@@ -5817,6 +5817,32 @@ function previewAcademic_() {
   });
 }
 
+/* ===================== [v9.18] 🖼️ 임시 플레이스홀더 이미지 =====================
+ * ⚠️ 임시용 — Recraft 진짜 이미지가 나오기 전, 앱에 빈 이미지 자리가 보이지 않도록 채우는 용도.
+ * contents의 monster/boss/worldboss 행 중 이미지URL(E열)이 "빈 행만" placehold.co URL로 채움.
+ * 이미 URL이 있는 행은 절대 덮어쓰지 않음(진짜 이미지 보존). 진짜 이미지가 오면 그 행은 자동 스킵.
+ * 임시 부품이라 bootstrapSynk 재건 목록·healthCheck 시트 점검에는 넣지 않음(academic_log와 반대). */
+function setupPlaceholderImages_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ct = ss.getSheetByName('contents');
+  if (!ct || ct.getLastRow() < 2) { Logger.log('contents 비어 있음 — 플레이스홀더 스킵'); return; }
+  const color = { monster: '4F46E5', boss: '312E81', worldboss: '1E1B4B' }; // 인디고 · 다크퍼플 · 더 어둡게
+  const n = ct.getLastRow() - 1;
+  const data = ct.getRange(2, 1, n, 6).getValues(); // A~F (콘텐츠ID·유형·이름·설명·이미지URL·순번)
+  let filled = 0;
+  const eCol = data.map(r => {
+    const id = String(r[0] || ''), type = String(r[1] || ''), url = String(r[4] || '').trim();
+    if (color[type] && !url) { // 대상 유형 + 빈 URL만 (기존 URL·비대상 유형은 손대지 않음)
+      const label = id.replace(/[^A-Za-z0-9]/g, '') || type.toUpperCase(); // ASCII만 — placehold.co 한글 깨짐 방지
+      filled++;
+      return ['https://placehold.co/400x400/' + color[type] + '/FFFFFF/png?text=' + label];
+    }
+    return [r[4]]; // 그대로 보존 (진짜 이미지 포함)
+  });
+  writeIfChanged(ct, 2, 5, eCol);
+  Logger.log('임시 플레이스홀더 이미지 ' + filled + '개 채움 (빈 monster/boss/worldboss만 · 기존 URL 보존)');
+}
+
 /* ===================== [v5] 신규 트리거/시트 셋업 (1회 실행) ===================== */
 
 // [v9.9] 🧬 원버튼 재건 — 빈 스프레드시트에서 SYNK 세계 전체를 되살립니다
