@@ -4046,17 +4046,22 @@ function runReportCards_() {
   if (!pendingAll.length) { Logger.log('리포트카드: ' + ym + ' 전원 생성 완료'); return; }
   const pending = pendingAll.slice(0, MAX_CARDS_PER_RUN);
 
-  // [v9.19] Phase 1: 슬라이드 복제 + 치환 + 막대차트/몬스터이미지 (buildReportCardSlide_ 공용)
+  // [v9.19b] Phase 1a: 복제만 (구조 변경) → saveAndClose
   const pres = SlidesApp.openById(REPORT_TEMPLATE_ID);
   const tpl = pres.getSlides()[0];
   const made = [];
   pending.forEach(r => {
     const d = reportCardData_(r, logsById[r[0]], monMap, now);
     d.month = label;
-    const sl = buildReportCardSlide_(tpl, d);
-    made.push({ d: d, pageId: sl.getObjectId() });
+    made.push({ d: d, pageId: tpl.duplicate().getObjectId() });
   });
   pres.saveAndClose();
+  // [v9.19b] Phase 1b: 재열기 후 채우기 (복제+편집 동일 배치의 "This request cannot be applied" 회피)
+  const presF = SlidesApp.openById(REPORT_TEMPLATE_ID);
+  const slById = {};
+  presF.getSlides().forEach(s => { slById[s.getObjectId()] = s; });
+  made.forEach(m => { const s = slById[m.pageId]; if (s) fillReportCardSlide_(s, m.d); });
+  presF.saveAndClose();
 
   // Phase 2: PNG 추출 → Drive 저장 → 시트 기록 (+옵션: 학부모 메일)
   const it = DriveApp.getFoldersByName(REPORT_FOLDER_NAME);
@@ -4241,19 +4246,22 @@ function insertMonsterImage_(sl, url) {
   }
 }
 
-// 템플릿 복제 → 텍스트 치환 + 차트 + 이미지 → 슬라이드 반환 (배치·프리뷰 공용)
-function buildReportCardSlide_(tpl, d) {
-  const sl = tpl.duplicate();
+// [v9.19b] 이미 존재하는(복제 후 저장·재열기된) 슬라이드를 채움 — 치환/차트/이미지 각각 try/catch로 격리.
+//  복제와 편집을 같은 배치에서 하면 Slides가 "This request cannot be applied"를 던지므로,
+//  호출부에서 [복제 → saveAndClose → 재열기 → fill] 2단계로 분리한다.
+function fillReportCardSlide_(sl, d) {
   const rep = {
     '{{월}}': d.month, '{{학생이름}}': d.name, '{{반이름}}': d.cls, '{{몬스터이름}}': d.nickname,
     '{{급수변화}}': d.levelText, '{{모의점수}}': d.mockText, '{{점수변화}}': d.scoreText,
     '{{출석}}': d.attendText, '{{몬스터단계}}': d.stageText, '{{칭호}}': d.title,
     '{{포인트}}': d.pointsText, '{{코멘트}}': d.comment
   };
-  Object.keys(rep).forEach(k => sl.replaceAllText(k, String(rep[k] == null ? '' : rep[k])));
-  drawScoreChart_(sl, d.mockScores); // {{CHART}}
-  insertMonsterImage_(sl, d.monImg); // {{MONIMG}}
-  return sl;
+  Object.keys(rep).forEach(k => {
+    try { sl.replaceAllText(k, String(rep[k] == null ? '' : rep[k])); }
+    catch (e) { Logger.log('치환 실패 ' + k + ': ' + e); }
+  });
+  try { drawScoreChart_(sl, d.mockScores); } catch (e) { Logger.log('차트 실패: ' + e); }   // {{CHART}}
+  try { insertMonsterImage_(sl, d.monImg); } catch (e) { Logger.log('이미지 실패: ' + e); } // {{MONIMG}}
 }
 
 // 테스트: 학생 1명만 카드 생성 → PNG URL 로그·반환 (report_cards 미기록 · 임시 슬라이드 정리)
@@ -4276,10 +4284,14 @@ function previewOneReportCard(studentId) {
   const d = reportCardData_(r, readAcademicLogs_(ss, tz)[r[0]], monsterImgMap_(ss), now);
   d.month = label;
 
+  // [v9.19b] 복제 → 저장 → 재열기 → 채우기 (같은 배치 복제+편집의 "This request cannot be applied" 회피)
   const pres = SlidesApp.openById(REPORT_TEMPLATE_ID);
-  const sl = buildReportCardSlide_(pres.getSlides()[0], d);
-  const pageId = sl.getObjectId();
+  const pageId = pres.getSlides()[0].duplicate().getObjectId();
   pres.saveAndClose();
+  const presF = SlidesApp.openById(REPORT_TEMPLATE_ID);
+  const slF = presF.getSlides().find(s => s.getObjectId() === pageId);
+  fillReportCardSlide_(slF, d);
+  presF.saveAndClose();
 
   Utilities.sleep(350);
   const blob = exportSlidePng(REPORT_TEMPLATE_ID, pageId).setName('PREVIEW_' + ym + '_' + d.sid + '_' + d.name + '.png');
