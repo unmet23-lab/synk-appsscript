@@ -413,13 +413,13 @@
  * 140. academic_log 시트(강사 월 1회 시트 직접 입력·Glide 업데이트 0): 유형 level(급수 1~6)·mock(점수 0~100).
  *      calcAcademic_(calcAll 말미 편승)이 학생별 스냅샷을 profiles BO~BV(67~74)에 기록 — 현재급수·최근모의·
  *      직전대비Δ·최고모의·레벨업누적·마지막평가월 + 학업한마디 KO/MN(따뜻한 리프레이밍, '하락' 금칙어).
- *      setupAcademic_(bootstrap 재건 편입) · previewAcademic_(시트 무쓰기 검증) · healthCheck 등록. 리포트카드는 열만 준비.
+ *      setupAcademic(bootstrap 재건 편입) · previewAcademic(시트 무쓰기 검증) · healthCheck 등록. 리포트카드는 열만 준비.
  *
  * [v9.19 — 🛠️ 상담폼 무효 ID 방어 (10분 실패 메일 스팸 차단)]
  * 141. importFormResponses의 FormApp.openById를 try/catch로 감쌈 — 저장된 상담폼ID가 삭제·타계정·권한없음·
  *      오타로 열리지 않으면 매 parentSweep(10분)마다 크래시→실패 메일이 쏟아지던 문제. 이제 빈 ID처럼
  *      조용히 스킵(로그만). 폼 재사용하려면 createConsultForm 재실행 또는 app_state '상담폼ID' 키 교정.
- * 142. checkFormMapping_(폼ID?): 폼 질문 제목 ↔ 상담시트 헤더 매핑을 읽기 전용 진단 — 정상 매핑·노션이관
+ * 142. checkFormMapping(폼ID?): 폼 질문 제목 ↔ 상담시트 헤더 매핑을 읽기 전용 진단 — 정상 매핑·노션이관
  *      ·빈 칸을 메일 보고. 폼 질문지 변경 시 "제대로 적용됐는지" 검증용. 새 폼 ID를 인자로 주면 상담폼ID
  *      교체 전 미리 검증 가능. 무인자는 현재 연결 폼 검사.
  **********************************************************/
@@ -4935,13 +4935,13 @@ function checkConsultSync() {
 /* ===================== [v9.19] 상담폼 ↔ 시트 매핑 진단 (수동 · 읽기 전용) =====================
  * 폼 질문지가 바뀌었을 때 "제대로 적용됐는지" 검증. importFormResponses와 동일 규칙(제목=헤더명 매칭,
  * 매칭 안 되면 노션이관)으로, 각 질문이 어느 칸에 들어가는지·노션이관으로 빠지는지·빈 칸은 뭔지 보고.
- * 인자로 새 폼 ID를 주면 상담폼ID를 바꾸기 전에 미리 검증 가능: checkFormMapping_('새폼ID')
+ * 인자로 새 폼 ID를 주면 상담폼ID를 바꾸기 전에 미리 검증 가능: checkFormMapping('새폼ID')
  * 무인자 호출은 app_state '상담폼ID'(현재 연결된 폼)를 검사. 데이터는 절대 수정하지 않음. */
-function checkFormMapping_(optId) {
+function checkFormMapping(optId) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
   const formId = String(optId || getState(st, '상담폼ID').val || '').trim();
-  if (!formId) { Logger.log('폼 ID 없음 — checkFormMapping_("폼ID")로 호출하거나 createConsultForm 먼저 실행'); return; }
+  if (!formId) { Logger.log('폼 ID 없음 — checkFormMapping("폼ID")로 호출하거나 createConsultForm 먼저 실행'); return; }
 
   let form;
   try { form = FormApp.openById(formId); }
@@ -5768,7 +5768,7 @@ function setupHomework() {
  * calcAcademic_이 calcAll 말미에 편승해 profiles BO~BV(67~74) 스냅샷을 writeIfChanged로 갱신.
  * 메시지는 언제나 따뜻하게 — '하락'을 쓰지 않고 '다지는 시간'으로 리프레이밍. */
 
-function setupAcademic_() {
+function setupAcademic() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ensureSheet(ss, 'academic_log',
     ['log_id', 'student_id', '날짜', '유형', '값', '비고', '입력자']);
@@ -5802,7 +5802,7 @@ function academicMsg_(s) {
   ];
 }
 
-// 학생 1명의 학업 로그(날짜 오름차순) → 스냅샷 객체. calcAcademic_·previewAcademic_ 공용.
+// 학생 1명의 학업 로그(날짜 오름차순) → 스냅샷 객체. calcAcademic_·previewAcademic 공용.
 function academicSnapshot_(logs) {
   if (!logs || !logs.length) return null;
   const levels = logs.filter(l => l.type === 'level');
@@ -5831,7 +5831,7 @@ function academicSnapshot_(logs) {
            levelUps: levelUps, lastMonth: lastMonth, ko: msg[0], mn: msg[1] };
 }
 
-// academic_log를 학생별로 읽어 그룹핑(날짜 오름차순). calcAcademic_·previewAcademic_ 공용.
+// academic_log를 학생별로 읽어 그룹핑(날짜 오름차순). calcAcademic_·previewAcademic 공용.
 function readAcademicLogs_(ss, tz) {
   const byId = {};
   const al = ss.getSheetByName('academic_log');
@@ -5873,13 +5873,13 @@ function calcAcademic_() {
 }
 
 // 시트에 쓰지 않고 계산 결과만 로그로 — 배포 전 검증용
-function previewAcademic_() {
+function previewAcademic() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const byId = readAcademicLogs_(ss, tz);
   const keys = Object.keys(byId);
-  if (!keys.length) { Logger.log('academic_log 비어 있음 — setupAcademic_ 먼저 실행하세요'); return; }
-  Logger.log('=== previewAcademic_ (시트 미기록) — ' + keys.length + '명 ===');
+  if (!keys.length) { Logger.log('academic_log 비어 있음 — setupAcademic 먼저 실행하세요'); return; }
+  Logger.log('=== previewAcademic (시트 미기록) — ' + keys.length + '명 ===');
   keys.forEach(sid => {
     const s = academicSnapshot_(byId[sid]);
     Logger.log(sid + ' | 급수 ' + (s.curLevel === '' ? '-' : s.curLevel) +
@@ -5896,7 +5896,7 @@ function previewAcademic_() {
  * contents의 monster/boss/worldboss 행 중 이미지URL(E열)이 "빈 행만" placehold.co URL로 채움.
  * 이미 URL이 있는 행은 절대 덮어쓰지 않음(진짜 이미지 보존). 진짜 이미지가 오면 그 행은 자동 스킵.
  * 임시 부품이라 bootstrapSynk 재건 목록·healthCheck 시트 점검에는 넣지 않음(academic_log와 반대). */
-function setupPlaceholderImages_() {
+function setupPlaceholderImages() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ct = ss.getSheetByName('contents');
   if (!ct || ct.getLastRow() < 2) { Logger.log('contents 비어 있음 — 플레이스홀더 스킵'); return; }
@@ -5950,7 +5950,7 @@ function bootstrapSynk() {
     ['몬스터 7', setupMonsters], ['보스 12 + 대군주', setupBosses], ['시즌 12', setupSeasons],
     ['브레인팁 30', setupBrainTips], ['학부모 라벨', setupParentLabels], ['크루 응원', setupTeacherCheers],
     ['연료 미션', setupFuelMissions], ['칭호 설화', setupTitleLore], ['워밍업 퀴즈', setupQuiz],
-    ['숙제 210', setupHomework], ['학업 로그', setupAcademic_] // [v9.18] 학업 성장 축 시트 재건 편입
+    ['숙제 210', setupHomework], ['학업 로그', setupAcademic] // [v9.18] 학업 성장 축 시트 재건 편입
   ];
   const log = [];
   steps.forEach(s => { try { s[1](); log.push('✓ ' + s[0]); } catch (e) { log.push('✗ ' + s[0] + ': ' + e.message); } });
