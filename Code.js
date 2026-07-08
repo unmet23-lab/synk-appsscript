@@ -4267,8 +4267,12 @@ function previewOneReportCard(studentId) {
   const pf = ss.getSheetByName('profiles');
   if (!pf || pf.getLastRow() < 2) { Logger.log('profiles 없음'); return; }
   const w = Math.min(pf.getLastColumn(), 74);
-  const r = pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues().find(x => String(x[0]) === String(studentId));
-  if (!r) { Logger.log('학생 없음: ' + studentId + ' — profiles user_id(A열) 확인'); return; }
+  const rowsP = pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues();
+  // [v9.19] 드롭다운 ▶실행은 인자를 못 넘기므로, 학생ID 미지정 시 자동으로 첫 학생으로 프리뷰
+  let r;
+  if (studentId) r = rowsP.find(x => String(x[0]) === String(studentId));
+  else { r = rowsP.find(x => x[0] && x[3] === 'student'); if (r) Logger.log('학생ID 미지정 → 첫 학생으로 프리뷰: ' + r[0] + ' (' + (r[1] || '') + ')'); }
+  if (!r) { Logger.log('학생 없음: ' + studentId + ' — profiles user_id(A열) 확인 (인자 없이 실행하면 첫 학생 자동 선택)'); return; }
   const d = reportCardData_(r, readAcademicLogs_(ss, tz)[r[0]], monsterImgMap_(ss), now);
   d.month = label;
 
