@@ -4256,9 +4256,28 @@ function fillReportCardSlide_(sl, d) {
     '{{출석}}': d.attendText, '{{몬스터단계}}': d.stageText, '{{칭호}}': d.title,
     '{{포인트}}': d.pointsText, '{{코멘트}}': d.comment
   };
-  Object.keys(rep).forEach(k => {
-    try { sl.replaceAllText(k, String(rep[k] == null ? '' : rep[k])); }
-    catch (e) { Logger.log('치환 실패 ' + k + ': ' + e); }
+  // [v9.19b] 도형·표 셀 단위로 치환 — 슬라이드 단위 replaceAllText는 표 안 자리표시자에서
+  //  "This request cannot be applied"를 던짐. 셀 단위 TextRange로 격리하고, 그래도 실패하면 setText 폴백.
+  const ranges = [];
+  try { sl.getShapes().forEach(sh => { try { ranges.push(sh.getText()); } catch (e) {} }); } catch (e) {}
+  try { (sl.getTables() || []).forEach(tb => {
+    for (let r = 0; r < tb.getNumRows(); r++) for (let c = 0; c < tb.getNumColumns(); c++) {
+      try { ranges.push(tb.getCell(r, c).getText()); } catch (e) {}
+    }
+  }); } catch (e) {}
+  ranges.forEach(tr => {
+    if (!tr) return;
+    let s = ''; try { s = tr.asString(); } catch (e) { return; }
+    if (s.indexOf('{{') === -1) return;
+    Object.keys(rep).forEach(k => {
+      if (s.indexOf(k) === -1) return;
+      const v = String(rep[k] == null ? '' : rep[k]);
+      try { tr.replaceAllText(k, v); }
+      catch (e) { // 폴백: 전체 텍스트 문자열 치환 (서식은 첫 런으로 평탄화될 수 있음)
+        try { tr.setText(tr.asString().split(k).join(v)); }
+        catch (e2) { Logger.log('치환 실패 ' + k + ': ' + e2); }
+      }
+    });
   });
   try { drawScoreChart_(sl, d.mockScores); } catch (e) { Logger.log('차트 실패: ' + e); }   // {{CHART}}
   try { insertMonsterImage_(sl, d.monImg); } catch (e) { Logger.log('이미지 실패: ' + e); } // {{MONIMG}}
