@@ -1618,6 +1618,12 @@ function syncProfiles() {
   });
 
   nonStudents.forEach(r => out.push(r)); // [v7.0] 학생 뒤에 비학생 행 재기록
+  // [v9.19] 안전 가드 — 상담시트에 학생이 0명이면 기존 profiles 학생을 덮어쓰지 않음
+  //          (빈/오연결/신규 상담시트가 원본일 때 실학생 대량 삭제 방지 · 백업 복구 이전에 예방)
+  if (out.filter(r => r[3] === 'student').length === 0 && dstLast > 1) {
+    Logger.log('syncProfiles 중단: 상담시트 학생 0명 — 기존 profiles 보호(덮어쓰기 안 함)');
+    return;
+  }
   if (dstLast > 1) dst.getRange(2, 1, dstLast - 1, 15).clearContent();
   if (out.length > 0) {
     dst.getRange(2, 1, out.length, 15).setValues(out);
@@ -4930,6 +4936,21 @@ function checkConsultSync() {
     '\n\n※ 읽기 전용 진단 — 어떤 데이터도 수정하지 않았습니다.';
   Logger.log(report);
   if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🔎 상담 연동 진단 결과', report);
+}
+
+/* ===================== [v9.19] 상담시트 헤더 덤프 (수동 · 읽기 전용) =====================
+ * 폼 질문을 시트 버전(v18.3 등)에 맞출 때, 시트 2행 헤더를 열 번호와 함께 그대로 출력.
+ * createConsultForm/importFormResponses 정렬의 기준 자료. 데이터는 수정하지 않음. */
+function dumpConsultHeaders() {
+  let out = [];
+  try {
+    const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    if (!consult) { Logger.log("'상담데이터입력' 탭 없음 — 탭 이름 확인"); return; }
+    const w = Math.max(consult.getLastColumn(), 62);
+    const h = consult.getRange(2, 1, 1, w).getValues()[0]; // 헤더는 2행
+    h.forEach((v, i) => { if (String(v).trim() !== '') out.push((i + 1) + '\t' + String(v).trim()); });
+  } catch (e) { Logger.log('상담시트 열기 실패: ' + e); return; }
+  Logger.log('=== 상담데이터입력 헤더(2행) · ' + out.length + '개 ===\n' + out.join('\n'));
 }
 
 /* ===================== [v9.19] 상담폼 ↔ 시트 매핑 진단 (수동 · 읽기 전용) =====================
