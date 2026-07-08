@@ -408,6 +408,12 @@
  *      가드 — 이제 sendEmail 31곳 전부 쿼터 가드 하에서만 발사. 다량 발송 루프(학부모·주간소식·
  *      시상식)는 애초에 루프 전 일괄 가드 확인. healthCheck 27시트 = 재건 실물 27과 완전 정합.
  *      백업 = 파일 전체 사본(SYNK_백업 폴더·30일) — 신규 시트 자동 포함. safeRun 34곳 크래시 격리.
+ *
+ * [v9.18 — 📚 학업 성장 축 v1 (급수·모의점수 시간축)]
+ * 140. academic_log 시트(강사 월 1회 시트 직접 입력·Glide 업데이트 0): 유형 level(급수 1~6)·mock(점수 0~100).
+ *      calcAcademic_(calcAll 말미 편승)이 학생별 스냅샷을 profiles BO~BV(67~74)에 기록 — 현재급수·최근모의·
+ *      직전대비Δ·최고모의·레벨업누적·마지막평가월 + 학업한마디 KO/MN(따뜻한 리프레이밍, '하락' 금칙어).
+ *      setupAcademic_(bootstrap 재건 편입) · previewAcademic_(시트 무쓰기 검증) · healthCheck 등록. 리포트카드는 열만 준비.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
@@ -1551,6 +1557,7 @@ function calcAll() {
     setState(st, '학생수', count);
   } else if (count !== prev) setState(st, '학생수', count);
 
+  try { calcAcademic_(); } catch (e) { Logger.log('calcAcademic_ 스킵: ' + e); } // [v9.18] 학업 성장 축 — 같은 사이클 편승·오류 격리
   Logger.log('calcAll v5 완료');
 }
 
@@ -3897,7 +3904,8 @@ function healthCheck() {
     'form_responses','contents','class_stats','app_state','raid','schedule',
     'monthly_snapshot','titles','achievements','story','manual_titles','teacher_stats',
     'report_cards','league_history','class_fuel','weekly_topics','hw_batch','today_board',
-    'league_pairs','world_raid','synk_stories','synk_cards']; // [v9.12]
+    'league_pairs','world_raid','synk_stories','synk_cards', // [v9.12]
+    'academic_log']; // [v9.18] 학업 성장 축
   const missing = required.filter(n => !ss.getSheetByName(n));
   const plRows = ss.getSheetByName('point_logs') ? ss.getSheetByName('point_logs').getLastRow() - 1 : 0;
   const quota = MailApp.getRemainingDailyQuota();
@@ -4062,6 +4070,7 @@ function runReportCards_() {
       growth: (pts[sid] || 0) - (prevPts[sid] !== undefined ? prevPts[sid] : (pts[sid] || 0))
     };
     const sl = tpl.duplicate();
+    // [v9.18] TODO: 리포트카드 활성화 시 {{급수}}(profiles BO) · {{모의점수변화}}(BQ) placeholder 추가 예정 — 지금은 열만 준비
     const rep = {
       '{{학생이름}}': s.name,
       '{{반이름}}': s.cls,
@@ -5678,6 +5687,136 @@ function setupHomework() {
   ]);
 }
 
+/* ===================== [v9.18] 📚 학업 성장 축 v1 =====================
+ * 실제 한국어 실력(급수 + 월간 모의점수)을 시간축으로 기록하는 순수 추가 축.
+ * academic_log = 강사가 월 1회 시트에 직접 입력(Glide 업데이트 0).
+ *   유형 level → 값=급수(1~6) · 유형 mock → 값=모의점수(0~100)
+ * calcAcademic_이 calcAll 말미에 편승해 profiles BO~BV(67~74) 스냅샷을 writeIfChanged로 갱신.
+ * 메시지는 언제나 따뜻하게 — '하락'을 쓰지 않고 '다지는 시간'으로 리프레이밍. */
+
+function setupAcademic_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ensureSheet(ss, 'academic_log',
+    ['log_id', 'student_id', '날짜', '유형', '값', '비고', '입력자']);
+  if (sh.getLastRow() < 2) { // 빈 시트(헤더만)일 때만 예시 3행 — 재실행 안전
+    sh.getRange(2, 1, 3, 7).setValues([
+      ['AL001', '(예시)S001', '2026-05-01', 'level', 3, '3급 인증', '(예시)'],
+      ['AL002', '(예시)S001', '2026-06-01', 'mock', 62, '6월 모의', '(예시)'],
+      ['AL003', '(예시)S001', '2026-07-01', 'mock', 69, '7월 모의', '(예시)']
+    ]);
+  }
+  Logger.log('academic_log 준비 완료 (헤더 7열 · 예시 3행)');
+}
+
+// 따뜻한 한마디 — [ko, mn]. 우선순위: 첫기록 > 급수상승 > 점수상승 > 유지/리프레이밍(부정어 없음)
+function academicMsg_(s) {
+  if (s.first) return [
+    '🌱 첫 평가 기록! 여기서부터 성장 스토리가 시작돼요 ✨',
+    '🌱 Анхны үнэлгээ бүртгэгдлээ! Эндээс өсөлтийн түүх эхэлж байна ✨'
+  ];
+  if (s.levelUp) return [
+    '🎉 ' + s.fromLv + '급 → ' + s.toLv + '급! 한국어 뇌에 새 회로가 열렸어요',
+    '🎉 ' + s.fromLv + '-р зэрэг → ' + s.toLv + '-р зэрэг боллоо! Солонгос хэлний тархинд шинэ холбоос нээгдлээ'
+  ];
+  if (s.hasDelta && s.delta > 0) return [
+    '지난달보다 +' + s.delta + '점 📈 꾸준함이 실력이 되고 있어요',
+    'Өнгөрсөн сараас +' + s.delta + ' оноо 📈 Тэвчээр чинь чадвар болж байна'
+  ];
+  return [ // 유지/하락 → 리프레이밍 (금칙어 '하락' 미사용)
+    '이번 달은 실력을 다지는 시간, 다음 도약을 준비 중이에요 💪',
+    'Энэ сар бол чадвараа бэхжүүлэх цаг, дараагийн үсрэлтэд бэлдэж байна 💪'
+  ];
+}
+
+// 학생 1명의 학업 로그(날짜 오름차순) → 스냅샷 객체. calcAcademic_·previewAcademic_ 공용.
+function academicSnapshot_(logs) {
+  if (!logs || !logs.length) return null;
+  const levels = logs.filter(l => l.type === 'level');
+  const mocks = logs.filter(l => l.type === 'mock');
+  const curLevel = levels.length ? levels[levels.length - 1].val : '';
+  let levelUps = 0, recentLevelUp = false, fromLv = '', toLv = '';
+  for (let k = 1; k < levels.length; k++) if (levels[k].val > levels[k - 1].val) levelUps++;
+  if (levels.length >= 2 && levels[levels.length - 1].val > levels[levels.length - 2].val) {
+    recentLevelUp = true; fromLv = levels[levels.length - 2].val; toLv = levels[levels.length - 1].val;
+  }
+  const curMock = mocks.length ? mocks[mocks.length - 1].val : '';
+  const hasDelta = mocks.length >= 2;
+  const delta = hasDelta ? (curMock - mocks[mocks.length - 2].val) : '';
+  const bestMock = mocks.length ? Math.max.apply(null, mocks.map(m => m.val)) : '';
+  const lastMonth = String(logs[logs.length - 1].ds).substring(0, 7);
+  const lastEntry = logs[logs.length - 1];
+  const state = { first: logs.length === 1, levelUp: false, fromLv: fromLv, toLv: toLv, hasDelta: false, delta: delta };
+  if (!state.first) { // 가장 최근 사건 기준 메시지 (mock 항목이라도 직전 레벨업이 있으면 축하 유지)
+    if (lastEntry.type === 'level' && recentLevelUp) state.levelUp = true;
+    else if (lastEntry.type === 'mock' && hasDelta) state.hasDelta = true;
+    else if (recentLevelUp) state.levelUp = true;
+    else if (hasDelta) state.hasDelta = true;
+  }
+  const msg = academicMsg_(state);
+  return { curLevel: curLevel, curMock: curMock, delta: delta, bestMock: bestMock,
+           levelUps: levelUps, lastMonth: lastMonth, ko: msg[0], mn: msg[1] };
+}
+
+// academic_log를 학생별로 읽어 그룹핑(날짜 오름차순). calcAcademic_·previewAcademic_ 공용.
+function readAcademicLogs_(ss, tz) {
+  const byId = {};
+  const al = ss.getSheetByName('academic_log');
+  if (!al || al.getLastRow() < 2) return byId;
+  al.getRange(2, 1, al.getLastRow() - 1, 7).getValues().forEach(r => {
+    const sid = r[1], type = String(r[3] || '').trim(), val = Number(r[4]) || 0;
+    if (!sid || (type !== 'level' && type !== 'mock')) return;
+    (byId[sid] = byId[sid] || []).push({ ds: dstr(r[2], tz), type: type, val: val });
+  });
+  Object.keys(byId).forEach(k => byId[k].sort((a, b) => a.ds < b.ds ? -1 : (a.ds > b.ds ? 1 : 0)));
+  return byId;
+}
+
+function calcAcademic_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return; // 콜드스타트 가드
+
+  const byId = readAcademicLogs_(ss, tz);
+
+  // profiles 신규열 BO~BV(67~74) 확장 + 헤더 보장 (기존 66열 계산과 분리)
+  if (pf.getMaxColumns() < 74) pf.insertColumnsAfter(pf.getMaxColumns(), 74 - pf.getMaxColumns());
+  const heads = ['현재급수','최근모의점수','직전대비Δ','최고모의점수','레벨업누적','마지막평가월','학업한마디_KO','학업한마디_MN'];
+  heads.forEach((h, i) => { if (String(pf.getRange(1, 67 + i).getValue()) !== h) pf.getRange(1, 67 + i).setValue(h); });
+
+  const n = pf.getLastRow() - 1;
+  const ids = pf.getRange(2, 1, n, 1).getValues();
+  const roles = pf.getRange(2, 4, n, 1).getValues();
+  const out = ids.map((r, i) => {
+    const sid = r[0];
+    if (!sid || roles[i][0] !== 'student') return ['', '', '', '', '', '', '', ''];
+    const snap = academicSnapshot_(byId[sid]);
+    if (!snap) return ['', '', '', '', '', '', '', ''];
+    return [snap.curLevel, snap.curMock, snap.delta, snap.bestMock, snap.levelUps, snap.lastMonth, snap.ko, snap.mn];
+  });
+  writeIfChanged(pf, 2, 67, out);
+  Logger.log('calcAcademic_ 완료: 학업 로그 ' + Object.keys(byId).length + '명');
+}
+
+// 시트에 쓰지 않고 계산 결과만 로그로 — 배포 전 검증용
+function previewAcademic_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const byId = readAcademicLogs_(ss, tz);
+  const keys = Object.keys(byId);
+  if (!keys.length) { Logger.log('academic_log 비어 있음 — setupAcademic_ 먼저 실행하세요'); return; }
+  Logger.log('=== previewAcademic_ (시트 미기록) — ' + keys.length + '명 ===');
+  keys.forEach(sid => {
+    const s = academicSnapshot_(byId[sid]);
+    Logger.log(sid + ' | 급수 ' + (s.curLevel === '' ? '-' : s.curLevel) +
+      ' · 최근모의 ' + (s.curMock === '' ? '-' : s.curMock) +
+      ' · Δ ' + (s.delta === '' ? '-' : s.delta) +
+      ' · 최고 ' + (s.bestMock === '' ? '-' : s.bestMock) +
+      ' · 레벨업 ' + s.levelUps + ' · ' + s.lastMonth +
+      '\n    KO: ' + s.ko + '\n    MN: ' + s.mn);
+  });
+}
+
 /* ===================== [v5] 신규 트리거/시트 셋업 (1회 실행) ===================== */
 
 // [v9.9] 🧬 원버튼 재건 — 빈 스프레드시트에서 SYNK 세계 전체를 되살립니다
@@ -5711,7 +5850,7 @@ function bootstrapSynk() {
     ['몬스터 7', setupMonsters], ['보스 12 + 대군주', setupBosses], ['시즌 12', setupSeasons],
     ['브레인팁 30', setupBrainTips], ['학부모 라벨', setupParentLabels], ['크루 응원', setupTeacherCheers],
     ['연료 미션', setupFuelMissions], ['칭호 설화', setupTitleLore], ['워밍업 퀴즈', setupQuiz],
-    ['숙제 210', setupHomework]
+    ['숙제 210', setupHomework], ['학업 로그', setupAcademic_] // [v9.18] 학업 성장 축 시트 재건 편입
   ];
   const log = [];
   steps.forEach(s => { try { s[1](); log.push('✓ ' + s[0]); } catch (e) { log.push('✗ ' + s[0] + ': ' + e.message); } });
