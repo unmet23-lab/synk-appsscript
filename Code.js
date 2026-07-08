@@ -425,13 +425,17 @@
  * 143. 상담 파이프라인 v18.3 정합: CONSULT_SHEET_ID 현행 시트로 교체 · createConsultForm 질문 제목 19개
  *      재정렬(학력→최종학력, 지망대학N→…순위, 학비조달→학비조달주체 등) · 서술형 저장칸 📝노션이관→
  *      📝자유서술→노션 · dumpConsultHeaders(헤더 덤프) · syncProfiles 빈-원본 삭제 방지 가드 추가.
+ * 144. 리포트카드 v2 ON: REPORT_TEMPLATE_ID 설정 · runReportCards_ 현재월 profiles+academic_log 기준 재배선
+ *      (랭킹·monthly_snapshot 의존 제거) · {{급수변화}}{{모의점수}}{{점수변화}}{{출석}}{{몬스터단계}}{{칭호}}
+ *      {{포인트}}{{코멘트}} + {{CHART}}(모의 최근5 막대) + {{MONIMG}}(단계 이미지). previewOneReportCard(sid)
+ *      테스트. 코멘트 따뜻·리프레이밍. 학부모 메일은 SEND_REPORT_EMAIL=false로 아직 미발송.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
 /* ── [v5] 신규 설정 ─────────────────────────────────── */
-const REPORT_TEMPLATE_ID = '';   // 리포트카드 Google Slides ID (비우면 카드 생성 스킵)
+const REPORT_TEMPLATE_ID = '1XDhZPMjd17fbxmqGGEjq-kRks2Y3tJc9Ntrp90XV4pE';   // [v9.19] 리포트카드 Slides 템플릿 (비우면 스킵)
 const REPORT_FOLDER_NAME = 'SYNK_리포트카드'; // Drive 폴더 (없으면 자동 생성)
 const SEND_REPORT_EMAIL = false; // true: 학부모 이메일로 카드 링크 발송 (쿼터 가드 적용)
 const MAX_CARDS_PER_RUN = 60;    // 1회 실행당 카드 수 (초과분은 4분 후 자동 이어하기)
@@ -4004,66 +4008,16 @@ function runReportCards_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const now = new Date();
-  const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const ym = Utilities.formatDate(lastMonthDate, tz, 'yyyy-MM');
+  const ym = Utilities.formatDate(now, tz, 'yyyy-MM'); // [v9.19] 현재월 스냅샷 — 포인트·출석·학업 모두 현재 profiles 기준
   const label = Number(ym.substring(0, 4)) + '년 ' + Number(ym.substring(5, 7)) + '월';
 
-  // 게임배치 스냅샷 필요 (포인트·랭킹의 원천)
-  const snap = ss.getSheetByName('monthly_snapshot');
-  const pts = {}, rank = {}, prevPts = {};
-  const prevYm = Utilities.formatDate(
-    new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth() - 1, 1), tz, 'yyyy-MM');
-  let snapOk = false;
-  if (snap && snap.getLastRow() >= 2) {
-    snap.getRange(2, 1, snap.getLastRow() - 1, 4).getValues().forEach(r => {
-      const rowYm = String(r[0]);
-      if (rowYm === ym) {
-        snapOk = true;
-        pts[r[1]] = Number(r[2]) || 0;
-        rank[r[1]] = Number(r[3]) || 999;
-      } else if (rowYm === prevYm) {
-        prevPts[r[1]] = Number(r[2]) || 0;
-      }
-    });
-  }
-  if (!snapOk) {
-    if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 리포트카드 대기',
-      ym + ' monthly_snapshot이 아직 없습니다.\nmonthlyGameBatch 실행 후 monthlyReportCards를 다시 실행해주세요.');
-    return;
-  }
-
-  // 지난달 칭호
-  const titleOf = {};
-  const tt = ss.getSheetByName('titles');
-  if (tt && tt.getLastRow() >= 2) {
-    tt.getRange(2, 1, tt.getLastRow() - 1, 3).getValues().forEach(r => {
-      if (String(r[0]) !== ym || !r[1]) return;
-      if (!titleOf[r[1]]) titleOf[r[1]] = [];
-      titleOf[r[1]].push(r[2]);
-    });
-  }
-
-  // 지난달 출석일수
-  const at = ss.getSheetByName('attendance');
-  const attCnt = {};
-  if (at && at.getLastRow() >= 2) {
-    const seen = {};
-    at.getRange(2, 1, at.getLastRow() - 1, 3).getValues().forEach(r => {
-      const sid = r[1], d = r[2];
-      if (!sid || !d) return;
-      const ds = dstr(d, tz);
-      if (!ds.startsWith(ym)) return;
-      if (!seen[sid]) seen[sid] = new Set();
-      seen[sid].add(ds);
-    });
-    Object.keys(seen).forEach(k => attCnt[k] = seen[k].size);
-  }
-
-  // 학생 목록 (몬스터 S열 · 반 · 보호자이메일)
   const pf = ss.getSheetByName('profiles');
   if (!pf || pf.getLastRow() < 2) return; // [v8.2]
-  const pfData = pf.getRange(2, 1, pf.getLastRow() - 1, 26).getValues();
+  const w = Math.min(pf.getLastColumn(), 74); // [v9.19] BQ(69)까지 필요 · 열 부족 시 안전 클램프
+  const pfData = pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues();
   const students = pfData.filter(r => r[0] && r[3] === 'student');
+  const logsById = readAcademicLogs_(ss, tz); // [v9.19] academic_log — 급수변화·모의 점수 차트
+  const monMap = monsterImgMap_(ss);          // [v9.19] 단계명 → 이미지URL
 
   const rc = ensureSheet(ss, 'report_cards',
     ['card_id', 'student_id', '월', 'image_url', '칭호', '코멘트', 'created_at']);
@@ -4077,34 +4031,15 @@ function runReportCards_() {
   if (!pendingAll.length) { Logger.log('리포트카드: ' + ym + ' 전원 생성 완료'); return; }
   const pending = pendingAll.slice(0, MAX_CARDS_PER_RUN);
 
-  // Phase 1: 슬라이드 복제 + 플레이스홀더 치환
+  // [v9.19] Phase 1: 슬라이드 복제 + 치환 + 막대차트/몬스터이미지 (buildReportCardSlide_ 공용)
   const pres = SlidesApp.openById(REPORT_TEMPLATE_ID);
   const tpl = pres.getSlides()[0];
   const made = [];
   pending.forEach(r => {
-    const sid = r[0];
-    const s = {
-      sid: sid, name: r[1], cls: r[4] || 'SYNK', pEmail: String(r[25] || '').trim(),
-      pts: pts[sid] || 0, rank: rank[sid] || 999,
-      attend: attCnt[sid] || 0, monster: String(r[18] || '') || '뉴로',
-      titles: titleOf[sid] || [],
-      growth: (pts[sid] || 0) - (prevPts[sid] !== undefined ? prevPts[sid] : (pts[sid] || 0))
-    };
-    const sl = tpl.duplicate();
-    // [v9.18] TODO: 리포트카드 활성화 시 {{급수}}(profiles BO) · {{모의점수변화}}(BQ) placeholder 추가 예정 — 지금은 열만 준비
-    const rep = {
-      '{{학생이름}}': s.name,
-      '{{반이름}}': s.cls,
-      '{{월}}': label,
-      '{{월간포인트}}': String(s.pts),
-      '{{출석일수}}': String(s.attend),
-      '{{랭킹}}': s.rank < 999 ? s.rank + '위' : '—',
-      '{{칭호}}': s.titles.length ? s.titles.join(' · ') : '다음 달 주인공 예약!',
-      '{{몬스터}}': (nickOf[s.sid] ? nickOf[s.sid] + ' (' + s.monster + ')' : s.monster), // [v6.6]
-      '{{코멘트}}': reportComment(s)
-    };
-    Object.keys(rep).forEach(k => sl.replaceAllText(k, rep[k]));
-    made.push({ s: s, pageId: sl.getObjectId() });
+    const d = reportCardData_(r, logsById[r[0]], monMap, now);
+    d.month = label;
+    const sl = buildReportCardSlide_(tpl, d);
+    made.push({ d: d, pageId: sl.getObjectId() });
   });
   pres.saveAndClose();
 
@@ -4115,15 +4050,15 @@ function runReportCards_() {
   made.forEach(m => {
     Utilities.sleep(350); // [v5.3] 연속 export 429 방지
     const blob = exportSlidePng(REPORT_TEMPLATE_ID, m.pageId)
-      .setName(ym + '_' + m.s.sid + '_' + m.s.name + '.png');
+      .setName(ym + '_' + m.d.sid + '_' + m.d.name + '.png');
     const file = folder.createFile(blob);
     try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); }
-    catch (e) { Logger.log('공유설정 실패(' + m.s.name + ') — 폴더 공유 설정으로 대체'); }
+    catch (e) { Logger.log('공유설정 실패(' + m.d.name + ') — 폴더 공유 설정으로 대체'); }
     const url = 'https://lh3.googleusercontent.com/d/' + file.getId();
-    rows.push([ym + '-' + m.s.sid, m.s.sid, ym, url,
-      m.s.titles.join(' · '), reportComment(m.s), new Date()]);
-    if (SEND_REPORT_EMAIL && m.s.pEmail.indexOf('@') > -1) {
-      mails.push({ to: m.s.pEmail, name: m.s.name, url: url, pts: m.s.pts, attend: m.s.attend });
+    rows.push([ym + '-' + m.d.sid, m.d.sid, ym, url,
+      m.d.title, m.d.comment, new Date()]);
+    if (SEND_REPORT_EMAIL && m.d.pEmail.indexOf('@') > -1) {
+      mails.push({ to: m.d.pEmail, name: m.d.name, url: url, pts: m.d.pointsText, attend: m.d.attendText });
     }
   });
   if (rows.length) rc.getRange(rc.getLastRow() + 1, 1, rows.length, 7).setValues(rows);
@@ -4132,7 +4067,7 @@ function runReportCards_() {
     mails.forEach(m => {
       MailApp.sendEmail(m.to, '[SYNK] 📮 ' + m.name + ' 학생 ' + label + ' 성장 리포트',
         m.name + ' 학생의 ' + label + ' 성장 리포트가 도착했어요!\n\n' +
-        '월간 포인트 ' + m.pts + 'P · 출석 ' + m.attend + '일\n' +
+        '포인트 ' + m.pts + ' · 출석 ' + m.attend + '\n' +
         '리포트 카드 보기: ' + m.url + '\n\n' +
         '한 달 동안 수고 많았습니다. 다음 달도 함께 성장해요!\n- 뇌과학으로 배우는 한국어, SYNK');
     });
@@ -4177,6 +4112,169 @@ function exportSlidePng(presId, pageId) {
     throw new Error('PNG 추출 실패(' + resp.getResponseCode() + ') — Slides ID/권한 확인');
   }
   return resp.getBlob();
+}
+
+/* ===================== [v9.19] 리포트 카드 v2 — 학업 성장·차트·몬스터 이미지 =====================
+ * 현재월 profiles 상태 + academic_log로 카드 생성. 플레이스홀더: {{월}}{{학생이름}}{{반이름}}{{몬스터이름}}
+ * {{급수변화}}{{모의점수}}{{점수변화}}{{출석}}{{몬스터단계}}{{칭호}}{{포인트}}{{코멘트}} + 도형 마커 {{CHART}}{{MONIMG}}.
+ * 메시지·코멘트는 항상 따뜻·희망(하락/유지도 '다지는 시간'으로 리프레이밍). */
+
+// contents(type=monster) 단계명 → 이미지URL
+function monsterImgMap_(ss) {
+  const ct = ss.getSheetByName('contents'), map = {};
+  if (ct && ct.getLastRow() >= 2) ct.getRange(2, 1, ct.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (r[1] === 'monster' && r[2]) map[String(r[2])] = String(r[4] || '');
+  });
+  return map;
+}
+
+// 이번 달 시작~오늘까지 반유형(평일/주말) 예정 수업일 수 (개근 판정용 · calcAll의 수업일 개념과 동일)
+function scheduledSoFar_(type, now) {
+  const y = now.getFullYear(), m = now.getMonth(), today = now.getDate();
+  let c = 0;
+  for (let dd = 1; dd <= today; dd++) {
+    const dt = new Date(y, m, dd), we = (dt.getDay() === 0 || dt.getDay() === 6);
+    if ((type === '주말') === we) c++;
+  }
+  return c;
+}
+
+// 따뜻한 코멘트 — 급수·점수·출석을 사실 기반으로 엮되 부정어 없음('하락' 금칙, 유지는 '다지는 시간')
+function reportCardComment_(d) {
+  const parts = [];
+  if (d.levelUp) parts.push('🎉 ' + d.fromLv + '급에서 ' + d.toLv + '급으로 진급했어요! 한국어 뇌에 새 회로가 열렸어요.');
+  if (typeof d.delta === 'number' && d.delta > 0) parts.push('모의 점수도 지난 기록보다 +' + d.delta + '점 올랐어요 📈 꾸준함이 실력이 되고 있어요.');
+  else if (d.hasMock && !d.levelUp) parts.push('이번 달은 실력을 탄탄히 다지는 시간이었어요 💪 다음 도약을 준비 중이에요.');
+  if (d.gaegeun) parts.push('개근까지 해냈어요 🔥 매일의 한 걸음이 큰 성장을 만듭니다.');
+  else if (d.attendCount >= 8) parts.push(d.attendCount + '일 함께하며 성실하게 자랐어요 🌱');
+  if (!parts.length) parts.push('이번 달도 SYNK와 함께 한 걸음씩 성장했어요 ✨ 다음 달이 더 기대돼요!');
+  return parts.slice(0, 3).join(' ');
+}
+
+// profiles 행 + academic_log → 카드 데이터 객체 (배치·프리뷰 공용)
+function reportCardData_(r, logs, monMap, now) {
+  logs = logs || [];
+  const levels = logs.filter(l => l.type === 'level');
+  const mocks = logs.filter(l => l.type === 'mock');
+  const curLv = levels.length ? levels[levels.length - 1].val : null;
+  const prevLv = levels.length >= 2 ? levels[levels.length - 2].val : null;
+  const levelUp = (curLv != null && prevLv != null && curLv > prevLv);
+  let levelText = '—';
+  if (levels.length >= 2) levelText = prevLv + '급 → ' + curLv + '급';
+  else if (levels.length === 1) levelText = curLv + '급';
+  const bp = (r[67] === '' || r[67] == null) ? null : Number(r[67]); // BP 최근모의점수
+  const bq = (r[68] === '' || r[68] == null) ? null : Number(r[68]); // BQ 직전대비Δ
+  const delta = (bq != null && !isNaN(bq)) ? bq : null;
+  const type = String(r[35] || '평일'); // AJ 반유형
+  const schSoFar = scheduledSoFar_(type, now);
+  const attendCount = Number(r[21]) || 0; // V 이번달출석
+  const gaegeun = schSoFar >= 1 && attendCount >= schSoFar;
+  const stage = String(r[18] || '뉴로'), stageNum = Number(r[41]) || 1; // S 단계 · AP 단계번호
+  const d = {
+    sid: r[0], name: r[1] || r[0], cls: String(r[4] || 'SYNK'), pEmail: String(r[25] || '').trim(),
+    nickname: String(r[40] || '') || stage, // AO 별명 (없으면 단계명)
+    levelText: levelText, levelUp: levelUp, fromLv: prevLv, toLv: curLv,
+    mockText: (bp != null && !isNaN(bp)) ? String(bp) : '—', hasMock: mocks.length > 0,
+    scoreText: (delta == null) ? '—' : (delta > 0 ? '+' + delta : String(delta)), delta: delta,
+    attendText: attendCount + '일' + (gaegeun ? ' · 개근' : ''), attendCount: attendCount, gaegeun: gaegeun,
+    stageText: stage + ' · ' + stageNum + '단계',
+    title: String(r[33] || '') || '이달도 화이팅 💪', // AH 대표칭호
+    pointsText: (Number(r[16]) || 0) + 'P', // Q 월간포인트
+    monImg: monMap[stage] || '',
+    mockScores: mocks.slice(-5).map(m => Number(m.val) || 0) // 시간순 최근 5개
+  };
+  d.comment = reportCardComment_(d);
+  return d;
+}
+
+// {{CHART}} 마커 도형 자리에 막대그래프 (없으면 첫 기록 안내), 마커는 제거
+function drawScoreChart_(sl, scores) {
+  let marker = null;
+  sl.getShapes().forEach(sh => { let t = ''; try { t = sh.getText().asString(); } catch (e) {} if (t.indexOf('{{CHART}}') > -1) marker = sh; });
+  if (!marker) return;
+  const L = marker.getLeft(), T = marker.getTop(), W = marker.getWidth(), H = marker.getHeight();
+  marker.remove();
+  if (!scores || !scores.length) {
+    const tb = sl.insertTextBox('이번이 첫 기록! ✨', L, T, W, H);
+    tb.getText().getTextStyle().setFontSize(13).setBold(true).setForegroundColor('#10B981');
+    return;
+  }
+  const use = scores.slice(-5), n = use.length;
+  const slot = W / n, barW = slot * 0.6;
+  for (let i = 0; i < n; i++) {
+    const sc = Math.max(0, Math.min(100, Number(use[i]) || 0));
+    const bh = Math.max(H * (sc / 100), 2);
+    const bar = sl.insertShape(SlidesApp.ShapeType.ROUND_RECTANGLE, L + i * slot + (slot - barW) / 2, T + H - bh, barW, bh);
+    bar.getFill().setSolidFill(i === n - 1 ? '#10B981' : '#CFEDDF'); // 최신=초록 · 나머지=연초록
+    bar.getBorder().setTransparent();
+  }
+}
+
+// {{MONIMG}} 마커 자리에 몬스터 이미지 (URL 없으면 빈 칸), 마커는 제거
+function insertMonsterImage_(sl, url) {
+  let marker = null;
+  sl.getShapes().forEach(sh => { let t = ''; try { t = sh.getText().asString(); } catch (e) {} if (t.indexOf('{{MONIMG}}') > -1) marker = sh; });
+  if (!marker) return;
+  const L = marker.getLeft(), T = marker.getTop(), W = marker.getWidth(), H = marker.getHeight();
+  marker.remove();
+  if (url && String(url).indexOf('http') === 0) {
+    try { sl.insertImage(url, L, T, W, H); } catch (e) { Logger.log('몬스터 이미지 삽입 실패: ' + e); }
+  }
+}
+
+// 템플릿 복제 → 텍스트 치환 + 차트 + 이미지 → 슬라이드 반환 (배치·프리뷰 공용)
+function buildReportCardSlide_(tpl, d) {
+  const sl = tpl.duplicate();
+  const rep = {
+    '{{월}}': d.month, '{{학생이름}}': d.name, '{{반이름}}': d.cls, '{{몬스터이름}}': d.nickname,
+    '{{급수변화}}': d.levelText, '{{모의점수}}': d.mockText, '{{점수변화}}': d.scoreText,
+    '{{출석}}': d.attendText, '{{몬스터단계}}': d.stageText, '{{칭호}}': d.title,
+    '{{포인트}}': d.pointsText, '{{코멘트}}': d.comment
+  };
+  Object.keys(rep).forEach(k => sl.replaceAllText(k, String(rep[k] == null ? '' : rep[k])));
+  drawScoreChart_(sl, d.mockScores); // {{CHART}}
+  insertMonsterImage_(sl, d.monImg); // {{MONIMG}}
+  return sl;
+}
+
+// 테스트: 학생 1명만 카드 생성 → PNG URL 로그·반환 (report_cards 미기록 · 임시 슬라이드 정리)
+function previewOneReportCard(studentId) {
+  if (!REPORT_TEMPLATE_ID) { Logger.log('REPORT_TEMPLATE_ID 미설정'); return; }
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const ym = Utilities.formatDate(now, tz, 'yyyy-MM');
+  const label = Number(ym.substring(0, 4)) + '년 ' + Number(ym.substring(5, 7)) + '월';
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) { Logger.log('profiles 없음'); return; }
+  const w = Math.min(pf.getLastColumn(), 74);
+  const r = pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues().find(x => String(x[0]) === String(studentId));
+  if (!r) { Logger.log('학생 없음: ' + studentId + ' — profiles user_id(A열) 확인'); return; }
+  const d = reportCardData_(r, readAcademicLogs_(ss, tz)[r[0]], monsterImgMap_(ss), now);
+  d.month = label;
+
+  const pres = SlidesApp.openById(REPORT_TEMPLATE_ID);
+  const sl = buildReportCardSlide_(pres.getSlides()[0], d);
+  const pageId = sl.getObjectId();
+  pres.saveAndClose();
+
+  Utilities.sleep(350);
+  const blob = exportSlidePng(REPORT_TEMPLATE_ID, pageId).setName('PREVIEW_' + ym + '_' + d.sid + '_' + d.name + '.png');
+  const it = DriveApp.getFoldersByName(REPORT_FOLDER_NAME);
+  const folder = it.hasNext() ? it.next() : DriveApp.createFolder(REPORT_FOLDER_NAME);
+  const file = folder.createFile(blob);
+  try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (e) {}
+  const pngUrl = 'https://lh3.googleusercontent.com/d/' + file.getId();
+
+  // 임시 프리뷰 슬라이드 제거 (템플릿 원본 보존)
+  const pres2 = SlidesApp.openById(REPORT_TEMPLATE_ID);
+  pres2.getSlides().forEach(s2 => { if (s2.getObjectId() === pageId) s2.remove(); });
+  pres2.saveAndClose();
+
+  Logger.log('📇 리포트카드 프리뷰 — ' + d.name + ' (' + d.sid + ')\nPNG: ' + pngUrl +
+    '\n데이터: 급수 ' + d.levelText + ' · 모의 ' + d.mockText + '(' + d.scoreText + ') · ' +
+    d.attendText + ' · ' + d.stageText + ' · ' + d.pointsText + '\n코멘트: ' + d.comment);
+  return pngUrl;
 }
 
 /* ===================== [v5] 명예의 전당 (monthlyGameBatch가 호출) ===================== */
