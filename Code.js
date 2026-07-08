@@ -4048,7 +4048,7 @@ function runReportCards_() {
 
   // [v9.19b] Phase 1a: 복제만 (구조 변경) → saveAndClose
   const pres = SlidesApp.openById(REPORT_TEMPLATE_ID);
-  const tpl = pres.getSlides()[0];
+  const tpl = reportTemplateSlide_(pres); // [v9.19b] 빈 슬라이드가 아니라 자리표시자 디자인 슬라이드를 복제
   const made = [];
   pending.forEach(r => {
     const d = reportCardData_(r, logsById[r[0]], monMap, now);
@@ -4246,6 +4246,20 @@ function insertMonsterImage_(sl, url) {
   }
 }
 
+// [v9.19b] 디자인(자리표시자) 슬라이드를 자동 탐색 — 템플릿에 빈 슬라이드가 앞에 있어도 안전.
+//  '{{학생이름}}'을 담은 첫 슬라이드를 반환(도형·표 모두 검색), 없으면 첫 슬라이드로 폴백.
+function reportTemplateSlide_(pres) {
+  const slides = pres.getSlides();
+  const hasMarker = sl => {
+    let hit = false;
+    try { sl.getShapes().forEach(sh => { try { if (sh.getText().asString().indexOf('{{학생이름}}') > -1) hit = true; } catch (e) {} }); } catch (e) {}
+    if (!hit) { try { (sl.getTables() || []).forEach(tb => { for (let r = 0; r < tb.getNumRows(); r++) for (let c = 0; c < tb.getNumColumns(); c++) { try { if (tb.getCell(r, c).getText().asString().indexOf('{{학생이름}}') > -1) hit = true; } catch (e) {} } }); } catch (e) {} }
+    return hit;
+  };
+  for (let i = 0; i < slides.length; i++) if (hasMarker(slides[i])) return slides[i];
+  return slides[0];
+}
+
 // [v9.19b] 이미 존재하는(복제 후 저장·재열기된) 슬라이드를 채움 — 치환/차트/이미지 각각 try/catch로 격리.
 //  복제와 편집을 같은 배치에서 하면 Slides가 "This request cannot be applied"를 던지므로,
 //  호출부에서 [복제 → saveAndClose → 재열기 → fill] 2단계로 분리한다.
@@ -4305,29 +4319,29 @@ function previewOneReportCard(studentId) {
 
   // [v9.19b] 복제 → 저장 → 재열기 → 채우기 (같은 배치 복제+편집의 "This request cannot be applied" 회피)
   const pres = SlidesApp.openById(REPORT_TEMPLATE_ID);
-  const pageId = pres.getSlides()[0].duplicate().getObjectId();
+  const pageId = reportTemplateSlide_(pres).duplicate().getObjectId(); // 빈 슬라이드 아닌 디자인 슬라이드 복제
   pres.saveAndClose();
   const presF = SlidesApp.openById(REPORT_TEMPLATE_ID);
   const slF = presF.getSlides().find(s => s.getObjectId() === pageId);
   fillReportCardSlide_(slF, d);
   presF.saveAndClose();
 
-  Utilities.sleep(3000); // [v9.19b] 저장 전파 대기 — export가 빈 슬라이드를 렌더하지 않도록 (350ms→3s)
+  Utilities.sleep(1500);
   const blob = exportSlidePng(REPORT_TEMPLATE_ID, pageId).setName('PREVIEW_' + ym + '_' + d.sid + '_' + d.name + '.png');
   const it = DriveApp.getFoldersByName(REPORT_FOLDER_NAME);
   const folder = it.hasNext() ? it.next() : DriveApp.createFolder(REPORT_FOLDER_NAME);
   const file = folder.createFile(blob);
   try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (e) {}
   const pngUrl = 'https://lh3.googleusercontent.com/d/' + file.getId();
-  // [v9.19b] 진단 모드: 프리뷰 슬라이드를 지우지 않고 Slides 링크를 남김 — 슬라이드 자체가 정상인지 눈으로 확인.
-  //  (export PNG가 비면 슬라이드는 정상인데 export 타이밍 문제, 슬라이드도 비면 템플릿/채우기 문제로 판별)
-  const slidesUrl = 'https://docs.google.com/presentation/d/' + REPORT_TEMPLATE_ID + '/edit#slide=id.' + pageId;
-  Logger.log('📇 리포트카드 프리뷰 — ' + d.name + ' (' + d.sid + ')' +
-    '\n👀 SLIDES(먼저 이걸 열어 확인): ' + slidesUrl +
-    '\n🖼️ PNG: ' + pngUrl +
+
+  // 프리뷰 임시 슬라이드 제거 (템플릿 원본 보존)
+  const pres2 = SlidesApp.openById(REPORT_TEMPLATE_ID);
+  pres2.getSlides().forEach(s2 => { if (s2.getObjectId() === pageId) s2.remove(); });
+  pres2.saveAndClose();
+
+  Logger.log('📇 리포트카드 프리뷰 — ' + d.name + ' (' + d.sid + ')\n🖼️ PNG: ' + pngUrl +
     '\n데이터: 급수 ' + d.levelText + ' · 모의 ' + d.mockText + '(' + d.scoreText + ') · ' +
-    d.attendText + ' · ' + d.stageText + ' · ' + d.pointsText + '\n코멘트: ' + d.comment +
-    '\n※ 이 프리뷰 슬라이드는 템플릿에 남겨뒀습니다 — 확인 후 수동 삭제하세요.');
+    d.attendText + ' · ' + d.stageText + ' · ' + d.pointsText + '\n코멘트: ' + d.comment);
   return pngUrl;
 }
 
