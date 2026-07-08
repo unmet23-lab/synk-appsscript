@@ -419,6 +419,9 @@
  * 141. importFormResponses의 FormApp.openById를 try/catch로 감쌈 — 저장된 상담폼ID가 삭제·타계정·권한없음·
  *      오타로 열리지 않으면 매 parentSweep(10분)마다 크래시→실패 메일이 쏟아지던 문제. 이제 빈 ID처럼
  *      조용히 스킵(로그만). 폼 재사용하려면 createConsultForm 재실행 또는 app_state '상담폼ID' 키 교정.
+ * 142. checkFormMapping_(폼ID?): 폼 질문 제목 ↔ 상담시트 헤더 매핑을 읽기 전용 진단 — 정상 매핑·노션이관
+ *      ·빈 칸을 메일 보고. 폼 질문지 변경 시 "제대로 적용됐는지" 검증용. 새 폼 ID를 인자로 주면 상담폼ID
+ *      교체 전 미리 검증 가능. 무인자는 현재 연결 폼 검사.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
@@ -4927,6 +4930,68 @@ function checkConsultSync() {
     '\n\n※ 읽기 전용 진단 — 어떤 데이터도 수정하지 않았습니다.';
   Logger.log(report);
   if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🔎 상담 연동 진단 결과', report);
+}
+
+/* ===================== [v9.19] 상담폼 ↔ 시트 매핑 진단 (수동 · 읽기 전용) =====================
+ * 폼 질문지가 바뀌었을 때 "제대로 적용됐는지" 검증. importFormResponses와 동일 규칙(제목=헤더명 매칭,
+ * 매칭 안 되면 노션이관)으로, 각 질문이 어느 칸에 들어가는지·노션이관으로 빠지는지·빈 칸은 뭔지 보고.
+ * 인자로 새 폼 ID를 주면 상담폼ID를 바꾸기 전에 미리 검증 가능: checkFormMapping_('새폼ID')
+ * 무인자 호출은 app_state '상담폼ID'(현재 연결된 폼)를 검사. 데이터는 절대 수정하지 않음. */
+function checkFormMapping_(optId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const formId = String(optId || getState(st, '상담폼ID').val || '').trim();
+  if (!formId) { Logger.log('폼 ID 없음 — checkFormMapping_("폼ID")로 호출하거나 createConsultForm 먼저 실행'); return; }
+
+  let form;
+  try { form = FormApp.openById(formId); }
+  catch (e) { Logger.log('폼 열기 실패 — ID 무효/권한 없음(' + formId + '): ' + e); return; }
+
+  let headers = [];
+  try {
+    const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    headers = consult.getRange(2, 1, 1, 62).getValues()[0].map(h => String(h || '').trim()); // [v8.4] v18.1 헤더 2행
+  } catch (e) { Logger.log('상담시트 열기 실패 — ID/권한 확인: ' + e); return; }
+  const colOf = {};
+  headers.forEach((h, i) => { if (h) colOf[h] = i + 1; });
+
+  // 답변형 문항만 (섹션 헤더·이미지·페이지 나눔 제외)
+  const answerable = [FormApp.ItemType.TEXT, FormApp.ItemType.PARAGRAPH_TEXT, FormApp.ItemType.MULTIPLE_CHOICE,
+    FormApp.ItemType.CHECKBOX, FormApp.ItemType.LIST, FormApp.ItemType.DATE, FormApp.ItemType.DATETIME,
+    FormApp.ItemType.TIME, FormApp.ItemType.SCALE, FormApp.ItemType.GRID];
+  const titles = form.getItems().filter(it => answerable.indexOf(it.getType()) > -1).map(it => String(it.getTitle()).trim());
+
+  const matched = [], narrative = [], dupTitle = [], seen = {};
+  titles.forEach(t => {
+    if (seen[t]) dupTitle.push(t);
+    seen[t] = true;
+    const c = colOf[t];
+    if (c && c <= 59) matched.push('  · ' + t + ' → ' + c + '열'); // importFormResponses와 동일 규칙(1~59열만 시트 기입)
+    else narrative.push('  · ' + t + (c ? ' (헤더 존재하나 ' + c + '열>59 → 노션이관)' : ' → 노션이관(대응 헤더 없음)'));
+  });
+
+  const autoCols = { '학생ID': 1, '등록일': 1, '📝노션이관': 1 }; // 폼이 안 채워도 정상(자동 채번·타임스탬프·서술형 모음)
+  const uncovered = [];
+  headers.forEach((h, i) => { if (h && i < 59 && !seen[h] && !autoCols[h]) uncovered.push(h + '(' + (i + 1) + '열)'); });
+
+  const out = [
+    '🔎 상담폼 ↔ 시트 매핑 진단',
+    '폼: ' + form.getTitle() + ' (ID ' + formId + ')',
+    '폼 질문 ' + titles.length + '개 · 시트 헤더 ' + Object.keys(colOf).length + '개',
+    '',
+    '✅ 시트 칸에 정상 매핑 (' + matched.length + '):', matched.join('\n') || '  (없음)',
+    '',
+    '📝 노션이관으로 들어가는 질문 (' + narrative.length + ') — 서술형이면 정상 / 아니면 제목 오타 의심:',
+    narrative.join('\n') || '  (없음)',
+    '',
+    '⚠️ 폼에 대응 질문이 없는 시트 칸 (' + uncovered.length + ', 자동·계산열 제외): ' + (uncovered.length ? uncovered.join(', ') : '없음'),
+    (dupTitle.length ? '\n⚠️ 중복 질문 제목: ' + dupTitle.join(', ') : ''),
+    '',
+    '※ 읽기 전용 진단 — 어떤 데이터도 수정하지 않았습니다.'
+  ].filter(l => l !== '');
+  const report = out.join('\n');
+  Logger.log(report);
+  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🔎 상담폼 매핑 진단', report);
 }
 
 /* ===================== [v5.4] 원장 브리핑 (일상 알림 통합) =====================
