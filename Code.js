@@ -414,6 +414,11 @@
  *      calcAcademic_(calcAll 말미 편승)이 학생별 스냅샷을 profiles BO~BV(67~74)에 기록 — 현재급수·최근모의·
  *      직전대비Δ·최고모의·레벨업누적·마지막평가월 + 학업한마디 KO/MN(따뜻한 리프레이밍, '하락' 금칙어).
  *      setupAcademic_(bootstrap 재건 편입) · previewAcademic_(시트 무쓰기 검증) · healthCheck 등록. 리포트카드는 열만 준비.
+ *
+ * [v9.19 — 🛠️ 상담폼 무효 ID 방어 (10분 실패 메일 스팸 차단)]
+ * 141. importFormResponses의 FormApp.openById를 try/catch로 감쌈 — 저장된 상담폼ID가 삭제·타계정·권한없음·
+ *      오타로 열리지 않으면 매 parentSweep(10분)마다 크래시→실패 메일이 쏟아지던 문제. 이제 빈 ID처럼
+ *      조용히 스킵(로그만). 폼 재사용하려면 createConsultForm 재실행 또는 app_state '상담폼ID' 키 교정.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
@@ -3771,7 +3776,11 @@ function importFormResponses() {
   if (!formId) { Logger.log('상담폼ID 없음'); return; }
   const lastTs = Number(getState(st, '폼처리시각').val) || 0;
 
-  const form = FormApp.openById(formId);
+  // [v9.19] 폼 삭제·다른 계정 생성·권한 없음·잘못된 ID면 매 sweep(10분)마다 크래시 → 실패 메일 스팸.
+  //         빈 ID(위 3771행)처럼 무효 ID도 조용히 스킵해 파이프라인·본체를 무사히 유지.
+  let form;
+  try { form = FormApp.openById(formId); }
+  catch (e) { Logger.log('상담폼 열기 실패 — ID 무효/삭제/권한 없음(' + formId + '): ' + e + ' · 상담폼ID 재설정(createConsultForm) 또는 app_state에서 키 삭제 필요'); return; }
   const responses = form.getResponses().filter(r => r.getTimestamp().getTime() > lastTs);
   if (responses.length === 0) { Logger.log('신규 응답 없음'); return; }
 
