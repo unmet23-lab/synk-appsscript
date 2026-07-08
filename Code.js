@@ -4312,22 +4312,22 @@ function previewOneReportCard(studentId) {
   fillReportCardSlide_(slF, d);
   presF.saveAndClose();
 
-  Utilities.sleep(350);
+  Utilities.sleep(3000); // [v9.19b] 저장 전파 대기 — export가 빈 슬라이드를 렌더하지 않도록 (350ms→3s)
   const blob = exportSlidePng(REPORT_TEMPLATE_ID, pageId).setName('PREVIEW_' + ym + '_' + d.sid + '_' + d.name + '.png');
   const it = DriveApp.getFoldersByName(REPORT_FOLDER_NAME);
   const folder = it.hasNext() ? it.next() : DriveApp.createFolder(REPORT_FOLDER_NAME);
   const file = folder.createFile(blob);
   try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (e) {}
   const pngUrl = 'https://lh3.googleusercontent.com/d/' + file.getId();
-
-  // 임시 프리뷰 슬라이드 제거 (템플릿 원본 보존)
-  const pres2 = SlidesApp.openById(REPORT_TEMPLATE_ID);
-  pres2.getSlides().forEach(s2 => { if (s2.getObjectId() === pageId) s2.remove(); });
-  pres2.saveAndClose();
-
-  Logger.log('📇 리포트카드 프리뷰 — ' + d.name + ' (' + d.sid + ')\nPNG: ' + pngUrl +
+  // [v9.19b] 진단 모드: 프리뷰 슬라이드를 지우지 않고 Slides 링크를 남김 — 슬라이드 자체가 정상인지 눈으로 확인.
+  //  (export PNG가 비면 슬라이드는 정상인데 export 타이밍 문제, 슬라이드도 비면 템플릿/채우기 문제로 판별)
+  const slidesUrl = 'https://docs.google.com/presentation/d/' + REPORT_TEMPLATE_ID + '/edit#slide=id.' + pageId;
+  Logger.log('📇 리포트카드 프리뷰 — ' + d.name + ' (' + d.sid + ')' +
+    '\n👀 SLIDES(먼저 이걸 열어 확인): ' + slidesUrl +
+    '\n🖼️ PNG: ' + pngUrl +
     '\n데이터: 급수 ' + d.levelText + ' · 모의 ' + d.mockText + '(' + d.scoreText + ') · ' +
-    d.attendText + ' · ' + d.stageText + ' · ' + d.pointsText + '\n코멘트: ' + d.comment);
+    d.attendText + ' · ' + d.stageText + ' · ' + d.pointsText + '\n코멘트: ' + d.comment +
+    '\n※ 이 프리뷰 슬라이드는 템플릿에 남겨뒀습니다 — 확인 후 수동 삭제하세요.');
   return pngUrl;
 }
 
