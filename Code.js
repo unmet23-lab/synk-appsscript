@@ -429,6 +429,13 @@
  *      (랭킹·monthly_snapshot 의존 제거) · {{급수변화}}{{모의점수}}{{점수변화}}{{출석}}{{몬스터단계}}{{칭호}}
  *      {{포인트}}{{코멘트}} + {{CHART}}(모의 최근5 막대) + {{MONIMG}}(단계 이미지). previewOneReportCard(sid)
  *      테스트. 코멘트 따뜻·리프레이밍. 학부모 메일은 SEND_REPORT_EMAIL=false로 아직 미발송.
+ *
+ * [v9.19b — 출시 전 안전·견고성 하드닝 (3중 감사 반영)]
+ * 145. ① 죽은 최상단 nickOf 블록 삭제(매 실행 profiles 조회·크래시 격리 구멍 제거) ② importFormResponses
+ *      상담시트 열기 try/catch(스팸 재발 차단) ③ 리포트카드 카드별 try/catch(1건 실패가 배치 전체 중단·중복
+ *      방지) + 모의/Δ를 academic_log 직접 산출(차트·급수와 일관·calcAll 전에도 정확) ④ syncProfiles 부분
+ *      축소 방어(기존 5명+ 30%↑ 급감 시 보류+알림) + 실패 시 알림 ⑤ 워치독 백업 나이 점검(2일↑ 경고)
+ *      ⑥ setupPlaceholderImages에 store 포함 ⑦ importFormResponses 600행 만차 시 append 폴백.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
@@ -1598,11 +1605,13 @@ function syncProfiles() {
   const dstLast = dst.getLastRow();
   const keep = {};
   const nonStudents = []; // [v7.0] teacher/parent/admin 행 보존 — 기존엔 매 동기화마다 지워지던 결함
+  let prevStudentCnt = 0; // [v9.19] 부분 축소 방어용 — 기존 학생 수
   if (dstLast >= 2) {
     dst.getRange(2, 1, dstLast - 1, 26).getValues().forEach(r => {
       if (!r[0]) return;
       keep[r[0]] = { parent_of: r[9] || '', pEmail: r[25] || '' };
       if (r[3] && r[3] !== 'student') nonStudents.push(r.slice(0, 15));
+      else if (r[3] === 'student') prevStudentCnt++;
     });
   }
 
@@ -1625,10 +1634,14 @@ function syncProfiles() {
   });
 
   nonStudents.forEach(r => out.push(r)); // [v7.0] 학생 뒤에 비학생 행 재기록
-  // [v9.19] 안전 가드 — 상담시트에 학생이 0명이면 기존 profiles 학생을 덮어쓰지 않음
-  //          (빈/오연결/신규 상담시트가 원본일 때 실학생 대량 삭제 방지 · 백업 복구 이전에 예방)
-  if (out.filter(r => r[3] === 'student').length === 0 && dstLast > 1) {
-    Logger.log('syncProfiles 중단: 상담시트 학생 0명 — 기존 profiles 보호(덮어쓰기 안 함)');
+  // [v9.19] 안전 가드 — 빈/부분 손상 상담시트가 원본일 때 실학생 대량 삭제 방지 (백업 복구 이전 예방)
+  //   ① 신규 학생 0명  또는  ② 기존 5명+ 인데 30% 넘게 급감 → 덮어쓰지 않고 원장 알림
+  const newStudentCnt = out.filter(r => r[3] === 'student').length;
+  if (dstLast > 1 && (newStudentCnt === 0 || (prevStudentCnt >= 5 && newStudentCnt < prevStudentCnt * 0.7))) {
+    Logger.log('syncProfiles 중단: 학생 ' + prevStudentCnt + '→' + newStudentCnt + ' 급감/0 — profiles 보호(덮어쓰기 안 함)');
+    adminMail('[SYNK] ⚠️ 동기화 보류 — 학생 급감 감지',
+      '상담시트 기준 학생이 ' + prevStudentCnt + '명 → ' + newStudentCnt + '명으로 급감/0이라 profiles 덮어쓰기를 보류했습니다.\n' +
+      '상담시트(CONSULT_SHEET_ID) 연결·데이터를 확인하세요. 정상이면 다음 동기화에서 자동 반영됩니다.');
     return;
   }
   if (dstLast > 1) dst.getRange(2, 1, dstLast - 1, 15).clearContent();
@@ -1651,7 +1664,10 @@ function syncProfiles() {
   }
   Logger.log(out.length + '명 동기화 완료');
   calcAll();
-  } catch (e) { Logger.log('syncProfiles 스킵(상담시트 연결 확인): ' + e); }
+  } catch (e) { // [v9.19] 조용한 실패 방지 — 연결 끊기면 매일 아침 알림 (profiles 스테일 조기 감지)
+    Logger.log('syncProfiles 스킵(상담시트 연결 확인): ' + e);
+    adminMail('[SYNK] ⚠️ 상담 동기화 실패', 'syncProfiles가 상담시트를 읽지 못했습니다: ' + e + '\nCONSULT_SHEET_ID·권한·탭명(상담데이터입력)을 확인하세요. profiles는 마지막 정상 상태로 유지됩니다.');
+  }
 }
 
 /* ===================== 매일 백업 (30일 보관) ===================== */
@@ -3800,10 +3816,16 @@ function importFormResponses() {
   const responses = form.getResponses().filter(r => r.getTimestamp().getTime() > lastTs);
   if (responses.length === 0) { Logger.log('신규 응답 없음'); return; }
 
+  // [v9.19] 상담시트 열기도 가드 — 시트 삭제/권한없음/탭명 변경 시 크래시→10분 스팸 재발 방지 (폼 가드와 대칭)
+  let consult;
+  try {
+    consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+  } catch (e) { Logger.log('상담시트 열기 실패 — CONSULT_SHEET_ID/권한 확인: ' + e); return; }
+  if (!consult) { Logger.log("상담시트에 '상담데이터입력' 탭 없음 — 탭 이름 확인"); return; }
+
   const lock = LockService.getScriptLock();
   lock.waitLock(60000);
   try {
-    const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
     const headers = consult.getRange(2, 1, 1, 62).getValues()[0]; // [v8.4] v18.1
     const colOf = {};
     headers.forEach((h, i) => { if (h) colOf[String(h).trim()] = i + 1; });
@@ -3830,12 +3852,13 @@ function importFormResponses() {
         ans[title] = v;
       });
 
-      // 빈 행 찾기 (A열 기준)
+      // 빈 행 찾기 (A열 기준) — [v9.19] 600행 창이 꽉 차면 3행 덮어쓰기 대신 시트 끝에 append
       const colA = consult.getRange(3, 1, 600, 1).getValues();
-      let newRow = 3;
+      let newRow = -1;
       for (let i = 0; i < colA.length; i++) {
         if (!colA[i][0]) { newRow = i + 3; break; }
       }
+      if (newRow === -1) newRow = consult.getLastRow() + 1;
 
       // 행 데이터 배열(1~60열) 한 번에 구성 → 일괄 쓰기
       const rowArr = new Array(59).fill(''); // [v8.4] 입력 A~BG(59열)
@@ -3985,16 +4008,8 @@ function setupTables() {
  * 이미 생성된 학생은 스킵, 60장 초과분은 4분 뒤 자동 이어하기.        */
 
 function monthlyReportCards() { runReportCards_(); }
-  // [v6.6] 몬스터 이름(AO열) — 학생이 지은 별명을 카드의 {{몬스터}}에 반영
-  const nickOf = {};
-  (function () {
-    const pfN = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('profiles');
-    if (!pfN || pfN.getLastRow() < 2 || pfN.getMaxColumns() < 41) return;
-    const n = pfN.getLastRow() - 1;
-    const ids = pfN.getRange(2, 1, n, 1).getValues();
-    const nks = pfN.getRange(2, 41, n, 1).getValues();
-    ids.forEach((r, k) => { if (r[0] && String(nks[k][0] || '').trim()) nickOf[r[0]] = String(nks[k][0]).trim(); });
-  })();
+// [v9.19] 죽은 최상단 nickOf 블록 삭제 — 리포트카드 v2는 별명을 profiles AO(r[40])에서 직접 읽음.
+//          (구 블록은 미사용 + 매 트리거 실행마다 profiles 조회 + safeRun 밖 크래시 위험이었음)
 
 function reportCardsContinue() {
   ScriptApp.getProjectTriggers().forEach(t => {
@@ -4049,17 +4064,19 @@ function runReportCards_() {
   const rows = [], mails = [];
   made.forEach(m => {
     Utilities.sleep(350); // [v5.3] 연속 export 429 방지
-    const blob = exportSlidePng(REPORT_TEMPLATE_ID, m.pageId)
-      .setName(ym + '_' + m.d.sid + '_' + m.d.name + '.png');
-    const file = folder.createFile(blob);
-    try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); }
-    catch (e) { Logger.log('공유설정 실패(' + m.d.name + ') — 폴더 공유 설정으로 대체'); }
-    const url = 'https://lh3.googleusercontent.com/d/' + file.getId();
-    rows.push([ym + '-' + m.d.sid, m.d.sid, ym, url,
-      m.d.title, m.d.comment, new Date()]);
-    if (SEND_REPORT_EMAIL && m.d.pEmail.indexOf('@') > -1) {
-      mails.push({ to: m.d.pEmail, name: m.d.name, url: url, pts: m.d.pointsText, attend: m.d.attendText });
-    }
+    try { // [v9.19] 카드별 격리 — 1건(429 등) 실패가 배치 전체를 중단·중복 생성시키지 않도록
+      const blob = exportSlidePng(REPORT_TEMPLATE_ID, m.pageId)
+        .setName(ym + '_' + m.d.sid + '_' + m.d.name + '.png');
+      const file = folder.createFile(blob);
+      try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); }
+      catch (e) { Logger.log('공유설정 실패(' + m.d.name + ') — 폴더 공유 설정으로 대체'); }
+      const url = 'https://lh3.googleusercontent.com/d/' + file.getId();
+      rows.push([ym + '-' + m.d.sid, m.d.sid, ym, url,
+        m.d.title, m.d.comment, new Date()]);
+      if (SEND_REPORT_EMAIL && m.d.pEmail.indexOf('@') > -1) {
+        mails.push({ to: m.d.pEmail, name: m.d.name, url: url, pts: m.d.pointsText, attend: m.d.attendText });
+      }
+    } catch (e) { Logger.log('카드 생성 실패(' + m.d.name + ') — 스킵, 다음 실행 때 재시도: ' + e); }
   });
   if (rows.length) rc.getRange(rc.getLastRow() + 1, 1, rows.length, 7).setValues(rows);
 
@@ -4162,9 +4179,11 @@ function reportCardData_(r, logs, monMap, now) {
   let levelText = '—';
   if (levels.length >= 2) levelText = prevLv + '급 → ' + curLv + '급';
   else if (levels.length === 1) levelText = curLv + '급';
-  const bp = (r[67] === '' || r[67] == null) ? null : Number(r[67]); // BP 최근모의점수
-  const bq = (r[68] === '' || r[68] == null) ? null : Number(r[68]); // BQ 직전대비Δ
-  const delta = (bq != null && !isNaN(bq)) ? bq : null;
+  // [v9.19] 모의점수·Δ는 academic_log에서 직접 산출 — 차트·급수와 일관 + calcAll(BP/BQ 갱신) 전에도 정확
+  const curMock = mocks.length ? (Number(mocks[mocks.length - 1].val) || 0) : null;
+  const prevMock = mocks.length >= 2 ? (Number(mocks[mocks.length - 2].val) || 0) : null;
+  const bp = curMock;
+  const delta = (curMock != null && prevMock != null) ? (curMock - prevMock) : null;
   const type = String(r[35] || '평일'); // AJ 반유형
   const schSoFar = scheduledSoFar_(type, now);
   const attendCount = Number(r[21]) || 0; // V 이번달출석
@@ -4898,6 +4917,19 @@ function systemWatchdog() {
     'monthlyJobs', 'monthlyReportCards', 'monthlyReport']; // [v7.0] v6.3 통합 트리거 기준
   const missing = recommended.filter(f => !have[f]);
   add(missing.length === 0, '권장 트리거: ' + (missing.length ? missing.join(', ') + ' 미등록 (의도적이면 무시)' : '전부 등록됨'));
+
+  // [v9.19] 1-b) 백업 실제 생성 여부 — 트리거는 살아있어도 makeCopy가 조용히 실패할 수 있어 최신 백업 나이 점검
+  try {
+    const bIt = DriveApp.getFoldersByName('SYNK_백업');
+    if (!bIt.hasNext()) add(false, '백업 폴더(SYNK_백업) 없음 — dailyBackup 1회 실행 확인');
+    else {
+      const files = bIt.next().getFiles();
+      let newest = 0;
+      while (files.hasNext()) { const t = files.next().getDateCreated().getTime(); if (t > newest) newest = t; }
+      const ageDays = newest ? Math.floor((Date.now() - newest) / 86400000) : 999;
+      add(ageDays <= 2, '최신 백업: ' + (newest ? ageDays + '일 전' : '없음') + (ageDays > 2 ? ' ⚠️ 백업 멈춤 의심 — dailyBackup/Drive 용량 확인' : ''));
+    }
+  } catch (e) { add(false, '백업 점검 실패: ' + e); }
 
   // 2) 데일리 로테이션 생존 (멈춤 = 트리거/시간대 문제 신호)
   const props = PropertiesService.getScriptProperties();
@@ -6016,14 +6048,14 @@ function previewAcademic() {
 
 /* ===================== [v9.18] 🖼️ 임시 플레이스홀더 이미지 =====================
  * ⚠️ 임시용 — Recraft 진짜 이미지가 나오기 전, 앱에 빈 이미지 자리가 보이지 않도록 채우는 용도.
- * contents의 monster/boss/worldboss 행 중 이미지URL(E열)이 "빈 행만" placehold.co URL로 채움.
+ * contents의 monster/boss/worldboss/store 행 중 이미지URL(E열)이 "빈 행만" placehold.co URL로 채움.
  * 이미 URL이 있는 행은 절대 덮어쓰지 않음(진짜 이미지 보존). 진짜 이미지가 오면 그 행은 자동 스킵.
  * 임시 부품이라 bootstrapSynk 재건 목록·healthCheck 시트 점검에는 넣지 않음(academic_log와 반대). */
 function setupPlaceholderImages() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ct = ss.getSheetByName('contents');
   if (!ct || ct.getLastRow() < 2) { Logger.log('contents 비어 있음 — 플레이스홀더 스킵'); return; }
-  const color = { monster: '4F46E5', boss: '312E81', worldboss: '1E1B4B' }; // 인디고 · 다크퍼플 · 더 어둡게
+  const color = { monster: '4F46E5', boss: '312E81', worldboss: '1E1B4B', store: 'F5A623' }; // 인디고·다크퍼플·더어둡게·[v9.19]스토어 앰버
   const n = ct.getLastRow() - 1;
   const data = ct.getRange(2, 1, n, 6).getValues(); // A~F (콘텐츠ID·유형·이름·설명·이미지URL·순번)
   let filled = 0;
