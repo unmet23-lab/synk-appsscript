@@ -425,7 +425,7 @@
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
-const CONSULT_SHEET_ID = '10Q-Yhqgy2-tpXsvJ8Xyl-OthQKF1KKHgIlFwdEf5GyA';
+const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
 /* ── [v5] 신규 설정 ─────────────────────────────────── */
 const REPORT_TEMPLATE_ID = '';   // 리포트카드 Google Slides ID (비우면 카드 생성 스킵)
