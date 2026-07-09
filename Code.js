@@ -462,9 +462,8 @@ const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.
 const REPORT_TEMPLATE_ID = '1XDhZPMjd17fbxmqGGEjq-kRks2Y3tJc9Ntrp90XV4pE';   // [v9.19] 리포트카드 Slides 템플릿 (비우면 스킵)
 const REPORT_FOLDER_NAME = 'SYNK_리포트카드'; // Drive 폴더 (없으면 자동 생성)
 const SEND_REPORT_EMAIL = false; // true: 학부모 이메일로 카드 링크 발송 (쿼터 가드 적용)
-const MAX_CARDS_PER_RUN = 60;    // 1회 실행당 카드 수 (초과분은 4분 후 자동 이어하기)
-const GAUGE_POINTS_MAX = 250;    //                  월간포인트 250P (40%)
-const GAUGE_ATT_MAX = 22;        //                  월 출석 22일 (30%)
+const MAX_CARDS_PER_RUN = 30;    // [opt] 60→30: 1회 실행당 카드 수 축소 — 6분 타임아웃·고아 슬라이드 리스크 절반 (초과분은 4분 후 자동 이어하기)
+// [opt] GAUGE_POINTS_MAX/GAUGE_ATT_MAX 제거 — v7.9/v8.2 은퇴된 게이지 시스템 잔재(참조 0)
 /* ── [v6.8] 강사 알림: 수업 전 브리핑 · 퇴근 후 응원 ── */
 const TC_NAME_COL = 1, TC_TYPE_COL = 2, TC_TIME_COL = 3; // teacher_checkins 열 순서(이름·구분·시각) — 시트와 다르면 숫자만 조정
 const CHECKOUT_MAIL_DELAY_MIN = 5; // 퇴근 후 최소 5분 뒤 발송 (10분 스위프 → 실제 5~15분 뒤 도착)
@@ -540,6 +539,9 @@ function toDate_(v) { // [v9.22] Date/yyyymmdd(문자·숫자) → Date, 실패 
   if (s.length === 8) { const d = new Date(Number(s.slice(0, 4)), Number(s.slice(4, 6)) - 1, Number(s.slice(6, 8))); return isNaN(d.getTime()) ? null : d; }
   return null;
 }
+
+// [opt] 셀값(Date 또는 문자/숫자) → Date 관용 강제. toDate_와 별개: 실패 시 null이 아니라 원 동작(new Date) 유지. 20곳 중복 일원화.
+function asDate_(d) { return d instanceof Date ? d : new Date(d); }
 
 function getState(st, key) {
   const last = st.getLastRow();
@@ -1120,8 +1122,7 @@ function calcAll() {
   { // [v9.15] 강사 팩 재료 — 어제 출석·이번 주 레이드 잔량·오늘 활동·오늘 배운 내용
     const yD = new Date(now); yD.setDate(now.getDate() - 1);
     const yYmd = dstr(yD, tz);
-    const atY = ss.getSheetByName('attendance');
-    if (atY && atY.getLastRow() >= 2) atY.getRange(2, 1, atY.getLastRow() - 1, 3).getValues().forEach(rr => {
+    atData.forEach(rr => { // [opt] 상단 atData 재사용 (attendance 재읽기 제거)
       if (rr[1] && rr[2] && dstr(rr[2], tz) === yYmd) yAttSid[rr[1]] = 1;
     });
     const rdT = ss.getSheetByName('raid');
@@ -1148,16 +1149,14 @@ function calcAll() {
     { // 이번 주(월~오늘) 개인 출석·포인트·왕관 + 반별 수업일
       const mondayW = new Date(now); mondayW.setDate(now.getDate() - ((now.getDay() + 6) % 7));
       const wkStart = dstr(mondayW, tz);
-      const atW = ss.getSheetByName('attendance');
-      if (atW && atW.getLastRow() >= 2) atW.getRange(2, 1, atW.getLastRow() - 1, 3).getValues().forEach(rr => {
+      atData.forEach(rr => { // [opt] atData 재사용
         if (!rr[1] || !rr[2]) return;
         const d6w = dstr(rr[2], tz);
         if (d6w >= wkStart && d6w <= todayYmd0) {
           (weekAtt[rr[1]] = weekAtt[rr[1]] || {})[d6w] = 1;
         }
       });
-      const plW = ss.getSheetByName('point_logs');
-      if (plW && plW.getLastRow() >= 2) plW.getRange(2, 1, plW.getLastRow() - 1, 6).getValues().forEach(rr => {
+      plData.forEach(rr => { // [opt] 상단 plData 재사용 (point_logs 재읽기 제거)
         const sid = rr[1], pts = Number(rr[2]) || 0, rs = String(rr[3] || '');
         if (!sid || !rr[5] || pts <= 0) return;
         const d6w = dstr(rr[5], tz);
@@ -1169,8 +1168,7 @@ function calcAll() {
   }
   const styleLogs = {}, chemi = {}, matchupByCls = {};
   { // [v9.13] 스타일 로그(이번 달 pl)
-    const plY = ss.getSheetByName('point_logs');
-    if (plY && plY.getLastRow() >= 2) plY.getRange(2, 1, plY.getLastRow() - 1, 6).getValues().forEach(rr => {
+    plData.forEach(rr => { // [opt] plData 재사용
       const sid = rr[1], pts = Number(rr[2]) || 0;
       if (!sid || !rr[5] || pts <= 0) return;
       const d6 = dstr(rr[5], tz);
@@ -1179,9 +1177,8 @@ function calcAll() {
     });
   }
   { // [v9.13] 케미 — 같은 반, 이번 달 공통 출석일 최다 (동점 = 이름순)
-    const atC = ss.getSheetByName('attendance');
     const byDay = {};
-    if (atC && atC.getLastRow() >= 2) atC.getRange(2, 1, atC.getLastRow() - 1, 3).getValues().forEach(rr => {
+    atData.forEach(rr => { // [opt] atData 재사용
       if (!rr[1] || !rr[2]) return;
       const d6 = dstr(rr[2], tz);
       if (d6.indexOf(thisMonth) !== 0) return;
@@ -1246,8 +1243,7 @@ function calcAll() {
   }
   const crownDates = {}, records = {};
   { // 기록실 사전 집계 — 첫 왕관일·레이드 참여(pl 스캔), 최고 월간(스냅샷), 최장 연속(출석 스캔)
-    const plR = ss.getSheetByName('point_logs');
-    if (plR && plR.getLastRow() >= 2) plR.getRange(2, 1, plR.getLastRow() - 1, 6).getValues().forEach(rr => {
+    plData.forEach(rr => { // [opt] plData 재사용
       const sid = rr[1], rs = String(rr[3] || ''), d6 = rr[5] ? dstr(rr[5], tz) : '';
       if (!sid || !d6) return;
       const rec = records[sid] = records[sid] || {};
@@ -1266,9 +1262,8 @@ function calcAll() {
       const rec = records[rr[1]] = records[rr[1]] || {};
       if ((Number(rr[2]) || 0) > (rec.bestMonth || 0)) rec.bestMonth = Number(rr[2]) || 0;
     });
-    const atR = ss.getSheetByName('attendance');
     const byS = {};
-    if (atR && atR.getLastRow() >= 2) atR.getRange(2, 1, atR.getLastRow() - 1, 3).getValues().forEach(rr => {
+    atData.forEach(rr => { // [opt] atData 재사용
       if (rr[1] && rr[2]) (byS[rr[1]] = byS[rr[1]] || {})[dstr(rr[2], tz)] = 1;
     });
     Object.keys(byS).forEach(sid => {
@@ -1533,7 +1528,7 @@ function calcAll() {
     const sid = r[1], pts = Number(r[2]) || 0, d = r[5];
     const isE = pts > 0 || String(r[3] || '').indexOf('정정') > -1; // [v7.4]
     if (!sid || !d || !isE || pts === 0 || !clsOfW[sid]) return;
-    const dd = (d instanceof Date) ? d : new Date(d);
+    const dd = asDate_(d);
     if (dd >= mondayW) weekDmg[clsOfW[sid]] = (weekDmg[clsOfW[sid]] || 0) + pts;
   });
   const fuelMapW = {};
@@ -1544,7 +1539,7 @@ function calcAll() {
     cfW.getRange(2, 1, cfW.getLastRow() - 1, 4).getValues().forEach(r => {
       const m = String(r[1] || ''), d = r[3];
       if (!r[0] || !d || !fuelMapW[m]) return;
-      const dd = (d instanceof Date) ? d : new Date(d);
+      const dd = asDate_(d);
       if (dd >= mondayW && !fSeenW.has(r[0] + '|' + m)) {
         fSeenW.add(r[0] + '|' + m);
         weekDmg[r[0]] = (weekDmg[r[0]] || 0) + fuelMapW[m];
@@ -1684,8 +1679,8 @@ function syncProfiles() {
   const dst = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('profiles');
 
   const lastRow = src.getLastRow();
-  if (lastRow < 3) { Logger.log('데이터 없음'); return; }
-  const data = src.getRange(3, 1, lastRow - 2, 62).getValues(); // [v8.3] v18.1 = 62열
+  // [opt] 빈 상담시트(<3행)도 조기 return 대신 data=[]로 진행 → 아래 급감/0 가드가 로스터 보호 + 중복제거 알림 발동. '상담시트 공백 → 로스터 갱신 조용히 중단' 버그 수정.
+  const data = lastRow >= 3 ? src.getRange(3, 1, lastRow - 2, 62).getValues() : []; // [v8.3] v18.1 = 62열
 
   const dstLast = dst.getLastRow();
   const keep = {};
@@ -1892,15 +1887,9 @@ function checkReenrollment() {
   if (last < 2) return;
   const data = pf.getRange(2, 1, last - 1, 15).getValues();
 
-  function parseReg(v) {
+  function parseReg(v) { // [opt] toDate_ 재사용 + 비8자리 문자열 new Date 폴백 유지
     if (!v) return null;
-    if (v instanceof Date) return v;
-    const s = String(v).replace(/\D/g, '');
-    if (s.length === 8) {
-      return new Date(Number(s.substring(0,4)), Number(s.substring(4,6)) - 1, Number(s.substring(6,8)));
-    }
-    const d = new Date(v);
-    return isNaN(d) ? null : d;
+    return toDate_(v) || (isNaN(new Date(v)) ? null : new Date(v));
   }
 
   const hits = [];
@@ -2019,13 +2008,7 @@ function birthdayCheck() {
   if (pfLast < 2) return;
   const pfData = pf.getRange(2, 1, pfLast - 1, 26).getValues();
 
-  function birthMMDD(v) {
-    if (!v) return '';
-    if (v instanceof Date) return Utilities.formatDate(v, tz, 'MM-dd');
-    const s = String(v).replace(/\D/g, '');
-    if (s.length === 8) return s.substring(4, 6) + '-' + s.substring(6, 8);
-    return '';
-  }
+  function birthMMDD(v) { const d = toDate_(v); return d ? Utilities.formatDate(d, tz, 'MM-dd') : ''; } // [opt] toDate_로 일원화
 
   const pl = ss.getSheetByName('point_logs');
   const given = new Set();
@@ -2175,7 +2158,7 @@ function leagueSettle_() {
     plL.getRange(2, 1, plL.getLastRow() - 1, 6).getValues().forEach(r => {
       const sid = r[1], pts = Number(r[2]) || 0, d = r[5];
       if (!sid || !d || !clsOfL[sid]) return;
-      const dd = (d instanceof Date) ? d : new Date(d);
+      const dd = asDate_(d);
       if (dd < mon) return;
       if (pts > 0 || String(r[3] || '').indexOf('정정') > -1) perSid[sid] = (perSid[sid] || 0) + pts;
     });
@@ -2268,7 +2251,7 @@ function leagueStoryDaily_() {
   if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
     const sid = r[1], pts = Number(r[2]) || 0, rs = String(r[3] || ''), d = r[5];
     if (!sid || !d || !clsD[sid] || !rivalOf[clsD[sid]]) return;
-    const dd = (d instanceof Date) ? d : new Date(d);
+    const dd = asDate_(d);
     if (dstr(dd, tz) !== todayD) return;
     if (pts > 0 || rs.indexOf('정정') > -1) {
       const c = clsD[sid];
@@ -2343,7 +2326,7 @@ function raidFriday() {
       const sid = r[1], pts = Number(r[2]) || 0, d = r[5];
       const isE = pts > 0 || String(r[3] || '').indexOf('정정') > -1; // [v7.4] 정정은 데미지도 되돌림
       if (!sid || !d || !isE || pts === 0) return;
-      const dd = (d instanceof Date) ? d : new Date(d);
+      const dd = asDate_(d);
       if (dd >= monday && classOf[sid]) {
         weekPts[classOf[sid]] = (weekPts[classOf[sid]] || 0) + pts;
         sidWeek[sid] = (sidWeek[sid] || 0) + pts;
@@ -2367,7 +2350,7 @@ function raidFriday() {
     cf.getRange(2, 1, cf.getLastRow() - 1, 4).getValues().forEach(r => {
       const cls = r[0], mission = String(r[1] || ''), d = r[3];
       if (!cls || !d) return;
-      const dd = (d instanceof Date) ? d : new Date(d);
+      const dd = asDate_(d);
       if (dd >= monday && fuelMap[mission] && !fSeen.has(cls + '|' + mission)) {
         fSeen.add(cls + '|' + mission);
         weekPts[cls] = (weekPts[cls] || 0) + fuelMap[mission];
@@ -2464,9 +2447,9 @@ function todayBoard_(ss) {
   const now = new Date();
   const today = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
   const bd = ensureSheet(ss, 'today_board', ['유형','이름','반','시각','퇴근']);
-  const hhmm = function (d) { return Utilities.formatDate((d instanceof Date) ? d : new Date(d), tz, 'HH:mm'); };
+  const hhmm = function (d) { return Utilities.formatDate(asDate_(d), tz, 'HH:mm'); };
   const isToday = function (d) {
-    const dd = (d instanceof Date) ? d : new Date(d);
+    const dd = asDate_(d);
     return Utilities.formatDate(dd, tz, 'yyyy-MM-dd') === today;
   };
 
@@ -2538,7 +2521,7 @@ function expandHwBatch() {
     pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
       const d = r[5];
       if (!r[1] || !d) return;
-      const dd = (d instanceof Date) ? d : new Date(d);
+      const dd = asDate_(d);
       if (Utilities.formatDate(dd, tz, 'yyyy-MM-dd') === today &&
           String(r[3] || '').indexOf('숙제완료') > -1 && Number(r[2]) > 0) doneToday.add(String(r[1]).trim());
     });
@@ -2555,7 +2538,7 @@ function expandHwBatch() {
   rows.forEach((r, i) => {
     const d = r[0];
     if (!d || String(r[5]) === '전개완료') return;
-    const dd = (d instanceof Date) ? d : new Date(d);
+    const dd = asDate_(d);
     if (Utilities.formatDate(dd, tz, 'yyyy-MM-dd') !== today) return; // 당일 행만 전개
     const by = String(r[3] || '강사');
     const seen = new Set();
@@ -2601,7 +2584,7 @@ function parentWeeklyDigest() {
     at.getRange(2, 1, at.getLastRow() - 1, 4).getValues().forEach(r => {
       const d = r[2];
       if (!r[1] || !d) return;
-      const dd = (d instanceof Date) ? d : new Date(d);
+      const dd = asDate_(d);
       if (dd >= monday && String(r[3]).indexOf('출석') > -1) attW[r[1]] = (attW[r[1]] || 0) + 1;
     });
   }
@@ -2612,7 +2595,7 @@ function parentWeeklyDigest() {
     pl.getRange(2, 1, pl.getLastRow() - 1, 8) /* [v9.0] H 태그 */.getValues().forEach(r => {
       const sid = r[1], pts = Number(r[2]) || 0, rs = String(r[3] || ''), d = r[5];
       if (!sid || !d) return;
-      const dd = (d instanceof Date) ? d : new Date(d);
+      const dd = asDate_(d);
       if (dd < monday) return;
       const isE = pts > 0 || rs.indexOf('정정') > -1;
       if (isE && pts !== 0) ptsW[sid] = (ptsW[sid] || 0) + pts;
@@ -2637,7 +2620,7 @@ function parentWeeklyDigest() {
     wt.getRange(2, 1, wt.getLastRow() - 1, 5).getValues().forEach(r => {
       const d = r[3];
       if (!r[0] || !d) return;
-      const dd = (d instanceof Date) ? d : new Date(d);
+      const dd = asDate_(d);
       if (dd >= monday) topicBy[r[0]] = String(r[4] || r[1] || '');
     });
   }
@@ -2729,7 +2712,7 @@ function dailyGuard() {
   (pl.getLastRow() < 2 ? [] : pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues()).forEach(r => { // [v8.2]
     const sid = r[1], pts = Number(r[2]) || 0, rs = String(r[3] || ''), d = r[5];
     if (!sid || !d || !classOf[sid]) return;
-    const dd = (d instanceof Date) ? d : new Date(d);
+    const dd = asDate_(d);
     if (Utilities.formatDate(dd, tz, 'yyyy-MM-dd') !== today) return;
     const cls = classOf[sid];
     if (rs.indexOf('정정') > -1) { // 오늘 이미 만든 정정 집계 (재실행 멱등)
@@ -2806,7 +2789,7 @@ function notifyDailyAwards() {
   (pl.getLastRow() < 2 ? [] : pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues()).forEach(r => { // [v8.7]
     const sid = r[1], pts = Number(r[2]) || 0, rs = String(r[3] || ''), d = r[5];
     if (!sid || !d || !info[sid]) return;
-    const dd = (d instanceof Date) ? d : new Date(d);
+    const dd = asDate_(d);
     if (Utilities.formatDate(dd, tz, 'yyyy-MM-dd') !== today) return;
     if (rs.indexOf('MVP') > -1) netM[sid] = (netM[sid] || 0) + pts;
     else if (rs.indexOf('시냅스') > -1) netS[sid] = (netS[sid] || 0) + pts;
@@ -2874,7 +2857,7 @@ function raidStoryDaily() {
     const sid = r[1], pts = Number(r[2]) || 0, d = r[5];
     const isE = pts > 0 || String(r[3] || '').indexOf('정정') > -1; // [v7.4]
     if (!sid || !d || !isE || pts === 0 || !classOf[sid]) return;
-    const dd = (d instanceof Date) ? d : new Date(d);
+    const dd = asDate_(d);
     const cls = classOf[sid];
     if (dd >= monday) weekD[cls] = (weekD[cls] || 0) + pts;
     if (Utilities.formatDate(dd, tz, 'yyyy-MM-dd') === today) {
@@ -2900,7 +2883,7 @@ function raidStoryDaily() {
     cf.getRange(2, 1, cf.getLastRow() - 1, 4).getValues().forEach(r => {
       const cls = r[0], m = String(r[1] || ''), d = r[3];
       if (!cls || !d || !fuelMap[m]) return;
-      const dd = (d instanceof Date) ? d : new Date(d);
+      const dd = asDate_(d);
       if (dd >= monday && !fSeenD.has(cls + '|' + m)) {
         fSeenD.add(cls + '|' + m);
         weekD[cls] = (weekD[cls] || 0) + fuelMap[m];
@@ -3129,7 +3112,7 @@ function calcTeacherStats() {
       const rs = String(r[3] || ''), pts = Number(r[2]) || 0, d = r[5];
       if (pts <= 0 || !d || rs.indexOf('정정') > -1) return;
       if (rs.indexOf('MVP') === -1 && rs.indexOf('시냅스') === -1) return;
-      const dd = (d instanceof Date) ? d : new Date(d);
+      const dd = asDate_(d);
       if (Utilities.formatDate(dd, tz8, 'yyyy-MM') !== ym8) return;
       const cl = clsOfT[r[1]];
       if (!cl) return;
@@ -3191,12 +3174,7 @@ function monthlyReport() {
   const riskHigh = students.filter(r => String(r[24]).startsWith('상')).length;
   const riskMid = students.filter(r => String(r[24]).startsWith('중')).length;
 
-  function regYM(v) {
-    if (!v) return '';
-    if (v instanceof Date) return Utilities.formatDate(v, tz, 'yyyy-MM');
-    const s = String(v).replace(/\D/g, '');
-    return s.length === 8 ? s.substring(0, 4) + '-' + s.substring(4, 6) : '';
-  }
+  function regYM(v) { const d = toDate_(v); return d ? Utilities.formatDate(d, tz, 'yyyy-MM') : ''; } // [opt] toDate_로 일원화
   const newStudents = students.filter(r => regYM(r[11]) === lastMonth);
   const tRows = calcTeacherStats() || [];
 
@@ -3399,13 +3377,7 @@ function monthlyGameBatch() {
   const schMap = scheduleMap(ss);
   const y = lastMonthDate.getFullYear(), mIdx = lastMonthDate.getMonth();
   const daysInMonth = new Date(y, mIdx + 1, 0).getDate();
-  function parseReg(v) {
-    if (!v) return null;
-    if (v instanceof Date) return v;
-    const s = String(v).replace(/\D/g, '');
-    if (s.length === 8) return new Date(Number(s.substring(0,4)), Number(s.substring(4,6)) - 1, Number(s.substring(6,8)));
-    return null;
-  }
+  function parseReg(v) { return toDate_(v); } // [opt] toDate_로 일원화 (동작 동일 + isNaN 가드)
   function schedDaysOf(sid) {
     const eG = schedOf(schMap, clsOf[sid]); // [v8.3]
     const type = eG ? eG.type : '평일';
@@ -3444,7 +3416,7 @@ function monthlyGameBatch() {
   logs.forEach(r => {
     const sid = r[1], p = Number(r[2]) || 0, d = r[5];
     if (p <= 0 || !d) return;
-    const dd = (d instanceof Date) ? d : new Date(d);
+    const dd = asDate_(d);
     const mon = new Date(dd);
     mon.setDate(dd.getDate() - ((dd.getDay() + 6) % 7));
     const wk = Utilities.formatDate(mon, tz, 'yyyy-MM-dd');
@@ -3902,7 +3874,8 @@ function importFormResponses() {
     let newTs = lastTs;
 
     // 현재 최대 SYNK 번호 (한 배치 내 연속 채번)
-    const biCol = consult.getRange(3, 60, 600, 1).getValues(); // [v8.4] BH
+    const lastRowC = consult.getLastRow();
+    const biCol = lastRowC >= 3 ? consult.getRange(3, 60, lastRowC - 2, 1).getValues() : []; // [opt] BH 전체 열 — 600행 초과 시 maxSynk 정확(ID 중복 방지). getLastRow<3 가드로 헤더만 있을 때 크래시 방지
     let maxSynk = 0;
     biCol.forEach(r => {
       const m = String(r[0]).match(/^SYNK-(\d+)$/);
