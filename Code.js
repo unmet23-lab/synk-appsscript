@@ -1022,10 +1022,10 @@ function calcAll() {
     // [v6.6] 열 부족 자동 확장 (AP=42열까지) — 좁은 시트에서 헤더 쓰기 오류 방지
     if (pf.getMaxColumns() < 50) pf.insertColumnsAfter(pf.getMaxColumns(), 50 - pf.getMaxColumns()); // [v7.7] AX까지
     // [v6.5] 사용자 기록 전용 열 — 스크립트는 값을 절대 안 쓰고 헤더만 보장 (Glide 오타 방지)
-    if (pf.getRange('AE1').getValue() !== '(구)게이지') pf.getRange('AE1').setValue('(구)게이지'); // [v7.9] 은퇴
-    if (pf.getRange('AF1').getValue() !== '(구)게이지문구') pf.getRange('AF1').setValue('(구)게이지문구');
+    // [v9.20] 죽은 코드 정리: AE·AF·AL(구 은퇴열) 헤더 유지 코드 제거.
+    //   이 열들(AE31·AF32·AL38·AM39·AN40)은 인덱스 고정이라 물리 삭제 불가(삭제 시 AO~BX 전부 밀림).
+    //   → 시트에서 "열 숨기기"로 시야에서만 치우면 됨(숨김은 인덱스 안 바뀜·안전). Glide 바인딩 금지.
     if (pf.getRange('AK1').getValue() !== '착용칭호') pf.getRange('AK1').setValue('착용칭호');
-    if (pf.getRange('AL1').getValue() !== '(구)리포트확인월') pf.getRange('AL1').setValue('(구)리포트확인월'); // [v7.9] 은퇴
     if (pf.getRange('AO1').getValue() !== '몬스터이름') pf.getRange('AO1').setValue('몬스터이름');
     if (pf.getRange('AP1').getValue() !== '단계번호') pf.getRange('AP1').setValue('단계번호'); // [v6.6]
     if (pf.getRange('AQ1').getValue() !== '잔액') pf.getRange('AQ1').setValue('잔액'); // [v7.1] P열=획득 누계(진화), AQ=잔액(스토어)
@@ -4134,14 +4134,7 @@ function runReportCards_() {
     Logger.log('리포트카드 완료: ' + rows.length + '장');
   }
 }
-
-function reportComment(s) {
-  if (s.rank <= 3) return '이번 달 TOP ' + s.rank + '! 최고의 시냅스 활동이었어요 🏆';
-  if (s.growth >= 50) return '지난달보다 ' + s.growth + 'P 상승 — 로켓 성장 중! 🚀';
-  if (s.attend >= 20) return '꾸준함이 최고의 재능 — 개근에 가까운 출석이에요 🔥';
-  if (s.pts >= 100) return '탄탄하게 쌓아가는 중 — 이 페이스 그대로!';
-  return '다음 달, 새로운 시냅스 연결을 함께 만들어봐요 💪';
-}
+// [v9.20] 죽은 코드 정리: reportComment 삭제 — v9.19 리포트카드 v2가 reportCardComment_로 대체(호출부 0).
 
 function exportSlidePng(presId, pageId) {
   const url = 'https://docs.google.com/presentation/d/' + presId +
