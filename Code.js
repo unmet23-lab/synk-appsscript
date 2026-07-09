@@ -1727,9 +1727,16 @@ function syncProfiles() {
   const newStudentCnt = out.filter(r => r[3] === 'student').length;
   if (dstLast > 1 && (newStudentCnt === 0 || (prevStudentCnt >= 5 && newStudentCnt < prevStudentCnt * 0.7))) {
     Logger.log('syncProfiles 중단: 학생 ' + prevStudentCnt + '→' + newStudentCnt + ' 급감/0 — profiles 보호(덮어쓰기 안 함)');
-    adminMail('[SYNK] ⚠️ 동기화 보류 — 학생 급감 감지',
-      '상담시트 기준 학생이 ' + prevStudentCnt + '명 → ' + newStudentCnt + '명으로 급감/0이라 profiles 덮어쓰기를 보류했습니다.\n' +
-      '상담시트(CONSULT_SHEET_ID) 연결·데이터를 확인하세요. 정상이면 다음 동기화에서 자동 반영됩니다.');
+    // [v9.22] 상태(신규/기존)가 바뀔 때만 1회 알림 — 빈 상담시트(테스트/미모집)가 매일 경보를 도배하는 것 방지
+    const stHold = ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'app_state', ['key', 'value']);
+    const holdSig = newStudentCnt + '/' + prevStudentCnt;
+    if (String(getState(stHold, '동기화보류_상태').val || '') !== holdSig) {
+      adminMail('[SYNK] ⚠️ 동기화 보류 — 학생 급감 감지',
+        '상담시트 기준 학생이 ' + prevStudentCnt + '명 → ' + newStudentCnt + '명으로 급감/0이라 profiles 덮어쓰기를 보류했습니다.\n' +
+        '상담시트(CONSULT_SHEET_ID) 연결·데이터를 확인하세요. 정상이면 다음 동기화에서 자동 반영됩니다.\n\n' +
+        '※ 상태가 바뀌기 전까지 이 알림은 다시 오지 않습니다.');
+      setState(stHold, '동기화보류_상태', holdSig);
+    }
     return;
   }
   if (dstLast > 1) dst.getRange(2, 1, dstLast - 1, 15).clearContent();
@@ -1750,6 +1757,7 @@ function syncProfiles() {
     }
 
   }
+  setState(ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'app_state', ['key', 'value']), '동기화보류_상태', ''); // [v9.22] 정상 동기화 → 보류 알림 재무장
   Logger.log(out.length + '명 동기화 완료');
   calcAll();
   } catch (e) { // [v9.19] 조용한 실패 방지 — 연결 끊기면 매일 아침 알림 (profiles 스테일 조기 감지)
