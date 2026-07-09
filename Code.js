@@ -1742,23 +1742,26 @@ function syncProfiles() {
     }
     return;
   }
-  if (dstLast > 1) dst.getRange(2, 1, dstLast - 1, 15).clearContent();
+  // [v9.25] A7-1: 로스터 writeIfChanged — JSON 동일이면 setValues 생략(대부분 상담시트 무변동이라 A~O/Z/AY~BA 통째 skip).
+  //   writeIfChanged는 셀값을 JSON.stringify로 비교 → Date는 ISO 전체 직렬화라 오탐(같은데 다르다고 판단)해도 '그냥 쓰기'(안전측), 반대(다른데 같다고)는 없음.
+  //   로스터 축소 대응: writeIfChanged는 겹치는 구간만 갱신하므로, 남는 옛 꼬리 행은 기존 전체 clearContent와 동일하게 별도로 비운다(tail-clear).
   if (out.length > 0) {
-    dst.getRange(2, 1, out.length, 15).setValues(out);
+    writeIfChanged(dst, 2, 1, out);                                       // A~O(15열)
+    const oTail = dstLast - 1 - out.length;                              // >0: 로스터가 줄어 남은 옛 행
+    if (oTail > 0) dst.getRange(out.length + 2, 1, oTail, 15).clearContent();
     const zOut = out.map(r => [keep[r[0]] ? keep[r[0]].pEmail : '']);
-    dst.getRange(2, 26, zOut.length, 1).setValues(zOut);
+    writeIfChanged(dst, 2, 26, zOut);                                     // Z(pEmail) — 기존과 동일하게 tail 미청소
 
     // [v8.5] 디테일 3종 → AY·AZ·BA (계산열 50 이후 안전 지대)
     if (dst.getMaxColumns() < 53) dst.insertColumnsAfter(dst.getMaxColumns(), 53 - dst.getMaxColumns());
     if (String(dst.getRange('AY1').getValue()) !== '한국어수준') dst.getRange('AY1').setValue('한국어수준');
     if (String(dst.getRange('AZ1').getValue()) !== '⚠상담위험') dst.getRange('AZ1').setValue('⚠상담위험');
     if (String(dst.getRange('BA1').getValue()) !== '핵심비전') dst.getRange('BA1').setValue('핵심비전');
-    if (dstLast > 1) dst.getRange(2, 51, dstLast - 1, 3).clearContent();
-    if (lvlOut.length) {
-      const trio = lvlOut.map((v, i) => [v[0], riskOut[i][0], visionOut[i][0]]); // [v8.7] 3열 1회 쓰기
-      dst.getRange(2, 51, trio.length, 3).setValues(trio);
-    }
-
+    // [v9.25] AY~BA는 out과 별개 소스(row[18]/[60]/[21])라 반드시 별도 비교 — out 무변동이어도 레벨/위험/비전만 바뀔 수 있음
+    const trio = lvlOut.map((v, i) => [v[0], riskOut[i][0], visionOut[i][0]]); // [v8.7] 3열 1회 쓰기 (학생만, 비학생 제외)
+    if (trio.length) writeIfChanged(dst, 2, 51, trio);
+    const tTail = dstLast - 1 - trio.length;                             // 학생 뒤(비학생·삭제) 행의 AY~BA는 비움 — 기존 전체 clear 보존
+    if (tTail > 0) dst.getRange(trio.length + 2, 51, tTail, 3).clearContent();
   }
   setState(ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'app_state', ['key', 'value']), '동기화보류_상태', ''); // [v9.22] 정상 동기화 → 보류 알림 재무장
   Logger.log(out.length + '명 동기화 완료');
