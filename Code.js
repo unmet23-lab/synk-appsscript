@@ -436,6 +436,12 @@
  *      방지) + 모의/Δ를 academic_log 직접 산출(차트·급수와 일관·calcAll 전에도 정확) ④ syncProfiles 부분
  *      축소 방어(기존 5명+ 30%↑ 급감 시 보류+알림) + 실패 시 알림 ⑤ 워치독 백업 나이 점검(2일↑ 경고)
  *      ⑥ setupPlaceholderImages에 store 포함 ⑦ importFormResponses 600행 만차 시 append 폴백.
+ *
+ * [v9.20 — 출시 우선순위 3종 (게임 ↔ 실제 실력 연결)]
+ * 146. ② 실력 성장 카드: profiles 학업추세HTML(BW 75) — 급수 + 모의 최근5 미니막대 + 증감(academicTrendHtml_,
+ *      calcAcademic_ 편승). 학생 홈·학부모 뷰 Rich Text 바인딩 → "게임 재미가 실제 실력으로" 가시화.
+ *      ③ 결정적 순간 알림: profiles 오늘의알림(BX 76) — 왕관/진화/생일/진화임박 1건만(결석 제외), 없으면 공란.
+ *      Glide 인앱 배너/푸시 훅. ① 강사 1탭은 Glide 레이아웃(class_stats 9~12열) — 코드 변경 없음.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
@@ -1049,6 +1055,7 @@ function calcAll() {
   const fortuneOut = [], speakOut = [], recordOut = []; // [v9.12]
   const styleOut = [], chemOut = [], matchOut = []; // [v9.13]
   const weeklyOut = [], talkOut = [], bannerOut = []; // [v9.16]
+  const alertOut = []; // [v9.20] 오늘의알림(BX 76) — 결정적 순간 1건(왕관/진화/생일/임박), 없으면 ''
   const clsB2 = {}; // sid→반 (주간 분모용)
   const radarOut = [], radarList = []; // [v9.14] (공유 변수는 함수 최상단으로 승격)
   pfData.forEach(rr => { if (rr[0] && rr[3] === 'student') clsB2[rr[0]] = String(rr[4] || ''); }); // [v9.16]
@@ -1333,6 +1340,13 @@ function calcAll() {
             : (evoRecent
               ? '<div style="background:linear-gradient(135deg,#C4B5FD,#A5B4FC);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;color:#fff;">⚡ ' + (r[1] || id) + '-ийн монстр шинэ шатанд хувьслаа! Түүхэн мөч 📸<br/><span style="font-weight:400;font-size:11px;">몬스터가 진화했어요! 역사적인 순간</span></div>'
               : '')]);
+          // [v9.20] 오늘의알림 — 푸시/인앱배너용 1건 (긍정·희소 이벤트만, 결석 알림은 제외)
+          const isBday6 = String(r[5] || '').slice(5, 10) === todayYmd0.slice(5, 10);
+          alertOut.push([crownToday2 ? '👑 오늘 왕관을 받았어요! 최고예요 🎉'
+            : evoRecent ? '⚡ 몬스터가 진화했어요! 축하해요 🐲'
+            : isBday6 ? '🎂 생일 축하해요! 오늘의 주인공이에요 🎉'
+            : (mon.rem > 0 && mon.rem <= 10) ? '✨ 조금만 더! 다음 진화까지 ' + mon.rem + 'P'
+            : '']);
         }
         const rec = records[id] || {};
         recordOut.push(['<div style="background:#fff;border:2px solid #E9E7F5;border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.9;">📊 <b>나의 기록실</b><br/>🔥 최장 연속출석 <b>' + (rec.maxStreak || stk) + '일</b><br/>🏔️ 최고 월간 포인트 <b>' + (rec.bestMonth || mPts) + 'P</b><br/>👑 첫 왕관 <b>' + (rec.firstCrown || '이번 달이 기회!') + '</b><br/>⚔️ 보스 토벌 참여 <b>' + (rec.raids || 0) + '회</b><br/>📚 총 누적 <b>' + t + 'P</b></div>']);
@@ -1375,6 +1389,10 @@ function calcAll() {
     writeIfChanged(pf, 2, 66, bannerOut); // [v9.16] 🎉
     if (String(pf.getRange('BK1').getValue()) !== '리텐션신호') pf.getRange('BK1').setValue('리텐션신호');
     writeIfChanged(pf, 2, 63, radarOut); // [v9.14] 📡
+    // [v9.20] 오늘의알림(BX 76) — Glide 인앱 배너/푸시 훅 (calcAcademic_의 BW75와 별개 열)
+    if (pf.getMaxColumns() < 76) pf.insertColumnsAfter(pf.getMaxColumns(), 76 - pf.getMaxColumns());
+    if (String(pf.getRange('BX1').getValue()) !== '오늘의알림') pf.getRange('BX1').setValue('오늘의알림');
+    writeIfChanged(pf, 2, 76, alertOut);
     { // 원장 홈 카드 2종
       radarList.sort((a2, b2) => a2.s === b2.s ? 0 : (a2.s === '🔴' ? -1 : 1));
       const rHtml = radarList.length
@@ -6049,6 +6067,37 @@ function readAcademicLogs_(ss, tz) {
   return byId;
 }
 
+// [v9.20] 📈 실력 성장 카드(HTML) — 급수 + 최근 모의 미니 막대 + 증감. 게임과 실제 실력을 잇는 핵심 카드.
+function academicTrendHtml_(logs) {
+  logs = logs || [];
+  const levels = logs.filter(l => l.type === 'level');
+  const mocks = logs.filter(l => l.type === 'mock');
+  if (!levels.length && !mocks.length)
+    return '<div style="background:#F9FAFB;border:2px dashed #E5E7EB;border-radius:14px;padding:12px 13px;font-size:12.5px;color:#6B7280;">📈 한국어 실력 성장 — 첫 평가를 기다리고 있어요 ✨</div>';
+  const curLv = levels.length ? levels[levels.length - 1].val : null;
+  const series = mocks.slice(-5).map(m => Number(m.val) || 0);
+  const curMock = series.length ? series[series.length - 1] : null;
+  const prevMock = series.length >= 2 ? series[series.length - 2] : null;
+  const delta = (curMock != null && prevMock != null) ? (curMock - prevMock) : null;
+  let bars = '';
+  series.forEach((sc, i) => {
+    const h = Math.max(Math.round((Math.max(0, Math.min(100, sc)) / 100) * 30), 3);
+    bars += '<div style="display:inline-block;width:9px;height:' + h + 'px;background:' + (i === series.length - 1 ? '#10B981' : '#CFEDDF') + ';border-radius:2px;margin:0 1.5px;vertical-align:bottom;"></div>';
+  });
+  const barBox = series.length
+    ? '<div style="text-align:center;">' + bars + '<div style="font-size:9px;color:#9CA3AF;padding-top:2px;">최근 ' + series.length + '회 모의</div></div>'
+    : '<div style="font-size:11px;color:#9CA3AF;text-align:center;">모의 기록<br>대기 중</div>';
+  const deltaTxt = (delta == null) ? '' : (delta > 0 ? '▲ +' + delta : (delta < 0 ? '△ ' + delta : '– 유지'));
+  const deltaCol = (delta != null && delta > 0) ? '#0E9F6E' : '#9CA3AF';
+  return '<div style="background:#F0FDF4;border:2px solid #BBF7D0;border-radius:14px;padding:11px 13px;">' +
+    '<div style="font-size:11px;color:#6B7280;">📈 한국어 실력 성장</div>' +
+    '<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding-top:4px;">' +
+      '<div><div style="font-size:24px;font-weight:800;color:#0E9F6E;line-height:1;">' + (curLv != null ? curLv + '급' : '—') + '</div><div style="font-size:10px;color:#6B7280;padding-top:2px;">현재 TOPIK 급수</div></div>' +
+      '<div style="flex:1;">' + barBox + '</div>' +
+      '<div style="text-align:right;"><div style="font-size:20px;font-weight:800;">' + (curMock != null ? curMock : '—') + '<span style="font-size:11px;color:#9CA3AF;">/100</span></div><div style="font-size:11px;font-weight:700;color:' + deltaCol + ';">' + deltaTxt + '</div></div>' +
+    '</div></div>';
+}
+
 function calcAcademic_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
@@ -6057,9 +6106,9 @@ function calcAcademic_() {
 
   const byId = readAcademicLogs_(ss, tz);
 
-  // profiles 신규열 BO~BV(67~74) 확장 + 헤더 보장 (기존 66열 계산과 분리)
-  if (pf.getMaxColumns() < 74) pf.insertColumnsAfter(pf.getMaxColumns(), 74 - pf.getMaxColumns());
-  const heads = ['현재급수','최근모의점수','직전대비Δ','최고모의점수','레벨업누적','마지막평가월','학업한마디_KO','학업한마디_MN'];
+  // profiles 신규열 BO~BW(67~75) 확장 + 헤더 보장 (기존 66열 계산과 분리)
+  if (pf.getMaxColumns() < 75) pf.insertColumnsAfter(pf.getMaxColumns(), 75 - pf.getMaxColumns());
+  const heads = ['현재급수','최근모의점수','직전대비Δ','최고모의점수','레벨업누적','마지막평가월','학업한마디_KO','학업한마디_MN','학업추세HTML']; // [v9.20] +학업추세HTML(BW)
   heads.forEach((h, i) => { if (String(pf.getRange(1, 67 + i).getValue()) !== h) pf.getRange(1, 67 + i).setValue(h); });
 
   const n = pf.getLastRow() - 1;
@@ -6067,10 +6116,10 @@ function calcAcademic_() {
   const roles = pf.getRange(2, 4, n, 1).getValues();
   const out = ids.map((r, i) => {
     const sid = r[0];
-    if (!sid || roles[i][0] !== 'student') return ['', '', '', '', '', '', '', ''];
+    if (!sid || roles[i][0] !== 'student') return ['', '', '', '', '', '', '', '', ''];
     const snap = academicSnapshot_(byId[sid]);
-    if (!snap) return ['', '', '', '', '', '', '', ''];
-    return [snap.curLevel, snap.curMock, snap.delta, snap.bestMock, snap.levelUps, snap.lastMonth, snap.ko, snap.mn];
+    if (!snap) return ['', '', '', '', '', '', '', '', ''];
+    return [snap.curLevel, snap.curMock, snap.delta, snap.bestMock, snap.levelUps, snap.lastMonth, snap.ko, snap.mn, academicTrendHtml_(byId[sid])];
   });
   writeIfChanged(pf, 2, 67, out);
   Logger.log('calcAcademic_ 완료: 학업 로그 ' + Object.keys(byId).length + '명');
