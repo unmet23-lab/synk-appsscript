@@ -840,23 +840,30 @@ function myJourneyHtml_(o) {
     return '<span style="color:' + (cur ? '#4F46E5;font-weight:800' : (past ? '#9CA3AF' : '#D1D5DB')) + ';">' + s.name + '</span>';
   }).join(' <span style="color:#D1D5DB;">›</span> ');
   const evoLine = o.evoDate ? '⚡ 진화한 날 <b>' + o.evoDate + '</b><br/>' : '';
+  const titles = (o.titles || []).filter(String);
+  const titleLine = titles.length ? '🏅 칭호 <b>' + titles.slice(0, 4).join(' · ') + '</b><br/>' : '';
+  const chemLine = (o.chem && o.chem.n) ? '🤝 이 달의 단짝 <b>' + o.chem.n + '</b> (' + o.chem.c + '일 동행)<br/>' : '';
   const hasLv = acad && acad.curLevel != null && acad.curLevel !== '';
   const hasMk = acad && acad.curMock != null && acad.curMock !== '';
   const acadLine = (hasLv || hasMk)
     ? '📈 ' + (hasLv ? '지금 <b>' + acad.curLevel + '급</b>' : '') + (hasLv && hasMk ? ' · ' : '') + (hasMk ? '모의 <b>' + acad.curMock + '점</b>' : '') + ' — 실력이 자라는 중'
     : '📈 첫 평가를 향해 한 걸음씩';
+  const storyBlock = o.story
+    ? '<div style="background:#FFFBEB;border:1px dashed #FCD34D;border-radius:11px;padding:9px 12px;font-size:12px;color:#92400E;margin-top:10px;line-height:1.7;">💬 <b>지난 이야기</b><br/>' + o.story + '</div>'
+    : '';
   return '<div style="background:linear-gradient(135deg,#F5F3FF,#EEF2FF);border:2px solid #C4B5FD;border-radius:16px;padding:13px 15px;">' +
     '<div style="font-size:15px;font-weight:800;color:#4338CA;">📖 ' + o.nm + '의 여정</div>' +
     '<div style="font-size:12px;padding:6px 0 9px;">🐣 ' + journey + '</div>' +
     '<div style="background:#fff;border-radius:12px;padding:9px 11px;font-size:12.5px;line-height:2;">' +
       '🔥 최장 연속출석 <b>' + (rec.maxStreak || o.stk || 0) + '일</b><br/>' +
       '👑 첫 왕관 <b>' + (rec.firstCrown || '이번 달이 기회!') + '</b><br/>' +
-      evoLine +
+      evoLine + titleLine + chemLine +
       '⚔️ 보스와 함께 <b>' + (rec.raids || 0) + '회</b><br/>' +
       '🏔️ 최고 월간 <b>' + (rec.bestMonth || o.mPts || 0) + 'P</b> · 📚 지금까지 <b>' + (o.t || 0) + 'P</b>' +
     '</div>' +
     '<div style="font-size:12.5px;color:#4338CA;padding-top:9px;">' + acadLine + '</div>' +
-    '<div style="font-size:11px;color:#9CA3AF;padding-top:6px;">다음 진화까지 ' + (mon.rem || 0) + 'P · 너의 이야기는 계속돼 ✨</div>' +
+    storyBlock +
+    '<div style="font-size:11px;color:#9CA3AF;padding-top:8px;">다음 진화까지 ' + (mon.rem || 0) + 'P · 너의 이야기는 계속돼 ✨</div>' +
     '</div>';
 }
 
@@ -1084,6 +1091,7 @@ function calcAll() {
     const evoRemOut = [], stageNumOut = [], balOut = []; // [v7.9] 게이지 2열 은퇴(진행바 T열로 단일화)
     const evoDateOut = []; // [v9.0]
     const prevAP = pfData.length ? pf.getRange(2, 42, pfData.length, 1).getValues() : [];
+    const prevAU = (pfData.length && pf.getMaxColumns() >= 47) ? pf.getRange(2, 47, pfData.length, 1).getValues() : []; // [v9.20] 이달의스토리 → 나의여정 카드
     const prevBB = (pfData.length && pf.getMaxColumns() >= 54) ? pf.getRange(2, 54, pfData.length, 1).getValues() : [];
   const prevBC = (pfData.length && pf.getMaxColumns() >= 55) ? pf.getRange(2, 55, pfData.length, 1).getValues() : []; // [v9.11]
   const skinOut = [], frameOut = [];
@@ -1398,7 +1406,8 @@ function calcAll() {
       // [v9.20] 📖 나의 여정 — 개인 스토리 카드 (진화일은 방금 push한 evoDateOut 마지막 값)
       journeyOut.push([myJourneyHtml_({
         nm: r[1] || id, stages: stages, mon: mon, rec: records[id], stk: stk, mPts: mPts, t: t,
-        acad: academicSnapshot_(acadById[id]), evoDate: (evoDateOut[evoDateOut.length - 1] || [''])[0]
+        acad: academicSnapshot_(acadById[id]), evoDate: (evoDateOut[evoDateOut.length - 1] || [''])[0],
+        titles: titleOf[id], chem: chemi[id], story: (prevAU[idx] && prevAU[idx][0]) || '' // [v9.20] 칭호·단짝·이달의 이야기
       })]);
       return [t, mPts, rankMap[id] === 999 ? '' : (rankMap[id] || ''), mon.stage, mon.pct,
               stk, matt, la, p, risk];
