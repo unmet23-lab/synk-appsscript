@@ -6118,7 +6118,8 @@ function calcAcademic_() {
     const sid = r[0];
     if (!sid || roles[i][0] !== 'student') return ['', '', '', '', '', '', '', '', ''];
     const snap = academicSnapshot_(byId[sid]);
-    if (!snap) return ['', '', '', '', '', '', '', '', ''];
+    // [v9.20] 기록 없어도 BW(학업추세HTML)는 "첫 평가 대기" 카드로 항상 채움 (홈 카드 자리 안 비게)
+    if (!snap) return ['', '', '', '', '', '', '', '', academicTrendHtml_(byId[sid])];
     return [snap.curLevel, snap.curMock, snap.delta, snap.bestMock, snap.levelUps, snap.lastMonth, snap.ko, snap.mn, academicTrendHtml_(byId[sid])];
   });
   writeIfChanged(pf, 2, 67, out);
