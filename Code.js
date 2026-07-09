@@ -10,7 +10,8 @@
  *   1) 새 Google 스프레드시트 생성 → 확장 프로그램 → Apps Script
  *   2) 이 파일 전체를 붙여넣고 저장
  *   3) bootstrapSynk() 1회 실행 (권한 승인 2회) — 세계가 재림합니다
- *   4) setupV5Triggers() 1회 실행 — 심장 박동(17개 트리거) 시작
+ *   4) resetAllTriggers() 1회 실행 — 심장 박동(통합 트리거 10개) 시작
+ *      (setupV5Triggers는 시트 보장 전용 · 트리거 설치는 resetAllTriggers가 전담)
  *   5) 데이터(학생·포인트 이력)는 Drive 'SYNK_백업' 폴더 최신본에서
  *      profiles·point_logs·attendance 시트를 복사해 덮어쓰기
  *
@@ -123,7 +124,7 @@
  *
  * [v6.3 — 트리거 20개 한도 해결: 통합 리셋]
  * 43. resetAllTriggers(): 전체 삭제 후 통합 10개 재설치 (morning/night/weekly/monthlyJobs)
- *     · 게임배치→아카이브 순서 코드 고정 · 폼 접수 30분 스위프 편입 · safeRun 실패 격리+알림
+ *     · 게임배치→아카이브 순서 코드 고정 · 폼 접수 10분 스위프 편입 · safeRun 실패 격리+알림
  *
  * [v6.4 — 처음의 목표 (여정 페이지)]
  * 44. syncProfiles가 상담시트의 목표 급수·시기 2필드만 profiles AM·AN으로 선별 복사
@@ -5024,7 +5025,7 @@ function systemWatchdog(asText) {
   const have = {};
   ScriptApp.getProjectTriggers().forEach(t => { have[t.getHandlerFunction()] = true; });
   ['calcAll', 'parentSweep', 'sendMorningDigest'].forEach(f => {
-    add(!!have[f], '필수 트리거 ' + f + (have[f] ? ' 정상' : ' 실종! — setupV5Triggers/트리거 화면 확인'));
+    add(!!have[f], '필수 트리거 ' + f + (have[f] ? ' 정상' : ' 실종! — resetAllTriggers()/트리거 화면 확인'));
   });
   const recommended = ['dailyBackup', 'morningJobs', 'nightJobs', 'weeklyJobs',
     'monthlyJobs', 'monthlyReportCards', 'monthlyReport']; // [v7.0] v6.3 통합 트리거 기준
@@ -6416,6 +6417,7 @@ function bootstrapSynk() {
 }
 
 function setupV5Triggers() {
+  // [v9.25] 시트 보장 전용 — 트리거 설치는 resetAllTriggers()가 전담한다(함수명은 이력상 유지).
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   ensureSheet(ss, 'class_fuel', ['class_name', '미션', '입력자', 'created_at']); // [v5.7] 레이드 연료
   ensureSheet(ss, 'weekly_topics', ['class_name', '배운내용', '입력자', 'created_at', '배운내용_mn']); // [v5.7]
@@ -6541,7 +6543,7 @@ function resetAllTriggers(force) {
   ScriptApp.newTrigger('monthlyJobs').timeBased().onMonthDay(1).atHour(5).create();
   ScriptApp.newTrigger('monthlyReportCardsJob').timeBased().onMonthDay(1).atHour(6).create(); // [v9.25] safeRun 보호 래퍼
   ScriptApp.newTrigger('monthlyReportJob').timeBased().onMonthDay(1).atHour(7).create();       // [v9.25] safeRun 보호 래퍼
-  Logger.log('✅ 트리거 통합 재설치 완료: 10개 (30분 스위프 · 3시 백업 · 7시 아침작업 · 8시 브리핑 · 14/22시 계산 · 월 7시 주간 · 1일 5/6/7시 월간)');
+  Logger.log('✅ 트리거 통합 재설치 완료: 10개 (10분 스위프 · 3시 백업 · 7시 아침작업 · 8시 브리핑 · 14/22시 계산 · 월 7시 주간 · 1일 5/6/7시 월간)');
 }
 
 /* ===================== [v5.3] 저업데이트 모드 (선택 실행) =====================
