@@ -443,6 +443,10 @@
  *      ③ 결정적 순간 알림: profiles 오늘의알림(BX 76) — 하루짜리 이벤트만(왕관/진화/생일), 없으면 공란.
  *      [최적화] 진화임박 분기 제거 = 시트 churn·푸시 피로↓(임박 넛지는 BF 담당). Glide 배너/푸시 훅.
  *      ① 강사 1탭은 Glide 레이아웃(class_stats 9~12열) — 코드 변경 없음.
+ * 147. 📖 나의 여정(BY 77): 개인 스토리 센터피스 — 몬스터 7단계 여정(현재 강조) + 개인 마일스톤
+ *      (최장연속·첫왕관·진화일·보스참여·최고월간·총누적) + 실력(급수·모의) + 다음 진화까지. myJourneyHtml_,
+ *      calcAll 편승(academic_log 1회 읽기 acadById). "개개인 스토리 우선" 철학의 홈 — 조용한 학생도 주인공.
+ *      죽은 코드 정리: reportComment 삭제 · (구)은퇴열 헤더 유지 코드 제거(열은 인덱스고정이라 숨기기만).
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
@@ -827,6 +831,35 @@ function setAppState_(ss, key, val) {
   else st.getRange(st.getLastRow() + 1, 1, 1, 2).setValues([[key, val]]);
 }
 
+// [v9.20] 📖 나의 여정 — 개인 스토리 센터피스. 몬스터 여정 + 개인 마일스톤 + 실력 성장을 한 카드로.
+//   "개개인 스토리가 가장 중요" 철학의 홈: 모든 학생이(조용한 학생도) 자기 이야기의 주인공.
+function myJourneyHtml_(o) {
+  const mon = o.mon || {}, rec = o.rec || {}, acad = o.acad;
+  const journey = (o.stages || []).map((s, i) => {
+    const cur = (i + 1) === (mon.idx || 1), past = (i + 1) < (mon.idx || 1);
+    return '<span style="color:' + (cur ? '#4F46E5;font-weight:800' : (past ? '#9CA3AF' : '#D1D5DB')) + ';">' + s.name + '</span>';
+  }).join(' <span style="color:#D1D5DB;">›</span> ');
+  const evoLine = o.evoDate ? '⚡ 진화한 날 <b>' + o.evoDate + '</b><br/>' : '';
+  const hasLv = acad && acad.curLevel != null && acad.curLevel !== '';
+  const hasMk = acad && acad.curMock != null && acad.curMock !== '';
+  const acadLine = (hasLv || hasMk)
+    ? '📈 ' + (hasLv ? '지금 <b>' + acad.curLevel + '급</b>' : '') + (hasLv && hasMk ? ' · ' : '') + (hasMk ? '모의 <b>' + acad.curMock + '점</b>' : '') + ' — 실력이 자라는 중'
+    : '📈 첫 평가를 향해 한 걸음씩';
+  return '<div style="background:linear-gradient(135deg,#F5F3FF,#EEF2FF);border:2px solid #C4B5FD;border-radius:16px;padding:13px 15px;">' +
+    '<div style="font-size:15px;font-weight:800;color:#4338CA;">📖 ' + o.nm + '의 여정</div>' +
+    '<div style="font-size:12px;padding:6px 0 9px;">🐣 ' + journey + '</div>' +
+    '<div style="background:#fff;border-radius:12px;padding:9px 11px;font-size:12.5px;line-height:2;">' +
+      '🔥 최장 연속출석 <b>' + (rec.maxStreak || o.stk || 0) + '일</b><br/>' +
+      '👑 첫 왕관 <b>' + (rec.firstCrown || '이번 달이 기회!') + '</b><br/>' +
+      evoLine +
+      '⚔️ 보스와 함께 <b>' + (rec.raids || 0) + '회</b><br/>' +
+      '🏔️ 최고 월간 <b>' + (rec.bestMonth || o.mPts || 0) + 'P</b> · 📚 지금까지 <b>' + (o.t || 0) + 'P</b>' +
+    '</div>' +
+    '<div style="font-size:12.5px;color:#4338CA;padding-top:9px;">' + acadLine + '</div>' +
+    '<div style="font-size:11px;color:#9CA3AF;padding-top:6px;">다음 진화까지 ' + (mon.rem || 0) + 'P · 너의 이야기는 계속돼 ✨</div>' +
+    '</div>';
+}
+
 function calcAll() {
   // [v9.15] 프로필·반통계 양쪽에서 쓰는 공유 집계 — 함수 최상단 선언
   const blindList = [], crownSetM = {}, clsBday = {}, clsAbsent = {}, clsEvoSoon = {};
@@ -846,6 +879,7 @@ function calcAll() {
   const ct = ss.getSheetByName('contents');
   const co = ss.getSheetByName('carryover');
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const acadById = readAcademicLogs_(ss, tz); // [v9.20] 나의 여정 카드용 학업 데이터 (1회 읽기)
 
   const plLast = pl.getLastRow();
   const plData = plLast >= 2 ? pl.getRange(2, 1, plLast - 1, 6).getValues() : [];
@@ -1057,6 +1091,7 @@ function calcAll() {
   const styleOut = [], chemOut = [], matchOut = []; // [v9.13]
   const weeklyOut = [], talkOut = [], bannerOut = []; // [v9.16]
   const alertOut = []; // [v9.20] 오늘의알림(BX 76) — 결정적 순간 1건(왕관/진화/생일/임박), 없으면 ''
+  const journeyOut = []; // [v9.20] 나의여정(BY 77) — 개인 스토리 카드
   const clsB2 = {}; // sid→반 (주간 분모용)
   const radarOut = [], radarList = []; // [v9.14] (공유 변수는 함수 최상단으로 승격)
   pfData.forEach(rr => { if (rr[0] && rr[3] === 'student') clsB2[rr[0]] = String(rr[4] || ''); }); // [v9.16]
@@ -1360,6 +1395,11 @@ function calcAll() {
         evoDateOut.push([(prevN >= 1 && newN > prevN) ? todayYmd : ((prevBB[iE] && prevBB[iE][0]) || '')]);
       }
       balOut.push([bal[id] || 0]); // [v7.1] 잔액(AQ) — 스토어 결제 기준
+      // [v9.20] 📖 나의 여정 — 개인 스토리 카드 (진화일은 방금 push한 evoDateOut 마지막 값)
+      journeyOut.push([myJourneyHtml_({
+        nm: r[1] || id, stages: stages, mon: mon, rec: records[id], stk: stk, mPts: mPts, t: t,
+        acad: academicSnapshot_(acadById[id]), evoDate: (evoDateOut[evoDateOut.length - 1] || [''])[0]
+      })]);
       return [t, mPts, rankMap[id] === 999 ? '' : (rankMap[id] || ''), mon.stage, mon.pct,
               stk, matt, la, p, risk];
     });
@@ -1391,10 +1431,12 @@ function calcAll() {
     writeIfChanged(pf, 2, 66, bannerOut); // [v9.16] 🎉
     if (String(pf.getRange('BK1').getValue()) !== '리텐션신호') pf.getRange('BK1').setValue('리텐션신호');
     writeIfChanged(pf, 2, 63, radarOut); // [v9.14] 📡
-    // [v9.20] 오늘의알림(BX 76) — Glide 인앱 배너/푸시 훅 (calcAcademic_의 BW75와 별개 열)
-    if (pf.getMaxColumns() < 76) pf.insertColumnsAfter(pf.getMaxColumns(), 76 - pf.getMaxColumns());
+    // [v9.20] 오늘의알림(BX 76) · 나의여정(BY 77) — Glide 인앱 배너/개인 스토리 카드
+    if (pf.getMaxColumns() < 77) pf.insertColumnsAfter(pf.getMaxColumns(), 77 - pf.getMaxColumns());
     if (String(pf.getRange('BX1').getValue()) !== '오늘의알림') pf.getRange('BX1').setValue('오늘의알림');
+    if (String(pf.getRange('BY1').getValue()) !== '나의여정') pf.getRange('BY1').setValue('나의여정');
     writeIfChanged(pf, 2, 76, alertOut);
+    writeIfChanged(pf, 2, 77, journeyOut);
     { // 원장 홈 카드 2종
       radarList.sort((a2, b2) => a2.s === b2.s ? 0 : (a2.s === '🔴' ? -1 : 1));
       const rHtml = radarList.length
