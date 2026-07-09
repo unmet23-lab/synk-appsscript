@@ -6305,6 +6305,9 @@ function syncToNotion_() {
   Logger.log('노션 동기화 완료: 생성 ' + created + ' · 갱신 ' + updated + ' · 실패 ' + failed);
 }
 
+// [v9.21] 수동 실행용 — 드롭다운에서 바로 보이는 정식 함수 (언더바 없음). 임시 testNotion 대체.
+function syncNotionNow() { return syncToNotion_(); }
+
 /* ===================== [v5] 신규 트리거/시트 셋업 (1회 실행) ===================== */
 
 // [v9.9] 🧬 원버튼 재건 — 빈 스프레드시트에서 SYNK 세계 전체를 되살립니다
