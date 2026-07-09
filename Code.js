@@ -1786,11 +1786,12 @@ function dailyBackup() {
 
 /* ===================== 알림: 미납 / 학부모 / 재등록 / 상담지연 ===================== */
 
-function checkTuition() {
+function checkTuition(asText) {
+  const wantText = asText === true; // [v9.25] 텍스트 반환 모드(주간 통합) — 트리거 이벤트객체는 false로 강제
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pf = ss.getSheetByName('profiles');
   const last = pf.getLastRow();
-  if (last < 2) return;
+  if (last < 2) return wantText ? '프로필 데이터 없음' : undefined;
   const data = pf.getRange(2, 1, last - 1, 15).getValues();
   const unpaid = [];
   data.forEach(r => {
@@ -1798,6 +1799,12 @@ function checkTuition() {
       unpaid.push(r[0] + ' ' + r[1] + ' (' + (r[4] || '반 미정') + ')');
     }
   });
+  if (wantText) {
+    return unpaid.length
+      ? '미납 ' + unpaid.length + '명\n' + unpaid.map(s => '· ' + s).join('\n') +
+        '\n\n※ profiles의 tuition 칸이 비어있는 학생 기준입니다.'
+      : '미납 없음 — 전원 납부 완료 ✅';
+  }
   if (unpaid.length === 0 || !quotaOk(1)) return;
   MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 미납 ' + unpaid.length + '명 - 확인 필요',
     'SYNK 미납 현황\n\n' + unpaid.map(s => '· ' + s).join('\n') +
@@ -1876,7 +1883,8 @@ function notifyParents() {
   Logger.log('학부모 알림: ' + jobs.length + '건');
 }
 
-function checkReenrollment() {
+function checkReenrollment(asText) {
+  const wantText = asText === true; // [v9.25] 텍스트 반환 모드(주간 통합) — 트리거 이벤트객체는 false로 강제
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const now = new Date();
@@ -1884,7 +1892,7 @@ function checkReenrollment() {
 
   const pf = ss.getSheetByName('profiles');
   const last = pf.getLastRow();
-  if (last < 2) return;
+  if (last < 2) return wantText ? '프로필 데이터 없음' : undefined;
   const data = pf.getRange(2, 1, last - 1, 15).getValues();
 
   function parseReg(v) { // [opt] toDate_ 재사용 + 비8자리 문자열 new Date 폴백 유지
@@ -1905,6 +1913,11 @@ function checkReenrollment() {
       }
     });
   });
+  if (wantText) {
+    return hits.length
+      ? '재등록 시점 ' + hits.length + '명\n' + hits.join('\n')
+      : '오늘 재등록 시점 학생 없음';
+  }
   if (hits.length === 0 || !quotaOk(1)) return;
   MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🔄 재등록 시점 학생 ' + hits.length + '명',
     '오늘 재등록 상담 시점인 학생입니다.\n\n' + hits.join('\n') +
@@ -1940,20 +1953,22 @@ function checkConsultDelay() {
 
 /* ===================== 주간 리포트 ===================== */
 
-function weeklyReport() {
+function weeklyReport(asText) {
+  const wantText = asText === true; // [v9.25] 텍스트 반환 모드(주간 통합) — 트리거 이벤트객체는 false로 강제
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const pf = ss.getSheetByName('profiles');
   const cs = ss.getSheetByName('class_stats');
   const last = pf.getLastRow();
-  if (last < 2 || !quotaOk(1)) return;
+  if (last < 2) return wantText ? '프로필 데이터 없음' : undefined;
+  if (!wantText && !quotaOk(1)) return;
 
   const pfData = pf.getRange(2, 1, last - 1, 25).getValues();
   const top = pfData.filter(r => r[0] && (Number(r[16]) || 0) > 0)
     .sort((a, b) => (Number(b[16]) || 0) - (Number(a[16]) || 0)).slice(0, 3);
 
-  let body = '📊 SYNK 주간 리포트 (' + Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd') + ')\n\n';
-  body += '🏆 이번달 TOP 3\n';
+  const title = '📊 SYNK 주간 리포트 (' + Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd') + ')'; // [v9.25]
+  let body = '🏆 이번달 TOP 3\n';
   body += top.length ? top.map((r, i) =>
     (i + 1) + '위 ' + r[1] + ' (' + (r[4] || '') + ') - ' + r[16] + 'P').join('\n') + '\n'
     : '아직 포인트 기록 없음\n';
@@ -1990,7 +2005,8 @@ function weeklyReport() {
   body += '\n🧯 복구 리허설: ' + (dDays < 0 ? '기록 없음 — restoreDrill을 한 번 실행해주세요 (10분, 안전)'
     : dDays + '일 전' + (dDays > 30 ? ' ⚠️ 30일 초과 — 이번 주 권장' : ' ✅')) + '\n';
 
-  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 주간 리포트', body);
+  if (wantText) return body;
+  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 주간 리포트', title + '\n\n' + body);
   Logger.log('주간 리포트 발송');
 }
 
@@ -3988,24 +4004,9 @@ function setupStore() {
 /* ===================== 시스템 헬스체크 (일요일) ===================== */
 
 function healthCheck() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const required = ['profiles','point_logs','attendance','teacher_checkins','notices',
-    'form_responses','contents','class_stats','app_state','raid','schedule',
-    'monthly_snapshot','titles','achievements','story','manual_titles','teacher_stats',
-    'report_cards','league_history','class_fuel','weekly_topics','hw_batch','today_board',
-    'league_pairs','world_raid','synk_stories','synk_cards', // [v9.12]
-    'academic_log']; // [v9.18] 학업 성장 축
-  const missing = required.filter(n => !ss.getSheetByName(n));
-  const plRows = ss.getSheetByName('point_logs') ? ss.getSheetByName('point_logs').getLastRow() - 1 : 0;
-  const quota = MailApp.getRemainingDailyQuota();
-
-  let body = '🩺 SYNK 시스템 헬스체크\n\n';
-  body += missing.length ? '❌ 누락 시트: ' + missing.join(', ') + '\n' : '✅ 시트 구조 정상\n';
-  body += '📊 point_logs ' + plRows + '행' + (plRows > 8000 ? ' ⚠️ (아카이빙 확인 필요)' : ' ✅') + '\n';
-  body += '📧 오늘 남은 메일 쿼터: ' + quota + '건' + (quota < 30 ? ' ⚠️' : '') + '\n';
-  body += '\n※ 문제 항목이 있으면 확인해주세요.';
-  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🩺 주간 헬스체크' + (missing.length ? ' ⚠️' : ' ✅'), body);
-  Logger.log('헬스체크 완료');
+  // [v9.25] 점검 항목(누락 시트·point_logs 행수·메일 쿼터)은 systemWatchdog로 흡수됨.
+  //          수동 실행·구 트리거 호환을 위해 얇은 위임만 남긴다.
+  systemWatchdog();
 }
 
 /* ===================== 1회용 유틸 ===================== */
@@ -5005,7 +5006,8 @@ function setupSeasons() {
  * 트리거 실종 · 데일리 로테이션 멈춤 · 셋업 미실행/부분 실행 · 데이터 무결성 · 번역 적체.
  * 이상이 곪기 전에 월요일 아침 메일이 먼저 알립니다. */
 
-function systemWatchdog() {
+function systemWatchdog(asText) {
+  const wantText = asText === true; // [v9.25] 텍스트 반환 모드(주간 통합) — 트리거 이벤트객체는 false로 강제
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const out = [];
@@ -5104,10 +5106,24 @@ function systemWatchdog() {
     }
   }
 
+  // [v9.25] 5) 시트 구조·용량·쿼터 — 구 healthCheck 흡수 (월요일 정기 메일 통합)
+  const reqSheets = ['profiles','point_logs','attendance','teacher_checkins','notices',
+    'form_responses','contents','class_stats','app_state','raid','schedule',
+    'monthly_snapshot','titles','achievements','story','manual_titles','teacher_stats',
+    'report_cards','league_history','class_fuel','weekly_topics','hw_batch','today_board',
+    'league_pairs','world_raid','synk_stories','synk_cards','academic_log'];
+  const missSheet = reqSheets.filter(n => !ss.getSheetByName(n));
+  add(missSheet.length === 0, missSheet.length ? '누락 시트: ' + missSheet.join(', ') : '시트 구조 정상 (' + reqSheets.length + '종)');
+  const plRows = pl ? pl.getLastRow() - 1 : 0; // pl = point_logs (섹션 4에서 조회)
+  add(plRows <= 8000, 'point_logs ' + plRows + '행' + (plRows > 8000 ? ' — 아카이빙 확인 필요' : ''));
+  const mailQ = MailApp.getRemainingDailyQuota();
+  add(mailQ >= 30, '오늘 남은 메일 쿼터: ' + mailQ + '건' + (mailQ < 30 ? ' — 부족' : ''));
+
   const report = '🛡️ SYNK 시스템 워치독 · ' +
     Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm') + '\n\n' + out.join('\n') +
     '\n\n⚠️가 하나라도 있으면 그 줄만 공유해주세요 — 나머지는 건강합니다.';
   Logger.log(report);
+  if (wantText) return out.join('\n'); // [v9.25] 통합 리포트용 본문 — 제목/타임스탬프는 weeklyJobs가 부여
   const warn = out.filter(l => l.indexOf('⚠️') === 0).length;
   if (quotaOk(1)) {
     MailApp.sendEmail(ADMIN_EMAIL,
@@ -6426,12 +6442,34 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
 }
 
 function weeklyJobs() {    // 매주 월 07시
-  safeRun('raidMonday', raidMonday);
-  safeRun('healthCheck', healthCheck);
-  safeRun('systemWatchdog', systemWatchdog);
-  safeRun('weeklyReport', weeklyReport);
-  safeRun('checkTuition', checkTuition);         // 미납은 주 1회 (알림 다이어트)
-  safeRun('checkReenrollment', checkReenrollment);
+  safeRun('raidMonday', raidMonday); // 게임(레이드) 설정 — 시트 쓰기만, 메일 리포트 아님
+
+  // [v9.25] 월요일 정기 리포트 통합 — 최악 5통(healthCheck·systemWatchdog·weeklyReport·checkTuition·
+  //         checkReenrollment) → 1통. 각 섹션을 개별 try/catch로 수집해 한 섹션 예외가 나머지 섹션·
+  //         메일 발송을 죽이지 않게 하고, 마지막에 quotaOk(1) 확인 후 딱 1통만 발송한다.
+  //         (healthCheck 점검 항목은 systemWatchdog에 흡수됨)
+  const tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+  const sections = [
+    ['🛡️ 시스템 워치독', systemWatchdog],
+    ['📊 주간 리포트', weeklyReport],
+    ['💰 미납 현황', checkTuition],        // 미납은 주 1회 (알림 다이어트)
+    ['🔄 재등록 시점', checkReenrollment]
+  ];
+  let body = '📬 SYNK 주간 통합 리포트 · ' + Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd') + '\n';
+  sections.forEach(function (sec) {
+    const title = sec[0], fn = sec[1];
+    body += '\n──────── ' + title + ' ────────\n';
+    try {
+      const txt = fn(true); // 텍스트 반환 모드 — 각 섹션은 자체 발송하지 않음
+      body += (txt && String(txt).trim() ? String(txt) : '(내용 없음)') + '\n';
+    } catch (e) {
+      body += '⚠ 섹션 생성 실패: ' + title + '\n';
+      Logger.log('주간 통합 리포트 섹션 실패 [' + title + ']: ' + e);
+    }
+  });
+  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 주간 통합 리포트', body);
+  else Logger.log('주간 통합 리포트: 쿼터 부족으로 미발송');
+
   safeRun('syncToNotion', syncToNotion_); // [v9.21] 앱→노션 크루 DB 동기화 (NOTION_TOKEN 없으면 자동 스킵)
   // [v7.0] pruneAppState 제거 — 인자(ss, 월)가 필요한 archiveMonthly 내부 헬퍼였음 (무인자 호출 시 매주 실패)
 }
