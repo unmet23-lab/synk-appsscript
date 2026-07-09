@@ -534,6 +534,13 @@ function dstr(v, tz, fmt) { // 날짜값 안전 문자열화
   return String(v).substring(0, (fmt === 'yyyy-MM') ? 7 : 10);
 }
 
+function toDate_(v) { // [v9.22] Date/yyyymmdd(문자·숫자) → Date, 실패 시 null
+  if (v instanceof Date) return v;
+  const s = String(v == null ? '' : v).replace(/\D/g, '');
+  if (s.length === 8) { const d = new Date(Number(s.slice(0, 4)), Number(s.slice(4, 6)) - 1, Number(s.slice(6, 8))); return isNaN(d.getTime()) ? null : d; }
+  return null;
+}
+
 function getState(st, key) {
   const last = st.getLastRow();
   if (last < 1) return { row: -1, val: '' };
@@ -637,8 +644,8 @@ function scheduleMap(ss) { // [v8.3] 키 = 반명(정확 일치) · 번호 키�
   return map;
 }
 function schedOf(map, cls) { return map[String(cls)] || map[classNumOf(cls)]; } // [v8.3] 반명 우선 조회
-function hasClassToday(ss, classStr) {
-  const s = schedOf(scheduleMap(ss), classStr); // [v8.3]
+function hasClassToday(ss, classStr, schMap) { // [v9.22] schMap 전달 시 재읽기 생략
+  const s = schedOf(schMap || scheduleMap(ss), classStr); // [v8.3]
   if (!s) return false;
   const day = new Date().getDay();
   const type = (day === 0 || day === 6) ? '주말' : '평일';
@@ -903,21 +910,22 @@ function calcAll() {
   const ctLast = ct.getLastRow();
   const ctData = ctLast >= 2 ? ct.getRange(2, 1, ctLast - 1, 6).getValues() : [];
 
-  // --- point_logs 빈칸 보정 (Glide 버튼 대비) ---
-  let blanks = 0;
-  plData.forEach(r => { if (r[1] && !r[0]) blanks++; });
-  if (blanks > 0) {
-    const ids = reservePlIds(ss, blanks);
-    let k = 0, fixed = false;
-    plData.forEach(r => {
-      if (r[1] && !r[0]) { r[0] = ids[k++]; fixed = true; }
-      if (r[1] && !r[5]) { r[5] = now; fixed = true; }
-    });
-    if (fixed) pl.getRange(2, 1, plData.length, 6).setValues(plData);
-  } else {
-    let fixed = false;
-    plData.forEach(r => { if (r[1] && !r[5]) { r[5] = now; fixed = true; } });
-    if (fixed) pl.getRange(2, 1, plData.length, 6).setValues(plData);
+  // --- point_logs 빈칸 보정 (Glide 버튼 대비) [v9.22] 변경 행의 A(id)·F(일시)만 기록, Glide 소유열(B~E) 미접촉 ---
+  const needId = [];
+  plData.forEach(r => { if (r[1] && !r[0]) needId.push(1); });
+  const newIds = needId.length ? reservePlIds(ss, needId.length) : [];
+  let ki = 0, firstCh = -1, lastCh = -1;
+  plData.forEach((r, i) => {
+    let ch = false;
+    if (r[1] && !r[0]) { r[0] = newIds[ki++]; ch = true; }
+    if (r[1] && !r[5]) { r[5] = now; ch = true; }
+    if (ch) { if (firstCh < 0) firstCh = i; lastCh = i; }
+  });
+  if (firstCh >= 0) {
+    const idCol = [], tsCol = [];
+    for (let i = firstCh; i <= lastCh; i++) { idCol.push([plData[i][0]]); tsCol.push([plData[i][5]]); }
+    writeIfChanged(pl, firstCh + 2, 1, idCol); // A열(채번)만
+    writeIfChanged(pl, firstCh + 2, 6, tsCol); // F열(일시)만
   }
 
   const ymCol = plData.map(r => [r[5] ? dstr(r[5], tz, 'yyyy-MM') : '']);
@@ -1656,7 +1664,7 @@ function calcAll() {
     setState(st, '학생수', count);
   } else if (count !== prev) setState(st, '학생수', count);
 
-  try { calcAcademic_(); } catch (e) { Logger.log('calcAcademic_ 스킵: ' + e); } // [v9.18] 학업 성장 축 — 같은 사이클 편승·오류 격리
+  try { calcAcademic_(acadById, pfData); } catch (e) { Logger.log('calcAcademic_ 스킵: ' + e); } // [v9.18] 학업 성장 축 — [v9.22] byId·pfData 재사용
   Logger.log('calcAll v5 완료');
 }
 
@@ -1686,7 +1694,7 @@ function syncProfiles() {
   if (dstLast >= 2) {
     dst.getRange(2, 1, dstLast - 1, 26).getValues().forEach(r => {
       if (!r[0]) return;
-      keep[r[0]] = { parent_of: r[9] || '', pEmail: r[25] || '' };
+      keep[r[0]] = { parent_of: r[9] || '', pEmail: r[25] || '', created_at: r[14] || '' }; // [v9.22] created_at 보존
       if (r[3] && r[3] !== 'student') nonStudents.push(r.slice(0, 15));
       else if (r[3] === 'student') prevStudentCnt++;
     });
@@ -1699,11 +1707,14 @@ function syncProfiles() {
     const userId = row[59];            // [v8.3] BH 학생ID (v18.1)
     if (!userId) return;
     if (payStatus[userId] === '퇴소') return; // [v8.3] 퇴소자는 앱 제외 (이력은 시트 보관)
+    // [v9.22] created_at 안정화: 등록일 우선(yyyymmdd 문자열도 파싱) → 보존값 → now. 매일 now로 덮여 리텐션이 고장나던 버그 수정
+    const regD = toDate_(row[2]);
+    const createdAt = regD || ((keep[userId] && keep[userId].created_at) ? keep[userId].created_at : now);
     out.push([
       userId, row[0], row[1], 'student', row[3], row[4],
       row[9], row[7], row[8],
       (keep[userId] ? keep[userId].parent_of : ''),
-      payFee[userId] || '', row[2], row[12], row[14], now
+      payFee[userId] || '', row[2], row[12], row[14], createdAt
     ]);
     lvlOut.push([row[18] || '']);    // S 한국어수준 → AY(51): 강사 뷰 '레벨'
     riskOut.push([row[60] || '']);   // BI ⚠위험신호 → AZ(52): 원장 콕핏 전용
@@ -1830,6 +1841,7 @@ function notifyParents() {
   }
 
   // 발송 대상 먼저 집계 (쿼터 확인용)
+  const schMap = scheduleMap(ss); // [v9.22] 루프 밖 1회
   const jobs = [];
   Object.keys(students).forEach(sid => {
     const s = students[sid];
@@ -1837,7 +1849,7 @@ function notifyParents() {
     const goodPts = (todayPts[sid] || []).filter(p => p.pts > 0);
     const attended = todayAtt.has(sid);
     if (PARENT_MAIL_PRAISE && goodPts.length > 0) jobs.push({ s: s, type: 'praise', pts: goodPts, att: attended }); // [v5.4] 칭찬은 인앱 전용
-    else if (PARENT_MAIL_ABSENT && !attended && hasClassToday(ss, s.cls)) jobs.push({ s: s, type: 'absent' });
+    else if (PARENT_MAIL_ABSENT && !attended && hasClassToday(ss, s.cls, schMap)) jobs.push({ s: s, type: 'absent' });
   });
   if (jobs.length === 0) { Logger.log('학부모 알림 대상 없음'); return; }
   if (!quotaOk(jobs.length)) return;
@@ -2137,17 +2149,17 @@ function leagueSettle_() {
     cs.getRange(2, 1, cs.getLastRow() - 1, 8).getValues().forEach(r => { if (r[0]) avgOf[String(r[0])] = Number(r[7]) || 0; });
   }
   const pf = ss.getSheetByName('profiles');
+  const nameOfL = {}; // [v9.22] profiles 1회 읽기로 memberCls + nameOfL 동시 구축 (중복 읽기 제거)
   if (pf && pf.getLastRow() >= 2) {
     pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
-      if (r[0] && r[3] === 'student' && r[4]) (memberCls[String(r[4])] = memberCls[String(r[4])] || []).push(r[0]);
+      if (!r[0]) return;
+      nameOfL[r[0]] = r[1] || r[0];
+      if (r[3] === 'student' && r[4]) (memberCls[String(r[4])] = memberCls[String(r[4])] || []).push(r[0]);
     });
   }
   // [v9.2] 반별 최다 기여자 — 양 반 모두 스토리에서 실명 호명 (진 반 배려의 핵심)
   const clsOfL = {};
   Object.keys(memberCls).forEach(c => memberCls[c].forEach(sid => clsOfL[sid] = c));
-  const nameOfL = {};
-  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 2).getValues()
-    .forEach(r => { if (r[0]) nameOfL[r[0]] = r[1] || r[0]; });
   const topOf = {};
   const plL = ss.getSheetByName('point_logs');
   if (plL && plL.getLastRow() >= 2) {
@@ -2426,12 +2438,11 @@ function raidFriday() {
 
   if (rewardSids.length) {
     appendPoints(ss, rewardSids.map(sid => [sid, 20, '레이드보상', '시스템'])); // [v7.1] 50→20
-    const bossW = bossOfMonth(ss, Number(Utilities.formatDate(now, tz, 'M'))); // [v5.7]
-    // [v5] 레이드 성공 자동 공지 → 앱 공지 탭에 노출
+    // [v5] 레이드 성공 자동 공지 → 앱 공지 탭에 노출 ([v9.22] bossS 재사용 — bossOfMonth 중복 호출 제거)
     addNotice(ss,
-      '🎉 이번 주 레이드 성공' + (bossW ? ' — ' + bossW.name + ' 격파!' : '!'),
+      '🎉 이번 주 레이드 성공' + (bossS ? ' — ' + bossS.name + ' 격파!' : '!'),
       winners.join(' · ') + ' — 목표 달성! 반 전원 보상 지급 완료 🏆' +
-      (bossW ? '\n"' + bossW.win + '"' : ''));
+      (bossS ? '\n"' + bossS.win + '"' : ''));
     calcAll();
   }
   Logger.log('레이드 정산: 보상 ' + rewardSids.length + '명 / 결산 스토리 ' + stOut.length + '건');
@@ -2485,12 +2496,13 @@ function todayBoard_(ss) {
       if (!arr[sid] || t < arr[sid]) arr[sid] = t;
     });
   }
+  const schMap = scheduleMap(ss); // [v9.22] 루프 밖 1회 — hasClassToday의 학생별 schedule 재읽기 제거
   const stuRows = [];
   pfData.forEach(r => {
     if (!(r[0] && r[3] === 'student' && r[4])) return;
     const came = arr[r[0]];
     if (came) stuRows.push(['🧑‍🎓 학생', r[1] || r[0], String(r[4]), hhmm(new Date(came)), '']);
-    else if (hasClassToday(ss, String(r[4]))) stuRows.push(['🧑‍🎓 학생', r[1] || r[0], String(r[4]), '—', '']);
+    else if (hasClassToday(ss, String(r[4]), schMap)) stuRows.push(['🧑‍🎓 학생', r[1] || r[0], String(r[4]), '—', '']);
   });
   stuRows.sort((a, b) => a[2] === b[2] ? String(a[3]).localeCompare(String(b[3])) : String(a[2]).localeCompare(String(b[2])));
   const all = rows.concat(stuRows);
@@ -3030,14 +3042,7 @@ function checkEvolution() {
   if (pf.getRange('AD1').getValue() !== '진화임박알림') pf.getRange('AD1').setValue('진화임박알림');
 
   const data = pf.getRange(2, 1, last - 1, 30).getValues();
-  const ct = ss.getSheetByName('contents');
-  const order = {};
-  if (ct.getLastRow() >= 2) {
-    let i = 0;
-    ct.getRange(2, 1, ct.getLastRow() - 1, 6).getValues().forEach(r => {
-      if (r[1] === 'monster') order[r[2]] = i++;
-    });
-  }
+  const order = monsterOrder_(ss); // [v9.22] 헬퍼로 단일화 (checkAchievements와 공유)
 
   const newAA = [], newAD = [], evolved = [], imminent = [];
   data.forEach(r => {
@@ -3160,12 +3165,7 @@ function monthlyReport() {
   const lastMonth = Utilities.formatDate(lastMonthDate, tz, 'yyyy-MM');
   if (!quotaOk(1)) return;
 
-  function readLogs(name) {
-    const sh = ss.getSheetByName(name);
-    if (!sh || sh.getLastRow() < 2) return [];
-    return sh.getRange(2, 1, sh.getLastRow() - 1, 7).getValues();
-  }
-  const logs = readLogs('point_logs').concat(readLogs('point_logs_archive'))
+  const logs = readPointLogs_(ss, 7) // [v9.22] 병합 읽기 헬퍼
     .filter(r => String(r[6]) === lastMonth);
 
   let issued = 0, deducted = 0;
@@ -3323,12 +3323,7 @@ function monthlyGameBatch() {
     if (done) { Logger.log(ym + ' 게임배치 이미 완료 — 스킵'); return; }
   }
 
-  function readLogs(name) {
-    const sh = ss.getSheetByName(name);
-    if (!sh || sh.getLastRow() < 2) return [];
-    return sh.getRange(2, 1, sh.getLastRow() - 1, 7).getValues();
-  }
-  const logs = readLogs('point_logs').concat(readLogs('point_logs_archive'))
+  const logs = readPointLogs_(ss, 7) // [v9.22] 병합 읽기 헬퍼
     .filter(r => String(r[6]) === ym && r[1]);
 
   const mPts = {}, praiseCnt = {}, hwCnt = {}, spkCnt = {}; // [v5.1] ([v5.2] storeUse 제거)
@@ -3672,14 +3667,7 @@ function checkAchievements() {
     if (hidRows.length) ach.getRange(ach.getLastRow() + 1, 1, hidRows.length, 4).setValues(hidRows);
   }
 
-  const ct = ss.getSheetByName('contents');
-  const order = {};
-  if (ct.getLastRow() >= 2) {
-    let i = 0;
-    ct.getRange(2, 1, ct.getLastRow() - 1, 6).getValues().forEach(r => {
-      if (r[1] === 'monster') order[r[2]] = i++;
-    });
-  }
+  const order = monsterOrder_(ss); // [v9.22] 헬퍼로 단일화 (checkEvolution과 공유)
 
   const snap = ss.getSheetByName('monthly_snapshot');
   const bySid = {};
@@ -3692,13 +3680,8 @@ function checkAchievements() {
   }
 
   // [v5.1] 레이드 승수 (누적 업적용)
-  function readLogs6(name) {
-    const sh2 = ss.getSheetByName(name);
-    if (!sh2 || sh2.getLastRow() < 2) return [];
-    return sh2.getRange(2, 1, sh2.getLastRow() - 1, 6).getValues();
-  }
   const raidWins = {}, hwAll = {}, spkAll = {}, praiseAll = {}; // [v5.9] 누적 노력 카운트
-  readLogs6('point_logs').concat(readLogs6('point_logs_archive')).forEach(r => {
+  readPointLogs_(ss, 6).forEach(r => { // [v9.22] 병합 읽기 헬퍼
     const sid0 = r[1];
     if (!sid0) return;
     const rs0 = String(r[3]);
@@ -4218,6 +4201,27 @@ function monsterImgMap_(ss) {
     if (r[1] === 'monster' && r[2]) map[String(r[2])] = String(r[4] || '');
   });
   return map;
+}
+
+// [v9.22] contents(type=monster) 단계명 → 등장순서 인덱스 (진화 판정·업적 티어 단일 소스)
+function monsterOrder_(ss) {
+  const ct = ss.getSheetByName('contents'), order = {};
+  if (ct && ct.getLastRow() >= 2) {
+    let i = 0;
+    ct.getRange(2, 1, ct.getLastRow() - 1, 6).getValues().forEach(r => {
+      if (r[1] === 'monster') order[r[2]] = i++;
+    });
+  }
+  return order;
+}
+
+// [v9.22] point_logs + point_logs_archive 병합 읽기 (cols 열까지) — 아카이브 병합 규칙 단일 소스
+function readPointLogs_(ss, cols) {
+  return ['point_logs', 'point_logs_archive'].reduce((acc, name) => {
+    const sh = ss.getSheetByName(name);
+    if (!sh || sh.getLastRow() < 2) return acc;
+    return acc.concat(sh.getRange(2, 1, sh.getLastRow() - 1, cols).getValues());
+  }, []);
 }
 
 // 이번 달 시작~오늘까지 반유형(평일/주말) 예정 수업일 수 (개근 판정용 · calcAll의 수업일 개념과 동일)
@@ -5334,6 +5338,18 @@ function classPrepMail_(ss, tz) {
   let sentNew = sent;
 
   const sch = scheduleMap(ss);
+  // [v9.22] 임박 수업이 하나도 없으면 profiles/emap/state 스캔 없이 조기 종료 (10분 스위프 부담↓)
+  const yest = Utilities.formatDate(new Date(now.getTime() - 86400000), tz, 'yyyy-MM-dd');
+  const anyImminent = Object.keys(sch).filter(num => sch[num].name === num).some(num => {
+    const s = sch[num];
+    if ((String(s.type) === '주말') !== isWknd) return false;
+    const m = String(s.time || '').match(/(\d{1,2})\s*[:시]?\s*(\d{2})?/);
+    if (!m) return false;
+    const start = new Date(now); start.setHours(Number(m[1]), Number(m[2] || 0), 0, 0);
+    const diff = (start - now) / 60000;
+    return diff > 0 && diff <= CLASS_PREP_WINDOW_MIN;
+  });
+  if (!anyImminent) { props.deleteProperty('수업알림_' + yest); return; }
   const emap = teacherEmailMap_(ss);
   const bdayByClass = {}; // [v9.0] 오늘 생일자 → 브리핑 한 줄 (교실 축하 유도)
   {
@@ -5384,8 +5400,7 @@ function classPrepMail_(ss, tz) {
     sentNew += '[' + num + ']';
   });
   if (sentNew !== sent) props.setProperty(key, sentNew);
-  const yest = Utilities.formatDate(new Date(now.getTime() - 86400000), tz, 'yyyy-MM-dd');
-  props.deleteProperty('수업알림_' + yest); // 어제 키 정리
+  props.deleteProperty('수업알림_' + yest); // 어제 키 정리 ([v9.22] yest는 상단 선언 재사용)
 }
 
 function checkoutCheerMail_(ss) {
@@ -6150,25 +6165,23 @@ function academicTrendHtml_(logs) {
     '</div></div>';
 }
 
-function calcAcademic_() {
+function calcAcademic_(byId, pfData) { // [v9.22] calcAll에서 byId·pfData 재사용(없으면 자체 읽기 — 수동 실행 호환)
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const pf = ss.getSheetByName('profiles');
   if (!pf || pf.getLastRow() < 2) return; // 콜드스타트 가드
 
-  const byId = readAcademicLogs_(ss, tz);
+  byId = byId || readAcademicLogs_(ss, tz);
 
   // profiles 신규열 BO~BW(67~75) 확장 + 헤더 보장 (기존 66열 계산과 분리)
   if (pf.getMaxColumns() < 75) pf.insertColumnsAfter(pf.getMaxColumns(), 75 - pf.getMaxColumns());
   const heads = ['현재급수','최근모의점수','직전대비Δ','최고모의점수','레벨업누적','마지막평가월','학업한마디_KO','학업한마디_MN','학업추세HTML']; // [v9.20] +학업추세HTML(BW)
   heads.forEach((h, i) => { if (String(pf.getRange(1, 67 + i).getValue()) !== h) pf.getRange(1, 67 + i).setValue(h); });
 
-  const n = pf.getLastRow() - 1;
-  const ids = pf.getRange(2, 1, n, 1).getValues();
-  const roles = pf.getRange(2, 4, n, 1).getValues();
-  const out = ids.map((r, i) => {
+  const rows = pfData || pf.getRange(2, 1, pf.getLastRow() - 1, 15).getValues(); // [v9.22] id(0)·role(3) 재사용
+  const out = rows.map(r => {
     const sid = r[0];
-    if (!sid || roles[i][0] !== 'student') return ['', '', '', '', '', '', '', '', ''];
+    if (!sid || r[3] !== 'student') return ['', '', '', '', '', '', '', '', ''];
     const snap = academicSnapshot_(byId[sid]);
     // [v9.20] 기록 없어도 BW(학업추세HTML)는 "첫 평가 대기" 카드로 항상 채움 (홈 카드 자리 안 비게)
     if (!snap) return ['', '', '', '', '', '', '', '', academicTrendHtml_(byId[sid])];
