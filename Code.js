@@ -6467,6 +6467,14 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   safeRun('checkAchievements', checkAchievements);
 }
 
+// [v9.25] 직접 등록 트리거 safeRun 보호 래퍼 — morningJobs/nightJobs처럼 실패 시 admin 알림 보장.
+//         원 함수(dailyBackup 등)는 수동 실행용으로 그대로 두고, 트리거에는 이 래퍼를 등록한다.
+//         monthlyReportCards는 진입점만 감싸고 내부 reportCardsContinue 이어하기 체인은 건드리지 않는다.
+function dailyBackupJob()         { safeRun('dailyBackup', dailyBackup); }                 // 매일 03시 — 유일한 백업 경로
+function sendMorningDigestJob()   { safeRun('sendMorningDigest', sendMorningDigest); }     // 매일 08시 — 아침 브리핑
+function monthlyReportCardsJob()  { safeRun('monthlyReportCards', monthlyReportCards); }   // 1일 06시 — 리포트카드 배치 진입점
+function monthlyReportJob()       { safeRun('monthlyReport', monthlyReport); }             // 1일 07시 — 월간 리포트
+
 function weeklyJobs() {    // 매주 월 07시
   safeRun('raidMonday', raidMonday); // 게임(레이드) 설정 — 시트 쓰기만, 메일 리포트 아님
 
@@ -6524,15 +6532,15 @@ function resetAllTriggers(force) {
   }
   triggers.forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('parentSweep').timeBased().everyMinutes(10).create(); // [v6.8] 30→10분: 수업 전·퇴근 후 알림 정밀도
-  ScriptApp.newTrigger('dailyBackup').timeBased().atHour(3).everyDays(1).create();
+  ScriptApp.newTrigger('dailyBackupJob').timeBased().atHour(3).everyDays(1).create();       // [v9.25] safeRun 보호 래퍼
   ScriptApp.newTrigger('morningJobs').timeBased().atHour(7).everyDays(1).create();
-  ScriptApp.newTrigger('sendMorningDigest').timeBased().atHour(8).everyDays(1).create();
+  ScriptApp.newTrigger('sendMorningDigestJob').timeBased().atHour(8).everyDays(1).create(); // [v9.25] safeRun 보호 래퍼
   ScriptApp.newTrigger('calcAll').timeBased().atHour(14).everyDays(1).create();
   ScriptApp.newTrigger('nightJobs').timeBased().atHour(22).everyDays(1).create();
   ScriptApp.newTrigger('weeklyJobs').timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(7).create();
   ScriptApp.newTrigger('monthlyJobs').timeBased().onMonthDay(1).atHour(5).create();
-  ScriptApp.newTrigger('monthlyReportCards').timeBased().onMonthDay(1).atHour(6).create();
-  ScriptApp.newTrigger('monthlyReport').timeBased().onMonthDay(1).atHour(7).create();
+  ScriptApp.newTrigger('monthlyReportCardsJob').timeBased().onMonthDay(1).atHour(6).create(); // [v9.25] safeRun 보호 래퍼
+  ScriptApp.newTrigger('monthlyReportJob').timeBased().onMonthDay(1).atHour(7).create();       // [v9.25] safeRun 보호 래퍼
   Logger.log('✅ 트리거 통합 재설치 완료: 10개 (30분 스위프 · 3시 백업 · 7시 아침작업 · 8시 브리핑 · 14/22시 계산 · 월 7시 주간 · 1일 5/6/7시 월간)');
 }
 
