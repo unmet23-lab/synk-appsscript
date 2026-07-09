@@ -659,9 +659,16 @@ function quotaOk(needed) {
   const q = MailApp.getRemainingDailyQuota();
   if (q >= needed + 3) return true;
   try {
-    MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] ⚠️ 메일 쿼터 부족',
-      '오늘 남은 발송량 ' + q + '건, 필요 ' + needed + '건.\n' +
-      '일부 알림이 발송되지 않았습니다. founder@synk.im(Workspace) 전환을 권장합니다.');
+    // [v9.25] 쿼터 경고 dedup — 쿼터가 바닥난 날 경고 메일이 매 호출마다 연쇄 발송돼 남은 쿼터를 마저 소진하는
+    //         자기증폭 방지. 경고 분기 안에서만 ScriptProperties를 읽고 써서 1일 1회로 제한 (정상 경로엔 영향 없음).
+    const props = PropertiesService.getScriptProperties();
+    const today = Utilities.formatDate(new Date(), SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd');
+    if (props.getProperty('쿼터경고일') !== today) {
+      MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] ⚠️ 메일 쿼터 부족',
+        '오늘 남은 발송량 ' + q + '건, 필요 ' + needed + '건.\n' +
+        '일부 알림이 발송되지 않았습니다. founder@synk.im(Workspace) 전환을 권장합니다.');
+      props.setProperty('쿼터경고일', today);
+    }
   } catch (e) {}
   return false;
 }
