@@ -447,6 +447,12 @@
  *      (최장연속·첫왕관·진화일·보스참여·최고월간·총누적) + 실력(급수·모의) + 다음 진화까지. myJourneyHtml_,
  *      calcAll 편승(academic_log 1회 읽기 acadById). "개개인 스토리 우선" 철학의 홈 — 조용한 학생도 주인공.
  *      죽은 코드 정리: reportComment 삭제 · (구)은퇴열 헤더 유지 코드 제거(열은 인덱스고정이라 숨기기만).
+ *
+ * [v9.21 — 📓 노션 크루 DB 동기화 (앱 → 노션)]
+ * 148. syncToNotion_(weeklyJobs 편입): profiles를 노션 "크루 DB"에 학생별 upsert(있으면 갱신·없으면 생성) —
+ *      이름·학생ID·반·급수·몬스터단계·총포인트·왕관수·최장연속·이탈위험·나의여정요약·앱갱신일. Notion API
+ *      (UrlFetchApp, ver 2022-06-28). 토큰은 Script Properties 'NOTION_TOKEN'(코드·깃 미포함). 없으면 자동 스킵.
+ *      → 노션 인터뷰(정성) + 앱 데이터(정량)를 한 곳에서: 개인 스토리 콘텐츠·케어 대시보드.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
@@ -6217,6 +6223,88 @@ function setupPlaceholderImages() {
   Logger.log('임시 플레이스홀더 이미지 ' + filled + '개 채움 (빈 monster/boss/worldboss만 · 기존 URL 보존)');
 }
 
+/* ===================== [v9.21] 📓 노션 크루 DB 동기화 (앱 → 노션) =====================
+ * profiles(앱 정량 데이터)를 노션 "크루 DB — 학생 통합 정보"에 학생별 upsert.
+ * 노션 인터뷰(정성)와 합쳐 완성된 학생 스토리 허브가 됨. 주 1회(weeklyJobs) 실행.
+ * ⚠️ 토큰은 코드에 넣지 말 것! Script Properties의 'NOTION_TOKEN'에 저장(깃/clasp에 안 올라감).
+ *    설정: notion.so/my-integrations → 통합 생성 → 크루 DB에 연결(Connections) → 토큰을 Script Properties에. */
+const NOTION_DB_ID = '393bd830-9852-80bf-9101-e7c0a62c3d80'; // 크루 DB
+const NOTION_VER = '2022-06-28';
+
+function notionHeaders_() {
+  const token = PropertiesService.getScriptProperties().getProperty('NOTION_TOKEN');
+  if (!token) throw new Error('NOTION_TOKEN 미설정');
+  return { 'Authorization': 'Bearer ' + token, 'Notion-Version': NOTION_VER, 'Content-Type': 'application/json' };
+}
+
+// 노션 크루 DB의 기존 페이지: 학생ID → pageId 맵 (페이지네이션)
+function notionExistingMap_() {
+  const map = {};
+  let cursor = null, guard = 0;
+  do {
+    const body = { page_size: 100 };
+    if (cursor) body.start_cursor = cursor;
+    const resp = UrlFetchApp.fetch('https://api.notion.com/v1/databases/' + NOTION_DB_ID + '/query', {
+      method: 'post', headers: notionHeaders_(), payload: JSON.stringify(body), muteHttpExceptions: true });
+    if (resp.getResponseCode() !== 200) { Logger.log('노션 쿼리 실패: ' + resp.getContentText()); break; }
+    const data = JSON.parse(resp.getContentText());
+    (data.results || []).forEach(p => {
+      const sp = p.properties && p.properties['학생ID'];
+      const sid = sp && sp.rich_text && sp.rich_text[0] ? sp.rich_text[0].plain_text : '';
+      if (sid) map[sid] = p.id;
+    });
+    cursor = data.has_more ? data.next_cursor : null;
+  } while (cursor && guard++ < 30);
+  return map;
+}
+
+function syncToNotion_() {
+  if (!PropertiesService.getScriptProperties().getProperty('NOTION_TOKEN')) { Logger.log('NOTION_TOKEN 미설정 — 노션 동기화 스킵'); return; }
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return;
+  const w = Math.min(pf.getLastColumn(), 67); // BO(급수 67)까지
+  const rows = pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  let existing;
+  try { existing = notionExistingMap_(); } catch (e) { Logger.log('노션 동기화 중단: ' + e); return; }
+
+  let created = 0, updated = 0, failed = 0;
+  rows.forEach(r => {
+    const id = String(r[0] || '');
+    if (!id || r[3] !== 'student') return;
+    const name = String(r[1] || id), cls = String(r[4] || ''), stage = String(r[18] || '');
+    const level = Number(r[66]) || null;                        // BO 현재급수
+    const points = Number(r[15]) || 0;                          // P 획득 누계
+    const crowns = (Number(r[48]) || 0) + (Number(r[49]) || 0); // AW+AX 왕관 누적
+    const bestStreak = Number(r[27]) || 0;                      // AB 최고스트릭
+    const rk = String(r[24] || '하').charAt(0);                 // Y 이탈위험 → 상/중/하
+    const risk = ['상', '중', '하'].indexOf(rk) > -1 ? rk : '하';
+    const summary = (stage || '뉴로') + ' · ' + (level ? level + '급' : '평가전') + ' · ' + points + 'P · 왕관 ' + crowns + '회 · 최장연속 ' + bestStreak + '일';
+    const properties = {
+      '이름': { title: [{ text: { content: name } }] },
+      '학생ID': { rich_text: [{ text: { content: id } }] },
+      '반': { rich_text: [{ text: { content: cls } }] },
+      '몬스터단계': { rich_text: [{ text: { content: stage } }] },
+      '총포인트': { number: points }, '왕관수': { number: crowns }, '최장연속출석': { number: bestStreak },
+      '이탈위험': { select: { name: risk } },
+      '나의여정요약': { rich_text: [{ text: { content: summary.substring(0, 1900) } }] },
+      '앱갱신일': { date: { start: today } }
+    };
+    if (level != null) properties['현재급수'] = { number: level };
+    try {
+      const url = existing[id] ? 'https://api.notion.com/v1/pages/' + existing[id] : 'https://api.notion.com/v1/pages';
+      const payload = existing[id] ? { properties: properties } : { parent: { database_id: NOTION_DB_ID }, properties: properties };
+      const resp = UrlFetchApp.fetch(url, { method: existing[id] ? 'patch' : 'post', headers: notionHeaders_(), payload: JSON.stringify(payload), muteHttpExceptions: true });
+      if (resp.getResponseCode() === 200) { existing[id] ? updated++ : created++; }
+      else { failed++; Logger.log('노션 ' + (existing[id] ? '갱신' : '생성') + ' 실패 ' + id + ': ' + resp.getContentText().substring(0, 300)); }
+      Utilities.sleep(350); // 노션 rate limit(~3/s)
+    } catch (e) { failed++; Logger.log('노션 동기화 오류 ' + id + ': ' + e); }
+  });
+  Logger.log('노션 동기화 완료: 생성 ' + created + ' · 갱신 ' + updated + ' · 실패 ' + failed);
+}
+
 /* ===================== [v5] 신규 트리거/시트 셋업 (1회 실행) ===================== */
 
 // [v9.9] 🧬 원버튼 재건 — 빈 스프레드시트에서 SYNK 세계 전체를 되살립니다
@@ -6324,6 +6412,7 @@ function weeklyJobs() {    // 매주 월 07시
   safeRun('weeklyReport', weeklyReport);
   safeRun('checkTuition', checkTuition);         // 미납은 주 1회 (알림 다이어트)
   safeRun('checkReenrollment', checkReenrollment);
+  safeRun('syncToNotion', syncToNotion_); // [v9.21] 앱→노션 크루 DB 동기화 (NOTION_TOKEN 없으면 자동 스킵)
   // [v7.0] pruneAppState 제거 — 인자(ss, 월)가 필요한 archiveMonthly 내부 헬퍼였음 (무인자 호출 시 매주 실패)
 }
 
