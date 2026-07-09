@@ -440,8 +440,9 @@
  * [v9.20 — 출시 우선순위 3종 (게임 ↔ 실제 실력 연결)]
  * 146. ② 실력 성장 카드: profiles 학업추세HTML(BW 75) — 급수 + 모의 최근5 미니막대 + 증감(academicTrendHtml_,
  *      calcAcademic_ 편승). 학생 홈·학부모 뷰 Rich Text 바인딩 → "게임 재미가 실제 실력으로" 가시화.
- *      ③ 결정적 순간 알림: profiles 오늘의알림(BX 76) — 왕관/진화/생일/진화임박 1건만(결석 제외), 없으면 공란.
- *      Glide 인앱 배너/푸시 훅. ① 강사 1탭은 Glide 레이아웃(class_stats 9~12열) — 코드 변경 없음.
+ *      ③ 결정적 순간 알림: profiles 오늘의알림(BX 76) — 하루짜리 이벤트만(왕관/진화/생일), 없으면 공란.
+ *      [최적화] 진화임박 분기 제거 = 시트 churn·푸시 피로↓(임박 넛지는 BF 담당). Glide 배너/푸시 훅.
+ *      ① 강사 1탭은 Glide 레이아웃(class_stats 9~12열) — 코드 변경 없음.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
@@ -1340,12 +1341,13 @@ function calcAll() {
             : (evoRecent
               ? '<div style="background:linear-gradient(135deg,#C4B5FD,#A5B4FC);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;color:#fff;">⚡ ' + (r[1] || id) + '-ийн монстр шинэ шатанд хувьслаа! Түүхэн мөч 📸<br/><span style="font-weight:400;font-size:11px;">몬스터가 진화했어요! 역사적인 순간</span></div>'
               : '')]);
-          // [v9.20] 오늘의알림 — 푸시/인앱배너용 1건 (긍정·희소 이벤트만, 결석 알림은 제외)
+          // [v9.20] 오늘의알림 — 푸시/인앱배너용, "하루짜리 결정적 순간"만 (왕관·진화·생일).
+          //  [v9.20 최적화] 진화임박(rem) 분기 제거: 매일 값 변동→시트 churn + 푸시 시 매일 알림 피로.
+          //  임박 넛지는 몬스터한마디(BF)가 이미 담당. BX는 이벤트일에만 채워지고 다음날 ''로 복귀.
           const isBday6 = String(r[5] || '').slice(5, 10) === todayYmd0.slice(5, 10);
           alertOut.push([crownToday2 ? '👑 오늘 왕관을 받았어요! 최고예요 🎉'
             : evoRecent ? '⚡ 몬스터가 진화했어요! 축하해요 🐲'
             : isBday6 ? '🎂 생일 축하해요! 오늘의 주인공이에요 🎉'
-            : (mon.rem > 0 && mon.rem <= 10) ? '✨ 조금만 더! 다음 진화까지 ' + mon.rem + 'P'
             : '']);
         }
         const rec = records[id] || {};
