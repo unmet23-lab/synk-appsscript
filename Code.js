@@ -6240,7 +6240,7 @@ function notionExistingMap_() {
     if (cursor) body.start_cursor = cursor;
     const resp = UrlFetchApp.fetch('https://api.notion.com/v1/databases/' + NOTION_DB_ID + '/query', {
       method: 'post', headers: notionHeaders_(), payload: JSON.stringify(body), muteHttpExceptions: true });
-    if (resp.getResponseCode() !== 200) { Logger.log('노션 쿼리 실패: ' + resp.getContentText()); break; }
+    if (resp.getResponseCode() !== 200) { throw new Error('노션 쿼리 실패(' + resp.getResponseCode() + '): ' + resp.getContentText().substring(0, 300)); }
     const data = JSON.parse(resp.getContentText());
     (data.results || []).forEach(p => {
       const sp = p.properties && p.properties['학생ID'];
@@ -6262,7 +6262,11 @@ function syncToNotion_() {
   const rows = pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues();
   const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
   let existing;
-  try { existing = notionExistingMap_(); } catch (e) { Logger.log('노션 동기화 중단: ' + e); return; }
+  try { existing = notionExistingMap_(); } catch (e) {
+    Logger.log('노션 동기화 중단: ' + e);
+    adminMail('[SYNK] ⚠️ 노션 동기화 중단', '기존 페이지 목록 조회 실패로 동기화를 건너뛰었습니다(중복 생성 방지).\n\n' + e);
+    return;
+  }
 
   let created = 0, updated = 0, failed = 0;
   rows.forEach(r => {
@@ -6297,6 +6301,9 @@ function syncToNotion_() {
     } catch (e) { failed++; Logger.log('노션 동기화 오류 ' + id + ': ' + e); }
   });
   Logger.log('노션 동기화 완료: 생성 ' + created + ' · 갱신 ' + updated + ' · 실패 ' + failed);
+  if (failed > 0) {
+    adminMail('[SYNK] ⚠️ 노션 동기화 일부 실패', '생성 ' + created + ' · 갱신 ' + updated + ' · 실패 ' + failed + '건\n자세한 원인은 Apps Script 실행 로그를 확인하세요.');
+  }
 }
 
 // [v9.21] 수동 실행용 — 드롭다운에서 바로 보이는 정식 함수 (언더바 없음). 임시 testNotion 대체.
