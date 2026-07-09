@@ -1541,19 +1541,8 @@ function calcAll() {
   });
   const fuelMapW = {};
   ctData.forEach(r => { if (r[1] === 'fuel' && r[2]) fuelMapW[String(r[2])] = Number(r[5]) || 0; });
-  const cfW = ss.getSheetByName('class_fuel');
-  const fSeenW = new Set(); // [v7.5]
-  if (cfW && cfW.getLastRow() >= 2) {
-    cfW.getRange(2, 1, cfW.getLastRow() - 1, 4).getValues().forEach(r => {
-      const m = String(r[1] || ''), d = r[3];
-      if (!r[0] || !d || !fuelMapW[m]) return;
-      const dd = asDate_(d);
-      if (dd >= mondayW && !fSeenW.has(r[0] + '|' + m)) {
-        fSeenW.add(r[0] + '|' + m);
-        weekDmg[r[0]] = (weekDmg[r[0]] || 0) + fuelMapW[m];
-      }
-    });
-  }
+  const fuelW = weeklyFuel_(ss, fuelMapW, mondayW).week; // [v9.25] 연료 주간집계 헬퍼 통합
+  Object.keys(fuelW).forEach(c => { weekDmg[c] = (weekDmg[c] || 0) + fuelW[c]; });
   ensureSheet(ss, 'hall_of_fame', ['연도','이름','반','업적','한마디','사진URL']); // [v7.8] 졸업생 명예의 전당 — 원장이 Glide 폼으로 행 추가
   const cs = ensureSheet(ss, 'class_stats',
     ['class_name','학생수','반누적포인트','반월간포인트','반몬스터','이번달출석합','반주간데미지','주간평균']);
@@ -2318,6 +2307,30 @@ function leagueStoryDaily_() {
   Logger.log('리그 중계: ' + outS.length + '건');
 }
 
+/* [v9.25] 연료 주간집계 헬퍼 — class_fuel을 (반|미션) 주 1회 dedup 합산 (calcAll·raidFriday·raidStoryDaily 3곳 공통).
+   fuelMap: 미션명→P (호출부에서 contents로 구성) · monday: 이번주 월요 0시 경계
+   todayStr(옵션)/tz: 넘기면 오늘 날짜분을 today에 별도 집계(raidStoryDaily용), 없으면 today는 빈 객체.
+   반환: { week:{반→주간연료합}, today:{반→오늘연료합} } */
+function weeklyFuel_(ss, fuelMap, monday, todayStr, tz) {
+  const week = {}, today = {}, seen = new Set(); // [v7.5] 같은 미션은 주 1회만 (중복 행 2배 방지)
+  const cf = ss.getSheetByName('class_fuel');
+  if (cf && cf.getLastRow() >= 2) {
+    cf.getRange(2, 1, cf.getLastRow() - 1, 4).getValues().forEach(r => {
+      const cls = r[0], m = String(r[1] || ''), d = r[3];
+      if (!cls || !d || !fuelMap[m]) return;
+      const dd = asDate_(d);
+      if (dd >= monday && !seen.has(cls + '|' + m)) {
+        seen.add(cls + '|' + m);
+        week[cls] = (week[cls] || 0) + fuelMap[m];
+        if (todayStr && Utilities.formatDate(dd, tz, 'yyyy-MM-dd') === todayStr) {
+          today[cls] = (today[cls] || 0) + fuelMap[m];
+        }
+      }
+    });
+  }
+  return { week: week, today: today };
+}
+
 function raidFriday() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
@@ -2363,7 +2376,6 @@ function raidFriday() {
   }
 
   // [v5.7] 레이드 연료 — 강사가 반 단위 1행으로 주입한 수업 미션 보너스를 반 합계에 합산
-  const fuelByCls = {}; // [v7.3] 결산 스토리용
   const fuelMap = {};
   const ctF = ss.getSheetByName('contents');
   if (ctF && ctF.getLastRow() >= 2) {
@@ -2371,20 +2383,8 @@ function raidFriday() {
       if (r[1] === 'fuel' && r[2]) fuelMap[String(r[2])] = Number(r[5]) || 0;
     });
   }
-  const cf = ss.getSheetByName('class_fuel');
-  const fSeen = new Set(); // [v7.5] 같은 미션은 주 1회만 합산 (중복 행 2배 방지)
-  if (cf && cf.getLastRow() >= 2) {
-    cf.getRange(2, 1, cf.getLastRow() - 1, 4).getValues().forEach(r => {
-      const cls = r[0], mission = String(r[1] || ''), d = r[3];
-      if (!cls || !d) return;
-      const dd = asDate_(d);
-      if (dd >= monday && fuelMap[mission] && !fSeen.has(cls + '|' + mission)) {
-        fSeen.add(cls + '|' + mission);
-        weekPts[cls] = (weekPts[cls] || 0) + fuelMap[mission];
-        fuelByCls[cls] = (fuelByCls[cls] || 0) + fuelMap[mission]; // [v7.3]
-      }
-    });
-  }
+  const fuelByCls = weeklyFuel_(ss, fuelMap, monday).week; // [v9.25] 연료 주간집계 헬퍼 통합 · [v7.3] 결산 스토리용 반별 연료합
+  Object.keys(fuelByCls).forEach(cls => { weekPts[cls] = (weekPts[cls] || 0) + fuelByCls[cls]; });
 
   const rdLast = rd.getLastRow();
   const rdData = rd.getRange(2, 1, rdLast - 1, 6).getValues();
@@ -2904,23 +2904,10 @@ function raidStoryDaily() {
       if (r[1] === 'fuel' && r[2]) fuelMap[String(r[2])] = Number(r[5]) || 0;
     });
   }
-  const fuelToday = {}, fSeenD = new Set(); // [v7.5] 주 1회 dedup
-  const cf = ss.getSheetByName('class_fuel');
-  if (cf && cf.getLastRow() >= 2) {
-    cf.getRange(2, 1, cf.getLastRow() - 1, 4).getValues().forEach(r => {
-      const cls = r[0], m = String(r[1] || ''), d = r[3];
-      if (!cls || !d || !fuelMap[m]) return;
-      const dd = asDate_(d);
-      if (dd >= monday && !fSeenD.has(cls + '|' + m)) {
-        fSeenD.add(cls + '|' + m);
-        weekD[cls] = (weekD[cls] || 0) + fuelMap[m];
-        if (Utilities.formatDate(dd, tz, 'yyyy-MM-dd') === today) {
-          fuelToday[cls] = (fuelToday[cls] || 0) + fuelMap[m];
-          if (!dayD[cls]) dayD[cls] = {};
-        }
-      }
-    });
-  }
+  const fuelWk = weeklyFuel_(ss, fuelMap, monday, today, tz); // [v9.25] 연료 주간집계 헬퍼 통합
+  const fuelToday = fuelWk.today;
+  Object.keys(fuelWk.week).forEach(cls => { weekD[cls] = (weekD[cls] || 0) + fuelWk.week[cls]; });
+  Object.keys(fuelToday).forEach(cls => { if (!dayD[cls]) dayD[cls] = {}; }); // 오늘 연료만 있는 반도 일일 스토리에 포함
   // 이번 주 보스 HP
   const hpOf = {};
   const rd = ss.getSheetByName('raid');
