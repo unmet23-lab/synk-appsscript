@@ -5126,6 +5126,25 @@ function systemWatchdog(asText) {
   const mailQ = MailApp.getRemainingDailyQuota();
   add(mailQ >= 30, '오늘 남은 메일 쿼터: ' + mailQ + '건' + (mailQ < 30 ? ' — 부족' : ''));
 
+  // [v9.25] 6) 상담폼 스키마 경량 점검 — 폼/시트 구조가 바뀌면 수동 진단(checkConsultSync·
+  //   dumpConsultHeaders·checkFormMapping) 전까지 몇 주간 조용히 어긋날 수 있어 워치독이 조기 감지.
+  //   기대 스키마: '상담데이터입력' 탭 · 헤더 2행 · 폭 62열 · 학생ID = 60열(BH, syncProfiles가 r[59]로 참조).
+  //   비용 최소화: openById 1회 + 헤더행 1회 읽기만. 접근 실패·불일치는 경고 줄로만 남기고 절대 throw하지 않음.
+  try {
+    const csrc = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    if (!csrc) {
+      add(false, "상담시트 스키마: '상담데이터입력' 탭 없음 — 탭 이름 변경 의심(checkConsultSync 확인)");
+    } else {
+      const cw = csrc.getLastColumn();
+      const chdr = cw >= 1 ? csrc.getRange(2, 1, 1, cw).getValues()[0].map(h => String(h || '').trim()) : [];
+      const widthOk = cw >= 62;
+      const idOk = chdr[59] === '학생ID'; // BH열(60열) = syncProfiles가 학생ID로 읽는 핵심 열
+      add(widthOk && idOk, '상담시트 스키마: 폭 ' + cw + '열' +
+        (widthOk ? '' : '(<62 ⚠️ 열 삭제 의심)') +
+        ' · 학생ID(60열)=' + (idOk ? 'OK' : '"' + (chdr[59] || '(빈칸)') + '" ⚠️ 헤더 어긋남 — dumpConsultHeaders/checkFormMapping 실행'));
+    }
+  } catch (e) { add(false, '상담시트 스키마 점검 실패 — CONSULT_SHEET_ID/권한 확인: ' + e); }
+
   const report = '🛡️ SYNK 시스템 워치독 · ' +
     Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm') + '\n\n' + out.join('\n') +
     '\n\n⚠️가 하나라도 있으면 그 줄만 공유해주세요 — 나머지는 건강합니다.';
