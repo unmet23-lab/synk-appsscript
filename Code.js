@@ -6491,8 +6491,19 @@ function monthlyJobs() {   // 매월 1일 05시 — 순서 고정이 핵심
   safeRun('archiveMonthly', archiveMonthly);     // ② 그다음 아카이브
 }
 
-function resetAllTriggers() {
-  ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
+function resetAllTriggers(force) {
+  // [v9.25] 리포트카드 이어하기 보호 — 월 1일 배치가 예약한 reportCardsContinue 4분-뒤 트리거를
+  // 무조건 삭제 루프가 함께 지워 배치를 조용히 중단시키는 사고 방지. force=true로 수동 강행 가능.
+  const triggers = ScriptApp.getProjectTriggers();
+  if (!force && triggers.some(t => t.getHandlerFunction() === 'reportCardsContinue')) {
+    const msg = '리포트카드 이어하기(reportCardsContinue) 트리거가 대기 중이라 resetAllTriggers를 중단했습니다. ' +
+      '지금 재설치하면 진행 중인 월간 리포트카드 배치가 중단됩니다. 배치 완료 후 다시 실행하거나, ' +
+      '강행이 필요하면 resetAllTriggers(true)로 호출하세요.';
+    Logger.log('⛔ ' + msg);
+    adminMail('[SYNK] ⛔ resetAllTriggers 중단 — 리포트카드 배치 보호', msg);
+    return;
+  }
+  triggers.forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('parentSweep').timeBased().everyMinutes(10).create(); // [v6.8] 30→10분: 수업 전·퇴근 후 알림 정밀도
   ScriptApp.newTrigger('dailyBackup').timeBased().atHour(3).everyDays(1).create();
   ScriptApp.newTrigger('morningJobs').timeBased().atHour(7).everyDays(1).create();
