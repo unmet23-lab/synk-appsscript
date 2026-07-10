@@ -11,7 +11,7 @@
  *   2) 이 파일 전체를 붙여넣고 저장
  *   3) bootstrapSynk() 1회 실행 (권한 승인 2회) — 세계가 재림합니다
  *   4) resetAllTriggers() 1회 실행 — 심장 박동(통합 트리거 10개) 시작
- *      (setupV5Triggers는 시트 보장 전용 · 트리거 설치는 resetAllTriggers가 전담)
+ *      (시트 보장은 bootstrapSynk 재건목록이 전담 · 트리거 설치는 resetAllTriggers)
  *   5) 데이터(학생·포인트 이력)는 Drive 'SYNK_백업' 폴더 최신본에서
  *      profiles·point_logs·attendance 시트를 복사해 덮어쓰기
  *
@@ -31,12 +31,12 @@
  *  archiveMonthly(1일 새벽2~3) monthlyGameBatch(1일 새벽5~6)
  *  monthlyReport(1일 아침7~8)
  *
- * [v5 신규 트리거 — setupV5Triggers() 1회 실행으로 자동 등록]
- *  weeklyBingoBatch(토 9시)   monthlyReportCards(1일 아침6~7시)
+ * [v5 신규 트리거 — 현재는 resetAllTriggers 통합 재설치가 등록]
+ *  weeklyBingoBatch(토 9시·v5.5 삭제)   monthlyReportCards(1일 아침6~7시)
  *
  * [수동/1회용] setupSchedule setupStore createConsultForm
  *  cleanupFormTest setupTables(잠금)
- *  + v5: setupMonsters setupBrainTips setupSeasons setupHomework setupV5Triggers
+ *  + v5: setupMonsters setupBrainTips setupSeasons setupHomework
  *  + v5.2: setupParentLabels translateContents (초벌 번역) · parentSweep(자동)
  *  + v5.7: setupFuelMissions setupQuiz setupTitleLore setupBosses
  *  + v5.8: checkConsultSync (상담 연동 진단) · setupHomework (210개 확장)
@@ -87,7 +87,7 @@
  *
  * [v5.5 — 빙고 완전 삭제]
  * 26. weeklyBingoBatch·countBingoLines·BINGO 상수·빙고 마스터 칭호·첫 빙고 업적
- *     ·bingo_state 참조 전부 제거. 남은 토요일 트리거는 setupV5Triggers가 자동 삭제.
+ *     ·bingo_state 참조 전부 제거. 남은 토요일 트리거는 resetAllTriggers 통합 재설치가 정리.
  *
  * [v5.6 — 몽골 수업 리듬 정렬]
  * 27. 오늘의 숙제: 저녁 21시 이후 자동 일괄 게시로 변경 ("오늘 배운" = 진짜 오늘 수업)
@@ -7790,24 +7790,9 @@ function bootstrapSynk() {
   const ct = ss.getSheetByName('contents');
   if (ct && ct.getLastRow() >= 2) cnt = ct.getLastRow() - 1;
   const summary = 'SYNK OS 재건 완료 — 시트 ' + ss.getSheets().length + '장 · 콘텐츠 ' + cnt + '개\n' + log.join('\n') +
-    '\n\n다음 단계: setupV5Triggers() 1회 실행 → 데이터 복원(백업 폴더) → Glide 연결';
+    '\n\n다음 단계: resetAllTriggers() 1회 실행(트리거 통합 재설치) → 데이터 복원(백업 폴더) → Glide 연결';
   Logger.log(summary);
   return summary;
-}
-
-function setupV5Triggers() {
-  // [v9.25] 시트 보장 전용 — 트리거 설치는 resetAllTriggers()가 전담한다(함수명은 이력상 유지).
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  ensureSheet(ss, 'class_fuel', ['class_name', '미션', '입력자', 'created_at']); // [v5.7] 레이드 연료
-  ensureSheet(ss, 'weekly_topics', ['class_name', '배운내용', '입력자', 'created_at', '배운내용_mn']); // [v5.7]
-  ensureSheet(ss, 'report_cards',
-    ['card_id', 'student_id', '월', 'image_url', '칭호', '코멘트', 'created_at']);
-  ensureSheet(ss, 'league_history',
-    ['월', '시즌', '챔피언반', '챔피언포인트', '준우승', '준우승포인트',
-     'MVP_id', 'MVP이름', 'MVP포인트', 'created_at']);
-
-  // [v6.3] 트리거 생성은 resetAllTriggers()가 전담 — 20개 한도 초과 방지
-  Logger.log('✅ 시트 준비 완료 — 이어서 resetAllTriggers()를 실행하세요 (트리거 통합 재설치)');
 }
 
 /* ===================== [v6.3] 트리거 통합 리셋 — 20개 한도 해결 =====================
