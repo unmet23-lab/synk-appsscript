@@ -2291,22 +2291,28 @@ function computeKpiMetrics(yearMonth, confirm) {
 }
 
 // 주간 통합 리포트 섹션 — 당월 잠정치 + 전월(확정 우선) 한 줄 비교. asText 패턴(기존 섹션과 동일).
-function kpiSection_(asText) {
+function kpiSection_(asText, kpiData) {
   const wantText = asText === true; // 트리거 이벤트객체 방어 — true일 때만 텍스트 모드
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const now = new Date();
   const y = Number(Utilities.formatDate(now, tz, 'yyyy')), m = Number(Utilities.formatDate(now, tz, 'MM'));
-  const curYm = Utilities.formatDate(now, tz, 'yyyy-MM');
-  const prevYm = Utilities.formatDate(new Date(y, m - 2, 1), tz, 'yyyy-MM'); // 전월(연 경계 안전)
+  // [v9.29] weeklyJobs 주입치(kpiData) 재사용 — 이중 계산 제거. 주입 없거나 형태가 다르면(단독 실행·트리거 이벤트객체) 기존처럼 자체 계산.
+  const inj = (kpiData && kpiData.cur) ? kpiData : null;
+  const curYm = inj ? inj.curYm : Utilities.formatDate(now, tz, 'yyyy-MM');
+  const prevYm = inj ? inj.prevYm : Utilities.formatDate(new Date(y, m - 2, 1), tz, 'yyyy-MM'); // 전월(연 경계 안전)
+  const cur = inj ? inj.cur : computeKpiMetrics(curYm);                       // 당월 잠정 재계산(멱등)
+  const prev = inj ? inj.prev : (kpiReadRow_(prevYm) || computeKpiMetrics(prevYm)); // 전월 확정 우선·없으면 잠정
 
-  const cur = computeKpiMetrics(curYm);                    // 당월 잠정 재계산(멱등)
-  const prev = kpiReadRow_(prevYm) || computeKpiMetrics(prevYm); // 전월은 시트(확정) 우선·없으면 잠정 계산
-
-  let body = '· ' + curYm + '(잠정): 이탈 ' + cur.churn + '/' + cur.opening + '명=' + cur.churnRate +
-    '% · 전환 ' + cur.conv + '/' + cur.consult + '건=' + cur.convRate + '%\n';
-  body += '· ' + prevYm + '(' + (prev && prev.confirm === '확정' ? '확정' : '잠정') + '): 이탈 ' +
-    (prev ? prev.churnRate : 0) + '% · 전환 ' + (prev ? prev.convRate : 0) + '%';
+  // [v9.29] KPI 섹션은 '전월 대비 변화'에 집중 — 당월 현재값·신호등 판정은 경영계기판 섹션이 담당(같은 메일 중복 표시 정리).
+  const dChurn = prev ? Math.round((cur.churnRate - (prev.churnRate || 0)) * 10) / 10 : null;
+  const dConv = prev ? Math.round((cur.convRate - (prev.convRate || 0)) * 10) / 10 : null;
+  const sgn = v => v > 0 ? '+' + v : String(v);
+  let body = '· 이탈률 ' + curYm + ' ' + cur.churn + '/' + cur.opening + '명=' + cur.churnRate + '%' +
+    (prev ? ' (전월 ' + (prev.churnRate || 0) + '% · Δ' + sgn(dChurn) + '%p)' : '') + '\n';
+  body += '· 전환율 ' + cur.conv + '/' + cur.consult + '건=' + cur.convRate + '%' +
+    (prev ? ' (전월 ' + (prev.convRate || 0) + '% · Δ' + sgn(dConv) + '%p)' : '') + '\n';
+  body += '· 전월(' + prevYm + ') ' + (prev && prev.confirm === '확정' ? '확정치' : '잠정치') + ' 기준';
   body += '\n※ 이탈=마지막출석 ' + KPI_CHURN_DAYS + '일+ 무활동 기초재원 · 전환=당월 상담 접수→신규등록';
 
   if (wantText) return body;
@@ -7865,6 +7871,19 @@ function weeklyJobs() {    // 매주 월 07시
   //         메일 발송을 죽이지 않게 하고, 마지막에 quotaOk(1) 확인 후 딱 1통만 발송한다.
   //         (healthCheck 점검 항목은 systemWatchdog에 흡수됨)
   const tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+  // [v9.29] KPI 단일 계산 — kpiSection_·updateBizDashboard가 각각 computeKpiMetrics(당월)를 독립
+  //   호출하던 이중 계산 제거(profiles·attendance 전량 스캔 + 상담시트 openById가 한 번으로).
+  //   여기서 1회 계산해 두 섹션에 주입하고, 실패하면 null → 각 섹션이 기존처럼 자체 계산(단독 실행 경로 보존).
+  let kpiInjection = null;
+  try {
+    const nowW = new Date();
+    const yW = Number(Utilities.formatDate(nowW, tz, 'yyyy')), mW = Number(Utilities.formatDate(nowW, tz, 'MM'));
+    const curYmW = Utilities.formatDate(nowW, tz, 'yyyy-MM');
+    const prevYmW = Utilities.formatDate(new Date(yW, mW - 2, 1), tz, 'yyyy-MM'); // 전월(연 경계 안전)
+    const curW = computeKpiMetrics(curYmW);                          // 당월 잠정 재계산(멱등)
+    const prevW = kpiReadRow_(prevYmW) || computeKpiMetrics(prevYmW); // 전월 확정 우선·없으면 잠정
+    kpiInjection = { cur: curW, prev: prevW, curYm: curYmW, prevYm: prevYmW };
+  } catch (e) { Logger.log('weeklyJobs KPI 단일 계산 실패(각 섹션 자체 계산 폴백): ' + e); }
   const sections = [
     ['🛡️ 시스템 워치독', systemWatchdog],
     ['📊 주간 리포트', weeklyReport],
@@ -7879,7 +7898,7 @@ function weeklyJobs() {    // 매주 월 07시
     const title = sec[0], fn = sec[1];
     body += '\n──────── ' + title + ' ────────\n';
     try {
-      const txt = fn(true); // 텍스트 반환 모드 — 각 섹션은 자체 발송하지 않음
+      const txt = fn(true, kpiInjection); // 텍스트 반환 모드 — 각 섹션은 자체 발송하지 않음(KPI 두 섹션만 주입치 사용, 나머지는 잉여인자 무시)
       body += (txt && String(txt).trim() ? String(txt) : '(내용 없음)') + '\n';
     } catch (e) {
       body += '⚠ 섹션 생성 실패: ' + title + '\n';
@@ -7974,7 +7993,7 @@ function setupBizDashboard() { // 1회 설치 — leads 드롭다운 + 계기판
   Logger.log('✅ 경영계기판 설치 완료 — leads 시트에 체험·상담을 기록하세요. 계기판 B2(현금잔고)는 월 1회 직접 입력.');
 }
 
-function updateBizDashboard(asText) { // 계기판 시트 갱신 + 요약 텍스트 반환 (주간 통합 리포트 섹션 규약)
+function updateBizDashboard(asText, kpiData) { // 계기판 시트 갱신 + 요약 텍스트 반환 (주간 통합 리포트 섹션 규약)
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const now = new Date();
@@ -7991,8 +8010,12 @@ function updateBizDashboard(asText) { // 계기판 시트 갱신 + 요약 텍스
   const yN = Number(Utilities.formatDate(now, tz, 'yyyy')), mN = Number(Utilities.formatDate(now, tz, 'MM'));
   const prevYm = Utilities.formatDate(new Date(yN, mN - 2, 1), tz, 'yyyy-MM');
   let kpiCur = null, kpiPrev = null;
-  try { kpiCur = computeKpiMetrics(); kpiPrev = kpiReadRow_(prevYm) || computeKpiMetrics(prevYm); }
-  catch (e) { Logger.log('경영계기판 KPI 읽기 실패(섹션은 계속): ' + e); }
+  const kpiInj = (kpiData && kpiData.cur) ? kpiData : null; // [v9.29] weeklyJobs 주입치 재사용(이중 계산 제거) · 주입 없으면(단독 실행) 자체 계산
+  if (kpiInj) { kpiCur = kpiInj.cur; kpiPrev = kpiInj.prev; }
+  else {
+    try { kpiCur = computeKpiMetrics(); kpiPrev = kpiReadRow_(prevYm) || computeKpiMetrics(prevYm); }
+    catch (e) { Logger.log('경영계기판 KPI 읽기 실패(섹션은 계속): ' + e); }
+  }
 
   // ── 재적·이탈위험 선행지표 (profiles Y열 25)
   const pf = ss.getSheetByName('profiles');
