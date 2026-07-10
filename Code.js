@@ -4528,7 +4528,8 @@ function runReportCards_() {
       rows.push([ym + '-' + m.d.sid, m.d.sid, ym, url,
         m.d.title, m.d.comment, new Date()]);
       if (SEND_REPORT_EMAIL && m.d.pEmail.indexOf('@') > -1) {
-        mails.push({ to: m.d.pEmail, name: m.d.name, url: url, pts: m.d.pointsText, attend: m.d.attendText });
+        // [v9.31] 공개 URL 링크 대신 PNG를 메일 첨부로 — 미성년 실명·성적이 메일 전달·캡처로 새는 경로 차단
+        mails.push({ to: m.d.pEmail, name: m.d.name, blob: blob.copyBlob(), pts: m.d.pointsText, attend: m.d.attendText });
       }
     } catch (e) { Logger.log('카드 생성 실패(' + m.d.name + ') — 스킵, 다음 실행 때 재시도: ' + e); }
   });
@@ -4539,8 +4540,9 @@ function runReportCards_() {
       MailApp.sendEmail(m.to, '[SYNK] 📮 ' + m.name + ' 학생 ' + label + ' 성장 리포트',
         m.name + ' 학생의 ' + label + ' 성장 리포트가 도착했어요!\n\n' +
         '포인트 ' + m.pts + ' · 출석 ' + m.attend + '\n' +
-        '리포트 카드 보기: ' + m.url + '\n\n' +
-        '한 달 동안 수고 많았습니다. 다음 달도 함께 성장해요!\n- 뇌과학으로 배우는 한국어, SYNK');
+        '리포트 카드는 첨부된 이미지로 확인해 주세요. 📎\n\n' +
+        '한 달 동안 수고 많았습니다. 다음 달도 함께 성장해요!\n- 뇌과학으로 배우는 한국어, SYNK',
+        { attachments: [m.blob] });
     });
   }
 

@@ -188,6 +188,14 @@ test('월간 아카이브는 태그(H열)까지 8열로 이관·정리한다', (
   assert.equal(/, 7\)\.(getValues|setValues|clearContent)/.test(body), false);
 });
 
+test('성장 리포트 메일은 공개 URL 링크 대신 PNG를 첨부로 보낸다', () => {
+  const body = section('function runReportCards_()', 'function exportSlidePng');
+  assert.ok(body.includes('blob: blob.copyBlob()'));
+  assert.ok(body.includes('{ attachments: [m.blob] }'));
+  // 공개 URL(m.url)을 메일 본문에 실으면 미성년 실명·성적이 전달·캡처로 샌다
+  assert.equal(body.includes("'리포트 카드 보기: ' + m.url"), false);
+});
+
 test.todo('숙제 일괄 지급을 별도 처리로그와 전용 잠금으로 원자화');
 test.todo('숙제 포인트와 자동 정정을 같은 야간 계산에 즉시 반영');
 test.todo('성장 리포트의 공개 링크를 비공개 전달 방식으로 교체');
