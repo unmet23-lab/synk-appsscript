@@ -3632,25 +3632,43 @@ function checkAchievements() {
       .forEach(r => has.add(r[0] + '|' + r[1]));
   }
 
+  // [v9.25] A7-3: point_logs 1회 스캔 — 히든·누적 동시 집계(구 2패스 통합, 라이브 재읽기 제거).
+  //   히든 3종은 매일 실행이라 라이브(당월) 로그로 실시간 포착됨 → 아카이브는 스캔하지 않는다(스코프 보존, 소급지급 방지).
+  //   누적 카운트는 전 기간 필요 → 라이브+아카이브 합산(readPointLogs_와 동일 병합규칙 인라인). 지급 멱등성은 has 셋이 담당.
+  const night = {}, tricolor = {}, firstStep = {}, dayKinds = {}; // [v9.13] 히든: 라이브 point_logs만
+  const raidWins = {}, hwAll = {}, spkAll = {}, praiseAll = {};   // [v5.9] 누적 노력 카운트(라이브+아카이브)
+  const tallyCumulative_ = r => { // [v5.1] 레이드 승수·숙제·MVP·시냅스 누적(정정 로그 제외)
+    const sid0 = r[1];
+    if (!sid0) return;
+    const rs0 = String(r[3]);
+    if (rs0 === '레이드보상') raidWins[sid0] = (raidWins[sid0] || 0) + 1;
+    if (rs0.indexOf('숙제') > -1 && rs0.indexOf('정정') === -1) hwAll[sid0] = (hwAll[sid0] || 0) + 1; // [v7.5]
+    if (rs0.indexOf('MVP') > -1 && rs0.indexOf('정정') === -1) spkAll[sid0] = (spkAll[sid0] || 0) + 1; // [v7.4]
+    if (rs0.indexOf('시냅스') > -1 && rs0.indexOf('정정') === -1) praiseAll[sid0] = (praiseAll[sid0] || 0) + 1; // [v7.6]
+  };
+  const plH = ss.getSheetByName('point_logs');
+  if (plH && plH.getLastRow() >= 2) {
+    plH.getRange(2, 1, plH.getLastRow() - 1, 6).getValues().forEach(rr => {
+      tallyCumulative_(rr);                        // 누적: 라이브
+      const sid = rr[1], pts = Number(rr[2]) || 0; // 히든: 라이브 당월만
+      if (!sid || !rr[5] || pts <= 0) return;
+      const dObj = (rr[5] instanceof Date) ? rr[5] : new Date(rr[5]);
+      const d6 = dstr(dObj, tz);
+      if (dObj.getHours() >= 21) night[sid] = 1;
+      if (d6.slice(8) === '01') firstStep[sid] = 1;
+      const k = sid + '|' + d6;
+      (dayKinds[k] = dayKinds[k] || {})[String(rr[3] || '')] = 1;
+    });
+    Object.keys(dayKinds).forEach(k => {
+      if (Object.keys(dayKinds[k]).length >= 3) tricolor[k.split('|')[0]] = 1;
+    });
+  }
+  const plArc = ss.getSheetByName('point_logs_archive'); // 누적: 아카이브만(히든 미포함 — 스코프 보존)
+  if (plArc && plArc.getLastRow() >= 2) {
+    plArc.getRange(2, 1, plArc.getLastRow() - 1, 6).getValues().forEach(tallyCumulative_);
+  }
+
   { // [v9.13] 🎯 히든 업적 3종 — 조건 비공개('?????'), 달성 순간 등급 '히든'으로 반짝 공개
-    const plH = ss.getSheetByName('point_logs');
-    const night = {}, tricolor = {}, firstStep = {};
-    if (plH && plH.getLastRow() >= 2) {
-      const dayKinds = {};
-      plH.getRange(2, 1, plH.getLastRow() - 1, 6).getValues().forEach(rr => {
-        const sid = rr[1], pts = Number(rr[2]) || 0;
-        if (!sid || !rr[5] || pts <= 0) return;
-        const dObj = (rr[5] instanceof Date) ? rr[5] : new Date(rr[5]);
-        const d6 = dstr(dObj, tz);
-        if (dObj.getHours() >= 21) night[sid] = 1;
-        if (d6.slice(8) === '01') firstStep[sid] = 1;
-        const k = sid + '|' + d6;
-        (dayKinds[k] = dayKinds[k] || {})[String(rr[3] || '')] = 1;
-      });
-      Object.keys(dayKinds).forEach(k => {
-        if (Object.keys(dayKinds[k]).length >= 3) tricolor[k.split('|')[0]] = 1;
-      });
-    }
     const hidRows = [];
     const hid = (map, name) => Object.keys(map).forEach(sid => {
       if (!has.has(sid + '|' + name)) { hidRows.push([sid, name, '히든', today]); has.add(sid + '|' + name); }
@@ -3672,18 +3690,6 @@ function checkAchievements() {
     });
     Object.keys(bySid).forEach(k => bySid[k].sort((a, b) => a.ym < b.ym ? -1 : 1));
   }
-
-  // [v5.1] 레이드 승수 (누적 업적용)
-  const raidWins = {}, hwAll = {}, spkAll = {}, praiseAll = {}; // [v5.9] 누적 노력 카운트
-  readPointLogs_(ss, 6).forEach(r => { // [v9.22] 병합 읽기 헬퍼
-    const sid0 = r[1];
-    if (!sid0) return;
-    const rs0 = String(r[3]);
-    if (rs0 === '레이드보상') raidWins[sid0] = (raidWins[sid0] || 0) + 1;
-    if (rs0.indexOf('숙제') > -1 && rs0.indexOf('정정') === -1) hwAll[sid0] = (hwAll[sid0] || 0) + 1; // [v7.5]
-    if (rs0.indexOf('MVP') > -1 && rs0.indexOf('정정') === -1) spkAll[sid0] = (spkAll[sid0] || 0) + 1; // [v7.4]
-    if (rs0.indexOf('시냅스') > -1 && rs0.indexOf('정정') === -1) praiseAll[sid0] = (praiseAll[sid0] || 0) + 1; // [v7.6]
-  });
 
   // [v5.9] 첫 출석일 — 재원 기념 업적용
   const firstAtt = {};
