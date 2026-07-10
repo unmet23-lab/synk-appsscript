@@ -454,6 +454,37 @@
  *      이름·학생ID·반·급수·몬스터단계·총포인트·왕관수·최장연속·이탈위험·나의여정요약·앱갱신일. Notion API
  *      (UrlFetchApp, ver 2022-06-28). 토큰은 Script Properties 'NOTION_TOKEN'(코드·깃 미포함). 없으면 자동 스킵.
  *      → 노션 인터뷰(정성) + 앱 데이터(정량)를 한 곳에서: 개인 스토리 콘텐츠·케어 대시보드.
+ *
+ * [v9.25 — 🅰️ 트랙 A: 월요일 알림 통합 · 자동화 안전망 하드닝 · 무변동 쿼터 절감]
+ * 149. [A1] 월요일 정기 메일 최악 5통(healthCheck·systemWatchdog·weeklyReport·checkTuition·
+ *      checkReenrollment) → 1통('[SYNK] 주간 통합 리포트'). weeklyReport/checkTuition/checkReenrollment/
+ *      systemWatchdog에 asText 인자 추가 — true면 섹션 본문 문자열만 반환(자체 발송·quotaOk 미호출),
+ *      단독/수동 실행은 기존대로 발송. healthCheck 3점검(누락시트·point_logs 행수>8000·메일쿼터<30)은
+ *      워치독 '5) 시트 구조·용량·쿼터'로 흡수, healthCheck는 systemWatchdog() 위임 껍데기로 축소.
+ *      weeklyJobs가 4섹션을 개별 try/catch로 모아 quotaOk(1) 후 1통 발송(섹션 실패는 '⚠ 섹션 생성 실패' 한 줄로 격리).
+ * 150. [A2] quotaOk 경고 발송 분기에만 1일 1회 dedup(ScriptProperties '쿼터경고일'=yyyy-MM-dd) — 쿼터
+ *      부족 시 경고 메일이 스스로 쿼터를 갉아먹는 자기증폭 차단. 정상 경로(early return)는 PropertiesService 무접촉.
+ *      [A3] resetAllTriggers에 리포트카드 이어하기 보호 가드 — reportCardsContinue 대기 트리거가 있으면
+ *      삭제 루프 전에 중단+admin 알림 후 return(force=true로 강행). 무조건 삭제가 진행 중 월간 리포트카드
+ *      배치를 조용히 끊던 사고 방지. 조회한 triggers 배열을 삭제 forEach에 재사용(중복 API 호출 없음).
+ * 151. [A4] 워치독 '6) 상담폼 스키마 경량 점검' 추가 — 세 수동 진단(checkConsultSync·dumpConsultHeaders·
+ *      checkFormMapping) 공유 기준('상담데이터입력' 탭·헤더 2행·폭 62열·학생ID=60열 BH)을 openById 1회+
+ *      헤더행 1회 읽기로만 확인, 불일치·접근실패는 경고 줄로만 남기고 throw 안 함. [A5] 직접 등록 4트리거를
+ *      safeRun 보호 래퍼로 감쌈(dailyBackupJob·sendMorningDigestJob·monthlyReportCardsJob·monthlyReportJob)
+ *      — 실패 시 admin 알림 보장. 원 함수는 수동 실행용 유지, monthlyReportCards는 진입점만 감쌈(이어하기
+ *      체인 무수정). 등록 트리거 총 10개 불변. [A6] 순수 문구 오기 정리: 🆘 복구 가이드 4단계
+ *      setupV5Triggers→resetAllTriggers(통합 10개)·'30분 스위프'→'10분'(실측 everyMinutes(10))·워치독 경고
+ *      문구 setupV5Triggers→resetAllTriggers()·setupV5Triggers 상단 '시트 보장 전용·트리거는 resetAllTriggers' 주석.
+ * 152. [A7 최적화 3종 — v9.22 보류분을 전후 동작동일성 증명 후 적용] ① syncProfiles 로스터 쓰기(A~O·Z·
+ *      AY~BA)를 writeIfChanged로 게이팅 — 상담시트 무변동인 대부분의 날엔 setValues/clearContent 생략(축소
+ *      tail-clear는 조건부 clearContent로 보존해 최종 시트 상태 동일). ② class_fuel 주간집계 3곳(calcAll·
+ *      raidFriday·raidStoryDaily)을 weeklyFuel_ 헬퍼로 순수 추출(주1회 dedup·월요 0시 경계 합산 동작 동일).
+ *      ③ checkAchievements의 point_logs 2스캔→1스캔: 라이브 1회로 히든+누적(라이브분) 동시 집계, 아카이브
+ *      1회는 누적에만 합산 — 히든 업적 스코프(라이브 당월만) 보존해 아카이브 소급 오지급 방지.
+ * 153. [리뷰 반영] A5 래퍼 개명(→…Job)이 워치독의 트리거 생존 점검(옛 bare 이름 조회)과 어긋나 매주 월요일
+ *      통합 리포트에 '필수 트리거 sendMorningDigest 실종!' 등 허위 크리티컬 4건을 싣던 회귀 수리 — 점검을
+ *      alive(f)=have[f]||have[f+'Job'] 관용 매칭으로 바꿔 bare/…Job 어느 쪽이 등록돼도 정상 판정(목록은 원
+ *      함수명 유지, 향후 다른 Job 래퍼도 자동 흡수). 워치독 '늑대소년화'로 진짜 트리거 실종을 놓칠 위험 제거.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
@@ -5020,12 +5051,17 @@ function systemWatchdog(asText) {
   // 1) 필수 트리거 생존
   const have = {};
   ScriptApp.getProjectTriggers().forEach(t => { have[t.getHandlerFunction()] = true; });
+  // [v9.25] A5에서 일부 핸들러가 safeRun 보호 래퍼(dailyBackupJob·sendMorningDigestJob·
+  //   monthlyReportCardsJob·monthlyReportJob)로 재등록됐다. 점검 목록은 원 함수명 그대로 두되,
+  //   bare/‘…Job’ 두 이름 중 하나라도 살아 있으면 정상으로 취급해 개명에도 오탐(실종! 허위경보)이
+  //   안 나게 한다 — 앞으로 다른 핸들러가 Job 래퍼로 바뀌어도 이 매칭이 자동으로 흡수한다.
+  const alive = f => !!(have[f] || have[f + 'Job']);
   ['calcAll', 'parentSweep', 'sendMorningDigest'].forEach(f => {
-    add(!!have[f], '필수 트리거 ' + f + (have[f] ? ' 정상' : ' 실종! — resetAllTriggers()/트리거 화면 확인'));
+    add(alive(f), '필수 트리거 ' + f + (alive(f) ? ' 정상' : ' 실종! — resetAllTriggers()/트리거 화면 확인'));
   });
   const recommended = ['dailyBackup', 'morningJobs', 'nightJobs', 'weeklyJobs',
     'monthlyJobs', 'monthlyReportCards', 'monthlyReport']; // [v7.0] v6.3 통합 트리거 기준
-  const missing = recommended.filter(f => !have[f]);
+  const missing = recommended.filter(f => !alive(f));
   add(missing.length === 0, '권장 트리거: ' + (missing.length ? missing.join(', ') + ' 미등록 (의도적이면 무시)' : '전부 등록됨'));
 
   // [v9.19] 1-b) 백업 실제 생성 여부 — 트리거는 살아있어도 makeCopy가 조용히 실패할 수 있어 최신 백업 나이 점검
