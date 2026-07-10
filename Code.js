@@ -1731,7 +1731,7 @@ function calcAll() {
   }
   // [v5.6] 오늘의 숙제 — 수업이 끝난 저녁(21시 이후) 자동 일괄 게시. 강사 손 불필요.
   //        "오늘 배운 ○○" 프롬프트가 실제 오늘 수업을 가리키도록 아침이 아닌 밤에 갱신.
-  //        ⚠️ calcAll 트리거에 21~23시 실행이 반드시 1개 필요 (applyLowUpdateMode의 22시가 담당)
+  //        ⚠️ calcAll 트리거에 21~23시 실행이 반드시 1개 필요 (resetAllTriggers의 22시 nightJobs가 담당)
   const hourNow = Number(Utilities.formatDate(now, tz, 'H'));
   if (hourNow >= 21 && props.getProperty('숙제기준일') !== todayStr) {
     const hwPool = ctData.filter(r => r[1] === 'homework' && r[3] && Number(r[5]) > 0);
@@ -7932,18 +7932,6 @@ function resetAllTriggers(force) {
   ScriptApp.newTrigger('monthlyReportCardsJob').timeBased().onMonthDay(1).atHour(6).create(); // [v9.25] safeRun 보호 래퍼
   ScriptApp.newTrigger('monthlyReportJob').timeBased().onMonthDay(1).atHour(7).create();       // [v9.25] safeRun 보호 래퍼
   Logger.log('✅ 트리거 통합 재설치 완료: 10개 (10분 스위프 · 3시 백업 · 7시 아침작업 · 8시 브리핑 · 14/22시 계산 · 월 7시 주간 · 1일 5/6/7시 월간)');
-}
-
-/* ===================== [v5.3] 저업데이트 모드 (선택 실행) =====================
- * Glide 업데이트 예산이 빠듯할 때: calcAll을 6시간 4회 → 하루 2회(14시·22시)로 전환.
- * 14시 = 오후 수업 전 최신화 · 22시 = 수업 후 반영 + 오늘의 숙제 게시(21시 조건) 담당.
- * 계산열(게이지·연속출석 등) 갱신이 하루 2번이 되는 대신 시트→Glide 싱크가 절반.
- * 버튼 포인트/출석은 앱에서 즉시 기록되므로 체감 영향은 적음.
- * 되돌리기: Apps Script 트리거 화면에서 calcAll 트리거를 원하는 주기로 재생성.     */
-
-function applyLowUpdateMode() {
-  // [v6.3] 통합 리셋에 14시/22시(nightJobs)가 포함 — 이 함수는 리셋으로 위임
-  resetAllTriggers();
 }
 
 /* ===================== [v9.26] 📟 경영계기판 — 6지표 신호등 대시보드 =====================
