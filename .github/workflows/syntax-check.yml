@@ -1,0 +1,30 @@
+name: syntax-check
+
+# 모든 push에서 Apps Script 소스(.js)와 appsscript.json의 구문을 검사한다.
+# 실패하면 GitHub이 커밋 작성자에게 이메일로 알린다 (기본 알림 설정).
+# 목적: 어떤 세션·어떤 경로로 커밋됐든 깨진 코드가 조용히 쌓이는 것 방지.
+
+on:
+  push:
+    paths:
+      - "**.js"
+      - "appsscript.json"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: node --check all .js files
+        run: |
+          set -e
+          for f in *.js; do
+            [ -e "$f" ] || continue
+            echo "checking $f"
+            node --check "$f"
+          done
+      - name: validate appsscript.json
+        run: node -e "JSON.parse(require('fs').readFileSync('appsscript.json','utf8')); console.log('appsscript.json OK')"
