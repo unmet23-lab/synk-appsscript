@@ -7450,7 +7450,7 @@ function bootstrapSynk() {
     ['attendance', ['id','student_id','timestamp','method']],
     ['teacher_checkins', ['id','teacher','timestamp','type']],
     ['form_responses', ['제출시각']],
-    ['raid', ['week','class_name','boss','HP','누적데미지','상태']],
+    ['raid', ['week','class_name','목표','달성포인트','상태','보상지급']],
     ['carryover', ['student_id','points']], ['app_state', ['key','value']],
     ['titles', ['월','student_id','칭호']], ['manual_titles', ['student_id','칭호','부여자','날짜']],
     ['achievements', ['student_id','업적','등급','달성일']],
@@ -7462,7 +7462,7 @@ function bootstrapSynk() {
     ['hw_batch', ['date','class_name','완료자목록','입력자','created_at','처리상태']],
     ['today_board', ['유형','이름','반','시각','퇴근']],
     ['teacher_stats', ['teacher','지급수','편중률']], ['report_cards', ['월','student_id','내용']],
-    ['league_history', ['월','student_id','랭킹']], ['hall_of_fame', ['연도','이름','반','업적','한마디','사진URL']],
+    ['league_history', ['월','시즌','챔피언반','챔피언포인트','준우승','준우승포인트','MVP_id','MVP이름','MVP포인트','created_at']], ['hall_of_fame', ['연도','이름','반','업적','한마디','사진URL']],
     ['raid_story', ['date','class_name','유형','제목','스토리']],
     [KPI_SHEET_NAME, KPI_HEADERS] // [v9.26] 이탈률·전환율 계측 시트
   ];
