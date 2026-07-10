@@ -532,6 +532,12 @@
  * 160. [추가·철학3·4 최소구현] crew_projects 시트 신설(시즌·반·프로젝트명·한줄소개·결과물링크·사진URL·공개일·
  *      참여크루·비고) — 시즌 프로젝트 포트폴리오. bootstrapSynk 재건목록에만 추가, 수동 기입 전용
  *      (hall_of_fame 패턴 · 트리거·배치 연동 없음). Glide 탭 바인딩 절차 = 지시서 2-5.
+ *
+ * [v9.30 — 안전 개선 1차: 부분 실패·재건 신뢰성]
+ * 161. sendMorningDigest와 adminMail이 같은 ScriptLock으로 브리핑큐를 보호. 메일 성공 뒤에만 발송한 큐를 제거해
+ *      쿼터 부족·발송 예외·발송 중 새 알림 추가 때 유실을 막음.
+ * 162. bootstrapSynk profiles·teacher_checkins 골격을 실제 런타임 열 순서와 일치시킴. 잠긴 setupTables를 재건
+ *      성공 단계에서 제거하고, 한 단계라도 실패하면 '재건 일부 실패'로 반환. tests/safety.test.js + CI 회귀검사 추가.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
@@ -5785,25 +5791,35 @@ function checkFormMapping(optId) {
 
 function adminMail(subject, body) {
   if (!DIGEST_MODE) { if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, subject, body); return; }
-  const p = PropertiesService.getScriptProperties();
-  const cur = p.getProperty('브리핑큐') || '';
-  const item = '■ ' + subject.replace('[SYNK] ', '') + '\n' + body + '\n\n';
-  if ((cur + item).length > 8500) { // Properties 9KB 한계 보호 — 넘치면 즉시 발송
-    if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, subject, body);
-    return;
-  }
-  p.setProperty('브리핑큐', cur + item);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const p = PropertiesService.getScriptProperties();
+    const cur = p.getProperty('브리핑큐') || '';
+    const item = '■ ' + subject.replace('[SYNK] ', '') + '\n' + body + '\n\n';
+    if ((cur + item).length > 8500) { // Properties 9KB 한계 보호 — 넘치면 즉시 발송
+      if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, subject, body);
+      return;
+    }
+    p.setProperty('브리핑큐', cur + item);
+  } finally { lock.releaseLock(); }
 }
 
 function sendMorningDigest() {
-  const p = PropertiesService.getScriptProperties();
-  const q = p.getProperty('브리핑큐');
-  if (!q) return;
-  p.deleteProperty('브리핑큐');
-  if (quotaOk(1)) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const p = PropertiesService.getScriptProperties();
+    const q = p.getProperty('브리핑큐');
+    if (!q) return;
+    if (!quotaOk(1)) return; // 쿼터 부족이면 큐를 보존해 다음 발송에서 재시도
     MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] ☀️ 오늘의 운영 브리핑',
       q + '— 개별 알림을 아침 1통으로 모았습니다 (DIGEST_MODE)');
-  }
+    const latest = p.getProperty('브리핑큐');
+    if (latest === q) p.deleteProperty('브리핑큐');
+    else if (latest && latest.indexOf(q) === 0) p.setProperty('브리핑큐', latest.slice(q.length));
+    // 예상 밖 변경이면 삭제하지 않는다. 중복 발송 가능성보다 알림 유실 방지를 우선한다.
+  } finally { lock.releaseLock(); }
 }
 
 /* ===================== [v6.8] 강사 알림 (10분 스위프에서 호출) =====================
@@ -7780,10 +7796,10 @@ function bootstrapSynk() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   // 0단계: 데이터 시트 골격 — 이 목록이 곧 SYNK의 시트 지도입니다 (실데이터는 백업에서 복원)
   const skeleton = [
-    ['profiles', ['user_id','이름','invite_code','role','class_name','생년월일','연락처','SNS','비고','email']],
+    ['profiles', ['user_id','이름','이름_몽골','role','class_name','생일','email','연락처','messenger_link','parent_of','tuition','등록일','보호자명','보호자연락처','created_at']],
     ['point_logs', ['id','student_id','points','reason','given_by','created_at','month','태그']],
     ['attendance', ['id','student_id','timestamp','method']],
-    ['teacher_checkins', ['id','teacher','timestamp','type']],
+    ['teacher_checkins', ['이름','구분','시각']],
     ['form_responses', ['제출시각']],
     ['raid', ['week','class_name','목표','달성포인트','상태','보상지급']],
     ['carryover', ['student_id','points']], ['app_state', ['key','value']],
@@ -7809,7 +7825,7 @@ function bootstrapSynk() {
   ];
   skeleton.forEach(k => ensureSheet(ss, k[0], k[1]));
   const steps = [
-    ['시간표·반 구조', setupSchedule], ['기준 테이블', setupTables], ['스토어', setupStore],
+    ['시간표·반 구조', setupSchedule], ['스토어', setupStore],
     ['몬스터 7', setupMonsters], ['보스 12 + 대군주', setupBosses], ['시즌 12', setupSeasons],
     ['브레인팁 30', setupBrainTips], ['학부모 라벨', setupParentLabels], ['크루 응원', setupTeacherCheers],
     ['연료 미션', setupFuelMissions], ['칭호 설화', setupTitleLore], ['워밍업 퀴즈', setupQuiz],
@@ -7822,7 +7838,9 @@ function bootstrapSynk() {
   let cnt = 0;
   const ct = ss.getSheetByName('contents');
   if (ct && ct.getLastRow() >= 2) cnt = ct.getLastRow() - 1;
-  const summary = 'SYNK OS 재건 완료 — 시트 ' + ss.getSheets().length + '장 · 콘텐츠 ' + cnt + '개\n' + log.join('\n') +
+  const rebuildFailed = log.some(line => line.indexOf('✗') === 0);
+  const summary = (rebuildFailed ? 'SYNK OS 재건 일부 실패' : 'SYNK OS 재건 완료') +
+    ' — 시트 ' + ss.getSheets().length + '장 · 콘텐츠 ' + cnt + '개\n' + log.join('\n') +
     '\n\n다음 단계: resetAllTriggers() 1회 실행(트리거 통합 재설치) → 데이터 복원(백업 폴더) → Glide 연결';
   Logger.log(summary);
   return summary;
@@ -7850,7 +7868,7 @@ function morningJobs() {   // 매일 07시
 }
 
 function nightJobs() {     // 매일 22시 — 수업 종료 후
-  safeRun('calcAll', calcAll); // 오늘의 숙제 게시(21시 조건) 포함
+  safeRun('calcAll', calcAll); // 오늘의 숙제 게시(21시 조건) + Glide가 만든 point_logs A·F 빈칸 보정
   safeRun('expandHwBatch', expandHwBatch);       // [v8.0] 숙제 일괄 1탭 → 학생별 +10 전개 (가드·정산·스토리 전에)
   safeRun('dailyGuard', dailyGuard);             // [v7.5] 일일 한도 — MVP 반당 1명 + 숙제·칭찬·생일 1회/일 자동 정정
   safeRun('notifyDailyAwards', notifyDailyAwards); // [v7.6] 유효 MVP·시냅스 학부모 알림(한·몽 통합 1통)

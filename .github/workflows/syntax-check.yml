@@ -28,3 +28,5 @@ jobs:
           done
       - name: validate appsscript.json
         run: node -e "JSON.parse(require('fs').readFileSync('appsscript.json','utf8')); console.log('appsscript.json OK')"
+      - name: run SYNK safety tests
+        run: node --test tests/safety.test.js
