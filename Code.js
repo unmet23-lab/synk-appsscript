@@ -7783,7 +7783,8 @@ function bootstrapSynk() {
     ['exit_log', ['student_id','이름','반','퇴소감지일','재원일수']], // [v9.28] 퇴소 이벤트 로그
     ['absence_notice', ['student_id','반','날짜','사유','등록시각']], // [v9.28] 학부모 결석 사전신고
     ['inquiries', ['student_id','이름','문의내용','상태','접수시각']], // [v9.28] 학부모 문의 인바운드
-    ['payments', ['student_id','이름','금액(만₮)','납부일','방법','비고','created_at']] // [v9.28] 매출 원장(수동 기입)
+    ['payments', ['student_id','이름','금액(만₮)','납부일','방법','비고','created_at']], // [v9.28] 매출 원장(수동 기입)
+    ['crew_projects', ['시즌','반','프로젝트명','한줄소개','결과물링크','사진URL','공개일','참여크루','비고']] // [v9.29] 시즌 프로젝트 포트폴리오 — 수동 기입 전용(hall_of_fame 패턴 · 트리거·배치 연동 없음)
   ];
   skeleton.forEach(k => ensureSheet(ss, k[0], k[1]));
   const steps = [
