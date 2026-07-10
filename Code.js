@@ -539,6 +539,27 @@ function rarityOf(t) { return TITLE_RARITY[t] || 1; }
 [v5] 31 시냅스게이지 32 게이지문구 33 다음진화까지
 [v5.1] 34 대표칭호 35 칭호등급 [v5.8] 36 반유형 */
 
+/* ── [v9.26] KPI 계측 (이탈률·전환율) — 램프 플랜 계측 공백 보강 ──────────────
+ * 정의를 여기서 상수화(정책 변경 용이). computeKpiMetrics가 이 값을 읽는다.
+ *
+ * ▸ 이탈(churn) 정의: profiles에는 "명시적 퇴원/휴원 상태" 열이 없다 — syncProfiles가
+ *   수강·납입 탭 payStatus '퇴소'를 아예 profiles에서 제외하므로, profiles 로스터에는
+ *   재원생만 남는다. 따라서 명시적 퇴원값을 profiles에서 읽을 수 없어, 대안 정의
+ *   "마지막 활동(출석)일이 기준일로부터 KPI_CHURN_DAYS일+ 경과한 기초재원 코호트"를 쓴다.
+ *   → 즉 이 지표가 잡는 것은 '아직 로스터에 있으나 조용히 멀어진(무활동)' 잠재이탈이고,
+ *     이미 '퇴소' 처리되어 로스터에서 빠진 학생은 분모·분자 어디에도 없다(라이브 스냅샷 한계).
+ *   마지막 활동일은 attendance 시트에서 기준일 이하로 산출(과거월 스냅샷도 재현 가능).
+ *   출석 이력이 전혀 없는 학생은 created_at을 활동 기준일로 대체(신규 유예).
+ *
+ * ▸ 전환(conversion) 정의: 해당 월 상담 접수 건(상담데이터입력 '등록일' = 구글폼 접수
+ *   타임스탬프, C열/인덱스2) 중, 학생ID(BH/인덱스59)가 profiles 신규 등록(created_at이
+ *   같은 달)으로 매칭된 비율. 학생ID가 빈 상담행은 분모에는 포함하되 매칭 불가(전환 0
+ *   취급) — 매칭 한계. 또한 syncProfiles가 '퇴소' 외 상담행 대부분을 자동 등록시키는
+ *   구조(별도 리드 단계 부재)라 전환율은 상향 편향될 수 있음. */
+const KPI_CHURN_DAYS = 30;           // 이탈 판정: 마지막 활동일로부터 N일+ 무활동
+const KPI_SHEET_NAME = 'kpi_metrics';
+const KPI_HEADERS = ['월', '기초재원', '신규등록', '이탈', '이탈률%', '상담건수', '전환건수', '전환율%', '계산일', '확정여부'];
+
 /* ===================== 공용 유틸 ===================== */
 
 function ensureSheet(ss, name, headers) {
@@ -2039,6 +2060,170 @@ function weeklyReport(asText) {
   if (wantText) return body;
   if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 주간 리포트', title + '\n\n' + body);
   Logger.log('주간 리포트 발송');
+}
+
+/* ===================== [v9.26] KPI 계측 (이탈률·전환율) =====================
+ * 정의·한계 상세 주석은 파일 상단 KPI_CHURN_DAYS 블록 참조. 시간대는 스프레드시트 tz 관례.
+ * 빈 시트·데이터 0건·분모 0(0나눗셈) 전부 안전 처리 · 월 키(yyyy-MM) 멱등 upsert. */
+
+function ensureKpiSheet_() { // kpi_metrics 시트 보장 (bootstrapSynk 스켈레톤에도 등록)
+  return ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), KPI_SHEET_NAME, KPI_HEADERS);
+}
+
+function kpiParseDate_(v) { // 관용 날짜 파싱 — Date/yyyymmdd(문자·숫자)/일반 문자열 → Date, 실패 시 null
+  if (!v && v !== 0) return null;
+  return toDate_(v) || (isNaN(new Date(v).getTime()) ? null : new Date(v));
+}
+
+function kpiReadRow_(ym) { // kpi_metrics에서 월 키 행을 객체로 (없으면 null)
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(KPI_SHEET_NAME);
+  if (!sh || sh.getLastRow() < 2) return null;
+  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, KPI_HEADERS.length).getValues();
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    if (String(r[0]) === ym) {
+      return {
+        ym: ym, opening: Number(r[1]) || 0, newReg: Number(r[2]) || 0, churn: Number(r[3]) || 0,
+        churnRate: Number(r[4]) || 0, consult: Number(r[5]) || 0, conv: Number(r[6]) || 0,
+        convRate: Number(r[7]) || 0, confirm: String(r[9] || '')
+      };
+    }
+  }
+  return null;
+}
+
+// 해당 월(yyyy-MM) KPI 계산 후 월 키로 멱등 upsert. yearMonth 미지정=당월. confirm===true면 확정여부='확정'.
+function computeKpiMetrics(yearMonth, confirm) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const ym = (yearMonth && /^\d{4}-\d{2}$/.test(String(yearMonth)))
+    ? String(yearMonth) : Utilities.formatDate(now, tz, 'yyyy-MM'); // 기본 = 당월
+  const y = Number(ym.slice(0, 4)), mo = Number(ym.slice(5, 7));
+  const monthStart = new Date(y, mo - 1, 1, 0, 0, 0);            // 해당 월 1일 00:00
+  const monthEnd = new Date(y, mo, 0, 23, 59, 59);              // 해당 월 말일 23:59:59
+  const refDate = (monthEnd.getTime() < now.getTime()) ? monthEnd : now; // 과거월=월말·당월=현재
+  const msDay = 86400000;
+  const wantConfirm = confirm === true;
+
+  // ── 재원생 로스터 (profiles, role=student) — created_at으로 코호트 분리 ──
+  const pf = ss.getSheetByName('profiles');
+  const students = []; // {id, createdAt(Date|null)}
+  if (pf && pf.getLastRow() >= 2) {
+    pf.getRange(2, 1, pf.getLastRow() - 1, 15).getValues().forEach(r => { // A~O
+      if (!r[0] || r[3] !== 'student') return;
+      students.push({ id: String(r[0]), createdAt: kpiParseDate_(r[14]) }); // O created_at
+    });
+  }
+  // 기초재원 = 월 시작 전 등록(레거시·created_at 불명 포함). 신규등록 = created_at이 해당 월.
+  const opening = students.filter(s => !s.createdAt || s.createdAt.getTime() < monthStart.getTime());
+  const newReg = students.filter(s => s.createdAt &&
+    s.createdAt.getTime() >= monthStart.getTime() && s.createdAt.getTime() <= monthEnd.getTime());
+
+  // ── 마지막 출석일(기준일 이하) — attendance 시트에서 산출(과거월 스냅샷 재현 가능) ──
+  const lastAtt = {}; // id -> ms(가장 최근, refDate 이하)
+  const at = ss.getSheetByName('attendance');
+  if (at && at.getLastRow() >= 2) {
+    at.getRange(2, 1, at.getLastRow() - 1, 3).getValues().forEach(r => {
+      const sid = r[1], dd = kpiParseDate_(r[2]);
+      if (!sid || !dd || dd.getTime() > refDate.getTime()) return; // 기준일 이후 출석 제외
+      const t = dd.getTime();
+      if (!lastAtt[sid] || t > lastAtt[sid]) lastAtt[sid] = t;
+    });
+  }
+
+  // ── 이탈 = 기초재원 코호트 중 기준일 활동공백 >= KPI_CHURN_DAYS (출석 없으면 created_at 기준) ──
+  let churn = 0;
+  opening.forEach(s => {
+    const anchor = lastAtt[s.id] || (s.createdAt ? s.createdAt.getTime() : null);
+    if (anchor == null) return; // 출석·created_at 둘 다 없으면 판정 보류
+    if (Math.floor((refDate.getTime() - anchor) / msDay) >= KPI_CHURN_DAYS) churn++;
+  });
+  const openingN = opening.length;
+  const churnRate = openingN ? Math.round((churn / openingN) * 1000) / 10 : 0; // 소수1자리·0나눗셈 가드
+
+  // ── 전환 = 해당 월 상담 접수 중 profiles 신규 등록(학생ID 매칭)으로 이어진 비율 ──
+  const newIds = {}; newReg.forEach(s => { newIds[s.id] = 1; });
+  let consultCnt = 0, convCnt = 0;
+  try { // 상담시트 접근 실패해도 이탈 지표는 산출 — 전환만 0 처리
+    const src = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    if (src && src.getLastRow() >= 3) {
+      src.getRange(3, 1, src.getLastRow() - 2, 62).getValues().forEach(r => { // v18.1 = 62열
+        const intake = kpiParseDate_(r[2]); // C 등록일 = 폼 접수 ts (상담 접수 시점)
+        if (!intake || intake.getTime() < monthStart.getTime() || intake.getTime() > monthEnd.getTime()) return;
+        consultCnt++; // 학생ID 없는 행도 분모 포함(매칭 한계 — 전환 0 취급)
+        const sid = String(r[59] || '').trim(); // BH 학생ID
+        if (sid && newIds[sid]) convCnt++;       // 같은 달 profiles 신규 등록과 매칭
+      });
+    }
+  } catch (e) {
+    Logger.log('computeKpiMetrics 상담시트 접근 실패(전환 0 처리): ' + e);
+  }
+  const convRate = consultCnt ? Math.round((convCnt / consultCnt) * 1000) / 10 : 0; // 0나눗셈 가드
+
+  // ── 월 키 멱등 upsert (재실행 안전 · 확정여부 보존) ──
+  const sh = ensureKpiSheet_();
+  const calcStamp = Utilities.formatDate(now, tz, 'yyyy-MM-dd HH:mm');
+  const last = sh.getLastRow();
+  let target = -1, prevConfirm = '';
+  if (last >= 2) {
+    const keys = sh.getRange(2, 1, last - 1, 1).getValues();
+    for (let i = 0; i < keys.length; i++) {
+      if (String(keys[i][0]) === ym) { target = i + 2; prevConfirm = String(sh.getRange(target, 10).getValue() || ''); break; }
+    }
+  }
+  const confirmVal = wantConfirm ? '확정' : prevConfirm; // 확정 표기는 유지(잠정 재계산이 지우지 않음)
+  const rowArr = [ym, openingN, newReg.length, churn, churnRate, consultCnt, convCnt, convRate, calcStamp, confirmVal];
+  if (target > 0) sh.getRange(target, 1, 1, KPI_HEADERS.length).setValues([rowArr]);
+  else sh.getRange(last + 1, 1, 1, KPI_HEADERS.length).setValues([rowArr]);
+
+  Logger.log('KPI ' + ym + ' → 기초 ' + openingN + '·신규 ' + newReg.length + '·이탈 ' + churn +
+    '(' + churnRate + '%)·상담 ' + consultCnt + '·전환 ' + convCnt + '(' + convRate + '%)' + (confirmVal ? '·' + confirmVal : ''));
+  return {
+    ym: ym, opening: openingN, newReg: newReg.length, churn: churn, churnRate: churnRate,
+    consult: consultCnt, conv: convCnt, convRate: convRate, confirm: confirmVal
+  };
+}
+
+// 주간 통합 리포트 섹션 — 당월 잠정치 + 전월(확정 우선) 한 줄 비교. asText 패턴(기존 섹션과 동일).
+function kpiSection_(asText) {
+  const wantText = asText === true; // 트리거 이벤트객체 방어 — true일 때만 텍스트 모드
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const y = Number(Utilities.formatDate(now, tz, 'yyyy')), m = Number(Utilities.formatDate(now, tz, 'MM'));
+  const curYm = Utilities.formatDate(now, tz, 'yyyy-MM');
+  const prevYm = Utilities.formatDate(new Date(y, m - 2, 1), tz, 'yyyy-MM'); // 전월(연 경계 안전)
+
+  const cur = computeKpiMetrics(curYm);                    // 당월 잠정 재계산(멱등)
+  const prev = kpiReadRow_(prevYm) || computeKpiMetrics(prevYm); // 전월은 시트(확정) 우선·없으면 잠정 계산
+
+  let body = '· ' + curYm + '(잠정): 이탈 ' + cur.churn + '/' + cur.opening + '명=' + cur.churnRate +
+    '% · 전환 ' + cur.conv + '/' + cur.consult + '건=' + cur.convRate + '%\n';
+  body += '· ' + prevYm + '(' + (prev && prev.confirm === '확정' ? '확정' : '잠정') + '): 이탈 ' +
+    (prev ? prev.churnRate : 0) + '% · 전환 ' + (prev ? prev.convRate : 0) + '%';
+  body += '\n※ 이탈=마지막출석 ' + KPI_CHURN_DAYS + '일+ 무활동 기초재원 · 전환=당월 상담 접수→신규등록';
+
+  if (wantText) return body;
+  Logger.log(body);
+  return body;
+}
+
+// 전월 KPI 확정 스냅샷 (monthlyJobs 1일 실행 — safeRun 래핑용 무인자 함수)
+function kpiSnapshotPrevMonth_() {
+  const tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+  const now = new Date();
+  const y = Number(Utilities.formatDate(now, tz, 'yyyy')), m = Number(Utilities.formatDate(now, tz, 'MM'));
+  const prevYm = Utilities.formatDate(new Date(y, m - 2, 1), tz, 'yyyy-MM'); // 전월(연 경계 안전)
+  computeKpiMetrics(prevYm, true); // 확정여부='확정'
+}
+
+// 수동 실행용: 당월 즉시 계산 + Logger 출력
+function kpiNow() {
+  const r = computeKpiMetrics();
+  Logger.log('kpiNow ' + r.ym + ': 기초재원 ' + r.opening + ' · 신규 ' + r.newReg + ' · 이탈 ' + r.churn +
+    '(' + r.churnRate + '%) · 상담 ' + r.consult + ' · 전환 ' + r.conv + '(' + r.convRate + '%) · ' + (r.confirm || '잠정'));
+  return r;
 }
 
 /* ===================== 생일 자동 +20 ===================== */
@@ -6425,7 +6610,8 @@ function bootstrapSynk() {
     ['today_board', ['유형','이름','반','시각','퇴근']],
     ['teacher_stats', ['teacher','지급수','편중률']], ['report_cards', ['월','student_id','내용']],
     ['league_history', ['월','student_id','랭킹']], ['hall_of_fame', ['연도','이름','반','업적','한마디','사진URL']],
-    ['raid_story', ['date','class_name','유형','제목','스토리']]
+    ['raid_story', ['date','class_name','유형','제목','스토리']],
+    [KPI_SHEET_NAME, KPI_HEADERS] // [v9.26] 이탈률·전환율 계측 시트
   ];
   skeleton.forEach(k => ensureSheet(ss, k[0], k[1]));
   const steps = [
@@ -6520,6 +6706,7 @@ function weeklyJobs() {    // 매주 월 07시
   const sections = [
     ['🛡️ 시스템 워치독', systemWatchdog],
     ['📊 주간 리포트', weeklyReport],
+    ['📈 KPI(이탈·전환)', kpiSection_],    // [v9.26] 당월 잠정 + 전월 확정 비교
     ['💰 미납 현황', checkTuition],        // 미납은 주 1회 (알림 다이어트)
     ['🔄 재등록 시점', checkReenrollment]
   ];
@@ -6549,6 +6736,7 @@ function monthlyJobs() {   // 매월 1일 05시 — 순서 고정이 핵심
   safeRun('buildMonthlyCards', buildMonthlyCards_);   // [v9.12] ①.6 🃏 이달의 카드
   safeRun('updateTravelMap', updateTravelMap_);       // [v9.12] ①.7 🗺️ 여행 지도 도장
   safeRun('buildExecReport', buildExecReport_);       // [v9.14] ①.8 📊 경영 리포트
+  safeRun('kpiSnapshotPrevMonth', kpiSnapshotPrevMonth_); // [v9.26] ①.9 📈 전월 KPI 확정 스냅샷 (attendance 미아카이브라 순서 무관·아카이브 전 배치)
   safeRun('archiveMonthly', archiveMonthly);     // ② 그다음 아카이브
 }
 
