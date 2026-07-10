@@ -952,7 +952,12 @@ function myJourneyHtml_(o) {
   const storyBlock = o.story
     ? '<div style="background:#FFFBEB;border:1px dashed #FCD34D;border-radius:11px;padding:9px 12px;font-size:12px;color:#92400E;margin-top:10px;line-height:1.7;">💬 <b>지난 이야기</b><br/>' + o.story + '</div>'
     : '';
+  // [v9.29] 🌟 나의 목표 — 학생이 직접 쓴 드림 한 줄(CB 80)을 카드 최상단에 노출. 비어있으면 작성 유도. 이스케이프 필수(사용자 입력).
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const dreamLine = '<div style="background:#EEF2FF;border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;color:#4338CA;margin-bottom:9px;">' +
+    (o.dream ? '🌟 나의 목표: ' + esc(o.dream) : '🌟 나의 목표를 적어보세요') + '</div>';
   return '<div style="background:linear-gradient(135deg,#F5F3FF,#EEF2FF);border:2px solid #C4B5FD;border-radius:16px;padding:13px 15px;">' +
+    dreamLine +
     '<div style="font-size:15px;font-weight:800;color:#4338CA;">📖 ' + o.nm + '의 여정</div>' +
     '<div style="font-size:12px;padding:6px 0 9px;">🐣 ' + journey + '</div>' +
     '<div style="background:#fff;border-radius:12px;padding:9px 11px;font-size:12.5px;line-height:2;">' +
@@ -1199,6 +1204,7 @@ function calcAll() {
     const prevBB = (pfData.length && pf.getMaxColumns() >= 54) ? pf.getRange(2, 54, pfData.length, 1).getValues() : [];
   const prevBC = (pfData.length && pf.getMaxColumns() >= 55) ? pf.getRange(2, 55, pfData.length, 1).getValues() : []; // [v9.11]
   const prevAR = (pfData.length && pf.getMaxColumns() >= 44) ? pf.getRange(2, 44, pfData.length, 1).getValues() : []; // [v9.28] 목표아이템(사용자 선택, 스크립트는 읽기만)
+  const prevDream = (pfData.length && pf.getMaxColumns() >= 80) ? pf.getRange(2, 80, pfData.length, 1).getValues() : []; // [v9.29] 드림한줄(CB 80) — 학생 자기선언, 스크립트는 읽기만
   const skinOut = [], frameOut = [];
   const fortuneOut = [], speakOut = [], recordOut = []; // [v9.12]
   const goalOut = [], perDayOut = []; // [v9.28] 목표진행 카드 · 출석일당포인트(주말반 보정 참고 지표)
@@ -1521,7 +1527,8 @@ function calcAll() {
       journeyOut.push([myJourneyHtml_({
         nm: r[1] || id, stages: stages, mon: mon, rec: records[id], stk: stk, mPts: mPts, t: t,
         acad: academicSnapshot_(acadById[id]), evoDate: (evoDateOut[evoDateOut.length - 1] || [''])[0],
-        titles: titleOf[id], chem: chemi[id], story: (prevAU[idx] && prevAU[idx][0]) || '' // [v9.20] 칭호·단짝·이달의 이야기
+        titles: titleOf[id], chem: chemi[id], story: (prevAU[idx] && prevAU[idx][0]) || '', // [v9.20] 칭호·단짝·이달의 이야기
+        dream: String((prevDream[idx] && prevDream[idx][0]) || '').trim() // [v9.29] 드림 한 줄(학생 자기선언)
       })]);
       { // [v9.28] 출석일당포인트 — 반유형 보정(주말반 불리 완화), 랭킹 참고용 별도 열(기존 월간랭킹은 무변경)
         const schSoFar = classTypeOf[id] ? scheduledSoFar_(classTypeOf[id], now) : 0;
@@ -1570,6 +1577,10 @@ function calcAll() {
     if (String(pf.getRange('CA1').getValue()) !== '출석일당포인트') pf.getRange('CA1').setValue('출석일당포인트');
     writeIfChanged(pf, 2, 78, goalOut);
     writeIfChanged(pf, 2, 79, perDayOut);
+    // [v9.29] 드림한줄(CB 80) — 학생이 Glide Set Column으로 직접 쓰는 사용자 소유 열(목적 노출·철학1 실현).
+    //   calcAll·syncProfiles 어떤 배치도 이 열의 데이터 행을 쓰지 않는다(헤더만 보장) — AK 착용칭호와 동일한 사용자 소유 방식.
+    if (pf.getMaxColumns() < 80) pf.insertColumnsAfter(pf.getMaxColumns(), 80 - pf.getMaxColumns());
+    if (String(pf.getRange('CB1').getValue()) !== '드림한줄') pf.getRange('CB1').setValue('드림한줄');
     { // 원장 홈 카드 2종
       radarList.sort((a2, b2) => a2.s === b2.s ? 0 : (a2.s === '🔴' ? -1 : 1));
       const rHtml = radarList.length
