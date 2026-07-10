@@ -511,6 +511,27 @@
  *      [의도적 보류] attendance 아카이브·profiles 열 상수화 전체 리팩터는 이번 배치에 미포함 — 최장연속출석
  *      전기간 스캔·KPI 과거월 재현 등 여러 함수가 attendance 전체 이력에 의존해 아카이브 시 병합 읽기로
  *      동시 수정해야 하는 범위라, 13종 동시 배포보다 별도 세션에서 단독 검증 권장.
+ *
+ * [v9.29 — 압축 3종(중복 계산·죽은 함수 제거) + 목적노출·포트폴리오 2종] · 5개 전부 적용, 보류 없음
+ * 156. [압축] 월요일 KPI 이중 계산 제거 — weeklyJobs가 computeKpiMetrics(당월·전월)를 1회만 계산해
+ *      kpiSection_·updateBizDashboard에 주입(profiles·attendance 전량 스캔 + 상담시트 openById가 두 벌→한 벌).
+ *      두 함수는 주입 없으면 기존대로 자체 계산 → kpiNow·bizDashboardNow·setupBizDashboard 단독 경로 보존.
+ *      같은 메일 중복 표시 정리: KPI 섹션은 '전월 대비 변화(Δ%p)' 중심, 현재값·신호등 판정은 경영계기판이 담당.
+ * 157. [압축] setupV5Triggers 삭제 — 시트 4종(class_fuel·weekly_topics·report_cards·league_history)이
+ *      bootstrapSynk 재건목록 + 소비지점 inline ensure로 전부 커버됨을 확인 후 제거. 재해복구 가이드 4단계·
+ *      bootstrapSynk 요약("다음 단계 setupV5Triggers"→resetAllTriggers)·관련 주석 정리(#151 [A6]·report_cards
+ *      정정 주석 등 과거 버전 기록은 존치 — 역사 서술이라 재작성 안 함).
+ * 158. [압축] applyLowUpdateMode 삭제 — 호출처 0건 확인 후 resetAllTriggers 위임 껍데기 + [v5.3] 주석 블록 제거.
+ *      calcAll 21~23시 주석의 '(applyLowUpdateMode의 22시)' 참조를 'resetAllTriggers의 22시 nightJobs'로 정정.
+ *      healthCheck 껍데기는 수동/구트리거 호환용으로 존치(결정).
+ * 159. [추가·철학1 실현] 🌟 드림 한 줄 — profiles 드림한줄(CB / 80) 신규 열. 학생이 Glide Set Column으로 직접
+ *      쓰는 사용자 소유 열(calcAll·syncProfiles 어떤 배치도 데이터 미기입, 헤더만 보장 — AK 착용칭호와 동일).
+ *      원장/강사 전용 핵심비전(BA / 53, 설계노트 115 잠금)과 별개의 학생 자기선언 열. myJourneyHtml_(나의여정
+ *      BY / 77 카드)이 드림한줄을 카드 최상단에 '🌟 나의 목표: {값}'(이스케이프)로, 비면 '🌟 나의 목표를
+ *      적어보세요' 유도 문구. Glide 입력·확인 절차 = 지시서 1-7.
+ * 160. [추가·철학3·4 최소구현] crew_projects 시트 신설(시즌·반·프로젝트명·한줄소개·결과물링크·사진URL·공개일·
+ *      참여크루·비고) — 시즌 프로젝트 포트폴리오. bootstrapSynk 재건목록에만 추가, 수동 기입 전용
+ *      (hall_of_fame 패턴 · 트리거·배치 연동 없음). Glide 탭 바인딩 절차 = 지시서 2-5.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
