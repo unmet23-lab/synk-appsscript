@@ -485,6 +485,11 @@
  *      통합 리포트에 '필수 트리거 sendMorningDigest 실종!' 등 허위 크리티컬 4건을 싣던 회귀 수리 — 점검을
  *      alive(f)=have[f]||have[f+'Job'] 관용 매칭으로 바꿔 bare/…Job 어느 쪽이 등록돼도 정상 판정(목록은 원
  *      함수명 유지, 향후 다른 Job 래퍼도 자동 흡수). 워치독 '늑대소년화'로 진짜 트리거 실종을 놓칠 위험 제거.
+ * 154. [v9.26] 📟 경영계기판 — 사업 진단(2026-07) 6지표 대시보드. KPI 파이프라인(#149대 아님·상단 KPI 블록,
+ *      computeKpiMetrics)을 단일 소스로 재사용해 이탈률·전환율을 읽고, leads 시트(채널·체험참석·권종·미등록
+ *      사유 — 마케팅 퍼널 귀속)와 입력칸(현금잔고·월번·BEP)으로 ⓪생존개월수 ①리드 ③추천비율 ⑤선납비중을
+ *      보강. '경영계기판' 시트(신호등 상태) + 주간 통합 리포트 섹션 + 적색경보(생존<4.0개월·이탈률 8% 2개월
+ *      연속 = 마케팅 증액 금지) 즉시 메일(월 1회 dedup). 설치 setupBizDashboard() 1회 · 수동 bizDashboardNow().
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
@@ -7555,6 +7560,7 @@ function weeklyJobs() {    // 매주 월 07시
     ['🛡️ 시스템 워치독', systemWatchdog],
     ['📊 주간 리포트', weeklyReport],
     ['📈 KPI(이탈·전환)', kpiSection_],    // [v9.26] 당월 잠정 + 전월 확정 비교
+    ['📟 경영계기판', updateBizDashboard],  // [v9.26] 6지표 신호등 — KPI 재사용 + leads·현금 지표 + 적색경보
     ['💰 미납 현황', checkTuition],        // 미납은 주 1회 (알림 다이어트)
     ['🔄 재등록 시점', checkReenrollment]
   ];
@@ -7625,3 +7631,138 @@ function applyLowUpdateMode() {
   // [v6.3] 통합 리셋에 14시/22시(nightJobs)가 포함 — 이 함수는 리셋으로 위임
   resetAllTriggers();
 }
+
+/* ===================== [v9.26] 📟 경영계기판 — 6지표 신호등 대시보드 =====================
+ * 사업 진단(2026-07)의 주간 대시보드를 시트로 구현. 이탈률·전환율은 KPI 파이프라인(computeKpiMetrics)을
+ * 단일 소스로 재사용하고(두 벌 계산 금지), 여기서는 그 위에 3개 층을 얹는다:
+ *   ① leads 시트 — 마케팅 퍼널 귀속: 유입경로(채널)·체험참석·등록권종·미등록사유·추천인. 데스크가 1행씩 기입.
+ *      (KPI 전환율은 '상담 접수→등록'이라 채널·체험·사유를 모름 — 이 시트가 그 공백을 채운다)
+ *   ② 입력칸 — 현금잔고(월 1회 직접)·월 번·BEP 목표 → ⓪ 생존개월수 = 현금÷번.
+ *   ③ 신호등 판정 + 적색경보 — 생존<4.0개월 · 이탈률 8% 2개월 연속(= 마케팅 증액 금지) → 즉시 메일(월 1회 dedup).
+ * 운영: 매주 월 07시 주간 통합 리포트 섹션으로 자동 갱신 · 설치 setupBizDashboard() 1회 · 수동 bizDashboardNow(). */
+
+const BIZ_BURN_DEFAULT = 5250; // 월 번(만₮) — 진단 기준치. 사회보험·외국인고용부담금 확정 시 계기판 B3에서 직접 수정
+const BIZ_BEP_DEFAULT = 131;   // 손익분기 재적(명) — 번 6,100만₮ 시나리오. 확정 시 계기판 B4에서 수정
+
+function bizSheets_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  return {
+    ld: ensureSheet(ss, 'leads', ['날짜', '이름', '연락처', '유입경로', '추천인', '체험참석', '등록', '등록권종', '등록일', '미등록사유', '메모']),
+    db: ensureSheet(ss, '경영계기판', ['지표', '값', '상태', '기준·메모'])
+  };
+}
+
+function setupBizDashboard() { // 1회 설치 — leads 드롭다운 + 계기판 골격 (재실행 무해)
+  const sh = bizSheets_();
+  const dv = list => SpreadsheetApp.newDataValidation().requireValueInList(list, true).setAllowInvalid(true).build();
+  sh.ld.getRange(2, 4, 999, 1).setDataValidation(dv(['페이스북', '인스타', '틱톡', '추천', '오픈데이', '학교제휴', '워크인', '기타']));
+  sh.ld.getRange(2, 6, 999, 2).setDataValidation(dv(['Y', 'N'])); // 체험참석·등록
+  sh.ld.getRange(2, 8, 999, 1).setDataValidation(dv(['1개월', '3개월', '6개월', '번들3개월', '번들6개월']));
+  sh.ld.getRange(2, 10, 999, 1).setDataValidation(dv(['가격', '시간대', '거리', '타학원', '보류', '연락두절', '기타']));
+  updateBizDashboard(true); // 입력칸·지표 골격 즉시 생성
+  Logger.log('✅ 경영계기판 설치 완료 — leads 시트에 체험·상담을 기록하세요. 계기판 B2(현금잔고)는 월 1회 직접 입력.');
+}
+
+function updateBizDashboard(asText) { // 계기판 시트 갱신 + 요약 텍스트 반환 (주간 통합 리포트 섹션 규약)
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const DAY = 86400000;
+  const sh = bizSheets_();
+
+  // ── 입력칸 B2:B4 보존 (비면 기본값)
+  const inp = sh.db.getLastRow() >= 4 ? sh.db.getRange(2, 2, 3, 1).getValues() : [[''], [''], ['']];
+  const cash = Number(inp[0][0]) || 0;
+  const burn = Number(inp[1][0]) || BIZ_BURN_DEFAULT;
+  const bep = Number(inp[2][0]) || BIZ_BEP_DEFAULT;
+
+  // ── 이탈률·전환율 = KPI 단일 소스 (당월 잠정 재계산 멱등 + 전월은 확정 우선)
+  const yN = Number(Utilities.formatDate(now, tz, 'yyyy')), mN = Number(Utilities.formatDate(now, tz, 'MM'));
+  const prevYm = Utilities.formatDate(new Date(yN, mN - 2, 1), tz, 'yyyy-MM');
+  let kpiCur = null, kpiPrev = null;
+  try { kpiCur = computeKpiMetrics(); kpiPrev = kpiReadRow_(prevYm) || computeKpiMetrics(prevYm); }
+  catch (e) { Logger.log('경영계기판 KPI 읽기 실패(섹션은 계속): ' + e); }
+
+  // ── 재적·이탈위험 선행지표 (profiles Y열 25)
+  const pf = ss.getSheetByName('profiles');
+  let nStu = 0, riskHi = 0, riskMid = 0;
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 25).getValues().forEach(r => {
+    if (!r[0] || r[3] !== 'student') return;
+    nStu++;
+    const rk = String(r[24] || '').charAt(0);
+    if (rk === '상') riskHi++; else if (rk === '중') riskMid++;
+  });
+
+  // ── 마케팅 퍼널 (leads): 리드·참석률·추천비율·선납비중
+  const L = [];
+  if (sh.ld.getLastRow() >= 2) sh.ld.getRange(2, 1, sh.ld.getLastRow() - 1, 10).getValues().forEach(r => {
+    const d = toDate_(r[0]) || (isNaN(new Date(r[0]).getTime()) ? null : new Date(r[0]));
+    if (!d || !String(r[1] || '')) return;
+    L.push({ t: d.getTime(), src: String(r[3] || ''), att: String(r[5]) === 'Y', enr: String(r[6]) === 'Y', term: String(r[7] || '') });
+  });
+  const in30 = L.filter(l => l.t > now.getTime() - 30 * DAY);
+  const enr90 = L.filter(l => l.t > now.getTime() - 90 * DAY && l.enr);
+  const att30 = in30.length ? Math.round(in30.filter(l => l.att).length / in30.length * 100) : null;
+  const refPct = enr90.length ? Math.round(enr90.filter(l => l.src === '추천').length / enr90.length * 100) : null;
+  const prePct = enr90.length ? Math.round(enr90.filter(l => l.term && l.term !== '1개월').length / enr90.length * 100) : null;
+
+  // ── 신호등 판정 (진단 임계선)
+  const surv = (burn > 0 && cash > 0) ? Math.round(cash / burn * 10) / 10 : null;
+  const cvR = kpiCur ? kpiCur.convRate : null, cvN = kpiCur ? kpiCur.consult : 0;
+  const chR = kpiCur ? kpiCur.churnRate : null, chPrevR = kpiPrev ? kpiPrev.churnRate : null;
+  const stSurv = surv == null ? '⚪' : surv >= 6 ? '🟢' : surv >= 4 ? '🟡' : '🔴';
+  const stConv = (cvR == null || cvN < 10) ? '⚪' : cvR >= 25 ? '🟢' : cvR >= 20 ? '🟡' : '🔴';
+  const stChurn = chR == null ? '⚪' : chR <= 5 ? '🟢' : chR < 8 ? '🟡' : '🔴';
+  const stRef = refPct == null ? '⚪' : refPct >= 15 ? '🟢' : '🟡';
+  const stPre = prePct == null ? '⚪' : prePct >= 30 ? '🟢' : '🟡';
+  const churn2x = chR != null && chPrevR != null && chR >= 8 && chPrevR >= 8;
+
+  // ── 계기판 시트 재작성 (2행부터 — 입력칸 값은 읽은 그대로 되쓰기)
+  const fmt = (v, unit) => v == null ? '— (축적 중)' : v + (unit || '');
+  const rows = [
+    ['[입력] 현금잔고(만₮)', cash || '', '', '월 1회 직접 입력 — 비어 있으면 생존개월수 미계산'],
+    ['[입력] 월 번(만₮)', burn, '', '유지비. 사회보험·외국인고용부담금 확정 시 갱신'],
+    ['[입력] BEP 목표(명)', bep, '', '손익분기 재적 (진단: 114~131명)'],
+    ['── 자동 지표 ──', '갱신 ' + Utilities.formatDate(now, tz, 'MM-dd HH:mm'), '', '매주 월 07시 자동 · 수동 bizDashboardNow()'],
+    ['⓪ 생존개월수', surv == null ? '현금잔고 입력 필요' : surv + '개월', stSurv, '현금÷번. 4.0 미만 = 적색(개원조건 미달)'],
+    ['재적 (BEP까지)', nStu + '명 (' + Math.max(bep - nStu, 0) + '명 남음)', nStu >= bep ? '🟢' : '⚪', 'BEP ' + bep + '명 기준'],
+    ['① 리드 30일', in30.length + '건 · 체험참석률 ' + fmt(att30, '%'), '⚪', 'leads 시트 기입 기준 · 참석률 50% 목표'],
+    ['② 전환율(상담→등록, 당월)', kpiCur ? kpiCur.conv + '/' + kpiCur.consult + '건 = ' + cvR + '%' : '— (KPI 미가동)', stConv, '25% 사수 · 20% 미만 적색(상담 10건+부터 판정) · 상세 kpi_metrics'],
+    ['③ 추천 신규 비율(90일)', fmt(refPct, '%'), stRef, '등록자 중 유입경로=추천. 15→30% 목표'],
+    ['④ 월 이탈률(당월 잠정)', (chR != null ? chR + '%' : '— (KPI 미가동)') + (chPrevR != null ? ' · 전월 ' + chPrevR + '%' : ''), stChurn, '≤5% 사수 · 8% 2개월 연속 = 마케팅 증액 금지 · 정의=출석 ' + KPI_CHURN_DAYS + '일+ 무활동'],
+    ['이탈위험 상/중 (선행지표)', riskHi + '명 / ' + riskMid + '명', riskHi > 0 ? '🟡' : '🟢', 'profiles 이탈위험 — 담임 케어 SOP 대상'],
+    ['⑤ 3개월+ 선납 비중(90일)', fmt(prePct, '%'), stPre, '등록자 중 3·6개월/번들. 30%+ = 겨울 방어선']
+  ];
+  sh.db.getRange(2, 1, rows.length, 4).setValues(rows);
+  const extra = sh.db.getLastRow() - (rows.length + 1);
+  if (extra > 0) sh.db.getRange(rows.length + 2, 1, extra, 4).clearContent();
+
+  // ── 적색경보 — 긴급이라 다이제스트 큐 우회 즉시 발송, 월 1회 dedup(app_state)
+  const alerts = [];
+  if (surv != null && surv < 4) alerts.push('🚨 생존개월수 ' + surv + '개월 (<4.0) — 현금 확보 최우선. 지출 동결·개원/증설 보류 검토.');
+  if (churn2x) alerts.push('🚨 월 이탈률 ' + chPrevR + '% → ' + chR + '%, 2개월 연속 8%+ — 마케팅 증액 금지. 리텐션 수술 우선(담임 결석 SOP·재등록 인터뷰·미등록사유 분석).');
+  if (alerts.length) {
+    const stA = ensureSheet(ss, 'app_state', ['key', 'value']);
+    const sig = Utilities.formatDate(now, tz, 'yyyy-MM') + '_' + alerts.length;
+    if (String(getState(stA, '경영경보_상태').val || '') !== sig) {
+      if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🚨 경영 적색경보', alerts.join('\n\n') + '\n\n📟 상세: 앱 스프레드시트 "경영계기판" 시트');
+      setState(stA, '경영경보_상태', sig);
+    }
+  }
+
+  // ── 주간 통합 리포트 섹션 텍스트
+  const t = [
+    '⓪ 생존개월수: ' + (surv == null ? '현금잔고 미입력 (계기판 B2)' : surv + '개월 ' + stSurv),
+    '재적: ' + nStu + '명 (BEP ' + bep + '명까지 ' + Math.max(bep - nStu, 0) + '명)',
+    '① 리드 30일: ' + in30.length + '건 · 참석률 ' + fmt(att30, '%'),
+    '② 전환율(상담→등록): ' + (kpiCur ? cvR + '% (' + kpiCur.conv + '/' + kpiCur.consult + ')' : 'KPI 미가동') + ' ' + stConv,
+    '③ 추천 비율: ' + fmt(refPct, '%') + ' ' + stRef,
+    '④ 이탈률: ' + (chR != null ? chR + '%' : 'KPI 미가동') + (chPrevR != null ? ' (전월 ' + chPrevR + '%)' : '') + ' ' + stChurn + ' · 이탈위험 상 ' + riskHi + '/중 ' + riskMid,
+    '⑤ 3개월+ 선납: ' + fmt(prePct, '%') + ' ' + stPre
+  ];
+  if (alerts.length) t.push('', alerts.join('\n'));
+  return t.join('\n');
+}
+
+// [v9.26] 수동 실행용 — 드롭다운에서 바로 보이는 정식 함수 (설치+갱신 원스톱)
+function bizDashboardNow() { setupBizDashboard(); return updateBizDashboard(true); }
