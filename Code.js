@@ -2929,6 +2929,7 @@ function expandHwBatch() {
     });
   }
   const outRows = [];
+  const doneIdx = []; // [v9.31] 전개 대상 행 인덱스 — 지급 성공 뒤에 일괄 마킹
   let skip = 0;
   rows.forEach((r, i) => {
     const d = r[0];
@@ -2945,9 +2946,12 @@ function expandHwBatch() {
       doneToday.add(sid);
       outRows.push([sid, 10, '숙제완료', by]);
     });
-    hb.getRange(i + 2, 6).setValue('전개완료');
+    doneIdx.push(i); // 마킹은 아직 하지 않는다 (지급 성공 후로 미룸)
   });
+  // [v9.31] 지급 → 성공 후 마킹 순서. 지급 전 크래시면 미마킹으로 재시도되고,
+  //         doneToday(point_logs 재조회)가 이미 지급된 학생을 걸러 중복 지급을 막는다.
   if (outRows.length) appendPoints(ss, outRows);
+  doneIdx.forEach(i => hb.getRange(i + 2, 6).setValue('전개완료'));
   Logger.log('숙제 일괄 전개: +' + outRows.length + '명 / 중복 스킵 ' + skip);
 }
 
@@ -3636,7 +3640,7 @@ function archiveMonthly() {
     if (plLast < 2) return;
 
     const arc = ensureSheet(ss, 'point_logs_archive',
-      ['log_id','student_id','points','reason','given_by','created_at','연월']);
+      ['log_id','student_id','points','reason','given_by','created_at','연월','태그']); // [v9.31] H열(태그) 보존 — 8열
     const co = ensureSheet(ss, 'carryover', ['student_id', 'points']);
     if (co.getRange(1, 3).getValue() !== 'earned') co.getRange(1, 3).setValue('earned'); // [v7.1]
 
@@ -3648,7 +3652,7 @@ function archiveMonthly() {
         carry[r[0]] = { n: n, e: (r[2] !== '' && r[2] !== null && r[2] !== undefined) ? (Number(r[2]) || 0) : n };
       });
     }
-    const data = pl.getRange(2, 1, plLast - 1, 7).getValues();
+    const data = pl.getRange(2, 1, plLast - 1, 8).getValues(); // [v9.31] 8열(H=태그 포함) — 태그 유실·오배치 방지
     const keep = [], move = [];
     data.forEach(r => {
       const ym = String(r[6]);
@@ -3664,9 +3668,9 @@ function archiveMonthly() {
     });
     if (move.length === 0) { Logger.log('아카이빙 대상 없음'); return; }
 
-    arc.getRange(arc.getLastRow() + 1, 1, move.length, 7).setValues(move);
-    pl.getRange(2, 1, data.length, 7).clearContent();
-    if (keep.length) pl.getRange(2, 1, keep.length, 7).setValues(keep);
+    arc.getRange(arc.getLastRow() + 1, 1, move.length, 8).setValues(move);
+    pl.getRange(2, 1, data.length, 8).clearContent(); // 8열 클리어 — 남은 태그가 다음 행에 밀려붙는 오배치 차단
+    if (keep.length) pl.getRange(2, 1, keep.length, 8).setValues(keep);
 
     const coOut = Object.keys(carry).map(k => [k, carry[k].n, carry[k].e]); // [v7.1]
     if (co.getLastRow() > 1) co.getRange(2, 1, co.getLastRow() - 1, 3).clearContent();

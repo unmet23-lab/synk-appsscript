@@ -166,6 +166,28 @@ test('재건 결과는 일부 단계가 실패하면 완료라고 표시하지 �
   assert.equal(body.includes("['기준 테이블', setupTables]"), false);
 });
 
+test('숙제 일괄 전개는 지급에 성공한 뒤에만 전개완료로 표시한다', () => {
+  const body = section('function expandHwBatch()', 'function parentWeeklyDigest');
+  // appendPoints(지급)가 '전개완료' 마킹보다 먼저 와야 미지급(선마킹 후 크래시)을 막는다.
+  // 재시도 시 doneToday(point_logs 재조회)가 이미 지급된 학생을 걸러 중복 지급도 막는다.
+  assertOrder(body, [
+    'const doneIdx = []',
+    'appendPoints(ss, outRows)',
+    "doneIdx.forEach(i => hb.getRange(i + 2, 6).setValue('전개완료'))"
+  ]);
+});
+
+test('월간 아카이브는 태그(H열)까지 8열로 이관·정리한다', () => {
+  const body = section('function archiveMonthly()', 'function pruneAppState');
+  assert.ok(body.includes("['log_id','student_id','points','reason','given_by','created_at','연월','태그']"));
+  assert.ok(body.includes('plLast - 1, 8).getValues()'));
+  assert.ok(body.includes('move.length, 8).setValues(move)'));
+  assert.ok(body.includes('data.length, 8).clearContent()'));
+  assert.ok(body.includes('keep.length, 8).setValues(keep)'));
+  // 7열만 다루던 옛 패턴이 남으면 태그가 유실되거나 다음 행에 밀려붙는다
+  assert.equal(/, 7\)\.(getValues|setValues|clearContent)/.test(body), false);
+});
+
 test.todo('숙제 일괄 지급을 별도 처리로그와 전용 잠금으로 원자화');
 test.todo('숙제 포인트와 자동 정정을 같은 야간 계산에 즉시 반영');
 test.todo('성장 리포트의 공개 링크를 비공개 전달 방식으로 교체');
