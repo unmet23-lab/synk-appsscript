@@ -1,0 +1,4 @@
+# 라이브(Apps Script)에는 실제 코드만 올린다. 테스트·문서·스킬은 GitHub 백업 전용.
+**/*
+!appsscript.json
+!Code.js
