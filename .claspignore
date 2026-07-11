@@ -1,4 +1,7 @@
 # 라이브(Apps Script)에는 실제 코드만 올린다. 테스트·문서·스킬은 GitHub 백업 전용.
+# contents_*.js = 분리된 콘텐츠 뱅크. Code.js가 전역 참조하므로 반드시 함께 올려야 한다
+# (누락 시 라이브에서 ReferenceError). 파일이 아직 없어도 미리 허용해 둬도 무해.
 **/*
 !appsscript.json
 !Code.js
+!contents_*.js

@@ -14,6 +14,15 @@
  *      (시트 보장은 bootstrapSynk 재건목록이 전담 · 트리거 설치는 resetAllTriggers)
  *   5) 데이터(학생·포인트 이력)는 Drive 'SYNK_백업' 폴더 최신본에서
  *      profiles·point_logs·attendance 시트를 복사해 덮어쓰기
+ *   6) [v9.32] Script Properties 복원 — 시트 백업엔 안 담긴다. 편집기 좌측
+ *      프로젝트 설정(⚙) → 스크립트 속성에서 최소 아래를 다시 넣는다:
+ *      · NOTION_TOKEN — 없으면 노션 동기화가 조용히 스킵된다(관리자 알림 없음)
+ *      · 퇴근메일_포인터 = teacher_checkins 마지막 행 번호 — 안 넣으면 과거
+ *        퇴근 이력 전체에 응원 메일이 재발송된다(checkoutCheerMail_ 당일 가드가
+ *        1차로 막지만 포인터 복원이 정석)
+ *      · 등원알림_포인터 = attendance 마지막 행 번호
+ *      그리고 .clasp.json의 scriptId를 새 프로젝트 ID로 교체(안 하면 다음
+ *      /deploy가 옛 프로젝트로 푸시된다). 이상은 재건 직후 즉시.
  *
  * ▶ 일상 안전망: 매일 밤 dailyBackup이 파일 전체 사본을 30일 보관.
  *   신규 시트도 자동 포함(파일 단위 복제). 복원 리허설 = restoreDrill().
@@ -567,6 +576,7 @@ const PARENT_MAIL_BIRTHDAY = true;   // 생일 축하 — 학생당 연 1회, �
 const PARENT_MAIL_MVP = true;        // [v7.4] 오늘의 MVP — 반당 하루 1건의 희소 소식, 유지
 const QUIET_DAYS = 7;                // [v7.7] 무포인트 경보 기준(일) — 조용히 멀어지는 학생 조기 감지
 const DIGEST_MODE = true;            // 원장 일상 알림(생일·진화·업적·신규학생)을 아침 8시 1통으로
+const DAILY_HEARTBEAT = true;        // [v9.32] 큐가 빈 날에도 아침 8시 하트비트 1통 — 메일 부재=트리거 사망 신호(데드맨 스위치). 끄려면 false
 
 /* ── [v5.2] 학부모 알림 · 다국어 ─────────────────────── */
 const NOTIFY_PARENT_ATTENDANCE = true; // 등원 시 학부모 메일 푸시 (false = 끔)
@@ -1936,12 +1946,23 @@ function dailyBackup() {
   const folder = it.hasNext() ? it.next() : DriveApp.createFolder('SYNK_백업');
   file.makeCopy('SYNK_앱데이터_백업_' + stamp, folder);
 
+  // [v9.32] 상담 스프레드시트도 백업 — 별도 파일이라 앱 백업에 안 담긴다. 학생 로스터 원본(상담데이터입력)
+  //   이자 수강·납입 장부이고, 사람 손 편집 + 폼 자동기록(10분마다)이 겹쳐 가장 손상되기 쉽다. 앱 백업과
+  //   격리(자체 try/catch)해 상담 백업이 실패해도 앱 백업은 남게 한다.
+  try {
+    DriveApp.getFileById(CONSULT_SHEET_ID).makeCopy('SYNK_상담백업_' + stamp, folder);
+  } catch (e) {
+    Logger.log('상담시트 백업 실패(앱 백업은 정상): ' + e);
+    adminMail('[SYNK] ⚠️ 상담시트 백업 실패', '상담 스프레드시트 사본 생성 실패: ' + e + '\nCONSULT_SHEET_ID·Drive 용량·권한을 확인하세요. 앱 데이터 백업은 정상입니다.');
+  }
+
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
   const files = folder.getFiles();
   while (files.hasNext()) {
     const f = files.next();
-    if (f.getName().startsWith('SYNK_앱데이터_백업_') && f.getDateCreated() < cutoff) {
-      f.setTrashed(true);
+    const nm = f.getName();
+    if ((nm.startsWith('SYNK_앱데이터_백업_') || nm.startsWith('SYNK_상담백업_')) && f.getDateCreated() < cutoff) {
+      f.setTrashed(true); // [v9.32] 정리 대상에 상담 백업 접두사 포함(안 넣으면 무한 누적)
     }
   }
   Logger.log('백업 완료: ' + stamp);
@@ -1993,6 +2014,28 @@ function checkNewInquiries_(asText) {
   MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 💬 새 학부모 문의 ' + pending.length + '건',
     pending.map(r => '· ' + (r[1] || r[0]) + ': ' + String(r[2] || '')).join('\n\n') +
     '\n\ninquiries 시트에서 상태를 "처리완료"로 바꿔주세요.');
+}
+
+// [v9.32] 신규 학부모 문의 → 아침 브리핑 큐(익일 08시). 주간 리포트(월요일)의 checkNewInquiries_는 상태
+//   필터라 응답이 최대 7일 지연됐다. 여기선 '아직 안 본 행'을 포인터로 잡아 하루 안에 인지시킨다. 즉시
+//   발송이 아니라 아침 1통(adminMail 큐)에 합류해 알림 다이어트를 지킨다. 시트 쓰기 0(포인터=Properties).
+function queueNewInquiries_(ss) {
+  const iq = ss.getSheetByName('inquiries');
+  if (!iq || iq.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const last = iq.getLastRow();
+  const from = Number(props.getProperty('문의알림_포인터')) || 1;
+  if (from >= last) return;
+  const rows = iq.getRange(from + 1, 1, last - from, 5).getValues();
+  const fresh = [];
+  rows.forEach(function (r) {
+    if (r[0] && String(r[2] || '').trim()) fresh.push('· ' + (r[1] || r[0]) + ': ' + String(r[2]).slice(0, 120));
+  });
+  if (fresh.length) {
+    adminMail('[SYNK] 💬 새 학부모 문의 ' + fresh.length + '건',
+      fresh.join('\n') + '\n\ninquiries 시트에서 상태를 "처리완료"로 바꿔주세요.');
+  }
+  props.setProperty('문의알림_포인터', String(last)); // 내용 없는 행도 전진(주간 리포트 상태필터가 백업)
 }
 
 function notifyParents() {
@@ -3081,7 +3124,8 @@ function restoreDrill() {
       '최신 백업: ' + latest.getName() + '\n' +
       'profiles — 백업 ' + bRows + '행 / 원본 ' + oRows + '행 · 헤더 ' + (bH === oH ? '일치 ✅' : '불일치 ⚠️') + '\n\n' +
       (ok ? '언제든 복구 가능한 상태입니다. 다음 리허설: 한 달 뒤 🗓' : '차이가 큽니다 — 백업 파일을 직접 열어 확인해주세요.') + '\n\n' +
-      '[실제 복구 절차 — 3단계]\n① Drive의 SYNK_백업 폴더에서 원하는 날짜 파일 열기\n② 손상된 시트만 전체 선택 → 복사\n③ 원본 같은 이름 시트에 붙여넣기 (스크립트·트리거는 원본에 살아있으므로 그대로)');
+      '[실제 복구 절차 — 3단계]\n① Drive의 SYNK_백업 폴더에서 원하는 날짜 파일 열기\n② 손상된 시트만 전체 선택 → 복사\n③ 원본 같은 이름 시트에 붙여넣기 (스크립트·트리거는 원본에 살아있으므로 그대로)\n\n' +
+      '※ 코드/트리거 장애·배포 사고 복구는 저장소 docs/응급복구_런북.md 참고.');
   } catch (e) {
     adminMail('[SYNK] 🧯 복구 리허설 오류', String(e));
   }
@@ -5512,11 +5556,18 @@ function systemWatchdog(asText) {
     const bIt = DriveApp.getFoldersByName('SYNK_백업');
     if (!bIt.hasNext()) add(false, '백업 폴더(SYNK_백업) 없음 — dailyBackup 1회 실행 확인');
     else {
+      // [v9.32] 접두사별 최신 나이 점검 — 폴더 전체 최신만 보면 상담 백업이 앱 백업 실패를 가린다(반대도).
       const files = bIt.next().getFiles();
-      let newest = 0;
-      while (files.hasNext()) { const t = files.next().getDateCreated().getTime(); if (t > newest) newest = t; }
-      const ageDays = newest ? Math.floor((Date.now() - newest) / 86400000) : 999;
-      add(ageDays <= 2, '최신 백업: ' + (newest ? ageDays + '일 전' : '없음') + (ageDays > 2 ? ' ⚠️ 백업 멈춤 의심 — dailyBackup/Drive 용량 확인' : ''));
+      const newest = { app: 0, consult: 0 };
+      while (files.hasNext()) {
+        const f = files.next(); const nm = f.getName(); const t = f.getDateCreated().getTime();
+        if (nm.indexOf('SYNK_앱데이터_백업_') === 0) { if (t > newest.app) newest.app = t; }
+        else if (nm.indexOf('SYNK_상담백업_') === 0) { if (t > newest.consult) newest.consult = t; }
+      }
+      [['앱데이터', newest.app], ['상담시트', newest.consult]].forEach(function (p) {
+        const ageDays = p[1] ? Math.floor((Date.now() - p[1]) / 86400000) : 999;
+        add(ageDays <= 2, '최신 ' + p[0] + ' 백업: ' + (p[1] ? ageDays + '일 전' : '없음') + (ageDays > 2 ? ' ⚠️ 백업 멈춤 의심 — dailyBackup/Drive 용량/CONSULT_SHEET_ID 확인' : ''));
+      });
     }
   } catch (e) { add(false, '백업 점검 실패: ' + e); }
 
@@ -5535,6 +5586,18 @@ function systemWatchdog(asText) {
   const nbDaysOld = nbDone === '(없음)' ? 99 : Math.round((new Date(today) - new Date(nbDone.slice(0, 10))) / 86400000);
   add(nbDaysOld <= 1, '야간배치(nightJobs) 완주: 마지막 ' + nbDone +
     (nbDaysOld > 1 ? ' — 6분 타임아웃으로 중도 증발했을 가능성! 트리거 실행 기록을 확인하세요.' : ' (정상)'));
+
+  // [v9.32] 2-d) 월간배치(monthlyJobs) 완주 마커 점검 — 매월 1일 05시 8개 직렬 체인의 중도 증발 감지.
+  //   워치독이 주 1회(월요일)라 감지가 최대 ~9일 지연되지만 마커가 없으면 영영 못 잡는다. 3일부터 당월 점검.
+  const domW = Number(Utilities.formatDate(new Date(), tz, 'd'));
+  const curYmW = Utilities.formatDate(new Date(), tz, 'yyyy-MM');
+  const mbDone = props.getProperty('월간배치완료월') || '(없음)';
+  if (domW >= 3) {
+    add(mbDone === curYmW, '월간배치(monthlyJobs) 완주: ' + mbDone +
+      (mbDone === curYmW ? ' (정상)' : ' — 이달(' + curYmW + ') 미완주! 스토리북·카드·경영리포트 증발 의심, 트리거 실행 기록 확인'));
+  } else {
+    add(true, '월간배치(monthlyJobs) 완주: ' + mbDone + ' (매월 3일부터 당월 점검)');
+  }
 
   // [v9.25→v9.28] 2-b) 미인식 reason 스캔 — 강사 오타 방어 3선. unknownReasonScan_로 공용화(nightJobs 일일 점검과 공유).
   //   포인트 합산은 reason과 무관하게 정상이지만, 분류(숙제카운트·왕관·업적·일일한도)는 키워드로 잡는다.
@@ -5811,13 +5874,41 @@ function adminMail(subject, body) {
   } finally { lock.releaseLock(); }
 }
 
+// [v9.32] 아침 하트비트용 마커 신선도 — Script Properties의 완주/게시 마커 나이만 경량 점검(Drive 접근 없음).
+//   systemWatchdog와 같은 임계값(야간 ≤1일 · 숙제 ≤2일 · 월간 = 당월)을 쓴다.
+function markerFreshness_(props, tz) {
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const curYm = Utilities.formatDate(new Date(), tz, 'yyyy-MM');
+  const ageOf = function (v) { return v ? Math.round((new Date(today) - new Date(String(v).slice(0, 10))) / 86400000) : 999; };
+  const checks = [];
+  const nb = props.getProperty('야간배치완료일');
+  checks.push({ ok: ageOf(nb) <= 1, s: '야간배치 완주: ' + (nb || '(없음)') });
+  const hw = props.getProperty('숙제기준일');
+  checks.push({ ok: ageOf(hw) <= 2, s: '오늘의 숙제 게시: ' + (hw || '(없음)') });
+  const mb = props.getProperty('월간배치완료월');
+  const domN = Number(Utilities.formatDate(new Date(), tz, 'd'));
+  checks.push({ ok: domN < 3 || mb === curYm, s: '월간배치 완주: ' + (mb || '(없음)') });
+  return { stale: checks.some(function (c) { return !c.ok; }), lines: checks.map(function (c) { return (c.ok ? '✅ ' : '⚠️ ') + c.s; }) };
+}
+
 function sendMorningDigest() {
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
     const p = PropertiesService.getScriptProperties();
     const q = p.getProperty('브리핑큐');
-    if (!q) return;
+    if (!q) {
+      // [v9.32] 데드맨 스위치 — 큐가 비어도 매일 08시 하트비트 1통. 메일이 '안 오는 것' 자체가 트리거
+      //   전체 사망(재인증 만료·권한 상실) 신호가 되게 한다. 마커가 오래됐으면 제목을 ⚠️로 바꿔 정상일과
+      //   구분(매일 ✅는 배경소음이 되어 부재 감지가 약해지므로).
+      if (!DAILY_HEARTBEAT || !quotaOk(1)) return;
+      const tzH = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+      const fr = markerFreshness_(p, tzH);
+      MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] ' + (fr.stale ? '⚠️ 신선도 경고' : '☀️ 시스템 정상'),
+        (fr.stale ? '아래 항목이 오래됐습니다 — 트리거/시간대를 확인하세요.\n\n' : '알릴 운영 소식이 없는 조용한 하루입니다. 시스템은 정상 작동 중입니다.\n\n') +
+        fr.lines.join('\n') + '\n\n(이 메일이 아침에 오지 않으면 자동화 트리거가 멈춘 것일 수 있습니다.)');
+      return;
+    }
     if (!quotaOk(1)) return; // 쿼터 부족이면 큐를 보존해 다음 발송에서 재시도
     MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] ☀️ 오늘의 운영 브리핑',
       q + '— 개별 알림을 아침 1통으로 모았습니다 (DIGEST_MODE)');
@@ -5894,6 +5985,26 @@ function classPrepMail_(ss, tz) {
       });
     }
   }
+  const absenceByClass = {}; // [v9.32] 오늘 결석 사전신고 → 강사 브리핑. 학부모가 미리 알렸어도 강사는 수업 준비 때 몰랐다.
+  {
+    const an = ss.getSheetByName('absence_notice');
+    if (an && an.getLastRow() >= 2) {
+      const pfN = ss.getSheetByName('profiles');
+      const infoById = {};
+      if (pfN && pfN.getLastRow() >= 2) {
+        pfN.getRange(2, 1, pfN.getLastRow() - 1, 5).getValues().forEach(r => {
+          if (r[0]) infoById[String(r[0]).trim()] = { name: r[1] || r[0], cls: String(r[4] || '') };
+        });
+      }
+      an.getRange(2, 1, an.getLastRow() - 1, 4).getValues().forEach(r => {
+        if (!r[0] || !r[2] || dstr(r[2], tz) !== todayStr) return;
+        const info = infoById[String(r[0]).trim()];
+        const cls = info ? info.cls : String(r[1] || ''); // profiles 반 우선, 없으면 신고행의 반
+        const nm = info ? info.name : r[0];
+        (absenceByClass[cls] = absenceByClass[cls] || []).push(nm + (r[3] ? '(' + String(r[3]) + ')' : ''));
+      });
+    }
+  }
   const st = ss.getSheetByName('app_state');
   const kv = {};
   if (st && st.getLastRow() >= 2) {
@@ -5918,7 +6029,8 @@ function classPrepMail_(ss, tz) {
     const quiz = String(kv['오늘의퀴즈'] || '').split('|')[0];
     const cname = s.name || (num + '반');
     const body = cname + ' 수업 시작 ' + Math.round(diff) + '분 전입니다.\n' +
-      (bdayByClass[cname] ? '\n🎂 오늘 ' + bdayByClass[cname].join(', ') + ' 생일! 반 전체 축하 한 번 어때요?\n' : '') + '\n' +
+      (bdayByClass[cname] ? '\n🎂 오늘 ' + bdayByClass[cname].join(', ') + ' 생일! 반 전체 축하 한 번 어때요?\n' : '') +
+      (absenceByClass[cname] ? '🚫 오늘 결석 예정(학부모 사전신고): ' + absenceByClass[cname].join(', ') + '\n' : '') + '\n' +
       '⚡ 오늘의 루틴: 시작 — 숙제 검사 1탭 · 끝 — 왕관 2개(🌟MVP·⚡시냅스 각 1명) · 미션 성공 시 연료 1행\n\n' +
       '📚 오늘 검사할 숙제' + (hwT ? ' (' + hwT + ')' : '') + '\n' + (hw || '게시된 숙제 없음') + '\n\n' +
       (quiz ? '⚡ 워밍업 퀴즈: ' + quiz + '\n\n' : '') +
@@ -5961,6 +6073,10 @@ function checkoutCheerMail_(ss) {
     const t = (tRaw instanceof Date) ? tRaw : new Date(tRaw);
     if (!t || isNaN(t.getTime())) { advanced = i + 1; continue; }
     if ((now - t) / 60000 < CHECKOUT_MAIL_DELAY_MIN) break; // 아직 5분 미만 → 다음 스위프에서
+    // [v9.32] 당일 가드 — 재건/포인터 리셋 시 과거 퇴근 이력 전체에 응원 메일이 재발송되는 사고 방지.
+    //   오늘 기록만 발송하고 지난 기록은 포인터만 전진시켜 조용히 건너뛴다.
+    const tzCo = ss.getSpreadsheetTimeZone();
+    if (Utilities.formatDate(t, tzCo, 'yyyy-MM-dd') !== Utilities.formatDate(now, tzCo, 'yyyy-MM-dd')) { advanced = i + 1; continue; }
     const who = String(r[TC_NAME_COL - 1] || '').trim();
     const email = emap.byKey[who] || '';
     if (email && pool.length && quotaOk(1)) {
@@ -5982,13 +6098,16 @@ function checkoutCheerMail_(ss) {
 
 function parentSweep() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (PARENT_MAIL_ARRIVAL) attendanceNotify_(ss); // [v7.9] 등원 즉시 알림은 기본 OFF
-  translateNotices_(ss);
-  translateTopics_(ss); // [v5.7] 이번 주 우리 반 배운 것 → 몽골어
+  // [v9.32] 상단 호출도 safeRun 보호 — 여기서 throw하면 아래 폼 편입·수업 브리핑·출결 보드가
+  //   함께 중단되고 구글 기본 실패 요약(최대 하루 지연)에만 의존하게 된다.
+  if (PARENT_MAIL_ARRIVAL) safeRun('attendanceNotify', function () { attendanceNotify_(ss); }); // [v7.9] 등원 즉시 알림은 기본 OFF
+  safeRun('translateNotices', function () { translateNotices_(ss); });
+  safeRun('translateTopics', function () { translateTopics_(ss); }); // [v5.7] 이번 주 우리 반 배운 것 → 몽골어
   safeRun('importFormResponses', importFormResponses); // [v6.3] 상담 폼 접수 편입
   safeRun('classPrepMail', function () { classPrepMail_(ss, ss.getSpreadsheetTimeZone()); }); // [v6.8]
   safeRun('checkoutCheerMail', function () { checkoutCheerMail_(ss); }); // [v6.8]
   safeRun('todayBoard', function () { todayBoard_(ss); }); // [v8.1] 오늘의 출결 보드 (10분 갱신)
+  safeRun('queueInquiries', function () { queueNewInquiries_(ss); }); // [v9.32] 신규 학부모 문의 → 아침 브리핑 큐
 }
 
 function translateTopics_(ss) {
@@ -7862,8 +7981,21 @@ function safeRun(name, fn) {
   try { fn(); }
   catch (e) {
     Logger.log('❗ ' + name + ' 실패: ' + e);
-    if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] ❗ 자동 작업 실패: ' + name,
-      String(e && e.stack ? e.stack : e) + '\n\n다른 작업들은 정상 진행되었습니다.');
+    // [v9.32] 실패 메일 dedup — parentSweep(10분)이 부르는 작업이 지속 실패하면 같은 실패 메일이
+    //   하루 수십~수백 통 발송돼 메일 쿼터를 태우고 학부모·미납·브리핑 알림까지 죽는다(quotaOk 경고와
+    //   동일한 자기증폭). '함수명+에러 첫 줄'당 하루 1통으로 제한하되, 에러 내용이 바뀌면 다시 알린다.
+    try {
+      const sig = String(e && e.message ? e.message : e).split('\n')[0].slice(0, 120);
+      const props = PropertiesService.getScriptProperties();
+      const today = Utilities.formatDate(new Date(), SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd');
+      const key = 'safeRun실패_' + name;
+      if (props.getProperty(key) === today + '|' + sig) return; // 오늘 같은 에러는 이미 알림
+      if (quotaOk(1)) {
+        MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] ❗ 자동 작업 실패: ' + name,
+          String(e && e.stack ? e.stack : e) + '\n\n다른 작업들은 정상 진행되었습니다.\n\n(같은 오류는 오늘 다시 알리지 않습니다 — dedup)');
+        props.setProperty(key, today + '|' + sig); // 발송 성공분만 마킹 → 쿼터 부족이면 다음 스위프 재시도
+      }
+    } catch (e2) { Logger.log('safeRun dedup 처리 실패: ' + e2); }
   }
 }
 
@@ -7901,6 +8033,7 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
 //         원 함수(dailyBackup 등)는 수동 실행용으로 그대로 두고, 트리거에는 이 래퍼를 등록한다.
 //         monthlyReportCards는 진입점만 감싸고 내부 reportCardsContinue 이어하기 체인은 건드리지 않는다.
 function dailyBackupJob()         { safeRun('dailyBackup', dailyBackup); }                 // 매일 03시 — 유일한 백업 경로
+function calcAllJob()             { safeRun('calcAll', calcAll); }                          // [v9.32] 14시 단독 계산 트리거 보호(실패 시 admin 알림)
 function sendMorningDigestJob()   { safeRun('sendMorningDigest', sendMorningDigest); }     // 매일 08시 — 아침 브리핑
 function monthlyReportCardsJob()  { safeRun('monthlyReportCards', monthlyReportCards); }   // 1일 06시 — 리포트카드 배치 진입점
 function monthlyReportJob()       { safeRun('monthlyReport', monthlyReport); }             // 1일 07시 — 월간 리포트
@@ -7963,6 +8096,14 @@ function monthlyJobs() {   // 매월 1일 05시 — 순서 고정이 핵심
   safeRun('buildExecReport', buildExecReport_);       // [v9.14] ①.8 📊 경영 리포트
   safeRun('kpiSnapshotPrevMonth', kpiSnapshotPrevMonth_); // [v9.26] ①.9 📈 전월 KPI 확정 스냅샷 (attendance 미아카이브라 순서 무관·아카이브 전 배치)
   safeRun('archiveMonthly', archiveMonthly);     // ② 그다음 아카이브
+  // [v9.32] 완주 마커 — 반드시 맨 마지막 줄(nightJobs와 동일 패턴). 8개 직렬 체인이 6분 타임아웃으로
+  //   중간 증발하면 이 줄이 실행되지 않아 워치독이 감지한다. archiveMonthly는 다음 달 소급 아카이브로
+  //   자기치유되지만 스토리북·카드·경영리포트는 그달 치가 영구 증발하므로 마커 감지가 필요.
+  try {
+    const ssMJ = SpreadsheetApp.getActiveSpreadsheet();
+    PropertiesService.getScriptProperties().setProperty('월간배치완료월',
+      Utilities.formatDate(new Date(), ssMJ.getSpreadsheetTimeZone(), 'yyyy-MM'));
+  } catch (e) {}
 }
 
 function resetAllTriggers(force) {
@@ -7982,7 +8123,7 @@ function resetAllTriggers(force) {
   ScriptApp.newTrigger('dailyBackupJob').timeBased().atHour(3).everyDays(1).create();       // [v9.25] safeRun 보호 래퍼
   ScriptApp.newTrigger('morningJobs').timeBased().atHour(7).everyDays(1).create();
   ScriptApp.newTrigger('sendMorningDigestJob').timeBased().atHour(8).everyDays(1).create(); // [v9.25] safeRun 보호 래퍼
-  ScriptApp.newTrigger('calcAll').timeBased().atHour(14).everyDays(1).create();
+  ScriptApp.newTrigger('calcAllJob').timeBased().atHour(14).everyDays(1).create(); // [v9.32] safeRun 보호 래퍼(워치독 alive가 calcAll/calcAllJob 흡수)
   ScriptApp.newTrigger('nightJobs').timeBased().atHour(22).everyDays(1).create();
   ScriptApp.newTrigger('weeklyJobs').timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(7).create();
   ScriptApp.newTrigger('monthlyJobs').timeBased().onMonthDay(1).atHour(5).create();
