@@ -556,7 +556,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.37'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
+const SYNK_VERSION = 'v9.38'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -3259,8 +3259,9 @@ function expandLessonLog_() {
   const now = new Date();
   const today = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
   const tp = ss.getSheetByName('weekly_topics');
-  if (!tp || tp.getLastRow() < 2) return;
-  ensureLessonCols_(tp);
+  if (!tp) return;
+  ensureLessonCols_(tp); // [v9.38] 열 보장을 행수 가드보다 앞으로 — 빈 시트에도 F~L 승격돼 마감폼 바인딩이 선행 가능
+  if (tp.getLastRow() < 2) return;
   const rows = tp.getRange(2, 1, tp.getLastRow() - 1, 12).getValues();
 
   const doneToday = new Set(); // 오늘 이미 숙제 지급된 학생 (hw_batch·개별 버튼 병행 대비 — point_logs 재조회)
@@ -3319,8 +3320,9 @@ function expandMasteryLog_() {
   const now = new Date();
   const today = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
   const tp = ss.getSheetByName('weekly_topics');
-  if (!tp || tp.getLastRow() < 2) return;
-  ensureLessonCols_(tp);
+  if (!tp) return;
+  ensureLessonCols_(tp); // [v9.38] 열 보장을 행수 가드보다 앞으로 — 빈 시트에도 F~L 승격돼 마감폼 바인딩이 선행 가능
+  if (tp.getLastRow() < 2) return;
   const rows = tp.getRange(2, 1, tp.getLastRow() - 1, 12).getValues();
   // 미처리(L열)·당일·태그 있는 행만 — 없으면 시트 읽기 없이 종료(6분 예산 보호)
   const targets = [];
@@ -8623,10 +8625,25 @@ function setupOnboarding() {
     ['student', 'SYNK에 온 걸 환영해! 🎮', '출석하고 미션을 하면 네 몬스터가 진화해. 왕관과 포인트를 모아 도감을 채우고, 한국어도 쑥쑥 자라!', 'Ирцээ бүртгүүлж даалгавраа хийвэл таны монстр хувьсана. Титэм ба оноо цуглуулж цомгоо дүүргэ, солонгос хэл ч өснө!', '🐣'],
     ['parent', '자녀의 성장을 매주 받아보세요 🌱', '매주 자녀의 한국어 성장 리포트가 몽골어로 도착해요. 출석·급수·칭찬을 한눈에 확인하고 함께 응원해 주세요.', 'Долоо хоног бүр хүүхдийнхээ солонгос хэлний ахицын тайланг монголоор хүлээн авна. Ирц, зэрэг, магтаалыг нэг дороос хараарай.', '💌'],
     ['teacher', '오늘 할 것만 크게 보여요 👩‍🏫', "'오늘의 반' 탭에서 브리핑·체크·왕관 밸런스를 확인하고, 버튼 한 번으로 포인트를 주세요. 하루 한도는 자동 정정돼요.", '', '📋'],
-    ['admin', 'SYNK LAB 콕핏 🛰️', '리텐션 레이더·케어 사각·경영 리포트로 학원 전체를 한 화면에서 관리하세요.', '', '🛰️'],
+    ['director', 'SYNK LAB 콕핏 🛰️', '리텐션 레이더·케어 사각·경영 리포트로 학원 전체를 한 화면에서 관리하세요.', '', '🛰️'], // [v9.38] 'admin'→'director' 실데이터 역할값 정합(Glide Visibility도 director)
   ];
   sh.getRange(2, 1, rows.length, 5).setValues(rows);
   Logger.log('온보딩 콘텐츠 ' + rows.length + '역할 세팅 완료 (onboarding 시트)');
+}
+
+/* ===================== [v9.38] 🏫 수업 입력 시트·열 물리 생성 (Glide 폼 바인딩 선행) =====================
+ * W3(학습추적) 신규 구조는 스켈레톤엔 있으나 '기존' 라이브 시트엔 미반영이다(ensureSheet는 생성 시에만 헤더 기록).
+ * 새 앱 조립 전 이 함수를 1회 실행하면 강사 마감폼(weekly_topics F~L)·출석 배치폼(attendance_batch)의
+ * 바인딩 대상 열/시트가 정확한 헤더로 물리 생성된다. 멱등 — 이미 있으면 무해. 수동 헤더 입력(오타 위험) 대체. */
+function setupClassroomInputs() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tp = ensureSheet(ss, 'weekly_topics', ['class_name', '배운내용', '입력자', 'created_at', '배운내용_mn']);
+  ensureLessonCols_(tp); // F~L 승격: 문법태그·전체도달도·예외학생·숙제완료자·연료미션·처리상태·학습전개상태
+  ensureSheet(ss, 'attendance_batch', ['날짜', 'class_name', '출석자목록', '입력자', 'created_at', '처리상태']); // 수업 시작 출석 1탭(멀티선택) — parentSweep이 attendance로 전개
+  ensureSheet(ss, 'mastery_log', ['student_id', 'grammar_id', '상태', '첫기록일', '도달일', '출처', 'updated_at']);   // 스크립트 전용(진화 게이트 재료)
+  ensureSheet(ss, 'student_errors', ['날짜', 'student_id', '반', '유형', '메모', '입력자', 'created_at', '상태']);       // 강사 선택 입력(학생 미노출)
+  Logger.log('수업 입력 구조 생성 완료: weekly_topics F~L 승격 · attendance_batch · mastery_log · student_errors');
+  return '수업 입력 구조 생성 완료 — 강사 마감폼/출석폼을 이 시트·열에 바인딩하세요.';
 }
 
 /* ===================== [v9.21] 📓 노션 크루 DB 동기화 (앱 → 노션) =====================
@@ -8769,7 +8786,8 @@ function bootstrapSynk() {
     ['브레인팁 30', setupBrainTips], ['학부모 라벨', setupParentLabels], ['크루 응원', setupTeacherCheers],
     ['연료 미션', setupFuelMissions], ['칭호 설화', setupTitleLore], ['워밍업 퀴즈', setupQuiz],
     ['숙제 210', setupHomework], ['학업 로그', setupAcademic], // [v9.18] 학업 성장 축 시트 재건 편입
-    ['문법 뱅크 72', setupGrammarBank] // [v9.36] 진화 게이트 문법 커리큘럼(contents type='grammar') 재건
+    ['문법 뱅크 72', setupGrammarBank], // [v9.36] 진화 게이트 문법 커리큘럼(contents type='grammar') 재건
+    ['수업 입력 구조', setupClassroomInputs] // [v9.38] weekly_topics F~L 승격 + attendance_batch·mastery_log·student_errors
   ];
   const log = [];
   steps.forEach(s => { try { s[1](); log.push('✓ ' + s[0]); } catch (e) { log.push('✗ ' + s[0] + ': ' + e.message); } });
