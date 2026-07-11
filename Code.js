@@ -2,9 +2,12 @@
  * ═══════════════════════════════════════════════════════════
  * 🆘 SYNK OS 긴급 복구 가이드 — 이 파일 하나가 시스템 전부입니다
  * ═══════════════════════════════════════════════════════════
- * 이 스크립트에는 SYNK의 모든 것이 들어 있습니다: 시트 29장의 구조,
- * 게임 콘텐츠 488개(몬스터·보스·대군주·스토어·팁·시즌·문법·감정),
- * 자동화 로직 전체, 그리고 설계 결정 이력(아래 노트 1~130).
+ * 이 스크립트에는 SYNK의 모든 것이 들어 있습니다: 시트 구조 전체,
+ * 게임 콘텐츠(몬스터·보스·대군주·스토어·팁·시즌·문법·감정),
+ * 자동화 로직 전체, 그리고 설계 결정 이력(아래 설계 노트).
+ * ▶ 시트·콘텐츠·트리거의 현재 수치는 코드에 박지 않는다 — system_manifest
+ *   시트를 보라(buildSystemManifest 실행 · 매주 월 자동 갱신). 수동 숫자를
+ *   두지 않는 이유는 코드와 실제의 드리프트를 원천 차단하기 위함이다.
  *
  * ▶ 무(無)에서 전체 재건 (새 시트·새 계정·재해 복구):
  *   1) 새 Google 스프레드시트 생성 → 확장 프로그램 → Apps Script
@@ -28,7 +31,8 @@
  *   신규 시트도 자동 포함(파일 단위 복제). 복원 리허설 = restoreDrill().
  * ═══════════════════════════════════════════════════════════
  *
- * SYNK 앱데이터 통합 스크립트 v5 (v4 전체 유지 + 정체성 기능 통합)
+ * SYNK 앱데이터 통합 스크립트 — 현재 버전 = 상수 SYNK_VERSION 참조(system_manifest 시트에 출력).
+ * [계보] v5 대통합(v4 전체 유지 + 정체성 기능 통합) 이후 단일 파일로 계속 진화.
  * 2026-07-07 · 이 파일 하나가 전체입니다. 기존 v4 전체 교체.
  *
  * [v4에서 유지되는 자동 트리거 — 변경 없음]
@@ -551,6 +555,13 @@
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
+
+const SYNK_VERSION = 'v9.37'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
+// [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
+//   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
+const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
+  season: 12, label: 15, reason: 9, cheer: 7, cheermail: 30, braintip: 30, worldboss: 1, // [v9.9] · [v9.34] reason 8→9 — setupParentLabels R01~R09(v9.28 R09 추가) 실측 정합
+  grammar: 72 }; // [v9.37] W3 문법뱅크(GRAMMAR_BANK 72종) 추가 — 미설치 시 'grammar 0/72' 정당 경보
 
 /* ── [v5] 신규 설정 ─────────────────────────────────── */
 const REPORT_TEMPLATE_ID = '1XDhZPMjd17fbxmqGGEjq-kRks2Y3tJc9Ntrp90XV4pE';   // [v9.19] 리포트카드 Slides 템플릿 (비우면 스킵)
@@ -6280,8 +6291,7 @@ function systemWatchdog(asText) {
   add(!!keys['오늘의팁'], 'app_state 오늘의팁: ' + (keys['오늘의팁'] ? '있음' : '없음 — setupBrainTips 실행 여부 확인')); // [v8.6]
 
   // 3) 셋업 실행 상태 (contents 수량 대조 — 부분 실행 감지)
-  const expect = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
-    season: 12, label: 15, reason: 9, cheer: 7, cheermail: 30, braintip: 30, worldboss: 1 }; // [v9.9] · [v9.34] reason 8→9 — setupParentLabels R01~R09(v9.28 R09 추가) 실측 정합, 'reason 9/8' 허위 경보 제거
+  const expect = CONTENT_EXPECT; // [v9.37] 모듈 정본(수동 숫자 승격) — grammar:72 포함, buildSystemManifest와 단일 소스. 세부 이력은 CONTENT_EXPECT 선언부 참조
   const cnt = {};
   let bossImg = 0, monThr = [], loreTier = 0;
   const ct = ss.getSheetByName('contents');
@@ -6388,6 +6398,125 @@ function systemWatchdog(asText) {
     MailApp.sendEmail(ADMIN_EMAIL,
       '[SYNK] 🛡️ 주간 워치독 ' + (warn ? '⚠️ ' + warn + '건' : '✅ 전부 정상'), report);
   }
+}
+
+/* ===================== [v9.37] 🧭 시스템 매니페스트 — 코드↔실제 드리프트 실측 =====================
+ * 헤더·주석의 수동 숫자(시트 수·콘텐츠 수·버전)를 코드에 박지 않고, 실행 시점의 실제 값을
+ * system_manifest 시트에 출력한다. 정본 상수(SYNK_VERSION·SHEET_SKELETON·CONTENT_EXPECT)와
+ * 라이브 스프레드시트를 대조해 누락·잉여·스키마 드리프트를 한 장에서 드러낸다.
+ * 실행: 수동 buildSystemManifest() · 주간 weeklyJobs 자동 · 재건 직후 bootstrapSynk.
+ * 쓰기: writeIfChanged만(변경 시에만) — Glide 미바인딩 시트라 update 쿼터 소비 0. 각 접근은 null 가드. */
+function buildSystemManifest() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = []; // 각 [지표, 값, 상태]
+  const OK = '정상', WARN = '⚠️ 확인';
+  function push(k, v, s) { rows.push([k, String(v), s || OK]); }
+  const sh = ensureSheet(ss, 'system_manifest', ['지표', '값', '상태']); // 소유 시트 — getSheets() 집계 전에 보장(첫 실행 자기 '누락' 오탐 방지)
+
+  // 1) 버전
+  push('버전', SYNK_VERSION, OK);
+
+  // 2) 시트 수 + 스켈레톤 대비 누락/잉여
+  const liveSheets = ss.getSheets().map(function (s) { return s.getName(); });
+  const skelNames = SHEET_SKELETON.map(function (k) { return k[0]; });
+  const missing = skelNames.filter(function (n) { return liveSheets.indexOf(n) === -1; });
+  const surplus = liveSheets.filter(function (n) { return skelNames.indexOf(n) === -1; });
+  push('시트 수(실측)', liveSheets.length + '장 · 스켈레톤 정본 ' + skelNames.length + '종', missing.length ? WARN : OK);
+  push('스켈레톤 누락(재건 필요)', missing.length ? missing.join(', ') : '없음', missing.length ? WARN : OK);
+  push('스켈레톤 외 시트(setup·수동 탭)', surplus.length ? surplus.join(', ') : '없음', OK); // 잉여는 경보 아님(setup 생성·수동 탭 포함)
+
+  // 3) 스키마 드리프트 — 스켈레톤 각 시트 1행 헤더의 앞부분이 실제와 일치하는지(확장열 허용)
+  const drift = [];
+  SHEET_SKELETON.forEach(function (k) {
+    const name = k[0], want = k[1] || [];
+    const sh = ss.getSheetByName(name);
+    if (!sh) return; // 누락은 2)에서 보고
+    const lastCol = sh.getLastColumn();
+    if (lastCol < 1) { if (want.length) drift.push(name + '(빈 헤더)'); return; }
+    const have = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(function (h) { return String(h == null ? '' : h).trim(); });
+    const mismatch = want.some(function (h, i) { return String(h).trim() !== (have[i] || ''); });
+    if (mismatch) drift.push(name);
+  });
+  push('스키마 드리프트(1행 헤더)', drift.length ? drift.join(', ') + ' — 라이브가 구 스키마 의심' : '없음', drift.length ? WARN : OK);
+
+  // 4) 콘텐츠 유형별 실측 vs CONTENT_EXPECT
+  const cnt = {};
+  const ct = ss.getSheetByName('contents');
+  if (ct && ct.getLastRow() >= 2) {
+    ct.getRange(2, 2, ct.getLastRow() - 1, 1).getValues().forEach(function (r) { // B열 = 콘텐츠 유형
+      const t = String(r[0] || ''); if (t) cnt[t] = (cnt[t] || 0) + 1;
+    });
+  }
+  const bad = Object.keys(CONTENT_EXPECT).filter(function (kk) { return (cnt[kk] || 0) !== CONTENT_EXPECT[kk]; });
+  const totalContent = Object.keys(cnt).reduce(function (a, kk) { return a + cnt[kk]; }, 0);
+  push('콘텐츠 총계(실측)', totalContent + '개 · ' + Object.keys(CONTENT_EXPECT).length + '유형 기대', OK);
+  push('콘텐츠 유형 불일치', bad.length
+    ? bad.map(function (kk) { return kk + ' ' + (cnt[kk] || 0) + '/' + CONTENT_EXPECT[kk]; }).join(', ') + ' — 해당 setup 재실행'
+    : '전부 일치', bad.length ? WARN : OK);
+
+  // 5) 트리거 — 실측 수·핸들러 vs resetAllTriggers 기대 10
+  const EXPECT_TRIGGERS = 10;
+  let handlers = [];
+  try { handlers = ScriptApp.getProjectTriggers().map(function (t) { return t.getHandlerFunction(); }); } catch (e) { handlers = []; }
+  const uniqH = handlers.filter(function (h, i) { return handlers.indexOf(h) === i; }).sort();
+  push('트리거 수(실측)', handlers.length + '개 / 기대 ' + EXPECT_TRIGGERS, handlers.length === EXPECT_TRIGGERS ? OK : WARN);
+  push('트리거 핸들러', uniqH.length ? uniqH.join(', ') : '(없음)', uniqH.length ? OK : WARN);
+
+  // 6) 외부 의존성
+  const props = PropertiesService.getScriptProperties();
+  push('NOTION_TOKEN', props.getProperty('NOTION_TOKEN') ? '있음 — 노션 동기화 활성' : '없음 — 노션 동기화 스킵(무해)', OK);
+
+  let consultVal, consultStat = WARN;
+  try {
+    const csrc = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    if (csrc) { consultVal = '접근 OK · 폭 ' + csrc.getLastColumn() + '열'; consultStat = OK; }
+    else consultVal = "열림 · '상담데이터입력' 탭 없음";
+  } catch (e) { consultVal = '접근 실패 — ID/권한 확인'; }
+  push('상담시트(CONSULT_SHEET_ID)', consultVal, consultStat);
+
+  push('리포트 템플릿(REPORT_TEMPLATE_ID)',
+    (REPORT_TEMPLATE_ID && String(REPORT_TEMPLATE_ID).trim()) ? '설정됨 — 리포트카드 활성' : '비어있음 — 리포트카드 스킵', OK);
+
+  // 백업 최신성 — SYNK_백업 폴더의 앱데이터 백업 최신 나이(dailyBackup 로직 참고)
+  let bkVal = '폴더 없음 — dailyBackup 1회 실행', bkStat = WARN;
+  try {
+    const bIt = DriveApp.getFoldersByName('SYNK_백업');
+    if (bIt.hasNext()) {
+      const files = bIt.next().getFiles(); let newest = 0;
+      while (files.hasNext()) {
+        const f = files.next();
+        if (f.getName().indexOf('SYNK_앱데이터_백업_') === 0) { const t = f.getDateCreated().getTime(); if (t > newest) newest = t; }
+      }
+      if (newest) { const ageD = Math.floor((Date.now() - newest) / 86400000); bkVal = '최신 앱백업 ' + ageD + '일 전'; bkStat = ageD <= 2 ? OK : WARN; }
+      else { bkVal = '앱데이터 백업 파일 없음'; }
+    }
+  } catch (e) { bkVal = '백업 점검 실패: ' + e; }
+  push('백업 최신성(SYNK_백업)', bkVal, bkStat);
+
+  // 완주 마커 신선도 — 야간·월간 배치(Script Properties)
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const nb = props.getProperty('야간배치완료일') || '';
+  const nbAge = nb ? Math.round((new Date(today) - new Date(nb.slice(0, 10))) / 86400000) : 999;
+  push('야간배치 완주(nightJobs)', nb ? nb + ' (' + nbAge + '일 전)' : '없음', (nb && nbAge <= 1) ? OK : WARN);
+  const curYm = Utilities.formatDate(new Date(), tz, 'yyyy-MM');
+  const dom = Number(Utilities.formatDate(new Date(), tz, 'd'));
+  const mb = props.getProperty('월간배치완료월') || '';
+  push('월간배치 완주(monthlyJobs)', mb || '없음', (dom < 3 || mb === curYm) ? OK : WARN); // 매월 3일부터 당월 점검
+
+  // 7) 생성 메타
+  push('생성 시각', Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm'), OK);
+  push('생성 경로', '수동 buildSystemManifest() · 주간 weeklyJobs · 재건 bootstrapSynk', OK);
+  push('Glide 바인딩', '미바인딩(진단 전용) — update 쿼터 소비 0', OK);
+
+  // 출력 — writeIfChanged로 변경 시에만(쿼터 절약). 이전 실행이 더 길었으면 초과 행 정리
+  const prevLast = sh.getLastRow();
+  const body = [['지표', '값', '상태']].concat(rows);
+  writeIfChanged(sh, 1, 1, body);
+  if (prevLast > body.length) sh.getRange(body.length + 1, 1, prevLast - body.length, 3).clearContent();
+  try { sh.setFrozenRows(1); } catch (e) {}
+  Logger.log('🧭 system_manifest 갱신: ' + rows.length + '지표');
+  return 'system_manifest 갱신: ' + rows.length + '지표 (' + Utilities.formatDate(new Date(), tz, 'HH:mm') + ')';
 }
 
 /* ===================== [v5.8] 상담 연동 진단 (수동 실행 · 읽기 전용) =====================
@@ -8595,10 +8724,9 @@ function syncNotionNow() { return syncToNotion_(); }
 /* ===================== [v5] 신규 트리거/시트 셋업 (1회 실행) ===================== */
 
 // [v9.9] 🧬 원버튼 재건 — 빈 스프레드시트에서 SYNK 세계 전체를 되살립니다
-function bootstrapSynk() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  // 0단계: 데이터 시트 골격 — 이 목록이 곧 SYNK의 시트 지도입니다 (실데이터는 백업에서 복원)
-  const skeleton = [
+// [v9.37] 시트 골격 정본 — 이 목록이 곧 SYNK의 시트 지도입니다(실데이터는 백업에서 복원). 모듈 const로
+//   승격해 bootstrapSynk(재건)와 buildSystemManifest(누락·잉여·스키마 드리프트 감지)가 단일 소스를 공유한다.
+const SHEET_SKELETON = [
     ['profiles', ['user_id','이름','이름_몽골','role','class_name','생일','email','연락처','messenger_link','parent_of','tuition','등록일','보호자명','보호자연락처','created_at']],
     ['point_logs', ['id','student_id','points','reason','given_by','created_at','month','태그']],
     ['attendance', ['id','student_id','timestamp','method']],
@@ -8627,9 +8755,14 @@ function bootstrapSynk() {
     ['crew_projects', ['시즌','반','프로젝트명','한줄소개','결과물링크','사진URL','공개일','참여크루','비고']], // [v9.29] 시즌 프로젝트 포트폴리오 — 수동 기입 전용(hall_of_fame 패턴 · 트리거·배치 연동 없음)
     ['mastery_log', ['student_id','grammar_id','상태','첫기록일','도달일','출처','updated_at']], // [v9.36] 문법 도달 로그 — expandMasteryLog_ upsert, 진화 게이트 재료(Glide 비바인딩)
     ['attendance_batch', ['날짜','class_name','출석자목록','입력자','created_at','처리상태']], // [v9.36] 수업 시작 출석 1탭(B안) → expandAttendanceBatch_가 attendance로 전개
-    ['student_errors', ['날짜','student_id','반','유형','메모','입력자','created_at','상태']] // [v9.36] 강사 개인 약점 메모(선택 입력) — 리포트·브리핑 노출은 후속(학생 앱 미노출)
+    ['student_errors', ['날짜','student_id','반','유형','메모','입력자','created_at','상태']], // [v9.36] 강사 개인 약점 메모(선택 입력) — 리포트·브리핑 노출은 후속(학생 앱 미노출)
+    ['system_manifest', ['지표','값','상태']] // [v9.37] buildSystemManifest 출력 — 시트·콘텐츠·트리거·의존성 실측 정본(수동 숫자 대체)
   ];
-  skeleton.forEach(k => ensureSheet(ss, k[0], k[1]));
+
+function bootstrapSynk() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  // 0단계: 데이터 시트 골격 — SHEET_SKELETON(모듈 정본)으로 재건. 이 목록이 곧 SYNK의 시트 지도입니다(실데이터는 백업에서 복원).
+  SHEET_SKELETON.forEach(k => ensureSheet(ss, k[0], k[1]));
   const steps = [
     ['시간표·반 구조', setupSchedule], ['스토어', setupStore],
     ['몬스터 7', setupMonsters], ['보스 12 + 대군주', setupBosses], ['시즌 12', setupSeasons],
@@ -8642,6 +8775,8 @@ function bootstrapSynk() {
   steps.forEach(s => { try { s[1](); log.push('✓ ' + s[0]); } catch (e) { log.push('✗ ' + s[0] + ': ' + e.message); } });
   try { worldRaidMonthly_(); log.push('✓ 월드 보스 소환'); } catch (e) { log.push('✗ 월드: ' + e.message); }
   try { calcAll(); log.push('✓ 전체 계산 1회'); } catch (e) { log.push('✗ calcAll: ' + e.message); }
+  // [v9.37] 재건 직후 시스템 매니페스트 1장 — 실측 스냅샷(진단용). 실패해도 '⚠'로만 남겨 재건 성공 판정엔 영향 없음
+  try { buildSystemManifest(); log.push('✓ 시스템 매니페스트'); } catch (e) { log.push('⚠ 매니페스트 스킵: ' + e.message); }
   let cnt = 0;
   const ct = ss.getSheetByName('contents');
   if (ct && ct.getLastRow() >= 2) cnt = ct.getLastRow() - 1;
@@ -8768,6 +8903,7 @@ function weeklyJobs() {    // 매주 월 07시
   else Logger.log('주간 통합 리포트: 쿼터 부족으로 미발송');
 
   safeRun('syncToNotion', syncToNotion_); // [v9.21] 앱→노션 크루 DB 동기화 (NOTION_TOKEN 없으면 자동 스킵)
+  safeRun('systemManifest', buildSystemManifest); // [v9.37] 주간 실측 스냅샷 — 시트·콘텐츠·트리거·의존성 드리프트를 system_manifest 시트에 갱신
   // [v7.0] pruneAppState 제거 — 인자(ss, 월)가 필요한 archiveMonthly 내부 헬퍼였음 (무인자 호출 시 매주 실패)
 }
 
