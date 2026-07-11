@@ -659,6 +659,17 @@ function toDate_(v) { // [v9.22] Date/yyyymmdd(문자·숫자) → Date, 실패 
 // [opt] 셀값(Date 또는 문자/숫자) → Date 관용 강제. toDate_와 별개: 실패 시 null이 아니라 원 동작(new Date) 유지. 20곳 중복 일원화.
 function asDate_(d) { return d instanceof Date ? d : new Date(d); }
 
+// [v9.34] 'yyyy-MM' 월키 산술 — new Date(y,m-1,1)(스크립트TZ 자정)+formatDate(시트TZ) 혼용 시 시트TZ가 서쪽이면
+//   월키가 한 달 밀려 배치가 통째 스킵되던 결함의 단일 해법. TZ 무관 순수 문자열 연산.
+function ymShift_(ym, delta) {
+  const y = Number(String(ym).slice(0, 4)), m0 = Number(String(ym).slice(5, 7)) - 1 + delta;
+  const yy = y + Math.floor(m0 / 12), mm = ((m0 % 12) + 12) % 12;
+  return yy + '-' + ('0' + (mm + 1)).slice(-2);
+}
+
+// [v9.34] 생일값(Date·yyyymmdd·yyyy-MM-dd) → 'MM-dd'. String slice 원시 판정이 Date 셀에서 전멸하던 것 통일(6017 패턴)
+function bdayMMDD_(v, tz) { const d = toDate_(v); return d ? Utilities.formatDate(d, tz, 'MM-dd') : ''; }
+
 function getState(st, key) {
   const last = st.getLastRow();
   if (last < 1) return { row: -1, val: '' };
@@ -1448,7 +1459,7 @@ function calcAll() {
       { // [v9.12] 운세·몬스터의 한마디·기록실
         fortuneOut.push(['🔮 ' + hashPick_(FORTUNES, id + todayYmd)]);
         const tone = speakTone_(mon.idx || 1);
-        const isBday = String(r[5] || '').slice(5, 10) === todayYmd.slice(5, 10);
+        const isBday = bdayMMDD_(r[5], tz) === todayYmd.slice(5, 10); // [v9.34] Date 셀 생일도 인식 — 원시 slice는 Date면 전멸(생일 한마디·브리핑 반쪽 연출)
         const crownToday = (crownDates[id] || '') === todayYmd;
         const toNext = mon.rem || 0; // [v9.15] rem = 다음 진화까지 남은 P (next는 객체 — 잠복버그 수리)
         let line;
@@ -1529,7 +1540,7 @@ function calcAll() {
           // [v9.20] 오늘의알림 — 푸시/인앱배너용, "하루짜리 결정적 순간"만 (왕관·진화·생일).
           //  [v9.20 최적화] 진화임박(rem) 분기 제거: 매일 값 변동→시트 churn + 푸시 시 매일 알림 피로.
           //  임박 넛지는 몬스터한마디(BF)가 이미 담당. BX는 이벤트일에만 채워지고 다음날 ''로 복귀.
-          const isBday6 = String(r[5] || '').slice(5, 10) === todayYmd0.slice(5, 10);
+          const isBday6 = bdayMMDD_(r[5], tz) === todayYmd0.slice(5, 10); // [v9.34] Date 셀 생일도 인식(1451과 동일 통일)
           alertOut.push([crownToday2 ? '👑 오늘 왕관을 받았어요! 최고예요 🎉'
             : evoRecent ? '⚡ 몬스터가 진화했어요! 축하해요 🐲'
             : isBday6 ? '🎂 생일 축하해요! 오늘의 주인공이에요 🎉'
@@ -1711,7 +1722,7 @@ function calcAll() {
   });
   const csLast = cs.getLastRow();
   if (csLast - 1 > csOut.length) {
-    cs.getRange(csOut.length + 2, 1, csLast - 1 - csOut.length, 8).clearContent(); // [v9.1]
+    cs.getRange(csOut.length + 2, 1, csLast - 1 - csOut.length, 12).clearContent(); // [v9.1] · [v9.34] 8→12열 — 강사팩 4열(9~12) 포함, 반 감소 시 유령 브리핑 HTML 잔존 방지
   }
   { // [v9.6] 🌍 월드 레이드 누적 — 전 학생 이번 달 획득 총합
     const wrC = ss.getSheetByName('world_raid');
@@ -1804,16 +1815,21 @@ function calcAll() {
     }
   }
   const count = pfData.filter(r => r[0]).length;
-  const prevG = getState(st, '학생수');
-  const prev = prevG.row > 0 ? (Number(prevG.val) || 0) : -1;
-  if (prev === -1) setState(st, '학생수', count);
-  else if (count > prev) {
-    const names = pfData.slice(prev).filter(r => r[0])
-      .map(r => r[0] + ' ' + r[1]).join(', ');
-    adminMail('[SYNK] 신규 학생 ' + (count - prev) + '명 등록',
-      '새로 등록된 학생: ' + names + '\n\n상담 배정을 진행해주세요.'); // [v5.4] 브리핑 통합
-    setState(st, '학생수', count);
-  } else if (count !== prev) setState(st, '학생수', count);
+  // [v9.34] 신규 학생 감지 — 행수 slice 방식은 비학생 행이 학생 뒤에 붙는 구조상 꼬리가 강사/관리자를 집고
+  //   강사 추가로도 오발동하던 결함 → 직전 학생 id 집합과의 차집합(role=student 한정)으로 교체
+  const curStuIds = pfData.filter(r => r[0] && r[3] === 'student').map(r => String(r[0]));
+  const prevIdsG = getState(st, '학생ID집합');
+  if (prevIdsG.row > 0) {
+    const prevIdSet = {};
+    String(prevIdsG.val || '').split(',').forEach(x => { if (x) prevIdSet[x] = 1; });
+    const addedStu = pfData.filter(r => r[0] && r[3] === 'student' && !prevIdSet[String(r[0])]);
+    if (addedStu.length) {
+      adminMail('[SYNK] 신규 학생 ' + addedStu.length + '명 등록',
+        '새로 등록된 학생: ' + addedStu.map(r => r[0] + ' ' + r[1]).join(', ') + '\n\n상담 배정을 진행해주세요.'); // [v5.4] 브리핑 통합
+    }
+  }
+  setState(st, '학생ID집합', curStuIds.join(','));
+  setState(st, '학생수', count); // 하위호환(외부 참조 대비) — 감지는 위 id 집합이 담당, setState가 동일값이면 무기록
 
   try { calcAcademic_(acadById, pfData); } catch (e) { Logger.log('calcAcademic_ 스킵: ' + e); } // [v9.18] 학업 성장 축 — [v9.22] byId·pfData 재사용
   Logger.log('calcAll v5 완료');
@@ -1841,18 +1857,19 @@ function syncProfiles() {
   const dstLast = dst.getLastRow();
   const keep = {};
   const nonStudents = []; // [v7.0] teacher/parent/admin 행 보존 — 기존엔 매 동기화마다 지워지던 결함
+  const existingStu = []; // [v9.34] {id,row} — 기존 학생의 물리 행 순서(행 안정화의 기준)
   let prevStudentCnt = 0; // [v9.19] 부분 축소 방어용 — 기존 학생 수
   if (dstLast >= 2) {
-    dst.getRange(2, 1, dstLast - 1, 26).getValues().forEach(r => {
+    dst.getRange(2, 1, dstLast - 1, 26).getValues().forEach((r, i) => {
       if (!r[0]) return;
       keep[r[0]] = { parent_of: r[9] || '', pEmail: r[25] || '', created_at: r[14] || '' }; // [v9.22] created_at 보존
       if (r[3] && r[3] !== 'student') nonStudents.push(r.slice(0, 15));
-      else if (r[3] === 'student') prevStudentCnt++;
+      else if (r[3] === 'student') { prevStudentCnt++; existingStu.push({ id: String(r[0]), row: i + 2 }); }
     });
   }
 
   const now = new Date();
-  const out = [], lvlOut = [], riskOut = [], visionOut = []; // [v8.5] 디테일 연동 3종
+  const newById = {}, newSeq = []; // [v9.34] 상담시트 신본 — id별 큐(중복 id도 기존처럼 행 수 보존)
   // [v9.28] 퇴소 이벤트 로그 — 진짜 이탈률·재원기간(LTV 기초) 확보. 학생당 최초 감지 1회만 기록(중복 방지)
   const exitSh = ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'exit_log', ['student_id','이름','반','퇴소감지일','재원일수']);
   const exitedIds = new Set();
@@ -1875,21 +1892,36 @@ function syncProfiles() {
     // [v9.22] created_at 안정화: 등록일 우선(yyyymmdd 문자열도 파싱) → 보존값 → now. 매일 now로 덮여 리텐션이 고장나던 버그 수정
     const regD = toDate_(row[2]);
     const createdAt = regD || ((keep[userId] && keep[userId].created_at) ? keep[userId].created_at : now);
-    out.push([
-      userId, row[0], row[1], 'student', row[3], row[4],
-      row[9], row[7], row[8],
-      (keep[userId] ? keep[userId].parent_of : ''),
-      payFee[userId] || '', row[2], row[12], row[14], createdAt
-    ]);
-    lvlOut.push([row[18] || '']);    // S 한국어수준 → AY(51): 강사 뷰 '레벨'
-    riskOut.push([row[60] || '']);   // BI ⚠위험신호 → AZ(52): 원장 콕핏 전용
-    visionOut.push([row[21] || '']); // V 핵심비전 → BA(53): 케어 대화용 한 줄
+    const ent = {
+      id: String(userId),
+      main: [userId, row[0], row[1], 'student', row[3], row[4],
+        row[9], row[7], row[8],
+        (keep[userId] ? keep[userId].parent_of : ''),
+        payFee[userId] || '', row[2], row[12], row[14], createdAt],
+      lvl: row[18] || '',    // S 한국어수준 → AY(51): 강사 뷰 '레벨'
+      risk: row[60] || '',   // BI ⚠위험신호 → AZ(52): 원장 콕핏 전용
+      vision: row[21] || ''  // V 핵심비전 → BA(53): 케어 대화용 한 줄
+    };
+    (newById[ent.id] = newById[ent.id] || []).push(ent);
+    newSeq.push(ent);
   });
 
-  nonStudents.forEach(r => out.push(r)); // [v7.0] 학생 뒤에 비학생 행 재기록
+  // [v9.34] P0 행 어긋남 수정 — 기존 profiles 학생 행 순서를 보존하고 신규만 뒤에 append.
+  //   구 방식(상담시트 순서로 A~O만 재작성)은 중간 퇴소 시 아래 학생 전원의 상태열(P~CB: Glide 소유
+  //   AK·AO·AR·BC·CB, 래칫 AB·AS·AT, 비교열 AA·AD)이 남의 행에 영구 오귀속되던 결함.
+  //   퇴소자 행은 deleteRow로 '전 열'을 함께 제거해 아래 행 전체가 정합을 유지한 채 당겨진다.
+  const ordered = [], removedRows = [];
+  existingStu.forEach(s => {
+    const q = newById[s.id];
+    if (q && q.length) { const e = q.shift(); e.used = true; ordered.push(e); }
+    else removedRows.push(s.row); // 퇴소·상담시트 삭제 — 행 통째 삭제 대상
+  });
+  let apCnt = 0; // 신규 학생 수 (뒤에 append)
+  newSeq.forEach(e => { if (!e.used) { ordered.push(e); apCnt++; } });
+
   // [v9.19] 안전 가드 — 빈/부분 손상 상담시트가 원본일 때 실학생 대량 삭제 방지 (백업 복구 이전 예방)
   //   ① 신규 학생 0명  또는  ② 기존 5명+ 인데 30% 넘게 급감 → 덮어쓰지 않고 원장 알림
-  const newStudentCnt = out.filter(r => r[3] === 'student').length;
+  const newStudentCnt = ordered.length;
   if (dstLast > 1 && (newStudentCnt === 0 || (prevStudentCnt >= 5 && newStudentCnt < prevStudentCnt * 0.7))) {
     Logger.log('syncProfiles 중단: 학생 ' + prevStudentCnt + '→' + newStudentCnt + ' 급감/0 — profiles 보호(덮어쓰기 안 함)');
     // [v9.22] 상태(신규/기존)가 바뀔 때만 1회 알림 — 빈 상담시트(테스트/미모집)가 매일 경보를 도배하는 것 방지
@@ -1904,15 +1936,26 @@ function syncProfiles() {
     }
     return;
   }
+  // [v9.34] 물리 행 정리 — ① 사라진 학생 행은 전 열 통째 삭제(아래 행이 상태열과 함께 당겨져 정합 유지)
+  //   ② 신규 학생은 기존 학생 블록 끝에 '빈 행'을 삽입해 배치(비학생 행의 잔존 상태열을 물려받지 않게).
+  //   비학생 행은 학생 뒤 배치 불변식([v7.0]) 그대로 유지된다.
+  removedRows.sort((a, b) => b - a).forEach(rn => dst.deleteRow(rn));
+  const survCnt = ordered.length - apCnt;
+  if (apCnt > 0 && dst.getLastRow() > survCnt + 1) dst.insertRowsAfter(survCnt + 1, apCnt);
+
+  const out = ordered.map(e => e.main);
+  nonStudents.forEach(r => out.push(r)); // [v7.0] 학생 뒤에 비학생 행 재기록
   // [v9.25] A7-1: 로스터 writeIfChanged — JSON 동일이면 setValues 생략(대부분 상담시트 무변동이라 A~O/Z/AY~BA 통째 skip).
   //   writeIfChanged는 셀값을 JSON.stringify로 비교 → Date는 ISO 전체 직렬화라 오탐(같은데 다르다고 판단)해도 '그냥 쓰기'(안전측), 반대(다른데 같다고)는 없음.
-  //   로스터 축소 대응: writeIfChanged는 겹치는 구간만 갱신하므로, 남는 옛 꼬리 행은 기존 전체 clearContent와 동일하게 별도로 비운다(tail-clear).
+  //   로스터 축소 대응: writeIfChanged는 겹치는 구간만 갱신하므로, 남는 옛 꼬리 행은 별도로 비운다(tail-clear).
   if (out.length > 0) {
+    if (dst.getMaxRows() < out.length + 1) dst.insertRowsAfter(dst.getMaxRows(), out.length + 1 - dst.getMaxRows()); // 그리드 부족 안전판
     writeIfChanged(dst, 2, 1, out);                                       // A~O(15열)
-    const oTail = dstLast - 1 - out.length;                              // >0: 로스터가 줄어 남은 옛 행
-    if (oTail > 0) dst.getRange(out.length + 2, 1, oTail, 15).clearContent();
+    const lastNow = dst.getLastRow();                                     // [v9.34] 삭제·삽입 반영 후 실측
+    const oTail = lastNow - 1 - out.length;                              // >0: 남은 옛 꼬리 행
+    if (oTail > 0) dst.getRange(out.length + 2, 1, oTail, dst.getMaxColumns()).clearContent(); // [v9.34] 전 열 tail-clear(구 15열 — Z 등 잔존 개인정보 포함 제거)
     const zOut = out.map(r => [keep[r[0]] ? keep[r[0]].pEmail : '']);
-    writeIfChanged(dst, 2, 26, zOut);                                     // Z(pEmail) — 기존과 동일하게 tail 미청소
+    writeIfChanged(dst, 2, 26, zOut);                                     // Z(pEmail)
 
     // [v8.5] 디테일 3종 → AY·AZ·BA (계산열 50 이후 안전 지대)
     if (dst.getMaxColumns() < 53) dst.insertColumnsAfter(dst.getMaxColumns(), 53 - dst.getMaxColumns());
@@ -1920,9 +1963,9 @@ function syncProfiles() {
     if (String(dst.getRange('AZ1').getValue()) !== '⚠상담위험') dst.getRange('AZ1').setValue('⚠상담위험');
     if (String(dst.getRange('BA1').getValue()) !== '핵심비전') dst.getRange('BA1').setValue('핵심비전');
     // [v9.25] AY~BA는 out과 별개 소스(row[18]/[60]/[21])라 반드시 별도 비교 — out 무변동이어도 레벨/위험/비전만 바뀔 수 있음
-    const trio = lvlOut.map((v, i) => [v[0], riskOut[i][0], visionOut[i][0]]); // [v8.7] 3열 1회 쓰기 (학생만, 비학생 제외)
+    const trio = ordered.map(e => [e.lvl, e.risk, e.vision]); // [v8.7] 3열 1회 쓰기 (학생만, 비학생 제외)
     if (trio.length) writeIfChanged(dst, 2, 51, trio);
-    const tTail = dstLast - 1 - trio.length;                             // 학생 뒤(비학생·삭제) 행의 AY~BA는 비움 — 기존 전체 clear 보존
+    const tTail = lastNow - 1 - trio.length;                             // 학생 뒤(비학생·삭제) 행의 AY~BA는 비움 — 기존 전체 clear 보존
     if (tTail > 0) dst.getRange(trio.length + 2, 51, tTail, 3).clearContent();
   }
   setState(ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'app_state', ['key', 'value']), '동기화보류_상태', ''); // [v9.22] 정상 동기화 → 보류 알림 재무장
@@ -2025,6 +2068,7 @@ function queueNewInquiries_(ss) {
   const props = PropertiesService.getScriptProperties();
   const last = iq.getLastRow();
   const from = Number(props.getProperty('문의알림_포인터')) || 1;
+  if (from > last) { props.setProperty('문의알림_포인터', String(last)); return; } // [v9.34] 행 정리로 시트가 줄면 클램프 — 이후 신규 문의 영구 누락 방지 (min 보정은 정상 정지 상태에서 마지막 행 무한 재큐잉이라 오답)
   if (from >= last) return;
   const rows = iq.getRange(from + 1, 1, last - from, 5).getValues();
   const fresh = [];
@@ -2146,19 +2190,21 @@ function checkReenrollment(asText) {
     [3, 6, 12].forEach(m => {
       const target = new Date(reg);
       target.setMonth(target.getMonth() + m);
-      if (Utilities.formatDate(target, tz, 'yyyy-MM-dd') === todayStr) {
+      // [v9.34] 주 1회(월) 실행인데 '당일 정확 일치'만 보면 화~일 도래분 ~86%가 영구 미보고 — 지난 7일 내 도래로 판정
+      const diffDays = (now - target) / 86400000;
+      if (diffDays >= 0 && diffDays < 7) {
         hits.push('· ' + r[0] + ' ' + r[1] + ' (' + (r[4] || '') + ') — ' + m + '개월차');
       }
     });
   });
   if (wantText) {
     return hits.length
-      ? '재등록 시점 ' + hits.length + '명\n' + hits.join('\n')
-      : '오늘 재등록 시점 학생 없음';
+      ? '재등록 시점 ' + hits.length + '명 (지난 7일 내 도래)\n' + hits.join('\n')
+      : '지난 7일 내 재등록 시점 학생 없음';
   }
   if (hits.length === 0 || !quotaOk(1)) return;
   MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🔄 재등록 시점 학생 ' + hits.length + '명',
-    '오늘 재등록 상담 시점인 학생입니다.\n\n' + hits.join('\n') +
+    '지난 7일 내 재등록 상담 시점이 도래한 학생입니다.\n\n' + hits.join('\n') +
     '\n\n재등록 안내 및 상담을 진행해주세요.');
   Logger.log('재등록 알림: ' + hits.length + '명');
 }
@@ -2166,7 +2212,7 @@ function checkReenrollment(asText) {
 function checkConsultDelay() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const now = new Date();
-  const fr = ss.getSheetByName('form_responses');
+  const fr = ensureSheet(ss, 'form_responses', ['접수ID', '타임스탬프', '이름', '경로', '처리상태']); // [v9.34] 무가드 → 시트 부재 시 매일 아침 크래시 차단
   const last = fr.getLastRow();
   if (last < 2) { Logger.log('상담 응답 없음'); return; }
   if (fr.getRange('E1').getValue() !== '처리상태') fr.getRange('E1').setValue('처리상태');
@@ -2453,7 +2499,7 @@ function birthdayCheck() {
   appendPoints(ss, kids.map(r => [r[0], 20, '생일축하', '시스템']));
 
   const emails = PARENT_MAIL_BIRTHDAY ? kids.filter(r => String(r[25] || '').indexOf('@') > -1) : []; // [v5.4]
-  if (quotaOk(emails.length + 1)) {
+  if (emails.length && quotaOk(emails.length)) {
     emails.forEach(r => {
       // [v9.28] 한몽 병기 — 유일 연 1회 발송인데 한국어 전용이던 문제 수정
       MailApp.sendEmail(String(r[25]).trim(),
@@ -2463,9 +2509,9 @@ function birthdayCheck() {
         '(' + r[1] + ' 학생의 생일을 SYNK 가족 모두가 축하합니다! 축하 포인트 +20P를 선물로 드렸어요 🎁)\n\n' +
         '— SYNK · Тархи судлалд суурилсан солонгос хэлний академи');
     });
-    adminMail('[SYNK] 오늘 생일 ' + kids.length + '명',
-      kids.map(r => '· ' + r[0] + ' ' + r[1]).join('\n') + '\n\n+20P 자동 지급 완료'); // [v5.4] 브리핑 통합
   }
+  adminMail('[SYNK] 오늘 생일 ' + kids.length + '명',
+    kids.map(r => '· ' + r[0] + ' ' + r[1]).join('\n') + '\n\n+20P 자동 지급 완료'); // [v5.4] 브리핑 통합 · [v9.34] quotaOk 게이트 밖 — 큐(쿼터 0)라 쿼터 부족 날에도 지급 사실이 원장 브리핑에 남게
   calcAll();
   Logger.log('생일 지급: ' + kids.length + '명');
 }
@@ -2558,6 +2604,7 @@ function leagueSettle_() {
   const tz = ss.getSpreadsheetTimeZone();
   const now = new Date();
   const mon = new Date(now); mon.setDate(mon.getDate() - ((mon.getDay() + 6) % 7)); // 이번 주 월요일
+  mon.setHours(0, 0, 0, 0); // [v9.34] 일 22시 실행 시 mon이 월요일 22:0x가 되어 월요일 낮 포인트가 최다기여 집계에서 빠지던 결함(raidFriday 2751과 동일 처리)
   const weekKey = Utilities.formatDate(mon, tz, 'yyyy-MM-dd');
   const lg = ss.getSheetByName('league_pairs');
   if (!lg || lg.getLastRow() < 2) return;
@@ -2601,6 +2648,7 @@ function leagueSettle_() {
 
   const data = lg.getRange(2, 1, lg.getLastRow() - 1, 5).getValues();
   const winRows = []; let noticed = 0;
+  const resUpd = [], noticeRows = []; // [v9.34] E열 마킹·공지를 지급 뒤로 지연 — 마킹 선행 시 크래시로 +5P 영구 유실(멱등 게이트가 재시도 차단)되던 결함
   data.forEach((r, i) => {
     if (String(r[0]) !== weekKey || String(r[3]) === '부전' || String(r[4] || '')) return; // 이번 주 · 미정산만 (멱등)
     const a = String(r[1] || ''), b = String(r[2] || '');
@@ -2609,7 +2657,7 @@ function leagueSettle_() {
     let res, winner = '';
     if (av === bv) res = '무승부 ' + av + ' : ' + bv;
     else { winner = av > bv ? a : b; res = winner + ' 승 (' + Math.max(av, bv) + ' : ' + Math.min(av, bv) + ')'; }
-    lg.getRange(i + 2, 5).setValue(res);
+    resUpd.push([i, res]);
     // [v9.2] 양 반 모두에게 서사 — '패배'라는 단어는 이 시스템에 존재하지 않는다
     const hi = Math.max(av, bv), lo = Math.min(av, bv);
     if (!winner) {
@@ -2634,16 +2682,31 @@ function leagueSettle_() {
     }
     if (winner && memberCls[winner]) {
       memberCls[winner].forEach(sid => winRows.push([sid, 5, '리그승리', 'SYSTEM']));
-      const nt = ensureSheet(ss, 'notices', ['title', 'body', 'date', 'title_mn', 'body_mn']);
-      nt.getRange(nt.getLastRow() + 1, 1, 1, 3).setValues([[
+      noticeRows.push([
         '🏆 주간 리그 결과: ' + a + ' × ' + b,
         '이번 주 리듬왕은 ' + winner + ' (1인 평균 ' + hi + ' : ' + lo + ')! 승리 반 전원 +5P. 양 반 모두의 데미지는 각자의 몬스터에게 그대로 쌓였습니다 🌱',
-        new Date()]]);
+        new Date()]);
       noticed++;
     }
   });
+  // [v9.34] ① 지급(멱등: 이번 주 '리그승리' 기지급자 point_logs 재조회 제외) → ② E열 결과 마킹 → ③ 서사·공지.
+  //   크래시 시 재실행이 안전하게 이어받는 순서 — 지급 전 죽으면 전부 재시도, 지급 후 죽으면 멱등 게이트가 중복 차단.
+  if (winRows.length) {
+    const paidL = {};
+    if (plL && plL.getLastRow() >= 2) {
+      plL.getRange(2, 1, plL.getLastRow() - 1, 6).getValues().forEach(r => {
+        if (String(r[3]) === '리그승리' && r[1] && r[5] && asDate_(r[5]) >= mon) paidL[String(r[1])] = 1;
+      });
+    }
+    const toPayL = winRows.filter(w => !paidL[String(w[0])]);
+    if (toPayL.length) appendPoints(ss, toPayL);
+  }
+  resUpd.forEach(u => lg.getRange(u[0] + 2, 5).setValue(u[1]));
   if (storyRows.length) rsL.getRange(rsL.getLastRow() + 1, 1, storyRows.length, 5).setValues(storyRows); // [v9.2]
-  if (winRows.length) appendPoints(ss, winRows);
+  if (noticeRows.length) {
+    const nt = ensureSheet(ss, 'notices', ['title', 'body', 'date', 'title_mn', 'body_mn']);
+    nt.getRange(nt.getLastRow() + 1, 1, noticeRows.length, 3).setValues(noticeRows);
+  }
   Logger.log('리그 정산: 승리 지급 ' + winRows.length + '명 · 서사 ' + storyRows.length + '건 · 공지 ' + noticed + '건');
 }
 
@@ -2802,6 +2865,7 @@ function raidFriday() {
   const rewardSids = [];
   const winners = []; // [v5] 자동 공지용 성공 반 목록
   const settled = []; // [v7.3] 결산 스토리 대상
+  const winRowIdx = []; // [v9.34] F열 '지급완료' 마킹은 appendPoints 성공 뒤로 — 선마킹 후 크래시 시 보상 영구 미지급 결함 수정
   rdData.forEach((r, i) => {
     if (dstr(r[0], tz) !== weekKey) return;
     const cls = r[1], target = Number(r[2]) || 0;
@@ -2810,7 +2874,8 @@ function raidFriday() {
     const got = weekPts[cls] || 0;
     r[3] = got;
     if (got >= target && target > 0 && !wasPaid) {
-      r[4] = '달성 🎉'; r[5] = '지급완료';
+      r[4] = '달성 🎉';
+      winRowIdx.push(i);
       winners.push(cls + ' (' + got + 'P)'); // [v5]
       (members[cls] || []).forEach(sid => rewardSids.push(sid));
     } else if (!wasPaid) {
@@ -2866,7 +2931,16 @@ function raidFriday() {
   if (stOut.length) rsSh.getRange(rsSh.getLastRow() + 1, 1, stOut.length, 5).setValues(stOut);
 
   if (rewardSids.length) {
-    appendPoints(ss, rewardSids.map(sid => [sid, 20, '레이드보상', '시스템'])); // [v7.1] 50→20
+    // [v9.34] 지급 멱등 가드 — 이전 실행이 지급 후 마킹 전에 죽었어도 이번 주 '레이드보상' 기지급자는 재지급하지 않음(expandHwBatch 재조회 패턴)
+    const paidSet = {};
+    if (pl.getLastRow() >= 2) {
+      pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
+        if (String(r[3]) === '레이드보상' && r[1] && r[5] && asDate_(r[5]) >= monday) paidSet[String(r[1])] = 1;
+      });
+    }
+    const toPay = rewardSids.filter(sid => !paidSet[String(sid)]);
+    if (toPay.length) appendPoints(ss, toPay.map(sid => [sid, 20, '레이드보상', '시스템'])); // [v7.1] 50→20
+    winRowIdx.forEach(i => rd.getRange(i + 2, 6).setValue('지급완료')); // [v9.34] 지급 성공 뒤에만 마킹 — 실패 시 다음 실행이 재시도(중복은 위 가드가 차단)
     // [v5] 레이드 성공 자동 공지 → 앱 공지 탭에 노출 ([v9.22] bossS 재사용 — bossOfMonth 중복 호출 제거)
     addNotice(ss,
       '🎉 이번 주 레이드 성공' + (bossS ? ' — ' + bossS.name + ' 격파!' : '!'),
@@ -3000,16 +3074,40 @@ function expandHwBatch() {
 
 /* ===================== [v7.9] 학부모 주간 다이제스트 ===================== */
 // 일요일 22시 — 등원·포인트·왕관·레이드·배운 것을 학부모에게 한 통으로 (등원 즉시 메일 대체)
-function parentWeeklyDigest() {
+function parentWeeklyDigest() { parentWeeklyDigestCore_(''); } // 일요일 밤 본발송
+
+// [v9.34] 다이제스트 보류 재시도 — 일요일 발송이 쿼터로 끊기면 app_state '다이제스트보류'(weekKey|발송완료 sid,…)가 남고,
+//   morningJobs가 매일 이 함수를 호출해 해당 주(monday 창) 미발송분만 재집계·재발송한다. 완료 또는 주 월요일+13일 경과 시 키 삭제.
+//   ('마킹 보류'만으로는 같은 weekKey 안에 다음 실행이 없어 no-op — 재시도 경로 자체가 정답. digest #31 교정)
+function parentWeeklyDigestRetry_() {
+  const ssR = SpreadsheetApp.getActiveSpreadsheet();
+  const stR = ssR.getSheetByName('app_state');
+  if (!stR) return;
+  const raw = String(getState(stR, '다이제스트보류').val || '');
+  if (!raw) return;
+  if ((Date.now() - new Date(raw.split('|')[0]).getTime()) / 86400000 > 13) { setState(stR, '다이제스트보류', ''); return; } // 다음 주 소식이 이미 도래 — 옛 소식 폐기
+  parentWeeklyDigestCore_(raw);
+}
+
+function parentWeeklyDigestCore_(holdRaw) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const now = new Date();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const retry = !!holdRaw;
+  const sentSet = {}; // [v9.34] 재시도 모드: 기발송 sid — 중복 발송 금지
+  let monday;
+  if (retry) {
+    monday = new Date(holdRaw.split('|')[0]);
+    String(holdRaw.split('|')[1] || '').split(',').forEach(x => { if (x) sentSet[x] = 1; });
+  } else {
+    monday = new Date(now);
+    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  }
   monday.setHours(0, 0, 0, 0);
+  const weekEnd = new Date(monday.getTime() + 7 * 86400000); // [v9.34] 주 창 상한 — 재시도가 다음 주 기록을 지난주 소식에 섞지 않게
   const weekKey = Utilities.formatDate(monday, tz, 'yyyy-MM-dd');
   const st = ss.getSheetByName('app_state');
-  if (st && String(getState(st, '학부모다이제스트주').val) === weekKey) return; // 재실행 방지
+  if (!retry && st && String(getState(st, '학부모다이제스트주').val) === weekKey) return; // 재실행 방지
 
   const pf = ss.getSheetByName('profiles');
   if (!pf || pf.getLastRow() < 2) return;
@@ -3027,7 +3125,7 @@ function parentWeeklyDigest() {
       const d = r[2];
       if (!r[1] || !d) return;
       const dd = asDate_(d);
-      if (dd >= monday && String(r[3]).indexOf('출석') > -1) attW[r[1]] = (attW[r[1]] || 0) + 1;
+      if (dd >= monday && dd < weekEnd && String(r[3]).indexOf('출석') > -1) attW[r[1]] = (attW[r[1]] || 0) + 1; // [v9.34] 주 창 상한
     });
   }
   const ptsW = {}, mvpW = {}, synW = {};
@@ -3038,7 +3136,7 @@ function parentWeeklyDigest() {
       const sid = r[1], pts = Number(r[2]) || 0, rs = String(r[3] || ''), d = r[5];
       if (!sid || !d) return;
       const dd = asDate_(d);
-      if (dd < monday) return;
+      if (dd < monday || dd >= weekEnd) return; // [v9.34] 주 창 상한
       const isE = pts > 0 || rs.indexOf('정정') > -1;
       if (isE && pts !== 0) ptsW[sid] = (ptsW[sid] || 0) + pts;
       if (rs.indexOf('MVP') > -1) mvpW[sid] = (mvpW[sid] || 0) + (pts > 0 ? 1 : (rs.indexOf('정정') > -1 ? -1 : 0)); // [v9.0] 건수 — 금액 독립
@@ -3063,12 +3161,14 @@ function parentWeeklyDigest() {
       const d = r[3];
       if (!r[0] || !d) return;
       const dd = asDate_(d);
-      if (dd >= monday) topicBy[r[0]] = String(r[4] || r[1] || '');
+      if (dd >= monday && dd < weekEnd) topicBy[r[0]] = String(r[4] || r[1] || ''); // [v9.34] 주 창 상한
     });
   }
-  let sent = 0;
+  let sent = 0, unsent = 0;
+  const sentIds = []; // [v9.34] 이번 실행 발송 성공 sid
   kids.forEach(k => {
-    if (!quotaOk(1)) return;
+    if (retry && sentSet[String(k.sid)]) return; // [v9.34] 재시도: 기발송 스킵 — 중복 발송 금지
+    if (!quotaOk(1)) { unsent++; return; }
     const att = attW[k.sid] || 0;
     const pts = Math.max(ptsW[k.sid] || 0, 0);
     const mvpN = Math.max(mvpW[k.sid] || 0, 0); // [v9.0] 건수 방식 — 시냅스 +10 상향에도 정확
@@ -3091,9 +3191,14 @@ function parentWeeklyDigest() {
       ((mvpN + synN) > 0 ? ' · титэм ' + (mvpN + synN) + 'ш 👑' : '') + ' 🎉';
     MailApp.sendEmail(k.m, '[SYNK] 📮 ' + k.n + ' — 이번 주 소식', body);
     sent++;
+    sentIds.push(String(k.sid));
   });
-  if (st && sent) setState(st, '학부모다이제스트주', weekKey);
-  Logger.log('학부모 주간 다이제스트: ' + sent + '통');
+  if (!retry && st && sent) setState(st, '학부모다이제스트주', weekKey); // 같은 날 수동 재실행 중복 방지(정상 가드 유지)
+  if (st) { // [v9.34] 미발송 잔여 → 보류 키(발송완료 sid 누적) 기록 · 전원 완료 시 삭제
+    if (unsent > 0) setState(st, '다이제스트보류', weekKey + '|' + Object.keys(sentSet).concat(sentIds).join(','));
+    else if (retry) setState(st, '다이제스트보류', '');
+  }
+  Logger.log('학부모 주간 다이제스트' + (retry ? '(재시도)' : '') + ': ' + sent + '통 · 미발송 ' + unsent + '명');
 }
 
 /* ===================== [v7.8] 복구 리허설 ===================== */
@@ -3268,8 +3373,7 @@ function notifyDailyAwards() {
     if (hasM) body += o.n + ' сурагч өнөөдрийн хичээлийн шилдэг оролцогчоор (MVP) шалгарлаа! (+' + netM[sid] + 'P)\n';
     if (hasS) body += o.n + ' сурагч өнөөдөр хамгийн их өссөн сурагчаар (Өнөөдрийн синапс) шалгарлаа! (+' + netS[sid] + 'P)\n';
     body += 'Багшийн өдөрт ганцхан хүнд өгдөг титэм — гэртээ магтаж урамшуулаарай 🎉';
-    if (quotaOk(1)) MailApp.sendEmail(o.m, '[SYNK] ' + title, body);
-    sent++;
+    if (quotaOk(1)) { MailApp.sendEmail(o.m, '[SYNK] ' + title, body); sent++; } // [v9.34] 발송 성공분만 카운트 — 쿼터 미발송을 '발송'으로 세어 허위 마킹·수동 복구 차단하던 결함 수정
   });
   if (st && sent) setState(st, 'MVP메일발송일', today);
   Logger.log('일일 왕관 학부모 메일: ' + sent + '통');
@@ -3420,7 +3524,7 @@ function checkNoShow() {
   const todayStr = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
   const day = now.getDay();
   const type = (day === 0 || day === 6) ? '주말' : '평일';
-  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const nowMin = Number(Utilities.formatDate(now, tz, 'H')) * 60 + Number(Utilities.formatDate(now, tz, 'm')); // [v9.34] 시트TZ 기준 — getHours(스크립트TZ) 혼용 시 판정 창이 어긋남
 
   const map = scheduleMap(ss);
   const targets = Object.keys(map).filter(num => map[num].name === num).filter(num => { // [v8.3] 반명 키만
@@ -3446,10 +3550,13 @@ function checkNoShow() {
   const emapNS = teacherEmailMap_(ss); // [v9.28] 담당 강사에게도 라우팅
 
   targets.forEach(num => {
-    const key = '미등원_' + todayStr + '_정규반' + num;
+    const key = '미등원_' + todayStr + '_' + num; // [v9.34] v8.3 반명 키 전환 후 남은 '정규반' 이중 접두 화석 정리
     if (getState(st, key).row > 0) return;
-    const absent = pfData.filter(r =>
-      r[0] && r[3] === 'student' && (String(r[4]) === num || (map[classNumOf(r[4])] && map[classNumOf(r[4])].name === num)) && !todayAtt.has(r[0])); // [v8.8] 번호 폴백은 '유일 번호'일 때만 — 신체계 트랙 간 오매칭 차단
+    const clsStu = pfData.filter(r =>
+      r[0] && r[3] === 'student' && (String(r[4]) === num || (map[classNumOf(r[4])] && map[classNumOf(r[4])].name === num))); // [v8.8] 번호 폴백은 '유일 번호'일 때만 — 신체계 트랙 간 오매칭 차단
+    // [v9.34] 당일 그 반 출석 0건이면 스킵(마킹도 보류) — 강사 미입력·휴강을 미등원으로 오경보하지 않고, 출석이 들어온 다음 스위프에 판정
+    if (!clsStu.some(r => todayAtt.has(r[0]))) return;
+    const absent = clsStu.filter(r => !todayAtt.has(r[0]));
     if (absent.length > 0 && quotaOk(1)) {
       MailApp.sendEmail(ADMIN_EMAIL,
         '[SYNK] ⚠️ ' + num + ' 미등원 ' + absent.length + '명 (' + map[num].time + ')',
@@ -3496,28 +3603,25 @@ function checkEvolution() {
                        pEmail: String(r[25] || '').trim() });
       }
       if (pct >= 90 && cur && adPrev !== cur) {
-        imminent.push({ id: r[0], name: r[1], cls: String(r[4] || ''), line: '· ' + r[0] + ' ' + r[1] + ' — ' + cur + ' ' + pct + '%' }); // [v9.28] cls 추가(강사 라우팅용)
+        imminent.push({ id: r[0], name: r[1], cls: String(r[4] || ''), adIdx: newAD.length, adPrev: adPrev, line: '· ' + r[0] + ' ' + r[1] + ' — ' + cur + ' ' + pct + '%' }); // [v9.28] cls 추가(강사 라우팅용) · [v9.34] adIdx/adPrev — 발송 성공 시에만 AD 확정
         ad = cur;
       }
     }
     newAD.push([ad]);
   });
 
-  writeIfChanged(pf, 2, 27, newAA);
-  writeIfChanged(pf, 2, 30, newAD);
-
   if (evolved.length) {
     const withEmail = PARENT_MAIL_EVOLUTION ? evolved.filter(e => e.pEmail.indexOf('@') > -1) : []; // [v5.4] 진화는 인앱 전용
-    if (quotaOk(withEmail.length + 1)) {
+    if (withEmail.length && quotaOk(withEmail.length)) {
       withEmail.forEach(e => {
         MailApp.sendEmail(e.pEmail,
           '[SYNK] 🐣→🐲 ' + e.name + ' 학생의 몬스터가 진화했어요!',
           e.name + ' 학생의 SYNK 몬스터가 [' + e.from + '] 에서 [' + e.to +
           '] (으)로 진화했습니다!\n꾸준한 노력의 결과예요. 많이 칭찬해주세요 🎉\n\n- SYNK 학원');
       });
-      adminMail('[SYNK] 🐲 몬스터 진화 ' + evolved.length + '명',
-        evolved.map(e => '· ' + e.id + ' ' + e.name + ': ' + e.from + ' → ' + e.to).join('\n')); // [v5.4] 브리핑 통합
     }
+    adminMail('[SYNK] 🐲 몬스터 진화 ' + evolved.length + '명',
+      evolved.map(e => '· ' + e.id + ' ' + e.name + ': ' + e.from + ' → ' + e.to).join('\n')); // [v5.4] 브리핑 통합 · [v9.34] quotaOk 게이트 밖으로 — DIGEST_MODE 큐라 쿼터 무관, 쿼터 부족 밤 원장 브리핑 증발 수정
   }
   if (imminent.length) { // [v5.4] 브리핑 통합
     adminMail('[SYNK] ✨ 진화 임박 ' + imminent.length + '명 (90%+)',
@@ -3526,14 +3630,25 @@ function checkEvolution() {
     // [v9.28] 담당 강사에게도 라우팅 — 응원할 사람이 정작 못 받던 정보를 원장 전용에서 공유로
     const emapEv = teacherEmailMap_(ss);
     const byClsEv = {};
+    const sentClsEv = {}; // [v9.34] 발송 성공 반만 기록
     imminent.forEach(x => { if (x.cls) (byClsEv[x.cls] = byClsEv[x.cls] || []).push(x.line); });
     Object.keys(byClsEv).forEach(cls => {
       (emapEv.byClass[cls] || []).forEach(t => {
-        if (quotaOk(1)) MailApp.sendEmail(t.email, '[SYNK] ✨ ' + cls + ' 진화 임박 ' + byClsEv[cls].length + '명',
-          '수업에서 살짝 응원해주세요! 조금만 더 하면 진화해요 🐲\n\n' + byClsEv[cls].join('\n'));
+        if (quotaOk(1)) {
+          MailApp.sendEmail(t.email, '[SYNK] ✨ ' + cls + ' 진화 임박 ' + byClsEv[cls].length + '명',
+            '수업에서 살짝 응원해주세요! 조금만 더 하면 진화해요 🐲\n\n' + byClsEv[cls].join('\n'));
+          sentClsEv[cls] = 1;
+        }
       });
     });
+    // [v9.34] 강사 메일이 쿼터로 못 나간 반은 AD를 되돌려 다음 실행에 재알림 (강사 없는 반은 원장 브리핑 큐가 담당하므로 확정)
+    imminent.forEach(x => {
+      if (x.cls && (emapEv.byClass[x.cls] || []).length && !sentClsEv[x.cls]) newAD[x.adIdx][0] = x.adPrev;
+    });
   }
+  // [v9.34] AA/AD 갱신을 발송 뒤로 — 발송 전 상태 갱신은 메일 실패(크래시·쿼터) 시 알림 영구 유실이던 순서 교정
+  writeIfChanged(pf, 2, 27, newAA);
+  writeIfChanged(pf, 2, 30, newAD);
   Logger.log('진화 ' + evolved.length + ' / 임박 ' + imminent.length);
 }
 
@@ -3557,27 +3672,25 @@ function calcTeacherStats() {
     t[teacher].praise += Number(r[23]) || 0;
   });
 
-  // [v7.8] 👑 왕관 공정성 — 강사별 이번 달 왕관 수 + 편중도(한 학생 최다 비중 %, 60%↑면 골고루 권장)
+  // [v7.8] 👑 왕관 공정성 — 강사별 지난달 왕관 수 + 편중도(한 학생 최다 비중 %, 60%↑면 골고루 권장)
+  // [v9.34] 당월→전월 + 병합 읽기 — 매월 1일(monthlyReport) 실행 시점엔 당월 로그 0건 + archiveMonthly가
+  //   전월 로그를 이미 아카이브로 옮긴 뒤라, point_logs 단독 당월 집계는 항상 0/0으로 덮여 v7.8 공정성 감지가 무력했음
   const tz8 = ss.getSpreadsheetTimeZone();
-  const ym8 = Utilities.formatDate(new Date(), tz8, 'yyyy-MM');
+  const ym8 = ymShift_(Utilities.formatDate(new Date(), tz8, 'yyyy-MM'), -1); // 전월
   const crownBy = {};
   const clsOfT = {};
   data.forEach(r => { if (r[0] && r[3] === 'student' && r[4]) clsOfT[r[0]] = String(r[4]).split('(')[0].trim(); });
-  const pl8 = ss.getSheetByName('point_logs');
-  if (pl8 && pl8.getLastRow() >= 2) {
-    pl8.getRange(2, 1, pl8.getLastRow() - 1, 6).getValues().forEach(r => {
-      const rs = String(r[3] || ''), pts = Number(r[2]) || 0, d = r[5];
-      if (pts <= 0 || !d || rs.indexOf('정정') > -1) return;
-      if (rs.indexOf('MVP') === -1 && rs.indexOf('시냅스') === -1) return;
-      const dd = asDate_(d);
-      if (Utilities.formatDate(dd, tz8, 'yyyy-MM') !== ym8) return;
-      const cl = clsOfT[r[1]];
-      if (!cl) return;
-      if (!crownBy[cl]) crownBy[cl] = { tot: 0, bySid: {} };
-      crownBy[cl].tot++;
-      crownBy[cl].bySid[r[1]] = (crownBy[cl].bySid[r[1]] || 0) + 1;
-    });
-  }
+  readPointLogs_(ss, 7).forEach(r => { // 병합 읽기(monthlyReport와 동일 패턴) — G열(연월) 기준 전월 필터
+    const rs = String(r[3] || ''), pts = Number(r[2]) || 0;
+    if (pts <= 0 || rs.indexOf('정정') > -1) return;
+    if (rs.indexOf('MVP') === -1 && rs.indexOf('시냅스') === -1) return;
+    if (String(r[6]) !== ym8) return;
+    const cl = clsOfT[r[1]];
+    if (!cl) return;
+    if (!crownBy[cl]) crownBy[cl] = { tot: 0, bySid: {} };
+    crownBy[cl].tot++;
+    crownBy[cl].bySid[r[1]] = (crownBy[cl].bySid[r[1]] || 0) + 1;
+  });
   const rows = Object.keys(t).map(k => {
     const v = t[k];
     const perAtt = v.att / v.n, perPts = v.pts / v.n, perPraise = v.praise / v.n;
@@ -3592,8 +3705,8 @@ function calcTeacherStats() {
   }).sort((a, b) => b[5] - a[5]);
 
   const ts = ensureSheet(ss, 'teacher_stats',
-    ['강사','담당학생수','1인당출석','1인당포인트','1인당칭찬','케어지수','이번달왕관','왕관편중%']);
-  if (ts.getRange(1, 7).getValue() !== '이번달왕관') ts.getRange(1, 7).setValue('이번달왕관'); // [v7.8]
+    ['강사','담당학생수','1인당출석','1인당포인트','1인당칭찬','케어지수','지난달왕관','왕관편중%']);
+  if (ts.getRange(1, 7).getValue() !== '지난달왕관') ts.getRange(1, 7).setValue('지난달왕관'); // [v7.8] · [v9.34] 집계 기준(전월)과 헤더 일치
   if (ts.getRange(1, 8).getValue() !== '왕관편중%') ts.getRange(1, 8).setValue('왕관편중%');
   const tsLast = ts.getLastRow();
   if (tsLast - 1 > rows.length && rows.length >= 0) {
@@ -3748,8 +3861,8 @@ function monthlyGameBatch() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const now = new Date();
-  const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const ym = Utilities.formatDate(lastMonthDate, tz, 'yyyy-MM');
+  const ym = ymShift_(Utilities.formatDate(now, tz, 'yyyy-MM'), -1); // [v9.34] 월키 TZ 단일화 — 혼용 시 ym이 밀려 완료월 가드에 걸려 그달 칭호·스냅샷이 통째 증발
+  const lastMonthDate = new Date(Number(ym.slice(0, 4)), Number(ym.slice(5, 7)) - 1, 1); // 달력 산술용(연·월 필드만 사용)
 
   // [v7.5] 월 1회 강제 — 재실행 시 출석정산·칭호보너스 중복 지급 원천 차단
   const stG5 = ss.getSheetByName('app_state');
@@ -3801,8 +3914,7 @@ function monthlyGameBatch() {
   });
 
   // 전월 스냅샷
-  const prevYm = Utilities.formatDate(
-    new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth() - 1, 1), tz, 'yyyy-MM');
+  const prevYm = ymShift_(ym, -1); // [v9.34] 월키 TZ 단일화
   const prevPts = {}, prevRank = {};
   if (snap.getLastRow() >= 2) {
     snap.getRange(2, 1, snap.getLastRow() - 1, 4).getValues().forEach(r => {
@@ -4372,7 +4484,7 @@ function importFormResponses() {
     const colOf = {};
     headers.forEach((h, i) => { if (h) colOf[String(h).trim()] = i + 1; });
 
-    const fr = ss.getSheetByName('form_responses');
+    const fr = ensureSheet(ss, 'form_responses', ['접수ID', '타임스탬프', '이름', '경로', '처리상태']); // [v9.34] 무가드 참조 → 시트 부재 시 채번 후 크래시·같은 응답 10분마다 재기입(증식) 차단
     let newTs = lastTs;
 
     // 현재 최대 SYNK 번호 (한 배치 내 연속 채번)
@@ -4507,7 +4619,7 @@ function cleanupFormTest() {
   });
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
   setState(st, '폼처리시각', 0);
-  const fr = ss.getSheetByName('form_responses');
+  const fr = ensureSheet(ss, 'form_responses', ['접수ID', '타임스탬프', '이름', '경로', '처리상태']); // [v9.34] 무가드 정리(3곳 일괄)
   const frLast = fr.getLastRow();
   if (frLast >= 2) {
     fr.getRange(2, 1, frLast - 1, 4).getValues().forEach((r, i) => {
@@ -4631,10 +4743,24 @@ function runReportCards_() {
   pres2.getSlides().forEach(sl => { if (rm.has(sl.getObjectId())) sl.remove(); });
   pres2.saveAndClose();
 
-  const remaining = pendingAll.length - pending.length;
+  // [v9.34] 잔여에 이번 배치 실패분(pending - rows)도 가산 — 마지막 배치에서 실패하면 remaining=0으로 굳어
+  //   '전원 완료' 거짓 메일 + 그달 카드 영구 미생성(다음 달 ym이 바뀌어 재시도 없음)되던 결함 수정
+  const remaining = pendingAll.length - rows.length;
+  const propsRC = PropertiesService.getScriptProperties();
+  if (rows.length === 0 && pending.length > 0) { // [v9.34] 연속 0장 = 영구 오류(권한·템플릿) 의심 → 무한 4분 재시도 루프 차단
+    const zeroN = (Number(propsRC.getProperty('리포트카드_연속0장')) || 0) + 1;
+    propsRC.setProperty('리포트카드_연속0장', String(zeroN));
+    if (zeroN >= 2) {
+      adminMail('[SYNK] ⚠️ 리포트카드 생성 중단 (' + label + ')',
+        '연속 ' + zeroN + '회 실행에서 카드가 1장도 생성되지 않아 자동 이어하기를 중단했습니다. 잔여 ' + remaining + '장.\n' +
+        '실행 로그·Drive 권한·리포트 템플릿(REPORT_TEMPLATE_ID)을 확인한 뒤 monthlyReportCards()를 수동 실행하세요.');
+      Logger.log('리포트카드: 연속 ' + zeroN + '회 0장 — 체인 중단');
+      return;
+    }
+  } else if (rows.length > 0) propsRC.setProperty('리포트카드_연속0장', '0');
   if (remaining > 0) {
     ScriptApp.newTrigger('reportCardsContinue').timeBased().after(4 * 60 * 1000).create();
-    Logger.log('카드 ' + rows.length + '장 생성 · 잔여 ' + remaining + '장 — 4분 후 자동 이어하기');
+    Logger.log('카드 ' + rows.length + '장 생성 · 잔여 ' + remaining + '장(실패 재시도 포함) — 4분 후 자동 이어하기');
   } else {
     if (quotaOk(1)) {
       MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 📮 ' + label + ' 리포트카드 생성 완료',
@@ -5184,13 +5310,13 @@ function buildMonthlyStorybook_() {
     const pLines = rows.map(r => '── 씬 ' + r[3] + ' · ' + r[4] + ' ──\n' + r[7]).join('\n\n');
     MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🎬 싱크 스토리 제' + issue + '호 영상팩 — 씬 프롬프트 12',
       '「' + title + '」 발간과 함께 영상 제작용 프롬프트가 준비됐습니다.\n\n사용법: ① IMG 부분을 Recraft(또는 이미지 AI)에 넣어 씬 일러스트 생성 → ② 그 이미지를 Kling 등 영상 AI에 올리고 MOT 부분만 프롬프트로 입력.\n\n' + pLines +
-      '\\n\\n════ ✍️ 집필 브리프 (수기 각색용 — 원할 때만) ════' +
-      '\\n무대: ' + SC[0] + ' | 아크: ' + (arcA ? '원정 편' : '라이벌 편') + ' | 문법: ' + G.map(g => g[0]).join(', ') +
-      '\\n주연: ' + (pick[0] ? nmB[pick[0]] + ' (' + (perM[pick[0]] || 0) + 'P)' : '-') + (rookie ? ' | 🌟 이달의 신인: ' + nmB[rookie.s] : '') +
-      '\\n조연: ' + pick.slice(1).map(s => nmB[s]).join(', ') +
-      '\\n사건: 격파 ' + raidWins + '회 | ' + (duel ? '명승부 ' + duel.a + ' vs ' + duel.b : '명승부 없음') + ' | ' + (world ? (world.win ? '월드 격파' : '월드 봉인') : '월드 진행중') +
-      '\\n카메오 본문 출연(' + Math.min(cameoIdx, cameoCand.length) + '명): ' + cameoCand.slice(0, cameoIdx).map(c => c.n).join(', ') +
-      '\\n\\n✍️ 수기 각색법: 위 브리프를 Claude에 붙여넣고 "싱크 스토리를 이 사실 그대로 12장 기승전결·해피엔딩으로 다시 써줘" → 나온 챕터를 synk_stories 해당 월 행의 F열(본문)에 붙여넣기. 자동 재발간은 월키 멱등이라 수기본을 절대 덮어쓰지 않습니다.');
+      '\n\n════ ✍️ 집필 브리프 (수기 각색용 — 원할 때만) ════' + // [v9.34] '\\n' 이스케이프 화석 → 실제 개행(브리프가 한 덩어리+리터럴 \n 노출로 발송되던 결함)
+      '\n무대: ' + SC[0] + ' | 아크: ' + (arcA ? '원정 편' : '라이벌 편') + ' | 문법: ' + G.map(g => g[0]).join(', ') +
+      '\n주연: ' + (pick[0] ? nmB[pick[0]] + ' (' + (perM[pick[0]] || 0) + 'P)' : '-') + (rookie ? ' | 🌟 이달의 신인: ' + nmB[rookie.s] : '') +
+      '\n조연: ' + pick.slice(1).map(s => nmB[s]).join(', ') +
+      '\n사건: 격파 ' + raidWins + '회 | ' + (duel ? '명승부 ' + duel.a + ' vs ' + duel.b : '명승부 없음') + ' | ' + (world ? (world.win ? '월드 격파' : '월드 봉인') : '월드 진행중') +
+      '\n카메오 본문 출연(' + Math.min(cameoIdx, cameoCand.length) + '명): ' + cameoCand.slice(0, cameoIdx).map(c => c.n).join(', ') +
+      '\n\n✍️ 수기 각색법: 위 브리프를 Claude에 붙여넣고 "싱크 스토리를 이 사실 그대로 12장 기승전결·해피엔딩으로 다시 써줘" → 나온 챕터를 synk_stories 해당 월 행의 F열(본문)에 붙여넣기. 자동 재발간은 월키 멱등이라 수기본을 절대 덮어쓰지 않습니다.');
   }
   const ntB = ensureSheet(ss, 'notices', ['title','body','date','title_mn','body_mn']);
   ntB.getRange(ntB.getLastRow() + 1, 1, 1, 3).setValues([['📖 싱크 스토리 제' + issue + '호 발간!',
@@ -5655,7 +5781,7 @@ function systemWatchdog(asText) {
 
   // 3) 셋업 실행 상태 (contents 수량 대조 — 부분 실행 감지)
   const expect = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
-    season: 12, label: 15, reason: 8, cheer: 7, cheermail: 30, braintip: 30, worldboss: 1 }; // [v9.9]
+    season: 12, label: 15, reason: 9, cheer: 7, cheermail: 30, braintip: 30, worldboss: 1 }; // [v9.9] · [v9.34] reason 8→9 — setupParentLabels R01~R09(v9.28 R09 추가) 실측 정합, 'reason 9/8' 허위 경보 제거
   const cnt = {};
   let bossImg = 0, monThr = [], loreTier = 0;
   const ct = ss.getSheetByName('contents');
@@ -5672,7 +5798,7 @@ function systemWatchdog(asText) {
   const bad = Object.keys(expect).filter(k => (cnt[k] || 0) !== expect[k]);
   add(bad.length === 0, '콘텐츠 수량: ' + (bad.length
     ? bad.map(k => k + ' ' + (cnt[k] || 0) + '/' + expect[k]).join(', ') + ' — 해당 setup 함수 재실행 필요'
-    : '10종 전부 정상'));
+    : Object.keys(expect).length + '종 전부 정상')); // [v9.34] '10종' 화석 문구 → 키 수 동적화
   const sortedOk = monThr.length < 2 || monThr.every((v, i) => i === 0 || v >= monThr[i - 1]);
   add(sortedOk, '몬스터 임계값 오름차순: ' + (sortedOk ? '정상' : '순서 꼬임! 진화 오작동 위험'));
   add(bossImg === 12, '보스 이미지 URL: ' + bossImg + '/12' + (bossImg < 12 ? ' — contents boss E열 입력(시즌 보스 12종)' : '')); // [v7.8]
@@ -5738,6 +5864,19 @@ function systemWatchdog(asText) {
         ' · 학생ID(60열)=' + (idOk ? 'OK' : '"' + (chdr[59] || '(빈칸)') + '" ⚠️ 헤더 어긋남 — dumpConsultHeaders/checkFormMapping 실행'));
     }
   } catch (e) { add(false, '상담시트 스키마 점검 실패 — CONSULT_SHEET_ID/권한 확인: ' + e); }
+
+  // [v9.34] 7) 폼 생존 점검 — 상담폼·리드폼이 삭제·권한 상실되면 응답이 폼 안에 미아로 적체되고
+  //   form_responses 행이 안 생겨 checkConsultDelay도 무반응(입학 퍼널 무감시 단절)이던 지대 해소.
+  try {
+    const stF = ss.getSheetByName('app_state');
+    [['상담폼ID', '상담폼(입학 퍼널)', 'createConsultForm 재실행 또는 app_state 키 교정'],
+     ['리드폼ID', '리드폼(광고 유입)', 'createLeadForm 재실행']].forEach(p => {
+      const fid = stF ? String(getState(stF, p[0]).val || '') : '';
+      if (!fid) { add(true, p[1] + ': 미연결 — ID 없음(도입 전이면 정상)'); return; }
+      try { FormApp.openById(fid); add(true, p[1] + ' 생존: 정상'); }
+      catch (e) { add(false, p[1] + ' 열기 실패 — 폼 삭제/권한 상실 의심! ' + p[2]); }
+    });
+  } catch (e) { add(false, '폼 생존 점검 실패: ' + e); }
 
   const report = '🛡️ SYNK 시스템 워치독 · ' +
     Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm') + '\n\n' + out.join('\n') +
@@ -6085,6 +6224,7 @@ function checkoutCheerMail_(ss) {
   const props = PropertiesService.getScriptProperties();
   const ptr = Number(props.getProperty('퇴근메일_포인터')) || 1;
   const last = tc.getLastRow();
+  if (ptr > last) { props.setProperty('퇴근메일_포인터', String(last)); return; } // [v9.34] 시트 재건·행 정리 시 클램프 — 퇴근 응원 메일 장기 침묵 방지
   if (ptr >= last) return;
   const width = Math.max(TC_NAME_COL, TC_TYPE_COL, TC_TIME_COL);
   const rows = tc.getRange(ptr + 1, 1, last - ptr, width).getValues();
@@ -6143,6 +6283,7 @@ function parentSweep() {
   safeRun('checkoutCheerMail', function () { checkoutCheerMail_(ss); }); // [v6.8]
   safeRun('todayBoard', function () { todayBoard_(ss); }); // [v8.1] 오늘의 출결 보드 (10분 갱신)
   safeRun('queueInquiries', function () { queueNewInquiries_(ss); }); // [v9.32] 신규 학부모 문의 → 아침 브리핑 큐
+  safeRun('checkNoShow', checkNoShow); // [v9.34] 부활 — 판정 창(수업 시작+30~90분)은 10분 스위프에서만 실제로 걸린다. 반별 1일 1회 app_state 가드 + 당일 출석 0건 반 스킵으로 오경보 없음
 }
 
 function translateTopics_(ss) {
@@ -6168,6 +6309,7 @@ function attendanceNotify_(ss) {
   const props = PropertiesService.getScriptProperties();
   let from = Number(props.getProperty('등원알림_포인터')) || 1; // 마지막 처리 행 (헤더 = 1)
   const lastRow = at.getLastRow();
+  if (from > lastRow) { props.setProperty('등원알림_포인터', String(lastRow)); return; } // [v9.34] 시트 재건·행 정리 시 클램프(플래그 ON 대비 잠복 결함 제거)
   if (from >= lastRow) { return; }
 
   const pf = ss.getSheetByName('profiles');
@@ -8038,6 +8180,7 @@ function morningJobs() {   // 매일 07시
   safeRun('syncProfiles', syncProfiles);       // [v7.0] 동기화 먼저 — 신규 학생 생일을 당일부터 인식
   safeRun('birthdayCheck', birthdayCheck);
   safeRun('checkConsultDelay', checkConsultDelay);
+  safeRun('parentWeeklyDigestRetry', parentWeeklyDigestRetry_); // [v9.34] 일요일 다이제스트 쿼터 유실분 평일 아침 재발송(보류 키 없으면 즉시 return)
 }
 
 function nightJobs() {     // 매일 22시 — 수업 종료 후
@@ -8052,7 +8195,7 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   if (dyN === 0) safeRun('leagueSettle', leagueSettle_); // [v9.1] 반 대항 리그 — 주간데미지 확정 후·다이제스트 전
   if (dyN === 0) safeRun('parentWeeklyDigest', parentWeeklyDigest); // [v7.9] 일요일 밤 — 학부모 주간 소식 1통
   safeRun('notifyParents', notifyParents);
-  safeRun('checkNoShow', checkNoShow);
+  // [v9.34] checkNoShow는 parentSweep(10분) 편승으로 이동 — 판정 창(수업 시작+30~90분)이 22시엔 구조적으로 안 걸려 죽은 안전장치였음
   safeRun('checkEvolution', checkEvolution);
   safeRun('checkAchievements', checkAchievements);
   safeRun('checkUnknownReasonsNightly', checkUnknownReasonsNightly_); // [v9.28] 미인식 reason 발각 지연 7일→1일
@@ -8087,9 +8230,8 @@ function weeklyJobs() {    // 매주 월 07시
   let kpiInjection = null;
   try {
     const nowW = new Date();
-    const yW = Number(Utilities.formatDate(nowW, tz, 'yyyy')), mW = Number(Utilities.formatDate(nowW, tz, 'MM'));
     const curYmW = Utilities.formatDate(nowW, tz, 'yyyy-MM');
-    const prevYmW = Utilities.formatDate(new Date(yW, mW - 2, 1), tz, 'yyyy-MM'); // 전월(연 경계 안전)
+    const prevYmW = ymShift_(curYmW, -1); // [v9.34] 전월 — 월키 TZ 단일화(연 경계 안전)
     const curW = computeKpiMetrics(curYmW);                          // 당월 잠정 재계산(멱등)
     const prevW = kpiReadRow_(prevYmW) || computeKpiMetrics(prevYmW); // 전월 확정 우선·없으면 잠정
     kpiInjection = { cur: curW, prev: prevW, curYm: curYmW, prevYm: prevYmW };
@@ -8217,8 +8359,7 @@ function updateBizDashboard(asText, kpiData) { // 계기판 시트 갱신 + 요�
   const adSpend = Number(inp[3][0]) || 0; // [v9.33] 이번달 광고비(만₮) — CPL 계산용. 비면 0
 
   // ── 이탈률·전환율 = KPI 단일 소스 (당월 잠정 재계산 멱등 + 전월은 확정 우선)
-  const yN = Number(Utilities.formatDate(now, tz, 'yyyy')), mN = Number(Utilities.formatDate(now, tz, 'MM'));
-  const prevYm = Utilities.formatDate(new Date(yN, mN - 2, 1), tz, 'yyyy-MM');
+  const prevYm = ymShift_(Utilities.formatDate(now, tz, 'yyyy-MM'), -1); // [v9.34] 전월 — 월키 TZ 단일화
   let kpiCur = null, kpiPrev = null;
   const kpiInj = (kpiData && kpiData.cur) ? kpiData : null; // [v9.29] weeklyJobs 주입치 재사용(이중 계산 제거) · 주입 없으면(단독 실행) 자체 계산
   if (kpiInj) { kpiCur = kpiInj.cur; kpiPrev = kpiInj.prev; }
