@@ -19,6 +19,11 @@ description: SYNK 배포 3종 세트 — 구문검사(node --check) → git 커�
    ```bash
    for f in *.js; do "/c/Program Files/nodejs/node.exe" --check "$f" || exit 1; done
    ```
+   이어서 **안전 불변식 테스트**를 돌린다 — 구문은 멀쩡해도 실데이터를 지키는 불변식(야간작업 순서·브리핑 큐 보존·아카이브 8열·리포트 PNG 첨부 등)을 깨는 변경을 라이브 반영 전에 잡는다.
+   ```bash
+   "/c/Program Files/nodejs/node.exe" --test tests/safety.test.js
+   ```
+   **`fail` 0이 아니면 배포 중단**(`todo`는 미구현 후속 과제 표시라 무시). 정상 리팩터로 마커 문자열이 바뀌어 실패하면 테스트를 함께 갱신하고 재실행한다.
 3. **appsscript.json 검증**: `node -e "JSON.parse(require('fs').readFileSync('appsscript.json','utf8'))"` — 임시 webapp 설정 등 검증 잔재가 남아있지 않은지 눈으로도 확인.
 4. **커밋**: `git diff --stat`으로 내 작업만 들어있는지 확인 후 커밋. 메시지 형식: `[v9.xx] 제목 — 요약` + `Co-Authored-By: Claude <모델명> <noreply@anthropic.com>`.
 5. **GitHub 백업**: `git push origin master`.
