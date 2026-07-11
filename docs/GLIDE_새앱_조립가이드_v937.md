@@ -19,12 +19,13 @@
 ### 0-3. 계정 주의
 - 앱 소유 계정 = **unmet23@gmail.com** (유호님 주계정 77yuhbs@gmail.com과 **다른 별도 계정**). 새 앱도 이 계정으로 만드세요(시트 소유·권한 일관성).
 
-### 0-4. 조립 전 실행할 스크립트 (Apps Script 편집기에서 1회씩)
-새 앱을 붙이기 전에 시트가 완성돼 있어야 합니다. 편집기(시트 → 확장 프로그램 → Apps Script)에서 함수를 선택하고 ▶실행:
-1. **`setupGrammarBank`** — 문법 커리큘럼 72개를 contents 시트에 생성(강사 마감폼의 문법 드롭다운 소스). ※문법 목록은 TOPIK 1~2급 초안 — 유호님·강사 검수 후 확정.
-2. **`buildSystemManifest`** — system_manifest 시트 생성(조립 중 시스템 상태·시트 목록 확인용).
-3. **`seedMasteryForExisting`** — (실제 학생 로스터가 들어온 뒤 = 개원 무렵) 재학생의 기존 단계까지 문법을 소급 인정. 지금 테스트 계정 단계면 나중에.
-4. (선택) **`translateContents`** — 문법·숙제 몽골어 초벌 번역.
+### 0-4. 조립 전 실행할 스크립트 (Apps Script 편집기에서 1회씩) — ★폼 만들기 전에 반드시
+새 앱을 붙이기 전에 시트·열이 완성돼 있어야 합니다(안 그러면 강사 폼이 바인딩할 열이 없음). 편집기(시트 → 확장 프로그램 → Apps Script)에서 함수를 선택하고 ▶실행:
+1. **`setupClassroomInputs`** (v9.38 신설) — ★강사 폼의 대상 시트·열을 정확한 헤더로 생성: **weekly_topics F~L 열**(마감폼)·**attendance_batch 시트**(출석폼)·mastery_log·student_errors. **PHASE 3-C 강사 폼을 만들기 전에 이걸 먼저 실행해야 합니다.**
+2. **`setupGrammarBank`** — 문법 커리큘럼 72개를 contents 시트에 생성(강사 마감폼의 문법 드롭다운 소스). ※TOPIK 1~2급 초안 — 유호님·강사 검수 후 확정.
+3. **`buildSystemManifest`** — system_manifest 시트 생성(조립 중 시스템 상태·시트 목록 확인용).
+4. **`seedMasteryForExisting`** — (실제 학생 로스터가 들어온 뒤 = 개원 무렵) 재학생의 기존 단계까지 문법 소급 인정. 지금 테스트 계정 단계면 나중에.
+5. (선택) **`translateContents`** — 문법·숙제 몽골어 초벌 번역.
 
 > 실행 후 각 함수의 실행 로그에 "OK/완료"가 뜨는지 확인. 오류 나면 저에게 로그를 주세요.
 
@@ -45,8 +46,8 @@
 1. **이메일 로그인 강제** — Settings → Privacy → "Users must sign in" ON. (profiles에 이메일이 있어야 로그인됨)
 2. **Users table 매핑** — 위 1-2 완료.
 3. **Row Owners** — profiles 테이블에서 `email` 열을 **Row Owner**로 지정. → 각 사용자는 **자기 행만 다운로드**받습니다(남의 데이터가 기기로 아예 안 감 = 개인정보 보호의 핵심).
-4. **역할 Visibility** — 모든 탭·컴포넌트에 role 조건. 특히:
-   - 원장 콕핏·리텐션신호(BK) = `role is admin` 전용
+4. **역할 Visibility** — 모든 탭·컴포넌트에 role 조건. ★**실제 역할값 = student / parent / teacher / `director`** (원장은 admin이 아니라 **director**). 특히:
+   - 원장 콕핏·리텐션신호(BK) = `role is director` 전용
    - **핵심비전(BA53)·⚠상담위험은 앱에 아예 노출 금지**(원장 내부 케어용)
    - student_errors·mastery_log = 학생에게 **미노출**
 5. **드라이브 폴더 공개** — `SYNK_리포트카드` 폴더 → 공유 → "링크가 있는 모든 사용자 · 뷰어". (리포트카드 이미지가 앱에 뜨려면 필수) — **이건 유호님이 직접**.
@@ -130,13 +131,15 @@
 - 오늘체크(11열)·격파찬스(10열)·왕관밸런스(12열)
 - **레이드카드HTML(13열, 신규)** — 이번 주 레이드 진행
 
-**② 수업 시작 · 출석 탭** (소스: attendance_batch, **Form**) — ★신규:
+**② 수업 시작 · 출석 탭** (소스: **attendance_batch** ← `setupClassroomInputs`가 생성, **Form**) — ★신규:
+- ⚠ **출석 폼은 `attendance` 시트가 아니라 `attendance_batch` 시트에** 만드세요. `attendance`는 스크립트가 개별 행으로 채우는 결과 시트라 여기에 폼을 걸면 학생 1명=1저장=쿼터 파산입니다. attendance_batch에 멀티선택 1저장 → 10분 뒤 스크립트(expandAttendanceBatch_)가 attendance로 전개합니다.
 - 폼 필드: 날짜(자동) · **class_name**(내 반) · **출석자목록 = Choice(멀티, 반 학생, value=user_id)** · 입력자(자동)
 - created_at은 **폼이 자동 기록**되게(Glide 폼은 기본으로 timestamp 열 지원 — 없으면 스크립트 전개가 안 되니 반드시 확인).
 - 저장 1탭 → 10분 내 스크립트가 attendance로 전개 → 등원 알림·출결 보드 자동.
 - ※ **학생당 개별 체크 금지**(월 쿼터 파산). 반드시 멀티선택 1저장.
 
 **③ 수업 마감 탭** (소스: weekly_topics, **Form**) — ★신규·핵심:
+- ⚠ 먼저 `setupClassroomInputs` 실행(0-4)으로 **weekly_topics에 F~L 열이 생성돼 있어야** 아래 필드를 바인딩할 수 있습니다. 열이 class_name·배운내용·배운내용_mn 3개(또는 5개)만 보이면 아직 실행 전입니다.
 - 폼 필드(A~J):
   - **배운내용**(B, Text)
   - **문법태그(F) = Choice(멀티)** → display = contents.문형(C열), value = contents.콘텐츠ID(A열=G3xx). ※Filter contents 유형 = grammar. **value(ID)로 저장**(문형 문자열로 저장하면 매칭 깨짐).
@@ -153,7 +156,7 @@
 - **★ "생일축하 +20" 버튼은 만들지 마세요** — 아침 7시에 시스템이 자동 지급하는데 강사가 또 누르면 밤에 정정+메일이 갑니다(v9.34 판정).
 - 숙제완료는 위 ③ 마감폼의 숙제완료자로 통합됐으니 **개별 숙제 버튼도 안 만듭니다**.
 
-### 3-D. 원장 (role = admin)
+### 3-D. 원장 (role = director)
 
 **콕핏 탭** (소스: app_state, Filter key = 각 HTML):
 - 경영리포트HTML·리텐션레이더HTML·케어사각HTML — Rich Text.
