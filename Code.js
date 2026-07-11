@@ -4292,7 +4292,7 @@ function createConsultForm() { // [v9.19] 상담지 시트 v18.3 정합 — 문�
   para('영어 학습 목표 (선택)');
 
   form.addSectionHeaderItem().setTitle('PART 6 — 기대와 건의');
-  mc('인지채널', ['릴스', '지인추천', '광고', '기타'], true);
+  mc('인지채널', ['페이스북', '인스타', '틱톡', '추천', '오픈데이', '학교제휴', '워크인', '기타'], true); // [v9.33] leads 유입경로 8버킷과 통일 — 어트리뷰션 분류 정합('광고' 단일 버킷→플랫폼 분리)
   para('SYNK 기대사항');
   para('이전 학원 경험');
   para('담당크루께 바라는 점');
@@ -4304,6 +4304,41 @@ function createConsultForm() { // [v9.19] 상담지 시트 v18.3 정합 — 문�
   Logger.log('✅ 폼 생성 완료!');
   Logger.log('학생용: ' + form.getPublishedUrl());
   Logger.log('편집용: ' + form.getEditUrl());
+}
+
+// [v9.33] 콜드 광고 트래픽용 미니 리드폼 — 이름·연락처·인지채널·관심과정 4문항. 60문항 온보딩 상담폼(createConsultForm)과 완전 별개(그 폼은 건드리지 않음).
+//         광고 CTA는 이 폼만 연결. 응답은 이 스프레드시트의 '리드폼_응답' 시트로 떨어지며, 원장이 이름·연락처·인지채널(→유입경로)을 leads 시트로 수기 이관.
+function createLeadForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const before = ss.getSheets().map(s => s.getName()); // setDestination이 새로 만드는 응답 시트를 식별하기 위한 스냅샷
+
+  const form = FormApp.create('SYNK LAB 상담 신청')
+    .setDescription('SYNK LAB에 관심 가져주셔서 감사합니다! 아래 4가지만 남겨주시면 크루가 곧 연락드립니다 🙂')
+    .setCollectEmail(false);
+
+  function txt(t, req) { const i = form.addTextItem().setTitle(t); if (req) i.setRequired(true); return i; }
+  function mc(t, opts, req) { const i = form.addMultipleChoiceItem().setTitle(t).setChoiceValues(opts); if (req) i.setRequired(true); return i; }
+
+  txt('이름', true);
+  txt('연락처', true).setHelpText('페이스북 메신저 · 전화번호 등 편하신 방법');
+  mc('인지채널', ['페이스북', '인스타', '틱톡', '추천', '오픈데이', '학교제휴', '워크인', '기타'], true).setHelpText('SYNK를 어디서 알게 되셨나요? (leads 유입경로와 동일 분류)');
+  mc('관심 과정', ['정규TOPIK', '회화', '영어', '미정'], true);
+
+  // 응답을 이 스프레드시트에 연결하고 시트명을 '리드폼_응답'으로 명시(leads로 수기 이관 편의). 이미 있으면 날짜 접미사로 충돌 회피(재실행 안전).
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  SpreadsheetApp.flush();
+  const created = ss.getSheets().find(s => before.indexOf(s.getName()) === -1);
+  if (created) {
+    const tz = ss.getSpreadsheetTimeZone();
+    created.setName(ss.getSheetByName('리드폼_응답') ? '리드폼_응답_' + Utilities.formatDate(new Date(), tz, 'MMdd_HHmm') : '리드폼_응답');
+  }
+
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  setState(st, '리드폼ID', form.getId());
+  Logger.log('✅ 미니 리드폼 생성 완료!');
+  Logger.log('광고 랜딩용(공개 URL — 광고 CTA/프로필 링크에 이 주소): ' + form.getPublishedUrl());
+  Logger.log('편집용: ' + form.getEditUrl());
+  Logger.log('응답 시트: "리드폼_응답" — 이름·연락처·인지채널(→leads 유입경로)·관심 과정(→leads 메모)을 leads 시트로 옮기세요.');
 }
 
 function importFormResponses() {
@@ -8147,7 +8182,7 @@ const BIZ_BEP_DEFAULT = 131;   // 손익분기 재적(명) — 번 6,100만₮ �
 function bizSheets_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   return {
-    ld: ensureSheet(ss, 'leads', ['날짜', '이름', '연락처', '유입경로', '추천인', '체험참석', '등록', '등록권종', '등록일', '미등록사유', '메모']),
+    ld: ensureSheet(ss, 'leads', ['날짜', '이름', '연락처', '유입경로', '추천인', '체험참석', '등록', '등록권종', '등록일', '미등록사유', '메모', '캠페인']), // [v9.33] '캠페인' 자유텍스트 열(맨 끝) — 광고 캠페인/소재 식별. 기존 시트는 setupBizDashboard가 멱등 추가(대시보드 로직은 A~J열만 읽어 무영향)
     db: ensureSheet(ss, '경영계기판', ['지표', '값', '상태', '기준·메모']),
     pay: ensureSheet(ss, 'payments', ['student_id', '이름', '금액(만₮)', '납부일', '방법', '비고', 'created_at']) // [v9.28] 매출 원장 — 수동 기입(hall_of_fame과 동일 방식)
   };
@@ -8155,6 +8190,9 @@ function bizSheets_() {
 
 function setupBizDashboard() { // 1회 설치 — leads 드롭다운 + 계기판 골격 (재실행 무해)
   const sh = bizSheets_();
+  // [v9.33] 기존 leads 시트 멱등 마이그레이션 — '캠페인' 열이 없으면 맨 끝에 1열만 추가(자유 텍스트, 드롭다운 없음). 재실행해도 이미 있으면 무해.
+  const ldHdr = sh.ld.getRange(1, 1, 1, sh.ld.getLastColumn()).getValues()[0].map(String);
+  if (ldHdr.indexOf('캠페인') === -1) sh.ld.getRange(1, sh.ld.getLastColumn() + 1).setValue('캠페인');
   const dv = list => SpreadsheetApp.newDataValidation().requireValueInList(list, true).setAllowInvalid(true).build();
   sh.ld.getRange(2, 4, 999, 1).setDataValidation(dv(['페이스북', '인스타', '틱톡', '추천', '오픈데이', '학교제휴', '워크인', '기타']));
   sh.ld.getRange(2, 6, 999, 2).setDataValidation(dv(['Y', 'N'])); // 체험참석·등록
@@ -8172,10 +8210,11 @@ function updateBizDashboard(asText, kpiData) { // 계기판 시트 갱신 + 요�
   const sh = bizSheets_();
 
   // ── 입력칸 B2:B4 보존 (비면 기본값)
-  const inp = sh.db.getLastRow() >= 4 ? sh.db.getRange(2, 2, 3, 1).getValues() : [[''], [''], ['']];
+  const inp = sh.db.getLastRow() >= 5 ? sh.db.getRange(2, 2, 4, 1).getValues() : [[''], [''], [''], ['']]; // [v9.33] 입력칸 4개(B5 광고비 추가) — 구 3칸 대시보드는 B5=구분선이라 NaN→0으로 안전 폴백 후 1회 실행에 자가치유
   const cash = Number(inp[0][0]) || 0;
   const burn = Number(inp[1][0]) || BIZ_BURN_DEFAULT;
   const bep = Number(inp[2][0]) || BIZ_BEP_DEFAULT;
+  const adSpend = Number(inp[3][0]) || 0; // [v9.33] 이번달 광고비(만₮) — CPL 계산용. 비면 0
 
   // ── 이탈률·전환율 = KPI 단일 소스 (당월 잠정 재계산 멱등 + 전월은 확정 우선)
   const yN = Number(Utilities.formatDate(now, tz, 'yyyy')), mN = Number(Utilities.formatDate(now, tz, 'MM'));
@@ -8211,6 +8250,10 @@ function updateBizDashboard(asText, kpiData) { // 계기판 시트 갱신 + 요�
   const refPct = enr90.length ? Math.round(enr90.filter(l => l.src === '추천').length / enr90.length * 100) : null;
   const prePct = enr90.length ? Math.round(enr90.filter(l => l.term && l.term !== '1개월').length / enr90.length * 100) : null;
 
+  // [v9.33] CPL — 이번달 광고비 ÷ 이번달 리드수(채널 무관 전체 리드). 몽골 CPM·CPL 벤치마크 부재 → 신호등 색 판정 보류(⚪ 고정), 값만 누적해 실측 기준을 세운다.
+  const inMonth = L.filter(l => { const d = new Date(l.t); return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth(); });
+  const cpl = (adSpend > 0 && inMonth.length > 0) ? Math.round(adSpend / inMonth.length * 10) / 10 : null; // 데이터 부족(광고비 0 또는 리드 0)이면 null
+
   // [v9.28] 매출 — payments 시트(수동 기입) 당월 합계. 기입 없으면 다른 지표와 동일하게 '축적 중'
   let revenue = null;
   if (sh.pay.getLastRow() >= 2) {
@@ -8240,6 +8283,7 @@ function updateBizDashboard(asText, kpiData) { // 계기판 시트 갱신 + 요�
     ['[입력] 현금잔고(만₮)', cash || '', '', '월 1회 직접 입력 — 비어 있으면 생존개월수 미계산'],
     ['[입력] 월 번(만₮)', burn, '', '유지비. 사회보험·외국인고용부담금 확정 시 갱신'],
     ['[입력] BEP 목표(명)', bep, '', '손익분기 재적 (진단: 114~131명)'],
+    ['[입력] 이번달 광고비(만₮)', adSpend || '', '', '이번 달 Meta 광고 지출 누계 — 직접 입력(월초 리셋). 비면 CPL 미계산'], // [v9.33] 4번째 입력칸(B5)
     ['── 자동 지표 ──', '갱신 ' + Utilities.formatDate(now, tz, 'MM-dd HH:mm'), '', '매주 월 07시 자동 · 수동 bizDashboardNow()'],
     ['⓪ 생존개월수', surv == null ? '현금잔고 입력 필요' : surv + '개월', stSurv, '현금÷번. 4.0 미만 = 적색(개원조건 미달)'],
     ['재적 (BEP까지)', nStu + '명 (' + Math.max(bep - nStu, 0) + '명 남음)', nStu >= bep ? '🟢' : '⚪', 'BEP ' + bep + '명 기준'],
@@ -8249,7 +8293,8 @@ function updateBizDashboard(asText, kpiData) { // 계기판 시트 갱신 + 요�
     ['③ 추천 신규 비율(90일)', fmt(refPct, '%'), stRef, '등록자 중 유입경로=추천. 15→30% 목표'],
     ['④ 월 이탈률(당월 잠정)', (chR != null ? chR + '%' : '— (KPI 미가동)') + (chPrevR != null ? ' · 전월 ' + chPrevR + '%' : ''), stChurn, '≤5% 사수 · 8% 2개월 연속 = 마케팅 증액 금지 · 정의=출석 ' + KPI_CHURN_DAYS + '일+ 무활동'],
     ['이탈위험 상/중 (선행지표)', riskHi + '명 / ' + riskMid + '명', riskHi > 0 ? '🟡' : '🟢', 'profiles 이탈위험 — 담임 케어 SOP 대상'],
-    ['⑤ 3개월+ 선납 비중(90일)', fmt(prePct, '%'), stPre, '등록자 중 3·6개월/번들. 30%+ = 겨울 방어선']
+    ['⑤ 3개월+ 선납 비중(90일)', fmt(prePct, '%'), stPre, '등록자 중 3·6개월/번들. 30%+ = 겨울 방어선'],
+    ['⑥ CPL (리드당 광고비)', cpl == null ? '— (광고비·리드 입력 후)' : cpl + '만₮/건', '⚪', '이번달 광고비 ' + (adSpend || 0) + '만₮ ÷ 이번달 리드 ' + inMonth.length + '건 · 몽골 벤치마크 부재로 색 판정 보류(실측 누적용)'] // [v9.33]
   ];
   sh.db.getRange(2, 1, rows.length, 4).setValues(rows);
   const extra = sh.db.getLastRow() - (rows.length + 1);
@@ -8277,7 +8322,8 @@ function updateBizDashboard(asText, kpiData) { // 계기판 시트 갱신 + 요�
     '② 전환율(상담→등록): ' + (kpiCur ? cvR + '% (' + kpiCur.conv + '/' + kpiCur.consult + ')' : 'KPI 미가동') + ' ' + stConv,
     '③ 추천 비율: ' + fmt(refPct, '%') + ' ' + stRef,
     '④ 이탈률: ' + (chR != null ? chR + '%' : 'KPI 미가동') + (chPrevR != null ? ' (전월 ' + chPrevR + '%)' : '') + ' ' + stChurn + ' · 이탈위험 상 ' + riskHi + '/중 ' + riskMid,
-    '⑤ 3개월+ 선납: ' + fmt(prePct, '%') + ' ' + stPre
+    '⑤ 3개월+ 선납: ' + fmt(prePct, '%') + ' ' + stPre,
+    '⑥ CPL: ' + (cpl == null ? '— (광고비·리드 입력 후)' : cpl + '만₮/건 (광고비 ' + adSpend + '÷리드 ' + inMonth.length + ')') + ' ⚪' // [v9.33]
   ];
   if (alerts.length) t.push('', alerts.join('\n'));
   return t.join('\n');
