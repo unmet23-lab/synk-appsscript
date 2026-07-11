@@ -890,25 +890,64 @@ function speakTone_(idx) { return idx <= 2 ? 0 : (idx <= 5 ? 1 : 2); }
 function hashPick_(arr, seedStr) { let h = 0; for (let i = 0; i < seedStr.length; i++) h = (h * 31 + seedStr.charCodeAt(i)) % 100000; return arr[h % arr.length]; }
 
 // [v9.11] 🖼️ 액자 시스템 — 도달 최고 단계(AP)가 액자 등급. 스킨은 취향, 액자는 지위.
+// [v9.35] 소프트 글로우 축 재설계 — 프레임은 공통 그라디언트+토큰(라운드 18/12·섀도), 단계 개성은
+//   보더색·배지 이모지·캡션 뱃지 색으로. 흰 캡션 폐지(밝은 프레임 위 진한 잉크 — WCAG 4.5:1 이상).
+//   FRAME_CSS = [액자명, 보더색, 뱃지배경, 뱃지잉크] — 색 계열은 기존 취지 유지(새싹=연보라, 스파크=하늘…왕관=골드)
 const FRAME_CSS = [
-  ['새싹 액자','background:#E9E7F5;padding:6px;border-radius:16px;'],
-  ['스파크 액자','background:linear-gradient(135deg,#BFDBFE,#93C5FD);padding:7px;border-radius:16px;'],
-  ['링크 액자','background:linear-gradient(135deg,#A5B4FC,#7DD3FC);padding:7px;border-radius:18px;'],
-  ['서킷 액자','background:linear-gradient(135deg,#4338CA,#06B6D4);padding:8px;border-radius:18px;'],
-  ['불씨 액자','background:linear-gradient(135deg,#B91C1C,#F5A623);padding:8px;border-radius:20px;'],
-  ['빛의 액자','background:linear-gradient(135deg,#F5F3FF,#C4B5FD,#F5A623);padding:9px;border-radius:20px;'],
-  ['왕관 액자','background:linear-gradient(135deg,#F5A623,#FDE68A,#B45309);padding:10px;border-radius:22px;']
+  ['새싹 액자','#C4B5FD','#EDE9FE','#6D28D9'],
+  ['스파크 액자','#93C5FD','#DBEAFE','#1D4ED8'],
+  ['링크 액자','#7DD3FC','#E0F2FE','#0369A1'],
+  ['서킷 액자','#06B6D4','#CFFAFE','#0E7490'],
+  ['불씨 액자','#FCA5A5','#FEE2E2','#B91C1C'],
+  ['빛의 액자','#A78BFA','#FEF9C3','#A16207'],
+  ['왕관 액자','#F5A623','#FEF3C7','#B45309']
 ];
 const FRAME_ICON = ['🌱','⚡','🔗','💡','🕯️','✨','👑'];
-function buildMonsterFrame_(dispName, dispImg, apIdx) {
-  const f = FRAME_CSS[Math.min(Math.max(apIdx - 1, 0), 6)];
-  const ic = FRAME_ICON[Math.min(Math.max(apIdx - 1, 0), 6)];
+// [v9.35] pct·rem 선택 인자 — 값이 있으면(홈 액자 BD열) 게이지 바(9px·99px 라운드)+한 줄 문구 렌더, 없으면 생략
+function buildMonsterFrame_(dispName, dispImg, apIdx, pct, rem) {
+  const fi = Math.min(Math.max(apIdx - 1, 0), 6);
+  const f = FRAME_CSS[fi], ic = FRAME_ICON[fi];
   const inner = dispImg && dispImg.indexOf('http') === 0
     ? '<img src="' + dispImg + '" style="width:100%;border-radius:12px;display:block;background:#fff;"/>'
     : '<div style="background:#fff;border-radius:12px;text-align:center;font-size:64px;padding:28px 0;">' + ic + '</div>';
-  return '<div style="' + f[1] + '">' + inner +
-    '<div style="text-align:center;font-size:12px;padding:5px 0 1px;color:#fff;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.25);">' +
-    ic + ' ' + f[0] + ' · ' + dispName + '</div></div>';
+  const hasG = typeof pct === 'number' && !isNaN(pct);
+  const pctC = hasG ? Math.max(0, Math.min(100, pct)) : 0;
+  const remN = Number(rem) || 0;
+  const cap = '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px 2px;">' +
+    '<div style="font-size:13px;font-weight:800;color:#4338CA;">' + ic + ' ' + dispName +
+    ' <span style="font-weight:700;font-size:11px;color:' + f[3] + ';background:' + f[2] + ';border-radius:99px;padding:1px 8px;">' + f[0] + '</span></div>' +
+    (hasG ? '<div style="font-size:11.5px;font-weight:700;color:#FF7A6B;">' + (remN > 0 ? '진화까지 ' + remN + 'P' : 'MAX') + '</div>' : '') +
+    '</div>';
+  const gauge = hasG
+    ? '<div style="background:#DDD9F3;border-radius:99px;height:9px;margin:5px 4px 3px;overflow:hidden;">' +
+      '<div style="width:' + pctC + '%;height:100%;border-radius:99px;background:linear-gradient(90deg,#818CF8,#4F46E5);"></div></div>' +
+      '<div style="font-size:11px;color:#6B7280;padding:0 4px 3px;">' +
+      (remN > 0 ? '🧠 시냅스 게이지 ' + pctC + '% — 다음 진화까지 ' + remN + 'P!' : '👑 모든 진화 완료 — 전설의 영역!') + '</div>'
+    : '';
+  return '<div style="background:linear-gradient(150deg,#EEF2FF,#E3E0FA 55%,#F5F3FF);padding:8px;border-radius:18px;border:2px solid ' + f[1] + ';box-shadow:0 6px 18px rgba(79,70,229,.14);">' +
+    inner + cap + gauge + '</div>';
+}
+
+// [v9.35] ⚔️ 레이드 카드 — 소프트 글로우 축(유호님 판정: 픽셀 레트로 폐기, 전 카드 단일 축 통일).
+//   goal 0 = 휴식주(보스휴식주·신규 반). won = raid 시트 '격파' 마킹(정산 전이라도 dmg≥goal이면 달성 표기).
+function buildRaidCard_(clsName, goal, dmg, won) {
+  const head = '<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 4px 8px;">' +
+    '<span style="font-size:13px;font-weight:800;color:#4338CA;">⚔️ 이번 주 레이드</span>' +
+    '<span style="font-size:11px;font-weight:800;color:#4338CA;background:#EEF2FF;border:1.5px solid #C4B5FD;border-radius:99px;padding:1px 9px;">' + clsName + '</span></div>';
+  let body;
+  if (!goal) {
+    body = '<div style="background:#fff;border-radius:12px;padding:11px 12px;font-size:12px;color:#6B7280;text-align:center;">🏖️ 이번 주는 휴식주 — 다음 보스를 기다리는 중</div>';
+  } else {
+    const win = won || dmg >= goal;
+    const pctR = win ? 100 : Math.max(0, Math.min(100, Math.round(dmg / goal * 100)));
+    body = '<div style="background:' + (win ? 'linear-gradient(90deg,#F5A623,#FDE68A)' : '#DDD9F3') + ';border-radius:99px;height:9px;margin:2px 4px 3px;overflow:hidden;">' +
+      (win ? '' : '<div style="width:' + pctR + '%;height:100%;border-radius:99px;background:linear-gradient(90deg,#818CF8,#4F46E5);"></div>') + '</div>' +
+      '<div style="display:flex;justify-content:space-between;padding:2px 4px 3px;font-size:11px;">' +
+      '<span style="color:#6B7280;">⚡ 데미지 <b style="color:#4338CA;">' + dmg + '</b> / ' + goal + '</span>' +
+      (win ? '<span style="font-weight:800;color:#B45309;">🏆 격파 달성!</span>' : '<span style="font-weight:700;color:#FF7A6B;">보스 HP ' + Math.max(goal - dmg, 0) + ' 남음</span>') +
+      '</div>';
+  }
+  return '<div style="background:linear-gradient(150deg,#EEF2FF,#E3E0FA 55%,#F5F3FF);padding:10px 8px 8px;border-radius:18px;border:2px solid #C4B5FD;box-shadow:0 6px 18px rgba(79,70,229,.14);">' + head + body + '</div>';
 }
 
 // [v9.14] 📊 월간 경영 리포트 — 숫자로 보는 SYNK (매월 1일, 원장 메일 즉발 + 원장 탭 상설)
@@ -984,10 +1023,34 @@ function setAppState_(ss, key, val) {
 //   "개개인 스토리가 가장 중요" 철학의 홈: 모든 학생이(조용한 학생도) 자기 이야기의 주인공.
 function myJourneyHtml_(o) {
   const mon = o.mon || {}, rec = o.rec || {}, acad = o.acad;
-  const journey = (o.stages || []).map((s, i) => {
-    const cur = (i + 1) === (mon.idx || 1), past = (i + 1) < (mon.idx || 1);
-    return '<span style="color:' + (cur ? '#4F46E5;font-weight:800' : (past ? '#9CA3AF' : '#D1D5DB')) + ';">' + s.name + '</span>';
-  }).join(' <span style="color:#D1D5DB;">›</span> ');
+  const idxJ = mon.idx || 1, stagesJ = o.stages || [];
+  // [v9.35] 진화 스트립 — 이미지 있으면 썸네일(이전 34px·현재 44px 강조 링·미도달 🔒 dashed), 없으면 텍스트 체인 폴백(재건 안전)
+  const hasImgs = stagesJ.some(s => String(s.img || '').indexOf('http') === 0);
+  let stripJ;
+  if (hasImgs) {
+    const cells = [];
+    stagesJ.forEach((s, i) => {
+      const n = i + 1, im = String(s.img || '');
+      if (n > idxJ) return; // 미도달은 아래 🔒로
+      const cur = n === idxJ;
+      const sz = cur ? 44 : 34, rd = cur ? 11 : 9;
+      const bd = cur ? '2.5px solid #4F46E5' : '2px solid #818CF8';
+      const ring = cur ? 'box-shadow:0 0 0 3px rgba(79,70,229,.18);' : '';
+      cells.push(im.indexOf('http') === 0
+        ? '<img src="' + im + '" style="width:' + sz + 'px;height:' + sz + 'px;border-radius:' + rd + 'px;background:#fff;border:' + bd + ';' + ring + '"/>'
+        : '<div style="width:' + sz + 'px;height:' + sz + 'px;border-radius:' + rd + 'px;background:#fff;border:' + bd + ';' + ring + 'text-align:center;line-height:' + sz + 'px;font-size:' + (cur ? 20 : 15) + 'px;">' + (FRAME_ICON[Math.min(i, 6)] || '🐣') + '</div>');
+    });
+    cells.push('<div style="flex:1;height:3px;background:repeating-linear-gradient(90deg,#C4B5FD 0 6px,transparent 6px 11px);"></div>');
+    for (let k = 0; k < Math.min(stagesJ.length - idxJ, 2); k++)
+      cells.push('<div style="width:34px;height:34px;border-radius:9px;background:#EDEBFA;border:2px dashed #C4B5FD;text-align:center;line-height:34px;font-size:15px;">🔒</div>');
+    stripJ = '<div style="display:flex;gap:4px;align-items:center;padding:9px 0 10px;">' + cells.join('') + '</div>';
+  } else {
+    const journey = stagesJ.map((s, i) => {
+      const cur = (i + 1) === idxJ, past = (i + 1) < idxJ;
+      return '<span style="color:' + (cur ? '#4F46E5;font-weight:800' : (past ? '#9CA3AF' : '#D1D5DB')) + ';">' + s.name + '</span>';
+    }).join(' <span style="color:#D1D5DB;">›</span> ');
+    stripJ = '<div style="font-size:12px;padding:6px 0 9px;">🐣 ' + journey + '</div>';
+  }
   const evoLine = o.evoDate ? '⚡ 진화한 날 <b>' + o.evoDate + '</b><br/>' : '';
   const titles = (o.titles || []).filter(String);
   const titleLine = titles.length ? '🏅 칭호 <b>' + titles.slice(0, 4).join(' · ') + '</b><br/>' : '';
@@ -1004,10 +1067,15 @@ function myJourneyHtml_(o) {
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const dreamLine = '<div style="background:#EEF2FF;border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;color:#4338CA;margin-bottom:9px;">' +
     (o.dream ? '🌟 나의 목표: ' + esc(o.dream) : '🌟 나의 목표를 적어보세요') + '</div>';
-  return '<div style="background:linear-gradient(135deg,#F5F3FF,#EEF2FF);border:2px solid #C4B5FD;border-radius:16px;padding:13px 15px;">' +
+  // [v9.35] 소프트 글로우 축 — 헤더 행(제목+우측 코랄 '진화까지 nP'), 토큰(그라디언트·라운드 18/12·섀도)
+  const remJ = mon.rem || 0;
+  return '<div style="background:linear-gradient(150deg,#EEF2FF,#E3E0FA 55%,#F5F3FF);border:2px solid #C4B5FD;border-radius:18px;padding:13px 15px;box-shadow:0 6px 18px rgba(79,70,229,.14);">' +
     dreamLine +
-    '<div style="font-size:15px;font-weight:800;color:#4338CA;">📖 ' + o.nm + '의 여정</div>' +
-    '<div style="font-size:12px;padding:6px 0 9px;">🐣 ' + journey + '</div>' +
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;">' +
+      '<div style="font-size:15px;font-weight:800;color:#4338CA;">📖 ' + o.nm + '의 여정</div>' +
+      '<div style="font-size:11px;font-weight:700;color:#FF7A6B;">' + (remJ > 0 ? '진화까지 ' + remJ + 'P' : '👑 최종 진화') + '</div>' +
+    '</div>' +
+    stripJ +
     '<div style="background:#fff;border-radius:12px;padding:9px 11px;font-size:12.5px;line-height:2;">' +
       '🔥 최장 연속출석 <b>' + (rec.maxStreak || o.stk || 0) + '일</b><br/>' +
       '👑 첫 왕관 <b>' + (rec.firstCrown || '이번 달이 기회!') + '</b><br/>' +
@@ -1016,8 +1084,9 @@ function myJourneyHtml_(o) {
       '🏔️ 최고 월간 <b>' + (rec.bestMonth || o.mPts || 0) + 'P</b> · 📚 지금까지 <b>' + (o.t || 0) + 'P</b>' +
     '</div>' +
     '<div style="font-size:12.5px;color:#4338CA;padding-top:9px;">' + acadLine + '</div>' +
+    // [v9.35] 학습추적(W3) 배선 지점 — acadLine 아래 '이 단계 문법 n/12' 삽입 예정
     storyBlock +
-    '<div style="font-size:11px;color:#9CA3AF;padding-top:8px;">다음 진화까지 ' + (mon.rem || 0) + 'P · 너의 이야기는 계속돼 ✨</div>' +
+    '<div style="font-size:11px;color:#9CA3AF;padding-top:8px;">너의 이야기는 계속돼 ✨</div>' +
     '</div>';
 }
 
@@ -1025,6 +1094,7 @@ function calcAll() {
   // [v9.15] 프로필·반통계 양쪽에서 쓰는 공유 집계 — 함수 최상단 선언
   const blindList = [], crownSetM = {}, clsBday = {}, clsAbsent = {}, clsEvoSoon = {};
   const raidLeft = {}, yAttCls = {}, yAttSid = {}, tdActs = {}, tdTopic = {};
+  const raidGoal = {}, raidWin = {}; // [v9.35] 레이드 카드(class_stats 13열) 재료 — 이번 주 목표·격파 여부
   const topicRecent = {}, weekTopicsCls = {}, weekAtt = {}, weekPts = {}, weekCrown = {}; // [v9.16]
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
@@ -1274,8 +1344,11 @@ function calcAll() {
       const mondayT = new Date(now); mondayT.setDate(now.getDate() - ((now.getDay() + 6) % 7));
       const wkT = dstr(mondayT, tz);
       rdT.getRange(2, 1, rdT.getLastRow() - 1, 6).getValues().forEach(rr => {
-        if (String(rr[0]) === wkT && rr[1] && String(rr[5] || rr[4] || '') !== '격파')
-          raidLeft[String(rr[1])] = Math.max((Number(rr[2]) || 0) - (Number(rr[3]) || 0), 0);
+        if (String(rr[0]) !== wkT || !rr[1]) return;
+        const cR = String(rr[1]), wonR = String(rr[5] || rr[4] || '') === '격파'; // 판정식 기존과 동일
+        raidGoal[cR] = Number(rr[2]) || 0; // [v9.35] 레이드 카드용 목표 HP
+        raidWin[cR] = wonR;
+        if (!wonR) raidLeft[cR] = Math.max((Number(rr[2]) || 0) - (Number(rr[3]) || 0), 0);
       });
     }
     const tpT = ss.getSheetByName('weekly_topics');
@@ -1454,7 +1527,7 @@ function calcAll() {
           if (pk && t >= pk.th) { disp = { name: pk.name, img: pk.img }; bcOut = pick; } // 유효 — 유지
         }
         skinOut.push([bcOut]);
-        frameOut.push([buildMonsterFrame_(disp.name, disp.img, mon.idx || 1)]);
+        frameOut.push([buildMonsterFrame_(disp.name, disp.img, mon.idx || 1, mon.pct, mon.rem)]); // [v9.35] 홈 액자만 진행 게이지 연결 (호출처 전수 확인: 이곳 1곳)
       }
       { // [v9.12] 운세·몬스터의 한마디·기록실
         fortuneOut.push(['🔮 ' + hashPick_(FORTUNES, id + todayYmd)]);
@@ -1722,7 +1795,7 @@ function calcAll() {
   });
   const csLast = cs.getLastRow();
   if (csLast - 1 > csOut.length) {
-    cs.getRange(csOut.length + 2, 1, csLast - 1 - csOut.length, 12).clearContent(); // [v9.1] · [v9.34] 8→12열 — 강사팩 4열(9~12) 포함, 반 감소 시 유령 브리핑 HTML 잔존 방지
+    cs.getRange(csOut.length + 2, 1, csLast - 1 - csOut.length, 13).clearContent(); // [v9.1] · [v9.34] 8→12열 · [v9.35] 12→13열(레이드카드HTML 포함) — 반 감소 시 유령 HTML 잔존 방지
   }
   { // [v9.6] 🌍 월드 레이드 누적 — 전 학생 이번 달 획득 총합
     const wrC = ss.getSheetByName('world_raid');
@@ -1765,6 +1838,13 @@ function calcAll() {
       return [brief, chance, check, bal];
     });
     if (crewCols.length) writeIfChanged(cs, 2, 9, crewCols);
+  }
+  { // [v9.35] ⚔️ 레이드 카드(13열) — 유일한 픽셀 레트로 적용처(다른 카드는 소프트 글로우 축). 반별 주간 전투 현황.
+    if (cs.getMaxColumns() < 13) cs.insertColumnsAfter(cs.getMaxColumns(), 13 - cs.getMaxColumns());
+    if (String(cs.getRange(1, 13).getValue()) !== '레이드카드HTML') cs.getRange(1, 13).setValue('레이드카드HTML');
+    const raidCards = Object.keys(cls).sort().map(c =>
+      [buildRaidCard_(c, raidGoal[c] || 0, weekDmg[c] || 0, !!raidWin[c])]);
+    if (raidCards.length) writeIfChanged(cs, 2, 13, raidCards);
   }
 
   // --- app_state: 학생수/신규감지 --- ([v7.9] 명언·브레인팁 카드 폐지 — 시선 분산 제거)
@@ -4890,7 +4970,7 @@ function drawScoreChart_(sl, scores) {
   marker.remove();
   if (!scores || !scores.length) {
     const tb = sl.insertTextBox('이번이 첫 기록! ✨', L, T, W, H);
-    tb.getText().getTextStyle().setFontSize(13).setBold(true).setForegroundColor('#10B981');
+    tb.getText().getTextStyle().setFontSize(13).setBold(true).setForegroundColor('#4F46E5'); // [v9.35] 토큰 잉크
     return;
   }
   const use = scores.slice(-5), n = use.length;
@@ -4899,7 +4979,7 @@ function drawScoreChart_(sl, scores) {
     const sc = Math.max(0, Math.min(100, Number(use[i]) || 0));
     const bh = Math.max(H * (sc / 100), 2);
     const bar = sl.insertShape(SlidesApp.ShapeType.ROUND_RECTANGLE, L + i * slot + (slot - barW) / 2, T + H - bh, barW, bh);
-    bar.getFill().setSolidFill(i === n - 1 ? '#10B981' : '#CFEDDF'); // 최신=초록 · 나머지=연초록
+    bar.getFill().setSolidFill(i === n - 1 ? '#FF7A6B' : '#4F46E5'); // [v9.35] 토큰 정렬 — 막대=인디고 · 최신 끝점=코랄 강조 (레이아웃 무변경)
     bar.getBorder().setTransparent();
   }
 }
@@ -5403,6 +5483,7 @@ function buildMonthlyCards_() {
     if (rs === '오늘의 MVP' || rs === '오늘의 시냅스') crowns[r[1]] = (crowns[r[1]] || 0) + 1;
     if (rs === '레이드보상' || rs === '월드레이드') raids[r[1]] = (raids[r[1]] || 0) + 1;
   });
+  const monMapC = monsterImgMap_(ss); // [v9.35] 단계명→이미지 — 카드에 몬스터 1장 삽입
   const rows = stus.map(s => {
     const pts = mP[s.id] || 0;
     const sch = s.type === '주말' ? schWeekend : schWeekday;
@@ -5411,10 +5492,13 @@ function buildMonthlyCards_() {
     const stat = pts > 0
       ? '⚡ ' + pts + 'P · 👑 ' + (crowns[s.id] || 0) + ' · ⚔️ ' + (raids[s.id] || 0)
       : '🌟 다음 달 주인공 예약';
-    return [ym, s.id, '<div style="background:' + tier[2] + ';border-radius:16px;padding:10px;max-width:230px;">' +
+    const mi = String(monMapC[s.mon] || ''); // [v9.35]
+    // [v9.35] 골격을 소프트 글로우 축으로 정렬(보더 #C4B5FD 2px·라운드 18/12·섀도) — 티어 그라디언트는 유지
+    return [ym, s.id, '<div style="background:' + tier[2] + ';border:2px solid #C4B5FD;border-radius:18px;padding:10px;max-width:230px;box-shadow:0 6px 18px rgba(79,70,229,.14);">' +
       '<div style="background:#fff;border-radius:12px;padding:10px 12px;text-align:center;">' +
       '<div style="font-size:11px;color:#6B7280;">SYNK ' + ym + ' · ' + tier[3] + ' ' + tier[1] + '</div>' +
       '<div style="font-size:17px;font-weight:800;padding:3px 0;">' + s.nm + '</div>' +
+      (mi.indexOf('http') === 0 ? '<img src="' + mi + '" style="width:72px;image-rendering:pixelated;display:block;margin:2px auto 0;"/>' : '') + // [v9.35] A안 이미지에도 무해
       '<div style="font-size:12px;color:#4338CA;">' + s.mon + '와 함께한 한 달</div>' +
       '<div style="font-size:11px;color:#6B7280;padding-top:2px;">' + (function(){ const ps2 = playStyleOf_(cardLogs[s.id] || []); return ps2[0] + ' ' + ps2[1]; })() + '</div>' +
       '<div style="font-size:13px;padding-top:6px;border-top:1px dashed #E5E7EB;margin-top:6px;">' + stat + '</div>' +
