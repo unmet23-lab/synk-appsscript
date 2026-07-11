@@ -152,7 +152,8 @@ test('공개 웹 실행 함수가 새로 생기지 않았다', () => {
 });
 
 test('재건용 핵심 시트 제목이 실제 읽기·쓰기 순서와 일치한다', () => {
-  const body = section('function bootstrapSynk()', 'function safeRun');
+  // [v9.37] skeleton 배열이 모듈 const SHEET_SKELETON으로 승격됨 — 시작 표식을 그 선언부로 이동(의도 동일: 골격 헤더 정합)
+  const body = section('const SHEET_SKELETON', 'function safeRun');
   assert.ok(body.includes(
     "['profiles', ['user_id','이름','이름_몽골','role','class_name','생일','email','연락처','messenger_link','parent_of','tuition','등록일','보호자명','보호자연락처','created_at']]"
   ));
