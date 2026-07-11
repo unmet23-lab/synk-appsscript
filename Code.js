@@ -1073,7 +1073,7 @@ function myJourneyHtml_(o) {
     dreamLine +
     '<div style="display:flex;justify-content:space-between;align-items:baseline;">' +
       '<div style="font-size:15px;font-weight:800;color:#4338CA;">📖 ' + o.nm + '의 여정</div>' +
-      '<div style="font-size:11px;font-weight:700;color:#FF7A6B;">' + (remJ > 0 ? '진화까지 ' + remJ + 'P' : '👑 최종 진화') + '</div>' +
+      '<div style="font-size:11px;font-weight:700;color:#FF7A6B;">' + (remJ > 0 ? '진화까지 ' + remJ + 'P' : ((o.grem || 0) > 0 ? '📖 문법 ' + o.grem + '개만!' : '👑 최종 진화')) + '</div>' + // [v9.36] 게이트 대기(rem=0·grem>0)는 최종 진화가 아니다
     '</div>' +
     stripJ +
     '<div style="background:#fff;border-radius:12px;padding:9px 11px;font-size:12.5px;line-height:2;">' +
@@ -1084,7 +1084,8 @@ function myJourneyHtml_(o) {
       '🏔️ 최고 월간 <b>' + (rec.bestMonth || o.mPts || 0) + 'P</b> · 📚 지금까지 <b>' + (o.t || 0) + 'P</b>' +
     '</div>' +
     '<div style="font-size:12.5px;color:#4338CA;padding-top:9px;">' + acadLine + '</div>' +
-    // [v9.35] 학습추적(W3) 배선 지점 — acadLine 아래 '이 단계 문법 n/12' 삽입 예정
+    // [v9.36] 학습추적(W3) — 이 단계 문법 도달 진행(게이트 없는 단계·무데이터면 상위에서 '' 전달 → 생략)
+    (o.gline ? '<div style="font-size:12px;color:#6D28D9;padding-top:4px;">' + o.gline + '</div>' : '') +
     storyBlock +
     '<div style="font-size:11px;color:#9CA3AF;padding-top:8px;">너의 이야기는 계속돼 ✨</div>' +
     '</div>';
@@ -1194,6 +1195,41 @@ function calcAll() {
       rem = Math.max(next.th - pts, 0);
     }
     return { stage: cur.name, pct: pct, rem: rem, idx: curIdx + 1 }; // [v6.6] 1~7단계 번호
+  }
+
+  // --- [v9.36] 진화 게이트 재료 — mastery_log 1패스(calcAll에서 여기 1회만 읽는다) ---
+  const masteryCnt = {};      // sid → {단계: '도달' 수}
+  const hasMastery = {};      // sid → mastery 기록 1건이라도 존재(신규생 보호 판별)
+  const masteryTopForm = {};  // sid → {단계: 최근(최고 순번) 도달 문형명} — 진화 축하 문구용
+  const bankCnt = grammarBankCounts_();
+  const gNameOf = grammarNameMap_();
+  {
+    const ml = ss.getSheetByName('mastery_log');
+    if (ml && ml.getLastRow() >= 2) {
+      ml.getRange(2, 1, ml.getLastRow() - 1, 3).getValues().forEach(r => {
+        const sid = String(r[0] || '').trim();
+        if (!sid) return;
+        hasMastery[sid] = true;
+        const g = grammarStageOf_(r[1]);
+        if (!g || String(r[2]) !== '도달') return;
+        (masteryCnt[sid] = masteryCnt[sid] || {})[g] = ((masteryCnt[sid] || {})[g] || 0) + 1;
+        const seq = Number(String(r[1]).trim().slice(2)) || 0;
+        const tf = masteryTopForm[sid] = masteryTopForm[sid] || {};
+        if (!tf[g] || seq >= tf[g].seq) tf[g] = { seq: seq, nm: gNameOf[String(r[1]).trim()] || '' };
+      });
+    }
+  }
+  const classTagFresh = {}; // [v9.36] 반별 최근 60일 문법태그 입력 존재 — 강사 태깅 중단 시 게이트 자동 해제(아래 weekly_topics 루프에서 채움)
+  // [v9.36] 게이트 클램프 — 3중 안전장치: ①무데이터 학생 미적용(신규생 보호) ②prevIdx(전회 단계) 아래 강등 금지 ③반 태깅 60일 중단 시 해제
+  function gatedIdx_(sid, pointIdx, prevIdx, cls2) {
+    if (!hasMastery[sid] || !classTagFresh[cls2]) return pointIdx;
+    let gi = pointIdx;
+    while (gi > 1 && gi > prevIdx) {
+      const need = Math.min(GRAMMAR_GATE_NEED[gi] || 0, bankCnt[gi] || 0);
+      if (!need || ((masteryCnt[sid] || {})[gi] || 0) >= need) break;
+      gi--;
+    }
+    return gi;
   }
 
   // --- 출석 ---
@@ -1329,6 +1365,7 @@ function calcAll() {
   const styleOut = [], chemOut = [], matchOut = []; // [v9.13]
   const weeklyOut = [], talkOut = [], bannerOut = []; // [v9.16]
   const alertOut = []; // [v9.20] 오늘의알림(BX 76) — 결정적 순간 1건(왕관/진화/생일/임박), 없으면 ''
+  const ccOut = [], cdOut = []; // [v9.36] 게이트 2열 — CC(81) 남은문법수 · CD(82) 게이트문구
   const journeyOut = []; // [v9.20] 나의여정(BY 77) — 개인 스토리 카드
   const clsB2 = {}; // sid→반 (주간 분모용)
   const radarOut = [], radarList = []; // [v9.14] (공유 변수는 함수 최상단으로 승격)
@@ -1352,11 +1389,13 @@ function calcAll() {
       });
     }
     const tpT = ss.getSheetByName('weekly_topics');
-    if (tpT && tpT.getLastRow() >= 2) tpT.getRange(2, 1, tpT.getLastRow() - 1, 5).getValues().forEach(rr => {
+    const wTpT = tpT ? Math.min(Math.max(tpT.getLastColumn(), 5), 12) : 5; // [v9.36] 승격 열(F 문법태그)까지 — 미승격 시트도 안전
+    if (tpT && tpT.getLastRow() >= 2) tpT.getRange(2, 1, tpT.getLastRow() - 1, wTpT).getValues().forEach(rr => {
       if (!rr[0] || !rr[3]) return;
       const d6t = dstr(rr[3], tz);
       if (d6t === todayYmd0) tdTopic[String(rr[0])] = 1;
       const gapT = Math.floor((new Date(todayYmd0) - new Date(d6t)) / msPerDay);
+      if (wTpT >= 6 && rr[5] && gapT >= 0 && gapT <= 60) classTagFresh[String(rr[0])] = 1; // [v9.36] 문법태그 신선도(60일)
       if (gapT >= 0 && gapT <= 7) {
         const cur = topicRecent[String(rr[0])];
         if (!cur || d6t > cur.d) topicRecent[String(rr[0])] = { d: d6t, ko: String(rr[1] || ''), mn: String(rr[4] || ''), today: d6t === todayYmd0 };
@@ -1504,7 +1543,33 @@ function calcAll() {
   }
     const todayYmd = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
     const out = pfData.map((r, idx) => {
-      const id = r[0], t = total[id] || 0, mon = monsterOf(t);
+      const id = r[0], t = total[id] || 0;
+      let mon = monsterOf(t); // [v9.36] let — 아래 게이트가 클램프할 수 있음
+      // [v9.36] 진화 게이트 — 포인트 도달(T=100)이어도 해당 단계 문법 도달 수 미달이면 단계 진입 보류.
+      //   S/T/AP/AG·여정·액자·진화일이 전부 클램프값을 따라 자동 일관(삽입점 단일화).
+      let gateBlocked = false, gateCC = 0, gateCD = '';
+      {
+        const cnG = String(r[4] || '');
+        const prevApN = Number(prevAP[idx] && prevAP[idx][0]) || 0;
+        if (r[3] === 'student') {
+          const gi = gatedIdx_(id, mon.idx, prevApN, cnG);
+          if (gi < mon.idx) {
+            gateBlocked = true;
+            mon = { stage: (stages[gi - 1] || {}).name || mon.stage, pct: 100, rem: 0, idx: gi }; // 게이지 가득 + 남은 P 0 = "에너지 충전 완료"
+          }
+          const nx = mon.idx + 1;
+          const needNx = Math.min(GRAMMAR_GATE_NEED[nx] || 0, bankCnt[nx] || 0);
+          if (hasMastery[id] && classTagFresh[cnG] && needNx > 0 && nx <= stages.length) {
+            const gotNx = (masteryCnt[id] || {})[nx] || 0;
+            gateCC = Math.max(needNx - gotNx, 0);
+            gateCD = gateBlocked
+              ? '📖 문법 ' + gateCC + '개만 익히면 ' + ((stages[nx - 1] || {}).name || '다음 단계') + ' 진화! (' + gotNx + '/' + (bankCnt[nx] || 0) + ')' // 긍정형 — '부족·실패' 금칙
+              : (gotNx > 0 ? '📖 다음 진화 문법 ' + gotNx + '/' + (bankCnt[nx] || 0) : '');
+          }
+        }
+        ccOut.push([gateCC]);
+        cdOut.push([gateCD]);
+      }
       const la = lastAtt[id] || '';
       const daysSince = la ? Math.floor((now - new Date(la)) / msPerDay) : 999;
       const p = praise[id] || 0, mPts = monthly[id] || 0;
@@ -1538,6 +1603,7 @@ function calcAll() {
         let line;
         if (isBday) line = hashPick_(SPEAK.bday, id + todayYmd);
         else if (crownToday) line = hashPick_(SPEAK.crown, id + todayYmd);
+        else if (gateBlocked && gateCC > 0) line = '⚡ 진화 에너지 100%! 문법 ' + gateCC + '개만 익히면 바로 진화해!'; // [v9.36] 게이트 대기 — 임박 분기보다 위(긍정형)
         else if (toNext > 0 && toNext <= 30) line = hashPick_(SPEAK.evosoon, id + todayYmd).replace('{n}', toNext);
         else if (la && lastAtt[id] === todayYmd) line = hashPick_(SPEAK.today[tone], id + todayYmd);
         else if (daysSince >= 7 && daysSince < 999) line = hashPick_(SPEAK.miss7[Math.min(tone, SPEAK.miss7.length - 1)], id + todayYmd);
@@ -1605,17 +1671,18 @@ function calcAll() {
           const evoStr6 = (prevBB[idx] && String(prevBB[idx][0] || '')) || '';
           const evoRecent = evoStr6 && (new Date(todayYmd0) - new Date(evoStr6.slice(0, 10))) / msPerDay <= 3;
           const crownToday2 = (crownDates[id] || '') === todayYmd0;
+          const gEvoForm = ((masteryTopForm[id] || {})[mon.idx] || {}).nm || ''; // [v9.36] 이번 단계 대표 도달 문형 — "무엇을 배워 진화했는지"
           bannerOut.push([crownToday2
             ? '<div style="background:linear-gradient(135deg,#FDE68A,#F5A623);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;">🎉 ' + (r[1] || id) + ' өнөөдөр титэм авлаа! Гэртээ магтаж өгөөрэй 💛<br/><span style="font-weight:400;font-size:11px;">오늘 왕관을 받았어요! 집에서 칭찬해 주세요</span></div>'
             : (evoRecent
-              ? '<div style="background:linear-gradient(135deg,#C4B5FD,#A5B4FC);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;color:#fff;">⚡ ' + (r[1] || id) + '-ийн монстр шинэ шатанд хувьслаа! Түүхэн мөч 📸<br/><span style="font-weight:400;font-size:11px;">몬스터가 진화했어요! 역사적인 순간</span></div>'
+              ? '<div style="background:linear-gradient(135deg,#C4B5FD,#A5B4FC);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;color:#fff;">⚡ ' + (r[1] || id) + '-ийн монстр шинэ шатанд хувьслаа! Түүхэн мөч 📸<br/><span style="font-weight:400;font-size:11px;">몬스터가 진화했어요!' + (gEvoForm ? ' \'' + gEvoForm + '\' 문법까지 익히고 진화!' : ' 역사적인 순간') + '</span></div>'
               : '')]);
           // [v9.20] 오늘의알림 — 푸시/인앱배너용, "하루짜리 결정적 순간"만 (왕관·진화·생일).
           //  [v9.20 최적화] 진화임박(rem) 분기 제거: 매일 값 변동→시트 churn + 푸시 시 매일 알림 피로.
           //  임박 넛지는 몬스터한마디(BF)가 이미 담당. BX는 이벤트일에만 채워지고 다음날 ''로 복귀.
           const isBday6 = bdayMMDD_(r[5], tz) === todayYmd0.slice(5, 10); // [v9.34] Date 셀 생일도 인식(1451과 동일 통일)
           alertOut.push([crownToday2 ? '👑 오늘 왕관을 받았어요! 최고예요 🎉'
-            : evoRecent ? '⚡ 몬스터가 진화했어요! 축하해요 🐲'
+            : evoRecent ? '⚡ 몬스터가 진화했어요! ' + (gEvoForm ? '\'' + gEvoForm + '\' 문법까지 익히고 진화! 🐲' : '축하해요 🐲') // [v9.36] 배운 문법 병기
             : isBday6 ? '🎂 생일 축하해요! 오늘의 주인공이에요 🎉'
             : '']);
         }
@@ -1649,7 +1716,10 @@ function calcAll() {
         nm: r[1] || id, stages: stages, mon: mon, rec: records[id], stk: stk, mPts: mPts, t: t,
         acad: academicSnapshot_(acadById[id]), evoDate: (evoDateOut[evoDateOut.length - 1] || [''])[0],
         titles: titleOf[id], chem: chemi[id], story: (prevAU[idx] && prevAU[idx][0]) || '', // [v9.20] 칭호·단짝·이달의 이야기
-        dream: String((prevDream[idx] && prevDream[idx][0]) || '').trim() // [v9.29] 드림 한 줄(학생 자기선언)
+        dream: String((prevDream[idx] && prevDream[idx][0]) || '').trim(), // [v9.29] 드림 한 줄(학생 자기선언)
+        // [v9.36] 학습추적(W3) — 이 단계 문법 도달 진행(뱅크 없는 단계·무데이터면 '' → 카드에서 생략) + 게이트 대기 헤더 문구
+        gline: ((bankCnt[mon.idx] || 0) > 0 && hasMastery[id]) ? '📖 이 단계 문법 ' + ((masteryCnt[id] || {})[mon.idx] || 0) + '/' + bankCnt[mon.idx] : '',
+        grem: gateBlocked ? gateCC : 0
       })]);
       { // [v9.28] 출석일당포인트 — 반유형 보정(주말반 불리 완화), 랭킹 참고용 별도 열(기존 월간랭킹은 무변경)
         const schSoFar = classTypeOf[id] ? scheduledSoFar_(classTypeOf[id], now) : 0;
@@ -1702,6 +1772,12 @@ function calcAll() {
     //   calcAll·syncProfiles 어떤 배치도 이 열의 데이터 행을 쓰지 않는다(헤더만 보장) — AK 착용칭호와 동일한 사용자 소유 방식.
     if (pf.getMaxColumns() < 80) pf.insertColumnsAfter(pf.getMaxColumns(), 80 - pf.getMaxColumns());
     if (String(pf.getRange('CB1').getValue()) !== '드림한줄') pf.getRange('CB1').setValue('드림한줄');
+    // [v9.36] 게이트 2열 — CC(81) 남은문법수(number) · CD(82) 게이트문구(text). writeIfChanged라 수업이 있어야 값이 변함(sync churn 낮음)
+    if (pf.getMaxColumns() < 82) pf.insertColumnsAfter(pf.getMaxColumns(), 82 - pf.getMaxColumns());
+    if (String(pf.getRange('CC1').getValue()) !== '남은문법수') pf.getRange('CC1').setValue('남은문법수');
+    if (String(pf.getRange('CD1').getValue()) !== '게이트문구') pf.getRange('CD1').setValue('게이트문구');
+    writeIfChanged(pf, 2, 81, ccOut);
+    writeIfChanged(pf, 2, 82, cdOut);
     { // 원장 홈 카드 2종
       radarList.sort((a2, b2) => a2.s === b2.s ? 0 : (a2.s === '🔴' ? -1 : 1));
       const rHtml = radarList.length
@@ -3150,6 +3226,249 @@ function expandHwBatch() {
   if (outRows.length) appendPoints(ss, outRows);
   doneIdx.forEach(i => hb.getRange(i + 2, 6).setValue('전개완료'));
   Logger.log('숙제 일괄 전개: +' + outRows.length + '명 / 중복 스킵 ' + skip);
+}
+
+/* ===================== [v9.36] 학습추적(W3) — weekly_topics 제자리 승격 · mastery · 출석 일괄 ===================== */
+
+// weekly_topics 5열 → 12열 멱등 확장(ensureSheet는 기존 시트 헤더를 보정하지 않음 — c02 지도 한계 보완).
+// A~E 기존 5열 위치 불변. F문법태그(ID 쉼표) G전체도달도('도달'/'더연습') H예외학생 I숙제완료자 J연료미션 K처리상태 L학습전개상태.
+function ensureLessonCols_(tp) {
+  if (tp.getMaxColumns() < 12) tp.insertColumnsAfter(tp.getMaxColumns(), 12 - tp.getMaxColumns());
+  ['문법태그', '전체도달도', '예외학생', '숙제완료자', '연료미션', '처리상태', '학습전개상태'].forEach((h, i) => {
+    if (String(tp.getRange(1, 6 + i).getValue()) !== h) tp.getRange(1, 6 + i).setValue(h);
+  });
+}
+
+// [v9.36] 수업 로그 전개 — 승격된 weekly_topics의 I(숙제완료자)→학생별 +10 '숙제완료' 지급, J(연료미션)→class_fuel append.
+//   expandHwBatch의 멱등 패턴 그대로: ID 검증 · 당일 기지급 재조회(doneToday) 스킵 · 지급 성공 후 K열 마킹(v9.31 규율).
+//   nightJobs에서 calcAll보다 앞 — 지급분이 그날 밤 게이지·랭킹에 즉시 반영된다. 기존 hw_batch·expandHwBatch와 병존(하위호환).
+function expandLessonLog_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const today = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
+  const tp = ss.getSheetByName('weekly_topics');
+  if (!tp || tp.getLastRow() < 2) return;
+  ensureLessonCols_(tp);
+  const rows = tp.getRange(2, 1, tp.getLastRow() - 1, 12).getValues();
+
+  const doneToday = new Set(); // 오늘 이미 숙제 지급된 학생 (hw_batch·개별 버튼 병행 대비 — point_logs 재조회)
+  const pl = ss.getSheetByName('point_logs');
+  if (pl && pl.getLastRow() >= 2) {
+    pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
+      const d = r[5];
+      if (!r[1] || !d) return;
+      if (Utilities.formatDate(asDate_(d), tz, 'yyyy-MM-dd') === today &&
+          String(r[3] || '').indexOf('숙제완료') > -1 && Number(r[2]) > 0) doneToday.add(String(r[1]).trim());
+    });
+  }
+  const valid = new Set();
+  const pf = ss.getSheetByName('profiles');
+  if (pf && pf.getLastRow() >= 2) {
+    pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().forEach(r => {
+      if (r[0] && r[3] === 'student') valid.add(String(r[0]).trim());
+    });
+  }
+  const outRows = [], fuelRows = [], doneIdx = [];
+  let skip = 0;
+  rows.forEach((r, i) => {
+    if (String(r[10]) === '전개완료') return;                 // K 처리상태
+    if (!r[3] || dstr(r[3], tz) !== today) return;            // 당일 행만 (hw_batch와 동일)
+    const hwList = String(r[8] || '').trim();                 // I 숙제완료자
+    const fuel = String(r[9] || '').trim();                   // J 연료미션
+    if (!hwList && !fuel) return;                             // 전개할 것 없음 — 태그만 있는 행은 expandMasteryLog_가 담당
+    const by = String(r[2] || '강사');
+    const seen = new Set();
+    hwList.split(',').forEach(tok => {
+      const sid = String(tok).trim();
+      if (!sid || seen.has(sid) || !valid.has(sid)) return;
+      seen.add(sid);
+      if (doneToday.has(sid)) { skip++; return; }
+      doneToday.add(sid);
+      outRows.push([sid, 10, '숙제완료', by]);
+    });
+    if (fuel && r[0]) fuelRows.push([r[0], fuel, by, now]);   // 주 1회 dedup은 기존 weeklyFuel_(seen cls|mission)이 처리
+    doneIdx.push(i); // 마킹은 지급 성공 뒤로 미룸
+  });
+  if (outRows.length) appendPoints(ss, outRows);
+  if (fuelRows.length) {
+    const cf = ensureSheet(ss, 'class_fuel', ['class_name', '미션', '입력자', 'created_at']);
+    cf.getRange(cf.getLastRow() + 1, 1, fuelRows.length, 4).setValues(fuelRows);
+  }
+  doneIdx.forEach(i => tp.getRange(i + 2, 11).setValue('전개완료'));
+  Logger.log('수업 로그 전개: 숙제 +' + outRows.length + '명 (중복 스킵 ' + skip + ') · 연료 ' + fuelRows.length + '건');
+}
+
+// [v9.36] 문법 도달 전개 — 당일 문법태그 행 × (출석자−예외학생) → mastery_log upsert. 상태는 '연습'→'도달' 단방향 상향(강등 없음).
+//   도달도='도달'이면 예외학생만 '연습', '더연습'이면 전원 '연습'. 결석자는 미전개(다음 태깅 때 자연 커버). 처리 후 L열 마킹.
+//   nightJobs에서 expandLessonLog_ 다음 · calcAll 앞 — 그날 밤 게이트가 즉시 반영되고 checkEvolution이 당일 진화를 감지한다.
+function expandMasteryLog_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const today = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
+  const tp = ss.getSheetByName('weekly_topics');
+  if (!tp || tp.getLastRow() < 2) return;
+  ensureLessonCols_(tp);
+  const rows = tp.getRange(2, 1, tp.getLastRow() - 1, 12).getValues();
+  // 미처리(L열)·당일·태그 있는 행만 — 없으면 시트 읽기 없이 종료(6분 예산 보호)
+  const targets = [];
+  rows.forEach((r, i) => {
+    if (String(r[11]) === '전개완료') return;                 // L 학습전개상태
+    if (!r[3] || dstr(r[3], tz) !== today) return;
+    if (!String(r[5] || '').trim()) return;                   // F 문법태그 없음 → 기존 행과 100% 동일 동작(하위호환)
+    targets.push({ r: r, i: i });
+  });
+  if (!targets.length) return;
+
+  const attendedToday = new Set();
+  const at = ss.getSheetByName('attendance');
+  if (at && at.getLastRow() >= 2) {
+    at.getRange(2, 1, at.getLastRow() - 1, 4).getValues().forEach(r => {
+      if (r[1] && r[2] && dstr(r[2], tz) === today) attendedToday.add(String(r[1]).trim());
+    });
+  }
+  const roster = {}; // 반 → 학생 sid 목록
+  const pf = ss.getSheetByName('profiles');
+  if (pf && pf.getLastRow() >= 2) {
+    pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
+      if (r[0] && r[3] === 'student' && r[4]) (roster[String(r[4])] = roster[String(r[4])] || []).push(String(r[0]).trim());
+    });
+  }
+  const ml = ensureSheet(ss, 'mastery_log', ['student_id', 'grammar_id', '상태', '첫기록일', '도달일', '출처', 'updated_at']);
+  const mkey = {}; // 'sid|gid' → {row(시트 행번호), st}
+  if (ml.getLastRow() >= 2) {
+    ml.getRange(2, 1, ml.getLastRow() - 1, 3).getValues().forEach((r, i) => {
+      if (r[0] && r[1]) mkey[String(r[0]).trim() + '|' + String(r[1]).trim()] = { row: i + 2, st: String(r[2] || '') };
+    });
+  }
+  const newRows = [], upgrades = [], doneIdx = [];
+  targets.forEach(t => {
+    const r = t.r;
+    const tags = String(r[5]).split(',').map(s => s.trim()).filter(g => grammarStageOf_(g) > 0); // ID(G3xx) 검증 — 문자열 연성 결합 회피
+    if (!tags.length) { doneIdx.push(t.i); return; }
+    const except = new Set(String(r[7] || '').split(',').map(s => s.trim()).filter(String)); // H 예외학생("아직")
+    const clsReached = String(r[6] || '').replace(/\s/g, '').indexOf('도달') === 0;           // G '도달'/'도달함' 허용
+    (roster[String(r[0])] || []).forEach(sid => {
+      if (!attendedToday.has(sid)) return;
+      const st = (clsReached && !except.has(sid)) ? '도달' : '연습';
+      tags.forEach(gid => {
+        const k = sid + '|' + gid, cur = mkey[k];
+        if (!cur) {
+          mkey[k] = { row: 0, st: st }; // 같은 실행 내 중복 태그 방지
+          newRows.push([sid, gid, st, today, st === '도달' ? today : '', 'lesson', now]);
+        } else if (cur.st === '연습' && st === '도달') {
+          cur.st = '도달';
+          if (cur.row > 0) upgrades.push(cur.row);
+          else { const nr = newRows.find(x => x[0] === sid && x[1] === gid); if (nr) { nr[2] = '도달'; nr[4] = today; } }
+        } // '도달' 기존 행은 불변 — 강등 없음
+      });
+    });
+    doneIdx.push(t.i);
+  });
+  if (newRows.length) ml.getRange(ml.getLastRow() + 1, 1, newRows.length, 7).setValues(newRows);
+  upgrades.forEach(row => ml.getRange(row, 3, 1, 3).setValues([['도달', ml.getRange(row, 4).getValue() || today, today]])); // 상태·(첫기록일 보존)·도달일
+  upgrades.forEach(row => ml.getRange(row, 7).setValue(now));
+  doneIdx.forEach(i => tp.getRange(i + 2, 12).setValue('전개완료')); // 전개(쓰기) 성공 후 마킹
+  Logger.log('문법 도달 전개: 신규 ' + newRows.length + ' · 상향 ' + upgrades.length + ' · 행 ' + doneIdx.length);
+}
+
+// [v9.36] 수업 시작 출석 1탭(B안) 착지 — attendance_batch 미처리 행의 출석자를 attendance로 전개(parentSweep 편승, 10분).
+//   기존 attendance 스키마(id·student_id·timestamp·method) 준수 · 같은 학생·같은 날 중복 방지 · 전개 성공 후 마킹.
+function expandAttendanceBatch_(ss) {
+  const ab = ss.getSheetByName('attendance_batch');
+  if (!ab || ab.getLastRow() < 2) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const today = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
+  const rows = ab.getRange(2, 1, ab.getLastRow() - 1, 6).getValues();
+  const pending = [];
+  rows.forEach((r, i) => {
+    if (!r[0] || String(r[5]) === '전개완료') return;
+    if (dstr(r[0], tz) !== today) return; // 당일 행만 (과거 미처리 행은 재전개하지 않음 — 옛 출석 소급 오염 방지)
+    pending.push({ r: r, i: i });
+  });
+  if (!pending.length) return; // 미처리 없으면 attendance·profiles 스캔 없이 종료 (10분 스위프 부담 0)
+
+  const at = ensureSheet(ss, 'attendance', ['id', 'student_id', 'timestamp', 'method']);
+  const seenToday = new Set(); // 오늘 이미 출석 기록된 학생 (개별 체크 병행 대비)
+  if (at.getLastRow() >= 2) {
+    at.getRange(2, 1, at.getLastRow() - 1, 3).getValues().forEach(r => {
+      if (r[1] && r[2] && dstr(r[2], tz) === today) seenToday.add(String(r[1]).trim());
+    });
+  }
+  const valid = new Set();
+  const pf = ss.getSheetByName('profiles');
+  if (pf && pf.getLastRow() >= 2) {
+    pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().forEach(r => {
+      if (r[0] && r[3] === 'student') valid.add(String(r[0]).trim());
+    });
+  }
+  const ymd = Utilities.formatDate(now, tz, 'yyyyMMdd');
+  const newRows = [], doneIdx = [];
+  pending.forEach(p => {
+    String(p.r[2] || '').split(',').forEach(tok => {
+      const sid = String(tok).trim();
+      if (!sid || !valid.has(sid) || seenToday.has(sid)) return;
+      seenToday.add(sid);
+      newRows.push(['ATB' + ymd + '-' + sid, sid, now, '출석(일괄)']); // method에 '출석' 포함 — 다이제스트 집계 호환
+    });
+    doneIdx.push(p.i);
+  });
+  if (newRows.length) at.getRange(at.getLastRow() + 1, 1, newRows.length, 4).setValues(newRows);
+  doneIdx.forEach(i => ab.getRange(i + 2, 6).setValue('전개완료')); // 전개 성공 후 마킹
+  Logger.log('출석 일괄 전개: +' + newRows.length + '명 / 행 ' + doneIdx.length);
+}
+
+// [v9.36] 수동 1회 — 재학생 소급 인정: 현 단계번호(AP)까지의 게이트 문법을 '도달(소급인정)' upsert.
+//   실행 순서: setupGrammarBank() → seedMasteryForExisting() → 다음 calcAll부터 게이트 활성.
+//   왜: 시드 없이는 링커 재학생의 여정 카드가 "이 단계 문법 0/12"로 표시되는 서사 모순. 신규생은 시드 불필요(무데이터=포인트 진화).
+function seedMasteryForExisting() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const today = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2 || pf.getMaxColumns() < 42) { Logger.log('seedMastery: profiles/AP열 없음 — calcAll 먼저 실행'); return; }
+  const pfData = pf.getRange(2, 1, pf.getLastRow() - 1, 42).getValues();
+  const ml = ensureSheet(ss, 'mastery_log', ['student_id', 'grammar_id', '상태', '첫기록일', '도달일', '출처', 'updated_at']);
+  const mkey = {};
+  if (ml.getLastRow() >= 2) {
+    ml.getRange(2, 1, ml.getLastRow() - 1, 3).getValues().forEach((r, i) => {
+      if (r[0] && r[1]) mkey[String(r[0]).trim() + '|' + String(r[1]).trim()] = { row: i + 2, st: String(r[2] || '') };
+    });
+  }
+  const newRows = [], upRows = [];
+  pfData.forEach(r => {
+    if (!r[0] || r[3] !== 'student') return;
+    const sid = String(r[0]).trim();
+    const curIdx = Number(r[41]) || 1; // AP 단계번호
+    GRAMMAR_BANK.forEach(g => {
+      const stg = grammarStageOf_(g[0]);
+      if (!stg || stg > curIdx) return; // 현 단계까지의 게이트 문법 전부(도착 단계 포함)
+      const k = sid + '|' + g[0], cur = mkey[k];
+      if (!cur) { mkey[k] = { row: 0, st: '도달' }; newRows.push([sid, g[0], '도달', today, today, '소급인정', now]); }
+      else if (cur.st === '연습' && cur.row > 0) { cur.st = '도달'; upRows.push(cur.row); }
+    });
+  });
+  if (newRows.length) ml.getRange(ml.getLastRow() + 1, 1, newRows.length, 7).setValues(newRows);
+  upRows.forEach(row => { ml.getRange(row, 3).setValue('도달'); ml.getRange(row, 5).setValue(today); ml.getRange(row, 7).setValue(now); });
+  Logger.log('소급 인정 시드: 신규 ' + newRows.length + ' · 상향 ' + upRows.length + '행');
+}
+
+// [v9.36] 리포트카드용 — 해당 월(yyyy-MM) 신규 '도달' 문법 수. 소급인정은 제외(시드 달 리포트 인플레 방지).
+function masteryNewCountByYm_(ss, ym) {
+  const out = {};
+  const ml = ss.getSheetByName('mastery_log');
+  if (!ml || ml.getLastRow() < 2) return out;
+  const tzM = ss.getSpreadsheetTimeZone();
+  ml.getRange(2, 1, ml.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (String(r[2]) !== '도달' || !r[4] || String(r[5]) === '소급인정') return;
+    if (dstr(r[4], tzM, 'yyyy-MM') !== ym) return;
+    const sid = String(r[0]).trim();
+    out[sid] = (out[sid] || 0) + 1;
+  });
+  return out;
 }
 
 /* ===================== [v7.9] 학부모 주간 다이제스트 ===================== */
@@ -5680,6 +5999,103 @@ function setupMonsters() {
 }
 
 
+/* ===================== [v9.36] 학습추적(W3) — 문법 커리큘럼 정본 (진화 게이트) =====================
+ * ⚠️ 유호님·강사 검수 대상 초안 (TOPIK 1~2급 기준 선정) — 문형·설명은 교육 전문 영역, 코드 반영 후에도 교체 자유.
+ * 정본 = 이 상수 → setupGrammarBank()가 contents type='grammar'로 재건(단일 파일 복구 철학).
+ * ID G단계번호+순번 2자리(G201~G712) · 게이트단계 = 도착 단계 번호(2~7) · contents F열 = 단계×100+순번.
+ * STORY_GRAMMAR(3~4급·월 로테이션)와는 급수·용도·구조가 달라 별도 정본 유지 — G7xx 일부 겹침은 무방. */
+const GRAMMAR_GATE_NEED = { 2: 0, 3: 9, 4: 9, 5: 9, 6: 9, 7: 9 }; // 뉴로→스파키 첫 진화는 무게이트(G2xx는 커리큘럼·노출용 유지) · 이후 12중 9(75%)
+const GRAMMAR_BANK = [
+  // G2xx — 뉴로→스파키 (게이트 비활성 · 노출용 커리큘럼)
+  ['G201', '이/가', '주격 조사 — 주어 표시'],
+  ['G202', '은/는', '화제·대조 조사'],
+  ['G203', '을/를', '목적격 조사'],
+  ['G204', '-이에요/예요', '명사 서술 (~입니다의 해요체)'],
+  ['G205', '-아/어요', '현재 시제 해요체'],
+  ['G206', '에', '장소·시간 조사'],
+  ['G207', '에서', '동작이 일어나는 장소'],
+  ['G208', '-았/었어요', '과거 시제'],
+  ['G209', '안 부정', '안 + 동사/형용사 부정'],
+  ['G210', '하고/와/과', '나열·함께'],
+  ['G211', '-(으)세요', '요청·존대 명령'],
+  ['G212', '숫자/시간 표현', '한자어·고유어 수 읽기'],
+  // G3xx — 스파키→링커
+  ['G301', '-고 싶다', '희망·바람'],
+  ['G302', '-(으)ㄹ 거예요', '미래·계획'],
+  ['G303', '-(으)러 가다', '이동의 목적'],
+  ['G304', '-지 않다', '긴 부정'],
+  ['G305', '못 부정', '능력 밖 부정'],
+  ['G306', '-고', '동작·상태 나열'],
+  ['G307', '-지만', '대조·역접'],
+  ['G308', '-아/어서', '이유·순차'],
+  ['G309', '(으)로', '수단·방향'],
+  ['G310', '에게/한테', '행위의 대상'],
+  ['G311', '-(으)ㄹ까요?', '제안·추측 질문'],
+  ['G312', '보다', '비교'],
+  // G4xx — 링커→서킷
+  ['G401', '-(으)면', '조건·가정'],
+  ['G402', '-(으)ㄹ 수 있다/없다', '능력·가능성'],
+  ['G403', '-아/어야 하다', '의무·필요'],
+  ['G404', '-아/어 주세요', '요청·부탁'],
+  ['G405', '-(으)려고 하다', '의도·계획'],
+  ['G406', '-기 전에/-(으)ㄴ 후에', '시간의 앞뒤'],
+  ['G407', '-는 것', '동사의 명사화'],
+  ['G408', '-아/어 보다', '시도·경험'],
+  ['G409', '-고 있다', '진행'],
+  ['G410', '-(으)니까', '이유·발견'],
+  ['G411', '-네요', '감탄·새로 앎'],
+  ['G412', '-지요?', '확인 질문'],
+  // G5xx — 서킷→미엘로
+  ['G501', '관형형 -(으)ㄴ/는/(으)ㄹ', '명사 수식'],
+  ['G502', '-(으)면서', '동시 동작'],
+  ['G503', '-기 때문에', '이유 강조'],
+  ['G504', '-게 되다', '상황 변화'],
+  ['G505', '-아/어도 되다', '허락'],
+  ['G506', '-(으)면 안 되다', '금지'],
+  ['G507', '-아/어 있다', '상태 지속'],
+  ['G508', '-기로 하다', '결심·약속'],
+  ['G509', '-(으)ㄴ 적이 있다', '경험 유무'],
+  ['G510', '-는 게 좋겠다', '권유·조언'],
+  ['G511', '-군요', '깨달음 감탄'],
+  ['G512', '-다고 하다', '간접화법 기초'],
+  // G6xx — 미엘로→플로우
+  ['G601', '-거든요', '이유 설명(구어)'],
+  ['G602', '-잖아요', '상기시키기'],
+  ['G603', '-(으)ㄹ 때', '시점·때'],
+  ['G604', '-던', '회상 수식'],
+  ['G605', '-아/어지다', '변화·피동'],
+  ['G606', '-게 하다', '사동'],
+  ['G607', '-도록', '목적·정도'],
+  ['G608', '-(으)ㄹ 것 같다', '추측'],
+  ['G609', '-대요/-래요', '축약 간접화법'],
+  ['G610', '-(으)ㄴ/는데', '배경 설명'],
+  ['G611', '-다가', '동작 전환'],
+  ['G612', '-(으)ㄹ게요/-(으)ㄹ래요', '의지·의향'],
+  // G7xx — 플로우→싱크마스터 (2급 상단+3급 진입 — STORY_GRAMMAR와 일부 겹침 허용)
+  ['G701', '-자마자', '직후'],
+  ['G702', '-느라고', '이유·핑계'],
+  ['G703', '-는 바람에', '뜻밖의 원인'],
+  ['G704', '-(으)ㄹ수록', '비례'],
+  ['G705', '-나 보다', '추측'],
+  ['G706', '-(으)ㄹ 뻔하다', '아슬아슬'],
+  ['G707', '-기 마련이다', '당연한 이치'],
+  ['G708', '-는 대신에', '대체'],
+  ['G709', '-(으)ㄴ 지', '시간 경과'],
+  ['G710', '-을/를 통해', '수단·경로'],
+  ['G711', '-곤 하다', '습관'],
+  ['G712', '-(으)면서도', '대조 동시']
+];
+function grammarStageOf_(gid) { const m = String(gid || '').trim().match(/^G([2-7])\d{2}$/); return m ? Number(m[1]) : 0; } // ID → 게이트단계(검증 겸용)
+function grammarBankCounts_() { const c = {}; GRAMMAR_BANK.forEach(g => { const k = grammarStageOf_(g[0]); if (k) c[k] = (c[k] || 0) + 1; }); return c; }
+function grammarNameMap_() { const m = {}; GRAMMAR_BANK.forEach(g => { m[g[0]] = g[1]; }); return m; }
+
+function setupGrammarBank() { // contents type='grammar' 재건 — replaceContentType이 E/G/H(이미지·번역) 보존 병합
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  replaceContentType(ss, 'grammar', GRAMMAR_BANK.map(g =>
+    [g[0], 'grammar', g[1], g[2], '', Number(String(g[0]).slice(1))])); // F = 단계×100+순번 (setupHomework 요일코드 패턴)
+  // G열 몽골어는 translateContents(대상 type에 grammar 포함)가 초벌 번역 — 재실행 시 번역 초기화되면 translateContents 재실행
+}
+
 function setupBrainTips() { // [v8.6] 오늘의 시냅스 팁 — 홈 최하단 한 줄 (v7.9 폐지 → 재설계 부활)
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   replaceContentType(ss, 'braintip', [
@@ -6359,6 +6775,7 @@ function parentSweep() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   // [v9.32] 상단 호출도 safeRun 보호 — 여기서 throw하면 아래 폼 편입·수업 브리핑·출결 보드가
   //   함께 중단되고 구글 기본 실패 요약(최대 하루 지연)에만 의존하게 된다.
+  safeRun('expandAttendanceBatch', function () { expandAttendanceBatch_(ss); }); // [v9.36] 수업 시작 출석 1탭(attendance_batch) → attendance 전개 (등원알림·보드·미등원판정 앞)
   if (PARENT_MAIL_ARRIVAL) safeRun('attendanceNotify', function () { attendanceNotify_(ss); }); // [v7.9] 등원 즉시 알림은 기본 OFF
   safeRun('translateNotices', function () { translateNotices_(ss); });
   safeRun('translateTopics', function () { translateTopics_(ss); }); // [v5.7] 이번 주 우리 반 배운 것 → 몽골어
@@ -8194,7 +8611,7 @@ function bootstrapSynk() {
     ['monthly_snapshot', ['월','student_id','월간포인트','랭킹']],
     ['story', ['월','student_id','이름','스토리']],
     ['notices', ['title','body','date','title_mn','body_mn']],
-    ['weekly_topics', ['class_name','배운내용','입력자','created_at','배운내용_mn']],
+    ['weekly_topics', ['class_name','배운내용','입력자','created_at','배운내용_mn','문법태그','전체도달도','예외학생','숙제완료자','연료미션','처리상태','학습전개상태']], // [v9.36] 수업 로그 승격(F~L) — ensureLessonCols_가 기존 시트도 보정
     ['class_fuel', ['class_name','미션','입력자','created_at']],
     ['hw_batch', ['date','class_name','완료자목록','입력자','created_at','처리상태']],
     ['today_board', ['유형','이름','반','시각','퇴근']],
@@ -8207,7 +8624,10 @@ function bootstrapSynk() {
     ['absence_notice', ['student_id','반','날짜','사유','등록시각']], // [v9.28] 학부모 결석 사전신고
     ['inquiries', ['student_id','이름','문의내용','상태','접수시각']], // [v9.28] 학부모 문의 인바운드
     ['payments', ['student_id','이름','금액(만₮)','납부일','방법','비고','created_at']], // [v9.28] 매출 원장(수동 기입)
-    ['crew_projects', ['시즌','반','프로젝트명','한줄소개','결과물링크','사진URL','공개일','참여크루','비고']] // [v9.29] 시즌 프로젝트 포트폴리오 — 수동 기입 전용(hall_of_fame 패턴 · 트리거·배치 연동 없음)
+    ['crew_projects', ['시즌','반','프로젝트명','한줄소개','결과물링크','사진URL','공개일','참여크루','비고']], // [v9.29] 시즌 프로젝트 포트폴리오 — 수동 기입 전용(hall_of_fame 패턴 · 트리거·배치 연동 없음)
+    ['mastery_log', ['student_id','grammar_id','상태','첫기록일','도달일','출처','updated_at']], // [v9.36] 문법 도달 로그 — expandMasteryLog_ upsert, 진화 게이트 재료(Glide 비바인딩)
+    ['attendance_batch', ['날짜','class_name','출석자목록','입력자','created_at','처리상태']], // [v9.36] 수업 시작 출석 1탭(B안) → expandAttendanceBatch_가 attendance로 전개
+    ['student_errors', ['날짜','student_id','반','유형','메모','입력자','created_at','상태']] // [v9.36] 강사 개인 약점 메모(선택 입력) — 리포트·브리핑 노출은 후속(학생 앱 미노출)
   ];
   skeleton.forEach(k => ensureSheet(ss, k[0], k[1]));
   const steps = [
@@ -8215,7 +8635,8 @@ function bootstrapSynk() {
     ['몬스터 7', setupMonsters], ['보스 12 + 대군주', setupBosses], ['시즌 12', setupSeasons],
     ['브레인팁 30', setupBrainTips], ['학부모 라벨', setupParentLabels], ['크루 응원', setupTeacherCheers],
     ['연료 미션', setupFuelMissions], ['칭호 설화', setupTitleLore], ['워밍업 퀴즈', setupQuiz],
-    ['숙제 210', setupHomework], ['학업 로그', setupAcademic] // [v9.18] 학업 성장 축 시트 재건 편입
+    ['숙제 210', setupHomework], ['학업 로그', setupAcademic], // [v9.18] 학업 성장 축 시트 재건 편입
+    ['문법 뱅크 72', setupGrammarBank] // [v9.36] 진화 게이트 문법 커리큘럼(contents type='grammar') 재건
   ];
   const log = [];
   steps.forEach(s => { try { s[1](); log.push('✓ ' + s[0]); } catch (e) { log.push('✗ ' + s[0] + ': ' + e.message); } });
@@ -8268,6 +8689,8 @@ function morningJobs() {   // 매일 07시
 }
 
 function nightJobs() {     // 매일 22시 — 수업 종료 후
+  safeRun('expandLessonLog', expandLessonLog_);   // [v9.36] 수업 마감 로그 승격분 → 숙제 +10·연료 전개 (calcAll 앞 = 그날 밤 게이지·랭킹 즉시 반영)
+  safeRun('expandMasteryLog', expandMasteryLog_); // [v9.36] 당일 문법 태그 → mastery_log upsert (calcAll 앞 = 그날 밤 진화 게이트 즉시 반영)
   safeRun('calcAll', calcAll); // 오늘의 숙제 게시(21시 조건) + Glide가 만든 point_logs A·F 빈칸 보정
   safeRun('expandHwBatch', expandHwBatch);       // [v8.0] 숙제 일괄 1탭 → 학생별 +10 전개 (가드·정산·스토리 전에)
   safeRun('dailyGuard', dailyGuard);             // [v7.5] 일일 한도 — MVP 반당 1명 + 숙제·칭찬·생일 1회/일 자동 정정
