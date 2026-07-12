@@ -8957,6 +8957,13 @@ function monthlyJobs() {   // 매월 1일 05시 — 순서 고정이 핵심
   } catch (e) {}
 }
 
+// [v9.38e] Glide 원장 콕핏 수동 생성용 래퍼 — buildExecReport_·updateTravelMap_는 이름이 _로 끝나
+//   Apps Script 편집기의 실행 드롭다운에 안 떠서(private 취급), 원장이 개원 전 콕핏 카드를 미리 만들 때
+//   이 래퍼를 골라 ▶실행한다. 각 함수는 자기 app_state 키(경영리포트HTML·여행지도HTML)만 멱등 생성 —
+//   monthlyJobs를 통째로 돌릴 때의 archiveMonthly(로그 아카이브) 같은 부작용이 전혀 없다.
+function runExecReportNow() { buildExecReport_(); }
+function runTravelMapNow() { updateTravelMap_(); }
+
 function resetAllTriggers(force) {
   // [v9.25] 리포트카드 이어하기 보호 — 월 1일 배치가 예약한 reportCardsContinue 4분-뒤 트리거를
   // 무조건 삭제 루프가 함께 지워 배치를 조용히 중단시키는 사고 방지. force=true로 수동 강행 가능.
