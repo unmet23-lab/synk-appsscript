@@ -21,11 +21,15 @@
 
 ### 0-4. 조립 전 실행할 스크립트 (Apps Script 편집기에서 1회씩) — ★폼 만들기 전에 반드시
 새 앱을 붙이기 전에 시트·열이 완성돼 있어야 합니다(안 그러면 강사 폼이 바인딩할 열이 없음). 편집기(시트 → 확장 프로그램 → Apps Script)에서 함수를 선택하고 ▶실행:
-1. **`setupClassroomInputs`** (v9.38 신설) — ★강사 폼의 대상 시트·열을 정확한 헤더로 생성: **weekly_topics F~L 열**(마감폼)·**attendance_batch 시트**(출석폼)·mastery_log·student_errors. **PHASE 3-C 강사 폼을 만들기 전에 이걸 먼저 실행해야 합니다.**
-2. **`setupGrammarBank`** — 문법 커리큘럼 72개를 contents 시트에 생성(강사 마감폼의 문법 드롭다운 소스). ※TOPIK 1~2급 초안 — 유호님·강사 검수 후 확정.
-3. **`buildSystemManifest`** — system_manifest 시트 생성(조립 중 시스템 상태·시트 목록 확인용).
-4. **`seedMasteryForExisting`** — (실제 학생 로스터가 들어온 뒤 = 개원 무렵) 재학생의 기존 단계까지 문법 소급 인정. 지금 테스트 계정 단계면 나중에.
-5. (선택) **`translateContents`** — 문법·숙제 몽골어 초벌 번역.
+1. **`setupClassroomInputs`** (v9.38) — ★강사 폼 대상 시트·열을 정확한 헤더로 생성: **weekly_topics F~L**(마감폼)·**attendance_batch**(출석폼)·mastery_log·student_errors + **teacher_checkins 헤더 정규화**(옛 GPS 스키마 → 이름·구분·시각, 출퇴근 폼용). **강사 폼 만들기 전에 필수.**
+2. **`setupOnboarding`** — 역할별 홈 안내 카드(onboarding 시트). 각 역할 홈 최상단에 붙입니다.
+3. **`setupGrammarBank`** — 문법 72개를 contents에 생성(마감폼 문법 드롭다운 소스). ※TOPIK 1~2급 초안, 검수 후 확정.
+4. **`calcAll`** — ★1회 실행. profiles의 카드 열(액자·여정·목표진행·게이트칩 등)과 **class_stats 9~13열(강사팩·레이드카드) 헤더**는 calcAll이 만듭니다. 안 돌리면 강사 '오늘의 반' 열이 없습니다.
+5. **`buildSystemManifest`** — system_manifest 시트(상태 확인용).
+6. **`seedMasteryForExisting`** — (실제 로스터 들어온 뒤=개원 무렵) 재학생 문법 소급. 지금은 나중에.
+7. (선택) **`translateContents`** — 문법·숙제 몽골어 초벌.
+
+> 실행 순서: **1 → 2 → 3 → 4** 먼저 (조립 전), 나머지는 아무 때나.
 
 > 실행 후 각 함수의 실행 로그에 "OK/완료"가 뜨는지 확인. 오류 나면 저에게 로그를 주세요.
 
@@ -52,6 +56,8 @@
    - student_errors·mastery_log = 학생에게 **미노출**
 5. **드라이브 폴더 공개** — `SYNK_리포트카드` 폴더 → 공유 → "링크가 있는 모든 사용자 · 뷰어". (리포트카드 이미지가 앱에 뜨려면 필수) — **이건 유호님이 직접**.
 
+> ⚠ **프라이버시 한계 (알아두기)**: 민감 열 **핵심비전(BA53)·⚠상담위험(AZ52)·리텐션신호(BK63)** 는 학생 본인 profiles 행에 있습니다. Row Owner(행 단위)는 학생 기기에 그 행 전체를 내려보내므로, Visibility=director로 **화면만 가려도 기기 안엔 값이 남습니다**(온디바이스 유출). 지금은 이 열들을 **어느 화면에도 바인딩하지 말고 비워두는 것**으로 회피하고, 실제 민감정보를 넣기 전(개원 전)에 이 열들을 **원장 전용 별도 시트로 분리**하는 후속이 필요합니다.
+
 ### 1-4. 언어 설정 확인 (몽골어 고착 우려 지점)
 - Settings → **Languages** 상태를 스크린샷으로 확인 → 저에게 주세요. "한번 몽골어로 뜨면 계속 몽골어" 우려의 실제 지점이라, 언어정책(아래 6장)과 함께 판정합니다.
 
@@ -75,7 +81,9 @@
 | 학업추세HTML (BW75) | **Rich Text** | 학생·학부모 | 읽기 |
 | 오늘의알림 (BX76) | **Text** (HTML 아님) | 학생 홈 배너 | 읽기 |
 | 나의여정 (BY77) | **Rich Text** | 학생 홈 대표 카드 | 읽기 |
+| 목표진행 (BZ78) | **Rich Text** | 학생 홈(not empty) | 읽기 |
 | 현재급수 (BO67) | 숫자/Text | (선택) 레벨 분기 | 읽기 |
+| 남은문법수(CC81)·게이트문구(CD82) | number·Text | (선택) 홈 — 보통 여정/알림에 녹음 | 읽기 |
 | 드림한줄 (CB80) | Text | 학생 입력칸 | **앱 쓰기(학생 유일)** |
 
 ### 다른 시트
@@ -85,7 +93,8 @@
 | report_cards | image_url → **Image** |
 | hall_of_fame | 사진URL → **Image** |
 | app_state | value 중 `~HTML` 4종(경영리포트·리텐션레이더·케어사각·여행지도) → **Rich Text**, key로 Filter |
-| class_stats | 9~12열 + **13열 레이드카드HTML(신규 v9.35)** → 전부 **Rich Text** |
+| class_stats | 9~12열 + **13열 레이드카드HTML(신규 v9.35)** → 전부 **Rich Text** (calcAll 1회 후 생성) |
+| onboarding | 안내KO·안내MN → Text, role로 Filter (각 역할 홈 최상단) |
 
 > **Rich Text 지정 방법**: 각 탭에서 컴포넌트 추가 시 "Rich Text" 컴포넌트를 고르고, 소스를 해당 열로. 또는 데이터 편집기에서 열 타입을 바꾸는 게 아니라 **컴포넌트 단에서 Rich Text 컴포넌트**를 쓰는 게 정석입니다.
 
@@ -98,14 +107,17 @@
 ### 3-A. 학생 (role = student)
 
 **홈 탭** (소스: profiles, 현재 사용자 행) — 위→아래 순서:
-1. 오늘의알림 (BX, Text) — Visibility: not empty (있을 때만)
+0. **온보딩 카드** (소스: onboarding, Filter role=student) — 홈 최상단 안내. 안내KO(제목·아이콘 포함).
+1. 오늘의알림 (BX, **Text**) — Visibility: not empty (있을 때만)
 2. **★ 나의여정 (BY, Rich Text)** — 대표 카드. 진화 썸네일 + 기록 + **"이 단계 문법 n/12"**(학습추적)가 여기 자동으로 뜹니다.
 3. 액자HTML (BD, Rich Text) — 몬스터 + 진화 게이지
-4. 학업추세HTML (BW, Rich Text)
-5. 진화진행률 (T, Progress)
-6. 몬스터한마디(BF)·기록실HTML(BG)·플레이스타일(BH)·시냅스케미(BI)·매치업프리뷰(BJ, not empty) — Rich Text
-7. 주간리포트MN (BL, Rich Text)
-8. 드림한줄 (CB, **Text Entry 입력칸**) — 학생이 목표를 직접 씀(유일한 학생 쓰기)
+4. **목표진행 (BZ, Rich Text)** — 찜한 스토어 아이템까지 남은 포인트 카드. Visibility: not empty.
+5. 학업추세HTML (BW, Rich Text)
+6. 진화진행률 (T, Progress)
+7. 몬스터한마디(BF)·기록실HTML(BG)·플레이스타일(BH)·시냅스케미(BI)·매치업프리뷰(BJ, not empty) — Rich Text
+8. 오늘의운세 (BE, **Text**) · 주간리포트MN (BL, Rich Text)
+9. 드림한줄 (CB, **Text Entry 입력칸**) — 학생이 목표를 직접 씀(유일한 학생 쓰기)
+- ※ 게이트 칩 **남은문법수(CC, number)·게이트문구(CD, text)** 는 이미 나의여정(BY)·오늘의알림(BX)에 녹아 나오므로 별도 컴포넌트는 불필요(원하면 CD를 Text로 홈에 하나 더 노출 가능).
 
 **도감 탭** (소스: contents, Filter 유형 = monster):
 - Image(E) + 이름(C) + 설명(D)
@@ -122,6 +134,16 @@
 **성장 리포트 탭** (소스: report_cards, 자녀 필터):
 - Image(image_url) + 월 + 코멘트.
 
+**★ 결석 사전신고 탭** (소스: **absence_notice**, Form/Add Row) — ★신규:
+- 필드: **student_id**(자녀 user_id) · **반**(class_name) · **날짜** · **사유**(Text) · 등록시각(자동).
+- 효과: 미출석 자동 경보에서 제외 + 강사 '오늘의 반' 브리핑에 "오늘 결석 예정"으로 뜸.
+
+**★ 문의 탭** (소스: **inquiries**, Form/Add Row) — ★신규:
+- 필드: **student_id**(자녀) · **이름** · **문의내용**(Text) · 상태(기본값 '접수') · 접수시각(자동).
+- 효과: 원장 아침 브리핑·주간 리포트에 신규 문의로 뜸.
+
+> 학부모 홈 최상단에 **온보딩 카드**(onboarding, Filter role=parent, 안내MN 몽골어) 배치.
+
 ### 3-C. 강사 (role = teacher) — ★ 이번 개편의 핵심: "수업 중 0~1터치"
 
 강사 탭 설계 원칙: **수업 시작 1탭(출석) → 수업 중 0탭(선택적 왕관만) → 수업 후 1탭(마감)**.
@@ -135,7 +157,8 @@
 - ⚠ **필터는 "로그인 강사의 class_name"이 아니라 "선택한 반"** 기준. (강사가 여러 반이면 자기 class_name 고정 필터로는 반 선택이 안 됨)
 
 **① 오늘의 반 탭** (소스: class_stats, 내 반 필터) — 전부 읽기(Rich Text):
-- 수업전브리핑(9열) — 수업 전에 확인
+- ⚠ **`calcAll`을 1회 실행해야 이 열(9~13)이 생깁니다**(0-4의 4번). 안 돌리면 class_stats가 8열까지만이라 아래를 바인딩할 수 없습니다.
+- 수업전브리핑(9열) — 수업 전에 확인 (여기에 "오늘 결석 예정"·생일·케어사각도 자동으로 뜸)
 - 오늘체크(11열)·격파찬스(10열)·왕관밸런스(12열)
 - **레이드카드HTML(13열, 신규)** — 이번 주 레이드 진행
 
@@ -150,7 +173,7 @@
 - ⚠ 먼저 `setupClassroomInputs` 실행(0-4)으로 **weekly_topics에 F~L 열이 생성돼 있어야** 아래 필드를 바인딩할 수 있습니다. 열이 class_name·배운내용·배운내용_mn 3개(또는 5개)만 보이면 아직 실행 전입니다.
 - 폼 필드(A~J):
   - **배운내용**(B, Text)
-  - **문법태그(F) = Choice(멀티)** → display = contents.문형(C열), value = contents.콘텐츠ID(A열=G3xx). ※Filter contents 유형 = grammar. **value(ID)로 저장**(문형 문자열로 저장하면 매칭 깨짐).
+  - **문법태그(F) = Choice(멀티)** → display = contents.문형(C열), value = contents.콘텐츠ID(A열, **G2xx~G7xx** 6단계). ※Filter contents 유형 = grammar. **value(ID)로 저장**(문형 문자열로 저장하면 매칭 깨짐).
   - **전체도달도(G) = Choice** 2택: `도달` / `더연습`
   - **예외학생(H) = Choice(멀티, 반 학생)** — "아직인 학생"
   - **숙제완료자(I) = Choice(멀티, 반 학생)** — 밤에 +10P 자동. ★이게 유호님이 말한 "학생 리스트 멀티체크 숙제"입니다. Choice 소스를 **이 반 학생으로 필터**하면 그 반 학생만 체크 목록에 뜹니다.
@@ -166,6 +189,16 @@
 - **★ "생일축하 +20" 버튼은 만들지 마세요** — 아침 7시에 시스템이 자동 지급하는데 강사가 또 누르면 밤에 정정+메일이 갑니다(v9.34 판정).
 - 숙제완료는 위 ③ 마감폼의 숙제완료자로 통합됐으니 **개별 숙제 버튼도 안 만듭니다**.
 
+**⑤ 출퇴근 탭** (소스: **teacher_checkins** ← `setupClassroomInputs`가 헤더 정규화, **Form/Add Row**) — ★신규:
+- 필드: **이름**(본인, 1열) · **구분 = Choice**(`출근`/`퇴근`, 2열) · **시각**(자동, 3열).
+- ⚠ 라이브 teacher_checkins가 옛 GPS 스키마(log_id·teacher_id…)면 `setupClassroomInputs` 실행으로 이름·구분·시각으로 정규화됩니다. 기존 테스트 행이 있으면 지우세요.
+- 효과: 출근→오늘의 출결 보드에 강사 표시 / 퇴근→퇴근 응원 메일 + 수업준비 브리핑 타이밍.
+
+**⑥ 출결 보드 탭** (소스: **today_board**, 읽기) — 10분마다 스크립트가 갱신:
+- 유형·이름·반·시각·퇴근 컬럼 표시. 오늘 등원한 학생 + 출퇴근한 강사가 뜹니다.
+
+> 강사 홈 최상단에 **온보딩 카드**(onboarding, Filter role=teacher).
+
 ### 3-D. 원장 (role = director)
 
 **콕핏 탭** (소스: app_state, Filter key = 각 HTML):
@@ -173,6 +206,8 @@
 - (선택) system_manifest 시트를 표로 붙이면 시스템 상태 한눈에.
 
 **명예의 전당 탭** (소스: hall_of_fame): Image(사진URL) + 목록, 폼으로 수동 등록.
+
+> 원장 홈 최상단에 **온보딩 카드**(onboarding, Filter role=director).
 
 ---
 
