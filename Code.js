@@ -8642,6 +8642,10 @@ function setupClassroomInputs() {
   ensureSheet(ss, 'attendance_batch', ['날짜', 'class_name', '출석자목록', '입력자', 'created_at', '처리상태']); // 수업 시작 출석 1탭(멀티선택) — parentSweep이 attendance로 전개
   ensureSheet(ss, 'mastery_log', ['student_id', 'grammar_id', '상태', '첫기록일', '도달일', '출처', 'updated_at']);   // 스크립트 전용(진화 게이트 재료)
   ensureSheet(ss, 'student_errors', ['날짜', 'student_id', '반', '유형', '메모', '입력자', 'created_at', '상태']);       // 강사 선택 입력(학생 미노출)
+  // [v9.38c] Glide 폼 대상 입력 시트 일괄 보장 — 배치 함수가 만들 때까지 안 생겨 Glide 바인딩이 막히던 것 방지(멱등, 기존은 무해)
+  ensureSheet(ss, 'hw_batch', ['date', 'class_name', '완료자목록', '입력자', 'created_at', '처리상태']);              // 강사 숙제 멀티체크
+  ensureSheet(ss, 'absence_notice', ['student_id', '반', '날짜', '사유', '등록시각']);                                // 학부모 결석 사전신고
+  ensureSheet(ss, 'inquiries', ['student_id', '이름', '문의내용', '상태', '접수시각']);                                // 학부모 문의
   // [v9.38] teacher_checkins 헤더 정규화 — 라이브 옛 GPS 스키마(log_id·teacher_id·date·type…)를 코드 기대(이름·구분·시각)로.
   //   TC_NAME/TYPE/TIME_COL=1/2/3이 이 3열을 위치로 읽으므로 헤더가 어긋나면 출퇴근 보드·퇴근응원 오작동. 빈 시트라 데이터 무손실.
   const tc = ensureSheet(ss, 'teacher_checkins', ['이름', '구분', '시각']);
