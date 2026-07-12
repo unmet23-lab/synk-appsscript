@@ -6106,6 +6106,9 @@ function setupGrammarBank() { // contents type='grammar' 재건 — replaceConte
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   replaceContentType(ss, 'grammar', GRAMMAR_BANK.map(g =>
     [g[0], 'grammar', g[1], g[2], '', Number(String(g[0]).slice(1))])); // F = 단계×100+순번 (setupHomework 요일코드 패턴)
+  // [v9.38d] 마감폼 '전체도달도' 드롭다운 소스 — Glide Choice가 테이블 소스 전용이라 도달/더연습 2행을 contents에 둔다.
+  //   value_ko('도달'/'더연습')를 그대로 저장(expandMasteryLog_이 문자열 '도달' 접두 매칭). 재건 시 이 2행도 자동 복원.
+  replaceContentType(ss, 'reach', [['REACH1', 'reach', '도달', '수업 목표 대부분 도달', '', 1], ['REACH2', 'reach', '더연습', '더 연습 필요', '', 2]]);
   // G열 몽골어는 translateContents(대상 type에 grammar 포함)가 초벌 번역 — 재실행 시 번역 초기화되면 translateContents 재실행
 }
 
