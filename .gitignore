@@ -1,0 +1,9 @@
+# 로컬 전용 — 커밋 금지
+.claude/settings.local.json
+
+# 비밀·자격증명 (예방)
+.env
+.env.*
+.clasprc.json
+**/.clasprc.json
+secrets/
