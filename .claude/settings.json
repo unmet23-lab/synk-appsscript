@@ -57,6 +57,24 @@
       "mcp__bb3342c3-f10b-4710-97fe-777e11ae8745__start-editing-transaction",
       "mcp__bb3342c3-f10b-4710-97fe-777e11ae8745__commit-editing-transaction",
       "mcp__bb3342c3-f10b-4710-97fe-777e11ae8745__cancel-editing-transaction"
+    ],
+    "ask": [
+      "PowerShell(git -C \"C:\\\\Users\\\\q1212\\\\Documents\\\\SYNK-appsscript\" push *)",
+      "Bash(git -C \"C:/Users/q1212/Documents/SYNK-appsscript\" push *)",
+      "Bash(git push *)",
+      "PowerShell(& \"C:\\\\Users\\\\q1212\\\\AppData\\\\Roaming\\\\npm\\\\clasp.cmd\" push*)",
+      "Bash(\"/c/Users/q1212/AppData/Roaming/npm/clasp.cmd\" push*)",
+      "PowerShell(npm install*)",
+      "Bash(npm install*)",
+      "PowerShell(& \"C:\\\\Users\\\\q1212\\\\AppData\\\\Roaming\\\\npm\\\\clasp.cmd\" deploy*)",
+      "Bash(\"/c/Users/q1212/AppData/Roaming/npm/clasp.cmd\" deploy*)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/.clasprc.json)",
+      "Read(secrets/**)"
     ]
   }
 }

@@ -1,2 +1,8 @@
+# SYNK Codex 설정 — 오케스트레이션(Codex 구현 ↔ Claude 리뷰)용
+# 최상위 키는 반드시 테이블 헤더([mcp_servers...]) 앞에 와야 함(TOML 규칙).
+approval_policy = "on-request"        # 일반 작업은 진행, 권한 필요 작업만 승인 요청
+sandbox_mode = "workspace-write"      # 저장소 안만 수정, 시스템 전역 접근 차단
+model_reasoning_effort = "medium"     # 기본 medium, 어려운 디버깅/마이그레이션만 high로 수동 상향
+
 [mcp_servers.exa]
 url = "https://mcp.exa.ai/mcp"
