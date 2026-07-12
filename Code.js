@@ -8642,8 +8642,12 @@ function setupClassroomInputs() {
   ensureSheet(ss, 'attendance_batch', ['날짜', 'class_name', '출석자목록', '입력자', 'created_at', '처리상태']); // 수업 시작 출석 1탭(멀티선택) — parentSweep이 attendance로 전개
   ensureSheet(ss, 'mastery_log', ['student_id', 'grammar_id', '상태', '첫기록일', '도달일', '출처', 'updated_at']);   // 스크립트 전용(진화 게이트 재료)
   ensureSheet(ss, 'student_errors', ['날짜', 'student_id', '반', '유형', '메모', '입력자', 'created_at', '상태']);       // 강사 선택 입력(학생 미노출)
-  Logger.log('수업 입력 구조 생성 완료: weekly_topics F~L 승격 · attendance_batch · mastery_log · student_errors');
-  return '수업 입력 구조 생성 완료 — 강사 마감폼/출석폼을 이 시트·열에 바인딩하세요.';
+  // [v9.38] teacher_checkins 헤더 정규화 — 라이브 옛 GPS 스키마(log_id·teacher_id·date·type…)를 코드 기대(이름·구분·시각)로.
+  //   TC_NAME/TYPE/TIME_COL=1/2/3이 이 3열을 위치로 읽으므로 헤더가 어긋나면 출퇴근 보드·퇴근응원 오작동. 빈 시트라 데이터 무손실.
+  const tc = ensureSheet(ss, 'teacher_checkins', ['이름', '구분', '시각']);
+  ['이름', '구분', '시각'].forEach((h, i) => { if (String(tc.getRange(1, i + 1).getValue()) !== h) tc.getRange(1, i + 1).setValue(h); });
+  Logger.log('수업 입력 구조 생성 완료: weekly_topics F~L 승격 · attendance_batch · mastery_log · student_errors · teacher_checkins 헤더 정규화');
+  return '수업 입력 구조 생성 완료 — 강사 마감폼/출석폼/출퇴근을 이 시트·열에 바인딩하세요.';
 }
 
 /* ===================== [v9.21] 📓 노션 크루 DB 동기화 (앱 → 노션) =====================
@@ -8773,6 +8777,7 @@ const SHEET_SKELETON = [
     ['mastery_log', ['student_id','grammar_id','상태','첫기록일','도달일','출처','updated_at']], // [v9.36] 문법 도달 로그 — expandMasteryLog_ upsert, 진화 게이트 재료(Glide 비바인딩)
     ['attendance_batch', ['날짜','class_name','출석자목록','입력자','created_at','처리상태']], // [v9.36] 수업 시작 출석 1탭(B안) → expandAttendanceBatch_가 attendance로 전개
     ['student_errors', ['날짜','student_id','반','유형','메모','입력자','created_at','상태']], // [v9.36] 강사 개인 약점 메모(선택 입력) — 리포트·브리핑 노출은 후속(학생 앱 미노출)
+    ['onboarding', ['role','제목','안내KO','안내MN','아이콘']], // [v9.38] 역할별 홈 안내 카드(setupOnboarding) — 재건 목록 누락분 보강
     ['system_manifest', ['지표','값','상태']] // [v9.37] buildSystemManifest 출력 — 시트·콘텐츠·트리거·의존성 실측 정본(수동 숫자 대체)
   ];
 
@@ -8787,7 +8792,8 @@ function bootstrapSynk() {
     ['연료 미션', setupFuelMissions], ['칭호 설화', setupTitleLore], ['워밍업 퀴즈', setupQuiz],
     ['숙제 210', setupHomework], ['학업 로그', setupAcademic], // [v9.18] 학업 성장 축 시트 재건 편입
     ['문법 뱅크 72', setupGrammarBank], // [v9.36] 진화 게이트 문법 커리큘럼(contents type='grammar') 재건
-    ['수업 입력 구조', setupClassroomInputs] // [v9.38] weekly_topics F~L 승격 + attendance_batch·mastery_log·student_errors
+    ['수업 입력 구조', setupClassroomInputs], // [v9.38] weekly_topics F~L 승격 + attendance_batch·mastery_log·student_errors·teacher_checkins 정규화
+    ['온보딩 카드', setupOnboarding] // [v9.38] 역할별 홈 안내(재건 목록 누락분 보강)
   ];
   const log = [];
   steps.forEach(s => { try { s[1](); log.push('✓ ' + s[0]); } catch (e) { log.push('✗ ' + s[0] + ': ' + e.message); } });
