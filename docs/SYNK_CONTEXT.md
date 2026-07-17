@@ -1,6 +1,6 @@
 # SYNK 공용 컨텍스트
 
-> 마지막 갱신: 2026-07-11
+> 마지막 갱신: 2026-07-17
 > 목적: Codex 새 작업이 이전 대화 원문 없이도 유호님과 SYNK의 핵심 맥락을 복원하기 위한 짧은 정본이다.
 
 ## 유호님
@@ -13,7 +13,7 @@
 
 ## SYNK
 
-- SYNK는 6개 부문을 운영할 1인 기업이다: SYNK LAB, SYNK STUDIO, SYNK FASHION, SYNK F&C, SYNK ABROAD, SYNK PUBLISH.
+- SYNK 조직계보(2026-07-17 확정, 정본=`docs/조직계보_정본_v1.md`): 고객 브랜드 3개(SYNK LAB·SYNK STUDIO·SYNK LIFE) + 전사 레이어 2개(SYNK IP·SYNK COMMON SYSTEM). 구 6부문 계보(FASHION·F&C·ABROAD·PUBLISH 포함)는 폐기·흡수됨. SYNK LIFE는 첫 제품 전까지 대외 비공개.
 - 현재 핵심은 SYNK LAB: 몽골 학생 대상 게임화 한국어 학원이며 영어 교육도 포함한다.
 - 몽골어 최종 감수는 AI가 아니라 현지 원어민 사람이 담당한다.
 - 디자인 최종 조립은 Canva, 운영·콘텐츠 검수는 Notion을 주로 사용한다.
