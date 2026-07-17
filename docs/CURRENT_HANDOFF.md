@@ -1,28 +1,13 @@
 # 현재 작업 인계
 
-> 마지막 갱신: 2026-07-11
+> 마지막 갱신: 2026-07-17
 > 이 문서는 새 작업이 "이어가자"는 요청을 받을 때 읽는 단기 인계서다.
 
 ## 현재 주제
 
-- Claude Code/Cowork와 ChatGPT Codex를 유호님의 1인 기업 운영에 맞게 분담하는 중이다.
-- 확정된 구조: Claude = 설계·창작·핵심 기술, Codex = 운영·검증·원격 실행.
-- 핵심 안전 규칙: 한 작업 = 한 AI 담당, 같은 코드 동시 수정 금지, 수정 담당 한 곳에서만 `/deploy`.
-
-## 현재 Codex 상태
-
-- `SYNK-appsscript` 저장소의 현재 브랜치는 `master`다.
-- 직전 확인 시 Git 추적 변경은 없었다.
-- 이전 `project Synk World (2)` 작업은 컨텍스트 창을 모두 사용했고 원격 압축도 실패했다.
-- 오류 문구: `Codex ran out of room in the model's context window.`
-- 해당 긴 작업을 계속 재시도하지 말고 새 작업에서 이 문서와 `docs/SYNK_CONTEXT.md`를 읽어 이어간다.
-
-## 최근 완료
-
-- 로컬 작업과 Codex 웹/클라우드의 차이를 정리했다.
-- worktree의 의미와 기본적으로 사용하지 않을 이유를 정리했다.
-- Claude–Codex 업무 분담안을 확정했다.
-- 업무 분담 요약 캐러셀 1장을 생성했다.
+- **조직계보 정본 v1 확정 + 문서 대청소 완료(2026-07-17)**: 3브랜드(LAB·STUDIO·LIFE)+2레이어(IP·COMMON SYSTEM). 정본 = `docs/조직계보_정본_v1.md`, 현행 문서 색인 = `docs/문서_지도.md`. 구 6브랜드 표기·Define/Build/Execute 용어는 폐기 — 발견 시 정본에 맞춰 고친다.
+- Desktop도 같은 구도로 재편됨: `SYNK LAB`·`SYNK STUDIO`·`SYNK IP`·`SYNK LIFE`·`SYNK 보안` + `_archive_2026-07`(구본 보관). 브랜드 문서 리라이팅_v2는 `SYNK LAB\About Synk lab\` 아래 **단일본**만 유효.
+- 진행 중(다른 세션): Glide 새 앱 원격 조립 — `docs/GLIDE_새앱_조립가이드_v937.md` (세션보드 참조).
 
 ## 다음 행동
 
