@@ -556,7 +556,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.38'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
+const SYNK_VERSION = 'v9.39'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -7017,28 +7017,49 @@ function translateNotices_(ss) {
  * G열 = 몽골어, H열 = 영어. 빈 칸만 채움 · 실행당 60행 (쿼터에 걸리면 내일 재실행).
  * 기계번역 초안이므로 학습 콘텐츠(숙제·팁)는 몽골어 가능한 크루 검수 권장.        */
 
+/* [v9.39] 번역 열 안전 탐색 — Glide가 시트에 심는 '🔒 Row ID' 열이 라이브 contents의 G(일부 행 H)를
+ * 차지한다(2026-07-18 실측). 위치(7/8) 고정으로 쓰면 Row ID가 번역으로 덮여 Glide 행 식별이 파괴됨.
+ * → 1행에서 label 포함 헤더('몽골어'·'몽골어(G)' 등)를 찾고, 없으면 맨 끝+1 열에 새로 만든다.
+ *   'Row ID' 포함 헤더는 절대 반환하지 않는다. */
+function langColOf_(ct, label) {
+  const w = ct.getLastColumn();
+  const heads = ct.getRange(1, 1, 1, w).getValues()[0].map(h => String(h || ''));
+  for (let c = 0; c < heads.length; c++) {
+    if (heads[c].indexOf('Row ID') > -1) continue;
+    if (heads[c].indexOf(label) > -1) return c + 1;
+  }
+  const col = w + 1;
+  if (ct.getMaxColumns() < col) ct.insertColumnsAfter(ct.getMaxColumns(), col - ct.getMaxColumns());
+  ct.getRange(1, col).setValue(label);
+  return col;
+}
+
 function translateContents() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ct = ss.getSheetByName('contents');
   if (!ct || ct.getLastRow() < 2) return;
-  if (String(ct.getRange(1, 7).getValue()) === '') ct.getRange(1, 7).setValue('몽골어(G)');
-  if (String(ct.getRange(1, 8).getValue()) === '') ct.getRange(1, 8).setValue('영어(H)');
-  const data = ct.getRange(2, 1, ct.getLastRow() - 1, 8).getValues();
+  // [v9.39] G/H 고정 접근 폐기 — langColOf_로 이름 기반 열 탐색(Row ID 열 보호)
+  const mnCol = langColOf_(ct, '몽골어');
+  const enCol = langColOf_(ct, '영어');
+  const last = ct.getLastRow();
+  const base = ct.getRange(2, 1, last - 1, 6).getValues(); // A~F
+  const mnV = ct.getRange(2, mnCol, last - 1, 1).getValues();
+  const enV = ct.getRange(2, enCol, last - 1, 1).getValues();
   const targets = ['quote', 'braintip', 'homework', 'monster', 'season'];
   let done = 0;
-  for (let i = 0; i < data.length && done < 60; i++) {
-    const r = data[i];
+  for (let i = 0; i < base.length && done < 60; i++) {
+    const r = base[i];
     if (targets.indexOf(String(r[1])) === -1) continue;
     const ko = String(r[3] || r[2] || '');
     if (!ko) continue;
-    if (String(r[6] || '') && String(r[7] || '')) continue;
+    if (String(mnV[i][0] || '') && String(enV[i][0] || '')) continue;
     try {
-      if (!String(r[6] || '')) ct.getRange(i + 2, 7).setValue(LanguageApp.translate(ko, 'ko', 'mn'));
-      if (!String(r[7] || '')) ct.getRange(i + 2, 8).setValue(LanguageApp.translate(ko, 'ko', 'en'));
+      if (!String(mnV[i][0] || '')) ct.getRange(i + 2, mnCol).setValue(LanguageApp.translate(ko, 'ko', 'mn'));
+      if (!String(enV[i][0] || '')) ct.getRange(i + 2, enCol).setValue(LanguageApp.translate(ko, 'ko', 'en'));
       done++;
     } catch (e) { Logger.log('번역 쿼터 도달 — ' + (i + 2) + '행부터 내일 이어서'); break; }
   }
-  Logger.log('translateContents: ' + done + '행 완료');
+  Logger.log('translateContents: ' + done + '행 완료 (몽골어=' + mnCol + '열 · 영어=' + enCol + '열)');
 }
 
 /* ===================== [v9.26] B1 몽골어 컨텐츠 뱅크 (translateContents 부근 다국어 섹션에 인라인 병합) =====================
@@ -7426,23 +7447,23 @@ function injectMongolianContents() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ct = ss.getSheetByName('contents');
   if (!ct || ct.getLastRow() < 2) { Logger.log('injectMongolianContents: contents 시트 없음/비어 있음 — 중단'); return; }
-  if (String(ct.getRange(1, 7).getValue()) === '') ct.getRange(1, 7).setValue('몽골어(G)'); // translateContents와 동일 헤더 규칙
+  const mnCol = langColOf_(ct, '몽골어'); // [v9.39] 고정 7열 폐기 — Glide 'Row ID' 열 보호(translateContents와 동일 규칙)
   const last = ct.getLastRow();
-  const data = ct.getRange(2, 1, last - 1, 7).getValues(); // A~G — H(영어)는 읽지도 쓰지도 않음
-  const gCol = data.map(function (r) { return [r[6]]; });   // 기존 G열 전체 보존 후 대상만 교체
+  const ids = ct.getRange(2, 1, last - 1, 1).getValues();      // A열(콘텐츠ID)만
+  const mnV = ct.getRange(2, mnCol, last - 1, 1).getValues();  // 기존 번역 열 전체 보존 후 대상만 교체
   let updated = 0, kept = 0;
   const seen = {};
-  for (let i = 0; i < data.length; i++) {
-    const id = String(data[i][0]);
+  for (let i = 0; i < ids.length; i++) {
+    const id = String(ids[i][0]);
     if (!Object.prototype.hasOwnProperty.call(MN_CONTENTS_G, id)) continue; // 대상 외 행은 그대로
     seen[id] = true;
     const mn = MN_CONTENTS_G[id];
-    if (String(gCol[i][0] || '') === mn) { kept++; continue; } // 멱등 가드
-    gCol[i][0] = mn; updated++;
+    if (String(mnV[i][0] || '') === mn) { kept++; continue; } // 멱등 가드
+    mnV[i][0] = mn; updated++;
   }
   const missing = Object.keys(MN_CONTENTS_G).filter(function (id) { return !seen[id]; });
-  if (updated) ct.getRange(2, 7, gCol.length, 1).setValues(gCol); // 무변동이면 쓰기 생략
-  Logger.log('injectMongolianContents: 갱신 ' + updated + '건 · 이미 최신 ' + kept + '건 · 시트에 없는 id ' + missing.length + '건'
+  if (updated) ct.getRange(2, mnCol, mnV.length, 1).setValues(mnV); // 무변동이면 쓰기 생략
+  Logger.log('injectMongolianContents: 갱신 ' + updated + '건 · 이미 최신 ' + kept + '건 · 시트에 없는 id ' + missing.length + '건 (몽골어=' + mnCol + '열)'
     + (missing.length ? ' → ' + missing.join(', ') + ' (setupHomework*/setupQuiz*/setupBrainTips 실행 여부 확인)' : ''));
 }
 
@@ -8819,6 +8840,129 @@ function bootstrapSynk() {
   return summary;
 }
 
+/* ===================== [v9.39] 🛫 Glide 조립 사전점검 — 원버튼 준비+진단 =====================
+ * 새 Glide 앱 조립 전 이 함수 하나만 실행한다: 안전 셋업(멱등·비파괴) + 바인딩 차단 요인 전수 진단.
+ * ⚠ 파괴 호출 없음 — setupSchedule(라이브 15반 커스텀을 기본값으로 리셋함)·replaceContentType 계열
+ *   (재실행 시 해당 유형 번역·Row ID 유실)은 절대 부르지 않는다. bootstrapSynk와 다른 점이 이것.
+ * 사용법: 편집기에서 preflightGlide 선택 → ▶실행 → 로그의 ⚠ 줄을 하나씩 해소 → ⚠ 0이면 조립 시작. */
+function preflightGlide() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const L = [];
+  const ok = m => L.push('✅ ' + m);
+  const warn = m => L.push('⚠ ' + m);
+
+  // 0) 안전 셋업(전부 멱등): 입력 시트·열 물리 보장 + 온보딩 + 전체 계산 1회
+  try { setupClassroomInputs(); ok('입력 시트·열 보장(setupClassroomInputs)'); } catch (e) { warn('setupClassroomInputs 실패: ' + e.message); }
+  try { setupOnboarding(); ok('온보딩 카드(setupOnboarding)'); } catch (e) { warn('setupOnboarding 실패: ' + e.message); }
+  try { calcAll(); ok('전체 계산 1회(calcAll) — profiles 카드열·class_stats 9~13열 갱신'); } catch (e) { warn('calcAll 실패: ' + e.message); }
+
+  // 1) app_state 중복 키 정리 — 같은 key 2행+면 첫 행만 유지(getState가 첫 행만 읽어 뒷행은 죽은 데이터.
+  //    라이브 실측(2026-07-18): '상담폼ID' 2행 존재 → 뒷행이 혼동 유발)
+  try {
+    const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+    const lastS = st.getLastRow();
+    if (lastS >= 2) {
+      const keys = st.getRange(1, 1, lastS, 1).getValues();
+      const seenK = {}; const del = [];
+      keys.forEach((r, i) => {
+        const k = String(r[0] || '');
+        if (!k) return;
+        if (seenK[k]) del.push(i + 1); else seenK[k] = 1;
+      });
+      del.reverse().forEach(rw => st.deleteRow(rw));
+      if (del.length) ok('app_state 중복 키 ' + del.length + '행 정리(첫 행 유지)');
+      else ok('app_state 중복 키 없음');
+    }
+  } catch (e) { warn('app_state 정리 실패: ' + e.message); }
+
+  // 2) profiles 진단 — 로그인·반배정·가족연결 차단 요인
+  const pf = ss.getSheetByName('profiles');
+  const ROLES = { student: 1, parent: 1, teacher: 1, director: 1 };
+  const cnt = { student: 0, parent: 0, teacher: 0, director: 0 };
+  const noClassStu = [], noClassTea = [], noParentOf = [], badEmail = [], badRole = [];
+  const emailSeen = {}, emailDup = [];
+  if (pf && pf.getLastRow() >= 2) {
+    pf.getRange(2, 1, pf.getLastRow() - 1, 10).getValues().forEach(r => {
+      if (!r[0]) return;
+      const role = String(r[3] || ''), nm = (r[1] || r[0]);
+      if (ROLES[role]) cnt[role]++; else { badRole.push(nm + '(' + (role || '빈값') + ')'); return; }
+      const em = String(r[6] || '').trim();
+      if (!em || em.indexOf('@') < 1) badEmail.push(nm + (em ? '(' + em + ')' : ''));
+      else { if (emailSeen[em]) emailDup.push(em); emailSeen[em] = 1; }
+      if (role === 'student' && !String(r[4] || '').trim()) noClassStu.push(nm);
+      if (role === 'teacher' && !String(r[4] || '').trim()) noClassTea.push(nm);
+      if (role === 'parent' && !String(r[9] || '').trim()) noParentOf.push(nm);
+    });
+  }
+  L.push('— profiles: 학생 ' + cnt.student + ' · 학부모 ' + cnt.parent + ' · 강사 ' + cnt.teacher + ' · 원장 ' + cnt.director);
+  if (badRole.length) warn('알 수 없는 role(탭 Visibility 전멸): ' + badRole.join(', ') + ' → student/parent/teacher/director만 유효');
+  if (badEmail.length) warn('이메일 없음/형식 오류(그 사람 로그인 불가): ' + badEmail.join(', '));
+  if (emailDup.length) warn('이메일 중복(로그인 시 첫 행만 연결됨): ' + emailDup.join(', '));
+  if (noClassStu.length) warn('반 미배정 학생(강사 반 리스트·반 통계·레이드에 안 뜸): ' + noClassStu.join(', ') + ' → 상담시트 "반" 열 입력, 내일 아침 자동 반영(즉시 반영 = syncProfiles 실행 후 preflightGlide 재실행)');
+  else if (cnt.student) ok('학생 전원 반 배정됨');
+  if (noClassTea.length) warn('담당 반 없는 강사(수업 브리핑·미등원 메일 라우팅 불가): ' + noClassTea.join(', ') + ' → profiles E열(class_name)에 담당 반 직접 입력(여러 반은 쉼표: 정규반1,정규반2)');
+  if (noParentOf.length) warn('자녀 미연결 학부모("우리 아이" 탭이 빔): ' + noParentOf.join(', ') + ' → profiles J열(parent_of)에 자녀 user_id 직접 입력(예: SYNK-001)');
+
+  // 3) 학생 반 이름 ↔ schedule 대조(오타·미등록 반 검출)
+  const sc = ss.getSheetByName('schedule');
+  const schSet = {};
+  if (sc && sc.getLastRow() >= 2) sc.getRange(2, 1, sc.getLastRow() - 1, 1).getValues().forEach(r => { if (r[0]) schSet[String(r[0]).trim()] = 1; });
+  const offSched = [];
+  if (pf && pf.getLastRow() >= 2) {
+    pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
+      if (!r[0] || String(r[3]) !== 'student') return;
+      const cn = String(r[4] || '').trim();
+      if (cn && !schSet[cn]) offSched.push((r[1] || r[0]) + '→' + cn);
+    });
+  }
+  if (offSched.length) warn('시간표(schedule)에 없는 반 이름(스트릭·미등원·수업 브리핑 오작동): ' + offSched.join(', '));
+  else ok('학생 반 이름 전부 시간표와 일치');
+
+  // 4) class_stats — 강사 "오늘의 반" 데이터 존재 여부
+  const cs = ss.getSheetByName('class_stats');
+  const csRows = cs && cs.getLastRow() >= 2 ? cs.getLastRow() - 1 : 0;
+  if (csRows) ok('class_stats ' + csRows + '개 반 집계됨(강사 팩 9~13열 포함)');
+  else warn('class_stats 비어 있음(강사 "오늘의 반" 탭이 빔) — 반 배정 해소 후 preflightGlide 재실행');
+
+  // 5) contents 유형 개수 — 0개면 어느 화면이 비는지 명시
+  const ct = ss.getSheetByName('contents');
+  const census = {};
+  if (ct && ct.getLastRow() >= 2) ct.getRange(2, 1, ct.getLastRow() - 1, 2).getValues().forEach(r => { const t = String(r[1] || ''); if (t) census[t] = (census[t] || 0) + 1; });
+  L.push('— contents: ' + (Object.keys(census).length ? Object.keys(census).sort().map(t => t + ' ' + census[t]).join(' · ') : '비어 있음'));
+  [['monster', '도감·진화', 'setupMonsters'], ['store', '스토어', 'setupStore'], ['grammar', '마감폼 문법 드롭다운', 'setupGrammarBank'],
+   ['quiz', '오늘의퀴즈', 'setupQuiz'], ['homework', '오늘의숙제(21시 자동 게시)', 'setupHomework'], ['braintip', '오늘의팁', 'setupBrainTips'],
+   ['fuel', '연료 미션(레이드 데미지 가산)', 'setupFuelMissions'], ['season', '시즌명(월간 스토리북)', 'setupSeasons']].forEach(p => {
+    if (!census[p[0]]) warn("contents '" + p[0] + "' 0개 — " + p[1] + ' 비어 나옴 → ' + p[2] + ' 1회 실행(주의: 재실행 시 그 유형의 몽골어 번역 재주입 필요)');
+  });
+
+  // 6) app_state 필수 키 + 원장 콕핏 월간 카드
+  const st6 = ss.getSheetByName('app_state');
+  if (st6) {
+    ['리텐션레이더HTML', '케어사각HTML', '오늘의퀴즈', '상담폼ID'].forEach(k => {
+      if (getState(st6, k).row < 1) warn("app_state '" + k + "' 없음" + (k === '상담폼ID' ? ' → createConsultForm 실행 필요(상담 폼 응답 유입 끊김)' : ''));
+    });
+    if (getState(st6, '경영리포트HTML').row < 1) L.push('ℹ 경영리포트HTML 아직 없음(매월 1일 자동 생성) — 지금 보려면 runExecReportNow 실행');
+    if (getState(st6, '여행지도HTML').row < 1) L.push('ℹ 여행지도HTML 아직 없음(매월 1일 자동 생성) — 지금 보려면 runTravelMapNow 실행');
+  }
+
+  // 7) 트리거 — 통합 10개 생존 확인
+  const need = { parentSweep: 1, dailyBackupJob: 1, morningJobs: 1, sendMorningDigestJob: 1, calcAllJob: 1, nightJobs: 1, weeklyJobs: 1, monthlyJobs: 1, monthlyReportCardsJob: 1, monthlyReportJob: 1 };
+  const have = {};
+  try { ScriptApp.getProjectTriggers().forEach(t => { have[t.getHandlerFunction()] = 1; }); } catch (e) {}
+  const missT = Object.keys(need).filter(k => !have[k]);
+  if (missT.length) warn('트리거 누락: ' + missT.join(', ') + ' → resetAllTriggers() 1회 실행(⚠ 매월 1일 오전엔 실행 금지)');
+  else ok('통합 트리거 10개 전부 살아있음');
+
+  // 8) 실측 매니페스트 갱신 + 요약
+  try { buildSystemManifest(); ok('system_manifest 실측 갱신'); } catch (e) { warn('manifest 실패: ' + e.message); }
+  const report = '===== SYNK Glide 조립 사전점검 (' + SYNK_VERSION + ' · ' + Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm') + ') =====\n'
+    + L.join('\n')
+    + '\n=====\n⚠ 줄을 전부 해소하면 조립 준비 완료. 세부 실측은 system_manifest 시트 참조.';
+  Logger.log(report);
+  return report;
+}
+
 /* ===================== [v6.3] 트리거 통합 리셋 — 20개 한도 해결 =====================
  * Apps Script는 스크립트당 시간 트리거 20개 한도. v4부터 쌓인 개별 트리거를 전부 지우고
  * 시간대별 통합 작업 10개로 재설치합니다. 실행 순서 보장 덤:
@@ -8963,6 +9107,10 @@ function monthlyJobs() {   // 매월 1일 05시 — 순서 고정이 핵심
 //   monthlyJobs를 통째로 돌릴 때의 archiveMonthly(로그 아카이브) 같은 부작용이 전혀 없다.
 function runExecReportNow() { buildExecReport_(); }
 function runTravelMapNow() { updateTravelMap_(); }
+// [v9.39] 조립 검증용 수동 러너 — 마감폼 저장분을 밤 22시까지 기다리지 않고 즉시 전개+재계산.
+//   expandLessonLog_/expandMasteryLog_는 멱등(K·L 처리상태 마킹 + 당일 지급분 재조회 dedup)이라 낮 실행 무해.
+//   메일·정산·가드는 안 건드린다(그건 nightJobs 전용 순서 유지).
+function runLessonExpandNow() { expandLessonLog_(); expandMasteryLog_(); calcAll(); return '마감폼 전개+재계산 완료 — mastery_log·point_logs·여정 카드 확인'; }
 
 function resetAllTriggers(force) {
   // [v9.25] 리포트카드 이어하기 보호 — 월 1일 배치가 예약한 reportCardsContinue 4분-뒤 트리거를

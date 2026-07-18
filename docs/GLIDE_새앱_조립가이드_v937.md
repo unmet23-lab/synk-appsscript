@@ -1,4 +1,10 @@
-# SYNK Glide 새 앱 조립 가이드 — v9.37 정본
+# ⛔ 폐기 (2026-07-18) — 정본은 `GLIDE_조립가이드_v939.md`
+
+> 실전 조립에서 이 문서의 지시 다수가 실제 시트와 어긋남이 확인되어(contents 열 이름 오류·출석폼 created_at 오지시·translateContents 지뢰·반 배정 전제 누락) **v9.39 실측 재검증판으로 전면 대체**되었습니다. 이 문서로 조립하지 마세요. 07-13 실증된 콕핏(Query→Single Value) 방법은 새 문서 4-F에 승계됨.
+
+---
+
+# SYNK Glide 새 앱 조립 가이드 — v9.37 정본 (구본)
 
 > **이 문서가 조립의 단일 정본입니다.** 기존 `GLIDE_바인딩_지시서_v925.md`(v9.26)와 `GLIDE_조립_마스터보드.txt`(v9.25)를 **현행화·통합·대체**합니다. 옛 두 문서는 이력 참조용으로만 두고, 새 앱 조립은 **이 문서만** 따르세요.
 > 작성 기준 = 라이브 코드 v9.37(버그팩·디자인·학습추적·매니페스트 반영). 이 세션에서 코드로 확인한 사실만 담았습니다.
@@ -201,8 +207,10 @@
 
 ### 3-D. 원장 (role = director)
 
-**콕핏 탭** (소스: app_state, Filter key = 각 HTML):
-- 경영리포트HTML·리텐션레이더HTML·케어사각HTML — Rich Text.
+**콕핏 탭** (소스: app_state) — ★방법1(계산 컬럼) 실전 검증(2026-07-13):
+- app_state는 key-value 세로 시트라, 리포트별로 **계산 컬럼 2단**을 만든다 — ① Query(예: `리텐션_q` = key is 리텐션레이더HTML) → ② **Single Value**(`리텐션레이더HTML_v` = Get First from 리텐션_q > value). 이 Single Value 컬럼을 Rich Text에 바인딩. ⚠ **Lookup으로 만들면 배열 타입이라 Rich Text에 안 붙는다 — 반드시 Single Value**(실증됨). 시트는 안 건드리는 Glide 계산 컬럼.
+- 지금 존재하는 키 = **리텐션레이더HTML·케어사각HTML** 2개. **경영리포트HTML·여행지도HTML은 월1일 배치(`monthlyJobs`)가 자동 생성** → 개원 후 생기면 같은 2단(Query→Single Value)으로 콕핏에 추가. ⚠ 지금 수동 생성은 걸림돌 있음: `buildExecReport_`·`updateTravelMap_`가 `_`접미사라 편집기 실행 드롭다운에 안 뜬다(래퍼 함수 필요·`monthlyJobs` 통째 실행은 archiveMonthly까지 돌아 비추천). 개원 후 자동생성이라 보류.
+- add/edit OFF(읽기 전용), Visibility=director.
 - (선택) system_manifest 시트를 표로 붙이면 시스템 상태 한눈에.
 
 **명예의 전당 탭** (소스: hall_of_fame): Image(사진URL) + 목록, 폼으로 수동 등록.
