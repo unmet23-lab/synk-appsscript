@@ -608,12 +608,30 @@
  * 176. [v9.42 자기검증 반영] 시드 삽입 위치=실학생 블록 직후(동기화 재배치로 계산열 어긋나는 경로 차단)·
  *      DEMO-03 임박 밴드 91~97P(출석정산 요일 변동 흡수)·clear 오폭 3중 완화(league_history 데모반명 기준·
  *      스토리북 사전존재 판별·notices 자동공지 이모지 접두 조건)·시드 체인에 birthdayCheck(생일 시연 즉시).
+ *
+ * [v9.44 — 검증 워크플로(26에이전트·4렌즈·반박패널) 확정 결함 10건 반영 + 검증 도구·시인성·스토리 완성]
+ * 177. 데모 정밀화: ①생일(+20P)과 임박(95P) 역할 분리(생일=DEMO-02·임박=DEMO-03, 지난달 기록 0으로 95P 고정)
+ *      ②마커 4필드(시각|sbPre|gbPre|시드시점 지난달) — clear가 달을 넘겨도 회수 대상 불변, 실배치 산출물·키 보존
+ *      ③notices 회수=데모 연관 조건 필수(제목·본문 '데모' 포함 or 데모 발간 공지) + 삭제 목록 로그 고지
+ *      ④world_raid 시드 행 '(데모)' 마커(HP 800 우연 일치 오폭 차단) ⑤전호주연은 데모 발간 시에만 삭제
+ *      ⑥레이드·리그 데모 반 직접 생성(raidMonday 주 단위 멱등 가드 비의존) + 이번 달 월드 HP 재적 정합
+ *      ⑦nightJobs 월말(28일~) 데모 잔존 경고 — 실배치 오염 예방 데드라인 알림.
+ * 178. 검증 도구 2종: seedConsultDemo/clearConsultDemo(상담시트 [DEMO] 행 실입력→syncProfiles→앱 유입까지
+ *      전 구간 실측·원버튼 회수) · demoRaidClearNow(반 레이드+월드 격파를 지금 화면으로 — 부족분 총력전 지급·
+ *      결산 서사·공지·지급완료 마킹, 일요일 실정산과 무충돌·clear 원복). syncProfiles의 DEMO 이중 유입 차단
+ *      (상담시트에 DEMO- ID 입력 시 보존본과 정상 유입이 중복되던 결함).
+ * 179. 🗓️ 출석달력HTML(CF 84) — 학부모 시인성 핵심: 이번 달 도장 그리드(출석=블루 ✓·수업일 빈칸·오늘 링).
+ *      학부모 우리아이·학생 내 기록 바인딩. calcAll 편승(attDates 재사용·writeIfChanged).
+ * 180. 📖 스토리북 완성 3종: ①발간 공지 addNotice 경유(구 스키마 열 어긋남 재발 지점 봉합 — v9.40 수리 누락분)
+ *      ②독서 분량 시스템 — 본문(1~11화) 자수 계측·목표 5~15분(300자/분)·하한 미달 시 감각 묘사 4종 자동 보강·
+ *      상한 초과 로그 ③표지에 "이번 호의 주인공·읽는 시간 n분" 예고(펼치기 전의 설렘). escHtml_ 공용화
+ *      (이달의보스·도감 카드 — 시트 커스텀 대사의 카드 파손 차단).
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.43'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
+const SYNK_VERSION = 'v9.44'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -986,6 +1004,8 @@ const CARD_ANIM = '<style>@keyframes synkBreath{0%,100%{transform:scale(1) trans
   '@media (prefers-reduced-motion:reduce){.skBr,.skBo{animation:none!important}}</style>';
 const ANIM_BREATH = 'animation:synkBreath 3.2s ease-in-out infinite;transform-origin:50% 100%;';
 const ANIM_BOSS = 'animation:synkBoss 4.4s ease-in-out infinite;transform-origin:50% 100%;';
+// [v9.44] HTML 이스케이프 공용 — 시트 커스텀 가능 텍스트(보스 대사·몬스터 이름 등)를 카드에 넣기 전 필수(레이아웃 파괴 차단)
+function escHtml_(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
 // [v9.11] 🖼️ 액자 시스템 — 도달 최고 단계(AP)가 액자 등급. 스킨은 취향, 액자는 지위.
 // [v9.35] 소프트 글로우 축 재설계 — 프레임은 공통 그라디언트+토큰(라운드 18/12·섀도), 단계 개성은
@@ -1134,7 +1154,7 @@ function buildDexHtml_(stages, t, curIdx) {
         (im.indexOf('http') === 0
           ? '<img class="skBr" src="' + im + '" style="width:40px;height:40px;border-radius:9px;background:#fff;' + br + '"/>'
           : '<div class="skBr" style="font-size:26px;line-height:40px;' + br + '">' + (FRAME_ICON[Math.min(i, 6)] || '🐣') + '</div>') +
-        '<div style="font-size:10.5px;font-weight:800;color:#2B3FD9;padding-top:2px;">' + s.name + (cur ? ' ✦' : '') + '</div></div>';
+        '<div style="font-size:10.5px;font-weight:800;color:#2B3FD9;padding-top:2px;">' + escHtml_(s.name) + (cur ? ' ✦' : '') + '</div></div>';
     } else {
       cells += '<div style="width:23%;margin:1%;background:#F3F4F6;border:2px dashed #D1D5DB;border-radius:12px;text-align:center;padding:7px 0 5px;float:left;opacity:.8;">' +
         '<div style="font-size:26px;line-height:40px;">🌫️</div>' +
@@ -1145,6 +1165,41 @@ function buildDexHtml_(stages, t, curIdx) {
     '<div style="font-size:13.5px;font-weight:800;padding-bottom:5px;">🗂️ 몬스터 도감 <span style="color:#3D5AFE;">' + met + '/' + stages.length + ' 만남</span></div>' +
     '<div style="overflow:hidden;">' + cells + '</div>' +
     '<div style="clear:both;font-size:10.5px;color:#9CA3AF;padding-top:5px;">포인트를 모으면 다음 친구가 모습을 드러내요 ✨</div></div>';
+}
+
+// [v9.44] 🗓️ 출석 달력 카드 — "출석을 잘 하는지"를 한눈에(학부모 시인성 핵심). 이번 달 7열 그리드:
+//   출석일=블루 도장 ✓ · 수업일인데 안 온 과거일=옅은 빈 칸 · 수업일 아님=점 · 오늘=링 강조 · 미래=흐림.
+function buildAttCalHtml_(attSet, now, tz, clsType) {
+  const y = now.getFullYear(), m = now.getMonth();
+  const first = new Date(y, m, 1), daysN = new Date(y, m + 1, 0).getDate();
+  const todayD = now.getDate();
+  const isWeType = clsType === '주말';
+  const WD = ['일', '월', '화', '수', '목', '금', '토'];
+  let head = '', cells = '';
+  WD.forEach((w, i) => { head += '<div style="width:13.6%;margin:0 .3%;float:left;text-align:center;font-size:9.5px;color:' + (i === 0 ? '#FF6B35' : '#9CA3AF') + ';font-weight:700;">' + w + '</div>'; });
+  for (let b = 0; b < first.getDay(); b++) cells += '<div style="width:13.6%;margin:1px .3%;float:left;height:26px;"></div>';
+  let attN = 0;
+  for (let d = 1; d <= daysN; d++) {
+    const dt = new Date(y, m, d);
+    const wd = dt.getDay(), isWe = (wd === 0 || wd === 6);
+    const isClassDay = (isWeType === isWe);
+    const ds = Utilities.formatDate(dt, tz, 'yyyy-MM-dd');
+    const came = attSet && attSet.has(ds);
+    if (came) attN++;
+    const isToday = d === todayD, isFuture = d > todayD;
+    let cell;
+    if (came) cell = '<div style="background:linear-gradient(135deg,#3D5AFE,#7C9BFF);color:#fff;border-radius:8px;height:26px;line-height:26px;font-size:11px;font-weight:800;' + (isToday ? 'box-shadow:0 0 0 2px rgba(61,90,254,.3);' : '') + '">✓</div>';
+    else if (isFuture) cell = '<div style="background:#F9FAFB;border-radius:8px;height:26px;line-height:26px;font-size:10px;color:#D1D5DB;">' + d + '</div>';
+    else if (isClassDay) cell = '<div style="background:#F3F4F6;border:1px dashed #E5E7EB;border-radius:8px;height:24px;line-height:24px;font-size:10px;color:#9CA3AF;' + (isToday ? 'box-shadow:0 0 0 2px rgba(61,90,254,.3);' : '') + '">' + d + '</div>';
+    else cell = '<div style="height:26px;line-height:26px;font-size:9px;color:#E5E7EB;text-align:center;">·</div>';
+    cells += '<div style="width:13.6%;margin:1px .3%;float:left;text-align:center;">' + cell + '</div>';
+  }
+  return '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:16px;padding:12px 11px;">' +
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 2px 7px;">' +
+    '<span style="font-size:13.5px;font-weight:800;">🗓️ ' + (m + 1) + '월 출석 달력</span>' +
+    '<span style="font-size:12px;font-weight:800;color:#3D5AFE;">' + attN + '일 출석 <span style="color:#9CA3AF;font-weight:400;font-size:10px;">· Ирц</span></span></div>' +
+    '<div style="overflow:hidden;">' + head + '</div><div style="overflow:hidden;clear:both;">' + cells + '</div>' +
+    '<div style="clear:both;font-size:10px;color:#9CA3AF;padding-top:6px;">✓ 등원한 날 — 도장이 채워질수록 몬스터가 자라요</div></div>';
 }
 
 // [v9.20] 📖 나의 여정 — 개인 스토리 센터피스. 몬스터 여정 + 개인 마일스톤 + 실력 성장을 한 카드로.
@@ -1514,6 +1569,7 @@ function calcAll() {
   const alertOut = []; // [v9.20] 오늘의알림(BX 76) — 결정적 순간 1건(왕관/진화/생일/임박), 없으면 ''
   const ccOut = [], cdOut = []; // [v9.36] 게이트 2열 — CC(81) 남은문법수 · CD(82) 게이트문구
   const dexOut = []; // [v9.42] CE(83) 도감HTML — 도달만 공개·미도달 ??? (도감 스포일러 차단)
+  const calOut = []; // [v9.44] CF(84) 출석달력HTML — 학부모·학생 출석 시인성(도장 그리드)
   const journeyOut = []; // [v9.20] 나의여정(BY 77) — 개인 스토리 카드
   const clsB2 = {}; // sid→반 (주간 분모용)
   const radarOut = [], radarList = []; // [v9.14] (공유 변수는 함수 최상단으로 승격)
@@ -1874,6 +1930,7 @@ function calcAll() {
         perDayOut.push([schSoFar > 0 ? Math.round((mPts / schSoFar) * 10) / 10 : 0]);
       }
       dexOut.push([r[3] === 'student' ? buildDexHtml_(stages, t, mon.idx || 1) : '']); // [v9.42] 도감 진행 카드
+      calOut.push([r[3] === 'student' ? buildAttCalHtml_(attDates[id], now, tz, classTypeOf[id] || '평일') : '']); // [v9.44] 출석 달력
       return [t, mPts, rankMap[id] === 999 ? '' : (rankMap[id] || ''), mon.stage, mon.pct,
               stk, matt, la, p, risk];
     });
@@ -1928,9 +1985,12 @@ function calcAll() {
     writeIfChanged(pf, 2, 81, ccOut);
     writeIfChanged(pf, 2, 82, cdOut);
     // [v9.42] 도감HTML(CE 83) — 도달 공개·미도달 ??? 실루엣. 도감 탭 상단 카드(Collection 필터와 이중 봉인)
-    if (pf.getMaxColumns() < 83) pf.insertColumnsAfter(pf.getMaxColumns(), 83 - pf.getMaxColumns());
+    if (pf.getMaxColumns() < 84) pf.insertColumnsAfter(pf.getMaxColumns(), 84 - pf.getMaxColumns());
     if (String(pf.getRange('CE1').getValue()) !== '도감HTML') pf.getRange('CE1').setValue('도감HTML');
     writeIfChanged(pf, 2, 83, dexOut);
+    // [v9.44] 출석달력HTML(CF 84) — 학부모 우리아이·학생 내 기록의 출석 시인성 카드
+    if (String(pf.getRange('CF1').getValue()) !== '출석달력HTML') pf.getRange('CF1').setValue('출석달력HTML');
+    writeIfChanged(pf, 2, 84, calOut);
     { // 원장 홈 카드 2종
       radarList.sort((a2, b2) => a2.s === b2.s ? 0 : (a2.s === '🔴' ? -1 : 1));
       const rHtml = radarList.length
@@ -2109,8 +2169,8 @@ function calcAll() {
           '<div style="' + CARD_FONT + 'background:linear-gradient(165deg,#1E1B4B,#312E81 60%,#1E1B4B);border:2px solid #6366F1;border-radius:18px;padding:14px;text-align:center;color:#E0E7FF;">' +
           '<div style="font-size:10px;letter-spacing:.25em;color:#A5B4FC;">' + Utilities.formatDate(now, tz, 'M') + '월의 보스</div>' +
           '<div style="padding:8px 0 9px;">' + bHero + '</div>' +
-          '<div style="font-size:17px;font-weight:900;color:#fff;">' + bz.name + '</div>' +
-          (bz.entry ? '<div style="font-size:12px;font-style:italic;color:#C7D2FE;padding-top:7px;line-height:1.8;">“' + bz.entry + '”</div>' : '') +
+          '<div style="font-size:17px;font-weight:900;color:#fff;">' + escHtml_(bz.name) + '</div>' + // [v9.44] 시트 커스텀 대사 이스케이프(카드 파손 차단)
+          (bz.entry ? '<div style="font-size:12px;font-style:italic;color:#C7D2FE;padding-top:7px;line-height:1.8;">“' + escHtml_(bz.entry) + '”</div>' : '') +
           '<div style="font-size:11px;color:#818CF8;padding-top:8px;">이번 주 레이드에서 우리 반의 힘을 보여주자 ⚔️</div></div>');
       }
     }
@@ -2267,6 +2327,12 @@ function syncProfiles() {
   });
   let apCnt = 0; // 신규 학생 수 (뒤에 append)
   newSeq.forEach(e => { if (!e.used) { ordered.push(e); apCnt++; } });
+  // [v9.44] 상담시트에 DEMO- 학생ID가 실제 입력된 경우(상담→앱 파이프라인 검증 시나리오): 그 행은 정상 경로
+  //   (ordered)로 유입되므로 보존본(demoStu)에서 제거 — 안 하면 같은 학생이 두 줄로 복제되던 결함.
+  if (demoStu.length) {
+    const inNew = {}; ordered.forEach(e => { inNew[e.id] = 1; });
+    for (let di = demoStu.length - 1; di >= 0; di--) if (inNew[String(demoStu[di][0])]) demoStu.splice(di, 1);
+  }
 
   // [v9.19] 안전 가드 — 빈/부분 손상 상담시트가 원본일 때 실학생 대량 삭제 방지 (백업 복구 이전 예방)
   //   ① 신규 학생 0명  또는  ② 기존 5명+ 인데 30% 넘게 급감 → 덮어쓰지 않고 원장 알림
@@ -5916,6 +5982,28 @@ function buildMonthlyStorybook_() {
       (nextUp.length ? '\n\n― 다음 호 출연 예정 ―\n' + nextUp.join(' · ') : '') +
       '\n\n각본·주연·제작: SYNK LAB 크루 전원 | 이 이야기의 모든 기록은 실화입니다.', '');
   }
+  // [v9.44] 📏 독서 분량 시스템 — 유호님 정책: 전체 독서 5~15분(학습자 300자/분 ≈ 1,500~4,500자 밴드).
+  //   본문(1~11화)만 계측(표지·크레딧 제외). 데이터가 빈 달엔 무대 감각 묘사 4종으로 하한을 자동 보강 —
+  //   "짧아서 허전한 호"가 구조적으로 없다. 상한 초과는 카메오 화당 ≤2 규율상 사실상 불가(초과 시 로그 경고만).
+  const STORY_BOOST = [
+    '바람의 온도, 발밑의 감촉, 스쳐 가는 냄새까지 — 크루들은 이 계절의 한국을 온몸으로 기억하기로 했다. 배운 단어 하나가 풍경 하나와 짝을 이루는 순간마다, 한국어는 교재 밖으로 한 뼘씩 걸어 나왔다.',
+    '싸움의 한가운데서도 크루들은 서로의 이름을 불렀다. 이름을 부르면 힘이 났다. 그것이 이 반의 오래된 비밀이었다. 넘어질 뻔한 순간마다 누군가의 목소리가 등을 받쳐 주었다.',
+    '전장의 소음 사이로, 각자의 한 달이 스쳐 지나갔다. 처음으로 손을 들었던 날. 틀렸지만 끝까지 말했던 날. 아무도 몰래 단어장을 한 바퀴 더 돌았던 밤. 그 모든 날들이 지금 이 순간을 위한 준비였다.',
+    '창밖으로 도시의 불빛이 강물처럼 흘렀다. 누군가는 오늘 배운 문장을 입안에서 굴려 보았고, 누군가는 다음 달의 자신에게 조용히 약속을 걸었다. 버스는 천천히, 그러나 분명히 집을 향해 달렸다.'
+  ];
+  let bodyChars = rows.filter(r => r[3] >= 1 && r[3] <= 11).reduce((a, r) => a + String(r[5]).length, 0);
+  if (bodyChars < 1500) {
+    const boostAt = [2, 4, 7, 10];
+    for (let bi = 0; bi < STORY_BOOST.length && bodyChars < 1500; bi++) {
+      const row = rows.find(r => r[3] === boostAt[bi]);
+      if (row) { row[5] += ' ' + STORY_BOOST[bi]; bodyChars += STORY_BOOST[bi].length + 1; }
+    }
+  }
+  if (bodyChars > 4500) Logger.log('⚠ 스토리북 본문 ' + bodyChars + '자 — 상한(15분) 초과, 카메오 규율 점검 권장');
+  const readMin = Math.max(5, Math.min(15, Math.round(bodyChars / 300)));
+  // 표지에 주인공 예고 + 읽는 시간 — 펼치기 전의 설렘("이번 달 주인공이 누구지?")이 몰입의 첫 문장
+  rows[0][5] += '\n\n🎬 이번 호의 주인공: ' + M.n + ' · 함께한 크루: ' + S1.n + (S2 ? ', ' + S2.n : '') +
+    '\n🕐 읽는 시간 약 ' + readMin + '분 — 따뜻한 차 한 잔과 함께';
   setAppState_(ss, '전호주연', pick[0] || '');
   sb.getRange(sb.getLastRow() + 1, 1, rows.length, 8).setValues(rows);
   if (quotaOk(1)) { // [v9.10] 🎬 원장 영상팩 — 즉발(브리핑 큐 미경유: 복사용 독립 메일, 월 1통)
@@ -5930,10 +6018,10 @@ function buildMonthlyStorybook_() {
       '\n카메오 본문 출연(' + Math.min(cameoIdx, cameoCand.length) + '명): ' + cameoCand.slice(0, cameoIdx).map(c => c.n).join(', ') +
       '\n\n✍️ 수기 각색법: 위 브리프를 Claude에 붙여넣고 "싱크 스토리를 이 사실 그대로 12장 기승전결·해피엔딩으로 다시 써줘" → 나온 챕터를 synk_stories 해당 월 행의 F열(본문)에 붙여넣기. 자동 재발간은 월키 멱등이라 수기본을 절대 덮어쓰지 않습니다.');
   }
-  const ntB = ensureSheet(ss, 'notices', ['title','body','date','title_mn','body_mn']);
-  ntB.getRange(ntB.getLastRow() + 1, 1, 1, 3).setValues([['📖 싱크 스토리 제' + issue + '호 발간!',
-    '「' + title + '」 — ' + SC[0] + '에서 펼쳐진 우리들의 ' + mNum + '월 이야기. 앱의 싱크 스토리에서 읽어보세요.', new Date()]]);
-  Logger.log('스토리북 ' + ym + ' 제' + issue + '호(v4·주연 ' + M.n + '): ' + rows.length + '행');
+  // [v9.44] 직접 쓰기 → addNotice — 구 스키마 notices 열 어긋남 재발 지점(leagueSettle_·worldRaid와 동일 수리의 누락분)
+  addNotice(ss, '📖 싱크 스토리 제' + issue + '호 발간!',
+    '「' + title + '」 — ' + SC[0] + '에서 펼쳐진 우리들의 ' + mNum + '월 이야기. 앱의 싱크 스토리에서 읽어보세요.');
+  Logger.log('스토리북 ' + ym + ' 제' + issue + '호(v4·주연 ' + M.n + '): ' + rows.length + '행 · 본문 ' + bodyChars + '자 ≈ ' + readMin + '분');
 }
 
 // [v9.6] 🌍 월드 레이드 — 학원 전체 vs 망각의 대군주 (월간 · 반 보스들의 배후 = 스토리북 최종 보스)
@@ -9132,13 +9220,14 @@ function seedDemoData() {
   }
   L.push('✓ 시간표: 데모 반 2개');
 
-  // ② profiles 8명 — 시나리오: 01 에이스·02 성실·03 오늘 생일+진화 임박·04 케어 사각·05 리텐션 🔴·06 신입·07 숙제왕·08 스킨 선택
-  const bday3 = Utilities.formatDate(now, tz, 'MM-dd'); // DEMO-03 = 오늘 생일
+  // ② profiles 8명 — 시나리오: 01 에이스·02 성실+오늘 생일·03 진화 임박(95P 고정)·04 케어 사각·05 리텐션 🔴·06 신입·07 숙제왕·08 스킨 선택
+  //   [검증 반영] 생일(+20P)과 임박(95P)을 같은 학생에 두면 생일 지급이 임박 밴드를 깨뜨림 — 역할 분리.
+  const bday2 = Utilities.formatDate(now, tz, 'MM-dd'); // DEMO-02 사라 = 오늘 생일
   const P = ADMIN_EMAIL;
   const demo = [ // [id, 이름, 몽골이름, 반, 생일, email, 등록일(일 전), 레벨]
     ['DEMO-01', '바야르', 'Баяр', CLS_A, '2011-03-14', 'demo01@synk.test', 90, '중급'],
-    ['DEMO-02', '사라', 'Сараа', CLS_A, '2012-07-02', 'demo02@synk.test', 75, '초급'],
-    ['DEMO-03', '테무진', 'Тэмүжин', CLS_A, '2012-' + bday3, 'demo03@synk.test', 60, '초급'],
+    ['DEMO-02', '사라', 'Сараа', CLS_A, '2012-' + bday2, 'demo02@synk.test', 75, '초급'],
+    ['DEMO-03', '테무진', 'Тэмүжин', CLS_A, '2012-11-08', 'demo03@synk.test', 60, '초급'],
     ['DEMO-04', '오윤아', 'Оюунаа', CLS_A, '2011-11-23', 'demo04@synk.test', 80, '기초'],
     ['DEMO-05', '냠카', 'Нямка', CLS_B, '2010-05-09', 'demo05@synk.test', 70, '초급'],
     ['DEMO-06', '졸자야', 'Золзаяа', CLS_B, '2013-01-30', 'demo06@synk.test', 20, '기초'],
@@ -9169,7 +9258,7 @@ function seedDemoData() {
     if (!isWe) { // 평일 — 데모정규반
       pushAtt('DEMO-01', k); // 개근 에이스
       if (k % 3 !== 0) pushAtt('DEMO-02', k);
-      if (k % 2 === 0) pushAtt('DEMO-03', k);
+      if (k % 2 === 0 && k <= 28) pushAtt('DEMO-03', k); // [검증 반영] 6월 출석 0 — 월간 출석정산(+3P/일) 변동을 차단해 95P 고정
       if (k <= 16 && k % 2 === 1) pushAtt('DEMO-04', k); // 최근 출석 있음(케어 사각용)
     } else { // 주말 — 데모주말반
       if (k >= 9) pushAtt('DEMO-05', k); // 9일 전부터 미출석 → 리텐션 🔴
@@ -9193,12 +9282,12 @@ function seedDemoData() {
   pushPl('DEMO-01', 10, '오늘의 시냅스', T, day(33), '발음↑');
   for (let i = 0; i < 9; i++) pushPl('DEMO-07', 10, '숙제완료', T, day(27 + (i * 0.8 | 0)));
   pushPl('DEMO-02', 10, '숙제완료', T, day(29)); pushPl('DEMO-02', 10, '오늘의 시냅스', T, day(27), '친구도움');
-  pushPl('DEMO-03', 10, '숙제완료', T, day(31)); pushPl('DEMO-08', 10, '숙제완료', T, day(28));
+  pushPl('DEMO-08', 10, '숙제완료', T, day(28)); // [검증 반영] DEMO-03 지난달 기록 0 — 정산·칭호 변수 원천 차단
   // 이번달: 진행 중 스토리 — 03 진화 임박(95P대), 04 무포인트(사각), 05 정지
   for (let i = 0; i < 6; i++) pushPl('DEMO-01', 10, '숙제완료', T, day(2 + i * 2));
   pushPl('DEMO-01', 10, '오늘의 MVP', T, day(0), '집중력'); // 오늘 왕관 — 축하 배너·알림 시연
   for (let i = 0; i < 5; i++) pushPl('DEMO-02', 10, '숙제완료', T, day(3 + i * 3));
-  for (let i = 0; i < 7; i++) pushPl('DEMO-03', 10, '숙제완료', T, day(1 + i * 2)); // 지난달 10+출석정산(±3일×3P)+70+5 ≈ 91~97P → 진화까지 3~9P(임박 밴드 — 실행 요일 무관)
+  for (let i = 0; i < 9; i++) pushPl('DEMO-03', 10, '숙제완료', T, day(1 + i * 2)); // [검증 반영] 6월 기록·출석·생일 전부 0인 설계라 90+5=95P '고정' → 진화까지 5P(임박 브리핑·한마디 확정 발화)
   pushPl('DEMO-03', 5, '리그승리', 'SYSTEM', day(7));
   pushPl('DEMO-04', 10, '숙제완료', T, day(16)); // 마지막 포인트 16일 전 — 케어 사각 발화
   for (let i = 0; i < 7; i++) pushPl('DEMO-07', 10, '숙제완료', T, day(2 + i * 2));
@@ -9238,7 +9327,7 @@ function seedDemoData() {
   cf.getRange(cf.getLastRow() + 1, 1, 1, 4).setValues([[CLS_A, '📚 숙제 올클리어', T, day(1)]]);
   const wr = ensureSheet(ss, 'world_raid', ['월', '보스명', 'HP', '누적데미지', '상태']);
   const wrHas = wr.getLastRow() >= 2 && wr.getRange(2, 1, wr.getLastRow() - 1, 1).getValues().some(r => String(r[0]) === ymLast);
-  if (!wrHas) wr.getRange(wr.getLastRow() + 1, 1, 1, 5).setValues([[ymLast, worldBossOf(ss).name, 800, 843, '격파']]);
+  if (!wrHas) wr.getRange(wr.getLastRow() + 1, 1, 1, 5).setValues([[ymLast, worldBossOf(ss).name + ' (데모)', 800, 843, '격파']]); // [검증 반영] '(데모)' 마커 — clear가 값 우연 일치(HP 800) 아닌 마커로 회수
   // ⑧ 운영 시트 — 문의·결석신고·매출·리드·전당·크루 프로젝트·리포트카드 1장
   ensureSheet(ss, 'inquiries', ['student_id', '이름', '문의내용', '상태', '접수시각'])
     .appendRow(['DEMO-02', '사라 어머니', '[DEMO] 겨울방학 특강도 있을까요? 아이가 학원 가는 날만 기다려요 😊', '접수', now]);
@@ -9259,16 +9348,25 @@ function seedDemoData() {
   const rc = ensureSheet(ss, 'report_cards', ['card_id', 'student_id', '월', 'image_url', '칭호', '코멘트', 'created_at']);
   rc.appendRow(['RCD-01', 'DEMO-01', ymLast, 'https://placehold.co/600x800/3D5AFE/FFFFFF/png?text=REPORT+' + ymLast, '🧠 시냅스 챔피언', '[DEMO] 이번 달 가장 많은 연결을 만든 크루', now]);
   L.push('✓ 운영 시트 7종(문의·결석·매출·리드·전당·크루·리포트)');
-  // 데모모드 마커 = 시드시각|지난달 스토리북 사전존재(0/1) — clear가 "데모가 만든 호"만 회수하기 위한 판별값
+  // 데모모드 마커 = 시드시각|스토리북 사전존재|월간배치 사전완료 — clear가 "데모가 만든 것"만 회수하기 위한 판별값
   const sbSheet = ss.getSheetByName('synk_stories');
   const sbPre = (sbSheet && sbSheet.getLastRow() >= 2 && sbSheet.getRange(2, 1, sbSheet.getLastRow() - 1, 1).getValues().some(r => String(r[0]) === ymLast)) ? 1 : 0;
-  setState(st, '데모모드', Utilities.formatDate(now, tz, "yyyy-MM-dd'T'HH:mm:ss") + '|' + sbPre);
+  // [워크플로 검증 반영] 실 시스템의 매월 1일 배치가 이미 지난달 시상을 완료한 상태(키 또는 스냅샷 존재)면
+  //   시드는 시상 재실행을 시도하지 않고(멱등 가드에 걸려 조용히 스킵됨 — 허위 ✓ 방지) 정직하게 고지하며,
+  //   clear는 실 시스템이 만든 완료 키를 지우지 않는다.
+  const snapPre = ss.getSheetByName('monthly_snapshot');
+  const gbPre = (String(getState(st, '게임배치완료월').val) === ymLast ||
+    (snapPre && snapPre.getLastRow() >= 2 && snapPre.getRange(2, 1, snapPre.getLastRow() - 1, 1).getValues().some(r => String(r[0]) === ymLast))) ? 1 : 0;
+  // 마커 4필드: 시각|sbPre|gbPre|시드 시점의 지난달 키 — clear가 달이 바뀐 뒤 실행돼도 정확히 그 달을 회수
+  setState(st, '데모모드', Utilities.formatDate(now, tz, "yyyy-MM-dd'T'HH:mm:ss") + '|' + sbPre + '|' + gbPre + '|' + ymLast);
 
   // ⑨ 배치 체인 — 계산→지난달 시상→스토리북→카드→지도→경영→레이드·리그→중계·보드
   const run = (nm, fn) => { try { fn(); L.push('✓ ' + nm); } catch (e) { L.push('✗ ' + nm + ': ' + e.message); } };
   run('전체 계산', calcAll);
   run('생일 축하(+20P·학부모 메일)', birthdayCheck); // DEMO-03 오늘 생일 — 지급·배너·브리핑 즉시 시연
-  run('지난달 시상(칭호·랭킹·정산)', monthlyGameBatch);
+  if (gbPre) L.push('ℹ 지난달 시상은 실배치가 이미 완료(재실행 안전상 스킵) — 시상·칭호 시연은 이번 달 데이터로 확인');
+  else run('지난달 시상(칭호·랭킹·정산)', monthlyGameBatch);
+  if (sbPre) L.push('ℹ 스토리북 지난달호는 실호가 이미 발간돼 재발간 생략(실호 보존) — 다음 달 1일 발간분으로 확인');
   { // 경영리포트를 데모 반영판으로 재생성(멱등 키 해제 후)
     const g1 = getState(st, '경영리포트발송_' + ymLast); if (g1.row > 0) st.deleteRow(g1.row);
   }
@@ -9276,15 +9374,159 @@ function seedDemoData() {
   run('이달의 카드', buildMonthlyCards_);
   run('여행 지도', updateTravelMap_);
   run('경영 리포트', buildExecReport_);
-  run('레이드·리그 생성', raidMonday);
+  run('레이드·리그 생성(데모 반 직접)', function () {
+    // [검증 반영] raidMonday는 "이번 주 행 존재 시 전체 스킵" 멱등 — 실반 레이드가 이미 있는 주엔 데모 반이 못 생기므로
+    //   데모 반 2행을 직접 생성(실반 행 불간섭·주 키·HP=인원×28/18 동일 산식). 이번 달 월드 HP도 재적 기준으로 정합화.
+    const mondayR = new Date(now); mondayR.setDate(now.getDate() - ((now.getDay() + 6) % 7)); mondayR.setHours(0, 0, 0, 0);
+    const wk = Utilities.formatDate(mondayR, tz, 'yyyy-MM-dd');
+    const rd = ensureSheet(ss, 'raid', ['week', 'class_name', '목표', '달성포인트', '상태', '보상지급']);
+    const haveR = {};
+    if (rd.getLastRow() >= 2) rd.getRange(2, 1, rd.getLastRow() - 1, 2).getValues().forEach(r => { if (dstr(r[0], tz) === wk) haveR[String(r[1])] = 1; });
+    const addR = [];
+    if (!haveR[CLS_A]) addR.push([wk, CLS_A, 4 * 28, 0, '진행중', '']);
+    if (!haveR[CLS_B]) addR.push([wk, CLS_B, 4 * 18, 0, '진행중', '']);
+    if (addR.length) rd.getRange(rd.getLastRow() + 1, 1, addR.length, 6).setValues(addR);
+    const lg = ensureSheet(ss, 'league_pairs', ['week', '반A', '반B', '상태', '결과']);
+    const haveL = lg.getLastRow() >= 2 && lg.getRange(2, 1, lg.getLastRow() - 1, 3).getValues().some(r => String(r[0]) === wk && String(r[1]).indexOf('데모') === 0);
+    if (!haveL) lg.getRange(lg.getLastRow() + 1, 1, 1, 5).setValues([[wk, CLS_A, CLS_B, '제안', '']]);
+    const wrN = ss.getSheetByName('world_raid');
+    const ymN = Utilities.formatDate(now, tz, 'yyyy-MM');
+    if (wrN && wrN.getLastRow() >= 2) {
+      const stuN = pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().filter(r => r[0] && r[3] === 'student').length;
+      wrN.getRange(2, 1, wrN.getLastRow() - 1, 5).getValues().forEach((r, i) => {
+        if (String(r[0]) === ymN && String(r[4]) === '진행중') wrN.getRange(i + 2, 3).setValue(Math.max(stuN, 1) * 100); // HP 100(재적1 기준)에 데모 데미지 수백이 얹히는 화면 모순 해소
+      });
+    }
+  });
   run('일일 전투 리포트', raidStoryDaily);
   run('리그 중계석', leagueStoryDaily_);
   run('재계산(시상 반영)', calcAll);
   run('강사 지표', calcTeacherStats);
   run('출결 보드', function () { todayBoard_(ss); });
   const rep = '🎭 데모 시드 완료 — 앱에서 8명의 크루가 살아 움직입니다\n' + L.join('\n') +
-    '\n\n확인: 학생(DEMO-01 바야르=에이스·03 테무진=오늘 생일·진화 임박) · 강사(데모정규반 브리핑·왕관밸런스) · 원장(레이더 🔴 냠카·케어사각 오윤아·계기판·시상 메일)' +
-    '\n제거: clearDemoData() 1회 — 흔적 없이 원복됩니다.';
+    '\n\n확인: 학생(DEMO-01 바야르=에이스·02 사라=오늘 생일·03 테무진=진화까지 5P 임박) · 강사(데모정규반 브리핑·왕관밸런스) · 원장(레이더 🔴 냠카·케어사각 오윤아·계기판·시상 메일)' +
+    '\n격파 시연: demoRaidClearNow() · 상담→앱 검증: seedConsultDemo() · 제거: clearDemoData() 1회(⚠ 월말 전 필수).';
+  Logger.log(rep);
+  return rep;
+}
+
+/* [v9.44] 🧪 상담→앱 파이프라인 검증 원버튼 — 상담 스프레드시트에 [DEMO] 체험학생 1명을 실제로 입력하고
+ * syncProfiles를 돌려 "상담데이터 입력 → 앱 로스터"의 전 구간(62열 매핑·수강납입 조인·created_at)을 실측 검증. */
+function seedConsultDemo() {
+  const book = SpreadsheetApp.openById(CONSULT_SHEET_ID);
+  const src = book.getSheetByName('상담데이터입력');
+  if (!src) return '상담데이터입력 탭을 찾지 못함';
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  // 기존 DEMO-C1 행이 있으면 재시드 금지(중복 방지)
+  if (src.getLastRow() >= 3 && src.getRange(3, 60, src.getLastRow() - 2, 1).getValues().some(r => String(r[0]) === 'DEMO-C1'))
+    return '이미 DEMO-C1 상담 행이 있습니다 — clearConsultDemo() 후 재시드하세요.';
+  const row = new Array(62).fill('');
+  row[0] = '[DEMO] 체험학생'; row[1] = 'Туршилт'; row[2] = today; row[3] = '데모정규반'; row[4] = '2012-06-15';
+  row[7] = '9900-0000'; row[8] = 'demo.trial'; row[9] = 'democ1@synk.test';
+  row[12] = '[DEMO] 보호자'; row[14] = '9900-0001'; row[18] = '기초'; row[21] = '한국 유학';
+  row[59] = 'DEMO-C1'; row[60] = '';
+  src.getRange(src.getLastRow() + 1, 1, 1, 62).setValues([row]);
+  const pay = book.getSheetByName('수강·납입');
+  if (pay) {
+    const pr = new Array(11).fill('');
+    pr[0] = 'DEMO-C1'; pr[4] = '30만₮'; pr[10] = '재원';
+    pay.getRange(Math.max(pay.getLastRow() + 1, 5), 1, 1, 11).setValues([pr]);
+  }
+  syncProfiles(); // 상담→앱 실제 파이프라인 가동
+  const pf = ss.getSheetByName('profiles');
+  const landed = pf && pf.getLastRow() >= 2 && pf.getRange(2, 1, pf.getLastRow() - 1, 1).getValues().some(r => String(r[0]) === 'DEMO-C1');
+  const rep = landed
+    ? '✅ 상담→앱 파이프라인 정상 — DEMO-C1 [DEMO] 체험학생이 profiles에 유입됐습니다(이름·반·이메일·보호자·created_at 확인). 검증 후 clearConsultDemo() 1회.'
+    : '⚠ 상담 행은 넣었으나 profiles에 안 보임 — syncProfiles 로그·급감 가드 알림을 확인하세요.';
+  Logger.log(rep);
+  return rep;
+}
+
+function clearConsultDemo() {
+  const book = SpreadsheetApp.openById(CONSULT_SHEET_ID);
+  const src = book.getSheetByName('상담데이터입력');
+  let n = 0;
+  if (src && src.getLastRow() >= 3) {
+    const ids = src.getRange(3, 60, src.getLastRow() - 2, 1).getValues();
+    for (let i = ids.length - 1; i >= 0; i--) if (String(ids[i][0]) === 'DEMO-C1') { src.deleteRow(i + 3); n++; }
+  }
+  const pay = book.getSheetByName('수강·납입');
+  if (pay && pay.getLastRow() >= 5) {
+    const pids = pay.getRange(5, 1, pay.getLastRow() - 4, 1).getValues();
+    for (let i = pids.length - 1; i >= 0; i--) if (String(pids[i][0]) === 'DEMO-C1') { pay.deleteRow(i + 5); n++; }
+  }
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const pf = ss.getSheetByName('profiles');
+  if (pf && pf.getLastRow() >= 2) {
+    const ids2 = pf.getRange(2, 1, pf.getLastRow() - 1, 1).getValues();
+    for (let i = ids2.length - 1; i >= 0; i--) if (String(ids2[i][0]) === 'DEMO-C1') { pf.deleteRow(i + 2); n++; }
+  }
+  calcAll();
+  return '🧹 상담 파이프라인 데모 제거: ' + n + '행';
+}
+
+/* [v9.44] ⚔️ 레이드·월드 격파 시뮬레이터 — "클리어했을 때 화면"을 지금 본다(데모 모드 전용).
+ * 반 레이드: 데모 반 부족 데미지를 '이벤트·총력전'으로 채우고 즉시 정산(보상 +20P·결산 서사·공지·지급완료 마킹 —
+ *   일요일 밤 실정산은 wasPaid 가드로 자동 스킵). 월드: 이번 달 행을 격파로 확정(다음 달 판정과 무충돌·clear가 원복). */
+function demoRaidClearNow() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const st = ss.getSheetByName('app_state');
+  if (!st || getState(st, '데모모드').row < 1) return '데모 모드가 아닙니다 — seedDemoData() 먼저.';
+  const now = new Date();
+  const monday = new Date(now); monday.setDate(now.getDate() - ((now.getDay() + 6) % 7)); monday.setHours(0, 0, 0, 0);
+  const weekKey = Utilities.formatDate(monday, tz, 'yyyy-MM-dd');
+  const pf = ss.getSheetByName('profiles');
+  const demoByCls = {};
+  pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (r[0] && String(r[0]).indexOf('DEMO-') === 0 && r[3] === 'student' && String(r[4] || '').indexOf('데모') === 0)
+      (demoByCls[String(r[4])] = demoByCls[String(r[4])] || []).push(String(r[0]));
+  });
+  const L = [];
+  const rd = ss.getSheetByName('raid');
+  if (rd && rd.getLastRow() >= 2) {
+    const data = rd.getRange(2, 1, rd.getLastRow() - 1, 6).getValues();
+    data.forEach((r, i) => {
+      const cls = String(r[1] || '');
+      if (dstr(r[0], tz) !== weekKey || cls.indexOf('데모') !== 0 || r[5] === '지급완료') return;
+      const members = demoByCls[cls] || [];
+      if (!members.length) return;
+      const target = Number(r[2]) || 0, got = Number(r[3]) || 0;
+      const lack = Math.max(target - got, 0);
+      if (lack > 0) { // 부족분을 총력전 이벤트로 분배(일일한도 가드 비대상 사유)
+        const per = Math.ceil(lack / members.length);
+        appendPoints(ss, members.map(sid => [sid, per, '이벤트·레이드총력전', 'SYSTEM']));
+      }
+      appendPoints(ss, members.map(sid => [sid, 20, '레이드보상', '시스템']));
+      rd.getRange(i + 2, 4, 1, 3).setValues([[Math.max(target, got + (lack || 0)), '달성 🎉', '지급완료']]);
+      const bossD = bossOfMonth(ss, Number(Utilities.formatDate(now, tz, 'M')));
+      const bNm = bossD ? bossD.name : '이달의 보스';
+      ensureSheet(ss, 'raid_story', ['date', 'class_name', '유형', '제목', '스토리']).appendRow([
+        weekKey, cls, '결산', '⚔️ ' + cls + ' — ' + bNm + ' 격파!',
+        '총력전 끝에 ' + bNm + '(HP ' + target + ')' + josa(String(target), '이', '가') + ' 무너졌다! 크루 전원의 마지막 합동 공격이 작렬한 순간, 보스는 빛이 되어 흩어졌다. 반 전원 +20P 🏆']);
+      addNotice(ss, '🎉 ' + cls + ' 레이드 격파!', bNm + ' 격파 성공 — ' + cls + ' 전원 +20P! ' + (bossD ? '"' + bossD.win + '"' : ''));
+      L.push('✓ ' + cls + ' 반 레이드 격파(부족분 ' + lack + ' 총력전 지급)');
+    });
+  }
+  const wr = ss.getSheetByName('world_raid');
+  const ymNow = Utilities.formatDate(now, tz, 'yyyy-MM');
+  if (wr && wr.getLastRow() >= 2) {
+    const wdata = wr.getRange(2, 1, wr.getLastRow() - 1, 5).getValues();
+    wdata.forEach((r, i) => {
+      if (String(r[0]) !== ymNow || String(r[4]) !== '진행중') return;
+      const hp = Number(r[2]) || 0;
+      wr.getRange(i + 2, 4, 1, 2).setValues([[Math.max(hp, Number(r[3]) || 0), '격파']]);
+      const demoAll = Object.keys(demoByCls).reduce((a, c) => a.concat(demoByCls[c]), []);
+      if (demoAll.length) appendPoints(ss, demoAll.map(sid => [sid, 10, '월드레이드', 'SYSTEM']));
+      const wbD = worldBossOf(ss);
+      addNotice(ss, '🌍 월드 레이드 대승리! ' + wbD.name + ' 격파!', '"' + wbD.win + '" 전교 크루의 힘이 대군주를 쓰러뜨렸습니다! (데모 시연)');
+      L.push('✓ 월드 레이드 격파(이번 달 행 확정 — clearDemoData가 원복)');
+    });
+  }
+  calcAll(); // 레이드 카드(13열)·여정·기록실에 격파가 반영되게
+  const rep = L.length ? '⚔️ 격파 시연 완료\n' + L.join('\n') + '\n확인: 학생 홈 레이드카드 "🏆 격파 달성!"·소식탭 공지·기록실 보스 참여' : '격파할 데모 레이드가 없습니다(raidMonday 미생성 또는 이미 지급완료).';
   Logger.log(rep);
   return rep;
 }
@@ -9298,7 +9540,9 @@ function clearDemoData() {
   const gParts = String(g.val).split('|');
   const seededAt = new Date(gParts[0]);
   const sbPreExisted = String(gParts[1] || '0') === '1'; // 시드 전에 지난달 스토리북 실호가 있었으면 회수 금지
-  const ymLast = ymShift_(Utilities.formatDate(new Date(), tz, 'yyyy-MM'), -1);
+  const gbPreExisted = String(gParts[2] || '0') === '1'; // [검증 반영] 실배치가 만든 게임배치완료월 키면 보존
+  // [검증 반영] 회수 기준 달 = "시드 시점의 지난달"(마커 4번째) — clear가 달을 넘겨 실행돼도 회수 대상이 어긋나지 않게
+  const ymLast = String(gParts[3] || '') || ymShift_(Utilities.formatDate(new Date(), tz, 'yyyy-MM'), -1);
   const L = [];
   // 열 값 술어 기반 행 삭제(뒤에서부터) — 시트별 [시트명, 판정 함수(row값 배열)]
   const wipe = (name, pred, width) => {
@@ -9339,7 +9583,16 @@ function clearDemoData() {
   wipe('raid_story', r => hasDemoCls(r[1]), 2);
   wipe('class_stats', r => hasDemoCls(r[0]), 1);
   wipe('teacher_stats', r => hasDemoCls(r[0]), 1);
-  wipe('world_raid', r => String(r[0]) === ymLast && Number(r[2]) === 800, 3); // 시드 이력(HP 800)만
+  wipe('world_raid', r => String(r[1] || '').indexOf('(데모)') > -1, 2); // [검증 반영] '(데모)' 마커 행만 — 재적 8명인 달의 실 이력(HP 800 우연 일치) 오폭 차단
+  { // [v9.44] demoRaidClearNow가 이번 달 월드를 '격파'로 확정했다면 '진행중'으로 원복 — 다음 calcAll이 실데미지로 재계산
+    const wrC = ss.getSheetByName('world_raid');
+    const ymNowC = Utilities.formatDate(new Date(), tz, 'yyyy-MM');
+    if (wrC && wrC.getLastRow() >= 2) {
+      wrC.getRange(2, 1, wrC.getLastRow() - 1, 5).getValues().forEach((r, i) => {
+        if (String(r[0]) === ymNowC && String(r[4]) === '격파') wrC.getRange(i + 2, 4, 1, 2).setValues([[0, '진행중']]);
+      });
+    }
+  }
   if (!sbPreExisted) wipe('synk_stories', r => String(r[0]) === ymLast, 1); // 데모가 발간시킨 지난달호만 회수(실호 사전존재 시 보존)
   wipe('league_history', r => hasDemoCls(r[2]) || hasDemoCls(r[4]), 6); // [검증 반영] 월 기준→데모 반명 기준(챔피언·준우승) — 실 월간 기록 오폭 차단
   { // notices — 시드 이후 생성분(발간·리그·시상 공지) 일괄 회수: created_at 헤더 탐색
@@ -9351,18 +9604,25 @@ function clearDemoData() {
       if (iC > -1) {
         const dataN = nt.getRange(2, 1, nt.getLastRow() - 1, nt.getLastColumn()).getValues();
         let n = 0;
-        // [검증 반영] 시각 + 자동 공지 이모지 접두 이중 조건 — 데모 기간에 유호님이 직접 쓴 공지 오폭 차단
-        const AUTO_PFX = ['🏆', '🌍', '⚔️', '📖', '🎉', '⚡'];
-        let iT2 = -1;
+        // [워크플로 검증 반영] 데모 "연관" 조건 필수 — 시각+이모지 접두만으로는 데모 기간 중 실반이 만든
+        //   정당한 자동 공지(레이드 성공·보스 등장 등)까지 지운다. 삭제 조건 = 시드 이후 AND (
+        //   ①제목·본문에 '데모' 포함(데모 반 공지·월드 시연 공지) OR ②데모가 발간시킨 산출물의 공지
+        //   (스토리북 📖 = sbPre 0일 때만 · 시상/보스 🏆⚔️ = gbPre 0일 때만) ). 지운 제목은 로그로 고지.
+        let iT2 = -1, iB2 = -1;
         ['title', 'title_ko', '제목'].forEach(c => { if (iT2 < 0) iT2 = heads.indexOf(c); });
+        ['body', 'body_ko', '내용', '본문'].forEach(c => { if (iB2 < 0) iB2 = heads.indexOf(c); });
+        const wiped = [];
         for (let i = dataN.length - 1; i >= 0; i--) {
           const dv = dataN[i][iC];
           const dd = dv instanceof Date ? dv : (dv ? new Date(dv) : null);
+          if (!dd || isNaN(dd.getTime()) || dd < seededAt) continue;
           const tt = iT2 > -1 ? String(dataN[i][iT2] || '') : '';
-          const isAuto = AUTO_PFX.some(p => tt.indexOf(p) === 0);
-          if (dd && !isNaN(dd.getTime()) && dd >= seededAt && isAuto) { nt.deleteRow(i + 2); n++; }
+          const bb = iB2 > -1 ? String(dataN[i][iB2] || '') : '';
+          const demoTouched = (tt + bb).indexOf('데모') > -1;
+          const demoIssue = (!sbPreExisted && tt.indexOf('📖') === 0) || (!gbPreExisted && (tt.indexOf('🏆') === 0 || tt.indexOf('⚔️') === 0));
+          if (demoTouched || demoIssue) { wiped.push(tt.slice(0, 30)); nt.deleteRow(i + 2); n++; }
         }
-        if (n) L.push('✓ notices ' + n + '행(시드 이후 자동 공지만 — 수동 공지 보존)');
+        if (n) L.push('✓ notices ' + n + '행(데모 연관만): ' + wiped.join(' / '));
       }
     }
   }
@@ -9372,8 +9632,10 @@ function clearDemoData() {
       const dataS = sc.getRange(2, 1, sc.getLastRow() - 1, 1).getValues();
       for (let i = dataS.length - 1; i >= 0; i--) if (hasDemoCls(dataS[i][0])) sc.deleteRow(i + 2);
     }
-    ['데모모드', '전호주연', '경영리포트발송_' + ymLast].forEach(k => { const gg = getState(st, k); if (gg.row > 0) st.deleteRow(gg.row); });
-    const gb = getState(st, '게임배치완료월'); if (gb.row > 0 && String(gb.val) === ymLast) st.deleteRow(gb.row);
+    ['데모모드', '경영리포트발송_' + ymLast].forEach(k => { const gg = getState(st, k); if (gg.row > 0) st.deleteRow(gg.row); });
+    // [검증 반영] 전호주연은 "데모가 스토리북을 실제로 발간했을 때만" 삭제 — 실 발간이 기록한 실학생 주연 가드를 보존
+    if (!sbPreExisted) { const gj = getState(st, '전호주연'); if (gj.row > 0) st.deleteRow(gj.row); }
+    if (!gbPreExisted) { const gb = getState(st, '게임배치완료월'); if (gb.row > 0 && String(gb.val) === ymLast) st.deleteRow(gb.row); } // [검증 반영] 실배치 키는 보존
     const sb = getState(st, '스토리북발간월'); if (sb.row > 0 && String(sb.val) === ymLast) st.deleteRow(sb.row);
   }
   const run = (nm, fn) => { try { fn(); L.push('✓ ' + nm + ' 원복'); } catch (e) { L.push('✗ ' + nm + ': ' + e.message); } };
@@ -9656,6 +9918,13 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   safeRun('checkAchievements', checkAchievements);
   safeRun('checkUnknownReasonsNightly', checkUnknownReasonsNightly_); // [v9.28] 미인식 reason 발각 지연 7일→1일
   safeRun('translateContentsNightly', translateContents); // [v9.41·자동화] 빈 몽골어·영어 번역을 매일 밤 60행씩 자동 소진 — "translateContents 수동 반복 실행" 절차 제거(빈칸 없으면 API 호출 0)
+  safeRun('demoMonthEndGuard', function () { // [v9.44] 데모 모드가 월말(28일~)까지 살아 있으면 경고 — 다음 달 1일 실배치가 데모 재적으로 지난달을 정산하는 사고 예방
+    const ssD = SpreadsheetApp.getActiveSpreadsheet();
+    const stD = ssD.getSheetByName('app_state');
+    if (!stD || getState(stD, '데모모드').row < 1) return;
+    const dD = Number(Utilities.formatDate(new Date(), ssD.getSpreadsheetTimeZone(), 'd'));
+    if (dD >= 28) adminMail('[SYNK] ⚠️ 데모 모드가 아직 켜져 있습니다(월말)', '다음 달 1일 새벽 월간 배치 전에 clearDemoData()를 실행하세요 — 안 하면 데모 크루 8명이 실제 월간 시상·스토리북·랭킹에 섞여 발간됩니다.');
+  });
   // [v9.28] 완주 마커 — 반드시 맨 마지막 줄. 6분 타임아웃이면 이 줄 자체가 실행 안 되어 워치독이 증발을 감지
   try {
     const ssNJ = SpreadsheetApp.getActiveSpreadsheet();
