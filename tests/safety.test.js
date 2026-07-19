@@ -202,3 +202,43 @@ test.todo('숙제 포인트와 자동 정정을 같은 야간 계산에 즉시 �
 test.todo('성장 리포트의 공개 링크를 비공개 전달 방식으로 교체');
 test.todo('실제 포인트 사유·점수 목록 확인 후 허용 규칙 적용');
 test.todo('레이드·월간 정산의 중간 실패 복구 구조 추가');
+
+test('[v9.40] preflightGlide는 콘텐츠 부족분을 자동 복구하고 진단은 그 뒤에 한다', () => {
+  const body = section('function preflightGlide()', 'function safeRun');
+  assertOrder(body, [
+    'SHEET_SKELETON.forEach',          // ① 시트 골격(월간 산출물 포함) 먼저
+    'contentSetupOf_(tp)',             // ② 부족 유형 자동 설치
+    'injectMongolianContents()',       // ③ 큐레이션 몽골어 재주입
+    'calcAll()',                       // ④ 계산(콜드스타트 시딩 포함)
+    '자동 복구 후에도 불일치'            // ⑤ 복구 후 재실측 진단(경고 문구)
+  ]);
+  // 파괴 호출 금지 — setupSchedule은 라이브 15반 커스텀을 리셋한다
+  assert.equal(/setupSchedule\(\)/.test(body), false);
+});
+
+test('[v9.40] 시트 골격에 월간 산출 5종이 있어 Glide가 조립 시점에 테이블로 잡을 수 있다', () => {
+  const body = section('const SHEET_SKELETON', 'function bootstrapSynk()');
+  ['synk_stories', 'synk_cards', 'world_raid', 'league_pairs', 'academic_log'].forEach((name) => {
+    assert.ok(body.includes(`['${name}',`), `SHEET_SKELETON에 ${name} 누락`);
+  });
+  // teacher_stats 구 3열 스키마가 되살아나면 calcTeacherStats 실사용 8열과 다시 어긋난다
+  assert.equal(body.includes("['teacher','지급수','편중률']"), false);
+});
+
+test('[v9.40] 공지 헬퍼는 라이브 구 스키마(title_ko/body_ko)를 인식한다', () => {
+  const noticeBody = section('function addNotice(', 'function replaceContentType');
+  assert.ok(noticeBody.includes("'title_ko'"));
+  assert.ok(noticeBody.includes("'body_ko'"));
+  const trBody = section('function translateNotices_(', 'function langColOf_');
+  assert.ok(trBody.includes("'title_ko'"));
+  // 리그·월드 정산이 notices 1~3열에 직접 쓰면 구 스키마에서 열이 어긋난다 — addNotice 경유 강제
+  const settle = section('function leagueSettle_()', 'function leagueStoryDaily_()');
+  assert.equal(settle.includes("ensureSheet(ss, 'notices'"), false);
+  assert.ok(settle.includes('addNotice(ss, nr[0], nr[1])'));
+});
+
+test('[v9.40] calcAll은 숙제·퀴즈·팁 키가 없으면 게이트를 기다리지 않고 즉시 게시한다', () => {
+  const body = section('function calcAll()', 'function syncProfiles()');
+  assert.ok(body.includes("getState(st, '오늘의퀴즈').row < 1 || getState(st, '오늘의팁').row < 1"));
+  assert.ok(body.includes("getState(st, pair[0] + '숙제').row > 0"));
+});
