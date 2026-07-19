@@ -551,17 +551,50 @@
  *      쿼터 부족·발송 예외·발송 중 새 알림 추가 때 유실을 막음.
  * 162. bootstrapSynk profiles·teacher_checkins 골격을 실제 런타임 열 순서와 일치시킴. 잠긴 setupTables를 재건
  *      성공 단계에서 제거하고, 한 단계라도 실패하면 '재건 일부 실패'로 반환. tests/safety.test.js + CI 회귀검사 추가.
+ *
+ * [v9.40 — Glide 조립 자동복구 팩 (2026-07-19 라이브 재실측 반영)]
+ * 163. preflightGlide 개조: 진단 전용 → 자동 복구. ①시트 골격 전수 ensureSheet(월간 산출 5종 —
+ *      synk_stories·synk_cards·world_raid·league_pairs·academic_log — 을 SHEET_SKELETON에 편입해 조립 시점에
+ *      미리 생성) ②콘텐츠 자동 복구(CONTENT_EXPECT 대비 불일치 유형만 해당 setup 자동 실행 + 플레이스홀더 +
+ *      초벌 번역 1회 — 실측 homework 0/210·fuel 0/6·season 0/12·braintip 0/30·grammar 57/72·reach 0/2 해소)
+ *      ③setupAcademic·worldRaidMonthly_·콕핏 월간 카드 2종 사전 생성 ④calcTeacherStats 1회(8열 정규화)
+ *      ⑤잔액 음수 학생 진단(실측 -35 발견 — 구매 버튼 잔액 조건 필수 안내). [적대 리뷰 H1 반영] 커스텀 보유
+ *      유형(monster·store·boss·worldboss)은 0개일 때만 자동 재건 — 부분 불일치 자동 재설치가 시트 커스텀
+ *      (진짜 이미지 URL·가격 편집)을 코드 기본값으로 소거하는 미래 경로 차단(경고로 강등).
+ * 164. calcAll 콜드스타트 시딩 — '오늘의숙제'·'주말의숙제'·'오늘의퀴즈'·'오늘의팁' 키 부재 시 21시/기준일
+ *      게이트와 무관하게 즉시 게시(멱등). preflight 1회로 Glide 바인딩 대상 키가 당일 전부 생긴다.
+ * 165. notices 스키마 드리프트 실버그 수정 — 라이브 구 스키마(notice_id·title_ko·body_ko…)에서 addNotice·
+ *      translateNotices_가 title/body를 못 찾아 1·2열(notice_id·title_ko)에 오기록·오번역하던 것을 title_ko/
+ *      body_ko 후보 추가로 해소. leagueSettle_·worldRaidMonthly_의 notices 직접 쓰기(1~3열 강제)도 addNotice
+ *      경유로 교체. teacher_stats 스켈레톤 구 3열 → 실사용 8열 정정. CONTENT_EXPECT에 reach:2 편입.
+ * 166. 카드 타이포 통일(CARD_FONT) — 전 HTML 카드 루트에 Noto Sans KR 우선 폰트 스택·자간(-0.01em)을 적용해
+ *      WebView 기본 세리프/플랫폼 편차를 제거. 조립 가이드 v9.40(디자인 장 포함)과 세트.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.39'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
+const SYNK_VERSION = 'v9.40'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
   season: 12, label: 15, reason: 9, cheer: 7, cheermail: 30, braintip: 30, worldboss: 1, // [v9.9] · [v9.34] reason 8→9 — setupParentLabels R01~R09(v9.28 R09 추가) 실측 정합
-  grammar: 72 }; // [v9.37] W3 문법뱅크(GRAMMAR_BANK 72종) 추가 — 미설치 시 'grammar 0/72' 정당 경보
+  grammar: 72, // [v9.37] W3 문법뱅크(GRAMMAR_BANK 72종) 추가 — 미설치 시 'grammar 0/72' 정당 경보
+  reach: 2 }; // [v9.40] 마감폼 '전체도달도' Choice 소스(도달/더연습) — setupGrammarBank(v9.38d)가 함께 재건. 실측 0이라 워치독·preflight 감시 대상 편입
+// [v9.40] 콘텐츠 유형 → 셋업 함수 매핑 — preflightGlide 자동 복구·워치독 안내 공용 정본.
+//   함수명을 문자열이 아닌 참조로 들고 있어 이름 변경 시 구문 오류로 즉시 발각된다.
+function contentSetupOf_(type) {
+  const m = { monster: setupMonsters, store: setupStore, grammar: setupGrammarBank, reach: setupGrammarBank,
+    quiz: setupQuiz, homework: setupHomework, braintip: setupBrainTips, fuel: setupFuelMissions,
+    season: setupSeasons, boss: setupBosses, worldboss: setupBosses, lore: setupTitleLore,
+    label: setupParentLabels, reason: setupParentLabels, cheer: setupTeacherCheers, cheermail: setupTeacherCheers };
+  return m[type] || null;
+}
+// [v9.40·리뷰 H1 반영] 시트-커스텀 보유 유형 — monster(진짜 이미지 URL·임계값)·boss·worldboss(이미지)는 시트에
+//   사람이 채운 값이 정본의 일부다. replaceContentType 재설치는 그 커스텀(E열 이미지 등)을 코드 기본값으로 되돌리므로,
+//   이 유형들은 "0개(전멸 = 안전 재건)"일 때만 자동 복구하고, 0이 아닌 불일치는 ⚠ 경고로 사람 판단에 맡긴다.
+//   나머지(grammar·quiz·homework·label 등)는 코드 상수가 유일 정본 + 번역은 inject/translate가 복원 → 불일치 시 자동.
+const CONTENT_CUSTOM_TYPES = { monster: 1, store: 1, boss: 1, worldboss: 1 };
 
 /* ── [v5] 신규 설정 ─────────────────────────────────── */
 const REPORT_TEMPLATE_ID = '1XDhZPMjd17fbxmqGGEjq-kRks2Y3tJc9Ntrp90XV4pE';   // [v9.19] 리포트카드 Slides 템플릿 (비우면 스킵)
@@ -843,7 +876,7 @@ function playStyleOf_(logs) {
   return PLAY_STYLES[rhythm + style] || PLAY_STYLES['꾸준성실'];
 }
 function playStyleHtml_(ps) {
-  return '<div style="background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:2px solid #C4B5FD;border-radius:14px;padding:10px 12px;"><div style="font-size:11px;color:#6B7280;">🧭 이번 달 나의 플레이 스타일</div><div style="font-size:16px;font-weight:800;padding:2px 0;">' + ps[0] + ' ' + ps[1] + '</div><div style="font-size:12px;color:#4338CA;">' + ps[2] + '</div></div>';
+  return '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:2px solid #C4B5FD;border-radius:14px;padding:10px 12px;"><div style="font-size:11px;color:#6B7280;">🧭 이번 달 나의 플레이 스타일</div><div style="font-size:16px;font-weight:800;padding:2px 0;">' + ps[0] + ' ' + ps[1] + '</div><div style="font-size:12px;color:#4338CA;">' + ps[2] + '</div></div>';
 }
 
 // [v9.12] 🔮 오늘의 시냅스 운세 — 결정론(이름+날짜), 절반은 행동 유도를 운세로 포장
@@ -900,6 +933,11 @@ const PARENT_Q = [
 function speakTone_(idx) { return idx <= 2 ? 0 : (idx <= 5 ? 1 : 2); }
 function hashPick_(arr, seedStr) { let h = 0; for (let i = 0; i < seedStr.length; i++) h = (h * 31 + seedStr.charCodeAt(i)) % 100000; return arr[h % arr.length]; }
 
+// [v9.40] 카드 타이포 토큰 — 전 HTML 카드 루트에 삽입되는 공통 폰트 스택. Glide Rich Text는 WebView라
+//   font-family 미지정 시 플랫폼 기본 폰트(기기마다 세리프/고딕 제각각)로 렌더된다 → 명시로 통일.
+//   Noto Sans KR(안드로이드 한글 기본) → Apple SD Gothic Neo(iOS) → Malgun(윈도) 순 폴백 + 살짝 조인 자간.
+const CARD_FONT = "font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;letter-spacing:-0.01em;";
+
 // [v9.11] 🖼️ 액자 시스템 — 도달 최고 단계(AP)가 액자 등급. 스킨은 취향, 액자는 지위.
 // [v9.35] 소프트 글로우 축 재설계 — 프레임은 공통 그라디언트+토큰(라운드 18/12·섀도), 단계 개성은
 //   보더색·배지 이모지·캡션 뱃지 색으로. 흰 캡션 폐지(밝은 프레임 위 진한 잉크 — WCAG 4.5:1 이상).
@@ -935,7 +973,7 @@ function buildMonsterFrame_(dispName, dispImg, apIdx, pct, rem) {
       '<div style="font-size:11px;color:#6B7280;padding:0 4px 3px;">' +
       (remN > 0 ? '🧠 시냅스 게이지 ' + pctC + '% — 다음 진화까지 ' + remN + 'P!' : '👑 모든 진화 완료 — 전설의 영역!') + '</div>'
     : '';
-  return '<div style="background:linear-gradient(150deg,#EEF2FF,#E3E0FA 55%,#F5F3FF);padding:8px;border-radius:18px;border:2px solid ' + f[1] + ';box-shadow:0 6px 18px rgba(79,70,229,.14);">' +
+  return '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E3E0FA 55%,#F5F3FF);padding:8px;border-radius:18px;border:2px solid ' + f[1] + ';box-shadow:0 6px 18px rgba(79,70,229,.14);">' +
     inner + cap + gauge + '</div>';
 }
 
@@ -958,7 +996,7 @@ function buildRaidCard_(clsName, goal, dmg, won) {
       (win ? '<span style="font-weight:800;color:#B45309;">🏆 격파 달성!</span>' : '<span style="font-weight:700;color:#FF7A6B;">보스 HP ' + Math.max(goal - dmg, 0) + ' 남음</span>') +
       '</div>';
   }
-  return '<div style="background:linear-gradient(150deg,#EEF2FF,#E3E0FA 55%,#F5F3FF);padding:10px 8px 8px;border-radius:18px;border:2px solid #C4B5FD;box-shadow:0 6px 18px rgba(79,70,229,.14);">' + head + body + '</div>';
+  return '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E3E0FA 55%,#F5F3FF);padding:10px 8px 8px;border-radius:18px;border:2px solid #C4B5FD;box-shadow:0 6px 18px rgba(79,70,229,.14);">' + head + body + '</div>';
 }
 
 // [v9.14] 📊 월간 경영 리포트 — 숫자로 보는 SYNK (매월 1일, 원장 메일 즉발 + 원장 탭 상설)
@@ -1013,7 +1051,7 @@ function buildExecReport_() {
     '이탈 레이더 현황: 🔴 ' + red + '명 · 🟡 ' + yellow + '명',
     '이달의 하이라이트: 👑 왕관 ' + crowns.n + '회 · ⚔️ 레이드 보상 ' + raids.n + '건 · 📖 싱크 스토리 ' + (issued ? '발간 완료' : '발간 예정')
   ].filter(String);
-  const html = '<div style="background:#fff;border:2px solid #C7D2FE;border-radius:14px;padding:12px 14px;font-size:13px;line-height:2;">' + lines.map((l, i) => i === 0 ? '<b style="font-size:14px;">' + l + '</b>' : l).join('<br/>') + '</div>';
+  const html = '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:14px;padding:12px 14px;font-size:13px;line-height:2;">' + lines.map((l, i) => i === 0 ? '<b style="font-size:14px;">' + l + '</b>' : l).join('<br/>') + '</div>';
   setAppState_(ss, '경영리포트HTML', html);
   setAppState_(ss, doneKey, Utilities.formatDate(now, tz, 'yyyy-MM-dd'));
   if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 📊 ' + mNum + '월 경영 리포트', lines.join('\n'));
@@ -1080,7 +1118,7 @@ function myJourneyHtml_(o) {
     (o.dream ? '🌟 나의 목표: ' + esc(o.dream) : '🌟 나의 목표를 적어보세요') + '</div>';
   // [v9.35] 소프트 글로우 축 — 헤더 행(제목+우측 코랄 '진화까지 nP'), 토큰(그라디언트·라운드 18/12·섀도)
   const remJ = mon.rem || 0;
-  return '<div style="background:linear-gradient(150deg,#EEF2FF,#E3E0FA 55%,#F5F3FF);border:2px solid #C4B5FD;border-radius:18px;padding:13px 15px;box-shadow:0 6px 18px rgba(79,70,229,.14);">' +
+  return '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E3E0FA 55%,#F5F3FF);border:2px solid #C4B5FD;border-radius:18px;padding:13px 15px;box-shadow:0 6px 18px rgba(79,70,229,.14);">' +
     dreamLine +
     '<div style="display:flex;justify-content:space-between;align-items:baseline;">' +
       '<div style="font-size:15px;font-weight:800;color:#4338CA;">📖 ' + o.nm + '의 여정</div>' +
@@ -1636,7 +1674,7 @@ function calcAll() {
             });
           }
         }
-        speakOut.push(['<div style="background:#F5F3FF;border:2px solid #C4B5FD;border-radius:14px;padding:9px 12px;font-size:13px;">💬 ' + line + '</div>']);
+        speakOut.push(['<div style="' + CARD_FONT + 'background:#F5F3FF;border:2px solid #C4B5FD;border-radius:14px;padding:9px 12px;font-size:13px;">💬 ' + line + '</div>']);
         styleOut.push([playStyleHtml_(playStyleOf_(styleLogs[id] || []))]);
         const chemP = chemi[id];
         chemOut.push([chemP
@@ -1671,22 +1709,22 @@ function calcAll() {
           Object.keys(weekAtt).forEach(sid2 => { if (clsB2[sid2] === cn6) Object.keys(weekAtt[sid2]).forEach(d6 => wDaysCls[d6] = 1); });
           const wDen = Math.max(Object.keys(wDaysCls).length, wAtt);
           const wTop = (weekTopicsCls[cn6] || []).slice(-3);
-          weeklyOut.push(['<div style="background:#fff;border:2px solid #C7D2FE;border-radius:14px;padding:10px 12px;font-size:12.5px;line-height:2;"><b style="font-size:13.5px;">📋 Долоо хоногийн тайлан <span style="color:#9CA3AF;font-weight:400;">· 주간 리포트</span></b><br/>✅ Ирц: <b>' + wAtt + '/' + (wDen || '-') + '</b> өдөр<br/>⚡ Оноо: <b>+' + (weekPts[id] || 0) + 'P</b> · 👑 Титэм: <b>' + (weekCrown[id] || 0) + '</b> удаа' + (wTop.length ? '<br/>📚 Сурсан зүйл: ' + wTop.join(' · ') : '') + '</div>']);
+          weeklyOut.push(['<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:14px;padding:10px 12px;font-size:12.5px;line-height:2;"><b style="font-size:13.5px;">📋 Долоо хоногийн тайлан <span style="color:#9CA3AF;font-weight:400;">· 주간 리포트</span></b><br/>✅ Ирц: <b>' + wAtt + '/' + (wDen || '-') + '</b> өдөр<br/>⚡ Оноо: <b>+' + (weekPts[id] || 0) + 'P</b> · 👑 Титэм: <b>' + (weekCrown[id] || 0) + '</b> удаа' + (wTop.length ? '<br/>📚 Сурсан зүйл: ' + wTop.join(' · ') : '') + '</div>']);
           const tp = topicRecent[cn6];
           if (tp) {
             const q = hashPick_(PARENT_Q, id + todayYmd0).replace('{t}', tp.ko);
-            talkOut.push(['<div style="background:linear-gradient(135deg,#FFF7ED,#FEF3C7);border:2px solid #FDE68A;border-radius:14px;padding:10px 12px;font-size:12.5px;line-height:1.95;"><b style="font-size:13.5px;">💬 Өнөөдрийн яриа <span style="color:#9CA3AF;font-weight:400;">· 오늘의 대화</span></b><br/>' + (tp.today ? 'Өнөөдөр' : 'Сүүлийн хичээлээр') + ' хүүхэд тань <b>«' + tp.ko + '»</b>' + (tp.mn ? ' (' + tp.mn + ')' : '') + ' сурсан.<br/>Хүүхдээсээ ингэж асуугаарай:<br/><b>' + q + '</b></div>']);
+            talkOut.push(['<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FFF7ED,#FEF3C7);border:2px solid #FDE68A;border-radius:14px;padding:10px 12px;font-size:12.5px;line-height:1.95;"><b style="font-size:13.5px;">💬 Өнөөдрийн яриа <span style="color:#9CA3AF;font-weight:400;">· 오늘의 대화</span></b><br/>' + (tp.today ? 'Өнөөдөр' : 'Сүүлийн хичээлээр') + ' хүүхэд тань <b>«' + tp.ko + '»</b>' + (tp.mn ? ' (' + tp.mn + ')' : '') + ' сурсан.<br/>Хүүхдээсээ ингэж асуугаарай:<br/><b>' + q + '</b></div>']);
           } else {
-            talkOut.push(['<div style="background:#F9FAFB;border:2px dashed #E5E7EB;border-radius:14px;padding:10px 12px;font-size:12px;color:#6B7280;">💬 Дараагийн хичээлийн дараа энд ярианы сэдэв гарч ирнэ (다음 수업 후 대화 주제가 여기에)</div>']);
+            talkOut.push(['<div style="' + CARD_FONT + 'background:#F9FAFB;border:2px dashed #E5E7EB;border-radius:14px;padding:10px 12px;font-size:12px;color:#6B7280;">💬 Дараагийн хичээлийн дараа энд ярианы сэдэв гарч ирнэ (다음 수업 후 대화 주제가 여기에)</div>']);
           }
           const evoStr6 = (prevBB[idx] && String(prevBB[idx][0] || '')) || '';
           const evoRecent = evoStr6 && (new Date(todayYmd0) - new Date(evoStr6.slice(0, 10))) / msPerDay <= 3;
           const crownToday2 = (crownDates[id] || '') === todayYmd0;
           const gEvoForm = ((masteryTopForm[id] || {})[mon.idx] || {}).nm || ''; // [v9.36] 이번 단계 대표 도달 문형 — "무엇을 배워 진화했는지"
           bannerOut.push([crownToday2
-            ? '<div style="background:linear-gradient(135deg,#FDE68A,#F5A623);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;">🎉 ' + (r[1] || id) + ' өнөөдөр титэм авлаа! Гэртээ магтаж өгөөрэй 💛<br/><span style="font-weight:400;font-size:11px;">오늘 왕관을 받았어요! 집에서 칭찬해 주세요</span></div>'
+            ? '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FDE68A,#F5A623);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;">🎉 ' + (r[1] || id) + ' өнөөдөр титэм авлаа! Гэртээ магтаж өгөөрэй 💛<br/><span style="font-weight:400;font-size:11px;">오늘 왕관을 받았어요! 집에서 칭찬해 주세요</span></div>'
             : (evoRecent
-              ? '<div style="background:linear-gradient(135deg,#C4B5FD,#A5B4FC);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;color:#fff;">⚡ ' + (r[1] || id) + '-ийн монстр шинэ шатанд хувьслаа! Түүхэн мөч 📸<br/><span style="font-weight:400;font-size:11px;">몬스터가 진화했어요!' + (gEvoForm ? ' \'' + gEvoForm + '\' 문법까지 익히고 진화!' : ' 역사적인 순간') + '</span></div>'
+              ? '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#C4B5FD,#A5B4FC);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;color:#fff;">⚡ ' + (r[1] || id) + '-ийн монстр шинэ шатанд хувьслаа! Түүхэн мөч 📸<br/><span style="font-weight:400;font-size:11px;">몬스터가 진화했어요!' + (gEvoForm ? ' \'' + gEvoForm + '\' 문법까지 익히고 진화!' : ' 역사적인 순간') + '</span></div>'
               : '')]);
           // [v9.20] 오늘의알림 — 푸시/인앱배너용, "하루짜리 결정적 순간"만 (왕관·진화·생일).
           //  [v9.20 최적화] 진화임박(rem) 분기 제거: 매일 값 변동→시트 churn + 푸시 시 매일 알림 피로.
@@ -1698,7 +1736,7 @@ function calcAll() {
             : '']);
         }
         const rec = records[id] || {};
-        recordOut.push(['<div style="background:#fff;border:2px solid #E9E7F5;border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.9;">📊 <b>나의 기록실</b><br/>🔥 최장 연속출석 <b>' + (rec.maxStreak || stk) + '일</b><br/>🏔️ 최고 월간 포인트 <b>' + (rec.bestMonth || mPts) + 'P</b><br/>👑 첫 왕관 <b>' + (rec.firstCrown || '이번 달이 기회!') + '</b><br/>⚔️ 보스 토벌 참여 <b>' + (rec.raids || 0) + '회</b><br/>📚 총 누적 <b>' + t + 'P</b></div>']);
+        recordOut.push(['<div style="' + CARD_FONT + 'background:#fff;border:2px solid #E9E7F5;border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.9;">📊 <b>나의 기록실</b><br/>🔥 최장 연속출석 <b>' + (rec.maxStreak || stk) + '일</b><br/>🏔️ 최고 월간 포인트 <b>' + (rec.bestMonth || mPts) + 'P</b><br/>👑 첫 왕관 <b>' + (rec.firstCrown || '이번 달이 기회!') + '</b><br/>⚔️ 보스 토벌 참여 <b>' + (rec.raids || 0) + '회</b><br/>📚 총 누적 <b>' + t + 'P</b></div>']);
       }
       { // [v9.0] 진화 순간 감지 → BB(54) 진화일 (상승만, 신규생 첫 계산 제외)
         const iE = stageNumOut.length - 1;
@@ -1792,14 +1830,14 @@ function calcAll() {
     { // 원장 홈 카드 2종
       radarList.sort((a2, b2) => a2.s === b2.s ? 0 : (a2.s === '🔴' ? -1 : 1));
       const rHtml = radarList.length
-        ? '<div style="background:#fff;border:2px solid #FECACA;border-radius:14px;padding:10px 12px;"><div style="font-size:13px;font-weight:800;">📡 리텐션 레이더 — 관심 필요 ' + radarList.length + '명</div><div style="font-size:12px;line-height:1.9;">' + radarList.slice(0, 8).map(x => x.s + ' <b>' + x.n + '</b> (' + x.c + ') — ' + x.w).join('<br/>') + (radarList.length > 8 ? '<br/>… 외 ' + (radarList.length - 8) + '명' : '') + '</div></div>'
-        : '<div style="background:#F0FDF4;border:2px solid #BBF7D0;border-radius:14px;padding:10px 12px;font-size:13px;">📡 전원 🟢 — 평화로운 항해 중입니다</div>';
+        ? '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #FECACA;border-radius:14px;padding:10px 12px;"><div style="font-size:13px;font-weight:800;">📡 리텐션 레이더 — 관심 필요 ' + radarList.length + '명</div><div style="font-size:12px;line-height:1.9;">' + radarList.slice(0, 8).map(x => x.s + ' <b>' + x.n + '</b> (' + x.c + ') — ' + x.w).join('<br/>') + (radarList.length > 8 ? '<br/>… 외 ' + (radarList.length - 8) + '명' : '') + '</div></div>'
+        : '<div style="' + CARD_FONT + 'background:#F0FDF4;border:2px solid #BBF7D0;border-radius:14px;padding:10px 12px;font-size:13px;">📡 전원 🟢 — 평화로운 항해 중입니다</div>';
       setAppState_(ss, '리텐션레이더HTML', rHtml);
       const bByCls = {};
       blindList.forEach(x => (bByCls[x.c] = bByCls[x.c] || []).push(x.n + '(' + x.d + ')'));
       const bHtml = blindList.length
-        ? '<div style="background:#fff;border:2px solid #FDE68A;border-radius:14px;padding:10px 12px;"><div style="font-size:13px;font-weight:800;">👩‍🏫 케어 사각 — 출석 중인데 2주+ 무포인트</div><div style="font-size:12px;line-height:1.9;">' + Object.keys(bByCls).map(cn => '<b>' + cn + '</b>: ' + bByCls[cn].join(', ')).join('<br/>') + '</div><div style="font-size:11px;color:#6B7280;padding-top:4px;">이번 주, 이 크루들에게 왕관 기회를 한 번씩 🙏</div></div>'
-        : '<div style="background:#F0FDF4;border:2px solid #BBF7D0;border-radius:14px;padding:10px 12px;font-size:13px;">👩‍🏫 사각지대 없음 — 모든 크루가 케어받는 중 ✨</div>';
+        ? '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #FDE68A;border-radius:14px;padding:10px 12px;"><div style="font-size:13px;font-weight:800;">👩‍🏫 케어 사각 — 출석 중인데 2주+ 무포인트</div><div style="font-size:12px;line-height:1.9;">' + Object.keys(bByCls).map(cn => '<b>' + cn + '</b>: ' + bByCls[cn].join(', ')).join('<br/>') + '</div><div style="font-size:11px;color:#6B7280;padding-top:4px;">이번 주, 이 크루들에게 왕관 기회를 한 번씩 🙏</div></div>'
+        : '<div style="' + CARD_FONT + 'background:#F0FDF4;border:2px solid #BBF7D0;border-radius:14px;padding:10px 12px;font-size:13px;">👩‍🏫 사각지대 없음 — 모든 크루가 케어받는 중 ✨</div>';
       setAppState_(ss, '케어사각HTML', bHtml);
     }
 
@@ -1910,18 +1948,18 @@ function calcAll() {
       if (yAttCls[c] && (clsAbsent[c] || []).length) parts.push('📵 어제 결석: ' + clsAbsent[c].slice(0, 5).join(', ') + ' — 오늘 오면 한마디 챙겨주세요');
       if ((blindByCls[c] || []).length) parts.push('👩‍🏫 케어 사각: ' + blindByCls[c].join(', '));
       (clsEvoSoon[c] || []).slice(0, 3).forEach(e => parts.push('⚡ <b>' + e.n + '</b> — 오늘 왕관(10P)이면 <b>진화</b>! (남은 ' + e.need + 'P)'));
-      const brief = '<div style="background:#fff;border:2px solid #C7D2FE;border-radius:14px;padding:10px 12px;font-size:12px;line-height:1.9;"><b style="font-size:13px;">🎬 오늘의 ' + c + '</b><br/>' + (parts.length ? parts.join('<br/>') : '오늘도 평화로운 교실 ✨ 좋은 수업 되세요!') + '</div>';
+      const brief = '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:14px;padding:10px 12px;font-size:12px;line-height:1.9;"><b style="font-size:13px;">🎬 오늘의 ' + c + '</b><br/>' + (parts.length ? parts.join('<br/>') : '오늘도 평화로운 교실 ✨ 좋은 수업 되세요!') + '</div>';
       const left = raidLeft[c];
       const chance = (left !== undefined && left > 0 && left <= v.n * 10)
-        ? '<div style="background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F5A623;border-radius:14px;padding:9px 12px;font-size:12px;">🐉 <b>오늘 격파 가능!</b> 남은 HP ' + left + ' — 전원이 숙제 하나씩이면 끝!</div>' : '';
+        ? '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F5A623;border-radius:14px;padding:9px 12px;font-size:12px;">🐉 <b>오늘 격파 가능!</b> 남은 HP ' + left + ' — 전원이 숙제 하나씩이면 끝!</div>' : '';
       const ta = tdActs[c] || {};
       const ck = it => it ? '✅' : '⏳';
-      const check = '<div style="background:#fff;border:2px solid #E9E7F5;border-radius:14px;padding:9px 12px;font-size:12px;line-height:1.9;"><b style="font-size:13px;">✅ 오늘 체크 — ' + c + '</b><br/>' + ck(ta.hw) + ' 숙제 처리 · ' + ck(ta.mvp) + ' MVP 왕관 · ' + ck(ta.syn) + ' 시냅스 왕관 · ' + ck(tdTopic[c]) + ' 배운 내용 입력</div>';
+      const check = '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #E9E7F5;border-radius:14px;padding:9px 12px;font-size:12px;line-height:1.9;"><b style="font-size:13px;">✅ 오늘 체크 — ' + c + '</b><br/>' + ck(ta.hw) + ' 숙제 처리 · ' + ck(ta.mvp) + ' MVP 왕관 · ' + ck(ta.syn) + ' 시냅스 왕관 · ' + ck(tdTopic[c]) + ' 배운 내용 입력</div>';
       const members = [];
       pfData.forEach(rr => { if (rr[0] && rr[3] === 'student' && String(rr[4]) === c) members.push({ id: rr[0], n: rr[1] || rr[0] }); });
       const got = members.filter(m => crownSetM[m.id]);
       const notYet = members.filter(m => !crownSetM[m.id]).map(m => m.n);
-      const bal = '<div style="background:#fff;border:2px solid #FDE68A;border-radius:14px;padding:9px 12px;font-size:12px;line-height:1.9;"><b style="font-size:13px;">👑 이번 달 왕관 밸런스 — ' + c + '</b><br/>' + got.length + '/' + members.length + '명 수혜' + (notYet.length ? '<br/>아직: ' + notYet.slice(0, 6).join(', ') + (notYet.length > 6 ? ' 외 ' + (notYet.length - 6) + '명' : '') : ' — 전원 수혜 달성! 🎉') + '</div>';
+      const bal = '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #FDE68A;border-radius:14px;padding:9px 12px;font-size:12px;line-height:1.9;"><b style="font-size:13px;">👑 이번 달 왕관 밸런스 — ' + c + '</b><br/>' + got.length + '/' + members.length + '명 수혜' + (notYet.length ? '<br/>아직: ' + notYet.slice(0, 6).join(', ') + (notYet.length > 6 ? ' 외 ' + (notYet.length - 6) + '명' : '') : ' — 전원 수혜 달성! 🎉') + '</div>';
       return [brief, chance, check, bal];
     });
     if (crewCols.length) writeIfChanged(cs, 2, 9, crewCols);
@@ -1937,7 +1975,10 @@ function calcAll() {
   // --- app_state: 학생수/신규감지 --- ([v7.9] 명언·브레인팁 카드 폐지 — 시선 분산 제거)
   // [v5.3] 기준일을 Script Properties로 이전 — app_state 시트 쓰기(월 ~30업데이트) 제거
   const props = PropertiesService.getScriptProperties();
-  if (props.getProperty('기준일') !== todayStr) {
+  // [v9.40] 콜드스타트 — '오늘의퀴즈'·'오늘의팁' 키 자체가 없으면(콘텐츠 첫 설치 직후) 기준일과 무관하게 즉시 게시.
+  //   setState는 동일값 무기록이라 재실행 무해. preflightGlide의 calcAll 1회로 바인딩 대상 키가 당일 전부 생긴다.
+  const dailyCold = getState(st, '오늘의퀴즈').row < 1 || getState(st, '오늘의팁').row < 1;
+  if (props.getProperty('기준일') !== todayStr || dailyCold) {
     // [v5.7→v9.28] 오늘의 시냅스 퀴즈 — 난이도 3분기(초급/중급/고급). '오늘의퀴즈'는 초급과 동일값 유지(하위호환 —
     //   classPrepMail_·워치독이 그대로 참조). Glide는 profiles.현재급수(BO67)로 학생별 ITE 분기 가능.
     const quizPool = ctData.filter(r => r[1] === 'quiz' && r[3]);
@@ -1979,6 +2020,23 @@ function calcAll() {
         setState(st, '주말의숙제팁', hw[4] || '');
       }
       props.setProperty('숙제기준일', todayStr);
+    }
+  }
+  { // [v9.40] 숙제 콜드스타트 시딩 — 키가 아예 없으면(콘텐츠 첫 설치·재건 직후) 21시 게이트와 무관하게 즉시 게시.
+    //   평일·주말 키 모두 보장해 Glide ITE(반유형 분기) 바인딩을 조립 당일 검증할 수 있게 한다. 키가 있으면 no-op(멱등).
+    const hwPoolC = ctData.filter(r => r[1] === 'homework' && r[3] && Number(r[5]) > 0);
+    if (hwPoolC.length) {
+      const wkC = Number(Utilities.formatDate(now, tz, 'w')) || 1;
+      const wdNow = now.getDay() === 0 ? 7 : now.getDay();
+      [['오늘의', Math.min(wdNow, 5)], ['주말의', wdNow >= 6 ? wdNow : 6]].forEach(pair => {
+        if (getState(st, pair[0] + '숙제').row > 0) return;
+        let poolC = hwPoolC.filter(r => Math.floor(Number(r[5]) / 100) === pair[1]);
+        if (!poolC.length) poolC = hwPoolC;
+        const hwC = poolC[wkC % poolC.length];
+        setState(st, pair[0] + '숙제유형', hwC[2]);
+        setState(st, pair[0] + '숙제', hwC[3]);
+        setState(st, pair[0] + '숙제팁', hwC[4] || '');
+      });
     }
   }
   const count = pfData.filter(r => r[0]).length;
@@ -2870,10 +2928,9 @@ function leagueSettle_() {
   }
   resUpd.forEach(u => lg.getRange(u[0] + 2, 5).setValue(u[1]));
   if (storyRows.length) rsL.getRange(rsL.getLastRow() + 1, 1, storyRows.length, 5).setValues(storyRows); // [v9.2]
-  if (noticeRows.length) {
-    const nt = ensureSheet(ss, 'notices', ['title', 'body', 'date', 'title_mn', 'body_mn']);
-    nt.getRange(nt.getLastRow() + 1, 1, noticeRows.length, 3).setValues(noticeRows);
-  }
+  // [v9.40] 직접 쓰기 → addNotice — 라이브 notices가 구 스키마(notice_id·title_ko…)면 1~3열 강제 기입이 열을 어긋내던 결함.
+  //   addNotice는 헤더 자동 인식(title/title_ko)이라 어떤 스키마에서도 제자리에 기록되고 번역 스위프도 정상 작동.
+  noticeRows.forEach(nr => addNotice(ss, nr[0], nr[1]));
   Logger.log('리그 정산: 승리 지급 ' + winRows.length + '명 · 서사 ' + storyRows.length + '건 · 공지 ' + noticed + '건');
 }
 
@@ -5767,12 +5824,11 @@ function worldRaidMonthly_() { // 매월 1일: 지난달 판정·보상 → 이�
     if (win && pfW && pfW.getLastRow() >= 2) pfW.getRange(2, 1, pfW.getLastRow() - 1, 5).getValues()
       .forEach(pr => { if (pr[0] && pr[3] === 'student') winRows.push([pr[0], 10, '월드레이드', 'SYSTEM']); });
     if (winRows.length) appendPoints(ss, winRows);
-    const ntW = ensureSheet(ss, 'notices', ['title','body','date','title_mn','body_mn']);
-    ntW.getRange(ntW.getLastRow() + 1, 1, 1, 3).setValues([[
+    // [v9.40] 직접 쓰기 → addNotice(헤더 자동 인식) — 구 스키마 notices에서 열이 어긋나던 결함 수정(leagueSettle_와 동일)
+    addNotice(ss,
       win ? '🌍 월드 레이드 대승리! ' + wb.name + ' 격파!' : '🌍 월드 레이드 — ' + wb.name + ' 봉인 성공!',
       win ? '"' + wb.win + '" 전교 크루의 ' + dmg + ' 데미지가 대군주를 쓰러뜨렸습니다! 전원 +10P!'
-          : '전교 크루가 ' + dmg + ' 데미지로 대군주를 한 달 더 봉인했습니다. 다음 달, 완전한 승리를 향해!',
-      new Date()]]);
+          : '전교 크루가 ' + dmg + ' 데미지로 대군주를 한 달 더 봉인했습니다. 다음 달, 완전한 승리를 향해!');
   });
   // 이번 달 소환
   if (!data.some(r => String(r[0]) === ymNow)) {
@@ -5826,7 +5882,7 @@ function buildMonthlyCards_() {
       : '🌟 다음 달 주인공 예약';
     const mi = String(monMapC[s.mon] || ''); // [v9.35]
     // [v9.35] 골격을 소프트 글로우 축으로 정렬(보더 #C4B5FD 2px·라운드 18/12·섀도) — 티어 그라디언트는 유지
-    return [ym, s.id, '<div style="background:' + tier[2] + ';border:2px solid #C4B5FD;border-radius:18px;padding:10px;max-width:230px;box-shadow:0 6px 18px rgba(79,70,229,.14);">' +
+    return [ym, s.id, '<div style="' + CARD_FONT + 'background:' + tier[2] + ';border:2px solid #C4B5FD;border-radius:18px;padding:10px;max-width:230px;box-shadow:0 6px 18px rgba(79,70,229,.14);">' +
       '<div style="background:#fff;border-radius:12px;padding:10px 12px;text-align:center;">' +
       '<div style="font-size:11px;color:#6B7280;">SYNK ' + ym + ' · ' + tier[3] + ' ' + tier[1] + '</div>' +
       '<div style="font-size:17px;font-weight:800;padding:3px 0;">' + s.nm + '</div>' +
@@ -5859,7 +5915,7 @@ function updateTravelMap_() {
       ? '<div style="width:31%;margin:1%;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:2px solid #A5B4FC;border-radius:12px;text-align:center;padding:8px 0;float:left;"><div style="font-size:22px;">' + MAP_EMOJI[i] + '</div><div style="font-size:11px;font-weight:700;">' + nm + '</div><div style="font-size:10px;color:#4338CA;">⭕ 정복!</div></div>'
       : '<div style="width:31%;margin:1%;background:#F3F4F6;border:2px dashed #D1D5DB;border-radius:12px;text-align:center;padding:8px 0;float:left;opacity:.75;"><div style="font-size:22px;">🌫️</div><div style="font-size:11px;color:#9CA3AF;">???</div><div style="font-size:10px;color:#9CA3AF;">' + (i + 1) + '월의 무대</div></div>';
   }
-  const html = '<div style="background:#fff;border:2px solid #E9E7F5;border-radius:16px;padding:12px;"><div style="font-size:14px;font-weight:800;padding-bottom:6px;">🗺️ 시냅스 여행 지도 — 한국 12경 <span style="color:#4338CA;">' + n + '/12곳 정복</span></div><div style="overflow:hidden;">' + cells + '</div><div style="clear:both;font-size:11px;color:#6B7280;padding-top:6px;">매달 싱크 스토리가 발간되면 새로운 무대에 도장이 찍혀요 📖</div></div>';
+  const html = '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #E9E7F5;border-radius:16px;padding:12px;"><div style="font-size:14px;font-weight:800;padding-bottom:6px;">🗺️ 시냅스 여행 지도 — 한국 12경 <span style="color:#4338CA;">' + n + '/12곳 정복</span></div><div style="overflow:hidden;">' + cells + '</div><div style="clear:both;font-size:11px;color:#6B7280;padding-top:6px;">매달 싱크 스토리가 발간되면 새로운 무대에 도장이 찍혀요 📖</div></div>';
   const st = ensureSheet(ss, 'app_state', ['key','value']);
   const data = st.getLastRow() < 2 ? [] : st.getRange(2, 1, st.getLastRow() - 1, 2).getValues();
   let found = -1;
@@ -5955,8 +6011,8 @@ function addNotice(ss, title, body) {
     }
     return -1;
   }
-  let iT = find(['title', '제목']);
-  let iB = find(['body', 'content', '내용', '본문']);
+  let iT = find(['title', 'title_ko', '제목']); // [v9.40] 라이브 구 스키마(notice_id·title_ko·body_ko…) 인식 — 없으면 공지가 notice_id 열에 오기록되던 실버그 수정
+  let iB = find(['body', 'body_ko', 'content', '내용', '본문']);
   let iC = find(['created_at', 'date', '날짜', '작성일']);
   if (iT === -1 && iB === -1) { iT = 0; iB = 1; if (iC === -1) iC = 2; }
   const row = new Array(lastCol).fill('');
@@ -5977,6 +6033,7 @@ function replaceContentType(ss, type, items) {
     ensureSheet(ss, 'contents', ['콘텐츠ID','유형','이름','설명','이미지URL','순번','몽골어','영어']); // [v9.9] 무에서 재건 대응
   const last = ct.getLastRow();
   const width = Math.max(ct.getLastColumn(), 8);
+  if (ct.getMaxColumns() < width) ct.insertColumnsAfter(ct.getMaxColumns(), width - ct.getMaxColumns()); // [v9.40] 그리드 폭 가드 — Glide가 열을 줄인 시트에서 8열 접근 예외 방지
   if (last >= 2) {
     const data = ct.getRange(2, 1, last - 1, width).getValues();
     const keep = data.filter(r => r[1] !== type);
@@ -6989,8 +7046,8 @@ function translateNotices_(ss) {
     for (let i = 0; i < headers.length; i++) if (cands.indexOf(headers[i]) > -1) return i;
     return -1;
   }
-  let iT = find(['title', '제목']);
-  let iB = find(['body', 'content', '내용', '본문']);
+  let iT = find(['title', 'title_ko', '제목']); // [v9.40] addNotice와 동일 확장 — 구 스키마에서 notice_id를 번역하던 오작동 수정
+  let iB = find(['body', 'body_ko', 'content', '내용', '본문']);
   if (iT === -1 && iB === -1) { iT = 0; iB = 1; }
   let iTm = headers.indexOf('title_mn');
   let iBm = headers.indexOf('body_mn');
@@ -8543,7 +8600,7 @@ function academicTrendHtml_(logs) {
   const levels = logs.filter(l => l.type === 'level');
   const mocks = logs.filter(l => l.type === 'mock');
   if (!levels.length && !mocks.length)
-    return '<div style="background:#F9FAFB;border:2px dashed #E5E7EB;border-radius:14px;padding:12px 13px;font-size:12.5px;color:#6B7280;">📈 한국어 실력 성장 — 첫 평가를 기다리고 있어요 ✨</div>';
+    return '<div style="' + CARD_FONT + 'background:#F9FAFB;border:2px dashed #E5E7EB;border-radius:14px;padding:12px 13px;font-size:12.5px;color:#6B7280;">📈 한국어 실력 성장 — 첫 평가를 기다리고 있어요 ✨</div>';
   const curLv = levels.length ? levels[levels.length - 1].val : null;
   const series = mocks.slice(-5).map(m => Number(m.val) || 0);
   const curMock = series.length ? series[series.length - 1] : null;
@@ -8559,7 +8616,7 @@ function academicTrendHtml_(logs) {
     : '<div style="font-size:11px;color:#9CA3AF;text-align:center;">모의 기록<br>대기 중</div>';
   const deltaTxt = (delta == null) ? '' : (delta > 0 ? '▲ +' + delta : (delta < 0 ? '△ ' + delta : '– 유지'));
   const deltaCol = (delta != null && delta > 0) ? '#0E9F6E' : '#9CA3AF';
-  return '<div style="background:#F0FDF4;border:2px solid #BBF7D0;border-radius:14px;padding:11px 13px;">' +
+  return '<div style="' + CARD_FONT + 'background:#F0FDF4;border:2px solid #BBF7D0;border-radius:14px;padding:11px 13px;">' +
     '<div style="font-size:11px;color:#6B7280;">📈 한국어 실력 성장</div>' +
     '<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding-top:4px;">' +
       '<div><div style="font-size:24px;font-weight:800;color:#0E9F6E;line-height:1;">' + (curLv != null ? curLv + '급' : '—') + '</div><div style="font-size:10px;color:#6B7280;padding-top:2px;">현재 TOPIK 급수</div></div>' +
@@ -8792,7 +8849,7 @@ const SHEET_SKELETON = [
     ['class_fuel', ['class_name','미션','입력자','created_at']],
     ['hw_batch', ['date','class_name','완료자목록','입력자','created_at','처리상태']],
     ['today_board', ['유형','이름','반','시각','퇴근']],
-    ['teacher_stats', ['teacher','지급수','편중률']],
+    ['teacher_stats', ['강사','담당학생수','1인당출석','1인당포인트','1인당칭찬','케어지수','지난달왕관','왕관편중%']], // [v9.40] 구 3열(teacher·지급수·편중률)이 calcTeacherStats 실사용 8열과 불일치하던 드리프트 정정
     ['report_cards', ['card_id','student_id','월','image_url','칭호','코멘트','created_at']], // [v9.28] 실사용 7열로 정정(구 3열은 setupV5Triggers·runReportCards_와 불일치하던 결함)
     ['league_history', ['월','시즌','챔피언반','챔피언포인트','준우승','준우승포인트','MVP_id','MVP이름','MVP포인트','created_at']], ['hall_of_fame', ['연도','이름','반','업적','한마디','사진URL']],
     ['raid_story', ['date','class_name','유형','제목','스토리']],
@@ -8806,7 +8863,14 @@ const SHEET_SKELETON = [
     ['attendance_batch', ['날짜','class_name','출석자목록','입력자','created_at','처리상태']], // [v9.36] 수업 시작 출석 1탭(B안) → expandAttendanceBatch_가 attendance로 전개
     ['student_errors', ['날짜','student_id','반','유형','메모','입력자','created_at','상태']], // [v9.36] 강사 개인 약점 메모(선택 입력) — 리포트·브리핑 노출은 후속(학생 앱 미노출)
     ['onboarding', ['role','제목','안내KO','안내MN','아이콘']], // [v9.38] 역할별 홈 안내 카드(setupOnboarding) — 재건 목록 누락분 보강
-    ['system_manifest', ['지표','값','상태']] // [v9.37] buildSystemManifest 출력 — 시트·콘텐츠·트리거·의존성 실측 정본(수동 숫자 대체)
+    ['system_manifest', ['지표','값','상태']], // [v9.37] buildSystemManifest 출력 — 시트·콘텐츠·트리거·의존성 실측 정본(수동 숫자 대체)
+    // [v9.40] 월간 배치 산출 시트 5종 — 배치가 매월 1일에야 ensureSheet로 만들던 것을 골격 정본에 편입.
+    //   Glide는 "존재하는 시트"만 테이블로 잡으므로, 조립 시점에 헤더가 미리 있어야 스토리·카드·리그 탭을 바인딩할 수 있다.
+    ['synk_stories', ['월','호수','제목','챕터','챕터제목','본문','문법포인트','씬프롬프트']],
+    ['synk_cards', ['월','student_id','카드HTML']],
+    ['world_raid', ['월','보스명','HP','누적데미지','상태']],
+    ['league_pairs', ['week','반A','반B','상태','결과']],
+    ['academic_log', ['log_id','student_id','날짜','유형','값','비고','입력자']]
   ];
 
 function bootstrapSynk() {
@@ -8840,10 +8904,13 @@ function bootstrapSynk() {
   return summary;
 }
 
-/* ===================== [v9.39] 🛫 Glide 조립 사전점검 — 원버튼 준비+진단 =====================
- * 새 Glide 앱 조립 전 이 함수 하나만 실행한다: 안전 셋업(멱등·비파괴) + 바인딩 차단 요인 전수 진단.
- * ⚠ 파괴 호출 없음 — setupSchedule(라이브 15반 커스텀을 기본값으로 리셋함)·replaceContentType 계열
- *   (재실행 시 해당 유형 번역·Row ID 유실)은 절대 부르지 않는다. bootstrapSynk와 다른 점이 이것.
+/* ===================== [v9.40] 🛫 Glide 조립 사전점검 — 원버튼 준비+자동복구+진단 =====================
+ * 새 Glide 앱 조립 전 이 함수 하나만 실행한다: 시트 골격·입력 시트·콘텐츠·월간 산출물·계산을 전부
+ * 자동으로 채우고(멱등), 사람이 해야 하는 것(반 배정·이메일·가족 연결)만 ⚠로 남긴다.
+ * [v9.40 개조 이유] 구 버전은 콘텐츠 구멍을 "setupXxx 실행" 경고로만 남겼고, 그 수동 실행이 누락돼
+ *   숙제 0/210·연료 0/6·시즌 0/12·팁 0/30·문법 57/72 상태로 조립이 진행됐다(기능 다수 전멸의 최대 원인).
+ * ⚠ 파괴 호출 없음 — setupSchedule(라이브 15반 커스텀을 기본값으로 리셋함)은 절대 부르지 않는다.
+ *   콘텐츠 자동 복구는 "개수가 기대와 다른 유형만" 재설치한다(다른 유형·Row ID·행 순서 보존).
  * 사용법: 편집기에서 preflightGlide 선택 → ▶실행 → 로그의 ⚠ 줄을 하나씩 해소 → ⚠ 0이면 조립 시작. */
 function preflightGlide() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -8852,10 +8919,54 @@ function preflightGlide() {
   const ok = m => L.push('✅ ' + m);
   const warn = m => L.push('⚠ ' + m);
 
-  // 0) 안전 셋업(전부 멱등): 입력 시트·열 물리 보장 + 온보딩 + 전체 계산 1회
+  // 0) 안전 셋업(전부 멱등): 시트 골격 + 입력 시트·열 + 온보딩 + 학업 로그
+  try { SHEET_SKELETON.forEach(k => ensureSheet(ss, k[0], k[1])); ok('시트 골격 ' + SHEET_SKELETON.length + '종 보장(누락분만 생성 — 기존 시트·데이터 무해)'); } catch (e) { warn('시트 골격 보장 실패: ' + e.message); }
   try { setupClassroomInputs(); ok('입력 시트·열 보장(setupClassroomInputs)'); } catch (e) { warn('setupClassroomInputs 실패: ' + e.message); }
   try { setupOnboarding(); ok('온보딩 카드(setupOnboarding)'); } catch (e) { warn('setupOnboarding 실패: ' + e.message); }
-  try { calcAll(); ok('전체 계산 1회(calcAll) — profiles 카드열·class_stats 9~13열 갱신'); } catch (e) { warn('calcAll 실패: ' + e.message); }
+  try { setupAcademic(); ok('학업 로그(academic_log) 보장 — 강사 급수·모의점수 입력처'); } catch (e) { warn('setupAcademic 실패: ' + e.message); }
+
+  // 0.5) [v9.40] 콘텐츠 자동 복구 — 유형별 실측이 기대(CONTENT_EXPECT)와 다르면 해당 셋업을 자동 실행.
+  //   구 preflight는 "setupXxx 1회 실행" 경고만 남겼고, 그 수동 실행이 누락돼 숙제(0/210)·연료(0/6)·시즌(0/12)·
+  //   팁(0/30)·문법(57/72)이 전멸 상태였다(2026-07-19 실측 — 조립 실패의 최대 원인). replaceContentType은
+  //   다른 유형 행을 보존하므로 안전하고, 재설치 유형의 몽골어 초벌 번역은 아래 translateContents가 다시 채운다.
+  try {
+    const ctA = ss.getSheetByName('contents');
+    const censusA = {};
+    if (ctA && ctA.getLastRow() >= 2) ctA.getRange(2, 1, ctA.getLastRow() - 1, 2).getValues().forEach(r => { const t = String(r[1] || ''); if (t) censusA[t] = (censusA[t] || 0) + 1; });
+    const ranFns = {}, fixedC = [];
+    Object.keys(CONTENT_EXPECT).forEach(tp => {
+      const have = censusA[tp] || 0;
+      if (have === CONTENT_EXPECT[tp]) return;
+      // [리뷰 H1] 커스텀 보유 유형(monster·store·boss·worldboss)은 0개일 때만 자동 재건 — 부분 불일치는
+      //   유호님 커스터마이즈일 수 있어 자동 재설치가 이미지 URL 등 시트 값을 소거하므로 경고로만 남긴다.
+      if (CONTENT_CUSTOM_TYPES[tp] && have > 0) {
+        warn("contents '" + tp + "' " + have + '/' + CONTENT_EXPECT[tp] + ' — 커스텀 가능 유형이라 자동 복구 안 함. 의도한 편집이면 무시, 재건하려면 ' + String((contentSetupOf_(tp) || {}).name || '') + ' 수동 실행(⚠ 이미지 URL 등 시트 커스텀이 코드 기본값으로 리셋됨)');
+        return;
+      }
+      const fn = contentSetupOf_(tp);
+      if (!fn) return;
+      const fname = String(fn.name || tp);
+      if (ranFns[fname]) return; // 한 셋업이 여러 유형 담당(setupGrammarBank=grammar+reach 등) — 1회만
+      ranFns[fname] = 1;
+      try { fn(); fixedC.push(tp + ' ' + have + '→' + CONTENT_EXPECT[tp]); }
+      catch (e) { warn('콘텐츠 자동 복구 실패 ' + fname + ': ' + e.message); }
+    });
+    if (fixedC.length) {
+      ok('콘텐츠 자동 복구 실행: ' + fixedC.join(' · '));
+      try { setupPlaceholderImages(); ok('빈 이미지 플레이스홀더 채움(기존 URL 보존)'); } catch (e) { warn('플레이스홀더 실패: ' + e.message); }
+      // 몽골어 재주입 — 숙제·퀴즈·팁 340행은 내장 큐레이션(injectMongolianContents·멱등 upsert)이 정본,
+      // monster·season 등 잔여는 translateContents 기계 초벌(60행/회 — 커버 유형이 적어 보통 1회로 끝)
+      try { injectMongolianContents(); ok('몽골어 큐레이션 340행 주입(숙제·퀴즈·팁 — injectMongolianContents)'); } catch (e) { warn('몽골어 큐레이션 주입 실패: ' + e.message); }
+      try { translateContents(); ok('잔여 유형 초벌 번역 1회(translateContents) — 로그에 남은 행이 있으면 재실행'); } catch (e) { warn('초벌 번역 실패(나중에 translateContents 수동 실행): ' + e.message); }
+    } else ok('콘텐츠 유형별 개수 전부 기대치와 일치');
+  } catch (e) { warn('콘텐츠 자동 복구 단계 실패: ' + e.message); }
+
+  // 0.7) [v9.40] 월간 산출물 사전 생성 — 월드보스 이번 달 소환 + 원장 콕핏 월간 카드 2종(전부 멱등·아카이브 등 부작용 없음)
+  try { worldRaidMonthly_(); ok('월드 레이드 이번 달 소환 확인(world_raid)'); } catch (e) { warn('worldRaidMonthly 실패: ' + e.message); }
+  try { buildExecReport_(); updateTravelMap_(); ok('콕핏 월간 카드 2종(경영리포트HTML·여행지도HTML) 생성 확인'); } catch (e) { warn('콕핏 월간 카드 실패: ' + e.message); }
+
+  try { calcAll(); ok('전체 계산 1회(calcAll) — profiles 카드열·class_stats 9~13열·오늘의숙제/퀴즈/팁 키 갱신'); } catch (e) { warn('calcAll 실패: ' + e.message); }
+  try { calcTeacherStats(); ok('강사 지표 갱신(teacher_stats 8열 정규화)'); } catch (e) { warn('calcTeacherStats 실패: ' + e.message); }
 
   // 1) app_state 중복 키 정리 — 같은 key 2행+면 첫 행만 유지(getState가 첫 행만 읽어 뒷행은 죽은 데이터.
   //    라이브 실측(2026-07-18): '상담폼ID' 2행 존재 → 뒷행이 혼동 유발)
@@ -8903,6 +9014,15 @@ function preflightGlide() {
   else if (cnt.student) ok('학생 전원 반 배정됨');
   if (noClassTea.length) warn('담당 반 없는 강사(수업 브리핑·미등원 메일 라우팅 불가): ' + noClassTea.join(', ') + ' → profiles E열(class_name)에 담당 반 직접 입력(여러 반은 쉼표: 정규반1,정규반2)');
   if (noParentOf.length) warn('자녀 미연결 학부모("우리 아이" 탭이 빔): ' + noParentOf.join(', ') + ' → profiles J열(parent_of)에 자녀 user_id 직접 입력(예: SYNK-001)');
+  // [v9.40] 잔액 음수 검사 — 구매 버튼에 잔액 조건이 없으면 마이너스 구매가 가능하다(2026-07-19 실측: SYNK-001 잔액 -35)
+  if (pf && pf.getLastRow() >= 2 && pf.getMaxColumns() >= 43) {
+    const negBal = [];
+    const balV = pf.getRange(2, 43, pf.getLastRow() - 1, 1).getValues();
+    pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().forEach((r, i) => {
+      if (r[0] && r[3] === 'student' && Number(balV[i] && balV[i][0]) < 0) negBal.push((r[1] || r[0]) + '(' + balV[i][0] + 'P)');
+    });
+    if (negBal.length) warn('잔액 음수 학생(스토어 과소비 이력): ' + negBal.join(', ') + ' → 테스트 구매였다면 point_logs의 해당 음수 행을 지우세요. 조립 시 구매 버튼 Visibility에 "잔액 ≥ 가격" 조건 필수(가이드 참조)');
+  }
 
   // 3) 학생 반 이름 ↔ schedule 대조(오타·미등록 반 검출)
   const sc = ss.getSheetByName('schedule');
@@ -8925,25 +9045,21 @@ function preflightGlide() {
   if (csRows) ok('class_stats ' + csRows + '개 반 집계됨(강사 팩 9~13열 포함)');
   else warn('class_stats 비어 있음(강사 "오늘의 반" 탭이 빔) — 반 배정 해소 후 preflightGlide 재실행');
 
-  // 5) contents 유형 개수 — 0개면 어느 화면이 비는지 명시
+  // 5) contents 유형 개수 — [v9.40] 자동 복구(0.5단계) 후 재실측. 여전히 불일치면 해당 셋업 로그 확인 필요.
   const ct = ss.getSheetByName('contents');
   const census = {};
   if (ct && ct.getLastRow() >= 2) ct.getRange(2, 1, ct.getLastRow() - 1, 2).getValues().forEach(r => { const t = String(r[1] || ''); if (t) census[t] = (census[t] || 0) + 1; });
   L.push('— contents: ' + (Object.keys(census).length ? Object.keys(census).sort().map(t => t + ' ' + census[t]).join(' · ') : '비어 있음'));
-  [['monster', '도감·진화', 'setupMonsters'], ['store', '스토어', 'setupStore'], ['grammar', '마감폼 문법 드롭다운', 'setupGrammarBank'],
-   ['quiz', '오늘의퀴즈', 'setupQuiz'], ['homework', '오늘의숙제(21시 자동 게시)', 'setupHomework'], ['braintip', '오늘의팁', 'setupBrainTips'],
-   ['fuel', '연료 미션(레이드 데미지 가산)', 'setupFuelMissions'], ['season', '시즌명(월간 스토리북)', 'setupSeasons']].forEach(p => {
-    if (!census[p[0]]) warn("contents '" + p[0] + "' 0개 — " + p[1] + ' 비어 나옴 → ' + p[2] + ' 1회 실행(주의: 재실행 시 그 유형의 몽골어 번역 재주입 필요)');
+  Object.keys(CONTENT_EXPECT).forEach(tp => {
+    if ((census[tp] || 0) !== CONTENT_EXPECT[tp]) warn("contents '" + tp + "' " + (census[tp] || 0) + '/' + CONTENT_EXPECT[tp] + ' — 자동 복구 후에도 불일치. 위 자동 복구 로그(실패 사유)를 확인하세요');
   });
 
-  // 6) app_state 필수 키 + 원장 콕핏 월간 카드
+  // 6) app_state 필수 키 — [v9.40] 숙제·팁 키 편입(calcAll 콜드스타트 시딩이 채웠어야 정상)
   const st6 = ss.getSheetByName('app_state');
   if (st6) {
-    ['리텐션레이더HTML', '케어사각HTML', '오늘의퀴즈', '상담폼ID'].forEach(k => {
+    ['리텐션레이더HTML', '케어사각HTML', '오늘의퀴즈', '오늘의숙제', '주말의숙제', '오늘의팁', '경영리포트HTML', '여행지도HTML', '상담폼ID'].forEach(k => {
       if (getState(st6, k).row < 1) warn("app_state '" + k + "' 없음" + (k === '상담폼ID' ? ' → createConsultForm 실행 필요(상담 폼 응답 유입 끊김)' : ''));
     });
-    if (getState(st6, '경영리포트HTML').row < 1) L.push('ℹ 경영리포트HTML 아직 없음(매월 1일 자동 생성) — 지금 보려면 runExecReportNow 실행');
-    if (getState(st6, '여행지도HTML').row < 1) L.push('ℹ 여행지도HTML 아직 없음(매월 1일 자동 생성) — 지금 보려면 runTravelMapNow 실행');
   }
 
   // 7) 트리거 — 통합 10개 생존 확인
