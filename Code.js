@@ -569,12 +569,25 @@
  *      경유로 교체. teacher_stats 스켈레톤 구 3열 → 실사용 8열 정정. CONTENT_EXPECT에 reach:2 편입.
  * 166. 카드 타이포 통일(CARD_FONT) — 전 HTML 카드 루트에 Noto Sans KR 우선 폰트 스택·자간(-0.01em)을 적용해
  *      WebView 기본 세리프/플랫폼 편차를 제거. 조립 가이드 v9.40(디자인 장 포함)과 세트.
+ *
+ * [v9.41 — 자동화 마감 + 2027 팔레트 (유호님 지시: 수동 잔재 제거·조잡함 청소·GPS 출석·트렌드 컬러)]
+ * 167. 자동화 3종: ①translateContents를 nightJobs 편입(빈 번역 매일 밤 60행 자동 소진 — 수동 반복 실행 절차
+ *      폐지, 빈칸 없으면 API 0회) ②calcTeacherStats를 weeklyJobs 편입(원장 강사 지표가 월 1회만 갱신돼 한 달
+ *      낡던 것 → 주간) ③dailyGuard에 잔액 음수 학생 야간 감지(서명 dedup — 스토어 잔액 조건 누락·조작 조기 발각).
+ * 168. GPS 출석(유호님 확정) 코드 지원 — attendance A열 id 빈칸 자동 채번(ATG+날짜+sid, calcAll 편승).
+ *      학생 셀프 GPS 출석(Glide Form→attendance Add Row)은 기존 파이프라인과 완전 호환(전 소비처가 student_id·
+ *      date·method만 읽음 · 중복 출석은 Set 기반 계산이라 무해 · 강사 일괄(attendance_batch)과 병존 dedup 기존재).
+ *      쿼터: 학생 1인당 수업일 1업데이트 — 재적 ~20명까지 Maker 500 內, 초과 시 Business 전환(가이드 §6-0).
+ * 169. 2027 팔레트 시프트(44곳) — WGSN·Coloro 2027 올해의 컬러 Luminous Blue(테마 Interconnectedness =
+ *      시냅스 세계관 정합)를 메인 축으로: 인디고 #4F46E5→일렉트릭 블루 #3D5AFE·잉크 #4338CA→#2B3FD9·
+ *      게이지 #818CF8→#7C9BFF·카드 보더 라벤더→라이트블루 #BCC8FF·코랄 #FF7A6B→Energy Orange #FF6B35·
+ *      진화 배너 발광 블루 그라디언트. 왕관 골드·학업 그린(Meadowland 축)·FRAME_CSS 단계 개성은 보존.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.40'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
+const SYNK_VERSION = 'v9.41'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -876,7 +889,7 @@ function playStyleOf_(logs) {
   return PLAY_STYLES[rhythm + style] || PLAY_STYLES['꾸준성실'];
 }
 function playStyleHtml_(ps) {
-  return '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:2px solid #C4B5FD;border-radius:14px;padding:10px 12px;"><div style="font-size:11px;color:#6B7280;">🧭 이번 달 나의 플레이 스타일</div><div style="font-size:16px;font-weight:800;padding:2px 0;">' + ps[0] + ' ' + ps[1] + '</div><div style="font-size:12px;color:#4338CA;">' + ps[2] + '</div></div>';
+  return '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:2px solid #BCC8FF;border-radius:14px;padding:10px 12px;"><div style="font-size:11px;color:#6B7280;">🧭 이번 달 나의 플레이 스타일</div><div style="font-size:16px;font-weight:800;padding:2px 0;">' + ps[0] + ' ' + ps[1] + '</div><div style="font-size:12px;color:#2B3FD9;">' + ps[2] + '</div></div>';
 }
 
 // [v9.12] 🔮 오늘의 시냅스 운세 — 결정론(이름+날짜), 절반은 행동 유도를 운세로 포장
@@ -963,17 +976,17 @@ function buildMonsterFrame_(dispName, dispImg, apIdx, pct, rem) {
   const pctC = hasG ? Math.max(0, Math.min(100, pct)) : 0;
   const remN = Number(rem) || 0;
   const cap = '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px 2px;">' +
-    '<div style="font-size:13px;font-weight:800;color:#4338CA;">' + ic + ' ' + dispName +
+    '<div style="font-size:13px;font-weight:800;color:#2B3FD9;">' + ic + ' ' + dispName +
     ' <span style="font-weight:700;font-size:11px;color:' + f[3] + ';background:' + f[2] + ';border-radius:99px;padding:1px 8px;">' + f[0] + '</span></div>' +
-    (hasG ? '<div style="font-size:11.5px;font-weight:700;color:#FF7A6B;">' + (remN > 0 ? '진화까지 ' + remN + 'P' : 'MAX') + '</div>' : '') +
+    (hasG ? '<div style="font-size:11.5px;font-weight:700;color:#FF6B35;">' + (remN > 0 ? '진화까지 ' + remN + 'P' : 'MAX') + '</div>' : '') +
     '</div>';
   const gauge = hasG
-    ? '<div style="background:#DDD9F3;border-radius:99px;height:9px;margin:5px 4px 3px;overflow:hidden;">' +
-      '<div style="width:' + pctC + '%;height:100%;border-radius:99px;background:linear-gradient(90deg,#818CF8,#4F46E5);"></div></div>' +
+    ? '<div style="background:#DDE3F8;border-radius:99px;height:9px;margin:5px 4px 3px;overflow:hidden;">' +
+      '<div style="width:' + pctC + '%;height:100%;border-radius:99px;background:linear-gradient(90deg,#7C9BFF,#3D5AFE);"></div></div>' +
       '<div style="font-size:11px;color:#6B7280;padding:0 4px 3px;">' +
       (remN > 0 ? '🧠 시냅스 게이지 ' + pctC + '% — 다음 진화까지 ' + remN + 'P!' : '👑 모든 진화 완료 — 전설의 영역!') + '</div>'
     : '';
-  return '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E3E0FA 55%,#F5F3FF);padding:8px;border-radius:18px;border:2px solid ' + f[1] + ';box-shadow:0 6px 18px rgba(79,70,229,.14);">' +
+  return '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E0E7FF 55%,#F5F3FF);padding:8px;border-radius:18px;border:2px solid ' + f[1] + ';box-shadow:0 6px 18px rgba(61,90,254,.14);">' +
     inner + cap + gauge + '</div>';
 }
 
@@ -981,22 +994,22 @@ function buildMonsterFrame_(dispName, dispImg, apIdx, pct, rem) {
 //   goal 0 = 휴식주(보스휴식주·신규 반). won = raid 시트 '격파' 마킹(정산 전이라도 dmg≥goal이면 달성 표기).
 function buildRaidCard_(clsName, goal, dmg, won) {
   const head = '<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 4px 8px;">' +
-    '<span style="font-size:13px;font-weight:800;color:#4338CA;">⚔️ 이번 주 레이드</span>' +
-    '<span style="font-size:11px;font-weight:800;color:#4338CA;background:#EEF2FF;border:1.5px solid #C4B5FD;border-radius:99px;padding:1px 9px;">' + clsName + '</span></div>';
+    '<span style="font-size:13px;font-weight:800;color:#2B3FD9;">⚔️ 이번 주 레이드</span>' +
+    '<span style="font-size:11px;font-weight:800;color:#2B3FD9;background:#EEF2FF;border:1.5px solid #BCC8FF;border-radius:99px;padding:1px 9px;">' + clsName + '</span></div>';
   let body;
   if (!goal) {
     body = '<div style="background:#fff;border-radius:12px;padding:11px 12px;font-size:12px;color:#6B7280;text-align:center;">🏖️ 이번 주는 휴식주 — 다음 보스를 기다리는 중</div>';
   } else {
     const win = won || dmg >= goal;
     const pctR = win ? 100 : Math.max(0, Math.min(100, Math.round(dmg / goal * 100)));
-    body = '<div style="background:' + (win ? 'linear-gradient(90deg,#F5A623,#FDE68A)' : '#DDD9F3') + ';border-radius:99px;height:9px;margin:2px 4px 3px;overflow:hidden;">' +
-      (win ? '' : '<div style="width:' + pctR + '%;height:100%;border-radius:99px;background:linear-gradient(90deg,#818CF8,#4F46E5);"></div>') + '</div>' +
+    body = '<div style="background:' + (win ? 'linear-gradient(90deg,#F5A623,#FDE68A)' : '#DDE3F8') + ';border-radius:99px;height:9px;margin:2px 4px 3px;overflow:hidden;">' +
+      (win ? '' : '<div style="width:' + pctR + '%;height:100%;border-radius:99px;background:linear-gradient(90deg,#7C9BFF,#3D5AFE);"></div>') + '</div>' +
       '<div style="display:flex;justify-content:space-between;padding:2px 4px 3px;font-size:11px;">' +
-      '<span style="color:#6B7280;">⚡ 데미지 <b style="color:#4338CA;">' + dmg + '</b> / ' + goal + '</span>' +
-      (win ? '<span style="font-weight:800;color:#B45309;">🏆 격파 달성!</span>' : '<span style="font-weight:700;color:#FF7A6B;">보스 HP ' + Math.max(goal - dmg, 0) + ' 남음</span>') +
+      '<span style="color:#6B7280;">⚡ 데미지 <b style="color:#2B3FD9;">' + dmg + '</b> / ' + goal + '</span>' +
+      (win ? '<span style="font-weight:800;color:#B45309;">🏆 격파 달성!</span>' : '<span style="font-weight:700;color:#FF6B35;">보스 HP ' + Math.max(goal - dmg, 0) + ' 남음</span>') +
       '</div>';
   }
-  return '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E3E0FA 55%,#F5F3FF);padding:10px 8px 8px;border-radius:18px;border:2px solid #C4B5FD;box-shadow:0 6px 18px rgba(79,70,229,.14);">' + head + body + '</div>';
+  return '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E0E7FF 55%,#F5F3FF);padding:10px 8px 8px;border-radius:18px;border:2px solid #BCC8FF;box-shadow:0 6px 18px rgba(61,90,254,.14);">' + head + body + '</div>';
 }
 
 // [v9.14] 📊 월간 경영 리포트 — 숫자로 보는 SYNK (매월 1일, 원장 메일 즉발 + 원장 탭 상설)
@@ -1083,20 +1096,20 @@ function myJourneyHtml_(o) {
       if (n > idxJ) return; // 미도달은 아래 🔒로
       const cur = n === idxJ;
       const sz = cur ? 44 : 34, rd = cur ? 11 : 9;
-      const bd = cur ? '2.5px solid #4F46E5' : '2px solid #818CF8';
-      const ring = cur ? 'box-shadow:0 0 0 3px rgba(79,70,229,.18);' : '';
+      const bd = cur ? '2.5px solid #3D5AFE' : '2px solid #7C9BFF';
+      const ring = cur ? 'box-shadow:0 0 0 3px rgba(61,90,254,.18);' : '';
       cells.push(im.indexOf('http') === 0
         ? '<img src="' + im + '" style="width:' + sz + 'px;height:' + sz + 'px;border-radius:' + rd + 'px;background:#fff;border:' + bd + ';' + ring + '"/>'
         : '<div style="width:' + sz + 'px;height:' + sz + 'px;border-radius:' + rd + 'px;background:#fff;border:' + bd + ';' + ring + 'text-align:center;line-height:' + sz + 'px;font-size:' + (cur ? 20 : 15) + 'px;">' + (FRAME_ICON[Math.min(i, 6)] || '🐣') + '</div>');
     });
-    cells.push('<div style="flex:1;height:3px;background:repeating-linear-gradient(90deg,#C4B5FD 0 6px,transparent 6px 11px);"></div>');
+    cells.push('<div style="flex:1;height:3px;background:repeating-linear-gradient(90deg,#BCC8FF 0 6px,transparent 6px 11px);"></div>');
     for (let k = 0; k < Math.min(stagesJ.length - idxJ, 2); k++)
-      cells.push('<div style="width:34px;height:34px;border-radius:9px;background:#EDEBFA;border:2px dashed #C4B5FD;text-align:center;line-height:34px;font-size:15px;">🔒</div>');
+      cells.push('<div style="width:34px;height:34px;border-radius:9px;background:#EDEBFA;border:2px dashed #BCC8FF;text-align:center;line-height:34px;font-size:15px;">🔒</div>');
     stripJ = '<div style="display:flex;gap:4px;align-items:center;padding:9px 0 10px;">' + cells.join('') + '</div>';
   } else {
     const journey = stagesJ.map((s, i) => {
       const cur = (i + 1) === idxJ, past = (i + 1) < idxJ;
-      return '<span style="color:' + (cur ? '#4F46E5;font-weight:800' : (past ? '#9CA3AF' : '#D1D5DB')) + ';">' + s.name + '</span>';
+      return '<span style="color:' + (cur ? '#3D5AFE;font-weight:800' : (past ? '#9CA3AF' : '#D1D5DB')) + ';">' + s.name + '</span>';
     }).join(' <span style="color:#D1D5DB;">›</span> ');
     stripJ = '<div style="font-size:12px;padding:6px 0 9px;">🐣 ' + journey + '</div>';
   }
@@ -1114,15 +1127,15 @@ function myJourneyHtml_(o) {
     : '';
   // [v9.29] 🌟 나의 목표 — 학생이 직접 쓴 드림 한 줄(CB 80)을 카드 최상단에 노출. 비어있으면 작성 유도. 이스케이프 필수(사용자 입력).
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  const dreamLine = '<div style="background:#EEF2FF;border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;color:#4338CA;margin-bottom:9px;">' +
+  const dreamLine = '<div style="background:#EEF2FF;border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;color:#2B3FD9;margin-bottom:9px;">' +
     (o.dream ? '🌟 나의 목표: ' + esc(o.dream) : '🌟 나의 목표를 적어보세요') + '</div>';
   // [v9.35] 소프트 글로우 축 — 헤더 행(제목+우측 코랄 '진화까지 nP'), 토큰(그라디언트·라운드 18/12·섀도)
   const remJ = mon.rem || 0;
-  return '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E3E0FA 55%,#F5F3FF);border:2px solid #C4B5FD;border-radius:18px;padding:13px 15px;box-shadow:0 6px 18px rgba(79,70,229,.14);">' +
+  return '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E0E7FF 55%,#F5F3FF);border:2px solid #BCC8FF;border-radius:18px;padding:13px 15px;box-shadow:0 6px 18px rgba(61,90,254,.14);">' +
     dreamLine +
     '<div style="display:flex;justify-content:space-between;align-items:baseline;">' +
-      '<div style="font-size:15px;font-weight:800;color:#4338CA;">📖 ' + o.nm + '의 여정</div>' +
-      '<div style="font-size:11px;font-weight:700;color:#FF7A6B;">' + (remJ > 0 ? '진화까지 ' + remJ + 'P' : ((o.grem || 0) > 0 ? '📖 문법 ' + o.grem + '개만!' : '👑 최종 진화')) + '</div>' + // [v9.36] 게이트 대기(rem=0·grem>0)는 최종 진화가 아니다
+      '<div style="font-size:15px;font-weight:800;color:#2B3FD9;">📖 ' + o.nm + '의 여정</div>' +
+      '<div style="font-size:11px;font-weight:700;color:#FF6B35;">' + (remJ > 0 ? '진화까지 ' + remJ + 'P' : ((o.grem || 0) > 0 ? '📖 문법 ' + o.grem + '개만!' : '👑 최종 진화')) + '</div>' + // [v9.36] 게이트 대기(rem=0·grem>0)는 최종 진화가 아니다
     '</div>' +
     stripJ +
     '<div style="background:#fff;border-radius:12px;padding:9px 11px;font-size:12.5px;line-height:2;">' +
@@ -1132,7 +1145,7 @@ function myJourneyHtml_(o) {
       '⚔️ 보스와 함께 <b>' + (rec.raids || 0) + '회</b><br/>' +
       '🏔️ 최고 월간 <b>' + (rec.bestMonth || o.mPts || 0) + 'P</b> · 📚 지금까지 <b>' + (o.t || 0) + 'P</b>' +
     '</div>' +
-    '<div style="font-size:12.5px;color:#4338CA;padding-top:9px;">' + acadLine + '</div>' +
+    '<div style="font-size:12.5px;color:#2B3FD9;padding-top:9px;">' + acadLine + '</div>' +
     // [v9.36] 학습추적(W3) — 이 단계 문법 도달 진행(게이트 없는 단계·무데이터면 상위에서 '' 전달 → 생략)
     (o.gline ? '<div style="font-size:12px;color:#6D28D9;padding-top:4px;">' + o.gline + '</div>' : '') +
     storyBlock +
@@ -1193,6 +1206,24 @@ function calcAll() {
   if (plData.length) {
     if (pl.getRange('G1').getValue() !== '연월') pl.getRange('G1').setValue('연월');
     writeIfChanged(pl, 2, 7, ymCol);
+  }
+
+  // --- [v9.41] attendance id(A열) 빈칸 보정 — GPS 셀프 출석(Glide Add Row)은 id를 비워 둔다.
+  //     코드 파이프라인은 A열을 안 읽어 기능 무해하지만, 빈 키 행이 쌓이는 조잡함 제거(point_logs 보정과 동일 규율).
+  {
+    let aFirst = -1, aLast = -1;
+    atData.forEach((r, i) => {
+      if (r[1] && r[2] && !r[0]) {
+        r[0] = 'ATG' + dstr(r[2], tz, 'yyyyMMdd').replace(/\D/g, '') + '-' + String(r[1]).trim();
+        if (aFirst < 0) aFirst = i;
+        aLast = i;
+      }
+    });
+    if (aFirst >= 0) {
+      const idColA = [];
+      for (let i = aFirst; i <= aLast; i++) idColA.push([atData[i][0]]);
+      writeIfChanged(at, aFirst + 2, 1, idColA); // A열만 — Glide 소유 행의 다른 열 미접촉
+    }
   }
 
   // --- 집계 (이월잔액 포함) ---
@@ -1674,7 +1705,7 @@ function calcAll() {
             });
           }
         }
-        speakOut.push(['<div style="' + CARD_FONT + 'background:#F5F3FF;border:2px solid #C4B5FD;border-radius:14px;padding:9px 12px;font-size:13px;">💬 ' + line + '</div>']);
+        speakOut.push(['<div style="' + CARD_FONT + 'background:#F5F3FF;border:2px solid #BCC8FF;border-radius:14px;padding:9px 12px;font-size:13px;">💬 ' + line + '</div>']);
         styleOut.push([playStyleHtml_(playStyleOf_(styleLogs[id] || []))]);
         const chemP = chemi[id];
         chemOut.push([chemP
@@ -1724,7 +1755,7 @@ function calcAll() {
           bannerOut.push([crownToday2
             ? '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FDE68A,#F5A623);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;">🎉 ' + (r[1] || id) + ' өнөөдөр титэм авлаа! Гэртээ магтаж өгөөрэй 💛<br/><span style="font-weight:400;font-size:11px;">오늘 왕관을 받았어요! 집에서 칭찬해 주세요</span></div>'
             : (evoRecent
-              ? '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#C4B5FD,#A5B4FC);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;color:#fff;">⚡ ' + (r[1] || id) + '-ийн монстр шинэ шатанд хувьслаа! Түүхэн мөч 📸<br/><span style="font-weight:400;font-size:11px;">몬스터가 진화했어요!' + (gEvoForm ? ' \'' + gEvoForm + '\' 문법까지 익히고 진화!' : ' 역사적인 순간') + '</span></div>'
+              ? '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#7C9BFF,#3D5AFE);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;color:#fff;">⚡ ' + (r[1] || id) + '-ийн монстр шинэ шатанд хувьслаа! Түүхэн мөч 📸<br/><span style="font-weight:400;font-size:11px;">몬스터가 진화했어요!' + (gEvoForm ? ' \'' + gEvoForm + '\' 문법까지 익히고 진화!' : ' 역사적인 순간') + '</span></div>'
               : '')]);
           // [v9.20] 오늘의알림 — 푸시/인앱배너용, "하루짜리 결정적 순간"만 (왕관·진화·생일).
           //  [v9.20 최적화] 진화임박(rem) 분기 제거: 매일 값 변동→시트 churn + 푸시 시 매일 알림 피로.
@@ -3778,6 +3809,23 @@ function dailyGuard() {
       if (x.by) (teacherNotices[x.by] = teacherNotices[x.by] || []).push('· ' + x.sid + ' 일일한도(' + x.rs + ') ' + (-x.pts) + 'P');
     }
   });
+  { // [v9.41·자동화] 잔액 음수 학생 야간 감지 — 스토어 과소비(Visibility 미설정·조작)를 다음날 아침 브리핑으로. 서명 dedup(같은 명단이면 재알림 없음)
+    const negB = [];
+    if (pf.getMaxColumns() >= 43) {
+      const balN = pf.getRange(2, 43, pf.getLastRow() - 1, 1).getValues();
+      pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().forEach((r, i) => {
+        if (r[0] && r[3] === 'student' && Number(balN[i] && balN[i][0]) < 0) negB.push(r[0] + ' ' + (r[1] || '') + '(' + balN[i][0] + 'P)');
+      });
+    }
+    if (negB.length) {
+      const stNB = ensureSheet(ss, 'app_state', ['key', 'value']);
+      const sigNB = negB.join(',');
+      if (String(getState(stNB, '음수잔액_상태').val || '') !== sigNB) {
+        adminMail('[SYNK] ⚠️ 잔액 음수 학생 ' + negB.length + '명', negB.join('\n') + '\n\n스토어 교환 버튼의 잔액 조건(가이드 §6-3)을 확인하세요. 테스트 구매면 point_logs의 음수 행 삭제.');
+        setState(stNB, '음수잔액_상태', sigNB);
+      }
+    } else { const stNB2 = ss.getSheetByName('app_state'); if (stNB2 && String(getState(stNB2, '음수잔액_상태').val || '') !== '') setState(stNB2, '음수잔액_상태', ''); }
+  }
   if (fixRows.length) {
     appendPoints(ss, fixRows);
     adminMail('[SYNK] ⚠️ 일일 한도 초과 자동 정정 ' + fixRows.length + '건',
@@ -5359,7 +5407,7 @@ function drawScoreChart_(sl, scores) {
   marker.remove();
   if (!scores || !scores.length) {
     const tb = sl.insertTextBox('이번이 첫 기록! ✨', L, T, W, H);
-    tb.getText().getTextStyle().setFontSize(13).setBold(true).setForegroundColor('#4F46E5'); // [v9.35] 토큰 잉크
+    tb.getText().getTextStyle().setFontSize(13).setBold(true).setForegroundColor('#3D5AFE'); // [v9.35] 토큰 잉크
     return;
   }
   const use = scores.slice(-5), n = use.length;
@@ -5368,7 +5416,7 @@ function drawScoreChart_(sl, scores) {
     const sc = Math.max(0, Math.min(100, Number(use[i]) || 0));
     const bh = Math.max(H * (sc / 100), 2);
     const bar = sl.insertShape(SlidesApp.ShapeType.ROUND_RECTANGLE, L + i * slot + (slot - barW) / 2, T + H - bh, barW, bh);
-    bar.getFill().setSolidFill(i === n - 1 ? '#FF7A6B' : '#4F46E5'); // [v9.35] 토큰 정렬 — 막대=인디고 · 최신 끝점=코랄 강조 (레이아웃 무변경)
+    bar.getFill().setSolidFill(i === n - 1 ? '#FF6B35' : '#3D5AFE'); // [v9.35] 토큰 정렬 — 막대=인디고 · 최신 끝점=코랄 강조 (레이아웃 무변경)
     bar.getBorder().setTransparent();
   }
 }
@@ -5882,12 +5930,12 @@ function buildMonthlyCards_() {
       : '🌟 다음 달 주인공 예약';
     const mi = String(monMapC[s.mon] || ''); // [v9.35]
     // [v9.35] 골격을 소프트 글로우 축으로 정렬(보더 #C4B5FD 2px·라운드 18/12·섀도) — 티어 그라디언트는 유지
-    return [ym, s.id, '<div style="' + CARD_FONT + 'background:' + tier[2] + ';border:2px solid #C4B5FD;border-radius:18px;padding:10px;max-width:230px;box-shadow:0 6px 18px rgba(79,70,229,.14);">' +
+    return [ym, s.id, '<div style="' + CARD_FONT + 'background:' + tier[2] + ';border:2px solid #BCC8FF;border-radius:18px;padding:10px;max-width:230px;box-shadow:0 6px 18px rgba(61,90,254,.14);">' +
       '<div style="background:#fff;border-radius:12px;padding:10px 12px;text-align:center;">' +
       '<div style="font-size:11px;color:#6B7280;">SYNK ' + ym + ' · ' + tier[3] + ' ' + tier[1] + '</div>' +
       '<div style="font-size:17px;font-weight:800;padding:3px 0;">' + s.nm + '</div>' +
       (mi.indexOf('http') === 0 ? '<img src="' + mi + '" style="width:72px;image-rendering:pixelated;display:block;margin:2px auto 0;"/>' : '') + // [v9.35] A안 이미지에도 무해
-      '<div style="font-size:12px;color:#4338CA;">' + s.mon + '와 함께한 한 달</div>' +
+      '<div style="font-size:12px;color:#2B3FD9;">' + s.mon + '와 함께한 한 달</div>' +
       '<div style="font-size:11px;color:#6B7280;padding-top:2px;">' + (function(){ const ps2 = playStyleOf_(cardLogs[s.id] || []); return ps2[0] + ' ' + ps2[1]; })() + '</div>' +
       '<div style="font-size:13px;padding-top:6px;border-top:1px dashed #E5E7EB;margin-top:6px;">' + stat + '</div>' +
       '</div></div>'];
@@ -5912,10 +5960,10 @@ function updateTravelMap_() {
   for (let i = 0; i < 12; i++) {
     const nm = MAP_NAME[i];
     cells += done[i]
-      ? '<div style="width:31%;margin:1%;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:2px solid #A5B4FC;border-radius:12px;text-align:center;padding:8px 0;float:left;"><div style="font-size:22px;">' + MAP_EMOJI[i] + '</div><div style="font-size:11px;font-weight:700;">' + nm + '</div><div style="font-size:10px;color:#4338CA;">⭕ 정복!</div></div>'
+      ? '<div style="width:31%;margin:1%;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:2px solid #A5B4FC;border-radius:12px;text-align:center;padding:8px 0;float:left;"><div style="font-size:22px;">' + MAP_EMOJI[i] + '</div><div style="font-size:11px;font-weight:700;">' + nm + '</div><div style="font-size:10px;color:#2B3FD9;">⭕ 정복!</div></div>'
       : '<div style="width:31%;margin:1%;background:#F3F4F6;border:2px dashed #D1D5DB;border-radius:12px;text-align:center;padding:8px 0;float:left;opacity:.75;"><div style="font-size:22px;">🌫️</div><div style="font-size:11px;color:#9CA3AF;">???</div><div style="font-size:10px;color:#9CA3AF;">' + (i + 1) + '월의 무대</div></div>';
   }
-  const html = '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #E9E7F5;border-radius:16px;padding:12px;"><div style="font-size:14px;font-weight:800;padding-bottom:6px;">🗺️ 시냅스 여행 지도 — 한국 12경 <span style="color:#4338CA;">' + n + '/12곳 정복</span></div><div style="overflow:hidden;">' + cells + '</div><div style="clear:both;font-size:11px;color:#6B7280;padding-top:6px;">매달 싱크 스토리가 발간되면 새로운 무대에 도장이 찍혀요 📖</div></div>';
+  const html = '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #E9E7F5;border-radius:16px;padding:12px;"><div style="font-size:14px;font-weight:800;padding-bottom:6px;">🗺️ 시냅스 여행 지도 — 한국 12경 <span style="color:#2B3FD9;">' + n + '/12곳 정복</span></div><div style="overflow:hidden;">' + cells + '</div><div style="clear:both;font-size:11px;color:#6B7280;padding-top:6px;">매달 싱크 스토리가 발간되면 새로운 무대에 도장이 찍혀요 📖</div></div>';
   const st = ensureSheet(ss, 'app_state', ['key','value']);
   const data = st.getLastRow() < 2 ? [] : st.getRange(2, 1, st.getLastRow() - 1, 2).getValues();
   let found = -1;
@@ -8679,7 +8727,7 @@ function setupPlaceholderImages() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ct = ss.getSheetByName('contents');
   if (!ct || ct.getLastRow() < 2) { Logger.log('contents 비어 있음 — 플레이스홀더 스킵'); return; }
-  const color = { monster: '4F46E5', boss: '312E81', worldboss: '1E1B4B', store: 'F5A623' }; // 인디고·다크퍼플·더어둡게·[v9.19]스토어 앰버
+  const color = { monster: '3D5AFE', boss: '312E81', worldboss: '1E1B4B', store: 'F5A623' }; // 인디고·다크퍼플·더어둡게·[v9.19]스토어 앰버
   const n = ct.getLastRow() - 1;
   const data = ct.getRange(2, 1, n, 6).getValues(); // A~F (콘텐츠ID·유형·이름·설명·이미지URL·순번)
   let filled = 0;
@@ -9132,6 +9180,7 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   safeRun('checkEvolution', checkEvolution);
   safeRun('checkAchievements', checkAchievements);
   safeRun('checkUnknownReasonsNightly', checkUnknownReasonsNightly_); // [v9.28] 미인식 reason 발각 지연 7일→1일
+  safeRun('translateContentsNightly', translateContents); // [v9.41·자동화] 빈 몽골어·영어 번역을 매일 밤 60행씩 자동 소진 — "translateContents 수동 반복 실행" 절차 제거(빈칸 없으면 API 호출 0)
   // [v9.28] 완주 마커 — 반드시 맨 마지막 줄. 6분 타임아웃이면 이 줄 자체가 실행 안 되어 워치독이 증발을 감지
   try {
     const ssNJ = SpreadsheetApp.getActiveSpreadsheet();
@@ -9194,6 +9243,7 @@ function weeklyJobs() {    // 매주 월 07시
   else Logger.log('주간 통합 리포트: 쿼터 부족으로 미발송');
 
   safeRun('syncToNotion', syncToNotion_); // [v9.21] 앱→노션 크루 DB 동기화 (NOTION_TOKEN 없으면 자동 스킵)
+  safeRun('calcTeacherStats', calcTeacherStats); // [v9.41·자동화] 강사 지표(케어지수·왕관편중) 주간 자동 갱신 — 월 1회(monthlyReport)만 갱신돼 원장 뷰가 한 달 낡던 것 해소(멱등·전월 왕관 기준이라 주중 재실행 무해)
   safeRun('systemManifest', buildSystemManifest); // [v9.37] 주간 실측 스냅샷 — 시트·콘텐츠·트리거·의존성 드리프트를 system_manifest 시트에 갱신
   // [v7.0] pruneAppState 제거 — 인자(ss, 월)가 필요한 archiveMonthly 내부 헬퍼였음 (무인자 호출 시 매주 실패)
 }
