@@ -582,12 +582,38 @@
  *      시냅스 세계관 정합)를 메인 축으로: 인디고 #4F46E5→일렉트릭 블루 #3D5AFE·잉크 #4338CA→#2B3FD9·
  *      게이지 #818CF8→#7C9BFF·카드 보더 라벤더→라이트블루 #BCC8FF·코랄 #FF7A6B→Energy Orange #FF6B35·
  *      진화 배너 발광 블루 그라디언트. 왕관 골드·학업 그린(Meadowland 축)·FRAME_CSS 단계 개성은 보존.
+ *
+ * [v9.42 — 🎭 데모 모드 + 도감 잠금 (유호님 지시: "전부 상용하는 것처럼" 시연 + 도감 전체 오픈 사고 봉인)]
+ * 170. seedDemoData()/clearDemoData() 원버튼 — 가상 크루 8명(데모정규반·데모주말반, 시나리오: 에이스·오늘
+ *      생일·진화 임박 95P·케어 사각·리텐션 🔴·신입 🟡·숙제왕·스킨 선택)의 지난달+이번달 출석·포인트·문법·
+ *      학업·연료·운영(문의·결석·매출·리드·전당·크루·리포트카드)을 깔고 월간 시상→스토리북→카드→지도→경영→
+ *      레이드·리그→중계→보드를 실제 배치로 발간. 실데이터 격리 3중(DEMO- ID·'데모' 반명·시드 시각 마커),
+ *      clear는 전 시트 역순 삭제+산출물 원복 재실행. syncProfiles가 DEMO- 행 보존(급감 분모 제외·AY tail-clear
+ *      시프트) · syncToNotion_은 DEMO- 스킵(실 크루 DB 오염 방지).
+ * 171. 도감 잠금 — buildDexHtml_(CE 83 도감HTML): 도달 몬스터만 공개(현재 단계 글로우), 미도달은 🌫️ ???+필요
+ *      P만. 구 조립에서 도감 전체(이미지·스토리)가 노출되던 문제의 코드 측 봉인 — Glide Collection 필터
+ *      (threshold ≤ 누적잔액)와 이중. calcAll 편승·writeIfChanged.
+ *
+ * [v9.43 — 🫁 살아있는 몬스터 + 폼 자동화 완결 (유호님 지시: 숨쉬는 디테일·몰입 상세·사소함의 아름다움)]
+ * 172. CSS 호흡 애니메이션(CARD_ANIM/ANIM_BREATH/ANIM_BOSS) — 홈 액자·도감 현재 칸·여정 스트립 현재 썸네일의
+ *      몬스터가 3.2s 주기로 숨쉰다(transform만·성능 안전). Glide Rich Text(WebView) <style> 렌더 — 미지원
+ *      기기는 정적 폴백(절대 깨지지 않음)·prefers-reduced-motion 존중. "전부 움직이면 조잡" — 현재 파트너만.
+ * 173. buildMonsterDetailCards() — contents '상세카드' 열(langColOf_·Row ID 회피): 몬스터=그 단계 시그니처 색
+ *      (FRAME_CSS)으로 물들인 히어로 카드(숨쉬는 150px+스토리+진화 조건), 보스·대군주=다크 위압 카드(등장 대사
+ *      이탤릭·격파 대사는 스포일러 숨김). preflight 편입·멱등(변경분만 쓰기). Glide 도감/보스 상세 Rich Text 소스.
+ * 174. app_state '이달의보스HTML' — 월 로테이션 보스 실물 카드(숨쉬는 이미지+등장 대사) 매일 보장(동일값 무기록).
+ *      학생 소식탭·강사 수업준비탭 바인딩용 — 보스가 텍스트가 아니라 "존재"가 된다.
+ * 175. [자동화] sweepLeadForm_ — 광고 리드폼 응답(리드폼_응답)을 10분 스위프가 leads로 자동 편입(수기 이관 폐지,
+ *      포인터·클램프·원장 알림). 상담폼(자동)+리드폼(자동)으로 구글폼 파이프라인 완결.
+ * 176. [v9.42 자기검증 반영] 시드 삽입 위치=실학생 블록 직후(동기화 재배치로 계산열 어긋나는 경로 차단)·
+ *      DEMO-03 임박 밴드 91~97P(출석정산 요일 변동 흡수)·clear 오폭 3중 완화(league_history 데모반명 기준·
+ *      스토리북 사전존재 판별·notices 자동공지 이모지 접두 조건)·시드 체인에 birthdayCheck(생일 시연 즉시).
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.41'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
+const SYNK_VERSION = 'v9.43'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -951,6 +977,16 @@ function hashPick_(arr, seedStr) { let h = 0; for (let i = 0; i < seedStr.length
 //   Noto Sans KR(안드로이드 한글 기본) → Apple SD Gothic Neo(iOS) → Malgun(윈도) 순 폴백 + 살짝 조인 자간.
 const CARD_FONT = "font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;letter-spacing:-0.01em;";
 
+// [v9.43] 🫁 숨쉬는 몬스터 — CSS keyframes 토큰. Glide Rich Text(WebView)는 <style> 블록을 렌더하므로 작동하고,
+//   미지원 기기에선 스타일이 무시되어 "정적 이미지"로 조용히 남는다(그레이스풀 폴백 — 절대 깨지지 않음).
+//   synkBreath = 몬스터 호흡(3.2s 잔잔) · synkBoss = 보스 위압(4.4s 무겁게+그림자 맥동). transform만 사용(성능 안전).
+//   prefers-reduced-motion 존중 — 움직임 민감 사용자에겐 자동 정지(명품의 접근성 디테일).
+const CARD_ANIM = '<style>@keyframes synkBreath{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.035) translateY(-2px)}}' +
+  '@keyframes synkBoss{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}' +
+  '@media (prefers-reduced-motion:reduce){.skBr,.skBo{animation:none!important}}</style>';
+const ANIM_BREATH = 'animation:synkBreath 3.2s ease-in-out infinite;transform-origin:50% 100%;';
+const ANIM_BOSS = 'animation:synkBoss 4.4s ease-in-out infinite;transform-origin:50% 100%;';
+
 // [v9.11] 🖼️ 액자 시스템 — 도달 최고 단계(AP)가 액자 등급. 스킨은 취향, 액자는 지위.
 // [v9.35] 소프트 글로우 축 재설계 — 프레임은 공통 그라디언트+토큰(라운드 18/12·섀도), 단계 개성은
 //   보더색·배지 이모지·캡션 뱃지 색으로. 흰 캡션 폐지(밝은 프레임 위 진한 잉크 — WCAG 4.5:1 이상).
@@ -969,9 +1005,10 @@ const FRAME_ICON = ['🌱','⚡','🔗','💡','🕯️','✨','👑'];
 function buildMonsterFrame_(dispName, dispImg, apIdx, pct, rem) {
   const fi = Math.min(Math.max(apIdx - 1, 0), 6);
   const f = FRAME_CSS[fi], ic = FRAME_ICON[fi];
+  // [v9.43] 홈 액자의 몬스터가 숨을 쉰다 — 살아있는 파트너 (미지원 기기는 정적 폴백)
   const inner = dispImg && dispImg.indexOf('http') === 0
-    ? '<img src="' + dispImg + '" style="width:100%;border-radius:12px;display:block;background:#fff;"/>'
-    : '<div style="background:#fff;border-radius:12px;text-align:center;font-size:64px;padding:28px 0;">' + ic + '</div>';
+    ? '<div style="background:#fff;border-radius:12px;overflow:hidden;"><img class="skBr" src="' + dispImg + '" style="width:100%;display:block;' + ANIM_BREATH + '"/></div>'
+    : '<div style="background:#fff;border-radius:12px;text-align:center;padding:28px 0;"><span class="skBr" style="display:inline-block;font-size:64px;' + ANIM_BREATH + '">' + ic + '</span></div>';
   const hasG = typeof pct === 'number' && !isNaN(pct);
   const pctC = hasG ? Math.max(0, Math.min(100, pct)) : 0;
   const remN = Number(rem) || 0;
@@ -986,7 +1023,7 @@ function buildMonsterFrame_(dispName, dispImg, apIdx, pct, rem) {
       '<div style="font-size:11px;color:#6B7280;padding:0 4px 3px;">' +
       (remN > 0 ? '🧠 시냅스 게이지 ' + pctC + '% — 다음 진화까지 ' + remN + 'P!' : '👑 모든 진화 완료 — 전설의 영역!') + '</div>'
     : '';
-  return '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E0E7FF 55%,#F5F3FF);padding:8px;border-radius:18px;border:2px solid ' + f[1] + ';box-shadow:0 6px 18px rgba(61,90,254,.14);">' +
+  return CARD_ANIM + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E0E7FF 55%,#F5F3FF);padding:8px;border-radius:18px;border:2px solid ' + f[1] + ';box-shadow:0 6px 18px rgba(61,90,254,.14);">' +
     inner + cap + gauge + '</div>';
 }
 
@@ -1081,6 +1118,35 @@ function setAppState_(ss, key, val) {
   else st.getRange(st.getLastRow() + 1, 1, 1, 2).setValues([[key, val]]);
 }
 
+// [v9.42] 🗂️ 도감 진행 카드 — 도달한 몬스터만 공개, 미도달은 🔒 ??? 실루엣(스포일러 차단).
+//   구 조립에서 도감이 전부 오픈돼 보이던 문제의 코드 측 봉인: Glide Collection 필터와 별개로,
+//   이 카드가 "몇 마리 만났고 다음은 몇 P인지"를 한 장으로 보여준다(여행지도 12칸 그리드 패턴).
+function buildDexHtml_(stages, t, curIdx) {
+  let cells = '', met = 0;
+  stages.forEach((s, i) => {
+    const reached = t >= s.th;
+    if (reached) met++;
+    const cur = (i + 1) === curIdx;
+    const im = String(s.img || '');
+    if (reached) {
+      const br = cur ? ANIM_BREATH : ''; // 현재 파트너만 숨쉬기 — 전부 움직이면 조잡, 하나만 살아있으면 시선이 간다
+      cells += '<div style="width:23%;margin:1%;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:2px solid ' + (cur ? '#3D5AFE' : '#BCC8FF') + ';border-radius:12px;text-align:center;padding:7px 0 5px;float:left;' + (cur ? 'box-shadow:0 0 0 3px rgba(61,90,254,.16);' : '') + '">' +
+        (im.indexOf('http') === 0
+          ? '<img class="skBr" src="' + im + '" style="width:40px;height:40px;border-radius:9px;background:#fff;' + br + '"/>'
+          : '<div class="skBr" style="font-size:26px;line-height:40px;' + br + '">' + (FRAME_ICON[Math.min(i, 6)] || '🐣') + '</div>') +
+        '<div style="font-size:10.5px;font-weight:800;color:#2B3FD9;padding-top:2px;">' + s.name + (cur ? ' ✦' : '') + '</div></div>';
+    } else {
+      cells += '<div style="width:23%;margin:1%;background:#F3F4F6;border:2px dashed #D1D5DB;border-radius:12px;text-align:center;padding:7px 0 5px;float:left;opacity:.8;">' +
+        '<div style="font-size:26px;line-height:40px;">🌫️</div>' +
+        '<div style="font-size:10px;color:#9CA3AF;padding-top:2px;">??? · ' + s.th + 'P</div></div>';
+    }
+  });
+  return CARD_ANIM + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #E9E7F5;border-radius:16px;padding:11px 12px;">' +
+    '<div style="font-size:13.5px;font-weight:800;padding-bottom:5px;">🗂️ 몬스터 도감 <span style="color:#3D5AFE;">' + met + '/' + stages.length + ' 만남</span></div>' +
+    '<div style="overflow:hidden;">' + cells + '</div>' +
+    '<div style="clear:both;font-size:10.5px;color:#9CA3AF;padding-top:5px;">포인트를 모으면 다음 친구가 모습을 드러내요 ✨</div></div>';
+}
+
 // [v9.20] 📖 나의 여정 — 개인 스토리 센터피스. 몬스터 여정 + 개인 마일스톤 + 실력 성장을 한 카드로.
 //   "개개인 스토리가 가장 중요" 철학의 홈: 모든 학생이(조용한 학생도) 자기 이야기의 주인공.
 function myJourneyHtml_(o) {
@@ -1098,9 +1164,10 @@ function myJourneyHtml_(o) {
       const sz = cur ? 44 : 34, rd = cur ? 11 : 9;
       const bd = cur ? '2.5px solid #3D5AFE' : '2px solid #7C9BFF';
       const ring = cur ? 'box-shadow:0 0 0 3px rgba(61,90,254,.18);' : '';
+      const brJ = cur ? ANIM_BREATH : ''; // [v9.43] 여정 스트립의 현재 파트너도 숨쉰다
       cells.push(im.indexOf('http') === 0
-        ? '<img src="' + im + '" style="width:' + sz + 'px;height:' + sz + 'px;border-radius:' + rd + 'px;background:#fff;border:' + bd + ';' + ring + '"/>'
-        : '<div style="width:' + sz + 'px;height:' + sz + 'px;border-radius:' + rd + 'px;background:#fff;border:' + bd + ';' + ring + 'text-align:center;line-height:' + sz + 'px;font-size:' + (cur ? 20 : 15) + 'px;">' + (FRAME_ICON[Math.min(i, 6)] || '🐣') + '</div>');
+        ? '<img class="skBr" src="' + im + '" style="width:' + sz + 'px;height:' + sz + 'px;border-radius:' + rd + 'px;background:#fff;border:' + bd + ';' + ring + brJ + '"/>'
+        : '<div class="skBr" style="width:' + sz + 'px;height:' + sz + 'px;border-radius:' + rd + 'px;background:#fff;border:' + bd + ';' + ring + brJ + 'text-align:center;line-height:' + sz + 'px;font-size:' + (cur ? 20 : 15) + 'px;">' + (FRAME_ICON[Math.min(i, 6)] || '🐣') + '</div>');
     });
     cells.push('<div style="flex:1;height:3px;background:repeating-linear-gradient(90deg,#BCC8FF 0 6px,transparent 6px 11px);"></div>');
     for (let k = 0; k < Math.min(stagesJ.length - idxJ, 2); k++)
@@ -1131,7 +1198,7 @@ function myJourneyHtml_(o) {
     (o.dream ? '🌟 나의 목표: ' + esc(o.dream) : '🌟 나의 목표를 적어보세요') + '</div>';
   // [v9.35] 소프트 글로우 축 — 헤더 행(제목+우측 코랄 '진화까지 nP'), 토큰(그라디언트·라운드 18/12·섀도)
   const remJ = mon.rem || 0;
-  return '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E0E7FF 55%,#F5F3FF);border:2px solid #BCC8FF;border-radius:18px;padding:13px 15px;box-shadow:0 6px 18px rgba(61,90,254,.14);">' +
+  return CARD_ANIM + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E0E7FF 55%,#F5F3FF);border:2px solid #BCC8FF;border-radius:18px;padding:13px 15px;box-shadow:0 6px 18px rgba(61,90,254,.14);">' +
     dreamLine +
     '<div style="display:flex;justify-content:space-between;align-items:baseline;">' +
       '<div style="font-size:15px;font-weight:800;color:#2B3FD9;">📖 ' + o.nm + '의 여정</div>' +
@@ -1446,6 +1513,7 @@ function calcAll() {
   const weeklyOut = [], talkOut = [], bannerOut = []; // [v9.16]
   const alertOut = []; // [v9.20] 오늘의알림(BX 76) — 결정적 순간 1건(왕관/진화/생일/임박), 없으면 ''
   const ccOut = [], cdOut = []; // [v9.36] 게이트 2열 — CC(81) 남은문법수 · CD(82) 게이트문구
+  const dexOut = []; // [v9.42] CE(83) 도감HTML — 도달만 공개·미도달 ??? (도감 스포일러 차단)
   const journeyOut = []; // [v9.20] 나의여정(BY 77) — 개인 스토리 카드
   const clsB2 = {}; // sid→반 (주간 분모용)
   const radarOut = [], radarList = []; // [v9.14] (공유 변수는 함수 최상단으로 승격)
@@ -1805,6 +1873,7 @@ function calcAll() {
         const schSoFar = classTypeOf[id] ? scheduledSoFar_(classTypeOf[id], now) : 0;
         perDayOut.push([schSoFar > 0 ? Math.round((mPts / schSoFar) * 10) / 10 : 0]);
       }
+      dexOut.push([r[3] === 'student' ? buildDexHtml_(stages, t, mon.idx || 1) : '']); // [v9.42] 도감 진행 카드
       return [t, mPts, rankMap[id] === 999 ? '' : (rankMap[id] || ''), mon.stage, mon.pct,
               stk, matt, la, p, risk];
     });
@@ -1858,6 +1927,10 @@ function calcAll() {
     if (String(pf.getRange('CD1').getValue()) !== '게이트문구') pf.getRange('CD1').setValue('게이트문구');
     writeIfChanged(pf, 2, 81, ccOut);
     writeIfChanged(pf, 2, 82, cdOut);
+    // [v9.42] 도감HTML(CE 83) — 도달 공개·미도달 ??? 실루엣. 도감 탭 상단 카드(Collection 필터와 이중 봉인)
+    if (pf.getMaxColumns() < 83) pf.insertColumnsAfter(pf.getMaxColumns(), 83 - pf.getMaxColumns());
+    if (String(pf.getRange('CE1').getValue()) !== '도감HTML') pf.getRange('CE1').setValue('도감HTML');
+    writeIfChanged(pf, 2, 83, dexOut);
     { // 원장 홈 카드 2종
       radarList.sort((a2, b2) => a2.s === b2.s ? 0 : (a2.s === '🔴' ? -1 : 1));
       const rHtml = radarList.length
@@ -2025,6 +2098,22 @@ function calcAll() {
       const tp = tipPool[Math.floor(now / msPerDay) % tipPool.length];
       setState(st, '오늘의팁', String(tp[2]));
     }
+    { // [v9.43] 🐉 이달의 보스 카드 — 소식탭·강사탭용 실물 등장(월 로테이션, setState 동일값 무기록)
+      const bz = bossOfMonth(ss, Number(Utilities.formatDate(now, tz, 'M')));
+      if (bz) {
+        const bImg = (ctData.find(r => r[1] === 'boss' && String(r[2]) === bz.name) || [])[4] || '';
+        const bHero = String(bImg).indexOf('http') === 0
+          ? '<img class="skBo" src="' + bImg + '" style="width:110px;height:110px;border-radius:16px;background:#312E81;border:2.5px solid #6366F1;' + ANIM_BOSS + '"/>'
+          : '<span class="skBo" style="display:inline-block;font-size:64px;' + ANIM_BOSS + '">👾</span>';
+        setState(st, '이달의보스HTML', CARD_ANIM +
+          '<div style="' + CARD_FONT + 'background:linear-gradient(165deg,#1E1B4B,#312E81 60%,#1E1B4B);border:2px solid #6366F1;border-radius:18px;padding:14px;text-align:center;color:#E0E7FF;">' +
+          '<div style="font-size:10px;letter-spacing:.25em;color:#A5B4FC;">' + Utilities.formatDate(now, tz, 'M') + '월의 보스</div>' +
+          '<div style="padding:8px 0 9px;">' + bHero + '</div>' +
+          '<div style="font-size:17px;font-weight:900;color:#fff;">' + bz.name + '</div>' +
+          (bz.entry ? '<div style="font-size:12px;font-style:italic;color:#C7D2FE;padding-top:7px;line-height:1.8;">“' + bz.entry + '”</div>' : '') +
+          '<div style="font-size:11px;color:#818CF8;padding-top:8px;">이번 주 레이드에서 우리 반의 힘을 보여주자 ⚔️</div></div>');
+      }
+    }
     if (quizPool.length) props.setProperty('기준일', todayStr);
   }
   // [v5.6] 오늘의 숙제 — 수업이 끝난 저녁(21시 이후) 자동 일괄 게시. 강사 손 불필요.
@@ -2113,6 +2202,7 @@ function syncProfiles() {
   const dstLast = dst.getLastRow();
   const keep = {};
   const nonStudents = []; // [v7.0] teacher/parent/admin 행 보존 — 기존엔 매 동기화마다 지워지던 결함
+  const demoStu = []; // [v9.42] DEMO- 학생 행 보존 — 상담시트에 없는 시연용 로스터가 매일 아침 삭제되지 않게(급감 가드 분모에서도 제외)
   const existingStu = []; // [v9.34] {id,row} — 기존 학생의 물리 행 순서(행 안정화의 기준)
   let prevStudentCnt = 0; // [v9.19] 부분 축소 방어용 — 기존 학생 수
   if (dstLast >= 2) {
@@ -2120,7 +2210,10 @@ function syncProfiles() {
       if (!r[0]) return;
       keep[r[0]] = { parent_of: r[9] || '', pEmail: r[25] || '', created_at: r[14] || '' }; // [v9.22] created_at 보존
       if (r[3] && r[3] !== 'student') nonStudents.push(r.slice(0, 15));
-      else if (r[3] === 'student') { prevStudentCnt++; existingStu.push({ id: String(r[0]), row: i + 2 }); }
+      else if (r[3] === 'student') {
+        if (String(r[0]).indexOf('DEMO-') === 0) { demoStu.push(r.slice(0, 15)); return; } // [v9.42]
+        prevStudentCnt++; existingStu.push({ id: String(r[0]), row: i + 2 });
+      }
     });
   }
 
@@ -2200,6 +2293,7 @@ function syncProfiles() {
   if (apCnt > 0 && dst.getLastRow() > survCnt + 1) dst.insertRowsAfter(survCnt + 1, apCnt);
 
   const out = ordered.map(e => e.main);
+  demoStu.forEach(r => out.push(r)); // [v9.42] 데모 학생은 실학생 뒤·비학생 앞에 그대로 보존(상담시트 무관)
   nonStudents.forEach(r => out.push(r)); // [v7.0] 학생 뒤에 비학생 행 재기록
   // [v9.25] A7-1: 로스터 writeIfChanged — JSON 동일이면 setValues 생략(대부분 상담시트 무변동이라 A~O/Z/AY~BA 통째 skip).
   //   writeIfChanged는 셀값을 JSON.stringify로 비교 → Date는 ISO 전체 직렬화라 오탐(같은데 다르다고 판단)해도 '그냥 쓰기'(안전측), 반대(다른데 같다고)는 없음.
@@ -2221,8 +2315,9 @@ function syncProfiles() {
     // [v9.25] AY~BA는 out과 별개 소스(row[18]/[60]/[21])라 반드시 별도 비교 — out 무변동이어도 레벨/위험/비전만 바뀔 수 있음
     const trio = ordered.map(e => [e.lvl, e.risk, e.vision]); // [v8.7] 3열 1회 쓰기 (학생만, 비학생 제외)
     if (trio.length) writeIfChanged(dst, 2, 51, trio);
-    const tTail = lastNow - 1 - trio.length;                             // 학생 뒤(비학생·삭제) 행의 AY~BA는 비움 — 기존 전체 clear 보존
-    if (tTail > 0) dst.getRange(trio.length + 2, 51, tTail, 3).clearContent();
+    // [v9.42] tail-clear 시작을 데모 행 뒤로 — 데모 학생의 AY(한국어수준) 시연값이 매일 지워지지 않게
+    const tTail = lastNow - 1 - trio.length - demoStu.length;            // 데모·학생 뒤(비학생·삭제) 행의 AY~BA는 비움
+    if (tTail > 0) dst.getRange(trio.length + demoStu.length + 2, 51, tTail, 3).clearContent();
   }
   setState(ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'app_state', ['key', 'value']), '동기화보류_상태', ''); // [v9.22] 정상 동기화 → 보류 알림 재무장
   Logger.log(out.length + '명 동기화 완료');
@@ -7010,6 +7105,33 @@ function checkoutCheerMail_(ss) {
  * 1) 새 등원 기록 → 학부모 몽골어 메일 (오늘 기록만, 포인터 기반 중복 방지)
  * 2) notices 미번역분 → title_mn / body_mn 자동 채움                          */
 
+// [v9.43·자동화] 리드폼 응답 → leads 자동 편입 — "리드폼_응답 시트를 leads로 옮기세요"(수기)를 10분 스위프로 대체.
+//   매핑: 타임스탬프→날짜 · 이름 · 연락처 · 인지채널→유입경로 · 관심과정→메모. 나머지(체험·등록…)는 데스크 후속 기입.
+//   포인터 = Script Properties '리드폼_포인터'(등원알림 패턴·클램프 포함) — 시트 쓰기 0·중복 편입 0.
+function sweepLeadForm_(ss) {
+  const src = ss.getSheetByName('리드폼_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const last = src.getLastRow();
+  let from = Number(props.getProperty('리드폼_포인터')) || 1;
+  if (from > last) { props.setProperty('리드폼_포인터', String(last)); return; }
+  if (from >= last) return;
+  const rows = src.getRange(from + 1, 1, last - from, 5).getValues(); // 타임스탬프·이름·연락처·인지채널·관심과정
+  const ld = ensureSheet(ss, 'leads', ['날짜', '이름', '연락처', '유입경로', '추천인', '체험참석', '등록', '등록권종', '등록일', '미등록사유', '메모', '캠페인']);
+  const out = [];
+  const tz = ss.getSpreadsheetTimeZone();
+  rows.forEach(r => {
+    if (!r[1]) return;
+    out.push([r[0] ? dstr(r[0], tz) : dstr(new Date(), tz), String(r[1]).trim(), String(r[2] || '').trim(),
+      String(r[3] || '기타'), '', '', '', '', '', '', String(r[4] || ''), '리드폼']);
+  });
+  if (out.length) {
+    ld.getRange(ld.getLastRow() + 1, 1, out.length, 12).setValues(out);
+    adminMail('[SYNK] 📥 새 리드 ' + out.length + '건(광고 리드폼)', out.map(o => '· ' + o[1] + ' (' + o[3] + ') ' + o[2]).join('\n') + '\n\nleads 시트에서 체험 일정을 잡아주세요.');
+  }
+  props.setProperty('리드폼_포인터', String(last));
+}
+
 function parentSweep() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   // [v9.32] 상단 호출도 safeRun 보호 — 여기서 throw하면 아래 폼 편입·수업 브리핑·출결 보드가
@@ -7019,6 +7141,7 @@ function parentSweep() {
   safeRun('translateNotices', function () { translateNotices_(ss); });
   safeRun('translateTopics', function () { translateTopics_(ss); }); // [v5.7] 이번 주 우리 반 배운 것 → 몽골어
   safeRun('importFormResponses', importFormResponses); // [v6.3] 상담 폼 접수 편입
+  safeRun('sweepLeadForm', function () { sweepLeadForm_(ss); }); // [v9.43] 광고 리드폼 → leads 자동 편입(수기 이관 폐지)
   safeRun('classPrepMail', function () { classPrepMail_(ss, ss.getSpreadsheetTimeZone()); }); // [v6.8]
   safeRun('checkoutCheerMail', function () { checkoutCheerMail_(ss); }); // [v6.8]
   safeRun('todayBoard', function () { todayBoard_(ss); }); // [v8.1] 오늘의 출결 보드 (10분 갱신)
@@ -8838,6 +8961,7 @@ function syncToNotion_() {
   rows.forEach(r => {
     const id = String(r[0] || '');
     if (!id || r[3] !== 'student') return;
+    if (id.indexOf('DEMO-') === 0) return; // [v9.42] 시연용 데모 학생은 노션 크루 DB에 올리지 않는다(실DB 오염 방지)
     const name = String(r[1] || id), cls = String(r[4] || ''), stage = String(r[18] || '');
     const level = Number(r[66]) || null;                        // BO 현재급수
     const points = Number(r[15]) || 0;                          // P 획득 누계
@@ -8920,6 +9044,348 @@ const SHEET_SKELETON = [
     ['league_pairs', ['week','반A','반B','상태','결과']],
     ['academic_log', ['log_id','student_id','날짜','유형','값','비고','입력자']]
   ];
+
+/* ===================== [v9.43] 🎴 몬스터·보스 상세 카드 — "눌렀을 때 우와" =====================
+ * contents의 monster·boss·worldboss 행에 '상세카드' 열(HTML)을 생성 — Glide 도감/보스 상세 화면의 Rich Text 소스.
+ * 몬스터 = 그 단계의 시그니처 색(FRAME_CSS)으로 물들인 카드 + 숨쉬는 큰 이미지 + 스토리 + 진화 조건.
+ * 보스 = 다크 톤 위압 카드 + 등장 대사(도발) + 격파 대사는 스포일러 방지로 숨김(격파의 순간에 스토리로 공개).
+ * langColOf_ 패턴으로 열 탐색·생성(Row ID 회피) — preflightGlide 편입 + 수동 실행 가능(멱등·writeIfChanged). */
+function buildMonsterDetailCards() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ct = ss.getSheetByName('contents');
+  if (!ct || ct.getLastRow() < 2) return 'contents 비어 있음';
+  const col = langColOf_(ct, '상세카드');
+  const n = ct.getLastRow() - 1;
+  const data = ct.getRange(2, 1, n, 6).getValues();
+  // 몬스터 순번(임계 오름차순) → FRAME_CSS 색 매핑
+  const mons = data.filter(r => r[1] === 'monster').sort((a, b) => (Number(a[5]) || 0) - (Number(b[5]) || 0));
+  const monIdx = {}; mons.forEach((r, i) => { monIdx[String(r[0])] = i; });
+  const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const out = data.map(r => {
+    const type = String(r[1] || ''), nm = esc(r[2]), story = esc(r[3]), img = String(r[4] || ''), th = Number(r[5]) || 0;
+    if (type === 'monster') {
+      const i = monIdx[String(r[0])] || 0;
+      const f = FRAME_CSS[Math.min(i, 6)], ic = FRAME_ICON[Math.min(i, 6)];
+      const hero = img.indexOf('http') === 0
+        ? '<img class="skBr" src="' + img + '" style="width:150px;height:150px;border-radius:20px;background:#fff;border:3px solid ' + f[1] + ';box-shadow:0 10px 26px rgba(61,90,254,.2);' + ANIM_BREATH + '"/>'
+        : '<span class="skBr" style="display:inline-block;font-size:90px;' + ANIM_BREATH + '">' + ic + '</span>';
+      return [CARD_ANIM + '<div style="' + CARD_FONT + 'background:linear-gradient(160deg,' + f[2] + ',#FFFFFF 45%,' + f[2] + ');border:2px solid ' + f[1] + ';border-radius:20px;padding:18px 16px;text-align:center;">' +
+        '<div style="padding:6px 0 12px;">' + hero + '</div>' +
+        '<div style="font-size:21px;font-weight:900;color:' + f[3] + ';">' + ic + ' ' + nm + '</div>' +
+        '<div style="display:inline-block;font-size:11px;font-weight:700;color:' + f[3] + ';background:' + f[2] + ';border:1.5px solid ' + f[1] + ';border-radius:99px;padding:2px 11px;margin:6px 0 10px;">' + f[0] + ' · ' + (i + 1) + '단계</div>' +
+        '<div style="background:rgba(255,255,255,.85);border-radius:14px;padding:11px 13px;font-size:13px;line-height:1.9;color:#374151;text-align:left;">' + story + '</div>' +
+        '<div style="font-size:11.5px;color:#6B7280;padding-top:10px;">' + (th > 0 ? '🧠 시냅스 ' + th + 'P에서 깨어난 친구' : '🥚 처음부터 함께한 첫 친구') + ' — 매일의 연결이 다음 진화를 부른다</div>' +
+        '</div>'];
+    }
+    if (type === 'boss' || type === 'worldboss') {
+      const isW = type === 'worldboss';
+      const entry = esc(String(r[3] || '').split('|')[0]);
+      const hero = img.indexOf('http') === 0
+        ? '<img class="skBo" src="' + img + '" style="width:150px;height:150px;border-radius:20px;background:#312E81;border:3px solid #6366F1;box-shadow:0 12px 30px rgba(30,27,75,.55);' + ANIM_BOSS + '"/>'
+        : '<span class="skBo" style="display:inline-block;font-size:90px;' + ANIM_BOSS + '">👾</span>';
+      return [CARD_ANIM + '<div style="' + CARD_FONT + 'background:linear-gradient(165deg,#1E1B4B,#312E81 60%,#1E1B4B);border:2px solid #6366F1;border-radius:20px;padding:18px 16px;text-align:center;color:#E0E7FF;">' +
+        '<div style="font-size:10.5px;letter-spacing:.25em;color:#A5B4FC;padding-bottom:8px;">' + (isW ? 'WORLD BOSS' : 'MONTHLY BOSS ' + (th || '') ) + '</div>' +
+        '<div style="padding:2px 0 12px;">' + hero + '</div>' +
+        '<div style="font-size:20px;font-weight:900;color:#FFFFFF;">' + nm + '</div>' +
+        (entry ? '<div style="background:rgba(224,231,255,.10);border:1px dashed rgba(165,180,252,.5);border-radius:14px;padding:11px 13px;font-size:13px;line-height:1.85;color:#C7D2FE;margin-top:11px;font-style:italic;">“' + entry + '”</div>' : '') +
+        '<div style="font-size:11.5px;color:#818CF8;padding-top:10px;">' + (isW ? '전교 크루의 힘을 합쳐야 봉인할 수 있다' : '격파의 대사는… 쓰러뜨린 크루만 듣게 된다 🤫') + '</div>' +
+        '</div>'];
+    }
+    return null; // 대상 외 유형 — 기존 값 보존
+  });
+  const cur = ct.getRange(2, col, n, 1).getValues();
+  let wrote = 0;
+  out.forEach((v, i) => { if (v && String(cur[i][0]) !== v[0]) { cur[i][0] = v[0]; wrote++; } });
+  if (wrote) ct.getRange(2, col, n, 1).setValues(cur);
+  Logger.log('상세 카드: 갱신 ' + wrote + '건 (몬스터 ' + mons.length + '·보스류 ' + data.filter(r => r[1] === 'boss' || r[1] === 'worldboss').length + ') — 상세카드=' + col + '열');
+  return '상세 카드 갱신 ' + wrote + '건';
+}
+
+/* ===================== [v9.42] 🎭 데모 모드 — 전 시스템을 "상용 중"처럼 시연 =====================
+ * seedDemoData(): 가상 크루 8명(데모정규반·데모주말반)의 지난달+이번달 출석·포인트·문법·학업 데이터를 깔고,
+ *   월간 시상·스토리북·이달의 카드·리그·레이드·콕핏까지 실제 배치로 발간 — 조립하며 모든 화면을 실물로 검증.
+ * clearDemoData(): DEMO- 흔적을 전 시트에서 제거하고 산출물(스토리북 지난달호·시상·카드·지도)을 원복.
+ * 실데이터 격리 3중: ①학생 ID 'DEMO-' 접두(syncProfiles·노션 보존/스킵 가드) ②반 이름 '데모' 접두
+ *   (레이드·리그·통계 식별) ③시드 시각 마커(app_state '데모모드' — notices 등 시각 기반 정리). */
+function seedDemoData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  if (getState(st, '데모모드').row > 0) return '이미 데모 데이터가 있습니다 — clearDemoData() 실행 후 다시 시드하세요.';
+  const L = [];
+  const day = k => { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - k); return d; }; // k일 전 0시(정규화 — 오후 실행 시 시각 오버플로 방지)
+  const atTime = (k, h) => new Date(day(k).getTime() + h * 3600000);
+  const d8 = d => Utilities.formatDate(d, tz, 'yyyy-MM-dd');
+  const ymNow = Utilities.formatDate(now, tz, 'yyyy-MM');
+  const ymLast = ymShift_(ymNow, -1);
+  const CLS_A = '데모정규반', CLS_B = '데모주말반';
+
+  // ① schedule에 데모 반 2행(평일·주말 각 1 — 스트릭·브리핑·미등원 파이프라인이 실반처럼 작동)
+  const sc = ss.getSheetByName('schedule');
+  if (sc) {
+    const have = sc.getLastRow() >= 2 ? sc.getRange(2, 1, sc.getLastRow() - 1, 1).getValues().map(r => String(r[0])) : [];
+    const addSc = [];
+    if (have.indexOf(CLS_A) < 0) addSc.push([CLS_A, '평일', '11:00']);
+    if (have.indexOf(CLS_B) < 0) addSc.push([CLS_B, '주말', '11:00']);
+    if (addSc.length) sc.getRange(sc.getLastRow() + 1, 1, addSc.length, 3).setValues(addSc);
+  }
+  L.push('✓ 시간표: 데모 반 2개');
+
+  // ② profiles 8명 — 시나리오: 01 에이스·02 성실·03 오늘 생일+진화 임박·04 케어 사각·05 리텐션 🔴·06 신입·07 숙제왕·08 스킨 선택
+  const bday3 = Utilities.formatDate(now, tz, 'MM-dd'); // DEMO-03 = 오늘 생일
+  const P = ADMIN_EMAIL;
+  const demo = [ // [id, 이름, 몽골이름, 반, 생일, email, 등록일(일 전), 레벨]
+    ['DEMO-01', '바야르', 'Баяр', CLS_A, '2011-03-14', 'demo01@synk.test', 90, '중급'],
+    ['DEMO-02', '사라', 'Сараа', CLS_A, '2012-07-02', 'demo02@synk.test', 75, '초급'],
+    ['DEMO-03', '테무진', 'Тэмүжин', CLS_A, '2012-' + bday3, 'demo03@synk.test', 60, '초급'],
+    ['DEMO-04', '오윤아', 'Оюунаа', CLS_A, '2011-11-23', 'demo04@synk.test', 80, '기초'],
+    ['DEMO-05', '냠카', 'Нямка', CLS_B, '2010-05-09', 'demo05@synk.test', 70, '초급'],
+    ['DEMO-06', '졸자야', 'Золзаяа', CLS_B, '2013-01-30', 'demo06@synk.test', 20, '기초'],
+    ['DEMO-07', '간톨가', 'Гантулга', CLS_B, '2011-09-17', 'demo07@synk.test', 85, '초급'],
+    ['DEMO-08', '에르덴', 'Эрдэнэ', CLS_B, '2012-04-05', 'demo08@synk.test', 55, '기초']
+  ];
+  const pf = ss.getSheetByName('profiles');
+  const pfRows = demo.map(d => [d[0], d[1], d[2], 'student', d[3], d[4], d[5], '', '', '', '30만₮', d8(day(d[6])), d[1] + ' 보호자', '', day(d[6])]);
+  // [검증 반영] 삽입 위치 = 실학생 블록 바로 뒤(비학생 앞) — syncProfiles의 out 순서(실학생→데모→비학생)와 물리 순서를
+  //   처음부터 일치시켜, 다음 날 아침 동기화가 A~O만 재배치하며 계산열(P~CE)과 행이 어긋나는 경로를 원천 차단.
+  let lastStuRow = 1;
+  if (pf.getLastRow() >= 2) {
+    pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().forEach((r, i) => { if (r[0] && r[3] === 'student') lastStuRow = i + 2; });
+  }
+  pf.insertRowsAfter(lastStuRow, pfRows.length);
+  const pfStart = lastStuRow + 1;
+  pf.getRange(pfStart, 1, pfRows.length, 15).setValues(pfRows);
+  pf.getRange(pfStart, 26, pfRows.length, 1).setValues(demo.map(() => [P])); // Z 보호자이메일 → 원장 수신(시연)
+  if (pf.getMaxColumns() >= 51) pf.getRange(pfStart, 51, pfRows.length, 1).setValues(demo.map(d => [d[7]])); // AY 레벨(강사 뷰)
+  if (pf.getMaxColumns() >= 55) pf.getRange(pfStart + 7, 55, 1, 1).setValue('뉴로'); // DEMO-08 대표몬스터 스킨 선택 시연
+  L.push('✓ profiles: 데모 크루 8명');
+
+  // ③ attendance — 반유형별 수업일만, 시나리오별 패턴 (지난달 포함 ~5주)
+  const atRows = [];
+  const pushAtt = (sid, k) => atRows.push(['ATD' + Utilities.formatDate(day(k), tz, 'yyyyMMdd') + '-' + sid, sid, atTime(k, 11), '출석(데모)']);
+  for (let k = 35; k >= 0; k--) {
+    const wd = day(k).getDay(), isWe = (wd === 0 || wd === 6);
+    if (!isWe) { // 평일 — 데모정규반
+      pushAtt('DEMO-01', k); // 개근 에이스
+      if (k % 3 !== 0) pushAtt('DEMO-02', k);
+      if (k % 2 === 0) pushAtt('DEMO-03', k);
+      if (k <= 16 && k % 2 === 1) pushAtt('DEMO-04', k); // 최근 출석 있음(케어 사각용)
+    } else { // 주말 — 데모주말반
+      if (k >= 9) pushAtt('DEMO-05', k); // 9일 전부터 미출석 → 리텐션 🔴
+      if (k <= 10) pushAtt('DEMO-06', k); // 신입 — 최근만
+      pushAtt('DEMO-07', k);
+      if (k % 4 !== 0) pushAtt('DEMO-08', k);
+    }
+  }
+  const at = ss.getSheetByName('attendance');
+  at.getRange(at.getLastRow() + 1, 1, atRows.length, 4).setValues(atRows);
+  L.push('✓ attendance: ' + atRows.length + '행(스트릭·미출석·보드 시나리오)');
+
+  // ④ point_logs — 지난달(시상 재료)+이번달(랭킹·왕관·레이드 재료). id 'PLD' 접두(PL 채번과 무충돌)
+  let seq = 0;
+  const plRows = [];
+  const pushPl = (sid, pts, rs, by, d, tag) => { const dd = (d instanceof Date && d.getHours() === 0) ? new Date(d.getTime() + 15 * 3600000) : d; plRows.push(['PLD' + (++seq), sid, pts, rs, by, dd, Utilities.formatDate(dd, tz, 'yyyy-MM'), tag || '']); };
+  const T = '김재헌';
+  // 지난달: 01 챔피언(왕관 몰림 — 편중 시연)·07 숙제왕
+  for (let i = 0; i < 8; i++) pushPl('DEMO-01', 10, '숙제완료', T, day(28 + i * 0.9 | 0));
+  pushPl('DEMO-01', 10, '오늘의 MVP', T, day(30), '집중력'); pushPl('DEMO-01', 10, '오늘의 MVP', T, day(26), '열정');
+  pushPl('DEMO-01', 10, '오늘의 시냅스', T, day(33), '발음↑');
+  for (let i = 0; i < 9; i++) pushPl('DEMO-07', 10, '숙제완료', T, day(27 + (i * 0.8 | 0)));
+  pushPl('DEMO-02', 10, '숙제완료', T, day(29)); pushPl('DEMO-02', 10, '오늘의 시냅스', T, day(27), '친구도움');
+  pushPl('DEMO-03', 10, '숙제완료', T, day(31)); pushPl('DEMO-08', 10, '숙제완료', T, day(28));
+  // 이번달: 진행 중 스토리 — 03 진화 임박(95P대), 04 무포인트(사각), 05 정지
+  for (let i = 0; i < 6; i++) pushPl('DEMO-01', 10, '숙제완료', T, day(2 + i * 2));
+  pushPl('DEMO-01', 10, '오늘의 MVP', T, day(0), '집중력'); // 오늘 왕관 — 축하 배너·알림 시연
+  for (let i = 0; i < 5; i++) pushPl('DEMO-02', 10, '숙제완료', T, day(3 + i * 3));
+  for (let i = 0; i < 7; i++) pushPl('DEMO-03', 10, '숙제완료', T, day(1 + i * 2)); // 지난달 10+출석정산(±3일×3P)+70+5 ≈ 91~97P → 진화까지 3~9P(임박 밴드 — 실행 요일 무관)
+  pushPl('DEMO-03', 5, '리그승리', 'SYSTEM', day(7));
+  pushPl('DEMO-04', 10, '숙제완료', T, day(16)); // 마지막 포인트 16일 전 — 케어 사각 발화
+  for (let i = 0; i < 7; i++) pushPl('DEMO-07', 10, '숙제완료', T, day(2 + i * 2));
+  for (let i = 0; i < 4; i++) pushPl('DEMO-06', 10, '숙제완료', T, day(1 + i * 3));
+  for (let i = 0; i < 5; i++) pushPl('DEMO-08', 10, '숙제완료', T, day(2 + i * 3));
+  pushPl('DEMO-08', -40, '스토어·싱크 스티커', '에르덴', day(4)); // 구매 이력(잔액 차감 시연)
+  const pl = ss.getSheetByName('point_logs');
+  pl.getRange(pl.getLastRow() + 1, 1, plRows.length, 8).setValues(plRows);
+  L.push('✓ point_logs: ' + plRows.length + '행(시상·왕관·구매·편중 시나리오)');
+
+  // ⑤ mastery_log — 01 게이트 통과(G3 9/12)·03 게이트 대기 직전 세팅
+  const ml = ensureSheet(ss, 'mastery_log', ['student_id', 'grammar_id', '상태', '첫기록일', '도달일', '출처', 'updated_at']);
+  const mlRows = [];
+  GRAMMAR_BANK.forEach(g => {
+    const stg = grammarStageOf_(g[0]);
+    if (stg === 2) { ['DEMO-01', 'DEMO-02', 'DEMO-03', 'DEMO-07'].forEach(sid => mlRows.push([sid, g[0], '도달', d8(day(25)), d8(day(25)), 'lesson', now])); }
+  });
+  GRAMMAR_BANK.filter(g => grammarStageOf_(g[0]) === 3).slice(0, 9).forEach(g => mlRows.push(['DEMO-01', g[0], '도달', d8(day(12)), d8(day(6)), 'lesson', now]));
+  GRAMMAR_BANK.filter(g => grammarStageOf_(g[0]) === 3).slice(0, 4).forEach(g => mlRows.push(['DEMO-03', g[0], '도달', d8(day(8)), d8(day(4)), 'lesson', now]));
+  ml.getRange(ml.getLastRow() + 1, 1, mlRows.length, 7).setValues(mlRows);
+  // 게이트 활성 조건(반 최근 60일 문법태그) — 마감폼 이력 1행(전개완료 마킹 = 재전개 없음)
+  const tp = ss.getSheetByName('weekly_topics');
+  ensureLessonCols_(tp);
+  tp.getRange(tp.getLastRow() + 1, 1, 1, 12).setValues([[CLS_A, "'-고 싶다'로 소원 말하기", T, day(3), '', 'G301,G302', '도달', '', '', '', '전개완료', '전개완료']]);
+  L.push('✓ mastery+마감폼 이력: 진화 게이트 활성(' + mlRows.length + '건)');
+
+  // ⑥ academic_log — 학업추세 차트·레벨업 축하 재료
+  const al = ensureSheet(ss, 'academic_log', ['log_id', 'student_id', '날짜', '유형', '값', '비고', '입력자']);
+  al.getRange(al.getLastRow() + 1, 1, 8, 7).setValues([
+    ['ALD1', 'DEMO-01', d8(day(65)), 'level', 2, '[DEMO]', T], ['ALD2', 'DEMO-01', d8(day(65)), 'mock', 55, '[DEMO]', T],
+    ['ALD3', 'DEMO-01', d8(day(35)), 'mock', 68, '[DEMO]', T], ['ALD4', 'DEMO-01', d8(day(5)), 'level', 3, '[DEMO] 레벨업!', T],
+    ['ALD5', 'DEMO-01', d8(day(5)), 'mock', 74, '[DEMO]', T], ['ALD6', 'DEMO-02', d8(day(40)), 'mock', 60, '[DEMO]', T],
+    ['ALD7', 'DEMO-02', d8(day(8)), 'mock', 62, '[DEMO]', T], ['ALD8', 'DEMO-03', d8(day(20)), 'level', 1, '[DEMO]', T]
+  ]);
+  // ⑦ class_fuel(이번 주 연료)·world_raid(지난달 격파 이력— 지급 부작용 없는 완료형)
+  const cf = ensureSheet(ss, 'class_fuel', ['class_name', '미션', '입력자', 'created_at']);
+  cf.getRange(cf.getLastRow() + 1, 1, 1, 4).setValues([[CLS_A, '📚 숙제 올클리어', T, day(1)]]);
+  const wr = ensureSheet(ss, 'world_raid', ['월', '보스명', 'HP', '누적데미지', '상태']);
+  const wrHas = wr.getLastRow() >= 2 && wr.getRange(2, 1, wr.getLastRow() - 1, 1).getValues().some(r => String(r[0]) === ymLast);
+  if (!wrHas) wr.getRange(wr.getLastRow() + 1, 1, 1, 5).setValues([[ymLast, worldBossOf(ss).name, 800, 843, '격파']]);
+  // ⑧ 운영 시트 — 문의·결석신고·매출·리드·전당·크루 프로젝트·리포트카드 1장
+  ensureSheet(ss, 'inquiries', ['student_id', '이름', '문의내용', '상태', '접수시각'])
+    .appendRow(['DEMO-02', '사라 어머니', '[DEMO] 겨울방학 특강도 있을까요? 아이가 학원 가는 날만 기다려요 😊', '접수', now]);
+  ensureSheet(ss, 'absence_notice', ['student_id', '반', '날짜', '사유', '등록시각'])
+    .appendRow(['DEMO-03', CLS_A, d8(new Date(now.getTime() + 86400000)), '[DEMO] 병원 진료', now]);
+  const pay = ensureSheet(ss, 'payments', ['student_id', '이름', '금액(만₮)', '납부일', '방법', '비고', 'created_at']);
+  pay.getRange(pay.getLastRow() + 1, 1, 2, 7).setValues([
+    ['DEMO-01', '바야르', 30, d8(day(6)), '계좌이체', '[DEMO]', now], ['DEMO-07', '간톨가', 84, d8(day(3)), '현금', '[DEMO] 3개월 선납', now]]);
+  const ld = ensureSheet(ss, 'leads', ['날짜', '이름', '연락처', '유입경로', '추천인', '체험참석', '등록', '등록권종', '등록일', '미등록사유', '메모', '캠페인']);
+  ld.getRange(ld.getLastRow() + 1, 1, 3, 12).setValues([
+    [d8(day(12)), '[DEMO] 아누진', '9911-0001', '페이스북', '', 'Y', 'Y', '3개월', d8(day(9)), '', '', '7월 신학기'],
+    [d8(day(8)), '[DEMO] 빌군', '9911-0002', '추천', '바야르', 'Y', 'N', '', '', '보류', '', ''],
+    [d8(day(4)), '[DEMO] 사인자야', '9911-0003', '인스타', '', 'N', 'N', '', '', '시간대', '', '7월 신학기']]);
+  ensureSheet(ss, 'hall_of_fame', ['연도', '이름', '반', '업적', '한마디', '사진URL'])
+    .appendRow(['2025', '김철수', '졸업 크루', 'TOPIK 4급 합격 · 서울 유학', '[DEMO] SYNK에서 보낸 1년이 인생을 바꿨어요', 'https://placehold.co/400x400/3D5AFE/FFFFFF/png?text=HOF']);
+  ensureSheet(ss, 'crew_projects', ['시즌', '반', '프로젝트명', '한줄소개', '결과물링크', '사진URL', '공개일', '참여크루', '비고'])
+    .appendRow(['여름 시즌', CLS_A, 'K-POP 커버 무대', '나담 축제 무대에서 한국어 노래 완창', '', 'https://placehold.co/400x300/FF6B35/FFFFFF/png?text=CREW', d8(day(15)), '바야르, 사라, 테무진', '[DEMO]']);
+  const rc = ensureSheet(ss, 'report_cards', ['card_id', 'student_id', '월', 'image_url', '칭호', '코멘트', 'created_at']);
+  rc.appendRow(['RCD-01', 'DEMO-01', ymLast, 'https://placehold.co/600x800/3D5AFE/FFFFFF/png?text=REPORT+' + ymLast, '🧠 시냅스 챔피언', '[DEMO] 이번 달 가장 많은 연결을 만든 크루', now]);
+  L.push('✓ 운영 시트 7종(문의·결석·매출·리드·전당·크루·리포트)');
+  // 데모모드 마커 = 시드시각|지난달 스토리북 사전존재(0/1) — clear가 "데모가 만든 호"만 회수하기 위한 판별값
+  const sbSheet = ss.getSheetByName('synk_stories');
+  const sbPre = (sbSheet && sbSheet.getLastRow() >= 2 && sbSheet.getRange(2, 1, sbSheet.getLastRow() - 1, 1).getValues().some(r => String(r[0]) === ymLast)) ? 1 : 0;
+  setState(st, '데모모드', Utilities.formatDate(now, tz, "yyyy-MM-dd'T'HH:mm:ss") + '|' + sbPre);
+
+  // ⑨ 배치 체인 — 계산→지난달 시상→스토리북→카드→지도→경영→레이드·리그→중계·보드
+  const run = (nm, fn) => { try { fn(); L.push('✓ ' + nm); } catch (e) { L.push('✗ ' + nm + ': ' + e.message); } };
+  run('전체 계산', calcAll);
+  run('생일 축하(+20P·학부모 메일)', birthdayCheck); // DEMO-03 오늘 생일 — 지급·배너·브리핑 즉시 시연
+  run('지난달 시상(칭호·랭킹·정산)', monthlyGameBatch);
+  { // 경영리포트를 데모 반영판으로 재생성(멱등 키 해제 후)
+    const g1 = getState(st, '경영리포트발송_' + ymLast); if (g1.row > 0) st.deleteRow(g1.row);
+  }
+  run('스토리북 발간(지난달호)', buildMonthlyStorybook_);
+  run('이달의 카드', buildMonthlyCards_);
+  run('여행 지도', updateTravelMap_);
+  run('경영 리포트', buildExecReport_);
+  run('레이드·리그 생성', raidMonday);
+  run('일일 전투 리포트', raidStoryDaily);
+  run('리그 중계석', leagueStoryDaily_);
+  run('재계산(시상 반영)', calcAll);
+  run('강사 지표', calcTeacherStats);
+  run('출결 보드', function () { todayBoard_(ss); });
+  const rep = '🎭 데모 시드 완료 — 앱에서 8명의 크루가 살아 움직입니다\n' + L.join('\n') +
+    '\n\n확인: 학생(DEMO-01 바야르=에이스·03 테무진=오늘 생일·진화 임박) · 강사(데모정규반 브리핑·왕관밸런스) · 원장(레이더 🔴 냠카·케어사각 오윤아·계기판·시상 메일)' +
+    '\n제거: clearDemoData() 1회 — 흔적 없이 원복됩니다.';
+  Logger.log(rep);
+  return rep;
+}
+
+function clearDemoData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const st = ss.getSheetByName('app_state');
+  const g = st ? getState(st, '데모모드') : { row: -1, val: '' };
+  if (!st || g.row < 1) return '데모 데이터가 없습니다(데모모드 키 없음).';
+  const gParts = String(g.val).split('|');
+  const seededAt = new Date(gParts[0]);
+  const sbPreExisted = String(gParts[1] || '0') === '1'; // 시드 전에 지난달 스토리북 실호가 있었으면 회수 금지
+  const ymLast = ymShift_(Utilities.formatDate(new Date(), tz, 'yyyy-MM'), -1);
+  const L = [];
+  // 열 값 술어 기반 행 삭제(뒤에서부터) — 시트별 [시트명, 판정 함수(row값 배열)]
+  const wipe = (name, pred, width) => {
+    const sh = ss.getSheetByName(name);
+    if (!sh || sh.getLastRow() < 2) return;
+    const w = Math.min(sh.getLastColumn(), width || sh.getLastColumn());
+    const data = sh.getRange(2, 1, sh.getLastRow() - 1, w).getValues();
+    let n = 0;
+    for (let i = data.length - 1; i >= 0; i--) {
+      if (pred(data[i])) { sh.deleteRow(i + 2); n++; }
+    }
+    if (n) L.push('✓ ' + name + ' ' + n + '행');
+  };
+  const isDemoSid = r => String(r[0] || '').indexOf('DEMO-') === 0;
+  const hasDemoCls = s => String(s || '').indexOf('데모') === 0;
+  wipe('profiles', isDemoSid, 4);
+  wipe('attendance', r => String(r[1] || '').indexOf('DEMO-') === 0, 2);
+  wipe('point_logs', r => String(r[1] || '').indexOf('DEMO-') === 0, 2);
+  wipe('point_logs_archive', r => String(r[1] || '').indexOf('DEMO-') === 0, 2);
+  wipe('mastery_log', isDemoSid, 1);
+  wipe('academic_log', r => String(r[1] || '').indexOf('DEMO-') === 0, 2);
+  wipe('monthly_snapshot', r => String(r[1] || '').indexOf('DEMO-') === 0, 2);
+  wipe('titles', r => String(r[1] || '').indexOf('DEMO-') === 0, 2);
+  wipe('story', r => String(r[1] || '').indexOf('DEMO-') === 0, 2);
+  wipe('achievements', isDemoSid, 1);
+  wipe('synk_cards', r => String(r[1] || '').indexOf('DEMO-') === 0, 2);
+  wipe('report_cards', r => String(r[1] || '').indexOf('DEMO-') === 0, 2);
+  wipe('inquiries', isDemoSid, 1);
+  wipe('absence_notice', isDemoSid, 1);
+  wipe('payments', isDemoSid, 1);
+  wipe('leads', r => String(r[1] || '').indexOf('[DEMO]') === 0, 2);
+  wipe('hall_of_fame', r => String(r[4] || '').indexOf('[DEMO]') === 0, 5);
+  wipe('crew_projects', r => String(r[8] || '').indexOf('[DEMO]') === 0, 9);
+  wipe('weekly_topics', r => hasDemoCls(r[0]), 1);
+  wipe('class_fuel', r => hasDemoCls(r[0]), 1);
+  wipe('raid', r => hasDemoCls(r[1]), 2);
+  wipe('league_pairs', r => hasDemoCls(r[1]) || hasDemoCls(r[2]), 3);
+  wipe('raid_story', r => hasDemoCls(r[1]), 2);
+  wipe('class_stats', r => hasDemoCls(r[0]), 1);
+  wipe('teacher_stats', r => hasDemoCls(r[0]), 1);
+  wipe('world_raid', r => String(r[0]) === ymLast && Number(r[2]) === 800, 3); // 시드 이력(HP 800)만
+  if (!sbPreExisted) wipe('synk_stories', r => String(r[0]) === ymLast, 1); // 데모가 발간시킨 지난달호만 회수(실호 사전존재 시 보존)
+  wipe('league_history', r => hasDemoCls(r[2]) || hasDemoCls(r[4]), 6); // [검증 반영] 월 기준→데모 반명 기준(챔피언·준우승) — 실 월간 기록 오폭 차단
+  { // notices — 시드 이후 생성분(발간·리그·시상 공지) 일괄 회수: created_at 헤더 탐색
+    const nt = ss.getSheetByName('notices');
+    if (nt && nt.getLastRow() >= 2) {
+      const heads = nt.getRange(1, 1, 1, nt.getLastColumn()).getValues()[0].map(h => String(h).trim().toLowerCase());
+      let iC = -1;
+      ['created_at', 'date', '날짜', '작성일'].forEach(c => { if (iC < 0) iC = heads.indexOf(c); });
+      if (iC > -1) {
+        const dataN = nt.getRange(2, 1, nt.getLastRow() - 1, nt.getLastColumn()).getValues();
+        let n = 0;
+        // [검증 반영] 시각 + 자동 공지 이모지 접두 이중 조건 — 데모 기간에 유호님이 직접 쓴 공지 오폭 차단
+        const AUTO_PFX = ['🏆', '🌍', '⚔️', '📖', '🎉', '⚡'];
+        let iT2 = -1;
+        ['title', 'title_ko', '제목'].forEach(c => { if (iT2 < 0) iT2 = heads.indexOf(c); });
+        for (let i = dataN.length - 1; i >= 0; i--) {
+          const dv = dataN[i][iC];
+          const dd = dv instanceof Date ? dv : (dv ? new Date(dv) : null);
+          const tt = iT2 > -1 ? String(dataN[i][iT2] || '') : '';
+          const isAuto = AUTO_PFX.some(p => tt.indexOf(p) === 0);
+          if (dd && !isNaN(dd.getTime()) && dd >= seededAt && isAuto) { nt.deleteRow(i + 2); n++; }
+        }
+        if (n) L.push('✓ notices ' + n + '행(시드 이후 자동 공지만 — 수동 공지 보존)');
+      }
+    }
+  }
+  { // schedule 데모 반 제거 + app_state 마커·지난달 배치 키 원복
+    const sc = ss.getSheetByName('schedule');
+    if (sc && sc.getLastRow() >= 2) {
+      const dataS = sc.getRange(2, 1, sc.getLastRow() - 1, 1).getValues();
+      for (let i = dataS.length - 1; i >= 0; i--) if (hasDemoCls(dataS[i][0])) sc.deleteRow(i + 2);
+    }
+    ['데모모드', '전호주연', '경영리포트발송_' + ymLast].forEach(k => { const gg = getState(st, k); if (gg.row > 0) st.deleteRow(gg.row); });
+    const gb = getState(st, '게임배치완료월'); if (gb.row > 0 && String(gb.val) === ymLast) st.deleteRow(gb.row);
+    const sb = getState(st, '스토리북발간월'); if (sb.row > 0 && String(sb.val) === ymLast) st.deleteRow(sb.row);
+  }
+  const run = (nm, fn) => { try { fn(); L.push('✓ ' + nm + ' 원복'); } catch (e) { L.push('✗ ' + nm + ': ' + e.message); } };
+  run('여행 지도', updateTravelMap_);
+  run('경영 리포트', buildExecReport_);
+  run('전체 재계산', calcAll);
+  run('강사 지표', calcTeacherStats);
+  run('출결 보드', function () { todayBoard_(ss); });
+  const rep = '🧹 데모 데이터 제거 완료\n' + L.join('\n');
+  Logger.log(rep);
+  return rep;
+}
 
 function bootstrapSynk() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -9013,8 +9479,9 @@ function preflightGlide() {
   try { worldRaidMonthly_(); ok('월드 레이드 이번 달 소환 확인(world_raid)'); } catch (e) { warn('worldRaidMonthly 실패: ' + e.message); }
   try { buildExecReport_(); updateTravelMap_(); ok('콕핏 월간 카드 2종(경영리포트HTML·여행지도HTML) 생성 확인'); } catch (e) { warn('콕핏 월간 카드 실패: ' + e.message); }
 
-  try { calcAll(); ok('전체 계산 1회(calcAll) — profiles 카드열·class_stats 9~13열·오늘의숙제/퀴즈/팁 키 갱신'); } catch (e) { warn('calcAll 실패: ' + e.message); }
+  try { calcAll(); ok('전체 계산 1회(calcAll) — profiles 카드열·class_stats 9~13열·오늘의숙제/퀴즈/팁/보스 키 갱신'); } catch (e) { warn('calcAll 실패: ' + e.message); }
   try { calcTeacherStats(); ok('강사 지표 갱신(teacher_stats 8열 정규화)'); } catch (e) { warn('calcTeacherStats 실패: ' + e.message); }
+  try { buildMonsterDetailCards(); ok('몬스터·보스 상세 카드(contents 상세카드 열) — 숨쉬는 단계색 카드'); } catch (e) { warn('상세 카드 실패: ' + e.message); }
 
   // 1) app_state 중복 키 정리 — 같은 key 2행+면 첫 행만 유지(getState가 첫 행만 읽어 뒷행은 죽은 데이터.
   //    라이브 실측(2026-07-18): '상담폼ID' 2행 존재 → 뒷행이 혼동 유발)
@@ -9117,6 +9584,14 @@ function preflightGlide() {
   const missT = Object.keys(need).filter(k => !have[k]);
   if (missT.length) warn('트리거 누락: ' + missT.join(', ') + ' → resetAllTriggers() 1회 실행(⚠ 매월 1일 오전엔 실행 금지)');
   else ok('통합 트리거 10개 전부 살아있음');
+
+  // 7.5) [v9.42] 데모 모드 상태 표시
+  {
+    const gD = st6 ? getState(st6, '데모모드') : { row: -1 };
+    L.push(gD.row > 0
+      ? 'ℹ 🎭 데모 모드 ON(' + gD.val + ' 시드) — 화면의 DEMO 크루 8명은 시연용. 제거 = clearDemoData() 1회'
+      : 'ℹ 데모 모드 OFF — 전 화면을 실물로 시연하려면 seedDemoData() 1회(제거는 clearDemoData)');
+  }
 
   // 8) 실측 매니페스트 갱신 + 요약
   try { buildSystemManifest(); ok('system_manifest 실측 갱신'); } catch (e) { warn('manifest 실패: ' + e.message); }
