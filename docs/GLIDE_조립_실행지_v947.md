@@ -51,7 +51,8 @@
 ## STEP 2 · profiles·contents 보조 컬럼 + 이미지 타입 (10분)
 
 ### 2-A. profiles에 만들 컬럼 (Data → profiles → +) — ★v9.48로 2개만 남음
-- [ ] 2-1 **Query** `오늘출석_q` — Source: **attendance** / Filter: **student_id** is **This row → user_id** AND **timestamp** is within **Today**
+- [ ] 2-1 **Query** `오늘출석_q` — Source: **attendance** / Filter: **student_id** is **This row → user_id** AND **`date`** is within **Today**
+  - ⚠ **라이브 헤더 실측(07-20)**: attendance의 헤더는 구명칭 `log_id·student_id·date·type·(gps)·checked_by·created_at` — 엔진은 열 위치로 읽으므로 **3열 `date`=사양의 timestamp, 4열 `type`=method**. `created_at`·`checked_by`는 구버전 잔재라 사용 금지
 - [ ] 2-2 **Rollup** `오늘출석수` — From: 오늘출석_q → Count
 > 이 2개만 UI에 남는 이유: GPS 출석 버튼은 **누르는 즉시** 상태가 바뀌어야 하는데, 서버 계산은 14/22시라 실시간이 안 됩니다.
 > ~~2-3 Single Value 6개~~ · ~~2-4 If-Then-Else 3개~~ · ~~2-5 퀴즈 SV~~ · ~~2-6 Split Text+SV 2개~~ → **전부 삭제**(서버가 profiles CG85~CK89에 이미 채움).
@@ -76,7 +77,7 @@ Layout → **+ New tab** → 이름 `홈` → Source: **profiles** (스타일: D
 
 | ✔ | # | 컴포넌트 | 소스/값 | 설정 |
 |---|---|---|---|---|
-| [ ] | ⓪ | **Form 버튼** `🧠 시냅스 ON — 오늘도 왔어!` | 대상 **attendance** (Add row) | 필드: student_id=**User's user_id** · timestamp=**제출 시각** · method=고정 텍스트 `GPS출석` · **Location** 컴포넌트→gps_lat (없으면 위치 없이 진행) · id는 비움. **Visibility: 오늘출석수 = 0** |
+| [ ] | ⓪ | **Form 버튼** `🧠 시냅스 ON — 오늘도 왔어!` | 대상 **attendance** (Add row) | 필드(라이브 헤더명 기준): student_id=**User's user_id** · **`date`**=제출 시각 · **`type`**=고정 텍스트 `GPS출석` · **Location**→gps_lat (없으면 위치 없이 진행) · `log_id`는 비움(자동 채번) · `checked_by`·`created_at`은 넣지 않음. **Visibility: 오늘출석수 = 0** |
 | [ ] | ⓪b | Text `✅ 오늘 시냅스 연결 완료!` | 고정 문구 | Visibility: 오늘출석수 **≥ 1** (⓪과 같은 자리) |
 | [ ] | ① | Collection 1행 | **onboarding** / Filter: role is `student` | 첫 안내 카드 |
 | [ ] | ② | Text | **오늘의알림 (BX)** | Visibility: is not empty |
