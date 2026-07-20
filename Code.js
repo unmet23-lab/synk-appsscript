@@ -1259,7 +1259,7 @@ function buildDexHtml_(stages, t, curIdx) {
       const br = cur ? ANIM_BREATH : ''; // 현재 파트너만 숨쉬기 — 전부 움직이면 조잡, 하나만 살아있으면 시선이 간다
       cells += '<div style="width:23%;margin:1%;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:2px solid ' + (cur ? '#3D5AFE' : '#BCC8FF') + ';border-radius:12px;text-align:center;padding:7px 0 5px;float:left;' + (cur ? 'box-shadow:0 0 0 3px rgba(61,90,254,.16);' : '') + '">' +
         (im.indexOf('http') === 0
-          ? '<img class="skBr" src="' + im + '" style="width:40px;height:40px;border-radius:9px;background:#fff;' + br + '"/>'
+          ? '<img class="skBr" src="' + im + '" style="display:block;margin:0 auto;width:40px;height:40px;border-radius:9px;background:#fff;' + br + '"/>' // [v9.48] 도감 셀도 중앙 고정
           : '<div class="skBr" style="font-size:26px;line-height:40px;' + br + '">' + (FRAME_ICON[Math.min(i, 6)] || '🐣') + '</div>') +
         '<div style="font-size:10.5px;font-weight:800;color:#2B3FD9;padding-top:2px;">' + escHtml_(s.name) + (cur ? ' ✦' : '') + '</div></div>';
     } else {
@@ -2287,7 +2287,7 @@ function calcAll() {
       if (bz) {
         const bImg = (ctData.find(r => r[1] === 'boss' && String(r[2]) === bz.name) || [])[4] || '';
         const bHero = String(bImg).indexOf('http') === 0
-          ? '<img class="skBo" src="' + bImg + '" style="width:110px;height:110px;border-radius:16px;background:#312E81;border:2.5px solid #6366F1;' + ANIM_BOSS + '"/>'
+          ? '<img class="skBo" src="' + bImg + '" style="display:block;margin:0 auto;width:110px;height:110px;border-radius:16px;background:#312E81;border:2.5px solid #6366F1;' + ANIM_BOSS + '"/>' // [v9.48] 중앙 고정(Glide img=block 교정)
           : '<span class="skBo" style="display:inline-block;font-size:64px;' + ANIM_BOSS + '">👾</span>';
         setState(st, '이달의보스HTML', CARD_ANIM +
           '<div style="' + CARD_FONT + 'background:linear-gradient(165deg,#1E1B4B,#312E81 60%,#1E1B4B);border:2px solid #6366F1;border-radius:18px;padding:14px;text-align:center;color:#E0E7FF;">' +
@@ -9577,7 +9577,7 @@ function buildMonsterDetailCards() {
       const i = monIdx[String(r[0])] || 0;
       const f = FRAME_CSS[Math.min(i, 6)], ic = FRAME_ICON[Math.min(i, 6)];
       const hero = img.indexOf('http') === 0
-        ? '<img class="skBr" src="' + img + '" style="width:150px;height:150px;border-radius:20px;background:#fff;border:3px solid ' + f[1] + ';box-shadow:0 10px 26px rgba(61,90,254,.2);' + ANIM_BREATH + '"/>'
+        ? '<img class="skBr" src="' + img + '" style="display:block;margin:0 auto;width:150px;height:150px;border-radius:20px;background:#fff;border:3px solid ' + f[1] + ';box-shadow:0 10px 26px rgba(61,90,254,.2);' + ANIM_BREATH + '"/>' // [v9.48] display:block+margin:auto — Glide Rich Text가 img를 block 처리해 text-align 중앙이 풀리던 것(왼쪽 치우침) 교정
         : '<span class="skBr" style="display:inline-block;font-size:90px;' + ANIM_BREATH + '">' + ic + '</span>';
       return [CARD_ANIM + '<div style="' + CARD_FONT + 'background:linear-gradient(160deg,' + f[2] + ',#FFFFFF 45%,' + f[2] + ');border:2px solid ' + f[1] + ';border-radius:20px;padding:18px 16px;text-align:center;">' +
         '<div style="padding:6px 0 12px;">' + hero + '</div>' +
@@ -9591,7 +9591,7 @@ function buildMonsterDetailCards() {
       const isW = type === 'worldboss';
       const entry = esc(String(r[3] || '').split('|')[0]);
       const hero = img.indexOf('http') === 0
-        ? '<img class="skBo" src="' + img + '" style="width:150px;height:150px;border-radius:20px;background:#312E81;border:3px solid #6366F1;box-shadow:0 12px 30px rgba(30,27,75,.55);' + ANIM_BOSS + '"/>'
+        ? '<img class="skBo" src="' + img + '" style="display:block;margin:0 auto;width:150px;height:150px;border-radius:20px;background:#312E81;border:3px solid #6366F1;box-shadow:0 12px 30px rgba(30,27,75,.55);' + ANIM_BOSS + '"/>' // [v9.48] 중앙 고정(위와 동일 사유)
         : '<span class="skBo" style="display:inline-block;font-size:90px;' + ANIM_BOSS + '">👾</span>';
       return [CARD_ANIM + '<div style="' + CARD_FONT + 'background:linear-gradient(165deg,#1E1B4B,#312E81 60%,#1E1B4B);border:2px solid #6366F1;border-radius:20px;padding:18px 16px;text-align:center;color:#E0E7FF;">' +
         '<div style="font-size:10.5px;letter-spacing:.25em;color:#A5B4FC;padding-bottom:8px;">' + (isW ? 'WORLD BOSS' : 'MONTHLY BOSS ' + (th || '') ) + '</div>' +
