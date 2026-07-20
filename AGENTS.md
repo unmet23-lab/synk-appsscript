@@ -48,7 +48,7 @@
 - 시작: `docs/세션보드.md`에 내 줄 추가(날짜·트랙·만질 파일·작업중). 다른 세션이 '작업중'인 파일은 편집 금지(조율은 유호님께).
 - 공유 파일 편집 전 `git status` — 남의 미커밋 변경은 그대로 두고 보고한다. 커밋 전 `git diff --stat`으로 내 작업만 있는지 확인, 섞였으면 분리 커밋.
 - 파일 차선: 콘텐츠·데이터는 `contents_*.js`에만, `Code.js`(엔진)는 코드 전용. 새 대량 콘텐츠는 새 `contents_*.js`로.
-- 배포는 `/deploy` 스킬만(구문검사→커밋→push→clasp push 순서 보장). 손 clasp push 단독 금지.
+- 배포는 `/deploy` 스킬만(구문검사→커밋→push→clasp push 순서 보장). 손 clasp push 단독 금지 — Claude 측은 `clasp-guard` 훅이 기계 차단, Codex 창은 훅이 없으니 같은 불변식을 절차 준수로 지킨다.
 - 종료: 세션보드 내 줄 '완료' 갱신, 미커밋 파일 남기지 않기.
 
 ## Codex ↔ Claude 오케스트레이션 (필수)

@@ -19,6 +19,10 @@ description: SYNK 배포 3종 세트 — 구문검사(node --check) → git 커�
    ```bash
    for f in *.js; do "/c/Program Files/nodejs/node.exe" --check "$f" || exit 1; done
    ```
+   이어서 **안전 불변식 테스트** — 구문은 멀쩡해도 실데이터를 지키는 불변식을 깨는 변경을 라이브 반영 전에 잡는다. **`fail` 0이 아니면 배포 중단**.
+   ```bash
+   "/c/Program Files/nodejs/node.exe" --test tests/*.test.js
+   ```
 3. **appsscript.json 검증**: `node -e "JSON.parse(require('fs').readFileSync('appsscript.json','utf8'))"` — 임시 webapp 설정 등 검증 잔재가 남아있지 않은지 눈으로도 확인.
 4. **커밋**: `git diff --stat`으로 내 작업만 들어있는지 확인 후 커밋. 메시지 형식: `[v9.xx] 제목 — 요약` + `Co-Authored-By: Codex <모델명> <noreply@anthropic.com>`.
 5. **GitHub 백업**: `git push origin master`.
@@ -29,6 +33,9 @@ description: SYNK 배포 3종 세트 — 구문검사(node --check) → git 커�
 - 구문 검사 없이 clasp push 단독 실행 금지.
 - 커밋 없이 clasp push 금지 (라이브와 git 이력 어긋남).
 - 다른 세션의 미커밋 변경을 내 커밋에 쓸어담기 금지.
+
+## 기계 게이트 (clasp-guard — 2026-07-20 도입)
+Claude Code 세션에서는 순서를 어긴 `clasp push`/`deploy`를 `.claude/hooks/clasp-guard.js` 훅이 자동 차단한다(구문·테스트·미커밋·미push 4대 불변식). **Codex 세션에는 이 훅이 없으므로 같은 불변식을 이 절차 준수로 직접 지킨다** — 게이트가 없다고 순서를 건너뛰지 않는다. 검증 절차의 임시 러너 push만 `CLASP_GUARD_BYPASS=1` 우회 대상.
 
 ## 라이브 함수 검증이 필요할 때 (선택)
 `clasp run`은 GCP 불일치로 불가. 검증된 우회법(임시 토큰 doGet 러너 → create-deployment → HTTP 호출 → **러너 제거 + delete-deployment + 404 확인**)은 메모리 `synk-tooling-paths` 참조. 러너를 남긴 채 종료 금지.
