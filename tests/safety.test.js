@@ -284,6 +284,24 @@ test('[v9.47] 무거운 러너 3종은 시간 예산+자동 이어하기를 쓴�
   assert.ok(clr.includes('마커 없는 부분 시드 회수 모드'));
 });
 
+test('[v9.48] 공유값 서버화 — calcAll이 학업 계산 뒤에 공유열을 쓰고, 학생/학부모 분기가 있다', () => {
+  const body = section('function calcAll()', 'function writeSharedCols_');
+  // 순서: 자녀 학업추세(BW)가 갱신된 뒤에 학부모 행으로 복사돼야 한 텀 늦은 값이 안 실린다
+  assertOrder(body, ['calcAcademic_(acadById, pfData)', 'writeSharedCols_(ss, pf, st)']);
+  const fn = section('function writeSharedCols_(', 'const WORLD_HP_PER');
+  assert.ok(fn.includes("role === 'student'"));
+  assert.ok(fn.includes("role === 'parent'"));
+  assert.ok(fn.includes("String(r[35] || '') === '주말' ? '주말의' : '오늘의'")); // 반유형 분기(구 Glide ITE)
+  assert.ok(fn.includes('splitQuiz')); // 퀴즈 문제/정답 분해(구 Glide Split Text)
+  assert.ok(fn.includes("String(r[9] || '').split(',')[0]")); // parent_of 첫 자녀(구 Relation)
+  assert.ok(fn.includes('writeIfChanged(pf, 2, SHARED_COL_START, out)')); // 무변경 시 쓰기 0(쿼터 보호)
+  // 헤더 17개가 열 지도와 일치해야 조립 문서의 CG~CW 안내가 유효
+  assert.ok(code.includes("const SHARED_COL_START = 85"));
+  const heads = code.match(/const SHARED_COL_HEADERS = \[([\s\S]*?)\];/);
+  assert.ok(heads, 'SHARED_COL_HEADERS 선언을 찾지 못함');
+  assert.equal(heads[1].split(',').filter(s => s.trim()).length, 17);
+});
+
 test('[v9.47] 경영 보고는 단일화 — monthlyReport는 위임 shim이고 월보는 병합 로그를 읽는다', () => {
   const mr = section('function monthlyReport()', 'function archiveMonthly');
   assert.ok(mr.includes('buildExecReport_()'));

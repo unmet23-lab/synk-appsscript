@@ -653,12 +653,21 @@
  *      B5 student_errors→수업 브리핑 '🧩 연습 포인트' 환류(쓰기만 되던 시트에 읽기 배선) ·
  *      B6 출근 치어 7종(cheer)→수업 전 브리핑 첫인사(잠들어 있던 콘텐츠 소생) · B7 healthCheck는 기위임 확인 ·
  *      C9 경영 보고 단일화(monthlyReport→buildExecReport_ 위임 — 월보 1통·병합 로그 읽기) · C10 스토리 3종 유지.
+ *
+ * [v9.48 — 🧩 공유값 서버화: Glide 계산 컬럼 ~38개 제거 (2026-07-20)]
+ * 185. writeSharedCols_(calcAll 말미·calcAcademic_ 뒤) — app_state 공유값을 각 행에 직접 write.
+ *      학생 행(CG85~CP94): 반유형(AJ)으로 분기한 내숙제 3종 · 급수(BO)로 고른 퀴즈 문제/정답 분해 ·
+ *        오늘의팁 · 전당배너 · 시즌배너 · 이달의보스HTML · 여행지도HTML(학생 소식탭).
+ *      학부모 행(CQ95~CW101): parent_of 자녀의 이름·축하배너·주간리포트·출석달력·대화카드·학업추세·액자.
+ *      → Glide 조립에서 Query·Single Value·If-Then-Else·Split·Relation·Lookup 약 38개가 전부 불필요해진다
+ *        (조립 UI 조작 = 프리즈·실수의 최대 원천이라는 2026-07-20 실측 보고에 대한 구조적 대응).
+ *      비용 0: 쓰기는 writeIfChanged 1블록, Glide sync는 "변경 묶음당 1"(docs/glide_업데이트_실측설계.md §1).
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.47'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
+const SYNK_VERSION = 'v9.48'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -2333,7 +2342,72 @@ function calcAll() {
   setState(st, '학생수', count); // 하위호환(외부 참조 대비) — 감지는 위 id 집합이 담당, setState가 동일값이면 무기록
 
   try { calcAcademic_(acadById, pfData); } catch (e) { Logger.log('calcAcademic_ 스킵: ' + e); } // [v9.18] 학업 성장 축 — [v9.22] byId·pfData 재사용
+  try { writeSharedCols_(ss, pf, st); } catch (e) { Logger.log('writeSharedCols_ 스킵: ' + e); } // [v9.48] 공유값 서버화 — 반드시 calcAcademic_ 뒤(학부모 행에 자녀 학업추세를 복사하므로)
   Logger.log('calcAll v5 완료');
+}
+
+/* ===================== [v9.48] 🧩 공유값 서버화 — Glide 계산 컬럼 제거 =====================
+ * 문제: app_state가 key-value 세로 시트라, 학생 홈의 숙제·퀴즈·팁·배너를 화면에 올리려면 Glide에서
+ *   키마다 Query+Single Value 2개(총 30개)를 손으로 만들어야 했고, 학부모 자녀 카드도 Relation+Lookup
+ *   8개가 필요했다. 조립 UI 조작이 곧 시간·프리즈·실수의 원천(2026-07-20 유호님 실측 보고).
+ * 해결: 그 값들을 여기서 **각 행에 직접 써 넣는다**. 학생 행에는 자기 반유형·급수에 맞는 숙제·퀴즈가,
+ *   학부모 행에는 자녀 카드가 이미 들어있으므로 Glide는 자기 행을 그냥 바인딩하면 끝(계산 컬럼 0개).
+ * 비용: 시트 쓰기는 writeIfChanged 1블록 + Glide sync는 "변경 묶음당 1"(docs/glide_업데이트_실측설계.md §1).
+ *   팁·퀴즈가 매일 로테이션해 profiles sync가 하루 최대 2회(14·22시) 확정 발생하나, profiles는 게이지·출석으로
+ *   어차피 매일 변하는 시트라 순증분은 미미(리뷰 P2 판정). 정확한 소비는 첫 달 Usage 실측으로 확인.
+ * 열 지도(신규): CG85 내숙제유형 · CH86 내숙제 · CI87 내숙제팁 · CJ88 오늘의퀴즈문제 · CK89 오늘의퀴즈정답 ·
+ *   CL90 오늘의팁 · CM91 전당배너 · CN92 시즌배너 · CO93 이달의보스HTML · CP94 여행지도HTML(학생 소식탭) ·
+ *   CQ95 자녀이름 · CR96 자녀_축하배너 · CS97 자녀_주간리포트 · CT98 자녀_출석달력 · CU99 자녀_대화카드 ·
+ *   CV100 자녀_학업추세 · CW101 자녀_액자. */
+const SHARED_COL_START = 85;
+const SHARED_COL_HEADERS = ['내숙제유형', '내숙제', '내숙제팁', '오늘의퀴즈문제', '오늘의퀴즈정답', '오늘의팁',
+  '전당배너', '시즌배너', '이달의보스HTML', '여행지도HTML',
+  '자녀이름', '자녀_축하배너', '자녀_주간리포트', '자녀_출석달력', '자녀_대화카드', '자녀_학업추세', '자녀_액자'];
+function writeSharedCols_(ss, pf, st) {
+  if (!pf || pf.getLastRow() < 2) return;
+  const endCol = SHARED_COL_START + SHARED_COL_HEADERS.length - 1; // 101(CW)
+  if (pf.getMaxColumns() < endCol) pf.insertColumnsAfter(pf.getMaxColumns(), endCol - pf.getMaxColumns());
+  SHARED_COL_HEADERS.forEach((h, i) => {
+    const c = SHARED_COL_START + i;
+    if (String(pf.getRange(1, c).getValue()) !== h) pf.getRange(1, c).setValue(h);
+  });
+  const kv = {};
+  // [v9.48·리뷰 P2] 첫 행 우선 — getState와 동일 규약(중복 키가 있어도 앱 전체가 같은 값을 본다)
+  if (st && st.getLastRow() >= 2) st.getRange(2, 1, st.getLastRow() - 1, 2).getValues().forEach(r => { const k = String(r[0] || ''); if (k && !(k in kv)) kv[k] = String(r[1] == null ? '' : r[1]); });
+  const rows = pf.getRange(2, 1, pf.getLastRow() - 1, 84).getValues(); // A~CF — 자녀 카드 원본 포함
+  // 학생별 카드 인덱스(자녀 조회용): id → 이름·액자(BD56)·주간리포트(BL64)·대화카드(BM65)·축하배너(BN66)·학업추세(BW75)·출석달력(CF84)
+  const byId = {};
+  rows.forEach(r => {
+    if (r[0] && r[3] === 'student') byId[String(r[0]).trim()] = { n: r[1] || r[0], bd: r[55], bl: r[63], bm: r[64], bn: r[65], bw: r[74], cf: r[83] };
+  });
+  const splitQuiz = v => { const p = String(v || '').split('|'); return [p[0] || '', p.length > 1 ? p.slice(1).join('|') : '']; };
+  const out = rows.map(r => {
+    const blank = SHARED_COL_HEADERS.map(() => '');
+    if (!r[0]) return blank;
+    const role = String(r[3] || '');
+    if (role === 'student') {
+      const pre = String(r[35] || '') === '주말' ? '주말의' : '오늘의'; // AJ36 반유형 — 서버가 분기(구 Glide ITE 3개 대체)
+      // 급수(BO67)로 퀴즈 난이도 자동 선택 — 값 없으면 초급. 상위 난이도가 비어 있으면 아래로 폴백.
+      const lv = Number(r[66]) || 0;
+      const quizRaw = (lv >= 3 ? (kv['오늘의퀴즈_고급'] || kv['오늘의퀴즈_중급'] || kv['오늘의퀴즈_초급'])
+        : lv >= 1 ? (kv['오늘의퀴즈_중급'] || kv['오늘의퀴즈_초급'])
+          : kv['오늘의퀴즈_초급']) || kv['오늘의퀴즈'] || '';
+      const q = splitQuiz(quizRaw);
+      return [kv[pre + '숙제유형'] || '', kv[pre + '숙제'] || '', kv[pre + '숙제팁'] || '',
+        q[0], q[1], kv['오늘의팁'] || '', kv['지난달의전당'] || '', kv['이달의시즌'] || '',
+        kv['이달의보스HTML'] || '', kv['여행지도HTML'] || '',
+        '', '', '', '', '', '', ''];
+    }
+    if (role === 'parent') {
+      const kidId = String(r[9] || '').split(',')[0].trim(); // J10 parent_of(첫 자녀)
+      const k = kidId ? byId[kidId] : null;
+      if (!k) return blank;
+      return ['', '', '', '', '', '', '', '', '', '',
+        k.n, k.bn, k.bl, k.cf, k.bm, k.bw, k.bd];
+    }
+    return blank;
+  });
+  writeIfChanged(pf, 2, SHARED_COL_START, out);
 }
 
 /* ===================== 상담시트 → profiles 동기화 ===================== */
@@ -10003,6 +10077,26 @@ function preflightGlide() {
     ['리텐션레이더HTML', '케어사각HTML', '오늘의퀴즈', '오늘의숙제', '주말의숙제', '오늘의팁', '경영리포트HTML', '여행지도HTML', '상담폼ID'].forEach(k => {
       if (getState(st6, k).row < 1) warn("app_state '" + k + "' 없음" + (k === '상담폼ID' ? ' → createConsultForm 실행 필요(상담 폼 응답 유입 끊김)' : ''));
     });
+  }
+
+  // 6.5) [v9.48] 공유열 서버화 확인 — Glide가 계산 컬럼 없이 바로 바인딩할 수 있는 상태인지(조립 전제)
+  if (pf && pf.getLastRow() >= 2) {
+    const endColP = SHARED_COL_START + SHARED_COL_HEADERS.length - 1;
+    if (pf.getMaxColumns() < endColP) warn('공유열(CG85~CW101) 미생성 — calcAll 1회 실행 필요(preflight가 이미 돌렸다면 로그의 calcAll 실패 사유 확인)');
+    else {
+      const shared = pf.getRange(2, SHARED_COL_START, pf.getLastRow() - 1, SHARED_COL_HEADERS.length).getValues();
+      const roles = pf.getRange(2, 1, pf.getLastRow() - 1, 10).getValues();
+      let stuFilled = 0, stuTotal = 0, parFilled = 0, parTotal = 0;
+      roles.forEach((r, i) => {
+        if (!r[0]) return;
+        if (r[3] === 'student') { stuTotal++; if (String(shared[i][1] || '')) stuFilled++; }        // 내숙제
+        else if (r[3] === 'parent') { parTotal++; if (String(shared[i][12] || '')) parFilled++; }   // 자녀_주간리포트
+      });
+      if (stuTotal && stuFilled < stuTotal) warn('학생 공유열 미충전 ' + stuFilled + '/' + stuTotal + ' — 숙제 키가 아직 없을 수 있음(밤 21시 이후 자동, 즉시 원하면 calcAll 재실행)');
+      else if (stuTotal) ok('학생 공유열 충전 완료 ' + stuFilled + '/' + stuTotal + '(숙제·퀴즈·팁·배너·보스·여행지도 — Glide 계산 컬럼 불필요)');
+      if (parTotal && parFilled < parTotal) warn('학부모 공유열 미충전 ' + parFilled + '/' + parTotal + ' — parent_of(J열) 자녀 연결을 확인하세요(연결 후 calcAll 재실행)');
+      else if (parTotal) ok('학부모 공유열 충전 완료 ' + parFilled + '/' + parTotal + '(자녀 카드 6종 — Relation·Lookup 불필요)');
+    }
   }
 
   // 7) 트리거 — 통합 10개 생존 확인
