@@ -5,7 +5,9 @@
 > **UI 위치 주의**: Glide 화면의 버튼 위치·이름은 업데이트로 조금씩 바뀝니다. 이 문서와 다르게 보이면 **지어서 누르지 말고 그 화면 스크린샷을 채팅에** — 정확한 다음 클릭을 안내받으세요.
 > **용어 3개만**: `Data`(상단 — 시트·계산 컬럼) · `Layout`(상단 — 화면·탭 조립) · 컴포넌트(화면 우측 + 버튼으로 추가하는 조각).
 
-**전체 지도** — STEP 0 설정(5분) → 1 공유 데이터 준비(15분) → 2 타입·보조 컬럼(10분) → 3 학생 5탭(60~90분) → 4 학부모 4탭(20분) → 5 강사 4탭(40분) → 6 원장 4탭(30분) → 7 Visibility·최종 감사(15분) → 8 검증 시나리오(30분) → 9 운영 전환.
+**전체 지도** — STEP 0 설정(5분) → 1 공유 데이터(5분·**v9.48로 축소**) → 2 보조 컬럼(5분·**축소**) → 3 학생 5탭(60~90분) → 4 학부모 4탭(15분·**축소**) → 5 강사 4탭(40분) → 6 원장 4탭(30분) → 7 Visibility·최종 감사(15분) → 8 검증 시나리오(30분) → 9 운영 전환.
+
+> **★v9.48 핵심 변경(2026-07-20)**: 손으로 만들던 Glide 계산 컬럼 **약 38개가 사라졌습니다**. app_state 공유값(숙제·퀴즈·팁·배너·보스·여행지도)과 학부모의 자녀 카드를 **Apps Script가 각자의 행(profiles CG85~CW101)에 직접 써 넣기** 때문입니다. 화면은 **자기 행을 그냥 바인딩**하면 끝 — Query·Single Value·If-Then-Else·Split Text·Relation·Lookup을 만들 필요가 없습니다. (조립 UI 조작이 프리즈·실수의 최대 원천이라는 실측 보고에 대한 구조적 대응)
 
 ---
 
@@ -21,45 +23,38 @@
 
 ---
 
-## STEP 1 · 공유 데이터 준비 — app_state 계산 컬럼 15세트 (15분)
+## STEP 1 · 공유 데이터 준비 — 원장 콕핏용 3세트만 (5분) ★v9.48로 대폭 축소
 
-여러 탭이 함께 쓰는 값입니다. **Data → app_state 테이블**에서 아래 표의 키마다 컬럼 2개(Query → Single Value)를 만듭니다.
+> **v9.48 변경**: 학생·학부모가 쓰는 공유값(숙제·퀴즈·팁·배너·보스·여행지도·자녀 카드)은 이제 **Apps Script가 각자의 행에 직접 써 넣습니다**(profiles CG85~CW101). 그래서 **구 1-7~1-15와 STEP 2-3~2-6, STEP 4-1~4-2의 계산 컬럼 ~38개가 전부 불필요**해졌습니다. 남은 건 원장 콕핏 3개뿐입니다.
 
-**만드는 법(첫 1개만 상세 — 나머지는 동일 패턴)**:
+**만드는 법(1개만 상세 — 나머지 동일 패턴)**:
 1. Data → 좌측에서 **app_state** 선택 → 우측 끝 **+ (Add column)**
-2. 타입 **Query** 선택 → 이름 `리텐션_q` → Source: app_state → Filter: **key** is `리텐션레이더HTML` → 저장
-3. 다시 **+** → 타입 **Single Value** → 이름 `리텐션_v` → From: **리텐션_q**(방금 만든 Query) → Column: **value** → Row: First → 저장
+2. 타입 **Query** → 이름 `리텐션_q` → Source: app_state → Filter: **key** is `리텐션레이더HTML` → 저장
+3. 다시 **+** → 타입 **Single Value** → 이름 `리텐션_v` → From: **리텐션_q** → Column: **value** → Row: First → 저장
 
 - [ ] 1-1 `리텐션_q`/`리텐션_v` ← key `리텐션레이더HTML`
 - [ ] 1-2 `케어사각_q`/`케어사각_v` ← `케어사각HTML`
 - [ ] 1-3 `경영월보_q`/`경영월보_v` ← `경영리포트HTML`
-- [ ] 1-4 `여행지도_q`/`여행지도_v` ← `여행지도HTML`
-- [ ] 1-5 `이달의보스_q`/`이달의보스_v` ← `이달의보스HTML`
-- [ ] 1-6 `퀴즈초급_q`/`퀴즈초급_v` ← `오늘의퀴즈_초급`
-- [ ] 1-7 `팁_q`/`팁_v` ← `오늘의팁`
-- [ ] 1-8 `전당_q`/`전당_v` ← `지난달의전당`
-- [ ] 1-9 `시즌_q`/`시즌_v` ← `이달의시즌`
-- [ ] 1-10 `오늘숙제유형_q`/`오늘숙제유형_v` ← `오늘의숙제유형`
-- [ ] 1-11 `오늘숙제_q`/`오늘숙제_v` ← `오늘의숙제`
-- [ ] 1-12 `오늘숙제팁_q`/`오늘숙제팁_v` ← `오늘의숙제팁`
-- [ ] 1-13 `주말숙제유형_q`/`주말숙제유형_v` ← `주말의숙제유형`
-- [ ] 1-14 `주말숙제_q`/`주말숙제_v` ← `주말의숙제`
-- [ ] 1-15 `주말숙제팁_q`/`주말숙제팁_v` ← `주말의숙제팁`
-- [ ] (선택) `퀴즈중급_v`·`퀴즈고급_v` ← `오늘의퀴즈_중급`/`_고급` — 급수별 퀴즈 분기를 쓸 때만
 
-**✅ 완료 판정**: app_state 테이블에 `_v` 컬럼들이 실제 값(HTML/문장)을 보여줌. `리텐션_v`에 카드 HTML이 보이면 성공.
+> 이미 만들어 둔 `여행지도_v`·`이달의보스_v`·`퀴즈초급_v`가 있다면 **그대로 두세요**(안 써도 무해). 새로 만들 필요는 없습니다.
+
+**✅ 완료 판정**: `리텐션_v`에 카드 HTML 문자열이 보이면 성공.
+
+### 1-B. 서버가 채워 주는 열 확인 (클릭 3번 — 이후 STEP 3·4가 여기에 그대로 붙습니다)
+- [ ] Data → **profiles** 테이블 → 오른쪽 끝으로 스크롤 → **CG~CW(85~101열)** 에 아래 17개 헤더가 있는지 눈으로 확인:
+  `내숙제유형 · 내숙제 · 내숙제팁 · 오늘의퀴즈문제 · 오늘의퀴즈정답 · 오늘의팁 · 전당배너 · 시즌배너 · 이달의보스HTML · 여행지도HTML · 자녀이름 · 자녀_축하배너 · 자녀_주간리포트 · 자녀_출석달력 · 자녀_대화카드 · 자녀_학업추세 · 자녀_액자`
+- [ ] 바야르(DEMO-01) 행의 **내숙제·오늘의퀴즈문제**에 값이 보이면 정상 / 학부모 행의 **자녀_주간리포트**에 값이 보이면 정상
+- [ ] 열이 안 보이면: Apps Script에서 **`calcAll`** ▶ 1회 → Glide에서 해당 테이블 **Refresh**(테이블 우클릭 또는 새로고침)
 
 ---
 
 ## STEP 2 · profiles·contents 보조 컬럼 + 이미지 타입 (10분)
 
-### 2-A. profiles에 만들 컬럼 (Data → profiles → +)
+### 2-A. profiles에 만들 컬럼 (Data → profiles → +) — ★v9.48로 2개만 남음
 - [ ] 2-1 **Query** `오늘출석_q` — Source: **attendance** / Filter: **student_id** is **This row → user_id** AND **timestamp** is within **Today**
 - [ ] 2-2 **Rollup** `오늘출석수` — From: 오늘출석_q → Count
-- [ ] 2-3 **Single Value** 6개 — 값을 app_state에서 가져오기: `오늘숙제유형_p`(From: app_state → 오늘숙제유형_v → First) · `오늘숙제_p` · `오늘숙제팁_p` · `주말숙제유형_p` · `주말숙제_p` · `주말숙제팁_p`
-- [ ] 2-4 **If-Then-Else** 3개 — `내숙제유형`: If **반유형(AJ)** is `주말` then 주말숙제유형_p Else 오늘숙제유형_p / 같은 방식으로 `내숙제`, `내숙제팁`
-- [ ] 2-5 **Single Value** `퀴즈_p` — From: app_state → 퀴즈초급_v → First
-- [ ] 2-6 **Split Text** `퀴즈분해` — Value: 퀴즈_p / Separator: `|` → 이어서 **Single Value** 2개: `퀴즈문제`(From 퀴즈분해 → First) · `퀴즈정답`(From 퀴즈분해 → Last)
+> 이 2개만 UI에 남는 이유: GPS 출석 버튼은 **누르는 즉시** 상태가 바뀌어야 하는데, 서버 계산은 14/22시라 실시간이 안 됩니다.
+> ~~2-3 Single Value 6개~~ · ~~2-4 If-Then-Else 3개~~ · ~~2-5 퀴즈 SV~~ · ~~2-6 Split Text+SV 2개~~ → **전부 삭제**(서버가 profiles CG85~CK89에 이미 채움).
 
 ### 2-B. contents에 만들 컬럼
 - [ ] 2-7 **Math** `음수가격` — 수식 `T * -1` (T = threshold 지정)
@@ -85,15 +80,15 @@ Layout → **+ New tab** → 이름 `홈` → Source: **profiles** (스타일: D
 | [ ] | ⓪b | Text `✅ 오늘 시냅스 연결 완료!` | 고정 문구 | Visibility: 오늘출석수 **≥ 1** (⓪과 같은 자리) |
 | [ ] | ① | Collection 1행 | **onboarding** / Filter: role is `student` | 첫 안내 카드 |
 | [ ] | ② | Text | **오늘의알림 (BX)** | Visibility: is not empty |
-| [ ] | ③ | Text ×2 | app_state **전당_v** · **시즌_v** (profiles에 SV로 끌어오거나 화면 소스만 app_state로 잠깐 전환해 배치) | 각각 Visibility: is not empty |
+| [ ] | ③ | Text ×2 | **전당배너 (CM91)** · **시즌배너 (CN92)** ← 내 행에 그대로 있음 | 각각 Visibility: is not empty |
 | [ ] | ④ | **Rich Text** | **나의여정 (BY)** | ★대표 카드 |
 | [ ] | ⑤ | **Rich Text** | **액자HTML (BD)** | 진화 게이지 포함 — Progress 컴포넌트 별도로 두지 않기 |
 | [ ] | ⑥ | **Rich Text** | **몬스터한마디 (BF)** | 출석 버튼 바로 아래가 연출상 최적이지만 이 위치도 OK |
 | [ ] | ⑦ | **Rich Text** | **학업추세HTML (BW)** | |
-| [ ] | ⑧ | Title+Text | 제목 `📚 오늘의 숙제`+**내숙제유형** / 본문 **내숙제** / 작은 글씨 **내숙제팁** | |
-| [ ] | ⑨ | Text+버튼 | **퀴즈문제** + 버튼 `🔮 정답 공개!` → Show notification(또는 Show detail)에 **퀴즈정답** | ⚠ 정답을 같은 화면에 평문으로 두지 않기 |
-| [ ] | ⑩ | **Text Entry** | **드림한줄 (CB)** | 라벨 `🌟 나의 목표` — 학생 유일 입력칸 |
-| [ ] | ⑪ | Text ×2 | **오늘의운세 (BE)** · app_state **팁_v** | 최하단 |
+| [ ] | ⑧ | Title+Text | 제목 `📚 오늘의 숙제`+**내숙제유형 (CG85)** / 본문 **내숙제 (CH86)** / 작은 글씨 **내숙제팁 (CI87)** | 반유형 분기는 서버가 이미 처리 |
+| [ ] | ⑨ | Text+버튼 | **오늘의퀴즈문제 (CJ88)** + 버튼 `🔮 정답 공개!` → Show notification(또는 Show detail)에 **오늘의퀴즈정답 (CK89)** | 🚨 **CK89 정답은 이 리빌 버튼 안에서만 사용 — 다른 어떤 화면·목록·상세에도 절대 배치 금지**(학생 자기 행에 정답이 실려 있으므로 실수로 올리면 즉시 노출). 급수별 난이도는 서버가 자동 선택 |
+| [ ] | ⑩ | **Text Entry** | **드림한줄 (CB80)** | 라벨 `🌟 나의 목표` — 학생 유일 입력칸 |
+| [ ] | ⑪ | Text ×2 | **오늘의운세 (BE57)** · **오늘의팁 (CL90)** | 최하단 |
 
 - [ ] 3-A-끝. 홈 하단에 작은 버튼 `📜 내 기록 전부 보기` → Action: **Show detail screen → This item** → 열린 화면에 **Rich Text 4장**: 기록실(BG) → 플레이스타일(BH) → 시냅스케미(BI) → 매치업프리뷰(BJ, Visibility: not empty) + (선택) 출석달력(CF)
 
@@ -115,8 +110,8 @@ Layout → **+ New tab** → 이름 `홈` → Source: **profiles** (스타일: D
 - **✅ 검증**: 비싼 상품엔 교환 버튼이 안 보이고, 찜하면 홈 목표진행(BZ) 카드가 "몇 P 남았는지"로 바뀜(다음 계산 때).
 
 ### 3-D. 탭 「소식」
-- [ ] 새 탭 `소식` → 최상단 **Rich Text**: **이달의보스_v**
-- [ ] **Rich Text**: **여행지도_v** (★스토리북 바로 위 — "이번 달 무대" 연결)
+- [ ] 새 탭 `소식`(Source: profiles·User's row) → 최상단 **Rich Text**: **이달의보스HTML (CO93)**
+- [ ] **Rich Text**: **여행지도HTML (CP94)** (★스토리북 바로 위 — "이번 달 무대" 연결)
 - [ ] **Collection**: **notices** — 제목=title_ko·본문=body_ko·날짜=created_at·최신순 (notice_id 바인딩 금지)
 - [ ] **Collection**: **raid_story** — Filter: class_name is **User Profile → class_name** OR class_name is `전체` / 제목+스토리·날짜 내림차순
 - [ ] **Collection**: **synk_stories** — 월별 그룹·챕터 오름차순·본문은 Rich Text
@@ -137,19 +132,18 @@ Layout → **+ New tab** → 이름 `홈` → Source: **profiles** (스타일: D
 
 ## STEP 4 · 학부모 앱 (Preview as: 사라 어머니 대신 → profiles의 데모 보호자이메일은 원장 수신이므로, 실계정 P01로 확인하거나 Preview as에서 parent 행 선택)
 
-### 4-0. 데이터 준비 (Data → profiles)
-- [ ] 4-1 **Relation** `자녀_rel` — Match: **This row → parent_of** ↔ profiles → **user_id** (Single match)
-- [ ] 4-2 **Lookup** 컬럼들 — From 자녀_rel: `자녀_축하배너`(BN) · `자녀_주간리포트`(BL) · `자녀_출석달력`(CF) · `자녀_대화카드`(BM) · `자녀_학업추세`(BW) · (선택) `자녀_액자`(BD) · `자녀_스토리`(AU) · `자녀_반`(class_name)
+### 4-0. 데이터 준비 — ★v9.48로 **불필요**(만들지 마세요)
+> ~~4-1 Relation `자녀_rel`~~ · ~~4-2 Lookup 7개~~ → 서버가 학부모 행 **CQ95~CW101**에 자녀 카드를 직접 채웁니다. 학부모 화면은 **자기 행만 바인딩**하면 끝입니다.
 
 ### 4-A. 탭 「우리 아이」
-- [ ] 새 탭 `우리 아이`(Source: profiles·User's row) → onboarding 1행(Filter role=`parent`)
-- [ ] **Rich Text 5장 순서대로**: 자녀_축하배너(not empty) → 자녀_주간리포트 → **자녀_출석달력** → 자녀_대화카드 → 자녀_학업추세 (+선택: 자녀_액자·자녀_스토리 Text)
+- [ ] 새 탭 `우리 아이`(Source: profiles·User's row) → 상단 Title: **자녀이름 (CQ95)** + onboarding 1행(Filter role=`parent`)
+- [ ] **Rich Text 5장 순서대로**: **자녀_축하배너 (CR96)**(Visibility: not empty) → **자녀_주간리포트 (CS97)** → **자녀_출석달력 (CT98)** → **자녀_대화카드 (CU99)** → **자녀_학업추세 (CV100)** (+선택: **자녀_액자 (CW101)**)
 
 ### 4-B. 탭 「성장 리포트」
 - [ ] **Collection** — report_cards / Filter: student_id is **User Profile → parent_of** / Image+월+칭호+코멘트
 
 ### 4-C. 탭 「신고·문의」 (폼 버튼 2개)
-- [ ] Form `🙏 결석 미리 알리기` → **absence_notice** Add row: student_id=**User's parent_of** · 반=**자녀_반** · 날짜=**Date picker(필수)** · 사유=Text · 등록시각=제출 시각
+- [ ] Form `🙏 결석 미리 알리기` → **absence_notice** Add row: student_id=**User's parent_of** · 반=비워둠(엔진이 profiles 반을 우선 사용) · 날짜=**Date picker(필수)** · 사유=Text · 등록시각=제출 시각
 - [ ] Form `💬 문의하기` → **inquiries** Add row: student_id=User's parent_of · 이름=User's 이름 · 문의내용=Text · 접수시각=제출 시각 (상태 필드는 넣지 않음)
 
 ### 4-D. 탭 「소식」
@@ -206,8 +200,8 @@ Layout → **+ New tab** → 이름 `홈` → Source: **profiles** (스타일: D
 - [ ] 7-1. **탭별 Visibility**(탭 설정 → Visibility): 홈·도감·스토어·소식·랭킹 = **Role is `student`** / 우리 아이·성장 리포트·신고문의·소식(MN) = **`parent`** / 반·보드·출퇴근·수업 준비 = **`teacher`** / 콕핏·출결·운영·경영 = **`director`**
 - [ ] 7-2. 역할 교차 확인: Preview as를 학생↔강사↔원장↔학부모로 바꿔가며 **남의 탭이 안 보이는지**
 - [ ] 7-3. **최종 감사표** — 아래 전 항목이 어딘가에 배치돼 있어야 함(§10 매트릭스 압축):
-  - 학생: 시냅스ON · 온보딩 · BX · 전당/시즌 · BY · BD · BF · BW · 숙제 · 퀴즈 · CB · BE/팁 · 내기록4(BG/BH/BI/BJ) · 도감(CE+Collection+상세카드+BC+AO) · 스토어(AQ+찜AR+교환+잔액게이트) · 소식(보스·**여행지도**·공지·전투·스토리북·카드·전당·리그역사) · 랭킹(Q/R/CA·업적·칭호·AK·AW/AX)
-  - 학부모: 온보딩 · BN · BL · **CF달력** · BM · BW · report_cards · 결석폼 · 문의폼 · 공지MN
+  - 학생: 시냅스ON · 온보딩 · BX76 · 전당CM91/시즌CN92 · BY77 · BD56 · BF58 · BW75 · 숙제CG~CI · 퀴즈CJ/CK · CB80 · BE57/팁CL90 · 내기록4(BG59/BH60/BI61/BJ62) · 도감(CE83+Collection+상세카드+BC55+AO41) · 스토어(AQ43+찜AR44+교환+잔액게이트) · 소식(보스CO93·**여행지도CP94**·공지·전투·스토리북·카드·전당·리그역사) · 랭킹(Q17/R18/CA79·업적·칭호AC/AH/AI·AK37·AW49/AX50)
+  - 학부모: 온보딩 · 자녀이름CQ95 · 축하배너CR96 · 주간리포트CS97 · **출석달력CT98** · 대화카드CU99 · 학업추세CV100 · report_cards · 결석폼 · 문의폼 · 공지MN
   - 강사: class_stats 목록 · 5카드(브리핑에 🧩연습 포인트 자동) · 학생 리스트(AY) · 🌟/⚡왕관 · **💝칭찬(태그)** · 출석폼 · 마감폼(F=content_id!) · hw_batch · 보드 · 출퇴근
   - 원장: 리텐션 · 케어사각 · **경영월보** · 보드 · 리그(A/B만) · raid/world · 특별칭호 · 공지폼 · 전당폼 · 크루폼 · teacher_stats · 문의함 · exit_log · (경영 4종)
 
