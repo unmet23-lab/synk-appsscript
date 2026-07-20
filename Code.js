@@ -641,12 +641,24 @@
  *      classPrepMail_ 일요일 조기 종료(미등원 판정·브리핑 창 자체를 안 엶) · 주말 숙제 게시 토요일만(일요일에
  *      숙제가 바뀌어 혼란 주던 것) · 데모 시드 주말 출석 토요일만 정합. BEP 확정 기준선 = 개원재무 §2-3 S1
  *      (번 3,922만₮ · 85/94명 — 원어민 정규직 내 소화·토만 운영 확정으로 S2·토일 시나리오 소멸).
+ *
+ * [v9.47 — 조립 멈춤 근본 해결 + 유호 채택 8건 반영 (2026-07-20)]
+ * 183. ⏱️ 시간 예산 이어하기 — preflightGlide·seedDemoData·clearDemoData가 4.5분 예산에서 우아하게 멈추고
+ *      1분 뒤 자동 이어하기(scheduleContinue_). 6분 강제 종료 → "clear 후 처음부터" 무한 반복이 조립 시간낭비의
+ *      근본 원인이었다. 시드는 배치 체인 포인터('데모시드_체인')로 재개, 마커 없는 부분 시드도 clearDemoData가
+ *      회수(교착 해소), 삭제는 연속 행 묶음 deleteRows로 가속.
+ * 184. 유호 채택 반영 — A1 리그 일일 중계 OFF(LEAGUE_DAILY_CAST — 소식탭 도배 방지·일요일 결산만) ·
+ *      A2 영상팩 메일 OFF(SEND_SCENE_PACK — 영상 제작 루틴 시작 전) · A3 여행지도=학생 소식탭 배치(가이드) ·
+ *      B4 💝 개별 칭찬 복원(+3P·태그 4종·1일 1회 — 주간 다이제스트 '크루의 눈' 체인 재연결) ·
+ *      B5 student_errors→수업 브리핑 '🧩 연습 포인트' 환류(쓰기만 되던 시트에 읽기 배선) ·
+ *      B6 출근 치어 7종(cheer)→수업 전 브리핑 첫인사(잠들어 있던 콘텐츠 소생) · B7 healthCheck는 기위임 확인 ·
+ *      C9 경영 보고 단일화(monthlyReport→buildExecReport_ 위임 — 월보 1통·병합 로그 읽기) · C10 스토리 3종 유지.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.46'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
+const SYNK_VERSION = 'v9.47'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -672,6 +684,7 @@ const CONTENT_CUSTOM_TYPES = { monster: 1, store: 1, boss: 1, worldboss: 1 };
 const REPORT_TEMPLATE_ID = '1XDhZPMjd17fbxmqGGEjq-kRks2Y3tJc9Ntrp90XV4pE';   // [v9.19] 리포트카드 Slides 템플릿 (비우면 스킵)
 const REPORT_FOLDER_NAME = 'SYNK_리포트카드'; // Drive 폴더 (없으면 자동 생성)
 const SEND_REPORT_EMAIL = false; // true: 학부모 이메일로 카드 링크 발송 (쿼터 가드 적용)
+const SEND_SCENE_PACK = false;   // [v9.47·A2] 🎬 영상팩 메일(스토리북 씬 프롬프트 12+집필 브리프) — 영상 제작 루틴 시작 전까지 OFF(유호 07-20). 켜면 매월 1일 발간과 함께 원장 메일 1통
 const MAX_CARDS_PER_RUN = 30;    // [opt] 60→30: 1회 실행당 카드 수 축소 — 6분 타임아웃·고아 슬라이드 리스크 절반 (초과분은 4분 후 자동 이어하기)
 // [opt] GAUGE_POINTS_MAX/GAUGE_ATT_MAX 제거 — v7.9/v8.2 은퇴된 게이지 시스템 잔재(참조 0)
 /* ── [v6.8] 강사 알림: 수업 전 브리핑 · 퇴근 후 응원 ── */
@@ -693,6 +706,7 @@ const PARENT_MAIL_MVP = true;        // [v7.4] 오늘의 MVP — 반당 하루 1
 const QUIET_DAYS = 7;                // [v7.7] 무포인트 경보 기준(일) — 조용히 멀어지는 학생 조기 감지
 const DIGEST_MODE = true;            // 원장 일상 알림(생일·진화·업적·신규학생)을 아침 8시 1통으로
 const DAILY_HEARTBEAT = true;        // [v9.32] 큐가 빈 날에도 아침 8시 하트비트 1통 — 메일 부재=트리거 사망 신호(데드맨 스위치). 끄려면 false
+const LEAGUE_DAILY_CAST = false;     // [v9.47·A1] 리그 일일 중계석(월~토 발간) — 일일 전투 리포트와 소식탭 도배가 겹쳐 OFF(유호 07-20). 리그는 일요일 결산 1건만. 반 수가 늘어 중계가 읽힐 때 true
 
 /* ── [v5.2] 학부모 알림 · 다국어 ─────────────────────── */
 const NOTIFY_PARENT_ATTENDANCE = true; // 등원 시 학부모 메일 푸시 (false = 끔)
@@ -898,6 +912,22 @@ function hasClassToday(ss, classStr, schMap) { // [v9.22] schMap 전달 시 재�
   return classDowOk_(s.type, new Date().getDay()); // [v9.46]
 }
 
+/* --- [v9.47] ⏱️ 실행 시간 예산 + 자동 이어하기 — Apps Script 6분 강제 종료 대책 ---
+ * 긴 러너(preflightGlide·seedDemoData·clearDemoData)가 4.5분에서 우아하게 멈추고 1분 뒤 스스로 이어간다.
+ * "중간에 죽음 → (시드는 clear까지 해서) 처음부터 반복"이 Glide 조립 시간낭비의 근본 원인이었다(2026-07-20 유호 보고).
+ * 이어하기 트리거는 함수명당 1개만 유지 — 대상 3함수는 통합 트리거 10개와 이름이 겹치지 않아 name 기준 삭제가 안전하다. */
+const RUN_BUDGET_MS = 270000; // 4.5분(6분 강제 종료 전 여유 90초)
+function budgetOver_(t0) { return Date.now() - t0 > RUN_BUDGET_MS; }
+function scheduleContinue_(fnName) {
+  try {
+    ScriptApp.getProjectTriggers().forEach(t => { if (t.getHandlerFunction() === fnName) ScriptApp.deleteTrigger(t); });
+    ScriptApp.newTrigger(fnName).timeBased().after(60 * 1000).create();
+  } catch (e) { Logger.log('이어하기 트리거 예약 실패(' + fnName + '): ' + e); }
+}
+function clearContinue_(fnName) {
+  try { ScriptApp.getProjectTriggers().forEach(t => { if (t.getHandlerFunction() === fnName) ScriptApp.deleteTrigger(t); }); } catch (e) {}
+}
+
 /* --- 메일 쿼터 가드 --- */
 function quotaOk(needed) {
   const q = MailApp.getRemainingDailyQuota();
@@ -1086,6 +1116,9 @@ function buildRaidCard_(clsName, goal, dmg, won) {
 }
 
 // [v9.14] 📊 월간 경영 리포트 — 숫자로 보는 SYNK (매월 1일, 원장 메일 즉발 + 원장 탭 상설)
+/* [v9.47·C9] 📊 경영 월보 단일화 — 구 monthlyReport(1일 07시 메일)와 이 함수(1일 05시 콕핏 카드+메일)가
+ * 재적·이탈·TOP3를 두 통으로 반복하던 것을 한 본으로 합침: 콕핏 카드 = 압축 9줄, 메일 = 월보 전문 1통.
+ * 로그는 readPointLogs_ 병합 읽기(라이브+아카이브) — 월중 수동 실행 시 지난달 왕관·레이드가 0으로 잡히던 것도 해소. */
 function buildExecReport_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
@@ -1098,23 +1131,29 @@ function buildExecReport_() {
   if (stData.some(r => String(r[0]) === doneKey)) return; // 멱등
   const pf = ss.getSheetByName('profiles');
   if (!pf || pf.getLastRow() < 2) return;
-  const stu = {}; let total = 0;
+  const regYM = v => { const d = toDate_(v); return d ? Utilities.formatDate(d, tz, 'yyyy-MM') : ''; };
+  const stu = {}; let total = 0, newN = 0, riskHigh = 0, riskMid = 0;
   pf.getRange(2, 1, pf.getLastRow() - 1, 63).getValues().forEach(r => {
     if (!r[0] || r[3] !== 'student') return;
     total++;
-    stu[r[0]] = { c: String(r[4] || ''), sig: String(r[62] || '🟢').slice(0, 2) };
+    if (regYM(r[11]) === ym) newN++; // 지난달 신규 등록(등록일 L열)
+    const rk = String(r[24] || ''); // 이탈위험(Y열)
+    if (rk.indexOf('상') === 0) riskHigh++; else if (rk.indexOf('중') === 0) riskMid++;
+    stu[r[0]] = { n: r[1] || r[0], c: String(r[4] || ''), sig: String(r[62] || '🟢').slice(0, 2) };
   });
-  const active = {}, crowns = { n: 0 }, raids = { n: 0 };
-  const plE = ss.getSheetByName('point_logs');
-  if (plE && plE.getLastRow() >= 2) plE.getRange(2, 1, plE.getLastRow() - 1, 6).getValues().forEach(r => {
-    if (!r[1] || !r[5] || dstr(r[5], tz).indexOf(ym) !== 0) return;
-    const rs = String(r[3] || '');
-    if ((Number(r[2]) || 0) > 0) active[r[1]] = 1;
-    if (rs === '오늘의 MVP' || rs === '오늘의 시냅스') crowns.n++;
-    if (rs === '레이드보상') raids.n++;
+  const active = {}, byStudent = {};
+  let issued = 0, deducted = 0, crownN = 0, raidN = 0;
+  readPointLogs_(ss, 7).forEach(r => { // [v9.47] 병합 읽기 — 아카이브 전(1일 새벽)·후(월중 수동) 모두 정확
+    if (!r[1] || String(r[6]) !== ym) return;
+    const p = Number(r[2]) || 0, rs = String(r[3] || '');
+    if (p > 0) { issued += p; if (stu[r[1]]) active[r[1]] = 1; } else deducted += -p;
+    byStudent[r[1]] = (byStudent[r[1]] || 0) + p;
+    if (rs === '오늘의 MVP' || rs === '오늘의 시냅스') crownN++;
+    if (rs === '레이드보상') raidN++;
   });
-  const actN = Object.keys(active).filter(sid => stu[sid]).length;
+  const actN = Object.keys(active).length;
   const actPct = total ? Math.round(actN / total * 100) : 0;
+  const usePct = issued ? Math.round(deducted / issued * 100) : 0;
   const byCls = {};
   Object.keys(stu).forEach(sid => {
     const cn = stu[sid].c || '미배정';
@@ -1125,23 +1164,47 @@ function buildExecReport_() {
   const clsRank = Object.keys(byCls).map(cn => ({ cn: cn, pct: Math.round(byCls[cn].a / byCls[cn].t * 100) })).sort((a, b) => b.pct - a.pct);
   let red = 0, yellow = 0;
   Object.keys(stu).forEach(sid => { if (stu[sid].sig === '🔴') red++; else if (stu[sid].sig === '🟡') yellow++; });
+  const top3 = Object.keys(byStudent).filter(id => stu[id] && byStudent[id] > 0)
+    .sort((a, b) => byStudent[b] - byStudent[a]).slice(0, 3);
+  const tRows = (function () { try { return calcTeacherStats() || []; } catch (e) { Logger.log('월보 강사지표 스킵: ' + e); return []; } })();
   const issueRow = ss.getSheetByName('synk_stories');
-  const issued = issueRow && issueRow.getLastRow() >= 2 && issueRow.getRange(2, 1, issueRow.getLastRow() - 1, 1).getValues().some(r => String(r[0]) === ym);
+  const issuedStory = issueRow && issueRow.getLastRow() >= 2 && issueRow.getRange(2, 1, issueRow.getLastRow() - 1, 1).getValues().some(r => String(r[0]) === ym);
+  const insights = []; // 구 monthlyReport 인사이트 승계 — 판정 임계 동일
+  if (deducted === 0 && issued > 0) insights.push('포인트가 발행만 되고 사용되지 않고 있어요 — 스토어 상품 홍보를 권장합니다.');
+  else if (issued > 0 && usePct < 20) insights.push('포인트 사용률 ' + usePct + '%로 낮아요 — 스토어 활성화가 필요합니다.');
+  if (riskHigh > 0) insights.push('이탈위험(상) ' + riskHigh + '명 — 이번 주 우선 케어 대상으로.');
+  if (total > 0 && riskHigh / total >= 0.3) insights.push('전체의 30% 이상이 이탈위험(상) — 출석 관리 점검이 필요합니다.');
+  if (newN === 0) insights.push('지난달 신규 등록 0명 — 마케팅·상담 파이프라인 점검을 권장합니다.');
+  if (tRows.length >= 2 && tRows[0][5] > 0) insights.push('이달의 강사: ' + tRows[0][0] + ' (케어지수 ' + tRows[0][5] + ').');
+  if (!insights.length) insights.push('특이사항 없이 안정적으로 운영되고 있습니다.');
   const mNum = lastM.getMonth() + 1;
-  const lines = [
-    '📊 SYNK 경영 리포트 — ' + mNum + '월',
-    '재적 학생: ' + total + '명',
-    '월간 활성률: ' + actPct + '% (' + actN + '명이 포인트 활동)',
+  const lines = [ // 콕핏 카드 — 한눈 9줄(압축), 상세는 메일 월보
+    '📊 SYNK 경영 월보 — ' + mNum + '월',
+    '재적 ' + total + '명 · 신규 +' + newN,
+    '월간 활성률 ' + actPct + '% (' + actN + '명 활동)',
+    '포인트 발행 ' + issued + 'P · 사용 ' + deducted + 'P (사용률 ' + usePct + '%)',
     '반 참여 온도 TOP: ' + clsRank.slice(0, 3).map(x => x.cn + ' ' + x.pct + '%').join(' · '),
     (clsRank.length > 3 ? '관심 필요 반: ' + clsRank[clsRank.length - 1].cn + ' ' + clsRank[clsRank.length - 1].pct + '%' : ''),
-    '이탈 레이더 현황: 🔴 ' + red + '명 · 🟡 ' + yellow + '명',
-    '이달의 하이라이트: 👑 왕관 ' + crowns.n + '회 · ⚔️ 레이드 보상 ' + raids.n + '건 · 📖 싱크 스토리 ' + (issued ? '발간 완료' : '발간 예정')
+    '이탈 레이더: 🔴 ' + red + ' · 🟡 ' + yellow + ' (위험 상 ' + riskHigh + '·중 ' + riskMid + ')',
+    '하이라이트: 👑 왕관 ' + crownN + '회 · ⚔️ 레이드 ' + raidN + '건 · 📖 스토리 ' + (issuedStory ? '발간 완료' : '발간 예정'),
+    '💡 ' + insights[0]
   ].filter(String);
-  const html = '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:14px;padding:12px 14px;font-size:13px;line-height:2;">' + lines.map((l, i) => i === 0 ? '<b style="font-size:14px;">' + l + '</b>' : l).join('<br/>') + '</div>';
+  const html = '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:14px;padding:12px 14px;font-size:13px;line-height:2;">' + lines.map((l, i) => i === 0 ? '<b style="font-size:14px;">' + l + '</b>' : escHtml_(l)).join('<br/>') + '</div>';
   setAppState_(ss, '경영리포트HTML', html);
   setAppState_(ss, doneKey, Utilities.formatDate(now, tz, 'yyyy-MM-dd'));
-  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 📊 ' + mNum + '월 경영 리포트', lines.join('\n'));
-  Logger.log('경영 리포트 ' + ym + ' 발송');
+  if (quotaOk(1)) { // 메일 = 월보 전문 1통(구 monthlyReport 완전 흡수 — 07시 트리거는 위임 shim이 멱등 통과)
+    let mail = '📊 SYNK 경영 월보 — ' + ym + '\n\n';
+    mail += '👥 크루  재적 ' + total + '명 · 지난달 신규 ' + newN + '명\n';
+    mail += '⚡ 활동  활성률 ' + actPct + '% (' + actN + '명) · 발행 ' + issued + 'P / 사용 ' + deducted + 'P (사용률 ' + usePct + '%)\n';
+    mail += '🚨 케어  이탈위험 상 ' + riskHigh + ' · 중 ' + riskMid + ' · 레이더 🔴' + red + '·🟡' + yellow + '\n\n';
+    mail += '🏆 지난달 TOP 3\n' + (top3.length ? top3.map((id, i) => (i + 1) + '위 ' + stu[id].n + ' — ' + byStudent[id] + 'P').join('\n') : '기록 없음') + '\n\n';
+    mail += '🌡️ 반 참여 온도\n' + (clsRank.length ? clsRank.map(x => '· ' + x.cn + ' ' + x.pct + '%').join('\n') : '· 반 배정 전') + '\n\n';
+    if (tRows.length) mail += '🧑‍🏫 강사 케어지수\n' + tRows.map(r => '· ' + r[0] + ': ' + r[5] + '점 (담당 ' + r[1] + '명)').join('\n') + '\n\n';
+    mail += '✨ 하이라이트  👑 왕관 ' + crownN + '회 · ⚔️ 레이드 보상 ' + raidN + '건 · 📖 싱크 스토리 ' + (issuedStory ? '발간 완료' : '발간 예정') + '\n\n';
+    mail += '💡 인사이트\n' + insights.map(s => '→ ' + s).join('\n');
+    MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 📊 ' + mNum + '월 경영 월보', mail);
+  }
+  Logger.log('경영 월보 ' + ym + ' 발간(콕핏+메일 단일화)');
 }
 
 // [v9.14] app_state 키-값 갱신 헬퍼 (변경 시에만 쓰기)
@@ -2119,12 +2182,31 @@ function calcAll() {
     });
     const blindByCls = {};
     blindList.forEach(x => (blindByCls[x.c] = blindByCls[x.c] || []).push(x.n));
+    const errByCls = {}; // [v9.47·B5] 🧩 연습 포인트(student_errors) — 쓰기만 되고 읽는 곳이 없던 약점 메모를 강사 브리핑에 환류(최근 14일·'해결' 제외)
+    {
+      const seE = ss.getSheetByName('student_errors');
+      if (seE && seE.getLastRow() >= 2) {
+        const infoE = {};
+        pfData.forEach(rr => { if (rr[0] && rr[3] === 'student') infoE[String(rr[0]).trim()] = { n: rr[1] || rr[0], c: String(rr[4] || '') }; });
+        const cutE = now.getTime() - 14 * 86400000;
+        seE.getRange(2, 1, seE.getLastRow() - 1, 8).getValues().forEach(rr => {
+          if (!rr[1] || String(rr[7] || '') === '해결') return;
+          const dE = toDate_(rr[0]) || (rr[6] instanceof Date ? rr[6] : null);
+          if (!dE || dE.getTime() < cutE) return;
+          const infE = infoE[String(rr[1]).trim()];
+          const cE = (infE && infE.c) || String(rr[2] || '');
+          if (!cE) return;
+          (errByCls[cE] = errByCls[cE] || []).push('<b>' + escHtml_((infE && infE.n) || rr[1]) + '</b> ' + escHtml_(String(rr[4] || rr[3] || '').slice(0, 24)));
+        });
+      }
+    }
     const crewCols = Object.keys(cls).sort().map(c => {
       const v = cls[c];
       const parts = [];
       if ((clsBday[c] || []).length) parts.push('🎂 오늘 생일: <b>' + clsBday[c].join(', ') + '</b>');
       if (yAttCls[c] && (clsAbsent[c] || []).length) parts.push('📵 어제 결석: ' + clsAbsent[c].slice(0, 5).join(', ') + ' — 오늘 오면 한마디 챙겨주세요');
       if ((blindByCls[c] || []).length) parts.push('👩‍🏫 케어 사각: ' + blindByCls[c].join(', '));
+      if ((errByCls[c] || []).length) parts.push('🧩 연습 포인트: ' + errByCls[c].slice(0, 3).join(' · ')); // [v9.47·B5] student_errors 환류 — '해결'로 바꾸면 사라짐
       (clsEvoSoon[c] || []).slice(0, 3).forEach(e => parts.push('⚡ <b>' + e.n + '</b> — 오늘 왕관(10P)이면 <b>진화</b>! (남은 ' + e.need + 'P)'));
       const brief = '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:14px;padding:10px 12px;font-size:12px;line-height:1.9;"><b style="font-size:13px;">🎬 오늘의 ' + c + '</b><br/>' + (parts.length ? parts.join('<br/>') : '오늘도 평화로운 교실 ✨ 좋은 수업 되세요!') + '</div>';
       const left = raidLeft[c];
@@ -3142,6 +3224,7 @@ function leagueSettle_() {
 
 // [v9.3] 리그 일일 중계 — 월~토 밤, 각 반의 오늘을 캐스터 톤으로 (아기자기 · 지치지 않게)
 function leagueStoryDaily_() {
+  if (!LEAGUE_DAILY_CAST) return; // [v9.47·A1] 일일 중계 OFF — 일일 전투 리포트와 도배가 겹침(리그는 일요일 결산만). 상수로 재개 가능
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const now = new Date();
@@ -3816,7 +3899,7 @@ function parentWeeklyDigestCore_(holdRaw) {
       if (isE && pts !== 0) ptsW[sid] = (ptsW[sid] || 0) + pts;
       if (rs.indexOf('MVP') > -1) mvpW[sid] = (mvpW[sid] || 0) + (pts > 0 ? 1 : (rs.indexOf('정정') > -1 ? -1 : 0)); // [v9.0] 건수 — 금액 독립
       else if (rs.indexOf('시냅스') > -1) synW[sid] = (synW[sid] || 0) + (pts > 0 ? 1 : (rs.indexOf('정정') > -1 ? -1 : 0));
-      if (pts > 0 && (rs.indexOf('MVP') > -1 || rs.indexOf('시냅스') > -1)) { // [v9.0] 칭찬 태그
+      if (pts > 0 && (rs.indexOf('MVP') > -1 || rs.indexOf('시냅스') > -1 || rs.indexOf('칭찬') > -1)) { // [v9.0] 칭찬 태그 · [v9.47·B4] 💝 개별 칭찬(+3P) 복원 — 태그가 '크루의 눈'에 다시 흐른다
         const tg = String(r[7] || '').trim();
         if (tg) (tagW[sid] = tagW[sid] || []).push(tg);
       }
@@ -3915,7 +3998,7 @@ function restoreDrill() {
 // 매일 22시. ① MVP·오늘의 시냅스: 같은 날·같은 반 각 1명(최초 지급만 유효)  ② 숙제완료·생일축하: 학생당 하루 1회
 // 초과분은 자동 정정(-P) + 원장 경고. 정정은 성장·잔액·레이드 데미지·칭호 카운트까지 대칭으로 되돌린다.
 // today 기준 검사라 자정이 지나면 자동 초기화 — 다음 날은 다시 지급 가능.
-const DAILY_LIMIT = { '숙제완료': 1, '생일축하': 1, '오늘의다짐': 1 }; // 사유(정확 일치)별 학생당 일일 한도 — [v9.28] 학생 셀프 미션 1일 1회
+const DAILY_LIMIT = { '숙제완료': 1, '생일축하': 1, '오늘의다짐': 1, '칭찬': 1 }; // 사유(정확 일치)별 학생당 일일 한도 — [v9.28] 학생 셀프 미션 1일 1회 · [v9.47·B4] 칭찬(+3P)도 학생당 1일 1회(왕관과 차별화되는 "작은 인정"·경제 보호, 초과분 야간 자동 정정+강사 통보)
 const CLASS_AWARDS = ['오늘의 MVP', '오늘의 시냅스']; // [v7.6] 반당 하루 1명 왕관 2종
 const TAG_MN = { '발음↑': 'Дуудлага ↑', '열정': 'Хичээл зүтгэл', '친구도움': 'Найздаа тусалсан', '집중력': 'Төвлөрөл' }; // [v9.0] 칭찬 태그 몽골어
 function dailyGuard() {
@@ -4418,70 +4501,11 @@ function calcTeacherStats() {
 
 /* ===================== 월말 경영 리포트 ===================== */
 
-function monthlyReport() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const tz = ss.getSpreadsheetTimeZone();
-  const now = new Date();
-  const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const lastMonth = Utilities.formatDate(lastMonthDate, tz, 'yyyy-MM');
-  if (!quotaOk(1)) return;
-
-  const logs = readPointLogs_(ss, 7) // [v9.22] 병합 읽기 헬퍼
-    .filter(r => String(r[6]) === lastMonth);
-
-  let issued = 0, deducted = 0;
-  const byStudent = {};
-  logs.forEach(r => {
-    const p = Number(r[2]) || 0;
-    if (p > 0) issued += p; else deducted += -p;
-    if (r[1]) byStudent[r[1]] = (byStudent[r[1]] || 0) + p;
-  });
-
-  const pf = ss.getSheetByName('profiles');
-  const pfData = pf.getLastRow() >= 2
-    ? pf.getRange(2, 1, pf.getLastRow() - 1, 25).getValues() : [];
-  const students = pfData.filter(r => r[0] && r[3] === 'student');
-  const riskHigh = students.filter(r => String(r[24]).startsWith('상')).length;
-  const riskMid = students.filter(r => String(r[24]).startsWith('중')).length;
-
-  function regYM(v) { const d = toDate_(v); return d ? Utilities.formatDate(d, tz, 'yyyy-MM') : ''; } // [opt] toDate_로 일원화
-  const newStudents = students.filter(r => regYM(r[11]) === lastMonth);
-  const tRows = calcTeacherStats() || [];
-
-  const insights = [];
-  if (deducted === 0 && issued > 0) {
-    insights.push('포인트가 발행만 되고 사용되지 않고 있습니다. 스토어 상품 홍보를 권장합니다.');
-  } else if (issued > 0 && deducted / issued < 0.2) {
-    insights.push('포인트 사용률 ' + Math.round(deducted / issued * 100) + '%로 낮습니다. 스토어 활성화가 필요합니다.');
-  }
-  if (riskHigh > 0) insights.push('이탈위험(상) ' + riskHigh + '명. 이번 주 우선 케어 대상으로 지정하세요.');
-  if (students.length > 0 && riskHigh / students.length >= 0.3) {
-    insights.push('전체의 30% 이상이 이탈위험(상)입니다. 출석 관리 점검이 필요합니다.');
-  }
-  if (newStudents.length === 0) insights.push('지난달 신규 등록이 없었습니다. 마케팅/상담 파이프라인 점검을 권장합니다.');
-  if (tRows.length >= 2 && tRows[0][5] > 0) {
-    insights.push('이달의 강사: ' + tRows[0][0] + ' (케어지수 ' + tRows[0][5] + ').');
-  }
-  if (insights.length === 0) insights.push('특이사항 없이 안정적으로 운영되고 있습니다.');
-
-  let body = '📈 SYNK 월말 경영 리포트 — ' + lastMonth + '\n\n';
-  body += '👥 재원생 ' + students.length + '명 (지난달 신규 ' + newStudents.length + '명)\n';
-  body += '💰 포인트: 발행 ' + issued + 'P / 사용 ' + deducted + 'P\n';
-  body += '⚠️ 이탈위험: 상 ' + riskHigh + ' · 중 ' + riskMid + '\n\n';
-  body += '🏆 지난달 TOP 3\n';
-  const top = Object.keys(byStudent).filter(id => byStudent[id] > 0)
-    .sort((a, b) => byStudent[b] - byStudent[a]).slice(0, 3);
-  body += top.length ? top.map((id, i) => {
-    const s = students.find(r => r[0] === id);
-    return (i + 1) + '위 ' + (s ? s[1] : id) + ' — ' + byStudent[id] + 'P';
-  }).join('\n') + '\n' : '기록 없음\n';
-  body += '\n🧑‍🏫 강사 케어지수\n';
-  tRows.forEach(r => { body += '· ' + r[0] + ': ' + r[5] + '점 (담당 ' + r[1] + '명)\n'; });
-  body += '\n💡 인사이트\n' + insights.map(s => '→ ' + s).join('\n');
-
-  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 📈 ' + lastMonth + ' 월말 경영 리포트', body);
-  Logger.log('월말 리포트 발송');
-}
+// [v9.47·C9] 경영 보고 단일화 — 본문은 buildExecReport_(경영 월보)에 전부 흡수됐다(재적·활성률·포인트
+//   발행/사용·TOP3·반 온도·이탈·강사 케어지수·인사이트 → 월보 1통). 1일 07시 트리거(monthlyReportJob)는
+//   그대로 두되 이 위임이 월보 멱등 키('경영리포트발송_ym')에 걸려 조용히 통과 — 05시 월간 배치가 이미
+//   발간한 달엔 아무것도 다시 보내지 않는다(원장 월간 수신 = 정확히 1통).
+function monthlyReport() { return buildExecReport_(); }
 
 /* ===================== 월별 아카이빙 (잔액 보존) ===================== */
 
@@ -6026,7 +6050,7 @@ function buildMonthlyStorybook_() {
     '\n🕐 읽는 시간 약 ' + readMin + '분 — 따뜻한 차 한 잔과 함께';
   setAppState_(ss, '전호주연', pick[0] || '');
   sb.getRange(sb.getLastRow() + 1, 1, rows.length, 8).setValues(rows);
-  if (quotaOk(1)) { // [v9.10] 🎬 원장 영상팩 — 즉발(브리핑 큐 미경유: 복사용 독립 메일, 월 1통)
+  if (SEND_SCENE_PACK && quotaOk(1)) { // [v9.10] 🎬 원장 영상팩 — 즉발(브리핑 큐 미경유: 복사용 독립 메일, 월 1통) · [v9.47·A2] 영상 제작 루틴 시작 전 OFF(발간·공지·데이터는 그대로, 메일만 잠금)
     const pLines = rows.map(r => '── 씬 ' + r[3] + ' · ' + r[4] + ' ──\n' + r[7]).join('\n\n');
     MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🎬 싱크 스토리 제' + issue + '호 영상팩 — 씬 프롬프트 12',
       '「' + title + '」 발간과 함께 영상 제작용 프롬프트가 준비됐습니다.\n\n사용법: ① IMG 부분을 Recraft(또는 이미지 AI)에 넣어 씬 일러스트 생성 → ② 그 이미지를 Kling 등 영상 AI에 올리고 MOT 부분만 프롬프트로 입력.\n\n' + pLines +
@@ -7088,6 +7112,36 @@ function classPrepMail_(ss, tz) {
   });
   if (!anyImminent) { props.deleteProperty('수업알림_' + yest); return; }
   const emap = teacherEmailMap_(ss);
+  let cheerLine = ''; // [v9.47·B6] ☀️ 출근 치어 7종(cheer·F열=1(일)~7(토)) → 브리핑 첫인사로 환류 — 시트에 잠들어 있던 콘텐츠 소생
+  {
+    const ctC = ss.getSheetByName('contents');
+    if (ctC && ctC.getLastRow() >= 2) {
+      const ordC = day + 1; // getDay 0(일)~6(토) → cheer 순번 1~7
+      ctC.getRange(2, 1, ctC.getLastRow() - 1, 6).getValues().some(r => {
+        if (String(r[1]) === 'cheer' && Number(r[5]) === ordC && r[3]) { cheerLine = String(r[3]); return true; }
+        return false;
+      });
+    }
+  }
+  const errByClass = {}; // [v9.47·B5] 🧩 연습 포인트 — student_errors(최근 14일·'해결' 제외)를 수업 직전 메일에도
+  {
+    const seM = ss.getSheetByName('student_errors');
+    if (seM && seM.getLastRow() >= 2) {
+      const pfM = ss.getSheetByName('profiles');
+      const infoM = {};
+      if (pfM && pfM.getLastRow() >= 2) pfM.getRange(2, 1, pfM.getLastRow() - 1, 5).getValues().forEach(r => { if (r[0]) infoM[String(r[0]).trim()] = { n: r[1] || r[0], c: String(r[4] || '') }; });
+      const cutM = now.getTime() - 14 * 86400000;
+      seM.getRange(2, 1, seM.getLastRow() - 1, 8).getValues().forEach(r => {
+        if (!r[1] || String(r[7] || '') === '해결') return;
+        const dM = toDate_(r[0]) || (r[6] instanceof Date ? r[6] : null);
+        if (!dM || dM.getTime() < cutM) return;
+        const infM = infoM[String(r[1]).trim()];
+        const clsM = (infM && infM.c) || String(r[2] || '');
+        if (!clsM) return;
+        (errByClass[clsM] = errByClass[clsM] || []).push(((infM && infM.n) || r[1]) + ' — ' + String(r[4] || r[3] || '').slice(0, 30));
+      });
+    }
+  }
   const bdayByClass = {}; // [v9.0] 오늘 생일자 → 브리핑 한 줄 (교실 축하 유도)
   {
     const pfB = ss.getSheetByName('profiles');
@@ -7145,9 +7199,11 @@ function classPrepMail_(ss, tz) {
     const hw = String((isWknd ? kv['주말의숙제'] : kv['오늘의숙제']) || '');
     const quiz = String(kv['오늘의퀴즈'] || '').split('|')[0];
     const cname = s.name || (num + '반');
-    const body = cname + ' 수업 시작 ' + Math.round(diff) + '분 전입니다.\n' +
+    const body = (cheerLine ? cheerLine + '\n\n' : '') + // [v9.47·B6] 요일 출근 치어 첫인사
+      cname + ' 수업 시작 ' + Math.round(diff) + '분 전입니다.\n' +
       (bdayByClass[cname] ? '\n🎂 오늘 ' + bdayByClass[cname].join(', ') + ' 생일! 반 전체 축하 한 번 어때요?\n' : '') +
-      (absenceByClass[cname] ? '🚫 오늘 결석 예정(학부모 사전신고): ' + absenceByClass[cname].join(', ') + '\n' : '') + '\n' +
+      (absenceByClass[cname] ? '🚫 오늘 결석 예정(학부모 사전신고): ' + absenceByClass[cname].join(', ') + '\n' : '') +
+      (errByClass[cname] ? '🧩 연습 포인트(최근 메모): ' + errByClass[cname].slice(0, 3).join(' · ') + '\n' : '') + '\n' + // [v9.47·B5]
       '⚡ 오늘의 루틴: 시작 — 숙제 검사 1탭 · 끝 — 왕관 2개(🌟MVP·⚡시냅스 각 1명) · 미션 성공 시 연료 1행\n\n' +
       '📚 오늘 검사할 숙제' + (hwT ? ' (' + hwT + ')' : '') + '\n' + (hw || '게시된 숙제 없음') + '\n\n' +
       (quiz ? '⚡ 워밍업 퀴즈: ' + quiz + '\n\n' : '') +
@@ -9221,7 +9277,20 @@ function seedDemoData() {
   const tz = ss.getSpreadsheetTimeZone();
   const now = new Date();
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const t0 = Date.now(); // [v9.47] ⏱️ 시간 예산 — 배치 체인을 4.5분에서 우아하게 멈추고 1분 뒤 자동 이어하기
+  { // [v9.47] ⏯️ 이어하기 — 직전 실행이 예산에서 멈췄으면(포인터 존재) 시드 ①~⑧은 건너뛰고 체인만 재개
+    const chainG = getState(st, '데모시드_체인');
+    if (chainG.row > 0) {
+      if (getState(st, '데모모드').row < 1) { st.deleteRow(chainG.row); clearContinue_('seedDemoData'); return 'ℹ 데모 모드가 이미 해제되어 이어하기를 취소했습니다.'; }
+      return runSeedChain_(ss, st, tz, ['⏯️ 이어하기 — 배치 체인 ' + (Number(chainG.val) || 0) + '단계부터 재개'], t0, Number(chainG.val) || 0);
+    }
+  }
   if (getState(st, '데모모드').row > 0) return '이미 데모 데이터가 있습니다 — clearDemoData() 실행 후 다시 시드하세요.';
+  { // [v9.47] 마커 없는 부분 시드 흔적(직전 실행이 ①~⑧ 도중 강제 종료됨) — clearDemoData가 마커 없이도 회수한다
+    const pf0 = ss.getSheetByName('profiles');
+    if (pf0 && pf0.getLastRow() >= 2 && pf0.getRange(2, 1, pf0.getLastRow() - 1, 1).getValues().some(r => String(r[0]).indexOf('DEMO-') === 0))
+      return '⚠ 데모 흔적은 있는데 마커가 없습니다(직전 시드가 도중에 끊김) — clearDemoData() 1회로 회수한 뒤 다시 시드하세요.';
+  }
   const L = [];
   const day = k => { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - k); return d; }; // k일 전 0시(정규화 — 오후 실행 시 시각 오버플로 방지)
   const atTime = (k, h) => new Date(day(k).getTime() + h * 3600000);
@@ -9382,48 +9451,81 @@ function seedDemoData() {
   setState(st, '데모모드', Utilities.formatDate(now, tz, "yyyy-MM-dd'T'HH:mm:ss") + '|' + sbPre + '|' + gbPre + '|' + ymLast);
 
   // ⑨ 배치 체인 — 계산→지난달 시상→스토리북→카드→지도→경영→레이드·리그→중계·보드
-  const run = (nm, fn) => { try { fn(); L.push('✓ ' + nm); } catch (e) { L.push('✗ ' + nm + ': ' + e.message); } };
-  run('전체 계산', calcAll);
-  run('생일 축하(+20P·학부모 메일)', birthdayCheck); // DEMO-03 오늘 생일 — 지급·배너·브리핑 즉시 시연
-  if (gbPre) L.push('ℹ 지난달 시상은 실배치가 이미 완료(재실행 안전상 스킵) — 시상·칭호 시연은 이번 달 데이터로 확인');
-  else run('지난달 시상(칭호·랭킹·정산)', monthlyGameBatch);
-  if (sbPre) L.push('ℹ 스토리북 지난달호는 실호가 이미 발간돼 재발간 생략(실호 보존) — 다음 달 1일 발간분으로 확인');
-  { // 경영리포트를 데모 반영판으로 재생성(멱등 키 해제 후)
-    const g1 = getState(st, '경영리포트발송_' + ymLast); if (g1.row > 0) st.deleteRow(g1.row);
-  }
-  run('스토리북 발간(지난달호)', buildMonthlyStorybook_);
-  run('이달의 카드', buildMonthlyCards_);
-  run('여행 지도', updateTravelMap_);
-  run('경영 리포트', buildExecReport_);
-  run('레이드·리그 생성(데모 반 직접)', function () {
-    // [검증 반영] raidMonday는 "이번 주 행 존재 시 전체 스킵" 멱등 — 실반 레이드가 이미 있는 주엔 데모 반이 못 생기므로
-    //   데모 반 2행을 직접 생성(실반 행 불간섭·주 키·HP=인원×28/18 동일 산식). 이번 달 월드 HP도 재적 기준으로 정합화.
-    const mondayR = new Date(now); mondayR.setDate(now.getDate() - ((now.getDay() + 6) % 7)); mondayR.setHours(0, 0, 0, 0);
-    const wk = Utilities.formatDate(mondayR, tz, 'yyyy-MM-dd');
-    const rd = ensureSheet(ss, 'raid', ['week', 'class_name', '목표', '달성포인트', '상태', '보상지급']);
-    const haveR = {};
-    if (rd.getLastRow() >= 2) rd.getRange(2, 1, rd.getLastRow() - 1, 2).getValues().forEach(r => { if (dstr(r[0], tz) === wk) haveR[String(r[1])] = 1; });
-    const addR = [];
-    if (!haveR[CLS_A]) addR.push([wk, CLS_A, 4 * 28, 0, '진행중', '']);
-    if (!haveR[CLS_B]) addR.push([wk, CLS_B, 4 * 18, 0, '진행중', '']);
-    if (addR.length) rd.getRange(rd.getLastRow() + 1, 1, addR.length, 6).setValues(addR);
-    const lg = ensureSheet(ss, 'league_pairs', ['week', '반A', '반B', '상태', '결과']);
-    const haveL = lg.getLastRow() >= 2 && lg.getRange(2, 1, lg.getLastRow() - 1, 3).getValues().some(r => String(r[0]) === wk && String(r[1]).indexOf('데모') === 0);
-    if (!haveL) lg.getRange(lg.getLastRow() + 1, 1, 1, 5).setValues([[wk, CLS_A, CLS_B, '제안', '']]);
-    const wrN = ss.getSheetByName('world_raid');
-    const ymN = Utilities.formatDate(now, tz, 'yyyy-MM');
-    if (wrN && wrN.getLastRow() >= 2) {
-      const stuN = pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().filter(r => r[0] && r[3] === 'student').length;
-      wrN.getRange(2, 1, wrN.getLastRow() - 1, 5).getValues().forEach((r, i) => {
-        if (String(r[0]) === ymN && String(r[4]) === '진행중') wrN.getRange(i + 2, 3).setValue(Math.max(stuN, 1) * 100); // HP 100(재적1 기준)에 데모 데미지 수백이 얹히는 화면 모순 해소
-      });
+  //   [v9.47] runSeedChain_로 분리 + 포인터('데모시드_체인') — 6분 강제 종료가 "clearDemoData 후 처음부터"를
+  //   무한 반복시키던 근본 원인 제거. 예산 도달 시 1분 뒤 자동 이어하기(수동 재실행해도 같은 지점부터).
+  setState(st, '데모시드_체인', '0');
+  return runSeedChain_(ss, st, tz, L, t0, 0);
+}
+
+// [v9.47] 데모 시드 배치 체인 — seedDemoData ⑨의 이어하기 가능 본체. sbPre/gbPre/기준달을 지역변수가 아니라
+//   '데모모드' 마커(4필드)에서 읽으므로 재진입(수동 재실행·1분 트리거) 시에도 조건 분기가 정확히 복원된다.
+function runSeedChain_(ss, st, tz, L, t0, startIdx) {
+  const gM = String(getState(st, '데모모드').val).split('|');
+  const sbPreC = String(gM[1] || '0') === '1';
+  const gbPreC = String(gM[2] || '0') === '1';
+  const ymLastC = String(gM[3] || '') || ymShift_(Utilities.formatDate(new Date(), tz, 'yyyy-MM'), -1);
+  const CLS_A = '데모정규반', CLS_B = '데모주말반';
+  const chain = [
+    ['전체 계산', function () { calcAll(); }],
+    ['생일 축하(+20P·학부모 메일)', function () { birthdayCheck(); }], // DEMO-02 사라 오늘 생일 — 지급·배너·브리핑 즉시 시연
+    ['지난달 시상(칭호·랭킹·정산)', function () {
+      if (gbPreC) { L.push('ℹ 지난달 시상은 실배치가 이미 완료(재실행 안전상 스킵) — 시상·칭호 시연은 이번 달 데이터로 확인'); return; }
+      monthlyGameBatch();
+    }],
+    ['스토리북 발간(지난달호)', function () {
+      if (sbPreC) L.push('ℹ 스토리북 지난달호는 실호가 이미 발간돼 재발간 생략(실호 보존) — 다음 달 1일 발간분으로 확인');
+      const g1 = getState(st, '경영리포트발송_' + ymLastC); if (g1.row > 0) st.deleteRow(g1.row); // 경영 월보를 데모 반영판으로 재생성(멱등 키 해제)
+      buildMonthlyStorybook_();
+    }],
+    ['이달의 카드', function () { buildMonthlyCards_(); }],
+    ['여행 지도', function () { updateTravelMap_(); }],
+    ['경영 월보', function () { buildExecReport_(); }],
+    ['레이드·리그 생성(데모 반 직접)', function () {
+      // [검증 반영] raidMonday는 "이번 주 행 존재 시 전체 스킵" 멱등 — 실반 레이드가 이미 있는 주엔 데모 반이 못 생기므로
+      //   데모 반 2행을 직접 생성(실반 행 불간섭·주 키·HP=인원×28/18 동일 산식). 이번 달 월드 HP도 재적 기준으로 정합화.
+      const nowR = new Date();
+      const mondayR = new Date(nowR); mondayR.setDate(nowR.getDate() - ((nowR.getDay() + 6) % 7)); mondayR.setHours(0, 0, 0, 0);
+      const wk = Utilities.formatDate(mondayR, tz, 'yyyy-MM-dd');
+      const rd = ensureSheet(ss, 'raid', ['week', 'class_name', '목표', '달성포인트', '상태', '보상지급']);
+      const haveR = {};
+      if (rd.getLastRow() >= 2) rd.getRange(2, 1, rd.getLastRow() - 1, 2).getValues().forEach(r => { if (dstr(r[0], tz) === wk) haveR[String(r[1])] = 1; });
+      const addR = [];
+      if (!haveR[CLS_A]) addR.push([wk, CLS_A, 4 * 28, 0, '진행중', '']);
+      if (!haveR[CLS_B]) addR.push([wk, CLS_B, 4 * 18, 0, '진행중', '']);
+      if (addR.length) rd.getRange(rd.getLastRow() + 1, 1, addR.length, 6).setValues(addR);
+      const lg = ensureSheet(ss, 'league_pairs', ['week', '반A', '반B', '상태', '결과']);
+      const haveL = lg.getLastRow() >= 2 && lg.getRange(2, 1, lg.getLastRow() - 1, 3).getValues().some(r => String(r[0]) === wk && String(r[1]).indexOf('데모') === 0);
+      if (!haveL) lg.getRange(lg.getLastRow() + 1, 1, 1, 5).setValues([[wk, CLS_A, CLS_B, '제안', '']]);
+      const wrN = ss.getSheetByName('world_raid');
+      const ymN = Utilities.formatDate(nowR, tz, 'yyyy-MM');
+      const pfR = ss.getSheetByName('profiles');
+      if (wrN && wrN.getLastRow() >= 2 && pfR && pfR.getLastRow() >= 2) {
+        const stuN = pfR.getRange(2, 1, pfR.getLastRow() - 1, 4).getValues().filter(r => r[0] && r[3] === 'student').length;
+        wrN.getRange(2, 1, wrN.getLastRow() - 1, 5).getValues().forEach((r, i) => {
+          if (String(r[0]) === ymN && String(r[4]) === '진행중') wrN.getRange(i + 2, 3).setValue(Math.max(stuN, 1) * 100); // HP 100(재적1 기준)에 데모 데미지 수백이 얹히는 화면 모순 해소
+        });
+      }
+    }],
+    ['일일 전투 리포트', function () { raidStoryDaily(); }],
+    ['리그 중계석', function () { if (LEAGUE_DAILY_CAST) leagueStoryDaily_(); else L.push('ℹ 리그 일일 중계는 OFF(일요일 결산만 — LEAGUE_DAILY_CAST)'); }],
+    ['재계산(시상 반영)', function () { calcAll(); }],
+    ['강사 지표', function () { calcTeacherStats(); }],
+    ['출결 보드', function () { todayBoard_(ss); }]
+  ];
+  for (let i = Math.max(startIdx, 0); i < chain.length; i++) {
+    if (budgetOver_(t0)) {
+      setState(st, '데모시드_체인', String(i));
+      scheduleContinue_('seedDemoData');
+      const pauseMsg = '⏱️ 시간 예산(4.5분) 도달 — 배치 체인 ' + i + '/' + chain.length + ' 단계까지 완료.\n' + L.join('\n') +
+        '\n\n💡 1분 후 자동으로 이어서 실행됩니다. 기다리기 싫으면 지금 seedDemoData ▶ 재실행 — 같은 지점부터 이어가며 중복 지급 없음(clearDemoData 불필요!).';
+      Logger.log(pauseMsg);
+      return pauseMsg;
     }
-  });
-  run('일일 전투 리포트', raidStoryDaily);
-  run('리그 중계석', leagueStoryDaily_);
-  run('재계산(시상 반영)', calcAll);
-  run('강사 지표', calcTeacherStats);
-  run('출결 보드', function () { todayBoard_(ss); });
+    try { chain[i][1](); L.push('✓ ' + chain[i][0]); } catch (e) { L.push('✗ ' + chain[i][0] + ': ' + e.message); }
+    setState(st, '데모시드_체인', String(i + 1));
+  }
+  { const gp = getState(st, '데모시드_체인'); if (gp.row > 0) st.deleteRow(gp.row); }
+  clearContinue_('seedDemoData');
   const rep = '🎭 데모 시드 완료 — 앱에서 8명의 크루가 살아 움직입니다\n' + L.join('\n') +
     '\n\n확인: 학생(DEMO-01 바야르=에이스·02 사라=오늘 생일·03 테무진=진화까지 5P 임박) · 강사(데모정규반 브리핑·왕관밸런스) · 원장(레이더 🔴 냠카·케어사각 오윤아·계기판·시상 메일)' +
     '\n격파 시연: demoRaidClearNow() · 상담→앱 검증: seedConsultDemo() · 제거: clearDemoData() 1회(⚠ 월말 전 필수).';
@@ -9556,25 +9658,46 @@ function clearDemoData() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const st = ss.getSheetByName('app_state');
-  const g = st ? getState(st, '데모모드') : { row: -1, val: '' };
-  if (!st || g.row < 1) return '데모 데이터가 없습니다(데모모드 키 없음).';
-  const gParts = String(g.val).split('|');
-  const seededAt = new Date(gParts[0]);
+  if (!st) return '데모 데이터가 없습니다(app_state 없음).';
+  const g = getState(st, '데모모드');
+  const hasMarker = g.row > 0;
+  const L = [];
+  if (!hasMarker) { // [v9.47] 마커 없는 부분 시드(①~⑧ 도중 강제 종료)도 회수 — 구 가드("키 없음" 거부)가 회수를 막던 교착 해소
+    const pf0 = ss.getSheetByName('profiles');
+    const anyDemo = pf0 && pf0.getLastRow() >= 2 && pf0.getRange(2, 1, pf0.getLastRow() - 1, 1).getValues().some(r => String(r[0]).indexOf('DEMO-') === 0);
+    if (!anyDemo) return '데모 데이터가 없습니다(데모모드 키 없음).';
+    L.push('ℹ 마커 없는 부분 시드 회수 모드 — DEMO 표식 행만 지우고 발간물·완료 키는 보존(가장 보수적)');
+  }
+  const gParts = hasMarker ? String(g.val).split('|') : ['', '1', '1', ''];
+  const seededAt = hasMarker ? new Date(gParts[0]) : new Date(0);
   const sbPreExisted = String(gParts[1] || '0') === '1'; // 시드 전에 지난달 스토리북 실호가 있었으면 회수 금지
   const gbPreExisted = String(gParts[2] || '0') === '1'; // [검증 반영] 실배치가 만든 게임배치완료월 키면 보존
   // [검증 반영] 회수 기준 달 = "시드 시점의 지난달"(마커 4번째) — clear가 달을 넘겨 실행돼도 회수 대상이 어긋나지 않게
   const ymLast = String(gParts[3] || '') || ymShift_(Utilities.formatDate(new Date(), tz, 'yyyy-MM'), -1);
-  const L = [];
-  // 열 값 술어 기반 행 삭제(뒤에서부터) — 시트별 [시트명, 판정 함수(row값 배열)]
+  clearContinue_('seedDemoData'); // [v9.47·리뷰 P2] seed가 일시정지 상태로 남긴 재개 트리거를 청소 시작 즉시 취소 — 청소 도중 시드가 재개돼 교차 실행되는 창 제거
+  const t0 = Date.now(); // [v9.47] ⏱️ 시간 예산 — 초과 시 1분 뒤 자동 이어서 청소(삭제는 전부 재실행 안전·이미 지운 행은 매치 안 됨)
+  const budgetStop_ = next => {
+    if (!budgetOver_(t0)) return null;
+    scheduleContinue_('clearDemoData');
+    const m = '⏱️ 시간 예산(4.5분) 도달 — "' + next + '" 앞에서 안전하게 멈췄습니다.\n' + L.join('\n') +
+      '\n\n💡 1분 후 자동으로 이어서 청소합니다(지금 clearDemoData ▶ 재실행해도 이어짐).';
+    Logger.log(m);
+    return m;
+  };
+  // 열 값 술어 기반 행 삭제(뒤에서부터) — [v9.47] 연속 매치를 묶어 deleteRows 1회로: 행당 API 1회 → 블록당 1회(수 배 가속).
+  //   아래→위로 훑으며 블록을 만들고, 삭제는 항상 현재 탐색 위치 아래라 남은 인덱스가 흔들리지 않는다.
   const wipe = (name, pred, width) => {
     const sh = ss.getSheetByName(name);
     if (!sh || sh.getLastRow() < 2) return;
     const w = Math.min(sh.getLastColumn(), width || sh.getLastColumn());
     const data = sh.getRange(2, 1, sh.getLastRow() - 1, w).getValues();
-    let n = 0;
+    let n = 0, start = -1, len = 0;
+    const flush = () => { if (len > 0) { sh.deleteRows(start + 2, len); n += len; } start = -1; len = 0; };
     for (let i = data.length - 1; i >= 0; i--) {
-      if (pred(data[i])) { sh.deleteRow(i + 2); n++; }
+      if (pred(data[i])) { start = i; len++; }
+      else flush();
     }
+    flush();
     if (n) L.push('✓ ' + name + ' ' + n + '행');
   };
   const isDemoSid = r => String(r[0] || '').indexOf('DEMO-') === 0;
@@ -9583,6 +9706,7 @@ function clearDemoData() {
   wipe('attendance', r => String(r[1] || '').indexOf('DEMO-') === 0, 2);
   wipe('point_logs', r => String(r[1] || '').indexOf('DEMO-') === 0, 2);
   wipe('point_logs_archive', r => String(r[1] || '').indexOf('DEMO-') === 0, 2);
+  { const bMsg = budgetStop_('mastery_log 회수'); if (bMsg) return bMsg; } // [v9.47] 체크포인트 ① — 큰 로그 시트 뒤
   wipe('mastery_log', isDemoSid, 1);
   wipe('academic_log', r => String(r[1] || '').indexOf('DEMO-') === 0, 2);
   wipe('monthly_snapshot', r => String(r[1] || '').indexOf('DEMO-') === 0, 2);
@@ -9597,6 +9721,7 @@ function clearDemoData() {
   wipe('leads', r => String(r[1] || '').indexOf('[DEMO]') === 0, 2);
   wipe('hall_of_fame', r => String(r[4] || '').indexOf('[DEMO]') === 0, 5);
   wipe('crew_projects', r => String(r[8] || '').indexOf('[DEMO]') === 0, 9);
+  { const bMsg = budgetStop_('weekly_topics 회수'); if (bMsg) return bMsg; } // [v9.47] 체크포인트 ② — 운영 시트 뒤
   wipe('weekly_topics', r => hasDemoCls(r[0]), 1);
   wipe('class_fuel', r => hasDemoCls(r[0]), 1);
   wipe('raid', r => hasDemoCls(r[1]), 2);
@@ -9647,24 +9772,29 @@ function clearDemoData() {
       }
     }
   }
-  { // schedule 데모 반 제거 + app_state 마커·지난달 배치 키 원복
+  { // schedule 데모 반 제거 + 지난달 배치 키 원복([v9.47] '데모모드' 마커 삭제는 맨 끝으로 — 예산 중단 시 재진입 경로 보존)
     const sc = ss.getSheetByName('schedule');
     if (sc && sc.getLastRow() >= 2) {
       const dataS = sc.getRange(2, 1, sc.getLastRow() - 1, 1).getValues();
       for (let i = dataS.length - 1; i >= 0; i--) if (hasDemoCls(dataS[i][0])) sc.deleteRow(i + 2);
     }
-    ['데모모드', '경영리포트발송_' + ymLast].forEach(k => { const gg = getState(st, k); if (gg.row > 0) st.deleteRow(gg.row); });
+    { const gg = getState(st, '경영리포트발송_' + ymLast); if (gg.row > 0) st.deleteRow(gg.row); } // 경영 월보를 제거 반영판으로 재생성
     // [검증 반영] 전호주연은 "데모가 스토리북을 실제로 발간했을 때만" 삭제 — 실 발간이 기록한 실학생 주연 가드를 보존
     if (!sbPreExisted) { const gj = getState(st, '전호주연'); if (gj.row > 0) st.deleteRow(gj.row); }
     if (!gbPreExisted) { const gb = getState(st, '게임배치완료월'); if (gb.row > 0 && String(gb.val) === ymLast) st.deleteRow(gb.row); } // [검증 반영] 실배치 키는 보존
     const sb = getState(st, '스토리북발간월'); if (sb.row > 0 && String(sb.val) === ymLast) st.deleteRow(sb.row);
   }
+  { const bMsg = budgetStop_('원복 재계산 5종'); if (bMsg) return bMsg; } // [v9.47] 체크포인트 ③ — 원복은 통으로 무거움
   const run = (nm, fn) => { try { fn(); L.push('✓ ' + nm + ' 원복'); } catch (e) { L.push('✗ ' + nm + ': ' + e.message); } };
   run('여행 지도', updateTravelMap_);
-  run('경영 리포트', buildExecReport_);
+  run('경영 월보', buildExecReport_);
   run('전체 재계산', calcAll);
   run('강사 지표', calcTeacherStats);
   run('출결 보드', function () { todayBoard_(ss); });
+  { // [v9.47] 마커·이어하기 정리는 맨 마지막 — 여기 도달 = 완주. 중간에 끊겼다면 마커가 남아 재실행이 정상 경로로 이어간다
+    ['데모모드', '데모시드_체인'].forEach(k => { const gg = getState(st, k); if (gg.row > 0) st.deleteRow(gg.row); });
+    clearContinue_('clearDemoData'); clearContinue_('seedDemoData');
+  }
   const rep = '🧹 데모 데이터 제거 완료\n' + L.join('\n');
   Logger.log(rep);
   return rep;
@@ -9715,6 +9845,18 @@ function preflightGlide() {
   const L = [];
   const ok = m => L.push('✅ ' + m);
   const warn = m => L.push('⚠ ' + m);
+  // [v9.47] ⏱️ 시간 예산 — 첫 실행(콘텐츠 수백 행+번역+계산)이 6분 강제 종료로 "중간에 죽던" 것을,
+  //   4.5분에서 우아하게 멈추고 1분 뒤 자동 이어하기로 교체. 전 단계 멱등이라 몇 번을 이어가도 안전.
+  const t0 = Date.now();
+  let pausedP = false;
+  const ensureBudget = next => {
+    if (pausedP) return false;
+    if (!budgetOver_(t0)) return true;
+    pausedP = true;
+    warn('⏱️ 시간 예산(4.5분) 도달 — "' + next + '"부터의 무거운 단계는 1분 후 자동으로 이어집니다(지금 preflightGlide ▶ 재실행해도 이어짐 · 전부 멱등이라 안전)');
+    scheduleContinue_('preflightGlide');
+    return false;
+  };
 
   // 0) 안전 셋업(전부 멱등): 시트 골격 + 입력 시트·열 + 온보딩 + 학업 로그
   try { SHEET_SKELETON.forEach(k => ensureSheet(ss, k[0], k[1])); ok('시트 골격 ' + SHEET_SKELETON.length + '종 보장(누락분만 생성 — 기존 시트·데이터 무해)'); } catch (e) { warn('시트 골격 보장 실패: ' + e.message); }
@@ -9742,6 +9884,7 @@ function preflightGlide() {
       }
       const fn = contentSetupOf_(tp);
       if (!fn) return;
+      if (!ensureBudget("contents '" + tp + "' 자동 복구")) return; // [v9.47] 유형 단위 체크포인트
       const fname = String(fn.name || tp);
       if (ranFns[fname]) return; // 한 셋업이 여러 유형 담당(setupGrammarBank=grammar+reach 등) — 1회만
       ranFns[fname] = 1;
@@ -9753,18 +9896,20 @@ function preflightGlide() {
       try { setupPlaceholderImages(); ok('빈 이미지 플레이스홀더 채움(기존 URL 보존)'); } catch (e) { warn('플레이스홀더 실패: ' + e.message); }
       // 몽골어 재주입 — 숙제·퀴즈·팁 340행은 내장 큐레이션(injectMongolianContents·멱등 upsert)이 정본,
       // monster·season 등 잔여는 translateContents 기계 초벌(60행/회 — 커버 유형이 적어 보통 1회로 끝)
-      try { injectMongolianContents(); ok('몽골어 큐레이션 340행 주입(숙제·퀴즈·팁 — injectMongolianContents)'); } catch (e) { warn('몽골어 큐레이션 주입 실패: ' + e.message); }
-      try { translateContents(); ok('잔여 유형 초벌 번역 1회(translateContents) — 로그에 남은 행이 있으면 재실행'); } catch (e) { warn('초벌 번역 실패(나중에 translateContents 수동 실행): ' + e.message); }
+      if (ensureBudget('몽골어 큐레이션 340행')) { try { injectMongolianContents(); ok('몽골어 큐레이션 340행 주입(숙제·퀴즈·팁 — injectMongolianContents)'); } catch (e) { warn('몽골어 큐레이션 주입 실패: ' + e.message); } }
+      if (ensureBudget('잔여 초벌 번역')) { try { translateContents(); ok('잔여 유형 초벌 번역 1회(translateContents) — 로그에 남은 행이 있으면 재실행 또는 매일 밤 자동 60행'); } catch (e) { warn('초벌 번역 실패(매일 밤 자동 60행이 이어서 채움): ' + e.message); } }
     } else ok('콘텐츠 유형별 개수 전부 기대치와 일치');
   } catch (e) { warn('콘텐츠 자동 복구 단계 실패: ' + e.message); }
 
   // 0.7) [v9.40] 월간 산출물 사전 생성 — 월드보스 이번 달 소환 + 원장 콕핏 월간 카드 2종(전부 멱등·아카이브 등 부작용 없음)
-  try { worldRaidMonthly_(); ok('월드 레이드 이번 달 소환 확인(world_raid)'); } catch (e) { warn('worldRaidMonthly 실패: ' + e.message); }
-  try { buildExecReport_(); updateTravelMap_(); ok('콕핏 월간 카드 2종(경영리포트HTML·여행지도HTML) 생성 확인'); } catch (e) { warn('콕핏 월간 카드 실패: ' + e.message); }
+  if (ensureBudget('월간 산출물 사전 생성')) {
+    try { worldRaidMonthly_(); ok('월드 레이드 이번 달 소환 확인(world_raid)'); } catch (e) { warn('worldRaidMonthly 실패: ' + e.message); }
+    try { buildExecReport_(); updateTravelMap_(); ok('콕핏 월간 카드 2종(경영리포트HTML·여행지도HTML) 생성 확인'); } catch (e) { warn('콕핏 월간 카드 실패: ' + e.message); }
+  }
 
-  try { calcAll(); ok('전체 계산 1회(calcAll) — profiles 카드열·class_stats 9~13열·오늘의숙제/퀴즈/팁/보스 키 갱신'); } catch (e) { warn('calcAll 실패: ' + e.message); }
-  try { calcTeacherStats(); ok('강사 지표 갱신(teacher_stats 8열 정규화)'); } catch (e) { warn('calcTeacherStats 실패: ' + e.message); }
-  try { buildMonsterDetailCards(); ok('몬스터·보스 상세 카드(contents 상세카드 열) — 숨쉬는 단계색 카드'); } catch (e) { warn('상세 카드 실패: ' + e.message); }
+  if (ensureBudget('전체 계산(calcAll)')) { try { calcAll(); ok('전체 계산 1회(calcAll) — profiles 카드열·class_stats 9~13열·오늘의숙제/퀴즈/팁/보스 키 갱신'); } catch (e) { warn('calcAll 실패: ' + e.message); } }
+  if (ensureBudget('강사 지표')) { try { calcTeacherStats(); ok('강사 지표 갱신(teacher_stats 8열 정규화)'); } catch (e) { warn('calcTeacherStats 실패: ' + e.message); } }
+  if (ensureBudget('몬스터 상세 카드')) { try { buildMonsterDetailCards(); ok('몬스터·보스 상세 카드(contents 상세카드 열) — 숨쉬는 단계색 카드'); } catch (e) { warn('상세 카드 실패: ' + e.message); } }
 
   // 1) app_state 중복 키 정리 — 같은 key 2행+면 첫 행만 유지(getState가 첫 행만 읽어 뒷행은 죽은 데이터.
   //    라이브 실측(2026-07-18): '상담폼ID' 2행 존재 → 뒷행이 혼동 유발)
@@ -9877,10 +10022,12 @@ function preflightGlide() {
   }
 
   // 8) 실측 매니페스트 갱신 + 요약
-  try { buildSystemManifest(); ok('system_manifest 실측 갱신'); } catch (e) { warn('manifest 실패: ' + e.message); }
+  if (ensureBudget('system_manifest 실측')) { try { buildSystemManifest(); ok('system_manifest 실측 갱신'); } catch (e) { warn('manifest 실패: ' + e.message); } }
+  if (!pausedP) clearContinue_('preflightGlide'); // [v9.47] 완주 시 잔여 이어하기 트리거 청소
   const report = '===== SYNK Glide 조립 사전점검 (' + SYNK_VERSION + ' · ' + Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm') + ') =====\n'
     + L.join('\n')
-    + '\n=====\n⚠ 줄을 전부 해소하면 조립 준비 완료. 세부 실측은 system_manifest 시트 참조.';
+    + '\n=====\n' + (pausedP ? '⏱️ 일부 무거운 단계가 시간 예산으로 미뤄졌습니다 — 1분 후 자동 이어하기(재실행 무해).\n' : '')
+    + '⚠ 줄을 전부 해소하면 조립 준비 완료. 세부 실측은 system_manifest 시트 참조.';
   Logger.log(report);
   return report;
 }
@@ -10047,9 +10194,13 @@ function resetAllTriggers(force) {
   // [v9.25] 리포트카드 이어하기 보호 — 월 1일 배치가 예약한 reportCardsContinue 4분-뒤 트리거를
   // 무조건 삭제 루프가 함께 지워 배치를 조용히 중단시키는 사고 방지. force=true로 수동 강행 가능.
   const triggers = ScriptApp.getProjectTriggers();
-  if (!force && triggers.some(t => t.getHandlerFunction() === 'reportCardsContinue')) {
-    const msg = '리포트카드 이어하기(reportCardsContinue) 트리거가 대기 중이라 resetAllTriggers를 중단했습니다. ' +
-      '지금 재설치하면 진행 중인 월간 리포트카드 배치가 중단됩니다. 배치 완료 후 다시 실행하거나, ' +
+  // [v9.47·리뷰 P2] 이어하기 트리거 보호 확장 — 리포트카드뿐 아니라 preflight·데모 시드/청소의 1분 재개 트리거도
+  //   무조건 삭제 루프에 쓸려 "자동 이어하기"가 조용히 죽는 것을 방지(그 1분 사이에 재설치하는 경합 케이스).
+  const PROTECTED_CONT = ['reportCardsContinue', 'preflightGlide', 'seedDemoData', 'clearDemoData'];
+  const pendingCont = triggers.map(t => t.getHandlerFunction()).filter(h => PROTECTED_CONT.indexOf(h) > -1);
+  if (!force && pendingCont.length) {
+    const msg = '이어하기 트리거(' + pendingCont.join(', ') + ')가 대기 중이라 resetAllTriggers를 중단했습니다. ' +
+      '지금 재설치하면 진행 중인 배치(리포트카드/조립 점검/데모)가 끊깁니다. 1~2분 뒤(완주 후) 다시 실행하거나, ' +
       '강행이 필요하면 resetAllTriggers(true)로 호출하세요.';
     Logger.log('⛔ ' + msg);
     adminMail('[SYNK] ⛔ resetAllTriggers 중단 — 리포트카드 배치 보호', msg);

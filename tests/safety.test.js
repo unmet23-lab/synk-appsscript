@@ -242,3 +242,53 @@ test('[v9.40] calcAll은 숙제·퀴즈·팁 키가 없으면 게이트를 기�
   assert.ok(body.includes("getState(st, '오늘의퀴즈').row < 1 || getState(st, '오늘의팁').row < 1"));
   assert.ok(body.includes("getState(st, pair[0] + '숙제').row > 0"));
 });
+
+test('[v9.47] 리그 일일 중계는 상수로 꺼져 있고 일요일 결산 경로는 그대로다', () => {
+  assert.ok(code.includes('const LEAGUE_DAILY_CAST = false'));
+  const daily = section('function leagueStoryDaily_()', 'function weeklyFuel_');
+  assert.ok(daily.includes('if (!LEAGUE_DAILY_CAST) return'));
+  const night = section('function nightJobs()', 'function dailyBackupJob()');
+  assert.ok(night.includes("safeRun('leagueSettle', leagueSettle_)")); // 결산(일요일)은 게이트 무관 유지
+});
+
+test('[v9.47] 영상팩 메일은 SEND_SCENE_PACK 게이트 뒤에서만 발송된다(발간·공지는 게이트 밖)', () => {
+  assert.ok(code.includes('const SEND_SCENE_PACK = false'));
+  const sb = section('function buildMonthlyStorybook_()', 'const WORLD_HP_PER');
+  assert.ok(sb.includes('SEND_SCENE_PACK && quotaOk(1)'));
+  assertOrder(sb, [
+    'sb.getRange(sb.getLastRow() + 1, 1, rows.length, 8).setValues(rows)', // 발간(시트)은 게이트 앞
+    'SEND_SCENE_PACK && quotaOk(1)',
+    'addNotice(ss,' // 발간 공지는 게이트 밖(항상)
+  ]);
+});
+
+test('[v9.47] 칭찬(+3P)은 일일 한도에 있고 다이제스트 크루의 눈이 칭찬 태그를 수집한다', () => {
+  assert.ok(code.includes("'칭찬': 1"));
+  const dig = section('function parentWeeklyDigestCore_', 'function restoreDrill');
+  assert.ok(dig.includes("rs.indexOf('칭찬') > -1"));
+});
+
+test('[v9.47] 무거운 러너 3종은 시간 예산+자동 이어하기를 쓴다(6분 강제 종료 대책)', () => {
+  assert.ok(code.includes('const RUN_BUDGET_MS'));
+  const seed = section('function seedDemoData()', 'function seedConsultDemo');
+  assert.ok(seed.includes("setState(st, '데모시드_체인', '0')"));
+  assert.ok(seed.includes('runSeedChain_(ss, st, tz, L, t0, 0)'));
+  const chain = section('function runSeedChain_(', 'function seedConsultDemo');
+  assert.ok(chain.includes("scheduleContinue_('seedDemoData')"));
+  const clr = section('function clearDemoData()', 'function bootstrapSynk()');
+  assert.ok(clr.includes("scheduleContinue_('clearDemoData')"));
+  assert.ok(clr.includes('sh.deleteRows(start + 2, len)')); // 연속 행 묶음 삭제(가속)
+  const pre = section('function preflightGlide()', 'function safeRun');
+  assert.ok(pre.includes("scheduleContinue_('preflightGlide')"));
+  // 마커 없는 부분 시드도 회수 가능해야 한다(교착 해소)
+  assert.ok(clr.includes('마커 없는 부분 시드 회수 모드'));
+});
+
+test('[v9.47] 경영 보고는 단일화 — monthlyReport는 위임 shim이고 월보는 병합 로그를 읽는다', () => {
+  const mr = section('function monthlyReport()', 'function archiveMonthly');
+  assert.ok(mr.includes('buildExecReport_()'));
+  assert.ok(mr.length < 900, '구 monthlyReport 본문이 남아 있으면 월간 메일이 2통으로 돌아간다');
+  const exec = section('function buildExecReport_()', 'function setAppState_');
+  assert.ok(exec.includes('readPointLogs_(ss, 7)'));
+  assert.ok(exec.includes("setAppState_(ss, '경영리포트HTML', html)")); // 콕핏 키 이름 불변(가이드 §9-1 정합)
+});
