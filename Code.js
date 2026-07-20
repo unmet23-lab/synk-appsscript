@@ -632,12 +632,21 @@
  *      주말 11/14시). 위성(댄스·보컬·뷰티·원어민 회화·글로벌 영어)은 출석 체크 없음(유호 확정) → schedule 미등록.
  *      정원·보스 HP는 기존 v8.3 이름 규칙이 자동 판정(정규 20/560·집중 10/280·주말정규 20/360·주말집중 10/180).
  *      문서 정본 = docs/반편성_정본_v2.md · 라이브 반영 = 반 배정 0명인 지금 setupSchedule ▶ 1회(그 후 재실행 금지 복귀).
+ *
+ * [v9.46 — 주말반 = 토요일만 (2026-07-19 유호 확정 · 원어민=정규직 내 소화 확정)]
+ * 182. classDowOk_(type, dow) 수업일 판정 단일 소스 — '주말'=토요일만·'평일'=월~금·일요일은 어느 반도 수업일 아님.
+ *      보정 5지점: ①isClassDayOf(스트릭 — 일요일이 주말반 연속출석을 끊던 것) ②schedDaysOf(개근왕 판정 리스트에
+ *      일요일이 껴 개근이 불가능하던 것) ③scheduledSoFar_(출석일당포인트·카드 티어 분모 과대) ④buildAttCalHtml_
+ *      (출석달력에 일요일이 "안 온 날"로 표시) ⑤hasClassToday(출결 보드·미출석 학부모 메일). + checkNoShow·
+ *      classPrepMail_ 일요일 조기 종료(미등원 판정·브리핑 창 자체를 안 엶) · 주말 숙제 게시 토요일만(일요일에
+ *      숙제가 바뀌어 혼란 주던 것) · 데모 시드 주말 출석 토요일만 정합. BEP 확정 기준선 = 개원재무 §2-3 S1
+ *      (번 3,922만₮ · 85/94명 — 원어민 정규직 내 소화·토만 운영 확정으로 S2·토일 시나리오 소멸).
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.45'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
+const SYNK_VERSION = 'v9.46'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -880,12 +889,13 @@ function scheduleMap(ss) { // [v8.3] 키 = 반명(정확 일치) · 번호 키�
   return map;
 }
 function schedOf(map, cls) { return map[String(cls)] || map[classNumOf(cls)]; } // [v8.3] 반명 우선 조회
+// [v9.46] 수업일 판정 단일 소스 — 주말반 = "토요일만"(2026-07-19 유호 확정). 일요일은 어느 반도 수업일이 아니다.
+//   스트릭·개근왕·출석달력·수업일 환산·미등원·브리핑이 전부 이 함수를 따른다(일요일 끊김·오경보 원천 차단).
+function classDowOk_(type, dow) { return String(type) === '주말' ? dow === 6 : (dow >= 1 && dow <= 5); }
 function hasClassToday(ss, classStr, schMap) { // [v9.22] schMap 전달 시 재읽기 생략
   const s = schedOf(schMap || scheduleMap(ss), classStr); // [v8.3]
   if (!s) return false;
-  const day = new Date().getDay();
-  const type = (day === 0 || day === 6) ? '주말' : '평일';
-  return s.type === type;
+  return classDowOk_(s.type, new Date().getDay()); // [v9.46]
 }
 
 /* --- 메일 쿼터 가드 --- */
@@ -1179,7 +1189,6 @@ function buildAttCalHtml_(attSet, now, tz, clsType) {
   const y = now.getFullYear(), m = now.getMonth();
   const first = new Date(y, m, 1), daysN = new Date(y, m + 1, 0).getDate();
   const todayD = now.getDate();
-  const isWeType = clsType === '주말';
   const WD = ['일', '월', '화', '수', '목', '금', '토'];
   let head = '', cells = '';
   WD.forEach((w, i) => { head += '<div style="width:13.6%;margin:0 .3%;float:left;text-align:center;font-size:9.5px;color:' + (i === 0 ? '#FF6B35' : '#9CA3AF') + ';font-weight:700;">' + w + '</div>'; });
@@ -1187,8 +1196,8 @@ function buildAttCalHtml_(attSet, now, tz, clsType) {
   let attN = 0;
   for (let d = 1; d <= daysN; d++) {
     const dt = new Date(y, m, d);
-    const wd = dt.getDay(), isWe = (wd === 0 || wd === 6);
-    const isClassDay = (isWeType === isWe);
+    const wd = dt.getDay();
+    const isClassDay = classDowOk_(clsType, wd); // [v9.46] 주말반=토요일만 — 달력에서 일요일이 "안 온 날"로 표시되던 것 해소
     const ds = Utilities.formatDate(dt, tz, 'yyyy-MM-dd');
     const came = attSet && attSet.has(ds);
     if (came) attN++;
@@ -1461,8 +1470,7 @@ function calcAll() {
   function isClassDayOf(sid, d) {
     const t = classTypeOf[sid];
     if (!t) return true; // 시간표 미등록 반은 기존(달력일) 방식 유지
-    const we = (d.getDay() === 0 || d.getDay() === 6);
-    return (t === '주말') === we;
+    return classDowOk_(t, d.getDay()); // [v9.46] 주말반=토요일만 — 일요일이 스트릭을 끊던 것 해소
   }
   const dayFmtCache = {}; // [v5.3] formatDate 메모 — 120명 × 최대 370일 반복 호출을 캐시로 절감
   function fmtDay(d) {
@@ -2200,7 +2208,7 @@ function calcAll() {
         setState(st, '오늘의숙제유형', hw[2]);
         setState(st, '오늘의숙제', hw[3]);
         setState(st, '오늘의숙제팁', hw[4] || '');
-      } else {
+      } else if (wd === 6) { // [v9.46] 주말 숙제는 토요일만 갱신(주말반=토요일만) — 일요일에 숙제가 바뀌어 학생을 혼란시키지 않게
         setState(st, '주말의숙제유형', hw[2]);
         setState(st, '주말의숙제', hw[3]);
         setState(st, '주말의숙제팁', hw[4] || '');
@@ -4214,7 +4222,8 @@ function checkNoShow() {
   const now = new Date();
   const todayStr = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
   const day = now.getDay();
-  const type = (day === 0 || day === 6) ? '주말' : '평일';
+  if (day === 0) return; // [v9.46] 일요일은 어느 반도 수업이 없다(주말반=토요일만) — 미등원 판정 자체를 안 연다
+  const type = day === 6 ? '주말' : '평일';
   const nowMin = Number(Utilities.formatDate(now, tz, 'H')) * 60 + Number(Utilities.formatDate(now, tz, 'm')); // [v9.34] 시트TZ 기준 — getHours(스크립트TZ) 혼용 시 판정 창이 어긋남
 
   const map = scheduleMap(ss);
@@ -4645,8 +4654,7 @@ function monthlyGameBatch() {
     const list = [];
     for (let d = 1; d <= daysInMonth; d++) {
       const dt = new Date(y, mIdx, d);
-      const isWe = (dt.getDay() === 0 || dt.getDay() === 6);
-      if ((type === '주말') !== isWe) continue;
+      if (!classDowOk_(type, dt.getDay())) continue; // [v9.46] 주말반=토요일만 — 일요일 포함 리스트가 개근왕을 불가능하게 만들던 것 해소
       if (reg && dt < reg) continue;
       list.push(ym + '-' + ('0' + d).slice(-2));
     }
@@ -5516,8 +5524,7 @@ function scheduledSoFar_(type, now) {
   const y = now.getFullYear(), m = now.getMonth(), today = now.getDate();
   let c = 0;
   for (let dd = 1; dd <= today; dd++) {
-    const dt = new Date(y, m, dd), we = (dt.getDay() === 0 || dt.getDay() === 6);
-    if ((type === '주말') === we) c++;
+    if (classDowOk_(type, new Date(y, m, dd).getDay())) c++; // [v9.46] 주말반=토요일만 — 일요일이 분모를 부풀려 주말반이 불리하던 것 해소
   }
   return c;
 }
@@ -7059,7 +7066,8 @@ function teacherEmailMap_(ss) {
 function classPrepMail_(ss, tz) {
   const now = new Date();
   const day = now.getDay();
-  const isWknd = (day === 0 || day === 6);
+  if (day === 0) return; // [v9.46] 일요일 수업 없음(주말반=토요일만) — 브리핑 발송 창 자체를 안 연다
+  const isWknd = (day === 6);
   const todayStr = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
   const props = PropertiesService.getScriptProperties();
   const key = '수업알림_' + todayStr;
@@ -9267,14 +9275,14 @@ function seedDemoData() {
   const atRows = [];
   const pushAtt = (sid, k) => atRows.push(['ATD' + Utilities.formatDate(day(k), tz, 'yyyyMMdd') + '-' + sid, sid, atTime(k, 11), '출석(데모)']);
   for (let k = 35; k >= 0; k--) {
-    const wd = day(k).getDay(), isWe = (wd === 0 || wd === 6);
-    if (!isWe) { // 평일 — 데모정규반
+    const wd = day(k).getDay();
+    if (wd >= 1 && wd <= 5) { // 평일 — 데모정규반
       pushAtt('DEMO-01', k); // 개근 에이스
       if (k % 3 !== 0) pushAtt('DEMO-02', k);
       if (k % 2 === 0 && k <= 28) pushAtt('DEMO-03', k); // [검증 반영] 6월 출석 0 — 월간 출석정산(+3P/일) 변동을 차단해 95P 고정
       if (k <= 16 && k % 2 === 1) pushAtt('DEMO-04', k); // 최근 출석 있음(케어 사각용)
-    } else { // 주말 — 데모주말반
-      if (k >= 9) pushAtt('DEMO-05', k); // 9일 전부터 미출석 → 리텐션 🔴
+    } else if (wd === 6) { // 토요일 — 데모주말반 ([v9.46] 주말반=토요일만 확정 정합)
+      if (k >= 9) pushAtt('DEMO-05', k); // 9일+ 미출석 → 리텐션 🔴
       if (k <= 10) pushAtt('DEMO-06', k); // 신입 — 최근만
       pushAtt('DEMO-07', k);
       if (k % 4 !== 0) pushAtt('DEMO-08', k);
