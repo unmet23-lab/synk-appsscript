@@ -662,12 +662,22 @@
  *      → Glide 조립에서 Query·Single Value·If-Then-Else·Split·Relation·Lookup 약 38개가 전부 불필요해진다
  *        (조립 UI 조작 = 프리즈·실수의 최대 원천이라는 2026-07-20 실측 보고에 대한 구조적 대응).
  *      비용 0: 쓰기는 writeIfChanged 1블록, Glide sync는 "변경 묶음당 1"(docs/glide_업데이트_실측설계.md §1).
+ *
+ * [v9.49 — 🤖 AI 숙제 첨삭(비동기) + 폼 출석 이관 (2026-07-21 유호 확정)]
+ * 186. AI 숙제 첨삭 — 숙제폼(createHwForm) 제출 → 밤 22시 aiFeedbackBatch_가 Claude API(구조화 출력)로
+ *      4칸 카드(고친문장·오늘의포인트MN·칭찬·다음미션) 생성 → hw_feedback '대기' → 승인 '노출' →
+ *      학생 '확인했어요'(J열·Glide 전용) → sweepFeedbackAck_(10분)가 +5P('첨삭확인'·1일 1회·시스템 지급).
+ *      키=Script Properties CLAUDE_API_KEY(없으면 전체 스킵). 실패 행부터 포인터 유지 → 다음 밤 재시도.
+ * 187. 폼 출석 — 출석폼(createAttendanceForm) 제출 → sweepAttendanceForm_(10분)가 attendance로 전개
+ *      (method='출석(폼)'). 앱 출석의 월 ~600 update 소비를 0으로. 알림·보드·미등원·달력은 채널 무관 동일.
+ * 188. 공유열 +3(CX102~CZ104): 출석폼URL·숙제폼URL(학생별 미리채움 링크 — SIDTOKEN 치환)·새첨삭수(미확인 배지).
+ *      실행지 = docs/AI첨삭_폼출석_실행지_v949.md.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.48'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
+const SYNK_VERSION = 'v9.49'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -716,6 +726,15 @@ const QUIET_DAYS = 7;                // [v7.7] 무포인트 경보 기준(일) �
 const DIGEST_MODE = true;            // 원장 일상 알림(생일·진화·업적·신규학생)을 아침 8시 1통으로
 const DAILY_HEARTBEAT = true;        // [v9.32] 큐가 빈 날에도 아침 8시 하트비트 1통 — 메일 부재=트리거 사망 신호(데드맨 스위치). 끄려면 false
 const LEAGUE_DAILY_CAST = false;     // [v9.47·A1] 리그 일일 중계석(월~토 발간) — 일일 전투 리포트와 소식탭 도배가 겹쳐 OFF(유호 07-20). 리그는 일요일 결산 1건만. 반 수가 늘어 중계가 읽힐 때 true
+
+/* ── [v9.49] 🤖 AI 숙제 첨삭 + 폼 출석 (유호 확정 2026-07-21) ── */
+// 흐름: 학생이 숙제폼 제출(구글폼 = Glide update 0) → 밤 aiFeedbackBatch_가 Claude API로 4칸 카드 생성
+//   → hw_feedback '대기' → 사람이 '노출' 승인 → 학생이 앱에서 '확인했어요'(J열) → sweepFeedbackAck_가 +5P.
+// 열람을 포인트 루프에 묶는 것까지가 한 세트 — 확인 버튼이 빠지면 "생성만 되고 안 읽히는" 반쪽 기능이 된다.
+const AI_FEEDBACK_MODEL = 'claude-sonnet-5'; // 콘텐츠=Sonnet급 라우팅(CLAUDE.md 정본). API 키는 Script Properties 'CLAUDE_API_KEY' — 없으면 배치 전체 스킵(NOTION_TOKEN 패턴, 배포만으로는 아무 일도 안 일어남)
+const AI_FEEDBACK_AUTOPUBLISH = false;       // false: 생성분 '대기' → 사람이 hw_feedback I열을 '노출'로 승인(초기 검수). 품질 안정 후 true로 자동 공개
+const AI_FEEDBACK_MAX_PER_RUN = 30;          // 야간 1회 첨삭 상한 — 시간예산·비용 가드(초과분은 포인터가 남아 다음 밤 자동 이어짐)
+const AI_FEEDBACK_ACK_POINTS = 5;            // '확인했어요' 보상 — 숙제완료 +10의 절반. 사유 '첨삭확인'은 DAILY_LIMIT 1회/일
 
 /* ── [v5.2] 학부모 알림 · 다국어 ─────────────────────── */
 const NOTIFY_PARENT_ATTENDANCE = true; // 등원 시 학부모 메일 푸시 (false = 끔)
@@ -2358,14 +2377,17 @@ function calcAll() {
  * 열 지도(신규): CG85 내숙제유형 · CH86 내숙제 · CI87 내숙제팁 · CJ88 오늘의퀴즈문제 · CK89 오늘의퀴즈정답 ·
  *   CL90 오늘의팁 · CM91 전당배너 · CN92 시즌배너 · CO93 이달의보스HTML · CP94 여행지도HTML(학생 소식탭) ·
  *   CQ95 자녀이름 · CR96 자녀_축하배너 · CS97 자녀_주간리포트 · CT98 자녀_출석달력 · CU99 자녀_대화카드 ·
- *   CV100 자녀_학업추세 · CW101 자녀_액자. */
+ *   CV100 자녀_학업추세 · CW101 자녀_액자.
+ * [v9.49] +3열: CX102 출석폼URL · CY103 숙제폼URL(학생별 미리채움 링크 — Glide Open Link 버튼 소스) ·
+ *   CZ104 새첨삭수(노출됐지만 미확인인 첨삭 수 — 홈 배너/뱃지 소스, 0이면 빈칸이라 "is not empty" 가시성 조건 그대로). */
 const SHARED_COL_START = 85;
 const SHARED_COL_HEADERS = ['내숙제유형', '내숙제', '내숙제팁', '오늘의퀴즈문제', '오늘의퀴즈정답', '오늘의팁',
   '전당배너', '시즌배너', '이달의보스HTML', '여행지도HTML',
-  '자녀이름', '자녀_축하배너', '자녀_주간리포트', '자녀_출석달력', '자녀_대화카드', '자녀_학업추세', '자녀_액자'];
+  '자녀이름', '자녀_축하배너', '자녀_주간리포트', '자녀_출석달력', '자녀_대화카드', '자녀_학업추세', '자녀_액자',
+  '출석폼URL', '숙제폼URL', '새첨삭수']; // [v9.49]
 function writeSharedCols_(ss, pf, st) {
   if (!pf || pf.getLastRow() < 2) return;
-  const endCol = SHARED_COL_START + SHARED_COL_HEADERS.length - 1; // 101(CW)
+  const endCol = SHARED_COL_START + SHARED_COL_HEADERS.length - 1; // [v9.49] 104(CZ) — 헤더 배열 길이로 동적
   if (pf.getMaxColumns() < endCol) pf.insertColumnsAfter(pf.getMaxColumns(), endCol - pf.getMaxColumns());
   SHARED_COL_HEADERS.forEach((h, i) => {
     const c = SHARED_COL_START + i;
@@ -2381,6 +2403,14 @@ function writeSharedCols_(ss, pf, st) {
     if (r[0] && r[3] === 'student') byId[String(r[0]).trim()] = { n: r[1] || r[0], bd: r[55], bl: r[63], bm: r[64], bn: r[65], bw: r[74], cf: r[83] };
   });
   const splitQuiz = v => { const p = String(v || '').split('|'); return [p[0] || '', p.length > 1 ? p.slice(1).join('|') : '']; };
+  // [v9.49] 학생별 미리채움 폼 URL — app_state의 URL 틀(SIDTOKEN 자리)에 학생ID 치환. 틀이 없으면(폼 미생성) 빈칸
+  const formUrlOf = (tmpl, sid) => tmpl ? String(tmpl).replace(/SIDTOKEN/g, encodeURIComponent(sid)) : '';
+  // [v9.49] 미확인 첨삭 수 — 상태 '노출'인데 학생확인(J열)이 빈 행의 학생별 개수
+  const fbCnt = {};
+  const fbSh = ss.getSheetByName('hw_feedback');
+  if (fbSh && fbSh.getLastRow() >= 2) fbSh.getRange(2, 1, fbSh.getLastRow() - 1, 10).getValues().forEach(r => {
+    if (r[1] && String(r[8]) === '노출' && !String(r[9] || '')) { const k = String(r[1]).trim(); fbCnt[k] = (fbCnt[k] || 0) + 1; }
+  });
   const out = rows.map(r => {
     const blank = SHARED_COL_HEADERS.map(() => '');
     if (!r[0]) return blank;
@@ -2393,17 +2423,20 @@ function writeSharedCols_(ss, pf, st) {
         : lv >= 1 ? (kv['오늘의퀴즈_중급'] || kv['오늘의퀴즈_초급'])
           : kv['오늘의퀴즈_초급']) || kv['오늘의퀴즈'] || '';
       const q = splitQuiz(quizRaw);
+      const sid = String(r[0]).trim(); // [v9.49] 폼 URL·첨삭 수 조회 키
       return [kv[pre + '숙제유형'] || '', kv[pre + '숙제'] || '', kv[pre + '숙제팁'] || '',
         q[0], q[1], kv['오늘의팁'] || '', kv['지난달의전당'] || '', kv['이달의시즌'] || '',
         kv['이달의보스HTML'] || '', kv['여행지도HTML'] || '',
-        '', '', '', '', '', '', ''];
+        '', '', '', '', '', '', '',
+        formUrlOf(kv['출석폼URL틀'], sid), formUrlOf(kv['숙제폼URL틀'], sid), fbCnt[sid] || '']; // [v9.49] CX~CZ
     }
     if (role === 'parent') {
       const kidId = String(r[9] || '').split(',')[0].trim(); // J10 parent_of(첫 자녀)
       const k = kidId ? byId[kidId] : null;
       if (!k) return blank;
       return ['', '', '', '', '', '', '', '', '', '',
-        k.n, k.bn, k.bl, k.cf, k.bm, k.bw, k.bd];
+        k.n, k.bn, k.bl, k.cf, k.bm, k.bw, k.bd,
+        '', '', '']; // [v9.49] CX~CZ 학부모 행은 빈칸
     }
     return blank;
   });
@@ -4072,7 +4105,7 @@ function restoreDrill() {
 // 매일 22시. ① MVP·오늘의 시냅스: 같은 날·같은 반 각 1명(최초 지급만 유효)  ② 숙제완료·생일축하: 학생당 하루 1회
 // 초과분은 자동 정정(-P) + 원장 경고. 정정은 성장·잔액·레이드 데미지·칭호 카운트까지 대칭으로 되돌린다.
 // today 기준 검사라 자정이 지나면 자동 초기화 — 다음 날은 다시 지급 가능.
-const DAILY_LIMIT = { '숙제완료': 1, '생일축하': 1, '오늘의다짐': 1, '칭찬': 1 }; // 사유(정확 일치)별 학생당 일일 한도 — [v9.28] 학생 셀프 미션 1일 1회 · [v9.47·B4] 칭찬(+3P)도 학생당 1일 1회(왕관과 차별화되는 "작은 인정"·경제 보호, 초과분 야간 자동 정정+강사 통보)
+const DAILY_LIMIT = { '숙제완료': 1, '생일축하': 1, '오늘의다짐': 1, '칭찬': 1, '첨삭확인': 1 }; // 사유(정확 일치)별 학생당 일일 한도 — [v9.28] 학생 셀프 미션 1일 1회 · [v9.47·B4] 칭찬(+3P)도 학생당 1일 1회(왕관과 차별화되는 "작은 인정"·경제 보호, 초과분 야간 자동 정정+강사 통보)
 const CLASS_AWARDS = ['오늘의 MVP', '오늘의 시냅스']; // [v7.6] 반당 하루 1명 왕관 2종
 const TAG_MN = { '발음↑': 'Дуудлага ↑', '열정': 'Хичээл зүтгэл', '친구도움': 'Найздаа тусалсан', '집중력': 'Төвлөрөл' }; // [v9.0] 칭찬 태그 몽골어
 function dailyGuard() {
@@ -5248,6 +5281,61 @@ function createLeadForm() {
   Logger.log('광고 랜딩용(공개 URL — 광고 CTA/프로필 링크에 이 주소): ' + form.getPublishedUrl());
   Logger.log('편집용: ' + form.getEditUrl());
   Logger.log('응답 시트: "리드폼_응답" — 이름·연락처·인지채널(→leads 유입경로)·관심 과정(→leads 메모)을 leads 시트로 옮기세요.');
+}
+
+/* ===================== [v9.49] 출석 폼 · 숙제 제출 폼 (1회 실행) ===================== */
+// 공용: 폼 응답을 이 스프레드시트에 연결하고 응답 탭 이름을 지정(createLeadForm 패턴 — 재실행 시 날짜 접미사로 충돌 회피)
+function linkFormTab_(ss, before, tabName) {
+  SpreadsheetApp.flush();
+  const created = ss.getSheets().find(s => before.indexOf(s.getName()) === -1);
+  if (created) {
+    const tz = ss.getSpreadsheetTimeZone();
+    created.setName(ss.getSheetByName(tabName) ? tabName + '_' + Utilities.formatDate(new Date(), tz, 'MMdd_HHmm') : tabName);
+  }
+}
+// 공용: 학생ID 문항의 미리채움 URL 틀 — SIDTOKEN 자리에 학생ID를 치환해 학생별 원터치 링크를 만든다(writeSharedCols_).
+function prefillTemplateOf_(form, itemTitle) {
+  const it = form.getItems().find(i => i.getTitle() === itemTitle);
+  return form.createResponse().withItemResponse(it.asTextItem().createResponse('SIDTOKEN')).toPrefilledUrl();
+}
+
+// [v9.49] 출석 폼 — 앱(Glide) 출석의 update-0 대체(docs/glide_업데이트_실측설계.md §3: 앱 출석은 30명 기준 월 ~600 update로 단독 초과).
+//   학생 경험: 앱의 [출석] 버튼(Open Link → CX102 출석폼URL, ID 미리채움) → 폼에서 [보내기] 1탭.
+//   응답은 '출석폼_응답' 탭 → parentSweep(10분)의 sweepAttendanceForm_가 attendance로 전개 → 알림·보드·달력 기존 그대로.
+function createAttendanceForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const before = ss.getSheets().map(s => s.getName());
+  const form = FormApp.create('SYNK 출석 체크')
+    .setDescription('Ирц бүртгэл ✅ 아래 [보내기]만 누르면 출석 완료!')
+    .setCollectEmail(false);
+  form.addTextItem().setTitle('학생ID').setRequired(true).setHelpText('앱에서 열었다면 자동으로 채워져 있어요 — 그대로 [보내기]!');
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  linkFormTab_(ss, before, '출석폼_응답');
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  setState(st, '출석폼ID', form.getId());
+  setState(st, '출석폼URL틀', prefillTemplateOf_(form, '학생ID'));
+  Logger.log('✅ 출석 폼 생성 완료! 다음 calcAll(14/22시)부터 profiles CX102(출석폼URL)에 학생별 링크가 채워집니다.');
+  Logger.log('편집용: ' + form.getEditUrl());
+}
+
+// [v9.49] 숙제 제출 폼 — AI 첨삭의 입력 통로. 앱 제출(행 추가)이 아닌 폼이라 Glide update 0.
+//   응답은 '숙제폼_응답' 탭 → 밤 22시 aiFeedbackBatch_가 Claude API로 첨삭 카드 생성.
+function createHwForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const before = ss.getSheets().map(s => s.getName());
+  const form = FormApp.create('SYNK 숙제 제출')
+    .setDescription('오늘 숙제로 쓴 한국어 문장을 보내면, 내일 아침 앱에 첨삭 카드가 도착해요 🤖✏️')
+    .setCollectEmail(false);
+  form.addTextItem().setTitle('학생ID').setRequired(true).setHelpText('앱에서 열었다면 자동으로 채워져 있어요');
+  form.addParagraphTextItem().setTitle('숙제 문장').setRequired(true).setHelpText('오늘 숙제로 쓴 한국어 문장을 그대로 적어주세요 (여러 문장 가능)');
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  linkFormTab_(ss, before, '숙제폼_응답');
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  setState(st, '숙제폼ID', form.getId());
+  setState(st, '숙제폼URL틀', prefillTemplateOf_(form, '학생ID'));
+  Logger.log('✅ 숙제 제출 폼 생성 완료! 다음 calcAll부터 profiles CY103(숙제폼URL)에 학생별 링크가 채워집니다.');
+  Logger.log('⚠️ AI 첨삭이 돌려면 Script Properties에 CLAUDE_API_KEY가 있어야 합니다(없으면 배치가 조용히 스킵).');
+  Logger.log('편집용: ' + form.getEditUrl());
 }
 
 function importFormResponses() {
@@ -6583,7 +6671,7 @@ function setupSeasons() {
 //   systemWatchdog(주간 요약)과 nightJobs(당일 신규만 admin 알림)가 함께 사용해 발각 지연을 7일→1일로 단축.
 function unknownReasonScan_(ss) {
   const KNOWN_RS = ['숙제', 'MVP', '시냅스', '칭찬', '정정', '생일', '레이드', '발표', '일일한도',
-    '출석', '이월', '스토어', '구매', '교환', '퀴즈', '챌린지', '연료', '보너스', '참여', '이벤트', '오늘의다짐'];
+    '출석', '이월', '스토어', '구매', '교환', '퀴즈', '챌린지', '연료', '보너스', '참여', '이벤트', '오늘의다짐', '첨삭']; // [v9.49] 첨삭확인(+5P) — '숙제'를 포함하면 숙제왕 카운트(4689행 indexOf('숙제'))가 오염되므로 별도 키워드
   const plW = ss.getSheetByName('point_logs');
   const unknown = {};
   if (plW && plW.getLastRow() >= 2) {
@@ -7371,16 +7459,198 @@ function sweepLeadForm_(ss) {
   props.setProperty('리드폼_포인터', String(last));
 }
 
+/* ===================== [v9.49] 폼 출석 전개 + AI 숙제 첨삭 ===================== */
+
+// [v9.49] 출석 폼 응답 → attendance 전개 — 앱 출석(학생당 update 1 소비)의 update-0 대체 경로.
+//   등원알림·미등원·보드·달력은 전부 attendance 시트를 읽으므로 입력 채널 무관 동일 동작.
+//   포인터 = '출석폼_포인터'(sweepLeadForm_ 패턴·클램프 포함), 당일 중복 = attendance 재조회 스킵(expandAttendanceBatch_ 패턴 — 앱·일괄 출석 병행 안전).
+function sweepAttendanceForm_(ss) {
+  const src = ss.getSheetByName('출석폼_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const last = src.getLastRow();
+  const from = Number(props.getProperty('출석폼_포인터')) || 1;
+  if (from > last) { props.setProperty('출석폼_포인터', String(last)); return; }
+  if (from >= last) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = src.getRange(from + 1, 1, last - from, 2).getValues(); // 타임스탬프·학생ID
+  const valid = new Set();
+  const pf = ss.getSheetByName('profiles');
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') valid.add(String(r[0]).trim());
+  });
+  const at = ensureSheet(ss, 'attendance', ['id', 'student_id', 'timestamp', 'method']);
+  const seen = {}; // '날짜|sid' — 같은 날 중복 제출·기존 기록 스킵
+  if (at.getLastRow() >= 2) at.getRange(2, 2, at.getLastRow() - 1, 2).getValues().forEach(r => { // B·C = sid·timestamp
+    if (r[0] && r[1]) seen[dstr(r[1], tz) + '|' + String(r[0]).trim()] = 1;
+  });
+  const out = [];
+  rows.forEach(r => {
+    const ts = r[0] instanceof Date ? r[0] : new Date();
+    const sid = String(r[1] || '').trim();
+    if (!sid || !valid.has(sid)) return;
+    const key = dstr(ts, tz) + '|' + sid;
+    if (seen[key]) return;
+    seen[key] = 1;
+    out.push(['ATF' + Utilities.formatDate(ts, tz, 'yyyyMMdd') + '-' + sid, sid, ts, '출석(폼)']); // method에 '출석' 포함 = 보드·레이드 판정 호환
+  });
+  if (out.length) at.getRange(at.getLastRow() + 1, 1, out.length, 4).setValues(out);
+  props.setProperty('출석폼_포인터', String(last));
+}
+
+// [v9.49] 첨삭 '확인했어요' 정산 — Glide가 hw_feedback J열(학생확인·스크립트 불가침)에 기록하면 10분 스위프가 1회 +5P.
+//   멱등 3중: ①K열 마킹 ②당일 point_logs 재조회(지급 후 마킹 전 크래시 대비 — expandHwBatch v9.31 패턴) ③DAILY_LIMIT 1회/일.
+function sweepFeedbackAck_(ss) {
+  const fb = ss.getSheetByName('hw_feedback');
+  if (!fb || fb.getLastRow() < 2) return;
+  const rows = fb.getRange(2, 1, fb.getLastRow() - 1, 11).getValues();
+  const tz = ss.getSpreadsheetTimeZone();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const valid = new Set();
+  const pf = ss.getSheetByName('profiles');
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') valid.add(String(r[0]).trim());
+  });
+  const doneToday = new Set(); // 오늘 이미 지급된 학생(지급→마킹 사이 크래시 재시도 대비)
+  const pl = ss.getSheetByName('point_logs');
+  if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (r[1] && r[5] && String(r[3] || '') === '첨삭확인' &&
+        Utilities.formatDate(asDate_(r[5]), tz, 'yyyy-MM-dd') === today) doneToday.add(String(r[1]).trim());
+  });
+  rows.forEach((r, i) => {
+    const sid = String(r[1] || '').trim();
+    if (!sid || !valid.has(sid)) return;
+    if (String(r[8]) !== '노출') return;   // I 상태: 검수 통과분만
+    if (!String(r[9] || '')) return;       // J 학생확인: 아직 안 눌렀으면 대기
+    if (String(r[10] || '')) return;       // K 포인트지급: 이미 지급
+    // [리뷰 M2] 행 단위 지급→즉시 마킹 — 지급과 마킹 사이 크래시 창을 행 하나로 좁혀 날짜 경계를 넘는
+    //   재지급을 사실상 차단. 순서는 v9.31 규칙 그대로(지급 먼저 → 마킹은 그 뒤, 실패 시 미마킹 재시도).
+    if (!doneToday.has(sid)) {             // 같은 날 두 번째 확인은 마킹만 하고 지급 생략(DAILY_LIMIT 정합)
+      doneToday.add(sid);
+      appendPoints(ss, [[sid, AI_FEEDBACK_ACK_POINTS, '첨삭확인', '시스템']]);
+    }
+    fb.getRange(i + 2, 11).setValue('지급완료');
+  });
+}
+
+// [v9.49] 야간 AI 첨삭 배치 — 숙제폼 제출분을 Claude API로 4칸 카드(고친문장·오늘의포인트MN·칭찬·다음미션)로.
+//   비동기 설계 확정(2026-07-21 유호): 실시간 챗은 update 예산·지연으로 불성립, "다음날 아침 도착"형만 성립.
+//   실패 시 그 행부터 포인터 유지 → 다음 밤 재시도. 상한·시간예산 가드로 6분 강제종료 안전.
+function aiFeedbackBatch_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const props = PropertiesService.getScriptProperties();
+  const apiKey = props.getProperty('CLAUDE_API_KEY');
+  if (!apiKey) return; // 키 미설정 = 기능 OFF (NOTION_TOKEN 패턴)
+  const src = ss.getSheetByName('숙제폼_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const last = src.getLastRow();
+  const from = Number(props.getProperty('숙제폼_포인터')) || 1;
+  if (from > last) { props.setProperty('숙제폼_포인터', String(last)); return; }
+  if (from >= last) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = src.getRange(from + 1, 1, last - from, 3).getValues(); // 타임스탬프·학생ID·숙제 문장
+  const info = {}; // sid → { name, lv(급수 BO67 — 설명 난도 조절) }
+  const pf = ss.getSheetByName('profiles');
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 67).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') info[String(r[0]).trim()] = { name: r[1] || r[0], lv: Number(r[66]) || 0 };
+  });
+  const fb = ensureSheet(ss, 'hw_feedback',
+    ['id', 'student_id', '제출일', '제출문', '고친문장', '오늘의포인트', '칭찬', '다음미션', '상태', '학생확인', '포인트지급']);
+  const t0 = Date.now();
+  const AI_BUDGET_MS = 120000; // [리뷰 H1] nightJobs 뒤쪽에서 돌므로 자체 예산 2분 — 완주 마커·후속 잡을 굶기지 않는다
+  let made = 0, permFails = 0, processed = 0, lastErr = '';
+  for (let i = 0; i < rows.length; i++) {
+    if (made >= AI_FEEDBACK_MAX_PER_RUN || Date.now() - t0 > AI_BUDGET_MS) break;
+    const sid = String(rows[i][1] || '').trim();
+    const text = String(rows[i][2] || '').trim().slice(0, 2000); // 폭주 입력 상한
+    const ts = rows[i][0] instanceof Date ? rows[i][0] : new Date();
+    const stu = info[sid];
+    if (!sid || !stu || !text) { processed = i + 1; continue; } // 무효 행은 건너뛰고 전진
+    try {
+      const card = callClaudeFeedback_(apiKey, stu, text);
+      fb.appendRow(['FB' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + fb.getLastRow(), sid,
+        dstr(ts, tz), text, String(card.corrected || ''), String(card.point_mn || ''),
+        String(card.praise || ''), String(card.mission || ''),
+        AI_FEEDBACK_AUTOPUBLISH ? '노출' : '대기', '', '']);
+      made++; processed = i + 1;
+      // [리뷰 H1] 성공분 즉시 포인터 전진 — 6분 하드킬(throw 없는 강제 종료)에도 중복 생성·중복 과금 0
+      props.setProperty('숙제폼_포인터', String(from + processed));
+      Utilities.sleep(300); // rate-limit 여유(syncToNotion_ 패턴)
+    } catch (e) {
+      if (e && e.permanent) {
+        // [리뷰 M1] 영구 오류(refusal·잘림·파싱·4xx 요청결함) — 재시도해도 같은 결과라 '오류' 행으로 기록하고 건너뛴다(포이즌 필 차단)
+        permFails++;
+        fb.appendRow(['FB' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + fb.getLastRow(), sid,
+          dstr(ts, tz), text, '', '', '', '', '오류:' + String(e.message || e).slice(0, 80), '', '']);
+        processed = i + 1;
+        props.setProperty('숙제폼_포인터', String(from + processed));
+        continue;
+      }
+      lastErr = String(e && e.message ? e.message : e).slice(0, 200);
+      break; // 실패 행부터 포인터 유지 → 다음 밤 재시도 (일시 오류: 429·5xx·네트워크·키 무효)
+    }
+  }
+  if (processed > 0) props.setProperty('숙제폼_포인터', String(from + processed));
+  if (made || permFails || lastErr) adminMail('[SYNK] 🤖 AI 첨삭 ' + made + '건 생성' + (permFails ? ' · 오류 ' + permFails + '건' : '') + (lastErr ? ' · 중단됨' : ''),
+    (made ? (AI_FEEDBACK_AUTOPUBLISH ? '앱에 바로 노출되었습니다.\n' : "hw_feedback 시트에서 내용 확인 후 '상태'를 '노출'로 바꾸면 학생에게 공개됩니다(AI_FEEDBACK_AUTOPUBLISH=true면 이 단계 생략).\n") : '') +
+    (permFails ? "\n'오류:' 상태 행 " + permFails + '건은 같은 입력 재시도가 무의미해 건너뛰었습니다(hw_feedback에서 확인).' : '') +
+    (lastErr ? '\n마지막 오류: ' + lastErr + '\n실패 지점부터 내일 밤 자동 재시도합니다.' : ''));
+}
+
+// [v9.49] Claude API 호출 — 구조화 출력(output_config.format json_schema)으로 4칸 스키마를 보장받는다.
+//   비-200·refusal·text 블록 부재는 throw → 호출부가 중단·재시도. 모델·톤 규칙은 AI_FEEDBACK_MODEL 주석 참조.
+function callClaudeFeedback_(apiKey, stu, text) {
+  const schema = {
+    type: 'object', additionalProperties: false,
+    required: ['corrected', 'point_mn', 'praise', 'mission'],
+    properties: {
+      corrected: { type: 'string', description: '교정한 한국어 문장 — 원문을 최대한 살린 최소 수정. 틀린 곳이 없으면 원문 그대로' },
+      point_mn: { type: 'string', description: '오늘의 포인트 딱 1개 — 가장 중요한 교정 이유를 몽골어 1~2문장으로(한국어 문법 용어는 괄호 병기). 여러 개 나열 금지' },
+      praise: { type: 'string', description: '잘한 점 구체적 칭찬 1문장(한국어 존댓말) — 실제로 잘한 지점을 짚어서, 빈말 금지' },
+      mission: { type: 'string', description: '다음 미션 1문장(한국어) — 오늘의 포인트를 써서 새 문장 하나를 만들게 유도' }
+    }
+  };
+  const body = {
+    model: AI_FEEDBACK_MODEL,
+    max_tokens: 4096, // Sonnet 5는 적응형 사고가 기본 ON이고 사고 토큰이 max_tokens에 포함 — 1024면 JSON이 잘릴 수 있다
+    system: 'SYNK LAB(몽골 울란바토르, 뇌과학 기반 게임화 한국어 학원)의 숙제 첨삭 선생님. 학생이 쓴 한국어 문장을 교정한다. ' +
+      '학생의 급수(1~6, 0=미정)에 맞춰 어휘 난도를 조절하고, 따뜻하되 과장 없는 존댓말을 쓴다.',
+    messages: [{ role: 'user', content: '학생: ' + stu.name + ' (급수: ' + (stu.lv || '미정') + ')\n제출 문장:\n' + text }],
+    output_config: { format: { type: 'json_schema', schema: schema } }
+  };
+  const res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+    method: 'post', contentType: 'application/json',
+    headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+    payload: JSON.stringify(body), muteHttpExceptions: true
+  });
+  // [리뷰 M1] 오류 분류: permanent=같은 입력 재시도 무의미(행 건너뜀) / 그 외=일시(배치 중단 후 다음 밤 재시도)
+  const permErr = msg => { const e = new Error(msg); e.permanent = true; return e; };
+  const rc = res.getResponseCode();
+  if (rc !== 200) {
+    const e = new Error('Claude API ' + rc + ': ' + res.getContentText().slice(0, 200));
+    e.permanent = (rc === 400 || rc === 404 || rc === 413 || rc === 422); // 요청 자체 결함 — 429·5xx·401은 일시 취급(전량 중단이 안전)
+    throw e;
+  }
+  const j = JSON.parse(res.getContentText());
+  if (j.stop_reason === 'refusal') throw permErr('Claude 거부(refusal)');
+  if (j.stop_reason === 'max_tokens') throw permErr('출력 잘림(max_tokens) — 사고 토큰 포함 한도 초과');
+  const tb = (j.content || []).filter(b => b.type === 'text')[0]; // thinking 블록이 앞설 수 있어 type으로 선별
+  if (!tb || !tb.text) throw permErr('응답에 text 블록 없음(stop_reason=' + j.stop_reason + ')');
+  try { return JSON.parse(tb.text); } catch (e) { throw permErr('첨삭 JSON 파싱 실패: ' + String(tb.text).slice(0, 80)); }
+}
+
 function parentSweep() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   // [v9.32] 상단 호출도 safeRun 보호 — 여기서 throw하면 아래 폼 편입·수업 브리핑·출결 보드가
   //   함께 중단되고 구글 기본 실패 요약(최대 하루 지연)에만 의존하게 된다.
+  safeRun('sweepAttendanceForm', function () { sweepAttendanceForm_(ss); }); // [v9.49] 출석 폼 → attendance 전개 (등원알림·보드·미등원판정 앞 — 앱 출석의 update-0 대체)
   safeRun('expandAttendanceBatch', function () { expandAttendanceBatch_(ss); }); // [v9.36] 수업 시작 출석 1탭(attendance_batch) → attendance 전개 (등원알림·보드·미등원판정 앞)
   if (PARENT_MAIL_ARRIVAL) safeRun('attendanceNotify', function () { attendanceNotify_(ss); }); // [v7.9] 등원 즉시 알림은 기본 OFF
   safeRun('translateNotices', function () { translateNotices_(ss); });
   safeRun('translateTopics', function () { translateTopics_(ss); }); // [v5.7] 이번 주 우리 반 배운 것 → 몽골어
   safeRun('importFormResponses', importFormResponses); // [v6.3] 상담 폼 접수 편입
   safeRun('sweepLeadForm', function () { sweepLeadForm_(ss); }); // [v9.43] 광고 리드폼 → leads 자동 편입(수기 이관 폐지)
+  safeRun('sweepFeedbackAck', function () { sweepFeedbackAck_(ss); }); // [v9.49] 첨삭 '확인했어요' → +5P 정산(열람 보상 — 10분 내 반응해야 루프가 산다)
   safeRun('classPrepMail', function () { classPrepMail_(ss, ss.getSpreadsheetTimeZone()); }); // [v6.8]
   safeRun('checkoutCheerMail', function () { checkoutCheerMail_(ss); }); // [v6.8]
   safeRun('todayBoard', function () { todayBoard_(ss); }); // [v8.1] 오늘의 출결 보드 (10분 갱신)
@@ -9272,6 +9542,7 @@ const SHEET_SKELETON = [
     ['crew_projects', ['시즌','반','프로젝트명','한줄소개','결과물링크','사진URL','공개일','참여크루','비고']], // [v9.29] 시즌 프로젝트 포트폴리오 — 수동 기입 전용(hall_of_fame 패턴 · 트리거·배치 연동 없음)
     ['mastery_log', ['student_id','grammar_id','상태','첫기록일','도달일','출처','updated_at']], // [v9.36] 문법 도달 로그 — expandMasteryLog_ upsert, 진화 게이트 재료(Glide 비바인딩)
     ['attendance_batch', ['날짜','class_name','출석자목록','입력자','created_at','처리상태']], // [v9.36] 수업 시작 출석 1탭(B안) → expandAttendanceBatch_가 attendance로 전개
+    ['hw_feedback', ['id','student_id','제출일','제출문','고친문장','오늘의포인트','칭찬','다음미션','상태','학생확인','포인트지급']], // [v9.49] AI 숙제 첨삭 카드 — aiFeedbackBatch_ 생성. I상태(대기→노출)=사람/자동, J학생확인=Glide 전용(스크립트 불가침), K포인트지급=스크립트 전용
     ['student_errors', ['날짜','student_id','반','유형','메모','입력자','created_at','상태']], // [v9.36] 강사 개인 약점 메모(선택 입력) — 리포트·브리핑 노출은 후속(학생 앱 미노출)
     ['onboarding', ['role','제목','안내KO','안내MN','아이콘']], // [v9.38] 역할별 홈 안내 카드(setupOnboarding) — 재건 목록 누락분 보강
     ['system_manifest', ['지표','값','상태']], // [v9.37] buildSystemManifest 출력 — 시트·콘텐츠·트리거·의존성 실측 정본(수동 숫자 대체)
@@ -10082,7 +10353,7 @@ function preflightGlide() {
   // 6.5) [v9.48] 공유열 서버화 확인 — Glide가 계산 컬럼 없이 바로 바인딩할 수 있는 상태인지(조립 전제)
   if (pf && pf.getLastRow() >= 2) {
     const endColP = SHARED_COL_START + SHARED_COL_HEADERS.length - 1;
-    if (pf.getMaxColumns() < endColP) warn('공유열(CG85~CW101) 미생성 — calcAll 1회 실행 필요(preflight가 이미 돌렸다면 로그의 calcAll 실패 사유 확인)');
+    if (pf.getMaxColumns() < endColP) warn('공유열(CG85~CZ104) 미생성 — calcAll 1회 실행 필요(preflight가 이미 돌렸다면 로그의 calcAll 실패 사유 확인)'); // [v9.49] 폼URL·새첨삭수 3열 포함
     else {
       const shared = pf.getRange(2, SHARED_COL_START, pf.getLastRow() - 1, SHARED_COL_HEADERS.length).getValues();
       const roles = pf.getRange(2, 1, pf.getLastRow() - 1, 10).getValues();
@@ -10180,6 +10451,7 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   safeRun('checkAchievements', checkAchievements);
   safeRun('checkUnknownReasonsNightly', checkUnknownReasonsNightly_); // [v9.28] 미인식 reason 발각 지연 7일→1일
   safeRun('translateContentsNightly', translateContents); // [v9.41·자동화] 빈 몽골어·영어 번역을 매일 밤 60행씩 자동 소진 — "translateContents 수동 반복 실행" 절차 제거(빈칸 없으면 API 호출 0)
+  safeRun('aiFeedbackBatch', aiFeedbackBatch_); // [v9.49] 숙제폼 제출분 AI 첨삭 생성 — CLAUDE_API_KEY 없으면 0초 스킵
   safeRun('demoMonthEndGuard', function () { // [v9.44] 데모 모드가 월말(28일~)까지 살아 있으면 경고 — 다음 달 1일 실배치가 데모 재적으로 지난달을 정산하는 사고 예방
     const ssD = SpreadsheetApp.getActiveSpreadsheet();
     const stD = ssD.getSheetByName('app_state');

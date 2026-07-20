@@ -295,11 +295,69 @@ test('[v9.48] 공유값 서버화 — calcAll이 학업 계산 뒤에 공유열�
   assert.ok(fn.includes('splitQuiz')); // 퀴즈 문제/정답 분해(구 Glide Split Text)
   assert.ok(fn.includes("String(r[9] || '').split(',')[0]")); // parent_of 첫 자녀(구 Relation)
   assert.ok(fn.includes('writeIfChanged(pf, 2, SHARED_COL_START, out)')); // 무변경 시 쓰기 0(쿼터 보호)
-  // 헤더 17개가 열 지도와 일치해야 조립 문서의 CG~CW 안내가 유효
+  // 헤더 20개가 열 지도와 일치해야 조립 문서의 CG~CZ 안내가 유효 ([v9.49] 폼URL 2종+새첨삭수 추가로 17→20)
   assert.ok(code.includes("const SHARED_COL_START = 85"));
   const heads = code.match(/const SHARED_COL_HEADERS = \[([\s\S]*?)\];/);
   assert.ok(heads, 'SHARED_COL_HEADERS 선언을 찾지 못함');
-  assert.equal(heads[1].split(',').filter(s => s.trim()).length, 17);
+  assert.equal(heads[1].split(',').filter(s => s.trim()).length, 20);
+});
+
+test('[v9.49] hw_feedback 골격 — 학생확인(Glide 전용)과 포인트지급(스크립트 전용) 열이 분리돼 있다', () => {
+  const body = section('const SHEET_SKELETON', 'function bootstrapSynk()');
+  assert.ok(body.includes("['hw_feedback', ['id','student_id','제출일','제출문','고친문장','오늘의포인트','칭찬','다음미션','상태','학생확인','포인트지급']]"));
+});
+
+test('[v9.49] 첨삭 확인 정산은 지급(appendPoints) 성공 뒤에만 지급완료로 표시한다', () => {
+  const body = section('function sweepFeedbackAck_(', 'function aiFeedbackBatch_()');
+  assertOrder(body, [
+    'const doneToday = new Set()',            // point_logs 재조회(크래시 재시도 중복 방지)
+    "appendPoints(ss, [[sid, AI_FEEDBACK_ACK_POINTS, '첨삭확인', '시스템']])", // 행 단위 지급 먼저(리뷰 M2)
+    "fb.getRange(i + 2, 11).setValue('지급완료')" // 마킹은 그 뒤
+  ]);
+  assert.ok(body.includes("String(r[8]) !== '노출'")); // 검수 게이트: 노출 상태만 지급
+});
+
+test('[v9.49] AI 첨삭 배치는 API 키가 없으면 전체 스킵하고, 성공분 즉시 포인터를 전진한다(하드킬 중복 차단)', () => {
+  const body = section('function aiFeedbackBatch_()', 'function callClaudeFeedback_(');
+  assertOrder(body, [
+    "props.getProperty('CLAUDE_API_KEY')",
+    'if (!apiKey) return',
+    'AI_FEEDBACK_MAX_PER_RUN || Date.now() - t0 > AI_BUDGET_MS', // 상한+자체 2분 예산(리뷰 H1)
+    '성공분 즉시 포인터 전진',                                      // 하드킬(throw 없는 강제종료)에도 중복 생성 0
+    '포이즌 필 차단',                                              // 영구 오류 행은 기록 후 건너뜀(리뷰 M1)
+    'break; // 실패 행부터 포인터 유지'                              // 일시 오류만 중단→재시도
+  ]);
+  assert.ok(body.includes("props.setProperty('숙제폼_포인터', String(from + processed))"));
+  // 오류 분류기: 영구(재시도 무의미) 플래그가 없으면 불량 행 하나가 큐 전체를 영구 차단한다
+  const api = section('function callClaudeFeedback_(', 'function parentSweep()');
+  assert.ok(api.includes('e.permanent = (rc === 400'));
+  assert.ok(api.includes('permErr'));
+});
+
+test('[v9.49] 폼 출석 method는 출석 판정 키워드를 포함하고 당일 중복은 스킵한다', () => {
+  const body = section('function sweepAttendanceForm_(', 'function sweepFeedbackAck_(');
+  assert.ok(body.includes("'출석(폼)'")); // todayBoard·raid의 indexOf('출석') 판정 호환
+  assert.ok(body.includes('seen[key]'));  // 같은 날 중복 제출·앱/일괄 병행 스킵
+  assert.ok(body.includes("props.setProperty('출석폼_포인터', String(last))"));
+});
+
+test('[v9.49] 신규 사유 첨삭확인이 일일한도·미인식 스캐너에 등록돼 있고 숙제 키워드를 오염시키지 않는다', () => {
+  assert.ok(code.includes("'첨삭확인': 1"), 'DAILY_LIMIT에 첨삭확인 누락');
+  const scan = section('function unknownReasonScan_(', 'function checkUnknownReasonsNightly_');
+  assert.ok(scan.includes("'첨삭'"), 'KNOWN_RS에 첨삭 누락 — 매일 밤 미인식 경보가 뜬다');
+  // 사유에 '숙제'가 들어가면 숙제왕 카운트(indexOf 숙제)가 첨삭 확인으로 부풀려진다
+  assert.equal(code.includes("'숙제첨삭확인'"), false);
+});
+
+test('[v9.49] 스위프·야간 배치에 폼출석·첨삭정산·첨삭생성이 편입돼 있다', () => {
+  const sweep = section('function parentSweep()', 'function translateTopics_');
+  assertOrder(sweep, [
+    "safeRun('sweepAttendanceForm'",  // 등원알림·보드·미등원판정 앞
+    "safeRun('expandAttendanceBatch'",
+    "safeRun('sweepFeedbackAck'"
+  ]);
+  const night = section('function nightJobs()', 'function dailyBackupJob()');
+  assert.ok(night.includes("safeRun('aiFeedbackBatch', aiFeedbackBatch_)"));
 });
 
 test('[v9.47] 경영 보고는 단일화 — monthlyReport는 위임 shim이고 월보는 병합 로그를 읽는다', () => {
