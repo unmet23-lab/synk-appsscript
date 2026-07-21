@@ -2254,7 +2254,7 @@ function calcAll() {
   });
   const csLast = cs.getLastRow();
   if (csLast - 1 > csOut.length) {
-    cs.getRange(csOut.length + 2, 1, csLast - 1 - csOut.length, 13).clearContent(); // [v9.1] · [v9.34] 8→12열 · [v9.35] 12→13열(레이드카드HTML 포함) — 반 감소 시 유령 HTML 잔존 방지
+    cs.getRange(csOut.length + 2, 1, csLast - 1 - csOut.length, 14).clearContent(); // [v9.1] · [v9.34] 8→12열 · [v9.35] 12→13열(레이드카드HTML) · [v9.52] 13→14열(반상세HTML) — 반 감소 시 유령 HTML 잔존 방지
   }
   { // [v9.6] 🌍 월드 레이드 누적 — 전 학생 이번 달 획득 총합
     const wrC = ss.getSheetByName('world_raid');
@@ -2269,6 +2269,7 @@ function calcAll() {
     }
   }
   if (csOut.length) writeIfChanged(cs, 2, 1, csOut);
+  let crewCols = [], raidCards = []; // [v9.52] 반 상세 통합 카드(14열)에서 재사용 — 블록 밖 선언
   { // [v9.15] 🧑‍🏫 강사 팩 4열 — 브리핑·격파 찬스·오늘 체크·왕관 밸런스
     ['수업전브리핑','격파찬스','오늘체크','왕관밸런스'].forEach((h, i) => {
       if (String(cs.getRange(1, 9 + i).getValue()) !== h) cs.getRange(1, 9 + i, 1, 1).setValue(h);
@@ -2295,7 +2296,7 @@ function calcAll() {
     }
     let briefAI = {}; // [v9.50·H5] 반별 AI 브리핑 한 줄(야간 생성) — 있으면 기존 브리핑 카드 최상단에 병합(새 컴포넌트 0)
     try { briefAI = JSON.parse(String(getState(ensureSheet(ss, 'app_state', ['key', 'value']), '반브리핑AI').val || '{}')) || {}; } catch (eB5) { briefAI = {}; }
-    const crewCols = Object.keys(cls).sort().map(c => {
+    crewCols = Object.keys(cls).sort().map(c => {
       const v = cls[c];
       const parts = [];
       if (briefAI[c]) parts.push('🤖 ' + escHtml_(String(briefAI[c]).slice(0, 120))); // [v9.50·H5]
@@ -2323,9 +2324,22 @@ function calcAll() {
   { // [v9.35] ⚔️ 레이드 카드(13열) — 유일한 픽셀 레트로 적용처(다른 카드는 소프트 글로우 축). 반별 주간 전투 현황.
     if (cs.getMaxColumns() < 13) cs.insertColumnsAfter(cs.getMaxColumns(), 13 - cs.getMaxColumns());
     if (String(cs.getRange(1, 13).getValue()) !== '레이드카드HTML') cs.getRange(1, 13).setValue('레이드카드HTML');
-    const raidCards = Object.keys(cls).sort().map(c =>
+    raidCards = Object.keys(cls).sort().map(c =>
       [buildRaidCard_(c, raidGoal[c] || 0, weekDmg[c] || 0, !!raidWin[c])]);
     if (raidCards.length) writeIfChanged(cs, 2, 13, raidCards);
+  }
+  { // [v9.52] 🧩 반 상세 통합 카드(14열) — Glide Rich Text 5장 → 1장.
+    //   순서(조립가이드 8-1): 브리핑⑨ → 오늘체크⑪ → 격파찬스⑩ → 레이드⑬ → 왕관밸런스⑫
+    //   격파찬스가 빈 반은 자동 생략되므로 Glide Visibility 조건(=조립 클릭)이 불필요해진다.
+    //   9~13열은 하위 호환·개별 참조용으로 그대로 둔다.
+    if (cs.getMaxColumns() < 14) cs.insertColumnsAfter(cs.getMaxColumns(), 14 - cs.getMaxColumns());
+    if (String(cs.getRange(1, 14).getValue()) !== '반상세HTML') cs.getRange(1, 14).setValue('반상세HTML');
+    const gapCS = '<div style="height:10px"></div>';
+    const mergedCS = crewCols.map((r, i) => {
+      const raid = (raidCards[i] && raidCards[i][0]) || '';
+      return [[r[0], r[2], r[1], raid, r[3]].filter(Boolean).join(gapCS)];
+    });
+    if (mergedCS.length) writeIfChanged(cs, 2, 14, mergedCS);
   }
 
   // --- app_state: 학생수/신규감지 --- ([v7.9] 명언·브레인팁 카드 폐지 — 시선 분산 제거)
