@@ -734,6 +734,9 @@ const LEAGUE_DAILY_CAST = false;     // [v9.47·A1] 리그 일일 중계석(월~
 const AI_FEEDBACK_MODEL = 'claude-sonnet-5'; // 콘텐츠=Sonnet급 라우팅(CLAUDE.md 정본). API 키는 Script Properties 'CLAUDE_API_KEY' — 없으면 배치 전체 스킵(NOTION_TOKEN 패턴, 배포만으로는 아무 일도 안 일어남)
 const AI_FEEDBACK_AUTOPUBLISH = false;       // false: 생성분 '대기' → 사람이 hw_feedback I열을 '노출'로 승인(초기 검수). 품질 안정 후 true로 자동 공개
 const AI_FEEDBACK_MAX_PER_RUN = 30;          // 야간 1회 첨삭 상한 — 시간예산·비용 가드(초과분은 포인터가 남아 다음 밤 자동 이어짐)
+const RAID_DAILY_STORY = false;  // [v9.50] 일일 전투 리포트 — 매일 발행물 읽힘율 급락 처방(유호 07-21). 금·일 결산(raidFriday·leagueSettle)은 유지. 되살리려면 true
+const AI_STUDIO_MAX_CALLS = 12;  // [v9.50] aiStudioBatch_ 야간 API 호출 상한(비용 가드 — 한 문장·퀴즈 배치 포함 전 호출 합산)
+const AI_DAILY_BATCH_SIZE = 15;  // [v9.50] 한 API 호출에 묶는 학생 수(오늘의 한 문장+개인 퀴즈 — 90명이면 6콜)
 const AI_FEEDBACK_ACK_POINTS = 5;            // '확인했어요' 보상 — 숙제완료 +10의 절반. 사유 '첨삭확인'은 DAILY_LIMIT 1회/일
 
 /* ── [v5.2] 학부모 알림 · 다국어 ─────────────────────── */
@@ -1344,6 +1347,7 @@ function myJourneyHtml_(o) {
   const evoLine = o.evoDate ? '⚡ 진화한 날 <b>' + o.evoDate + '</b><br/>' : '';
   const titles = (o.titles || []).filter(String);
   const titleLine = titles.length ? '🏅 칭호 <b>' + titles.slice(0, 4).join(' · ') + '</b><br/>' : '';
+  const aiTitleLine = o.aiTitle ? '🎖️ 이달의 칭호 <b>' + o.aiTitle + '</b><br/>' : ''; // [v9.50·B3] AI 유니크 칭호
   const chemLine = (o.chem && o.chem.n) ? '🤝 이 달의 단짝 <b>' + o.chem.n + '</b> (' + o.chem.c + '일 동행)<br/>' : '';
   const hasLv = acad && acad.curLevel != null && acad.curLevel !== '';
   const hasMk = acad && acad.curMock != null && acad.curMock !== '';
@@ -1357,6 +1361,14 @@ function myJourneyHtml_(o) {
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const dreamLine = '<div style="background:#EEF2FF;border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;color:#2B3FD9;margin-bottom:9px;">' +
     (o.dream ? '🌟 나의 목표: ' + esc(o.dream) : '🌟 나의 목표를 적어보세요') + '</div>';
+  // [v9.50·A5] 주간 퀘스트 결산 — 주간 발행물 신설 대신 여정 카드에 통합(채널 피로 방지)
+  const wkB = o.wk && (o.wk.p > 0 || o.wk.a > 0)
+    ? '<div style="background:#EEF2FF;border-radius:11px;padding:8px 11px;font-size:12px;margin-top:10px;line-height:1.9;">🗡️ <b>이번 주 퀘스트 결산</b><br/>출석 <b>' + o.wk.a + '일</b> · 경험치 <b>+' + o.wk.p + 'P</b>' + (o.wk.c ? ' · 왕관 <b>' + o.wk.c + '회</b>' : '') + '</div>'
+    : '';
+  // [v9.50·A7] 성장 전/후 — 첨삭 데이터 재활용(한 달 전 내 문장 vs 지금), 재등록 시점의 가장 반박 불가능한 증거
+  const gwB = o.growth
+    ? '<div style="background:#F0FDF4;border:1px dashed #86EFAC;border-radius:11px;padding:8px 11px;font-size:12px;margin-top:10px;line-height:1.8;">🌱 <b>성장 전/후</b><br/><span style="color:#9CA3AF;">' + esc(String(o.growth.d1)) + '</span> ' + esc(String(o.growth.a).slice(0, 42)) + '<br/><span style="color:#16A34A;font-weight:700;">' + esc(String(o.growth.d2)) + '</span> ' + esc(String(o.growth.b).slice(0, 42)) + '</div>'
+    : '';
   // [v9.35] 소프트 글로우 축 — 헤더 행(제목+우측 코랄 '진화까지 nP'), 토큰(그라디언트·라운드 18/12·섀도)
   const remJ = mon.rem || 0;
   return CARD_ANIM + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E0E7FF 55%,#F5F3FF);border:2px solid #BCC8FF;border-radius:18px;padding:13px 15px;box-shadow:0 6px 18px rgba(61,90,254,.14);">' +
@@ -1369,14 +1381,14 @@ function myJourneyHtml_(o) {
     '<div style="background:#fff;border-radius:12px;padding:9px 11px;font-size:12.5px;line-height:2;">' +
       '🔥 최장 연속출석 <b>' + (rec.maxStreak || o.stk || 0) + '일</b><br/>' +
       '👑 첫 왕관 <b>' + (rec.firstCrown || '이번 달이 기회!') + '</b><br/>' +
-      evoLine + titleLine + chemLine +
+      evoLine + titleLine + aiTitleLine + chemLine +
       '⚔️ 보스와 함께 <b>' + (rec.raids || 0) + '회</b><br/>' +
       '🏔️ 최고 월간 <b>' + (rec.bestMonth || o.mPts || 0) + 'P</b> · 📚 지금까지 <b>' + (o.t || 0) + 'P</b>' +
     '</div>' +
     '<div style="font-size:12.5px;color:#2B3FD9;padding-top:9px;">' + acadLine + '</div>' +
     // [v9.36] 학습추적(W3) — 이 단계 문법 도달 진행(게이트 없는 단계·무데이터면 상위에서 '' 전달 → 생략)
     (o.gline ? '<div style="font-size:12px;color:#6D28D9;padding-top:4px;">' + o.gline + '</div>' : '') +
-    storyBlock +
+    wkB + gwB + storyBlock +
     '<div style="font-size:11px;color:#9CA3AF;padding-top:8px;">너의 이야기는 계속돼 ✨</div>' +
     '</div>';
 }
@@ -1666,6 +1678,44 @@ function calcAll() {
   const prevBC = (pfData.length && pf.getMaxColumns() >= 55) ? pf.getRange(2, 55, pfData.length, 1).getValues() : []; // [v9.11]
   const prevAR = (pfData.length && pf.getMaxColumns() >= 44) ? pf.getRange(2, 44, pfData.length, 1).getValues() : []; // [v9.28] 목표아이템(사용자 선택, 스크립트는 읽기만)
   const prevDream = (pfData.length && pf.getMaxColumns() >= 80) ? pf.getRange(2, 80, pfData.length, 1).getValues() : []; // [v9.29] 드림한줄(CB 80) — 학생 자기선언, 스크립트는 읽기만
+  // [v9.50] AI 스튜디오 산출물 로드 — ai_daily(오늘의 한 문장 H1), ai_ledger(이달의 AI 칭호 B3), 리텐션 멘트(E5), 성장 전/후(A7)
+  const tzAI = ss.getSpreadsheetTimeZone();
+  const aiToday_ = Utilities.formatDate(new Date(), tzAI, 'yyyy-MM-dd');
+  const aiDailyMap = {}; // sid → {s: 한 문장}
+  {
+    const adC = ss.getSheetByName('ai_daily');
+    if (adC && adC.getLastRow() >= 2) adC.getRange(2, 1, adC.getLastRow() - 1, 5).getValues().forEach(rA => {
+      if (rA[0] && String(rA[1]) === aiToday_ && String(rA[2] || '')) aiDailyMap[String(rA[0]).trim()] = { s: String(rA[2]) };
+    });
+  }
+  const aiTitleMap = {}; // sid → 이달의 AI 유니크 칭호
+  {
+    const alC = ss.getSheetByName('ai_ledger');
+    const curYmT = aiToday_.slice(0, 7);
+    if (alC && alC.getLastRow() >= 2) alC.getRange(2, 1, alC.getLastRow() - 1, 4).getValues().forEach(rA => {
+      if (String(rA[0]) === '칭호' && rA[1] && String(rA[2]) === curYmT) aiTitleMap[String(rA[1]).trim()] = String(rA[3] || '');
+    });
+  }
+  let aiCareMap = {}; // 학생이름 → 리텐션 개입 멘트(E5 — 콕핏 레이더에 병기)
+  try { aiCareMap = JSON.parse(String(getState(ensureSheet(ss, 'app_state', ['key', 'value']), '리텐션멘트').val || '{}')) || {}; } catch (eAC) { aiCareMap = {}; }
+  const growthMap = {}; // sid → {a, d1, b, d2} 첨삭 최초 vs 최근 문장(21일+ 간격일 때만)
+  {
+    const fbG = ss.getSheetByName('hw_feedback');
+    if (fbG && fbG.getLastRow() >= 2) {
+      const perG = {};
+      fbG.getRange(2, 1, fbG.getLastRow() - 1, 9).getValues().forEach(rG => {
+        const sidG = String(rG[1] || '').trim(), sentG = String(rG[4] || '').trim();
+        if (!sidG || !sentG || String(rG[8] || '').indexOf('오류') === 0) return;
+        const dG = String(rG[2] || '');
+        if (!perG[sidG]) perG[sidG] = { a: sentG, d1: dG, b: sentG, d2: dG };
+        else { perG[sidG].b = sentG; perG[sidG].d2 = dG; }
+      });
+      Object.keys(perG).forEach(kG => {
+        const g = perG[kG];
+        if (g.d1 && g.d2 && g.a !== g.b && (new Date(g.d2) - new Date(g.d1)) / 86400000 >= 21) growthMap[kG] = g;
+      });
+    }
+  }
   const skinOut = [], frameOut = [];
   const fortuneOut = [], speakOut = [], recordOut = []; // [v9.12]
   const goalOut = [], perDayOut = []; // [v9.28] 목표진행 카드 · 출석일당포인트(주말반 보정 참고 지표)
@@ -1904,7 +1954,9 @@ function calcAll() {
         frameOut.push([buildMonsterFrame_(disp.name, disp.img, mon.idx || 1, mon.pct, mon.rem)]); // [v9.35] 홈 액자만 진행 게이지 연결 (호출처 전수 확인: 이곳 1곳)
       }
       { // [v9.12] 운세·몬스터의 한마디·기록실
-        fortuneOut.push(['🔮 ' + hashPick_(FORTUNES, id + todayYmd)]);
+        // [v9.50·H1] 오늘의 한 문장 — AI 개인화(약점·관심사 기반)가 있으면 운세 슬롯(BE) 대체, 없으면 기존 운세 폴백(키 미설정에도 카드는 산다)
+        const aiD6 = aiDailyMap[id];
+        fortuneOut.push([aiD6 && aiD6.s ? '💡 ' + aiD6.s : '🔮 ' + hashPick_(FORTUNES, id + todayYmd)]);
         const tone = speakTone_(mon.idx || 1);
         const isBday = bdayMMDD_(r[5], tz) === todayYmd.slice(5, 10); // [v9.34] Date 셀 생일도 인식 — 원시 slice는 Date면 전멸(생일 한마디·브리핑 반쪽 연출)
         const crownToday = (crownDates[id] || '') === todayYmd;
@@ -1990,8 +2042,12 @@ function calcAll() {
           //  [v9.20 최적화] 진화임박(rem) 분기 제거: 매일 값 변동→시트 churn + 푸시 시 매일 알림 피로.
           //  임박 넛지는 몬스터한마디(BF)가 이미 담당. BX는 이벤트일에만 채워지고 다음날 ''로 복귀.
           const isBday6 = bdayMMDD_(r[5], tz) === todayYmd0.slice(5, 10); // [v9.34] Date 셀 생일도 인식(1451과 동일 통일)
+          // [v9.50·B1] 세계관 내레이터 — 진화 순간 배너를 그 학생의 실데이터(이름·몬스터·문법·기록)로 개인화(결정론 템플릿 6종)
           alertOut.push([crownToday2 ? '👑 오늘 왕관을 받았어요! 최고예요 🎉'
-            : evoRecent ? '⚡ 몬스터가 진화했어요! ' + (gEvoForm ? '\'' + gEvoForm + '\' 문법까지 익히고 진화! 🐲' : '축하해요 🐲') // [v9.36] 배운 문법 병기
+            : evoRecent ? hashPick_(NARRATE_EVO, id + todayYmd0)
+                .replace('{n}', r[1] || id).replace('{m}', String(r[18] || '몬스터'))
+                .replace('{g}', gEvoForm ? '\'' + gEvoForm + '\' 문법을 익히고 ' : '')
+                .replace('{t}', String(t || 0))
             : isBday6 ? '🎂 생일 축하해요! 오늘의 주인공이에요 🎉'
             : '']);
         }
@@ -2026,6 +2082,9 @@ function calcAll() {
         acad: academicSnapshot_(acadById[id]), evoDate: (evoDateOut[evoDateOut.length - 1] || [''])[0],
         titles: titleOf[id], chem: chemi[id], story: (prevAU[idx] && prevAU[idx][0]) || '', // [v9.20] 칭호·단짝·이달의 이야기
         dream: String((prevDream[idx] && prevDream[idx][0]) || '').trim(), // [v9.29] 드림 한 줄(학생 자기선언)
+        aiTitle: aiTitleMap[id] || '', // [v9.50·B3] 이달의 AI 유니크 칭호
+        wk: { a: Object.keys(weekAtt[id] || {}).length, p: weekPts[id] || 0, c: weekCrown[id] || 0 }, // [v9.50·A5] 주간 퀘스트 결산(별도 발행물 대신 여정 카드에 통합)
+        growth: growthMap[id] || null, // [v9.50·A7] 성장 전/후 — 첨삭 최초 vs 최근(21일+ 간격일 때만)
         // [v9.36] 학습추적(W3) — 이 단계 문법 도달 진행(뱅크 없는 단계·무데이터면 '' → 카드에서 생략) + 게이트 대기 헤더 문구
         gline: ((bankCnt[mon.idx] || 0) > 0 && hasMastery[id]) ? '📖 이 단계 문법 ' + ((masteryCnt[id] || {})[mon.idx] || 0) + '/' + bankCnt[mon.idx] : '',
         grem: gateBlocked ? gateCC : 0
@@ -2096,10 +2155,14 @@ function calcAll() {
     // [v9.44] 출석달력HTML(CF 84) — 학부모 우리아이·학생 내 기록의 출석 시인성 카드
     if (String(pf.getRange('CF1').getValue()) !== '출석달력HTML') pf.getRange('CF1').setValue('출석달력HTML');
     writeIfChanged(pf, 2, 84, calOut);
+    // [v9.50·A4] 최애(DA 105) — 학생이 Glide Set Column으로 쓰는 사용자 소유 열(드림한줄 CB와 동일 방식).
+    //   개인화 예문·한 문장·퀴즈의 재료로 aiStudioBatch_가 읽기만 한다. 비면 개인화는 약점 기반으로만.
+    if (pf.getMaxColumns() < 105) pf.insertColumnsAfter(pf.getMaxColumns(), 105 - pf.getMaxColumns());
+    if (String(pf.getRange('DA1').getValue()) !== '최애') pf.getRange('DA1').setValue('최애');
     { // 원장 홈 카드 2종
       radarList.sort((a2, b2) => a2.s === b2.s ? 0 : (a2.s === '🔴' ? -1 : 1));
       const rHtml = radarList.length
-        ? '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #FECACA;border-radius:14px;padding:10px 12px;"><div style="font-size:13px;font-weight:800;">📡 리텐션 레이더 — 관심 필요 ' + radarList.length + '명</div><div style="font-size:12px;line-height:1.9;">' + radarList.slice(0, 8).map(x => x.s + ' <b>' + x.n + '</b> (' + x.c + ') — ' + x.w).join('<br/>') + (radarList.length > 8 ? '<br/>… 외 ' + (radarList.length - 8) + '명' : '') + '</div></div>'
+        ? '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #FECACA;border-radius:14px;padding:10px 12px;"><div style="font-size:13px;font-weight:800;">📡 리텐션 레이더 — 관심 필요 ' + radarList.length + '명</div><div style="font-size:12px;line-height:1.9;">' + radarList.slice(0, 8).map(x => x.s + ' <b>' + x.n + '</b> (' + x.c + ') — ' + x.w + (aiCareMap[x.n] ? '<br/>&nbsp;&nbsp;💬 <span style="color:#6B7280;">' + String(aiCareMap[x.n]).slice(0, 90) + '</span>' : '')).join('<br/>') + (radarList.length > 8 ? '<br/>… 외 ' + (radarList.length - 8) + '명' : '') + '</div></div>'
         : '<div style="' + CARD_FONT + 'background:#F0FDF4;border:2px solid #BBF7D0;border-radius:14px;padding:10px 12px;font-size:13px;">📡 전원 🟢 — 평화로운 항해 중입니다</div>';
       setAppState_(ss, '리텐션레이더HTML', rHtml);
       const bByCls = {};
@@ -2108,6 +2171,8 @@ function calcAll() {
         ? '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #FDE68A;border-radius:14px;padding:10px 12px;"><div style="font-size:13px;font-weight:800;">👩‍🏫 케어 사각 — 출석 중인데 2주+ 무포인트</div><div style="font-size:12px;line-height:1.9;">' + Object.keys(bByCls).map(cn => '<b>' + cn + '</b>: ' + bByCls[cn].join(', ')).join('<br/>') + '</div><div style="font-size:11px;color:#6B7280;padding-top:4px;">이번 주, 이 크루들에게 왕관 기회를 한 번씩 🙏</div></div>'
         : '<div style="' + CARD_FONT + 'background:#F0FDF4;border:2px solid #BBF7D0;border-radius:14px;padding:10px 12px;font-size:13px;">👩‍🏫 사각지대 없음 — 모든 크루가 케어받는 중 ✨</div>';
       setAppState_(ss, '케어사각HTML', bHtml);
+      // [v9.50·E5] 리텐션 목록 저장 — 야간 AI가 이 목록으로 학생별 개입 멘트를 생성해 '리텐션멘트'에 되돌려 놓는다(감지=규칙, AI=문구만)
+      setAppState_(ss, '리텐션목록', JSON.stringify(radarList.slice(0, 12).map(x => ({ n: x.n, c: x.c, w: x.w }))));
     }
 
     const abOut = pfData.map((r, i) =>
@@ -2228,9 +2293,12 @@ function calcAll() {
         });
       }
     }
+    let briefAI = {}; // [v9.50·H5] 반별 AI 브리핑 한 줄(야간 생성) — 있으면 기존 브리핑 카드 최상단에 병합(새 컴포넌트 0)
+    try { briefAI = JSON.parse(String(getState(ensureSheet(ss, 'app_state', ['key', 'value']), '반브리핑AI').val || '{}')) || {}; } catch (eB5) { briefAI = {}; }
     const crewCols = Object.keys(cls).sort().map(c => {
       const v = cls[c];
       const parts = [];
+      if (briefAI[c]) parts.push('🤖 ' + escHtml_(String(briefAI[c]).slice(0, 120))); // [v9.50·H5]
       if ((clsBday[c] || []).length) parts.push('🎂 오늘 생일: <b>' + clsBday[c].join(', ') + '</b>');
       if (yAttCls[c] && (clsAbsent[c] || []).length) parts.push('📵 어제 결석: ' + clsAbsent[c].slice(0, 5).join(', ') + ' — 오늘 오면 한마디 챙겨주세요');
       if ((blindByCls[c] || []).length) parts.push('👩‍🏫 케어 사각: ' + blindByCls[c].join(', '));
@@ -2411,6 +2479,15 @@ function writeSharedCols_(ss, pf, st) {
   if (fbSh && fbSh.getLastRow() >= 2) fbSh.getRange(2, 1, fbSh.getLastRow() - 1, 10).getValues().forEach(r => {
     if (r[1] && String(r[8]) === '노출' && !String(r[9] || '')) { const k = String(r[1]).trim(); fbCnt[k] = (fbCnt[k] || 0) + 1; }
   });
+  // [v9.50·A1/A2] 오늘자 개인 퀴즈 — 있으면 글로벌 3난이도 로테이션 대신 학생별 약점 문항(정답 칸에 해설 포함), 없으면 기존 그대로
+  const aiQ = {};
+  {
+    const adQ = ss.getSheetByName('ai_daily');
+    const tdQ = Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd');
+    if (adQ && adQ.getLastRow() >= 2) adQ.getRange(2, 1, adQ.getLastRow() - 1, 5).getValues().forEach(r => {
+      if (r[0] && String(r[1]) === tdQ && String(r[3] || '')) aiQ[String(r[0]).trim()] = { q: String(r[3]), a: String(r[4] || '') };
+    });
+  }
   const out = rows.map(r => {
     const blank = SHARED_COL_HEADERS.map(() => '');
     if (!r[0]) return blank;
@@ -2424,8 +2501,9 @@ function writeSharedCols_(ss, pf, st) {
           : kv['오늘의퀴즈_초급']) || kv['오늘의퀴즈'] || '';
       const q = splitQuiz(quizRaw);
       const sid = String(r[0]).trim(); // [v9.49] 폼 URL·첨삭 수 조회 키
+      const pq = aiQ[sid]; // [v9.50·A1/A2] 개인 퀴즈 오버라이드
       return [kv[pre + '숙제유형'] || '', kv[pre + '숙제'] || '', kv[pre + '숙제팁'] || '',
-        q[0], q[1], kv['오늘의팁'] || '', kv['지난달의전당'] || '', kv['이달의시즌'] || '',
+        pq ? pq.q : q[0], pq ? pq.a : q[1], kv['오늘의팁'] || '', kv['지난달의전당'] || '', kv['이달의시즌'] || '',
         kv['이달의보스HTML'] || '', kv['여행지도HTML'] || '',
         '', '', '', '', '', '', '',
         formUrlOf(kv['출석폼URL틀'], sid), formUrlOf(kv['숙제폼URL틀'], sid), fbCnt[sid] || '']; // [v9.49] CX~CZ
@@ -2589,6 +2667,19 @@ function syncProfiles() {
     if (tTail > 0) dst.getRange(trio.length + demoStu.length + 2, 51, tTail, 3).clearContent();
   }
   setState(ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'app_state', ['key', 'value']), '동기화보류_상태', ''); // [v9.22] 정상 동기화 → 보류 알림 재무장
+  // [v9.50·F4] 신규 학생 웰컴 스토리 대기열 — 등록 감지 즉시 큐에 넣고, 학부모 이메일(§1-3)이 채워진 아침에 welcomeStoryBatch_가 발송
+  try {
+    if (apCnt > 0) {
+      const newIds = ordered.slice(survCnt).map(e => String(e.id)).filter(id => id.indexOf('DEMO-') !== 0);
+      if (newIds.length) {
+        const pW = PropertiesService.getScriptProperties();
+        let curW = [];
+        try { curW = JSON.parse(pW.getProperty('웰컴대기') || '[]') || []; } catch (eQ) { curW = []; }
+        newIds.forEach(id => { if (curW.indexOf(id) < 0) curW.push(id); });
+        pW.setProperty('웰컴대기', JSON.stringify(curW.slice(-60)));
+      }
+    }
+  } catch (eW) { Logger.log('웰컴 대기열 등록 실패: ' + eW); }
   Logger.log(out.length + '명 동기화 완료');
   calcAll();
   } catch (e) { // [v9.19] 조용한 실패 방지 — 연결 끊기면 매일 아침 알림 (profiles 스테일 조기 감지)
@@ -4272,6 +4363,7 @@ function josa(w, a, b) {
 /* ===================== [v7.3] 일일 전투 리포트 ===================== */
 // 월~목·토 22시 (nightJobs) — 오늘 반별 데미지를 RPG 전투 서사로 자동 변환 → raid_story 시트
 function raidStoryDaily() {
+  if (!RAID_DAILY_STORY) return; // [v9.50] 일일 전투 OFF(유호 07-21 처방) — 주간 결산만 발간. 상수 true로 재개
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const now = new Date();
@@ -6211,7 +6303,14 @@ function buildMonthlyStorybook_() {
   rows[0][5] += '\n\n🎬 이번 호의 주인공: ' + M.n + ' · 함께한 크루: ' + S1.n + (S2 ? ', ' + S2.n : '') +
     '\n🕐 읽는 시간 약 ' + readMin + '분 — 따뜻한 차 한 잔과 함께';
   setAppState_(ss, '전호주연', pick[0] || '');
-  sb.getRange(sb.getLastRow() + 1, 1, rows.length, 8).setValues(rows);
+  // [v9.50] 단일본 발간 — 유호 지시 "한 번에 읽히게": 13행 분할(소식탭에 챕터가 파편으로 흩어짐) 대신
+  //   챕터를 이어 붙인 전문 1행으로 발간한다. 월키 멱등(A열)·여행지도(월만 읽음)·데모 마커(월 행 존재)·
+  //   clearDemoData(월 일치 행 회수) 전부 호환. 씬프롬프트는 영상팩 메일이 rows에서 직접 읽으므로 시트엔 비운다.
+  const fullBody = rows.map(r =>
+    (r[3] >= 1 && r[3] <= 11 ? '― ' + r[4] + ' ―\n' : (r[3] === 12 ? '\n' : '')) + r[5]).join('\n\n');
+  const badgesAll = rows.map(r => String(r[6] || '')).filter(String);
+  const uniqBadges = badgesAll.filter((b, i) => badgesAll.indexOf(b) === i).join('  ·  ');
+  sb.getRange(sb.getLastRow() + 1, 1, 1, 8).setValues([[ym, issue, title, 1, '전문', fullBody, uniqBadges, '']]);
   if (SEND_SCENE_PACK && quotaOk(1)) { // [v9.10] 🎬 원장 영상팩 — 즉발(브리핑 큐 미경유: 복사용 독립 메일, 월 1통) · [v9.47·A2] 영상 제작 루틴 시작 전 OFF(발간·공지·데이터는 그대로, 메일만 잠금)
     const pLines = rows.map(r => '── 씬 ' + r[3] + ' · ' + r[4] + ' ──\n' + r[7]).join('\n\n');
     MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🎬 싱크 스토리 제' + issue + '호 영상팩 — 씬 프롬프트 12',
@@ -6227,7 +6326,7 @@ function buildMonthlyStorybook_() {
   // [v9.44] 직접 쓰기 → addNotice — 구 스키마 notices 열 어긋남 재발 지점(leagueSettle_·worldRaid와 동일 수리의 누락분)
   addNotice(ss, '📖 싱크 스토리 제' + issue + '호 발간!',
     '「' + title + '」 — ' + SC[0] + '에서 펼쳐진 우리들의 ' + mNum + '월 이야기. 앱의 싱크 스토리에서 읽어보세요.');
-  Logger.log('스토리북 ' + ym + ' 제' + issue + '호(v4·주연 ' + M.n + '): ' + rows.length + '행 · 본문 ' + bodyChars + '자 ≈ ' + readMin + '분');
+  Logger.log('스토리북 ' + ym + ' 제' + issue + '호(v5 단일본·주연 ' + M.n + '): 전문 1행 · 본문 ' + bodyChars + '자 ≈ ' + readMin + '분');
 }
 
 // [v9.6] 🌍 월드 레이드 — 학원 전체 vs 망각의 대군주 (월간 · 반 보스들의 배후 = 스토리북 최종 보스)
@@ -7637,6 +7736,523 @@ function callClaudeFeedback_(apiKey, stu, text) {
   const tb = (j.content || []).filter(b => b.type === 'text')[0]; // thinking 블록이 앞설 수 있어 type으로 선별
   if (!tb || !tb.text) throw permErr('응답에 text 블록 없음(stop_reason=' + j.stop_reason + ')');
   try { return JSON.parse(tb.text); } catch (e) { throw permErr('첨삭 JSON 파싱 실패: ' + String(tb.text).slice(0, 80)); }
+}
+
+/* ===================== [v9.50] 🎛️ AI 스튜디오 — 채택 17건 서버측 배선 =====================
+ * 정본 목록 = docs/AI기능_아이디어뱅크_v1.md ✅확정 리스트. 원칙:
+ *   ① 전부 야간/아침/월간 배치 — 학생·학부모는 읽기만(Glide update 소비 0~미미)
+ *   ② CLAUDE_API_KEY 없으면 전부 0초 스킵 또는 템플릿 폴백 — 배포만으로는 아무 일도 안 일어남
+ *   ③ 새 화면 0 — 기존 슬롯(운세 BE·퀴즈 CJ/CK·여정 BY·브리핑⑨·레이더)에 얹는다
+ *   ④ 호출 수 상한(AI_STUDIO_MAX_CALLS)·시간 예산으로 비용·타임아웃 이중 가드 */
+
+// 진화 내레이터 템플릿(B1) — {n}=이름 {m}=몬스터 {g}=문법절 {t}=누적P. AI 없이 실데이터 결정론 조합
+const NARRATE_EVO = [
+  '⚡ {n}의 파트너 {m}이(가) {g}새 형태로 깨어났어요! 누적 {t}P가 만든 순간 🐲',
+  '🐲 진화! {m}이(가) {n}의 노력을 먹고 자랐어요 — {g}오늘이 그 역사적인 날',
+  '✨ {n}, 네 이야기의 새 챕터가 열렸어! {m}이(가) {g}진화했어 🎉',
+  '⚡ 시냅스 폭발! {g}{m}이(가) 새 모습으로 — {n}의 꾸준함이 증명된 날',
+  '🌟 {m} 진화 완료! {n}의 여정에 별이 하나 더 — 누적 {t}P',
+  '🔥 오늘의 주인공 {n} — {g}{m}이(가) 다음 단계로 진화했어요!'];
+
+// 공통 API 헬퍼 — callClaudeFeedback_와 동일 규약(구조화 출력·오류 분류). 실패는 throw — 호출부가 폴백 결정
+function aiCall_(apiKey, system, user, schema, maxTok) {
+  const body = {
+    model: AI_FEEDBACK_MODEL, max_tokens: maxTok || 4096, system: system,
+    messages: [{ role: 'user', content: user }],
+    output_config: { format: { type: 'json_schema', schema: schema } }
+  };
+  const res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+    method: 'post', contentType: 'application/json',
+    headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+    payload: JSON.stringify(body), muteHttpExceptions: true
+  });
+  if (res.getResponseCode() !== 200) throw new Error('Claude API ' + res.getResponseCode() + ': ' + res.getContentText().slice(0, 160));
+  const j = JSON.parse(res.getContentText());
+  if (j.stop_reason === 'refusal' || j.stop_reason === 'max_tokens') throw new Error('응답 불가(' + j.stop_reason + ')');
+  const tb = (j.content || []).filter(b => b.type === 'text')[0];
+  if (!tb || !tb.text) throw new Error('text 블록 없음');
+  return JSON.parse(tb.text);
+}
+// 자유 텍스트 헬퍼 — 키 없음·실패 전부 null(호출부는 null이면 조용히 생략)
+function aiText_(prompt, maxTok) {
+  try {
+    const key = PropertiesService.getScriptProperties().getProperty('CLAUDE_API_KEY');
+    if (!key) return null;
+    const res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+      method: 'post', contentType: 'application/json',
+      headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+      payload: JSON.stringify({ model: AI_FEEDBACK_MODEL, max_tokens: maxTok || 1024, messages: [{ role: 'user', content: prompt }] }),
+      muteHttpExceptions: true
+    });
+    if (res.getResponseCode() !== 200) return null;
+    const j = JSON.parse(res.getContentText());
+    const tb = (j.content || []).filter(b => b.type === 'text')[0];
+    return tb && tb.text ? String(tb.text).trim() : null;
+  } catch (e) { return null; }
+}
+
+// 학생 요약 로더 — AI 스튜디오 공용(이름·급수·반·이메일·목표·최애·재원일)
+function aiStudents_(ss) {
+  const pf = ss.getSheetByName('profiles');
+  const list = [];
+  if (!pf || pf.getLastRow() < 2) return list;
+  const w = Math.min(105, pf.getMaxColumns());
+  pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues().forEach(r => {
+    if (!r[0] || r[3] !== 'student' || String(r[0]).indexOf('DEMO-') === 0) return;
+    list.push({
+      id: String(r[0]).trim(), n: r[1] || r[0], cls: String(r[4] || ''),
+      created: r[14] || '', total: Number(r[15]) || 0, stage: String(r[18] || ''), stk: Number(r[20]) || 0,
+      pEmail: String(r[25] || '').trim(), vision: String(r[52] || '').trim(),
+      lv: w >= 67 ? (Number(r[66]) || 0) : 0, dream: w >= 80 ? String(r[79] || '').trim() : '',
+      fav: w >= 105 ? String(r[104] || '').trim() : ''
+    });
+  });
+  return list;
+}
+// 최근 약점 로더 — student_errors(14일·미해결) + 첨삭 '오늘의포인트' 최근 1건
+function aiWeakMap_(ss) {
+  const weak = {};
+  const se = ss.getSheetByName('student_errors');
+  const cut = Date.now() - 14 * 86400000;
+  if (se && se.getLastRow() >= 2) se.getRange(2, 1, se.getLastRow() - 1, 8).getValues().forEach(r => {
+    if (!r[1] || String(r[7] || '') === '해결') return;
+    const d = toDate_(r[0]) || (r[6] instanceof Date ? r[6] : null);
+    if (!d || d.getTime() < cut) return;
+    const k = String(r[1]).trim();
+    (weak[k] = weak[k] || []).push(String(r[4] || r[3] || '').slice(0, 30));
+  });
+  const fb = ss.getSheetByName('hw_feedback');
+  if (fb && fb.getLastRow() >= 2) fb.getRange(2, 1, fb.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (!r[1] || !String(r[5] || '')) return;
+    const k = String(r[1]).trim();
+    (weak[k] = weak[k] || [])._fb = String(r[5]).slice(0, 60); // 마지막 것이 최근(행 순서)
+  });
+  Object.keys(weak).forEach(k => { if (weak[k]._fb) { weak[k].push(weak[k]._fb); delete weak[k]._fb; } });
+  return weak;
+}
+
+// ── 야간 오케스트레이터: H1 한 문장 + A1/A2/A4 개인 퀴즈 + G 오류사전 + H5 반 브리핑 + E5 리텐션 멘트 ──
+function aiStudioBatch_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const props = PropertiesService.getScriptProperties();
+  const apiKey = props.getProperty('CLAUDE_API_KEY');
+  if (!apiKey) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const t0 = Date.now(), BUDGET_MS = 100000;
+  let calls = 0, made = 0, errs = [];
+  const can = () => calls < AI_STUDIO_MAX_CALLS && (Date.now() - t0) < BUDGET_MS;
+
+  const ad = ensureSheet(ss, 'ai_daily', ['student_id', '날짜', '한문장', '퀴즈문제', '퀴즈정답해설']);
+  { // 프룬 — 어제 이전 행 제거(시트 비대·다음날 오독 방지). 남길 것 = 오늘·어제
+    if (ad.getLastRow() >= 2) {
+      const keepD = {}; keepD[today] = 1;
+      keepD[Utilities.formatDate(new Date(Date.now() - 86400000), tz, 'yyyy-MM-dd')] = 1;
+      const rowsD = ad.getRange(2, 1, ad.getLastRow() - 1, 5).getValues().filter(r => keepD[String(r[1])]);
+      ad.getRange(2, 1, ad.getLastRow() - 1, 5).clearContent();
+      if (rowsD.length) ad.getRange(2, 1, rowsD.length, 5).setValues(rowsD);
+    }
+  }
+  const doneToday = {};
+  if (ad.getLastRow() >= 2) ad.getRange(2, 1, ad.getLastRow() - 1, 2).getValues().forEach(r => { if (String(r[1]) === today) doneToday[String(r[0]).trim()] = 1; });
+
+  // ① H1/A1/A2/A4 — 학생별 오늘의 한 문장 + 약점 퀴즈(관심사 반영), 배치 호출
+  try {
+    const stus = aiStudents_(ss).filter(s => !doneToday[s.id]);
+    const weak = aiWeakMap_(ss);
+    const schema = {
+      type: 'object', additionalProperties: false, required: ['items'],
+      properties: { items: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['i', 's', 'q', 'a'], properties: {
+        i: { type: 'integer', description: '입력 목록의 인덱스' },
+        s: { type: 'string', description: '오늘의 한 문장 — 그 학생의 약점·관심사를 반영한 짧은 한국어 응원+미니미션 1문장(60자 이내, 몽골어 병기 금지)' },
+        q: { type: 'string', description: '오늘의 퀴즈 문제 1개 — 약점 문법 기반 빈칸/선택 문제, 한국어(80자 이내)' },
+        a: { type: 'string', description: '정답 — 왜 그런지 해설 1문장(몽골어)을 덧붙인다. 형식: "정답: X — 해설(몽골어)"' } } } } }
+    };
+    for (let off = 0; off < stus.length && can(); off += AI_DAILY_BATCH_SIZE) {
+      const chunk = stus.slice(off, off + AI_DAILY_BATCH_SIZE);
+      const userMsg = chunk.map((s, i) => i + '. ' + s.n + ' | 급수 ' + (s.lv || '미정') +
+        ' | 약점: ' + ((weak[s.id] || []).slice(-2).join(' / ') || '기록 없음') +
+        (s.fav ? ' | 최애: ' + s.fav : '') + (s.dream ? ' | 목표: ' + s.dream.slice(0, 30) : '')).join('\n');
+      try {
+        calls++;
+        const out = aiCall_(apiKey,
+          'SYNK LAB(몽골 울란바토르, 뇌과학 기반 게임화 한국어 학원)의 개인화 튜터. 학생마다 오늘의 한 문장(응원+미니미션)과 약점 기반 퀴즈 1문제를 만든다. ' +
+          '약점이 있으면 반드시 그 문법을 쓰고, 최애(아이돌·게임)가 있으면 예문 소재로 자연스럽게 쓴다(사실 주장 금지 — 가상 서술만). 따뜻하되 과장 없는 반말 응원 톤.',
+          '학생 목록:\n' + userMsg, schema, 8096);
+        const rowsN = [];
+        (out.items || []).forEach(it => {
+          const s = chunk[it.i];
+          if (!s || !it.s || !it.q) return;
+          rowsN.push([s.id, today, String(it.s).slice(0, 90), String(it.q).slice(0, 140), String(it.a || '').slice(0, 180)]);
+        });
+        if (rowsN.length) { ad.getRange(ad.getLastRow() + 1, 1, rowsN.length, 5).setValues(rowsN); made += rowsN.length; }
+        Utilities.sleep(300);
+      } catch (e1) { errs.push('한문장 배치: ' + String(e1.message || e1).slice(0, 80)); break; }
+    }
+  } catch (e) { errs.push('한문장 준비: ' + String(e.message || e).slice(0, 80)); }
+
+  // ② G 오류사전 — 첨삭 신규분에서 몽골어 화자 오류 패턴 축적(학생 식별 정보 저장 안 함 — 비식별 원칙)
+  try {
+    const fb = ss.getSheetByName('hw_feedback');
+    if (fb && fb.getLastRow() >= 2 && can()) {
+      const from = Number(props.getProperty('오류뱅크_포인터')) || 1;
+      const last = fb.getLastRow();
+      if (from < last) {
+        const rowsF = fb.getRange(from + 1, 1, Math.min(last - from, 40), 6).getValues()
+          .map(r => ({ sub: String(r[3] || '').slice(0, 120), fix: String(r[4] || '').slice(0, 120), pt: String(r[5] || '').slice(0, 80) }))
+          .filter(x => x.sub && x.fix);
+        const takeN = Math.min(last - from, 40);
+        if (rowsF.length) {
+          const ebSchema = { type: 'object', additionalProperties: false, required: ['items'], properties: { items: { type: 'array', items: {
+            type: 'object', additionalProperties: false, required: ['type', 'pattern'], properties: {
+              type: { type: 'string', description: '오류 유형(조사/어순/시제/어휘/철자/높임 등 짧은 분류)' },
+              pattern: { type: 'string', description: '몽골어 화자 특유 패턴 일반화 1문장 — 학생 이름·개인정보 금지' } } } } } };
+          calls++;
+          const out = aiCall_(apiKey,
+            '몽골어 화자의 한국어 오류를 분류·일반화하는 언어학 조수. 개별 문장에서 개인 정보를 제거하고 오류 유형과 패턴만 추출한다.',
+            '오류 사례(제출→교정):\n' + rowsF.map(x => x.sub + ' → ' + x.fix + (x.pt ? ' (' + x.pt + ')' : '')).join('\n'), ebSchema, 4096);
+          const eb = ensureSheet(ss, 'error_bank', ['월', '오류유형', '패턴', 'created_at']);
+          const ym = today.slice(0, 7);
+          const rowsE = (out.items || []).slice(0, 20).map(it => [ym, String(it.type || '').slice(0, 20), String(it.pattern || '').slice(0, 160), today]);
+          if (rowsE.length) eb.getRange(eb.getLastRow() + 1, 1, rowsE.length, 4).setValues(rowsE);
+        }
+        props.setProperty('오류뱅크_포인터', String(from + takeN)); // 성공 시에만 전진(실패는 throw로 위 catch)
+      }
+    }
+  } catch (e) { errs.push('오류사전: ' + String(e.message || e).slice(0, 80)); }
+
+  // ③ H5 반 브리핑 한 줄 — 반별 약점·주간 흐름을 강사용 1문장으로(있으면 calcAll이 브리핑⑨ 최상단에 병합)
+  try {
+    const cs = ss.getSheetByName('class_stats');
+    if (cs && cs.getLastRow() >= 2 && can()) {
+      const weak = aiWeakMap_(ss);
+      const stus = aiStudents_(ss);
+      const wkByCls = {};
+      stus.forEach(s => { (weak[s.id] || []).slice(-1).forEach(w => (wkByCls[s.cls] = wkByCls[s.cls] || []).push(w)); });
+      const clsRows = cs.getRange(2, 1, cs.getLastRow() - 1, 8).getValues().filter(r => r[0] && Number(r[1]) > 0);
+      if (clsRows.length) {
+        const bSchema = { type: 'object', additionalProperties: false, required: ['items'], properties: { items: { type: 'array', items: {
+          type: 'object', additionalProperties: false, required: ['c', 'line'], properties: {
+            c: { type: 'string' }, line: { type: 'string', description: '그 반 강사에게 주는 오늘의 포인트 1문장(한국어, 100자 이내, 구체적으로)' } } } } } };
+        calls++;
+        const out = aiCall_(apiKey, 'SYNK LAB 강사 브리핑 조수. 반별 데이터로 오늘 수업에서 챙길 포인트 1문장씩.',
+          clsRows.map(r => r[0] + ' | 인원 ' + r[1] + ' | 주간평균 ' + r[7] + 'P | 최근 약점: ' + ((wkByCls[r[0]] || []).slice(0, 3).join(', ') || '없음')).join('\n'),
+          bSchema, 4096);
+        const map = {};
+        (out.items || []).forEach(it => { if (it.c && it.line) map[String(it.c)] = String(it.line).slice(0, 140); });
+        setState(ensureSheet(ss, 'app_state', ['key', 'value']), '반브리핑AI', JSON.stringify(map));
+      }
+    }
+  } catch (e) { errs.push('반브리핑: ' + String(e.message || e).slice(0, 80)); }
+
+  // ④ E5 리텐션 개입 멘트 — 감지(규칙·calcAll)가 남긴 목록에 문구만 생성
+  try {
+    const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+    let list = [];
+    try { list = JSON.parse(String(getState(st, '리텐션목록').val || '[]')) || []; } catch (eL) { list = []; }
+    if (!list.length) setState(st, '리텐션멘트', '{}');
+    else if (can()) {
+      const rSchema = { type: 'object', additionalProperties: false, required: ['items'], properties: { items: { type: 'array', items: {
+        type: 'object', additionalProperties: false, required: ['n', 'line'], properties: {
+          n: { type: 'string' }, line: { type: 'string', description: '원장·강사가 그 학생(또는 학부모)에게 건넬 개입 멘트 1문장(한국어, 80자 이내, 다그침 금지·구체적 다리 놓기)' } } } } } };
+      calls++;
+      const out = aiCall_(apiKey, 'SYNK LAB 리텐션 조수. 관심이 필요한 학생별로 부담 없는 개입 멘트 1문장씩. 원인(사유)에 맞춰서.',
+        list.map(x => x.n + ' (' + x.c + ') — ' + x.w).join('\n'), rSchema, 3072);
+      const map = {};
+      (out.items || []).forEach(it => { if (it.n && it.line) map[String(it.n)] = String(it.line).slice(0, 120); });
+      setState(st, '리텐션멘트', JSON.stringify(map));
+    }
+  } catch (e) { errs.push('리텐션멘트: ' + String(e.message || e).slice(0, 80)); }
+
+  if (made || errs.length) adminMail('[SYNK] 🎛️ AI 스튜디오 야간 — 한문장·퀴즈 ' + made + '건' + (errs.length ? ' · 오류 ' + errs.length : ''),
+    '호출 ' + calls + '회 (상한 ' + AI_STUDIO_MAX_CALLS + ')\n' + (errs.length ? '오류:\n' + errs.join('\n') + '\n(실패 항목은 내일 밤 자동 재시도)' : '정상'));
+}
+
+// ── F4 웰컴 스토리(아침) — 신규 등록 감지분 중 학부모 이메일이 채워진 학생에게 세계관 입장 편지 ──
+function welcomeStoryBatch_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const props = PropertiesService.getScriptProperties();
+  let queue = [];
+  try { queue = JSON.parse(props.getProperty('웰컴대기') || '[]') || []; } catch (e) { queue = []; }
+  if (!queue.length) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const byId = {};
+  aiStudents_(ss).forEach(s => { byId[s.id] = s; });
+  const apiKey = props.getProperty('CLAUDE_API_KEY');
+  const ledger = ensureSheet(ss, 'ai_ledger', ['유형', 'student_id', '키', '값', 'created_at']);
+  const remain = [], today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  let sent = 0;
+  queue.forEach(id => {
+    const s = byId[id];
+    if (!s) return; // 프로필에서 사라짐(퇴소·오입력) — 큐에서 제거
+    const ageD = s.created ? Math.floor((Date.now() - new Date(s.created).getTime()) / 86400000) : 0;
+    if (ageD > 45) return; // 45일 지난 웰컴은 의미 없음 — 조용히 폐기
+    if (!s.pEmail) { remain.push(id); return; } // 이메일 대기(§1-3 입력 전)
+    if (!quotaOk(1)) { remain.push(id); return; }
+    let story = null;
+    if (apiKey) story = aiText_('SYNK LAB(몽골 울란바토르, 뇌과학 기반 게임화 한국어 학원)의 웰컴 스토리 작가. 신규 학생 "' + s.n + '"' +
+      (s.dream ? '(목표: ' + s.dream.slice(0, 40) + ')' : '') + (s.vision ? '(비전 메모: ' + s.vision.slice(0, 40) + ')' : '') +
+      '의 세계관 입장 스토리를 5~7문장 한국어로. 시냅스 크루로 임명되는 서사, 몬스터 파트너와의 첫 만남 예고, 따뜻하고 과장 없는 톤. 인사말·서명 없이 본문만.', 1024);
+    if (!story) story = s.n + ' 크루의 시냅스 여정이 시작됩니다. 첫 출석의 순간, 파트너 몬스터가 깨어나고 매일의 기록이 이야기가 됩니다. ' +
+      'SYNK LAB의 모든 스토리는 실제 기록으로 만들어집니다 — 이제 주인공은 ' + s.n + ' 입니다.';
+    MailApp.sendEmail(s.pEmail, '[SYNK] 🌟 ' + s.n + ' 크루 임명장',
+      s.n + ' 크루의 입학을 환영합니다!\n\n' + story + '\n\n— SYNK LAB 드림\n(앱에서 ' + s.n + '의 여정 카드가 오늘부터 자랍니다)');
+    ledger.appendRow(['웰컴', id, today, '', today]);
+    sent++;
+  });
+  props.setProperty('웰컴대기', JSON.stringify(remain));
+  if (sent) adminMail('[SYNK] 🌟 웰컴 스토리 ' + sent + '건 발송', '신규 크루 웰컴 편지가 학부모 메일로 나갔습니다. (대기 잔여 ' + remain.length + '건 — 이메일 입력되면 다음 아침 발송)');
+}
+
+// ── B3 이달의 AI 유니크 칭호(월간) — 전월 활동 패턴 → 학생별 긍정 전용 칭호 1개, 여정 카드 노출 ──
+function aiMonthlyTitles_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const props = PropertiesService.getScriptProperties();
+  const apiKey = props.getProperty('CLAUDE_API_KEY');
+  if (!apiKey) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const ym = Utilities.formatDate(new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1), tz, 'yyyy-MM');
+  const ledger = ensureSheet(ss, 'ai_ledger', ['유형', 'student_id', '키', '값', 'created_at']);
+  if (ledger.getLastRow() >= 2 && ledger.getRange(2, 1, ledger.getLastRow() - 1, 3).getValues()
+    .some(r => String(r[0]) === '칭호' && String(r[2]) === ym)) return; // 월키 멱등
+  const pl = ss.getSheetByName('point_logs');
+  const act = {};
+  if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (!r[1] || !r[5] || dstr(r[5], tz).indexOf(ym) !== 0) return;
+    const pts = Number(r[2]) || 0;
+    if (pts <= 0) return;
+    const a = act[String(r[1]).trim()] = act[String(r[1]).trim()] || { p: 0, rs: {} };
+    a.p += pts;
+    const rs = String(r[3] || '');
+    if (rs) a.rs[rs] = (a.rs[rs] || 0) + 1;
+  });
+  const stus = aiStudents_(ss).filter(s => act[s.id] && act[s.id].p > 0);
+  if (!stus.length) return;
+  const tSchema = { type: 'object', additionalProperties: false, required: ['items'], properties: { items: { type: 'array', items: {
+    type: 'object', additionalProperties: false, required: ['i', 't'], properties: {
+      i: { type: 'integer' }, t: { type: 'string', description: '유니크 칭호(한국어 6~12자) — 긍정 전용, 그 학생만의 패턴 반영. 지각·결석 등 부정 소재 절대 금지' } } } } } };
+  const rows = [], today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  for (let off = 0; off < stus.length && off < 90; off += 30) {
+    const chunk = stus.slice(off, off + 30);
+    try {
+      const out = aiCall_(apiKey, 'SYNK LAB(게임화 한국어 학원)의 칭호 작명가. 전월 활동 패턴으로 학생마다 겹치지 않는 긍정 칭호 1개씩("새벽의 문법사냥꾼" 같은 톤).',
+        chunk.map((s, i) => {
+          const a = act[s.id];
+          const top = Object.keys(a.rs).sort((x, y) => a.rs[y] - a.rs[x]).slice(0, 2).join('·');
+          return i + '. ' + s.n + ' | 월 ' + a.p + 'P | 주활동: ' + (top || '출석') + ' | 몬스터: ' + (s.stage || '-');
+        }).join('\n'), tSchema, 4096);
+      (out.items || []).forEach(it => {
+        const s = chunk[it.i];
+        if (s && it.t) rows.push(['칭호', s.id, ym, String(it.t).slice(0, 16), today]);
+      });
+      Utilities.sleep(300);
+    } catch (e) { Logger.log('AI 칭호 배치 실패: ' + e); break; }
+  }
+  if (rows.length) {
+    ledger.getRange(ledger.getLastRow() + 1, 1, rows.length, 5).setValues(rows);
+    adminMail('[SYNK] 🎖️ 이달의 AI 칭호 ' + rows.length + '건', ym + ' 활동 기반 유니크 칭호가 여정 카드에 반영됩니다(다음 calcAll부터).');
+  }
+}
+
+// ── B5 미래의 나 편지(월간) — 재원 80~110일 & 목표 보유 & 학부모 이메일 → 입학 목표 대조 편지 ──
+function futureLetterBatch_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const props = PropertiesService.getScriptProperties();
+  const tz = ss.getSpreadsheetTimeZone();
+  const ym = Utilities.formatDate(new Date(), tz, 'yyyy-MM');
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const ledger = ensureSheet(ss, 'ai_ledger', ['유형', 'student_id', '키', '값', 'created_at']);
+  const sentIds = new Set();
+  if (ledger.getLastRow() >= 2) ledger.getRange(2, 1, ledger.getLastRow() - 1, 2).getValues().forEach(r => { if (String(r[0]) === '편지') sentIds.add(String(r[1])); });
+  const targets = aiStudents_(ss).filter(s => {
+    if (sentIds.has(s.id) || !s.pEmail) return false;
+    const goal = s.dream || s.vision;
+    if (!goal || !s.created) return false;
+    const d = Math.floor((Date.now() - new Date(s.created).getTime()) / 86400000);
+    return d >= 80 && d <= 110; // 재등록 결정 시점(3개월) 창
+  });
+  if (!targets.length) return;
+  const apiKey = props.getProperty('CLAUDE_API_KEY');
+  let sent = 0;
+  targets.slice(0, 20).forEach(s => {
+    if (!quotaOk(1)) return;
+    const goal = s.dream || s.vision;
+    let letter = null;
+    if (apiKey) letter = aiText_('SYNK LAB의 "미래의 나" 편지 작가. 3개월 전 입학하며 목표를 적은 학생에게, 그 목표를 인용하며 실제 데이터로 성장을 비추는 편지를 8~10문장 한국어로. ' +
+      '규칙: "달성/미달" 판정 금지 — "얼마나 왔는지"만. 다정하되 과장 금지. 인사·서명 없이 본문만.\n' +
+      '학생: ' + s.n + '\n입학 때 목표: "' + goal.slice(0, 60) + '"\n누적 포인트: ' + s.total + 'P\n몬스터 단계: ' + (s.stage || '진행 중') + '\n연속 출석: ' + s.stk + '일', 1536);
+    if (!letter) letter = '3개월 전, ' + s.n + '은(는) 이렇게 적었습니다 — "' + goal.slice(0, 60) + '"\n\n그날부터 지금까지 누적 ' + s.total + 'P, 몬스터는 ' +
+      (s.stage || '성장 중') + ' 단계까지 왔습니다. 목표를 향해 걸어온 거리는 기록이 증명합니다. 다음 3개월의 이야기가 더 기대되는 이유입니다.';
+    MailApp.sendEmail(s.pEmail, '[SYNK] 💌 ' + s.n + '에게 도착한 편지 — 3개월 전의 나로부터',
+      '(자녀와 함께 읽어주세요)\n\n' + letter + '\n\n— SYNK LAB · 3개월의 기록으로 쓴 편지');
+    ledger.appendRow(['편지', s.id, ym, '', today]);
+    sent++;
+  });
+  if (sent) adminMail('[SYNK] 💌 미래의 나 편지 ' + sent + '건 발송', '3개월차 크루의 입학 목표 대조 편지가 나갔습니다 — 재등록 상담과 묶기 좋은 시점입니다.');
+}
+
+// ── H4-라이트 학부모 하이라이트 3장면(월간) — 몽골어는 사전 작성 템플릿만(AI 창작 0 · 원어민 검수 대상) ──
+const HL_TPL = [ // [ko, mn] — {n}=이름 {x}=숫자 {t}=칭호. ⚠ 몽골어 문장은 원어민 검수 1회 권장(아이디어뱅크 선행 조건)
+  ['{n}이(가) 이번 달 「{t}」 칭호를 받았어요.', '{n} энэ сард "{t}" цол хүртлээ.'],
+  ['{n}의 몬스터가 새로운 단계로 진화했어요 — 꾸준함의 증거예요.', '{n}-ийн монстр шинэ шатанд хувьслаа — тууштай байдлын баталгаа.'],
+  ['이번 달 경험치 +{x}P를 모았어요.', 'Энэ сард +{x} оноо цуглууллаа.'],
+  ['연속 출석 {x}일 — 습관이 실력이 되는 중이에요.', 'Дараалан {x} өдөр ирлээ — зуршил чадвар болж байна.'],
+  ['이번 달도 교실에서 자기 자리를 지켰어요.', 'Энэ сард ч хичээлдээ тогтмол оролцлоо.']];
+function parentHighlightsMail_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const props = PropertiesService.getScriptProperties();
+  const tz = ss.getSpreadsheetTimeZone();
+  const ym = Utilities.formatDate(new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1), tz, 'yyyy-MM');
+  if (props.getProperty('하이라이트발송월') === ym) return; // 월키 멱등
+  const pl = ss.getSheetByName('point_logs');
+  const ptsM = {};
+  if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (!r[1] || !r[5] || dstr(r[5], tz).indexOf(ym) !== 0) return;
+    const p = Number(r[2]) || 0;
+    if (p > 0) ptsM[String(r[1]).trim()] = (ptsM[String(r[1]).trim()] || 0) + p;
+  });
+  const titleM = {};
+  const tl = ss.getSheetByName('titles');
+  if (tl && tl.getLastRow() >= 2) tl.getRange(2, 1, tl.getLastRow() - 1, 3).getValues().forEach(r => {
+    if (String(r[0]) === ym && r[1] && !titleM[String(r[1]).trim()]) titleM[String(r[1]).trim()] = String(r[2] || '');
+  });
+  const pf = ss.getSheetByName('profiles');
+  const evoM = {};
+  if (pf && pf.getLastRow() >= 2 && pf.getMaxColumns() >= 54) pf.getRange(2, 1, pf.getLastRow() - 1, 54).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student' && String(r[53] || '').indexOf(ym) === 0) evoM[String(r[0]).trim()] = 1;
+  });
+  let sent = 0;
+  aiStudents_(ss).forEach(s => {
+    if (!s.pEmail || !quotaOk(1)) return;
+    const scenes = [];
+    const fill = (ti, x, t) => scenes.push(HL_TPL[ti][0].replace('{n}', s.n).replace('{x}', x || '').replace('{t}', t || '') +
+      '\n' + HL_TPL[ti][1].replace('{n}', s.n).replace('{x}', x || '').replace('{t}', t || ''));
+    if (titleM[s.id]) fill(0, '', titleM[s.id]);
+    if (evoM[s.id]) fill(1);
+    if ((ptsM[s.id] || 0) >= 20) fill(2, String(ptsM[s.id]));
+    if (scenes.length < 3 && s.stk >= 7) fill(3, String(s.stk));
+    if (!scenes.length) return; // 데이터 없는 학생에게 지어내지 않는다 — 발송 생략
+    while (scenes.length > 3) scenes.pop();
+    MailApp.sendEmail(s.pEmail, '[SYNK] ✨ ' + s.n + ' — Энэ сарын гурван агшин (이달의 세 장면)',
+      'Энэ сард ' + s.n + '-д ийм агшин байлаа:\n(이번 달 ' + s.n + '에게 이런 순간이 있었어요)\n\n' +
+      scenes.map((sc, i) => (i + 1) + '. ' + sc).join('\n\n') + '\n\n— SYNK LAB');
+    sent++;
+  });
+  props.setProperty('하이라이트발송월', ym);
+  if (sent) adminMail('[SYNK] ✨ 학부모 하이라이트 ' + sent + '건 발송', ym + ' 실데이터 장면만 골라 발송(데이터 없는 학생은 생략 — 지어내지 않음).');
+}
+
+// ── F2 SNS 성장 스토리 초안(월간) — 익명 집계만 사용(동의 체계 구축 전 개인 식별 정보 미사용) ──
+function snsDrafts_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const apiKey = PropertiesService.getScriptProperties().getProperty('CLAUDE_API_KEY');
+  if (!apiKey) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const ym = Utilities.formatDate(new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1), tz, 'yyyy-MM');
+  const sd = ensureSheet(ss, '스토리초안', ['월', '제목', '초안', '상태', 'created_at']);
+  if (sd.getLastRow() >= 2 && sd.getRange(2, 1, sd.getLastRow() - 1, 1).getValues().some(r => String(r[0]) === ym)) return; // 월키 멱등
+  const pl = ss.getSheetByName('point_logs');
+  let totP = 0, evtN = 0;
+  if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (!r[5] || dstr(r[5], tz).indexOf(ym) !== 0) return;
+    const p = Number(r[2]) || 0;
+    if (p > 0) { totP += p; evtN++; }
+  });
+  if (!evtN) return; // 지난달 데이터 없음(개원 전) — 초안 생성 생략
+  const pf = ss.getSheetByName('profiles');
+  let evoN = 0, stuN = 0;
+  if (pf && pf.getLastRow() >= 2 && pf.getMaxColumns() >= 54) pf.getRange(2, 1, pf.getLastRow() - 1, 54).getValues().forEach(r => {
+    if (!r[0] || r[3] !== 'student') return;
+    stuN++;
+    if (String(r[53] || '').indexOf(ym) === 0) evoN++;
+  });
+  try {
+    const sSchema = { type: 'object', additionalProperties: false, required: ['items'], properties: { items: { type: 'array', items: {
+      type: 'object', additionalProperties: false, required: ['t', 'd'], properties: {
+        t: { type: 'string', description: '게시물 제목(한국어)' }, d: { type: 'string', description: 'FB 게시용 초안 6~9문장 — 한국어 본문 + 마지막에 몽골어 요약 2문장. 학생 실명·개인정보 금지(집계 숫자만)' } } } } } };
+    const out = aiCall_(apiKey, 'SYNK LAB(몽골 울란바토르 게임화 한국어 학원) FB 페이지의 콘텐츠 작가. 과장 광고 톤 금지, 기록·숫자 기반 담백한 자랑.',
+      ym + ' 집계: 크루 ' + stuN + '명 · 총 경험치 ' + totP + 'P · 기록 이벤트 ' + evtN + '건 · 몬스터 진화 ' + evoN + '회.\n이 집계로 서로 다른 각도의 게시물 초안 3개.', sSchema, 4096);
+    const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+    const rows = (out.items || []).slice(0, 3).map(it => [ym, String(it.t || '').slice(0, 60), String(it.d || ''), '검수대기', today]);
+    if (rows.length) {
+      sd.getRange(sd.getLastRow() + 1, 1, rows.length, 5).setValues(rows);
+      adminMail('[SYNK] 📣 SNS 초안 ' + rows.length + '건 생성', '스토리초안 시트에서 검수 후 발행하세요(발행은 항상 사람 — 자동 게시 없음).');
+    }
+  } catch (e) { Logger.log('SNS 초안 실패: ' + e); }
+}
+
+/* ── F1 AI 레벨 진단 — 무료 테스트 폼 → 채점 → 몽골어 진단 리포트 → leads 편입 ──
+ * createLevelTestForm(): 유호님이 에디터에서 1회 ▶ 실행(출석폼 패턴). 문항·정답키는 아래 상수 — 커리큘럼 정본 기준, 유호님 검수 환영. */
+const LEVEL_TEST_Q = [ // [문항, 보기4, 정답 인덱스(0~3)]
+  ['"안녕하세요"의 뜻은?', ['Баяртай', 'Сайн байна уу', 'Баярлалаа', 'Уучлаарай'], 1],
+  ['다음 중 "물"은?', ['ус', 'гал', 'салхи', 'шороо'], 0],
+  ['저는 학생___. 빈칸에 맞는 것은?', ['는', '이에요', '가', '를'], 1],
+  ['"감사합니다"는 언제 쓰나요?', ['사과할 때', '고마울 때', '헤어질 때', '만날 때'], 1],
+  ['숫자 "셋"은?', ['1', '2', '3', '4'], 2],
+  ['"밥을 ___" 맞는 것은?', ['마셔요', '먹어요', '입어요', '신어요'], 1],
+  ['어제 학교에 ___. 맞는 것은?', ['가요', '갈 거예요', '갔어요', '갑니다'], 2],
+  ['"책이 책상 ___ 있어요"', ['위에', '위를', '위가', '위는'], 0],
+  ['"바쁘___ 못 갔어요" — 이유를 나타내는 것은?', ['지만', '아서', '거나', '려고'], 1],
+  ['높임말이 맞는 문장은?', ['선생님이 밥을 먹어요', '선생님께서 진지를 드세요', '선생님이 잘 자요', '선생님은 집에 가'], 1],
+  ['"한국에 ___ 적이 있어요"(경험)', ['가는', '간', '갈', '가던'], 1],
+  ['"비가 오___ 우산을 가져가세요"', ['니까', '지만', '거나', '도록'], 0],
+  ['"동생은 키가 크___ 저는 작아요"(대조)', ['고', '지만', '아서', '니까'], 1],
+  ['"열심히 공부했___ 시험을 잘 봤어요"(결과)', ['지만', '더니', '거나', '려고'], 1],
+  ['"시간이 있___ 같이 영화 봐요"(조건)', ['어서', '으면', '지만', '고'], 1]];
+function createLevelTestForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const before = {};
+  ss.getSheets().forEach(sh => { before[sh.getName()] = 1; });
+  const form = FormApp.create('SYNK LAB — 무료 한국어 레벨 테스트 (Үнэгүй түвшин тогтоох тест)');
+  form.setDescription('15문항 · 5분 · 결과는 몽골어 AI 진단 리포트로 이메일에 도착합니다.\n15 асуулт · 5 минут · Танд монгол хэлээр оношилгооны тайлан имэйлээр очно.');
+  form.addTextItem().setTitle('이름 / Нэр').setRequired(true);
+  form.addTextItem().setTitle('연락처 / Утас').setRequired(true);
+  form.addTextItem().setTitle('이메일 / Имэйл (리포트 수신)').setRequired(true);
+  LEVEL_TEST_Q.forEach((q, i) => {
+    const item = form.addMultipleChoiceItem();
+    item.setTitle((i + 1) + '. ' + q[0]).setChoices(q[1].map(c => item.createChoice(c))).setRequired(true);
+  });
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  SpreadsheetApp.flush();
+  const fresh = ss.getSheets().filter(sh => !before[sh.getName()])[0];
+  if (fresh) fresh.setName('레벨테스트_응답');
+  setState(ensureSheet(ss, 'app_state', ['key', 'value']), '레벨테스트URL', form.getPublishedUrl());
+  Logger.log('레벨 테스트 폼 생성 완료 — 공유 URL: ' + form.getPublishedUrl());
+  return '레벨 테스트 준비 완료. FB·상담에 뿌릴 URL: ' + form.getPublishedUrl();
+}
+function sweepLevelTest_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const src = ss.getSheetByName('레벨테스트_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const from = Number(props.getProperty('레벨테스트_포인터')) || 1;
+  const last = src.getLastRow();
+  if (from >= last) { if (from > last) props.setProperty('레벨테스트_포인터', String(last)); return; }
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = src.getRange(from + 1, 1, last - from, 4 + LEVEL_TEST_Q.length).getValues();
+  const ld = ensureSheet(ss, 'leads', ['날짜', '이름', '연락처', '유입경로', '추천인', '체험참석', '등록', '등록권종', '등록일', '미등록사유', '메모', '캠페인']);
+  let done = 0;
+  const t0L = Date.now(); // [자체 예산] nightJobs 6분 하드킬 보호 — 초과분은 포인터가 남아 다음 밤 이어짐
+  for (let i = 0; i < rows.length && done < 10 && Date.now() - t0L < 60000; i++) {
+    const r = rows[i];
+    const nm = String(r[1] || '').trim(), phone = String(r[2] || '').trim(), email = String(r[3] || '').trim();
+    if (!nm) { props.setProperty('레벨테스트_포인터', String(from + i + 1)); continue; }
+    let score = 0;
+    LEVEL_TEST_Q.forEach((q, qi) => { if (String(r[4 + qi] || '') === q[1][q[2]]) score++; });
+    const lvl = score <= 4 ? { n: '입문', d: '한글·기초 표현부터 탄탄하게' } : score <= 7 ? { n: '초급 1', d: '기초 문장 만들기 단계' }
+      : score <= 10 ? { n: '초급 2', d: '일상 대화 확장 단계' } : score <= 12 ? { n: '중급 1', d: '이유·대조 등 연결 표현 단계' }
+      : { n: '중급 2+', d: '심화 문형·유창성 단계' };
+    let report = aiText_('몽골 학생의 한국어 레벨 테스트 결과로 몽골어 진단 리포트를 써라. 형식: 몽골어 8~10줄(인사→점수와 의미→강점 1개→보완할 것 1개→추천 반→마무리 응원). ' +
+      '마지막 줄에 한국어 1줄 요약. 과장 금지.\n이름: ' + nm + '\n점수: ' + score + '/15\n판정 레벨: ' + lvl.n + ' (' + lvl.d + ')', 1536);
+    if (!report) report = nm + ' — Таны оноо: ' + score + '/15\nТүвшин: ' + lvl.n + '\n' +
+      'SYNK LAB-д тохирох анги: ' + lvl.n + ' анги.\nДэлгэрэнгүй зөвлөгөөг зөвлөх багштай холбогдоорой!\n\n(한국어 요약) ' + nm + '님의 레벨은 ' + lvl.n + ' — ' + lvl.d + '.';
+    if (email && quotaOk(1)) MailApp.sendEmail(email, '[SYNK LAB] 📊 ' + nm + ' — Түвшин тогтоох тестийн үр дүн (레벨 진단 리포트)',
+      report + '\n\n—\nSYNK LAB · Улаанбаатар\n무료 상담·체험 신청은 이 메일에 회신하시면 됩니다. (Үнэгүй зөвлөгөө авахыг хүсвэл энэ имэйлд хариулаарай!)');
+    ld.appendRow([dstr(r[0] instanceof Date ? r[0] : new Date(), tz), nm, phone, '레벨테스트', '', '', '', '', '', '', '점수 ' + score + '/15 · ' + lvl.n + (email ? ' · ' + email : ''), '레벨테스트']);
+    props.setProperty('레벨테스트_포인터', String(from + i + 1));
+    done++;
+  }
+  if (done) adminMail('[SYNK] 📊 레벨 테스트 ' + done + '건 처리', '진단 리포트 발송 + leads 편입 완료. leads 시트에서 상담 연결하세요.');
 }
 
 function parentSweep() {
@@ -10430,6 +11046,7 @@ function morningJobs() {   // 매일 07시
   safeRun('birthdayCheck', birthdayCheck);
   safeRun('checkConsultDelay', checkConsultDelay);
   safeRun('parentWeeklyDigestRetry', parentWeeklyDigestRetry_); // [v9.34] 일요일 다이제스트 쿼터 유실분 평일 아침 재발송(보류 키 없으면 즉시 return)
+  safeRun('welcomeStoryBatch', welcomeStoryBatch_); // [v9.50·F4] 웰컴 스토리 — 대기열 중 학부모 이메일이 채워진 신규 학생에게 세계관 입장 편지(키 없으면 템플릿 폴백)
 }
 
 function nightJobs() {     // 매일 22시 — 수업 종료 후
@@ -10452,6 +11069,8 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   safeRun('checkUnknownReasonsNightly', checkUnknownReasonsNightly_); // [v9.28] 미인식 reason 발각 지연 7일→1일
   safeRun('translateContentsNightly', translateContents); // [v9.41·자동화] 빈 몽골어·영어 번역을 매일 밤 60행씩 자동 소진 — "translateContents 수동 반복 실행" 절차 제거(빈칸 없으면 API 호출 0)
   safeRun('aiFeedbackBatch', aiFeedbackBatch_); // [v9.49] 숙제폼 제출분 AI 첨삭 생성 — CLAUDE_API_KEY 없으면 0초 스킵
+  safeRun('aiStudioBatch', aiStudioBatch_); // [v9.50] AI 스튜디오 — 오늘의 한 문장·개인 퀴즈(H1/A1/A2/A4)·오류사전(G)·반 브리핑(H5)·리텐션 멘트(E5). 키 없으면 0초 스킵
+  safeRun('sweepLevelTest', sweepLevelTest_); // [v9.50·F1] 레벨 테스트 응답 채점→AI 진단 리포트 발송→leads 편입(폼 미생성이면 0초 스킵)
   safeRun('demoMonthEndGuard', function () { // [v9.44] 데모 모드가 월말(28일~)까지 살아 있으면 경고 — 다음 달 1일 실배치가 데모 재적으로 지난달을 정산하는 사고 예방
     const ssD = SpreadsheetApp.getActiveSpreadsheet();
     const stD = ssD.getSheetByName('app_state');
@@ -10517,6 +11136,10 @@ function weeklyJobs() {    // 매주 월 07시
       Logger.log('주간 통합 리포트 섹션 실패 [' + title + ']: ' + e);
     }
   });
+  try { // [v9.50·H7] 주간 지표 AI 해설 — 숫자 위 판단 층(계산은 코드가, AI는 해설만·실패해도 리포트는 그대로 발송)
+    const cmtH7 = aiText_('SYNK 학원(몽골 울란바토르, 게임화 한국어 학원)의 주간 운영 리포트다. 아래 본문 지표에서 ①핵심 신호 2가지 ②이상 징후(없으면 "없음") ③이번 주 원장이 할 행동 딱 1가지를 한국어 6줄 이내로 써라. 숫자를 새로 계산하지 말고 본문의 숫자만 인용한다.\n\n' + body.slice(0, 6000), 900);
+    if (cmtH7) body += '\n──────── 🤖 AI 해설 ────────\n' + cmtH7 + '\n';
+  } catch (eH7) { Logger.log('H7 해설 스킵: ' + eH7); }
   if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 주간 통합 리포트', body);
   else Logger.log('주간 통합 리포트: 쿼터 부족으로 미발송');
 
@@ -10532,6 +11155,10 @@ function monthlyJobs() {   // 매월 1일 05시 — 순서 고정이 핵심
   safeRun('buildMonthlyStorybook', buildMonthlyStorybook_); // [v9.4] ①.5 📖 싱크 스토리 — 칭호 확보 후·아카이브 전
   safeRun('buildMonthlyCards', buildMonthlyCards_);   // [v9.12] ①.6 🃏 이달의 카드
   safeRun('updateTravelMap', updateTravelMap_);       // [v9.12] ①.7 🗺️ 여행 지도 도장
+  safeRun('aiMonthlyTitles', aiMonthlyTitles_);       // [v9.50·B3] ①.71 이달의 AI 유니크 칭호 — 여정 카드 노출(키 없으면 스킵)
+  safeRun('futureLetter', futureLetterBatch_);        // [v9.50·B5] ①.72 미래의 나 편지 — 3개월차·목표(드림한줄/상담 비전) 보유자에게(키 없으면 템플릿)
+  safeRun('parentHighlights', parentHighlightsMail_); // [v9.50·H4] ①.73 학부모 하이라이트 3장면 — 몽골어 템플릿 조합(AI 창작 없음·원어민 검수 대상)
+  safeRun('snsDrafts', snsDrafts_);                   // [v9.50·F2] ①.74 SNS 성장 스토리 초안 — 익명 집계만 사용(동의 체계 전 개인정보 미사용)
   safeRun('buildExecReport', buildExecReport_);       // [v9.14] ①.8 📊 경영 리포트
   safeRun('kpiSnapshotPrevMonth', kpiSnapshotPrevMonth_); // [v9.26] ①.9 📈 전월 KPI 확정 스냅샷 (attendance 미아카이브라 순서 무관·아카이브 전 배치)
   safeRun('archiveMonthly', archiveMonthly);     // ② 그다음 아카이브
