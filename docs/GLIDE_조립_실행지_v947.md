@@ -163,7 +163,7 @@ Layout → **+ New tab** → 이름 `홈` → Source: **profiles** (스타일: D
 - [ ] **학생 상세 화면**에 버튼 3종:
   - `🌟 오늘의 MVP 왕관` → Add row → point_logs: student_id=**This item → user_id** · points=**10** · reason=**`오늘의 MVP`** · given_by=User's 이름 · created_at=현재
   - `⚡ 오늘의 시냅스 왕관` → 동일하되 reason=**`오늘의 시냅스`**
-  - **`💝 반짝 칭찬`** → **Form** → point_logs: 화면 필드는 **태그 Choice 1개만**(선택지 직접 입력: `발음↑`, `열정`, `친구도움`, `집중력` → 대상 열 **태그**) / 숨은 값: student_id=This item→user_id · points=**3** · reason=**`칭찬`**(정확히 두 글자) · given_by=User's 이름 · created_at=제출 시각
+  - **`💝 반짝 칭찬`(★v9.51 방식 확정 — 태그별 버튼 4개)**: 라이브 point_logs 8열은 Glide 🔒 Row ID라 태그 열이 없음 → 태그를 **reason 접미로 고정**한 Add row 버튼 4개(Button Block 하나에 묶기): 라벨 `🗣 발음↑` `🔥 열정` `🤝 친구도움` `🎯 집중력` — 각각 student_id=This item→user_id · points=**3** · reason=고정 텍스트 **`칭찬·발음↑`** / **`칭찬·열정`** / **`칭찬·친구도움`** / **`칭찬·집중력`**(가운뎃점 `·` 복사-붙여넣기!) · given_by=User profile→이름 · created_at=현재 시각. 학생당 하루 1회(태그 무관 합산 — 초과분 야간 자동 정정)이며, 태그는 일요일 학부모 다이제스트 '크루의 눈'에 한·몽 병기로 전달
   - (선택) `📚 숙제완료` → Add row: points=10 · reason=`숙제완료`
 - [ ] 반 상세에 **폼 버튼 3개**:
   - `🎬 수업 시작 — 출석 1탭` → **attendance_batch**: 날짜=**오늘(제출 시각)** · class_name=This item→class_name · 출석자목록=**Choice 멀티**(Source profiles·Filter 이 반 학생·display 이름·**value user_id**) · 입력자=User's 이름 (처리상태 넣지 않음)
@@ -203,7 +203,7 @@ Layout → **+ New tab** → 이름 `홈` → Source: **profiles** (스타일: D
 - [ ] 7-3. **최종 감사표** — 아래 전 항목이 어딘가에 배치돼 있어야 함(§10 매트릭스 압축):
   - 학생: 시냅스ON · 온보딩 · BX76 · 전당CM91/시즌CN92 · BY77 · BD56 · BF58 · BW75 · 숙제CG~CI · 퀴즈CJ/CK · CB80 · BE57/팁CL90 · 내기록4(BG59/BH60/BI61/BJ62) · 도감(CE83+Collection+상세카드+BC55+AO41) · 스토어(AQ43+찜AR44+교환+잔액게이트) · 소식(보스CO93·**여행지도CP94**·공지·전투·스토리북·카드·전당·리그역사) · 랭킹(Q17/R18/CA79·업적·칭호AC/AH/AI·AK37·AW49/AX50)
   - 학부모: 온보딩 · 자녀이름CQ95 · 축하배너CR96 · 주간리포트CS97 · **출석달력CT98** · 대화카드CU99 · 학업추세CV100 · report_cards · 결석폼 · 문의폼 · 공지MN
-  - 강사: class_stats 목록 · 5카드(브리핑에 🧩연습 포인트 자동) · 학생 리스트(AY) · 🌟/⚡왕관 · **💝칭찬(태그)** · 출석폼 · 마감폼(F=content_id!) · hw_batch · 보드 · 출퇴근
+  - 강사: class_stats 목록 · 5카드(브리핑에 🧩연습 포인트 자동) · 학생 리스트(AY) · 🌟/⚡왕관 · **💝칭찬 4버튼(reason=`칭찬·태그`)** · 출석폼 · 마감폼(F=content_id!) · hw_batch · 보드 · 출퇴근
   - 원장: 리텐션 · 케어사각 · **경영월보** · 보드 · 리그(A/B만) · raid/world · 특별칭호 · 공지폼 · 전당폼 · 크루폼 · teacher_stats · 문의함 · exit_log · (경영 4종)
 
 ---

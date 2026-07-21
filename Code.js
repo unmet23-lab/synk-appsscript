@@ -677,7 +677,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.49'; // [v9.37] 단일 버전 상수 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
+const SYNK_VERSION = 'v9.51'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50(AI 스튜디오) 배포 때 상수 미갱신 발견 — 여기서 정정 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -4088,7 +4088,7 @@ function parentWeeklyDigestCore_(holdRaw) {
   const tagW = {}; // [v9.0] 칭찬 태그 — pl 루프보다 앞에 선언
   const pl = ss.getSheetByName('point_logs');
   if (pl && pl.getLastRow() >= 2) {
-    pl.getRange(2, 1, pl.getLastRow() - 1, 8) /* [v9.0] H 태그 */.getValues().forEach(r => {
+    pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => { // [v9.51] 6열이면 충분 — 구 8열(H 태그) 읽기는 폐기(라이브 H열=🔒 Row ID라, 왕관 행의 Row ID 문자열이 '크루의 눈'에 태그로 새던 결함 차단)
       const sid = r[1], pts = Number(r[2]) || 0, rs = String(r[3] || ''), d = r[5];
       if (!sid || !d) return;
       const dd = asDate_(d);
@@ -4097,8 +4097,8 @@ function parentWeeklyDigestCore_(holdRaw) {
       if (isE && pts !== 0) ptsW[sid] = (ptsW[sid] || 0) + pts;
       if (rs.indexOf('MVP') > -1) mvpW[sid] = (mvpW[sid] || 0) + (pts > 0 ? 1 : (rs.indexOf('정정') > -1 ? -1 : 0)); // [v9.0] 건수 — 금액 독립
       else if (rs.indexOf('시냅스') > -1) synW[sid] = (synW[sid] || 0) + (pts > 0 ? 1 : (rs.indexOf('정정') > -1 ? -1 : 0));
-      if (pts > 0 && (rs.indexOf('MVP') > -1 || rs.indexOf('시냅스') > -1 || rs.indexOf('칭찬') > -1)) { // [v9.0] 칭찬 태그 · [v9.47·B4] 💝 개별 칭찬(+3P) 복원 — 태그가 '크루의 눈'에 다시 흐른다
-        const tg = String(r[7] || '').trim();
+      if (pts > 0 && rs.indexOf('칭찬·') === 0) { // [v9.51·B4] 💝 태그=사유 접미 — Glide 버튼은 reason='칭찬·발음↑' 등 4종 고정값으로 기록
+        const tg = rs.slice(3).trim();
         if (tg) (tagW[sid] = tagW[sid] || []).push(tg);
       }
     });
@@ -4237,10 +4237,11 @@ function dailyGuard() {
         return;
       }
     }
-    if (pts > 0 && DAILY_LIMIT[rs]) { // 사유 정확 일치만 (오탐 방지)
-      const key = sid + '|' + rs;
+    const rsBase = rs.split('·')[0]; // [v9.51·B4] 💝 칭찬 태그=사유 접미('칭찬·집중력') — 라이브 point_logs 8열이 🔒 Row ID라 태그 열 방식 폐기. 한도는 기본 사유로 판정
+    if (pts > 0 && DAILY_LIMIT[rsBase]) { // 기본 사유 정확 일치(오탐 방지 — '스토어·…' 등은 목록에 없어 무해)
+      const key = sid + '|' + rsBase;
       if (!bySR[key]) bySR[key] = [];
-      bySR[key].push({ sid: sid, pts: pts, t: dd.getTime(), rs: rs, by: String(r[4] || '') }); // [v9.28] by 추가
+      bySR[key].push({ sid: sid, pts: pts, t: dd.getTime(), rs: rsBase, by: String(r[4] || '') }); // [v9.28] by 추가
     }
   });
   const fixRows = [], teacherNotices = {}; // [v9.28] teacherNotices: 강사명 → 정정 라인들(본인 통보용)
@@ -10325,18 +10326,19 @@ function seedDemoData() {
   // ④ point_logs — 지난달(시상 재료)+이번달(랭킹·왕관·레이드 재료). id 'PLD' 접두(PL 채번과 무충돌)
   let seq = 0;
   const plRows = [];
-  const pushPl = (sid, pts, rs, by, d, tag) => { const dd = (d instanceof Date && d.getHours() === 0) ? new Date(d.getTime() + 15 * 3600000) : d; plRows.push(['PLD' + (++seq), sid, pts, rs, by, dd, Utilities.formatDate(dd, tz, 'yyyy-MM'), tag || '']); };
+  const pushPl = (sid, pts, rs, by, d) => { const dd = (d instanceof Date && d.getHours() === 0) ? new Date(d.getTime() + 15 * 3600000) : d; plRows.push(['PLD' + (++seq), sid, pts, rs, by, dd, Utilities.formatDate(dd, tz, 'yyyy-MM')]); }; // [v9.51] 7열만 기록 — 라이브 8열은 Glide 🔒 Row ID(충돌 지뢰). 태그는 사유 접미('칭찬·태그') 방식
   const T = '김재헌';
   // 지난달: 01 챔피언(왕관 몰림 — 편중 시연)·07 숙제왕
   for (let i = 0; i < 8; i++) pushPl('DEMO-01', 10, '숙제완료', T, day(28 + i * 0.9 | 0));
-  pushPl('DEMO-01', 10, '오늘의 MVP', T, day(30), '집중력'); pushPl('DEMO-01', 10, '오늘의 MVP', T, day(26), '열정');
-  pushPl('DEMO-01', 10, '오늘의 시냅스', T, day(33), '발음↑');
+  pushPl('DEMO-01', 10, '오늘의 MVP', T, day(30)); pushPl('DEMO-01', 10, '오늘의 MVP', T, day(26));
+  pushPl('DEMO-01', 10, '오늘의 시냅스', T, day(33));
   for (let i = 0; i < 9; i++) pushPl('DEMO-07', 10, '숙제완료', T, day(27 + (i * 0.8 | 0)));
-  pushPl('DEMO-02', 10, '숙제완료', T, day(29)); pushPl('DEMO-02', 10, '오늘의 시냅스', T, day(27), '친구도움');
+  pushPl('DEMO-02', 10, '숙제완료', T, day(29)); pushPl('DEMO-02', 10, '오늘의 시냅스', T, day(27));
   pushPl('DEMO-08', 10, '숙제완료', T, day(28)); // [검증 반영] DEMO-03 지난달 기록 0 — 정산·칭호 변수 원천 차단
   // 이번달: 진행 중 스토리 — 03 진화 임박(95P대), 04 무포인트(사각), 05 정지
   for (let i = 0; i < 6; i++) pushPl('DEMO-01', 10, '숙제완료', T, day(2 + i * 2));
-  pushPl('DEMO-01', 10, '오늘의 MVP', T, day(0), '집중력'); // 오늘 왕관 — 축하 배너·알림 시연
+  pushPl('DEMO-01', 10, '오늘의 MVP', T, day(0)); // 오늘 왕관 — 축하 배너·알림 시연
+  pushPl('DEMO-01', 3, '칭찬·집중력', T, day(1)); pushPl('DEMO-02', 3, '칭찬·친구도움', T, day(4)); // [v9.51] 💝 '크루의 눈' 시연 재료 — 태그=사유 접미
   for (let i = 0; i < 5; i++) pushPl('DEMO-02', 10, '숙제완료', T, day(3 + i * 3));
   for (let i = 0; i < 9; i++) pushPl('DEMO-03', 10, '숙제완료', T, day(1 + i * 2)); // [검증 반영] 6월 기록·출석·생일 전부 0인 설계라 90+5=95P '고정' → 진화까지 5P(임박 브리핑·한마디 확정 발화)
   pushPl('DEMO-03', 5, '리그승리', 'SYSTEM', day(7));
@@ -10346,7 +10348,7 @@ function seedDemoData() {
   for (let i = 0; i < 5; i++) pushPl('DEMO-08', 10, '숙제완료', T, day(2 + i * 3));
   pushPl('DEMO-08', -40, '스토어·싱크 스티커', '에르덴', day(4)); // 구매 이력(잔액 차감 시연)
   const pl = ss.getSheetByName('point_logs');
-  pl.getRange(pl.getLastRow() + 1, 1, plRows.length, 8).setValues(plRows);
+  pl.getRange(pl.getLastRow() + 1, 1, plRows.length, 7).setValues(plRows); // [v9.51] 7열 — 8열(🔒 Row ID) 침범 금지
   L.push('✓ point_logs: ' + plRows.length + '행(시상·왕관·구매·편중 시나리오)');
 
   // ⑤ mastery_log — 01 게이트 통과(G3 9/12)·03 게이트 대기 직전 세팅
