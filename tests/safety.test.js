@@ -322,10 +322,17 @@ test('[v9.50] 웰컴 대기열은 syncProfiles가 쌓고 아침 배치가 발송
   assert.ok(hl.includes('if (!scenes.length) return'), '데이터 없는 학생 발송 생략 가드 없음');
 });
 
-test('[v9.47] 칭찬(+3P)은 일일 한도에 있고 다이제스트 크루의 눈이 칭찬 태그를 수집한다', () => {
+test('[v9.47·v9.51] 칭찬(+3P)은 일일 한도에 있고 태그는 사유 접미로 흐른다(태그 열 폐기)', () => {
   assert.ok(code.includes("'칭찬': 1"));
   const dig = section('function parentWeeklyDigestCore_', 'function restoreDrill');
-  assert.ok(dig.includes("rs.indexOf('칭찬') > -1"));
+  assert.ok(dig.includes("rs.indexOf('칭찬·') === 0")); // 크루의 눈 태그 = reason 접미('칭찬·집중력')
+  assert.equal(dig.includes('/* [v9.0] H 태그 */'), false); // 구 8열(라이브=🔒 Row ID) 읽기가 되살아나면 Row ID가 태그로 샌다
+  const dg = section('function dailyGuard()', 'function notifyDailyAwards');
+  assert.ok(dg.includes("rs.split('·')[0]")); // 한도는 기본 사유('칭찬')로 판정 — 태그 4종이 각각 1회씩 뚫리지 않게
+  // 데모 시드가 8열(Row ID 자리)을 침범하지 않는다
+  const seed = section('function seedDemoData()', 'function seedConsultDemo');
+  assert.ok(seed.includes('plRows.length, 7'));
+  assert.ok(seed.includes("'칭찬·집중력'"));
 });
 
 test('[v9.47] 무거운 러너 3종은 시간 예산+자동 이어하기를 쓴다(6분 강제 종료 대책)', () => {
