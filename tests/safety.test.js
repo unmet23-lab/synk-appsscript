@@ -256,10 +256,70 @@ test('[v9.47] 영상팩 메일은 SEND_SCENE_PACK 게이트 뒤에서만 발송�
   const sb = section('function buildMonthlyStorybook_()', 'const WORLD_HP_PER');
   assert.ok(sb.includes('SEND_SCENE_PACK && quotaOk(1)'));
   assertOrder(sb, [
-    'sb.getRange(sb.getLastRow() + 1, 1, rows.length, 8).setValues(rows)', // 발간(시트)은 게이트 앞
+    "setValues([[ym, issue, title, 1, '전문', fullBody, uniqBadges, '']])", // [v9.50] 단일본 발간(시트)은 게이트 앞
     'SEND_SCENE_PACK && quotaOk(1)',
     'addNotice(ss,' // 발간 공지는 게이트 밖(항상)
   ]);
+});
+
+test('[v9.50] 스토리북은 단일본 1행으로 발간된다(챕터 분할 발간 제거)', () => {
+  const sb = section('function buildMonthlyStorybook_()', 'const WORLD_HP_PER');
+  assert.ok(!sb.includes('rows.length, 8).setValues(rows)'), '구 13행 분할 발간 코드가 남아 있음');
+  assert.ok(sb.includes('const fullBody = rows.map('), '전문 조립 코드 없음');
+});
+
+test('[v9.50] 일일 전투 리포트는 RAID_DAILY_STORY 게이트로 꺼져 있고 주간 결산은 유지된다', () => {
+  assert.ok(code.includes('const RAID_DAILY_STORY = false'));
+  const rs = section('function raidStoryDaily()', 'const pf');
+  assert.ok(rs.includes('if (!RAID_DAILY_STORY) return'));
+  const night = section('function nightJobs()', 'function dailyBackupJob()');
+  assert.ok(night.includes("safeRun('raidSettle', raidFriday)")); // 금·일 결산은 게이트 무관
+});
+
+test('[v9.50] AI 스튜디오는 키 없으면 스킵하고 야간 완주 마커 앞에서 실행된다', () => {
+  const night = section('function nightJobs()', 'function dailyBackupJob()');
+  assertOrder(night, [
+    "safeRun('aiFeedbackBatch', aiFeedbackBatch_)",
+    "safeRun('aiStudioBatch', aiStudioBatch_)",
+    "safeRun('sweepLevelTest', sweepLevelTest_)",
+    "PropertiesService.getScriptProperties().setProperty('야간배치완료일'"
+  ]);
+  const studio = section('function aiStudioBatch_()', 'function welcomeStoryBatch_()');
+  assert.ok(studio.includes("getProperty('CLAUDE_API_KEY')"));
+  assert.ok(studio.includes('if (!apiKey) return'));
+  assert.ok(studio.includes('AI_STUDIO_MAX_CALLS')); // 비용 상한 가드
+});
+
+test('[v9.50] 오늘의 한 문장은 운세 슬롯을 대체하되 폴백을 유지하고, 개인 퀴즈는 공유열을 오버라이드한다', () => {
+  assert.ok(code.includes("aiD6 && aiD6.s ? '💡 ' + aiD6.s : '🔮 ' + hashPick_(FORTUNES"), 'H1 폴백 구조 없음');
+  const shared = section('function writeSharedCols_', 'function syncProfiles()');
+  assert.ok(shared.includes('pq ? pq.q : q[0]'), 'A1 퀴즈 오버라이드 없음');
+  assert.ok(shared.includes('pq ? pq.a : q[1]'), 'A2 해설 오버라이드 없음');
+});
+
+test('[v9.50] 월간 배치에 AI 4종이 스토리북 뒤·경영 리포트 앞 순서로 편입됐다', () => {
+  const mj = section('function monthlyJobs()', 'function runExecReportNow');
+  assertOrder(mj, [
+    "safeRun('buildMonthlyStorybook', buildMonthlyStorybook_)",
+    "safeRun('aiMonthlyTitles', aiMonthlyTitles_)",
+    "safeRun('futureLetter', futureLetterBatch_)",
+    "safeRun('parentHighlights', parentHighlightsMail_)",
+    "safeRun('snsDrafts', snsDrafts_)",
+    "safeRun('buildExecReport', buildExecReport_)",
+    "safeRun('archiveMonthly', archiveMonthly)"
+  ]);
+});
+
+test('[v9.50] 웰컴 대기열은 syncProfiles가 쌓고 아침 배치가 발송하며, 편지·하이라이트는 월키 멱등이다', () => {
+  assert.ok(code.includes("pW.setProperty('웰컴대기'"), '웰컴 대기열 등록 없음(syncProfiles)');
+  assert.ok(code.indexOf("pW.setProperty('웰컴대기'") > code.indexOf('function syncProfiles()'), '웰컴 대기열 등록이 syncProfiles 밖에 있음');
+  const morning = section('function morningJobs()', 'function nightJobs()');
+  assert.ok(morning.includes("safeRun('welcomeStoryBatch', welcomeStoryBatch_)"));
+  const letter = section('function futureLetterBatch_()', 'const HL_TPL');
+  assert.ok(letter.includes("String(r[0]) === '편지'"), '편지 재발송 방지 원장 조회 없음');
+  const hl = section('function parentHighlightsMail_()', 'function snsDrafts_()');
+  assert.ok(hl.includes("getProperty('하이라이트발송월')"), '하이라이트 월키 멱등 없음');
+  assert.ok(hl.includes('if (!scenes.length) return'), '데이터 없는 학생 발송 생략 가드 없음');
 });
 
 test('[v9.47] 칭찬(+3P)은 일일 한도에 있고 다이제스트 크루의 눈이 칭찬 태그를 수집한다', () => {
