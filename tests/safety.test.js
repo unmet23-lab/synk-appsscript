@@ -435,3 +435,60 @@ test('[v9.47] 경영 보고는 단일화 — monthlyReport는 위임 shim이고 
   assert.ok(exec.includes('readPointLogs_(ss, 7)'));
   assert.ok(exec.includes("setAppState_(ss, '경영리포트HTML', html)")); // 콕핏 키 이름 불변(가이드 §9-1 정합)
 });
+
+// ───────────────────────── v9.54 최종 점검 팩 회귀 장치 ─────────────────────────
+
+test('[v9.54] setupStore는 전체 열 보존 경로(replaceContentType)로만 contents를 만진다', () => {
+  const body = section('function setupStore()', 'function healthCheck()');
+  assert.ok(body.includes("replaceContentType(ss, 'store'"), 'setupStore는 replaceContentType에 위임해야 한다');
+  // 구 6열 clear/압축 패턴이 되살아나면 몽골어(G)·영어(H)·Glide Row ID가 생존 행에서 오정렬된다
+  assert.equal(/clearContent\(\)/.test(body), false, 'setupStore 안에 직접 clearContent가 있으면 안 된다');
+  assert.equal(body.includes('getRange(2, 1, last - 1, 6)'), false, '6열 고정 접근 금지');
+});
+
+test('[v9.54] 학부모 하이라이트는 쿼터 소진 시 월 마커를 미루고 보류 명단으로 이어 보낸다', () => {
+  const body = section('function parentHighlightsMail_()', 'function snsDrafts_()');
+  assert.ok(body.includes('doneSids.has(s.id)'), '보류 명단(이미 발송) 학생은 재발송에서 제외돼야 한다');
+  assertOrder(body, [
+    'quotaShort = true',
+    "props.setProperty('하이라이트보류'",
+    "props.setProperty('하이라이트발송월', ym)"
+  ]);
+  // 마커 무조건 세팅(구 결함)이 되살아나면: 쿼터로 스킵된 학생들이 그 달 하이라이트를 영영 못 받는다
+  assert.ok(body.includes('if (quotaShort)'), '마커는 전원 처리 완료(quotaShort=false)일 때만 세팅');
+  const morning = section('function morningJobs()', 'function nightJobs()');
+  assert.ok(morning.includes("safeRun('parentHighlightsRetry', parentHighlightsMail_)"), '아침 배치 재시도 편입 누락');
+});
+
+test('[v9.54] 진화 배너 내레이터는 실제 단계명(mon.stage)을 쓴다 — 범위 밖 r[18] 금지', () => {
+  const idx = code.indexOf('NARRATE_EVO, id + todayYmd0');
+  assert.notEqual(idx, -1, '진화 배너 내레이터 호출부를 찾지 못함');
+  const seg = code.slice(idx, idx + 400);
+  assert.ok(seg.includes('mon.stage'), '{m} 슬롯은 mon.stage여야 한다');
+  // pfData는 15열(인덱스 0~14)만 읽는다 — r[18]은 상시 undefined라 항상 "몬스터"로 나오던 v9.50·B1 결함
+  assert.equal(seg.includes('r[18]'), false);
+});
+
+test('[v9.54] aiText_는 사고 OFF로 짧은 예산 전액을 본문에 쓴다(폴백률 급증 방지)', () => {
+  const body = section('function aiText_(', 'function aiStudents_(');
+  assert.ok(body.includes("thinking: { type: 'disabled' }"),
+    'Sonnet 5는 thinking 생략 시 적응형 사고가 기본 ON — 사고 토큰이 900~1536 예산을 잠식한다');
+});
+
+test('[v9.54] 상담 임포트·정리의 600행 창은 시트 물리 행수로 클램프된다', () => {
+  const imp = section('function importFormResponses()', 'function setupStore()');
+  assert.ok(imp.includes('consult.getMaxRows()'), '고정 600행 읽기는 행<602 시트에서 10분마다 크래시');
+  const cln = section('function cleanupFormTest()', 'function setupTables()');
+  assert.ok(cln.includes('consult.getMaxRows()'));
+});
+
+test('[v9.54] AI 스튜디오는 학생·약점 로더를 1회만 read한다(①·③ 중복 제거)', () => {
+  const body = section('function aiStudioBatch_()', 'function welcomeStoryBatch_(');
+  assert.equal((body.match(/aiStudents_\(ss\)/g) || []).length, 1, 'aiStudents_ 전량 read는 메모이즈 안에서 1회만');
+  assert.equal((body.match(/aiWeakMap_\(ss\)/g) || []).length, 1, 'aiWeakMap_ 전량 read는 메모이즈 안에서 1회만');
+});
+
+test('[v9.54] 미등원 판정은 attendance 부재 시 열리지 않는다(전원 미등원 오경보 방지)', () => {
+  const body = section('function checkNoShow()', 'function checkEvolution');
+  assertOrder(body, ["ss.getSheetByName('attendance')", 'if (!at) return;', 'at.getLastRow()']);
+});
