@@ -501,6 +501,18 @@ test('[v9.60] 레벨테스트 폼 생성은 재실행 안전 — 이미 있으�
   assert.ok(body.includes('shX.getFormUrl()'), 'URL 기록이 없을 때 시트에 연결된 폼에서 회수해야 재생성을 피한다');
 });
 
+test('[v9.62] 출석·숙제 폼 생성도 재실행 안전 — 가드가 FormApp.create보다 앞에 있다', () => {
+  // 2026-07-24: 레벨테스트 폼(v9.60)과 같은 계급. linkFormTab_이 이름 충돌은 피해주지만,
+  // 재실행마다 중복 폼 + 유령 응답 시트가 쌓이고 URL 틀이 새 폼으로 갈아끼워져 배포된 링크가 죽는다.
+  const att = section('function createAttendanceForm()', 'function createHwForm()');
+  assertOrder(att, ['formAlreadyMade_(ss,', 'if (doneA) return doneA;', 'FormApp.create(']);
+  const hw = section('function createHwForm()', 'function importFormResponses()');
+  assertOrder(hw, ['formAlreadyMade_(ss,', 'if (doneH) return doneH;', 'FormApp.create(']);
+  const guard = section('function formAlreadyMade_(', 'function createAttendanceForm()');
+  assert.ok(guard.includes('sh.getFormUrl()'), '응답 시트만 남은 경우 연결 폼에서 URL 틀을 복구해야 한다');
+  assert.ok(guard.includes("if (!tpl) return '';"), '복구 실패 시에는 정상 생성 경로로 빠져야 한다');
+});
+
 test('[v9.60] 잔재 청소는 자동생성 이름 + 빈 시트만 지운다(데이터 보호)', () => {
   const body = section('function cleanupOrphanFormSheets()', 'function sweepLevelTest_()');
   assert.ok(body.includes('설문지 응답 시트'), '자동 생성 이름만 대상');
