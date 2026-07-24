@@ -544,3 +544,52 @@ test('[v9.55] 약점 메모 스위프는 수업 전 메일보다 먼저 돈다(�
   const body = section('function parentSweep()', 'function translateTopics_(');
   assertOrder(body, ["safeRun('sweepTeacherMemoForm'", "safeRun('classPrepMail'"]);
 });
+
+// ───────────────────────── v9.56 트렌드 팩 회귀 장치 ─────────────────────────
+
+test('[v9.56] 월 테마는 「이달의 무대」 — 구 "월 시즌" 표기가 학생 화면에 되살아나지 않는다', () => {
+  assert.ok(code.includes("'월의 무대 · '"), '이달의시즌 배너 값은 「N월의 무대 · 이름」 형식');
+  assert.equal(code.includes("'월 시즌 · '"), false, '구 표기 부활 금지 — "시즌"은 커리큘럼 8주 트랙 전용(유호 07-24)');
+  assert.ok(code.includes('+ season + "\' 무대"'), '리그 결과 공지도 무대 표기');
+});
+
+test('[v9.56] 시즌 패스 트랙 — 입력 셀 정본·형식 검증·미설정 시 통째 생략', () => {
+  const calc = section('function calcAll()', 'function writeSharedCols_');
+  assert.ok(calc.includes("'시즌트랙입력'"), 'app_state 입력 셀이 정본');
+  assert.ok(calc.includes('/^\\d{4}-\\d{2}-\\d{2}$/'), '시작일 형식 검증 없이 파싱하면 깨진 날짜로 주차가 NaN');
+  assert.ok(calc.includes('seasonT: seasonCfg ?'), '여정 카드 주입은 설정 있을 때만(null이면 카드에서 생략)');
+  const journey = section('function myJourneyHtml_(', 'function calcAll()');
+  assert.ok(journey.includes("let seasonB = '', wrapB = '';"), '미설정 폴백(빈 문자열) 고정');
+  assert.ok(journey.includes('🎫 시즌'), '트랙 블록 렌더');
+  assert.ok(journey.includes('나의 기록'), '8주차 랩업(공유 카드) 렌더');
+});
+
+test('[v9.56] 추천 현황 — leads 추천인 집계가 여정 카드 한 줄로 흐른다(0명이면 비표시)', () => {
+  const calc = section('function calcAll()', 'function writeSharedCols_');
+  assert.ok(calc.includes('refCntByName'), 'leads 추천인(E열) 집계');
+  const journey = section('function myJourneyHtml_(', 'function calcAll()');
+  assert.ok(journey.includes("(o.refN || 0) > 0 ?"), '0명일 땐 줄 자체가 생략돼야 한다');
+});
+
+test('[v9.56] 교실 스크린 — 10분 보드에 편승하되 실패 격리·분 단위 시계 금지(업데이트 예산 보호)', () => {
+  const body = section('function todayBoard_(', 'function expandHwBatch()');
+  assert.ok(body.includes("setAppState_(ss, '교실스크린HTML'"), '스크린 HTML은 app_state 한 키');
+  assert.ok(body.includes('catch (eScr)'), '스크린 실패가 출결 보드를 깨면 안 된다');
+  const scrSeg = body.slice(body.indexOf('교실 스크린 모드'));
+  assert.equal(/formatDate\(now,\s*tz,\s*'HH:mm'\)/.test(scrSeg), false,
+    '분 단위 시계를 넣으면 내용이 매 스위프 바뀌어 야간·주말에도 sync가 깨어난다');
+});
+
+test('[v9.56] 이달의 카드 인쇄 — 최신 발간월만 모아 Drive 저장·PDF 실패 시 HTML 폴백 안내', () => {
+  const body = section('function printMonthlyCards()', '// [v9.12] 🗺️ 시냅스 여행 지도');
+  assert.ok(body.includes("getSheetByName('synk_cards')"));
+  assert.ok(body.includes("'SYNK_인쇄'"), '고정 폴더 — 파일이 드라이브 루트에 흩어지지 않게');
+  assert.ok(body.includes("getAs('application/pdf')"));
+  assert.ok(body.includes('Ctrl+P'), 'PDF 변환 실패 폴백 안내(비개발자 절차)');
+});
+
+test('[v9.56] 첨삭 통보 메일에 검수 바로가기(#gid)가 붙는다 — 검수함 조립 전 다리', () => {
+  const body = section('function aiFeedbackBatch_(', 'function callClaudeFeedback_');
+  assert.ok(body.includes("'#gid=' + (ss.getSheetByName('hw_feedback')"));
+  assert.ok(body.includes('!AI_FEEDBACK_AUTOPUBLISH ?'), '자동공개로 전환하면 링크 줄은 자동 소멸');
+});
