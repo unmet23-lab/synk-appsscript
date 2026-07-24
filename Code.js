@@ -672,12 +672,20 @@
  *      (method='출석(폼)'). 앱 출석의 월 ~600 update 소비를 0으로. 알림·보드·미등원·달력은 채널 무관 동일.
  * 188. 공유열 +3(CX102~CZ104): 출석폼URL·숙제폼URL(학생별 미리채움 링크 — SIDTOKEN 치환)·새첨삭수(미확인 배지).
  *      실행지 = docs/AI첨삭_폼출석_실행지_v949.md.
+ *
+ * [v9.55 — 🧩 강사 약점 메모 폼 (2026-07-24 유호 채택)]
+ * 189. createTeacherMemoForm(▶1회) — 강사·반 드롭다운(profiles 실측)+학생 이름·유형·메모 → '약점메모폼_응답'.
+ *      sweepTeacherMemoForm_(parentSweep 10분·수업 전 메일 앞)가 이름+반→student_id 매칭
+ *      (matchStudentsByNameClass_ 순수 함수) 후 student_errors로 전개 — 읽기 3곳(반 브리핑·수업 전 메일·
+ *      AI 약점 로더)은 v9.47·v9.50 기배선, 이번 건은 쓰기 레일. 매칭 실패 행은 sid 공란+상태='미매칭'
+ *      (소비처 전부 sid 공란 스킵 = 오염 0)+관리자 메일로 사람 복구. 폼 URL은 app_state+생성 메일.
+ *      부수: SYNK_VERSION 미갱신 재발(v9.50·v9.52~54) → 최고 버전 태그=상수 동치 테스트로 기계 강제.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.51'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50(AI 스튜디오) 배포 때 상수 미갱신 발견 — 여기서 정정 — 헤더·주석의 수동 버전 문자열 대신 이 값을 정본으로. buildSystemManifest가 system_manifest 시트에 출력
+const SYNK_VERSION = 'v9.55'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -5434,6 +5442,43 @@ function createHwForm() {
   Logger.log('편집용: ' + form.getEditUrl());
 }
 
+// [v9.55] 강사 약점 메모 폼 — student_errors의 입력 레일. 읽기(반 브리핑·수업 전 메일·AI 약점 로더)는
+//   v9.47·v9.50에 기배선인데 쓰기 경로가 시트 수기뿐이던 것을 폼 1분 입력으로. Glide update 0.
+//   ▶ 1회 실행(createLevelTestForm 패턴) — URL은 app_state '약점메모폼URL'+관리자 메일로 전달.
+function createTeacherMemoForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const before = ss.getSheets().map(s => s.getName());
+  const form = FormApp.create('SYNK 약점 메모 (강사용)')
+    .setDescription('수업 중 발견한 학생 약점을 30초로 남기면, 다음 계산부터 반 브리핑·수업 전 메일·AI 개인 퀴즈에 자동 반영됩니다.')
+    .setCollectEmail(false);
+  const pf = ss.getSheetByName('profiles');
+  const teachers = [], clsSet = {};
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (!r[0]) return;
+    if (r[3] === 'teacher' && r[1]) teachers.push(String(r[1]));
+    if (r[3] === 'student' && r[4]) clsSet[String(r[4])] = 1;
+  });
+  const classes = Object.keys(clsSet).sort();
+  if (teachers.length) form.addListItem().setTitle('강사').setRequired(true).setChoiceValues(teachers.concat(['기타']));
+  else form.addTextItem().setTitle('강사').setRequired(true); // 로스터에 강사 0명(재건 직후)이어도 폼은 성립
+  if (classes.length) form.addListItem().setTitle('반').setRequired(true).setChoiceValues(classes.concat(['기타']));
+  else form.addTextItem().setTitle('반').setRequired(true);
+  form.addTextItem().setTitle('학생 이름').setRequired(true).setHelpText('앱 프로필의 한글 이름 그대로 (동명이인이면 반을 정확히)');
+  form.addListItem().setTitle('유형').setRequired(true).setChoiceValues(['문법', '어휘', '발음', '쓰기', '듣기', '태도', '기타']);
+  form.addParagraphTextItem().setTitle('메모').setRequired(true).setHelpText('예: 은/는 vs 이/가 혼동 — 주어 자리에서 반복');
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  linkFormTab_(ss, before, '약점메모폼_응답');
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  setState(st, '약점메모폼ID', form.getId());
+  setState(st, '약점메모폼URL', form.getPublishedUrl());
+  adminMail('[SYNK] 🧩 약점 메모 폼 생성 완료',
+    '강사 단톡·즐겨찾기에 배포할 링크:\n' + form.getPublishedUrl() +
+    '\n\nGlide 수업 준비 탭의 버튼(Open Link)에도 이 URL을 넣으면 됩니다.\n편집용: ' + form.getEditUrl() +
+    '\n\n※ 반·강사 목록이 바뀌면 이 함수를 다시 실행하지 말고(폼이 새로 생깁니다) 폼 편집 화면에서 드롭다운만 고쳐주세요.');
+  Logger.log('✅ 약점 메모 폼 생성 완료: ' + form.getPublishedUrl());
+  Logger.log('편집용: ' + form.getEditUrl());
+}
+
 function importFormResponses() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
@@ -7636,6 +7681,59 @@ function sweepFeedbackAck_(ss) {
   });
 }
 
+// [v9.55] 이름+반 → student_id 매칭(순수 함수 — tests/safety.test.js가 직접 로드해 검증).
+//   반이 '기타'/공란이면 이름만으로. 반을 지정했는데 그 반에 없으면 이름 전체로 폴백(반 오기재 구제 —
+//   이름이 유일할 때만 확정되므로 안전). 호출부는 결과가 정확히 1명일 때만 매칭 확정.
+function matchStudentsByNameClass_(students, name, cls) {
+  const norm = s => String(s || '').replace(/\s+/g, ' ').trim();
+  const nName = norm(name);
+  if (!nName) return [];
+  const nCls = norm(cls);
+  const byName = students.filter(st => norm(st.n) === nName);
+  if (!nCls || nCls === '기타') return byName.map(st => st.sid);
+  const both = byName.filter(st => norm(st.c) === nCls);
+  return (both.length ? both : byName).map(st => st.sid);
+}
+
+// [v9.55] 약점 메모 폼 응답 → student_errors 전개 — 시트 수기 입력은 그대로 두고 폼 통로를 추가.
+//   포인터 = '약점메모폼_포인터'(sweepLeadForm_ 클램프 패턴). 매칭 실패(0명·동명이인)는 sid 공란+상태='미매칭'
+//   으로 기록 — 소비처 3곳(반 브리핑 errByCls·수업 전 메일 errByClass·aiWeakMap_)이 전부 sid 공란을 스킵하므로
+//   화면·메일 오염 0, 관리자 메일이 복구 경로(H열 '미매칭' 지우고 sid 채우면 다음 계산부터 반영)를 안내한다.
+function sweepTeacherMemoForm_(ss) {
+  const src = ss.getSheetByName('약점메모폼_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const last = src.getLastRow();
+  const from = Number(props.getProperty('약점메모폼_포인터')) || 1;
+  if (from > last) { props.setProperty('약점메모폼_포인터', String(last)); return; }
+  if (from >= last) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = src.getRange(from + 1, 1, last - from, 6).getValues(); // 타임스탬프·강사·반·학생이름·유형·메모
+  const pf = ss.getSheetByName('profiles');
+  const students = [];
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') students.push({ sid: String(r[0]).trim(), n: String(r[1] || ''), c: String(r[4] || '') });
+  });
+  const se = ensureSheet(ss, 'student_errors', ['날짜', 'student_id', '반', '유형', '메모', '입력자', 'created_at', '상태']);
+  const out = [], miss = [];
+  rows.forEach(r => {
+    const ts = r[0] instanceof Date ? r[0] : new Date();
+    const name = String(r[3] || '').trim();
+    const memo = String(r[5] || '').trim();
+    if (!name || !memo) return; // 필수 문항이라 실질 발생 없음 — 빈 응답 방어만
+    const cands = matchStudentsByNameClass_(students, name, String(r[2] || ''));
+    const ok = cands.length === 1;
+    const sid = ok ? cands[0] : '';
+    const cls = ok ? ((students.find(s => s.sid === sid) || {}).c || String(r[2] || '')) : String(r[2] || '');
+    out.push([dstr(ts, tz), sid, cls, String(r[4] || '기타'), memo, String(r[1] || '폼'), ts, ok ? '' : '미매칭']);
+    if (!ok) miss.push('· ' + name + ' (' + (r[2] || '반 미상') + ') — 로스터 후보 ' + cands.length + '명 · 메모: ' + memo.slice(0, 40));
+  });
+  if (out.length) se.getRange(se.getLastRow() + 1, 1, out.length, 8).setValues(out);
+  if (miss.length) adminMail('[SYNK] 🧩 약점 메모 미매칭 ' + miss.length + '건',
+    miss.join('\n') + '\n\nstudent_errors 시트에서 해당 행의 student_id를 채우고 상태(H열)의 "미매칭"을 지우면 다음 계산부터 브리핑·AI에 반영됩니다.');
+  props.setProperty('약점메모폼_포인터', String(last));
+}
+
 // [v9.49] 야간 AI 첨삭 배치 — 숙제폼 제출분을 Claude API로 4칸 카드(고친문장·오늘의포인트MN·칭찬·다음미션)로.
 //   비동기 설계 확정(2026-07-21 유호): 실시간 챗은 update 예산·지연으로 불성립, "다음날 아침 도착"형만 성립.
 //   실패 시 그 행부터 포인터 유지 → 다음 밤 재시도. 상한·시간예산 가드로 6분 강제종료 안전.
@@ -8289,6 +8387,7 @@ function parentSweep() {
   safeRun('importFormResponses', importFormResponses); // [v6.3] 상담 폼 접수 편입
   safeRun('sweepLeadForm', function () { sweepLeadForm_(ss); }); // [v9.43] 광고 리드폼 → leads 자동 편입(수기 이관 폐지)
   safeRun('sweepFeedbackAck', function () { sweepFeedbackAck_(ss); }); // [v9.49] 첨삭 '확인했어요' → +5P 정산(열람 보상 — 10분 내 반응해야 루프가 산다)
+  safeRun('sweepTeacherMemoForm', function () { sweepTeacherMemoForm_(ss); }); // [v9.55] 약점 메모 폼 → student_errors — classPrepMail보다 앞(같은 틱의 메모가 수업 전 메일에 실린다)
   safeRun('classPrepMail', function () { classPrepMail_(ss, ss.getSpreadsheetTimeZone()); }); // [v6.8]
   safeRun('checkoutCheerMail', function () { checkoutCheerMail_(ss); }); // [v6.8]
   safeRun('todayBoard', function () { todayBoard_(ss); }); // [v8.1] 오늘의 출결 보드 (10분 갱신)
