@@ -691,7 +691,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.60'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화
+const SYNK_VERSION = 'v9.61'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -11274,6 +11274,13 @@ function preflightGlide() {
   if (st6) {
     ['리텐션레이더HTML', '케어사각HTML', '오늘의퀴즈', '오늘의숙제', '주말의숙제', '오늘의팁', '경영리포트HTML', '여행지도HTML', '상담폼ID'].forEach(k => {
       if (getState(st6, k).row < 1) warn("app_state '" + k + "' 없음" + (k === '상담폼ID' ? ' → createConsultForm 실행 필요(상담 폼 응답 유입 끊김)' : ''));
+    });
+    // [v9.61] 학생 입력 폼 3종 미생성 감시 — 폼을 안 만들면 URL 틀이 없고 → calcAll이 CX102·CY103을 빈칸으로 두고
+    //   → Glide의 Open-link 버튼이 "대상 없음"으로 조용히 안 그려진다. 컴포넌트는 멀쩡히 존재하므로 조립 점검을
+    //   눈으로만 하면 통과해 버린다(2026-07-24 실측: 출석·숙제 버튼 전원 미렌더 + GPS 삭제 후 출석 수단 0).
+    [['출석폼URL틀', 'createAttendanceForm', '앱 출석 버튼'], ['숙제폼URL틀', 'createHwForm', '숙제 제출 버튼(AI 첨삭 입구)'],
+     ['약점메모폼URL', 'createTeacherMemoForm', '강사 약점 메모']].forEach(f => {
+      if (getState(st6, f[0]).row < 1) warn('폼 미생성 — ' + f[2] + '가 작동하지 않습니다. 에디터에서 ' + f[1] + ' ▶ 1회 실행 후 calcAll(자동 14/22시)');
     });
   }
 
