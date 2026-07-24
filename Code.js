@@ -691,7 +691,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.61'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시
+const SYNK_VERSION = 'v9.62'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -5516,11 +5516,41 @@ function prefillTemplateOf_(form, itemTitle) {
   return form.createResponse().withItemResponse(it.asTextItem().createResponse('SIDTOKEN')).toPrefilledUrl();
 }
 
+// [v9.62] 폼 생성 재실행 가드 — 이미 만들어졌으면 새로 만들지 않는다. 두 번 눌러도 안전해야 하는 이유:
+//   linkFormTab_이 이름 충돌을 날짜 접미사로 피해주므로 예외는 안 나지만, 재실행마다 **중복 폼 + 유령 응답 시트**가
+//   쌓이고 URL 틀이 새 폼으로 갈아끼워져 이미 배포한 링크가 죽는다(v9.60 레벨테스트 실사고와 같은 계급).
+//   응답 시트는 있는데 app_state 키만 없으면(사람이 지웠거나 부분 실패) 연결된 폼에서 틀을 되찾아 복구한다.
+function formAlreadyMade_(ss, tabName, urlKey, idKey, itemTitle, label) {
+  const sh = ss.getSheetByName(tabName);
+  if (!sh) return '';
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  let tpl = '';
+  try { tpl = String((getState(st, urlKey) || {}).val || '').trim(); } catch (e) {}
+  if (!tpl) {
+    try {
+      const editUrl = sh.getFormUrl();
+      if (editUrl) {
+        const f = FormApp.openByUrl(editUrl);
+        setState(st, idKey, f.getId());
+        tpl = prefillTemplateOf_(f, itemTitle);
+        setState(st, urlKey, tpl);
+        Logger.log(label + ' — URL 틀이 없어 연결된 폼에서 복구했습니다.');
+      }
+    } catch (e2) { Logger.log(label + ' URL 틀 복구 실패(새로 만듭니다): ' + e2.message); }
+  }
+  if (!tpl) return ''; // 복구 불가 → 호출부가 정상 생성 경로로 진행
+  const msg = '✅ ' + label + ' — 이미 준비돼 있어 새로 만들지 않았습니다. 다음 calcAll(14/22시)이 학생별 링크를 채웁니다.';
+  Logger.log(msg);
+  return msg;
+}
+
 // [v9.49] 출석 폼 — 앱(Glide) 출석의 update-0 대체(docs/glide_업데이트_실측설계.md §3: 앱 출석은 30명 기준 월 ~600 update로 단독 초과).
 //   학생 경험: 앱의 [출석] 버튼(Open Link → CX102 출석폼URL, ID 미리채움) → 폼에서 [보내기] 1탭.
 //   응답은 '출석폼_응답' 탭 → parentSweep(10분)의 sweepAttendanceForm_가 attendance로 전개 → 알림·보드·달력 기존 그대로.
 function createAttendanceForm() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const doneA = formAlreadyMade_(ss, '출석폼_응답', '출석폼URL틀', '출석폼ID', '학생ID', '출석 폼'); // [v9.62] 두 번 눌러도 안전
+  if (doneA) return doneA;
   const before = ss.getSheets().map(s => s.getName());
   const form = FormApp.create('SYNK 출석 체크')
     .setDescription('Ирц бүртгэл ✅ 아래 [보내기]만 누르면 출석 완료!')
@@ -5539,6 +5569,8 @@ function createAttendanceForm() {
 //   응답은 '숙제폼_응답' 탭 → 밤 22시 aiFeedbackBatch_가 Claude API로 첨삭 카드 생성.
 function createHwForm() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const doneH = formAlreadyMade_(ss, '숙제폼_응답', '숙제폼URL틀', '숙제폼ID', '학생ID', '숙제 제출 폼'); // [v9.62] 두 번 눌러도 안전
+  if (doneH) return doneH;
   const before = ss.getSheets().map(s => s.getName());
   const form = FormApp.create('SYNK 숙제 제출')
     .setDescription('오늘 숙제로 쓴 한국어 문장을 보내면, 내일 아침 앱에 첨삭 카드가 도착해요 🤖✏️')
