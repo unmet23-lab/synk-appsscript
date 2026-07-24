@@ -691,7 +691,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.57'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스
+const SYNK_VERSION = 'v9.60'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -8462,6 +8462,30 @@ const LEVEL_TEST_Q = [ // [문항, 보기4, 정답 인덱스(0~3)]
   ['"시간이 있___ 같이 영화 봐요"(조건)', ['어서', '으면', '지만', '고'], 1]];
 function createLevelTestForm() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  // [v9.60] 재실행 안전(멱등) — 구 버전은 무조건 새 폼을 만들고 마지막에 시트 이름만 바꿨다.
+  //   그래서 두 번째 실행이 "이름이 '레벨테스트_응답'인 시트가 이미 있습니다"로 죽으면서
+  //   ①쓸모없는 중복 폼 ②이름 없는 응답 시트 잔재를 남겼다(2026-07-24 22:23 실사고).
+  //   이제 이미 있으면 만들지 않고 기존 URL을 돌려준다. URL 기록이 없으면 시트에 연결된
+  //   폼에서 되찾아 app_state에 복구한다(수동 재생성 불필요).
+  {
+    const stX = ensureSheet(ss, 'app_state', ['key', 'value']);
+    const shX = ss.getSheetByName('레벨테스트_응답');
+    let urlX = '';
+    try { urlX = String((getState(stX, '레벨테스트URL') || {}).val || '').trim(); } catch (eX) {}
+    if (shX) {
+      if (!urlX) { // 시트는 있는데 URL 기록만 없음 → 연결된 폼에서 회수
+        try {
+          const editUrl = shX.getFormUrl();
+          if (editUrl) { urlX = FormApp.openByUrl(editUrl).getPublishedUrl(); setState(stX, '레벨테스트URL', urlX); }
+        } catch (eY) { Logger.log('폼 URL 회수 실패: ' + eY.message); }
+      }
+      const msgX = urlX
+        ? '이미 개통돼 있습니다 — 새로 만들지 않았습니다.\n공유 URL: ' + urlX
+        : "'레벨테스트_응답' 시트는 있는데 연결된 폼을 찾지 못했습니다. 그 시트를 지운 뒤 다시 실행하면 새로 만듭니다.";
+      Logger.log(msgX);
+      return msgX;
+    }
+  }
   const before = {};
   ss.getSheets().forEach(sh => { before[sh.getName()] = 1; });
   const form = FormApp.create('SYNK LAB — 무료 한국어 레벨 테스트 (Үнэгүй түвшин тогтоох тест)');
@@ -8480,6 +8504,30 @@ function createLevelTestForm() {
   setState(ensureSheet(ss, 'app_state', ['key', 'value']), '레벨테스트URL', form.getPublishedUrl());
   Logger.log('레벨 테스트 폼 생성 완료 — 공유 URL: ' + form.getPublishedUrl());
   return '레벨 테스트 준비 완료. FB·상담에 뿌릴 URL: ' + form.getPublishedUrl();
+}
+
+// [v9.60] 폼 재실행이 남긴 잔재 청소 — ▶ 수동 실행. 자동 생성 이름('설문지 응답 시트N'·'Form Responses N')이면서
+//   **응답이 0건인 시트만** 지운다(이름 붙은 정본 시트·데이터 있는 시트는 절대 건드리지 않는다).
+//   연결된 폼 파일 자체는 지우지 않고 편집 URL만 로그로 안내한다 — 유호님이 Drive에서 확인 후 삭제.
+function cleanupOrphanFormSheets() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const pat = /^(설문지 응답 시트\d+|Form Responses \d+)$/;
+  const removed = [], kept = [], forms = [];
+  ss.getSheets().forEach(sh => {
+    const nm = sh.getName();
+    if (!pat.test(nm)) return;
+    let furl = '';
+    try { furl = sh.getFormUrl() || ''; } catch (e) {}
+    if (sh.getLastRow() >= 2) { kept.push(nm + '(응답 ' + (sh.getLastRow() - 1) + '건 — 보존)'); return; }
+    if (furl) forms.push(nm + ' → ' + furl);
+    ss.deleteSheet(sh);
+    removed.push(nm);
+  });
+  const msg = '잔재 청소: 삭제 ' + removed.length + '개' + (removed.length ? ' (' + removed.join(', ') + ')' : '') +
+    (kept.length ? '\n보존(응답 있음): ' + kept.join(', ') : '') +
+    (forms.length ? '\n\n⚠ 아래 폼 파일은 그대로 남아 있습니다 — Drive에서 확인 후 삭제하세요:\n' + forms.join('\n') : '');
+  Logger.log(msg);
+  return msg;
 }
 function sweepLevelTest_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
