@@ -492,3 +492,19 @@ test('[v9.54] 미등원 판정은 attendance 부재 시 열리지 않는다(전�
   const body = section('function checkNoShow()', 'function checkEvolution');
   assertOrder(body, ["ss.getSheetByName('attendance')", 'if (!at) return;', 'at.getLastRow()']);
 });
+
+test('[v9.54] 루트의 모든 엔진 .js가 .claspignore 허용목록에 있다(반쪽 배포 방지)', () => {
+  // 상담AI.js가 허용목록에 빠져 매니페스트·contents만 라이브로 가던 실사고(2026-07-24)의 회귀 장치.
+  // 새 엔진 파일을 루트에 만들면 이 테스트가 배포 게이트에서 누락을 잡는다.
+  const ig = fs.readFileSync(path.join(ROOT, '.claspignore'), 'utf8');
+  const allows = ig.split(/\r?\n/).filter((l) => l.startsWith('!')).map((l) => l.slice(1).trim());
+  const rootJs = fs.readdirSync(ROOT).filter((f) => f.endsWith('.js'));
+  assert.ok(rootJs.length >= 1, '루트 .js 목록을 읽지 못함');
+  for (const f of rootJs) {
+    const ok = allows.some((p) => {
+      const re = new RegExp('^' + p.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$');
+      return re.test(f);
+    });
+    assert.ok(ok, `.claspignore 허용목록에 없음: ${f} — clasp push에서 빠져 라이브가 반쪽이 된다`);
+  }
+});
