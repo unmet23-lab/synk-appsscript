@@ -24,7 +24,11 @@
  *   상담AI_일일상한    … 하루 최대 호출 수(기본 300)
  * ============================================================ */
 
-const 상담AI_모델 = AI_FEEDBACK_MODEL;   // Code.js 정본을 따른다(현재 claude-sonnet-5)
+// [v9.57] 톱레벨 타파일 참조 금지 — Apps Script는 파일 순서대로 전역을 초기화하는데 라이브에선 이 파일이
+//   Code.gs보다 먼저 돈다(07-24 실사고: 모든 ▶실행·트리거가 여기 ReferenceError로 즉사, 유호님 실행에서 발각).
+//   타파일 전역은 반드시 함수 안(호출 시점)에서 읽는다 — tests/safety.test.js가 전 파일 기계 차단 + .clasp.json
+//   filePushOrder가 Code.js 선두를 이중 보증.
+function 상담AI_모델_() { return typeof AI_FEEDBACK_MODEL === 'undefined' ? 'claude-sonnet-5' : AI_FEEDBACK_MODEL; } // Code.js 정본을 따른다
 const 상담AI_사고 = false;               // 메신저는 응답속도가 전환을 좌우 — 사고 OFF. 답변 품질이 아쉬우면 true
 const 상담AI_기본상한 = 300;             // 하루 호출 상한 기본값
 const 상담AI_로그헤더 = ['시각', '세션', '발신', '내용', '인계', '입력토큰', '캐시읽기', '출력토큰', '비고'];
@@ -162,7 +166,7 @@ function 상담_호출_(apiKey, 세션, 사용자말) {
     }
   };
   const body = {
-    model: 상담AI_모델,
+    model: 상담AI_모델_(),
     max_tokens: 2048,
     system: [{ type: 'text', text: 상담_시스템_(), cache_control: { type: 'ephemeral' } }], // 지식은 매번 같음 → 캐시 읽기 약 1/10 가격
     messages: 상담_이력_(세션).concat([{ role: 'user', content: 사용자말 }]),
@@ -319,7 +323,7 @@ function 상담AI_점검() {
 
   Logger.log('■ 준비 상태: ' + (준비.length ? '❌ ' + 준비.join(' / ') : '✅ 정상'));
   if (경고.length) Logger.log('■ 경고: ⚠ ' + 경고.join('\n         ⚠ '));
-  Logger.log('■ 모델: ' + 상담AI_모델 + ' · 사고: ' + (상담AI_사고 ? 'ON' : 'OFF') + ' · 일일상한: ' + (props.getProperty('상담AI_일일상한') || 상담AI_기본상한));
+  Logger.log('■ 모델: ' + 상담AI_모델_() + ' · 사고: ' + (상담AI_사고 ? 'ON' : 'OFF') + ' · 일일상한: ' + (props.getProperty('상담AI_일일상한') || 상담AI_기본상한));
   Logger.log('■ 지식 블록: 확정 ' + 확정수 + '개 / 미확정 ' + 미확정.length + '개 → ' + (미확정.join(', ') || '없음'));
   Logger.log('■ 시스템 프롬프트 길이: ' + 상담_시스템_().length + '자');
   if (준비.length) { Logger.log('※ 준비물부터 채워주세요. 실호출은 건너뜁니다.'); return; }

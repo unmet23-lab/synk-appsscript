@@ -593,3 +593,46 @@ test('[v9.56] 첨삭 통보 메일에 검수 바로가기(#gid)가 붙는다 —
   assert.ok(body.includes("'#gid=' + (ss.getSheetByName('hw_feedback')"));
   assert.ok(body.includes('!AI_FEEDBACK_AUTOPUBLISH ?'), '자동공개로 전환하면 링크 줄은 자동 소멸');
 });
+
+test('[v9.57] 톱레벨 크로스파일 참조 금지 — 전역 초기화 순서 크래시(상담AI.gs:27 실사고) 기계 차단', () => {
+  // Apps Script는 파일 순서대로 전역을 초기화한다. 어떤 파일의 톱레벨 코드가 다른 파일의 전역을 읽으면
+  // 순서에 따라 ReferenceError로 "프로젝트 전체"(모든 트리거·실행)가 즉사한다 — 07-24 라이브 실사고.
+  const rootJs = fs.readdirSync(ROOT).filter((f) => f.endsWith('.js'));
+  const topLevel = {}, declared = {};
+  for (const f of rootJs) {
+    const src = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    let out = '', depth = 0, st = null;
+    for (let i = 0; i < src.length; i++) {
+      const c = src[i], n = src[i + 1];
+      if (st === '//') { if (c === '\n') { st = null; out += c; } }
+      else if (st === '/*') { if (c === '*' && n === '/') { st = null; i++; } }
+      else if (st === '"' || st === "'" || st === '`') {
+        if (c === '\\') i++;
+        else if (c === st) st = null;
+      }
+      else if (c === '/' && n === '/') st = '//';
+      else if (c === '/' && n === '*') { st = '/*'; i++; }
+      else if (c === '"' || c === "'" || c === '`') st = c;
+      else if (c === '{') { depth++; out += ' '; }
+      else if (c === '}') { depth--; out += ' '; }
+      else if (depth === 0) out += c;
+    }
+    topLevel[f] = out;
+    declared[f] = new Set([...out.matchAll(/(?:^|[\s;])(?:const|let|var|function)\s+([A-Za-z_$가-힣][\w$가-힣]*)/g)].map((m) => m[1]));
+  }
+  for (const f of rootJs) for (const g of rootJs) {
+    if (f === g) continue;
+    for (const name of declared[g]) {
+      if (declared[f].has(name)) continue; // 동명 재선언은 별개 문제(전역 충돌 검사가 따로 있음)
+      const re = new RegExp('(?<![\\w$\uAC00-\uD7A3])' + name.replace(/[$]/g, '\\$&') + '(?![\\w$\uAC00-\uD7A3])');
+      assert.ok(!re.test(topLevel[f]),
+        `${f} 톱레벨이 ${g}의 전역 '${name}'을 참조 — 파일 초기화 순서에 따라 전 트리거가 죽는다. 함수 안(호출 시점)으로 옮길 것`);
+    }
+  }
+});
+
+test('[v9.57] clasp filePushOrder는 Code.js를 선두로 고정한다(전역 초기화 순서 보증)', () => {
+  const cj = JSON.parse(fs.readFileSync(path.join(ROOT, '.clasp.json'), 'utf8'));
+  assert.ok(Array.isArray(cj.filePushOrder) && cj.filePushOrder.length >= 1, 'filePushOrder가 비어 있으면 파일 순서 무보증');
+  assert.equal(cj.filePushOrder[0], 'Code.js', '공용 상수 정본(Code.js)이 가장 먼저 초기화돼야 한다');
+});
