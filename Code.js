@@ -685,7 +685,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.55'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력
+const SYNK_VERSION = 'v9.56'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -1369,6 +1369,26 @@ function myJourneyHtml_(o) {
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const dreamLine = '<div style="background:#EEF2FF;border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;color:#2B3FD9;margin-bottom:9px;">' +
     (o.dream ? '🌟 나의 목표: ' + esc(o.dream) : '🌟 나의 목표를 적어보세요') + '</div>';
+  // [v9.56] 🎫 시즌 패스 트랙 — 커리큘럼 8주 도달제의 앱 표면(seasonT 없으면 통째 생략). 8주차부터 랩업(공유용) 동반
+  let seasonB = '', wrapB = '';
+  if (o.seasonT) {
+    const sw = o.seasonT.week, inRun = sw >= 1 && sw <= 8;
+    const segs = [];
+    for (let si = 1; si <= 8; si++) {
+      const done8 = inRun && si < sw, cur8 = inRun && si === sw;
+      segs.push('<div style="flex:1;height:9px;border-radius:5px;background:' + (cur8 ? 'linear-gradient(90deg,#3D5AFE,#7C9BFF);box-shadow:0 0 0 2px rgba(61,90,254,.22)' : (done8 || sw > 8) ? '#3D5AFE' : '#E5E7EB') + ';"></div>');
+    }
+    const rightLb = inRun ? sw + '/8주' : (sw > 8 ? '완주 🎉' : '개막 전');
+    const phase = sw < 1 ? '곧 개막! 준비됐지?' : sw > 8 ? '시즌 종료 — 다음 시즌 준비 중' : sw === 8 ? '🏁 승급 도전 주간 — 도달했을 때 올라간다!' : '도달 게이지를 채우는 중 — 8주차에 승급 도전!';
+    seasonB = '<div style="background:#fff;border-radius:12px;padding:8px 11px;margin-bottom:9px;">' +
+      '<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;"><span>🎫 시즌' + esc(String(o.seasonT.n)) + ' 「' + esc(String(o.seasonT.name)) + '」</span><span style="color:#3D5AFE;">' + rightLb + '</span></div>' +
+      '<div style="display:flex;gap:3px;padding:7px 0 4px;">' + segs.join('') + '</div>' +
+      '<div style="font-size:11px;color:#6B7280;">' + phase + '</div></div>';
+    if (sw >= 8) {
+      wrapB = '<div style="background:linear-gradient(135deg,#FDE68A,#FCD34D);border-radius:11px;padding:9px 12px;font-size:12px;margin-top:10px;line-height:1.9;color:#78350F;">🎉 <b>시즌' + esc(String(o.seasonT.n)) + ' 나의 기록</b><br/>출석 <b>' + (o.seasonT.a || 0) + '일</b> · 경험치 <b>+' + (o.seasonT.p || 0) + 'P</b>' + (o.seasonT.c ? ' · 왕관 <b>' + o.seasonT.c + '회</b>' : '') + '<br/><span style="font-size:11px;">📸 이 카드를 캡처해 가족·친구에게 자랑해요!</span></div>';
+    }
+  }
+  const refLine = (o.refN || 0) > 0 ? '🤝 내 추천으로 온 친구 <b>' + o.refN + '명</b><br/>' : ''; // [v9.56] 추천 루프(개원 후 leads 데이터부터 자동 표시)
   // [v9.50·A5] 주간 퀘스트 결산 — 주간 발행물 신설 대신 여정 카드에 통합(채널 피로 방지)
   const wkB = o.wk && (o.wk.p > 0 || o.wk.a > 0)
     ? '<div style="background:#EEF2FF;border-radius:11px;padding:8px 11px;font-size:12px;margin-top:10px;line-height:1.9;">🗡️ <b>이번 주 퀘스트 결산</b><br/>출석 <b>' + o.wk.a + '일</b> · 경험치 <b>+' + o.wk.p + 'P</b>' + (o.wk.c ? ' · 왕관 <b>' + o.wk.c + '회</b>' : '') + '</div>'
@@ -1380,7 +1400,7 @@ function myJourneyHtml_(o) {
   // [v9.35] 소프트 글로우 축 — 헤더 행(제목+우측 코랄 '진화까지 nP'), 토큰(그라디언트·라운드 18/12·섀도)
   const remJ = mon.rem || 0;
   return CARD_ANIM + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E0E7FF 55%,#F5F3FF);border:2px solid #BCC8FF;border-radius:18px;padding:13px 15px;box-shadow:0 6px 18px rgba(61,90,254,.14);">' +
-    dreamLine +
+    dreamLine + seasonB +
     '<div style="display:flex;justify-content:space-between;align-items:baseline;">' +
       '<div style="font-size:15px;font-weight:800;color:#2B3FD9;">📖 ' + o.nm + '의 여정</div>' +
       '<div style="font-size:11px;font-weight:700;color:#FF6B35;">' + (remJ > 0 ? '진화까지 ' + remJ + 'P' : ((o.grem || 0) > 0 ? '📖 문법 ' + o.grem + '개만!' : '👑 최종 진화')) + '</div>' + // [v9.36] 게이트 대기(rem=0·grem>0)는 최종 진화가 아니다
@@ -1389,14 +1409,14 @@ function myJourneyHtml_(o) {
     '<div style="background:#fff;border-radius:12px;padding:9px 11px;font-size:12.5px;line-height:2;">' +
       '🔥 최장 연속출석 <b>' + (rec.maxStreak || o.stk || 0) + '일</b><br/>' +
       '👑 첫 왕관 <b>' + (rec.firstCrown || '이번 달이 기회!') + '</b><br/>' +
-      evoLine + titleLine + aiTitleLine + chemLine +
+      evoLine + titleLine + aiTitleLine + chemLine + refLine +
       '⚔️ 보스와 함께 <b>' + (rec.raids || 0) + '회</b><br/>' +
       '🏔️ 최고 월간 <b>' + (rec.bestMonth || o.mPts || 0) + 'P</b> · 📚 지금까지 <b>' + (o.t || 0) + 'P</b>' +
     '</div>' +
     '<div style="font-size:12.5px;color:#2B3FD9;padding-top:9px;">' + acadLine + '</div>' +
     // [v9.36] 학습추적(W3) — 이 단계 문법 도달 진행(게이트 없는 단계·무데이터면 상위에서 '' 전달 → 생략)
     (o.gline ? '<div style="font-size:12px;color:#6D28D9;padding-top:4px;">' + o.gline + '</div>' : '') +
-    wkB + gwB + storyBlock +
+    wkB + wrapB + gwB + storyBlock +
     '<div style="font-size:11px;color:#9CA3AF;padding-top:8px;">너의 이야기는 계속돼 ✨</div>' +
     '</div>';
 }
@@ -1789,6 +1809,34 @@ function calcAll() {
       });
     }
   }
+  // [v9.56] 🎫 시즌 패스 트랙(커리큘럼 8주 도달제) — app_state '시즌트랙입력' 셀이 정본.
+  //   유호님이 시트에서 그 칸에 `번호|이름|시작일` (예: 1|첫 목소리|2027-02-01)만 적으면 다음 계산부터
+  //   전 학생 여정 카드에 트랙이, 8주차엔 랩업(공유 카드)이 뜬다. 비우면 전 블록이 조용히 사라진다.
+  //   "시즌"=이 8주 트랙 전용 명칭(월 테마는 「이달의 무대」로 개명 — 유호 07-24 확정).
+  let seasonCfg = null;
+  {
+    const stSsn = ss.getSheetByName('app_state');
+    if (stSsn) {
+      let sInRaw = '';
+      try { sInRaw = String((getState(stSsn, '시즌트랙입력') || {}).val || '').trim(); } catch (eSn) {}
+      if (!sInRaw) setAppState_(ss, '시즌트랙입력', ''); // 입력 칸을 시트에 노출(동일값 무기록이라 반복 무해)
+      const pSn = sInRaw.split('|').map(x => String(x).trim());
+      if (pSn.length >= 3 && /^\d{4}-\d{2}-\d{2}$/.test(pSn[2])) seasonCfg = { n: pSn[0], name: pSn[1], start: pSn[2] };
+    }
+  }
+  const seasonAtt = {}, seasonPts = {}, seasonCrown = {};
+  let seasonWeek = 0;
+  if (seasonCfg) {
+    seasonWeek = Math.floor((new Date(todayYmd0).getTime() - new Date(seasonCfg.start).getTime()) / 86400000 / 7) + 1;
+    atData.forEach(rr => { if (!rr[1] || !rr[2]) return; const d6s = dstr(rr[2], tz); if (d6s >= seasonCfg.start && d6s <= todayYmd0) (seasonAtt[rr[1]] = seasonAtt[rr[1]] || {})[d6s] = 1; });
+    plData.forEach(rr => { const sid6 = rr[1], pts6 = Number(rr[2]) || 0, rs6 = String(rr[3] || ''); if (!sid6 || !rr[5] || pts6 <= 0) return; const d6s = dstr(rr[5], tz); if (d6s < seasonCfg.start || d6s > todayYmd0) return; seasonPts[sid6] = (seasonPts[sid6] || 0) + pts6; if (rs6 === '오늘의 MVP' || rs6 === '오늘의 시냅스') seasonCrown[sid6] = (seasonCrown[sid6] || 0) + 1; });
+  }
+  // [v9.56] 🤝 추천 현황 — leads '추천인'(E) 수기값을 학생 이름으로 집계. 표면=여정 카드 한 줄(개원 후 데이터가 생기면 자동 표시)
+  const refCntByName = {};
+  {
+    const ldR = ss.getSheetByName('leads');
+    if (ldR && ldR.getLastRow() >= 2) ldR.getRange(2, 1, ldR.getLastRow() - 1, 5).getValues().forEach(rr => { const rf6 = String(rr[4] || '').trim(); if (rf6) refCntByName[rf6] = (refCntByName[rf6] || 0) + 1; });
+  }
   const styleLogs = {}, chemi = {}, matchupByCls = {};
   { // [v9.13] 스타일 로그(이번 달 pl)
     plData.forEach(rr => { // [opt] plData 재사용
@@ -2093,6 +2141,8 @@ function calcAll() {
         aiTitle: aiTitleMap[id] || '', // [v9.50·B3] 이달의 AI 유니크 칭호
         wk: { a: Object.keys(weekAtt[id] || {}).length, p: weekPts[id] || 0, c: weekCrown[id] || 0 }, // [v9.50·A5] 주간 퀘스트 결산(별도 발행물 대신 여정 카드에 통합)
         growth: growthMap[id] || null, // [v9.50·A7] 성장 전/후 — 첨삭 최초 vs 최근(21일+ 간격일 때만)
+        seasonT: seasonCfg ? { n: seasonCfg.n, name: seasonCfg.name, week: seasonWeek, a: Object.keys(seasonAtt[id] || {}).length, p: seasonPts[id] || 0, c: seasonCrown[id] || 0 } : null, // [v9.56] 시즌 패스 트랙(8주 도달제)+랩업 재료
+        refN: refCntByName[String(r[1] || '').trim()] || 0, // [v9.56] 내 추천으로 온 친구 수(leads 추천인 이름 매칭)
         // [v9.36] 학습추적(W3) — 이 단계 문법 도달 진행(뱅크 없는 단계·무데이터면 '' → 카드에서 생략) + 게이트 대기 헤더 문구
         gline: ((bankCnt[mon.idx] || 0) > 0 && hasMastery[id]) ? '📖 이 단계 문법 ' + ((masteryCnt[id] || {})[mon.idx] || 0) + '/' + bankCnt[mon.idx] : '',
         grem: gateBlocked ? gateCC : 0
@@ -3745,6 +3795,63 @@ function todayBoard_(ss) {
   const last = bd.getLastRow();
   if (last - 1 > all.length) bd.getRange(all.length + 2, 1, Math.max(last - 1 - all.length, 1), 5).clearContent();
   if (all.length) writeIfChanged(bd, 2, 1, all);
+
+  // [v9.56] 📺 교실 스크린 모드 — 반 TV/프로젝터용 한 장(app_state '교실스크린HTML').
+  //   10분 스위프 편승·읽기 3(raid·league_pairs·app_state)·쓰기는 setAppState_(동일값 무기록).
+  //   분 단위 시계는 넣지 않는다(넣으면 매 스위프가 강제 변경 → 야간·주말에도 sync를 깨움).
+  //   조립 = screen 계정 1개 + Rich Text 탭 1개(docs/조립후_트렌드_증분_v956.md).
+  try {
+    const stScr = ss.getSheetByName('app_state');
+    if (stScr) {
+      const dowNm = ['일', '월', '화', '수', '목', '금', '토'][now.getDay()];
+      const nowMin2 = Number(Utilities.formatDate(now, tz, 'H')) * 60 + Number(Utilities.formatDate(now, tz, 'm'));
+      const typeToday = now.getDay() === 0 ? null : (now.getDay() === 6 ? '주말' : '평일'); // 일요일=무수업(v9.46)
+      let nextTxt = '오늘은 수업 없는 날';
+      if (typeToday) {
+        let best = null;
+        Object.keys(schMap).forEach(cn6 => {
+          const e6 = schMap[cn6];
+          if (e6.name !== cn6 || e6.type !== typeToday || !e6.time) return;
+          const p6 = String(e6.time).split(':'); const stMin = Number(p6[0]) * 60 + Number(p6[1] || 0);
+          if (stMin + 90 < nowMin2) return; // 끝난 수업 제외(90분 수업 기준)
+          if (!best || stMin < best.min) best = { cn: cn6, min: stMin, hm: e6.time };
+        });
+        nextTxt = best ? ((best.min <= nowMin2 ? '지금 수업 중 · ' : '다음 수업 · ') + best.cn + ' ' + best.hm) : '오늘 수업 종료 — 내일 만나!';
+      }
+      let stageTxt = '';
+      try { stageTxt = String((getState(stScr, '이달의시즌') || {}).val || ''); } catch (eSt) {}
+      let raidB = '';
+      const rdScr = ss.getSheetByName('raid');
+      if (rdScr && rdScr.getLastRow() >= 2) {
+        const byCls = {};
+        rdScr.getRange(2, 1, rdScr.getLastRow() - 1, 5).getValues().forEach(rr => {
+          const wk6 = rr[0] ? dstr(rr[0], tz) : '', cn6 = String(rr[1] || ''); if (!cn6) return;
+          if (!byCls[cn6] || wk6 > byCls[cn6].w) byCls[cn6] = { w: wk6, goal: Number(rr[2]) || 0, dmg: Number(rr[3]) || 0, stt: String(rr[4] || '') };
+        });
+        const items = Object.keys(byCls).sort().slice(0, 4).map(cn6 => {
+          const b6 = byCls[cn6]; const pct = b6.goal > 0 ? Math.min(Math.round(b6.dmg / b6.goal * 100), 100) : 0;
+          return '<div style="padding:5px 0;"><div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;"><span>' + cn6 + '</span><span>' + b6.dmg + '/' + b6.goal + (b6.stt.indexOf('격파') > -1 ? ' 🏆' : '') + '</span></div><div style="height:10px;border-radius:5px;background:rgba(255,255,255,.18);"><div style="width:' + pct + '%;height:10px;border-radius:5px;background:linear-gradient(90deg,#FFD54D,#FF6B35);"></div></div></div>';
+        });
+        if (items.length) raidB = '<div style="font-size:13px;opacity:.8;padding:12px 0 2px;">⚔️ 이번 주 보스 레이드</div>' + items.join('');
+      }
+      let lgB = '';
+      const lgScr = ss.getSheetByName('league_pairs');
+      if (lgScr && lgScr.getLastRow() >= 2) {
+        const rowsL = lgScr.getRange(2, 1, lgScr.getLastRow() - 1, 4).getValues();
+        let wMax = '';
+        rowsL.forEach(rr => { const w6 = rr[0] ? dstr(rr[0], tz) : ''; if (w6 > wMax) wMax = w6; });
+        const cur6 = rowsL.filter(rr => (rr[0] ? dstr(rr[0], tz) : '') === wMax && rr[1] && rr[2]).slice(0, 3);
+        if (cur6.length) lgB = '<div style="font-size:13px;opacity:.8;padding:12px 0 2px;">🏆 이번 주 리그</div>' + cur6.map(rr => '<div style="font-size:15px;padding:2px 0;">' + rr[1] + ' <span style="opacity:.55;">vs</span> ' + rr[2] + '</div>').join('');
+      }
+      const scrHtml = '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#101736,#1D2A6B 60%,#3D5AFE);border-radius:20px;padding:22px 24px;color:#fff;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:baseline;"><div style="font-size:22px;font-weight:800;">📺 SYNK LIVE</div><div style="font-size:15px;opacity:.85;">' + (now.getMonth() + 1) + '월 ' + now.getDate() + '일 (' + dowNm + ')</div></div>' +
+        (stageTxt ? '<div style="font-size:14px;opacity:.9;padding-top:4px;">🎪 ' + stageTxt + '</div>' : '') +
+        '<div style="background:rgba(255,255,255,.12);border-radius:14px;padding:10px 14px;margin-top:12px;font-size:17px;font-weight:700;">🕐 ' + nextTxt + ' · 오늘 등원 ' + Object.keys(arr).length + '명</div>' +
+        raidB + lgB +
+        '<div style="font-size:12px;opacity:.6;padding-top:12px;">SYNK LAB · 점수를 넘어, 삶을 설계합니다</div></div>';
+      setAppState_(ss, '교실스크린HTML', scrHtml);
+    }
+  } catch (eScr) { Logger.log('교실스크린 생략: ' + eScr.message); } // 스크린 실패가 출결 보드를 깨지 않게
 }
 
 /* ===================== [v8.0] 숙제 일괄 전개 ===================== */
@@ -5017,7 +5124,7 @@ function monthlyGameBatch() {
         if (r[1] === 'season' && Number(r[5]) === nowMonth) { sName = String(r[2]); sTheme = String(r[3] || ''); }
       });
     }
-    if (sName) setState(stG, '이달의시즌', nowMonth + '월 시즌 · ' + sName + (sTheme ? ' — ' + sTheme : ''));
+    if (sName) setState(stG, '이달의시즌', nowMonth + '월의 무대 · ' + sName + (sTheme ? ' — ' + sTheme : '')); // [v9.56] 월 테마 개명 「이달의 무대」(유호 07-24) — "시즌"은 커리큘럼 8주 트랙 전용. app_state 키명은 Glide 바인딩 보호로 유지
   }
 
   // [v7.1] 월간 정산 — ① 칭호보너스: 조건형만 포인트(경쟁형 1위류는 명예만) ② 출석 1회당 +3P
@@ -6481,6 +6588,33 @@ function buildMonthlyCards_() {
   Logger.log('이달의 카드 ' + ym + ': ' + rows.length + '장');
 }
 
+// [v9.56] 🖨️ 이달의 카드 실물 인쇄(도전안④ 물성화) — ▶ 수동 실행(월례 세리머니 직전 1회).
+//   synk_cards 최신 발간월을 A4용 그리드 HTML로 Drive 'SYNK_인쇄' 폴더에 저장(가능하면 PDF도)
+//   + 원장 메일로 링크. 앱·Glide 변경 0 — 디지털 카드의 물성화라 원격 앱이 못 베끼는 리텐션 표면.
+function printMonthlyCards() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const cd = ss.getSheetByName('synk_cards');
+  if (!cd || cd.getLastRow() < 2) return '카드 없음 — 매월 1일 발간 후 실행하세요';
+  const rowsP = cd.getRange(2, 1, cd.getLastRow() - 1, 3).getValues();
+  let ymP = '';
+  rowsP.forEach(r => { const y6 = String(r[0] || ''); if (y6 > ymP) ymP = y6; });
+  const cards = rowsP.filter(r => String(r[0]) === ymP && r[2]).map(r => String(r[2]));
+  if (!cards.length) return ymP + ' 발간분 없음';
+  const html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>SYNK 이달의 카드 ' + ymP + '</title>' +
+    '<style>body{margin:0;padding:8mm;background:#fff;}.g{display:flex;flex-wrap:wrap;gap:5mm;}.c{width:62mm;}@media print{.c{page-break-inside:avoid;}}</style></head>' +
+    '<body><div class="g">' + cards.map(c => '<div class="c">' + c + '</div>').join('') + '</div></body></html>';
+  const blob = Utilities.newBlob(html, 'text/html', 'SYNK_이달의카드_' + ymP + '.html');
+  const it = DriveApp.getFoldersByName('SYNK_인쇄');
+  const folder = it.hasNext() ? it.next() : DriveApp.createFolder('SYNK_인쇄');
+  const fHtml = folder.createFile(blob);
+  let pdfUrl = '';
+  try { const pdf = blob.getAs('application/pdf'); pdf.setName('SYNK_이달의카드_' + ymP + '.pdf'); pdfUrl = folder.createFile(pdf).getUrl(); } catch (eP) {}
+  const msg = ymP + ' 카드 ' + cards.length + '장\nHTML: ' + fHtml.getUrl() + (pdfUrl ? '\nPDF: ' + pdfUrl : '\n(PDF 자동 변환 실패 — HTML 파일을 열어 Ctrl+P로 인쇄)');
+  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🖨️ 이달의 카드 인쇄 파일 (' + ymP + ')', msg + '\n\n인쇄 팁: A4 가로 방향 + "배경 그래픽" 옵션 켜기. 이름 인쇄 지급 전 학생·학부모 동의 확인.');
+  Logger.log(msg);
+  return msg;
+}
+
 // [v9.12] 🗺️ 시냅스 여행 지도 — 스토리북이 다녀간 한국 12경, 도감 문법(???)의 지도판
 const MAP_EMOJI = ['🏯','🥘','🌸','👘','🍗','🌇','🌊','🎸','🏘️','🍁','🎡','🔔'];
 const MAP_NAME = ['덕수궁','광장시장','여의도','경복궁','한강','남산','해운대','홍대','북촌','설악산','롯데월드','보신각'];
@@ -6573,7 +6707,7 @@ function writeLeagueHistory(ss, tz, ym, mPts, rank, clsOf, nameOf) {
 
   const label = Number(ym.substring(0, 4)) + '년 ' + Number(ym.substring(5, 7)) + '월';
   addNotice(ss,
-    '🏆 ' + label + (season ? " '" + season + "' 시즌" : '') + ' 리그 결과!',
+    '🏆 ' + label + (season ? " '" + season + "' 무대" : '') + ' 리그 결과!', // [v9.56] 월 테마 개명 — 여행지도의 "N월의 무대"와 표현 통일
     '챔피언: ' + champ.name + ' (' + champ.pts + 'P) 🎉' +
     (mvpId ? ' · 이달의 MVP: ' + (nameOf[mvpId] || mvpId) + ' (' + (mPts[mvpId] || 0) + 'P)' : '') +
     ' — 명예의 전당에 기록되었습니다!');
@@ -7794,6 +7928,7 @@ function aiFeedbackBatch_() {
   if (processed > 0) props.setProperty('숙제폼_포인터', String(from + processed));
   if (made || permFails || lastErr) adminMail('[SYNK] 🤖 AI 첨삭 ' + made + '건 생성' + (permFails ? ' · 오류 ' + permFails + '건' : '') + (lastErr ? ' · 중단됨' : ''),
     (made ? (AI_FEEDBACK_AUTOPUBLISH ? '앱에 바로 노출되었습니다.\n' : "hw_feedback 시트에서 내용 확인 후 '상태'를 '노출'로 바꾸면 학생에게 공개됩니다(AI_FEEDBACK_AUTOPUBLISH=true면 이 단계 생략).\n") : '') +
+    (made && !AI_FEEDBACK_AUTOPUBLISH ? '📎 검수 바로가기: ' + ss.getUrl() + '#gid=' + (ss.getSheetByName('hw_feedback') ? ss.getSheetByName('hw_feedback').getSheetId() : 0) + '\n' : '') + // [v9.56] 검수함(Glide 2-D) 조립 전 다리 — 메일 1클릭으로 I열 승인
     (permFails ? "\n'오류:' 상태 행 " + permFails + '건은 같은 입력 재시도가 무의미해 건너뛰었습니다(hw_feedback에서 확인).' : '') +
     (lastErr ? '\n마지막 오류: ' + lastErr + '\n실패 지점부터 내일 밤 자동 재시도합니다.' : ''));
 }
