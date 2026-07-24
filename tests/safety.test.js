@@ -653,3 +653,15 @@ test('[v9.57] clasp filePushOrder는 Code.js를 선두로 고정한다(전역 �
   assert.ok(Array.isArray(cj.filePushOrder) && cj.filePushOrder.length >= 1, 'filePushOrder가 비어 있으면 파일 순서 무보증');
   assert.equal(cj.filePushOrder[0], 'Code.js', '공용 상수 정본(Code.js)이 가장 먼저 초기화돼야 한다');
 });
+
+test('[v9.61] preflight는 학생 입력 폼 3종 미생성을 경고한다(버튼이 조용히 안 그려지는 결함)', () => {
+  // 2026-07-24 실측: 출석폼URL틀·숙제폼URL틀이 없어 CX102·CY103이 공란 → Glide Open-link 버튼 전원 미렌더.
+  // 컴포넌트는 존재해 눈으로 하는 조립 점검을 통과했다 → 기계 경고로 이관.
+  const body = section('function preflightGlide()', 'function safeRun(name, fn)');
+  ['출석폼URL틀', '숙제폼URL틀', '약점메모폼URL'].forEach((k) => {
+    assert.ok(body.includes(`'${k}'`), `preflight가 ${k} 부재를 감시해야 한다`);
+  });
+  ['createAttendanceForm', 'createHwForm', 'createTeacherMemoForm'].forEach((fn) => {
+    assert.ok(body.includes(fn), `경고문이 처방(${fn} 실행)을 담아야 한다`);
+  });
+});
