@@ -508,3 +508,39 @@ test('[v9.54] 루트의 모든 엔진 .js가 .claspignore 허용목록에 있다
     assert.ok(ok, `.claspignore 허용목록에 없음: ${f} — clasp push에서 빠져 라이브가 반쪽이 된다`);
   }
 });
+
+test('[v9.55] SYNK_VERSION 상수는 파일 내 최고 버전 태그와 일치한다(배포 시 미갱신 재발 차단)', () => {
+  // v9.50 미갱신을 v9.51에서 정정하고도 v9.52~54가 또 미갱신 — 두 번 나온 오류는 시스템 결함(기계 강제로 이관).
+  const tags = [...code.matchAll(/\[v9\.(\d+)/g)].map((m) => Number(m[1]));
+  const max = Math.max(...tags);
+  const m = code.match(/const SYNK_VERSION = 'v9\.(\d+)'/);
+  assert.ok(m, 'SYNK_VERSION 상수를 찾지 못함');
+  assert.equal(Number(m[1]), max, `헤더 최고 태그 v9.${max} ≠ SYNK_VERSION v9.${m[1]} — 새 버전 태그를 달면 상수도 함께 올려야 한다`);
+});
+
+test('[v9.55] 이름+반 매칭 — 동명이인은 반으로 갈리고, 반 오기재도 이름 유일이면 구제된다', () => {
+  const match = loadFunction('function matchStudentsByNameClass_', 'function sweepTeacherMemoForm_', 'matchStudentsByNameClass_', {});
+  const roster = [
+    { sid: 'S1', n: '테무진', c: '월수 A' }, { sid: 'S2', n: '테무진', c: '화목 B' },
+    { sid: 'S3', n: '사라', c: '월수 A' }
+  ];
+  assert.deepEqual(match(roster, '사라', '월수 A'), ['S3']);
+  assert.deepEqual(match(roster, ' 사라 ', '기타'), ['S3']);   // 공백 정규화 + '기타'는 이름만
+  assert.deepEqual(match(roster, '사라', '화목 B'), ['S3']);   // 반 오기재 — 이름이 유일하면 구제
+  assert.deepEqual(match(roster, '테무진', '화목 B'), ['S2']); // 동명이인 — 반으로 확정
+  assert.equal(match(roster, '테무진', '기타').length, 2);     // 동명이인 + 반 미상 = 복수 반환(호출부가 미매칭 처리)
+  assert.deepEqual(match(roster, '없는애', '월수 A'), []);
+});
+
+test('[v9.55] 약점 메모 스위프 — 미매칭은 sid 공란+상태 미매칭(소비처 오염 0) + 포인터 클램프', () => {
+  const body = section('function sweepTeacherMemoForm_(', 'function aiFeedbackBatch_(');
+  assert.ok(body.includes("'약점메모폼_포인터'"), '전용 포인터 필요(sweepLeadForm 패턴)');
+  assert.ok(body.includes('from > last'), '응답 시트 행 삭제 시 포인터 클램프가 없으면 영구 스킵');
+  assert.ok(body.includes("ok ? cands[0] : ''"), '매칭 실패는 sid 공란 — 소비처 3곳이 전부 sid 공란을 스킵하는 전제를 고정');
+  assert.ok(body.includes("'미매칭'"), '상태=미매칭이 사람 복구 경로(H열 지우고 sid 채움)');
+});
+
+test('[v9.55] 약점 메모 스위프는 수업 전 메일보다 먼저 돈다(같은 10분 틱의 메모가 메일에 실린다)', () => {
+  const body = section('function parentSweep()', 'function translateTopics_(');
+  assertOrder(body, ["safeRun('sweepTeacherMemoForm'", "safeRun('classPrepMail'"]);
+});
