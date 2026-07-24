@@ -2045,7 +2045,7 @@ function calcAll() {
           // [v9.50·B1] 세계관 내레이터 — 진화 순간 배너를 그 학생의 실데이터(이름·몬스터·문법·기록)로 개인화(결정론 템플릿 6종)
           alertOut.push([crownToday2 ? '👑 오늘 왕관을 받았어요! 최고예요 🎉'
             : evoRecent ? hashPick_(NARRATE_EVO, id + todayYmd0)
-                .replace('{n}', r[1] || id).replace('{m}', String(r[18] || '몬스터'))
+                .replace('{n}', r[1] || id).replace('{m}', String(mon.stage || '몬스터')) // [v9.54] pfData는 15열(0~14)만 읽는다 — 범위 밖 인덱스(18) 참조로 항상 '몬스터'가 나오던 것을 현 단계명으로 교정
                 .replace('{g}', gEvoForm ? '\'' + gEvoForm + '\' 문법을 익히고 ' : '')
                 .replace('{t}', String(t || 0))
             : isBday6 ? '🎂 생일 축하해요! 오늘의 주인공이에요 🎉'
@@ -2840,8 +2840,8 @@ function notifyParents() {
   const atLast = at.getLastRow();
   const todayAtt = new Set();
   if (atLast >= 2) {
-    at.getRange(2, 1, atLast - 1, 3).getValues().forEach(r => {
-      if (r[1] && r[2] && dstr(r[2], tz) === todayStr) todayAtt.add(r[1]);
+    at.getRange(2, 1, atLast - 1, 4).getValues().forEach(r => { // [v9.54] method 열까지 읽어 '출석' 판정 — todayBoard_·주간 다이제스트와 동일 방어(현 유입값은 전부 '출석*'이라 동작 동일)
+      if (r[1] && r[2] && dstr(r[2], tz) === todayStr && String(r[3]).indexOf('출석') > -1) todayAtt.add(r[1]);
     });
   }
 
@@ -4027,20 +4027,8 @@ function seedMasteryForExisting() {
   Logger.log('소급 인정 시드: 신규 ' + newRows.length + ' · 상향 ' + upRows.length + '행');
 }
 
-// [v9.36] 리포트카드용 — 해당 월(yyyy-MM) 신규 '도달' 문법 수. 소급인정은 제외(시드 달 리포트 인플레 방지).
-function masteryNewCountByYm_(ss, ym) {
-  const out = {};
-  const ml = ss.getSheetByName('mastery_log');
-  if (!ml || ml.getLastRow() < 2) return out;
-  const tzM = ss.getSpreadsheetTimeZone();
-  ml.getRange(2, 1, ml.getLastRow() - 1, 6).getValues().forEach(r => {
-    if (String(r[2]) !== '도달' || !r[4] || String(r[5]) === '소급인정') return;
-    if (dstr(r[4], tzM, 'yyyy-MM') !== ym) return;
-    const sid = String(r[0]).trim();
-    out[sid] = (out[sid] || 0) + 1;
-  });
-  return out;
-}
+// [v9.54] masteryNewCountByYm_ 제거 — v9.36에서 리포트카드용으로 만들었으나 이후 개편에서 호출부가
+//   사라져 참조 0건(죽은 코드)임을 전수 스캔으로 확인. 필요해지면 git 이력(v9.52 이전)에서 복원.
 
 /* ===================== [v7.9] 학부모 주간 다이제스트 ===================== */
 // 일요일 22시 — 등원·포인트·왕관·레이드·배운 것을 학부모에게 한 통으로 (등원 즉시 메일 대체)
@@ -4534,6 +4522,7 @@ function checkNoShow() {
 
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
   const at = ss.getSheetByName('attendance');
+  if (!at) return; // [v9.54] 재건 직후 attendance 부재 가드 — 출석표 없이 판정을 열면 전원 미등원 오경보가 된다(다음 스위프에서 재시도)
   const atLast = at.getLastRow();
   const todayAtt = new Set();
   if (atLast >= 2) {
@@ -5500,10 +5489,15 @@ function importFormResponses() {
       });
 
       // 빈 행 찾기 (A열 기준) — [v9.19] 600행 창이 꽉 차면 3행 덮어쓰기 대신 시트 끝에 append
-      const colA = consult.getRange(3, 1, 600, 1).getValues();
+      // [v9.54] 창을 시트 물리 행수로 클램프 — 외부 상담시트에서 누가 빈 행을 지워 총 행<602가 되면
+      //   고정 600행 읽기가 Range 예외를 던져 10분 스위프가 반복 실패하던 위험 제거
+      const winRows = Math.min(600, consult.getMaxRows() - 2);
       let newRow = -1;
-      for (let i = 0; i < colA.length; i++) {
-        if (!colA[i][0]) { newRow = i + 3; break; }
+      if (winRows > 0) {
+        const colA = consult.getRange(3, 1, winRows, 1).getValues();
+        for (let i = 0; i < colA.length; i++) {
+          if (!colA[i][0]) { newRow = i + 3; break; }
+        }
       }
       if (newRow === -1) newRow = consult.getLastRow() + 1;
 
@@ -5555,15 +5549,10 @@ function importFormResponses() {
 
 function setupStore() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const ct = ss.getSheetByName('contents') ||
-    ensureSheet(ss, 'contents', ['콘텐츠ID','유형','이름','설명','이미지URL','순번','몽골어','영어']); // [v9.9]
-  const last = ct.getLastRow();
-  if (last >= 2) {
-    const data = ct.getRange(2, 1, last - 1, 6).getValues();
-    const keep = data.filter(r => r[1] !== 'store');
-    ct.getRange(2, 1, last - 1, 6).clearContent();
-    if (keep.length) ct.getRange(2, 1, keep.length, 6).setValues(keep);
-  }
+  // [v9.54] 구 6열 clear/압축 패턴 폐기 → replaceContentType 위임(전체 열 폭 보존).
+  //   구 패턴은 A~F만 지우고 위로 압축해, 라이브 시트의 몽골어(G)·영어(H)·Glide Row ID가 옛 행 위치에
+  //   남아 생존 행 전체가 오정렬됐다(다른 15개 유형은 v5.2부터 위임인데 이 함수만 잔존).
+  //   preflight 자동복구가 store 0개일 때 이 함수를 자동 실행하므로 손 실행 없이도 밟힐 수 있던 지뢰.
   const items = [
     // [v7.1] 소득(평균 월 ~160P·성실 ~280P) 역산 가격 사다리 — 간식·체험 티어 신설
     ['ST01','store','한국 간식 1개 (초코파이·빼빼로 등)','간식','',40],
@@ -5587,8 +5576,7 @@ function setupStore() {
     ['ST21','store','스튜디오 스타일 가족사진 촬영','체험','',2000],
     ['ST22','store','K-아이돌 메이크업+프로필 촬영','체험','',2000]
   ];
-  ct.getRange(ct.getLastRow() + 1, 1, items.length, 6).setValues(items);
-  Logger.log('스토어 ' + items.length + '개 등록');
+  replaceContentType(ss, 'store', items);
 }
 
 /* ===================== 시스템 헬스체크 (일요일) ===================== */
@@ -5604,7 +5592,8 @@ function healthCheck() {
 function cleanupFormTest() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
-  const colA = consult.getRange(8, 1, 600, 1).getValues();
+  const winRows2 = Math.min(600, consult.getMaxRows() - 7); // [v9.54] 물리 행수 클램프(importFormResponses와 동일 처방)
+  const colA = winRows2 > 0 ? consult.getRange(8, 1, winRows2, 1).getValues() : [];
   let cleaned = 0;
   colA.forEach((r, i) => {
     if (r[0]) { consult.getRange(8 + i, 1, 1, 68).clearContent(); cleaned++; }
@@ -7796,7 +7785,10 @@ function aiText_(prompt, maxTok) {
     const res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
       method: 'post', contentType: 'application/json',
       headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-      payload: JSON.stringify({ model: AI_FEEDBACK_MODEL, max_tokens: maxTok || 1024, messages: [{ role: 'user', content: prompt }] }),
+      // [v9.54] thinking OFF — Sonnet 5는 thinking 생략 시 적응형 사고가 기본 ON이고 사고 토큰이 max_tokens를
+      //   잠식한다. 짧은 예산(900~1536)의 자유텍스트에서 본문이 잘리거나 비어 폴백률이 오르던 것을,
+      //   사고를 꺼 예산 전액을 본문에 쓰게 교정(구조화 호출 aiCall_·첨삭은 품질 우선으로 사고 유지).
+      payload: JSON.stringify({ model: AI_FEEDBACK_MODEL, max_tokens: maxTok || 1024, thinking: { type: 'disabled' }, messages: [{ role: 'user', content: prompt }] }),
       muteHttpExceptions: true
     });
     if (res.getResponseCode() !== 200) return null;
@@ -7871,10 +7863,16 @@ function aiStudioBatch_() {
   const doneToday = {};
   if (ad.getLastRow() >= 2) ad.getRange(2, 1, ad.getLastRow() - 1, 2).getValues().forEach(r => { if (String(r[1]) === today) doneToday[String(r[0]).trim()] = 1; });
 
+  // [v9.54] 학생·약점 로더 지연 메모이즈 — ①(한문장)과 ③(반브리핑)이 profiles·student_errors·hw_feedback
+  //   전량을 각각 중복 read하던 것을 1회로. 실패 시 캐시가 남지 않으므로 섹션별 try 격리(뒤 섹션이 재시도)는 유지된다.
+  let _stusAll = null, _weakAll = null;
+  const stusAll_ = () => (_stusAll || (_stusAll = aiStudents_(ss)));
+  const weakAll_ = () => (_weakAll || (_weakAll = aiWeakMap_(ss)));
+
   // ① H1/A1/A2/A4 — 학생별 오늘의 한 문장 + 약점 퀴즈(관심사 반영), 배치 호출
   try {
-    const stus = aiStudents_(ss).filter(s => !doneToday[s.id]);
-    const weak = aiWeakMap_(ss);
+    const stus = stusAll_().filter(s => !doneToday[s.id]);
+    const weak = weakAll_();
     const schema = {
       type: 'object', additionalProperties: false, required: ['items'],
       properties: { items: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['i', 's', 'q', 'a'], properties: {
@@ -7940,8 +7938,8 @@ function aiStudioBatch_() {
   try {
     const cs = ss.getSheetByName('class_stats');
     if (cs && cs.getLastRow() >= 2 && can()) {
-      const weak = aiWeakMap_(ss);
-      const stus = aiStudents_(ss);
+      const weak = weakAll_(); // [v9.54] ①에서 로드했으면 재사용
+      const stus = stusAll_();
       const wkByCls = {};
       stus.forEach(s => { (weak[s.id] || []).slice(-1).forEach(w => (wkByCls[s.cls] = wkByCls[s.cls] || []).push(w)); });
       const clsRows = cs.getRange(2, 1, cs.getLastRow() - 1, 8).getValues().filter(r => r[0] && Number(r[1]) > 0);
@@ -8119,6 +8117,9 @@ function parentHighlightsMail_() {
   const tz = ss.getSpreadsheetTimeZone();
   const ym = Utilities.formatDate(new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1), tz, 'yyyy-MM');
   if (props.getProperty('하이라이트발송월') === ym) return; // 월키 멱등
+  const doneSids = new Set(); // [v9.54] 이번 달 이미 발송된 학생 — 쿼터 보류 이어하기용(아래 quotaShort 참조)
+  const holdHl = String(props.getProperty('하이라이트보류') || '');
+  if (holdHl.indexOf(ym + '|') === 0) holdHl.slice(ym.length + 1).split(',').forEach(x => { if (x) doneSids.add(x); });
   const pl = ss.getSheetByName('point_logs');
   const ptsM = {};
   if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
@@ -8136,9 +8137,14 @@ function parentHighlightsMail_() {
   if (pf && pf.getLastRow() >= 2 && pf.getMaxColumns() >= 54) pf.getRange(2, 1, pf.getLastRow() - 1, 54).getValues().forEach(r => {
     if (r[0] && r[3] === 'student' && String(r[53] || '').indexOf(ym) === 0) evoM[String(r[0]).trim()] = 1;
   });
-  let sent = 0;
+  // [v9.54] 쿼터 보류 이어하기 — 발송 도중 일일 메일 쿼터가 바닥나면 월 마커를 찍지 않고 발송분만
+  //   '하이라이트보류'(ym|sid,…)에 남기고, morningJobs가 매일 재호출해 남은 학생만 이어 보낸다
+  //   (다이제스트보류 #31과 같은 처방). 구 구현은 쿼터 소진 시에도 마커를 무조건 세팅해
+  //   뒤쪽 학생들이 그 달 하이라이트를 영영 못 받았다(조용한 유실).
+  let sent = 0, quotaShort = false;
   aiStudents_(ss).forEach(s => {
-    if (!s.pEmail || !quotaOk(1)) return;
+    if (!s.pEmail || doneSids.has(s.id) || quotaShort) return;
+    if (!quotaOk(1)) { quotaShort = true; return; }
     const scenes = [];
     const fill = (ti, x, t) => scenes.push(HL_TPL[ti][0].replace('{n}', s.n).replace('{x}', x || '').replace('{t}', t || '') +
       '\n' + HL_TPL[ti][1].replace('{n}', s.n).replace('{x}', x || '').replace('{t}', t || ''));
@@ -8151,10 +8157,11 @@ function parentHighlightsMail_() {
     MailApp.sendEmail(s.pEmail, '[SYNK] ✨ ' + s.n + ' — Энэ сарын гурван агшин (이달의 세 장면)',
       'Энэ сард ' + s.n + '-д ийм агшин байлаа:\n(이번 달 ' + s.n + '에게 이런 순간이 있었어요)\n\n' +
       scenes.map((sc, i) => (i + 1) + '. ' + sc).join('\n\n') + '\n\n— SYNK LAB');
-    sent++;
+    sent++; doneSids.add(s.id);
   });
-  props.setProperty('하이라이트발송월', ym);
-  if (sent) adminMail('[SYNK] ✨ 학부모 하이라이트 ' + sent + '건 발송', ym + ' 실데이터 장면만 골라 발송(데이터 없는 학생은 생략 — 지어내지 않음).');
+  if (quotaShort) props.setProperty('하이라이트보류', ym + '|' + Array.from(doneSids).join(','));
+  else { props.setProperty('하이라이트발송월', ym); props.deleteProperty('하이라이트보류'); }
+  if (sent) adminMail('[SYNK] ✨ 학부모 하이라이트 ' + sent + '건 발송', ym + ' 실데이터 장면만 골라 발송(데이터 없는 학생은 생략 — 지어내지 않음).' + (quotaShort ? '\n⚠ 메일 쿼터 도달 — 남은 학생은 내일 아침 자동으로 이어 발송됩니다.' : ''));
 }
 
 // ── F2 SNS 성장 스토리 초안(월간) — 익명 집계만 사용(동의 체계 구축 전 개인 식별 정보 미사용) ──
@@ -11062,6 +11069,7 @@ function morningJobs() {   // 매일 07시
   safeRun('birthdayCheck', birthdayCheck);
   safeRun('checkConsultDelay', checkConsultDelay);
   safeRun('parentWeeklyDigestRetry', parentWeeklyDigestRetry_); // [v9.34] 일요일 다이제스트 쿼터 유실분 평일 아침 재발송(보류 키 없으면 즉시 return)
+  safeRun('parentHighlightsRetry', parentHighlightsMail_); // [v9.54] 월간 하이라이트 쿼터 보류분 이어 발송(월 마커 있으면 즉시 return — 사실상 무비용)
   safeRun('welcomeStoryBatch', welcomeStoryBatch_); // [v9.50·F4] 웰컴 스토리 — 대기열 중 학부모 이메일이 채워진 신규 학생에게 세계관 입장 편지(키 없으면 템플릿 폴백)
 }
 
