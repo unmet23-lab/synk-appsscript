@@ -680,12 +680,18 @@
  *      AI 약점 로더)은 v9.47·v9.50 기배선, 이번 건은 쓰기 레일. 매칭 실패 행은 sid 공란+상태='미매칭'
  *      (소비처 전부 sid 공란 스킵 = 오염 0)+관리자 메일로 사람 복구. 폼 URL은 app_state+생성 메일.
  *      부수: SYNK_VERSION 미갱신 재발(v9.50·v9.52~54) → 최고 버전 태그=상수 동치 테스트로 기계 강제.
+ *
+ * [v9.57 — 🚑 전역 초기화 크래시 핫픽스 (2026-07-24 실사고)]
+ * 190. 상담AI.gs:27이 톱레벨에서 Code.js의 AI_FEEDBACK_MODEL을 참조 — 라이브 파일 순서가 상담AI→Code라
+ *      모든 ▶실행·트리거가 ReferenceError로 즉사하던 것(유호님 createTeacherMemoForm 실행에서 발각,
+ *      상담AI.js가 처음 라이브에 오른 07-24 배포부터 잠복). 수정 3중: ①지연 참조(상담AI_모델_())
+ *      ②.clasp.json filePushOrder=Code.js 선두 고정 ③톱레벨 크로스파일 참조 전 파일 기계 차단 테스트.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.56'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩
+const SYNK_VERSION = 'v9.57'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
