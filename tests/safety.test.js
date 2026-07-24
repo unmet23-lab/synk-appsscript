@@ -493,6 +493,23 @@ test('[v9.54] 미등원 판정은 attendance 부재 시 열리지 않는다(전�
   assertOrder(body, ["ss.getSheetByName('attendance')", 'if (!at) return;', 'at.getLastRow()']);
 });
 
+test('[v9.60] 레벨테스트 폼 생성은 재실행 안전 — 이미 있으면 새 폼을 만들지 않는다', () => {
+  const body = section('function createLevelTestForm()', 'function cleanupOrphanFormSheets()');
+  // 2026-07-24 실사고: 두 번째 실행이 시트 이름 충돌로 죽으면서 중복 폼 + 잔재 응답 시트를 남겼다.
+  // 조기 반환(있으면 만들지 않음)이 FormApp.create보다 반드시 앞에 와야 한다.
+  assertOrder(body, ["ss.getSheetByName('레벨테스트_응답')", 'return msgX;', 'FormApp.create(']);
+  assert.ok(body.includes('shX.getFormUrl()'), 'URL 기록이 없을 때 시트에 연결된 폼에서 회수해야 재생성을 피한다');
+});
+
+test('[v9.60] 잔재 청소는 자동생성 이름 + 빈 시트만 지운다(데이터 보호)', () => {
+  const body = section('function cleanupOrphanFormSheets()', 'function sweepLevelTest_()');
+  assert.ok(body.includes('설문지 응답 시트'), '자동 생성 이름만 대상');
+  assert.ok(body.includes('getLastRow() >= 2'), '응답이 있으면 보존해야 한다');
+  assert.ok(body.includes('deleteSheet'), '삭제 경로 존재');
+  // 이름 붙은 정본 시트를 지우는 경로가 생기면 안 된다
+  assert.equal(/deleteSheet\(ss\.getSheetByName/.test(body), false);
+});
+
 test('[v9.54] 루트의 모든 엔진 .js가 .claspignore 허용목록에 있다(반쪽 배포 방지)', () => {
   // 상담AI.js가 허용목록에 빠져 매니페스트·contents만 라이브로 가던 실사고(2026-07-24)의 회귀 장치.
   // 새 엔진 파일을 루트에 만들면 이 테스트가 배포 게이트에서 누락을 잡는다.
