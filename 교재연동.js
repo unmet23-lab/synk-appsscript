@@ -1,11 +1,15 @@
 /* ============================================================
- * SYNK 교재연동 엔진 [v9.58] — 목소리 타임랩스(A) + 필살기 노트(B)
+ * SYNK 교재연동 엔진 [v9.59] — 목소리 타임랩스(A) + 필살기 노트(B) + AI 문법 판정(C)
  *
  * 무엇(2026-07-24 유호님 채택 2건 — 기능 동결의 명시 예외):
  *   A. 목소리 타임랩스 — 교재 권1 1·4·8과 과업의 음성 녹음을 폼으로 제출받아
  *      "처음 목소리 vs 오늘 목소리" 성장 카드를 만든다(시즌1 「첫 목소리」 서사의 물증).
  *   B. 필살기 노트 — mastery_log(미도달 문법)·student_errors(강사 약점 메모)·
  *      hw_feedback(AI 첨삭)을 모아 "너의 약점 → 교재 몇 과를 다시 펴라"를 학생별 생성.
+ *   C. AI 문법 판정 [v9.59, 유호님 지시 "교사 손 0"] — 학생이 숙제폼으로 낸 문장을
+ *      AI가 판정해 mastery_log를 자동 축적. 강사 마감폼 문법태그 없이도 진화 게이트·
+ *      필살기 노트가 완전 작동한다(마감폼·약점메모폼은 선택 보강으로 강등).
+ *      열의 있는 학생일수록 제출↑ → 도달↑ → 진화↑ — 학생 주도 완결 루프.
  *
  * 설계 원칙
  *   ① Glide update 0 — 폼 제출(인바운드)·야간 배치 쓰기만. 앱은 읽기 전용.
@@ -35,6 +39,8 @@ const TB_VOICE_POINTS = 10;              // 목소리 제출 포인트(하루 1�
 const TB_VOICE_REASON = '목소리제출';     // point_logs 사유(멱등 키)
 const TB_NOTE_MAX = 3;                   // 필살기 노트 최대 항목 수(인지 부하 상한)
 const TB_GROWTH_MIN_DAYS = 21;           // 성장 카드 최소 간격(처음↔최신)
+const TB_JUDGE_MAX_PER_RUN = 20;         // C. 문법 판정 — 밤당 최대 학생 수(비용·시간 가드)
+const TB_JUDGE_TEXT_CAP = 600;           // 학생당 판정 입력 문장 길이 상한(자)
 
 // profiles 열을 헤더 이름으로 찾는다 — 열 번호 하드코딩 금지(집필 중 54↔106 오계산을 실제로
 // 냈던 오류 클래스의 회귀 장치. 다른 세션이 열을 추가·이동해도 이름이 맞으면 안전).
@@ -89,9 +95,10 @@ function setupTextbookLink() {
   교재연동Nightly(); // 설치 직후 1회 즉시(링크 열을 바로 채워 Glide 조립을 기다리게 하지 않는다)
 }
 
-// ── 야간 오케스트레이터(트리거 23:00) ─────────────────────────────────
+// ── 야간 오케스트레이터(트리거 23:00 — aiFeedbackBatch_ 22시 뒤라 당일 첨삭분 판정 가능) ──
 function 교재연동Nightly() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  try { masteryFromFeedback_(ss); } catch (e) { Logger.log('masteryFromFeedback_ 오류: ' + e); }
   try { voiceSweep_(ss); } catch (e) { Logger.log('voiceSweep_ 오류: ' + e); }
   try { writeVoiceLinks_(ss); } catch (e) { Logger.log('writeVoiceLinks_ 오류: ' + e); }
   try { buildVoiceGrowthCards_(ss); } catch (e) { Logger.log('buildVoiceGrowthCards_ 오류: ' + e); }
@@ -260,4 +267,89 @@ function buildFocusNotes_(ss) {
   });
   const col = tbProfileCol_(pf, '필살기노트');
   if (col) writeIfChanged(pf, 2, col, out);
+}
+
+// ── C. AI 문법 판정 [v9.59] — 숙제 문장 → mastery_log 자동 축적(교사 손 0) ──
+//   흐름: hw_feedback 신규 행(포인터) → 학생별 문장 묶음 → aiCall_(Code.js 공용 헬퍼) 1회/학생
+//        → 올바르게 쓴 문법 = '연습' 기록, 서로 다른 날 2회째 = '도달' 승격(우연 1회 방지)
+//        → 틀리게 시도한 문법 = '연습'만(강등 없음 — 기존 단방향 상향 원칙 그대로)
+//   보수 판정 원칙: "명백히 사용된 것만" — 진화 게이트의 무결성이 관대함보다 중요하다.
+function masteryFromFeedback_(ss) {
+  const apiKey = PropertiesService.getScriptProperties().getProperty('CLAUDE_API_KEY');
+  if (!apiKey) return; // 키 없으면 0초 스킵(전 AI 기능 공통 스위치 원칙)
+  const fb = ss.getSheetByName('hw_feedback');
+  if (!fb || fb.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const last = fb.getLastRow();
+  const from = Number(props.getProperty('문법판정_포인터')) || 1;
+  if (from >= last) { if (from > last) props.setProperty('문법판정_포인터', String(last)); return; }
+  const tz = ss.getSpreadsheetTimeZone();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+
+  // 신규 첨삭 행에서 학생별 제출문 묶기(D열=제출문)
+  const rows = fb.getRange(from + 1, 1, last - from, 4).getValues();
+  const bySid = {};
+  rows.forEach(r => {
+    const sid = String(r[1] || '').trim(), text = String(r[3] || '').trim();
+    if (!sid || !text) return;
+    bySid[sid] = ((bySid[sid] || '') + '\n' + text).slice(-TB_JUDGE_TEXT_CAP);
+  });
+  const sids = Object.keys(bySid).slice(0, TB_JUDGE_MAX_PER_RUN);
+  if (!sids.length) { props.setProperty('문법판정_포인터', String(last)); return; }
+
+  // 판정 대상 문법 목록 — GRAMMAR_BANK(Code.js 전역)의 G2xx·G3xx만(진화 1~3단계 스코프, 프롬프트 압축)
+  const bankList = [];
+  try { GRAMMAR_BANK.forEach(g => { if (/^G[23]/.test(g[0])) bankList.push(g[0] + '=' + g[1]); }); } catch (e) { return; }
+  if (!bankList.length) return;
+  const schema = {
+    type: 'object', additionalProperties: false, required: ['used', 'wrong'],
+    properties: {
+      used: { type: 'array', items: { type: 'string' }, description: '학생이 명백히 올바르게 사용한 문법 ID만(확신 없으면 제외)' },
+      wrong: { type: 'array', items: { type: 'string' }, description: '사용을 시도했으나 틀린 문법 ID만' }
+    }
+  };
+  const system = '한국어 교육 문법 판정관. 학생 문장에서 아래 문법 항목의 사용 여부를 보수적으로 판정한다. ' +
+    '명백한 것만 담고, 애매하면 제외한다. 목록에 없는 ID는 절대 만들지 않는다.';
+
+  // mastery_log upsert 준비 — (sid|gid) → {row, 상태, 마지막근거일}
+  const ml = ensureSheet(ss, 'mastery_log', ['student_id', 'grammar_id', '상태', '첫기록일', '도달일', '출처', 'updated_at']);
+  const idx = {};
+  if (ml.getLastRow() >= 2) ml.getRange(2, 1, ml.getLastRow() - 1, 7).getValues().forEach((r, i) => {
+    const sid = String(r[0] || '').trim(), gid = String(r[1] || '').trim();
+    if (sid && gid) idx[sid + '|' + gid] = { row: i + 2, st: String(r[2] || ''), d: dstr(r[6] || r[3], tz) };
+  });
+  const validGid = {};
+  bankList.forEach(s => { validGid[s.split('=')[0]] = 1; });
+
+  let judged = 0, reached = 0;
+  const append = [];
+  for (const sid of sids) {
+    let out;
+    try {
+      out = aiCall_(apiKey, system,
+        '문법 목록(ID=이름):\n' + bankList.join('\n') + '\n\n학생 문장:\n' + bySid[sid],
+        schema, 2048);
+    } catch (e) { Logger.log('문법판정 실패(' + sid + '): ' + e); continue; } // 학생 단위 격리 — 다음 학생 계속
+    judged++;
+    const mark = (gid, correct) => {
+      if (!validGid[gid]) return; // AI가 지어낸 ID 차단
+      const k = sid + '|' + gid, ex = idx[k];
+      if (!ex) { // 첫 근거 — '연습'으로 입장
+        append.push([sid, gid, '연습', today, '', correct ? 'AI첨삭' : 'AI첨삭(오류)', new Date()]);
+        idx[k] = { row: 0, st: '연습', d: today };
+        return;
+      }
+      if (ex.st === '도달') return; // 단방향 상향 — 강등 없음
+      if (correct && ex.d && ex.d !== today) { // 서로 다른 날 2회째 올바름 = 도달
+        if (ex.row) { ml.getRange(ex.row, 3, 1, 5).setValues([['도달', ml.getRange(ex.row, 4).getValue() || today, today, 'AI첨삭', new Date()]]); reached++; }
+        ex.st = '도달';
+      } else if (ex.row) { ml.getRange(ex.row, 7).setValue(new Date()); ex.d = today; } // 근거일 갱신
+    };
+    (out.used || []).forEach(g => mark(String(g).trim(), true));
+    (out.wrong || []).forEach(g => mark(String(g).trim(), false));
+  }
+  if (append.length) ml.getRange(ml.getLastRow() + 1, 1, append.length, 7).setValues(append);
+  // 포인터는 이번에 판정한 학생 수와 무관하게 전진 — 남은 학생은 다음 제출 때 자연 재판정(단순성 우선)
+  props.setProperty('문법판정_포인터', String(last));
+  if (judged) Logger.log('✅ 문법 판정 ' + judged + '명 · 신규 기록 ' + append.length + ' · 도달 승격 ' + reached);
 }
