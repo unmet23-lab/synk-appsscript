@@ -694,6 +694,9 @@ test('[v9.63] 품질 게이트가 정상 카드는 통과시키고 불량 카드
   assert.equal(gate(Object.assign({}, good, { mission: '' }), 'x').reason, '빈칸:다음미션');
   assert.equal(gate(Object.assign({}, good, { praise: '아직 부족하지만 잘했어요' }), 'x').reason, '금칙어:부족');
   assert.equal(gate(Object.assign({}, good, { praise: '죄송하지만 문장을 이해하지 못했어요' }), 'x').reason, '메타문구');
+  // [v9.65 리뷰 H1] 사과 단원·AI 주제 숙제의 원문은 corrected에 정당하게 남는다 — 격리하면 무인 목적 훼손
+  assert.equal(gate(Object.assign({}, good, { corrected: '늦어서 죄송합니다.' }), '늦어서 죄송해요').ok, true);
+  assert.equal(gate(Object.assign({}, good, { corrected: '저는 인공지능을 공부해요.' }), '저는 인공지능 공부해요').ok, true);
   assert.equal(gate(Object.assign({}, good, { mission: 'Дараагийн даалгавар' }), 'x').reason, '한글없음:다음미션');
   assert.equal(gate(Object.assign({}, good, { praise: good.praise + ' ```json' }), 'x').reason, '형식잔재');
   // 무의미 제출문을 원문 그대로 되돌린 경우(프롬프트 규칙 5)는 정당 — 한글 없어도 통과
@@ -707,7 +710,7 @@ test('[v9.63] 무인 발행은 게이트 통과분만 노출하고 미달분은 
   assert.ok(body.includes("gate.ok ? (AI_FEEDBACK_AUTOPUBLISH ? '노출' : '대기') : '격리:' + gate.reason"),
     '상태 기록은 게이트 판정이 무인 스위치보다 먼저여야 한다(미달 카드는 어떤 모드에서도 미노출)');
   assertOrder(body, ['callClaudeFeedback_(apiKey, stu, text)', 'fbQualityGate_(card, text)', 'fb.appendRow']);
-  assert.ok(body.includes("' · 격리 ' + held + '건'"), '관리자 메일 제목에 격리 수가 떠야 한다(무인 발행의 사람 백스톱)');
+  assert.ok(body.includes("' · 격리 ' + held"), '관리자 메일 제목에 격리 수가 떠야 한다(무인 발행의 사람 백스톱)'); // [v9.65 L2] 제목 형식 개정에 맞춤
 });
 
 test('[v9.63] 격리·오류 카드는 학생 표면(포인트 정산·성장카드 짝·오류사전·약점퀴즈 재료)에 새어들지 않는다', () => {
