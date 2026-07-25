@@ -665,7 +665,8 @@
  *
  * [v9.49 — 🤖 AI 숙제 첨삭(비동기) + 폼 출석 이관 (2026-07-21 유호 확정)]
  * 186. AI 숙제 첨삭 — 숙제폼(createHwForm) 제출 → 밤 22시 aiFeedbackBatch_가 Claude API(구조화 출력)로
- *      4칸 카드(고친문장·오늘의포인트MN·칭찬·다음미션) 생성 → hw_feedback '대기' → 승인 '노출' →
+ *      4칸 카드(고친문장·오늘의포인트MN·칭찬·다음미션) 생성 → [v9.63] 품질 게이트(fbQualityGate_) 통과분
+ *      즉시 '노출'(무인 발행) · 미달분 '격리:사유'(학생 미노출, 관리자 메일 통보) →
  *      학생 '확인했어요'(J열·Glide 전용) → sweepFeedbackAck_(10분)가 +5P('첨삭확인'·1일 1회·시스템 지급).
  *      키=Script Properties CLAUDE_API_KEY(없으면 전체 스킵). 실패 행부터 포인터 유지 → 다음 밤 재시도.
  * 187. 폼 출석 — 출석폼(createAttendanceForm) 제출 → sweepAttendanceForm_(10분)가 attendance로 전개
@@ -691,7 +692,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.62'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화
+const SYNK_VERSION = 'v9.63'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정)
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -742,11 +743,12 @@ const DAILY_HEARTBEAT = true;        // [v9.32] 큐가 빈 날에도 아침 8시
 const LEAGUE_DAILY_CAST = false;     // [v9.47·A1] 리그 일일 중계석(월~토 발간) — 일일 전투 리포트와 소식탭 도배가 겹쳐 OFF(유호 07-20). 리그는 일요일 결산 1건만. 반 수가 늘어 중계가 읽힐 때 true
 
 /* ── [v9.49] 🤖 AI 숙제 첨삭 + 폼 출석 (유호 확정 2026-07-21) ── */
-// 흐름: 학생이 숙제폼 제출(구글폼 = Glide update 0) → 밤 aiFeedbackBatch_가 Claude API로 4칸 카드 생성
-//   → hw_feedback '대기' → 사람이 '노출' 승인 → 학생이 앱에서 '확인했어요'(J열) → sweepFeedbackAck_가 +5P.
+// 흐름([v9.63] 무인): 학생이 숙제폼 제출(구글폼 = Glide update 0) → 밤 aiFeedbackBatch_가 Claude API로 4칸 카드 생성
+//   → fbQualityGate_ 통과 시 즉시 '노출'(무인 발행) · 미달 시 '격리:사유'(학생 미노출, 관리자 메일 통보)
+//   → 학생이 앱에서 '확인했어요'(J열) → sweepFeedbackAck_가 +5P.
 // 열람을 포인트 루프에 묶는 것까지가 한 세트 — 확인 버튼이 빠지면 "생성만 되고 안 읽히는" 반쪽 기능이 된다.
 const AI_FEEDBACK_MODEL = 'claude-sonnet-5'; // 콘텐츠=Sonnet급 라우팅(CLAUDE.md 정본). API 키는 Script Properties 'CLAUDE_API_KEY' — 없으면 배치 전체 스킵(NOTION_TOKEN 패턴, 배포만으로는 아무 일도 안 일어남)
-const AI_FEEDBACK_AUTOPUBLISH = false;       // false: 생성분 '대기' → 사람이 hw_feedback I열을 '노출'로 승인(초기 검수). 품질 안정 후 true로 자동 공개
+const AI_FEEDBACK_AUTOPUBLISH = true;        // [v9.63] 무인 발행(유호 07-25 확정: 검수함 잔여 조립 중단·즉시 무인 전환) — 게이트 통과분 즉시 '노출'. 문제가 반복되면 false로 되돌리면 구 검수 모드('대기'→수동 승인)로 복귀
 const AI_FEEDBACK_MAX_PER_RUN = 30;          // 야간 1회 첨삭 상한 — 시간예산·비용 가드(초과분은 포인터가 남아 다음 밤 자동 이어짐)
 const RAID_DAILY_STORY = false;  // [v9.50] 일일 전투 리포트 — 매일 발행물 읽힘율 급락 처방(유호 07-21). 금·일 결산(raidFriday·leagueSettle)은 유지. 되살리려면 true
 const AI_STUDIO_MAX_CALLS = 12;  // [v9.50] aiStudioBatch_ 야간 API 호출 상한(비용 가드 — 한 문장·퀴즈 배치 포함 전 호출 합산)
@@ -1739,7 +1741,7 @@ function calcAll() {
       const perG = {};
       fbG.getRange(2, 1, fbG.getLastRow() - 1, 9).getValues().forEach(rG => {
         const sidG = String(rG[1] || '').trim(), sentG = String(rG[4] || '').trim();
-        if (!sidG || !sentG || String(rG[8] || '').indexOf('오류') === 0) return;
+        if (!sidG || !sentG || /^(오류|격리)/.test(String(rG[8] || ''))) return; // [v9.63] 격리 카드는 성장카드 짝에서 제외
         const dG = String(rG[2] || '');
         if (!perG[sidG]) perG[sidG] = { a: sentG, d1: dG, b: sentG, d2: dG };
         else { perG[sidG].b = sentG; perG[sidG].d2 = dG; }
@@ -7906,6 +7908,48 @@ function sweepTeacherMemoForm_(ss) {
   props.setProperty('약점메모폼_포인터', String(last));
 }
 
+// [v9.63] 첨삭 품질 게이트(순수 함수 — tests/safety.test.js가 직접 로드해 검증) — 무인 발행의 안전판.
+//   구조화 출력이 "형태"는 보장해도 "내용"은 보장 못 한다: 빈칸·언어 뒤바뀜(몽골어 칸에 한국어만)·
+//   사과/AI 자기언급·브랜드 금칙어(synk-brand 부정 금지)·형식 잔재를 기계로 거른다.
+//   통과 → 즉시 '노출'(무인) / 미달 → '격리:사유'로 사람 확인 대기. 오탐(정상 카드 격리)은 메일 링크로
+//   복구 가능하지만 미탐(불량 카드 노출)은 학생에게 직행하므로, 규칙은 고정밀 신호만 쓴다(애매하면 통과).
+function fbQualityGate_(card, srcText) {
+  const f = {
+    corrected: String(card && card.corrected || '').trim(),
+    point_mn: String(card && card.point_mn || '').trim(),
+    praise: String(card && card.praise || '').trim(),
+    mission: String(card && card.mission || '').trim()
+  };
+  const src = String(srcText || '').trim();
+  if (!f.corrected) return { ok: false, reason: '빈칸:고친문장' };
+  if (!f.point_mn) return { ok: false, reason: '빈칸:오늘의포인트' };
+  if (!f.praise) return { ok: false, reason: '빈칸:칭찬' };
+  if (!f.mission) return { ok: false, reason: '빈칸:다음미션' };
+  // 언어 검증 — 오늘의포인트=몽골어(키릴 필수), 칭찬·미션=한국어(한글 필수).
+  // 고친문장은 한글 필수이되, 무의미 제출문을 원문 그대로 되돌린 경우(프롬프트 규칙 ⑤)만 예외.
+  if (!/[Ѐ-ӿ]/.test(f.point_mn)) return { ok: false, reason: '몽골어없음:오늘의포인트' };
+  if (!/[가-힣]/.test(f.praise)) return { ok: false, reason: '한글없음:칭찬' };
+  if (!/[가-힣]/.test(f.mission)) return { ok: false, reason: '한글없음:다음미션' };
+  if (!/[가-힣]/.test(f.corrected) && f.corrected !== src) return { ok: false, reason: '한글없음:고친문장' };
+  // 길이 상한 — "최소 수정·1~2문장" 규격의 수 배를 넘으면 폭주(설명문 유입)로 본다. 하한은 두지 않는다(한 단어 교정도 정당).
+  if (f.corrected.length > Math.max(300, src.length * 2)) return { ok: false, reason: '길이초과:고친문장' };
+  if (f.point_mn.length > 500) return { ok: false, reason: '길이초과:오늘의포인트' };
+  if (f.praise.length > 300) return { ok: false, reason: '길이초과:칭찬' };
+  if (f.mission.length > 300) return { ok: false, reason: '길이초과:다음미션' };
+  const all = f.corrected + '\n' + f.point_mn + '\n' + f.praise + '\n' + f.mission;
+  // 메타 발언·사과·형식 잔재 — 4칸 어디에도 있으면 안 되는 것
+  if (/죄송|미안하지만|AI로서|인공지능|as an AI|I can(?:no|')t|도와드릴 수 없|답변할 수 없/i.test(all)) return { ok: false, reason: '메타문구' };
+  if (all.indexOf('```') !== -1 || all.indexOf('{"') !== -1) return { ok: false, reason: '형식잔재' };
+  // 브랜드 금칙어(synk-brand "부정 금지") — 학생에게 직접 읽히는 격려 칸(칭찬·미션)만 검사.
+  //   고친문장(학생 원문 기반)·오늘의포인트(몽골어 설명)는 제외 — 자기 서술·문법 설명까지 막는 오탐 방지.
+  const banned = ['패배', '실패', '불운', '하락', '부족', '늦었'];
+  const kor = f.praise + '\n' + f.mission;
+  for (let i = 0; i < banned.length; i++) {
+    if (kor.indexOf(banned[i]) !== -1) return { ok: false, reason: '금칙어:' + banned[i] };
+  }
+  return { ok: true, reason: '' };
+}
+
 // [v9.49] 야간 AI 첨삭 배치 — 숙제폼 제출분을 Claude API로 4칸 카드(고친문장·오늘의포인트MN·칭찬·다음미션)로.
 //   비동기 설계 확정(2026-07-21 유호): 실시간 챗은 update 예산·지연으로 불성립, "다음날 아침 도착"형만 성립.
 //   실패 시 그 행부터 포인터 유지 → 다음 밤 재시도. 상한·시간예산 가드로 6분 강제종료 안전.
@@ -7931,7 +7975,7 @@ function aiFeedbackBatch_() {
     ['id', 'student_id', '제출일', '제출문', '고친문장', '오늘의포인트', '칭찬', '다음미션', '상태', '학생확인', '포인트지급']);
   const t0 = Date.now();
   const AI_BUDGET_MS = 120000; // [리뷰 H1] nightJobs 뒤쪽에서 돌므로 자체 예산 2분 — 완주 마커·후속 잡을 굶기지 않는다
-  let made = 0, permFails = 0, processed = 0, lastErr = '';
+  let made = 0, held = 0, permFails = 0, processed = 0, lastErr = ''; // [v9.63] held=품질 게이트 격리 수
   for (let i = 0; i < rows.length; i++) {
     if (made >= AI_FEEDBACK_MAX_PER_RUN || Date.now() - t0 > AI_BUDGET_MS) break;
     const sid = String(rows[i][1] || '').trim();
@@ -7941,10 +7985,12 @@ function aiFeedbackBatch_() {
     if (!sid || !stu || !text) { processed = i + 1; continue; } // 무효 행은 건너뛰고 전진
     try {
       const card = callClaudeFeedback_(apiKey, stu, text);
+      const gate = fbQualityGate_(card, text); // [v9.63] 무인 발행 안전판 — 미달 카드는 학생에게 안 나간다
+      if (!gate.ok) held++;
       fb.appendRow(['FB' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + fb.getLastRow(), sid,
         dstr(ts, tz), text, String(card.corrected || ''), String(card.point_mn || ''),
         String(card.praise || ''), String(card.mission || ''),
-        AI_FEEDBACK_AUTOPUBLISH ? '노출' : '대기', '', '']);
+        gate.ok ? (AI_FEEDBACK_AUTOPUBLISH ? '노출' : '대기') : '격리:' + gate.reason, '', '']);
       made++; processed = i + 1;
       // [리뷰 H1] 성공분 즉시 포인터 전진 — 6분 하드킬(throw 없는 강제 종료)에도 중복 생성·중복 과금 0
       props.setProperty('숙제폼_포인터', String(from + processed));
@@ -7964,9 +8010,10 @@ function aiFeedbackBatch_() {
     }
   }
   if (processed > 0) props.setProperty('숙제폼_포인터', String(from + processed));
-  if (made || permFails || lastErr) adminMail('[SYNK] 🤖 AI 첨삭 ' + made + '건 생성' + (permFails ? ' · 오류 ' + permFails + '건' : '') + (lastErr ? ' · 중단됨' : ''),
-    (made ? (AI_FEEDBACK_AUTOPUBLISH ? '앱에 바로 노출되었습니다.\n' : "hw_feedback 시트에서 내용 확인 후 '상태'를 '노출'로 바꾸면 학생에게 공개됩니다(AI_FEEDBACK_AUTOPUBLISH=true면 이 단계 생략).\n") : '') +
-    (made && !AI_FEEDBACK_AUTOPUBLISH ? '📎 검수 바로가기: ' + ss.getUrl() + '#gid=' + (ss.getSheetByName('hw_feedback') ? ss.getSheetByName('hw_feedback').getSheetId() : 0) + '\n' : '') + // [v9.56] 검수함(Glide 2-D) 조립 전 다리 — 메일 1클릭으로 I열 승인
+  if (made || permFails || lastErr) adminMail('[SYNK] 🤖 AI 첨삭 ' + made + '건 생성' + (held ? ' · 격리 ' + held + '건' : '') + (permFails ? ' · 오류 ' + permFails + '건' : '') + (lastErr ? ' · 중단됨' : ''),
+    (made ? (AI_FEEDBACK_AUTOPUBLISH ? '게이트 통과 ' + (made - held) + '건은 앱에 바로 노출되었습니다.\n' : "hw_feedback 시트에서 내용 확인 후 '상태'를 '노출'로 바꾸면 학생에게 공개됩니다(AI_FEEDBACK_AUTOPUBLISH=true면 이 단계 생략).\n") : '') +
+    (held ? "🚧 품질 게이트 격리 " + held + "건 — 시트 '상태' 열의 '격리:사유'를 확인하고, 내용이 멀쩡하면 '노출'로 바꿔 공개하세요(같은 사유가 반복되면 알려주세요).\n" : '') + // [v9.63] 무인 발행의 사람 백스톱 — 격리만 사람 눈
+    ((held || (made && !AI_FEEDBACK_AUTOPUBLISH)) ? '📎 시트 바로가기: ' + ss.getUrl() + '#gid=' + (ss.getSheetByName('hw_feedback') ? ss.getSheetByName('hw_feedback').getSheetId() : 0) + '\n' : '') + // [v9.56] 메일 1클릭으로 I열 처리 · [v9.63] 격리 복구 공용
     (permFails ? "\n'오류:' 상태 행 " + permFails + '건은 같은 입력 재시도가 무의미해 건너뛰었습니다(hw_feedback에서 확인).' : '') +
     (lastErr ? '\n마지막 오류: ' + lastErr + '\n실패 지점부터 내일 밤 자동 재시도합니다.' : ''));
 }
@@ -7988,7 +8035,12 @@ function callClaudeFeedback_(apiKey, stu, text) {
     model: AI_FEEDBACK_MODEL,
     max_tokens: 4096, // Sonnet 5는 적응형 사고가 기본 ON이고 사고 토큰이 max_tokens에 포함 — 1024면 JSON이 잘릴 수 있다
     system: 'SYNK LAB(몽골 울란바토르, 뇌과학 기반 게임화 한국어 학원)의 숙제 첨삭 선생님. 학생이 쓴 한국어 문장을 교정한다. ' +
-      '학생의 급수(1~6, 0=미정)에 맞춰 어휘 난도를 조절하고, 따뜻하되 과장 없는 존댓말을 쓴다.',
+      '학생의 급수(1~6, 0=미정)에 맞춰 어휘 난도를 조절하고, 따뜻하되 과장 없는 존댓말을 쓴다. ' +
+      // [v9.63] 무인 발행 규칙 — 검수 없이 학생에게 직행하므로 출력 규격을 여기서 고정(기계 게이트 fbQualityGate_와 쌍)
+      '규칙: ①point_mn은 반드시 몽골어(키릴 문자)로 쓰고 한국어 문법 용어만 괄호 병기 ②praise·mission은 한국어 ' +
+      '③"패배·실패·부족·늦었다" 같은 부정 단어 금지 — 같은 내용도 성장 프레임("~하면 더 강해져요")으로 말한다 ' +
+      '④사과·자기 언급(AI)·메타 발언 금지, 4칸 내용만 채운다 ⑤제출문이 한국어 문장이 아니면(무의미 문자·다른 언어만) ' +
+      'corrected에는 원문을 그대로 두고, praise는 제출한 행동 자체를 격려하고, mission은 한국어 한 문장 도전을 유도한다.',
     messages: [{ role: 'user', content: '학생: ' + stu.name + ' (급수: ' + (stu.lv || '미정') + ')\n제출 문장:\n' + text }],
     output_config: { format: { type: 'json_schema', schema: schema } }
   };
@@ -8182,7 +8234,8 @@ function aiStudioBatch_() {
       const from = Number(props.getProperty('오류뱅크_포인터')) || 1;
       const last = fb.getLastRow();
       if (from < last) {
-        const rowsF = fb.getRange(from + 1, 1, Math.min(last - from, 40), 6).getValues()
+        const rowsF = fb.getRange(from + 1, 1, Math.min(last - from, 40), 9).getValues()
+          .filter(r => !/^(오류|격리)/.test(String(r[8] || ''))) // [v9.63] 격리 카드는 오류사전 재료에서 제외
           .map(r => ({ sub: String(r[3] || '').slice(0, 120), fix: String(r[4] || '').slice(0, 120), pt: String(r[5] || '').slice(0, 80) }))
           .filter(x => x.sub && x.fix);
         const takeN = Math.min(last - from, 40);
@@ -10500,7 +10553,7 @@ const SHEET_SKELETON = [
     ['crew_projects', ['시즌','반','프로젝트명','한줄소개','결과물링크','사진URL','공개일','참여크루','비고']], // [v9.29] 시즌 프로젝트 포트폴리오 — 수동 기입 전용(hall_of_fame 패턴 · 트리거·배치 연동 없음)
     ['mastery_log', ['student_id','grammar_id','상태','첫기록일','도달일','출처','updated_at']], // [v9.36] 문법 도달 로그 — expandMasteryLog_ upsert, 진화 게이트 재료(Glide 비바인딩)
     ['attendance_batch', ['날짜','class_name','출석자목록','입력자','created_at','처리상태']], // [v9.36] 수업 시작 출석 1탭(B안) → expandAttendanceBatch_가 attendance로 전개
-    ['hw_feedback', ['id','student_id','제출일','제출문','고친문장','오늘의포인트','칭찬','다음미션','상태','학생확인','포인트지급']], // [v9.49] AI 숙제 첨삭 카드 — aiFeedbackBatch_ 생성. I상태(대기→노출)=사람/자동, J학생확인=Glide 전용(스크립트 불가침), K포인트지급=스크립트 전용
+    ['hw_feedback', ['id','student_id','제출일','제출문','고친문장','오늘의포인트','칭찬','다음미션','상태','학생확인','포인트지급']], // [v9.49] AI 숙제 첨삭 카드 — aiFeedbackBatch_ 생성. I상태: '노출'=공개(게이트 통과·무인)/'대기'=수동검수 모드/'격리:'·'오류:'=미노출([v9.63]), J학생확인=Glide 전용(스크립트 불가침), K포인트지급=스크립트 전용
     ['student_errors', ['날짜','student_id','반','유형','메모','입력자','created_at','상태']], // [v9.36] 강사 개인 약점 메모(선택 입력) — 리포트·브리핑 노출은 후속(학생 앱 미노출)
     ['onboarding', ['role','제목','안내KO','안내MN','아이콘']], // [v9.38] 역할별 홈 안내 카드(setupOnboarding) — 재건 목록 누락분 보강
     ['system_manifest', ['지표','값','상태']], // [v9.37] buildSystemManifest 출력 — 시트·콘텐츠·트리거·의존성 실측 정본(수동 숫자 대체)
