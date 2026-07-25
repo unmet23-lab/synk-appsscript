@@ -710,11 +710,12 @@ test('[v9.63] 무인 발행은 게이트 통과분만 노출하고 미달분은 
   assert.ok(body.includes("' · 격리 ' + held + '건'"), '관리자 메일 제목에 격리 수가 떠야 한다(무인 발행의 사람 백스톱)');
 });
 
-test('[v9.63] 격리·오류 카드는 학생 표면(포인트 정산·성장카드 짝·오류사전)에 새어들지 않는다', () => {
+test('[v9.63] 격리·오류 카드는 학생 표면(포인트 정산·성장카드 짝·오류사전·약점퀴즈 재료)에 새어들지 않는다', () => {
   const ack = section('function sweepFeedbackAck_(ss)', 'function matchStudentsByNameClass_');
   assert.ok(ack.includes("!== '노출'"), '첨삭 포인트 정산은 노출 행만 처리해야 한다');
   assert.ok(code.includes("/^(오류|격리)/.test(String(rG[8] || ''))"), '성장카드 짝 로더에 격리 제외 필터가 없다');
   assert.ok(code.includes('격리 카드는 오류사전 재료에서 제외'), '오류사전 로더에 격리 제외 필터가 없다');
+  assert.ok(code.includes('격리 카드는 약점 재료에서 제외'), 'AI 약점 로더(aiWeakMap_)에 격리 제외 필터가 없다'); // v9.64 세션이 위탁 반영한 1줄의 회귀 고정
 });
 
 test('[v9.64] 연습 포인트 폼 — 재실행=제자리 업그레이드(복제·URL 교체 차단) + 아침 자동 동기화', () => {
