@@ -716,3 +716,29 @@ test('[v9.63] 격리·오류 카드는 학생 표면(포인트 정산·성장카
   assert.ok(code.includes("/^(오류|격리)/.test(String(rG[8] || ''))"), '성장카드 짝 로더에 격리 제외 필터가 없다');
   assert.ok(code.includes('격리 카드는 오류사전 재료에서 제외'), '오류사전 로더에 격리 제외 필터가 없다');
 });
+
+test('[v9.64] 연습 포인트 폼 — 재실행=제자리 업그레이드(복제·URL 교체 차단) + 아침 자동 동기화', () => {
+  const body = section('function createTeacherMemoForm()', 'function importFormResponses()');
+  assertOrder(body, ['syncTeacherMemoForm_', 'FormApp.create']); // 동기화 가드가 생성보다 앞 — 재실행 시 복제 경로로 못 간다
+  const sync = section('function syncTeacherMemoForm_', 'function createTeacherMemoForm()');
+  assert.equal(/\.add[A-Z]\w*Item\(/.test(sync.replace(/\/\/[^\n]*/g, '')), false,
+    '업그레이드 경로에서 항목 추가 금지 — 응답 시트에 새 열이 생겨 sweep 위치 파싱(1~6열)이 깨진다');
+  const morning = section('function morningJobs()', 'function nightJobs()');
+  assert.ok(morning.includes("safeRun('teacherMemoFormSync'"), '아침 로스터 자동 동기화 미편입');
+});
+
+test('[v9.64] 유형 선택지에 말하기·읽기 포함(코어=문법·톡=회화 커리큘럼 축 정합)', () => {
+  const m = code.match(/const TEACHER_MEMO_TYPES = \[([^\]]+)\]/);
+  assert.ok(m, 'TEACHER_MEMO_TYPES 상수(폼 유형 정본)가 필요');
+  ['문법', '말하기', '읽기', '기타'].forEach((t) => assert.ok(m[1].includes(`'${t}'`), `유형 '${t}' 누락`));
+});
+
+test('[v9.64] 반복 자동 감지 — 브리핑·수업 전 메일 ×N, AI 로더는 반복 우선 정렬(강사 기입 부담 0)', () => {
+  const brief = section('const errByCls', 'let briefAI');
+  assert.ok(brief.includes('cnt') && brief.includes('×'), '브리핑 ×N 집계 누락');
+  assert.ok(brief.includes('sort'), '브리핑 반복 우선 정렬 누락 — slice(0,3)이 끈질긴 포인트를 골라야 한다');
+  const mail = section('const errByClass', 'const bdayByClass');
+  assert.ok(mail.includes('cnt') && mail.includes('×'), '수업 전 메일 ×N 집계 누락');
+  const ai = section('function aiWeakMap_(', "const fb = ss.getSheetByName('hw_feedback')");
+  assert.ok(ai.includes('반복') && ai.includes('sort'), 'AI 로더 반복 우선("유형: 메모 (반복 n회)") 누락');
+});

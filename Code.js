@@ -687,12 +687,19 @@
  *      모든 ▶실행·트리거가 ReferenceError로 즉사하던 것(유호님 createTeacherMemoForm 실행에서 발각,
  *      상담AI.js가 처음 라이브에 오른 07-24 배포부터 잠복). 수정 3중: ①지연 참조(상담AI_모델_())
  *      ②.clasp.json filePushOrder=Code.js 선두 고정 ③톱레벨 크로스파일 참조 전 파일 기계 차단 테스트.
+ *
+ * [v9.64 — 🧩 연습 포인트 폼 스마트화 (2026-07-25 유호 지시: 분량 그대로, 목적 적합하게)]
+ * 191. 폼 스펙 정본=코드(teacherMemoSpec_) — 재실행=제자리 업그레이드(URL·응답 열 불변, 복제 사고 차단),
+ *      morningJobs가 강사·반 드롭다운을 로스터에 매일 자동 동기화(개원 확장 시 사람 손 0). 유형에 말하기·읽기
+ *      편입(코어=문법·톡=회화 정합), 안내문=관찰 프롬프트("무엇을+어떤 상황"·학생별 개별 제출 유도).
+ *      소비처 3곳 반복 집계 — 같은 학생×유형 14일 재발 시 브리핑·수업 전 메일 ×N+반복 우선 정렬,
+ *      AI 약점 로더는 "유형: 메모 (반복 n회)"로 끈질긴 포인트부터 공략. 강사 기입 부담 증가 0.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.63'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정)
+const SYNK_VERSION = 'v9.64'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -2349,6 +2356,7 @@ function calcAll() {
         const infoE = {};
         pfData.forEach(rr => { if (rr[0] && rr[3] === 'student') infoE[String(rr[0]).trim()] = { n: rr[1] || rr[0], c: String(rr[4] || '') }; });
         const cutE = now.getTime() - 14 * 86400000;
+        const aggE = {}; // [v9.64] 학생×유형 반복 집계 — 같은 포인트가 되풀이되면 ×N으로 패턴을 드러내고 앞세운다
         seE.getRange(2, 1, seE.getLastRow() - 1, 8).getValues().forEach(rr => {
           if (!rr[1] || String(rr[7] || '') === '해결') return;
           const dE = toDate_(rr[0]) || (rr[6] instanceof Date ? rr[6] : null);
@@ -2356,7 +2364,13 @@ function calcAll() {
           const infE = infoE[String(rr[1]).trim()];
           const cE = (infE && infE.c) || String(rr[2] || '');
           if (!cE) return;
-          (errByCls[cE] = errByCls[cE] || []).push('<b>' + escHtml_((infE && infE.n) || rr[1]) + '</b> ' + escHtml_(String(rr[4] || rr[3] || '').slice(0, 24)));
+          const kE = String(rr[1]).trim() + '|' + String(rr[3] || rr[4] || '');
+          const gE = aggE[kE] = aggE[kE] || { c: cE, n: (infE && infE.n) || rr[1], memo: '', t: 0, cnt: 0 };
+          gE.cnt++;
+          if (dE.getTime() >= gE.t) { gE.t = dE.getTime(); gE.memo = String(rr[4] || rr[3] || ''); }
+        });
+        Object.keys(aggE).map(k => aggE[k]).sort((a, b) => (b.cnt - a.cnt) || (b.t - a.t)).forEach(gE => {
+          (errByCls[gE.c] = errByCls[gE.c] || []).push('<b>' + escHtml_(gE.n) + '</b> ' + escHtml_(gE.memo.slice(0, 24)) + (gE.cnt > 1 ? ' <b>×' + gE.cnt + '</b>' : ''));
         });
       }
     }
@@ -5589,15 +5603,15 @@ function createHwForm() {
   Logger.log('편집용: ' + form.getEditUrl());
 }
 
-// [v9.55] 강사 약점 메모 폼 — student_errors의 입력 레일. 읽기(반 브리핑·수업 전 메일·AI 약점 로더)는
+// [v9.55] 강사 연습 포인트(약점 메모) 폼 — student_errors의 입력 레일. 읽기(반 브리핑·수업 전 메일·AI 약점 로더)는
 //   v9.47·v9.50에 기배선인데 쓰기 경로가 시트 수기뿐이던 것을 폼 1분 입력으로. Glide update 0.
-//   ▶ 1회 실행(createLevelTestForm 패턴) — URL은 app_state '약점메모폼URL'+관리자 메일로 전달.
-function createTeacherMemoForm() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const before = ss.getSheets().map(s => s.getName());
-  const form = FormApp.create('SYNK 약점 메모 (강사용)')
-    .setDescription('수업 중 발견한 학생 약점을 30초로 남기면, 다음 계산부터 반 브리핑·수업 전 메일·AI 개인 퀴즈에 자동 반영됩니다.')
-    .setCollectEmail(false);
+//   [v9.64] 스마트화 — 폼 스펙의 정본은 아래 코드이고 실제 폼은 여기에 동기화된다(URL·응답 열 불변):
+//   ①재실행 = 복제가 아니라 제자리 업그레이드(제목·안내·유형 선택지·강사/반 드롭다운) — 중복 폼·링크 사망 사고 차단
+//   ②morningJobs가 매일 로스터 변화를 드롭다운에 반영(개원 때 반 16개·강사 6인이 돼도 사람 손 0)
+//   ③항목 추가·삭제는 절대 안 한다 — 응답 시트가 항목별 열이라, 지웠다 다시 만들면 새 열이 생겨
+//     sweep의 위치 파싱(1~6열)이 깨진다. 제목·안내·선택지 교체는 열을 보존한다(실측 안전).
+const TEACHER_MEMO_TYPES = ['문법', '어휘', '발음', '말하기', '듣기', '읽기', '쓰기', '태도', '기타']; // [v9.64] 말하기·읽기 편입 — 코어=문법·톡=회화 커리큘럼 축 정합
+function teacherMemoSpec_(ss) { // 폼 문안 정본 — 생성·업그레이드·아침 동기화가 전부 이것만 읽는다
   const pf = ss.getSheetByName('profiles');
   const teachers = [], clsSet = {};
   if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
@@ -5605,24 +5619,76 @@ function createTeacherMemoForm() {
     if (r[3] === 'teacher' && r[1]) teachers.push(String(r[1]));
     if (r[3] === 'student' && r[4]) clsSet[String(r[4])] = 1;
   });
-  const classes = Object.keys(clsSet).sort();
-  if (teachers.length) form.addListItem().setTitle('강사').setRequired(true).setChoiceValues(teachers.concat(['기타']));
+  return {
+    title: 'SYNK 연습 포인트 (강사용)',
+    desc: '수업 중 보인 학생의 연습 포인트(막히는 지점·발전 지점)를 30초로 남겨주세요. 다음 계산부터 반 브리핑·수업 전 메일에 뜨고, AI가 그 학생 맞춤 퀴즈·예문으로 이어서 연습시킵니다. 같은 포인트가 반복되면 ×N으로 표시돼 패턴이 보입니다.',
+    teachers: teachers.concat(['기타']),
+    classes: Object.keys(clsSet).sort().concat(['기타']),
+    help: {
+      '학생 이름': '앱 프로필의 한글 이름 그대로 (동명이인이면 반을 정확히) · 여러 명이면 한 명씩 따로 — 학생별 맞춤이 정확해집니다',
+      '유형': '가장 가까운 것 하나 — AI가 이 유형으로 맞춤 연습을 만듭니다',
+      '메모': "'무엇을 + 어떤 상황에서' 한 줄이면 충분해요. 예: 은/는 vs 이/가 혼동 — 주어 자리에서 반복 / 받침 ㄹ 과잉적용(살아요→사라요)"
+    }
+  };
+}
+// 실제 폼을 스펙에 제자리 동기화 — 다른 곳만 쓴다(반환 = 바꾼 곳 수). 폼이 아예 없으면 -1(호출부가 생성 경로로).
+function syncTeacherMemoForm_(ss, st) {
+  let formId = '';
+  try { formId = String((getState(st, '약점메모폼ID') || {}).val || '').trim(); } catch (eS) {}
+  if (!formId) { // ID 유실 시 응답 시트의 연결 폼에서 복구(v9.62 formAlreadyMade_ 패턴)
+    try {
+      const shR = ss.getSheetByName('약점메모폼_응답');
+      const editUrl = shR && shR.getFormUrl();
+      if (editUrl) { const f0 = FormApp.openByUrl(editUrl); formId = f0.getId(); setState(st, '약점메모폼ID', formId); setState(st, '약점메모폼URL', f0.getPublishedUrl()); }
+    } catch (eR) {}
+  }
+  if (!formId) return -1;
+  const form = FormApp.openById(formId);
+  const spec = teacherMemoSpec_(ss);
+  let changed = 0;
+  if (form.getTitle() !== spec.title) { form.setTitle(spec.title); changed++; }
+  if (form.getDescription() !== spec.desc) { form.setDescription(spec.desc); changed++; }
+  form.getItems().forEach(it => {
+    const t = it.getTitle();
+    const wantHelp = spec.help[t];
+    if (wantHelp !== undefined && it.getHelpText() !== wantHelp) { it.setHelpText(wantHelp); changed++; }
+    if (it.getType() !== FormApp.ItemType.LIST) return;
+    const li = it.asListItem();
+    const cur = li.getChoices().map(c => c.getValue()).join('|');
+    const want = (t === '강사' ? spec.teachers : t === '반' ? spec.classes : t === '유형' ? TEACHER_MEMO_TYPES : null);
+    if (want && cur !== want.join('|')) { li.setChoiceValues(want); changed++; }
+  });
+  if (changed) Logger.log('🧩 연습 포인트 폼 동기화 — ' + changed + '곳 갱신(URL 불변)');
+  return changed;
+}
+function createTeacherMemoForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const synced = syncTeacherMemoForm_(ss, st); // [v9.64] 이미 있으면 복제 대신 제자리 업그레이드
+  if (synced >= 0) {
+    const msg = '✅ 연습 포인트 폼 — 이미 있어 제자리 업그레이드만 했습니다(' + synced + '곳 갱신 · URL 불변): ' + String((getState(st, '약점메모폼URL') || {}).val || '');
+    Logger.log(msg);
+    return msg;
+  }
+  const before = ss.getSheets().map(s => s.getName());
+  const spec = teacherMemoSpec_(ss);
+  const form = FormApp.create(spec.title).setDescription(spec.desc).setCollectEmail(false);
+  if (spec.teachers.length > 1) form.addListItem().setTitle('강사').setRequired(true).setChoiceValues(spec.teachers);
   else form.addTextItem().setTitle('강사').setRequired(true); // 로스터에 강사 0명(재건 직후)이어도 폼은 성립
-  if (classes.length) form.addListItem().setTitle('반').setRequired(true).setChoiceValues(classes.concat(['기타']));
+  if (spec.classes.length > 1) form.addListItem().setTitle('반').setRequired(true).setChoiceValues(spec.classes);
   else form.addTextItem().setTitle('반').setRequired(true);
-  form.addTextItem().setTitle('학생 이름').setRequired(true).setHelpText('앱 프로필의 한글 이름 그대로 (동명이인이면 반을 정확히)');
-  form.addListItem().setTitle('유형').setRequired(true).setChoiceValues(['문법', '어휘', '발음', '쓰기', '듣기', '태도', '기타']);
-  form.addParagraphTextItem().setTitle('메모').setRequired(true).setHelpText('예: 은/는 vs 이/가 혼동 — 주어 자리에서 반복');
+  form.addTextItem().setTitle('학생 이름').setRequired(true).setHelpText(spec.help['학생 이름']);
+  form.addListItem().setTitle('유형').setRequired(true).setChoiceValues(TEACHER_MEMO_TYPES).setHelpText(spec.help['유형']);
+  form.addParagraphTextItem().setTitle('메모').setRequired(true).setHelpText(spec.help['메모']);
   form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
   linkFormTab_(ss, before, '약점메모폼_응답');
-  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
   setState(st, '약점메모폼ID', form.getId());
   setState(st, '약점메모폼URL', form.getPublishedUrl());
-  adminMail('[SYNK] 🧩 약점 메모 폼 생성 완료',
+  adminMail('[SYNK] 🧩 연습 포인트 폼 생성 완료',
     '강사 단톡·즐겨찾기에 배포할 링크:\n' + form.getPublishedUrl() +
     '\n\nGlide 수업 준비 탭의 버튼(Open Link)에도 이 URL을 넣으면 됩니다.\n편집용: ' + form.getEditUrl() +
-    '\n\n※ 반·강사 목록이 바뀌면 이 함수를 다시 실행하지 말고(폼이 새로 생깁니다) 폼 편집 화면에서 드롭다운만 고쳐주세요.');
-  Logger.log('✅ 약점 메모 폼 생성 완료: ' + form.getPublishedUrl());
+    '\n\n※ 재실행해도 안전합니다(제자리 업그레이드 · URL 불변). 반·강사가 바뀌면 다음 날 아침 드롭다운이 자동 갱신됩니다.');
+  Logger.log('✅ 연습 포인트 폼 생성 완료: ' + form.getPublishedUrl());
   Logger.log('편집용: ' + form.getEditUrl());
 }
 
@@ -7615,6 +7681,7 @@ function classPrepMail_(ss, tz) {
       const infoM = {};
       if (pfM && pfM.getLastRow() >= 2) pfM.getRange(2, 1, pfM.getLastRow() - 1, 5).getValues().forEach(r => { if (r[0]) infoM[String(r[0]).trim()] = { n: r[1] || r[0], c: String(r[4] || '') }; });
       const cutM = now.getTime() - 14 * 86400000;
+      const aggM = {}; // [v9.64] 학생×유형 반복 집계 — ×N 표시 + 반복 우선(브리핑과 동일 규칙)
       seM.getRange(2, 1, seM.getLastRow() - 1, 8).getValues().forEach(r => {
         if (!r[1] || String(r[7] || '') === '해결') return;
         const dM = toDate_(r[0]) || (r[6] instanceof Date ? r[6] : null);
@@ -7622,7 +7689,13 @@ function classPrepMail_(ss, tz) {
         const infM = infoM[String(r[1]).trim()];
         const clsM = (infM && infM.c) || String(r[2] || '');
         if (!clsM) return;
-        (errByClass[clsM] = errByClass[clsM] || []).push(((infM && infM.n) || r[1]) + ' — ' + String(r[4] || r[3] || '').slice(0, 30));
+        const kM = String(r[1]).trim() + '|' + String(r[3] || r[4] || '');
+        const gM = aggM[kM] = aggM[kM] || { c: clsM, n: (infM && infM.n) || r[1], memo: '', t: 0, cnt: 0 };
+        gM.cnt++;
+        if (dM.getTime() >= gM.t) { gM.t = dM.getTime(); gM.memo = String(r[4] || r[3] || ''); }
+      });
+      Object.keys(aggM).map(k => aggM[k]).sort((a, b) => (b.cnt - a.cnt) || (b.t - a.t)).forEach(gM => {
+        (errByClass[gM.c] = errByClass[gM.c] || []).push(gM.n + ' — ' + gM.memo.slice(0, 30) + (gM.cnt > 1 ? ' ×' + gM.cnt : ''));
       });
     }
   }
@@ -8144,16 +8217,25 @@ function aiWeakMap_(ss) {
   const weak = {};
   const se = ss.getSheetByName('student_errors');
   const cut = Date.now() - 14 * 86400000;
+  const aggW = {}; // [v9.64] 학생×유형 집계 — 반복 많은 포인트를 앞세워 AI가 끈질긴 약점부터 공략(유형 태그로 표적도 선명)
   if (se && se.getLastRow() >= 2) se.getRange(2, 1, se.getLastRow() - 1, 8).getValues().forEach(r => {
     if (!r[1] || String(r[7] || '') === '해결') return;
     const d = toDate_(r[0]) || (r[6] instanceof Date ? r[6] : null);
     if (!d || d.getTime() < cut) return;
     const k = String(r[1]).trim();
-    (weak[k] = weak[k] || []).push(String(r[4] || r[3] || '').slice(0, 30));
+    const gS = (aggW[k] = aggW[k] || {});
+    const tK = String(r[3] || r[4] || '').slice(0, 10);
+    const eW = gS[tK] = gS[tK] || { type: String(r[3] || ''), memo: '', t: 0, cnt: 0 };
+    eW.cnt++;
+    if (d.getTime() >= eW.t) { eW.t = d.getTime(); eW.memo = String(r[4] || r[3] || ''); }
+  });
+  Object.keys(aggW).forEach(k => {
+    weak[k] = Object.keys(aggW[k]).map(x => aggW[k][x]).sort((a, b) => (b.cnt - a.cnt) || (b.t - a.t))
+      .map(eW => (eW.type ? eW.type + ': ' : '') + eW.memo.slice(0, 30) + (eW.cnt > 1 ? ' (반복 ' + eW.cnt + '회)' : ''));
   });
   const fb = ss.getSheetByName('hw_feedback');
-  if (fb && fb.getLastRow() >= 2) fb.getRange(2, 1, fb.getLastRow() - 1, 6).getValues().forEach(r => {
-    if (!r[1] || !String(r[5] || '')) return;
+  if (fb && fb.getLastRow() >= 2) fb.getRange(2, 1, fb.getLastRow() - 1, 9).getValues().forEach(r => {
+    if (!r[1] || !String(r[5] || '') || /^(오류|격리)/.test(String(r[8] || ''))) return; // [v9.63] 격리 카드는 약점 재료에서 제외(품질 게이트 미달분이 AI 퀴즈로 새는 것 차단)
     const k = String(r[1]).trim();
     (weak[k] = weak[k] || [])._fb = String(r[5]).slice(0, 60); // 마지막 것이 최근(행 순서)
   });
@@ -11451,6 +11533,7 @@ function morningJobs() {   // 매일 07시
   safeRun('parentWeeklyDigestRetry', parentWeeklyDigestRetry_); // [v9.34] 일요일 다이제스트 쿼터 유실분 평일 아침 재발송(보류 키 없으면 즉시 return)
   safeRun('parentHighlightsRetry', parentHighlightsMail_); // [v9.54] 월간 하이라이트 쿼터 보류분 이어 발송(월 마커 있으면 즉시 return — 사실상 무비용)
   safeRun('welcomeStoryBatch', welcomeStoryBatch_); // [v9.50·F4] 웰컴 스토리 — 대기열 중 학부모 이메일이 채워진 신규 학생에게 세계관 입장 편지(키 없으면 템플릿 폴백)
+  safeRun('teacherMemoFormSync', function () { const ssTm = SpreadsheetApp.getActiveSpreadsheet(); syncTeacherMemoForm_(ssTm, ensureSheet(ssTm, 'app_state', ['key', 'value'])); }); // [v9.64] 연습 포인트 폼을 코드 정본에 매일 동기화 — 로스터(강사·반) 변화가 드롭다운에 자동 반영(폼 없으면 즉시 -1 return, 무비용)
 }
 
 function nightJobs() {     // 매일 22시 — 수업 종료 후
