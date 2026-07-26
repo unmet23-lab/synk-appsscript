@@ -68,7 +68,7 @@ preflight가 자동으로 해주는 것: 시트 골격 39종 보장 · 콘텐츠
 | 함수 | 이유 |
 |---|---|
 | `bootstrapSynk` | 시간표를 기본값으로 리셋 — 재해 복구 전용 |
-| `resetAllTriggers` | preflight가 "트리거 누락" 경고할 때만. 매월 1일 오전 금지 |
+| `resetAllTriggers` | preflight가 "트리거 누락" 경고할 때만. 매월 1일 오전 금지. 정상 개수 = 통합 10개 + 교재연동 개통 후엔 교재연동Nightly(23시) 1개 = 11개 — 실행 로그 문구가 몇 개가 정상인지 스스로 알려준다(v9.67) |
 | `setupSchedule` | §1-0 확정 1회 이후엔 금지(시간표 리셋) |
 | `seedMasteryForExisting` | 개원 무렵 실제 로스터 입장 후 1회 |
 

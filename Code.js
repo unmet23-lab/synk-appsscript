@@ -13,7 +13,7 @@
  *   1) 새 Google 스프레드시트 생성 → 확장 프로그램 → Apps Script
  *   2) 이 파일 전체를 붙여넣고 저장
  *   3) bootstrapSynk() 1회 실행 (권한 승인 2회) — 세계가 재림합니다
- *   4) resetAllTriggers() 1회 실행 — 심장 박동(통합 트리거 10개) 시작
+ *   4) resetAllTriggers() 1회 실행 — 심장 박동(통합 트리거 10개 + 교재연동 개통 시 교재연동Nightly 1개) 시작
  *      (시트 보장은 bootstrapSynk 재건목록이 전담 · 트리거 설치는 resetAllTriggers)
  *   5) 데이터(학생·포인트 이력)는 Drive 'SYNK_백업' 폴더 최신본에서
  *      profiles·point_logs·attendance 시트를 복사해 덮어쓰기
@@ -136,7 +136,7 @@
  *     매주 자동 점검해 메일 보고 — 숨은 문제를 "곪기 전에 먼저 아는" 안전망.
  *
  * [v6.3 — 트리거 20개 한도 해결: 통합 리셋]
- * 43. resetAllTriggers(): 전체 삭제 후 통합 10개 재설치 (morning/night/weekly/monthlyJobs)
+ * 43. resetAllTriggers(): 전체 삭제 후 통합 10개 재설치 (morning/night/weekly/monthlyJobs) · [v9.67] 교재연동 개통 시 교재연동Nightly(23시) 포함
  *     · 게임배치→아카이브 순서 코드 고정 · 폼 접수 10분 스위프 편입 · safeRun 실패 격리+알림
  *
  * [v6.4 — 처음의 목표 (여정 페이지)]
@@ -709,7 +709,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.66'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일)
+const SYNK_VERSION = 'v9.67'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -7225,6 +7225,50 @@ function checkUnknownReasonsNightly_() {
     uKeys.map(function (k) { return '· "' + k + '" (' + unknown[k] + '건)'; }).join('\n'));
 }
 
+// [v9.67] 교재연동(교재연동.js) 개통 판별 — setupTextbookLink가 세팅하는 profiles '목소리폼URL' 헤더가 영속 발자국.
+//   app_state '목소리폼URL틀'은 목소리 폼(STEP 1~3) 전용 키라 폼 없이 문법판정만 개통한 경우를 놓친다 — 헤더가 정확한 기준.
+//   resetAllTriggers·preflightGlide·systemWatchdog·buildSystemManifest 4곳 공용: 미개통 시스템에선 교재연동Nightly를
+//   요구하지 않아 오경보 0, 개통 후엔 트리거 실종(전체 삭제 재설치 사고)을 즉시 잡는다(2026-07-26 진단 결함 ①).
+function textbookLinkOn_(ssOpt) {
+  try {
+    const ss = ssOpt || SpreadsheetApp.getActiveSpreadsheet();
+    const pf = ss.getSheetByName('profiles');
+    if (!pf || pf.getLastColumn() < 1) return false;
+    return pf.getRange(1, 1, 1, pf.getLastColumn()).getValues()[0].some(h => String(h) === '목소리폼URL');
+  } catch (e) { return false; }
+}
+
+// [v9.67] AI 첨삭 파이프라인 계기(워치독·preflight 공용) — 키 휴면·적체가 완전 침묵이던 결함 ②의 계기판.
+//   키가 없으면 aiFeedbackBatch_가 포인터 전진 없이 0초 리턴하므로 '숙제폼_응답 포인터 뒤 신규 행 수'가 곧 적체량.
+//   oldestAge = 큐 머리(가장 오래된 미처리 제출)의 나이(일) — 경보 기준. 마지막 생성 나이(fbAge)로 판정하면
+//   "조용한 주간 + 오늘 새 제출"(정상)이 낮 preflight에서 허위 경보가 된다 · >1 = 밤 배치를 최소 1회 지나쳤는데 미처리.
+//   fbAge = hw_feedback 마지막 행 생성 나이(일 · ID 'FByyyyMMdd-'에 생성일이 박힘) — 메일 문맥용 · -1=이력/판독 없음.
+//   키 값 자체는 절대 반환·기록하지 않는다(존재 여부 boolean만) — 로그·메일 노출 금지 원칙.
+function aiFeedbackHealth_(ss) {
+  const props = PropertiesService.getScriptProperties();
+  const hasKey = !!props.getProperty('CLAUDE_API_KEY');
+  const tz = ss.getSpreadsheetTimeZone();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  let backlog = 0, oldestAge = -1;
+  const src = ss.getSheetByName('숙제폼_응답');
+  if (src && src.getLastRow() >= 2) {
+    const last = src.getLastRow();
+    const from = Math.min(Number(props.getProperty('숙제폼_포인터')) || 1, last);
+    backlog = last - from;
+    if (backlog > 0) {
+      const ts = src.getRange(from + 1, 1).getValue(); // 큐 머리의 폼 타임스탬프 1셀만
+      if (ts instanceof Date) oldestAge = Math.max(0, Math.round((new Date(today) - new Date(Utilities.formatDate(ts, tz, 'yyyy-MM-dd'))) / 86400000));
+    }
+  }
+  let fbAge = -1;
+  const fb = ss.getSheetByName('hw_feedback');
+  if (fb && fb.getLastRow() >= 2) {
+    const m = String(fb.getRange(fb.getLastRow(), 1).getValue() || '').match(/^FB(\d{4})(\d{2})(\d{2})-/);
+    if (m) fbAge = Math.max(0, Math.round((new Date(today) - new Date(m[1] + '-' + m[2] + '-' + m[3])) / 86400000));
+  }
+  return { hasKey: hasKey, backlog: backlog, oldestAge: oldestAge, fbAge: fbAge };
+}
+
 function systemWatchdog(asText) {
   const wantText = asText === true; // [v9.25] 텍스트 반환 모드(주간 통합) — 트리거 이벤트객체는 false로 강제
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -7245,6 +7289,7 @@ function systemWatchdog(asText) {
   });
   const recommended = ['dailyBackup', 'morningJobs', 'nightJobs', 'weeklyJobs',
     'monthlyJobs', 'monthlyReportCards', 'monthlyReport']; // [v7.0] v6.3 통합 트리거 기준
+  if (textbookLinkOn_(ss)) recommended.push('교재연동Nightly'); // [v9.67] 개통 후에만 요구 — 전체 삭제 재설치 사고로 실종되면 여기서 발각(미개통 오경보 0)
   const missing = recommended.filter(f => !alive(f));
   add(missing.length === 0, '권장 트리거: ' + (missing.length ? missing.join(', ') + ' 미등록 (의도적이면 무시)' : '전부 등록됨'));
 
@@ -7422,6 +7467,19 @@ function systemWatchdog(asText) {
     });
   } catch (e) { add(false, '폼 생존 점검 실패: ' + e); }
 
+  // [v9.67] 8) AI 첨삭 파이프라인 — CLAUDE_API_KEY 휴면·적체가 어디에도 안 뜨던 결함 해소(2026-07-26 진단 ②).
+  //   키 값은 절대 노출하지 않는다(존재 여부만). 적체 = 숙제폼_응답 신규 누적 vs hw_feedback 최근 생성 대조.
+  try {
+    const ai = aiFeedbackHealth_(ss);
+    add(ai.hasKey, 'CLAUDE_API_KEY: ' + (ai.hasKey ? '설정됨 — AI 첨삭·문법판정·스튜디오 활성'
+      : '미설정 — AI 기능 전부 휴면(첨삭·문법판정·스튜디오·레벨진단 0초 스킵). 개원 전 의도적 휴면이면 무시'));
+    const stale = ai.backlog > 0 && (!ai.hasKey || ai.oldestAge > 1); // 밤 배치를 확실히 1회+ 지나친 큐 머리만 경보(허위 경보 차단)
+    add(!stale, '숙제 첨삭 적체: ' + (ai.backlog === 0 ? '없음(신규 제출 전부 소진)'
+      : ai.backlog + '건 누적(가장 오래된 제출 ' + (ai.oldestAge < 0 ? '나이 미상' : ai.oldestAge + '일 전') + ' · hw_feedback 최근 생성 ' + (ai.fbAge < 0 ? '이력 없음' : ai.fbAge + '일 전') + ')'
+        + (stale ? (ai.hasKey ? ' — 밤 배치가 지나쳤는데 남아 있음, 실패 의심(aiFeedbackBatch 실행 기록·키 유효성 확인)' : ' — 키 미설정이 원인, 설정 즉시 다음 밤 자동 소진')
+          : ' (다음 밤 자동 소진 예정)')));
+  } catch (e) { add(false, 'AI 첨삭 계기 점검 실패: ' + e); }
+
   const report = '🛡️ SYNK 시스템 워치독 · ' +
     Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm') + '\n\n' + out.join('\n') +
     '\n\n⚠️가 하나라도 있으면 그 줄만 공유해주세요 — 나머지는 건강합니다.';
@@ -7489,17 +7547,21 @@ function buildSystemManifest() {
     ? bad.map(function (kk) { return kk + ' ' + (cnt[kk] || 0) + '/' + CONTENT_EXPECT[kk]; }).join(', ') + ' — 해당 setup 재실행'
     : '전부 일치', bad.length ? WARN : OK);
 
-  // 5) 트리거 — 실측 수·핸들러 vs resetAllTriggers 기대 10
-  const EXPECT_TRIGGERS = 10;
+  // 5) 트리거 — 실측 수·핸들러 vs 기대치. [v9.67] 기대 = 통합 10 + 교재연동 개통 시 교재연동Nightly 1
+  //   (고정 10이던 시절엔 정상 설치된 11개 상태를 ⚠로 오판 — 2026-07-26 진단 결함 ①의 매니페스트 축)
+  const tbOnM = textbookLinkOn_(ss);
+  const EXPECT_TRIGGERS = 10 + (tbOnM ? 1 : 0);
   let handlers = [];
   try { handlers = ScriptApp.getProjectTriggers().map(function (t) { return t.getHandlerFunction(); }); } catch (e) { handlers = []; }
   const uniqH = handlers.filter(function (h, i) { return handlers.indexOf(h) === i; }).sort();
-  push('트리거 수(실측)', handlers.length + '개 / 기대 ' + EXPECT_TRIGGERS, handlers.length === EXPECT_TRIGGERS ? OK : WARN);
+  push('트리거 수(실측)', handlers.length + '개 / 기대 ' + EXPECT_TRIGGERS + (tbOnM ? ' (통합 10+교재연동 1)' : ' (통합 10 · 교재연동 미개통)'), handlers.length === EXPECT_TRIGGERS ? OK : WARN);
   push('트리거 핸들러', uniqH.length ? uniqH.join(', ') : '(없음)', uniqH.length ? OK : WARN);
 
   // 6) 외부 의존성
   const props = PropertiesService.getScriptProperties();
   push('NOTION_TOKEN', props.getProperty('NOTION_TOKEN') ? '있음 — 노션 동기화 활성' : '없음 — 노션 동기화 스킵(무해)', OK);
+  push('CLAUDE_API_KEY', props.getProperty('CLAUDE_API_KEY') ? '있음 — AI 첨삭·문법판정·스튜디오 활성'
+    : '없음 — AI 기능 휴면(첨삭·문법판정·스튜디오·레벨진단 스킵)', props.getProperty('CLAUDE_API_KEY') ? OK : WARN); // [v9.67] 값은 절대 미출력(존재 여부만) — 휴면 무감시 결함 해소
 
   let consultVal, consultStat = WARN;
   try {
@@ -8005,6 +8067,30 @@ function sweepLeadForm_(ss) {
 
 /* ===================== [v9.49] 폼 출석 전개 + AI 숙제 첨삭 ===================== */
 
+// [v9.67] 폼 응답 무효 학생ID 드롭 통보 — profiles에 없는 sid 행은 반영 없이 포인터만 전진하는데(동작 유지),
+//   그 사실이 로그·메일 어디에도 없어 미리채움 링크 오염·손 입력 오타를 영영 모르던 결함 해소(2026-07-26 진단 ③).
+//   약점메모폼 '미매칭' 메일과 동급의 통보만 한다 — 자동 복구는 과설계(정상 운영은 폼 미리채움이라 희귀 사건).
+//   같은 폼·같은 sid는 하루 1회만 알림(safeRun 실패 메일 dedup 패턴) · 원본 행은 폼 응답 탭에 그대로 남는다.
+//   호출처 3곳: sweepAttendanceForm_(출석폼)·aiFeedbackBatch_(숙제폼)·voiceSweep_(목소리폼, 교재연동.js).
+function notifyDroppedSids_(label, sids) {
+  if (!sids || !sids.length) return;
+  try {
+    const tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+    const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+    const props = PropertiesService.getScriptProperties();
+    const key = '무효sid통보_' + label;
+    const prev = String(props.getProperty(key) || '').split('|');
+    const seen = prev[0] === today ? prev.slice(1) : [];
+    const fresh = sids.map(s => String(s).replace(/\|/g, '¦').slice(0, 40)).filter((s, i, a) => a.indexOf(s) === i && seen.indexOf(s) === -1); // '|'는 dedup 구분자라 치환
+    if (!fresh.length) return;
+    adminMail('[SYNK] 🧩 ' + label + ' 무효 학생ID ' + fresh.length + '건 — 응답 미반영',
+      fresh.slice(0, 10).map(s => '· "' + s + '"').join('\n') + (fresh.length > 10 ? '\n· …외 ' + (fresh.length - 10) + '건' : '') +
+      '\n\nprofiles에 없는 학생ID라 집계에 반영되지 않았습니다(포인터는 전진 · 원본 행은 ' + label + '_응답 탭에 남아 있음). ' +
+      '미리채움 링크가 아닌 손 입력이거나 링크 ID 오염일 수 있어요 — 실제 학생이면 profiles 등록(또는 ID 교정) 후 재제출을 안내하세요. (같은 ID는 오늘 다시 알리지 않습니다)');
+    props.setProperty(key, [today].concat(seen, fresh).slice(0, 200).join('|')); // 발송(큐 적재) 성공분만 마킹 + 9KB 보호 — safeRun 실패 메일 패턴(실패 시 다음 스위프 재시도)
+  } catch (e) { Logger.log('notifyDroppedSids_ 실패: ' + e); }
+}
+
 // [v9.49] 출석 폼 응답 → attendance 전개 — 앱 출석(학생당 update 1 소비)의 update-0 대체 경로.
 //   등원알림·미등원·보드·달력은 전부 attendance 시트를 읽으므로 입력 채널 무관 동일 동작.
 //   포인터 = '출석폼_포인터'(sweepLeadForm_ 패턴·클램프 포함), 당일 중복 = attendance 재조회 스킵(expandAttendanceBatch_ 패턴 — 앱·일괄 출석 병행 안전).
@@ -8028,17 +8114,19 @@ function sweepAttendanceForm_(ss) {
   if (at.getLastRow() >= 2) at.getRange(2, 2, at.getLastRow() - 1, 2).getValues().forEach(r => { // B·C = sid·timestamp
     if (r[0] && r[1]) seen[dstr(r[1], tz) + '|' + String(r[0]).trim()] = 1;
   });
-  const out = [];
+  const out = [], badSid = []; // [v9.67] 무효 sid 수집 — 무통보 드롭 결함 수리
   rows.forEach(r => {
     const ts = r[0] instanceof Date ? r[0] : new Date();
     const sid = String(r[1] || '').trim();
-    if (!sid || !valid.has(sid)) return;
+    if (!sid) return;
+    if (!valid.has(sid)) { badSid.push(sid); return; } // 행은 기존대로 버리되 통보만(notifyDroppedSids_)
     const key = dstr(ts, tz) + '|' + sid;
     if (seen[key]) return;
     seen[key] = 1;
     out.push(['ATF' + Utilities.formatDate(ts, tz, 'yyyyMMdd') + '-' + sid, sid, ts, '출석(폼)']); // method에 '출석' 포함 = 보드·레이드 판정 호환
   });
   if (out.length) at.getRange(at.getLastRow() + 1, 1, out.length, 4).setValues(out);
+  notifyDroppedSids_('출석폼', badSid); // [v9.67] 하루 1회 dedup 내장 — 빈 배열이면 0초
   props.setProperty('출석폼_포인터', String(last));
 }
 
@@ -8200,13 +8288,14 @@ function aiFeedbackBatch_() {
   const t0 = Date.now();
   const AI_BUDGET_MS = 120000; // [리뷰 H1] nightJobs 뒤쪽에서 돌므로 자체 예산 2분 — 완주 마커·후속 잡을 굶기지 않는다
   let made = 0, held = 0, permFails = 0, processed = 0, lastErr = ''; // [v9.63] held=품질 게이트 격리 수
+  const badSid = []; // [v9.67] profiles에 없는 sid 수집 — 무통보 드롭 결함 수리(하루 1회 dedup 통보)
   for (let i = 0; i < rows.length; i++) {
     if (made >= AI_FEEDBACK_MAX_PER_RUN || Date.now() - t0 > AI_BUDGET_MS) break;
     const sid = String(rows[i][1] || '').trim();
     const text = String(rows[i][2] || '').trim().slice(0, 2000); // 폭주 입력 상한
     const ts = rows[i][0] instanceof Date ? rows[i][0] : new Date();
     const stu = info[sid];
-    if (!sid || !stu || !text) { processed = i + 1; continue; } // 무효 행은 건너뛰고 전진
+    if (!sid || !stu || !text) { if (sid && !stu) badSid.push(sid); processed = i + 1; continue; } // 무효 행은 건너뛰고 전진 — [v9.67] 미등록 sid만 통보 수집(빈 ID·빈 문장은 폼 필수문항이라 실질 없음)
     try {
       const card = callClaudeFeedback_(apiKey, stu, text);
       const gate = fbQualityGate_(card, text); // [v9.63] 무인 발행 안전판 — 미달 카드는 학생에게 안 나간다
@@ -8234,6 +8323,7 @@ function aiFeedbackBatch_() {
     }
   }
   if (processed > 0) props.setProperty('숙제폼_포인터', String(from + processed));
+  notifyDroppedSids_('숙제폼', badSid); // [v9.67]
   if (made || permFails || lastErr) adminMail('[SYNK] 🤖 AI 첨삭 ' + made + '건 생성' + (held ? '(노출 ' + (made - held) + ' · 격리 ' + held + ')' : '') + (permFails ? ' · 오류 ' + permFails + '건' : '') + (lastErr ? ' · 중단됨' : ''), // [v9.65 리뷰 L2] 격리 있을 때 합산 오독 방지
     (made ? (AI_FEEDBACK_AUTOPUBLISH ? (made - held > 0 ? '게이트 통과 ' + (made - held) + '건은 앱에 바로 노출되었습니다.\n' : '') : "hw_feedback 시트에서 내용 확인 후 '상태'를 '노출'로 바꾸면 학생에게 공개됩니다(AI_FEEDBACK_AUTOPUBLISH=true면 이 단계 생략).\n") : '') +
     (held ? "🚧 품질 게이트 격리 " + held + "건 — 시트 '상태' 열의 '격리:사유'를 확인하고, 내용이 멀쩡하면 '노출'로 바꿔 공개하세요(같은 사유가 반복되면 알려주세요).\n" : '') + // [v9.63] 무인 발행의 사람 백스톱 — 격리만 사람 눈
@@ -11622,13 +11712,23 @@ function preflightGlide() {
     }
   }
 
-  // 7) 트리거 — 통합 10개 생존 확인
+  // 7) 트리거 — 통합 10개 + 교재연동 개통 시 교재연동Nightly(23시) 생존 확인
   const need = { parentSweep: 1, dailyBackupJob: 1, morningJobs: 1, sendMorningDigestJob: 1, calcAllJob: 1, nightJobs: 1, weeklyJobs: 1, monthlyJobs: 1, monthlyReportCardsJob: 1, monthlyReportJob: 1 };
+  const tbOnP = textbookLinkOn_(ss); // [v9.67] 개통 발자국(profiles 목소리폼URL 헤더) 있을 때만 요구 — 미개통 오경보 차단
+  if (tbOnP) need['교재연동Nightly'] = 1;
   const have = {};
   try { ScriptApp.getProjectTriggers().forEach(t => { have[t.getHandlerFunction()] = 1; }); } catch (e) {}
   const missT = Object.keys(need).filter(k => !have[k]);
-  if (missT.length) warn('트리거 누락: ' + missT.join(', ') + ' → resetAllTriggers() 1회 실행(⚠ 매월 1일 오전엔 실행 금지)');
-  else ok('통합 트리거 10개 전부 살아있음');
+  if (missT.length) warn('트리거 누락: ' + missT.join(', ') + ' → resetAllTriggers() 1회 실행(⚠ 매월 1일 오전엔 실행 금지 · 교재연동Nightly는 setupTextbookLink ▶로도 복구)');
+  else ok('트리거 ' + Object.keys(need).length + '개 전부 살아있음(통합 10' + (tbOnP ? ' + 교재연동Nightly' : ' · 교재연동 미개통') + ')');
+
+  // 7.2) [v9.67] AI 첨삭 키·적체 — 키 휴면이 완전 침묵이던 결함 해소(키 값은 절대 미출력, 존재 여부만)
+  {
+    const aiP = aiFeedbackHealth_(ss);
+    if (!aiP.hasKey) warn('CLAUDE_API_KEY 미설정 — AI 첨삭·문법판정·스튜디오 휴면' + (aiP.backlog ? ' · 숙제폼 적체 ' + aiP.backlog + '건(키 설정 즉시 다음 밤 자동 소진)' : '(학생 숙제 제출이 시작되기 전에 스크립트 속성에 설정)'));
+    else if (aiP.backlog > 0 && aiP.oldestAge > 1) warn('숙제 첨삭 적체 ' + aiP.backlog + '건 — 가장 오래된 제출이 ' + aiP.oldestAge + '일 전인데 미처리(hw_feedback 최근 생성 ' + (aiP.fbAge < 0 ? '이력 없음' : aiP.fbAge + '일 전') + ') → 야간 배치 실패 의심(aiFeedbackBatch 실행 기록 확인)');
+    else ok('AI 첨삭 파이프라인: 키 설정됨 · 적체 ' + (aiP.backlog ? aiP.backlog + '건(다음 밤 소진 예정)' : '0건'));
+  }
 
   // 7.5) [v9.42] 데모 모드 상태 표시
   {
@@ -11651,7 +11751,7 @@ function preflightGlide() {
 
 /* ===================== [v6.3] 트리거 통합 리셋 — 20개 한도 해결 =====================
  * Apps Script는 스크립트당 시간 트리거 20개 한도. v4부터 쌓인 개별 트리거를 전부 지우고
- * 시간대별 통합 작업 10개로 재설치합니다. 실행 순서 보장 덤:
+ * 시간대별 통합 작업 10개(+교재연동 개통 시 교재연동Nightly 1개)로 재설치합니다. 실행 순서 보장 덤:
  * 게임배치 → 아카이브 순서가 코드로 고정 (기존엔 별도 트리거라 경합 위험).
  * ⚠️ 매월 1일 오전(리포트카드 생성 중)에는 실행하지 마세요 — 이어하기 트리거가 끊깁니다. */
 
@@ -11848,7 +11948,13 @@ function resetAllTriggers(force) {
   ScriptApp.newTrigger('monthlyJobs').timeBased().onMonthDay(1).atHour(5).create();
   ScriptApp.newTrigger('monthlyReportCardsJob').timeBased().onMonthDay(1).atHour(6).create(); // [v9.25] safeRun 보호 래퍼
   ScriptApp.newTrigger('monthlyReportJob').timeBased().onMonthDay(1).atHour(7).create();       // [v9.25] safeRun 보호 래퍼
-  Logger.log('✅ 트리거 통합 재설치 완료: 10개 (10분 스위프 · 3시 백업 · 7시 아침작업 · 8시 브리핑 · 14/22시 계산 · 월 7시 주간 · 1일 5/6/7시 월간)');
+  // [v9.67] 교재연동Nightly(23시 — AI 문법판정·목소리 수거·필살기 노트) 재설치 — 위 전체 삭제 루프가
+  //   setupTextbookLink(교재연동.js)가 설치한 이 트리거까지 지우고 재설치 목록엔 없어 조용히 실종되던 결함.
+  //   개통 발자국(profiles '목소리폼URL' 헤더) 있을 때만 — 미개통 시스템에 유령 트리거를 만들지 않는다.
+  //   시각·주기는 setupTextbookLink와 동일(매일 23시) · 전체 삭제 직후라 중복 설치 불가.
+  const tbOnR = textbookLinkOn_();
+  if (tbOnR) ScriptApp.newTrigger('교재연동Nightly').timeBased().everyDays(1).atHour(23).create();
+  Logger.log('✅ 트리거 통합 재설치 완료: ' + (tbOnR ? '11개' : '10개') + ' (10분 스위프 · 3시 백업 · 7시 아침작업 · 8시 브리핑 · 14/22시 계산 · 월 7시 주간 · 1일 5/6/7시 월간' + (tbOnR ? ' · 23시 교재연동' : ' — 교재연동 미개통이라 교재연동Nightly 제외, setupTextbookLink ▶ 시 +1') + ')');
 }
 
 /* ===================== [v9.26] 📟 경영계기판 — 6지표 신호등 대시보드 =====================
