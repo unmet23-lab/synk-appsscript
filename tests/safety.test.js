@@ -775,3 +775,56 @@ test('[v9.64] 반복 자동 감지 — 브리핑·수업 전 메일 ×N, AI 로�
   const ai = section('function aiWeakMap_(', "const fb = ss.getSheetByName('hw_feedback')");
   assert.ok(ai.includes('반복') && ai.includes('sort'), 'AI 로더 반복 우선("유형: 메모 (반복 n회)") 누락');
 });
+
+/* ── [v9.67] 감시 사각 3종 수리(2026-07-26 손타는 기능 진단 · 유호 승인) ─────────────── */
+
+test('[v9.67] resetAllTriggers는 교재연동Nightly(23시)를 개통 시스템에 재설치한다(전체 삭제 실종 결함)', () => {
+  const body = section('function resetAllTriggers(', 'const BIZ_BURN_DEFAULT');
+  // 전체 삭제 루프 → 통합 10개 → 교재연동 조건 재설치 순서. 재설치가 빠지면 AI 문법판정·목소리·필살기 노트가 조용히 죽는다.
+  assertOrder(body, [
+    'triggers.forEach(t => ScriptApp.deleteTrigger(t))',
+    "newTrigger('monthlyReportJob')",
+    'textbookLinkOn_()',
+    "newTrigger('교재연동Nightly').timeBased().everyDays(1).atHour(23)"
+  ]);
+  // 설치 정본(setupTextbookLink)과 시각·주기가 어긋나면 두 경로가 서로 다른 시간에 트리거를 만든다
+  const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
+  assert.ok(tb.includes("newTrigger('교재연동Nightly').timeBased().everyDays(1).atHour(23)"),
+    '교재연동.js setupTextbookLink의 23시 설치 정본이 변형됨 — resetAllTriggers 재설치와 함께 바꿔야 한다');
+});
+
+test('[v9.67] preflight·워치독·매니페스트가 교재연동Nightly 생존을 개통 조건부로 감시한다(미개통 오경보 0)', () => {
+  const pre = section('function preflightGlide()', 'function safeRun(name, fn)');
+  assert.ok(pre.includes("need['교재연동Nightly'] = 1"), 'preflight need 목록 편입 누락 — 실종을 조립 점검이 영영 모른다');
+  assert.ok(pre.includes('textbookLinkOn_'), 'preflight 개통 발자국 조건 누락 — setupTextbookLink 미실행 시스템에 오경보');
+  const wd = section('function systemWatchdog(', 'function buildSystemManifest()');
+  assert.ok(wd.includes("recommended.push('교재연동Nightly')"), '워치독 권장 트리거 편입 누락 — 주간 메일 감시망 밖');
+  const mf = section('function buildSystemManifest()', 'function checkConsultSync()');
+  assert.ok(mf.includes('10 + (tbOnM ? 1 : 0)'), '매니페스트 기대치가 고정 10이면 정상 설치된 11개 상태를 ⚠로 오판한다');
+});
+
+test('[v9.67] CLAUDE_API_KEY 휴면·첨삭 적체가 워치독·preflight·매니페스트에 뜬다(키 값은 절대 미노출)', () => {
+  const health = section('function aiFeedbackHealth_(', 'function systemWatchdog(');
+  assert.ok(health.includes("!!props.getProperty('CLAUDE_API_KEY')"), '키는 존재 여부 boolean만 — 값을 반환하면 로그·메일로 샌다');
+  assert.ok(health.includes("'숙제폼_포인터'"), '적체 = 숙제폼_응답 포인터 뒤 신규 행 수(키 없으면 포인터가 멈추는 성질 이용)');
+  const wd = section('function systemWatchdog(', 'function buildSystemManifest()');
+  assert.ok(wd.includes('aiFeedbackHealth_(ss)'), '주간 워치독 계기 누락 — 키 휴면·적체가 다시 완전 침묵이 된다');
+  const pre = section('function preflightGlide()', 'function safeRun(name, fn)');
+  assert.ok(pre.includes('aiFeedbackHealth_(ss)'), 'preflight 계기 누락');
+  const mf = section('function buildSystemManifest()', 'function checkConsultSync()');
+  assert.ok(mf.includes("push('CLAUDE_API_KEY'"), '매니페스트 외부 의존성 줄 누락(NOTION_TOKEN만 점검하던 결함)');
+});
+
+test('[v9.67] 출석·숙제·목소리폼의 무효 sid 드롭은 무통보가 아니다(하루 1회 dedup 통보·자동 복구 없음)', () => {
+  const att = section('function sweepAttendanceForm_(', 'function sweepFeedbackAck_(');
+  assert.ok(att.includes("notifyDroppedSids_('출석폼', badSid)"), '출석폼 드롭 통보 누락');
+  const fbk = section('function aiFeedbackBatch_()', 'function callClaudeFeedback_(');
+  assert.ok(fbk.includes("notifyDroppedSids_('숙제폼', badSid)"), '숙제폼 드롭 통보 누락');
+  assert.ok(fbk.includes('if (sid && !stu) badSid.push(sid)'), '미등록 sid만 수집해야 한다(빈 ID·빈 문장은 폼 필수문항이라 제외)');
+  const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
+  assert.ok(tb.includes("notifyDroppedSids_('목소리폼', badSid)"), '목소리폼 드롭 통보 누락(같은 결함 계급의 선제 수리)');
+  const helper = section('function notifyDroppedSids_(', 'function sweepAttendanceForm_(');
+  // dedup 필터 → 메일 발송 → 통보됨 마킹 순서 — 선마킹이면 큐 적재 실패 시 그날 통보가 영영 증발한다(safeRun 패턴)
+  assertOrder(helper, ['무효sid통보_', 'seen.indexOf(s) === -1', 'adminMail(', 'props.setProperty(key']);
+  assert.ok(helper.includes('포인터는 전진'), '메일이 "반영 안 됨 + 원본은 응답 탭에 있음"을 알려야 사람이 복구 경로를 안다');
+});

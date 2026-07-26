@@ -140,11 +140,12 @@ function voiceSweep_(ss) {
   });
 
   const rows = src.getRange(from + 1, 1, last - from, src.getLastColumn()).getValues();
-  const vOut = [], pOut = [];
+  const vOut = [], pOut = [], badSid = []; // [v9.67] 무효 sid 수집 — 출석·숙제폼과 같은 무통보 드롭 결함 수리
   rows.forEach(r => {
     const ts = r[0] instanceof Date ? r[0] : new Date();
     const sid = String(r[cSid] || '').trim();
-    if (!sid || !valid.has(sid)) return;
+    if (!sid) return;
+    if (!valid.has(sid)) { badSid.push(sid); return; } // 통보만(Code.js notifyDroppedSids_ — 하루 1회 dedup)
     const fileUrl = String(r[cFile] || '').trim();
     if (!fileUrl) return;
     const mission = cMission >= 0 ? String(r[cMission] || '').trim() : '';
@@ -164,6 +165,7 @@ function voiceSweep_(ss) {
   });
   if (vOut.length) vl.getRange(vl.getLastRow() + 1, 1, vOut.length, 6).setValues(vOut);
   if (pOut.length) pl.getRange(pl.getLastRow() + 1, 1, pOut.length, 8).setValues(pOut);
+  notifyDroppedSids_('목소리폼', badSid); // [v9.67] 함수 안 런타임 호출 — 톱레벨 크로스파일 금지 규칙과 무관
   props.setProperty('목소리폼_포인터', String(last));
   if (vOut.length) adminMail('[SYNK] 🎙 새 목소리 ' + vOut.length + '건',
     '목소리 미션 제출 ' + vOut.length + '건이 voice_log에 쌓였습니다. 성장 카드는 야간 배치가 자동 갱신합니다.');
