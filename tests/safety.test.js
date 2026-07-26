@@ -513,6 +513,35 @@ test('[v9.62] 출석·숙제 폼 생성도 재실행 안전 — 가드가 FormAp
   assert.ok(guard.includes("if (!tpl) return '';"), '복구 실패 시에는 정상 생성 경로로 빠져야 한다');
 });
 
+test('[v9.66] 상담폼 생성도 재실행 안전 — 살아있는 폼이 있으면 재생성하지 않는다', () => {
+  // 상담폼은 응답 시트가 없어(setDestination 미사용) formAlreadyMade_를 못 쓴다 — app_state 상담폼ID 생존 확인이 가드.
+  // 가드(조기 return)가 FormApp.create보다 반드시 앞: 재생성되면 상담폼ID가 갈아끼워져 배포된 링크 응답이 미아가 된다.
+  const body = section('function createConsultForm()', 'function migrateConsultV184()');
+  assertOrder(body, ["getState(st, '상담폼ID')", 'return msg0;', 'FormApp.create(']);
+});
+
+test('[v9.66] v18.4 증분 기입은 보호 구간(60~62열)을 건너뛰고 이름 매칭으로만 간다', () => {
+  const imp = section('function importFormResponses()', 'function setupStore()');
+  // 규칙 순서: 1~59열 → 증분(63열~) → 노션이관. 60~62열(학생ID·자동열)에 폼 답이 기입되는 경로가 생기면 안 된다.
+  assertOrder(imp, ['c <= 59', 'c >= 63', 'narrative.push']);
+  assert.ok(imp.includes('consult.getLastColumn()'), '헤더 폭이 62 고정이면 증분 열이 노션이관으로 새어 나간다');
+  assert.ok(imp.includes('getRange(newRow, 63, 1,'), '증분 구간은 조밀 배치 쓰기(리뷰 H1) — 개별 setValue는 재사용 행에 이전 학생 민감정보를 남긴다');
+  const chk = section('function checkFormMapping(', "/* ===================== [v5.4] 원장 브리핑");
+  assert.ok(chk.includes('c >= 63'), 'checkFormMapping이 importFormResponses와 같은 규칙이어야 진단을 믿을 수 있다');
+  // 증분 헤더 정본 동결 — 이름이 바뀌면 시트·폼·Crew Dossier 3자 정합이 조용히 깨진다
+  assert.ok(code.includes("['학교명/전공', '방문상세', '거절정황', '선호그룹', '인생드라마', '취미관심사']"),
+    'CONSULT_EXT_HEADERS 정본 배열이 변형됨 — 시트 헤더·폼 문항 제목과 함께 바꿔야 한다');
+});
+
+test('[v9.66] 상담 마이그레이션은 멱등 — 스키마 가드가 앞서고, 있는 것은 전부 건너뛴다', () => {
+  const mig = section('function migrateConsultV184()', 'function createLeadForm()');
+  // 순서: 60열=학생ID 스키마 가드 → 시트 헤더 존재 스킵 → 폼 제목 존재 스킵 → 예능 선택지 존재 스킵
+  assertOrder(mig, ["hdr[59] !== '학생ID'", 'have[h]', 'titleIdx[q[0]] !== undefined', "indexOf('예능') === -1"]);
+  assert.ok(mig.includes('insertColumnsAfter'), '물리 그리드가 62열뿐인 시트에서 열 추가가 Range 예외로 죽는다');
+  assert.ok(mig.includes('Math.max(62, wH) + 1'), '증분은 항상 헤더 행 끝에 append — 중간 삽입은 syncProfiles r[59] 등 인덱스 참조 전체를 밀어 파괴한다');
+  assert.ok(mig.includes('showColumns'), '숨김 62열 옆 삽입은 숨김을 상속할 수 있다(리뷰 M3) — 안 보이는 열은 강사가 영원히 안 채운다');
+});
+
 test('[v9.60] 잔재 청소는 자동생성 이름 + 빈 시트만 지운다(데이터 보호)', () => {
   const body = section('function cleanupOrphanFormSheets()', 'function sweepLevelTest_()');
   assert.ok(body.includes('설문지 응답 시트'), '자동 생성 이름만 대상');
