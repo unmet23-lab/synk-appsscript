@@ -691,15 +691,25 @@
  * [v9.64 — 🧩 연습 포인트 폼 스마트화 (2026-07-25 유호 지시: 분량 그대로, 목적 적합하게)]
  * 191. 폼 스펙 정본=코드(teacherMemoSpec_) — 재실행=제자리 업그레이드(URL·응답 열 불변, 복제 사고 차단),
  *      morningJobs가 강사·반 드롭다운을 로스터에 매일 자동 동기화(개원 확장 시 사람 손 0). 유형에 말하기·읽기
- *      편입(코어=문법·톡=회화 정합), 안내문=관찰 프롬프트("무엇을+어떤 상황"·학생별 개별 제출 유도).
+ *      편입(코어=문법·톡=회화 커리큘럼 축 정합), 안내문=관찰 프롬프트("무엇을+어떤 상황"·학생별 개별 제출 유도).
  *      소비처 3곳 반복 집계 — 같은 학생×유형 14일 재발 시 브리핑·수업 전 메일 ×N+반복 우선 정렬,
  *      AI 약점 로더는 "유형: 메모 (반복 n회)"로 끈질긴 포인트부터 공략. 강사 기입 부담 증가 0.
+ *
+ * [v9.66 — 🔀 상담 정본 v18.4 통합 (2026-07-26 유호 지시: 구글폼+상담데이터입력 시트를 Crew Dossier 기준 단일 정본으로)]
+ * 192. 오프라인 상담지(Crew Dossier v3.3)와 온라인 폼·시트 문항 통일 — 증분 6열(학교명/전공·방문상세·거절정황·
+ *      선호그룹·인생드라마·취미관심사)은 63열~에 '이름 매칭'으로 기입(60~62열 학생ID·자동열 보호 구간 불변 →
+ *      syncProfiles r[59]·KPI·워치독 인덱스 무영향), 서술형 2문항(한국어고충·SYNK선택이유)은 규칙대로 📝자유서술→노션.
+ *      importFormResponses·checkFormMapping 헤더 폭 동적화(62→getLastColumn) — 이후 문항 증설은 "시트 헤더+같은
+ *      제목 질문 추가"만으로 코드 수정 0. 워치독은 증분 적용본(>62열)에서 증분 헤더 유실도 감시.
+ * 193. migrateConsultV184 ▶ 1회 = 시트 헤더 증분 + 라이브 폼 제자리 증분(같은 제목 있으면 스킵 · 기존 문항/URL/
+ *      응답 불변, v9.64 제자리 업그레이드 계보) + 관심K분야 '예능' 선택지. createConsultForm에 재실행 안전 가드
+ *      (살아있는 폼 있으면 재생성 금지 — 배포 링크 갈아끼움 사고 차단, v9.60·v9.62 계급) + 신규 생성도 v18.4 스펙.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.65'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독
+const SYNK_VERSION = 'v9.66'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일)
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -5391,7 +5401,33 @@ function checkAchievements() {
 
 /* ===================== 상담 구글폼 ===================== */
 
-function createConsultForm() { // [v9.19] 상담지 시트 v18.3 정합 — 문항 제목=시트 헤더명(19개 재정렬), 서술형→📝자유서술→노션. (구 v8.4=v18.1)
+// [v9.66] 상담 정본 v18.4 증분 열 — Crew Dossier(오프라인 상담지)와 온라인 폼·상담데이터입력 시트 문항 통일.
+//   importFormResponses가 '헤더 이름 매칭'으로 기입하므로 열 위치 무관(60~62열 = 학생ID·자동열 보호 구간만 회피).
+//   앞으로 문항을 늘릴 땐 ① 이 배열에 헤더 추가 ② migrateConsultV184의 spec에 한 줄 ③ tests/safety.test.js의 동결 배열 문자열 갱신 ④ ▶ 1회.
+//   서술형(문단형) 신규 문항은 여기 넣지 않는다 — 대응 헤더가 없으면 규칙대로 📝자유서술→노션 칸에 모인다.
+const CONSULT_EXT_HEADERS = ['학교명/전공', '방문상세', '거절정황', '선호그룹', '인생드라마', '취미관심사'];
+
+function createConsultForm() { // [v9.19] 상담지 시트 v18.3 정합 — 문항 제목=시트 헤더명(19개 재정렬), 서술형→📝자유서술→노션. (구 v8.4=v18.1) · [v9.66] v18.4 — Crew Dossier 문항 통일(증분 8문항+관심K분야 '예능') + 재실행 안전 가드
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  // [v9.66] 재실행 안전 — 연결된 상담폼이 살아 있으면 새로 만들지 않는다(레벨테스트 v9.60·출석/숙제 v9.62와 같은 계급:
+  //   재실행마다 새 폼이 생기고 상담폼ID가 갈아끼워지면 배포된 링크·QR 응답이 미아가 된다). 문항 증분은 migrateConsultV184 ▶ 1회.
+  const exId = String(getState(st, '상담폼ID').val || '');
+  if (exId) {
+    try {
+      const exForm = FormApp.openById(exId);
+      const msg0 = '✅ 상담폼이 이미 연결돼 있어 새로 만들지 않았습니다.\n학생용: ' + exForm.getPublishedUrl() + '\n문항 업그레이드(v18.4)는 migrateConsultV184 ▶ 1회.';
+      Logger.log(msg0);
+      return msg0;
+    } catch (eGuard) {
+      // [리뷰 M1] 일시 장애·권한 순간 오류도 이 catch로 온다 — 여기서 새 폼을 만들면 배포된 링크·QR가 구 폼을
+      // 가리킨 채 응답이 미아가 되고(무감시 단절), 폼 생존 점검은 새 폼을 보고 통과해버린다. 진짜 삭제됐을 때만
+      // 사람 손으로 app_state '상담폼ID' 키를 지우고 재실행하는 것이 재생성 경로다(5708행 안내와 동일 관례).
+      const msgG = '⚠️ 연결된 상담폼ID를 열지 못했습니다(' + eGuard + ').\n일시 오류일 수 있어 새 폼을 만들지 않았습니다 — 폼이 정말 삭제된 게 맞으면 app_state 시트에서 상담폼ID 행을 지운 뒤 다시 실행하세요.';
+      Logger.log(msgG);
+      return msgG;
+    }
+  }
   const form = FormApp.create('SYNK LAB 크루 적성 파악 상담지')
     .setDescription('환영합니다! SYNK LAB 크루가 된 것을 축하드립니다.\n뇌과학 기반 맞춤 한국어 여정을 설계하기 위한 설문입니다. 솔직하게 답해주세요 🙂')
     .setCollectEmail(false);
@@ -5412,6 +5448,7 @@ function createConsultForm() { // [v9.19] 상담지 시트 v18.3 정합 — 문�
   txt('이메일', true).setHelpText('앱 로그인에 사용됩니다. 정확히 입력해주세요!');
   txt('거주지역');
   mc('최종학력', ['재학', '졸업', '휴학']); // [v9.19] v18.3: 학력→최종학력
+  txt('학교명/전공').setHelpText('재학·졸업 학교명과 전공 (선택)'); // [v9.66] v18.4 — 진학 로드맵·비자 소명 재료
   txt('보호자명', true);
   mc('보호자관계', ['엄마', '아빠', '형제/자매', '기타'], true);
   txt('보호자연락처', true);
@@ -5434,8 +5471,10 @@ function createConsultForm() { // [v9.19] 상담지 시트 v18.3 정합 — 문�
 
   form.addSectionHeaderItem().setTitle('PART 3 — 한국 경험과 비자');
   mc('한국방문경험', ['없음', '관광', '단기연수', '장기체류']); // [v9.19] v18.3
+  txt('방문상세').setHelpText('방문 기간·목적 (한국 방문 경험이 있을 때만)'); // [v9.66] v18.4
   mc('비자신청이력', ['없음', '승인', '거절'], true); // [v9.19] v18.3
   mc('거절비자종류', ['C-3', 'D-4', 'D-2', '기타']).setHelpText('비자 거절 경험이 있을 때만'); // [v9.19] v18.3
+  txt('거절정황').setHelpText('거절 시기·영사 지적 사유 (거절 경험이 있을 때만)'); // [v9.66] v18.4 — 비자 전략 설계의 핵심 재료
   mc('가족한국체류', ['없음', '현재합법체류', '특이사항'], true); // [v9.19] v18.3
 
   form.addSectionHeaderItem().setTitle('PART 4 — 학업 계획과 재정');
@@ -5458,7 +5497,11 @@ function createConsultForm() { // [v9.19] 상담지 시트 v18.3 정합 — 문�
   mc('학습_방식', ['이론중심', '실습·회화중심']);
   mc('학습_태도', ['꼼꼼한반복', '새로운탐구']);
   mc('대표강점', ['리더십', '분석력', '예술감각', '추진력', '창의성', '소통', '꼼꼼함', '기타']);
-  mc('관심K분야', ['KPOP', '드라마', '뷰티패션', '음식']).setHelpText('가장 관심 있는 것 하나만');
+  txt('취미관심사').setHelpText('운동·음악·요리·게임·여행 등 자유롭게'); // [v9.66] v18.4 — 케어 대화·콘텐츠 개인화 재료
+  para('한국어고충').setHelpText('암기·집중·발음·문법·말하기 울렁증 등 — 수업 설계에 그대로 반영됩니다'); // [v9.66] v18.4 서술형 → 노션
+  mc('관심K분야', ['KPOP', '드라마', '뷰티패션', '음식', '예능']).setHelpText('가장 관심 있는 것 하나만'); // [v9.66] '예능' 증분(Crew Dossier 정합)
+  txt('선호그룹').setHelpText('K-POP 최애 그룹 (있다면)'); // [v9.66] v18.4
+  txt('인생드라마').setHelpText('인생 K-드라마·작품 (있다면)'); // [v9.66] v18.4
   mc('KPOP댄스희망', ['매우희망', '보통', '없음']);
   mc('보컬트레이닝', ['매우희망', '보통', '없음']);
   mc('연기체험', ['매우희망', '보통', '없음']);
@@ -5468,20 +5511,111 @@ function createConsultForm() { // [v9.19] 상담지 시트 v18.3 정합 — 문�
 
   form.addSectionHeaderItem().setTitle('PART 6 — 기대와 건의');
   mc('인지채널', ['페이스북', '인스타', '틱톡', '추천', '오픈데이', '학교제휴', '워크인', '기타'], true); // [v9.33] leads 유입경로 8버킷과 통일 — 어트리뷰션 분류 정합('광고' 단일 버킷→플랫폼 분리)
+  para('SYNK선택이유').setHelpText('SYNK를 선택한 결정적 이유 (예: 비자 관리 · 확실한 성적 향상 · K컬처 클래스)'); // [v9.66] v18.4 서술형 → 노션 — 전환 결정타 수집
   para('SYNK 기대사항');
   para('이전 학원 경험');
   para('담당크루께 바라는 점');
   para('기타 질문');
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
   setState(st, '상담폼ID', form.getId());
-  Logger.log('✅ 폼 생성 완료!');
-  Logger.log('학생용: ' + form.getPublishedUrl());
-  Logger.log('편집용: ' + form.getEditUrl());
+  const doneMsg = '✅ 폼 생성 완료! (v18.4)\n학생용: ' + form.getPublishedUrl() + '\n편집용: ' + form.getEditUrl();
+  Logger.log(doneMsg);
+  return doneMsg;
 }
 
-// [v9.33] 콜드 광고 트래픽용 미니 리드폼 — 이름·연락처·인지채널·관심과정 4문항. 60문항 온보딩 상담폼(createConsultForm)과 완전 별개(그 폼은 건드리지 않음).
+/* [v9.66] 상담 정본 v18.4 통합 마이그레이션 — ▶ 1회 실행(재실행 안전 · 멱등).
+ * 유호님 2026-07-26 지시(구글폼+상담데이터입력 시트를 오프라인 Crew Dossier 기준 단일 정본으로 통합)의 실행부.
+ * ① 상담데이터입력 2행 헤더 끝(63열~)에 CONSULT_EXT_HEADERS 중 없는 것만 추가 — 기존 62열·데이터·행은 불변
+ *    (syncProfiles r[59] 학생ID·KPI·워치독 전부 열 '추가'에는 무영향. 60열=학생ID가 아니면 스키마 어긋남으로 중단).
+ * ② 라이브 상담폼에 v18.4 신규 문항(제목=헤더명)을 같은 제목이 없을 때만 추가하고 파트 내 제자리로 이동.
+ *    기존 문항·제목·응답·URL은 건드리지 않는다(v9.64 '제자리 업그레이드' 계보 — 응답 이력·배포 링크 보존).
+ *    '관심K분야'에는 '예능' 선택지만 증분(기존 응답값 불변).
+ * ③ 결과를 로그+원장 메일로 보고. 끝나면 checkFormMapping ▶로 매핑을 눈으로 확인하는 것을 권장. */
+function migrateConsultV184() {
+  const out = [];
+  let sheetOk = false; // [리뷰 M5] 시트 증분 성공 시 app_state '상담정본'=v18.4 선언 — 워치독 감시 게이트
+  // ① 시트 헤더 증분
+  try {
+    const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    if (!consult) out.push("⚠️ 시트: '상담데이터입력' 탭 없음 — 탭 이름 확인, 증분 중단");
+    else {
+      const w0 = consult.getLastColumn();
+      const hdr = w0 >= 1 ? consult.getRange(2, 1, 1, w0).getValues()[0].map(h => String(h || '').trim()) : [];
+      if (w0 < 62 || hdr[59] !== '학생ID') {
+        out.push('⚠️ 시트: 스키마 어긋남(폭 ' + w0 + '열 · 60열="' + (hdr[59] || '빈칸') + '") — 60열(BH)=학생ID 전제가 깨져 있어 증분을 중단합니다. dumpConsultHeaders ▶로 확인하세요.');
+      } else {
+        const have = {}; hdr.forEach(h => { if (h) have[h] = 1; });
+        const added = [], kept = [];
+        let wH = 0; hdr.forEach((h, i) => { if (h) wH = i + 1; }); // [리뷰 L1] 시트 lastColumn이 아니라 '헤더 행의 끝' 기준 — 오른쪽 데이터 잔재가 있어도 63열부터 정확히 붙는다
+        let col = Math.max(62, wH) + 1; // 항상 뒤에만 추가 — 기존 열 위치(인덱스 참조)가 절대 안 밀린다
+        const firstNew = col;
+        CONSULT_EXT_HEADERS.forEach(h => {
+          if (have[h]) { kept.push(h); return; }
+          if (consult.getMaxColumns() < col) consult.insertColumnsAfter(consult.getMaxColumns(), col - consult.getMaxColumns());
+          consult.getRange(2, col).setValue(h);
+          added.push(h + '(' + col + '열)');
+          col++;
+        });
+        if (added.length) consult.showColumns(firstNew, added.length); // [리뷰 M3] 숨김 열(62열=반조회순번) 옆 삽입은 숨김을 상속할 수 있다 — 강사 눈에 보이게 강제
+        sheetOk = true;
+        out.push('시트: 추가 ' + (added.length ? added.join(', ') : '없음') + (kept.length ? ' · 이미 있음 ' + kept.length + '개' : ''));
+      }
+    }
+  } catch (e) { out.push('⚠️ 시트 접근 실패 — CONSULT_SHEET_ID/권한 확인: ' + e); }
+
+  // ② 라이브 폼 제자리 증분
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+    if (sheetOk) setState(st, '상담정본', 'v18.4'); // [리뷰 M5] 적용 선언 — 워치독이 열 폭이 아니라 이 플래그로 감시(6열 전량 삭제로 폭이 62로 돌아와도 잡힌다)
+    const fid = String(getState(st, '상담폼ID').val || '');
+    if (!fid) out.push('폼: 상담폼ID 미연결 — createConsultForm ▶ 먼저(새 폼은 v18.4 문항 포함으로 생성됩니다)');
+    else {
+      const form = FormApp.openById(fid);
+      let titleIdx = {};
+      const rebuild = () => { titleIdx = {}; form.getItems().forEach(x => { titleIdx[String(x.getTitle()).trim()] = x.getIndex(); }); };
+      rebuild();
+      // [제목, 종류, 도움말, 위치 앵커(이 문항 바로 뒤에 배치)] — 제목=시트 헤더명 규칙 유지
+      const spec = [
+        ['학교명/전공', 'text', '재학·졸업 학교명과 전공 (선택)', '최종학력'],
+        ['방문상세', 'text', '방문 기간·목적 (한국 방문 경험이 있을 때만)', '한국방문경험'],
+        ['거절정황', 'text', '거절 시기·영사 지적 사유 (거절 경험이 있을 때만)', '거절비자종류'],
+        ['취미관심사', 'text', '운동·음악·요리·게임·여행 등 자유롭게', '대표강점'],
+        ['한국어고충', 'para', '암기·집중·발음·문법·말하기 울렁증 등 — 수업 설계에 그대로 반영됩니다', '취미관심사'],
+        ['선호그룹', 'text', 'K-POP 최애 그룹 (있다면)', '관심K분야'],
+        ['인생드라마', 'text', '인생 K-드라마·작품 (있다면)', '선호그룹'],
+        ['SYNK선택이유', 'para', 'SYNK를 선택한 결정적 이유 (예: 비자 관리 · 확실한 성적 향상 · K컬처 클래스)', '인지채널']
+      ];
+      const fAdded = [], fKept = [];
+      spec.forEach(q => {
+        if (titleIdx[q[0]] !== undefined) { fKept.push(q[0]); return; } // 멱등 — 같은 제목이 있으면 스킵
+        const it = q[1] === 'para' ? form.addParagraphTextItem() : form.addTextItem();
+        it.setTitle(q[0]).setHelpText(q[2]);
+        const anchor = titleIdx[q[3]];
+        if (anchor !== undefined) form.moveItem(it.getIndex(), anchor + 1);
+        rebuild(); // 이동 후 인덱스가 전부 밀리므로 다음 앵커 계산 전에 재구축
+        fAdded.push(q[0] + (anchor === undefined ? '(앵커 "' + q[3] + '" 미발견 — 맨 끝 배치)' : '')); // [리뷰 L4] 조용한 끝 배치를 리포트에 노출
+      });
+      // '관심K분야' 선택지 '예능' 증분(기존 선택지·응답 보존)
+      const kItems = form.getItems().filter(x => String(x.getTitle()).trim() === '관심K분야' && x.getType() === FormApp.ItemType.MULTIPLE_CHOICE);
+      if (kItems.length) {
+        const mcIt = kItems[0].asMultipleChoiceItem();
+        const vals = mcIt.getChoices().map(ch => ch.getValue());
+        if (vals.indexOf('예능') === -1) { vals.push('예능'); mcIt.setChoiceValues(vals); fAdded.push("관심K분야+'예능'"); }
+        else fKept.push("관심K분야 '예능'");
+      } else out.push("폼: '관심K분야' 객관식 문항을 못 찾음 — 제목 변경 여부 확인");
+      out.push('폼: 추가 ' + (fAdded.length ? fAdded.join(', ') : '없음') + (fKept.length ? ' · 이미 있음 ' + fKept.length + '개' : ''));
+    }
+  } catch (e) { out.push('⚠️ 폼 증분 실패 — 상담폼ID/권한 확인: ' + e); }
+
+  const report = '🔀 상담 정본 v18.4 마이그레이션 결과\n' + out.join('\n') +
+    '\n\n다음 확인: checkFormMapping ▶ — 증분 6문항이 열에 매핑되고, 서술형 2문항(한국어고충·SYNK선택이유)이 노션이관으로 표시되면 정상입니다.';
+  Logger.log(report);
+  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🔀 상담 정본 v18.4 마이그레이션', report);
+  return report;
+}
+
+// [v9.33] 콜드 광고 트래픽용 미니 리드폼 — 이름·연락처·인지채널·관심과정 4문항. 68문항(v18.4) 온보딩 상담폼(createConsultForm)과 완전 별개(그 폼은 건드리지 않음).
 //         광고 CTA는 이 폼만 연결. 응답은 이 스프레드시트의 '리드폼_응답' 시트로 떨어지며, 원장이 이름·연락처·인지채널(→유입경로)을 leads 시트로 수기 이관.
 function createLeadForm() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -5719,9 +5853,10 @@ function importFormResponses() {
   const lock = LockService.getScriptLock();
   lock.waitLock(60000);
   try {
-    const headers = consult.getRange(2, 1, 1, 62).getValues()[0]; // [v8.4] v18.1
+    const lastC = Math.max(62, consult.getLastColumn()); // [v9.66] v18.4 — 증분 열(63~)도 이름 매칭 대상
+    const headers = consult.getRange(2, 1, 1, lastC).getValues()[0]; // [v8.4] v18.1 · 헤더 2행
     const colOf = {};
-    headers.forEach((h, i) => { if (h) colOf[String(h).trim()] = i + 1; });
+    headers.forEach((h, i) => { const k = String(h).trim(); if (k && !colOf[k]) colOf[k] = i + 1; }); // [v9.66·리뷰 M2] 중복 헤더는 첫 열 우선 — 시트 오른쪽에 같은 이름의 보조 열이 생겨도 정본 열이 이긴다
 
     const fr = ensureSheet(ss, 'form_responses', ['접수ID', '타임스탬프', '이름', '경로', '처리상태']); // [v9.34] 무가드 참조 → 시트 부재 시 채번 후 크래시·같은 응답 10분마다 재기입(증식) 차단
     let newTs = lastTs;
@@ -5761,9 +5896,11 @@ function importFormResponses() {
 
       // 행 데이터 배열(1~60열) 한 번에 구성 → 일괄 쓰기
       const rowArr = new Array(59).fill(''); // [v8.4] 입력 A~BG(59열)
+      const extArr = lastC > 62 ? new Array(lastC - 62).fill('') : null; // [v9.66·리뷰 H1] v18.4 증분(63~lastC)은 조밀 배치 — 무응답 칸도 ''로 덮어 재사용 행의 이전 학생 잔재(비자·재정 민감정보)를 차단. 60~62열(학생ID·자동열)은 보호 구간
       Object.keys(ans).forEach(title => {
         const c = colOf[title];
         if (c && c <= 59) rowArr[c - 1] = ans[title];
+        else if (extArr && c >= 63) extArr[c - 63] = ans[title];
         else narrative.push('[' + title + '] ' + ans[title]);
       });
       if (colOf['생년월일'] && rowArr[colOf['생년월일'] - 1]) { // [v8.4] Date 객체로 (나이 수식 안정)
@@ -5777,6 +5914,7 @@ function importFormResponses() {
         rowArr[colOf['📝자유서술→노션'] - 1] = narrative.join('\n\n');
       }
       consult.getRange(newRow, 1, 1, 59).setValues([rowArr]);
+      if (extArr) consult.getRange(newRow, 63, 1, extArr.length).setValues([extArr]); // [v9.66·리뷰 H1] 증분 구간 통째 1회 쓰기(60~62 건너뜀) — 개별 setValue였다면 행 재사용 시 옛 학생 값이 남았다
 
       // 학생ID 직접 채번 (수식 비의존)
       maxSynk++;
@@ -5854,7 +5992,7 @@ function cleanupFormTest() {
   const colA = winRows2 > 0 ? consult.getRange(8, 1, winRows2, 1).getValues() : [];
   let cleaned = 0;
   colA.forEach((r, i) => {
-    if (r[0]) { consult.getRange(8 + i, 1, 1, 68).clearContent(); cleaned++; }
+    if (r[0]) { consult.getRange(8 + i, 1, 1, Math.max(68, consult.getLastColumn())).clearContent(); cleaned++; } // [v9.66] v18.4 증분 열까지 청소(폭 동적)
   });
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
   setState(st, '폼처리시각', 0);
@@ -7259,6 +7397,15 @@ function systemWatchdog(asText) {
       add(widthOk && idOk, '상담시트 스키마: 폭 ' + cw + '열' +
         (widthOk ? '' : '(<62 ⚠️ 열 삭제 의심)') +
         ' · 학생ID(60열)=' + (idOk ? 'OK' : '"' + (chdr[59] || '(빈칸)') + '" ⚠️ 헤더 어긋남 — dumpConsultHeaders/checkFormMapping 실행'));
+      const stV = ss.getSheetByName('app_state'); // [v9.66·리뷰 M5] 감시 게이트 = 열 폭이 아니라 마이그레이션 '적용 선언'(상담정본=v18.4) — 6열 전량 삭제(폭 62 복귀)도, 미실행 방치도 잡힌다
+      const v184on = stV ? String(getState(stV, '상담정본').val || '') === 'v18.4' : false;
+      const hasCForm = stV ? !!String(getState(stV, '상담폼ID').val || '') : false;
+      if (v184on) {
+        const missE = CONSULT_EXT_HEADERS.filter(h => chdr.indexOf(h) === -1);
+        add(missE.length === 0, '상담시트 v18.4 증분 헤더: ' + (missE.length ? missE.join(', ') + ' 유실 — migrateConsultV184 재실행' : CONSULT_EXT_HEADERS.length + '종 정상'));
+      } else if (hasCForm) {
+        add(false, '상담 v18.4 마이그레이션 미실행 — 증분 문항 응답이 시트 열 없이 노션이관으로만 쌓입니다. migrateConsultV184 ▶ 1회');
+      }
     }
   } catch (e) { add(false, '상담시트 스키마 점검 실패 — CONSULT_SHEET_ID/권한 확인: ' + e); }
 
@@ -7485,7 +7632,8 @@ function dumpConsultHeaders() {
  * 폼 질문지가 바뀌었을 때 "제대로 적용됐는지" 검증. importFormResponses와 동일 규칙(제목=헤더명 매칭,
  * 매칭 안 되면 노션이관)으로, 각 질문이 어느 칸에 들어가는지·노션이관으로 빠지는지·빈 칸은 뭔지 보고.
  * 인자로 새 폼 ID를 주면 상담폼ID를 바꾸기 전에 미리 검증 가능: checkFormMapping('새폼ID')
- * 무인자 호출은 app_state '상담폼ID'(현재 연결된 폼)를 검사. 데이터는 절대 수정하지 않음. */
+ * 무인자 호출은 app_state '상담폼ID'(현재 연결된 폼)를 검사. 데이터는 절대 수정하지 않음.
+ * [v9.66] v18.4 — 증분 열(63~)도 매핑 대상(60~62열 보호 구간만 노션이관 처리), 헤더 폭 동적화. */
 function checkFormMapping(optId) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
@@ -7499,10 +7647,10 @@ function checkFormMapping(optId) {
   let headers = [];
   try {
     const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
-    headers = consult.getRange(2, 1, 1, 62).getValues()[0].map(h => String(h || '').trim()); // [v8.4] v18.1 헤더 2행
+    headers = consult.getRange(2, 1, 1, Math.max(62, consult.getLastColumn())).getValues()[0].map(h => String(h || '').trim()); // [v8.4] v18.1 헤더 2행 · [v9.66] 폭 동적
   } catch (e) { Logger.log('상담시트 열기 실패 — ID/권한 확인: ' + e); return; }
-  const colOf = {};
-  headers.forEach((h, i) => { if (h) colOf[h] = i + 1; });
+  const colOf = {}, hdrDup = []; // [v9.66·리뷰 M2] 중복 헤더는 첫 열 우선(importFormResponses와 동일 규칙) + 진단에 노출
+  headers.forEach((h, i) => { if (!h) return; if (colOf[h]) hdrDup.push(h + '(' + colOf[h] + '↔' + (i + 1) + '열)'); else colOf[h] = i + 1; });
 
   // 답변형 문항만 (섹션 헤더·이미지·페이지 나눔 제외)
   const answerable = [FormApp.ItemType.TEXT, FormApp.ItemType.PARAGRAPH_TEXT, FormApp.ItemType.MULTIPLE_CHOICE,
@@ -7515,14 +7663,14 @@ function checkFormMapping(optId) {
     if (seen[t]) dupTitle.push(t);
     seen[t] = true;
     const c = colOf[t];
-    if (c && c <= 59) matched.push('  · ' + t + ' → ' + c + '열'); // importFormResponses와 동일 규칙(1~59열만 시트 기입)
-    else narrative.push('  · ' + t + (c ? ' (헤더 존재하나 ' + c + '열>59 → 노션이관)' : ' → 노션이관(대응 헤더 없음)'));
+    if (c && (c <= 59 || c >= 63)) matched.push('  · ' + t + ' → ' + c + '열' + (c >= 63 ? ' (v18.4 증분)' : '')); // importFormResponses와 동일 규칙(60~62열 보호 구간만 제외)
+    else narrative.push('  · ' + t + (c ? ' (보호 구간 ' + c + '열(60~62) → 노션이관)' : ' → 노션이관(대응 헤더 없음)'));
   });
 
   // [v9.19] v18.3 기준 — 폼이 안 채워도 정상인 칸(자동 채번·타임스탬프·서술형 모음·강사 배정·자동 계산)
   const autoCols = { '학생ID': 1, '등록일': 1, '📝자유서술→노션': 1, '나이(자동)': 1, '반': 1, '비고': 1, '⚠위험신호(자동)': 1, '반조회순번(숨김)': 1 };
   const uncovered = [];
-  headers.forEach((h, i) => { if (h && i < 59 && !seen[h] && !autoCols[h]) uncovered.push(h + '(' + (i + 1) + '열)'); });
+  headers.forEach((h, i) => { if (h && !seen[h] && !autoCols[h]) uncovered.push(h + '(' + (i + 1) + '열)'); }); // [v9.66] 증분 열(63~)도 폼 미대응이면 경고 — 60~62열은 autoCols가 제외
 
   const out = [
     '🔎 상담폼 ↔ 시트 매핑 진단',
@@ -7536,6 +7684,7 @@ function checkFormMapping(optId) {
     '',
     '⚠️ 폼에 대응 질문이 없는 시트 칸 (' + uncovered.length + ', 자동·계산열 제외): ' + (uncovered.length ? uncovered.join(', ') : '없음'),
     (dupTitle.length ? '\n⚠️ 중복 질문 제목: ' + dupTitle.join(', ') : ''),
+    (hdrDup.length ? '\n⚠️ 시트 중복 헤더(첫 열에만 기입됨): ' + hdrDup.join(', ') : ''),
     '',
     '※ 읽기 전용 진단 — 어떤 데이터도 수정하지 않았습니다.'
   ].filter(l => l !== '');
