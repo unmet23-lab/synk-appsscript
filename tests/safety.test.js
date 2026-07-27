@@ -361,12 +361,38 @@ test('[v9.48] 공유값 서버화 — calcAll이 학업 계산 뒤에 공유열�
   assert.ok(fn.includes("String(r[35] || '') === '주말' ? '주말의' : '오늘의'")); // 반유형 분기(구 Glide ITE)
   assert.ok(fn.includes('splitQuiz')); // 퀴즈 문제/정답 분해(구 Glide Split Text)
   assert.ok(fn.includes("String(r[9] || '').split(',')[0]")); // parent_of 첫 자녀(구 Relation)
-  assert.ok(fn.includes('writeIfChanged(pf, 2, SHARED_COL_START, out)')); // 무변경 시 쓰기 0(쿼터 보호)
+  assert.ok(fn.includes('writeIfChanged(pf, 2, SHARED_COL_START, out.map(')); // 무변경 시 쓰기 0(쿼터 보호) — [v9.74] 블록 분리 쓰기
   // 헤더 20개가 열 지도와 일치해야 조립 문서의 CG~CZ 안내가 유효 ([v9.49] 폼URL 2종+새첨삭수 추가로 17→20)
   assert.ok(code.includes("const SHARED_COL_START = 85"));
   const heads = code.match(/const SHARED_COL_HEADERS = \[([\s\S]*?)\];/);
   assert.ok(heads, 'SHARED_COL_HEADERS 선언을 찾지 못함');
   assert.equal(heads[1].split(',').filter(s => s.trim()).length, 20);
+  // [v9.74] 2차 블록(DH112~DN118) — 강사 행 분기 + 두 블록 분리 쓰기 + 길이 기계 가드
+  assert.ok(fn.includes("role === 'teacher'"), '강사 행 분기(수업준비·출퇴근·폼URL)가 없다');
+  assert.ok(code.includes('const SHARED2_COL_START = 112'), '2차 블록 시작(DH112) 상수가 없다');
+  const heads2 = code.match(/const SHARED2_COL_HEADERS = \[([\s\S]*?)\];/);
+  assert.ok(heads2, 'SHARED2_COL_HEADERS 선언을 찾지 못함');
+  assert.equal(heads2[1].split(',').filter(s => s.trim()).length, 7);
+  assert.ok(fn.includes('writeIfChanged(pf, 2, SHARED_COL_START,') && fn.includes('writeIfChanged(pf, 2, SHARED2_COL_START,'),
+    '두 블록 분리 쓰기가 아니면 선점 구간(DA105~DG111)을 덮어쓴다');
+  assert.ok(fn.includes('a.length !== HEADS_ALL.length'), '분기 반환 길이 기계 가드(리뷰 H1)가 없다 — 열 밀림 조용한 파괴 위험');
+});
+
+test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105 최애·DB~DD 교재연동 3열)과 겹치지 않는다', () => {
+  // 리뷰 B1 재발 차단: 공유 블록을 확장할 때 이미 주인이 있는 열을 침범하면 첫 calcAll이 데이터를 파괴한다.
+  const s1 = 85, len1 = code.match(/const SHARED_COL_HEADERS = \[([\s\S]*?)\];/)[1].split(',').filter(s => s.trim()).length;
+  const s2 = Number(code.match(/const SHARED2_COL_START = (\d+)/)[1]);
+  const len2 = code.match(/const SHARED2_COL_HEADERS = \[([\s\S]*?)\];/)[1].split(',').filter(s => s.trim()).length;
+  const reserved = { 105: '최애(v9.50·A4, 학생 Set Column)', 106: '목소리폼URL(교재연동)', 107: '목소리성장카드(교재연동)', 108: '필살기노트(교재연동)' };
+  Object.keys(reserved).forEach(cs => {
+    const c = Number(cs);
+    assert.ok(!(c >= s1 && c <= s1 + len1 - 1) && !(c >= s2 && c <= s2 + len2 - 1),
+      '공유 블록이 선점 열 ' + c + '(' + reserved[cs] + ')을 침범 — 리뷰 B1 재발');
+  });
+  // 선점 주인들이 실제로 그 열을 쓰는지(레지스트리의 근거) — 코드가 바뀌면 이 목록도 갱신해야 한다
+  assert.ok(code.includes("pf.getRange('DA1').getValue()) !== '최애'"), 'DA105 최애 보장 코드가 사라짐 — 레지스트리 갱신 필요');
+  const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
+  ['DB1', 'DC1', 'DD1'].forEach(cell => assert.ok(tb.includes("getRange('" + cell + "')"), '교재연동.js ' + cell + ' 보장 코드가 사라짐 — 레지스트리 갱신 필요'));
 });
 
 test('[v9.49] hw_feedback 골격 — 학생확인(Glide 전용)과 포인트지급(스크립트 전용) 열이 분리돼 있다', () => {
@@ -885,4 +911,77 @@ test('[v9.69] 번역 대상에 grammar가 있고, 반복 체감 뱅크는 확장
   assert.ok((evo.match(/\{n\}/g) || []).length >= 6, 'evosoon 6문장 미만');
   const bd = sp.slice(sp.indexOf('bday:'), sp.indexOf('idle:'));
   assert.ok((bd.match(/'/g) || []).length / 2 >= 4, 'bday 4문장 미만');
+});
+
+test('[v9.74] 숙제 카드 — 라벨 있는 완성 카드(과제·선생님 체크·제출 안내), 과제 없으면 미노출', () => {
+  const hw = loadFunction('function hwCardHtml_(', 'function quizCardHtml_(', 'hwCardHtml_', { escHtml_: (s) => String(s), CARD_FONT: '' });
+  const html = hw('어휘', 'Үгийн сан', '오늘 단어 중 2개를 한 문장 안에 같이 넣어 보세요.', '의미 연결이 자연스러운지', 'Утгын холбоо');
+  ['오늘의 숙제', '어휘', '오늘 단어 중 2개', '선생님이 이걸 봐요', '의미 연결이 자연스러운지', '숙제 제출'].forEach((k) =>
+    assert.ok(html.includes(k), '숙제 카드에 누락: ' + k));
+  assert.equal(hw('어휘', '', '', '', ''), ''); // 게시 전 콜드스타트 — 빈 껍데기 카드 대신 미노출
+});
+
+test('[v9.74] 퀴즈 카드 — 문제와 공개 안내만, 정답은 어떤 경로로도 카드에 담기지 않는다(언어정책)', () => {
+  const quiz = loadFunction('function quizCardHtml_(', 'function prepCardHtml_(', 'quizCardHtml_', { escHtml_: (s) => String(s), CARD_FONT: '' });
+  const html = quiz('감사합니다의 실제 발음은?', false);
+  assert.ok(html.includes('오늘의 퀴즈') && html.includes('감사합니다의 실제 발음은?') && html.includes('정답 공개'));
+  assert.ok(quiz('문제', true).includes('맞춤 문제'), '개인 퀴즈(ai_daily) 라벨 누락');
+  assert.equal(quiz('', false), '');
+  // 호출부가 문제(q[0]·pq.q)만 넘기는지 — 정답(q[1]·pq.a)이 카드로 새는 회귀 차단
+  assert.ok(code.includes('quizCardHtml_(pq ? pq.q : q[0], !!pq)'), '퀴즈 카드 호출부는 문제만 넘겨야 한다');
+  const fnQ = section('function quizCardHtml_(', 'function prepCardHtml_(');
+  assert.ok(!fnQ.includes('quizAns'), '퀴즈 카드 빌더에 정답 인자가 생기면 언어정책(정답 평문 노출 금지) 위반');
+});
+
+test('[v9.74] 수업준비 카드 — 검사 포인트의 제자리는 강사 화면, 워밍업 퀴즈는 정답 동봉', () => {
+  const prep = loadFunction('function prepCardHtml_(', 'function teacherInOutMap_(', 'prepCardHtml_', { escHtml_: (s) => String(s), CARD_FONT: '' });
+  const html = prep('어휘', '단어 3개로 문장 만들기', '조사 확인', '같이의 발음은?', '가치 — 구개음화');
+  ['수업 준비', '오늘 검사할 숙제', '검사 포인트 — 조사 확인', '워밍업 퀴즈', '정답 — 가치'].forEach((k) =>
+    assert.ok(html.includes(k), '수업준비 카드에 누락: ' + k));
+  assert.ok(prep('', '', '', '', '').includes('게시된 숙제 없음'));
+});
+
+test('[v9.74] 출퇴근 중복 방어 — 첫 출근·마지막 퇴근 집계, 강사 행만 갱신, 응원 메일 당일 1회·발송 후 마킹', () => {
+  const io = section('function teacherInOutMap_(', 'function updateTeacherInOut_(');
+  assert.ok(io.includes('d < m.tin') && io.includes('d > m.tout'), '중복 탭 무해화(첫 출근·마지막 퇴근) 집계가 없다');
+  const upd = section('function updateTeacherInOut_(', 'function writeSharedCols_(');
+  assert.ok(upd.includes("String(r[3]) !== 'teacher'"), '강사 행 한정 갱신이 없다(학생·학부모 행 침범 위험)');
+  assert.ok(upd.includes("!== '오늘출근'"), '공유열 미생성 콜드스타트 가드가 없다');
+  assert.ok(upd.includes('SHARED2_COL_START') && upd.includes('hhmmOf_(cur[i][0], tz)'),
+    '2차 블록 주소·hhmmOf_ 정규화 비교(리뷰 B1·B2)가 없다 — 선점 열 침범 또는 10분 재기입 루프');
+  assert.ok(section('function writeSharedCols_(', 'const HEADS_ALL').includes("setNumberFormat('@')"),
+    '출퇴근 열 텍스트 서식 고정(리뷰 B2)이 없다 — HH:mm이 1899 Date로 되읽혀 재기입 루프(v9.68 계급)');
+  assert.ok(section('function todayBoard_(', '교실 스크린').includes('updateTeacherInOut_(ss, tz, pf)'), '10분 스위프 갱신 배선이 없다');
+  const co = section('function checkoutCheerMail_(', 'function sweepLeadForm_(');
+  assert.ok(co.includes("sentNames.indexOf('|' + who + '|')"), '당일 1회/강사 가드가 없다');
+  assertOrder(co, ['MailApp.sendEmail(email', 'props.setProperty(sentKey']); // 발송 성공분만 마킹
+  assert.ok(co.includes('!quotaOk(1)) break'), '쿼터 소진 시 포인터 전진 없는 중단(리뷰 H2 — 재시도 보장)이 없다');
+  assertOrder(co, ["props.deleteProperty('퇴근응원_'", "Number(props.getProperty('퇴근메일_포인터'))"]); // 어제 키 청소는 조기 return보다 앞(리뷰 L1)
+});
+
+test('[v9.74] 학부모 접점에서 몬스터 호칭 제거 — 성장 파트너(хамтрагч), 학생 세계관은 유지', () => {
+  assert.ok(code.includes('도장이 쌓일수록 성장 파트너가 자라요'), '출석달력 캡션 교체 누락');
+  assert.ok(!code.includes('도장이 채워질수록 몬스터가 자라요'), '구 캡션 잔존');
+  assert.ok(code.includes('학생의 성장 파트너가 진화했어요') && !code.includes('학생의 몬스터가 진화했어요'), '진화 학부모 메일 교체 누락');
+  assert.ok(!code.includes('-ийн монстр'), '학부모 몽골어 배너·하이라이트에 монстр 잔존'); // 학생용(운세 "дараагийн монстр"·onboarding "таны монстр")은 세계관 유지로 남는다
+  const pq = section('const PARENT_Q = [', '];');
+  assert.ok(pq.indexOf('монстр') === -1 && pq.indexOf('네 몬스터') === -1, '학부모 대화 카드에 몬스터 잔존');
+  const hl = section('const HL_TPL = [', '];');
+  assert.ok(hl.indexOf('монстр') === -1 && hl.indexOf('몬스터') === -1, '학부모 하이라이트에 몬스터 잔존');
+});
+
+test('[v9.74] 학업 기록 폼 — 재실행 가드·10분 전개(값 검증·AL 채번·미매칭 통보)·아침 동기화·켜기 큐 감시', () => {
+  const cf = section('function createAcademicForm()', 'function importFormResponses()');
+  assertOrder(cf, ['syncAcademicForm_(ss, st)', 'FormApp.create']); // 있으면 제자리 업그레이드, 없을 때만 생성(URL 갈아끼움 사고 차단)
+  const sw = section('function sweepAcademicForm_(', '첨삭 품질 게이트');
+  assert.ok(sw.includes("props.setProperty('학업폼_포인터', String(last))"), '포인터 마감 누락');
+  assertOrder(sw, ['al.getRange(al.getLastRow() + 1', '적재 직후·메일 전 마감', 'adminMail(']); // [리뷰 M5] 적재→포인터→메일 — 메일 실패가 중복 적재를 만들지 않게(상단 클램프의 setProperty와 구분해 주석 마커 사용)
+  assert.ok(sw.includes('val >= 1 && val <= 6') && sw.includes('val >= 0 && val <= 100'), '값 범위 검증 누락 — 차트 원본 오염 위험');
+  assert.ok(sw.includes("'AL' + String(seq).padStart(3, '0')"), 'AL 채번(기존 최대 번호 잇기) 누락');
+  assert.ok(sw.includes('미매칭'), '미매칭 통보 누락');
+  assert.ok(section('function parentSweep()', 'function translateTopics_').includes("safeRun('sweepAcademicForm'"), '10분 스위프 배선 누락');
+  assert.ok(section('function morningJobs()', 'function nightJobs()').includes("safeRun('academicFormSync'"), '아침 로스터 동기화 누락');
+  assert.ok(code.includes("['학업폼URL', 'createAcademicForm'"), 'preflight 켜기 큐(폼 미생성 감시) 누락');
+  const shared = section('function writeSharedCols_(', 'function syncProfiles()');
+  assert.ok(shared.includes("kv['학업폼URL']") && shared.includes("kv['약점메모폼URL']"), '강사 행 폼 버튼 URL 배선 누락');
 });
