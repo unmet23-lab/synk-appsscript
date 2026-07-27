@@ -985,3 +985,27 @@ test('[v9.74] 학업 기록 폼 — 재실행 가드·10분 전개(값 검증·A
   const shared = section('function writeSharedCols_(', 'function syncProfiles()');
   assert.ok(shared.includes("kv['학업폼URL']") && shared.includes("kv['약점메모폼URL']"), '강사 행 폼 버튼 URL 배선 누락');
 });
+
+test('[v9.75] 만족도팩 켜기 큐 — 설문 폼 미생성·수강 등록 공백이 preflight에서 드러난다', () => {
+  // v9.73 설문 폼은 유호님 ▶ 1회가 필요한데 v9.61 폼 감시 목록에서 빠져 있었다(안 하면 링크가 조용히 생략됨).
+  assert.ok(code.includes("['설문폼URL틀', 'createSurveyForm'"), '설문 폼이 켜기 큐(폼 미생성 감시)에 없다');
+  // v9.72 만료 안내는 enrollments가 비면 무비용 휴면 — 학생이 있는데 0행이면 "코드는 정상인데 아무도 모르는" 침묵이 된다.
+  const pfl = section("const en = ss.getSheetByName('enrollments')", '// 4) class_stats');
+  assert.ok(pfl.includes('cnt.student'), '학생 수 대조 없이 경고하면 개원 전 빈 로스터에서 오경보');
+  assert.ok(pfl.includes('만료 D-14/D-3'), '만료 안내 침묵 경고 문구가 없다');
+});
+
+test('[v9.71] 메신저 연결 스위프가 상담로그 실제 열 순서(시각·세션·발신·내용)와 맞는다', () => {
+  // 상담AI.js가 쓰는 헤더와 만족도팩이 읽는 인덱스가 어긋나면 연결 요청이 영원히 접수되지 않는다(양쪽 파일 교차 계약).
+  const ai = fs.readFileSync(path.join(ROOT, '상담AI.js'), 'utf8');
+  const head = ai.match(/const 상담AI_로그헤더 = \[([^\]]+)\]/);
+  assert.ok(head, '상담AI_로그헤더 선언을 찾지 못함');
+  const cols = head[1].split(',').map(s => s.trim().replace(/'/g, ''));
+  assert.deepEqual(cols.slice(0, 4), ['시각', '세션', '발신', '내용'], '상담로그 앞 4열이 바뀌면 MJ_msgLinkSweep_의 psid/발신/내용 인덱스가 어긋난다');
+  const mj = fs.readFileSync(path.join(ROOT, '만족도팩.js'), 'utf8');
+  const sweep = mj.slice(mj.indexOf('function MJ_msgLinkSweep_('), mj.indexOf('function MJ_canSendNow_('));
+  assert.ok(sweep.includes('last - from, 4'), '상담로그 4열 읽기가 아니다');
+  assert.ok(sweep.includes("who !== 'user'"), "발신 'user' 필터가 없다 — 봇 발화까지 학생ID로 오인 접수");
+  assert.ok(sweep.includes("psid === 'anon'"), 'anon(자체폼 세션) 제외가 없다 — psid 없는 세션이 연결 대기로 쌓인다');
+  assert.ok(ai.includes("상담_기록_(세션, 'user'"), "상담AI가 'user' 발신으로 기록하지 않으면 스위프가 아무것도 못 잡는다");
+});
