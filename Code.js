@@ -735,7 +735,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.78'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고 · [v9.77] profiles 무결성 3면 감시 — Glide 상세 화면 Edit/Add 잔재 실측(07-28) 후속: 유령 행(user_id 공란, 기존 !r[0] 스킵의 사각)·user_id 중복·무효 role을 nightJobs(매일·이상 시에만 메일·동일 내용 dedup)+주간 워치독+preflight 3면에서 자동 발각 · [v9.78] 강사 반 HUD 리디자인 — 유호 07-28 "반 탭이 만들다 만 느낌" → 낱장 줄글 4카드(v9.15)를 SYNK CLASS HUD로 격상: 14열 반상세HTML = 헤더 스탯 스트립(미션 n건·루틴 k/4·보스 HP) + 미션(유형 색 필·명단 캡)·루틴(게이지+2×2)·레이드(사정권 콜아웃 흡수)·왕관(미수혜 pill 후보 명단), Glide 기바인딩이라 클릭 0 적용·9~13열 낱장도 동일 디자인(설계=ban-tab-redesign 워크플로 A/B 판정)
+const SYNK_VERSION = 'v9.79'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고 · [v9.77] profiles 무결성 3면 감시 — Glide 상세 화면 Edit/Add 잔재 실측(07-28) 후속: 유령 행(user_id 공란, 기존 !r[0] 스킵의 사각)·user_id 중복·무효 role을 nightJobs(매일·이상 시에만 메일·동일 내용 dedup)+주간 워치독+preflight 3면에서 자동 발각 · [v9.78] 강사 반 HUD 리디자인 — 유호 07-28 "반 탭이 만들다 만 느낌" → 낱장 줄글 4카드(v9.15)를 SYNK CLASS HUD로 격상: 14열 반상세HTML = 헤더 스탯 스트립(미션 n건·루틴 k/4·보스 HP) + 미션(유형 색 필·명단 캡)·루틴(게이지+2×2)·레이드(사정권 콜아웃 흡수)·왕관(미수혜 pill 후보 명단), Glide 기바인딩이라 클릭 0 적용·9~13열 낱장도 동일 디자인(설계=ban-tab-redesign 워크플로 A/B 판정) · [v9.79] 미니멀 스킨 — 유호 "훨씬 트렌디하고 미니멀하게, 뼈대 같은 느낌" → 실렌더 A/B(M1 에어리 라이트 vs M2 다크 히어로) 판정 M2 채택: 유색 보더 전면 폐지(흰 카드+이중 소프트 섀도)·타이포 3단(그레이 라벨→잉크 빅넘버→본문)·색 3계 절제(블루·앰버·그린)·이모지 카드당 ≤1·미션 도트 3톤·상세 헤더=딥 네이비 다크 히어로(블루 radial glow)
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -1204,131 +1204,134 @@ function buildMonsterFrame_(dispName, dispImg, apIdx, pct, rem) {
     inner + cap + gauge + '</div>';
 }
 
-// [v9.35] ⚔️ 레이드 카드 — 소프트 글로우 축(유호님 판정: 픽셀 레트로 폐기, 전 카드 단일 축 통일).
+// [v9.35] ⚔️ 레이드 카드 · [v9.78] stuN=사정권 콜아웃 흡수 · [v9.79] 미니멀 스킨(유호 "훨씬 트렌디하고 미니멀하게"
+//   — 실렌더 A/B 판정 M2 다크 히어로 채택): 유색 보더 폐지 → 흰 카드+이중 소프트 섀도, 라벨/빅넘버 타이포 위계.
 //   goal 0 = 휴식주(보스휴식주·신규 반). won = raid 시트 '격파' 마킹(정산 전이라도 dmg≥goal이면 달성 표기).
-//   [v9.78] stuN(반 학생수) 선택 인자 — 있으면 구 10열 격파찬스를 카드 안 앰버 콜아웃으로 흡수(잔여 ≤ 학생수×10).
 function buildRaidCard_(clsName, goal, dmg, won, stuN) {
-  const head = '<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 4px 8px;">' +
-    '<span style="font-size:13px;font-weight:800;color:#2B3FD9;">⚔️ 이번 주 레이드</span>' +
-    '<span style="font-size:11px;font-weight:800;color:#2B3FD9;background:#EEF2FF;border:1.5px solid #BCC8FF;border-radius:99px;padding:1px 9px;">' + escHtml_(clsName) + '</span></div>';
+  const head = '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+    '<span style="' + HUD_LABEL + '">이번 주 레이드</span>' + (clsName ? hudChip_(clsName) : '') + '</div>';
   let body;
   if (!goal) {
-    body = '<div style="background:#fff;border-radius:12px;padding:11px 12px;font-size:12px;color:#6B7280;text-align:center;">🏖️ 이번 주는 휴식주 — 다음 보스를 기다리는 중</div>';
+    body = '<div style="margin-top:12px;background:#F8F9FB;border-radius:14px;padding:18px 14px;text-align:center;font-size:13px;line-height:1.7;color:#667085;">🏖️ 이번 주는 휴식주 — 다음 보스를 기다리는 중</div>';
   } else {
     const win = won || dmg >= goal;
     const left = Math.max(goal - dmg, 0);
-    const chance = !win && left > 0 && Number(stuN) > 0 && left <= Number(stuN) * 10; // [v9.78] 사정권 — 10열 스냅샷과 소스가 달라 미세 드리프트 가능(단일 카드 안에선 goal−dmg 하나만 쓰므로 자기모순 없음)
+    const chance = !win && left > 0 && Number(stuN) > 0 && left <= Number(stuN) * 10; // [v9.78] 사정권 — 라이브 소스(goal−dmg) 단일
     const pctR = win ? 100 : Math.max(0, Math.min(100, Math.round(dmg / goal * 100)));
-    body = '<div style="background:' + (win ? 'linear-gradient(90deg,#F5A623,#FDE68A)' : '#DDE3F8') + ';border-radius:99px;height:9px;margin:2px 4px 3px;overflow:hidden;">' +
-      (win ? '' : '<div style="width:' + pctR + '%;height:100%;border-radius:99px;background:linear-gradient(90deg,#7C9BFF,#3D5AFE);"></div>') + '</div>' +
-      '<div style="display:flex;justify-content:space-between;padding:2px 4px 3px;font-size:11px;">' +
-      '<span style="color:#6B7280;">⚡ 데미지 <b style="color:#2B3FD9;">' + dmg + '</b> / ' + goal + '</span>' +
-      (win ? '<span style="font-weight:800;color:#B45309;">🏆 격파 달성!</span>' : '<span style="font-weight:700;color:' + (chance ? '#FF6B35' : '#2B3FD9') + ';">보스 HP ' + left + ' 남음</span>') +
-      '</div>' +
-      (chance ? '<div style="margin:8px 4px 2px;background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:1.5px solid #F5A623;border-radius:10px;padding:6px 10px;font-size:11.5px;font-weight:700;color:#B45309;">🔥 오늘 격파 사정권 — 전원 숙제 1개면 남은 HP ' + left + ' 소멸!</div>' : '');
+    body = '<div style="margin-top:10px;display:flex;justify-content:space-between;align-items:flex-end;">' +
+      '<div><div style="' + HUD_LABEL + '">데미지</div>' +
+      '<div style="margin-top:2px;"><span style="font-size:24px;font-weight:800;color:#101828;line-height:1.2;">' + dmg + '</span><span style="font-size:13px;font-weight:700;color:#98A2B3;"> / ' + goal + '</span></div></div>' +
+      '<div style="text-align:right;"><div style="' + HUD_LABEL + '">' + (win ? '결과' : '남은 HP') + '</div>' +
+      '<div style="margin-top:2px;font-size:24px;font-weight:800;color:' + (win ? '#12B76A' : '#F79009') + ';line-height:1.2;">' + (win ? '격파!' : left) + '</div></div></div>' +
+      '<div style="margin-top:12px;">' + hudGauge_(pctR, win) + '</div>' +
+      (chance ? '<div style="margin-top:12px;background:#FFFAEB;border-radius:14px;padding:12px 14px;font-size:12.5px;font-weight:600;line-height:1.6;color:#B54708;">🔥 오늘 격파 사정권 — 전원 숙제 1개면 남은 HP ' + left + ' 소멸!</div>' : '');
   }
-  return '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E0E7FF 55%,#F5F3FF);padding:10px 8px 8px;border-radius:18px;border:2px solid #BCC8FF;box-shadow:0 6px 18px rgba(61,90,254,.14);">' + head + body + '</div>';
+  return '<div style="' + CARD_FONT + HUD_CARD + '">' + head + body + '</div>';
 }
 
-/* ── [v9.78] 강사 반 HUD 조각(순수 함수 — tests/safety.test.js 직로드) ──
- * 유호 07-28 피드백 "반 탭이 뭐가 뭔지 모르겠다, 만들다 만 느낌" → 원인은 v9.15 낱장 4카드가
- * 위계 없는 12px 줄글 나열이었던 것(진단·A/B 설계·판정 = ban-tab-redesign 워크플로).
- * 축: 카드 1장 = 질문 1개(누굴 챙기지/뭐가 남았지/보스전 어디까지/왕관 누구 줄까) +
- * 제목(14px/800) > 핵심 수치(15~16px 컬러 잉크) > 보조(11~12.5px 그레이) 3단 위계 + 빈 상태도 카드로. */
-function hudChip_(txt) { // 반명 식별 칩 — 이스케이프는 이 안에서(호출부 누락 침투 차단)
-  return '<span style="font-size:10.5px;font-weight:800;color:#2B3FD9;background:#EEF2FF;border:1.5px solid #BCC8FF;border-radius:99px;padding:3px 9px;white-space:nowrap;">' + escHtml_(txt) + '</span>';
+/* ── [v9.78] 강사 반 HUD 조각(순수 함수 — tests/safety.test.js 직로드) · [v9.79] 미니멀 스킨 ──
+ * 유호 07-28 피드백 2연속: "뭐가 뭔지 모르겠다"(→v9.78 정보 재편) + "훨씬 트렌디하고 미니멀하게,
+ * 뼈대 같은 느낌"(→v9.79 스킨). '뼈대' 원인 = 2px 유색 보더 나열·이모지 과다·요소별 제각각 색.
+ * 처방(실렌더 A/B 판정 M2 다크 히어로 채택 — ban-hud-minimal-skin 워크플로): 보더 전면 폐지 →
+ * 흰 카드+이중 소프트 섀도 / 타이포 3단(11px 그레이 라벨 → 20~24px 잉크 빅넘버 → 13px 본문) /
+ * 색 3계 절제(블루 #3D5AFE·앰버 #F79009·그린 #12B76A) / 이모지 카드당 ≤1 / 상세 헤더만 다크 히어로. */
+const HUD_CARD = 'background:#fff;border-radius:20px;padding:16px 18px;box-shadow:0 1px 2px rgba(16,24,40,.05),0 10px 24px -6px rgba(16,24,40,.08);'; // 카드 공통(보더 0)
+const HUD_LABEL = 'font-size:11px;font-weight:700;letter-spacing:.02em;color:#98A2B3;'; // 섹션 라벨 공통
+function hudChip_(txt) { // [v9.79] 유색 칩 → 그레이 반명 라벨(낱장 카드 우측 식별용) — 이스케이프는 이 안에서
+  return '<span style="font-size:12px;font-weight:600;color:#98A2B3;">' + escHtml_(txt) + '</span>';
 }
-function hudGauge_(pct, gold) { // 표준 9px 게이지 — gold=달성(골드 풀필)
+function hudGauge_(pct, doneAll) { // 6px 미니멀 게이지 — doneAll=달성(그린 풀필)
   const p = Math.max(0, Math.min(100, Math.round(Number(pct) || 0)));
-  const fill = gold ? 'linear-gradient(90deg,#F5A623,#FDE68A)' : 'linear-gradient(90deg,#7C9BFF,#3D5AFE)';
-  return '<div style="background:#DDE3F8;border-radius:99px;height:9px;overflow:hidden;"><div style="width:' + p + '%;height:100%;border-radius:99px;background:' + fill + ';"></div></div>';
+  return '<div style="background:#EEF0F4;border-radius:99px;height:6px;overflow:hidden;"><div style="width:' + p + '%;height:100%;border-radius:99px;background:' + (doneAll ? '#12B76A' : '#3D5AFE') + ';"></div></div>';
 }
-// 미션 행 재료 → [유형 필, 본문HTML][]. 브리핑 카드와 HUD 헤더(미션 n건)가 공유 — 카운트·본문 불일치 불가.
+// 미션 행 재료 → [유형 라벨(도트+텍스트), 본문HTML][]. 브리핑 카드와 HUD 헤더(미션 n건)가 공유 — 카운트·본문 불일치 불가.
 // ⚠ mats.errs 계약: calcAll errByCls에서 이미 escHtml_ 완료된 HTML 조각만 통과(원문 문자열 금지).
-//   나머지(이름·문구)는 전부 이 안에서 이스케이프. 필 색 = FRAME_CSS 실존 팔레트(뱃지배경/뱃지잉크).
+//   나머지(이름·문구)는 전부 이 안에서 이스케이프.
+// [v9.79] 유색 필 5색 → 8px 도트 3톤: 앰버=오늘 행동(생일·케어 사각) · 블루=성장 기회(진화 임박) · 그레이=메모(결석·연습)
 function hudBriefRows_(mats) {
   mats = mats || {};
-  const pill = (bg, ink, label) => '<span style="display:inline-block;font-size:9.5px;font-weight:800;color:' + ink + ';background:' + bg + ';border-radius:99px;padding:2px 7px;white-space:nowrap;">' + label + '</span>';
+  const dot = (color, label) => '<span style="display:inline-block;width:8px;height:8px;border-radius:99px;background:' + color + ';vertical-align:middle;margin:-1px 6px 0 0;"></span><span style="' + HUD_LABEL + 'vertical-align:middle;">' + label + '</span>';
+  const nm = s => '<b style="font-weight:700;color:#101828;">' + s + '</b>';
   const esc = arr => (arr || []).map(n => escHtml_(n)).join(', ');
   const cap = (arr, k) => (arr || []).length > k ? esc(arr.slice(0, k)) + ' 외 ' + (arr.length - k) + '명' : esc(arr);
   const rows = [];
-  if ((mats.bday || []).length) rows.push([pill('#FEE2E2', '#B91C1C', '생일'), '<b style="color:#2B3FD9;">' + esc(mats.bday) + '</b> — 수업 시작 때 축하 한 번! 🎂']);
-  if ((mats.absent || []).length) rows.push([pill('#EDE9FE', '#6D28D9', '어제 결석'), '<b style="color:#2B3FD9;">' + cap(mats.absent, 5) + '</b> — 오면 한마디 챙겨주세요']);
-  (mats.evo || []).forEach(e => rows.push([pill('#DBEAFE', '#1D4ED8', '진화 임박'), '<b style="color:#2B3FD9;">' + escHtml_(e.n) + '</b> 오늘 왕관(10P)이면 <b style="color:#FF6B35;">진화</b>! (남은 ' + (Number(e.need) || 0) + 'P)']));
-  if ((mats.blind || []).length) rows.push([pill('#E0F2FE', '#0369A1', '케어 사각'), '<b style="color:#2B3FD9;">' + cap(mats.blind, 6) + '</b> — 2주째 포인트 0, 오늘 작게라도 하나']);
-  if ((mats.errs || []).length) rows.push([pill('#CFFAFE', '#0E7490', '연습 포인트'), mats.errs.join(' · ')]);
+  if ((mats.bday || []).length) rows.push([dot('#F79009', '생일'), nm(esc(mats.bday)) + ' — 수업 시작 때 축하 한 번! 🎂']);
+  if ((mats.absent || []).length) rows.push([dot('#CBD2DC', '어제 결석'), nm(cap(mats.absent, 5)) + ' — 오면 한마디 챙겨주세요']);
+  (mats.evo || []).forEach(e => rows.push([dot('#3D5AFE', '진화 임박'), nm(escHtml_(e.n)) + ' 오늘 왕관(10P)이면 <b style="font-weight:700;color:#3D5AFE;">진화</b>! (남은 ' + (Number(e.need) || 0) + 'P)']));
+  if ((mats.blind || []).length) rows.push([dot('#F79009', '케어 사각'), nm(cap(mats.blind, 6)) + ' — 2주째 포인트 0, 오늘 작게라도 하나']);
+  if ((mats.errs || []).length) rows.push([dot('#CBD2DC', '연습 포인트'), mats.errs.join(' · ')]);
   return rows;
 }
-// 🎬 오늘의 미션(9열·상세 1절) — 누굴 챙기지? clsName='' 이면 칩 생략(상세 카드 안 중복 방지).
+// 오늘의 미션(9열·상세 1절) — 누굴 챙기지? clsName='' 이면 반명 라벨 생략(상세 카드 안 중복 방지).
 function buildBriefHud_(clsName, mats) {
   const rows = hudBriefRows_(mats);
-  const chip = clsName ? hudChip_(clsName) : '';
+  const chip = clsName ? hudChip_(clsName) + '<span style="display:inline-block;width:10px;"></span>' : '';
   const badge = rows.length
-    ? '<span style="font-size:11px;font-weight:800;color:#FF6B35;">' + rows.length + '건</span>'
-    : '<span style="font-size:11px;font-weight:800;color:#0E9F6E;">클리어</span>';
-  const head = '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding-bottom:7px;">' +
-    '<span style="font-size:14px;font-weight:800;">🎬 오늘의 미션</span>' +
-    '<span style="display:flex;align-items:center;gap:6px;">' + chip + badge + '</span></div>';
+    ? '<span><span style="font-size:22px;font-weight:800;color:#3D5AFE;line-height:1;">' + rows.length + '</span><span style="font-size:12px;font-weight:700;color:#98A2B3;">건</span></span>'
+    : '<span style="font-size:13px;font-weight:800;color:#12B76A;">클리어</span>';
+  const head = '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+    '<span style="' + HUD_LABEL + '">오늘의 미션</span><span>' + chip + badge + '</span></div>';
   let body;
   if (rows.length) {
-    body = rows.map((r, i) =>
-      '<div style="padding:6px 0;' + (i < rows.length - 1 ? 'border-bottom:1px solid #F3F4F6;' : '') + '">' + r[0] +
-      '<span style="font-size:12.5px;line-height:1.65;color:#475569;margin-left:6px;">' + r[1] + '</span></div>').join('');
-  } else if (mats && mats.ai) { // [리뷰 P2-1] AI 브리핑만 있는 날 — "특이사항 없음"과 동시 출력하면 모순(구 코드는 parts 합류로 자동 억제)
+    body = rows.map(r =>
+      '<div style="margin-top:12px;"><div>' + r[0] + '</div>' +
+      '<div style="margin:3px 0 0 14px;font-size:13px;line-height:1.6;color:#475467;">' + r[1] + '</div></div>').join('');
+  } else if (mats && mats.ai) { // [리뷰 P2-1] AI 브리핑만 있는 날 — "특이사항 없음"과 동시 출력하면 모순
     body = '';
   } else { // 빈 상태도 카드 — 조용히 사라지지 않는다
-    body = '<div style="background:#F9FAFB;border:2px dashed #E5E7EB;border-radius:12px;padding:12px;text-align:center;font-size:12px;color:#6B7280;line-height:1.7;">특이사항 없음 — 평화로운 교실 ✨<br/><span style="font-size:11px;color:#9CA3AF;">아래 루틴 4가지만 챙기면 완벽한 하루</span></div>';
+    body = '<div style="margin-top:12px;background:#F8F9FB;border-radius:14px;padding:18px 14px;text-align:center;"><div style="font-size:13px;font-weight:700;line-height:1.7;color:#667085;">특이사항 없음 — 평화로운 교실 ✨</div><div style="font-size:12px;line-height:1.7;color:#98A2B3;">아래 루틴 4가지만 챙기면 완벽한 하루</div></div>';
   }
   const ai = mats && mats.ai
-    ? '<div style="margin-top:8px;background:#F8FAFC;border-left:3px solid #3D5AFE;border-radius:0 10px 10px 0;padding:7px 10px;font-size:11.5px;color:#475569;line-height:1.7;">🤖 <b>AI 브리핑</b> — ' + escHtml_(mats.ai) + '</div>' : '';
-  const foot = (mats && (mats.errs || []).length) // [리뷰 P1-2] '해결' 표기는 시트 접근자(원장)만 가능 — 강사가 실행 가능한 안내로 교체
-    ? '<div style="margin-top:7px;font-size:11px;color:#9CA3AF;">🧩 연습 포인트는 수업 중 한 번만 짚어주면 충분해요 — 14일 지나면 자동으로 내려갑니다</div>' : '';
-  return '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:14px;padding:11px 12px;">' + head + body + ai + foot + '</div>';
+    ? '<div style="margin-top:14px;background:#F8F9FB;border-radius:14px;padding:10px 12px;font-size:12px;line-height:1.7;color:#475467;"><b style="color:#101828;">AI 브리핑</b> — ' + escHtml_(mats.ai) + '</div>' : '';
+  const foot = (mats && (mats.errs || []).length) // [리뷰 P1-2] 강사가 실행 가능한 안내만
+    ? '<div style="margin-top:14px;font-size:11px;line-height:1.6;color:#98A2B3;">연습 포인트는 수업 중 한 번만 짚어주면 충분해요 — 14일 지나면 자동으로 내려갑니다</div>' : '';
+  return '<div style="' + CARD_FONT + HUD_CARD + '">' + head + body + ai + foot + '</div>';
 }
-// ✅ 오늘 루틴(11열·상세 2절) — 뭐가 남았지? HUD 원칙: 완료는 흐리게, 미완이 앰버 볼드로 빛난다.
+// 오늘 루틴(11열·상세 2절) — 뭐가 남았지? 완료 = ✓ 그린+흐린 텍스트, 미완 = ○+잉크 볼드(남은 일이 주인공).
 function buildRoutineHud_(clsName, ta, topicDone) {
   ta = ta || {};
   const items = [['숙제 처리', !!ta.hw], ['MVP 왕관', !!ta.mvp], ['시냅스 왕관', !!ta.syn], ['배운 내용 입력', !!topicDone]];
   const done = items.filter(it => it[1]).length;
   const all = done === items.length;
-  const chip = clsName ? hudChip_(clsName) : '';
-  const head = '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding-bottom:6px;">' +
-    '<span style="font-size:14px;font-weight:800;">✅ 오늘 루틴</span>' +
-    '<span style="display:flex;align-items:center;gap:6px;">' + chip +
-    '<span style="font-size:16px;font-weight:800;color:' + (all ? '#B45309' : '#2B3FD9') + ';line-height:1;">' + done + '<span style="font-size:11px;font-weight:700;color:#94A3B8;">/' + items.length + '</span></span></span></div>';
-  const grid = '<div style="overflow:hidden;margin-top:7px;">' + items.map(it => {
-    const cell = it[1] ? '<span style="color:#9CA3AF;">✅ ' + it[0] + '</span>' : '<b style="color:#B45309;">⏳ ' + it[0] + '</b>';
-    return '<div style="float:left;width:50%;font-size:12.5px;line-height:2;">' + cell + '</div>';
+  const chip = clsName ? hudChip_(clsName) + '<span style="display:inline-block;width:10px;"></span>' : '';
+  const head = '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+    '<span style="' + HUD_LABEL + '">오늘 루틴</span><span>' + chip +
+    '<span style="font-size:22px;font-weight:800;color:' + (all ? '#12B76A' : '#101828') + ';line-height:1;">' + done + '</span><span style="font-size:12px;font-weight:700;color:#98A2B3;">/' + items.length + '</span></span></div>';
+  const grid = '<div style="overflow:hidden;margin-top:10px;">' + items.map(it => {
+    const cell = it[1]
+      ? '<span style="color:#12B76A;font-weight:700;">✓</span> <span style="color:#98A2B3;">' + it[0] + '</span>'
+      : '<span style="color:#D0D5DD;">○</span> <span style="color:#101828;font-weight:700;">' + it[0] + '</span>';
+    return '<div style="float:left;width:50%;font-size:13px;line-height:2.2;">' + cell + '</div>';
   }).join('') + '<div style="clear:both;"></div></div>';
   const foot = all
-    ? '<div style="margin-top:6px;font-size:11px;font-weight:800;color:#B45309;">루틴 올클리어 — 완벽한 마감 🏆</div>'
-    : '<div style="margin-top:6px;font-size:11px;color:#9CA3AF;">✍️ 출석·왕관은 수업 중 · 📝 배운 내용은 마감 폼으로 — 기록되면 자동 ✅</div>';
-  return '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #E9E7F5;border-radius:14px;padding:11px 12px;">' + head + hudGauge_(done / items.length * 100, all) + grid + foot + '</div>';
+    ? '<div style="margin-top:8px;font-size:11px;font-weight:700;color:#12B76A;">루틴 올클리어 — 완벽한 마감</div>'
+    : '<div style="margin-top:8px;font-size:11px;line-height:1.6;color:#98A2B3;">출석·왕관은 수업 중 · 배운 내용은 마감 폼으로 — 기록되면 자동 체크</div>';
+  return '<div style="' + CARD_FONT + HUD_CARD + '">' + head + '<div style="margin-top:12px;">' + hudGauge_(done / items.length * 100, all) + '</div>' + grid + foot + '</div>';
 }
-// 👑 왕관 밸런스(12열·상세 4절) — 오늘 왕관 누구 줄까? 미수혜 = 오늘의 후보 명단으로 재프레임.
+// 왕관 밸런스(12열·상세 4절) — 오늘 왕관 누구 줄까? 미수혜 = 그레이 pill 후보 명단.
 function buildCrownHud_(clsName, got, total, notYet) {
   got = Number(got) || 0; total = Number(total) || 0; notYet = notYet || [];
-  const chip = clsName ? hudChip_(clsName) : '';
-  const head = '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding-bottom:6px;">' +
-    '<span style="font-size:14px;font-weight:800;">👑 왕관 밸런스</span>' +
-    '<span style="display:flex;align-items:center;gap:6px;">' + chip +
-    '<span style="font-size:16px;font-weight:800;color:#2B3FD9;line-height:1;">' + got + '<span style="font-size:11px;font-weight:700;color:#94A3B8;">/' + total + '명</span></span></span></div>';
+  const chip = clsName ? hudChip_(clsName) + '<span style="display:inline-block;width:10px;"></span>' : '';
+  const head = '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+    '<span style="' + HUD_LABEL + '">왕관 밸런스</span><span>' + chip +
+    '<span style="font-size:22px;font-weight:800;color:' + (total && got >= total ? '#12B76A' : '#101828') + ';line-height:1;">' + got + '</span><span style="font-size:12px;font-weight:700;color:#98A2B3;">/' + total + '명</span></span></div>';
   let body;
   if (!total) {
-    body = '<div style="background:#F9FAFB;border:2px dashed #E5E7EB;border-radius:12px;padding:12px;text-align:center;font-size:12px;color:#6B7280;">반 학생 명단이 아직 비어 있어요 — 등록되면 자동으로 채워집니다</div>';
+    body = '<div style="margin-top:12px;background:#F8F9FB;border-radius:14px;padding:18px 14px;text-align:center;font-size:13px;line-height:1.7;color:#667085;">반 학생 명단이 아직 비어 있어요 — 등록되면 자동으로 채워집니다</div>';
   } else if (got >= total) {
-    body = hudGauge_(100, true) + '<div style="margin-top:7px;background:linear-gradient(135deg,#FEF3C7,#FDE68A);border-radius:12px;padding:9px 11px;font-size:12px;font-weight:800;color:#B45309;text-align:center;">이번 달 전원 수혜 — 밸런스 완벽 🎉</div>';
+    body = '<div style="margin-top:12px;">' + hudGauge_(100, true) + '</div>' +
+      '<div style="margin-top:12px;background:#ECFDF3;border-radius:14px;padding:12px 14px;font-size:12.5px;font-weight:700;color:#027A48;text-align:center;">이번 달 전원 수혜 — 밸런스 완벽 🎉</div>';
   } else {
     const pills = notYet.slice(0, 6).map(n =>
-      '<span style="display:inline-block;font-size:11px;font-weight:700;color:#B45309;background:#FEF3C7;border-radius:99px;padding:2px 9px;margin:3px 4px 0 0;">' + escHtml_(n) + '</span>').join('') +
-      (notYet.length > 6 ? '<span style="display:inline-block;font-size:11px;color:#6B7280;padding:2px 0;margin-top:3px;">외 ' + (notYet.length - 6) + '명</span>' : '');
-    body = hudGauge_(got / total * 100, false) +
-      '<div style="margin-top:7px;font-size:11px;color:#6B7280;">이번 달 아직 왕관이 없는 학생</div><div>' + pills + '</div>' +
-      '<div style="margin-top:7px;font-size:11px;color:#9CA3AF;">오늘 MVP·시냅스는 이 명단에서 고르면 밸런스가 맞아요</div>';
+      '<span style="display:inline-block;font-size:12px;font-weight:600;color:#475467;background:#F2F4F7;border-radius:99px;padding:4px 11px;margin:6px 6px 0 0;">' + escHtml_(n) + '</span>').join('') +
+      (notYet.length > 6 ? '<span style="display:inline-block;font-size:12px;color:#98A2B3;padding:4px 0;margin-top:6px;">외 ' + (notYet.length - 6) + '명</span>' : '');
+    body = '<div style="margin-top:12px;">' + hudGauge_(got / total * 100, false) + '</div>' +
+      '<div style="margin-top:12px;' + HUD_LABEL + '">이번 달 아직 왕관이 없는 학생</div><div style="margin-top:2px;">' + pills + '</div>' +
+      '<div style="margin-top:12px;font-size:11px;line-height:1.6;color:#98A2B3;">오늘 MVP·시냅스는 이 명단에서 고르면 밸런스가 맞아요</div>';
   }
-  return '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #FDE68A;border-radius:14px;padding:11px 12px;">' + head + body + '</div>';
+  return '<div style="' + CARD_FONT + HUD_CARD + '">' + head + body + '</div>';
 }
-// 🎛️ 반 상세 HUD(14열 — Glide가 바인딩하는 단 1장) — 헤더 스탯 스트립(미션 n건·루틴 k/4·보스 HP) + 4절 스택.
+// 반 상세 HUD(14열 — Glide가 바인딩하는 단 1장) — 다크 히어로 헤더(딥 네이비+블루 글로우) + 4절 스택.
 // 서브 카드는 clsName='' — 반명은 헤더 1번만. dateStr은 호출부 주입(빌더 순수성 유지).
 function buildClassHudDetail_(clsName, mats, ta, topicDone, crown, raid, dateStr) {
   ta = ta || {}; crown = crown || {}; raid = raid || {};
@@ -1336,29 +1339,33 @@ function buildClassHudDetail_(clsName, mats, ta, topicDone, crown, raid, dateStr
   const done = (ta.hw ? 1 : 0) + (ta.mvp ? 1 : 0) + (ta.syn ? 1 : 0) + (topicDone ? 1 : 0);
   const goal = Number(raid.goal) || 0, dmg = Number(raid.dmg) || 0, stuN = Number(raid.stuN) || 0;
   const left = Math.max(goal - dmg, 0);
-  const boss = !goal ? ['휴식주', '#9CA3AF']
-    : (raid.won || dmg >= goal) ? ['격파 🏆', '#B45309']
-      : ['HP ' + left, (left > 0 && stuN > 0 && left <= stuN * 10) ? '#FF6B35' : '#2B3FD9'];
-  const cellH = (label, val, color) =>
+  const dimW = 'rgba(255,255,255,.35)', midW = 'rgba(255,255,255,.45)';
+  const boss = !goal ? ['<span style="font-size:14px;font-weight:700;color:rgba(255,255,255,.5);">휴식주</span>']
+    : (raid.won || dmg >= goal) ? ['<span style="font-size:14px;font-weight:800;color:#6CE9A6;">격파 🏆</span>']
+      : ['<span style="font-size:15px;font-weight:800;color:' + ((left > 0 && stuN > 0 && left <= stuN * 10) ? '#FDB022' : '#93A8FF') + ';">HP ' + left + '</span>'];
+  const cellH = (label, valHtml) =>
     '<div style="float:left;width:33.33%;text-align:center;">' +
-    '<div style="font-size:10px;color:#6B7280;letter-spacing:.04em;">' + label + '</div>' +
-    '<div style="font-size:15px;font-weight:800;color:' + color + ';line-height:1.5;">' + val + '</div></div>';
-  const strip = '<div style="background:#fff;border-radius:12px;padding:8px 4px;overflow:hidden;margin-top:8px;">' +
-    cellH('오늘 미션', missions ? missions + '건' : '없음', missions ? '#FF6B35' : '#9CA3AF') +
-    cellH('수업 루틴', done + '/4', done === 4 ? '#B45309' : '#2B3FD9') +
-    cellH('보스', boss[0], boss[1]) +
+    '<div style="font-size:10px;font-weight:700;letter-spacing:.05em;color:' + midW + ';">' + label + '</div>' +
+    '<div style="margin-top:3px;height:26px;line-height:26px;">' + valHtml + '</div></div>';
+  const num = (v, on) => '<span style="font-size:21px;font-weight:800;color:' + (on ? '#FFFFFF' : dimW) + ';">' + v + '</span>';
+  const strip = '<div style="margin-top:16px;background:rgba(255,255,255,.06);border-radius:14px;padding:11px 0 10px;overflow:hidden;">' +
+    cellH('오늘 미션', missions ? num(missions, 1) + '<span style="font-size:12px;font-weight:700;color:' + midW + ';">건</span>' : num('0', 0) + '<span style="font-size:12px;font-weight:700;color:' + dimW + ';">건</span>') +
+    cellH('수업 루틴', num(done, done > 0) + '<span style="font-size:12px;font-weight:700;color:' + midW + ';">/4</span>') +
+    cellH('보스', boss[0]) +
     '<div style="clear:both;"></div></div>';
-  const header = '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E0E7FF 55%,#F5F3FF);border:2px solid #BCC8FF;border-radius:18px;padding:12px 12px 10px;box-shadow:0 6px 18px rgba(61,90,254,.14);">' +
-    '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-    '<div><div style="font-size:10px;font-weight:800;letter-spacing:.08em;color:#3D5AFE;">SYNK CLASS HUD</div>' +
-    '<div style="font-size:17px;font-weight:800;color:#2B3FD9;line-height:1.35;">' + escHtml_(clsName) + '</div></div>' +
-    (dateStr ? '<span style="font-size:11px;font-weight:700;color:#6B7280;">' + escHtml_(dateStr) + '</span>' : '') +
-    '</div>' + strip + '</div>';
-  const gap = '<div style="height:10px"></div>';
+  const header = '<div style="' + CARD_FONT + 'position:relative;overflow:hidden;background:linear-gradient(135deg,#101828 0%,#1E293B 100%);border-radius:20px;padding:20px 20px 16px;box-shadow:0 12px 28px -10px rgba(16,24,40,.4);">' +
+    '<div style="position:absolute;top:-70px;right:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(closest-side,rgba(61,90,254,.38),rgba(61,90,254,0));"></div>' +
+    '<div style="position:absolute;bottom:-90px;left:-60px;width:190px;height:190px;border-radius:50%;background:radial-gradient(closest-side,rgba(61,90,254,.16),rgba(61,90,254,0));"></div>' +
+    '<div style="position:relative;"><div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
+    '<div><div style="font-size:10px;font-weight:800;letter-spacing:.14em;color:#93A8FF;">SYNK CLASS HUD</div>' +
+    '<div style="font-size:20px;font-weight:800;color:#FFFFFF;line-height:1.4;margin-top:2px;">' + escHtml_(clsName) + '</div></div>' +
+    (dateStr ? '<span style="font-size:12px;font-weight:600;color:rgba(255,255,255,.55);padding-top:4px;">' + escHtml_(dateStr) + '</span>' : '') +
+    '</div>' + strip + '</div></div>';
+  const gap = '<div style="height:12px"></div>';
   return [header,
     buildBriefHud_('', mats),
     buildRoutineHud_('', ta, topicDone),
-    buildRaidCard_('전투 현황', goal, dmg, !!raid.won, stuN),
+    buildRaidCard_('', goal, dmg, !!raid.won, stuN),
     buildCrownHud_('', Number(crown.got) || 0, Number(crown.total) || 0, crown.notYet || [])
   ].join(gap); // 전 절 상시 렌더 — 조용한 공백 없음(휴식주·전원수혜·학생0도 상태 카드)
 }
@@ -2598,7 +2605,7 @@ function calcAll() {
       //   raidFriday(금·일)에만 갱신돼 월~목 내내 발동 불가능한 죽은 조건이었음 → 13·14열과 같은 라이브 소스(goal−weekDmg)로 통일
       const left = Math.max((raidGoal[c] || 0) - (weekDmg[c] || 0), 0);
       const chance = (!raidWin[c] && (raidGoal[c] || 0) > 0 && left > 0 && left <= v.n * 10)
-        ? '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F5A623;border-radius:14px;padding:9px 12px;font-size:12px;color:#B45309;">🔥 <b>오늘 격파 사정권!</b> 남은 HP ' + left + ' — 전원이 숙제 하나씩이면 끝</div>' : '';
+        ? '<div style="' + CARD_FONT + 'background:#FFFAEB;border-radius:14px;padding:12px 14px;font-size:12.5px;font-weight:600;line-height:1.6;color:#B54708;">🔥 오늘 격파 사정권 — 전원 숙제 1개면 남은 HP ' + left + ' 소멸!</div>' : '';
       const ta = tdActs[c] || {};
       const members = [];
       pfData.forEach(rr => { if (rr[0] && rr[3] === 'student' && String(rr[4]) === c) members.push({ id: rr[0], n: rr[1] || rr[0] }); });
