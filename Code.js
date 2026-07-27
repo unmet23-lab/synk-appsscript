@@ -1274,13 +1274,15 @@ function buildBriefHud_(clsName, mats) {
     body = rows.map((r, i) =>
       '<div style="padding:6px 0;' + (i < rows.length - 1 ? 'border-bottom:1px solid #F3F4F6;' : '') + '">' + r[0] +
       '<span style="font-size:12.5px;line-height:1.65;color:#475569;margin-left:6px;">' + r[1] + '</span></div>').join('');
+  } else if (mats && mats.ai) { // [리뷰 P2-1] AI 브리핑만 있는 날 — "특이사항 없음"과 동시 출력하면 모순(구 코드는 parts 합류로 자동 억제)
+    body = '';
   } else { // 빈 상태도 카드 — 조용히 사라지지 않는다
     body = '<div style="background:#F9FAFB;border:2px dashed #E5E7EB;border-radius:12px;padding:12px;text-align:center;font-size:12px;color:#6B7280;line-height:1.7;">특이사항 없음 — 평화로운 교실 ✨<br/><span style="font-size:11px;color:#9CA3AF;">아래 루틴 4가지만 챙기면 완벽한 하루</span></div>';
   }
   const ai = mats && mats.ai
     ? '<div style="margin-top:8px;background:#F8FAFC;border-left:3px solid #3D5AFE;border-radius:0 10px 10px 0;padding:7px 10px;font-size:11.5px;color:#475569;line-height:1.7;">🤖 <b>AI 브리핑</b> — ' + escHtml_(mats.ai) + '</div>' : '';
-  const foot = (mats && (mats.errs || []).length)
-    ? '<div style="margin-top:7px;font-size:11px;color:#9CA3AF;">🧩 연습 포인트는 메모에서 \'해결\'로 바꾸면 다음 브리핑부터 사라져요</div>' : '';
+  const foot = (mats && (mats.errs || []).length) // [리뷰 P1-2] '해결' 표기는 시트 접근자(원장)만 가능 — 강사가 실행 가능한 안내로 교체
+    ? '<div style="margin-top:7px;font-size:11px;color:#9CA3AF;">🧩 연습 포인트는 수업 중 한 번만 짚어주면 충분해요 — 14일 지나면 자동으로 내려갑니다</div>' : '';
   return '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:14px;padding:11px 12px;">' + head + body + ai + foot + '</div>';
 }
 // ✅ 오늘 루틴(11열·상세 2절) — 뭐가 남았지? HUD 원칙: 완료는 흐리게, 미완이 앰버 볼드로 빛난다.
@@ -2547,7 +2549,7 @@ function calcAll() {
     }
   }
   if (csOut.length) writeIfChanged(cs, 2, 1, csOut);
-  let crewCols = [], raidCards = [], hudDetailRows = []; // [v9.52] 반 상세 통합 카드(14열)에서 재사용 — 블록 밖 선언 · [v9.78] hudDetailRows = HUD 대시보드 1장
+  let crewCols = [], raidCards = [], hudDetailRows = []; // [v9.78] 14열은 hudDetailRows만 사용(crewCols·raidCards 블록 밖 선언은 9~13열 기록용 잔존 — 구 v9.52 재사용 주석은 폐기)
   { // [v9.15] 🧑‍🏫 강사 팩 4열 — 브리핑·격파 찬스·오늘 체크·왕관 밸런스
     ['수업전브리핑','격파찬스','오늘체크','왕관밸런스'].forEach((h, i) => {
       if (String(cs.getRange(1, 9 + i).getValue()) !== h) cs.getRange(1, 9 + i, 1, 1).setValue(h);
@@ -2581,6 +2583,7 @@ function calcAll() {
     }
     let briefAI = {}; // [v9.50·H5] 반별 AI 브리핑 한 줄(야간 생성) — 있으면 기존 브리핑 카드 최상단에 병합(새 컴포넌트 0)
     try { briefAI = JSON.parse(String(getState(ensureSheet(ss, 'app_state', ['key', 'value']), '반브리핑AI').val || '{}')) || {}; } catch (eB5) { briefAI = {}; }
+    const hudDateStr = Utilities.formatDate(now, tz, 'M월 d일'); // [리뷰 P2-8] 루프 밖 1회 — 한글은 SimpleDateFormat 리터럴이라 안전
     crewCols = Object.keys(cls).sort().map(c => { // [v9.78] 낱장 줄글 4카드 → HUD 카드(디자인만 교체 — 데이터 재료·열 지도 불변)
       const v = cls[c];
       const matsC = { // hudBriefRows_ 계약: errs만 사전 이스케이프 HTML(위 errByCls가 escHtml_ 완료), 나머지는 원문(빌더가 이스케이프)
@@ -2591,9 +2594,10 @@ function calcAll() {
         errs: (errByCls[c] || []).slice(0, 3), // [v9.47·B5] student_errors 환류 — '해결'로 바꾸면 사라짐
         evo: (clsEvoSoon[c] || []).slice(0, 3)
       };
-      // 10열 격파찬스 — 구 조립(not-empty 가시성) 하위호환: raidLeft 스냅샷·조건 그대로, 빈 반은 '' 유지
-      const left = raidLeft[c];
-      const chance = (left !== undefined && left > 0 && left <= v.n * 10)
+      // 10열 격파찬스 — not-empty 가시성 계약(빈 반='') 유지. [리뷰 P1-1] 구 raidLeft 스냅샷은 raid 시트 D열이
+      //   raidFriday(금·일)에만 갱신돼 월~목 내내 발동 불가능한 죽은 조건이었음 → 13·14열과 같은 라이브 소스(goal−weekDmg)로 통일
+      const left = Math.max((raidGoal[c] || 0) - (weekDmg[c] || 0), 0);
+      const chance = (!raidWin[c] && (raidGoal[c] || 0) > 0 && left > 0 && left <= v.n * 10)
         ? '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F5A623;border-radius:14px;padding:9px 12px;font-size:12px;color:#B45309;">🔥 <b>오늘 격파 사정권!</b> 남은 HP ' + left + ' — 전원이 숙제 하나씩이면 끝</div>' : '';
       const ta = tdActs[c] || {};
       const members = [];
@@ -2603,7 +2607,7 @@ function calcAll() {
       hudDetailRows.push([buildClassHudDetail_(c, matsC, ta, !!tdTopic[c],
         { got: got.length, total: members.length, notYet: notYet },
         { goal: raidGoal[c] || 0, dmg: weekDmg[c] || 0, won: !!raidWin[c], stuN: v.n },
-        Utilities.formatDate(now, tz, 'M월 d일'))]);
+        hudDateStr)]);
       return [buildBriefHud_(c, matsC), chance, buildRoutineHud_(c, ta, !!tdTopic[c]), buildCrownHud_(c, got.length, members.length, notYet)];
     });
     if (crewCols.length) writeIfChanged(cs, 2, 9, crewCols);

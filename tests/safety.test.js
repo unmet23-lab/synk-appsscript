@@ -1103,3 +1103,25 @@ test('[v9.78] 강사 반 HUD — 빈 상태 카드·명단 캡·사정권 경계
   assert.ok(code.includes('writeIfChanged(cs, 2, 14, hudDetailRows)'), '14열 기록이 hudDetailRows가 아니다');
   assert.ok(code.includes('buildRaidCard_(c, raidGoal[c] || 0, weekDmg[c] || 0, !!raidWin[c], cls[c].n)'), '13열에 stuN(사정권 흡수)이 전달되지 않는다');
 });
+
+test('[v9.78·리뷰 반영] HUD 보강 — AI 이스케이프·모순 억제·absent 캡·10열 라이브 소스·행수 계약', () => {
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const deps = { escHtml_: esc, CARD_FONT: "font-family:test;" };
+  const load = (name) => loadFunction('function buildRaidCard_', '\n// [v9.14] 📊 월간 경영 리포트', name, deps);
+  const brief = load('buildBriefHud_'), rows = load('hudBriefRows_');
+  // ① AI 브리핑 이스케이프(유일 XSS 잔여면이라는 리뷰 지적) + 미션 0건일 때 "특이사항 없음"과 동시 출력 모순 억제
+  const aiOnly = brief('반', { ai: '<script>x</script>' });
+  assert.ok(aiOnly.includes('&lt;script&gt;'), 'AI 브리핑이 이스케이프 없이 침투한다');
+  assert.ok(!aiOnly.includes('특이사항 없음'), 'AI 브리핑과 "특이사항 없음"이 동시 출력된다(모순)');
+  // ② absent 캡 5(구 slice(0,5) 하위호환)
+  const ab = rows({ absent: ['a','b','c','d','e','f','g'] });
+  assert.ok(ab[0][1].includes('외 2명'), '어제 결석 캡(5명+외 n)이 없다');
+  // ③ 10열 격파찬스 = 라이브 소스(goal−weekDmg) — 죽은 raidLeft 스냅샷(금·일만 갱신) 회귀 금지
+  const wiring = section('crewCols = Object.keys(cls).sort().map', 'writeIfChanged(cs, 2, 9, crewCols)');
+  assert.ok(wiring.includes('(raidGoal[c] || 0) - (weekDmg[c] || 0)'), '10열이 라이브 소스가 아니다');
+  assert.ok(!wiring.includes('raidLeft[c]'), '10열이 죽은 raidLeft 스냅샷(월~목 발동 불가)을 다시 쓴다');
+  // ④ hudDetailRows가 crewCols와 같은 map 안에서 push — 행 순서·개수 원자 동기
+  assert.ok(wiring.includes('hudDetailRows.push('), '14열 행 생성이 9열 map 밖으로 이탈했다(반 순서 어긋남 위험)');
+  // ⑤ 강사가 실행 불가한 안내 금지 — '해결' 표기는 시트 접근자만 가능
+  assert.ok(!code.includes("'해결'로 바꾸면 다음 브리핑부터"), '강사가 수행할 수 없는 풋노트 안내가 남아 있다');
+});
