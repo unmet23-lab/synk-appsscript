@@ -1071,7 +1071,7 @@ test('[v9.78] 강사 반 HUD — 빈 상태 카드·명단 캡·사정권 경계
   const raid = load('buildRaidCard_'), routine = load('buildRoutineHud_'), detail = load('buildClassHudDetail_');
   // ① 빈 미션 = dashed 빈 상태 + 클리어 배지(카드가 사라지지 않는다)
   const emptyBrief = brief('정규반1', {});
-  assert.ok(emptyBrief.includes('dashed') && emptyBrief.includes('클리어'), '빈 미션이 빈 상태 카드로 렌더되지 않는다');
+  assert.ok(emptyBrief.includes('특이사항 없음') && emptyBrief.includes('클리어'), '빈 미션이 빈 상태 카드로 렌더되지 않는다');
   // ② 명단 캡 — 케어 사각 8명이면 6명+외 2명(행 폭발 방지, 구 v9.15 전원 join 결함 재발 금지)
   const capped = rows({ blind: ['a','b','c','d','e','f','g','h'] });
   assert.ok(capped[0][1].includes('외 2명'), '케어 사각 명단이 캡 없이 전원 나열된다');
@@ -1087,13 +1087,13 @@ test('[v9.78] 강사 반 HUD — 빈 상태 카드·명단 캡·사정권 경계
   assert.ok(raid('반', 0, 0, false, 5).includes('휴식주'), 'goal 0이 휴식주 카드가 아니다');
   assert.ok(raid('반', 60, 10, false, 5).includes('사정권'), '경계값(left=50=5×10)에서 사정권 콜아웃이 안 뜬다');
   assert.ok(!raid('반', 61, 10, false, 5).includes('사정권'), '사정권 밖(left=51)인데 콜아웃이 뜬다');
-  assert.ok(raid('반', 60, 60, false, 5).includes('격파 달성'), 'dmg≥goal 격파 표기가 없다');
+  assert.ok(raid('반', 60, 60, false, 5).includes('격파!'), 'dmg≥goal 격파 표기가 없다');
   // ⑥ 루틴 — 4/4 골드 올클리어·2/4 진행 카운트
   assert.ok(routine('반', { hw: 1, mvp: 1, syn: 1 }, true).includes('올클리어'), '4/4가 올클리어로 표기되지 않는다');
   assert.ok(routine('반', { hw: 1 }, true).includes('>2<'), '완료 카운트(2/4)가 헤더에 없다');
   // ⑦ 상세 헤더 스탯 = hudBriefRows_와 동일 소스(카운트·본문 불일치 불가) + 반명 이스케이프
   const d = detail('<정규반>', { bday: ['a'], blind: ['b'] }, {}, false, { got: 0, total: 1, notYet: ['a'] }, { goal: 100, dmg: 30, stuN: 3 }, '7월 28일');
-  assert.ok(d.includes('2건'), '헤더 미션 카운트가 미션 행 수와 안 맞는다');
+  assert.ok(d.indexOf('>2</span><span style="font-size:12px;font-weight:700;color:rgba(255,255,255,.45);">건') > -1, '헤더 미션 카운트가 미션 행 수와 안 맞는다');
   assert.ok(d.includes('&lt;정규반&gt;'), '헤더 반명이 이스케이프되지 않는다');
   assert.ok(d.includes('SYNK CLASS HUD') && d.includes('HP 70'), '헤더 스탯 스트립(HUD 라벨·보스 HP)이 없다');
   // ⑧ 배선 — calcAll 강사 팩이 HUD 빌더를 쓰고 14열이 대시보드 1장을 기록한다
