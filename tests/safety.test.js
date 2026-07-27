@@ -828,3 +828,20 @@ test('[v9.67] 출석·숙제·목소리폼의 무효 sid 드롭은 무통보가 
   assertOrder(helper, ['무효sid통보_', 'seen.indexOf(s) === -1', 'adminMail(', 'props.setProperty(key']);
   assert.ok(helper.includes('포인터는 전진'), '메일이 "반영 안 됨 + 원본은 응답 탭에 있음"을 알려야 사람이 복구 경로를 안다');
 });
+
+test('[v9.68] schedule 시간 칸이 Date로 읽혀도 HH:mm으로 고정된다(교실스크린 1899 노출·시각 파싱 붕괴 차단)', () => {
+  const hhmmOf_ = loadFunction('function hhmmOf_(', 'function scheduleMap(ss)', 'hhmmOf_', {
+    Utilities: { formatDate: (d) => ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) }
+  });
+  // 구글시트가 '시간 서식' 셀을 돌려주는 실제 형태 — 1899-12-30 기준 Date
+  assert.equal(hhmmOf_(new Date(1899, 11, 30, 11, 0, 0), 'Asia/Ulaanbaatar'), '11:00');
+  assert.equal(hhmmOf_('9:00'), '09:00');
+  assert.equal(hhmmOf_('9시'), '09:00');
+  assert.equal(hhmmOf_('14:30'), '14:30'); // 정상 표기는 그대로 — 기존 표시 파괴 금지
+  assert.equal(hhmmOf_(''), '');
+
+  // 소비처(교실스크린·미등원 알림·수업 전 메일)가 아니라 단일 소스에서 정규화해야 4곳이 함께 낫는다
+  const sm = section('function scheduleMap(ss)', 'function schedOf(map, cls)');
+  assert.ok(sm.includes('hhmmOf_(r[2], tzSc)'), 'scheduleMap이 원본 String(r[2])로 되돌아가면 1899 문자열이 다시 샌다');
+  assert.ok(!sm.includes('String(r[2])'), '원본 문자열화 잔재 — Date 오염 경로가 남는다');
+});

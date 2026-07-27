@@ -709,7 +709,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.67'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보
+const SYNK_VERSION = 'v9.68'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -950,15 +950,26 @@ function classNumOf(classStr) {
   const m = String(classStr).match(/(\d+)/);
   return m ? m[1] : '';
 }
+// [v9.68] 수업 시각 정규화 — schedule 시트의 시간 칸이 '시간 서식'이면 getValues()가 Date(1899-12-30 기준)를
+//   돌려준다. 그대로 String()하면 "Sat Dec 30 1899 11:00:00 GMT+0700"이 되어 ①교실스크린에 그 문자열이 노출
+//   ②':' split·정규식이 1899·30 같은 엉뚱한 숫자를 hour/min으로 잡아 미등원 알림·수업 전 메일 시각이 무너진다.
+//   증상이 4곳에 흩어져 있으므로 소비처가 아니라 단일 소스(scheduleMap)에서 'HH:mm'으로 고정한다.
+function hhmmOf_(v, tz) {
+  if (v instanceof Date) return Utilities.formatDate(v, tz, 'HH:mm');
+  const s = String(v == null ? '' : v).trim();
+  const m = s.match(/^(\d{1,2})\s*[:시]\s*(\d{1,2})?/); // "9:00"·"9시"·"09:5" → 두 자리 정규화
+  return m ? ('0' + m[1]).slice(-2) + ':' + ('0' + (m[2] || '0')).slice(-2) : s;
+}
 function scheduleMap(ss) { // [v8.3] 키 = 반명(정확 일치) · 번호 키는 '그 번호가 유일할 때만' 유지(구체계 하위호환)
   const sc = ss.getSheetByName('schedule');
   const map = {};
+  const tzSc = ss.getSpreadsheetTimeZone();
   if (sc && sc.getLastRow() >= 2) {
     const rows = sc.getRange(2, 1, sc.getLastRow() - 1, 3).getValues().filter(r => r[0]);
     const cnt = {};
     rows.forEach(r => { const n = classNumOf(r[0]); if (n) cnt[n] = (cnt[n] || 0) + 1; });
     rows.forEach(r => {
-      const e = { type: r[1], time: String(r[2]), name: String(r[0]) };
+      const e = { type: r[1], time: hhmmOf_(r[2], tzSc), name: String(r[0]) };
       map[String(r[0])] = e;
       const n = classNumOf(r[0]);
       if (n && cnt[n] === 1 && !map[n]) map[n] = e;
