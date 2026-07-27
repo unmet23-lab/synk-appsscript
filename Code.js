@@ -713,12 +713,29 @@
  *      ZWJ 편입으로 재발 차단. translateContents targets에 grammar 편입(setupGrammarBank 주석과 불일치 수리).
  *      콘텐츠 반복 체감 보강: PARENT_Q 4→12(추가 8문항 원어민 검수 큐) · SPEAK miss7 2→4/톤 · evosoon 3→6 ·
  *      crown 3→6 · bday 2→4 — 코드 상수라 배포만으로 반영(setup ▶ 불필요).
+ *
+ * [v9.74 — 🔎 디테일 팩 (07-28 유호 지적 5건: 숙제 카드 해독 불가·정답공개 정체·출퇴근 중복·'몬스터' 오독·수업준비 불친절)]
+ * 195. 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 +7 = DH112~DN118 — DA105 최애·DB~DD 교재연동 3열 선점 구간 회피,
+ *      리뷰 B1): 숙제카드HTML(라벨 있는 완성 카드 — 유형칩·할일·"선생님이 이걸 봐요" 검사포인트·제출 안내)·
+ *      퀴즈카드HTML(문제만 — 정답은 CK89를 버튼이 연다). 원인 진단: 검사포인트(E열 강사용)가 학생 홈에 무라벨
+ *      노출 + 퀴즈 문항이 숙제 카드에 시각적으로 붙어 "감사합니다의 실제 발음은?"이 숙제 지문처럼 읽힘.
+ *      낱개 Text 3~4개(6-1a/b) → Rich Text 2장으로 대체. 분기 반환 길이 기계 가드 + 열 레지스트리 테스트 신설.
+ * 196. 강사 수업준비HTML(DJ114) — 오늘 검사할 숙제+검사포인트(제자리 복귀)+워밍업 퀴즈·정답 1장 +
+ *      📊 학업 기록 폼(createAcademicForm — "시트 직접 입력" 안내문 대체, 약점 메모 폼 계보: 제자리 업그레이드·
+ *      아침 로스터 동기화·sweepAcademicForm_ 10분 전개·값 검증(급수 1~6 정수/모의 0~100)·AL 채번·미매칭 통보·
+ *      포인터는 메일 전 마감) + 🧩 메모 폼 버튼 URL(DM117·DN118). 켜기 큐(preflight 폼 감시)에 학업폼URL 편입.
+ * 197. 출퇴근 중복 방어 — 오늘출근·오늘퇴근(DK115·DL116, todayBoard_ 10분 갱신·강사 행만·hhmmOf_ 정규화 비교·
+ *      텍스트 서식 고정 = 1899 Date 되읽힘 재기입 루프 차단(리뷰 B2, v9.68 계급)) = Glide 출퇴근 버튼 Visibility
+ *      소스. checkoutCheerMail_ 당일 1회/강사 가드(발송 성공분만 마킹·쿼터 소진은 중단해 재시도·어제 키 선청소).
+ * 198. 학부모 접점 '몬스터' → '성장 파트너(хамтрагч)' 6곳: 출석달력 캡션·진화 메일·축하배너·대화카드(PARENT_Q)·
+ *      3개월 편지·웰컴 스토리. 학생 세계관(도감·한마디·여정)은 유지 — 전면 개명은 유호 결정 항목.
+ *      잔여 1곳 = 리포트카드 Slides 템플릿 {{몬스터단계}} 라벨(코드 밖 문서 — 유호 몫).
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.73'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외)
+const SYNK_VERSION = 'v9.74'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -1118,7 +1135,7 @@ const PARENT_Q = [
   '«Өнөөдөр багш чамайг юу гэж магтсан бэ?» (오늘 선생님이 뭐라고 칭찬하셨어?)',
   '«Солонгос хэлээр надад мэндлээд үзээч!» (한국어로 나한테 인사해줘!)',
   '«Өнөөдөр ангид хамгийн сонирхолтой юу байсан бэ?» (오늘 수업에서 제일 재미있었던 게 뭐야?)',
-  '«Чиний монстр одоо ямар байгаа вэ? Надад үзүүлээч!» (네 몬스터 지금 어때? 나한테 보여줘!)',
+  '«Чиний хамтрагч одоо ямар байгаа вэ? Надад үзүүлээч!» (네 성장 파트너 지금 어때? 나한테 보여줘!)', // [v9.74] 학부모 접점 '몬스터' 착시 제거(유호 07-28) — хамтрагч=파트너
   '«Солонгосоор нэг дуу дуулаад өгөөч!» (한국어로 노래 한 소절 불러줘!)',
   '«Өнөөдөр шинэ үг хэдийг сурсан бэ?» (오늘 새 단어 몇 개 배웠어?)',
   '«Найзууддаа солонгосоор юу гэж хэлдэг вэ?» (친구들한테 한국어로 뭐라고 말해?)',
@@ -1371,7 +1388,7 @@ function buildAttCalHtml_(attSet, now, tz, clsType) {
     '<span style="font-size:13.5px;font-weight:800;">🗓️ ' + (m + 1) + '월 출석 달력</span>' +
     '<span style="font-size:12px;font-weight:800;color:#3D5AFE;">' + attN + '일 출석 <span style="color:#9CA3AF;font-weight:400;font-size:10px;">· Ирц</span></span></div>' +
     '<div style="overflow:hidden;">' + head + '</div><div style="overflow:hidden;clear:both;">' + cells + '</div>' +
-    '<div style="clear:both;font-size:10px;color:#9CA3AF;padding-top:6px;">✓ 등원한 날 — 도장이 채워질수록 몬스터가 자라요</div></div>';
+    '<div style="clear:both;font-size:10px;color:#9CA3AF;padding-top:6px;">✓ 등원한 날 — 도장이 쌓일수록 성장 파트너가 자라요</div></div>'; // [v9.74] 학부모 미러(CT98) 공용 캡션 — "몬스터"가 자녀 지칭으로 오독될 여지 제거(유호 07-28)
 }
 
 // [v9.20] 📖 나의 여정 — 개인 스토리 센터피스. 몬스터 여정 + 개인 마일스톤 + 실력 성장을 한 카드로.
@@ -2156,7 +2173,7 @@ function calcAll() {
           bannerOut.push([crownToday2
             ? '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FDE68A,#F5A623);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;">🎉 ' + (r[1] || id) + ' өнөөдөр титэм авлаа! Гэртээ магтаж өгөөрэй 💛<br/><span style="font-weight:400;font-size:11px;">오늘 왕관을 받았어요! 집에서 칭찬해 주세요</span></div>'
             : (evoRecent
-              ? '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#7C9BFF,#3D5AFE);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;color:#fff;">⚡ ' + (r[1] || id) + '-ийн монстр шинэ шатанд хувьслаа! Түүхэн мөч 📸<br/><span style="font-weight:400;font-size:11px;">몬스터가 진화했어요!' + (gEvoForm ? ' \'' + gEvoForm + '\' 문법까지 익히고 진화!' : ' 역사적인 순간') + '</span></div>'
+              ? '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#7C9BFF,#3D5AFE);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;color:#fff;">⚡ ' + (r[1] || id) + '-ийн хамтрагч шинэ шатанд хувьслаа! Түүхэн мөч 📸<br/><span style="font-weight:400;font-size:11px;">성장 파트너가 진화했어요!' + (gEvoForm ? ' \'' + gEvoForm + '\' 문법까지 익히고 진화!' : ' 역사적인 순간') + '</span></div>' // [v9.74] 학부모 배너 — 몬스터→성장 파트너(хамтрагч)
               : '')]);
           // [v9.20] 오늘의알림 — 푸시/인앱배너용, "하루짜리 결정적 순간"만 (왕관·진화·생일).
           //  [v9.20 최적화] 진화임박(rem) 분기 제거: 매일 값 변동→시트 churn + 푸시 시 매일 알림 피로.
@@ -2592,20 +2609,113 @@ function calcAll() {
  *   CQ95 자녀이름 · CR96 자녀_축하배너 · CS97 자녀_주간리포트 · CT98 자녀_출석달력 · CU99 자녀_대화카드 ·
  *   CV100 자녀_학업추세 · CW101 자녀_액자.
  * [v9.49] +3열: CX102 출석폼URL · CY103 숙제폼URL(학생별 미리채움 링크 — Glide Open Link 버튼 소스) ·
- *   CZ104 새첨삭수(노출됐지만 미확인인 첨삭 수 — 홈 배너/뱃지 소스, 0이면 빈칸이라 "is not empty" 가시성 조건 그대로). */
+ *   CZ104 새첨삭수(노출됐지만 미확인인 첨삭 수 — 홈 배너/뱃지 소스, 0이면 빈칸이라 "is not empty" 가시성 조건 그대로).
+ * [v9.74] 2차 블록 +7열(유호 07-28 디테일 팩) — ⚠ DA105~DG111은 선점 열이라 건너뛰고 **DH112부터**:
+ *   DA105 최애(학생 Set Column·v9.50 A4) · DB106 목소리폼URL · DC107 목소리성장카드 · DD108 필살기노트(교재연동.js).
+ *   리뷰 B1: 첫 설계(DA105 연속 확장)면 첫 calcAll이 이 4열을 파괴하고 교재연동 야간 배치가 무음사했다.
+ *   DH112 숙제카드HTML · DI113 퀴즈카드HTML(학생 — 홈 6-1a/b 낱개 Text를 라벨 있는 완성 카드 2장으로 대체.
+ *   퀴즈 카드에 정답은 절대 미포함 — 정답은 CK89를 버튼만이 연다) · DJ114 수업준비HTML(강사) ·
+ *   DK115 오늘출근 · DL116 오늘퇴근(HH:mm 텍스트 고정, todayBoard_ 10분 갱신 — 출퇴근 버튼 가시성 소스) ·
+ *   DM117 학업폼URL · DN118 메모폼URL(강사 버튼). */
 const SHARED_COL_START = 85;
 const SHARED_COL_HEADERS = ['내숙제유형', '내숙제', '내숙제팁', '오늘의퀴즈문제', '오늘의퀴즈정답', '오늘의팁',
   '전당배너', '시즌배너', '이달의보스HTML', '여행지도HTML',
   '자녀이름', '자녀_축하배너', '자녀_주간리포트', '자녀_출석달력', '자녀_대화카드', '자녀_학업추세', '자녀_액자',
   '출석폼URL', '숙제폼URL', '새첨삭수']; // [v9.49]
+// [v9.74] 선점 열(DA105 최애·DB~DD 교재연동 3열)을 피한 2차 공유 블록 — tests가 블록·선점 열 비겹침을 기계 검사
+const SHARED2_COL_START = 112; // DH
+const SHARED2_COL_HEADERS = ['숙제카드HTML', '퀴즈카드HTML', '수업준비HTML', '오늘출근', '오늘퇴근', '학업폼URL', '메모폼URL']; // DH112~DN118
+
+/* ── [v9.74] 숙제·퀴즈·수업준비 카드 빌더(순수 함수 — tests/safety.test.js가 직접 로드) ──
+ * 유호 07-28 보고: 홈 숙제 카드가 "과제문 + 무라벨 검사포인트 + 퀴즈 문항"이 한 덩어리로 보여 무엇을
+ * 하라는지 읽을 수 없었다 — 검사포인트(E열)는 강사용 문구인데 학생 화면에 라벨 없이 그대로 노출된 것.
+ * → 조각마다 라벨을 입힌 완성 카드 1장씩으로 리빌드(Glide는 Rich Text 1개만 바인딩). */
+function hwCardHtml_(ty, mnTy, task, tip, mnTip) {
+  if (!task) return '';
+  const chip = ty ? '<span style="font-size:10.5px;font-weight:800;color:#3D5AFE;background:#EEF2FF;border-radius:99px;padding:3px 9px;white-space:nowrap;">' + escHtml_(ty) + (mnTy ? ' · ' + escHtml_(mnTy) : '') + '</span>' : '';
+  return '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:16px;padding:13px 12px;">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding-bottom:8px;">' +
+    '<span style="font-size:14px;font-weight:800;">📚 오늘의 숙제</span>' + chip + '</div>' +
+    '<div style="font-size:14.5px;font-weight:700;line-height:1.75;">' + escHtml_(task) + '</div>' +
+    (tip ? '<div style="margin-top:9px;background:#F8FAFC;border-left:3px solid #3D5AFE;border-radius:0 10px 10px 0;padding:7px 10px;font-size:11.5px;color:#475569;line-height:1.7;">👀 <b>선생님이 이걸 봐요</b> — ' + escHtml_(tip) +
+      (mnTip ? '<br/><span style="color:#94A3B8;">' + escHtml_(mnTip) + '</span>' : '') + '</div>' : '') +
+    '<div style="margin-top:9px;font-size:11px;color:#9CA3AF;">다 했으면 ✍️ <b>숙제 제출</b> 버튼으로 보내기 — +10P · AI 선생님 피드백 🤖</div></div>';
+}
+function quizCardHtml_(q, personal) {
+  if (!q) return '';
+  return '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#FFFFFF 55%);border:2px solid #C7D2FE;border-radius:16px;padding:13px 12px;">' +
+    '<div style="font-size:14px;font-weight:800;padding-bottom:7px;">🧠 오늘의 퀴즈' +
+    (personal ? ' <span style="font-size:10.5px;font-weight:800;color:#3D5AFE;">나를 위한 맞춤 문제 🎯</span>' : '') + '</div>' +
+    '<div style="font-size:14px;font-weight:700;line-height:1.75;">' + escHtml_(q) + '</div>' +
+    '<div style="margin-top:8px;font-size:11px;color:#9CA3AF;">먼저 소리 내어 답해 보고 — 아래 🔮 <b>정답 공개!</b> 버튼으로 확인하세요</div></div>';
+}
+// 강사 수업준비 카드 — 검사포인트(E열)의 제자리는 학생 홈이 아니라 여기. 퀴즈는 정답까지 함께(강사용 화면 전용).
+function prepCardHtml_(hwTy, hw, tip, quiz, quizAns) {
+  const sec = 'margin-top:9px;background:#F8FAFC;border-radius:12px;padding:9px 11px;font-size:12.5px;line-height:1.8;';
+  return '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:16px;padding:13px 12px;">' +
+    '<div style="font-size:14px;font-weight:800;">🎬 오늘 수업 준비 — 1분 브리핑</div>' +
+    '<div style="' + sec + '"><b>📚 오늘 검사할 숙제</b>' + (hwTy ? ' <span style="color:#3D5AFE;font-weight:800;">' + escHtml_(hwTy) + '</span>' : '') + '<br/>' +
+    (hw ? escHtml_(hw) : '게시된 숙제 없음') +
+    (tip ? '<br/><span style="color:#64748B;">👀 검사 포인트 — ' + escHtml_(tip) + '</span>' : '') + '</div>' +
+    (quiz ? '<div style="' + sec + '"><b>⚡ 워밍업 퀴즈</b><br/>' + escHtml_(quiz) +
+      (quizAns ? '<br/><span style="color:#64748B;">정답 — ' + escHtml_(quizAns) + '</span>' : '') + '</div>' : '') +
+    '<div style="margin-top:9px;font-size:11px;color:#9CA3AF;">기록은 아래 버튼으로 — 📊 학업 기록(월 1회 급수·모의) · 🧩 연습 포인트 메모</div></div>';
+}
+// 오늘의 강사 출퇴근 시각(HH:mm) — todayBoard_(10분 스위프)와 writeSharedCols_(14/22시)가 같은 계산을 공유
+function teacherInOutMap_(ss, tz) {
+  const map = {};
+  const tc = ss.getSheetByName('teacher_checkins');
+  if (!tc || tc.getLastRow() < 2) return map;
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  tc.getRange(2, 1, tc.getLastRow() - 1, Math.max(TC_NAME_COL, TC_TYPE_COL, TC_TIME_COL)).getValues().forEach(r => {
+    const nm = String(r[TC_NAME_COL - 1] || '').trim(), tp = String(r[TC_TYPE_COL - 1] || '');
+    const d = asDate_(r[TC_TIME_COL - 1]);
+    if (!nm || !d || isNaN(d.getTime()) || Utilities.formatDate(d, tz, 'yyyy-MM-dd') !== today) return;
+    const m = map[nm] || (map[nm] = { tin: null, tout: null });
+    if (tp.indexOf('출근') > -1) { if (!m.tin || d < m.tin) m.tin = d; }       // 중복 출근 탭 = 첫 시각만
+    else if (tp.indexOf('퇴근') > -1) { if (!m.tout || d > m.tout) m.tout = d; } // 중복 퇴근 탭 = 마지막 시각만
+  });
+  Object.keys(map).forEach(k => {
+    map[k] = { in: map[k].tin ? Utilities.formatDate(map[k].tin, tz, 'HH:mm') : '', out: map[k].tout ? Utilities.formatDate(map[k].tout, tz, 'HH:mm') : '' };
+  });
+  return map;
+}
+// [v9.74] 강사 행 오늘출근(DD108)·오늘퇴근(DE109)을 10분 스위프(todayBoard_)마다 갱신.
+//   Glide 출퇴근 버튼 Visibility 소스: 출근 버튼 = 오늘출근 is empty · 퇴근 버튼 = 오늘출근 not empty AND 오늘퇴근 is empty
+//   → 유호 07-28 보고 "출근·퇴근이 중복 체크된다"의 UI 차단(중복 탭 자체는 teacherInOutMap_의 첫/마지막 집계가 무해화).
+//   자정 롤오버는 별도 청소 불필요 — 날짜가 바뀌면 map이 비어 다음 스위프가 빈칸('')으로 되돌린다.
+function updateTeacherInOut_(ss, tz, pf) {
+  if (!pf || pf.getLastRow() < 2) return;
+  const ci = SHARED2_COL_START + SHARED2_COL_HEADERS.indexOf('오늘출근'); // [v9.74] DK115 — 2차 블록(선점 열 회피)
+  if (pf.getMaxColumns() < ci + 1 || String(pf.getRange(1, ci).getValue()) !== '오늘출근') return; // 공유열 미생성(콜드스타트) — calcAll이 만든 뒤부터
+  const map = teacherInOutMap_(ss, tz);
+  const roles = pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues();
+  const cur = pf.getRange(2, ci, pf.getLastRow() - 1, 2).getValues();
+  roles.forEach((r, i) => {
+    if (!r[0] || String(r[3]) !== 'teacher') return; // 강사 행만 — 나머지는 writeSharedCols_ 소유
+    const io = map[String(r[1] || r[0]).trim()] || {}; // 이름 없으면 ID 폴백 — todayBoard_와 동일 키(리뷰 H3)
+    const want = [io.in || '', io.out || ''];
+    // [v9.74·리뷰 B2] hhmmOf_ 정규화 비교 — 과거 시간 서식 셀(Date 되읽힘)이 남아 있어도 재기입 루프가 되지 않는다
+    if (hhmmOf_(cur[i][0], tz) !== want[0] || hhmmOf_(cur[i][1], tz) !== want[1]) pf.getRange(i + 2, ci, 1, 2).setValues([want]); // 변경 행만 — Glide sync 소비 최소화
+  });
+}
 function writeSharedCols_(ss, pf, st) {
   if (!pf || pf.getLastRow() < 2) return;
-  const endCol = SHARED_COL_START + SHARED_COL_HEADERS.length - 1; // [v9.49] 104(CZ) — 헤더 배열 길이로 동적
+  const endCol = SHARED2_COL_START + SHARED2_COL_HEADERS.length - 1; // [v9.74] 118(DN) — 2차 블록 끝까지 동적
   if (pf.getMaxColumns() < endCol) pf.insertColumnsAfter(pf.getMaxColumns(), endCol - pf.getMaxColumns());
   SHARED_COL_HEADERS.forEach((h, i) => {
     const c = SHARED_COL_START + i;
     if (String(pf.getRange(1, c).getValue()) !== h) pf.getRange(1, c).setValue(h);
   });
+  SHARED2_COL_HEADERS.forEach((h, i) => { // [v9.74] DA105~DG111(최애·교재연동 3열 등 선점 구간)은 절대 건드리지 않는다
+    const c = SHARED2_COL_START + i;
+    if (String(pf.getRange(1, c).getValue()) !== h) pf.getRange(1, c).setValue(h);
+  });
+  { // [v9.74·리뷰 B2] 출퇴근 열 텍스트 서식 고정 — 'HH:mm' 문자열이 시간 서식 Date(1899-12-30 기준)로 되읽히면
+    //   비교가 항상 실패해 10분마다 재기입 루프(v9.68 실측 계급)가 된다. 서식이 이미 '@'면 무비용.
+    const tCol = SHARED2_COL_START + SHARED2_COL_HEADERS.indexOf('오늘출근');
+    if (pf.getRange(2, tCol).getNumberFormat() !== '@') pf.getRange(1, tCol, pf.getMaxRows(), 2).setNumberFormat('@');
+  }
   const kv = {};
   // [v9.48·리뷰 P2] 첫 행 우선 — getState와 동일 규약(중복 키가 있어도 앱 전체가 같은 값을 본다)
   if (st && st.getLastRow() >= 2) st.getRange(2, 1, st.getLastRow() - 1, 2).getValues().forEach(r => { const k = String(r[0] || ''); if (k && !(k in kv)) kv[k] = String(r[1] == null ? '' : r[1]); });
@@ -2633,10 +2743,24 @@ function writeSharedCols_(ss, pf, st) {
       if (r[0] && String(r[1]) === tdQ && String(r[3] || '')) aiQ[String(r[0]).trim()] = { q: String(r[3]), a: String(r[4] || '') };
     });
   }
+  // [v9.74] 강사 행 재료 — 출퇴근 시각·수업준비 카드(주말엔 주말 숙제 키)·폼 버튼 URL
+  const tzW = ss.getSpreadsheetTimeZone();
+  const ioT = teacherInOutMap_(ss, tzW);
+  const preT = Number(Utilities.formatDate(new Date(), tzW, 'u')) >= 6 ? '주말의' : '오늘의'; // 시트 TZ 기준(u: 월1~일7) — getDay(스크립트TZ) 혼용 금지(v9.34 규약)
+  const qT = splitQuiz(kv['오늘의퀴즈'] || '');
+  const prepCard = prepCardHtml_(kv[preT + '숙제유형'] || '', kv[preT + '숙제'] || '', kv[preT + '숙제팁'] || '', qT[0], qT[1]);
+  const HEADS_ALL = SHARED_COL_HEADERS.concat(SHARED2_COL_HEADERS); // 27 — 분기 반환은 이 길이의 단일 배열, 쓰기 직전 두 블록으로 쪼갠다
   const out = rows.map(r => {
-    const blank = SHARED_COL_HEADERS.map(() => '');
+    const blank = HEADS_ALL.map(() => '');
     if (!r[0]) return blank;
     const role = String(r[3] || '');
+    if (role === 'teacher') { // [v9.74] 수업준비 탭 = 카드 1장 + 버튼 2개(전부 자기 행 직접 바인딩)
+      const io = ioT[String(r[1] || r[0]).trim()] || {}; // 이름 없으면 ID 폴백 — todayBoard_와 동일 키(리뷰 H3)
+      return ['', '', '', '', '', '', '', '', '', '',
+        '', '', '', '', '', '', '',
+        '', '', '',
+        '', '', prepCard, io.in || '', io.out || '', kv['학업폼URL'] || '', kv['약점메모폼URL'] || ''];
+    }
     if (role === 'student') {
       const pre = String(r[35] || '') === '주말' ? '주말의' : '오늘의'; // AJ36 반유형 — 서버가 분기(구 Glide ITE 3개 대체)
       // 급수(BO67)로 퀴즈 난이도 자동 선택 — 값 없으면 초급. 상위 난이도가 비어 있으면 아래로 폴백.
@@ -2657,7 +2781,10 @@ function writeSharedCols_(ss, pf, st) {
         pq ? pq.q : q[0], pq ? pq.a : q[1], kv['오늘의팁'] || '', kv['지난달의전당'] || '', kv['이달의시즌'] || '',
         kv['이달의보스HTML'] || '', kv['여행지도HTML'] || '',
         '', '', '', '', '', '', '',
-        formUrlOf(kv['출석폼URL틀'], sid), formUrlOf(kv['숙제폼URL틀'], sid), fbCnt[sid] || '']; // [v9.49] CX~CZ
+        formUrlOf(kv['출석폼URL틀'], sid), formUrlOf(kv['숙제폼URL틀'], sid), fbCnt[sid] || '', // [v9.49] CX~CZ
+        hwCardHtml_(hwTy9, mnTy9, kv[pre + '숙제'] || '', hwTip9, mnTip9), // [v9.74] DA105 — 구 3컴포넌트(6-1a) 대체
+        quizCardHtml_(pq ? pq.q : q[0], !!pq), // [v9.74] DB106 — 문제만. 정답은 CK89를 버튼이 연다
+        '', '', '', '', ''];
     }
     if (role === 'parent') {
       const kidId = String(r[9] || '').split(',')[0].trim(); // J10 parent_of(첫 자녀)
@@ -2665,11 +2792,15 @@ function writeSharedCols_(ss, pf, st) {
       if (!k) return blank;
       return ['', '', '', '', '', '', '', '', '', '',
         k.n, k.bn, k.bl, k.cf, k.bm, k.bw, k.bd,
-        '', '', '']; // [v9.49] CX~CZ 학부모 행은 빈칸
+        '', '', '', // [v9.49] CX~CZ 학부모 행은 빈칸
+        '', '', '', '', '', '', '']; // [v9.74] DH~DN도 빈칸
     }
     return blank;
   });
-  writeIfChanged(pf, 2, SHARED_COL_START, out);
+  // [v9.74·리뷰 H1] 분기 반환 길이 기계 가드 — 하나라도 어긋나면 열이 통째로 밀려 쓰인다(조용한 파괴 대신 즉사)
+  out.forEach(a => { if (a.length !== HEADS_ALL.length) throw new Error('writeSharedCols_ 행 길이 ' + a.length + ' ≠ 헤더 ' + HEADS_ALL.length); });
+  writeIfChanged(pf, 2, SHARED_COL_START, out.map(a => a.slice(0, SHARED_COL_HEADERS.length)));
+  writeIfChanged(pf, 2, SHARED2_COL_START, out.map(a => a.slice(SHARED_COL_HEADERS.length))); // 선점 구간(DA105~DG111)은 건너뛴다
 }
 
 /* ===================== 상담시트 → profiles 동기화 ===================== */
@@ -3874,6 +4005,7 @@ function todayBoard_(ss) {
   const last = bd.getLastRow();
   if (last - 1 > all.length) bd.getRange(all.length + 2, 1, Math.max(last - 1 - all.length, 1), 5).clearContent();
   if (all.length) writeIfChanged(bd, 2, 1, all);
+  updateTeacherInOut_(ss, tz, pf); // [v9.74] 강사 행 오늘출근·오늘퇴근(DD·DE) 10분 갱신 — 출퇴근 버튼 가시성 소스
 
   // [v9.56] 📺 교실 스크린 모드 — 반 TV/프로젝터용 한 장(app_state '교실스크린HTML').
   //   10분 스위프 편승·읽기 3(raid·league_pairs·app_state)·쓰기는 setAppState_(동일값 무기록).
@@ -4795,8 +4927,8 @@ function checkEvolution() {
     if (withEmail.length && quotaOk(withEmail.length)) {
       withEmail.forEach(e => {
         MailApp.sendEmail(e.pEmail,
-          '[SYNK] 🐣→🐲 ' + e.name + ' 학생의 몬스터가 진화했어요!',
-          e.name + ' 학생의 SYNK 몬스터가 [' + e.from + '] 에서 [' + e.to +
+          '[SYNK] 🐣→🐲 ' + e.name + ' 학생의 성장 파트너가 진화했어요!', // [v9.74] 학부모 메일 — 몬스터→성장 파트너
+          e.name + ' 학생의 SYNK 성장 파트너가 [' + e.from + '] 에서 [' + e.to +
           '] (으)로 진화했습니다!\n꾸준한 노력의 결과예요. 많이 칭찬해주세요 🎉\n\n- SYNK 학원');
       });
     }
@@ -5870,6 +6002,88 @@ function createTeacherMemoForm() {
     '\n\nGlide 수업 준비 탭의 버튼(Open Link)에도 이 URL을 넣으면 됩니다.\n편집용: ' + form.getEditUrl() +
     '\n\n※ 재실행해도 안전합니다(제자리 업그레이드 · URL 불변). 반·강사가 바뀌면 다음 날 아침 드롭다운이 자동 갱신됩니다.');
   Logger.log('✅ 연습 포인트 폼 생성 완료: ' + form.getPublishedUrl());
+  Logger.log('편집용: ' + form.getEditUrl());
+}
+
+/* ── [v9.74] 📊 학업 기록 폼 — "시트에 직접 입력하세요" 안내문의 대체 ──
+ * 유호 07-28 보고: 수업준비 탭의 '직접 입력하는 기록'이 어떻게 하라는 건지 알 수 없다 → 버튼 하나로.
+ * 구글 폼 경로라 Glide 업데이트 소비 0(약점 메모 폼 v9.55·v9.64 계보 그대로: 제자리 업그레이드·아침 로스터 동기화).
+ * 응답은 parentSweep(10분)의 sweepAcademicForm_이 academic_log로 전개(값 검증·이름→sid 매칭·AL 채번). */
+const ACADEMIC_TYPES = ['급수 (1~6)', '모의점수 (0~100)'];
+function academicFormSpec_(ss) {
+  const base = teacherMemoSpec_(ss); // 강사·반 로스터 재사용 — 아침 동기화도 같은 원천을 본다
+  return {
+    title: 'SYNK 학업 기록 (강사용 · 월 1회)',
+    desc: '급수 인증·모의고사 결과를 남기면 학생 홈의 학업 추세 차트·월간 리포트에 자동 반영됩니다. 학생 1명당 1건씩 제출해 주세요.',
+    teachers: base.teachers,
+    classes: base.classes,
+    help: {
+      '학생 이름': '앱 프로필의 한글 이름 그대로 (동명이인이면 반을 정확히)',
+      '유형': '급수 = TOPIK/자체 급수(1~6) · 모의점수 = 모의고사 점수(0~100)',
+      '값': '숫자만 — 급수는 1~6, 모의점수는 0~100 (예: 3 또는 62)',
+      '비고': '예: 7월 모의 · 3급 인증 (선택)'
+    }
+  };
+}
+// 실제 폼을 스펙에 제자리 동기화 — 반환 = 바꾼 곳 수, 폼이 아예 없으면 -1(호출부가 생성 경로로). syncTeacherMemoForm_와 동형.
+function syncAcademicForm_(ss, st) {
+  let formId = '';
+  try { formId = String((getState(st, '학업폼ID') || {}).val || '').trim(); } catch (eS) {}
+  if (!formId) { // ID 유실 시 응답 시트의 연결 폼에서 복구(v9.62 formAlreadyMade_ 패턴)
+    try {
+      const shR = ss.getSheetByName('학업폼_응답');
+      const editUrl = shR && shR.getFormUrl();
+      if (editUrl) { const f0 = FormApp.openByUrl(editUrl); formId = f0.getId(); setState(st, '학업폼ID', formId); setState(st, '학업폼URL', f0.getPublishedUrl()); }
+    } catch (eR) {}
+  }
+  if (!formId) return -1;
+  const form = FormApp.openById(formId);
+  const spec = academicFormSpec_(ss);
+  let changed = 0;
+  if (form.getTitle() !== spec.title) { form.setTitle(spec.title); changed++; }
+  if (form.getDescription() !== spec.desc) { form.setDescription(spec.desc); changed++; }
+  form.getItems().forEach(it => {
+    const t = it.getTitle();
+    const wantHelp = spec.help[t];
+    if (wantHelp !== undefined && it.getHelpText() !== wantHelp) { it.setHelpText(wantHelp); changed++; }
+    if (it.getType() !== FormApp.ItemType.LIST) return;
+    const li = it.asListItem();
+    const cur = li.getChoices().map(c => c.getValue()).join('|');
+    const want = (t === '강사' ? spec.teachers : t === '반' ? spec.classes : t === '유형' ? ACADEMIC_TYPES : null);
+    if (want && cur !== want.join('|')) { li.setChoiceValues(want); changed++; }
+  });
+  if (changed) Logger.log('📊 학업 기록 폼 동기화 — ' + changed + '곳 갱신(URL 불변)');
+  return changed;
+}
+function createAcademicForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const synced = syncAcademicForm_(ss, st); // 이미 있으면 복제 대신 제자리 업그레이드(재실행 안전)
+  if (synced >= 0) {
+    const msg = '✅ 학업 기록 폼 — 이미 있어 제자리 업그레이드만 했습니다(' + synced + '곳 갱신 · URL 불변): ' + String((getState(st, '학업폼URL') || {}).val || '');
+    Logger.log(msg);
+    return msg;
+  }
+  const before = ss.getSheets().map(s => s.getName());
+  const spec = academicFormSpec_(ss);
+  const form = FormApp.create(spec.title).setDescription(spec.desc).setCollectEmail(false);
+  if (spec.teachers.length > 1) form.addListItem().setTitle('강사').setRequired(true).setChoiceValues(spec.teachers);
+  else form.addTextItem().setTitle('강사').setRequired(true); // 로스터에 강사 0명(재건 직후)이어도 폼은 성립
+  if (spec.classes.length > 1) form.addListItem().setTitle('반').setRequired(true).setChoiceValues(spec.classes);
+  else form.addTextItem().setTitle('반').setRequired(true);
+  form.addTextItem().setTitle('학생 이름').setRequired(true).setHelpText(spec.help['학생 이름']);
+  form.addListItem().setTitle('유형').setRequired(true).setChoiceValues(ACADEMIC_TYPES).setHelpText(spec.help['유형']);
+  form.addTextItem().setTitle('값').setRequired(true).setHelpText(spec.help['값']);
+  form.addTextItem().setTitle('비고').setHelpText(spec.help['비고']);
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  linkFormTab_(ss, before, '학업폼_응답');
+  setState(st, '학업폼ID', form.getId());
+  setState(st, '학업폼URL', form.getPublishedUrl());
+  adminMail('[SYNK] 📊 학업 기록 폼 생성 완료',
+    '강사 단톡·즐겨찾기에 배포할 링크:\n' + form.getPublishedUrl() +
+    '\n\n다음 계산(14/22시, 즉시 원하면 calcAll ▶)부터 강사 수업준비 탭의 📊 버튼에 자동으로 연결됩니다.\n편집용: ' + form.getEditUrl() +
+    '\n\n※ 재실행해도 안전합니다(제자리 업그레이드 · URL 불변). 반·강사가 바뀌면 다음 날 아침 드롭다운이 자동 갱신됩니다.');
+  Logger.log('✅ 학업 기록 폼 생성 완료: ' + form.getPublishedUrl());
   Logger.log('편집용: ' + form.getEditUrl());
 }
 
@@ -8136,14 +8350,20 @@ function checkoutCheerMail_(ss) {
   const tc = ss.getSheetByName('teacher_checkins');
   if (!tc || tc.getLastRow() < 2) return;
   const props = PropertiesService.getScriptProperties();
+  // [v9.74] 당일 1회/강사 가드 준비 — 어제 키 청소는 조기 return보다 앞(무기록 날에도 청소돼 키 누수 없음, 리뷰 L1)
+  const now = new Date();
+  const tzCo = ss.getSpreadsheetTimeZone();
+  const todayCo = Utilities.formatDate(now, tzCo, 'yyyy-MM-dd');
+  const sentKey = '퇴근응원_' + todayCo;
+  let sentNames = String(props.getProperty(sentKey) || '');
+  props.deleteProperty('퇴근응원_' + Utilities.formatDate(new Date(now.getTime() - 86400000), tzCo, 'yyyy-MM-dd'));
   const ptr = Number(props.getProperty('퇴근메일_포인터')) || 1;
   const last = tc.getLastRow();
   if (ptr > last) { props.setProperty('퇴근메일_포인터', String(last)); return; } // [v9.34] 시트 재건·행 정리 시 클램프 — 퇴근 응원 메일 장기 침묵 방지
   if (ptr >= last) return;
   const width = Math.max(TC_NAME_COL, TC_TYPE_COL, TC_TIME_COL);
   const rows = tc.getRange(ptr + 1, 1, last - ptr, width).getValues();
-  const emap = teacherEmailMap_(ss);
-  const now = new Date();
+  const emap = teacherEmailMap_(ss); // now는 상단 가드 블록에서 선언([v9.74])
 
   const pool = [];
   const ct = ss.getSheetByName('contents');
@@ -8153,6 +8373,8 @@ function checkoutCheerMail_(ss) {
     });
   }
 
+  // [v9.74] 당일 1회/강사 가드 — 퇴근 버튼 중복 탭이 같은 날 응원 메일을 2통 내보내던 것 차단(유호 07-28 보고).
+  //   마킹은 발송 성공 후에만. 쿼터 소진은 포인터 전진 없이 중단(다음 스위프 재시도), 이메일 미등록은 전진(재시도 무의미).
   let advanced = 0;
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i];
@@ -8164,15 +8386,18 @@ function checkoutCheerMail_(ss) {
     if ((now - t) / 60000 < CHECKOUT_MAIL_DELAY_MIN) break; // 아직 5분 미만 → 다음 스위프에서
     // [v9.32] 당일 가드 — 재건/포인터 리셋 시 과거 퇴근 이력 전체에 응원 메일이 재발송되는 사고 방지.
     //   오늘 기록만 발송하고 지난 기록은 포인터만 전진시켜 조용히 건너뛴다.
-    const tzCo = ss.getSpreadsheetTimeZone();
-    if (Utilities.formatDate(t, tzCo, 'yyyy-MM-dd') !== Utilities.formatDate(now, tzCo, 'yyyy-MM-dd')) { advanced = i + 1; continue; }
+    if (Utilities.formatDate(t, tzCo, 'yyyy-MM-dd') !== todayCo) { advanced = i + 1; continue; }
     const who = String(r[TC_NAME_COL - 1] || '').trim();
+    if (who && sentNames.indexOf('|' + who + '|') > -1) { advanced = i + 1; continue; } // [v9.74] 같은 강사 당일 2번째 퇴근 탭 — 메일 1회만
     const email = emap.byKey[who] || '';
-    if (email && pool.length && quotaOk(1)) {
+    if (email && pool.length && !quotaOk(1)) break; // [v9.74·리뷰 H2] 쿼터 소진 — 포인터 전진 없이 중단해 다음 스위프가 재시도
+    if (email && pool.length) {
       const doy = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
       const msg = pool[(doy + i) % pool.length];
       MailApp.sendEmail(email, '[SYNK] 🌙 오늘도 수고하셨습니다',
         (who ? who + ' 선생님,\n\n' : '') + msg + '\n\n— SYNK LAB');
+      sentNames = (sentNames || '|') + who + '|'; // [v9.74] 발송 성공분만 마킹
+      props.setProperty(sentKey, sentNames);
     }
     advanced = i + 1;
   }
@@ -8360,9 +8585,58 @@ function sweepTeacherMemoForm_(ss) {
     if (!ok) miss.push('· ' + name + ' (' + (r[2] || '반 미상') + ') — 로스터 후보 ' + cands.length + '명 · 메모: ' + memo.slice(0, 40));
   });
   if (out.length) se.getRange(se.getLastRow() + 1, 1, out.length, 8).setValues(out);
+  props.setProperty('약점메모폼_포인터', String(last)); // [v9.74·리뷰 M5 동반 수리] 적재 직후·메일 전 마감 — 메일 실패 시 중복 적재 차단
   if (miss.length) adminMail('[SYNK] 🧩 약점 메모 미매칭 ' + miss.length + '건',
     miss.join('\n') + '\n\nstudent_errors 시트에서 해당 행의 student_id를 채우고 상태(H열)의 "미매칭"을 지우면 다음 계산부터 브리핑·AI에 반영됩니다.');
-  props.setProperty('약점메모폼_포인터', String(last));
+}
+
+// [v9.74] 학업 기록 폼 응답 → academic_log 전개 — 약점 메모 폼(v9.55) 패턴 그대로(포인터·클램프·미매칭 통보).
+//   값 검증: 급수 1~6 · 모의 0~100 — 범위 밖은 기록하지 않고 메일로만(차트·리포트 원본 오염 방지, 재제출 안내).
+//   미매칭 이름은 sid 공란 + 비고 '미매칭:이름'으로 적재 — sid를 채우면 다음 계산부터 차트·월보에 반영.
+function sweepAcademicForm_(ss) {
+  const src = ss.getSheetByName('학업폼_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const last = src.getLastRow();
+  const from = Number(props.getProperty('학업폼_포인터')) || 1;
+  if (from > last) { props.setProperty('학업폼_포인터', String(last)); return; }
+  if (from >= last) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = src.getRange(from + 1, 1, last - from, 7).getValues(); // 타임스탬프·강사·반·학생이름·유형·값·비고
+  const pf = ss.getSheetByName('profiles');
+  const students = [];
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') students.push({ sid: String(r[0]).trim(), n: String(r[1] || ''), c: String(r[4] || '') });
+  });
+  const al = ensureSheet(ss, 'academic_log', ['log_id', 'student_id', '날짜', '유형', '값', '비고', '입력자']);
+  let seq = 0; // AL 채번 — 기존 최대 번호를 이어간다(수기 입력 AL001~ 예시와 공존)
+  if (al.getLastRow() >= 2) al.getRange(2, 1, al.getLastRow() - 1, 1).getValues().forEach(r => {
+    const m = /^AL(\d+)$/.exec(String(r[0] || '')); if (m) seq = Math.max(seq, Number(m[1]));
+  });
+  const out = [], miss = [];
+  rows.forEach(r => {
+    const ts = r[0] instanceof Date ? r[0] : new Date();
+    const name = String(r[3] || '').trim();
+    if (!name) return; // 필수 문항이라 실질 발생 없음 — 빈 응답 방어만
+    const typRaw = String(r[4] || '');
+    const typ = typRaw.indexOf('급수') > -1 ? 'level' : 'mock';
+    const valStr = String(r[5] == null ? '' : r[5]).trim();
+    const val = Number(valStr.replace(/[^\d.\-]/g, '')); // [리뷰 M3] 음수 부호 보존 — '-5'가 '5'로 세탁돼 통과하지 않게
+    const okVal = valStr !== '' && !isNaN(val) &&
+      (typ === 'level' ? (Number.isInteger(val) && val >= 1 && val <= 6) : (val >= 0 && val <= 100));
+    if (!okVal) { miss.push('· ' + name + ' — 값 "' + valStr + '"이(가) ' + (typ === 'level' ? '급수(1~6)' : '모의점수(0~100)') + ' 범위를 벗어나 기록하지 않았습니다. 폼으로 재제출해 주세요'); return; }
+    const cands = matchStudentsByNameClass_(students, name, String(r[2] || ''));
+    const ok = cands.length === 1;
+    const sid = ok ? cands[0] : '';
+    seq++;
+    const memo = String(r[6] || '').trim();
+    out.push(['AL' + String(seq).padStart(3, '0'), sid, dstr(ts, tz), typ, val,
+      memo + (ok ? '' : (memo ? ' · ' : '') + '미매칭:' + name), String(r[1] || '폼')]);
+    if (!ok) miss.push('· ' + name + ' (' + (r[2] || '반 미상') + ') — 로스터 후보 ' + cands.length + '명 · academic_log에 sid 공란으로 적재됨(student_id를 채우면 다음 계산부터 차트·월보 반영)');
+  });
+  if (out.length) al.getRange(al.getLastRow() + 1, 1, out.length, 7).setValues(out);
+  props.setProperty('학업폼_포인터', String(last)); // [리뷰 M5] 적재 직후·메일 전 마감 — 메일 실패가 같은 응답을 재적재(모의 Δ 왜곡)하지 않게
+  if (miss.length) adminMail('[SYNK] 📊 학업 기록 확인 필요 ' + miss.length + '건', miss.join('\n'));
 }
 
 // [v9.63] 첨삭 품질 게이트(순수 함수 — tests/safety.test.js가 직접 로드해 검증) — 무인 발행의 안전판.
@@ -8799,8 +9073,8 @@ function welcomeStoryBatch_() {
     let story = null;
     if (apiKey) story = aiText_('SYNK LAB(몽골 울란바토르, 뇌과학 기반 게임화 한국어 학원)의 웰컴 스토리 작가. 신규 학생 "' + s.n + '"' +
       (s.dream ? '(목표: ' + s.dream.slice(0, 40) + ')' : '') + (s.vision ? '(비전 메모: ' + s.vision.slice(0, 40) + ')' : '') +
-      '의 세계관 입장 스토리를 5~7문장 한국어로. 시냅스 크루로 임명되는 서사, 몬스터 파트너와의 첫 만남 예고, 따뜻하고 과장 없는 톤. 인사말·서명 없이 본문만.', 1024);
-    if (!story) story = s.n + ' 크루의 시냅스 여정이 시작됩니다. 첫 출석의 순간, 파트너 몬스터가 깨어나고 매일의 기록이 이야기가 됩니다. ' +
+      '의 세계관 입장 스토리를 5~7문장 한국어로. 시냅스 크루로 임명되는 서사, 성장 파트너와의 첫 만남 예고("몬스터"라는 단어는 쓰지 않기), 따뜻하고 과장 없는 톤. 인사말·서명 없이 본문만.', 1024); // [v9.74] 학부모 수신 편지 — 몬스터→성장 파트너
+    if (!story) story = s.n + ' 크루의 시냅스 여정이 시작됩니다. 첫 출석의 순간, 성장 파트너가 깨어나고 매일의 기록이 이야기가 됩니다. ' +
       'SYNK LAB의 모든 스토리는 실제 기록으로 만들어집니다 — 이제 주인공은 ' + s.n + ' 입니다.';
     MailApp.sendEmail(s.pEmail, '[SYNK] 🌟 ' + s.n + ' 크루 임명장',
       s.n + ' 크루의 입학을 환영합니다!\n\n' + story + '\n\n— SYNK LAB 드림\n(앱에서 ' + s.n + '의 여정 카드가 오늘부터 자랍니다)');
@@ -8887,8 +9161,8 @@ function futureLetterBatch_() {
     let letter = null;
     if (apiKey) letter = aiText_('SYNK LAB의 "미래의 나" 편지 작가. 3개월 전 입학하며 목표를 적은 학생에게, 그 목표를 인용하며 실제 데이터로 성장을 비추는 편지를 8~10문장 한국어로. ' +
       '규칙: "달성/미달" 판정 금지 — "얼마나 왔는지"만. 다정하되 과장 금지. 인사·서명 없이 본문만.\n' +
-      '학생: ' + s.n + '\n입학 때 목표: "' + goal.slice(0, 60) + '"\n누적 포인트: ' + s.total + 'P\n몬스터 단계: ' + (s.stage || '진행 중') + '\n연속 출석: ' + s.stk + '일', 1536);
-    if (!letter) letter = '3개월 전, ' + s.n + '은(는) 이렇게 적었습니다 — "' + goal.slice(0, 60) + '"\n\n그날부터 지금까지 누적 ' + s.total + 'P, 몬스터는 ' +
+      '학생: ' + s.n + '\n입학 때 목표: "' + goal.slice(0, 60) + '"\n누적 포인트: ' + s.total + 'P\n성장 파트너 단계: ' + (s.stage || '진행 중') + '\n연속 출석: ' + s.stk + '일', 1536); // [v9.74] 학부모 편지 — 몬스터→성장 파트너
+    if (!letter) letter = '3개월 전, ' + s.n + '은(는) 이렇게 적었습니다 — "' + goal.slice(0, 60) + '"\n\n그날부터 지금까지 누적 ' + s.total + 'P, 성장 파트너는 ' +
       (s.stage || '성장 중') + ' 단계까지 왔습니다. 목표를 향해 걸어온 거리는 기록이 증명합니다. 다음 3개월의 이야기가 더 기대되는 이유입니다.';
     MailApp.sendEmail(s.pEmail, '[SYNK] 💌 ' + s.n + '에게 도착한 편지 — 3개월 전의 나로부터',
       '(자녀와 함께 읽어주세요)\n\n' + letter + '\n\n— SYNK LAB · 3개월의 기록으로 쓴 편지');
@@ -8901,7 +9175,7 @@ function futureLetterBatch_() {
 // ── H4-라이트 학부모 하이라이트 3장면(월간) — 몽골어는 사전 작성 템플릿만(AI 창작 0 · 원어민 검수 대상) ──
 const HL_TPL = [ // [ko, mn] — {n}=이름 {x}=숫자 {t}=칭호. ⚠ 몽골어 문장은 원어민 검수 1회 권장(아이디어뱅크 선행 조건)
   ['{n}이(가) 이번 달 「{t}」 칭호를 받았어요.', '{n} энэ сард "{t}" цол хүртлээ.'],
-  ['{n}의 몬스터가 새로운 단계로 진화했어요 — 꾸준함의 증거예요.', '{n}-ийн монстр шинэ шатанд хувьслаа — тууштай байдлын баталгаа.'],
+  ['{n}의 성장 파트너가 새로운 단계로 진화했어요 — 꾸준함의 증거예요.', '{n}-ийн хамтрагч шинэ шатанд хувьслаа — тууштай байдлын баталгаа.'], // [v9.74] 학부모 접점 호칭 교체(성장 파트너·хамтрагч)
   ['이번 달 경험치 +{x}P를 모았어요.', 'Энэ сард +{x} оноо цуглууллаа.'],
   ['연속 출석 {x}일 — 습관이 실력이 되는 중이에요.', 'Дараалан {x} өдөр ирлээ — зуршил чадвар болж байна.'],
   ['이번 달도 교실에서 자기 자리를 지켰어요.', 'Энэ сард ч хичээлдээ тогтмол оролцлоо.']];
@@ -9135,6 +9409,7 @@ function parentSweep() {
   safeRun('msgLinkSweep', function () { MJ_msgLinkSweep_(ss); }); // [v9.71] 학부모 메신저 연결 스위프 — 상담로그 새 수신에서 학생ID를 찾아 messenger_links 자동 연결(새 행 없으면 2읽기 종료)
   safeRun('sweepFeedbackAck', function () { sweepFeedbackAck_(ss); }); // [v9.49] 첨삭 '확인했어요' → +5P 정산(열람 보상 — 10분 내 반응해야 루프가 산다)
   safeRun('sweepTeacherMemoForm', function () { sweepTeacherMemoForm_(ss); }); // [v9.55] 약점 메모 폼 → student_errors — classPrepMail보다 앞(같은 틱의 메모가 수업 전 메일에 실린다)
+  safeRun('sweepAcademicForm', function () { sweepAcademicForm_(ss); }); // [v9.74] 학업 기록 폼 → academic_log — 급수·모의 차트 원료(월 빈도라 포인터 조기 종료로 무비용)
   safeRun('classPrepMail', function () { classPrepMail_(ss, ss.getSpreadsheetTimeZone()); }); // [v6.8]
   safeRun('checkoutCheerMail', function () { checkoutCheerMail_(ss); }); // [v6.8]
   safeRun('todayBoard', function () { todayBoard_(ss); }); // [v8.1] 오늘의 출결 보드 (10분 갱신)
@@ -11837,15 +12112,16 @@ function preflightGlide() {
     //   → Glide의 Open-link 버튼이 "대상 없음"으로 조용히 안 그려진다. 컴포넌트는 멀쩡히 존재하므로 조립 점검을
     //   눈으로만 하면 통과해 버린다(2026-07-24 실측: 출석·숙제 버튼 전원 미렌더 + GPS 삭제 후 출석 수단 0).
     [['출석폼URL틀', 'createAttendanceForm', '앱 출석 버튼'], ['숙제폼URL틀', 'createHwForm', '숙제 제출 버튼(AI 첨삭 입구)'],
-     ['약점메모폼URL', 'createTeacherMemoForm', '강사 약점 메모']].forEach(f => {
+     ['약점메모폼URL', 'createTeacherMemoForm', '강사 약점 메모'],
+     ['학업폼URL', 'createAcademicForm', '강사 학업 기록 버튼(수업준비 탭 — 급수·모의 차트 원료)']].forEach(f => { // [v9.74]
       if (getState(st6, f[0]).row < 1) warn('폼 미생성 — ' + f[2] + '가 작동하지 않습니다. 에디터에서 ' + f[1] + ' ▶ 1회 실행 후 calcAll(자동 14/22시)');
     });
   }
 
   // 6.5) [v9.48] 공유열 서버화 확인 — Glide가 계산 컬럼 없이 바로 바인딩할 수 있는 상태인지(조립 전제)
   if (pf && pf.getLastRow() >= 2) {
-    const endColP = SHARED_COL_START + SHARED_COL_HEADERS.length - 1;
-    if (pf.getMaxColumns() < endColP) warn('공유열(CG85~CZ104) 미생성 — calcAll 1회 실행 필요(preflight가 이미 돌렸다면 로그의 calcAll 실패 사유 확인)'); // [v9.49] 폼URL·새첨삭수 3열 포함
+    const endColP = SHARED2_COL_START + SHARED2_COL_HEADERS.length - 1; // [v9.74] 118(DN) — 2차 블록까지
+    if (pf.getMaxColumns() < endColP) warn('공유열(CG85~CZ104·DH112~DN118) 미생성 — calcAll 1회 실행 필요(preflight가 이미 돌렸다면 로그의 calcAll 실패 사유 확인)'); // [v9.74] 카드·출퇴근·폼URL 2차 블록 포함(DA105~DG111 선점 구간은 제외)
     else {
       const shared = pf.getRange(2, SHARED_COL_START, pf.getLastRow() - 1, SHARED_COL_HEADERS.length).getValues();
       const roles = pf.getRange(2, 1, pf.getLastRow() - 1, 10).getValues();
@@ -11935,6 +12211,7 @@ function morningJobs() {   // 매일 07시
   safeRun('parentHighlightsRetry', parentHighlightsMail_); // [v9.54] 월간 하이라이트 쿼터 보류분 이어 발송(월 마커 있으면 즉시 return — 사실상 무비용)
   safeRun('welcomeStoryBatch', welcomeStoryBatch_); // [v9.50·F4] 웰컴 스토리 — 대기열 중 학부모 이메일이 채워진 신규 학생에게 세계관 입장 편지(키 없으면 템플릿 폴백)
   safeRun('teacherMemoFormSync', function () { const ssTm = SpreadsheetApp.getActiveSpreadsheet(); syncTeacherMemoForm_(ssTm, ensureSheet(ssTm, 'app_state', ['key', 'value'])); }); // [v9.64] 연습 포인트 폼을 코드 정본에 매일 동기화 — 로스터(강사·반) 변화가 드롭다운에 자동 반영(폼 없으면 즉시 -1 return, 무비용)
+  safeRun('academicFormSync', function () { const ssAf = SpreadsheetApp.getActiveSpreadsheet(); syncAcademicForm_(ssAf, ensureSheet(ssAf, 'app_state', ['key', 'value'])); }); // [v9.74] 학업 기록 폼 동기화 — 같은 계보(폼 없으면 -1 return, 무비용)
   safeRun('expiryDaily', function () { MJ_expiryDaily_(); }); // [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 비어 있으면 무비용(클로저 = 만족도팩 누락에도 morningJobs 생존)
 }
 
