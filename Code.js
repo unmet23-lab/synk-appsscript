@@ -735,7 +735,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.75'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고
+const SYNK_VERSION = 'v9.76'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -2144,9 +2144,13 @@ function calcAll() {
           else if (attDrop || ptDrop) { sig = '🟡'; why = attDrop ? '출석 추세 하락' : '포인트 추세 하락'; }
           else if (joinD >= 14 && joinD < 45 && !rec2.firstCrown) { sig = '🟡'; why = '신입 — 아직 첫 왕관 전'; }
           else { sig = '🟢'; why = ''; }
-          radarOut.push([sig + (why ? ' ' + why : '')]);
-          if (sig !== '🟢') radarList.push({ s: sig, n: r[1] || id, c: String(r[4] || ''), w: why });
-          if ((rec2.a14 || 0) >= 1 && daysSince < 4) {
+          // [v9.76] 학생 한정 — 07-28 실측: 원장(양유호)·강사(김재헌21)·학부모(수길형 아버지)가 "이탈 위험"으로
+          //   콕핏 카드·원장 브리핑·리텐션 AI 멘트에 매일 올라오고 있었다(role 필터 부재). 개원 후 강사·학부모가
+          //   늘면 레이더가 통째로 무의미해지는 결함이라 신호 자체를 학생 행에만 찍는다.
+          const isStu76 = r[3] === 'student';
+          radarOut.push([isStu76 ? sig + (why ? ' ' + why : '') : '']);
+          if (sig !== '🟢' && isStu76) radarList.push({ s: sig, n: r[1] || id, c: String(r[4] || ''), w: why });
+          if (isStu76 && (rec2.a14 || 0) >= 1 && daysSince < 4) {
             const lastP = lastPtD[id] ? Math.floor((now - lastPtD[id]) / msPerDay) : 999;
             if (lastP >= 14) blindList.push({ n: r[1] || id, c: String(r[4] || ''), d: lastP === 999 ? '기록 없음' : lastP + '일' });
           }
@@ -2573,7 +2577,7 @@ function calcAll() {
       });
     }
   }
-  const count = pfData.filter(r => r[0]).length;
+  // [v9.76] 구 count(전체 행 수) 제거 — '학생수'는 아래 curStuIds(role=student)로 단일화
   // [v9.34] 신규 학생 감지 — 행수 slice 방식은 비학생 행이 학생 뒤에 붙는 구조상 꼬리가 강사/관리자를 집고
   //   강사 추가로도 오발동하던 결함 → 직전 학생 id 집합과의 차집합(role=student 한정)으로 교체
   const curStuIds = pfData.filter(r => r[0] && r[3] === 'student').map(r => String(r[0]));
@@ -2588,7 +2592,7 @@ function calcAll() {
     }
   }
   setState(st, '학생ID집합', curStuIds.join(','));
-  setState(st, '학생수', count); // 하위호환(외부 참조 대비) — 감지는 위 id 집합이 담당, setState가 동일값이면 무기록
+  setState(st, '학생수', curStuIds.length); // [v9.76] role=student만 — 07-28 실측 '학생수 13'은 전체 행 수(학생 9+원장1+강사1+학부모2)였다. 감지는 위 id 집합이 담당, setState 동일값이면 무기록
 
   try { calcAcademic_(acadById, pfData); } catch (e) { Logger.log('calcAcademic_ 스킵: ' + e); } // [v9.18] 학업 성장 축 — [v9.22] byId·pfData 재사용
   try { writeSharedCols_(ss, pf, st); } catch (e) { Logger.log('writeSharedCols_ 스킵: ' + e); } // [v9.48] 공유값 서버화 — 반드시 calcAcademic_ 뒤(학부모 행에 자녀 학업추세를 복사하므로)

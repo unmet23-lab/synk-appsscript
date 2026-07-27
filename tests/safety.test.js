@@ -1009,3 +1009,16 @@ test('[v9.71] 메신저 연결 스위프가 상담로그 실제 열 순서(시�
   assert.ok(sweep.includes("psid === 'anon'"), 'anon(자체폼 세션) 제외가 없다 — psid 없는 세션이 연결 대기로 쌓인다');
   assert.ok(ai.includes("상담_기록_(세션, 'user'"), "상담AI가 'user' 발신으로 기록하지 않으면 스위프가 아무것도 못 잡는다");
 });
+
+test('[v9.76] 리텐션 레이더·학생수는 role=student만 — 원장·강사·학부모 오염 차단', () => {
+  // 07-28 실측: 콕핏 "관심 필요 13명"에 원장(director)·강사(teacher)·학부모(parent)가 섞여 있었다.
+  // profiles 실제 구성은 학생 9 + 원장1 + 강사1 + 학부모2 = 13행 → 전 행을 학생으로 집계하던 결함.
+  const body = section('// [v9.14] 📡 리텐션 신호', '// [v9.20] 오늘의알림');
+  assert.ok(body.includes("const isStu76 = r[3] === 'student'"), '리텐션 신호에 role 필터가 없다');
+  assert.ok(body.includes("if (sig !== '🟢' && isStu76)"), '레이더 목록(콕핏·브리핑·AI 멘트 소스)에 비학생이 들어간다');
+  assert.ok(body.includes('if (isStu76 && (rec2.a14'), '케어 사각 목록에 비학생이 들어간다');
+  assert.ok(body.includes("radarOut.push([isStu76 ?"), '비학생 행에도 신호 문자열이 찍힌다(학부모가 자기 행에서 볼 여지)');
+  // 학생수는 role=student 집합 길이여야 한다(구 전체 행 수 count는 제거)
+  assert.ok(code.includes("setState(st, '학생수', curStuIds.length)"), "'학생수'가 role=student 기준이 아니다");
+  assert.ok(!code.includes('const count = pfData.filter(r => r[0]).length'), '구 전체 행 수 count가 살아 있다');
+});
