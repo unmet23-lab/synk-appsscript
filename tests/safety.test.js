@@ -845,3 +845,44 @@ test('[v9.68] schedule 시간 칸이 Date로 읽혀도 HH:mm으로 고정된다(
   assert.ok(sm.includes('hhmmOf_(r[2], tzSc)'), 'scheduleMap이 원본 String(r[2])로 되돌아가면 1899 문자열이 다시 샌다');
   assert.ok(!sm.includes('String(r[2])'), '원본 문자열화 잔재 — Date 오염 경로가 남는다');
 });
+
+test('[v9.69] 시트 자기치유가 야간에 돌고, 스토리북 병합은 v9.50 단일본 조립식을 그대로 쓴다', () => {
+  const nj = section('function nightJobs()', 'function dailyBackupJob()');
+  assert.ok(nj.includes("safeRun('sheetSelfHeal', sheetSelfHeal_)"),
+    'nightJobs 편승 누락 — 구형 분권 호가 영영 소식탭에 파편으로 남는다');
+  const heal = section('function sheetSelfHeal_()', 'const WORLD_HP_PER');
+  assert.ok(heal.includes("'전문'"), '병합 행 챕터제목은 v9.50과 동일한 \'전문\'이어야 조립 바인딩이 안 갈린다');
+  assert.ok(heal.includes("― ' + r[4] + ' ―"), '챕터 헤더 조립식이 v9.50 발간식과 달라지면 신·구 호의 본문 모양이 갈린다');
+  assert.ok(heal.includes('sort((a, b) => b - a)') && heal.includes('deleteRow'),
+    '잔여 행은 아래부터 물리 삭제해야 한다(행번호 밀림·Row ID 고아 방지)');
+  assert.ok(heal.includes('Math.max.apply(null, rows.map(r => Number(r[3]) || 0))'),
+    'world_raid 중복 정리는 누적데미지 최대값을 보존해야 진행분이 증발하지 않는다');
+});
+
+test('[v9.69] 고아 변형 선택자 청소는 비이모지 뒤 잔재만 걷고 정상 이모지 조합은 보존한다', () => {
+  const cleaner = loadFunction('function orphanVsClean_(', 'function sheetSelfHeal_()', 'orphanVsClean_', {});
+  assert.equal(cleaner('망각의 대군주 제로 \uFE0F와 시냅스의 불꽃'), '망각의 대군주 제로 와 시냅스의 불꽃');
+  assert.equal(cleaner('7월의 보스 \u{1F573}\uFE0F 등장'), '7월의 보스 \u{1F573}\uFE0F 등장');
+  assert.equal(cleaner(null), '');
+});
+
+test('[v9.69] 스토리 제목 이모지 제거가 변형 선택자·ZWJ까지 걷어낸다(고아 문자 재발 차단)', () => {
+  const rx = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0E\uFE0F\u200D]/gu;
+  assert.equal('망각의 대군주 제로 \u{1F573}\uFE0F'.replace(rx, '').trim(), '망각의 대군주 제로');
+  const bnSeg = section('const bN = boss.name.replace', 'const J = josa');
+  ['uFE0E','uFE0F','u200D'].forEach(esc => assert.ok(bnSeg.includes(esc), 'bN/wN 정규식에서 ' + esc + ' 누락 — 고아 문자 재발'));
+});
+
+test('[v9.69] 번역 대상에 grammar가 있고, 반복 체감 뱅크는 확장 하한을 지킨다', () => {
+  assert.ok(code.includes("'monster', 'season', 'grammar']"),
+    'translateContents targets에 grammar 누락 — setupGrammarBank 주석(자동 복원)과 코드가 다시 어긋난다');
+  const pq = section('const PARENT_Q = [', '];');
+  assert.ok((pq.match(/«/g) || []).length >= 12, '학부모 대화 카드 12문항 미만 — 4일 주기 반복 체감으로 회귀');
+  const sp = section('const SPEAK = {', 'const PARENT_Q');
+  const m7 = sp.slice(sp.indexOf('miss7:'), sp.indexOf('evosoon:'));
+  assert.ok((m7.match(/'/g) || []).length / 2 >= 12, 'miss7 톤당 4문장(계 12) 미만 — 장기 미출석 반복 체감 회귀');
+  const evo = sp.slice(sp.indexOf('evosoon:'), sp.indexOf('crown:'));
+  assert.ok((evo.match(/\{n\}/g) || []).length >= 6, 'evosoon 6문장 미만');
+  const bd = sp.slice(sp.indexOf('bday:'), sp.indexOf('idle:'));
+  assert.ok((bd.match(/'/g) || []).length / 2 >= 4, 'bday 4문장 미만');
+});
