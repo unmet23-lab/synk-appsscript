@@ -718,7 +718,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.69'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4
+const SYNK_VERSION = 'v9.73'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외)
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -1801,6 +1801,7 @@ function calcAll() {
   }
   const skinOut = [], frameOut = [];
   const fortuneOut = [], speakOut = [], recordOut = []; // [v9.12]
+  const biSet = (typeof MJ_beginnerSet_ === 'function') ? MJ_beginnerSet_(pf) : null; // [v9.70] 초급 한·몽 병기 대상(AY 완전초보·기초) — 만족도팩.js 누락(반쪽 배포)에도 안전
   const goalOut = [], perDayOut = []; // [v9.28] 목표진행 카드 · 출석일당포인트(주말반 보정 참고 지표)
   const styleOut = [], chemOut = [], matchOut = []; // [v9.13]
   const weeklyOut = [], talkOut = [], bannerOut = []; // [v9.16]
@@ -2067,7 +2068,11 @@ function calcAll() {
       { // [v9.12] 운세·몬스터의 한마디·기록실
         // [v9.50·H1] 오늘의 한 문장 — AI 개인화(약점·관심사 기반)가 있으면 운세 슬롯(BE) 대체, 없으면 기존 운세 폴백(키 미설정에도 카드는 산다)
         const aiD6 = aiDailyMap[id];
-        fortuneOut.push([aiD6 && aiD6.s ? '💡 ' + aiD6.s : '🔮 ' + hashPick_(FORTUNES, id + todayYmd)]);
+        const biOn6 = biSet && (typeof MJ_biOn_ === 'function') && MJ_biOn_(biSet, id); // [v9.70] 이 학생 병기 여부(초급만)
+        const fort9 = aiD6 && aiD6.s ? '💡 ' + aiD6.s : '🔮 ' + hashPick_(FORTUNES, id + todayYmd);
+        // [v9.70] 운세 한·몽 병기 — AI 한 문장(개인화)엔 붙이지 않고, 뱅크 운세일 때만 같은 seed 쌍(MJ_pickMn_=hashPick_ 동조)을 아랫줄로
+        const fortMn9 = (biOn6 && !(aiD6 && aiD6.s) && typeof MJ_pairPick_ === 'function' && typeof MN_FORTUNES !== 'undefined') ? MJ_pairPick_(FORTUNES, MN_FORTUNES, id + todayYmd) : '';
+        fortuneOut.push([fortMn9 ? fort9 + '\n' + fortMn9 : fort9]);
         const tone = speakTone_(mon.idx || 1);
         const isBday = bdayMMDD_(r[5], tz) === todayYmd.slice(5, 10); // [v9.34] Date 셀 생일도 인식 — 원시 slice는 Date면 전멸(생일 한마디·브리핑 반쪽 연출)
         const crownToday = (crownDates[id] || '') === todayYmd;
@@ -2081,6 +2086,10 @@ function calcAll() {
         else if (daysSince >= 7 && daysSince < 999) line = hashPick_(SPEAK.miss7[Math.min(tone, SPEAK.miss7.length - 1)], id + todayYmd);
         else if (daysSince >= 3 && daysSince < 7) line = hashPick_(SPEAK.miss3[tone], id + todayYmd);
         else line = hashPick_(SPEAK.idle[tone], id + todayYmd);
+        // [v9.70] 몬스터 한마디 몽골어 미러(초급만) — 분기 순서는 위와 1:1(만족도팩 MJ_speakMirror_), 게이트 분기만 대응 없음('')
+        const mnSpk9 = (biOn6 && typeof MJ_speakMirror_ === 'function')
+          ? MJ_speakMirror_({ isBday: isBday, crownToday: crownToday, gateWait: (gateBlocked && gateCC > 0), toNext: toNext, attended: (la && lastAtt[id] === todayYmd), daysSince: daysSince, tone: tone, seed: id + todayYmd })
+          : '';
         { // [v9.15] 강사 팩 반별 수집
           const cn5 = String(r[4] || '');
           if (cn5) {
@@ -2097,7 +2106,7 @@ function calcAll() {
             });
           }
         }
-        speakOut.push(['<div style="' + CARD_FONT + 'background:#F5F3FF;border:2px solid #BCC8FF;border-radius:14px;padding:9px 12px;font-size:13px;">💬 ' + line + '</div>']);
+        speakOut.push(['<div style="' + CARD_FONT + 'background:#F5F3FF;border:2px solid #BCC8FF;border-radius:14px;padding:9px 12px;font-size:13px;">💬 ' + line + (mnSpk9 ? '<br/><span style="font-size:11px;opacity:.78;">' + mnSpk9 + '</span>' : '') + '</div>']); // [v9.70] 초급 병기
         styleOut.push([playStyleHtml_(playStyleOf_(styleLogs[id] || []))]);
         const chemP = chemi[id];
         chemOut.push([chemP
@@ -2520,10 +2529,12 @@ function calcAll() {
         setState(st, '오늘의숙제유형', hw[2]);
         setState(st, '오늘의숙제', hw[3]);
         setState(st, '오늘의숙제팁', hw[4] || '');
+        setState(st, '오늘의숙제ID', hw[0] || ''); // [v9.70] 몽골어 검사포인트(MN_HOMEWORK_CHECKPOINT) 매칭 키
       } else if (wd === 6) { // [v9.46] 주말 숙제는 토요일만 갱신(주말반=토요일만) — 일요일에 숙제가 바뀌어 학생을 혼란시키지 않게
         setState(st, '주말의숙제유형', hw[2]);
         setState(st, '주말의숙제', hw[3]);
         setState(st, '주말의숙제팁', hw[4] || '');
+        setState(st, '주말의숙제ID', hw[0] || ''); // [v9.70]
       }
       props.setProperty('숙제기준일', todayStr);
     }
@@ -2636,7 +2647,13 @@ function writeSharedCols_(ss, pf, st) {
       const q = splitQuiz(quizRaw);
       const sid = String(r[0]).trim(); // [v9.49] 폼 URL·첨삭 수 조회 키
       const pq = aiQ[sid]; // [v9.50·A1/A2] 개인 퀴즈 오버라이드
-      return [kv[pre + '숙제유형'] || '', kv[pre + '숙제'] || '', kv[pre + '숙제팁'] || '',
+      // [v9.70] 초급 한·몽 병기 — 숙제 유형 라벨(MN_HOMEWORK_CATEGORY)·검사포인트(MN_HOMEWORK_CHECKPOINT, 게시된 숙제ID로 매칭)
+      const biW9 = (typeof MJ_biOnLvl_ === 'function') && MJ_biOnLvl_(r[50]);
+      const hwTy9 = kv[pre + '숙제유형'] || '';
+      const mnTy9 = (biW9 && typeof MN_HOMEWORK_CATEGORY !== 'undefined' && MN_HOMEWORK_CATEGORY[hwTy9]) || '';
+      const hwTip9 = kv[pre + '숙제팁'] || '';
+      const mnTip9 = (biW9 && typeof MN_HOMEWORK_CHECKPOINT !== 'undefined' && MN_HOMEWORK_CHECKPOINT[kv[pre + '숙제ID'] || '']) || '';
+      return [mnTy9 ? hwTy9 + ' · ' + mnTy9 : hwTy9, kv[pre + '숙제'] || '', mnTip9 ? hwTip9 + '\n' + mnTip9 : hwTip9,
         pq ? pq.q : q[0], pq ? pq.a : q[1], kv['오늘의팁'] || '', kv['지난달의전당'] || '', kv['이달의시즌'] || '',
         kv['이달의보스HTML'] || '', kv['여행지도HTML'] || '',
         '', '', '', '', '', '', '',
@@ -6640,8 +6657,11 @@ function buildMonthlyStorybook_() {
   const tY2 = (lastM.getFullYear() % 2 === 1); // [v9.27] 홀수해=2년차 타이틀(6~9)·짝수해=1년차(0~5), 2026 출력 불변
   const title = STORY_TITLES[(tY2 ? 6 : 0) + (issue - 1) % (tY2 ? 4 : 6)].replace('{boss}', wN);
   const rows = [];
-  const gB = i => '📖 ' + G[i][0] + ' — ' + G[i][1];
-  const eB = i => '💗 ' + STORY_EMOTIONS[i][0] + ' — ' + STORY_EMOTIONS[i][1];
+  // [v9.70] 스토리북 문법·감정 용어줄 한·몽 병기 — 스토리북은 반 공유물이라 학생별이 아닌 전역 스위치(MJ_BILINGUAL)로.
+  //   몽골어판 구조: MN_STORY_GRAMMAR[월][i] = [문형(한국어 유지), 의미(몽골어)] · MN_STORY_EMOTIONS[i] = [관용구, 뜻(몽골어)]
+  const bi9 = (typeof MJ_BILINGUAL !== 'undefined' && MJ_BILINGUAL !== 'off');
+  const gB = i => '📖 ' + G[i][0] + ' — ' + G[i][1] + (bi9 && typeof MN_STORY_GRAMMAR !== 'undefined' && MN_STORY_GRAMMAR[sIdx] && MN_STORY_GRAMMAR[sIdx][i] ? ' / ' + MN_STORY_GRAMMAR[sIdx][i][1] : '');
+  const eB = i => '💗 ' + STORY_EMOTIONS[i][0] + ' — ' + STORY_EMOTIONS[i][1] + (bi9 && typeof MN_STORY_EMOTIONS !== 'undefined' && MN_STORY_EMOTIONS[i] ? ' / ' + MN_STORY_EMOTIONS[i][1] : '');
   const SEn = SCENE_EN[sIdx], BEn = BOSS_EN[sIdx];
   const IMG = t => 'IMG: ' + t + ' | ' + STYLE_EN;
   const scenePrompts = arcA ? [
@@ -8916,6 +8936,8 @@ function parentHighlightsMail_() {
   //   (다이제스트보류 #31과 같은 처방). 구 구현은 쿼터 소진 시에도 마커를 무조건 세팅해
   //   뒤쪽 학생들이 그 달 하이라이트를 영영 못 받았다(조용한 유실).
   let sent = 0, quotaShort = false;
+  // [v9.73] 설문 링크 틀 — 폼 미생성이면 빈값(메일은 기존 그대로). 만족도팩 누락에도 안전.
+  const svTpl9 = (typeof MJ_surveyLine_ === 'function') ? String((getState(ensureSheet(ss, 'app_state', ['key', 'value']), '설문폼URL틀') || {}).val || '') : '';
   aiStudents_(ss).forEach(s => {
     if (!s.pEmail || doneSids.has(s.id) || quotaShort) return;
     if (!quotaOk(1)) { quotaShort = true; return; }
@@ -8930,7 +8952,7 @@ function parentHighlightsMail_() {
     while (scenes.length > 3) scenes.pop();
     MailApp.sendEmail(s.pEmail, '[SYNK] ✨ ' + s.n + ' — Энэ сарын гурван агшин (이달의 세 장면)',
       'Энэ сард ' + s.n + '-д ийм агшин байлаа:\n(이번 달 ' + s.n + '에게 이런 순간이 있었어요)\n\n' +
-      scenes.map((sc, i) => (i + 1) + '. ' + sc).join('\n\n') + '\n\n— SYNK LAB');
+      scenes.map((sc, i) => (i + 1) + '. ' + sc).join('\n\n') + (svTpl9 ? MJ_surveyLine_(svTpl9, s.id) : '') + '\n\n— SYNK LAB'); // [v9.73] 월간 설문 링크 동봉(학생별 프리필)
     sent++; doneSids.add(s.id);
   });
   if (quotaShort) props.setProperty('하이라이트보류', ym + '|' + Array.from(doneSids).join(','));
@@ -9110,6 +9132,7 @@ function parentSweep() {
   safeRun('translateTopics', function () { translateTopics_(ss); }); // [v5.7] 이번 주 우리 반 배운 것 → 몽골어
   safeRun('importFormResponses', importFormResponses); // [v6.3] 상담 폼 접수 편입
   safeRun('sweepLeadForm', function () { sweepLeadForm_(ss); }); // [v9.43] 광고 리드폼 → leads 자동 편입(수기 이관 폐지)
+  safeRun('msgLinkSweep', function () { MJ_msgLinkSweep_(ss); }); // [v9.71] 학부모 메신저 연결 스위프 — 상담로그 새 수신에서 학생ID를 찾아 messenger_links 자동 연결(새 행 없으면 2읽기 종료)
   safeRun('sweepFeedbackAck', function () { sweepFeedbackAck_(ss); }); // [v9.49] 첨삭 '확인했어요' → +5P 정산(열람 보상 — 10분 내 반응해야 루프가 산다)
   safeRun('sweepTeacherMemoForm', function () { sweepTeacherMemoForm_(ss); }); // [v9.55] 약점 메모 폼 → student_errors — classPrepMail보다 앞(같은 틱의 메모가 수업 전 메일에 실린다)
   safeRun('classPrepMail', function () { classPrepMail_(ss, ss.getSpreadsheetTimeZone()); }); // [v6.8]
@@ -11912,6 +11935,7 @@ function morningJobs() {   // 매일 07시
   safeRun('parentHighlightsRetry', parentHighlightsMail_); // [v9.54] 월간 하이라이트 쿼터 보류분 이어 발송(월 마커 있으면 즉시 return — 사실상 무비용)
   safeRun('welcomeStoryBatch', welcomeStoryBatch_); // [v9.50·F4] 웰컴 스토리 — 대기열 중 학부모 이메일이 채워진 신규 학생에게 세계관 입장 편지(키 없으면 템플릿 폴백)
   safeRun('teacherMemoFormSync', function () { const ssTm = SpreadsheetApp.getActiveSpreadsheet(); syncTeacherMemoForm_(ssTm, ensureSheet(ssTm, 'app_state', ['key', 'value'])); }); // [v9.64] 연습 포인트 폼을 코드 정본에 매일 동기화 — 로스터(강사·반) 변화가 드롭다운에 자동 반영(폼 없으면 즉시 -1 return, 무비용)
+  safeRun('expiryDaily', function () { MJ_expiryDaily_(); }); // [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 비어 있으면 무비용(클로저 = 만족도팩 누락에도 morningJobs 생존)
 }
 
 function nightJobs() {     // 매일 22시 — 수업 종료 후
@@ -11927,6 +11951,7 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   if (dyN !== 0) safeRun('leagueStoryDaily', leagueStoryDaily_); // [v9.3] 월~토 리그 중계석
   if (dyN === 0) safeRun('leagueSettle', leagueSettle_); // [v9.1] 반 대항 리그 — 주간데미지 확정 후·다이제스트 전
   if (dyN === 0) safeRun('parentWeeklyDigest', parentWeeklyDigest); // [v7.9] 일요일 밤 — 학부모 주간 소식 1통
+  if (dyN === 0) safeRun('messengerDigest', function () { MJ_messengerDigest_(); }); // [v9.71] 이메일 다이제스트의 메신저 미러 — 연결된 학부모만·창 밖 스킵(클로저 = 만족도팩 누락에도 nightJobs 생존)
   safeRun('notifyParents', notifyParents);
   // [v9.34] checkNoShow는 parentSweep(10분) 편승으로 이동 — 판정 창(수업 시작+30~90분)이 22시엔 구조적으로 안 걸려 죽은 안전장치였음
   safeRun('checkEvolution', checkEvolution);
@@ -11988,7 +12013,10 @@ function weeklyJobs() {    // 매주 월 07시
     ['📟 경영계기판', updateBizDashboard],  // [v9.26] 6지표 신호등 — KPI 재사용 + leads·현금 지표 + 적색경보
     ['💰 미납 현황', checkTuition],        // 미납은 주 1회 (알림 다이어트)
     ['🔄 재등록 시점', checkReenrollment],
-    ['💬 학부모 문의', checkNewInquiries_]  // [v9.28] 결석 사전신고와 짝을 이루는 인바운드 채널
+    ['💬 학부모 문의', checkNewInquiries_],  // [v9.28] 결석 사전신고와 짝을 이루는 인바운드 채널
+    ['📨 메신저 연결(학부모)', function (t) { return MJ_msgSection_(t); }],  // [v9.71] 이중화 현황 — 클로저(만족도팩 누락 시 이 섹션만 실패, 리포트는 발송)
+    ['📅 수강 만료 임박', function (t) { return MJ_expirySection_(t); }],    // [v9.72]
+    ['📋 월간 만족도 설문', function (t) { return MJ_surveySection_(t); }]   // [v9.73] 첫 만족도 기준선
   ];
   let body = '📬 SYNK 주간 통합 리포트 · ' + Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd') + '\n';
   sections.forEach(function (sec) {
