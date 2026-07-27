@@ -1,10 +1,11 @@
 # 현재 작업 인계
 
-> 마지막 갱신: 2026-07-17
+> 마지막 갱신: 2026-07-27
 > 이 문서는 새 작업이 "이어가자"는 요청을 받을 때 읽는 단기 인계서다.
 
 ## 현재 주제
 
+- **만족도팩 v9.70~73 반영·커밋 대기(2026-07-27, cowork 세션)**: 파일은 전부 폴더에 반영됐고 회귀 106종 통과 상태. **다음 로컬 Claude Code 세션이 할 일**: ① `git status`로 변경분이 만족도팩 목록(세션보드 참조)과 일치하는지 확인 ② `node --test tests/*.test.js` 재확인 ③ **`.github/workflows/syntax-check.yml` 마지막 줄을 `run: node --test tests/*.test.js`로 수정**(신규 테스트 CI 편입 — 보호 파일이라 cowork가 원격으로 못 씀) ④ 커밋 후 `/deploy` 1회. 유호님 ▶는 배포 후 `createSurveyForm` 1회뿐 — 상세는 `docs/만족도팩_실행지_v973.md`.
 - **조직계보 정본 v1 확정 + 문서 대청소 완료(2026-07-17)**: 3브랜드(LAB·STUDIO·LIFE)+2레이어(IP·COMMON SYSTEM). 정본 = `docs/조직계보_정본_v1.md`, 현행 문서 색인 = `docs/문서_지도.md`. 구 6브랜드 표기·Define/Build/Execute 용어는 폐기 — 발견 시 정본에 맞춰 고친다.
 - Desktop도 같은 구도로 재편됨: `SYNK LAB`·`SYNK STUDIO`·`SYNK IP`·`SYNK LIFE`·`SYNK 보안` + `_archive_2026-07`(구본 보관). 브랜드 문서 리라이팅_v2는 `SYNK LAB\About Synk lab\` 아래 **단일본**만 유효.
 - **Glide 조립(2026-07-19 v9.40 재리셋)**: v939 재조립도 기능 누락 다수(유호님 보고) → 라이브 재실측으로 원인 확정: 콘텐츠 절반 부재(숙제 0/210·연료 0/6·시즌 0/12·팁 0/30·문법 57/72)+월간 시트 5종 미존재+가이드가 코어만 커버. 코드 v9.40 배포 — **preflightGlide가 콘텐츠·시트·몽골어를 자동 복구**하도록 개조 + notices 스키마 실버그 수정 + 전 카드 폰트 통일(CARD_FONT). **조립 정본 = `docs/GLIDE_조립가이드_v940.md`** (v939 폐기 표기·§10에 기능→화면 전수 매트릭스). 남은 사람 몫: 상담시트 '반' 입력·강사 class_name·parent_of·P02 이메일(가이드 §1) → preflightGlide ⚠ 0 → 조립.
