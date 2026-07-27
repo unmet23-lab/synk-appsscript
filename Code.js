@@ -704,12 +704,21 @@
  * 193. migrateConsultV184 ▶ 1회 = 시트 헤더 증분 + 라이브 폼 제자리 증분(같은 제목 있으면 스킵 · 기존 문항/URL/
  *      응답 불변, v9.64 제자리 업그레이드 계보) + 관심K분야 '예능' 선택지. createConsultForm에 재실행 안전 가드
  *      (살아있는 폼 있으면 재생성 금지 — 배포 링크 갈아끼움 사고 차단, v9.60·v9.62 계급) + 신규 생성도 v18.4 스펙.
+ *
+ * [v9.69 — 🩹 앱 신뢰도 팩 (07-27 유호 "명품 디테일" 전수점검의 코드 몫)]
+ * 194. sheetSelfHeal_(nightJobs 편승·멱등): ①synk_stories 월 중복(구형 13행 분권 호) → v9.50 단일본 병합
+ *      (챕터 정렬·수기 본문 보존·배지 dedupe·첫 행 덮어쓰기+잔여 행 물리 삭제) ②제목·본문·공지의 고아
+ *      변형 선택자(U+FE0E/FE0F — 구 이모지 제거 정규식 잔재 "제로 ️와") 청소 ③world_raid 같은 달 중복 행
+ *      → 1행(데미지 최대 보존·진행중 이번 달만 재적 기준 HP 재산정). 원인 지점(bN/wN 정규식)도 FE0E/FE0F/
+ *      ZWJ 편입으로 재발 차단. translateContents targets에 grammar 편입(setupGrammarBank 주석과 불일치 수리).
+ *      콘텐츠 반복 체감 보강: PARENT_Q 4→12(추가 8문항 원어민 검수 큐) · SPEAK miss7 2→4/톤 · evosoon 3→6 ·
+ *      crown 3→6 · bday 2→4 — 코드 상수라 배포만으로 반영(setup ▶ 불필요).
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.68'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정
+const SYNK_VERSION = 'v9.69'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -1088,24 +1097,34 @@ const SPEAK = {
     ['창밖만 보고 이떠(있어)… 주인님 자리는 내가 지키는 중! 🐣','오늘도 문 소리마다 고개를 들었어… 보고 시퍼(싶어) 🥺','주인님 책상에 먼지 못 앉게 후후 불고 있어!'],
     ['창밖만 보고 있어… 네 자리는 늘 여기 있어 🌱','네 목소리가 그리운 날이야 — 돌아오면 제일 먼저 반겨 줄게','괜찮아, 천천히 와도 돼. 나 여기서 튼튼하게 기다릴게 💪'],
     ['그대의 빈자리에도 배움의 불씨는 꺼지지 않게 지키고 있네 🕯️','기다림도 수행이라네 — 하지만 그대가 오면 더 좋겠군','그대가 돌아올 길을 밝혀 두었네. 서두르지 않아도 좋아 ✨']],
-  miss7: [
-    ['주인님이 준 포인트 꼭 안고 씩씩하게 기다리는 중! 돌아오면 제일 먼저 안아 줄 거야 🤗','알 속에서도 주인님 응원해! 언제든 돌아와 🥚'],
-    ['네가 쌓아 둔 포인트, 하나도 안 사라지고 여기 있어 — 언제든 이어서 가자 🌱','오래 못 봐도 우린 한 팀이야. 문은 항상 열려 있어 🚪'],
-    ['먼 길을 돌아오는 것도 여정의 일부라네 — 그대의 기록은 영원히 이곳에 있네 📜','별은 잠시 구름에 가려도 빛을 잃지 않는 법이지 ⭐']],
-  evosoon: ['몸이 근질근질… 곧 뭔가 일어날 것 같아! (다음 진화까지 {n}P) ⚡','껍질이(몸이) 간지러워! 조금만 더! (진화까지 {n}P) 🔥','변화의 기운이 차오르고 있네… 앞으로 {n}P라네 ✨'],
-  crown: ['오늘 왕관 쓴 모습, 세상에서 제일 멋졌어 👑 밤새 자랑할 거야','왕관이 주인을 알아봤네 — 눈부셨다네 👑','네 머리 위 왕관, 내가 제일 먼저 봤다! 👑'],
-  bday: ['오늘은 주인공의 날! 내가 세상에서 제일 먼저 축하해 🎂🎉','생일 축하하네 — 그대가 태어나 나도 태어날 수 있었지 🎂'],
+  miss7: [ // [v9.69] 톤당 2→4문장 — 장기 미출석 학생이 같은 문장을 즉시 재노출당하던 최박 버킷 보강
+    ['주인님이 준 포인트 꼭 안고 씩씩하게 기다리는 중! 돌아오면 제일 먼저 안아 줄 거야 🤗','알 속에서도 주인님 응원해! 언제든 돌아와 🥚','주인님 자리에서 매일 아침 인사 연습하고 이떠(있어)! 🐣','보고 싶은 만큼 씩씩하게 자라는 중! 돌아오면 깜짝 놀랄걸? 🌟'],
+    ['네가 쌓아 둔 포인트, 하나도 안 사라지고 여기 있어 — 언제든 이어서 가자 🌱','오래 못 봐도 우린 한 팀이야. 문은 항상 열려 있어 🚪','네가 없는 동안 배운 거 복습하면서 기다렸어 — 같이 이어서 하자 📖','돌아오는 날이 우리의 새 챕터 첫 페이지야 ✨'],
+    ['먼 길을 돌아오는 것도 여정의 일부라네 — 그대의 기록은 영원히 이곳에 있네 📜','별은 잠시 구름에 가려도 빛을 잃지 않는 법이지 ⭐','쉼표는 문장의 끝이 아니라네 — 그대의 이야기는 계속되고 있어 ✒️','씨앗은 보이지 않는 곳에서도 뿌리를 내린다네 🌳']],
+  evosoon: ['몸이 근질근질… 곧 뭔가 일어날 것 같아! (다음 진화까지 {n}P) ⚡','껍질이(몸이) 간지러워! 조금만 더! (진화까지 {n}P) 🔥','변화의 기운이 차오르고 있네… 앞으로 {n}P라네 ✨','심장이 두근두근! 새로운 내가 되기까지 {n}P! 💓','다음 모습, 살짝 보여 주고 싶은데… {n}P만 더 모아 줄래? 👀','진화의 문이 열리기 직전이야 — 마지막 {n}P, 같이 가자! 🚪'], // [v9.69] 3→6 — 임박 구간(며칠 지속)에 매일 같은 문장이 반복되던 것 보강
+  crown: ['오늘 왕관 쓴 모습, 세상에서 제일 멋졌어 👑 밤새 자랑할 거야','왕관이 주인을 알아봤네 — 눈부셨다네 👑','네 머리 위 왕관, 내가 제일 먼저 봤다! 👑','오늘의 왕관, 도감에 있는 친구들한테 다 자랑했어! 👑✨','왕관은 하루지만 그걸 쓴 기억은 평생 남는다네 👑','왕관 쓴 주인님 그리는 중 — 완성되면 제일 잘 보이는 곳에 걸어 둘게 🎨👑'], // [v9.69] 3→6 — 왕관 단골 학생 반복 체감 보강
+  bday: ['오늘은 주인공의 날! 내가 세상에서 제일 먼저 축하해 🎂🎉','생일 축하하네 — 그대가 태어나 나도 태어날 수 있었지 🎂','일 년 중 제일 반짝이는 날! 오늘은 공부보다 축하가 먼저야 🎈','태어나 줘서 고마워 — 덕분에 나의 세계가 생겼어 🎁'], // [v9.69] 2→4 — 내년 같은 날 같은 문장 확률 50%→25%
   idle: [
     ['오늘은 구름 구경 중 ☁️ 주인님은 뭐 해?','시냅스 씨앗 심는 연습 하고 이떠(있어) 🌱','하품 크게 하고 기지개! 오늘도 화이팅 🐣'],
     ['월요일은 몬스터도 살짝 졸려… 같이 힘내 보자 ☀️','오늘 급식(간식) 뭐야? 나도 궁금해 🍙','네 필통 속에서 낮잠 자는 상상했어 😴'],
     ['고요한 날에도 시냅스는 자라는 법이라네 🍃','오늘의 바람에서 가을 냄새가 나는군 — 배움하기 좋은 날씨야','천천히 가도 괜찮네. 방향이 맞다면 말일세 🧭']]
 };
 // [v9.16] 💬 학부모 대화 카드 — 몽골어 질문 로테이션 (아이에게 이렇게 물어보세요)
+// [v9.69] 4→12문항 확장 — 4개 로테이션은 평균 4일 주기 재노출(전 뱅크 중 최박)로 "매일 같은 카드" 체감의
+//   주범이었다. 추가 8문항은 단문·기초 구문만 사용(⚠ 배포 전 원어민 검수 큐: 에리카쌤 — 기존 4문항은 기라이브라 불변)
 const PARENT_Q = [
   '«Өнөөдөр юу сурсан бэ? Надад зааж өгөөч!» (오늘 뭐 배웠어? 나한테 가르쳐줘!)',
   '«{t} гэдгийг ашиглаад нэг өгүүлбэр хэлээд өгөөч!» (그 표현으로 문장 하나 만들어줘!)',
   '«Өнөөдөр багш чамайг юу гэж магтсан бэ?» (오늘 선생님이 뭐라고 칭찬하셨어?)',
-  '«Солонгос хэлээр надад мэндлээд үзээч!» (한국어로 나한테 인사해줘!)'
+  '«Солонгос хэлээр надад мэндлээд үзээч!» (한국어로 나한테 인사해줘!)',
+  '«Өнөөдөр ангид хамгийн сонирхолтой юу байсан бэ?» (오늘 수업에서 제일 재미있었던 게 뭐야?)',
+  '«Чиний монстр одоо ямар байгаа вэ? Надад үзүүлээч!» (네 몬스터 지금 어때? 나한테 보여줘!)',
+  '«Солонгосоор нэг дуу дуулаад өгөөч!» (한국어로 노래 한 소절 불러줘!)',
+  '«Өнөөдөр шинэ үг хэдийг сурсан бэ?» (오늘 새 단어 몇 개 배웠어?)',
+  '«Найзууддаа солонгосоор юу гэж хэлдэг вэ?» (친구들한테 한국어로 뭐라고 말해?)',
+  '«Энэ долоо хоногт хэдэн оноо цуглуулсан бэ?» (이번 주에 포인트 몇 개 모았어?)',
+  '«Солонгос хэл сурахад юу хамгийн хэцүү вэ?» (한국어 배울 때 뭐가 제일 어려워?)',
+  '«Багшийгаа солонгосоор юу гэж дууддаг вэ?» (선생님을 한국어로 뭐라고 불러?)'
 ];
 
 function speakTone_(idx) { return idx <= 2 ? 0 : (idx <= 5 ? 1 : 2); }
@@ -6569,8 +6588,10 @@ function buildMonthlyStorybook_() {
     if (String(r[0]) === ym) world = { hp: Number(r[2]) || 0, dmg: Number(r[3]) || 0, win: String(r[4]) === '격파' };
   });
   const rvA = duel ? duel.a : '옆 반';
-  const bN = boss.name.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim();
-  const wN = wb.name.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim();
+  // [v9.69] 변형 선택자(U+FE0E/FE0F)·ZWJ(U+200D)까지 함께 제거 — 🕳️처럼 "이모지+FE0F" 조합에서 FE0F만 남아
+  //   제목이 "제로 ️와"로 렌더되던 고아 문자 결함 수리(기발간 행은 sheetSelfHeal_이 청소)
+  const bN = boss.name.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0E\uFE0F\u200D]/gu, '').trim();
+  const wN = wb.name.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0E\uFE0F\u200D]/gu, '').trim();
   const J = josa;
   const usedNames = {};
   pick.forEach(s => usedNames[s] = 1);
@@ -6738,6 +6759,101 @@ function buildMonthlyStorybook_() {
   addNotice(ss, '📖 싱크 스토리 제' + issue + '호 발간!',
     '「' + title + '」 — ' + SC[0] + '에서 펼쳐진 우리들의 ' + mNum + '월 이야기. 앱의 싱크 스토리에서 읽어보세요.');
   Logger.log('스토리북 ' + ym + ' 제' + issue + '호(v5 단일본·주연 ' + M.n + '): 전문 1행 · 본문 ' + bodyChars + '자 ≈ ' + readMin + '분');
+}
+
+// [v9.69] 🩹 시트 자기치유 — 매일 밤 1회(nightJobs 편승·멱등·변경 없으면 쓰기 0):
+//   ① 스토리북 구형 분권 호 병합 — v9.50이 "전문 1행" 발간으로 바꿨지만 기발간 호(13행 분권)는 마이그레이션이
+//      없어 소식탭에 표지·제1화…크레딧이 파편으로 늘어서던 잔재(유호 07-27 실관찰)를 v9.50 조립식 그대로
+//      전문 1행으로 병합한다. 챕터 오름차순 정렬·수기 각색 본문 보존·문법 배지 dedupe. 첫 행에 덮어쓰고
+//      나머지 행은 물리 삭제(Row ID 등 코드 밖 열은 행 단위로 함께 정리되어 정합 유지).
+//   ② 고아 변형 선택자 청소 — 구 이모지 제거 정규식이 U+FE0E/FE0F를 남겨 "제로 ️와"처럼 렌더되던 잔재를
+//      제목·본문·공지에서 제거(이모지 뒤의 정상 변형 선택자는 보존 — 비이모지 문자 뒤 고아만).
+//   ③ world_raid 같은 달 중복 행 정리 — 데모 로스터 시절 소환·재실행 잔재로 월 행이 여러 개 쌓인 것을
+//      1행으로 줄인다(누적데미지는 최대값 보존). 이번 달 진행중 행은 HP를 현재 재적 기준으로 재산정 —
+//      중복이 있었을 때만 손대므로 정상 단일 행의 "소환 시 HP 고정" 설계는 불변.
+function orphanVsClean_(v) { // 비이모지 문자 뒤에 남은 변형 선택자만 제거(한글·숫자·공백·닫는따옴표 등)
+  return String(v == null ? '' : v).replace(/([\uAC00-\uD7A3\w\s.,\u00B7\u300D\u300F\u201D\x22\x27)\]])[\uFE0E\uFE0F]+/g, '$1');
+}
+function sheetSelfHeal_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  // ①+② 스토리북
+  const sb = ss.getSheetByName('synk_stories');
+  if (sb && sb.getLastRow() >= 2) {
+    const n = sb.getLastRow() - 1;
+    const data = sb.getRange(2, 1, n, 8).getValues();
+    const byYm = {};
+    data.forEach((r, i) => { const ym = String(r[0] || ''); if (ym) (byYm[ym] = byYm[ym] || []).push(i); });
+    const dupMonths = Object.keys(byYm).filter(ym => byYm[ym].length >= 2).sort();
+    const delRows = []; // 시트 실제 행 번호(2-base)
+    dupMonths.forEach(ym => {
+      const idxs = byYm[ym];
+      const rows = idxs.map(i => data[i]).sort((a, b) => (Number(a[3]) || 0) - (Number(b[3]) || 0));
+      const full = rows.map(r => { const ch = Number(r[3]) || 0;
+        return (ch >= 1 && ch <= 11 ? '― ' + r[4] + ' ―\n' : (ch === 12 ? '\n' : '')) + String(r[5] || ''); }).join('\n\n');
+      const badges = rows.map(r => String(r[6] || '')).filter(String);
+      const uniq = badges.filter((b, k) => badges.indexOf(b) === k).join('  ·  ');
+      const keep = Math.min.apply(null, idxs); // 물리적으로 가장 위 행에 병합본을 쓴다
+      sb.getRange(keep + 2, 1, 1, 8).setValues([[ym, rows[0][1], orphanVsClean_(rows[0][2]), 1, '전문', orphanVsClean_(full), uniq, '']]);
+      idxs.forEach(i => { if (i !== keep) delRows.push(i + 2); });
+      Logger.log('자기치유: 스토리북 ' + ym + '호 ' + idxs.length + '행 → 전문 1행 병합');
+    });
+    delRows.sort((a, b) => b - a).forEach(rn => sb.deleteRow(rn)); // 아래부터 삭제(행번호 밀림 방지)
+    // ② 병합 대상이 아니어도 제목·본문의 고아 선택자는 청소(변경분만 쓰기)
+    if (sb.getLastRow() >= 2) {
+      const n2 = sb.getLastRow() - 1;
+      const tv = sb.getRange(2, 3, n2, 1).getValues(); const bv = sb.getRange(2, 6, n2, 1).getValues();
+      let chT = false, chB = false;
+      for (let i = 0; i < n2; i++) {
+        const t2 = orphanVsClean_(tv[i][0]); if (t2 !== String(tv[i][0] || '')) { tv[i][0] = t2; chT = true; }
+        const b2 = orphanVsClean_(bv[i][0]); if (b2 !== String(bv[i][0] || '')) { bv[i][0] = b2; chB = true; }
+      }
+      if (chT) sb.getRange(2, 3, n2, 1).setValues(tv);
+      if (chB) sb.getRange(2, 6, n2, 1).setValues(bv);
+    }
+  }
+  // ② 공지 제목·본문 고아 선택자 청소(헤더 이름 기반 — 한/몽 4열)
+  const nt = ss.getSheetByName('notices');
+  if (nt && nt.getLastRow() >= 2) {
+    const hdr = nt.getRange(1, 1, 1, nt.getLastColumn()).getValues()[0].map(String);
+    ['title_ko', 'body_ko', 'title_mn', 'body_mn'].forEach(cn => {
+      const c = hdr.indexOf(cn) + 1; if (!c) return;
+      const nv = nt.getRange(2, c, nt.getLastRow() - 1, 1).getValues();
+      let ch = false;
+      nv.forEach(r => { const v2 = orphanVsClean_(r[0]); if (v2 !== String(r[0] || '')) { r[0] = v2; ch = true; } });
+      if (ch) nt.getRange(2, c, nt.getLastRow() - 1, 1).setValues(nv);
+    });
+  }
+  // ③ world_raid 월 중복 정리
+  const wr = ss.getSheetByName('world_raid');
+  if (wr && wr.getLastRow() >= 2) {
+    const tz = ss.getSpreadsheetTimeZone();
+    const ymNow = Utilities.formatDate(new Date(), tz, 'yyyy-MM');
+    const n3 = wr.getLastRow() - 1;
+    const wd = wr.getRange(2, 1, n3, 5).getValues();
+    const byM = {};
+    wd.forEach((r, i) => { const ym = String(r[0] || ''); if (ym) (byM[ym] = byM[ym] || []).push(i); });
+    const del2 = [];
+    Object.keys(byM).filter(ym => byM[ym].length >= 2).forEach(ym => {
+      const idxs = byM[ym];
+      const rows = idxs.map(i => wd[i]);
+      const maxDmg = Math.max.apply(null, rows.map(r => Number(r[3]) || 0));
+      const won = rows.some(r => String(r[4]) === '격파');
+      const keep = Math.min.apply(null, idxs);
+      let hp = Number(wd[keep][2]) || 0, st = won ? '격파' : String(wd[keep][4] || '진행중'), nm = String(wd[keep][1] || '');
+      if (ym === ymNow && !won) { // 진행중인 이번 달만 현재 재적으로 HP 재산정(중복 존재 시 한정)
+        let stu = 0;
+        const pfH = ss.getSheetByName('profiles');
+        if (pfH && pfH.getLastRow() >= 2) pfH.getRange(2, 1, pfH.getLastRow() - 1, 5).getValues()
+          .forEach(pr => { if (pr[0] && pr[3] === 'student') stu++; });
+        hp = Math.max(stu, 1) * WORLD_HP_PER; st = '진행중';
+        const wbH = worldBossOf(ss); if (wbH && wbH.name) nm = wbH.name;
+      }
+      wr.getRange(keep + 2, 1, 1, 5).setValues([[ym, nm, hp, maxDmg, st]]);
+      idxs.forEach(i => { if (i !== keep) del2.push(i + 2); });
+      Logger.log('자기치유: world_raid ' + ym + ' ' + idxs.length + '행 → 1행(HP ' + hp + '·데미지 ' + maxDmg + ')');
+    });
+    del2.sort((a, b) => b - a).forEach(rn => wr.deleteRow(rn));
+  }
 }
 
 // [v9.6] 🌍 월드 레이드 — 학원 전체 vs 망각의 대군주 (월간 · 반 보스들의 배후 = 스토리북 최종 보스)
@@ -9127,7 +9243,7 @@ function translateContents() {
   const base = ct.getRange(2, 1, last - 1, 6).getValues(); // A~F
   const mnV = ct.getRange(2, mnCol, last - 1, 1).getValues();
   const enV = ct.getRange(2, enCol, last - 1, 1).getValues();
-  const targets = ['quote', 'braintip', 'homework', 'monster', 'season'];
+  const targets = ['quote', 'braintip', 'homework', 'monster', 'season', 'grammar']; // [v9.69] grammar 편입 — setupGrammarBank 주석(v9.38d)은 "포함"이라 했으나 실제 배열에 없어 G열 몽골어 초기화 시 자동 복원 경로가 끊겨 있던 주석-코드 불일치 수리(빈칸만 채우므로 큐레이션 번역은 불변)
   let done = 0;
   for (let i = 0; i < base.length && done < 60; i++) {
     const r = base[i];
@@ -11816,6 +11932,7 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   safeRun('checkEvolution', checkEvolution);
   safeRun('checkAchievements', checkAchievements);
   safeRun('checkUnknownReasonsNightly', checkUnknownReasonsNightly_); // [v9.28] 미인식 reason 발각 지연 7일→1일
+  safeRun('sheetSelfHeal', sheetSelfHeal_); // [v9.69] 스토리북 구형 분권 병합·고아 변형 선택자 청소·world_raid 월 중복 정리 — 멱등·변경 없으면 쓰기 0
   safeRun('translateContentsNightly', translateContents); // [v9.41·자동화] 빈 몽골어·영어 번역을 매일 밤 60행씩 자동 소진 — "translateContents 수동 반복 실행" 절차 제거(빈칸 없으면 API 호출 0)
   safeRun('aiFeedbackBatch', aiFeedbackBatch_); // [v9.49] 숙제폼 제출분 AI 첨삭 생성 — CLAUDE_API_KEY 없으면 0초 스킵
   safeRun('aiStudioBatch', aiStudioBatch_); // [v9.50] AI 스튜디오 — 오늘의 한 문장·개인 퀴즈(H1/A1/A2/A4)·오류사전(G)·반 브리핑(H5)·리텐션 멘트(E5). 키 없으면 0초 스킵
