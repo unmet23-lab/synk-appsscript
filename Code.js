@@ -735,7 +735,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.76'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고
+const SYNK_VERSION = 'v9.77'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고 · [v9.77] profiles 무결성 3면 감시 — Glide 상세 화면 Edit/Add 잔재 실측(07-28) 후속: 유령 행(user_id 공란, 기존 !r[0] 스킵의 사각)·user_id 중복·무효 role을 nightJobs(매일·이상 시에만 메일·동일 내용 dedup)+주간 워치독+preflight 3면에서 자동 발각
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -7609,6 +7609,53 @@ function textbookLinkOn_(ssOpt) {
 //   "조용한 주간 + 오늘 새 제출"(정상)이 낮 preflight에서 허위 경보가 된다 · >1 = 밤 배치를 최소 1회 지나쳤는데 미처리.
 //   fbAge = hw_feedback 마지막 행 생성 나이(일 · ID 'FByyyyMMdd-'에 생성일이 박힘) — 메일 문맥용 · -1=이력/판독 없음.
 //   키 값 자체는 절대 반환·기록하지 않는다(존재 여부 boolean만) — 로그·메일 노출 금지 원칙.
+/* [v9.77] profiles 무결성 코어 — Glide 상세 화면 Edit/Add 잔재 사고(2026-07-28 유호 실측: 반 상세에서
+ *   강사가 profiles 생 행 추가·class_stats 편집 가능) 후속. 레이아웃 구멍은 편집기에서 막았지만
+ *   "다시 열려도 오염을 기계가 잡는" 층이 없었다: 기존 preflight 루프는 `if (!r[0]) return`이라
+ *   user_id 공란 유령 행을 영원히 못 보고, user_id 중복은 어디에도 없었으며, 전부 수동 ▶ 전용이었다.
+ *   순수 함수(시트 미접촉) — tests/safety.test.js가 직접 실행 검증. rows = profiles 2행~ 원시값. */
+function profilesIntegrityCore_(rows) {
+  const ROLES = { student: 1, parent: 1, teacher: 1, director: 1 };
+  const ghost = [], dupId = [], badRole = [];
+  const seen = {};
+  (rows || []).forEach(function (r, i) {
+    const id = String(r[0] || '').trim(), nm = String(r[1] || '').trim();
+    const role = String(r[3] || '').trim(), em = String(r[6] || '').trim();
+    if (!id) {
+      if (nm || role || em) ghost.push((i + 2) + '행(' + (nm || role || em) + ')'); // 완전 빈 행은 무해 — 내용 있는 무ID 행만
+      return;
+    }
+    if (seen[id]) dupId.push(id); else seen[id] = 1;
+    if (!ROLES[role]) badRole.push((nm || id) + '(' + (role || '빈값') + ')');
+  });
+  return { ghost: ghost, dupId: dupId, badRole: badRole,
+    clean: !ghost.length && !dupId.length && !badRole.length };
+}
+
+// [v9.77] 시트 래퍼 + 야간 자동 통보(nightJobs 편입). 이상 시그니처를 scriptProperty에 저장해
+//   같은 이상은 하루 1통으로 끝(매일 반복 소음 0) · 내용이 변하면 즉시 재통보 · 해소되면 키 삭제.
+function profilesIntegrityScan_(ss) {
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return profilesIntegrityCore_([]);
+  return profilesIntegrityCore_(pf.getRange(2, 1, pf.getLastRow() - 1, 10).getValues());
+}
+function profilesIntegrityNightly_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const chk = profilesIntegrityScan_(ss);
+  const props = PropertiesService.getScriptProperties();
+  const KEY = '프로필무결성통보';
+  if (chk.clean) { if (props.getProperty(KEY)) props.deleteProperty(KEY); return; }
+  const lines = [];
+  if (chk.ghost.length) lines.push('· 유령 행(user_id 공란인데 내용 있음 — 앱 Add 폼/수기 추가 흔적): ' + chk.ghost.join(', ') + ' → profiles에서 해당 행 삭제(또는 user_id 채움)');
+  if (chk.dupId.length) lines.push('· user_id 중복(로그인·집계가 첫 행만 물어 나머지는 유실): ' + chk.dupId.join(', ') + ' → 중복 행 정리');
+  if (chk.badRole.length) lines.push('· 무효 role(그 사람 탭 Visibility 전멸): ' + chk.badRole.join(', ') + ' → student/parent/teacher/director로 교정');
+  const sig = lines.join('|').slice(0, 8000); // 9KB 보호
+  if (props.getProperty(KEY) === sig) return; // 동일 이상은 재통보 안 함
+  adminMail('[SYNK] 🧬 profiles 무결성 이상 ' + (chk.ghost.length + chk.dupId.length + chk.badRole.length) + '건',
+    lines.join('\n') + '\n\n학생 등록 정본은 상담시트→syncProfiles입니다. 앱/시트에서 직접 만든 행이 의심돼요. (같은 내용이면 다시 알리지 않습니다 — 내용이 바뀌거나 해소되면 자동 갱신)');
+  props.setProperty(KEY, sig);
+}
+
 function aiFeedbackHealth_(ss) {
   const props = PropertiesService.getScriptProperties();
   const hasKey = !!props.getProperty('CLAUDE_API_KEY');
@@ -7844,6 +7891,17 @@ function systemWatchdog(asText) {
         + (stale ? (ai.hasKey ? ' — 밤 배치가 지나쳤는데 남아 있음, 실패 의심(aiFeedbackBatch 실행 기록·키 유효성 확인)' : ' — 키 미설정이 원인, 설정 즉시 다음 밤 자동 소진')
           : ' (다음 밤 자동 소진 예정)')));
   } catch (e) { add(false, 'AI 첨삭 계기 점검 실패: ' + e); }
+
+  // [v9.77] 9) profiles 무결성 — 앱 Edit/Add 잔재·수기 오염이 만든 유령 행/중복 ID/무효 role.
+  //   야간 통보(profilesIntegrityNightly_)는 이상 시에만 오므로, 주간 리포트에는 상태를 상시 표기.
+  try {
+    const pi = profilesIntegrityScan_(ss);
+    add(pi.clean, 'profiles 무결성: ' + (pi.clean ? '유령 행·중복 ID·무효 role 없음'
+      : (pi.ghost.length ? '유령 행 ' + pi.ghost.length + '건(' + pi.ghost.join(', ') + ') ' : '')
+      + (pi.dupId.length ? 'user_id 중복 ' + pi.dupId.length + '건(' + pi.dupId.join(', ') + ') ' : '')
+      + (pi.badRole.length ? '무효 role ' + pi.badRole.length + '건(' + pi.badRole.join(', ') + ')' : '')
+      + '— 정본은 상담시트→syncProfiles, 직접 만든 행 정리 필요'));
+  } catch (e) { add(false, 'profiles 무결성 점검 실패: ' + e); }
 
   const report = '🛡️ SYNK 시스템 워치독 · ' +
     Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm') + '\n\n' + out.join('\n') +
@@ -12060,6 +12118,12 @@ function preflightGlide() {
   }
   L.push('— profiles: 학생 ' + cnt.student + ' · 학부모 ' + cnt.parent + ' · 강사 ' + cnt.teacher + ' · 원장 ' + cnt.director);
   if (badRole.length) warn('알 수 없는 role(탭 Visibility 전멸): ' + badRole.join(', ') + ' → student/parent/teacher/director만 유효');
+  { // [v9.77] 위 루프는 !r[0] 스킵이라 유령 행·중복 ID를 구조적으로 못 본다 — 코어 스캔으로 보강
+    const pi = profilesIntegrityScan_(ss);
+    if (pi.ghost.length) warn('유령 행(user_id 공란인데 내용 있음 — 앱 Add/수기 흔적, 어떤 집계에도 안 잡힘): ' + pi.ghost.join(', ') + ' → 행 삭제 또는 user_id 채움');
+    if (pi.dupId.length) warn('user_id 중복(로그인·카드열이 첫 행만 연결): ' + pi.dupId.join(', ') + ' → 중복 행 정리');
+    if (!pi.ghost.length && !pi.dupId.length) ok('유령 행·중복 user_id 없음');
+  }
   if (badEmail.length) warn('이메일 없음/형식 오류(그 사람 로그인 불가): ' + badEmail.join(', '));
   if (emailDup.length) warn('이메일 중복(로그인 시 첫 행만 연결됨): ' + emailDup.join(', '));
   if (noClassStu.length) warn('반 미배정 학생(강사 반 리스트·반 통계·레이드에 안 뜸): ' + noClassStu.join(', ') + ' → 상담시트 "반" 열 입력, 내일 아침 자동 반영(즉시 반영 = syncProfiles 실행 후 preflightGlide 재실행)');
@@ -12250,6 +12314,7 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   safeRun('checkAchievements', checkAchievements);
   safeRun('checkUnknownReasonsNightly', checkUnknownReasonsNightly_); // [v9.28] 미인식 reason 발각 지연 7일→1일
   safeRun('sheetSelfHeal', sheetSelfHeal_); // [v9.69] 스토리북 구형 분권 병합·고아 변형 선택자 청소·world_raid 월 중복 정리 — 멱등·변경 없으면 쓰기 0
+  safeRun('profilesIntegrityNightly', profilesIntegrityNightly_); // [v9.77] 유령 행·user_id 중복·무효 role 매일 감시 — 이상 시에만 메일(동일 내용 dedup), 3열 읽기라 비용 0
   safeRun('translateContentsNightly', translateContents); // [v9.41·자동화] 빈 몽골어·영어 번역을 매일 밤 60행씩 자동 소진 — "translateContents 수동 반복 실행" 절차 제거(빈칸 없으면 API 호출 0)
   safeRun('aiFeedbackBatch', aiFeedbackBatch_); // [v9.49] 숙제폼 제출분 AI 첨삭 생성 — CLAUDE_API_KEY 없으면 0초 스킵
   safeRun('aiStudioBatch', aiStudioBatch_); // [v9.50] AI 스튜디오 — 오늘의 한 문장·개인 퀴즈(H1/A1/A2/A4)·오류사전(G)·반 브리핑(H5)·리텐션 멘트(E5). 키 없으면 0초 스킵

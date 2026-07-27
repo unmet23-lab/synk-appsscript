@@ -1022,3 +1022,42 @@ test('[v9.76] 리텐션 레이더·학생수는 role=student만 — 원장·강�
   assert.ok(code.includes("setState(st, '학생수', curStuIds.length)"), "'학생수'가 role=student 기준이 아니다");
   assert.ok(!code.includes('const count = pfData.filter(r => r[0]).length'), '구 전체 행 수 count가 살아 있다');
 });
+
+test('[v9.77] profiles 무결성 감시 — 유령 행·중복 ID·무효 role을 매일 자동 발각', () => {
+  // 2026-07-28 실측: Glide 반 상세 화면에 Edit(class_stats)·+Add(profiles 생 행) 잔재 —
+  // 레이아웃 구멍은 편집기에서 닫았지만, 다시 열려도 오염을 기계가 잡는 층이 없었다.
+  // 기존 preflight 루프는 `if (!r[0]) return`이라 user_id 공란 유령 행을 구조적으로 못 본다.
+  const core = loadFunction('function profilesIntegrityCore_', '\nfunction aiFeedbackHealth_',
+    'profilesIntegrityCore_', {});
+  // 정상: 4역할 + 완전 빈 행(무해)
+  const okRes = core([
+    ['SYNK-001', '김재헌', '', 'student', '정규반1', '', 'a@b.c'],
+    ['SYNK-T01', '강사', '', 'teacher', '정규반1', '', 't@b.c'],
+    ['SYNK-D01', '원장', '', 'director', '', '', 'd@b.c'],
+    ['SYNK-P01', '학부모', '', 'parent', '', '', 'p@b.c'],
+    ['', '', '', '', '', '', ''],
+  ]);
+  assert.equal(okRes.clean, true, '정상 데이터가 오탐된다');
+  // 유령: user_id 공란 + 내용 있음(앱 Add 폼이 만드는 형태)
+  const ghostRes = core([['', '홍길동', '', '', '', '', '']]);
+  assert.equal(ghostRes.ghost.length, 1, 'user_id 공란 유령 행을 못 잡는다');
+  assert.ok(ghostRes.ghost[0].includes('홍길동'), '유령 행 라벨에 단서(이름)가 없다');
+  // 중복 ID + 무효 role
+  const dupRes = core([
+    ['SYNK-001', 'A', '', 'student', '', '', 'a@b.c'],
+    ['SYNK-001', 'B', '', 'studnet', '', '', 'b@b.c'],
+  ]);
+  assert.equal(dupRes.dupId.length, 1, 'user_id 중복을 못 잡는다');
+  assert.equal(dupRes.badRole.length, 1, '무효 role(오타)을 못 잡는다');
+  // 소비처 3면: 야간 배치(매일)·주간 워치독·preflight 보강이 전부 배선돼 있어야 한다
+  const night = section('function nightJobs()', '// [v9.28] 완주 마커');
+  assert.ok(night.includes("safeRun('profilesIntegrityNightly', profilesIntegrityNightly_)"), 'nightJobs에 야간 무결성 감시가 없다');
+  const wd = section('function systemWatchdog(', "const report = '🛡️ SYNK 시스템 워치독");
+  assert.ok(wd.includes('profilesIntegrityScan_(ss)'), '주간 워치독에 무결성 항목이 없다');
+  const pfChk = section('// 2) profiles 진단', '// [v9.40] 잔액 음수 검사');
+  assert.ok(pfChk.includes('pi.ghost'), 'preflight가 여전히 유령 행을 못 본다(!r[0] 스킵만 존재)');
+  // 통보는 동일 내용 dedup(매일 같은 메일 소음 금지) + 해소 시 키 삭제
+  const notif = section('function profilesIntegrityNightly_', '\nfunction aiFeedbackHealth_');
+  assert.ok(notif.includes("props.getProperty(KEY) === sig) return"), '동일 이상 재통보 dedup이 없다');
+  assert.ok(notif.includes('props.deleteProperty(KEY)'), '해소 시 시그니처 키를 지우지 않는다(재발 감지 불가)');
+});
