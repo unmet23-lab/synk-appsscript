@@ -109,6 +109,14 @@
       </div>
     </div>
 
+    <div class="fld" id="handFld">
+      <label>페이지 잡은 손 (1안 전용)</label>
+      <div class="seg" id="hand">
+        <button data-v="0" class="on">없음</button>
+        <button data-v="1">있음</button>
+      </div>
+    </div>
+
     <div class="fld" id="ptFld">
       <label>책 지면의 글줄 (1안 전용)</label>
       <div class="seg" id="pagetext">
@@ -208,7 +216,7 @@ var SCENES = [
 ];
 
 var S = { scene:'lap', ratio:'4:5', ramp:'ember', camt:0.45, dens:1.0, met:1,
-          bh:true, pagetext:true,
+          bh:true, pagetext:true, hand:false,
           txt:true, onpage:0, label:'SYNK LAB',
           copy:'3개월 뒤,\n말이 트입니다', meta:'시즌 1 · 선착순 24명' };
 var SEEDS = { lap:11, stove:23, window:37, desk:51, ger:73 };
@@ -413,23 +421,34 @@ function meteorBH(P,PC,W,H,u,k,bh){
 /* ================= 장면 1 · 무릎 위의 우주 ================= */
 /* 1인칭으로 내려다본 자기 두 다리 — 담요가 아니라 신체(유호님 2026-07-28).
    원기둥 셰이딩(축까지 거리 → 법선)으로 볼륨을 만든다. 윤곽선은 긋지 않는다. */
-var LEG={ sepA:0.268, sepB:0.222, radA:0.300, radB:0.238, base:1.02, knee:0.792 };
+/* 지평선을 두지 않는다 — 별이 다리 좌우·아래까지 이어져야 우주에 떠 있는 것이 된다 */
+var LEG={ sepA:0.256, sepB:0.222, radA:0.205, radB:0.174, base:1.02, knee:0.800 };
+var KNEECAP=0.062;
 function legAt(nx,ny){
-  var t=cl((LEG.base-ny)/(LEG.base-LEG.knee),0,1);
-  var sep=LEG.sepA+(LEG.sepB-LEG.sepA)*t;
-  var rad=LEG.radA+(LEG.radB-LEG.radA)*t;
+  var t=(LEG.base-ny)/(LEG.base-LEG.knee), sep, rad;
+  if(t<0) return null;
+  if(t<=1){
+    sep=LEG.sepA+(LEG.sepB-LEG.sepA)*t;
+    rad=LEG.radA+(LEG.radB-LEG.radA)*t;
+  } else {
+    /* 무릎 위쪽은 둥글게 마감된다 — 수평으로 자르면 판자가 된다 */
+    var over=(t-1)*(LEG.base-LEG.knee);
+    if(over>KNEECAP) return null;
+    var q=over/KNEECAP;
+    sep=LEG.sepB;
+    rad=LEG.radB*Math.sqrt(Math.max(0,1-q*q));
+  }
+  rad *= 1+(fbm(ny*17+2.9, 5.7, 3)-0.5)*0.075;   /* 윤곽이 자로 잰 듯하면 안 된다 */
   var cxL=0.5-sep, cxR=0.5+sep;
   var dL=Math.abs(nx-cxL), dR=Math.abs(nx-cxR), d, side, cx;
   if(dL<dR){ d=dL; side=-1; cx=cxL; } else { d=dR; side=1; cx=cxR; }
   if(d>rad) return null;
-  return [d/rad, side, t, cx, rad];
+  return [d/rad, side, cl(t,0,1), cx, rad];
 }
-function kneeTop(nx){
-  var sep=LEG.sepB, rad=LEG.radB;
-  var d=Math.min(Math.abs(nx-(0.5-sep)), Math.abs(nx-(0.5+sep)));
-  if(d>rad) return 0.845 + (fbm(nx*4.2, 8.3, 2)-0.5)*0.022;   /* 다리 밖 = 낮은 지평선 */
-  var s=d/rad;
-  return LEG.knee - 0.038*Math.sqrt(Math.max(0,1-s*s)) + (fbm(nx*9,4.1,2)-0.5)*0.008;
+/* 각 x에서 다리가 시작되는 y를 실제로 훑어 구한다(반경이 y에 따라 변하므로 식으로 못 푼다) */
+function legTopScan(nx){
+  for(var y=LEG.knee-KNEECAP; y<1.02; y+=0.0010){ if(legAt(nx,y)) return y; }
+  return 1.10;
 }
 /* 책은 무릎 위에 얹힌다. 좌우를 일부러 다르게 — 완전 대칭이면 관(棺)처럼 보인다 */
 var BT=0.638, BB=0.862;
@@ -438,7 +457,7 @@ function bookGeom(nx,ny){
   if(t<0||t>1) return null;
   /* 접힘선도 곧지 않다 */
   var cx = 0.5 + 0.022*t + Math.sin(t*2.6)*0.008;
-  var half = (nx<cx) ? (0.168+0.128*t) : (0.186+0.156*t);
+  var half = (nx<cx) ? (0.158+0.118*t) : (0.174+0.144*t);
   half += (fbm(ny*26+5.5, 3.3, 3)-0.5)*0.014;      /* 가장자리 미세 굴곡 */
   var corner = cl(Math.min(t,1-t)/0.055, 0, 1);
   half *= 0.87+0.13*Math.sqrt(corner);              /* 모서리는 둥글다 */
@@ -448,8 +467,8 @@ function bookGeom(nx,ny){
 }
 function bookTopAt(nx){
   var a=Math.abs(nx-0.5);
-  if(a<0.168) return BT;
-  var t=(a-0.168)/0.128;
+  if(a<0.158) return BT;
+  var t=(a-0.158)/0.118;
   return t>1 ? 9 : BT+t*(BB-BT);
 }
 /* 페이지를 잡은 손 — 얼굴은 넣지 않되(O4) 손은 1인칭 몰입을 만든다.
@@ -504,15 +523,15 @@ function handAt(nx,ny){
 function sceneLap(P,PC,W,H,u){
   var KT=new Float32Array(W), ST=new Float32Array(W), i;
   for(i=0;i<W;i++){
-    KT[i]=kneeTop(i/W);
-    ST[i]=Math.min(KT[i], bookTopAt(i/W));      /* 책 뒤로 별이 비치지 않게 */
+    KT[i]=legTopScan(i/W);
+    ST[i]=Math.min(KT[i], bookTopAt(i/W));      /* 책·다리 뒤로 별이 비치지 않게 */
   }
   var topF=function(nx){ var j=(nx*W)|0; return ST[j<0?0:(j>=W?W-1:j)]; };
   var bh = S.bh ? {x:0.252,y:0.206,r:0.0165} : null;
   sky(P,W,H,topF,{ang:-0.55,cx:0.40,cy:0.20,wid:0.155,bh:bh});
   var lineU = Math.max(1, Math.round(3.4*u));
   field(P,W,H,function(nx,ny,px,py){
-    var hd = handAt(nx,ny);
+    var hd = S.hand ? handAt(nx,ny) : null;
     if(hd){
       var hs=hd[0], ht=hd[1], fi=hd[2];
       var z=Math.sqrt(Math.max(0,1-hs*hs*0.94));
@@ -560,7 +579,7 @@ function sceneLap(P,PC,W,H,u){
           }
         }
       }
-      if(handAt(nx,ny-0.018)) L*=0.52;          /* 손이 지면에 드리우는 그림자 */
+      if(S.hand && handAt(nx,ny-0.018)) L*=0.52;   /* 손이 지면에 드리우는 그림자 */
       L = cl(L,0,1.0);
       return [L, (0.20+0.20*t+lift*0.30)*L];
     }
@@ -572,14 +591,18 @@ function sceneLap(P,PC,W,H,u){
     var z=Math.sqrt(Math.max(0,1-sN*sN));       /* 원기둥 볼륨 */
     var inner = side<0 ? cl((nx-(cx-rad))/(2*rad),0,1) : cl(((cx+rad)-nx)/(2*rad),0,1);
     var fold=fbm(nx*19+3.1, ny*5.2, 3);         /* 옷 주름은 다리 방향으로 길다 */
-    var dxb=nx-0.5, dyb=ny-0.735;
-    var fall=Math.exp(-(dxb*dxb*0.95+dyb*dyb)/0.160);
-    var vig=cl(1.22-Math.sqrt((nx-0.5)*(nx-0.5)*1.15+(ny-0.845)*(ny-0.845)*1.8)/0.52,0,1);
-    var L=z*(0.20+0.80*inner)*fall*(0.46+0.86*fold)*vig;
-    if(ny<kt+0.013) L*=1.46;                    /* 무릎이 빛을 받는다 */
-    var sh=0, g1=bookGeom(nx,ny-0.012), g2=bookGeom(nx,ny-0.036);
-    if(g1) sh=1; else if(g2) sh=0.50;           /* 책이 무릎에 드리우는 그림자 */
-    L*=(1-sh*0.78);
+    var dxb=nx-0.5, dyb=ny-0.740;
+    var fall=Math.exp(-(dxb*dxb*0.95+dyb*dyb)/0.150);
+    /* 아래로 갈수록 어둠에 잠긴다 — 어디서 시작되는지 모를 때 떠 있는 것이 된다 */
+    var bot=cl((1.035-ny)/0.130,0,1);
+    var L=z*(0.20+0.80*inner)*fall*(0.46+0.86*fold)*bot;
+    /* 별빛이 윤곽을 얇게 훑는 rim — 어둠 속에 떠 있음을 만드는 건 이 한 줄이다 */
+    L += Math.pow(sN,12)*0.17*bot*(0.40+0.60*fbm(nx*30,ny*30,2));
+    if(ny<kt+0.010) L*=1.55;                    /* 무릎이 빛을 받는다 */
+    /* 책이 무릎에 드리우는 그림자 — 단을 나누면 검은 띠가 생기므로 거리로 부드럽게 */
+    var sh=0, k;
+    for(k=0;k<4;k++){ if(bookGeom(nx, ny-0.010-k*0.013)){ sh=1-k*0.22; break; } }
+    L*=(1-sh*0.72);
     L=cl(L,0,0.90);
     return [L, L*0.15];
   });
@@ -925,6 +948,7 @@ function syncFields(){
   document.getElementById('onpageFld').style.display=isLap;
   document.getElementById('bhFld').style.display=isLap;
   document.getElementById('ptFld').style.display=isLap;
+  document.getElementById('handFld').style.display=isLap;
 }
 
 function seg(id,key,fn){
@@ -942,6 +966,7 @@ seg('txt','txt',function(v){ return v==='on'; });
 seg('onpage','onpage',function(v){ return +v; });
 seg('bh','bh',function(v){ return v==='1'; });
 seg('pagetext','pagetext',function(v){ return v==='1'; });
+seg('hand','hand',function(v){ return v==='1'; });
 
 document.getElementById('ratio').addEventListener('change',function(e){ S.ratio=e.target.value; all(); });
 ['label','copy','metaTxt'].forEach(function(id){
