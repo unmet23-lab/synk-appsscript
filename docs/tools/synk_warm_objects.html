@@ -109,6 +109,16 @@
       </div>
     </div>
 
+    <div class="fld" id="poseFld">
+      <label>무릎 자세 (1안 전용)</label>
+      <div class="seg" id="pose">
+        <button data-v="1">내려다봄</button>
+        <button data-v="2" class="on">기울인 책</button>
+        <button data-v="3">세워 안기</button>
+        <button data-v="4">1+2 조합</button>
+      </div>
+    </div>
+
     <div class="fld" id="handFld">
       <label>페이지 잡은 손 (1안 전용)</label>
       <div class="seg" id="hand">
@@ -216,7 +226,7 @@ var SCENES = [
 ];
 
 var S = { scene:'lap', ratio:'4:5', ramp:'ember', camt:0.45, dens:1.0, met:1,
-          bh:true, pagetext:true, hand:false,
+          bh:true, pagetext:true, hand:false, pose:2,
           txt:true, onpage:0, label:'SYNK LAB',
           copy:'3개월 뒤,\n말이 트입니다', meta:'시즌 1 · 선착순 24명' };
 var SEEDS = { lap:11, stove:23, window:37, desk:51, ger:73 };
@@ -422,7 +432,34 @@ function meteorBH(P,PC,W,H,u,k,bh){
 /* 1인칭으로 내려다본 자기 두 다리 — 담요가 아니라 신체(유호님 2026-07-28).
    원기둥 셰이딩(축까지 거리 → 법선)으로 볼륨을 만든다. 윤곽선은 긋지 않는다. */
 /* 지평선을 두지 않는다 — 별이 다리 좌우·아래까지 이어져야 우주에 떠 있는 것이 된다 */
-var LEG={ sepA:0.296, sepB:0.266, radA:0.205, radB:0.174, base:1.02, knee:0.800 };
+/* 무릎 자세 3안 (유호님 2026-07-28) — 무릎이 무릎으로 읽히려면 자세부터 다르다
+   1 내려다보는 각도를 키움 · 2 책을 한쪽으로 기울여 반대 무릎 노출 · 3 무릎을 세워 안음 */
+var LEG, KNEECAP, BOOK, LIGHT;
+function applyPose(n){
+  if(n===1){
+    LEG={ sepA:0.290, sepB:0.272, radA:0.212, radB:0.198, base:0.995, knee:0.766 };
+    KNEECAP=0.118;
+    BOOK={ bt:0.706, bb:0.852, hl0:0.180, hl1:0.130, hr0:0.196, hr1:0.152, rot:0, cx:0.5 };
+    LIGHT=0.778;
+  } else if(n===4){
+    /* 1의 시점 + 2의 기울인 책 — 무릎은 온전히 보이고 책은 방금 놓인 것처럼 보인다 */
+    LEG={ sepA:0.290, sepB:0.272, radA:0.212, radB:0.198, base:0.995, knee:0.766 };
+    KNEECAP=0.118;
+    BOOK={ bt:0.706, bb:0.852, hl0:0.176, hl1:0.126, hr0:0.192, hr1:0.148, rot:-0.135, cx:0.472 };
+    LIGHT=0.778;
+  } else if(n===3){
+    LEG={ sepA:0.250, sepB:0.278, radA:0.176, radB:0.210, base:0.945, knee:0.632 };
+    KNEECAP=0.148;
+    BOOK={ bt:0.568, bb:0.708, hl0:0.152, hl1:0.104, hr0:0.166, hr1:0.124, rot:0, cx:0.5 };
+    LIGHT=0.644;
+  } else {
+    LEG={ sepA:0.296, sepB:0.266, radA:0.205, radB:0.174, base:1.02, knee:0.800 };
+    KNEECAP=0.052;
+    BOOK={ bt:0.702, bb:0.858, hl0:0.170, hl1:0.124, hr0:0.186, hr1:0.150, rot:-0.155, cx:0.434 };
+    LIGHT=0.768;
+  }
+}
+applyPose(2);
 var KNEECAP=0.052;
 /* 다리는 단순히 가늘어지는 원기둥이 아니다 — 허벅지에서 좁아졌다가 슬개골에서 다시
    볼록해지고 무릎 끝에서 급히 좁아진다. 이 잘록함이 없으면 무릎이 아니라 기둥 끝이 된다 */
@@ -460,25 +497,29 @@ function legTopScan(nx){
 }
 /* 책은 무릎 위에 얹힌다. 좌우를 일부러 다르게 — 완전 대칭이면 관(棺)처럼 보인다 */
 /* 무릎 위에서 내려다본 책은 원근 때문에 세로가 눌린다 — 세로로 길면 석판이 된다 */
-var BT=0.702, BB=0.858;
 function bookGeom(nx,ny){
-  var t = (ny-BT)/(BB-BT);
+  var px=nx, py=ny;
+  if(BOOK.rot){
+    var mid=(BOOK.bt+BOOK.bb)/2, ox=nx-BOOK.cx, oy=ny-mid;
+    var rc=Math.cos(BOOK.rot), rs=Math.sin(BOOK.rot);
+    px=BOOK.cx+ox*rc-oy*rs; py=mid+ox*rs+oy*rc;
+  }
+  var t = (py-BOOK.bt)/(BOOK.bb-BOOK.bt);
   if(t<0||t>1) return null;
   /* 접힘선도 곧지 않다 */
-  var cx = 0.5 + 0.020*t + Math.sin(t*2.6)*0.008;
-  var half = (nx<cx) ? (0.170+0.124*t) : (0.186+0.150*t);
-  half += (fbm(ny*30+5.5, 3.3, 3)-0.5)*0.016;      /* 가장자리 미세 굴곡 */
+  var cx = BOOK.cx + 0.020*t + Math.sin(t*2.6)*0.008;
+  var half = (px<cx) ? (BOOK.hl0+BOOK.hl1*t) : (BOOK.hr0+BOOK.hr1*t);
+  half += (fbm(py*30+5.5, 3.3, 3)-0.5)*0.016;      /* 가장자리 미세 굴곡 */
   var corner = cl(Math.min(t,1-t)/0.070, 0, 1);
   half *= 0.86+0.14*Math.sqrt(corner);              /* 모서리는 둥글다 */
-  var off = (nx-cx)/half;
+  var off = (px-cx)/half;
   if(Math.abs(off)>1) return null;
   return [t, off, half];
 }
-function bookTopAt(nx){
-  var a=Math.abs(nx-0.5);
-  if(a<0.170) return BT;
-  var t=(a-0.170)/0.124;
-  return t>1 ? 9 : BT+t*(BB-BT);
+function bookTopScan(nx){
+  var y1=BOOK.bb+0.03;
+  for(var y=BOOK.bt-0.10; y<y1; y+=0.0012){ if(bookGeom(nx,y)) return y; }
+  return 9;
 }
 /* 페이지를 잡은 손 — 얼굴은 넣지 않되(O4) 손은 1인칭 몰입을 만든다.
    실루엣으로 그리면 클립아트가 되므로 손가락도 원기둥 셰이딩으로만 드러낸다 */
@@ -533,7 +574,7 @@ function sceneLap(P,PC,W,H,u){
   var KT=new Float32Array(W), ST=new Float32Array(W), i;
   for(i=0;i<W;i++){
     KT[i]=legTopScan(i/W);
-    ST[i]=Math.min(KT[i], bookTopAt(i/W));      /* 책·다리 뒤로 별이 비치지 않게 */
+    ST[i]=Math.min(KT[i], bookTopScan(i/W));    /* 책·다리 뒤로 별이 비치지 않게 */
   }
   var topF=function(nx){ var j=(nx*W)|0; return ST[j<0?0:(j>=W?W-1:j)]; };
   var bh = S.bh ? {x:0.252,y:0.206,r:0.0165} : null;
@@ -606,10 +647,10 @@ function sceneLap(P,PC,W,H,u){
     var inner = side<0 ? cl((nx-(cx-rad))/(2*rad),0,1) : cl(((cx+rad)-nx)/(2*rad),0,1);
     var fold=fbm(nx*19+3.1, ny*5.2, 3);         /* 옷 주름은 다리 방향으로 길다 */
     /* 빛은 무릎에만 닿고 허벅지는 어둠으로 멀어진다 — 무릎 두 개만 남아야 무릎으로 읽힌다 */
-    var dxb=nx-0.5, dyb=ny-0.768;
+    var dxb=nx-0.5, dyb=ny-LIGHT;
     var fall=Math.exp(-(dxb*dxb*0.80+dyb*dyb*1.35)/0.105);
     /* 아래로 갈수록 어둠에 잠긴다 — 어디서 시작되는지 모를 때 떠 있는 것이 된다 */
-    var bot=cl((1.035-ny)/0.130,0,1);
+    var bot=cl((LEG.base+0.015-ny)/0.130,0,1);
     var L=z*(0.20+0.80*inner)*fall*(0.46+0.86*fold)*bot;
     /* 무릎 윗면은 책빛을 정면으로 받는다 — 이 하이라이트가 슬개골을 만든다 */
     if(lg[5]>=0) L *= 1.55 - 0.55*lg[5]*lg[5];
@@ -938,6 +979,7 @@ function renderTo(canvas,id,W,H){
   canvas.width=W; canvas.height=H;
   var ctx=canvas.getContext('2d'), u=W/1080;
   SEED = SEEDS[id]; RAMP = RAMPS[S.ramp]; DENS = S.dens;
+  applyPose(S.pose);
   ctx.fillStyle=BG; ctx.fillRect(0,0,W,H);
   var img=ctx.getImageData(0,0,W,H);
   DBUF=img.data;
@@ -990,6 +1032,7 @@ function syncFields(){
   document.getElementById('bhFld').style.display=(S.scene==='lap'||S.scene==='window')?'':'none';
   document.getElementById('ptFld').style.display=isLap;
   document.getElementById('handFld').style.display=isLap;
+  document.getElementById('poseFld').style.display=isLap;
 }
 
 function seg(id,key,fn){
@@ -1008,6 +1051,7 @@ seg('onpage','onpage',function(v){ return +v; });
 seg('bh','bh',function(v){ return v==='1'; });
 seg('pagetext','pagetext',function(v){ return v==='1'; });
 seg('hand','hand',function(v){ return v==='1'; });
+seg('pose','pose',function(v){ return +v; });
 
 document.getElementById('ratio').addEventListener('change',function(e){ S.ratio=e.target.value; all(); });
 ['label','copy','metaTxt'].forEach(function(id){
