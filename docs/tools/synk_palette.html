@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK FIELD 팔레트 v1.2</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css">
+<style>
+  :root{ --ink:#101014; --sub:#8A8F98; --line:#E7E5E0; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; padding:38px 40px 60px; background:#FDFCF8; color:var(--ink);
+        font-family:'Pretendard Variable',Pretendard,-apple-system,'Segoe UI','Malgun Gothic',sans-serif; }
+  .wrap{ max-width:1000px; margin:0 auto; }
+  h1{ font-size:19px; font-weight:600; letter-spacing:-.01em; margin:0 0 5px; }
+  .sub{ font-size:12.5px; color:var(--sub); margin:0 0 6px; line-height:1.6; }
+  .sec{ font-size:12px; font-weight:600; letter-spacing:.03em; color:var(--sub);
+        margin:38px 0 13px; padding-bottom:8px; border-bottom:1px solid var(--line); }
+  .row{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .chip{ border-radius:12px; padding:17px 16px; height:124px; cursor:pointer;
+         display:flex; flex-direction:column; justify-content:space-between;
+         border:1px solid rgba(0,0,0,.07); transition:transform .12s ease; }
+  .chip:hover{ transform:translateY(-2px); }
+  .role{ font-size:11.5px; font-weight:500; opacity:.72; }
+  .nm{ font-size:12.5px; font-weight:500; }
+  .hx{ font-size:15px; font-weight:500; letter-spacing:.01em; margin-top:2px; }
+  .use{ font-size:11.5px; color:var(--sub); margin-top:9px; line-height:1.5; }
+  .mp{ border-radius:12px; overflow:hidden; position:relative; height:170px; border:1px solid rgba(0,0,0,.07); }
+  .mp canvas{ display:block; width:100%; height:170px; }
+  .rule{ font-size:13px; line-height:2.05; color:#3F4650; }
+  .rule b{ font-weight:600; color:var(--ink); }
+  .mini{ display:flex; gap:9px; flex-wrap:wrap; }
+  .mini > div{ flex:1; min-width:110px; }
+  .bar{ height:34px; border-radius:8px; }
+  .toast{ position:fixed; left:50%; bottom:34px; transform:translateX(-50%) translateY(20px);
+          background:#0B1A2E; color:#F5F1E8; font-size:12.5px; padding:9px 18px; border-radius:99px;
+          opacity:0; transition:all .18s ease; pointer-events:none; }
+  .toast.on{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>SYNK FIELD 팔레트</h1>
+  <p class="sub">정본 v1.2 · 2026-07-28 확정 — 색 칩을 클릭하면 HEX가 복사됩니다.</p>
+  <p class="sub">바탕과 잉크 2색만 쓴다. 그래서 색 한 점이 형광펜 열 자루 값을 한다.</p>
+
+  <div class="sec">핵심 3색 — 디더 모드에서 쓰는 전부</div>
+  <div class="row">
+    <div>
+      <div class="chip" style="background:#0B1A2E;color:#F5F1E8" data-hex="#0B1A2E">
+        <div class="role">바탕</div>
+        <div><div class="nm">미드나잇 블루</div><div class="hx">#0B1A2E</div></div>
+      </div>
+      <div class="use">모드 A 디더 바탕 · 214° · 채도 61 · 신규</div>
+    </div>
+    <div>
+      <div class="chip" style="background:#F5F1E8;color:#0B1A2E" data-hex="#F5F1E8">
+        <div class="role">잉크</div>
+        <div><div class="nm">웜크림</div><div class="hx">#F5F1E8</div></div>
+      </div>
+      <div class="use">디더 점 · 바탕 대비 15.5 · 순백으로 바꾸지 말 것</div>
+    </div>
+    <div>
+      <div class="chip" style="background:#FF6D00;color:#3B1500" data-hex="#FF6D00">
+        <div class="role">신호</div>
+        <div><div class="nm">에너지 오렌지</div><div class="hx">#FF6D00</div></div>
+      </div>
+      <div class="use">화면당 1점 · 배경 214°의 보색 · 대비 6.19</div>
+    </div>
+  </div>
+
+  <div class="sec">보조 3색 — 타이포·겹침 모드</div>
+  <div class="row">
+    <div>
+      <div class="chip" style="background:#FDFCF8;color:#101014" data-hex="#FDFCF8">
+        <div class="role">바탕</div>
+        <div><div class="nm">웜 화이트</div><div class="hx">#FDFCF8</div></div>
+      </div>
+      <div class="use">모드 B·C 공용 바탕 · 기존 자산</div>
+    </div>
+    <div>
+      <div class="chip" style="background:#101014;color:#FDFCF8" data-hex="#101014">
+        <div class="role">잉크</div>
+        <div><div class="nm">잉크 블랙</div><div class="hx">#101014</div></div>
+      </div>
+      <div class="use">모드 B 대형 타이포 · 신규</div>
+    </div>
+    <div>
+      <div class="chip" style="background:#3D5AFE;color:#E8ECFF" data-hex="#3D5AFE">
+        <div class="role">2도 잉크</div>
+        <div><div class="nm">루미너스 블루</div><div class="hx">#3D5AFE</div></div>
+      </div>
+      <div class="use">모드 C 첫 판 · 오렌지와 겹쳐 세 번째 톤 생성</div>
+    </div>
+  </div>
+
+  <div class="sec">모드별 실제 조합</div>
+  <div class="row">
+    <div>
+      <div class="mp"><canvas id="pv"></canvas>
+        <div style="position:absolute;left:15px;bottom:14px">
+          <div style="width:22px;height:3px;background:#FF6D00;margin-bottom:9px"></div>
+          <div style="font-size:16px;font-weight:600;color:#F5F1E8;line-height:1.3">말이<br>트입니다</div>
+        </div>
+      </div>
+      <div class="use">A 디더 — 바탕·잉크·신호 한 점</div>
+    </div>
+    <div>
+      <div class="mp" style="background:#FDFCF8;padding:16px">
+        <div style="font-size:11.5px;letter-spacing:.16em;color:#98A2B3">02</div>
+        <div style="font-size:38px;font-weight:600;color:#FF6D00;line-height:1;margin-top:13px">8<span style="font-size:17px;color:#101014">주</span></div>
+        <div style="font-size:13px;color:#101014;margin-top:11px;line-height:1.5">한 시즌에 한 권</div>
+      </div>
+      <div class="use">B 타이포 — 숫자 하나만 신호색</div>
+    </div>
+    <div>
+      <div class="mp" style="background:#FDFCF8;isolation:isolate">
+        <div style="position:absolute;left:13%;top:11%;width:56%;height:56%;border-radius:50%;background:#3D5AFE;mix-blend-mode:multiply;opacity:.8"></div>
+        <div style="position:absolute;left:20%;top:17%;width:56%;height:56%;border-radius:50%;background:#FF6D00;mix-blend-mode:multiply;opacity:.72"></div>
+        <div style="position:absolute;left:15px;bottom:14px;font-size:16px;font-weight:600;color:#101014">모집 시작</div>
+      </div>
+      <div class="use">C 겹침 — 2도 잉크가 주인공</div>
+    </div>
+  </div>
+
+  <div class="sec">어길 수 없는 규칙</div>
+  <div class="rule">
+    <b>R1</b> 신호색은 화면당 한 점, 면적 5% 미만 — 눈을 가늘게 떴을 때 색이 한 덩어리로만 보일 것<br>
+    <b>R2</b> 위계는 밀도와 여백으로. 크기·굵기·색을 동시에 쓰지 않는다<br>
+    <b>R3</b> 글자에는 그레인·투명도·그림자·왜곡을 절대 넣지 않는다 — 거친 바탕과 깨끗한 글자의 대비가 이 컨셉의 생명<br>
+    <b>+</b> 교재 다크 스프레드에서는 신호색을 쓰지 않는다 — 교재에서 오렌지는 「받침 없음·오류」 기능색
+  </div>
+
+  <div class="sec">제품층 (앱 UI · 교재 기능색) — 이 팔레트와 별개, 불가침</div>
+  <div class="mini">
+    <div><div class="bar" style="background:#3D5AFE"></div><div class="use">#3D5AFE 받침 있음·주조</div></div>
+    <div><div class="bar" style="background:#FF6D00"></div><div class="use">#FF6D00 받침 없음·오류</div></div>
+    <div><div class="bar" style="background:#FFC400"></div><div class="use">#FFC400 보상·필살기</div></div>
+    <div><div class="bar" style="background:#1A237E"></div><div class="use">#1A237E 교재 본문 잉크</div></div>
+    <div><div class="bar" style="background:#12B76A"></div><div class="use">#12B76A 완료</div></div>
+    <div><div class="bar" style="background:#98A2B3"></div><div class="use">#98A2B3 라벨·보조</div></div>
+  </div>
+
+  <p class="sub" style="margin-top:34px">캐러셀 문법 — 1장 디더 → 가운데 타이포 → 마지막 겹침. 차가움에서 정보로, 정보에서 온기로.</p>
+</div>
+<div class="toast" id="toast">복사됨</div>
+
+<script>
+(function(){
+  var t=document.getElementById('toast'), tm;
+  document.querySelectorAll('.chip').forEach(function(c){
+    c.addEventListener('click', function(){
+      var hex=c.dataset.hex;
+      function done(){ t.textContent=hex+' 복사됨'; t.classList.add('on');
+        clearTimeout(tm); tm=setTimeout(function(){ t.classList.remove('on'); },1400); }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(hex).then(done).catch(fallback);
+      } else fallback();
+      function fallback(){
+        var ta=document.createElement('textarea'); ta.value=hex; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try{ document.execCommand('copy'); done(); }catch(e){}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+
+  function prng(s){ var a=(s>>>0)||1; return function(){ a=(a*1664525+1013904223)>>>0; return a/4294967296; }; }
+  var cv=document.getElementById('pv');
+  var w=Math.max(140,cv.clientWidth), h=170, dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=w*dpr; cv.height=h*dpr;
+  var x=cv.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0);
+  x.fillStyle='#0B1A2E'; x.fillRect(0,0,w,h);
+  var R=prng(17), cx=w*0.79, cy=h*0.2, rr=w*0.52, px, py, k, s;
+  x.fillStyle='#F5F1E8';
+  for(py=0;py<h;py++){ for(px=0;px<w;px++){
+    var dx=(px-cx)/rr, dy=(py-cy)/rr, r=Math.sqrt(dx*dx+dy*dy); if(r>1.04) continue;
+    var den=Math.max(0,1-r*0.72)*0.6, cl=(((px/5)|0)+((py/5)|0))%2;
+    var th=cl?(Math.sin(px*0.63)*0.5+0.5):(Math.sin(py*0.63)*0.5+0.5);
+    if(R()<th*den) x.fillRect(px,py,1,1);
+  }}
+  for(k=0;k<8;k++){ var an=k*0.7854-0.3;
+    for(s=0;s<rr;s+=0.6){ var qx=cx+Math.cos(an)*s, qy=cy+Math.sin(an)*s;
+      if(qx<0||qx>w||qy<0||qy>h) continue; if(R()<0.62) x.fillRect(qx|0,qy|0,1,1); } }
+  for(k=0;k<1200;k++){ var a2=k/1200*6.283, ex=cx+Math.cos(a2)*rr, ey=cy+Math.sin(a2)*rr;
+    if(ex<0||ex>w||ey<0||ey>h) continue; if(R()<0.7) x.fillRect(ex|0,ey|0,1,1); }
+  for(k=0;k<Math.round(w*h*0.004);k++){ if(R()<0.5) x.fillRect((R()*w)|0,(R()*h)|0,1,1); }
+})();
+</script>
+</body>
+</html>
