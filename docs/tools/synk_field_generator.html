@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>SYNK FIELD 생성기 v1</title>
+<title>SYNK FIELD 생성기 v1.2</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css">
 <style>
   :root{ --ink:#101014; --sub:#8A8F98; --line:#E5E7EB; --paper:#FDFCF8; }
@@ -43,7 +43,7 @@
 <div class="wrap">
   <div class="panel">
     <h1>SYNK FIELD 생성기</h1>
-    <p class="hint">정본 v1 · 모드와 카피를 넣고 PNG로 내려받으세요. 흑백 2색과 신호색 1점은 자동으로 지켜집니다.</p>
+    <p class="hint">정본 v1.2 · 모드와 카피를 넣고 PNG로 내려받으세요. 바탕·잉크 2색과 신호색 1점은 자동으로 지켜집니다. 배경 = 미드나잇 블루 #0B1A2E.</p>
 
     <div class="fld">
       <label>모드</label>
@@ -201,7 +201,7 @@ function render(){
   var sig = SIG[S.sig];
   var copyArr = S.copy.split('\n');
   var isDark = (S.mode === 'dither');
-  var bg = isDark ? '#08080B' : (S.mode === 'riso' ? '#F7F4EC' : '#FDFCF8');
+  var bg = isDark ? '#0B1A2E' : (S.mode === 'riso' ? '#F7F4EC' : '#FDFCF8');
   var ink = isDark ? '#F5F1E8' : '#101014';
   var dim = isDark ? '#8A8A94' : '#98A2B3';
 
