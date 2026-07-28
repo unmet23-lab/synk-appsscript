@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK 따뜻한 오브제 후보 5종</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css">
+<style>
+  :root{ --ink:#101014; --sub:#8A8F98; --line:#E5E7EB; --paper:#FDFCF8; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--paper); color:var(--ink);
+        font-family:'Pretendard Variable',Pretendard,-apple-system,'Segoe UI','Malgun Gothic',sans-serif; }
+  .wrap{ display:flex; gap:26px; padding:24px 28px; align-items:flex-start; }
+  .panel{ width:286px; flex:0 0 286px; }
+  h1{ font-size:15px; font-weight:600; letter-spacing:-.01em; margin:0 0 4px; }
+  .hint{ font-size:12px; color:var(--sub); line-height:1.6; margin:0 0 18px; }
+  .fld{ margin-bottom:14px; }
+  .fld > label{ display:block; font-size:11px; font-weight:600; letter-spacing:.06em;
+                color:var(--sub); margin-bottom:6px; }
+  input[type=text], textarea, select{ width:100%; font:inherit; font-size:13px; color:var(--ink);
+    background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px 10px; outline:none; }
+  textarea{ resize:vertical; min-height:56px; line-height:1.5; }
+  input:focus, textarea:focus, select:focus{ border-color:#3D5AFE; }
+  .seg{ display:flex; gap:6px; flex-wrap:wrap; }
+  .seg button{ flex:1; min-width:56px; font:inherit; font-size:12px; font-weight:500; padding:8px 4px;
+    cursor:pointer; background:#fff; border:1px solid var(--line); border-radius:8px; color:var(--sub); }
+  .seg button.on{ background:var(--ink); border-color:var(--ink); color:#fff; }
+  .row{ display:flex; gap:8px; align-items:center; }
+  .row input[type=range]{ flex:1; }
+  .num{ font-size:12px; color:var(--sub); width:34px; text-align:right; }
+  .go{ width:100%; font:inherit; font-size:13px; font-weight:600; padding:11px; cursor:pointer;
+    background:var(--ink); color:#fff; border:none; border-radius:9px; margin-top:4px; }
+  .ghost{ width:100%; font:inherit; font-size:12px; padding:9px; cursor:pointer; margin-top:8px;
+    background:#fff; color:var(--sub); border:1px solid var(--line); border-radius:9px; }
+  .stage{ flex:1; min-width:0; }
+  .sheet{ display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+  .cell{ width:172px; cursor:pointer; }
+  .cell canvas{ width:100%; height:auto; display:block; border-radius:3px;
+    box-shadow:0 1px 2px rgba(16,24,40,.08); outline:2px solid transparent; transition:outline-color .12s; }
+  .cell.on canvas{ outline-color:#FF6D00; }
+  .cell .nm{ font-size:11.5px; font-weight:600; margin-top:6px; letter-spacing:-.01em; }
+  .cell .sb{ font-size:10.5px; color:var(--sub); margin-top:1px; line-height:1.4; }
+  .big{ display:flex; gap:20px; align-items:flex-start; }
+  .big canvas{ max-height:74vh; max-width:100%; height:auto; border-radius:4px;
+    box-shadow:0 1px 2px rgba(16,24,40,.06),0 12px 30px -8px rgba(16,24,40,.12); }
+  .note{ flex:1; min-width:190px; font-size:11.5px; line-height:1.75; color:var(--sub); }
+  .note b{ color:var(--ink); font-weight:600; display:block; font-size:12.5px; margin-bottom:4px; }
+  .note .k{ color:var(--ink); font-weight:500; }
+  .meta{ font-size:11px; color:var(--sub); margin-top:8px; }
+  .rules{ margin-top:20px; padding-top:14px; border-top:1px solid var(--line);
+          font-size:11px; line-height:1.8; color:var(--sub); }
+  .rules b{ color:var(--ink); font-weight:600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="panel">
+    <h1>따뜻한 오브제 후보</h1>
+    <p class="hint">우주 대신 <b>온기</b>. 5종 전부 구도가 다릅니다. 썸네일을 눌러 크게 보고 PNG로 내려받으세요.</p>
+
+    <div class="fld">
+      <label>비율</label>
+      <select id="ratio">
+        <option value="4:5">인스타 캐러셀 · 4:5 (1080×1350)</option>
+        <option value="1:1">인스타 정사각 · 1:1 (1080×1080)</option>
+        <option value="9:16">스토리·릴스 · 9:16 (1080×1920)</option>
+      </select>
+    </div>
+
+    <div class="fld">
+      <label>오브제 색 (유호님 지시 · 흑백 고정 해제)</label>
+      <div class="seg" id="ramp">
+        <button data-v="ember" class="on">불빛</button>
+        <button data-v="dawn">새벽</button>
+        <button data-v="moon">달빛</button>
+        <button data-v="none">없음</button>
+      </div>
+    </div>
+
+    <div class="fld">
+      <label>색 강도</label>
+      <div class="row">
+        <input type="range" id="camt" min="0" max="100" step="5" value="45">
+        <span class="num" id="camtN">45</span>
+      </div>
+    </div>
+
+    <div class="fld">
+      <label>잉크 밀도</label>
+      <div class="row">
+        <input type="range" id="dens" min="55" max="145" step="5" value="100">
+        <span class="num" id="densN">100</span>
+      </div>
+    </div>
+
+    <div class="fld">
+      <label>유성 (신호 1점)</label>
+      <div class="seg" id="met">
+        <button data-v="1" class="on">1개</button>
+        <button data-v="2">2개</button>
+        <button data-v="0">없음</button>
+      </div>
+    </div>
+
+    <div class="fld" id="bhFld">
+      <label>블랙홀 + 폭죽 유성 (1안 전용)</label>
+      <div class="seg" id="bh">
+        <button data-v="1" class="on">있음</button>
+        <button data-v="0">없음</button>
+      </div>
+    </div>
+
+    <div class="fld" id="ptFld">
+      <label>책 지면의 글줄 (1안 전용)</label>
+      <div class="seg" id="pagetext">
+        <button data-v="1" class="on">있음</button>
+        <button data-v="0">없음</button>
+      </div>
+    </div>
+
+    <div class="fld">
+      <label>카피</label>
+      <div class="seg" id="txt">
+        <button data-v="on" class="on">표시</button>
+        <button data-v="off">숨김</button>
+      </div>
+    </div>
+
+    <div class="fld">
+      <label>상단 라벨</label>
+      <input type="text" id="label" value="SYNK LAB">
+    </div>
+
+    <div class="fld">
+      <label>메인 카피 (줄바꿈 = 줄나눔)</label>
+      <textarea id="copy">3개월 뒤,
+말이 트입니다</textarea>
+    </div>
+
+    <div class="fld">
+      <label>하단 메타</label>
+      <input type="text" id="metaTxt" value="시즌 1 · 선착순 24명">
+    </div>
+
+    <div class="fld" id="onpageFld">
+      <label>카피 위치 (1안 전용)</label>
+      <div class="seg" id="onpage">
+        <button data-v="0" class="on">화면 하단</button>
+        <button data-v="1">책 지면 위</button>
+      </div>
+    </div>
+
+    <button class="go" id="dl">이 화면 PNG 내려받기</button>
+    <button class="ghost" id="re">다시 그리기 (시드 변경)</button>
+    <button class="ghost" id="reall">5종 전부 다시 그리기</button>
+
+    <div class="rules">
+      <b>지켜지는 것</b> 배경 #0B1A2E · 잉크 #F5F1E8<br>
+      윤곽선 0 — 형태는 빛(밝기)으로만 드러남<br>
+      점 임계값 고정 — 지글거림 없음<br>
+      사람·얼굴 없음 (O4) · 초점 하나 (O2)<br>
+      화면 전체 흐름 없음 — 멀미 원인 차단
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="sheet" id="sheet"></div>
+    <div class="big">
+      <canvas id="cv"></canvas>
+      <div class="note" id="note"></div>
+    </div>
+    <div class="meta" id="stat"></div>
+  </div>
+</div>
+
+<script>
+var SIZES = { '4:5':[1080,1350], '1:1':[1080,1080], '9:16':[1080,1920] };
+var FONT = "'Pretendard Variable',Pretendard,-apple-system,'Segoe UI','Malgun Gothic',sans-serif";
+var BG = '#0B1A2E', INK = [245,241,232], SIGC = [255,109,0];
+
+var RAMPS = {
+  ember: [[255,236,198],[255,166,71],[255,109,0]],
+  dawn:  [[255,246,222],[255,201,120],[226,124,86]],
+  moon:  [[236,244,255],[171,201,242],[92,133,197]],
+  none:  null
+};
+
+var SCENES = [
+  { id:'lap',   nm:'무릎 위의 우주', sb:'1인칭 · 유호님 안',
+    desc:'담요 덮은 무릎 위에 책이 펼쳐져 있고, 그 위가 전부 밤하늘이다. 화면에서 유일하게 밝은 면이 지면(紙面) — 광원이 하늘이 아니라 <span class="k">책</span>이다.',
+    why:'배우는 순간이 곧 그 사람의 우주. 얼굴이 없어서 보는 사람이 그 자리에 들어간다.',
+    mo:'오른쪽 페이지 모서리가 들려 있음 = 다음 장을 넘기기 직전. 정지 화면에 시간이 들어감.' },
+  { id:'stove', nm:'난로에서 별로', sb:'하단 광원 · 몽골',
+    desc:'게르 난로의 화구가 화면 아래에서 크롭돼 있고, 불씨가 위로 올라가다 어느 높이에서 <span class="k">별과 구분되지 않는다</span>.',
+    why:'빛이 아래에서 오면 사람은 그것을 불로 읽는다 — 따뜻함의 물리적 신호. 몽골 게르는 우리만 가진 재료.',
+    mo:'불씨가 좁은 기둥 안에서만 흔들림. 화면 전체는 정지 — 멀미 원인을 만들지 않음.' },
+  { id:'window',nm:'김 서린 창', sb:'프레임 인 프레임',
+    desc:'실내에서 본 창. 김 때문에 바깥 불빛이 뭉개져 있고, 손가락으로 닦아낸 자국 안쪽만 선명하다.',
+    why:'안(우리)과 밖(세상)의 경계. 닦아낸 만큼만 보인다 = 배운 만큼만 보인다.',
+    mo:'닦인 자국 가장자리에 김이 밀려 두꺼워진 밝은 테두리. 진짜 유리에서 일어나는 일.' },
+  { id:'desk',  nm:'밤의 책상', sb:'사선 · 광원 하나',
+    desc:'스탠드 불빛이 만든 웅덩이 안에 노트와 연필. 스탠드 자체는 화면 위로 잘려 보이지 않는다.',
+    why:'우리 학생이 실제로 보내는 시간. 가장 안전하고 가장 읽히기 쉬운 안.',
+    mo:'빛 웅덩이 경계를 흐리게 둠 — 원으로 읽히면 디더와 충돌한다(블랙홀이 실패한 지점).' },
+  { id:'ger',   nm:'지평선의 게르', sb:'도전안 · 하늘을 지킴',
+    desc:'하늘은 지금 그대로 두고, 화면 맨 아래 능선 위에 게르 한 채만 놓는다. 창에서 새는 빛 몇 점이 전부.',
+    why:'차갑게 느껴진 원인은 소재(우주)가 아니라 <span class="k">인간 크기의 단서가 없었던 것</span>. 한 채만 넣으면 하늘은 그대로인데 따뜻해진다.',
+    mo:'게르 앞 땅에 빛이 짧게 번짐. 크기 대비로 하늘이 갑자기 거대해진다.' }
+];
+
+var S = { scene:'lap', ratio:'4:5', ramp:'ember', camt:0.45, dens:1.0, met:1,
+          bh:true, pagetext:true,
+          txt:true, onpage:0, label:'SYNK LAB',
+          copy:'3개월 뒤,\n말이 트입니다', meta:'시즌 1 · 선착순 24명' };
+var SEEDS = { lap:11, stove:23, window:37, desk:51, ger:73 };
+var SEED = 11, RAMP = RAMPS.ember, DENS = 1.0;
+
+/* ---------- 노이즈 · 고정 임계값 ---------- */
+function h2(x,y){
+  var h = Math.imul(x|0,374761393) ^ Math.imul(y|0,668265263) ^ Math.imul(SEED,362437);
+  h = Math.imul(h ^ (h>>>13), 1274126177);
+  return ((h ^ (h>>>16))>>>0) / 4294967296;
+}
+function vn(x,y){
+  var xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi;
+  var u=xf*xf*(3-2*xf), v=yf*yf*(3-2*yf);
+  var a=h2(xi,yi), b=h2(xi+1,yi), c=h2(xi,yi+1), d=h2(xi+1,yi+1);
+  return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v;
+}
+function fbm(x,y,o){
+  var s=0,a=0.5,f=1,t=0,i;
+  for(i=0;i<o;i++){ s+=vn(x*f,y*f)*a; t+=a; f*=2; a*=0.5; }
+  return s/t;
+}
+function cl(v,a,b){ return v<a?a:(v>b?b:v); }
+
+/* ---------- 색 ---------- */
+function mix(a,b,t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
+/* 색은 '가장 뜨거운 곳'에만 — 절반 이하 heat는 거의 크림으로 남는다 */
+function ramp(t){
+  if(!RAMP) return INK;
+  t = cl(t,0,1);
+  if(t<0.52) return mix(INK, RAMP[2], (t/0.52)*0.72);
+  if(t<0.80) return mix(mix(INK,RAMP[2],0.72), RAMP[1], (t-0.52)/0.28);
+  return mix(RAMP[1], RAMP[0], (t-0.80)/0.20);
+}
+
+/* ---------- 픽셀 · 붓 ---------- */
+function mkPut(d,W,H){
+  return function(x,y,heat){
+    x=x|0; y=y|0;
+    if(x<0||y<0||x>=W||y>=H) return;
+    var i=(y*W+x)<<2, c = (heat>0.004 && RAMP) ? ramp(heat*S.camt) : INK;
+    d[i]=c[0]; d[i+1]=c[1]; d[i+2]=c[2]; d[i+3]=255;
+  };
+}
+function mkPutC(d,W,H){
+  return function(x,y,c,a){
+    x=x|0; y=y|0;
+    if(x<0||y<0||x>=W||y>=H) return;
+    var i=(y*W+x)<<2;
+    if(a===undefined) a=1;
+    d[i]=d[i]+(c[0]-d[i])*a; d[i+1]=d[i+1]+(c[1]-d[i+1])*a; d[i+2]=d[i+2]+(c[2]-d[i+2])*a; d[i+3]=255;
+  };
+}
+/* 붓: 어두운 곳 1px, 밝은 곳 덩어리, 아주 밝은 곳 십자 */
+function stroke(P,x,y,L,heat){
+  P(x,y,heat);
+  if(L>0.62){
+    if(h2(x+7,y+3)<0.86) P(x+1,y,heat);
+    if(h2(x+3,y+9)<0.74) P(x,y+1,heat);
+    if(L>0.86 && h2(x+13,y+11)<0.58) P(x+1,y+1,heat);
+  }
+  if(L>0.955 && h2(x+29,y+31)<0.012){
+    P(x-2,y,heat); P(x+3,y,heat); P(x,y-2,heat); P(x,y+3,heat);
+  }
+}
+/* 공통 밝기장 → 디더 */
+function field(P,W,H,fn){
+  var x,y,r,L,d,t;
+  for(y=0;y<H;y++){
+    for(x=0;x<W;x++){
+      r = fn(x/W, y/H, x, y);
+      if(!r) continue;
+      L = r[0];
+      if(L<=0.006) continue;
+      if(L>1) L=1;
+      d = Math.pow(L,1.42)*DENS;   /* 중간톤을 살려 형태가 셰이딩으로 읽히게 */
+      t = h2(x,y);
+      if(L>0.62){ if(t < d*0.40) stroke(P,x,y,L,r[1]); }
+      else if(t < d) P(x,y,r[1]);
+    }
+  }
+}
+
+/* ---------- 하늘 (공통) ---------- */
+/* 블랙홀 중력렌즈 — 별을 반경 방향으로 밀어내고 지평선 안쪽은 지운다.
+   원을 그리는 게 아니라 별이 휘는 것으로 존재를 알린다(매끈한 벡터 원 = 실패한 접근) */
+function lens(bh,x,y,W,H){
+  var ddx=(x/W-bh.x), ddy=(y/H-bh.y)*(H/W);
+  var dr=Math.sqrt(ddx*ddx+ddy*ddy);
+  if(dr < bh.r*1.06) return null;
+  if(dr < bh.r*8){
+    var push = bh.r*bh.r*0.92/dr;
+    return [ (x/W + ddx/dr*push)*W, (y/H + ddy/dr*push*(W/H))*H ];
+  }
+  return [x,y];
+}
+function sky(P,W,H,topFn,opt){
+  var n = Math.round(W*H*0.0026), i, x, y, b, bh = opt && opt.bh;
+  for(i=0;i<n;i++){
+    x = h2(i*3+1,101)*W; y = h2(i*3+2,102)*H;
+    if(bh){ var q=lens(bh,x,y,W,H); if(!q) continue; x=q[0]; y=q[1]; }
+    if(topFn && (y/H) > topFn(x/W)) continue;
+    b = h2(i*3+3,103);
+    if(b>0.86){ P(x,y,0); P(x+1,y,0); if(b>0.975){ P(x,y+1,0); P(x-1,y,0); } }
+    else if(b>0.34) P(x,y,0);
+  }
+  if(!opt || opt.milky!==false){
+    var m = Math.round(W*H*0.016), ang = (opt&&opt.ang!==undefined)?opt.ang:-0.62;
+    var mcx = (opt&&opt.cx!==undefined)?opt.cx:0.42, mcy = (opt&&opt.cy!==undefined)?opt.cy:0.24;
+    var wid = (opt&&opt.wid!==undefined)?opt.wid:0.17;
+    var sa = Math.sin(ang), ca = Math.cos(ang), dd, band, cld;
+    for(i=0;i<m;i++){
+      x = h2(i*3+4,201)*W; y = h2(i*3+5,202)*H;
+      if(bh){ var q2=lens(bh,x,y,W,H); if(!q2) continue; x=q2[0]; y=q2[1]; }
+      if(topFn && (y/H) > topFn(x/W)) continue;
+      dd = (x/W-mcx)*sa - (y/H-mcy)*ca;
+      band = Math.exp(-dd*dd/(wid*wid));
+      cld = fbm(x/W*4.2, y/H*4.2, 3);
+      if(h2(i*3+6,203) < band*cld*cld*1.55) P(x,y,0);
+    }
+  }
+}
+
+/* ---------- 유성 ---------- */
+function meteor(PC,W,H,u,k){
+  var sx = W*(0.60+h2(k,301)*0.34), sy = H*(0.04+h2(k,302)*0.20);
+  var len = W*(0.085+h2(k,303)*0.065);
+  var a = 2.36 + (h2(k,304)-0.5)*0.22;          /* 우상 → 좌하 */
+  var dx = -Math.abs(Math.cos(a)), dy = Math.abs(Math.sin(a));
+  var i, t, p, px, py, n = Math.round(len*2.6);
+  for(i=0;i<n;i++){
+    t = i/n;
+    px = sx + dx*len*t; py = sy + dy*len*t;
+    p = Math.pow(1-t, 2.3);
+    if(h2(i+k*977, 305) < p*0.92){
+      PC(px + (h2(i,306)-0.5)*2.2*u, py + (h2(i,307)-0.5)*2.2*u, SIGC, 1);
+      if(t<0.10) PC(px+1, py, SIGC, 1);
+    }
+  }
+  PC(sx,sy,SIGC,1);
+  PC(sx-2.2*u,sy,SIGC,.9); PC(sx+2.2*u,sy,SIGC,.9);
+  PC(sx,sy-2.2*u,SIGC,.9); PC(sx,sy+2.2*u,SIGC,.9);
+}
+
+/* ---------- 블랙홀 (유호님 2026-07-28) ----------
+   작고 멀리 있을 것. 크게 그리면 매끈한 벡터 원이 되어 디더와 충돌한다(과거 실패 지점).
+   여기서는 ①지평선 안쪽을 비우고 ②둘레를 불균등한 점으로 두르고 ③별을 휘게 해서 알린다. */
+function blackhole(P,PC,W,H,u,bh){
+  var R=bh.r*W, cx=bh.x*W, cy=bh.y*H, i, a, rr;
+  var n=Math.round(R*16);
+  for(i=0;i<n;i++){
+    a = h2(i,801)*6.283;
+    rr = R*(1.03+Math.pow(h2(i,802),1.7)*0.16);
+    /* 한쪽이 더 밝다 — 완전 대칭이면 그려 넣은 원으로 보인다 */
+    var boost = 0.34+0.66*(0.5+0.5*Math.cos(a-2.45));
+    if(h2(i,803) < (0.30+0.70*h2(i,804))*boost) P(cx+Math.cos(a)*rr, cy+Math.sin(a)*rr, 0);
+  }
+  /* 강착원반 — 납작한 호 한쪽만, 아주 옅게 */
+  var m=Math.round(R*30);
+  for(i=0;i<m;i++){
+    a = -0.42 + h2(i,805)*2.25;
+    rr = R*(1.45+Math.pow(h2(i,806),1.7)*2.5);
+    var fade = 1-(rr/R-1.45)/2.5;
+    if(h2(i,807) < fade*fade*0.62) PC(cx+Math.cos(a)*rr, cy+Math.sin(a)*rr*0.30, SIGC, 0.14+0.42*fade);
+  }
+}
+
+/* 유성이 블랙홀로 빨려들어 폭죽처럼 터진다 (유호님 아이디어).
+   애니메이션으로 옮길 때 도착 판정은 시간이 아니라 위치로 할 것 — 시간 기준은 도착 전에 터진다. */
+function meteorBH(P,PC,W,H,u,k,bh){
+  var cx=bh.x*W, cy=bh.y*H, R=bh.r*W;
+  var sx=W*(0.86+h2(k,821)*0.11), sy=H*(0.035+h2(k,822)*0.075);
+  /* 중력에 휘는 궤적 — 제어점을 블랙홀 바깥쪽에 둔다 */
+  var mx=(sx+cx)/2 + (sy-cy)*0.30, my=(sy+cy)/2 - (sx-cx)*0.055;
+  var n=Math.round(Math.abs(sx-cx)*1.5), i, t, p, px, py;
+  for(i=0;i<n;i++){
+    t=i/n;
+    px=(1-t)*(1-t)*sx + 2*(1-t)*t*mx + t*t*cx;
+    py=(1-t)*(1-t)*sy + 2*(1-t)*t*my + t*t*cy;
+    if(Math.sqrt((px-cx)*(px-cx)+(py-cy)*(py-cy)) < R*1.15) continue;
+    p=Math.pow(t,1.5)*0.92;                       /* 빨려들수록 조밀해진다 */
+    if(h2(i+k*613,823) < p){
+      PC(px+(h2(i,824)-0.5)*2.0*u, py+(h2(i,825)-0.5)*2.0*u, SIGC, 0.35+0.65*p);
+    }
+  }
+  /* 터지는 순간 — 방사형 스파크가 살짝 감긴다 */
+  var sp=Math.round(30+h2(k,826)*16), j;
+  for(i=0;i<sp;i++){
+    var a=h2(i*7+k,827)*6.283;
+    var len=R*(1.8+Math.pow(h2(i,828),1.9)*6.0);
+    var steps=Math.round(len*0.85);
+    for(j=0;j<steps;j++){
+      var tt=j/steps;
+      var rr=R*1.12+(len-R*1.12)*tt;
+      var aa=a+tt*0.52;
+      var pp=Math.pow(1-tt,1.7);
+      if(h2(i*97+j,829) < pp*0.72) PC(cx+Math.cos(aa)*rr, cy+Math.sin(aa)*rr, SIGC, 0.28+0.72*pp);
+    }
+  }
+}
+
+/* ================= 장면 1 · 무릎 위의 우주 ================= */
+/* 1인칭으로 내려다본 자기 두 다리 — 담요가 아니라 신체(유호님 2026-07-28).
+   원기둥 셰이딩(축까지 거리 → 법선)으로 볼륨을 만든다. 윤곽선은 긋지 않는다. */
+var LEG={ sepA:0.268, sepB:0.222, radA:0.300, radB:0.238, base:1.02, knee:0.792 };
+function legAt(nx,ny){
+  var t=cl((LEG.base-ny)/(LEG.base-LEG.knee),0,1);
+  var sep=LEG.sepA+(LEG.sepB-LEG.sepA)*t;
+  var rad=LEG.radA+(LEG.radB-LEG.radA)*t;
+  var cxL=0.5-sep, cxR=0.5+sep;
+  var dL=Math.abs(nx-cxL), dR=Math.abs(nx-cxR), d, side, cx;
+  if(dL<dR){ d=dL; side=-1; cx=cxL; } else { d=dR; side=1; cx=cxR; }
+  if(d>rad) return null;
+  return [d/rad, side, t, cx, rad];
+}
+function kneeTop(nx){
+  var sep=LEG.sepB, rad=LEG.radB;
+  var d=Math.min(Math.abs(nx-(0.5-sep)), Math.abs(nx-(0.5+sep)));
+  if(d>rad) return 0.845 + (fbm(nx*4.2, 8.3, 2)-0.5)*0.022;   /* 다리 밖 = 낮은 지평선 */
+  var s=d/rad;
+  return LEG.knee - 0.038*Math.sqrt(Math.max(0,1-s*s)) + (fbm(nx*9,4.1,2)-0.5)*0.008;
+}
+/* 책은 무릎 위에 얹힌다. 좌우를 일부러 다르게 — 완전 대칭이면 관(棺)처럼 보인다 */
+var BT=0.638, BB=0.862;
+function bookGeom(nx,ny){
+  var t = (ny-BT)/(BB-BT);
+  if(t<0||t>1) return null;
+  /* 접힘선도 곧지 않다 */
+  var cx = 0.5 + 0.022*t + Math.sin(t*2.6)*0.008;
+  var half = (nx<cx) ? (0.168+0.128*t) : (0.186+0.156*t);
+  half += (fbm(ny*26+5.5, 3.3, 3)-0.5)*0.014;      /* 가장자리 미세 굴곡 */
+  var corner = cl(Math.min(t,1-t)/0.055, 0, 1);
+  half *= 0.87+0.13*Math.sqrt(corner);              /* 모서리는 둥글다 */
+  var off = (nx-cx)/half;
+  if(Math.abs(off)>1) return null;
+  return [t, off, half];
+}
+function bookTopAt(nx){
+  var a=Math.abs(nx-0.5);
+  if(a<0.168) return BT;
+  var t=(a-0.168)/0.128;
+  return t>1 ? 9 : BT+t*(BB-BT);
+}
+/* 페이지를 잡은 손 — 얼굴은 넣지 않되(O4) 손은 1인칭 몰입을 만든다.
+   실루엣으로 그리면 클립아트가 되므로 손가락도 원기둥 셰이딩으로만 드러낸다 */
+function capsule(nx,ny,ax,ay,bx,by){
+  var vx=bx-ax, vy=by-ay, wx=nx-ax, wy=ny-ay;
+  var t=cl((wx*vx+wy*vy)/(vx*vx+vy*vy),0,1);
+  var qx=ax+vx*t, qy=ay+vy*t;
+  return [Math.sqrt((nx-qx)*(nx-qx)+(ny-qy)*(ny-qy)), t];
+}
+/* 손가락은 마디에서 굽고 굵기가 변한다. 균일한 원기둥이면 기둥으로 보인다.
+   뿌리는 화면 밖(가까운 쪽), 끝만 지면 위에 얹힌다 — 정체를 다 보이지 않는다(O1) */
+function polyDist(nx,ny,pts){
+  var best=1e9, bt=0, acc=0, total=0, i, len=[], dx, dy;
+  for(i=1;i<pts.length;i++){
+    dx=pts[i][0]-pts[i-1][0]; dy=pts[i][1]-pts[i-1][1];
+    len.push(Math.sqrt(dx*dx+dy*dy)); total+=len[i-1];
+  }
+  for(i=1;i<pts.length;i++){
+    var c=capsule(nx,ny,pts[i-1][0],pts[i-1][1],pts[i][0],pts[i][1]);
+    if(c[0]<best){ best=c[0]; bt=(acc+c[1]*len[i-1])/total; }
+    acc+=len[i-1];
+  }
+  return [best,bt];
+}
+var FINGERS=[
+  { p:[[0.928,0.980],[0.830,0.862],[0.752,0.804],[0.692,0.780]], r:0.0212 },
+  { p:[[0.960,1.004],[0.872,0.886],[0.800,0.826],[0.744,0.804]], r:0.0216 },
+  { p:[[0.986,1.030],[0.914,0.918],[0.850,0.856],[0.798,0.836]], r:0.0202 },
+  { p:[[1.006,1.058],[0.952,0.954],[0.898,0.892],[0.852,0.874]], r:0.0176 },
+  { p:[[0.098,0.956],[0.208,0.890],[0.298,0.832],[0.348,0.804]], r:0.0248 }
+];
+function fingerR(base,t){
+  /* 뿌리에서 굵고 끝으로 가늘어지며, 마디에서 살짝 볼록해진다 */
+  return base*(1.03 - 0.34*t + 0.055*Math.sin(t*9.4));
+}
+function handAt(nx,ny){
+  if(ny<0.755) return null;
+  var best=null, i, c, r;
+  for(i=0;i<FINGERS.length;i++){
+    c=polyDist(nx,ny,FINGERS[i].p);
+    r=fingerR(FINGERS[i].r, c[1]);
+    if(c[0]<r && (!best || c[0]/r < best[0])) best=[c[0]/r, c[1], i, c[0]];
+  }
+  if(best) return best;
+  /* 손등 — 대부분 화면 밖으로 크롭된다 */
+  var hx=(nx-1.045), hy=(ny-1.015)*1.25;
+  var hd=Math.sqrt(hx*hx+hy*hy);
+  if(hd<0.185) return [cl(hd/0.185,0,1), 0.02, 9, hd];
+  return null;
+}
+function sceneLap(P,PC,W,H,u){
+  var KT=new Float32Array(W), ST=new Float32Array(W), i;
+  for(i=0;i<W;i++){
+    KT[i]=kneeTop(i/W);
+    ST[i]=Math.min(KT[i], bookTopAt(i/W));      /* 책 뒤로 별이 비치지 않게 */
+  }
+  var topF=function(nx){ var j=(nx*W)|0; return ST[j<0?0:(j>=W?W-1:j)]; };
+  var bh = S.bh ? {x:0.252,y:0.206,r:0.0165} : null;
+  sky(P,W,H,topF,{ang:-0.55,cx:0.40,cy:0.20,wid:0.155,bh:bh});
+  var lineU = Math.max(1, Math.round(3.4*u));
+  field(P,W,H,function(nx,ny,px,py){
+    var hd = handAt(nx,ny);
+    if(hd){
+      var hs=hd[0], ht=hd[1], fi=hd[2];
+      var z=Math.sqrt(Math.max(0,1-hs*hs*0.94));
+      var dxh=nx-0.5, dyh=ny-0.76;
+      var fh=Math.exp(-(dxh*dxh*0.9+dyh*dyh)/0.26);
+      /* 손가락 사이는 어둡다(AO) + 마디 주름 */
+      var ao=0.62+0.38*Math.pow(1-hs,0.55);
+      var knuck=1-0.10*Math.max(0,Math.sin(ht*9.4));
+      var skin=0.86+0.20*fbm(nx*46+7, ny*46, 2);
+      var Lh=(fi===9?0.62:1)*z*fh*ao*knuck*skin*(0.70+0.36*(1-ht));
+      return [cl(Lh,0,0.86), Lh*0.16];
+    }
+    var g = bookGeom(nx,ny);
+    if(g){
+      var t=g[0], off=g[1], s=Math.abs(off);
+      /* 좌우 두 페이지가 각각 볼록한 곡면 — 평평하면 도로로 읽힌다 */
+      var curve = Math.sin(s*Math.PI*0.88);
+      var L = 0.30 + 0.66*curve;
+      L -= 0.34*Math.exp(-off*off/0.00085);    /* 접힘(gutter) 계곡 — 넓으면 두 판으로 갈라진다 */
+      L -= 0.14*(1-t);                          /* 먼 쪽이 어둡다 */
+      /* 종이는 평평하지 않다 — 저주파 물결이 있어야 딱딱함이 풀린다 */
+      L += (fbm(nx*4.6+11.3, ny*7.8+3.1, 3)-0.5)*0.17*(0.32+0.68*s);
+      L += (fbm(nx*100, ny*100, 2)-0.5)*0.075;  /* 종이 결 */
+      if(t>0.955){                              /* 아래 모서리에 종이 다발이 보인다 */
+        var lay=((t-0.955)/0.045)*3.4, lf=lay-Math.floor(lay);
+        L *= (lf<0.42 ? 0.62 : 0.98);
+      }
+      var lift = 0;
+      if(off>0.55 && t>0.66){                   /* 넘기기 직전 들린 모서리 */
+        lift = ((off-0.55)/0.45)*((t-0.66)/0.34);
+        L += lift*0.34;
+      }
+      /* 글줄 — 글자를 읽히게 하지 않되 '글이 있는 지면'으로 보이게 한다 */
+      if(S.pagetext){
+        var lt=(t-0.11)/0.78;
+        if(lt>0 && lt<1){
+          var row=lt*8.4, ri=Math.floor(row), rf=row-ri;
+          if(rf>0.26 && rf<0.60){
+            var side=off>0?1:0;
+            var run=0.34+0.60*h2(ri*13+side*7, 601);
+            if(s>0.16 && s<0.16+run*0.78){
+              var seg=(px/lineU)|0;
+              if(h2(seg, ri*31+700) > 0.17) L*=0.34;   /* 단어 사이 공백 */
+            }
+          }
+        }
+      }
+      if(handAt(nx,ny-0.018)) L*=0.52;          /* 손이 지면에 드리우는 그림자 */
+      L = cl(L,0,1.0);
+      return [L, (0.20+0.20*t+lift*0.30)*L];
+    }
+    var kt = KT[px];
+    if(ny<=kt) return null;
+    var lg = legAt(nx,ny);
+    if(!lg) return null;                        /* 다리 밖 = 어둠(여백) */
+    var sN=lg[0], side=lg[1], cx=lg[3], rad=lg[4];
+    var z=Math.sqrt(Math.max(0,1-sN*sN));       /* 원기둥 볼륨 */
+    var inner = side<0 ? cl((nx-(cx-rad))/(2*rad),0,1) : cl(((cx+rad)-nx)/(2*rad),0,1);
+    var fold=fbm(nx*19+3.1, ny*5.2, 3);         /* 옷 주름은 다리 방향으로 길다 */
+    var dxb=nx-0.5, dyb=ny-0.735;
+    var fall=Math.exp(-(dxb*dxb*0.95+dyb*dyb)/0.160);
+    var vig=cl(1.22-Math.sqrt((nx-0.5)*(nx-0.5)*1.15+(ny-0.845)*(ny-0.845)*1.8)/0.52,0,1);
+    var L=z*(0.20+0.80*inner)*fall*(0.46+0.86*fold)*vig;
+    if(ny<kt+0.013) L*=1.46;                    /* 무릎이 빛을 받는다 */
+    var sh=0, g1=bookGeom(nx,ny-0.012), g2=bookGeom(nx,ny-0.036);
+    if(g1) sh=1; else if(g2) sh=0.50;           /* 책이 무릎에 드리우는 그림자 */
+    L*=(1-sh*0.78);
+    L=cl(L,0,0.90);
+    return [L, L*0.15];
+  });
+  if(bh){
+    blackhole(P,PC,W,H,u,bh);
+    if(S.met>0) meteorBH(P,PC,W,H,u,1,bh);
+    for(i=1;i<S.met;i++) meteor(PC,W,H,u,i+40);
+  } else {
+    for(i=0;i<S.met;i++) meteor(PC,W,H,u,i+1);
+  }
+}
+
+/* ================= 장면 2 · 난로에서 별로 ================= */
+function sceneStove(P,PC,W,H,u){
+  var FX0=0.400, FX1=0.600, FY0=0.752, BX0=0.215, BX1=0.785, BY0=0.668;
+  sky(P,W,H,function(){ return 0.99; },{ang:-0.72,cx:0.62,cy:0.18,wid:0.15});
+  field(P,W,H,function(nx,ny,px,py){
+    if(ny<BY0-0.004) return null;
+    var inFire = (nx>FX0 && nx<FX1 && ny>FY0);
+    if(inFire){
+      var fx=(nx-FX0)/(FX1-FX0), fy=(ny-FY0)/(1-FY0);
+      var edge = Math.min(fx,1-fx,fy*1.4);
+      var L = 1.02 - 0.34*fy + (fbm(nx*34,ny*34,3)-0.5)*0.46;
+      L *= cl(edge*5.5,0,1);
+      L = cl(L,0,1);
+      return [L, 0.80+0.20*L];
+    }
+    if(nx>BX0 && nx<BX1){
+      var mdx = nx-0.5, mdy = ny-0.82;
+      var d = Math.sqrt(mdx*mdx+mdy*mdy*1.3);
+      var fall = Math.exp(-d*d/0.098);
+      var frame = (nx>FX0-0.022 && nx<FX1+0.022 && ny>FY0-0.020) ? 0.12 : 1;
+      var srf = fbm(nx*22, ny*26, 2);
+      var top = (ny<BY0+0.022) ? 1.8 : 1;      /* 상판 모서리가 빛을 받음 */
+      var L = fall*(0.32+0.66*srf)*frame*top;
+      var side = cl((nx-BX0)/0.07,0,1)*cl((BX1-nx)/0.07,0,1);
+      L *= 0.22+0.78*side;
+      L = cl(L,0,0.94);
+      return [L, L*0.42];
+    }
+    return null;
+  });
+  /* 불씨 — 좁은 기둥 안에서만. 짧고 촘촘하게(막대로 보이면 부자연스럽다) */
+  var n=Math.round(W*0.52), i;
+  for(i=0;i<n;i++){
+    var t = Math.pow(h2(i,401), 1.5);
+    var y = (FY0 - 0.014) - t*0.52;
+    var spread = 0.026 + t*t*0.105;
+    var x = 0.5 + (h2(i,402)-0.5)*2*spread + Math.sin(t*7.3+h2(i,403)*6.28)*0.015;
+    var life = (1-t);
+    if(h2(i,404) > life*0.86) continue;
+    var hh = 0.62+life*0.38;
+    var len = (1.4+life*2.8)*u;
+    var j;
+    for(j=0;j<len;j++){
+      if(h2(i*31+j,405) < 0.60+life*0.35) P(x*W, y*H - j, hh);
+    }
+    if(life>0.80 && h2(i,406)<0.5) P(x*W+1, y*H, hh);
+  }
+  for(var k=0;k<S.met;k++) meteor(PC,W,H,u,k+5);
+}
+
+/* ================= 장면 3 · 김 서린 창 ================= */
+var WIPE=null;
+/* 손가락 자국 마스크 — 캔버스 stroke 대신 선분 거리로 계산(순수 JS·매끈한 벡터 윤곽 없음) */
+function buildWipe(W,H){
+  var mw=W>>1, mh=H>>1;
+  /* 닦은 자국은 반드시 불빛 위를 지나야 한다 — 닦았더니 보인다는 인과 */
+  var paths=[
+    [[0.475,0.415],[0.585,0.352],[0.705,0.305],[0.835,0.272]],
+    [[0.468,0.318],[0.590,0.262],[0.720,0.222]],
+    [[0.492,0.448],[0.612,0.398],[0.742,0.356]]
+  ];
+  var segs=[], p, i;
+  for(p=0;p<paths.length;p++){
+    for(i=1;i<paths[p].length;i++){
+      segs.push([paths[p][i-1][0]*mw, paths[p][i-1][1]*mh, paths[p][i][0]*mw, paths[p][i][1]*mh]);
+    }
+  }
+  var d=new Float32Array(mw*mh), hw=0.062*mw, x, y, s, best, a;
+  for(y=0;y<mh;y++){
+    for(x=0;x<mw;x++){
+      best=1e9;
+      for(s=0;s<segs.length;s++){
+        var ax=segs[s][0], ay=segs[s][1], vx=segs[s][2]-ax, vy=segs[s][3]-ay;
+        var t=((x-ax)*vx+(y-ay)*vy)/(vx*vx+vy*vy);
+        t = t<0?0:(t>1?1:t);
+        var qx=x-(ax+vx*t), qy=y-(ay+vy*t), dd=qx*qx+qy*qy;
+        if(dd<best) best=dd;
+      }
+      a = 1.18 - Math.sqrt(best)/hw;
+      a = a<0?0:(a>1?1:a);
+      d[y*mw+x] = a*a*(3-2*a);
+    }
+  }
+  return { d:d, w:mw, h:mh };
+}
+function wipeAt(nx,ny){
+  if(!WIPE) return 0;
+  var x=(nx*WIPE.w)|0, y=(ny*WIPE.h)|0;
+  if(x<0||y<0||x>=WIPE.w||y>=WIPE.h) return 0;
+  return WIPE.d[y*WIPE.w+x];
+}
+function sceneWindow(P,PC,W,H,u){
+  var LX=0.655, LY=0.315;
+  field(P,W,H,function(nx,ny,px,py){
+    var pad=0.062;
+    if(nx<pad||nx>1-pad||ny<pad*0.80||ny>1-pad*0.80) return null;
+    if(Math.abs(nx-0.415)<0.014) return null;
+    if(Math.abs(ny-0.470)<0.013) return null;
+    var dx=(nx-LX), dy=(ny-LY)*1.06;
+    var d2=dx*dx+dy*dy;
+    var fog=fbm(nx*3.4+1.7, ny*3.4, 3);
+    var fog2=fbm(nx*11+5, ny*11, 2);
+    var w=wipeAt(nx,ny);
+    var wn = cl(w*1.35 - fog2*0.42, 0, 1);          /* 노이즈로 침식된 가장자리 */
+    var band = cl(1 - Math.abs(w-0.42)/0.24, 0, 1);  /* 밀려 두꺼워진 김 */
+    var glow = Math.exp(-d2/0.055)*0.55 + Math.exp(-d2/0.30)*0.24;
+    var haze = (0.030 + glow) * (0.24+1.15*fog*fog);
+    /* 광원도 김에 변조된다 — 매끈한 원이면 디더와 충돌한다 */
+    var sharp = (Math.exp(-d2/0.0015)*1.32 + Math.exp(-d2/0.018)*0.17)*(0.40+1.05*fog) + 0.020;
+    var L = haze*(1-wn) + sharp*wn + band*(1-wn*0.7)*0.26*fog;
+    var heat = (Math.exp(-d2/0.0024)*1.02 + Math.exp(-d2/0.08)*0.22)*(0.30+0.70*wn);
+    L=cl(L,0,1);
+    return [L, heat];
+  });
+  for(var k=0;k<S.met;k++) meteor(PC,W,H,u,k+9);
+}
+
+/* ================= 장면 4 · 밤의 책상 ================= */
+function sceneDesk(P,PC,W,H,u){
+  var PX=0.565, PY=0.545;
+  function pool(nx,ny){
+    var dx=(nx-PX)/0.500, dy=(ny-PY)/0.352;
+    var d=Math.sqrt(dx*dx+dy*dy);
+    var wob=(fbm(nx*3.1, ny*3.1, 2)-0.5)*0.46;
+    return cl(1.10 - d*(1+wob*0.60), 0, 1);
+  }
+  function noteAt(nx,ny){
+    var t=(ny-0.452)/0.286;
+    if(t<0||t>1) return null;
+    var half=0.118+0.074*t, cx=0.552+0.024*t;
+    var off=(nx-cx)/half;
+    if(Math.abs(off)>1) return null;
+    return [t,off];
+  }
+  field(P,W,H,function(nx,ny,px,py){
+    var pl=pool(nx,ny);
+    if(pl<=0.012) return null;
+    var nt=noteAt(nx,ny);
+    if(nt){
+      var t=nt[0], off=nt[1];
+      var L=0.92*pl+0.07;
+      L -= 0.20*Math.pow(Math.abs(off),3.2);
+      var ln=Math.abs(((ny-0.46)*22)%1 - 0.5);   /* 괘선은 암시만 — 굵으면 계단이 된다 */
+      if(ln>0.44 && t>0.10 && t<0.94) L-=0.085;
+      L += (fbm(nx*80,ny*80,2)-0.5)*0.07;
+      if(1-Math.abs(off)<0.014) L*=1.22;
+      return [cl(L,0,1), 0.20*L];
+    }
+    var pen=(function(){
+      var ax=0.318, ay=0.742, bx=0.508, by=0.612;
+      var vx=bx-ax, vy=by-ay, wx=nx-ax, wy=ny-ay;
+      var tt=cl((wx*vx+wy*vy)/(vx*vx+vy*vy),0,1);
+      var qx=ax+vx*tt, qy=ay+vy*tt;
+      var d=Math.sqrt((nx-qx)*(nx-qx)+(ny-qy)*(ny-qy));
+      return [d, tt];
+    })();
+    if(pen[0]<0.0105 && pen[1]>0.02){
+      var rr=pen[0]/0.0105;
+      var Lp=(0.90-0.58*rr*rr)*pl+0.05;
+      if(pen[1]>0.90) Lp*=0.50;                  /* 심 쪽이 어둡다 */
+      return [cl(Lp,0,1), 0.22*Lp];
+    }
+    if(pen[0]<0.032 && pen[1]>0.06){
+      var sh=1-(pen[0]-0.0105)/0.0215;
+      var Ls=(0.26+0.34*fbm(nx*40,ny*44,2))*pl*(1-sh*0.90);
+      return [cl(Ls,0,1), Ls*0.22];
+    }
+    var grain=fbm(nx*2.6, ny*30, 2);             /* 책상 나뭇결 */
+    var L=pl*pl*(0.24+0.52*grain)*(0.42+0.58*pl);
+    return [cl(L,0,0.86), L*0.34];
+  });
+  for(var k=0;k<S.met;k++) meteor(PC,W,H,u,k+13);
+}
+
+/* ================= 장면 5 · 지평선의 게르 (도전안) ================= */
+function ridgeAt(nx){
+  return 0.898 - 0.055*fbm(nx*1.9+0.7, 9.3, 3) - 0.020*fbm(nx*5.4, 3.3, 2);
+}
+function sceneGer(P,PC,W,H,u){
+  var RG=new Float32Array(W), i;
+  for(i=0;i<W;i++) RG[i]=ridgeAt(i/W);
+  var topF=function(nx){ var j=(nx*W)|0; return RG[j<0?0:(j>=W?W-1:j)]; };
+  sky(P,W,H,topF,{ang:-0.58,cx:0.44,cy:0.26,wid:0.175});
+  var GX=0.622, GW=0.105, GH=0.080;
+  var gBase=topF(GX);
+  /* 지평선 잔광 — 이게 있어야 실루엣이 드러난다. 게르 뒤가 특히 밝다 */
+  field(P,W,H,function(nx,ny,px,py){
+    var r=RG[px];
+    if(ny<r-0.080) return null;
+    if(ny<r-0.001){
+      var near=Math.exp(-Math.pow((nx-GX)/0.115,2));
+      var g=Math.exp(-Math.pow((r-ny)/0.058,2))*(0.095+0.23*near)*(0.55+0.9*fbm(nx*3.2,7.7,2));
+      return g>0.006 ? [g,0] : null;
+    }
+    if(ny<r+0.005) return [0.34+0.40*fbm(nx*22,ny*22,2), 0];
+    var dxg=Math.abs(nx-GX);
+    var glow=Math.exp(-(dxg*dxg)/0.0030)*Math.exp(-Math.pow((ny-gBase)/0.048,2))*0.42;
+    if(glow>0.02) return [cl(glow,0,0.55), glow*1.9];
+    return null;
+  });
+  /* 게르 = 실루엣(파냄) — 원통 위에 완만한 원뿔 지붕 */
+  var gcx=GX*W, gy1=gBase*H, gy0=(gBase-GH)*H, hw=GW/2*W;
+  var x,y;
+  for(y=gy0|0; y<=gy1; y++){
+    var t=(y-gy0)/(gy1-gy0);
+    var half=hw*(t<0.50 ? (0.05+0.95*Math.pow(t/0.50,1.35)) : 1);  /* 완만한 원뿔 지붕 */
+    for(x=(gcx-half)|0; x<=gcx+half; x++){
+      var idx=((y*W+x)<<2);
+      DBUF[idx]=11; DBUF[idx+1]=26; DBUF[idx+2]=46; DBUF[idx+3]=255;
+    }
+  }
+  /* 문에서 새는 빛 + 앞 땅에 짧게 번짐 */
+  var dW=hw*0.30, dH=(gy1-gy0)*0.42, i2;
+  for(i2=0;i2<70;i2++){
+    var ox=(h2(i2,501)-0.5)*2*dW, oy=-h2(i2,502)*dH;
+    if(Math.abs(ox)>dW*(0.55+0.45*(1+oy/dH))) continue;
+    PC(gcx+ox+hw*0.10, gy1-2*u+oy, SIGC, 0.45+h2(i2,503)*0.55);
+  }
+  for(i2=0;i2<90;i2++){
+    var sp=h2(i2,505);
+    var gxp=gcx+hw*0.10+(h2(i2,504)-0.5)*hw*2.2*(0.4+sp);
+    var gyp=gy1+sp*0.026*H;
+    if(h2(i2,506) < (1-sp)*0.62) PC(gxp,gyp,SIGC,0.34*(1-sp));
+  }
+  for(var k=0;k<S.met;k++) meteor(PC,W,H,u,k+17);
+}
+
+var DRAW = { lap:sceneLap, stove:sceneStove, window:sceneWindow, desk:sceneDesk, ger:sceneGer };
+var DBUF = null;
+/* ===== 렌더 코어 끝 (여기까지 DOM 의존 0 — Node 검증 스크립트가 이 블록만 실행한다) ===== */
+</script>
+
+<script>
+/* ---------- 카피 ---------- */
+function tracked(ctx,text,x,y,sp){
+  var cx=x,i;
+  for(i=0;i<text.length;i++){ ctx.fillText(text[i],cx,y); cx+=ctx.measureText(text[i]).width+sp; }
+}
+function lines(ctx,arr,x,y,size,lh,color,weight,center){
+  ctx.fillStyle=color; ctx.font=weight+' '+size+'px '+FONT; ctx.textBaseline='alphabetic';
+  for(var i=0;i<arr.length;i++){
+    var tx=x;
+    if(center) tx = x - ctx.measureText(arr[i]).width/2;
+    ctx.fillText(arr[i], tx, y+i*size*lh);
+  }
+}
+function overlayText(ctx,W,H,u,id){
+  if(!S.txt) return;
+  var pad=78*u, arr=S.copy.split('\n');
+  var onPage = (id==='lap' && S.onpage==1);
+  ctx.fillStyle='rgba(245,241,232,.60)';
+  ctx.font='600 '+Math.round(25*u)+'px '+FONT; ctx.textBaseline='alphabetic';
+  tracked(ctx,S.label,pad,pad+18*u,5.4*u);
+
+  if(onPage){
+    var size=Math.round(52*u), lh=1.30;
+    var blockH=(arr.length-1)*size*lh;
+    var midY=H*0.745-blockH/2;
+    lines(ctx,arr,W*0.505,midY,size,lh,'#0B1A2E','600',true);
+    ctx.fillStyle='#FF6D00';
+    ctx.fillRect(W*0.505-32*u, midY-size-30*u, 64*u, 7*u);
+    ctx.fillStyle='rgba(245,241,232,.55)'; ctx.font='500 '+Math.round(24*u)+'px '+FONT;
+    ctx.fillText(S.meta,pad,H-pad+6*u);
+    return;
+  }
+  var base=Math.round(78*u);
+  if(arr.length>=4) base=Math.round(base*0.74);
+  else if(arr.length===3) base=Math.round(base*0.86);
+  var lh2=1.3, bh=(arr.length-1)*base*lh2;
+  var botY=H-pad-44*u, startY=botY-bh;
+  ctx.fillStyle='#FF6D00';
+  ctx.fillRect(pad,startY-base-44*u,78*u,9*u);
+  lines(ctx,arr,pad,startY,base,lh2,'#F5F1E8','600');
+  ctx.fillStyle='rgba(245,241,232,.55)'; ctx.font='500 '+Math.round(24*u)+'px '+FONT;
+  ctx.fillText(S.meta,pad,H-pad+6*u);
+}
+
+/* ---------- 렌더 ---------- */
+function renderTo(canvas,id,W,H){
+  canvas.width=W; canvas.height=H;
+  var ctx=canvas.getContext('2d'), u=W/1080;
+  SEED = SEEDS[id]; RAMP = RAMPS[S.ramp]; DENS = S.dens;
+  ctx.fillStyle=BG; ctx.fillRect(0,0,W,H);
+  var img=ctx.getImageData(0,0,W,H);
+  DBUF=img.data;
+  if(id==='window') WIPE=buildWipe(W,H);
+  (DRAW[id]||sceneLap)(mkPut(img.data,W,H), mkPutC(img.data,W,H), W, H, u);
+  ctx.putImageData(img,0,0);
+  overlayText(ctx,W,H,u,id);
+}
+
+var sheet=document.getElementById('sheet'), cells=[];
+SCENES.forEach(function(sc,i){
+  var box=document.createElement('div'); box.className='cell'+(sc.id===S.scene?' on':'');
+  var c=document.createElement('canvas');
+  box.appendChild(c);
+  var nm=document.createElement('div'); nm.className='nm'; nm.textContent=(i+1)+'. '+sc.nm;
+  var sb=document.createElement('div'); sb.className='sb'; sb.textContent=sc.sb;
+  box.appendChild(nm); box.appendChild(sb);
+  box.addEventListener('click',function(){
+    S.scene=sc.id;
+    cells.forEach(function(n){ n.classList.remove('on'); });
+    box.classList.add('on');
+    syncFields(); big();
+  });
+  sheet.appendChild(box); cells.push(box);
+});
+
+function thumbs(){
+  var sz=SIZES[S.ratio], w=344, h=Math.round(344*sz[1]/sz[0]);
+  SCENES.forEach(function(sc,i){
+    renderTo(cells[i].querySelector('canvas'), sc.id, w, h);
+  });
+}
+function big(){
+  var sz=SIZES[S.ratio];
+  renderTo(document.getElementById('cv'), S.scene, sz[0], sz[1]);
+  var sc=null,i;
+  for(i=0;i<SCENES.length;i++) if(SCENES[i].id===S.scene) sc=SCENES[i];
+  document.getElementById('note').innerHTML =
+    '<b>'+sc.nm+'</b>'+sc.desc+
+    '<div style="margin-top:10px"><b>왜 이게 따뜻한가</b>'+sc.why+'</div>'+
+    '<div style="margin-top:10px"><b>한 수 더</b>'+sc.mo+'</div>';
+  document.getElementById('stat').textContent =
+    sz[0]+' × '+sz[1]+' px · '+sc.nm+' · 시드 '+SEEDS[S.scene]+' · 색 '+S.ramp+' '+Math.round(S.camt*100)+'%';
+}
+function all(){ thumbs(); big(); }
+
+function syncFields(){
+  var isLap=(S.scene==='lap')?'':'none';
+  document.getElementById('onpageFld').style.display=isLap;
+  document.getElementById('bhFld').style.display=isLap;
+  document.getElementById('ptFld').style.display=isLap;
+}
+
+function seg(id,key,fn){
+  var host=document.getElementById(id);
+  host.addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    S[key]=fn?fn(b.dataset.v):b.dataset.v;
+    Array.prototype.forEach.call(host.children,function(n){ n.classList.toggle('on',n===b); });
+    all();
+  });
+}
+seg('ramp','ramp');
+seg('met','met',function(v){ return +v; });
+seg('txt','txt',function(v){ return v==='on'; });
+seg('onpage','onpage',function(v){ return +v; });
+seg('bh','bh',function(v){ return v==='1'; });
+seg('pagetext','pagetext',function(v){ return v==='1'; });
+
+document.getElementById('ratio').addEventListener('change',function(e){ S.ratio=e.target.value; all(); });
+['label','copy','metaTxt'].forEach(function(id){
+  document.getElementById(id).addEventListener('input',function(e){
+    S[id==='metaTxt'?'meta':id]=e.target.value; big();
+  });
+});
+document.getElementById('camt').addEventListener('input',function(e){
+  S.camt=+e.target.value/100; document.getElementById('camtN').textContent=e.target.value; all();
+});
+document.getElementById('dens').addEventListener('input',function(e){
+  S.dens=+e.target.value/100; document.getElementById('densN').textContent=e.target.value; all();
+});
+document.getElementById('re').addEventListener('click',function(){
+  SEEDS[S.scene]=(SEEDS[S.scene]*7919+13)%99991; all();
+});
+document.getElementById('reall').addEventListener('click',function(){
+  SCENES.forEach(function(sc){ SEEDS[sc.id]=(SEEDS[sc.id]*7919+13)%99991; });
+  all();
+});
+document.getElementById('dl').addEventListener('click',function(){
+  document.getElementById('cv').toBlob(function(b){
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(b);
+    a.download='synk_warm_'+S.scene+'_'+S.ratio.replace(':','x')+'_'+SEEDS[S.scene]+'.png';
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); },1000);
+  },'image/png');
+});
+
+syncFields();
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(all); else all();
+all();
+</script>
+</body>
+</html>
