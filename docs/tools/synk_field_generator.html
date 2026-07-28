@@ -89,6 +89,18 @@
       </div>
     </div>
 
+    <div class="fld" id="objFld">
+      <label>오브제</label>
+      <select id="obj">
+        <option value="toono">게르 천창 — 시작·몽골</option>
+        <option value="ignition">발화 — 첫 이해의 순간</option>
+        <option value="wave">파동 간섭 — 연결</option>
+        <option value="orbit">궤도 — 시즌 순환</option>
+        <option value="horizon">지평선 — 새벽·출발</option>
+        <option value="lattice">결정 격자 — 시냅스망</option>
+      </select>
+    </div>
+
     <div class="fld" id="spokeFld">
       <label>천창 살 개수</label>
       <div class="row">
@@ -130,7 +142,7 @@ var FONT = "'Pretendard Variable',Pretendard,-apple-system,'Segoe UI','Malgun Go
 
 var S = { mode:'dither', ratio:'4:5', label:'SYNK LAB',
           copy:'3개월 뒤,\n말이 트입니다', meta:'시즌 1 · 선착순 24명',
-          sig:'orange', seed:17, spokes:8, comp:'tr' };
+          sig:'orange', seed:17, spokes:8, comp:'tr', obj:'toono' };
 
 var cv = document.getElementById('cv');
 
@@ -150,43 +162,174 @@ function lines(ctx, arr, x, y, size, lh, color, weight){
   return y + (arr.length-1)*size*lh;
 }
 
-function drawToono(ctx, W, H, u, R){
-  var img = ctx.getImageData(0,0,W,H), d = img.data;
-  var ink = rgb('#F5F1E8'), x, y, k, t;
-  var cx, cy, rr;
-  if(S.comp === 'tr'){ cx = W*0.82; cy = H*0.20; rr = W*0.56; }
-  else if(S.comp === 'bl'){ cx = W*0.16; cy = H*0.80; rr = W*0.54; }
-  else { cx = W*0.5; cy = H*0.42; rr = W*0.40; }
+function anchor(W, H){
+  if(S.comp === 'tr') return [W*0.82, H*0.20];
+  if(S.comp === 'bl') return [W*0.16, H*0.80];
+  return [W*0.5, H*0.42];
+}
 
-  function put(px, py){
-    px = px|0; py = py|0;
-    if(px<0||py<0||px>=W||py>=H) return;
-    var i = ((py*W+px)<<2);
-    d[i]=ink[0]; d[i+1]=ink[1]; d[i+2]=ink[2]; d[i+3]=255;
+function spark(P, cx, cy, L, R){
+  var i, p;
+  for(i=1;i<L;i++){
+    p = 1-i/L; p = p*p;
+    if(R()<p*0.95) P(cx, cy-i);
+    if(R()<p*0.80) P(cx, cy+i*0.75);
+    if(R()<p*0.55) P(cx-i*0.85, cy);
+    if(R()<p*0.55) P(cx+i*0.85, cy);
   }
+}
 
-  var cell = 5*u, wave = 0.63/u;
+function objToono(P, W, H, u, R, cx, cy){
+  var rr = (S.comp === 'c') ? W*0.40 : W*0.56, x, y, k, t;
+  var cell = 5*u, wv = 0.63/u;
   for(y=0;y<H;y++){
     for(x=0;x<W;x++){
       var dx=(x-cx)/rr, dy=(y-cy)/rr, r=Math.sqrt(dx*dx+dy*dy);
       if(r>1.04) continue;
       var den = Math.max(0, 1-r*0.72)*0.62;
       var c2 = (((x/cell)|0)+((y/cell)|0))%2;
-      var thr = c2 ? (Math.sin(x*wave)*0.5+0.5) : (Math.sin(y*wave)*0.5+0.5);
-      if(R() < thr*den) put(x,y);
+      var thr = c2 ? (Math.sin(x*wv)*0.5+0.5) : (Math.sin(y*wv)*0.5+0.5);
+      if(R() < thr*den) P(x,y);
     }
   }
   for(k=0;k<S.spokes;k++){
     var an = k*6.283/S.spokes - 0.3;
     for(t=0;t<rr*1.02;t+=0.6){
-      if(R() < 0.66*(1-t/(rr*1.02)*0.25)) put(cx+Math.cos(an)*t, cy+Math.sin(an)*t);
+      if(R() < 0.66*(1-t/(rr*1.02)*0.25)) P(cx+Math.cos(an)*t, cy+Math.sin(an)*t);
     }
   }
   var steps = Math.round(rr*7);
   for(k=0;k<steps;k++){
     var a2 = k/steps*6.283;
-    if(R() < 0.72) put(cx+Math.cos(a2)*rr, cy+Math.sin(a2)*rr);
+    if(R() < 0.72) P(cx+Math.cos(a2)*rr, cy+Math.sin(a2)*rr);
   }
+}
+
+function objIgnition(P, W, H, u, R, cx, cy){
+  var span = Math.min(W,H), rays = Math.round(W*H*0.00068), i, t;
+  for(i=0;i<rays;i++){
+    var a = R()*6.283, len = Math.pow(R(), 2.1)*span*1.05, bend = (R()-0.5)*0.55;
+    for(t=0;t<len;t+=1.0){
+      var cv = Math.sin(t*0.011/u)*bend;
+      var p = (1-t/len)*0.52+0.02;
+      if(R() < p*0.52) P(cx+Math.cos(a+cv)*t, cy+Math.sin(a+cv)*t);
+    }
+  }
+  var core = Math.round(W*H*0.0024);
+  for(i=0;i<core;i++){
+    var a2 = R()*6.283, r2 = Math.pow(R(), 3.0)*span*0.11;
+    P(cx+Math.cos(a2)*r2, cy+Math.sin(a2)*r2);
+  }
+  spark(P, cx, cy, span*0.44, R);
+}
+
+function objWave(P, W, H, u, R, cx, cy){
+  var bx = cx + W*0.66, by = cy + H*0.24, k = 0.052/u, x, y;
+  var far = Math.max(W,H)*0.92;
+  for(y=0;y<H;y++){
+    for(x=0;x<W;x++){
+      var d1 = Math.sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy));
+      var d2 = Math.sqrt((x-bx)*(x-bx)+(y-by)*(y-by));
+      var v = Math.sin(d1*k) + Math.sin(d2*k);
+      var att = Math.max(0, 1-Math.min(d1,d2)/far);
+      var p = Math.max(0, (v+0.35)/2.35)*att*att*0.62;
+      if(p>0.004 && R()<p) P(x,y);
+    }
+  }
+}
+
+function objOrbit(P, W, H, u, R, cx, cy){
+  var span = Math.min(W,H), i, s, j;
+  for(i=0;i<8;i++){
+    var rx = span*(0.15+i*0.088), ry = rx*(0.24+R()*0.54), rot = R()*3.1416;
+    var cs = Math.cos(rot), sn = Math.sin(rot), steps = Math.round(rx*16);
+    var band = 1.6*u;
+    for(s=0;s<steps;s++){
+      var a = s/steps*6.283, ex = Math.cos(a)*rx, ey = Math.sin(a)*ry;
+      var bx = cx+ex*cs-ey*sn, by = cy+ex*sn+ey*cs;
+      for(j=0;j<2;j++){
+        if(R() < 0.62) P(bx+(R()-0.5)*band, by+(R()-0.5)*band);
+      }
+    }
+  }
+  var core = Math.round(W*H*0.0026);
+  for(i=0;i<core;i++){
+    var a2 = R()*6.283, r2 = Math.pow(R(), 2.6)*span*0.1;
+    P(cx+Math.cos(a2)*r2, cy+Math.sin(a2)*r2);
+  }
+}
+
+function objHorizon(P, W, H, u, R, cx){
+  var hy = H*0.63, span = Math.min(W,H), rr = span*0.21;
+  var sy = hy - rr*0.28, x, y, i;
+  for(y=0;y<H;y++){
+    for(x=0;x<W;x++){
+      var dd = Math.sqrt((x-cx)*(x-cx)+(y-sy)*(y-sy))/rr;
+      if(dd>1.02) continue;
+      if(R() < Math.max(0, 1-dd*0.78)*0.78) P(x,y);
+    }
+  }
+  for(x=0;x<W;x++){
+    if(R()<0.78) P(x, hy);
+    if(R()<0.34) P(x, hy+1.4*u);
+  }
+  for(i=0;i<Math.round(W*0.9);i++){
+    var bx = cx + (R()-0.5)*rr*1.9, up = hy - Math.pow(R(), 1.6)*span*0.75;
+    if(R() < 0.5*(1-Math.abs(bx-cx)/(rr*1.1))) P(bx, up);
+  }
+  for(y=hy+2*u;y<H;y++){
+    var fade = 1-(y-hy)/(H-hy);
+    var wob = Math.sin(y*0.09/u)*rr*0.12;
+    for(x=0;x<W;x++){
+      var lat = Math.abs(x-cx-wob)/(rr*1.5);
+      if(lat<1 && R() < fade*fade*0.42*(1-lat)) P(x,y);
+    }
+  }
+}
+
+function objLattice(P, W, H, u, R, cx, cy){
+  var cell = Math.min(W,H)*0.108, nodes = [], gx, gy, i, j, s;
+  for(gy=-1; gy*cell<H+cell; gy++){
+    for(gx=-1; gx*cell<W+cell; gx++){
+      nodes.push([gx*cell+(R()-0.5)*cell*0.6, gy*cell+(R()-0.5)*cell*0.6]);
+    }
+  }
+  var far = Math.max(W,H)*1.15;
+  for(i=0;i<nodes.length;i++){
+    for(j=i+1;j<nodes.length;j++){
+      var ax=nodes[i][0], ay=nodes[i][1], bx=nodes[j][0], by=nodes[j][1];
+      var d = Math.sqrt((ax-bx)*(ax-bx)+(ay-by)*(ay-by));
+      if(d > cell*1.32) continue;
+      var steps = Math.round(d*1.6);
+      for(s=0;s<steps;s++){
+        var t = s/steps, px = ax+(bx-ax)*t, py = ay+(by-ay)*t;
+        var att = Math.max(0.08, 1-Math.sqrt((px-cx)*(px-cx)+(py-cy)*(py-cy))/far);
+        if(R() < 0.82*att) P(px+(R()-0.5)*1.3*u, py+(R()-0.5)*1.3*u);
+      }
+    }
+  }
+  for(i=0;i<nodes.length;i++){
+    var nx=nodes[i][0], ny=nodes[i][1];
+    var at2 = Math.max(0, 1-Math.sqrt((nx-cx)*(nx-cx)+(ny-cy)*(ny-cy))/(far*0.85));
+    if(R() < at2*0.92){
+      for(j=0;j<18;j++) P(nx+(R()-0.5)*5.5*u, ny+(R()-0.5)*5.5*u);
+    }
+  }
+}
+
+var OBJECTS = { toono:objToono, ignition:objIgnition, wave:objWave,
+                orbit:objOrbit, horizon:objHorizon, lattice:objLattice };
+
+function drawObject(ctx, W, H, u, R){
+  var img = ctx.getImageData(0,0,W,H), d = img.data, ink = rgb('#F5F1E8'), k;
+  function put(px, py){
+    px = px|0; py = py|0;
+    if(px<0||py<0||px>=W||py>=H) return;
+    var i = ((py*W+px)<<2);
+    d[i]=ink[0]; d[i+1]=ink[1]; d[i+2]=ink[2]; d[i+3]=255;
+  }
+  var a = anchor(W,H);
+  (OBJECTS[S.obj] || objToono)(put, W, H, u, R, a[0], a[1]);
   var dust = Math.round(W*H*0.0028);
   for(k=0;k<dust;k++){ if(R()<0.5) put(R()*W, R()*H); }
   ctx.putImageData(img,0,0);
@@ -208,7 +351,7 @@ function render(){
   ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
 
   if(S.mode === 'dither'){
-    drawToono(ctx, W, H, u, R);
+    drawObject(ctx, W, H, u, R);
   } else if(S.mode === 'riso'){
     var ex, ey, ew, eh;
     if(S.comp === 'tr'){ ex=W*0.34; ey=H*0.14; }
@@ -259,23 +402,32 @@ function render(){
     W + ' × ' + H + ' px · ' + S.mode + ' · 시드 ' + S.seed;
 }
 
+function syncFields(){
+  document.getElementById('objFld').style.display = (S.mode === 'dither') ? '' : 'none';
+  document.getElementById('spokeFld').style.display =
+    (S.mode === 'dither' && S.obj === 'toono') ? '' : 'none';
+}
+
 function seg(id, key){
   var host = document.getElementById(id);
   host.addEventListener('click', function(e){
     var b = e.target.closest('button'); if(!b) return;
     S[key] = b.dataset.v;
     Array.prototype.forEach.call(host.children, function(n){ n.classList.toggle('on', n === b); });
-    document.getElementById('spokeFld').style.display = (S.mode === 'dither') ? '' : 'none';
+    syncFields();
     render();
   });
 }
 seg('mode','mode'); seg('sig','sig');
 
-function bind(id, key){
-  document.getElementById(id).addEventListener('input', function(e){ S[key] = e.target.value; render(); });
+function bind(id, key, after){
+  document.getElementById(id).addEventListener('input', function(e){
+    S[key] = e.target.value; if(after) after(); render();
+  });
 }
 bind('label','label'); bind('copy','copy'); bind('metaTxt','meta');
-bind('ratio','ratio'); bind('comp','comp');
+bind('ratio','ratio'); bind('comp','comp'); bind('obj','obj', syncFields);
+syncFields();
 
 document.getElementById('spokes').addEventListener('input', function(e){
   S.spokes = +e.target.value;
@@ -291,7 +443,8 @@ document.getElementById('dl').addEventListener('click', function(){
   cv.toBlob(function(b){
     var a = document.createElement('a');
     a.href = URL.createObjectURL(b);
-    a.download = 'synk_' + S.mode + '_' + S.ratio.replace(':','x') + '_' + S.seed + '.png';
+    a.download = 'synk_' + (S.mode === 'dither' ? S.obj : S.mode) + '_' +
+                 S.ratio.replace(':','x') + '_' + S.seed + '.png';
     a.click();
     setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
   }, 'image/png');
