@@ -102,7 +102,7 @@
     </div>
 
     <div class="fld" id="bhFld">
-      <label>블랙홀 + 폭죽 유성 (1안 전용)</label>
+      <label>블랙홀 + 폭죽 유성 (1·3안)</label>
       <div class="seg" id="bh">
         <button data-v="1" class="on">있음</button>
         <button data-v="0">없음</button>
@@ -422,14 +422,21 @@ function meteorBH(P,PC,W,H,u,k,bh){
 /* 1인칭으로 내려다본 자기 두 다리 — 담요가 아니라 신체(유호님 2026-07-28).
    원기둥 셰이딩(축까지 거리 → 법선)으로 볼륨을 만든다. 윤곽선은 긋지 않는다. */
 /* 지평선을 두지 않는다 — 별이 다리 좌우·아래까지 이어져야 우주에 떠 있는 것이 된다 */
-var LEG={ sepA:0.256, sepB:0.222, radA:0.205, radB:0.174, base:1.02, knee:0.800 };
-var KNEECAP=0.062;
+var LEG={ sepA:0.296, sepB:0.266, radA:0.205, radB:0.174, base:1.02, knee:0.800 };
+var KNEECAP=0.052;
+/* 다리는 단순히 가늘어지는 원기둥이 아니다 — 허벅지에서 좁아졌다가 슬개골에서 다시
+   볼록해지고 무릎 끝에서 급히 좁아진다. 이 잘록함이 없으면 무릎이 아니라 기둥 끝이 된다 */
+function legProfile(t){
+  if(t<0.70) return 1 - 0.24*(t/0.70);
+  if(t<0.90) return 0.76 + 0.115*Math.sin((t-0.70)/0.20*Math.PI);
+  return 0.76 - 0.19*((t-0.90)/0.10);
+}
 function legAt(nx,ny){
-  var t=(LEG.base-ny)/(LEG.base-LEG.knee), sep, rad;
+  var t=(LEG.base-ny)/(LEG.base-LEG.knee), sep, rad, cap=-1;
   if(t<0) return null;
   if(t<=1){
     sep=LEG.sepA+(LEG.sepB-LEG.sepA)*t;
-    rad=LEG.radA+(LEG.radB-LEG.radA)*t;
+    rad=LEG.radA*legProfile(t);
   } else {
     /* 무릎 위쪽은 둥글게 마감된다 — 수평으로 자르면 판자가 된다 */
     var over=(t-1)*(LEG.base-LEG.knee);
@@ -437,13 +444,14 @@ function legAt(nx,ny){
     var q=over/KNEECAP;
     sep=LEG.sepB;
     rad=LEG.radB*Math.sqrt(Math.max(0,1-q*q));
+    cap=q;
   }
   rad *= 1+(fbm(ny*17+2.9, 5.7, 3)-0.5)*0.075;   /* 윤곽이 자로 잰 듯하면 안 된다 */
   var cxL=0.5-sep, cxR=0.5+sep;
   var dL=Math.abs(nx-cxL), dR=Math.abs(nx-cxR), d, side, cx;
   if(dL<dR){ d=dL; side=-1; cx=cxL; } else { d=dR; side=1; cx=cxR; }
   if(d>rad) return null;
-  return [d/rad, side, cl(t,0,1), cx, rad];
+  return [d/rad, side, cl(t,0,1), cx, rad, cap];
 }
 /* 각 x에서 다리가 시작되는 y를 실제로 훑어 구한다(반경이 y에 따라 변하므로 식으로 못 푼다) */
 function legTopScan(nx){
@@ -451,24 +459,25 @@ function legTopScan(nx){
   return 1.10;
 }
 /* 책은 무릎 위에 얹힌다. 좌우를 일부러 다르게 — 완전 대칭이면 관(棺)처럼 보인다 */
-var BT=0.638, BB=0.862;
+/* 무릎 위에서 내려다본 책은 원근 때문에 세로가 눌린다 — 세로로 길면 석판이 된다 */
+var BT=0.702, BB=0.858;
 function bookGeom(nx,ny){
   var t = (ny-BT)/(BB-BT);
   if(t<0||t>1) return null;
   /* 접힘선도 곧지 않다 */
-  var cx = 0.5 + 0.022*t + Math.sin(t*2.6)*0.008;
-  var half = (nx<cx) ? (0.158+0.118*t) : (0.174+0.144*t);
-  half += (fbm(ny*26+5.5, 3.3, 3)-0.5)*0.014;      /* 가장자리 미세 굴곡 */
-  var corner = cl(Math.min(t,1-t)/0.055, 0, 1);
-  half *= 0.87+0.13*Math.sqrt(corner);              /* 모서리는 둥글다 */
+  var cx = 0.5 + 0.020*t + Math.sin(t*2.6)*0.008;
+  var half = (nx<cx) ? (0.170+0.124*t) : (0.186+0.150*t);
+  half += (fbm(ny*30+5.5, 3.3, 3)-0.5)*0.016;      /* 가장자리 미세 굴곡 */
+  var corner = cl(Math.min(t,1-t)/0.070, 0, 1);
+  half *= 0.86+0.14*Math.sqrt(corner);              /* 모서리는 둥글다 */
   var off = (nx-cx)/half;
   if(Math.abs(off)>1) return null;
   return [t, off, half];
 }
 function bookTopAt(nx){
   var a=Math.abs(nx-0.5);
-  if(a<0.158) return BT;
-  var t=(a-0.158)/0.118;
+  if(a<0.170) return BT;
+  var t=(a-0.170)/0.124;
   return t>1 ? 9 : BT+t*(BB-BT);
 }
 /* 페이지를 잡은 손 — 얼굴은 넣지 않되(O4) 손은 1인칭 몰입을 만든다.
@@ -548,16 +557,21 @@ function sceneLap(P,PC,W,H,u){
     if(g){
       var t=g[0], off=g[1], s=Math.abs(off);
       /* 좌우 두 페이지가 각각 볼록한 곡면 — 평평하면 도로로 읽힌다 */
-      var curve = Math.sin(s*Math.PI*0.88);
-      var L = 0.30 + 0.66*curve;
-      L -= 0.34*Math.exp(-off*off/0.00085);    /* 접힘(gutter) 계곡 — 넓으면 두 판으로 갈라진다 */
-      L -= 0.14*(1-t);                          /* 먼 쪽이 어둡다 */
-      /* 종이는 평평하지 않다 — 저주파 물결이 있어야 딱딱함이 풀린다 */
-      L += (fbm(nx*4.6+11.3, ny*7.8+3.1, 3)-0.5)*0.17*(0.32+0.68*s);
-      L += (fbm(nx*100, ny*100, 2)-0.5)*0.075;  /* 종이 결 */
-      if(t>0.955){                              /* 아래 모서리에 종이 다발이 보인다 */
-        var lay=((t-0.955)/0.045)*3.4, lf=lay-Math.floor(lay);
-        L *= (lf<0.42 ? 0.62 : 0.98);
+      /* 종이 단면의 실제 기울기 → 법선 → 밝기.
+         접힘에서 급히 솟아 중간은 거의 평평하고 바깥은 제 무게로 처진다.
+         이 처짐이 없으면 두꺼운 판으로 보인다 */
+      var slope = 4.6*Math.exp(-s*4.6) - 2.9*Math.pow(s,4.6);
+      var L = 0.26 + 0.74/Math.sqrt(1+slope*slope*0.42);
+      L -= 0.30*Math.exp(-off*off/0.0006);      /* 접힘(gutter) 계곡 */
+      L -= 0.13*(1-t);                          /* 먼 쪽이 어둡다 */
+      /* 종이는 평평하지 않다 — 크기가 다른 굴곡 셋이 겹쳐야 딱딱함이 풀린다 */
+      L += (fbm(nx*3.4+11.3, ny*9.0+3.1, 3)-0.5)*0.19*(0.30+0.70*s);
+      L += (fbm(nx*13+5.1, ny*26+7.3, 2)-0.5)*0.11;
+      L += (fbm(nx*100, ny*100, 2)-0.5)*0.07;   /* 종이 결 */
+      if(s>0.93) L += (s-0.93)/0.07*0.20;       /* 종이 단면이 빛을 받는다 — 얇아 보이는 이유 */
+      if(t>0.945){                              /* 아래 모서리에 종이 다발이 보인다 */
+        var lay=((t-0.945)/0.055)*3.8, lf=lay-Math.floor(lay);
+        L *= (lf<0.40 ? 0.66 : 0.99);
       }
       var lift = 0;
       if(off>0.55 && t>0.66){                   /* 넘기기 직전 들린 모서리 */
@@ -591,18 +605,24 @@ function sceneLap(P,PC,W,H,u){
     var z=Math.sqrt(Math.max(0,1-sN*sN));       /* 원기둥 볼륨 */
     var inner = side<0 ? cl((nx-(cx-rad))/(2*rad),0,1) : cl(((cx+rad)-nx)/(2*rad),0,1);
     var fold=fbm(nx*19+3.1, ny*5.2, 3);         /* 옷 주름은 다리 방향으로 길다 */
-    var dxb=nx-0.5, dyb=ny-0.740;
-    var fall=Math.exp(-(dxb*dxb*0.95+dyb*dyb)/0.150);
+    /* 빛은 무릎에만 닿고 허벅지는 어둠으로 멀어진다 — 무릎 두 개만 남아야 무릎으로 읽힌다 */
+    var dxb=nx-0.5, dyb=ny-0.768;
+    var fall=Math.exp(-(dxb*dxb*0.80+dyb*dyb*1.35)/0.105);
     /* 아래로 갈수록 어둠에 잠긴다 — 어디서 시작되는지 모를 때 떠 있는 것이 된다 */
     var bot=cl((1.035-ny)/0.130,0,1);
     var L=z*(0.20+0.80*inner)*fall*(0.46+0.86*fold)*bot;
+    /* 무릎 윗면은 책빛을 정면으로 받는다 — 이 하이라이트가 슬개골을 만든다 */
+    if(lg[5]>=0) L *= 1.55 - 0.55*lg[5]*lg[5];
     /* 별빛이 윤곽을 얇게 훑는 rim — 어둠 속에 떠 있음을 만드는 건 이 한 줄이다 */
     L += Math.pow(sN,12)*0.17*bot*(0.40+0.60*fbm(nx*30,ny*30,2));
     if(ny<kt+0.010) L*=1.55;                    /* 무릎이 빛을 받는다 */
-    /* 책이 무릎에 드리우는 그림자 — 단을 나누면 검은 띠가 생기므로 거리로 부드럽게 */
+    /* 접촉 그림자 — 닿는 자리 바로 밑이 가장 어두워야 '얹혀 있다'가 된다.
+       이게 없으면 아무리 그림자를 부드럽게 깔아도 책이 떠 보인다 */
     var sh=0, k;
-    for(k=0;k<4;k++){ if(bookGeom(nx, ny-0.010-k*0.013)){ sh=1-k*0.22; break; } }
-    L*=(1-sh*0.72);
+    for(k=0;k<6;k++){ if(bookGeom(nx, ny-0.003-k*0.011)){ sh=1-k*0.155; break; } }
+    L*=(1-sh*sh*0.80);
+    var kneeShade = 1 - 0.20*Math.exp(-Math.pow((lg[2]-0.78)/0.085,2));  /* 무릎 아래 그늘 */
+    L*=kneeShade;
     L=cl(L,0,0.90);
     return [L, L*0.15];
   });
@@ -707,7 +727,9 @@ function wipeAt(nx,ny){
   return WIPE.d[y*WIPE.w+x];
 }
 function sceneWindow(P,PC,W,H,u){
-  var LX=0.655, LY=0.315;
+  /* 유리 너머의 사건 = 폭죽이 터지는 순간. 그 빛이 곧 이 화면의 광원이다(유호님 2026-07-28) */
+  var bhW = S.bh ? {x:0.662,y:0.302,r:0.0132} : null;
+  var LX = bhW ? bhW.x : 0.655, LY = bhW ? bhW.y : 0.315;
   field(P,W,H,function(nx,ny,px,py){
     var pad=0.062;
     if(nx<pad||nx>1-pad||ny<pad*0.80||ny>1-pad*0.80) return null;
@@ -729,7 +751,26 @@ function sceneWindow(P,PC,W,H,u){
     L=cl(L,0,1);
     return [L, heat];
   });
-  for(var k=0;k<S.met;k++) meteor(PC,W,H,u,k+9);
+  if(bhW){
+    /* 유리·창틀 밖은 찍지 않고, 김 낀 곳에서는 번지고 성겨진다.
+       닦아낸 자국 안에서만 사건이 선명해진다 — 닦은 만큼만 보인다 */
+    var glass=function(fn){
+      return function(x,y,a1,a2){
+        var nx=x/W, ny=y/H, pad=0.062;
+        if(nx<pad||nx>1-pad||ny<pad*0.80||ny>1-pad*0.80) return;
+        if(Math.abs(nx-0.415)<0.014 || Math.abs(ny-0.470)<0.013) return;
+        var wn=cl(wipeAt(nx,ny)*1.35,0,1);
+        if(wn>0.52){ fn(x,y,a1,a2); return; }
+        if(h2((x*2)|0,(y*2)|0) > 0.22+0.62*wn) return;
+        fn(x+(h2(x|0,17)-0.5)*8*u, y+(h2(y|0,19)-0.5)*8*u, a1, a2);
+      };
+    };
+    var gP=glass(P), gPC=glass(PC);
+    blackhole(gP,gPC,W,H,u,bhW);
+    if(S.met>0) meteorBH(gP,gPC,W,H,u,3,bhW);
+  } else {
+    for(var k=0;k<S.met;k++) meteor(PC,W,H,u,k+9);
+  }
 }
 
 /* ================= 장면 4 · 밤의 책상 ================= */
@@ -946,7 +987,7 @@ function all(){ thumbs(); big(); }
 function syncFields(){
   var isLap=(S.scene==='lap')?'':'none';
   document.getElementById('onpageFld').style.display=isLap;
-  document.getElementById('bhFld').style.display=isLap;
+  document.getElementById('bhFld').style.display=(S.scene==='lap'||S.scene==='window')?'':'none';
   document.getElementById('ptFld').style.display=isLap;
   document.getElementById('handFld').style.display=isLap;
 }
