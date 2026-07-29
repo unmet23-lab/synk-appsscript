@@ -13,7 +13,8 @@
 
 ## SYNK
 
-- SYNK 조직계보(2026-07-17 확정, 정본=`docs/조직계보_정본_v1.md`): 고객 브랜드 3개(SYNK LAB·SYNK STUDIO·SYNK LIFE) + 전사 레이어 2개(SYNK IP·SYNK COMMON SYSTEM). 구 6부문 계보(FASHION·F&C·ABROAD·PUBLISH 포함)는 폐기·흡수됨. SYNK LIFE는 첫 제품 전까지 대외 비공개.
+- SYNK 조직계보(2026-07-17 확정 · 2026-07-29 v1.1 표기 전환, 정본=`docs/조직계보_정본_v1.md`): 고객 브랜드 3개(SYNK LAB·SYNK STUDIO·SYNK LIFE) + 전사 레이어 2개(SYNK IP·SYNK COMMON SYSTEM). 구 6부문 계보(FASHION·F&C·ABROAD·PUBLISH 포함)는 폐기·흡수됨. SYNK LIFE는 첫 제품 전까지 대외 비공개.
+- **조직 표기는 조직도가 아니라 로드맵이다(v1.1)**: 지금 여는 것 = LAB / 지금 쌓는 것 = STUDIO·IP·COMMON SYSTEM / 아직 아닌 것 = LIFE. 세로로 읽으면 시간, 꼬리표(브랜드·레이어)를 읽으면 성격. 조직·브랜드를 언급하는 문서를 쓸 때는 이 축을 먼저 쓴다.
 - 현재 핵심은 SYNK LAB: 몽골 학생 대상 게임화 한국어 학원이며 영어 교육도 포함한다.
 - 몽골어 최종 감수는 AI가 아니라 현지 원어민 사람이 담당한다.
 - 디자인 최종 조립은 Canva, 운영·콘텐츠 검수는 Notion을 주로 사용한다.
