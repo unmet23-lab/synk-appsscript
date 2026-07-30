@@ -735,7 +735,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.79'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고 · [v9.77] profiles 무결성 3면 감시 — Glide 상세 화면 Edit/Add 잔재 실측(07-28) 후속: 유령 행(user_id 공란, 기존 !r[0] 스킵의 사각)·user_id 중복·무효 role을 nightJobs(매일·이상 시에만 메일·동일 내용 dedup)+주간 워치독+preflight 3면에서 자동 발각 · [v9.78] 강사 반 HUD 리디자인 — 유호 07-28 "반 탭이 만들다 만 느낌" → 낱장 줄글 4카드(v9.15)를 SYNK CLASS HUD로 격상: 14열 반상세HTML = 헤더 스탯 스트립(미션 n건·루틴 k/4·보스 HP) + 미션(유형 색 필·명단 캡)·루틴(게이지+2×2)·레이드(사정권 콜아웃 흡수)·왕관(미수혜 pill 후보 명단), Glide 기바인딩이라 클릭 0 적용·9~13열 낱장도 동일 디자인(설계=ban-tab-redesign 워크플로 A/B 판정) · [v9.79] 미니멀 스킨 — 유호 "훨씬 트렌디하고 미니멀하게, 뼈대 같은 느낌" → 실렌더 A/B(M1 에어리 라이트 vs M2 다크 히어로) 판정 M2 채택: 유색 보더 전면 폐지(흰 카드+이중 소프트 섀도)·타이포 3단(그레이 라벨→잉크 빅넘버→본문)·색 3계 절제(블루·앰버·그린)·이모지 카드당 ≤1·미션 도트 3톤·상세 헤더=딥 네이비 다크 히어로(블루 radial glow)
+const SYNK_VERSION = 'v9.80'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고 · [v9.77] profiles 무결성 3면 감시 — Glide 상세 화면 Edit/Add 잔재 실측(07-28) 후속: 유령 행(user_id 공란, 기존 !r[0] 스킵의 사각)·user_id 중복·무효 role을 nightJobs(매일·이상 시에만 메일·동일 내용 dedup)+주간 워치독+preflight 3면에서 자동 발각 · [v9.78] 강사 반 HUD 리디자인 — 유호 07-28 "반 탭이 만들다 만 느낌" → 낱장 줄글 4카드(v9.15)를 SYNK CLASS HUD로 격상: 14열 반상세HTML = 헤더 스탯 스트립(미션 n건·루틴 k/4·보스 HP) + 미션(유형 색 필·명단 캡)·루틴(게이지+2×2)·레이드(사정권 콜아웃 흡수)·왕관(미수혜 pill 후보 명단), Glide 기바인딩이라 클릭 0 적용·9~13열 낱장도 동일 디자인(설계=ban-tab-redesign 워크플로 A/B 판정) · [v9.79] 미니멀 스킨 — 유호 "훨씬 트렌디하고 미니멀하게, 뼈대 같은 느낌" → 실렌더 A/B(M1 에어리 라이트 vs M2 다크 히어로) 판정 M2 채택: 유색 보더 전면 폐지(흰 카드+이중 소프트 섀도)·타이포 3단(그레이 라벨→잉크 빅넘버→본문)·색 3계 절제(블루·앰버·그린)·이모지 카드당 ≤1·미션 도트 3톤·상세 헤더=딥 네이비 다크 히어로(블루 radial glow) · [v9.80] 조 편성·역할 로테이션 — 강사 수업 규칙 v3.0 §11 배선 대기 1순위(유호 07-31 "앱 자동 제안" 확정): groups 시트(시즌×반 1벌·실력 스네이크+말수·학교 계층 내 교환)·역할 4개 차시 순환·2인 짝 3조합·발표 순번(로테이션이 8주 전원 2회를 자동 보장)을 앱이 짠다. 역할·짝·발표자는 저장하지 않고 차시 번호에서 계산 — 매 차시 쓰기 0(월 500건 한도 불변). 강사 브리핑에 조 편성표 동봉
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -842,6 +842,9 @@ function rarityOf(t) { return TITLE_RARITY[t] || 1; }
 const KPI_CHURN_DAYS = 30;           // 이탈 판정: 마지막 활동일로부터 N일+ 무활동
 const KPI_SHEET_NAME = 'kpi_metrics';
 const KPI_HEADERS = ['월', '기초재원', '신규등록', '이탈', '이탈률%', '상담건수', '전환건수', '전환율%', '계산일', '확정여부'];
+// [v9.80] 조 편성 헤더 — 본체는 파일 끝 「조 편성·역할 로테이션」 섹션이지만, SHEET_SKELETON이 이 상수를
+//   참조하므로 정의가 골격보다 앞에 있어야 한다(뒤에 두면 const TDZ로 스크립트 전체가 ReferenceError로 죽는다).
+const GROUPS_HEADERS = ['시즌', 'class_name', 'student_id', '이름', '조', '좌석', '확정', '편성일', '편성근거', '고정'];
 
 /* ===================== 공용 유틸 ===================== */
 
@@ -8532,6 +8535,11 @@ function classPrepMail_(ss, tz) {
     const hw = String((isWknd ? kv['주말의숙제'] : kv['오늘의숙제']) || '');
     const quiz = String(kv['오늘의퀴즈'] || '').split('|')[0];
     const cname = s.name || (num + '반');
+    // [v9.80] 🧩 조 편성표 — 규칙서 §9 "대강 강사는 앱에 늘 있는 넷(진도·판서·좌석표·조 편성표)만으로 수업한다".
+    //   편성이 없거나 시즌 밖이면 조용히 빈 문자열 — 브리핑 본체는 어떤 경우에도 죽지 않는다.
+    const gbText = (function () {
+      try { return groupBoardText_(ss, cname, now, tz); } catch (e) { Logger.log('조 편성표 스킵(' + cname + '): ' + e); return ''; }
+    })();
     const body = (cheerLine ? cheerLine + '\n\n' : '') + // [v9.47·B6] 요일 출근 치어 첫인사
       cname + ' 수업 시작 ' + Math.round(diff) + '분 전입니다.\n' +
       (bdayByClass[cname] ? '\n🎂 오늘 ' + bdayByClass[cname].join(', ') + ' 생일! 반 전체 축하 한 번 어때요?\n' : '') +
@@ -8540,6 +8548,7 @@ function classPrepMail_(ss, tz) {
       '⚡ 오늘의 루틴: 시작 — 숙제 검사 1탭 · 끝 — 왕관 2개(🌟MVP·⚡시냅스 각 1명) · 미션 성공 시 연료 1행\n\n' +
       '📚 오늘 검사할 숙제' + (hwT ? ' (' + hwT + ')' : '') + '\n' + (hw || '게시된 숙제 없음') + '\n\n' +
       (quiz ? '⚡ 워밍업 퀴즈: ' + quiz + '\n\n' : '') +
+      (gbText ? gbText + '\n' : '') + // [v9.80] 조·역할·짝·오늘 발표자 — ④소그룹 20분을 그대로 들고 들어갑니다
       '🔥 연료 미션을 걸 계획이면 수업 시작 때 선언해 주세요!\n\n좋은 수업 되세요 — SYNK LAB';
     teachers.forEach(t => {
       if (quotaOk(1)) MailApp.sendEmail(t.email, '[SYNK] 🎬 ' + cname + ' 수업 ' + Math.round(diff) + '분 전 — 오늘의 준비', body);
@@ -11374,7 +11383,16 @@ function setupClassroomInputs() {
   //   TC_NAME/TYPE/TIME_COL=1/2/3이 이 3열을 위치로 읽으므로 헤더가 어긋나면 출퇴근 보드·퇴근응원 오작동. 빈 시트라 데이터 무손실.
   const tc = ensureSheet(ss, 'teacher_checkins', ['이름', '구분', '시각']);
   ['이름', '구분', '시각'].forEach((h, i) => { if (String(tc.getRange(1, i + 1).getValue()) !== h) tc.getRange(1, i + 1).setValue(h); });
-  Logger.log('수업 입력 구조 생성 완료: weekly_topics F~L 승격 · attendance_batch · mastery_log · student_errors · teacher_checkins 헤더 정규화');
+  // [v9.80] profiles BX·BY(76·77) 학교·동네 — 조 편성의 "같은 학교·동네 친구는 다른 조로"(규칙서 §5) 재료.
+  //   선택 입력이라 비어 있어도 편성은 돌아가고 그 기준만 생략된다. 열이 없으면 채울 자리조차 없어 여기서 보장한다.
+  //   BO~BW(67~75)는 calcAcademic_ 담당 — 겹치지 않는다.
+  const pfG = ss.getSheetByName('profiles');
+  if (pfG) {
+    if (pfG.getMaxColumns() < 77) pfG.insertColumnsAfter(pfG.getMaxColumns(), 77 - pfG.getMaxColumns());
+    ['학교', '동네'].forEach((h, i) => { if (String(pfG.getRange(1, 76 + i).getValue()) !== h) pfG.getRange(1, 76 + i).setValue(h); });
+  }
+  ensureSheet(ss, 'groups', GROUPS_HEADERS); // [v9.80] 조 편성 — assignGroupsAll이 채운다(강사 입력 아님)
+  Logger.log('수업 입력 구조 생성 완료: weekly_topics F~L 승격 · attendance_batch · mastery_log · student_errors · teacher_checkins 헤더 정규화 · profiles 학교/동네 · groups');
   return '수업 입력 구조 생성 완료 — 강사 마감폼/출석폼/출퇴근을 이 시트·열에 바인딩하세요.';
 }
 
@@ -11505,6 +11523,7 @@ const SHEET_SKELETON = [
     ['crew_projects', ['시즌','반','프로젝트명','한줄소개','결과물링크','사진URL','공개일','참여크루','비고']], // [v9.29] 시즌 프로젝트 포트폴리오 — 수동 기입 전용(hall_of_fame 패턴 · 트리거·배치 연동 없음)
     ['mastery_log', ['student_id','grammar_id','상태','첫기록일','도달일','출처','updated_at']], // [v9.36] 문법 도달 로그 — expandMasteryLog_ upsert, 진화 게이트 재료(Glide 비바인딩)
     ['attendance_batch', ['날짜','class_name','출석자목록','입력자','created_at','처리상태']], // [v9.36] 수업 시작 출석 1탭(B안) → expandAttendanceBatch_가 attendance로 전개
+    ['groups', GROUPS_HEADERS], // [v9.80] 조 편성(시즌×반 1벌) — assignGroupsAll이 채운다. 역할·짝·발표자는 여기서 계산만 하고 저장하지 않는다(매 차시 쓰기 0)
     ['hw_feedback', ['id','student_id','제출일','제출문','고친문장','오늘의포인트','칭찬','다음미션','상태','학생확인','포인트지급']], // [v9.49] AI 숙제 첨삭 카드 — aiFeedbackBatch_ 생성. I상태: '노출'=공개(게이트 통과·무인)/'대기'=수동검수 모드/'격리:'·'오류:'=미노출([v9.63]), J학생확인=Glide 전용(스크립트 불가침), K포인트지급=스크립트 전용
     ['student_errors', ['날짜','student_id','반','유형','메모','입력자','created_at','상태']], // [v9.36] 강사 개인 약점 메모(선택 입력) — 리포트·브리핑 노출은 후속(학생 앱 미노출)
     ['onboarding', ['role','제목','안내KO','안내MN','아이콘']], // [v9.38] 역할별 홈 안내 카드(setupOnboarding) — 재건 목록 누락분 보강
@@ -12775,3 +12794,362 @@ function updateBizDashboard(asText, kpiData) { // 계기판 시트 갱신 + 요�
 
 // [v9.26] 수동 실행용 — 드롭다운에서 바로 보이는 정식 함수 (설치+갱신 원스톱)
 function bizDashboardNow() { setupBizDashboard(); return updateBizDashboard(true); }
+
+/* ===================== [v9.80] 🧩 조 편성 · 역할 로테이션 — 소그룹 20분을 앱이 짠다 =====================
+ * 정본 = Desktop\SYNK LAB\「SYNK LAB 강사 수업 규칙」 v3.0 §5·§11 (2026-07-31)
+ *   §11 "가장 먼저 만들 것 = 조 편성 데이터 — 조 편성 한 벌이 (배선 대기) 목록의 절반을 한꺼번에 엽니다"
+ *   조·역할 자동 배정 → 발표 순번 자동 → 짝 조합 순환 → 발화량 추정 → 4주차 침묵 명단.
+ *
+ * ▣ 왜 앱이 짜는가 (유호님 2026-07-31 확정 "앱 자동 제안")
+ *   반 16개 × 4조 × 4역할을 매 차시 손으로 돌리면 결석 한 번에 순번이 꼬이고, 8주 뒤엔 누가 몇 번
+ *   발표했는지 아무도 모른다. 규칙서가 강사 머리에서 앱으로 넘긴 3개(전원 1회 발화·조별 산출물
+ *   확인·발표 순번)가 전부 이 데이터 위에 선다.
+ *
+ * ▣ 규칙서 → 코드 대응
+ *   4명 한 조 · 8주 고정           → groups 시트(시즌×반 1벌). 재편성해도 '고정'=Y 행은 자리 보존
+ *   12명 이하 반은 3명씩 4조       → 조 수는 항상 4, 인원은 몫+나머지 분배(3명 조는 역할 3개만 순환)
+ *   실력 섞기(빠른1 보통2 느린1)   → 실력 내림차순 스네이크 배분
+ *   말수 섞기                      → 같은 배분 계층 안에서만 교환(실력 균형이 깨지지 않는다)
+ *   같은 학교·동네는 다른 조       → 같은 원리로 교환. profiles BX·BY가 비면 자동 생략
+ *   역할 차시마다 한 칸            → roleOfSeat_(좌석, 차시) 순수 계산 — 시트에 쓰지 않는다
+ *   2인 짝 3조합 순환              → pairSeatOf_(좌석, 차시)
+ *   발표 8주 전원 최소 2회         → 역할 주기가 4차시라 주말반 8차시=정확히 2회·평일반 40차시=10회.
+ *                                     로테이션이 이미 보장하므로 별도 순번표를 만들지 않는다.
+ *
+ * ▣ 쓰기 예산 (규칙서 §11 — Glide 월 500건 한도)
+ *   조 편성은 시즌당 반별 1회(16반 × 8주 = 두 달에 16행). 역할·짝·발표자는 저장하지 않고 차시 번호에서
+ *   계산한다. 매 차시 쓰기가 0이라 한도에 손대지 않는다. */
+
+const GROUP_COUNT = 4;                                 // 규칙서 §5·§9 — 인원과 무관하게 4조(교실의 4인 섬 4개와 1:1)
+const ROLE_NAMES = ['진행', '기록', '발표', '질문'];    // 순환 순서 — 진행 → 기록 → 발표 → 질문 → 진행
+const ROLE_ICONS = ['🎯', '✍️', '📢', '❓'];
+const ROLE_TALK = [2, 1, 2, 1];                        // 발화량 가중(규칙서 역할 상세: 진행·발표=많음 / 기록·질문=보통)
+const SEASON_WEEKS = 8;
+// 4인 조의 2인 짝 3조합 — 값 = 그 좌석의 짝 좌석. (0,1)(2,3) / (0,2)(1,3) / (0,3)(1,2)
+const PAIR_PATTERNS = [[1, 0, 3, 2], [2, 3, 0, 1], [3, 2, 1, 0]];
+// GROUPS_HEADERS는 SHEET_SKELETON보다 앞(KPI_HEADERS 옆)에 정의돼 있다 — 여기 두면 const TDZ로 죽는다.
+
+/* --- 시즌 시작일 — 차시 번호의 원점. 이 한 줄이 없으면 역할·짝·발표가 전부 안 돈다 --- */
+function seasonStartOf_(ss) {
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  return toDate_(getState(st, '시즌시작일').val);
+}
+
+// 유호님 수동 실행 — 시즌 1주차 1차시 날짜를 박습니다. 예: setSeasonStart('2027-02-01')
+function setSeasonStart(dateStr) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const d = toDate_(dateStr || Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd'));
+  if (!d) return '⚠ 날짜를 읽지 못했습니다 — setSeasonStart("2027-02-01") 형태로 실행하세요.';
+  const s = Utilities.formatDate(d, tz, 'yyyy-MM-dd');
+  setState(ensureSheet(ss, 'app_state', ['key', 'value']), '시즌시작일', s);
+  const end = new Date(d.getTime() + (SEASON_WEEKS * 7 - 1) * 86400000);
+  return '✅ 시즌 시작일 = ' + s + ' (8주 → ' + Utilities.formatDate(end, tz, 'yyyy-MM-dd') + ' 종료)\n' +
+    '   다음: assignGroupsAll() ▶ 1회로 전 반 조 편성';
+}
+
+// 시즌 라벨 — groups 행의 키. 시작일이 곧 시즌 이름(중복·재사용 사고가 없다)
+function seasonLabelOf_(ss, tz) {
+  const d = seasonStartOf_(ss);
+  return d ? Utilities.formatDate(d, tz || ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd') : '';
+}
+
+/* --- 차시 번호 — 시즌 시작일부터 '그 반이 수업하는 요일'만 세어 몇 번째 차시인지.
+ *     평일반은 월~금(주 5차시), 주말반은 토(주 1차시). classDowOk_과 같은 판정을 쓴다. --- */
+function lessonNoOf_(start, target, type) {
+  if (!start || !target) return 0;
+  const s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const t = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+  if (t < s) return 0;
+  const days = Math.round((t - s) / 86400000);
+  if (days > SEASON_WEEKS * 7 + 14) return 0;           // 시즌 밖 — 무한 루프·오래된 시작일 방어
+  let n = 0;
+  const d = new Date(s);
+  for (let i = 0; i <= days; i++) {
+    if (classDowOk_(type, d.getDay())) n++;
+    d.setDate(d.getDate() + 1);
+  }
+  return n;
+}
+
+// 시즌 주차(1~8) — 4주차 침묵 명단·3주차 오류 톱10 같은 리듬 장치의 기준
+function seasonWeekOf_(start, target) {
+  if (!start || !target) return 0;
+  const s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const t = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+  if (t < s) return 0;
+  return Math.floor(Math.round((t - s) / 86400000) / 7) + 1;
+}
+
+/* --- 역할·짝 — 저장하지 않고 계산한다(매 차시 쓰기 0) --- */
+// 좌석 seat(0~) · 차시 lessonNo(1~) → 역할명. 조 인원이 3명이면 앞 3개(진행·기록·발표)만 돈다.
+function roleOfSeat_(seat, lessonNo, size) {
+  const k = Math.max(1, Math.min(Number(size) || GROUP_COUNT, ROLE_NAMES.length));
+  const n = Math.max(1, Number(lessonNo) || 1);
+  return ROLE_NAMES[(((Number(seat) || 0) + n - 1) % k + k) % k];
+}
+function roleIconOf_(seat, lessonNo, size) {
+  const k = Math.max(1, Math.min(Number(size) || GROUP_COUNT, ROLE_ICONS.length));
+  const n = Math.max(1, Number(lessonNo) || 1);
+  return ROLE_ICONS[(((Number(seat) || 0) + n - 1) % k + k) % k];
+}
+// 그 차시의 짝 좌석(4인 조만). 3인 조는 셋이 함께 하므로 -1.
+function pairSeatOf_(seat, lessonNo, size) {
+  if ((Number(size) || GROUP_COUNT) < 4) return -1;
+  const n = Math.max(1, Number(lessonNo) || 1);
+  return PAIR_PATTERNS[((n - 1) % 3 + 3) % 3][(Number(seat) || 0) % 4];
+}
+
+/* --- 실력 점수 — 급수(BO)가 있으면 급수가 지배하고, 없는 학생끼리는 누계 포인트·출석으로 가른다.
+ *     개원 첫 시즌엔 전원 급수가 비어 있어 사실상 포인트 순이 된다(그래서 1주차는 임시 조다). --- */
+function skillScoreOf_(r) {
+  const lv = Number(r[66]) || 0;    // BO 현재급수
+  const pts = Number(r[15]) || 0;   // P 획득 누계
+  const att = Number(r[21]) || 0;   // V 출석 누계
+  return lv * 1000000 + pts + att * 10;
+}
+
+/* --- 말수 점수 — 규칙서 §5 "말 많은 학생을 한 조에 몰지 않기".
+ *     원천은 차시 마감폼의 「발화자」다(규칙서 §6). 마감폼이 배선되기 전에는 빈 맵이 돌아오고,
+ *     이 기준만 조용히 생략된다(실력·학교 기준은 그대로 작동). --- */
+function talkScoreMap_(ss) {
+  const out = {};
+  const sh = ss.getSheetByName('lesson_close');
+  if (!sh || sh.getLastRow() < 2) return out;
+  const head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(h => String(h));
+  const col = head.indexOf('발화자');
+  if (col < 0) return out;
+  sh.getRange(2, col + 1, sh.getLastRow() - 1, 1).getValues().forEach(r => {
+    String(r[0] || '').split(/[,·\n]/).forEach(s => {
+      const id = s.trim();
+      if (id) out[id] = (out[id] || 0) + 1;
+    });
+  });
+  return out;
+}
+
+/* --- 조 편성 코어 — 실력 스네이크 배분 후, 계층을 깨지 않는 교환으로 말수·학교를 푼다 ---
+ * 반환: [{sid, name, grp, seat, why}]
+ * members = [{sid, name, skill, talk, tag}]  tag = 학교·동네(없으면 '') */
+function buildGroupPlan_(members, fixed) {
+  const n = members.length;
+  if (!n) return [];
+  const sorted = members.slice().sort((a, b) => b.skill - a.skill || String(a.sid).localeCompare(String(b.sid)));
+  const rankOf = {};
+  sorted.forEach((m, i) => { rankOf[m.sid] = i + 1; });
+
+  // 조별 정원 — 4조 고정, 나머지는 앞 조부터 한 명씩(16명→4·4·4·4 / 14명→4·4·3·3 / 12명→3·3·3·3)
+  const base = Math.floor(n / GROUP_COUNT), rest = n % GROUP_COUNT;
+  const cap = [];
+  for (let g = 0; g < GROUP_COUNT; g++) cap.push(base + (g < rest ? 1 : 0));
+
+  // ① 고정 학생(강사가 손으로 잠근 자리)을 먼저 앉힌다 — 규칙서상 예외 경로지만 존중한다
+  const bucket = [];
+  for (let g = 0; g < GROUP_COUNT; g++) bucket.push([]);
+  const placed = {};
+  sorted.forEach(m => {
+    const f = fixed[m.sid];
+    if (!f) return;
+    const g = Math.min(Math.max(Number(f.grp) - 1, 0), GROUP_COUNT - 1);
+    if (bucket[g].length >= cap[g]) return;             // 정원이 줄었으면 고정을 포기하고 자동 배분에 맡긴다
+    bucket[g].push(m); placed[m.sid] = true;
+  });
+
+  // ② 나머지를 실력 내림차순 스네이크로 — 라운드마다 방향을 뒤집어야 각 조에 상·중·하가 고루 간다
+  const rows = sorted.filter(m => !placed[m.sid]);
+  let round = 0, idx = 0;
+  while (idx < rows.length) {
+    const order = [];
+    for (let g = 0; g < GROUP_COUNT; g++) order.push(round % 2 === 0 ? g : GROUP_COUNT - 1 - g);
+    let moved = false;
+    for (let k = 0; k < order.length && idx < rows.length; k++) {
+      const g = order[k];
+      if (bucket[g].length >= cap[g]) continue;
+      bucket[g].push(rows[idx++]); moved = true;
+      rows[idx - 1].layer = round;                       // 계층 = 스네이크 라운드(교환은 이 안에서만)
+    }
+    round++;
+    if (!moved) break;                                   // 전 조 만석 — 방어
+  }
+
+  // ③ 계층 안 교환 — 실력 균형을 유지한 채 말수·학교 쏠림만 푼다
+  const dup = (arr, key) => {                            // 한 조 안에서 같은 값이 겹치는 수
+    const seen = {}; let d = 0;
+    arr.forEach(m => { const v = key(m); if (!v) return; if (seen[v]) d++; else seen[v] = 1; });
+    return d;
+  };
+  const talkHi = (() => {                                // 말수 상위 절반을 '말 많은 학생'으로 본다
+    const vals = members.map(m => m.talk).filter(v => v > 0).sort((a, b) => b - a);
+    return vals.length ? vals[Math.floor(vals.length / 2)] : Infinity;
+  })();
+  const cost = arr => dup(arr, m => m.tag) * 2 + dup(arr, m => (m.talk >= talkHi && m.talk > 0) ? 'TALK' : '');
+  for (let pass = 0; pass < 3; pass++) {
+    let improved = false;
+    for (let a = 0; a < GROUP_COUNT; a++) {
+      for (let b = a + 1; b < GROUP_COUNT; b++) {
+        for (let i = 0; i < bucket[a].length; i++) {
+          for (let j = 0; j < bucket[b].length; j++) {
+            const ma = bucket[a][i], mb = bucket[b][j];
+            if (placed[ma.sid] || placed[mb.sid]) continue;         // 고정 자리는 안 건드린다
+            if ((ma.layer == null ? -1 : ma.layer) !== (mb.layer == null ? -2 : mb.layer)) continue; // 같은 계층끼리만
+            const before = cost(bucket[a]) + cost(bucket[b]);
+            bucket[a][i] = mb; bucket[b][j] = ma;
+            const after = cost(bucket[a]) + cost(bucket[b]);
+            if (after < before) { improved = true; } else { bucket[a][i] = ma; bucket[b][j] = mb; }
+          }
+        }
+      }
+    }
+    if (!improved) break;
+  }
+
+  // ④ 좌석 — 조 안에서 실력 내림차순으로 앉힌다. 좌석이 역할·짝 순환의 축이라 순서가 곧 규칙이다
+  const out = [];
+  bucket.forEach((arr, g) => {
+    arr.sort((x, y) => y.skill - x.skill);
+    arr.forEach((m, seat) => {
+      out.push({
+        sid: m.sid, name: m.name, grp: g + 1, seat: seat,
+        why: '실력 ' + rankOf[m.sid] + '/' + n + (m.talk > 0 ? ' · 발화 ' + m.talk + '회' : '') + (m.tag ? ' · ' + m.tag : '')
+      });
+    });
+  });
+  return out;
+}
+
+/* --- 반 하나 편성 — 앱이 제안하고 강사는 확인만 한다(유호님 확정) --- */
+function assignGroups(className, opts) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const season = seasonLabelOf_(ss, tz);
+  if (!season) return '⚠ 시즌 시작일이 없습니다 — setSeasonStart("2027-02-01") 먼저 실행하세요.';
+  const cls = String(className || '').trim();
+  if (!cls) return '⚠ 반 이름이 필요합니다 — assignGroups("정규반1") 형태로 실행하세요.';
+
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return '⚠ profiles가 비어 있습니다.';
+  const w = Math.max(pf.getLastColumn(), 78);
+  const rows = pf.getRange(2, 1, pf.getLastRow() - 1, Math.min(w, pf.getMaxColumns())).getValues();
+  const talk = talkScoreMap_(ss);
+  const members = [];
+  rows.forEach(r => {
+    if (!r[0] || r[3] !== 'student') return;
+    if (String(r[4] || '').split('(')[0].trim() !== cls) return;
+    members.push({
+      sid: String(r[0]), name: String(r[1] || r[0]), skill: skillScoreOf_(r),
+      talk: Number(talk[String(r[0])] || 0),
+      tag: String(r[76] || '').trim() || String(r[77] || '').trim()   // BX 학교 · BY 동네(둘 다 선택 입력)
+    });
+  });
+  if (!members.length) return 'ℹ ' + cls + ': 배정된 학생이 없습니다.';
+
+  // 기존 편성 — 같은 시즌·반의 '고정'=Y만 자리를 지킨다
+  const gs = ensureSheet(ss, 'groups', GROUPS_HEADERS);
+  const last = gs.getLastRow();
+  const all = last >= 2 ? gs.getRange(2, 1, last - 1, GROUPS_HEADERS.length).getValues() : [];
+  const fixed = {};
+  all.forEach(r => {
+    if (String(r[0]) !== season || String(r[1]) !== cls) return;
+    if (String(r[9] || '').toUpperCase().charAt(0) === 'Y') fixed[String(r[2])] = { grp: r[4], seat: r[5] };
+  });
+
+  const plan = buildGroupPlan_(members, fixed);
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const confirmed = (opts && opts.temp) ? '임시' : '확정';
+  const keep = all.filter(r => !(String(r[0]) === season && String(r[1]) === cls));  // 다른 시즌·반은 그대로
+  const fresh = plan.map(p => [season, cls, p.sid, p.name, p.grp, p.seat,
+    confirmed, today, p.why, fixed[p.sid] ? 'Y' : '']);
+  const merged = keep.concat(fresh);
+  if (last >= 2) gs.getRange(2, 1, last - 1, GROUPS_HEADERS.length).clearContent();
+  if (merged.length) gs.getRange(2, 1, merged.length, GROUPS_HEADERS.length).setValues(merged);
+
+  const sizes = [];
+  for (let g = 1; g <= GROUP_COUNT; g++) sizes.push(plan.filter(p => p.grp === g).length);
+  return '✅ ' + cls + ' ' + confirmed + ' 편성: ' + members.length + '명 → ' +
+    sizes.join('·') + '명' + (Object.keys(fixed).length ? ' (고정 ' + Object.keys(fixed).length + '명 유지)' : '');
+}
+
+// 전 반 일괄 — schedule에 있는 코어 반 전부. 시즌 3차시까지 1회 실행이 규칙서 §8 절차다.
+function assignGroupsAll(opts) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sc = ss.getSheetByName('schedule');
+  if (!sc || sc.getLastRow() < 2) return '⚠ schedule이 비어 있습니다 — setupSchedule 먼저 실행하세요.';
+  const L = [];
+  sc.getRange(2, 1, sc.getLastRow() - 1, 1).getValues().forEach(r => {
+    if (!r[0]) return;
+    try { L.push(assignGroups(String(r[0]), opts)); } catch (e) { L.push('⚠ ' + r[0] + ': ' + e.message); }
+  });
+  Logger.log(L.join('\n'));
+  return L.join('\n');
+}
+
+/* --- 그 반의 오늘(또는 지정 차시) 조·역할·짝 한 판 --- */
+function groupBoardOf_(ss, cls, when, tz) {
+  const season = seasonLabelOf_(ss, tz);
+  const start = seasonStartOf_(ss);
+  const gs = ss.getSheetByName('groups');
+  if (!season || !gs || gs.getLastRow() < 2) return null;
+  const sch = schedOf(scheduleMap(ss), cls);
+  const lessonNo = lessonNoOf_(start, when || new Date(), sch ? sch.type : '평일');
+  const rows = gs.getRange(2, 1, gs.getLastRow() - 1, GROUPS_HEADERS.length).getValues()
+    .filter(r => String(r[0]) === season && String(r[1]) === cls);
+  if (!rows.length) return null;
+  const groups = [];
+  for (let g = 0; g < GROUP_COUNT; g++) groups.push([]);
+  rows.forEach(r => {
+    const g = Math.min(Math.max(Number(r[4]) - 1, 0), GROUP_COUNT - 1);
+    groups[g].push({ sid: String(r[2]), name: String(r[3] || r[2]), seat: Number(r[5]) || 0 });
+  });
+  groups.forEach(arr => arr.sort((a, b) => a.seat - b.seat));
+  groups.forEach(arr => arr.forEach(m => {
+    m.role = roleOfSeat_(m.seat, lessonNo, arr.length);
+    m.icon = roleIconOf_(m.seat, lessonNo, arr.length);
+    const ps = pairSeatOf_(m.seat, lessonNo, arr.length);
+    const pm = ps >= 0 ? arr.filter(x => x.seat === ps)[0] : null;
+    m.pair = pm ? pm.name : (arr.length < 4 ? '조 전체' : '');
+  }));
+  return {
+    season: season, lessonNo: lessonNo, week: seasonWeekOf_(start, when || new Date()),
+    confirmed: String(rows[0][6] || ''), groups: groups.filter(a => a.length)
+  };
+}
+
+/* --- 강사용 조 편성표 — 브리핑 메일에 붙는 텍스트. 대강 강사가 이것만 보고 수업할 수 있어야 한다(규칙서 §9) --- */
+function groupBoardText_(ss, cls, when, tz) {
+  const b = groupBoardOf_(ss, cls, when, tz);
+  if (!b) return '';
+  if (!b.lessonNo) return '🧩 조 편성: 시즌 기간 밖입니다(시즌 시작일 확인 — setSeasonStart).\n';
+  const L = ['🧩 조 편성 · ' + b.week + '주차 ' + b.lessonNo + '차시' + (b.confirmed === '임시' ? ' (임시 조)' : '')];
+  b.groups.forEach((arr, g) => {
+    L.push('  ' + (g + 1) + '조  ' + arr.map(m => m.icon + ' ' + m.name + '(' + m.role + ')').join(' · '));
+    const pairs = [];
+    const seen = {};
+    arr.forEach(m => {
+      if (!m.pair || m.pair === '조 전체' || seen[m.name] || seen[m.pair]) return;
+      seen[m.name] = 1; seen[m.pair] = 1; pairs.push(m.name + '–' + m.pair);
+    });
+    if (pairs.length) L.push('       짝: ' + pairs.join(' / '));
+  });
+  const pres = [];
+  b.groups.forEach((arr, g) => arr.forEach(m => { if (m.role === '발표') pres.push((g + 1) + '조 ' + m.name); }));
+  if (pres.length) L.push('  📢 오늘 발표: ' + pres.join(' · ') + '  ← ④소그룹 시작할 때 미리 알려주세요');
+  return L.join('\n') + '\n';
+}
+
+// 수동 확인용 — 드롭다운에서 바로 보이는 정식 함수. 인자 없이 실행하면 오늘 수업하는 반 전부.
+function groupBoardNow(className) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const sc = ss.getSheetByName('schedule');
+  const dow = new Date().getDay();
+  const list = className ? [String(className)]
+    : (sc && sc.getLastRow() >= 2 ? sc.getRange(2, 1, sc.getLastRow() - 1, 2).getValues()
+      .filter(r => r[0] && classDowOk_(r[1], dow)).map(r => String(r[0])) : []);
+  if (!list.length) return 'ℹ 오늘 수업하는 반이 없습니다(일요일이거나 schedule 미설정).';
+  const out = list.map(c => {
+    const t = groupBoardText_(ss, c, new Date(), tz);
+    return '── ' + c + ' ──\n' + (t || '  (편성 없음 — assignGroups("' + c + '") 실행)');
+  }).join('\n');
+  Logger.log(out);
+  return out;
+}
