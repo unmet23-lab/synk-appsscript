@@ -293,6 +293,29 @@ test('시즌 시작일은 ▶ 버튼 한 번으로 실수 설정되지 않는다
     '인자 없이 실행했는데 시즌 시작일을 써버린다 — ▶ 오작동으로 차시가 통째로 밀린다');
 });
 
+/* ── profiles 열 안전 — 2026-07-31 배포 직전 실사고 ────────────────
+ * v9.80 초안이 학교·동네를 profiles 76·77(BX·BY)에 박았는데, 그 두 열은 v9.20부터
+ * '오늘의알림'·'나의여정'으로 calcAll이 매일 쓰는 라이브 열이었다. 헤더를 덮어써
+ * Glide 인앱 배너와 개인 스토리 카드를 깨뜨릴 배치였고, 값은 한 칸 밀린 열에서 읽고 있었다.
+ * 공유 열은 v9.74·v9.81에서 계속 늘어나므로 번호 고정 자체가 시한폭탄이다. */
+
+test('학교·동네 열은 번호를 박지 않고 이름으로 찾는다', () => {
+  const i = code.indexOf('function setupClassroomInputs');
+  const body = code.slice(i, code.indexOf('\n/* =====', i));
+  assert.ok(/langColOf_\(pfG, '학교'\)/.test(body) && /langColOf_\(pfG, '동네'\)/.test(body),
+    '학교·동네 열을 langColOf_로 확보하지 않는다');
+  assert.equal(/pfG\.getRange\(1, *7[0-9]/.test(body), false,
+    'profiles 70번대 열에 헤더를 직접 쓴다 — 오늘의알림(76)·나의여정(77)을 덮어쓸 자리다');
+});
+
+test('조 편성이 오늘의알림·나의여정 열을 침범하지 않는다', () => {
+  const i = code.indexOf('function assignGroups(className, opts)');
+  const body = code.slice(i, code.indexOf('\n// 전 반 일괄', i));
+  assert.ok(/langColOf_\(pf, '학교'\)/.test(body), '학교 열을 이름으로 찾지 않는다');
+  assert.equal(/r\[7[67]\]/.test(body), false,
+    'r[76]·r[77]을 직접 읽는다 — 공유 열이 늘어나면 엉뚱한 값이 학교·동네로 들어간다');
+});
+
 /* ── 쓰기 예산 — 규칙서 §11 (Glide 월 500건) ────────────────────── */
 
 test('역할·짝·발표자는 시트에 저장하지 않는다 (매 차시 쓰기 0)', () => {
