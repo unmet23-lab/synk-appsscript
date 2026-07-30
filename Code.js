@@ -12835,11 +12835,22 @@ function seasonStartOf_(ss) {
   return toDate_(getState(st, '시즌시작일').val);
 }
 
-// 유호님 수동 실행 — 시즌 1주차 1차시 날짜를 박습니다. 예: setSeasonStart('2027-02-01')
+/* 시즌 1주차 1차시 날짜를 박습니다. 예: setSeasonStart('2027-02-01')
+ * ⚠ 인자 없이 실행하면 설정하지 않고 현재 상태만 알려준다 — Apps Script 편집기의 ▶ 버튼은 인자를 못 넘기므로,
+ *   "인자 없으면 오늘"로 두면 확인하려고 누른 ▶ 한 번에 엉뚱한 날짜가 시즌 시작일로 박힌다.
+ *   시즌 시작일이 틀어지면 차시 번호가 통째로 밀려 역할·짝·발표자가 전부 어긋난다. */
 function setSeasonStart(dateStr) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
-  const d = toDate_(dateStr || Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd'));
+  if (!dateStr) {
+    const cur = seasonLabelOf_(ss, tz);
+    return (cur ? '현재 시즌 시작일 = ' + cur : '시즌 시작일이 아직 없습니다.') + '\n' +
+      '바꾸려면 둘 중 하나:\n' +
+      '  ① app_state 시트에 key="시즌시작일" · value="2027-02-01" 한 행 (▶ 없이 바로 반영)\n' +
+      '  ② 코드에서 setSeasonStart("2027-02-01") 호출\n' +
+      '※ ▶ 버튼만으로는 설정되지 않습니다(실수로 오늘 날짜가 박히는 것을 막기 위함).';
+  }
+  const d = toDate_(dateStr);
   if (!d) return '⚠ 날짜를 읽지 못했습니다 — setSeasonStart("2027-02-01") 형태로 실행하세요.';
   const s = Utilities.formatDate(d, tz, 'yyyy-MM-dd');
   setState(ensureSheet(ss, 'app_state', ['key', 'value']), '시즌시작일', s);
