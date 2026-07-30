@@ -11488,14 +11488,12 @@ function setupClassroomInputs() {
   //   TC_NAME/TYPE/TIME_COL=1/2/3이 이 3열을 위치로 읽으므로 헤더가 어긋나면 출퇴근 보드·퇴근응원 오작동. 빈 시트라 데이터 무손실.
   const tc = ensureSheet(ss, 'teacher_checkins', ['이름', '구분', '시각']);
   ['이름', '구분', '시각'].forEach((h, i) => { if (String(tc.getRange(1, i + 1).getValue()) !== h) tc.getRange(1, i + 1).setValue(h); });
-  // [v9.80] profiles BX·BY(76·77) 학교·동네 — 조 편성의 "같은 학교·동네 친구는 다른 조로"(규칙서 §5) 재료.
+  // [v9.80] profiles 학교·동네 — 조 편성의 "같은 학교·동네 친구는 다른 조로"(규칙서 §5) 재료.
   //   선택 입력이라 비어 있어도 편성은 돌아가고 그 기준만 생략된다. 열이 없으면 채울 자리조차 없어 여기서 보장한다.
-  //   BO~BW(67~75)는 calcAcademic_ 담당 — 겹치지 않는다.
+  //   ⚠ 열 번호를 박지 않는다 — 76·77(BX·BY)은 이미 '오늘의알림'·'나의여정'(v9.20, calcAll이 매일 씀)이고,
+  //     공유 열도 v9.74·v9.81에서 계속 늘어나는 중이다. langColOf_로 이름으로 찾고 없으면 끝에 새로 만든다.
   const pfG = ss.getSheetByName('profiles');
-  if (pfG) {
-    if (pfG.getMaxColumns() < 77) pfG.insertColumnsAfter(pfG.getMaxColumns(), 77 - pfG.getMaxColumns());
-    ['학교', '동네'].forEach((h, i) => { if (String(pfG.getRange(1, 76 + i).getValue()) !== h) pfG.getRange(1, 76 + i).setValue(h); });
-  }
+  if (pfG) { langColOf_(pfG, '학교'); langColOf_(pfG, '동네'); }
   ensureSheet(ss, 'groups', GROUPS_HEADERS); // [v9.80] 조 편성 — assignGroupsAll이 채운다(강사 입력 아님)
   Logger.log('수업 입력 구조 생성 완료: weekly_topics F~L 승격 · attendance_batch · mastery_log · student_errors · teacher_checkins 헤더 정규화 · profiles 학교/동네 · groups');
   return '수업 입력 구조 생성 완료 — 강사 마감폼/출석폼/출퇴근을 이 시트·열에 바인딩하세요.';
@@ -12915,7 +12913,8 @@ function bizDashboardNow() { setupBizDashboard(); return updateBizDashboard(true
  *   12명 이하 반은 3명씩 4조       → 조 수는 항상 4, 인원은 몫+나머지 분배(3명 조는 역할 3개만 순환)
  *   실력 섞기(빠른1 보통2 느린1)   → 실력 내림차순 스네이크 배분
  *   말수 섞기                      → 같은 배분 계층 안에서만 교환(실력 균형이 깨지지 않는다)
- *   같은 학교·동네는 다른 조       → 같은 원리로 교환. profiles BX·BY가 비면 자동 생략
+ *   같은 학교·동네는 다른 조       → 같은 원리로 교환. profiles 학교·동네 열이 비면 자동 생략
+ *                                     (열은 langColOf_로 이름 탐색 — 번호를 박으면 공유 열 증설 때 어긋난다)
  *   역할 차시마다 한 칸            → roleOfSeat_(좌석, 차시) 순수 계산 — 시트에 쓰지 않는다
  *   2인 짝 3조합 순환              → pairSeatOf_(좌석, 차시)
  *   발표 8주 전원 최소 2회         → 역할 주기가 4차시라 주말반 8차시=정확히 2회·평일반 40차시=10회.
@@ -13144,8 +13143,9 @@ function assignGroups(className, opts) {
 
   const pf = ss.getSheetByName('profiles');
   if (!pf || pf.getLastRow() < 2) return '⚠ profiles가 비어 있습니다.';
-  const w = Math.max(pf.getLastColumn(), 78);
-  const rows = pf.getRange(2, 1, pf.getLastRow() - 1, Math.min(w, pf.getMaxColumns())).getValues();
+  // 학교·동네는 이름으로 열을 찾는다 — 열 번호를 박으면 공유 열이 늘어날 때마다 엉뚱한 값을 읽는다.
+  const schoolCol = langColOf_(pf, '학교'), areaCol = langColOf_(pf, '동네');
+  const rows = pf.getRange(2, 1, pf.getLastRow() - 1, pf.getLastColumn()).getValues();
   const talk = talkScoreMap_(ss);
   const members = [];
   rows.forEach(r => {
@@ -13154,7 +13154,7 @@ function assignGroups(className, opts) {
     members.push({
       sid: String(r[0]), name: String(r[1] || r[0]), skill: skillScoreOf_(r),
       talk: Number(talk[String(r[0])] || 0),
-      tag: String(r[76] || '').trim() || String(r[77] || '').trim()   // BX 학교 · BY 동네(둘 다 선택 입력)
+      tag: String(r[schoolCol - 1] || '').trim() || String(r[areaCol - 1] || '').trim()  // 둘 다 선택 입력
     });
   });
   if (!members.length) return 'ℹ ' + cls + ': 배정된 학생이 없습니다.';
