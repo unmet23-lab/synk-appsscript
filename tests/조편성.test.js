@@ -282,6 +282,17 @@ test('수업 12분 전 브리핑에 조 편성표가 실린다', () => {
     '조 편성표 실패가 브리핑 전체를 막으면 안 된다(try/catch 누락)');
 });
 
+// Apps Script 편집기의 ▶ 버튼은 인자를 못 넘긴다. "인자 없으면 오늘"로 두면 확인하려고 누른 ▶ 한 번에
+// 엉뚱한 날짜가 박히고, 시즌 시작일이 틀어지면 차시 번호가 밀려 역할·짝·발표자가 전부 어긋난다.
+test('시즌 시작일은 ▶ 버튼 한 번으로 실수 설정되지 않는다', () => {
+  const i = code.indexOf('function setSeasonStart');
+  const body = code.slice(i, code.indexOf('\n// 시즌 라벨', i));
+  assert.ok(/if \(!dateStr\)/.test(body), '인자 없이 실행했을 때의 분기가 없다');
+  const guard = body.slice(body.indexOf('if (!dateStr)'), body.indexOf('const d = toDate_'));
+  assert.equal(/setState/.test(guard), false,
+    '인자 없이 실행했는데 시즌 시작일을 써버린다 — ▶ 오작동으로 차시가 통째로 밀린다');
+});
+
 /* ── 쓰기 예산 — 규칙서 §11 (Glide 월 500건) ────────────────────── */
 
 test('역할·짝·발표자는 시트에 저장하지 않는다 (매 차시 쓰기 0)', () => {
