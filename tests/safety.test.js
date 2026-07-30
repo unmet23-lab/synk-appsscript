@@ -383,7 +383,7 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
   const s1 = 85, len1 = code.match(/const SHARED_COL_HEADERS = \[([\s\S]*?)\];/)[1].split(',').filter(s => s.trim()).length;
   const s2 = Number(code.match(/const SHARED2_COL_START = (\d+)/)[1]);
   const len2 = code.match(/const SHARED2_COL_HEADERS = \[([\s\S]*?)\];/)[1].split(',').filter(s => s.trim()).length;
-  const reserved = { 105: '최애(v9.50·A4, 학생 Set Column)', 106: '목소리폼URL(교재연동)', 107: '목소리성장카드(교재연동)', 108: '필살기노트(교재연동)' };
+  const reserved = { 105: '최애(v9.50·A4, 학생 Set Column)', 106: '목소리폼URL(교재연동)', 107: '목소리성장카드(교재연동)', 108: '필살기노트(교재연동)', 119: '랭킹보드HTML(v9.81, calcAll 리그 카드)' };
   Object.keys(reserved).forEach(cs => {
     const c = Number(cs);
     assert.ok(!(c >= s1 && c <= s1 + len1 - 1) && !(c >= s2 && c <= s2 + len2 - 1),
@@ -391,6 +391,7 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
   });
   // 선점 주인들이 실제로 그 열을 쓰는지(레지스트리의 근거) — 코드가 바뀌면 이 목록도 갱신해야 한다
   assert.ok(code.includes("pf.getRange('DA1').getValue()) !== '최애'"), 'DA105 최애 보장 코드가 사라짐 — 레지스트리 갱신 필요');
+  assert.ok(code.includes("pf.getRange('DO1').getValue()) !== '랭킹보드HTML'"), 'DO119 랭킹보드 보장 코드가 사라짐 — 레지스트리 갱신 필요');
   const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
   ['DB1', 'DC1', 'DD1'].forEach(cell => assert.ok(tb.includes("getRange('" + cell + "')"), '교재연동.js ' + cell + ' 보장 코드가 사라짐 — 레지스트리 갱신 필요'));
 });
@@ -1124,4 +1125,55 @@ test('[v9.78·리뷰 반영] HUD 보강 — AI 이스케이프·모순 억제·a
   assert.ok(wiring.includes('hudDetailRows.push('), '14열 행 생성이 9열 map 밖으로 이탈했다(반 순서 어긋남 위험)');
   // ⑤ 강사가 실행 불가한 안내 금지 — '해결' 표기는 시트 접근자만 가능
   assert.ok(!code.includes("'해결'로 바꾸면 다음 브리핑부터"), '강사가 수행할 수 없는 풋노트 안내가 남아 있다');
+});
+
+test('[v9.81] 리그 카드 — 포디움·내 순위 하이라이트·넛지 환산·콜드·이스케이프·DO119 배선', () => {
+  // 유호 07-31 "랭킹 탭이 데이터만 띡". 원칙: 전원 같은 보드, 개인화는 하이라이트·넛지 두 곳뿐.
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  // HUD_CARD는 로드 범위(buildRaidCard_~) 안에 실선언이 있어 주입하면 중복 선언 — 나머지 상수만 주입
+  const deps = { escHtml_: esc, CARD_FONT: 'font-family:test;', CARD_ANIM: '<style>a</style>', ANIM_BREATH: 'animation:b;' };
+  const board = loadFunction('function buildRaidCard_', '\n// [v9.14] 📊 월간 경영 리포트', 'buildRankBoardHtml_', deps);
+  const rows = [];
+  for (let i = 0; i < 12; i++) rows.push({ id: 'S' + (i + 1), rank: i + 1, name: '학생' + (i + 1), pts: (12 - i) * 10 });
+  // ① 히어로(라벨·D-n)와 포디움 — 1위 왕관 + 내(2위) 칩
+  const p = board('S2', rows, { label: '7월 리그', dLeft: 3 });
+  assert.ok(p.includes('SYNK LEAGUE') && p.includes('정산 D-3'), '히어로 헤더(라벨·D-n)가 없다');
+  assert.ok(p.includes('학생1') && p.includes('👑'), '1위 포디움(왕관)이 없다');
+  assert.ok(p.includes('>나<'), '내 순위 하이라이트 칩(포디움)이 없다');
+  // ② 11위 밖 내 행 점프(⋯) + 추격 넛지의 숙제 환산(diff 10P = 숙제 1번)
+  const far = board('S12', rows, { label: '7월 리그', dLeft: 3 });
+  assert.ok(far.includes('⋯'), '리스트 밖 내 행 점프(⋯)가 없다');
+  assert.ok(far.includes('11위까지') && far.includes('숙제 1번이면'), '추격 넛지(포인트→숙제 환산)가 없다');
+  // ③ 동점(diff 0) — "숙제 0번" 대신 동점 문구
+  const tie = rows.map(x => ({ id: x.id, rank: x.rank, name: x.name, pts: x.pts }));
+  tie[1] = { id: 'S2', rank: 1, name: '학생2', pts: 120 };
+  assert.ok(board('S2', tie, { label: '7월', dLeft: 1 }).includes('동점'), '동점 넛지가 없다');
+  // ④ 리그 밖(0P) 입장 넛지 · 참가 0 콜드 상태 카드
+  assert.ok(board('GHOST', rows, {}).includes('순위표 밖'), '리그 밖 학생 넛지가 없다');
+  assert.ok(board('S1', [], {}).includes('리그 개막 전'), '참가 0 콜드 상태 카드가 없다');
+  // ⑤ 이름 이스케이프 (랭킹은 전교 노출면 — 몬스터이름과 달리 학생 자기입력이 아니어도 방어)
+  const x = board('S1', [{ id: 'S1', rank: 1, name: '<b>x', pts: 10 }], {});
+  assert.ok(x.includes('&lt;b&gt;x') && !x.includes('<b>x'), '이름이 이스케이프 없이 침투한다');
+  // ⑥ 배선 — 학생 루프에서 생성, DO119에 기록, rankMap과 동일 소스(leagueRows)
+  assert.ok(code.includes("rankBoardOut.push([r[3] === 'student' ? buildRankBoardHtml_(id, leagueRows, leagueMeta)"), '리그 카드가 학생 루프 밖에서 생성된다');
+  assert.ok(code.includes('writeIfChanged(pf, 2, 119, rankBoardOut)'), 'DO119 기록이 없다');
+  assert.ok(code.includes('leagueRows.push({ id: s.id, rank: rankMap[s.id]'), 'leagueRows가 rankMap과 다른 소스다(R열과 분열 위험)');
+});
+
+test('[v9.81] 반 목록 카드 2열 + HUD 총원 필 — 유호 07-31 반 리스트·총원 지적', () => {
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const deps = { escHtml_: esc, CARD_FONT: 'font-family:test;' };
+  const detail = loadFunction('function buildRaidCard_', '\n// [v9.14] 📊 월간 경영 리포트', 'buildClassHudDetail_', deps);
+  // ① 반 상세 HUD 헤더 총원 필 — stuN이 이미 전달되고 있어 Glide 조립 0으로 적용된다
+  const d = detail('정규반1', {}, {}, false, { got: 0, total: 0, notYet: [] }, { goal: 0, dmg: 0, stuN: 12 }, '7월 31일');
+  assert.ok(d.includes('👥 12명'), 'HUD 헤더 총원 필이 없다');
+  // ② 15·16열 — 헤더 보장·기록·유령 행 클리어 확장(반 감소 시 15·16열 잔존 방지)
+  assert.ok(code.includes("cs.getRange(1, 15).getValue()) !== '반카드요약'") && code.includes("cs.getRange(1, 16).getValue()) !== '반몬스터이미지'"), '15·16열 헤더 보장이 없다');
+  assert.ok(code.includes('writeIfChanged(cs, 2, 15, listCards)'), '반 목록 카드 기록이 없다');
+  assert.ok(code.includes('csLast - 1 - csOut.length, 16).clearContent()'), '유령 행 클리어가 16열로 확장되지 않았다');
+  // ③ 요약 구성 — 총원(8번 지적과 호응)·보스 3상태, 몬스터 판정은 csOut 5열과 같은 classMonster 공유
+  const blk = section("cs.getRange(1, 15).getValue()) !== '반카드요약'", 'writeIfChanged(cs, 2, 15, listCards)');
+  assert.ok(blk.includes("'👥 ' + v.n + '명'") && blk.includes('🏖️ 보스 휴식주') && blk.includes('🏆 이번 주 보스 격파!'), '요약 구성(총원·보스 상태)이 빠졌다');
+  assert.ok(code.includes('classMonster(v.total, v.n).name'), 'csOut 5열이 classMonster.name을 쓰지 않는다(15열과 판정 분열)');
+  assert.ok(blk.includes("m.img.indexOf('http') === 0"), '몬스터 이미지가 URL 검증 없이 Image 열에 들어간다');
 });
