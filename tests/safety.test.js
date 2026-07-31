@@ -380,7 +380,7 @@ test('[v9.48] 공유값 서버화 — calcAll이 학업 계산 뒤에 공유열�
   assert.ok(code.includes('const SHARED3_COL_START = 120'), '3차 블록 시작(DP120) 상수가 없다');
   const heads3 = code.match(/const SHARED3_COL_HEADERS = \[([\s\S]*?)\];/);
   assert.ok(heads3, 'SHARED3_COL_HEADERS 선언을 찾지 못함');
-  assert.equal(heads3[1].split(',').filter(s => s.trim()).length, 3); // [v9.89] +결석폼URL(DR122)
+  assert.equal(heads3[1].split(',').filter(s => s.trim()).length, 3); // [v9.97] +결석폼URL(DR122)
   assert.ok(fn.includes('writeIfChanged(pf, 2, SHARED3_COL_START,'), '3차 블록 분리 쓰기가 아니면 선점 열 DO119(랭킹보드)를 덮어쓴다');
   assert.ok(fn.includes('.concat(SHARED3_COL_HEADERS)'), 'HEADS_ALL이 3차 블록을 포함하지 않는다 — 분기 반환 길이 가드가 무력화');
 });
@@ -1832,4 +1832,47 @@ test('[v9.80] 켜기 큐·침묵 감시 — 폼 미생성과 "출석 1탭이 없
   const h3v = code.match(/const SHARED3_COL_HEADERS = \[([^\]]+)\]/);
   assert.ok(h3v && h3v[1].includes("'결석폼URL'"), '결석폼URL이 3차 블록(DR122)에 없다 — DO119는 v9.81 랭킹보드가 선점했다');
   assert.ok(section('function weeklyJobs()', 'function monthlyJobs()').includes('absenceSection_'), '주간 리포트 노출 누락 — 측정해도 아무도 안 본다');
+});
+
+test('[v9.97] 스토리북 월 키 — Date 오염이 멱등 가드를 깨지 않는다(+학생 화면 원시 Date 노출 차단)', () => {
+  // 07-31 학생 화면 실측: 소식탭 스토리북 Description이 'Mon Jun 01 2026 00:00:00 GMT+0800 …'.
+  //   정체는 표시 문제가 아니라 시트가 'yyyy-MM'을 Date로 자동 변환한 것 — 그 탓에 발간 멱등 가드
+  //   String(r[0])===ym 이 영구 실패해 같은 달이 매달 재발간되고, 중복 병합 자기치유가 증상을 가려 왔다.
+  const tzf = { formatDate: (d, tz, f) => {
+    const p = (n) => String(n).padStart(2, '0');
+    return f === 'yyyy-MM' ? d.getFullYear() + '-' + p(d.getMonth() + 1) : String(d);
+  } };
+  const ymTextOf_ = loadFunction('function ymTextOf_(', 'function ymTextColFix_(', 'ymTextOf_', {
+    Utilities: tzf, Session: { getScriptTimeZone: () => 'Asia/Ulaanbaatar' } });
+
+  // Date 셀 → 월키 문자열. 문자열 셀은 그대로(재파싱 금지 — tz 경계에서 전달로 밀린다)
+  assert.equal(ymTextOf_(new Date(2026, 5, 1), 'Asia/Ulaanbaatar'), '2026-06');
+  assert.equal(ymTextOf_('2026-06', 'Asia/Ulaanbaatar'), '2026-06');
+  assert.equal(ymTextOf_('', 'Asia/Ulaanbaatar'), '');
+  assert.equal(ymTextOf_(null, 'Asia/Ulaanbaatar'), '');
+  assert.equal(ymTextOf_(new Date('nope'), 'Asia/Ulaanbaatar'), 'Invalid Date'.slice(0, 12));
+
+  // 발간·월보·자기치유 세 곳이 전부 정규화를 거쳐야 한다 — 한 곳이라도 String() 직접 비교면 같은 사고 재발
+  const build = section('function buildMonthlyStorybook_(', 'function sheetSelfHeal_(');
+  assert.ok(build.includes('ymTextColFix_(sb, 1, tz)'), '발간 함수가 월 열 텍스트 고정을 안 한다');
+  assert.ok(build.includes('ymTextOf_(r[0], tz) === ym'), '멱등 가드가 Date 오염 셀을 못 읽는다(중복 발간)');
+  assert.equal(/some\(r => String\(r\[0\]\) === ym\)/.test(code), false, '구 String() 직접 비교가 남아 있다');
+  const heal = section('function sheetSelfHeal_(', 'function worldBossOf(');
+  assert.ok(heal.includes('ymTextColFix_(sb, 1'), '자기치유가 기존 Date 오염 행을 되돌리지 않는다');
+  assert.ok(heal.includes('ymTextOf_(r[0]'), '중복 그룹핑이 Date 셀을 다른 달로 오인한다');
+
+  // 같은 결함이 월키 멱등을 쓰는 시트 전부에 있었다(07-31 실측: 5곳) — 한 곳이라도 구 패턴이면 그 배치가 매달 재실행된다.
+  //   monthly_snapshot=포인트 재지급 경로 · synk_cards=카드 중복 · league_history=기록 중복 · 스토리초안=Claude API 중복 과금.
+  ['monthly_snapshot', 'synk_cards', 'league_history', '스토리초안'].forEach((sheet) => {
+    const anchor = code.indexOf("ensureSheet(ss, '" + sheet + "'");
+    assert.notEqual(anchor, -1, sheet + ' ensureSheet 호출부를 찾지 못함');
+    const near = code.slice(anchor, anchor + 700);
+    assert.ok(near.includes('ymTextColFix_'), sheet + ' 월 열 텍스트 고정이 없다');
+    assert.ok(near.includes('ymTextOf_(r[0]'), sheet + ' 멱등 가드가 Date 오염 셀을 못 읽는다(월간 배치 중복 실행)');
+  });
+
+  // 서식 고정은 멱등이어야 한다(매 야간 전체 열 재서식 = 무의미한 쓰기)
+  const fix = section('function ymTextColFix_(', 'function sheetSelfHeal_(');
+  assert.ok(fix.includes("getNumberFormat() !== '@'"), '서식 고정에 멱등 가드가 없다');
+  assert.ok(fix.includes('if (fixed)'), '변경 행이 없어도 매번 setValues 한다');
 });
