@@ -756,7 +756,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.86'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고 · [v9.77] profiles 무결성 3면 감시 — Glide 상세 화면 Edit/Add 잔재 실측(07-28) 후속: 유령 행(user_id 공란, 기존 !r[0] 스킵의 사각)·user_id 중복·무효 role을 nightJobs(매일·이상 시에만 메일·동일 내용 dedup)+주간 워치독+preflight 3면에서 자동 발각 · [v9.78] 강사 반 HUD 리디자인 — 유호 07-28 "반 탭이 만들다 만 느낌" → 낱장 줄글 4카드(v9.15)를 SYNK CLASS HUD로 격상: 14열 반상세HTML = 헤더 스탯 스트립(미션 n건·루틴 k/4·보스 HP) + 미션(유형 색 필·명단 캡)·루틴(게이지+2×2)·레이드(사정권 콜아웃 흡수)·왕관(미수혜 pill 후보 명단), Glide 기바인딩이라 클릭 0 적용·9~13열 낱장도 동일 디자인(설계=ban-tab-redesign 워크플로 A/B 판정) · [v9.79] 미니멀 스킨 — 유호 "훨씬 트렌디하고 미니멀하게, 뼈대 같은 느낌" → 실렌더 A/B(M1 에어리 라이트 vs M2 다크 히어로) 판정 M2 채택: 유색 보더 전면 폐지(흰 카드+이중 소프트 섀도)·타이포 3단(그레이 라벨→잉크 빅넘버→본문)·색 3계 절제(블루·앰버·그린)·이모지 카드당 ≤1·미션 도트 3톤·상세 헤더=딥 네이비 다크 히어로(블루 radial glow) · [v9.80] 조 편성·역할 로테이션 — 강사 수업 규칙 v3.0 §11 배선 대기 1순위(유호 07-31 "앱 자동 제안" 확정): groups 시트(시즌×반 1벌·실력 스네이크+말수·학교 계층 내 교환)·역할 4개 차시 순환·2인 짝 3조합·발표 순번(로테이션이 8주 전원 2회를 자동 보장)을 앱이 짠다. 역할·짝·발표자는 저장하지 않고 차시 번호에서 계산 — 매 차시 쓰기 0(월 500건 한도 불변). 강사 브리핑에 조 편성표 동봉 · [v9.81] 랭킹·반 목록 UI 격상(유호 07-31 지적 3건) — ①학생 랭킹 탭: profiles DO119 랭킹보드HTML 신설(SYNK LEAGUE 다크 포디움+순위 리스트+내 순위 하이라이트+추격 넛지 "nP=숙제 k번", rankMap과 동일 소스) ②강사 반 목록: class_stats 15열 반카드요약(👥 n명·반몬스터·보스 상태)+16열 반몬스터이미지 — Glide Collection을 Card 스타일로 ③반 상세 HUD 헤더에 👥 총원 필(stuN 기전달이라 조립 0) · classMonster {name,img}화·유령 클리어 14→16열 · [v9.82] 출퇴근·결석 카드(유호 07-31 지시 10·12번) — ①강사 출퇴근HTML(DP120, 3차 블록 SHARED3 — DO119 랭킹보드 선점 회피): 오늘의 근무 히어로(출근/퇴근 빅넘버·상태 필 3단·퇴근 후 근무시간 확정값)+이번 주 월~토 스트립(과거 무기록일은 무채색 — 개인 시간표 부재로 결근 단정 금지)+요일 출근 치어 재사용(CH11~17 소생), 10분 스위프 소유·값 변경시만 기입(경과시간류 금지 = update 순증 0, 자정 리셋은 기존 출퇴근 리셋과 같은 묶음) ②학부모 결석신고HTML(DQ121): 접수 확인 ✅(v9.34 보류 P-ACK 상환)·오늘/예정/지난 3태·다음 수업일 3칩(classDowOk_ 재사용)·작동 3줄 몽골어 병기(원어민 검수 큐), 출석 달력과 같은 껍질 ③결석 폼 "자녀"를 Choice(value=user_id)로 재조립 지시 — 다자녀 parent_of 통짜 기록이 미출석 제외·브리핑·오늘의 반 3곳에서 조용히 불발되던 것 근본 수리 + preflight absence_notice student_id 무결성 검사(쉼표·미매칭) ④학부모 전수 점검 문서 docs/부모탭_점검_2026-07-31.md(P-ACK·다자녀 🔴 2건 = 이번 수리, 문의 답변 루프·다이제스트 몽골어 🟡 2건 = 제안 대기) · [v9.83] 💰 포인트 경제 재설계(유호 07-31 지시 23번 "포인트가 너무 후하다") — ①지급 단가를 PT 상수 단일 소스로 모으고 전면 ÷2(숙제 10→5·출석 3→2·첨삭확인 5→2·왕관 10→5·레이드 20→10·리그 5→3·월드 10→5·개근왕 30→15·영웅 20→10·생일 20→10): 설계 앵커 "성실 월 ~280P" 이후 지급 경로 6개가 늘도록 아무도 총합을 안 봐서 실측 572P/월 = 정확히 2배 인플레였고, 그 탓에 과잠 3.0개월·싱크마스터 진화 4.2개월(의도 9개월)로 스토어·진화·보스 세 경제가 동시에 무너져 있던 것을 스토어 가격 무수정으로 한 번에 복귀(열심히 291P·보통 196P) ②🧥 과잠은 스토어 하차 → 재원 12개월+누계 1,200P 무료 지급 자격으로(jacketWatch_·jacket_grants, 잔액 무차감이라 간식·굿즈를 사면서도 시계가 돌고 수업일 1/5인 주말반도 같은 개월에 도달) ③목표진행 카드(BZ78)를 도착 예정일로 — 촤 없으면 과잠 진행 폴백 ④보스 HP를 RAID_HP_PER 상수화 재보정(평일 28→34·주말 18→14·WORLD_HP_PER 100→150, 지급의 종속 변수라 함께 움직인다) · [v9.84] 🔌 상담 배선 팩(유호 07-31 승인: 진단 5건+도전안+한수더 전부) — ①상담 5필드→DT124~DX128(취향·목표·입학TOPIK·고충·페이스라인, 읽기 폭 동적+헤더 이름 해석+점거 가드) ②AI 콜드스타트 폴백 사슬 4곳 통일(최애=DA105‖상담취향·목표=드림‖상담목표‖비전·약점=기록‖입학 자기보고 — 학생 소유 열은 읽기만) ③여정카드 페이스라인(도전안: 목표 기한 역산 남은 주, 보장 표현 0)+미래편지 입학TOPIK 0점 좌표(한수더) ④자유서술 blob→노션 상담서술 주간 자동 이관(속성 자동 보장·장애 격리) ⑤KPI 인지채널별 등록/상담 분해(시트 스키마 불변) ⑥migrateConsentV185 ▶1회 — 온라인 폼 동의 문항(v18.5, 문구 유호 검토 전제)+워치독 감시 2종. 설계노트 199~204·테스트 7종 · [v9.85] 리그 카드 리뷰 반영(v9.81 독립 리뷰 P1+P2) — ①단상 숫자=실순위(동점 동순위, 구현은 배열 위치를 찍어 R열과 어긋났다)+동점 1위 왕좌 문구(구 mineIdx===0) ②넛지 환산 단가를 PT.숙제 주입으로(v9.83 반값 개정 자동 추종, meta.hwP)+6번 이상은 "사정권" 문구 캡 ③동점 추격 문구를 이름 기준으로(같은 순위끼리 "n위와 동점"은 자기 언급) ④콜드 리스트 문구 분기(없는 TOP3 전제 제거) ⑤리그 이름 폴백 '이름 미등록'(전교 노출면 user_id 차단) ⑥월 라벨 시트 tz 통일 ⑦class_stats 유령 클리어 앞 폭 보장(좁은 시트+반 감소 조합 크래시 경로) · [v9.86] 수업준비 팩(유호 07-31 "1,2,3,4 전부 진행" — 9번 아이디어 4건 전량 채택) — A 오늘·내일 결석 예정을 HUD 미션 절로(preAbsByCls, 사전신고→강사 화면 관통·수업 12분 전 메일에만 있던 것) · B 조 편성 절을 반 상세 HUD에 상설(buildGroupHud_+groupHudsByClass_ 1회 읽기 배치 — 메일 조 편성표와 동일 원천 roleOfSeat_·발표자 앰버 콜아웃·임시 조 필, 편성 전엔 절 생략) · C 수업준비 카드에 제출 현황(검사 동선) 절 — hw_feedback 기존 읽기에 편승(subT)·담당 반별 n/전체·미제출 5명 캡·강사별 카드 분화(prepArgsT) · D 주간 교안 초안 자동 생성(weeklyJobs 월 07시 편승·통합 리포트 섹션으로 링크 보고) — 양식 v2.0 14항 틀에 앱이 아는 칸만 채움(기간·인원·담당·이월 '더연습' 태그·3주차부터 오류 톱10 실측·4주차부터 지명 프록시(발화 실측 전 포인트 무활동 대체 명시)·조 편성표·과업 은행 20종 차시×주차 로테이션), Google Doc 멱등 생성(같은 이름 있으면 보존 — 강사 편집 불가침)·SYNK_교안초안 폴더·콘텐츠는 contents_교안.js 신설(파일 차선 규약·filePushOrder 편입) ⚠DocumentApp 최초 사용 = 배포 후 아무 함수 ▶ 1회 권한 재승인 필요(승인 전 트리거 실패 창 — 보고에 0단계 명시)
+const SYNK_VERSION = 'v9.87'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고 · [v9.77] profiles 무결성 3면 감시 — Glide 상세 화면 Edit/Add 잔재 실측(07-28) 후속: 유령 행(user_id 공란, 기존 !r[0] 스킵의 사각)·user_id 중복·무효 role을 nightJobs(매일·이상 시에만 메일·동일 내용 dedup)+주간 워치독+preflight 3면에서 자동 발각 · [v9.78] 강사 반 HUD 리디자인 — 유호 07-28 "반 탭이 만들다 만 느낌" → 낱장 줄글 4카드(v9.15)를 SYNK CLASS HUD로 격상: 14열 반상세HTML = 헤더 스탯 스트립(미션 n건·루틴 k/4·보스 HP) + 미션(유형 색 필·명단 캡)·루틴(게이지+2×2)·레이드(사정권 콜아웃 흡수)·왕관(미수혜 pill 후보 명단), Glide 기바인딩이라 클릭 0 적용·9~13열 낱장도 동일 디자인(설계=ban-tab-redesign 워크플로 A/B 판정) · [v9.79] 미니멀 스킨 — 유호 "훨씬 트렌디하고 미니멀하게, 뼈대 같은 느낌" → 실렌더 A/B(M1 에어리 라이트 vs M2 다크 히어로) 판정 M2 채택: 유색 보더 전면 폐지(흰 카드+이중 소프트 섀도)·타이포 3단(그레이 라벨→잉크 빅넘버→본문)·색 3계 절제(블루·앰버·그린)·이모지 카드당 ≤1·미션 도트 3톤·상세 헤더=딥 네이비 다크 히어로(블루 radial glow) · [v9.80] 조 편성·역할 로테이션 — 강사 수업 규칙 v3.0 §11 배선 대기 1순위(유호 07-31 "앱 자동 제안" 확정): groups 시트(시즌×반 1벌·실력 스네이크+말수·학교 계층 내 교환)·역할 4개 차시 순환·2인 짝 3조합·발표 순번(로테이션이 8주 전원 2회를 자동 보장)을 앱이 짠다. 역할·짝·발표자는 저장하지 않고 차시 번호에서 계산 — 매 차시 쓰기 0(월 500건 한도 불변). 강사 브리핑에 조 편성표 동봉 · [v9.81] 랭킹·반 목록 UI 격상(유호 07-31 지적 3건) — ①학생 랭킹 탭: profiles DO119 랭킹보드HTML 신설(SYNK LEAGUE 다크 포디움+순위 리스트+내 순위 하이라이트+추격 넛지 "nP=숙제 k번", rankMap과 동일 소스) ②강사 반 목록: class_stats 15열 반카드요약(👥 n명·반몬스터·보스 상태)+16열 반몬스터이미지 — Glide Collection을 Card 스타일로 ③반 상세 HUD 헤더에 👥 총원 필(stuN 기전달이라 조립 0) · classMonster {name,img}화·유령 클리어 14→16열 · [v9.82] 출퇴근·결석 카드(유호 07-31 지시 10·12번) — ①강사 출퇴근HTML(DP120, 3차 블록 SHARED3 — DO119 랭킹보드 선점 회피): 오늘의 근무 히어로(출근/퇴근 빅넘버·상태 필 3단·퇴근 후 근무시간 확정값)+이번 주 월~토 스트립(과거 무기록일은 무채색 — 개인 시간표 부재로 결근 단정 금지)+요일 출근 치어 재사용(CH11~17 소생), 10분 스위프 소유·값 변경시만 기입(경과시간류 금지 = update 순증 0, 자정 리셋은 기존 출퇴근 리셋과 같은 묶음) ②학부모 결석신고HTML(DQ121): 접수 확인 ✅(v9.34 보류 P-ACK 상환)·오늘/예정/지난 3태·다음 수업일 3칩(classDowOk_ 재사용)·작동 3줄 몽골어 병기(원어민 검수 큐), 출석 달력과 같은 껍질 ③결석 폼 "자녀"를 Choice(value=user_id)로 재조립 지시 — 다자녀 parent_of 통짜 기록이 미출석 제외·브리핑·오늘의 반 3곳에서 조용히 불발되던 것 근본 수리 + preflight absence_notice student_id 무결성 검사(쉼표·미매칭) ④학부모 전수 점검 문서 docs/부모탭_점검_2026-07-31.md(P-ACK·다자녀 🔴 2건 = 이번 수리, 문의 답변 루프·다이제스트 몽골어 🟡 2건 = 제안 대기) · [v9.83] 💰 포인트 경제 재설계(유호 07-31 지시 23번 "포인트가 너무 후하다") — ①지급 단가를 PT 상수 단일 소스로 모으고 전면 ÷2(숙제 10→5·출석 3→2·첨삭확인 5→2·왕관 10→5·레이드 20→10·리그 5→3·월드 10→5·개근왕 30→15·영웅 20→10·생일 20→10): 설계 앵커 "성실 월 ~280P" 이후 지급 경로 6개가 늘도록 아무도 총합을 안 봐서 실측 572P/월 = 정확히 2배 인플레였고, 그 탓에 과잠 3.0개월·싱크마스터 진화 4.2개월(의도 9개월)로 스토어·진화·보스 세 경제가 동시에 무너져 있던 것을 스토어 가격 무수정으로 한 번에 복귀(열심히 291P·보통 196P) ②🧥 과잠은 스토어 하차 → 재원 12개월+누계 1,200P 무료 지급 자격으로(jacketWatch_·jacket_grants, 잔액 무차감이라 간식·굿즈를 사면서도 시계가 돌고 수업일 1/5인 주말반도 같은 개월에 도달) ③목표진행 카드(BZ78)를 도착 예정일로 — 촤 없으면 과잠 진행 폴백 ④보스 HP를 RAID_HP_PER 상수화 재보정(평일 28→34·주말 18→14·WORLD_HP_PER 100→150, 지급의 종속 변수라 함께 움직인다) · [v9.84] 🔌 상담 배선 팩(유호 07-31 승인: 진단 5건+도전안+한수더 전부) — ①상담 5필드→DT124~DX128(취향·목표·입학TOPIK·고충·페이스라인, 읽기 폭 동적+헤더 이름 해석+점거 가드) ②AI 콜드스타트 폴백 사슬 4곳 통일(최애=DA105‖상담취향·목표=드림‖상담목표‖비전·약점=기록‖입학 자기보고 — 학생 소유 열은 읽기만) ③여정카드 페이스라인(도전안: 목표 기한 역산 남은 주, 보장 표현 0)+미래편지 입학TOPIK 0점 좌표(한수더) ④자유서술 blob→노션 상담서술 주간 자동 이관(속성 자동 보장·장애 격리) ⑤KPI 인지채널별 등록/상담 분해(시트 스키마 불변) ⑥migrateConsentV185 ▶1회 — 온라인 폼 동의 문항(v18.5, 문구 유호 검토 전제)+워치독 감시 2종. 설계노트 199~204·테스트 7종 · [v9.85] 리그 카드 리뷰 반영(v9.81 독립 리뷰 P1+P2) — ①단상 숫자=실순위(동점 동순위, 구현은 배열 위치를 찍어 R열과 어긋났다)+동점 1위 왕좌 문구(구 mineIdx===0) ②넛지 환산 단가를 PT.숙제 주입으로(v9.83 반값 개정 자동 추종, meta.hwP)+6번 이상은 "사정권" 문구 캡 ③동점 추격 문구를 이름 기준으로(같은 순위끼리 "n위와 동점"은 자기 언급) ④콜드 리스트 문구 분기(없는 TOP3 전제 제거) ⑤리그 이름 폴백 '이름 미등록'(전교 노출면 user_id 차단) ⑥월 라벨 시트 tz 통일 ⑦class_stats 유령 클리어 앞 폭 보장(좁은 시트+반 감소 조합 크래시 경로) · [v9.86] 수업준비 팩(유호 07-31 "1,2,3,4 전부 진행" — 9번 아이디어 4건 전량 채택) — A 오늘·내일 결석 예정을 HUD 미션 절로(preAbsByCls, 사전신고→강사 화면 관통·수업 12분 전 메일에만 있던 것) · B 조 편성 절을 반 상세 HUD에 상설(buildGroupHud_+groupHudsByClass_ 1회 읽기 배치 — 메일 조 편성표와 동일 원천 roleOfSeat_·발표자 앰버 콜아웃·임시 조 필, 편성 전엔 절 생략) · C 수업준비 카드에 제출 현황(검사 동선) 절 — hw_feedback 기존 읽기에 편승(subT)·담당 반별 n/전체·미제출 5명 캡·강사별 카드 분화(prepArgsT) · D 주간 교안 초안 자동 생성(weeklyJobs 월 07시 편승·통합 리포트 섹션으로 링크 보고) — 양식 v2.0 14항 틀에 앱이 아는 칸만 채움(기간·인원·담당·이월 '더연습' 태그·3주차부터 오류 톱10 실측·4주차부터 지명 프록시(발화 실측 전 포인트 무활동 대체 명시)·조 편성표·과업 은행 20종 차시×주차 로테이션), Google Doc 멱등 생성(같은 이름 있으면 보존 — 강사 편집 불가침)·SYNK_교안초안 폴더·콘텐츠는 contents_교안.js 신설(파일 차선 규약·filePushOrder 편입) ⚠DocumentApp 최초 사용 = 배포 후 아무 함수 ▶ 1회 권한 재승인 필요(승인 전 트리거 실패 창 — 보고에 0단계 명시) · [v9.87] 강사 지표 축 교정 — teacher_stats A열이 '강사' 헤더에 실은 반명을 담고 있었다(학생 행 class_name을 강사로 오독). teacherEmailMap_.byClass 조인으로 반명→담당 강사 변환, 집계 정의 확정(공동 담당=각자 온전 귀속·다반 강사=1행 합산·왕관 편중%만 반 단위 최댓값·매핑 없는 반='(미지정) 반명'으로 노출), 담당반 9열 추가로 조인 결과 감사 가능화, 헤더 정본 상수(TEACHER_STATS_HEADERS)를 골격·실사용이 공유해 v9.40 드리프트 재발 차단
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -1656,7 +1656,10 @@ function buildExecReport_() {
   if (riskHigh > 0) insights.push('이탈위험(상) ' + riskHigh + '명 — 이번 주 우선 케어 대상으로.');
   if (total > 0 && riskHigh / total >= 0.3) insights.push('전체의 30% 이상이 이탈위험(상) — 출석 관리 점검이 필요합니다.');
   if (newN === 0) insights.push('지난달 신규 등록 0명 — 마케팅·상담 파이프라인 점검을 권장합니다.');
-  if (tRows.length >= 2 && tRows[0][5] > 0) insights.push('이달의 강사: ' + tRows[0][0] + ' (케어지수 ' + tRows[0][5] + ').');
+  // [v9.87] '이달의 강사'는 진짜 강사 행에서만 뽑는다 — 담당 매핑이 없는 반은 '(미지정) 반명'으로 실리므로(정직한 결손 노출)
+  //   그대로 1위를 집으면 원장 월보에 "이달의 강사: (미지정) 월수 A"가 찍힌다. 메일 본문 목록에는 미지정 행도 그대로 남긴다.
+  const tNamed = tRows.filter(r => String(r[0]).indexOf(TEACHER_UNASSIGNED) !== 0);
+  if (tNamed.length >= 2 && tNamed[0][5] > 0) insights.push('이달의 강사: ' + tNamed[0][0] + ' (케어지수 ' + tNamed[0][5] + ').');
   if (!insights.length) insights.push('특이사항 없이 안정적으로 운영되고 있습니다.');
   const mNum = lastM.getMonth() + 1;
   const lines = [ // 콕핏 카드 — 한눈 9줄(압축), 상세는 메일 월보
@@ -5765,6 +5768,43 @@ function checkEvolution() {
 
 /* ===================== 강사 케어 지수 ===================== */
 
+// [v9.87] teacher_stats 헤더 정본 — SHEET_SKELETON(골격)과 calcTeacherStats(실사용)가 이 상수 하나를 함께 쓴다.
+//   v9.40에서 골격 구 3열 vs 실사용 8열이 어긋난 드리프트가 이미 한 번 났다 → 주석 경고 대신 단일 소스로 기계 강제.
+const TEACHER_STATS_HEADERS = ['강사', '담당학생수', '1인당출석', '1인당포인트', '1인당칭찬', '케어지수', '지난달왕관', '왕관편중%', '담당반'];
+const TEACHER_UNASSIGNED = '(미지정)'; // 담당 강사 매핑이 없는 반의 라벨 접두 — 학생이 조용히 증발하지 않게
+
+// [v9.87] 반명 → 담당 강사명 — 정본 매핑은 teacherEmailMap_.byClass(profiles 강사 행 E열, 쉼표 구분)다.
+//   조회 순서 ①반명 정확 일치 ②괄호 주석 제거본('월수 A(9시)' → '월수 A') ③번호 폴백은 강사가 유일할 때만
+//   (v8.8 선례 — 번호만 같은 신·구 트랙이 엉뚱한 강사에게 붙는 오매칭 차단).
+//   ⚠ byClass는 이메일이 있는 강사 행만 담는다(메일 라우팅용 정본) → 이메일 공란 강사의 반은 (미지정)으로 떨어져
+//   teacher_stats에 그대로 보인다. 조용한 누락보다 눈에 보이는 결손이 낫다는 판단(고치는 법 = profiles 강사 행 이메일).
+function teachersOfClass_(emap, cls) {
+  const raw = String(cls == null ? '' : cls).trim();
+  if (!raw) return [];
+  const pick = list => { // 같은 강사가 반명 키·번호 키로 두 번 담긴 경우 dedupe(이메일 기준)
+    const seen = {}, out = [];
+    (list || []).forEach(x => {
+      const nm = String((x && x.name) || '').trim();
+      if (!nm) return;
+      const key = String((x && x.email) || nm);
+      if (seen[key]) return;
+      seen[key] = 1;
+      out.push(nm);
+    });
+    return out;
+  };
+  const exact = pick(emap.byClass[raw]);
+  if (exact.length) return exact;
+  const bare = raw.split('(')[0].trim();
+  if (bare && bare !== raw) {
+    const byBare = pick(emap.byClass[bare]);
+    if (byBare.length) return byBare;
+  }
+  const n = classNumOf(raw);
+  const byNum = n ? pick(emap.byClass[n]) : [];
+  return byNum.length === 1 ? byNum : []; // 번호가 여러 강사로 갈리면 폴백 포기(오귀속보다 미지정이 낫다)
+}
+
 function calcTeacherStats() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pf = ss.getSheetByName('profiles');
@@ -5772,15 +5812,33 @@ function calcTeacherStats() {
   if (last < 2) return [];
   const data = pf.getRange(2, 1, last - 1, 25).getValues();
 
+  // [v9.87] 축 교정 — 구버전은 학생 행의 r[4](class_name)를 그대로 '강사'로 썼다. A열 헤더는 '강사'인데 값은 반명이라
+  //   "강사별" 지표가 실은 존재한 적이 없다(승급 통과율·결석 복귀율·재등록률 등 인센티브 지표가 올라탈 축이 통째로 공백).
+  //   진짜 매핑은 teacherEmailMap_.byClass(강사 행 E열). 집계 정의(확정):
+  //   ① 한 반에 강사 여러 명 = 그 반 전원을 각 강사에게 온전히 귀속. 1인당 지표(출석·포인트·칭찬)가 공동 담당에서도
+  //      단독 담당과 같은 척도여야 비교가 되므로 분수 분할하지 않는다 → 담당학생수 합계는 재적을 넘을 수 있다.
+  //   ② 한 강사 여러 반 = 담당 반 전체를 한 행으로 합산(왕관 편중%만 예외 — 아래 반 단위 최댓값).
+  //   ③ 매핑 없는 반 = '(미지정) 반명'으로 반별 1행 유지. 한 줄로 뭉치면 반별 케어 신호가 사라지고, 빼버리면 학생이
+  //      조용히 증발한다. 매핑을 채우는 순간 자동으로 강사 행에 접힌다(별도 마이그레이션 없음).
+  const emap = teacherEmailMap_(ss);
   const t = {};
+  const clsOfT = {};
+  const memo = {}; // 반명 → 강사 배열(반복 조회 절감)
   data.forEach(r => {
     if (!r[0] || r[3] !== 'student' || !r[4]) return;
-    const teacher = String(r[4]).split('(')[0].trim();
-    if (!t[teacher]) t[teacher] = { n: 0, att: 0, pts: 0, praise: 0 };
-    t[teacher].n++;
-    t[teacher].att += Number(r[21]) || 0;
-    t[teacher].pts += Number(r[16]) || 0;
-    t[teacher].praise += Number(r[23]) || 0;
+    const rawCls = String(r[4]).trim();
+    const cls = rawCls.split('(')[0].trim() || rawCls;
+    clsOfT[r[0]] = cls;
+    if (!memo[rawCls]) memo[rawCls] = teachersOfClass_(emap, rawCls);
+    const names = memo[rawCls].length ? memo[rawCls] : [TEACHER_UNASSIGNED + ' ' + cls];
+    names.forEach(nm => {
+      if (!t[nm]) t[nm] = { n: 0, att: 0, pts: 0, praise: 0, cls: {} };
+      t[nm].n++;
+      t[nm].att += Number(r[21]) || 0;
+      t[nm].pts += Number(r[16]) || 0;
+      t[nm].praise += Number(r[23]) || 0;
+      t[nm].cls[cls] = 1;
+    });
   });
 
   // [v7.8] 👑 왕관 공정성 — 강사별 지난달 왕관 수 + 편중도(한 학생 최다 비중 %, 60%↑면 골고루 권장)
@@ -5788,9 +5846,7 @@ function calcTeacherStats() {
   //   전월 로그를 이미 아카이브로 옮긴 뒤라, point_logs 단독 당월 집계는 항상 0/0으로 덮여 v7.8 공정성 감지가 무력했음
   const tz8 = ss.getSpreadsheetTimeZone();
   const ym8 = ymShift_(Utilities.formatDate(new Date(), tz8, 'yyyy-MM'), -1); // 전월
-  const crownBy = {};
-  const clsOfT = {};
-  data.forEach(r => { if (r[0] && r[3] === 'student' && r[4]) clsOfT[r[0]] = String(r[4]).split('(')[0].trim(); });
+  const crownBy = {}; // 반 단위 집계 — 강사 롤업은 아래에서(왕관은 반당 1명 체제라 공정성 단위 = 반)
   readPointLogs_(ss, 7).forEach(r => { // 병합 읽기(monthlyReport와 동일 패턴) — G열(연월) 기준 전월 필터
     const rs = String(r[3] || ''), pts = Number(r[2]) || 0;
     if (pts <= 0 || rs.indexOf('정정') > -1) return;
@@ -5805,24 +5861,36 @@ function calcTeacherStats() {
   const rows = Object.keys(t).map(k => {
     const v = t[k];
     const perAtt = v.att / v.n, perPts = v.pts / v.n, perPraise = v.praise / v.n;
-    const cb = crownBy[k] || { tot: 0, bySid: {} };
-    let mx = 0;
-    Object.keys(cb.bySid).forEach(s => { if (cb.bySid[s] > mx) mx = cb.bySid[s]; });
-    const share = cb.tot ? Math.round(mx * 100 / cb.tot) : 0;
+    const clsList = Object.keys(v.cls).sort();
+    // [v9.87] 왕관 총계 = 담당 반 합산 / 편중% = 반 단위 최댓값(가장 쏠린 반). 여러 반 학생을 한 통에 섞으면
+    //   한 반의 100% 쏠림이 반 수만큼 희석돼 60% 경보가 죽는다 — 왕관은 반당 1명([v7.9])이라 공정성 단위도 반이다.
+    let tot = 0, worst = 0;
+    clsList.forEach(cn => {
+      const cb = crownBy[cn];
+      if (!cb || !cb.tot) return;
+      tot += cb.tot;
+      let mx = 0;
+      Object.keys(cb.bySid).forEach(s => { if (cb.bySid[s] > mx) mx = cb.bySid[s]; });
+      const share = Math.round(mx * 100 / cb.tot);
+      if (share > worst) worst = share;
+    });
     return [k, v.n, Number(perAtt.toFixed(1)), Number(perPts.toFixed(1)),
             Number(perPraise.toFixed(1)),
             Math.round(perAtt * 12 + perPts * 1), // [v7.9] 시냅스(반당 1명) 체제에서 praise 변별력 소멸 — 출석 중심 재조정
-            cb.tot, share];
+            tot, worst, clsList.join(', ')];
   }).sort((a, b) => b[5] - a[5]);
 
-  const ts = ensureSheet(ss, 'teacher_stats',
-    ['강사','담당학생수','1인당출석','1인당포인트','1인당칭찬','케어지수','지난달왕관','왕관편중%']);
-  if (ts.getRange(1, 7).getValue() !== '지난달왕관') ts.getRange(1, 7).setValue('지난달왕관'); // [v7.8] · [v9.34] 집계 기준(전월)과 헤더 일치
-  if (ts.getRange(1, 8).getValue() !== '왕관편중%') ts.getRange(1, 8).setValue('왕관편중%');
+  const ts = ensureSheet(ss, 'teacher_stats', TEACHER_STATS_HEADERS);
+  const W = TEACHER_STATS_HEADERS.length;
+  if (ts.getMaxColumns() < W) ts.insertColumnsAfter(ts.getMaxColumns(), W - ts.getMaxColumns()); // 물리 그리드 부족 시 Range 예외로 주간 배치가 죽는다
+  // [v9.87] ensureSheet는 '시트가 없을 때만' 헤더를 쓴다 — 살아있는 시트의 헤더 보정은 여기서 한다
+  //   (구 v7.8·v9.34 개별 셀 보정 2줄을 정본 배열 대조 1블록으로 흡수 — 열이 늘어도 자동으로 따라온다).
+  const hdr = ts.getRange(1, 1, 1, W).getValues()[0];
+  if (TEACHER_STATS_HEADERS.some((h, i) => String(hdr[i] || '') !== h)) ts.getRange(1, 1, 1, W).setValues([TEACHER_STATS_HEADERS]);
   const tsLast = ts.getLastRow();
-  if (tsLast - 1 > rows.length && rows.length >= 0) {
-    ts.getRange(rows.length + 2, 1, Math.max(tsLast - 1 - rows.length, 1), 8).clearContent();
-  }
+  // [v9.87] 라벨 축이 반명 → 강사명으로 바뀌면 첫 실행에서 행 수가 줄어든다(반 15 → 강사 6). 꼬리 정리가 곧 마이그레이션 —
+  //   안 지우면 구 반명 행이 강사인 척 그대로 남는다. 전량 재계산이라 별도 이관 절차는 필요 없다.
+  if (tsLast - 1 > rows.length) ts.getRange(rows.length + 2, 1, tsLast - 1 - rows.length, W).clearContent();
   if (rows.length) writeIfChanged(ts, 2, 1, rows);
   return rows;
 }
@@ -12362,7 +12430,7 @@ const SHEET_SKELETON = [
     ['class_fuel', ['class_name','미션','입력자','created_at']],
     ['hw_batch', ['date','class_name','완료자목록','입력자','created_at','처리상태']],
     ['today_board', ['유형','이름','반','시각','퇴근']],
-    ['teacher_stats', ['강사','담당학생수','1인당출석','1인당포인트','1인당칭찬','케어지수','지난달왕관','왕관편중%']], // [v9.40] 구 3열(teacher·지급수·편중률)이 calcTeacherStats 실사용 8열과 불일치하던 드리프트 정정
+    ['teacher_stats', TEACHER_STATS_HEADERS], // [v9.40] 구 3열(teacher·지급수·편중률)이 실사용 8열과 불일치하던 드리프트 정정 · [v9.87] 정본 상수 공유로 드리프트 재발 자체를 차단(+담당반 9열)
     ['report_cards', ['card_id','student_id','월','image_url','칭호','코멘트','created_at']], // [v9.28] 실사용 7열로 정정(구 3열은 setupV5Triggers·runReportCards_와 불일치하던 결함)
     ['league_history', ['월','시즌','챔피언반','챔피언포인트','준우승','준우승포인트','MVP_id','MVP이름','MVP포인트','created_at']], ['hall_of_fame', ['연도','이름','반','업적','한마디','사진URL']],
     ['raid_story', ['date','class_name','유형','제목','스토리']],
@@ -12908,7 +12976,9 @@ function clearDemoData() {
   wipe('league_pairs', r => hasDemoCls(r[1]) || hasDemoCls(r[2]), 3);
   wipe('raid_story', r => hasDemoCls(r[1]), 2);
   wipe('class_stats', r => hasDemoCls(r[0]), 1);
-  wipe('teacher_stats', r => hasDemoCls(r[0]), 1);
+  // [v9.87] A열이 반명 → 강사명으로 바뀌어 '데모' 접두만으론 못 잡는다(데모 반 담당 강사 행·'(미지정) 데모…' 행 모두).
+  //   담당반(I열)에 데모 반이 하나라도 있으면 그 행은 데모 오염분 — 지워도 다음 calcTeacherStats가 실데이터로 재생성한다.
+  wipe('teacher_stats', r => hasDemoCls(r[0]) || String(r[8] || '').split(',').some(c => hasDemoCls(c.trim())), TEACHER_STATS_HEADERS.length);
   wipe('world_raid', r => String(r[1] || '').indexOf('(데모)') > -1, 2); // [검증 반영] '(데모)' 마커 행만 — 재적 8명인 달의 실 이력(HP 800 우연 일치) 오폭 차단
   { // [v9.44] demoRaidClearNow가 이번 달 월드를 '격파'로 확정했다면 '진행중'으로 원복 — 다음 calcAll이 실데미지로 재계산
     const wrC = ss.getSheetByName('world_raid');
