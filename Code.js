@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.96'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.96] 버전 이력 분리
+const SYNK_VERSION = 'v9.97'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.96] 버전 이력 분리 · [v9.97] 월키 Date 오염 팩(07-31 학생화면 실측 잔여 D) — 소식탭 스토리북 Description이 'Mon Jun 01 2026 …' 원시 Date로 뜨던 것의 정체는 표시 문제가 아니라 **시트가 'yyyy-MM'을 날짜로 자동 변환**한 것. 그 탓에 월키 멱등 가드(String(r[0])===ym)가 영구 실패해 ①synk_stories 매달 재발간(중복 병합 자기치유가 증상을 가려 옴) ②monthly_snapshot 게임배치 재실행 ③synk_cards·league_history 중복 ④스토리초안 Claude API 중복 과금 경로가 동시에 열려 있었다(v9.68 시각 Date 오염과 같은 계급, 5개 시트 공통). 처치=ymTextOf_(Date→'yyyy-MM' 정규화, 문자열은 재파싱 금지 — tz 경계 전달 밀림 차단)+ymTextColFix_(월 열 '@' 서식 고정·기존 오염 행 되돌림, 서식·쓰기 양쪽 멱등)를 5개 호출부에 배선. 회귀=구 String() 직접 비교 잔존 0 + 4개 시트 ensureSheet 인근 배선 기계 검사
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -1736,7 +1736,7 @@ function buildExecReport_() {
     .sort((a, b) => byStudent[b] - byStudent[a]).slice(0, 3);
   const tRows = (function () { try { return calcTeacherStats() || []; } catch (e) { Logger.log('월보 강사지표 스킵: ' + e); return []; } })();
   const issueRow = ss.getSheetByName('synk_stories');
-  const issuedStory = issueRow && issueRow.getLastRow() >= 2 && issueRow.getRange(2, 1, issueRow.getLastRow() - 1, 1).getValues().some(r => String(r[0]) === ym);
+  const issuedStory = issueRow && issueRow.getLastRow() >= 2 && issueRow.getRange(2, 1, issueRow.getLastRow() - 1, 1).getValues().some(r => ymTextOf_(r[0], tz) === ym); // [v9.97] Date 오염 셀도 월키로 읽는다
   const insights = []; // 구 monthlyReport 인사이트 승계 — 판정 임계 동일
   if (deducted === 0 && issued > 0) insights.push('포인트가 발행만 되고 사용되지 않고 있어요 — 스토어 상품 홍보를 권장합니다.');
   else if (issued > 0 && usePct < 20) insights.push('포인트 사용률 ' + usePct + '%로 낮아요 — 스토어 활성화가 필요합니다.');
@@ -6327,9 +6327,10 @@ function monthlyGameBatch() {
 
   // 중복 실행 방지
   const snap = ensureSheet(ss, 'monthly_snapshot', ['월', 'student_id', '월간포인트', '랭킹']);
+  ymTextColFix_(snap, 1, tz); // [v9.97] 월 열 Date 오염 → 멱등 가드 무력화(게임배치 재실행) 차단
   if (snap.getLastRow() >= 2) {
     const done = snap.getRange(2, 1, snap.getLastRow() - 1, 1).getValues()
-      .some(r => String(r[0]) === ym);
+      .some(r => ymTextOf_(r[0], tz) === ym);
     if (done) { Logger.log(ym + ' 게임배치 이미 완료 — 스킵'); return; }
   }
 
@@ -8312,9 +8313,11 @@ function buildMonthlyStorybook_() {
   const sb = ensureSheet(ss, 'synk_stories', ['월','호수','제목','챕터','챕터제목','본문','문법포인트','씬프롬프트']);
   if (sb.getMaxColumns() < 8) sb.insertColumnsAfter(sb.getMaxColumns(), 8 - sb.getMaxColumns()); // [v9.10]
   if (String(sb.getRange(1, 8).getValue()) !== '씬프롬프트') sb.getRange(1, 8).setValue('씬프롬프트');
+  // [v9.97] 월 열을 텍스트로 고정 — 이 줄이 없으면 아래 멱등 가드가 Date 오염 셀에서 영구 실패해 매달 중복 발간된다
+  ymTextColFix_(sb, 1, tz);
   if (sb.getLastRow() >= 2 && sb.getRange(2, 1, sb.getLastRow() - 1, 1).getValues()
-    .some(r => String(r[0]) === ym)) { Logger.log('스토리북: ' + ym + '호 기발간'); return; }
-  const issue = 1 + new Set(sb.getLastRow() < 2 ? [] : sb.getRange(2, 1, sb.getLastRow() - 1, 1).getValues().map(r => String(r[0])).filter(String)).size;
+    .some(r => ymTextOf_(r[0], tz) === ym)) { Logger.log('스토리북: ' + ym + '호 기발간'); return; }
+  const issue = 1 + new Set(sb.getLastRow() < 2 ? [] : sb.getRange(2, 1, sb.getLastRow() - 1, 1).getValues().map(r => ymTextOf_(r[0], tz)).filter(String)).size;
   const G = STORY_GRAMMAR[sIdx];
   const boss = bossOfMonth(ss, mNum) || { name: '이달의 보스', open: '', win: '' };
   const wb = worldBossOf(ss);
@@ -8580,15 +8583,38 @@ function buildMonthlyStorybook_() {
 function orphanVsClean_(v) { // 비이모지 문자 뒤에 남은 변형 선택자만 제거(한글·숫자·공백·닫는따옴표 등)
   return String(v == null ? '' : v).replace(/([\uAC00-\uD7A3\w\s.,\u00B7\u300D\u300F\u201D\x22\x27)\]])[\uFE0E\uFE0F]+/g, '$1');
 }
+// [v9.97] 'yyyy-MM' 월 키 정규화 — 셀이 Date로 자동 변환돼 있어도 항상 문자열 월키를 돌려준다.
+//   Date 판정은 asDate_가 아니라 instanceof로 한다("2026-06" 문자열을 다시 Date로 만들면 tz 경계에서 전달로 밀린다).
+function ymTextOf_(v, tz) {
+  if (v instanceof Date && !isNaN(v.getTime())) return Utilities.formatDate(v, tz || Session.getScriptTimeZone(), 'yyyy-MM');
+  return String(v == null ? '' : v).trim();
+}
+// 월 열을 텍스트 서식으로 고정하고 기존 Date 오염 행을 'yyyy-MM' 문자열로 되돌린다(변경 행만 쓰기 — 멱등).
+function ymTextColFix_(sh, col, tz) {
+  if (!sh || sh.getLastRow() < 2) return 0;
+  if (sh.getRange(2, col).getNumberFormat() !== '@') sh.getRange(1, col, sh.getMaxRows(), 1).setNumberFormat('@');
+  const n = sh.getLastRow() - 1;
+  const vals = sh.getRange(2, col, n, 1).getValues();
+  let fixed = 0;
+  for (let i = 0; i < n; i++) {
+    if (vals[i][0] instanceof Date) { vals[i][0] = ymTextOf_(vals[i][0], tz); fixed++; }
+  }
+  if (fixed) { sh.getRange(2, col, n, 1).setValues(vals); Logger.log('자기치유: ' + sh.getName() + ' 월 열 Date 오염 ' + fixed + '행 → yyyy-MM 텍스트'); }
+  return fixed;
+}
 function sheetSelfHeal_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   // ①+② 스토리북
   const sb = ss.getSheetByName('synk_stories');
   if (sb && sb.getLastRow() >= 2) {
+    // [v9.97] ⓪ 월(A열) Date 오염 정상화 — 시트가 'yyyy-MM'을 날짜로 자동 변환해 두면
+    //   ⓐ학생 소식탭 카드에 원시 Date 문자열이 노출되고 ⓑ발간 멱등 가드(String(r[0])===ym)가 영구 실패해
+    //   같은 달 스토리가 매달 재발간된다(중복 병합이 그 증상을 가려 왔다 — v9.68 시각 Date 오염과 같은 계급).
+    ymTextColFix_(sb, 1, ss.getSpreadsheetTimeZone());
     const n = sb.getLastRow() - 1;
     const data = sb.getRange(2, 1, n, 8).getValues();
     const byYm = {};
-    data.forEach((r, i) => { const ym = String(r[0] || ''); if (ym) (byYm[ym] = byYm[ym] || []).push(i); });
+    data.forEach((r, i) => { const ym = ymTextOf_(r[0], ss.getSpreadsheetTimeZone()); if (ym) (byYm[ym] = byYm[ym] || []).push(i); });
     const dupMonths = Object.keys(byYm).filter(ym => byYm[ym].length >= 2).sort();
     const delRows = []; // 시트 실제 행 번호(2-base)
     dupMonths.forEach(ym => {
@@ -8719,7 +8745,8 @@ function buildMonthlyCards_() {
   const lastM = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const ym = Utilities.formatDate(lastM, tz, 'yyyy-MM');
   const cd = ensureSheet(ss, 'synk_cards', ['월','student_id','카드HTML']);
-  if (cd.getLastRow() >= 2 && cd.getRange(2, 1, cd.getLastRow() - 1, 1).getValues().some(r => String(r[0]) === ym)) return; // 멱등
+  ymTextColFix_(cd, 1, tz); // [v9.97]
+  if (cd.getLastRow() >= 2 && cd.getRange(2, 1, cd.getLastRow() - 1, 1).getValues().some(r => ymTextOf_(r[0], tz) === ym)) return; // 멱등
   const pf = ss.getSheetByName('profiles');
   if (!pf || pf.getLastRow() < 2) return;
   // [v9.28] 주말반 보정 — 반유형(AJ36)별 지난달 예정 수업일로 카드 티어를 정규화(랭킹은 그대로, 카드만 공정 보정)
@@ -8849,9 +8876,10 @@ function writeLeagueHistory(ss, tz, ym, mPts, rank, clsOf, nameOf) {
   const lh = ensureSheet(ss, 'league_history',
     ['월', '시즌', '챔피언반', '챔피언포인트', '준우승', '준우승포인트',
      'MVP_id', 'MVP이름', 'MVP포인트', 'created_at']);
+  ymTextColFix_(lh, 1, tz); // [v9.97]
   if (lh.getLastRow() >= 2) {
     const exists = lh.getRange(2, 1, lh.getLastRow() - 1, 1).getValues()
-      .some(r => String(r[0]) === ym);
+      .some(r => ymTextOf_(r[0], tz) === ym);
     if (exists) { Logger.log(ym + ' 리그 기록 이미 존재 — 스킵'); return; }
   }
   const cls = {};
@@ -11001,7 +11029,8 @@ function snsDrafts_() {
   const tz = ss.getSpreadsheetTimeZone();
   const ym = Utilities.formatDate(new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1), tz, 'yyyy-MM');
   const sd = ensureSheet(ss, '스토리초안', ['월', '제목', '초안', '상태', 'created_at']);
-  if (sd.getLastRow() >= 2 && sd.getRange(2, 1, sd.getLastRow() - 1, 1).getValues().some(r => String(r[0]) === ym)) return; // 월키 멱등
+  ymTextColFix_(sd, 1, tz); // [v9.97] — 여기 멱등이 깨지면 Claude API가 매달 중복 호출된다(비용)
+  if (sd.getLastRow() >= 2 && sd.getRange(2, 1, sd.getLastRow() - 1, 1).getValues().some(r => ymTextOf_(r[0], tz) === ym)) return; // 월키 멱등
   const pl = ss.getSheetByName('point_logs');
   let totP = 0, evtN = 0;
   if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
@@ -12958,21 +12987,31 @@ function notionHeaders_() {
   return { 'Authorization': 'Bearer ' + token, 'Notion-Version': NOTION_VER, 'Content-Type': 'application/json' };
 }
 
+// [v9.96] 동의 문항 A의 제목 = 자유서술 blob에 남는 동의 마커. migrateConsentV186과 한 벌 — 제목을 바꾸면 여기도 바꾼다
+//   (문항 A는 대응 시트 열이 없어 규칙대로 blob에 '[제목] 답'으로 접수 시각과 함께 보존된다 = 행 단위 동의 증빙).
+const CONSENT_Q_TITLE = '개인정보·학습데이터 활용 동의';
+
 // [v9.84·④] 상담시트 자유서술 blob → 학생ID 맵. '📝자유서술→노션' 열이 이름만 약속하고 수동이던 것의 자동화 재료.
 //   서술이 있는 행만·학생ID 중복은 첫 행 우선. 실패는 호출부에서 격리(서술만 생략, 본 동기화는 계속).
+// [v9.96·행 단위 동의] app_state 게이트(v18.6)는 "폼에 문항이 생겼는가"만 보증한다 — 문항 신설 **이전에** 접수된
+//   행과 종이 상담을 손으로 옮긴 행에는 동의 표기가 없다. 08-01 실측에서 그런 행(SYNK-001)이 서술을 가진 채
+//   이관 대기 중인 것을 확인 → 마커 없는 행은 내보내지 않는다(버전 게이트의 한 겹 아래 구멍).
 function consultNarrativeMap_() {
   const map = {};
+  let skipped = 0;
   const src = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
-  if (!src || src.getLastRow() < 3) return map;
+  if (!src || src.getLastRow() < 3) return { map: map, skipped: 0 };
   const lastC = Math.max(62, src.getLastColumn());
   const hdr = src.getRange(2, 1, 1, lastC).getValues()[0].map(h => String(h || '').trim());
   const bi = hdr.indexOf('📝자유서술→노션');
-  if (bi === -1) return map;
+  if (bi === -1) return { map: map, skipped: 0 };
   src.getRange(3, 1, src.getLastRow() - 2, lastC).getValues().forEach(r => {
     const sid = String(r[59] || '').trim(), t = String(r[bi] || '').trim();
-    if (sid && t && !map[sid]) map[sid] = t;
+    if (!sid || !t || map[sid]) return;
+    if (t.indexOf('[' + CONSENT_Q_TITLE + ']') === -1) { skipped++; return; } // 동의 표기 없는 행 = 이관 안 함
+    map[sid] = t;
   });
-  return map;
+  return { map: map, skipped: skipped };
 }
 
 // [v9.84·④] 크루 DB에 rich_text 속성 보장 — 이미 있으면 no-op(200), 타입 충돌 등 실패면 false(서술만 생략).
