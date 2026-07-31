@@ -142,6 +142,49 @@ test('4주차 명단은 4주차에만, 시즌당 한 번만 나간다', () => {
     '이미 보낸 시즌인지 확인하지 않는다');
 });
 
+/* ── 필수화 강제 — 유호 08-01 확정 「마감 30초를 강사 필수 루틴으로」 ────
+ * 문서에 "필수"라고 쓰기만 하면 재량과 같다. 안 낸 차시를 앱이 잡아야 필수가 된다. */
+
+test('어제 마감 미제출 반을 아침에 담당 강사에게 알린다', () => {
+  const mj = bodyOf('function morningJobs()', '\n}');
+  assert.ok(/lessonCloseGapAlert_/.test(mj), 'morningJobs가 미제출을 확인하지 않는다 — 필수가 재량이 된다');
+});
+
+test('출석 0건인 반은 휴강으로 보고 미제출로 세지 않는다 (규칙서 §6 정의 재사용)', () => {
+  const g = bodyOf('function lessonCloseGapAlert_', '\n}');
+  assert.ok(/if \(!Object\.keys\(taught\)\.length\) return ''/.test(g),
+    '어제 수업이 아예 없던 날에도 알림이 나간다 — 공휴일마다 오경보');
+  assert.ok(/getSheetByName\('attendance'\)/.test(g), '출석 기록으로 수업 여부를 판정하지 않는다');
+});
+
+test('일요일은 판정 자체를 열지 않는다 (주말반=토요일만)', () => {
+  const g = bodyOf('function lessonCloseGapAlert_', '\n}');
+  assert.ok(/classDowOk_\('평일', y\.getDay\(\)\)/.test(g) && /classDowOk_\('주말', y\.getDay\(\)\)/.test(g),
+    '요일 판정에 기존 classDowOk_를 쓰지 않는다 — 시간표 규칙과 어긋날 수 있다');
+});
+
+test('같은 날 재알림이 나가지 않는다 (하루 1통)', () => {
+  const g = bodyOf('function lessonCloseGapAlert_', '\n}');
+  assert.ok(/마감미제출_알림/.test(g), 'dedup 키가 없다 — 아침 배치가 두 번 돌면 두 번 간다');
+  const guardAt = g.indexOf("getState(st, '마감미제출_알림')");
+  const mailAt = g.indexOf('MailApp.sendEmail');
+  assert.ok(guardAt > -1 && guardAt < mailAt, 'dedup 확인이 발송보다 뒤에 있다');
+});
+
+test('전 반이 제출한 날에도 dedup 키를 찍는다 (다음 배치가 다시 훑지 않게)', () => {
+  const g = bodyOf('function lessonCloseGapAlert_', '\n}');
+  assert.ok(/if \(!gaps\.length\) \{ setState\(st, '마감미제출_알림', yStr\); return ''/.test(g),
+    '미제출 0건일 때 키를 안 찍으면 같은 날 배치마다 전 시트를 다시 스캔한다');
+});
+
+test('시즌 마감 제출률이 주간 리포트에 실린다 (필수 준수의 유일한 계측치)', () => {
+  const wj = bodyOf('function weeklyJobs()', '\n}');
+  assert.ok(/lessonCloseRate_/.test(wj), '주간 리포트에 제출률 섹션이 없다');
+  const rate = bodyOf('function lessonCloseRate_', '\n}');
+  assert.ok(/taught\[/.test(rate) && /closed\[/.test(rate),
+    '분모를 출석이 있었던 차시로 잡지 않는다 — 반마다 분모가 달라져 등급 심사에 못 쓴다');
+});
+
 test('이름 매칭 실패는 버리지 않고 sid 공란으로 적재한다 (복구 가능하게)', () => {
   const sweep = bodyOf('function sweepLessonCloseForm_', '\n}');
   assert.ok(/matchStudentsByNameClass_/.test(sweep), '기존 이름 매칭 규칙을 쓰지 않는다');
