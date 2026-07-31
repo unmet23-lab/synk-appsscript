@@ -376,6 +376,13 @@ test('[v9.48] 공유값 서버화 — calcAll이 학업 계산 뒤에 공유열�
   assert.ok(fn.includes('writeIfChanged(pf, 2, SHARED_COL_START,') && fn.includes('writeIfChanged(pf, 2, SHARED2_COL_START,'),
     '두 블록 분리 쓰기가 아니면 선점 구간(DA105~DG111)을 덮어쓴다');
   assert.ok(fn.includes('a.length !== HEADS_ALL.length'), '분기 반환 길이 기계 가드(리뷰 H1)가 없다 — 열 밀림 조용한 파괴 위험');
+  // [v9.82] 3차 블록(DP120~DQ121) — DO119(랭킹보드, v9.81) 선점 회피 + 세 블록 분리 쓰기
+  assert.ok(code.includes('const SHARED3_COL_START = 120'), '3차 블록 시작(DP120) 상수가 없다');
+  const heads3 = code.match(/const SHARED3_COL_HEADERS = \[([\s\S]*?)\];/);
+  assert.ok(heads3, 'SHARED3_COL_HEADERS 선언을 찾지 못함');
+  assert.equal(heads3[1].split(',').filter(s => s.trim()).length, 2);
+  assert.ok(fn.includes('writeIfChanged(pf, 2, SHARED3_COL_START,'), '3차 블록 분리 쓰기가 아니면 선점 열 DO119(랭킹보드)를 덮어쓴다');
+  assert.ok(fn.includes('.concat(SHARED3_COL_HEADERS)'), 'HEADS_ALL이 3차 블록을 포함하지 않는다 — 분기 반환 길이 가드가 무력화');
 });
 
 test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105 최애·DB~DD 교재연동 3열)과 겹치지 않는다', () => {
@@ -383,10 +390,12 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
   const s1 = 85, len1 = code.match(/const SHARED_COL_HEADERS = \[([\s\S]*?)\];/)[1].split(',').filter(s => s.trim()).length;
   const s2 = Number(code.match(/const SHARED2_COL_START = (\d+)/)[1]);
   const len2 = code.match(/const SHARED2_COL_HEADERS = \[([\s\S]*?)\];/)[1].split(',').filter(s => s.trim()).length;
+  const s3 = Number(code.match(/const SHARED3_COL_START = (\d+)/)[1]); // [v9.82] 3차 블록(출퇴근·결석 카드)
+  const len3 = code.match(/const SHARED3_COL_HEADERS = \[([\s\S]*?)\];/)[1].split(',').filter(s => s.trim()).length;
   const reserved = { 105: '최애(v9.50·A4, 학생 Set Column)', 106: '목소리폼URL(교재연동)', 107: '목소리성장카드(교재연동)', 108: '필살기노트(교재연동)', 119: '랭킹보드HTML(v9.81, calcAll 리그 카드)' };
   Object.keys(reserved).forEach(cs => {
     const c = Number(cs);
-    assert.ok(!(c >= s1 && c <= s1 + len1 - 1) && !(c >= s2 && c <= s2 + len2 - 1),
+    assert.ok(!(c >= s1 && c <= s1 + len1 - 1) && !(c >= s2 && c <= s2 + len2 - 1) && !(c >= s3 && c <= s3 + len3 - 1),
       '공유 블록이 선점 열 ' + c + '(' + reserved[cs] + ')을 침범 — 리뷰 B1 재발');
   });
   // 선점 주인들이 실제로 그 열을 쓰는지(레지스트리의 근거) — 코드가 바뀌면 이 목록도 갱신해야 한다
@@ -960,6 +969,37 @@ test('[v9.74] 출퇴근 중복 방어 — 첫 출근·마지막 퇴근 집계, �
   assertOrder(co, ["props.deleteProperty('퇴근응원_'", "Number(props.getProperty('퇴근메일_포인터'))"]); // 어제 키 청소는 조기 return보다 앞(리뷰 L1)
 });
 
+test('[v9.82] 출퇴근 카드 — 상태 3단 렌더·근무시간 확정값·스위프가 카드도 변경시만 기입', () => {
+  const io = loadFunction('function ioCardHtml_(', 'function absenceCardHtml_(', 'ioCardHtml_',
+    { escHtml_: (s) => String(s == null ? '' : s), CARD_FONT: '', HUD_CARD: '', HUD_LABEL: '' });
+  const cells = [{ d: '월', s: 'done' }, { d: '화', s: 'today' }];
+  assert.ok(io('7/31 (금)', { in: '', out: '' }, cells, 1, '').includes('출근 전'));
+  const work = io('7/31 (금)', { in: '09:12', out: '' }, cells, 1, '금요일 화이팅');
+  assert.ok(work.includes('근무 중') && work.includes('09:12') && work.includes('금요일 화이팅'), '근무 중 상태·출근 시각·요일 치어 누락');
+  const done = io('7/31 (금)', { in: '09:12', out: '18:40', mins: 508 }, cells, 1, '');
+  assert.ok(done.includes('퇴근 완료') && done.includes('8시간 28분'), '퇴근 완료 상태·근무시간(508분=8시간 28분) 누락');
+  assert.ok(io('7/31 (금)', { in: '09:12', out: '09:12', mins: 0 }, cells, 1, '').indexOf('0분') === -1, '0분 근무 표기(동시각 중복 탭)가 노출되면 안 된다');
+  // 소유자(10분 스위프)가 시각 2열과 함께 카드도 갱신 + 학부모 결석 카드 배선
+  const upd = section('function updateTeacherInOut_(', 'function writeSharedCols_(');
+  assert.ok(upd.includes("'출퇴근HTML'") && upd.includes('ioCardHtml_('), '스위프가 출퇴근 카드를 갱신하지 않는다');
+  assert.ok(upd.includes('updateParentAbsence_') && upd.includes("'결석신고HTML'"), '학부모 결석 카드 스위프 갱신 함수가 없다');
+  assert.ok(section('function todayBoard_(', '교실 스크린').includes('updateParentAbsence_(ss, tz, pf)'), '결석 카드 10분 배선(todayBoard_)이 없다');
+});
+
+test('[v9.82] 결석 신고 카드 — 접수 확인 3태·빈 상태·사유 이스케이프·재계산 동일값', () => {
+  const ab = loadFunction('function absenceCardHtml_(', 'function teacherInOutMap_(', 'absenceCardHtml_',
+    { escHtml_: (s) => String(s == null ? '' : s).replace(/</g, '&lt;'), CARD_FONT: '' });
+  const html = ab('바야르', [{ label: '8/1 (금)', state: 'future', reason: '<병원>' }], ['8/1 (금)', '8/4 (월)']);
+  assert.ok(html.includes('접수됨') && html.includes('바야르') && html.includes('다음 수업일'), '접수 확인·자녀명·다음 수업일 누락');
+  assert.ok(html.indexOf('<병원>') === -1 && html.includes('&lt;병원>'), '사유가 이스케이프되지 않는다(HTML 주입)');
+  assert.ok(ab('바야르', [{ label: '7/31 (목)', state: 'today', reason: '' }], []).includes('오늘'), '오늘 신고 상태 표기가 없다');
+  assert.ok(ab('바야르', [], []).includes('아직 등록된 신고가 없어요'), '빈 상태 안내가 없다');
+  // 14/22시 재계산(writeSharedCols_)이 스위프와 같은 빌더로 같은 값을 채워 카드를 지우지 않는다
+  const fn = section('function writeSharedCols_(', '/* ===================== 상담시트');
+  assert.ok(fn.includes('ioCardHtml_(') && fn.includes('absenceCardHtml_('), '공유열 재계산이 새 카드 2종을 채우지 않는다 — 14/22시마다 카드가 지워진다');
+  assert.ok(code.includes('결석 신고 student_id 불일치'), 'preflight 결석 신고 무결성 검사(다자녀 통짜 기록 회귀 장치)가 없다');
+});
+
 test('[v9.74] 학부모 접점에서 몬스터 호칭 제거 — 성장 파트너(хамтрагч), 학생 세계관은 유지', () => {
   assert.ok(code.includes('도장이 쌓일수록 성장 파트너가 자라요'), '출석달력 캡션 교체 누락');
   assert.ok(!code.includes('도장이 채워질수록 몬스터가 자라요'), '구 캡션 잔존');
@@ -1176,4 +1216,173 @@ test('[v9.81] 반 목록 카드 2열 + HUD 총원 필 — 유호 07-31 반 리�
   assert.ok(blk.includes("'👥 ' + v.n + '명'") && blk.includes('🏖️ 보스 휴식주') && blk.includes('🏆 이번 주 보스 격파!'), '요약 구성(총원·보스 상태)이 빠졌다');
   assert.ok(code.includes('classMonster(v.total, v.n).name'), 'csOut 5열이 classMonster.name을 쓰지 않는다(15열과 판정 분열)');
   assert.ok(blk.includes("m.img.indexOf('http') === 0"), '몬스터 이미지가 URL 검증 없이 Image 열에 들어간다');
+});
+
+test('[v9.84] 상담 배선 — 읽기 폭 동적·이름 해석·DT124~DX128 기입·점거 가드', () => {
+  const body = section('function syncProfiles()', '/* ===================== 매일 백업');
+  assert.ok(body.includes('Math.max(62, src.getLastColumn())'), '상담 읽기 폭이 62 고정 — v18.4 증분(선호그룹 등)을 통째로 못 읽는다');
+  assert.ok(body.includes("cv(row, '선호그룹')") && body.includes("cv(row, 'TOPIK목표기한')"), '증분 문항 헤더 이름 해석이 없다(열 이동에 취약)');
+  assert.ok(body.includes("consultBlobField_(cv(row, '📝자유서술→노션'), '한국어고충')"), '자유서술 blob 고충 추출이 없다');
+  // 점거 가드가 기입보다 앞 — 24시간 내 열 충돌 계열 사고 2건(오늘의알림 덮임·DO119 선점)의 회귀 장치
+  assertOrder(body, ['const dtClash', 'writeIfChanged(dst, 2, 124, quint)', 'qTail, 5).clearContent()']);
+  assert.ok(body.includes("adminMail('[SYNK] ⚠️ 상담 디테일 열 충돌"), '점거 충돌 시 상태 변화 1회 알림이 없다');
+  assert.ok(body.includes("['상담취향', '상담목표', '입학TOPIK', '상담고충', '페이스라인']"), 'DT_HEADS 정본 배열이 변형됨 — 시트·문서·레지스트리 함께 갱신 필요');
+  assert.ok(body.includes("[e.taste || '', e.cGoal || '', e.topik0 || '', e.pain || '', e.pace || '']"), 'quint 5열 구성이 변형됨');
+});
+
+test('[v9.84] 상담 디테일 열 비침범 — DT124~DX128이 공유 블록(SHARED·2·3 자동 검출)과 겹치지 않는다', () => {
+  // v9.74 레지스트리와 독립 검사 — 동시 편집 트랙과의 텍스트 충돌을 피하면서, 미래의 SHARED3+ 성장도 자동으로 잡는다
+  const blocks = [];
+  [['SHARED_COL_START', 'SHARED_COL_HEADERS'], ['SHARED2_COL_START', 'SHARED2_COL_HEADERS'], ['SHARED3_COL_START', 'SHARED3_COL_HEADERS'], ['SHARED4_COL_START', 'SHARED4_COL_HEADERS']].forEach(p => {
+    const s = code.match(new RegExp('const ' + p[0] + ' = (\\d+)'));
+    const h = code.match(new RegExp('const ' + p[1] + ' = \\[([\\s\\S]*?)\\];'));
+    if (s && h) blocks.push([Number(s[1]), h[1].split(',').filter(x => x.trim()).length]);
+  });
+  assert.ok(blocks.length >= 2, '공유 블록 상수를 찾지 못함 — 검사 자체가 무력화됨');
+  for (let c = 124; c <= 128; c++) {
+    blocks.forEach(b => assert.ok(!(c >= b[0] && c <= b[0] + b[1] - 1),
+      '공유 블록(' + b[0] + '~' + (b[0] + b[1] - 1) + ')이 상담 디테일 열 ' + c + '을 침범 — 리뷰 B1 계열 재발'));
+  }
+  assert.ok(code.includes('writeIfChanged(dst, 2, 124, quint)'), 'DT124 기입 코드가 사라짐 — 이 검사·레지스트리 갱신 필요');
+});
+
+test('[v9.84] 페이스라인·blob 추출 — 실행 검증(경계·과장 금지 포함)', () => {
+  const blobF = loadFunction('function consultBlobField_', 'function syncProfiles()', 'consultBlobField_', {});
+  const paceF = loadFunction('function consultBlobField_', 'function syncProfiles()', 'consultPace_', {});
+  const b = '[나의 다짐 노트] 꿈이 있다\n중간 줄\n\n[한국어고충] 발음이 어렵고\n암기가 약해요\n\n[기타 질문] 없음';
+  assert.equal(blobF(b, '한국어고충'), '발음이 어렵고\n암기가 약해요'); // 문단 내 단일 개행은 값의 일부
+  assert.equal(blobF(b, '없는문항'), '');
+  assert.equal(blobF('', '한국어고충'), '');
+  const now = new Date(2026, 7, 1); // 2026-08-01 기준
+  const p = paceF('3~4급', '2027-06', '1~2시간', now);
+  assert.ok(p.indexOf('🎯 TOPIK 3~4급까지 약 ') === 0 && p.includes('하루 1~2시간'), '페이스라인 형식 이상: ' + p);
+  const wk = Number((p.match(/약 (\d+)주/) || [])[1]);
+  assert.ok(wk >= 43 && wk <= 48, '남은 주 역산 이상(2026-08-01→2027-06 말일): ' + wk);
+  assert.equal(paceF('3~4급', '2025-06', '1~2시간', now), '', '기한 경과인데 침묵하지 않는다(사람 상담 영역)');
+  assert.equal(paceF('3~4급', '기한 미정', '', now), '', '파싱 불가인데 침묵하지 않는다');
+  assert.equal(paceF('3~4급', '2033-06', '', now), '', '5년+ 오입력인데 침묵하지 않는다');
+  assert.equal(paceF('', '2027-06', '', now), '', '목표 없음인데 침묵하지 않는다');
+  assert.ok(paceF('5~6급', '2027년 3월', '', now).includes('약 '), '한국식 연월(2027년 3월) 파싱 실패');
+  ['도달권', '합격', '보장', '가능'].forEach(wd => assert.ok(!p.includes(wd), '페이스라인에 보장성 단어 침투: ' + wd));
+});
+
+test('[v9.84] 콜드스타트 폴백 사슬 — 소비층 4곳 통일·학생 소유 열은 읽기만', () => {
+  const stu = section('function aiStudents_', 'function aiWeakMap_');
+  assert.ok(stu.includes('Math.min(128, pf.getMaxColumns())'), 'aiStudents_ 폭이 128이 아니다(상담 디테일 못 읽음)');
+  ['r[123]', 'r[124]', 'r[125]', 'r[126]'].forEach(m => assert.ok(stu.includes(m), 'aiStudents_에 ' + m + ' 로드가 없다'));
+  assert.ok(code.includes('s.fav || s.taste'), '데일리 최애 폴백(DA105‖상담취향)이 없다');
+  assert.ok(code.includes('s.dream || s.cGoal || s.vision'), '목표 폴백 사슬(드림‖상담목표‖비전)이 없다');
+  assert.ok(code.includes("'입학 자기보고: ' + s.pain"), '데일리 약점→상담고충 폴백이 없다');
+  assert.ok(code.includes("(s.dream || s.cGoal) ? '(목표: '"), '웰컴 스토리 목표 폴백이 없다');
+  assert.ok(code.includes('입학 때 TOPIK 실측'), '미래편지 0점 좌표(입학TOPIK) 축이 없다');
+  assert.ok(code.includes('직접 비교 단정은 금지'), '미래편지 0점 좌표에 급수 체계 차이 가드 문구가 없다');
+  assert.ok(code.includes('const goalTxt = o.dream || o.cGoal'), '여정카드 목표줄 폴백이 없다');
+  assert.ok(code.includes('o.pace ?'), '여정카드 페이스라인 렌더가 없다');
+});
+
+test('[v9.84] 노션 상담서술 이관 — 속성 보장→조인·1900자·장애 격리', () => {
+  const body = section('function syncToNotion_()', 'function syncNotionNow()');
+  assertOrder(body, ['consultNarrativeMap_()', "notionEnsureProp_('상담서술')", "properties['상담서술']"]);
+  assert.ok(body.includes('상담서술 로드 실패(정량만 동기화)'), '상담시트 장애가 정량 동기화까지 끊는다(격리 부재)');
+  const nm = section('function consultNarrativeMap_', 'function notionEnsureProp_');
+  assert.ok(nm.includes("hdr.indexOf('📝자유서술→노션')") && nm.includes('r[59]'), '서술 맵이 blob 열 이름 해석·학생ID(BH)를 쓰지 않는다');
+  const ep = section('function notionEnsureProp_', 'function syncToNotion_');
+  assert.ok(ep.includes("method: 'patch'") && ep.includes('muteHttpExceptions: true'), '속성 보장이 PATCH+mute가 아니다(실패가 주간 배치를 죽인다)');
+});
+
+test('[v9.84] KPI 인지채널 분해 — 이름 해석·집계·리포트 1줄·시트 스키마 불변 + 정렬 실행 검증', () => {
+  const body = section('function computeKpiMetrics', 'function kpiChannelLine_');
+  assert.ok(body.includes(".indexOf('인지채널')"), '인지채널 헤더 이름 해석이 없다');
+  assert.ok(body.includes('chConsult[ch] = (chConsult[ch] || 0) + 1'), '채널 집계가 없다');
+  assert.ok(body.includes('const rowArr = [ym, openingN, newReg.length, churn, churnRate, consultCnt, convCnt, convRate, calcStamp, confirmVal]'),
+    'KPI 시트 rowArr가 변형됨 — 스키마 불변 원칙 위반(아카이브 열 밀림)');
+  assert.ok(code.includes("'· 채널별 등록/상담: ' + chLine"), '주간 KPI 섹션 채널 줄이 없다');
+  const lineF = loadFunction('function kpiChannelLine_', '// 주간 통합 리포트 섹션', 'kpiChannelLine_', {});
+  const out = lineF({ chConsult: { A: 5, B: 2, C: 9, D: 1, E: 1, F: 1 }, chConv: { B: 2, A: 1 } });
+  assert.ok(out.indexOf('B 2/2') === 0, '등록 많은 채널이 앞이 아니다: ' + out);
+  assert.equal(out.split(' · ').length, 5, '상위 5 컷이 아니다: ' + out);
+  assert.equal(lineF({ chConsult: {}, chConv: {} }), '', '채널 0건인데 빈 문자열이 아니다');
+});
+
+test('[v9.84] 동의 마이그레이션(v18.5) — 멱등·필수·명시 동의·▶ 전용·워치독 게이트', () => {
+  const body = section('function migrateConsentV185()', 'function createLeadForm()');
+  assertOrder(body, ['상담폼ID', 'const hasIt', 'addMultipleChoiceItem', 'setRequired(true)', "setState(st, '상담동의', 'v18.5')"]);
+  assert.ok(body.includes("['네, 동의합니다']"), '명시적 동의 선택지가 없다');
+  assert.ok(body.includes('철회'), '동의 철회 안내가 없다(문구 초안 필수 요소)');
+  const calls = (code.match(/migrateConsentV185\(\)/g) || []).length;
+  assert.equal(calls, 1, '▶ 전용이어야 하는 동의 마이그레이션이 코드 어딘가에서 자동 호출된다(정의 1회 외 호출 ' + (calls - 1) + '건)');
+  assert.ok(code.includes("String(getState(stV, '상담동의').val || '') === 'v18.5'"), '워치독 동의 미적용 감시 게이트가 없다');
+});
+
+// ── [v9.83] 💰 포인트 경제 ─────────────────────────────────────────────────────
+// 이 세 테스트가 존재하는 이유: v9.83 이전의 결함은 "누가 숫자를 잘못 썼다"가 아니라
+//   **지급 단가가 10곳에 흩어져 있어 아무도 총합을 볼 수 없었다**는 것이다(경로 6개가 늘도록 실측 2배 인플레).
+//   그래서 단가 하나만 보지 않고 여기서 월간 소득 총합을 실제로 계산해 스토어·진화 앵커와 대조한다.
+function constObj_(startMarker) { // Code.js의 `const X = { 키: 숫자 }` 블록을 주석 무시하고 파싱
+  const raw = section(startMarker, '\n};');
+  const o = {};
+  raw.replace(/\/\/[^\n]*/g, '').replace(/([가-힣A-Za-z_]+)\s*:\s*(\d+)/g, (m, k, v) => { o[k] = Number(v); return m; });
+  return o;
+}
+
+test('[v9.83] 포인트 경제 — 월간 소득 시뮬이 과잠·진화 앵커를 넘지 않는다', () => {
+  const PT = constObj_('const PT = {');
+  const D = 21.7, W = 4.3; // 평일반 월 수업일 · 월 주수
+
+  // 지급 경로 전수 — Code.js가 실제로 발행하는 사유와 1:1. 새 경로가 생기면 여기에 반드시 추가할 것.
+  const paths = {
+    숙제: PT.숙제 * D, 출석: PT.출석 * D, 첨삭확인: PT.첨삭확인 * D,
+    칭찬: PT.칭찬 * 8.7, 왕관: PT.왕관 * 2.2, 레이드: PT.레이드 * W,
+    리그: PT.리그 * W * 0.5, 월드: PT.월드 * 0.5, 개근왕: PT.개근왕, 생일: PT.생일 / 12
+  };
+  const hard = Object.keys(paths).reduce((a, k) => a + paths[k], 0); // 열심히 = 전 경로 만점
+  assert.equal(Object.keys(PT).length, 11, 'PT 항목 수가 바뀌었다 — 새 지급 경로를 이 시뮬에 넣고 상한을 다시 판정할 것');
+
+  // ① 유호 07-31 기준: 성실한 학생이 과잠(1,700P)에 6개월 안에 닿으면 안 된다
+  assert.ok(hard <= 310, '열심히 월 소득 ' + Math.round(hard) + 'P — 상한 310P 초과(포인트가 다시 후해졌다)');
+  assert.ok(hard >= 250, '열심히 월 소득 ' + Math.round(hard) + 'P — 하한 250P 미달(모으는 재미가 죽는다)');
+  assert.ok(1700 / hard >= 5, '과잠 도달 ' + (1700 / hard).toFixed(1) + '개월 — 5개월 미만이면 인플레 재발');
+  // ② 진화 최종(싱크마스터 2,400P) = 성실 9개월이라는 설계 의도(docs/몬스터_진화_임계값_v1.md)
+  assert.ok(2400 / hard >= 7, '싱크마스터 도달 ' + (2400 / hard).toFixed(1) + '개월 — 7개월 미만이면 진화가 너무 빠르다');
+  // ③ 과잠 성실 하한은 "12개월 다녔지만 거의 안 나온 학생"만 걸러야 한다 — 보통 학생(열심히의 60%)은 통과
+  const JMIN = Number(code.match(/const JACKET_MIN_POINTS = (\d+)/)[1]);
+  const JMON = Number(code.match(/const JACKET_TENURE_MONTHS = (\d+)/)[1]);
+  assert.ok(hard * 0.6 * JMON > JMIN * 1.3, '과잠 누계 하한 ' + JMIN + 'P가 보통 학생 ' + JMON + '개월치에 비해 빡빡하다');
+
+  // ④ 배선 — 지급 지점이 숫자를 직접 쓰지 않고 PT를 참조하는가(인플레 재발의 유일한 경로 차단)
+  // 지급 행 리터럴 `[대상, <숫자>, '사유'` 가 남아 있으면 PT를 우회한 것 — 데모 시더(pushPl)는 대상이 아니다
+  const litRe = /\[\s*(?:sid|r\[0\]|pr\[0\])\s*,\s*\d+\s*,\s*'([^']+)'/g;
+  const bypass = [];
+  let mm;
+  while ((mm = litRe.exec(code)) !== null) bypass.push(mm[1]);
+  assert.deepEqual(bypass, [], '숫자를 직접 쓴 지급 지점이 남아 있다: ' + bypass.join(', '));
+  assert.ok(code.includes('const AI_FEEDBACK_ACK_POINTS = PT.첨삭확인'), '첨삭확인 보상이 PT에서 분리됐다');
+  assert.ok(code.includes('d * PT.출석'), '출석 정산이 PT를 안 쓴다');
+  assert.ok(code.includes('[PT.개근왕,') && code.includes('[PT.레이드영웅,'), '칭호 보너스가 PT를 안 쓴다');
+});
+
+test('[v9.83] 과잠 자격 — 스토어 하차 + 재원 게이트 + 잔액 무차감', () => {
+  // 과잠이 스토어에 남아 있으면 학생은 자격까지 간식·굿즈를 한 번도 못 산다(하위 티어 루프 사망).
+  assert.ok(!code.includes("'싱크 과잠','의류'"), '싱크 과잠이 아직 스토어 상품으로 팔린다');
+  assert.ok(code.includes('function jacketWatch_'), '과잠 자격 워처가 없다');
+  assert.ok(code.includes("safeRun('jacketWatch', jacketWatch_)"), 'jacketWatch_가 어느 트리거에도 안 걸렸다(영원히 안 돎)');
+  const blk = section('function jacketWatch_', '/* ===================== 시스템 헬스체크');
+  assert.ok(blk.includes("r[3] !== 'student'"), 'role 필터가 없다 — 강사·학부모에게도 과잠이 나간다');
+  assert.ok(blk.includes('already.has(sid)'), '멱등 가드가 없다 — 매일 같은 학생이 다시 적재된다');
+  assert.ok(blk.includes('Number(r[15])'), '누계는 P열(16)이어야 한다 — 잔액(AQ)을 쓰면 간식을 산 학생이 자격을 잃는다');
+  assert.ok(!/appendPoints|\bbal\b/.test(blk), '포인트를 건드린다 — 무료 지급이 아니게 된다');
+  assert.ok(blk.includes('JACKET_TENURE_MONTHS') && blk.includes('JACKET_MIN_POINTS'), '자격 조건이 상수를 안 쓴다');
+});
+
+test('[v9.83] 보스 HP는 지급 단가의 종속 변수 — 상수화 + 만실 격파 가능', () => {
+  assert.ok(code.includes('const RAID_HP_PER = {'), '보스 HP 계수가 아직 하드코딩이다(개원 후 실측 재조정 불가)');
+  assert.ok(code.includes('RAID_HP_PER.주말 : RAID_HP_PER.평일'), '레이드 HP 계산이 상수를 안 쓴다');
+  const PT = constObj_('const PT = {');
+  const per = {};
+  section('const RAID_HP_PER = {', ';').replace(/([가-힣]+)\s*:\s*(\d+)/g, (m, k, v) => { per[k] = Number(v); return m; });
+  // 만실 반의 주간 획득 하한(보수 추정: 개인 수업일 소득의 60% + 레이드) ≥ HP 계수여야 격파가 성립한다
+  const weekly = (PT.숙제 + PT.출석 + PT.첨삭확인) * (21.7 / 4.3) * 0.6 + PT.레이드;
+  assert.ok(weekly > per.평일, '평일 보스 계수 ' + per.평일 + '가 주간 획득 추정 ' + Math.round(weekly) + 'P를 넘는다(매주 격파 실패)');
+  assert.ok(per.평일 > weekly * 0.5, '평일 보스가 너무 쉽다 — 격파가 자동이면 레이드 서사가 죽는다');
+  assert.ok(per.주말 < per.평일, '주말반은 수업일이 1/5인데 계수가 평일 이상이다');
 });
