@@ -189,6 +189,8 @@
  * 66. 보스 HP = 반 정원 × (평일 28 · 주말 18) — 정원: 반 번호 1~4 = 20명, 5번~ = 10명
  *     → 대형반 560 · 소형반 280 · 주말반 180. 매주 동일 HP = 예측 가능한 보스
  * 67. 스토어 앵커(성실 월 ~280P): 반팔 3개월(850) · 과잠 6개월(1,700) · 촬영 7개월+(2,000)
+ *     ⚠ [v9.83 정정] 이 앵커는 그 뒤 지급 경로 6개가 늘며 무너졌다(실측 572P/월 = 2배). 지금 정본은
+ *     상수 PT(월 291P) + docs/포인트경제_재설계_v1.md. **과잠은 스토어 상품이 아니다** — 재원 12개월 자격 지급.
  *
  * [v7.3 — 레이드 스토리 엔진 · 주말반 정산 수정 · 기능 열 4종]
  * 68. raid_story 시트 신설 — 일일 전투 리포트(월~목·토 22시, RPG 서사 자동 생성: 부위 타격·연료
@@ -730,12 +732,31 @@
  * 198. 학부모 접점 '몬스터' → '성장 파트너(хамтрагч)' 6곳: 출석달력 캡션·진화 메일·축하배너·대화카드(PARENT_Q)·
  *      3개월 편지·웰컴 스토리. 학생 세계관(도감·한마디·여정)은 유지 — 전면 개명은 유호 결정 항목.
  *      잔여 1곳 = 리포트카드 Slides 템플릿 {{몬스터단계}} 라벨(코드 밖 문서 — 유호 몫).
+ *
+ * [v9.84 — 🔌 상담 배선 팩 (2026-07-31 유호 승인: 진단 5건+도전안+한수더 전부. "받아둔 답을 앱이 쓰게 하라")]
+ * 199. syncProfiles 상담 디테일 2차 5열 — 읽기 폭 62→동적(v18.4 증분 포함), 증분 문항은 헤더 이름 해석(위치 가변
+ *      대비, importFormResponses와 같은 규칙). 선호그룹·인생드라마·취미관심사→DT124 상담취향 / TOPIK목표+기한→
+ *      DU125 상담목표 / TOPIK급수+점수→DV126 입학TOPIK(성장 서사 0점 좌표) / 자유서술 blob에서 [한국어고충] 추출→
+ *      DW127 상담고충(강사 뷰 전용) / 목표 역산→DX128 페이스라인. 데모 행 보존·tail-clear는 AY~BA 트리오와 동일 계급.
+ * 200. AI 개인화 콜드스타트 해소 — aiStudents_ 폭 105→128 확장, 소비층 폴백 사슬 통일: 최애=DA105(학생 자기선언)
+ *      ‖상담취향, 목표=CB80 드림‖상담목표‖핵심비전(웰컴·미래편지·데일리·여정카드 4곳 동률), 데일리 약점=student_errors
+ *      ‖상담고충(입학 자기보고). 학생 소유 열(CB·DA)에는 절대 쓰지 않는다 — 읽기 폴백만(앱 입력이 항상 이긴다).
+ * 201. 여정 카드 — 목표줄 폴백(드림 비면 상담목표) + 페이스라인(도전안): "TOPIK 3~4급까지 약 N주 — 하루 X의 꾸준함으로".
+ *      판정·보장 없이 남은 주만(과장 금지). 기한 경과·5년+ 오입력이면 침묵. futureLetter에 입학TOPIK 대조축 동봉.
+ * 202. syncToNotion_ 상담서술 이관 — 자유서술 blob(다짐·3-5년·고충·선택이유…)을 학생ID로 조인해 크루 DB '상담서술'
+ *      rich_text로 주간 upsert. 속성은 PATCH /databases로 자동 보장(실패 시 서술만 생략·본 동기화 계속). '→노션' 열
+ *      이름이 약속만 하고 수동이던 것을 자동화.
+ * 203. computeKpiMetrics 인지채널 분해 — 이미 돌던 상담시트 스캔에서 인지채널 열(헤더 해석)만 추가 집계 →
+ *      채널별 상담/등록 맵을 반환하고 주간 KPI 섹션에 1줄("채널별 등록") 노출. KPI 시트 스키마는 불변.
+ * 204. migrateConsentV185(▶1회·유호 문구 검토 후) — 온라인 상담폼에 개인정보·학습데이터 활용 동의 필수 문항 추가
+ *      (오프라인 도시에 v3.3 동의 블록의 온라인 짝). 헤더 없는 문항 규칙에 따라 응답이 자유서술 blob에 타임스탬프와
+ *      함께 보존(=동의 증빙). app_state '상담동의'=v18.5 선언, 워치독이 미적용을 주간 안내. AI기능뱅크 F2 선행 조건 해소.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.81'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고 · [v9.77] profiles 무결성 3면 감시 — Glide 상세 화면 Edit/Add 잔재 실측(07-28) 후속: 유령 행(user_id 공란, 기존 !r[0] 스킵의 사각)·user_id 중복·무효 role을 nightJobs(매일·이상 시에만 메일·동일 내용 dedup)+주간 워치독+preflight 3면에서 자동 발각 · [v9.78] 강사 반 HUD 리디자인 — 유호 07-28 "반 탭이 만들다 만 느낌" → 낱장 줄글 4카드(v9.15)를 SYNK CLASS HUD로 격상: 14열 반상세HTML = 헤더 스탯 스트립(미션 n건·루틴 k/4·보스 HP) + 미션(유형 색 필·명단 캡)·루틴(게이지+2×2)·레이드(사정권 콜아웃 흡수)·왕관(미수혜 pill 후보 명단), Glide 기바인딩이라 클릭 0 적용·9~13열 낱장도 동일 디자인(설계=ban-tab-redesign 워크플로 A/B 판정) · [v9.79] 미니멀 스킨 — 유호 "훨씬 트렌디하고 미니멀하게, 뼈대 같은 느낌" → 실렌더 A/B(M1 에어리 라이트 vs M2 다크 히어로) 판정 M2 채택: 유색 보더 전면 폐지(흰 카드+이중 소프트 섀도)·타이포 3단(그레이 라벨→잉크 빅넘버→본문)·색 3계 절제(블루·앰버·그린)·이모지 카드당 ≤1·미션 도트 3톤·상세 헤더=딥 네이비 다크 히어로(블루 radial glow) · [v9.80] 조 편성·역할 로테이션 — 강사 수업 규칙 v3.0 §11 배선 대기 1순위(유호 07-31 "앱 자동 제안" 확정): groups 시트(시즌×반 1벌·실력 스네이크+말수·학교 계층 내 교환)·역할 4개 차시 순환·2인 짝 3조합·발표 순번(로테이션이 8주 전원 2회를 자동 보장)을 앱이 짠다. 역할·짝·발표자는 저장하지 않고 차시 번호에서 계산 — 매 차시 쓰기 0(월 500건 한도 불변). 강사 브리핑에 조 편성표 동봉 · [v9.81] 랭킹·반 목록 UI 격상(유호 07-31 지적 3건) — ①학생 랭킹 탭: profiles DO119 랭킹보드HTML 신설(SYNK LEAGUE 다크 포디움+순위 리스트+내 순위 하이라이트+추격 넛지 "nP=숙제 k번", rankMap과 동일 소스) ②강사 반 목록: class_stats 15열 반카드요약(👥 n명·반몬스터·보스 상태)+16열 반몬스터이미지 — Glide Collection을 Card 스타일로 ③반 상세 HUD 헤더에 👥 총원 필(stuN 기전달이라 조립 0) · classMonster {name,img}화·유령 클리어 14→16열
+const SYNK_VERSION = 'v9.84'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고 · [v9.77] profiles 무결성 3면 감시 — Glide 상세 화면 Edit/Add 잔재 실측(07-28) 후속: 유령 행(user_id 공란, 기존 !r[0] 스킵의 사각)·user_id 중복·무효 role을 nightJobs(매일·이상 시에만 메일·동일 내용 dedup)+주간 워치독+preflight 3면에서 자동 발각 · [v9.78] 강사 반 HUD 리디자인 — 유호 07-28 "반 탭이 만들다 만 느낌" → 낱장 줄글 4카드(v9.15)를 SYNK CLASS HUD로 격상: 14열 반상세HTML = 헤더 스탯 스트립(미션 n건·루틴 k/4·보스 HP) + 미션(유형 색 필·명단 캡)·루틴(게이지+2×2)·레이드(사정권 콜아웃 흡수)·왕관(미수혜 pill 후보 명단), Glide 기바인딩이라 클릭 0 적용·9~13열 낱장도 동일 디자인(설계=ban-tab-redesign 워크플로 A/B 판정) · [v9.79] 미니멀 스킨 — 유호 "훨씬 트렌디하고 미니멀하게, 뼈대 같은 느낌" → 실렌더 A/B(M1 에어리 라이트 vs M2 다크 히어로) 판정 M2 채택: 유색 보더 전면 폐지(흰 카드+이중 소프트 섀도)·타이포 3단(그레이 라벨→잉크 빅넘버→본문)·색 3계 절제(블루·앰버·그린)·이모지 카드당 ≤1·미션 도트 3톤·상세 헤더=딥 네이비 다크 히어로(블루 radial glow) · [v9.80] 조 편성·역할 로테이션 — 강사 수업 규칙 v3.0 §11 배선 대기 1순위(유호 07-31 "앱 자동 제안" 확정): groups 시트(시즌×반 1벌·실력 스네이크+말수·학교 계층 내 교환)·역할 4개 차시 순환·2인 짝 3조합·발표 순번(로테이션이 8주 전원 2회를 자동 보장)을 앱이 짠다. 역할·짝·발표자는 저장하지 않고 차시 번호에서 계산 — 매 차시 쓰기 0(월 500건 한도 불변). 강사 브리핑에 조 편성표 동봉 · [v9.81] 랭킹·반 목록 UI 격상(유호 07-31 지적 3건) — ①학생 랭킹 탭: profiles DO119 랭킹보드HTML 신설(SYNK LEAGUE 다크 포디움+순위 리스트+내 순위 하이라이트+추격 넛지 "nP=숙제 k번", rankMap과 동일 소스) ②강사 반 목록: class_stats 15열 반카드요약(👥 n명·반몬스터·보스 상태)+16열 반몬스터이미지 — Glide Collection을 Card 스타일로 ③반 상세 HUD 헤더에 👥 총원 필(stuN 기전달이라 조립 0) · classMonster {name,img}화·유령 클리어 14→16열 · [v9.82] 출퇴근·결석 카드(유호 07-31 지시 10·12번) — ①강사 출퇴근HTML(DP120, 3차 블록 SHARED3 — DO119 랭킹보드 선점 회피): 오늘의 근무 히어로(출근/퇴근 빅넘버·상태 필 3단·퇴근 후 근무시간 확정값)+이번 주 월~토 스트립(과거 무기록일은 무채색 — 개인 시간표 부재로 결근 단정 금지)+요일 출근 치어 재사용(CH11~17 소생), 10분 스위프 소유·값 변경시만 기입(경과시간류 금지 = update 순증 0, 자정 리셋은 기존 출퇴근 리셋과 같은 묶음) ②학부모 결석신고HTML(DQ121): 접수 확인 ✅(v9.34 보류 P-ACK 상환)·오늘/예정/지난 3태·다음 수업일 3칩(classDowOk_ 재사용)·작동 3줄 몽골어 병기(원어민 검수 큐), 출석 달력과 같은 껍질 ③결석 폼 "자녀"를 Choice(value=user_id)로 재조립 지시 — 다자녀 parent_of 통짜 기록이 미출석 제외·브리핑·오늘의 반 3곳에서 조용히 불발되던 것 근본 수리 + preflight absence_notice student_id 무결성 검사(쉼표·미매칭) ④학부모 전수 점검 문서 docs/부모탭_점검_2026-07-31.md(P-ACK·다자녀 🔴 2건 = 이번 수리, 문의 답변 루프·다이제스트 몽골어 🟡 2건 = 제안 대기) · [v9.83] 💰 포인트 경제 재설계(유호 07-31 지시 23번 "포인트가 너무 후하다") — ①지급 단가를 PT 상수 단일 소스로 모으고 전면 ÷2(숙제 10→5·출석 3→2·첨삭확인 5→2·왕관 10→5·레이드 20→10·리그 5→3·월드 10→5·개근왕 30→15·영웅 20→10·생일 20→10): 설계 앵커 "성실 월 ~280P" 이후 지급 경로 6개가 늘도록 아무도 총합을 안 봐서 실측 572P/월 = 정확히 2배 인플레였고, 그 탓에 과잠 3.0개월·싱크마스터 진화 4.2개월(의도 9개월)로 스토어·진화·보스 세 경제가 동시에 무너져 있던 것을 스토어 가격 무수정으로 한 번에 복귀(열심히 291P·보통 196P) ②🧥 과잠은 스토어 하차 → 재원 12개월+누계 1,200P 무료 지급 자격으로(jacketWatch_·jacket_grants, 잔액 무차감이라 간식·굿즈를 사면서도 시계가 돌고 수업일 1/5인 주말반도 같은 개월에 도달) ③목표진행 카드(BZ78)를 도착 예정일로 — 촤 없으면 과잠 진행 폴백 ④보스 HP를 RAID_HP_PER 상수화 재보정(평일 28→34·주말 18→14·WORLD_HP_PER 100→150, 지급의 종속 변수라 함께 움직인다) · [v9.84] 🔌 상담 배선 팩(유호 07-31 승인: 진단 5건+도전안+한수더 전부) — ①상담 5필드→DT124~DX128(취향·목표·입학TOPIK·고충·페이스라인, 읽기 폭 동적+헤더 이름 해석+점거 가드) ②AI 콜드스타트 폴백 사슬 4곳 통일(최애=DA105‖상담취향·목표=드림‖상담목표‖비전·약점=기록‖입학 자기보고 — 학생 소유 열은 읽기만) ③여정카드 페이스라인(도전안: 목표 기한 역산 남은 주, 보장 표현 0)+미래편지 입학TOPIK 0점 좌표(한수더) ④자유서술 blob→노션 상담서술 주간 자동 이관(속성 자동 보장·장애 격리) ⑤KPI 인지채널별 등록/상담 분해(시트 스키마 불변) ⑥migrateConsentV185 ▶1회 — 온라인 폼 동의 문항(v18.5, 문구 유호 검토 전제)+워치독 감시 2종. 설계노트 199~204·테스트 7종
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -796,7 +817,58 @@ const AI_FEEDBACK_MAX_PER_RUN = 30;          // 야간 1회 첨삭 상한 — �
 const RAID_DAILY_STORY = false;  // [v9.50] 일일 전투 리포트 — 매일 발행물 읽힘율 급락 처방(유호 07-21). 금·일 결산(raidFriday·leagueSettle)은 유지. 되살리려면 true
 const AI_STUDIO_MAX_CALLS = 12;  // [v9.50] aiStudioBatch_ 야간 API 호출 상한(비용 가드 — 한 문장·퀴즈 배치 포함 전 호출 합산)
 const AI_DAILY_BATCH_SIZE = 15;  // [v9.50] 한 API 호출에 묶는 학생 수(오늘의 한 문장+개인 퀴즈 — 90명이면 6콜)
-const AI_FEEDBACK_ACK_POINTS = 5;            // '확인했어요' 보상 — 숙제완료 +10의 절반. 사유 '첨삭확인'은 DAILY_LIMIT 1회/일
+/* ── [v9.83] 💰 포인트 지급 단일 소스 ─────────────────────────────────────────
+ * 유호 07-31 지시("포인트가 너무 후하다 — 열심히 6개월·보통 9개월에 과잠")로 전면 재보정.
+ * 진단: 원래 설계 앵커는 "성실 월 ~280P"(헤더 §67)였는데 그 뒤 지급 경로가 6개(첨삭확인·왕관 2종·
+ *   레이드·리그·월드레이드·개근왕) 늘어나는 동안 아무도 총합을 다시 안 봐서 실측 572P/월 = 정확히 2배 인플레.
+ *   → 과잠 3.0개월·싱크마스터 진화 4.2개월(설계 의도 9개월)로 스토어·진화·보스 세 경제가 동시에 무너져 있었다.
+ * 처방: 스토어 22종 가격은 그대로 두고 **지급을 절반으로**. 지급을 낮춰야 스토어·진화 임계·보스 HP가
+ *   한 번에 원래 설계로 복귀한다(가격을 올리면 스토어 하나만 고쳐진다).
+ * ⚠ 재발 방지 — 이 상수 블록이 **유일한 지급 단가 소스**다. 새 지급 경로를 만들 때는 반드시 여기에 키를
+ *   추가하고, tests/safety.test.js의 월간 소득 시뮬(POINT_BUDGET)이 상한을 넘지 않는지 확인할 것.
+ *   숫자를 지급 지점에 직접 쓰면 같은 인플레가 그대로 재발한다.
+ * 실측 결과(평일반·월 21.7 수업일): 열심히 291P/월 · 보통 196P/월 → 정본 docs/포인트경제_재설계_v1.md
+ */
+const PT = {
+  숙제: 5,        // [v9.83] 10→5. 여전히 최대 단일 소득원(월 108P)
+  출석: 2,        // [v9.83] 3→2. ÷2(1.5)보다 올림 — 출석은 바닥 보장선
+  첨삭확인: 2,    // [v9.83] 5→2. 인플레 최대 범인 — "숙제의 절반"으로 정했는데 탭 1회가 매일 반복돼 월 109P였다
+  왕관: 5,        // [v9.83] 10→5 (MVP·시냅스 공통). ⚠ Glide 버튼 값도 함께 5로 바꿔야 실제 반영(조립가이드 §8-1)
+  칭찬: 2,        // [v9.83] 3→2. ⚠ 실지급은 Glide Add row 버튼 4종이라 여기 값은 문서·시뮬용 — Glide도 함께 2로
+  레이드: 10,     // [v9.83] 20→10. 주 1회 반 전원
+  리그: 3,        // [v9.83] 5→3. 주 1회 승리 반 전원
+  월드: 5,        // [v9.83] 10→5. 월 1회 격파 시 전교
+  개근왕: 15,     // [v9.83] 30→15
+  레이드영웅: 10, // [v9.83] 20→10
+  생일: 10        // [v9.83] 20→10. 연 1회
+};
+const AI_FEEDBACK_ACK_POINTS = PT.첨삭확인;  // '확인했어요' 보상. 사유 '첨삭확인'은 DAILY_LIMIT 1회/일
+
+/* ── [v9.83] 🧥 싱크 과잠 = 스토어 상품이 아니라 자격 ──────────────────────────
+ * 유호 07-31 확정: "과잠 지급은 12개월로 · 12개월 수강생에게만 무료로 지급."
+ * 근거: 과잠은 소속의 상징인데 스토어에 놓으면 ①"포인트 주고 산 옷"이 되고 ②6개월간 간식·굿즈(40~120P)를
+ *   한 번도 못 사게 만들어 하위 티어 보상 루프를 통째로 죽인다. 코드는 이미 획득 누계(P열)와 잔액(AQ열)이
+ *   분리돼 있으므로(v7.1), 과잠만 **누계 기준 자격**으로 빼면 학생은 간식을 사면서도 과잠 시계가 계속 돈다.
+ *   재원 개월 기준이라 수업일이 1/5인 주말반도 같은 개월에 도달한다(누계 절대값만 쓰면 주말반은 도달 불가).
+ * 성실 하한(누계)의 뜻: "12개월 등록만 해두고 거의 안 나온 학생" 배제선. 신규 단가 기준 보통 학생 12개월
+ *   = 약 2,350P · 주말반 열심히 12개월 = 약 1,380P 이므로 1,200은 둘 다 통과하고 유령만 걸린다.
+ */
+const JACKET_TENURE_MONTHS = 12; // 재원 개월 하한 (profiles created_at 기준)
+const JACKET_MIN_POINTS = 1200;  // 누적 획득 P 하한 — 유령 등록 배제용
+const JACKET_ITEM_NAME = '싱크 과잠';
+
+/* ── [v9.83] ⚔️ 레이드 난이도 = 지급 단가의 종속 변수 ─────────────────────────
+ * 반 보스 HP = 반 정원 × 계수. 데미지 = 그 반 학생들의 주간 양수 포인트 + 연료.
+ *   즉 **지급 단가를 바꾸면 보스 난이도가 같은 비율로 따라 움직인다** — 구 28/18은 인플레 전 값이라
+ *   실측 3.0배 오버킬(격파가 사실상 자동)이었고, 지급 ÷2만으로 1.5~2.0배까지 이미 정상화된다.
+ * 보정 기준: **만실 기준 여유 1.3배** — 정원을 다 채운 반은 여유 있게 격파하고, 인원이 덜 찬 반은 긴장한다.
+ *   격파가 매주 실패하면 레이드보상(주 수입의 15%)과 서사가 함께 죽으므로 보수적으로 잡았다.
+ * ⚠ 학생 0명이라 주간 획득 추정치로 계산한 값이다. **개원 후 첫 달 실측으로 1회 재조정할 것**
+ *   (class_stats 7열 '반주간데미지' 실값 ÷ 정원 = 실제 계수 상한). 그래서 하드코딩을 상수로 뽑았다.
+ */
+const RAID_HP_PER = { 평일: 34, 주말: 14 }; // [v9.83] 28→34 · 18→14 (지급 ÷2 반영)
+// 월드 보스 계수 WORLD_HP_PER도 같은 종속 변수지만 선언 위치는 그대로 둔다 —
+// tests/safety.test.js의 여러 구간 검사가 `const WORLD_HP_PER`를 끝 표식으로 쓰고 있어 이관하면 4건이 깨진다.
 
 /* ── [v5.2] 학부모 알림 · 다국어 ─────────────────────── */
 const NOTIFY_PARENT_ATTENDANCE = true; // 등원 시 학부모 메일 푸시 (false = 끔)
@@ -1661,8 +1733,11 @@ function myJourneyHtml_(o) {
     : '';
   // [v9.29] 🌟 나의 목표 — 학생이 직접 쓴 드림 한 줄(CB 80)을 카드 최상단에 노출. 비어있으면 작성 유도. 이스케이프 필수(사용자 입력).
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const goalTxt = o.dream || o.cGoal; // [v9.84] 학생 자기선언 우선 — 비면 입학 상담 목표(첫날부터 빈 카드 대신 자기 목표)
   const dreamLine = '<div style="background:#EEF2FF;border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;color:#2B3FD9;margin-bottom:9px;">' +
-    (o.dream ? '🌟 나의 목표: ' + esc(o.dream) : '🌟 나의 목표를 적어보세요') + '</div>';
+    (goalTxt ? '🌟 나의 목표: ' + esc(goalTxt) : '🌟 나의 목표를 적어보세요') + '</div>' +
+    // [v9.84·도전안] 페이스라인 — 목표 기한 역산 "남은 주" 한 줄(판정·보장 없음, syncProfiles가 매일 재계산·기한 경과 시 자동 소멸)
+    (o.pace ? '<div style="background:#FFF7ED;border-radius:10px;padding:6px 11px;font-size:11.5px;font-weight:700;color:#C2410C;margin-bottom:9px;">' + esc(o.pace) + '</div>' : '');
   // [v9.56] 🎫 시즌 패스 트랙 — 커리큘럼 8주 도달제의 앱 표면(seasonT 없으면 통째 생략). 8주차부터 랩업(공유용) 동반
   let seasonB = '', wrapB = '';
   if (o.seasonT) {
@@ -2008,6 +2083,8 @@ function calcAll() {
   const prevBC = (pfData.length && pf.getMaxColumns() >= 55) ? pf.getRange(2, 55, pfData.length, 1).getValues() : []; // [v9.11]
   const prevAR = (pfData.length && pf.getMaxColumns() >= 44) ? pf.getRange(2, 44, pfData.length, 1).getValues() : []; // [v9.28] 목표아이템(사용자 선택, 스크립트는 읽기만)
   const prevDream = (pfData.length && pf.getMaxColumns() >= 80) ? pf.getRange(2, 80, pfData.length, 1).getValues() : []; // [v9.29] 드림한줄(CB 80) — 학생 자기선언, 스크립트는 읽기만
+  const prevCGoal = (pfData.length && pf.getMaxColumns() >= 125) ? pf.getRange(2, 125, pfData.length, 1).getValues() : []; // [v9.84] 상담목표(DU125) — 드림 비었을 때 목표줄 폴백(콜드스타트)
+  const prevPace = (pfData.length && pf.getMaxColumns() >= 128) ? pf.getRange(2, 128, pfData.length, 1).getValues() : []; // [v9.84] 페이스라인(DX128) — 도전안
   // [v9.50] AI 스튜디오 산출물 로드 — ai_daily(오늘의 한 문장 H1), ai_ledger(이달의 AI 칭호 B3), 리텐션 멘트(E5), 성장 전/후(A7)
   const tzAI = ss.getSpreadsheetTimeZone();
   const aiToday_ = Utilities.formatDate(new Date(), tzAI, 'yyyy-MM-dd');
@@ -2433,17 +2510,55 @@ function calcAll() {
       }
       balOut.push([bal[id] || 0]); // [v7.1] 잔액(AQ) — 스토어 결제 기준
       { // [v9.28] 🎯 목표아이템 진행 카드 — AR(찜) × AQ(잔액) × store 가격
+        // [v9.83] 남은 P를 **도착 예정일**로 바꾼다. 지급을 절반으로 낮추면 학생 체감은 "멀어졌다"인데,
+        //   날짜로 보여주면 멀어진 게 아니라 도착일이 생긴 것이 된다 — 하락을 서사로 전환.
+        //   재료는 전부 이미 계산 중이던 것(records.p14/pPrev14 = 최근 28일 획득)이라 추가 스캔 0.
+        //   찜한 상품이 없으면 🧥 과잠 자격 진행으로 폴백 — 과잠은 스토어에서 하차했으므로(v9.83)
+        //   찜으로는 영영 뜨지 않는데, 모든 학생의 기본 장기 목표가 바로 그것이다.
+        const recG = records[id] || {};
+        const perDay = (((recG.p14 || 0) + (recG.pPrev14 || 0)) / 28); // 하루 평균 획득(최근 28일)
+        const etaOf = function (need, extraPerDay) {
+          const v = perDay + (extraPerDay || 0);
+          if (!(v > 0) || need <= 0) return '';
+          const days = Math.ceil(need / v);
+          if (days > 730) return ''; // 2년 넘는 예측은 숫자만 크고 뜻이 없다 — 아예 말하지 않는다
+          return Utilities.formatDate(new Date(now.getTime() + days * msPerDay), tz, 'yyyy년 M월 d일');
+        };
+        const paceLine = function (need) {
+          const eta = etaOf(need, 0);
+          if (!eta) return '<div style="font-size:11.5px;color:#98A2B3;margin-top:3px;">📅 며칠 더 모으면 도착 예정일이 계산돼요</div>';
+          const faster = etaOf(need, PT.숙제); // 숙제 1회 = 하루 PT.숙제P — 조건부 약속이 아니라 산수 그대로
+          return '<div style="font-size:11.5px;color:#98A2B3;margin-top:3px;">📅 지금 페이스(하루 ' +
+            (Math.round(perDay * 10) / 10) + 'P)면 <b style="color:#3D5AFE;">' + eta + '</b> 도착' +
+            (faster && faster !== eta ? ' · ⚡ 하루 ' + PT.숙제 + 'P만 더 모으면 <b>' + faster + '</b>' : '') + '</div>';
+        };
         const goalNm = String((prevAR[idx] && prevAR[idx][0]) || '').trim();
-        if (!goalNm) goalOut.push(['']);
-        else {
-          const price = storePriceByName_[goalNm];
+        const price = goalNm ? storePriceByName_[goalNm] : 0;
+        if (goalNm && !price) goalOut.push(['🎯 목표: <b>' + goalNm + '</b> — 잔액 ' + (bal[id] || 0) + 'P']);
+        else if (goalNm) {
           const myBal = bal[id] || 0;
-          if (!price) goalOut.push(['🎯 목표: <b>' + goalNm + '</b> — 잔액 ' + myBal + 'P']);
+          const remain = Math.max(price - myBal, 0);
+          goalOut.push([remain <= 0
+            ? '🎯 목표 달성! <b>' + goalNm + '</b> 교환 가능해요 🎉 (잔액 ' + myBal + 'P)'
+            : '🎯 목표: <b>' + goalNm + '</b> — 잔액 ' + myBal + 'P / 필요 ' + price + 'P · <b>' + remain + 'P</b> 더 모으면 교환 가능!' + paceLine(remain)]);
+        } else { // 🧥 과잠 자격 진행 — 재원 개월 AND 누적 획득, 둘 다 채운 날이 도달일
+          const joinedG = r[14] ? asDate_(r[14]) : null;
+          if (!joinedG || isNaN(joinedG.getTime())) goalOut.push(['']);
           else {
-            const remain = Math.max(price - myBal, 0);
-            goalOut.push([remain <= 0
-              ? '🎯 목표 달성! <b>' + goalNm + '</b> 교환 가능해요 🎉 (잔액 ' + myBal + 'P)'
-              : '🎯 목표: <b>' + goalNm + '</b> — 잔액 ' + myBal + 'P / 필요 ' + price + 'P · <b>' + remain + 'P</b> 더 모으면 교환 가능!']);
+            const monthsG = (now.getFullYear() - joinedG.getFullYear()) * 12 + (now.getMonth() - joinedG.getMonth())
+              - (now.getDate() < joinedG.getDate() ? 1 : 0);
+            const needP = Math.max(JACKET_MIN_POINTS - t, 0);
+            const tenureDone = monthsG >= JACKET_TENURE_MONTHS;
+            const head = '🧥 <b>' + JACKET_ITEM_NAME + '</b> — 재원 <b>' + Math.max(monthsG, 0) + '/' + JACKET_TENURE_MONTHS +
+              '개월</b> · 누적 <b>' + t + 'P</b>/' + JACKET_MIN_POINTS + 'P' + (needP <= 0 ? ' ✅' : '');
+            if (tenureDone && needP <= 0) goalOut.push([head + '<div style="font-size:11.5px;color:#12B76A;margin-top:3px;">🎉 자격 도달! 곧 전달해 드려요 — 포인트는 한 톨도 쓰지 않습니다</div>']);
+            else {
+              const tenureDate = new Date(joinedG.getFullYear(), joinedG.getMonth() + JACKET_TENURE_MONTHS, joinedG.getDate());
+              const tenureStr = Utilities.formatDate(tenureDate, tz, 'yyyy년 M월 d일');
+              goalOut.push([head + (needP > 0
+                ? paceLine(needP) + '<div style="font-size:11.5px;color:#98A2B3;">🗓️ 재원 ' + JACKET_TENURE_MONTHS + '개월은 ' + tenureStr + '</div>'
+                : '<div style="font-size:11.5px;color:#98A2B3;margin-top:3px;">포인트 조건은 이미 충족 — 남은 건 시간이에요. <b style="color:#3D5AFE;">' + tenureStr + '</b>에 자격 도달</div>')]);
+            }
           }
         }
       }
@@ -2453,6 +2568,8 @@ function calcAll() {
         acad: academicSnapshot_(acadById[id]), evoDate: (evoDateOut[evoDateOut.length - 1] || [''])[0],
         titles: titleOf[id], chem: chemi[id], story: (prevAU[idx] && prevAU[idx][0]) || '', // [v9.20] 칭호·단짝·이달의 이야기
         dream: String((prevDream[idx] && prevDream[idx][0]) || '').trim(), // [v9.29] 드림 한 줄(학생 자기선언)
+        cGoal: String((prevCGoal[idx] && prevCGoal[idx][0]) || '').trim(), // [v9.84] 상담목표 — 드림 폴백
+        pace: String((prevPace[idx] && prevPace[idx][0]) || '').trim(),    // [v9.84] 페이스라인
         aiTitle: aiTitleMap[id] || '', // [v9.50·B3] 이달의 AI 유니크 칭호
         wk: { a: Object.keys(weekAtt[id] || {}).length, p: weekPts[id] || 0, c: weekCrown[id] || 0 }, // [v9.50·A5] 주간 퀘스트 결산(별도 발행물 대신 여정 카드에 통합)
         growth: growthMap[id] || null, // [v9.50·A7] 성장 전/후 — 첨삭 최초 vs 최근(21일+ 간격일 때만)
@@ -2879,6 +2996,9 @@ const SHARED_COL_HEADERS = ['내숙제유형', '내숙제', '내숙제팁', '오
 // [v9.74] 선점 열(DA105 최애·DB~DD 교재연동 3열)을 피한 2차 공유 블록 — tests가 블록·선점 열 비겹침을 기계 검사
 const SHARED2_COL_START = 112; // DH
 const SHARED2_COL_HEADERS = ['숙제카드HTML', '퀴즈카드HTML', '수업준비HTML', '오늘출근', '오늘퇴근', '학업폼URL', '메모폼URL']; // DH112~DN118
+// [v9.82] DO119(랭킹보드HTML — v9.81 리그 카드 선점)를 피한 3차 공유 블록. 강사 출퇴근 카드·학부모 결석 카드.
+const SHARED3_COL_START = 120; // DP
+const SHARED3_COL_HEADERS = ['출퇴근HTML', '결석신고HTML']; // DP120(강사) · DQ121(학부모)
 
 /* ── [v9.74] 숙제·퀴즈·수업준비 카드 빌더(순수 함수 — tests/safety.test.js가 직접 로드) ──
  * 유호 07-28 보고: 홈 숙제 카드가 "과제문 + 무라벨 검사포인트 + 퀴즈 문항"이 한 덩어리로 보여 무엇을
@@ -2915,6 +3035,88 @@ function prepCardHtml_(hwTy, hw, tip, quiz, quizAns) {
       (quizAns ? '<br/><span style="color:#64748B;">정답 — ' + escHtml_(quizAns) + '</span>' : '') + '</div>' : '') +
     '<div style="margin-top:9px;font-size:11px;color:#9CA3AF;">기록은 아래 버튼으로 — 📊 학업 기록(월 1회 급수·모의) · 🧩 연습 포인트 메모</div></div>';
 }
+/* ── [v9.82] 출퇴근 카드 · 결석 사전신고 카드(순수 함수 — tests/safety.test.js가 직접 로드) ──
+ * 유호 07-31 지시 10·12번. 출퇴근 탭은 폼 버튼 2개+낱개 Text뿐이라 기록기에 그쳤고, 결석 폼은
+ * 제출해도 접수 여부를 알 길이 없었다(v9.34 감사의 보류 항목 P-ACK 상환). 두 카드 모두 10분 스위프
+ * (todayBoard_)가 소유하되 값이 바뀔 때만 기입 — 경과시간·분 단위 시계처럼 "매 스위프 변하는 값"은
+ * 절대 넣지 않는다(교실스크린 v9.56과 같은 이유 — 월 500 update 수호). 자정 리셋 기입은 기존
+ * 오늘출근/오늘퇴근 리셋과 같은 스위프 묶음이라 sync 순증 0. */
+// 강사 출퇴근 카드(DP120) — v9.79 미니멀 스킨. io={in,out,mins} · weekCells=[{d,s}](월~토) · cheer=요일 출근 치어(CH11~17 재사용).
+function ioCardHtml_(dateLabel, io, weekCells, weekN, cheer) {
+  io = io || {};
+  const onI = !!io.in, offI = !!io.out;
+  const st = offI ? 2 : (onI ? 1 : 0); // 0 출근 전 · 1 근무 중 · 2 퇴근 완료
+  const pill = st === 1 ? '<span style="font-size:11px;font-weight:700;color:#12B76A;background:#ECFDF3;border-radius:99px;padding:3px 10px;">근무 중</span>'
+    : st === 2 ? '<span style="font-size:11px;font-weight:700;color:#475467;background:#F2F4F7;border-radius:99px;padding:3px 10px;">퇴근 완료</span>'
+      : '<span style="font-size:11px;font-weight:700;color:#3D5AFE;background:#EEF2FF;border-radius:99px;padding:3px 10px;">출근 전</span>';
+  const big = (v, on) => '<div style="margin-top:2px;font-size:26px;font-weight:800;line-height:1.2;color:' + (on ? '#101828' : '#D0D5DD') + ';">' + (v || '—') + '</div>';
+  const head = '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+    '<span style="' + HUD_LABEL + '">오늘의 근무</span><span>' +
+    '<span style="font-size:12px;font-weight:600;color:#98A2B3;">' + escHtml_(dateLabel || '') + '</span>' +
+    '<span style="display:inline-block;width:8px;"></span>' + pill + '</span></div>';
+  const hero = '<div style="margin-top:12px;display:flex;">' +
+    '<div style="flex:1;"><div style="' + HUD_LABEL + '">출근</div>' + big(io.in, onI) + '</div>' +
+    '<div style="width:1px;align-self:stretch;background:#EEF0F4;margin:0 16px;"></div>' +
+    '<div style="flex:1;"><div style="' + HUD_LABEL + '">퇴근</div>' + big(io.out, offI) + '</div></div>';
+  let note;
+  if (st === 0) note = '아래 버튼 한 번이면 출근 도장 — 출결 보드에 바로 올라갑니다';
+  else if (st === 1) note = '퇴근 도장을 찍으면 잠시 후 응원 메일이 한 통 갑니다';
+  else {
+    const m = Math.max(0, Number(io.mins) || 0);
+    const dur = m >= 60 ? Math.floor(m / 60) + '시간' + (m % 60 ? ' ' + (m % 60) + '분' : '') : m + '분';
+    note = (m > 0 ? '오늘 근무 ' + dur + ' — ' : '') + '수고하셨습니다. 응원 메일이 곧 도착해요 🌙';
+  }
+  const noteRow = '<div style="margin-top:12px;background:#F8F9FB;border-radius:12px;padding:10px 12px;font-size:12px;line-height:1.6;color:#475467;">' + note + '</div>';
+  let strip = '';
+  if (weekCells && weekCells.length) { // 개인 시간표는 없으므로 과거 무기록일은 탓하지 않는 무채색(off)
+    const cells = weekCells.map(c => {
+      const done = c.s === 'done' || c.s === 'todayDone';
+      const today = c.s === 'today' || c.s === 'todayDone';
+      const circle = done
+        ? '<div style="width:24px;height:24px;margin:3px auto 0;border-radius:99px;background:#3D5AFE;color:#fff;text-align:center;line-height:24px;font-size:11px;font-weight:800;' + (today ? 'box-shadow:0 0 0 3px rgba(61,90,254,.18);' : '') + '">✓</div>'
+        : today
+          ? '<div style="width:24px;height:24px;margin:3px auto 0;border-radius:99px;background:#fff;border:1.5px dashed #93A8FF;box-shadow:0 0 0 3px rgba(61,90,254,.10);"></div>'
+          : '<div style="width:24px;height:24px;margin:3px auto 0;border-radius:99px;background:#F2F4F7;"></div>';
+      return '<div style="flex:1;text-align:center;"><div style="font-size:9.5px;font-weight:700;color:#98A2B3;">' + c.d + '</div>' + circle + '</div>';
+    }).join('');
+    strip = '<div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;">' +
+      '<span style="' + HUD_LABEL + '">이번 주</span>' +
+      '<span><span style="font-size:18px;font-weight:800;color:#101828;line-height:1;">' + (Number(weekN) || 0) + '</span><span style="font-size:11px;font-weight:700;color:#98A2B3;">일 근무</span></span></div>' +
+      '<div style="margin-top:6px;display:flex;gap:4px;">' + cells + '</div>';
+  }
+  const cheerRow = cheer ? '<div style="margin-top:12px;font-size:11.5px;line-height:1.7;color:#98A2B3;">' + escHtml_(cheer) + '</div>' : '';
+  return '<div style="' + CARD_FONT + HUD_CARD + '">' + head + hero + noteRow + strip + cheerRow + '</div>';
+}
+// 학부모 결석 카드(DQ121) — 출석 달력과 같은 껍질(학부모 면 디자인 축). items=[{label,state,reason}] · nextDays=수업일 라벨 3개.
+function absenceCardHtml_(kidName, items, nextDays) {
+  items = items || []; nextDays = nextDays || [];
+  const head = '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 2px;">' +
+    '<span style="font-size:13.5px;font-weight:800;">🙏 결석 미리 알리기</span>' +
+    (kidName ? '<span style="font-size:11px;font-weight:700;color:#9CA3AF;">' + escHtml_(kidName) + '</span>' : '') + '</div>' +
+    '<div style="font-size:10.5px;color:#9CA3AF;padding:2px 2px 9px;">Ирэхгүй өдрөө урьдчилан мэдэгдээрэй — 미리 알려주시면 그날 걱정 알림이 가지 않아요</div>';
+  let list;
+  if (items.length) {
+    list = items.map(it => {
+      const pill = it.state === 'today'
+        ? '<span style="font-size:10px;font-weight:800;color:#12B76A;background:#ECFDF3;border-radius:99px;padding:2px 8px;white-space:nowrap;">✅ 오늘 — 선생님이 알아요</span>'
+        : it.state === 'future'
+          ? '<span style="font-size:10px;font-weight:800;color:#3D5AFE;background:#EEF2FF;border-radius:99px;padding:2px 8px;white-space:nowrap;">✅ 접수됨 · Бүртгэгдсэн</span>'
+          : '<span style="font-size:10px;font-weight:700;color:#9CA3AF;background:#F3F4F6;border-radius:99px;padding:2px 8px;white-space:nowrap;">지난 신고</span>';
+      const rs = it.reason ? '<div style="font-size:10.5px;color:#9CA3AF;padding-top:2px;">' + escHtml_(String(it.reason).slice(0, 40)) + '</div>' : '';
+      return '<div style="' + (it.state === 'past' ? 'opacity:.55;' : '') + 'display:flex;justify-content:space-between;align-items:center;gap:8px;background:#F8FAFC;border-radius:12px;padding:9px 11px;margin-top:6px;">' +
+        '<div style="min-width:0;"><span style="font-size:12.5px;font-weight:800;color:#111827;">' + escHtml_(it.label) + '</span>' + rs + '</div>' + pill + '</div>';
+    }).join('');
+  } else {
+    list = '<div style="background:#F8FAFC;border:1px dashed #E5E7EB;border-radius:12px;padding:14px 12px;text-align:center;font-size:11.5px;color:#9CA3AF;line-height:1.8;">아직 등록된 신고가 없어요<br/>Бүртгэл алга — доорх товчоор урьдчилан мэдэгдээрэй</div>';
+  }
+  const nextRow = nextDays.length
+    ? '<div style="margin-top:10px;font-size:11px;color:#6B7280;">🗓️ 다음 수업일 · Дараагийн хичээл — <b>' + nextDays.map(d => escHtml_(d)).join(' · ') + '</b></div>' : '';
+  const steps = '<div style="margin-top:10px;background:#F8FAFC;border-left:3px solid #3D5AFE;border-radius:0 10px 10px 0;padding:8px 11px;font-size:10.5px;color:#475569;line-height:1.9;">' +
+    '① 그날 「안 왔어요」 알림이 가지 않아요 <span style="color:#9CA3AF;">Тухайн өдөр сануулга илгээгдэхгүй</span><br/>' +
+    '② 담당 선생님 수업 브리핑에 자동 전달 <span style="color:#9CA3AF;">Багшид автоматаар дамжина</span><br/>' +
+    '③ 제출하면 10분 안에 여기 ✅ 표시 <span style="color:#9CA3AF;">10 минутын дотор энд харагдана</span></div>';
+  return '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:16px;padding:12px 11px;">' + head + list + nextRow + steps + '</div>';
+}
 // 오늘의 강사 출퇴근 시각(HH:mm) — todayBoard_(10분 스위프)와 writeSharedCols_(14/22시)가 같은 계산을 공유
 function teacherInOutMap_(ss, tz) {
   const map = {};
@@ -2930,9 +3132,57 @@ function teacherInOutMap_(ss, tz) {
     else if (tp.indexOf('퇴근') > -1) { if (!m.tout || d > m.tout) m.tout = d; } // 중복 퇴근 탭 = 마지막 시각만
   });
   Object.keys(map).forEach(k => {
-    map[k] = { in: map[k].tin ? Utilities.formatDate(map[k].tin, tz, 'HH:mm') : '', out: map[k].tout ? Utilities.formatDate(map[k].tout, tz, 'HH:mm') : '' };
+    const m = map[k];
+    map[k] = { in: m.tin ? Utilities.formatDate(m.tin, tz, 'HH:mm') : '', out: m.tout ? Utilities.formatDate(m.tout, tz, 'HH:mm') : '',
+      mins: (m.tin && m.tout && m.tout > m.tin) ? Math.round((m.tout - m.tin) / 60000) : 0 }; // [v9.82] 근무시간(분) — 퇴근 후 확정값만(카드 전용)
   });
   return map;
+}
+// [v9.82] 최근 8일 출퇴근 기록의 날짜 집합(이름별) — 주간 스트립 재료. 시트가 커져도 최근 ~400행만 읽는다.
+function teacherWeekSet_(ss, tz) {
+  const map = {};
+  const tc = ss.getSheetByName('teacher_checkins');
+  if (!tc || tc.getLastRow() < 2) return map;
+  const from = Math.max(2, tc.getLastRow() - 400);
+  const cut = new Date(Date.now() - 8 * 86400000);
+  tc.getRange(from, 1, tc.getLastRow() - from + 1, Math.max(TC_NAME_COL, TC_TIME_COL)).getValues().forEach(r => {
+    const nm = String(r[TC_NAME_COL - 1] || '').trim();
+    const d = asDate_(r[TC_TIME_COL - 1]);
+    if (!nm || !d || isNaN(d.getTime()) || d < cut) return;
+    (map[nm] = map[nm] || {})[Utilities.formatDate(d, tz, 'yyyy-MM-dd')] = 1;
+  });
+  return map;
+}
+// [v9.82] 이번 주 월~토 셀 상태 + 근무일 수. 강사별 개인 시간표는 없으므로 과거 무기록일을 '결근'으로 칠하지 않는다.
+function ioWeekCellsOf_(days, now, tz) {
+  days = days || {};
+  const WD6 = ['월', '화', '수', '목', '금', '토'];
+  const mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+  const today = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
+  const cells = []; let n = 0;
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i);
+    const ds = Utilities.formatDate(d, tz, 'yyyy-MM-dd');
+    const worked = !!days[ds];
+    if (worked) n++;
+    cells.push({ d: WD6[i], s: ds === today ? (worked ? 'todayDone' : 'today') : (worked ? 'done' : 'off') });
+  }
+  return { cells: cells, n: n };
+}
+// [v9.82] 오늘 요일의 출근 치어(CH11~17) — 토스트로만 소비되던 콘텐츠를 카드 인사말로 재사용(브리핑 v9.47·B6과 같은 소스).
+function todayCheerLine_(ss) {
+  const ct = ss.getSheetByName('contents');
+  if (!ct || ct.getLastRow() < 2) return '';
+  const ord = new Date().getDay() + 1; // cheer F열 = 1(일)~7(토)
+  let line = '';
+  ct.getRange(2, 1, ct.getLastRow() - 1, 6).getValues().some(r => {
+    if (String(r[1]) === 'cheer' && Number(r[5]) === ord && r[3]) { line = String(r[3]); return true; }
+    return false;
+  });
+  return line;
+}
+function ioDateLabel_(now) {
+  return (now.getMonth() + 1) + '/' + now.getDate() + ' (' + ['일', '월', '화', '수', '목', '금', '토'][now.getDay()] + ')';
 }
 // [v9.74] 강사 행 오늘출근(DD108)·오늘퇴근(DE109)을 10분 스위프(todayBoard_)마다 갱신.
 //   Glide 출퇴근 버튼 Visibility 소스: 출근 버튼 = 오늘출근 is empty · 퇴근 버튼 = 오늘출근 not empty AND 오늘퇴근 is empty
@@ -2943,19 +3193,90 @@ function updateTeacherInOut_(ss, tz, pf) {
   const ci = SHARED2_COL_START + SHARED2_COL_HEADERS.indexOf('오늘출근'); // [v9.74] DK115 — 2차 블록(선점 열 회피)
   if (pf.getMaxColumns() < ci + 1 || String(pf.getRange(1, ci).getValue()) !== '오늘출근') return; // 공유열 미생성(콜드스타트) — calcAll이 만든 뒤부터
   const map = teacherInOutMap_(ss, tz);
+  // [v9.84] 출퇴근 카드(DP120) — 시각 열과 같은 스위프에서 함께. 헤더 미생성(콜드스타트·구버전 시트)이면 카드만 조용히 생략.
+  const cardCi = SHARED3_COL_START + SHARED3_COL_HEADERS.indexOf('출퇴근HTML');
+  // ⚠ 존재 검사는 `>= cardCi`(ci+1이 아님) — DQ121이 시트 마지막 열이라 +1 요구면 영원히 스킵된다(자기검증에서 잡음)
+  const hasCard = pf.getMaxColumns() >= cardCi && String(pf.getRange(1, cardCi).getValue()) === '출퇴근HTML';
+  const wk = hasCard ? teacherWeekSet_(ss, tz) : {};
+  const cheer = hasCard ? todayCheerLine_(ss) : '';
+  const nowT = new Date();
+  const dl = ioDateLabel_(nowT);
   const roles = pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues();
   const cur = pf.getRange(2, ci, pf.getLastRow() - 1, 2).getValues();
+  const curCard = hasCard ? pf.getRange(2, cardCi, pf.getLastRow() - 1, 1).getValues() : null;
   roles.forEach((r, i) => {
     if (!r[0] || String(r[3]) !== 'teacher') return; // 강사 행만 — 나머지는 writeSharedCols_ 소유
-    const io = map[String(r[1] || r[0]).trim()] || {}; // 이름 없으면 ID 폴백 — todayBoard_와 동일 키(리뷰 H3)
+    const keyT = String(r[1] || r[0]).trim(); // 이름 없으면 ID 폴백 — todayBoard_와 동일 키(리뷰 H3)
+    const io = map[keyT] || {};
     const want = [io.in || '', io.out || ''];
     // [v9.74·리뷰 B2] hhmmOf_ 정규화 비교 — 과거 시간 서식 셀(Date 되읽힘)이 남아 있어도 재기입 루프가 되지 않는다
     if (hhmmOf_(cur[i][0], tz) !== want[0] || hhmmOf_(cur[i][1], tz) !== want[1]) pf.getRange(i + 2, ci, 1, 2).setValues([want]); // 변경 행만 — Glide sync 소비 최소화
+    if (hasCard) { // [v9.82] 카드도 값이 바뀔 때만 — 입력이 전부 안정값이라 재기입 루프 없음
+      const wc = ioWeekCellsOf_(wk[keyT], nowT, tz);
+      const card = ioCardHtml_(dl, io, wc.cells, wc.n, cheer);
+      if (String(curCard[i][0] == null ? '' : curCard[i][0]) !== card) pf.getRange(i + 2, cardCi, 1, 1).setValue(card);
+    }
   });
+}
+// [v9.82] 자녀별 결석 신고 항목(예정 전부 + 지난 14일) — 예정 오름차순 앞·지난 것 최신순 뒤, 총 4개 캡.
+function absenceItemsByKid_(ss, tz) {
+  const map = {};
+  const an = ss.getSheetByName('absence_notice');
+  if (!an || an.getLastRow() < 2) return map;
+  const WD = ['일', '월', '화', '수', '목', '금', '토'];
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const cutStr = Utilities.formatDate(new Date(Date.now() - 14 * 86400000), tz, 'yyyy-MM-dd');
+  an.getRange(2, 1, an.getLastRow() - 1, 4).getValues().forEach(r => {
+    const sid = String(r[0] || '').trim();
+    const d = asDate_(r[2]);
+    if (!sid || !d || isNaN(d.getTime())) return;
+    const ds = Utilities.formatDate(d, tz, 'yyyy-MM-dd');
+    if (ds < cutStr) return;
+    (map[sid] = map[sid] || []).push({ ds: ds, label: (d.getMonth() + 1) + '/' + d.getDate() + ' (' + WD[d.getDay()] + ')',
+      state: ds === today ? 'today' : (ds > today ? 'future' : 'past'), reason: String(r[3] || '') });
+  });
+  Object.keys(map).forEach(k => {
+    const up = map[k].filter(x => x.state !== 'past').sort((a, b) => a.ds < b.ds ? -1 : 1);
+    const past = map[k].filter(x => x.state === 'past').sort((a, b) => a.ds > b.ds ? -1 : 1);
+    map[k] = up.concat(past).slice(0, 4);
+  });
+  return map;
+}
+// [v9.82] 앞으로 열흘 중 이 반 유형의 수업일 3개 — 학부모가 결석 날짜를 고를 때의 나침반(classDowOk_ 재사용).
+function nextClassDaysOf_(clsType, now) {
+  const WD = ['일', '월', '화', '수', '목', '금', '토'];
+  const out = [];
+  for (let i = 1; i <= 10 && out.length < 3; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+    if (classDowOk_(clsType, d.getDay())) out.push((d.getMonth() + 1) + '/' + d.getDate() + ' (' + WD[d.getDay()] + ')');
+  }
+  return out;
+}
+// [v9.82] 학부모 행 결석신고HTML(DQ121) 10분 갱신 — 제출 후 10분 내 ✅ 접수 확인(P-ACK). 값이 같으면 기입 0.
+function updateParentAbsence_(ss, tz, pf) {
+  if (!pf || pf.getLastRow() < 2) return;
+  const ci = SHARED3_COL_START + SHARED3_COL_HEADERS.indexOf('결석신고HTML');
+  if (pf.getMaxColumns() < ci || String(pf.getRange(1, ci).getValue()) !== '결석신고HTML') return; // 콜드스타트 — calcAll 후부터. ⚠ `< ci`(ci+1 아님) — 마지막 열이라 +1 요구면 영원히 스킵
+
+  const rows = pf.getRange(2, 1, pf.getLastRow() - 1, 36).getValues(); // A~AJ36(반유형)
+  const stu = {};
+  rows.forEach(r => { if (r[0] && String(r[3]) === 'student') stu[String(r[0]).trim()] = { n: r[1] || r[0], t: String(r[35] || '') }; });
+  const byKid = absenceItemsByKid_(ss, tz);
+  const cur = pf.getRange(2, ci, pf.getLastRow() - 1, 1).getValues();
+  const nowA = new Date();
+  // [v9.82·리뷰 M1] 행별 setValue(학부모 90행 = 자정 후 첫 스위프에 90회) → 블록 1회. 학부모 아닌 행은
+  // 현재 값을 원형 그대로 통과시켜(스트링화 금지 — 동일성 비교 보존) 이 스위프가 학부모 행만 소유한다.
+  const wants = rows.map((r, i) => {
+    if (!r[0] || String(r[3]) !== 'parent') return [cur[i][0]];
+    const kid = String(r[9] || '').split(',')[0].trim(); // 첫 자녀 — writeSharedCols_와 동일 규약(다자녀 한계는 docs/부모탭_점검_2026-07-31.md §2-2)
+    const info = kid ? stu[kid] : null;
+    return [info ? absenceCardHtml_(info.n, byKid[kid] || [], nextClassDaysOf_(info.t, nowA)) : ''];
+  });
+  writeIfChanged(pf, 2, ci, wants);
 }
 function writeSharedCols_(ss, pf, st) {
   if (!pf || pf.getLastRow() < 2) return;
-  const endCol = SHARED2_COL_START + SHARED2_COL_HEADERS.length - 1; // [v9.74] 118(DN) — 2차 블록 끝까지 동적
+  const endCol = SHARED3_COL_START + SHARED3_COL_HEADERS.length - 1; // [v9.82] 121(DQ) — 3차 블록 끝까지 동적
   if (pf.getMaxColumns() < endCol) pf.insertColumnsAfter(pf.getMaxColumns(), endCol - pf.getMaxColumns());
   SHARED_COL_HEADERS.forEach((h, i) => {
     const c = SHARED_COL_START + i;
@@ -2963,6 +3284,10 @@ function writeSharedCols_(ss, pf, st) {
   });
   SHARED2_COL_HEADERS.forEach((h, i) => { // [v9.74] DA105~DG111(최애·교재연동 3열 등 선점 구간)은 절대 건드리지 않는다
     const c = SHARED2_COL_START + i;
+    if (String(pf.getRange(1, c).getValue()) !== h) pf.getRange(1, c).setValue(h);
+  });
+  SHARED3_COL_HEADERS.forEach((h, i) => { // [v9.82] DO119(랭킹보드, v9.81 선점)를 건너뛴 3차 블록
+    const c = SHARED3_COL_START + i;
     if (String(pf.getRange(1, c).getValue()) !== h) pf.getRange(1, c).setValue(h);
   });
   { // [v9.74·리뷰 B2] 출퇴근 열 텍스트 서식 고정 — 'HH:mm' 문자열이 시간 서식 Date(1899-12-30 기준)로 되읽히면
@@ -2977,7 +3302,7 @@ function writeSharedCols_(ss, pf, st) {
   // 학생별 카드 인덱스(자녀 조회용): id → 이름·액자(BD56)·주간리포트(BL64)·대화카드(BM65)·축하배너(BN66)·학업추세(BW75)·출석달력(CF84)
   const byId = {};
   rows.forEach(r => {
-    if (r[0] && r[3] === 'student') byId[String(r[0]).trim()] = { n: r[1] || r[0], bd: r[55], bl: r[63], bm: r[64], bn: r[65], bw: r[74], cf: r[83] };
+    if (r[0] && r[3] === 'student') byId[String(r[0]).trim()] = { n: r[1] || r[0], bd: r[55], bl: r[63], bm: r[64], bn: r[65], bw: r[74], cf: r[83], t: String(r[35] || '') }; // [v9.82] t=반유형(AJ36) — 결석 카드 다음 수업일
   });
   const splitQuiz = v => { const p = String(v || '').split('|'); return [p[0] || '', p.length > 1 ? p.slice(1).join('|') : '']; };
   // [v9.49] 학생별 미리채움 폼 URL — app_state의 URL 틀(SIDTOKEN 자리)에 학생ID 치환. 틀이 없으면(폼 미생성) 빈칸
@@ -3003,17 +3328,26 @@ function writeSharedCols_(ss, pf, st) {
   const preT = Number(Utilities.formatDate(new Date(), tzW, 'u')) >= 6 ? '주말의' : '오늘의'; // 시트 TZ 기준(u: 월1~일7) — getDay(스크립트TZ) 혼용 금지(v9.34 규약)
   const qT = splitQuiz(kv['오늘의퀴즈'] || '');
   const prepCard = prepCardHtml_(kv[preT + '숙제유형'] || '', kv[preT + '숙제'] || '', kv[preT + '숙제팁'] || '', qT[0], qT[1]);
-  const HEADS_ALL = SHARED_COL_HEADERS.concat(SHARED2_COL_HEADERS); // 27 — 분기 반환은 이 길이의 단일 배열, 쓰기 직전 두 블록으로 쪼갠다
+  // [v9.82] 출퇴근·결석 카드 재료 — 10분 스위프(소유자)와 같은 빌더·같은 값이라 14/22시 재계산이 스위프 기입을 지우지 않는다
+  const wkT = teacherWeekSet_(ss, tzW);
+  const cheerT = todayCheerLine_(ss);
+  const nowSh = new Date();
+  const dlT = ioDateLabel_(nowSh);
+  const absByKid = absenceItemsByKid_(ss, tzW);
+  const HEADS_ALL = SHARED_COL_HEADERS.concat(SHARED2_COL_HEADERS).concat(SHARED3_COL_HEADERS); // 29 — 분기 반환은 이 길이의 단일 배열, 쓰기 직전 세 블록으로 쪼갠다(선점 열 DO119는 건너뜀)
   const out = rows.map(r => {
     const blank = HEADS_ALL.map(() => '');
     if (!r[0]) return blank;
     const role = String(r[3] || '');
     if (role === 'teacher') { // [v9.74] 수업준비 탭 = 카드 1장 + 버튼 2개(전부 자기 행 직접 바인딩)
-      const io = ioT[String(r[1] || r[0]).trim()] || {}; // 이름 없으면 ID 폴백 — todayBoard_와 동일 키(리뷰 H3)
+      const keyT = String(r[1] || r[0]).trim(); // 이름 없으면 ID 폴백 — todayBoard_와 동일 키(리뷰 H3)
+      const io = ioT[keyT] || {};
+      const wcT = ioWeekCellsOf_(wkT[keyT], nowSh, tzW); // [v9.82]
       return ['', '', '', '', '', '', '', '', '', '',
         '', '', '', '', '', '', '',
         '', '', '',
-        '', '', prepCard, io.in || '', io.out || '', kv['학업폼URL'] || '', kv['약점메모폼URL'] || ''];
+        '', '', prepCard, io.in || '', io.out || '', kv['학업폼URL'] || '', kv['약점메모폼URL'] || '',
+        ioCardHtml_(dlT, io, wcT.cells, wcT.n, cheerT), '']; // [v9.82] DP120 출퇴근 카드 · DQ121은 학부모 몫
     }
     if (role === 'student') {
       const pre = String(r[35] || '') === '주말' ? '주말의' : '오늘의'; // AJ36 반유형 — 서버가 분기(구 Glide ITE 3개 대체)
@@ -3038,26 +3372,51 @@ function writeSharedCols_(ss, pf, st) {
         formUrlOf(kv['출석폼URL틀'], sid), formUrlOf(kv['숙제폼URL틀'], sid), fbCnt[sid] || '', // [v9.49] CX~CZ
         hwCardHtml_(hwTy9, mnTy9, kv[pre + '숙제'] || '', hwTip9, mnTip9), // [v9.74] DA105 — 구 3컴포넌트(6-1a) 대체
         quizCardHtml_(pq ? pq.q : q[0], !!pq), // [v9.74] DB106 — 문제만. 정답은 CK89를 버튼이 연다
-        '', '', '', '', ''];
+        '', '', '', '', '',
+        '', '']; // [v9.82] DP·DQ 학생 행은 빈칸
     }
     if (role === 'parent') {
-      const kidId = String(r[9] || '').split(',')[0].trim(); // J10 parent_of(첫 자녀)
+      const kidId = String(r[9] || '').split(',')[0].trim(); // J10 parent_of(첫 자녀 — 다자녀 한계는 docs/부모탭_점검_2026-07-31.md §2-2)
       const k = kidId ? byId[kidId] : null;
       if (!k) return blank;
       return ['', '', '', '', '', '', '', '', '', '',
         k.n, k.bn, k.bl, k.cf, k.bm, k.bw, k.bd,
         '', '', '', // [v9.49] CX~CZ 학부모 행은 빈칸
-        '', '', '', '', '', '', '']; // [v9.74] DH~DN도 빈칸
+        '', '', '', '', '', '', '', // [v9.74] DH~DN 빈칸
+        '', absenceCardHtml_(k.n, absByKid[kidId] || [], nextClassDaysOf_(k.t, nowSh))]; // [v9.82] DQ121 결석 카드
     }
     return blank;
   });
   // [v9.74·리뷰 H1] 분기 반환 길이 기계 가드 — 하나라도 어긋나면 열이 통째로 밀려 쓰인다(조용한 파괴 대신 즉사)
   out.forEach(a => { if (a.length !== HEADS_ALL.length) throw new Error('writeSharedCols_ 행 길이 ' + a.length + ' ≠ 헤더 ' + HEADS_ALL.length); });
   writeIfChanged(pf, 2, SHARED_COL_START, out.map(a => a.slice(0, SHARED_COL_HEADERS.length)));
-  writeIfChanged(pf, 2, SHARED2_COL_START, out.map(a => a.slice(SHARED_COL_HEADERS.length))); // 선점 구간(DA105~DG111)은 건너뛴다
+  writeIfChanged(pf, 2, SHARED2_COL_START, out.map(a => a.slice(SHARED_COL_HEADERS.length, SHARED_COL_HEADERS.length + SHARED2_COL_HEADERS.length))); // 선점 구간(DA105~DG111)은 건너뛴다
+  writeIfChanged(pf, 2, SHARED3_COL_START, out.map(a => a.slice(SHARED_COL_HEADERS.length + SHARED2_COL_HEADERS.length))); // [v9.82] 선점 열 DO119(랭킹보드)도 건너뛴다
 }
 
 /* ===================== 상담시트 → profiles 동기화 ===================== */
+
+// [v9.84] 자유서술 blob에서 [문항명] 섹션 1개 추출 — importFormResponses가 '[제목] 값'을 '\n\n'로 이어 쌓는
+//   형식의 역파싱. 문단 답 안의 이중 개행은 다음 섹션이 '['로 시작할 때만 경계로 본다(lookahead).
+function consultBlobField_(blob, title) {
+  if (!blob) return '';
+  const seg = String(blob).split(/\n\n(?=\[)/).find(s => s.indexOf('[' + title + ']') === 0);
+  return seg ? seg.slice(title.length + 2).trim() : '';
+}
+
+// [v9.84·도전안] 페이스라인 — TOPIK목표+기한+하루 학습가능시간을 역산해 한 줄로. 판정·보장 없이 "남은 주"만
+//   (과장 금지). 기한 파싱 실패·이미 경과·5년+(오입력)면 침묵('') — 그 구간은 사람 상담의 영역.
+function consultPace_(goalLv, dueRaw, hoursRaw, now) {
+  if (!goalLv || !dueRaw) return '';
+  const m = String(dueRaw).match(/(20\d{2})\s*[.\-\/년]?\s*(\d{1,2})/);
+  if (!m) return '';
+  const mo = Number(m[2]);
+  if (mo < 1 || mo > 12) return '';
+  const due = new Date(Number(m[1]), mo, 0); // 그 달 말일(여유 쪽 해석)
+  const weeks = Math.ceil((due.getTime() - now.getTime()) / (7 * 86400000));
+  if (weeks < 1 || weeks > 260) return '';
+  return '🎯 TOPIK ' + goalLv + '까지 약 ' + weeks + '주' + (hoursRaw ? ' — 하루 ' + hoursRaw + '의 꾸준함으로' : '');
+}
 
 function syncProfiles() {
   try { // [v8.2] 상담시트 미연결·권한 오류에도 앱 본체는 무사
@@ -3074,7 +3433,12 @@ function syncProfiles() {
 
   const lastRow = src.getLastRow();
   // [opt] 빈 상담시트(<3행)도 조기 return 대신 data=[]로 진행 → 아래 급감/0 가드가 로스터 보호 + 중복제거 알림 발동. '상담시트 공백 → 로스터 갱신 조용히 중단' 버그 수정.
-  const data = lastRow >= 3 ? src.getRange(3, 1, lastRow - 2, 62).getValues() : []; // [v8.3] v18.1 = 62열
+  const lastC = Math.max(62, src.getLastColumn()); // [v9.84] v18.4 증분 열(63~)까지 — 기존 62열 고정이 상담 취향·목표를 통째로 못 읽던 사각 해소
+  const data = lastRow >= 3 ? src.getRange(3, 1, lastRow - 2, lastC).getValues() : []; // [v8.3] v18.1 = 62열 + [v9.84] 증분
+  // [v9.84] 증분 문항은 위치 가변(migrateConsultV184가 "뒤에 추가"만 보장) — importFormResponses와 같은 헤더 이름 해석. 중복 헤더는 첫 열 우선.
+  const cHdr = src.getRange(2, 1, 1, lastC).getValues()[0];
+  const cCol = {}; cHdr.forEach((h, i) => { const k = String(h || '').trim(); if (k && cCol[k] === undefined) cCol[k] = i; });
+  const cv = (row, name) => { const i = cCol[name]; return i === undefined ? '' : String(row[i] || '').trim(); };
 
   const dstLast = dst.getLastRow();
   const keep = {};
@@ -3126,7 +3490,13 @@ function syncProfiles() {
         payFee[userId] || '', row[2], row[12], row[14], createdAt],
       lvl: row[18] || '',    // S 한국어수준 → AY(51): 강사 뷰 '레벨'
       risk: row[60] || '',   // BI ⚠위험신호 → AZ(52): 원장 콕핏 전용
-      vision: row[21] || ''  // V 핵심비전 → BA(53): 케어 대화용 한 줄
+      vision: row[21] || '', // V 핵심비전 → BA(53): 케어 대화용 한 줄
+      // [v9.84] 상담 디테일 2차 — 받아둔 답을 앱이 쓰게(콜드스타트 해소·강사뷰·0점 좌표·페이스). 전부 이름 해석이라 열 이동에 안전.
+      taste: [cv(row, '선호그룹'), cv(row, '인생드라마'), cv(row, '취미관심사')].filter(String).join(' · ').slice(0, 120), // → DT124: AI 최애 폴백
+      cGoal: (cv(row, 'TOPIK목표') ? 'TOPIK ' + cv(row, 'TOPIK목표') + (cv(row, 'TOPIK목표기한') ? ' · ' + cv(row, 'TOPIK목표기한') : '') : ''), // → DU125: 목표 폴백
+      topik0: [cv(row, 'TOPIK급수'), cv(row, 'TOPIK점수')].filter(String).join(' ').slice(0, 40), // → DV126: 입학 시점 실측(성장 서사 0점 좌표)
+      pain: consultBlobField_(cv(row, '📝자유서술→노션'), '한국어고충').slice(0, 120), // → DW127: 강사 뷰 전용("수업 설계 반영" 약속의 배선)
+      pace: consultPace_(cv(row, 'TOPIK목표'), cv(row, 'TOPIK목표기한'), cv(row, '학습가능시간'), now) // → DX128: 여정 카드 페이스라인(도전안)
     };
     (newById[ent.id] = newById[ent.id] || []).push(ent);
     newSeq.push(ent);
@@ -3201,6 +3571,30 @@ function syncProfiles() {
     // [v9.42] tail-clear 시작을 데모 행 뒤로 — 데모 학생의 AY(한국어수준) 시연값이 매일 지워지지 않게
     const tTail = lastNow - 1 - trio.length - demoStu.length;            // 데모·학생 뒤(비학생·삭제) 행의 AY~BA는 비움
     if (tTail > 0) dst.getRange(trio.length + demoStu.length + 2, 51, tTail, 3).clearContent();
+
+    // [v9.84] 상담 디테일 2차 5열 → DT124~DX128 (취향·목표·입학TOPIK·고충·페이스라인). AY~BA 트리오와 같은 계급
+    //   (학생만·데모 보존 tail-clear·writeIfChanged). ⚠ 점거 가드: 24시간 내 열 충돌 계열 사고 2건(오늘의알림 덮임·
+    //   리그 DO119 선점)의 회귀 장치 — 5칸 중 하나라도 남의 헤더가 있으면 기입 전체를 멈추고 상태 변화 시 1회만 알린다.
+    const DT_HEADS = ['상담취향', '상담목표', '입학TOPIK', '상담고충', '페이스라인'];
+    if (dst.getMaxColumns() < 128) dst.insertColumnsAfter(dst.getMaxColumns(), 128 - dst.getMaxColumns());
+    const dtCur = dst.getRange(1, 124, 1, 5).getValues()[0].map(h => String(h || '').trim());
+    const dtClash = dtCur.map((h, i) => (h && h !== DT_HEADS[i]) ? (h + '(' + (124 + i) + '열)') : '').filter(String);
+    const stDT = ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'app_state', ['key', 'value']);
+    if (dtClash.length) {
+      const sigDT = dtClash.join(',');
+      if (String(getState(stDT, '상담열충돌').val || '') !== sigDT) {
+        adminMail('[SYNK] ⚠️ 상담 디테일 열 충돌 — 기입 보류', 'profiles DT124~DX128에 다른 주인 헤더가 있어 상담 디테일 기입을 멈췄습니다: ' + sigDT +
+          '\n열 이동·개명 후 syncProfiles가 다음 아침 자동 재개합니다. (같은 상태면 다시 알리지 않습니다)');
+        setState(stDT, '상담열충돌', sigDT);
+      }
+    } else {
+      if (String(getState(stDT, '상담열충돌').val || '') !== '') setState(stDT, '상담열충돌', ''); // 해소 → 재무장
+      DT_HEADS.forEach((h, i) => { if (dtCur[i] !== h) dst.getRange(1, 124 + i).setValue(h); });
+      const quint = ordered.map(e => [e.taste || '', e.cGoal || '', e.topik0 || '', e.pain || '', e.pace || '']);
+      if (quint.length) writeIfChanged(dst, 2, 124, quint);
+      const qTail = lastNow - 1 - quint.length - demoStu.length;
+      if (qTail > 0) dst.getRange(quint.length + demoStu.length + 2, 124, qTail, 5).clearContent();
+    }
   }
   setState(ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'app_state', ['key', 'value']), '동기화보류_상태', ''); // [v9.22] 정상 동기화 → 보류 알림 재무장
   // [v9.50·F4] 신규 학생 웰컴 스토리 대기열 — 등록 감지 즉시 큐에 넣고, 학부모 이메일(§1-3)이 채워진 아침에 welcomeStoryBatch_가 발송
@@ -3624,15 +4018,24 @@ function computeKpiMetrics(yearMonth, confirm) {
   // ── 전환 = 해당 월 상담 접수 중 profiles 신규 등록(학생ID 매칭)으로 이어진 비율 ──
   const newIds = {}; newReg.forEach(s => { newIds[s.id] = 1; });
   let consultCnt = 0, convCnt = 0;
+  const chConsult = {}, chConv = {}; // [v9.84·⑤] 인지채널별 상담/등록 — 이미 돌던 스캔에 열 1개만 추가(마케팅 예산 배분의 실측 근거)
   try { // 상담시트 접근 실패해도 이탈 지표는 산출 — 전환만 0 처리
     const src = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
     if (src && src.getLastRow() >= 3) {
+      const chIdx = src.getRange(2, 1, 1, Math.max(62, src.getLastColumn())).getValues()[0]
+        .map(h => String(h || '').trim()).indexOf('인지채널'); // [v9.84·⑤] 헤더 이름 해석 — 없으면 -1(집계 생략)
       src.getRange(3, 1, src.getLastRow() - 2, 62).getValues().forEach(r => { // v18.1 = 62열
         const intake = kpiParseDate_(r[2]); // C 등록일 = 폼 접수 ts (상담 접수 시점)
         if (!intake || intake.getTime() < monthStart.getTime() || intake.getTime() > monthEnd.getTime()) return;
         consultCnt++; // 학생ID 없는 행도 분모 포함(매칭 한계 — 전환 0 취급)
         const sid = String(r[59] || '').trim(); // BH 학생ID
-        if (sid && newIds[sid]) convCnt++;       // 같은 달 profiles 신규 등록과 매칭
+        const matched = !!(sid && newIds[sid]);
+        if (matched) convCnt++;                  // 같은 달 profiles 신규 등록과 매칭
+        if (chIdx > -1 && chIdx < 62) {          // [v9.84·⑤] 채널 집계(8버킷 — 미기입은 '미기입' 버킷)
+          const ch = String(r[chIdx] || '').trim() || '미기입';
+          chConsult[ch] = (chConsult[ch] || 0) + 1;
+          if (matched) chConv[ch] = (chConv[ch] || 0) + 1;
+        }
       });
     }
   } catch (e) {
@@ -3660,8 +4063,18 @@ function computeKpiMetrics(yearMonth, confirm) {
     '(' + churnRate + '%)·상담 ' + consultCnt + '·전환 ' + convCnt + '(' + convRate + '%)' + (confirmVal ? '·' + confirmVal : ''));
   return {
     ym: ym, opening: openingN, newReg: newReg.length, churn: churn, churnRate: churnRate,
-    consult: consultCnt, conv: convCnt, convRate: convRate, confirm: confirmVal
+    consult: consultCnt, conv: convCnt, convRate: convRate, confirm: confirmVal,
+    chConsult: chConsult, chConv: chConv // [v9.84·⑤] 채널별 상담/등록(KPI 시트 스키마는 불변 — 리포트 텍스트 전용)
   };
+}
+
+// [v9.84·⑤] 채널별 등록 한 줄 — "페이스북 2/5 · 추천 1/2" (등록/상담). 등록 많은 순 → 상담 많은 순, 상위 5개.
+function kpiChannelLine_(cur) {
+  if (!cur || !cur.chConsult) return '';
+  const keys = Object.keys(cur.chConsult);
+  if (!keys.length) return '';
+  keys.sort((a, b) => ((cur.chConv[b] || 0) - (cur.chConv[a] || 0)) || (cur.chConsult[b] - cur.chConsult[a]));
+  return keys.slice(0, 5).map(k => k + ' ' + (cur.chConv[k] || 0) + '/' + cur.chConsult[k]).join(' · ');
 }
 
 // 주간 통합 리포트 섹션 — 당월 잠정치 + 전월(확정 우선) 한 줄 비교. asText 패턴(기존 섹션과 동일).
@@ -3686,6 +4099,8 @@ function kpiSection_(asText, kpiData) {
     (prev ? ' (전월 ' + (prev.churnRate || 0) + '% · Δ' + sgn(dChurn) + '%p)' : '') + '\n';
   body += '· 전환율 ' + cur.conv + '/' + cur.consult + '건=' + cur.convRate + '%' +
     (prev ? ' (전월 ' + (prev.convRate || 0) + '% · Δ' + sgn(dConv) + '%p)' : '') + '\n';
+  const chLine = kpiChannelLine_(cur); // [v9.84·⑤] 채널별 등록/상담 — 상담폼 인지채널 자동 집계(leads 수기 이관과 별개 축)
+  if (chLine) body += '· 채널별 등록/상담: ' + chLine + '\n';
   body += '· 전월(' + prevYm + ') ' + (prev && prev.confirm === '확정' ? '확정치' : '잠정치') + ' 기준';
   body += '\n※ 이탈=마지막출석 ' + KPI_CHURN_DAYS + '일+ 무활동 기초재원 · 전환=당월 상담 접수→신규등록';
 
@@ -3743,7 +4158,7 @@ function birthdayCheck() {
     r[0] && r[3] === 'student' && birthMMDD(r[5]) === mmdd && !given.has(r[0]));
   if (kids.length === 0) return;
 
-  appendPoints(ss, kids.map(r => [r[0], 20, '생일축하', '시스템']));
+  appendPoints(ss, kids.map(r => [r[0], PT.생일, '생일축하', '시스템']));
 
   const emails = PARENT_MAIL_BIRTHDAY ? kids.filter(r => String(r[25] || '').indexOf('@') > -1) : []; // [v5.4]
   if (emails.length && quotaOk(emails.length)) {
@@ -3819,7 +4234,7 @@ function raidMonday() {
       else if (s0.indexOf('주말정규반') === 0) cap = 20;
       else { const num = classNumOf(s0); cap = num ? (Number(num) <= 4 ? 20 : 10) : (Number(r[1]) || 1); }
       const eS = schedOf(smR, s0);
-      const per = (eS && eS.type === '주말') ? 18 : 28;
+      const per = (eS && eS.type === '주말') ? RAID_HP_PER.주말 : RAID_HP_PER.평일;
       return [weekKey, r[0], cap * per, 0, '진행중', ''];
     });
   if (rows.length) rd.getRange(rd.getLastRow() + 1, 1, rows.length, 6).setValues(rows);
@@ -3928,7 +4343,7 @@ function leagueSettle_() {
       }
     }
     if (winner && memberCls[winner]) {
-      memberCls[winner].forEach(sid => winRows.push([sid, 5, '리그승리', 'SYSTEM']));
+      memberCls[winner].forEach(sid => winRows.push([sid, PT.리그, '리그승리', 'SYSTEM']));
       noticeRows.push([
         '🏆 주간 리그 결과: ' + a + ' × ' + b,
         '이번 주 리듬왕은 ' + winner + ' (1인 평균 ' + hi + ' : ' + lo + ')! 승리 반 전원 +5P. 양 반 모두의 데미지는 각자의 몬스터에게 그대로 쌓였습니다 🌱',
@@ -4186,7 +4601,7 @@ function raidFriday() {
       });
     }
     const toPay = rewardSids.filter(sid => !paidSet[String(sid)]);
-    if (toPay.length) appendPoints(ss, toPay.map(sid => [sid, 20, '레이드보상', '시스템'])); // [v7.1] 50→20
+    if (toPay.length) appendPoints(ss, toPay.map(sid => [sid, PT.레이드, '레이드보상', '시스템'])); // [v7.1] 50→20 · [v9.83] 20→10
     winRowIdx.forEach(i => rd.getRange(i + 2, 6).setValue('지급완료')); // [v9.34] 지급 성공 뒤에만 마킹 — 실패 시 다음 실행이 재시도(중복은 위 가드가 차단)
     // [v5] 레이드 성공 자동 공지 → 앱 공지 탭에 노출 ([v9.22] bossS 재사용 — bossOfMonth 중복 호출 제거)
     addNotice(ss,
@@ -4260,6 +4675,7 @@ function todayBoard_(ss) {
   if (last - 1 > all.length) bd.getRange(all.length + 2, 1, Math.max(last - 1 - all.length, 1), 5).clearContent();
   if (all.length) writeIfChanged(bd, 2, 1, all);
   updateTeacherInOut_(ss, tz, pf); // [v9.74] 강사 행 오늘출근·오늘퇴근(DD·DE) 10분 갱신 — 출퇴근 버튼 가시성 소스
+  updateParentAbsence_(ss, tz, pf); // [v9.82] 학부모 결석신고 카드(DQ121) — 제출 후 10분 내 ✅ 접수 표시
 
   // [v9.56] 📺 교실 스크린 모드 — 반 TV/프로젝터용 한 장(app_state '교실스크린HTML').
   //   10분 스위프 편승·읽기 3(raid·league_pairs·app_state)·쓰기는 setAppState_(동일값 무기록).
@@ -4366,7 +4782,7 @@ function expandHwBatch() {
       seen.add(sid);
       if (doneToday.has(sid)) { skip++; return; }
       doneToday.add(sid);
-      outRows.push([sid, 10, '숙제완료', by]);
+      outRows.push([sid, PT.숙제, '숙제완료', by]);
     });
     doneIdx.push(i); // 마킹은 아직 하지 않는다 (지급 성공 후로 미룸)
   });
@@ -4435,7 +4851,7 @@ function expandLessonLog_() {
       seen.add(sid);
       if (doneToday.has(sid)) { skip++; return; }
       doneToday.add(sid);
-      outRows.push([sid, 10, '숙제완료', by]);
+      outRows.push([sid, PT.숙제, '숙제완료', by]);
     });
     if (fuel && r[0]) fuelRows.push([r[0], fuel, by, now]);   // 주 1회 dedup은 기존 weeklyFuel_(seen cls|mission)이 처리
     doneIdx.push(i); // 마킹은 지급 성공 뒤로 미룸
@@ -5593,14 +6009,14 @@ function monthlyGameBatch() {
   }
 
   // [v7.1] 월간 정산 — ① 칭호보너스: 조건형만 포인트(경쟁형 1위류는 명예만) ② 출석 1회당 +3P
-  const TITLE_BONUS = { '👑 개근왕': [30, '칭호보너스·개근왕'], '⚔️ 레이드 영웅': [20, '칭호보너스·영웅'] };
+  const TITLE_BONUS = { '👑 개근왕': [PT.개근왕, '칭호보너스·개근왕'], '⚔️ 레이드 영웅': [PT.레이드영웅, '칭호보너스·영웅'] };
   const settleRows = [];
   Object.keys(won).forEach(sid => won[sid].forEach(t => {
     if (TITLE_BONUS[t]) settleRows.push([sid, TITLE_BONUS[t][0], TITLE_BONUS[t][1], '시스템']);
   }));
   students.forEach(r => {
     const d = daysBySid[r[0]] || 0;
-    if (d > 0) settleRows.push([r[0], d * 3, '출석정산 ' + ym + ' (' + d + '회)', '시스템']);
+    if (d > 0) settleRows.push([r[0], d * PT.출석, '출석정산 ' + ym + ' (' + d + '회)', '시스템']);
   });
   if (settleRows.length) appendPoints(ss, settleRows);
 
@@ -6048,6 +6464,36 @@ function migrateConsultV184() {
   return report;
 }
 
+// [v9.84·204] ▶ 1회(유호 문구 검토 후) — 온라인 상담폼에 개인정보·학습데이터 활용 동의 필수 문항 추가 (정본 v18.5).
+//   오프라인 도시에 v3.3 동의·서명 블록(상담통합_실행지_v966 §5)의 온라인 짝 — 지금까지 온라인 폼엔 동의가 0개였다.
+//   설계: ① 시트 헤더는 만들지 않는다 → 응답이 '📝자유서술→노션' blob에 '[문항명] 답'으로 접수 타임스탬프와 함께
+//   보존(=동의 증빙, 노션 상담서술로도 주간 이관). ② 멱등 — 같은 제목이 있으면 스킵(V184와 같은 계급).
+//   ③ 문구는 초안 — 몽골어 병기·법률 수위는 유호님+원어민 검수 몫(음성 동의 조항과 같은 '소급 불가' 계열이라 우선 배치).
+function migrateConsentV185() {
+  const out = [];
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+    const fid = String(getState(st, '상담폼ID').val || '');
+    if (!fid) { const m0 = '⚠️ 상담폼ID 미연결 — createConsultForm ▶ 먼저'; Logger.log(m0); return m0; }
+    const form = FormApp.openById(fid);
+    const TITLE = '개인정보·학습데이터 활용 동의';
+    const hasIt = form.getItems().some(x => String(x.getTitle()).trim() === TITLE);
+    if (hasIt) { out.push('폼: 동의 문항 이미 있음 — 스킵(멱등)'); }
+    else {
+      form.addMultipleChoiceItem().setTitle(TITLE)
+        .setHelpText('수집: 이 설문의 응답(연락처·보호자 정보·학습 배경·목표·취향) / 용도: 상담·반 배정·학습 개인화(응원 문장·퀴즈·성장 리포트의 소재)·학원 운영 통계 / 보관: 재원 기간 및 성장 기록 보존 기간 / 제3자 제공 없음 · 동의 철회는 언제든 학원으로 연락 주세요.')
+        .setChoiceValues(['네, 동의합니다']).setRequired(true);
+      out.push('폼: 동의 문항 추가(필수·맨 끝 배치) — 응답은 자유서술 칸에 타임스탬프와 함께 보존됩니다');
+    }
+    setState(st, '상담동의', 'v18.5'); // 워치독 감시 게이트 — 적용 선언
+  } catch (e) { out.push('⚠️ 폼 접근 실패 — 상담폼ID/권한 확인: ' + e); }
+  const report = '🔏 상담 동의 v18.5 결과\n' + out.join('\n');
+  Logger.log(report);
+  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🔏 상담폼 동의 문항(v18.5)', report);
+  return report;
+}
+
 // [v9.33] 콜드 광고 트래픽용 미니 리드폼 — 이름·연락처·인지채널·관심과정 4문항. 68문항(v18.4) 온보딩 상담폼(createConsultForm)과 완전 별개(그 폼은 건드리지 않음).
 //         광고 CTA는 이 폼만 연결. 응답은 이 스프레드시트의 '리드폼_응답' 시트로 떨어지며, 원장이 이름·연락처·인지채널(→유입경로)을 leads 시트로 수기 이관.
 function createLeadForm() {
@@ -6481,13 +6927,58 @@ function setupStore() {
     ['ST15','store','졸업 포토북 제작','특별','',1000],
     ['ST16','store','싱크 패딩 조끼','의류','',1400],
     ['ST17','store','부모님께 드리는 꽃다발+손편지','가족','',1200],
-    ['ST18','store','싱크 과잠','의류','',1700],
+    // [v9.83] ST18 싱크 과잠 — 스토어에서 하차(판매 중단). 유호 07-31 확정: 포인트로 사는 상품이 아니라
+    //   **재원 12개월 + 누계 하한 = 무료 지급 자격**(JACKET_* 상수 · jacketWatch_). point_logs에 구매 음수 행이
+    //   생기지 않으므로 학생은 과잠을 기다리면서도 간식·굿즈를 마음껏 산다.
     ['ST19','store','가족 외식 상품권','가족','',1500],
     ['ST20','store','어버이날 K-플라워 박스 배달','가족','',1500],
     ['ST21','store','스튜디오 스타일 가족사진 촬영','체험','',2000],
     ['ST22','store','K-아이돌 메이크업+프로필 촬영','체험','',2000]
   ];
   replaceContentType(ss, 'store', items);
+}
+
+/* ===================== [v9.83] 🧥 과잠 자격 워처 ===================== */
+// 매일 아침(morningJobs). 재원 JACKET_TENURE_MONTHS개월 + 누적 획득 JACKET_MIN_POINTS 도달 학생을
+// jacket_grants 시트에 1회만 적재하고 원장에게 지급 명단을 알린다.
+// 멱등: 시트에 이미 있는 학생은 건너뛴다(신규 0명이면 쓰기·메일 모두 없음 = 무비용).
+// 잔액(AQ)은 건드리지 않는다 — 무료 지급이자, 학생이 그동안 간식·굿즈를 산 것과 무관하게 자격이 유지되는 이유.
+function jacketWatch_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return; // 콜드 가드 — 로스터 없으면 판정 자체를 열지 않는다
+  const gr = ensureSheet(ss, 'jacket_grants', ['student_id', '이름', '자격도달일', '재원개월', '누적P', '지급상태']);
+  const already = new Set();
+  if (gr.getLastRow() >= 2) gr.getRange(2, 1, gr.getLastRow() - 1, 1).getValues()
+    .forEach(r => { if (r[0]) already.add(String(r[0]).trim()); });
+
+  const tz = ss.getSpreadsheetTimeZone();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const now = new Date();
+  const rows = pf.getRange(2, 1, pf.getLastRow() - 1, 16).getValues();
+  const out = [];
+  rows.forEach(r => {
+    const sid = String(r[0] || '').trim();
+    if (!sid || r[3] !== 'student' || already.has(sid)) return;
+    if (!r[14]) return;                                   // created_at 없는 행은 재원 개월을 셀 수 없다
+    const joined = asDate_(r[14]);
+    if (!joined || isNaN(joined.getTime())) return;
+    const months = (now.getFullYear() - joined.getFullYear()) * 12 + (now.getMonth() - joined.getMonth())
+      - (now.getDate() < joined.getDate() ? 1 : 0);        // 만 개월(일자 미달이면 1개월 차감)
+    const pts = Number(r[15]) || 0;                       // P열 = 획득 누계(잔액 AQ 아님 — 소비해도 안 깎인다)
+    if (months >= JACKET_TENURE_MONTHS && pts >= JACKET_MIN_POINTS)
+      out.push([sid, r[1] || sid, today, months, pts, '지급대기']);
+  });
+  if (!out.length) return;
+
+  gr.getRange(gr.getLastRow() + 1, 1, out.length, 6).setValues(out);
+  if (quotaOk(1)) {
+    adminMail('[SYNK] 🧥 ' + JACKET_ITEM_NAME + ' 지급 대상 ' + out.length + '명',
+      out.map(o => '· ' + o[1] + ' (' + o[0] + ') — 재원 ' + o[3] + '개월 · 누적 ' + o[4] + 'P').join('\n') +
+      '\n\n조건: 재원 ' + JACKET_TENURE_MONTHS + '개월 이상 + 누적 획득 ' + JACKET_MIN_POINTS + 'P 이상.' +
+      '\n포인트 차감 없는 무료 지급입니다. 실물을 전달한 뒤 jacket_grants 시트의 「지급상태」를 「지급완료」로 바꿔주세요.');
+  }
+  Logger.log('🧥 과잠 자격 신규 ' + out.length + '명');
 }
 
 /* ===================== 시스템 헬스체크 (일요일) ===================== */
@@ -7345,7 +7836,7 @@ function sheetSelfHeal_() {
 }
 
 // [v9.6] 🌍 월드 레이드 — 학원 전체 vs 망각의 대군주 (월간 · 반 보스들의 배후 = 스토리북 최종 보스)
-const WORLD_HP_PER = 100; // 재적 학생 1인당 HP 계수 — 월 평균 개인 획득(~100P+)이면 전원 참여 시 클리어 가능한 '조금 강한' 난이도
+const WORLD_HP_PER = 150; // [v9.83] 100→150. 재적 1인당 HP 계수 — 데미지 = 전교 이번 달 획득 총합이라 지급 단가의 종속 변수(구 100은 "1인당 월 ~100P" 가정이었는데 실측이 그 3~5배였다)
 function worldBossOf(ss) {
   const ct = ss.getSheetByName('contents');
   let w = null;
@@ -7373,7 +7864,7 @@ function worldRaidMonthly_() { // 매월 1일: 지난달 판정·보상 → 이�
     const pfW = ss.getSheetByName('profiles');
     const winRows = [];
     if (win && pfW && pfW.getLastRow() >= 2) pfW.getRange(2, 1, pfW.getLastRow() - 1, 5).getValues()
-      .forEach(pr => { if (pr[0] && pr[3] === 'student') winRows.push([pr[0], 10, '월드레이드', 'SYSTEM']); });
+      .forEach(pr => { if (pr[0] && pr[3] === 'student') winRows.push([pr[0], PT.월드, '월드레이드', 'SYSTEM']); });
     if (winRows.length) appendPoints(ss, winRows);
     // [v9.40] 직접 쓰기 → addNotice(헤더 자동 인식) — 구 스키마 notices에서 열이 어긋나던 결함 수정(leagueSettle_와 동일)
     addNotice(ss,
@@ -7975,6 +8466,23 @@ function systemWatchdog(asText) {
     }
   } catch (e) { add(false, '백업 점검 실패: ' + e); }
 
+  // [v9.82·리뷰 H4] 결석 사전신고 무결성 — preflight에만 두면 사람이 돌릴 때만 걸린다 → 주간 자동 감시 편입.
+  //   다자녀 parent_of 통짜 기록('A,B')이 미출석 제외·강사 브리핑·접수 카드 3곳을 조용히 불발시키는 회귀 감시.
+  try {
+    const anW = ss.getSheetByName('absence_notice');
+    if (anW && anW.getLastRow() >= 2) {
+      const pfW = ss.getSheetByName('profiles');
+      const idsW = {};
+      if (pfW && pfW.getLastRow() >= 2) pfW.getRange(2, 1, pfW.getLastRow() - 1, 1).getValues().forEach(r => { if (r[0]) idsW[String(r[0]).trim()] = 1; });
+      let badW = 0;
+      anW.getRange(2, 1, anW.getLastRow() - 1, 1).getValues().forEach(r => {
+        const v = String(r[0] || '').trim();
+        if (v && (v.indexOf(',') > -1 || !idsW[v])) badW++;
+      });
+      add(badW === 0, '결석 사전신고 student_id ' + (badW ? '불일치 ' + badW + '건 — 폼 "자녀"를 Choice(value=user_id)로 재조립(억제·브리핑·카드 불발 중)' : '전건 유효'));
+    }
+  } catch (e) { add(false, '결석 신고 점검 실패: ' + e); }
+
   // 2) 데일리 로테이션 생존 (멈춤 = 트리거/시간대 문제 신호)
   const props = PropertiesService.getScriptProperties();
   const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
@@ -8113,6 +8621,17 @@ function systemWatchdog(asText) {
       } else if (hasCForm) {
         add(false, '상담 v18.4 마이그레이션 미실행 — 증분 문항 응답이 시트 열 없이 노션이관으로만 쌓입니다. migrateConsultV184 ▶ 1회');
       }
+      // [v9.84] 동의 문항(v18.5) 적용 여부 — AI 인용·노션 이관 확대의 선행 조건(소급 불가 계열)이라 적용 전까지 주간 안내
+      if (hasCForm) {
+        const consentOn = stV ? String(getState(stV, '상담동의').val || '') === 'v18.5' : false;
+        add(consentOn, '상담폼 동의 문항(v18.5): ' + (consentOn ? '적용됨' : '미적용 — 문구 검토 후 migrateConsentV185 ▶ 1회'));
+      }
+      // [v9.84] 상담 디테일 착지 열(DT124~DX128) 생존 — syncProfiles 배선의 도착지. 헤더 개명·열 삭제 시 폴백·페이스라인이 조용히 꺼진다
+      try {
+        const pfDT = ss.getSheetByName('profiles');
+        const dtOk = pfDT && pfDT.getMaxColumns() >= 128 && String(pfDT.getRange('DT1').getValue()) === '상담취향' && String(pfDT.getRange('DX1').getValue()) === '페이스라인';
+        add(!!dtOk, '상담 디테일 열(DT124~DX128): ' + (dtOk ? '정상' : '유실/미생성 — syncProfiles 1회 실행(첫 동기화 전이면 정상)'));
+      } catch (eDT) { add(false, '상담 디테일 열 점검 실패: ' + eDT); }
     }
   } catch (e) { add(false, '상담시트 스키마 점검 실패 — CONSULT_SHEET_ID/권한 확인: ' + e); }
 
@@ -9179,7 +9698,7 @@ function aiStudents_(ss) {
   const pf = ss.getSheetByName('profiles');
   const list = [];
   if (!pf || pf.getLastRow() < 2) return list;
-  const w = Math.min(105, pf.getMaxColumns());
+  const w = Math.min(128, pf.getMaxColumns()); // [v9.84] 상담 디테일(DT124~DX128)까지 — 신규생 콜드스타트 폴백 재료
   pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues().forEach(r => {
     if (!r[0] || r[3] !== 'student' || String(r[0]).indexOf('DEMO-') === 0) return;
     list.push({
@@ -9187,7 +9706,12 @@ function aiStudents_(ss) {
       created: r[14] || '', total: Number(r[15]) || 0, stage: String(r[18] || ''), stk: Number(r[20]) || 0,
       pEmail: String(r[25] || '').trim(), vision: String(r[52] || '').trim(),
       lv: w >= 67 ? (Number(r[66]) || 0) : 0, dream: w >= 80 ? String(r[79] || '').trim() : '',
-      fav: w >= 105 ? String(r[104] || '').trim() : ''
+      fav: w >= 105 ? String(r[104] || '').trim() : '',
+      // [v9.84] 상담 폴백 4종 — 학생 소유 열(dream CB80·fav DA105)이 비어 있을 때만 소비층이 대신 쓴다(앱 입력이 항상 이긴다)
+      taste: w >= 124 ? String(r[123] || '').trim() : '',   // DT124 상담취향(선호그룹·인생드라마·취미)
+      cGoal: w >= 125 ? String(r[124] || '').trim() : '',   // DU125 상담목표(TOPIK 급수·기한)
+      topik0: w >= 126 ? String(r[125] || '').trim() : '',  // DV126 입학TOPIK(0점 좌표)
+      pain: w >= 127 ? String(r[126] || '').trim() : ''     // DW127 상담고충(입학 자기보고)
     });
   });
   return list;
@@ -9268,9 +9792,15 @@ function aiStudioBatch_() {
     };
     for (let off = 0; off < stus.length && can(); off += AI_DAILY_BATCH_SIZE) {
       const chunk = stus.slice(off, off + AI_DAILY_BATCH_SIZE);
-      const userMsg = chunk.map((s, i) => i + '. ' + s.n + ' | 급수 ' + (s.lv || '미정') +
-        ' | 약점: ' + ((weak[s.id] || []).slice(-2).join(' / ') || '기록 없음') +
-        (s.fav ? ' | 최애: ' + s.fav : '') + (s.dream ? ' | 목표: ' + s.dream.slice(0, 30) : '')).join('\n');
+      // [v9.84] 콜드스타트 폴백 사슬 — 최애=학생 자기선언(DA105)‖상담취향, 목표=드림(CB80)‖상담목표‖핵심비전,
+      //   약점=student_errors‖상담 자기보고(입학 첫 주라 앱 기록이 0이어도 상담 답으로 첫날부터 개인화)
+      const userMsg = chunk.map((s, i) => {
+        const fv = s.fav || s.taste, gl = s.dream || s.cGoal || s.vision;
+        const wk = (weak[s.id] || []).slice(-2).join(' / ') || (s.pain ? '입학 자기보고: ' + s.pain.slice(0, 40) : '기록 없음');
+        return i + '. ' + s.n + ' | 급수 ' + (s.lv || '미정') +
+          ' | 약점: ' + wk +
+          (fv ? ' | 최애: ' + fv.slice(0, 40) : '') + (gl ? ' | 목표: ' + gl.slice(0, 30) : '');
+      }).join('\n');
       try {
         calls++;
         const out = aiCall_(apiKey,
@@ -9390,7 +9920,7 @@ function welcomeStoryBatch_() {
     if (!quotaOk(1)) { remain.push(id); return; }
     let story = null;
     if (apiKey) story = aiText_('SYNK LAB(몽골 울란바토르, 뇌과학 기반 게임화 한국어 학원)의 웰컴 스토리 작가. 신규 학생 "' + s.n + '"' +
-      (s.dream ? '(목표: ' + s.dream.slice(0, 40) + ')' : '') + (s.vision ? '(비전 메모: ' + s.vision.slice(0, 40) + ')' : '') +
+      ((s.dream || s.cGoal) ? '(목표: ' + (s.dream || s.cGoal).slice(0, 40) + ')' : '') + (s.vision ? '(비전 메모: ' + s.vision.slice(0, 40) + ')' : '') + // [v9.84] 신규생은 드림 입력 전 — 상담목표 폴백
       '의 세계관 입장 스토리를 5~7문장 한국어로. 시냅스 크루로 임명되는 서사, 성장 파트너와의 첫 만남 예고("몬스터"라는 단어는 쓰지 않기), 따뜻하고 과장 없는 톤. 인사말·서명 없이 본문만.', 1024); // [v9.74] 학부모 수신 편지 — 몬스터→성장 파트너
     if (!story) story = s.n + ' 크루의 시냅스 여정이 시작됩니다. 첫 출석의 순간, 성장 파트너가 깨어나고 매일의 기록이 이야기가 됩니다. ' +
       'SYNK LAB의 모든 스토리는 실제 기록으로 만들어집니다 — 이제 주인공은 ' + s.n + ' 입니다.';
@@ -9465,7 +9995,7 @@ function futureLetterBatch_() {
   if (ledger.getLastRow() >= 2) ledger.getRange(2, 1, ledger.getLastRow() - 1, 2).getValues().forEach(r => { if (String(r[0]) === '편지') sentIds.add(String(r[1])); });
   const targets = aiStudents_(ss).filter(s => {
     if (sentIds.has(s.id) || !s.pEmail) return false;
-    const goal = s.dream || s.vision;
+    const goal = s.dream || s.cGoal || s.vision; // [v9.84] 상담목표(TOPIK 급수·기한)가 비전 카테고리보다 구체 — 인용 재료 승격
     if (!goal || !s.created) return false;
     const d = Math.floor((Date.now() - new Date(s.created).getTime()) / 86400000);
     return d >= 80 && d <= 110; // 재등록 결정 시점(3개월) 창
@@ -9475,11 +10005,13 @@ function futureLetterBatch_() {
   let sent = 0;
   targets.slice(0, 20).forEach(s => {
     if (!quotaOk(1)) return;
-    const goal = s.dream || s.vision;
+    const goal = s.dream || s.cGoal || s.vision; // [v9.84] 상담목표(TOPIK 급수·기한)가 비전 카테고리보다 구체 — 인용 재료 승격
     let letter = null;
     if (apiKey) letter = aiText_('SYNK LAB의 "미래의 나" 편지 작가. 3개월 전 입학하며 목표를 적은 학생에게, 그 목표를 인용하며 실제 데이터로 성장을 비추는 편지를 8~10문장 한국어로. ' +
       '규칙: "달성/미달" 판정 금지 — "얼마나 왔는지"만. 다정하되 과장 금지. 인사·서명 없이 본문만.\n' +
-      '학생: ' + s.n + '\n입학 때 목표: "' + goal.slice(0, 60) + '"\n누적 포인트: ' + s.total + 'P\n성장 파트너 단계: ' + (s.stage || '진행 중') + '\n연속 출석: ' + s.stk + '일', 1536); // [v9.74] 학부모 편지 — 몬스터→성장 파트너
+      '학생: ' + s.n + '\n입학 때 목표: "' + goal.slice(0, 60) + '"' +
+      (s.topik0 ? '\n입학 때 TOPIK 실측: ' + s.topik0 + (s.lv ? ' → 지금 앱 급수 ' + s.lv + '급' : '') + ' (이 대조를 성장의 증거로 한 문장 녹일 것 — 급수 체계가 달라 직접 비교 단정은 금지)' : '') + // [v9.84·한수더] 입학 시점 실측 = 0점 좌표
+      '\n누적 포인트: ' + s.total + 'P\n성장 파트너 단계: ' + (s.stage || '진행 중') + '\n연속 출석: ' + s.stk + '일', 1536); // [v9.74] 학부모 편지 — 몬스터→성장 파트너
     if (!letter) letter = '3개월 전, ' + s.n + '은(는) 이렇게 적었습니다 — "' + goal.slice(0, 60) + '"\n\n그날부터 지금까지 누적 ' + s.total + 'P, 성장 파트너는 ' +
       (s.stage || '성장 중') + ' 단계까지 왔습니다. 목표를 향해 걸어온 거리는 기록이 증명합니다. 다음 3개월의 이야기가 더 기대되는 이유입니다.';
     MailApp.sendEmail(s.pEmail, '[SYNK] 💌 ' + s.n + '에게 도착한 편지 — 3개월 전의 나로부터',
@@ -11513,6 +12045,36 @@ function notionHeaders_() {
   return { 'Authorization': 'Bearer ' + token, 'Notion-Version': NOTION_VER, 'Content-Type': 'application/json' };
 }
 
+// [v9.84·④] 상담시트 자유서술 blob → 학생ID 맵. '📝자유서술→노션' 열이 이름만 약속하고 수동이던 것의 자동화 재료.
+//   서술이 있는 행만·학생ID 중복은 첫 행 우선. 실패는 호출부에서 격리(서술만 생략, 본 동기화는 계속).
+function consultNarrativeMap_() {
+  const map = {};
+  const src = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+  if (!src || src.getLastRow() < 3) return map;
+  const lastC = Math.max(62, src.getLastColumn());
+  const hdr = src.getRange(2, 1, 1, lastC).getValues()[0].map(h => String(h || '').trim());
+  const bi = hdr.indexOf('📝자유서술→노션');
+  if (bi === -1) return map;
+  src.getRange(3, 1, src.getLastRow() - 2, lastC).getValues().forEach(r => {
+    const sid = String(r[59] || '').trim(), t = String(r[bi] || '').trim();
+    if (sid && t && !map[sid]) map[sid] = t;
+  });
+  return map;
+}
+
+// [v9.84·④] 크루 DB에 rich_text 속성 보장 — 이미 있으면 no-op(200), 타입 충돌 등 실패면 false(서술만 생략).
+function notionEnsureProp_(name) {
+  try {
+    const props = {}; props[name] = { rich_text: {} };
+    const resp = UrlFetchApp.fetch('https://api.notion.com/v1/databases/' + NOTION_DB_ID, {
+      method: 'patch', headers: notionHeaders_(), payload: JSON.stringify({ properties: props }), muteHttpExceptions: true
+    });
+    if (resp.getResponseCode() === 200) return true;
+    Logger.log('노션 속성 보장 실패(' + name + '): ' + resp.getContentText().substring(0, 200));
+    return false;
+  } catch (e) { Logger.log('노션 속성 보장 오류(' + name + '): ' + e); return false; }
+}
+
 // 노션 크루 DB의 기존 페이지: 학생ID → pageId 맵 (페이지네이션)
 function notionExistingMap_() {
   const map = {};
@@ -11550,6 +12112,12 @@ function syncToNotion_() {
     return;
   }
 
+  // [v9.84·④] 상담 자유서술(다짐·3-5년 목표·고충·선택이유…) 주간 자동 이관 — 정성+정량 허브 완성.
+  //   맵 로드·속성 보장 실패는 서술만 생략(본 동기화 계속) — 상담시트 장애가 노션 정량 동기화를 못 끊는다.
+  let consultNarr = {};
+  try { consultNarr = consultNarrativeMap_(); } catch (e) { Logger.log('상담서술 로드 실패(정량만 동기화): ' + e); }
+  const narrOn = Object.keys(consultNarr).length ? notionEnsureProp_('상담서술') : false;
+
   let created = 0, updated = 0, failed = 0;
   rows.forEach(r => {
     const id = String(r[0] || '');
@@ -11574,6 +12142,7 @@ function syncToNotion_() {
       '앱갱신일': { date: { start: today } }
     };
     if (level != null) properties['현재급수'] = { number: level };
+    if (narrOn && consultNarr[id]) properties['상담서술'] = { rich_text: [{ text: { content: String(consultNarr[id]).substring(0, 1900) } }] }; // [v9.84·④]
     try {
       const url = existing[id] ? 'https://api.notion.com/v1/pages/' + existing[id] : 'https://api.notion.com/v1/pages';
       const payload = existing[id] ? { properties: properties } : { parent: { database_id: NOTION_DB_ID }, properties: properties };
@@ -11637,7 +12206,8 @@ const SHEET_SKELETON = [
     ['synk_cards', ['월','student_id','카드HTML']],
     ['world_raid', ['월','보스명','HP','누적데미지','상태']],
     ['league_pairs', ['week','반A','반B','상태','결과']],
-    ['academic_log', ['log_id','student_id','날짜','유형','값','비고','입력자']]
+    ['academic_log', ['log_id','student_id','날짜','유형','값','비고','입력자']],
+    ['jacket_grants', ['student_id','이름','자격도달일','재원개월','누적P','지급상태']] // [v9.83] 🧥 과잠 자격 대장
   ];
 
 /* ===================== [v9.43] 🎴 몬스터·보스 상세 카드 — "눌렀을 때 우와" =====================
@@ -12053,7 +12623,7 @@ function demoRaidClearNow() {
         const per = Math.ceil(lack / members.length);
         appendPoints(ss, members.map(sid => [sid, per, '이벤트·레이드총력전', 'SYSTEM']));
       }
-      appendPoints(ss, members.map(sid => [sid, 20, '레이드보상', '시스템']));
+      appendPoints(ss, members.map(sid => [sid, PT.레이드, '레이드보상', '시스템']));
       rd.getRange(i + 2, 4, 1, 3).setValues([[Math.max(target, got + (lack || 0)), '달성 🎉', '지급완료']]);
       const bossD = bossOfMonth(ss, Number(Utilities.formatDate(now, tz, 'M')));
       const bNm = bossD ? bossD.name : '이달의 보스';
@@ -12073,7 +12643,7 @@ function demoRaidClearNow() {
       const hp = Number(r[2]) || 0;
       wr.getRange(i + 2, 4, 1, 2).setValues([[Math.max(hp, Number(r[3]) || 0), '격파']]);
       const demoAll = Object.keys(demoByCls).reduce((a, c) => a.concat(demoByCls[c]), []);
-      if (demoAll.length) appendPoints(ss, demoAll.map(sid => [sid, 10, '월드레이드', 'SYSTEM']));
+      if (demoAll.length) appendPoints(ss, demoAll.map(sid => [sid, PT.월드, '월드레이드', 'SYSTEM']));
       const wbD = worldBossOf(ss);
       addNotice(ss, '🌍 월드 레이드 대승리! ' + wbD.name + ' 격파!', '"' + wbD.win + '" 전교 크루의 힘이 대군주를 쓰러뜨렸습니다! (데모 시연)');
       L.push('✓ 월드 레이드 격파(이번 달 행 확정 — clearDemoData가 원복)');
@@ -12394,6 +12964,21 @@ function preflightGlide() {
   else if (cnt.student) ok('학생 전원 반 배정됨');
   if (noClassTea.length) warn('담당 반 없는 강사(수업 브리핑·미등원 메일 라우팅 불가): ' + noClassTea.join(', ') + ' → profiles E열(class_name)에 담당 반 직접 입력(여러 반은 쉼표: 정규반1,정규반2)');
   if (noParentOf.length) warn('자녀 미연결 학부모("우리 아이" 탭이 빔): ' + noParentOf.join(', ') + ' → profiles J열(parent_of)에 자녀 user_id 직접 입력(예: SYNK-001)');
+  { // [v9.82] 결석 사전신고 무결성 — student_id가 profiles와 정확히 일치해야 미출석 제외·강사 브리핑·접수 카드가 작동.
+    //   다자녀 parent_of('A,B')가 통째로 기록되면 엔진 3곳이 조용히 불발하던 실결함의 회귀 장치(폼은 자녀 Choice로 재조립).
+    const anP = ss.getSheetByName('absence_notice');
+    if (anP && anP.getLastRow() >= 2) {
+      const idsP = {};
+      if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 1).getValues().forEach(r => { if (r[0]) idsP[String(r[0]).trim()] = 1; });
+      const badAb = [];
+      anP.getRange(2, 1, anP.getLastRow() - 1, 1).getValues().forEach((r, i) => {
+        const v = String(r[0] || '').trim();
+        if (v && (v.indexOf(',') > -1 || !idsP[v])) badAb.push('행' + (i + 2) + '(' + v.slice(0, 24) + ')');
+      });
+      if (badAb.length) warn('결석 신고 student_id 불일치 ' + badAb.length + '건 — 엔진이 무시함(알림 억제·브리핑·카드 전부 불발). 폼 "자녀"를 Choice(value=user_id)로 재조립: ' + badAb.slice(0, 5).join(', '));
+      else ok('결석 사전신고 student_id 전건 유효');
+    }
+  }
   // [v9.40] 잔액 음수 검사 — 구매 버튼에 잔액 조건이 없으면 마이너스 구매가 가능하다(2026-07-19 실측: SYNK-001 잔액 -35)
   if (pf && pf.getLastRow() >= 2 && pf.getMaxColumns() >= 43) {
     const negBal = [];
@@ -12556,6 +13141,7 @@ function morningJobs() {   // 매일 07시
   safeRun('teacherMemoFormSync', function () { const ssTm = SpreadsheetApp.getActiveSpreadsheet(); syncTeacherMemoForm_(ssTm, ensureSheet(ssTm, 'app_state', ['key', 'value'])); }); // [v9.64] 연습 포인트 폼을 코드 정본에 매일 동기화 — 로스터(강사·반) 변화가 드롭다운에 자동 반영(폼 없으면 즉시 -1 return, 무비용)
   safeRun('academicFormSync', function () { const ssAf = SpreadsheetApp.getActiveSpreadsheet(); syncAcademicForm_(ssAf, ensureSheet(ssAf, 'app_state', ['key', 'value'])); }); // [v9.74] 학업 기록 폼 동기화 — 같은 계보(폼 없으면 -1 return, 무비용)
   safeRun('expiryDaily', function () { MJ_expiryDaily_(); }); // [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 비어 있으면 무비용(클로저 = 만족도팩 누락에도 morningJobs 생존)
+  safeRun('jacketWatch', jacketWatch_); // [v9.83] 🧥 과잠 자격(재원 12개월+누계) 신규 도달자 감지 — 도달 0명이면 시트·메일 모두 무동작
 }
 
 function nightJobs() {     // 매일 22시 — 수업 종료 후
