@@ -27,6 +27,18 @@ function assertOrder(text, markers) {
   });
 }
 
+/* [v9.99] 조 편성·발화 상수 실값 로드 — 테스트가 상수를 하드코딩하면 정본이 바뀔 때 검사만 조용히 낡는다.
+ *   상수 블록(GROUP_COUNT ~ PAIR_PATTERNS)을 잘라 그대로 평가해 실제 값을 쓴다. */
+function groupConsts() {
+  const s = code.indexOf('const GROUP_COUNT = 4;');
+  assert.notEqual(s, -1, '조 편성 상수 블록을 찾지 못함');
+  const e = code.indexOf('// GROUPS_HEADERS는 SHEET_SKELETON보다', s);
+  assert.notEqual(e, -1, '조 편성 상수 블록 끝 표식을 찾지 못함');
+  return new Function(`${code.slice(s, e)}
+    return { GROUP_COUNT, ROLE_NAMES, ROLE_ICONS, ROLE_TALK, ROLE_DUTY, SEASON_WEEKS,
+             TALK_PLAN_MIN, TALK_ROUNDS, FOCUS_START_WEEK, PAIR_PATTERNS };`)();
+}
+
 function loadFunction(startMarker, endMarker, functionName, dependencies) {
   const source = section(startMarker, endMarker);
   const names = Object.keys(dependencies);
@@ -392,7 +404,7 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
   const len2 = code.match(/const SHARED2_COL_HEADERS = \[([\s\S]*?)\];/)[1].split(',').filter(s => s.trim()).length;
   const s3 = Number(code.match(/const SHARED3_COL_START = (\d+)/)[1]); // [v9.82] 3차 블록(출퇴근·결석 카드)
   const len3 = code.match(/const SHARED3_COL_HEADERS = \[([\s\S]*?)\];/)[1].split(',').filter(s => s.trim()).length;
-  const reserved = { 105: '최애(v9.50·A4, 학생 Set Column)', 106: '목소리폼URL(교재연동)', 107: '목소리성장카드(교재연동)', 108: '필살기노트(교재연동)', 119: '랭킹보드HTML(v9.81, calcAll 리그 카드)' };
+  const reserved = { 105: '최애(v9.50·A4, 학생 Set Column)', 106: '목소리폼URL(교재연동)', 107: '목소리성장카드(교재연동)', 108: '필살기노트(교재연동)', 119: '랭킹보드HTML(v9.81, calcAll 리그 카드)', 129: '오늘의만남(v9.99, calcAll 소그룹 3라운드 짝)' };
   Object.keys(reserved).forEach(cs => {
     const c = Number(cs);
     assert.ok(!(c >= s1 && c <= s1 + len1 - 1) && !(c >= s2 && c <= s2 + len2 - 1) && !(c >= s3 && c <= s3 + len3 - 1),
@@ -401,6 +413,7 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
   // 선점 주인들이 실제로 그 열을 쓰는지(레지스트리의 근거) — 코드가 바뀌면 이 목록도 갱신해야 한다
   assert.ok(code.includes("pf.getRange('DA1').getValue()) !== '최애'"), 'DA105 최애 보장 코드가 사라짐 — 레지스트리 갱신 필요');
   assert.ok(code.includes("pf.getRange('DO1').getValue()) !== '랭킹보드HTML'"), 'DO119 랭킹보드 보장 코드가 사라짐 — 레지스트리 갱신 필요');
+  assert.ok(code.includes("pf.getRange('DY1').getValue()) !== '오늘의만남'"), 'DY129 오늘의만남 보장 코드가 사라짐 — 레지스트리 갱신 필요'); // [v9.99]
   const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
   ['DB1', 'DC1', 'DD1'].forEach(cell => assert.ok(tb.includes("getRange('" + cell + "')"), '교재연동.js ' + cell + ' 보장 코드가 사라짐 — 레지스트리 갱신 필요'));
 });
@@ -1000,7 +1013,8 @@ test('[v9.86] 수업준비 팩 — 결석 예정 HUD·조 편성 절·제출 현
   const det = section('function buildClassHudDetail_(', 'function buildGroupHud_(');
   assert.ok(det.includes('groupHtml'), '반 상세에 조 편성 절 인자가 없다');
   const gh = loadFunction('function buildGroupHud_(', 'function groupHudsByClass_(', 'buildGroupHud_',
-    { escHtml_: (s) => String(s == null ? '' : s), CARD_FONT: '', HUD_CARD: '', HUD_LABEL: '', hudChip_: (s) => String(s) });
+    Object.assign({ escHtml_: (s) => String(s == null ? '' : s), CARD_FONT: '', HUD_CARD: '', HUD_LABEL: '', hudChip_: (s) => String(s) },
+      groupConsts())); // [v9.99] 상수는 하드코딩하지 않고 Code.js 정본에서 실값을 뽑아 주입
   const gHtml = gh('', { lessonNo: 7, week: 2, confirmed: '확정', groups: [[{ name: '바야르', seat: 0, role: '발표', icon: '📢' }, { name: '사라', seat: 1, role: '진행', icon: '🎯' }]] });
   assert.ok(gHtml.includes('조 편성') && gHtml.includes('오늘 발표') && gHtml.includes('바야르'), '조 편성 절 렌더 누락(발표 콜아웃 포함)');
   assert.equal(gh('', { lessonNo: 0, week: 0, groups: [] }), '', '편성 전엔 절이 생략돼야 한다(도입 전 잔소리 방지)');
