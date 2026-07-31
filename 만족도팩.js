@@ -437,6 +437,7 @@ function createSurveyForm() {
   const form = FormApp.create('SYNK — Сарын сэтгэл ханамжийн асуулга (월간 만족도 설문)')
     .setDescription('1 минут л зарцуулагдана 🙏 Таны санал бидэнд маш чухал.\n(1분이면 됩니다 — 보내주신 의견은 다음 달 수업에 바로 반영합니다.)')
     .setCollectEmail(false);
+  setState(ensureSheet(ss, 'app_state', ['key', 'value']), '설문폼ID', form.getId()); // [v9.94] 생성 즉시 기록 — 뒤 단계(응답 시트 연결)에서 타임아웃돼도 앱이 이 폼을 잃지 않는다
   form.addTextItem().setTitle('학생ID').setRequired(true).setHelpText('Аппаас нээсэн бол аль хэдийн бөглөгдсөн байгаа (앱에서 열었다면 자동으로 채워져 있어요)');
   form.addScaleItem().setTitle('Энэ сарын хичээл хүүхдэд тань хэр тус болов? (이번 달 수업이 얼마나 도움이 되었나요?)')
     .setBounds(1, 5).setLabels('Огт үгүй (전혀)', 'Маш их (매우)').setRequired(true);
