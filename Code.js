@@ -756,7 +756,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.88'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고 · [v9.77] profiles 무결성 3면 감시 — Glide 상세 화면 Edit/Add 잔재 실측(07-28) 후속: 유령 행(user_id 공란, 기존 !r[0] 스킵의 사각)·user_id 중복·무효 role을 nightJobs(매일·이상 시에만 메일·동일 내용 dedup)+주간 워치독+preflight 3면에서 자동 발각 · [v9.78] 강사 반 HUD 리디자인 — 유호 07-28 "반 탭이 만들다 만 느낌" → 낱장 줄글 4카드(v9.15)를 SYNK CLASS HUD로 격상: 14열 반상세HTML = 헤더 스탯 스트립(미션 n건·루틴 k/4·보스 HP) + 미션(유형 색 필·명단 캡)·루틴(게이지+2×2)·레이드(사정권 콜아웃 흡수)·왕관(미수혜 pill 후보 명단), Glide 기바인딩이라 클릭 0 적용·9~13열 낱장도 동일 디자인(설계=ban-tab-redesign 워크플로 A/B 판정) · [v9.79] 미니멀 스킨 — 유호 "훨씬 트렌디하고 미니멀하게, 뼈대 같은 느낌" → 실렌더 A/B(M1 에어리 라이트 vs M2 다크 히어로) 판정 M2 채택: 유색 보더 전면 폐지(흰 카드+이중 소프트 섀도)·타이포 3단(그레이 라벨→잉크 빅넘버→본문)·색 3계 절제(블루·앰버·그린)·이모지 카드당 ≤1·미션 도트 3톤·상세 헤더=딥 네이비 다크 히어로(블루 radial glow) · [v9.80] 조 편성·역할 로테이션 — 강사 수업 규칙 v3.0 §11 배선 대기 1순위(유호 07-31 "앱 자동 제안" 확정): groups 시트(시즌×반 1벌·실력 스네이크+말수·학교 계층 내 교환)·역할 4개 차시 순환·2인 짝 3조합·발표 순번(로테이션이 8주 전원 2회를 자동 보장)을 앱이 짠다. 역할·짝·발표자는 저장하지 않고 차시 번호에서 계산 — 매 차시 쓰기 0(월 500건 한도 불변). 강사 브리핑에 조 편성표 동봉 · [v9.81] 랭킹·반 목록 UI 격상(유호 07-31 지적 3건) — ①학생 랭킹 탭: profiles DO119 랭킹보드HTML 신설(SYNK LEAGUE 다크 포디움+순위 리스트+내 순위 하이라이트+추격 넛지 "nP=숙제 k번", rankMap과 동일 소스) ②강사 반 목록: class_stats 15열 반카드요약(👥 n명·반몬스터·보스 상태)+16열 반몬스터이미지 — Glide Collection을 Card 스타일로 ③반 상세 HUD 헤더에 👥 총원 필(stuN 기전달이라 조립 0) · classMonster {name,img}화·유령 클리어 14→16열 · [v9.82] 출퇴근·결석 카드(유호 07-31 지시 10·12번) — ①강사 출퇴근HTML(DP120, 3차 블록 SHARED3 — DO119 랭킹보드 선점 회피): 오늘의 근무 히어로(출근/퇴근 빅넘버·상태 필 3단·퇴근 후 근무시간 확정값)+이번 주 월~토 스트립(과거 무기록일은 무채색 — 개인 시간표 부재로 결근 단정 금지)+요일 출근 치어 재사용(CH11~17 소생), 10분 스위프 소유·값 변경시만 기입(경과시간류 금지 = update 순증 0, 자정 리셋은 기존 출퇴근 리셋과 같은 묶음) ②학부모 결석신고HTML(DQ121): 접수 확인 ✅(v9.34 보류 P-ACK 상환)·오늘/예정/지난 3태·다음 수업일 3칩(classDowOk_ 재사용)·작동 3줄 몽골어 병기(원어민 검수 큐), 출석 달력과 같은 껍질 ③결석 폼 "자녀"를 Choice(value=user_id)로 재조립 지시 — 다자녀 parent_of 통짜 기록이 미출석 제외·브리핑·오늘의 반 3곳에서 조용히 불발되던 것 근본 수리 + preflight absence_notice student_id 무결성 검사(쉼표·미매칭) ④학부모 전수 점검 문서 docs/부모탭_점검_2026-07-31.md(P-ACK·다자녀 🔴 2건 = 이번 수리, 문의 답변 루프·다이제스트 몽골어 🟡 2건 = 제안 대기) · [v9.83] 💰 포인트 경제 재설계(유호 07-31 지시 23번 "포인트가 너무 후하다") — ①지급 단가를 PT 상수 단일 소스로 모으고 전면 ÷2(숙제 10→5·출석 3→2·첨삭확인 5→2·왕관 10→5·레이드 20→10·리그 5→3·월드 10→5·개근왕 30→15·영웅 20→10·생일 20→10): 설계 앵커 "성실 월 ~280P" 이후 지급 경로 6개가 늘도록 아무도 총합을 안 봐서 실측 572P/월 = 정확히 2배 인플레였고, 그 탓에 과잠 3.0개월·싱크마스터 진화 4.2개월(의도 9개월)로 스토어·진화·보스 세 경제가 동시에 무너져 있던 것을 스토어 가격 무수정으로 한 번에 복귀(열심히 291P·보통 196P) ②🧥 과잠은 스토어 하차 → 재원 12개월+누계 1,200P 무료 지급 자격으로(jacketWatch_·jacket_grants, 잔액 무차감이라 간식·굿즈를 사면서도 시계가 돌고 수업일 1/5인 주말반도 같은 개월에 도달) ③목표진행 카드(BZ78)를 도착 예정일로 — 촤 없으면 과잠 진행 폴백 ④보스 HP를 RAID_HP_PER 상수화 재보정(평일 28→34·주말 18→14·WORLD_HP_PER 100→150, 지급의 종속 변수라 함께 움직인다) · [v9.84] 🔌 상담 배선 팩(유호 07-31 승인: 진단 5건+도전안+한수더 전부) — ①상담 5필드→DT124~DX128(취향·목표·입학TOPIK·고충·페이스라인, 읽기 폭 동적+헤더 이름 해석+점거 가드) ②AI 콜드스타트 폴백 사슬 4곳 통일(최애=DA105‖상담취향·목표=드림‖상담목표‖비전·약점=기록‖입학 자기보고 — 학생 소유 열은 읽기만) ③여정카드 페이스라인(도전안: 목표 기한 역산 남은 주, 보장 표현 0)+미래편지 입학TOPIK 0점 좌표(한수더) ④자유서술 blob→노션 상담서술 주간 자동 이관(속성 자동 보장·장애 격리) ⑤KPI 인지채널별 등록/상담 분해(시트 스키마 불변) ⑥migrateConsentV185 ▶1회 — 온라인 폼 동의 문항(v18.5, 문구 유호 검토 전제)+워치독 감시 2종. 설계노트 199~204·테스트 7종 · [v9.85] 리그 카드 리뷰 반영(v9.81 독립 리뷰 P1+P2) — ①단상 숫자=실순위(동점 동순위, 구현은 배열 위치를 찍어 R열과 어긋났다)+동점 1위 왕좌 문구(구 mineIdx===0) ②넛지 환산 단가를 PT.숙제 주입으로(v9.83 반값 개정 자동 추종, meta.hwP)+6번 이상은 "사정권" 문구 캡 ③동점 추격 문구를 이름 기준으로(같은 순위끼리 "n위와 동점"은 자기 언급) ④콜드 리스트 문구 분기(없는 TOP3 전제 제거) ⑤리그 이름 폴백 '이름 미등록'(전교 노출면 user_id 차단) ⑥월 라벨 시트 tz 통일 ⑦class_stats 유령 클리어 앞 폭 보장(좁은 시트+반 감소 조합 크래시 경로) · [v9.86] 수업준비 팩(유호 07-31 "1,2,3,4 전부 진행" — 9번 아이디어 4건 전량 채택) — A 오늘·내일 결석 예정을 HUD 미션 절로(preAbsByCls, 사전신고→강사 화면 관통·수업 12분 전 메일에만 있던 것) · B 조 편성 절을 반 상세 HUD에 상설(buildGroupHud_+groupHudsByClass_ 1회 읽기 배치 — 메일 조 편성표와 동일 원천 roleOfSeat_·발표자 앰버 콜아웃·임시 조 필, 편성 전엔 절 생략) · C 수업준비 카드에 제출 현황(검사 동선) 절 — hw_feedback 기존 읽기에 편승(subT)·담당 반별 n/전체·미제출 5명 캡·강사별 카드 분화(prepArgsT) · D 주간 교안 초안 자동 생성(weeklyJobs 월 07시 편승·통합 리포트 섹션으로 링크 보고) — 양식 v2.0 14항 틀에 앱이 아는 칸만 채움(기간·인원·담당·이월 '더연습' 태그·3주차부터 오류 톱10 실측·4주차부터 지명 프록시(발화 실측 전 포인트 무활동 대체 명시)·조 편성표·과업 은행 20종 차시×주차 로테이션), Google Doc 멱등 생성(같은 이름 있으면 보존 — 강사 편집 불가침)·SYNK_교안초안 폴더·콘텐츠는 contents_교안.js 신설(파일 차선 규약·filePushOrder 편입) ⚠DocumentApp 최초 사용 = 배포 후 아무 함수 ▶ 1회 권한 재승인 필요(승인 전 트리거 실패 창 — 보고에 0단계 명시) · [v9.87] 강사 지표 축 교정 — teacher_stats A열이 '강사' 헤더에 실은 반명을 담고 있었다(학생 행 class_name을 강사로 오독). teacherEmailMap_.byClass 조인으로 반명→담당 강사 변환, 집계 정의 확정(공동 담당=각자 온전 귀속·다반 강사=1행 합산·왕관 편중%만 반 단위 최댓값·매핑 없는 반='(미지정) 반명'으로 노출), 담당반 9열 추가로 조인 결과 감사 가능화, 헤더 정본 상수(TEACHER_STATS_HEADERS)를 골격·실사용이 공유해 v9.40 드리프트 재발 차단 · [v9.88] 숙제·퀴즈 문항 자기완결 팩(유호 07-31 "한국인인 나조차 이해 안 감") — ①HW 41문항 "오늘 단어/문법/문장/대화문/표현/문형"→"오늘 배운 X"(한·몽 41쌍 동시 치환, 몽골어는 기존 HW101 Өнөөдөр сурсан·HW201 Өнөөдөр үзсэн 패턴으로의 기계 치환만 — 신규 작문 0) ②QZ22 문장 붕괴 수리 — 「밥 먹었어?」 따옴표 복원(몽골어판은 원래 완전문이었고 한국어 원문만 조각) ③카드 문항 본문 한·몽 병기 배선 — v9.70이 유형·검사포인트만 병기하고 정작 본문은 한국어뿐이던 것: 숙제=게시 숙제ID 매칭, 퀴즈=오늘의퀴즈ID_초급 신설+표시문항 동일성 검사(quizRaw===begQ9, 중·고급 문항에 초급 번역 오결합 차단·개인AI퀴즈 병기 없음) ④숙제 카드 제출 안내를 실제 버튼 라벨과 정합(✏️ 숙제) ⑤(코드 밖) Glide 학생 홈 버튼 3종 라벨 압축 ✅ 출석·✏️ 숙제·🎙 목소리로 한 줄 정렬 — 07-31 원격 실측·자동저장 완료. ▶ 필요: setupHomework+setupQuiz(문항 시트 반영, 재실행 시 해당 유형 G열 초기화)→injectMongolianContents(G열 재주입) 순서 준수
+const SYNK_VERSION = 'v9.89'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고 · [v9.77] profiles 무결성 3면 감시 — Glide 상세 화면 Edit/Add 잔재 실측(07-28) 후속: 유령 행(user_id 공란, 기존 !r[0] 스킵의 사각)·user_id 중복·무효 role을 nightJobs(매일·이상 시에만 메일·동일 내용 dedup)+주간 워치독+preflight 3면에서 자동 발각 · [v9.78] 강사 반 HUD 리디자인 — 유호 07-28 "반 탭이 만들다 만 느낌" → 낱장 줄글 4카드(v9.15)를 SYNK CLASS HUD로 격상: 14열 반상세HTML = 헤더 스탯 스트립(미션 n건·루틴 k/4·보스 HP) + 미션(유형 색 필·명단 캡)·루틴(게이지+2×2)·레이드(사정권 콜아웃 흡수)·왕관(미수혜 pill 후보 명단), Glide 기바인딩이라 클릭 0 적용·9~13열 낱장도 동일 디자인(설계=ban-tab-redesign 워크플로 A/B 판정) · [v9.79] 미니멀 스킨 — 유호 "훨씬 트렌디하고 미니멀하게, 뼈대 같은 느낌" → 실렌더 A/B(M1 에어리 라이트 vs M2 다크 히어로) 판정 M2 채택: 유색 보더 전면 폐지(흰 카드+이중 소프트 섀도)·타이포 3단(그레이 라벨→잉크 빅넘버→본문)·색 3계 절제(블루·앰버·그린)·이모지 카드당 ≤1·미션 도트 3톤·상세 헤더=딥 네이비 다크 히어로(블루 radial glow) · [v9.80] 조 편성·역할 로테이션 — 강사 수업 규칙 v3.0 §11 배선 대기 1순위(유호 07-31 "앱 자동 제안" 확정): groups 시트(시즌×반 1벌·실력 스네이크+말수·학교 계층 내 교환)·역할 4개 차시 순환·2인 짝 3조합·발표 순번(로테이션이 8주 전원 2회를 자동 보장)을 앱이 짠다. 역할·짝·발표자는 저장하지 않고 차시 번호에서 계산 — 매 차시 쓰기 0(월 500건 한도 불변). 강사 브리핑에 조 편성표 동봉 · [v9.81] 랭킹·반 목록 UI 격상(유호 07-31 지적 3건) — ①학생 랭킹 탭: profiles DO119 랭킹보드HTML 신설(SYNK LEAGUE 다크 포디움+순위 리스트+내 순위 하이라이트+추격 넛지 "nP=숙제 k번", rankMap과 동일 소스) ②강사 반 목록: class_stats 15열 반카드요약(👥 n명·반몬스터·보스 상태)+16열 반몬스터이미지 — Glide Collection을 Card 스타일로 ③반 상세 HUD 헤더에 👥 총원 필(stuN 기전달이라 조립 0) · classMonster {name,img}화·유령 클리어 14→16열 · [v9.82] 출퇴근·결석 카드(유호 07-31 지시 10·12번) — ①강사 출퇴근HTML(DP120, 3차 블록 SHARED3 — DO119 랭킹보드 선점 회피): 오늘의 근무 히어로(출근/퇴근 빅넘버·상태 필 3단·퇴근 후 근무시간 확정값)+이번 주 월~토 스트립(과거 무기록일은 무채색 — 개인 시간표 부재로 결근 단정 금지)+요일 출근 치어 재사용(CH11~17 소생), 10분 스위프 소유·값 변경시만 기입(경과시간류 금지 = update 순증 0, 자정 리셋은 기존 출퇴근 리셋과 같은 묶음) ②학부모 결석신고HTML(DQ121): 접수 확인 ✅(v9.34 보류 P-ACK 상환)·오늘/예정/지난 3태·다음 수업일 3칩(classDowOk_ 재사용)·작동 3줄 몽골어 병기(원어민 검수 큐), 출석 달력과 같은 껍질 ③결석 폼 "자녀"를 Choice(value=user_id)로 재조립 지시 — 다자녀 parent_of 통짜 기록이 미출석 제외·브리핑·오늘의 반 3곳에서 조용히 불발되던 것 근본 수리 + preflight absence_notice student_id 무결성 검사(쉼표·미매칭) ④학부모 전수 점검 문서 docs/부모탭_점검_2026-07-31.md(P-ACK·다자녀 🔴 2건 = 이번 수리, 문의 답변 루프·다이제스트 몽골어 🟡 2건 = 제안 대기) · [v9.83] 💰 포인트 경제 재설계(유호 07-31 지시 23번 "포인트가 너무 후하다") — ①지급 단가를 PT 상수 단일 소스로 모으고 전면 ÷2(숙제 10→5·출석 3→2·첨삭확인 5→2·왕관 10→5·레이드 20→10·리그 5→3·월드 10→5·개근왕 30→15·영웅 20→10·생일 20→10): 설계 앵커 "성실 월 ~280P" 이후 지급 경로 6개가 늘도록 아무도 총합을 안 봐서 실측 572P/월 = 정확히 2배 인플레였고, 그 탓에 과잠 3.0개월·싱크마스터 진화 4.2개월(의도 9개월)로 스토어·진화·보스 세 경제가 동시에 무너져 있던 것을 스토어 가격 무수정으로 한 번에 복귀(열심히 291P·보통 196P) ②🧥 과잠은 스토어 하차 → 재원 12개월+누계 1,200P 무료 지급 자격으로(jacketWatch_·jacket_grants, 잔액 무차감이라 간식·굿즈를 사면서도 시계가 돌고 수업일 1/5인 주말반도 같은 개월에 도달) ③목표진행 카드(BZ78)를 도착 예정일로 — 촤 없으면 과잠 진행 폴백 ④보스 HP를 RAID_HP_PER 상수화 재보정(평일 28→34·주말 18→14·WORLD_HP_PER 100→150, 지급의 종속 변수라 함께 움직인다) · [v9.84] 🔌 상담 배선 팩(유호 07-31 승인: 진단 5건+도전안+한수더 전부) — ①상담 5필드→DT124~DX128(취향·목표·입학TOPIK·고충·페이스라인, 읽기 폭 동적+헤더 이름 해석+점거 가드) ②AI 콜드스타트 폴백 사슬 4곳 통일(최애=DA105‖상담취향·목표=드림‖상담목표‖비전·약점=기록‖입학 자기보고 — 학생 소유 열은 읽기만) ③여정카드 페이스라인(도전안: 목표 기한 역산 남은 주, 보장 표현 0)+미래편지 입학TOPIK 0점 좌표(한수더) ④자유서술 blob→노션 상담서술 주간 자동 이관(속성 자동 보장·장애 격리) ⑤KPI 인지채널별 등록/상담 분해(시트 스키마 불변) ⑥migrateConsentV185 ▶1회 — 온라인 폼 동의 문항(v18.5, 문구 유호 검토 전제)+워치독 감시 2종. 설계노트 199~204·테스트 7종 · [v9.85] 리그 카드 리뷰 반영(v9.81 독립 리뷰 P1+P2) — ①단상 숫자=실순위(동점 동순위, 구현은 배열 위치를 찍어 R열과 어긋났다)+동점 1위 왕좌 문구(구 mineIdx===0) ②넛지 환산 단가를 PT.숙제 주입으로(v9.83 반값 개정 자동 추종, meta.hwP)+6번 이상은 "사정권" 문구 캡 ③동점 추격 문구를 이름 기준으로(같은 순위끼리 "n위와 동점"은 자기 언급) ④콜드 리스트 문구 분기(없는 TOP3 전제 제거) ⑤리그 이름 폴백 '이름 미등록'(전교 노출면 user_id 차단) ⑥월 라벨 시트 tz 통일 ⑦class_stats 유령 클리어 앞 폭 보장(좁은 시트+반 감소 조합 크래시 경로) · [v9.86] 수업준비 팩(유호 07-31 "1,2,3,4 전부 진행" — 9번 아이디어 4건 전량 채택) — A 오늘·내일 결석 예정을 HUD 미션 절로(preAbsByCls, 사전신고→강사 화면 관통·수업 12분 전 메일에만 있던 것) · B 조 편성 절을 반 상세 HUD에 상설(buildGroupHud_+groupHudsByClass_ 1회 읽기 배치 — 메일 조 편성표와 동일 원천 roleOfSeat_·발표자 앰버 콜아웃·임시 조 필, 편성 전엔 절 생략) · C 수업준비 카드에 제출 현황(검사 동선) 절 — hw_feedback 기존 읽기에 편승(subT)·담당 반별 n/전체·미제출 5명 캡·강사별 카드 분화(prepArgsT) · D 주간 교안 초안 자동 생성(weeklyJobs 월 07시 편승·통합 리포트 섹션으로 링크 보고) — 양식 v2.0 14항 틀에 앱이 아는 칸만 채움(기간·인원·담당·이월 '더연습' 태그·3주차부터 오류 톱10 실측·4주차부터 지명 프록시(발화 실측 전 포인트 무활동 대체 명시)·조 편성표·과업 은행 20종 차시×주차 로테이션), Google Doc 멱등 생성(같은 이름 있으면 보존 — 강사 편집 불가침)·SYNK_교안초안 폴더·콘텐츠는 contents_교안.js 신설(파일 차선 규약·filePushOrder 편입) ⚠DocumentApp 최초 사용 = 배포 후 아무 함수 ▶ 1회 권한 재승인 필요(승인 전 트리거 실패 창 — 보고에 0단계 명시) · [v9.87] 강사 지표 축 교정 — teacher_stats A열이 '강사' 헤더에 실은 반명을 담고 있었다(학생 행 class_name을 강사로 오독). teacherEmailMap_.byClass 조인으로 반명→담당 강사 변환, 집계 정의 확정(공동 담당=각자 온전 귀속·다반 강사=1행 합산·왕관 편중%만 반 단위 최댓값·매핑 없는 반='(미지정) 반명'으로 노출), 담당반 9열 추가로 조인 결과 감사 가능화, 헤더 정본 상수(TEACHER_STATS_HEADERS)를 골격·실사용이 공유해 v9.40 드리프트 재발 차단 · [v9.88] 숙제·퀴즈 문항 자기완결 팩(유호 07-31 "한국인인 나조차 이해 안 감") — ①HW 41문항 "오늘 단어/문법/문장/대화문/표현/문형"→"오늘 배운 X"(한·몽 41쌍 동시 치환, 몽골어는 기존 HW101 Өнөөдөр сурсан·HW201 Өнөөдөр үзсэн 패턴으로의 기계 치환만 — 신규 작문 0) ②QZ22 문장 붕괴 수리 — 「밥 먹었어?」 따옴표 복원(몽골어판은 원래 완전문이었고 한국어 원문만 조각) ③카드 문항 본문 한·몽 병기 배선 — v9.70이 유형·검사포인트만 병기하고 정작 본문은 한국어뿐이던 것: 숙제=게시 숙제ID 매칭, 퀴즈=오늘의퀴즈ID_초급 신설+표시문항 동일성 검사(quizRaw===begQ9, 중·고급 문항에 초급 번역 오결합 차단·개인AI퀴즈 병기 없음) ④숙제 카드 제출 안내를 실제 버튼 라벨과 정합(✏️ 숙제) ⑤(코드 밖) Glide 학생 홈 버튼 3종 라벨 압축 ✅ 출석·✏️ 숙제·🎙 목소리로 한 줄 정렬 — 07-31 원격 실측·자동저장 완료. ▶ 필요: setupHomework+setupQuiz(문항 시트 반영, 재실행 시 해당 유형 G열 초기화)→injectMongolianContents(G열 재주입) 순서 준수 · [v9.89] 결석 추적 — 「결석 복귀율」(시즌 등급 심사 20점·개원 첫 시즌 30점·채점 "앱 자동")이 측정 불가이던 것 해소: checkNoShow가 app_state에 인원수만 남기고 결석자 명단을 안 남겨 24시간 뒤 "이 학생에게 연락했는가"를 대조할 학생별 행이 없었다. absence_followup 1인 1행 적재(시트 쓰기가 메일보다 앞 — 지표 원본이 쿼터·메일 실패에 종속되지 않게)·결석 연락 폼 6문항 고정(응답 7열 계약, Glide update 0)·복귀 자동 판정(attendance 대조 + 지각 오탐 자체 정정, 판정 보류는 분모 제외)·24h 미연락 창 알림 D+1~D+3(강사 1인당 밤 최대 1통)·주간 리포트 강사별 복귀율(§7 배점표 환산)·DR122 결석폼URL. ⚠전제 = 출석 1탭이 유일한 입구(당일 그 반 출석 0건이면 판정 창 자체가 안 열린다) — preflight 침묵 감시로 방어
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -3107,7 +3107,7 @@ const SHARED2_COL_START = 112; // DH
 const SHARED2_COL_HEADERS = ['숙제카드HTML', '퀴즈카드HTML', '수업준비HTML', '오늘출근', '오늘퇴근', '학업폼URL', '메모폼URL']; // DH112~DN118
 // [v9.82] DO119(랭킹보드HTML — v9.81 리그 카드 선점)를 피한 3차 공유 블록. 강사 출퇴근 카드·학부모 결석 카드.
 const SHARED3_COL_START = 120; // DP
-const SHARED3_COL_HEADERS = ['출퇴근HTML', '결석신고HTML']; // DP120(강사) · DQ121(학부모)
+const SHARED3_COL_HEADERS = ['출퇴근HTML', '결석신고HTML', '결석폼URL']; // DP120(강사) · DQ121(학부모) · [v9.89] DR122(강사 결석 연락 폼 — DO119는 v9.81 랭킹보드가 선점)
 
 /* ── [v9.74] 숙제·퀴즈·수업준비 카드 빌더(순수 함수 — tests/safety.test.js가 직접 로드) ──
  * 유호 07-28 보고: 홈 숙제 카드가 "과제문 + 무라벨 검사포인트 + 퀴즈 문항"이 한 덩어리로 보여 무엇을
@@ -3480,7 +3480,7 @@ function writeSharedCols_(ss, pf, st) {
         '', '', '',
         '', '', prepCardHtml_(prepArgsT[0], prepArgsT[1], prepArgsT[2], prepArgsT[3], prepArgsT[4], subsT),
         io.in || '', io.out || '', kv['학업폼URL'] || '', kv['약점메모폼URL'] || '',
-        ioCardHtml_(dlT, io, wcT.cells, wcT.n, cheerT), '']; // [v9.82] DP120 출퇴근 카드 · DQ121은 학부모 몫
+        ioCardHtml_(dlT, io, wcT.cells, wcT.n, cheerT), '', kv['결석폼URL'] || '']; // [v9.82] DP120 출퇴근 카드 · DQ121은 학부모 몫 · [v9.89] DR122 결석 연락 폼
     }
     if (role === 'student') {
       const pre = String(r[35] || '') === '주말' ? '주말의' : '오늘의'; // AJ36 반유형 — 서버가 분기(구 Glide ITE 3개 대체)
@@ -3512,7 +3512,7 @@ function writeSharedCols_(ss, pf, st) {
         hwCardHtml_(hwTy9, mnTy9, kv[pre + '숙제'] || '', mnTask9, hwTip9, mnTip9), // [v9.74] DA105 — 구 3컴포넌트(6-1a) 대체 · [v9.87] 본문 병기
         quizCardHtml_(pq ? pq.q : q[0], mnQ9, !!pq), // [v9.74] DB106 — 문제만. 정답은 CK89를 버튼이 연다 · [v9.87] 본문 병기
         '', '', '', '', '',
-        '', '']; // [v9.82] DP·DQ 학생 행은 빈칸
+        '', '', '']; // [v9.82] DP·DQ 학생 행은 빈칸 · [v9.89] DR도
     }
     if (role === 'parent') {
       const kidId = String(r[9] || '').split(',')[0].trim(); // J10 parent_of(첫 자녀 — 다자녀 한계는 docs/부모탭_점검_2026-07-31.md §2-2)
@@ -3522,7 +3522,7 @@ function writeSharedCols_(ss, pf, st) {
         k.n, k.bn, k.bl, k.cf, k.bm, k.bw, k.bd,
         '', '', '', // [v9.49] CX~CZ 학부모 행은 빈칸
         '', '', '', '', '', '', '', // [v9.74] DH~DN 빈칸
-        '', absenceCardHtml_(k.n, absByKid[kidId] || [], nextClassDaysOf_(k.t, nowSh))]; // [v9.82] DQ121 결석 카드
+        '', absenceCardHtml_(k.n, absByKid[kidId] || [], nextClassDaysOf_(k.t, nowSh)), '']; // [v9.82] DQ121 결석 카드 · [v9.89] DR122는 강사 몫
     }
     return blank;
   });
@@ -5642,6 +5642,84 @@ function setupSchedule() {
   Logger.log('시간표 ' + rows.length + '개 반 생성(2026-07-19 확정 3실 체계)');
 }
 
+/* ===================== [v9.89] 🔁 결석 추적 — 「결석 복귀율」의 측정 레일 =====================
+ * 결함: checkNoShow(v9.34~)는 미등원자를 메일로만 알리고 app_state에 "N명"이라는 카운트만 남겼다.
+ *   → 24시간 뒤 "이 학생에게 연락했는가"를 대조할 학생별 행이 어디에도 없다.
+ *   그런데 「결석 복귀율」은 강사 시즌 등급 심사 20점(개원 첫 시즌 30점) · 채점 방식 "앱 자동" 항목이다
+ *   (급여 인센티브 정본 §7 배점표 · 강사 수업 규칙 「결석자 복귀 — 24시간 안에」(v3.0 기준 7장)).
+ *   돈이 걸린 지표가 측정 불가 상태였다 — 규칙서는 절차를 정해뒀는데 앱에 데이터가 없었다.
+ * → 감지 1건 = absence_followup 1행. 연락은 구글 폼(Glide update 0), 복귀는 attendance 대조로 자동 판정.
+ *
+ * ⚠ 구조적 전제 — 출석 1탭이 이 지표의 유일한 입구:
+ *   checkNoShow는 "당일 그 반 출석 0건이면 스킵"한다(v9.34 — 휴강·강사 미입력을 미등원으로 오경보하지
+ *   않기 위한 가드). 즉 강사가 출석 1탭을 안 하면 결석 추적 자체가 열리지 않고, 그 반의 결석 복귀율은
+ *   측정 자체가 안 된다(0점이 아니라 무데이터). 이 침묵은 preflightGlide가 경고로 잡는다.
+ *
+ * 판정 규약(돈이 걸린 지표라 "모르는 것"을 불리하게 세지 않는다):
+ *   '지각'   = 감지 후 같은 날 출석이 들어옴 → checkNoShow의 구조적 오탐(수업 시작 +30분 판정이라
+ *              늦게 온 학생이 결석으로 잡힌다). 분모에서 제외 — 데이터가 스스로 정정한다.
+ *   '복귀:d' = 결석일 이후 ABSENCE_RETURN_DAYS 안에 첫 출석. 며칠 만인지도 함께 남긴다.
+ *   '미복귀' = 유예 창을 넘겨도 출석 없음.
+ *   ''       = 아직 판정 보류(유예 창 안) — 분모에도 분자에도 넣지 않는다.
+ */
+const ABSENCE_FOLLOWUP_HEADERS = ['날짜', 'student_id', '반', '담당강사', '감지시각', '연락여부', '연락시각', '연락수단', '복귀여부', '비고'];
+const ABSENCE_NAG_DAYS = 3;      // 미연락 재알림 창 D+1~D+3 — 정확일 매칭이면 배치가 하루 죽을 때 영영 건너뛴다(MJ_expiryDaily_ 창 방식 계보)
+const ABSENCE_RETURN_DAYS = 14;  // 복귀 판정 유예 — 이 안에 출석이 없으면 '미복귀' 확정
+const ABSENCE_ESCALATE_N = 3;    // 유예 창 안 결석 N회 → 원장 보고(수업 규칙 「결석자 복귀」 "3회면 원장에게 보고" · v3.0 기준 절차 6)
+const ABSENCE_SEASON_DAYS = 56;  // 등급 심사 주기 = 8주 시즌(주간 리포트의 복귀율 집계 창)
+
+// [v9.89] 복귀 판정(순수 함수 — tests/safety.test.js가 직접 로드해 검증).
+//   attDates = 그 학생의 출석일 문자열 배열(yyyy-MM-dd). 반환 '' = 판정 보류(다음 밤에 재판정).
+function absenceReturnState_(dateStr, attDates, todayStr, returnDays) {
+  const d = String(dateStr || '').slice(0, 10);
+  if (!d) return '';
+  const list = attDates || [];
+  if (list.indexOf(d) > -1) return '지각'; // 같은 날 출석이 뒤늦게 들어옴 = 애초에 결석이 아니었다
+  const gap = s => Math.round((new Date(s + 'T00:00:00') - new Date(d + 'T00:00:00')) / 86400000);
+  let first = '';
+  for (let i = 0; i < list.length; i++) { // 결석일 이후 첫 출석(yyyy-MM-dd는 문자열 비교 = 날짜 비교)
+    const s = String(list[i] || '').slice(0, 10);
+    if (s > d && (!first || s < first)) first = s;
+  }
+  if (first) { const g = gap(first); return g <= returnDays ? '복귀:' + first + '(+' + g + '일)' : '미복귀'; }
+  const elapsed = gap(String(todayStr || '').slice(0, 10));
+  return (!isNaN(elapsed) && elapsed >= returnDays) ? '미복귀' : '';
+}
+
+// [v9.89] 강사별 집계(순수 함수) — 「결석 복귀율」 계산 정본. rows = absence_followup 값 그대로.
+//   분모 = 판정이 끝난 결석만(복귀+미복귀). '지각'(오탐)과 판정 보류는 제외한다.
+function absenceReturnStats_(rows, fromStr, toStr) {
+  const by = {};
+  (rows || []).forEach(r => {
+    const d = String(r[0] || '').slice(0, 10);
+    if (!d) return;
+    if (fromStr && d < fromStr) return;
+    if (toStr && d > toStr) return;
+    const key = String(r[3] || '').trim() || '(담당 미배정)';
+    const o = by[key] || (by[key] = { tot: 0, contacted: 0, judged: 0, ret: 0, pending: 0, late: 0 });
+    const st = String(r[8] || '').trim();
+    if (st === '지각') { o.late++; return; } // 오탐 — 어느 분모에도 안 들어간다
+    o.tot++;
+    if (String(r[5] || '').trim()) o.contacted++;
+    if (st.indexOf('복귀:') === 0) { o.judged++; o.ret++; }
+    else if (st === '미복귀') o.judged++;
+    else o.pending++;
+  });
+  Object.keys(by).forEach(k => {
+    const o = by[k];
+    o.rate = o.judged ? Math.round(o.ret / o.judged * 100) : null;        // 복귀율 — 판정 0건이면 null(0%가 아니다)
+    o.contactRate = o.tot ? Math.round(o.contacted / o.tot * 100) : null; // 24시간 연락 이행률
+  });
+  return by;
+}
+
+// [v9.89] 급여 인센티브 정본 §7 배점표 그대로 — 90%+ 20 / 85~89 16 / 80~84 12 / 75~79 6 / 미만 0.
+//   판정 데이터가 없으면 null(미측정) — 무데이터를 0점으로 환산하면 강사가 앱 결함으로 돈을 잃는다.
+function absenceReturnScore_(rate) {
+  if (rate == null || isNaN(rate)) return null;
+  return rate >= 90 ? 20 : rate >= 85 ? 16 : rate >= 80 ? 12 : rate >= 75 ? 6 : 0;
+}
+
 function checkNoShow() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
@@ -5676,6 +5754,23 @@ function checkNoShow() {
   const pfData = pf.getRange(2, 1, pf.getLastRow() - 1, 15).getValues();
   const emapNS = teacherEmailMap_(ss); // [v9.28] 담당 강사에게도 라우팅
 
+  // [v9.89] 결석 추적 적재 준비 — 감지 1건 = 1행. (날짜|sid) 중복 가드는 app_state 마커와 이중 방어라,
+  //   적재 뒤 메일이 throw해 다음 스위프가 이 반을 재처리해도 행은 늘지 않는다.
+  const af = ensureSheet(ss, 'absence_followup', ABSENCE_FOLLOWUP_HEADERS);
+  const afSeen = {};
+  let afRow = af.getLastRow() + 1; // 쓰기 행은 직접 전진시킨다 — 반마다 getLastRow()를 다시 읽으면 flush 타이밍에 의존하게 된다
+  if (af.getLastRow() >= 2) af.getRange(2, 1, af.getLastRow() - 1, 2).getValues().forEach(r => {
+    if (r[1] && dstr(r[0], tz) === todayStr) afSeen[String(r[1]).trim()] = 1;
+  });
+  // 학부모 사전신고(absence_notice) 조인 — 사유가 이미 확인된 결석은 비고에 남기고 밤 미연락 알림에서 제외한다
+  const preN = {};
+  const an = ss.getSheetByName('absence_notice');
+  if (an && an.getLastRow() >= 2) an.getRange(2, 1, an.getLastRow() - 1, 4).getValues().forEach(r => {
+    if (r[0] && dstr(r[2], tz) === todayStr) preN[String(r[0]).trim()] = String(r[3] || '사유 미기재').slice(0, 60);
+  });
+  const nowHm = Utilities.formatDate(now, tz, 'HH:mm');
+  const formUrlNS = String((getState(st, '결석폼URL') || {}).val || ''); // [v9.89] 연락 기록 한 클릭 — 루프 밖 1회 조회
+
   targets.forEach(num => {
     const key = '미등원_' + todayStr + '_' + num; // [v9.34] v8.3 반명 키 전환 후 남은 '정규반' 이중 접두 화석 정리
     if (getState(st, key).row > 0) return;
@@ -5684,6 +5779,19 @@ function checkNoShow() {
     // [v9.34] 당일 그 반 출석 0건이면 스킵(마킹도 보류) — 강사 미입력·휴강을 미등원으로 오경보하지 않고, 출석이 들어온 다음 스위프에 판정
     if (!clsStu.some(r => todayAtt.has(r[0]))) return;
     const absent = clsStu.filter(r => !todayAtt.has(r[0]));
+    // [v9.89] 시트 적재가 메일보다 먼저 — 지표 원본이 쿼터·메일 실패에 종속되면 안 된다(메일은 알림, 행은 데이터).
+    if (absent.length > 0) {
+      const tNames = (emapNS.byClass[num] || []).map(t => t.name).join('·'); // 담당 강사 = 등급 심사 귀속 주체
+      const add = [];
+      absent.forEach(r => {
+        const sid = String(r[0]).trim();
+        if (afSeen[sid]) return; // 오늘 이미 적재됨(재시도·다른 반 중복 배정)
+        afSeen[sid] = 1;
+        add.push([todayStr, sid, num, tNames, nowHm, '', '', '', '',
+          preN[sid] ? '사전신고:' + preN[sid] : '']);
+      });
+      if (add.length) { af.getRange(afRow, 1, add.length, ABSENCE_FOLLOWUP_HEADERS.length).setValues(add); afRow += add.length; }
+    }
     if (absent.length > 0 && quotaOk(1)) {
       MailApp.sendEmail(ADMIN_EMAIL,
         '[SYNK] ⚠️ ' + num + ' 미등원 ' + absent.length + '명 (' + map[num].time + ')',
@@ -5695,12 +5803,130 @@ function checkNoShow() {
         if (quotaOk(1)) MailApp.sendEmail(t.email,
           '[SYNK] ⚠️ ' + num + ' 미등원 ' + absent.length + '명 (' + map[num].time + ')',
           map[num].time + ' 시작 ' + num + ' 수업 30분 경과, 미출석:\n\n' +
-          absent.map(r => '· ' + r[0] + ' ' + r[1]).join('\n'));
+          absent.map(r => '· ' + r[0] + ' ' + r[1]).join('\n') +
+          '\n\n📌 24시간 안에 연락하고 아래 폼에 남겨주세요(시즌 등급 심사 「결석 복귀율」 항목).' +
+          (formUrlNS ? '\n' + formUrlNS : '\n※ 연락 기록 폼이 아직 없습니다 — 원장에게 알려주세요(createAbsenceForm 1회 실행).'));
       });
     }
     setState(st, key, absent.length + '명');
   });
   Logger.log('미등원 체크: ' + targets.length + '개 반');
+}
+
+/* [v9.89] 밤 22시 — ①복귀 자동 판정(attendance 대조) ②24시간 경과 미연락 강사 알림 ③원장 요약·에스컬레이션.
+ * 알림은 창 방식(D+1~D+3)이라 배치가 하루 죽어도 따라잡고, 창을 넘기면 조용해진다 — 강사 1인당 밤 최대 1통.
+ * 미연락 행은 지우지 않는다: 연락여부 빈칸 = 미이행 증거이고, 그것이 등급 심사가 읽는 값이다. */
+function absenceFollowupNightly_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName('absence_followup');
+  if (!sh || sh.getLastRow() < 2) return; // 감지 0건 = 무비용 휴면
+  const tz = ss.getSpreadsheetTimeZone();
+  const todayStr = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const W = ABSENCE_FOLLOWUP_HEADERS.length;
+  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, W).getValues();
+
+  // ① 복귀 판정 — 빈칸만 채운다(확정값은 재기입 없음 = 멱등). 판정 보류 학생의 출석만 인덱싱.
+  const need = {};
+  rows.forEach(r => { const s = String(r[1] || '').trim(); if (s && !String(r[8] || '').trim()) need[s] = 1; });
+  const attBy = {};
+  if (Object.keys(need).length) {
+    const at = ss.getSheetByName('attendance');
+    if (at && at.getLastRow() >= 2) at.getRange(2, 1, at.getLastRow() - 1, 3).getValues().forEach(r => {
+      const sid = String(r[1] || '').trim();
+      if (!sid || !need[sid] || !r[2]) return;
+      (attBy[sid] = attBy[sid] || []).push(dstr(r[2], tz));
+    });
+  }
+  const retCol = rows.map(r => {
+    const cur = String(r[8] || '').trim();
+    if (cur) return [cur];
+    const sid = String(r[1] || '').trim();
+    if (!sid) return ['']; // 미매칭 행 — sid를 채우면 다음 밤에 자동 판정
+    return [absenceReturnState_(dstr(r[0], tz), attBy[sid] || [], todayStr, ABSENCE_RETURN_DAYS)];
+  });
+  writeIfChanged(sh, 2, 9, retCol);
+
+  // 이름 조회(메일 가독성) — sid만 적힌 알림은 강사가 누구인지 모른다
+  const nameOf = {};
+  const pf = ss.getSheetByName('profiles');
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 2).getValues().forEach(r => {
+    if (r[0]) nameOf[String(r[0]).trim()] = String(r[1] || '');
+  });
+
+  // ② 미연락 창 스캔 + ③ 반복 결석 집계
+  const byT = {}, stuCnt = {}, adminLines = [];
+  rows.forEach((r, i) => {
+    const d = dstr(r[0], tz);
+    const sid = String(r[1] || '').trim();
+    if (!d || !sid) return;
+    const days = Math.round((new Date(todayStr + 'T00:00:00') - new Date(d + 'T00:00:00')) / 86400000);
+    if (isNaN(days)) return;
+    if (days >= 0 && days <= ABSENCE_RETURN_DAYS && retCol[i][0] !== '지각') stuCnt[sid] = (stuCnt[sid] || 0) + 1;
+    if (String(r[5] || '').trim()) return;                    // 연락 기록됨 — 이행 완료
+    if (retCol[i][0] === '지각') return;                       // 오탐(당일 늦게 등원) — 연락 의무 없음
+    if (String(r[9] || '').indexOf('사전신고') === 0) return;   // 학부모가 미리 알려온 결석 — 사유 확인됨
+    if (days < 1 || days > ABSENCE_NAG_DAYS) return;           // 창 밖(오늘 감지분·지난 건)은 조용히
+    const t = String(r[3] || '').trim();
+    (byT[t] = byT[t] || []).push('· ' + d + ' ' + (nameOf[sid] || sid) + ' (' + String(r[2] || '') + ') — 감지 ' +
+      String(r[4] || '') + ' · ' + days + '일 경과');
+  });
+
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const formUrl = String((getState(st, '결석폼URL') || {}).val || '');
+  const emap = teacherEmailMap_(ss);
+  let sent = 0, pend = 0;
+  Object.keys(byT).forEach(t => {
+    pend += byT[t].length;
+    const names = t ? t.split('·').map(s => s.trim()).filter(Boolean) : []; // 담당 강사 복수 표기 분해
+    if (!names.length) { adminLines.push('⚠ 담당 강사 미배정 ' + byT[t].length + '건 — profiles의 강사 class_name을 확인하세요\n' + byT[t].join('\n')); return; }
+    names.forEach(nm => {
+      const em = emap.byKey[nm];
+      if (!em) { adminLines.push('⚠ 강사 "' + nm + '" 이메일 미상 — ' + byT[t].length + '건 미통보'); return; }
+      if (!quotaOk(1)) { adminLines.push('⚠ 쿼터 부족 — ' + nm + ' ' + byT[t].length + '건 미통보(내일 밤 재시도)'); return; }
+      MailApp.sendEmail(em, '[SYNK] 🔁 결석 연락 미이행 ' + byT[t].length + '건 — 24시간 규칙',
+        nm + ' 선생님,\n\n아래 학생은 결석이 감지됐는데 아직 연락 기록이 없습니다.\n\n' + byT[t].join('\n') +
+        '\n\n── 수업 규칙 「결석자 복귀」 ──\n· 24시간 안에 메신저로 3문장(오늘 뭘 했는지 · 걱정 한마디 · 다음 시간 예고)\n' +
+        '· 2회 연속이면 전화 · 3회 연속이면 원장 보고\n· "왜 안 왔어요?"로 시작하지 않기\n\n' +
+        '연락하셨으면 기록해 주세요(30초). 이 기록이 시즌 등급 심사 「결석 복귀율」의 원본입니다.\n' +
+        (formUrl || '※ 기록 폼 미생성 — 원장에게 알려주세요') +
+        '\n\n※ 이 알림은 감지 후 ' + ABSENCE_NAG_DAYS + '일까지만 갑니다. 그 뒤에도 빈칸이면 미이행으로 남습니다.');
+      sent++;
+    });
+  });
+
+  Object.keys(stuCnt).forEach(sid => {
+    if (stuCnt[sid] >= ABSENCE_ESCALATE_N) adminLines.push('🚨 ' + (nameOf[sid] || sid) + ' — 최근 ' + ABSENCE_RETURN_DAYS +
+      '일 결석 ' + stuCnt[sid] + '회(연속 여부는 판정하지 않음 — 감지 횟수 기준). 수업 규칙 「결석자 복귀」의 원장 개입 지점(3회 연속 결석 보고)에 해당합니다');
+  });
+  if (adminLines.length || pend) adminMail('[SYNK] 🔁 결석 연락 점검 — 미이행 ' + pend + '건',
+    '강사 통보 ' + sent + '통 발송.\n\n' + (adminLines.length ? adminLines.join('\n') : '(추가 조치 사항 없음)') +
+    '\n\n※ 복귀 판정은 자동입니다(출석 대조). absence_followup 시트의 연락여부 빈칸이 곧 미이행 기록입니다.');
+  Logger.log('결석 추적: ' + rows.length + '행 · 미연락 ' + pend + '건 · 강사 통보 ' + sent + '통');
+}
+
+/* [v9.89] 주간 통합 리포트 섹션 — 「결석 복귀율」을 원장이 실제로 볼 수 있게(등급 심사 8주 시즌 창).
+ * 침묵(학생은 있는데 감지 0건)은 성과가 아니라 출석 1탭 미입력 신호라고 명시한다 — 이 지표의 최대 오독 지점. */
+function absenceSection_(wantText) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName('absence_followup');
+  const tz = ss.getSpreadsheetTimeZone();
+  const today0 = new Date(Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd') + 'T00:00:00');
+  const fromStr = Utilities.formatDate(new Date(today0.getTime() - ABSENCE_SEASON_DAYS * 86400000), tz, 'yyyy-MM-dd');
+  if (!sh || sh.getLastRow() < 2) return '결석 감지 0건 — 성과가 아니라 신호입니다. checkNoShow는 "당일 그 반 출석 0건이면 스킵"하므로, 강사가 출석 1탭을 안 하면 결석 추적이 아예 열리지 않습니다(= 결석 복귀율 측정 불가).';
+  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, ABSENCE_FOLLOWUP_HEADERS.length).getValues();
+  const by = absenceReturnStats_(rows.map(r => r.map(v => v instanceof Date ? dstr(v, tz) : v)), fromStr, null);
+  const keys = Object.keys(by).sort();
+  if (!keys.length) return '최근 ' + ABSENCE_SEASON_DAYS + '일 결석 감지 0건 — 출석 1탭이 들어오고 있는지 확인하세요(1탭이 없으면 판정 창 자체가 안 열립니다).';
+  const L = ['최근 ' + ABSENCE_SEASON_DAYS + '일(8주 시즌 창) · 배점표 = 급여 인센티브 정본 §7'];
+  keys.forEach(k => {
+    const o = by[k];
+    const sc = absenceReturnScore_(o.rate);
+    L.push('· ' + k + ' — 결석 ' + o.tot + '건 · 24h 연락 ' + (o.contactRate == null ? '—' : o.contactRate + '%') +
+      ' · 복귀율 ' + (o.rate == null ? '판정 대기(0건)' : o.rate + '% (' + o.ret + '/' + o.judged + ')') +
+      (sc == null ? ' · 점수 미측정' : ' · 등급점수 ' + sc + '/20') +
+      (o.pending ? ' · 보류 ' + o.pending : '') + (o.late ? ' · 지각정정 ' + o.late : ''));
+  });
+  return L.join('\n');
 }
 
 /* ===================== 진화 감지 + 임박 알림 ===================== */
@@ -6994,6 +7220,92 @@ function createAcademicForm() {
     '\n\n다음 계산(14/22시, 즉시 원하면 calcAll ▶)부터 강사 수업준비 탭의 📊 버튼에 자동으로 연결됩니다.\n편집용: ' + form.getEditUrl() +
     '\n\n※ 재실행해도 안전합니다(제자리 업그레이드 · URL 불변). 반·강사가 바뀌면 다음 날 아침 드롭다운이 자동 갱신됩니다.');
   Logger.log('✅ 학업 기록 폼 생성 완료: ' + form.getPublishedUrl());
+  Logger.log('편집용: ' + form.getEditUrl());
+}
+
+/* ── [v9.89] 🔁 결석 연락 기록 폼 — 「결석 복귀율」의 입력 레일(약점 메모 폼 v9.55·v9.64 계보) ──
+ * 왜 폼인가: Glide에서 입력받으면 update를 소비한다(Maker 월 500 제약). 폼은 0.
+ * ⚠ 항목 수는 여기서 확정이다 — 나중에 추가·삭제하면 응답 시트에 새 열이 생기거나 밀려
+ *   sweepAbsenceForm_의 위치 파싱(1~7열)이 깨진다. 동기화는 제목·안내·선택지만 바꾸고 항목은 건드리지 않는다.
+ *   고정 6문항 = 강사 · 반 · 학생 이름 · 연락 수단 · 결과 · 메모 → 응답 7열(타임스탬프 포함). */
+const ABSENCE_CONTACT_METHODS = ['메신저', '전화', '학부모 전화', '직접 만남', '기타'];
+const ABSENCE_CONTACT_RESULTS = ['연결됨 — 다음 시간에 온다고 함', '연결됨 — 사유만 확인', '답장 없음(메시지는 남김)', '학부모에게 전달', '장기 결석 — 원장 보고 필요'];
+function absenceFormSpec_(ss) {
+  const base = teacherMemoSpec_(ss); // 강사·반 로스터 재사용 — 아침 동기화도 같은 원천을 본다
+  return {
+    title: 'SYNK 결석 연락 기록 (강사용 · 24시간)',
+    desc: '결석한 학생에게 연락했으면 30초로 남겨주세요. 이 기록이 시즌 등급 심사 「결석 복귀율」의 원본입니다(수업 규칙 「결석자 복귀」). 복귀 여부는 앱이 출석으로 자동 판정하니 따로 적지 않아도 됩니다.',
+    teachers: base.teachers,
+    classes: base.classes,
+    help: {
+      '학생 이름': '앱 프로필의 한글 이름 그대로 (동명이인이면 반을 정확히) · 한 명씩 따로 제출',
+      '연락 수단': '기본은 메신저 · 2회 연속 결석이면 전화(수업 규칙 「결석자 복귀」)',
+      '결과': '연결이 안 됐어도 제출해 주세요 — 시도 자체가 이행 기록입니다',
+      '메모': '선택 · 한 줄이면 충분해요. 예: 가족 행사로 몽골 지방 다녀옴, 목요일부터 나온다고 함'
+    }
+  };
+}
+// 실제 폼을 스펙에 제자리 동기화 — 반환 = 바꾼 곳 수, 폼이 아예 없으면 -1(호출부가 생성 경로로). syncTeacherMemoForm_와 동형.
+function syncAbsenceForm_(ss, st) {
+  let formId = '';
+  try { formId = String((getState(st, '결석폼ID') || {}).val || '').trim(); } catch (eS) {}
+  if (!formId) { // ID 유실 시 응답 시트의 연결 폼에서 복구(v9.62 formAlreadyMade_ 패턴)
+    try {
+      const shR = ss.getSheetByName('결석폼_응답');
+      const editUrl = shR && shR.getFormUrl();
+      if (editUrl) { const f0 = FormApp.openByUrl(editUrl); formId = f0.getId(); setState(st, '결석폼ID', formId); setState(st, '결석폼URL', f0.getPublishedUrl()); }
+    } catch (eR) {}
+  }
+  if (!formId) return -1;
+  const form = FormApp.openById(formId);
+  const spec = absenceFormSpec_(ss);
+  let changed = 0;
+  if (form.getTitle() !== spec.title) { form.setTitle(spec.title); changed++; }
+  if (form.getDescription() !== spec.desc) { form.setDescription(spec.desc); changed++; }
+  form.getItems().forEach(it => {
+    const t = it.getTitle();
+    const wantHelp = spec.help[t];
+    if (wantHelp !== undefined && it.getHelpText() !== wantHelp) { it.setHelpText(wantHelp); changed++; }
+    if (it.getType() !== FormApp.ItemType.LIST) return;
+    const li = it.asListItem();
+    const cur = li.getChoices().map(c => c.getValue()).join('|');
+    const want = (t === '강사' ? spec.teachers : t === '반' ? spec.classes : t === '연락 수단' ? ABSENCE_CONTACT_METHODS : t === '결과' ? ABSENCE_CONTACT_RESULTS : null);
+    if (want && cur !== want.join('|')) { li.setChoiceValues(want); changed++; }
+  });
+  if (changed) Logger.log('🔁 결석 연락 폼 동기화 — ' + changed + '곳 갱신(URL 불변)');
+  return changed;
+}
+function createAbsenceForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const synced = syncAbsenceForm_(ss, st); // 이미 있으면 복제 대신 제자리 업그레이드(재실행 안전)
+  if (synced >= 0) {
+    const msg = '✅ 결석 연락 폼 — 이미 있어 제자리 업그레이드만 했습니다(' + synced + '곳 갱신 · URL 불변): ' + String((getState(st, '결석폼URL') || {}).val || '');
+    Logger.log(msg);
+    return msg;
+  }
+  const before = ss.getSheets().map(s => s.getName());
+  const spec = absenceFormSpec_(ss);
+  const form = FormApp.create(spec.title).setDescription(spec.desc).setCollectEmail(false);
+  if (spec.teachers.length > 1) form.addListItem().setTitle('강사').setRequired(true).setChoiceValues(spec.teachers);
+  else form.addTextItem().setTitle('강사').setRequired(true); // 로스터에 강사 0명(재건 직후)이어도 폼은 성립
+  if (spec.classes.length > 1) form.addListItem().setTitle('반').setRequired(true).setChoiceValues(spec.classes);
+  else form.addTextItem().setTitle('반').setRequired(true);
+  form.addTextItem().setTitle('학생 이름').setRequired(true).setHelpText(spec.help['학생 이름']);
+  form.addListItem().setTitle('연락 수단').setRequired(true).setChoiceValues(ABSENCE_CONTACT_METHODS).setHelpText(spec.help['연락 수단']);
+  form.addListItem().setTitle('결과').setRequired(true).setChoiceValues(ABSENCE_CONTACT_RESULTS).setHelpText(spec.help['결과']);
+  form.addParagraphTextItem().setTitle('메모').setHelpText(spec.help['메모']);
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  linkFormTab_(ss, before, '결석폼_응답');
+  setState(st, '결석폼ID', form.getId());
+  setState(st, '결석폼URL', form.getPublishedUrl());
+  ensureSheet(ss, 'absence_followup', ABSENCE_FOLLOWUP_HEADERS); // Glide는 "존재하는 시트"만 테이블로 잡는다
+  adminMail('[SYNK] 🔁 결석 연락 기록 폼 생성 완료',
+    '강사 단톡·즐겨찾기에 배포할 링크:\n' + form.getPublishedUrl() +
+    '\n\n다음 계산(14/22시, 즉시 원하면 calcAll ▶)부터 강사 수업준비 탭의 🔁 버튼과 미등원 알림 메일에 자동으로 붙습니다.\n편집용: ' + form.getEditUrl() +
+    '\n\n※ 재실행해도 안전합니다(제자리 업그레이드 · URL 불변). 반·강사가 바뀌면 다음 날 아침 드롭다운이 자동 갱신됩니다.' +
+    '\n⚠ 전제: 강사가 출석 1탭을 안 하면 결석 감지 자체가 열리지 않습니다(휴강 오경보 차단 가드) — 1탭이 이 지표의 유일한 입구입니다.');
+  Logger.log('✅ 결석 연락 기록 폼 생성 완료: ' + form.getPublishedUrl());
   Logger.log('편집용: ' + form.getEditUrl());
 }
 
@@ -9715,6 +10027,71 @@ function sweepAcademicForm_(ss) {
   if (miss.length) adminMail('[SYNK] 📊 학업 기록 확인 필요 ' + miss.length + '건', miss.join('\n'));
 }
 
+// [v9.89] 결석 연락 폼 응답 → absence_followup 마감(약점 메모 폼 계보: 포인터·클램프·미매칭 통보).
+//   ① 열린 행(연락여부 빈칸 · 결석일 ≤ 응답일)을 전부 마감한다 — 전화 한 통이 밀린 결석 여러 건을 함께
+//      덮는 현실 반영이자, 오래된 1건이 영원히 남아 매일 알림을 부르는 실패 모드 차단.
+//   ② 열린 행이 없으면 버리지 않고 '수동기록' 행으로 적재한다. 이 행이 쌓인다는 것 자체가
+//      "출석 1탭이 안 들어와 결석 감지가 안 열렸다"는 신호 — 강사의 연락 노력도 보존하고 구멍도 드러낸다.
+function sweepAbsenceForm_(ss) {
+  const src = ss.getSheetByName('결석폼_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const last = src.getLastRow();
+  const from = Number(props.getProperty('결석폼_포인터')) || 1;
+  if (from > last) { props.setProperty('결석폼_포인터', String(last)); return; } // 응답 시트 재생성 대비 클램프
+  if (from >= last) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = src.getRange(from + 1, 1, last - from, 7).getValues(); // 타임스탬프·강사·반·학생이름·연락수단·결과·메모
+  const pf = ss.getSheetByName('profiles');
+  const students = [];
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') students.push({ sid: String(r[0]).trim(), n: String(r[1] || ''), c: String(r[4] || '') });
+  });
+  const W = ABSENCE_FOLLOWUP_HEADERS.length;
+  const sh = ensureSheet(ss, 'absence_followup', ABSENCE_FOLLOWUP_HEADERS);
+  const cur = sh.getLastRow() >= 2 ? sh.getRange(2, 1, sh.getLastRow() - 1, W).getValues() : [];
+  const add = [], miss = [];
+  rows.forEach(r => {
+    const ts = r[0] instanceof Date ? r[0] : new Date();
+    const dayStr = dstr(ts, tz);
+    const stamp = dayStr + ' ' + Utilities.formatDate(ts, tz, 'HH:mm');
+    const name = String(r[3] || '').trim();
+    if (!name) return; // 필수 문항이라 실질 발생 없음 — 빈 응답 방어만
+    const method = String(r[4] || '기타');
+    const note = [String(r[5] || '').trim(), String(r[6] || '').trim()].filter(Boolean).join(' · ');
+    const cands = matchStudentsByNameClass_(students, name, String(r[2] || ''));
+    const ok = cands.length === 1;
+    const sid = ok ? cands[0] : '';
+    // 열린 행(연락여부 빈칸 · 결석일 ≤ 응답일)을 전부 마감. recent = 유예 창 안에 이미 감지된 행이 있었는가
+    //   — 수업 규칙 「결석자 복귀」은 "2회 연속이면 전화"라 같은 학생에 두 번째 연락이 정상적으로 들어온다. 그때 새 행을
+    //   만들면 결석 1건이 2건으로 세어져 복귀율 분모가 부풀므로, 새 행 대신 최근 행의 비고에 덧붙인다.
+    let closed = 0, recentIdx = -1;
+    if (sid) cur.forEach((c, ci) => {
+      if (String(c[1] || '').trim() !== sid) return;
+      const cd = dstr(c[0], tz);
+      if (cd > dayStr) return;                        // 응답일보다 나중의 결석은 이 연락으로 덮을 수 없다
+      if (Math.round((new Date(dayStr + 'T00:00:00') - new Date(cd + 'T00:00:00')) / 86400000) <= ABSENCE_RETURN_DAYS &&
+        (recentIdx < 0 || cd >= dstr(cur[recentIdx][0], tz))) recentIdx = ci;
+      if (String(c[5] || '').trim()) return;          // 이미 마감된 행은 건드리지 않는다(첫 연락 시각 보존)
+      c[5] = 'O'; c[6] = stamp; c[7] = method;
+      c[9] = [String(c[9] || '').trim(), note].filter(Boolean).join(' / ');
+      closed++;
+    });
+    if (!closed && recentIdx >= 0) { // 추가 연락 — 행을 늘리지 않고 기록만 덧붙인다(분모 보호)
+      cur[recentIdx][9] = [String(cur[recentIdx][9] || '').trim(), '추가연락 ' + stamp + ' ' + method + (note ? ' · ' + note : '')].filter(Boolean).join(' / ');
+    } else if (!closed) {
+      add.push([dayStr, sid, String(r[2] || ''), String(r[1] || '폼'), '', 'O', stamp, method, '',
+        [ok ? '수동기록(결석 감지 행 없음 — 출석 1탭 확인 필요)' : '미매칭:' + name, note].filter(Boolean).join(' / ')]);
+    }
+    if (!ok) miss.push('· ' + name + ' (' + (r[2] || '반 미상') + ') — 로스터 후보 ' + cands.length + '명 · absence_followup에 sid 공란으로 적재됨(student_id를 채우면 다음 밤 복귀 판정·집계에 반영)');
+    else if (!closed && recentIdx < 0) miss.push('· ' + name + ' (' + (r[2] || '반 미상') + ') — 연락 기록은 남겼으나 대응하는 결석 감지 행이 없습니다. 그 반의 출석 1탭이 그날 들어왔는지 확인하세요(1탭이 없으면 결석 판정 자체가 안 열립니다)');
+  });
+  if (cur.length) writeIfChanged(sh, 2, 1, cur);                                    // 마감 반영(변경 없으면 쓰기 0)
+  if (add.length) sh.getRange(sh.getLastRow() + 1, 1, add.length, W).setValues(add);
+  props.setProperty('결석폼_포인터', String(last)); // 적재 직후·메일 전 마감 — 메일 실패가 같은 응답을 재적재하지 않게
+  if (miss.length) adminMail('[SYNK] 🔁 결석 연락 기록 확인 필요 ' + miss.length + '건', miss.join('\n'));
+}
+
 // [v9.63] 첨삭 품질 게이트(순수 함수 — tests/safety.test.js가 직접 로드해 검증) — 무인 발행의 안전판.
 //   구조화 출력이 "형태"는 보장해도 "내용"은 보장 못 한다: 빈칸·언어 뒤바뀜(몽골어 칸에 한국어만)·
 //   사과/AI 자기언급·브랜드 금칙어(synk-brand 부정 금지)·형식 잔재를 기계로 거른다.
@@ -10499,6 +10876,7 @@ function parentSweep() {
   safeRun('sweepFeedbackAck', function () { sweepFeedbackAck_(ss); }); // [v9.49] 첨삭 '확인했어요' → +5P 정산(열람 보상 — 10분 내 반응해야 루프가 산다)
   safeRun('sweepTeacherMemoForm', function () { sweepTeacherMemoForm_(ss); }); // [v9.55] 약점 메모 폼 → student_errors — classPrepMail보다 앞(같은 틱의 메모가 수업 전 메일에 실린다)
   safeRun('sweepAcademicForm', function () { sweepAcademicForm_(ss); }); // [v9.74] 학업 기록 폼 → academic_log — 급수·모의 차트 원료(월 빈도라 포인터 조기 종료로 무비용)
+  safeRun('sweepAbsenceForm', function () { sweepAbsenceForm_(ss); }); // [v9.89] 결석 연락 폼 → absence_followup 마감 — checkNoShow보다 앞(같은 틱에 들어온 연락이 오늘 감지분에 바로 반영)
   safeRun('classPrepMail', function () { classPrepMail_(ss, ss.getSpreadsheetTimeZone()); }); // [v6.8]
   safeRun('checkoutCheerMail', function () { checkoutCheerMail_(ss); }); // [v6.8]
   safeRun('todayBoard', function () { todayBoard_(ss); }); // [v8.1] 오늘의 출결 보드 (10분 갱신)
@@ -12450,6 +12828,7 @@ const SHEET_SKELETON = [
     [KPI_SHEET_NAME, KPI_HEADERS], // [v9.26] 이탈률·전환율 계측 시트
     ['exit_log', ['student_id','이름','반','퇴소감지일','재원일수']], // [v9.28] 퇴소 이벤트 로그
     ['absence_notice', ['student_id','반','날짜','사유','등록시각']], // [v9.28] 학부모 결석 사전신고
+    ['absence_followup', ABSENCE_FOLLOWUP_HEADERS], // [v9.89] 결석 추적 — checkNoShow 감지 1건=1행, 연락은 폼, 복귀는 자동 판정. 「결석 복귀율」(등급 심사 20점) 원본
     ['inquiries', ['student_id','이름','문의내용','상태','접수시각']], // [v9.28] 학부모 문의 인바운드
     ['payments', ['student_id','이름','금액(만₮)','납부일','방법','비고','created_at']], // [v9.28] 매출 원장(수동 기입)
     ['crew_projects', ['시즌','반','프로젝트명','한줄소개','결과물링크','사진URL','공개일','참여크루','비고']], // [v9.29] 시즌 프로젝트 포트폴리오 — 수동 기입 전용(hall_of_fame 패턴 · 트리거·배치 연동 없음)
@@ -13276,6 +13655,19 @@ function preflightGlide() {
     else if (enRows) ok('수강 등록 ' + enRows + '건 — 만료 D-14/D-3 안내 가동 중');
   }
 
+  { // [v9.89] 결석 추적 침묵 감시 — checkNoShow는 "당일 그 반 출석 0건이면 스킵"이라, 강사가 출석 1탭을
+    //   안 하면 판정 창 자체가 안 열린다. 그러면 absence_followup은 계속 0행이고 「결석 복귀율」(등급 심사
+    //   20점 · 앱 자동 채점)은 0점이 아니라 무데이터가 된다. 코드는 정상인데 아무도 모르는 상태 = v9.75 계급.
+    const af80 = ss.getSheetByName('absence_followup');
+    const afRows = af80 && af80.getLastRow() >= 2 ? af80.getLastRow() - 1 : 0;
+    const atSh80 = ss.getSheetByName('attendance');
+    const atRows80 = atSh80 && atSh80.getLastRow() >= 2 ? atSh80.getLastRow() - 1 : 0;
+    if (!af80) warn('absence_followup 시트 없음 — 다음 미등원 감지 때 자동 생성되지만, 그 전까지 결석 복귀율은 측정되지 않습니다');
+    else if (cnt.student > 0 && !atRows80) warn('attendance 0건(학생 ' + cnt.student + '명) — 출석 1탭이 안 들어오면 결석 감지 창 자체가 안 열립니다(결석 복귀율 측정 불가). 강사 출석 1탭 정착이 이 지표의 전제입니다');
+    else if (cnt.student > 0 && atRows80 && !afRows) warn('출석은 들어오는데(' + atRows80 + '건) 결석 감지 0건 — 전원 개근이면 정상이지만, 반 단위로 출석 1탭이 빠진 날이 있는지 확인하세요(그 반은 결석 판정이 스킵됩니다)');
+    else if (afRows) ok('결석 추적 ' + afRows + '행 — 복귀 자동 판정·24시간 연락 알림 가동 중');
+  }
+
   // 4) class_stats — 강사 "오늘의 반" 데이터 존재 여부
   const cs = ss.getSheetByName('class_stats');
   const csRows = cs && cs.getLastRow() >= 2 ? cs.getLastRow() - 1 : 0;
@@ -13303,6 +13695,7 @@ function preflightGlide() {
     [['출석폼URL틀', 'createAttendanceForm', '앱 출석 버튼'], ['숙제폼URL틀', 'createHwForm', '숙제 제출 버튼(AI 첨삭 입구)'],
      ['약점메모폼URL', 'createTeacherMemoForm', '강사 약점 메모'],
      ['학업폼URL', 'createAcademicForm', '강사 학업 기록 버튼(수업준비 탭 — 급수·모의 차트 원료)'], // [v9.74]
+     ['결석폼URL', 'createAbsenceForm', '강사 결석 연락 기록 버튼(시즌 등급 심사 「결석 복귀율」 원료 — 없으면 지표가 측정 불가)'], // [v9.89]
      ['설문폼URL틀', 'createSurveyForm', '월간 만족도 설문(하이라이트 메일 동봉·주간 리포트 집계 — 첫 만족도 기준선)']].forEach(f => { // [v9.75] v9.73 편입 누락분
       if (getState(st6, f[0]).row < 1) warn('폼 미생성 — ' + f[2] + '가 작동하지 않습니다. 에디터에서 ' + f[1] + ' ▶ 1회 실행 후 calcAll(자동 14/22시)');
     });
@@ -13402,6 +13795,7 @@ function morningJobs() {   // 매일 07시
   safeRun('welcomeStoryBatch', welcomeStoryBatch_); // [v9.50·F4] 웰컴 스토리 — 대기열 중 학부모 이메일이 채워진 신규 학생에게 세계관 입장 편지(키 없으면 템플릿 폴백)
   safeRun('teacherMemoFormSync', function () { const ssTm = SpreadsheetApp.getActiveSpreadsheet(); syncTeacherMemoForm_(ssTm, ensureSheet(ssTm, 'app_state', ['key', 'value'])); }); // [v9.64] 연습 포인트 폼을 코드 정본에 매일 동기화 — 로스터(강사·반) 변화가 드롭다운에 자동 반영(폼 없으면 즉시 -1 return, 무비용)
   safeRun('academicFormSync', function () { const ssAf = SpreadsheetApp.getActiveSpreadsheet(); syncAcademicForm_(ssAf, ensureSheet(ssAf, 'app_state', ['key', 'value'])); }); // [v9.74] 학업 기록 폼 동기화 — 같은 계보(폼 없으면 -1 return, 무비용)
+  safeRun('absenceFormSync', function () { const ssAb = SpreadsheetApp.getActiveSpreadsheet(); syncAbsenceForm_(ssAb, ensureSheet(ssAb, 'app_state', ['key', 'value'])); }); // [v9.89] 결석 연락 폼 동기화 — 같은 계보(폼 없으면 -1 return, 무비용)
   safeRun('expiryDaily', function () { MJ_expiryDaily_(); }); // [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 비어 있으면 무비용(클로저 = 만족도팩 누락에도 morningJobs 생존)
   safeRun('jacketWatch', jacketWatch_); // [v9.83] 🧥 과잠 자격(재원 12개월+누계) 신규 도달자 감지 — 도달 0명이면 시트·메일 모두 무동작
 }
@@ -13424,6 +13818,7 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   // [v9.34] checkNoShow는 parentSweep(10분) 편승으로 이동 — 판정 창(수업 시작+30~90분)이 22시엔 구조적으로 안 걸려 죽은 안전장치였음
   safeRun('checkEvolution', checkEvolution);
   safeRun('checkAchievements', checkAchievements);
+  safeRun('absenceFollowup', absenceFollowupNightly_); // [v9.89] 결석 복귀 자동 판정 + 24시간 경과 미연락 강사 알림(창 D+1~D+3) — attendance가 그날치까지 채워진 뒤라야 판정이 맞으므로 calcAll·출석 전개 뒤
   safeRun('checkUnknownReasonsNightly', checkUnknownReasonsNightly_); // [v9.28] 미인식 reason 발각 지연 7일→1일
   safeRun('sheetSelfHeal', sheetSelfHeal_); // [v9.69] 스토리북 구형 분권 병합·고아 변형 선택자 청소·world_raid 월 중복 정리 — 멱등·변경 없으면 쓰기 0
   safeRun('profilesIntegrityNightly', profilesIntegrityNightly_); // [v9.77] 유령 행·user_id 중복·무효 role 매일 감시 — 이상 시에만 메일(동일 내용 dedup), 3열 읽기라 비용 0
@@ -13486,6 +13881,7 @@ function weeklyJobs() {    // 매주 월 07시
     ['🔄 재등록 시점', checkReenrollment],
     ['💬 학부모 문의', checkNewInquiries_],  // [v9.28] 결석 사전신고와 짝을 이루는 인바운드 채널
     ['📨 메신저 연결(학부모)', function (t) { return MJ_msgSection_(t); }],  // [v9.71] 이중화 현황 — 클로저(만족도팩 누락 시 이 섹션만 실패, 리포트는 발송)
+    ['🔁 결석 복귀율(강사별)', function (t) { return absenceSection_(t); }],  // [v9.89] 등급 심사 20점 항목 — 8주 시즌 창
     ['📅 수강 만료 임박', function (t) { return MJ_expirySection_(t); }],    // [v9.72]
     ['📋 월간 만족도 설문', function (t) { return MJ_surveySection_(t); }],   // [v9.73] 첫 만족도 기준선
     ['📋 주간 교안 초안', function () { return lpText || '(생성 없음)'; }]     // [v9.86·D] 반별 Doc 링크 — 유호 근무 46%(콘텐츠 편집)의 백지 제거

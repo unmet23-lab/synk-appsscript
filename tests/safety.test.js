@@ -380,7 +380,7 @@ test('[v9.48] 공유값 서버화 — calcAll이 학업 계산 뒤에 공유열�
   assert.ok(code.includes('const SHARED3_COL_START = 120'), '3차 블록 시작(DP120) 상수가 없다');
   const heads3 = code.match(/const SHARED3_COL_HEADERS = \[([\s\S]*?)\];/);
   assert.ok(heads3, 'SHARED3_COL_HEADERS 선언을 찾지 못함');
-  assert.equal(heads3[1].split(',').filter(s => s.trim()).length, 2);
+  assert.equal(heads3[1].split(',').filter(s => s.trim()).length, 3); // [v9.89] +결석폼URL(DR122)
   assert.ok(fn.includes('writeIfChanged(pf, 2, SHARED3_COL_START,'), '3차 블록 분리 쓰기가 아니면 선점 열 DO119(랭킹보드)를 덮어쓴다');
   assert.ok(fn.includes('.concat(SHARED3_COL_HEADERS)'), 'HEADS_ALL이 3차 블록을 포함하지 않는다 — 분기 반환 길이 가드가 무력화');
 });
@@ -1672,4 +1672,130 @@ test('[v9.88] 숙제·퀴즈 문항 자기완결 — 축약 참조 잔존 0 + �
   // ⑤ 카드 안내 문구가 실제 버튼 라벨과 일치(07-31 버튼 3종 한 줄 정렬로 라벨이 "✏️ 숙제"로 압축됨)
   assert.ok(!code.includes('✍️ <b>숙제 제출</b> 버튼'), '숙제 카드가 존재하지 않는 옛 버튼명(✍️ 숙제 제출)을 안내한다');
   assert.ok(code.includes('✏️ <b>숙제</b> 버튼'), '숙제 카드 제출 안내가 실제 버튼 라벨(✏️ 숙제)을 가리키지 않는다');
+});
+
+/* ── [v9.80] 🔁 결석 추적 — 「결석 복귀율」 측정 레일 ─────────────── */
+
+test('[v9.80] absence_followup 골격 — 감지·연락·복귀 3구간이 한 행에 있고 재건 목록에 편입돼 있다', () => {
+  // 결함: checkNoShow가 app_state에 "N명" 카운트만 남겨, 24시간 뒤 대조할 학생별 행이 없었다.
+  // 「결석 복귀율」은 등급 심사 20점 · 앱 자동 채점 항목(급여 인센티브 정본 §7) — 돈이 걸린 지표.
+  const m = code.match(/const ABSENCE_FOLLOWUP_HEADERS = \[([^\]]+)\]/);
+  assert.ok(m, 'ABSENCE_FOLLOWUP_HEADERS(헤더 정본) 선언이 없다');
+  ['날짜', 'student_id', '반', '담당강사', '감지시각', '연락여부', '연락시각', '연락수단', '복귀여부'].forEach((h) => {
+    assert.ok(m[1].includes(`'${h}'`), `요구 열 '${h}' 누락`);
+  });
+  const skel = section('const SHEET_SKELETON', 'function bootstrapSynk()');
+  assert.ok(skel.includes("['absence_followup', ABSENCE_FOLLOWUP_HEADERS]"),
+    '재건 목록(SHEET_SKELETON)에 없으면 원버튼 재건 후 시트가 사라진다');
+  assert.ok(!skel.includes("['absence_followup', ['날짜'"),
+    '헤더를 리터럴로 복제하면 두 정본이 갈라진다(단일 소스 유지)');
+});
+
+test('[v9.80] 복귀 판정 순수 함수 — 지각 오탐 정정·유예 창·판정 보류가 분모를 오염시키지 않는다', () => {
+  const f = loadFunction('function absenceReturnState_(', 'function absenceReturnStats_(', 'absenceReturnState_', {});
+  // 같은 날 출석이 뒤늦게 들어옴 = checkNoShow의 구조적 오탐(수업 시작 +30분 판정)
+  assert.equal(f('2026-07-01', ['2026-07-01'], '2026-07-20', 14), '지각');
+  // 이후 첫 출석 = 복귀(며칠 만인지 함께 기록)
+  assert.equal(f('2026-07-01', ['2026-07-03', '2026-07-09'], '2026-07-20', 14), '복귀:2026-07-03(+2일)');
+  // 유예 창 밖의 첫 출석은 '다음 수업 복귀'가 아니다
+  assert.equal(f('2026-07-01', ['2026-07-30'], '2026-07-31', 14), '미복귀');
+  // 유예 창 안 · 아직 출석 없음 = 판정 보류('') → 분모에도 분자에도 안 들어간다
+  assert.equal(f('2026-07-01', [], '2026-07-05', 14), '');
+  assert.equal(f('2026-07-01', [], '2026-07-15', 14), '미복귀');
+  assert.equal(f('', ['2026-07-03'], '2026-07-20', 14), '');
+  // 결석일 이전 출석은 복귀 근거가 될 수 없다
+  assert.equal(f('2026-07-10', ['2026-07-02'], '2026-07-12', 14), '');
+});
+
+test('[v9.80] 강사별 집계·배점 — 무데이터를 0점으로 환산하지 않는다(앱 결함으로 돈을 잃지 않게)', () => {
+  const stats = loadFunction('function absenceReturnStats_(', 'function absenceReturnScore_(', 'absenceReturnStats_', {});
+  const score = loadFunction('function absenceReturnScore_(', 'function checkNoShow()', 'absenceReturnScore_', {});
+  const R = (d, sid, cls, t, contacted, ret) => [d, sid, cls, t, '11:30', contacted, '', '', ret, ''];
+  const by = stats([
+    R('2026-07-01', 'S1', '정규반1', '재헌', 'O', '복귀:2026-07-02(+1일)'),
+    R('2026-07-02', 'S2', '정규반1', '재헌', '', '미복귀'),
+    R('2026-07-03', 'S3', '정규반1', '재헌', 'O', '지각'),           // 오탐 — 분모 제외
+    R('2026-07-04', 'S4', '정규반1', '재헌', '', ''),                 // 판정 보류 — 분모 제외
+    R('2026-06-01', 'S5', '정규반1', '재헌', '', '미복귀'),           // 창 밖
+    R('2026-07-01', 'S6', '집중반1', '', 'O', '복귀:2026-07-02(+1일)') // 담당 미배정
+  ], '2026-07-01', null);
+  assert.equal(by['재헌'].tot, 3, '지각은 결석 건수에서 빠져야 한다');
+  assert.equal(by['재헌'].judged, 2, '판정 보류가 분모에 들어갔다');
+  assert.equal(by['재헌'].rate, 50);
+  assert.equal(by['재헌'].late, 1);
+  assert.equal(by['재헌'].pending, 1);
+  assert.equal(by['재헌'].contacted, 1);
+  assert.ok(by['(담당 미배정)'], '담당강사 공란도 집계에서 사라지면 안 된다(누락이 드러나야 한다)');
+  // 급여 인센티브 정본 §7 배점표 — 90%+ 20 / 85~89 16 / 80~84 12 / 75~79 6 / 미만 0
+  assert.equal(score(95), 20); assert.equal(score(90), 20);
+  assert.equal(score(87), 16); assert.equal(score(82), 12);
+  assert.equal(score(76), 6);  assert.equal(score(74), 0);
+  assert.equal(score(null), null, '판정 0건은 미측정(null) — 0점이 아니다');
+});
+
+test('[v9.80] checkNoShow — 시트 적재가 메일보다 먼저이고, 재시도해도 행이 늘지 않는다', () => {
+  const body = section('function checkNoShow()', 'function absenceFollowupNightly_()');
+  // 지표 원본이 쿼터·메일 실패에 종속되면 안 된다(메일은 알림, 행은 데이터)
+  assertOrder(body, [
+    'af.getRange(afRow, 1, add.length',
+    'if (absent.length > 0 && quotaOk(1))',
+    'MailApp.sendEmail(ADMIN_EMAIL',
+    "setState(st, key, absent.length + '명')"
+  ]);
+  assert.ok(body.includes('if (afSeen[sid]) return;'), '(날짜|sid) 중복 가드가 없다 — 메일 throw 후 재시도가 행을 복제한다');
+  assert.ok(body.includes("ensureSheet(ss, 'absence_followup', ABSENCE_FOLLOWUP_HEADERS)"), '적재 시트 보장이 없다');
+  // 당일 출석 0건 스킵(v9.34 가드)은 이 지표의 전제 — 지우면 휴강일 전원이 결석으로 적재된다
+  assert.ok(body.includes('if (!clsStu.some(r => todayAtt.has(r[0]))) return;'), '당일 출석 0건 스킵 가드가 사라졌다');
+  assert.ok(body.includes('사전신고'), '학부모 사전신고(absence_notice) 조인이 없다 — 사유 확인된 결석까지 강사를 쫀다');
+});
+
+test('[v9.80] 야간 스캔 — 창 방식 재알림·이행분 제외·복귀 판정 멱등', () => {
+  const body = section('function absenceFollowupNightly_()', 'function absenceSection_(');
+  assert.ok(body.includes('days < 1 || days > ABSENCE_NAG_DAYS'),
+    '정확일 매칭이면 배치가 하루 죽을 때 그 건은 영영 알림 없이 지나간다(MJ_expiryDaily_ 창 방식)');
+  assert.ok(body.includes("if (String(r[5] || '').trim()) return;"), '이미 연락한 건까지 다시 쫀다');
+  assert.ok(body.includes("if (retCol[i][0] === '지각') return;"), '지각(오탐)에도 연락 독촉이 나간다');
+  assert.ok(body.includes("if (String(r[9] || '').indexOf('사전신고') === 0) return;"), '사전신고 결석까지 독촉한다');
+  assert.ok(body.includes('if (cur) return [cur];'), '확정된 복귀 판정을 매일 다시 쓰면 멱등이 깨진다');
+  assert.ok(body.includes('writeIfChanged(sh, 2, 9, retCol)'), '복귀 열 기록이 writeIfChanged가 아니다(무변경일에도 쓰기 발생)');
+  assert.ok(body.includes('!quotaOk(1)'), '강사 메일에 쿼터 가드가 없다 — 강사 대상 자동 메일이 이미 4종 돈다');
+  assert.ok(body.includes('ABSENCE_ESCALATE_N'), '반복 결석 원장 에스컬레이션(수업 규칙 「결석자 복귀」 — 3회 연속 원장 보고)이 없다');
+  assert.ok(section('function nightJobs()', 'function dailyBackupJob()').includes("safeRun('absenceFollowup'"), '야간 배치 배선 누락');
+});
+
+test('[v9.80] 결석 연락 폼 — 항목 고정(응답 열 파싱 계약)·재실행 제자리 업그레이드·10분 전개', () => {
+  const cf = section('function createAbsenceForm()', 'function importFormResponses()');
+  assertOrder(cf, ['syncAbsenceForm_(ss, st)', 'FormApp.create']); // 있으면 업그레이드, 없을 때만 생성(URL 갈아끼움 사고 차단)
+  // 항목 수 = 응답 시트 열 지도. 6문항 + 타임스탬프 = 7열이고, 스위프가 정확히 7열을 읽어야 한다.
+  const items = cf.match(/\.add[A-Z]\w*Item\(/g) || [];
+  assert.equal(items.length, 8, '항목 수가 바뀌었다(강사·반은 List/Text 2분기라 8개 호출 = 6문항)');
+  const sync = section('function syncAbsenceForm_(', 'function createAbsenceForm()');
+  assert.equal(/\.add[A-Z]\w*Item\(/.test(sync.replace(/\/\/[^\n]*/g, '')), false,
+    '업그레이드 경로에서 항목 추가 금지 — 응답 시트에 새 열이 생겨 스위프 위치 파싱(1~7열)이 깨진다');
+  const sw = section('function sweepAbsenceForm_(', '첨삭 품질 게이트');
+  assert.ok(sw.includes('last - from, 7'), '응답 7열 읽기가 아니다 — 폼 항목 수와 어긋나면 값이 밀린다');
+  assertOrder(sw, ['sh.getRange(sh.getLastRow() + 1', '적재 직후·메일 전 마감', 'adminMail(']); // 메일 실패가 중복 적재를 만들지 않게
+  assert.ok(sw.includes("props.setProperty('결석폼_포인터', String(last))"), '포인터 마감 누락');
+  assert.ok(sw.includes("if (String(c[5] || '').trim()) return;"), '이미 마감된 행을 덮어써 첫 연락 시각이 사라진다');
+  assert.ok(sw.includes('수동기록'), '대응 결석 행이 없을 때 응답을 버리면 강사의 연락 기록이 증발한다');
+  // 수업 규칙 「결석자 복귀」 "2회 연속이면 전화" — 같은 학생 두 번째 연락이 새 행이 되면 결석 1건이 2건으로 세어져
+  // 복귀율 분모가 부푼다(돈이 걸린 지표의 조용한 왜곡). 새 행 대신 최근 행 비고에 덧붙여야 한다.
+  assert.ok(sw.includes('recentIdx'), '추가 연락 판별(유예 창 안 기존 행 탐색)이 없다');
+  assert.ok(sw.includes("'추가연락 '"), '추가 연락을 기존 행 비고에 덧붙이는 경로가 없다 — 분모가 부푼다');
+  assert.ok(sw.includes('!closed && recentIdx >= 0'), '추가 연락인데 새 행을 만든다(결석 건수 이중 계상)');
+  assert.ok(sw.includes('!closed && recentIdx < 0'), '추가 연락에도 "출석 1탭 확인" 오경보가 나간다');
+  assert.ok(section('function parentSweep()', 'function translateTopics_').includes("safeRun('sweepAbsenceForm'"), '10분 스위프 배선 누락');
+  assert.ok(section('function morningJobs()', 'function nightJobs()').includes("safeRun('absenceFormSync'"), '아침 로스터 동기화 누락');
+});
+
+test('[v9.80] 켜기 큐·침묵 감시 — 폼 미생성과 "출석 1탭이 없어 추적이 안 열림"을 preflight가 잡는다', () => {
+  assert.ok(code.includes("['결석폼URL', 'createAbsenceForm'"), 'preflight 켜기 큐(폼 미생성 감시) 누락');
+  const pfl = section("const af80 = ss.getSheetByName('absence_followup')", '// 4) class_stats');
+  assert.ok(pfl.includes('cnt.student'), '학생 수 대조 없이 경고하면 개원 전 빈 로스터에서 오경보');
+  assert.ok(pfl.includes('출석 1탭'), '이 지표의 구조적 전제(1탭이 유일한 입구) 경고 문구가 없다');
+  const shared = section('function writeSharedCols_(', 'function syncProfiles()');
+  assert.ok(shared.includes("kv['결석폼URL']"), '강사 행 결석 폼 버튼 URL 배선 누락');
+  const h3v = code.match(/const SHARED3_COL_HEADERS = \[([^\]]+)\]/);
+  assert.ok(h3v && h3v[1].includes("'결석폼URL'"), '결석폼URL이 3차 블록(DR122)에 없다 — DO119는 v9.81 랭킹보드가 선점했다');
+  assert.ok(section('function weeklyJobs()', 'function monthlyJobs()').includes('absenceSection_'), '주간 리포트 노출 누락 — 측정해도 아무도 안 본다');
 });
