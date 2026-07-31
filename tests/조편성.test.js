@@ -142,7 +142,7 @@ test('시즌 주차는 1주차부터 시작해 8주차까지 간다', () => {
 const mk = (n, extra) => {
   const out = [];
   for (let i = 1; i <= n; i++) {
-    out.push(Object.assign({ sid: 'S' + i, name: '학생' + i, skill: n - i + 1, talk: 0, tag: '' },
+    out.push(Object.assign({ sid: 'S' + i, name: '학생' + i, skill: n - i + 1, quiet: 0, tag: '' },
       extra ? extra(i) : {}));
   }
   return out; // skill이 큰 순서 = S1이 1위
@@ -204,16 +204,25 @@ test('같은 학교 학생이 한 조에 몰리지 않는다', () => {
   }
 });
 
-test('말 많은 학생이 한 조에 몰리지 않는다', () => {
-  // 실력 1~4위가 전부 말수 상위인 상황 — 스네이크가 이미 흩어뜨리는지 확인
-  const members = mk(16, (i) => ({ talk: i <= 4 ? 20 : 1 }));
+test('조용한 학생이 한 조에 몰리지 않는다 (마감폼 미발화 기록 기반)', () => {
+  // 같은 실력 계층(스네이크 라운드) 안에 조용한 학생을 몰아넣고, 교환이 실제로 흩어놓는지 본다.
+  // 계층을 가로지르는 교환은 실력 균형을 깨므로 하지 않는다 — 그래서 같은 라운드에 심는다.
+  const quietSids = ['S1', 'S2', 'S3', 'S4'];
+  const members = mk(16, (i) => ({ quiet: i <= 4 ? 9 : 0 }));
   const plan = G.buildGroupPlan_(members, {});
-  const talkOf = {};
-  members.forEach((m) => { talkOf[m.sid] = m.talk; });
   for (let g = 1; g <= 4; g++) {
-    const hi = plan.filter((p) => p.grp === g).filter((p) => talkOf[p.sid] >= 20).length;
-    assert.ok(hi <= 1, `${g}조에 말 많은 학생이 ${hi}명 몰림`);
+    const hi = plan.filter((p) => p.grp === g).filter((p) => quietSids.indexOf(p.sid) > -1).length;
+    assert.ok(hi <= 1, `${g}조에 조용한 학생이 ${hi}명 몰림`);
   }
+});
+
+test('침묵 점수가 편성에 실제로 반영된다 (필드명이 어긋나면 이 테스트가 죽는다)', () => {
+  // talk→quiet 개명 때 buildGroupPlan_만 바꾸고 호출부를 안 고치면 quiet가 undefined가 되어
+  // 교환 로직이 통째로 무음이 된다. 그래도 스네이크만으로 대부분 흩어져 겉으로는 통과한다.
+  // 그래서 '편성근거'에 침묵 횟수가 실리는지를 직접 본다.
+  const plan = G.buildGroupPlan_(mk(8, (i) => ({ quiet: i === 1 ? 5 : 0 })), {});
+  const s1 = plan.filter((p) => p.sid === 'S1')[0];
+  assert.ok(/침묵 5회/.test(s1.why), `편성근거에 침묵 횟수가 없다: ${s1.why}`);
 });
 
 test('강사가 잠근 학생(고정=Y)은 그 조 자리를 지킨다', () => {
