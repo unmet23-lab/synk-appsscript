@@ -1347,9 +1347,10 @@ test('[v9.84] 콜드스타트 폴백 사슬 — 소비층 4곳 통일·학생 �
 
 test('[v9.84] 노션 상담서술 이관 — 동의 게이트→속성 보장→조인·1900자·장애 격리', () => {
   const body = section('function syncToNotion_()', 'function syncNotionNow()');
-  // [리뷰 H2] 동의 게이트가 맵 로드보다 앞 — migrateConsentV185(상담동의=v18.5) 전에는 자유서술이 노션으로 나가지 않는다(데이터 접촉 0)
+  // [리뷰 H2] 동의 게이트가 맵 로드보다 앞 — migrateConsentV186(상담동의=v18.6) 전에는 자유서술이 노션으로 나가지 않는다(데이터 접촉 0)
   assertOrder(body, ["'상담동의'", 'consultNarrativeMap_()', "notionEnsureProp_('상담서술')", "properties['상담서술']"]);
-  assert.ok(body.includes("=== 'v18.5'"), '동의 게이트 값 비교(v18.5)가 없다');
+  // [v9.90] 마이그레이션 버전을 올리면 이 게이트도 함께 올라가야 한다 — 한쪽만 올리면 이관이 영영 안 열린 채 침묵한다(선언값 단일 소스 검사)
+  assert.ok(body.includes("=== 'v18.6'"), '동의 게이트 값 비교(v18.6)가 없다 — 마이그레이션 선언값과 어긋나면 상담서술이 영구 보류된다');
   assert.ok(body.includes('상담서술 이관 보류'), '동의 미적용 시 보류 로그가 없다(침묵 금지)');
   assert.ok(body.includes('상담서술 로드 실패(정량만 동기화)'), '상담시트 장애가 정량 동기화까지 끊는다(격리 부재)');
   const nm = section('function consultNarrativeMap_', 'function notionEnsureProp_');
@@ -1377,14 +1378,47 @@ test('[v9.84] KPI 인지채널 분해 — 이름 해석·집계·리포트 1줄�
   assert.equal(lineF({ chConsult: {}, chConv: {} }), '', '채널 0건인데 빈 문자열이 아니다');
 });
 
-test('[v9.84] 동의 마이그레이션(v18.5) — 멱등·필수·명시 동의·▶ 전용·워치독 게이트', () => {
-  const body = section('function migrateConsentV185()', 'function createLeadForm()');
-  assertOrder(body, ['상담폼ID', 'const hasIt', 'addMultipleChoiceItem', 'setRequired(true)', "setState(st, '상담동의', 'v18.5')"]);
+test('[v9.90] 동의 마이그레이션(v18.6) — 멱등·명시 동의·거부 가능·열 착지·▶ 전용·워치독 게이트', () => {
+  const body = section('function migrateConsentV186()', 'function voiceConsentStat_()');
+  assert.ok(body.includes("const A = '개인정보·학습데이터 활용 동의'"), '문항 A(개인정보·필수)가 없다');
   assert.ok(body.includes("['네, 동의합니다']"), '명시적 동의 선택지가 없다');
   assert.ok(body.includes('철회'), '동의 철회 안내가 없다(문구 초안 필수 요소)');
-  const calls = (code.match(/migrateConsentV185\(\)/g) || []).length;
+  // [v9.90 핵심] 음성 동의는 blob이 아니라 '열'로 받는다 — 열이 없으면 "누가 거부했는지"를 코드가 못 읽어 녹음이 거부자까지 삼킨다
+  assert.ok(code.includes("const CONSENT_EXT_HEADERS = ['음성동의']"), '음성동의 착지 헤더 상수가 없다/변형됨');
+  assert.ok(body.includes('const B = CONSENT_EXT_HEADERS[0]'), '문항 B 제목이 헤더명 상수를 쓰지 않는다(제목≠헤더면 열에 착지하지 않는다)');
+  assert.ok(body.includes("['네, 동의합니다', '아니요, 원하지 않습니다']"), '음성 동의에 거부 선택지가 없다 — 거부 불가 동의는 끼워팔기로 무효화될 수 있다');
+  assert.ok(/const B = CONSENT_EXT_HEADERS\[0\][\s\S]*setRequired\(true\)/.test(body), '음성 동의가 필수 응답이 아니다(무응답이면 게이트가 침묵으로 통과된다)');
+  // 시트 열 증분이 실패하면 v18.6을 선언하지 않는다 — 폼 문항만 있고 열이 없는 상태를 "적용됨"으로 오인하면 거부자를 못 읽는다
+  assert.ok(body.includes('if (sheetOk) setState(st, \'상담동의\', \'v18.6\')'), '시트 증분 성공 조건부 선언이 아니다');
+  assert.ok(body.includes('학생ID') && body.includes('증분 중단'), '상담시트 스키마 가드(60열=학생ID)가 없다');
+  const calls = (code.match(/migrateConsentV186\(\)/g) || []).length;
   assert.equal(calls, 1, '▶ 전용이어야 하는 동의 마이그레이션이 코드 어딘가에서 자동 호출된다(정의 1회 외 호출 ' + (calls - 1) + '건)');
-  assert.ok(code.includes("String(getState(stV, '상담동의').val || '') === 'v18.5'"), '워치독 동의 미적용 감시 게이트가 없다');
+  assert.ok(code.includes("String(getState(stV, '상담동의').val || '') === 'v18.6'"), '워치독 동의 미적용 감시 게이트가 없다');
+  // 구 함수명 잔재 검사 — 역사 기록(설계노트 204·버전 문자열)은 허용하되, 정의와 '▶ 실행 지시'는 남아 있으면 안 된다(없는 함수를 유호님이 누른다)
+  assert.ok(!code.includes('function migrateConsentV185'), '구 함수 정의(V185)가 남아 있다');
+  assert.ok(!code.includes('migrateConsentV185 ▶'), '구 함수 ▶ 실행 안내가 남아 있다 — 유호님이 없는 함수를 실행하게 된다');
+});
+
+test('[v9.90] 🛂 면접 기록 폼 — 재실행 안전·익명 회수·활용 동의·핵심 칸·워치독 편입', () => {
+  const body = section('function createInterviewLogForm()', 'function importFormResponses()');
+  // 재실행 안전 — 살아 있는 폼이 있으면 절대 새로 만들지 않는다(배포된 링크·QR가 미아가 되는 사고 방지, createConsultForm 리뷰 M1 계보)
+  // 생성(FormApp.create)은 반드시 ①ID 조회 ②응답 탭 복구 ③기존 폼 열기를 모두 지나친 뒤에만 온다
+  assertOrder(body, ["getState(st, '면접폼ID')", 'shR.getFormUrl()', 'FormApp.openById(exId)', 'FormApp.create(']);
+  assert.ok(body.includes("setState(st, '면접폼ID'") && body.includes("setState(st, '면접폼URL'"), '생성 후 폼 ID·URL 저장이 없다');
+  assert.ok(body.includes('새 폼을 만들지 않았습니다'), '폼 열기 실패 시 재생성 차단 경로가 없다');
+  assert.ok(body.includes('연결 폼에서 복구'), 'ID 유실 시 응답 탭에서 복구하는 경로가 없다 — 중복 폼이 생겨 회수가 두 곳으로 갈린다');
+  // 익명 회수 — 이름·연락처가 필수면 거절 경험(가장 값진 자료)이 안 들어온다
+  assert.ok(!/txt\('이름', true/.test(body) && !/txt\('연락처', true/.test(body), '이름·연락처가 필수다 — 익명 회수가 막힌다');
+  // 자료 활용 동의 = 필수 + 거부 가능. 없으면 모은 기록을 연습 자료로도 AI 학습으로도 못 쓴다(소급 불가)
+  assert.ok(/mc\('자료활용동의', \['네, 동의합니다', '아니요, 원하지 않습니다'\], true/.test(body), '자료 활용 동의가 필수·거부 가능 형태가 아니다');
+  // 핵심 칸 2개 — 질문 은행과 모순 탐지 채점표의 원료
+  assert.ok(/para\('받은 질문 전부', true/.test(body), "'받은 질문 전부'가 필수 문항이 아니다(질문 은행의 유일한 원천)");
+  assert.ok(body.includes("para('다시 물어보거나 서류를 지적한 부분'"), '재질문·서류 지적 칸이 없다(합격과 거절을 가르는 지점)');
+  assert.ok(body.includes("mc('면접 종류', INTERVIEW_KINDS, true)") && body.includes("mc('결과',"), '면접 종류·결과 분류 문항이 없다');
+  assert.ok(body.includes("linkFormTab_(ss, before, '면접기록_응답')"), '응답 탭 연결이 없다');
+  // 워치독 — 폼 생존 + 회수량(개발 준비도)
+  assert.ok(code.includes("['면접폼ID', '면접 기록 폼(비자·취업)'"), '워치독 폼 생존 큐에 면접폼이 없다');
+  assert.ok(code.includes("ss.getSheetByName('면접기록_응답')"), '워치독 회수 건수 표기가 없다');
 });
 
 // ── [v9.83] 💰 포인트 경제 ─────────────────────────────────────────────────────
