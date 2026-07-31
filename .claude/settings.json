@@ -12,6 +12,18 @@
             "statusMessage": "clasp 배포 게이트 검사"
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IN=$(cat); case \"$IN\" in *.md*) printf '%s' \"$IN\" | \"/c/Program Files/nodejs/node.exe\" \"C:/Users/q1212/Documents/SYNK-appsscript/.claude/hooks/board-guard.js\" ;; esac",
+            "shell": "bash",
+            "timeout": 30,
+            "statusMessage": "세션보드 비대화 검사"
+          }
+        ]
       }
     ]
   },
