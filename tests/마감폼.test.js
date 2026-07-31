@@ -82,6 +82,27 @@ test('폼은 재실행해도 복제되지 않고 제자리 업그레이드된다
     '이미 있을 때 조기 반환하지 않는다 — 두 번 누르면 폼이 복제되고 강사 링크가 갈린다');
 });
 
+// 2026-08-01 실사고: 첫 실행이 8분 만에 DEADLINE_EXCEEDED. 폼은 이미 생성됐는데 ID 저장이 맨 뒤라
+// 앱이 그 폼을 몰랐다 — 재실행하면 폼이 하나 더 생기고 이미 배포한 강사 링크가 죽는다.
+test('폼 생성 직후 즉시 ID를 기록한다 (중간에 죽어도 고아가 안 생기게)', () => {
+  const create = bodyOf('function createLessonCloseForm', '\n}');
+  const createAt = create.indexOf('FormApp.create(');
+  const idAt = create.indexOf("setState(st, '마감폼ID'", createAt);
+  const destAt = create.indexOf('setDestination(');
+  assert.ok(createAt > -1 && idAt > createAt, '폼 생성 후 ID를 저장하지 않는다');
+  assert.ok(idAt < destAt,
+    'ID 저장이 응답 시트 연결보다 뒤에 있다 — 그 사이에 타임아웃되면 앱이 모르는 고아 폼이 남는다');
+});
+
+test('무거운 단계는 이미 끝났으면 건너뛴다 (재실행이 남은 단계만 이어서 한다)', () => {
+  const create = bodyOf('function createLessonCloseForm', '\n}');
+  assert.ok(/getDestinationId\(\)/.test(create), '응답 시트 연결 여부를 확인하지 않는다 — 매번 다시 연결한다');
+  assert.ok(/if \(!form\.getItems\(\)\.length\)/.test(create),
+    '문항 존재 여부를 확인하지 않는다 — 재실행 때 문항이 중복 추가되면 sweep 5열 계약이 깨진다');
+  assert.ok(/DriveApp\.getFilesByName\(spec\.title\)/.test(create),
+    '같은 이름의 고아 폼을 회수하지 않는다 — 직전 실행이 남긴 폼 위에 또 만든다');
+});
+
 /* ── 배선 ────────────────────────────────────────────────── */
 
 test('lesson_close가 시트 골격에 있고, 상수는 골격보다 앞에 정의된다 (const TDZ)', () => {
