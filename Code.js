@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.98'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.98] 버전 이력 분리 · [v9.97] 월키 Date 오염 팩(07-31 학생화면 실측 잔여 D) — 소식탭 스토리북 Description이 'Mon Jun 01 2026 …' 원시 Date로 뜨던 것의 정체는 표시 문제가 아니라 **시트가 'yyyy-MM'을 날짜로 자동 변환**한 것. 그 탓에 월키 멱등 가드(String(r[0])===ym)가 영구 실패해 ①synk_stories 매달 재발간(중복 병합 자기치유가 증상을 가려 옴) ②monthly_snapshot 게임배치 재실행 ③synk_cards·league_history 중복 ④스토리초안 Claude API 중복 과금 경로가 동시에 열려 있었다(v9.68 시각 Date 오염과 같은 계급, 5개 시트 공통). 처치=ymTextOf_(Date→'yyyy-MM' 정규화, 문자열은 재파싱 금지 — tz 경계 전달 밀림 차단)+ymTextColFix_(월 열 '@' 서식 고정·기존 오염 행 되돌림, 서식·쓰기 양쪽 멱등)를 5개 호출부에 배선. 회귀=구 String() 직접 비교 잔존 0 + 4개 시트 ensureSheet 인근 배선 기계 검사
+const SYNK_VERSION = 'v9.99'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.99] 발화 퀄리티 엔진 — 소그룹 20분 프로토콜·3라운드 짝·발화 지수·정밀 청취 로테이션
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -1559,17 +1559,38 @@ function buildGroupHud_(clsName, b) {
       return '<span style="white-space:nowrap;' + (pres ? 'color:#B54708;font-weight:800;' : 'color:#101828;font-weight:700;') + '">' +
         (m.icon ? m.icon + ' ' : '') + escHtml_(m.name) + '<span style="font-weight:600;color:#98A2B3;">(' + escHtml_(m.role || '') + ')</span></span>';
     }).join('<span style="color:#D0D5DD;"> · </span>');
-    return '<div style="margin-top:10px;display:flex;gap:10px;align-items:baseline;">' +
-      '<span style="flex-shrink:0;width:30px;font-size:12px;font-weight:800;color:#3D5AFE;">' + (g + 1) + '조</span>' +
-      '<div style="font-size:12.5px;line-height:1.9;">' + mem + '</div></div>';
+    // [v9.99] 3라운드 짝 — 교실에서 폰으로 보는 화면이라 여기서는 이름이 실제로 필요하다(메일과 동일 원천)
+    const rd = [];
+    for (let r = 0; r < TALK_ROUNDS.length; r++) {
+      const seen = {}, ps = [];
+      arr.forEach(m => {
+        const nm = (m.rounds || [])[r];
+        if (!nm || seen[m.name] || seen[nm]) return;
+        seen[m.name] = 1; seen[nm] = 1; ps.push(escHtml_(m.name) + '–' + escHtml_(nm));
+      });
+      if (ps.length) rd.push('<b style="color:#667085;">' + (r + 1) + 'R</b> ' + ps.join('/'));
+    }
+    const focused = Number(b.focus) === g + 1; // [v9.99] 오늘 정밀 청취 조
+    return '<div style="margin-top:10px;display:flex;gap:10px;align-items:baseline;' +
+      (focused ? 'background:#EEF4FF;border-radius:10px;padding:6px 8px;margin-left:-8px;margin-right:-8px;' : '') + '">' +
+      '<span style="flex-shrink:0;width:34px;font-size:12px;font-weight:800;color:#3D5AFE;">' + (g + 1) + '조' + (focused ? '🎧' : '') + '</span>' +
+      '<div style="font-size:12.5px;line-height:1.9;">' + mem +
+      (rd.length ? '<div style="font-size:10.5px;color:#98A2B3;line-height:1.7;font-weight:600;">' + rd.join('<span style="color:#D0D5DD;"> · </span>') + '</div>' : '') +
+      '</div></div>';
   }).join('');
   const pres = [];
   b.groups.forEach((arr, g) => arr.forEach(m => { if (m.role === '발표') pres.push((g + 1) + '조 ' + escHtml_(m.name)); }));
   const foot = pres.length
     ? '<div style="margin-top:12px;background:#FFFAEB;border-radius:12px;padding:9px 12px;font-size:12px;font-weight:600;line-height:1.6;color:#B54708;">📢 오늘 발표 — ' + pres.join(' · ') + '<span style="font-weight:500;"> · 소그룹 시작 때 미리 알려주세요</span></div>'
     : '';
-  const hint = '<div style="margin-top:10px;font-size:11px;line-height:1.6;color:#98A2B3;">역할은 차시마다 한 칸씩 돕니다 — 진행 → 기록 → 발표 → 질문</div>';
-  return '<div style="' + CARD_FONT + HUD_CARD + '">' + head + rows + foot + hint + '</div>';
+  // [v9.99] 20분 타임박스 — 프로토콜을 문서에만 두면 개원 3주면 아무도 안 본다. 교실 화면에 상설한다.
+  const box = '<div style="margin-top:10px;background:#F9FAFB;border-radius:12px;padding:9px 12px;font-size:11.5px;line-height:1.7;color:#475467;font-weight:600;">' +
+    '⏱ 20분 — ' + TALK_PLAN_MIN + '분 계획(말 없이 메모) → ' +
+    TALK_ROUNDS.map((m, i) => (i + 1) + 'R ' + m + '분').join(' → ') + ' → 정리·발표' +
+    (Number(b.focus) ? '<br/>🎧 정밀 청취 <b>' + Number(b.focus) + '조</b> — 20분 내내 붙어 실제 문장을 받아적고 약점 메모 폼에 넣으세요' : '') + '</div>';
+  const hint = '<div style="margin-top:10px;font-size:11px;line-height:1.6;color:#98A2B3;">역할은 차시마다 한 칸씩 돕니다 — ' +
+    ROLE_NAMES.map((n, i) => n + '(' + ROLE_DUTY[i] + ')').join(' → ') + '</div>';
+  return '<div style="' + CARD_FONT + HUD_CARD + '">' + head + rows + foot + box + hint + '</div>';
 }
 // [v9.86·B] 반별 조 편성 절 배치 생성 — groupBoardOf_를 반마다 부르면 groups·schedule을 16회 재읽는다 → 1회 읽기.
 //   역할 계산은 groupBoardOf_와 동일 원천(roleOfSeat_·lessonNoOf_) — 메일 조 편성표와 어긋날 수 없다.
@@ -1600,8 +1621,13 @@ function groupHudsByClass_(ss, tz, when) {
     groups.forEach(arr => arr.forEach(m => {
       m.role = roleOfSeat_(m.seat, lessonNo, arr.length);
       m.icon = roleIconOf_(m.seat, lessonNo, arr.length);
+      // [v9.99] 3라운드 짝 — groupBoardOf_와 같은 순수 계산이라 메일 조 편성표와 어긋날 수 없다
+      m.rounds = pairRoundsOf_(m.seat, arr.length)
+        .map(s => { const x = arr.filter(y => y.seat === s)[0]; return x ? x.name : ''; }).filter(Boolean);
     }));
-    out[c] = buildGroupHud_('', { lessonNo: lessonNo, week: seasonWeekOf_(start, whenD), confirmed: String(byCls[c][0][6] || ''), groups: groups.filter(a => a.length) });
+    const wk = seasonWeekOf_(start, whenD);
+    out[c] = buildGroupHud_('', { lessonNo: lessonNo, week: wk, focus: focusGroupOf_(lessonNo, wk), // [v9.99]
+      confirmed: String(byCls[c][0][6] || ''), groups: groups.filter(a => a.length) });
   });
   return out;
 }
@@ -2301,6 +2327,7 @@ function calcAll() {
   const dexOut = []; // [v9.42] CE(83) 도감HTML — 도달만 공개·미도달 ??? (도감 스포일러 차단)
   const calOut = []; // [v9.44] CF(84) 출석달력HTML — 학부모·학생 출석 시인성(도장 그리드)
   const journeyOut = []; // [v9.20] 나의여정(BY 77) — 개인 스토리 카드
+  const meetOut = []; // [v9.99] 오늘의만남(DY 129) — 소그룹 3라운드 짝. 계산값이라 시트에 새 원천을 만들지 않는다
   const clsB2 = {}; // sid→반 (주간 분모용)
   const radarOut = [], radarList = []; // [v9.14] (공유 변수는 함수 최상단으로 승격)
   pfData.forEach(rr => { if (rr[0] && rr[3] === 'student') clsB2[rr[0]] = String(rr[4] || ''); }); // [v9.16]
@@ -2504,8 +2531,12 @@ function calcAll() {
     });
   }
     const todayYmd = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
+    // [v9.99] 오늘의 3라운드 짝 — 편성·역할과 같은 순수 계산(groups 1회 읽기). 편성 전·수업 없는 날은 빈 맵
+    let meetMap = {};
+    try { meetMap = todayPairsBySid_(ss, tz, now); } catch (e) { Logger.log('오늘의만남 스킵: ' + e); }
     const out = pfData.map((r, idx) => {
       const id = r[0], t = total[id] || 0;
+      meetOut.push([(r[3] === 'student' && meetMap[String(id)]) || '']); // 행 수 정합 — 비학생·미편성은 공란
       let mon = monsterOf(t); // [v9.36] let — 아래 게이트가 클램프할 수 있음
       // [v9.36] 진화 게이트 — 포인트 도달(T=100)이어도 해당 단계 문법 도달 수 미달이면 단계 진입 보류.
       //   S/T/AP/AG·여정·액자·진화일이 전부 클램프값을 따라 자동 일관(삽입점 단일화).
@@ -2817,6 +2848,14 @@ function calcAll() {
     // [v9.44] 출석달력HTML(CF 84) — 학부모 우리아이·학생 내 기록의 출석 시인성 카드
     if (String(pf.getRange('CF1').getValue()) !== '출석달력HTML') pf.getRange('CF1').setValue('출석달력HTML');
     writeIfChanged(pf, 2, 84, calOut);
+    /* [v9.99] 오늘의만남(DY 129) — 소그룹 3라운드 짝을 학생 화면에 연다.
+     *   앱은 v9.80부터 매 차시 짝을 계산해 왔지만 학생은 그걸 본 적이 없다(강사 메일에만 있었다).
+     *   훈련 장치(같은 과제 3회 반복)가 그대로 서사가 되는 지점 — "오늘 나는 세 사람과 만난다".
+     *   상담 5열(DT124~DX128) 다음의 calcAll 소유 독립 열. 계산값이라 새 원천·쓰기 압력이 없고,
+     *   writeIfChanged라 값이 바뀌는 날(수업일)에만 실제로 쓴다. */
+    if (pf.getMaxColumns() < 129) pf.insertColumnsAfter(pf.getMaxColumns(), 129 - pf.getMaxColumns());
+    if (String(pf.getRange('DY1').getValue()) !== '오늘의만남') pf.getRange('DY1').setValue('오늘의만남');
+    writeIfChanged(pf, 2, 129, meetOut);
     // [v9.50·A4] 최애(DA 105) — 학생이 Glide Set Column으로 쓰는 사용자 소유 열(드림한줄 CB와 동일 방식).
     //   개인화 예문·한 문장·퀴즈의 재료로 aiStudioBatch_가 읽기만 한다. 비면 개인화는 약점 기반으로만.
     if (pf.getMaxColumns() < 105) pf.insertColumnsAfter(pf.getMaxColumns(), 105 - pf.getMaxColumns());
@@ -14538,6 +14577,21 @@ const ROLE_NAMES = ['진행', '기록', '발표', '질문'];    // 순환 순서
 const ROLE_ICONS = ['🎯', '✍️', '📢', '❓'];
 const ROLE_TALK = [2, 1, 2, 1];                        // 발화량 가중(규칙서 역할 상세: 진행·발표=많음 / 기록·질문=보통)
 const SEASON_WEEKS = 8;
+/* [v9.99] 역할별 '발화 의무' — v9.80은 역할 이름만 줬다. 이름은 자리를 정하지만 입을 열게 하지는 않는다.
+ *   기록·질문은 가중 1(저발화)인데 로테이션 주기가 4차시라, 학생은 4차시 중 2차시를 저발화 역할로 보낸다.
+ *   의무 한 줄을 붙여 저발화 역할에도 발화를 심는다. 특히 '질문 = 고칠 문장 1개'는 강사가 못 듣는
+ *   소그룹 3/4 구간(강사 1명 : 4조 = 조당 5분)에 학생 상호 교정을 심는 장치다.
+ *   ⚠ ROLE_TALK 가중은 그대로 둔다 — 의무 발화는 30초·1문장이고 진행·발표는 활동 내내 말한다.
+ *     격차는 줄지만 남으며, 가중을 평탄화하면 편성의 '말수 섞기' 기준이 무의미해진다. */
+const ROLE_DUTY = ['한국어 유지 감시', '마지막 30초 요약', '조 결론 발표', '고칠 문장 1개'];
+/* [v9.99] 소그룹 20분 타임박스 — 20분을 "알아서 하세요"로 두지 않는다.
+ *   1분 계획(말 없이 메모) → 4·3·2분 3라운드(라운드마다 짝 교대) → 정리·발표. 합 19분(전환 여유 1분).
+ *   ① 계획 1분: 하위권의 침묵은 할 말이 없어서가 아니라 조립할 시간이 없어서다. 20분에서 1분을 떼면
+ *      남은 19분의 밀도가 오른다.  ② 4/3/2: 같은 과제를 짝을 바꿔 반복하면 인지 여유가 정확도로 넘어간다.
+ *   ⚠ Lv1~3 유창성 차시 기준. 상급은 내용 깊이가 목표라 3회 반복이 폭을 줄인다 — 강사가 끄는 판단은 재량(§6-2). */
+const TALK_PLAN_MIN = 1;
+const TALK_ROUNDS = [4, 3, 2];
+const FOCUS_START_WEEK = 3;                            // 정밀 청취 시작 주차 — 1~2주차는 조 자율 운행 미성숙
 // 4인 조의 2인 짝 3조합 — 값 = 그 좌석의 짝 좌석. (0,1)(2,3) / (0,2)(1,3) / (0,3)(1,2)
 const PAIR_PATTERNS = [[1, 0, 3, 2], [2, 3, 0, 1], [3, 2, 1, 0]];
 // GROUPS_HEADERS는 SHEET_SKELETON보다 앞(KPI_HEADERS 옆)에 정의돼 있다 — 여기 두면 const TDZ로 죽는다.
@@ -14622,6 +14676,156 @@ function pairSeatOf_(seat, lessonNo, size) {
   if ((Number(size) || GROUP_COUNT) < 4) return -1;
   const n = Math.max(1, Number(lessonNo) || 1);
   return PAIR_PATTERNS[((n - 1) % 3 + 3) % 3][(Number(seat) || 0) % 4];
+}
+/* [v9.99] 한 차시 안의 3라운드 짝 — PAIR_PATTERNS를 '차시마다 1조합'이 아니라 '한 차시에 3조합 전부'로 쓴다.
+ *   같은 상수, 새 의미: 4/3/2의 상대가 라운드마다 바뀐다(= 학생에게는 "오늘 세 번의 만남").
+ *   기존 pairSeatOf_(차시별 대표 짝)는 4/3/2를 끄는 차시용으로 그대로 둔다 — 어느 쪽도 시트에 쓰지 않는다. */
+function pairRoundsOf_(seat, size) {
+  if ((Number(size) || GROUP_COUNT) < 4) return [];    // 3인 조는 셋이 함께 — 짝을 만들지 않는다
+  const s = ((Number(seat) || 0) % 4 + 4) % 4;
+  return PAIR_PATTERNS.map(p => p[s]);
+}
+/* [v9.99] 정밀 청취 조 — 유호님 08-01 채택(도전안: 순회 지도를 버린다).
+ *   순회(4조 × 5분)는 어느 학생의 오류도 정확히 못 잡는다. 그래서 student_errors가 빈 채로 남고,
+ *   그 시트가 비면 반 브리핑 '연습 포인트'·AI 개인화·3주차 오류 톱10이 전부 빈 껍데기로 돈다
+ *   — 체인 전체가 강사의 실측 입력 한 칸에 물려 있다.
+ *   한 차시에 한 조만 20분 내내 듣는다: 4차시면 전원 1회전, 8주 시즌 2회전(주말반은 1회전).
+ *   0 = 표시하지 않음(1~2주차는 조가 아직 자율 운행을 못 해 나머지 3조 방치가 통제 리스크). */
+function focusGroupOf_(lessonNo, week) {
+  const n = Number(lessonNo) || 0, w = Number(week) || 0;
+  if (n < 1 || w < FOCUS_START_WEEK) return 0;
+  return ((n - 1) % GROUP_COUNT) + 1;
+}
+/* [v9.99] 날짜 → 차시 번호 맵 — lessonNoOf_를 출석 행마다 부르면 그 안의 일자 루프가 행 수만큼 반복된다.
+ *   시즌 시작~기준일을 한 번만 훑어 'yyyy-MM-dd' → 차시 번호를 만든다(발화 지수의 조인 축). */
+function lessonDayMap_(start, until, type, tz) {
+  const out = {};
+  if (!start || !until) return out;
+  const s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const t = new Date(until.getFullYear(), until.getMonth(), until.getDate());
+  const days = Math.round((t - s) / 86400000);
+  if (days < 0 || days > SEASON_WEEKS * 7 + 14) return out;   // 시즌 밖·오래된 시작일 방어(lessonNoOf_와 같은 창)
+  let n = 0;
+  const d = new Date(s);
+  for (let i = 0; i <= days; i++) {
+    if (classDowOk_(type, d.getDay())) { n++; out[Utilities.formatDate(d, tz, 'yyyy-MM-dd')] = n; }
+    d.setDate(d.getDate() + 1);
+  }
+  return out;
+}
+/* [v9.99] 출석 원본 1회 읽기 — 브리핑은 한 실행에 반 18개를 도는데, 반마다 attendance를 통째로 읽으면
+ *   같은 시트를 18번 훑는다. 실행 단위 메모이즈(Apps Script는 실행마다 전역이 초기화되므로 stale 없음).
+ *   차시 번호로의 변환은 반 type(평일/주말)마다 다르니 여기서는 날짜까지만 만든다. */
+let TALK_ATT_CACHE_ = null;
+function attDayMapCached_(ss, tz) {
+  if (TALK_ATT_CACHE_) return TALK_ATT_CACHE_;
+  const out = {};
+  const at = ss.getSheetByName('attendance');
+  if (at && at.getLastRow() >= 2) {
+    at.getRange(2, 2, at.getLastRow() - 1, 2).getValues().forEach(r => {   // B student_id · C timestamp
+      if (!r[0] || !r[1]) return;
+      const d = asDate_(r[1]);
+      if (!d || isNaN(d.getTime())) return;
+      (out[String(r[0])] = out[String(r[0])] || {})[Utilities.formatDate(d, tz, 'yyyy-MM-dd')] = 1;
+    });
+  }
+  TALK_ATT_CACHE_ = out;
+  return out;
+}
+
+/* [v9.99] 🔈 발화 지수 — ROLE_TALK를 처음으로 실제 계산에 쓴다.
+ *   v9.80은 이 상수를 선언만 하고 어디서도 참조하지 않아, 헤더가 약속한 「발화량 추정」이 주석으로만
+ *   존재했다(08-01 발견). 역할 로테이션이 만드는 발화량 편차를 아무도 측정하지 않고 있었다는 뜻이다.
+ *
+ *   지수 = 그 학생이 '실제 출석한 차시'의 역할 가중 합. 역할은 좌석·차시의 결정론이라 개근하면 전원이
+ *   거의 같아진다 — 벌어지는 원인은 셋뿐이고, 셋 다 강사가 눈으로는 못 보는 것이다.
+ *     ① 결석: 그날 배정됐던 역할(진행·발표일 수도 있다)을 통째로 못 받았다
+ *     ② 3인 조: 역할이 3개만 돌아 '질문'이 없다
+ *     ③ 미발화 기록(마감폼): 자리는 받았는데 실제로 말하지 않았다 → 가중에서 뺀다
+ *   그래서 하위권 = "구조적으로 말할 차례를 덜 받은 학생"이고, 지명은 인상이 아니라 이 순서로 간다.
+ *   4주차 침묵 명단(시즌 1회·이진)의 상시·연속값 짝 — 그쪽이 경보라면 이쪽은 계기판이다.
+ *   board = groupBoardOf_ 결과(좌석·조 크기 재사용, groups 재읽기 0). 반환 = [{sid,name,grp,got,max,quiet,pct}] 오름차순. */
+function talkIndexOf_(ss, cls, when, tz, board, quietMap) {
+  const b = board || groupBoardOf_(ss, cls, when, tz);
+  if (!b || !b.lessonNo) return [];
+  const start = seasonStartOf_(ss);
+  const sch = schedOf(scheduleMap(ss), cls);
+  const dayMap = lessonDayMap_(start, when || new Date(), sch ? sch.type : '평일', tz);
+  const byDay = attDayMapCached_(ss, tz);                      // sid → {'yyyy-MM-dd': 1}
+  const quiet = quietMap || quietScoreMap_(ss);
+  const out = [];
+  const lessonSeen = {};                                       // sid → {차시번호: 1} (반 type의 dayMap으로 변환)
+  Object.keys(byDay).forEach(sid => {
+    Object.keys(byDay[sid]).forEach(ymd => {
+      const n = dayMap[ymd];                                   // 시즌 밖·수업 없는 날(보강 등)은 분모에 없다
+      if (n) (lessonSeen[sid] = lessonSeen[sid] || {})[n] = 1;
+    });
+  });
+  b.groups.forEach((arr, g) => arr.forEach(m => {
+    let got = 0, max = 0;
+    for (let n = 1; n <= b.lessonNo; n++) {
+      const w = ROLE_TALK[ROLE_NAMES.indexOf(roleOfSeat_(m.seat, n, arr.length))] || 0;
+      max += w;
+      if ((lessonSeen[m.sid] || {})[n]) got += w;
+    }
+    const q = Number(quiet[m.sid] || 0);
+    const adj = Math.max(got - q * ROLE_TALK[0], 0);           // 미발화 1회 = 최고 가중 1차시를 통째로 무효로 본다
+    out.push({ sid: m.sid, name: m.name, grp: g + 1, got: got, max: max, quiet: q,
+      pct: max ? Math.round(adj / max * 100) : 0 });
+  }));
+  return out.sort((x, y) => x.pct - y.pct || String(x.sid).localeCompare(String(y.sid)));
+}
+/* [v9.99] 학생용 오늘의 만남 — sid → "1R 바트 · 2R 사란 · 3R 뭉흐".
+ *   calcAll이 profiles DY129에 싣는다. 오늘 수업이 없는 반은 키를 만들지 않는다(학생 화면 공란 = 카드 숨김).
+ *   groups 1회 읽기 · 반 수만큼 순회. 편성 전이면 빈 맵(개원 전 무소음 — 조용한 공백이 정상인 구간). */
+function todayPairsBySid_(ss, tz, when) {
+  const out = {};
+  const season = seasonLabelOf_(ss, tz);
+  const start = seasonStartOf_(ss);
+  const gs = ss.getSheetByName('groups');
+  if (!season || !start || !gs || gs.getLastRow() < 2) return out;
+  const schM = scheduleMap(ss);
+  const whenD = when || new Date();
+  const byCls = {};
+  gs.getRange(2, 1, gs.getLastRow() - 1, GROUPS_HEADERS.length).getValues().forEach(r => {
+    if (String(r[0]) !== season || !r[1]) return;
+    (byCls[String(r[1])] = byCls[String(r[1])] || []).push(r);
+  });
+  Object.keys(byCls).forEach(c => {
+    const sch = schedOf(schM, c);
+    const type = sch ? sch.type : '평일';
+    if (!classDowOk_(type, whenD.getDay())) return;      // 오늘 수업 없는 반 — 어제 짝이 남아 있으면 오히려 오정보
+    const lessonNo = lessonNoOf_(start, whenD, type);
+    if (!lessonNo) return;                               // 시즌 기간 밖
+    const groups = [];
+    for (let g = 0; g < GROUP_COUNT; g++) groups.push([]);
+    byCls[c].forEach(r => {
+      const g = Math.min(Math.max(Number(r[4]) - 1, 0), GROUP_COUNT - 1);
+      groups[g].push({ sid: String(r[2]), name: String(r[3] || r[2]), seat: Number(r[5]) || 0 });
+    });
+    groups.forEach(arr => {
+      arr.sort((a, b) => a.seat - b.seat);
+      arr.forEach(m => {
+        const names = pairRoundsOf_(m.seat, arr.length)
+          .map(s => { const x = arr.filter(y => y.seat === s)[0]; return x ? x.name : ''; }).filter(Boolean);
+        out[m.sid] = names.length
+          ? '🤝 오늘 세 번 만나요 — ' + names.map((n, i) => (i + 1) + 'R ' + n).join(' · ')
+          : '🤝 오늘은 조 전체가 함께 이야기해요';
+      });
+    });
+  });
+  return out;
+}
+
+/* [v9.99] 강사가 매 차시 보는 20분 운영 지시 — 프로토콜을 문서에만 두면 개원 3주면 아무도 안 본다.
+ *   조 편성표가 나가는 모든 경로(브리핑 메일·수업 직전 메일·반 상세 HUD·주간 교안)에 같은 원천으로 실린다. */
+function talkProtocolLines_(focusGrp) {
+  const L = ['  ⏱ 소그룹 20분 — ' + TALK_PLAN_MIN + '분 계획(말 없이 메모만) → ' +
+    TALK_ROUNDS.map((m, i) => (i + 1) + 'R ' + m + '분').join(' → ') + ' (라운드마다 짝 교대) → 조별 정리 → 발표',
+    '  🗣 역할 의무 — ' + ROLE_NAMES.map((n, i) => ROLE_ICONS[i] + ' ' + n + '=' + ROLE_DUTY[i]).join(' · ')];
+  if (focusGrp) L.push('  🎧 오늘 정밀 청취 = ' + focusGrp + '조 — 20분 내내 이 조에 붙어 실제 문장을 받아적고, ' +
+    '끝나면 약점 메모 폼에 넣으세요(나머지 3조는 역할·타이머로 자율 운행)');
+  return L;
 }
 
 /* --- 실력 점수 — 급수(BO)가 있으면 급수가 지배하고, 없는 학생끼리는 누계 포인트·출석으로 가른다.
@@ -14830,12 +15034,18 @@ function groupBoardOf_(ss, cls, when, tz) {
   groups.forEach(arr => arr.forEach(m => {
     m.role = roleOfSeat_(m.seat, lessonNo, arr.length);
     m.icon = roleIconOf_(m.seat, lessonNo, arr.length);
+    m.duty = ROLE_DUTY[ROLE_NAMES.indexOf(m.role)] || ''; // [v9.99]
     const ps = pairSeatOf_(m.seat, lessonNo, arr.length);
     const pm = ps >= 0 ? arr.filter(x => x.seat === ps)[0] : null;
     m.pair = pm ? pm.name : (arr.length < 4 ? '조 전체' : '');
+    // [v9.99] 오늘의 3라운드 짝 — 4/3/2 반복의 상대. 3인 조는 빈 배열('조 전체'로 표기)
+    m.rounds = pairRoundsOf_(m.seat, arr.length)
+      .map(s => { const x = arr.filter(y => y.seat === s)[0]; return x ? x.name : ''; }).filter(Boolean);
   }));
+  const week = seasonWeekOf_(start, when || new Date());
   return {
-    season: season, lessonNo: lessonNo, week: seasonWeekOf_(start, when || new Date()),
+    season: season, lessonNo: lessonNo, week: week,
+    focus: focusGroupOf_(lessonNo, week), // [v9.99] 오늘 정밀 청취 조(0 = 표시 안 함)
     confirmed: String(rows[0][6] || ''), groups: groups.filter(a => a.length)
   };
 }
@@ -14847,18 +15057,33 @@ function groupBoardText_(ss, cls, when, tz) {
   if (!b.lessonNo) return '🧩 조 편성: 시즌 기간 밖입니다(시즌 시작일 확인 — setSeasonStart).\n';
   const L = ['🧩 조 편성 · ' + b.week + '주차 ' + b.lessonNo + '차시' + (b.confirmed === '임시' ? ' (임시 조)' : '')];
   b.groups.forEach((arr, g) => {
-    L.push('  ' + (g + 1) + '조  ' + arr.map(m => m.icon + ' ' + m.name + '(' + m.role + ')').join(' · '));
-    const pairs = [];
-    const seen = {};
-    arr.forEach(m => {
-      if (!m.pair || m.pair === '조 전체' || seen[m.name] || seen[m.pair]) return;
-      seen[m.name] = 1; seen[m.pair] = 1; pairs.push(m.name + '–' + m.pair);
-    });
-    if (pairs.length) L.push('       짝: ' + pairs.join(' / '));
+    L.push('  ' + (g + 1) + '조' + (b.focus === g + 1 ? ' 🎧' : '  ') + '  ' +
+      arr.map(m => m.icon + ' ' + m.name + '(' + m.role + ')').join(' · '));
+    // [v9.99] 짝을 '오늘 1조합'이 아니라 3라운드로 편다 — 4/3/2 반복이 곧 이 순서다
+    const rounds = [];
+    for (let r = 0; r < TALK_ROUNDS.length; r++) {
+      const seen = {}, ps = [];
+      arr.forEach(m => {
+        const nm = (m.rounds || [])[r];
+        if (!nm || seen[m.name] || seen[nm]) return;
+        seen[m.name] = 1; seen[nm] = 1; ps.push(m.name + '–' + nm);
+      });
+      if (ps.length) rounds.push((r + 1) + 'R ' + ps.join('/'));
+    }
+    if (rounds.length) L.push('        짝 ' + rounds.join('  '));
+    else if (arr.length && arr.length < 4) L.push('        짝: 조 전체(3인 조)');
   });
   const pres = [];
   b.groups.forEach((arr, g) => arr.forEach(m => { if (m.role === '발표') pres.push((g + 1) + '조 ' + m.name); }));
   if (pres.length) L.push('  📢 오늘 발표: ' + pres.join(' · ') + '  ← ④소그룹 시작할 때 미리 알려주세요');
+  talkProtocolLines_(b.focus).forEach(x => L.push(x)); // [v9.99] 20분 타임박스·역할 의무·정밀 청취
+  // [v9.99] 지명 우선 — "말 많은 애가 또 말하는" 20분을 막는 유일한 객관 축(인상 아님, 출석×역할 실측)
+  try {
+    const idx = talkIndexOf_(ss, cls, when, tz, b);
+    const low = idx.filter(x => x.max > 0).slice(0, 3);
+    if (low.length) L.push('  🔈 오늘 지명 우선: ' + low.map(x => x.name + '(' + x.pct + '%' +
+      (x.quiet ? '·침묵' + x.quiet : '') + ')').join(' · ') + '  ← 발화 차례를 구조적으로 덜 받은 순서');
+  } catch (e) { Logger.log('발화 지수 스킵(' + cls + '): ' + e); }
   return L.join('\n') + '\n';
 }
 
@@ -14980,11 +15205,24 @@ function lessonPlanDrafts_() {
     if (ex.hasNext()) { kept++; L.push('· ' + cN + ' (기존 유지) ' + ex.next().getUrl()); return; }
     const sch = schedOf(schM, cN);
     const doc = DocumentApp.create(nameD);
+    /* [v9.99] 지명 계획을 실측으로 승격 — §12는 "발화 실측 전 — 포인트 무활동 대체"라고 스스로 적어 뒀다.
+     *   발화 지수(출석한 차시의 역할 가중 − 미발화)가 배선됐으므로 그 프록시를 걷어낸다.
+     *   편성 전·1주차엔 지수가 없으니 기존 프록시로 조용히 폴백한다(빈칸보다 낫다). */
+    let quietList = (quiet[cN] || []).slice(0, 3), talkReal = false;
+    if (week >= 2) {
+      try {
+        const ti = talkIndexOf_(ss, cN, now, tz).filter(x => x.max > 0);
+        if (ti.length) {
+          quietList = ti.slice(0, 3).map(x => x.name + ' ' + x.pct + '%' + (x.quiet ? '(침묵' + x.quiet + ')' : ''));
+          talkReal = true;
+        }
+      } catch (e) { Logger.log('교안 발화 지수 스킵(' + cN + '): ' + e); }
+    }
     lessonPlanFill_(doc.getBody(), {
       cls: cN, week: week, period: period, stuN: stuCnt[cN] || 0,
       teachers: (teachersByCls[cN] || []).join(' · '),
       carry: (carry[cN] || []).filter((v, i, a) => a.indexOf(v) === i).slice(0, 4),
-      prevTopic: prevTopic[cN] || '', errTop: errTop[cN] || [], quiet: (quiet[cN] || []).slice(0, 3),
+      prevTopic: prevTopic[cN] || '', errTop: errTop[cN] || [], quiet: quietList, talkReal: talkReal,
       wknd: !!(sch && String(sch.type) === '주말'),
       groupText: (function () { try { return groupBoardText_(ss, cN, now, tz); } catch (e) { return ''; } })()
     });
@@ -15030,6 +15268,11 @@ function lessonPlanFill_(body, o) {
   line('▣ 5. 한자어 (Lv3 이상만) — 어원 묶음: ______ → ______ ______ ______');
   line('');
   line('▣ 6. 차시별 5행 — ②제시에서 다룰 것 + ④소그룹 과업(앱 추천, 바꿔도 됩니다)');
+  // [v9.99] 20분 타임박스 — 과업만 주고 시간 배분을 안 주면 20분은 "말 많은 학생의 20분"이 된다
+  line('   ⏱ 소그룹 20분 공통 — ' + TALK_PLAN_MIN + '분 계획(말 없이 메모) → ' +
+    TALK_ROUNDS.map((m, i) => (i + 1) + 'R ' + m + '분').join(' → ') + ' (라운드마다 짝 교대) → 조별 정리 → 발표');
+  line('   🗣 역할 의무 — ' + ROLE_NAMES.map((n, i) => n + '=' + ROLE_DUTY[i]).join(' · ') +
+    '   ※ 상급 내용 심화 차시는 3라운드를 끄고 한 과업을 깊게(§6-2 자율)');
   const slots = o.wknd ? [5] : [1, 2, 3, 4, 5];
   slots.forEach(i => {
     const lbl = (typeof LESSON_SLOT_LABELS !== 'undefined' && LESSON_SLOT_LABELS[i - 1]) || '';
@@ -15050,9 +15293,12 @@ function lessonPlanFill_(body, o) {
   line('▣ 10. 숙제 — 차시별: ______________  주말: ______________  앱 연동: □퀴즈 ___번 □AI 첨삭 □없음');
   line('▣ 11. 준비물 — □인쇄물 ___장 □그림·사진 □실물 □음원/영상 (없을 때 대체 = 수업 규칙 9장)');
   line('');
-  line('▣ 12. 이번 주 지명 계획' + (o.week >= 4
-    ? ' — 앱 명단(발화 실측 전 — 최근 2주 포인트 무활동 대체): ' + (o.quiet.length ? o.quiet.join('  ') : '(해당 학생 없음)')
-    : ' — 해당 없음(4주차부터)'));
+  // [v9.99] 실측(발화 지수)이 있으면 그것으로, 없으면 구 프록시로 폴백 — 어느 쪽인지 강사에게 밝힌다
+  line('▣ 12. 이번 주 지명 계획' + (o.talkReal
+    ? ' — 🔈 발화 지수 하위(출석한 차시의 역할 발화량 실측): ' + o.quiet.join('  ')
+    : (o.week >= 4
+      ? ' — 앱 명단(발화 실측 전 — 최근 2주 포인트 무활동 대체): ' + (o.quiet.length ? o.quiet.join('  ') : '(해당 학생 없음)')
+      : ' — 해당 없음(2주차부터 발화 지수 · 4주차부터 대체 명단)')));
   line('   → 5주차 안에 각 3회 지명 · 정답이 아니라 경험을 묻습니다');
   line('');
   line('▣ 13. 주말 점검 — 도달 기준: ______________  못 따라온 학생: ______ ______ → 다음 주: ______');
