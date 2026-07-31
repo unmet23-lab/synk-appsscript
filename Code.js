@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.97'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.96] 버전 이력 분리 · [v9.97] 월키 Date 오염 팩(07-31 학생화면 실측 잔여 D) — 소식탭 스토리북 Description이 'Mon Jun 01 2026 …' 원시 Date로 뜨던 것의 정체는 표시 문제가 아니라 **시트가 'yyyy-MM'을 날짜로 자동 변환**한 것. 그 탓에 월키 멱등 가드(String(r[0])===ym)가 영구 실패해 ①synk_stories 매달 재발간(중복 병합 자기치유가 증상을 가려 옴) ②monthly_snapshot 게임배치 재실행 ③synk_cards·league_history 중복 ④스토리초안 Claude API 중복 과금 경로가 동시에 열려 있었다(v9.68 시각 Date 오염과 같은 계급, 5개 시트 공통). 처치=ymTextOf_(Date→'yyyy-MM' 정규화, 문자열은 재파싱 금지 — tz 경계 전달 밀림 차단)+ymTextColFix_(월 열 '@' 서식 고정·기존 오염 행 되돌림, 서식·쓰기 양쪽 멱등)를 5개 호출부에 배선. 회귀=구 String() 직접 비교 잔존 0 + 4개 시트 ensureSheet 인근 배선 기계 검사
+const SYNK_VERSION = 'v9.98'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.98] 버전 이력 분리 · [v9.97] 월키 Date 오염 팩(07-31 학생화면 실측 잔여 D) — 소식탭 스토리북 Description이 'Mon Jun 01 2026 …' 원시 Date로 뜨던 것의 정체는 표시 문제가 아니라 **시트가 'yyyy-MM'을 날짜로 자동 변환**한 것. 그 탓에 월키 멱등 가드(String(r[0])===ym)가 영구 실패해 ①synk_stories 매달 재발간(중복 병합 자기치유가 증상을 가려 옴) ②monthly_snapshot 게임배치 재실행 ③synk_cards·league_history 중복 ④스토리초안 Claude API 중복 과금 경로가 동시에 열려 있었다(v9.68 시각 Date 오염과 같은 계급, 5개 시트 공통). 처치=ymTextOf_(Date→'yyyy-MM' 정규화, 문자열은 재파싱 금지 — tz 경계 전달 밀림 차단)+ymTextColFix_(월 열 '@' 서식 고정·기존 오염 행 되돌림, 서식·쓰기 양쪽 멱등)를 5개 호출부에 배선. 회귀=구 String() 직접 비교 잔존 0 + 4개 시트 ensureSheet 인근 배선 기계 검사
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -3720,7 +3720,9 @@ function syncProfiles() {
       // [v9.84] 상담 디테일 2차 — 받아둔 답을 앱이 쓰게(콜드스타트 해소·강사뷰·0점 좌표·페이스). 전부 이름 해석이라 열 이동에 안전.
       taste: [cv(row, '선호그룹'), cv(row, '인생드라마'), cv(row, '취미관심사')].filter(String).join(' · ').slice(0, 120), // → DT124: AI 최애 폴백
       cGoal: (cv(row, 'TOPIK목표') ? 'TOPIK ' + cv(row, 'TOPIK목표') + (cv(row, 'TOPIK목표기한') ? ' · ' + cv(row, 'TOPIK목표기한') : '') : ''), // → DU125: 목표 폴백
-      topik0: [cv(row, 'TOPIK급수'), cv(row, 'TOPIK점수')].filter(String).join(' ').slice(0, 40), // → DV126: 입학 시점 실측(성장 서사 0점 좌표)
+      // → DV126: 입학 시점 실측(성장 서사 0점 좌표). [v9.98] 라벨 부착 — 08-01 실데이터가 '없음 20'(급수 없음·점수 20)으로
+      //   붙어 학부모 편지 프롬프트에 뜻 모를 문자열로 들어가던 것(AI가 20을 급수로 읽을 여지)을 제거.
+      topik0: [cv(row, 'TOPIK급수') ? '급수 ' + cv(row, 'TOPIK급수') : '', cv(row, 'TOPIK점수') ? cv(row, 'TOPIK점수') + '점' : ''].filter(String).join(' · ').slice(0, 40),
       pain: consultBlobField_(cv(row, '📝자유서술→노션'), '한국어고충').slice(0, 120), // → DW127: 강사 뷰 전용("수업 설계 반영" 약속의 배선)
       pace: consultPace_(cv(row, 'TOPIK목표'), cv(row, 'TOPIK목표기한'), cv(row, '학습가능시간'), now) // → DX128: 여정 카드 페이스라인(도전안)
     };
@@ -7050,7 +7052,7 @@ function migrateConsentV186() {
     const form = FormApp.openById(fid);
     const titles = form.getItems().map(x => String(x.getTitle()).trim());
 
-    const A = '개인정보·학습데이터 활용 동의';
+    const A = CONSENT_Q_TITLE; // [v9.98] 제목 하드코딩 2곳 → 단일 소스. 이 제목이 곧 blob의 행 단위 동의 마커라 어긋나면 전 행이 미동의로 분류된다
     if (titles.indexOf(A) !== -1) out.push('폼 A(개인정보·필수): 이미 있음 — 스킵');
     else {
       form.addMultipleChoiceItem().setTitle(A)
@@ -12987,13 +12989,13 @@ function notionHeaders_() {
   return { 'Authorization': 'Bearer ' + token, 'Notion-Version': NOTION_VER, 'Content-Type': 'application/json' };
 }
 
-// [v9.96] 동의 문항 A의 제목 = 자유서술 blob에 남는 동의 마커. migrateConsentV186과 한 벌 — 제목을 바꾸면 여기도 바꾼다
+// [v9.98] 동의 문항 A의 제목 = 자유서술 blob에 남는 동의 마커. migrateConsentV186과 한 벌 — 제목을 바꾸면 여기도 바꾼다
 //   (문항 A는 대응 시트 열이 없어 규칙대로 blob에 '[제목] 답'으로 접수 시각과 함께 보존된다 = 행 단위 동의 증빙).
 const CONSENT_Q_TITLE = '개인정보·학습데이터 활용 동의';
 
 // [v9.84·④] 상담시트 자유서술 blob → 학생ID 맵. '📝자유서술→노션' 열이 이름만 약속하고 수동이던 것의 자동화 재료.
 //   서술이 있는 행만·학생ID 중복은 첫 행 우선. 실패는 호출부에서 격리(서술만 생략, 본 동기화는 계속).
-// [v9.96·행 단위 동의] app_state 게이트(v18.6)는 "폼에 문항이 생겼는가"만 보증한다 — 문항 신설 **이전에** 접수된
+// [v9.98·행 단위 동의] app_state 게이트(v18.6)는 "폼에 문항이 생겼는가"만 보증한다 — 문항 신설 **이전에** 접수된
 //   행과 종이 상담을 손으로 옮긴 행에는 동의 표기가 없다. 08-01 실측에서 그런 행(SYNK-001)이 서술을 가진 채
 //   이관 대기 중인 것을 확인 → 마커 없는 행은 내보내지 않는다(버전 게이트의 한 겹 아래 구멍).
 function consultNarrativeMap_() {
@@ -13082,13 +13084,29 @@ function syncToNotion_() {
   // [v9.84·리뷰 H2 → v9.90] 동의 게이트 — migrateConsentV186(app_state 상담동의=v18.6, 유호 문구 검토 ▶) 전에는 자유서술을
   //   노션으로 내보내지 않는다(#204 "소급 불가" 취지 그대로). 게이트 앞이라 맵 로드 자체를 생략(데이터 접촉 0).
   //   [v9.90] 기대값을 v18.5→v18.6으로 함께 올린다 — 마이그레이션만 개정하면 이 게이트가 영영 안 열린 채 침묵한다.
-  let consultNarr = {};
+  //   [v9.98] 게이트 통과 후에도 **행 단위**로 한 번 더 — 문항 신설 전 접수분·종이 상담 이기 행은 마커가 없다.
+  let consultNarr = {}, narrSkipped = 0;
   const stCn = ss.getSheetByName('app_state');
   const consentOn = stCn ? String(getState(stCn, '상담동의').val || '') === 'v18.6' : false;
   if (consentOn) {
-    try { consultNarr = consultNarrativeMap_(); } catch (e) { Logger.log('상담서술 로드 실패(정량만 동기화): ' + e); }
+    try {
+      const nr = consultNarrativeMap_();
+      consultNarr = nr.map; narrSkipped = nr.skipped;
+    } catch (e) { Logger.log('상담서술 로드 실패(정량만 동기화): ' + e); }
   } else {
     Logger.log('상담서술 이관 보류 — 동의 문항(v18.6) 미적용. migrateConsentV186 ▶ 후 자동 개시.');
+  }
+  // [v9.98] 동의 표기 없는 행 안내 — 원장이 조치할 수 있게(수가 바뀔 때만 재통지: 동기화보류·열충돌과 같은 dedup 관례)
+  if (consentOn && narrSkipped > 0 && stCn) {
+    const sigN = String(narrSkipped);
+    if (String(getState(stCn, '서술동의보류').val || '') !== sigN) {
+      adminMail('[SYNK] 🔏 상담 서술 ' + narrSkipped + '건 이관 보류 — 동의 표기 없음',
+        '동의 문항이 생기기 전에 접수됐거나 종이 상담을 옮겨 적은 행이라 노션으로 내보내지 않았습니다(정량 데이터는 정상 동기화).\n\n' +
+        '종이 동의서를 받아 두셨다면 상담시트 그 학생의 「📝자유서술→노션」 칸 맨 앞에 아래 한 줄을 넣어 주세요 — 다음 주 월요일부터 이관됩니다.\n' +
+        '[' + CONSENT_Q_TITLE + '] 네, 동의합니다 (종이 동의서 보관)\n\n' +
+        '※ 건수가 바뀌기 전까지 다시 알리지 않습니다.');
+      setState(stCn, '서술동의보류', sigN);
+    }
   }
   const narrOn = Object.keys(consultNarr).length ? notionEnsureProp_('상담서술') : false;
 

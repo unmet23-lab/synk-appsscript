@@ -1355,6 +1355,15 @@ test('[v9.84] 노션 상담서술 이관 — 동의 게이트→속성 보장→
   assert.ok(body.includes('상담서술 로드 실패(정량만 동기화)'), '상담시트 장애가 정량 동기화까지 끊는다(격리 부재)');
   const nm = section('function consultNarrativeMap_', 'function notionEnsureProp_');
   assert.ok(nm.includes("hdr.indexOf('📝자유서술→노션')") && nm.includes('r[59]'), '서술 맵이 blob 열 이름 해석·학생ID(BH)를 쓰지 않는다');
+  // [v9.98] 행 단위 동의 — 버전 게이트(v18.6)는 "폼에 문항이 생겼는가"만 보증한다. 문항 신설 전 접수분·종이 상담 이기 행은
+  //   마커가 없으므로 내보내지 않는다(08-01 실측: SYNK-001이 마커 없이 서술을 가진 채 이관 대기 중이던 것을 발견).
+  assert.ok(nm.includes("t.indexOf('[' + CONSENT_Q_TITLE + ']') === -1"), '행 단위 동의 마커 검사가 없다 — 미동의 행이 노션으로 나간다');
+  assert.ok(nm.includes('skipped++'), '마커 없는 행을 세지 않는다(원장이 조치할 근거가 사라진다)');
+  assert.ok(code.includes("const CONSENT_Q_TITLE = '개인정보·학습데이터 활용 동의'"), '동의 마커 제목 상수가 없다/변형됨 — migrateConsentV186의 문항 A 제목과 한 벌');
+  assert.ok(code.includes('const A = CONSENT_Q_TITLE'),
+    'V186 문항 A 제목이 마커 상수를 쓰지 않는다(하드코딩 2곳) — 한쪽만 바뀌면 모든 행이 조용히 미동의로 분류된다');
+  assert.equal((code.match(/'개인정보·학습데이터 활용 동의'/g) || []).length, 1, '동의 제목 리터럴이 2곳 이상 — 단일 소스가 깨졌다');
+  assert.ok(body.includes('서술동의보류'), '보류 건수 통지(dedup)가 없다 — 종이 동의서 학생이 영구히 누락된다');
   const ep = section('function notionEnsureProp_', 'function syncToNotion_');
   // [리뷰 M3] GET 선확인이 PATCH보다 앞 + 타입 다르면 덮지 않는다(사람이 만든 노션 구조 불가침)
   assertOrder(ep, ["method: 'get'", "cur.type === 'rich_text'", "method: 'patch'"]);
@@ -1380,7 +1389,9 @@ test('[v9.84] KPI 인지채널 분해 — 이름 해석·집계·리포트 1줄�
 
 test('[v9.90] 동의 마이그레이션(v18.6) — 멱등·명시 동의·거부 가능·열 착지·▶ 전용·워치독 게이트', () => {
   const body = section('function migrateConsentV186()', 'function voiceConsentStat_()');
-  assert.ok(body.includes("const A = '개인정보·학습데이터 활용 동의'"), '문항 A(개인정보·필수)가 없다');
+  // [v9.98] 제목이 CONSENT_Q_TITLE 상수로 단일화됨(그 제목이 곧 blob의 행 단위 동의 마커라 하드코딩 2곳은 표류 위험) — 의도는 동일: 문항 A가 그 제목으로 존재하는가
+  assert.ok(body.includes('const A = CONSENT_Q_TITLE'), '문항 A(개인정보·필수)가 없다');
+  assert.ok(code.includes("const CONSENT_Q_TITLE = '개인정보·학습데이터 활용 동의'"), '동의 제목 상수가 없다/변형됨');
   assert.ok(body.includes("['네, 동의합니다']"), '명시적 동의 선택지가 없다');
   assert.ok(body.includes('철회'), '동의 철회 안내가 없다(문구 초안 필수 요소)');
   // [v9.90 핵심] 음성 동의는 blob이 아니라 '열'로 받는다 — 열이 없으면 "누가 거부했는지"를 코드가 못 읽어 녹음이 거부자까지 삼킨다
