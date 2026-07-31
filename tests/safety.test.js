@@ -1429,7 +1429,11 @@ test('[v9.83] 포인트 경제 — 월간 소득 시뮬이 과잠·진화 앵커
   //    옛 숫자로 남겨 학생에게 "+10P"라고 말하면서 5P를 주고 있었다. 지급 지점보다 오히려 이쪽이 눈에 띈다.
   //    코드 줄(주석 제외)에 PT를 안 거친 '+숫자P' 문자열이 있으면 실패시킨다.
   const claims = [];
-  code.split('\n').forEach((ln, i) => {
+  // [v9.87] split('\n') → split(/\r?\n/): CRLF 체크아웃에서 줄 끝에 남는 \r 때문에 아래 주석 제거가 통째로
+  //   죽어 있었다(정규식 `.`은 \r을 매치하지 않아 `$`가 문자열 끝에 닿지 못해 replace가 무동작).
+  //   결과 = 꼬리 주석의 "+5P·+3P" 4건이 위반으로 잡혀 master가 상시 실패 → 전 트랙 배포 게이트가 막혀 있었다.
+  //   같은 커밋이 체크아웃 줄바꿈 설정에 따라 통과/실패가 갈리던 것이라 회귀 장치로서도 신뢰 불가였다.
+  code.split(/\r?\n/).forEach((ln, i) => {
     const t = ln.trim();
     if (t.startsWith('*') || t.startsWith('//') || t.startsWith('/*')) return; // 버전 이력 주석은 역사라 그대로 둔다
     if (/\+\s?\d+\s?P(?![a-zA-Z가-힣])/.test(ln.replace(/\/\/.*$/, ''))) claims.push((i + 1) + ': ' + t.slice(0, 90));
@@ -1484,4 +1488,146 @@ test('[v9.83] 보스 HP는 지급 단가의 종속 변수 — 상수화 + 만실
   assert.ok(per.주말 < per.평일 * 0.45, '주말반 계수가 수업일 비율에 비해 높다(주말반만 격파 불가)');
   // 덜 찬 반 보호 — HP를 정원으로만 잡으면 개원 초 9명 반은 20명분을 내야 한다
   assert.ok(code.includes('if (live > 0 && live < cap) cap = live;'), '보스 HP가 실인원을 안 본다(덜 찬 반 격파 불가)');
+});
+
+/* ── [v9.87] 강사 지표 축 교정 — teacher_stats A열('강사')에 반명이 들어가던 결함 ──────────
+ * 결함의 성질: 헤더는 '강사'인데 값은 학생 행의 class_name이었다. 시트를 열어봐도 "강사 = 정규반1"이
+ * 반명인지 강사명인지 한눈에 안 보여 오래 살아남았다 → 눈으로 하는 점검이 아니라 기계 검사로 이관한다.
+ * 아래 하네스는 실제 teacherEmailMap_·classNumOf를 그대로 불러 쓴다(조인 양쪽의 계약까지 함께 고정). */
+
+const STU_COLS = 26;
+const mkStu = (id, cls, att, pts, praise) => {
+  const r = new Array(STU_COLS).fill('');
+  r[0] = id; r[3] = 'student'; r[4] = cls; r[16] = pts; r[21] = att; r[23] = praise;
+  return r;
+};
+const mkTeacher = (id, name, classes, email) => {
+  const r = new Array(STU_COLS).fill('');
+  r[0] = id; r[1] = name; r[3] = 'teacher'; r[4] = classes; r[6] = email;
+  return r;
+};
+const mkSheet_ = (g) => ({
+  g,
+  getMaxColumns: () => 30,
+  insertColumnsAfter: () => {},
+  getLastRow: () => g.length,
+  getRange: (row, col, nR, nC) => ({
+    getValues: () => {
+      const out = [];
+      for (let i = 0; i < (nR || 1); i++) {
+        const src = g[row - 1 + i] || [];
+        const line = [];
+        for (let j = 0; j < (nC || 1); j++) line.push(src[col - 1 + j] === undefined ? '' : src[col - 1 + j]);
+        out.push(line);
+      }
+      return out;
+    },
+    setValues: (vals) => vals.forEach((line, i) => {
+      const ri = row - 1 + i;
+      while (g.length <= ri) g.push([]);
+      line.forEach((v, j) => { g[ri][col - 1 + j] = v; });
+    }),
+    clearContent: () => {
+      for (let i = 0; i < (nR || 1); i++) {
+        if (!g[row - 1 + i]) continue;
+        for (let j = 0; j < (nC || 1); j++) g[row - 1 + i][col - 1 + j] = '';
+      }
+    }
+  })
+});
+
+function runTeacherStats_({ profileRows, logs = [], oldStats = [] }) {
+  const classNumOf = loadFunction('function classNumOf(', 'function hhmmOf_', 'classNumOf', {});
+  const pfSheet = mkSheet_([new Array(STU_COLS).fill('헤더')].concat(profileRows));
+  const tsSheet = mkSheet_([['강사', '담당학생수', '1인당출석', '1인당포인트', '1인당칭찬', '케어지수', '지난달왕관', '왕관편중%']].concat(oldStats));
+  const ss = {
+    getSheetByName: (n) => (n === 'profiles' ? pfSheet : null),
+    getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar'
+  };
+  const teacherEmailMap_ = loadFunction('function teacherEmailMap_(ss)', 'function classPrepMail_', 'teacherEmailMap_', { classNumOf });
+  const calcTeacherStats = loadFunction(
+    'const TEACHER_STATS_HEADERS', 'function monthlyReport()', 'calcTeacherStats',
+    {
+      SpreadsheetApp: { getActiveSpreadsheet: () => ss },
+      Utilities: { formatDate: () => '2026-07' },
+      ymShift_: () => '2026-06',               // 전월 필터 기준 고정(시계 비의존)
+      readPointLogs_: () => logs,
+      teacherEmailMap_, classNumOf,
+      ensureSheet: () => tsSheet,
+      writeIfChanged: (sh, row, col, vals) => { sh.getRange(row, col, vals.length, vals[0].length).setValues(vals); }
+    }
+  );
+  const rows = calcTeacherStats();
+  return { rows, sheet: tsSheet.g, byLabel: (label) => rows.filter((r) => r[0] === label)[0] };
+}
+
+test('[v9.87] teacher_stats A열은 강사명이다 — 반명이 강사인 척 실리던 결함 재발 차단', () => {
+  const { rows, byLabel } = runTeacherStats_({
+    profileRows: [
+      mkTeacher('T1', '바트', '정규반1, 정규반2', 'bat@synk.im'),
+      mkStu('S1', '정규반1', 10, 100, 2),
+      mkStu('S2', '정규반1', 20, 200, 4)
+    ]
+  });
+  // 핵심: 라벨이 강사명 '바트'여야 한다. 구버전은 여기에 '정규반1'이 들어갔다.
+  assert.ok(byLabel('바트'), "A열에 강사명이 없다 — r[4](class_name)를 강사로 쓰던 결함 재발");
+  assert.equal(rows.filter((r) => String(r[0]).indexOf('정규반') === 0).length, 0,
+    'A열에 반명이 그대로 실렸다 — 조인(teacherEmailMap_.byClass)이 끊겼다');
+  assert.equal(byLabel('바트')[1], 2, '담당학생수가 담당 반 학생 합계가 아니다');
+});
+
+test('[v9.87] 집계 정의 — 공동 담당=각자 온전 귀속 · 다반 강사=1행 합산 · 미매칭 반=(미지정)으로 노출', () => {
+  const crown = (sid, n) => Array.from({ length: n }, () => ['PL', sid, 5, '👑 시냅스 왕관', '시스템', '', '2026-06']);
+  const { rows, sheet, byLabel } = runTeacherStats_({
+    profileRows: [
+      mkTeacher('T1', '바트', '정규반1, 정규반2', 'bat@synk.im'),   // 다반 + 정규반1 공동 담당
+      mkTeacher('T2', '에리카', '정규반1', 'erika@synk.im'),        // 같은 반 공동 담당
+      mkStu('S1', '정규반1', 10, 100, 2),
+      mkStu('S2', '정규반1', 20, 200, 4),
+      mkStu('S3', '정규반2(9시)', 30, 300, 6),                      // 괄호 주석 → 반명 폴백
+      mkStu('S6', '심화2', 40, 400, 8),                             // 번호 폴백(2 = 바트 유일)
+      mkStu('S4', '주말반9', 5, 50, 1),                             // 담당 강사 없음
+      mkStu('S5', '크루1', 7, 70, 3)                                // 번호 1 = 바트·에리카 양쪽 → 폴백 포기
+    ],
+    logs: [].concat(crown('S1', 3), crown('S2', 1), crown('S3', 1)),
+    oldStats: ['정규반1', '정규반2', '심화2', '주말반9', '크루1', '주말반8'].map((c) => [c, 1, 1, 1, 1, 1, 0, 0])
+  });
+
+  // ① 한 강사 여러 반 = 한 행으로 합산 + 담당반 열이 조인 결과를 감사 가능하게 남긴다
+  const bat = byLabel('바트');
+  assert.equal(bat[1], 4, '다반 강사(정규반1·2 + 심화2)의 담당학생수가 합산되지 않았다');
+  assert.equal(bat[8], '심화2, 정규반1, 정규반2', '담당반 열이 실제 조인된 반 목록이 아니다');
+  // ② 한 반에 강사 여러 명 = 각자 그 반 전원을 온전히(분수 분할 없이) 귀속 → 합계가 재적을 넘는 것이 정상
+  const erika = byLabel('에리카');
+  assert.equal(erika[1], 2, '공동 담당 강사가 반 전원을 귀속받지 못했다');
+  assert.equal(erika[2], 15, '1인당 지표가 공동 담당에서 분수 분할되면 단독 담당과 비교 불가');
+  assert.equal(rows.reduce((s, r) => s + r[1], 0), 8, '귀속 정의 변경(합계 8 = 학생 6 + 공동 담당 2중 계상)');
+  // ③ 매핑 없는 반 = 반별 (미지정) 행 — 학생이 조용히 사라지지 않는다
+  assert.ok(byLabel('(미지정) 주말반9'), '담당 강사 없는 반의 학생이 집계에서 증발했다');
+  assert.ok(byLabel('(미지정) 크루1'), '번호가 여러 강사로 갈리는 반이 오귀속되거나 증발했다');
+  assert.equal(rows.filter((r) => String(r[0]).indexOf('(미지정)') === 0).length, 2, '(미지정)은 반별 1행이어야 한다');
+  // ④ 왕관 편중% = 반 단위 최댓값. 담당 반 학생을 한 통에 섞으면(3/5=60%) 100% 쏠린 반의 경보가 죽는다.
+  assert.equal(bat[6], 5, '왕관 총계는 담당 반 합산(정규반1 4 + 정규반2 1)이어야 한다');
+  assert.equal(bat[7], 100, '편중%가 반 단위 최댓값이 아니다 — 여러 반에 희석되면 60%↑ 경보가 무력화된다');
+  assert.equal(erika[7], 75, '공동 담당 강사의 편중%는 담당 반(정규반1 3/4)의 값이어야 한다');
+  // ⑤ 마이그레이션 = 전량 재계산 1회로 끝. 구 반명 행 6개 → 강사 4행, 꼬리 2행은 지워져야 한다.
+  assert.equal(sheet[0][8], '담당반', '살아있는 시트의 헤더가 실사용 폭(9열)으로 보정되지 않았다');
+  assert.deepEqual(sheet.slice(5).map((r) => String(r[0] || '')), ['', ''], '구 반명 행이 꼬리에 남아 강사인 척 살아 있다');
+  assert.equal(sheet.slice(1).filter((r) => String(r[0] || '').indexOf('정규반') === 0).length, 0, '구 반명 라벨이 시트에 잔존한다');
+});
+
+test('[v9.87] 축이 흔들리는 지점 3곳 — 조인 소스·헤더 정본 공유·데모 회수 기준', () => {
+  const body = section('function calcTeacherStats()', 'function monthlyReport()');
+  assert.ok(body.includes('teacherEmailMap_(ss)'), '강사 매핑 정본을 읽지 않는다');
+  assert.equal(body.includes("const teacher = String(r[4])"), false,
+    '학생 행 class_name을 강사로 쓰던 구 코드가 되살아났다');
+  // 헤더는 골격·실사용이 같은 상수를 봐야 한다 — v9.40 드리프트(구 3열 vs 실사용 8열)의 근본 차단
+  assert.ok(code.includes("['teacher_stats', TEACHER_STATS_HEADERS]"), 'SHEET_SKELETON이 헤더 정본 상수를 쓰지 않는다');
+  assert.equal(/\['teacher_stats', \[/.test(code), false, 'teacher_stats 헤더 리터럴이 두 곳으로 갈라졌다');
+  // 데모 회수: A열이 강사명이 된 뒤로 '데모' 접두만 보면 데모 오염 행이 영구 잔존한다
+  const clr = section('function clearDemoData()', 'function bootstrapSynk()');
+  assert.ok(/wipe\('teacher_stats'[^\n]*r\[8\]/.test(clr), '데모 회수가 담당반(I열) 기준이 아니다 — 강사명 라벨 행을 못 지운다');
+  // 원장 월보의 '이달의 강사'가 (미지정) 행을 1위로 집으면 안 된다
+  const exec = section('function buildExecReport_()', 'function setAppState_');
+  assert.ok(exec.includes('TEACHER_UNASSIGNED'), "'이달의 강사' 선정이 (미지정) 행을 걸러내지 않는다");
 });
