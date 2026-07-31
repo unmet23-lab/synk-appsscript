@@ -751,12 +751,22 @@
  * 204. migrateConsentV185(▶1회·유호 문구 검토 후) — 온라인 상담폼에 개인정보·학습데이터 활용 동의 필수 문항 추가
  *      (오프라인 도시에 v3.3 동의 블록의 온라인 짝). 헤더 없는 문항 규칙에 따라 응답이 자유서술 blob에 타임스탬프와
  *      함께 보존(=동의 증빙). app_state '상담동의'=v18.5 선언, 워치독이 미적용을 주간 안내. AI기능뱅크 F2 선행 조건 해소.
+ * 205. [v9.90] migrateConsentV186(▶1회 · 204를 대체 — 아직 미실행이라 개명 비용 0) — 음성·AI 학습 동의(선택) 문항 신설.
+ *      문항 A(개인정보·필수)는 blob 보존 그대로, 문항 B는 **열로 받는다**(CONSENT_EXT_HEADERS='음성동의', 제목=헤더명
+ *      매칭으로 상담시트 착지) — blob에만 있으면 "누가 거부했는지"를 코드가 못 읽어 녹음·AI 학습이 거부자까지 삼킨다.
+ *      필수 응답 + '아니요' 선택지 = 끼워팔기 무효 리스크와 침묵 통과를 동시에 차단. voiceConsentStat_로 회수 현황 감시.
+ *      음성은 몽골법상 생체정보 계열이라 목적란에 'AI 학습'이 없으면 소급 동의가 불가능 — 녹음 시작 전에 박아야 한다.
+ * 206. [v9.90] createInterviewLogForm(▶1회) — 비자·취업 면접 기록 회수 폼(VR/AR 면접 시뮬레이터 0단계).
+ *      시뮬레이터의 승부처는 렌더링이 아니라 질문 은행·채점 기준이고, 몽골 현지 실제 질문·재질문·거절 사유는
+ *      면접을 본 사람에게서만 나온다(=학원만 가진 복제 불가 자산). 이름·연락처 선택(익명 회수 허용), 마지막 문항 =
+ *      자료 활용 동의(필수·거부 가능). 핵심 칸 = '받은 질문 전부'·'다시 물어보거나 서류를 지적한 부분'.
+ *      워치독이 폼 생존 + 회수 건수를 주간 노출. 구글 폼 경로라 Glide update 소비 0.
  **********************************************************/
 
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.89'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고 · [v9.77] profiles 무결성 3면 감시 — Glide 상세 화면 Edit/Add 잔재 실측(07-28) 후속: 유령 행(user_id 공란, 기존 !r[0] 스킵의 사각)·user_id 중복·무효 role을 nightJobs(매일·이상 시에만 메일·동일 내용 dedup)+주간 워치독+preflight 3면에서 자동 발각 · [v9.78] 강사 반 HUD 리디자인 — 유호 07-28 "반 탭이 만들다 만 느낌" → 낱장 줄글 4카드(v9.15)를 SYNK CLASS HUD로 격상: 14열 반상세HTML = 헤더 스탯 스트립(미션 n건·루틴 k/4·보스 HP) + 미션(유형 색 필·명단 캡)·루틴(게이지+2×2)·레이드(사정권 콜아웃 흡수)·왕관(미수혜 pill 후보 명단), Glide 기바인딩이라 클릭 0 적용·9~13열 낱장도 동일 디자인(설계=ban-tab-redesign 워크플로 A/B 판정) · [v9.79] 미니멀 스킨 — 유호 "훨씬 트렌디하고 미니멀하게, 뼈대 같은 느낌" → 실렌더 A/B(M1 에어리 라이트 vs M2 다크 히어로) 판정 M2 채택: 유색 보더 전면 폐지(흰 카드+이중 소프트 섀도)·타이포 3단(그레이 라벨→잉크 빅넘버→본문)·색 3계 절제(블루·앰버·그린)·이모지 카드당 ≤1·미션 도트 3톤·상세 헤더=딥 네이비 다크 히어로(블루 radial glow) · [v9.80] 조 편성·역할 로테이션 — 강사 수업 규칙 v3.0 §11 배선 대기 1순위(유호 07-31 "앱 자동 제안" 확정): groups 시트(시즌×반 1벌·실력 스네이크+말수·학교 계층 내 교환)·역할 4개 차시 순환·2인 짝 3조합·발표 순번(로테이션이 8주 전원 2회를 자동 보장)을 앱이 짠다. 역할·짝·발표자는 저장하지 않고 차시 번호에서 계산 — 매 차시 쓰기 0(월 500건 한도 불변). 강사 브리핑에 조 편성표 동봉 · [v9.81] 랭킹·반 목록 UI 격상(유호 07-31 지적 3건) — ①학생 랭킹 탭: profiles DO119 랭킹보드HTML 신설(SYNK LEAGUE 다크 포디움+순위 리스트+내 순위 하이라이트+추격 넛지 "nP=숙제 k번", rankMap과 동일 소스) ②강사 반 목록: class_stats 15열 반카드요약(👥 n명·반몬스터·보스 상태)+16열 반몬스터이미지 — Glide Collection을 Card 스타일로 ③반 상세 HUD 헤더에 👥 총원 필(stuN 기전달이라 조립 0) · classMonster {name,img}화·유령 클리어 14→16열 · [v9.82] 출퇴근·결석 카드(유호 07-31 지시 10·12번) — ①강사 출퇴근HTML(DP120, 3차 블록 SHARED3 — DO119 랭킹보드 선점 회피): 오늘의 근무 히어로(출근/퇴근 빅넘버·상태 필 3단·퇴근 후 근무시간 확정값)+이번 주 월~토 스트립(과거 무기록일은 무채색 — 개인 시간표 부재로 결근 단정 금지)+요일 출근 치어 재사용(CH11~17 소생), 10분 스위프 소유·값 변경시만 기입(경과시간류 금지 = update 순증 0, 자정 리셋은 기존 출퇴근 리셋과 같은 묶음) ②학부모 결석신고HTML(DQ121): 접수 확인 ✅(v9.34 보류 P-ACK 상환)·오늘/예정/지난 3태·다음 수업일 3칩(classDowOk_ 재사용)·작동 3줄 몽골어 병기(원어민 검수 큐), 출석 달력과 같은 껍질 ③결석 폼 "자녀"를 Choice(value=user_id)로 재조립 지시 — 다자녀 parent_of 통짜 기록이 미출석 제외·브리핑·오늘의 반 3곳에서 조용히 불발되던 것 근본 수리 + preflight absence_notice student_id 무결성 검사(쉼표·미매칭) ④학부모 전수 점검 문서 docs/부모탭_점검_2026-07-31.md(P-ACK·다자녀 🔴 2건 = 이번 수리, 문의 답변 루프·다이제스트 몽골어 🟡 2건 = 제안 대기) · [v9.83] 💰 포인트 경제 재설계(유호 07-31 지시 23번 "포인트가 너무 후하다") — ①지급 단가를 PT 상수 단일 소스로 모으고 전면 ÷2(숙제 10→5·출석 3→2·첨삭확인 5→2·왕관 10→5·레이드 20→10·리그 5→3·월드 10→5·개근왕 30→15·영웅 20→10·생일 20→10): 설계 앵커 "성실 월 ~280P" 이후 지급 경로 6개가 늘도록 아무도 총합을 안 봐서 실측 572P/월 = 정확히 2배 인플레였고, 그 탓에 과잠 3.0개월·싱크마스터 진화 4.2개월(의도 9개월)로 스토어·진화·보스 세 경제가 동시에 무너져 있던 것을 스토어 가격 무수정으로 한 번에 복귀(열심히 291P·보통 196P) ②🧥 과잠은 스토어 하차 → 재원 12개월+누계 1,200P 무료 지급 자격으로(jacketWatch_·jacket_grants, 잔액 무차감이라 간식·굿즈를 사면서도 시계가 돌고 수업일 1/5인 주말반도 같은 개월에 도달) ③목표진행 카드(BZ78)를 도착 예정일로 — 촤 없으면 과잠 진행 폴백 ④보스 HP를 RAID_HP_PER 상수화 재보정(평일 28→34·주말 18→14·WORLD_HP_PER 100→150, 지급의 종속 변수라 함께 움직인다) · [v9.84] 🔌 상담 배선 팩(유호 07-31 승인: 진단 5건+도전안+한수더 전부) — ①상담 5필드→DT124~DX128(취향·목표·입학TOPIK·고충·페이스라인, 읽기 폭 동적+헤더 이름 해석+점거 가드) ②AI 콜드스타트 폴백 사슬 4곳 통일(최애=DA105‖상담취향·목표=드림‖상담목표‖비전·약점=기록‖입학 자기보고 — 학생 소유 열은 읽기만) ③여정카드 페이스라인(도전안: 목표 기한 역산 남은 주, 보장 표현 0)+미래편지 입학TOPIK 0점 좌표(한수더) ④자유서술 blob→노션 상담서술 주간 자동 이관(속성 자동 보장·장애 격리) ⑤KPI 인지채널별 등록/상담 분해(시트 스키마 불변) ⑥migrateConsentV185 ▶1회 — 온라인 폼 동의 문항(v18.5, 문구 유호 검토 전제)+워치독 감시 2종. 설계노트 199~204·테스트 7종 · [v9.85] 리그 카드 리뷰 반영(v9.81 독립 리뷰 P1+P2) — ①단상 숫자=실순위(동점 동순위, 구현은 배열 위치를 찍어 R열과 어긋났다)+동점 1위 왕좌 문구(구 mineIdx===0) ②넛지 환산 단가를 PT.숙제 주입으로(v9.83 반값 개정 자동 추종, meta.hwP)+6번 이상은 "사정권" 문구 캡 ③동점 추격 문구를 이름 기준으로(같은 순위끼리 "n위와 동점"은 자기 언급) ④콜드 리스트 문구 분기(없는 TOP3 전제 제거) ⑤리그 이름 폴백 '이름 미등록'(전교 노출면 user_id 차단) ⑥월 라벨 시트 tz 통일 ⑦class_stats 유령 클리어 앞 폭 보장(좁은 시트+반 감소 조합 크래시 경로) · [v9.86] 수업준비 팩(유호 07-31 "1,2,3,4 전부 진행" — 9번 아이디어 4건 전량 채택) — A 오늘·내일 결석 예정을 HUD 미션 절로(preAbsByCls, 사전신고→강사 화면 관통·수업 12분 전 메일에만 있던 것) · B 조 편성 절을 반 상세 HUD에 상설(buildGroupHud_+groupHudsByClass_ 1회 읽기 배치 — 메일 조 편성표와 동일 원천 roleOfSeat_·발표자 앰버 콜아웃·임시 조 필, 편성 전엔 절 생략) · C 수업준비 카드에 제출 현황(검사 동선) 절 — hw_feedback 기존 읽기에 편승(subT)·담당 반별 n/전체·미제출 5명 캡·강사별 카드 분화(prepArgsT) · D 주간 교안 초안 자동 생성(weeklyJobs 월 07시 편승·통합 리포트 섹션으로 링크 보고) — 양식 v2.0 14항 틀에 앱이 아는 칸만 채움(기간·인원·담당·이월 '더연습' 태그·3주차부터 오류 톱10 실측·4주차부터 지명 프록시(발화 실측 전 포인트 무활동 대체 명시)·조 편성표·과업 은행 20종 차시×주차 로테이션), Google Doc 멱등 생성(같은 이름 있으면 보존 — 강사 편집 불가침)·SYNK_교안초안 폴더·콘텐츠는 contents_교안.js 신설(파일 차선 규약·filePushOrder 편입) ⚠DocumentApp 최초 사용 = 배포 후 아무 함수 ▶ 1회 권한 재승인 필요(승인 전 트리거 실패 창 — 보고에 0단계 명시) · [v9.87] 강사 지표 축 교정 — teacher_stats A열이 '강사' 헤더에 실은 반명을 담고 있었다(학생 행 class_name을 강사로 오독). teacherEmailMap_.byClass 조인으로 반명→담당 강사 변환, 집계 정의 확정(공동 담당=각자 온전 귀속·다반 강사=1행 합산·왕관 편중%만 반 단위 최댓값·매핑 없는 반='(미지정) 반명'으로 노출), 담당반 9열 추가로 조인 결과 감사 가능화, 헤더 정본 상수(TEACHER_STATS_HEADERS)를 골격·실사용이 공유해 v9.40 드리프트 재발 차단 · [v9.88] 숙제·퀴즈 문항 자기완결 팩(유호 07-31 "한국인인 나조차 이해 안 감") — ①HW 41문항 "오늘 단어/문법/문장/대화문/표현/문형"→"오늘 배운 X"(한·몽 41쌍 동시 치환, 몽골어는 기존 HW101 Өнөөдөр сурсан·HW201 Өнөөдөр үзсэн 패턴으로의 기계 치환만 — 신규 작문 0) ②QZ22 문장 붕괴 수리 — 「밥 먹었어?」 따옴표 복원(몽골어판은 원래 완전문이었고 한국어 원문만 조각) ③카드 문항 본문 한·몽 병기 배선 — v9.70이 유형·검사포인트만 병기하고 정작 본문은 한국어뿐이던 것: 숙제=게시 숙제ID 매칭, 퀴즈=오늘의퀴즈ID_초급 신설+표시문항 동일성 검사(quizRaw===begQ9, 중·고급 문항에 초급 번역 오결합 차단·개인AI퀴즈 병기 없음) ④숙제 카드 제출 안내를 실제 버튼 라벨과 정합(✏️ 숙제) ⑤(코드 밖) Glide 학생 홈 버튼 3종 라벨 압축 ✅ 출석·✏️ 숙제·🎙 목소리로 한 줄 정렬 — 07-31 원격 실측·자동저장 완료. ▶ 필요: setupHomework+setupQuiz(문항 시트 반영, 재실행 시 해당 유형 G열 초기화)→injectMongolianContents(G열 재주입) 순서 준수 · [v9.89] 결석 추적 — 「결석 복귀율」(시즌 등급 심사 20점·개원 첫 시즌 30점·채점 "앱 자동")이 측정 불가이던 것 해소: checkNoShow가 app_state에 인원수만 남기고 결석자 명단을 안 남겨 24시간 뒤 "이 학생에게 연락했는가"를 대조할 학생별 행이 없었다. absence_followup 1인 1행 적재(시트 쓰기가 메일보다 앞 — 지표 원본이 쿼터·메일 실패에 종속되지 않게)·결석 연락 폼 6문항 고정(응답 7열 계약, Glide update 0)·복귀 자동 판정(attendance 대조 + 지각 오탐 자체 정정, 판정 보류는 분모 제외)·24h 미연락 창 알림 D+1~D+3(강사 1인당 밤 최대 1통)·주간 리포트 강사별 복귀율(§7 배점표 환산)·DR122 결석폼URL. ⚠전제 = 출석 1탭이 유일한 입구(당일 그 반 출석 0건이면 판정 창 자체가 안 열린다) — preflight 침묵 감시로 방어
+const SYNK_VERSION = 'v9.90'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고 · [v9.77] profiles 무결성 3면 감시 — Glide 상세 화면 Edit/Add 잔재 실측(07-28) 후속: 유령 행(user_id 공란, 기존 !r[0] 스킵의 사각)·user_id 중복·무효 role을 nightJobs(매일·이상 시에만 메일·동일 내용 dedup)+주간 워치독+preflight 3면에서 자동 발각 · [v9.78] 강사 반 HUD 리디자인 — 유호 07-28 "반 탭이 만들다 만 느낌" → 낱장 줄글 4카드(v9.15)를 SYNK CLASS HUD로 격상: 14열 반상세HTML = 헤더 스탯 스트립(미션 n건·루틴 k/4·보스 HP) + 미션(유형 색 필·명단 캡)·루틴(게이지+2×2)·레이드(사정권 콜아웃 흡수)·왕관(미수혜 pill 후보 명단), Glide 기바인딩이라 클릭 0 적용·9~13열 낱장도 동일 디자인(설계=ban-tab-redesign 워크플로 A/B 판정) · [v9.79] 미니멀 스킨 — 유호 "훨씬 트렌디하고 미니멀하게, 뼈대 같은 느낌" → 실렌더 A/B(M1 에어리 라이트 vs M2 다크 히어로) 판정 M2 채택: 유색 보더 전면 폐지(흰 카드+이중 소프트 섀도)·타이포 3단(그레이 라벨→잉크 빅넘버→본문)·색 3계 절제(블루·앰버·그린)·이모지 카드당 ≤1·미션 도트 3톤·상세 헤더=딥 네이비 다크 히어로(블루 radial glow) · [v9.80] 조 편성·역할 로테이션 — 강사 수업 규칙 v3.0 §11 배선 대기 1순위(유호 07-31 "앱 자동 제안" 확정): groups 시트(시즌×반 1벌·실력 스네이크+말수·학교 계층 내 교환)·역할 4개 차시 순환·2인 짝 3조합·발표 순번(로테이션이 8주 전원 2회를 자동 보장)을 앱이 짠다. 역할·짝·발표자는 저장하지 않고 차시 번호에서 계산 — 매 차시 쓰기 0(월 500건 한도 불변). 강사 브리핑에 조 편성표 동봉 · [v9.81] 랭킹·반 목록 UI 격상(유호 07-31 지적 3건) — ①학생 랭킹 탭: profiles DO119 랭킹보드HTML 신설(SYNK LEAGUE 다크 포디움+순위 리스트+내 순위 하이라이트+추격 넛지 "nP=숙제 k번", rankMap과 동일 소스) ②강사 반 목록: class_stats 15열 반카드요약(👥 n명·반몬스터·보스 상태)+16열 반몬스터이미지 — Glide Collection을 Card 스타일로 ③반 상세 HUD 헤더에 👥 총원 필(stuN 기전달이라 조립 0) · classMonster {name,img}화·유령 클리어 14→16열 · [v9.82] 출퇴근·결석 카드(유호 07-31 지시 10·12번) — ①강사 출퇴근HTML(DP120, 3차 블록 SHARED3 — DO119 랭킹보드 선점 회피): 오늘의 근무 히어로(출근/퇴근 빅넘버·상태 필 3단·퇴근 후 근무시간 확정값)+이번 주 월~토 스트립(과거 무기록일은 무채색 — 개인 시간표 부재로 결근 단정 금지)+요일 출근 치어 재사용(CH11~17 소생), 10분 스위프 소유·값 변경시만 기입(경과시간류 금지 = update 순증 0, 자정 리셋은 기존 출퇴근 리셋과 같은 묶음) ②학부모 결석신고HTML(DQ121): 접수 확인 ✅(v9.34 보류 P-ACK 상환)·오늘/예정/지난 3태·다음 수업일 3칩(classDowOk_ 재사용)·작동 3줄 몽골어 병기(원어민 검수 큐), 출석 달력과 같은 껍질 ③결석 폼 "자녀"를 Choice(value=user_id)로 재조립 지시 — 다자녀 parent_of 통짜 기록이 미출석 제외·브리핑·오늘의 반 3곳에서 조용히 불발되던 것 근본 수리 + preflight absence_notice student_id 무결성 검사(쉼표·미매칭) ④학부모 전수 점검 문서 docs/부모탭_점검_2026-07-31.md(P-ACK·다자녀 🔴 2건 = 이번 수리, 문의 답변 루프·다이제스트 몽골어 🟡 2건 = 제안 대기) · [v9.83] 💰 포인트 경제 재설계(유호 07-31 지시 23번 "포인트가 너무 후하다") — ①지급 단가를 PT 상수 단일 소스로 모으고 전면 ÷2(숙제 10→5·출석 3→2·첨삭확인 5→2·왕관 10→5·레이드 20→10·리그 5→3·월드 10→5·개근왕 30→15·영웅 20→10·생일 20→10): 설계 앵커 "성실 월 ~280P" 이후 지급 경로 6개가 늘도록 아무도 총합을 안 봐서 실측 572P/월 = 정확히 2배 인플레였고, 그 탓에 과잠 3.0개월·싱크마스터 진화 4.2개월(의도 9개월)로 스토어·진화·보스 세 경제가 동시에 무너져 있던 것을 스토어 가격 무수정으로 한 번에 복귀(열심히 291P·보통 196P) ②🧥 과잠은 스토어 하차 → 재원 12개월+누계 1,200P 무료 지급 자격으로(jacketWatch_·jacket_grants, 잔액 무차감이라 간식·굿즈를 사면서도 시계가 돌고 수업일 1/5인 주말반도 같은 개월에 도달) ③목표진행 카드(BZ78)를 도착 예정일로 — 촤 없으면 과잠 진행 폴백 ④보스 HP를 RAID_HP_PER 상수화 재보정(평일 28→34·주말 18→14·WORLD_HP_PER 100→150, 지급의 종속 변수라 함께 움직인다) · [v9.84] 🔌 상담 배선 팩(유호 07-31 승인: 진단 5건+도전안+한수더 전부) — ①상담 5필드→DT124~DX128(취향·목표·입학TOPIK·고충·페이스라인, 읽기 폭 동적+헤더 이름 해석+점거 가드) ②AI 콜드스타트 폴백 사슬 4곳 통일(최애=DA105‖상담취향·목표=드림‖상담목표‖비전·약점=기록‖입학 자기보고 — 학생 소유 열은 읽기만) ③여정카드 페이스라인(도전안: 목표 기한 역산 남은 주, 보장 표현 0)+미래편지 입학TOPIK 0점 좌표(한수더) ④자유서술 blob→노션 상담서술 주간 자동 이관(속성 자동 보장·장애 격리) ⑤KPI 인지채널별 등록/상담 분해(시트 스키마 불변) ⑥상담폼 동의 문항 ▶1회(migrateConsentV185 — 미실행 상태에서 v9.90 migrateConsentV186으로 대체됨) — 온라인 폼 동의 문항(v18.5, 문구 유호 검토 전제)+워치독 감시 2종. 설계노트 199~204·테스트 7종 · [v9.85] 리그 카드 리뷰 반영(v9.81 독립 리뷰 P1+P2) — ①단상 숫자=실순위(동점 동순위, 구현은 배열 위치를 찍어 R열과 어긋났다)+동점 1위 왕좌 문구(구 mineIdx===0) ②넛지 환산 단가를 PT.숙제 주입으로(v9.83 반값 개정 자동 추종, meta.hwP)+6번 이상은 "사정권" 문구 캡 ③동점 추격 문구를 이름 기준으로(같은 순위끼리 "n위와 동점"은 자기 언급) ④콜드 리스트 문구 분기(없는 TOP3 전제 제거) ⑤리그 이름 폴백 '이름 미등록'(전교 노출면 user_id 차단) ⑥월 라벨 시트 tz 통일 ⑦class_stats 유령 클리어 앞 폭 보장(좁은 시트+반 감소 조합 크래시 경로) · [v9.86] 수업준비 팩(유호 07-31 "1,2,3,4 전부 진행" — 9번 아이디어 4건 전량 채택) — A 오늘·내일 결석 예정을 HUD 미션 절로(preAbsByCls, 사전신고→강사 화면 관통·수업 12분 전 메일에만 있던 것) · B 조 편성 절을 반 상세 HUD에 상설(buildGroupHud_+groupHudsByClass_ 1회 읽기 배치 — 메일 조 편성표와 동일 원천 roleOfSeat_·발표자 앰버 콜아웃·임시 조 필, 편성 전엔 절 생략) · C 수업준비 카드에 제출 현황(검사 동선) 절 — hw_feedback 기존 읽기에 편승(subT)·담당 반별 n/전체·미제출 5명 캡·강사별 카드 분화(prepArgsT) · D 주간 교안 초안 자동 생성(weeklyJobs 월 07시 편승·통합 리포트 섹션으로 링크 보고) — 양식 v2.0 14항 틀에 앱이 아는 칸만 채움(기간·인원·담당·이월 '더연습' 태그·3주차부터 오류 톱10 실측·4주차부터 지명 프록시(발화 실측 전 포인트 무활동 대체 명시)·조 편성표·과업 은행 20종 차시×주차 로테이션), Google Doc 멱등 생성(같은 이름 있으면 보존 — 강사 편집 불가침)·SYNK_교안초안 폴더·콘텐츠는 contents_교안.js 신설(파일 차선 규약·filePushOrder 편입) ⚠DocumentApp 최초 사용 = 배포 후 아무 함수 ▶ 1회 권한 재승인 필요(승인 전 트리거 실패 창 — 보고에 0단계 명시) · [v9.87] 강사 지표 축 교정 — teacher_stats A열이 '강사' 헤더에 실은 반명을 담고 있었다(학생 행 class_name을 강사로 오독). teacherEmailMap_.byClass 조인으로 반명→담당 강사 변환, 집계 정의 확정(공동 담당=각자 온전 귀속·다반 강사=1행 합산·왕관 편중%만 반 단위 최댓값·매핑 없는 반='(미지정) 반명'으로 노출), 담당반 9열 추가로 조인 결과 감사 가능화, 헤더 정본 상수(TEACHER_STATS_HEADERS)를 골격·실사용이 공유해 v9.40 드리프트 재발 차단 · [v9.88] 숙제·퀴즈 문항 자기완결 팩(유호 07-31 "한국인인 나조차 이해 안 감") — ①HW 41문항 "오늘 단어/문법/문장/대화문/표현/문형"→"오늘 배운 X"(한·몽 41쌍 동시 치환, 몽골어는 기존 HW101 Өнөөдөр сурсан·HW201 Өнөөдөр үзсэн 패턴으로의 기계 치환만 — 신규 작문 0) ②QZ22 문장 붕괴 수리 — 「밥 먹었어?」 따옴표 복원(몽골어판은 원래 완전문이었고 한국어 원문만 조각) ③카드 문항 본문 한·몽 병기 배선 — v9.70이 유형·검사포인트만 병기하고 정작 본문은 한국어뿐이던 것: 숙제=게시 숙제ID 매칭, 퀴즈=오늘의퀴즈ID_초급 신설+표시문항 동일성 검사(quizRaw===begQ9, 중·고급 문항에 초급 번역 오결합 차단·개인AI퀴즈 병기 없음) ④숙제 카드 제출 안내를 실제 버튼 라벨과 정합(✏️ 숙제) ⑤(코드 밖) Glide 학생 홈 버튼 3종 라벨 압축 ✅ 출석·✏️ 숙제·🎙 목소리로 한 줄 정렬 — 07-31 원격 실측·자동저장 완료. ▶ 필요: setupHomework+setupQuiz(문항 시트 반영, 재실행 시 해당 유형 G열 초기화)→injectMongolianContents(G열 재주입) 순서 준수 · [v9.89] 결석 추적 — 「결석 복귀율」(시즌 등급 심사 20점·개원 첫 시즌 30점·채점 "앱 자동")이 측정 불가이던 것 해소: checkNoShow가 app_state에 인원수만 남기고 결석자 명단을 안 남겨 24시간 뒤 "이 학생에게 연락했는가"를 대조할 학생별 행이 없었다. absence_followup 1인 1행 적재(시트 쓰기가 메일보다 앞 — 지표 원본이 쿼터·메일 실패에 종속되지 않게)·결석 연락 폼 6문항 고정(응답 7열 계약, Glide update 0)·복귀 자동 판정(attendance 대조 + 지각 오탐 자체 정정, 판정 보류는 분모 제외)·24h 미연락 창 알림 D+1~D+3(강사 1인당 밤 최대 1통)·주간 리포트 강사별 복귀율(§7 배점표 환산)·DR122 결석폼URL. ⚠전제 = 출석 1탭이 유일한 입구(당일 그 반 출석 0건이면 판정 창 자체가 안 열린다) — preflight 침묵 감시로 방어 · [v9.90] 🛂 면접 시뮬 0단계(유호 07-31 "둘 다 진행") — VR/AR 비자·취업 면접 체험 앱의 승부처는 렌더링이 아니라 질문 은행·채점 기준이고 그 원천은 실제 면접자뿐이라, 헤드셋보다 먼저 비용 0으로 시작하는 두 장치를 깔았다: ①migrateConsentV186 — 미실행 상태였던 v18.5를 대체·확장해 음성·AI 학습 동의(선택)를 신설. 문항 A(개인정보·필수)는 blob 보존 유지, 문항 B는 제목=헤더명 규칙으로 상담시트 '음성동의' 열에 착지시켜 거부자를 기계로 식별(blob에만 두면 녹음·AI 학습이 거부자까지 삼킨다) · 필수 응답+'아니요' 선택지로 끼워팔기 무효 리스크와 침묵 통과를 동시 차단 · voiceConsentStat_ 회수 현황을 워치독에 상시 표기. 음성은 몽골법상 생체정보 계열이라 목적란 'AI 학습'이 없으면 소급 동의가 불가능 = 녹음 시작 전에 박아야 하는 조항(노션 상담서술 이관 게이트도 v18.6으로 동반 상향 — 한쪽만 올리면 영구 보류) ②createInterviewLogForm — 비자·취업 면접 경험 회수 폼(16문항·구글 폼이라 update 0). 이름·연락처 선택으로 익명 회수 허용(거절 경험일수록 밝히기 싫다), 마지막 문항=자료 활용 동의(필수·거부 가능), 핵심 칸은 '받은 질문 전부'와 '다시 물어보거나 서류를 지적한 부분'(=질문 은행과 모순 탐지 채점표의 원료). ID 유실 시 응답 탭에서 폼 복구(중복 폼으로 회수가 갈리는 경로 차단) · 워치독에 폼 생존+회수 건수 편입 ⚠몽골어 병기는 원어민 검수 큐(동의 문항은 학생이 못 읽으면 효력을 다툴 수 있음)
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -6900,34 +6910,118 @@ function migrateConsultV184() {
   return report;
 }
 
-// [v9.84·204] ▶ 1회(유호 문구 검토 후) — 온라인 상담폼에 개인정보·학습데이터 활용 동의 필수 문항 추가 (정본 v18.5).
+// [v9.90] 음성·면접 녹음 동의가 받는 시트 열 — 문항 B는 blob이 아니라 '열'로 받는다(아래 설계 ③).
+const CONSENT_EXT_HEADERS = ['음성동의'];
+
+// [v9.84·204 → v9.90·205] ▶ 1회(유호 문구 검토 후) — 온라인 상담폼 동의 문항 (정본 v18.6).
 //   오프라인 도시에 v3.3 동의·서명 블록(상담통합_실행지_v966 §5)의 온라인 짝 — 지금까지 온라인 폼엔 동의가 0개였다.
-//   설계: ① 시트 헤더는 만들지 않는다 → 응답이 '📝자유서술→노션' blob에 '[문항명] 답'으로 접수 타임스탬프와 함께
-//   보존(=동의 증빙, 노션 상담서술로도 주간 이관). ② 멱등 — 같은 제목이 있으면 스킵(V184와 같은 계급).
-//   ③ 문구는 초안 — 몽골어 병기·법률 수위는 유호님+원어민 검수 몫(음성 동의 조항과 같은 '소급 불가' 계열이라 우선 배치).
-function migrateConsentV185() {
+//   설계: ① 문항 A(개인정보·학습데이터, 필수)는 시트 헤더를 만들지 않는다 → '📝자유서술→노션' blob에 접수
+//   타임스탬프와 함께 보존(=동의 증빙, 노션 상담서술로도 주간 이관). ② 멱등 — 같은 제목이 있으면 스킵(V184와 같은 계급).
+//   ③ [v9.90] 문항 B(음성·AI 학습, 선택)는 **열로 받는다** — blob에만 있으면 "누가 거부했는지"를 코드가 못 읽어
+//   녹음·AI 학습 기능이 거부자까지 삼킨다. 제목=헤더명 규칙(CONSENT_EXT_HEADERS)으로 상담시트 열에 착지시켜
+//   voiceConsentStat_·후속 녹음 기능이 기계 게이트로 쓴다. 필수 응답이되 '아니요' 선택지를 둬 거부가 가능하게 —
+//   끼워팔기 동의(거부 불가)는 동의 자체가 무효화될 수 있고, 무응답 허용은 게이트가 침묵으로 통과된다.
+//   ④ 문구는 초안 — 보관 기간·법률 수위·몽골어 병기는 유호님+원어민 검수 몫. 음성은 몽골법상 생체정보 계열이라
+//   목적란에 'AI 학습'이 없으면 나중에 모은 것을 전부 못 쓰고 **소급 동의가 불가능**하다(=녹음 시작 전에 박아야 함).
+function migrateConsentV186() {
   const out = [];
+  let sheetOk = false;
+  // ① 시트 헤더 증분 — 음성동의 열(migrateConsultV184와 동일 규약: 항상 헤더 행 끝에만 추가, 기존 열 위치 불변)
+  try {
+    const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    if (!consult) out.push("⚠️ 시트: '상담데이터입력' 탭 없음 — 탭 이름 확인, 증분 중단");
+    else {
+      const w0 = consult.getLastColumn();
+      const hdr = w0 >= 1 ? consult.getRange(2, 1, 1, w0).getValues()[0].map(h => String(h || '').trim()) : [];
+      if (w0 < 62 || hdr[59] !== '학생ID') {
+        out.push('⚠️ 시트: 스키마 어긋남(폭 ' + w0 + '열 · 60열="' + (hdr[59] || '빈칸') + '") — 증분 중단. dumpConsultHeaders ▶로 확인하세요.');
+      } else {
+        const have = {}; hdr.forEach(h => { if (h) have[h] = 1; });
+        const added = [];
+        let wH = 0; hdr.forEach((h, i) => { if (h) wH = i + 1; });
+        let col = Math.max(62, wH) + 1;
+        const firstNew = col;
+        CONSENT_EXT_HEADERS.forEach(h => {
+          if (have[h]) return;
+          if (consult.getMaxColumns() < col) consult.insertColumnsAfter(consult.getMaxColumns(), col - consult.getMaxColumns());
+          consult.getRange(2, col).setValue(h);
+          added.push(h + '(' + col + '열)');
+          col++;
+        });
+        if (added.length) consult.showColumns(firstNew, added.length); // 숨김 열 옆 삽입의 숨김 상속 차단(V184 리뷰 M3와 동일)
+        sheetOk = true;
+        out.push('시트: ' + (added.length ? '추가 ' + added.join(', ') : '이미 있음 — 스킵(멱등)'));
+      }
+    }
+  } catch (e) { out.push('⚠️ 시트 접근 실패 — CONSULT_SHEET_ID/권한 확인: ' + e); }
+
+  // ② 폼 문항 2종 증분
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const st = ensureSheet(ss, 'app_state', ['key', 'value']);
     const fid = String(getState(st, '상담폼ID').val || '');
     if (!fid) { const m0 = '⚠️ 상담폼ID 미연결 — createConsultForm ▶ 먼저'; Logger.log(m0); return m0; }
     const form = FormApp.openById(fid);
-    const TITLE = '개인정보·학습데이터 활용 동의';
-    const hasIt = form.getItems().some(x => String(x.getTitle()).trim() === TITLE);
-    if (hasIt) { out.push('폼: 동의 문항 이미 있음 — 스킵(멱등)'); }
+    const titles = form.getItems().map(x => String(x.getTitle()).trim());
+
+    const A = '개인정보·학습데이터 활용 동의';
+    if (titles.indexOf(A) !== -1) out.push('폼 A(개인정보·필수): 이미 있음 — 스킵');
     else {
-      form.addMultipleChoiceItem().setTitle(TITLE)
+      form.addMultipleChoiceItem().setTitle(A)
         .setHelpText('수집: 이 설문의 응답(연락처·보호자 정보·학습 배경·목표·취향) / 용도: 상담·반 배정·학습 개인화(응원 문장·퀴즈·성장 리포트의 소재)·학원 운영 통계 / 보관: 재원 기간 및 성장 기록 보존 기간 / 제3자 제공 없음 · 동의 철회는 언제든 학원으로 연락 주세요.')
         .setChoiceValues(['네, 동의합니다']).setRequired(true);
-      out.push('폼: 동의 문항 추가(필수·맨 끝 배치) — 응답은 자유서술 칸에 타임스탬프와 함께 보존됩니다');
+      out.push('폼 A(개인정보·필수): 추가 — 응답은 자유서술 칸에 타임스탬프와 함께 보존됩니다');
     }
-    setState(st, '상담동의', 'v18.5'); // 워치독 감시 게이트 — 적용 선언
+
+    // 문항 B — 제목이 곧 시트 헤더명이어야 열에 착지한다(importFormResponses 헤더 이름 매칭)
+    const B = CONSENT_EXT_HEADERS[0]; // '음성동의'
+    if (titles.indexOf(B) !== -1) out.push('폼 B(음성·AI 학습·선택): 이미 있음 — 스킵');
+    else {
+      form.addMultipleChoiceItem().setTitle(B)
+        .setHelpText('※ 선택 문항입니다 — 어느 쪽을 고르셔도 수업·성적·반 배정에 어떤 불이익도 없습니다.\n'
+          + '수집: 수업·발음 연습·모의 면접(비자·취업) 중 녹음된 목소리와 그것을 글로 옮긴 기록 / '
+          + '용도: 발음·말하기·면접 답변에 대한 개인 피드백과, 그 피드백을 만드는 AI의 학습 / '
+          + '보관: 재원 기간 + 졸업 후 3년(이후 삭제) / 제3자 제공 없음 · '
+          + '동의 철회는 언제든 학원으로 연락 주시면 즉시 중단하고 기존 녹음도 삭제합니다.')
+        .setChoiceValues(['네, 동의합니다', '아니요, 원하지 않습니다']).setRequired(true);
+      out.push('폼 B(음성·AI 학습·선택): 추가 — 응답이 상담시트 "' + B + '" 열에 착지합니다(거부자 기계 식별 가능)');
+    }
+    if (sheetOk) setState(st, '상담동의', 'v18.6'); // 워치독 감시 게이트 — 시트 열까지 성립했을 때만 적용 선언
+    else out.push('⚠️ 시트 열 증분이 실패해 v18.6 선언을 보류했습니다 — 폼 문항만으로는 거부자를 못 읽습니다');
   } catch (e) { out.push('⚠️ 폼 접근 실패 — 상담폼ID/권한 확인: ' + e); }
-  const report = '🔏 상담 동의 v18.5 결과\n' + out.join('\n');
+
+  const report = '🔏 상담 동의 v18.6 결과\n' + out.join('\n')
+    + '\n\n다음 확인: checkFormMapping ▶ — "음성동의"가 열 매핑으로 표시되면 정상입니다.'
+    + '\n⚠️ 몽골어 병기는 아직 없습니다 — 학생이 못 읽는 동의는 효력을 다툴 수 있어 원어민 검수 후 도움말에 병기하세요.';
   Logger.log(report);
-  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🔏 상담폼 동의 문항(v18.5)', report);
+  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🔏 상담폼 동의 문항(v18.6)', report);
   return report;
+}
+
+/* [v9.90] 음성·AI 학습 동의 현황 — 상담시트 '음성동의' 열 집계(동의/거부/미응답).
+ * 녹음·AI 학습 기능이 붙기 전까지는 워치독 표기용이고, 붙은 뒤에는 같은 열이 그대로 기계 게이트가 된다
+ * ('동의' 행만 녹음 대상 — 거부자를 삼키면 되돌릴 수 없다). 실패는 빈 결과로 격리한다(워치독 한 줄이 전체를 깨지 않게). */
+function voiceConsentStat_() {
+  const r = { yes: 0, no: 0, blank: 0, total: 0, ok: false };
+  try {
+    const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    if (!consult) return r;
+    const w = consult.getLastColumn(), lastRow = consult.getLastRow();
+    if (w < 1 || lastRow < 3) return r;
+    const hdr = consult.getRange(2, 1, 1, w).getValues()[0].map(h => String(h || '').trim());
+    const ci = hdr.indexOf(CONSENT_EXT_HEADERS[0]);
+    if (ci === -1) return r;
+    const vals = consult.getRange(3, ci + 1, lastRow - 2, 1).getValues();
+    vals.forEach(row => {
+      const v = String(row[0] || '').trim();
+      r.total++;
+      if (!v) r.blank++;
+      else if (v.indexOf('아니') === 0) r.no++;
+      else r.yes++;
+    });
+    r.ok = true;
+  } catch (e) { /* 격리 */ }
+  return r;
 }
 
 // [v9.33] 콜드 광고 트래픽용 미니 리드폼 — 이름·연락처·인지채널·관심과정 4문항. 68문항(v18.4) 온보딩 상담폼(createConsultForm)과 완전 별개(그 폼은 건드리지 않음).
@@ -7221,6 +7315,102 @@ function createAcademicForm() {
     '\n\n※ 재실행해도 안전합니다(제자리 업그레이드 · URL 불변). 반·강사가 바뀌면 다음 날 아침 드롭다운이 자동 갱신됩니다.');
   Logger.log('✅ 학업 기록 폼 생성 완료: ' + form.getPublishedUrl());
   Logger.log('편집용: ' + form.getEditUrl());
+}
+
+/* ── [v9.90·206] 🛂 면접 기록 회수 폼 — VR/AR 면접 시뮬레이터의 0단계 ──
+ * 유호 07-31 지시: 비자·취업 면접을 가상현실로 체험시키는 앱을 만든다 → 그 앱의 승부처는 렌더링이 아니라
+ * '질문 은행과 채점 기준'이고, 몽골 현지의 실제 질문·재질문·거절 사유는 검색으로 안 나온다. 실제로 면접을 본
+ * 사람(졸업생·지원자·재학생)에게서만 나오며 그들을 가진 곳은 학원뿐 = 복제 불가 자산. 헤드셋보다 먼저, 비용 0으로 시작한다.
+ * 설계: ① 구글 폼이라 Glide update 소비 0(약점 메모·학업 기록 폼 계보) ② 이름·연락처는 선택 —
+ * 익명으로도 남길 수 있어야 회수율이 산다(거절 경험은 특히 밝히기 싫은 정보다) ③ 마지막 문항 = 자료 활용 동의로
+ * 필수·거부 가능 — 동의 없이 모은 기록은 후배 연습 자료로도 AI 학습으로도 못 쓴다(소급 불가, migrateConsentV186과 같은 계열)
+ * ④ 핵심 칸은 9·11번 — '받은 질문 전부'와 '심사관이 다시 물은 것'. 이 둘이 시뮬레이터의 질문 은행과 모순 탐지 채점표가 된다. */
+const INTERVIEW_KINDS = ['한국 유학 비자 인터뷰', 'EPS 취업(E-9) 면접·시험', '한국 기업 취업 면접', '한국 대학·대학원 입학 면접', '한국 방문·기타 비자 인터뷰', '기타'];
+function createInterviewLogForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  // 재실행 안전 — 배포된 링크·QR가 미아가 되지 않도록 살아 있는 폼은 절대 새로 만들지 않는다(createConsultForm 리뷰 M1과 동일 계급).
+  let exId = String(getState(st, '면접폼ID').val || '');
+  if (!exId) { // ID만 유실된 경우(시트 수기 편집·app_state 정리) 응답 탭의 연결 폼에서 복구 — 없으면 중복 폼이 생기고 회수가 두 곳으로 갈린다(syncAcademicForm_ 패턴)
+    try {
+      const shR = ss.getSheetByName('면접기록_응답');
+      const editUrl = shR && shR.getFormUrl();
+      if (editUrl) {
+        const f0 = FormApp.openByUrl(editUrl);
+        exId = f0.getId();
+        setState(st, '면접폼ID', exId);
+        setState(st, '면접폼URL', f0.getPublishedUrl());
+        Logger.log('면접 기록 폼 — ID가 없어 응답 탭의 연결 폼에서 복구했습니다.');
+      }
+    } catch (eR) { /* 복구 실패 → 아래 정상 생성 경로 */ }
+  }
+  if (exId) {
+    try {
+      const exForm = FormApp.openById(exId);
+      const msg0 = '✅ 면접 기록 폼이 이미 있어 새로 만들지 않았습니다.\n배포 링크: ' + exForm.getPublishedUrl();
+      Logger.log(msg0);
+      return msg0;
+    } catch (eG) {
+      const msgG = '⚠️ 연결된 면접폼ID를 열지 못했습니다(' + eG + ').\n일시 오류일 수 있어 새 폼을 만들지 않았습니다 — 폼이 정말 삭제됐으면 app_state에서 면접폼ID 행을 지운 뒤 재실행하세요.';
+      Logger.log(msgG);
+      return msgG;
+    }
+  }
+  const before = ss.getSheets().map(s => s.getName());
+  const form = FormApp.create('SYNK 면접 경험 기록 (비자 · 취업)')
+    .setDescription('한국 유학 비자나 취업 면접을 실제로 보신 경험을 남겨주세요.\n'
+      + '여기 쌓인 질문들이 다음 크루가 연습할 실제 문제가 됩니다 — 합격이든 거절이든, 거절 경험이 오히려 더 큰 도움이 됩니다.\n'
+      + '이름은 적지 않으셔도 됩니다. 10분이면 충분합니다 🙂')
+    .setCollectEmail(false);
+
+  function txt(t, req, help) { const i = form.addTextItem().setTitle(t); if (req) i.setRequired(true); if (help) i.setHelpText(help); return i; }
+  function para(t, req, help) { const i = form.addParagraphTextItem().setTitle(t); if (req) i.setRequired(true); if (help) i.setHelpText(help); return i; }
+  function mc(t, opts, req, help) { const i = form.addMultipleChoiceItem().setTitle(t).setChoiceValues(opts); if (req) i.setRequired(true); if (help) i.setHelpText(help); return i; }
+
+  form.addSectionHeaderItem().setTitle('1. 누구의 경험인가요').setHelpText('이 부분은 전부 선택입니다 — 익명으로 남기셔도 자료로 잘 쓰입니다.');
+  txt('이름', false, '익명을 원하시면 비워두세요');
+  mc('지금 신분', ['재학생', '졸업생', '학부모·지인', '기타'], false);
+  txt('연락처', false, '내용을 더 여쭤봐도 될 때만 남겨주세요');
+
+  form.addSectionHeaderItem().setTitle('2. 어떤 면접이었나요');
+  mc('면접 종류', INTERVIEW_KINDS, true);
+  txt('시기', true, '예: 2026-05 (연-월만 적어주세요)');
+  txt('장소·기관', false, '예: 주몽골 대한민국 대사관 / ○○ 회사');
+  mc('사용 언어', ['한국어', '몽골어', '영어', '섞어서'], false);
+  mc('걸린 시간', ['5분 미만', '5~15분', '15~30분', '30분 이상'], false);
+
+  form.addSectionHeaderItem().setTitle('3. 실제로 무슨 일이 있었나요')
+    .setHelpText('여기가 가장 중요합니다. 문장이 어색해도 괜찮으니 기억나는 대로 많이 적어주세요.');
+  para('받은 질문 전부', true, '순서대로, 짧게라도 전부 적어주세요. 이 칸이 다음 크루의 연습 문제가 됩니다.');
+  para('어떻게 답했나요', false, '기억나는 답변을 그대로 (잘 답한 것도, 못 답한 것도)');
+  para('다시 물어보거나 서류를 지적한 부분', false, '심사관이 한 번 더 캐물은 것 · 서류와 말이 다르다고 지적한 것 — 합격과 거절을 가르는 지점입니다');
+  para('준비하면서 가장 어려웠던 것', false);
+
+  form.addSectionHeaderItem().setTitle('4. 결과');
+  mc('결과', ['합격·승인', '불합격·거절', '추가 서류 요청·보류', '아직 기다리는 중'], true);
+  para('거절·보류였다면 들은 사유', false, '들은 그대로 (사유를 안 알려준 경우 "안 알려줌"이라고 적어주세요)');
+  para('다음 사람에게 한마디', false);
+
+  form.addSectionHeaderItem().setTitle('5. 자료 활용 동의');
+  mc('자료활용동의', ['네, 동의합니다', '아니요, 원하지 않습니다'], true,
+    '이 기록을 ① 후배 크루의 면접 연습 자료 ② 면접 연습 AI의 학습 자료로 쓰는 것에 동의하시나요?\n'
+    + '이름·연락처는 연습 자료에 절대 포함하지 않습니다(질문과 상황만 씁니다). '
+    + '"아니요"를 고르셔도 기록은 감사히 받고, 연습 자료로는 쓰지 않습니다 · 철회는 언제든 학원으로 연락 주세요.');
+
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  linkFormTab_(ss, before, '면접기록_응답');
+  setState(st, '면접폼ID', form.getId());
+  setState(st, '면접폼URL', form.getPublishedUrl());
+  adminMail('[SYNK] 🛂 면접 기록 폼 생성 완료',
+    '배포 링크:\n' + form.getPublishedUrl() +
+    '\n\n어디에 뿌리면 좋은지:\n' +
+    '① 졸업생·수료생 단톡·페이스북 그룹 (가장 회수율이 높은 곳)\n' +
+    '② 상담 온 학생 중 "비자 인터뷰 봤다"는 사람 — 상담 자리에서 QR로\n' +
+    '③ 재학생 중 유학·취업 지원 예정자 — 다녀온 직후에 부탁하면 기억이 살아 있습니다\n\n' +
+    '⚠️ 몽골어 병기는 아직 없습니다 — 졸업생 대상이면 원어민 검수 후 문항에 병기하는 것이 회수율에 직결됩니다.\n' +
+    '편집용: ' + form.getEditUrl());
+  Logger.log('✅ 면접 기록 폼 생성 완료: ' + form.getPublishedUrl());
+  return '✅ 면접 기록 폼 생성 완료: ' + form.getPublishedUrl();
 }
 
 /* ── [v9.89] 🔁 결석 연락 기록 폼 — 「결석 복귀율」의 입력 레일(약점 메모 폼 v9.55·v9.64 계보) ──
@@ -9172,10 +9362,17 @@ function systemWatchdog(asText) {
       const srcNeed = ['TOPIK목표', 'TOPIK목표기한', 'TOPIK급수', 'TOPIK점수', '학습가능시간', '📝자유서술→노션'];
       const srcMiss = srcNeed.filter(h => chdr.indexOf(h) === -1);
       add(srcMiss.length === 0, '상담 배선 소스 헤더: ' + (srcMiss.length ? srcMiss.join(', ') + ' 미발견 — 상담시트 2행 헤더 개명 여부 확인(취향·목표·페이스라인이 빈칸으로 착지 중)' : srcNeed.length + '종 정상'));
-      // [v9.84] 동의 문항(v18.5) 적용 여부 — AI 인용·노션 이관 확대의 선행 조건(소급 불가 계열)이라 적용 전까지 주간 안내
+      // [v9.84→v9.90] 동의 문항(v18.6) 적용 여부 — AI 인용·노션 이관 확대의 선행 조건(소급 불가 계열)이라 적용 전까지 주간 안내.
+      //   v9.90부터 음성·AI 학습 동의(선택)가 붙었다 — 이게 없으면 나중에 모은 녹음을 한 건도 못 쓴다.
       if (hasCForm) {
-        const consentOn = stV ? String(getState(stV, '상담동의').val || '') === 'v18.5' : false;
-        add(consentOn, '상담폼 동의 문항(v18.5): ' + (consentOn ? '적용됨' : '미적용 — 문구 검토 후 migrateConsentV185 ▶ 1회'));
+        const consentOn = stV ? String(getState(stV, '상담동의').val || '') === 'v18.6' : false;
+        add(consentOn, '상담폼 동의 문항(v18.6): ' + (consentOn ? '적용됨(개인정보 필수 + 음성·AI 학습 선택)' : '미적용 — 문구 검토 후 migrateConsentV186 ▶ 1회'));
+        if (consentOn) {
+          const vMiss = CONSENT_EXT_HEADERS.filter(h => chdr.indexOf(h) === -1);
+          add(vMiss.length === 0, '음성동의 착지 열: ' + (vMiss.length ? vMiss.join(', ') + ' 유실 — migrateConsentV186 재실행(거부자를 못 읽는 상태)' : '정상'));
+          const vs = voiceConsentStat_();
+          if (vs.ok) add(true, '음성·AI 학습 동의 회수: 동의 ' + vs.yes + ' · 거부 ' + vs.no + ' · 미응답 ' + vs.blank + ' (총 ' + vs.total + '행 · 녹음은 "동의" 행만 대상)');
+        }
       }
       // [v9.84] 상담 디테일 착지 열(DT124~DX128) 생존 — syncProfiles 배선의 도착지. 헤더 개명·열 삭제 시 폴백·페이스라인이 조용히 꺼진다
       try {
@@ -9191,12 +9388,17 @@ function systemWatchdog(asText) {
   try {
     const stF = ss.getSheetByName('app_state');
     [['상담폼ID', '상담폼(입학 퍼널)', 'createConsultForm 재실행 또는 app_state 키 교정'],
-     ['리드폼ID', '리드폼(광고 유입)', 'createLeadForm 재실행']].forEach(p => {
+     ['리드폼ID', '리드폼(광고 유입)', 'createLeadForm 재실행'],
+     ['면접폼ID', '면접 기록 폼(비자·취업)', 'createInterviewLogForm 재실행']].forEach(p => {
       const fid = stF ? String(getState(stF, p[0]).val || '') : '';
       if (!fid) { add(true, p[1] + ': 미연결 — ID 없음(도입 전이면 정상)'); return; }
       try { FormApp.openById(fid); add(true, p[1] + ' 생존: 정상'); }
       catch (e) { add(false, p[1] + ' 열기 실패 — 폼 삭제/권한 상실 의심! ' + p[2]); }
     });
+    // [v9.90] 면접 기록 회수량 — 시뮬레이터 질문 은행의 원천이라 "몇 건 모였나"가 곧 개발 준비도.
+    //   0건이어도 경보가 아니다(배포 직후가 정상) — 상태만 상시 노출해 회수 활동을 잊지 않게 한다.
+    const shIv = ss.getSheetByName('면접기록_응답');
+    if (shIv) add(true, '면접 기록 회수: ' + Math.max(0, shIv.getLastRow() - 1) + '건 (질문 은행 원천 · 배포처는 졸업생 그룹·상담 자리)');
   } catch (e) { add(false, '폼 생존 점검 실패: ' + e); }
 
   // [v9.67] 8) AI 첨삭 파이프라인 — CLAUDE_API_KEY 휴면·적체가 어디에도 안 뜨던 결함 해소(2026-07-26 진단 ②).
@@ -12744,15 +12946,16 @@ function syncToNotion_() {
 
   // [v9.84·④] 상담 자유서술(다짐·3-5년 목표·고충·선택이유…) 주간 자동 이관 — 정성+정량 허브 완성.
   //   맵 로드·속성 보장 실패는 서술만 생략(본 동기화 계속) — 상담시트 장애가 노션 정량 동기화를 못 끊는다.
-  // [v9.84·리뷰 H2] 동의 게이트 — migrateConsentV185(app_state 상담동의=v18.5, 유호 문구 검토 ▶) 전에는 자유서술을
+  // [v9.84·리뷰 H2 → v9.90] 동의 게이트 — migrateConsentV186(app_state 상담동의=v18.6, 유호 문구 검토 ▶) 전에는 자유서술을
   //   노션으로 내보내지 않는다(#204 "소급 불가" 취지 그대로). 게이트 앞이라 맵 로드 자체를 생략(데이터 접촉 0).
+  //   [v9.90] 기대값을 v18.5→v18.6으로 함께 올린다 — 마이그레이션만 개정하면 이 게이트가 영영 안 열린 채 침묵한다.
   let consultNarr = {};
   const stCn = ss.getSheetByName('app_state');
-  const consentOn = stCn ? String(getState(stCn, '상담동의').val || '') === 'v18.5' : false;
+  const consentOn = stCn ? String(getState(stCn, '상담동의').val || '') === 'v18.6' : false;
   if (consentOn) {
     try { consultNarr = consultNarrativeMap_(); } catch (e) { Logger.log('상담서술 로드 실패(정량만 동기화): ' + e); }
   } else {
-    Logger.log('상담서술 이관 보류 — 동의 문항(v18.5) 미적용. migrateConsentV185 ▶ 후 자동 개시.');
+    Logger.log('상담서술 이관 보류 — 동의 문항(v18.6) 미적용. migrateConsentV186 ▶ 후 자동 개시.');
   }
   const narrOn = Object.keys(consultNarr).length ? notionEnsureProp_('상담서술') : false;
 
