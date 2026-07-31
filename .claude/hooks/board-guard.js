@@ -9,7 +9,8 @@ const fs = require('fs');
 const path = require('path');
 
 const MAX_CELL = 200;
-const MAX_ROWS = 14; // 보드 규칙은 12줄 — 훅은 여유 2줄 뒤 차단
+const MAX_ACTIVE = 12; // 활성(완료 아닌) 줄 상한 — 병행 세션이 실제로 조율해야 하는 대상
+const MAX_ROWS = 18;   // 전체 상한 — 완료 줄이 쌓이는 것도 결국 막는다(6줄 여유)
 
 function deny(reason) {
   process.stdout.write(JSON.stringify({
@@ -41,6 +42,7 @@ if (base !== '세션보드.md') process.exit(0); // 아카이브·다른 문서�
 const edits = tool === 'MultiEdit' && Array.isArray(ti.edits) ? ti.edits : [ti];
 const incoming = [];
 let delta = 0;
+let activeDelta = 0;
 let fullContent = null;
 
 if (tool === 'Write') {
@@ -52,6 +54,7 @@ if (tool === 'Write') {
     const os = String(e.old_string || '');
     incoming.push(ns);
     delta += countRows(ns) - countRows(os);
+    activeDelta += countActive(ns) - countActive(os);
   }
 }
 
@@ -65,6 +68,18 @@ function isDataRow(line) {
 
 function countRows(text) {
   return text.split('\n').filter(isDataRow).length;
+}
+
+// 활성 = 상태 칸이 '완료'로 시작하지 않는 줄(작업중·진행중·대기·미확정…).
+// 오분류는 활성 수를 줄이는 방향뿐이라 전체 상한이 여전히 잡는다.
+function isActiveRow(line) {
+  const cells = line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|');
+  const status = (cells[cells.length - 1] || '').trim();
+  return !/^완료/.test(status);
+}
+
+function countActive(text) {
+  return text.split('\n').filter(isDataRow).filter(isActiveRow).length;
 }
 
 // ① 칸 길이 검사
@@ -87,22 +102,30 @@ if (longCells.length) {
   );
 }
 
-// ② 표 줄 수 검사
-let total;
+// ② 표 줄 수 검사 — 활성 상한과 전체 상한을 따로 본다
+let total, active;
 if (fullContent !== null) {
   total = countRows(fullContent);
+  active = countActive(fullContent);
 } else {
-  let current = 0;
+  let cur;
   try {
-    current = countRows(fs.readFileSync(filePath, 'utf8'));
+    cur = fs.readFileSync(filePath, 'utf8');
   } catch (_) {
     process.exit(0); // 파일을 못 읽으면 판단 불가 — 통과
   }
-  total = current + delta;
+  total = countRows(cur) + delta;
+  active = countActive(cur) + activeDelta;
+}
+if (active > MAX_ACTIVE) {
+  deny(
+    `[board-guard] 세션보드 활성 줄이 ${active}줄이 된다(상한 ${MAX_ACTIVE}줄).\n` +
+      '→ 활성 줄이 이만큼이면 조율이 아니라 소음이다. 끝난 트랙의 상태를 먼저 "완료"로 갱신하거나, 남의 줄이 아니라 내 줄을 합쳐라.'
+  );
 }
 if (total > MAX_ROWS) {
   deny(
-    `[board-guard] 세션보드 표가 ${total}줄이 된다(상한 ${MAX_ROWS}줄, 목표 12줄).\n` +
+    `[board-guard] 세션보드 표가 ${total}줄이 된다(상한 ${MAX_ROWS}줄).\n` +
       '→ 오래된 **완료** 줄부터 docs/세션보드_아카이브.md 맨 위로 옮긴 뒤 다시 시도할 것. 활성(작업중·진행중·대기) 줄은 남긴다.'
   );
 }

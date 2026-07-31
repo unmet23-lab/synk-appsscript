@@ -16,7 +16,9 @@ const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'boardguard-'));
 const BOARD = path.join(TMP, '세션보드.md');
 const ARCHIVE = path.join(TMP, '세션보드_아카이브.md');
 const row = (i) => `| 2026-08-01 | 트랙${i} | Code.js | 완료 |`;
+const activeRow = (i) => `| 2026-08-01 | 트랙${i} | Code.js | 작업중 |`;
 const table = (n) => ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|', ...Array.from({ length: n }, (_, i) => row(i))].join('\n');
+const activeTable = (n) => ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|', ...Array.from({ length: n }, (_, i) => activeRow(i))].join('\n');
 fs.writeFileSync(BOARD, table(11), 'utf8');
 
 function decide(payload) {
@@ -39,16 +41,29 @@ test('정상 길이 1줄 추가는 통과', () => {
   );
 });
 
-test('표 14줄 초과 Write는 차단', () => {
+test('전체 18줄 초과 Write는 차단', () => {
   assert.strictEqual(decide({ tool_name: 'Write', tool_input: { file_path: BOARD, content: table(20) } }), 'deny');
 });
 
-test('11줄 Write는 통과', () => {
-  assert.strictEqual(decide({ tool_name: 'Write', tool_input: { file_path: BOARD, content: table(11) } }), 'allow');
+test('완료 줄 16개는 통과 (완료는 전체 상한까지 허용)', () => {
+  assert.strictEqual(decide({ tool_name: 'Write', tool_input: { file_path: BOARD, content: table(16) } }), 'allow');
 });
 
-test('Edit 증분으로 상한을 넘겨도 차단', () => {
+test('활성 13줄은 전체가 상한 이내여도 차단', () => {
+  assert.strictEqual(decide({ tool_name: 'Write', tool_input: { file_path: BOARD, content: activeTable(13) } }), 'deny');
+});
+
+test('활성 12줄은 통과 (경계값)', () => {
+  assert.strictEqual(decide({ tool_name: 'Write', tool_input: { file_path: BOARD, content: activeTable(12) } }), 'allow');
+});
+
+test('Edit 증분으로 전체 상한을 넘겨도 차단', () => {
   const many = Array.from({ length: 15 }, (_, i) => row(i)).join('\n');
+  assert.strictEqual(decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: 'x', new_string: many } }), 'deny');
+});
+
+test('Edit 증분으로 활성 상한을 넘겨도 차단', () => {
+  const many = Array.from({ length: 13 }, (_, i) => activeRow(i)).join('\n');
   assert.strictEqual(decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: 'x', new_string: many } }), 'deny');
 });
 
