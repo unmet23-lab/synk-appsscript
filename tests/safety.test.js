@@ -925,21 +925,25 @@ test('[v9.69] 번역 대상에 grammar가 있고, 반복 체감 뱅크는 확장
 
 test('[v9.74] 숙제 카드 — 라벨 있는 완성 카드(과제·선생님 체크·제출 안내), 과제 없으면 미노출', () => {
   // [v9.83] 제출 안내가 "+nP"를 말하므로 실제 PT를 주입한다 — 5를 하드코딩하면 단가 드리프트를 못 잡는다
+  // [v9.87] 시그니처 (ty, mnTy, task, mnTask, tip, mnTip) — 본문 몽골어 병기 슬롯 추가
   const hw = loadFunction('function hwCardHtml_(', 'function quizCardHtml_(', 'hwCardHtml_', { escHtml_: (s) => String(s), CARD_FONT: '', PT: constObj_('const PT = {') });
-  const html = hw('어휘', 'Үгийн сан', '오늘 단어 중 2개를 한 문장 안에 같이 넣어 보세요.', '의미 연결이 자연스러운지', 'Утгын холбоо');
-  ['오늘의 숙제', '어휘', '오늘 단어 중 2개', '선생님이 이걸 봐요', '의미 연결이 자연스러운지', '숙제 제출'].forEach((k) =>
+  const html = hw('어휘', 'Үгийн сан', '오늘 배운 단어 중 2개를 한 문장 안에 같이 넣어 보세요.', 'Өнөөдөр сурсан үгнээс 2-ыг нэг өгүүлбэрт хамт оруулаад үзээрэй.', '의미 연결이 자연스러운지', 'Утгын холбоо');
+  ['오늘의 숙제', '어휘', '오늘 배운 단어 중 2개', 'Өнөөдөр сурсан үгнээс', '선생님이 이걸 봐요', '의미 연결이 자연스러운지', '버튼으로 제출'].forEach((k) =>
     assert.ok(html.includes(k), '숙제 카드에 누락: ' + k));
-  assert.equal(hw('어휘', '', '', '', ''), ''); // 게시 전 콜드스타트 — 빈 껍데기 카드 대신 미노출
+  assert.ok(hw('어휘', '', '한 문장 만들기', '', '체크', '').indexOf('undefined') === -1, '빈 병기 슬롯이 undefined로 샌다');
+  assert.equal(hw('어휘', '', '', '', '', ''), ''); // 게시 전 콜드스타트 — 빈 껍데기 카드 대신 미노출
 });
 
 test('[v9.74] 퀴즈 카드 — 문제와 공개 안내만, 정답은 어떤 경로로도 카드에 담기지 않는다(언어정책)', () => {
+  // [v9.87] 시그니처 (q, mnQ, personal) — 본문 몽골어 병기 슬롯 추가(병기도 문제부만, 정답부 금지는 ⑤에서 검사)
   const quiz = loadFunction('function quizCardHtml_(', 'function prepCardHtml_(', 'quizCardHtml_', { escHtml_: (s) => String(s), CARD_FONT: '' });
-  const html = quiz('감사합니다의 실제 발음은?', false);
+  const html = quiz('감사합니다의 실제 발음은?', '', false);
   assert.ok(html.includes('오늘의 퀴즈') && html.includes('감사합니다의 실제 발음은?') && html.includes('정답 공개'));
-  assert.ok(quiz('문제', true).includes('맞춤 문제'), '개인 퀴즈(ai_daily) 라벨 누락');
-  assert.equal(quiz('', false), '');
+  assert.ok(quiz('문제', '', true).includes('맞춤 문제'), '개인 퀴즈(ai_daily) 라벨 누락');
+  assert.ok(quiz('문제', 'Монгол асуулт', false).includes('Монгол асуулт'), '몽골어 병기가 렌더되지 않는다');
+  assert.equal(quiz('', '', false), '');
   // 호출부가 문제(q[0]·pq.q)만 넘기는지 — 정답(q[1]·pq.a)이 카드로 새는 회귀 차단
-  assert.ok(code.includes('quizCardHtml_(pq ? pq.q : q[0], !!pq)'), '퀴즈 카드 호출부는 문제만 넘겨야 한다');
+  assert.ok(code.includes('quizCardHtml_(pq ? pq.q : q[0], mnQ9, !!pq)'), '퀴즈 카드 호출부는 문제(한·몽)만 넘겨야 한다');
   const fnQ = section('function quizCardHtml_(', 'function prepCardHtml_(');
   assert.ok(!fnQ.includes('quizAns'), '퀴즈 카드 빌더에 정답 인자가 생기면 언어정책(정답 평문 노출 금지) 위반');
 });
@@ -1271,6 +1275,10 @@ test('[v9.81] 반 목록 카드 2열 + HUD 총원 필 — 유호 07-31 반 리�
   // ③ 요약 구성 — 총원(8번 지적과 호응)·보스 3상태, 몬스터 판정은 csOut 5열과 같은 classMonster 공유
   const blk = section("cs.getRange(1, 15).getValue()) !== '반카드요약'", 'writeIfChanged(cs, 2, 15, listCards)');
   assert.ok(blk.includes("'👥 ' + v.n + '명'") && blk.includes('🏖️ 보스 휴식주') && blk.includes('🏆 이번 주 보스 격파!'), '요약 구성(총원·보스 상태)이 빠졌다');
+  // [v9.87] 라이브 조립 계약 — Description = 「반몬스터」+「반카드요약」 2토큰(Glide가 공백 없이 잇는다).
+  //   요약은 몬스터를 빼고 ' · '로 시작해야 "스파키 · 👥 4명 · ⚔️…"로 이어진다. 몬스터를 다시 넣으면 카드에 두 번 나온다.
+  assert.ok(blk.includes("' · ' + ['👥 ' + v.n + '명'"), '요약이 구분자로 시작하지 않는다 — 반몬스터 토큰과 붙어 "스파키👥 4명"이 된다');
+  assert.ok(!blk.includes('m.name, boss'), '요약에 몬스터 이름이 다시 들어갔다 — Description 2토큰이라 카드에 중복 표기된다');
   assert.ok(code.includes('classMonster(v.total, v.n).name'), 'csOut 5열이 classMonster.name을 쓰지 않는다(15열과 판정 분열)');
   assert.ok(blk.includes("m.img.indexOf('http') === 0"), '몬스터 이미지가 URL 검증 없이 Image 열에 들어간다');
 });
@@ -1630,4 +1638,38 @@ test('[v9.87] 축이 흔들리는 지점 3곳 — 조인 소스·헤더 정본 �
   // 원장 월보의 '이달의 강사'가 (미지정) 행을 1위로 집으면 안 된다
   const exec = section('function buildExecReport_()', 'function setAppState_');
   assert.ok(exec.includes('TEACHER_UNASSIGNED'), "'이달의 강사' 선정이 (미지정) 행을 걸러내지 않는다");
+});
+
+test('[v9.88] 숙제·퀴즈 문항 자기완결 — 축약 참조 잔존 0 + 카드 한·몽 병기 배선', () => {
+  // 07-31 유호 실측: "오늘 단어 중 2개" · "선생님께 밥 먹었어? 대신?" — 한국인도 못 읽는 축약.
+  // 같은 계열 재발(v9.74가 카드 구조를 고쳤는데 문항 원문이 다음 층위로 남음)이라 기계 검사로 못을 박는다.
+
+  // ① QZ22 — 인용 따옴표가 있는 완전문이어야 한다
+  assert.ok(code.includes('선생님께 「밥 먹었어?」 대신 뭐라고 할까요?'), 'QZ22 리라이팅이 사라졌다');
+  assert.ok(!code.includes('선생님께 밥 먹었어? 대신?'), 'QZ22 구 축약 문항이 되살아났다');
+
+  // ② homework 문항 라인에 "오늘 배운" 없는 축약 참조("오늘 단어/문법/문장/대화문/표현/문형") 잔존 0
+  //    ("오늘 배운 단어"에는 "오늘 단어"가 연속 부분열로 없어 자동 통과 — 새 문항 추가 시에도 이 검사가 지킨다)
+  const hwLines = code.split('\n').filter(l => /^\s*\['HW\d{3}','homework'/.test(l));
+  assert.ok(hwLines.length >= 200, 'homework 뱅크가 통째로 사라졌다: ' + hwLines.length + '행');
+  const abbrev = hwLines.filter(l => /오늘 (단어|문법|문장|대화문|표현|문형)/.test(l));
+  assert.deepEqual(abbrev.map(l => l.trim().slice(0, 50)), [], '숙제 문항에 수업 연결이 안 보이는 축약 참조가 남았다');
+
+  // ③ 몽골어 뱅크(MN_CONTENTS_G)도 같은 교정 — 학습물 명사 앞 Өнөөдрийн(오늘의)은 사라져야 한다
+  const mnLines = code.split('\n').filter(l => /^\s*"HW\d{3}":/.test(l));
+  assert.ok(mnLines.length >= 200, '몽골어 숙제 뱅크가 통째로 사라졌다: ' + mnLines.length + '행');
+  const mnAbbrev = mnLines.filter(l => /[Өө]нөөдрийн\s+(?:(?:нэг|\d+)\s+)?(үг|хэллэг|дүрм|дүрэм|өгүүлбэр|харилцан)/.test(l));
+  assert.deepEqual(mnAbbrev.map(l => l.trim().slice(0, 40)), [], '몽골어 숙제 문항에 축약 참조가 남았다(한·몽 짝 깨짐)');
+
+  // ④ 카드 병기 배선 — 시그니처·게시 키·오결합 가드가 전부 살아 있어야 한다
+  assert.ok(code.includes('function hwCardHtml_(ty, mnTy, task, mnTask, tip, mnTip)'), '숙제 카드 mnTask 파라미터가 없다(본문 병기 소실)');
+  assert.ok(code.includes('function quizCardHtml_(q, mnQ, personal)'), '퀴즈 카드 mnQ 파라미터가 없다(본문 병기 소실)');
+  assert.ok(code.includes("'오늘의퀴즈ID_초급'"), '초급 퀴즈 ID 게시가 없다 — 몽골어 병기 매칭 불가');
+  assert.ok(code.includes('quizRaw === begQ9'), '퀴즈 병기에 표시문항 동일성 검사가 없다 — 중·고급 문항에 초급 번역이 붙는다');
+  // 병기 몽골어는 "문제|정답" 미러 — 정답부가 카드에 새면 언어정책(정답 평문 노출 금지) 위반
+  assert.ok(code.includes('splitQuiz(mnQRaw9)[0]'), '몽골어 퀴즈 병기가 정답부를 자르지 않는다');
+
+  // ⑤ 카드 안내 문구가 실제 버튼 라벨과 일치(07-31 버튼 3종 한 줄 정렬로 라벨이 "✏️ 숙제"로 압축됨)
+  assert.ok(!code.includes('✍️ <b>숙제 제출</b> 버튼'), '숙제 카드가 존재하지 않는 옛 버튼명(✍️ 숙제 제출)을 안내한다');
+  assert.ok(code.includes('✏️ <b>숙제</b> 버튼'), '숙제 카드 제출 안내가 실제 버튼 라벨(✏️ 숙제)을 가리키지 않는다');
 });
