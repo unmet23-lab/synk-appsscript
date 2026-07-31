@@ -924,7 +924,8 @@ test('[v9.69] 번역 대상에 grammar가 있고, 반복 체감 뱅크는 확장
 });
 
 test('[v9.74] 숙제 카드 — 라벨 있는 완성 카드(과제·선생님 체크·제출 안내), 과제 없으면 미노출', () => {
-  const hw = loadFunction('function hwCardHtml_(', 'function quizCardHtml_(', 'hwCardHtml_', { escHtml_: (s) => String(s), CARD_FONT: '' });
+  // [v9.83] 제출 안내가 "+nP"를 말하므로 실제 PT를 주입한다 — 5를 하드코딩하면 단가 드리프트를 못 잡는다
+  const hw = loadFunction('function hwCardHtml_(', 'function quizCardHtml_(', 'hwCardHtml_', { escHtml_: (s) => String(s), CARD_FONT: '', PT: constObj_('const PT = {') });
   const html = hw('어휘', 'Үгийн сан', '오늘 단어 중 2개를 한 문장 안에 같이 넣어 보세요.', '의미 연결이 자연스러운지', 'Утгын холбоо');
   ['오늘의 숙제', '어휘', '오늘 단어 중 2개', '선생님이 이걸 봐요', '의미 연결이 자연스러운지', '숙제 제출'].forEach((k) =>
     assert.ok(html.includes(k), '숙제 카드에 누락: ' + k));
@@ -1180,17 +1181,33 @@ test('[v9.81] 리그 카드 — 포디움·내 순위 하이라이트·넛지 �
   assert.ok(p.includes('SYNK LEAGUE') && p.includes('정산 D-3'), '히어로 헤더(라벨·D-n)가 없다');
   assert.ok(p.includes('학생1') && p.includes('👑'), '1위 포디움(왕관)이 없다');
   assert.ok(p.includes('>나<'), '내 순위 하이라이트 칩(포디움)이 없다');
-  // ② 11위 밖 내 행 점프(⋯) + 추격 넛지의 숙제 환산(diff 10P = 숙제 1번)
-  const far = board('S12', rows, { label: '7월 리그', dLeft: 3 });
+  // ② 11위 밖 내 행 점프(⋯) + 추격 넛지의 숙제 환산
+  //    [v9.83] diff 10P를 "숙제 몇 번"으로 옮기는 값은 PT.숙제다 — 상수를 읽어 기대값을 만든다.
+  //    숫자를 적어두면 단가가 바뀔 때마다 이 테스트가 무고하게 깨지거나(지금 겪음) 조용히 거짓말한다.
+  const hwPt = constObj_('const PT = {').숙제;
+  const far = board('S12', rows, { label: '7월 리그', dLeft: 3, hwP: hwPt });
   assert.ok(far.includes('⋯'), '리스트 밖 내 행 점프(⋯)가 없다');
-  assert.ok(far.includes('11위까지') && far.includes('숙제 1번이면'), '추격 넛지(포인트→숙제 환산)가 없다');
-  // ③ 동점(diff 0) — "숙제 0번" 대신 동점 문구
+  assert.ok(far.includes('11위까지') && far.includes('숙제 ' + Math.ceil(10 / hwPt) + '번이면'), '추격 넛지(포인트→숙제 환산)가 없다');
+  // ③ 동점(diff 0) — "숙제 0번" 대신 동점 문구.
+  //    [v9.85 반영] 공동 1위는 이제 왕좌 문구로 가므로(mine.rank === 1 분기), 동점 검사는 1위가 아닌 자리에서 해야 한다.
+  //    구 픽스처는 S2를 rank 1로 만들어 두 분기를 겹쳐 놨었다 — 왕좌 우선 변경이 들어오자 이 단언이 무고하게 깨졌다.
   const tie = rows.map(x => ({ id: x.id, rank: x.rank, name: x.name, pts: x.pts }));
-  tie[1] = { id: 'S2', rank: 1, name: '학생2', pts: 120 };
-  assert.ok(board('S2', tie, { label: '7월', dLeft: 1 }).includes('동점'), '동점 넛지가 없다');
-  // ④ 리그 밖(0P) 입장 넛지 · 참가 0 콜드 상태 카드
+  tie[2] = { id: 'S3', rank: 2, name: '학생3', pts: tie[1].pts }; // 2위와 동점인 공동 2위
+  assert.ok(board('S3', tie, { label: '7월', dLeft: 1 }).includes('동점'), '동점 넛지가 없다');
+  // 공동 1위는 추격이 아니라 왕좌 — v9.85 판정을 고정한다
+  const co1 = rows.map(x => ({ id: x.id, rank: x.rank, name: x.name, pts: x.pts }));
+  co1[1] = { id: 'S2', rank: 1, name: '학생2', pts: co1[0].pts };
+  assert.ok(board('S2', co1, { label: '7월', dLeft: 1 }).includes('왕좌'), '공동 1위가 추격 문구로 샌다');
+  // 단상 숫자 = 실순위(rankMap 동순위) — 공동 1위 픽스처에선 "1" 단상이 두 개여야 한다(P1: 배열 위치 2·1·3을 찍던 회귀 차단)
+  assert.equal((board('S2', co1, { label: '7월', dLeft: 1 }).match(/>1<\/div>/g) || []).length, 2, '공동 1위 단상 숫자가 실순위가 아니다(P1 회귀)');
+  // 대격차(6번+)는 횟수 대신 사정권 문구 — "숙제 16번" 같은 비현실 숫자 금지
+  const cap = board('B', [{ id: 'A', rank: 1, name: '가', pts: 100 }, { id: 'B', rank: 2, name: '나', pts: 20 }], { hwP: hwPt });
+  assert.ok(cap.includes('사정권'), '대격차 넛지 캡(사정권 문구)이 없다');
+  // ④ 리그 밖(0P) 입장 넛지 · 참가 0 콜드 상태 카드([v9.85] 리스트도 "없는 TOP3" 전제 금지)
   assert.ok(board('GHOST', rows, {}).includes('순위표 밖'), '리그 밖 학생 넛지가 없다');
-  assert.ok(board('S1', [], {}).includes('리그 개막 전'), '참가 0 콜드 상태 카드가 없다');
+  const cold = board('S1', [], {});
+  assert.ok(cold.includes('리그 개막 전'), '참가 0 콜드 상태 카드가 없다');
+  assert.ok(cold.includes('첫 포인트가 이 순위표') && !cold.includes('TOP3 아래'), '콜드 리스트가 없는 TOP3를 전제한다');
   // ⑤ 이름 이스케이프 (랭킹은 전교 노출면 — 몬스터이름과 달리 학생 자기입력이 아니어도 방어)
   const x = board('S1', [{ id: 'S1', rank: 1, name: '<b>x', pts: 10 }], {});
   assert.ok(x.includes('&lt;b&gt;x') && !x.includes('<b>x'), '이름이 이스케이프 없이 침투한다');
@@ -1198,6 +1215,11 @@ test('[v9.81] 리그 카드 — 포디움·내 순위 하이라이트·넛지 �
   assert.ok(code.includes("rankBoardOut.push([r[3] === 'student' ? buildRankBoardHtml_(id, leagueRows, leagueMeta)"), '리그 카드가 학생 루프 밖에서 생성된다');
   assert.ok(code.includes('writeIfChanged(pf, 2, 119, rankBoardOut)'), 'DO119 기록이 없다');
   assert.ok(code.includes('leagueRows.push({ id: s.id, rank: rankMap[s.id]'), 'leagueRows가 rankMap과 다른 소스다(R열과 분열 위험)');
+  // ⑦ [v9.85] 단가·이름·폭 가드 배선 — PT 단일 소스 추종 + 전교 노출면 user_id 차단 + 유령 클리어 크래시 경로
+  assert.ok(code.includes('hwP: PT.숙제'), '넛지 단가가 PT 상수를 따르지 않는다(v9.83 인플레 재발 경로)');
+  assert.ok(code.includes("|| '이름 미등록'"), '리그 이름 폴백이 user_id를 전교 보드에 노출한다');
+  assertOrder(section('const csLast = cs.getLastRow()', 'writeIfChanged(cs, 2, 1, csOut)'),
+    ['cs.getMaxColumns() < 16', 'clearContent()']); // 폭 보장이 유령 클리어보다 먼저
 });
 
 test('[v9.81] 반 목록 카드 2열 + HUD 총원 필 — 유호 07-31 반 리스트·총원 지적', () => {
@@ -1280,14 +1302,22 @@ test('[v9.84] 콜드스타트 폴백 사슬 — 소비층 4곳 통일·학생 �
   assert.ok(code.includes('o.pace ?'), '여정카드 페이스라인 렌더가 없다');
 });
 
-test('[v9.84] 노션 상담서술 이관 — 속성 보장→조인·1900자·장애 격리', () => {
+test('[v9.84] 노션 상담서술 이관 — 동의 게이트→속성 보장→조인·1900자·장애 격리', () => {
   const body = section('function syncToNotion_()', 'function syncNotionNow()');
-  assertOrder(body, ['consultNarrativeMap_()', "notionEnsureProp_('상담서술')", "properties['상담서술']"]);
+  // [리뷰 H2] 동의 게이트가 맵 로드보다 앞 — migrateConsentV185(상담동의=v18.5) 전에는 자유서술이 노션으로 나가지 않는다(데이터 접촉 0)
+  assertOrder(body, ["'상담동의'", 'consultNarrativeMap_()', "notionEnsureProp_('상담서술')", "properties['상담서술']"]);
+  assert.ok(body.includes("=== 'v18.5'"), '동의 게이트 값 비교(v18.5)가 없다');
+  assert.ok(body.includes('상담서술 이관 보류'), '동의 미적용 시 보류 로그가 없다(침묵 금지)');
   assert.ok(body.includes('상담서술 로드 실패(정량만 동기화)'), '상담시트 장애가 정량 동기화까지 끊는다(격리 부재)');
   const nm = section('function consultNarrativeMap_', 'function notionEnsureProp_');
   assert.ok(nm.includes("hdr.indexOf('📝자유서술→노션')") && nm.includes('r[59]'), '서술 맵이 blob 열 이름 해석·학생ID(BH)를 쓰지 않는다');
   const ep = section('function notionEnsureProp_', 'function syncToNotion_');
-  assert.ok(ep.includes("method: 'patch'") && ep.includes('muteHttpExceptions: true'), '속성 보장이 PATCH+mute가 아니다(실패가 주간 배치를 죽인다)');
+  // [리뷰 M3] GET 선확인이 PATCH보다 앞 + 타입 다르면 덮지 않는다(사람이 만든 노션 구조 불가침)
+  assertOrder(ep, ["method: 'get'", "cur.type === 'rich_text'", "method: 'patch'"]);
+  assert.ok(ep.includes('노션 속성 타입 충돌'), '타입 충돌 시 생략 로그가 없다');
+  assert.ok(ep.includes('muteHttpExceptions: true'), '속성 보장이 mute가 아니다(실패가 주간 배치를 죽인다)');
+  // [리뷰 H3] 소스 헤더 6종 워치독 — 이름 개명이 "조용한 전부 빈칸"으로 착지하는 것을 주간 발각
+  assert.ok(code.includes("['TOPIK목표', 'TOPIK목표기한', 'TOPIK급수', 'TOPIK점수', '학습가능시간', '📝자유서술→노션']"), '워치독 소스 헤더 검사 배열이 없다/변형됨');
 });
 
 test('[v9.84] KPI 인지채널 분해 — 이름 해석·집계·리포트 1줄·시트 스키마 불변 + 정렬 실행 검증', () => {
@@ -1359,6 +1389,20 @@ test('[v9.83] 포인트 경제 — 월간 소득 시뮬이 과잠·진화 앵커
   assert.ok(code.includes('const AI_FEEDBACK_ACK_POINTS = PT.첨삭확인'), '첨삭확인 보상이 PT에서 분리됐다');
   assert.ok(code.includes('d * PT.출석'), '출석 정산이 PT를 안 쓴다');
   assert.ok(code.includes('[PT.개근왕,') && code.includes('[PT.레이드영웅,'), '칭호 보너스가 PT를 안 쓴다');
+
+  // ⑤ [리뷰 B1] **표기가 실지급의 2배를 약속하던 사고의 재발 방지.** 상수만 모으고 화면·메일 문자열 8곳을
+  //    옛 숫자로 남겨 학생에게 "+10P"라고 말하면서 5P를 주고 있었다. 지급 지점보다 오히려 이쪽이 눈에 띈다.
+  //    코드 줄(주석 제외)에 PT를 안 거친 '+숫자P' 문자열이 있으면 실패시킨다.
+  const claims = [];
+  code.split('\n').forEach((ln, i) => {
+    const t = ln.trim();
+    if (t.startsWith('*') || t.startsWith('//') || t.startsWith('/*')) return; // 버전 이력 주석은 역사라 그대로 둔다
+    if (/\+\s?\d+\s?P(?![a-zA-Z가-힣])/.test(ln.replace(/\/\/.*$/, ''))) claims.push((i + 1) + ': ' + t.slice(0, 90));
+  });
+  // 유일한 예외: 몽골어 응원 문구 "어제의 자신보다 정확히 +1P 더" — 지급 약속이 아니라 최소 단위 비유이고
+  //   단가가 어떻게 바뀌어도 참이다. 다른 예외를 늘리려면 그 자리에 진짜 지급 약속이 없는지 먼저 확인할 것.
+  const left = claims.filter(c => !c.includes('+1P'));
+  assert.deepEqual(left, [], '화면·메일 문구가 PT를 안 거친 포인트를 약속한다:\n' + left.join('\n'));
 });
 
 test('[v9.83] 과잠 자격 — 스토어 하차 + 재원 게이트 + 잔액 무차감', () => {
@@ -1372,17 +1416,37 @@ test('[v9.83] 과잠 자격 — 스토어 하차 + 재원 게이트 + 잔액 무
   assert.ok(blk.includes('Number(r[15])'), '누계는 P열(16)이어야 한다 — 잔액(AQ)을 쓰면 간식을 산 학생이 자격을 잃는다');
   assert.ok(!/appendPoints|\bbal\b/.test(blk), '포인트를 건드린다 — 무료 지급이 아니게 된다');
   assert.ok(blk.includes('JACKET_TENURE_MONTHS') && blk.includes('JACKET_MIN_POINTS'), '자격 조건이 상수를 안 쓴다');
+
+  // [리뷰 B2] setupStore()는 코드 정본만 바꾼다 — ▶ 실행 전까지 라이브 contents에 옛 상품이 남아
+  //   "사서도 받고 자격으로도 받는" 두 경로가 동시에 열린다. 문서 절차는 안 지켜지므로 기계가 매일 본다.
+  assert.ok(blk.includes("String(r[1]) === 'store'") && blk.includes('JACKET_ITEM_NAME'), '스토어 잔존 감시가 없다');
+  assert.ok(blk.includes("setState(stJ, '과잠_스토어잔존'"), '잔존 경보에 dedup이 없다(매일 같은 메일)');
+  // 과잠을 이미 찜해 둔 학생 — AR은 학생 소유 열이라 스크립트가 못 지운다. 가격 분기로 가면 죽은 카드에 갇힌다.
+  assert.ok(code.includes('(goalRaw === JACKET_ITEM_NAME) ?'), '과잠 찜 학생이 자격 카드로 흡수되지 않는다');
 });
 
 test('[v9.83] 보스 HP는 지급 단가의 종속 변수 — 상수화 + 만실 격파 가능', () => {
   assert.ok(code.includes('const RAID_HP_PER = {'), '보스 HP 계수가 아직 하드코딩이다(개원 후 실측 재조정 불가)');
   assert.ok(code.includes('RAID_HP_PER.주말 : RAID_HP_PER.평일'), '레이드 HP 계산이 상수를 안 쓴다');
   const PT = constObj_('const PT = {');
-  const per = {};
-  section('const RAID_HP_PER = {', ';').replace(/([가-힣]+)\s*:\s*(\d+)/g, (m, k, v) => { per[k] = Number(v); return m; });
-  // 만실 반의 주간 획득 하한(보수 추정: 개인 수업일 소득의 60% + 레이드) ≥ HP 계수여야 격파가 성립한다
-  const weekly = (PT.숙제 + PT.출석 + PT.첨삭확인) * (21.7 / 4.3) * 0.6 + PT.레이드;
-  assert.ok(weekly > per.평일, '평일 보스 계수 ' + per.평일 + '가 주간 획득 추정 ' + Math.round(weekly) + 'P를 넘는다(매주 격파 실패)');
-  assert.ok(per.평일 > weekly * 0.5, '평일 보스가 너무 쉽다 — 격파가 자동이면 레이드 서사가 죽는다');
-  assert.ok(per.주말 < per.평일, '주말반은 수업일이 1/5인데 계수가 평일 이상이다');
+  const per = constObj_('const RAID_HP_PER = {');
+
+  // ⚠ 이 추정에 **레이드 보상(PT.레이드)을 넣으면 안 된다** — 격파의 결과를 격파의 원인으로 세는 순환 가정이고,
+  //   실제로 첫 판정(평일 34)이 그렇게 부풀려져 리뷰에서 잡혔다. 개인이 스스로 만드는 데미지만 센다.
+  //   출석정산도 제외 — 월말 1행 뭉치라 특정 주에만 몰린다(매주 기대할 수 있는 소득이 아니다).
+  const perDay = PT.숙제 + PT.첨삭확인;               // 수업일마다 자기 힘으로 얻는 몫
+  const weeklyOf = (classDays) => perDay * classDays + PT.칭찬 * Math.min(classDays, 2) + PT.왕관 * 0.5;
+  const mix = (w) => w * 0.7;                          // 반 평균은 성실 학생보다 낮다(보통 학생 혼재)
+
+  [['평일', 5.05], ['주말', 1]].forEach(([type, classDays]) => {
+    const weekly = mix(weeklyOf(classDays));
+    assert.ok(weekly > per[type],
+      type + ' 보스 계수 ' + per[type] + '가 1인 주간 획득 추정 ' + weekly.toFixed(1) + 'P를 넘는다 — 만실이어도 매주 격파 실패');
+    assert.ok(per[type] > weekly * 0.4,
+      type + ' 보스가 너무 쉽다(계수 ' + per[type] + ' vs 주간 ' + weekly.toFixed(1) + 'P) — 격파가 자동이면 레이드 서사가 죽는다');
+  });
+  // 수업일 비율(1:5)을 계수가 거스르면 주말반이 구조적으로 불리해진다 — v9.83 이전이 정확히 그 상태였다
+  assert.ok(per.주말 < per.평일 * 0.45, '주말반 계수가 수업일 비율에 비해 높다(주말반만 격파 불가)');
+  // 덜 찬 반 보호 — HP를 정원으로만 잡으면 개원 초 9명 반은 20명분을 내야 한다
+  assert.ok(code.includes('if (live > 0 && live < cap) cap = live;'), '보스 HP가 실인원을 안 본다(덜 찬 반 격파 불가)');
 });

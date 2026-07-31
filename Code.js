@@ -756,7 +756,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.84'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고 · [v9.77] profiles 무결성 3면 감시 — Glide 상세 화면 Edit/Add 잔재 실측(07-28) 후속: 유령 행(user_id 공란, 기존 !r[0] 스킵의 사각)·user_id 중복·무효 role을 nightJobs(매일·이상 시에만 메일·동일 내용 dedup)+주간 워치독+preflight 3면에서 자동 발각 · [v9.78] 강사 반 HUD 리디자인 — 유호 07-28 "반 탭이 만들다 만 느낌" → 낱장 줄글 4카드(v9.15)를 SYNK CLASS HUD로 격상: 14열 반상세HTML = 헤더 스탯 스트립(미션 n건·루틴 k/4·보스 HP) + 미션(유형 색 필·명단 캡)·루틴(게이지+2×2)·레이드(사정권 콜아웃 흡수)·왕관(미수혜 pill 후보 명단), Glide 기바인딩이라 클릭 0 적용·9~13열 낱장도 동일 디자인(설계=ban-tab-redesign 워크플로 A/B 판정) · [v9.79] 미니멀 스킨 — 유호 "훨씬 트렌디하고 미니멀하게, 뼈대 같은 느낌" → 실렌더 A/B(M1 에어리 라이트 vs M2 다크 히어로) 판정 M2 채택: 유색 보더 전면 폐지(흰 카드+이중 소프트 섀도)·타이포 3단(그레이 라벨→잉크 빅넘버→본문)·색 3계 절제(블루·앰버·그린)·이모지 카드당 ≤1·미션 도트 3톤·상세 헤더=딥 네이비 다크 히어로(블루 radial glow) · [v9.80] 조 편성·역할 로테이션 — 강사 수업 규칙 v3.0 §11 배선 대기 1순위(유호 07-31 "앱 자동 제안" 확정): groups 시트(시즌×반 1벌·실력 스네이크+말수·학교 계층 내 교환)·역할 4개 차시 순환·2인 짝 3조합·발표 순번(로테이션이 8주 전원 2회를 자동 보장)을 앱이 짠다. 역할·짝·발표자는 저장하지 않고 차시 번호에서 계산 — 매 차시 쓰기 0(월 500건 한도 불변). 강사 브리핑에 조 편성표 동봉 · [v9.81] 랭킹·반 목록 UI 격상(유호 07-31 지적 3건) — ①학생 랭킹 탭: profiles DO119 랭킹보드HTML 신설(SYNK LEAGUE 다크 포디움+순위 리스트+내 순위 하이라이트+추격 넛지 "nP=숙제 k번", rankMap과 동일 소스) ②강사 반 목록: class_stats 15열 반카드요약(👥 n명·반몬스터·보스 상태)+16열 반몬스터이미지 — Glide Collection을 Card 스타일로 ③반 상세 HUD 헤더에 👥 총원 필(stuN 기전달이라 조립 0) · classMonster {name,img}화·유령 클리어 14→16열 · [v9.82] 출퇴근·결석 카드(유호 07-31 지시 10·12번) — ①강사 출퇴근HTML(DP120, 3차 블록 SHARED3 — DO119 랭킹보드 선점 회피): 오늘의 근무 히어로(출근/퇴근 빅넘버·상태 필 3단·퇴근 후 근무시간 확정값)+이번 주 월~토 스트립(과거 무기록일은 무채색 — 개인 시간표 부재로 결근 단정 금지)+요일 출근 치어 재사용(CH11~17 소생), 10분 스위프 소유·값 변경시만 기입(경과시간류 금지 = update 순증 0, 자정 리셋은 기존 출퇴근 리셋과 같은 묶음) ②학부모 결석신고HTML(DQ121): 접수 확인 ✅(v9.34 보류 P-ACK 상환)·오늘/예정/지난 3태·다음 수업일 3칩(classDowOk_ 재사용)·작동 3줄 몽골어 병기(원어민 검수 큐), 출석 달력과 같은 껍질 ③결석 폼 "자녀"를 Choice(value=user_id)로 재조립 지시 — 다자녀 parent_of 통짜 기록이 미출석 제외·브리핑·오늘의 반 3곳에서 조용히 불발되던 것 근본 수리 + preflight absence_notice student_id 무결성 검사(쉼표·미매칭) ④학부모 전수 점검 문서 docs/부모탭_점검_2026-07-31.md(P-ACK·다자녀 🔴 2건 = 이번 수리, 문의 답변 루프·다이제스트 몽골어 🟡 2건 = 제안 대기) · [v9.83] 💰 포인트 경제 재설계(유호 07-31 지시 23번 "포인트가 너무 후하다") — ①지급 단가를 PT 상수 단일 소스로 모으고 전면 ÷2(숙제 10→5·출석 3→2·첨삭확인 5→2·왕관 10→5·레이드 20→10·리그 5→3·월드 10→5·개근왕 30→15·영웅 20→10·생일 20→10): 설계 앵커 "성실 월 ~280P" 이후 지급 경로 6개가 늘도록 아무도 총합을 안 봐서 실측 572P/월 = 정확히 2배 인플레였고, 그 탓에 과잠 3.0개월·싱크마스터 진화 4.2개월(의도 9개월)로 스토어·진화·보스 세 경제가 동시에 무너져 있던 것을 스토어 가격 무수정으로 한 번에 복귀(열심히 291P·보통 196P) ②🧥 과잠은 스토어 하차 → 재원 12개월+누계 1,200P 무료 지급 자격으로(jacketWatch_·jacket_grants, 잔액 무차감이라 간식·굿즈를 사면서도 시계가 돌고 수업일 1/5인 주말반도 같은 개월에 도달) ③목표진행 카드(BZ78)를 도착 예정일로 — 촤 없으면 과잠 진행 폴백 ④보스 HP를 RAID_HP_PER 상수화 재보정(평일 28→34·주말 18→14·WORLD_HP_PER 100→150, 지급의 종속 변수라 함께 움직인다) · [v9.84] 🔌 상담 배선 팩(유호 07-31 승인: 진단 5건+도전안+한수더 전부) — ①상담 5필드→DT124~DX128(취향·목표·입학TOPIK·고충·페이스라인, 읽기 폭 동적+헤더 이름 해석+점거 가드) ②AI 콜드스타트 폴백 사슬 4곳 통일(최애=DA105‖상담취향·목표=드림‖상담목표‖비전·약점=기록‖입학 자기보고 — 학생 소유 열은 읽기만) ③여정카드 페이스라인(도전안: 목표 기한 역산 남은 주, 보장 표현 0)+미래편지 입학TOPIK 0점 좌표(한수더) ④자유서술 blob→노션 상담서술 주간 자동 이관(속성 자동 보장·장애 격리) ⑤KPI 인지채널별 등록/상담 분해(시트 스키마 불변) ⑥migrateConsentV185 ▶1회 — 온라인 폼 동의 문항(v18.5, 문구 유호 검토 전제)+워치독 감시 2종. 설계노트 199~204·테스트 7종
+const SYNK_VERSION = 'v9.85'; // [v9.37] 단일 버전 상수 · [v9.51] v9.50 배포 때 미갱신 정정 · [v9.55] v9.52~54 미갱신 재발 → tests/safety.test.js가 파일 내 최고 버전 태그와 동치를 기계 검사. buildSystemManifest가 system_manifest 시트에 출력 · [v9.56] 트렌드 팩 · [v9.57] 초기화 크래시 핫픽스 · [v9.60] 레벨테스트 폼 멱등화 · [v9.61] 폼 미생성 감시 · [v9.62] 폼 생성 멱등화 · [v9.63] 첨삭 무인 발행+품질 게이트(유호 07-25 확정) · [v9.64] 연습 포인트 폼 스마트화 · [v9.65] 게이트 메타검사 corrected 제외(리뷰 H1)+메일 카운트 가독 · [v9.66] 상담 정본 v18.4 통합(폼+시트+Crew Dossier 문항 통일) · [v9.67] 감시 사각 3종 수리 — 교재연동Nightly 재설치 편입·CLAUDE_API_KEY 휴면/첨삭 적체 계기·폼 무효 sid 드롭 통보 · [v9.68] 수업 시각 Date 오염 수리 — schedule 시간 칸이 Date로 읽히면 교실스크린에 "Sat Dec 30 1899"가 노출되고 미등원 알림·수업 전 메일 시각이 무너지던 것을 scheduleMap 단일 소스에서 HH:mm 고정 · [v9.69] 앱 신뢰도 팩 — ①sheetSelfHeal_(야간): 스토리북 구형 분권 호(13행)를 v9.50 단일본(전문 1행)으로 병합·고아 변형 선택자(U+FE0F) 청소·world_raid 월 중복 행 정리 ②스토리 제목 이모지 제거 정규식에 FE0E/FE0F/ZWJ 편입 ③translateContents targets에 grammar 편입(주석-코드 불일치 수리) ④콘텐츠 반복 체감 보강 — PARENT_Q 4→12·SPEAK miss7 톤당 2→4·evosoon 3→6·crown 3→6·bday 2→4 · [v9.70] 초급 한·몽 병기 배선 — 적재만 돼 있던 MN_* 상수 6종(운세·한마디·숙제유형/검사포인트·스토리북 문법/감정 용어줄)을 한국어수준 완전초보·기초 학생에게 병기, 킬 스위치 MJ_BILINGUAL · [v9.71] 학부모 메신저 이중화 — messenger_links 접수·유호 승인 게이트·일요일 주간 미러(이메일은 보장 채널 유지, 24시간 창/승인 태그 정책) · [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 시트·성공분만 마커·단계 창·보장 표현 금지 · [v9.73] 월간 만족도 설문 — createSurveyForm+하이라이트 동봉+주간 집계(첫 만족도 기준선). 엔진은 만족도팩.js(유호 07-27 직접 지시 — 기능 동결 예외) · [v9.74] 디테일 팩 — 숙제·퀴즈 카드 서버 렌더(2차 공유 블록 DH112~DN118, 선점 열 회피)·강사 수업준비 카드+학업 기록 폼·출퇴근 중복 방어(가시성 열+퇴근메일 당일 1회)·학부모 접점 몬스터→성장 파트너 6곳 · [v9.76] 리텐션 레이더 role 오염 수리 — 07-28 라이브 실측에서 원장·강사·학부모가 "이탈 위험 학생"으로 콕핏·브리핑·AI 멘트에 매일 오르던 것(role 필터 부재) 차단 + '학생수'를 전체 행 수→role=student로 정정(실측 13→9) · [v9.75] 만족도팩 감시 갭 2건 — 설문 폼(v9.73)이 켜기 큐에서 누락돼 미생성 시 침묵하던 것 편입 + enrollments 공백(v9.72 만료 안내 무발송) preflight 경고 · [v9.77] profiles 무결성 3면 감시 — Glide 상세 화면 Edit/Add 잔재 실측(07-28) 후속: 유령 행(user_id 공란, 기존 !r[0] 스킵의 사각)·user_id 중복·무효 role을 nightJobs(매일·이상 시에만 메일·동일 내용 dedup)+주간 워치독+preflight 3면에서 자동 발각 · [v9.78] 강사 반 HUD 리디자인 — 유호 07-28 "반 탭이 만들다 만 느낌" → 낱장 줄글 4카드(v9.15)를 SYNK CLASS HUD로 격상: 14열 반상세HTML = 헤더 스탯 스트립(미션 n건·루틴 k/4·보스 HP) + 미션(유형 색 필·명단 캡)·루틴(게이지+2×2)·레이드(사정권 콜아웃 흡수)·왕관(미수혜 pill 후보 명단), Glide 기바인딩이라 클릭 0 적용·9~13열 낱장도 동일 디자인(설계=ban-tab-redesign 워크플로 A/B 판정) · [v9.79] 미니멀 스킨 — 유호 "훨씬 트렌디하고 미니멀하게, 뼈대 같은 느낌" → 실렌더 A/B(M1 에어리 라이트 vs M2 다크 히어로) 판정 M2 채택: 유색 보더 전면 폐지(흰 카드+이중 소프트 섀도)·타이포 3단(그레이 라벨→잉크 빅넘버→본문)·색 3계 절제(블루·앰버·그린)·이모지 카드당 ≤1·미션 도트 3톤·상세 헤더=딥 네이비 다크 히어로(블루 radial glow) · [v9.80] 조 편성·역할 로테이션 — 강사 수업 규칙 v3.0 §11 배선 대기 1순위(유호 07-31 "앱 자동 제안" 확정): groups 시트(시즌×반 1벌·실력 스네이크+말수·학교 계층 내 교환)·역할 4개 차시 순환·2인 짝 3조합·발표 순번(로테이션이 8주 전원 2회를 자동 보장)을 앱이 짠다. 역할·짝·발표자는 저장하지 않고 차시 번호에서 계산 — 매 차시 쓰기 0(월 500건 한도 불변). 강사 브리핑에 조 편성표 동봉 · [v9.81] 랭킹·반 목록 UI 격상(유호 07-31 지적 3건) — ①학생 랭킹 탭: profiles DO119 랭킹보드HTML 신설(SYNK LEAGUE 다크 포디움+순위 리스트+내 순위 하이라이트+추격 넛지 "nP=숙제 k번", rankMap과 동일 소스) ②강사 반 목록: class_stats 15열 반카드요약(👥 n명·반몬스터·보스 상태)+16열 반몬스터이미지 — Glide Collection을 Card 스타일로 ③반 상세 HUD 헤더에 👥 총원 필(stuN 기전달이라 조립 0) · classMonster {name,img}화·유령 클리어 14→16열 · [v9.82] 출퇴근·결석 카드(유호 07-31 지시 10·12번) — ①강사 출퇴근HTML(DP120, 3차 블록 SHARED3 — DO119 랭킹보드 선점 회피): 오늘의 근무 히어로(출근/퇴근 빅넘버·상태 필 3단·퇴근 후 근무시간 확정값)+이번 주 월~토 스트립(과거 무기록일은 무채색 — 개인 시간표 부재로 결근 단정 금지)+요일 출근 치어 재사용(CH11~17 소생), 10분 스위프 소유·값 변경시만 기입(경과시간류 금지 = update 순증 0, 자정 리셋은 기존 출퇴근 리셋과 같은 묶음) ②학부모 결석신고HTML(DQ121): 접수 확인 ✅(v9.34 보류 P-ACK 상환)·오늘/예정/지난 3태·다음 수업일 3칩(classDowOk_ 재사용)·작동 3줄 몽골어 병기(원어민 검수 큐), 출석 달력과 같은 껍질 ③결석 폼 "자녀"를 Choice(value=user_id)로 재조립 지시 — 다자녀 parent_of 통짜 기록이 미출석 제외·브리핑·오늘의 반 3곳에서 조용히 불발되던 것 근본 수리 + preflight absence_notice student_id 무결성 검사(쉼표·미매칭) ④학부모 전수 점검 문서 docs/부모탭_점검_2026-07-31.md(P-ACK·다자녀 🔴 2건 = 이번 수리, 문의 답변 루프·다이제스트 몽골어 🟡 2건 = 제안 대기) · [v9.83] 💰 포인트 경제 재설계(유호 07-31 지시 23번 "포인트가 너무 후하다") — ①지급 단가를 PT 상수 단일 소스로 모으고 전면 ÷2(숙제 10→5·출석 3→2·첨삭확인 5→2·왕관 10→5·레이드 20→10·리그 5→3·월드 10→5·개근왕 30→15·영웅 20→10·생일 20→10): 설계 앵커 "성실 월 ~280P" 이후 지급 경로 6개가 늘도록 아무도 총합을 안 봐서 실측 572P/월 = 정확히 2배 인플레였고, 그 탓에 과잠 3.0개월·싱크마스터 진화 4.2개월(의도 9개월)로 스토어·진화·보스 세 경제가 동시에 무너져 있던 것을 스토어 가격 무수정으로 한 번에 복귀(열심히 291P·보통 196P) ②🧥 과잠은 스토어 하차 → 재원 12개월+누계 1,200P 무료 지급 자격으로(jacketWatch_·jacket_grants, 잔액 무차감이라 간식·굿즈를 사면서도 시계가 돌고 수업일 1/5인 주말반도 같은 개월에 도달) ③목표진행 카드(BZ78)를 도착 예정일로 — 촤 없으면 과잠 진행 폴백 ④보스 HP를 RAID_HP_PER 상수화 재보정(평일 28→34·주말 18→14·WORLD_HP_PER 100→150, 지급의 종속 변수라 함께 움직인다) · [v9.84] 🔌 상담 배선 팩(유호 07-31 승인: 진단 5건+도전안+한수더 전부) — ①상담 5필드→DT124~DX128(취향·목표·입학TOPIK·고충·페이스라인, 읽기 폭 동적+헤더 이름 해석+점거 가드) ②AI 콜드스타트 폴백 사슬 4곳 통일(최애=DA105‖상담취향·목표=드림‖상담목표‖비전·약점=기록‖입학 자기보고 — 학생 소유 열은 읽기만) ③여정카드 페이스라인(도전안: 목표 기한 역산 남은 주, 보장 표현 0)+미래편지 입학TOPIK 0점 좌표(한수더) ④자유서술 blob→노션 상담서술 주간 자동 이관(속성 자동 보장·장애 격리) ⑤KPI 인지채널별 등록/상담 분해(시트 스키마 불변) ⑥migrateConsentV185 ▶1회 — 온라인 폼 동의 문항(v18.5, 문구 유호 검토 전제)+워치독 감시 2종. 설계노트 199~204·테스트 7종 · [v9.85] 리그 카드 리뷰 반영(v9.81 독립 리뷰 P1+P2) — ①단상 숫자=실순위(동점 동순위, 구현은 배열 위치를 찍어 R열과 어긋났다)+동점 1위 왕좌 문구(구 mineIdx===0) ②넛지 환산 단가를 PT.숙제 주입으로(v9.83 반값 개정 자동 추종, meta.hwP)+6번 이상은 "사정권" 문구 캡 ③동점 추격 문구를 이름 기준으로(같은 순위끼리 "n위와 동점"은 자기 언급) ④콜드 리스트 문구 분기(없는 TOP3 전제 제거) ⑤리그 이름 폴백 '이름 미등록'(전교 노출면 user_id 차단) ⑥월 라벨 시트 tz 통일 ⑦class_stats 유령 클리어 앞 폭 보장(좁은 시트+반 감소 조합 크래시 경로)
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -866,7 +866,12 @@ const JACKET_ITEM_NAME = '싱크 과잠';
  * ⚠ 학생 0명이라 주간 획득 추정치로 계산한 값이다. **개원 후 첫 달 실측으로 1회 재조정할 것**
  *   (class_stats 7열 '반주간데미지' 실값 ÷ 정원 = 실제 계수 상한). 그래서 하드코딩을 상수로 뽑았다.
  */
-const RAID_HP_PER = { 평일: 34, 주말: 14 }; // [v9.83] 28→34 · 18→14 (지급 ÷2 반영)
+// [v9.83·리뷰 H1 반영] 첫 판정(34/14)은 주간 획득 추정에 **레이드 보상 자체를 포함**한 순환 가정이었다 —
+//   격파의 결과(보상 10P)를 격파의 원인(데미지)으로 세면 난이도가 실제보다 쉬워 보인다. 보상을 빼고 재계산:
+//   평일 1인 주간 = 열심히 57.7P·보통 35.6P → 반 평균 44.4P / 주말 = 16.7P·10.0P → 반 평균 12.7P.
+//   여유 1.6배(연료 미션 데미지는 추가 여유)로 잡아 평일 28(원복)·주말 8.
+//   주말을 크게 내린 이유: 수업일이 평일의 1/5인데 계수는 평일의 64%(18/28)여서 원래부터 구조적으로 불리했다.
+const RAID_HP_PER = { 평일: 28, 주말: 8 };
 // 월드 보스 계수 WORLD_HP_PER도 같은 종속 변수지만 선언 위치는 그대로 둔다 —
 // tests/safety.test.js의 여러 구간 검사가 `const WORLD_HP_PER`를 끝 표식으로 쓰고 있어 이관하면 4건이 깨진다.
 
@@ -1476,7 +1481,7 @@ function buildRankBoardHtml_(myId, rows, meta) {
     return '<div style="flex:1;min-width:0;text-align:center;padding:0 3px;">' +
       (first ? '<div class="skBr" style="font-size:22px;line-height:1;margin-bottom:5px;' + (x ? ANIM_BREATH : '') + '">👑</div>' : '') +
       nameHtml +
-      '<div style="margin:7px 4px 0;height:' + h + 'px;border-radius:10px 10px 0 0;' + stand + 'font-size:' + (first ? 19 : 14) + 'px;font-weight:800;color:rgba(255,255,255,.3);line-height:' + h + 'px;">' + place + '</div></div>';
+      '<div style="margin:7px 4px 0;height:' + h + 'px;border-radius:10px 10px 0 0;' + stand + 'font-size:' + (first ? 19 : 14) + 'px;font-weight:800;color:rgba(255,255,255,.3);line-height:' + h + 'px;">' + (x ? x.rank : place) + '</div></div>'; // [v9.85·리뷰 P1] 단상 숫자 = 실순위(rankMap 동점 동순위) — 자리(place)는 배치·높이만
   };
   const podium = rows.length
     ? '<div style="display:flex;align-items:flex-end;margin-top:18px;">' + pod(rows[1], 2) + pod(rows[0], 1) + pod(rows[2], 3) + '</div>'
@@ -1502,14 +1507,20 @@ function buildRankBoardHtml_(myId, rows, meta) {
   };
   let listRows = rows.slice(3, 10).map(x => row(x)).join('');
   if (mine && mineIdx >= 10) listRows += '<div style="text-align:center;font-size:12px;font-weight:800;color:#D0D5DD;padding:1px 0;">⋯</div>' + row(mine);
-  if (!listRows) listRows = '<div style="text-align:center;font-size:12px;color:#98A2B3;padding:10px 0 6px;">TOP3 아래 자리가 비어 있어요 — 다음 주인공은?</div>';
+  if (!listRows) listRows = rows.length
+    ? '<div style="text-align:center;font-size:12px;color:#98A2B3;padding:10px 0 6px;">TOP3 아래 자리가 비어 있어요 — 다음 주인공은?</div>'
+    : '<div style="text-align:center;font-size:12px;color:#98A2B3;padding:10px 0 6px;">첫 포인트가 이 순위표의 첫 줄이 됩니다</div>'; // [v9.85·리뷰 P2-5] 콜드 문구 — 없는 TOP3를 전제하지 않기
   // 넛지 — 내 다음 목표 한 줄: 격차를 "숙제 몇 번"으로 번역해야 행동이 된다.
+  //   [v9.85] 환산 단가는 meta.hwP(호출부가 PT.숙제 주입 — v9.83 단가 개정에 자동 추종, 빌더 순수성 유지)
   let nudge = '';
-  if (mine && mineIdx === 0) nudge = '왕좌 수성 중 — 매월 1일 정산, 이 순위가 명예의 전당에 남아요';
+  const hwP = Number(meta.hwP) || 5;
+  if (mine && mine.rank === 1) nudge = '왕좌 수성 중 — 매월 1일 정산, 이 순위가 명예의 전당에 남아요'; // [v9.85·리뷰 P1] 동점 1위도 왕좌(구 mineIdx===0은 공동 1위를 추격 문구로 보냄)
   else if (mine) {
     const diff = rows[mineIdx - 1].pts - mine.pts;
-    nudge = diff > 0 ? '🔥 ' + rows[mineIdx - 1].rank + '위까지 <b>' + diff + 'P</b> — 숙제 ' + Math.ceil(diff / 10) + '번이면 추월!'
-      : '🔥 ' + rows[mineIdx - 1].rank + '위와 동점 — 다음 1P가 순위를 가른다!';
+    const hwN = Math.ceil(diff / hwP);
+    nudge = diff > 0
+      ? '🔥 ' + rows[mineIdx - 1].rank + '위까지 <b>' + diff + 'P</b> — ' + (hwN <= 5 ? '숙제 ' + hwN + '번이면 추월!' : '이번 주 숙제·출석을 다 모으면 사정권!')
+      : '🔥 「' + escHtml_(rows[mineIdx - 1].name) + '」와 동점 — 다음 1P가 순위를 가른다!'; // [v9.85] 같은 순위끼리 "n위와 동점"은 자기 언급 — 이름으로
   } else if (rows.length) nudge = '아직 순위표 밖 — 오늘 출석 도장 하나로 입장!';
   const list = '<div style="' + CARD_FONT + HUD_CARD + '">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;padding:0 2px 6px;">' +
@@ -2068,10 +2079,11 @@ function calcAll() {
     // [v9.81] 리그 카드 재료 — 순위 스냅샷(학생·양수 포인트만, rankMap과 동일 소스라 R열과 어긋날 수 없다).
     //   카드 생성은 아래 학생 루프(rankBoardOut), 기록은 DO119.
     const leagueRows = [], nameLg = {};
-    pfData.forEach(r => { if (r[0] && r[3] === 'student') nameLg[r[0]] = r[1] || r[0]; });
+    pfData.forEach(r => { if (r[0] && r[3] === 'student') nameLg[r[0]] = String(r[1] || '').trim() || '이름 미등록'; }); // [v9.85·리뷰 P2-6] 전교 노출면이라 user_id 폴백 대신 라벨
     sorted.forEach(s => { if (s.m > 0 && nameLg[s.id]) leagueRows.push({ id: s.id, rank: rankMap[s.id], name: nameLg[s.id], pts: s.m }); });
-    const leagueMeta = { label: (now.getMonth() + 1) + '월 리그',
-      dLeft: Math.max(1, Math.ceil((new Date(now.getFullYear(), now.getMonth() + 1, 1) - now) / 86400000)) };
+    const leagueMeta = { label: Utilities.formatDate(now, tz, 'M') + '월 리그', // [v9.85·리뷰 P2-7] 시트 tz 통일 — 집계(thisMonth)와 라벨이 같은 달을 가리키게
+      dLeft: Math.max(1, Math.ceil((new Date(now.getFullYear(), now.getMonth() + 1, 1) - now) / 86400000)),
+      hwP: PT.숙제 }; // [v9.85] 넛지 환산 단가 — v9.83 PT 단일 소스 추종(숫자 직접 쓰기 금지 조항)
 
     const prevAB = pf.getRange(2, 28, pfData.length, 1).getValues();
     const evoRemOut = [], stageNumOut = [], balOut = []; // [v7.9] 게이지 2열 은퇴(진행바 T열로 단일화)
@@ -2532,7 +2544,11 @@ function calcAll() {
             (Math.round(perDay * 10) / 10) + 'P)면 <b style="color:#3D5AFE;">' + eta + '</b> 도착' +
             (faster && faster !== eta ? ' · ⚡ 하루 ' + PT.숙제 + 'P만 더 모으면 <b>' + faster + '</b>' : '') + '</div>';
         };
-        const goalNm = String((prevAR[idx] && prevAR[idx][0]) || '').trim();
+        // [v9.83·리뷰 B2] 과잠을 찜해 둔 학생 흡수 — AR(찜)은 학생 소유 열이라 스크립트가 지우지 않고,
+        //   ST18이 스토어에서 빠지면 price가 undefined가 되어 "잔액 N P"만 뜨는 죽은 카드에 갇힌다.
+        //   찜 값이 과잠이면 가격 분기로 보내지 말고 자격 진행 카드로 넘긴다(아래 else 가지가 그것).
+        const goalRaw = String((prevAR[idx] && prevAR[idx][0]) || '').trim();
+        const goalNm = (goalRaw === JACKET_ITEM_NAME) ? '' : goalRaw;
         const price = goalNm ? storePriceByName_[goalNm] : 0;
         if (goalNm && !price) goalOut.push(['🎯 목표: <b>' + goalNm + '</b> — 잔액 ' + (bal[id] || 0) + 'P']);
         else if (goalNm) {
@@ -2750,6 +2766,7 @@ function calcAll() {
   });
   const csLast = cs.getLastRow();
   if (csLast - 1 > csOut.length) {
+    if (cs.getMaxColumns() < 16) cs.insertColumnsAfter(cs.getMaxColumns(), 16 - cs.getMaxColumns()); // [v9.85·리뷰 P2-3] 폭 보장이 이 클리어보다 뒤(15·16열 블록)에 있어, 좁은 시트+반 감소 조합이면 범위 초과로 매 실행 죽던 경로 차단
     cs.getRange(csOut.length + 2, 1, csLast - 1 - csOut.length, 16).clearContent(); // [v9.1] · [v9.34] 8→12열 · [v9.35] 12→13열(레이드카드HTML) · [v9.52] 13→14열(반상세HTML) · [v9.81] 14→16열(반카드요약·반몬스터이미지) — 반 감소 시 유령 HTML 잔존 방지
   }
   { // [v9.6] 🌍 월드 레이드 누적 — 전 학생 이번 달 획득 총합
@@ -3013,7 +3030,7 @@ function hwCardHtml_(ty, mnTy, task, tip, mnTip) {
     '<div style="font-size:14.5px;font-weight:700;line-height:1.75;">' + escHtml_(task) + '</div>' +
     (tip ? '<div style="margin-top:9px;background:#F8FAFC;border-left:3px solid #3D5AFE;border-radius:0 10px 10px 0;padding:7px 10px;font-size:11.5px;color:#475569;line-height:1.7;">👀 <b>선생님이 이걸 봐요</b> — ' + escHtml_(tip) +
       (mnTip ? '<br/><span style="color:#94A3B8;">' + escHtml_(mnTip) + '</span>' : '') + '</div>' : '') +
-    '<div style="margin-top:9px;font-size:11px;color:#9CA3AF;">다 했으면 ✍️ <b>숙제 제출</b> 버튼으로 보내기 — +10P · AI 선생님 피드백 🤖</div></div>';
+    '<div style="margin-top:9px;font-size:11px;color:#9CA3AF;">다 했으면 ✍️ <b>숙제 제출</b> 버튼으로 보내기 — +' + PT.숙제 + 'P · AI 선생님 피드백 🤖</div></div>';
 }
 function quizCardHtml_(q, personal) {
   if (!q) return '';
@@ -4167,13 +4184,13 @@ function birthdayCheck() {
       MailApp.sendEmail(String(r[25]).trim(),
         '[SYNK] 🎂 ' + r[1] + ' — Төрсөн өдрийн мэнд хүргэе!',
         r[1] + ' сурагчийн төрсөн өдрийг SYNK гэр бүл бүгд тэмдэглэж байна!\n' +
-        'Баяр хүргэсэн оноо +20P бэлэглэлээ 🎁\n\n' +
-        '(' + r[1] + ' 학생의 생일을 SYNK 가족 모두가 축하합니다! 축하 포인트 +20P를 선물로 드렸어요 🎁)\n\n' +
+        'Баяр хүргэсэн оноо +' + PT.생일 + 'P бэлэглэлээ 🎁\n\n' +
+        '(' + r[1] + ' 학생의 생일을 SYNK 가족 모두가 축하합니다! 축하 포인트 +' + PT.생일 + 'P를 선물로 드렸어요 🎁)\n\n' +
         '— SYNK · Тархи судлалд суурилсан солонгос хэлний академи');
     });
   }
   adminMail('[SYNK] 오늘 생일 ' + kids.length + '명',
-    kids.map(r => '· ' + r[0] + ' ' + r[1]).join('\n') + '\n\n+20P 자동 지급 완료'); // [v5.4] 브리핑 통합 · [v9.34] quotaOk 게이트 밖 — 큐(쿼터 0)라 쿼터 부족 날에도 지급 사실이 원장 브리핑에 남게
+    kids.map(r => '· ' + r[0] + ' ' + r[1]).join('\n') + '\n\n+' + PT.생일 + 'P 자동 지급 완료'); // [v5.4] 브리핑 통합 · [v9.34] quotaOk 게이트 밖 — 큐(쿼터 0)라 쿼터 부족 날에도 지급 사실이 원장 브리핑에 남게
   calcAll();
   Logger.log('생일 지급: ' + kids.length + '명');
 }
@@ -4233,6 +4250,12 @@ function raidMonday() {
       if (s0.indexOf('집중반') > -1) cap = 10;
       else if (s0.indexOf('주말정규반') === 0) cap = 20;
       else { const num = classNumOf(s0); cap = num ? (Number(num) <= 4 ? 20 : 10) : (Number(r[1]) || 1); }
+      // [v9.83·리뷰 H1] HP를 정원으로만 잡으면 **덜 찬 반은 구조적으로 격파 불가**다(정원 20 자리에 9명이면
+      //   20명분 데미지를 9명이 내야 한다). 개원 초가 정확히 그 상태이고, 사기가 가장 중요한 시기다.
+      //   실인원(class_stats 학생수)이 정원보다 적으면 그쪽으로 낮춘다 — 보스가 파티 규모를 따라간다.
+      //   "매주 같은 HP = 외울 수 있는 보스"는 유지된다(로스터가 바뀔 때만 움직인다).
+      const live = Number(r[1]) || 0;
+      if (live > 0 && live < cap) cap = live;
       const eS = schedOf(smR, s0);
       const per = (eS && eS.type === '주말') ? RAID_HP_PER.주말 : RAID_HP_PER.평일;
       return [weekKey, r[0], cap * per, 0, '진행중', ''];
@@ -4346,7 +4369,7 @@ function leagueSettle_() {
       memberCls[winner].forEach(sid => winRows.push([sid, PT.리그, '리그승리', 'SYSTEM']));
       noticeRows.push([
         '🏆 주간 리그 결과: ' + a + ' × ' + b,
-        '이번 주 리듬왕은 ' + winner + ' (1인 평균 ' + hi + ' : ' + lo + ')! 승리 반 전원 +5P. 양 반 모두의 데미지는 각자의 몬스터에게 그대로 쌓였습니다 🌱',
+        '이번 주 리듬왕은 ' + winner + ' (1인 평균 ' + hi + ' : ' + lo + ')! 승리 반 전원 +' + PT.리그 + 'P. 양 반 모두의 데미지는 각자의 몬스터에게 그대로 쌓였습니다 🌱',
         new Date()]);
       noticed++;
     }
@@ -4576,7 +4599,7 @@ function raidFriday() {
           (second ? ', ' + second.n + josa(second.n, '이', '가') + ' ' + second.d + ' 데미지로 뒤를 이었다' : '') + '. ' : '') +
         (fuel ? '🔥 연료 미션 합동 공격 ' + fuel + ' 데미지가 결정적이었다. ' : '') +
         (last ? bN + josa(bN, '이', '가') + ' 비틀거리며 도망치려는 순간 — ' + last.n + '의 마지막 일격이 작렬! ' : '') +
-        '반 전원 +20P 🏆';
+        '반 전원 +' + PT.레이드 + 'P 🏆';
     } else if (o.got > 0) {
       title = '🌫️ ' + o.cls + ' — ' + bN + ' 도주…';
       text = o.got + ' 데미지를 입혔지만, ' + bN + '(HP ' + o.target + ')' + josa('P', '은', '는') + ' ' + Math.max(o.target - o.got, 0) +
@@ -5136,7 +5159,7 @@ function parentWeeklyDigestCore_(holdRaw) {
       const uniq = tagW[k.sid].filter((v, i, a) => a.indexOf(v) === i);
       lines.push('💬 크루의 눈: ' + uniq.join(' · ') + ' / ' + uniq.map(t => TAG_MN[t] || t).join(' · '));
     }
-    if (raidSt) lines.push('⚔️ 반 레이드: ' + (raidSt.indexOf('달성') > -1 ? '보스 격파! 반 전원 +20P 🏆'
+    if (raidSt) lines.push('⚔️ 반 레이드: ' + (raidSt.indexOf('달성') > -1 ? '보스 격파! 반 전원 +' + PT.레이드 + 'P 🏆'
       : raidSt.indexOf('아쉬움') > -1 ? '아깝게 놓쳤어요 — 다음 주 복수전!' : '다음 주, 반격을 준비 중이에요!'));
     if (topicBy[k.cls]) lines.push('📖 이번 주 배운 것: ' + topicBy[k.cls]);
     const body = k.n + ' 학생의 한 주 소식입니다.\n\n' + lines.join('\n') +
@@ -5194,7 +5217,7 @@ function restoreDrill() {
 // 매일 22시. ① MVP·오늘의 시냅스: 같은 날·같은 반 각 1명(최초 지급만 유효)  ② 숙제완료·생일축하: 학생당 하루 1회
 // 초과분은 자동 정정(-P) + 원장 경고. 정정은 성장·잔액·레이드 데미지·칭호 카운트까지 대칭으로 되돌린다.
 // today 기준 검사라 자정이 지나면 자동 초기화 — 다음 날은 다시 지급 가능.
-const DAILY_LIMIT = { '숙제완료': 1, '생일축하': 1, '오늘의다짐': 1, '칭찬': 1, '첨삭확인': 1 }; // 사유(정확 일치)별 학생당 일일 한도 — [v9.28] 학생 셀프 미션 1일 1회 · [v9.47·B4] 칭찬(+3P)도 학생당 1일 1회(왕관과 차별화되는 "작은 인정"·경제 보호, 초과분 야간 자동 정정+강사 통보)
+const DAILY_LIMIT = { '숙제완료': 1, '생일축하': 1, '오늘의다짐': 1, '칭찬': 1, '첨삭확인': 1 }; // 사유(정확 일치)별 학생당 일일 한도 — [v9.28] 학생 셀프 미션 1일 1회 · [v9.47·B4] 칭찬(PT.칭찬)도 학생당 1일 1회(왕관과 차별화되는 "작은 인정"·경제 보호, 초과분 야간 자동 정정+강사 통보)
 const CLASS_AWARDS = ['오늘의 MVP', '오늘의 시냅스']; // [v7.6] 반당 하루 1명 왕관 2종
 const TAG_MN = { '발음↑': 'Дуудлага ↑', '열정': 'Хичээл зүтгэл', '친구도움': 'Найздаа тусалсан', '집중력': 'Төвлөрөл' }; // [v9.0] 칭찬 태그 몽골어
 function dailyGuard() {
@@ -5942,7 +5965,7 @@ function monthlyGameBatch() {
     if (best >= 1) Object.keys(map).forEach(k => { if (map[k] === best) give(k, title); });
   }
   giveTop(praiseCnt, '💝 정성왕');
-  // [v5.1] '💰 칭찬 부자' 제거 — 칭찬이 고정 +3P라 정성왕과 항상 동일 순위(완전 중복)
+  // [v5.1] '💰 칭찬 부자' 제거 — 칭찬이 고정액이라 정성왕과 항상 동일 순위(완전 중복)
   giveTop(hwCnt, '📚 숙제왕');           // [v5.1] 숙제 최다
   giveTop(spkCnt, '🌟 이달의 스타');     // [v7.2] MVP 최다 (명예 전용)
   // [v5.2] '🛍️ 포인트 플렉스' 제거 — 포인트 소비 경쟁 유도 배제 (양도·도박성 메커니즘 없음 정책)
@@ -6945,6 +6968,30 @@ function setupStore() {
 // 잔액(AQ)은 건드리지 않는다 — 무료 지급이자, 학생이 그동안 간식·굿즈를 산 것과 무관하게 자격이 유지되는 이유.
 function jacketWatch_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  // [v9.83·리뷰 B2] 이중 경로 감시 — setupStore()는 코드 정본을 바꿀 뿐 라이브 contents 시트를 자동으로 고치지 않는다.
+  //   ▶ 실행 전까지 학생 화면에는 과잠이 1,700P 상품으로 남아, 사서도 받고 자격으로도 받는 두 경로가 동시에 열린다.
+  //   store는 CONTENT_CUSTOM_TYPES(사람이 채운 값이 정본)라 preflight 자동복구가 0개일 때만 도므로 여기서 잡는다.
+  //   문서에 "배포 후 setupStore ▶"라고 적어두는 것으로는 안 지켜지므로, 남아 있는 동안 매일 알린다(내용 같으면 dedup).
+  try {
+    const ctJ = ss.getSheetByName('contents');
+    const stJ = ss.getSheetByName('app_state');
+    if (ctJ && stJ && ctJ.getLastRow() >= 2) {
+      const live = ctJ.getRange(2, 1, ctJ.getLastRow() - 1, 3).getValues()
+        .some(r => String(r[1]) === 'store' && String(r[2]).trim() === JACKET_ITEM_NAME);
+      const sig = live ? 'ON' : '';
+      if (String((getState(stJ, '과잠_스토어잔존').val || '')) !== sig) {
+        if (live && quotaOk(1)) {
+          adminMail('[SYNK] ⚠️ ' + JACKET_ITEM_NAME + '이 아직 스토어에 남아 있습니다',
+            'v9.83에서 과잠은 판매 상품이 아니라 **재원 ' + JACKET_TENURE_MONTHS + '개월 무료 지급 자격**으로 바뀌었지만,\n' +
+            '라이브 contents 시트에는 옛 상품 행이 그대로 있어 학생이 포인트로도 살 수 있는 상태입니다(이중 경로).\n\n' +
+            '고치는 법: Apps Script에서 setupStore ▶ 1회 실행 → 이어서 translateContents ▶ 1회(몽골어 복원).\n' +
+            '실행하면 이 알림은 자동으로 멈춥니다.');
+        }
+        setState(stJ, '과잠_스토어잔존', sig);
+      }
+    }
+  } catch (eJ) { Logger.log('과잠 스토어 잔존 검사 실패(무해·다음 실행 재시도): ' + eJ); }
+
   const pf = ss.getSheetByName('profiles');
   if (!pf || pf.getLastRow() < 2) return; // 콜드 가드 — 로스터 없으면 판정 자체를 열지 않는다
   const gr = ensureSheet(ss, 'jacket_grants', ['student_id', '이름', '자격도달일', '재원개월', '누적P', '지급상태']);
@@ -7869,7 +7916,7 @@ function worldRaidMonthly_() { // 매월 1일: 지난달 판정·보상 → 이�
     // [v9.40] 직접 쓰기 → addNotice(헤더 자동 인식) — 구 스키마 notices에서 열이 어긋나던 결함 수정(leagueSettle_와 동일)
     addNotice(ss,
       win ? '🌍 월드 레이드 대승리! ' + wb.name + ' 격파!' : '🌍 월드 레이드 — ' + wb.name + ' 봉인 성공!',
-      win ? '"' + wb.win + '" 전교 크루의 ' + dmg + ' 데미지가 대군주를 쓰러뜨렸습니다! 전원 +10P!'
+      win ? '"' + wb.win + '" 전교 크루의 ' + dmg + ' 데미지가 대군주를 쓰러뜨렸습니다! 전원 +' + PT.월드 + 'P!'
           : '전교 크루가 ' + dmg + ' 데미지로 대군주를 한 달 더 봉인했습니다. 다음 달, 완전한 승리를 향해!');
   });
   // 이번 달 소환
@@ -8270,7 +8317,7 @@ function setupBrainTips() { // [v8.6] 오늘의 시냅스 팁 — 홈 최하단 
     ['BT27','braintip','"나는 한국어가 는다"고 말하는 뇌는 정말 그렇게 배선된다 🧠','','',27],
     ['BT28','braintip','아침 햇빛 10분 — 오늘 밤 수면의 질을 예약하는 스위치 🌅','','',28],
     ['BT29','braintip','배운 지 24시간 안에 한 번 복습 — 망각곡선이 꺾인다 📉','','',29],
-    ['BT30','braintip','매일 +10P — 시냅스는 폭발이 아니라 누적으로 자란다 🌱','','',30]
+    ['BT30','braintip','매일 한 걸음 — 시냅스는 폭발이 아니라 누적으로 자란다 🌱','','',30] // [v9.83] 지급 단가가 바뀌면 틀리는 숫자를 문구에서 제거
   ]);
   Logger.log('브레인팁 30종 OK');
 }
@@ -8621,6 +8668,11 @@ function systemWatchdog(asText) {
       } else if (hasCForm) {
         add(false, '상담 v18.4 마이그레이션 미실행 — 증분 문항 응답이 시트 열 없이 노션이관으로만 쌓입니다. migrateConsultV184 ▶ 1회');
       }
+      // [v9.84·리뷰 H3] 상담 배선 소스 헤더 6종(v18.1 기본 열) — 이름 완전 일치로 읽으므로 개명되면 DT124~DX128이
+      //   "조용히 전부 빈칸"이 된다. 증분 3종(선호그룹 등)은 위 v18.4 검사가 담당, 여기는 기본 열 몫.
+      const srcNeed = ['TOPIK목표', 'TOPIK목표기한', 'TOPIK급수', 'TOPIK점수', '학습가능시간', '📝자유서술→노션'];
+      const srcMiss = srcNeed.filter(h => chdr.indexOf(h) === -1);
+      add(srcMiss.length === 0, '상담 배선 소스 헤더: ' + (srcMiss.length ? srcMiss.join(', ') + ' 미발견 — 상담시트 2행 헤더 개명 여부 확인(취향·목표·페이스라인이 빈칸으로 착지 중)' : srcNeed.length + '종 정상'));
       // [v9.84] 동의 문항(v18.5) 적용 여부 — AI 인용·노션 이관 확대의 선행 조건(소급 불가 계열)이라 적용 전까지 주간 안내
       if (hasCForm) {
         const consentOn = stV ? String(getState(stV, '상담동의').val || '') === 'v18.5' : false;
@@ -10786,7 +10838,7 @@ const MN_CONTENTS_G = {
   "BT27": "«Миний солонгос хэл өдөр бүр сайжирч байна» гэж хэлдэг тархи үнэхээр тийм байдлаар холбогддог 🧠",
   "BT28": "Өглөө 10 минут наранд гар — энэ шөнийн сайхан нойрыг захиалдаг товчлуур 🌅",
   "BT29": "Сурснаас хойш 24 цагийн дотор нэг удаа давт — мартах муруйг тэр дороо нугалчихна 📉",
-  "BT30": "Өдөр бүр +10P — синапс нэг дор биш, өдөр бүрийн хуримтлалаар ургадаг 🌱",
+  "BT30": "Өдөр бүр нэг алхам — синапс нэг дор биш, өдөр бүрийн хуримтлалаар ургадаг 🌱",
 };
 
 function injectMongolianContents() {
@@ -12065,6 +12117,19 @@ function consultNarrativeMap_() {
 // [v9.84·④] 크루 DB에 rich_text 속성 보장 — 이미 있으면 no-op(200), 타입 충돌 등 실패면 false(서술만 생략).
 function notionEnsureProp_(name) {
   try {
+    // [v9.84·리뷰 M3] GET 선확인 — PATCH가 기존 속성의 "타입을 변환"할 수 있어(예: 유호가 손으로 만든 select),
+    //   이미 있으면 rich_text일 때만 통과, 다른 타입이면 덮지 않고 생략(사람이 만든 구조 불가침).
+    const getR = UrlFetchApp.fetch('https://api.notion.com/v1/databases/' + NOTION_DB_ID, {
+      method: 'get', headers: notionHeaders_(), muteHttpExceptions: true
+    });
+    if (getR.getResponseCode() === 200) {
+      const cur = (JSON.parse(getR.getContentText()).properties || {})[name];
+      if (cur) {
+        if (cur.type === 'rich_text') return true;
+        Logger.log('노션 속성 타입 충돌(' + name + '=' + cur.type + ') — 덮지 않고 서술 이관 생략. 노션에서 속성을 rich_text로 바꾸거나 이름을 비워주세요.');
+        return false;
+      }
+    }
     const props = {}; props[name] = { rich_text: {} };
     const resp = UrlFetchApp.fetch('https://api.notion.com/v1/databases/' + NOTION_DB_ID, {
       method: 'patch', headers: notionHeaders_(), payload: JSON.stringify({ properties: props }), muteHttpExceptions: true
@@ -12114,8 +12179,16 @@ function syncToNotion_() {
 
   // [v9.84·④] 상담 자유서술(다짐·3-5년 목표·고충·선택이유…) 주간 자동 이관 — 정성+정량 허브 완성.
   //   맵 로드·속성 보장 실패는 서술만 생략(본 동기화 계속) — 상담시트 장애가 노션 정량 동기화를 못 끊는다.
+  // [v9.84·리뷰 H2] 동의 게이트 — migrateConsentV185(app_state 상담동의=v18.5, 유호 문구 검토 ▶) 전에는 자유서술을
+  //   노션으로 내보내지 않는다(#204 "소급 불가" 취지 그대로). 게이트 앞이라 맵 로드 자체를 생략(데이터 접촉 0).
   let consultNarr = {};
-  try { consultNarr = consultNarrativeMap_(); } catch (e) { Logger.log('상담서술 로드 실패(정량만 동기화): ' + e); }
+  const stCn = ss.getSheetByName('app_state');
+  const consentOn = stCn ? String(getState(stCn, '상담동의').val || '') === 'v18.5' : false;
+  if (consentOn) {
+    try { consultNarr = consultNarrativeMap_(); } catch (e) { Logger.log('상담서술 로드 실패(정량만 동기화): ' + e); }
+  } else {
+    Logger.log('상담서술 이관 보류 — 동의 문항(v18.5) 미적용. migrateConsentV185 ▶ 후 자동 개시.');
+  }
   const narrOn = Object.keys(consultNarr).length ? notionEnsureProp_('상담서술') : false;
 
   let created = 0, updated = 0, failed = 0;
@@ -12468,7 +12541,7 @@ function runSeedChain_(ss, st, tz, L, t0, startIdx) {
   const CLS_A = '데모정규반', CLS_B = '데모주말반';
   const chain = [
     ['전체 계산', function () { calcAll(); }],
-    ['생일 축하(+20P·학부모 메일)', function () { birthdayCheck(); }], // DEMO-02 사라 오늘 생일 — 지급·배너·브리핑 즉시 시연
+    ['생일 축하(+' + PT.생일 + 'P·학부모 메일)', function () { birthdayCheck(); }], // DEMO-02 사라 오늘 생일 — 지급·배너·브리핑 즉시 시연
     ['지난달 시상(칭호·랭킹·정산)', function () {
       if (gbPreC) { L.push('ℹ 지난달 시상은 실배치가 이미 완료(재실행 안전상 스킵) — 시상·칭호 시연은 이번 달 데이터로 확인'); return; }
       monthlyGameBatch();
@@ -12629,8 +12702,8 @@ function demoRaidClearNow() {
       const bNm = bossD ? bossD.name : '이달의 보스';
       ensureSheet(ss, 'raid_story', ['date', 'class_name', '유형', '제목', '스토리']).appendRow([
         weekKey, cls, '결산', '⚔️ ' + cls + ' — ' + bNm + ' 격파!',
-        '총력전 끝에 ' + bNm + '(HP ' + target + ')' + josa(String(target), '이', '가') + ' 무너졌다! 크루 전원의 마지막 합동 공격이 작렬한 순간, 보스는 빛이 되어 흩어졌다. 반 전원 +20P 🏆']);
-      addNotice(ss, '🎉 ' + cls + ' 레이드 격파!', bNm + ' 격파 성공 — ' + cls + ' 전원 +20P! ' + (bossD ? '"' + bossD.win + '"' : ''));
+        '총력전 끝에 ' + bNm + '(HP ' + target + ')' + josa(String(target), '이', '가') + ' 무너졌다! 크루 전원의 마지막 합동 공격이 작렬한 순간, 보스는 빛이 되어 흩어졌다. 반 전원 +' + PT.레이드 + 'P 🏆']);
+      addNotice(ss, '🎉 ' + cls + ' 레이드 격파!', bNm + ' 격파 성공 — ' + cls + ' 전원 +' + PT.레이드 + 'P! ' + (bossD ? '"' + bossD.win + '"' : ''));
       L.push('✓ ' + cls + ' 반 레이드 격파(부족분 ' + lack + ' 총력전 지급)');
     });
   }
