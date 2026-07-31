@@ -11,6 +11,6 @@
   "jsonExtensions": [
     ".json"
   ],
-  "filePushOrder": ["Code.js", "contents_상담AI.js", "상담AI.js", "교재연동.js"],
+  "filePushOrder": ["Code.js", "contents_교안.js", "contents_상담AI.js", "상담AI.js", "교재연동.js"],
   "skipSubdirectories": false
 }

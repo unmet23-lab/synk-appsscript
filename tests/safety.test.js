@@ -987,6 +987,41 @@ test('[v9.82] 출퇴근 카드 — 상태 3단 렌더·근무시간 확정값·�
   assert.ok(section('function todayBoard_(', '교실 스크린').includes('updateParentAbsence_(ss, tz, pf)'), '결석 카드 10분 배선(todayBoard_)이 없다');
 });
 
+test('[v9.86] 수업준비 팩 — 결석 예정 HUD·조 편성 절·제출 현황·교안 초안 배선', () => {
+  // A: 결석 예정(학부모 사전신고) — 메일에만 있던 것이 HUD 미션 절로
+  const rowsFn = section('function hudBriefRows_(', 'function buildBriefHud_(');
+  assert.ok(rowsFn.includes("'결석 예정'") && rowsFn.includes('mats.preAbs'), 'HUD 결석 예정 행이 없다');
+  assert.ok(code.includes('preAbs: preAbsByCls[c]'), 'calcAll mats에 preAbs 배선이 없다');
+  // B: 조 편성 절 — 상세 join 인자 + 배치 헬퍼(반복 재읽기 방지) + 렌더 3태
+  const det = section('function buildClassHudDetail_(', 'function buildGroupHud_(');
+  assert.ok(det.includes('groupHtml'), '반 상세에 조 편성 절 인자가 없다');
+  const gh = loadFunction('function buildGroupHud_(', 'function groupHudsByClass_(', 'buildGroupHud_',
+    { escHtml_: (s) => String(s == null ? '' : s), CARD_FONT: '', HUD_CARD: '', HUD_LABEL: '', hudChip_: (s) => String(s) });
+  const gHtml = gh('', { lessonNo: 7, week: 2, confirmed: '확정', groups: [[{ name: '바야르', seat: 0, role: '발표', icon: '📢' }, { name: '사라', seat: 1, role: '진행', icon: '🎯' }]] });
+  assert.ok(gHtml.includes('조 편성') && gHtml.includes('오늘 발표') && gHtml.includes('바야르'), '조 편성 절 렌더 누락(발표 콜아웃 포함)');
+  assert.equal(gh('', { lessonNo: 0, week: 0, groups: [] }), '', '편성 전엔 절이 생략돼야 한다(도입 전 잔소리 방지)');
+  assert.ok(gh('', { lessonNo: 3, week: 1, confirmed: '임시', groups: [[{ name: 'A', seat: 0, role: '진행', icon: '🎯' }]] }).includes('임시 조'), '임시 조 필 누락');
+  assert.ok(code.includes('groupHudByCls[c]') && code.includes('groupHudsByClass_(ss, tz, now)'), 'calcAll 배선(1회 읽기 배치)이 없다');
+  // C: 수업준비 카드 제출 현황(검사 동선) — 하위 호환 + 미제출 캡 + 전원 제출
+  const prep = loadFunction('function prepCardHtml_(', 'function teacherInOutMap_(', 'prepCardHtml_', { escHtml_: (s) => String(s == null ? '' : s), CARD_FONT: '' });
+  const wSubs = prep('어휘', '숙제', '', '', '', [{ c: '정규반1', done: 9, total: 13, missing: ['가', '나', '다', '라', '마', '바'] }]);
+  assert.ok(wSubs.includes('제출 현황') && wSubs.includes('9/13') && wSubs.includes('외 1명'), '제출 현황 절·미제출 캡 누락');
+  assert.ok(prep('어휘', '숙제', '', '', '', [{ c: '정규반1', done: 3, total: 3, missing: [] }]).includes('전원 제출'), '전원 제출 표기 누락');
+  assert.ok(prep('어휘', '숙제', '', '', '').indexOf('제출 현황') === -1, 'subs 없으면 절이 생략돼야 한다(하위 호환)');
+  assert.ok(section('function writeSharedCols_(', '/* ===================== 상담시트').includes('subsT'), '강사 분기에 제출 현황 재료가 없다');
+  // D: 주간 교안 초안 — weeklyJobs 편승·멱등(강사 편집 보존)·미배포 가드·과업 은행 20종
+  const wj = section('function weeklyJobs()', 'function monthlyJobs');
+  assert.ok(wj.includes('lessonPlanDrafts_') && wj.includes('주간 교안 초안'), 'weeklyJobs에 교안 초안 편승이 없다');
+  const lp = section('function lessonPlanDrafts_(', 'function lessonPlanTaskFor_(');
+  assert.ok(lp.includes('getFilesByName') && lp.includes('기존 유지'), '멱등(기존 문서 보존) 가드가 없다 — 강사 편집이 매주 덮인다');
+  assert.ok(lp.includes("typeof LESSON_TASK_BANK === 'undefined'"), 'contents_교안.js 미배포 가드가 없다(v9.57 크로스파일 계급)');
+  const bank = fs.readFileSync(path.join(ROOT, 'contents_교안.js'), 'utf8');
+  const ids = [...bank.matchAll(/\['(T-\d\d)'/g)].map((m) => m[1]);
+  assert.equal(ids.length, 20, '과업 은행은 20종이어야 한다');
+  assert.equal(new Set(ids).size, 20, '과업 ID가 중복됐다');
+  assert.ok(JSON.parse(fs.readFileSync(path.join(ROOT, '.clasp.json'), 'utf8')).filePushOrder.indexOf('contents_교안.js') > -1, 'filePushOrder에 contents_교안.js 누락');
+});
+
 test('[v9.82] 결석 신고 카드 — 접수 확인 3태·빈 상태·사유 이스케이프·재계산 동일값', () => {
   const ab = loadFunction('function absenceCardHtml_(', 'function teacherInOutMap_(', 'absenceCardHtml_',
     { escHtml_: (s) => String(s == null ? '' : s).replace(/</g, '&lt;'), CARD_FONT: '' });
