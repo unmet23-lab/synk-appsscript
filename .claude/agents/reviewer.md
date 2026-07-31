@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: 코드 변경을 수정하지 않고 read-only로 검토한다. Codex(또는 다른 세션)가 구현·커밋한 diff를 정확성·회귀·보안·테스트 누락 관점에서 리뷰할 때 사용. 직접 코드를 고치지 않는다.
+description: 코드 변경을 수정하지 않고 read-only로 검토한다. 다른 세션이 구현·커밋한 diff를 정확성·회귀·보안·테스트 누락 관점에서 리뷰할 때 사용. 직접 코드를 고치지 않는다.
 tools: Read, Glob, Grep, Bash
 model: opus
 ---
