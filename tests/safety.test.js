@@ -1616,11 +1616,20 @@ function runTeacherStats_({ profileRows, logs = [], oldStats = [] }) {
     'const TEACHER_STATS_HEADERS', 'function monthlyReport()', 'calcTeacherStats',
     {
       SpreadsheetApp: { getActiveSpreadsheet: () => ss },
-      Utilities: { formatDate: () => '2026-07' },
+      // [v9.107] 3지표가 'yyyy-MM-dd' 창을 만들므로 포맷별로 답해야 한다(왕관은 'yyyy-MM' 그대로)
+      Utilities: { formatDate: (d, tz, fmt) => (fmt === 'yyyy-MM' ? '2026-07' : '2026-08-01') },
       ymShift_: () => '2026-06',               // 전월 필터 기준 고정(시계 비의존)
       readPointLogs_: () => logs,
       teacherEmailMap_, classNumOf,
       ensureSheet: () => tsSheet,
+      // [v9.107] 3지표 의존 — 이 하네스는 academic_log·absence_followup·enrollments를 주지 않는다(전부 null).
+      //   즉 지표 열은 '미측정 빈칸' 경로를 타며, 그 경로가 기존 8열 계산을 깨지 않는지가 여기서 지켜진다.
+      ABSENCE_SEASON_DAYS: 56,
+      ABSENCE_FOLLOWUP_HEADERS: new Array(10).fill('h'),
+      absenceReturnStats_: () => ({}),
+      absenceReturnScore_: loadFunction('function absenceReturnState_', 'function checkNoShow()', 'absenceReturnScore_', {}),
+      dstr: (v) => String(v == null ? '' : v).slice(0, 10),
+      Logger: { log: () => {} },
       writeIfChanged: (sh, row, col, vals) => { sh.getRange(row, col, vals.length, vals[0].length).setValues(vals); }
     }
   );
@@ -1916,4 +1925,72 @@ test('[v9.100] 「담당 강사」는 한 축 — 결석 복귀율과 케어지�
   assert.ok(ts.includes('teachersOfClass_(emap, rawCls)'), 'teacher_stats가 공용 헬퍼를 안 쓴다');
   // 즉시 통보 경로는 이메일이 필요해 byClass를 그대로 쓴다 — 적재분(넓음)은 야간 byKey 역조회가 커버한다.
   assert.ok(ns.includes('(emapNS.byClass[num] || []).forEach'), '즉시 통보 경로(이메일 필요)가 사라졌다');
+});
+
+/* ── [v9.108] 인센티브 3지표 — 축(v9.87) 위에 얹은 승급 통과율·결석 복귀율·재등록률 ──────────
+ * 지켜야 할 단 하나의 원칙: **무데이터는 0%가 아니라 미측정(null)이다.**
+ * 앱이 못 잰 것을 0으로 환산하면 강사가 앱 결함으로 급여를 잃는다(v9.89가 세운 원칙의 확장). */
+
+test('[v9.108] 승급 통과율 — 창 이전 기준 급수가 있어야 판정, 없으면 미측정', () => {
+  const fn = loadFunction('const REENROLL_GRACE_DAYS', 'function calcTeacherStats()', 'promotionByStudent_', {});
+  const rows = [
+    { sid: 'S1', date: '2026-05-01', level: 2 }, { sid: 'S1', date: '2026-07-15', level: 3 }, // 올랐다
+    { sid: 'S2', date: '2026-05-01', level: 3 }, { sid: 'S2', date: '2026-07-15', level: 3 }, // 그대로
+    { sid: 'S3', date: '2026-07-10', level: 1 },                                              // 신규 — 비교 불가
+    { sid: 'S4', date: '2026-05-01', level: 4 }                                               // 창 내 기록 없음
+  ];
+  const v = fn(rows, '2026-06-01', '2026-08-01');
+  assert.equal(v.S1, true, '급수 상승을 승급으로 안 잡는다');
+  assert.equal(v.S2, false, '동일 급수를 승급으로 잘못 잡는다');
+  assert.equal(v.S3, null, '기준 급수 없는 신규 학생이 분모에 들어간다 — 신규가 많은 강사가 불리해진다');
+  assert.equal(v.S4, null, '창 내 평가가 없는데 판정한다');
+});
+
+test('[v9.108] 재등록률 — 만료 후 유예 중이면 보류(실패로 세지 않는다)', () => {
+  const fn = loadFunction('const REENROLL_GRACE_DAYS', 'function calcTeacherStats()', 'reenrollByStudent_', {});
+  const rows = [
+    { sid: 'S1', start: '2026-01-01', expire: '2026-06-30' }, { sid: 'S1', start: '2026-07-01', expire: '2026-12-31' },
+    { sid: 'S2', start: '2026-01-01', expire: '2026-06-01' },                       // 두 달 지나도 후속 없음
+    { sid: 'S3', start: '2026-02-01', expire: '2026-07-25' },                       // 만료 7일째 — 아직 판정 이르다
+    { sid: 'S4', start: '2025-01-01', expire: '2026-05-01' }                        // 창 밖 만료
+  ];
+  const v = fn(rows, '2026-06-01', '2026-08-01', '2026-08-01');
+  assert.equal(v.S1, true, '후속 등록을 재등록으로 안 잡는다');
+  assert.equal(v.S2, false, '유예가 한참 지난 미갱신을 실패로 안 잡는다');
+  assert.equal(v.S3, null, '만료 직후(유예 중)를 실패로 세면 월말 만료 학생이 강사 점수를 깎는다');
+  assert.equal(v.S4, null, '창 밖 만료가 분모에 들어간다');
+});
+
+test('[v9.108] 강사별 접기 — 미측정은 분모에서 빠지고, 판정 0건이면 비율 자체가 없다', () => {
+  const fn = loadFunction('const REENROLL_GRACE_DAYS', 'function calcTeacherStats()', 'rateByTeacher_', {});
+  const out = fn({ S1: true, S2: false, S3: null }, { 바트: { S1: 1, S2: 1, S3: 1 }, 에리카: { S3: 1 } });
+  assert.equal(out.바트.tot, 2, 'null이 분모에 들어갔다');
+  assert.equal(out.바트.rate, 50);
+  assert.equal(out.에리카.rate, null, '판정 0건인데 0%로 표기된다 — 무데이터가 최하점으로 둔갑한다');
+  assert.equal(out.에리카.tot, 0);
+});
+
+test('[v9.108] teacher_stats 14열 — 3지표가 축 위에 얹혔고, 미측정 행은 빈칸이다', () => {
+  const heads = code.match(/const TEACHER_STATS_HEADERS = \[([\s\S]*?)\];/)[1];
+  ['승급통과율%', '결석복귀율%', '재등록률%', '복귀배점', '지표모수'].forEach((h) => {
+    assert.ok(heads.includes(`'${h}'`), `헤더에 ${h} 없음`);
+  });
+  assert.equal(heads.split(',').filter((s) => s.trim()).length, 14, '헤더 폭이 14열이 아니다');
+  // 무데이터 → 빈칸(0 아님). **동작으로 검사한다** — 문자열 매칭만 두면 `null ? '' :`를 `null ? 0 :`으로
+  //   바꿔도 통과해 가드가 무력화된다(작성 중 변이 주입으로 실제 확인한 구멍).
+  const { rows } = runTeacherStats_({
+    profileRows: [mkTeacher('T1', '바트', '정규반1', 'bat@synk.im'), mkStu('S1', '정규반1', 10, 100, 2)]
+  });
+  const r = rows[0];
+  assert.equal(r.length, 14, '행 폭이 헤더(14열)와 다르다 — 열 밀림');
+  [9, 10, 11, 12].forEach((i) => assert.strictEqual(r[i], '',
+    `미측정 지표(${i}열)가 빈칸이 아니다 — 0%로 둔갑하면 강사가 앱 결함으로 급여를 잃는다`));
+  assert.equal(r[13], '승급 0 · 복귀 0 · 재등록 0', '지표모수 표기가 계약과 다르다');
+  const body = section('function calcTeacherStats()', 'function monthlyReport()');
+  assert.ok(body.includes("'승급 ' + pm.tot"), '분모(지표모수) 노출이 없다 — 80%가 5명 중 4명인지 알 수 없다');
+  // 지표별 격리: 한 시트가 없어도 나머지 계산이 죽으면 안 된다
+  assert.equal((body.match(/catch \(e(Pr|Ab|Re)\)/g) || []).length, 3, '지표 3종이 각각 try/catch로 격리돼 있지 않다');
+  // 결석 복귀율은 정본 재사용(규칙 중복 금지) + 공동 담당 분해
+  assert.ok(body.includes('absenceReturnStats_('), '결석 복귀율이 정본 함수를 안 쓰고 규칙을 복제했다');
+  assert.ok(body.includes("String(key).split('·')"), '담당강사 복수 표기가 각 강사에게 귀속되지 않는다');
 });

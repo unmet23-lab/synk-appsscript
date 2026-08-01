@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.107'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.107] STT 배선 — GCP Speech-to-Text 전사(서비스 계정 JWT·매니페스트 무변경)
+const SYNK_VERSION = 'v9.108'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.108] STT 배선 — GCP Speech-to-Text 전사(서비스 계정 JWT·매니페스트 무변경) · [v9.108] 인센티브 3지표(승급 통과율·결석 복귀율·재등록률) teacher_stats 편입 — v9.87이 고친 강사 축 위에 올린다
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -6177,7 +6177,12 @@ function checkEvolution() {
 
 // [v9.87] teacher_stats 헤더 정본 — SHEET_SKELETON(골격)과 calcTeacherStats(실사용)가 이 상수 하나를 함께 쓴다.
 //   v9.40에서 골격 구 3열 vs 실사용 8열이 어긋난 드리프트가 이미 한 번 났다 → 주석 경고 대신 단일 소스로 기계 강제.
-const TEACHER_STATS_HEADERS = ['강사', '담당학생수', '1인당출석', '1인당포인트', '1인당칭찬', '케어지수', '지난달왕관', '왕관편중%', '담당반'];
+// [v9.108] 인센티브 3지표(10~14열) 편입 — 축(A열 강사)이 v9.87에서 고쳐진 뒤 비로소 얹을 수 있게 된 것.
+//   ⚠ 무데이터는 0%가 아니라 **빈칸(미측정)**이다 — 앱이 못 잰 것을 0으로 환산하면 강사가 앱 결함으로 돈을 잃는다
+//   (v9.89 absenceReturnScore_가 세운 원칙을 3지표 전체로 확장). 분모는 '지표모수' 열에 그대로 노출해
+//   "80%"가 5명 중 4명인지 100명 중 80명인지 원장이 바로 판별하게 한다.
+const TEACHER_STATS_HEADERS = ['강사', '담당학생수', '1인당출석', '1인당포인트', '1인당칭찬', '케어지수', '지난달왕관', '왕관편중%', '담당반',
+                               '승급통과율%', '결석복귀율%', '재등록률%', '복귀배점', '지표모수'];
 const TEACHER_UNASSIGNED = '(미지정)'; // 담당 강사 매핑이 없는 반의 라벨 접두 — 학생이 조용히 증발하지 않게
 
 // [v9.87] 반명 → 담당 강사명 — 정본 매핑은 teacherEmailMap_.byClass(profiles 강사 행 E열, 쉼표 구분)다.
@@ -6212,6 +6217,84 @@ function teachersOfClass_(emap, cls) {
   return byNum.length === 1 ? byNum : []; // 번호가 여러 강사로 갈리면 폴백 포기(오귀속보다 미지정이 낫다)
 }
 
+/* ── [v9.108] 인센티브 3지표 — 학생 단위 판정 순수 함수 3종 ──────────────────
+ * 셋 다 "판정 불가 = null"을 반환한다(false가 아니다). 강사별 합산은 calcTeacherStats가
+ * null을 분모에서 빼는 방식으로 처리 — 무데이터가 0%로 둔갑하면 급여가 틀어진다.
+ * 시즌 창(8주=ABSENCE_SEASON_DAYS)은 결석 복귀율과 동일 창을 쓴다(등급 심사 주기 일치). */
+
+const REENROLL_GRACE_DAYS = 14; // 만료 후 이 기간이 안 지났으면 재등록 판정 보류(결석 '복귀 유예'와 같은 계급)
+
+// 승급 = 창 이전 마지막 급수 대비 창 내 마지막 급수가 올랐는가.
+//   levelRows = [{sid, date:'yyyy-MM-dd', level:Number}] (academic_log 유형 'level'만)
+//   기준 급수(창 이전 기록)가 없으면 신규 학생 → 비교 불가라 null(분모 제외).
+function promotionByStudent_(levelRows, fromStr, toStr) {
+  const agg = {};
+  (levelRows || []).forEach(r => {
+    const sid = String((r && r.sid) || '').trim();
+    const d = String((r && r.date) || '').slice(0, 10);
+    const lv = Number(r && r.level);
+    if (!sid || !d || !isFinite(lv)) return;
+    const o = agg[sid] || (agg[sid] = { base: null, baseD: '', last: null, lastD: '' });
+    if (d < fromStr) {                       // 창 이전 — 가장 나중 것이 기준 급수
+      if (!o.baseD || d >= o.baseD) { o.baseD = d; o.base = lv; }
+    } else if (d <= toStr) {                 // 창 안 — 가장 나중 것이 현재 급수
+      if (!o.lastD || d >= o.lastD) { o.lastD = d; o.last = lv; }
+    }
+  });
+  const out = {};
+  Object.keys(agg).forEach(sid => {
+    const o = agg[sid];
+    out[sid] = (o.base == null || o.last == null) ? null : (o.last > o.base);
+  });
+  return out;
+}
+
+// 재등록 = 창 안에 만료된 수강 건이, 만료일 이후 시작하는 후속 등록으로 이어졌는가.
+//   rows = [{sid, start:'yyyy-MM-dd', expire:'yyyy-MM-dd'}] (enrollments)
+//   만료 후 유예(REENROLL_GRACE_DAYS)가 안 지났고 후속도 없으면 아직 판정하지 않는다(null).
+function reenrollByStudent_(rows, fromStr, toStr, todayStr) {
+  const bySid = {};
+  (rows || []).forEach(r => {
+    const sid = String((r && r.sid) || '').trim();
+    if (!sid) return;
+    (bySid[sid] = bySid[sid] || []).push({
+      start: String((r && r.start) || '').slice(0, 10),
+      expire: String((r && r.expire) || '').slice(0, 10)
+    });
+  });
+  const out = {};
+  Object.keys(bySid).forEach(sid => {
+    const list = bySid[sid];
+    const due = list.filter(e => e.expire && e.expire >= fromStr && e.expire <= toStr);
+    if (!due.length) { out[sid] = null; return; }          // 창 안 만료 없음 = 판정 대상 아님
+    const last = due.sort((a, b) => (a.expire < b.expire ? -1 : 1))[due.length - 1];
+    const renewed = list.some(e => e.start && e.start > last.expire);
+    if (renewed) { out[sid] = true; return; }
+    out[sid] = daysBetweenStr_(last.expire, todayStr) >= REENROLL_GRACE_DAYS ? false : null; // 유예 중이면 보류
+  });
+  return out;
+}
+
+function daysBetweenStr_(a, b) { // 'yyyy-MM-dd' 두 개의 일수 차(b - a). 파싱 실패는 0.
+  const t1 = Date.parse(String(a) + 'T00:00:00Z'), t2 = Date.parse(String(b) + 'T00:00:00Z');
+  return (isFinite(t1) && isFinite(t2)) ? Math.round((t2 - t1) / 86400000) : 0;
+}
+
+// 학생별 판정({sid: true|false|null})을 강사별 비율로 접는다. null은 분모에서 빠진다.
+//   sidsOf = {강사: {sid:1,...}} — 판정이 없는 학생도 분모에 넣지 않는다(미측정 ≠ 실패).
+function rateByTeacher_(verdictBySid, sidsOf) {
+  const out = {};
+  Object.keys(sidsOf || {}).forEach(tn => {
+    let tot = 0, hit = 0;
+    Object.keys(sidsOf[tn] || {}).forEach(sid => {
+      const v = verdictBySid ? verdictBySid[sid] : undefined;
+      if (v === true || v === false) { tot++; if (v === true) hit++; }
+    });
+    out[tn] = { tot: tot, hit: hit, rate: tot ? Math.round(hit * 100 / tot) : null };
+  });
+  return out;
+}
+
 function calcTeacherStats() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pf = ss.getSheetByName('profiles');
@@ -6239,12 +6322,13 @@ function calcTeacherStats() {
     if (!memo[rawCls]) memo[rawCls] = teachersOfClass_(emap, rawCls);
     const names = memo[rawCls].length ? memo[rawCls] : [TEACHER_UNASSIGNED + ' ' + cls];
     names.forEach(nm => {
-      if (!t[nm]) t[nm] = { n: 0, att: 0, pts: 0, praise: 0, cls: {} };
+      if (!t[nm]) t[nm] = { n: 0, att: 0, pts: 0, praise: 0, cls: {}, sids: {} };
       t[nm].n++;
       t[nm].att += Number(r[21]) || 0;
       t[nm].pts += Number(r[16]) || 0;
       t[nm].praise += Number(r[23]) || 0;
       t[nm].cls[cls] = 1;
+      t[nm].sids[String(r[0]).trim()] = 1; // [v9.108] 인센티브 3지표는 학생 단위 판정 → 강사별로 접는다
     });
   });
 
@@ -6265,10 +6349,59 @@ function calcTeacherStats() {
     crownBy[cl].tot++;
     crownBy[cl].bySid[r[1]] = (crownBy[cl].bySid[r[1]] || 0) + 1;
   });
+  /* ── [v9.108] 인센티브 3지표 — 시즌 창(8주 = ABSENCE_SEASON_DAYS, 등급 심사 주기와 동일).
+   *   세 지표 모두 시트가 없거나 비어 있으면 조용히 건너뛴다(빈칸=미측정). 개원 전 로스터가 비어도
+   *   케어지수 계산 자체는 계속 돌아야 하므로 지표별로 격리한다 — 한 시트의 부재가 전체를 죽이면 안 된다. */
+  const todayS = Utilities.formatDate(new Date(), tz8, 'yyyy-MM-dd');
+  const fromS = Utilities.formatDate(new Date(Date.now() - ABSENCE_SEASON_DAYS * 86400000), tz8, 'yyyy-MM-dd');
+  const sidsOf = {};
+  Object.keys(t).forEach(k => { sidsOf[k] = t[k].sids; });
+
+  let promoBy = {};   // ① 승급 통과율 — academic_log 유형 'level'(급수 1~6, 강사 월 1회 입력)
+  try {
+    const ac = ss.getSheetByName('academic_log');
+    if (ac && ac.getLastRow() >= 2) {
+      const lv = ac.getRange(2, 1, ac.getLastRow() - 1, 7).getValues()
+        .filter(r => String(r[3] || '').trim() === 'level')
+        .map(r => ({ sid: String(r[1] || '').trim(), date: dstr(r[2], tz8), level: Number(r[4]) }));
+      promoBy = rateByTeacher_(promotionByStudent_(lv, fromS, todayS), sidsOf);
+    }
+  } catch (ePr) { Logger.log('승급 통과율 스킵: ' + ePr); }
+
+  const absBy = {};   // ② 결석 복귀율 — 정본은 absenceReturnStats_(v9.89). 규칙 중복 없이 그대로 재사용한다.
+  try {              //    담당강사 칸이 '김·박'처럼 복수면 각자에게 온전 귀속(v9.87 공동 담당 규칙과 동일 —
+    const af = ss.getSheetByName('absence_followup'); //  두 지표가 다른 귀속 규칙을 쓰면 강사별 합산이 어긋난다).
+    if (af && af.getLastRow() >= 2) {
+      const st = absenceReturnStats_(af.getRange(2, 1, af.getLastRow() - 1, ABSENCE_FOLLOWUP_HEADERS.length).getValues(), fromS, todayS);
+      Object.keys(st).forEach(key => {
+        const o = st[key];
+        String(key).split('·').map(s => s.trim()).filter(Boolean).forEach(nm => {
+          const a = absBy[nm] || (absBy[nm] = { judged: 0, ret: 0 });
+          a.judged += o.judged; a.ret += o.ret;
+        });
+      });
+    }
+  } catch (eAb) { Logger.log('결석 복귀율 스킵: ' + eAb); }
+
+  let reBy = {};      // ③ 재등록률 — enrollments(유호님 수기 시트). 만료 후 유예 중이면 판정 보류(null).
+  try {
+    const en = ss.getSheetByName('enrollments');
+    if (en && en.getLastRow() >= 2) {
+      const er = en.getRange(2, 1, en.getLastRow() - 1, 8).getValues()
+        .map(r => ({ sid: String(r[0] || '').trim(), start: dstr(r[2], tz8), expire: dstr(r[4], tz8) }));
+      reBy = rateByTeacher_(reenrollByStudent_(er, fromS, todayS, todayS), sidsOf);
+    }
+  } catch (eRe) { Logger.log('재등록률 스킵: ' + eRe); }
+
   const rows = Object.keys(t).map(k => {
     const v = t[k];
     const perAtt = v.att / v.n, perPts = v.pts / v.n, perPraise = v.praise / v.n;
     const clsList = Object.keys(v.cls).sort();
+    const pm = promoBy[k] || { tot: 0, rate: null };
+    const ab = absBy[k] || { judged: 0, ret: 0 };
+    const abRate = ab.judged ? Math.round(ab.ret * 100 / ab.judged) : null;
+    const abScore = absenceReturnScore_(abRate); // 급여 정본 §7 배점(20/16/12/6/0) — 승급·재등록은 배점표 미확정이라 비율만 낸다
+    const re = reBy[k] || { tot: 0, rate: null };
     // [v9.87] 왕관 총계 = 담당 반 합산 / 편중% = 반 단위 최댓값(가장 쏠린 반). 여러 반 학생을 한 통에 섞으면
     //   한 반의 100% 쏠림이 반 수만큼 희석돼 60% 경보가 죽는다 — 왕관은 반당 1명([v7.9])이라 공정성 단위도 반이다.
     let tot = 0, worst = 0;
@@ -6284,7 +6417,13 @@ function calcTeacherStats() {
     return [k, v.n, Number(perAtt.toFixed(1)), Number(perPts.toFixed(1)),
             Number(perPraise.toFixed(1)),
             Math.round(perAtt * 12 + perPts * 1), // [v7.9] 시냅스(반당 1명) 체제에서 praise 변별력 소멸 — 출석 중심 재조정
-            tot, worst, clsList.join(', ')];
+            tot, worst, clsList.join(', '),
+            // [v9.108] 인센티브 3지표 — 미측정은 빈칸(0%가 아니다). 분모는 '지표모수'에 그대로 노출한다.
+            pm.rate == null ? '' : pm.rate,
+            abRate == null ? '' : abRate,
+            re.rate == null ? '' : re.rate,
+            abScore == null ? '' : abScore,
+            '승급 ' + pm.tot + ' · 복귀 ' + ab.judged + ' · 재등록 ' + re.tot];
   }).sort((a, b) => b[5] - a[5]);
 
   const ts = ensureSheet(ss, 'teacher_stats', TEACHER_STATS_HEADERS);
