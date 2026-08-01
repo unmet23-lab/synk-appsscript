@@ -47,6 +47,10 @@
 <script>
 var BG='#0F1730', INK='#F6F1E8', SIG='#FF6B5C', PAPER='#FBF7EE', DARK='#171820',
     DIM='#98A2B3', BODY='#475467', BLUE='#4E7CFF';
+// 라이트 배경 위 "글자" 강조는 SIG(Coral)를 쓰지 않는다 — Paper 위 대비 2.6으로
+// 대형 텍스트 기준(3.0)에도 미달한다. Coral 3는 같은 자리에서 3.40으로 통과한다.
+// SIG는 다크 배경 텍스트(6.5)와 면·도형(막대·리소 원)에만 쓴다. 정본 v1.3 §11 참조.
+var SIG_TEXT='#E8543F';
 var FONT="'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif";
 var W=1080, H=1350, PAD=88;
 
@@ -97,7 +101,7 @@ function typeCard(c, idx, main, subLines, meta, hi){
       var seg=main[i].split('|');
       var x=PAD;
       for(var j=0;j<seg.length;j++){
-        c.fillStyle=(j%2===1)?SIG:DARK;
+        c.fillStyle=(j%2===1)?SIG_TEXT:DARK;
         c.fillText(seg[j], x, top+i*size*lh);
         x+=c.measureText(seg[j]).width;
       }
