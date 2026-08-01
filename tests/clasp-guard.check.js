@@ -7,13 +7,23 @@ const path = require('path');
 
 const GUARD = path.join(__dirname, '..', '.claude', 'hooks', 'clasp-guard.js');
 
-function feed(command) {
+function feed(command, cwd) {
+  const payload = { tool_name: 'Bash', tool_input: { command } };
+  if (cwd) payload.cwd = cwd; // 훅 입력의 cwd = 명령이 실제로 실행될 위치
   const r = spawnSync(process.execPath, [GUARD], {
-    input: JSON.stringify({ tool_name: 'Bash', tool_input: { command } }),
+    input: JSON.stringify(payload),
     encoding: 'utf8',
     timeout: 120000,
   });
   return { code: r.status, out: (r.stdout || '').trim() };
+}
+const PUSH = '"/c/Users/q1212/AppData/Roaming/npm/clasp.cmd" push --force';
+function denyReason(r) {
+  try {
+    const j = JSON.parse(r.out);
+    return (j.hookSpecificOutput && j.hookSpecificOutput.permissionDecision === 'deny')
+      ? String(j.hookSpecificOutput.permissionDecisionReason || '') : '';
+  } catch (_) { return ''; }
 }
 
 let fails = 0;
@@ -51,6 +61,34 @@ if (r.out === '') {
   check('push 게이트: deny JSON 형식', r.code === 0 && ok);
   console.log('  (현재 저장소 상태 기준 차단 사유)');
   console.log('  ' + JSON.parse(r.out).hookSpecificOutput.permissionDecisionReason.split('\n').join('\n  '));
+}
+
+// 5) 워크트리에서의 push → 워크트리 사유로 차단(08-01: 메인 상태를 보고 엉뚱한 진단을 내던 결함)
+//    라이브 타깃이 하나라 미병합 브랜치를 밀면 master의 최신 코드가 라이브에서 사라진다 → 허용이 아니라 정확한 차단.
+{
+  const fs = require('fs');
+  const wtDir = path.join(__dirname, '..', '.claude', 'worktrees');
+  let wt = '';
+  try {
+    wt = (fs.readdirSync(wtDir, { withFileTypes: true }).find((d) => d.isDirectory() &&
+      fs.existsSync(path.join(wtDir, d.name, '.git'))) || {}).name || '';
+  } catch (_) {}
+  if (!wt) {
+    console.log('skip 워크트리 차단 — 검사할 워크트리가 없음(정상: 전부 정리된 상태)');
+  } else {
+    const reason = denyReason(feed(PUSH, path.join(wtDir, wt)));
+    check('워크트리 push 차단', /워크트리에서는 clasp push/.test(reason));
+    check('워크트리 차단 사유에 복구 절차 포함', /메인 저장소.*\/deploy/s.test(reason));
+  }
+}
+
+// 6) 메인 저장소 cwd는 종전과 동일하게 동작한다(워크트리 차단이 정상 배포를 막지 않는다)
+{
+  const main = path.resolve(__dirname, '..');
+  const r = feed(PUSH, main);
+  const reason = denyReason(r);
+  check('메인 cwd는 워크트리로 오판하지 않음', !/워크트리에서는 clasp push/.test(reason));
+  check('메인 cwd 응답 형식 유지', r.code === 0 && (r.out === '' || reason !== ''));
 }
 
 process.exit(fails ? 1 : 0);
