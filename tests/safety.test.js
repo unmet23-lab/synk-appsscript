@@ -1901,3 +1901,19 @@ test('[v9.97] 스토리북 월 키 — Date 오염이 멱등 가드를 깨지 �
   assert.ok(fix.includes("getNumberFormat() !== '@'"), '서식 고정에 멱등 가드가 없다');
   assert.ok(fix.includes('if (fixed)'), '변경 행이 없어도 매번 setValues 한다');
 });
+
+test('[v9.100] 「담당 강사」는 한 축 — 결석 복귀율과 케어지수가 같은 헬퍼로 강사를 구한다', () => {
+  // 결함의 성질: 두 지표가 각자 반→강사 변환을 구현하면, 같은 반이 지표마다 다른 강사에게 귀속된다.
+  // 급여 정본 §7은 이 둘을 강사별로 합산하므로 축이 갈리면 인센티브 산정이 조용히 틀어진다.
+  // v9.87이 teacher_stats를 teachersOfClass_로 옮겼는데 결석 추적(v9.89) 적재부만 옛 방식으로 남아 있었다.
+  const ns = section('function checkNoShow()', 'function checkEvolution');
+  assert.ok(ns.includes('teachersOfClass_(emapNS, num)'),
+    '결석 적재부가 공용 헬퍼를 안 쓴다 — teacher_stats와 담당 강사가 갈린다');
+  assert.equal(/const tNames = \(emapNS\.byClass\[num\]/.test(ns), false,
+    'byClass 직접 조회가 되살아났다(괄호 반명·번호 폴백·중복 제거가 빠져 미배정 오경보가 는다)');
+  // 케어지수 쪽도 같은 헬퍼를 계속 쓰는지 — 한쪽만 바뀌면 다시 갈린다
+  const ts = section('function calcTeacherStats()', 'function monthlyReport()');
+  assert.ok(ts.includes('teachersOfClass_(emap, rawCls)'), 'teacher_stats가 공용 헬퍼를 안 쓴다');
+  // 즉시 통보 경로는 이메일이 필요해 byClass를 그대로 쓴다 — 적재분(넓음)은 야간 byKey 역조회가 커버한다.
+  assert.ok(ns.includes('(emapNS.byClass[num] || []).forEach'), '즉시 통보 경로(이메일 필요)가 사라졌다');
+});
