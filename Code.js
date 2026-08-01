@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.110'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로
+const SYNK_VERSION = 'v9.111'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -16192,6 +16192,71 @@ function onOpen() {
       .addItem('🔄 전체 재계산', 'calcAll')
       .addSeparator()
       .addItem('🩺 조립 진단(preflight)', 'preflightGlide')
+      .addSeparator()
+      // [v9.111] 온라인 강의 2종 — 순서대로 누르면 된다(자리 깔기 → URL 채우기 → 폼 만들기).
+      //   편집기 드롭다운은 배포 직후 새로고침 전까지 새 함수를 안 보여줘서 "함수가 없다"로 읽힌다.
+      .addItem('📚 강의 자리 깔기(1단계)', 'setupLectures')
+      .addItem('🎬 강의 수강 확인 폼(2단계)', 'createLectureForm')
       .addToUi();
   } catch (eMenu) { Logger.log('시트 메뉴 생성 스킵: ' + eMenu); } // UI 없는 컨텍스트(트리거 실행)에서는 조용히 통과
+}
+
+/* ===================== [v9.111] 📚 강의 카탈로그 시딩 =====================
+ * 유호님 08-01 확정: 녹화 강의를 따로 제작하지 않는다. **평일 수업을 녹화해 잘 된 것만 골라 올린다.**
+ *   그래서 카탈로그는 "만들어 둔 강의 목록"이 아니라 **채워질 자리의 목록**이다 —
+ *   시즌 시작 시점에 빈 칸(URL 없음)으로 32개를 깔아 두고, 녹화가 나오는 대로 URL만 채운다.
+ *
+ * 왜 미리 까는가: 이수율의 분모가 시즌 첫날부터 확정돼야 한다. 강의를 올릴 때마다 분모가 늘면
+ *   먼저 들은 학생이 계속 손해를 본다(3주차에 8/8이던 학생이 4주차에 8/12가 된다).
+ *   자리를 먼저 깔면 "아직 안 올라온 강의"와 "안 본 강의"가 구분되고, 학생은 자기 진도를 예측할 수 있다.
+ *
+ * 분량 = 주말반이 대면으로 못 채우는 몫. 평일 주 5차시 − 주말 대면 1차시 = **주 4차시** × 8주 = 32개/레벨·시즌.
+ *
+ * 멱등: 같은 강의ID가 이미 있으면 건드리지 않는다(URL·제목을 손으로 채워 둔 것을 덮어쓰지 않기 위해).
+ *   재실행은 빠진 자리만 추가한다.
+ */
+const LECTURE_WEEKS = 8;          // 시즌 8주 (커리큘럼 D2 확정)
+const LECTURE_PER_WEEK = 4;       // 평일 5차시 − 주말 대면 1차시
+const LECTURE_LEVELS_DEFAULT = ['Lv1', 'Lv2']; // 개원 초 수강생은 사실상 전원 Lv1~2 (커리큘럼 뼈대안 ⑤)
+
+// 강의ID 규칙 — 정렬하면 진도 순서 그대로. 사람이 읽고 바로 위치를 안다.
+//   L1-S1-W03-4 = Lv1 · 시즌1 · 3주차 · 4번째 차시
+function lectureIdOf_(level, season, week, no) {
+  return String(level).replace(/^Lv/i, 'L') + '-S' + season + '-W' + ('0' + week).slice(-2) + '-' + no;
+}
+
+/* ▶ 1회 — lectures 시트에 이번 시즌 자리를 깐다.
+ *   setupLectures()            = Lv1·Lv2 · 현재 시즌(app_state '현재시즌', 없으면 1)
+ *   setupLectures(['Lv3'], 2)  = 특정 레벨·시즌만 추가
+ *   URL은 비워 둔다 — 녹화가 나오는 대로 유호님이 그 칸에만 붙여넣으면 된다. */
+function setupLectures(levels, season) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const sh = ensureSheet(ss, 'lectures', LECTURE_HEADERS);
+  const sn = Number(season) || Number((getState(st, '현재시즌') || {}).val) || 1;
+  const lvs = (levels && levels.length) ? levels : LECTURE_LEVELS_DEFAULT;
+
+  const have = {};
+  if (sh.getLastRow() >= 2) sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues()
+    .forEach(function (r) { const id = String(r[0] || '').trim(); if (id) have[id] = 1; });
+
+  const rows = [];
+  lvs.forEach(function (lv) {
+    for (let w = 1; w <= LECTURE_WEEKS; w++) {
+      for (let n = 1; n <= LECTURE_PER_WEEK; n++) {
+        const id = lectureIdOf_(lv, sn, w, n);
+        if (have[id]) continue; // 이미 있으면 손대지 않는다(손으로 채운 URL·제목 보존)
+        rows.push([id, lv, sn, w, lv + ' 시즌' + sn + ' ' + w + '주차 ' + n + '차시', '', 'Y']);
+      }
+    }
+  });
+
+  if (rows.length) sh.getRange(sh.getLastRow() + 1, 1, rows.length, LECTURE_HEADERS.length).setValues(rows);
+  const msg = '강의 자리 ' + rows.length + '개 추가 (레벨 ' + lvs.join('·') + ' · 시즌 ' + sn + ')' +
+    (rows.length ? '' : ' — 이미 다 있어 변경 없음') +
+    '\n   다음: URL 칸(F열)에 녹화 링크를 채우세요. 비어 있어도 이수율 분모에는 들어갑니다.' +
+    '\n   필수(G열)를 Y가 아닌 값으로 바꾸면 그 강의는 분모에서 빠집니다.' +
+    '\n   그 다음: createLectureForm ▶ 1회 — 폼 선택지가 이 목록으로 만들어집니다.';
+  Logger.log(msg);
+  return msg;
 }
