@@ -195,12 +195,24 @@ test('20분 프로토콜이 조 편성표가 나가는 모든 경로에 실린�
 });
 
 test('학생 화면 오늘의만남(DY129) 배선 — 행 수 정합·수업 없는 날 공란', () => {
-  assert.ok(code.includes("pf.getRange('DY1').getValue()) !== '오늘의만남'"), 'DY129 헤더 보장이 없다');
+  assert.ok(code.includes("pf.getRange('DY1').setValue('오늘의만남')"), 'DY129 헤더 보장이 없다');
   assert.ok(code.includes('writeIfChanged(pf, 2, 129, meetOut)'), 'DY129 기입이 없다 — 이 검사·레지스트리 갱신 필요');
   assert.ok(code.includes('meetOut.push('), 'meetOut이 학생 루프에서 채워지지 않는다(행 수 어긋남 = 열 전체 밀림)');
   const fn = section('function todayPairsBySid_(', '/* [v9.99] 강사가 매 차시 보는');
   assert.ok(fn.includes('classDowOk_'), '수업 없는 날 가드가 없다 — 어제 짝이 남아 오정보가 된다');
   assert.ok(fn.includes('pairRoundsOf_'), '학생 화면 짝이 조 편성표와 다른 계산을 쓴다');
+});
+
+test('DY129 점거 가드 — 남의 헤더를 덮지 않는다(열 충돌 사고 2건의 회귀 장치)', () => {
+  const s = code.indexOf('⚠ 점거 가드(v9.84와 같은 계급)');
+  assert.notEqual(s, -1, 'DY129 점거 가드가 없다 — 헤더만 갈아끼우면 그 열의 실데이터가 통째로 밀린다');
+  const blk = code.slice(s, s + 1600);
+  assert.ok(/dyCur && dyCur !== '오늘의만남'/.test(blk), '남의 헤더 판정 분기가 없다');
+  // 충돌 분기 안에 기입이 있으면 가드가 무의미해진다 — 기입은 else(정상) 쪽에만 있어야 한다
+  const clash = blk.slice(blk.indexOf("dyCur && dyCur !== '오늘의만남'"), blk.indexOf('} else {'));
+  assert.ok(!clash.includes('writeIfChanged'), '충돌 상태인데도 기입한다 — 가드가 무력');
+  assert.ok(!clash.includes("setValue('오늘의만남')"), '충돌 상태인데 헤더를 덮어쓴다');
+  assert.ok(blk.includes("setState(stDY, '만남열충돌', '')"), '충돌 해소 시 재무장이 없다 — 다음 사고에 침묵한다');
 });
 
 test('출석 원본은 실행당 1회만 읽는다(반 18개 × 전체 읽기 방지)', () => {
