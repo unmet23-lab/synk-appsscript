@@ -68,6 +68,35 @@ test('[v9.106] 이수율 대상은 주말반 학생뿐이다 (평일반은 대�
   assert.ok(/필수|TRUE/.test(body), '필수 여부 필터가 없다');
 });
 
+/* ── ②-b 조인 키 — 라이브 실측으로 잡은 결함 3겹 (v9.118) ───── */
+
+test('[v9.118] 레벨은 profiles S열(18)에서 읽는다 — H열(연락처)을 레벨로 읽던 결함 차단', () => {
+  const body = section('function lectureRatesOf_(ss)', 'function createLectureForm()');
+  assert.ok(code.includes('const PROFILE_LEVEL_COL = 18'), '한국어수준 열 상수가 없다');
+  assert.ok(body.includes('r[PROFILE_LEVEL_COL]'), '레벨을 상수가 아닌 숫자로 읽는다');
+  // r[7]은 연락처다. 이 값을 레벨로 쓰면 전화번호와 레벨명을 비교하게 되어 영원히 안 맞는다
+  assert.equal(/const lv = String\(r\[7\]/.test(body), false, 'H열(연락처)을 레벨로 읽는 코드가 되살아났다');
+});
+
+test('[v9.118] profiles 읽기 폭이 S열에 닿는다 — 15열 고정이면 레벨이 undefined다', () => {
+  const body = section('function lectureRatesOf_(ss)', 'function createLectureForm()');
+  assert.equal(/pf\.getRange\(2, 1, pf\.getLastRow\(\) - 1, 15\)/.test(body), false,
+    '읽기 폭이 15열로 고정됐다 — 인덱스 18에 닿지 못한다');
+  assert.ok(/PROFILE_LEVEL_COL \+ 1/.test(body), '폭 보장이 레벨 열 기준이 아니다');
+});
+
+test('[v9.118] lectures 레벨 어휘 = profiles 한국어수준 어휘 (Lv1/Lv2는 조인 불가)', () => {
+  assert.ok(code.includes("const PROFILE_LEVELS = ['완전초보', '기초', '초중급', '중급', '고급']"),
+    'profiles 레벨 어휘 정본이 바뀌었다');
+  const def = code.match(/const LECTURE_LEVELS_DEFAULT = (\[[^\]]*\])/);
+  assert.ok(def, 'setupLectures 기본 레벨을 못 찾음');
+  const levels = JSON.parse(def[1].replace(/'/g, '"'));
+  const vocab = ['완전초보', '기초', '초중급', '중급', '고급'];
+  levels.forEach((lv) => assert.ok(vocab.includes(lv),
+    `기본 레벨 '${lv}'이 profiles 어휘에 없다 — 이수율이 조용히 무데이터가 된다`));
+  assert.equal(/Lv[1-6]/.test(def[1]), false, "구 'Lv1/Lv2' 어휘가 되살아났다");
+});
+
 /* ── ③ 적재 안전 — 포인터·중복 ───────────────────────────── */
 
 test('[v9.106] 스위프는 적재 뒤에 포인터를 마감한다 (메일 실패가 재적재를 부르지 않게)', () => {
