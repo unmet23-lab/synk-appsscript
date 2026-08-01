@@ -2,11 +2,11 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>SYNK FIELD 생성기 v1.2</title>
+<title>SYNK FIELD 생성기 v1.3</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&family=DM+Mono:wght@300;400;500&display=swap">
 <style>
-  :root{ --ink:#101014; --sub:#8A8F98; --line:#E5E7EB; --paper:#FDFCF8; }
+  :root{ --ink:#171820; --sub:#7A7566; --line:#E7DDC7; --paper:#FBF7EE; }
   *{ box-sizing:border-box; }
   body{ margin:0; background:var(--paper); color:var(--ink);
         font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
@@ -20,7 +20,7 @@
   input[type=text], textarea, select{ width:100%; font:inherit; font-size:13px; color:var(--ink);
     background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px 10px; outline:none; }
   textarea{ resize:vertical; min-height:64px; line-height:1.5; }
-  input:focus, textarea:focus, select:focus{ border-color:#3D5AFE; }
+  input:focus, textarea:focus, select:focus{ border-color:#FF6B5C; }
   .seg{ display:flex; gap:6px; }
   .seg button{ flex:1; font:inherit; font-size:12px; font-weight:500; padding:8px 4px; cursor:pointer;
     background:#fff; border:1px solid var(--line); border-radius:8px; color:var(--sub); }
@@ -44,7 +44,7 @@
 <div class="wrap">
   <div class="panel">
     <h1>SYNK FIELD 생성기</h1>
-    <p class="hint">정본 v1.2 · 모드와 카피를 넣고 PNG로 내려받으세요. 바탕·잉크 2색과 신호색 1점은 자동으로 지켜집니다. 배경 = 미드나잇 블루 #0B1A2E.</p>
+    <p class="hint">정본 v1.3 · 브랜드 키트 「v10 Crew Dossier」 반영. 모드와 카피를 넣고 PNG로 내려받으세요. 바탕·잉크 2색과 신호색 1점은 자동으로 지켜집니다. 다크 배경 = Navy 2 #0F1730 · 신호 = Coral #FF6B5C.</p>
 
     <div class="fld">
       <label>모드</label>
@@ -84,8 +84,8 @@
     <div class="fld">
       <label>신호색 (화면당 1점)</label>
       <div class="seg" id="sig">
-        <button data-v="orange" class="on">오렌지</button>
-        <button data-v="blue">블루</button>
+        <button data-v="coral" class="on">코랄</button>
+        <button data-v="blue">쿨블루(2도)</button>
         <button data-v="none">없음</button>
       </div>
     </div>
@@ -138,12 +138,12 @@
 
 <script>
 var SIZES = { '4:5':[1080,1350], '1:1':[1080,1080], '9:16':[1080,1920], 'A4':[1240,1754] };
-var SIG = { orange:'#FF6D00', blue:'#3D5AFE', none:null };
+var SIG = { coral:'#FF6B5C', blue:'#4E7CFF', none:null };
 var FONT = "'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif";
 
 var S = { mode:'dither', ratio:'4:5', label:'SYNK LAB',
           copy:'3개월 뒤,\n말이 트입니다', meta:'시즌 1 · 선착순 24명',
-          sig:'orange', seed:17, spokes:8, comp:'tr', obj:'toono' };
+          sig:'coral', seed:17, spokes:8, comp:'tr', obj:'toono' };
 
 var cv = document.getElementById('cv');
 
@@ -322,7 +322,7 @@ var OBJECTS = { toono:objToono, ignition:objIgnition, wave:objWave,
                 orbit:objOrbit, horizon:objHorizon, lattice:objLattice };
 
 function drawObject(ctx, W, H, u, R){
-  var img = ctx.getImageData(0,0,W,H), d = img.data, ink = rgb('#F5F1E8'), k;
+  var img = ctx.getImageData(0,0,W,H), d = img.data, ink = rgb('#F6F1E8'), k;
   function put(px, py){
     px = px|0; py = py|0;
     if(px<0||py<0||px>=W||py>=H) return;
@@ -345,8 +345,8 @@ function render(){
   var sig = SIG[S.sig];
   var copyArr = S.copy.split('\n');
   var isDark = (S.mode === 'dither');
-  var bg = isDark ? '#0B1A2E' : '#FDFCF8';
-  var ink = isDark ? '#F5F1E8' : '#101014';
+  var bg = isDark ? '#0F1730' : '#FBF7EE';
+  var ink = isDark ? '#F6F1E8' : '#171820';
   var dim = isDark ? '#8A8A94' : '#98A2B3';
 
   ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
@@ -360,18 +360,18 @@ function render(){
     else { ex=W*0.19; ey=H*0.24; }
     ew = W*0.62; eh = W*0.62;
     ctx.globalCompositeOperation = 'multiply';
-    ctx.globalAlpha = 0.80; ctx.fillStyle = '#3D5AFE';
+    ctx.globalAlpha = 0.80; ctx.fillStyle = '#4E7CFF';
     ctx.beginPath(); ctx.ellipse(ex+ew/2, ey+eh/2, ew/2, eh/2, 0, 0, 6.284); ctx.fill();
-    ctx.globalAlpha = 0.72; ctx.fillStyle = '#FF6D00';
+    ctx.globalAlpha = 0.72; ctx.fillStyle = '#FF6B5C';
     ctx.beginPath(); ctx.ellipse(ex+ew/2+13*u, ey+eh/2+11*u, ew/2, eh/2, 0, 0, 6.284); ctx.fill();
-    ctx.globalAlpha = 0.55; ctx.fillStyle = '#3D5AFE';
+    ctx.globalAlpha = 0.55; ctx.fillStyle = '#4E7CFF';
     ctx.fillRect(0, ey+eh+52*u, W, 11*u);
-    ctx.globalAlpha = 0.48; ctx.fillStyle = '#FF6D00';
+    ctx.globalAlpha = 0.48; ctx.fillStyle = '#FF6B5C';
     ctx.fillRect(0, ey+eh+57*u, W, 11*u);
     ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
   }
 
-  ctx.fillStyle = isDark ? 'rgba(245,241,232,.62)' : dim;
+  ctx.fillStyle = isDark ? 'rgba(246,241,232,.62)' : dim;
   ctx.font = '600 ' + Math.round(25*u) + 'px ' + FONT;
   ctx.textBaseline = 'alphabetic';
   tracked(ctx, S.label, pad, pad + 18*u, 5.4*u);
