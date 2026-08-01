@@ -2037,7 +2037,11 @@ test('[v9.107] 주간 통합 리포트 sections — 배열 요소 쉼표 누락 
   const stub = block.replace(/function\s*\([^)]*\)\s*\{[\s\S]*?\}(?=\s*\])/g, 'null')
                     .replace(/\b(systemWatchdog|weeklyReport|kpiSection_|updateBizDashboard|checkTuition|checkReenrollment|checkNewInquiries_)\b/g, 'null');
   let evaluated;
-  assert.doesNotThrow(() => { evaluated = eval('[' + stub + ']'); }, 'sections 배열이 평가되지 않는다');
+  // 닫는 `]` 앞의 개행은 필수다. sections 마지막 요소 뒤에는 `// [v9.106] …` 줄 주석이 붙어 있고,
+  //   block은 그 주석 끝에서 잘린다 — 개행 없이 `]`를 이으면 **닫는 괄호가 주석 안으로 들어가** 항상
+  //   "Unexpected end of input"이 난다. 이 가드는 그동안 CRLF 덕에만 살아 있었다(`\r`가 주석을 끊어줬다).
+  //   Code.js가 LF로 저장된 순간 조용히 죽어 배포 게이트를 상시 차단했다(08-01 실측).
+  assert.doesNotThrow(() => { evaluated = eval('[' + stub + '\n]'); }, 'sections 배열이 평가되지 않는다');
   evaluated.forEach((sec, i) => {
     assert.ok(sec && typeof sec[0] === 'string', `sections[${i}]가 undefined이거나 제목이 없다 — 쉼표 누락 계열 결함`);
   });

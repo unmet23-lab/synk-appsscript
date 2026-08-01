@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.120'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
+const SYNK_VERSION = 'v9.121'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -16225,6 +16225,59 @@ function lectureRatesOf_(ss) {
   return out;
 }
 
+/* [v9.121] 카탈로그 → 폼 선택지 문자열. 최초 생성과 이후 동기화가 **같은 모양**을 쓰도록 한 곳에서 만든다.
+ *   " - " 구분자는 계약이다 — sweepLectureForm_이 앞부분을 강의ID로 잘라 읽는다(모양이 갈리면 적재가 조용히 어긋난다).
+ *   200개 상한은 구글 폼 목록 문항의 현실적 한계 — 넘치면 뒤가 잘리므로 호출부가 개수를 보고한다. */
+function lectureChoices_(ss) {
+  const out = [];
+  const lc = ss.getSheetByName('lectures');
+  if (lc && lc.getLastRow() >= 2) lc.getRange(2, 1, lc.getLastRow() - 1, 5).getValues()
+    .forEach(function (r) { if (r[0]) out.push(String(r[0]).trim() + (r[4] ? ' - ' + r[4] : '')); });
+  return out.slice(0, 200);
+}
+
+/* [v9.121] ▶ 카탈로그가 바뀌면 폼 선택지도 따라가야 한다 — 그런데 아무도 따라가게 하지 않고 있었다.
+ *   createLectureForm은 「문항이 이미 있으면 손대지 않는다」. 응답 4열 계약을 지키려는 것이라 그 판단은 옳다.
+ *   대가는 **카탈로그와 폼의 영구 불일치**다: 08-01 실측에서 폐기된 Lv1/Lv2 64개가 폼에 그대로 남아 있었고,
+ *   학생이 그걸 고르면 lecture_views에 존재하지 않는 강의ID가 쌓여 이수율 분자가 영영 0이 된다.
+ *   해법은 재생성이 아니다(지웠다 만들면 응답 시트 열이 갈린다) — **같은 ListItem의 선택지만 교체**한다.
+ *   멱등: 같으면 안 건드리고 '변경 없음'을 돌려준다. */
+function syncLectureFormChoices() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const id = String((getState(st, '강의폼ID') || {}).val || '').trim();
+  if (!id) return '강의폼ID가 없습니다 — createLectureForm ▶ 을 먼저 실행하세요.';
+  const want = lectureChoices_(ss);
+  if (!want.length) return '카탈로그(lectures)가 비어 있어 선택지를 바꾸지 않았습니다 — setupLectures ▶ 를 먼저 실행하세요.';
+
+  const form = FormApp.openById(id);
+  const li = form.getItems(FormApp.ItemType.LIST)
+    .filter(function (it) { return String(it.getTitle()).trim() === '강의'; })[0];
+  if (!li) {
+    // 카탈로그가 비었던 시절에 만들어진 폼은 「강의」가 자유 입력(TEXT)이다. 유형을 갈아끼우면 응답 열이 갈리므로
+    //   조용히 고치지 않고 사실만 알린다 — 폼을 새로 만들지 말지는 사람이 정할 문제다.
+    return '폼에 목록형 「강의」 문항이 없습니다(자유 입력으로 만들어진 폼) — 선택지를 바꾸지 않았습니다.';
+  }
+  const item = li.asListItem();
+  const before = item.getChoices().map(function (c) { return c.getValue(); });
+  const same = before.length === want.length && before.every(function (v, i) { return v === want[i]; });
+  if (same) {
+    const msgS = '강의 선택지 ' + want.length + '개 — 카탈로그와 이미 같습니다(변경 없음).';
+    Logger.log(msgS);
+    return msgS;
+  }
+  item.setChoiceValues(want);
+  const gone = before.filter(function (v) { return want.indexOf(v) < 0; });
+  const add = want.filter(function (v) { return before.indexOf(v) < 0; });
+  const msg = '강의 선택지 교체: ' + before.length + '개 → ' + want.length + '개 (삭제 ' + gone.length + ' · 추가 ' + add.length + ')' +
+    '\n   첫 선택지: ' + want[0] +
+    '\n   끝 선택지: ' + want[want.length - 1] +
+    (want.length >= 200 ? '\n   ⚠ 200개 상한에 닿았습니다 — 카탈로그 뒷부분이 폼에서 잘렸습니다.' : '') +
+    '\n   ⚠ 이미 제출된 응답과 lecture_views는 손대지 않았습니다(구 강의ID로 적재된 행이 있으면 수동 정리).';
+  Logger.log(msg);
+  return msg;
+}
+
 /* [v9.106] 1회 실행 — 학생이 강의를 본 뒤 제출하는 확인 폼. 구글 폼 경로라 Glide update 소비 0.
  *   문항 3개 고정(응답 4열 계약 — sweep이 열 위치로 읽으므로 순서를 바꾸면 적재가 어긋난다).
  *   4단계 멱등은 v9.93 실사고 대응 패턴을 그대로 따른다(죽어도 재실행이 남은 단계만 이어서 한다). */
@@ -16260,17 +16313,19 @@ function createLectureForm() {
 
   // 3) 문항 3개 — 이미 있으면 손대지 않는다(지웠다 만들면 응답 열 계약이 깨진다)
   if (!form.getItems().length) {
-    const choices = [];
-    const lc = ss.getSheetByName('lectures');
-    if (lc && lc.getLastRow() >= 2) lc.getRange(2, 1, lc.getLastRow() - 1, 5).getValues()
-      .forEach(function (r) { if (r[0]) choices.push(String(r[0]).trim() + (r[4] ? ' - ' + r[4] : '')); });
+    const choices = lectureChoices_(ss);
     form.addTextItem().setTitle('이름').setRequired(true).setHelpText('앱에 등록된 이름 그대로 써 주세요');
-    if (choices.length) form.addListItem().setTitle('강의').setRequired(true).setChoiceValues(choices.slice(0, 200));
+    if (choices.length) form.addListItem().setTitle('강의').setRequired(true).setChoiceValues(choices);
     else form.addTextItem().setTitle('강의').setRequired(true).setHelpText('강의 번호를 그대로 적어 주세요');
     form.addParagraphTextItem().setTitle('오늘 배운 것을 한국어로 한 문장 쓰세요').setRequired(true)
       .setHelpText('짧아도 됩니다. 틀려도 됩니다 - 선생님이 봅니다.');
     step('문항 3개 추가' + (choices.length ? ' (강의 ' + choices.length + '개 선택지)' : ' (카탈로그가 비어 자유 입력)'));
-  } else step('문항 이미 있음 — 건너뜀');
+  } else {
+    // [v9.121] 구 동작은 여기서 그냥 '건너뜀'이었다. 그 결과 카탈로그를 갈아엎어도 폼은 폐기된 선택지를
+    //   계속 보여준다(08-01 실측: 폐기된 Lv1/Lv2 64개가 그대로 남아 있었다). 문항은 그대로 두고 선택지만 맞춘다.
+    step('문항 이미 있음 — 선택지만 카탈로그와 동기화');
+    step(syncLectureFormChoices().split('\n')[0]);
+  }
 
   // 4) 응답 시트 연결 — 가장 무거운 단계라 맨 뒤
   let linked = false;
@@ -16381,6 +16436,8 @@ function onOpen() {
       //   편집기 드롭다운은 배포 직후 새로고침 전까지 새 함수를 안 보여줘서 "함수가 없다"로 읽힌다.
       .addItem('📚 강의 자리 깔기(1단계)', 'setupLectures')
       .addItem('🎬 강의 수강 확인 폼(2단계)', 'createLectureForm')
+      // [v9.121] 시즌이 바뀌어 1단계를 다시 깔면 폼 선택지가 낡는다 — 2단계는 문항이 있으면 건너뛰므로 따라가지 않는다.
+      .addItem('🔄 폼 선택지 카탈로그와 맞추기(시즌 갱신)', 'syncLectureFormChoices')
       .addToUi();
   } catch (eMenu) { Logger.log('시트 메뉴 생성 스킵: ' + eMenu); } // UI 없는 컨텍스트(트리거 실행)에서는 조용히 통과
 }
