@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.123'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.123] 낡은 강의 자리 안전 정리 — 조준을 행 번호에서 내용으로 · [v9.122] 브랜드 폰트 3종을 앱 카드에 적용 — 스택 교체 + 웹폰트 로더 신설(이름만 바꾸면 전 카드가 폴백된다) · [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
+const SYNK_VERSION = 'v9.124'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.124] 메뉴 결과 가시화 + 이수율 조인 진단 · [v9.123] 낡은 강의 자리 안전 정리 — 조준을 행 번호에서 내용으로 · [v9.122] 브랜드 폰트 3종을 앱 카드에 적용 — 스택 교체 + 웹폰트 로더 신설(이름만 바꾸면 전 카드가 폴백된다) · [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -16241,6 +16241,92 @@ function lectureRatesOf_(ss) {
   return out;
 }
 
+/* [v9.124] 메뉴에서 부른 결과를 **눈에 보이게** 한다.
+ *   지금까지 메뉴 항목은 `Logger.log`만 남겼다 — 실행 로그는 편집기를 열어야 보이므로, 유호님 입장에서는
+ *   누르면 **아무 일도 안 일어난 것처럼 보인다.** 그 결과가 확인 없는 재클릭이고, 멱등이 아닌 함수에서는
+ *   그게 곧 사고다. 실패도 반드시 보여준다 — 조용히 실패하면 "했다"고 믿은 채 다음 단계로 간다.
+ *   throw를 다시 올리는 이유: alert만 띄우고 삼키면 실행 기록에 「완료됨」으로 남아 사후 추적이 거짓말을 한다. */
+function menuRun_(fn) {
+  const ui = SpreadsheetApp.getUi();
+  let out;
+  try {
+    out = String(fn() || '(반환값 없음)');
+  } catch (err) {
+    ui.alert('❌ 실패했습니다\n\n' + String(err && err.message || err).slice(0, 800) +
+      '\n\n아무것도 바뀌지 않았을 수 있습니다. 이 문구를 그대로 알려 주세요.');
+    throw err;
+  }
+  ui.alert(out.length > 1400 ? out.slice(0, 1400) + '\n\n…(이하 생략 — 전체는 실행 로그)' : out);
+}
+function menuSetupLectures() { menuRun_(setupLectures); }
+function menuCreateLectureForm() { menuRun_(createLectureForm); }
+function menuPruneStaleLectures() { menuRun_(pruneStaleLectures); }
+function menuSyncLectureForm() { menuRun_(syncLectureFormChoices); }
+function menuLectureJoinDiag() { menuRun_(lectureJoinDiag); }
+
+/* [v9.124] ▶ 읽기 전용 — 「이수율 조인이 실제로 붙는가」에 한 화면으로 답한다.
+ *   이 질문이 따로 필요한 이유: 조인이 깨져도 **에러가 안 난다.** 그냥 rate=null(무데이터)로 조용히 떨어지고,
+ *   주간 리포트에서는 섹션이 통째로 빠져 「원래 그런 주」와 구별되지 않는다. v9.118·v9.119가 같은 자리에서
+ *   세 번 틀린 이유가 그것이다 — 틀렸다는 신호가 어디에도 없었다. 그래서 신호를 만든다. */
+function lectureJoinDiag() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const lec = ss.getSheetByName('lectures');
+  const pf = ss.getSheetByName('profiles');
+  if (!lec || lec.getLastRow() < 2) return '카탈로그(lectures)가 비어 있습니다 — 「📚 강의 자리 깔기」를 먼저 누르세요.';
+  if (!pf || pf.getLastRow() < 2) return 'profiles가 비어 있습니다 — 동기화 먼저.';
+
+  const season = Number((getState(ensureSheet(ss, 'app_state', ['key', 'value']), '현재시즌') || {}).val) || 0;
+  const cat = {};
+  lec.getRange(2, 1, lec.getLastRow() - 1, LECTURE_HEADERS.length).getValues().forEach(function (r) {
+    if (!String(r[0] || '').trim()) return;
+    const lv = String(r[1] || '').trim() || '*';
+    cat[lv] = cat[lv] || { all: 0, req: 0 };
+    cat[lv].all++;
+    const isReq = /^(Y|O|1|필수|TRUE|true)$/.test(String(r[6] == null ? '' : r[6]).trim());
+    const inSeason = !(season && Number(r[2]) && Number(r[2]) !== season);
+    if (isReq && inSeason) cat[lv].req++;
+  });
+
+  const lvCol = profileLevelCol_(pf);
+  const smap = scheduleMap(ss);
+  const dist = {};
+  let weekend = 0;
+  pf.getRange(2, 1, pf.getLastRow() - 1, pf.getLastColumn()).getValues().forEach(function (r) {
+    if (!r[0] || r[3] !== 'student') return;
+    const sch = schedOf(smap, String(r[4] || '').trim());
+    if (!sch || sch.type !== '주말') return;
+    weekend++;
+    const k = lvCol < 0 ? '(레벨 열 없음)' : (String(r[lvCol] || '').trim() || '(공란)');
+    dist[k] = (dist[k] || 0) + 1;
+  });
+
+  const m = lectureRatesOf_(ss);
+  const ids = Object.keys(m);
+  const scored = ids.filter(function (s) { return m[s].rate !== null; });
+
+  // 붙지 않은 레벨 = 학생은 있는데 그 레벨의 필수 강의가 0개인 것. 이것이 조인 실패의 유일한 실제 모양이다.
+  const orphan = Object.keys(dist).filter(function (k) {
+    return !(cat[k] && cat[k].req) && !(cat['*'] && cat['*'].req);
+  });
+
+  return '🎬 온라인 강의 이수율 — 조인 진단\n\n' +
+    '① 레벨 열: ' + (lvCol < 0 ? '❌ profiles에 「' + PROFILE_LEVEL_HEADER + '」 헤더가 없습니다(레벨 매칭 불가)' : '✅ ' + (lvCol + 1) + '번째 열') + '\n' +
+    '② 현재 시즌: ' + (season || '(미설정 — 모든 시즌을 분모에 넣습니다)') + '\n' +
+    '③ 카탈로그 레벨별 (전체/필수):\n   ' +
+      (Object.keys(cat).length ? Object.keys(cat).map(function (k) { return k + ' ' + cat[k].all + '/' + cat[k].req; }).join(' · ') : '(없음)') + '\n' +
+    '④ 주말반 학생 ' + weekend + '명 레벨 분포:\n   ' +
+      (weekend ? Object.keys(dist).map(function (k) { return k + ' ' + dist[k] + '명'; }).join(' · ') : '(주말반 학생 없음 — 시간표 반유형이 「주말」인 반에 학생이 있어야 합니다)') + '\n' +
+    '⑤ 이수율 산출: ' + scored.length + '명 / 대상 ' + ids.length + '명' +
+      (scored.length ? '\n   ' + scored.slice(0, 8).map(function (s) { return m[s].name + ' ' + m[s].done + '/' + m[s].total; }).join(' · ') : '') + '\n\n' +
+    (scored.length
+      ? '판정: ✅ 조인 성립 — 이수율이 실제로 계산됩니다.'
+      : '판정: ⚠ 아직 아무도 산출되지 않습니다.\n   원인 = ' +
+        (lvCol < 0 ? '레벨 열 없음'
+          : !weekend ? '주말반 학생 0명'
+          : orphan.length ? '학생 레벨 「' + orphan.join('·') + '」에 배정된 필수 강의가 0개 — **카탈로그 레벨 어휘가 학생 레벨과 다릅니다**'
+          : '알 수 없음(위 ①~④를 그대로 알려 주세요)'));
+}
+
 /* [v9.123] 지금 실제로 쓰이는 레벨 어휘 = 상수 ∪ profiles 「한국어수준」에 실재하는 값.
  *   상수만 믿으면 유호님이 profiles에 새 레벨을 추가한 순간 그 레벨의 강의 자리가 '낡은 것'으로 오판된다.
  *   그래서 **살아 있는 쪽을 시트에서 읽어 합집합**을 만든다 — 판단이 틀리는 방향을 항상 '안 지우는' 쪽으로 기울인다. */
@@ -16528,12 +16614,14 @@ function onOpen() {
       .addSeparator()
       // [v9.111] 온라인 강의 2종 — 순서대로 누르면 된다(자리 깔기 → URL 채우기 → 폼 만들기).
       //   편집기 드롭다운은 배포 직후 새로고침 전까지 새 함수를 안 보여줘서 "함수가 없다"로 읽힌다.
-      .addItem('📚 강의 자리 깔기(1단계)', 'setupLectures')
-      .addItem('🎬 강의 수강 확인 폼(2단계)', 'createLectureForm')
+      .addItem('📚 강의 자리 깔기(1단계)', 'menuSetupLectures')
+      .addItem('🎬 강의 수강 확인 폼(2단계)', 'menuCreateLectureForm')
       // [v9.123] 레벨 어휘가 바뀌면 구 자리가 유령으로 남는다 — 4중 잠금이라 잘못 눌러도 손실 0(함수 주석 참조).
-      .addItem('🧹 낡은 강의 자리 걷어내기', 'pruneStaleLectures')
+      .addItem('🧹 낡은 강의 자리 걷어내기', 'menuPruneStaleLectures')
       // [v9.121] 시즌이 바뀌어 1단계를 다시 깔면 폼 선택지가 낡는다 — 2단계는 문항이 있으면 건너뛰므로 따라가지 않는다.
-      .addItem('🔄 폼 선택지 카탈로그와 맞추기(시즌 갱신)', 'syncLectureFormChoices')
+      .addItem('🔄 폼 선택지 카탈로그와 맞추기(시즌 갱신)', 'menuSyncLectureForm')
+      // [v9.124] 읽기 전용 — 조인이 깨져도 에러가 안 나므로 물어볼 곳이 필요하다.
+      .addItem('🔎 이수율 조인 진단(읽기 전용)', 'menuLectureJoinDiag')
       .addToUi();
   } catch (eMenu) { Logger.log('시트 메뉴 생성 스킵: ' + eMenu); } // UI 없는 컨텍스트(트리거 실행)에서는 조용히 통과
 }

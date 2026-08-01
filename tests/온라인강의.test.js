@@ -191,7 +191,7 @@ test('[v9.121] 카탈로그 재시딩 뒤 폼이 낡은 채 남지 않는다 (�
   const create = section('function createLectureForm()', 'function sweepLectureForm_(ss)');
   assert.ok(create.includes('syncLectureFormChoices()'),
     '문항이 이미 있을 때 그냥 건너뛴다 — 카탈로그를 갈아엎어도 폼이 따라가지 않는다(08-01 실사고)');
-  assert.ok(code.includes("'syncLectureFormChoices'"), '시트 메뉴에 없다 — 유호님이 시즌마다 실행할 경로가 없다');
+  assert.ok(code.includes("'menuSyncLectureForm'"), '시트 메뉴에 없다 — 유호님이 시즌마다 실행할 경로가 없다(v9.124부터 래퍼 경유)');
 });
 
 /* ── ⑦ [v9.123] 낡은 자리 정리는 '지우지 않는 쪽'으로 틀린다 ──
@@ -224,7 +224,7 @@ test('[v9.123] 남긴 이유와 지운 내역을 보고한다 (조용한 삭제 
   const body = section('function pruneStaleLectures()', 'function lectureChoices_(ss)');
   assert.ok(body.includes('keep.push('), '남긴 행을 모으지 않는다 — 왜 안 지웠는지 알 수 없다');
   assert.ok(/첫 삭제/.test(body) && /끝 삭제/.test(body), '지운 범위를 보고하지 않는다');
-  assert.ok(code.includes("'pruneStaleLectures'"), '시트 메뉴에 없다 — 유호님이 실행할 경로가 없다');
+  assert.ok(code.includes("'menuPruneStaleLectures'"), '시트 메뉴에 없다 — 유호님이 실행할 경로가 없다(v9.124부터 래퍼 경유)');
 });
 
 test('[v9.123] 자동 제목 재구성은 제목이 아니라 강의ID에서 차시를 얻는다(순환 금지)', () => {
@@ -315,4 +315,36 @@ test('[v9.123] 여러 행을 지워도 행 번호가 밀리지 않는다 (실행
   assert.deepEqual(r.remaining, ['완전초보-S1-W01-1', '기초-S1-W01-1'],
     '위에서부터 지워 남은 행이 밀렸다 — 멀쩡한 행이 함께 사라진다');
   assert.deepEqual(r.deleted, [6, 5, 3], '삭제가 역순(아래→위)이 아니다');
+});
+
+/* ── ⑨ [v9.124] 눌렀는데 아무 일도 안 일어난 것처럼 보이면 안 된다 ──
+ * 메뉴 항목이 Logger.log만 남기면 유호님은 성공·실패를 구별할 수 없다. 확인 없는 재클릭이 사고가 된다. */
+
+test('[v9.124] 강의 메뉴 5종은 결과를 보여주는 래퍼를 부른다', () => {
+  ['menuSetupLectures', 'menuCreateLectureForm', 'menuPruneStaleLectures', 'menuSyncLectureForm', 'menuLectureJoinDiag']
+    .forEach((fn) => {
+      assert.ok(code.includes(`'${fn}'`), `메뉴가 ${fn}을 부르지 않는다`);
+      assert.ok(code.includes(`function ${fn}()`), `${fn} 정의가 없다 — 메뉴에서 'Script function not found'`);
+    });
+  // 원본 함수를 메뉴에 직접 걸면 결과가 안 보이던 상태로 되돌아간다
+  ['setupLectures', 'createLectureForm', 'pruneStaleLectures', 'syncLectureFormChoices'].forEach((fn) => {
+    assert.equal(code.includes(`.addItem('📚 강의 자리 깔기(1단계)', '${fn}')`), false, `${fn}이 메뉴에 직접 걸렸다`);
+  });
+});
+
+test('[v9.124] 실패는 alert로 보이고, 실행 기록에도 실패로 남는다', () => {
+  const body = section('function menuRun_(fn)', 'function menuSetupLectures()');
+  assert.ok(body.includes('ui.alert('), '결과를 안 보여준다');
+  assert.ok(/catch \(err\)/.test(body) && body.includes('throw err'),
+    '오류를 삼킨다 — alert만 띄우고 삼키면 실행 기록에 「완료됨」으로 남아 사후 추적이 거짓말을 한다');
+});
+
+test('[v9.124] 조인 진단은 읽기 전용이고, 안 붙을 때 원인을 지목한다', () => {
+  const body = section('function lectureJoinDiag()', 'function liveLectureLevels_(ss)');
+  assert.equal(/setValues\(|deleteRows\(|setState\(|appendRow\(/.test(body), false,
+    '진단이 시트를 쓴다 — 읽기 전용이어야 아무 때나 눌러도 안전하다');
+  assert.ok(body.includes('profileLevelCol_(pf)') && body.includes('lectureRatesOf_(ss)'),
+    '실제 조인 경로가 아니라 다른 계산을 본다 — 진단이 본체와 갈리면 거짓 안심을 준다');
+  assert.ok(/orphan/.test(body), '학생 레벨에 배정된 필수 강의가 0개인 경우를 지목하지 않는다(조인 실패의 실제 모양)');
+  assert.ok(/조인 성립/.test(body) && /원인 = /.test(body), '판정과 원인을 문장으로 내지 않는다');
 });
