@@ -33,27 +33,29 @@ const { SCHEDULE_HEADERS, CLASS_CAP_DEFAULT, CORE_ROOMS_DEFAULT, ROOM_LETTERS, C
 
 /* ── ① 급여 인센티브 정본 v1.1 §1과의 대조 ────────────────────── */
 
-test('[v9.95] 개원 = 3실 18반 · 전 반 16명 · 288석 (급여 정본 v1.1 §1)', () => {
-  const rows = buildCoreSchedule_();                       // 인자 생략 = 개원 기본값
-  assert.equal(rows.length, 18, '개원 반 수가 18반이 아니다');
+test('[v9.102] 기준선 = 4실 24반 · 전 반 16명 · 384석 (유호 08-01 4실 확정)', () => {
+  const rows = buildCoreSchedule_();                       // 인자 생략 = 확정 기준선
+  assert.equal(rows.length, 24, '기준선 반 수가 24반이 아니다');
+  assert.equal(CORE_ROOMS_DEFAULT, 4, '기본값이 4실이 아니다 — 08-01 3실 폐기 확정');
   assert.equal(CLASS_CAP_DEFAULT, 16, '전 반 정원이 16명이 아니다(급여 정본 §1)');
 
   const seats = rows.reduce((s, r) => s + Number(r[3]), 0);
-  assert.equal(seats, 288, `좌석 합계가 288석이 아니다(실측 ${seats}석)`);
+  assert.equal(seats, 384, `좌석 합계가 384석이 아니다(실측 ${seats}석)`);
 
   const weekday = rows.filter((r) => r[1] === '평일');
   const weekend = rows.filter((r) => r[1] === '주말');
-  assert.equal(weekday.length, 12, '평일 코어가 12반이 아니다');
-  assert.equal(weekend.length, 6, '주말 코어가 6반이 아니다');
-  assert.equal(weekday.reduce((s, r) => s + Number(r[3]), 0), 192, '평일 좌석이 192석이 아니다');
-  assert.equal(weekend.reduce((s, r) => s + Number(r[3]), 0), 96, '주말 좌석이 96석이 아니다');
+  assert.equal(weekday.length, 16, '평일 코어가 16반이 아니다');
+  assert.equal(weekend.length, 8, '주말 코어가 8반이 아니다');
+  assert.equal(weekday.reduce((s, r) => s + Number(r[3]), 0), 256, '평일 좌석이 256석이 아니다');
+  assert.equal(weekend.reduce((s, r) => s + Number(r[3]), 0), 128, '주말 좌석이 128석이 아니다');
 });
 
-test('[v9.95] 확장 3단계 = 4실 24반 · 384석', () => {
-  const rows = buildCoreSchedule_(4);
-  assert.equal(rows.length, 24, '4실 반 수가 24반이 아니다');
-  assert.equal(rows.reduce((s, r) => s + Number(r[3]), 0), 384, '4실 좌석이 384석이 아니다');
-  assert.equal(CORE_ROOMS_DEFAULT, 3, '개원 기본값이 3실이 아니다 — 4실은 인자로만 열어야 한다');
+test('[v9.102] 램프업은 인자로 남아 있다 — 2실 192석 · 3실 288석', () => {
+  // 개원 초 좌석이 남으면 작은 수로 열고 채워지면 재실행한다(표시명은 보존되므로 이름이 안 날아간다)
+  assert.equal(buildCoreSchedule_(2).reduce((s, r) => s + Number(r[3]), 0), 192, '2실 좌석이 192석이 아니다');
+  assert.equal(buildCoreSchedule_(3).reduce((s, r) => s + Number(r[3]), 0), 288, '3실 좌석이 288석이 아니다');
+  assert.equal(buildCoreSchedule_(2).length, 12, '2실 반 수가 12반이 아니다');
+  assert.equal(buildCoreSchedule_(3).length, 18, '3실 반 수가 18반이 아니다');
 });
 
 test('[v9.95] 반 수 = 슬롯 수 × 실 수 (표를 늘려도 산수가 깨지지 않는다)', () => {
