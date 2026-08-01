@@ -25,7 +25,14 @@ description: SYNK 배포 3종 세트 — 구문검사(node --check) → git 커�
    ```
    **`fail` 0이 아니면 배포 중단**(`todo`는 미구현 후속 과제 표시라 무시). 정상 리팩터로 마커 문자열이 바뀌어 실패하면 테스트를 함께 갱신하고 재실행한다.
 3. **appsscript.json 검증**: `node -e "JSON.parse(require('fs').readFileSync('appsscript.json','utf8'))"` — 임시 webapp 설정 등 검증 잔재가 남아있지 않은지 눈으로도 확인.
-4. **커밋**: `git diff --stat`으로 내 작업만 들어있는지 확인 후 커밋. 메시지 형식: `[v9.xx] 제목 — 요약` + `Co-Authored-By: Claude <모델명> <noreply@anthropic.com>`.
+4. **버전 채번 → 커밋**
+   - Code.js·contents_*.js를 고쳤으면 **번호를 직접 고르지 말고 채번기를 쓴다**:
+     ```bash
+     node tools/bump-version.js --desc "한 줄 요약"
+     ```
+     origin/master·로컬 브랜치 전부·예약 태그를 훑어 다음 번호를 정하고, **그 번호를 태그로 origin에 push해 원자적으로 예약**한 뒤 `SYNK_VERSION`에 기입한다. 두 세션이 같은 순간에 돌려도 한쪽만 성공한다(2026-08-01 하루 6회 동시 발번의 근본 대책 — 사람이 고르는 한 충돌은 반복된다). 조회만 하려면 `--dry`.
+   - 그 다음 `git diff --stat`으로 내 작업만 들어있는지 확인하고 커밋. 메시지 형식: `[v9.xx] 제목 — 요약`(채번기가 알려준 번호 그대로) + `Co-Authored-By: Claude <모델명> <noreply@anthropic.com>`.
+   - `docs/버전_이력.md` 맨 아래에 같은 번호로 한 줄 추가.
 5. **GitHub 백업**: `git push origin master`.
 6. **라이브 배포**: `clasp push --force`.
 7. **보고**: 커밋 해시 + "GitHub·라이브 동기화 완료"를 1줄로. 트리거가 코드를 쓰는 시각(07시 morning, 14/22시 calc, 월 07시 weekly)을 감안해 첫 실전 작동 시점을 알려줄 것.
