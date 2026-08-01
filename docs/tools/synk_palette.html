@@ -2,94 +2,113 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>SYNK FIELD 팔레트 v1.2</title>
+<title>SYNK 팔레트 v1.3 — v10 Crew Dossier 19색</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&family=DM+Mono:wght@300;400;500&display=swap">
 <style>
-  :root{ --ink:#101014; --sub:#8A8F98; --line:#E7E5E0; }
+  :root{ --ink:#171820; --sub:#7A7566; --line:#E7DDC7; }
   *{ box-sizing:border-box; }
-  body{ margin:0; padding:38px 40px 60px; background:#FDFCF8; color:var(--ink);
+  body{ margin:0; padding:38px 40px 60px; background:#FBF7EE; color:var(--ink);
         font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
   .wrap{ max-width:1000px; margin:0 auto; }
   h1{ font-size:19px; font-weight:600; letter-spacing:-.01em; margin:0 0 5px; }
   .sub{ font-size:12.5px; color:var(--sub); margin:0 0 6px; line-height:1.6; }
   .sec{ font-size:12px; font-weight:600; letter-spacing:.03em; color:var(--sub);
         margin:38px 0 13px; padding-bottom:8px; border-bottom:1px solid var(--line); }
+  .sec span{ font-weight:400; opacity:.8; }
   .row{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .row5{ display:grid; grid-template-columns:repeat(5,1fr); gap:11px; }
   .chip{ border-radius:12px; padding:17px 16px; height:124px; cursor:pointer;
          display:flex; flex-direction:column; justify-content:space-between;
          border:1px solid rgba(0,0,0,.07); transition:transform .12s ease; }
   .chip:hover{ transform:translateY(-2px); }
+  .chip.sm{ height:82px; padding:12px 12px; border-radius:10px; }
   .role{ font-size:11.5px; font-weight:500; opacity:.72; }
   .nm{ font-size:12.5px; font-weight:500; }
-  .hx{ font-size:15px; font-weight:500; letter-spacing:.01em; margin-top:2px; }
+  .chip.sm .nm{ font-size:11.5px; }
+  .hx{ font-size:15px; font-weight:500; letter-spacing:.01em; margin-top:2px;
+       font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace; }
+  .chip.sm .hx{ font-size:12px; }
   .use{ font-size:11.5px; color:var(--sub); margin-top:9px; line-height:1.5; }
+  .chip.sm + .use{ margin-top:6px; font-size:11px; }
   .mp{ border-radius:12px; overflow:hidden; position:relative; height:170px; border:1px solid rgba(0,0,0,.07); }
   .mp canvas{ display:block; width:100%; height:170px; }
   .rule{ font-size:13px; line-height:2.05; color:#3F4650; }
   .rule b{ font-weight:600; color:var(--ink); }
+  .rule .warn{ color:#E8543F; font-weight:600; }
   .mini{ display:flex; gap:9px; flex-wrap:wrap; }
   .mini > div{ flex:1; min-width:110px; }
   .bar{ height:34px; border-radius:8px; }
+  .note{ background:#FFE9E4; border-radius:10px; padding:14px 16px; font-size:12.5px;
+         line-height:1.75; color:#3F4650; margin-top:14px; }
+  .note b{ color:#171820; }
   .toast{ position:fixed; left:50%; bottom:34px; transform:translateX(-50%) translateY(20px);
-          background:#0B1A2E; color:#F5F1E8; font-size:12.5px; padding:9px 18px; border-radius:99px;
+          background:#0F1730; color:#F6F1E8; font-size:12.5px; padding:9px 18px; border-radius:99px;
+          font-family:'DM Mono',ui-monospace,monospace;
           opacity:0; transition:all .18s ease; pointer-events:none; }
   .toast.on{ opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>SYNK FIELD 팔레트</h1>
-  <p class="sub">정본 v1.2 · 2026-07-28 확정 — 색 칩을 클릭하면 HEX가 복사됩니다.</p>
-  <p class="sub">바탕과 잉크 2색만 쓴다. 그래서 색 한 점이 형광펜 열 자루 값을 한다.</p>
+  <h1>SYNK 팔레트</h1>
+  <p class="sub">브랜드 키트 <b>「v10 Crew Dossier」 19색</b> · 2026-08-01 유호님 확정 — 색 칩을 클릭하면 HEX가 복사됩니다.</p>
+  <p class="sub">Canva 브랜드 키트 <code>kAHO4v46jZ4</code>에 5팔레트로 등록 완료 · 디자인 컨셉 정본 v1.3 연동</p>
 
-  <div class="sec">핵심 3색 — 디더 모드에서 쓰는 전부</div>
+  <div class="note">
+    <b>19색 키트와 「2색 원칙」은 충돌하지 않는다.</b> 키트 19색은 <b>브랜드가 소유한 색의 목록</b>이고,
+    2색 원칙은 <b>한 화면에 동시에 등장하는 색의 수</b>다. 19색 중에서 고르되 한 화면에는 여전히
+    바탕 1 + 잉크 1 + 신호 1점이다. 아래 <b>①②</b>가 SYNK FIELD(캐러셀·표지·간지)가 실제로 쓰는 6색이고,
+    <b>③</b>의 나머지 13색은 앱 UI·문서·K-Culture 콘텐츠의 몫이다.
+  </div>
+
+  <div class="sec">① 핵심 3색 <span>— 다크 화면(모드 A 디더)에서 쓰는 전부</span></div>
   <div class="row">
     <div>
-      <div class="chip" style="background:#0B1A2E;color:#F5F1E8" data-hex="#0B1A2E">
-        <div class="role">바탕</div>
-        <div><div class="nm">미드나잇 블루</div><div class="hx">#0B1A2E</div></div>
+      <div class="chip" style="background:#0F1730;color:#F6F1E8" data-hex="#0F1730">
+        <div class="role">바탕 · 다크</div>
+        <div><div class="nm">Navy 2</div><div class="hx">#0F1730</div></div>
       </div>
-      <div class="use">모드 A 디더 바탕 · 214° · 채도 61 · 신규</div>
+      <div class="use">모드 A 디더 바탕 · 225° · 키트 Navy 4단 중 최암부</div>
     </div>
     <div>
-      <div class="chip" style="background:#F5F1E8;color:#0B1A2E" data-hex="#F5F1E8">
-        <div class="role">잉크</div>
-        <div><div class="nm">웜크림</div><div class="hx">#F5F1E8</div></div>
+      <div class="chip" style="background:#F6F1E8;color:#0F1730" data-hex="#F6F1E8">
+        <div class="role">잉크 · 다크 위</div>
+        <div><div class="nm">Cream</div><div class="hx">#F6F1E8</div></div>
       </div>
-      <div class="use">디더 점 · 바탕 대비 15.5 · 순백으로 바꾸지 말 것</div>
+      <div class="use">디더 점 · 바탕 대비 16.1 · 순백으로 바꾸지 말 것</div>
     </div>
     <div>
-      <div class="chip" style="background:#FF6D00;color:#3B1500" data-hex="#FF6D00">
-        <div class="role">신호</div>
-        <div><div class="nm">에너지 오렌지</div><div class="hx">#FF6D00</div></div>
+      <div class="chip" style="background:#FF6B5C;color:#0F1730" data-hex="#FF6B5C">
+        <div class="role">신호 · 주 액센트</div>
+        <div><div class="nm">Coral</div><div class="hx">#FF6B5C</div></div>
       </div>
-      <div class="use">화면당 1점 · 배경 214°의 보색 · 대비 6.19</div>
+      <div class="use">화면당 1점 · 다크 위 대비 6.5 · 라이트 위 2.6(글자 금지)</div>
     </div>
   </div>
 
-  <div class="sec">보조 3색 — 타이포·겹침 모드</div>
+  <div class="sec">② 보조 3색 <span>— 라이트 화면(모드 B 타이포 · 모드 C 겹침)</span></div>
   <div class="row">
     <div>
-      <div class="chip" style="background:#FDFCF8;color:#101014" data-hex="#FDFCF8">
-        <div class="role">바탕</div>
-        <div><div class="nm">웜 화이트</div><div class="hx">#FDFCF8</div></div>
+      <div class="chip" style="background:#FBF7EE;color:#171820" data-hex="#FBF7EE">
+        <div class="role">바탕 · 라이트</div>
+        <div><div class="nm">Paper</div><div class="hx">#FBF7EE</div></div>
       </div>
-      <div class="use">모드 B·C 공용 바탕 · 기존 자산</div>
+      <div class="use">모드 B·C 공용 바탕</div>
     </div>
     <div>
-      <div class="chip" style="background:#101014;color:#FDFCF8" data-hex="#101014">
-        <div class="role">잉크</div>
-        <div><div class="nm">잉크 블랙</div><div class="hx">#101014</div></div>
+      <div class="chip" style="background:#171820;color:#FBF7EE" data-hex="#171820">
+        <div class="role">잉크 · 라이트 위</div>
+        <div><div class="nm">Ink</div><div class="hx">#171820</div></div>
       </div>
-      <div class="use">모드 B 대형 타이포 · 신규</div>
+      <div class="use">모드 B 대형 타이포 · 대비 17.0</div>
     </div>
     <div>
-      <div class="chip" style="background:#3D5AFE;color:#E8ECFF" data-hex="#3D5AFE">
+      <div class="chip" style="background:#4E7CFF;color:#EAF0FF" data-hex="#4E7CFF">
         <div class="role">2도 잉크</div>
-        <div><div class="nm">루미너스 블루</div><div class="hx">#3D5AFE</div></div>
+        <div><div class="nm">KC Cool Blue</div><div class="hx">#4E7CFF</div></div>
       </div>
-      <div class="use">모드 C 첫 판 · 오렌지와 겹쳐 세 번째 톤 생성</div>
+      <div class="use">모드 C 첫 판 · Coral과 multiply로 세 번째 톤 생성</div>
     </div>
   </div>
 
@@ -98,25 +117,25 @@
     <div>
       <div class="mp"><canvas id="pv"></canvas>
         <div style="position:absolute;left:15px;bottom:14px">
-          <div style="width:22px;height:3px;background:#FF6D00;margin-bottom:9px"></div>
-          <div style="font-size:16px;font-weight:600;color:#F5F1E8;line-height:1.3">말이<br>트입니다</div>
+          <div style="width:22px;height:3px;background:#FF6B5C;margin-bottom:9px"></div>
+          <div style="font-size:16px;font-weight:600;color:#F6F1E8;line-height:1.3">말이<br>트입니다</div>
         </div>
       </div>
       <div class="use">A 디더 — 바탕·잉크·신호 한 점</div>
     </div>
     <div>
-      <div class="mp" style="background:#FDFCF8;padding:16px">
-        <div style="font-size:11.5px;letter-spacing:.16em;color:#98A2B3">02</div>
-        <div style="font-size:38px;font-weight:600;color:#FF6D00;line-height:1;margin-top:13px">8<span style="font-size:17px;color:#101014">주</span></div>
-        <div style="font-size:13px;color:#101014;margin-top:11px;line-height:1.5">한 시즌에 한 권</div>
+      <div class="mp" style="background:#FBF7EE;padding:16px">
+        <div style="font-size:11.5px;letter-spacing:.16em;color:#7A7566;font-family:'DM Mono',monospace">02</div>
+        <div style="font-size:38px;font-weight:600;color:#FF6B5C;line-height:1;margin-top:13px">8<span style="font-size:17px;color:#171820">주</span></div>
+        <div style="font-size:13px;color:#171820;margin-top:11px;line-height:1.5">한 시즌에 한 권</div>
       </div>
-      <div class="use">B 타이포 — 숫자 하나만 신호색</div>
+      <div class="use">B 타이포 — 숫자 하나만 신호색(대형이라 허용)</div>
     </div>
     <div>
-      <div class="mp" style="background:#FDFCF8;isolation:isolate">
-        <div style="position:absolute;left:13%;top:11%;width:56%;height:56%;border-radius:50%;background:#3D5AFE;mix-blend-mode:multiply;opacity:.8"></div>
-        <div style="position:absolute;left:20%;top:17%;width:56%;height:56%;border-radius:50%;background:#FF6D00;mix-blend-mode:multiply;opacity:.72"></div>
-        <div style="position:absolute;left:15px;bottom:14px;font-size:16px;font-weight:600;color:#101014">모집 시작</div>
+      <div class="mp" style="background:#FBF7EE;isolation:isolate">
+        <div style="position:absolute;left:13%;top:11%;width:56%;height:56%;border-radius:50%;background:#4E7CFF;mix-blend-mode:multiply;opacity:.8"></div>
+        <div style="position:absolute;left:20%;top:17%;width:56%;height:56%;border-radius:50%;background:#FF6B5C;mix-blend-mode:multiply;opacity:.72"></div>
+        <div style="position:absolute;left:15px;bottom:14px;font-size:16px;font-weight:600;color:#171820">모집 시작</div>
       </div>
       <div class="use">C 겹침 — 2도 잉크가 주인공</div>
     </div>
@@ -127,7 +146,54 @@
     <b>R1</b> 신호색은 화면당 한 점, 면적 5% 미만 — 눈을 가늘게 떴을 때 색이 한 덩어리로만 보일 것<br>
     <b>R2</b> 위계는 밀도와 여백으로. 크기·굵기·색을 동시에 쓰지 않는다<br>
     <b>R3</b> 글자에는 그레인·투명도·그림자·왜곡을 절대 넣지 않는다 — 거친 바탕과 깨끗한 글자의 대비가 이 컨셉의 생명<br>
-    <b>+</b> 교재 다크 스프레드에서는 신호색을 쓰지 않는다 — 교재에서 오렌지는 「받침 없음·오류」 기능색
+    <span class="warn">+ 라이트 배경에서 Coral을 글자로 쓰지 않는다</span> — Paper 위 대비 2.6(판독 기준 4.5 미달). 면·알약·36pt 이상 대형 숫자로만<br>
+    <span class="warn">+ Lime은 이 팔레트에 들어오지 않는다</span> — 앱 진행률·라이브 전용. 캐러셀에 등장하면 신호가 둘이 되어 R1이 깨진다<br>
+    <b>·</b> <b>(v1.3 해제)</b> 「교재 다크 스프레드 신호색 금지」는 폐지 — 그 금지는 구 오렌지가 교재 「오류」 기능색이라 만든 예외였고, Coral은 기능색과 겹치지 않는다
+  </div>
+
+  <div class="sec">③ 브랜드 키트 전체 19색 <span>— 위 6색 외 13색은 SYNK FIELD 밖의 용도</span></div>
+
+  <p class="sub" style="margin:14px 0 9px">01 Core</p>
+  <div class="row5">
+    <div><div class="chip sm" style="background:#F6F1E8;color:#0F1730" data-hex="#F6F1E8"><div class="nm">Cream</div><div class="hx">#F6F1E8</div></div></div>
+    <div><div class="chip sm" style="background:#FF6B5C;color:#0F1730" data-hex="#FF6B5C"><div class="nm">Coral</div><div class="hx">#FF6B5C</div></div></div>
+    <div><div class="chip sm" style="background:#1A2340;color:#F6F1E8" data-hex="#1A2340"><div class="nm">Navy</div><div class="hx">#1A2340</div></div></div>
+    <div><div class="chip sm" style="background:#C8FF3D;color:#171820" data-hex="#C8FF3D"><div class="nm">Lime</div><div class="hx">#C8FF3D</div></div></div>
+    <div><div class="chip sm" style="background:#171820;color:#F6F1E8" data-hex="#171820"><div class="nm">Ink</div><div class="hx">#171820</div></div></div>
+  </div>
+
+  <p class="sub" style="margin:18px 0 9px">02 Cream Family</p>
+  <div class="row5">
+    <div><div class="chip sm" style="background:#FBF7EE;color:#171820" data-hex="#FBF7EE"><div class="nm">Paper</div><div class="hx">#FBF7EE</div></div></div>
+    <div><div class="chip sm" style="background:#EFE7D7;color:#171820" data-hex="#EFE7D7"><div class="nm">Cream 2</div><div class="hx">#EFE7D7</div></div></div>
+    <div><div class="chip sm" style="background:#E7DDC7;color:#171820" data-hex="#E7DDC7"><div class="nm">Cream 3</div><div class="hx">#E7DDC7</div></div></div>
+    <div></div><div></div>
+  </div>
+
+  <p class="sub" style="margin:18px 0 9px">03 Coral Family</p>
+  <div class="row5">
+    <div><div class="chip sm" style="background:#FFE9E4;color:#171820" data-hex="#FFE9E4"><div class="nm">Coral Wash</div><div class="hx">#FFE9E4</div></div></div>
+    <div><div class="chip sm" style="background:#FFCFC6;color:#171820" data-hex="#FFCFC6"><div class="nm">Coral Soft</div><div class="hx">#FFCFC6</div></div></div>
+    <div><div class="chip sm" style="background:#FF8877;color:#171820" data-hex="#FF8877"><div class="nm">Coral 2</div><div class="hx">#FF8877</div></div></div>
+    <div><div class="chip sm" style="background:#E8543F;color:#FFE9E4" data-hex="#E8543F"><div class="nm">Coral 3</div><div class="hx">#E8543F</div></div></div>
+    <div></div>
+  </div>
+
+  <p class="sub" style="margin:18px 0 9px">04 Navy Family</p>
+  <div class="row5">
+    <div><div class="chip sm" style="background:#2A3358;color:#F6F1E8" data-hex="#2A3358"><div class="nm">Navy 3</div><div class="hx">#2A3358</div></div></div>
+    <div><div class="chip sm" style="background:#131A32;color:#F6F1E8" data-hex="#131A32"><div class="nm">Navy Ink</div><div class="hx">#131A32</div></div></div>
+    <div><div class="chip sm" style="background:#0F1730;color:#F6F1E8" data-hex="#0F1730"><div class="nm">Navy 2</div><div class="hx">#0F1730</div></div></div>
+    <div></div><div></div>
+  </div>
+
+  <p class="sub" style="margin:18px 0 9px">05 K-Culture <b>(Part 6 콘텐츠 전용 — Cool Blue만 모드 C에서 씀)</b></p>
+  <div class="row5">
+    <div><div class="chip sm" style="background:#FF3E88;color:#FFE9E4" data-hex="#FF3E88"><div class="nm">KC Hot Pink</div><div class="hx">#FF3E88</div></div></div>
+    <div><div class="chip sm" style="background:#FF6BA8;color:#171820" data-hex="#FF6BA8"><div class="nm">KC Pink 2</div><div class="hx">#FF6BA8</div></div></div>
+    <div><div class="chip sm" style="background:#FFD447;color:#171820" data-hex="#FFD447"><div class="nm">KC Sun</div><div class="hx">#FFD447</div></div></div>
+    <div><div class="chip sm" style="background:#4E7CFF;color:#EAF0FF" data-hex="#4E7CFF"><div class="nm">KC Cool Blue</div><div class="hx">#4E7CFF</div></div></div>
+    <div></div>
   </div>
 
   <div class="sec">제품층 (앱 UI · 교재 기능색) — 이 팔레트와 별개, 불가침</div>
@@ -139,6 +205,7 @@
     <div><div class="bar" style="background:#12B76A"></div><div class="use">#12B76A 완료</div></div>
     <div><div class="bar" style="background:#98A2B3"></div><div class="use">#98A2B3 라벨·보조</div></div>
   </div>
+  <p class="sub" style="margin-top:10px">교재 기능색의 오렌지 <code>#FF6D00</code>는 브랜드 신호색 Coral <code>#FF6B5C</code>와 다른 색이다 — 비슷해 보이지만 역할이 완전히 다르니 서로 대체하지 않는다.</p>
 
   <p class="sub" style="margin-top:34px">캐러셀 문법 — 1장 디더 → 가운데 타이포 → 마지막 겹침. 차가움에서 정보로, 정보에서 온기로.</p>
 </div>
@@ -169,9 +236,9 @@
   var w=Math.max(140,cv.clientWidth), h=170, dpr=Math.min(2,window.devicePixelRatio||1);
   cv.width=w*dpr; cv.height=h*dpr;
   var x=cv.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0);
-  x.fillStyle='#0B1A2E'; x.fillRect(0,0,w,h);
+  x.fillStyle='#0F1730'; x.fillRect(0,0,w,h);
   var R=prng(17), cx=w*0.79, cy=h*0.2, rr=w*0.52, px, py, k, s;
-  x.fillStyle='#F5F1E8';
+  x.fillStyle='#F6F1E8';
   for(py=0;py<h;py++){ for(px=0;px<w;px++){
     var dx=(px-cx)/rr, dy=(py-cy)/rr, r=Math.sqrt(dx*dx+dy*dy); if(r>1.04) continue;
     var den=Math.max(0,1-r*0.72)*0.6, cl=(((px/5)|0)+((py/5)|0))%2;
