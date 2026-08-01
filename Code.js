@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.112'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.112] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로
+const SYNK_VERSION = 'v9.113'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -6181,8 +6181,33 @@ function checkEvolution() {
 //   ⚠ 무데이터는 0%가 아니라 **빈칸(미측정)**이다 — 앱이 못 잰 것을 0으로 환산하면 강사가 앱 결함으로 돈을 잃는다
 //   (v9.89 absenceReturnScore_가 세운 원칙을 3지표 전체로 확장). 분모는 '지표모수' 열에 그대로 노출해
 //   "80%"가 5명 중 4명인지 100명 중 80명인지 원장이 바로 판별하게 한다.
+//   [v9.113] 지표별 (비율, 배점) 쌍을 나란히 둔다 — 흩어져 있으면 원장이 "이 점수가 어느 비율에서 나왔나"를
+//   눈으로 잇지 못한다. 인센티브점수는 '획득 / 가능' 문자열(미측정 지표는 분모에서도 빠진다).
 const TEACHER_STATS_HEADERS = ['강사', '담당학생수', '1인당출석', '1인당포인트', '1인당칭찬', '케어지수', '지난달왕관', '왕관편중%', '담당반',
-                               '승급통과율%', '결석복귀율%', '재등록률%', '복귀배점', '지표모수'];
+                               '승급통과율%', '승급배점', '결석복귀율%', '복귀배점', '재등록률%', '재등록배점', '인센티브점수', '지표모수'];
+
+/* [v9.113] 승급·재등록 배점 — ⚠ **임의 기준**(유호 08-01 "임의로 해줘" 지시).
+ * 급여 인센티브 정본 §7에 근거가 있는 것은 결석 복귀율(absenceReturnScore_)뿐이고, 나머지 둘은
+ * **이 파일이 현재 정본**이다. 정본 문서가 확정되면 아래 두 함수의 임계값만 갈아끼우면 된다
+ * (호출부·열 구조는 건드릴 필요 없다 — 그러라고 함수로 분리했다).
+ * 셋 다 만점 20점으로 맞춘 이유: 세 지표가 인센티브에서 같은 계급이라는 것이 현재까지의 유일한 단서다
+ * (등급 심사 90점 중 복귀 20점). 가중치를 다르게 줄 근거가 없어 동률로 둔다. */
+function promotionScore_(rate) {
+  // 도달제 승급(급수 6단계를 여러 시즌에 걸쳐 오른다) — 한 시즌에 전원이 오르는 것은 비현실적이라
+  // 복귀·재등록보다 임계를 낮게 잡는다. 절반이 오르면 우수.
+  if (rate == null || isNaN(rate)) return null;
+  return rate >= 60 ? 20 : rate >= 50 ? 16 : rate >= 40 ? 12 : rate >= 30 ? 6 : 0;
+}
+function reenrollScore_(rate) {
+  // 이탈은 곧 매출 손실 — '지켜내는' 지표라 복귀율과 같은 계급의 높은 임계를 쓴다.
+  if (rate == null || isNaN(rate)) return null;
+  return rate >= 90 ? 20 : rate >= 85 ? 16 : rate >= 80 ? 12 : rate >= 75 ? 6 : 0;
+}
+// 측정된 지표만 합산해 '획득 / 가능'으로 낸다. 미측정을 0점으로 더하면 앱 결함이 급여 삭감이 된다.
+function incentiveTotal_(scores) {
+  const got = (scores || []).filter(s => s != null);
+  return got.length ? (got.reduce((a, b) => a + b, 0) + ' / ' + (got.length * 20)) : '';
+}
 const TEACHER_UNASSIGNED = '(미지정)'; // 담당 강사 매핑이 없는 반의 라벨 접두 — 학생이 조용히 증발하지 않게
 
 // [v9.87] 반명 → 담당 강사명 — 정본 매핑은 teacherEmailMap_.byClass(profiles 강사 행 E열, 쉼표 구분)다.
@@ -6400,8 +6425,9 @@ function calcTeacherStats() {
     const pm = promoBy[k] || { tot: 0, rate: null };
     const ab = absBy[k] || { judged: 0, ret: 0 };
     const abRate = ab.judged ? Math.round(ab.ret * 100 / ab.judged) : null;
-    const abScore = absenceReturnScore_(abRate); // 급여 정본 §7 배점(20/16/12/6/0) — 승급·재등록은 배점표 미확정이라 비율만 낸다
+    const abScore = absenceReturnScore_(abRate); // 급여 정본 §7 배점(20/16/12/6/0) — 셋 중 유일하게 문서 근거가 있는 것
     const re = reBy[k] || { tot: 0, rate: null };
+    const pmScore = promotionScore_(pm.rate), reScore = reenrollScore_(re.rate); // [v9.113] ⚠ 임의 기준(위 함수 주석)
     // [v9.87] 왕관 총계 = 담당 반 합산 / 편중% = 반 단위 최댓값(가장 쏠린 반). 여러 반 학생을 한 통에 섞으면
     //   한 반의 100% 쏠림이 반 수만큼 희석돼 60% 경보가 죽는다 — 왕관은 반당 1명([v7.9])이라 공정성 단위도 반이다.
     let tot = 0, worst = 0;
@@ -6419,10 +6445,10 @@ function calcTeacherStats() {
             Math.round(perAtt * 12 + perPts * 1), // [v7.9] 시냅스(반당 1명) 체제에서 praise 변별력 소멸 — 출석 중심 재조정
             tot, worst, clsList.join(', '),
             // [v9.108] 인센티브 3지표 — 미측정은 빈칸(0%가 아니다). 분모는 '지표모수'에 그대로 노출한다.
-            pm.rate == null ? '' : pm.rate,
-            abRate == null ? '' : abRate,
-            re.rate == null ? '' : re.rate,
-            abScore == null ? '' : abScore,
+            pm.rate == null ? '' : pm.rate, pmScore == null ? '' : pmScore,
+            abRate == null ? '' : abRate,   abScore == null ? '' : abScore,
+            re.rate == null ? '' : re.rate, reScore == null ? '' : reScore,
+            incentiveTotal_([pmScore, abScore, reScore]),
             '승급 ' + pm.tot + ' · 복귀 ' + ab.judged + ' · 재등록 ' + re.tot];
   }).sort((a, b) => b[5] - a[5]);
 
