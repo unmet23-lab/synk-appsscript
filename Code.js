@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.99'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.99] 발화 퀄리티 엔진 — 소그룹 20분 프로토콜·3라운드 짝·발화 지수·정밀 청취 로테이션
+const SYNK_VERSION = 'v9.100'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.100] 결석 복귀율↔케어지수 담당강사 산출 통일 — 두 인센티브 지표가 같은 강사에게 귀속되도록 teachersOfClass_ 단일 소스화
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -5917,7 +5917,11 @@ function checkNoShow() {
     const absent = clsStu.filter(r => !todayAtt.has(r[0]));
     // [v9.89] 시트 적재가 메일보다 먼저 — 지표 원본이 쿼터·메일 실패에 종속되면 안 된다(메일은 알림, 행은 데이터).
     if (absent.length > 0) {
-      const tNames = (emapNS.byClass[num] || []).map(t => t.name).join('·'); // 담당 강사 = 등급 심사 귀속 주체
+      // 담당 강사 = 등급 심사 귀속 주체. [v9.100] teacher_stats(케어지수)와 같은 헬퍼로 통일 — 「결석 복귀율」과
+      //   「케어지수」가 서로 다른 강사를 가리키면 인센티브 산정(급여 정본 §7)이 어긋난다. byClass[num] 직접 조회 대비
+      //   괄호 반명('정규반1(9시)')·번호 폴백(강사 유일할 때만)·중복 제거가 붙어 담당 강사를 더 넓게 잡는다
+      //   → '담당 강사 미배정' 오경보 감소. 누락 방향이 아니므로 야간 통보(byKey 역조회)가 그대로 커버한다.
+      const tNames = teachersOfClass_(emapNS, num).join('·');
       const add = [];
       absent.forEach(r => {
         const sid = String(r[0]).trim();
