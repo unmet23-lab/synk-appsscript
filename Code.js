@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.111'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로
+const SYNK_VERSION = 'v9.112'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.112] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -14511,7 +14511,10 @@ function weeklyJobs() {    // 매주 월 07시
     ['🔁 결석 복귀율(강사별)', function (t) { return absenceSection_(t); }],  // [v9.89] 등급 심사 20점 항목 — 8주 시즌 창
     ['📅 수강 만료 임박', function (t) { return MJ_expirySection_(t); }],    // [v9.72]
     ['📋 월간 만족도 설문', function (t) { return MJ_surveySection_(t); }],   // [v9.73] 첫 만족도 기준선
-    ['📋 주간 교안 초안', function () { return lpText || '(생성 없음)'; }]     // [v9.86·D] 반별 Doc 링크 — 유호 근무 46%(콘텐츠 편집)의 백지 제거,
+    ['📋 주간 교안 초안', function () { return lpText || '(생성 없음)'; }],    // [v9.86·D] 반별 Doc 링크 — 유호 근무 46%(콘텐츠 편집)의 백지 제거
+    // ⚠ [v9.107] 위 줄의 쉼표는 지우지 말 것 — 빠지면 JS가 `[…][…]`를 배열 인덱싱으로 읽어 이 자리가
+    //   undefined가 되고, 아래 forEach의 sec[0]에서 TypeError로 죽는다. 그러면 주간 통합 리포트가
+    //   통째로 발송되지 않는다(섹션 try/catch보다 바깥이라 안전망이 안 걸린다). 08-01 실측으로 발각.
     ['📋 마감 제출률', function () { const ssR = SpreadsheetApp.getActiveSpreadsheet(); return lessonCloseRate_(ssR, tz); }],  // [v9.92] 필수 루틴 준수 계측 — 값 없으면(시즌 미설정·수업 0) 섹션 생략
     ['🔇 4주차 침묵 학생', function () { return silText; }],
     ['🎬 온라인 강의 이수율(주말반)', function () { return lectureWeeklyText_(ss); }] // [v9.106] 값 없으면 섹션 자동 생략                       // [v9.91] 규칙서 §6 — 값이 없는 주(4주차 아님·마감폼 무응답)는 빈 문자열이라 섹션이 조용히 빠진다
