@@ -79,7 +79,7 @@ function voiceFormFinishSetup() {
 // ── 유호님 ▶ 1회: 시트·열·야간 트리거 설치(멱등) ───────────────────────
 function setupTextbookLink() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  ensureSheet(ss, 'voice_log', ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at']);
+  ensureSheet(ss, 'voice_log', VOICE_LOG_HEADERS);
   const pf = ss.getSheetByName('profiles');
   if (pf) {
     if (String(pf.getRange('DB1').getValue()) !== '목소리폼URL') pf.getRange('DB1').setValue('목소리폼URL');
@@ -100,6 +100,7 @@ function 교재연동Nightly() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   try { masteryFromFeedback_(ss); } catch (e) { Logger.log('masteryFromFeedback_ 오류: ' + e); }
   try { voiceSweep_(ss); } catch (e) { Logger.log('voiceSweep_ 오류: ' + e); }
+  try { voiceTranscribe_(ss); } catch (e) { Logger.log('voiceTranscribe_ 오류: ' + e); } // [v9.107] 적재 직후 전사 — 성장 카드가 전사문을 실을 수 있게 카드 생성보다 앞
   try { writeVoiceLinks_(ss); } catch (e) { Logger.log('writeVoiceLinks_ 오류: ' + e); }
   try { buildVoiceGrowthCards_(ss); } catch (e) { Logger.log('buildVoiceGrowthCards_ 오류: ' + e); }
   // 필살기 노트는 주 1회(일요일 밤)면 충분 — 매일 바뀌면 "노트"가 아니라 소음이 된다
@@ -131,7 +132,7 @@ function voiceSweep_(ss) {
     if (r[0] && r[3] === 'student') valid.add(String(r[0]).trim());
   });
 
-  const vl = ensureSheet(ss, 'voice_log', ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at']);
+  const vl = ensureSheet(ss, 'voice_log', VOICE_LOG_HEADERS);
   const pl = ensureSheet(ss, 'point_logs', ['id', 'student_id', 'points', 'reason', 'given_by', 'created_at', 'month', '태그']);
   // 멱등: 이미 지급된 '날짜|sid' (지급→포인터 저장 사이 크래시 재시도 대비)
   const givenKey = {};
@@ -281,18 +282,194 @@ function voiceWithdraw(studentId, confirm) {
   return msg;
 }
 
+/* ═══════════ [v9.107] 🎧 STT — GCP Speech-to-Text 전사 (유호님 08-01 결정) ═══════════
+ * 녹음 AI 첨삭의 마지막 빠진 조각. Claude API는 오디오를 받지 않으므로 음성→텍스트가 먼저 필요하다.
+ *
+ * ▣ 왜 서비스 계정인가 (매니페스트를 건드리지 않는 유일한 길)
+ *   Speech-to-Text는 `cloud-platform` 스코프 토큰을 요구한다. `ScriptApp.getOAuthToken()`으로 그걸
+ *   받으려면 appsscript.json에 oauthScopes를 명시해야 하는데, **그 순간 자동 추론이 꺼진다** —
+ *   현재 이 프로젝트는 스코프를 한 줄도 적지 않고 추론에 맡기고 있어(SpreadsheetApp·DriveApp·FormApp·
+ *   DocumentApp·MailApp·ScriptApp·UrlFetchApp·Session) 하나라도 빠뜨리면 트리거 10개가 한 번에 죽는다.
+ *   서비스 계정 JWT는 UrlFetchApp만 쓰므로(이미 있는 권한) **라이브 리스크가 0**이다.
+ *   ⓘ 나중에 매니페스트 스코프를 정리하기로 하면 그때 getOAuthToken 경로로 바꿔도 된다(아래 폴백 유지).
+ *
+ * ▣ 알려진 제약 — 지어내지 않고 실패를 그대로 기록한다
+ *   ① 동기 recognize는 짧은 오디오용이다(대략 1분). 초과분은 API가 거부하고, 그 사유를 상태 열에 남긴다.
+ *   ② 인라인 base64라 요청 크기 한도가 있다 — 10MB 넘는 파일은 보내기 전에 거른다.
+ *   ③ 인코딩: m4a(AAC)는 지원 목록에 없다. 폰 녹음이 m4a로 오면 여기서 걸린다 —
+ *      MIME으로 먼저 거르고, 나머지는 encoding을 지정하지 않고 보내 API의 헤더 자동 인식에 맡긴다.
+ *      실제 어느 포맷이 들어오는지는 첫 실측 전엔 알 수 없으므로 **상태 열에 원문 오류를 남겨** 판단 재료로 쓴다.
+ *   ④ 유료 API다. 일일 상한(STT_DAILY_CAP)으로 폭주를 막고, 초과분은 다음 날로 미룬다. */
+const STT_LANG = 'ko-KR';
+const STT_DAILY_CAP = 30;                 // 하루 전사 상한 — 비용 폭주 방어(지출 2게이트 원칙)
+const STT_MAX_BYTES = 10 * 1024 * 1024;   // 인라인 요청 한도
+const STT_OK_MIME = ['audio/flac', 'audio/x-flac', 'audio/wav', 'audio/x-wav', 'audio/wave',
+  'audio/mpeg', 'audio/mp3', 'audio/ogg', 'audio/webm', 'audio/amr', 'audio/3gpp'];
+const VOICE_LOG_HEADERS = ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at', '전사', '전사상태', '전사일시'];
+
+/* GCP 액세스 토큰 — ①서비스 계정(GCP_SA_JSON) ②없으면 스크립트 자체 토큰(매니페스트에 스코프를 넣은 경우).
+ * 토큰은 1시간짜리라 캐시에 50분 보관한다(매 파일마다 토큰 발급하면 그 자체가 쿼터·지연이다). */
+function gcpAccessToken_() {
+  const cache = CacheService.getScriptCache();
+  const hit = cache.get('GCP_TOKEN');
+  if (hit) return hit;
+  const raw = PropertiesService.getScriptProperties().getProperty('GCP_SA_JSON');
+  if (!raw) {
+    try { return ScriptApp.getOAuthToken(); } catch (e) { return null; } // 스코프 미명시면 Speech가 403을 준다
+  }
+  let sa;
+  try { sa = JSON.parse(raw); } catch (e) { throw new Error('GCP_SA_JSON 파싱 실패 — 서비스 계정 JSON 전체를 그대로 붙여넣으세요'); }
+  if (!sa.client_email || !sa.private_key) throw new Error('GCP_SA_JSON에 client_email/private_key가 없습니다');
+  const now = Math.floor(Date.now() / 1000);
+  const b64 = o => Utilities.base64EncodeWebSafe(JSON.stringify(o)).replace(/=+$/, '');
+  const head = b64({ alg: 'RS256', typ: 'JWT' });
+  const claim = b64({ iss: sa.client_email, scope: 'https://www.googleapis.com/auth/cloud-platform',
+    aud: 'https://oauth2.googleapis.com/token', exp: now + 3600, iat: now });
+  const sig = Utilities.base64EncodeWebSafe(
+    Utilities.computeRsaSha256Signature(head + '.' + claim, sa.private_key)).replace(/=+$/, '');
+  const res = UrlFetchApp.fetch('https://oauth2.googleapis.com/token', {
+    method: 'post', muteHttpExceptions: true,
+    payload: { grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: head + '.' + claim + '.' + sig }
+  });
+  if (res.getResponseCode() !== 200) throw new Error('토큰 발급 실패 ' + res.getResponseCode() + ': ' + res.getContentText().slice(0, 200));
+  const tok = JSON.parse(res.getContentText()).access_token;
+  if (tok) cache.put('GCP_TOKEN', tok, 3000);
+  return tok;
+}
+
+/* 파일 1개 전사 — 성공 시 {text}, 실패 시 {err} (throw하지 않는다: 한 건 실패가 배치를 멈추면 안 된다) */
+function sttOne_(fileId, token) {
+  let blob;
+  try { blob = DriveApp.getFileById(fileId).getBlob(); }
+  catch (e) { return { err: '파일 접근 불가: ' + String(e).slice(0, 80) }; }
+  const mime = String(blob.getContentType() || '').toLowerCase();
+  if (mime && STT_OK_MIME.indexOf(mime) === -1) return { err: '미지원 포맷(' + mime + ') — m4a/AAC는 Speech-to-Text가 받지 않습니다' };
+  const bytes = blob.getBytes();
+  if (bytes.length > STT_MAX_BYTES) return { err: '파일 초과(' + Math.round(bytes.length / 1024 / 1024) + 'MB > 10MB) — 짧게 재녹음 필요' };
+  const res = UrlFetchApp.fetch('https://speech.googleapis.com/v1/speech:recognize', {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    headers: { Authorization: 'Bearer ' + token },
+    payload: JSON.stringify({
+      // encoding·sampleRate는 지정하지 않는다 — 헤더가 있는 포맷은 API가 스스로 읽고,
+      // 잘못 지정하면 오히려 인식이 깨진다. 못 읽는 포맷은 그 사유가 응답에 그대로 온다.
+      config: { languageCode: STT_LANG, enableAutomaticPunctuation: true, model: 'default' },
+      audio: { content: Utilities.base64Encode(bytes) }
+    })
+  });
+  const code = res.getResponseCode();
+  const body = res.getContentText();
+  if (code !== 200) return { err: 'API ' + code + ': ' + body.replace(/\s+/g, ' ').slice(0, 200) };
+  let j;
+  try { j = JSON.parse(body); } catch (e) { return { err: '응답 파싱 실패' }; }
+  const text = (j.results || []).map(r => ((r.alternatives || [])[0] || {}).transcript || '').join(' ').trim();
+  if (!text) return { err: '인식 결과 없음(무음·잡음·언어 불일치 가능)' };
+  return { text: text };
+}
+
+// ── A-2c. voice_log 미전사 행 → STT (교재연동Nightly 편승) ──────────────
+function voiceTranscribe_(ss) {
+  const vl = ss.getSheetByName('voice_log');
+  if (!vl || vl.getLastRow() < 2) return;
+  // 열 확장 — 구 6열 시트도 그대로 살아야 하므로 헤더를 보장하고 나서 읽는다
+  if (vl.getLastColumn() < VOICE_LOG_HEADERS.length) {
+    vl.insertColumnsAfter(vl.getLastColumn(), VOICE_LOG_HEADERS.length - vl.getLastColumn());
+  }
+  VOICE_LOG_HEADERS.forEach((h, i) => { if (String(vl.getRange(1, i + 1).getValue()) !== h) vl.getRange(1, i + 1).setValue(h); });
+
+  const tz = ss.getSpreadsheetTimeZone();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const usedRaw = String(getState(st, 'STT일일사용').val || '');
+  const used = (usedRaw.split('|')[0] === today) ? (Number(usedRaw.split('|')[1]) || 0) : 0;
+  let budget = STT_DAILY_CAP - used;
+  if (budget <= 0) return;                                   // 오늘 몫 소진 — 내일 이어서
+
+  const n = vl.getLastRow() - 1;
+  const rows = vl.getRange(2, 1, n, VOICE_LOG_HEADERS.length).getValues();
+  const todo = [];
+  rows.forEach((r, i) => {
+    if (String(r[6] || '').trim()) return;                   // 이미 전사됨
+    const state = String(r[7] || '').trim();
+    if (state && state !== '대기') return;                   // 실패 사유가 있는 행은 자동 재시도하지 않는다(같은 오류로 과금 반복)
+    if (!String(r[4] || '').trim()) return;                  // file_id 없음
+    todo.push({ row: i + 2, fid: String(r[4]).trim(), sid: String(r[0] || '') });
+  });
+  if (!todo.length) return;
+
+  let token;
+  try { token = gcpAccessToken_(); }
+  catch (e) {
+    adminMail('[SYNK] 🎧 STT 토큰 실패 — 전사 보류', String(e) + '\n\nvoiceSttStatus() ▶ 로 설정 상태를 확인하세요.');
+    return;
+  }
+  if (!token) { adminMail('[SYNK] 🎧 STT 미설정 — 전사 보류', 'GCP_SA_JSON 스크립트 속성이 없습니다. docs/STT_설치_v9107.md의 STEP 1~3을 따르세요.'); return; }
+
+  let ok = 0, fail = 0;
+  const errSample = [];
+  todo.slice(0, budget).forEach(t => {
+    const r = sttOne_(t.fid, token);
+    const stamp = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm');
+    if (r.text) { vl.getRange(t.row, 7, 1, 3).setValues([[r.text, '완료', stamp]]); ok++; }
+    else { vl.getRange(t.row, 7, 1, 3).setValues([['', '실패: ' + r.err, stamp]]); fail++; if (errSample.length < 5) errSample.push(t.sid + ' — ' + r.err); }
+  });
+  setState(st, 'STT일일사용', today + '|' + (used + ok + fail));
+  if (ok || fail) adminMail('[SYNK] 🎧 목소리 전사 ' + ok + '건' + (fail ? ' · 실패 ' + fail + '건' : ''),
+    '전사 완료 ' + ok + '건, 실패 ' + fail + '건 (오늘 사용 ' + (used + ok + fail) + '/' + STT_DAILY_CAP + ')\n' +
+    (errSample.length ? '\n실패 사유(최대 5건):\n' + errSample.join('\n') +
+      '\n\n※ 실패 행은 자동 재시도하지 않습니다(같은 오류로 과금이 반복되므로). 원인을 고친 뒤 voice_log의 「전사상태」 칸을 비우면 다음 밤에 다시 시도합니다.' : ''));
+}
+
+/* [v9.107] STT 설정 진단 — "왜 전사가 안 되지"를 추측이 아니라 실측으로 답한다.
+ * 실제로 1바이트짜리 요청을 보내 응답 코드를 그대로 보여준다(권한·API 활성화·결제 문제가 여기서 갈린다). */
+function voiceSttStatus() {
+  const L = ['🎧 STT 설정 진단'];
+  const raw = PropertiesService.getScriptProperties().getProperty('GCP_SA_JSON');
+  L.push('1) 서비스 계정 키(GCP_SA_JSON): ' + (raw ? '있음' : '없음 — 스크립트 속성에 추가 필요'));
+  let token = null;
+  try { token = gcpAccessToken_(); L.push('2) 액세스 토큰: ' + (token ? '발급 성공' : '발급 실패(null)')); }
+  catch (e) { L.push('2) 액세스 토큰: ❌ ' + String(e).slice(0, 200)); }
+  if (token) {
+    // 빈 오디오로 호출 — 400이면 인증·API는 정상(요청 내용만 문제), 403이면 권한·활성화 문제
+    const res = UrlFetchApp.fetch('https://speech.googleapis.com/v1/speech:recognize', {
+      method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+      headers: { Authorization: 'Bearer ' + token },
+      payload: JSON.stringify({ config: { languageCode: STT_LANG }, audio: { content: '' } })
+    });
+    const c = res.getResponseCode();
+    L.push('3) Speech API 응답: ' + c + (c === 400 ? ' ✅ (인증·API 정상 — 빈 오디오라 400이 정상 응답)'
+      : c === 403 ? ' ❌ API 미활성화이거나 서비스 계정에 권한이 없습니다'
+      : c === 401 ? ' ❌ 토큰이 거부됐습니다' : ''));
+    if (c !== 400) L.push('   응답 원문: ' + res.getContentText().replace(/\s+/g, ' ').slice(0, 300));
+  }
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const vl = ss.getSheetByName('voice_log');
+  if (vl && vl.getLastRow() >= 2 && vl.getLastColumn() >= 8) {
+    const rows = vl.getRange(2, 1, vl.getLastRow() - 1, 8).getValues();
+    const done = rows.filter(r => String(r[6] || '').trim()).length;
+    const failed = rows.filter(r => String(r[7] || '').indexOf('실패') === 0).length;
+    L.push('4) voice_log: 전체 ' + rows.length + '행 · 전사 완료 ' + done + ' · 실패 ' + failed + ' · 대기 ' + (rows.length - done - failed));
+    rows.filter(r => String(r[7] || '').indexOf('실패') === 0).slice(0, 3)
+      .forEach(r => L.push('   실패 예: ' + r[0] + ' — ' + r[7]));
+  } else L.push('4) voice_log: 없음 또는 비어 있음(전사할 대상 0)');
+  const msg = L.join('\n');
+  Logger.log(msg);
+  return msg;
+}
+
 // ── A-3. 성장 카드(처음 vs 최신, 간격 21일+) → profiles '목소리성장카드' 열 ──
 function buildVoiceGrowthCards_(ss) {
   const vl = ss.getSheetByName('voice_log');
   const pf = ss.getSheetByName('profiles');
   if (!vl || !pf || vl.getLastRow() < 2 || pf.getLastRow() < 2) return;
   const tz = ss.getSpreadsheetTimeZone();
-  const byStu = {}; // sid → {first:{t,url,mission}, last:{...}, cnt}
-  vl.getRange(2, 1, vl.getLastRow() - 1, 4).getValues().forEach(r => {
+  const byStu = {}; // sid → {first:{t,url,mission,text}, last:{...}, cnt}
+  // [v9.107] 폭을 전사 열까지 넓힌다 — 구 6열 시트도 살아야 하므로 실제 폭 기준(없는 칸은 undefined→'')
+  const wV = Math.max(vl.getLastColumn(), 4);
+  vl.getRange(2, 1, vl.getLastRow() - 1, wV).getValues().forEach(r => {
     const sid = String(r[0] || '').trim();
     if (!sid || !r[1] || !r[3]) return;
     const t = asDate_(r[1]).getTime();
-    const rec = { t: t, url: String(r[3]), mission: String(r[2] || '') };
+    const rec = { t: t, url: String(r[3]), mission: String(r[2] || ''), text: String(r[6] || '').trim() };
     const s = byStu[sid] = byStu[sid] || { cnt: 0 };
     s.cnt++;
     if (!s.first || t < s.first.t) s.first = rec;
@@ -307,9 +484,14 @@ function buildVoiceGrowthCards_(ss) {
     if (days < TB_GROWTH_MIN_DAYS) return [''];
     const d1 = Utilities.formatDate(new Date(s.first.t), tz, 'M/d');
     const d2 = Utilities.formatDate(new Date(s.last.t), tz, 'M/d');
+    /* [v9.107] 전사문 병기 — 목소리 타임랩스는 여태 "듣기 링크 두 개"였다. 링크는 눌러야 비교되고,
+     *   두 파일을 번갈아 듣는 사람은 거의 없다. 전사문이 있으면 **눈으로 한 번에 대비**된다
+     *   ("처음엔 이렇게 말했고, 오늘은 이렇게 말한다") — STT가 성장 서사에 실제로 값을 내는 지점.
+     *   전사가 없는 구간(미설정·실패·포맷 미지원)에서는 그 줄만 조용히 빠지고 카드는 그대로 산다. */
+    const q = (t) => t ? '\n> “' + (t.length > 140 ? t.slice(0, 140) + '…' : t) + '”' : '';
     return ['## 🎧 나의 목소리 타임랩스\n\n' +
-      '**' + d1 + ' 처음의 나** — [듣기](' + s.first.url + ')' + (s.first.mission ? ' · ' + s.first.mission : '') + '\n\n' +
-      '**' + d2 + ' 오늘의 나** — [듣기](' + s.last.url + ')' + (s.last.mission ? ' · ' + s.last.mission : '') + '\n\n' +
+      '**' + d1 + ' 처음의 나** — [듣기](' + s.first.url + ')' + (s.first.mission ? ' · ' + s.first.mission : '') + q(s.first.text) + '\n\n' +
+      '**' + d2 + ' 오늘의 나** — [듣기](' + s.last.url + ')' + (s.last.mission ? ' · ' + s.last.mission : '') + q(s.last.text) + '\n\n' +
       days + '일의 거리만큼 목소리가 자랐어요. 다음 무대에서 또 만나요! 🎤'];
   });
   const col = tbProfileCol_(pf, '목소리성장카드');
