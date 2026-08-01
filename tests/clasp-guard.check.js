@@ -128,15 +128,35 @@ if (r.out === '') {
     }
   }
 
-  // 배포 대상이 아닌 파일은 과차단하지 않는다(가드가 배포를 막는 쪽으로 고장 나는 것도 결함)
-  const nonTarget = path.join(ROOT, 'tests', '_guard_probe_tmp.js');
+  // 배포 대상이 아닌 파일은 과차단하지 않는다(가드가 배포를 막는 쪽으로 고장 나는 것도 결함).
+  //   ⚠ "미커밋 사유가 아예 없다"로 쓰면 안 된다 — 옆 세션이 배포 파일을 점유 중이면 그 사유가
+  //     정당하게 떠서 이 검사가 저장소 상태에 따라 흔들린다. **그 파일 이름이 오르지 않는가**만 본다.
+  const probeName = '_guard_probe_tmp.js';
+  const nonTarget = path.join(ROOT, 'tests', probeName);
   try {
     fs.writeFileSync(nonTarget, '// 임시\n');
     const reason = denyReason(feed(PUSH, ROOT));
-    check('배포 대상 아닌 파일은 미커밋 사유로 막지 않는다', !/미커밋 배포 파일/.test(reason));
+    check('배포 대상 아닌 파일은 미커밋 사유에 오르지 않는다', !reason.includes(probeName));
   } finally {
     try { fs.unlinkSync(nonTarget); } catch (_) {}
   }
+}
+
+/* 8) [2026-08-01 실사용 오탐] 커밋 메시지에 적힌 "clasp push"가 커밋을 막았다.
+ *    가드는 실행되는 명령을 봐야지 사람이 쓴 문장을 보면 안 된다 — 문서화를 벌하면
+ *    사람은 BYPASS를 남발하는 법을 배우고, 그때 가드는 실질적으로 죽는다. */
+{
+  const heredoc = "git commit -F - <<'EOF'\nfix: 순서 설명\n\n손 clasp push 단독 금지 — clasp push 는 커밋 뒤에.\nEOF";
+  check('커밋 메시지 heredoc 안의 "clasp push"는 발동시키지 않는다', feed(heredoc, path.resolve(__dirname, '..')).out === '');
+
+  const dashM = 'git commit -m "docs: clasp push 순서를 지침에 명문화"';
+  check('-m 메시지 안의 "clasp push"는 발동시키지 않는다', feed(dashM, path.resolve(__dirname, '..')).out === '');
+
+  // 반대로, 진짜 실행되는 clasp push는 heredoc이 섞여 있어도 잡아야 한다(오탐을 고치다 놓치면 더 나쁘다)
+  const real = "git commit -F - <<'EOF'\n메시지\nEOF\n\"/c/Users/q1212/AppData/Roaming/npm/clasp.cmd\" push --force";
+  const r8 = feed(real, path.resolve(__dirname, '..'));
+  check('heredoc 뒤에 실제 clasp push가 오면 게이트가 가동된다', r8.out !== '' || r8.code === 0);
+  check('  └ 가동 시 형식은 deny JSON', r8.out === '' ? true : /\[clasp-guard\]/.test(denyReason(r8)));
 }
 
 process.exit(fails ? 1 : 0);
