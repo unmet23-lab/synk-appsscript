@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.122'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.122] 브랜드 폰트 3종을 앱 카드에 적용 — 스택 교체 + 웹폰트 로더 신설(이름만 바꾸면 전 카드가 폴백된다) · [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
+const SYNK_VERSION = 'v9.123'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.123] 낡은 강의 자리 안전 정리 — 조준을 행 번호에서 내용으로 · [v9.122] 브랜드 폰트 3종을 앱 카드에 적용 — 스택 교체 + 웹폰트 로더 신설(이름만 바꾸면 전 카드가 폴백된다) · [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -16241,6 +16241,84 @@ function lectureRatesOf_(ss) {
   return out;
 }
 
+/* [v9.123] 지금 실제로 쓰이는 레벨 어휘 = 상수 ∪ profiles 「한국어수준」에 실재하는 값.
+ *   상수만 믿으면 유호님이 profiles에 새 레벨을 추가한 순간 그 레벨의 강의 자리가 '낡은 것'으로 오판된다.
+ *   그래서 **살아 있는 쪽을 시트에서 읽어 합집합**을 만든다 — 판단이 틀리는 방향을 항상 '안 지우는' 쪽으로 기울인다. */
+function liveLectureLevels_(ss) {
+  const set = {};
+  PROFILE_LEVELS.forEach(function (v) { set[v] = 1; });
+  const pf = ss.getSheetByName('profiles');
+  if (pf && pf.getLastRow() >= 2) {
+    const c = profileLevelCol_(pf);
+    if (c >= 0) pf.getRange(2, c + 1, pf.getLastRow() - 1, 1).getValues()
+      .forEach(function (r) { const v = String(r[0] || '').trim(); if (v) set[v] = 1; });
+  }
+  return set;
+}
+
+/* [v9.123] ▶ 낡은 어휘로 깔린 강의 자리만 걷어낸다.
+ * 왜 필요한가: 레벨 어휘가 바뀌면(Lv1/Lv2 → 완전초보/기초, 08-01) 구 자리는 **어느 학생과도 조인되지 않는
+ *   유령 행**으로 남는다. 이수율 수치를 오염시키진 않지만 폼 선택지를 두 배로 부풀리고, 학생이 유령을
+ *   고르면 존재하지 않는 강의ID가 lecture_views에 쌓인다. setupLectures는 강의ID로 멱등이라 못 지운다.
+ *
+ * 왜 손으로 지우지 않는가: 시트에서 행을 직접 지우는 건 **행 번호로 조준하는 일**이고, 옆 세션·다른 창이
+ *   같은 시트를 만지면 목록이 밀려 멀쩡한 행에 삭제가 걸린다(08-01 실사고 계열). 조준은 내용으로 해야 한다.
+ *
+ * 4중 잠금 — 아래를 **전부** 만족하는 행만 지운다. 하나라도 어긋나면 남기고 이유를 보고한다.
+ *   ① 레벨이 지금 쓰이는 어휘가 아니다(상수 ∪ profiles 실재값)
+ *   ② URL(F열)이 비어 있다        — 유호님이 녹화 링크를 붙였으면 그건 사람의 작업물이다
+ *   ③ 제목(E열)이 자동 생성값 그대로다 — 손으로 고쳤으면 사람의 작업물이다
+ *   ④ 그 강의ID로 제출된 수강 기록이 없다 — 있으면 학생의 이력이다
+ * 그래서 **잘못 눌러도 손실이 0**이다(메뉴에 올린 근거 — 「한 번 잘못 누름이 라이브 사고」에 해당하지 않는다). */
+function pruneStaleLectures() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName('lectures');
+  if (!sh || sh.getLastRow() < 2) return 'lectures가 비어 있습니다 — 지울 것이 없습니다.';
+
+  const live = liveLectureLevels_(ss);
+  const viewed = {};
+  const vw = ss.getSheetByName('lecture_views');
+  if (vw && vw.getLastRow() >= 2) vw.getRange(2, 1, vw.getLastRow() - 1, LECTURE_VIEW_HEADERS.length).getValues()
+    .forEach(function (r) { const id = String(r[4] || '').trim(); if (id) viewed[id] = (viewed[id] || 0) + 1; });
+
+  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, LECTURE_HEADERS.length).getValues();
+  const kill = [], keep = [];
+  rows.forEach(function (r, i) {
+    const id = String(r[0] || '').trim();
+    if (!id) return;
+    const lv = String(r[1] || '').trim();
+    if (live[lv]) return;                                     // ① 살아 있는 레벨 — 대상 아님(조용히 통과)
+    // 자동 생성 제목의 차시 번호는 강의ID 끝자리에서 온다(setupLectures와 같은 조립식) — 제목에서 되짚으면 순환이 된다
+    const auto = lv + ' 시즌' + r[2] + ' ' + r[3] + '주차 ' + id.split('-').pop() + '차시';
+    const why = [];
+    if (String(r[5] || '').trim()) why.push('URL 있음');       // ②
+    if (String(r[4] || '').trim() !== auto) why.push('제목 수정됨'); // ③
+    if (viewed[id]) why.push('수강 기록 ' + viewed[id] + '건');   // ④
+    if (why.length) keep.push(id + '(' + lv + ') — ' + why.join('·'));
+    else kill.push({ row: i + 2, id: id, lv: lv });
+  });
+
+  if (!kill.length) {
+    const none = '지울 낡은 자리가 없습니다 (총 ' + rows.length + '행)' +
+      (keep.length ? '\n   ⚠ 낡은 어휘지만 사람·학생의 작업물이라 남긴 행 ' + keep.length + '개:\n   - ' + keep.join('\n   - ') : '');
+    Logger.log(none);
+    return none;
+  }
+  // 아래에서 위로 지운다 — 위에서 지우면 남은 행 번호가 밀려 다음 삭제가 엉뚱한 행을 문다
+  kill.slice().sort(function (a, b) { return b.row - a.row; }).forEach(function (k) { sh.deleteRows(k.row, 1); });
+
+  const byLv = {};
+  kill.forEach(function (k) { byLv[k.lv] = (byLv[k.lv] || 0) + 1; });
+  const msg = '낡은 강의 자리 ' + kill.length + '개 삭제 (남은 ' + (rows.length - kill.length) + '행)' +
+    '\n   레벨별: ' + Object.keys(byLv).map(function (k) { return k + ' ' + byLv[k] + '개'; }).join(' · ') +
+    '\n   첫 삭제: ' + kill[0].id + ' · 끝 삭제: ' + kill[kill.length - 1].id +
+    '\n   지운 것은 전부 URL 공란·제목 자동값·수강기록 0 — 사람이 넣은 값은 하나도 없었습니다.' +
+    (keep.length ? '\n   ⚠ 낡은 어휘지만 남긴 행 ' + keep.length + '개(사람·학생 작업물):\n   - ' + keep.join('\n   - ') : '') +
+    '\n   다음: 「🔄 폼 선택지 카탈로그와 맞추기」를 눌러 폼에서도 유령 선택지를 걷어내세요.';
+  Logger.log(msg);
+  return msg;
+}
+
 /* [v9.121] 카탈로그 → 폼 선택지 문자열. 최초 생성과 이후 동기화가 **같은 모양**을 쓰도록 한 곳에서 만든다.
  *   " - " 구분자는 계약이다 — sweepLectureForm_이 앞부분을 강의ID로 잘라 읽는다(모양이 갈리면 적재가 조용히 어긋난다).
  *   200개 상한은 구글 폼 목록 문항의 현실적 한계 — 넘치면 뒤가 잘리므로 호출부가 개수를 보고한다. */
@@ -16452,6 +16530,8 @@ function onOpen() {
       //   편집기 드롭다운은 배포 직후 새로고침 전까지 새 함수를 안 보여줘서 "함수가 없다"로 읽힌다.
       .addItem('📚 강의 자리 깔기(1단계)', 'setupLectures')
       .addItem('🎬 강의 수강 확인 폼(2단계)', 'createLectureForm')
+      // [v9.123] 레벨 어휘가 바뀌면 구 자리가 유령으로 남는다 — 4중 잠금이라 잘못 눌러도 손실 0(함수 주석 참조).
+      .addItem('🧹 낡은 강의 자리 걷어내기', 'pruneStaleLectures')
       // [v9.121] 시즌이 바뀌어 1단계를 다시 깔면 폼 선택지가 낡는다 — 2단계는 문항이 있으면 건너뛰므로 따라가지 않는다.
       .addItem('🔄 폼 선택지 카탈로그와 맞추기(시즌 갱신)', 'syncLectureFormChoices')
       .addToUi();
