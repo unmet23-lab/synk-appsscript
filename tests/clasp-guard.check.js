@@ -91,4 +91,52 @@ if (r.out === '') {
   check('메인 cwd 응답 형식 유지', r.code === 0 && (r.out === '' || reason !== ''));
 }
 
+/* 7) [2026-08-01 감사] **배포되는 파일 전부**가 미커밋 검사에 걸리는가.
+ *    구 버전은 목록을 하드코딩(Code.js·contents_*·appsscript.json)해 두어
+ *    실제로 배포되는 상담AI.js·교재연동.js·만족도팩.js 3종이 감시 밖이었다
+ *    — 미커밋인 채로 clasp push가 통과했고, 그건 이 훅의 존재 이유가 절반에서 죽어 있었다는 뜻이다.
+ *    목록을 다시 베끼지 않는다: .claspignore(배포 집합의 정본)에서 읽어 하나씩 실제로 더럽혀 본다. */
+{
+  const fs = require('fs');
+  const ROOT = path.resolve(__dirname, '..');
+  const pats = fs
+    .readFileSync(path.join(ROOT, '.claspignore'), 'utf8')
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.startsWith('!'))
+    .map((l) => l.slice(1).trim())
+    .filter(Boolean);
+  const files = [];
+  for (const t of pats) {
+    if (t.includes('*')) {
+      const re = new RegExp('^' + t.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*') + '$');
+      fs.readdirSync(ROOT).filter((f) => re.test(f)).forEach((f) => files.push(f));
+    } else if (fs.existsSync(path.join(ROOT, t))) files.push(t);
+  }
+  check('.claspignore에서 배포 대상을 찾아냈다(≥5종)', files.length >= 5);
+
+  for (const f of files) {
+    const p = path.join(ROOT, f);
+    const orig = fs.readFileSync(p);
+    try {
+      fs.appendFileSync(p, f.endsWith('.json') ? ' ' : '\n// clasp-guard 회귀 임시 한 줄\n');
+      const reason = denyReason(feed(PUSH, ROOT));
+      const esc = f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      check('미커밋 배포 파일 차단: ' + f, new RegExp('미커밋 배포 파일\\([^)]*' + esc).test(reason));
+    } finally {
+      fs.writeFileSync(p, orig); // 실패해도 반드시 원복 — 저장소를 더럽힌 채 끝내지 않는다
+    }
+  }
+
+  // 배포 대상이 아닌 파일은 과차단하지 않는다(가드가 배포를 막는 쪽으로 고장 나는 것도 결함)
+  const nonTarget = path.join(ROOT, 'tests', '_guard_probe_tmp.js');
+  try {
+    fs.writeFileSync(nonTarget, '// 임시\n');
+    const reason = denyReason(feed(PUSH, ROOT));
+    check('배포 대상 아닌 파일은 미커밋 사유로 막지 않는다', !/미커밋 배포 파일/.test(reason));
+  } finally {
+    try { fs.unlinkSync(nonTarget); } catch (_) {}
+  }
+}
+
 process.exit(fails ? 1 : 0);

@@ -100,13 +100,47 @@ if (problems.length === 0) {
   }
 }
 
+/* 배포 대상 파일 목록 — **.claspignore가 유일 정본**이다.
+ * 2026-08-01 감사에서 발각: 여기에 목록을 하드코딩했더니(Code.js·contents_*·appsscript.json)
+ * 실제로 배포되는 상담AI.js·교재연동.js·만족도팩.js 3종이 감시 밖이었다. 즉 그 파일들은
+ * **미커밋인 채로 clasp push가 통과**했다 — 라이브가 git 이력보다 앞서가는 것을 막겠다는
+ * 이 훅의 존재 이유가 정작 파일 절반에서 작동하지 않았다.
+ * .claspignore 주석은 그 3종이 빠지면 "반쪽 배포"라고 스스로 적어 두었는데 가드만 몰랐다.
+ * → 목록을 베끼지 않는다. 배포 집합을 정하는 파일에서 그대로 읽는다([[guard-must-check-result]] 패턴). */
+function deployTargets() {
+  try {
+    const pats = fs
+      .readFileSync(path.join(ROOT, '.claspignore'), 'utf8')
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l.startsWith('!'))
+      .map((l) => l.slice(1).trim())
+      .filter(Boolean);
+    if (pats.length) return pats;
+  } catch (_) {}
+  // .claspignore를 못 읽으면 넓게 잡는다 — 폴백은 항상 '더 많이 검사하는' 쪽
+  return ['appsscript.json', '*.js'];
+}
+function globToRe(g) {
+  return new RegExp('^' + g.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*') + '$');
+}
+
 // 3) 배포 대상 파일 미커밋 금지 (커밋 → git push → clasp push 순서 강제)
 try {
-  const dirty = run('git', ['status', '--porcelain'])
+  const targets = deployTargets().map(globToRe);
+  // core.quotepath=false — 끄지 않으면 한글 파일명이 "\354\203\201…" 로 이스케이프돼 매칭이 통째로 빗나간다
+  //   (상담AI.js·교재연동.js·만족도팩.js가 전부 한글이라 이 한 줄이 없으면 목록을 고쳐도 여전히 못 잡는다)
+  const dirty = run('git', ['-c', 'core.quotepath=false', 'status', '--porcelain'])
     .split('\n')
     .filter(Boolean)
-    .filter((l) => /^(Code\.js|contents_[^/]*\.js|appsscript\.json)$/.test(l.slice(3).replace(/"/g, '').trim()));
-  if (dirty.length) problems.push(`미커밋 배포 파일(${dirty.map((l) => l.slice(3).trim()).join(', ')}): 커밋 먼저`);
+    .map((l) => {
+      let p = l.slice(3).trim();
+      const arrow = p.indexOf(' -> '); // rename: "R  old -> new" → 새 이름이 배포 대상인지 본다
+      if (arrow !== -1) p = p.slice(arrow + 4).trim();
+      return p.replace(/^"|"$/g, '');
+    })
+    .filter((p) => targets.some((re) => re.test(p)));
+  if (dirty.length) problems.push(`미커밋 배포 파일(${dirty.join(', ')}): 커밋 먼저`);
 } catch (_) {
   problems.push('git status 확인 실패 — 저장소 상태를 확인할 수 없어 차단');
 }
