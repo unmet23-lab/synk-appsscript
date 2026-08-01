@@ -413,7 +413,7 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
   // 선점 주인들이 실제로 그 열을 쓰는지(레지스트리의 근거) — 코드가 바뀌면 이 목록도 갱신해야 한다
   assert.ok(code.includes("pf.getRange('DA1').getValue()) !== '최애'"), 'DA105 최애 보장 코드가 사라짐 — 레지스트리 갱신 필요');
   assert.ok(code.includes("pf.getRange('DO1').getValue()) !== '랭킹보드HTML'"), 'DO119 랭킹보드 보장 코드가 사라짐 — 레지스트리 갱신 필요');
-  assert.ok(code.includes("pf.getRange('DY1').getValue()) !== '오늘의만남'"), 'DY129 오늘의만남 보장 코드가 사라짐 — 레지스트리 갱신 필요'); // [v9.99]
+  assert.ok(code.includes("pf.getRange('DY1').setValue('오늘의만남')"), 'DY129 오늘의만남 보장 코드가 사라짐 — 레지스트리 갱신 필요'); // [v9.99]
   const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
   ['DB1', 'DC1', 'DD1'].forEach(cell => assert.ok(tb.includes("getRange('" + cell + "')"), '교재연동.js ' + cell + ' 보장 코드가 사라짐 — 레지스트리 갱신 필요'));
 });

@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.100'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.100] 결석 복귀율↔케어지수 담당강사 산출 통일 — 두 인센티브 지표가 같은 강사에게 귀속되도록 teachersOfClass_ 단일 소스화
+const SYNK_VERSION = 'v9.101'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.100] 결석 복귀율↔케어지수 담당강사 산출 통일 — 두 인센티브 지표가 같은 강사에게 귀속되도록 teachersOfClass_ 단일 소스화 · [v9.101] DY129 점거 가드 — v9.99 발화 엔진의 신설 열이 남의 헤더를 덮던 구멍
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -2853,9 +2853,24 @@ function calcAll() {
      *   훈련 장치(같은 과제 3회 반복)가 그대로 서사가 되는 지점 — "오늘 나는 세 사람과 만난다".
      *   상담 5열(DT124~DX128) 다음의 calcAll 소유 독립 열. 계산값이라 새 원천·쓰기 압력이 없고,
      *   writeIfChanged라 값이 바뀌는 날(수업일)에만 실제로 쓴다. */
+    /*   ⚠ 점거 가드(v9.84와 같은 계급) — 이 저장소는 열 충돌로 두 번 당했다(오늘의알림 덮임·리그 DO119 선점).
+     *   지금 129는 비어 있지만 세션이 병렬로 돌기 때문에 남이 먼저 자리를 잡을 수 있다. 남의 헤더가 있으면
+     *   덮지 않고 기입 전체를 멈춘다 — 헤더만 갈아끼우면 그 열의 실데이터가 다음 calcAll에 통째로 밀린다. */
     if (pf.getMaxColumns() < 129) pf.insertColumnsAfter(pf.getMaxColumns(), 129 - pf.getMaxColumns());
-    if (String(pf.getRange('DY1').getValue()) !== '오늘의만남') pf.getRange('DY1').setValue('오늘의만남');
-    writeIfChanged(pf, 2, 129, meetOut);
+    const dyCur = String(pf.getRange('DY1').getValue() || '').trim();
+    const stDY = ensureSheet(ss, 'app_state', ['key', 'value']);
+    if (dyCur && dyCur !== '오늘의만남') {
+      if (String(getState(stDY, '만남열충돌').val || '') !== dyCur) {   // 상태가 바뀔 때만 1회 알린다
+        adminMail('[SYNK] ⚠️ 오늘의만남 열 충돌 — 기입 보류',
+          'profiles DY129에 다른 주인 헤더가 있어 소그룹 짝 기입을 멈췄습니다: ' + dyCur +
+          '\n열 이동·개명 후 calcAll이 다음 계산에서 자동 재개합니다. (같은 상태면 다시 알리지 않습니다)');
+        setState(stDY, '만남열충돌', dyCur);
+      }
+    } else {
+      if (String(getState(stDY, '만남열충돌').val || '') !== '') setState(stDY, '만남열충돌', ''); // 해소 → 재무장
+      if (!dyCur) pf.getRange('DY1').setValue('오늘의만남');
+      writeIfChanged(pf, 2, 129, meetOut);
+    }
     // [v9.50·A4] 최애(DA 105) — 학생이 Glide Set Column으로 쓰는 사용자 소유 열(드림한줄 CB와 동일 방식).
     //   개인화 예문·한 문장·퀴즈의 재료로 aiStudioBatch_가 읽기만 한다. 비면 개인화는 약점 기반으로만.
     if (pf.getMaxColumns() < 105) pf.insertColumnsAfter(pf.getMaxColumns(), 105 - pf.getMaxColumns());
