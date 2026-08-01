@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.116'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
+const SYNK_VERSION = 'v9.117'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -16224,6 +16224,13 @@ function onOpen() {
       .addItem('🔄 전체 재계산', 'calcAll')
       .addSeparator()
       .addItem('🩺 조립 진단(preflight)', 'preflightGlide')
+      // [v9.117] 언더바 함수 — **편집기 드롭다운에는 안 뜨지만 메뉴에서는 도는가**를 확인하는 첫 사례.
+      //   GAS의 `_` 접미 규약은 "라이브러리로 export하지 않는다 · Run 드롭다운·트리거 UI에 안 보인다"이고,
+      //   addItem의 2번째 인자는 같은 스크립트 안의 전역을 이름으로 부르는 것이라 무관할 것으로 본다(미검증).
+      //   맞다면 배치·스위프(absenceFollowupNightly_·sweepAbsenceForm_·aiFeedbackBatch_ …)를 밤을 기다리지 않고
+      //   수동으로 한 번 돌려볼 수 있게 된다 — 지금은 그게 불가능해 스모크 테스트를 정적 검증으로 때우고 있다.
+      //   검증체로 sheetSelfHeal_을 고른 이유: 인자 없음 · 멱등 · 야간에 이미 도는 자기치유라 눌러도 무해.
+      .addItem('🩹 시트 자기치유', 'sheetSelfHeal_')
       .addSeparator()
       // [v9.111] 온라인 강의 2종 — 순서대로 누르면 된다(자리 깔기 → URL 채우기 → 폼 만들기).
       //   편집기 드롭다운은 배포 직후 새로고침 전까지 새 함수를 안 보여줘서 "함수가 없다"로 읽힌다.
