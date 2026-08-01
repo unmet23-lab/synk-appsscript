@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.119'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
+const SYNK_VERSION = 'v9.120'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -1225,8 +1225,114 @@ function clearContinue_(fnName) {
   try { ScriptApp.getProjectTriggers().forEach(t => { if (t.getHandlerFunction() === fnName) ScriptApp.deleteTrigger(t); }); } catch (e) {}
 }
 
+/* ===================== [v9.120] 🧪 배치 리허설 모드 =====================
+ * 문제: 개원 전에 배치·스위프를 검증해야 하는데, 돌리면 부작용이 밖으로 나간다 —
+ *   학부모·강사에게 진짜 메일이 가고, Claude API 비용이 실제로 청구된다. 그래서 지금까지
+ *   새 배치는 하룻밤을 기다리거나 코드 정적 검증으로 때웠다(실측: 결석 추적 v9.89가 그랬다).
+ * 해법: 밖으로 나가는 것만 막고 로직은 그대로 돌린다. 관문이 이미 좁다 —
+ *   메일 발송 46곳 중 43곳이 quotaOk를 거치고, AI 비용은 aiText_·callClaudeFeedback_ 둘뿐이다.
+ *   그 6곳에만 게이트를 달면 나머지 코드는 한 줄도 안 바뀐다.
+ * ⚠ 가장 큰 위험은 "켜둔 채 잊는 것"이다 — 리허설 중엔 진짜 알림도 안 나가므로, 밤이 오면
+ *   그날 알림이 통째로 죽는다. 그래서 이중 안전장치를 둔다:
+ *   ① TTL(기본 20분) 자동 만료  ② 야간 배치 진입 시 강제 해제 + 원장 통보.
+ *   판정 실패 시에는 항상 '리허설 아님'(=정상 발송)으로 떨어진다 — 평상시가 압도적으로 많고,
+ *   조용히 알림이 죽는 쪽이 조용히 메일 한 통 나가는 쪽보다 훨씬 비싸다. */
+const REHEARSAL_UNTIL_KEY = '배치리허설_만료';
+const REHEARSAL_LOG_KEY = '배치리허설_기록';
+const REHEARSAL_TTL_MIN = 20;
+const REHEARSAL_LOG_MAX = 6000;
+
+function isRehearsal_() {
+  try {
+    const p = PropertiesService.getScriptProperties();
+    const until = Number(p.getProperty(REHEARSAL_UNTIL_KEY) || 0);
+    if (!until) return false;
+    if (Date.now() > until) { p.deleteProperty(REHEARSAL_UNTIL_KEY); return false; } // TTL 만료 = 자동 해제
+    return true;
+  } catch (e) { return false; } // 판정 불가 → 정상 발송 쪽으로(게이트가 알림을 삼키지 않게)
+}
+
+// 차단된 것을 기록한다 — "무엇이 나갈 뻔했나"를 못 보면 리허설은 그냥 아무것도 안 한 것과 같다.
+function rehearsalNote_(what) {
+  try {
+    const p = PropertiesService.getScriptProperties();
+    const cur = String(p.getProperty(REHEARSAL_LOG_KEY) || '');
+    if (cur.length > REHEARSAL_LOG_MAX) return; // 폭주 방지(Properties 용량 보호)
+    p.setProperty(REHEARSAL_LOG_KEY, cur + '· ' + what + '\n');
+  } catch (e) {}
+}
+
+// 야간 배치 진입점에서 호출 — 리허설이 켜진 채 밤이 오면 그날 알림이 통째로 죽는다.
+function rehearsalForceOff_() {
+  try {
+    const p = PropertiesService.getScriptProperties();
+    if (!p.getProperty(REHEARSAL_UNTIL_KEY)) return;
+    p.deleteProperty(REHEARSAL_UNTIL_KEY);
+    Logger.log('⚠ 리허설이 켜진 채 야간 배치 진입 — 강제 해제했다(그대로 두면 오늘 알림이 전부 죽는다)');
+  } catch (e) {}
+}
+
+/* ── 리허설 조작부(메뉴에서 부른다) ─────────────────────────────────────
+ * 배치 실행 항목은 반드시 리허설 가드를 통과해야 한다 — 실수로 눌렀을 때 아무 일도 없어야
+ * 메뉴에 올릴 수 있다. 가드가 없으면 클릭 한 번이 학부모 메일 발송이 된다. */
+function rehearsalStart() {
+  const p = PropertiesService.getScriptProperties();
+  p.setProperty(REHEARSAL_UNTIL_KEY, String(Date.now() + REHEARSAL_TTL_MIN * 60000));
+  p.deleteProperty(REHEARSAL_LOG_KEY);
+  try {
+    SpreadsheetApp.getUi().alert('🧪 리허설 시작 (' + REHEARSAL_TTL_MIN + '분)\n\n'
+      + '지금부터 배치를 돌려도 메일이 나가지 않고 AI 비용도 들지 않습니다.\n'
+      + '계산·시트 기록은 평소처럼 진행되니 결과를 그대로 확인하실 수 있습니다.\n\n'
+      + '· 아래 「배치 실행」 항목들을 눌러 보세요\n'
+      + '· 끝나면 「🧪 리허설 결과·종료」로 무엇이 나갈 뻔했는지 확인하세요\n\n'
+      + '※ ' + REHEARSAL_TTL_MIN + '분 뒤 자동으로 꺼집니다(켜둔 채 잊어도 안전).');
+  } catch (e) {}
+}
+
+function rehearsalReport() {
+  const p = PropertiesService.getScriptProperties();
+  const log = String(p.getProperty(REHEARSAL_LOG_KEY) || '');
+  const on = isRehearsal_();
+  p.deleteProperty(REHEARSAL_UNTIL_KEY);
+  p.deleteProperty(REHEARSAL_LOG_KEY);
+  const lines = log.split('\n').filter(String);
+  try {
+    SpreadsheetApp.getUi().alert('🧪 리허설 ' + (on ? '종료' : '종료(이미 만료됨)') + '\n\n'
+      + (lines.length
+          ? '차단된 외부 동작 ' + lines.length + '건 — 실제였다면 아래가 나갔습니다:\n\n'
+            + lines.slice(0, 40).join('\n') + (lines.length > 40 ? '\n… 외 ' + (lines.length - 40) + '건' : '')
+          : '차단된 외부 동작이 없습니다.\n\n배치를 안 돌렸거나, 보낼 대상이 없었다는 뜻입니다\n(개원 전이라 로스터가 비어 있으면 정상입니다).')
+      + '\n\n이제 평소 상태로 돌아왔습니다.');
+  } catch (e) {}
+  return lines;
+}
+
+function rehearseAbsenceFollowup() { rehearseRun_('결석 복귀 판정', absenceFollowupNightly_); }
+function rehearseAiFeedback() { rehearseRun_('AI 첨삭 배치', aiFeedbackBatch_); }
+
+function rehearseRun_(label, fn) {
+  const ui = (function () { try { return SpreadsheetApp.getUi(); } catch (e) { return null; } })();
+  if (!isRehearsal_()) { // 리허설 밖에서는 절대 돌리지 않는다 — 이 한 줄이 메뉴 등재의 전제다
+    if (ui) ui.alert('⛔ 먼저 「🧪 리허설 시작」을 눌러 주세요.\n\n'
+      + '리허설 없이 ' + label + '을(를) 실행하면 강사·학부모에게 실제 메일이 발송되고\n'
+      + 'AI 비용이 청구됩니다. 그래서 막았습니다.');
+    return;
+  }
+  const t0 = Date.now();
+  let err = '';
+  try { fn(); } catch (e) { err = String(e); }
+  const sec = ((Date.now() - t0) / 1000).toFixed(1);
+  rehearsalNote_(label + ' 실행 ' + sec + '초' + (err ? ' · 오류: ' + err.slice(0, 120) : ''));
+  if (ui) ui.alert('🧪 ' + label + ' 리허설 완료 (' + sec + '초)\n\n'
+    + (err ? '⚠ 오류가 났습니다:\n' + err.slice(0, 300) + '\n\n이게 리허설의 목적입니다 — 실제 밤에 터졌으면 몰랐을 것입니다.'
+           : '오류 없이 끝났습니다.')
+    + '\n\n무엇이 나갈 뻔했는지는 「🧪 리허설 결과·종료」에서 봅니다.');
+}
+
 /* --- 메일 쿼터 가드 --- */
 function quotaOk(needed) {
+  // [v9.120] 리허설이면 여기서 전부 막힌다 — 발송 46곳 중 43곳이 이 관문을 지난다.
+  if (isRehearsal_()) { rehearsalNote_('메일 ' + needed + '통 (차단)'); return false; }
   const q = MailApp.getRemainingDailyQuota();
   if (q >= needed + 3) return true;
   try {
@@ -4107,7 +4213,8 @@ function notifyParents() {
       MailApp.sendEmail(s.pEmail, '[SYNK] ' + s.name + ' 학생, 오늘 칭찬받았어요! 🎉', body);
     } else {
       // [v9.28] 한몽 병기 — 유일하게 발송되는 안전 알림인데 한국어 전용이던 문제 수정 (등원 메일과 동일 패턴)
-      MailApp.sendEmail(s.pEmail, '[SYNK] ' + s.name + ' өнөөдөр ирээгүй байна',
+      // [v9.120] quotaOk 가드 신설 — 이 발송만 관문 밖이었다(쿼터 소진 시 무방비 + 리허설 누수)
+      if (quotaOk(1)) MailApp.sendEmail(s.pEmail, '[SYNK] ' + s.name + ' өнөөдөр ирээгүй байна',
         'Сайн байна уу! 👋\n\n' + s.name + ' сурагч өнөөдөр(' + todayStr + ') ирц бүртгэгдээгүй байна.\n' +
         'Хэрэв шалтгаантай бол багшид мэдэгдээрэй эсвэл дараагийн удаа хичээлийн өмнө урьдчилан мэдэгдээрэй.\n\n' +
         '(' + s.name + ' 학생이 오늘(' + todayStr + ') 출석 기록이 없습니다. 사정이 있으셨다면 담당 선생님께 알려주시거나, 다음부터는 수업 전 결석 사전신고를 이용해 주세요.)\n\n' +
@@ -5460,6 +5567,9 @@ function parentWeeklyDigestCore_(holdRaw) {
       '\n\n자세한 내용은 SYNK 앱에서 확인하실 수 있어요 😊\n\n' +
       'Долоо хоногийн тойм — ирц ' + att + ' · оноо +' + pts + 'P' +
       ((mvpN + synN) > 0 ? ' · титэм ' + (mvpN + synN) + 'ш 👑' : '') + ' 🎉';
+    // [v9.120] quotaOk 가드 신설 — 관문 밖이던 발송. 실패 시 sent·sentIds도 건너뛴다
+    //   (마킹은 발송 성공분만 — 안 그러면 쿼터로 못 보낸 학생이 '보냈음'으로 마킹돼 영영 안 간다)
+    if (!quotaOk(1)) return;
     MailApp.sendEmail(k.m, '[SYNK] 📮 ' + k.n + ' — 이번 주 소식', body);
     sent++;
     sentIds.push(String(k.sid));
@@ -6845,7 +6955,8 @@ function monthlyGameBatch() {
       aBody += t + ' — ' + byTitle[t].join(', ') + '\n';
       if (loreMap[t]) aBody += '   상장 문구: "' + loreMap[t] + '"\n';
     });
-    MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🏆 ' + ym + ' 왕관 시상식 준비', aBody);
+    // [v9.120] quotaOk 가드 신설 — 관문 밖이던 마지막 발송
+    if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🏆 ' + ym + ' 왕관 시상식 준비', aBody);
   }
 
   // [v7.3] 최고 월간 기록(자기 경신 AS·AT) + 이달의 스토리(AU) — 학부모·여정 탭 원클릭 바인딩용
@@ -10835,6 +10946,9 @@ function aiFeedbackBatch_() {
 // [v9.49] Claude API 호출 — 구조화 출력(output_config.format json_schema)으로 4칸 스키마를 보장받는다.
 //   비-200·refusal·text 블록 부재는 throw → 호출부가 중단·재시도. 모델·톤 규칙은 AI_FEEDBACK_MODEL 주석 참조.
 function callClaudeFeedback_(apiKey, stu, text) {
+  // [v9.120] 리허설 = 비용 0. throw로 올려야 호출부(aiFeedbackBatch_)의 오류 경로를 함께 리허설한다
+  //   — null을 돌려주면 "정상 응답인데 내용이 빈 것"으로 흘러 포인터가 전진해 버린다.
+  if (isRehearsal_()) { rehearsalNote_('AI 첨삭 callClaudeFeedback_ (차단·비용 0)'); throw new Error('리허설 모드: AI 호출 차단'); }
   const schema = {
     type: 'object', additionalProperties: false,
     required: ['corrected', 'point_mn', 'praise', 'mission'],
@@ -10916,6 +11030,7 @@ function aiCall_(apiKey, system, user, schema, maxTok) {
 }
 // 자유 텍스트 헬퍼 — 키 없음·실패 전부 null(호출부는 null이면 조용히 생략)
 function aiText_(prompt, maxTok) {
+  if (isRehearsal_()) { rehearsalNote_('AI 호출 aiText_ (차단·비용 0)'); return null; } // [v9.120]
   try {
     const key = PropertiesService.getScriptProperties().getProperty('CLAUDE_API_KEY');
     if (!key) return null;
@@ -14453,6 +14568,7 @@ function safeRun(name, fn) {
 }
 
 function morningJobs() {   // 매일 07시
+  rehearsalForceOff_(); // [v9.120] 리허설이 켜진 채 배치가 오면 그날 알림이 통째로 죽는다 — TTL과 별개의 두 번째 안전장치
   safeRun('syncProfiles', syncProfiles);       // [v7.0] 동기화 먼저 — 신규 학생 생일을 당일부터 인식
   safeRun('birthdayCheck', birthdayCheck);
   safeRun('checkConsultDelay', checkConsultDelay);
@@ -14468,6 +14584,7 @@ function morningJobs() {   // 매일 07시
 }
 
 function nightJobs() {     // 매일 22시 — 수업 종료 후
+  rehearsalForceOff_(); // [v9.120] 리허설이 켜진 채 배치가 오면 그날 알림이 통째로 죽는다 — TTL과 별개의 두 번째 안전장치
   safeRun('expandLessonLog', expandLessonLog_);   // [v9.36] 수업 마감 로그 승격분 → 숙제 +10·연료 전개 (calcAll 앞 = 그날 밤 게이지·랭킹 즉시 반영)
   safeRun('expandMasteryLog', expandMasteryLog_); // [v9.36] 당일 문법 태그 → mastery_log upsert (calcAll 앞 = 그날 밤 진화 게이트 즉시 반영)
   safeRun('calcAll', calcAll); // 오늘의 숙제 게시(21시 조건) + Glide가 만든 point_logs A·F 빈칸 보정
@@ -16251,6 +16368,14 @@ function onOpen() {
       //   수동으로 한 번 돌려볼 수 있게 된다 — 지금은 그게 불가능해 스모크 테스트를 정적 검증으로 때우고 있다.
       //   검증체로 sheetSelfHeal_을 고른 이유: 인자 없음 · 멱등 · 야간에 이미 도는 자기치유라 눌러도 무해.
       .addItem('🩹 시트 자기치유', 'sheetSelfHeal_')
+      .addSeparator()
+      // [v9.120] 🧪 배치 리허설 — 개원 전에 배치를 "돌려보고" 검증하기 위한 것.
+      //   리허설을 켜면 메일·AI 호출이 전부 막히고(quotaOk·aiText_·callClaudeFeedback_ 게이트),
+      //   무엇이 나갈 뻔했는지만 기록된다. 배치 실행 항목은 리허설 밖에서 누르면 스스로 거부한다.
+      .addItem('🧪 리허설 시작(' + REHEARSAL_TTL_MIN + '분)', 'rehearsalStart')
+      .addItem('　└ 결석 복귀 판정 실행', 'rehearseAbsenceFollowup')
+      .addItem('　└ AI 첨삭 배치 실행', 'rehearseAiFeedback')
+      .addItem('🧪 리허설 결과·종료', 'rehearsalReport')
       .addSeparator()
       // [v9.111] 온라인 강의 2종 — 순서대로 누르면 된다(자리 깔기 → URL 채우기 → 폼 만들기).
       //   편집기 드롭다운은 배포 직후 새로고침 전까지 새 함수를 안 보여줘서 "함수가 없다"로 읽힌다.

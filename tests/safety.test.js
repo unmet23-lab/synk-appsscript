@@ -2012,7 +2012,12 @@ test('[v9.110] 시트 메뉴 — 안전 항목만 올리고 파괴적 함수는 
     assert.equal(menu.includes(`'${f}'`), false, `파괴적 함수 ${f}가 메뉴에 올라갔다 — 한 번 잘못 누르면 라이브 사고`);
   });
   // UI 없는 컨텍스트(트리거)에서 죽지 않아야 한다 — onOpen 실패가 시트 열기를 막으면 안 된다
-  assert.ok(code.slice(start, start + 1400).includes('catch (eMenu)'), '메뉴 생성 실패 격리가 없다');
+  //   ⚠ 여기 초판은 `code.slice(start, start + 1400)`이었다. 메뉴 항목이 늘자 catch가 1400자 밖으로
+  //   밀려 테스트가 죽었다 — **고정 길이도 앵커다**(v9.116에서 문구 앵커로 같은 실패를 겪었다).
+  //   함수 끝까지를 범위로 잡아 길이 의존을 없앤다.
+  const fnEnd = code.indexOf('\n}', code.indexOf('addToUi();', start));
+  assert.ok(fnEnd > start, 'onOpen 함수 끝을 찾지 못했다');
+  assert.ok(code.slice(start, fnEnd).includes('catch (eMenu)'), '메뉴 생성 실패 격리가 없다');
 });
 
 test('[v9.107] 주간 통합 리포트 sections — 배열 요소 쉼표 누락 회귀 차단', () => {
@@ -2077,4 +2082,39 @@ test('[v9.113] 인센티브 배점 3종 — 구간 경계 + 미측정은 점수 
   assert.equal(tot([20, null, null]), '20 / 20', '미측정이 분모에 남으면 만점이 불가능해진다');
   assert.equal(tot([null, null, null]), '', '전부 미측정인데 0점으로 표기된다');
   assert.equal(tot([0, 0, null]), '0 / 40', '실제 0점(측정됨)은 미측정과 구분돼야 한다');
+});
+
+test('[v9.120] 배치 리허설 — 밖으로 나가는 것만 막고, 켜둔 채 잊어도 안전하다', () => {
+  // 목적: 개원 전에 배치를 "돌려보고" 검증한다. 지금까지는 돌리면 학부모에게 진짜 메일이 가고
+  // AI 비용이 청구돼, 새 배치를 하룻밤 기다리거나 정적 검증으로 때워야 했다.
+  // ① 관문 — 메일 발송이 전부 quotaOk를 지나야 이 설계가 성립한다(한 곳을 막으면 전부 막힌다)
+  const lines = code.split(/\r?\n/);
+  const ungated = lines.filter((l, i) => /MailApp\.sendEmail/.test(l)
+    && !/quotaOk\(/.test(lines.slice(Math.max(0, i - 12), i + 1).join('\n')));
+  assert.deepEqual(ungated.map((l) => l.trim().slice(0, 60)), [],
+    '관문(quotaOk) 밖 발송이 있다 — 리허설 중에도 이 메일은 실제로 나간다');
+
+  // ② 게이트 3종 — 메일·AI 텍스트·AI 첨삭
+  const q = section('function quotaOk(needed)', 'function playStyleOf_(');
+  assert.ok(q.includes('isRehearsal_()') && q.includes('return false'), 'quotaOk에 리허설 게이트가 없다');
+  assert.ok(section('function aiText_(', 'function aiStudents_(').includes('isRehearsal_()'), 'aiText_ 게이트 없음(API 비용)');
+  assert.ok(section('function callClaudeFeedback_(', 'function parentSweep()').includes('isRehearsal_()'), 'callClaudeFeedback_ 게이트 없음(API 비용)');
+
+  // ③ 켜둔 채 잊는 것이 가장 큰 위험 — 이중 안전장치
+  const infra = section('const REHEARSAL_UNTIL_KEY', 'function quotaOk(needed)');
+  assert.ok(infra.includes('Date.now() > until'), 'TTL 자동 만료가 없다 — 켜두면 알림이 영영 죽는다');
+  assert.ok(infra.includes('catch (e) { return false; }'), '판정 실패 시 리허설로 떨어지면 알림을 조용히 삼킨다');
+  ['function nightJobs()', 'function morningJobs()'].forEach((fn) => {
+    const body = code.slice(code.indexOf(fn), code.indexOf(fn) + 400);
+    assert.ok(body.includes('rehearsalForceOff_()'), `${fn} 진입 시 강제 해제가 없다 — 그날 알림이 통째로 죽는다`);
+  });
+
+  // ④ 배치 실행 항목은 리허설 밖에서 스스로 거부해야 메뉴에 올릴 수 있다
+  const run = section('function rehearseRun_(', 'function quotaOk(needed)');
+  assert.ok(run.includes('if (!isRehearsal_())') && run.includes('return;'),
+    '리허설 가드 없이 배치가 도는다 — 클릭 한 번이 학부모 메일 발송이 된다');
+
+  // ⑤ 차단된 것을 기록해야 리허설이 의미를 갖는다("무엇이 나갈 뻔했나")
+  assert.ok(q.includes('rehearsalNote_('), '차단 기록이 없다 — 아무것도 안 한 것과 구별되지 않는다');
+  assert.ok(infra.includes('REHEARSAL_LOG_MAX'), '기록 폭주 상한이 없다(Properties 용량)');
 });
