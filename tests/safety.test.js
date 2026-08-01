@@ -1970,22 +1970,26 @@ test('[v9.108] 강사별 접기 — 미측정은 분모에서 빠지고, 판정 
   assert.equal(out.에리카.tot, 0);
 });
 
-test('[v9.108] teacher_stats 14열 — 3지표가 축 위에 얹혔고, 미측정 행은 빈칸이다', () => {
+test('[v9.112] teacher_stats 17열 — 3지표가 축 위에 얹혔고, 미측정 행은 빈칸이다', () => {
   const heads = code.match(/const TEACHER_STATS_HEADERS = \[([\s\S]*?)\];/)[1];
-  ['승급통과율%', '결석복귀율%', '재등록률%', '복귀배점', '지표모수'].forEach((h) => {
+  ['승급통과율%', '승급배점', '결석복귀율%', '복귀배점', '재등록률%', '재등록배점', '인센티브점수', '지표모수'].forEach((h) => {
     assert.ok(heads.includes(`'${h}'`), `헤더에 ${h} 없음`);
   });
-  assert.equal(heads.split(',').filter((s) => s.trim()).length, 14, '헤더 폭이 14열이 아니다');
+  assert.equal(heads.split(',').filter((s) => s.trim()).length, 17, '헤더 폭이 17열이 아니다');
+  // 비율 바로 옆에 그 배점이 오도록 — 흩어지면 "이 점수가 어느 비율에서 나왔나"를 눈으로 못 잇는다
+  ['승급통과율%\', \'승급배점', '결석복귀율%\', \'복귀배점', '재등록률%\', \'재등록배점'].forEach((pair) => {
+    assert.ok(heads.includes(pair), `(비율, 배점) 쌍이 인접하지 않다: ${pair}`);
+  });
   // 무데이터 → 빈칸(0 아님). **동작으로 검사한다** — 문자열 매칭만 두면 `null ? '' :`를 `null ? 0 :`으로
   //   바꿔도 통과해 가드가 무력화된다(작성 중 변이 주입으로 실제 확인한 구멍).
   const { rows } = runTeacherStats_({
     profileRows: [mkTeacher('T1', '바트', '정규반1', 'bat@synk.im'), mkStu('S1', '정규반1', 10, 100, 2)]
   });
   const r = rows[0];
-  assert.equal(r.length, 14, '행 폭이 헤더(14열)와 다르다 — 열 밀림');
-  [9, 10, 11, 12].forEach((i) => assert.strictEqual(r[i], '',
-    `미측정 지표(${i}열)가 빈칸이 아니다 — 0%로 둔갑하면 강사가 앱 결함으로 급여를 잃는다`));
-  assert.equal(r[13], '승급 0 · 복귀 0 · 재등록 0', '지표모수 표기가 계약과 다르다');
+  assert.equal(r.length, 17, '행 폭이 헤더(17열)와 다르다 — 열 밀림');
+  [9, 10, 11, 12, 13, 14, 15].forEach((i) => assert.strictEqual(r[i], '',
+    `미측정 지표(${i}열)가 빈칸이 아니다 — 0%·0점으로 둔갑하면 강사가 앱 결함으로 급여를 잃는다`));
+  assert.equal(r[16], '승급 0 · 복귀 0 · 재등록 0', '지표모수 표기가 계약과 다르다');
   const body = section('function calcTeacherStats()', 'function monthlyReport()');
   assert.ok(body.includes("'승급 ' + pm.tot"), '분모(지표모수) 노출이 없다 — 80%가 5명 중 4명인지 알 수 없다');
   // 지표별 격리: 한 시트가 없어도 나머지 계산이 죽으면 안 된다
@@ -2032,4 +2036,30 @@ test('[v9.107] 주간 통합 리포트 sections — 배열 요소 쉼표 누락 
   evaluated.forEach((sec, i) => {
     assert.ok(sec && typeof sec[0] === 'string', `sections[${i}]가 undefined이거나 제목이 없다 — 쉼표 누락 계열 결함`);
   });
+});
+
+test('[v9.113] 인센티브 배점 3종 — 구간 경계 + 미측정은 점수 자체가 없다', () => {
+  const load = (n) => loadFunction('const TEACHER_STATS_HEADERS', 'function calcTeacherStats()', n, {});
+  const pm = load('promotionScore_'), re = load('reenrollScore_'), ab =
+    loadFunction('function absenceReturnState_', 'function checkNoShow()', 'absenceReturnScore_', {});
+
+  // 승급 — 도달제라 임계가 낮다(60/50/40/30). 경계값이 아래 구간으로 새면 강사가 한 등급 손해본다.
+  [[60, 20], [59, 16], [50, 16], [49, 12], [40, 12], [39, 6], [30, 6], [29, 0], [0, 0]]
+    .forEach(([r, s]) => assert.equal(pm(r), s, `승급 ${r}% → ${s}점이어야 한다`));
+  // 재등록 — '지켜내는' 지표라 복귀와 같은 높은 임계(90/85/80/75)
+  [[90, 20], [89, 16], [85, 16], [84, 12], [80, 12], [79, 6], [75, 6], [74, 0]]
+    .forEach(([r, s]) => assert.equal(re(r), s, `재등록 ${r}% → ${s}점이어야 한다`));
+  // 셋 다 만점 20 동률(가중치를 다르게 줄 근거가 없다) + 미측정은 null(0점이 아니다)
+  assert.equal(pm(100), 20); assert.equal(re(100), 20); assert.equal(ab(100), 20);
+  [pm, re, ab].forEach((f) => {
+    assert.strictEqual(f(null), null, '미측정이 0점으로 환산된다 — 앱이 못 잰 것이 급여 삭감이 된다');
+    assert.strictEqual(f(undefined), null);
+  });
+
+  // 총점은 '획득 / 가능' — 측정된 지표만 분모에 들어간다
+  const tot = load('incentiveTotal_');
+  assert.equal(tot([20, 16, 12]), '48 / 60', '3지표 전부 측정 시 분모 60');
+  assert.equal(tot([20, null, null]), '20 / 20', '미측정이 분모에 남으면 만점이 불가능해진다');
+  assert.equal(tot([null, null, null]), '', '전부 미측정인데 0점으로 표기된다');
+  assert.equal(tot([0, 0, null]), '0 / 40', '실제 0점(측정됨)은 미측정과 구분돼야 한다');
 });
