@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.108'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.108] STT 배선 — GCP Speech-to-Text 전사(서비스 계정 JWT·매니페스트 무변경) · [v9.108] 인센티브 3지표(승급 통과율·결석 복귀율·재등록률) teacher_stats 편입 — v9.87이 고친 강사 축 위에 올린다
+const SYNK_VERSION = 'v9.110'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -16175,4 +16175,23 @@ function lectureWeeklyText_(ss) {
       ? '\n  주의 60% 미만: ' + low.join(' · ') +
         '\n     대면이 주 1회뿐이라 이 학생들은 진도의 상당 부분을 안 들은 상태입니다. 승급 판정 전에 확인하세요.'
       : '\n  - 60% 미만 없음');
+}
+
+/* ===================== [v9.110] 시트 메뉴 — 수동 실행 진입점 =====================
+ * 이 저장소엔 onOpen이 없어 「SYNK 메뉴」가 존재한 적이 없다. 수동 실행은 Apps Script 편집기에서
+ * 함수 138개 중 하나를 드롭다운으로 골라 ▶를 눌러야만 가능했다 — 오선택 위험이 크고(setupSchedule은
+ * 라이브 반 편성을 리셋한다), 비개발자에게는 사실상 닫힌 경로였다.
+ * → 자주 쓰는 **안전한** 항목만 시트 메뉴로 올린다. 파괴적·일회성 함수(setupSchedule·seedDemoData·
+ *   clearDemoData·각종 create*Form)는 의도적으로 넣지 않는다. 메뉴에 올리는 순간 "한 번 잘못 누름"이
+ *   그대로 라이브 사고가 되므로, 그런 것들은 편집기에서 의식적으로 고르게 둔다.
+ * onOpen은 단순 트리거라 별도 권한 승인이 필요 없다(시트를 열면 자동 설치). */
+function onOpen() {
+  try {
+    SpreadsheetApp.getUi().createMenu('SYNK')
+      .addItem('📊 강사 지표 갱신', 'calcTeacherStats')
+      .addItem('🔄 전체 재계산', 'calcAll')
+      .addSeparator()
+      .addItem('🩺 조립 진단(preflight)', 'preflightGlide')
+      .addToUi();
+  } catch (eMenu) { Logger.log('시트 메뉴 생성 스킵: ' + eMenu); } // UI 없는 컨텍스트(트리거 실행)에서는 조용히 통과
 }
