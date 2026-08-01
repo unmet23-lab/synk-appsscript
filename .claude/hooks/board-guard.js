@@ -58,6 +58,34 @@ if (tool === 'Write') {
   }
 }
 
+/* ── 결과 기반 검사 (2026-08-01 실사고 대응) ───────────────────────────────
+ * 들어오는 '조각'만 보면 **상태 칸 하나를 갈아끼우는 편집**(보드 갱신의 가장 흔한 모양)이
+ * `|`로 시작하지 않아 isDataRow를 통과하지 못하고 검사 자체를 건너뛰었다.
+ * 그 결과 같은 날 200자 위반이 두 번(274자 `ab2c60d` · 213자 `aa68ac7`) 그대로 들어갔고
+ * 둘 다 훅이 아니라 사람이 눈으로 잡았다 — 가드가 있다는 믿음이 없는 것보다 위험했다.
+ * 기존 테스트가 못 잡은 이유도 같다: 모든 케이스가 new_string을 `|`로 시작하는 완전한 행으로 만들었다
+ * (실사용이 아니라 구현의 가정을 시험한 것).
+ * → **조각의 생김새에 앵커를 걸지 않는다.** 편집을 실제로 적용한 결과 파일을 검사한다. */
+function applyEdits(content) {
+  let out = content;
+  for (const e of edits) {
+    const os = String(e.old_string || '');
+    const ns = String(e.new_string || '');
+    if (!os || !out.includes(os)) return null; // 매칭 실패 = Edit 자체가 실패할 것 → 판단 보류
+    out = e.replace_all ? out.split(os).join(ns) : out.replace(os, () => ns);
+  }
+  return out;
+}
+
+let resulting = fullContent;
+if (resulting === null) {
+  try {
+    resulting = applyEdits(fs.readFileSync(filePath, 'utf8'));
+  } catch (_) {
+    resulting = null; // 파일을 못 읽으면 아래 폴백으로
+  }
+}
+
 function isDataRow(line) {
   const t = line.trim();
   if (!t.startsWith('|')) return false;
@@ -82,16 +110,36 @@ function countActive(text) {
   return text.split('\n').filter(isDataRow).filter(isActiveRow).length;
 }
 
-// ① 칸 길이 검사
+function cellsOfRow(line) {
+  return line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|');
+}
+
+// ① 칸 길이 검사 — 결과 파일이 있으면 그것만 본다(권위 있는 판정)
 const longCells = [];
-for (const text of incoming) {
-  for (const line of text.split('\n')) {
+if (resulting !== null) {
+  for (const line of resulting.split('\n')) {
     if (!isDataRow(line)) continue;
-    const cells = line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|');
-    cells.forEach((c, i) => {
+    cellsOfRow(line).forEach((c, i) => {
       const len = c.trim().length;
       if (len > MAX_CELL) longCells.push(`${i + 1}번째 칸 ${len}자 — "${c.trim().slice(0, 40)}…"`);
     });
+  }
+} else {
+  // 폴백 — 결과를 못 만들 때만. 조각이 완전한 행이 아니어도 `|` 조각 단위로 재 본다.
+  for (const text of incoming) {
+    for (const line of text.split('\n')) {
+      if (isDataRow(line)) {
+        cellsOfRow(line).forEach((c, i) => {
+          const len = c.trim().length;
+          if (len > MAX_CELL) longCells.push(`${i + 1}번째 칸 ${len}자 — "${c.trim().slice(0, 40)}…"`);
+        });
+      } else if (line.includes('|')) {
+        line.split('|').forEach((c) => {
+          const len = c.trim().length;
+          if (len > MAX_CELL) longCells.push(`칸 조각 ${len}자 — "${c.trim().slice(0, 40)}…"`);
+        });
+      }
+    }
   }
 }
 if (longCells.length) {
@@ -104,9 +152,9 @@ if (longCells.length) {
 
 // ② 표 줄 수 검사 — 활성 상한과 전체 상한을 따로 본다
 let total, active;
-if (fullContent !== null) {
-  total = countRows(fullContent);
-  active = countActive(fullContent);
+if (resulting !== null) {
+  total = countRows(resulting);
+  active = countActive(resulting);
 } else {
   let cur;
   try {
