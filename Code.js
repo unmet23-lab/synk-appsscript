@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.103'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.103] 음성 보관 1년 확정 + 동의 문구 동기화 · 조 편성표 미리보기
+const SYNK_VERSION = 'v9.104'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.104] 음성 보관 무기한 + 동의 게이트 배선(v9.90 약속의 실물)
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -7063,17 +7063,22 @@ function migrateConsultV184() {
 
 // [v9.90] 음성·면접 녹음 동의가 받는 시트 열 — 문항 B는 blob이 아니라 '열'로 받는다(아래 설계 ③).
 const CONSENT_EXT_HEADERS = ['음성동의'];
-/* [v9.103] 음성 보관 기간 = **녹음일로부터 1년**(유호님 08-01 확정 — v9.90이 초안으로 비워 둔 값).
- *   상수로 두는 이유: 이 숫자는 ①학생이 읽는 동의 문구 ②실제 삭제 배치 ③대외 문서 세 곳에 동시에 나타나고,
- *   어긋나면 "1년이라 해놓고 3년 갖고 있는" 상태가 된다 — 동의는 학생이 읽은 문장이 정본이라 그 순간 근거가 무효다.
- *   ⚠ 녹음 기능을 붙이는 트랙은 이 상수를 읽는 **자동 삭제 배치를 같은 버전에** 넣어야 한다.
- *     문구만 있고 삭제가 없으면 약속 위반이고, 사후에 지워도 이미 어긴 기간은 되돌릴 수 없다.
- *   ⓘ 3년→1년은 학생에게 유리한 방향이라 기존 동의자에게 소급 적용해도 무방하다(반대 방향이면 재동의 필수). */
-const VOICE_RETENTION_MONTHS = 12;
+/* [v9.104] 음성 보관 기간 = **기간 제한 없음**(유호님 08-01 재확정 — 08-01 오전 1년 → 오후 무제한).
+ *   0 = 무기한. 데이터 축적이 전략 축이라는 판단(오래된 녹음일수록 "처음 목소리 vs 오늘" 대비가 커진다).
+ *   ⚠ 무기한은 **시간 기반 자동 삭제가 없다**는 뜻이고, 그래서 삭제의 유일한 트리거가 **철회**가 된다.
+ *     즉 1년 설계보다 오히려 철회 경로가 더 중요해진다 — 학생이 지워 달라고 했을 때 실제로 지울 수
+ *     있어야 그 문장이 참이 된다(voice_log·Drive 파일·성장 카드 세 곳).
+ *   ⚠ 1년→무기한은 **학생에게 불리한 방향**이라 소급 적용이 불가하다. 다행히 1년 문구는 아직 라이브
+ *     폼에 반영된 적이 없어(migrateConsentV186 재실행 전) 그 문장으로 동의한 사람이 0명이다.
+ *     이후에 기간을 다시 늘리려면 그때는 재동의를 받아야 한다.
+ *   ⓘ 몽골법상 음성은 생체정보 계열로 읽힐 수 있어, 무기한 보관은 '동의 철회 시까지'라는 통제권과
+ *     한 쌍으로 제시해야 방어된다 — 그래서 문구가 기간과 철회를 같은 문장에 담는다. */
+const VOICE_RETENTION_MONTHS = 0;
 const VOICE_CONSENT_HELP = '※ 선택 문항입니다 — 어느 쪽을 고르셔도 수업·성적·반 배정에 어떤 불이익도 없습니다.\n'
   + '수집: 수업·발음 연습·모의 면접(비자·취업) 중 녹음된 목소리와 그것을 글로 옮긴 기록 / '
   + '용도: 발음·말하기·면접 답변에 대한 개인 피드백과, 그 피드백을 만드는 AI의 학습 / '
-  + '보관: 녹음일로부터 1년(1년이 지나면 자동 삭제) / 제3자 제공 없음 · '
+  + '보관: 기간 제한 없이 보관합니다 — 여러 해에 걸친 "처음 목소리 vs 오늘 목소리" 성장 기록을 위해서입니다. '
+  + '다만 동의를 철회하시면 그 시점에 보관 중인 녹음을 모두 삭제합니다 / 제3자 제공 없음 · '
   + '동의 철회는 언제든 학원으로 연락 주시면 즉시 중단하고 기존 녹음도 삭제합니다.';
 
 // [v9.84·204 → v9.90·205] ▶ 1회(유호 문구 검토 후) — 온라인 상담폼 동의 문항 (정본 v18.6).
@@ -7170,6 +7175,34 @@ function migrateConsentV186() {
 /* [v9.90] 음성·AI 학습 동의 현황 — 상담시트 '음성동의' 열 집계(동의/거부/미응답).
  * 녹음·AI 학습 기능이 붙기 전까지는 워치독 표기용이고, 붙은 뒤에는 같은 열이 그대로 기계 게이트가 된다
  * ('동의' 행만 녹음 대상 — 거부자를 삼키면 되돌릴 수 없다). 실패는 빈 결과로 격리한다(워치독 한 줄이 전체를 깨지 않게). */
+/* [v9.104] 🔒 학생별 음성 동의 맵 — sid → 'yes' | 'no' | ''(미응답).
+ *   v9.90은 이 열을 만들며 "후속 녹음 기능이 기계 게이트로 쓴다"고 적었지만, **정작 이미 존재하던
+ *   목소리 레일(교재연동.js v9.59)에는 배선되지 않았다**(08-01 발견 — ROLE_TALK 미배선과 같은 계급:
+ *   약속은 주석에, 배선은 없음). 그 사이 voiceSweep_는 동의 여부와 무관하게 전원의 녹음을 적재하고
+ *   포인트까지 지급하고 있었다. 보관이 무기한이 되면서 이 구멍의 비용은 "영구 보관"으로 커진다.
+ *   종이 동의서 학생은 상담시트 그 칸에 수기로 '네, 동의합니다'를 넣으면 그대로 통과한다.
+ *   실패는 null로 격리 — 시트를 못 읽었을 때 전원 통과시키면 게이트가 침묵으로 열린다(호출부는 보류를 택한다). */
+function voiceConsentMap_() {
+  try {
+    const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    if (!consult) return null;
+    const w = consult.getLastColumn(), lastRow = consult.getLastRow();
+    if (w < 1 || lastRow < 3) return {};
+    const hdr = consult.getRange(2, 1, 1, w).getValues()[0].map(h => String(h || '').trim());
+    const ci = hdr.indexOf(CONSENT_EXT_HEADERS[0]);
+    const si = hdr.indexOf('학생ID');
+    if (ci === -1 || si === -1) return null;                 // 열 자체가 없으면 판정 불가 — 통과가 아니라 보류
+    const out = {};
+    consult.getRange(3, 1, lastRow - 2, w).getValues().forEach(r => {
+      const sid = String(r[si] || '').trim();
+      if (!sid) return;
+      const v = String(r[ci] || '').trim();
+      out[sid] = !v ? '' : (v.indexOf('아니') === 0 ? 'no' : 'yes');
+    });
+    return out;
+  } catch (e) { Logger.log('voiceConsentMap_ 실패: ' + e); return null; }
+}
+
 function voiceConsentStat_() {
   const r = { yes: 0, no: 0, blank: 0, total: 0, ok: false };
   try {

@@ -139,13 +139,22 @@ function voiceSweep_(ss) {
     if (r[1] && String(r[3] || '') === TB_VOICE_REASON && r[5]) givenKey[dstr(r[5], tz) + '|' + String(r[1]).trim()] = 1;
   });
 
+  /* [v9.104] 🔒 음성 동의 게이트 — v9.90이 '음성동의' 열을 만들며 "후속 녹음 기능이 기계 게이트로 쓴다"고
+   *   선언했는데 정작 이 스위프에는 배선이 없었다(08-01 발견). 동의하지 않은 학생의 녹음이 voice_log에
+   *   쌓이고 포인트까지 지급되던 상태였고, 보관이 무기한이 되면서 그 비용이 "영구 보관"으로 커진다.
+   *   맵이 null(시트·열 접근 실패)이면 **전원 보류** — 판정 불가를 통과로 바꾸면 게이트가 침묵으로 열린다.
+   *   보류분은 적재도, 공유 전환도, 포인트도 하지 않고 원장에게만 알린다. 파일 자동 삭제는 하지 않는다
+   *   (오판이면 복구가 불가능하고, 종이 동의서 학생일 수도 있다 — 사람이 판단할 몫). */
+  const consent = (typeof voiceConsentMap_ === 'function') ? voiceConsentMap_() : null;
   const rows = src.getRange(from + 1, 1, last - from, src.getLastColumn()).getValues();
-  const vOut = [], pOut = [], badSid = []; // [v9.67] 무효 sid 수집 — 출석·숙제폼과 같은 무통보 드롭 결함 수리
+  const vOut = [], pOut = [], badSid = [], held = []; // [v9.67] 무효 sid · [v9.104] 미동의 보류
   rows.forEach(r => {
     const ts = r[0] instanceof Date ? r[0] : new Date();
     const sid = String(r[cSid] || '').trim();
     if (!sid) return;
     if (!valid.has(sid)) { badSid.push(sid); return; } // 통보만(Code.js notifyDroppedSids_ — 하루 1회 dedup)
+    const state = consent ? (consent[sid] || '') : null;
+    if (state !== 'yes') { held.push(sid + ' (' + (state === 'no' ? '거부' : state === '' ? '미응답' : '동의 확인 불가') + ')'); return; }
     const fileUrl = String(r[cFile] || '').trim();
     if (!fileUrl) return;
     const mission = cMission >= 0 ? String(r[cMission] || '').trim() : '';
@@ -169,6 +178,14 @@ function voiceSweep_(ss) {
   props.setProperty('목소리폼_포인터', String(last));
   if (vOut.length) adminMail('[SYNK] 🎙 새 목소리 ' + vOut.length + '건',
     '목소리 미션 제출 ' + vOut.length + '건이 voice_log에 쌓였습니다. 성장 카드는 야간 배치가 자동 갱신합니다.');
+  // [v9.104] 미동의 보류 통지 — 침묵하면 "왜 내 제출이 반영 안 되지"가 학생 쪽 미스터리가 된다
+  if (held.length) adminMail('[SYNK] 🔒 음성 동의 없는 제출 ' + held.length + '건 — 보류',
+    '아래 제출은 「음성동의」가 확인되지 않아 voice_log에 넣지 않았고 포인트도 지급하지 않았습니다.\n' +
+    '(파일은 자동 삭제하지 않았습니다 — 종이 동의서 학생일 수 있어 사람 판단 몫입니다.)\n\n' +
+    held.join('\n') + '\n\n' +
+    '처리: ①동의를 받은 학생이면 상담시트 「음성동의」 칸에 「네, 동의합니다」를 넣고 재제출을 안내하세요.\n' +
+    '②거부한 학생이면 드라이브의 해당 녹음 파일을 삭제하세요.\n' +
+    (consent ? '' : '⚠ 상담시트·음성동의 열을 읽지 못해 전원을 보류했습니다 — migrateConsentV186 ▶ 로 열을 먼저 만드세요.'));
 }
 
 // ── A-2. 학생별 미리채움 링크 → profiles '목소리폼URL' 열 ─────────────────
