@@ -73,9 +73,20 @@ function replaceVersionLine(src, newVer, desc) {
   if (i < 0) throw new Error('SYNK_VERSION 선언을 찾지 못함');
   let line = lines[i].replace(/const SYNK_VERSION = '[^']+'/, "const SYNK_VERSION = '" + newVer + "'");
   if (desc) {
-    const head = line.split('//')[0];
-    line = head + '// 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 ['
-         + newVer + '] ' + desc;
+    // ⚠ 기존 이력 체인을 통째로 갈아끼우면 안 된다 — 이 줄에는 앞선 세션들의 [vN] 항목이 누적돼 있고,
+    //   덮어쓰면 그들의 기록이 조용히 사라진다(초판이 실제로 그랬고 라이브 대조에서 발각됐다).
+    //   기존 '· 최신 [vOld]'를 '· [vOld]'로 강등하고, 새 항목을 그 앞에 끼워 넣는다.
+    //   '· 최신 [' 위치를 기준으로 삼는다 — 특정 안내 문구에 앵커를 걸면 그 문구가 바뀌는 순간
+    //   조용히 else로 빠져 체인을 통째로 날린다(앵커 의존 초판이 테스트에서 그렇게 걸렸다).
+    const ci = line.indexOf('//');
+    const old = ci >= 0 ? line.slice(ci) : '';
+    const NEW = '· 최신 [' + newVer + '] ' + desc;
+    const k = old.indexOf('· 최신 [');
+    const comment = k >= 0
+      ? old.slice(0, k) + NEW + ' ' + old.slice(k).replace('· 최신 [', '· [')   // 기존 최신을 강등하고 앞에 삽입
+      : (old ? old.replace(/\s*$/, '') + ' ' + NEW
+             : '// 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) ' + NEW);
+    line = (ci >= 0 ? line.slice(0, ci) : line + ' ') + comment;
   }
   lines[i] = line;
   return lines.join(eol);
