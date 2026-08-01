@@ -253,13 +253,42 @@ test('미리보기 출력에 강사가 볼 5요소가 전부 있다', () => {
 
 /* ── ⑧ 음성 동의 — 보관 1년(유호 08-01 확정)이 학생이 읽는 문장까지 닿는가 ── */
 
-test('음성 보관 기간은 1년 단일 소스이고 구 3년 문구가 남아 있지 않다', () => {
-  assert.ok(/const VOICE_RETENTION_MONTHS = 12/.test(code), 'VOICE_RETENTION_MONTHS 상수가 없다');
+test('음성 보관은 무기한 단일 소스이고 구 기간 문구가 남아 있지 않다', () => {
+  assert.ok(/const VOICE_RETENTION_MONTHS = 0/.test(code), 'VOICE_RETENTION_MONTHS = 0(무기한) 상수가 없다');
   const hs = code.indexOf('const VOICE_CONSENT_HELP =');
   assert.notEqual(hs, -1, 'VOICE_CONSENT_HELP 단일 소스가 없다');
   const help = code.slice(hs, code.indexOf('\n', code.indexOf('삭제합니다.', hs)));
-  assert.ok(help.includes('보관: 녹음일로부터 1년'), '동의 문구에 보관 1년이 없다');
+  assert.ok(help.includes('기간 제한 없이'), '동의 문구에 무기한 보관 표기가 없다');
+  // 무기한은 시간 기반 삭제가 없다 = 삭제의 유일한 트리거가 철회다. 그 문장이 빠지면 방어가 사라진다
+  assert.ok(help.includes('철회'), '무기한 보관인데 철회 시 삭제 문장이 없다 — 통제권 없는 영구 보관이 된다');
   assert.ok(!code.includes('졸업 후 3년'), '구 보관 문구(졸업 후 3년)가 코드에 남아 있다');
+  assert.ok(!help.includes('녹음일로부터 1년'), '구 1년 문구가 남아 있다');
+});
+
+test('음성 동의 게이트 — 동의 확인 없이는 녹음이 적재되지 않는다', () => {
+  const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
+  const s = tb.indexOf('function voiceSweep_(');
+  const sweep = tb.slice(s, tb.indexOf('function writeVoiceLinks_(', s));
+  assert.ok(sweep.includes('voiceConsentMap_'), 'voiceSweep_에 동의 게이트가 없다 — v9.90이 약속한 배선');
+  assert.ok(/state !== 'yes'/.test(sweep), "'동의' 이외를 통과시킨다 — 거부·미응답이 함께 삼켜진다");
+  // 판정 불가(맵 null)를 통과로 바꾸면 게이트가 침묵으로 열린다 — 보류가 기본값이어야 한다
+  assert.ok(/const state = consent \? \(consent\[sid\] \|\| ''\) : null/.test(sweep),
+    '동의 맵을 못 읽었을 때 보류로 떨어지지 않는다');
+  // 게이트는 적재·공유전환·포인트보다 앞이어야 한다(뒤면 이미 저장된 뒤 막는 셈)
+  const gate = sweep.indexOf("state !== 'yes'");
+  ['vOut.push(', 'pOut.push(', 'setSharing('].forEach((after) =>
+    assert.ok(sweep.indexOf(after) > gate, `게이트가 ${after}보다 뒤에 있다 — 이미 처리된 뒤 막힌다`));
+  assert.ok(sweep.includes('held.length') && sweep.includes('adminMail'),
+    '보류를 통지하지 않는다 — 학생 쪽에서 "왜 반영이 안 되지"가 미스터리로 남는다');
+  assert.ok(!/DriveApp[\s\S]{0,80}remove|setTrashed/.test(sweep),
+    '보류분을 자동 삭제한다 — 오판이면 복구 불가이고 종이 동의서 학생일 수 있다');
+});
+
+test('voiceConsentMap_은 열이 없으면 null(보류)을 돌려준다', () => {
+  const fn = section('function voiceConsentMap_(', 'function voiceConsentStat_(');
+  assert.ok(/if \(ci === -1 \|\| si === -1\) return null/.test(fn),
+    '동의 열·학생ID 열이 없을 때 빈 맵을 주면 전원이 통과한다');
+  assert.ok(/catch \(e\)[\s\S]{0,80}return null/.test(fn), '예외 시 null(보류)이 아니다');
 });
 
 test('동의 문항은 제목만 보고 스킵하지 않는다 — 문구 개정이 라이브 폼에 닿아야 한다', () => {
