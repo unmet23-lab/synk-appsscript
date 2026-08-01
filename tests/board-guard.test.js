@@ -77,3 +77,39 @@ test('보드가 아닌 파일은 통과', () => {
     'allow'
   );
 });
+
+/* ── 2026-08-01 실사고 회귀 ────────────────────────────────────────────────
+ * 위 케이스들은 전부 new_string을 `|`로 시작하는 **완전한 행**으로 만든다.
+ * 그런데 보드를 갱신하는 실제 모양은 **상태 칸 하나만 갈아끼우는 것**이고, 그 조각은
+ * `|`로 시작하지 않아 isDataRow를 통과하지 못해 칸 검사가 통째로 건너뛰어졌다.
+ * 같은 날 274자(ab2c60d)·213자(aa68ac7) 두 번이 그대로 통과했고 둘 다 사람이 눈으로 잡았다.
+ * 아래 4건은 그 구멍을 못박는다 — 실패하면 가드가 다시 죽은 것이다. */
+
+test('[회귀] 상태 칸만 부분 교체해도 200자 초과는 차단 — 실사고 경로', () => {
+  assert.strictEqual(
+    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: '완료 |', new_string: `${LONG} |` } }),
+    'deny'
+  );
+});
+
+test('[회귀] 상태 칸만 부분 교체하고 길이가 정상이면 통과', () => {
+  assert.strictEqual(
+    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: '완료 |', new_string: '완료 — 라이브 검증까지 끝 |' } }),
+    'allow'
+  );
+});
+
+test('[회귀] 파이프가 전혀 없는 조각으로 칸을 부풀려도 차단', () => {
+  // 결과 파일을 계산하므로 조각의 생김새와 무관하게 잡힌다
+  assert.strictEqual(
+    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: '트랙0', new_string: LONG } }),
+    'deny'
+  );
+});
+
+test('[회귀] replace_all 부분 교체도 검사한다', () => {
+  assert.strictEqual(
+    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: '완료', new_string: LONG, replace_all: true } }),
+    'deny'
+  );
+});
