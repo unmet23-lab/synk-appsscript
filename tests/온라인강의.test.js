@@ -68,24 +68,29 @@ test('[v9.106] 이수율 대상은 주말반 학생뿐이다 (평일반은 대�
   assert.ok(/필수|TRUE/.test(body), '필수 여부 필터가 없다');
 });
 
-/* ── ②-b 조인 키 — 라이브 실측으로 잡은 결함 3겹 (v9.118) ───── */
+/* ── ②-b 조인 키 — 라이브 실측으로 잡은 결함 3겹 (v9.119) ───── */
 
-test('[v9.118] 레벨은 profiles S열(18)에서 읽는다 — H열(연락처)을 레벨로 읽던 결함 차단', () => {
+test('[v9.119] 레벨 열은 이름으로 찾는다 — 위치 상수는 같은 자리에서 두 번 틀렸다', () => {
   const body = section('function lectureRatesOf_(ss)', 'function createLectureForm()');
-  assert.ok(code.includes('const PROFILE_LEVEL_COL = 18'), '한국어수준 열 상수가 없다');
-  assert.ok(body.includes('r[PROFILE_LEVEL_COL]'), '레벨을 상수가 아닌 숫자로 읽는다');
-  // r[7]은 연락처다. 이 값을 레벨로 쓰면 전화번호와 레벨명을 비교하게 되어 영원히 안 맞는다
-  assert.equal(/const lv = String\(r\[7\]/.test(body), false, 'H열(연락처)을 레벨로 읽는 코드가 되살아났다');
+  assert.ok(code.includes("const PROFILE_LEVEL_HEADER = '한국어수준'"), '헤더 이름 정본이 없다');
+  assert.ok(code.includes('function profileLevelCol_(pf)'), '헤더 이름으로 찾는 헬퍼가 없다');
+  assert.ok(body.includes('profileLevelCol_(pf)'), '레벨 열을 이름으로 안 찾는다');
+  // 실패 이력: r[7]=연락처(v9.106) · r[18]=몬스터단계(v9.119 초판). profiles는 128열이고 계속 늘어난다
+  assert.equal(/const lv = .*r\[7\]/.test(body), false, 'H열(연락처)을 레벨로 읽는 코드가 되살아났다');
+  assert.equal(/PROFILE_LEVEL_COL/.test(code), false, '위치 상수 방식이 되살아났다');
 });
 
-test('[v9.118] profiles 읽기 폭이 S열에 닿는다 — 15열 고정이면 레벨이 undefined다', () => {
+test('[v9.119] 레벨 열을 못 찾으면 매칭을 포기한다 — 엉뚱한 열로 오답을 내지 않는다', () => {
   const body = section('function lectureRatesOf_(ss)', 'function createLectureForm()');
-  assert.equal(/pf\.getRange\(2, 1, pf\.getLastRow\(\) - 1, 15\)/.test(body), false,
-    '읽기 폭이 15열로 고정됐다 — 인덱스 18에 닿지 못한다');
-  assert.ok(/PROFILE_LEVEL_COL \+ 1/.test(body), '폭 보장이 레벨 열 기준이 아니다');
+  const helper = section('function profileLevelCol_(pf)', 'const PROFILE_LEVELS');
+  assert.ok(/return -1/.test(helper), '못 찾았을 때 -1을 돌려주지 않는다');
+  assert.ok(/lvCol < 0/.test(body), '못 찾은 경우를 호출부가 안 다룬다');
+  // 폭 고정은 열이 늘면 바로 깨진다(구 15열이 그랬다)
+  assert.equal(/pf\.getRange\(2, 1, pf\.getLastRow\(\) - 1, 15\)/.test(body), false, '읽기 폭이 15열로 고정됐다');
+  assert.ok(/pf\.getLastColumn\(\)/.test(body), '읽기 폭이 시트 실폭 기준이 아니다');
 });
 
-test('[v9.118] lectures 레벨 어휘 = profiles 한국어수준 어휘 (Lv1/Lv2는 조인 불가)', () => {
+test('[v9.119] lectures 레벨 어휘 = profiles 한국어수준 어휘 (Lv1/Lv2는 조인 불가)', () => {
   assert.ok(code.includes("const PROFILE_LEVELS = ['완전초보', '기초', '초중급', '중급', '고급']"),
     'profiles 레벨 어휘 정본이 바뀌었다');
   const def = code.match(/const LECTURE_LEVELS_DEFAULT = (\[[^\]]*\])/);
