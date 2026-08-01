@@ -101,7 +101,7 @@ test('DM Mono를 쓰는 파일은 한글·키릴을 같은 지정에 섞지 않�
  * 지금 알려진 잔여 = CARD_FONT 1건(정본 §9의 교체 대기). 이 숫자는 교체 시 0으로 내린다. */
 const JS_TARGETS = ['Code.js', '상담AI.js', '교재연동.js', '만족도팩.js']
   .concat(fs.readdirSync(ROOT).filter((f) => /^contents_.*\.js$/.test(f)));
-const KNOWN_RETIRED_IN_JS = 1;
+const KNOWN_RETIRED_IN_JS = 0; // CARD_FONT 교체 완료(08-01) — 이제 한 건도 허용하지 않는다
 
 test('JS 산출물에 폐기 폰트가 새로 들어오지 않는다', () => {
   const hits = [];
@@ -133,11 +133,8 @@ test('브랜드 폰트 정본 문서가 존재한다', () => {
   }
 });
 
-/* ⏳ CARD_FONT 미교체 — 08-01 기준 lectures 트랙 세션이 Code.js를 활발히 편집 중이다.
- *    (그 세션이 CARD_FONT를 한 번 바꿨다가 되돌리는 것을 실제로 관측했다 — 몇 분 사이에.)
- *    지금 끼어들면 ① 중복 편집 ② 커밋에 남의 미완성 lectures 코드가 딸려 라이브로 나간다.
- *    교체하는 세션이 이 skip을 지우면 그때부터 회귀가 잠긴다. 절차 = 정본 §9. */
-test('Code.js CARD_FONT가 브랜드 3종을 쓴다', { skip: 'CARD_FONT 교체 대기 — 정본 §9' }, () => {
+/* CARD_FONT 교체 완료(08-01, lectures 트랙 세션이 Code.js를 놓은 직후). */
+test('Code.js CARD_FONT가 브랜드 3종을 쓴다', () => {
   const src = fs.readFileSync(path.join(ROOT, 'Code.js'), 'utf8');
   const m = src.match(/const CARD_FONT = "([^"]+)"/);
   assert.ok(m, 'Code.js에서 CARD_FONT 상수를 못 찾았다');
@@ -147,5 +144,32 @@ test('Code.js CARD_FONT가 브랜드 3종을 쓴다', { skip: 'CARD_FONT 교체 
   assert.ok(
     decl.indexOf('Inter Tight') < decl.indexOf('SUIT Variable'),
     'CARD_FONT 스택 순서가 뒤집혔다 — Inter Tight가 앞'
+  );
+});
+
+/* 이 파일에서 가장 중요한 검사 — 「이름만 바꾸고 로드를 빠뜨리는」 실패를 막는다.
+ * 학생 기기에 SUIT·Inter Tight는 없다. 로드가 없으면 전 카드가 시스템 폰트로 조용히 폴백되는데,
+ * 에러도 안 나고 화면도 그럴싸해서 사람 눈으로는 「적용됐다」와 구별이 안 된다.
+ * 그래서 ① 로더가 두 폰트를 다 부르는지 ② 카드 루트마다 실제로 붙었는지를 결과로 검사한다. */
+test('CARD_WEBFONT가 두 웹폰트를 실제로 로드한다', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'Code.js'), 'utf8');
+  const m = src.match(/const CARD_WEBFONT = ([\s\S]*?);\n/);
+  assert.ok(m, 'CARD_WEBFONT 상수가 없다 — CARD_FONT만 바꾸면 전 카드가 폴백된다(정본 §9)');
+  const decl = m[1];
+  assert.ok(/sun-typeface\/SUIT/.test(decl), 'CARD_WEBFONT가 SUIT를 안 부른다 → 한글이 폴백된다');
+  assert.ok(/Inter\+Tight/.test(decl), 'CARD_WEBFONT가 Inter Tight를 안 부른다 → 영문·몽골어가 폴백된다');
+  assert.ok(/<style>/.test(decl), 'CARD_WEBFONT에 <style> 블록이 없다 — style 속성 값에는 @import를 못 넣는다');
+});
+
+test('카드 루트마다 CARD_WEBFONT가 붙어 있다', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'Code.js'), 'utf8');
+  const roots = src.match(/'<div style="' \+ CARD_FONT/g) || [];
+  assert.ok(roots.length > 0, "카드 루트 패턴을 못 찾았다 — 렌더 구조가 바뀌었는지 확인");
+  const loaded = src.match(/CARD_WEBFONT \+ '<div style="' \+ CARD_FONT/g) || [];
+  assert.equal(
+    loaded.length,
+    roots.length,
+    `카드 루트 ${roots.length}곳 중 ${loaded.length}곳에만 CARD_WEBFONT가 붙었다 — ` +
+      `빠진 카드는 폰트가 폴백된다. 새 카드를 추가했다면 CARD_WEBFONT를 앞에 붙여라`
   );
 });
