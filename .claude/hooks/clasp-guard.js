@@ -31,8 +31,22 @@ try {
   process.exit(0);
 }
 
+/* 명령에서 **실행되지 않는 텍스트**를 먼저 걷어낸다.
+ * 2026-08-01 실사용 오탐: 커밋 메시지에 절차를 설명하려고 "clasp push"라고 적었더니
+ *   `git commit -F - <<'EOF' … clasp push … EOF` 의 heredoc 본문이 매칭돼 **커밋 자체가 막혔다**.
+ *   가드는 실행되는 명령을 봐야지 사람이 쓴 문장을 보면 안 된다 — 문서화를 벌하는 가드는
+ *   결국 사람이 우회하는 법(BYPASS 남발)을 배우게 만든다. */
+function stripNonExecutedText(s) {
+  return s
+    // heredoc 본문: <<EOF / <<'EOF' / <<-"EOF" … 줄 처음의 같은 태그까지
+    .replace(/<<-?\s*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\1[\s\S]*?^\s*\2\s*$/gm, ' <<HEREDOC ')
+    // -m / --message 의 인용 문자열 본문
+    .replace(/(-m|--message)\s+(['"])[\s\S]*?\2/g, '$1 MSG');
+}
+const execCmd = stripNonExecutedText(cmd);
+
 // clasp 호출어 바로 뒤에 push/deploy가 올 때만 발동 — list-deployments, login 등은 통과
-if (!/clasp(\.cmd|\.ps1)?["']?\s+(--?\S+\s+)*(push|deploy)\b/i.test(cmd)) process.exit(0);
+if (!/clasp(\.cmd|\.ps1)?["']?\s+(--?\S+\s+)*(push|deploy)\b/i.test(execCmd)) process.exit(0);
 if (cmd.includes('CLASP_GUARD_BYPASS=1')) process.exit(0);
 
 function run(bin, args) {
