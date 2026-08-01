@@ -2010,3 +2010,26 @@ test('[v9.110] 시트 메뉴 — 안전 항목만 올리고 파괴적 함수는 
   // UI 없는 컨텍스트(트리거)에서 죽지 않아야 한다 — onOpen 실패가 시트 열기를 막으면 안 된다
   assert.ok(code.slice(start, start + 1400).includes('catch (eMenu)'), '메뉴 생성 실패 격리가 없다');
 });
+
+test('[v9.107] 주간 통합 리포트 sections — 배열 요소 쉼표 누락 회귀 차단', () => {
+  // 08-01 실사고: 14514행 끝 쉼표가 빠져 JS가 `[…][…]`를 배열 인덱싱으로 읽었고,
+  // sections의 그 자리가 undefined가 되어 forEach의 sec[0]에서 TypeError로 죽었다.
+  // 섹션별 try/catch보다 바깥이라 안전망이 안 걸렸고, 결과는 주간 리포트 전체 미발송.
+  // node --check로는 절대 안 잡힌다(문법상 유효한 인덱싱이므로) — 그래서 이 테스트가 필요하다.
+  const start = code.indexOf('const sections = [');
+  assert.notEqual(start, -1, 'weeklyJobs의 sections 배열을 찾지 못함');
+  const end = code.indexOf('\n  ];', start);
+  assert.notEqual(end, -1, 'sections 배열의 끝을 찾지 못함');
+  const block = code.slice(start + 'const sections = ['.length, end);
+
+  // 실제로 배열을 평가해 undefined 요소가 생기지 않는지 본다.
+  // 문자열로 "줄 끝에 쉼표가 있나"를 세는 방식은 요소가 여러 줄에 걸치거나 주석이 붙으면 오탐이 난다
+  // (첫 구현이 실제로 그랬다) — 쉼표 누락의 결과는 "요소가 undefined가 되는 것"이므로 그걸 직접 본다.
+  const stub = block.replace(/function\s*\([^)]*\)\s*\{[\s\S]*?\}(?=\s*\])/g, 'null')
+                    .replace(/\b(systemWatchdog|weeklyReport|kpiSection_|updateBizDashboard|checkTuition|checkReenrollment|checkNewInquiries_)\b/g, 'null');
+  let evaluated;
+  assert.doesNotThrow(() => { evaluated = eval('[' + stub + ']'); }, 'sections 배열이 평가되지 않는다');
+  evaluated.forEach((sec, i) => {
+    assert.ok(sec && typeof sec[0] === 'string', `sections[${i}]가 undefined이거나 제목이 없다 — 쉼표 누락 계열 결함`);
+  });
+});
