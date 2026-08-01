@@ -203,6 +203,84 @@ function writeVoiceLinks_(ss) {
   if (col) writeIfChanged(pf, 2, col, out);
 }
 
+/* ── A-2b. [v9.105] 🗑 음성 동의 철회 실행 — 무기한 보관의 **유일한 삭제 트리거** ──────────
+ * v9.104가 보관을 무기한으로 바꾸면서 시간 기반 자동 삭제가 사라졌다. 그러면 동의서의
+ * "철회하시면 보관 중인 녹음을 모두 삭제합니다"가 **코드로 실행할 수단이 없는 약속**이 된다
+ * — 문장이 참이 되려면 지울 수 있어야 한다. 지워야 할 곳은 세 군데다:
+ *   ① Drive 원본 파일  ② voice_log 행  ③ profiles 목소리성장카드(첫 목소리 URL이 박혀 있다)
+ * 여기에 ④ 상담시트 음성동의를 '아니요'로 되돌려 **다음 제출이 자동 보류**되게 한다
+ * (안 되돌리면 지운 그날 밤 스위프가 새 녹음을 다시 적재한다).
+ *
+ * ⚠ 비가역이므로 **미리보기가 기본**이다. voiceWithdraw('SYNK-001')은 무엇이 지워질지만 보여주고,
+ *   실제 실행은 voiceWithdraw('SYNK-001', true). Drive는 완전 삭제가 아니라 휴지통으로 보낸다
+ *   (30일 복구 창 — 오판을 되돌릴 수 있고, 30일 뒤 자동 영구 삭제라 약속에도 어긋나지 않는다). */
+function voiceWithdraw(studentId, confirm) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sid = String(studentId || '').trim();
+  if (!sid) {
+    const usage = '사용법: voiceWithdraw("학생ID") → 무엇이 지워질지 미리보기\n' +
+      '        voiceWithdraw("학생ID", true) → 실제 삭제(Drive는 휴지통 30일 보관)';
+    Logger.log(usage); return usage;
+  }
+  const vl = ss.getSheetByName('voice_log');
+  const rows = (vl && vl.getLastRow() >= 2) ? vl.getRange(2, 1, vl.getLastRow() - 1, 6).getValues() : [];
+  const mine = [];
+  rows.forEach((r, i) => { if (String(r[0] || '').trim() === sid) mine.push({ row: i + 2, date: r[1], mission: r[2], url: r[3], fid: String(r[4] || '') }); });
+
+  const head = ['🗑 음성 동의 철회 — ' + sid + (confirm === true ? ' (실행)' : ' (미리보기)'),
+    '녹음 기록: ' + mine.length + '건'];
+  mine.slice(0, 10).forEach(m => head.push('  · ' + (m.date instanceof Date ? Utilities.formatDate(m.date, ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd') : String(m.date)) + ' ' + (m.mission || '')));
+  if (mine.length > 10) head.push('  … 외 ' + (mine.length - 10) + '건');
+
+  if (confirm !== true) {
+    head.push('', '지울 곳: ①Drive 파일 ' + mine.filter(m => m.fid).length + '개(휴지통) ②voice_log ' + mine.length + '행 ③목소리성장카드 ④상담시트 음성동의 → 「아니요」',
+      '', '실제로 지우려면: voiceWithdraw("' + sid + '", true)');
+    Logger.log(head.join('\n')); return head.join('\n');
+  }
+
+  // ① Drive 휴지통 — 실패해도 나머지는 진행한다(파일이 이미 없을 수 있다)
+  let trashed = 0, failed = 0;
+  mine.forEach(m => {
+    if (!m.fid) return;
+    try { DriveApp.getFileById(m.fid).setTrashed(true); trashed++; }
+    catch (e) { failed++; Logger.log('파일 휴지통 실패(' + m.fid + '): ' + e); }
+  });
+  // ② voice_log 행 삭제 — 아래에서 위로 지워야 인덱스가 밀리지 않는다
+  mine.map(m => m.row).sort((a, b) => b - a).forEach(r => vl.deleteRow(r));
+  // ③ 성장 카드 비우기 — 첫 목소리 URL이 카드 HTML에 박혀 있어 지우지 않으면 링크가 남는다
+  const pf = ss.getSheetByName('profiles');
+  const col = pf ? tbProfileCol_(pf, '목소리성장카드') : 0;
+  if (pf && col) {
+    const ids = pf.getRange(2, 1, pf.getLastRow() - 1, 1).getValues();
+    ids.forEach((r, i) => { if (String(r[0] || '').trim() === sid) pf.getRange(i + 2, col).clearContent(); });
+  }
+  // ④ 동의를 '아니요'로 — 되돌리지 않으면 그날 밤 스위프가 새 녹음을 다시 적재한다
+  let consentSet = '실패(수기 확인 필요)';
+  try {
+    const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    const w = consult.getLastColumn();
+    const hdr = consult.getRange(2, 1, 1, w).getValues()[0].map(h => String(h || '').trim());
+    const ci = hdr.indexOf(CONSENT_EXT_HEADERS[0]), si = hdr.indexOf('학생ID');
+    if (ci > -1 && si > -1) {
+      const body = consult.getRange(3, 1, consult.getLastRow() - 2, w).getValues();
+      let hit = 0;
+      body.forEach((r, i) => {
+        if (String(r[si] || '').trim() !== sid) return;
+        consult.getRange(i + 3, ci + 1).setValue('아니요, 원하지 않습니다'); hit++;
+      });
+      consentSet = hit ? hit + '행 「아니요」로 변경' : '해당 학생 행 없음(수기 확인)';
+    }
+  } catch (e) { Logger.log('동의 되돌리기 실패: ' + e); }
+
+  head.push('', '✅ Drive 휴지통 ' + trashed + '개' + (failed ? ' (실패 ' + failed + ')' : '') +
+    ' · voice_log ' + mine.length + '행 삭제 · 성장 카드 초기화 · 동의: ' + consentSet,
+    'ⓘ Drive 휴지통은 30일 뒤 자동 영구 삭제됩니다(그 전엔 복구 가능).');
+  const msg = head.join('\n');
+  Logger.log(msg);
+  adminMail('[SYNK] 🗑 음성 동의 철회 처리 — ' + sid, msg);
+  return msg;
+}
+
 // ── A-3. 성장 카드(처음 vs 최신, 간격 21일+) → profiles '목소리성장카드' 열 ──
 function buildVoiceGrowthCards_(ss) {
   const vl = ss.getSheetByName('voice_log');

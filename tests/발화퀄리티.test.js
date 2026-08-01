@@ -284,6 +284,25 @@ test('음성 동의 게이트 — 동의 확인 없이는 녹음이 적재되지
     '보류분을 자동 삭제한다 — 오판이면 복구 불가이고 종이 동의서 학생일 수 있다');
 });
 
+test('철회 실행 경로가 있다 — 무기한 보관의 유일한 삭제 트리거', () => {
+  const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
+  const s = tb.indexOf('function voiceWithdraw(');
+  assert.notEqual(s, -1, '철회 실행 함수가 없다 — 동의서의 "철회하면 삭제합니다"가 실행 수단 없는 약속이 된다');
+  const fn = tb.slice(s, tb.indexOf('// ── A-3.', s));
+  // 지워야 할 네 곳이 모두 있어야 약속이 참이 된다
+  assert.ok(fn.includes('setTrashed(true)'), 'Drive 원본을 지우지 않는다');
+  assert.ok(fn.includes('deleteRow('), 'voice_log 행을 지우지 않는다');
+  assert.ok(fn.includes('목소리성장카드'), '성장 카드에 박힌 첫 목소리 URL이 남는다');
+  assert.ok(fn.includes('아니요, 원하지 않습니다'), '동의를 되돌리지 않는다 — 그날 밤 스위프가 다시 적재한다');
+  // 비가역이므로 미리보기가 기본이어야 한다
+  assert.ok(/confirm !== true/.test(fn), '확인 없이 즉시 삭제한다 — 오타 하나로 남의 기록이 사라진다');
+  const preview = fn.slice(fn.indexOf('confirm !== true'), fn.indexOf('// ① Drive'));
+  assert.ok(preview.includes('return'), '미리보기가 조기 반환하지 않는다');
+  // 행 삭제는 아래에서 위로 — 위에서부터 지우면 인덱스가 밀려 엉뚱한 행이 지워진다
+  assert.ok(/sort\(\(a, b\) => b - a\)[\s\S]{0,40}deleteRow/.test(fn),
+    'voice_log 행을 내림차순으로 지우지 않는다 — 인덱스가 밀려 다른 학생 기록이 지워진다');
+});
+
 test('voiceConsentMap_은 열이 없으면 null(보류)을 돌려준다', () => {
   const fn = section('function voiceConsentMap_(', 'function voiceConsentStat_(');
   assert.ok(/if \(ci === -1 \|\| si === -1\) return null/.test(fn),
