@@ -6,9 +6,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&family=DM+Mono:wght@300;400;500&display=swap">
 <style>
-  :root{ --ink:#101014; --sub:#8A8F98; --line:#E7E5E0; }
+  :root{ --ink:#171820; --sub:#7A7566; --line:#E7DDC7; }
   *{ box-sizing:border-box; }
-  body{ margin:0; padding:34px 40px 70px; background:#FDFCF8; color:var(--ink);
+  body{ margin:0; padding:34px 40px 70px; background:#FBF7EE; color:var(--ink);
         font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
   .wrap{ max-width:1180px; margin:0 auto; }
   h1{ font-size:18px; font-weight:600; margin:0 0 5px; letter-spacing:-.01em; }
@@ -24,7 +24,7 @@
   .dl{ font:inherit; font-size:11px; padding:4px 10px; cursor:pointer; background:#fff;
        border:1px solid var(--line); border-radius:7px; color:var(--sub); }
   .toast{ position:fixed; left:50%; bottom:30px; transform:translateX(-50%) translateY(20px);
-          background:#0B1A2E; color:#F5F1E8; font-size:12.5px; padding:9px 18px; border-radius:99px;
+          background:#0F1730; color:#F6F1E8; font-size:12.5px; padding:9px 18px; border-radius:99px;
           opacity:0; transition:all .18s ease; pointer-events:none; }
   .toast.on{ opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
@@ -45,8 +45,8 @@
 <div class="toast" id="toast"></div>
 
 <script>
-var BG='#0B1A2E', INK='#F5F1E8', SIG='#FF6D00', PAPER='#FDFCF8', DARK='#101014',
-    DIM='#98A2B3', BODY='#475467', BLUE='#3D5AFE';
+var BG='#0F1730', INK='#F6F1E8', SIG='#FF6B5C', PAPER='#FBF7EE', DARK='#171820',
+    DIM='#98A2B3', BODY='#475467', BLUE='#4E7CFF';
 var FONT="'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif";
 var W=1080, H=1350, PAD=88;
 
@@ -63,7 +63,7 @@ function waveField(c, seed){
   var img=c.getImageData(0,0,W,H), d=img.data, R=prng(seed);
   var cx=W*0.80, cy=H*0.19, bx=cx+W*0.62, by=cy+H*0.30, k=0.048, far=Math.max(W,H)*0.95, x, y;
   function put(px,py){ px=px|0; py=py|0; if(px<0||py<0||px>=W||py>=H) return;
-    var i=((py*W+px)<<2); d[i]=245; d[i+1]=241; d[i+2]=232; d[i+3]=255; }
+    var i=((py*W+px)<<2); d[i]=246; d[i+1]=241; d[i+2]=232; d[i+3]=255; }
   for(y=0;y<H;y++){ for(x=0;x<W;x++){
     var d1=Math.sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy)), d2=Math.sqrt((x-bx)*(x-bx)+(y-by)*(y-by));
     var v=Math.sin(d1*k)+Math.sin(d2*k), att=Math.max(0,1-Math.min(d1,d2)/far);
@@ -77,7 +77,7 @@ function waveField(c, seed){
 function card1(c){
   c.fillStyle=BG; c.fillRect(0,0,W,H);
   waveField(c, 29);
-  c.fillStyle='rgba(245,241,232,.6)'; c.font='600 25px '+FONT; c.textBaseline='alphabetic';
+  c.fillStyle='rgba(246,241,232,.6)'; c.font='600 25px '+FONT; c.textBaseline='alphabetic';
   tracked(c,'SYNK LAB',PAD,PAD+18,5.4);
   c.fillStyle=SIG; c.fillRect(PAD, H-PAD-330, 78, 9);
   lines(c,['단어는 아는데','입이 멈추는 순간'],PAD,H-PAD-190,78,1.32,INK,'600');
