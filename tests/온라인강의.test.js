@@ -155,3 +155,41 @@ test('[v9.106] 시청 확인은 한국어 한 문장 산출로 받는다 (체크
   assert.ok(/한국어로 한 문장/.test(body), '한 줄 요약 문항이 사라졌다');
   assert.equal(/addCheckboxItem\(\)\s*\.setTitle\('(봤|시청)/.test(body), false, '시청 여부 체크박스가 생겼다');
 });
+
+/* ── ⑥ [v9.121] 카탈로그와 폼 선택지가 갈리지 않는다 ────────
+ * 08-01 실사고: 카탈로그를 새 어휘로 갈아엎어도 폼은 폐기된 Lv1/Lv2 선택지를 계속 보여줬다.
+ *   createLectureForm이 「문항이 있으면 건너뜀」이라 아무도 따라가지 않았기 때문이다.
+ *   학생이 폐기된 선택지를 고르면 존재하지 않는 강의ID가 lecture_views에 쌓여 분자가 영영 0이 된다. */
+
+test('[v9.121] 선택지 문자열은 한 곳에서만 만든다 (생성·동기화가 같은 모양)', () => {
+  const build = section('function lectureChoices_(ss)', 'function syncLectureFormChoices()');
+  assert.ok(build.includes("' - '"), '구분자가 바뀌었다 — sweepLectureForm_이 앞부분을 강의ID로 자르는 계약이 깨진다');
+  assert.ok(build.includes('slice(0, 200)'), '폼 목록 상한이 사라졌다');
+  // 생성부가 자기만의 선택지 조립을 되살리면 두 모양이 갈린다
+  const create = section('function createLectureForm()', 'function sweepLectureForm_(ss)');
+  assert.ok(create.includes('lectureChoices_(ss)'), '생성부가 공용 빌더를 안 쓴다 — 모양이 갈릴 수 있다');
+  assert.equal(/choices\.push\(/.test(create), false, '생성부에 선택지 조립이 되살아났다(중복 정본)');
+});
+
+test('[v9.121] 동기화는 문항을 지웠다 만들지 않는다 (응답 열 계약 보존)', () => {
+  const body = section('function syncLectureFormChoices()', 'function createLectureForm()');
+  assert.ok(body.includes('setChoiceValues('), '선택지 교체가 없다');
+  assert.equal(/deleteItem\(|addListItem\(/.test(body), false,
+    '문항을 삭제·재생성한다 — 응답 시트 열이 갈려 sweep 적재가 어긋난다');
+  assert.ok(body.includes('FormApp.ItemType.LIST'), '목록 문항을 유형으로 찾지 않는다');
+});
+
+test('[v9.121] 동기화는 멱등이고, 못 할 상황이면 조용히 고치지 않고 사실을 돌려준다', () => {
+  const body = section('function syncLectureFormChoices()', 'function createLectureForm()');
+  assert.ok(/every\(/.test(body), '같은지 비교하지 않는다 — 매번 폼을 쓴다');
+  assert.ok(body.includes("'강의폼ID'"), '폼ID를 app_state에서 읽지 않는다');
+  assert.ok(/!want\.length/.test(body), '카탈로그가 빈 경우를 안 막는다 — 선택지를 전멸시킬 수 있다');
+  assert.ok(/if \(!li\)/.test(body), '자유 입력 폼(목록 문항 없음)을 처리하지 않는다');
+});
+
+test('[v9.121] 카탈로그 재시딩 뒤 폼이 낡은 채 남지 않는다 (생성부 자가치유 + 메뉴)', () => {
+  const create = section('function createLectureForm()', 'function sweepLectureForm_(ss)');
+  assert.ok(create.includes('syncLectureFormChoices()'),
+    '문항이 이미 있을 때 그냥 건너뛴다 — 카탈로그를 갈아엎어도 폼이 따라가지 않는다(08-01 실사고)');
+  assert.ok(code.includes("'syncLectureFormChoices'"), '시트 메뉴에 없다 — 유호님이 시즌마다 실행할 경로가 없다');
+});
