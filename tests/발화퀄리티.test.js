@@ -215,6 +215,64 @@ test('DY129 점거 가드 — 남의 헤더를 덮지 않는다(열 충돌 사�
   assert.ok(blk.includes("setState(stDY, '만남열충돌', '')"), '충돌 해소 시 재무장이 없다 — 다음 사고에 침묵한다');
 });
 
+/* ── ⑦ 미리보기 — 개원 전에 실물을 확인할 수 있는가 ─────────────── */
+
+function loadPreview() {
+  const s = code.indexOf('const GROUP_COUNT = 4;');
+  const e = code.indexOf('/* --- 실력 점수', s);
+  const s2 = code.indexOf('function groupBoardRender_(');
+  const e2 = code.indexOf('// 수동 확인용', s2);
+  assert.ok(s2 !== -1 && e2 !== -1, 'groupBoardRender_ 섹션을 찾지 못함');
+  const classDowOk_ = (t, d) => (String(t) === '주말' ? d === 6 : (d >= 1 && d <= 5));
+  return new Function('classDowOk_', 'Logger',
+    `${code.slice(s, e)}${code.slice(s2, e2)}\nreturn groupBoardPreview;`)(classDowOk_, { log: () => {} });
+}
+
+test('미리보기는 시트를 전혀 건드리지 않는다(개원 전 확인용)', () => {
+  const s2 = code.indexOf('function groupBoardPreview()');
+  const body = code.slice(s2, code.indexOf('// 수동 확인용', s2));
+  ['SpreadsheetApp', 'getSheetByName', 'setValue', 'writeIfChanged'].forEach((bad) => {
+    assert.ok(!body.includes(bad), `미리보기가 ${bad}를 쓴다 — 확인용 함수가 실데이터를 만지면 안 된다`);
+  });
+});
+
+test('미리보기와 실물은 같은 렌더러를 탄다(두 벌이 되면 갈라진다)', () => {
+  const prev = code.slice(code.indexOf('function groupBoardPreview()'), code.indexOf('// 수동 확인용'));
+  assert.ok(prev.includes('groupBoardRender_('), '미리보기가 자체 문자열을 조립한다 — 실물과 갈라진다');
+  const real = section('function groupBoardText_(', '/* [v9.103] 조 편성표 렌더');
+  assert.ok(real.includes('groupBoardRender_('), '실물이 렌더러를 안 쓴다');
+});
+
+test('미리보기 출력에 강사가 볼 5요소가 전부 있다', () => {
+  const out = loadPreview()();
+  ['조 편성', '짝 1R', '2R', '3R', '오늘 발표', '소그룹 20분', '역할 의무', '정밀 청취', '지명 우선', '오늘 세 번 만나요']
+    .forEach((k) => assert.ok(out.includes(k), `미리보기에 「${k}」가 없다`));
+  assert.ok(/🎧 오늘 정밀 청취 = [1-4]조/.test(out), '정밀 청취 조가 지정되지 않았다(3주차 예시여야 한다)');
+  assert.ok(out.split('짝 1R').length - 1 === 4, '4개 조 전부에 3라운드 짝이 찍히지 않았다');
+});
+
+/* ── ⑧ 음성 동의 — 보관 1년(유호 08-01 확정)이 학생이 읽는 문장까지 닿는가 ── */
+
+test('음성 보관 기간은 1년 단일 소스이고 구 3년 문구가 남아 있지 않다', () => {
+  assert.ok(/const VOICE_RETENTION_MONTHS = 12/.test(code), 'VOICE_RETENTION_MONTHS 상수가 없다');
+  const hs = code.indexOf('const VOICE_CONSENT_HELP =');
+  assert.notEqual(hs, -1, 'VOICE_CONSENT_HELP 단일 소스가 없다');
+  const help = code.slice(hs, code.indexOf('\n', code.indexOf('삭제합니다.', hs)));
+  assert.ok(help.includes('보관: 녹음일로부터 1년'), '동의 문구에 보관 1년이 없다');
+  assert.ok(!code.includes('졸업 후 3년'), '구 보관 문구(졸업 후 3년)가 코드에 남아 있다');
+});
+
+test('동의 문항은 제목만 보고 스킵하지 않는다 — 문구 개정이 라이브 폼에 닿아야 한다', () => {
+  const fn = section('function migrateConsentV186()', 'function voiceConsentStat_(');
+  assert.ok(fn.includes('const syncHelp'), '도움말 동기화 로직이 없다 — 보관 기간을 바꿔도 학생이 읽는 문장은 옛것으로 남는다');
+  assert.ok(fn.includes('syncHelp(titles.indexOf(B), VOICE_CONSENT_HELP'), '음성 동의(B) 문구가 단일 소스와 동기화되지 않는다');
+  assert.ok(/setHelpText\(VOICE_CONSENT_HELP\)/.test(fn), '신규 생성 경로도 단일 소스를 써야 한다(두 벌 방지)');
+  // 동기화가 제목·선택지·응답을 건드리면 시트 착지가 깨진다
+  const sync = fn.slice(fn.indexOf('const syncHelp'), fn.indexOf('const A = CONSENT_Q_TITLE'));
+  ['setTitle', 'setChoiceValues', 'deleteItem'].forEach((bad) =>
+    assert.ok(!sync.includes(bad), `도움말 동기화가 ${bad}를 호출한다 — 열 착지·기존 응답이 깨진다`));
+});
+
 test('출석 원본은 실행당 1회만 읽는다(반 18개 × 전체 읽기 방지)', () => {
   const fn = section('function attDayMapCached_(', '/* [v9.99] 🔈 발화 지수');
   assert.ok(fn.includes('if (TALK_ATT_CACHE_) return TALK_ATT_CACHE_'), '출석 읽기 메모이즈가 없다');
