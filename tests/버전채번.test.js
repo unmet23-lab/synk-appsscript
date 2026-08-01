@@ -96,6 +96,36 @@ test('[v9.116] 유일성 보장 경로 — 예약은 원격 push로만 확정된
   assert.ok(dryIdx > -1 && pushIdx > dryIdx, '--dry 조기 반환이 push보다 뒤에 있다 — 조회가 번호를 소모한다');
 });
 
+/* [2026-08-01 감사] 위 '유일성 보장 경로' 케이스는 전부 src.includes(...) — **소스에 그 문장이 쓰여 있다**만
+ * 보증하고 **실행하면 그렇게 동작한다**는 보증하지 못한다. 문구가 살짝 바뀌면 죽고, 문구가 남아 있어도
+ * 도달 불가 코드면 통과한다(board-guard·clasp-guard가 같은 이유로 실사용 경로에서 죽어 있었다 —
+ * memory `guard-must-check-result`). 그래서 아래 한 겹은 **실제로 돌려서 결과**를 본다.
+ * --dry는 정의상 부작용이 없어야 하므로 테스트에서 안전하게 실행할 수 있다(그 무부작용 자체가 검사 대상이다). */
+test('[감사] --dry를 실제로 돌리면: 다음 번호를 내놓고, 번호도 작업본도 소모하지 않는다', () => {
+  const { spawnSync } = require('node:child_process');
+  const git = (args) =>
+    spawnSync('git', args, { cwd: ROOT, encoding: 'utf8' }).stdout || '';
+
+  const tagsBefore = git(['tag', '-l', 'synk-v9.*']).trim();
+  const codeBefore = fs.readFileSync(path.join(ROOT, 'Code.js'));
+
+  const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'bump-version.js'), '--dry'], {
+    cwd: ROOT, encoding: 'utf8', timeout: 60000,
+  });
+  const out = (r.stdout || '') + (r.stderr || '');
+
+  assert.equal(r.status, 0, `--dry가 실패했다:\n${out}`);
+  const cur = out.match(/현재 최고 버전:\s*(v9\.\d+)/);
+  const next = out.match(/다음 번호[^:]*:\s*(v9\.\d+)/);
+  assert.ok(cur && next, `--dry 출력에서 현재/다음 번호를 못 읽었다:\n${out}`);
+  assert.ok(bump.cmpVer(next[1], cur[1]) > 0,
+    `다음 번호(${next[1]})가 현재 최고(${cur[1]})보다 크지 않다 — 채번기가 남의 번호를 되돌려 준다`);
+
+  // 조회하러 왔다가 번호를 소모하면 아무도 --dry를 못 쓴다
+  assert.equal(git(['tag', '-l', 'synk-v9.*']).trim(), tagsBefore, '--dry가 태그를 만들었다(번호 소모)');
+  assert.deepEqual(fs.readFileSync(path.join(ROOT, 'Code.js')), codeBefore, '--dry가 Code.js를 건드렸다');
+});
+
 test('[v9.116] 채번기는 라이브로 배포되지 않는다 (.claspignore 허용목록 밖)', () => {
   // tools/가 라이브에 올라가면 Apps Script가 require/process를 만나 프로젝트 전체가 죽는다.
   const ig = fs.readFileSync(path.join(ROOT, '.claspignore'), 'utf8');
