@@ -2036,6 +2036,21 @@ test('[v9.107] 주간 통합 리포트 sections — 배열 요소 쉼표 누락 
   evaluated.forEach((sec, i) => {
     assert.ok(sec && typeof sec[0] === 'string', `sections[${i}]가 undefined이거나 제목이 없다 — 쉼표 누락 계열 결함`);
   });
+
+  // 같은 실행에서 드러난 2번째 결함: 섹션 클로저가 weeklyJobs 스코프에 없는 변수를 참조했다
+  // (`lectureWeeklyText_(ss)` → ReferenceError: ss is not defined). 이쪽은 섹션 try/catch가 잡아 리포트는
+  // 살지만 그 섹션만 매주 조용히 빈다 — 즉 "리포트가 오니까 괜찮다"로는 절대 안 드러난다.
+  // 규칙: 섹션 클로저는 스프레드시트를 자체 조회한다(다른 섹션들이 쓰는 ssR·ssL 패턴).
+  const fnBodies = block.match(/function\s*\([^)]*\)\s*\{[\s\S]*?\}(?=\s*\])/g) || [];
+  assert.ok(fnBodies.length >= 5, `섹션 클로저를 ${fnBodies.length}개만 찾았다 — 추출 로직이 깨졌다`);
+  fnBodies.forEach((body) => {
+    const usesSheet = /\bss[A-Z]?\w*\b/.test(body);
+    if (!usesSheet) return; // 시트를 안 쓰는 섹션(lpText·silText 반환)은 대상 아님
+    assert.ok(
+      body.includes('SpreadsheetApp.getActiveSpreadsheet()'),
+      `섹션 클로저가 시트 변수를 쓰면서 자체 조회를 안 한다 → weeklyJobs 스코프에 없으면 ReferenceError: ${body.slice(0, 70)}`
+    );
+  });
 });
 
 test('[v9.113] 인센티브 배점 3종 — 구간 경계 + 미측정은 점수 자체가 없다', () => {
