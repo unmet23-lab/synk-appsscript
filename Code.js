@@ -569,7 +569,7 @@
  *      translateNotices_가 title/body를 못 찾아 1·2열(notice_id·title_ko)에 오기록·오번역하던 것을 title_ko/
  *      body_ko 후보 추가로 해소. leagueSettle_·worldRaidMonthly_의 notices 직접 쓰기(1~3열 강제)도 addNotice
  *      경유로 교체. teacher_stats 스켈레톤 구 3열 → 실사용 8열 정정. CONTENT_EXPECT에 reach:2 편입.
- * 166. 카드 타이포 통일(CARD_FONT) — 전 HTML 카드 루트에 Noto Sans KR 우선 폰트 스택·자간(-0.01em)을 적용해
+ * 166. 카드 타이포 통일(CARD_FONT) — 전 HTML 카드 루트에 브랜드 3종 스택(Inter Tight→SUIT Variable)·자간(-0.02em)을 적용해
  *      WebView 기본 세리프/플랫폼 편차를 제거. 조립 가이드 v9.40(디자인 장 포함)과 세트.
  *
  * [v9.41 — 자동화 마감 + 2027 팔레트 (유호님 지시: 수동 잔재 제거·조잡함 청소·GPS 출석·트렌드 컬러)]
@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.121'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
+const SYNK_VERSION = 'v9.122'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.122] 브랜드 폰트 3종을 앱 카드에 적용 — 스택 교체 + 웹폰트 로더 신설(이름만 바꾸면 전 카드가 폴백된다) · [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -1382,7 +1382,7 @@ function playStyleOf_(logs) {
   return PLAY_STYLES[rhythm + style] || PLAY_STYLES['꾸준성실'];
 }
 function playStyleHtml_(ps) {
-  return '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:2px solid #BCC8FF;border-radius:14px;padding:10px 12px;"><div style="font-size:11px;color:#6B7280;">🧭 이번 달 나의 플레이 스타일</div><div style="font-size:16px;font-weight:800;padding:2px 0;">' + ps[0] + ' ' + ps[1] + '</div><div style="font-size:12px;color:#2B3FD9;">' + ps[2] + '</div></div>';
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:2px solid #BCC8FF;border-radius:14px;padding:10px 12px;"><div style="font-size:11px;color:#6B7280;">🧭 이번 달 나의 플레이 스타일</div><div style="font-size:16px;font-weight:800;padding:2px 0;">' + ps[0] + ' ' + ps[1] + '</div><div style="font-size:12px;color:#2B3FD9;">' + ps[2] + '</div></div>';
 }
 
 // [v9.12] 🔮 오늘의 시냅스 운세 — 결정론(이름+날짜), 절반은 행동 유도를 운세로 포장
@@ -1451,8 +1451,24 @@ function hashPick_(arr, seedStr) { let h = 0; for (let i = 0; i < seedStr.length
 
 // [v9.40] 카드 타이포 토큰 — 전 HTML 카드 루트에 삽입되는 공통 폰트 스택. Glide Rich Text는 WebView라
 //   font-family 미지정 시 플랫폼 기본 폰트(기기마다 세리프/고딕 제각각)로 렌더된다 → 명시로 통일.
-//   Noto Sans KR(안드로이드 한글 기본) → Apple SD Gothic Neo(iOS) → Malgun(윈도) 순 폴백 + 살짝 조인 자간.
-const CARD_FONT = "font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;letter-spacing:-0.01em;";
+// [브랜드 폰트 정본 §2] 유호님 확정 3종. **스택 순서가 곧 언어 배분이다** — 폴백은 글리프 단위로 돌기 때문에
+//   라틴·몽골 키릴은 Inter Tight가, 한글은(Inter Tight에 한글이 없으므로) SUIT Variable이 잡는다.
+//   **순서를 뒤집지 말 것** — SUIT를 앞에 두면 SUIT의 라틴 자형이 먼저 잡혀 Inter Tight가 영영 안 쓰인다.
+//   뒤쪽 시스템 폰트는 웹폰트 로드가 실패했을 때의 그물이다(레이아웃은 유지되고 결만 약해진다).
+const CARD_FONT = "font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;letter-spacing:-0.02em;";
+
+/* [브랜드 폰트 정본 §9] 스택 이름만 바꾸면 아무 일도 일어나지 않는다 — 이 상수가 있어야 실제로 바뀐다.
+ *   학생 휴대폰에 SUIT·Inter Tight가 설치돼 있을 리 없다. 로드가 없으면 전 카드가 시스템 폰트로 조용히
+ *   폴백되는데, 에러도 안 나고 화면도 그럴싸해서 「교체 완료」로 착각하기 딱 좋다.
+ *   구 스택(Noto Sans KR)이 이 문제를 안 겪은 건 그게 **안드로이드 기본 한글 폰트**라 우연히 깔려 있었기 때문이다.
+ *   CARD_FONT는 style 속성 값이라 그 안에 @import를 넣을 수 없다 → 카드 앞에 <style>을 따로 붙인다.
+ *   CARD_ANIM이 같은 방식으로 라이브에서 작동 중이므로(v9.43~) 이 경로는 열려 있다.
+ *   한 카드에 여러 번 들어가도 무해하다 — 같은 URL은 브라우저가 한 번만 받는다.
+ *   ⚠ WebView가 <style> 안의 @import까지 통과시키는지는 라이브 실측 전이다(배포 후 자형 확인 필요). */
+const CARD_WEBFONT = '<style>' +
+  '@import url("https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css");' +
+  '@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&display=swap");' +
+  '</style>';
 
 // [v9.43] 🫁 숨쉬는 몬스터 — CSS keyframes 토큰. Glide Rich Text(WebView)는 <style> 블록을 렌더하므로 작동하고,
 //   미지원 기기에선 스타일이 무시되어 "정적 이미지"로 조용히 남는다(그레이스풀 폴백 — 절대 깨지지 않음).
@@ -1502,7 +1518,7 @@ function buildMonsterFrame_(dispName, dispImg, apIdx, pct, rem) {
       '<div style="font-size:11px;color:#6B7280;padding:0 4px 3px;">' +
       (remN > 0 ? '🧠 시냅스 게이지 ' + pctC + '% — 다음 진화까지 ' + remN + 'P!' : '👑 모든 진화 완료 — 전설의 영역!') + '</div>'
     : '';
-  return CARD_ANIM + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E0E7FF 55%,#F5F3FF);padding:8px;border-radius:18px;border:2px solid ' + f[1] + ';box-shadow:0 6px 18px rgba(61,90,254,.14);">' +
+  return CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E0E7FF 55%,#F5F3FF);padding:8px;border-radius:18px;border:2px solid ' + f[1] + ';box-shadow:0 6px 18px rgba(61,90,254,.14);">' +
     inner + cap + gauge + '</div>';
 }
 
@@ -1528,7 +1544,7 @@ function buildRaidCard_(clsName, goal, dmg, won, stuN) {
       '<div style="margin-top:12px;">' + hudGauge_(pctR, win) + '</div>' +
       (chance ? '<div style="margin-top:12px;background:#FFFAEB;border-radius:14px;padding:12px 14px;font-size:12.5px;font-weight:600;line-height:1.6;color:#B54708;">🔥 오늘 격파 사정권 — 전원 숙제 1개면 남은 HP ' + left + ' 소멸!</div>' : '');
   }
-  return '<div style="' + CARD_FONT + HUD_CARD + '">' + head + body + '</div>';
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + HUD_CARD + '">' + head + body + '</div>';
 }
 
 /* ── [v9.78] 강사 반 HUD 조각(순수 함수 — tests/safety.test.js 직로드) · [v9.79] 미니멀 스킨 ──
@@ -1588,7 +1604,7 @@ function buildBriefHud_(clsName, mats) {
     ? '<div style="margin-top:14px;background:#F8F9FB;border-radius:14px;padding:10px 12px;font-size:12px;line-height:1.7;color:#475467;"><b style="color:#101828;">AI 브리핑</b> — ' + escHtml_(mats.ai) + '</div>' : '';
   const foot = (mats && (mats.errs || []).length) // [리뷰 P1-2] 강사가 실행 가능한 안내만
     ? '<div style="margin-top:14px;font-size:11px;line-height:1.6;color:#98A2B3;">연습 포인트는 수업 중 한 번만 짚어주면 충분해요 — 14일 지나면 자동으로 내려갑니다</div>' : '';
-  return '<div style="' + CARD_FONT + HUD_CARD + '">' + head + body + ai + foot + '</div>';
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + HUD_CARD + '">' + head + body + ai + foot + '</div>';
 }
 // 오늘 루틴(11열·상세 2절) — 뭐가 남았지? 완료 = ✓ 그린+흐린 텍스트, 미완 = ○+잉크 볼드(남은 일이 주인공).
 function buildRoutineHud_(clsName, ta, topicDone) {
@@ -1609,7 +1625,7 @@ function buildRoutineHud_(clsName, ta, topicDone) {
   const foot = all
     ? '<div style="margin-top:8px;font-size:11px;font-weight:700;color:#12B76A;">루틴 올클리어 — 완벽한 마감</div>'
     : '<div style="margin-top:8px;font-size:11px;line-height:1.6;color:#98A2B3;">출석·왕관은 수업 중 · 배운 내용은 마감 폼으로 — 기록되면 자동 체크</div>';
-  return '<div style="' + CARD_FONT + HUD_CARD + '">' + head + '<div style="margin-top:12px;">' + hudGauge_(done / items.length * 100, all) + '</div>' + grid + foot + '</div>';
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + HUD_CARD + '">' + head + '<div style="margin-top:12px;">' + hudGauge_(done / items.length * 100, all) + '</div>' + grid + foot + '</div>';
 }
 // 왕관 밸런스(12열·상세 4절) — 오늘 왕관 누구 줄까? 미수혜 = 그레이 pill 후보 명단.
 function buildCrownHud_(clsName, got, total, notYet) {
@@ -1632,7 +1648,7 @@ function buildCrownHud_(clsName, got, total, notYet) {
       '<div style="margin-top:12px;' + HUD_LABEL + '">이번 달 아직 왕관이 없는 학생</div><div style="margin-top:2px;">' + pills + '</div>' +
       '<div style="margin-top:12px;font-size:11px;line-height:1.6;color:#98A2B3;">오늘 MVP·시냅스는 이 명단에서 고르면 밸런스가 맞아요</div>';
   }
-  return '<div style="' + CARD_FONT + HUD_CARD + '">' + head + body + '</div>';
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + HUD_CARD + '">' + head + body + '</div>';
 }
 // 반 상세 HUD(14열 — Glide가 바인딩하는 단 1장) — 다크 히어로 헤더(딥 네이비+블루 글로우) + 4절 스택.
 // 서브 카드는 clsName='' — 반명은 헤더 1번만. dateStr은 호출부 주입(빌더 순수성 유지).
@@ -1656,7 +1672,7 @@ function buildClassHudDetail_(clsName, mats, ta, topicDone, crown, raid, dateStr
     cellH('수업 루틴', num(done, done > 0) + '<span style="font-size:12px;font-weight:700;color:' + midW + ';">/4</span>') +
     cellH('보스', boss[0]) +
     '<div style="clear:both;"></div></div>';
-  const header = '<div style="' + CARD_FONT + 'position:relative;overflow:hidden;background:linear-gradient(135deg,#101828 0%,#1E293B 100%);border-radius:20px;padding:20px 20px 16px;box-shadow:0 12px 28px -10px rgba(16,24,40,.4);">' +
+  const header = CARD_WEBFONT + '<div style="' + CARD_FONT + 'position:relative;overflow:hidden;background:linear-gradient(135deg,#101828 0%,#1E293B 100%);border-radius:20px;padding:20px 20px 16px;box-shadow:0 12px 28px -10px rgba(16,24,40,.4);">' +
     '<div style="position:absolute;top:-70px;right:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(closest-side,rgba(61,90,254,.38),rgba(61,90,254,0));"></div>' +
     '<div style="position:absolute;bottom:-90px;left:-60px;width:190px;height:190px;border-radius:50%;background:radial-gradient(closest-side,rgba(61,90,254,.16),rgba(61,90,254,0));"></div>' +
     '<div style="position:relative;"><div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
@@ -1725,7 +1741,7 @@ function buildGroupHud_(clsName, b) {
     (Number(b.focus) ? '<br/>🎧 정밀 청취 <b>' + Number(b.focus) + '조</b> — 20분 내내 붙어 실제 문장을 받아적고 약점 메모 폼에 넣으세요' : '') + '</div>';
   const hint = '<div style="margin-top:10px;font-size:11px;line-height:1.6;color:#98A2B3;">역할은 차시마다 한 칸씩 돕니다 — ' +
     ROLE_NAMES.map((n, i) => n + '(' + ROLE_DUTY[i] + ')').join(' → ') + '</div>';
-  return '<div style="' + CARD_FONT + HUD_CARD + '">' + head + rows + foot + box + hint + '</div>';
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + HUD_CARD + '">' + head + rows + foot + box + hint + '</div>';
 }
 // [v9.86·B] 반별 조 편성 절 배치 생성 — groupBoardOf_를 반마다 부르면 groups·schedule을 16회 재읽는다 → 1회 읽기.
 //   역할 계산은 groupBoardOf_와 동일 원천(roleOfSeat_·lessonNoOf_) — 메일 조 편성표와 어긋날 수 없다.
@@ -1800,7 +1816,7 @@ function buildRankBoardHtml_(myId, rows, meta) {
     ? '<div style="display:flex;align-items:flex-end;margin-top:18px;">' + pod(rows[1], 2) + pod(rows[0], 1) + pod(rows[2], 3) + '</div>'
     : '<div style="text-align:center;padding:20px 0 8px;"><div style="font-size:13.5px;font-weight:800;color:#FFFFFF;">리그 개막 전</div>' +
       '<div style="margin-top:4px;font-size:11.5px;color:rgba(255,255,255,.55);">이번 달 첫 포인트가 곧 1위 — 출석 도장부터!</div></div>';
-  const hero = '<div style="' + CARD_FONT + 'position:relative;overflow:hidden;background:linear-gradient(135deg,#101828 0%,#1E293B 100%);border-radius:20px;padding:20px 18px 0;box-shadow:0 12px 28px -10px rgba(16,24,40,.4);">' +
+  const hero = CARD_WEBFONT + '<div style="' + CARD_FONT + 'position:relative;overflow:hidden;background:linear-gradient(135deg,#101828 0%,#1E293B 100%);border-radius:20px;padding:20px 18px 0;box-shadow:0 12px 28px -10px rgba(16,24,40,.4);">' +
     '<div style="position:absolute;top:-70px;right:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(closest-side,rgba(253,176,34,.26),rgba(253,176,34,0));"></div>' +
     '<div style="position:absolute;bottom:-90px;left:-60px;width:190px;height:190px;border-radius:50%;background:radial-gradient(closest-side,rgba(61,90,254,.20),rgba(61,90,254,0));"></div>' +
     '<div style="position:relative;"><div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
@@ -1835,7 +1851,7 @@ function buildRankBoardHtml_(myId, rows, meta) {
       ? '🔥 ' + rows[mineIdx - 1].rank + '위까지 <b>' + diff + 'P</b> — ' + (hwN <= 5 ? '숙제 ' + hwN + '번이면 추월!' : '이번 주 숙제·출석을 다 모으면 사정권!')
       : '🔥 「' + escHtml_(rows[mineIdx - 1].name) + '」와 동점 — 다음 1P가 순위를 가른다!'; // [v9.85] 같은 순위끼리 "n위와 동점"은 자기 언급 — 이름으로
   } else if (rows.length) nudge = '아직 순위표 밖 — 오늘 출석 도장 하나로 입장!';
-  const list = '<div style="' + CARD_FONT + HUD_CARD + '">' +
+  const list = CARD_WEBFONT + '<div style="' + CARD_FONT + HUD_CARD + '">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;padding:0 2px 6px;">' +
     '<span style="font-size:10px;font-weight:800;letter-spacing:.12em;color:#98A2B3;">이번 달 순위</span>' +
     '<span style="font-size:11px;font-weight:700;color:#98A2B3;">' + rows.length + '명 참가</span></div>' + listRows +
@@ -1921,7 +1937,7 @@ function buildExecReport_() {
     '하이라이트: 👑 왕관 ' + crownN + '회 · ⚔️ 레이드 ' + raidN + '건 · 📖 스토리 ' + (issuedStory ? '발간 완료' : '발간 예정'),
     '💡 ' + insights[0]
   ].filter(String);
-  const html = '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:14px;padding:12px 14px;font-size:13px;line-height:2;">' + lines.map((l, i) => i === 0 ? '<b style="font-size:14px;">' + l + '</b>' : escHtml_(l)).join('<br/>') + '</div>';
+  const html = CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:14px;padding:12px 14px;font-size:13px;line-height:2;">' + lines.map((l, i) => i === 0 ? '<b style="font-size:14px;">' + l + '</b>' : escHtml_(l)).join('<br/>') + '</div>';
   setAppState_(ss, '경영리포트HTML', html);
   setAppState_(ss, doneKey, Utilities.formatDate(now, tz, 'yyyy-MM-dd'));
   if (quotaOk(1)) { // 메일 = 월보 전문 1통(구 monthlyReport 완전 흡수 — 07시 트리거는 위임 shim이 멱등 통과)
@@ -1972,7 +1988,7 @@ function buildDexHtml_(stages, t, curIdx) {
         '<div style="font-size:10px;color:#9CA3AF;padding-top:2px;">??? · ' + s.th + 'P</div></div>';
     }
   });
-  return CARD_ANIM + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #E9E7F5;border-radius:16px;padding:11px 12px;">' +
+  return CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #E9E7F5;border-radius:16px;padding:11px 12px;">' +
     '<div style="font-size:13.5px;font-weight:800;padding-bottom:5px;">🗂️ 몬스터 도감 <span style="color:#3D5AFE;">' + met + '/' + stages.length + ' 만남</span></div>' +
     '<div style="overflow:hidden;">' + cells + '</div>' +
     '<div style="clear:both;font-size:10.5px;color:#9CA3AF;padding-top:5px;">포인트를 모으면 다음 친구가 모습을 드러내요 ✨</div></div>';
@@ -2004,7 +2020,7 @@ function buildAttCalHtml_(attSet, now, tz, clsType) {
     else cell = '<div style="height:26px;line-height:26px;font-size:9px;color:#E5E7EB;text-align:center;">·</div>';
     cells += '<div style="width:13.6%;margin:1px .3%;float:left;text-align:center;">' + cell + '</div>';
   }
-  return '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:16px;padding:12px 11px;">' +
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:16px;padding:12px 11px;">' +
     '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 2px 7px;">' +
     '<span style="font-size:13.5px;font-weight:800;">🗓️ ' + (m + 1) + '월 출석 달력</span>' +
     '<span style="font-size:12px;font-weight:800;color:#3D5AFE;">' + attN + '일 출석 <span style="color:#9CA3AF;font-weight:400;font-size:10px;">· Ирц</span></span></div>' +
@@ -2095,7 +2111,7 @@ function myJourneyHtml_(o) {
     : '';
   // [v9.35] 소프트 글로우 축 — 헤더 행(제목+우측 코랄 '진화까지 nP'), 토큰(그라디언트·라운드 18/12·섀도)
   const remJ = mon.rem || 0;
-  return CARD_ANIM + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E0E7FF 55%,#F5F3FF);border:2px solid #BCC8FF;border-radius:18px;padding:13px 15px;box-shadow:0 6px 18px rgba(61,90,254,.14);">' +
+  return CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#E0E7FF 55%,#F5F3FF);border:2px solid #BCC8FF;border-radius:18px;padding:13px 15px;box-shadow:0 6px 18px rgba(61,90,254,.14);">' +
     dreamLine + seasonB +
     '<div style="display:flex;justify-content:space-between;align-items:baseline;">' +
       '<div style="font-size:15px;font-weight:800;color:#2B3FD9;">📖 ' + o.nm + '의 여정</div>' +
@@ -2763,7 +2779,7 @@ function calcAll() {
             });
           }
         }
-        speakOut.push(['<div style="' + CARD_FONT + 'background:#F5F3FF;border:2px solid #BCC8FF;border-radius:14px;padding:9px 12px;font-size:13px;">💬 ' + line + (mnSpk9 ? '<br/><span style="font-size:11px;opacity:.78;">' + mnSpk9 + '</span>' : '') + '</div>']); // [v9.70] 초급 병기
+        speakOut.push([CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#F5F3FF;border:2px solid #BCC8FF;border-radius:14px;padding:9px 12px;font-size:13px;">💬 ' + line + (mnSpk9 ? '<br/><span style="font-size:11px;opacity:.78;">' + mnSpk9 + '</span>' : '') + '</div>']); // [v9.70] 초급 병기
         styleOut.push([playStyleHtml_(playStyleOf_(styleLogs[id] || []))]);
         const chemP = chemi[id];
         chemOut.push([chemP
@@ -2802,22 +2818,22 @@ function calcAll() {
           Object.keys(weekAtt).forEach(sid2 => { if (clsB2[sid2] === cn6) Object.keys(weekAtt[sid2]).forEach(d6 => wDaysCls[d6] = 1); });
           const wDen = Math.max(Object.keys(wDaysCls).length, wAtt);
           const wTop = (weekTopicsCls[cn6] || []).slice(-3);
-          weeklyOut.push(['<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:14px;padding:10px 12px;font-size:12.5px;line-height:2;"><b style="font-size:13.5px;">📋 Долоо хоногийн тайлан <span style="color:#9CA3AF;font-weight:400;">· 주간 리포트</span></b><br/>✅ Ирц: <b>' + wAtt + '/' + (wDen || '-') + '</b> өдөр<br/>⚡ Оноо: <b>+' + (weekPts[id] || 0) + 'P</b> · 👑 Титэм: <b>' + (weekCrown[id] || 0) + '</b> удаа' + (wTop.length ? '<br/>📚 Сурсан зүйл: ' + wTop.join(' · ') : '') + '</div>']);
+          weeklyOut.push([CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:14px;padding:10px 12px;font-size:12.5px;line-height:2;"><b style="font-size:13.5px;">📋 Долоо хоногийн тайлан <span style="color:#9CA3AF;font-weight:400;">· 주간 리포트</span></b><br/>✅ Ирц: <b>' + wAtt + '/' + (wDen || '-') + '</b> өдөр<br/>⚡ Оноо: <b>+' + (weekPts[id] || 0) + 'P</b> · 👑 Титэм: <b>' + (weekCrown[id] || 0) + '</b> удаа' + (wTop.length ? '<br/>📚 Сурсан зүйл: ' + wTop.join(' · ') : '') + '</div>']);
           const tp = topicRecent[cn6];
           if (tp) {
             const q = hashPick_(PARENT_Q, id + todayYmd0).replace('{t}', tp.ko);
-            talkOut.push(['<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FFF7ED,#FEF3C7);border:2px solid #FDE68A;border-radius:14px;padding:10px 12px;font-size:12.5px;line-height:1.95;"><b style="font-size:13.5px;">💬 Өнөөдрийн яриа <span style="color:#9CA3AF;font-weight:400;">· 오늘의 대화</span></b><br/>' + (tp.today ? 'Өнөөдөр' : 'Сүүлийн хичээлээр') + ' хүүхэд тань <b>«' + tp.ko + '»</b>' + (tp.mn ? ' (' + tp.mn + ')' : '') + ' сурсан.<br/>Хүүхдээсээ ингэж асуугаарай:<br/><b>' + q + '</b></div>']);
+            talkOut.push([CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FFF7ED,#FEF3C7);border:2px solid #FDE68A;border-radius:14px;padding:10px 12px;font-size:12.5px;line-height:1.95;"><b style="font-size:13.5px;">💬 Өнөөдрийн яриа <span style="color:#9CA3AF;font-weight:400;">· 오늘의 대화</span></b><br/>' + (tp.today ? 'Өнөөдөр' : 'Сүүлийн хичээлээр') + ' хүүхэд тань <b>«' + tp.ko + '»</b>' + (tp.mn ? ' (' + tp.mn + ')' : '') + ' сурсан.<br/>Хүүхдээсээ ингэж асуугаарай:<br/><b>' + q + '</b></div>']);
           } else {
-            talkOut.push(['<div style="' + CARD_FONT + 'background:#F9FAFB;border:2px dashed #E5E7EB;border-radius:14px;padding:10px 12px;font-size:12px;color:#6B7280;">💬 Дараагийн хичээлийн дараа энд ярианы сэдэв гарч ирнэ (다음 수업 후 대화 주제가 여기에)</div>']);
+            talkOut.push([CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#F9FAFB;border:2px dashed #E5E7EB;border-radius:14px;padding:10px 12px;font-size:12px;color:#6B7280;">💬 Дараагийн хичээлийн дараа энд ярианы сэдэв гарч ирнэ (다음 수업 후 대화 주제가 여기에)</div>']);
           }
           const evoStr6 = (prevBB[idx] && String(prevBB[idx][0] || '')) || '';
           const evoRecent = evoStr6 && (new Date(todayYmd0) - new Date(evoStr6.slice(0, 10))) / msPerDay <= 3;
           const crownToday2 = (crownDates[id] || '') === todayYmd0;
           const gEvoForm = ((masteryTopForm[id] || {})[mon.idx] || {}).nm || ''; // [v9.36] 이번 단계 대표 도달 문형 — "무엇을 배워 진화했는지"
           bannerOut.push([crownToday2
-            ? '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FDE68A,#F5A623);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;">🎉 ' + (r[1] || id) + ' өнөөдөр титэм авлаа! Гэртээ магтаж өгөөрэй 💛<br/><span style="font-weight:400;font-size:11px;">오늘 왕관을 받았어요! 집에서 칭찬해 주세요</span></div>'
+            ? CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FDE68A,#F5A623);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;">🎉 ' + (r[1] || id) + ' өнөөдөр титэм авлаа! Гэртээ магтаж өгөөрэй 💛<br/><span style="font-weight:400;font-size:11px;">오늘 왕관을 받았어요! 집에서 칭찬해 주세요</span></div>'
             : (evoRecent
-              ? '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#7C9BFF,#3D5AFE);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;color:#fff;">⚡ ' + (r[1] || id) + '-ийн хамтрагч шинэ шатанд хувьслаа! Түүхэн мөч 📸<br/><span style="font-weight:400;font-size:11px;">성장 파트너가 진화했어요!' + (gEvoForm ? ' \'' + gEvoForm + '\' 문법까지 익히고 진화!' : ' 역사적인 순간') + '</span></div>' // [v9.74] 학부모 배너 — 몬스터→성장 파트너(хамтрагч)
+              ? CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#7C9BFF,#3D5AFE);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;color:#fff;">⚡ ' + (r[1] || id) + '-ийн хамтрагч шинэ шатанд хувьслаа! Түүхэн мөч 📸<br/><span style="font-weight:400;font-size:11px;">성장 파트너가 진화했어요!' + (gEvoForm ? ' \'' + gEvoForm + '\' 문법까지 익히고 진화!' : ' 역사적인 순간') + '</span></div>' // [v9.74] 학부모 배너 — 몬스터→성장 파트너(хамтрагч)
               : '')]);
           // [v9.20] 오늘의알림 — 푸시/인앱배너용, "하루짜리 결정적 순간"만 (왕관·진화·생일).
           //  [v9.20 최적화] 진화임박(rem) 분기 제거: 매일 값 변동→시트 churn + 푸시 시 매일 알림 피로.
@@ -2833,7 +2849,7 @@ function calcAll() {
             : '']);
         }
         const rec = records[id] || {};
-        recordOut.push(['<div style="' + CARD_FONT + 'background:#fff;border:2px solid #E9E7F5;border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.9;">📊 <b>나의 기록실</b><br/>🔥 최장 연속출석 <b>' + (rec.maxStreak || stk) + '일</b><br/>🏔️ 최고 월간 포인트 <b>' + (rec.bestMonth || mPts) + 'P</b><br/>👑 첫 왕관 <b>' + (rec.firstCrown || '이번 달이 기회!') + '</b><br/>⚔️ 보스 토벌 참여 <b>' + (rec.raids || 0) + '회</b><br/>📚 총 누적 <b>' + t + 'P</b></div>']);
+        recordOut.push([CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #E9E7F5;border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.9;">📊 <b>나의 기록실</b><br/>🔥 최장 연속출석 <b>' + (rec.maxStreak || stk) + '일</b><br/>🏔️ 최고 월간 포인트 <b>' + (rec.bestMonth || mPts) + 'P</b><br/>👑 첫 왕관 <b>' + (rec.firstCrown || '이번 달이 기회!') + '</b><br/>⚔️ 보스 토벌 참여 <b>' + (rec.raids || 0) + '회</b><br/>📚 총 누적 <b>' + t + 'P</b></div>']);
       }
       { // [v9.0] 진화 순간 감지 → BB(54) 진화일 (상승만, 신규생 첫 계산 제외)
         const iE = stageNumOut.length - 1;
@@ -3018,14 +3034,14 @@ function calcAll() {
     { // 원장 홈 카드 2종
       radarList.sort((a2, b2) => a2.s === b2.s ? 0 : (a2.s === '🔴' ? -1 : 1));
       const rHtml = radarList.length
-        ? '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #FECACA;border-radius:14px;padding:10px 12px;"><div style="font-size:13px;font-weight:800;">📡 리텐션 레이더 — 관심 필요 ' + radarList.length + '명</div><div style="font-size:12px;line-height:1.9;">' + radarList.slice(0, 8).map(x => x.s + ' <b>' + x.n + '</b> (' + x.c + ') — ' + x.w + (aiCareMap[x.n] ? '<br/>&nbsp;&nbsp;💬 <span style="color:#6B7280;">' + String(aiCareMap[x.n]).slice(0, 90) + '</span>' : '')).join('<br/>') + (radarList.length > 8 ? '<br/>… 외 ' + (radarList.length - 8) + '명' : '') + '</div></div>'
-        : '<div style="' + CARD_FONT + 'background:#F0FDF4;border:2px solid #BBF7D0;border-radius:14px;padding:10px 12px;font-size:13px;">📡 전원 🟢 — 평화로운 항해 중입니다</div>';
+        ? CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #FECACA;border-radius:14px;padding:10px 12px;"><div style="font-size:13px;font-weight:800;">📡 리텐션 레이더 — 관심 필요 ' + radarList.length + '명</div><div style="font-size:12px;line-height:1.9;">' + radarList.slice(0, 8).map(x => x.s + ' <b>' + x.n + '</b> (' + x.c + ') — ' + x.w + (aiCareMap[x.n] ? '<br/>&nbsp;&nbsp;💬 <span style="color:#6B7280;">' + String(aiCareMap[x.n]).slice(0, 90) + '</span>' : '')).join('<br/>') + (radarList.length > 8 ? '<br/>… 외 ' + (radarList.length - 8) + '명' : '') + '</div></div>'
+        : CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#F0FDF4;border:2px solid #BBF7D0;border-radius:14px;padding:10px 12px;font-size:13px;">📡 전원 🟢 — 평화로운 항해 중입니다</div>';
       setAppState_(ss, '리텐션레이더HTML', rHtml);
       const bByCls = {};
       blindList.forEach(x => (bByCls[x.c] = bByCls[x.c] || []).push(x.n + '(' + x.d + ')'));
       const bHtml = blindList.length
-        ? '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #FDE68A;border-radius:14px;padding:10px 12px;"><div style="font-size:13px;font-weight:800;">👩‍🏫 케어 사각 — 출석 중인데 2주+ 무포인트</div><div style="font-size:12px;line-height:1.9;">' + Object.keys(bByCls).map(cn => '<b>' + cn + '</b>: ' + bByCls[cn].join(', ')).join('<br/>') + '</div><div style="font-size:11px;color:#6B7280;padding-top:4px;">이번 주, 이 크루들에게 왕관 기회를 한 번씩 🙏</div></div>'
-        : '<div style="' + CARD_FONT + 'background:#F0FDF4;border:2px solid #BBF7D0;border-radius:14px;padding:10px 12px;font-size:13px;">👩‍🏫 사각지대 없음 — 모든 크루가 케어받는 중 ✨</div>';
+        ? CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #FDE68A;border-radius:14px;padding:10px 12px;"><div style="font-size:13px;font-weight:800;">👩‍🏫 케어 사각 — 출석 중인데 2주+ 무포인트</div><div style="font-size:12px;line-height:1.9;">' + Object.keys(bByCls).map(cn => '<b>' + cn + '</b>: ' + bByCls[cn].join(', ')).join('<br/>') + '</div><div style="font-size:11px;color:#6B7280;padding-top:4px;">이번 주, 이 크루들에게 왕관 기회를 한 번씩 🙏</div></div>'
+        : CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#F0FDF4;border:2px solid #BBF7D0;border-radius:14px;padding:10px 12px;font-size:13px;">👩‍🏫 사각지대 없음 — 모든 크루가 케어받는 중 ✨</div>';
       setAppState_(ss, '케어사각HTML', bHtml);
       // [v9.50·E5] 리텐션 목록 저장 — 야간 AI가 이 목록으로 학생별 개입 멘트를 생성해 '리텐션멘트'에 되돌려 놓는다(감지=규칙, AI=문구만)
       setAppState_(ss, '리텐션목록', JSON.stringify(radarList.slice(0, 12).map(x => ({ n: x.n, c: x.c, w: x.w }))));
@@ -3195,7 +3211,7 @@ function calcAll() {
       //   raidFriday(금·일)에만 갱신돼 월~목 내내 발동 불가능한 죽은 조건이었음 → 13·14열과 같은 라이브 소스(goal−weekDmg)로 통일
       const left = Math.max((raidGoal[c] || 0) - (weekDmg[c] || 0), 0);
       const chance = (!raidWin[c] && (raidGoal[c] || 0) > 0 && left > 0 && left <= v.n * 10)
-        ? '<div style="' + CARD_FONT + 'background:#FFFAEB;border-radius:14px;padding:12px 14px;font-size:12.5px;font-weight:600;line-height:1.6;color:#B54708;">🔥 오늘 격파 사정권 — 전원 숙제 1개면 남은 HP ' + left + ' 소멸!</div>' : '';
+        ? CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FFFAEB;border-radius:14px;padding:12px 14px;font-size:12.5px;font-weight:600;line-height:1.6;color:#B54708;">🔥 오늘 격파 사정권 — 전원 숙제 1개면 남은 HP ' + left + ' 소멸!</div>' : '';
       const ta = tdActs[c] || {};
       const members = [];
       pfData.forEach(rr => { if (rr[0] && rr[3] === 'student' && String(rr[4]) === c) members.push({ id: rr[0], n: rr[1] || rr[0] }); });
@@ -3274,7 +3290,7 @@ function calcAll() {
           ? '<img class="skBo" src="' + bImg + '" style="display:block;margin:0 auto;width:110px;height:110px;border-radius:16px;background:#312E81;border:2.5px solid #6366F1;' + ANIM_BOSS + '"/>' // [v9.48] 중앙 고정(Glide img=block 교정)
           : '<span class="skBo" style="display:inline-block;font-size:64px;' + ANIM_BOSS + '">👾</span>';
         setState(st, '이달의보스HTML', CARD_ANIM +
-          '<div style="' + CARD_FONT + 'background:linear-gradient(165deg,#1E1B4B,#312E81 60%,#1E1B4B);border:2px solid #6366F1;border-radius:18px;padding:14px;text-align:center;color:#E0E7FF;">' +
+          CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(165deg,#1E1B4B,#312E81 60%,#1E1B4B);border:2px solid #6366F1;border-radius:18px;padding:14px;text-align:center;color:#E0E7FF;">' +
           '<div style="font-size:10px;letter-spacing:.25em;color:#A5B4FC;">' + Utilities.formatDate(now, tz, 'M') + '월의 보스</div>' +
           '<div style="padding:8px 0 9px;">' + bHero + '</div>' +
           '<div style="font-size:17px;font-weight:900;color:#fff;">' + escHtml_(bz.name) + '</div>' + // [v9.44] 시트 커스텀 대사 이스케이프(카드 파손 차단)
@@ -3393,7 +3409,7 @@ const SHARED3_COL_HEADERS = ['출퇴근HTML', '결석신고HTML', '결석폼URL'
 function hwCardHtml_(ty, mnTy, task, mnTask, tip, mnTip) {
   if (!task) return '';
   const chip = ty ? '<span style="font-size:10.5px;font-weight:800;color:#3D5AFE;background:#EEF2FF;border-radius:99px;padding:3px 9px;white-space:nowrap;">' + escHtml_(ty) + (mnTy ? ' · ' + escHtml_(mnTy) : '') + '</span>' : '';
-  return '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:16px;padding:13px 12px;">' +
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:16px;padding:13px 12px;">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding-bottom:8px;">' +
     '<span style="font-size:14px;font-weight:800;">📚 오늘의 숙제</span>' + chip + '</div>' +
     '<div style="font-size:14.5px;font-weight:700;line-height:1.75;">' + escHtml_(task) + '</div>' +
@@ -3404,7 +3420,7 @@ function hwCardHtml_(ty, mnTy, task, mnTask, tip, mnTip) {
 }
 function quizCardHtml_(q, mnQ, personal) {
   if (!q) return '';
-  return '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#FFFFFF 55%);border:2px solid #C7D2FE;border-radius:16px;padding:13px 12px;">' +
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#EEF2FF,#FFFFFF 55%);border:2px solid #C7D2FE;border-radius:16px;padding:13px 12px;">' +
     '<div style="font-size:14px;font-weight:800;padding-bottom:7px;">🧠 오늘의 퀴즈' +
     (personal ? ' <span style="font-size:10.5px;font-weight:800;color:#3D5AFE;">나를 위한 맞춤 문제 🎯</span>' : '') + '</div>' +
     '<div style="font-size:14px;font-weight:700;line-height:1.75;">' + escHtml_(q) + '</div>' +
@@ -3423,7 +3439,7 @@ function prepCardHtml_(hwTy, hw, tip, quiz, quizAns, subs) {
           : ' · <span style="color:#12B76A;font-weight:700;">전원 제출</span>')).join('<br/>') +
       '<br/><span style="font-size:10.5px;color:#9CA3AF;">어제 0시 이후 제출 기준 — 낸 학생부터 검사하면 동선이 줄어요</span></div>'
     : '';
-  return '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:16px;padding:13px 12px;">' +
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:16px;padding:13px 12px;">' +
     '<div style="font-size:14px;font-weight:800;">🎬 오늘 수업 준비 — 1분 브리핑</div>' +
     '<div style="' + sec + '"><b>📚 오늘 검사할 숙제</b>' + (hwTy ? ' <span style="color:#3D5AFE;font-weight:800;">' + escHtml_(hwTy) + '</span>' : '') + '<br/>' +
     (hw ? escHtml_(hw) : '게시된 숙제 없음') +
@@ -3483,7 +3499,7 @@ function ioCardHtml_(dateLabel, io, weekCells, weekN, cheer) {
       '<div style="margin-top:6px;display:flex;gap:4px;">' + cells + '</div>';
   }
   const cheerRow = cheer ? '<div style="margin-top:12px;font-size:11.5px;line-height:1.7;color:#98A2B3;">' + escHtml_(cheer) + '</div>' : '';
-  return '<div style="' + CARD_FONT + HUD_CARD + '">' + head + hero + noteRow + strip + cheerRow + '</div>';
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + HUD_CARD + '">' + head + hero + noteRow + strip + cheerRow + '</div>';
 }
 // 학부모 결석 카드(DQ121) — 출석 달력과 같은 껍질(학부모 면 디자인 축). items=[{label,state,reason}] · nextDays=수업일 라벨 3개.
 function absenceCardHtml_(kidName, items, nextDays) {
@@ -3513,7 +3529,7 @@ function absenceCardHtml_(kidName, items, nextDays) {
     '① 그날 「안 왔어요」 알림이 가지 않아요 <span style="color:#9CA3AF;">Тухайн өдөр сануулга илгээгдэхгүй</span><br/>' +
     '② 담당 선생님 수업 브리핑에 자동 전달 <span style="color:#9CA3AF;">Багшид автоматаар дамжина</span><br/>' +
     '③ 제출하면 10분 안에 여기 ✅ 표시 <span style="color:#9CA3AF;">10 минутын дотор энд харагдана</span></div>';
-  return '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:16px;padding:12px 11px;">' + head + list + nextRow + steps + '</div>';
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #C7D2FE;border-radius:16px;padding:12px 11px;">' + head + list + nextRow + steps + '</div>';
 }
 // 오늘의 강사 출퇴근 시각(HH:mm) — todayBoard_(10분 스위프)와 writeSharedCols_(14/22시)가 같은 계산을 공유
 function teacherInOutMap_(ss, tz) {
@@ -5148,7 +5164,7 @@ function todayBoard_(ss) {
         const cur6 = rowsL.filter(rr => (rr[0] ? dstr(rr[0], tz) : '') === wMax && rr[1] && rr[2]).slice(0, 3);
         if (cur6.length) lgB = '<div style="font-size:13px;opacity:.8;padding:12px 0 2px;">🏆 이번 주 리그</div>' + cur6.map(rr => '<div style="font-size:15px;padding:2px 0;">' + rr[1] + ' <span style="opacity:.55;">vs</span> ' + rr[2] + '</div>').join('');
       }
-      const scrHtml = '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#101736,#1D2A6B 60%,#3D5AFE);border-radius:20px;padding:22px 24px;color:#fff;">' +
+      const scrHtml = CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#101736,#1D2A6B 60%,#3D5AFE);border-radius:20px;padding:22px 24px;color:#fff;">' +
         '<div style="display:flex;justify-content:space-between;align-items:baseline;"><div style="font-size:22px;font-weight:800;">📺 SYNK LIVE</div><div style="font-size:15px;opacity:.85;">' + (now.getMonth() + 1) + '월 ' + now.getDate() + '일 (' + dowNm + ')</div></div>' +
         (stageTxt ? '<div style="font-size:14px;opacity:.9;padding-top:4px;">🎪 ' + stageTxt + '</div>' : '') +
         '<div style="background:rgba(255,255,255,.12);border-radius:14px;padding:10px 14px;margin-top:12px;font-size:17px;font-weight:700;">🕐 ' + nextTxt + ' · 오늘 등원 ' + Object.keys(arr).length + '명</div>' +
@@ -9194,7 +9210,7 @@ function buildMonthlyCards_() {
       : '🌟 다음 달 주인공 예약';
     const mi = String(monMapC[s.mon] || ''); // [v9.35]
     // [v9.35] 골격을 소프트 글로우 축으로 정렬(보더 #C4B5FD 2px·라운드 18/12·섀도) — 티어 그라디언트는 유지
-    return [ym, s.id, '<div style="' + CARD_FONT + 'background:' + tier[2] + ';border:2px solid #BCC8FF;border-radius:18px;padding:10px;max-width:230px;box-shadow:0 6px 18px rgba(61,90,254,.14);">' +
+    return [ym, s.id, CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:' + tier[2] + ';border:2px solid #BCC8FF;border-radius:18px;padding:10px;max-width:230px;box-shadow:0 6px 18px rgba(61,90,254,.14);">' +
       '<div style="background:#fff;border-radius:12px;padding:10px 12px;text-align:center;">' +
       '<div style="font-size:11px;color:#6B7280;">SYNK ' + ym + ' · ' + tier[3] + ' ' + tier[1] + '</div>' +
       '<div style="font-size:17px;font-weight:800;padding:3px 0;">' + s.nm + '</div>' +
@@ -9254,7 +9270,7 @@ function updateTravelMap_() {
       ? '<div style="width:31%;margin:1%;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:2px solid #A5B4FC;border-radius:12px;text-align:center;padding:8px 0;float:left;"><div style="font-size:22px;">' + MAP_EMOJI[i] + '</div><div style="font-size:11px;font-weight:700;">' + nm + '</div><div style="font-size:10px;color:#2B3FD9;">⭕ 정복!</div></div>'
       : '<div style="width:31%;margin:1%;background:#F3F4F6;border:2px dashed #D1D5DB;border-radius:12px;text-align:center;padding:8px 0;float:left;opacity:.75;"><div style="font-size:22px;">🌫️</div><div style="font-size:11px;color:#9CA3AF;">???</div><div style="font-size:10px;color:#9CA3AF;">' + (i + 1) + '월의 무대</div></div>';
   }
-  const html = '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #E9E7F5;border-radius:16px;padding:12px;"><div style="font-size:14px;font-weight:800;padding-bottom:6px;">🗺️ 시냅스 여행 지도 — 한국 12경 <span style="color:#2B3FD9;">' + n + '/12곳 정복</span></div><div style="overflow:hidden;">' + cells + '</div><div style="clear:both;font-size:11px;color:#6B7280;padding-top:6px;">매달 싱크 스토리가 발간되면 새로운 무대에 도장이 찍혀요 📖</div></div>';
+  const html = CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #E9E7F5;border-radius:16px;padding:12px;"><div style="font-size:14px;font-weight:800;padding-bottom:6px;">🗺️ 시냅스 여행 지도 — 한국 12경 <span style="color:#2B3FD9;">' + n + '/12곳 정복</span></div><div style="overflow:hidden;">' + cells + '</div><div style="clear:both;font-size:11px;color:#6B7280;padding-top:6px;">매달 싱크 스토리가 발간되면 새로운 무대에 도장이 찍혀요 📖</div></div>';
   const st = ensureSheet(ss, 'app_state', ['key','value']);
   const data = st.getLastRow() < 2 ? [] : st.getRange(2, 1, st.getLastRow() - 1, 2).getValues();
   let found = -1;
@@ -13251,7 +13267,7 @@ function academicTrendHtml_(logs) {
   const levels = logs.filter(l => l.type === 'level');
   const mocks = logs.filter(l => l.type === 'mock');
   if (!levels.length && !mocks.length)
-    return '<div style="' + CARD_FONT + 'background:#F9FAFB;border:2px dashed #E5E7EB;border-radius:14px;padding:12px 13px;font-size:12.5px;color:#6B7280;">📈 한국어 실력 성장 — 첫 평가를 기다리고 있어요 ✨</div>';
+    return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#F9FAFB;border:2px dashed #E5E7EB;border-radius:14px;padding:12px 13px;font-size:12.5px;color:#6B7280;">📈 한국어 실력 성장 — 첫 평가를 기다리고 있어요 ✨</div>';
   const curLv = levels.length ? levels[levels.length - 1].val : null;
   const series = mocks.slice(-5).map(m => Number(m.val) || 0);
   const curMock = series.length ? series[series.length - 1] : null;
@@ -13267,7 +13283,7 @@ function academicTrendHtml_(logs) {
     : '<div style="font-size:11px;color:#9CA3AF;text-align:center;">모의 기록<br>대기 중</div>';
   const deltaTxt = (delta == null) ? '' : (delta > 0 ? '▲ +' + delta : (delta < 0 ? '△ ' + delta : '– 유지'));
   const deltaCol = (delta != null && delta > 0) ? '#0E9F6E' : '#9CA3AF';
-  return '<div style="' + CARD_FONT + 'background:#F0FDF4;border:2px solid #BBF7D0;border-radius:14px;padding:11px 13px;">' +
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#F0FDF4;border:2px solid #BBF7D0;border-radius:14px;padding:11px 13px;">' +
     '<div style="font-size:11px;color:#6B7280;">📈 한국어 실력 성장</div>' +
     '<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding-top:4px;">' +
       '<div><div style="font-size:24px;font-weight:800;color:#0E9F6E;line-height:1;">' + (curLv != null ? curLv + '급' : '—') + '</div><div style="font-size:10px;color:#6B7280;padding-top:2px;">현재 TOPIK 급수</div></div>' +
@@ -13651,7 +13667,7 @@ function buildMonsterDetailCards() {
       const hero = img.indexOf('http') === 0
         ? '<img class="skBr" src="' + img + '" style="display:block;margin:0 auto;width:150px;height:150px;border-radius:20px;background:#fff;border:3px solid ' + f[1] + ';box-shadow:0 10px 26px rgba(61,90,254,.2);' + ANIM_BREATH + '"/>' // [v9.48] display:block+margin:auto — Glide Rich Text가 img를 block 처리해 text-align 중앙이 풀리던 것(왼쪽 치우침) 교정
         : '<span class="skBr" style="display:inline-block;font-size:90px;' + ANIM_BREATH + '">' + ic + '</span>';
-      return [CARD_ANIM + '<div style="' + CARD_FONT + 'background:linear-gradient(160deg,' + f[2] + ',#FFFFFF 45%,' + f[2] + ');border:2px solid ' + f[1] + ';border-radius:20px;padding:18px 16px;text-align:center;">' +
+      return [CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(160deg,' + f[2] + ',#FFFFFF 45%,' + f[2] + ');border:2px solid ' + f[1] + ';border-radius:20px;padding:18px 16px;text-align:center;">' +
         '<div style="padding:6px 0 12px;">' + hero + '</div>' +
         '<div style="font-size:21px;font-weight:900;color:' + f[3] + ';">' + ic + ' ' + nm + '</div>' +
         '<div style="display:inline-block;font-size:11px;font-weight:700;color:' + f[3] + ';background:' + f[2] + ';border:1.5px solid ' + f[1] + ';border-radius:99px;padding:2px 11px;margin:6px 0 10px;">' + f[0] + ' · ' + (i + 1) + '단계</div>' +
@@ -13665,7 +13681,7 @@ function buildMonsterDetailCards() {
       const hero = img.indexOf('http') === 0
         ? '<img class="skBo" src="' + img + '" style="display:block;margin:0 auto;width:150px;height:150px;border-radius:20px;background:#312E81;border:3px solid #6366F1;box-shadow:0 12px 30px rgba(30,27,75,.55);' + ANIM_BOSS + '"/>' // [v9.48] 중앙 고정(위와 동일 사유)
         : '<span class="skBo" style="display:inline-block;font-size:90px;' + ANIM_BOSS + '">👾</span>';
-      return [CARD_ANIM + '<div style="' + CARD_FONT + 'background:linear-gradient(165deg,#1E1B4B,#312E81 60%,#1E1B4B);border:2px solid #6366F1;border-radius:20px;padding:18px 16px;text-align:center;color:#E0E7FF;">' +
+      return [CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(165deg,#1E1B4B,#312E81 60%,#1E1B4B);border:2px solid #6366F1;border-radius:20px;padding:18px 16px;text-align:center;color:#E0E7FF;">' +
         '<div style="font-size:10.5px;letter-spacing:.25em;color:#A5B4FC;padding-bottom:8px;">' + (isW ? 'WORLD BOSS' : 'MONTHLY BOSS ' + (th || '') ) + '</div>' +
         '<div style="padding:2px 0 12px;">' + hero + '</div>' +
         '<div style="font-size:20px;font-weight:900;color:#FFFFFF;">' + nm + '</div>' +

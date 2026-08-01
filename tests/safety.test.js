@@ -939,7 +939,7 @@ test('[v9.69] 번역 대상에 grammar가 있고, 반복 체감 뱅크는 확장
 test('[v9.74] 숙제 카드 — 라벨 있는 완성 카드(과제·선생님 체크·제출 안내), 과제 없으면 미노출', () => {
   // [v9.83] 제출 안내가 "+nP"를 말하므로 실제 PT를 주입한다 — 5를 하드코딩하면 단가 드리프트를 못 잡는다
   // [v9.87] 시그니처 (ty, mnTy, task, mnTask, tip, mnTip) — 본문 몽골어 병기 슬롯 추가
-  const hw = loadFunction('function hwCardHtml_(', 'function quizCardHtml_(', 'hwCardHtml_', { escHtml_: (s) => String(s), CARD_FONT: '', PT: constObj_('const PT = {') });
+  const hw = loadFunction('function hwCardHtml_(', 'function quizCardHtml_(', 'hwCardHtml_', { escHtml_: (s) => String(s), CARD_FONT: '', CARD_WEBFONT: '', PT: constObj_('const PT = {') });
   const html = hw('어휘', 'Үгийн сан', '오늘 배운 단어 중 2개를 한 문장 안에 같이 넣어 보세요.', 'Өнөөдөр сурсан үгнээс 2-ыг нэг өгүүлбэрт хамт оруулаад үзээрэй.', '의미 연결이 자연스러운지', 'Утгын холбоо');
   ['오늘의 숙제', '어휘', '오늘 배운 단어 중 2개', 'Өнөөдөр сурсан үгнээс', '선생님이 이걸 봐요', '의미 연결이 자연스러운지', '버튼으로 제출'].forEach((k) =>
     assert.ok(html.includes(k), '숙제 카드에 누락: ' + k));
@@ -949,7 +949,7 @@ test('[v9.74] 숙제 카드 — 라벨 있는 완성 카드(과제·선생님 �
 
 test('[v9.74] 퀴즈 카드 — 문제와 공개 안내만, 정답은 어떤 경로로도 카드에 담기지 않는다(언어정책)', () => {
   // [v9.87] 시그니처 (q, mnQ, personal) — 본문 몽골어 병기 슬롯 추가(병기도 문제부만, 정답부 금지는 ⑤에서 검사)
-  const quiz = loadFunction('function quizCardHtml_(', 'function prepCardHtml_(', 'quizCardHtml_', { escHtml_: (s) => String(s), CARD_FONT: '' });
+  const quiz = loadFunction('function quizCardHtml_(', 'function prepCardHtml_(', 'quizCardHtml_', { escHtml_: (s) => String(s), CARD_FONT: '', CARD_WEBFONT: '' });
   const html = quiz('감사합니다의 실제 발음은?', '', false);
   assert.ok(html.includes('오늘의 퀴즈') && html.includes('감사합니다의 실제 발음은?') && html.includes('정답 공개'));
   assert.ok(quiz('문제', '', true).includes('맞춤 문제'), '개인 퀴즈(ai_daily) 라벨 누락');
@@ -962,7 +962,7 @@ test('[v9.74] 퀴즈 카드 — 문제와 공개 안내만, 정답은 어떤 경
 });
 
 test('[v9.74] 수업준비 카드 — 검사 포인트의 제자리는 강사 화면, 워밍업 퀴즈는 정답 동봉', () => {
-  const prep = loadFunction('function prepCardHtml_(', 'function teacherInOutMap_(', 'prepCardHtml_', { escHtml_: (s) => String(s), CARD_FONT: '' });
+  const prep = loadFunction('function prepCardHtml_(', 'function teacherInOutMap_(', 'prepCardHtml_', { escHtml_: (s) => String(s), CARD_FONT: '', CARD_WEBFONT: '' });
   const html = prep('어휘', '단어 3개로 문장 만들기', '조사 확인', '같이의 발음은?', '가치 — 구개음화');
   ['수업 준비', '오늘 검사할 숙제', '검사 포인트 — 조사 확인', '워밍업 퀴즈', '정답 — 가치'].forEach((k) =>
     assert.ok(html.includes(k), '수업준비 카드에 누락: ' + k));
@@ -989,7 +989,7 @@ test('[v9.74] 출퇴근 중복 방어 — 첫 출근·마지막 퇴근 집계, �
 
 test('[v9.82] 출퇴근 카드 — 상태 3단 렌더·근무시간 확정값·스위프가 카드도 변경시만 기입', () => {
   const io = loadFunction('function ioCardHtml_(', 'function absenceCardHtml_(', 'ioCardHtml_',
-    { escHtml_: (s) => String(s == null ? '' : s), CARD_FONT: '', HUD_CARD: '', HUD_LABEL: '' });
+    { escHtml_: (s) => String(s == null ? '' : s), CARD_FONT: '', CARD_WEBFONT: '', HUD_CARD: '', HUD_LABEL: '' });
   const cells = [{ d: '월', s: 'done' }, { d: '화', s: 'today' }];
   assert.ok(io('7/31 (금)', { in: '', out: '' }, cells, 1, '').includes('출근 전'));
   const work = io('7/31 (금)', { in: '09:12', out: '' }, cells, 1, '금요일 화이팅');
@@ -1013,7 +1013,7 @@ test('[v9.86] 수업준비 팩 — 결석 예정 HUD·조 편성 절·제출 현
   const det = section('function buildClassHudDetail_(', 'function buildGroupHud_(');
   assert.ok(det.includes('groupHtml'), '반 상세에 조 편성 절 인자가 없다');
   const gh = loadFunction('function buildGroupHud_(', 'function groupHudsByClass_(', 'buildGroupHud_',
-    Object.assign({ escHtml_: (s) => String(s == null ? '' : s), CARD_FONT: '', HUD_CARD: '', HUD_LABEL: '', hudChip_: (s) => String(s) },
+    Object.assign({ escHtml_: (s) => String(s == null ? '' : s), CARD_FONT: '', CARD_WEBFONT: '', HUD_CARD: '', HUD_LABEL: '', hudChip_: (s) => String(s) },
       groupConsts())); // [v9.99] 상수는 하드코딩하지 않고 Code.js 정본에서 실값을 뽑아 주입
   const gHtml = gh('', { lessonNo: 7, week: 2, confirmed: '확정', groups: [[{ name: '바야르', seat: 0, role: '발표', icon: '📢' }, { name: '사라', seat: 1, role: '진행', icon: '🎯' }]] });
   assert.ok(gHtml.includes('조 편성') && gHtml.includes('오늘 발표') && gHtml.includes('바야르'), '조 편성 절 렌더 누락(발표 콜아웃 포함)');
@@ -1021,7 +1021,7 @@ test('[v9.86] 수업준비 팩 — 결석 예정 HUD·조 편성 절·제출 현
   assert.ok(gh('', { lessonNo: 3, week: 1, confirmed: '임시', groups: [[{ name: 'A', seat: 0, role: '진행', icon: '🎯' }]] }).includes('임시 조'), '임시 조 필 누락');
   assert.ok(code.includes('groupHudByCls[c]') && code.includes('groupHudsByClass_(ss, tz, now)'), 'calcAll 배선(1회 읽기 배치)이 없다');
   // C: 수업준비 카드 제출 현황(검사 동선) — 하위 호환 + 미제출 캡 + 전원 제출
-  const prep = loadFunction('function prepCardHtml_(', 'function teacherInOutMap_(', 'prepCardHtml_', { escHtml_: (s) => String(s == null ? '' : s), CARD_FONT: '' });
+  const prep = loadFunction('function prepCardHtml_(', 'function teacherInOutMap_(', 'prepCardHtml_', { escHtml_: (s) => String(s == null ? '' : s), CARD_FONT: '', CARD_WEBFONT: '' });
   const wSubs = prep('어휘', '숙제', '', '', '', [{ c: '정규반1', done: 9, total: 13, missing: ['가', '나', '다', '라', '마', '바'] }]);
   assert.ok(wSubs.includes('제출 현황') && wSubs.includes('9/13') && wSubs.includes('외 1명'), '제출 현황 절·미제출 캡 누락');
   assert.ok(prep('어휘', '숙제', '', '', '', [{ c: '정규반1', done: 3, total: 3, missing: [] }]).includes('전원 제출'), '전원 제출 표기 누락');
@@ -1042,7 +1042,7 @@ test('[v9.86] 수업준비 팩 — 결석 예정 HUD·조 편성 절·제출 현
 
 test('[v9.82] 결석 신고 카드 — 접수 확인 3태·빈 상태·사유 이스케이프·재계산 동일값', () => {
   const ab = loadFunction('function absenceCardHtml_(', 'function teacherInOutMap_(', 'absenceCardHtml_',
-    { escHtml_: (s) => String(s == null ? '' : s).replace(/</g, '&lt;'), CARD_FONT: '' });
+    { escHtml_: (s) => String(s == null ? '' : s).replace(/</g, '&lt;'), CARD_FONT: '', CARD_WEBFONT: '' });
   const html = ab('바야르', [{ label: '8/1 (금)', state: 'future', reason: '<병원>' }], ['8/1 (금)', '8/4 (월)']);
   assert.ok(html.includes('접수됨') && html.includes('바야르') && html.includes('다음 수업일'), '접수 확인·자녀명·다음 수업일 누락');
   assert.ok(html.indexOf('<병원>') === -1 && html.includes('&lt;병원>'), '사유가 이스케이프되지 않는다(HTML 주입)');
@@ -1160,7 +1160,7 @@ test('[v9.77] profiles 무결성 감시 — 유령 행·중복 ID·무효 role�
 test('[v9.78] 강사 반 HUD — 빈 상태 카드·명단 캡·사정권 경계·이스케이프·헤더 동기', () => {
   // 유호 07-28 "반 탭 만들다 만 느낌" 리디자인. 원칙: 카드 1장=질문 1개 + 빈 상태도 카드(조용한 공백 금지).
   const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const deps = { escHtml_: esc, CARD_FONT: "font-family:test;" };
+  const deps = { escHtml_: esc, CARD_FONT: "font-family:test;", CARD_WEBFONT: '' };
   const load = (name) => loadFunction('function buildRaidCard_', '\n// [v9.14] 📊 월간 경영 리포트', name, deps);
   const brief = load('buildBriefHud_'), rows = load('hudBriefRows_'), crown = load('buildCrownHud_');
   const raid = load('buildRaidCard_'), routine = load('buildRoutineHud_'), detail = load('buildClassHudDetail_');
@@ -1201,7 +1201,7 @@ test('[v9.78] 강사 반 HUD — 빈 상태 카드·명단 캡·사정권 경계
 
 test('[v9.78·리뷰 반영] HUD 보강 — AI 이스케이프·모순 억제·absent 캡·10열 라이브 소스·행수 계약', () => {
   const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const deps = { escHtml_: esc, CARD_FONT: "font-family:test;" };
+  const deps = { escHtml_: esc, CARD_FONT: "font-family:test;", CARD_WEBFONT: '' };
   const load = (name) => loadFunction('function buildRaidCard_', '\n// [v9.14] 📊 월간 경영 리포트', name, deps);
   const brief = load('buildBriefHud_'), rows = load('hudBriefRows_');
   // ① AI 브리핑 이스케이프(유일 XSS 잔여면이라는 리뷰 지적) + 미션 0건일 때 "특이사항 없음"과 동시 출력 모순 억제
@@ -1225,7 +1225,7 @@ test('[v9.81] 리그 카드 — 포디움·내 순위 하이라이트·넛지 �
   // 유호 07-31 "랭킹 탭이 데이터만 띡". 원칙: 전원 같은 보드, 개인화는 하이라이트·넛지 두 곳뿐.
   const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   // HUD_CARD는 로드 범위(buildRaidCard_~) 안에 실선언이 있어 주입하면 중복 선언 — 나머지 상수만 주입
-  const deps = { escHtml_: esc, CARD_FONT: 'font-family:test;', CARD_ANIM: '<style>a</style>', ANIM_BREATH: 'animation:b;' };
+  const deps = { escHtml_: esc, CARD_FONT: 'font-family:test;', CARD_WEBFONT: '', CARD_ANIM: '<style>a</style>', ANIM_BREATH: 'animation:b;' };
   const board = loadFunction('function buildRaidCard_', '\n// [v9.14] 📊 월간 경영 리포트', 'buildRankBoardHtml_', deps);
   const rows = [];
   for (let i = 0; i < 12; i++) rows.push({ id: 'S' + (i + 1), rank: i + 1, name: '학생' + (i + 1), pts: (12 - i) * 10 });
@@ -1277,7 +1277,7 @@ test('[v9.81] 리그 카드 — 포디움·내 순위 하이라이트·넛지 �
 
 test('[v9.81] 반 목록 카드 2열 + HUD 총원 필 — 유호 07-31 반 리스트·총원 지적', () => {
   const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const deps = { escHtml_: esc, CARD_FONT: 'font-family:test;' };
+  const deps = { escHtml_: esc, CARD_FONT: 'font-family:test;', CARD_WEBFONT: '' };
   const detail = loadFunction('function buildRaidCard_', '\n// [v9.14] 📊 월간 경영 리포트', 'buildClassHudDetail_', deps);
   // ① 반 상세 HUD 헤더 총원 필 — stuN이 이미 전달되고 있어 Glide 조립 0으로 적용된다
   const d = detail('정규반1', {}, {}, false, { got: 0, total: 0, notYet: [] }, { goal: 0, dmg: 0, stuN: 12 }, '7월 31일');
