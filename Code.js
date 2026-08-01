@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.102'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.102] 3실 폐기·4실 24반 384석 확정 — 개원 기본값 전환 + 글로벌영어/원어민회화 담당 확정
+const SYNK_VERSION = 'v9.103'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.103] 음성 보관 1년 확정 + 동의 문구 동기화 · 조 편성표 미리보기
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -7063,6 +7063,18 @@ function migrateConsultV184() {
 
 // [v9.90] 음성·면접 녹음 동의가 받는 시트 열 — 문항 B는 blob이 아니라 '열'로 받는다(아래 설계 ③).
 const CONSENT_EXT_HEADERS = ['음성동의'];
+/* [v9.103] 음성 보관 기간 = **녹음일로부터 1년**(유호님 08-01 확정 — v9.90이 초안으로 비워 둔 값).
+ *   상수로 두는 이유: 이 숫자는 ①학생이 읽는 동의 문구 ②실제 삭제 배치 ③대외 문서 세 곳에 동시에 나타나고,
+ *   어긋나면 "1년이라 해놓고 3년 갖고 있는" 상태가 된다 — 동의는 학생이 읽은 문장이 정본이라 그 순간 근거가 무효다.
+ *   ⚠ 녹음 기능을 붙이는 트랙은 이 상수를 읽는 **자동 삭제 배치를 같은 버전에** 넣어야 한다.
+ *     문구만 있고 삭제가 없으면 약속 위반이고, 사후에 지워도 이미 어긴 기간은 되돌릴 수 없다.
+ *   ⓘ 3년→1년은 학생에게 유리한 방향이라 기존 동의자에게 소급 적용해도 무방하다(반대 방향이면 재동의 필수). */
+const VOICE_RETENTION_MONTHS = 12;
+const VOICE_CONSENT_HELP = '※ 선택 문항입니다 — 어느 쪽을 고르셔도 수업·성적·반 배정에 어떤 불이익도 없습니다.\n'
+  + '수집: 수업·발음 연습·모의 면접(비자·취업) 중 녹음된 목소리와 그것을 글로 옮긴 기록 / '
+  + '용도: 발음·말하기·면접 답변에 대한 개인 피드백과, 그 피드백을 만드는 AI의 학습 / '
+  + '보관: 녹음일로부터 1년(1년이 지나면 자동 삭제) / 제3자 제공 없음 · '
+  + '동의 철회는 언제든 학원으로 연락 주시면 즉시 중단하고 기존 녹음도 삭제합니다.';
 
 // [v9.84·204 → v9.90·205] ▶ 1회(유호 문구 검토 후) — 온라인 상담폼 동의 문항 (정본 v18.6).
 //   오프라인 도시에 v3.3 동의·서명 블록(상담통합_실행지_v966 §5)의 온라인 짝 — 지금까지 온라인 폼엔 동의가 0개였다.
@@ -7113,27 +7125,33 @@ function migrateConsentV186() {
     const fid = String(getState(st, '상담폼ID').val || '');
     if (!fid) { const m0 = '⚠️ 상담폼ID 미연결 — createConsultForm ▶ 먼저'; Logger.log(m0); return m0; }
     const form = FormApp.openById(fid);
-    const titles = form.getItems().map(x => String(x.getTitle()).trim());
+    const fItems = form.getItems();
+    const titles = fItems.map(x => String(x.getTitle()).trim());
+    /* [v9.103] 도움말 동기화 — 제목만 보고 스킵하던 구 로직에서는 **문구 개정이 라이브 폼에 영원히 닿지 않는다.**
+     *   보관 기간처럼 나중에 확정되는 값이 코드에만 바뀌고 학생이 실제로 읽는 문장은 옛것으로 남는 구멍이었다
+     *   (동의는 학생이 읽은 문장이 정본이므로, 어긋나면 코드가 가진 근거가 무효가 된다).
+     *   제목·선택지·시트 착지는 그대로 두고 도움말만 정본과 맞춘다 — 기존 응답은 손대지 않는다. */
+    const syncHelp = (idx, help, label) => {
+      const it = fItems[idx].asMultipleChoiceItem();
+      if (String(it.getHelpText() || '') === help) { out.push(label + ': 이미 있음 · 문구 최신'); return; }
+      it.setHelpText(help);
+      out.push(label + ': 이미 있음 — 📝 문구를 정본으로 갱신했습니다');
+    };
 
     const A = CONSENT_Q_TITLE; // [v9.98] 제목 하드코딩 2곳 → 단일 소스. 이 제목이 곧 blob의 행 단위 동의 마커라 어긋나면 전 행이 미동의로 분류된다
-    if (titles.indexOf(A) !== -1) out.push('폼 A(개인정보·필수): 이미 있음 — 스킵');
+    const HELP_A = '수집: 이 설문의 응답(연락처·보호자 정보·학습 배경·목표·취향) / 용도: 상담·반 배정·학습 개인화(응원 문장·퀴즈·성장 리포트의 소재)·학원 운영 통계 / 보관: 재원 기간 및 성장 기록 보존 기간 / 제3자 제공 없음 · 동의 철회는 언제든 학원으로 연락 주세요.';
+    if (titles.indexOf(A) !== -1) syncHelp(titles.indexOf(A), HELP_A, '폼 A(개인정보·필수)');
     else {
-      form.addMultipleChoiceItem().setTitle(A)
-        .setHelpText('수집: 이 설문의 응답(연락처·보호자 정보·학습 배경·목표·취향) / 용도: 상담·반 배정·학습 개인화(응원 문장·퀴즈·성장 리포트의 소재)·학원 운영 통계 / 보관: 재원 기간 및 성장 기록 보존 기간 / 제3자 제공 없음 · 동의 철회는 언제든 학원으로 연락 주세요.')
+      form.addMultipleChoiceItem().setTitle(A).setHelpText(HELP_A)
         .setChoiceValues(['네, 동의합니다']).setRequired(true);
       out.push('폼 A(개인정보·필수): 추가 — 응답은 자유서술 칸에 타임스탬프와 함께 보존됩니다');
     }
 
     // 문항 B — 제목이 곧 시트 헤더명이어야 열에 착지한다(importFormResponses 헤더 이름 매칭)
     const B = CONSENT_EXT_HEADERS[0]; // '음성동의'
-    if (titles.indexOf(B) !== -1) out.push('폼 B(음성·AI 학습·선택): 이미 있음 — 스킵');
+    if (titles.indexOf(B) !== -1) syncHelp(titles.indexOf(B), VOICE_CONSENT_HELP, '폼 B(음성·AI 학습·선택)');
     else {
-      form.addMultipleChoiceItem().setTitle(B)
-        .setHelpText('※ 선택 문항입니다 — 어느 쪽을 고르셔도 수업·성적·반 배정에 어떤 불이익도 없습니다.\n'
-          + '수집: 수업·발음 연습·모의 면접(비자·취업) 중 녹음된 목소리와 그것을 글로 옮긴 기록 / '
-          + '용도: 발음·말하기·면접 답변에 대한 개인 피드백과, 그 피드백을 만드는 AI의 학습 / '
-          + '보관: 재원 기간 + 졸업 후 3년(이후 삭제) / 제3자 제공 없음 · '
-          + '동의 철회는 언제든 학원으로 연락 주시면 즉시 중단하고 기존 녹음도 삭제합니다.')
+      form.addMultipleChoiceItem().setTitle(B).setHelpText(VOICE_CONSENT_HELP)
         .setChoiceValues(['네, 동의합니다', '아니요, 원하지 않습니다']).setRequired(true);
       out.push('폼 B(음성·AI 학습·선택): 추가 — 응답이 상담시트 "' + B + '" 열에 착지합니다(거부자 기계 식별 가능)');
     }
@@ -15079,6 +15097,18 @@ function groupBoardText_(ss, cls, when, tz) {
   const b = groupBoardOf_(ss, cls, when, tz);
   if (!b) return '';
   if (!b.lessonNo) return '🧩 조 편성: 시즌 기간 밖입니다(시즌 시작일 확인 — setSeasonStart).\n';
+  // [v9.103] 지명 우선 — "말 많은 애가 또 말하는" 20분을 막는 유일한 객관 축(인상 아님, 출석×역할 실측)
+  let low = [];
+  try { low = talkIndexOf_(ss, cls, when, tz, b).filter(x => x.max > 0).slice(0, 3); }
+  catch (e) { Logger.log('발화 지수 스킵(' + cls + '): ' + e); }
+  return groupBoardRender_(b, low);
+}
+
+/* [v9.103] 조 편성표 렌더 — 시트를 모르는 순수 함수로 분리.
+ *   분리 이유: 개원 전에는 편성 데이터가 없어 강사가 실제로 뭘 보게 되는지 확인할 방법이 아예 없었다
+ *   (08-01 유호님 groupBoardNow ▶ 실측 = 전 반 "편성 없음"). 미리보기가 별도 문자열을 조립하면 그 순간
+ *   두 벌이 되어 갈라지므로, 실물과 미리보기가 **같은 함수**를 타게 만든다. */
+function groupBoardRender_(b, low) {
   const L = ['🧩 조 편성 · ' + b.week + '주차 ' + b.lessonNo + '차시' + (b.confirmed === '임시' ? ' (임시 조)' : '')];
   b.groups.forEach((arr, g) => {
     L.push('  ' + (g + 1) + '조' + (b.focus === g + 1 ? ' 🎧' : '  ') + '  ' +
@@ -15101,14 +15131,42 @@ function groupBoardText_(ss, cls, when, tz) {
   b.groups.forEach((arr, g) => arr.forEach(m => { if (m.role === '발표') pres.push((g + 1) + '조 ' + m.name); }));
   if (pres.length) L.push('  📢 오늘 발표: ' + pres.join(' · ') + '  ← ④소그룹 시작할 때 미리 알려주세요');
   talkProtocolLines_(b.focus).forEach(x => L.push(x)); // [v9.99] 20분 타임박스·역할 의무·정밀 청취
-  // [v9.99] 지명 우선 — "말 많은 애가 또 말하는" 20분을 막는 유일한 객관 축(인상 아님, 출석×역할 실측)
-  try {
-    const idx = talkIndexOf_(ss, cls, when, tz, b);
-    const low = idx.filter(x => x.max > 0).slice(0, 3);
-    if (low.length) L.push('  🔈 오늘 지명 우선: ' + low.map(x => x.name + '(' + x.pct + '%' +
-      (x.quiet ? '·침묵' + x.quiet : '') + ')').join(' · ') + '  ← 발화 차례를 구조적으로 덜 받은 순서');
-  } catch (e) { Logger.log('발화 지수 스킵(' + cls + '): ' + e); }
+  if ((low || []).length) L.push('  🔈 오늘 지명 우선: ' + low.map(x => x.name + '(' + x.pct + '%' +
+    (x.quiet ? '·침묵' + x.quiet : '') + ')').join(' · ') + '  ← 발화 차례를 구조적으로 덜 받은 순서');
   return L.join('\n') + '\n';
+}
+
+/* [v9.103] 📺 조 편성표 미리보기 — 개원 전에 "강사가 매 차시 보게 될 화면"을 그대로 확인한다.
+ *   시트를 전혀 읽지 않고 쓰지도 않는다(가상 16명 · 4인 4조 · 11차시=3주차라 정밀 청취까지 켜진 상태).
+ *   실물과 **같은 groupBoardRender_**를 타므로 여기서 본 모양이 개원 후 실제와 다를 수 없다. */
+function groupBoardPreview() {
+  const NAMES = ['바트', '사란', '뭉흐', '오윤', '텅걸', '아마르', '볼드', '나랑',
+    '에르덴', '조리그', '하스', '뭉근', '사르나이', '간바트', '오트곤', '델게르'];
+  const lessonNo = 11, week = 3;                       // 3주차 = 정밀 청취가 켜지는 첫 주
+  const groups = [];
+  for (let g = 0; g < GROUP_COUNT; g++) {
+    const arr = [];
+    for (let s = 0; s < 4; s++) {
+      const nm = NAMES[g * 4 + s];
+      arr.push({ sid: 'DEMO-' + (g * 4 + s + 1), name: nm, seat: s,
+        role: roleOfSeat_(s, lessonNo, 4), icon: roleIconOf_(s, lessonNo, 4) });
+    }
+    arr.forEach(m => {
+      m.duty = ROLE_DUTY[ROLE_NAMES.indexOf(m.role)] || '';
+      m.rounds = pairRoundsOf_(m.seat, 4).map(x => arr[x].name);
+    });
+    groups.push(arr);
+  }
+  const b = { season: '(미리보기)', lessonNo: lessonNo, week: week,
+    focus: focusGroupOf_(lessonNo, week), confirmed: '확정', groups: groups };
+  const low = [{ name: '델게르', pct: 58, quiet: 2 }, { name: '하스', pct: 67, quiet: 0 }, { name: '나랑', pct: 75, quiet: 1 }];
+  const txt = '── 📺 미리보기(가상 데이터 · 시트 무접근) ──\n' + groupBoardRender_(b, low) +
+    '\n※ 실제 반은 assignGroupsAll 실행 후 groupBoardNow에서 같은 모양으로 나옵니다.' +
+    '\n※ 학생 앱에는 각자 이렇게 보입니다 — "' +
+    '🤝 오늘 세 번 만나요 — 1R ' + groups[0][0].rounds[0] + ' · 2R ' + groups[0][0].rounds[1] + ' · 3R ' + groups[0][0].rounds[2] + '"' +
+    ' (1조 ' + groups[0][0].name + ' 학생 화면 기준)';
+  Logger.log(txt);
+  return txt;
 }
 
 // 수동 확인용 — 드롭다운에서 바로 보이는 정식 함수. 인자 없이 실행하면 오늘 수업하는 반 전부.
