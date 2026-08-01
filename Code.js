@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.105'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.105] 음성 철회 실행 경로 — 무기한 보관의 유일한 삭제 트리거
+const SYNK_VERSION = 'v9.106'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.106] 온라인 녹화 강의 수강 이력 — 주말반 승급 판정의 나머지 절반
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -952,6 +952,14 @@ const KPI_HEADERS = ['월', '기초재원', '신규등록', '이탈', '이탈률
 const GROUPS_HEADERS = ['시즌', 'class_name', 'student_id', '이름', '조', '좌석', '확정', '편성일', '편성근거', '고정'];
 // [v9.91] 차시 마감폼 적재 시트 — 본체는 파일 끝 「차시 마감폼」 섹션(같은 TDZ 사유로 정의만 앞에 둔다).
 const LESSON_CLOSE_HEADERS = ['날짜', 'class_name', '차시', '주차', '진도', '미발화자', '미발화자이름', '입력자', 'created_at', '처리상태'];
+/* [v9.106] 온라인 녹화 강의 — 주말반 정규 트랙 승격(유호 08-01)의 측정 레일.
+ * 주말반은 대면이 주 1회뿐이고 나머지 시수를 녹화 강의로 메운다. 즉 **온라인이 커리큘럼의 정식 일부**다.
+ * 그런데 이수 여부를 앱이 모르면 승급 도달제 판정이 대면 90분만 보고 내려진다 — 진도의 대부분을 못 보고
+ * 채점하는 셈이고, 급여 정본 §7 「승급 통과율」(강사 2층 20점)도 같은 눈으로 매겨진다.
+ * → 강의 카탈로그(lectures)와 수강 이력(lecture_views)을 분리해 깔고, 확인은 구글 폼(Glide update 0)으로 받는다.
+ * 본체는 파일 끝 「온라인 강의」 섹션 — SHEET_SKELETON이 이 상수를 먼저 읽으므로 정의만 앞에 둔다(TDZ). */
+const LECTURE_HEADERS = ['강의ID', '레벨', '시즌', '주차', '제목', 'URL', '필수'];
+const LECTURE_VIEW_HEADERS = ['날짜', 'student_id', '이름', '반', '강의ID', '한줄요약', 'created_at', '비고'];
 
 /* ===================== 공용 유틸 ===================== */
 
@@ -11316,6 +11324,7 @@ function parentSweep() {
   safeRun('sweepTeacherMemoForm', function () { sweepTeacherMemoForm_(ss); }); // [v9.55] 약점 메모 폼 → student_errors — classPrepMail보다 앞(같은 틱의 메모가 수업 전 메일에 실린다)
   safeRun('sweepAcademicForm', function () { sweepAcademicForm_(ss); }); // [v9.74] 학업 기록 폼 → academic_log — 급수·모의 차트 원료(월 빈도라 포인터 조기 종료로 무비용)
   safeRun('sweepAbsenceForm', function () { sweepAbsenceForm_(ss); }); // [v9.89] 결석 연락 폼 → absence_followup 마감 — checkNoShow보다 앞(같은 틱에 들어온 연락이 오늘 감지분에 바로 반영)
+  safeRun('sweepLectureForm', function () { sweepLectureForm_(ss); }); // [v9.106] 강의폼_응답 → lecture_views
   safeRun('sweepLessonCloseForm', function () { sweepLessonCloseForm_(ss); }); // [v9.91] 차시 마감폼 → lesson_close — classPrepMail보다 앞(같은 틱의 마감이 다음 수업 브리핑 조 편성에 반영)
   safeRun('classPrepMail', function () { classPrepMail_(ss, ss.getSpreadsheetTimeZone()); }); // [v6.8]
   safeRun('checkoutCheerMail', function () { checkoutCheerMail_(ss); }); // [v6.8]
@@ -13084,6 +13093,8 @@ function setupClassroomInputs() {
   const pfG = ss.getSheetByName('profiles');
   if (pfG) { langColOf_(pfG, '학교'); langColOf_(pfG, '동네'); }
   ensureSheet(ss, 'groups', GROUPS_HEADERS); // [v9.80] 조 편성 — assignGroupsAll이 채운다(강사 입력 아님)
+  ensureSheet(ss, 'lectures', LECTURE_HEADERS);           // [v9.106]
+  ensureSheet(ss, 'lecture_views', LECTURE_VIEW_HEADERS); // [v9.106]
   ensureSheet(ss, 'lesson_close', LESSON_CLOSE_HEADERS); // [v9.91] 차시 마감폼 적재처(폼 생성 전에도 Glide 바인딩 가능하게 선보장)
   Logger.log('수업 입력 구조 생성 완료: weekly_topics F~L 승격 · attendance_batch · mastery_log · student_errors · teacher_checkins 헤더 정규화 · profiles 학교/동네 · groups');
   return '수업 입력 구조 생성 완료 — 강사 마감폼/출석폼/출퇴근을 이 시트·열에 바인딩하세요.';
@@ -13303,6 +13314,8 @@ const SHEET_SKELETON = [
     ['mastery_log', ['student_id','grammar_id','상태','첫기록일','도달일','출처','updated_at']], // [v9.36] 문법 도달 로그 — expandMasteryLog_ upsert, 진화 게이트 재료(Glide 비바인딩)
     ['attendance_batch', ['날짜','class_name','출석자목록','입력자','created_at','처리상태']], // [v9.36] 수업 시작 출석 1탭(B안) → expandAttendanceBatch_가 attendance로 전개
     ['groups', GROUPS_HEADERS], // [v9.80] 조 편성(시즌×반 1벌) — assignGroupsAll이 채운다. 역할·짝·발표자는 여기서 계산만 하고 저장하지 않는다(매 차시 쓰기 0)
+    ['lectures', LECTURE_HEADERS],           // [v9.106] 온라인 강의 카탈로그(유호님이 채운다)
+    ['lecture_views', LECTURE_VIEW_HEADERS], // [v9.106] 수강 이력 — 주말반 승급 판정의 나머지 절반
     ['lesson_close', LESSON_CLOSE_HEADERS], // [v9.91] 차시 마감폼 적재 — 진도 3택·미발화자. 조 편성 침묵 점수·이월 경보·4주차 명단의 공통 원천
     ['hw_feedback', ['id','student_id','제출일','제출문','고친문장','오늘의포인트','칭찬','다음미션','상태','학생확인','포인트지급']], // [v9.49] AI 숙제 첨삭 카드 — aiFeedbackBatch_ 생성. I상태: '노출'=공개(게이트 통과·무인)/'대기'=수동검수 모드/'격리:'·'오류:'=미노출([v9.63]), J학생확인=Glide 전용(스크립트 불가침), K포인트지급=스크립트 전용
     ['student_errors', ['날짜','student_id','반','유형','메모','입력자','created_at','상태']], // [v9.36] 강사 개인 약점 메모(선택 입력) — 리포트·브리핑 노출은 후속(학생 앱 미노출)
@@ -14167,6 +14180,7 @@ function preflightGlide() {
      ['학업폼URL', 'createAcademicForm', '강사 학업 기록 버튼(수업준비 탭 — 급수·모의 차트 원료)'], // [v9.74]
      ['결석폼URL', 'createAbsenceForm', '강사 결석 연락 기록 버튼(시즌 등급 심사 「결석 복귀율」 원료 — 없으면 지표가 측정 불가)'], // [v9.89]
      ['마감폼URL', 'createLessonCloseForm', '강사 차시 마감 30초(규칙서 §6 강사 입력 2개 중 하나 — 없으면 조 편성 침묵 점수·4주차 명단·이월 경보가 전부 안 열린다)'], // [v9.91]
+     ['강의폼URL', 'createLectureForm', '온라인 강의 수강 확인(주말반 승급 판정의 나머지 절반 — 없으면 대면 90분만 보고 채점된다)'], // [v9.106]
      ['설문폼URL틀', 'createSurveyForm', '월간 만족도 설문(하이라이트 메일 동봉·주간 리포트 집계 — 첫 만족도 기준선)']].forEach(f => { // [v9.75] v9.73 편입 누락분
       if (getState(st6, f[0]).row < 1) warn('폼 미생성 — ' + f[2] + '가 작동하지 않습니다. 에디터에서 ' + f[1] + ' ▶ 1회 실행 후 calcAll(자동 14/22시)');
     });
@@ -14360,7 +14374,8 @@ function weeklyJobs() {    // 매주 월 07시
     ['📋 월간 만족도 설문', function (t) { return MJ_surveySection_(t); }],   // [v9.73] 첫 만족도 기준선
     ['📋 주간 교안 초안', function () { return lpText || '(생성 없음)'; }]     // [v9.86·D] 반별 Doc 링크 — 유호 근무 46%(콘텐츠 편집)의 백지 제거,
     ['📋 마감 제출률', function () { const ssR = SpreadsheetApp.getActiveSpreadsheet(); return lessonCloseRate_(ssR, tz); }],  // [v9.92] 필수 루틴 준수 계측 — 값 없으면(시즌 미설정·수업 0) 섹션 생략
-    ['🔇 4주차 침묵 학생', function () { return silText; }]                       // [v9.91] 규칙서 §6 — 값이 없는 주(4주차 아님·마감폼 무응답)는 빈 문자열이라 섹션이 조용히 빠진다
+    ['🔇 4주차 침묵 학생', function () { return silText; }],
+    ['🎬 온라인 강의 이수율(주말반)', function () { return lectureWeeklyText_(ss); }] // [v9.106] 값 없으면 섹션 자동 생략                       // [v9.91] 규칙서 §6 — 값이 없는 주(4주차 아님·마감폼 무응답)는 빈 문자열이라 섹션이 조용히 빠진다
   ];
   let body = '📬 SYNK 주간 통합 리포트 · ' + Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd') + '\n';
   sections.forEach(function (sec) {
@@ -15826,4 +15841,199 @@ function lessonCloseRate_(ss, tz) {
   return '마감 제출률: ' + rate + '% (' + done + '/' + total + '차시)' +
     (weak.length ? ' · 80% 미만: ' + weak.join(' · ') : ' · 전 반 80% 이상') +
     (rate < 80 ? '\n  ⚠ 제출률이 낮으면 4주차 침묵 명단·이월 경보·조 편성 침묵 균형이 반쪽 데이터로 돌아갑니다.' : '');
+}
+
+/* ===================== [v9.106] 🎬 온라인 녹화 강의 — 주말반 시수의 나머지 =====================
+ * 유호님 08-01 확정: 주말반 = 정규 트랙(에드온 폐지). 대면 토 1회 90분 + 녹화 강의로 시수를 메우고,
+ *   커리큘럼·시즌·승급 기준은 평일과 동일하다. 가격도 평일과 같다(올액세스는 주말생에게 팔지 않는다).
+ *
+ * 이 절이 푸는 문제: 「온라인이 커리큘럼의 정식 일부」라고 상담에서 고지해 놓고 이수 여부를 앱이
+ *   모르면, 8주차 승급 도달제 판정이 **대면 90분만 보고** 내려진다. 강사 2층 「승급 통과율」 20점도
+ *   같은 눈으로 매겨지므로 돈이 걸린 지표가 반쪽 데이터 위에 선다(v9.89 결석 복귀율과 같은 계급의 구멍).
+ *
+ * 확인 방법 = 체크박스가 아니라 **한 줄 요약**이다. "봤어요" 체크는 3주 뒤 전원 100%가 되고 아무것도
+ *   증명하지 못한다. 배운 것을 한국어 한 문장으로 쓰게 하면 시청 증명·산출 연습·강사가 볼 재료가
+ *   한 번에 나온다 — 한국어 학원에서 가장 싼 검증은 한국어를 쓰게 하는 것이다.
+ *
+ * 무데이터는 0%가 아니다(v9.89 규약 계승): 배정된 필수 강의가 없으면 rate=null로 두고 분모에 안 넣는다.
+ *   카탈로그를 아직 안 채웠다는 이유로 학생·강사가 0점을 맞으면 안 된다.
+ */
+
+// 순수 함수 — tests/온라인강의.test.js가 직접 로드해 검증한다(시트 접근 없음).
+//   required = 그 학생에게 배정된 필수 강의ID 배열 · viewed = 그 학생이 제출한 강의ID 배열
+function lectureProgressOf_(required, viewed) {
+  const need = [];
+  (required || []).forEach(function (x) {
+    const s = String(x == null ? '' : x).trim();
+    if (s && need.indexOf(s) < 0) need.push(s); // 중복 배정은 한 번만 센다
+  });
+  if (!need.length) return { done: 0, total: 0, rate: null }; // 배정 없음 = 무데이터. 0%로 환산하지 않는다
+  const seen = {};
+  (viewed || []).forEach(function (x) {
+    const s = String(x == null ? '' : x).trim();
+    if (s) seen[s] = 1;
+  });
+  let done = 0;
+  need.forEach(function (id) { if (seen[id]) done++; });
+  return { done: done, total: need.length, rate: Math.round(done / need.length * 100) };
+}
+
+// 학생별 이수율 — 반유형 '주말'인 학생만 대상(평일반은 대면으로 시수가 차서 필수가 아니다).
+//   반환 { sid: {name, cls, done, total, rate} }
+function lectureRatesOf_(ss) {
+  const out = {};
+  const lec = ss.getSheetByName('lectures');
+  if (!lec || lec.getLastRow() < 2) return out;
+  const season = Number((getState(ensureSheet(ss, 'app_state', ['key', 'value']), '현재시즌') || {}).val) || 0;
+  const reqByLevel = {}; // 레벨 → 필수 강의ID[]  ('*' = 전 레벨 공통)
+  lec.getRange(2, 1, lec.getLastRow() - 1, LECTURE_HEADERS.length).getValues().forEach(function (r) {
+    const id = String(r[0] || '').trim();
+    if (!id) return;
+    if (!/^(Y|O|1|필수|TRUE|true)$/.test(String(r[6] == null ? '' : r[6]).trim())) return; // 선택 강의는 분모 제외
+    if (season && Number(r[2]) && Number(r[2]) !== season) return; // 시즌 지정이 있으면 현재 시즌만
+    const lv = String(r[1] || '').trim() || '*';
+    (reqByLevel[lv] = reqByLevel[lv] || []).push(id);
+  });
+
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return out;
+  const smap = scheduleMap(ss);
+
+  const seenBy = {};
+  const vw = ss.getSheetByName('lecture_views');
+  if (vw && vw.getLastRow() >= 2) vw.getRange(2, 1, vw.getLastRow() - 1, LECTURE_VIEW_HEADERS.length).getValues()
+    .forEach(function (r) { const sid = String(r[1] || '').trim(); if (sid) (seenBy[sid] = seenBy[sid] || []).push(r[4]); });
+
+  pf.getRange(2, 1, pf.getLastRow() - 1, 15).getValues().forEach(function (r) {
+    if (!r[0] || r[3] !== 'student') return;
+    const cls = String(r[4] || '').trim();
+    const sch = schedOf(smap, cls);
+    if (!sch || sch.type !== '주말') return; // 주말반만 — 평일반은 대면으로 시수가 찬다
+    const lv = String(r[7] || '').trim(); // 한국어수준(레벨) 열
+    const need = (reqByLevel[lv] || []).concat(reqByLevel['*'] || []);
+    const p = lectureProgressOf_(need, seenBy[String(r[0]).trim()]);
+    out[String(r[0]).trim()] = { name: String(r[1] || r[0]), cls: cls, done: p.done, total: p.total, rate: p.rate };
+  });
+  return out;
+}
+
+/* [v9.106] 1회 실행 — 학생이 강의를 본 뒤 제출하는 확인 폼. 구글 폼 경로라 Glide update 소비 0.
+ *   문항 3개 고정(응답 4열 계약 — sweep이 열 위치로 읽으므로 순서를 바꾸면 적재가 어긋난다).
+ *   4단계 멱등은 v9.93 실사고 대응 패턴을 그대로 따른다(죽어도 재실행이 남은 단계만 이어서 한다). */
+function createLectureForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  ensureSheet(ss, 'lectures', LECTURE_HEADERS);
+  ensureSheet(ss, 'lecture_views', LECTURE_VIEW_HEADERS);
+  const title = 'SYNK 온라인 강의 수강 확인';
+  const t0 = Date.now();
+  const step = function (m) { Logger.log('[' + Math.round((Date.now() - t0) / 1000) + 's] ' + m); };
+
+  // 1) 고아 폼 회수 — 직전 실행이 ID 저장 전에 끊겼을 수 있다
+  let form = null;
+  try {
+    const it = DriveApp.getFilesByName(title), found = [];
+    while (it.hasNext()) found.push(it.next().getId());
+    if (found.length) {
+      form = FormApp.openById(found[0]);
+      step('고아 폼 회수' + (found.length > 1 ? ' (주의: 같은 이름 ' + found.length + '개 — 나머지는 드라이브에서 수동 삭제)' : ''));
+    }
+  } catch (eD) { step('드라이브 조회 건너뜀: ' + eD.message); }
+
+  // 2) 생성 즉시 ID·URL 기록 — 여기서 죽어도 다음 실행이 1)에서 찾는다
+  if (!form) {
+    form = FormApp.create(title)
+      .setDescription('강의를 다 본 뒤에 제출하세요. 배운 것을 한국어로 한 문장 쓰면 끝입니다.')
+      .setCollectEmail(false);
+    step('폼 생성');
+  }
+  setState(st, '강의폼ID', form.getId());
+  setState(st, '강의폼URL', form.getPublishedUrl());
+
+  // 3) 문항 3개 — 이미 있으면 손대지 않는다(지웠다 만들면 응답 열 계약이 깨진다)
+  if (!form.getItems().length) {
+    const choices = [];
+    const lc = ss.getSheetByName('lectures');
+    if (lc && lc.getLastRow() >= 2) lc.getRange(2, 1, lc.getLastRow() - 1, 5).getValues()
+      .forEach(function (r) { if (r[0]) choices.push(String(r[0]).trim() + (r[4] ? ' - ' + r[4] : '')); });
+    form.addTextItem().setTitle('이름').setRequired(true).setHelpText('앱에 등록된 이름 그대로 써 주세요');
+    if (choices.length) form.addListItem().setTitle('강의').setRequired(true).setChoiceValues(choices.slice(0, 200));
+    else form.addTextItem().setTitle('강의').setRequired(true).setHelpText('강의 번호를 그대로 적어 주세요');
+    form.addParagraphTextItem().setTitle('오늘 배운 것을 한국어로 한 문장 쓰세요').setRequired(true)
+      .setHelpText('짧아도 됩니다. 틀려도 됩니다 - 선생님이 봅니다.');
+    step('문항 3개 추가' + (choices.length ? ' (강의 ' + choices.length + '개 선택지)' : ' (카탈로그가 비어 자유 입력)'));
+  } else step('문항 이미 있음 — 건너뜀');
+
+  // 4) 응답 시트 연결 — 가장 무거운 단계라 맨 뒤
+  let linked = false;
+  try { linked = !!form.getDestinationId(); } catch (eL) { linked = false; }
+  if (!linked) {
+    const before = ss.getSheets().map(function (s) { return s.getName(); });
+    form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+    linkFormTab_(ss, before, '강의폼_응답');
+    step('응답 시트 연결');
+  } else step('응답 시트 이미 연결됨');
+
+  const msg = '온라인 강의 수강 확인 폼: ' + form.getPublishedUrl() +
+    '\n   먼저 lectures 시트에 강의를 채우세요(강의ID·레벨·시즌·주차·제목·URL·필수).' +
+    '\n   비어 있으면 이수율이 0%가 아니라 무데이터로 남습니다.';
+  Logger.log(msg);
+  return msg;
+}
+
+// 10분 스위프 편승 — 강의폼_응답 → lecture_views. 포인터 방식이라 같은 응답을 두 번 적재하지 않는다.
+function sweepLectureForm_(ss) {
+  const src = ss.getSheetByName('강의폼_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const last = src.getLastRow();
+  const from = Number(props.getProperty('강의폼_포인터')) || 1;
+  if (from >= last) { if (from > last) props.setProperty('강의폼_포인터', String(last)); return; }
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = src.getRange(from + 1, 1, last - from, 4).getValues(); // 타임스탬프·이름·강의·한줄요약
+  const pf = ss.getSheetByName('profiles');
+  const students = [];
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(function (r) {
+    if (r[0] && r[3] === 'student') students.push({ sid: String(r[0]).trim(), n: String(r[1] || ''), c: String(r[4] || '') });
+  });
+  const vw = ensureSheet(ss, 'lecture_views', LECTURE_VIEW_HEADERS);
+  const out = [], miss = [];
+  rows.forEach(function (r) {
+    const ts = r[0] instanceof Date ? r[0] : new Date();
+    const nm = String(r[1] || '').trim();
+    const lid = String(r[2] || '').split(' - ')[0].trim(); // 선택지가 "ID - 제목" 형태라 앞부분만 취한다
+    if (!nm || !lid) return;
+    const cands = students.filter(function (s) { return s.n === nm; });
+    const sid = cands.length === 1 ? cands[0].sid : '';
+    const cls = cands.length === 1 ? cands[0].c : '';
+    if (!sid) miss.push('- ' + nm + ' (강의 ' + lid + ') — 로스터 후보 ' + cands.length + '명');
+    out.push([dstr(ts, tz), sid, nm, cls, lid, String(r[3] || ''), dstr(ts, tz, 'yyyy-MM-dd'), sid ? '' : '미매칭']);
+  });
+  if (out.length) vw.getRange(vw.getLastRow() + 1, 1, out.length, LECTURE_VIEW_HEADERS.length).setValues(out);
+  props.setProperty('강의폼_포인터', String(last)); // 적재 직후 마감 — 메일 실패가 같은 응답을 재적재하지 않게
+  if (miss.length && quotaOk(1)) {
+    adminMail('[SYNK] 온라인 강의 — 이름 매칭 실패 ' + miss.length + '건',
+      '아래 제출은 학생을 특정하지 못해 이수율에 반영되지 않았습니다.\n' +
+      'lecture_views 시트에서 student_id를 채우면 그대로 살아납니다.\n\n' + miss.join('\n'));
+  }
+}
+
+// 주간 리포트 섹션 — 주말반 학생 이수율. 값이 없으면 빈 문자열이라 섹션이 조용히 빠진다(v9.91 관행).
+function lectureWeeklyText_(ss) {
+  const m = lectureRatesOf_(ss);
+  const sids = Object.keys(m);
+  if (!sids.length) return '';
+  const scored = sids.filter(function (s) { return m[s].rate !== null; });
+  if (!scored.length) {
+    return '  - 주말반 ' + sids.length + '명 — 배정된 필수 강의가 없어 이수율을 내지 않았습니다(lectures 시트를 채우세요)';
+  }
+  const avg = Math.round(scored.reduce(function (a, s) { return a + m[s].rate; }, 0) / scored.length);
+  const low = scored.filter(function (s) { return m[s].rate < 60; })
+    .sort(function (a, b) { return m[a].rate - m[b].rate; }).slice(0, 8)
+    .map(function (s) { return m[s].name + '(' + m[s].cls + ' ' + m[s].done + '/' + m[s].total + ')'; });
+  return '  - 주말반 ' + scored.length + '명 평균 이수율 ' + avg + '%' +
+    (low.length
+      ? '\n  주의 60% 미만: ' + low.join(' · ') +
+        '\n     대면이 주 1회뿐이라 이 학생들은 진도의 상당 부분을 안 들은 상태입니다. 승급 판정 전에 확인하세요.'
+      : '\n  - 60% 미만 없음');
 }
