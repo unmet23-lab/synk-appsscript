@@ -193,3 +193,126 @@ test('[v9.121] 카탈로그 재시딩 뒤 폼이 낡은 채 남지 않는다 (�
     '문항이 이미 있을 때 그냥 건너뛴다 — 카탈로그를 갈아엎어도 폼이 따라가지 않는다(08-01 실사고)');
   assert.ok(code.includes("'syncLectureFormChoices'"), '시트 메뉴에 없다 — 유호님이 시즌마다 실행할 경로가 없다');
 });
+
+/* ── ⑦ [v9.123] 낡은 자리 정리는 '지우지 않는 쪽'으로 틀린다 ──
+ * 손으로 행을 지우는 건 행 번호 조준이라 옆 세션이 목록을 밀면 멀쩡한 행을 문다(08-01 실사고 계열).
+ *   그래서 조준을 내용으로 옮겼고, 그 조준이 느슨해지지 않도록 4중 잠금을 기계로 잠근다. */
+
+test('[v9.123] 살아 있는 레벨 판정은 상수가 아니라 상수 ∪ 시트 실재값이다', () => {
+  const body = section('function liveLectureLevels_(ss)', 'function pruneStaleLectures()');
+  assert.ok(body.includes('PROFILE_LEVELS'), '상수를 안 쓴다');
+  assert.ok(body.includes('profileLevelCol_(pf)'), 'profiles 실재값을 안 읽는다 — 새 레벨이 유령으로 오판된다');
+});
+
+test('[v9.123] 삭제 4중 잠금 — 하나라도 어긋나면 남긴다', () => {
+  const body = section('function pruneStaleLectures()', 'function lectureChoices_(ss)');
+  assert.ok(body.includes('if (live[lv]) return'), '① 살아 있는 레벨을 지울 수 있다');
+  assert.ok(/URL 있음/.test(body), '② URL이 채워진 행을 지울 수 있다 — 유호님 작업물 손실');
+  assert.ok(/제목 수정됨/.test(body), '③ 손으로 고친 제목을 지울 수 있다');
+  assert.ok(/수강 기록/.test(body) && body.includes('viewed[id]'), '④ 학생 수강 기록이 있는 강의를 지울 수 있다');
+  assert.ok(body.includes('lecture_views'), '수강 기록을 아예 안 본다');
+});
+
+test('[v9.123] 삭제는 아래에서 위로 — 행 번호 밀림 자해 차단', () => {
+  const body = section('function pruneStaleLectures()', 'function lectureChoices_(ss)');
+  assert.ok(/sort\(function \(a, b\) \{ return b\.row - a\.row; \}\)/.test(body),
+    '역순 정렬이 없다 — 위에서 지우면 남은 행이 밀려 다음 삭제가 엉뚱한 행을 문다');
+  assert.ok(body.includes('deleteRows('), '삭제가 없다');
+});
+
+test('[v9.123] 남긴 이유와 지운 내역을 보고한다 (조용한 삭제 금지)', () => {
+  const body = section('function pruneStaleLectures()', 'function lectureChoices_(ss)');
+  assert.ok(body.includes('keep.push('), '남긴 행을 모으지 않는다 — 왜 안 지웠는지 알 수 없다');
+  assert.ok(/첫 삭제/.test(body) && /끝 삭제/.test(body), '지운 범위를 보고하지 않는다');
+  assert.ok(code.includes("'pruneStaleLectures'"), '시트 메뉴에 없다 — 유호님이 실행할 경로가 없다');
+});
+
+test('[v9.123] 자동 제목 재구성은 제목이 아니라 강의ID에서 차시를 얻는다(순환 금지)', () => {
+  const body = section('function pruneStaleLectures()', 'function lectureChoices_(ss)');
+  assert.ok(body.includes("id.split('-').pop()"), '차시 번호를 강의ID에서 얻지 않는다');
+  assert.equal(/const auto = [^\n]*r\[4\]/.test(body), false,
+    '자동 제목을 제목 자신으로 만든다 — 항상 일치해 ③ 잠금이 죽는다');
+});
+
+/* ── ⑧ [v9.123] 정적 검사로는 부족하다 — 실제로 돌려서 무엇이 지워지는지 본다 ──
+ * 08-01 교훈(`guard-must-check-result`): 가드가 "그 문구가 있는지"만 보면 문구를 옮기는 순간 죽는다.
+ *   여기서는 가짜 시트로 pruneStaleLectures를 **실행**해 삭제된 행 자체를 확인한다. */
+
+function runPrune(lectureRows, viewRows, profileLevels) {
+  const deleted = [];
+  const mkSheet = (rows, width) => ({
+    getLastRow: () => rows.length + 1,
+    getLastColumn: () => width,
+    getRange: (r, c, n, w) => ({
+      getValues: () => rows.slice(r - 2, r - 2 + n).map((row) => row.slice(c - 1, c - 1 + w)),
+    }),
+    deleteRows: (r, n) => { deleted.push(r); rows.splice(r - 2, n); },
+  });
+  const sheets = {
+    lectures: mkSheet(lectureRows, 7),
+    lecture_views: mkSheet(viewRows, 8),
+    profiles: mkSheet(profileLevels.map((v) => [v]), 1),
+  };
+  const scope = {
+    SpreadsheetApp: { getActiveSpreadsheet: () => ({ getSheetByName: (n) => sheets[n] || null }) },
+    PROFILE_LEVELS: ['완전초보', '기초', '초중급', '중급', '고급'],
+    LECTURE_HEADERS: ['강의ID', '레벨', '시즌', '주차', '제목', 'URL', '필수'],
+    LECTURE_VIEW_HEADERS: ['날짜', 'student_id', '이름', '반', '강의ID', '한줄요약', 'created_at', '비고'],
+    profileLevelCol_: () => 0,
+    Logger: { log: () => {} },
+  };
+  const src = section('function liveLectureLevels_(ss)', 'function lectureChoices_(ss)');
+  const fn = new Function(...Object.keys(scope), `${src}\nreturn pruneStaleLectures;`)(...Object.values(scope));
+  return { msg: fn(), deleted, remaining: lectureRows.map((r) => r[0]) };
+}
+
+const seat = (id, lv, s, w, n, url, title) =>
+  [id, lv, s, w, title === undefined ? `${lv} 시즌${s} ${w}주차 ${n}차시` : title, url || '', 'Y'];
+
+test('[v9.123] 낡은 어휘 자리만 지우고 살아 있는 어휘는 남긴다 (실행 검증)', () => {
+  const rows = [
+    seat('L1-S1-W01-1', 'Lv1', 1, 1, 1),
+    seat('완전초보-S1-W01-1', '완전초보', 1, 1, 1),
+    seat('L2-S1-W01-1', 'Lv2', 1, 1, 1),
+    seat('기초-S1-W01-1', '기초', 1, 1, 1),
+  ];
+  const r = runPrune(rows, [], ['완전초보', '기초']);
+  assert.deepEqual(r.remaining, ['완전초보-S1-W01-1', '기초-S1-W01-1'], '살아 있는 어휘를 지웠거나 유령을 남겼다');
+  assert.match(r.msg, /낡은 강의 자리 2개 삭제/);
+});
+
+test('[v9.123] 사람·학생의 작업물은 낡은 어휘여도 남긴다 (실행 검증)', () => {
+  const rows = [
+    seat('L1-S1-W01-1', 'Lv1', 1, 1, 1, 'https://youtu.be/abc'),        // ② URL 있음
+    seat('L1-S1-W01-2', 'Lv1', 1, 1, 2, '', '손으로 고친 제목'),          // ③ 제목 수정됨
+    seat('L1-S1-W01-3', 'Lv1', 1, 1, 3),                                 // ④ 수강 기록 있음
+    seat('L1-S1-W01-4', 'Lv1', 1, 1, 4),                                 // 순수 유령 — 이것만 지워야 한다
+  ];
+  const views = [['2026-08-01', 'S1', '학생', 'A반', 'L1-S1-W01-3', '요약', '2026-08-01', '']];
+  const r = runPrune(rows, views, ['완전초보']);
+  assert.deepEqual(r.remaining, ['L1-S1-W01-1', 'L1-S1-W01-2', 'L1-S1-W01-3'], '사람·학생 작업물을 지웠다');
+  assert.match(r.msg, /남긴 행 3개/);
+  assert.match(r.msg, /URL 있음/);
+  assert.match(r.msg, /수강 기록 1건/);
+});
+
+test('[v9.123] profiles에만 있는 새 레벨도 살아 있는 것으로 본다 (실행 검증)', () => {
+  const rows = [seat('심화-S1-W01-1', '심화', 1, 1, 1)];   // 상수에는 없고 profiles에만 있는 레벨
+  const r = runPrune(rows, [], ['심화']);
+  assert.deepEqual(r.remaining, ['심화-S1-W01-1'], '시트에 실재하는 레벨의 자리를 유령으로 오판해 지웠다');
+  assert.match(r.msg, /지울 낡은 자리가 없습니다/);
+});
+
+test('[v9.123] 여러 행을 지워도 행 번호가 밀리지 않는다 (실행 검증)', () => {
+  const rows = [
+    seat('완전초보-S1-W01-1', '완전초보', 1, 1, 1),
+    seat('L1-S1-W01-1', 'Lv1', 1, 1, 1),
+    seat('기초-S1-W01-1', '기초', 1, 1, 1),
+    seat('L2-S1-W01-1', 'Lv2', 1, 1, 1),
+    seat('L2-S1-W01-2', 'Lv2', 1, 1, 2),
+  ];
+  const r = runPrune(rows, [], ['완전초보', '기초']);
+  assert.deepEqual(r.remaining, ['완전초보-S1-W01-1', '기초-S1-W01-1'],
+    '위에서부터 지워 남은 행이 밀렸다 — 멀쩡한 행이 함께 사라진다');
+  assert.deepEqual(r.deleted, [6, 5, 3], '삭제가 역순(아래→위)이 아니다');
+});
