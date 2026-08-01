@@ -22,9 +22,11 @@ function deny(reason) {
 }
 
 let cmd = '';
+let callerCwd = '';
 try {
   const input = JSON.parse(fs.readFileSync(0, 'utf8'));
   cmd = String((input.tool_input && input.tool_input.command) || '');
+  callerCwd = String(input.cwd || '').trim(); // 명령이 실제로 실행될 위치(워크트리면 워크트리 경로)
 } catch (_) {
   process.exit(0);
 }
@@ -35,6 +37,37 @@ if (cmd.includes('CLASP_GUARD_BYPASS=1')) process.exit(0);
 
 function run(bin, args) {
   return execFileSync(bin, args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+}
+function gitAt(dir, args) {
+  return execFileSync('git', args, { cwd: dir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+}
+
+// 0) 워크트리에서의 배포 차단 — 아래 4개 검사보다 앞. 이 훅은 settings.json에 절대경로로 등록돼
+//    ROOT가 항상 메인 저장소를 가리키므로, 워크트리에서 부르면 "내 워크트리는 깨끗한데 메인의
+//    타 세션 미커밋 때문에 막힌다"는 엉뚱한 진단이 나온다(08-01 실측 3회 차단).
+//    그렇다고 워크트리 기준으로 검사하게 바꾸면 더 위험하다 — 라이브 타깃은 하나뿐이라
+//    미병합 브랜치를 밀면 master에 이미 들어간 남의 최신 코드가 라이브에서 사라진다
+//    (08-01 실측: 어떤 워크트리는 v9.89인데 master는 v9.95였다). 그래서 허용이 아니라 정확한 차단.
+if (callerCwd) {
+  try {
+    const gitDir = path.resolve(gitAt(callerCwd, ['rev-parse', '--absolute-git-dir']));
+    const commonDir = path.resolve(callerCwd, gitAt(callerCwd, ['rev-parse', '--git-common-dir']));
+    if (gitDir !== commonDir) {
+      let br = '';
+      try { br = gitAt(callerCwd, ['rev-parse', '--abbrev-ref', 'HEAD']); } catch (_) {}
+      deny(
+        '[clasp-guard] 배포 게이트 차단:\n' +
+          `- 워크트리에서는 clasp push/deploy를 하지 않는다 (${path.basename(callerCwd)}${br ? ' · ' + br : ''})\n` +
+          '  라이브 Apps Script는 하나뿐이라, 워크트리 파일을 밀면 그 사이 master에 들어간\n' +
+          '  다른 세션의 최신 코드가 라이브에서 조용히 사라진다.\n' +
+          `→ ①브랜치를 master에 반영(병합/rebase) ②메인 저장소(${ROOT})에서 /deploy\n` +
+          '   메인이 타 세션 미커밋으로 지저분하면, 먼저 git push origin <내브랜치>:master 로\n' +
+          '   백업만 해두고 라이브 반영은 메인이 깨끗해진 뒤 한 번에 한다.'
+      );
+    }
+  } catch (_) {
+    // 워크트리 판정 실패(git 없음·저장소 밖 등) → 아래 기존 검사로 계속 진행한다(폴백은 항상 검사 쪽)
+  }
 }
 
 const problems = [];
