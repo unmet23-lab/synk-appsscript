@@ -784,7 +784,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.117'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
+const SYNK_VERSION = 'v9.118'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.118] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -959,6 +959,14 @@ const LESSON_CLOSE_HEADERS = ['날짜', 'class_name', '차시', '주차', '진�
  * → 강의 카탈로그(lectures)와 수강 이력(lecture_views)을 분리해 깔고, 확인은 구글 폼(Glide update 0)으로 받는다.
  * 본체는 파일 끝 「온라인 강의」 섹션 — SHEET_SKELETON이 이 상수를 먼저 읽으므로 정의만 앞에 둔다(TDZ). */
 const LECTURE_HEADERS = ['강의ID', '레벨', '시즌', '주차', '제목', 'URL', '필수'];
+/* [v9.118] profiles 한국어수준 = S열(0기준 18). 라이브 실측으로 잡은 결함 3겹의 뿌리:
+ *   v9.106이 r[7]을 「레벨」로 읽었는데 H열은 **연락처**였고, 읽기 폭도 15열이라 S열에 닿지도 못했다.
+ *   에러가 안 나고 조용히 rate=null(무데이터)로만 떨어져 **주말반 이수율이 영영 0건**이 될 뻔했다.
+ *   숫자 상수를 뽑아 두는 이유 = 다음에 열이 밀리면 여기 한 곳만 고치면 된다. */
+const PROFILE_LEVEL_COL = 18;
+// [v9.118] lectures 「레벨」은 profiles 한국어수준과 **같은 어휘**여야 조인된다(구 'Lv1/Lv2'는 절대 안 맞았다).
+//   커리큘럼 정본의 Lv1~Lv6와는 다른 축이다 — 그 매핑은 유호님 확정 사항이라 코드가 추측하지 않는다.
+const PROFILE_LEVELS = ['완전초보', '기초', '초중급', '중급', '고급'];
 const LECTURE_VIEW_HEADERS = ['날짜', 'student_id', '이름', '반', '강의ID', '한줄요약', 'created_at', '비고'];
 
 /* ===================== 공용 유틸 ===================== */
@@ -14543,7 +14551,7 @@ function weeklyJobs() {    // 매주 월 07시
     //   통째로 발송되지 않는다(섹션 try/catch보다 바깥이라 안전망이 안 걸린다). 08-01 실측으로 발각.
     ['📋 마감 제출률', function () { const ssR = SpreadsheetApp.getActiveSpreadsheet(); return lessonCloseRate_(ssR, tz); }],  // [v9.92] 필수 루틴 준수 계측 — 값 없으면(시즌 미설정·수업 0) 섹션 생략
     ['🔇 4주차 침묵 학생', function () { return silText; }],
-    // [v9.112] `ss`는 weeklyJobs 스코프에 없다 — 08-01 실행 로그에서 `ReferenceError: ss is not defined`로
+    // [v9.118] `ss`는 weeklyJobs 스코프에 없다 — 08-01 실행 로그에서 `ReferenceError: ss is not defined`로
     //   이 섹션만 매주 실패하고 있었다(섹션 try/catch가 잡아 리포트는 살지만 이수율은 영구 공백).
     //   다른 섹션과 같은 패턴으로 자체 조회한다.
     ['🎬 온라인 강의 이수율(주말반)', function () { const ssL = SpreadsheetApp.getActiveSpreadsheet(); return lectureWeeklyText_(ssL); }] // [v9.106] 값 없으면 섹션 자동 생략                       // [v9.91] 규칙서 §6 — 값이 없는 주(4주차 아님·마감폼 무응답)는 빈 문자열이라 섹션이 조용히 빠진다
@@ -16075,12 +16083,14 @@ function lectureRatesOf_(ss) {
   if (vw && vw.getLastRow() >= 2) vw.getRange(2, 1, vw.getLastRow() - 1, LECTURE_VIEW_HEADERS.length).getValues()
     .forEach(function (r) { const sid = String(r[1] || '').trim(); if (sid) (seenBy[sid] = seenBy[sid] || []).push(r[4]); });
 
-  pf.getRange(2, 1, pf.getLastRow() - 1, 15).getValues().forEach(function (r) {
+  // [v9.118] 폭은 19열 이상 — 한국어수준이 S열(인덱스 18)이다. 구 15열은 그 열에 닿지도 못했다.
+  const pfW = Math.max(pf.getLastColumn(), PROFILE_LEVEL_COL + 1);
+  pf.getRange(2, 1, pf.getLastRow() - 1, pfW).getValues().forEach(function (r) {
     if (!r[0] || r[3] !== 'student') return;
     const cls = String(r[4] || '').trim();
     const sch = schedOf(smap, cls);
     if (!sch || sch.type !== '주말') return; // 주말반만 — 평일반은 대면으로 시수가 찬다
-    const lv = String(r[7] || '').trim(); // 한국어수준(레벨) 열
+    const lv = String(r[PROFILE_LEVEL_COL] || '').trim(); // S열 한국어수준(완전초보·기초·초중급·중급·고급)
     const need = (reqByLevel[lv] || []).concat(reqByLevel['*'] || []);
     const p = lectureProgressOf_(need, seenBy[String(r[0]).trim()]);
     out[String(r[0]).trim()] = { name: String(r[1] || r[0]), cls: cls, done: p.done, total: p.total, rate: p.rate };
@@ -16256,10 +16266,12 @@ function onOpen() {
  */
 const LECTURE_WEEKS = 8;          // 시즌 8주 (커리큘럼 D2 확정)
 const LECTURE_PER_WEEK = 4;       // 평일 5차시 − 주말 대면 1차시
-const LECTURE_LEVELS_DEFAULT = ['Lv1', 'Lv2']; // 개원 초 수강생은 사실상 전원 Lv1~2 (커리큘럼 뼈대안 ⑤)
+// [v9.118] 개원 초 실제 분포 = 완전초보·기초. **profiles 한국어수준과 같은 어휘여야 조인된다**
+//   (구 v9.111의 'Lv1','Lv2'는 profiles 어디에도 없는 값이라 이수율이 영영 무데이터였다 — 라이브 실측으로 발각).
+const LECTURE_LEVELS_DEFAULT = ['완전초보', '기초'];
 
 // 강의ID 규칙 — 정렬하면 진도 순서 그대로. 사람이 읽고 바로 위치를 안다.
-//   L1-S1-W03-4 = Lv1 · 시즌1 · 3주차 · 4번째 차시
+//   기초-S1-W03-4 = 기초 · 시즌1 · 3주차 · 4번째 차시
 function lectureIdOf_(level, season, week, no) {
   return String(level).replace(/^Lv/i, 'L') + '-S' + season + '-W' + ('0' + week).slice(-2) + '-' + no;
 }
