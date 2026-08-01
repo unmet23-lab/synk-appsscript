@@ -303,6 +303,63 @@ test('철회 실행 경로가 있다 — 무기한 보관의 유일한 삭제 �
     'voice_log 행을 내림차순으로 지우지 않는다 — 인덱스가 밀려 다른 학생 기록이 지워진다');
 });
 
+/* ── ⑨ STT(GCP Speech-to-Text) — 비용·재시도·라이브 리스크 ─────────── */
+
+test('STT는 매니페스트 OAuth 스코프를 건드리지 않는다(트리거 10개 동시 사망 방지)', () => {
+  const mf = JSON.parse(fs.readFileSync(path.join(ROOT, 'appsscript.json'), 'utf8'));
+  assert.ok(!mf.oauthScopes,
+    'appsscript.json에 oauthScopes가 생겼다 — 명시하는 순간 자동 추론이 꺼져 누락된 스코프의 서비스가 전부 죽는다. ' +
+    '추가하려면 SpreadsheetApp·DriveApp·FormApp·DocumentApp·MailApp·ScriptApp·UrlFetchApp·Session을 전부 나열했는지 확인하고 이 검사를 갱신하라');
+  const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
+  assert.ok(tb.includes('computeRsaSha256Signature'), '서비스 계정 JWT 경로가 없다 — 스코프 없이 cloud-platform 토큰을 받을 방법이 사라진다');
+});
+
+test('STT는 일일 상한으로 비용 폭주를 막는다', () => {
+  const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
+  assert.ok(/const STT_DAILY_CAP = \d+/.test(tb), '일일 상한 상수가 없다 — 유료 API가 무한정 돈다');
+  const fn = tb.slice(tb.indexOf('function voiceTranscribe_('), tb.indexOf('function voiceSttStatus('));
+  assert.ok(fn.includes('STT_DAILY_CAP - used'), '상한을 실제 예산 계산에 쓰지 않는다');
+  assert.ok(/budget <= 0\) return/.test(fn), '상한 소진 시 조기 종료하지 않는다');
+  assert.ok(fn.includes('STT일일사용'), '사용량을 기록하지 않는다 — 다음 실행이 상한을 모른다');
+  assert.ok(/todo\.slice\(0, budget\)/.test(fn), '예산만큼만 처리하지 않는다');
+});
+
+test('실패한 전사는 자동 재시도하지 않는다(같은 오류로 과금 반복 방지)', () => {
+  const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
+  const fn = tb.slice(tb.indexOf('function voiceTranscribe_('), tb.indexOf('function voiceSttStatus('));
+  assert.ok(/if \(state && state !== '대기'\) return/.test(fn),
+    '실패 상태 행을 걸러내지 않는다 — 미지원 포맷 하나가 매일 밤 과금된다');
+  assert.ok(fn.includes("'실패: '"), '실패 사유를 상태 칸에 남기지 않는다 — 원인을 알 수 없다');
+});
+
+test('보낼 수 없는 파일은 API에 닿기 전에 거른다', () => {
+  const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
+  const fn = tb.slice(tb.indexOf('function sttOne_('), tb.indexOf('// ── A-2c.'));
+  const gate = fn.indexOf('STT_OK_MIME.indexOf(mime) === -1');
+  const size = fn.indexOf('STT_MAX_BYTES');
+  const call = fn.indexOf('speech:recognize');
+  assert.ok(gate !== -1 && gate < call, '미지원 포맷을 API에 보낸다 — 실패인데 과금될 수 있다');
+  assert.ok(size !== -1 && size < call, '크기 초과 파일을 걸러내지 않는다');
+  assert.ok(!fn.includes("encoding:"), 'encoding을 고정한다 — 잘못 지정하면 인식이 깨진다(헤더 자동 인식에 맡길 것)');
+});
+
+test('전사는 성장 카드보다 먼저 돈다(같은 밤에 전사문이 카드에 실리도록)', () => {
+  const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
+  const nightly = tb.slice(tb.indexOf('function 교재연동Nightly()'), tb.indexOf('// ── A-1.'));
+  const t = nightly.indexOf('voiceTranscribe_');
+  const g = nightly.indexOf('buildVoiceGrowthCards_');
+  assert.ok(t !== -1, '야간 배치에 전사가 편입되지 않았다');
+  assert.ok(t < g, '전사가 성장 카드보다 뒤에 있다 — 전사문이 하루 늦게 실린다');
+});
+
+test('STT 진단 함수가 실제 응답 코드를 보여준다(추측 금지)', () => {
+  const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
+  const fn = tb.slice(tb.indexOf('function voiceSttStatus('), tb.indexOf('// ── A-3.'));
+  assert.ok(fn.includes('getResponseCode()'), '진단이 실제 API를 호출하지 않는다 — 설정 문제를 추측으로 답하게 된다');
+  ['403', '401', '400'].forEach((c) => assert.ok(fn.includes(c), `진단이 ${c} 응답을 구분하지 않는다`));
+  assert.ok(fn.includes('getContentText()'), '실패 시 응답 원문을 보여주지 않는다');
+});
+
 test('voiceConsentMap_은 열이 없으면 null(보류)을 돌려준다', () => {
   const fn = section('function voiceConsentMap_(', 'function voiceConsentStat_(');
   assert.ok(/if \(ci === -1 \|\| si === -1\) return null/.test(fn),
