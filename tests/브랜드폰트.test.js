@@ -105,8 +105,10 @@ test('브랜드 폰트 정본 문서가 존재한다', () => {
   }
 });
 
-/* ⏳ 타 세션이 Code.js를 점유 중이라 CARD_FONT를 아직 못 바꿨다(정본 §9).
- *    교체하는 세션이 { skip: true }를 지우면 그때부터 회귀가 잠긴다. */
+/* ⏳ CARD_FONT 미교체 — 08-01 기준 lectures 트랙 세션이 Code.js를 활발히 편집 중이다.
+ *    (그 세션이 CARD_FONT를 한 번 바꿨다가 되돌리는 것을 실제로 관측했다 — 몇 분 사이에.)
+ *    지금 끼어들면 ① 중복 편집 ② 커밋에 남의 미완성 lectures 코드가 딸려 라이브로 나간다.
+ *    교체하는 세션이 이 skip을 지우면 그때부터 회귀가 잠긴다. 절차 = 정본 §9. */
 test('Code.js CARD_FONT가 브랜드 3종을 쓴다', { skip: 'CARD_FONT 교체 대기 — 정본 §9' }, () => {
   const src = fs.readFileSync(path.join(ROOT, 'Code.js'), 'utf8');
   const m = src.match(/const CARD_FONT = "([^"]+)"/);
