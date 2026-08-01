@@ -1994,3 +1994,19 @@ test('[v9.108] teacher_stats 14열 — 3지표가 축 위에 얹혔고, 미측�
   assert.ok(body.includes('absenceReturnStats_('), '결석 복귀율이 정본 함수를 안 쓰고 규칙을 복제했다');
   assert.ok(body.includes("String(key).split('·')"), '담당강사 복수 표기가 각 강사에게 귀속되지 않는다');
 });
+
+test('[v9.110] 시트 메뉴 — 안전 항목만 올리고 파괴적 함수는 넣지 않는다', () => {
+  // 메뉴는 "한 번 잘못 누름"이 곧 라이브 사고가 되는 면이다. setupSchedule은 반 편성을,
+  // clearDemoData는 데이터를 지운다 — 이런 것들은 편집기에서 의식적으로 고르게 둔다.
+  const start = code.indexOf('function onOpen()');
+  assert.notEqual(start, -1, 'onOpen이 없어 시트 메뉴가 생기지 않는다');
+  const menu = code.slice(start, code.indexOf('addToUi();', start) + 12); // onOpen 본문만 — 파일 다른 곳의 함수명에 오염되지 않게
+  ['calcTeacherStats', 'calcAll', 'preflightGlide'].forEach((f) => {
+    assert.ok(menu.includes(`'${f}'`), `메뉴에 ${f} 누락`);
+  });
+  ['setupSchedule', 'seedDemoData', 'clearDemoData', 'bootstrapSynk', 'resetAllTriggers'].forEach((f) => {
+    assert.equal(menu.includes(`'${f}'`), false, `파괴적 함수 ${f}가 메뉴에 올라갔다 — 한 번 잘못 누르면 라이브 사고`);
+  });
+  // UI 없는 컨텍스트(트리거)에서 죽지 않아야 한다 — onOpen 실패가 시트 열기를 막으면 안 된다
+  assert.ok(code.slice(start, start + 1400).includes('catch (eMenu)'), '메뉴 생성 실패 격리가 없다');
+});
