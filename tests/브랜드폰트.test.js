@@ -96,6 +96,34 @@ test('DM Mono를 쓰는 파일은 한글·키릴을 같은 지정에 섞지 않�
   }
 });
 
+/* HTML만 검사하면 빈틈이 남는다 — 앱 카드 폰트는 Code.js 안의 문자열이고, 콘텐츠 파일도 마찬가지다.
+ * 「폐기 폰트가 **새로** 들어오는 것」을 잡으려면 알려진 잔여 건수를 못 박고 그보다 늘면 실패시킨다.
+ * 지금 알려진 잔여 = CARD_FONT 1건(정본 §9의 교체 대기). 이 숫자는 교체 시 0으로 내린다. */
+const JS_TARGETS = ['Code.js', '상담AI.js', '교재연동.js', '만족도팩.js']
+  .concat(fs.readdirSync(ROOT).filter((f) => /^contents_.*\.js$/.test(f)));
+const KNOWN_RETIRED_IN_JS = 1;
+
+test('JS 산출물에 폐기 폰트가 새로 들어오지 않는다', () => {
+  const hits = [];
+  for (const f of JS_TARGETS) {
+    const p = path.join(ROOT, f);
+    if (!fs.existsSync(p)) continue;
+    const src = fs.readFileSync(p, 'utf8');
+    src.split(/\r?\n/).forEach((line, i) => {
+      if (!/font-family\s*:/.test(line)) return; // 주석 속 언급은 세지 않는다 — 실제 지정만
+      for (const bad of RETIRED) {
+        if (line.includes(bad)) hits.push(`${f}:${i + 1} 「${bad}」`);
+      }
+    });
+  }
+  assert.ok(
+    hits.length <= KNOWN_RETIRED_IN_JS,
+    `JS에 폐기 폰트 지정이 ${hits.length}건 — 알려진 잔여는 ${KNOWN_RETIRED_IN_JS}건뿐이다.\n  ` +
+      hits.join('\n  ') +
+      `\n정본 docs/브랜드_폰트_정본.md의 3종만 쓴다. 교체를 끝냈으면 KNOWN_RETIRED_IN_JS를 0으로 내려라.`
+  );
+});
+
 test('브랜드 폰트 정본 문서가 존재한다', () => {
   const doc = path.join(ROOT, 'docs', '브랜드_폰트_정본.md');
   assert.ok(fs.existsSync(doc), 'docs/브랜드_폰트_정본.md가 없다 — 3종 규칙의 정본이다');
