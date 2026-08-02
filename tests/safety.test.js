@@ -667,6 +667,20 @@ test('[v9.55] SYNK_VERSION 상수는 파일 내 최고 버전 태그와 일치�
   assert.equal(Number(m[1]), max, `헤더 최고 태그 v9.${max} ≠ SYNK_VERSION v9.${m[1]} — 새 버전 태그를 달면 상수도 함께 올려야 한다`);
 });
 
+test('[2026-08-03] docs/버전_이력.md는 SYNK_VERSION을 따라오고, 머리말에 버전 숫자를 박지 않는다', () => {
+  // 위 v9.55 가드는 Code.js 안만 본다 — 정본 문서가 뒤처져도 침묵했고, 실제로 머리말 「현재 버전 = v9.107」이
+  // 36개 버전 뒤처진 채 이틀을 살았다. 값이 두 곳에 있으면 갈린다: ①문서 최신성 ②머리말 하드코딩 재발을 함께 막는다.
+  const doc = fs.readFileSync(path.join(ROOT, 'docs', '버전_이력.md'), 'utf8');
+  const cur = Number(code.match(/const SYNK_VERSION = 'v9\.(\d+)'/)[1]);
+  const docMax = Math.max(...[...doc.matchAll(/\[v9\.(\d+)\]/g)].map((x) => Number(x[1])));
+  assert.equal(docMax, cur,
+    `docs/버전_이력.md 최고 태그 v9.${docMax} ≠ SYNK_VERSION v9.${cur} — 버전을 올렸으면 그 파일 맨 아래에 한 줄 추가해야 한다(/deploy 커밋 단계)`);
+
+  const head = doc.split(/^---$/m)[0];
+  assert.ok(!/현재 버전\s*=\s*\**v9\.\d+/.test(head),
+    '머리말에 「현재 버전 = v9.NNN」을 박지 마라 — 아무도 안 고쳐서 반드시 낡는다. 맨 아래 마지막 항목이 현재 버전이다');
+});
+
 test('[v9.55] 이름+반 매칭 — 동명이인은 반으로 갈리고, 반 오기재도 이름 유일이면 구제된다', () => {
   const match = loadFunction('function matchStudentsByNameClass_', 'function sweepTeacherMemoForm_', 'matchStudentsByNameClass_', {});
   const roster = [
