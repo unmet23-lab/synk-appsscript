@@ -8,7 +8,8 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const ROOT = path.resolve(__dirname, '..');
-const code = fs.readFileSync(path.join(ROOT, 'Code.js'), 'utf8');
+const { engineSource } = require('./_engine-source');
+const code = engineSource();
 const tbCode = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
 const mjCode = fs.readFileSync(path.join(ROOT, '만족도팩.js'), 'utf8');
 

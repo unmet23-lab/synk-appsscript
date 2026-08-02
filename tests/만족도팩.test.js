@@ -9,9 +9,9 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-const CODE_PATH = path.join(ROOT, 'Code.js');
+const { engineSource } = require('./_engine-source');
 const PACK_PATH = path.join(ROOT, '만족도팩.js');
-const code = fs.readFileSync(CODE_PATH, 'utf8');
+const code = engineSource();
 const pack = fs.readFileSync(PACK_PATH, 'utf8');
 
 function sectionOf(src, startMarker, endMarker) {

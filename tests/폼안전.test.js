@@ -17,7 +17,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
-const FILES = ['Code.js', '만족도팩.js'];
+const { ENGINE_FILES } = require('./_engine-source');
+const FILES = [...ENGINE_FILES, '만족도팩.js']; // 엔진이 쪼개지면 새 파일도 자동으로 검사 대상
 
 // 소스에서 FormApp.create를 쓰는 최상위 함수를 전부 수집한다.
 function formFactories() {

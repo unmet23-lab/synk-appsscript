@@ -5,9 +5,9 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-const CODE_PATH = path.join(ROOT, 'Code.js');
+const { ENGINE_FILES, engineSource } = require('./_engine-source');
 const MANIFEST_PATH = path.join(ROOT, 'appsscript.json');
-const code = fs.readFileSync(CODE_PATH, 'utf8');
+const code = engineSource(); // 엔진 전체를 한 문자열로 — 파일이 쪼개져도 아래 표식 검사가 그대로 산다
 
 function section(startMarker, endMarker) {
   const start = code.indexOf(startMarker);
@@ -46,8 +46,11 @@ function loadFunction(startMarker, endMarker, functionName, dependencies) {
   return new Function(...names, `${source}\nreturn ${functionName};`)(...values);
 }
 
-test('Code.js 구문이 정상이다', () => {
-  execFileSync(process.execPath, ['--check', CODE_PATH], { stdio: 'pipe' });
+test('엔진 파일 구문이 정상이다', () => {
+  // 파일별로 검사한다 — 합친 문자열로 검사하면 어느 파일이 깨졌는지 못 가리킨다.
+  ENGINE_FILES.forEach((f) => {
+    execFileSync(process.execPath, ['--check', path.join(ROOT, f)], { stdio: 'pipe' });
+  });
 });
 
 test('Apps Script 설정 파일이 정상이며 실행 API는 본인만 허용한다', () => {

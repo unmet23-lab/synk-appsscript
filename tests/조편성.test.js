@@ -11,7 +11,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
-const code = fs.readFileSync(path.join(ROOT, 'Code.js'), 'utf8');
+const { engineSource } = require('./_engine-source');
+const code = engineSource();
 
 // 조 편성 섹션(상수 ~ 편성 코어)만 잘라 로드한다. 시트·SpreadsheetApp 의존 함수는 정의만 되고 호출하지 않는다.
 function loadGroupCore() {

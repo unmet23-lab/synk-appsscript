@@ -11,7 +11,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
-const code = fs.readFileSync(path.join(ROOT, 'Code.js'), 'utf8');
+const { engineSource } = require('./_engine-source');
+const code = engineSource();
 
 function bodyOf(startMarker, endMarker) {
   const i = code.indexOf(startMarker);
