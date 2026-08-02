@@ -9,11 +9,46 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { looksSecret, topLevelFunctions, parseDeploymentLine } = require('../tools/deploy-security-check.js');
+const fs = require('node:fs');
+const path = require('node:path');
+const mod = require('../tools/deploy-security-check.js');
+const { looksSecret, topLevelFunctions, parseDeploymentLine } = mod;
+
+/* 이 테스트가 지키는 것은 판정식이 아니라 **순서**다.
+ * 08-02 옆 세션 지적: clasp-guard는 맨 앞에서 CLASP_GUARD_BYPASS=1 이면 즉시 종료하는데,
+ * 임시 러너는 **언제나** bypass로 push한다(러너 코드가 미커밋이라 우회 없이는 3번 검사에 걸린다).
+ * 그래서 코드 검사(고정 토큰·doGet 파괴 연산)가 bypass 뒤에 있으면
+ * **그것들이 실제로 존재하는 유일한 경로에서 영원히 발화하지 않는다.**
+ * 되돌리기는 한 줄이면 되고 그때 아무 테스트도 안 죽는다 — 그래서 여기서 죽인다. */
+test('clasp-guard — 코드 검사는 BYPASS 앞, 배포 검사는 뒤', () => {
+  const guard = fs.readFileSync(path.join(__dirname, '..', '.claude', 'hooks', 'clasp-guard.js'), 'utf8');
+  const iCode = guard.indexOf('.checkCode()');
+  const iBypass = guard.search(/cmd\.includes\('CLASP_GUARD_BYPASS=1'\)\s*\)\s*process\.exit\(0\)/);
+  const iDeploy = guard.indexOf('.checkDeployments()');
+
+  assert.notStrictEqual(iCode, -1, 'checkCode() 호출이 사라졌다 — 훅이 코드 검사를 안 한다');
+  assert.notStrictEqual(iBypass, -1, 'BYPASS 조기 종료 앵커를 못 찾았다 — 훅 구조가 바뀌었으니 이 테스트를 갱신할 것');
+  assert.notStrictEqual(iDeploy, -1, 'checkDeployments() 호출이 사라졌다');
+
+  assert.ok(iCode < iBypass, 'checkCode()가 BYPASS 뒤로 밀렸다 — 임시 러너 경로에서 보안 검사가 통째로 죽는다');
+  assert.ok(iBypass < iDeploy, 'checkDeployments()가 BYPASS 앞으로 왔다 — 러너 운용 중 정상 상태를 위반으로 잡는다');
+});
+
+/* 두 갈래가 모두 존재하는지만 본다. check()를 실제로 부르면 `clasp deployments`가 돌아
+ * 이 테스트 하나가 7.5초를 먹는데, 이 파일은 배포마다 clasp-guard가 통째로 실행한다.
+ * 네트워크는 CLI가 부를 때 한 번이면 충분하다 — checkCode()는 파일만 읽어 즉시 끝난다. */
+test('두 갈래가 다 있고 checkCode()는 네트워크 없이 돈다', () => {
+  assert.strictEqual(typeof mod.checkCode, 'function');
+  assert.strictEqual(typeof mod.checkDeployments, 'function');
+  assert.strictEqual(typeof mod.check, 'function');
+  assert.ok(Array.isArray(mod.checkCode()), 'checkCode()는 문제 목록 배열을 돌려줘야 한다');
+});
 
 test('looksSecret — 난수 토큰은 잡는다(미탐 방지)', () => {
-  // 08-02 실사고의 실제 토큰 모양(소문자·대문자·숫자·구분자 4종)
-  assert.strictEqual(looksSecret('2Kn1KrbV-NAUVoCxjiGT7It7_-ueMp0_'), true);
+  /* 08-02 실사고 토큰과 **같은 모양의 합성 문자열**(소문자·대문자·숫자·구분자 4종, 32자).
+   * 실제 토큰을 픽스처로 쓰지 않는다 — 그 토큰은 이미 폐기됐지만, 「탐지기 테스트에 진짜 토큰을
+   * 붙여넣는다」는 관행이 다음에 살아 있는 토큰에 적용되면 그때는 실사고다. 탐지력은 동일하다. */
+  assert.strictEqual(looksSecret('Xk7Qm2Vt-9RbLpZa4wNc0HsE_JyU1oGf'), true);
   assert.strictEqual(looksSecret('AKfycbyu3CD5tD-0saS42bWiS7CAtl2z'), true);
   // 대소문자가 없는 hex 다이제스트 — 문자 종류 규칙만으로는 새므로 따로 태우는 경로
   assert.strictEqual(looksSecret('a3f9c2e1b8d74f60a3f9c2e1b8d74f60'), true);
