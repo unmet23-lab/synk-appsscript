@@ -1274,6 +1274,7 @@ function runReportCards_() {
   const it = DriveApp.getFoldersByName(REPORT_FOLDER_NAME);
   const folder = it.hasNext() ? it.next() : DriveApp.createFolder(REPORT_FOLDER_NAME);
   const rows = [], mails = [];
+  let shareFail = 0, shareFirstErr = ''; // [v9.140] 공유 설정 실패 — 조용히 넘기지 않는다
   made.forEach(m => {
     Utilities.sleep(350); // [v5.3] 연속 export 429 방지
     try { // [v9.19] 카드별 격리 — 1건(429 등) 실패가 배치 전체를 중단·중복 생성시키지 않도록
@@ -1289,17 +1290,23 @@ function runReportCards_() {
        *   사지 못하는 공유였다) 여기를 남긴 건 봐준 게 아니라 **기능이 매달려 있어서**다.
        *   ▣ 남은 위험(축소했지만 0은 아니다): 링크를 아는 사람은 인증 없이 카드를 본다. Drive
        *     공개 링크에는 만료가 없어서 한 번 새면 영구다. 완화책은 둘이고 성격이 다르다 —
-       *     ①**폴더를 「제한됨」으로 잠근다(손실 0에 가깝다)**: 여기서 카드마다 자기 몫의 공유를
-       *       따로 받으므로 폴더를 잠가도 명시 권한은 살아남아 학부모 화면이 안 깨진다. 닫히는 건
-       *       상속 경로뿐이다(폴더째 열려 있으면 프리뷰·미래 파일까지 전부 딸려 열린다).
-       *       단 위 catch가 말하듯 **파일별 공유가 실패해 폴더 공유에 기대던 카드**가 과거에
-       *       있었다면 그것만 깨지므로, 잠근 뒤 성장 리포트 탭을 한 번 보고 확인해야 한다.
+       *     ①**폴더를 「제한됨」으로 잠근다** — 2026-08-03 실행 결과로 **손실 0이 아님이 판명**됐다.
+       *       잠그기 전 이 폴더는 익명으로 목록 조회·전체 다운로드까지 됐고, 잠그자 유출은 닫혔지만
+       *       **학부모 카드도 함께 죽었다.** 원인: 아래 setSharing이 「액세스가 거부됨: DriveApp」으로
+       *       **줄곧 실패해 catch로 빠지고 있었고**, 카드의 공개는 전부 폴더 상속이었다(카드마다
+       *       자기 공유가 있다는 것은 코드의 의도였을 뿐 라이브의 사실이 아니었다 — 잠근 뒤
+       *       `2026-08_SYNK-001_*.png`가 「비공개」로 바뀌는 것으로 확인). 그러니 폴더를 잠근 상태를
+       *       유지하려면 **이 setSharing이 실제로 성공하도록 고치는 일이 선행**돼야 한다.
        *     ②「N개월 지난 카드는 공유 해제」: 그만큼 과거 달 카드가 앱에서 사라진다 —
        *       보안과 학부모 편의의 교환이라 유호님 결정 사안으로 올렸다(2026-08-03).
        *   ▣ 여기를 고치려는 다음 세션에게: 먼저 Glide 「성장 리포트」 탭이 이 URL을 안 쓰게
        *     바꾼 다음에 닫아라. 순서가 반대면 라이브 화면이 먼저 죽는다. */
+      /* [v9.140] 실패를 세고 **알린다**. 구 코드는 '폴더 공유 설정으로 대체'라고만 로그했는데,
+       *   그 문장이 문제를 몇 달 숨겼다 — 실제로 이 호출은 줄곧 실패하고 있었고, 카드가 열려 보인 건
+       *   폴더가 공개였기 때문이다. 폴더를 잠근 지금 그 대체 수단은 **존재하지 않으므로**,
+       *   조용히 넘어가면 학부모 화면이 이유 없이 빈 채로 남는다. */
       try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); }
-      catch (e) { Logger.log('공유설정 실패(' + m.d.name + ') — 폴더 공유 설정으로 대체'); }
+      catch (e) { shareFail++; if (!shareFirstErr) shareFirstErr = String(e); Logger.log('공유설정 실패(' + m.d.name + '): ' + e); }
       const url = 'https://lh3.googleusercontent.com/d/' + file.getId();
       rows.push([ym + '-' + m.d.sid, m.d.sid, ym, url,
         m.d.title, m.d.comment, new Date()]);
@@ -1310,6 +1317,19 @@ function runReportCards_() {
     } catch (e) { Logger.log('카드 생성 실패(' + m.d.name + ') — 스킵, 다음 실행 때 재시도: ' + e); }
   });
   if (rows.length) rc.getRange(rc.getLastRow() + 1, 1, rows.length, 7).setValues(rows);
+
+  /* [v9.140] 공유 실패는 「카드가 만들어졌다」와 함께 조용히 지나가면 안 된다 — 시트에는 URL이
+   *   멀쩡히 적히고 배치는 "성공"이라 말하는데, 학부모 화면만 빈다. 표시가 나는 유일한 자리가 여기다. */
+  if (shareFail) {
+    Logger.log('⚠ 리포트카드 공유 설정 실패 ' + shareFail + '건 — 학부모 화면에서 이미지가 안 보입니다: ' + shareFirstErr);
+    adminMail('[SYNK] ⚠️ 리포트카드 공유 설정 실패 ' + shareFail + '건',
+      '카드 ' + shareFail + '장이 만들어졌지만 「링크가 있는 모든 사람이 보기」 설정에 실패했습니다.\n' +
+      '앱의 학부모 「성장 리포트」 탭에서 그 카드들이 빈 이미지로 보입니다.\n\n' +
+      '첫 오류: ' + shareFirstErr + '\n\n' +
+      '2026-08-03 이력: 같은 오류(액세스가 거부됨: DriveApp)가 계속 나고 있었는데, ' +
+      REPORT_FOLDER_NAME + ' 폴더가 공개라 상속으로 가려져 드러나지 않았습니다. ' +
+      '폴더를 「제한됨」으로 잠근 뒤에는 가려주는 것이 없으므로 이 알림이 유일한 신호입니다.');
+  }
 
   if (mails.length && quotaOk(mails.length)) {
     mails.forEach(m => {
@@ -1654,10 +1674,11 @@ function closePreviewCardLinks() {
     const fa = folder.getSharingAccess();
     if (fa === DriveApp.Access.ANYONE_WITH_LINK || fa === DriveApp.Access.ANYONE) {
       folderWarn = '🔴 폴더 자체가 공개입니다 — 파일별로 닫아도 상속으로 계속 열립니다.\n' +
-        '   Drive에서 「' + REPORT_FOLDER_NAME + '」 폴더 공유를 「제한됨」으로 바꾸세요.\n' +
-        '   (배치 카드는 파일마다 자기 공유를 따로 받아 두므로 폴더를 잠가도 학부모 화면은 안 깨집니다.\n' +
-        '    다만 과거에 파일별 공유가 실패해 폴더 공유에 기대던 카드가 있으면 그것만 깨지니,\n' +
-        '    잠근 뒤 학부모 앱 「성장 리포트」 탭을 한 번 확인하세요.)';
+        '   Drive에서 「' + REPORT_FOLDER_NAME + '」 폴더 공유를 「제한됨」으로 바꿔야 닫힙니다.\n' +
+        '   ⚠ 다만 그 순간 학부모 앱 「성장 리포트」 탭의 카드 이미지가 함께 깨집니다.\n' +
+        '     2026-08-03 실측 — 배치 카드에는 **자기 공유가 하나도 없었고** 공개는 전부 폴더 상속이었습니다\n' +
+        '     (runReportCards_의 setSharing이 「액세스가 거부됨: DriveApp」으로 계속 실패해 catch로 빠지고\n' +
+        '      있었습니다). 그러니 순서는 ①폴더 잠금 ②파일별 공유를 되살리는 수리 ③탭 확인입니다.';
     }
   } catch (e) {
     folderWarn = '⚠ 폴더 공유 상태를 읽지 못했습니다 — 아래 숫자가 상속분을 놓쳤을 수 있으니 Drive에서 직접 확인하세요.';
