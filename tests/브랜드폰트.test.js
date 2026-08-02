@@ -104,6 +104,46 @@ test('DM Mono를 쓰는 파일은 한글·키릴을 같은 지정에 섞지 않�
   }
 });
 
+/* ⚠ 08-03 브랜드 키트 종합 판정에서 드러난 구멍 — 위 검사는 전부 **블랙리스트**다.
+ *   폐기된 5종이 돌아오는 건 막지만 **3종 밖 새 폰트**(Montserrat·Poppins 등)가 들어오는 건 통과시킨다.
+ *   정본 금칙 4는 「3종만 쓴다」인데 기계는 「구 3종만 안 쓴다」를 검사하고 있었다 — 둘은 다른 규칙이다.
+ *   자동 생성이 늘수록 이 구멍으로 들어온다(생성기가 예쁜 폰트를 임의로 고른다). 그래서 화이트리스트로 잠근다.
+ *
+ * 허용 = 브랜드 3종 + CSS 제네릭/시스템 폴백(실측으로 열거 — 저장소 전체에서 이 목록이 전부였다).
+ * 폴백은 CDN이 죽었을 때 레이아웃을 지키는 안전망이라 금지 대상이 아니다(정본 §7). */
+const BRAND_FAMILIES = ['Inter Tight', 'SUIT Variable', 'DM Mono'];
+const SYSTEM_FALLBACKS = [
+  'system-ui', 'ui-monospace', '-apple-system', 'BlinkMacSystemFont',
+  'sans-serif', 'serif', 'monospace', 'cursive',
+  'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Helvetica Neue', 'Helvetica', 'Arial',
+  'Consolas', 'SFMono-Regular', 'Menlo', 'Monaco', 'Courier New', 'inherit', 'initial', 'unset',
+];
+const ALLOWED_FAMILIES = new Set([...BRAND_FAMILIES, ...SYSTEM_FALLBACKS].map((s) => s.toLowerCase()));
+
+test('3종 밖 폰트가 새로 들어오지 않는다(화이트리스트 — 블랙리스트로는 못 막는다)', () => {
+  const violations = [];
+  for (const f of htmlFiles) {
+    if (EXEMPT.has(f)) continue; // 비교 도구는 3종 밖 폰트가 있는 것이 목적
+    const src = fs.readFileSync(path.join(TOOLS, f), 'utf8');
+    for (const decl of fontDecls(src)) {
+      for (const token of decl.replace(/^font-family\s*:/, '').split(',')) {
+        const name = token.trim().replace(/^["']|["']$/g, '').trim();
+        // HTML이 섞여 들어온 파싱 부스러기는 폰트 이름이 아니다 — 폰트명은 라틴·숫자·하이픈·공백뿐
+        if (!name || !/^[-A-Za-z0-9 ]+$/.test(name)) continue;
+        if (!ALLOWED_FAMILIES.has(name.toLowerCase())) violations.push(`${f}: 「${name}」`);
+      }
+    }
+  }
+  assert.equal(
+    violations.length,
+    0,
+    `정본 3종·시스템 폴백 밖의 폰트가 지정됐다:\n  ${violations.join('\n  ')}\n` +
+      `SYNK가 쓰는 서체는 SUIT Variable(한글)·Inter Tight(라틴+몽골 키릴)·DM Mono(워드마크·라벨)뿐이다.\n` +
+      `새 서체를 정말 도입한다면 정본 docs/브랜드_폰트_정본.md 개정이 먼저이고, ` +
+      `키릴 몽골 고유자 「ө·ү」 실측(도구 docs/tools/_mn_font_probe.html)이 필수다.`
+  );
+});
+
 /* HTML만 검사하면 빈틈이 남는다 — 앱 카드 폰트는 Code.js 안의 문자열이고, 콘텐츠 파일도 마찬가지다.
  * 「폐기 폰트가 **새로** 들어오는 것」을 잡으려면 알려진 잔여 건수를 못 박고 그보다 늘면 실패시킨다.
  * 지금 알려진 잔여 = CARD_FONT 1건(정본 §9의 교체 대기). 이 숫자는 교체 시 0으로 내린다. */
