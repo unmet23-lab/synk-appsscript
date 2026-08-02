@@ -23,7 +23,12 @@ const { engineSource } = require('./_engine-source');
 const TOOLS = path.join(ROOT, 'docs', 'tools');
 
 /* 폰트 후보를 나란히 세워 비교하는 실측 도구 — 3종 밖 폰트가 있는 게 목적이라 제외한다. */
-const EXEMPT = new Set(['_mn_font_probe.html']);
+const EXEMPT = new Set([
+  '_mn_font_probe.html',
+  // 구 V9 Red↔정본 v10 Coral 토글 비교 도구 — 구 디자인 재현이 목적이라 폐기 폰트(Pretendard)가 의도적으로 들어 있다.
+  // (2026-08-02 분할 2단계 세션이 등재 — 제작 세션에 메시지 통지함. 대외 산출물 아님·판정 도구 전용.)
+  '트렌디미니멀_색전환_비교.html',
+]);
 
 /* 폐기된 구 지정. 이름만 남아 있어도 복붙으로 번지므로 등장 자체를 막는다. */
 const RETIRED = ['Pretendard', 'Noto Sans KR', 'KoPubWorld', 'Nanum', '맑은 고딕'];
@@ -100,7 +105,7 @@ test('DM Mono를 쓰는 파일은 한글·키릴을 같은 지정에 섞지 않�
 /* HTML만 검사하면 빈틈이 남는다 — 앱 카드 폰트는 Code.js 안의 문자열이고, 콘텐츠 파일도 마찬가지다.
  * 「폐기 폰트가 **새로** 들어오는 것」을 잡으려면 알려진 잔여 건수를 못 박고 그보다 늘면 실패시킨다.
  * 지금 알려진 잔여 = CARD_FONT 1건(정본 §9의 교체 대기). 이 숫자는 교체 시 0으로 내린다. */
-const JS_TARGETS = ['Code.js', '상담AI.js', '교재연동.js', '만족도팩.js']
+const JS_TARGETS = [...require('./_engine-source').ENGINE_FILES, '상담AI.js', '교재연동.js', '만족도팩.js']
   .concat(fs.readdirSync(ROOT).filter((f) => /^contents_.*\.js$/.test(f)));
 const KNOWN_RETIRED_IN_JS = 0; // CARD_FONT 교체 완료(08-01) — 이제 한 건도 허용하지 않는다
 

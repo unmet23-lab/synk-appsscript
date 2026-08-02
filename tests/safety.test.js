@@ -731,8 +731,15 @@ test('[v9.57] 톱레벨 크로스파일 참조 금지 — 전역 초기화 순�
     topLevel[f] = out;
     declared[f] = new Set([...out.matchAll(/(?:^|[\s;])(?:const|let|var|function)\s+([A-Za-z_$가-힣][\w$가-힣]*)/g)].map((m) => m[1]));
   }
+  // [2026-08-02 분할 2단계] 초기화 순서가 기계 보증되는 참조만 허용한다: 두 파일 다 filePushOrder에
+  // 등재돼 있고 선언 파일(g)이 참조 파일(f)보다 먼저 로드될 때. Apps Script는 파일 순서대로 전역을
+  // 초기화하므로 이 경우는 단일 파일 시절의 위→아래 참조와 동일하게 안전하다(아래 filePushOrder 검사가
+  // ENGINE_FILES 순서 일치를 함께 강제한다). 미등재 파일·역순 참조는 종전대로 전면 금지.
+  const pushOrder = JSON.parse(fs.readFileSync(path.join(ROOT, '.clasp.json'), 'utf8')).filePushOrder || [];
   for (const f of rootJs) for (const g of rootJs) {
     if (f === g) continue;
+    const fi = pushOrder.indexOf(f), gi = pushOrder.indexOf(g);
+    if (fi > -1 && gi > -1 && gi < fi) continue; // g가 f보다 먼저 로드됨이 보증된 참조
     for (const name of declared[g]) {
       if (declared[f].has(name)) continue; // 동명 재선언은 별개 문제(전역 충돌 검사가 따로 있음)
       const re = new RegExp('(?<![\\w$\uAC00-\uD7A3])' + name.replace(/[$]/g, '\\$&') + '(?![\\w$\uAC00-\uD7A3])');
@@ -746,6 +753,10 @@ test('[v9.57] clasp filePushOrder는 Code.js를 선두로 고정한다(전역 �
   const cj = JSON.parse(fs.readFileSync(path.join(ROOT, '.clasp.json'), 'utf8'));
   assert.ok(Array.isArray(cj.filePushOrder) && cj.filePushOrder.length >= 1, 'filePushOrder가 비어 있으면 파일 순서 무보증');
   assert.equal(cj.filePushOrder[0], 'Code.js', '공용 상수 정본(Code.js)이 가장 먼저 초기화돼야 한다');
+  // [2026-08-02 분할 2단계] 엔진 분할부는 원본 단일 Code.js의 원래 순서 그대로 이어져야 한다.
+  // 어긋나면 테스트(합본은 ENGINE_FILES 순서)는 통과하는데 라이브만 죽는다 — 위 크로스파일 허용 조건의 전제.
+  assert.deepEqual(cj.filePushOrder.slice(0, ENGINE_FILES.length), ENGINE_FILES,
+    'filePushOrder 선두가 ENGINE_FILES(로드 순서 정본)와 다르다 — 톱레벨 참조가 라이브에서만 죽는다');
 });
 
 test('[v9.61] preflight는 학생 입력 폼 3종 미생성을 경고한다(버튼이 조용히 안 그려지는 결함)', () => {
