@@ -32,11 +32,11 @@ const PERM = { VIEW: 'P_VIEW', EDIT: 'P_EDIT', COMMENT: 'P_COMMENT', NONE: 'P_NO
 const rec = { sharing: [], created: [], logs: [] };
 const reset = () => {
   rec.sharing = []; rec.created = []; rec.logs = [];
-  state.folderFiles = []; state.folderAccess = 'A_PRIVATE'; state.folderAccessThrows = false;
+  state.folderFiles = []; state.folderAccess = 'A_PRIVATE'; state.folderAccessThrows = false; state.byId = {};
 };
 
 /** 폴더 상태 — 테스트가 갈아끼운다. folderAccess = 폴더 자체의 공유(상속의 원천). */
-const state = { folderFiles: [], folderAccess: 'A_PRIVATE', folderAccessThrows: false };
+const state = { folderFiles: [], folderAccess: 'A_PRIVATE', folderAccessThrows: false, byId: {} };
 
 function makeFile(name, access, opts) {
   const o = opts || {};
@@ -75,6 +75,11 @@ const DriveAppMock = {
     },
   }]),
   createFolder: () => { throw new Error('테스트에서 폴더를 새로 만들 일이 없다'); },
+  getFileById: (id) => {
+    const f = state.byId[id];
+    if (!f) throw new Error('없는 파일: ' + id);
+    return f;
+  },
 };
 
 const pad = (n) => String(n).padStart(2, '0');
@@ -304,6 +309,72 @@ test('[v9.138] 폴더 상태를 못 읽으면 숫자를 믿지 말라고 말한�
   assert.equal(rec.sharing.length, 1, '폴더를 못 읽었다고 파일 정리를 멈추면 안 된다');
 });
 
+/* ── ②-c 카드 링크 복구 (폴더 잠금 뒤 화면을 되살리는 유일한 수단) ──── */
+
+const rcSheet = (rows) => ({
+  getLastRow: () => rows.length + 1,
+  getRange: () => ({ getValues: () => rows }),
+});
+// report_cards: A=card_id B=student_id C=월 D=image_url
+const RC_ROWS = [
+  ['2026-08-S1', 'S1', '2026-08', 'https://lh3.googleusercontent.com/d/ID_A'],
+  ['2026-08-S2', 'S2', '2026-08', 'https://lh3.googleusercontent.com/d/ID_B'],
+  ['2026-06-S3', 'S3', '2026-06', 'https://placehold.co/600x800/png'], // 플레이스홀더 — Drive 아님
+];
+/** report_cards를 보게 만든 뒤 복구 함수를 돌린다. Drive는 id→파일 맵으로 스텁. */
+function runRepair(rows, filesById) {
+  state.byId = filesById;
+  const prev = ctx.SpreadsheetApp;
+  ctx.SpreadsheetApp = {
+    getActiveSpreadsheet: () => ({
+      getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar',
+      getSheetByName: (n) => (n === 'report_cards' ? rcSheet(rows) : null),
+    }),
+    getUi: () => ({ alert: () => {} }),
+  };
+  try { return ctx.repairReportCardSharing(); } finally { ctx.SpreadsheetApp = prev; }
+}
+
+test('[v9.142] 카드 링크 복구 — report_cards의 카드에만 공개 링크를 되살린다', () => {
+  reset();
+  const a = makeFile('2026-08_S1.png', ACCESS.PRIVATE);
+  const b = makeFile('2026-08_S2.png', ACCESS.PRIVATE);
+  const out = runRepair(RC_ROWS, { ID_A: a, ID_B: b });
+
+  assert.equal(rec.sharing.length, 2, 'Drive 카드 2개를 복구하지 않았다');
+  rec.sharing.forEach((s) => {
+    assert.equal(s.access, ACCESS.ANYONE_WITH_LINK, '공개 링크로 되살리지 않았다');
+    assert.equal(s.permission, PERM.VIEW, '보기 권한이 아니다');
+  });
+  assert.ok(/복구 2개/.test(out), '복구 건수를 보고하지 않는다');
+});
+
+test('[v9.142] 🔴 폴더를 훑지 않는다 — 대상은 report_cards가 지목한 파일뿐', () => {
+  // 폴더 순회로 만들면 프리뷰·남의 파일까지 공개로 열어버린다. 시트가 화이트리스트다.
+  reset();
+  state.folderFiles = [makeFile('PREVIEW_hack.png', ACCESS.PRIVATE), makeFile('남의파일.png', ACCESS.PRIVATE)];
+  const a = makeFile('2026-08_S1.png', ACCESS.PRIVATE);
+  runRepair([RC_ROWS[0]], { ID_A: a });
+  assert.equal(rec.sharing.length, 1, '시트에 없는 파일까지 건드렸다 — 프리뷰가 다시 공개된다');
+  assert.equal(rec.sharing[0].name, '2026-08_S1.png');
+});
+
+test('[v9.142] 이미 공개면 다시 쓰지 않는다 (멱등)', () => {
+  reset();
+  const a = makeFile('2026-08_S1.png', ACCESS.ANYONE_WITH_LINK);
+  const out = runRepair([RC_ROWS[0]], { ID_A: a });
+  assert.equal(rec.sharing.length, 0, '이미 공개인 카드에 불필요한 Drive 쓰기를 한다');
+  assert.ok(/이미 공개 1개/.test(out));
+});
+
+test('[v9.142] 실패하면 첫 오류 원문을 남긴다 — 가설이 틀렸을 때의 재료', () => {
+  reset();
+  const a = makeFile('2026-08_S1.png', ACCESS.PRIVATE, { setThrows: true });
+  const out = runRepair([RC_ROWS[0]], { ID_A: a });
+  assert.ok(/실패 1개/.test(out), '실패 건수를 숨긴다');
+  assert.ok(/첫 오류/.test(out), '오류 원문을 남기지 않는다 — 다음 조사가 맨손이 된다');
+});
+
 /* ── ③ 저장소 전체 — 공개 공유는 승인된 두 자리에만 있다 ───────────── */
 
 test('[v9.138] 새 공개 공유(setSharing ANYONE)가 승인 없이 늘지 않는다', () => {
@@ -312,7 +383,7 @@ test('[v9.138] 새 공개 공유(setSharing ANYONE)가 승인 없이 늘지 않�
    *   엔진_폼리포트.js runReportCards_ : report_cards.image_url → Glide 학부모 성장 리포트 탭
    *   교재연동.js      voiceSweep_     : voice_log/목소리성장카드 → 학생 앱 녹음 재생
    * 여기 숫자를 올리려면 「이 URL이 어디로 흘러가고, 없으면 무엇이 죽는가」를 먼저 답해야 한다. */
-  const APPROVED = { '엔진_폼리포트.js': 1, '교재연동.js': 1 };
+  const APPROVED = { '엔진_폼리포트.js': 2, '교재연동.js': 1 }; // [v9.142] 폼리포트 2 = 배치 + 카드 링크 복구
 
   const roots = fs.readdirSync(ROOT).filter((f) => f.endsWith('.js'));
   assert.ok(roots.length >= 5, '루트 .js 목록을 못 읽었다 — 이 검사가 아무것도 안 보고 통과한다');
