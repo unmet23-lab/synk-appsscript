@@ -136,3 +136,78 @@ test('[v9.116] 채번기는 라이브로 배포되지 않는다 (.claspignore �
   });
   assert.equal(ok, false, 'tools/bump-version.js가 clasp push 대상에 들어갔다 — Node 전용 코드가 라이브에서 크래시한다');
 });
+
+/* ═══════ [F017] 이력 체인 병합 — 옆 세션 항목이 조용히 사라지던 자리 ═══════
+ * 08-03 실측: v9.141(옆)과 v9.142(내)가 겹쳤을 때 내 작업본 체인엔 [v9.141]이 애초에 없었고,
+ * 그대로 써서 그 항목이 빠진 줄이 만들어졌다. 마침 충돌이 나서 손으로 복원했다 —
+ * **충돌이 안 났으면 아무도 몰랐을 자리다.** 그래서 회귀는 「충돌 없는 경로」를 검사한다. */
+
+const LINE = (ver, chain) => "const SYNK_VERSION = '" + ver + "'; // 전체 이력 = docs/버전_이력.md " + chain;
+
+test('[F017] origin에만 있는 항목을 되살린다 — 옆 세션 기록이 사라지지 않는다', () => {
+  const mine = LINE('v9.140', '· 최신 [v9.140] 내 직전 · [v9.139] 수집층');
+  const theirs = LINE('v9.141', '· 최신 [v9.141] 옆 세션 작업 · [v9.140] 내 직전 · [v9.139] 수집층');
+  const out = bump.replaceVersionLine(mine, 'v9.142', '내 새 작업', theirs);
+  assert.ok(out.includes('[v9.142] 내 새 작업'), '새 항목이 없다');
+  assert.ok(out.includes('[v9.141] 옆 세션 작업'), '옆 세션 항목이 사라졌다 — F017 재발');
+  assert.ok(out.includes('[v9.140] 내 직전'), '내 기존 항목이 사라졌다');
+  assert.ok(out.includes('[v9.139] 수집층'), '더 오래된 항목이 사라졌다');
+});
+
+test('[F017] 되살린 항목은 버전 내림차순 자리에 들어간다', () => {
+  const mine = LINE('v9.140', '· 최신 [v9.140] 내 직전 · [v9.139] 수집층');
+  const theirs = LINE('v9.141', '· 최신 [v9.141] 옆 · [v9.140] 내 직전 · [v9.139] 수집층');
+  const out = bump.replaceVersionLine(mine, 'v9.142', '내 새 작업', theirs);
+  const order = (out.match(/\[v9\.\d+\]/g) || []);
+  assert.deepEqual(order, ['[v9.142]', '[v9.141]', '[v9.140]', '[v9.139]'],
+    '순서가 섞였다 — 사람이 최신부터 읽는 줄이다: ' + order.join(' '));
+});
+
+test('[F017] 새 항목은 여전히 「최신」 표식을 가지고, 옛 최신은 강등된다', () => {
+  const mine = LINE('v9.140', '· 최신 [v9.140] 내 직전');
+  const theirs = LINE('v9.141', '· 최신 [v9.141] 옆');
+  const out = bump.replaceVersionLine(mine, 'v9.142', '새것', theirs);
+  assert.equal((out.match(/· 최신 \[/g) || []).length, 1, '「최신」이 둘 이상이거나 없다');
+  assert.ok(/· 최신 \[v9\.142\]/.test(out), '최신 표식이 새 번호에 안 붙었다');
+});
+
+test('[F017] 중복 삽입하지 않는다 — 이미 가진 항목은 한 번만', () => {
+  const mine = LINE('v9.141', '· 최신 [v9.141] 옆 · [v9.140] 내 직전');
+  const theirs = LINE('v9.141', '· 최신 [v9.141] 옆 · [v9.140] 내 직전');
+  const out = bump.replaceVersionLine(mine, 'v9.142', '새것', theirs);
+  assert.equal((out.match(/\[v9\.141\]/g) || []).length, 1, '같은 항목이 두 번 들어갔다');
+  assert.equal((out.match(/\[v9\.140\]/g) || []).length, 1);
+});
+
+test('[F017] 병합은 더하기만 한다 — origin에 없는 내 항목을 지우지 않는다', () => {
+  // 내가 origin보다 앞서 있는 흔한 경우(내 앞선 커밋이 아직 push 전)
+  const mine = LINE('v9.142', '· 최신 [v9.142] 내 미push · [v9.140] 공통');
+  const theirs = LINE('v9.140', '· 최신 [v9.140] 공통');
+  const out = bump.replaceVersionLine(mine, 'v9.143', '새것', theirs);
+  assert.ok(out.includes('[v9.142] 내 미push'), 'origin에 없다고 내 항목을 지웠다');
+  assert.ok(out.includes('[v9.140] 공통'));
+});
+
+test('[F017] originSrc가 없으면 기존 동작 그대로 — 오프라인에서도 채번은 돈다', () => {
+  const mine = LINE('v9.140', '· 최신 [v9.140] 내 직전 · [v9.139] 이전');
+  const out = bump.replaceVersionLine(mine, 'v9.141', '새것');
+  assert.ok(out.includes('[v9.141] 새것') && out.includes('[v9.140] 내 직전') && out.includes('[v9.139] 이전'));
+});
+
+test('[F017] 실저장소 줄을 자기 자신과 병합해도 항목 수가 늘지 않는다(멱등)', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'Code.js'), 'utf8');
+  const before = (src.match(/\[v9\.\d+\]/g) || []).length;
+  const out = bump.replaceVersionLine(src, 'v9.999', '시험', src);
+  const after = (out.match(/\[v9\.\d+\]/g) || []).length;
+  assert.equal(after, before + 1, `항목이 ${before} → ${after}로 변했다(새 항목 1개만 늘어야 한다)`);
+});
+
+test('[F017] 파싱 보조 — 체인 조각과 버전 추출', () => {
+  const c = bump.chainEntries('// 안내 · 최신 [v9.5] 다섯 · [v9.4] 넷 · [v9.3] 셋');
+  // 「최신」 도막도 항목이다 — head에 남기면 상대의 가장 새 항목이 비교에서 빠진다(F017의 정체).
+  assert.equal(c.items.length, 3, '「최신」 도막이 items에 없다: ' + JSON.stringify(c));
+  assert.equal(c.head, '// 안내');
+  assert.equal(bump.entryVer(c.items[0]), 'v9.5', '「최신 [vN]」에서 버전을 못 읽는다');
+  assert.equal(bump.entryVer('[v9.4] 넷'), 'v9.4');
+  assert.equal(bump.entryVer('안내 문구'), null);
+});

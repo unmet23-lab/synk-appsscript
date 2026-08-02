@@ -66,12 +66,80 @@ function versionOf(src) {
 
 // SYNK_VERSION 줄만 교체한다. desc가 있으면 설명 꼬리를 '· 최신 [vX] desc'로 갈아끼운다.
 // 파일의 다른 부분은 절대 건드리지 않는다(줄 단위 치환).
-function replaceVersionLine(src, newVer, desc) {
+/* [v9.144 후속] 이력 체인 병합 — 마찰 F017.
+ *
+ * 무슨 일이 있었나: 채번기는 **작업본**의 SYNK_VERSION 줄만 보고 새 항목을 끼워 넣는다.
+ * 그런데 내가 작업하는 동안 옆 세션이 origin에 자기 번호를 올려 두면, 내 작업본의 체인에는
+ * 그 항목이 **애초에 없다.** 그 상태로 내 줄을 쓰면 옆 세션의 기록이 조용히 빠진 줄이 만들어진다.
+ * 08-03 실측 — v9.141(옆)과 v9.142(내)가 겹쳤을 때 `[v9.141]` 항목이 누락됐고,
+ * 마침 충돌이 나서 손으로 복원했다. **충돌이 안 났으면 아무도 몰랐을 자리다.**
+ *
+ * 그래서 origin/master의 현재 줄에만 있는 항목을 내 체인에 **끼워 넣는다**(통째로 갈아끼우지 않는다 —
+ * 초판이 그렇게 했다가 앞선 세션들의 기록을 날렸다). 삽입 위치는 버전 내림차순을 따르고,
+ * 판정 불가한 조각은 건드리지 않는다. 즉 이 함수는 **더하기만 하고 빼지 않는다.** */
+/* ⚠ '최신' 도막도 **항목이다**. 초판은 head에 남겨 뒀는데, 그러면 상대의 가장 새 항목이
+ *   — 즉 이번 사고에서 잃어버린 바로 그 항목이 — 비교 대상에서 통째로 빠진다.
+ *   회귀 「origin에만 있는 항목을 되살린다」가 정확히 이걸로 실패했다. */
+const CHAIN_SPLIT = /\s·\s(?=(?:최신\s)?\[v\d)/;
+const CHAIN_FIRST = /·\s(?:최신\s)?\[v\d/;
+function chainEntries(comment) {
+  const s = String(comment || '');
+  const first = s.search(CHAIN_FIRST);
+  if (first < 0) return { head: s, items: [] };
+  const head = s.slice(0, first).replace(/\s*$/, '');
+  const rest = s.slice(first).replace(/^·\s*/, '');
+  return { head: head, items: rest.split(CHAIN_SPLIT).map((t) => t.trim()).filter(Boolean) };
+}
+const entryVer = (raw) => {
+  const m = String(raw).replace(/^최신\s+/, '').match(/^\[v(\d+)\.(\d+)\]/);
+  return m ? 'v' + m[1] + '.' + m[2] : null;
+};
+
+function mergeChain(mineComment, theirsComment) {
+  const mine = chainEntries(mineComment);
+  const theirs = chainEntries(theirsComment);
+  if (!theirs.items.length) return mineComment;
+
+  const have = new Set(mine.items.map(entryVer).filter(Boolean));
+  // 상대의 '최신' 표식은 떼고 들여온다 — 「최신」은 이 줄에 **하나**여야 하고, 그건 내가 지금 다는 번호다.
+  const missing = theirs.items
+    .filter((raw) => { const v = entryVer(raw); return v && !have.has(v); })
+    .map((raw) => raw.replace(/^최신\s+/, ''));
+  if (!missing.length) return mineComment;
+
+  const items = mine.items.slice();
+  missing.forEach((raw) => {
+    const v = entryVer(raw);
+    // 내림차순 유지 — 나보다 낮은 첫 항목 **앞**에 넣는다. 못 정하면 맨 뒤(잃는 것보다 낫다).
+    let at = items.findIndex((x) => { const xv = entryVer(x); return xv && cmpVer(xv, v) < 0; });
+    if (at < 0) at = items.length;
+    items.splice(at, 0, raw);
+  });
+  return mine.head + ' · ' + items.join(' · ');
+}
+
+function replaceVersionLine(src, newVer, desc, originSrc) {
   const eol = src.includes('\r\n') ? '\r\n' : '\n';
   const lines = src.split(/\r?\n/);
   const i = lines.findIndex((l) => l.startsWith('const SYNK_VERSION'));
   if (i < 0) throw new Error('SYNK_VERSION 선언을 찾지 못함');
   let line = lines[i].replace(/const SYNK_VERSION = '[^']+'/, "const SYNK_VERSION = '" + newVer + "'");
+
+  /* [F017] 옆 세션이 origin에 올린 항목을 먼저 되살린다 — desc 유무와 무관하게 한다.
+   * 내 작업본에 없는 항목은 「내가 지운 것」이 아니라 「내가 본 적 없는 것」이고,
+   * 그대로 쓰면 그들의 기록이 조용히 사라진다. */
+  if (originSrc) {
+    const ci0 = line.indexOf('//');
+    if (ci0 >= 0) {
+      const originLine = String(originSrc).split(/\r?\n/).find((l) => l.startsWith('const SYNK_VERSION')) || '';
+      const oci = originLine.indexOf('//');
+      if (oci >= 0) {
+        const merged = mergeChain(line.slice(ci0), originLine.slice(oci));
+        line = line.slice(0, ci0) + merged;
+      }
+    }
+  }
+
   if (desc) {
     // ⚠ 기존 이력 체인을 통째로 갈아끼우면 안 된다 — 이 줄에는 앞선 세션들의 [vN] 항목이 누적돼 있고,
     //   덮어쓰면 그들의 기록이 조용히 사라진다(초판이 실제로 그랬고 라이브 대조에서 발각됐다).
@@ -81,7 +149,11 @@ function replaceVersionLine(src, newVer, desc) {
     const ci = line.indexOf('//');
     const old = ci >= 0 ? line.slice(ci) : '';
     const NEW = '· 최신 [' + newVer + '] ' + desc;
-    const k = old.indexOf('· 최신 [');
+    /* [F017] 기준은 '· 최신 [' 이 아니라 **체인의 첫 항목**이다.
+     * 병합으로 되살린 항목(옆 세션의 더 큰 번호)이 '최신' 도막 **앞**에 놓이면,
+     * '최신' 자리에 끼워 넣는 순간 새 번호가 그 뒤로 밀려 141·142·140 같은 순서가 나온다.
+     * 뒤쪽의 옛 '최신' 표식은 아래 replace가 그대로 강등한다(표식은 줄에 하나여야 한다). */
+    const k = old.search(CHAIN_FIRST);
     const comment = k >= 0
       ? old.slice(0, k) + NEW + ' ' + old.slice(k).replace('· 최신 [', '· [')   // 기존 최신을 강등하고 앞에 삽입
       : (old ? old.replace(/\s*$/, '') + ' ' + NEW
@@ -156,7 +228,10 @@ function main(argv) {
     }
 
     const src = fs.readFileSync(CODE, 'utf8');
-    fs.writeFileSync(CODE, replaceVersionLine(src, cand, desc));
+    // [F017] origin/master의 **현재** 줄을 함께 넘긴다 — 위에서 이미 fetch했으므로 최신이다.
+    // 못 읽으면(오프라인·초기 저장소) null이 가고 병합은 건너뛴다. 병합 실패가 채번을 막지는 않는다.
+    const originSrc = gitQuiet(['show', 'origin/master:Code.js']);
+    fs.writeFileSync(CODE, replaceVersionLine(src, cand, desc, originSrc));
     console.log('✅ 예약 완료: ' + cand + '  (태그 ' + tag + ' origin push 성공 = 이 번호는 내 것)');
     console.log('   Code.js SYNK_VERSION 기입됨. 커밋 제목·태그·docs/버전_이력.md에 [' + cand + ']를 쓰세요.');
     return cand;
@@ -164,7 +239,10 @@ function main(argv) {
   throw new Error(MAX_TRIES + '회 시도했으나 번호를 확보하지 못했습니다 — origin 접근을 확인하세요');
 }
 
-module.exports = { parseVer, cmpVer, maxVer, nextVer, versionOf, replaceVersionLine, collectUsedVersions, main };
+module.exports = {
+  parseVer, cmpVer, maxVer, nextVer, versionOf, replaceVersionLine, collectUsedVersions, main,
+  chainEntries, mergeChain, entryVer,
+};
 
 if (require.main === module) {
   try { main(process.argv.slice(2)); }
