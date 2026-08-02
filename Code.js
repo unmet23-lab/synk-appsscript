@@ -786,7 +786,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.130'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.130] 개원 시뮬 — 조 편성표의 침묵을 원인·처방 안내로 · [v9.129] String(Date) 텍스트 오염 형태 추가 정규화 — 라이브가 세 번째 형태를 드러냈다 · [v9.128] 월키 정상화 순서 최종 교정 — 읽기→서식→쓰기(라이브가 v9.125 실패를 증명) · [v9.127] 원격 실행 경로 신설 + 경영 정본 v1.3 동기화 + 출퇴근 연타 정리 · [v9.126] Glide 라이브 전수 점검 — 월키 Date 오염 미보호 시트 2종·상담값 원시 Date·출결 백지 · [v9.125] 앱 전면 최적화 — 5구역 적대 리뷰 결함 26건 수리 + 브랜드 키트 색 전환 · [v9.124] 메뉴 결과 가시화 + 이수율 조인 진단 · [v9.123] 낡은 강의 자리 안전 정리 — 조준을 행 번호에서 내용으로 · [v9.122] 브랜드 폰트 3종을 앱 카드에 적용 — 스택 교체 + 웹폰트 로더 신설(이름만 바꾸면 전 카드가 폴백된다) · [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
+const SYNK_VERSION = 'v9.131'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.131] 시즌 시작일 프롬프트 — 인자 필요 함수의 실행 경로 신설 · [v9.130] 개원 시뮬 — 조 편성표의 침묵을 원인·처방 안내로 · [v9.129] String(Date) 텍스트 오염 형태 추가 정규화 — 라이브가 세 번째 형태를 드러냈다 · [v9.128] 월키 정상화 순서 최종 교정 — 읽기→서식→쓰기(라이브가 v9.125 실패를 증명) · [v9.127] 원격 실행 경로 신설 + 경영 정본 v1.3 동기화 + 출퇴근 연타 정리 · [v9.126] Glide 라이브 전수 점검 — 월키 Date 오염 미보호 시트 2종·상담값 원시 Date·출결 백지 · [v9.125] 앱 전면 최적화 — 5구역 적대 리뷰 결함 26건 수리 + 브랜드 키트 색 전환 · [v9.124] 메뉴 결과 가시화 + 이수율 조인 진단 · [v9.123] 낡은 강의 자리 안전 정리 — 조준을 행 번호에서 내용으로 · [v9.122] 브랜드 폰트 3종을 앱 카드에 적용 — 스택 교체 + 웹폰트 로더 신설(이름만 바꾸면 전 카드가 폴백된다) · [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -16543,6 +16543,40 @@ function menuSyncLectureForm() { menuRun_(syncLectureFormChoices); }
 function menuLectureJoinDiag() { menuRun_(lectureJoinDiag); }
 function menuSelfHeal() { menuRun_(sheetSelfHealNow); } // [v9.127] 자기치유 결과 가시화
 
+/* [v9.131] 🗓 시즌 시작일 — **인자가 필요한 유일한 개원 준비 함수**라 ▶ 버튼으로 실행할 수 없었다.
+ *   `setSeasonStart`는 인자 없이 부르면 「▶로는 설정되지 않습니다」라고 거부한다(오늘 날짜가 실수로 박히면
+ *   차시 번호가 통째로 밀려 역할·짝·발표자가 전부 어긋나므로 옳은 설계다). 그런데 그 결과 **비개발자에게는
+ *   실행 경로가 app_state 시트 직접 편집뿐**이었다 — 08-02 유호님이 드롭다운에서 못 찾아 막힌 지점.
+ *   해법은 거부를 푸는 게 아니라 **날짜를 물어보는 입구를 만드는 것**(voiceWithdrawPrompt와 같은 계보).
+ *   확인 단계에서 시즌 종료일과 「차시 1이 언제인지」를 함께 보여 준다 — 날짜가 맞는지는 그걸 봐야 안다. */
+function seasonStartPrompt() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const cur = seasonLabelOf_(ss, tz);
+  const a = ui.prompt('🗓 시즌 시작일 설정',
+    (cur ? '현재: ' + cur + '\n\n' : '현재: 설정 안 됨\n\n') +
+    '시즌 1주차 **1차시 날짜**를 yyyy-MM-dd로 입력하세요 (예: 2027-02-01).\n' +
+    '⚠ 이 날짜부터 8주가 한 시즌이고, 차시 번호·역할·짝·발표자가 전부 여기서 계산됩니다.',
+    ui.ButtonSet.OK_CANCEL);
+  if (a.getSelectedButton() !== ui.Button.OK) return;
+  const raw = String(a.getResponseText() || '').trim();
+  const d = toDate_(raw);
+  if (!d) { ui.alert('⚠ 날짜를 읽지 못했습니다 — 2027-02-01 형태로 입력하세요.'); return; }
+  const s = Utilities.formatDate(d, tz, 'yyyy-MM-dd');
+  const end = new Date(d.getTime() + (SEASON_WEEKS * 7 - 1) * 86400000);
+  const dow = ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
+  const b = ui.alert('확인',
+    '시즌 시작일을 ' + s + '(' + dow + ')로 설정합니다.\n' +
+    '  · 8주 시즌 종료 = ' + Utilities.formatDate(end, tz, 'yyyy-MM-dd') + '\n' +
+    '  · 그날이 평일반 1차시가 됩니다(일요일이면 수업일이 아니라 차시가 밀립니다)\n' +
+    (cur ? '  · 현재 값 ' + cur + '을(를) 덮어씁니다 — 기존 groups 편성은 옛 시즌 키로 남습니다\n' : '') +
+    '\n진행할까요?', ui.ButtonSet.YES_NO);
+  if (b !== ui.Button.YES) { ui.alert('취소했습니다 — 아무것도 바뀌지 않았습니다.'); return; }
+  ui.alert(setSeasonStart(s) + '\n\n다음: 메뉴 「🧩 전 반 조 편성」');
+}
+function menuAssignGroups() { menuRun_(assignGroupsAll); } // [v9.131] 조 편성표의 나머지 절반 — 결과가 alert로 보인다
+
 /* [v9.124] ▶ 읽기 전용 — 「이수율 조인이 실제로 붙는가」에 한 화면으로 답한다.
  *   이 질문이 따로 필요한 이유: 조인이 깨져도 **에러가 안 난다.** 그냥 rate=null(무데이터)로 조용히 떨어지고,
  *   주간 리포트에서는 섹션이 통째로 빠져 「원래 그런 주」와 구별되지 않는다. v9.118·v9.119가 같은 자리에서
@@ -16960,6 +16994,11 @@ function onOpen() {
       // [v9.125] 철회 진입점 — voiceWithdraw는 인자 필수라 편집기 ▶·메뉴 직접 등재가 불가능했다(약속만 있고 실행 수단 없음).
       //   프롬프트 2단계(ID 입력 → 미리보기 → 「삭제」 타이핑)라 잘못 눌러도 손실 0 — 메뉴 등재 기준을 충족한다.
       .addItem('🗑 음성 동의 철회(2단계 확인)', 'voiceWithdrawPrompt')
+      .addSeparator()
+      // [v9.131] 개원 준비 2종 — 이 둘을 안 하면 강사 브리핑의 조 편성표가 영구 공백이다(v9.130에서 화면이 이유를 말하게 했지만, 실행 경로가 없으면 소용없다).
+      //   setSeasonStart는 인자가 필요해 ▶ 버튼으로 실행할 수 없다 → 날짜를 물어보는 프롬프트로 감싼다.
+      .addItem('🗓 시즌 시작일 설정(개원 준비 1)', 'seasonStartPrompt')
+      .addItem('🧩 전 반 조 편성(개원 준비 2)', 'menuAssignGroups')
       .addToUi();
   } catch (eMenu) { Logger.log('시트 메뉴 생성 스킵: ' + eMenu); } // UI 없는 컨텍스트(트리거 실행)에서는 조용히 통과
 }

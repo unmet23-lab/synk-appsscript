@@ -315,3 +315,19 @@ test('[v9.130] groupBoardText_ — 조 편성이 없을 때 빈 문자열 대신
   assert.ok(seg.indexOf('seasonLabelOf_') < seg.indexOf('assignGroupsAll'),
     '원인 판정 없이 문구만 나열한다 — 세 경우를 실제로 갈라야 처방이 맞는다');
 });
+
+/* ═══════ [v9.131] 인자가 필요한 함수는 ▶로 실행할 수 없다 — 입구를 만든다 ═══════ */
+test('[v9.131] 시즌 시작일 — 프롬프트 입구가 있고, 인자 없는 setSeasonStart는 여전히 거부한다', () => {
+  assert.ok(/function seasonStartPrompt\(\)/.test(code), '날짜를 물어보는 입구가 없다 — ▶ 버튼은 인자를 못 넘긴다');
+  const seg = code.slice(code.indexOf('function seasonStartPrompt'), code.indexOf('function menuAssignGroups'));
+  assert.ok(seg.includes('ui.prompt'), '입력을 받지 않는다');
+  assert.ok(seg.includes('ButtonSet.YES_NO'), '확인 단계가 없다 — 시즌 시작일은 틀리면 차시가 통째로 밀린다');
+  assert.ok(seg.includes('setSeasonStart('), '정본 함수를 거치지 않고 직접 쓴다(규칙 중복)');
+  assert.ok(seg.includes('SEASON_WEEKS'), '종료일을 보여주지 않는다 — 날짜가 맞는지는 그걸 봐야 안다');
+  // 원래 안전장치는 살아 있어야 한다: 인자 없이 부르면 설정하지 않는다
+  const orig = code.slice(code.indexOf('function setSeasonStart'), code.indexOf('function seasonLabelOf_'));
+  assert.ok(orig.includes('if (!dateStr)'), '인자 없는 호출을 거부하는 가드가 사라졌다 — ▶ 한 번에 오늘 날짜가 박힌다');
+  // 메뉴 등재
+  assert.ok(code.includes("addItem('🗓 시즌 시작일 설정(개원 준비 1)', 'seasonStartPrompt')"), '메뉴에 없다');
+  assert.ok(code.includes("addItem('🧩 전 반 조 편성(개원 준비 2)', 'menuAssignGroups')"), '조 편성 메뉴가 없다');
+});
