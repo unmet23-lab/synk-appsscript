@@ -331,3 +331,37 @@ test('[v9.131] 시즌 시작일 — 프롬프트 입구가 있고, 인자 없는
   assert.ok(code.includes("addItem('🗓 시즌 시작일 설정(개원 준비 1)', 'seasonStartPrompt')"), '메뉴에 없다');
   assert.ok(code.includes("addItem('🧩 전 반 조 편성(개원 준비 2)', 'menuAssignGroups')"), '조 편성 메뉴가 없다');
 });
+
+/* ═══════ [v9.132] 시즌 키 Date 오염 — 월키 오염의 네 번째 재현 지점(groups A열) ═══════ */
+test('[v9.132] seasonKeyOf_ — Date·String(Date)·문자열이 모두 같은 키를 낸다', () => {
+  const d = vm.runInContext('new Date(2026, 6, 13)', ctx); // 2026-07-13
+  assert.equal(ctx.seasonKeyOf_('2026-07-13', 'Asia/Ulaanbaatar'), '2026-07-13', '정상 문자열을 훼손한다');
+  assert.equal(ctx.seasonKeyOf_('Mon Jul 13 2026 00:00:00 GMT+0800 (Ulaanbaatar Standard Time)', 'Asia/Ulaanbaatar'),
+    '2026-07-13', 'String(Date)가 텍스트로 굳은 형태를 못 되돌린다');
+  assert.equal(ctx.seasonKeyOf_('', 'Asia/Ulaanbaatar'), '', '빈 값 처리가 다르다');
+  assert.equal(ctx.seasonKeyOf_('정규반1', 'Asia/Ulaanbaatar'), '정규반1', '일반 텍스트를 날짜로 오변환한다');
+});
+
+test('[v9.132] 시즌 비교 5곳이 전부 정규화를 거친다 (하나라도 빠지면 그 화면만 조용히 빈다)', () => {
+  const raw = (code.match(/String\(r\[0\]\)\s*[!=]==\s*season/g) || []);
+  assert.deepEqual(raw, [], '정규화를 안 거치는 시즌 비교가 남아 있다: ' + raw.join(' / '));
+  const norm = (code.match(/seasonKeyOf_\(r\[0\], tz\)/g) || []).length;
+  assert.equal(norm, 5, '정규화 지점이 5곳이 아니다(현재 ' + norm + ') — 새 비교가 늘었거나 하나가 사라졌다');
+});
+
+test('[v9.132] assignGroups 재실행이 교체다 — 시즌 열을 텍스트로 굳혀 다음 비교가 어긋나지 않는다', () => {
+  const seg = code.slice(code.indexOf('function assignGroups(className'), code.indexOf('function assignGroupsAll'));
+  const fmtAt = seg.indexOf("setNumberFormat('@')");
+  const writeAt = seg.indexOf('.setValues(svCol)');
+  assert.ok(fmtAt > -1 && writeAt > -1, '시즌 열 정상화가 없다');
+  assert.ok(fmtAt < writeAt, '쓰기가 서식보다 먼저다 — 되쓴 값이 그 자리에서 다시 Date가 된다(v9.128과 같은 함정)');
+  assert.ok(seg.includes('const keep = all.filter(r => !(seasonKeyOf_'),
+    '교체 필터가 정규화를 안 거친다 — 재실행이 누적이 되어 한 학생이 여러 조에 동시에 들어간다');
+});
+
+test('[v9.132] 조 편성표가 실제 인원을 적는다 — 1인 조에 "3인 조"라고 쓰지 않는다', () => {
+  const seg = code.slice(code.indexOf('function groupBoardRender_'), code.indexOf('function groupBoardPreview'));
+  assert.equal(/조 전체\(3인 조\)/.test(seg), false, '인원이 하드코딩돼 있다 — 1인 조에도 "3인 조"라고 찍힌다');
+  assert.ok(seg.includes("arr.length + '인 조"), '실제 인원을 쓰지 않는다');
+  assert.ok(seg.includes('arr.length !== 4'), '5인 조(정원 초과)가 이 분기로 안 온다 — 짝 규칙(pairSeatOf_)과 기준이 갈린다');
+});
