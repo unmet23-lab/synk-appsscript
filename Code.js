@@ -3300,9 +3300,12 @@ function calcAll() {
     const quizHi = quizPool.filter(r => String(r[2] || '') === 'TOPIK중급');
     const quizBeg = quizPool.filter(r => String(r[2] || '').indexOf('TOPIK') !== 0);
     if (quizBeg.length) { const q = quizBeg[Math.floor(now / msPerDay) % quizBeg.length]; setState(st, '오늘의퀴즈', q[3]); setState(st, '오늘의퀴즈_초급', q[3]); setState(st, '오늘의퀴즈ID_초급', q[0] || ''); } // [v9.87] ID = 카드 몽골어 병기(MN_CONTENTS_G) 매칭 키 — 값 키와 같은 호출에서 저장해 항상 짝
-    else if (quizPool.length) { const q = quizPool[Math.floor(now / msPerDay) % quizPool.length]; setState(st, '오늘의퀴즈', q[3]); } // 폴백(초급 풀 비었을 때만)
-    if (quizMid.length) setState(st, '오늘의퀴즈_중급', quizMid[Math.floor(now / msPerDay) % quizMid.length][3]);
-    if (quizHi.length) setState(st, '오늘의퀴즈_고급', quizHi[Math.floor(now / msPerDay) % quizHi.length][3]);
+    else if (quizPool.length) { const q = quizPool[Math.floor(now / msPerDay) % quizPool.length]; setState(st, '오늘의퀴즈', q[3]); setState(st, '오늘의퀴즈ID', q[0] || ''); } // 폴백(초급 풀 비었을 때만)
+    /* [v9.138] 중·고급도 **ID를 함께 저장**한다. 구 코드는 초급만 ID를 남겼는데(v9.87의 몽골어 매칭 용도),
+     *   그러면 중·고급 학생의 퀴즈 응답이 "어느 문항에 대한 답인지 모르는 답"으로 쌓인다 —
+     *   숙제폼이 자유 텍스트라 210문항과 끊겨 있던 것과 정확히 같은 결함이고, 이건 소급이 안 된다. */
+    if (quizMid.length) { const q = quizMid[Math.floor(now / msPerDay) % quizMid.length]; setState(st, '오늘의퀴즈_중급', q[3]); setState(st, '오늘의퀴즈ID_중급', q[0] || ''); }
+    if (quizHi.length) { const q = quizHi[Math.floor(now / msPerDay) % quizHi.length]; setState(st, '오늘의퀴즈_고급', q[3]); setState(st, '오늘의퀴즈ID_고급', q[0] || ''); }
     const tipPool = ctData.filter(r => r[1] === 'braintip' && r[2]); // [v8.6] 오늘의 시냅스 팁
     if (tipPool.length) {
       const tp = tipPool[Math.floor(now / msPerDay) % tipPool.length];
@@ -3425,7 +3428,13 @@ const SHARED2_COL_START = 112; // DH
 const SHARED2_COL_HEADERS = ['숙제카드HTML', '퀴즈카드HTML', '수업준비HTML', '오늘출근', '오늘퇴근', '학업폼URL', '메모폼URL']; // DH112~DN118
 // [v9.82] DO119(랭킹보드HTML — v9.81 리그 카드 선점)를 피한 3차 공유 블록. 강사 출퇴근 카드·학부모 결석 카드.
 const SHARED3_COL_START = 120; // DP
-const SHARED3_COL_HEADERS = ['출퇴근HTML', '결석신고HTML', '결석폼URL']; // DP120(강사) · DQ121(학부모) · [v9.89] DR122(강사 결석 연락 폼 — DO119는 v9.81 랭킹보드가 선점)
+const SHARED3_COL_HEADERS = ['출퇴근HTML', '결석신고HTML', '결석폼URL', '퀴즈폼URL']; // DP120(강사) · DQ121(학부모) · [v9.89] DR122(강사 결석 연락 폼 — DO119는 v9.81 랭킹보드가 선점) · [v9.138] DS123(학생 퀴즈 응답 폼 — 배열 **끝에만** 추가해 기존 열 위치 불변)
+/* [v9.138] 4차 블록 — DT124~DX128은 상담 디테일(v9.84), DY129는 오늘의만남(v9.99)이 이미 선점했다.
+ *   3차 블록을 계속 늘리면 DT124를 침범한다(safety.test.js의 「상담 디테일 열 비침범」이 실제로 그렇게 잡아냈다).
+ *   이 저장소는 열 충돌로 세 번 당했으므로(오늘의알림 덮임·리그 DO119·DY129 점거) 선점 구간을 뛰어넘어 새 블록을 연다.
+ *   그 테스트는 SHARED4를 **자동 검출**하도록 미리 쓰여 있었다 — 4차 블록이 생길 것을 예상한 설계다. */
+const SHARED4_COL_START = 130; // DZ
+const SHARED4_COL_HEADERS = ['대화폼URL']; // DZ130(학생 — 한국어로 말 걸기)
 
 /* ── [v9.74] 숙제·퀴즈·수업준비 카드 빌더(순수 함수 — tests/safety.test.js가 직접 로드) ──
  * 유호 07-28 보고: 홈 숙제 카드가 "과제문 + 무라벨 검사포인트 + 퀴즈 문항"이 한 덩어리로 보여 무엇을
@@ -3451,7 +3460,9 @@ function quizCardHtml_(q, mnQ, personal) {
     (personal ? ' <span style="font-size:10.5px;font-weight:800;color:#E8543F;">나를 위한 맞춤 문제 🎯</span>' : '') + '</div>' +
     '<div style="font-size:14px;font-weight:700;line-height:1.75;">' + escHtml_(q) + '</div>' +
     (mnQ ? '<div style="font-size:12px;color:#94A3B8;line-height:1.7;padding-top:3px;">' + escHtml_(mnQ) + '</div>' : '') +
-    '<div style="margin-top:8px;font-size:11px;color:#9CA3AF;">먼저 소리 내어 답해 보고 — 아래 🔮 <b>정답 공개!</b> 버튼으로 확인하세요</div></div>';
+    // [v9.138] 동선 교정 — 「답하기」를 정답 공개보다 **앞**에 안내한다. 정답을 먼저 열면 그 뒤의 답은
+    //   학생의 선택이 아니라 베낀 답이라, 수집하는 의미가 사라진다(회화 앱이 필요한 건 정답률이 아니라 오답의 내용).
+    '<div style="margin-top:8px;font-size:11px;color:#9CA3AF;">먼저 소리 내어 답하고 → ✍️ <b>답하기</b>로 남긴 다음 → 🔮 <b>정답 공개!</b>로 확인하세요</div></div>';
 }
 // 강사 수업준비 카드 — 검사포인트(E열)의 제자리는 학생 홈이 아니라 여기. 퀴즈는 정답까지 함께(강사용 화면 전용).
 // [v9.86·C] subs = [{c, done, total, missing[]}] — 담당 반별 최근 제출 현황(검사 동선). 없으면 절 생략(하위 호환).
@@ -3716,7 +3727,7 @@ function updateParentAbsence_(ss, tz, pf) {
 }
 function writeSharedCols_(ss, pf, st) {
   if (!pf || pf.getLastRow() < 2) return;
-  const endCol = SHARED3_COL_START + SHARED3_COL_HEADERS.length - 1; // [v9.82] 121(DQ) — 3차 블록 끝까지 동적
+  const endCol = SHARED4_COL_START + SHARED4_COL_HEADERS.length - 1; // [v9.82] 3차 블록 끝까지 동적 · [v9.138] 4차 블록(DZ130)까지
   if (pf.getMaxColumns() < endCol) pf.insertColumnsAfter(pf.getMaxColumns(), endCol - pf.getMaxColumns());
   SHARED_COL_HEADERS.forEach((h, i) => {
     const c = SHARED_COL_START + i;
@@ -3728,6 +3739,10 @@ function writeSharedCols_(ss, pf, st) {
   });
   SHARED3_COL_HEADERS.forEach((h, i) => { // [v9.82] DO119(랭킹보드, v9.81 선점)를 건너뛴 3차 블록
     const c = SHARED3_COL_START + i;
+    if (String(pf.getRange(1, c).getValue()) !== h) pf.getRange(1, c).setValue(h);
+  });
+  SHARED4_COL_HEADERS.forEach((h, i) => { // [v9.138] 상담 5열(DT124~DX128)·오늘의만남(DY129)을 건너뛴 4차 블록
+    const c = SHARED4_COL_START + i;
     if (String(pf.getRange(1, c).getValue()) !== h) pf.getRange(1, c).setValue(h);
   });
   { // [v9.74·리뷰 B2] 출퇴근 열 텍스트 서식 고정 — 'HH:mm' 문자열이 시간 서식 Date(1899-12-30 기준)로 되읽히면
@@ -3779,7 +3794,7 @@ function writeSharedCols_(ss, pf, st) {
   const nowSh = new Date();
   const dlT = ioDateLabel_(nowSh);
   const absByKid = absenceItemsByKid_(ss, tzW);
-  const HEADS_ALL = SHARED_COL_HEADERS.concat(SHARED2_COL_HEADERS).concat(SHARED3_COL_HEADERS); // 29 — 분기 반환은 이 길이의 단일 배열, 쓰기 직전 세 블록으로 쪼갠다(선점 열 DO119는 건너뜀)
+  const HEADS_ALL = SHARED_COL_HEADERS.concat(SHARED2_COL_HEADERS).concat(SHARED3_COL_HEADERS).concat(SHARED4_COL_HEADERS); // [v9.138] 4블록 — 분기 반환은 이 길이의 단일 배열, 쓰기 직전 세 블록으로 쪼갠다(선점 열 DO119는 건너뜀)
   const out = rows.map(r => {
     const blank = HEADS_ALL.map(() => '');
     if (!r[0]) return blank;
@@ -3798,15 +3813,20 @@ function writeSharedCols_(ss, pf, st) {
         '', '', '',
         '', '', prepCardHtml_(prepArgsT[0], prepArgsT[1], prepArgsT[2], prepArgsT[3], prepArgsT[4], subsT),
         io.in || '', io.out || '', kv['학업폼URL'] || '', kv['약점메모폼URL'] || '',
-        ioCardHtml_(dlT, io, wcT.cells, wcT.n, cheerT), '', kv['결석폼URL'] || '']; // [v9.82] DP120 출퇴근 카드 · DQ121은 학부모 몫 · [v9.89] DR122 결석 연락 폼
+        ioCardHtml_(dlT, io, wcT.cells, wcT.n, cheerT), '', kv['결석폼URL'] || '', '', '']; // [v9.82] DP120 출퇴근 카드 · DQ121은 학부모 몫 · [v9.89] DR122 결석 연락 폼 · [v9.138] DS123·DT124는 학생 몫
     }
     if (role === 'student') {
       const pre = String(r[35] || '') === '주말' ? '주말의' : '오늘의'; // AJ36 반유형 — 서버가 분기(구 Glide ITE 3개 대체)
       // 급수(BO67)로 퀴즈 난이도 자동 선택 — 값 없으면 초급. 상위 난이도가 비어 있으면 아래로 폴백.
       const lv = Number(r[66]) || 0;
-      const quizRaw = (lv >= 3 ? (kv['오늘의퀴즈_고급'] || kv['오늘의퀴즈_중급'] || kv['오늘의퀴즈_초급'])
-        : lv >= 1 ? (kv['오늘의퀴즈_중급'] || kv['오늘의퀴즈_초급'])
-          : kv['오늘의퀴즈_초급']) || kv['오늘의퀴즈'] || '';
+      /* [v9.138] 문제와 ID를 **한 번에** 고른다. 구 코드는 문제 문자열만 폴백 사슬로 골랐는데, 응답 폼에 퀴즈ID를
+       *   프리필하려면 같은 사슬을 한 벌 더 써야 하고 — 두 사슬이 언젠가 어긋나면 "3번 문제에 답했는데 5번으로
+       *   기록되는" 조용한 오염이 된다(라이브에서 눈에 안 띄고, 2년 뒤 데이터를 열었을 때야 드러난다).
+       *   짝을 객체로 묶으면 구조적으로 어긋날 수 없다. */
+      const qSuffix = lv >= 3 ? ['_고급', '_중급', '_초급'] : lv >= 1 ? ['_중급', '_초급'] : ['_초급'];
+      const qPick = qSuffix.map(s => ({ q: kv['오늘의퀴즈' + s] || '', id: kv['오늘의퀴즈ID' + s] || '' })).filter(o => o.q)[0]
+        || { q: kv['오늘의퀴즈'] || '', id: kv['오늘의퀴즈ID'] || '' };
+      const quizRaw = qPick.q;
       const q = splitQuiz(quizRaw);
       const sid = String(r[0]).trim(); // [v9.49] 폼 URL·첨삭 수 조회 키
       const pq = aiQ[sid]; // [v9.50·A1/A2] 개인 퀴즈 오버라이드
@@ -3826,11 +3846,17 @@ function writeSharedCols_(ss, pf, st) {
         pq ? pq.q : q[0], pq ? pq.a : q[1], kv['오늘의팁'] || '', kv['지난달의전당'] || '', kv['이달의시즌'] || '',
         kv['이달의보스HTML'] || '', kv['여행지도HTML'] || '',
         '', '', '', '', '', '', '',
-        formUrlOf(kv['출석폼URL틀'], sid), formUrlOf(kv['숙제폼URL틀'], sid), fbCnt[sid] || '', // [v9.49] CX~CZ
+        // [v9.138] 숙제 링크에 오늘 게시된 숙제ID를 함께 프리필 — 구 링크는 학생ID만 박혀 210문항과 끊겨 있었다.
+        //   숙제ID가 없어도 링크는 살아 있다(제출을 막지 않는다 — 문장 자체가 이미 자산이므로).
+        formUrlOf(kv['출석폼URL틀'], sid), hwFormUrlOf_(kv['숙제폼URL틀'], sid, kv[pre + '숙제ID'] || ''), fbCnt[sid] || '', // [v9.49] CX~CZ
         hwCardHtml_(hwTy9, mnTy9, kv[pre + '숙제'] || '', mnTask9, hwTip9, mnTip9), // [v9.74] DA105 — 구 3컴포넌트(6-1a) 대체 · [v9.87] 본문 병기
         quizCardHtml_(pq ? pq.q : q[0], mnQ9, !!pq), // [v9.74] DB106 — 문제만. 정답은 CK89를 버튼이 연다 · [v9.87] 본문 병기
         '', '', '', '', '',
-        '', '', '']; // [v9.82] DP·DQ 학생 행은 빈칸 · [v9.89] DR도
+        '', '', '', // [v9.82] DP·DQ 학생 행은 빈칸 · [v9.89] DR도
+        // [v9.138] DS123 퀴즈 응답 폼 — 개인 퀴즈(AI 생성)는 contents에 없으므로 'AIQ'로 표식만 남긴다.
+        //   그 행은 채점이 '판정보류'가 되지만 **고른 답 원문은 남는다**(수집이 채점보다 우선).
+        quizFormUrlOf_(kv['퀴즈폼URL틀'], sid, pq ? 'AIQ' : qPick.id),
+        formUrlOf(kv['대화폼URL틀'], sid)]; // [v9.138] DT124 — 한국어로 말 걸기(회화 앱 1세대 · 다회차 대화 데이터의 유일한 원천)
     }
     if (role === 'parent') {
       const kidId = String(r[9] || '').split(',')[0].trim(); // J10 parent_of(첫 자녀 — 다자녀 한계는 docs/부모탭_점검_2026-07-31.md §2-2)
@@ -3840,7 +3866,7 @@ function writeSharedCols_(ss, pf, st) {
         k.n, k.bn, k.bl, k.cf, k.bm, k.bw, k.bd,
         '', '', '', // [v9.49] CX~CZ 학부모 행은 빈칸
         '', '', '', '', '', '', '', // [v9.74] DH~DN 빈칸
-        '', absenceCardHtml_(k.n, absByKid[kidId] || [], nextClassDaysOf_(k.t, nowSh)), '']; // [v9.82] DQ121 결석 카드 · [v9.89] DR122는 강사 몫
+        '', absenceCardHtml_(k.n, absByKid[kidId] || [], nextClassDaysOf_(k.t, nowSh)), '', '', '']; // [v9.82] DQ121 결석 카드 · [v9.89] DR122는 강사 몫 · [v9.138] DS123·DT124도
     }
     return blank;
   });
@@ -3848,6 +3874,8 @@ function writeSharedCols_(ss, pf, st) {
   out.forEach(a => { if (a.length !== HEADS_ALL.length) throw new Error('writeSharedCols_ 행 길이 ' + a.length + ' ≠ 헤더 ' + HEADS_ALL.length); });
   writeIfChanged(pf, 2, SHARED_COL_START, out.map(a => a.slice(0, SHARED_COL_HEADERS.length)));
   writeIfChanged(pf, 2, SHARED2_COL_START, out.map(a => a.slice(SHARED_COL_HEADERS.length, SHARED_COL_HEADERS.length + SHARED2_COL_HEADERS.length))); // 선점 구간(DA105~DG111)은 건너뛴다
-  writeIfChanged(pf, 2, SHARED3_COL_START, out.map(a => a.slice(SHARED_COL_HEADERS.length + SHARED2_COL_HEADERS.length))); // [v9.82] 선점 열 DO119(랭킹보드)도 건너뛴다
+  const cut3 = SHARED_COL_HEADERS.length + SHARED2_COL_HEADERS.length;
+  writeIfChanged(pf, 2, SHARED3_COL_START, out.map(a => a.slice(cut3, cut3 + SHARED3_COL_HEADERS.length))); // [v9.82] 선점 열 DO119(랭킹보드)도 건너뛴다
+  writeIfChanged(pf, 2, SHARED4_COL_START, out.map(a => a.slice(cut3 + SHARED3_COL_HEADERS.length))); // [v9.138] 상담 5열·DY129를 건너뛴 4차 블록
 }
 
