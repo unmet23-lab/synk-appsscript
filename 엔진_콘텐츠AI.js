@@ -612,7 +612,7 @@ function systemWatchdog(asText) {
 
 /* ===================== [v9.37] 🧭 시스템 매니페스트 — 코드↔실제 드리프트 실측 =====================
  * 헤더·주석의 수동 숫자(시트 수·콘텐츠 수·버전)를 코드에 박지 않고, 실행 시점의 실제 값을
- * system_manifest 시트에 출력한다. 정본 상수(SYNK_VERSION·SHEET_SKELETON·CONTENT_EXPECT)와
+ * system_manifest 시트에 출력한다. 정본(SYNK_VERSION·sheetSkeleton_()·CONTENT_EXPECT)과
  * 라이브 스프레드시트를 대조해 누락·잉여·스키마 드리프트를 한 장에서 드러낸다.
  * 실행: 수동 buildSystemManifest() · 주간 weeklyJobs 자동 · 재건 직후 bootstrapSynk.
  * 쓰기: writeIfChanged만(변경 시에만) — Glide 미바인딩 시트라 update 쿼터 소비 0. 각 접근은 null 가드. */
@@ -629,7 +629,8 @@ function buildSystemManifest() {
 
   // 2) 시트 수 + 스켈레톤 대비 누락/잉여
   const liveSheets = ss.getSheets().map(function (s) { return s.getName(); });
-  const skelNames = SHEET_SKELETON.map(function (k) { return k[0]; });
+  const skel = sheetSkeleton_(); // [v9.135] 골격 정본이 지연 평가 함수로 바뀜(엔진_셋업확장.js) — 런타임 호출이라 파일 순서 무관
+  const skelNames = skel.map(function (k) { return k[0]; });
   const missing = skelNames.filter(function (n) { return liveSheets.indexOf(n) === -1; });
   const surplus = liveSheets.filter(function (n) { return skelNames.indexOf(n) === -1; });
   push('시트 수(실측)', liveSheets.length + '장 · 스켈레톤 정본 ' + skelNames.length + '종', missing.length ? WARN : OK);
@@ -638,7 +639,7 @@ function buildSystemManifest() {
 
   // 3) 스키마 드리프트 — 스켈레톤 각 시트 1행 헤더의 앞부분이 실제와 일치하는지(확장열 허용)
   const drift = [];
-  SHEET_SKELETON.forEach(function (k) {
+  skel.forEach(function (k) {
     const name = k[0], want = k[1] || [];
     const sh = ss.getSheetByName(name);
     if (!sh) return; // 누락은 2)에서 보고

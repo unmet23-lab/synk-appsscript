@@ -3,9 +3,14 @@
 /* ===================== [v5] 신규 트리거/시트 셋업 (1회 실행) ===================== */
 
 // [v9.9] 🧬 원버튼 재건 — 빈 스프레드시트에서 SYNK 세계 전체를 되살립니다
-// [v9.37] 시트 골격 정본 — 이 목록이 곧 SYNK의 시트 지도입니다(실데이터는 백업에서 복원). 모듈 const로
-//   승격해 bootstrapSynk(재건)와 buildSystemManifest(누락·잉여·스키마 드리프트 감지)가 단일 소스를 공유한다.
-const SHEET_SKELETON = [
+// [v9.37] 시트 골격 정본 — 이 목록이 곧 SYNK의 시트 지도입니다(실데이터는 백업에서 복원). 단일 소스를
+//   bootstrapSynk(재건)·preflightGlide·buildSystemManifest(누락·잉여·스키마 드리프트 감지)가 공유한다.
+// [v9.135] 톱레벨 const → 지연 평가 함수. 이 목록은 타파일 상수 8종(KPI_*·GROUPS_·LECTURE_*·LESSON_CLOSE_·
+//   TEACHER_STATS_·ABSENCE_FOLLOWUP_)을 참조하는데, 톱레벨 const면 파일 초기화 순서(filePushOrder)가
+//   틀어지는 순간 ReferenceError로 전 트리거가 즉사한다(07-24 상담AI.gs:27 실사고와 같은 계급).
+//   호출 시점(런타임)엔 전 파일이 로드돼 있어 순서 자체가 무의미해진다 — 순서 의존 제거가 목적이지 성능 아님.
+function sheetSkeleton_() {
+  return [
     ['profiles', ['user_id','이름','이름_몽골','role','class_name','생일','email','연락처','messenger_link','parent_of','tuition','등록일','보호자명','보호자연락처','created_at']],
     ['point_logs', ['id','student_id','points','reason','given_by','created_at','month','태그']],
     ['attendance', ['id','student_id','timestamp','method']],
@@ -52,6 +57,7 @@ const SHEET_SKELETON = [
     ['academic_log', ['log_id','student_id','날짜','유형','값','비고','입력자']],
     ['jacket_grants', ['student_id','이름','자격도달일','재원개월','누적P','지급상태']] // [v9.83] 🧥 과잠 자격 대장
   ];
+}
 
 /* ===================== [v9.43] 🎴 몬스터·보스 상세 카드 — "눌렀을 때 우와" =====================
  * contents의 monster·boss·worldboss 행에 '상세카드' 열(HTML)을 생성 — Glide 도감/보스 상세 화면의 Rich Text 소스.
@@ -648,8 +654,8 @@ function clearDemoData() {
 
 function bootstrapSynk() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  // 0단계: 데이터 시트 골격 — SHEET_SKELETON(모듈 정본)으로 재건. 이 목록이 곧 SYNK의 시트 지도입니다(실데이터는 백업에서 복원).
-  SHEET_SKELETON.forEach(k => ensureSheet(ss, k[0], k[1]));
+  // 0단계: 데이터 시트 골격 — sheetSkeleton_()(모듈 정본)으로 재건. 이 목록이 곧 SYNK의 시트 지도입니다(실데이터는 백업에서 복원).
+  sheetSkeleton_().forEach(k => ensureSheet(ss, k[0], k[1]));
   const steps = [
     ['시간표·반 구조', setupSchedule], ['스토어', setupStore],
     ['몬스터 7', setupMonsters], ['보스 12 + 대군주', setupBosses], ['시즌 12', setupSeasons],
@@ -706,7 +712,7 @@ function preflightGlide() {
   };
 
   // 0) 안전 셋업(전부 멱등): 시트 골격 + 입력 시트·열 + 온보딩 + 학업 로그
-  try { SHEET_SKELETON.forEach(k => ensureSheet(ss, k[0], k[1])); ok('시트 골격 ' + SHEET_SKELETON.length + '종 보장(누락분만 생성 — 기존 시트·데이터 무해)'); } catch (e) { warn('시트 골격 보장 실패: ' + e.message); }
+  try { const skel = sheetSkeleton_(); skel.forEach(k => ensureSheet(ss, k[0], k[1])); ok('시트 골격 ' + skel.length + '종 보장(누락분만 생성 — 기존 시트·데이터 무해)'); } catch (e) { warn('시트 골격 보장 실패: ' + e.message); }
   try { setupClassroomInputs(); ok('입력 시트·열 보장(setupClassroomInputs)'); } catch (e) { warn('setupClassroomInputs 실패: ' + e.message); }
   try { setupOnboarding(); ok('온보딩 카드(setupOnboarding)'); } catch (e) { warn('setupOnboarding 실패: ' + e.message); }
   try { setupAcademic(); ok('학업 로그(academic_log) 보장 — 강사 급수·모의점수 입력처'); } catch (e) { warn('setupAcademic 실패: ' + e.message); }
@@ -1427,7 +1433,7 @@ const TALK_ROUNDS = [4, 3, 2];
 const FOCUS_START_WEEK = 3;                            // 정밀 청취 시작 주차 — 1~2주차는 조 자율 운행 미성숙
 // 4인 조의 2인 짝 3조합 — 값 = 그 좌석의 짝 좌석. (0,1)(2,3) / (0,2)(1,3) / (0,3)(1,2)
 const PAIR_PATTERNS = [[1, 0, 3, 2], [2, 3, 0, 1], [3, 2, 1, 0]];
-// GROUPS_HEADERS는 SHEET_SKELETON보다 앞(KPI_HEADERS 옆)에 정의돼 있다 — 여기 두면 const TDZ로 죽는다.
+// GROUPS_HEADERS 정본은 Code.js(KPI_HEADERS 옆) — [v9.135] 골격이 지연 평가라 순서 제약은 없어졌지만, 헤더 정본은 상수 정본 파일(Code.js)에 모아 둔다.
 
 /* --- 시즌 시작일 — 차시 번호의 원점. 이 한 줄이 없으면 역할·짝·발표가 전부 안 돈다 --- */
 function seasonStartOf_(ss) {
@@ -2276,7 +2282,7 @@ function lessonPlanFill_(body, o) {
  *   Glide 입력 경로다. 이 폼은 진도 3택·미발화자 = 수업 '지표' 로그이고 폼 경로다.
  *   소비처도 다르다(전자 = 진화 게이트·번역·브리핑 / 후자 = 조 편성 침묵 점수·이월 경보·4주차 명단). */
 
-// LESSON_CLOSE_HEADERS는 SHEET_SKELETON보다 앞(GROUPS_HEADERS 옆)에 정의돼 있다 — 여기 두면 const TDZ로 죽는다.
+// LESSON_CLOSE_HEADERS 정본은 Code.js(GROUPS_HEADERS 옆) — [v9.135] 골격이 지연 평가라 순서 제약은 없어졌지만, 헤더 정본은 상수 정본 파일(Code.js)에 모아 둔다.
 const LESSON_PROGRESS = ['완료', '이월', '미실시'];
 const LESSON_CARRY_LIMIT = 4;  // 규칙서 외울것 2 — 시즌 이월 4회 초과 = 강사 문제가 아니라 교안 과적재
 
