@@ -167,6 +167,20 @@ try {
   // origin 참조가 없으면 이 검사는 건너뜀
 }
 
+/* 5) 배포 **표면** 검사 — 구문검사도 안전 테스트도 전부 초록인데 문이 열려 있던 층.
+ *    2026-08-02: 임시 doGet 러너가 고정 토큰 하나로 익명 공개 엔드포인트를 열었고(ANYONE_ANONYMOUS·
+ *    executeAs=USER_DEPLOYING), GET 한 번에 deleteRow가 돌았으며, versioned 배포 4개가 살아남았다.
+ *    1~4번 검사는 전부 통과시켰다 — 재는 층이 달랐다. 상세·판정 근거는 tools/deploy-security-check.js.
+ *    모듈이 깨지면 통과가 아니라 차단이다(이 파일 3번 검사의 'git status 확인 실패' 와 같은 방향). */
+try {
+  problems.push(...require(path.join(ROOT, 'tools', 'deploy-security-check.js')).check());
+} catch (e) {
+  problems.push(
+    '배포 표면 검사 실행 실패(tools/deploy-security-check.js): ' +
+      String((e && e.message) || e).split('\n')[0]
+  );
+}
+
 if (problems.length) {
   deny(
     '[clasp-guard] 배포 게이트 차단:\n- ' +
