@@ -46,7 +46,7 @@
 
 <script>
 var BG='#0F1730', INK='#F6F1E8', SIG='#FF6B5C', PAPER='#FBF7EE', DARK='#171820',
-    DIM='#98A2B3', BODY='#475467', BLUE='#4E7CFF';
+    DIM='#98A2B3', BODY='#475467', INK2='#FFD447'; // v1.5: 모드 C 2도 = KC Sun
 // 라이트 배경 위 "글자" 강조는 SIG(Coral)를 쓰지 않는다 — Paper 위 대비 2.6으로
 // 대형 텍스트 기준(3.0)에도 미달한다. Coral 3는 같은 자리에서 3.40으로 통과한다.
 // SIG는 다크 배경 텍스트(6.5)와 면·도형(막대·리소 원)에만 쓴다. 정본 v1.3 §11 참조.
@@ -104,11 +104,11 @@ function card5(c){
   c.fillStyle=PAPER; c.fillRect(0,0,W,H);
   var ew=W*0.60, ex=W*0.16, ey=H*0.13;
   c.globalCompositeOperation='multiply';
-  c.globalAlpha=0.80; c.fillStyle=BLUE;
+  c.globalAlpha=0.80; c.fillStyle=INK2;
   c.beginPath(); c.ellipse(ex+ew/2, ey+ew/2, ew/2, ew/2, 0, 0, 6.284); c.fill();
   c.globalAlpha=0.72; c.fillStyle=SIG;
   c.beginPath(); c.ellipse(ex+ew/2+15, ey+ew/2+13, ew/2, ew/2, 0, 0, 6.284); c.fill();
-  c.globalAlpha=0.55; c.fillStyle=BLUE; c.fillRect(0, ey+ew+66, W, 11);
+  c.globalAlpha=0.55; c.fillStyle=INK2; c.fillRect(0, ey+ew+66, W, 11);
   c.globalAlpha=0.48; c.fillStyle=SIG; c.fillRect(0, ey+ew+72, W, 11);
   c.globalCompositeOperation='source-over'; c.globalAlpha=1;
   c.fillStyle='#1A237E'; c.font='600 25px '+FONT; c.textBaseline='alphabetic';

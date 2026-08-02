@@ -44,7 +44,7 @@
 <div class="wrap">
   <div class="panel">
     <h1>SYNK FIELD 생성기</h1>
-    <p class="hint">정본 v1.4 · 다크 표지 기본은 <b>플랫</b>(그림 0 — 2026-08-02 유호님 시험 채택). 디더는 시즌 오프닝·수료 같은 의식 순간 전용. 바탕·잉크 2색과 신호색 1점은 자동으로 지켜집니다. 다크 = Navy 2 #0F1730 · 신호 = Coral #FF6B5C.</p>
+    <p class="hint">정본 v1.5 · 다크 표지 기본은 <b>플랫</b>(그림 0 — 2026-08-02 유호님 시험 채택). 디더는 시즌 오프닝·수료 같은 의식 순간 전용. 바탕·잉크 2색과 신호색 1점은 자동으로 지켜집니다. 다크 = Navy 2 #0F1730 · 신호 = Coral #FF6B5C.</p>
 
     <div class="fld">
       <label>모드</label>
@@ -86,7 +86,7 @@
       <label>신호색 (화면당 1점)</label>
       <div class="seg" id="sig">
         <button data-v="coral" class="on">코랄</button>
-        <button data-v="blue">쿨블루(2도)</button>
+        <button data-v="sun">노랑(2도)</button>
         <button data-v="none">없음</button>
       </div>
     </div>
@@ -140,7 +140,7 @@
 
 <script>
 var SIZES = { '4:5':[1080,1350], '1:1':[1080,1080], '9:16':[1080,1920], 'A4':[1240,1754] };
-var SIG = { coral:'#FF6B5C', blue:'#4E7CFF', none:null };
+var SIG = { coral:'#FF6B5C', sun:'#FFD447', none:null }; // v1.5: 2도 = KC Sun (구 blue 폐기)
 var FONT = "'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif";
 
 var S = { mode:'dark', ratio:'4:5', label:'SYNK LAB',
@@ -362,11 +362,11 @@ function render(){
     else { ex=W*0.19; ey=H*0.24; }
     ew = W*0.62; eh = W*0.62;
     ctx.globalCompositeOperation = 'multiply';
-    ctx.globalAlpha = 0.80; ctx.fillStyle = '#4E7CFF';
+    ctx.globalAlpha = 0.80; ctx.fillStyle = '#FFD447'; // v1.5: 2도 = KC Sun
     ctx.beginPath(); ctx.ellipse(ex+ew/2, ey+eh/2, ew/2, eh/2, 0, 0, 6.284); ctx.fill();
     ctx.globalAlpha = 0.72; ctx.fillStyle = '#FF6B5C';
     ctx.beginPath(); ctx.ellipse(ex+ew/2+13*u, ey+eh/2+11*u, ew/2, eh/2, 0, 0, 6.284); ctx.fill();
-    ctx.globalAlpha = 0.55; ctx.fillStyle = '#4E7CFF';
+    ctx.globalAlpha = 0.55; ctx.fillStyle = '#FFD447';
     ctx.fillRect(0, ey+eh+52*u, W, 11*u);
     ctx.globalAlpha = 0.48; ctx.fillStyle = '#FF6B5C';
     ctx.fillRect(0, ey+eh+57*u, W, 11*u);
