@@ -239,23 +239,9 @@ function voiceWithdraw(studentId, confirm) {
     Logger.log(head.join('\n')); return head.join('\n');
   }
 
-  // ① Drive 휴지통 — 실패해도 나머지는 진행한다(파일이 이미 없을 수 있다)
-  let trashed = 0, failed = 0;
-  mine.forEach(m => {
-    if (!m.fid) return;
-    try { DriveApp.getFileById(m.fid).setTrashed(true); trashed++; }
-    catch (e) { failed++; Logger.log('파일 휴지통 실패(' + m.fid + '): ' + e); }
-  });
-  // ② voice_log 행 삭제 — 아래에서 위로 지워야 인덱스가 밀리지 않는다
-  mine.map(m => m.row).sort((a, b) => b - a).forEach(r => vl.deleteRow(r));
-  // ③ 성장 카드 비우기 — 첫 목소리 URL이 카드 HTML에 박혀 있어 지우지 않으면 링크가 남는다
-  const pf = ss.getSheetByName('profiles');
-  const col = pf ? tbProfileCol_(pf, '목소리성장카드') : 0;
-  if (pf && col) {
-    const ids = pf.getRange(2, 1, pf.getLastRow() - 1, 1).getValues();
-    ids.forEach((r, i) => { if (String(r[0] || '').trim() === sid) pf.getRange(i + 2, col).clearContent(); });
-  }
-  // ④ 동의를 '아니요'로 — 되돌리지 않으면 그날 밤 스위프가 새 녹음을 다시 적재한다
+  // [v9.125] 실행 순서 재편: ④동의 되돌리기를 **맨 앞**으로 — 뒤 단계가 예외로 죽어도 재유입(그날 밤 스위프의
+  //   재적재)만은 반드시 차단된다. 구 순서(①②③④)는 ③이 던지면 ④가 안 돌아 철회가 조용히 무효화됐다.
+  // ④→① 동의를 '아니요'로
   let consentSet = '실패(수기 확인 필요)';
   try {
     const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
@@ -272,6 +258,23 @@ function voiceWithdraw(studentId, confirm) {
       consentSet = hit ? hit + '행 「아니요」로 변경' : '해당 학생 행 없음(수기 확인)';
     }
   } catch (e) { Logger.log('동의 되돌리기 실패: ' + e); }
+  // ② Drive 휴지통 — 실패해도 나머지는 진행한다(파일이 이미 없을 수 있다)
+  let trashed = 0, failed = 0;
+  mine.forEach(m => {
+    if (!m.fid) return;
+    try { DriveApp.getFileById(m.fid).setTrashed(true); trashed++; }
+    catch (e) { failed++; Logger.log('파일 휴지통 실패(' + m.fid + '): ' + e); }
+  });
+  // ③ voice_log 행 삭제 — 아래에서 위로 지워야 인덱스가 밀리지 않는다
+  mine.map(m => m.row).sort((a, b) => b - a).forEach(r => vl.deleteRow(r));
+  // ④ 성장 카드 비우기 — 첫 목소리 URL이 카드 HTML에 박혀 있어 지우지 않으면 링크가 남는다.
+  //    [v9.125] 헤더만 있는 profiles(getLastRow()=1) 가드 — getRange(2,1,0,1) 예외가 뒤 단계를 죽이던 구멍
+  const pf = ss.getSheetByName('profiles');
+  const col = pf ? tbProfileCol_(pf, '목소리성장카드') : 0;
+  if (pf && col && pf.getLastRow() >= 2) {
+    const ids = pf.getRange(2, 1, pf.getLastRow() - 1, 1).getValues();
+    ids.forEach((r, i) => { if (String(r[0] || '').trim() === sid) pf.getRange(i + 2, col).clearContent(); });
+  }
 
   head.push('', '✅ Drive 휴지통 ' + trashed + '개' + (failed ? ' (실패 ' + failed + ')' : '') +
     ' · voice_log ' + mine.length + '행 삭제 · 성장 카드 초기화 · 동의: ' + consentSet,
@@ -280,6 +283,23 @@ function voiceWithdraw(studentId, confirm) {
   Logger.log(msg);
   adminMail('[SYNK] 🗑 음성 동의 철회 처리 — ' + sid, msg);
   return msg;
+}
+
+/* [v9.125] 🗑 철회 무인자 진입점 — voiceWithdraw는 인자 2개라 편집기 ▶·시트 메뉴에서 실행할 수 없어,
+ * 「철회 약속」이 비개발자 운영에선 코드 편집 없이는 이행 불가였다(v9.105가 고치려던 결함의 실행 계층 재현).
+ * UI 프롬프트 2단계: ①학생ID 입력 → 미리보기 표시 ②확인 문구 「삭제」 입력 시에만 실행. */
+function voiceWithdrawPrompt() {
+  const ui = SpreadsheetApp.getUi();
+  const a = ui.prompt('🗑 음성 동의 철회', '철회할 학생ID를 입력하세요 (예: SYNK-001)', ui.ButtonSet.OK_CANCEL);
+  if (a.getSelectedButton() !== ui.Button.OK) return;
+  const sid = String(a.getResponseText() || '').trim();
+  if (!sid) { ui.alert('학생ID가 비어 있습니다.'); return; }
+  const preview = voiceWithdraw(sid);
+  const b = ui.prompt('미리보기 — 아래 내용을 확인하세요', preview + '\n\n실제로 삭제하려면 「삭제」라고 입력하세요.', ui.ButtonSet.OK_CANCEL);
+  if (b.getSelectedButton() !== ui.Button.OK || String(b.getResponseText() || '').trim() !== '삭제') {
+    ui.alert('취소했습니다 — 아무것도 지워지지 않았습니다.'); return;
+  }
+  ui.alert(voiceWithdraw(sid, true));
 }
 
 /* ═══════════ [v9.107] 🎧 STT — GCP Speech-to-Text 전사 (유호님 08-01 결정) ═══════════
@@ -358,7 +378,9 @@ function sttOne_(fileId, token) {
   });
   const code = res.getResponseCode();
   const body = res.getContentText();
-  if (code !== 200) return { err: 'API ' + code + ': ' + body.replace(/\s+/g, ' ').slice(0, 200) };
+  // [v9.125] systemic 플래그 — 401/403/429/5xx는 파일이 아니라 계정·설정·쿼터 문제라, 행에 낙인을 찍으면
+  //   설정을 고쳐도 전 행을 손으로 되살려야 한다. 배치가 이 플래그를 보고 행을 '대기'로 남기고 즉시 중단한다.
+  if (code !== 200) return { err: 'API ' + code + ': ' + body.replace(/\s+/g, ' ').slice(0, 200), systemic: (code === 401 || code === 403 || code === 429 || code >= 500) };
   let j;
   try { j = JSON.parse(body); } catch (e) { return { err: '응답 파싱 실패' }; }
   const text = (j.results || []).map(r => ((r.alternatives || [])[0] || {}).transcript || '').join(' ').trim();
@@ -384,16 +406,26 @@ function voiceTranscribe_(ss) {
   let budget = STT_DAILY_CAP - used;
   if (budget <= 0) return;                                   // 오늘 몫 소진 — 내일 이어서
 
+  // [v9.125] 🔒 동의 게이트 — 동의 문구가 보호하는 대상은 "목소리와 **그것을 글로 옮긴 기록**"인데,
+  //   전사(외부 GCP 전송)만 게이트 밖이었다(v9.104 게이트 뒤에 생긴 소비자가 자동으로 구멍이 되는 구조).
+  //   v9.104 이전에 무동의로 적재된 행도 여기서 걸러진다. 맵 실패(null)는 배치 전체 보류 — 판정 불가는 통과가 아니다.
+  const consent = (typeof voiceConsentMap_ === 'function') ? voiceConsentMap_() : null;
+  if (consent === null) { Logger.log('🎧 전사 보류 — 음성 동의 맵을 읽지 못했다(판정 불가는 보류)'); return; }
+
   const n = vl.getLastRow() - 1;
   const rows = vl.getRange(2, 1, n, VOICE_LOG_HEADERS.length).getValues();
   const todo = [];
+  let noConsent = 0;
   rows.forEach((r, i) => {
     if (String(r[6] || '').trim()) return;                   // 이미 전사됨
     const state = String(r[7] || '').trim();
     if (state && state !== '대기') return;                   // 실패 사유가 있는 행은 자동 재시도하지 않는다(같은 오류로 과금 반복)
     if (!String(r[4] || '').trim()) return;                  // file_id 없음
-    todo.push({ row: i + 2, fid: String(r[4]).trim(), sid: String(r[0] || '') });
+    const sid = String(r[0] || '').trim();
+    if (consent[sid] !== 'yes') { noConsent++; return; }     // [v9.125] 동의 확인 안 된 행은 전사하지 않는다(행은 '대기' 유지 — 동의가 확인되면 다음 밤 자동 진행)
+    todo.push({ row: i + 2, fid: String(r[4]).trim(), sid: sid });
   });
+  if (noConsent) Logger.log('🎧 전사 보류 ' + noConsent + '행 — 음성 동의 미확인(동의 확인 시 자동 재개)');
   if (!todo.length) return;
 
   let token;
@@ -404,15 +436,35 @@ function voiceTranscribe_(ss) {
   }
   if (!token) { adminMail('[SYNK] 🎧 STT 미설정 — 전사 보류', 'GCP_SA_JSON 스크립트 속성이 없습니다. docs/STT_설치_v9107.md의 STEP 1~3을 따르세요.'); return; }
 
-  let ok = 0, fail = 0;
+  // [v9.125] 리허설 게이트 — 유료 외부 API. 대기량만 보고하고 아무것도 보내지 않는다.
+  if (typeof isRehearsal_ === 'function' && isRehearsal_()) {
+    if (typeof rehearsalNote_ === 'function') rehearsalNote_('STT 전사: 대기 ' + todo.length + '건 전량 차단(비용 0)');
+    return;
+  }
+
+  let ok = 0, fail = 0, aborted = '';
   const errSample = [];
-  todo.slice(0, budget).forEach(t => {
+  const batch = todo.slice(0, budget);
+  for (let bi = 0; bi < batch.length; bi++) {
+    const t = batch[bi];
     const r = sttOne_(t.fid, token);
     const stamp = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm');
     if (r.text) { vl.getRange(t.row, 7, 1, 3).setValues([[r.text, '완료', stamp]]); ok++; }
+    else if (r.systemic) {
+      // [v9.125] 계정·설정·쿼터 오류(401/403/429/5xx) — 행에 낙인을 찍지 않고('대기' 유지) 배치를 즉시 중단.
+      //   구 코드는 설정 실수 하나로 그날 대기 전 행이 '실패:'로 영구 낙인돼 수기 복구가 필요했다.
+      aborted = r.err;
+      break;
+    }
     else { vl.getRange(t.row, 7, 1, 3).setValues([['', '실패: ' + r.err, stamp]]); fail++; if (errSample.length < 5) errSample.push(t.sid + ' — ' + r.err); }
-  });
-  setState(st, 'STT일일사용', today + '|' + (used + ok + fail));
+  }
+  setState(st, 'STT일일사용', today + '|' + (used + ok + fail + (aborted ? 1 : 0)));
+  if (aborted) {
+    adminMail('[SYNK] 🎧 STT 전사 중단 — 계정·설정 문제(행 낙인 없음)',
+      '오류: ' + aborted + '\n\n파일이 아니라 계정·API·쿼터 쪽 문제라 대기 행을 그대로 두고 중단했습니다.\n' +
+       'voiceSttStatus() ▶ 로 원인을 확인해 고치면 다음 밤에 자동 재개됩니다(수기 복구 불필요).');
+    return;
+  }
   if (ok || fail) adminMail('[SYNK] 🎧 목소리 전사 ' + ok + '건' + (fail ? ' · 실패 ' + fail + '건' : ''),
     '전사 완료 ' + ok + '건, 실패 ' + fail + '건 (오늘 사용 ' + (used + ok + fail) + '/' + STT_DAILY_CAP + ')\n' +
     (errSample.length ? '\n실패 사유(최대 5건):\n' + errSample.join('\n') +

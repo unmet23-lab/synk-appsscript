@@ -137,12 +137,12 @@ Row Owner를 켜면 각자 자기 행만 받아 **랭킹·강사 학생 리스�
 
 ## 4단계 · 디자인 세팅 — "누르고 싶게" (2027 팔레트)
 
-카드 HTML은 코드가 완성합니다(브랜드 3종 폰트 + 2027 Luminous Blue). 앱 껍데기만 맞추면 됩니다.
+카드 HTML은 코드가 완성합니다(브랜드 3종 폰트 + **v9.125 브랜드 키트 색** — Coral 신호·Navy 히어로·Cream 워시). 앱 껍데기만 맞추면 됩니다.
 
 ### 4-1. Appearance
 | 항목 | 값 |
 |---|---|
-| **Accent color** | **`#3D5AFE`** (일렉트릭 블루 — 전 카드와 한 몸) |
+| **Accent color** | **`#FF6B5C`** (브랜드 Coral — v9.125에서 카드가 키트 색으로 전환, 껍데기도 한 몸으로. 구 `#3D5AFE`는 폐기) |
 | Theme/Background | **Light 고정** (Dark 금지 — 카드가 라이트 파스텔) |
 | Font | 기본(System) 또는 Rounded |
 | Logo/Icon | SYNK 로고 |

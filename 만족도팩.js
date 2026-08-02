@@ -56,9 +56,16 @@ function MJ_beginnerSet_(pf) {
   const set = new Set();
   try {
     if (MJ_BILINGUAL === 'off') return set;
-    if (!pf || pf.getLastRow() < 2 || pf.getMaxColumns() < 51) return set;
+    if (!pf || pf.getLastRow() < 2) return set;
+    // [v9.125] 위치 상수 51 폐기 — v9.119가 「레벨 열은 이름으로 찾는다」로 못박은 규약을 이 파일만 안 따랐다.
+    //   열이 밀리면 병기가 엉뚱한 학생 집합에 조용히 적용된다. typeof 가드 = 반쪽 배포 안전.
+    //   ⚠ profileLevelCol_은 0-기반 인덱스를 돌려준다(호출부 규약 = c + 1) — 못 찾으면 -1.
+    const lv0 = (typeof profileLevelCol_ === 'function') ? profileLevelCol_(pf) : 50;
+    if (lv0 < 0) return set;
+    const lvCol = lv0 + 1;
+    if (pf.getMaxColumns() < lvCol) return set;
     const ids = pf.getRange(2, 1, pf.getLastRow() - 1, 1).getValues();
-    const lvl = pf.getRange(2, 51, pf.getLastRow() - 1, 1).getValues();
+    const lvl = pf.getRange(2, lvCol, pf.getLastRow() - 1, 1).getValues();
     ids.forEach((r, i) => {
       if (r[0] && MJ_isBeginnerLvl_(lvl[i] ? lvl[i][0] : '')) set.add(String(r[0]).trim());
     });
@@ -170,6 +177,7 @@ function MJ_msgLinkSweep_(ss) {
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
   const last = log.getLastRow();
   let from = Number(getState(st, '메신저링크_스캔행').val) || 0;
+  if (from > last) { setState(st, '메신저링크_스캔행', last); return; } // [v9.125] 클램프 — 로그 행 정리로 last가 줄면 포인터가 허공을 가리켜 영구 침묵하던 구멍(형제 스위프 4곳과 동일 규약)
   if (from >= last) return;                       // 새 행 없음 — 2읽기로 종료(10분 틱 무비용)
   if (from < 1) from = Math.max(1, last - 200);   // 첫 가동: 최근 200행만 소급(과거 전체 재처리 방지)
   const rows = log.getRange(from + 1, 1, last - from, 4).getValues(); // 시각·세션·발신·내용
@@ -220,6 +228,12 @@ function MJ_canSendNow_(lastIn, now, tag) {
 // Meta Send API — 상담_전송_과 달리 건당 관리자 메일 없이 결과만 반환(집계 보고용)
 function MJ_send_(psid, text) {
   try {
+    // [v9.125] 리허설 게이트 — 메일 관문(quotaOk)만 막던 리허설이 메신저 실발송은 못 막던 구멍.
+    //   typeof 가드 = 반쪽 배포(이 파일만 라이브) 안전.
+    if (typeof isRehearsal_ === 'function' && isRehearsal_()) {
+      if (typeof rehearsalNote_ === 'function') rehearsalNote_('메신저 발송 MJ_send_ (차단): ' + String(text).slice(0, 40));
+      return { ok: false, skip: 'rehearsal' };
+    }
     const tok = PropertiesService.getScriptProperties().getProperty('상담AI_페이지토큰');
     if (!tok) return { ok: false, skip: 'no-token' }; // Meta 미세팅 = 조용한 휴면
     if (!psid || !text) return { ok: false, skip: 'no-input' };
