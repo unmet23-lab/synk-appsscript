@@ -84,9 +84,7 @@
       "mcp__bb3342c3-f10b-4710-97fe-777e11ae8745__perform-editing-operations",
       "mcp__bb3342c3-f10b-4710-97fe-777e11ae8745__start-editing-transaction",
       "mcp__bb3342c3-f10b-4710-97fe-777e11ae8745__commit-editing-transaction",
-      "mcp__bb3342c3-f10b-4710-97fe-777e11ae8745__cancel-editing-transaction"
-    ],
-    "ask": [
+      "mcp__bb3342c3-f10b-4710-97fe-777e11ae8745__cancel-editing-transaction",
       "PowerShell(git -C \"C:\\\\Users\\\\q1212\\\\Documents\\\\SYNK-appsscript\" push *)",
       "Bash(git -C \"C:/Users/q1212/Documents/SYNK-appsscript\" push *)",
       "Bash(git push *)",
