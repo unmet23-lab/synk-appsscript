@@ -47,6 +47,32 @@ const execCmd = stripNonExecutedText(cmd);
 
 // clasp 호출어 바로 뒤에 push/deploy가 올 때만 발동 — list-deployments, login 등은 통과
 if (!/clasp(\.cmd|\.ps1)?["']?\s+(--?\S+\s+)*(push|deploy)\b/i.test(execCmd)) process.exit(0);
+
+/* 5-A) 코드의 성질을 보는 보안 검사 — **BYPASS보다 앞**이다.
+ *   08-02 옆 세션 지적: 임시 러너는 언제나 bypass로 push한다(러너 코드가 미커밋이라 우회하지 않으면
+ *   3번 검사에 걸려 애초에 못 나간다). 이 검사를 아래에 두면 **고정 토큰·doGet 파괴 연산은
+ *   그것들이 실제로 존재하는 유일한 경로에서 절대 발화하지 않는다** — 막으려던 것만 못 보는 가드.
+ *   그래서 우회 레버를 늘리는 대신 기존 레버가 끌 수 있는 범위를 좁혔다.
+ *   러너를 금지하는 게 아니라, 러너가 최소한 ScriptProperties 토큰 + doPost를 쓰게 강제한다.
+ *   (워크트리에서 bypass로 부르면 이 검사만 메인 저장소 기준으로 도는 한계가 있다 — 아래 0번이
+ *    워크트리 배포 자체를 막으므로 정상 경로에서는 닿지 않는다.) */
+{
+  let codeProblems;
+  try {
+    codeProblems = require(path.join(ROOT, 'tools', 'deploy-security-check.js')).checkCode();
+  } catch (e) {
+    codeProblems = ['보안 검사(코드) 실행 실패: ' + String((e && e.message) || e).split('\n')[0]];
+  }
+  if (codeProblems.length) {
+    deny(
+      '[clasp-guard] 배포 게이트 차단 — **CLASP_GUARD_BYPASS로 끌 수 없는 항목**:\n- ' +
+        codeProblems.join('\n- ') +
+        '\n→ 임시 러너라도 토큰은 PropertiesService.getScriptProperties()에서 읽고,\n' +
+        '   파괴적 연산은 doPost에 둔다. 이건 절차 위반이 아니라 코드 자체의 결함이라 우회 대상이 아니다.'
+    );
+  }
+}
+
 if (cmd.includes('CLASP_GUARD_BYPASS=1')) process.exit(0);
 
 function run(bin, args) {
@@ -167,13 +193,13 @@ try {
   // origin 참조가 없으면 이 검사는 건너뜀
 }
 
-/* 5) 배포 **표면** 검사 — 구문검사도 안전 테스트도 전부 초록인데 문이 열려 있던 층.
- *    2026-08-02: 임시 doGet 러너가 고정 토큰 하나로 익명 공개 엔드포인트를 열었고(ANYONE_ANONYMOUS·
- *    executeAs=USER_DEPLOYING), GET 한 번에 deleteRow가 돌았으며, versioned 배포 4개가 살아남았다.
- *    1~4번 검사는 전부 통과시켰다 — 재는 층이 달랐다. 상세·판정 근거는 tools/deploy-security-check.js.
- *    모듈이 깨지면 통과가 아니라 차단이다(이 파일 3번 검사의 'git status 확인 실패' 와 같은 방향). */
+/* 5-B) 임시 배포 잔존 — **순간의 성질**이라 여기(BYPASS 뒤)가 맞다.
+ *    러너를 돌리는 도중엔 임시 배포가 있는 게 정상이고, 러너가 끝난 뒤 정상 push에서 잡히면 된다.
+ *    08-02 실측: 이 검사가 살아남은 배포 4개(@28~@31)를 실제로 잡았다.
+ *    **코드를 지워도 라이브는 안 닫힌다** — versioned 배포는 그 시점 코드를 영구 서빙한다.
+ *    모듈이 깨지면 통과가 아니라 차단이다(이 파일 3번 검사의 'git status 확인 실패'와 같은 방향). */
 try {
-  problems.push(...require(path.join(ROOT, 'tools', 'deploy-security-check.js')).check());
+  problems.push(...require(path.join(ROOT, 'tools', 'deploy-security-check.js')).checkDeployments());
 } catch (e) {
   problems.push(
     '배포 표면 검사 실행 실패(tools/deploy-security-check.js): ' +

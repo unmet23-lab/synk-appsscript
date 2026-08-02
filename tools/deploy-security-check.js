@@ -55,8 +55,10 @@ const lineOf = (src, idx) => src.slice(0, idx).split('\n').length;
 /* 시크릿인가, 사람이 지은 이름인가 — 길이로는 못 가른다.
  * 실측(08-02): 길이 16자만 보게 했더니 `p.op === 'purgeTestCheckins'`(연산 이름 18자)이 걸렸다.
  * 난수 토큰은 문자 종류가 섞이고 사람이 지은 camelCase는 안 섞인다는 차이로 가른다.
- *   '2Kn1KrbV-NAUVoCxjiGT7It7_-ueMp0_' → 소문자·대문자·숫자·구분자 4종 = 시크릿
- *   'purgeTestCheckins'               → 소문자·대문자 2종 = 이름
+ *   'Xk7Qm2Vt-9RbLpZa4wNc0HsE_JyU1oGf' → 소문자·대문자·숫자·구분자 4종 = 시크릿
+ *   'purgeTestCheckins'                → 소문자·대문자 2종 = 이름
+ * ⚠ 위 예시는 **합성 문자열이다.** 탐지기의 예시·픽스처에 실제로 쓰였던 토큰을 박지 않는다 —
+ *   폐기된 토큰이면 무해하지만, 같은 관행이 살아 있는 토큰에 적용되는 순간 그게 사고다.
  * 대소문자 없는 hex 다이제스트는 이 규칙에 안 걸리므로 따로 태운다. */
 function looksSecret(s) {
   if (/^[0-9a-f]{32,}$/i.test(s)) return true;
@@ -75,7 +77,19 @@ function parseDeploymentLine(line) {
   return { id: m[1], ver: m[2], desc, temp: /temp|tmp|임시|runner|러너/i.test(desc) };
 }
 
-function check() {
+/* ── 검사를 두 갈래로 나눈 이유 (2026-08-02, 옆 세션 지적으로 재설계) ────────────────────
+ * 처음엔 셋을 한 함수에 담아 clasp-guard 맨 끝에 붙였다. 그런데 clasp-guard는 맨 앞에서
+ * CLASP_GUARD_BYPASS=1 이면 즉시 종료한다 — 그리고 **임시 러너는 언제나 bypass로 push한다**
+ * (러너 코드가 미커밋이라 우회하지 않으면 3번 검사에 걸려 애초에 못 나간다).
+ * 즉 ①고정 토큰 ②doGet 파괴 연산은 **그것들이 실제로 존재하는 유일한 경로에서 절대 발화하지 않았다.**
+ * 가드가 자기가 막으려던 것만 못 보는 형태였다([[guard-must-check-result]]).
+ *
+ * 가르는 기준은 「끄는 게 정당한가」다.
+ *   checkCode()        = **코드의 성질**. 언제 봐도 틀렸다 → bypass가 못 끈다.
+ *   checkDeployments() = **순간의 성질**. 러너 도중엔 임시 배포가 있는 게 정상 → bypass가 끈다.
+ * 우회 레버는 늘리지 않았다. 대신 기존 레버가 끌 수 있는 범위를 좁혔다.
+ * ──────────────────────────────────────────────────────────────────────────────── */
+function checkCode() {
   const problems = [];
   let anon = false;
   try {
@@ -117,9 +131,14 @@ function check() {
     }
   }
 
-  /* 3) 임시 배포 잔존. **코드를 지워도 라이브는 안 닫힌다** — versioned 배포는 그 시점 코드를
-   *    영구 고정해 계속 서빙하므로, 원복 push 뒤에도 그 URL은 살아서 러너를 그대로 응답한다.
-   *    조회 실패(오프라인·미로그인)는 위반이 아니라 '확인 불가'라 통과시킨다. */
+  return problems;
+}
+
+/* 3) 임시 배포 잔존. **코드를 지워도 라이브는 안 닫힌다** — versioned 배포는 그 시점 코드를
+ *    영구 고정해 계속 서빙하므로, 원복 push 뒤에도 그 URL은 살아서 러너를 그대로 응답한다.
+ *    조회 실패(오프라인·미로그인)는 위반이 아니라 '확인 불가'라 통과시킨다. */
+function checkDeployments() {
+  const problems = [];
   try {
     /* Windows의 clasp는 .cmd 배치라 execFileSync로 직접 못 띄운다. shell:true는 되지만
      * args 배열과 함께 쓰면 Node가 DEP0190(인자 미이스케이프)를 경고한다 — 보안 검사기가
@@ -145,8 +164,11 @@ function check() {
   return problems;
 }
 
+// check() = 둘 다. /deploy 4단계와 CLI용(사람이 직접 돌릴 땐 전부 본다).
+const check = () => [...checkCode(), ...checkDeployments()];
+
 // 오탐/미탐이 갈리는 지점은 테스트가 직접 잡는다(tests/배포표면.test.js)
-module.exports = { check, looksSecret, topLevelFunctions, parseDeploymentLine };
+module.exports = { check, checkCode, checkDeployments, looksSecret, topLevelFunctions, parseDeploymentLine };
 
 if (require.main === module) {
   const p = check();
