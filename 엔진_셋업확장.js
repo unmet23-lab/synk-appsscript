@@ -3207,6 +3207,14 @@ function onOpen() {
       //   편집기 드롭다운은 배포 직후 새로고침 전까지 새 함수를 안 보여줘서 "함수가 없다"로 읽힌다.
       .addItem('📚 강의 자리 깔기(1단계)', 'menuSetupLectures')
       .addItem('🎬 강의 수강 확인 폼(2단계)', 'menuCreateLectureForm')
+      .addSeparator()
+      // [2026-08-03] 🧠 회사 두뇌 — 확정된 것만 답하고 모르면 원장님께 넘긴다. '모르는 질문'이 곧 채울 목록이다.
+      //   강사용 웹 화면은 배포 직전 보안 검토에서 철회됐다(익명 google.script.run 브릿지 — `_보류_두뇌_웹화면.js` 머리말).
+      //   지금 단계에서 답변 품질은 아래 '시험 삼아 물어보기'로 확인한다.
+      .addItem('🧠 두뇌 지식 만들기(1단계)', 'menuBrainSetup')
+      .addItem('💬 시험 삼아 물어보기', 'menuBrainTry')
+      .addItem('　└ 두뇌 점검', 'menuBrainCheck')
+      .addItem('　└ 아직 모르는 질문 보기', 'menuBrainGaps')
       // [v9.123] 레벨 어휘가 바뀌면 구 자리가 유령으로 남는다 — 4중 잠금이라 잘못 눌러도 손실 0(함수 주석 참조).
       .addItem('🧹 낡은 강의 자리 걷어내기', 'menuPruneStaleLectures')
       // [v9.121] 시즌이 바뀌어 1단계를 다시 깔면 폼 선택지가 낡는다 — 2단계는 문항이 있으면 건너뛰므로 따라가지 않는다.
