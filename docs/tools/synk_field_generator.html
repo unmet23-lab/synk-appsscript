@@ -373,7 +373,7 @@ function render(){
     ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
   }
 
-  ctx.fillStyle = isDark ? 'rgba(246,241,232,.62)' : dim;
+  ctx.fillStyle = isDark ? 'rgba(246,241,232,.75)' : dim; // v1.4.1 알파 하한
   ctx.font = '600 ' + Math.round(25*u) + 'px ' + FONT;
   ctx.textBaseline = 'alphabetic';
   tracked(ctx, S.label, pad, pad + 18*u, 5.4*u);

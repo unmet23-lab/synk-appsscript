@@ -67,7 +67,7 @@ function lines(c,arr,x,y,size,lh,color,weight){
 // 디더는 시즌 오프닝·수료 등 의식 순간 전용으로 강등. 구 waveField 구현은 git 이력에.
 function card1(c){
   c.fillStyle=BG; c.fillRect(0,0,W,H);
-  c.fillStyle='rgba(246,241,232,.6)'; c.font='600 25px '+FONT; c.textBaseline='alphabetic';
+  c.fillStyle='rgba(246,241,232,.75)'; c.font='600 25px '+FONT; c.textBaseline='alphabetic'; // v1.4.1 알파 하한
   tracked(c,'SYNK LAB',PAD,PAD+18,5.4);
   c.fillStyle=SIG; c.fillRect(PAD, H-PAD-330, 78, 9);
   lines(c,['단어는 아는데','입이 멈추는 순간'],PAD,H-PAD-190,78,1.32,INK,'600');
