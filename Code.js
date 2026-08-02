@@ -786,7 +786,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.127'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.127] 원격 실행 경로 신설 + 경영 정본 v1.3 동기화 + 출퇴근 연타 정리 · [v9.126] Glide 라이브 전수 점검 — 월키 Date 오염 미보호 시트 2종·상담값 원시 Date·출결 백지 · [v9.125] 앱 전면 최적화 — 5구역 적대 리뷰 결함 26건 수리 + 브랜드 키트 색 전환 · [v9.124] 메뉴 결과 가시화 + 이수율 조인 진단 · [v9.123] 낡은 강의 자리 안전 정리 — 조준을 행 번호에서 내용으로 · [v9.122] 브랜드 폰트 3종을 앱 카드에 적용 — 스택 교체 + 웹폰트 로더 신설(이름만 바꾸면 전 카드가 폴백된다) · [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
+const SYNK_VERSION = 'v9.128'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.128] 월키 정상화 순서 최종 교정 — 읽기→서식→쓰기(라이브가 v9.125 실패를 증명) · [v9.127] 원격 실행 경로 신설 + 경영 정본 v1.3 동기화 + 출퇴근 연타 정리 · [v9.126] Glide 라이브 전수 점검 — 월키 Date 오염 미보호 시트 2종·상담값 원시 Date·출결 백지 · [v9.125] 앱 전면 최적화 — 5구역 적대 리뷰 결함 26건 수리 + 브랜드 키트 색 전환 · [v9.124] 메뉴 결과 가시화 + 이수율 조인 진단 · [v9.123] 낡은 강의 자리 안전 정리 — 조준을 행 번호에서 내용으로 · [v9.122] 브랜드 폰트 3종을 앱 카드에 적용 — 스택 교체 + 웹폰트 로더 신설(이름만 바꾸면 전 카드가 폴백된다) · [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -3911,10 +3911,11 @@ function syncProfiles() {
     if (i === undefined) return '';
     const raw = row[i];
     if (raw instanceof Date && !isNaN(raw.getTime())) {
-      // 시분초가 0이면 날짜만(운영 표기), 아니면 분까지 — 어느 쪽도 원시 Date 문자열은 내보내지 않는다
+      /* 날짜만 — 상담시트 칸(목표기한·생일 등)에 시각은 의미가 없다. [v9.128] 08-02 실측에서 시각까지 붙이니
+       * 학생 홈에 `2027-10-01 15:00`이 떴는데, 그 15:00은 유호님이 적은 값이 아니라 시트가 `2027-10`을
+       * 파싱하며 생긴 타임존 잔재였다 — 원시 Date만큼은 아니어도 화면에 남을 이유가 없는 노이즈다. */
       const p2 = n => (n < 10 ? '0' : '') + n;
-      const ymd = raw.getFullYear() + '-' + p2(raw.getMonth() + 1) + '-' + p2(raw.getDate());
-      return (raw.getHours() || raw.getMinutes()) ? ymd + ' ' + p2(raw.getHours()) + ':' + p2(raw.getMinutes()) : ymd;
+      return raw.getFullYear() + '-' + p2(raw.getMonth() + 1) + '-' + p2(raw.getDate());
     }
     return String(raw || '').trim();
   };
@@ -9120,25 +9121,35 @@ function ymTextOf_(v, tz) {
   }
   return String(v == null ? '' : v).trim();
 }
-// 월 열을 텍스트 서식으로 고정하고 기존 Date·시리얼 오염 행을 'yyyy-MM' 문자열로 되돌린다(변경 행만 쓰기 — 멱등).
-// [v9.125] 순서 교정 — 구 버전은 서식을 먼저 '@'로 바꾼 뒤 읽어서, Date 오염 셀이 시리얼 숫자로 읽혀
-//   instanceof Date 판정을 빠져나갔다(치유 0건 + 화면엔 46173 노출 = 치유 전보다 악화). 읽기→변환→쓰기→서식 순.
-//   빈 시트에도 서식은 걸어 둔다(첫 쓰기가 Date로 오염되는 것을 예방).
+/* 월 열을 텍스트 서식으로 고정하고 기존 Date·시리얼 오염 행을 'yyyy-MM' 문자열로 되돌린다(변경 행만 쓰기 — 멱등).
+ * 🔴 [v9.128] 순서가 이 함수의 전부다 — **읽기 → 서식('@') → 쓰기**. 세 번 틀렸고 세 번 다 조용히 실패했다:
+ *   ① 구 v9.97: 서식 → 읽기 → 쓰기. 서식을 먼저 걸면 Date 셀이 **시리얼 숫자**로 읽혀 instanceof Date를 빠져나간다
+ *      (치유 0건 + 화면엔 46173 노출 = 치유 전보다 악화).
+ *   ② v9.125: 읽기 → 쓰기 → 서식. 읽기는 고쳤지만 **쓰기가 아직 날짜 서식인 열에 떨어져 시트가 '2026-07'을
+ *      다시 Date로 파싱**한다. 08-02 라이브 실측 — 자기치유를 돌린 직후에도 운영 탭에 `Wed Jul 01 2026`가 그대로였다.
+ *   ③ 정답: 날짜 서식일 때 **먼저 읽어** Date를 Date로 잡고, 그 다음 열을 '@'로 굳히고, 마지막에 문자열을 쓴다.
+ *      그래야 쓰는 값이 재파싱되지 않는다. 빈 시트에도 서식은 걸어 둔다(첫 쓰기부터 오염 예방). */
 function ymTextColFix_(sh, col, tz) {
   if (!sh) return 0;
   const n = sh.getLastRow() - 1;
   let fixed = 0;
+  let vals = null;
   if (n >= 1) {
-    const vals = sh.getRange(2, col, n, 1).getValues();
+    vals = sh.getRange(2, col, n, 1).getValues();          // ① 읽기 — 날짜 서식일 때라야 Date가 Date로 온다
     for (let i = 0; i < n; i++) {
       const raw = vals[i][0];
       if (raw == null || raw === '') continue;
       const norm = ymTextOf_(raw, tz);
       if (typeof raw !== 'string' || norm !== raw) { vals[i][0] = norm; fixed++; }
     }
-    if (fixed) { sh.getRange(2, col, n, 1).setValues(vals); Logger.log('자기치유: ' + sh.getName() + ' 월 열 오염 ' + fixed + '행 → yyyy-MM 텍스트'); }
   }
-  if (sh.getRange(2, col).getNumberFormat() !== '@') sh.getRange(1, col, sh.getMaxRows(), 1).setNumberFormat('@');
+  if (sh.getRange(2, col).getNumberFormat() !== '@') {      // ② 서식 고정 — 쓰기보다 반드시 먼저
+    sh.getRange(1, col, sh.getMaxRows(), 1).setNumberFormat('@');
+  }
+  if (fixed) {                                             // ③ 쓰기 — 이제 '@'라 재파싱되지 않는다
+    sh.getRange(2, col, n, 1).setValues(vals);
+    Logger.log('자기치유: ' + sh.getName() + ' 월 열 오염 ' + fixed + '행 → yyyy-MM 텍스트');
+  }
   return fixed;
 }
 /* [v9.127] ▶ 공개 래퍼 — `sheetSelfHeal_`은 언더바 private이라 Apps Script 편집기 드롭다운에 **아예 안 뜬다**
