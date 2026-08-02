@@ -8,9 +8,8 @@
  *   font-family에 'SUIT Variable'이라고 써 두고 웹폰트 로드를 빠뜨리면, 화면은 조용히 시스템 고딕으로
  *   폴백된다. 에러도 안 나고 눈으로도 잘 안 보인다. 그래서 이름과 로드를 **함께** 검사한다.
  *
- * 검사 범위 = docs/tools/*.html (폰트를 실제로 지정하는 산출물).
- *   ⏳ Code.js `CARD_FONT`는 타 세션 미커밋 점유로 **아직 교체 못 했다**(정본 §9).
- *      교체하는 세션이 이 파일 맨 아래 「CARD_FONT」 테스트의 skip을 풀 것.
+ * 검사 범위 = docs/tools/*.html (폰트를 실제로 지정하는 산출물) + Code.js `CARD_FONT`·`CARD_WEBFONT`.
+ *   ✅ 2026-08-03 — `CARD_FONT` 3종 교체·skip 해제 **완료**(35 pass · skipped 0). 전파도 끝났다(정본 §9).
  *   정본 = docs/브랜드_폰트_정본.md
  */
 const test = require('node:test');
