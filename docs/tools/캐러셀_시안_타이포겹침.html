@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>캐러셀 시안 — 타이포 + 겹침 (v1.4 문법)</title>
+<!-- v1.4 첫 실물 시안. 디더 없음 — 1장 다크 플랫(타이포) → 2~4장 타이포 → 5장 겹침.
+     콘텐츠 = TOPIK 로드맵(표지→문제→근거→방법→CTA). 몽골어는 원어민 검수 전 가안(정본 §3: AI 몽골어는 1장 실전송출 금지). -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&family=DM+Mono:wght@300;400;500&display=swap">
+<style>
+  :root{ --coral:#FF6B5C; --navy2:#0F1730; --cream:#F6F1E8; --paper:#FBF7EE; --cream2:#EFE7D7;
+         --ink:#171820; --navy:#1A2340; --c3:#E8543F; --c-soft:#FFCFC6; --kc-cool:#4E7CFF;
+         --mut:rgba(23,24,32,.56); --line:rgba(23,24,32,.12); }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:var(--cream2); padding:40px 22px 80px; color:var(--ink);
+        font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+        letter-spacing:-0.02em; -webkit-font-smoothing:antialiased; }
+  .mono{ font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.14em; }
+  .kr{ font-family:'SUIT Variable',sans-serif; }
+  .wrap{ max-width:1900px; margin:0 auto; }
+  .kick{ display:flex; align-items:center; gap:11px; }
+  .kick .tick{ width:24px; height:8px; background:var(--coral); border-radius:2px; }
+  .kick .mono{ font-size:11px; color:var(--navy); font-weight:500; }
+  h1{ font-family:'SUIT Variable',sans-serif; font-weight:900; font-size:38px; letter-spacing:-0.04em; margin:14px 0 8px; }
+  .lead{ font-size:14.5px; font-weight:500; line-height:1.7; color:var(--navy); max-width:760px; }
+  .lead b{ font-weight:800; }
+
+  .row{ display:flex; gap:18px; overflow-x:auto; padding:22px 2px 16px; }
+  .card{ flex:0 0 340px; width:340px; height:425px; border-radius:14px; position:relative; overflow:hidden;
+         padding:30px 28px; display:flex; flex-direction:column;
+         box-shadow:0 12px 30px -14px rgba(19,26,50,.28); }
+  .tag{ font-family:'DM Mono',monospace; font-size:9.5px; letter-spacing:.18em; font-weight:500; }
+  .pg{ font-family:'DM Mono',monospace; font-size:9.5px; letter-spacing:.14em; position:absolute; bottom:22px; right:24px; opacity:.7; }
+  .mn{ font-family:'Inter Tight',sans-serif; font-size:calc(1em * 1.04); }
+
+  /* 1장 · 다크 플랫 (타이포) */
+  .c-dark{ background:var(--navy2); color:var(--cream); }
+  .c-dark .tag{ color:rgba(246,241,232,.6); }
+  .c-dark .bar{ width:60px; height:8px; background:var(--coral); border-radius:2px; margin-top:auto; }
+  .c-dark h2{ font-family:'SUIT Variable',sans-serif; font-weight:900; font-size:37px; line-height:1.26;
+              letter-spacing:-0.035em; margin-top:14px; }
+  .c-dark .sub{ font-size:12.5px; color:rgba(246,241,232,.55); margin-top:12px; font-weight:500; }
+
+  /* 2~4장 · 타이포 */
+  .c-type{ background:var(--paper); color:var(--ink); border:1px solid var(--line); }
+  .c-type .tag{ color:var(--navy); }
+  .c-type h2{ font-family:'SUIT Variable',sans-serif; font-weight:800; font-size:29px; line-height:1.34;
+              letter-spacing:-0.03em; margin-top:16px; }
+  .c-type .body{ font-family:'SUIT Variable',sans-serif; font-size:13px; line-height:1.75; color:var(--navy);
+                 font-weight:500; margin-top:12px; }
+  .c-type .rule-line{ height:1px; background:var(--line); position:absolute; left:28px; right:28px; bottom:64px; }
+  .c-type .meta{ position:absolute; left:28px; bottom:22px; font-family:'DM Mono',monospace;
+                 font-size:9.5px; letter-spacing:.14em; color:var(--mut); }
+  .num{ font-family:'SUIT Variable',sans-serif; font-weight:900; font-size:92px; line-height:1;
+        letter-spacing:-0.03em; color:var(--c3); margin-top:18px; }
+  .num small{ font-size:34px; color:var(--ink); font-weight:800; letter-spacing:-0.02em; }
+  .steps{ margin-top:18px; display:flex; flex-direction:column; gap:13px; }
+  .step{ display:flex; gap:11px; align-items:baseline; font-family:'SUIT Variable',sans-serif;
+         font-size:14.5px; font-weight:600; color:var(--navy); }
+  .step .dot{ width:9px; height:9px; border-radius:50%; background:var(--line); flex:0 0 auto; position:relative; top:-1px; }
+  .step.hot{ font-weight:800; color:var(--ink); font-size:15.5px; }
+  .step.hot .dot{ background:var(--coral); }
+  .step .mn-s{ display:block; font-size:10.5px; color:var(--mut); font-weight:500; margin-top:2px; }
+
+  /* 5장 · 겹침 (리소) */
+  .c-riso{ background:var(--paper); color:var(--ink); border:1px solid var(--line); isolation:isolate; }
+  .c-riso .tag{ color:var(--navy); position:relative; z-index:2; }
+  .c-riso .o1,.c-riso .o2{ position:absolute; border-radius:50%; mix-blend-mode:multiply; }
+  .c-riso .o1{ width:250px; height:250px; background:var(--kc-cool); opacity:.8; right:-60px; top:-52px; }
+  .c-riso .o2{ width:250px; height:250px; background:var(--coral); opacity:.72; right:-47px; top:-41px; }
+  .c-riso h2{ font-family:'SUIT Variable',sans-serif; font-weight:900; font-size:34px; line-height:1.28;
+              letter-spacing:-0.035em; margin-top:auto; position:relative; z-index:2; }
+  .c-riso .go{ display:flex; align-items:baseline; gap:10px; margin-top:14px; position:relative; z-index:2; }
+  .c-riso .go .mn{ font-size:13.5px; font-weight:600; color:var(--navy); }
+  .c-riso .go .ar{ font-family:'DM Mono',monospace; font-size:13px; color:var(--c3); }
+
+  /* thumbnails */
+  .sec{ font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.2em; color:var(--navy); font-weight:500; margin:20px 0 10px; }
+  .thumbs{ display:flex; gap:8px; }
+  .thumbs .t{ width:110px; height:137px; border-radius:5px; overflow:hidden; flex:0 0 auto;
+              box-shadow:0 4px 10px -5px rgba(19,26,50,.3); }
+  .thumbs .t .inner{ width:340px; height:425px; transform:scale(0.3236); transform-origin:0 0; }
+
+  .note{ background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:16px 20px;
+         margin-top:22px; font-family:'SUIT Variable',sans-serif; font-size:12.5px; line-height:1.75;
+         color:var(--navy); font-weight:500; max-width:860px; }
+  .note b{ font-weight:800; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kick"><span class="tick"></span><span class="mono">SYNK LAB &middot; CAROUSEL DRAFT &middot; V1.4 GRAMMAR</span></div>
+  <h1>타이포 + 겹침, 디더 없이 한 세트.</h1>
+  <p class="lead">전에 쓰던 텍스트 카드뉴스 형식 그대로 — 표지는 <b>다크 플랫(타이포)</b>, 본문은 <b>타이포</b>, 마지막은 <b>겹침(리소)</b>.
+  차가움 &rarr; 정보 &rarr; 온기의 서사는 그대로, 그림은 0.</p>
+
+  <div class="row" id="cards">
+
+    <!-- 1 · 표지 : 다크 플랫 -->
+    <div class="card c-dark">
+      <span class="tag">SYNK LAB</span>
+      <h2>내 한국어,<br>지금 어디쯤<br>와 있을까.</h2>
+      <div class="sub"><span class="mn">Миний солонгос хэл хаана байна?</span></div>
+      <div class="bar"></div>
+      <span class="pg" style="color:rgba(246,241,232,.5)">01 / 05</span>
+    </div>
+
+    <!-- 2 · 문제 : 타이포 -->
+    <div class="card c-type">
+      <span class="tag">02 &middot; MOMENT</span>
+      <h2>단어는 아는데,<br>입이 먼저<br>멈춘다.</h2>
+      <p class="body">시험은 멀게 느껴지고, 어디서부터 가야 할지 지도가 없다. 문제는 실력이 아니라 <b>내 위치를 모른다는 것.</b></p>
+      <div class="rule-line"></div>
+      <span class="meta">SYNK LAB</span>
+      <span class="pg" style="color:var(--mut)">02 / 05</span>
+    </div>
+
+    <!-- 3 · 근거 : 타이포 + 숫자 -->
+    <div class="card c-type">
+      <span class="tag">03 &middot; MILESTONE</span>
+      <div class="num">3<small>급</small></div>
+      <p class="body" style="margin-top:14px">많은 한국 대학의 입학 기준선이 여기다.
+      유학이 목표라면 첫 이정표는 멀리 있지 않다.<br>
+      <span class="mn" style="font-size:11px; color:var(--mut)">TOPIK 3-р зэрэг &mdash; их сургуулийн босго</span></p>
+      <div class="rule-line"></div>
+      <span class="meta">SYNK LAB</span>
+      <span class="pg" style="color:var(--mut)">03 / 05</span>
+    </div>
+
+    <!-- 4 · 방법 : 타이포 + 단계 -->
+    <div class="card c-type">
+      <span class="tag">04 &middot; ROADMAP</span>
+      <h2 style="font-size:24px">가는 길은<br>세 칸이면 된다.</h2>
+      <div class="steps">
+        <div class="step"><span class="dot"></span><span>1급 &mdash; 첫 인사, 첫 문장</span></div>
+        <div class="step"><span class="dot"></span><span>2급 &mdash; 일상이 한국어가 되는 곳</span></div>
+        <div class="step hot"><span class="dot"></span><span>3급 &mdash; 유학의 문이 열리는 곳<span class="mn-s mn">Гуравдугаар зэрэг &mdash; эхний зорилго</span></span></div>
+      </div>
+      <div class="rule-line"></div>
+      <span class="meta">SYNK LAB</span>
+      <span class="pg" style="color:var(--mut)">04 / 05</span>
+    </div>
+
+    <!-- 5 · CTA : 겹침 -->
+    <div class="card c-riso">
+      <span class="tag">05 &middot; START</span>
+      <div class="o1"></div><div class="o2"></div>
+      <h2>오늘,<br>+1 문장부터.</h2>
+      <div class="go"><span class="mn">Өнөөдөр эхэлье</span><span class="ar">--&gt;</span></div>
+      <span class="pg" style="color:var(--mut)">05 / 05</span>
+    </div>
+
+  </div>
+
+  <div class="sec">EXPLORE GRID &middot; 110 PX</div>
+  <div class="thumbs" id="thumbs"></div>
+
+  <div class="note">
+    <b>규칙 자가검증</b> — 신호 1점: 1장 코랄 막대 / 2장 없음(웨이트만) / 3장 Coral 3 대형 숫자 / 4장 코랄 점 하나 / 5장은 겹침 잉크가 곧 신호(R1 예외).
+    코랄 글자는 다크에서만, 라이트 강조는 Coral 3 대형만. 디더 0.<br>
+    <b>실전 송출 전 2가지</b> — &#9312; 정본 &sect;3: 1장 표지는 <b>몽골어가 주인공</b>이어야 한다(이 시안은 유호님 판독용으로 한국어 주). &#9313; 몽골어 문구는 <b>가안</b> — 에리카쌤 검수 전 송출 금지.
+  </div>
+
+</div>
+<script>
+// 썸네일 = 카드 DOM을 그대로 복제해 0.32배 축소 (실물과 픽셀 동일한 미리보기)
+(function(){
+  var cards=document.querySelectorAll('#cards .card');
+  var host=document.getElementById('thumbs');
+  cards.forEach(function(c){
+    var t=document.createElement('div'); t.className='t';
+    var inner=document.createElement('div'); inner.className='inner';
+    inner.appendChild(c.cloneNode(true));
+    t.appendChild(inner); host.appendChild(t);
+  });
+})();
+</script>
+</body>
+</html>
