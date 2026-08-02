@@ -786,7 +786,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.131'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.131] 시즌 시작일 프롬프트 — 인자 필요 함수의 실행 경로 신설 · [v9.130] 개원 시뮬 — 조 편성표의 침묵을 원인·처방 안내로 · [v9.129] String(Date) 텍스트 오염 형태 추가 정규화 — 라이브가 세 번째 형태를 드러냈다 · [v9.128] 월키 정상화 순서 최종 교정 — 읽기→서식→쓰기(라이브가 v9.125 실패를 증명) · [v9.127] 원격 실행 경로 신설 + 경영 정본 v1.3 동기화 + 출퇴근 연타 정리 · [v9.126] Glide 라이브 전수 점검 — 월키 Date 오염 미보호 시트 2종·상담값 원시 Date·출결 백지 · [v9.125] 앱 전면 최적화 — 5구역 적대 리뷰 결함 26건 수리 + 브랜드 키트 색 전환 · [v9.124] 메뉴 결과 가시화 + 이수율 조인 진단 · [v9.123] 낡은 강의 자리 안전 정리 — 조준을 행 번호에서 내용으로 · [v9.122] 브랜드 폰트 3종을 앱 카드에 적용 — 스택 교체 + 웹폰트 로더 신설(이름만 바꾸면 전 카드가 폴백된다) · [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
+const SYNK_VERSION = 'v9.132'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.132] 시즌 키 Date 오염 — 조 편성이 성공해도 편성표가 영원히 비던 결함 · [v9.131] 시즌 시작일 프롬프트 — 인자 필요 함수의 실행 경로 신설 · [v9.130] 개원 시뮬 — 조 편성표의 침묵을 원인·처방 안내로 · [v9.129] String(Date) 텍스트 오염 형태 추가 정규화 — 라이브가 세 번째 형태를 드러냈다 · [v9.128] 월키 정상화 순서 최종 교정 — 읽기→서식→쓰기(라이브가 v9.125 실패를 증명) · [v9.127] 원격 실행 경로 신설 + 경영 정본 v1.3 동기화 + 출퇴근 연타 정리 · [v9.126] Glide 라이브 전수 점검 — 월키 Date 오염 미보호 시트 2종·상담값 원시 Date·출결 백지 · [v9.125] 앱 전면 최적화 — 5구역 적대 리뷰 결함 26건 수리 + 브랜드 키트 색 전환 · [v9.124] 메뉴 결과 가시화 + 이수율 조인 진단 · [v9.123] 낡은 강의 자리 안전 정리 — 조준을 행 번호에서 내용으로 · [v9.122] 브랜드 폰트 3종을 앱 카드에 적용 — 스택 교체 + 웹폰트 로더 신설(이름만 바꾸면 전 카드가 폴백된다) · [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -1765,7 +1765,7 @@ function groupHudsByClass_(ss, tz, when) {
   const schM = scheduleMap(ss);
   const byCls = {};
   gs.getRange(2, 1, gs.getLastRow() - 1, GROUPS_HEADERS.length).getValues().forEach(r => {
-    if (String(r[0]) !== season || !r[1]) return;
+    if (seasonKeyOf_(r[0], tz) !== season || !r[1]) return; // [v9.132] Date 오염 면역
     (byCls[String(r[1])] = byCls[String(r[1])] || []).push(r);
   });
   const whenD = when || new Date();
@@ -15282,6 +15282,28 @@ function setSeasonStart(dateStr) {
     '   다음: assignGroupsAll() ▶ 1회로 전 반 조 편성';
 }
 
+/* [v9.132] 🔴 시즌 키 정규화 — 월키 Date 오염의 **네 번째** 재현 지점(groups 시트 A열).
+ *   시즌 라벨은 `2026-07-13` 형태라 시트가 날짜로 자동 파싱한다. 그러면 `String(r[0])`이
+ *   `Mon Jul 13 2026 00:00:00 GMT+0800…`이 되어 라벨과 **영원히 안 맞는다.** 08-02 실측 결과:
+ *     ① 조 편성은 "✅ 1명 확정"으로 성공하는데 ② 조 편성표는 "편성 행이 없습니다"를 돌려준다
+ *     ③ 더 위험한 것 — `assignGroups`의 「같은 시즌·반 행을 걷어내고 새로 쓴다」 필터도 안 맞아
+ *        **재실행이 교체가 아니라 누적**이 된다(한 학생이 여러 조에 동시에 들어간다).
+ *   그래서 비교는 전부 이 함수를 통과시킨다 — 셀이 Date든 문자열이든 같은 키가 나오게. */
+function seasonKeyOf_(v, tz) {
+  if (v instanceof Date && !isNaN(v.getTime())) {
+    return Utilities.formatDate(v, tz || Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+  const s = String(v == null ? '' : v).trim();
+  // String(Date)가 텍스트로 굳은 형태(v9.129와 같은 계열)
+  if (/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\s+\d{4}/.test(s)) {
+    const p = new Date(s);
+    if (!isNaN(p.getTime())) {
+      const p2 = n => (n < 10 ? '0' : '') + n;
+      return p.getFullYear() + '-' + p2(p.getMonth() + 1) + '-' + p2(p.getDate());
+    }
+  }
+  return s;
+}
 // 시즌 라벨 — groups 행의 키. 시작일이 곧 시즌 이름(중복·재사용 사고가 없다)
 function seasonLabelOf_(ss, tz) {
   const d = seasonStartOf_(ss);
@@ -15451,7 +15473,7 @@ function todayPairsBySid_(ss, tz, when) {
   const whenD = when || new Date();
   const byCls = {};
   gs.getRange(2, 1, gs.getLastRow() - 1, GROUPS_HEADERS.length).getValues().forEach(r => {
-    if (String(r[0]) !== season || !r[1]) return;
+    if (seasonKeyOf_(r[0], tz) !== season || !r[1]) return; // [v9.132] Date 오염 면역
     (byCls[String(r[1])] = byCls[String(r[1])] || []).push(r);
   });
   Object.keys(byCls).forEach(c => {
@@ -15644,18 +15666,33 @@ function assignGroups(className, opts) {
 
   // 기존 편성 — 같은 시즌·반의 '고정'=Y만 자리를 지킨다
   const gs = ensureSheet(ss, 'groups', GROUPS_HEADERS);
+  /* [v9.132] 시즌 열을 텍스트로 굳힌다 — 읽기→서식→쓰기 순(v9.128에서 확립한 순서).
+   *   이걸 안 하면 아래 setValues가 쓰는 '2026-07-13'이 그 자리에서 다시 Date로 파싱돼
+   *   다음 실행의 비교가 또 어긋난다(정규화만으로는 읽기만 고치고 쓰기는 계속 오염된다). */
+  if (gs.getLastRow() >= 2) {
+    const svCol = gs.getRange(2, 1, gs.getLastRow() - 1, 1).getValues();
+    let svFix = 0;
+    for (let i = 0; i < svCol.length; i++) {
+      const norm = seasonKeyOf_(svCol[i][0], tz);
+      if (typeof svCol[i][0] !== 'string' || norm !== svCol[i][0]) { svCol[i][0] = norm; svFix++; }
+    }
+    if (gs.getRange(2, 1).getNumberFormat() !== '@') gs.getRange(1, 1, gs.getMaxRows(), 1).setNumberFormat('@');
+    if (svFix) { gs.getRange(2, 1, svCol.length, 1).setValues(svCol); Logger.log('조 편성: groups 시즌 열 ' + svFix + '행 정상화'); }
+  } else if (gs.getRange(2, 1).getNumberFormat() !== '@') {
+    gs.getRange(1, 1, gs.getMaxRows(), 1).setNumberFormat('@'); // 첫 쓰기부터 오염 예방
+  }
   const last = gs.getLastRow();
   const all = last >= 2 ? gs.getRange(2, 1, last - 1, GROUPS_HEADERS.length).getValues() : [];
   const fixed = {};
   all.forEach(r => {
-    if (String(r[0]) !== season || String(r[1]) !== cls) return;
+    if (seasonKeyOf_(r[0], tz) !== season || String(r[1]) !== cls) return; // [v9.132]
     if (String(r[9] || '').toUpperCase().charAt(0) === 'Y') fixed[String(r[2])] = { grp: r[4], seat: r[5] };
   });
 
   const plan = buildGroupPlan_(members, fixed);
   const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
   const confirmed = (opts && opts.temp) ? '임시' : '확정';
-  const keep = all.filter(r => !(String(r[0]) === season && String(r[1]) === cls));  // 다른 시즌·반은 그대로
+  const keep = all.filter(r => !(seasonKeyOf_(r[0], tz) === season && String(r[1]) === cls));  // 다른 시즌·반은 그대로 [v9.132] 이 비교가 안 맞으면 재실행이 교체가 아니라 누적이 된다
   const fresh = plan.map(p => [season, cls, p.sid, p.name, p.grp, p.seat,
     confirmed, today, p.why, fixed[p.sid] ? 'Y' : '']);
   const merged = keep.concat(fresh);
@@ -15698,7 +15735,7 @@ function groupBoardOf_(ss, cls, when, tz) {
   const wkChk = seasonWeekOf_(start, when || new Date());
   const lessonNo = (wkChk > SEASON_WEEKS) ? 0 : lessonNoOf_(start, when || new Date(), sch ? sch.type : '평일');
   const rows = gs.getRange(2, 1, gs.getLastRow() - 1, GROUPS_HEADERS.length).getValues()
-    .filter(r => String(r[0]) === season && String(r[1]) === cls);
+    .filter(r => seasonKeyOf_(r[0], tz) === season && String(r[1]) === cls); // [v9.132]
   if (!rows.length) return null;
   const groups = [];
   for (let g = 0; g < GROUP_COUNT; g++) groups.push([]);
@@ -15771,7 +15808,10 @@ function groupBoardRender_(b, low) {
       if (ps.length) rounds.push((r + 1) + 'R ' + ps.join('/'));
     }
     if (rounds.length) L.push('        짝 ' + rounds.join('  '));
-    else if (arr.length && arr.length < 4) L.push('        짝: 조 전체(3인 조)');
+    // [v9.132] 실제 인원을 적는다 — 「(3인 조)」 하드코딩이라 **1인 조에도 "3인 조"**라고 찍혔다(08-02 실측).
+    //   강사가 화면을 믿고 셋을 묶으려다 사람이 없는 것을 발견하게 되는, 조용하지만 현장에서 바로 걸리는 거짓말.
+    //   5인 조(정원 초과)도 짝을 안 만들므로 여기로 오는데, 그때 "3인 조"는 정반대 오정보가 된다.
+    else if (arr.length && arr.length !== 4) L.push('        짝: 조 전체(' + arr.length + '인 조)');
   });
   const pres = [];
   b.groups.forEach((arr, g) => arr.forEach(m => { if (m.role === '발표') pres.push((g + 1) + '조 ' + m.name); }));
