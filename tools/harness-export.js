@@ -12,6 +12,9 @@
  *   node tools/harness-export.js --out <경로>
  *   node tools/harness-export.js --dry      # 무엇을 쓸지만 출력
  *
+ * require 시에는 아무것도 만들지 않는다 — rot-check(주간 부패 점검)가 이식 폴더의
+ * 낡음을 재려고 { DEFAULT_OUT, VER, STAMP }만 물어본다. 생성 실행은 CLI 직접 호출뿐.
+ *
  * ⛔ 절대 담지 않는 것 (자격증명·머신 종속):
  *   settings.local.json · launch.json · .clasprc.json · 로그인.txt · *비밀번호* · worktrees/
  */
@@ -24,9 +27,8 @@ const REPO = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
 const outIdx = args.indexOf('--out');
-const OUT = outIdx >= 0 && args[outIdx + 1]
-  ? path.resolve(args[outIdx + 1])
-  : path.join(os.homedir(), 'OneDrive', 'Desktop', 'SYNK_하네스');
+const DEFAULT_OUT = path.join(os.homedir(), 'OneDrive', 'Desktop', 'SYNK_하네스');
+const OUT = outIdx >= 0 && args[outIdx + 1] ? path.resolve(args[outIdx + 1]) : DEFAULT_OUT;
 
 // ── 담지 않을 것 (이름 단위 차단 — .gitignore와 같은 정신) ─────────────
 const DENY = [
@@ -62,7 +64,7 @@ function write(rel, body) {
   written++;
 }
 
-// ── 정본 읽기 + 버전 추출 ────────────────────────────────────────────
+// ── 정본 읽기 + 버전 추출 (require 시에도 읽기만 한다) ──────────────────
 const claudeMd = fs.readFileSync(path.join(REPO, 'CLAUDE.md'), 'utf8');
 const mVer = claudeMd.match(/\*\*(v[\d.]+)\s*·\s*([\d-]+)\*\*/);
 const VER = mVer ? mVer[1] : '(버전 미검출)';
@@ -81,57 +83,58 @@ const banner = (vendor, entry) => `<!-- 이 파일은 생성물이다. 손으로
 
 `;
 
-log(`하네스 내보내기 — 정본 ${STAMP}`);
-log(`대상: ${OUT}${DRY ? '  [DRY RUN]' : ''}\n`);
+function main() {
+  log(`하네스 내보내기 — 정본 ${STAMP}`);
+  log(`대상: ${OUT}${DRY ? '  [DRY RUN]' : ''}\n`);
 
-if (!DRY && fs.existsSync(OUT)) {
-  fs.rmSync(OUT, { recursive: true, force: true });   // 재생성이므로 통째로 새로
-  log('  (기존 폴더를 지우고 새로 만든다 — 이 폴더는 언제나 생성물이다)\n');
-}
+  if (!DRY && fs.existsSync(OUT)) {
+    fs.rmSync(OUT, { recursive: true, force: true });   // 재생성이므로 통째로 새로
+    log('  (기존 폴더를 지우고 새로 만든다 — 이 폴더는 언제나 생성물이다)\n');
+  }
 
-// ── 00 정본 ─────────────────────────────────────────────────────────
-log('00_정본/');
-write('00_정본/CLAUDE.md', claudeMd);                                  // Claude Code — 원문 그대로
-write('00_정본/AGENTS.md', banner('GPT Codex · Kimi Code CLI', 'AGENTS.md') + claudeMd);
-write('00_정본/지침_붙여넣기용.md', banner('웹 채팅(Claude.ai · ChatGPT · Gemini) 커스텀 인스트럭션', '설정 화면에 붙여넣기') + claudeMd);
+  // ── 00 정본 ─────────────────────────────────────────────────────────
+  log('00_정본/');
+  write('00_정본/CLAUDE.md', claudeMd);                                  // Claude Code — 원문 그대로
+  write('00_정본/AGENTS.md', banner('GPT Codex · Kimi Code CLI', 'AGENTS.md') + claudeMd);
+  write('00_정본/지침_붙여넣기용.md', banner('웹 채팅(Claude.ai · ChatGPT · Gemini) 커스텀 인스트럭션', '설정 화면에 붙여넣기') + claudeMd);
 
-// ── 01~05 이식물 ─────────────────────────────────────────────────────
-log('01_스킬/');   copyDir(path.join(REPO, '.claude', 'skills'), path.join(OUT, '01_스킬'));
-log('02_훅/');     copyDir(path.join(REPO, '.claude', 'hooks'), path.join(OUT, '02_훅'));
-                   copyFile(path.join(REPO, '.claude', 'settings.json'), path.join(OUT, '02_훅', 'settings.json'));
-log('03_에이전트/'); copyDir(path.join(REPO, '.claude', 'agents'), path.join(OUT, '03_에이전트'));
-log('04_메모리_볼트/');
-const MEM = path.join(os.homedir(), '.claude', 'projects',
-  'C--Users-q1212-Documents-SYNK-appsscript', 'memory');
-copyDir(MEM, path.join(OUT, '04_메모리_볼트'));
-log('05_도구/');   copyDir(path.join(REPO, 'tools'), path.join(OUT, '05_도구'));
+  // ── 01~05 이식물 ─────────────────────────────────────────────────────
+  log('01_스킬/');   copyDir(path.join(REPO, '.claude', 'skills'), path.join(OUT, '01_스킬'));
+  log('02_훅/');     copyDir(path.join(REPO, '.claude', 'hooks'), path.join(OUT, '02_훅'));
+                     copyFile(path.join(REPO, '.claude', 'settings.json'), path.join(OUT, '02_훅', 'settings.json'));
+  log('03_에이전트/'); copyDir(path.join(REPO, '.claude', 'agents'), path.join(OUT, '03_에이전트'));
+  log('04_메모리_볼트/');
+  const MEM = path.join(os.homedir(), '.claude', 'projects',
+    'C--Users-q1212-Documents-SYNK-appsscript', 'memory');
+  copyDir(MEM, path.join(OUT, '04_메모리_볼트'));
+  log('05_도구/');   copyDir(path.join(REPO, 'tools'), path.join(OUT, '05_도구'));
 
-// ── 06 브랜드 키트 (색·폰트 정본 + 검증 도구 + 회귀 가드) ─────────────
-// 정본 2종이 뿌리다. 도구는 눈으로 보는 용, 가드는 기계가 지키는 용 — 셋이 한 벌이다.
-log('06_브랜드키트/');
-for (const f of ['docs/디자인_컨셉_정본_v1.md', 'docs/브랜드_폰트_정본.md']) {
-  copyFile(path.join(REPO, f), path.join(OUT, '06_브랜드키트', '정본', path.basename(f)));
-}
-const BRAND_TOOLS = [
-  'synk_palette.html',            // 19색 팔레트 뷰어
-  'canva_키트_검증.js',            // Canva 키트 ↔ 정본 대조
-  '브랜드_포스터_컬러.html',
-  '브랜드_포스터_폰트.html',
-  '트렌디미니멀_색전환_비교.html',
-  '표지_AB_코랄vs레드.html',
-  '_mn_font_probe.html',          // 몽골 키릴 글리프 실측(ө·ү)
-];
-for (const f of BRAND_TOOLS) {
-  const s = path.join(REPO, 'docs', 'tools', f);
-  if (fs.existsSync(s)) copyFile(s, path.join(OUT, '06_브랜드키트', '도구', f));
-  else log(`  ⚠ 없음: docs/tools/${f}`);
-}
-for (const f of ['브랜드색.test.js', '브랜드폰트.test.js']) {
-  copyFile(path.join(REPO, 'tests', f), path.join(OUT, '06_브랜드키트', '회귀가드', f));
-}
+  // ── 06 브랜드 키트 (색·폰트 정본 + 검증 도구 + 회귀 가드) ─────────────
+  // 정본 2종이 뿌리다. 도구는 눈으로 보는 용, 가드는 기계가 지키는 용 — 셋이 한 벌이다.
+  log('06_브랜드키트/');
+  for (const f of ['docs/디자인_컨셉_정본_v1.md', 'docs/브랜드_폰트_정본.md']) {
+    copyFile(path.join(REPO, f), path.join(OUT, '06_브랜드키트', '정본', path.basename(f)));
+  }
+  const BRAND_TOOLS = [
+    'synk_palette.html',            // 19색 팔레트 뷰어
+    'canva_키트_검증.js',            // Canva 키트 ↔ 정본 대조
+    '브랜드_포스터_컬러.html',
+    '브랜드_포스터_폰트.html',
+    '트렌디미니멀_색전환_비교.html',
+    '표지_AB_코랄vs레드.html',
+    '_mn_font_probe.html',          // 몽골 키릴 글리프 실측(ө·ү)
+  ];
+  for (const f of BRAND_TOOLS) {
+    const s = path.join(REPO, 'docs', 'tools', f);
+    if (fs.existsSync(s)) copyFile(s, path.join(OUT, '06_브랜드키트', '도구', f));
+    else log(`  ⚠ 없음: docs/tools/${f}`);
+  }
+  for (const f of ['브랜드색.test.js', '브랜드폰트.test.js']) {
+    copyFile(path.join(REPO, 'tests', f), path.join(OUT, '06_브랜드키트', '회귀가드', f));
+  }
 
-// ── README ──────────────────────────────────────────────────────────
-write('README.md', `# SYNK 하네스 이식 꾸러미
+  // ── README ──────────────────────────────────────────────────────────
+  write('README.md', `# SYNK 하네스 이식 꾸러미
 
 > **생성물이다.** 정본 = SYNK-appsscript 저장소 · 지침 **${STAMP}**
 > 다시 만들기 = 저장소에서 \`node tools/harness-export.js\`
@@ -232,12 +235,17 @@ node tools/harness-export.js
 
 한 번 돌리고, 위 2·3의 복사만 다시 하면 전부 최신이 됩니다.
 이 폴더 안의 파일은 **모두 머리말에 정본 버전이 박혀 있어**, 열었을 때 낡았는지 스스로 알 수 있습니다.
+(낡음은 저장소 쪽에서도 감시합니다 — \`tools/rot-check.js\` 주간 부패 점검이 이 폴더의 스탬프를 정본과 대조합니다.)
 
 ## ⛔ 담지 않은 것 (의도적)
 
 \`settings.local.json\`(머신 종속 권한) · \`launch.json\`(절대경로) · \`.clasprc.json\`·\`로그인.txt\`·\`*비밀번호*\`(**자격증명 — 영구히 git 밖**) · \`.claude/worktrees/\`(14MB 작업 잔여물).
 `);
 
-log(`\n생성 ${written}건 · 제외 ${skipped}건`);
-if (DRY) log('(DRY RUN — 실제로 쓰지 않았다)');
-else log(`완료: ${OUT}`);
+  log(`\n생성 ${written}건 · 제외 ${skipped}건`);
+  if (DRY) log('(DRY RUN — 실제로 쓰지 않았다)');
+  else log(`완료: ${OUT}`);
+}
+
+if (require.main === module) main();
+module.exports = { DEFAULT_OUT, VER, STAMP };

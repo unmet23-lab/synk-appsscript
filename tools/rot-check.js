@@ -91,6 +91,19 @@ function frictionSection() {
   return { open: rows.filter((r) => !r.resolved), total: rows.length };
 }
 
+function harnessSection() {
+  // 이식 폴더(바탕화면 SYNK_하네스)는 머리말에 정본 버전을 박아 「스스로 낡음을 말하는」 생성물이지만,
+  // 여는 사람이 없으면 그 고백도 침묵이다 — 실측: v6.12 개정 당일, 폴더는 v6.11인 채로 하루를 보냈다(08-03).
+  // 폴더가 없으면 부패가 아니다(아직 안 꺼낸 것) — 「없음」과 「낡음」을 같은 모양으로 만들지 않는다.
+  const H = require('./harness-export.js'); // require는 생성기를 실행하지 않는다 — 경로·정본 버전만 얻는다
+  const dir = process.env.SYNK_HARNESS_OUT || H.DEFAULT_OUT;
+  const readme = path.join(dir, 'README.md');
+  if (!fs.existsSync(readme)) return { present: false, canonical: H.VER };
+  const m = fs.readFileSync(readme, 'utf8').match(/지침 \*\*(v[\d.]+)/);
+  const stamp = m ? m[1] : null;
+  return { present: true, canonical: H.VER, stamp, stale: !stamp || stamp !== H.VER };
+}
+
 /* ── 판정 ────────────────────────────────────────────────────────────────── */
 // 🔴 = 무언가가 이미 거짓을 말하고 있다(고치기 전엔 그래프·문서가 거짓말한다)
 // ⚠  = 아직 거짓은 아니지만 방치하면 🔴이 된다
@@ -100,12 +113,13 @@ function collect() {
   const mem = attempt('memory', memorySection);
   const doc = attempt('doc', docSection);
   const fri = attempt('friction', frictionSection);
+  const har = attempt('harness', harnessSection);
 
   const red = [];
   const warn = [];
   const notes = [];
 
-  for (const s of [mem, doc, fri]) {
+  for (const s of [mem, doc, fri, har]) {
     if (!s.ok) red.push({ kind: '검사기 고장', text: `${s.name} 검사가 실패했다 — ${s.error}` });
   }
 
@@ -128,6 +142,14 @@ function collect() {
     }
   }
 
+  if (har.ok && har.value.present && har.value.stale) {
+    warn.push({
+      kind: '이식 폴더 낡음',
+      text: `바탕화면 SYNK_하네스 = ${har.value.stamp || '(스탬프 미검출)'} · 정본 = ${har.value.canonical}` +
+        ' — 다른 도구(Codex·Kimi·웹·Obsidian)가 낡은 지침을 읽는다. 수리: node tools/harness-export.js',
+    });
+  }
+
   if (fri.ok && fri.value.open.length >= EVOLVE_THRESHOLD) {
     notes.push({
       kind: '/evolve 발동 조건 도달',
@@ -136,7 +158,7 @@ function collect() {
     });
   }
 
-  return { mem, doc, fri, red, warn, notes, findings: red.length + warn.length + notes.length };
+  return { mem, doc, fri, har, red, warn, notes, findings: red.length + warn.length + notes.length };
 }
 
 /* ── 출력 ────────────────────────────────────────────────────────────────── */
@@ -232,6 +254,7 @@ function main() {
       memory: r.mem.ok ? r.mem.value : { error: r.mem.error },
       doc: r.doc.ok ? r.doc.value : { error: r.doc.error },
       friction: r.fri.ok ? { open: r.fri.value.open.length, total: r.fri.value.total } : { error: r.fri.error },
+      harness: r.har.ok ? r.har.value : { error: r.har.error },
     }, null, 2));
     process.exit(r.red.length ? 1 : 0);
   }
@@ -249,4 +272,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { collect, render, dueNow, stamp, stateFile, EVOLVE_THRESHOLD };
+module.exports = { collect, render, dueNow, stamp, stateFile, harnessSection, EVOLVE_THRESHOLD };
