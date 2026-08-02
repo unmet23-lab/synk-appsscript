@@ -142,3 +142,60 @@ test('상태 파일은 git이 추적하지 않는다', () => {
   assert.match(ig, /^\.claude\/state\/$/m,
     '스로틀 상태가 추적되면 병행 세션끼리 매 실행 충돌한다');
 });
+
+/* 이식 폴더(다른 도구용 생성물) 낡음 감시 — 장치는 있는데 발동이 없어 v6.12 개정 당일
+ * 폴더가 v6.11인 채로 하루를 보냈다(2026-08-03 실측). 탐지 능력은 픽스처로 못박는다 —
+ * 실저장소의 낡음 여부에 기대면, 폴더를 재생성하는 순간 테스트가 빨간불이 된다. */
+function withHarnessOut(dir, fn) {
+  const prev = process.env.SYNK_HARNESS_OUT;
+  try {
+    process.env.SYNK_HARNESS_OUT = dir;
+    return fn();
+  } finally {
+    if (prev === undefined) delete process.env.SYNK_HARNESS_OUT; else process.env.SYNK_HARNESS_OUT = prev;
+  }
+}
+
+test('이식 폴더 — 스탬프가 정본과 다르면 낡음으로 잡는다 (픽스처)', () => {
+  const dir = path.join(TMP, 'stale-export');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'README.md'),
+    '> **생성물이다.** 정본 = SYNK-appsscript 저장소 · 지침 **v0.0 · 정본일 2026-01-01**\n', 'utf8');
+  withHarnessOut(dir, () => {
+    const v = R.harnessSection();
+    assert.strictEqual(v.present, true);
+    assert.strictEqual(v.stamp, 'v0.0');
+    assert.strictEqual(v.stale, true, '스탬프가 정본과 다른데 낡음을 못 잡는다');
+    const r = R.collect();
+    assert.ok(r.warn.some((w) => w.kind === '이식 폴더 낡음'),
+      '낡음을 알고도 리포트에 안 올린다 — 장치가 다시 침묵으로 돌아갔다');
+  });
+});
+
+test('이식 폴더 — 정본과 같으면 조용하고, 아예 없으면 부패가 아니다', () => {
+  const H = require(path.join(ROOT, 'tools', 'harness-export.js'));
+  const fresh = path.join(TMP, 'fresh-export');
+  fs.mkdirSync(fresh, { recursive: true });
+  fs.writeFileSync(path.join(fresh, 'README.md'),
+    `> **생성물이다.** 정본 = SYNK-appsscript 저장소 · 지침 **${H.VER} · 정본일 2026-08-03**\n`, 'utf8');
+  withHarnessOut(fresh, () => {
+    const v = R.harnessSection();
+    assert.strictEqual(v.stale, false, '정본과 같은데 낡았다고 한다 — 거짓양성은 가드 불신을 만든다');
+    assert.ok(!R.collect().warn.some((w) => w.kind === '이식 폴더 낡음'));
+  });
+  withHarnessOut(path.join(TMP, '없는-이식-폴더'), () => {
+    const v = R.harnessSection();
+    assert.strictEqual(v.present, false, '없는 폴더를 낡았다고 하면 「아직 안 씀」이 매주 경보가 된다');
+    assert.ok(!R.collect().warn.some((w) => w.kind === '이식 폴더 낡음'));
+  });
+});
+
+test('harness-export는 require로 불러도 생성기가 돌지 않는다', () => {
+  // rot-check가 주간마다 require하는데 그때마다 바탕화면 폴더를 지우고 다시 만들면
+  // 점검기가 곧 부작용 기계가 된다 — require 무해성을 실행으로 못박는다.
+  const toolPath = path.join(ROOT, 'tools', 'harness-export.js');
+  const out = execFileSync(process.execPath, ['-e', `require(${JSON.stringify(toolPath)})`], { encoding: 'utf8' });
+  assert.strictEqual(out, '', 'require만 했는데 내보내기 로그가 찍혔다 — 생성이 실행된 것');
+  const H = require(toolPath);
+  assert.ok(H.DEFAULT_OUT && /v[\d.]+/.test(H.VER), '경로·정본 버전을 내보내지 않는다');
+});
