@@ -136,17 +136,48 @@ test('머리말 밖의 vN은 버전이 아니다 — 본문을 훑으면 아무 
   assert.strictEqual(G.canonVersion('제목만 있고 버전이 없다'), null, '못 읽으면 null이지 추측이 아니다');
 });
 
-test('낡은 인용을 실제로 잡는다 — 급여 정본 v1.3 vs 파생 v1.1', () => {
-  const g = G.build();
-  const stale = g.stale.filter((s) => /급여 인센티브 정본/.test(s.target));
-  assert.ok(stale.length >= 3, `낡은 인용이 ${stale.length}건 — 실측 3건이 사라졌는지 확인할 것`);
-  for (const s of stale) {
-    assert.strictEqual(s.now, 'v1.3');
-    assert.notStrictEqual(s.cited, s.now, '같은 버전인데 낡음으로 올라왔다');
+/* [2026-08-03] 이 테스트는 처음에 **실저장소의 낡은 인용 3건**을 세도록 썼다가,
+ * 그 3건을 고치자마자 스스로 깨졌다. 회귀 테스트가 「버그가 아직 있을 것」을 요구하면
+ * 고치는 순간 빨간불이 되고, 다음 사람은 테스트를 고치는 게 아니라 **꺼버린다.**
+ * 그래서 탐지 능력은 픽스처로 못박고, 실저장소에는 거짓양성만 검사한다. */
+test('낡은 인용을 잡는다 — 픽스처(정본 v2.3 vs 파생 v1.0)', () => {
+  const stem = `docgraph-stale-${process.pid}`;
+  const canon = path.join(ROOT, 'docs', `${stem}_정본.md`);
+  const derived = path.join(ROOT, 'docs', `${stem}_파생.md`);
+  fs.writeFileSync(canon, '# 임시 정본 v2.3 — 시험용\n', 'utf8');
+  fs.writeFileSync(derived, `# 임시 파생\n\n<!-- 파생: docs/${stem}_정본.md@v1.0 -->\n`, 'utf8');
+  try {
+    const g = G.build();
+    const hit = g.stale.find((s) => s.from === `docs/${stem}_파생.md`);
+    assert.ok(hit, '정본이 v2.3인데 v1.0을 인용하는 파생을 못 잡았다');
+    assert.strictEqual(hit.cited, 'v1.0');
+    assert.strictEqual(hit.now, 'v2.3');
+  } finally {
+    fs.unlinkSync(canon);
+    fs.unlinkSync(derived);
   }
-  // 같은 정본을 따르지만 v1.3으로 맞춰둔 문서는 낡음이 아니다(거짓양성 차단)
-  assert.ok(!g.stale.some((s) => s.from === 'docs/반편성_정본_v2.md'),
-    '이미 v1.3에 맞춘 문서를 낡음으로 올리면 알림 전체가 신뢰를 잃는다');
+});
+
+test('버전이 같으면 낡음이 아니다 — 거짓양성이 나면 알림 전체가 신뢰를 잃는다', () => {
+  const stem = `docgraph-fresh-${process.pid}`;
+  const canon = path.join(ROOT, 'docs', `${stem}_정본.md`);
+  const derived = path.join(ROOT, 'docs', `${stem}_파생.md`);
+  fs.writeFileSync(canon, '# 임시 정본 v2.3 — 시험용\n', 'utf8');
+  fs.writeFileSync(derived, `# 임시 파생\n\n<!-- 파생: docs/${stem}_정본.md@v2.3 -->\n`, 'utf8');
+  try {
+    assert.ok(!G.build().stale.some((s) => s.from === `docs/${stem}_파생.md`));
+  } finally {
+    fs.unlinkSync(canon);
+    fs.unlinkSync(derived);
+  }
+});
+
+test('실저장소: 급여 정본을 v1.3으로 맞춘 파생은 낡음으로 올라오지 않는다', () => {
+  const g = G.build();
+  const canon = 'docs/정본/SYNK LAB/SYNK LAB 급여 인센티브 정본.txt';
+  assert.strictEqual(g.docs.get(canon).version, 'v1.3');
+  const wrong = g.stale.filter((s) => s.target === canon && s.cited === 'v1.3');
+  assert.deepStrictEqual(wrong, [], '이미 맞춘 문서를 낡음으로 올렸다');
 });
 
 test('버전 없는 엣지는 낡음도 최신도 아닌 「모름」이다', () => {
