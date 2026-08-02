@@ -83,11 +83,16 @@ test('[v9.125] ymTextOf_ — 텍스트 서식이 만든 시리얼 숫자(46173�
   assert.equal(ctx.ymTextOf_(120, 'Asia/Ulaanbaatar'), '120', '포인트류 작은 숫자를 날짜로 오변환한다(범위 가드 붕괴)');
 });
 
-test('[v9.125] ymTextColFix_ — 서식 변경(@)이 값 읽기보다 뒤다(먼저 바꾸면 Date가 시리얼로 숨는다)', () => {
-  const body = code.slice(code.indexOf('function ymTextColFix_'), code.indexOf('function sheetSelfHeal_'));
+test('[v9.128] ymTextColFix_ 순서 = 읽기 → 서식(@) → 쓰기 (세 번 틀린 자리)', () => {
+  const body = code.slice(code.indexOf('function ymTextColFix_'), code.indexOf('function sheetSelfHealNow'));
   const readAt = body.indexOf('.getValues()');
   const fmtAt = body.indexOf("setNumberFormat('@')");
-  assert.ok(readAt > -1 && fmtAt > -1 && readAt < fmtAt, '서식이 읽기보다 먼저다 — 치유 0건 + 46173 노출(치유 전보다 악화)');
+  const writeAt = body.indexOf('.setValues(vals)');
+  assert.ok(readAt > -1 && fmtAt > -1 && writeAt > -1, '읽기·서식·쓰기 중 없는 단계가 있다');
+  // ① 읽기가 서식보다 먼저 — 서식을 먼저 걸면 Date가 시리얼로 읽혀 instanceof를 빠져나간다(v9.97 실패)
+  assert.ok(readAt < fmtAt, '서식이 읽기보다 먼저다 — 치유 0건 + 46173 노출(치유 전보다 악화)');
+  // ② 서식이 쓰기보다 먼저 — 날짜 서식 열에 쓰면 시트가 '2026-07'을 다시 Date로 파싱한다(v9.125 실패·라이브 실측)
+  assert.ok(fmtAt < writeAt, '쓰기가 서식보다 먼저다 — 되쓴 문자열이 그 자리에서 다시 Date가 된다');
 });
 
 /* ── ⑤ 음성 동의 — fail-open 차단 (무동의 녹음은 영구 보관·비가역) ──────── */
@@ -222,7 +227,7 @@ test('[v9.126] 상담시트 값 읽기(cv)가 Date를 원시 문자열로 흘리
   const fnSrc = code.slice(s, code.indexOf('};', s) + 2).replace('const cv = ', 'return ');
   const cv = new Function('cCol', fnSrc + '')({ '기한': 0 });
   const d = new Date(2027, 9, 1);
-  assert.equal(cv([d], '기한'), '2027-10-01', 'Date가 yyyy-MM-dd로 정규화되지 않는다');
+  assert.equal(cv([d], "기한"), "2027-10-01", 'Date가 yyyy-MM-dd로 정규화되지 않는다');
   assert.equal(cv(['2027-10'], '기한'), '2027-10', '문자열 값을 훼손한다');
   assert.equal(cv([''], '기한'), '', '빈 값 처리가 다르다');
 });
