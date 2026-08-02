@@ -1,0 +1,2364 @@
+// SYNK 엔진 분할부 — 폼·리포트 — 상담 구글폼·출석/숙제 폼·스토어·과잠 워처·헬스체크·리포트 카드·명예의 전당·자동 공지.
+// 원본은 Code.js 단일 파일이었다. 로드 순서 정본 = .clasp.json filePushOrder(상수 정본 Code.js가 선두). 표식 기반 테스트는 tests/_engine-source.js가 전 파일을 합본해 본다.
+/* ===================== 상담 구글폼 ===================== */
+
+// [v9.66] 상담 정본 v18.4 증분 열 — Crew Dossier(오프라인 상담지)와 온라인 폼·상담데이터입력 시트 문항 통일.
+//   importFormResponses가 '헤더 이름 매칭'으로 기입하므로 열 위치 무관(60~62열 = 학생ID·자동열 보호 구간만 회피).
+//   앞으로 문항을 늘릴 땐 ① 이 배열에 헤더 추가 ② migrateConsultV184의 spec에 한 줄 ③ tests/safety.test.js의 동결 배열 문자열 갱신 ④ ▶ 1회.
+//   서술형(문단형) 신규 문항은 여기 넣지 않는다 — 대응 헤더가 없으면 규칙대로 📝자유서술→노션 칸에 모인다.
+const CONSULT_EXT_HEADERS = ['학교명/전공', '방문상세', '거절정황', '선호그룹', '인생드라마', '취미관심사'];
+
+function createConsultForm() { // [v9.19] 상담지 시트 v18.3 정합 — 문항 제목=시트 헤더명(19개 재정렬), 서술형→📝자유서술→노션. (구 v8.4=v18.1) · [v9.66] v18.4 — Crew Dossier 문항 통일(증분 8문항+관심K분야 '예능') + 재실행 안전 가드
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  // [v9.66] 재실행 안전 — 연결된 상담폼이 살아 있으면 새로 만들지 않는다(레벨테스트 v9.60·출석/숙제 v9.62와 같은 계급:
+  //   재실행마다 새 폼이 생기고 상담폼ID가 갈아끼워지면 배포된 링크·QR 응답이 미아가 된다). 문항 증분은 migrateConsultV184 ▶ 1회.
+  const exId = String(getState(st, '상담폼ID').val || '');
+  if (exId) {
+    try {
+      const exForm = FormApp.openById(exId);
+      const msg0 = '✅ 상담폼이 이미 연결돼 있어 새로 만들지 않았습니다.\n학생용: ' + exForm.getPublishedUrl() + '\n문항 업그레이드(v18.4)는 migrateConsultV184 ▶ 1회.';
+      Logger.log(msg0);
+      return msg0;
+    } catch (eGuard) {
+      // [리뷰 M1] 일시 장애·권한 순간 오류도 이 catch로 온다 — 여기서 새 폼을 만들면 배포된 링크·QR가 구 폼을
+      // 가리킨 채 응답이 미아가 되고(무감시 단절), 폼 생존 점검은 새 폼을 보고 통과해버린다. 진짜 삭제됐을 때만
+      // 사람 손으로 app_state '상담폼ID' 키를 지우고 재실행하는 것이 재생성 경로다(5708행 안내와 동일 관례).
+      const msgG = '⚠️ 연결된 상담폼ID를 열지 못했습니다(' + eGuard + ').\n일시 오류일 수 있어 새 폼을 만들지 않았습니다 — 폼이 정말 삭제된 게 맞으면 app_state 시트에서 상담폼ID 행을 지운 뒤 다시 실행하세요.';
+      Logger.log(msgG);
+      return msgG;
+    }
+  }
+  const form = FormApp.create('SYNK LAB 크루 적성 파악 상담지')
+    .setDescription('환영합니다! SYNK LAB 크루가 된 것을 축하드립니다.\n뇌과학 기반 맞춤 한국어 여정을 설계하기 위한 설문입니다. 솔직하게 답해주세요 🙂')
+    .setCollectEmail(false);
+
+  function txt(t, req) { const i = form.addTextItem().setTitle(t); if (req) i.setRequired(true); return i; }
+  function para(t) { return form.addParagraphTextItem().setTitle(t); }
+  function mc(t, opts, req) {
+    const i = form.addMultipleChoiceItem().setTitle(t).setChoiceValues(opts);
+    if (req) i.setRequired(true); return i;
+  }
+
+  form.addSectionHeaderItem().setTitle('PART 1 — 기본 인적사항');
+  txt('이름(한국어)', true); txt('이름(몽골어)', true);
+  form.addDateItem().setTitle('생년월일').setRequired(true);
+  mc('성별', ['남', '여'], true);
+  txt('연락처', true);
+  txt('SNS_ID').setHelpText('페이스북/인스타그램 ID');
+  txt('이메일', true).setHelpText('앱 로그인에 사용됩니다. 정확히 입력해주세요!');
+  txt('거주지역');
+  mc('최종학력', ['재학', '졸업', '휴학']); // [v9.19] v18.3: 학력→최종학력
+  txt('학교명/전공').setHelpText('재학·졸업 학교명과 전공 (선택)'); // [v9.66] v18.4 — 진학 로드맵·비자 소명 재료
+  txt('보호자명', true);
+  mc('보호자관계', ['엄마', '아빠', '형제/자매', '기타'], true);
+  txt('보호자연락처', true);
+
+  form.addSectionHeaderItem().setTitle('PART 1 — 어학 수준');
+  mc('TOPIK급수', ['없음', '1급', '2급', '3급', '4급', '5급', '6급']);
+  txt('TOPIK점수'); txt('기타인증서');
+  mc('한국어수준', ['완전초보', '기초', '초중급', '중급', '고급'], true);
+  txt('영어(점수/회화)').setHelpText('예: TOEIC 800 / 회화 중'); // [v9.19] v18.3: 영어수준→영어(점수/회화)
+  mc('학습경로', ['독학', '학원', '온라인', 'K콘텐츠']).setHelpText('가장 주된 것 하나만');
+
+  form.addSectionHeaderItem().setTitle('PART 2 — 동기와 목표');
+  mc('핵심비전', ['토픽고득점', '유학진학', '취업비자', 'K컬처전문가', '비자행정', '생활회화'], true)
+    .setHelpText('SYNK에 온 가장 큰 이유 하나만');
+  para('나의 다짐 노트').setHelpText('한국 유학과 배움이 나에게 갖는 의미, 진짜 꿈');
+  para('3-5년 후 목표');
+  mc('TOPIK목표', ['1~2급', '3~4급', '5~6급']);
+  txt('TOPIK목표기한').setHelpText('예: 2027-06'); // [v9.19] v18.3: 목표기한→TOPIK목표기한
+  txt('대학진학시기').setHelpText('예: 2027년 3월');
+
+  form.addSectionHeaderItem().setTitle('PART 3 — 한국 경험과 비자');
+  mc('한국방문경험', ['없음', '관광', '단기연수', '장기체류']); // [v9.19] v18.3
+  txt('방문상세').setHelpText('방문 기간·목적 (한국 방문 경험이 있을 때만)'); // [v9.66] v18.4
+  mc('비자신청이력', ['없음', '승인', '거절'], true); // [v9.19] v18.3
+  mc('거절비자종류', ['C-3', 'D-4', 'D-2', '기타']).setHelpText('비자 거절 경험이 있을 때만'); // [v9.19] v18.3
+  txt('거절정황').setHelpText('거절 시기·영사 지적 사유 (거절 경험이 있을 때만)'); // [v9.66] v18.4 — 비자 전략 설계의 핵심 재료
+  mc('가족한국체류', ['없음', '현재합법체류', '특이사항'], true); // [v9.19] v18.3
+
+  form.addSectionHeaderItem().setTitle('PART 4 — 학업 계획과 재정');
+  mc('희망진학과정', ['어학연수', '전문대', '학사', '편입', '석사', '박사', '취업비자준비']); // [v9.19] v18.3
+  mc('희망진학지역', ['서울', '경기·인천', '지방국공립', '상관없음']); // [v9.19] v18.3
+  mc('현재직업', ['학생', '직장인', '구직', '기타']);
+  mc('학습가능시간', ['1시간 미만', '1~2시간', '2~3시간', '3시간 이상']).setHelpText('하루 평균 공부 시간'); // [v9.19] v18.3
+  mc('목표달성시기', ['6개월(집중)', '1년(표준)', '2년(장기)']); // [v9.19] v18.3
+  mc('졸업후진로', ['한국취업', '몽골귀국', '미정']);
+  mc('핵심가치관', ['안정성', '고수입', '보람성취', '워라밸']);
+  txt('지망대학1순위'); txt('지망대학2순위'); txt('지망대학3순위'); // [v9.19] v18.3: …순위
+  txt('지망전공1순위'); txt('지망전공2순위'); txt('지망전공3순위'); // [v9.19] v18.3: …순위
+  mc('유학예산', ['여유있음', '보통', '빠듯함'], true);
+  mc('학비조달주체', ['부모님지원', '본인저축', '정부·기관장학금', '한국내근로', '기타'], true); // [v9.19] v18.3
+  mc('가족지지', ['전폭지지', '조건부찬성', '설득필요'], true);
+
+  form.addSectionHeaderItem().setTitle('PART 5 — 성향과 K-컬처');
+  mc('성격유형', ['외향적', '내향적', '상황에따라']);
+  mc('학습_집중', ['혼자집중', '그룹스터디']);
+  mc('학습_방식', ['이론중심', '실습·회화중심']);
+  mc('학습_태도', ['꼼꼼한반복', '새로운탐구']);
+  mc('대표강점', ['리더십', '분석력', '예술감각', '추진력', '창의성', '소통', '꼼꼼함', '기타']);
+  txt('취미관심사').setHelpText('운동·음악·요리·게임·여행 등 자유롭게'); // [v9.66] v18.4 — 케어 대화·콘텐츠 개인화 재료
+  para('한국어고충').setHelpText('암기·집중·발음·문법·말하기 울렁증 등 — 수업 설계에 그대로 반영됩니다'); // [v9.66] v18.4 서술형 → 노션
+  mc('관심K분야', ['KPOP', '드라마', '뷰티패션', '음식', '예능']).setHelpText('가장 관심 있는 것 하나만'); // [v9.66] '예능' 증분(Crew Dossier 정합)
+  txt('선호그룹').setHelpText('K-POP 최애 그룹 (있다면)'); // [v9.66] v18.4
+  txt('인생드라마').setHelpText('인생 K-드라마·작품 (있다면)'); // [v9.66] v18.4
+  mc('KPOP댄스희망', ['매우희망', '보통', '없음']);
+  mc('보컬트레이닝', ['매우희망', '보통', '없음']);
+  mc('연기체험', ['매우희망', '보통', '없음']);
+  mc('K뷰티메이크업', ['매우희망', '보통', '없음']);
+  mc('영어수업관심', ['매우희망', '보통', '없음']).setHelpText('SYNK 영어 수업 (GLOBAL ENGLISH) 참여 희망'); // [v9.19] v18.3: 영어수업→영어수업관심
+  para('영어 학습 목표 (선택)');
+
+  form.addSectionHeaderItem().setTitle('PART 6 — 기대와 건의');
+  mc('인지채널', ['페이스북', '인스타', '틱톡', '추천', '오픈데이', '학교제휴', '워크인', '기타'], true); // [v9.33] leads 유입경로 8버킷과 통일 — 어트리뷰션 분류 정합('광고' 단일 버킷→플랫폼 분리)
+  para('SYNK선택이유').setHelpText('SYNK를 선택한 결정적 이유 (예: 비자 관리 · 확실한 성적 향상 · K컬처 클래스)'); // [v9.66] v18.4 서술형 → 노션 — 전환 결정타 수집
+  para('SYNK 기대사항');
+  para('이전 학원 경험');
+  para('담당크루께 바라는 점');
+  para('기타 질문');
+
+  setState(st, '상담폼ID', form.getId());
+  const doneMsg = '✅ 폼 생성 완료! (v18.4)\n학생용: ' + form.getPublishedUrl() + '\n편집용: ' + form.getEditUrl();
+  Logger.log(doneMsg);
+  return doneMsg;
+}
+
+/* [v9.66] 상담 정본 v18.4 통합 마이그레이션 — ▶ 1회 실행(재실행 안전 · 멱등).
+ * 유호님 2026-07-26 지시(구글폼+상담데이터입력 시트를 오프라인 Crew Dossier 기준 단일 정본으로 통합)의 실행부.
+ * ① 상담데이터입력 2행 헤더 끝(63열~)에 CONSULT_EXT_HEADERS 중 없는 것만 추가 — 기존 62열·데이터·행은 불변
+ *    (syncProfiles r[59] 학생ID·KPI·워치독 전부 열 '추가'에는 무영향. 60열=학생ID가 아니면 스키마 어긋남으로 중단).
+ * ② 라이브 상담폼에 v18.4 신규 문항(제목=헤더명)을 같은 제목이 없을 때만 추가하고 파트 내 제자리로 이동.
+ *    기존 문항·제목·응답·URL은 건드리지 않는다(v9.64 '제자리 업그레이드' 계보 — 응답 이력·배포 링크 보존).
+ *    '관심K분야'에는 '예능' 선택지만 증분(기존 응답값 불변).
+ * ③ 결과를 로그+원장 메일로 보고. 끝나면 checkFormMapping ▶로 매핑을 눈으로 확인하는 것을 권장. */
+function migrateConsultV184() {
+  const out = [];
+  let sheetOk = false; // [리뷰 M5] 시트 증분 성공 시 app_state '상담정본'=v18.4 선언 — 워치독 감시 게이트
+  // ① 시트 헤더 증분
+  try {
+    const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    if (!consult) out.push("⚠️ 시트: '상담데이터입력' 탭 없음 — 탭 이름 확인, 증분 중단");
+    else {
+      const w0 = consult.getLastColumn();
+      const hdr = w0 >= 1 ? consult.getRange(2, 1, 1, w0).getValues()[0].map(h => String(h || '').trim()) : [];
+      if (w0 < 62 || hdr[59] !== '학생ID') {
+        out.push('⚠️ 시트: 스키마 어긋남(폭 ' + w0 + '열 · 60열="' + (hdr[59] || '빈칸') + '") — 60열(BH)=학생ID 전제가 깨져 있어 증분을 중단합니다. dumpConsultHeaders ▶로 확인하세요.');
+      } else {
+        const have = {}; hdr.forEach(h => { if (h) have[h] = 1; });
+        const added = [], kept = [];
+        let wH = 0; hdr.forEach((h, i) => { if (h) wH = i + 1; }); // [리뷰 L1] 시트 lastColumn이 아니라 '헤더 행의 끝' 기준 — 오른쪽 데이터 잔재가 있어도 63열부터 정확히 붙는다
+        let col = Math.max(62, wH) + 1; // 항상 뒤에만 추가 — 기존 열 위치(인덱스 참조)가 절대 안 밀린다
+        const firstNew = col;
+        CONSULT_EXT_HEADERS.forEach(h => {
+          if (have[h]) { kept.push(h); return; }
+          if (consult.getMaxColumns() < col) consult.insertColumnsAfter(consult.getMaxColumns(), col - consult.getMaxColumns());
+          consult.getRange(2, col).setValue(h);
+          added.push(h + '(' + col + '열)');
+          col++;
+        });
+        if (added.length) consult.showColumns(firstNew, added.length); // [리뷰 M3] 숨김 열(62열=반조회순번) 옆 삽입은 숨김을 상속할 수 있다 — 강사 눈에 보이게 강제
+        sheetOk = true;
+        out.push('시트: 추가 ' + (added.length ? added.join(', ') : '없음') + (kept.length ? ' · 이미 있음 ' + kept.length + '개' : ''));
+      }
+    }
+  } catch (e) { out.push('⚠️ 시트 접근 실패 — CONSULT_SHEET_ID/권한 확인: ' + e); }
+
+  // ② 라이브 폼 제자리 증분
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+    if (sheetOk) setState(st, '상담정본', 'v18.4'); // [리뷰 M5] 적용 선언 — 워치독이 열 폭이 아니라 이 플래그로 감시(6열 전량 삭제로 폭이 62로 돌아와도 잡힌다)
+    const fid = String(getState(st, '상담폼ID').val || '');
+    if (!fid) out.push('폼: 상담폼ID 미연결 — createConsultForm ▶ 먼저(새 폼은 v18.4 문항 포함으로 생성됩니다)');
+    else {
+      const form = FormApp.openById(fid);
+      let titleIdx = {};
+      const rebuild = () => { titleIdx = {}; form.getItems().forEach(x => { titleIdx[String(x.getTitle()).trim()] = x.getIndex(); }); };
+      rebuild();
+      // [제목, 종류, 도움말, 위치 앵커(이 문항 바로 뒤에 배치)] — 제목=시트 헤더명 규칙 유지
+      const spec = [
+        ['학교명/전공', 'text', '재학·졸업 학교명과 전공 (선택)', '최종학력'],
+        ['방문상세', 'text', '방문 기간·목적 (한국 방문 경험이 있을 때만)', '한국방문경험'],
+        ['거절정황', 'text', '거절 시기·영사 지적 사유 (거절 경험이 있을 때만)', '거절비자종류'],
+        ['취미관심사', 'text', '운동·음악·요리·게임·여행 등 자유롭게', '대표강점'],
+        ['한국어고충', 'para', '암기·집중·발음·문법·말하기 울렁증 등 — 수업 설계에 그대로 반영됩니다', '취미관심사'],
+        ['선호그룹', 'text', 'K-POP 최애 그룹 (있다면)', '관심K분야'],
+        ['인생드라마', 'text', '인생 K-드라마·작품 (있다면)', '선호그룹'],
+        ['SYNK선택이유', 'para', 'SYNK를 선택한 결정적 이유 (예: 비자 관리 · 확실한 성적 향상 · K컬처 클래스)', '인지채널']
+      ];
+      const fAdded = [], fKept = [];
+      spec.forEach(q => {
+        if (titleIdx[q[0]] !== undefined) { fKept.push(q[0]); return; } // 멱등 — 같은 제목이 있으면 스킵
+        const it = q[1] === 'para' ? form.addParagraphTextItem() : form.addTextItem();
+        it.setTitle(q[0]).setHelpText(q[2]);
+        const anchor = titleIdx[q[3]];
+        if (anchor !== undefined) form.moveItem(it.getIndex(), anchor + 1);
+        rebuild(); // 이동 후 인덱스가 전부 밀리므로 다음 앵커 계산 전에 재구축
+        fAdded.push(q[0] + (anchor === undefined ? '(앵커 "' + q[3] + '" 미발견 — 맨 끝 배치)' : '')); // [리뷰 L4] 조용한 끝 배치를 리포트에 노출
+      });
+      // '관심K분야' 선택지 '예능' 증분(기존 선택지·응답 보존)
+      const kItems = form.getItems().filter(x => String(x.getTitle()).trim() === '관심K분야' && x.getType() === FormApp.ItemType.MULTIPLE_CHOICE);
+      if (kItems.length) {
+        const mcIt = kItems[0].asMultipleChoiceItem();
+        const vals = mcIt.getChoices().map(ch => ch.getValue());
+        if (vals.indexOf('예능') === -1) { vals.push('예능'); mcIt.setChoiceValues(vals); fAdded.push("관심K분야+'예능'"); }
+        else fKept.push("관심K분야 '예능'");
+      } else out.push("폼: '관심K분야' 객관식 문항을 못 찾음 — 제목 변경 여부 확인");
+      out.push('폼: 추가 ' + (fAdded.length ? fAdded.join(', ') : '없음') + (fKept.length ? ' · 이미 있음 ' + fKept.length + '개' : ''));
+    }
+  } catch (e) { out.push('⚠️ 폼 증분 실패 — 상담폼ID/권한 확인: ' + e); }
+
+  const report = '🔀 상담 정본 v18.4 마이그레이션 결과\n' + out.join('\n') +
+    '\n\n다음 확인: checkFormMapping ▶ — 증분 6문항이 열에 매핑되고, 서술형 2문항(한국어고충·SYNK선택이유)이 노션이관으로 표시되면 정상입니다.';
+  Logger.log(report);
+  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🔀 상담 정본 v18.4 마이그레이션', report);
+  return report;
+}
+
+// [v9.90] 음성·면접 녹음 동의가 받는 시트 열 — 문항 B는 blob이 아니라 '열'로 받는다(아래 설계 ③).
+const CONSENT_EXT_HEADERS = ['음성동의'];
+/* [v9.104] 음성 보관 기간 = **기간 제한 없음**(유호님 08-01 재확정 — 08-01 오전 1년 → 오후 무제한).
+ *   0 = 무기한. 데이터 축적이 전략 축이라는 판단(오래된 녹음일수록 "처음 목소리 vs 오늘" 대비가 커진다).
+ *   ⚠ 무기한은 **시간 기반 자동 삭제가 없다**는 뜻이고, 그래서 삭제의 유일한 트리거가 **철회**가 된다.
+ *     즉 1년 설계보다 오히려 철회 경로가 더 중요해진다 — 학생이 지워 달라고 했을 때 실제로 지울 수
+ *     있어야 그 문장이 참이 된다(voice_log·Drive 파일·성장 카드 세 곳).
+ *   ⚠ 1년→무기한은 **학생에게 불리한 방향**이라 소급 적용이 불가하다. 다행히 1년 문구는 아직 라이브
+ *     폼에 반영된 적이 없어(migrateConsentV186 재실행 전) 그 문장으로 동의한 사람이 0명이다.
+ *     이후에 기간을 다시 늘리려면 그때는 재동의를 받아야 한다.
+ *   ⓘ 몽골법상 음성은 생체정보 계열로 읽힐 수 있어, 무기한 보관은 '동의 철회 시까지'라는 통제권과
+ *     한 쌍으로 제시해야 방어된다 — 그래서 문구가 기간과 철회를 같은 문장에 담는다. */
+const VOICE_RETENTION_MONTHS = 0;
+const VOICE_CONSENT_HELP = '※ 선택 문항입니다 — 어느 쪽을 고르셔도 수업·성적·반 배정에 어떤 불이익도 없습니다.\n'
+  + '수집: 수업·발음 연습·모의 면접(비자·취업) 중 녹음된 목소리와 그것을 글로 옮긴 기록 / '
+  + '용도: 발음·말하기·면접 답변에 대한 개인 피드백과, 그 피드백을 만드는 AI의 학습 / '
+  + '보관: 기간 제한 없이 보관합니다 — 여러 해에 걸친 "처음 목소리 vs 오늘 목소리" 성장 기록을 위해서입니다. '
+  + '다만 동의를 철회하시면 그 시점에 보관 중인 녹음을 모두 삭제합니다 / 제3자 제공 없음 · '
+  + '동의 철회는 언제든 학원으로 연락 주시면 즉시 중단하고 기존 녹음도 삭제합니다.';
+
+// [v9.84·204 → v9.90·205] ▶ 1회(유호 문구 검토 후) — 온라인 상담폼 동의 문항 (정본 v18.6).
+//   오프라인 도시에 v3.3 동의·서명 블록(상담통합_실행지_v966 §5)의 온라인 짝 — 지금까지 온라인 폼엔 동의가 0개였다.
+//   설계: ① 문항 A(개인정보·학습데이터, 필수)는 시트 헤더를 만들지 않는다 → '📝자유서술→노션' blob에 접수
+//   타임스탬프와 함께 보존(=동의 증빙, 노션 상담서술로도 주간 이관). ② 멱등 — 같은 제목이 있으면 스킵(V184와 같은 계급).
+//   ③ [v9.90] 문항 B(음성·AI 학습, 선택)는 **열로 받는다** — blob에만 있으면 "누가 거부했는지"를 코드가 못 읽어
+//   녹음·AI 학습 기능이 거부자까지 삼킨다. 제목=헤더명 규칙(CONSENT_EXT_HEADERS)으로 상담시트 열에 착지시켜
+//   voiceConsentStat_·후속 녹음 기능이 기계 게이트로 쓴다. 필수 응답이되 '아니요' 선택지를 둬 거부가 가능하게 —
+//   끼워팔기 동의(거부 불가)는 동의 자체가 무효화될 수 있고, 무응답 허용은 게이트가 침묵으로 통과된다.
+//   ④ 문구는 초안 — 보관 기간·법률 수위·몽골어 병기는 유호님+원어민 검수 몫. 음성은 몽골법상 생체정보 계열이라
+//   목적란에 'AI 학습'이 없으면 나중에 모은 것을 전부 못 쓰고 **소급 동의가 불가능**하다(=녹음 시작 전에 박아야 함).
+function migrateConsentV186() {
+  const out = [];
+  let sheetOk = false;
+  // ① 시트 헤더 증분 — 음성동의 열(migrateConsultV184와 동일 규약: 항상 헤더 행 끝에만 추가, 기존 열 위치 불변)
+  try {
+    const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    if (!consult) out.push("⚠️ 시트: '상담데이터입력' 탭 없음 — 탭 이름 확인, 증분 중단");
+    else {
+      const w0 = consult.getLastColumn();
+      const hdr = w0 >= 1 ? consult.getRange(2, 1, 1, w0).getValues()[0].map(h => String(h || '').trim()) : [];
+      if (w0 < 62 || hdr[59] !== '학생ID') {
+        out.push('⚠️ 시트: 스키마 어긋남(폭 ' + w0 + '열 · 60열="' + (hdr[59] || '빈칸') + '") — 증분 중단. dumpConsultHeaders ▶로 확인하세요.');
+      } else {
+        const have = {}; hdr.forEach(h => { if (h) have[h] = 1; });
+        const added = [];
+        let wH = 0; hdr.forEach((h, i) => { if (h) wH = i + 1; });
+        let col = Math.max(62, wH) + 1;
+        const firstNew = col;
+        CONSENT_EXT_HEADERS.forEach(h => {
+          if (have[h]) return;
+          if (consult.getMaxColumns() < col) consult.insertColumnsAfter(consult.getMaxColumns(), col - consult.getMaxColumns());
+          consult.getRange(2, col).setValue(h);
+          added.push(h + '(' + col + '열)');
+          col++;
+        });
+        if (added.length) consult.showColumns(firstNew, added.length); // 숨김 열 옆 삽입의 숨김 상속 차단(V184 리뷰 M3와 동일)
+        sheetOk = true;
+        out.push('시트: ' + (added.length ? '추가 ' + added.join(', ') : '이미 있음 — 스킵(멱등)'));
+      }
+    }
+  } catch (e) { out.push('⚠️ 시트 접근 실패 — CONSULT_SHEET_ID/권한 확인: ' + e); }
+
+  // ② 폼 문항 2종 증분
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+    const fid = String(getState(st, '상담폼ID').val || '');
+    if (!fid) { const m0 = '⚠️ 상담폼ID 미연결 — createConsultForm ▶ 먼저'; Logger.log(m0); return m0; }
+    const form = FormApp.openById(fid);
+    const fItems = form.getItems();
+    const titles = fItems.map(x => String(x.getTitle()).trim());
+    /* [v9.103] 도움말 동기화 — 제목만 보고 스킵하던 구 로직에서는 **문구 개정이 라이브 폼에 영원히 닿지 않는다.**
+     *   보관 기간처럼 나중에 확정되는 값이 코드에만 바뀌고 학생이 실제로 읽는 문장은 옛것으로 남는 구멍이었다
+     *   (동의는 학생이 읽은 문장이 정본이므로, 어긋나면 코드가 가진 근거가 무효가 된다).
+     *   제목·선택지·시트 착지는 그대로 두고 도움말만 정본과 맞춘다 — 기존 응답은 손대지 않는다. */
+    const syncHelp = (idx, help, label) => {
+      const it = fItems[idx].asMultipleChoiceItem();
+      if (String(it.getHelpText() || '') === help) { out.push(label + ': 이미 있음 · 문구 최신'); return; }
+      it.setHelpText(help);
+      out.push(label + ': 이미 있음 — 📝 문구를 정본으로 갱신했습니다');
+    };
+
+    const A = CONSENT_Q_TITLE; // [v9.98] 제목 하드코딩 2곳 → 단일 소스. 이 제목이 곧 blob의 행 단위 동의 마커라 어긋나면 전 행이 미동의로 분류된다
+    const HELP_A = '수집: 이 설문의 응답(연락처·보호자 정보·학습 배경·목표·취향) / 용도: 상담·반 배정·학습 개인화(응원 문장·퀴즈·성장 리포트의 소재)·학원 운영 통계 / 보관: 재원 기간 및 성장 기록 보존 기간 / 제3자 제공 없음 · 동의 철회는 언제든 학원으로 연락 주세요.';
+    if (titles.indexOf(A) !== -1) syncHelp(titles.indexOf(A), HELP_A, '폼 A(개인정보·필수)');
+    else {
+      form.addMultipleChoiceItem().setTitle(A).setHelpText(HELP_A)
+        .setChoiceValues(['네, 동의합니다']).setRequired(true);
+      out.push('폼 A(개인정보·필수): 추가 — 응답은 자유서술 칸에 타임스탬프와 함께 보존됩니다');
+    }
+
+    // 문항 B — 제목이 곧 시트 헤더명이어야 열에 착지한다(importFormResponses 헤더 이름 매칭)
+    const B = CONSENT_EXT_HEADERS[0]; // '음성동의'
+    if (titles.indexOf(B) !== -1) syncHelp(titles.indexOf(B), VOICE_CONSENT_HELP, '폼 B(음성·AI 학습·선택)');
+    else {
+      form.addMultipleChoiceItem().setTitle(B).setHelpText(VOICE_CONSENT_HELP)
+        .setChoiceValues(['네, 동의합니다', '아니요, 원하지 않습니다']).setRequired(true);
+      out.push('폼 B(음성·AI 학습·선택): 추가 — 응답이 상담시트 "' + B + '" 열에 착지합니다(거부자 기계 식별 가능)');
+    }
+    if (sheetOk) setState(st, '상담동의', 'v18.6'); // 워치독 감시 게이트 — 시트 열까지 성립했을 때만 적용 선언
+    else out.push('⚠️ 시트 열 증분이 실패해 v18.6 선언을 보류했습니다 — 폼 문항만으로는 거부자를 못 읽습니다');
+  } catch (e) { out.push('⚠️ 폼 접근 실패 — 상담폼ID/권한 확인: ' + e); }
+
+  const report = '🔏 상담 동의 v18.6 결과\n' + out.join('\n')
+    + '\n\n다음 확인: checkFormMapping ▶ — "음성동의"가 열 매핑으로 표시되면 정상입니다.'
+    + '\n⚠️ 몽골어 병기는 아직 없습니다 — 학생이 못 읽는 동의는 효력을 다툴 수 있어 원어민 검수 후 도움말에 병기하세요.';
+  Logger.log(report);
+  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🔏 상담폼 동의 문항(v18.6)', report);
+  return report;
+}
+
+/* [v9.90] 음성·AI 학습 동의 현황 — 상담시트 '음성동의' 열 집계(동의/거부/미응답).
+ * 녹음·AI 학습 기능이 붙기 전까지는 워치독 표기용이고, 붙은 뒤에는 같은 열이 그대로 기계 게이트가 된다
+ * ('동의' 행만 녹음 대상 — 거부자를 삼키면 되돌릴 수 없다). 실패는 빈 결과로 격리한다(워치독 한 줄이 전체를 깨지 않게). */
+/* [v9.104] 🔒 학생별 음성 동의 맵 — sid → 'yes' | 'no' | ''(미응답).
+ *   v9.90은 이 열을 만들며 "후속 녹음 기능이 기계 게이트로 쓴다"고 적었지만, **정작 이미 존재하던
+ *   목소리 레일(교재연동.js v9.59)에는 배선되지 않았다**(08-01 발견 — ROLE_TALK 미배선과 같은 계급:
+ *   약속은 주석에, 배선은 없음). 그 사이 voiceSweep_는 동의 여부와 무관하게 전원의 녹음을 적재하고
+ *   포인트까지 지급하고 있었다. 보관이 무기한이 되면서 이 구멍의 비용은 "영구 보관"으로 커진다.
+ *   종이 동의서 학생은 상담시트 그 칸에 수기로 '네, 동의합니다'를 넣으면 그대로 통과한다.
+ *   실패는 null로 격리 — 시트를 못 읽었을 때 전원 통과시키면 게이트가 침묵으로 열린다(호출부는 보류를 택한다). */
+function voiceConsentMap_() {
+  try {
+    const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    if (!consult) return null;
+    const w = consult.getLastColumn(), lastRow = consult.getLastRow();
+    if (w < 1 || lastRow < 3) return {};
+    const hdr = consult.getRange(2, 1, 1, w).getValues()[0].map(h => String(h || '').trim());
+    const ci = hdr.indexOf(CONSENT_EXT_HEADERS[0]);
+    const si = hdr.indexOf('학생ID');
+    if (ci === -1 || si === -1) return null;                 // 열 자체가 없으면 판정 불가 — 통과가 아니라 보류
+    const out = {};
+    consult.getRange(3, 1, lastRow - 2, w).getValues().forEach(r => {
+      const sid = String(r[si] || '').trim();
+      if (!sid) return;
+      const v = String(r[ci] || '').trim();
+      // [v9.125] 화이트리스트 판정 — 구 코드는 「'아니'로 시작하지 않으면 전부 yes」(fail-open)라
+      //   수기 칸의 '거부'·'보류'·'확인중'·'X'가 모두 동의로 통과했다. 무동의 녹음은 영구 보관이라 되돌릴 수 없다.
+      //   명시적 긍정만 yes, 명시적 부정만 no, 그 외 전부 ''(보류) — v9.104 원칙(판정 불가는 통과가 아니라 보류).
+      out[sid] = !v ? ''
+        : (v.indexOf('아니') === 0 || v.indexOf('거부') === 0 || v.indexOf('미동의') === 0) ? 'no'
+        : (v.indexOf('네') === 0 || v.indexOf('동의') === 0) ? 'yes'
+        : '';
+    });
+    return out;
+  } catch (e) { Logger.log('voiceConsentMap_ 실패: ' + e); return null; }
+}
+
+function voiceConsentStat_() {
+  const r = { yes: 0, no: 0, blank: 0, total: 0, ok: false };
+  try {
+    const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    if (!consult) return r;
+    const w = consult.getLastColumn(), lastRow = consult.getLastRow();
+    if (w < 1 || lastRow < 3) return r;
+    const hdr = consult.getRange(2, 1, 1, w).getValues()[0].map(h => String(h || '').trim());
+    const ci = hdr.indexOf(CONSENT_EXT_HEADERS[0]);
+    if (ci === -1) return r;
+    const vals = consult.getRange(3, ci + 1, lastRow - 2, 1).getValues();
+    vals.forEach(row => {
+      const v = String(row[0] || '').trim();
+      r.total++;
+      if (!v) r.blank++;
+      else if (v.indexOf('아니') === 0) r.no++;
+      else r.yes++;
+    });
+    r.ok = true;
+  } catch (e) { /* 격리 */ }
+  return r;
+}
+
+// [v9.33] 콜드 광고 트래픽용 미니 리드폼 — 이름·연락처·인지채널·관심과정 4문항. 68문항(v18.4) 온보딩 상담폼(createConsultForm)과 완전 별개(그 폼은 건드리지 않음).
+//         광고 CTA는 이 폼만 연결. 응답은 이 스프레드시트의 '리드폼_응답' 시트로 떨어지며, 원장이 이름·연락처·인지채널(→유입경로)을 leads 시트로 수기 이관.
+function createLeadForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const before = ss.getSheets().map(s => s.getName()); // setDestination이 새로 만드는 응답 시트를 식별하기 위한 스냅샷
+
+  const form = FormApp.create('SYNK LAB 상담 신청')
+    .setDescription('SYNK LAB에 관심 가져주셔서 감사합니다! 아래 4가지만 남겨주시면 크루가 곧 연락드립니다 🙂')
+    .setCollectEmail(false);
+  setState(ensureSheet(ss, 'app_state', ['key', 'value']), '리드폼ID', form.getId()); // [v9.94] 생성 즉시 기록 — 뒤 단계(응답 시트 연결)에서 타임아웃돼도 앱이 이 폼을 잃지 않는다
+
+  function txt(t, req) { const i = form.addTextItem().setTitle(t); if (req) i.setRequired(true); return i; }
+  function mc(t, opts, req) { const i = form.addMultipleChoiceItem().setTitle(t).setChoiceValues(opts); if (req) i.setRequired(true); return i; }
+
+  txt('이름', true);
+  txt('연락처', true).setHelpText('페이스북 메신저 · 전화번호 등 편하신 방법');
+  mc('인지채널', ['페이스북', '인스타', '틱톡', '추천', '오픈데이', '학교제휴', '워크인', '기타'], true).setHelpText('SYNK를 어디서 알게 되셨나요? (leads 유입경로와 동일 분류)');
+  mc('관심 과정', ['정규TOPIK', '회화', '영어', '미정'], true);
+
+  // 응답을 이 스프레드시트에 연결하고 시트명을 '리드폼_응답'으로 명시(leads로 수기 이관 편의). 이미 있으면 날짜 접미사로 충돌 회피(재실행 안전).
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  SpreadsheetApp.flush();
+  const created = ss.getSheets().find(s => before.indexOf(s.getName()) === -1);
+  if (created) {
+    const tz = ss.getSpreadsheetTimeZone();
+    created.setName(ss.getSheetByName('리드폼_응답') ? '리드폼_응답_' + Utilities.formatDate(new Date(), tz, 'MMdd_HHmm') : '리드폼_응답');
+  }
+
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  setState(st, '리드폼ID', form.getId());
+  Logger.log('✅ 미니 리드폼 생성 완료!');
+  Logger.log('광고 랜딩용(공개 URL — 광고 CTA/프로필 링크에 이 주소): ' + form.getPublishedUrl());
+  Logger.log('편집용: ' + form.getEditUrl());
+  Logger.log('응답 시트: "리드폼_응답" — 이름·연락처·인지채널(→leads 유입경로)·관심 과정(→leads 메모)을 leads 시트로 옮기세요.');
+}
+
+/* ===================== [v9.49] 출석 폼 · 숙제 제출 폼 (1회 실행) ===================== */
+// 공용: 폼 응답을 이 스프레드시트에 연결하고 응답 탭 이름을 지정(createLeadForm 패턴 — 재실행 시 날짜 접미사로 충돌 회피)
+function linkFormTab_(ss, before, tabName) {
+  SpreadsheetApp.flush();
+  const created = ss.getSheets().find(s => before.indexOf(s.getName()) === -1);
+  if (created) {
+    const tz = ss.getSpreadsheetTimeZone();
+    created.setName(ss.getSheetByName(tabName) ? tabName + '_' + Utilities.formatDate(new Date(), tz, 'MMdd_HHmm') : tabName);
+  }
+}
+// 공용: 학생ID 문항의 미리채움 URL 틀 — SIDTOKEN 자리에 학생ID를 치환해 학생별 원터치 링크를 만든다(writeSharedCols_).
+function prefillTemplateOf_(form, itemTitle) {
+  const it = form.getItems().find(i => i.getTitle() === itemTitle);
+  return form.createResponse().withItemResponse(it.asTextItem().createResponse('SIDTOKEN')).toPrefilledUrl();
+}
+
+// [v9.62] 폼 생성 재실행 가드 — 이미 만들어졌으면 새로 만들지 않는다. 두 번 눌러도 안전해야 하는 이유:
+//   linkFormTab_이 이름 충돌을 날짜 접미사로 피해주므로 예외는 안 나지만, 재실행마다 **중복 폼 + 유령 응답 시트**가
+//   쌓이고 URL 틀이 새 폼으로 갈아끼워져 이미 배포한 링크가 죽는다(v9.60 레벨테스트 실사고와 같은 계급).
+//   응답 시트는 있는데 app_state 키만 없으면(사람이 지웠거나 부분 실패) 연결된 폼에서 틀을 되찾아 복구한다.
+function formAlreadyMade_(ss, tabName, urlKey, idKey, itemTitle, label) {
+  const sh = ss.getSheetByName(tabName);
+  if (!sh) return '';
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  let tpl = '';
+  try { tpl = String((getState(st, urlKey) || {}).val || '').trim(); } catch (e) {}
+  if (!tpl) {
+    try {
+      const editUrl = sh.getFormUrl();
+      if (editUrl) {
+        const f = FormApp.openByUrl(editUrl);
+        setState(st, idKey, f.getId());
+        tpl = prefillTemplateOf_(f, itemTitle);
+        setState(st, urlKey, tpl);
+        Logger.log(label + ' — URL 틀이 없어 연결된 폼에서 복구했습니다.');
+      }
+    } catch (e2) { Logger.log(label + ' URL 틀 복구 실패(새로 만듭니다): ' + e2.message); }
+  }
+  if (!tpl) return ''; // 복구 불가 → 호출부가 정상 생성 경로로 진행
+  const msg = '✅ ' + label + ' — 이미 준비돼 있어 새로 만들지 않았습니다. 다음 calcAll(14/22시)이 학생별 링크를 채웁니다.';
+  Logger.log(msg);
+  return msg;
+}
+
+// [v9.49] 출석 폼 — 앱(Glide) 출석의 update-0 대체(docs/glide_업데이트_실측설계.md §3: 앱 출석은 30명 기준 월 ~600 update로 단독 초과).
+//   학생 경험: 앱의 [출석] 버튼(Open Link → CX102 출석폼URL, ID 미리채움) → 폼에서 [보내기] 1탭.
+//   응답은 '출석폼_응답' 탭 → parentSweep(10분)의 sweepAttendanceForm_가 attendance로 전개 → 알림·보드·달력 기존 그대로.
+function createAttendanceForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const doneA = formAlreadyMade_(ss, '출석폼_응답', '출석폼URL틀', '출석폼ID', '학생ID', '출석 폼'); // [v9.62] 두 번 눌러도 안전
+  if (doneA) return doneA;
+  const before = ss.getSheets().map(s => s.getName());
+  const form = FormApp.create('SYNK 출석 체크')
+    .setDescription('Ирц бүртгэл ✅ 아래 [보내기]만 누르면 출석 완료!')
+    .setCollectEmail(false);
+  setState(ensureSheet(ss, 'app_state', ['key', 'value']), '출석폼ID', form.getId()); // [v9.94] 생성 즉시 기록 — 뒤 단계(응답 시트 연결)에서 타임아웃돼도 앱이 이 폼을 잃지 않는다
+  form.addTextItem().setTitle('학생ID').setRequired(true).setHelpText('앱에서 열었다면 자동으로 채워져 있어요 — 그대로 [보내기]!');
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  linkFormTab_(ss, before, '출석폼_응답');
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  setState(st, '출석폼ID', form.getId());
+  setState(st, '출석폼URL틀', prefillTemplateOf_(form, '학생ID'));
+  Logger.log('✅ 출석 폼 생성 완료! 다음 calcAll(14/22시)부터 profiles CX102(출석폼URL)에 학생별 링크가 채워집니다.');
+  Logger.log('편집용: ' + form.getEditUrl());
+}
+
+// [v9.49] 숙제 제출 폼 — AI 첨삭의 입력 통로. 앱 제출(행 추가)이 아닌 폼이라 Glide update 0.
+//   응답은 '숙제폼_응답' 탭 → 밤 22시 aiFeedbackBatch_가 Claude API로 첨삭 카드 생성.
+function createHwForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const doneH = formAlreadyMade_(ss, '숙제폼_응답', '숙제폼URL틀', '숙제폼ID', '학생ID', '숙제 제출 폼'); // [v9.62] 두 번 눌러도 안전
+  if (doneH) return doneH;
+  const before = ss.getSheets().map(s => s.getName());
+  const form = FormApp.create('SYNK 숙제 제출')
+    .setDescription('오늘 숙제로 쓴 한국어 문장을 보내면, 내일 아침 앱에 첨삭 카드가 도착해요 🤖✏️')
+    .setCollectEmail(false);
+  setState(ensureSheet(ss, 'app_state', ['key', 'value']), '숙제폼ID', form.getId()); // [v9.94] 생성 즉시 기록 — 뒤 단계(응답 시트 연결)에서 타임아웃돼도 앱이 이 폼을 잃지 않는다
+  form.addTextItem().setTitle('학생ID').setRequired(true).setHelpText('앱에서 열었다면 자동으로 채워져 있어요');
+  form.addParagraphTextItem().setTitle('숙제 문장').setRequired(true).setHelpText('오늘 숙제로 쓴 한국어 문장을 그대로 적어주세요 (여러 문장 가능)');
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  linkFormTab_(ss, before, '숙제폼_응답');
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  setState(st, '숙제폼ID', form.getId());
+  setState(st, '숙제폼URL틀', prefillTemplateOf_(form, '학생ID'));
+  Logger.log('✅ 숙제 제출 폼 생성 완료! 다음 calcAll부터 profiles CY103(숙제폼URL)에 학생별 링크가 채워집니다.');
+  Logger.log('⚠️ AI 첨삭이 돌려면 Script Properties에 CLAUDE_API_KEY가 있어야 합니다(없으면 배치가 조용히 스킵).');
+  Logger.log('편집용: ' + form.getEditUrl());
+}
+
+// [v9.55] 강사 연습 포인트(약점 메모) 폼 — student_errors의 입력 레일. 읽기(반 브리핑·수업 전 메일·AI 약점 로더)는
+//   v9.47·v9.50에 기배선인데 쓰기 경로가 시트 수기뿐이던 것을 폼 1분 입력으로. Glide update 0.
+//   [v9.64] 스마트화 — 폼 스펙의 정본은 아래 코드이고 실제 폼은 여기에 동기화된다(URL·응답 열 불변):
+//   ①재실행 = 복제가 아니라 제자리 업그레이드(제목·안내·유형 선택지·강사/반 드롭다운) — 중복 폼·링크 사망 사고 차단
+//   ②morningJobs가 매일 로스터 변화를 드롭다운에 반영(개원 때 반 16개·강사 6인이 돼도 사람 손 0)
+//   ③항목 추가·삭제는 절대 안 한다 — 응답 시트가 항목별 열이라, 지웠다 다시 만들면 새 열이 생겨
+//     sweep의 위치 파싱(1~6열)이 깨진다. 제목·안내·선택지 교체는 열을 보존한다(실측 안전).
+const TEACHER_MEMO_TYPES = ['문법', '어휘', '발음', '말하기', '듣기', '읽기', '쓰기', '태도', '기타']; // [v9.64] 말하기·읽기 편입 — 코어=문법·톡=회화 커리큘럼 축 정합
+function teacherMemoSpec_(ss) { // 폼 문안 정본 — 생성·업그레이드·아침 동기화가 전부 이것만 읽는다
+  const pf = ss.getSheetByName('profiles');
+  const teachers = [], clsSet = {};
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (!r[0]) return;
+    if (r[3] === 'teacher' && r[1]) teachers.push(String(r[1]));
+    if (r[3] === 'student' && r[4]) clsSet[String(r[4])] = 1;
+  });
+  return {
+    title: 'SYNK 연습 포인트 (강사용)',
+    desc: '수업 중 보인 학생의 연습 포인트(막히는 지점·발전 지점)를 30초로 남겨주세요. 다음 계산부터 반 브리핑·수업 전 메일에 뜨고, AI가 그 학생 맞춤 퀴즈·예문으로 이어서 연습시킵니다. 같은 포인트가 반복되면 ×N으로 표시돼 패턴이 보입니다.',
+    teachers: teachers.concat(['기타']),
+    classes: Object.keys(clsSet).sort().concat(['기타']),
+    help: {
+      '학생 이름': '앱 프로필의 한글 이름 그대로 (동명이인이면 반을 정확히) · 여러 명이면 한 명씩 따로 — 학생별 맞춤이 정확해집니다',
+      '유형': '가장 가까운 것 하나 — AI가 이 유형으로 맞춤 연습을 만듭니다',
+      '메모': "'무엇을 + 어떤 상황에서' 한 줄이면 충분해요. 예: 은/는 vs 이/가 혼동 — 주어 자리에서 반복 / 받침 ㄹ 과잉적용(살아요→사라요)"
+    }
+  };
+}
+// 실제 폼을 스펙에 제자리 동기화 — 다른 곳만 쓴다(반환 = 바꾼 곳 수). 폼이 아예 없으면 -1(호출부가 생성 경로로).
+function syncTeacherMemoForm_(ss, st) {
+  let formId = '';
+  try { formId = String((getState(st, '약점메모폼ID') || {}).val || '').trim(); } catch (eS) {}
+  if (!formId) { // ID 유실 시 응답 시트의 연결 폼에서 복구(v9.62 formAlreadyMade_ 패턴)
+    try {
+      const shR = ss.getSheetByName('약점메모폼_응답');
+      const editUrl = shR && shR.getFormUrl();
+      if (editUrl) { const f0 = FormApp.openByUrl(editUrl); formId = f0.getId(); setState(st, '약점메모폼ID', formId); setState(st, '약점메모폼URL', f0.getPublishedUrl()); }
+    } catch (eR) {}
+  }
+  if (!formId) return -1;
+  const form = FormApp.openById(formId);
+  const spec = teacherMemoSpec_(ss);
+  let changed = 0;
+  if (form.getTitle() !== spec.title) { form.setTitle(spec.title); changed++; }
+  if (form.getDescription() !== spec.desc) { form.setDescription(spec.desc); changed++; }
+  form.getItems().forEach(it => {
+    const t = it.getTitle();
+    const wantHelp = spec.help[t];
+    if (wantHelp !== undefined && it.getHelpText() !== wantHelp) { it.setHelpText(wantHelp); changed++; }
+    if (it.getType() !== FormApp.ItemType.LIST) return;
+    const li = it.asListItem();
+    const cur = li.getChoices().map(c => c.getValue()).join('|');
+    const want = (t === '강사' ? spec.teachers : t === '반' ? spec.classes : t === '유형' ? TEACHER_MEMO_TYPES : null);
+    if (want && cur !== want.join('|')) { li.setChoiceValues(want); changed++; }
+  });
+  if (changed) Logger.log('🧩 연습 포인트 폼 동기화 — ' + changed + '곳 갱신(URL 불변)');
+  return changed;
+}
+function createTeacherMemoForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const synced = syncTeacherMemoForm_(ss, st); // [v9.64] 이미 있으면 복제 대신 제자리 업그레이드
+  if (synced >= 0) {
+    const msg = '✅ 연습 포인트 폼 — 이미 있어 제자리 업그레이드만 했습니다(' + synced + '곳 갱신 · URL 불변): ' + String((getState(st, '약점메모폼URL') || {}).val || '');
+    Logger.log(msg);
+    return msg;
+  }
+  const before = ss.getSheets().map(s => s.getName());
+  const spec = teacherMemoSpec_(ss);
+  const form = FormApp.create(spec.title).setDescription(spec.desc).setCollectEmail(false);
+  setState(ensureSheet(ss, 'app_state', ['key', 'value']), '약점메모폼ID', form.getId()); // [v9.94] 생성 즉시 기록 — 뒤 단계(응답 시트 연결)에서 타임아웃돼도 앱이 이 폼을 잃지 않는다
+  if (spec.teachers.length > 1) form.addListItem().setTitle('강사').setRequired(true).setChoiceValues(spec.teachers);
+  else form.addTextItem().setTitle('강사').setRequired(true); // 로스터에 강사 0명(재건 직후)이어도 폼은 성립
+  if (spec.classes.length > 1) form.addListItem().setTitle('반').setRequired(true).setChoiceValues(spec.classes);
+  else form.addTextItem().setTitle('반').setRequired(true);
+  form.addTextItem().setTitle('학생 이름').setRequired(true).setHelpText(spec.help['학생 이름']);
+  form.addListItem().setTitle('유형').setRequired(true).setChoiceValues(TEACHER_MEMO_TYPES).setHelpText(spec.help['유형']);
+  form.addParagraphTextItem().setTitle('메모').setRequired(true).setHelpText(spec.help['메모']);
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  linkFormTab_(ss, before, '약점메모폼_응답');
+  setState(st, '약점메모폼ID', form.getId());
+  setState(st, '약점메모폼URL', form.getPublishedUrl());
+  adminMail('[SYNK] 🧩 연습 포인트 폼 생성 완료',
+    '강사 단톡·즐겨찾기에 배포할 링크:\n' + form.getPublishedUrl() +
+    '\n\nGlide 수업 준비 탭의 버튼(Open Link)에도 이 URL을 넣으면 됩니다.\n편집용: ' + form.getEditUrl() +
+    '\n\n※ 재실행해도 안전합니다(제자리 업그레이드 · URL 불변). 반·강사가 바뀌면 다음 날 아침 드롭다운이 자동 갱신됩니다.');
+  Logger.log('✅ 연습 포인트 폼 생성 완료: ' + form.getPublishedUrl());
+  Logger.log('편집용: ' + form.getEditUrl());
+}
+
+/* ── [v9.74] 📊 학업 기록 폼 — "시트에 직접 입력하세요" 안내문의 대체 ──
+ * 유호 07-28 보고: 수업준비 탭의 '직접 입력하는 기록'이 어떻게 하라는 건지 알 수 없다 → 버튼 하나로.
+ * 구글 폼 경로라 Glide 업데이트 소비 0(약점 메모 폼 v9.55·v9.64 계보 그대로: 제자리 업그레이드·아침 로스터 동기화).
+ * 응답은 parentSweep(10분)의 sweepAcademicForm_이 academic_log로 전개(값 검증·이름→sid 매칭·AL 채번). */
+const ACADEMIC_TYPES = ['급수 (1~6)', '모의점수 (0~100)'];
+function academicFormSpec_(ss) {
+  const base = teacherMemoSpec_(ss); // 강사·반 로스터 재사용 — 아침 동기화도 같은 원천을 본다
+  return {
+    title: 'SYNK 학업 기록 (강사용 · 월 1회)',
+    desc: '급수 인증·모의고사 결과를 남기면 학생 홈의 학업 추세 차트·월간 리포트에 자동 반영됩니다. 학생 1명당 1건씩 제출해 주세요.',
+    teachers: base.teachers,
+    classes: base.classes,
+    help: {
+      '학생 이름': '앱 프로필의 한글 이름 그대로 (동명이인이면 반을 정확히)',
+      '유형': '급수 = TOPIK/자체 급수(1~6) · 모의점수 = 모의고사 점수(0~100)',
+      '값': '숫자만 — 급수는 1~6, 모의점수는 0~100 (예: 3 또는 62)',
+      '비고': '예: 7월 모의 · 3급 인증 (선택)'
+    }
+  };
+}
+// 실제 폼을 스펙에 제자리 동기화 — 반환 = 바꾼 곳 수, 폼이 아예 없으면 -1(호출부가 생성 경로로). syncTeacherMemoForm_와 동형.
+function syncAcademicForm_(ss, st) {
+  let formId = '';
+  try { formId = String((getState(st, '학업폼ID') || {}).val || '').trim(); } catch (eS) {}
+  if (!formId) { // ID 유실 시 응답 시트의 연결 폼에서 복구(v9.62 formAlreadyMade_ 패턴)
+    try {
+      const shR = ss.getSheetByName('학업폼_응답');
+      const editUrl = shR && shR.getFormUrl();
+      if (editUrl) { const f0 = FormApp.openByUrl(editUrl); formId = f0.getId(); setState(st, '학업폼ID', formId); setState(st, '학업폼URL', f0.getPublishedUrl()); }
+    } catch (eR) {}
+  }
+  if (!formId) return -1;
+  const form = FormApp.openById(formId);
+  const spec = academicFormSpec_(ss);
+  let changed = 0;
+  if (form.getTitle() !== spec.title) { form.setTitle(spec.title); changed++; }
+  if (form.getDescription() !== spec.desc) { form.setDescription(spec.desc); changed++; }
+  form.getItems().forEach(it => {
+    const t = it.getTitle();
+    const wantHelp = spec.help[t];
+    if (wantHelp !== undefined && it.getHelpText() !== wantHelp) { it.setHelpText(wantHelp); changed++; }
+    if (it.getType() !== FormApp.ItemType.LIST) return;
+    const li = it.asListItem();
+    const cur = li.getChoices().map(c => c.getValue()).join('|');
+    const want = (t === '강사' ? spec.teachers : t === '반' ? spec.classes : t === '유형' ? ACADEMIC_TYPES : null);
+    if (want && cur !== want.join('|')) { li.setChoiceValues(want); changed++; }
+  });
+  if (changed) Logger.log('📊 학업 기록 폼 동기화 — ' + changed + '곳 갱신(URL 불변)');
+  return changed;
+}
+function createAcademicForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const synced = syncAcademicForm_(ss, st); // 이미 있으면 복제 대신 제자리 업그레이드(재실행 안전)
+  if (synced >= 0) {
+    const msg = '✅ 학업 기록 폼 — 이미 있어 제자리 업그레이드만 했습니다(' + synced + '곳 갱신 · URL 불변): ' + String((getState(st, '학업폼URL') || {}).val || '');
+    Logger.log(msg);
+    return msg;
+  }
+  const before = ss.getSheets().map(s => s.getName());
+  const spec = academicFormSpec_(ss);
+  const form = FormApp.create(spec.title).setDescription(spec.desc).setCollectEmail(false);
+  setState(ensureSheet(ss, 'app_state', ['key', 'value']), '학업폼ID', form.getId()); // [v9.94] 생성 즉시 기록 — 뒤 단계(응답 시트 연결)에서 타임아웃돼도 앱이 이 폼을 잃지 않는다
+  if (spec.teachers.length > 1) form.addListItem().setTitle('강사').setRequired(true).setChoiceValues(spec.teachers);
+  else form.addTextItem().setTitle('강사').setRequired(true); // 로스터에 강사 0명(재건 직후)이어도 폼은 성립
+  if (spec.classes.length > 1) form.addListItem().setTitle('반').setRequired(true).setChoiceValues(spec.classes);
+  else form.addTextItem().setTitle('반').setRequired(true);
+  form.addTextItem().setTitle('학생 이름').setRequired(true).setHelpText(spec.help['학생 이름']);
+  form.addListItem().setTitle('유형').setRequired(true).setChoiceValues(ACADEMIC_TYPES).setHelpText(spec.help['유형']);
+  form.addTextItem().setTitle('값').setRequired(true).setHelpText(spec.help['값']);
+  form.addTextItem().setTitle('비고').setHelpText(spec.help['비고']);
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  linkFormTab_(ss, before, '학업폼_응답');
+  setState(st, '학업폼ID', form.getId());
+  setState(st, '학업폼URL', form.getPublishedUrl());
+  adminMail('[SYNK] 📊 학업 기록 폼 생성 완료',
+    '강사 단톡·즐겨찾기에 배포할 링크:\n' + form.getPublishedUrl() +
+    '\n\n다음 계산(14/22시, 즉시 원하면 calcAll ▶)부터 강사 수업준비 탭의 📊 버튼에 자동으로 연결됩니다.\n편집용: ' + form.getEditUrl() +
+    '\n\n※ 재실행해도 안전합니다(제자리 업그레이드 · URL 불변). 반·강사가 바뀌면 다음 날 아침 드롭다운이 자동 갱신됩니다.');
+  Logger.log('✅ 학업 기록 폼 생성 완료: ' + form.getPublishedUrl());
+  Logger.log('편집용: ' + form.getEditUrl());
+}
+
+/* ── [v9.90·206] 🛂 면접 기록 회수 폼 — VR/AR 면접 시뮬레이터의 0단계 ──
+ * 유호 07-31 지시: 비자·취업 면접을 가상현실로 체험시키는 앱을 만든다 → 그 앱의 승부처는 렌더링이 아니라
+ * '질문 은행과 채점 기준'이고, 몽골 현지의 실제 질문·재질문·거절 사유는 검색으로 안 나온다. 실제로 면접을 본
+ * 사람(졸업생·지원자·재학생)에게서만 나오며 그들을 가진 곳은 학원뿐 = 복제 불가 자산. 헤드셋보다 먼저, 비용 0으로 시작한다.
+ * 설계: ① 구글 폼이라 Glide update 소비 0(약점 메모·학업 기록 폼 계보) ② 이름·연락처는 선택 —
+ * 익명으로도 남길 수 있어야 회수율이 산다(거절 경험은 특히 밝히기 싫은 정보다) ③ 마지막 문항 = 자료 활용 동의로
+ * 필수·거부 가능 — 동의 없이 모은 기록은 후배 연습 자료로도 AI 학습으로도 못 쓴다(소급 불가, migrateConsentV186과 같은 계열)
+ * ④ 핵심 칸은 9·11번 — '받은 질문 전부'와 '심사관이 다시 물은 것'. 이 둘이 시뮬레이터의 질문 은행과 모순 탐지 채점표가 된다. */
+const INTERVIEW_KINDS = ['한국 유학 비자 인터뷰', 'EPS 취업(E-9) 면접·시험', '한국 기업 취업 면접', '한국 대학·대학원 입학 면접', '한국 방문·기타 비자 인터뷰', '기타'];
+function createInterviewLogForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  // 재실행 안전 — 배포된 링크·QR가 미아가 되지 않도록 살아 있는 폼은 절대 새로 만들지 않는다(createConsultForm 리뷰 M1과 동일 계급).
+  let exId = String(getState(st, '면접폼ID').val || '');
+  if (!exId) { // ID만 유실된 경우(시트 수기 편집·app_state 정리) 응답 탭의 연결 폼에서 복구 — 없으면 중복 폼이 생기고 회수가 두 곳으로 갈린다(syncAcademicForm_ 패턴)
+    try {
+      const shR = ss.getSheetByName('면접기록_응답');
+      const editUrl = shR && shR.getFormUrl();
+      if (editUrl) {
+        const f0 = FormApp.openByUrl(editUrl);
+        exId = f0.getId();
+        setState(st, '면접폼ID', exId);
+        setState(st, '면접폼URL', f0.getPublishedUrl());
+        Logger.log('면접 기록 폼 — ID가 없어 응답 탭의 연결 폼에서 복구했습니다.');
+      }
+    } catch (eR) { /* 복구 실패 → 아래 정상 생성 경로 */ }
+  }
+  if (exId) {
+    try {
+      const exForm = FormApp.openById(exId);
+      const msg0 = '✅ 면접 기록 폼이 이미 있어 새로 만들지 않았습니다.\n배포 링크: ' + exForm.getPublishedUrl();
+      Logger.log(msg0);
+      return msg0;
+    } catch (eG) {
+      const msgG = '⚠️ 연결된 면접폼ID를 열지 못했습니다(' + eG + ').\n일시 오류일 수 있어 새 폼을 만들지 않았습니다 — 폼이 정말 삭제됐으면 app_state에서 면접폼ID 행을 지운 뒤 재실행하세요.';
+      Logger.log(msgG);
+      return msgG;
+    }
+  }
+  const before = ss.getSheets().map(s => s.getName());
+  const form = FormApp.create('SYNK 면접 경험 기록 (비자 · 취업)')
+    .setDescription('한국 유학 비자나 취업 면접을 실제로 보신 경험을 남겨주세요.\n'
+      + '여기 쌓인 질문들이 다음 크루가 연습할 실제 문제가 됩니다 — 합격이든 거절이든, 거절 경험이 오히려 더 큰 도움이 됩니다.\n'
+      + '이름은 적지 않으셔도 됩니다. 10분이면 충분합니다 🙂')
+    .setCollectEmail(false);
+
+  function txt(t, req, help) { const i = form.addTextItem().setTitle(t); if (req) i.setRequired(true); if (help) i.setHelpText(help); return i; }
+  function para(t, req, help) { const i = form.addParagraphTextItem().setTitle(t); if (req) i.setRequired(true); if (help) i.setHelpText(help); return i; }
+  function mc(t, opts, req, help) { const i = form.addMultipleChoiceItem().setTitle(t).setChoiceValues(opts); if (req) i.setRequired(true); if (help) i.setHelpText(help); return i; }
+
+  form.addSectionHeaderItem().setTitle('1. 누구의 경험인가요').setHelpText('이 부분은 전부 선택입니다 — 익명으로 남기셔도 자료로 잘 쓰입니다.');
+  txt('이름', false, '익명을 원하시면 비워두세요');
+  mc('지금 신분', ['재학생', '졸업생', '학부모·지인', '기타'], false);
+  txt('연락처', false, '내용을 더 여쭤봐도 될 때만 남겨주세요');
+
+  form.addSectionHeaderItem().setTitle('2. 어떤 면접이었나요');
+  mc('면접 종류', INTERVIEW_KINDS, true);
+  txt('시기', true, '예: 2026-05 (연-월만 적어주세요)');
+  txt('장소·기관', false, '예: 주몽골 대한민국 대사관 / ○○ 회사');
+  mc('사용 언어', ['한국어', '몽골어', '영어', '섞어서'], false);
+  mc('걸린 시간', ['5분 미만', '5~15분', '15~30분', '30분 이상'], false);
+
+  form.addSectionHeaderItem().setTitle('3. 실제로 무슨 일이 있었나요')
+    .setHelpText('여기가 가장 중요합니다. 문장이 어색해도 괜찮으니 기억나는 대로 많이 적어주세요.');
+  para('받은 질문 전부', true, '순서대로, 짧게라도 전부 적어주세요. 이 칸이 다음 크루의 연습 문제가 됩니다.');
+  para('어떻게 답했나요', false, '기억나는 답변을 그대로 (잘 답한 것도, 못 답한 것도)');
+  para('다시 물어보거나 서류를 지적한 부분', false, '심사관이 한 번 더 캐물은 것 · 서류와 말이 다르다고 지적한 것 — 합격과 거절을 가르는 지점입니다');
+  para('준비하면서 가장 어려웠던 것', false);
+
+  form.addSectionHeaderItem().setTitle('4. 결과');
+  mc('결과', ['합격·승인', '불합격·거절', '추가 서류 요청·보류', '아직 기다리는 중'], true);
+  para('거절·보류였다면 들은 사유', false, '들은 그대로 (사유를 안 알려준 경우 "안 알려줌"이라고 적어주세요)');
+  para('다음 사람에게 한마디', false);
+
+  form.addSectionHeaderItem().setTitle('5. 자료 활용 동의');
+  mc('자료활용동의', ['네, 동의합니다', '아니요, 원하지 않습니다'], true,
+    '이 기록을 ① 후배 크루의 면접 연습 자료 ② 면접 연습 AI의 학습 자료로 쓰는 것에 동의하시나요?\n'
+    + '이름·연락처는 연습 자료에 절대 포함하지 않습니다(질문과 상황만 씁니다). '
+    + '"아니요"를 고르셔도 기록은 감사히 받고, 연습 자료로는 쓰지 않습니다 · 철회는 언제든 학원으로 연락 주세요.');
+
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  linkFormTab_(ss, before, '면접기록_응답');
+  setState(st, '면접폼ID', form.getId());
+  setState(st, '면접폼URL', form.getPublishedUrl());
+  adminMail('[SYNK] 🛂 면접 기록 폼 생성 완료',
+    '배포 링크:\n' + form.getPublishedUrl() +
+    '\n\n어디에 뿌리면 좋은지:\n' +
+    '① 졸업생·수료생 단톡·페이스북 그룹 (가장 회수율이 높은 곳)\n' +
+    '② 상담 온 학생 중 "비자 인터뷰 봤다"는 사람 — 상담 자리에서 QR로\n' +
+    '③ 재학생 중 유학·취업 지원 예정자 — 다녀온 직후에 부탁하면 기억이 살아 있습니다\n\n' +
+    '⚠️ 몽골어 병기는 아직 없습니다 — 졸업생 대상이면 원어민 검수 후 문항에 병기하는 것이 회수율에 직결됩니다.\n' +
+    '편집용: ' + form.getEditUrl());
+  Logger.log('✅ 면접 기록 폼 생성 완료: ' + form.getPublishedUrl());
+  return '✅ 면접 기록 폼 생성 완료: ' + form.getPublishedUrl();
+}
+
+/* ── [v9.89] 🔁 결석 연락 기록 폼 — 「결석 복귀율」의 입력 레일(약점 메모 폼 v9.55·v9.64 계보) ──
+ * 왜 폼인가: Glide에서 입력받으면 update를 소비한다(Maker 월 500 제약). 폼은 0.
+ * ⚠ 항목 수는 여기서 확정이다 — 나중에 추가·삭제하면 응답 시트에 새 열이 생기거나 밀려
+ *   sweepAbsenceForm_의 위치 파싱(1~7열)이 깨진다. 동기화는 제목·안내·선택지만 바꾸고 항목은 건드리지 않는다.
+ *   고정 6문항 = 강사 · 반 · 학생 이름 · 연락 수단 · 결과 · 메모 → 응답 7열(타임스탬프 포함). */
+const ABSENCE_CONTACT_METHODS = ['메신저', '전화', '학부모 전화', '직접 만남', '기타'];
+const ABSENCE_CONTACT_RESULTS = ['연결됨 — 다음 시간에 온다고 함', '연결됨 — 사유만 확인', '답장 없음(메시지는 남김)', '학부모에게 전달', '장기 결석 — 원장 보고 필요'];
+function absenceFormSpec_(ss) {
+  const base = teacherMemoSpec_(ss); // 강사·반 로스터 재사용 — 아침 동기화도 같은 원천을 본다
+  return {
+    title: 'SYNK 결석 연락 기록 (강사용 · 24시간)',
+    desc: '결석한 학생에게 연락했으면 30초로 남겨주세요. 이 기록이 시즌 등급 심사 「결석 복귀율」의 원본입니다(수업 규칙 「결석자 복귀」). 복귀 여부는 앱이 출석으로 자동 판정하니 따로 적지 않아도 됩니다.',
+    teachers: base.teachers,
+    classes: base.classes,
+    help: {
+      '학생 이름': '앱 프로필의 한글 이름 그대로 (동명이인이면 반을 정확히) · 한 명씩 따로 제출',
+      '연락 수단': '기본은 메신저 · 2회 연속 결석이면 전화(수업 규칙 「결석자 복귀」)',
+      '결과': '연결이 안 됐어도 제출해 주세요 — 시도 자체가 이행 기록입니다',
+      '메모': '선택 · 한 줄이면 충분해요. 예: 가족 행사로 몽골 지방 다녀옴, 목요일부터 나온다고 함'
+    }
+  };
+}
+// 실제 폼을 스펙에 제자리 동기화 — 반환 = 바꾼 곳 수, 폼이 아예 없으면 -1(호출부가 생성 경로로). syncTeacherMemoForm_와 동형.
+function syncAbsenceForm_(ss, st) {
+  let formId = '';
+  try { formId = String((getState(st, '결석폼ID') || {}).val || '').trim(); } catch (eS) {}
+  if (!formId) { // ID 유실 시 응답 시트의 연결 폼에서 복구(v9.62 formAlreadyMade_ 패턴)
+    try {
+      const shR = ss.getSheetByName('결석폼_응답');
+      const editUrl = shR && shR.getFormUrl();
+      if (editUrl) { const f0 = FormApp.openByUrl(editUrl); formId = f0.getId(); setState(st, '결석폼ID', formId); setState(st, '결석폼URL', f0.getPublishedUrl()); }
+    } catch (eR) {}
+  }
+  if (!formId) return -1;
+  const form = FormApp.openById(formId);
+  const spec = absenceFormSpec_(ss);
+  let changed = 0;
+  if (form.getTitle() !== spec.title) { form.setTitle(spec.title); changed++; }
+  if (form.getDescription() !== spec.desc) { form.setDescription(spec.desc); changed++; }
+  form.getItems().forEach(it => {
+    const t = it.getTitle();
+    const wantHelp = spec.help[t];
+    if (wantHelp !== undefined && it.getHelpText() !== wantHelp) { it.setHelpText(wantHelp); changed++; }
+    if (it.getType() !== FormApp.ItemType.LIST) return;
+    const li = it.asListItem();
+    const cur = li.getChoices().map(c => c.getValue()).join('|');
+    const want = (t === '강사' ? spec.teachers : t === '반' ? spec.classes : t === '연락 수단' ? ABSENCE_CONTACT_METHODS : t === '결과' ? ABSENCE_CONTACT_RESULTS : null);
+    if (want && cur !== want.join('|')) { li.setChoiceValues(want); changed++; }
+  });
+  if (changed) Logger.log('🔁 결석 연락 폼 동기화 — ' + changed + '곳 갱신(URL 불변)');
+  return changed;
+}
+function createAbsenceForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const synced = syncAbsenceForm_(ss, st); // 이미 있으면 복제 대신 제자리 업그레이드(재실행 안전)
+  if (synced >= 0) {
+    const msg = '✅ 결석 연락 폼 — 이미 있어 제자리 업그레이드만 했습니다(' + synced + '곳 갱신 · URL 불변): ' + String((getState(st, '결석폼URL') || {}).val || '');
+    Logger.log(msg);
+    return msg;
+  }
+  const before = ss.getSheets().map(s => s.getName());
+  const spec = absenceFormSpec_(ss);
+  const form = FormApp.create(spec.title).setDescription(spec.desc).setCollectEmail(false);
+  setState(ensureSheet(ss, 'app_state', ['key', 'value']), '결석폼ID', form.getId()); // [v9.94] 생성 즉시 기록 — 뒤 단계(응답 시트 연결)에서 타임아웃돼도 앱이 이 폼을 잃지 않는다
+  if (spec.teachers.length > 1) form.addListItem().setTitle('강사').setRequired(true).setChoiceValues(spec.teachers);
+  else form.addTextItem().setTitle('강사').setRequired(true); // 로스터에 강사 0명(재건 직후)이어도 폼은 성립
+  if (spec.classes.length > 1) form.addListItem().setTitle('반').setRequired(true).setChoiceValues(spec.classes);
+  else form.addTextItem().setTitle('반').setRequired(true);
+  form.addTextItem().setTitle('학생 이름').setRequired(true).setHelpText(spec.help['학생 이름']);
+  form.addListItem().setTitle('연락 수단').setRequired(true).setChoiceValues(ABSENCE_CONTACT_METHODS).setHelpText(spec.help['연락 수단']);
+  form.addListItem().setTitle('결과').setRequired(true).setChoiceValues(ABSENCE_CONTACT_RESULTS).setHelpText(spec.help['결과']);
+  form.addParagraphTextItem().setTitle('메모').setHelpText(spec.help['메모']);
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  linkFormTab_(ss, before, '결석폼_응답');
+  setState(st, '결석폼ID', form.getId());
+  setState(st, '결석폼URL', form.getPublishedUrl());
+  ensureSheet(ss, 'absence_followup', ABSENCE_FOLLOWUP_HEADERS); // Glide는 "존재하는 시트"만 테이블로 잡는다
+  adminMail('[SYNK] 🔁 결석 연락 기록 폼 생성 완료',
+    '강사 단톡·즐겨찾기에 배포할 링크:\n' + form.getPublishedUrl() +
+    '\n\n다음 계산(14/22시, 즉시 원하면 calcAll ▶)부터 강사 수업준비 탭의 🔁 버튼과 미등원 알림 메일에 자동으로 붙습니다.\n편집용: ' + form.getEditUrl() +
+    '\n\n※ 재실행해도 안전합니다(제자리 업그레이드 · URL 불변). 반·강사가 바뀌면 다음 날 아침 드롭다운이 자동 갱신됩니다.' +
+    '\n⚠ 전제: 강사가 출석 1탭을 안 하면 결석 감지 자체가 열리지 않습니다(휴강 오경보 차단 가드) — 1탭이 이 지표의 유일한 입구입니다.');
+  Logger.log('✅ 결석 연락 기록 폼 생성 완료: ' + form.getPublishedUrl());
+  Logger.log('편집용: ' + form.getEditUrl());
+}
+
+function importFormResponses() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+
+  const formId = String(getState(st, '상담폼ID').val || '');
+  if (!formId) { Logger.log('상담폼ID 없음'); return; }
+  const lastTs = Number(getState(st, '폼처리시각').val) || 0;
+
+  // [v9.19] 폼 삭제·다른 계정 생성·권한 없음·잘못된 ID면 매 sweep(10분)마다 크래시 → 실패 메일 스팸.
+  //         빈 ID(위 3771행)처럼 무효 ID도 조용히 스킵해 파이프라인·본체를 무사히 유지.
+  let form;
+  try { form = FormApp.openById(formId); }
+  catch (e) { Logger.log('상담폼 열기 실패 — ID 무효/삭제/권한 없음(' + formId + '): ' + e + ' · 상담폼ID 재설정(createConsultForm) 또는 app_state에서 키 삭제 필요'); return; }
+  const responses = form.getResponses().filter(r => r.getTimestamp().getTime() > lastTs);
+  if (responses.length === 0) { Logger.log('신규 응답 없음'); return; }
+
+  // [v9.19] 상담시트 열기도 가드 — 시트 삭제/권한없음/탭명 변경 시 크래시→10분 스팸 재발 방지 (폼 가드와 대칭)
+  let consult;
+  try {
+    consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+  } catch (e) { Logger.log('상담시트 열기 실패 — CONSULT_SHEET_ID/권한 확인: ' + e); return; }
+  if (!consult) { Logger.log("상담시트에 '상담데이터입력' 탭 없음 — 탭 이름 확인"); return; }
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(60000);
+  try {
+    const lastC = Math.max(62, consult.getLastColumn()); // [v9.66] v18.4 — 증분 열(63~)도 이름 매칭 대상
+    const headers = consult.getRange(2, 1, 1, lastC).getValues()[0]; // [v8.4] v18.1 · 헤더 2행
+    const colOf = {};
+    headers.forEach((h, i) => { const k = String(h).trim(); if (k && !colOf[k]) colOf[k] = i + 1; }); // [v9.66·리뷰 M2] 중복 헤더는 첫 열 우선 — 시트 오른쪽에 같은 이름의 보조 열이 생겨도 정본 열이 이긴다
+
+    const fr = ensureSheet(ss, 'form_responses', ['접수ID', '타임스탬프', '이름', '경로', '처리상태']); // [v9.34] 무가드 참조 → 시트 부재 시 채번 후 크래시·같은 응답 10분마다 재기입(증식) 차단
+    let newTs = lastTs;
+
+    // 현재 최대 SYNK 번호 (한 배치 내 연속 채번)
+    const lastRowC = consult.getLastRow();
+    const biCol = lastRowC >= 3 ? consult.getRange(3, 60, lastRowC - 2, 1).getValues() : []; // [opt] BH 전체 열 — 600행 초과 시 maxSynk 정확(ID 중복 방지). getLastRow<3 가드로 헤더만 있을 때 크래시 방지
+    let maxSynk = 0;
+    biCol.forEach(r => {
+      const m = String(r[0]).match(/^SYNK-(\d+)$/);
+      if (m) maxSynk = Math.max(maxSynk, parseInt(m[1], 10));
+    });
+
+    responses.forEach(resp => {
+      const ts = resp.getTimestamp();
+      newTs = Math.max(newTs, ts.getTime());
+      const ans = {}, narrative = [];
+      resp.getItemResponses().forEach(ir => {
+        const title = ir.getItem().getTitle();
+        let v = ir.getResponse();
+        if (Array.isArray(v)) v = v.join(', ');
+        ans[title] = v;
+      });
+
+      // 빈 행 찾기 (A열 기준) — [v9.19] 600행 창이 꽉 차면 3행 덮어쓰기 대신 시트 끝에 append
+      // [v9.54] 창을 시트 물리 행수로 클램프 — 외부 상담시트에서 누가 빈 행을 지워 총 행<602가 되면
+      //   고정 600행 읽기가 Range 예외를 던져 10분 스위프가 반복 실패하던 위험 제거
+      const winRows = Math.min(600, consult.getMaxRows() - 2);
+      let newRow = -1;
+      if (winRows > 0) {
+        const colA = consult.getRange(3, 1, winRows, 1).getValues();
+        for (let i = 0; i < colA.length; i++) {
+          if (!colA[i][0]) { newRow = i + 3; break; }
+        }
+      }
+      if (newRow === -1) newRow = consult.getLastRow() + 1;
+
+      // 행 데이터 배열(1~60열) 한 번에 구성 → 일괄 쓰기
+      const rowArr = new Array(59).fill(''); // [v8.4] 입력 A~BG(59열)
+      const extArr = lastC > 62 ? new Array(lastC - 62).fill('') : null; // [v9.66·리뷰 H1] v18.4 증분(63~lastC)은 조밀 배치 — 무응답 칸도 ''로 덮어 재사용 행의 이전 학생 잔재(비자·재정 민감정보)를 차단. 60~62열(학생ID·자동열)은 보호 구간
+      Object.keys(ans).forEach(title => {
+        const c = colOf[title];
+        if (c && c <= 59) rowArr[c - 1] = ans[title];
+        else if (extArr && c >= 63) extArr[c - 63] = ans[title];
+        else narrative.push('[' + title + '] ' + ans[title]);
+      });
+      if (colOf['생년월일'] && rowArr[colOf['생년월일'] - 1]) { // [v8.4] Date 객체로 (나이 수식 안정)
+        const bd = new Date(rowArr[colOf['생년월일'] - 1]);
+        if (!isNaN(bd)) rowArr[colOf['생년월일'] - 1] = bd;
+      }
+      if (colOf['등록일'] && colOf['등록일'] <= 59) {
+        rowArr[colOf['등록일'] - 1] = ts; // [v8.4] Date 객체 (신규 카운트 수식 안정)
+      }
+      if (narrative.length && colOf['📝자유서술→노션'] && colOf['📝자유서술→노션'] <= 59) { // [v9.19] v18.3: 📝노션이관→📝자유서술→노션
+        rowArr[colOf['📝자유서술→노션'] - 1] = narrative.join('\n\n');
+      }
+      consult.getRange(newRow, 1, 1, 59).setValues([rowArr]);
+      if (extArr) consult.getRange(newRow, 63, 1, extArr.length).setValues([extArr]); // [v9.66·리뷰 H1] 증분 구간 통째 1회 쓰기(60~62 건너뜀) — 개별 setValue였다면 행 재사용 시 옛 학생 값이 남았다
+
+      // 학생ID 직접 채번 (수식 비의존)
+      maxSynk++;
+      // [v5] slice → padStart: SYNK-1000 이후 ID 중복 방지
+      consult.getRange(newRow, 60).setValue('SYNK-' + String(maxSynk).padStart(3, '0')); // [v8.4] BH
+
+      // form_responses 기록
+      const frRow = fr.getLastRow() + 1;
+      fr.getRange(frRow, 1, 1, 4).setValues([[
+        'R' + String(frRow).padStart(3, '0'), ts,
+        ans['이름(한국어)'] || ans['이름(몽골어)'] || '(무명)', '폼 자동접수'
+      ]]);
+    });
+
+    setState(st, '폼처리시각', newTs);
+  } finally { lock.releaseLock(); }
+
+  if (quotaOk(1)) {
+    MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 📝 신규 상담 접수 ' + responses.length + '건',
+      '새 상담 설문이 상담시트에 자동 기록되었습니다.\n' +
+      '담당 크루 배정 후 form_responses의 처리상태에 "완료"를 입력하세요.');
+  }
+  syncProfiles();
+  Logger.log('폼 응답 ' + responses.length + '건 처리');
+}
+
+/* ===================== 스토어 상품 (contents) ===================== */
+
+function setupStore() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  // [v9.54] 구 6열 clear/압축 패턴 폐기 → replaceContentType 위임(전체 열 폭 보존).
+  //   구 패턴은 A~F만 지우고 위로 압축해, 라이브 시트의 몽골어(G)·영어(H)·Glide Row ID가 옛 행 위치에
+  //   남아 생존 행 전체가 오정렬됐다(다른 15개 유형은 v5.2부터 위임인데 이 함수만 잔존).
+  //   preflight 자동복구가 store 0개일 때 이 함수를 자동 실행하므로 손 실행 없이도 밟힐 수 있던 지뢰.
+  const items = [
+    // [v7.1] 소득(평균 월 ~160P·성실 ~280P) 역산 가격 사다리 — 간식·체험 티어 신설
+    ['ST01','store','한국 간식 1개 (초코파이·빼빼로 등)','간식','',40],
+    ['ST02','store','바나나우유 · 음료 1개','간식','',60],
+    ['ST04','store','싱크 스티커','굿즈','',80],
+    ['ST05','store','싱크 볼펜','굿즈','',100],
+    ['ST07','store','싱크 노트','굿즈','',120],
+    ['ST08','store','한국 프리미엄 간식 랜덤박스','간식','',250],
+    ['ST09','store','싱크 굿즈 (인형·가방키링)','굿즈','',400],
+    ['ST10','store','싱크 텀블러','굿즈','',450],
+    ['ST11','store','우리 반 전체 간식 쏘기권','특별','',500],
+    ['ST12','store','싱크 반팔티','의류','',850],
+    ['ST13','store','싱크 카라티','의류','',900],
+    ['ST14','store','한국어 이름 디자인 액자','특별','',700],
+    ['ST15','store','졸업 포토북 제작','특별','',1000],
+    ['ST16','store','싱크 패딩 조끼','의류','',1400],
+    ['ST17','store','부모님께 드리는 꽃다발+손편지','가족','',1200],
+    // [v9.83] ST18 싱크 과잠 — 스토어에서 하차(판매 중단). 유호 07-31 확정: 포인트로 사는 상품이 아니라
+    //   **재원 12개월 + 누계 하한 = 무료 지급 자격**(JACKET_* 상수 · jacketWatch_). point_logs에 구매 음수 행이
+    //   생기지 않으므로 학생은 과잠을 기다리면서도 간식·굿즈를 마음껏 산다.
+    ['ST19','store','가족 외식 상품권','가족','',1500],
+    ['ST20','store','어버이날 K-플라워 박스 배달','가족','',1500],
+    ['ST21','store','스튜디오 스타일 가족사진 촬영','체험','',2000],
+    ['ST22','store','K-아이돌 메이크업+프로필 촬영','체험','',2000]
+  ];
+  replaceContentType(ss, 'store', items);
+}
+
+/* ===================== [v9.83] 🧥 과잠 자격 워처 ===================== */
+// 매일 아침(morningJobs). 재원 JACKET_TENURE_MONTHS개월 + 누적 획득 JACKET_MIN_POINTS 도달 학생을
+// jacket_grants 시트에 1회만 적재하고 원장에게 지급 명단을 알린다.
+// 멱등: 시트에 이미 있는 학생은 건너뛴다(신규 0명이면 쓰기·메일 모두 없음 = 무비용).
+// 잔액(AQ)은 건드리지 않는다 — 무료 지급이자, 학생이 그동안 간식·굿즈를 산 것과 무관하게 자격이 유지되는 이유.
+function jacketWatch_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  // [v9.83·리뷰 B2] 이중 경로 감시 — setupStore()는 코드 정본을 바꿀 뿐 라이브 contents 시트를 자동으로 고치지 않는다.
+  //   ▶ 실행 전까지 학생 화면에는 과잠이 1,700P 상품으로 남아, 사서도 받고 자격으로도 받는 두 경로가 동시에 열린다.
+  //   store는 CONTENT_CUSTOM_TYPES(사람이 채운 값이 정본)라 preflight 자동복구가 0개일 때만 도므로 여기서 잡는다.
+  //   문서에 "배포 후 setupStore ▶"라고 적어두는 것으로는 안 지켜지므로, 남아 있는 동안 매일 알린다(내용 같으면 dedup).
+  try {
+    const ctJ = ss.getSheetByName('contents');
+    const stJ = ss.getSheetByName('app_state');
+    if (ctJ && stJ && ctJ.getLastRow() >= 2) {
+      const live = ctJ.getRange(2, 1, ctJ.getLastRow() - 1, 3).getValues()
+        .some(r => String(r[1]) === 'store' && String(r[2]).trim() === JACKET_ITEM_NAME);
+      const sig = live ? 'ON' : '';
+      if (String((getState(stJ, '과잠_스토어잔존').val || '')) !== sig) {
+        if (live && quotaOk(1)) {
+          adminMail('[SYNK] ⚠️ ' + JACKET_ITEM_NAME + '이 아직 스토어에 남아 있습니다',
+            'v9.83에서 과잠은 판매 상품이 아니라 **재원 ' + JACKET_TENURE_MONTHS + '개월 무료 지급 자격**으로 바뀌었지만,\n' +
+            '라이브 contents 시트에는 옛 상품 행이 그대로 있어 학생이 포인트로도 살 수 있는 상태입니다(이중 경로).\n\n' +
+            '고치는 법: Apps Script에서 setupStore ▶ 1회 실행 → 이어서 translateContents ▶ 1회(몽골어 복원).\n' +
+            '실행하면 이 알림은 자동으로 멈춥니다.');
+        }
+        setState(stJ, '과잠_스토어잔존', sig);
+      }
+    }
+  } catch (eJ) { Logger.log('과잠 스토어 잔존 검사 실패(무해·다음 실행 재시도): ' + eJ); }
+
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return; // 콜드 가드 — 로스터 없으면 판정 자체를 열지 않는다
+  const gr = ensureSheet(ss, 'jacket_grants', ['student_id', '이름', '자격도달일', '재원개월', '누적P', '지급상태']);
+  const already = new Set();
+  if (gr.getLastRow() >= 2) gr.getRange(2, 1, gr.getLastRow() - 1, 1).getValues()
+    .forEach(r => { if (r[0]) already.add(String(r[0]).trim()); });
+
+  const tz = ss.getSpreadsheetTimeZone();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const now = new Date();
+  const rows = pf.getRange(2, 1, pf.getLastRow() - 1, 16).getValues();
+  const out = [];
+  rows.forEach(r => {
+    const sid = String(r[0] || '').trim();
+    if (!sid || r[3] !== 'student' || already.has(sid)) return;
+    if (!r[14]) return;                                   // created_at 없는 행은 재원 개월을 셀 수 없다
+    const joined = asDate_(r[14]);
+    if (!joined || isNaN(joined.getTime())) return;
+    const months = (now.getFullYear() - joined.getFullYear()) * 12 + (now.getMonth() - joined.getMonth())
+      - (now.getDate() < joined.getDate() ? 1 : 0);        // 만 개월(일자 미달이면 1개월 차감)
+    const pts = Number(r[15]) || 0;                       // P열 = 획득 누계(잔액 AQ 아님 — 소비해도 안 깎인다)
+    if (months >= JACKET_TENURE_MONTHS && pts >= JACKET_MIN_POINTS)
+      out.push([sid, r[1] || sid, today, months, pts, '지급대기']);
+  });
+  if (!out.length) return;
+
+  gr.getRange(gr.getLastRow() + 1, 1, out.length, 6).setValues(out);
+  if (quotaOk(1)) {
+    adminMail('[SYNK] 🧥 ' + JACKET_ITEM_NAME + ' 지급 대상 ' + out.length + '명',
+      out.map(o => '· ' + o[1] + ' (' + o[0] + ') — 재원 ' + o[3] + '개월 · 누적 ' + o[4] + 'P').join('\n') +
+      '\n\n조건: 재원 ' + JACKET_TENURE_MONTHS + '개월 이상 + 누적 획득 ' + JACKET_MIN_POINTS + 'P 이상.' +
+      '\n포인트 차감 없는 무료 지급입니다. 실물을 전달한 뒤 jacket_grants 시트의 「지급상태」를 「지급완료」로 바꿔주세요.');
+  }
+  Logger.log('🧥 과잠 자격 신규 ' + out.length + '명');
+}
+
+/* ===================== 시스템 헬스체크 (일요일) ===================== */
+
+function healthCheck() {
+  // [v9.25] 점검 항목(누락 시트·point_logs 행수·메일 쿼터)은 systemWatchdog로 흡수됨.
+  //          수동 실행·구 트리거 호환을 위해 얇은 위임만 남긴다.
+  systemWatchdog();
+}
+
+/* ===================== 1회용 유틸 ===================== */
+
+function cleanupFormTest() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+  const winRows2 = Math.min(600, consult.getMaxRows() - 7); // [v9.54] 물리 행수 클램프(importFormResponses와 동일 처방)
+  const colA = winRows2 > 0 ? consult.getRange(8, 1, winRows2, 1).getValues() : [];
+  let cleaned = 0;
+  colA.forEach((r, i) => {
+    if (r[0]) { consult.getRange(8 + i, 1, 1, Math.max(68, consult.getLastColumn())).clearContent(); cleaned++; } // [v9.66] v18.4 증분 열까지 청소(폭 동적)
+  });
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  setState(st, '폼처리시각', 0);
+  const fr = ensureSheet(ss, 'form_responses', ['접수ID', '타임스탬프', '이름', '경로', '처리상태']); // [v9.34] 무가드 정리(3곳 일괄)
+  const frLast = fr.getLastRow();
+  if (frLast >= 2) {
+    fr.getRange(2, 1, frLast - 1, 4).getValues().forEach((r, i) => {
+      if (String(r[3]) === '폼 자동접수') fr.getRange(2 + i, 1, 1, 5).clearContent();
+    });
+  }
+  Logger.log('정리: ' + cleaned + '건');
+}
+
+function setupTables() {
+  // ⚠️ 최초 1회용. 실행 시 테이블이 샘플로 리셋되므로 잠금.
+  Logger.log('setupTables는 잠겨 있습니다 (데이터 보호).');
+  return;
+}
+
+/* ********************************************************
+ * ▼▼▼ 여기부터 [v5] 신규 모듈 ▼▼▼
+ ******************************************************** */
+
+/* ===================== [v5] 시냅스 게이지 문구 ===================== */
+
+
+/* ===================== [v5] 월간 리포트 카드 (1일 아침 6~7시) =====================
+ * monthly_snapshot(게임배치 산출물) 기반 → Slides 복제·치환 → PNG →
+ * Drive(SYNK_리포트카드 폴더) → report_cards 시트. 재실행 안전:
+ * 이미 생성된 학생은 스킵, 60장 초과분은 4분 뒤 자동 이어하기.        */
+
+function monthlyReportCards() { runReportCards_(); }
+// [v9.19] 죽은 최상단 nickOf 블록 삭제 — 리포트카드 v2는 별명을 profiles AO(r[40])에서 직접 읽음.
+//          (구 블록은 미사용 + 매 트리거 실행마다 profiles 조회 + safeRun 밖 크래시 위험이었음)
+
+function reportCardsContinue() {
+  ScriptApp.getProjectTriggers().forEach(t => {
+    if (t.getHandlerFunction() === 'reportCardsContinue') ScriptApp.deleteTrigger(t);
+  });
+  runReportCards_();
+}
+
+function runReportCards_() {
+  if (!REPORT_TEMPLATE_ID) { Logger.log('REPORT_TEMPLATE_ID 미설정 — 카드 생성 스킵'); return; }
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const ym = Utilities.formatDate(now, tz, 'yyyy-MM'); // [v9.19] 현재월 스냅샷 — 포인트·출석·학업 모두 현재 profiles 기준
+  const label = Number(ym.substring(0, 4)) + '년 ' + Number(ym.substring(5, 7)) + '월';
+
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return; // [v8.2]
+  const w = Math.min(pf.getLastColumn(), 74); // [v9.19] BQ(69)까지 필요 · 열 부족 시 안전 클램프
+  const pfData = pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues();
+  const students = pfData.filter(r => r[0] && r[3] === 'student');
+  const logsById = readAcademicLogs_(ss, tz); // [v9.19] academic_log — 급수변화·모의 점수 차트
+  const monMap = monsterImgMap_(ss);          // [v9.19] 단계명 → 이미지URL
+
+  const rc = ensureSheet(ss, 'report_cards',
+    ['card_id', 'student_id', '월', 'image_url', '칭호', '코멘트', 'created_at']);
+  /* [v9.126] 🔴 월 열 Date 오염 = 이 멱등 가드의 사망 지점 — 08-02 라이브에서 37행(정상 9행)이 발견됐다.
+   *   `setValues`로 '2026-08' 문자열을 쓰면 시트가 날짜로 자동 파싱해 Date로 되읽히고, 셀 표시는 여전히
+   *   '2026-08'이라 눈으로는 멀쩡하다. 그런데 String(Date)='Fri Aug 01 2026…' ≠ ym → **가드가 영영 안 맞고
+   *   매 실행이 전원 카드를 다시 만든다**(Slides 복제·Drive 파일·학부모 메일이 매번 중복). 학부모 화면엔
+   *   같은 카드가 6장 쌓여 있었다. v9.97이 스토리북에서 잡은 것과 같은 계급인데 이 시트만 배선이 빠져 있었다.
+   *   ①열을 텍스트로 정상화 ②비교값도 ymTextOf_로 정규화 — 둘 다 해야 과거 오염분까지 산다. */
+  ymTextColFix_(rc, 3, tz);
+  const done = new Set();
+  if (rc.getLastRow() >= 2) {
+    rc.getRange(2, 1, rc.getLastRow() - 1, 3).getValues().forEach(r => {
+      done.add(ymTextOf_(r[2], tz) + '|' + r[1]);
+    });
+  }
+  const pendingAll = students.filter(r => !done.has(ym + '|' + r[0]));
+  if (!pendingAll.length) { Logger.log('리포트카드: ' + ym + ' 전원 생성 완료'); return; }
+  const pending = pendingAll.slice(0, MAX_CARDS_PER_RUN);
+
+  // [v9.19b] Phase 1a: 복제만 (구조 변경) → saveAndClose
+  const pres = SlidesApp.openById(REPORT_TEMPLATE_ID);
+  const tpl = reportTemplateSlide_(pres); // [v9.19b] 빈 슬라이드가 아니라 자리표시자 디자인 슬라이드를 복제
+  const made = [];
+  pending.forEach(r => {
+    const d = reportCardData_(r, logsById[r[0]], monMap, now);
+    d.month = label;
+    made.push({ d: d, pageId: tpl.duplicate().getObjectId() });
+  });
+  pres.saveAndClose();
+  // [v9.19b] Phase 1b: 재열기 후 채우기 (복제+편집 동일 배치의 "This request cannot be applied" 회피)
+  const presF = SlidesApp.openById(REPORT_TEMPLATE_ID);
+  const slById = {};
+  presF.getSlides().forEach(s => { slById[s.getObjectId()] = s; });
+  made.forEach(m => { const s = slById[m.pageId]; if (s) fillReportCardSlide_(s, m.d); });
+  presF.saveAndClose();
+
+  // Phase 2: PNG 추출 → Drive 저장 → 시트 기록 (+옵션: 학부모 메일)
+  const it = DriveApp.getFoldersByName(REPORT_FOLDER_NAME);
+  const folder = it.hasNext() ? it.next() : DriveApp.createFolder(REPORT_FOLDER_NAME);
+  const rows = [], mails = [];
+  made.forEach(m => {
+    Utilities.sleep(350); // [v5.3] 연속 export 429 방지
+    try { // [v9.19] 카드별 격리 — 1건(429 등) 실패가 배치 전체를 중단·중복 생성시키지 않도록
+      const blob = exportSlidePng(REPORT_TEMPLATE_ID, m.pageId)
+        .setName(ym + '_' + m.d.sid + '_' + m.d.name + '.png');
+      const file = folder.createFile(blob);
+      try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); }
+      catch (e) { Logger.log('공유설정 실패(' + m.d.name + ') — 폴더 공유 설정으로 대체'); }
+      const url = 'https://lh3.googleusercontent.com/d/' + file.getId();
+      rows.push([ym + '-' + m.d.sid, m.d.sid, ym, url,
+        m.d.title, m.d.comment, new Date()]);
+      if (SEND_REPORT_EMAIL && m.d.pEmail.indexOf('@') > -1) {
+        // [v9.31] 공개 URL 링크 대신 PNG를 메일 첨부로 — 미성년 실명·성적이 메일 전달·캡처로 새는 경로 차단
+        mails.push({ to: m.d.pEmail, name: m.d.name, blob: blob.copyBlob(), pts: m.d.pointsText, attend: m.d.attendText });
+      }
+    } catch (e) { Logger.log('카드 생성 실패(' + m.d.name + ') — 스킵, 다음 실행 때 재시도: ' + e); }
+  });
+  if (rows.length) rc.getRange(rc.getLastRow() + 1, 1, rows.length, 7).setValues(rows);
+
+  if (mails.length && quotaOk(mails.length)) {
+    mails.forEach(m => {
+      MailApp.sendEmail(m.to, '[SYNK] 📮 ' + m.name + ' 학생 ' + label + ' 성장 리포트',
+        m.name + ' 학생의 ' + label + ' 성장 리포트가 도착했어요!\n\n' +
+        '포인트 ' + m.pts + ' · 출석 ' + m.attend + '\n' +
+        '리포트 카드는 첨부된 이미지로 확인해 주세요. 📎\n\n' +
+        '한 달 동안 수고 많았습니다. 다음 달도 함께 성장해요!\n- 뇌과학으로 배우는 한국어, SYNK',
+        { attachments: [m.blob] });
+    });
+  }
+
+  // Phase 3: 임시 슬라이드 정리 (템플릿 1장만 유지)
+  const pres2 = SlidesApp.openById(REPORT_TEMPLATE_ID);
+  const rm = new Set(made.map(m => m.pageId));
+  pres2.getSlides().forEach(sl => { if (rm.has(sl.getObjectId())) sl.remove(); });
+  pres2.saveAndClose();
+
+  // [v9.34] 잔여에 이번 배치 실패분(pending - rows)도 가산 — 마지막 배치에서 실패하면 remaining=0으로 굳어
+  //   '전원 완료' 거짓 메일 + 그달 카드 영구 미생성(다음 달 ym이 바뀌어 재시도 없음)되던 결함 수정
+  const remaining = pendingAll.length - rows.length;
+  const propsRC = PropertiesService.getScriptProperties();
+  if (rows.length === 0 && pending.length > 0) { // [v9.34] 연속 0장 = 영구 오류(권한·템플릿) 의심 → 무한 4분 재시도 루프 차단
+    const zeroN = (Number(propsRC.getProperty('리포트카드_연속0장')) || 0) + 1;
+    propsRC.setProperty('리포트카드_연속0장', String(zeroN));
+    if (zeroN >= 2) {
+      adminMail('[SYNK] ⚠️ 리포트카드 생성 중단 (' + label + ')',
+        '연속 ' + zeroN + '회 실행에서 카드가 1장도 생성되지 않아 자동 이어하기를 중단했습니다. 잔여 ' + remaining + '장.\n' +
+        '실행 로그·Drive 권한·리포트 템플릿(REPORT_TEMPLATE_ID)을 확인한 뒤 monthlyReportCards()를 수동 실행하세요.');
+      Logger.log('리포트카드: 연속 ' + zeroN + '회 0장 — 체인 중단');
+      return;
+    }
+  } else if (rows.length > 0) propsRC.setProperty('리포트카드_연속0장', '0');
+  if (remaining > 0) {
+    ScriptApp.newTrigger('reportCardsContinue').timeBased().after(4 * 60 * 1000).create();
+    Logger.log('카드 ' + rows.length + '장 생성 · 잔여 ' + remaining + '장(실패 재시도 포함) — 4분 후 자동 이어하기');
+  } else {
+    if (quotaOk(1)) {
+      MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 📮 ' + label + ' 리포트카드 생성 완료',
+        '이번 실행 ' + rows.length + '장 생성 — ' + label + ' 카드 전원 완료.\n' +
+        'Drive 폴더: ' + REPORT_FOLDER_NAME + '\n앱의 report_cards에서 확인하세요.');
+    }
+    Logger.log('리포트카드 완료: ' + rows.length + '장');
+  }
+}
+// [v9.20] 죽은 코드 정리: reportComment 삭제 — v9.19 리포트카드 v2가 reportCardComment_로 대체(호출부 0).
+
+function exportSlidePng(presId, pageId) {
+  const url = 'https://docs.google.com/presentation/d/' + presId +
+    '/export/png?id=' + presId + '&pageid=' + pageId;
+  const resp = UrlFetchApp.fetch(url, {
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+    muteHttpExceptions: true
+  });
+  if (resp.getResponseCode() !== 200) {
+    throw new Error('PNG 추출 실패(' + resp.getResponseCode() + ') — Slides ID/권한 확인');
+  }
+  return resp.getBlob();
+}
+
+/* ===================== [v9.19] 리포트 카드 v2 — 학업 성장·차트·몬스터 이미지 =====================
+ * 현재월 profiles 상태 + academic_log로 카드 생성. 플레이스홀더: {{월}}{{학생이름}}{{반이름}}{{몬스터이름}}
+ * {{급수변화}}{{모의점수}}{{점수변화}}{{출석}}{{몬스터단계}}{{칭호}}{{포인트}}{{코멘트}} + 도형 마커 {{CHART}}{{MONIMG}}.
+ * 메시지·코멘트는 항상 따뜻·희망(하락/유지도 '다지는 시간'으로 리프레이밍). */
+
+// contents(type=monster) 단계명 → 이미지URL
+function monsterImgMap_(ss) {
+  const ct = ss.getSheetByName('contents'), map = {};
+  if (ct && ct.getLastRow() >= 2) ct.getRange(2, 1, ct.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (r[1] === 'monster' && r[2]) map[String(r[2])] = String(r[4] || '');
+  });
+  return map;
+}
+
+// [v9.22] contents(type=monster) 단계명 → 등장순서 인덱스 (진화 판정·업적 티어 단일 소스)
+function monsterOrder_(ss) {
+  const ct = ss.getSheetByName('contents'), order = {};
+  if (ct && ct.getLastRow() >= 2) {
+    let i = 0;
+    ct.getRange(2, 1, ct.getLastRow() - 1, 6).getValues().forEach(r => {
+      if (r[1] === 'monster') order[r[2]] = i++;
+    });
+  }
+  return order;
+}
+
+// [v9.22] point_logs + point_logs_archive 병합 읽기 (cols 열까지) — 아카이브 병합 규칙 단일 소스
+function readPointLogs_(ss, cols) {
+  return ['point_logs', 'point_logs_archive'].reduce((acc, name) => {
+    const sh = ss.getSheetByName(name);
+    if (!sh || sh.getLastRow() < 2) return acc;
+    return acc.concat(sh.getRange(2, 1, sh.getLastRow() - 1, cols).getValues());
+  }, []);
+}
+
+// 이번 달 시작~오늘까지 반유형(평일/주말) 예정 수업일 수 (개근 판정용 · calcAll의 수업일 개념과 동일)
+function scheduledSoFar_(type, now) {
+  const y = now.getFullYear(), m = now.getMonth(), today = now.getDate();
+  let c = 0;
+  for (let dd = 1; dd <= today; dd++) {
+    if (classDowOk_(type, new Date(y, m, dd).getDay())) c++; // [v9.46] 주말반=토요일만 — 일요일이 분모를 부풀려 주말반이 불리하던 것 해소
+  }
+  return c;
+}
+
+// 따뜻한 코멘트 — 급수·점수·출석을 사실 기반으로 엮되 부정어 없음('하락' 금칙, 유지는 '다지는 시간')
+function reportCardComment_(d) {
+  const parts = [];
+  if (d.levelUp) parts.push('🎉 ' + d.fromLv + '급에서 ' + d.toLv + '급으로 진급했어요! 한국어 뇌에 새 회로가 열렸어요.');
+  if (typeof d.delta === 'number' && d.delta > 0) parts.push('모의 점수도 지난 기록보다 +' + d.delta + '점 올랐어요 📈 꾸준함이 실력이 되고 있어요.');
+  else if (d.hasMock && !d.levelUp) parts.push('이번 달은 실력을 탄탄히 다지는 시간이었어요 💪 다음 도약을 준비 중이에요.');
+  if (d.gaegeun) parts.push('개근까지 해냈어요 🔥 매일의 한 걸음이 큰 성장을 만듭니다.');
+  else if (d.attendCount >= 8) parts.push(d.attendCount + '일 함께하며 성실하게 자랐어요 🌱');
+  if (!parts.length) parts.push('이번 달도 SYNK와 함께 한 걸음씩 성장했어요 ✨ 다음 달이 더 기대돼요!');
+  return parts.slice(0, 3).join(' ');
+}
+
+// profiles 행 + academic_log → 카드 데이터 객체 (배치·프리뷰 공용)
+function reportCardData_(r, logs, monMap, now) {
+  logs = logs || [];
+  const levels = logs.filter(l => l.type === 'level');
+  const mocks = logs.filter(l => l.type === 'mock');
+  const curLv = levels.length ? levels[levels.length - 1].val : null;
+  const prevLv = levels.length >= 2 ? levels[levels.length - 2].val : null;
+  const levelUp = (curLv != null && prevLv != null && curLv > prevLv);
+  let levelText = '—';
+  if (levels.length >= 2) levelText = prevLv + '급 → ' + curLv + '급';
+  else if (levels.length === 1) levelText = curLv + '급';
+  // [v9.19] 모의점수·Δ는 academic_log에서 직접 산출 — 차트·급수와 일관 + calcAll(BP/BQ 갱신) 전에도 정확
+  const curMock = mocks.length ? (Number(mocks[mocks.length - 1].val) || 0) : null;
+  const prevMock = mocks.length >= 2 ? (Number(mocks[mocks.length - 2].val) || 0) : null;
+  const bp = curMock;
+  const delta = (curMock != null && prevMock != null) ? (curMock - prevMock) : null;
+  const type = String(r[35] || '평일'); // AJ 반유형
+  const schSoFar = scheduledSoFar_(type, now);
+  const attendCount = Number(r[21]) || 0; // V 이번달출석
+  const gaegeun = schSoFar >= 1 && attendCount >= schSoFar;
+  const stage = String(r[18] || '뉴로'), stageNum = Number(r[41]) || 1; // S 단계 · AP 단계번호
+  const d = {
+    sid: r[0], name: r[1] || r[0], cls: String(r[4] || 'SYNK'), pEmail: String(r[25] || '').trim(),
+    nickname: String(r[40] || '') || stage, // AO 별명 (없으면 단계명)
+    levelText: levelText, levelUp: levelUp, fromLv: prevLv, toLv: curLv,
+    mockText: (bp != null && !isNaN(bp)) ? String(bp) : '—', hasMock: mocks.length > 0,
+    scoreText: (delta == null) ? '—' : (delta > 0 ? '+' + delta : String(delta)), delta: delta,
+    attendText: attendCount + '일' + (gaegeun ? ' · 개근' : ''), attendCount: attendCount, gaegeun: gaegeun,
+    stageText: stage + ' · ' + stageNum + '단계',
+    title: String(r[33] || '') || '이달도 화이팅 💪', // AH 대표칭호
+    pointsText: (Number(r[16]) || 0) + 'P', // Q 월간포인트
+    monImg: monMap[stage] || '',
+    mockScores: mocks.slice(-5).map(m => Number(m.val) || 0) // 시간순 최근 5개
+  };
+  d.comment = reportCardComment_(d);
+  return d;
+}
+
+// {{CHART}} 마커 도형 자리에 막대그래프 (없으면 첫 기록 안내), 마커는 제거
+function drawScoreChart_(sl, scores) {
+  let marker = null;
+  sl.getShapes().forEach(sh => { let t = ''; try { t = sh.getText().asString(); } catch (e) {} if (t.indexOf('{{CHART}}') > -1) marker = sh; });
+  if (!marker) return;
+  const L = marker.getLeft(), T = marker.getTop(), W = marker.getWidth(), H = marker.getHeight();
+  marker.remove();
+  if (!scores || !scores.length) {
+    const tb = sl.insertTextBox('이번이 첫 기록! ✨', L, T, W, H);
+    tb.getText().getTextStyle().setFontSize(13).setBold(true).setForegroundColor('#1A2340'); // [v9.35] 토큰 잉크
+    return;
+  }
+  const use = scores.slice(-5), n = use.length;
+  const slot = W / n, barW = slot * 0.6;
+  for (let i = 0; i < n; i++) {
+    const sc = Math.max(0, Math.min(100, Number(use[i]) || 0));
+    const bh = Math.max(H * (sc / 100), 2);
+    const bar = sl.insertShape(SlidesApp.ShapeType.ROUND_RECTANGLE, L + i * slot + (slot - barW) / 2, T + H - bh, barW, bh);
+    bar.getFill().setSolidFill(i === n - 1 ? '#FF6B5C' : '#1A2340'); // [v9.35] 토큰 정렬 — 막대=인디고 · 최신 끝점=코랄 강조 (레이아웃 무변경)
+    bar.getBorder().setTransparent();
+  }
+}
+
+// {{MONIMG}} 마커 자리에 몬스터 이미지 (URL 없으면 빈 칸), 마커는 제거
+function insertMonsterImage_(sl, url) {
+  let marker = null;
+  sl.getShapes().forEach(sh => { let t = ''; try { t = sh.getText().asString(); } catch (e) {} if (t.indexOf('{{MONIMG}}') > -1) marker = sh; });
+  if (!marker) return;
+  const L = marker.getLeft(), T = marker.getTop(), W = marker.getWidth(), H = marker.getHeight();
+  marker.remove();
+  if (url && String(url).indexOf('http') === 0) {
+    try { sl.insertImage(url, L, T, W, H); } catch (e) { Logger.log('몬스터 이미지 삽입 실패: ' + e); }
+  }
+}
+
+// [v9.19b] 디자인(자리표시자) 슬라이드를 자동 탐색 — 템플릿에 빈 슬라이드가 앞에 있어도 안전.
+//  '{{학생이름}}'을 담은 첫 슬라이드를 반환(도형·표 모두 검색), 없으면 첫 슬라이드로 폴백.
+function reportTemplateSlide_(pres) {
+  const slides = pres.getSlides();
+  const hasMarker = sl => {
+    let hit = false;
+    try { sl.getShapes().forEach(sh => { try { if (sh.getText().asString().indexOf('{{학생이름}}') > -1) hit = true; } catch (e) {} }); } catch (e) {}
+    if (!hit) { try { (sl.getTables() || []).forEach(tb => { for (let r = 0; r < tb.getNumRows(); r++) for (let c = 0; c < tb.getNumColumns(); c++) { try { if (tb.getCell(r, c).getText().asString().indexOf('{{학생이름}}') > -1) hit = true; } catch (e) {} } }); } catch (e) {} }
+    return hit;
+  };
+  for (let i = 0; i < slides.length; i++) if (hasMarker(slides[i])) return slides[i];
+  return slides[0];
+}
+
+// [v9.19b] 이미 존재하는(복제 후 저장·재열기된) 슬라이드를 채움 — 치환/차트/이미지 각각 try/catch로 격리.
+//  복제와 편집을 같은 배치에서 하면 Slides가 "This request cannot be applied"를 던지므로,
+//  호출부에서 [복제 → saveAndClose → 재열기 → fill] 2단계로 분리한다.
+function fillReportCardSlide_(sl, d) {
+  const rep = {
+    '{{월}}': d.month, '{{학생이름}}': d.name, '{{반이름}}': d.cls, '{{몬스터이름}}': d.nickname,
+    '{{급수변화}}': d.levelText, '{{모의점수}}': d.mockText, '{{점수변화}}': d.scoreText,
+    '{{출석}}': d.attendText, '{{몬스터단계}}': d.stageText, '{{칭호}}': d.title,
+    '{{포인트}}': d.pointsText, '{{코멘트}}': d.comment
+  };
+  // [v9.19b] 도형·표 셀 단위로 치환 — 슬라이드 단위 replaceAllText는 표 안 자리표시자에서
+  //  "This request cannot be applied"를 던짐. 셀 단위 TextRange로 격리하고, 그래도 실패하면 setText 폴백.
+  const ranges = [];
+  try { sl.getShapes().forEach(sh => { try { ranges.push(sh.getText()); } catch (e) {} }); } catch (e) {}
+  try { (sl.getTables() || []).forEach(tb => {
+    for (let r = 0; r < tb.getNumRows(); r++) for (let c = 0; c < tb.getNumColumns(); c++) {
+      try { ranges.push(tb.getCell(r, c).getText()); } catch (e) {}
+    }
+  }); } catch (e) {}
+  ranges.forEach(tr => {
+    if (!tr) return;
+    let s = ''; try { s = tr.asString(); } catch (e) { return; }
+    if (s.indexOf('{{') === -1) return;
+    Object.keys(rep).forEach(k => {
+      if (s.indexOf(k) === -1) return;
+      const v = String(rep[k] == null ? '' : rep[k]);
+      try { tr.replaceAllText(k, v); }
+      catch (e) { // 폴백: 전체 텍스트 문자열 치환 (서식은 첫 런으로 평탄화될 수 있음)
+        try { tr.setText(tr.asString().split(k).join(v)); }
+        catch (e2) { Logger.log('치환 실패 ' + k + ': ' + e2); }
+      }
+    });
+  });
+  try { drawScoreChart_(sl, d.mockScores); } catch (e) { Logger.log('차트 실패: ' + e); }   // {{CHART}}
+  try { insertMonsterImage_(sl, d.monImg); } catch (e) { Logger.log('이미지 실패: ' + e); } // {{MONIMG}}
+}
+
+// 테스트: 학생 1명만 카드 생성 → PNG URL 로그·반환 (report_cards 미기록 · 임시 슬라이드 정리)
+function previewOneReportCard(studentId) {
+  if (!REPORT_TEMPLATE_ID) { Logger.log('REPORT_TEMPLATE_ID 미설정'); return; }
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const ym = Utilities.formatDate(now, tz, 'yyyy-MM');
+  const label = Number(ym.substring(0, 4)) + '년 ' + Number(ym.substring(5, 7)) + '월';
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) { Logger.log('profiles 없음'); return; }
+  const w = Math.min(pf.getLastColumn(), 74);
+  const rowsP = pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues();
+  // [v9.19] 드롭다운 ▶실행은 인자를 못 넘기므로, 학생ID 미지정 시 자동으로 첫 학생으로 프리뷰
+  let r;
+  if (studentId) r = rowsP.find(x => String(x[0]) === String(studentId));
+  else { r = rowsP.find(x => x[0] && x[3] === 'student'); if (r) Logger.log('학생ID 미지정 → 첫 학생으로 프리뷰: ' + r[0] + ' (' + (r[1] || '') + ')'); }
+  if (!r) { Logger.log('학생 없음: ' + studentId + ' — profiles user_id(A열) 확인 (인자 없이 실행하면 첫 학생 자동 선택)'); return; }
+  const d = reportCardData_(r, readAcademicLogs_(ss, tz)[r[0]], monsterImgMap_(ss), now);
+  d.month = label;
+
+  // [v9.19b] 복제 → 저장 → 재열기 → 채우기 (같은 배치 복제+편집의 "This request cannot be applied" 회피)
+  const pres = SlidesApp.openById(REPORT_TEMPLATE_ID);
+  const pageId = reportTemplateSlide_(pres).duplicate().getObjectId(); // 빈 슬라이드 아닌 디자인 슬라이드 복제
+  pres.saveAndClose();
+  const presF = SlidesApp.openById(REPORT_TEMPLATE_ID);
+  const slF = presF.getSlides().find(s => s.getObjectId() === pageId);
+  fillReportCardSlide_(slF, d);
+  presF.saveAndClose();
+
+  Utilities.sleep(1500);
+  const blob = exportSlidePng(REPORT_TEMPLATE_ID, pageId).setName('PREVIEW_' + ym + '_' + d.sid + '_' + d.name + '.png');
+  const it = DriveApp.getFoldersByName(REPORT_FOLDER_NAME);
+  const folder = it.hasNext() ? it.next() : DriveApp.createFolder(REPORT_FOLDER_NAME);
+  const file = folder.createFile(blob);
+  try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (e) {}
+  const pngUrl = 'https://lh3.googleusercontent.com/d/' + file.getId();
+
+  // 프리뷰 임시 슬라이드 제거 (템플릿 원본 보존)
+  const pres2 = SlidesApp.openById(REPORT_TEMPLATE_ID);
+  pres2.getSlides().forEach(s2 => { if (s2.getObjectId() === pageId) s2.remove(); });
+  pres2.saveAndClose();
+
+  Logger.log('📇 리포트카드 프리뷰 — ' + d.name + ' (' + d.sid + ')\n🖼️ PNG: ' + pngUrl +
+    '\n데이터: 급수 ' + d.levelText + ' · 모의 ' + d.mockText + '(' + d.scoreText + ') · ' +
+    d.attendText + ' · ' + d.stageText + ' · ' + d.pointsText + '\n코멘트: ' + d.comment);
+  return pngUrl;
+}
+
+/* ===================== [v5] 명예의 전당 (monthlyGameBatch가 호출) ===================== */
+
+// [v5.7] 이달의 보스 — contents type='boss' 순번(F열) 월 로테이션. D열 = "등장대사|격파대사"
+// [v9.4] 📖 싱크 스토리 — 월간 스토리북 자동 발간 (한 달의 실화 × TOPIK 문법)
+const STORY_GRAMMAR = [ // 월(1~12) 로테이션 · TOPIK 3~4급 문형 4개/월 — 챕터 문장의 골격
+  [['-느라고','이유·핑계'],['-았/었더니','경험 후 결과'],['-는 바람에','뜻밖의 원인'],['-기 마련이다','당연한 이치']],
+  [['-(으)ㄹ 뻔하다','아슬아슬'],['-고 말다','결국 그렇게 됨'],['-도록','목적·정도'],['-는 김에','겸사겸사']],
+  [['-자마자','직후'],['-(으)ㄹ수록','비례'],['-는 대신에','대체'],['-기만 하면','조건 반복']],
+  [['-다 보니','하다 보니 알게 됨'],['-(으)ㄹ 만하다','가치'],['-는 척하다','거짓 행동'],['-거든요','이유 설명']],
+  [['-(으)ㄴ 지','시간 경과'],['-을/를 통해','수단'],['-는 데다가','추가'],['-기 나름이다','하기에 달림']],
+  [['-던','회상'],['-(으)ㄹ 리가 없다','강한 부정 추측'],['-곤 하다','습관'],['-(으)면서도','대조 동시']],
+  [['-느니 차라리','선택'],['-는 통에','시끄러운 원인'],['-기는커녕','부정 강조'],['-(으)ㄹ 겸','두 목적']],
+  [['-다가','전환'],['-(으)ㄴ 채로','상태 유지'],['-을 뿐만 아니라','추가 강조'],['-기 십상이다','되기 쉬움']],
+  [['-더니','관찰 후 변화'],['-(으)ㄹ 정도로','정도'],['-는 한','조건 한계'],['-기에','이유 문어']],
+  [['-고 나서','순서'],['-(으)ㄹ 테니까','추측 근거'],['-는 반면에','대조'],['-을 비롯해서','대표 예시']],
+  [['-자','즉시 계기'],['-(으)므로','문어 이유'],['-든지','선택 나열'],['-기 위해서','목적']],
+  [['-았/었더라면','과거 가정'],['-(으)ㄹ 겸 해서','겸사'],['-는 데 비해','비교'],['-고서야','그제야']],
+  [['-는 길에','오가는 도중'],['-(으)ㄴ/는 덕분에','고마운 원인'],['-기로 하다','결심·약속'],['-게 되다','상황 변화의 결과']],
+  [['-(으)ㄴ/는 편이다','대체적인 경향'],['-(으)ㄹ까 봐','걱정 섞인 추측'],['-아/어 놓다','해 둔 상태 유지'],['-잖아요','아는 사실 확인']],
+  [['-더라고요','직접 경험 전달'],['-나 보다','보고 느낀 추측'],['-는 대로','하는 즉시·그대로'],['-아/어 버리다','완전히 끝냄']],
+  [['-다 보면','계속하면 생기는 결과'],['-(으)려던 참이다','마침 하려던 때'],['-고 해서','여러 이유 중 하나'],['-은/는 물론이고','당연한 포함']],
+  [['-던데','경험한 배경 제시'],['-(이)야말로','바로 그것 강조'],['-만 해도','하나만 예로 들어도'],['-게 하다','하게 만듦(사동)']],
+  [['-(으)려다가','의도를 바꿈'],['-는 셈이다','따져 보면 마찬가지'],['-에 달려 있다','그것이 좌우함'],['-다니','뜻밖의 감탄']],
+  [['-더라도','양보 가정'],['-(으)로 인해','원인(문어)'],['-에 따라','기준·비례'],['-고자','목적(문어)']],
+  [['-(으)ㄴ 끝에','오랜 과정 끝의 결과'],['-기가 무섭게','하자마자 곧바로'],['-(으)며','나열·동시(문어)'],['-(으)ㅁ으로써','수단·방법(문어)']],
+  [['-는가 하면','한편의 대조 나열'],['-(으)ㄹ 뿐이다','오직 그것뿐'],['-다시피','아는 바와 같이'],['-(으)ㄴ 나머지','지나친 나머지의 결과']],
+  [['-에도 불구하고','그럼에도(양보)'],['-(으)ㄹ 지경이다','매우 심한 정도'],['-기에 앞서','하기 전에 먼저'],['-는 가운데','진행되는 배경 속에']],
+  [['-(으)ㄹ 법하다','그럴 만한 추측'],['-다 못해','정도를 넘어서'],['-아/어 내다','끝까지 해냄'],['-치고','예외 없이·기준 밖 의외']],
+  [['-(으)ㄹ 따름이다','오직 그러할 뿐(문어)'],['-기 그지없다','더없이 그러함'],['-(으)ㄹ지언정','강한 양보 선택'],['-(으)리라','굳은 의지·추측(문어)']],
+];
+const STORY_TITLES = ['{boss}와 시냅스의 불꽃','{boss}가 남긴 것','우리가 {boss}를 만났을 때','{boss}보다 빛난 아이들','{boss}의 계절, 성장의 계절','안녕, {boss} — 우리는 자랐다','{boss} 너머의 아침','{boss}가 가르쳐 준 문장들','{boss}의 밤을 건너는 법','한 뼘 더 자란 우리와 {boss}'];
+
+// [v9.5] 배경 12경 — 한국 생활·문화의 무대 (월 로테이션): [이름, 도착 묘사, 문화 디테일, 보스 등장 연출]
+const STORY_SCENES = [
+  ['눈 내리는 덕수궁 돌담길','첫눈이 내리는 덕수궁 돌담길을 크루들이 걸었습니다. 입김이 하얗게 피어오르고, 돌담 위에 눈이 소복이 쌓였습니다.','붕어빵을 반으로 쪼개 나눠 먹으며 "머리부터? 꼬리부터?" 하고 웃었습니다. 한국의 겨울은 붕어빵 냄새로 시작된다는 걸 크루들은 알게 되었습니다.','그때, 돌담 그림자가 이상하게 길어지더니 눈발이 거꾸로 솟구쳤습니다.'],
+  ['광장시장 먹자골목','설 연휴의 광장시장은 사람들의 웃음소리로 가득했습니다. 크루들은 빈대떡 부치는 소리를 따라 골목 깊숙이 들어갔습니다.','마약김밥과 육회를 앞에 두고, 꼬마 크루가 "이모, 여기 하나 더요!"를 완벽한 발음으로 외치자 모두가 박수를 쳤습니다.','그런데 시장의 불빛이 하나둘 꺼지더니, 골목 끝에서 무거운 그림자가 스멀스멀 기어 나왔습니다.'],
+  ['여의도 벚꽃길','4월의 여의도, 벚꽃이 눈처럼 흩날렸습니다. 크루들은 꽃잎을 손바닥에 받으며 윤중로를 걸었습니다.','돗자리를 펴고 김밥을 나눠 먹는데, 지나가던 할머니가 "학생들 한국말 참 잘하네" 하고 웃어주셨습니다. 그 한마디에 어깨가 으쓱해졌습니다.','갑자기 바람이 멈추고, 흩날리던 벚꽃잎이 공중에 그대로 얼어붙었습니다.'],
+  ['경복궁 한복 나들이','크루들은 색색의 한복을 입고 경복궁 근정전 앞에 섰습니다. 옷고름을 서로 매어주며 한참을 웃었습니다.','수문장 교대식의 북소리에 맞춰 걷다가, 외국인 관광객이 사진을 부탁하자 "김치~" 하고 포즈까지 취해주었습니다.','그 순간, 근정전 지붕 위 잡상들 사이로 낯선 실루엣 하나가 스르륵 일어났습니다.'],
+  ['한강 치킨 피크닉','5월의 한강공원, 크루들은 돗자리 위에 치킨과 라면을 펼쳤습니다. 강바람이 시원하게 불어왔습니다.','배달 앱으로 주문한 치킨이 정확히 돗자리 앞까지 온 것을 보고 다들 "한국 최고!"를 외쳤습니다. 편의점 라면 끓이는 기계 앞에선 작은 줄다툼도 있었습니다.','그런데 잔잔하던 한강 물결이 뚝 멈추더니, 수면 아래에서 거대한 그림자가 떠올랐습니다.'],
+  ['남산 노을 전망대','케이블카를 타고 오른 남산, 크루들은 노을에 물드는 서울을 내려다보았습니다. 사랑의 자물쇠 앞에서 소원도 하나씩 걸었습니다.','"서울이 이렇게 넓었어?" 누군가 중얼거리자, 다른 크루가 "우리가 배운 한국어로 저 도시 전부랑 이야기할 수 있는 거야"라고 답했습니다.','노을이 절정에 달한 순간, 타워의 그림자가 갑자기 두 배로 길어지며 꿈틀거렸습니다.'],
+  ['부산 해운대 바다','여름방학, 크루들은 KTX를 타고 부산으로 떠났습니다. 해운대 모래사장에 발을 딛자마자 파도가 발목을 간질였습니다.','밀면과 씨앗호떡을 사 들고, 부산 사투리로 "마, 억수로 맛있네!"를 따라 하다 다 같이 웃음이 터졌습니다.','그때 수평선 너머 하늘이 먹물처럼 어두워지더니, 파도가 이상한 리듬으로 출렁이기 시작했습니다.'],
+  ['홍대 버스킹 거리','금요일 밤의 홍대 걷고싶은거리, 크루들은 버스킹 무대 앞에 모였습니다. 기타 소리와 박수 소리가 골목을 채웠습니다.','즉석에서 마이크를 넘겨받은 크루가 한국 노래 한 소절을 불렀고, 지나가던 사람들이 함성을 질러주었습니다. 떡볶이 컵을 든 손이 떨릴 만큼 짜릿했습니다.','그 순간 스피커가 지직거리더니, 무대 뒤 어둠 속에서 낮게 웃는 소리가 들려왔습니다.'],
+  ['북촌 한옥마을 골목','가을 오후의 북촌, 크루들은 기와지붕 사이 좁은 골목을 탐험했습니다. 골목마다 다른 서울이 숨어 있었습니다.','한옥 카페에서 대추차를 마시며, 창호지 문으로 스며드는 햇살에 다들 말을 잃었습니다. "옛날 사람들은 이런 집에서 공부했구나."','그런데 골목 끝 담벼락의 그림자가, 아무도 걷지 않는데 혼자 움직이기 시작했습니다.'],
+  ['설악산 단풍 산행','단풍이 절정인 설악산, 크루들은 서로를 끌어주며 흔들바위까지 올랐습니다. 산 전체가 붉게 타오르고 있었습니다.','정상 근처 매점에서 컵라면을 후후 불어 먹으며 "산에서 먹는 라면이 세상에서 제일 맛있다"는 한국의 진리를 몸으로 배웠습니다.','그때 단풍잎들이 일제히 떨어지기를 멈추고, 공중에서 소용돌이치기 시작했습니다.'],
+  ['롯데월드 자유이용권','기말고사가 끝난 기념으로 크루들은 롯데월드에 갔습니다. 머리띠를 하나씩 나눠 쓰고 회전목마 앞에서 단체 사진도 찍었습니다.','자이로드롭 앞에서 "먼저 타" "네가 먼저 타"를 반복하다 결국 다 같이 탔고, 내려온 뒤엔 다리가 풀려 한참을 웃었습니다.','퍼레이드 음악이 뚝 끊기더니, 아이스링크 한가운데 조명이 꺼지며 냉기가 확 퍼졌습니다.'],
+  ['보신각 제야의 종','한 해의 마지막 밤, 크루들은 보신각 앞 인파 속에 섰습니다. 입김과 함성이 뒤섞여 밤하늘로 올라갔습니다.','"쓰리, 투, 원!" 카운트다운을 한국어로 목이 터져라 외치고, 종소리가 울리자 서로를 끌어안았습니다. 낯선 나라의 새해가 우리의 새해가 된 밤이었습니다.','서른세 번째 종소리가 울리려는 순간 — 종소리가 멈췄습니다. 광장의 대형 전광판이 지직거리며 검게 물들었습니다.'],
+  ['전주 한옥마을 비빔밥 골목','겨울 아침의 전주 한옥마을, 크루들은 기와 처마 아래 골목을 천천히 걸었습니다. 돌바닥 위로 하얀 입김이 번졌습니다.','유기그릇에 담긴 전주비빔밥을 비비며 "이렇게 색이 많은 밥은 처음이야" 하고 웃었습니다. 한 그릇 속 색의 조화를 크루들은 눈으로 먼저 배웠습니다.','그때 처마 끝 풍경 소리가 뚝 멈추더니, 골목 안개가 한 덩어리로 뭉쳐 일어섰습니다.'],
+  ['강릉 안목해변 커피거리','2월의 강릉, 크루들은 안목해변 커피거리에 도착했습니다. 겨울 바다가 유리처럼 반짝이고, 갓 볶은 원두 향이 파도 소리와 섞여 왔습니다.','따뜻한 커피와 커피콩빵을 손에 쥐고 방파제에 나란히 앉았습니다. "바다를 보면서 마시는 커피가 진짜 강릉의 맛이래." 갈매기가 끼룩거리며 다가오자 다들 빵을 꼭 끌어안았습니다.','그런데 수평선의 물안개가 스르르 몰려오더니, 방파제 앞에서 커다란 거품 덩어리로 부풀어 올랐습니다.'],
+  ['경주 대릉원 돌담과 첨성대','초봄의 경주, 크루들은 대릉원의 부드러운 능선 사이 오솔길을 걸었습니다. 담장 너머로 목련이 하얗게 피어나고 있었습니다.','천 년 전 별을 보던 첨성대 앞에서 갓 구운 황남빵을 나눠 먹으며 "신라 사람들도 이 하늘을 봤겠지?" 하고 속삭였습니다. 오래된 도시가 갑자기 아주 가깝게 느껴졌습니다.','그 순간 첨성대의 그림자가 해와 반대 방향으로 돌기 시작하더니, 이끼 낀 돌덩이들이 데굴데굴 한곳으로 모여들었습니다.'],
+  ['보성 녹차밭 초록 계단','4월의 보성, 크루들은 초록 물결이 계단처럼 이어진 녹차밭 언덕에 올랐습니다. 곡우를 앞둔 찻잎들이 연둣빛으로 반짝였습니다.','갓 딴 첫물 찻잎을 손바닥에 올려 향을 맡고, 전망대에서 녹차 아이스크림을 나눠 먹었습니다. "우전, 세작 — 찻잎 한 장에도 계절 이름이 붙는구나." 크루들은 새 단어를 아이스크림처럼 천천히 음미했습니다.','그런데 밭고랑 사이 안개가 초록빛으로 물들더니, 언덕 하나만큼 커다란 덩어리로 뭉치기 시작했습니다.'],
+  ['담양 죽녹원 대나무숲','5월의 담양, 크루들은 하늘까지 뻗은 대나무 사이 오솔길로 들어섰습니다. 바람이 지나갈 때마다 댓잎이 사각사각 파도 소리를 냈습니다.','대통밥 뚜껑을 열자 김이 확 올라왔고, 죽순 반찬을 맛본 크루가 "대나무를 먹는 거야?" 하고 눈이 동그래졌습니다. 죽순은 하루에 1미터씩도 자란다는 이야기에 다들 "우리 같네!" 하고 웃었습니다.','그때 바람도 없는데 대숲 전체가 출렁이더니, 흙을 밀어 올리며 집채만 한 죽순이 불쑥 솟아났습니다.'],
+  ['여수 밤바다 낭만포차','초여름 저녁의 여수, 크루들은 바닷가를 따라 늘어선 낭만포차 거리에 도착했습니다. 항구의 불빛이 까만 바다 위에 금가루처럼 떠 있었습니다.','포차에서 갓김치와 딱새우를 맛보며 "맵지만 자꾸 손이 가!"를 외쳤습니다. 주인아주머니가 "우리 여수 밤바다가 노래보다 예쁘지?" 하시자 크루들이 크게 고개를 끄덕였습니다.','그런데 바다 위 불빛들이 일렁이며 한곳으로 모이더니, 말랑말랑한 젤리처럼 부풀어 둥실 떠올랐습니다.'],
+  ['보령 대천해변 머드축제','한여름의 대천해변, 크루들은 머드축제 한복판으로 뛰어들었습니다. 회색 진흙을 뒤집어쓴 사람들이 모두 똑같은 얼굴로 웃고 있었습니다.','서로의 얼굴에 머드를 발라주다 보니 누가 누군지 알 수 없게 되었고, "이 진흙이 피부에 좋대!" 하며 더 신나게 발랐습니다. 진흙 미끄럼틀에서는 목소리만으로 서로를 찾아냈습니다.','그때 갯벌 한가운데가 부글부글 끓더니, 진흙 거품이 산처럼 쌓이며 꿈틀 일어났습니다.'],
+  ['제주 우도 돌담과 해녀','8월의 제주, 크루들은 배를 타고 우도로 건너갔습니다. 에메랄드빛 바다와 까만 현무암 돌담이 그림처럼 이어졌습니다.','물질을 마친 해녀 할머니의 "호오이—" 숨비소리에 다들 조용히 귀를 기울였습니다. 우도 명물 땅콩 아이스크림을 하나씩 들고, 돌하르방 옆에서 똑같은 표정을 지으며 사진도 찍었습니다.','그런데 해안가 돌담이 드르륵드르륵 저절로 움직이더니, 커다란 돌덩이 하나로 차곡차곡 쌓여 올라갔습니다.'],
+  ['안동 하회마을 탈춤 마당','가을 초입의 안동 하회마을, 크루들은 강이 마을을 한 바퀴 감싸 도는 풍경에 감탄하며 탈춤 공연 마당에 자리를 잡았습니다.','하회탈의 웃는 얼굴을 따라 그려보고, 덩실덩실 어깨춤도 배웠습니다. "탈을 쓰면 부끄러움이 사라진대!" 한 크루가 탈을 쓰고 한국어 인사말을 외치자 마당 가득 박수가 쏟아졌습니다.','그 순간 공연 마당의 북소리가 뚝 멈추고, 나무탈 하나가 저 혼자 데굴데굴 굴러 나오며 점점 커졌습니다.'],
+  ['진주 남강 유등축제','10월의 진주, 크루들은 남강 위를 가득 메운 유등 불빛 사이를 걸었습니다. 강물이 수천 개의 소원으로 반짝였습니다.','크루들도 소망 유등에 한국어로 또박또박 소원을 적어 강물에 띄웠습니다. "내년의 나에게 보내는 편지 같아." 유등이 멀어질수록 마음속 소원은 더 또렷해졌습니다.','그런데 강바람이 빙그르르 돌기 시작하더니, 통통한 소용돌이 하나가 강 위로 내려와 유등 사이를 장난스럽게 헤집었습니다.'],
+  ['순천만 갈대밭 노을','11월의 순천만, 크루들은 끝없이 펼쳐진 갈대밭 데크길을 걸었습니다. 바람이 지나가면 은빛 갈대가 한 방향으로 물결쳤습니다.','전망대에 오르자 노을 속에서 흑두루미 떼가 브이 자를 그리며 날아올랐습니다. "겨울을 나러 시베리아에서 여기까지 온대." 수천 킬로미터를 날아온 새들 앞에서 크루들은 한참 동안 하늘만 바라보았습니다.','그때 갈대밭 한가운데가 동그랗게 눕더니, 갈대 뭉치가 데굴데굴 구르며 점점 커다란 공처럼 불어났습니다.'],
+  ['명동 크리스마스 빛거리','12월의 명동, 크루들은 캐럴이 흐르는 빛의 거리로 들어섰습니다. 상점마다 반짝이는 트리와 사람들의 들뜬 발걸음이 겨울밤을 환하게 데웠습니다.','노점 군고구마를 호호 불며 껍질을 벗기고, 종이컵에 담긴 어묵 국물로 언 손을 녹였습니다. 명동성당 앞에서 울려 퍼지는 캐럴을 들으며 "한국의 겨울은 손이 따뜻해지는 계절이구나" 하고 웃었습니다.','그 순간 거리의 트리 전구가 일제히 깜빡이더니, 광장 구석의 눈더미가 마시멜로처럼 부풀어 둥실 일어났습니다.'],
+];
+
+// [v9.10] 🎬 영상팩 — 씬 프롬프트 자동 생성용 영문 자산
+const SCENE_EN = ['snowy Deoksugung palace stone wall road in Seoul, winter','bustling Gwangjang traditional market food alley at night','Yeouido cherry blossom road in full bloom','Gyeongbokgung palace courtyard, students in colorful hanbok','Han river park picnic at dusk, food delivery on mats','N Seoul Tower observatory at sunset, city skyline below','Haeundae beach in Busan, summer waves','Hongdae busking street at night, neon and guitar crowd','Bukchon hanok village narrow alley, autumn afternoon','Seoraksan mountain trail in peak autumn foliage','Lotte World theme park, carousel and ice rink','Bosingak bell pavilion on New Year\'s Eve, festival crowd','Jeonju hanok village bibimbap alley, winter morning','Anmok beach coffee street in Gangneung, sparkling winter sea','Gyeongju Daereungwon royal mound path and Cheomseongdae observatory, early spring magnolia','Boseong green tea field terraced hills, fresh spring leaves','Juknokwon bamboo forest path in Damyang, fresh green May light','Yeosu night sea pocha street, harbor lights on dark water, early summer evening','Daecheon beach mud festival in Boryeong, midsummer splash','Udo island in Jeju, emerald sea and black basalt stone walls, midsummer','Andong Hahoe folk village mask dance yard, early autumn river bend','Jinju Namgang river lantern festival, thousands of floating wish lanterns, autumn night','Suncheonman bay silver reed field at sunset, migrating cranes, late autumn','Myeongdong shopping street with Christmas lights and carols, snowy December night'];
+const BOSS_EN = ['a giant sleepy hibernating bear monster','a lazy holiday slime monster','a mesmerizing spring butterfly monster','a hazy yellow-dust sphinx of fog','a daydream cloud monster','a tempting grassland wolf monster','a giant memory-devouring kraken rising from water','a procrastination skeleton monster','an autumn drowsiness goblin monster','a shadowy exam-anxiety phantom','a freezing yeti monster in a blizzard','a distraction phantom ghost in year-end lights','a giant swirling gochujang mist monster','a fluffy giant sea-foam latte monster','a dozy moss-covered stone tortoise monster','a giant rolling matcha fog monster','a springy giant bamboo-shoot monster','a wobbly glowing neon jellyfish monster','a giant bouncy mud-bubble monster','a giant waddling basalt dol hareubang monster','a goofy tumbling wooden-mask monster','a plump mischievous whirlwind monster','a fluffy giant reed-tumbleweed monster','a giant puffy marshmallow snowman monster'];
+const WB_EN = 'ZERO, the colossal Overlord of Oblivion — a vast void-black entity with a glowing crown, looming over the sky';
+const STYLE_EN = 'vibrant Korean coming-of-age webtoon style, clean flat vector illustration, warm indigo and coral palette, expressive teenage students with small glowing neuron companion monsters, cinematic composition';
+
+const STORY_EMOTIONS = [ // [v9.7] 감정 표현 배지 — 막의 감정 곡선과 1:1 (한국어 감정 관용구 학습)
+  ['설레다','기대로 마음이 두근거리다'],['심장이 쿵 내려앉다','갑작스러운 충격을 받다'],
+  ['입술을 깨물다','분함이나 결심을 참아 누르다'],['소름이 돋다','놀라움·감동으로 피부가 오싹해지다'],
+  ['가슴이 벅차오르다','기쁨과 감동이 가득 차다'],['목이 메다','감동으로 말이 잘 나오지 않다'],
+  ['어깨가 으쓱해지다','자랑스러워지다'],['속이 후련하다','걱정이 풀려 시원하다'],
+  ['눈이 반짝이다','기대와 호기심으로 빛나다'],['숨이 턱 막히다','놀라움과 긴장으로 숨이 멎는 듯하다'],
+  ['주먹을 불끈 쥐다','결심과 의지를 다지다'],['손에 땀을 쥐다','조마조마하여 마음을 졸이다'],
+  ['가슴이 뭉클하다','감동이 조용히 밀려오다'],['눈시울이 붉어지다','감동으로 눈가가 뜨거워지다'],
+  ['가슴을 펴다','당당하고 자랑스러워지다'],['가슴을 쓸어내리다','안심하여 마음을 놓다']];
+
+function buildMonthlyStorybook_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const lastM = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const ym = Utilities.formatDate(lastM, tz, 'yyyy-MM');
+  const mNum = lastM.getMonth() + 1;
+  // [v9.27] 연도 로테이션: 짝수해(2026 등)=1년차 슬롯0~11 · 홀수해=2년차 슬롯12~23 (2026 출력 불변)
+  const sIdx = (mNum - 1) + (lastM.getFullYear() % 2 === 1 ? 12 : 0);
+  const sb = ensureSheet(ss, 'synk_stories', ['월','호수','제목','챕터','챕터제목','본문','문법포인트','씬프롬프트']);
+  if (sb.getMaxColumns() < 8) sb.insertColumnsAfter(sb.getMaxColumns(), 8 - sb.getMaxColumns()); // [v9.10]
+  if (String(sb.getRange(1, 8).getValue()) !== '씬프롬프트') sb.getRange(1, 8).setValue('씬프롬프트');
+  // [v9.97] 월 열을 텍스트로 고정 — 이 줄이 없으면 아래 멱등 가드가 Date 오염 셀에서 영구 실패해 매달 중복 발간된다
+  ymTextColFix_(sb, 1, tz);
+  if (sb.getLastRow() >= 2 && sb.getRange(2, 1, sb.getLastRow() - 1, 1).getValues()
+    .some(r => ymTextOf_(r[0], tz) === ym)) { Logger.log('스토리북: ' + ym + '호 기발간'); return; }
+  const issue = 1 + new Set(sb.getLastRow() < 2 ? [] : sb.getRange(2, 1, sb.getLastRow() - 1, 1).getValues().map(r => ymTextOf_(r[0], tz)).filter(String)).size;
+  const G = STORY_GRAMMAR[sIdx];
+  const boss = bossOfMonth(ss, mNum) || { name: '이달의 보스', open: '', win: '' };
+  const wb = worldBossOf(ss);
+  const SC = STORY_SCENES[sIdx];
+
+  // ── 캐스팅 (전부 실데이터, 5역 체계: 주연1·조연2·단역2·엑스트라) ──
+  const pf = ss.getSheetByName('profiles');
+  const nmB = {}, clsB = {}, evolvedMap = {};
+  let stuCnt = 0;
+  if (pf && pf.getLastRow() >= 2) {
+    const wide = Math.min(54, pf.getMaxColumns());
+    pf.getRange(2, 1, pf.getLastRow() - 1, wide).getValues().forEach(r => {
+      if (!r[0] || r[3] !== 'student') return;
+      stuCnt++; nmB[r[0]] = r[1] || r[0]; clsB[r[0]] = String(r[4] || '');
+      if (wide >= 54 && String(r[53] || '').indexOf(ym) === 0) evolvedMap[r[0]] = r[18] || '몬스터';
+    });
+  }
+  const perM = {}; let raidWins = 0;
+  const plB = ss.getSheetByName('point_logs');
+  if (plB && plB.getLastRow() >= 2) plB.getRange(2, 1, plB.getLastRow() - 1, 6).getValues().forEach(r => {
+    const sid = r[1], pts = Number(r[2]) || 0, rs = String(r[3] || '');
+    if (!sid || !r[5] || dstr(r[5], tz).indexOf(ym) !== 0) return;
+    if (rs === '레이드보상') raidWins++;
+    if (pts > 0 || rs.indexOf('정정') > -1) perM[sid] = (perM[sid] || 0) + pts;
+  });
+  const crownSid = {};
+  const tl = ss.getSheetByName('titles');
+  if (tl && tl.getLastRow() >= 2) tl.getRange(2, 1, tl.getLastRow() - 1, 3).getValues().forEach(r => {
+    if (String(r[0]) !== ym) return;
+    if (String(r[2]).indexOf('이달의 스타') > -1 || String(r[2]).indexOf('시냅스 챔피언') > -1) crownSid[r[1]] = String(r[2]);
+  });
+  const ranked = Object.keys(perM).filter(s => nmB[s]).sort((a, b) => perM[b] - perM[a]);
+  const stH = ensureSheet(ss, 'app_state', ['key','value']);
+  const stHData = stH.getLastRow() < 2 ? [] : stH.getRange(2, 1, stH.getLastRow() - 1, 2).getValues();
+  let prevLead = '';
+  stHData.forEach(rr => { if (String(rr[0]) === '전호주연') prevLead = String(rr[1] || ''); });
+  const pick = [];
+  const leadCand = ranked.filter(s => s !== prevLead);
+  if (leadCand[0]) pick.push(leadCand[0]);
+  else if (ranked[0]) pick.push(ranked[0]);
+  const prevMon = {};
+  const msH = ss.getSheetByName('monthly_snapshot');
+  const ymPrev = Utilities.formatDate(new Date(lastM.getFullYear(), lastM.getMonth() - 1, 1), tz, 'yyyy-MM');
+  if (msH && msH.getLastRow() >= 2) msH.getRange(2, 1, msH.getLastRow() - 1, 3).getValues().forEach(rr => {
+    if (String(rr[0]) === ymPrev && rr[1]) prevMon[rr[1]] = Number(rr[2]) || 0;
+  });
+  let rookie = null;
+  ranked.forEach(s => {
+    if (pick.indexOf(s) > -1 || (perM[s] || 0) < 15) return;
+    const rise = ((perM[s] || 0) - (prevMon[s] || 0)) / Math.max(prevMon[s] || 0, 10);
+    if (rise >= 1 && (!rookie || rise > rookie.rise)) rookie = { s: s, rise: rise };
+  });
+  if (rookie && pick.indexOf(rookie.s) < 0) pick.push(rookie.s);
+  ranked.forEach(s => { if (pick.indexOf(s) < 0 && pick.length < 3) pick.push(s); });
+  Object.keys(evolvedMap).forEach(s => { if (pick.indexOf(s) < 0 && pick.length < 3 && nmB[s]) pick.push(s); });
+  const cameoPool = Object.keys(crownSid).filter(s => pick.indexOf(s) < 0 && nmB[s]);
+  const M  = pick[0] ? { n: nmB[pick[0]], d: perM[pick[0]] || 0, c: clsB[pick[0]], evo: evolvedMap[pick[0]] } : { n: '유나', d: 0, c: '우리 반', evo: null };
+  const S1 = pick[1] ? { n: nmB[pick[1]], evo: evolvedMap[pick[1]] } : { n: '민호', evo: null };
+  const S2 = pick[2] ? { n: nmB[pick[2]], evo: evolvedMap[pick[2]] } : null;
+  const C1 = cameoPool[0] ? { n: nmB[cameoPool[0]], t: crownSid[cameoPool[0]] } : null;
+  const evoActor = M.evo ? M : (S1.evo ? S1 : (S2 && S2.evo ? S2 : null));
+  let duel = null;
+  const lgB = ss.getSheetByName('league_pairs');
+  if (lgB && lgB.getLastRow() >= 2) lgB.getRange(2, 1, lgB.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (String(r[0]).indexOf(ym) !== 0) return;
+    const m2 = String(r[4] || '').match(/\((\d+(?:\.\d+)?) : (\d+(?:\.\d+)?)\)/);
+    if (!m2) return;
+    const hi = Number(m2[1]), lo = Number(m2[2]);
+    if (!duel || (hi - lo) < duel.gap) duel = { a: String(r[1]), b: String(r[2]), gap: hi - lo };
+  });
+  let world = null;
+  const wrS = ss.getSheetByName('world_raid');
+  if (wrS && wrS.getLastRow() >= 2) wrS.getRange(2, 1, wrS.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (String(r[0]) === ym) world = { hp: Number(r[2]) || 0, dmg: Number(r[3]) || 0, win: String(r[4]) === '격파' };
+  });
+  const rvA = duel ? duel.a : '옆 반';
+  // [v9.69] 변형 선택자(U+FE0E/FE0F)·ZWJ(U+200D)까지 함께 제거 — 🕳️처럼 "이모지+FE0F" 조합에서 FE0F만 남아
+  //   제목이 "제로 ️와"로 렌더되던 고아 문자 결함 수리(기발간 행은 sheetSelfHeal_이 청소)
+  const bN = boss.name.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0E\uFE0F\u200D]/gu, '').trim();
+  const wN = wb.name.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0E\uFE0F\u200D]/gu, '').trim();
+  const J = josa;
+  const usedNames = {};
+  pick.forEach(s => usedNames[s] = 1);
+  Object.keys(crownSid).forEach(s => usedNames[s] = 1);
+  const cameoCand = [];
+  const atCam = ss.getSheetByName('attendance');
+  const attDays = {}, firstAtt = {};
+  if (atCam && atCam.getLastRow() >= 2) atCam.getRange(2, 1, atCam.getLastRow() - 1, 3).getValues().forEach(rr => {
+    if (!rr[1] || !rr[2]) return;
+    const dC = dstr(rr[2], tz);
+    if (!firstAtt[rr[1]] || dC < firstAtt[rr[1]]) firstAtt[rr[1]] = dC;
+    if (dC.indexOf(ym) === 0) attDays[rr[1]] = (attDays[rr[1]] || 0) + 1;
+  });
+  const achCam = ss.getSheetByName('achievements');
+  const nightSid = {}, tricolorSid = {};
+  if (achCam && achCam.getLastRow() >= 2) achCam.getRange(2, 1, achCam.getLastRow() - 1, 4).getValues().forEach(rr => {
+    if (String(rr[3] || '').indexOf(ym) !== 0) return;
+    if (String(rr[1]).indexOf('한밤') > -1) nightSid[rr[0]] = 1;
+    if (String(rr[1]).indexOf('세 빛깔') > -1) tricolorSid[rr[0]] = 1;
+  });
+  const CAMEO_TPL = {
+    night: n => '밤 아홉 시가 넘도록 시냅스를 쌓던 ' + n + '의 습관이, 이런 날을 위해 있었다.',
+    tri: n => '하루에 세 가지 빛을 낸 적 있는 ' + n + J(n, '이', '가') + ' 세 방향에서 동시에 움직였다.',
+    newbie: n => '들어온 지 한 달도 안 된 ' + n + J(n, '이', '가') + ' 누구보다 먼저 달려 나갔다.',
+    steady: n => '이번 달 거의 하루도 빠지지 않은 ' + n + '의 다리는 지치는 법을 몰랐다.',
+    syn: n => '조용히, 그러나 꾸준히 시냅스를 이어 온 ' + n + '의 손이 빛났다.',
+    hw: n => n + J(n, '은', '는') + ' 말없이 숙제로 쌓아 올린 화살들을 쏟아부었다.',
+    voice: n => '함성 사이로 ' + n + '의 목소리가 또렷하게 길을 열었다.',
+    guard: n => '맨 뒤에서 ' + n + J(n, '이', '가') + ' 넘어지는 친구들을 하나씩 일으켰다.'
+  };
+  Object.keys(perM).forEach(s => {
+    if (usedNames[s] || !nmB[s] || (perM[s] || 0) <= 0) return;
+    let tag;
+    if (nightSid[s]) tag = 'night';
+    else if (tricolorSid[s]) tag = 'tri';
+    else if ((firstAtt[s] || '').indexOf(ym) === 0) tag = 'newbie';
+    else if ((attDays[s] || 0) >= 8) tag = 'steady';
+    else if ((perM[s] || 0) >= 40) tag = 'hw';
+    else tag = ['syn', 'voice', 'guard'][s.charCodeAt(s.length - 1) % 3];
+    cameoCand.push({ s: s, n: nmB[s], tag: tag });
+  });
+  cameoCand.sort((a, b) => (perM[b.s] || 0) - (perM[a.s] || 0));
+  let cameoIdx = 0;
+  const cameo = () => { const c = cameoCand[cameoIdx++]; return c ? ' ' + CAMEO_TPL[c.tag](c.n) : ''; };
+  const arcA = (mNum % 2 === 1);
+  const tY2 = (lastM.getFullYear() % 2 === 1); // [v9.27] 홀수해=2년차 타이틀(6~9)·짝수해=1년차(0~5), 2026 출력 불변
+  const title = STORY_TITLES[(tY2 ? 6 : 0) + (issue - 1) % (tY2 ? 4 : 6)].replace('{boss}', wN);
+  const rows = [];
+  // [v9.70] 스토리북 문법·감정 용어줄 한·몽 병기 — 스토리북은 반 공유물이라 학생별이 아닌 전역 스위치(MJ_BILINGUAL)로.
+  //   몽골어판 구조: MN_STORY_GRAMMAR[월][i] = [문형(한국어 유지), 의미(몽골어)] · MN_STORY_EMOTIONS[i] = [관용구, 뜻(몽골어)]
+  const bi9 = (typeof MJ_BILINGUAL !== 'undefined' && MJ_BILINGUAL !== 'off');
+  const gB = i => '📖 ' + G[i][0] + ' — ' + G[i][1] + (bi9 && typeof MN_STORY_GRAMMAR !== 'undefined' && MN_STORY_GRAMMAR[sIdx] && MN_STORY_GRAMMAR[sIdx][i] ? ' / ' + MN_STORY_GRAMMAR[sIdx][i][1] : '');
+  const eB = i => '💗 ' + STORY_EMOTIONS[i][0] + ' — ' + STORY_EMOTIONS[i][1] + (bi9 && typeof MN_STORY_EMOTIONS !== 'undefined' && MN_STORY_EMOTIONS[i] ? ' / ' + MN_STORY_EMOTIONS[i][1] : '');
+  const SEn = SCENE_EN[sIdx], BEn = BOSS_EN[sIdx];
+  const IMG = t => 'IMG: ' + t + ' | ' + STYLE_EN;
+  const scenePrompts = arcA ? [
+    IMG('poster cover: group of students at ' + SEn + ', title space at top') + ' || MOT: slow cinematic push-in, floating light particles',
+    IMG('a student arriving first at meeting spot, morning light, snack bag, friends gathering') + ' || MOT: gentle pan across smiling faces, hair moving in breeze',
+    IMG('students enjoying local food and culture at ' + SEn + ', laughing together') + ' || MOT: handheld documentary feel, steam and light flares',
+    IMG('sudden silence — dark aura appearing over ' + SEn + ', ' + BEn + ' emerging, students turning around') + ' || MOT: slow dolly back, sky darkening, wind picking up',
+    IMG('the hero student stepping forward, glowing word-arrows forming from open notebook, determined eyes') + ' || MOT: dramatic low-angle push-in, arrows streaking forward',
+    IMG(BEn + ' staggering, then dissolving into black smoke rising to the sky, students shocked') + ' || MOT: smoke spiraling upward, camera tilting up',
+    IMG('the sky splitting open, ' + WB_EN + ', tiny students below') + ' || MOT: massive slow reveal from above, rumbling scale',
+    IMG('hundreds of students from all classes running to join, one monster evolving in a burst of light at the center') + ' || MOT: sweeping crane shot over the crowd, light burst bloom',
+    IMG('all students chanting together, chains of glowing Korean letters wrapping the overlord') + ' || MOT: orbiting camera, letter-chains tightening, rising intensity',
+    IMG('the overlord defeated or sealed, golden sparkle rain falling, students embracing under the light') + ' || MOT: slow-motion sparkle fall, warm glow expanding',
+    IMG('sunset group photo at ' + SEn + ', arms over shoulders, tired happy smiles') + ' || MOT: still-photo freeze with gentle zoom, lens flare',
+    IMG('empty classroom at night, faint shadow whispering outside the window, a single desk lamp on') + ' || MOT: slow creep toward window, curtain swaying'
+  ] : [
+    IMG('poster cover: two rival class groups facing each other at ' + SEn + ', playful tension') + ' || MOT: split-screen slide-in, spark between them',
+    IMG('two rival student groups spotting each other across ' + SEn + ', surprised faces') + ' || MOT: whip-pan between the two groups',
+    IMG('rivals sharing snacks at one table, awkward then warming up, ' + SEn + ' background') + ' || MOT: slow push-in as smiles appear',
+    IMG(BEn + ' erupting between the two groups, splitting them apart, dark energy wall') + ' || MOT: shockwave burst, camera shake',
+    IMG('the hero student reaching a hand across the divide toward the rival class') + ' || MOT: intimate close-up, hand meeting hand, light igniting',
+    IMG('two class monsters roaring side by side above joined hands') + ' || MOT: twin energy auras merging into one new color',
+    IMG('the sky splitting open, ' + WB_EN + ', both classes standing together below') + ' || MOT: massive slow reveal, dust swirling',
+    IMG('combined chant of both classes, glowing letter-chains from two directions binding the overlord') + ' || MOT: dual spiral camera, chains crossing',
+    IMG('crown-wearing students leading the final chant, all monsters glowing') + ' || MOT: heroic slow push through the front line',
+    IMG('the overlord falling, rivals high-fiving in golden light rain') + ' || MOT: slow-motion high-five, sparkles',
+    IMG('sunset group photo of both classes together at ' + SEn) + ' || MOT: freeze-frame with camera flash white-out',
+    IMG('empty classroom at night, faint shadow at the window, distant whisper') + ' || MOT: slow creep, single light flickering'
+  ];
+  const push = (ch, cTitle, body, badge) => rows.push([ym, issue, title, ch, cTitle, body, badge || '', scenePrompts[ch] || '']);
+
+  push(0, '표지', 'SYNK LAB 청춘 실록 제' + issue + '호 — ' + mNum + '월의 무대: ' + SC[0] + '\n이 이야기의 인물과 기록은 크루들이 이번 달 실제로 만든 것입니다. 배경과 모험은 상상이지만, 주인공은 상상이 아닙니다.', '');
+
+  // ═══ 起 ═══
+  if (arcA) {
+    push(1, '제1화 — 아침', '약속 장소에 가장 먼저 나온 사람은 ' + M.n + '였다. 가방 안에는 어젯밤 미리 사 둔 간식이 들어 있었다. 하나둘 모여드는 크루들의 얼굴에는 같은 표정이 떠 있었다. 오늘만큼은 공부가 아니라는 표정. 버스가 출발하자 누군가 창문을 열었고, ' + S1.n + '이(가) 이어폰 한쪽을 ' + M.n + '에게 건넸다. 창밖의 간판들이 빠르게 지나갔다. ' + M.n + '은(는) 그것들을 하나씩 소리 내지 않고 읽어 보았다. 전부 읽을 수 있었다.', gB(0));
+    push(2, '제2화 — ' + SC[0], SC[1] + ' ' + SC[2] + ' ' + M.n + '이(가) 주문을 맡았다. 조금 떨렸지만, 점원은 한 번에 알아들었다. 돌아서는 ' + M.n + '의 입꼬리가 *슬며시 올라갔다*. ' + S1.n + '이(가) 그걸 보고 웃었다. "잘하네." "당연하지."', eB(0));
+  } else {
+    push(1, '제1화 — 마주침', SC[1] + ' 먼저 알아본 쪽은 ' + M.n + '였다. 길 건너편, 낯익은 얼굴들. 매주 리그에서 겨루던 ' + rvA + ' 크루들이었다. 잠깐 어색한 정적이 흘렀다. 그 정적을 깬 것은 양쪽의 막내들이었다. "안녕!" 아이들의 인사는 언제나 스코어보다 빠르다.', gB(0));
+    push(2, '제2화 — 같은 테이블', SC[2] + ' 간식을 나누다 보니 자리가 섞였다. ' + M.n + '은(는) ' + rvA + ' 크루와 지난주 승부 이야기를 했다. ' + (duel ? '단 ' + Math.round(duel.gap * 10) / 10 + ' 차이였던 그 승부.' : '매주 이어진 접전들.') + ' 서로의 기록을 서로가 외우고 있었다. 라이벌이란 그런 것이었다.' + cameo(), eB(0));
+  }
+
+  // ═══ 承 ═══
+  push(3, '제3화 — 정적', SC[3] + ' 웃음소리가 끊겼다. 공기가 한 단계 무거워졌다. "' + (boss.open || '...') + '" ' + bN + '였다. 매일 밤 전투 리포트에서만 보던 그 이름이, 지금 눈앞에 있었다. ' + M.n + '의 *심장이 쿵 내려앉았다*. 그러나 물러선 크루는 없었다.', eB(1));
+  push(4, '제4화 — 선봉', '먼저 움직인 것은 ' + M.n + '였다. 이번 달 기록 ' + M.d + '. 반에서 가장 높은 숫자였고, 그 숫자만큼의 밤이 있었다. 외운 단어가 화살이 되고, 발표했던 문장이 방패가 되었다. ' + S1.n + '이(가) 옆에 붙었다. 둘의 호흡은 오래 맞춰 온 것처럼 정확했다.' + cameo(), gB(1));
+  push(5, '제5화 — 그림자', bN + J(bN, '이', '가') + ' 비틀거렸다. ' + (raidWins > 0 ? '이번 달에만 ' + raidWins + '번 무릎 꿇었던 상대다.' : '매일 쌓인 데미지는 거짓말을 하지 않는다.') + ' 승리가 눈앞이었다. 그때, 쓰러지던 보스가 웃었다. "나는… 그림자일 뿐." 보스의 몸이 검은 안개가 되어 하늘로 빨려 올라갔다. ' + M.n + '은(는) *입술을 깨물었다*. 이긴 것이 아니었다.' + cameo(), eB(2));
+
+  // ═══ 轉 ═══
+  push(6, '제6화 — 대군주', '하늘이 갈라졌다. "' + (wb.open || '...') + '" ' + wN + '. 매달의 보스들을 뒤에서 부리던 존재가 처음으로 모습을 드러냈다. 한 반의 힘으로 어찌할 상대가 아니라는 것은, 그 그림자의 크기만으로 알 수 있었다.', gB(2));
+  push(7, '제7화 — 집결', '멀리서 발소리가 들려왔다. ' + rvA + '이(가) 오고 있었다. 평일반이, 주말반이, ' + stuCnt + '명의 크루 전원이 한 전장에 모이고 있었다. ' + (evoActor
+    ? '그 한가운데서 빛이 터졌다. ' + evoActor.n + '의 몬스터가 ' + evoActor.evo + '(으)로 진화하는 순간이었다. 한 달의 포인트가 가장 필요한 순간에 형태를 바꾼 것이다.'
+    : '크루들의 몬스터가 일제히 낮게 울었다. 대군주의 그림자가 처음으로 흔들렸다.') + cameo() + cameo(), eB(3));
+  push(8, '제8화 — 총공세', (C1 ? C1.n + '이(가) 앞으로 나섰다. ' + (C1.t.indexOf('스타') > -1 ? '이달의 무대를 가장 많이 가졌던 목소리' : '이달 가장 많이 성장한 목소리') + '가 첫 문장을 열었다.' : M.n + '이(가) 첫 문장을 열었다.') + ' 다음 크루가 이어받고, 또 다음 크루가 이어받았다. ' + stuCnt + '명의 한국어가 하나의 사슬이 되어 대군주를 감았다. ' + (world ? '이번 달 전교의 기록, ' + world.dmg + '. 그 전부가 지금 한 점을 향하고 있었다.' : '한 달의 기록 전부가 한 점을 향하고 있었다.') + cameo() + cameo(), gB(3));
+
+  // ═══ 結 ═══
+  if (world && world.win) {
+    push(9, '제9화 — 끝', '"' + (wb.win || '...') + '" 대군주가 무너졌다. 잠깐의 정적 뒤, 함성이 터졌다. ' + M.n + '은(는) 소리를 지르는 대신 하늘을 올려다보았다. 반짝이는 가루가 내리고 있었다. *가슴이 벅차올랐다*. 매일의 숙제가, 매일의 출석이, 여기까지 온 것이다.' + cameo(), eB(4));
+  } else {
+    push(9, '제9화 — 봉인', '전교의 총공세에 대군주가 밀려났다. "기억하는 자들이… 이렇게 많다니…" 어둠 속으로 사라지는 목소리는 처음보다 훨씬 작았다. 완전한 끝은 아니었다. 그러나 고개를 떨군 크루는 없었다. 오늘의 데미지는 남고, 대군주는 매달 약해진다. ' + M.n + '이(가) 먼저 웃었다. "다음 달엔 끝내자." *속이 후련한* 함성이 뒤따랐다.' + cameo(), eB(7));
+  }
+  push(10, '제10화 — 귀갓길', '돌아가는 버스 안, 크루들은 하나둘 잠들었다. ' + S1.n + '은(는) ' + M.n + '의 어깨에 기대어 있었다. 창밖의 불빛을 오래 바라보던 ' + M.n + '이(가) 낮게 중얼거렸다. "다음 달에도, 다 같이 오자." 대답 대신 고른 숨소리가 들렸다. 그것으로 충분했다.' + cameo(), eB(6));
+  push(11, '에필로그', '그날 밤, 불 꺼진 교실. 창밖 어둠 저편에서 희미한 목소리가 울렸다. "다음 달… 다시…" 크루들은 이제 그 목소리가 두렵지 않다. 내일 완료할 숙제가 다음 호의 화살이 되고, 내일 받을 왕관이 다음 호의 첫 문장이 된다. 이 책의 다음 주인공은, 지금 이 페이지를 덮는 당신이다.', '');
+
+  { // [v9.17] 🎬 크레딧 롤 — 활동 전원 출연 · 무활동자는 다음 호 예고 (소외 0)
+    const cast = Object.keys(perM).filter(s => nmB[s] && (perM[s] || 0) > 0).sort((a, b) => perM[b] - perM[a]).map(s => nmB[s]);
+    const nextUp = Object.keys(nmB).filter(s => !(perM[s] > 0)).map(s => nmB[s]);
+    push(12, '🎬 크레딧', '― 출연 · 이 이야기를 실제로 만든 크루들 ―\n' + cast.join(' · ') +
+      (nextUp.length ? '\n\n― 다음 호 출연 예정 ―\n' + nextUp.join(' · ') : '') +
+      '\n\n각본·주연·제작: SYNK LAB 크루 전원 | 이 이야기의 모든 기록은 실화입니다.', '');
+  }
+  // [v9.44] 📏 독서 분량 시스템 — 유호님 정책: 전체 독서 5~15분(학습자 300자/분 ≈ 1,500~4,500자 밴드).
+  //   본문(1~11화)만 계측(표지·크레딧 제외). 데이터가 빈 달엔 무대 감각 묘사 4종으로 하한을 자동 보강 —
+  //   "짧아서 허전한 호"가 구조적으로 없다. 상한 초과는 카메오 화당 ≤2 규율상 사실상 불가(초과 시 로그 경고만).
+  const STORY_BOOST = [
+    '바람의 온도, 발밑의 감촉, 스쳐 가는 냄새까지 — 크루들은 이 계절의 한국을 온몸으로 기억하기로 했다. 배운 단어 하나가 풍경 하나와 짝을 이루는 순간마다, 한국어는 교재 밖으로 한 뼘씩 걸어 나왔다.',
+    '싸움의 한가운데서도 크루들은 서로의 이름을 불렀다. 이름을 부르면 힘이 났다. 그것이 이 반의 오래된 비밀이었다. 넘어질 뻔한 순간마다 누군가의 목소리가 등을 받쳐 주었다.',
+    '전장의 소음 사이로, 각자의 한 달이 스쳐 지나갔다. 처음으로 손을 들었던 날. 틀렸지만 끝까지 말했던 날. 아무도 몰래 단어장을 한 바퀴 더 돌았던 밤. 그 모든 날들이 지금 이 순간을 위한 준비였다.',
+    '창밖으로 도시의 불빛이 강물처럼 흘렀다. 누군가는 오늘 배운 문장을 입안에서 굴려 보았고, 누군가는 다음 달의 자신에게 조용히 약속을 걸었다. 버스는 천천히, 그러나 분명히 집을 향해 달렸다.'
+  ];
+  let bodyChars = rows.filter(r => r[3] >= 1 && r[3] <= 11).reduce((a, r) => a + String(r[5]).length, 0);
+  if (bodyChars < 1500) {
+    const boostAt = [2, 4, 7, 10];
+    for (let bi = 0; bi < STORY_BOOST.length && bodyChars < 1500; bi++) {
+      const row = rows.find(r => r[3] === boostAt[bi]);
+      if (row) { row[5] += ' ' + STORY_BOOST[bi]; bodyChars += STORY_BOOST[bi].length + 1; }
+    }
+  }
+  if (bodyChars > 4500) Logger.log('⚠ 스토리북 본문 ' + bodyChars + '자 — 상한(15분) 초과, 카메오 규율 점검 권장');
+  const readMin = Math.max(5, Math.min(15, Math.round(bodyChars / 300)));
+  // 표지에 주인공 예고 + 읽는 시간 — 펼치기 전의 설렘("이번 달 주인공이 누구지?")이 몰입의 첫 문장
+  rows[0][5] += '\n\n🎬 이번 호의 주인공: ' + M.n + ' · 함께한 크루: ' + S1.n + (S2 ? ', ' + S2.n : '') +
+    '\n🕐 읽는 시간 약 ' + readMin + '분 — 따뜻한 차 한 잔과 함께';
+  setAppState_(ss, '전호주연', pick[0] || '');
+  // [v9.50] 단일본 발간 — 유호 지시 "한 번에 읽히게": 13행 분할(소식탭에 챕터가 파편으로 흩어짐) 대신
+  //   챕터를 이어 붙인 전문 1행으로 발간한다. 월키 멱등(A열)·여행지도(월만 읽음)·데모 마커(월 행 존재)·
+  //   clearDemoData(월 일치 행 회수) 전부 호환. 씬프롬프트는 영상팩 메일이 rows에서 직접 읽으므로 시트엔 비운다.
+  const fullBody = rows.map(r =>
+    (r[3] >= 1 && r[3] <= 11 ? '― ' + r[4] + ' ―\n' : (r[3] === 12 ? '\n' : '')) + r[5]).join('\n\n');
+  const badgesAll = rows.map(r => String(r[6] || '')).filter(String);
+  const uniqBadges = badgesAll.filter((b, i) => badgesAll.indexOf(b) === i).join('  ·  ');
+  sb.getRange(sb.getLastRow() + 1, 1, 1, 8).setValues([[ym, issue, title, 1, '전문', fullBody, uniqBadges, '']]);
+  if (SEND_SCENE_PACK && quotaOk(1)) { // [v9.10] 🎬 원장 영상팩 — 즉발(브리핑 큐 미경유: 복사용 독립 메일, 월 1통) · [v9.47·A2] 영상 제작 루틴 시작 전 OFF(발간·공지·데이터는 그대로, 메일만 잠금)
+    const pLines = rows.map(r => '── 씬 ' + r[3] + ' · ' + r[4] + ' ──\n' + r[7]).join('\n\n');
+    MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🎬 싱크 스토리 제' + issue + '호 영상팩 — 씬 프롬프트 12',
+      '「' + title + '」 발간과 함께 영상 제작용 프롬프트가 준비됐습니다.\n\n사용법: ① IMG 부분을 Recraft(또는 이미지 AI)에 넣어 씬 일러스트 생성 → ② 그 이미지를 Kling 등 영상 AI에 올리고 MOT 부분만 프롬프트로 입력.\n\n' + pLines +
+      '\n\n════ ✍️ 집필 브리프 (수기 각색용 — 원할 때만) ════' + // [v9.34] '\\n' 이스케이프 화석 → 실제 개행(브리프가 한 덩어리+리터럴 \n 노출로 발송되던 결함)
+      '\n무대: ' + SC[0] + ' | 아크: ' + (arcA ? '원정 편' : '라이벌 편') + ' | 문법: ' + G.map(g => g[0]).join(', ') +
+      '\n주연: ' + (pick[0] ? nmB[pick[0]] + ' (' + (perM[pick[0]] || 0) + 'P)' : '-') + (rookie ? ' | 🌟 이달의 신인: ' + nmB[rookie.s] : '') +
+      '\n조연: ' + pick.slice(1).map(s => nmB[s]).join(', ') +
+      '\n사건: 격파 ' + raidWins + '회 | ' + (duel ? '명승부 ' + duel.a + ' vs ' + duel.b : '명승부 없음') + ' | ' + (world ? (world.win ? '월드 격파' : '월드 봉인') : '월드 진행중') +
+      '\n카메오 본문 출연(' + Math.min(cameoIdx, cameoCand.length) + '명): ' + cameoCand.slice(0, cameoIdx).map(c => c.n).join(', ') +
+      '\n\n✍️ 수기 각색법: 위 브리프를 Claude에 붙여넣고 "싱크 스토리를 이 사실 그대로 12장 기승전결·해피엔딩으로 다시 써줘" → 나온 챕터를 synk_stories 해당 월 행의 F열(본문)에 붙여넣기. 자동 재발간은 월키 멱등이라 수기본을 절대 덮어쓰지 않습니다.');
+  }
+  // [v9.44] 직접 쓰기 → addNotice — 구 스키마 notices 열 어긋남 재발 지점(leagueSettle_·worldRaid와 동일 수리의 누락분)
+  addNotice(ss, '📖 싱크 스토리 제' + issue + '호 발간!',
+    '「' + title + '」 — ' + SC[0] + '에서 펼쳐진 우리들의 ' + mNum + '월 이야기. 앱의 싱크 스토리에서 읽어보세요.');
+  Logger.log('스토리북 ' + ym + ' 제' + issue + '호(v5 단일본·주연 ' + M.n + '): 전문 1행 · 본문 ' + bodyChars + '자 ≈ ' + readMin + '분');
+}
+
+// [v9.69] 🩹 시트 자기치유 — 매일 밤 1회(nightJobs 편승·멱등·변경 없으면 쓰기 0):
+//   ① 스토리북 구형 분권 호 병합 — v9.50이 "전문 1행" 발간으로 바꿨지만 기발간 호(13행 분권)는 마이그레이션이
+//      없어 소식탭에 표지·제1화…크레딧이 파편으로 늘어서던 잔재(유호 07-27 실관찰)를 v9.50 조립식 그대로
+//      전문 1행으로 병합한다. 챕터 오름차순 정렬·수기 각색 본문 보존·문법 배지 dedupe. 첫 행에 덮어쓰고
+//      나머지 행은 물리 삭제(Row ID 등 코드 밖 열은 행 단위로 함께 정리되어 정합 유지).
+//   ② 고아 변형 선택자 청소 — 구 이모지 제거 정규식이 U+FE0E/FE0F를 남겨 "제로 ️와"처럼 렌더되던 잔재를
+//      제목·본문·공지에서 제거(이모지 뒤의 정상 변형 선택자는 보존 — 비이모지 문자 뒤 고아만).
+//   ③ world_raid 같은 달 중복 행 정리 — 데모 로스터 시절 소환·재실행 잔재로 월 행이 여러 개 쌓인 것을
+//      1행으로 줄인다(누적데미지는 최대값 보존). 이번 달 진행중 행은 HP를 현재 재적 기준으로 재산정 —
+//      중복이 있었을 때만 손대므로 정상 단일 행의 "소환 시 HP 고정" 설계는 불변.
+function orphanVsClean_(v) { // 비이모지 문자 뒤에 남은 변형 선택자만 제거(한글·숫자·공백·닫는따옴표 등)
+  return String(v == null ? '' : v).replace(/([\uAC00-\uD7A3\w\s.,\u00B7\u300D\u300F\u201D\x22\x27)\]])[\uFE0E\uFE0F]+/g, '$1');
+}
+// [v9.97] 'yyyy-MM' 월 키 정규화 — 셀이 Date로 자동 변환돼 있어도 항상 문자열 월키를 돌려준다.
+//   Date 판정은 asDate_가 아니라 instanceof로 한다("2026-06" 문자열을 다시 Date로 만들면 tz 경계에서 전달로 밀린다).
+function ymTextOf_(v, tz) {
+  if (v instanceof Date && !isNaN(v.getTime())) return Utilities.formatDate(v, tz || Session.getScriptTimeZone(), 'yyyy-MM');
+  // [v9.125] 시리얼 숫자 분기 — 텍스트 서식('@')이 먼저 걸린 셀은 Date가 아니라 시리얼(예: 46173)로 읽힌다.
+  //   1899-12-30 기준 일수 → yyyy-MM. 범위 가드(1954~2119년)로 포인트·카운트 숫자 오변환을 막는다.
+  const sn = (typeof v === 'number') ? v : (/^\d{5}$/.test(String(v || '').trim()) ? Number(String(v).trim()) : NaN);
+  if (isFinite(sn) && sn > 20000 && sn < 80000) {
+    const d = new Date(Date.UTC(1899, 11, 30) + Math.round(sn) * 86400000);
+    const m = d.getUTCMonth() + 1;
+    return d.getUTCFullYear() + '-' + (m < 10 ? '0' : '') + m;
+  }
+  const s = String(v == null ? '' : v).trim();
+  /* [v9.129] 🔴 세 번째 오염 형태 — **`String(Date)` 결과가 텍스트로 굳은 셀**.
+   *   `Wed Jul 01 2026 00:00:00 GMT+0800 (Ulaanbaatar Standard Time)` 같은 값이 문자열로 들어 있으면
+   *   Date 분기도 시리얼 분기도 안 걸려 **정규화를 그대로 통과한다.** 08-02 라이브에서 운영 탭의 이 값이
+   *   순서를 고친 v9.128을 두 번 돌리고도 살아남아 발각됐다(그래서 화면이 안 바뀐 것이지, 순서가 틀린 게 아니었다).
+   *   요일·영문 월로 시작하는 형태만 되돌린다 — 사람이 쓴 일반 텍스트를 날짜로 오변환하지 않기 위해. */
+  if (/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\s+\d{4}/.test(s)) {
+    const p = new Date(s);
+    if (!isNaN(p.getTime())) {
+      const m2 = p.getMonth() + 1;
+      return p.getFullYear() + '-' + (m2 < 10 ? '0' : '') + m2;
+    }
+  }
+  return s;
+}
+/* 월 열을 텍스트 서식으로 고정하고 기존 Date·시리얼 오염 행을 'yyyy-MM' 문자열로 되돌린다(변경 행만 쓰기 — 멱등).
+ * 🔴 [v9.128] 순서가 이 함수의 전부다 — **읽기 → 서식('@') → 쓰기**. 세 번 틀렸고 세 번 다 조용히 실패했다:
+ *   ① 구 v9.97: 서식 → 읽기 → 쓰기. 서식을 먼저 걸면 Date 셀이 **시리얼 숫자**로 읽혀 instanceof Date를 빠져나간다
+ *      (치유 0건 + 화면엔 46173 노출 = 치유 전보다 악화).
+ *   ② v9.125: 읽기 → 쓰기 → 서식. 읽기는 고쳤지만 **쓰기가 아직 날짜 서식인 열에 떨어져 시트가 '2026-07'을
+ *      다시 Date로 파싱**한다. 08-02 라이브 실측 — 자기치유를 돌린 직후에도 운영 탭에 `Wed Jul 01 2026`가 그대로였다.
+ *   ③ 정답: 날짜 서식일 때 **먼저 읽어** Date를 Date로 잡고, 그 다음 열을 '@'로 굳히고, 마지막에 문자열을 쓴다.
+ *      그래야 쓰는 값이 재파싱되지 않는다. 빈 시트에도 서식은 걸어 둔다(첫 쓰기부터 오염 예방). */
+function ymTextColFix_(sh, col, tz) {
+  if (!sh) return 0;
+  const n = sh.getLastRow() - 1;
+  let fixed = 0;
+  let vals = null;
+  if (n >= 1) {
+    vals = sh.getRange(2, col, n, 1).getValues();          // ① 읽기 — 날짜 서식일 때라야 Date가 Date로 온다
+    for (let i = 0; i < n; i++) {
+      const raw = vals[i][0];
+      if (raw == null || raw === '') continue;
+      const norm = ymTextOf_(raw, tz);
+      if (typeof raw !== 'string' || norm !== raw) { vals[i][0] = norm; fixed++; }
+    }
+  }
+  if (sh.getRange(2, col).getNumberFormat() !== '@') {      // ② 서식 고정 — 쓰기보다 반드시 먼저
+    sh.getRange(1, col, sh.getMaxRows(), 1).setNumberFormat('@');
+  }
+  if (fixed) {                                             // ③ 쓰기 — 이제 '@'라 재파싱되지 않는다
+    sh.getRange(2, col, n, 1).setValues(vals);
+    Logger.log('자기치유: ' + sh.getName() + ' 월 열 오염 ' + fixed + '행 → yyyy-MM 텍스트');
+  }
+  return fixed;
+}
+/* [v9.127] ▶ 공개 래퍼 — `sheetSelfHeal_`은 언더바 private이라 Apps Script 편집기 드롭다운에 **아예 안 뜬다**
+ *   (GAS 규약). 그래서 밤을 기다리지 않고 지금 고치려면 시트 메뉴가 유일한 경로였는데, 원격 세션은 시트
+ *   메뉴를 누를 수 없다. 인자 없음·멱등이라 아무 때나 눌러도 안전한 함수이므로 공개 진입점을 둔다.
+ *   반환 문구는 메뉴(menuRun_)가 그대로 alert에 띄운다. */
+function sheetSelfHealNow() {
+  sheetSelfHeal_();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const cnt = n => { const s = ss.getSheetByName(n); return s ? Math.max(s.getLastRow() - 1, 0) : -1; };
+  const msg = '🩹 시트 자기치유 완료\n' +
+    '   report_cards ' + cnt('report_cards') + '행 · world_raid ' + cnt('world_raid') + '행 · synk_stories ' + cnt('synk_stories') + '행\n' +
+    '   (월 열 Date 오염 정상화 + 같은 달·같은 학생 중복 정리 — 상세는 실행 로그)';
+  Logger.log(msg);
+  return msg;
+}
+function sheetSelfHeal_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  // ①+② 스토리북
+  const sb = ss.getSheetByName('synk_stories');
+  if (sb && sb.getLastRow() >= 2) {
+    // [v9.97] ⓪ 월(A열) Date 오염 정상화 — 시트가 'yyyy-MM'을 날짜로 자동 변환해 두면
+    //   ⓐ학생 소식탭 카드에 원시 Date 문자열이 노출되고 ⓑ발간 멱등 가드(String(r[0])===ym)가 영구 실패해
+    //   같은 달 스토리가 매달 재발간된다(중복 병합이 그 증상을 가려 왔다 — v9.68 시각 Date 오염과 같은 계급).
+    ymTextColFix_(sb, 1, ss.getSpreadsheetTimeZone());
+    const n = sb.getLastRow() - 1;
+    const data = sb.getRange(2, 1, n, 8).getValues();
+    const byYm = {};
+    data.forEach((r, i) => { const ym = ymTextOf_(r[0], ss.getSpreadsheetTimeZone()); if (ym) (byYm[ym] = byYm[ym] || []).push(i); });
+    const dupMonths = Object.keys(byYm).filter(ym => byYm[ym].length >= 2).sort();
+    const delRows = []; // 시트 실제 행 번호(2-base)
+    dupMonths.forEach(ym => {
+      const idxs = byYm[ym];
+      const rows = idxs.map(i => data[i]).sort((a, b) => (Number(a[3]) || 0) - (Number(b[3]) || 0));
+      const full = rows.map(r => { const ch = Number(r[3]) || 0;
+        return (ch >= 1 && ch <= 11 ? '― ' + r[4] + ' ―\n' : (ch === 12 ? '\n' : '')) + String(r[5] || ''); }).join('\n\n');
+      const badges = rows.map(r => String(r[6] || '')).filter(String);
+      const uniq = badges.filter((b, k) => badges.indexOf(b) === k).join('  ·  ');
+      const keep = Math.min.apply(null, idxs); // 물리적으로 가장 위 행에 병합본을 쓴다
+      sb.getRange(keep + 2, 1, 1, 8).setValues([[ym, rows[0][1], orphanVsClean_(rows[0][2]), 1, '전문', orphanVsClean_(full), uniq, '']]);
+      idxs.forEach(i => { if (i !== keep) delRows.push(i + 2); });
+      Logger.log('자기치유: 스토리북 ' + ym + '호 ' + idxs.length + '행 → 전문 1행 병합');
+    });
+    delRows.sort((a, b) => b - a).forEach(rn => sb.deleteRow(rn)); // 아래부터 삭제(행번호 밀림 방지)
+    // ② 병합 대상이 아니어도 제목·본문의 고아 선택자는 청소(변경분만 쓰기)
+    if (sb.getLastRow() >= 2) {
+      const n2 = sb.getLastRow() - 1;
+      const tv = sb.getRange(2, 3, n2, 1).getValues(); const bv = sb.getRange(2, 6, n2, 1).getValues();
+      let chT = false, chB = false;
+      for (let i = 0; i < n2; i++) {
+        const t2 = orphanVsClean_(tv[i][0]); if (t2 !== String(tv[i][0] || '')) { tv[i][0] = t2; chT = true; }
+        const b2 = orphanVsClean_(bv[i][0]); if (b2 !== String(bv[i][0] || '')) { bv[i][0] = b2; chB = true; }
+      }
+      if (chT) sb.getRange(2, 3, n2, 1).setValues(tv);
+      if (chB) sb.getRange(2, 6, n2, 1).setValues(bv);
+    }
+  }
+  // ② 공지 제목·본문 고아 선택자 청소(헤더 이름 기반 — 한/몽 4열)
+  const nt = ss.getSheetByName('notices');
+  if (nt && nt.getLastRow() >= 2) {
+    const hdr = nt.getRange(1, 1, 1, nt.getLastColumn()).getValues()[0].map(String);
+    ['title_ko', 'body_ko', 'title_mn', 'body_mn'].forEach(cn => {
+      const c = hdr.indexOf(cn) + 1; if (!c) return;
+      const nv = nt.getRange(2, c, nt.getLastRow() - 1, 1).getValues();
+      let ch = false;
+      nv.forEach(r => { const v2 = orphanVsClean_(r[0]); if (v2 !== String(r[0] || '')) { r[0] = v2; ch = true; } });
+      if (ch) nt.getRange(2, c, nt.getLastRow() - 1, 1).setValues(nv);
+    });
+  }
+  // ③ world_raid 월 중복 정리
+  const wr = ss.getSheetByName('world_raid');
+  if (wr && wr.getLastRow() >= 2) {
+    const tz = ss.getSpreadsheetTimeZone();
+    /* [v9.126] 월 열 Date 오염 정상화 — 08-02 라이브 실측: 운영 탭 월드 레이드 표에
+     *   `Wed Jul 01 2026 00:00:00 GMT+0800 (Ulaanbaatar Standard Time)`가 원장 화면에 그대로 노출됐고,
+     *   그 행은 String(Date) 키라 '2026-07'과 다른 버킷이 되어 **중복 정리에서도 영영 안 묶였다.**
+     *   report_cards와 같은 계급(v9.97 보호 목록에서 누락된 시트). 읽기 전에 고친다. */
+    ymTextColFix_(wr, 1, tz);
+    const ymNow = Utilities.formatDate(new Date(), tz, 'yyyy-MM');
+    const n3 = wr.getLastRow() - 1;
+    const wd = wr.getRange(2, 1, n3, 5).getValues();
+    const byM = {};
+    wd.forEach((r, i) => { const ym = ymTextOf_(r[0], tz); if (ym) (byM[ym] = byM[ym] || []).push(i); });
+    const del2 = [];
+    Object.keys(byM).filter(ym => byM[ym].length >= 2).forEach(ym => {
+      const idxs = byM[ym];
+      const rows = idxs.map(i => wd[i]);
+      const maxDmg = Math.max.apply(null, rows.map(r => Number(r[3]) || 0));
+      const won = rows.some(r => String(r[4]) === '격파');
+      const keep = Math.min.apply(null, idxs);
+      let hp = Number(wd[keep][2]) || 0, st = won ? '격파' : String(wd[keep][4] || '진행중'), nm = String(wd[keep][1] || '');
+      if (ym === ymNow && !won) { // 진행중인 이번 달만 현재 재적으로 HP 재산정(중복 존재 시 한정)
+        let stu = 0;
+        const pfH = ss.getSheetByName('profiles');
+        if (pfH && pfH.getLastRow() >= 2) pfH.getRange(2, 1, pfH.getLastRow() - 1, 5).getValues()
+          .forEach(pr => { if (pr[0] && pr[3] === 'student') stu++; });
+        hp = Math.max(stu, 1) * WORLD_HP_PER; st = '진행중';
+        const wbH = worldBossOf(ss); if (wbH && wbH.name) nm = wbH.name;
+      }
+      wr.getRange(keep + 2, 1, 1, 5).setValues([[ym, nm, hp, maxDmg, st]]);
+      idxs.forEach(i => { if (i !== keep) del2.push(i + 2); });
+      Logger.log('자기치유: world_raid ' + ym + ' ' + idxs.length + '행 → 1행(HP ' + hp + '·데미지 ' + maxDmg + ')');
+    });
+    del2.sort((a, b) => b - a).forEach(rn => wr.deleteRow(rn));
+  }
+  /* ④ [v9.126] report_cards 「같은 달·같은 학생」 중복 정리 — 위 가드 수리는 **새 중복을 막을 뿐**이고
+   *   이미 쌓인 것은 스스로 사라지지 않는다(08-02 실측 37행 · 학부모 화면에 같은 카드 6장).
+   *   남길 행 = image_url이 살아 있는 것 중 가장 최근(created_at) — 카드 이미지가 없는 행은 학부모 화면에서
+   *   빈 카드가 되므로 우선순위가 낮다. 하나도 없으면 첫 행을 남긴다(전멸 방지). */
+  const rcH = ss.getSheetByName('report_cards');
+  if (rcH && rcH.getLastRow() >= 2) {
+    const tzR = ss.getSpreadsheetTimeZone();
+    ymTextColFix_(rcH, 3, tzR);
+    const nR = rcH.getLastRow() - 1;
+    const rd = rcH.getRange(2, 1, nR, 7).getValues();
+    const byKey = {};
+    rd.forEach((r, i) => {
+      const sid = String(r[1] || '').trim(), ym = ymTextOf_(r[2], tzR);
+      if (!sid || !ym) return;
+      (byKey[ym + '|' + sid] = byKey[ym + '|' + sid] || []).push(i);
+    });
+    const delR = [];
+    Object.keys(byKey).filter(k => byKey[k].length >= 2).forEach(k => {
+      const idxs = byKey[k];
+      const scored = idxs.slice().sort((a, b) => {
+        const ua = String(rd[a][3] || '') ? 1 : 0, ub = String(rd[b][3] || '') ? 1 : 0;
+        if (ua !== ub) return ub - ua;                       // image_url 있는 쪽 우선
+        const ta = new Date(rd[a][6]).getTime() || 0, tb = new Date(rd[b][6]).getTime() || 0;
+        return tb - ta;                                       // 그 다음 최신 우선
+      });
+      const keepI = scored[0];
+      idxs.forEach(i => { if (i !== keepI) delR.push(i + 2); });
+      Logger.log('자기치유: report_cards ' + k + ' ' + idxs.length + '행 → 1행');
+    });
+    if (delR.length) {
+      delR.sort((a, b) => b - a).forEach(rn => rcH.deleteRow(rn));
+      Logger.log('자기치유: report_cards 중복 ' + delR.length + '행 삭제(남은 ' + (nR - delR.length) + '행)');
+    }
+  }
+  /* ⑤ [v9.127] teacher_checkins 연타 중복 정리 — 08-02 실측: 같은 강사의 「출근」이 3초 안에 3건,
+   *   「퇴근」이 2건 쌓여 있었다(버튼 연타·네트워크 재시도). today_board는 최소/최대만 쓰므로 집계는
+   *   무해하지만 출퇴근 이력 화면이 지저분해지고, 근무 시간을 사람이 셀 때 오독을 부른다.
+   *   **같은 이름·같은 유형·60초 이내**만 묶어 가장 이른 1건을 남긴다(정상 출근/퇴근은 몇 시간 간격이라 안 걸린다). */
+  const tcH = ss.getSheetByName('teacher_checkins');
+  /* [v9.133] 시각 열 표시 형식 보증 — **행 수 가드 밖**에 둔다. 08-02 실측에서 「ISO 원시 타임스탬프」로
+   *   보고된 것의 정체가 이것이다: 셀 값은 정상 Date였고 **서식이 없어서** `2026-07-24T04:22:17.691Z`로
+   *   렌더되고 있었다(데이터 결함 아님). 그런데 사람은 그 화면을 보고 「데이터가 깨졌다」고 읽는다.
+   *   빈 시트일수록 반드시 걸어야 한다 — 서식을 미리 깔아 둬야 **첫 출근 기록이 처음부터 제대로 보인다**.
+   *   아래 중복 정리 가드(행 2개 이상) 안에 두면 갓 비운 시트를 영영 건너뛴다(수리 직후 실측으로 발각). */
+  if (tcH) {
+    const tf = tcH.getRange(2, TC_TIME_COL, Math.max(tcH.getMaxRows() - 1, 1), 1);
+    if (tf.getNumberFormat() !== 'yyyy-mm-dd hh:mm') tf.setNumberFormat('yyyy-mm-dd hh:mm');
+  }
+  if (tcH && tcH.getLastRow() >= 2) {
+    const nT = tcH.getLastRow() - 1;
+    const td = tcH.getRange(2, 1, nT, 3).getValues();
+    const parsed = td.map((r, i) => {
+      const nm = String(r[TC_NAME_COL - 1] || '').trim();
+      const tp = String(r[TC_TYPE_COL - 1] || '').trim();
+      const d = r[TC_TIME_COL - 1];
+      const t = (d instanceof Date) ? d.getTime() : new Date(d).getTime();
+      return { i: i, nm: nm, tp: tp, t: isFinite(t) ? t : 0 };
+    }).filter(x => x.nm && x.tp && x.t);
+    const byNT = {};
+    parsed.forEach(x => { (byNT[x.nm + '|' + x.tp] = byNT[x.nm + '|' + x.tp] || []).push(x); });
+    const delT = [];
+    Object.keys(byNT).forEach(k => {
+      const list = byNT[k].slice().sort((a, b) => a.t - b.t);
+      let anchor = null;
+      list.forEach(x => {
+        if (anchor && x.t - anchor.t <= 60000) { delT.push(x.i + 2); return; } // 60초 이내 = 연타
+        anchor = x;
+      });
+    });
+    if (delT.length) {
+      delT.sort((a, b) => b - a).forEach(rn => tcH.deleteRow(rn));
+      Logger.log('자기치유: teacher_checkins 연타 중복 ' + delT.length + '행 삭제(60초 이내 같은 이름·유형)');
+    }
+  }
+}
+
+// [v9.6] 🌍 월드 레이드 — 학원 전체 vs 망각의 대군주 (월간 · 반 보스들의 배후 = 스토리북 최종 보스)
+const WORLD_HP_PER = 150; // [v9.83] 100→150. 재적 1인당 HP 계수 — 데미지 = 전교 이번 달 획득 총합이라 지급 단가의 종속 변수(구 100은 "1인당 월 ~100P" 가정이었는데 실측이 그 3~5배였다)
+function worldBossOf(ss) {
+  const ct = ss.getSheetByName('contents');
+  let w = null;
+  if (ct && ct.getLastRow() >= 2) ct.getRange(2, 1, ct.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (r[1] === 'worldboss' && r[2] && !w) w = { name: String(r[2]), open: String(r[3] || '').split('|')[0] || '', win: String(r[3] || '').split('|')[1] || '', img: r[4] || '' };
+  });
+  return w || { name: '망각의 대군주 제로', open: '너희가 배운 모든 것을... 0으로 되돌려주마...', win: '기억하는 자들 앞에서, 망각은 이름을 잃었다!', img: '' };
+}
+
+function worldRaidMonthly_() { // 매월 1일: 지난달 판정·보상 → 이번 달 소환 (멱등)
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const ymNow = Utilities.formatDate(now, tz, 'yyyy-MM');
+  const ymLast = Utilities.formatDate(new Date(now.getFullYear(), now.getMonth() - 1, 1), tz, 'yyyy-MM');
+  const wr = ensureSheet(ss, 'world_raid', ['월','보스명','HP','누적데미지','상태']);
+  const wb = worldBossOf(ss);
+  const data = wr.getLastRow() < 2 ? [] : wr.getRange(2, 1, wr.getLastRow() - 1, 5).getValues();
+  // 지난달 판정
+  data.forEach((r, i) => {
+    if (String(r[0]) !== ymLast || String(r[4]) !== '진행중') return;
+    const hp = Number(r[2]) || 0, dmg = Number(r[3]) || 0;
+    const win = dmg >= hp;
+    wr.getRange(i + 2, 5).setValue(win ? '격파' : '봉인');
+    const pfW = ss.getSheetByName('profiles');
+    const winRows = [];
+    if (win && pfW && pfW.getLastRow() >= 2) pfW.getRange(2, 1, pfW.getLastRow() - 1, 5).getValues()
+      .forEach(pr => { if (pr[0] && pr[3] === 'student') winRows.push([pr[0], PT.월드, '월드레이드', 'SYSTEM']); });
+    if (winRows.length) appendPoints(ss, winRows);
+    // [v9.40] 직접 쓰기 → addNotice(헤더 자동 인식) — 구 스키마 notices에서 열이 어긋나던 결함 수정(leagueSettle_와 동일)
+    addNotice(ss,
+      win ? '🌍 월드 레이드 대승리! ' + wb.name + ' 격파!' : '🌍 월드 레이드 — ' + wb.name + ' 봉인 성공!',
+      win ? '"' + wb.win + '" 전교 크루의 ' + dmg + ' 데미지가 대군주를 쓰러뜨렸습니다! 전원 +' + PT.월드 + 'P!'
+          : '전교 크루가 ' + dmg + ' 데미지로 대군주를 한 달 더 봉인했습니다. 다음 달, 완전한 승리를 향해!');
+  });
+  // 이번 달 소환
+  if (!data.some(r => String(r[0]) === ymNow)) {
+    let stu = 0;
+    const pfW2 = ss.getSheetByName('profiles');
+    if (pfW2 && pfW2.getLastRow() >= 2) pfW2.getRange(2, 1, pfW2.getLastRow() - 1, 5).getValues()
+      .forEach(pr => { if (pr[0] && pr[3] === 'student') stu++; });
+    wr.getRange(wr.getLastRow() + 1, 1, 1, 5).setValues([[ymNow, wb.name, Math.max(stu, 1) * WORLD_HP_PER, 0, '진행중']]);
+    Logger.log('월드 보스 소환: HP ' + Math.max(stu, 1) * WORLD_HP_PER);
+  }
+}
+
+// [v9.12] 🃏 이달의 카드 — 월말 성과를 트레이딩 카드로 (0P도 참가 카드 — 소외 없음)
+const CARD_TIERS = [[200,'플래티나','linear-gradient(135deg,#F6F1E8,#E7DDC7,#FFE9E4)','💎'],[100,'골드','linear-gradient(135deg,#F5A623,#FDE68A)','🥇'],[50,'실버','linear-gradient(135deg,#CBD5E1,#F1F5F9)','🥈'],[0,'브론즈','linear-gradient(135deg,#D6A67C,#F3E3CF)','🥉']];
+function buildMonthlyCards_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const lastM = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const ym = Utilities.formatDate(lastM, tz, 'yyyy-MM');
+  const cd = ensureSheet(ss, 'synk_cards', ['월','student_id','카드HTML']);
+  ymTextColFix_(cd, 1, tz); // [v9.97]
+  if (cd.getLastRow() >= 2 && cd.getRange(2, 1, cd.getLastRow() - 1, 1).getValues().some(r => ymTextOf_(r[0], tz) === ym)) return; // 멱등
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return;
+  // [v9.28] 주말반 보정 — 반유형(AJ36)별 지난달 예정 수업일로 카드 티어를 정규화(랭킹은 그대로, 카드만 공정 보정)
+  const lastDayOfLastM = new Date(now.getFullYear(), now.getMonth(), 0);
+  const schWeekday = scheduledSoFar_('평일', lastDayOfLastM) || 1;
+  const schWeekend = scheduledSoFar_('주말', lastDayOfLastM) || 1;
+  const stus = [];
+  pf.getRange(2, 1, pf.getLastRow() - 1, 36).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') stus.push({ id: r[0], nm: r[1] || r[0], mon: r[18] || '뉴로', type: String(r[35] || '평일') });
+  });
+  const mP = {}, crowns = {}, raids = {}, cardLogs = {};
+  const plC = ss.getSheetByName('point_logs');
+  if (plC && plC.getLastRow() >= 2) plC.getRange(2, 1, plC.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (!r[1] || !r[5] || dstr(r[5], tz).indexOf(ym) !== 0) return;
+    const pts = Number(r[2]) || 0, rs = String(r[3] || '');
+    if (pts > 0) (cardLogs[r[1]] = cardLogs[r[1]] || []).push({ d: parseInt(dstr(r[5], tz).slice(8), 10), rs: rs, pts: pts });
+    if (pts > 0 || rs.indexOf('정정') > -1) mP[r[1]] = (mP[r[1]] || 0) + pts;
+    if (rs === '오늘의 MVP' || rs === '오늘의 시냅스') crowns[r[1]] = (crowns[r[1]] || 0) + 1;
+    if (rs === '레이드보상' || rs === '월드레이드') raids[r[1]] = (raids[r[1]] || 0) + 1;
+  });
+  const monMapC = monsterImgMap_(ss); // [v9.35] 단계명→이미지 — 카드에 몬스터 1장 삽입
+  const rows = stus.map(s => {
+    const pts = mP[s.id] || 0;
+    const sch = s.type === '주말' ? schWeekend : schWeekday;
+    const normPts = Math.round(pts / sch * schWeekday); // [v9.28] 수업일당 환산 — 주말반도 같은 기준으로 티어 판정
+    const tier = CARD_TIERS.find(tt => normPts >= tt[0]);
+    const stat = pts > 0
+      ? '⚡ ' + pts + 'P · 👑 ' + (crowns[s.id] || 0) + ' · ⚔️ ' + (raids[s.id] || 0)
+      : '🌟 다음 달 주인공 예약';
+    const mi = String(monMapC[s.mon] || ''); // [v9.35]
+    // [v9.35] 골격을 소프트 글로우 축으로 정렬(보더 #C4B5FD 2px·라운드 18/12·섀도) — 티어 그라디언트는 유지
+    return [ym, s.id, CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:' + tier[2] + ';border:2px solid #FFCFC6;border-radius:18px;padding:10px;max-width:230px;box-shadow:0 6px 18px rgba(255,107,92,.14);">' +
+      '<div style="background:#fff;border-radius:12px;padding:10px 12px;text-align:center;">' +
+      '<div style="font-size:11px;color:#6B7280;">SYNK ' + ym + ' · ' + tier[3] + ' ' + tier[1] + '</div>' +
+      '<div style="font-size:17px;font-weight:800;padding:3px 0;">' + s.nm + '</div>' +
+      (mi.indexOf('http') === 0 ? '<img src="' + mi + '" style="width:72px;image-rendering:pixelated;display:block;margin:2px auto 0;"/>' : '') + // [v9.35] A안 이미지에도 무해
+      '<div style="font-size:12px;color:#131A32;">' + s.mon + '와 함께한 한 달</div>' +
+      '<div style="font-size:11px;color:#6B7280;padding-top:2px;">' + (function(){ const ps2 = playStyleOf_(cardLogs[s.id] || []); return ps2[0] + ' ' + ps2[1]; })() + '</div>' +
+      '<div style="font-size:13px;padding-top:6px;border-top:1px dashed #E5E7EB;margin-top:6px;">' + stat + '</div>' +
+      '</div></div>'];
+  });
+  if (rows.length) cd.getRange(cd.getLastRow() + 1, 1, rows.length, 3).setValues(rows);
+  Logger.log('이달의 카드 ' + ym + ': ' + rows.length + '장');
+}
+
+// [v9.56] 🖨️ 이달의 카드 실물 인쇄(도전안④ 물성화) — ▶ 수동 실행(월례 세리머니 직전 1회).
+//   synk_cards 최신 발간월을 A4용 그리드 HTML로 Drive 'SYNK_인쇄' 폴더에 저장(가능하면 PDF도)
+//   + 원장 메일로 링크. 앱·Glide 변경 0 — 디지털 카드의 물성화라 원격 앱이 못 베끼는 리텐션 표면.
+function printMonthlyCards() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const cd = ss.getSheetByName('synk_cards');
+  if (!cd || cd.getLastRow() < 2) return '카드 없음 — 매월 1일 발간 후 실행하세요';
+  const rowsP = cd.getRange(2, 1, cd.getLastRow() - 1, 3).getValues();
+  let ymP = '';
+  rowsP.forEach(r => { const y6 = String(r[0] || ''); if (y6 > ymP) ymP = y6; });
+  const cards = rowsP.filter(r => String(r[0]) === ymP && r[2]).map(r => String(r[2]));
+  if (!cards.length) return ymP + ' 발간분 없음';
+  const html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>SYNK 이달의 카드 ' + ymP + '</title>' +
+    '<style>body{margin:0;padding:8mm;background:#fff;}.g{display:flex;flex-wrap:wrap;gap:5mm;}.c{width:62mm;}@media print{.c{page-break-inside:avoid;}}</style></head>' +
+    '<body><div class="g">' + cards.map(c => '<div class="c">' + c + '</div>').join('') + '</div></body></html>';
+  const blob = Utilities.newBlob(html, 'text/html', 'SYNK_이달의카드_' + ymP + '.html');
+  const it = DriveApp.getFoldersByName('SYNK_인쇄');
+  const folder = it.hasNext() ? it.next() : DriveApp.createFolder('SYNK_인쇄');
+  const fHtml = folder.createFile(blob);
+  let pdfUrl = '';
+  try { const pdf = blob.getAs('application/pdf'); pdf.setName('SYNK_이달의카드_' + ymP + '.pdf'); pdfUrl = folder.createFile(pdf).getUrl(); } catch (eP) {}
+  const msg = ymP + ' 카드 ' + cards.length + '장\nHTML: ' + fHtml.getUrl() + (pdfUrl ? '\nPDF: ' + pdfUrl : '\n(PDF 자동 변환 실패 — HTML 파일을 열어 Ctrl+P로 인쇄)');
+  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🖨️ 이달의 카드 인쇄 파일 (' + ymP + ')', msg + '\n\n인쇄 팁: A4 가로 방향 + "배경 그래픽" 옵션 켜기. 이름 인쇄 지급 전 학생·학부모 동의 확인.');
+  Logger.log(msg);
+  return msg;
+}
+
+// [v9.12] 🗺️ 시냅스 여행 지도 — 스토리북이 다녀간 한국 12경, 도감 문법(???)의 지도판
+const MAP_EMOJI = ['🏯','🥘','🌸','👘','🍗','🌇','🌊','🎸','🏘️','🍁','🎡','🔔'];
+const MAP_NAME = ['덕수궁','광장시장','여의도','경복궁','한강','남산','해운대','홍대','북촌','설악산','롯데월드','보신각'];
+function updateTravelMap_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sbM = ss.getSheetByName('synk_stories');
+  const done = {};
+  if (sbM && sbM.getLastRow() >= 2) sbM.getRange(2, 1, sbM.getLastRow() - 1, 1).getValues().forEach(r => {
+    const mm = parseInt(String(r[0]).split('-')[1], 10);
+    if (mm >= 1 && mm <= 12) done[(mm - 1) % 12] = 1;
+  });
+  const n = Object.keys(done).length;
+  let cells = '';
+  for (let i = 0; i < 12; i++) {
+    const nm = MAP_NAME[i];
+    cells += done[i]
+      ? '<div style="width:31%;margin:1%;background:linear-gradient(135deg,#FBF7EE,#F6F1E8);border:2px solid #E7DDC7;border-radius:12px;text-align:center;padding:8px 0;float:left;"><div style="font-size:22px;">' + MAP_EMOJI[i] + '</div><div style="font-size:11px;font-weight:700;">' + nm + '</div><div style="font-size:10px;color:#131A32;">⭕ 정복!</div></div>'
+      : '<div style="width:31%;margin:1%;background:#F3F4F6;border:2px dashed #D1D5DB;border-radius:12px;text-align:center;padding:8px 0;float:left;opacity:.75;"><div style="font-size:22px;">🌫️</div><div style="font-size:11px;color:#9CA3AF;">???</div><div style="font-size:10px;color:#9CA3AF;">' + (i + 1) + '월의 무대</div></div>';
+  }
+  const html = CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #E7DDC7;border-radius:16px;padding:12px;"><div style="font-size:14px;font-weight:800;padding-bottom:6px;">🗺️ 시냅스 여행 지도 — 한국 12경 <span style="color:#131A32;">' + n + '/12곳 정복</span></div><div style="overflow:hidden;">' + cells + '</div><div style="clear:both;font-size:11px;color:#6B7280;padding-top:6px;">매달 싱크 스토리가 발간되면 새로운 무대에 도장이 찍혀요 📖</div></div>';
+  const st = ensureSheet(ss, 'app_state', ['key','value']);
+  const data = st.getLastRow() < 2 ? [] : st.getRange(2, 1, st.getLastRow() - 1, 2).getValues();
+  let found = -1;
+  data.forEach((r, i) => { if (String(r[0]) === '여행지도HTML') found = i + 2; });
+  if (found > 0) { if (String(st.getRange(found, 2).getValue()) !== html) st.getRange(found, 2).setValue(html); }
+  else st.getRange(st.getLastRow() + 1, 1, 1, 2).setValues([['여행지도HTML', html]]);
+}
+
+function bossOfMonth(ss, monthNum) {
+  const ct = ss.getSheetByName('contents');
+  if (!ct || ct.getLastRow() < 2) return null;
+  const list = [];
+  ct.getRange(2, 1, ct.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (r[1] === 'boss' && r[2]) {
+      const parts = String(r[3] || '').split('|');
+      list.push({ name: String(r[2]), entry: parts[0] || '', win: parts[1] || '', ord: Number(r[5]) || 99 });
+    }
+  });
+  if (!list.length) return null;
+  list.sort((a, b) => a.ord - b.ord);
+  return list[(monthNum - 1) % list.length];
+}
+
+function seasonNameOf(ss, monthNum) {
+  const ct = ss.getSheetByName('contents');
+  if (!ct || ct.getLastRow() < 2) return '';
+  let name = '';
+  ct.getRange(2, 1, ct.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (r[1] === 'season' && Number(r[5]) === monthNum) name = String(r[2]);
+  });
+  return name;
+}
+
+function writeLeagueHistory(ss, tz, ym, mPts, rank, clsOf, nameOf) {
+  const lh = ensureSheet(ss, 'league_history',
+    ['월', '시즌', '챔피언반', '챔피언포인트', '준우승', '준우승포인트',
+     'MVP_id', 'MVP이름', 'MVP포인트', 'created_at']);
+  ymTextColFix_(lh, 1, tz); // [v9.97]
+  if (lh.getLastRow() >= 2) {
+    const exists = lh.getRange(2, 1, lh.getLastRow() - 1, 1).getValues()
+      .some(r => ymTextOf_(r[0], tz) === ym);
+    if (exists) { Logger.log(ym + ' 리그 기록 이미 존재 — 스킵'); return; }
+  }
+  const cls = {};
+  Object.keys(mPts).forEach(sid => {
+    const c = clsOf[sid];
+    if (!c) return;
+    cls[c] = (cls[c] || 0) + (mPts[sid] || 0);
+  });
+  const ranked = Object.keys(cls).map(c => ({ name: c, pts: cls[c] }))
+    .sort((a, b) => b.pts - a.pts);
+  if (!ranked.length || ranked[0].pts <= 0) { Logger.log('리그: 유효 데이터 없음'); return; }
+
+  let mvpId = '';
+  Object.keys(rank).forEach(sid => { if (rank[sid] === 1 && !mvpId) mvpId = sid; });
+  const champ = ranked[0], runner = ranked[1] || { name: '', pts: '' };
+  const season = seasonNameOf(ss, Number(ym.substring(5, 7)));
+
+  lh.getRange(lh.getLastRow() + 1, 1, 1, 10).setValues([[
+    ym, season, champ.name, champ.pts, runner.name, runner.pts,
+    mvpId, mvpId ? (nameOf[mvpId] || '') : '', mvpId ? (mPts[mvpId] || 0) : '', new Date()
+  ]]);
+
+  // [v6.6] 지난달의 전당 — 학생 홈 고정 배너용 app_state 키 (Glide는 키 하나만 바인딩)
+  const stH = ss.getSheetByName('app_state');
+  if (stH) {
+    setState(stH, '지난달의전당',
+      '🏛 ' + Number(ym.substring(5, 7)) + '월의 전당 — 챔피언 ' + champ.name +
+      ' (' + champ.pts + 'P)' + (mvpId ? ' · MVP ' + (nameOf[mvpId] || '') : ''));
+  }
+
+  const label = Number(ym.substring(0, 4)) + '년 ' + Number(ym.substring(5, 7)) + '월';
+  addNotice(ss,
+    '🏆 ' + label + (season ? " '" + season + "' 무대" : '') + ' 리그 결과!', // [v9.56] 월 테마 개명 — 여행지도의 "N월의 무대"와 표현 통일
+    '챔피언: ' + champ.name + ' (' + champ.pts + 'P) 🎉' +
+    (mvpId ? ' · 이달의 MVP: ' + (nameOf[mvpId] || mvpId) + ' (' + (mPts[mvpId] || 0) + 'P)' : '') +
+    ' — 명예의 전당에 기록되었습니다!');
+  Logger.log('리그 기록: ' + champ.name);
+}
+
+/* ===================== [v5] 자동 공지 (notices 시트 → 앱 공지 탭) =====================
+ * notices 헤더를 자동 인식 (title/제목, body·content/내용·본문, created_at/날짜)
+ * 못 찾으면 1·2·3열에 기록. 시트가 없으면 조용히 스킵.                      */
+
+function addNotice(ss, title, body) {
+  const sh = ss.getSheetByName('notices');
+  if (!sh) { Logger.log('notices 시트 없음 — 공지 생략'); return; }
+  const lastCol = Math.max(sh.getLastColumn(), 3);
+  const headers = sh.getRange(1, 1, 1, lastCol).getValues()[0]
+    .map(h => String(h).trim().toLowerCase());
+  function find(cands) {
+    for (let i = 0; i < headers.length; i++) {
+      if (cands.indexOf(headers[i]) > -1) return i;
+    }
+    return -1;
+  }
+  let iT = find(['title', 'title_ko', '제목']); // [v9.40] 라이브 구 스키마(notice_id·title_ko·body_ko…) 인식 — 없으면 공지가 notice_id 열에 오기록되던 실버그 수정
+  let iB = find(['body', 'body_ko', 'content', '내용', '본문']);
+  let iC = find(['created_at', 'date', '날짜', '작성일']);
+  if (iT === -1 && iB === -1) { iT = 0; iB = 1; if (iC === -1) iC = 2; }
+  const row = new Array(lastCol).fill('');
+  if (iT > -1) row[iT] = title;
+  if (iB > -1) row[iB] = body;
+  if (iC > -1) row[iC] = new Date();
+  sh.getRange(sh.getLastRow() + 1, 1, 1, lastCol).setValues([row]);
+}
+

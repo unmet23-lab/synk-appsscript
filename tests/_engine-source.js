@@ -25,8 +25,8 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 
-/** 엔진 파일 — 로드 순서대로. 분할 시 여기에 추가한다. */
-const ENGINE_FILES = ['Code.js'];
+/** 엔진 파일 — 로드 순서대로. 분할 시 여기에 추가한다. (2026-08-02 2단계: 실제 5분할) */
+const ENGINE_FILES = ['Code.js', '엔진_운영배치.js', '엔진_폼리포트.js', '엔진_콘텐츠AI.js', '엔진_셋업확장.js'];
 
 /** 엔진 전체를 한 문자열로. 파일 사이는 개행으로만 잇는다(표식 검색에 영향 없게). */
 function engineSource() {

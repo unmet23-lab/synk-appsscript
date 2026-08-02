@@ -8,6 +8,8 @@
 **/*
 !appsscript.json
 !Code.js
+# 엔진_*.js = Code.js 분할부 4종(2026-08-02 분할 2단계). 허용 누락 시 엔진이 반쪽으로 죽는다 — v9.54 실사고 계열.
+!엔진_*.js
 !contents_*.js
 !상담AI.js
 !교재연동.js

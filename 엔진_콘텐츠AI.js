@@ -1,0 +1,4232 @@
+// SYNK 엔진 분할부 — 콘텐츠·AI — 콘텐츠 셋업·문법 커리큘럼·워치독·매니페스트·진단·원장 브리핑·강사 알림·학부모 스위프·폼 출석 전개·AI 첨삭·AI 스튜디오·번역·콘텐츠 뱅크·온보딩·노션 동기화.
+// 원본은 Code.js 단일 파일이었다. 로드 순서 정본 = .clasp.json filePushOrder(상수 정본 Code.js가 선두). 표식 기반 테스트는 tests/_engine-source.js가 전 파일을 합본해 본다.
+/* ===================== [v5] 콘텐츠 셋업 (contents 6열 v4 스키마) =====================
+ * 스키마: [id, type, name(C), text(D), extra(E), value(F)]
+ * 같은 type만 교체하고 나머지(store·quote 등)는 그대로 유지.                */
+
+function replaceContentType(ss, type, items) {
+  // [v5.2] 전체 열 보존 — G열(몽골어)/H열(영어) 번역이 다른 type의 setup 재실행에도 밀리지 않음
+  //        단, 같은 type을 재실행하면 그 type의 번역은 초기화됨 → translateContents 재실행
+  const ct = ss.getSheetByName('contents') ||
+    ensureSheet(ss, 'contents', ['콘텐츠ID','유형','이름','설명','이미지URL','순번','몽골어','영어']); // [v9.9] 무에서 재건 대응
+  const last = ct.getLastRow();
+  const width = Math.max(ct.getLastColumn(), 8);
+  if (ct.getMaxColumns() < width) ct.insertColumnsAfter(ct.getMaxColumns(), width - ct.getMaxColumns()); // [v9.40] 그리드 폭 가드 — Glide가 열을 줄인 시트에서 8열 접근 예외 방지
+  if (last >= 2) {
+    const data = ct.getRange(2, 1, last - 1, width).getValues();
+    const keep = data.filter(r => r[1] !== type);
+    ct.getRange(2, 1, last - 1, width).clearContent();
+    if (keep.length) ct.getRange(2, 1, keep.length, width).setValues(keep);
+  }
+  if (items.length) {
+    const rows = items.map(it => {
+      const r = it.slice(0, width);
+      while (r.length < width) r.push('');
+      return r;
+    });
+    ct.getRange(ct.getLastRow() + 1, 1, rows.length, width).setValues(rows);
+  }
+  Logger.log("contents '" + type + "' " + items.length + '개 입력 완료');
+}
+
+function setupMonsters() {
+  // ⚠️ 기존 monster 행을 아래 5단계(뇌과학 진화 라인)로 교체합니다.
+  //    임계값은 F열, Recraft 이미지 URL은 E열에 입력하면 도감에서 사용 가능.
+  //    행 순서 = 진화 순서(임계값 오름차순)로 유지해주세요.
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  replaceContentType(ss, 'monster', [ // [v9.11] 도감 스토리 — 아기자기·1~2문장, 뇌과학 은유 유지
+    ['M01','monster','뉴로','알 속에서 바깥세상의 소리를 가만히 엿듣는 아기 뉴런 🥚 네가 첫 단어를 말하는 순간, 껍질에 처음으로 금이 가요.','',0],
+    ['M02','monster','스파키','태어나자마자 번쩍! 첫 신호를 쏜 꼬마 ⚡ 신나면 참지 못하고 머리끝에서 스파크가 파바박 튀어요.','',100],
+    ['M03','monster','링커','친구 사귀기가 세상에서 제일 좋은 연결쟁이 🔗 외로운 단어들의 손을 잡아 문장으로 만들어 줘요.','',250],
+    ['M04','monster','서킷','몸에 반짝이는 회로를 두른 꼬마 발명가 💡 네가 배운 길들이 서로 이어져, 몸 위에 작은 지도가 생겼어요.','',500],
+    ['M05','monster','미엘로','붉은 망토에 촛불을 든 배움의 순례자 🕯️ 매일의 반복 연습이 이 작은 불씨를 꺼지지 않는 등불로 키워요.','',900],
+    ['M06','monster','플로우','지팡이를 짚고 양손에서 빛이 흐르는 현자 ✨ 이제 생각보다 한국어가 먼저, 물처럼 흘러나와요.','',1500],
+    ['M07','monster','싱크마스터','빛의 왕관과 황금 홀을 든 시냅스의 왕 👑 그가 지나가면 반 전체가 환해져요 — 배움의 끝에서, 모든 것이 이어졌어요.','',2400]
+  ]);
+  calcAll();
+}
+
+
+/* ===================== [v9.36] 학습추적(W3) — 문법 커리큘럼 정본 (진화 게이트) =====================
+ * ⚠️ 유호님·강사 검수 대상 초안 (TOPIK 1~2급 기준 선정) — 문형·설명은 교육 전문 영역, 코드 반영 후에도 교체 자유.
+ * 정본 = 이 상수 → setupGrammarBank()가 contents type='grammar'로 재건(단일 파일 복구 철학).
+ * ID G단계번호+순번 2자리(G201~G712) · 게이트단계 = 도착 단계 번호(2~7) · contents F열 = 단계×100+순번.
+ * STORY_GRAMMAR(3~4급·월 로테이션)와는 급수·용도·구조가 달라 별도 정본 유지 — G7xx 일부 겹침은 무방. */
+const GRAMMAR_GATE_NEED = { 2: 0, 3: 9, 4: 9, 5: 9, 6: 9, 7: 9 }; // 뉴로→스파키 첫 진화는 무게이트(G2xx는 커리큘럼·노출용 유지) · 이후 12중 9(75%)
+const GRAMMAR_BANK = [
+  // G2xx — 뉴로→스파키 (게이트 비활성 · 노출용 커리큘럼)
+  ['G201', '이/가', '주격 조사 — 주어 표시'],
+  ['G202', '은/는', '화제·대조 조사'],
+  ['G203', '을/를', '목적격 조사'],
+  ['G204', '-이에요/예요', '명사 서술 (~입니다의 해요체)'],
+  ['G205', '-아/어요', '현재 시제 해요체'],
+  ['G206', '에', '장소·시간 조사'],
+  ['G207', '에서', '동작이 일어나는 장소'],
+  ['G208', '-았/었어요', '과거 시제'],
+  ['G209', '안 부정', '안 + 동사/형용사 부정'],
+  ['G210', '하고/와/과', '나열·함께'],
+  ['G211', '-(으)세요', '요청·존대 명령'],
+  ['G212', '숫자/시간 표현', '한자어·고유어 수 읽기'],
+  // G3xx — 스파키→링커
+  ['G301', '-고 싶다', '희망·바람'],
+  ['G302', '-(으)ㄹ 거예요', '미래·계획'],
+  ['G303', '-(으)러 가다', '이동의 목적'],
+  ['G304', '-지 않다', '긴 부정'],
+  ['G305', '못 부정', '능력 밖 부정'],
+  ['G306', '-고', '동작·상태 나열'],
+  ['G307', '-지만', '대조·역접'],
+  ['G308', '-아/어서', '이유·순차'],
+  ['G309', '(으)로', '수단·방향'],
+  ['G310', '에게/한테', '행위의 대상'],
+  ['G311', '-(으)ㄹ까요?', '제안·추측 질문'],
+  ['G312', '보다', '비교'],
+  // G4xx — 링커→서킷
+  ['G401', '-(으)면', '조건·가정'],
+  ['G402', '-(으)ㄹ 수 있다/없다', '능력·가능성'],
+  ['G403', '-아/어야 하다', '의무·필요'],
+  ['G404', '-아/어 주세요', '요청·부탁'],
+  ['G405', '-(으)려고 하다', '의도·계획'],
+  ['G406', '-기 전에/-(으)ㄴ 후에', '시간의 앞뒤'],
+  ['G407', '-는 것', '동사의 명사화'],
+  ['G408', '-아/어 보다', '시도·경험'],
+  ['G409', '-고 있다', '진행'],
+  ['G410', '-(으)니까', '이유·발견'],
+  ['G411', '-네요', '감탄·새로 앎'],
+  ['G412', '-지요?', '확인 질문'],
+  // G5xx — 서킷→미엘로
+  ['G501', '관형형 -(으)ㄴ/는/(으)ㄹ', '명사 수식'],
+  ['G502', '-(으)면서', '동시 동작'],
+  ['G503', '-기 때문에', '이유 강조'],
+  ['G504', '-게 되다', '상황 변화'],
+  ['G505', '-아/어도 되다', '허락'],
+  ['G506', '-(으)면 안 되다', '금지'],
+  ['G507', '-아/어 있다', '상태 지속'],
+  ['G508', '-기로 하다', '결심·약속'],
+  ['G509', '-(으)ㄴ 적이 있다', '경험 유무'],
+  ['G510', '-는 게 좋겠다', '권유·조언'],
+  ['G511', '-군요', '깨달음 감탄'],
+  ['G512', '-다고 하다', '간접화법 기초'],
+  // G6xx — 미엘로→플로우
+  ['G601', '-거든요', '이유 설명(구어)'],
+  ['G602', '-잖아요', '상기시키기'],
+  ['G603', '-(으)ㄹ 때', '시점·때'],
+  ['G604', '-던', '회상 수식'],
+  ['G605', '-아/어지다', '변화·피동'],
+  ['G606', '-게 하다', '사동'],
+  ['G607', '-도록', '목적·정도'],
+  ['G608', '-(으)ㄹ 것 같다', '추측'],
+  ['G609', '-대요/-래요', '축약 간접화법'],
+  ['G610', '-(으)ㄴ/는데', '배경 설명'],
+  ['G611', '-다가', '동작 전환'],
+  ['G612', '-(으)ㄹ게요/-(으)ㄹ래요', '의지·의향'],
+  // G7xx — 플로우→싱크마스터 (2급 상단+3급 진입 — STORY_GRAMMAR와 일부 겹침 허용)
+  ['G701', '-자마자', '직후'],
+  ['G702', '-느라고', '이유·핑계'],
+  ['G703', '-는 바람에', '뜻밖의 원인'],
+  ['G704', '-(으)ㄹ수록', '비례'],
+  ['G705', '-나 보다', '추측'],
+  ['G706', '-(으)ㄹ 뻔하다', '아슬아슬'],
+  ['G707', '-기 마련이다', '당연한 이치'],
+  ['G708', '-는 대신에', '대체'],
+  ['G709', '-(으)ㄴ 지', '시간 경과'],
+  ['G710', '-을/를 통해', '수단·경로'],
+  ['G711', '-곤 하다', '습관'],
+  ['G712', '-(으)면서도', '대조 동시']
+];
+function grammarStageOf_(gid) { const m = String(gid || '').trim().match(/^G([2-7])\d{2}$/); return m ? Number(m[1]) : 0; } // ID → 게이트단계(검증 겸용)
+function grammarBankCounts_() { const c = {}; GRAMMAR_BANK.forEach(g => { const k = grammarStageOf_(g[0]); if (k) c[k] = (c[k] || 0) + 1; }); return c; }
+function grammarNameMap_() { const m = {}; GRAMMAR_BANK.forEach(g => { m[g[0]] = g[1]; }); return m; }
+
+function setupGrammarBank() { // contents type='grammar' 재건 — replaceContentType이 E/G/H(이미지·번역) 보존 병합
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  replaceContentType(ss, 'grammar', GRAMMAR_BANK.map(g =>
+    [g[0], 'grammar', g[1], g[2], '', Number(String(g[0]).slice(1))])); // F = 단계×100+순번 (setupHomework 요일코드 패턴)
+  // [v9.38d] 마감폼 '전체도달도' 드롭다운 소스 — Glide Choice가 테이블 소스 전용이라 도달/더연습 2행을 contents에 둔다.
+  //   value_ko('도달'/'더연습')를 그대로 저장(expandMasteryLog_이 문자열 '도달' 접두 매칭). 재건 시 이 2행도 자동 복원.
+  replaceContentType(ss, 'reach', [['REACH1', 'reach', '도달', '수업 목표 대부분 도달', '', 1], ['REACH2', 'reach', '더연습', '더 연습 필요', '', 2]]);
+  // G열 몽골어는 translateContents(대상 type에 grammar 포함)가 초벌 번역 — 재실행 시 번역 초기화되면 translateContents 재실행
+}
+
+function setupBrainTips() { // [v8.6] 오늘의 시냅스 팁 — 홈 최하단 한 줄 (v7.9 폐지 → 재설계 부활)
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  replaceContentType(ss, 'braintip', [
+    ['BT01','braintip','단어는 잘 때 저장된다 — 시험 전날 밤샘보다 7시간 수면이 점수를 올린다 😴','','',1],
+    ['BT02','braintip','오늘·내일·일주일 뒤, 세 번 만난 단어는 평생 친구가 된다 📅','','',2],
+    ['BT03','braintip','다시 읽기보다 덮고 떠올리기 — 뇌는 꺼낼 때 강해진다 🎯','','',3],
+    ['BT04','braintip','같은 문장을 소리 내어 반복할 때, 뇌 속 전선에 절연 테이프(미엘린)가 감긴다 ⚡','','',4],
+    ['BT05','braintip','공부 시작이 힘들면 "딱 5분만" — 시작된 뇌는 멈추기가 더 어렵다 ⏱️','','',5],
+    ['BT06','braintip','20분 걷기는 해마에 물 주기 — 산책 후 외운 단어는 더 오래 산다 🚶','','',6],
+    ['BT07','braintip','단어를 그림과 함께 — 두 개의 길로 저장된 기억은 두 배로 튼튼하다 🖼️','','',7],
+    ['BT08','braintip','책상에서만 외운 말은 책상에서만 나온다 — 버스에서도 한 문장 🚌','','',8],
+    ['BT09','braintip','웃으며 배운 표현은 잊히지 않는다 — 재미는 기억의 접착제 😄','','',9],
+    ['BT10','braintip','입 밖으로 나온 문장만 진짜 내 것 — 오늘 배운 것, 소리 내어 한 문장 🗣️','','',10],
+    ['BT11','braintip','전화번호처럼 — 긴 문장은 덩어리 3개로 쪼개면 외워진다 🧩','','',11],
+    ['BT12','braintip','틀린 순간 뇌는 가장 크게 배운다 — 실수는 시냅스의 공사 신호 🚧','','',12],
+    ['BT13','braintip','친구에게 설명해보라 — 가르칠 수 있으면 아는 것이다 👥','','',13],
+    ['BT14','braintip','자고 일어난 직후 5분 복습 — 밤새 정리된 기억에 도장 찍기 ☀️','','',14],
+    ['BT15','braintip','타이핑보다 손으로 — 손이 그린 글자는 뇌에 더 깊이 새겨진다 ✍️','','',15],
+    ['BT16','braintip','가사 있는 노래는 공부의 적, 공부 끝의 보상으로는 최고 🎧','','',16],
+    ['BT17','braintip','뇌의 75%는 물 — 목마름은 집중력 도둑 💧','','',17],
+    ['BT18','braintip','뇌는 동시에 두 가지를 못 한다 — 폰은 다른 방에 📵','','',18],
+    ['BT19','braintip','"TOPIK 합격"보다 "오늘 단어 10개" — 뇌는 작은 승리를 연료로 쓴다 🔥','','',19],
+    ['BT20','braintip','하굣길에 오늘 배운 것 3가지 떠올리기 — 걷는 뇌는 기억을 정리한다 🌆','','',20],
+    ['BT21','braintip','자기 전 10분 암기는 프라임 타임 — 방해 없이 바로 저장된다 🌙','','',21],
+    ['BT22','braintip','발음이 정확해지면 듣기가 뚫린다 — 입과 귀는 한 회로 👂','','',22],
+    ['BT23','braintip','어제의 나와만 비교 — 남과의 비교는 학습 호르몬을 꺼버린다 🪞','','',23],
+    ['BT24','braintip','25분 집중 + 5분 멍때리기 — 멍때리는 동안 뇌가 정리정돈한다 🧹','','',24],
+    ['BT25','braintip','답보다 질문이 기억된다 — "왜?"라고 물은 내용은 오래간다 ❓','','',25],
+    ['BT26','braintip','단어 5개로 이야기 만들기 — 뇌는 목록보다 이야기를 사랑한다 📖','','',26],
+    ['BT27','braintip','"나는 한국어가 는다"고 말하는 뇌는 정말 그렇게 배선된다 🧠','','',27],
+    ['BT28','braintip','아침 햇빛 10분 — 오늘 밤 수면의 질을 예약하는 스위치 🌅','','',28],
+    ['BT29','braintip','배운 지 24시간 안에 한 번 복습 — 망각곡선이 꺾인다 📉','','',29],
+    ['BT30','braintip','매일 한 걸음 — 시냅스는 폭발이 아니라 누적으로 자란다 🌱','','',30] // [v9.83] 지급 단가가 바뀌면 틀리는 숫자를 문구에서 제거
+  ]);
+  Logger.log('브레인팁 30종 OK');
+}
+
+function setupSeasons() {
+  // 리그 시즌명 12종 (K-컬처 테마 · 창작명) — 명예의 전당/공지에 자동 사용
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  replaceContentType(ss, 'season', [
+    ['SE01','season','첫눈의 시냅스','새해 첫 연결을 만드는 달','',1],
+    ['SE02','season','설날 포인트 대잔치','세뱃돈 대신 포인트!','',2],
+    ['SE03','season','새 학기 K-캠퍼스','새 교실, 새 에너지','',3],
+    ['SE04','season','벚꽃 스터디 피크닉','꽃길만 걷는 공부','',4],
+    ['SE05','season','한강의 봄','초록 위의 집중력','',5],
+    ['SE06','season','미리 여름 페스티벌','축제처럼 공부하기','',6],
+    ['SE07','season','한강 나이트','열대야를 이기는 시냅스','',7],
+    ['SE08','season','서울 서머 웨이브','파도처럼 밀려오는 성장','',8],
+    ['SE09','season','추석 보름달','꽉 찬 달처럼 꽉 찬 포인트','',9],
+    ['SE10','season','단풍 로드','물들어가는 실력','',10],
+    ['SE11','season','수능 파이팅','대한민국 집중의 달, 우리도!','',11],
+    ['SE12','season','연말 시상식','올해의 MVP를 가리자','',12]
+  ]);
+}
+
+/* ===================== [v6.2] 시스템 워치독 (매주 월 7시 · 읽기 전용) =====================
+ * 정적 검사로 못 잡는 "살아있는 시스템"의 이상을 감시:
+ * 트리거 실종 · 데일리 로테이션 멈춤 · 셋업 미실행/부분 실행 · 데이터 무결성 · 번역 적체.
+ * 이상이 곪기 전에 월요일 아침 메일이 먼저 알립니다. */
+
+// [v9.28] 강사 오타 방어 3선 공용 스캐너 — point_logs의 reason이 알려진 키워드에 하나도 안 걸리면 수집.
+//   systemWatchdog(주간 요약)과 nightJobs(당일 신규만 admin 알림)가 함께 사용해 발각 지연을 7일→1일로 단축.
+function unknownReasonScan_(ss) {
+  const KNOWN_RS = ['숙제', 'MVP', '시냅스', '칭찬', '정정', '생일', '레이드', '발표', '일일한도',
+    '출석', '이월', '스토어', '구매', '교환', '퀴즈', '챌린지', '연료', '보너스', '참여', '이벤트', '오늘의다짐', '첨삭']; // [v9.49] 첨삭확인(+5P) — '숙제'를 포함하면 숙제왕 카운트(4689행 indexOf('숙제'))가 오염되므로 별도 키워드
+  const plW = ss.getSheetByName('point_logs');
+  const unknown = {};
+  if (plW && plW.getLastRow() >= 2) {
+    plW.getRange(2, 1, plW.getLastRow() - 1, 4).getValues().forEach(function (r) {
+      const rs = String(r[3] || '').trim();
+      if (!r[1] || !rs) return;
+      if (!KNOWN_RS.some(function (k) { return rs.indexOf(k) > -1; })) unknown[rs] = (unknown[rs] || 0) + 1;
+    });
+  }
+  return unknown;
+}
+
+// [v9.28] 미인식 reason 야간 점검 — 워치독 주간 요약을 기다리지 않고 당일 새 오타를 admin에 알림(목록 동일하면 dedup)
+function checkUnknownReasonsNightly_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const unknown = unknownReasonScan_(ss);
+  const uKeys = Object.keys(unknown).sort();
+  if (!uKeys.length) return;
+  const props = PropertiesService.getScriptProperties();
+  const sig = uKeys.map(function (k) { return k + ':' + unknown[k]; }).join('|');
+  if (props.getProperty('미인식사유_상태') === sig) return; // 어제와 동일 목록이면 재알림 생략
+  props.setProperty('미인식사유_상태', sig);
+  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] ⚠️ 미인식 포인트 사유 ' + uKeys.length + '종',
+    '아래 사유 문구가 알려진 키워드에 안 걸립니다 — 강사 버튼 오타이면 분류(왕관·숙제·업적)가 누락될 수 있어요.\n\n' +
+    uKeys.map(function (k) { return '· "' + k + '" (' + unknown[k] + '건)'; }).join('\n'));
+}
+
+// [v9.67] 교재연동(교재연동.js) 개통 판별 — setupTextbookLink가 세팅하는 profiles '목소리폼URL' 헤더가 영속 발자국.
+//   app_state '목소리폼URL틀'은 목소리 폼(STEP 1~3) 전용 키라 폼 없이 문법판정만 개통한 경우를 놓친다 — 헤더가 정확한 기준.
+//   resetAllTriggers·preflightGlide·systemWatchdog·buildSystemManifest 4곳 공용: 미개통 시스템에선 교재연동Nightly를
+//   요구하지 않아 오경보 0, 개통 후엔 트리거 실종(전체 삭제 재설치 사고)을 즉시 잡는다(2026-07-26 진단 결함 ①).
+function textbookLinkOn_(ssOpt) {
+  try {
+    const ss = ssOpt || SpreadsheetApp.getActiveSpreadsheet();
+    const pf = ss.getSheetByName('profiles');
+    if (!pf || pf.getLastColumn() < 1) return false;
+    return pf.getRange(1, 1, 1, pf.getLastColumn()).getValues()[0].some(h => String(h) === '목소리폼URL');
+  } catch (e) { return false; }
+}
+
+// [v9.67] AI 첨삭 파이프라인 계기(워치독·preflight 공용) — 키 휴면·적체가 완전 침묵이던 결함 ②의 계기판.
+//   키가 없으면 aiFeedbackBatch_가 포인터 전진 없이 0초 리턴하므로 '숙제폼_응답 포인터 뒤 신규 행 수'가 곧 적체량.
+//   oldestAge = 큐 머리(가장 오래된 미처리 제출)의 나이(일) — 경보 기준. 마지막 생성 나이(fbAge)로 판정하면
+//   "조용한 주간 + 오늘 새 제출"(정상)이 낮 preflight에서 허위 경보가 된다 · >1 = 밤 배치를 최소 1회 지나쳤는데 미처리.
+//   fbAge = hw_feedback 마지막 행 생성 나이(일 · ID 'FByyyyMMdd-'에 생성일이 박힘) — 메일 문맥용 · -1=이력/판독 없음.
+//   키 값 자체는 절대 반환·기록하지 않는다(존재 여부 boolean만) — 로그·메일 노출 금지 원칙.
+/* [v9.77] profiles 무결성 코어 — Glide 상세 화면 Edit/Add 잔재 사고(2026-07-28 유호 실측: 반 상세에서
+ *   강사가 profiles 생 행 추가·class_stats 편집 가능) 후속. 레이아웃 구멍은 편집기에서 막았지만
+ *   "다시 열려도 오염을 기계가 잡는" 층이 없었다: 기존 preflight 루프는 `if (!r[0]) return`이라
+ *   user_id 공란 유령 행을 영원히 못 보고, user_id 중복은 어디에도 없었으며, 전부 수동 ▶ 전용이었다.
+ *   순수 함수(시트 미접촉) — tests/safety.test.js가 직접 실행 검증. rows = profiles 2행~ 원시값. */
+function profilesIntegrityCore_(rows) {
+  const ROLES = { student: 1, parent: 1, teacher: 1, director: 1 };
+  const ghost = [], dupId = [], badRole = [];
+  const seen = {};
+  (rows || []).forEach(function (r, i) {
+    const id = String(r[0] || '').trim(), nm = String(r[1] || '').trim();
+    const role = String(r[3] || '').trim(), em = String(r[6] || '').trim();
+    if (!id) {
+      if (nm || role || em) ghost.push((i + 2) + '행(' + (nm || role || em) + ')'); // 완전 빈 행은 무해 — 내용 있는 무ID 행만
+      return;
+    }
+    if (seen[id]) dupId.push(id); else seen[id] = 1;
+    if (!ROLES[role]) badRole.push((nm || id) + '(' + (role || '빈값') + ')');
+  });
+  return { ghost: ghost, dupId: dupId, badRole: badRole,
+    clean: !ghost.length && !dupId.length && !badRole.length };
+}
+
+// [v9.77] 시트 래퍼 + 야간 자동 통보(nightJobs 편입). 이상 시그니처를 scriptProperty에 저장해
+//   같은 이상은 하루 1통으로 끝(매일 반복 소음 0) · 내용이 변하면 즉시 재통보 · 해소되면 키 삭제.
+function profilesIntegrityScan_(ss) {
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return profilesIntegrityCore_([]);
+  return profilesIntegrityCore_(pf.getRange(2, 1, pf.getLastRow() - 1, 10).getValues());
+}
+function profilesIntegrityNightly_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const chk = profilesIntegrityScan_(ss);
+  const props = PropertiesService.getScriptProperties();
+  const KEY = '프로필무결성통보';
+  if (chk.clean) { if (props.getProperty(KEY)) props.deleteProperty(KEY); return; }
+  const lines = [];
+  if (chk.ghost.length) lines.push('· 유령 행(user_id 공란인데 내용 있음 — 앱 Add 폼/수기 추가 흔적): ' + chk.ghost.join(', ') + ' → profiles에서 해당 행 삭제(또는 user_id 채움)');
+  if (chk.dupId.length) lines.push('· user_id 중복(로그인·집계가 첫 행만 물어 나머지는 유실): ' + chk.dupId.join(', ') + ' → 중복 행 정리');
+  if (chk.badRole.length) lines.push('· 무효 role(그 사람 탭 Visibility 전멸): ' + chk.badRole.join(', ') + ' → student/parent/teacher/director로 교정');
+  const sig = lines.join('|').slice(0, 8000); // 9KB 보호
+  if (props.getProperty(KEY) === sig) return; // 동일 이상은 재통보 안 함
+  adminMail('[SYNK] 🧬 profiles 무결성 이상 ' + (chk.ghost.length + chk.dupId.length + chk.badRole.length) + '건',
+    lines.join('\n') + '\n\n학생 등록 정본은 상담시트→syncProfiles입니다. 앱/시트에서 직접 만든 행이 의심돼요. (같은 내용이면 다시 알리지 않습니다 — 내용이 바뀌거나 해소되면 자동 갱신)');
+  props.setProperty(KEY, sig);
+}
+
+function aiFeedbackHealth_(ss) {
+  const props = PropertiesService.getScriptProperties();
+  const hasKey = !!props.getProperty('CLAUDE_API_KEY');
+  const tz = ss.getSpreadsheetTimeZone();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  let backlog = 0, oldestAge = -1;
+  const src = ss.getSheetByName('숙제폼_응답');
+  if (src && src.getLastRow() >= 2) {
+    const last = src.getLastRow();
+    const from = Math.min(Number(props.getProperty('숙제폼_포인터')) || 1, last);
+    backlog = last - from;
+    if (backlog > 0) {
+      const ts = src.getRange(from + 1, 1).getValue(); // 큐 머리의 폼 타임스탬프 1셀만
+      if (ts instanceof Date) oldestAge = Math.max(0, Math.round((new Date(today) - new Date(Utilities.formatDate(ts, tz, 'yyyy-MM-dd'))) / 86400000));
+    }
+  }
+  let fbAge = -1;
+  const fb = ss.getSheetByName('hw_feedback');
+  if (fb && fb.getLastRow() >= 2) {
+    const m = String(fb.getRange(fb.getLastRow(), 1).getValue() || '').match(/^FB(\d{4})(\d{2})(\d{2})-/);
+    if (m) fbAge = Math.max(0, Math.round((new Date(today) - new Date(m[1] + '-' + m[2] + '-' + m[3])) / 86400000));
+  }
+  return { hasKey: hasKey, backlog: backlog, oldestAge: oldestAge, fbAge: fbAge };
+}
+
+function systemWatchdog(asText) {
+  const wantText = asText === true; // [v9.25] 텍스트 반환 모드(주간 통합) — 트리거 이벤트객체는 false로 강제
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const out = [];
+  function add(ok, msg) { out.push((ok ? '✅ ' : '⚠️ ') + msg); }
+
+  // 1) 필수 트리거 생존
+  const have = {};
+  ScriptApp.getProjectTriggers().forEach(t => { have[t.getHandlerFunction()] = true; });
+  // [v9.25] A5에서 일부 핸들러가 safeRun 보호 래퍼(dailyBackupJob·sendMorningDigestJob·
+  //   monthlyReportCardsJob·monthlyReportJob)로 재등록됐다. 점검 목록은 원 함수명 그대로 두되,
+  //   bare/‘…Job’ 두 이름 중 하나라도 살아 있으면 정상으로 취급해 개명에도 오탐(실종! 허위경보)이
+  //   안 나게 한다 — 앞으로 다른 핸들러가 Job 래퍼로 바뀌어도 이 매칭이 자동으로 흡수한다.
+  const alive = f => !!(have[f] || have[f + 'Job']);
+  ['calcAll', 'parentSweep', 'sendMorningDigest'].forEach(f => {
+    add(alive(f), '필수 트리거 ' + f + (alive(f) ? ' 정상' : ' 실종! — resetAllTriggers()/트리거 화면 확인'));
+  });
+  const recommended = ['dailyBackup', 'morningJobs', 'nightJobs', 'weeklyJobs',
+    'monthlyJobs', 'monthlyReportCards', 'monthlyReport']; // [v7.0] v6.3 통합 트리거 기준
+  if (textbookLinkOn_(ss)) recommended.push('교재연동Nightly'); // [v9.67] 개통 후에만 요구 — 전체 삭제 재설치 사고로 실종되면 여기서 발각(미개통 오경보 0)
+  const missing = recommended.filter(f => !alive(f));
+  add(missing.length === 0, '권장 트리거: ' + (missing.length ? missing.join(', ') + ' 미등록 (의도적이면 무시)' : '전부 등록됨'));
+
+  // [v9.19] 1-b) 백업 실제 생성 여부 — 트리거는 살아있어도 makeCopy가 조용히 실패할 수 있어 최신 백업 나이 점검
+  try {
+    const bIt = DriveApp.getFoldersByName('SYNK_백업');
+    if (!bIt.hasNext()) add(false, '백업 폴더(SYNK_백업) 없음 — dailyBackup 1회 실행 확인');
+    else {
+      // [v9.32] 접두사별 최신 나이 점검 — 폴더 전체 최신만 보면 상담 백업이 앱 백업 실패를 가린다(반대도).
+      const files = bIt.next().getFiles();
+      const newest = { app: 0, consult: 0 };
+      while (files.hasNext()) {
+        const f = files.next(); const nm = f.getName(); const t = f.getDateCreated().getTime();
+        if (nm.indexOf('SYNK_앱데이터_백업_') === 0) { if (t > newest.app) newest.app = t; }
+        else if (nm.indexOf('SYNK_상담백업_') === 0) { if (t > newest.consult) newest.consult = t; }
+      }
+      [['앱데이터', newest.app], ['상담시트', newest.consult]].forEach(function (p) {
+        const ageDays = p[1] ? Math.floor((Date.now() - p[1]) / 86400000) : 999;
+        add(ageDays <= 2, '최신 ' + p[0] + ' 백업: ' + (p[1] ? ageDays + '일 전' : '없음') + (ageDays > 2 ? ' ⚠️ 백업 멈춤 의심 — dailyBackup/Drive 용량/CONSULT_SHEET_ID 확인' : ''));
+      });
+    }
+  } catch (e) { add(false, '백업 점검 실패: ' + e); }
+
+  // [v9.82·리뷰 H4] 결석 사전신고 무결성 — preflight에만 두면 사람이 돌릴 때만 걸린다 → 주간 자동 감시 편입.
+  //   다자녀 parent_of 통짜 기록('A,B')이 미출석 제외·강사 브리핑·접수 카드 3곳을 조용히 불발시키는 회귀 감시.
+  try {
+    const anW = ss.getSheetByName('absence_notice');
+    if (anW && anW.getLastRow() >= 2) {
+      const pfW = ss.getSheetByName('profiles');
+      const idsW = {};
+      if (pfW && pfW.getLastRow() >= 2) pfW.getRange(2, 1, pfW.getLastRow() - 1, 1).getValues().forEach(r => { if (r[0]) idsW[String(r[0]).trim()] = 1; });
+      let badW = 0;
+      anW.getRange(2, 1, anW.getLastRow() - 1, 1).getValues().forEach(r => {
+        const v = String(r[0] || '').trim();
+        if (v && (v.indexOf(',') > -1 || !idsW[v])) badW++;
+      });
+      add(badW === 0, '결석 사전신고 student_id ' + (badW ? '불일치 ' + badW + '건 — 폼 "자녀"를 Choice(value=user_id)로 재조립(억제·브리핑·카드 불발 중)' : '전건 유효'));
+    }
+  } catch (e) { add(false, '결석 신고 점검 실패: ' + e); }
+
+  // 2) 데일리 로테이션 생존 (멈춤 = 트리거/시간대 문제 신호)
+  const props = PropertiesService.getScriptProperties();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const hw = props.getProperty('숙제기준일') || '(없음)';
+  const daysOld = hw === '(없음)' ? 99 :
+    Math.round((new Date(today) - new Date(hw)) / 86400000);
+  add(daysOld <= 2, '오늘의 숙제 게시: 마지막 ' + hw +
+    (daysOld > 2 ? ' — 21~23시 calcAll 트리거가 없거나 시간대가 어긋났을 가능성!' : ' (정상)'));
+
+  // [v9.28] 2-c) 야간배치(nightJobs) 완주 마커 — 6분 타임아웃으로 뒷부분이 증발해도 앞부분(calcAll 등)은
+  //   끝난 것처럼 보일 수 있어, nightJobs 맨 마지막 줄에서만 찍는 완주 마커로 "끝까지 돌았는지"를 별도 확인.
+  const nbDone = props.getProperty('야간배치완료일') || '(없음)';
+  const nbDaysOld = nbDone === '(없음)' ? 99 : Math.round((new Date(today) - new Date(nbDone.slice(0, 10))) / 86400000);
+  add(nbDaysOld <= 1, '야간배치(nightJobs) 완주: 마지막 ' + nbDone +
+    (nbDaysOld > 1 ? ' — 6분 타임아웃으로 중도 증발했을 가능성! 트리거 실행 기록을 확인하세요.' : ' (정상)'));
+
+  // [v9.32] 2-d) 월간배치(monthlyJobs) 완주 마커 점검 — 매월 1일 05시 8개 직렬 체인의 중도 증발 감지.
+  //   워치독이 주 1회(월요일)라 감지가 최대 ~9일 지연되지만 마커가 없으면 영영 못 잡는다. 3일부터 당월 점검.
+  const domW = Number(Utilities.formatDate(new Date(), tz, 'd'));
+  const curYmW = Utilities.formatDate(new Date(), tz, 'yyyy-MM');
+  const mbDone = props.getProperty('월간배치완료월') || '(없음)';
+  if (domW >= 3) {
+    add(mbDone === curYmW, '월간배치(monthlyJobs) 완주: ' + mbDone +
+      (mbDone === curYmW ? ' (정상)' : ' — 이달(' + curYmW + ') 미완주! 스토리북·카드·경영리포트 증발 의심, 트리거 실행 기록 확인'));
+  } else {
+    add(true, '월간배치(monthlyJobs) 완주: ' + mbDone + ' (매월 3일부터 당월 점검)');
+  }
+
+  // [v9.25→v9.28] 2-b) 미인식 reason 스캔 — 강사 오타 방어 3선. unknownReasonScan_로 공용화(nightJobs 일일 점검과 공유).
+  //   포인트 합산은 reason과 무관하게 정상이지만, 분류(숙제카운트·왕관·업적·일일한도)는 키워드로 잡는다.
+  try {
+    const unknown = unknownReasonScan_(ss);
+    const uKeys = Object.keys(unknown);
+    add(uKeys.length === 0, '포인트 사유(reason) 인식: ' + (uKeys.length === 0 ? '전부 정상'
+      : uKeys.length + '종 미인식 — 분류(왕관·숙제·업적) 누락 위험. 버튼 문구 확인: '
+        + uKeys.slice(0, 5).map(function (k) { return '"' + k + '"(' + unknown[k] + '건)'; }).join(' · ')
+        + (uKeys.length > 5 ? ' 외 ' + (uKeys.length - 5) + '종' : '')));
+  } catch (e) { add(false, 'reason 스캔 실패: ' + e); }
+
+  const stW = ss.getSheetByName('app_state');
+  const keys = {};
+  if (stW && stW.getLastRow() >= 2) {
+    stW.getRange(2, 1, stW.getLastRow() - 1, 2).getValues().forEach(r => { keys[r[0]] = r[1]; });
+  }
+  add(!!keys['오늘의퀴즈'], 'app_state 오늘의퀴즈: ' + (keys['오늘의퀴즈'] ? '있음' : '없음 — setupQuiz 실행 여부 확인'));
+  add(!!keys['오늘의팁'], 'app_state 오늘의팁: ' + (keys['오늘의팁'] ? '있음' : '없음 — setupBrainTips 실행 여부 확인')); // [v8.6]
+
+  // 3) 셋업 실행 상태 (contents 수량 대조 — 부분 실행 감지)
+  const expect = CONTENT_EXPECT; // [v9.37] 모듈 정본(수동 숫자 승격) — grammar:72 포함, buildSystemManifest와 단일 소스. 세부 이력은 CONTENT_EXPECT 선언부 참조
+  const cnt = {};
+  let bossImg = 0, monThr = [], loreTier = 0;
+  const ct = ss.getSheetByName('contents');
+  if (ct && ct.getLastRow() >= 2) {
+    ct.getRange(2, 1, ct.getLastRow() - 1, 6).getValues().forEach(r => {
+      const t = String(r[1] || '');
+      if (!t) return;
+      cnt[t] = (cnt[t] || 0) + 1;
+      if (t === 'boss' && String(r[4] || '').indexOf('http') === 0) bossImg++;
+      if (t === 'monster') monThr.push(Number(r[5]) || 0);
+      if (t === 'lore' && String(r[4] || '')) loreTier++;
+    });
+  }
+  const bad = Object.keys(expect).filter(k => (cnt[k] || 0) !== expect[k]);
+  add(bad.length === 0, '콘텐츠 수량: ' + (bad.length
+    ? bad.map(k => k + ' ' + (cnt[k] || 0) + '/' + expect[k]).join(', ') + ' — 해당 setup 함수 재실행 필요'
+    : Object.keys(expect).length + '종 전부 정상')); // [v9.34] '10종' 화석 문구 → 키 수 동적화
+  const sortedOk = monThr.length < 2 || monThr.every((v, i) => i === 0 || v >= monThr[i - 1]);
+  add(sortedOk, '몬스터 임계값 오름차순: ' + (sortedOk ? '정상' : '순서 꼬임! 진화 오작동 위험'));
+  add(bossImg === 12, '보스 이미지 URL: ' + bossImg + '/12' + (bossImg < 12 ? ' — contents boss E열 입력(시즌 보스 12종)' : '')); // [v7.8]
+  add(loreTier === 11, '칭호 로어 등급(E열): ' + loreTier + '/11' + (loreTier < 11 ? ' — setupTitleLore 재실행(v6.1)' : ''));
+
+  // 4) 데이터 무결성
+  const pl = ss.getSheetByName('point_logs');
+  if (pl && pl.getLastRow() >= 3) {
+    const n = Math.min(pl.getLastRow() - 1, 800);
+    const idsW = pl.getRange(pl.getLastRow() - n + 1, 1, n, 1).getValues().map(r => String(r[0]));
+    const seen = {}; let dupN = 0;
+    idsW.forEach(id => { if (id) { if (seen[id]) dupN++; seen[id] = true; } });
+    add(dupN === 0, 'PL ID 중복(최근 ' + n + '행): ' + dupN + '건');
+  }
+  const pfW = ss.getSheetByName('profiles');
+  if (pfW && pfW.getLastRow() >= 2) {
+    const hdrOk = String(pfW.getRange('AJ1').getValue()) === '반유형';
+    add(hdrOk, 'profiles 확장열(AE~AJ) 헤더: ' + (hdrOk ? '정상' : 'AJ 헤더 없음 — 최신 calcAll 1회 실행'));
+  }
+  const nt = ss.getSheetByName('notices');
+  if (nt && nt.getLastRow() >= 2) {
+    const lc = nt.getLastColumn();
+    const hd = nt.getRange(1, 1, 1, lc).getValues()[0].map(h => String(h).toLowerCase());
+    const iBm = hd.indexOf('body_mn');
+    if (iBm > -1) {
+      let untr = 0;
+      (nt.getLastRow() < 2 ? [] : nt.getRange(2, 1, nt.getLastRow() - 1, lc).getValues()).forEach(r => { // [v8.7]
+        if (r[0] && !String(r[iBm] || '')) untr++;
+      });
+      add(untr <= 10, '공지 몽골어 미번역 적체: ' + untr + '건' + (untr > 10 ? ' — 번역 쿼터/스위프 확인' : ''));
+    }
+  }
+
+  // [v9.25] 5) 시트 구조·용량·쿼터 — 구 healthCheck 흡수 (월요일 정기 메일 통합)
+  const reqSheets = ['profiles','point_logs','attendance','teacher_checkins','notices',
+    'form_responses','contents','class_stats','app_state','raid','schedule',
+    'monthly_snapshot','titles','achievements','story','manual_titles','teacher_stats',
+    'report_cards','league_history','class_fuel','weekly_topics','hw_batch','today_board',
+    'league_pairs','world_raid','synk_stories','synk_cards','academic_log',
+    'exit_log','absence_notice','inquiries','payments']; // [v9.28] 신규 시트 4종
+  const missSheet = reqSheets.filter(n => !ss.getSheetByName(n));
+  add(missSheet.length === 0, missSheet.length ? '누락 시트: ' + missSheet.join(', ') : '시트 구조 정상 (' + reqSheets.length + '종)');
+  const plRows = pl ? pl.getLastRow() - 1 : 0; // pl = point_logs (섹션 4에서 조회)
+  add(plRows <= 8000, 'point_logs ' + plRows + '행' + (plRows > 8000 ? ' — 아카이빙 확인 필요' : ''));
+  const mailQ = MailApp.getRemainingDailyQuota();
+  add(mailQ >= 30, '오늘 남은 메일 쿼터: ' + mailQ + '건' + (mailQ < 30 ? ' — 부족' : ''));
+
+  // [v9.25] 6) 상담폼 스키마 경량 점검 — 폼/시트 구조가 바뀌면 수동 진단(checkConsultSync·
+  //   dumpConsultHeaders·checkFormMapping) 전까지 몇 주간 조용히 어긋날 수 있어 워치독이 조기 감지.
+  //   기대 스키마: '상담데이터입력' 탭 · 헤더 2행 · 폭 62열 · 학생ID = 60열(BH, syncProfiles가 r[59]로 참조).
+  //   비용 최소화: openById 1회 + 헤더행 1회 읽기만. 접근 실패·불일치는 경고 줄로만 남기고 절대 throw하지 않음.
+  try {
+    const csrc = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    if (!csrc) {
+      add(false, "상담시트 스키마: '상담데이터입력' 탭 없음 — 탭 이름 변경 의심(checkConsultSync 확인)");
+    } else {
+      const cw = csrc.getLastColumn();
+      const chdr = cw >= 1 ? csrc.getRange(2, 1, 1, cw).getValues()[0].map(h => String(h || '').trim()) : [];
+      const widthOk = cw >= 62;
+      const idOk = chdr[59] === '학생ID'; // BH열(60열) = syncProfiles가 학생ID로 읽는 핵심 열
+      add(widthOk && idOk, '상담시트 스키마: 폭 ' + cw + '열' +
+        (widthOk ? '' : '(<62 ⚠️ 열 삭제 의심)') +
+        ' · 학생ID(60열)=' + (idOk ? 'OK' : '"' + (chdr[59] || '(빈칸)') + '" ⚠️ 헤더 어긋남 — dumpConsultHeaders/checkFormMapping 실행'));
+      const stV = ss.getSheetByName('app_state'); // [v9.66·리뷰 M5] 감시 게이트 = 열 폭이 아니라 마이그레이션 '적용 선언'(상담정본=v18.4) — 6열 전량 삭제(폭 62 복귀)도, 미실행 방치도 잡힌다
+      const v184on = stV ? String(getState(stV, '상담정본').val || '') === 'v18.4' : false;
+      const hasCForm = stV ? !!String(getState(stV, '상담폼ID').val || '') : false;
+      if (v184on) {
+        const missE = CONSULT_EXT_HEADERS.filter(h => chdr.indexOf(h) === -1);
+        add(missE.length === 0, '상담시트 v18.4 증분 헤더: ' + (missE.length ? missE.join(', ') + ' 유실 — migrateConsultV184 재실행' : CONSULT_EXT_HEADERS.length + '종 정상'));
+      } else if (hasCForm) {
+        add(false, '상담 v18.4 마이그레이션 미실행 — 증분 문항 응답이 시트 열 없이 노션이관으로만 쌓입니다. migrateConsultV184 ▶ 1회');
+      }
+      // [v9.84·리뷰 H3] 상담 배선 소스 헤더 6종(v18.1 기본 열) — 이름 완전 일치로 읽으므로 개명되면 DT124~DX128이
+      //   "조용히 전부 빈칸"이 된다. 증분 3종(선호그룹 등)은 위 v18.4 검사가 담당, 여기는 기본 열 몫.
+      const srcNeed = ['TOPIK목표', 'TOPIK목표기한', 'TOPIK급수', 'TOPIK점수', '학습가능시간', '📝자유서술→노션'];
+      const srcMiss = srcNeed.filter(h => chdr.indexOf(h) === -1);
+      add(srcMiss.length === 0, '상담 배선 소스 헤더: ' + (srcMiss.length ? srcMiss.join(', ') + ' 미발견 — 상담시트 2행 헤더 개명 여부 확인(취향·목표·페이스라인이 빈칸으로 착지 중)' : srcNeed.length + '종 정상'));
+      // [v9.84→v9.90] 동의 문항(v18.6) 적용 여부 — AI 인용·노션 이관 확대의 선행 조건(소급 불가 계열)이라 적용 전까지 주간 안내.
+      //   v9.90부터 음성·AI 학습 동의(선택)가 붙었다 — 이게 없으면 나중에 모은 녹음을 한 건도 못 쓴다.
+      if (hasCForm) {
+        const consentOn = stV ? String(getState(stV, '상담동의').val || '') === 'v18.6' : false;
+        add(consentOn, '상담폼 동의 문항(v18.6): ' + (consentOn ? '적용됨(개인정보 필수 + 음성·AI 학습 선택)' : '미적용 — 문구 검토 후 migrateConsentV186 ▶ 1회'));
+        if (consentOn) {
+          const vMiss = CONSENT_EXT_HEADERS.filter(h => chdr.indexOf(h) === -1);
+          add(vMiss.length === 0, '음성동의 착지 열: ' + (vMiss.length ? vMiss.join(', ') + ' 유실 — migrateConsentV186 재실행(거부자를 못 읽는 상태)' : '정상'));
+          const vs = voiceConsentStat_();
+          if (vs.ok) add(true, '음성·AI 학습 동의 회수: 동의 ' + vs.yes + ' · 거부 ' + vs.no + ' · 미응답 ' + vs.blank + ' (총 ' + vs.total + '행 · 녹음은 "동의" 행만 대상)');
+        }
+      }
+      // [v9.84] 상담 디테일 착지 열(DT124~DX128) 생존 — syncProfiles 배선의 도착지. 헤더 개명·열 삭제 시 폴백·페이스라인이 조용히 꺼진다
+      try {
+        const pfDT = ss.getSheetByName('profiles');
+        const dtOk = pfDT && pfDT.getMaxColumns() >= 128 && String(pfDT.getRange('DT1').getValue()) === '상담취향' && String(pfDT.getRange('DX1').getValue()) === '페이스라인';
+        add(!!dtOk, '상담 디테일 열(DT124~DX128): ' + (dtOk ? '정상' : '유실/미생성 — syncProfiles 1회 실행(첫 동기화 전이면 정상)'));
+      } catch (eDT) { add(false, '상담 디테일 열 점검 실패: ' + eDT); }
+    }
+  } catch (e) { add(false, '상담시트 스키마 점검 실패 — CONSULT_SHEET_ID/권한 확인: ' + e); }
+
+  // [v9.34] 7) 폼 생존 점검 — 상담폼·리드폼이 삭제·권한 상실되면 응답이 폼 안에 미아로 적체되고
+  //   form_responses 행이 안 생겨 checkConsultDelay도 무반응(입학 퍼널 무감시 단절)이던 지대 해소.
+  try {
+    const stF = ss.getSheetByName('app_state');
+    [['상담폼ID', '상담폼(입학 퍼널)', 'createConsultForm 재실행 또는 app_state 키 교정'],
+     ['리드폼ID', '리드폼(광고 유입)', 'createLeadForm 재실행'],
+     ['면접폼ID', '면접 기록 폼(비자·취업)', 'createInterviewLogForm 재실행']].forEach(p => {
+      const fid = stF ? String(getState(stF, p[0]).val || '') : '';
+      if (!fid) { add(true, p[1] + ': 미연결 — ID 없음(도입 전이면 정상)'); return; }
+      try { FormApp.openById(fid); add(true, p[1] + ' 생존: 정상'); }
+      catch (e) { add(false, p[1] + ' 열기 실패 — 폼 삭제/권한 상실 의심! ' + p[2]); }
+    });
+    // [v9.90] 면접 기록 회수량 — 시뮬레이터 질문 은행의 원천이라 "몇 건 모였나"가 곧 개발 준비도.
+    //   0건이어도 경보가 아니다(배포 직후가 정상) — 상태만 상시 노출해 회수 활동을 잊지 않게 한다.
+    const shIv = ss.getSheetByName('면접기록_응답');
+    if (shIv) add(true, '면접 기록 회수: ' + Math.max(0, shIv.getLastRow() - 1) + '건 (질문 은행 원천 · 배포처는 졸업생 그룹·상담 자리)');
+  } catch (e) { add(false, '폼 생존 점검 실패: ' + e); }
+
+  // [v9.67] 8) AI 첨삭 파이프라인 — CLAUDE_API_KEY 휴면·적체가 어디에도 안 뜨던 결함 해소(2026-07-26 진단 ②).
+  //   키 값은 절대 노출하지 않는다(존재 여부만). 적체 = 숙제폼_응답 신규 누적 vs hw_feedback 최근 생성 대조.
+  try {
+    const ai = aiFeedbackHealth_(ss);
+    add(ai.hasKey, 'CLAUDE_API_KEY: ' + (ai.hasKey ? '설정됨 — AI 첨삭·문법판정·스튜디오 활성'
+      : '미설정 — AI 기능 전부 휴면(첨삭·문법판정·스튜디오·레벨진단 0초 스킵). 개원 전 의도적 휴면이면 무시'));
+    const stale = ai.backlog > 0 && (!ai.hasKey || ai.oldestAge > 1); // 밤 배치를 확실히 1회+ 지나친 큐 머리만 경보(허위 경보 차단)
+    add(!stale, '숙제 첨삭 적체: ' + (ai.backlog === 0 ? '없음(신규 제출 전부 소진)'
+      : ai.backlog + '건 누적(가장 오래된 제출 ' + (ai.oldestAge < 0 ? '나이 미상' : ai.oldestAge + '일 전') + ' · hw_feedback 최근 생성 ' + (ai.fbAge < 0 ? '이력 없음' : ai.fbAge + '일 전') + ')'
+        + (stale ? (ai.hasKey ? ' — 밤 배치가 지나쳤는데 남아 있음, 실패 의심(aiFeedbackBatch 실행 기록·키 유효성 확인)' : ' — 키 미설정이 원인, 설정 즉시 다음 밤 자동 소진')
+          : ' (다음 밤 자동 소진 예정)')));
+  } catch (e) { add(false, 'AI 첨삭 계기 점검 실패: ' + e); }
+
+  // [v9.77] 9) profiles 무결성 — 앱 Edit/Add 잔재·수기 오염이 만든 유령 행/중복 ID/무효 role.
+  //   야간 통보(profilesIntegrityNightly_)는 이상 시에만 오므로, 주간 리포트에는 상태를 상시 표기.
+  try {
+    const pi = profilesIntegrityScan_(ss);
+    add(pi.clean, 'profiles 무결성: ' + (pi.clean ? '유령 행·중복 ID·무효 role 없음'
+      : (pi.ghost.length ? '유령 행 ' + pi.ghost.length + '건(' + pi.ghost.join(', ') + ') ' : '')
+      + (pi.dupId.length ? 'user_id 중복 ' + pi.dupId.length + '건(' + pi.dupId.join(', ') + ') ' : '')
+      + (pi.badRole.length ? '무효 role ' + pi.badRole.length + '건(' + pi.badRole.join(', ') + ')' : '')
+      + '— 정본은 상담시트→syncProfiles, 직접 만든 행 정리 필요'));
+  } catch (e) { add(false, 'profiles 무결성 점검 실패: ' + e); }
+
+  const report = '🛡️ SYNK 시스템 워치독 · ' +
+    Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm') + '\n\n' + out.join('\n') +
+    '\n\n⚠️가 하나라도 있으면 그 줄만 공유해주세요 — 나머지는 건강합니다.';
+  Logger.log(report);
+  if (wantText) return out.join('\n'); // [v9.25] 통합 리포트용 본문 — 제목/타임스탬프는 weeklyJobs가 부여
+  const warn = out.filter(l => l.indexOf('⚠️') === 0).length;
+  if (quotaOk(1)) {
+    MailApp.sendEmail(ADMIN_EMAIL,
+      '[SYNK] 🛡️ 주간 워치독 ' + (warn ? '⚠️ ' + warn + '건' : '✅ 전부 정상'), report);
+  }
+}
+
+/* ===================== [v9.37] 🧭 시스템 매니페스트 — 코드↔실제 드리프트 실측 =====================
+ * 헤더·주석의 수동 숫자(시트 수·콘텐츠 수·버전)를 코드에 박지 않고, 실행 시점의 실제 값을
+ * system_manifest 시트에 출력한다. 정본 상수(SYNK_VERSION·SHEET_SKELETON·CONTENT_EXPECT)와
+ * 라이브 스프레드시트를 대조해 누락·잉여·스키마 드리프트를 한 장에서 드러낸다.
+ * 실행: 수동 buildSystemManifest() · 주간 weeklyJobs 자동 · 재건 직후 bootstrapSynk.
+ * 쓰기: writeIfChanged만(변경 시에만) — Glide 미바인딩 시트라 update 쿼터 소비 0. 각 접근은 null 가드. */
+function buildSystemManifest() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = []; // 각 [지표, 값, 상태]
+  const OK = '정상', WARN = '⚠️ 확인';
+  function push(k, v, s) { rows.push([k, String(v), s || OK]); }
+  const sh = ensureSheet(ss, 'system_manifest', ['지표', '값', '상태']); // 소유 시트 — getSheets() 집계 전에 보장(첫 실행 자기 '누락' 오탐 방지)
+
+  // 1) 버전
+  push('버전', SYNK_VERSION, OK);
+
+  // 2) 시트 수 + 스켈레톤 대비 누락/잉여
+  const liveSheets = ss.getSheets().map(function (s) { return s.getName(); });
+  const skelNames = SHEET_SKELETON.map(function (k) { return k[0]; });
+  const missing = skelNames.filter(function (n) { return liveSheets.indexOf(n) === -1; });
+  const surplus = liveSheets.filter(function (n) { return skelNames.indexOf(n) === -1; });
+  push('시트 수(실측)', liveSheets.length + '장 · 스켈레톤 정본 ' + skelNames.length + '종', missing.length ? WARN : OK);
+  push('스켈레톤 누락(재건 필요)', missing.length ? missing.join(', ') : '없음', missing.length ? WARN : OK);
+  push('스켈레톤 외 시트(setup·수동 탭)', surplus.length ? surplus.join(', ') : '없음', OK); // 잉여는 경보 아님(setup 생성·수동 탭 포함)
+
+  // 3) 스키마 드리프트 — 스켈레톤 각 시트 1행 헤더의 앞부분이 실제와 일치하는지(확장열 허용)
+  const drift = [];
+  SHEET_SKELETON.forEach(function (k) {
+    const name = k[0], want = k[1] || [];
+    const sh = ss.getSheetByName(name);
+    if (!sh) return; // 누락은 2)에서 보고
+    const lastCol = sh.getLastColumn();
+    if (lastCol < 1) { if (want.length) drift.push(name + '(빈 헤더)'); return; }
+    const have = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(function (h) { return String(h == null ? '' : h).trim(); });
+    const mismatch = want.some(function (h, i) { return String(h).trim() !== (have[i] || ''); });
+    if (mismatch) drift.push(name);
+  });
+  push('스키마 드리프트(1행 헤더)', drift.length ? drift.join(', ') + ' — 라이브가 구 스키마 의심' : '없음', drift.length ? WARN : OK);
+
+  // 4) 콘텐츠 유형별 실측 vs CONTENT_EXPECT
+  const cnt = {};
+  const ct = ss.getSheetByName('contents');
+  if (ct && ct.getLastRow() >= 2) {
+    ct.getRange(2, 2, ct.getLastRow() - 1, 1).getValues().forEach(function (r) { // B열 = 콘텐츠 유형
+      const t = String(r[0] || ''); if (t) cnt[t] = (cnt[t] || 0) + 1;
+    });
+  }
+  const bad = Object.keys(CONTENT_EXPECT).filter(function (kk) { return (cnt[kk] || 0) !== CONTENT_EXPECT[kk]; });
+  const totalContent = Object.keys(cnt).reduce(function (a, kk) { return a + cnt[kk]; }, 0);
+  push('콘텐츠 총계(실측)', totalContent + '개 · ' + Object.keys(CONTENT_EXPECT).length + '유형 기대', OK);
+  push('콘텐츠 유형 불일치', bad.length
+    ? bad.map(function (kk) { return kk + ' ' + (cnt[kk] || 0) + '/' + CONTENT_EXPECT[kk]; }).join(', ') + ' — 해당 setup 재실행'
+    : '전부 일치', bad.length ? WARN : OK);
+
+  // 5) 트리거 — 실측 수·핸들러 vs 기대치. [v9.67] 기대 = 통합 10 + 교재연동 개통 시 교재연동Nightly 1
+  //   (고정 10이던 시절엔 정상 설치된 11개 상태를 ⚠로 오판 — 2026-07-26 진단 결함 ①의 매니페스트 축)
+  const tbOnM = textbookLinkOn_(ss);
+  const EXPECT_TRIGGERS = 10 + (tbOnM ? 1 : 0);
+  let handlers = [];
+  try { handlers = ScriptApp.getProjectTriggers().map(function (t) { return t.getHandlerFunction(); }); } catch (e) { handlers = []; }
+  const uniqH = handlers.filter(function (h, i) { return handlers.indexOf(h) === i; }).sort();
+  push('트리거 수(실측)', handlers.length + '개 / 기대 ' + EXPECT_TRIGGERS + (tbOnM ? ' (통합 10+교재연동 1)' : ' (통합 10 · 교재연동 미개통)'), handlers.length === EXPECT_TRIGGERS ? OK : WARN);
+  push('트리거 핸들러', uniqH.length ? uniqH.join(', ') : '(없음)', uniqH.length ? OK : WARN);
+
+  // 6) 외부 의존성
+  const props = PropertiesService.getScriptProperties();
+  push('NOTION_TOKEN', props.getProperty('NOTION_TOKEN') ? '있음 — 노션 동기화 활성' : '없음 — 노션 동기화 스킵(무해)', OK);
+  push('CLAUDE_API_KEY', props.getProperty('CLAUDE_API_KEY') ? '있음 — AI 첨삭·문법판정·스튜디오 활성'
+    : '없음 — AI 기능 휴면(첨삭·문법판정·스튜디오·레벨진단 스킵)', props.getProperty('CLAUDE_API_KEY') ? OK : WARN); // [v9.67] 값은 절대 미출력(존재 여부만) — 휴면 무감시 결함 해소
+
+  let consultVal, consultStat = WARN;
+  try {
+    const csrc = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    if (csrc) { consultVal = '접근 OK · 폭 ' + csrc.getLastColumn() + '열'; consultStat = OK; }
+    else consultVal = "열림 · '상담데이터입력' 탭 없음";
+  } catch (e) { consultVal = '접근 실패 — ID/권한 확인'; }
+  push('상담시트(CONSULT_SHEET_ID)', consultVal, consultStat);
+
+  push('리포트 템플릿(REPORT_TEMPLATE_ID)',
+    (REPORT_TEMPLATE_ID && String(REPORT_TEMPLATE_ID).trim()) ? '설정됨 — 리포트카드 활성' : '비어있음 — 리포트카드 스킵', OK);
+
+  // 백업 최신성 — SYNK_백업 폴더의 앱데이터 백업 최신 나이(dailyBackup 로직 참고)
+  let bkVal = '폴더 없음 — dailyBackup 1회 실행', bkStat = WARN;
+  try {
+    const bIt = DriveApp.getFoldersByName('SYNK_백업');
+    if (bIt.hasNext()) {
+      const files = bIt.next().getFiles(); let newest = 0;
+      while (files.hasNext()) {
+        const f = files.next();
+        if (f.getName().indexOf('SYNK_앱데이터_백업_') === 0) { const t = f.getDateCreated().getTime(); if (t > newest) newest = t; }
+      }
+      if (newest) { const ageD = Math.floor((Date.now() - newest) / 86400000); bkVal = '최신 앱백업 ' + ageD + '일 전'; bkStat = ageD <= 2 ? OK : WARN; }
+      else { bkVal = '앱데이터 백업 파일 없음'; }
+    }
+  } catch (e) { bkVal = '백업 점검 실패: ' + e; }
+  push('백업 최신성(SYNK_백업)', bkVal, bkStat);
+
+  // 완주 마커 신선도 — 야간·월간 배치(Script Properties)
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const nb = props.getProperty('야간배치완료일') || '';
+  const nbAge = nb ? Math.round((new Date(today) - new Date(nb.slice(0, 10))) / 86400000) : 999;
+  push('야간배치 완주(nightJobs)', nb ? nb + ' (' + nbAge + '일 전)' : '없음', (nb && nbAge <= 1) ? OK : WARN);
+  const curYm = Utilities.formatDate(new Date(), tz, 'yyyy-MM');
+  const dom = Number(Utilities.formatDate(new Date(), tz, 'd'));
+  const mb = props.getProperty('월간배치완료월') || '';
+  push('월간배치 완주(monthlyJobs)', mb || '없음', (dom < 3 || mb === curYm) ? OK : WARN); // 매월 3일부터 당월 점검
+
+  // 7) 생성 메타
+  push('생성 시각', Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm'), OK);
+  push('생성 경로', '수동 buildSystemManifest() · 주간 weeklyJobs · 재건 bootstrapSynk', OK);
+  push('Glide 바인딩', '미바인딩(진단 전용) — update 쿼터 소비 0', OK);
+
+  // 출력 — writeIfChanged로 변경 시에만(쿼터 절약). 이전 실행이 더 길었으면 초과 행 정리
+  const prevLast = sh.getLastRow();
+  const body = [['지표', '값', '상태']].concat(rows);
+  writeIfChanged(sh, 1, 1, body);
+  if (prevLast > body.length) sh.getRange(body.length + 1, 1, prevLast - body.length, 3).clearContent();
+  try { sh.setFrozenRows(1); } catch (e) {}
+  Logger.log('🧭 system_manifest 갱신: ' + rows.length + '지표');
+  return 'system_manifest 갱신: ' + rows.length + '지표 (' + Utilities.formatDate(new Date(), tz, 'HH:mm') + ')';
+}
+
+/* ===================== [v5.8] 상담 연동 진단 (수동 실행 · 읽기 전용) =====================
+ * 상담시트↔profiles↔폼 연동 상태를 점검해 원장 메일로 보고. 데이터는 절대 수정하지 않음. */
+
+function checkConsultSync() {
+  const out = [];
+  function add(ok, msg) { out.push((ok ? '✅ ' : '⚠️ ') + msg); }
+  let src = null;
+  try {
+    const srcSs = SpreadsheetApp.openById(CONSULT_SHEET_ID);
+    src = srcSs.getSheetByName('상담데이터입력');
+    add(!!src, '상담시트 접근: ' + srcSs.getName() + (src ? " — '상담데이터입력' 탭 OK" : " — '상담데이터입력' 탭 없음!"));
+  } catch (e) { add(false, '상담시트 열기 실패 — ID/권한 확인 필요: ' + e); }
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let consultCnt = 0, noId = [], dup = [], ids = {};
+  if (src && src.getLastRow() >= 3) {
+    src.getRange(3, 1, src.getLastRow() - 2, 62).getValues().forEach((r, i) => { // [v8.3] v18.1
+      if (!r[0]) return;
+      consultCnt++;
+      const id = String(r[59] || '').trim();
+      if (!id) noId.push((i + 3) + '행 ' + r[0]);
+      else { if (ids[id]) dup.push(id); ids[id] = true; }
+    });
+    add(true, '상담시트 학생(이름 있는 행): ' + consultCnt + '명');
+    add(noId.length === 0, '학생ID(BH열) 누락: ' + noId.length + '명' +
+      (noId.length ? ' → ⚠️ 동기화에서 조용히 빠집니다! ' + noId.slice(0, 5).join(', ') : ''));
+    add(dup.length === 0, '학생ID 중복: ' + (dup.length ? dup.join(', ') : '없음'));
+  }
+
+  const pf = ss.getSheetByName('profiles');
+  let pfCnt = 0, noEmail = 0, noClass = 0, orphan = [];
+  if (pf && pf.getLastRow() >= 2) {
+    pf.getRange(2, 1, pf.getLastRow() - 1, 26).getValues().forEach(r => {
+      if (!r[0] || r[3] !== 'student') return;
+      pfCnt++;
+      if (String(r[25] || '').indexOf('@') === -1) noEmail++;
+      if (!r[4]) noClass++;
+      if (Object.keys(ids).length && !ids[r[0]]) orphan.push(r[0]);
+    });
+  }
+  add(true, 'profiles 학생: ' + pfCnt + '명 (상담시트 유효 인원과 차이: ' +
+    Math.abs(pfCnt - Math.max(consultCnt - noId.length, 0)) + '명)');
+  add(noEmail === 0, '학부모 이메일(Z열) 미입력: ' + noEmail + '명 — 등원 메일을 못 받습니다');
+  add(noClass === 0, '반 미배정: ' + noClass + '명');
+  add(orphan.length === 0, '상담시트에 없는 profiles ID: ' +
+    (orphan.length ? orphan.slice(0, 5).join(', ') + ' — 다음 syncProfiles에서 사라질 수 있음!' : '없음'));
+
+  const st = ss.getSheetByName('app_state');
+  const formId = st ? String(getState(st, '상담폼ID').val || '') : '';
+  add(!!formId, '상담폼 연결: ' + (formId ? 'OK (ID 저장됨)' : '미설정 — createConsultForm 실행 필요'));
+  const fr = ss.getSheetByName('form_responses');
+  add(true, 'form_responses 누적: ' + (fr && fr.getLastRow() > 1 ? (fr.getLastRow() - 1) + '건' : '0건'));
+
+  const report = '🔎 SYNK 상담 연동 진단\n' + Utilities.formatDate(new Date(),
+    ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd HH:mm') + '\n\n' + out.join('\n') +
+    '\n\n※ 읽기 전용 진단 — 어떤 데이터도 수정하지 않았습니다.';
+  Logger.log(report);
+  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🔎 상담 연동 진단 결과', report);
+}
+
+/* ===================== [v9.19] 상담시트 헤더 덤프 (수동 · 읽기 전용) =====================
+ * 폼 질문을 시트 버전(v18.3 등)에 맞출 때, 시트 2행 헤더를 열 번호와 함께 그대로 출력.
+ * createConsultForm/importFormResponses 정렬의 기준 자료. 데이터는 수정하지 않음. */
+function dumpConsultHeaders() {
+  let out = [];
+  try {
+    const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    if (!consult) { Logger.log("'상담데이터입력' 탭 없음 — 탭 이름 확인"); return; }
+    const w = Math.max(consult.getLastColumn(), 62);
+    const h = consult.getRange(2, 1, 1, w).getValues()[0]; // 헤더는 2행
+    h.forEach((v, i) => { if (String(v).trim() !== '') out.push((i + 1) + '\t' + String(v).trim()); });
+  } catch (e) { Logger.log('상담시트 열기 실패: ' + e); return; }
+  Logger.log('=== 상담데이터입력 헤더(2행) · ' + out.length + '개 ===\n' + out.join('\n'));
+}
+
+/* ===================== [v9.19] 상담폼 ↔ 시트 매핑 진단 (수동 · 읽기 전용) =====================
+ * 폼 질문지가 바뀌었을 때 "제대로 적용됐는지" 검증. importFormResponses와 동일 규칙(제목=헤더명 매칭,
+ * 매칭 안 되면 노션이관)으로, 각 질문이 어느 칸에 들어가는지·노션이관으로 빠지는지·빈 칸은 뭔지 보고.
+ * 인자로 새 폼 ID를 주면 상담폼ID를 바꾸기 전에 미리 검증 가능: checkFormMapping('새폼ID')
+ * 무인자 호출은 app_state '상담폼ID'(현재 연결된 폼)를 검사. 데이터는 절대 수정하지 않음.
+ * [v9.66] v18.4 — 증분 열(63~)도 매핑 대상(60~62열 보호 구간만 노션이관 처리), 헤더 폭 동적화. */
+function checkFormMapping(optId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const formId = String(optId || getState(st, '상담폼ID').val || '').trim();
+  if (!formId) { Logger.log('폼 ID 없음 — checkFormMapping("폼ID")로 호출하거나 createConsultForm 먼저 실행'); return; }
+
+  let form;
+  try { form = FormApp.openById(formId); }
+  catch (e) { Logger.log('폼 열기 실패 — ID 무효/권한 없음(' + formId + '): ' + e); return; }
+
+  let headers = [];
+  try {
+    const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    headers = consult.getRange(2, 1, 1, Math.max(62, consult.getLastColumn())).getValues()[0].map(h => String(h || '').trim()); // [v8.4] v18.1 헤더 2행 · [v9.66] 폭 동적
+  } catch (e) { Logger.log('상담시트 열기 실패 — ID/권한 확인: ' + e); return; }
+  const colOf = {}, hdrDup = []; // [v9.66·리뷰 M2] 중복 헤더는 첫 열 우선(importFormResponses와 동일 규칙) + 진단에 노출
+  headers.forEach((h, i) => { if (!h) return; if (colOf[h]) hdrDup.push(h + '(' + colOf[h] + '↔' + (i + 1) + '열)'); else colOf[h] = i + 1; });
+
+  // 답변형 문항만 (섹션 헤더·이미지·페이지 나눔 제외)
+  const answerable = [FormApp.ItemType.TEXT, FormApp.ItemType.PARAGRAPH_TEXT, FormApp.ItemType.MULTIPLE_CHOICE,
+    FormApp.ItemType.CHECKBOX, FormApp.ItemType.LIST, FormApp.ItemType.DATE, FormApp.ItemType.DATETIME,
+    FormApp.ItemType.TIME, FormApp.ItemType.SCALE, FormApp.ItemType.GRID];
+  const titles = form.getItems().filter(it => answerable.indexOf(it.getType()) > -1).map(it => String(it.getTitle()).trim());
+
+  const matched = [], narrative = [], dupTitle = [], seen = {};
+  titles.forEach(t => {
+    if (seen[t]) dupTitle.push(t);
+    seen[t] = true;
+    const c = colOf[t];
+    if (c && (c <= 59 || c >= 63)) matched.push('  · ' + t + ' → ' + c + '열' + (c >= 63 ? ' (v18.4 증분)' : '')); // importFormResponses와 동일 규칙(60~62열 보호 구간만 제외)
+    else narrative.push('  · ' + t + (c ? ' (보호 구간 ' + c + '열(60~62) → 노션이관)' : ' → 노션이관(대응 헤더 없음)'));
+  });
+
+  // [v9.19] v18.3 기준 — 폼이 안 채워도 정상인 칸(자동 채번·타임스탬프·서술형 모음·강사 배정·자동 계산)
+  const autoCols = { '학생ID': 1, '등록일': 1, '📝자유서술→노션': 1, '나이(자동)': 1, '반': 1, '비고': 1, '⚠위험신호(자동)': 1, '반조회순번(숨김)': 1 };
+  const uncovered = [];
+  headers.forEach((h, i) => { if (h && !seen[h] && !autoCols[h]) uncovered.push(h + '(' + (i + 1) + '열)'); }); // [v9.66] 증분 열(63~)도 폼 미대응이면 경고 — 60~62열은 autoCols가 제외
+
+  const out = [
+    '🔎 상담폼 ↔ 시트 매핑 진단',
+    '폼: ' + form.getTitle() + ' (ID ' + formId + ')',
+    '폼 질문 ' + titles.length + '개 · 시트 헤더 ' + Object.keys(colOf).length + '개',
+    '',
+    '✅ 시트 칸에 정상 매핑 (' + matched.length + '):', matched.join('\n') || '  (없음)',
+    '',
+    '📝 노션이관으로 들어가는 질문 (' + narrative.length + ') — 서술형이면 정상 / 아니면 제목 오타 의심:',
+    narrative.join('\n') || '  (없음)',
+    '',
+    '⚠️ 폼에 대응 질문이 없는 시트 칸 (' + uncovered.length + ', 자동·계산열 제외): ' + (uncovered.length ? uncovered.join(', ') : '없음'),
+    (dupTitle.length ? '\n⚠️ 중복 질문 제목: ' + dupTitle.join(', ') : ''),
+    (hdrDup.length ? '\n⚠️ 시트 중복 헤더(첫 열에만 기입됨): ' + hdrDup.join(', ') : ''),
+    '',
+    '※ 읽기 전용 진단 — 어떤 데이터도 수정하지 않았습니다.'
+  ].filter(l => l !== '');
+  const report = out.join('\n');
+  Logger.log(report);
+  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🔎 상담폼 매핑 진단', report);
+}
+
+/* ===================== [v5.4] 원장 브리핑 (일상 알림 통합) =====================
+ * 생일·진화·임박·업적·신규학생 같은 "좋은 소식"은 개별 발송 대신 큐에 모아 아침 8시 1통.
+ * 긴급/액션 필요(미납·상담지연·신규상담·헬스체크·쿼터)는 기존대로 즉시 발송 유지.   */
+
+function adminMail(subject, body) {
+  // [v9.125] 리허설 격리 — 구 코드는 다이제스트 큐 적재가 quotaOk를 안 지나, 리허설 산출물("AI 차단" 등)이
+  //   다음 아침 진짜 장애 보고로 발송됐다. 리허설 중엔 큐 대신 리허설 리포트에 남긴다.
+  if (isRehearsal_()) { rehearsalNote_('원장 브리핑: ' + String(subject || '').replace('[SYNK] ', '')); return; }
+  if (!DIGEST_MODE) { if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, subject, body); return; }
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const p = PropertiesService.getScriptProperties();
+    const cur = p.getProperty('브리핑큐') || '';
+    const item = '■ ' + subject.replace('[SYNK] ', '') + '\n' + body + '\n\n';
+    if ((cur + item).length > 8500) { // Properties 9KB 한계 보호 — 넘치면 즉시 발송
+      if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, subject, body);
+      return;
+    }
+    p.setProperty('브리핑큐', cur + item);
+  } finally { lock.releaseLock(); }
+}
+
+// [v9.32] 아침 하트비트용 마커 신선도 — Script Properties의 완주/게시 마커 나이만 경량 점검(Drive 접근 없음).
+//   systemWatchdog와 같은 임계값(야간 ≤1일 · 숙제 ≤2일 · 월간 = 당월)을 쓴다.
+function markerFreshness_(props, tz) {
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const curYm = Utilities.formatDate(new Date(), tz, 'yyyy-MM');
+  const ageOf = function (v) { return v ? Math.round((new Date(today) - new Date(String(v).slice(0, 10))) / 86400000) : 999; };
+  const checks = [];
+  const nb = props.getProperty('야간배치완료일');
+  checks.push({ ok: ageOf(nb) <= 1, s: '야간배치 완주: ' + (nb || '(없음)') });
+  const hw = props.getProperty('숙제기준일');
+  checks.push({ ok: ageOf(hw) <= 2, s: '오늘의 숙제 게시: ' + (hw || '(없음)') });
+  const mb = props.getProperty('월간배치완료월');
+  const domN = Number(Utilities.formatDate(new Date(), tz, 'd'));
+  checks.push({ ok: domN < 3 || mb === curYm, s: '월간배치 완주: ' + (mb || '(없음)') });
+  return { stale: checks.some(function (c) { return !c.ok; }), lines: checks.map(function (c) { return (c.ok ? '✅ ' : '⚠️ ') + c.s; }) };
+}
+
+function sendMorningDigest() {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const p = PropertiesService.getScriptProperties();
+    const q = p.getProperty('브리핑큐');
+    if (!q) {
+      // [v9.32] 데드맨 스위치 — 큐가 비어도 매일 08시 하트비트 1통. 메일이 '안 오는 것' 자체가 트리거
+      //   전체 사망(재인증 만료·권한 상실) 신호가 되게 한다. 마커가 오래됐으면 제목을 ⚠️로 바꿔 정상일과
+      //   구분(매일 ✅는 배경소음이 되어 부재 감지가 약해지므로).
+      if (!DAILY_HEARTBEAT || !quotaOk(1)) return;
+      const tzH = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+      const fr = markerFreshness_(p, tzH);
+      MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] ' + (fr.stale ? '⚠️ 신선도 경고' : '☀️ 시스템 정상'),
+        (fr.stale ? '아래 항목이 오래됐습니다 — 트리거/시간대를 확인하세요.\n\n' : '알릴 운영 소식이 없는 조용한 하루입니다. 시스템은 정상 작동 중입니다.\n\n') +
+        fr.lines.join('\n') + '\n\n(이 메일이 아침에 오지 않으면 자동화 트리거가 멈춘 것일 수 있습니다.)');
+      return;
+    }
+    if (!quotaOk(1)) return; // 쿼터 부족이면 큐를 보존해 다음 발송에서 재시도
+    MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] ☀️ 오늘의 운영 브리핑',
+      q + '— 개별 알림을 아침 1통으로 모았습니다 (DIGEST_MODE)');
+    const latest = p.getProperty('브리핑큐');
+    if (latest === q) p.deleteProperty('브리핑큐');
+    else if (latest && latest.indexOf(q) === 0) p.setProperty('브리핑큐', latest.slice(q.length));
+    // 예상 밖 변경이면 삭제하지 않는다. 중복 발송 가능성보다 알림 유실 방지를 우선한다.
+  } finally { lock.releaseLock(); }
+}
+
+/* ===================== [v6.8] 강사 알림 (10분 스위프에서 호출) =====================
+ * ① classPrepMail_: 수업 시작 0~12분 전 — 오늘 검사할 숙제·워밍업 퀴즈·연료 리마인드 브리핑
+ * ② checkoutCheerMail_: 퇴근 기록 5분+ 경과 시 — 응원 메일 (30종 일자 로테이션)
+ * 상태는 전부 Script Properties — 시트 쓰기 0. 강사 이메일은 profiles teacher 행에서 자동 탐지. */
+
+function teacherEmailMap_(ss) {
+  const out = { byKey: {}, byClass: {} };
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return out;
+  pf.getRange(2, 1, pf.getLastRow() - 1, 26).getValues().forEach(r => {
+    if (r[3] !== 'teacher') return;
+    let email = '';
+    for (let c = 0; c < 26; c++) {
+      if (String(r[c] || '').indexOf('@') > 0) { email = String(r[c]).trim(); break; }
+    }
+    if (!email) return;
+    [r[0], r[1], r[2]].forEach(k => { if (k) out.byKey[String(k).trim()] = email; });
+    String(r[4] || '').split(/[,/·]/).forEach(part => {
+      const nm = String(part).trim(); // [v8.3] 반명 키 우선 + 번호 키(자유화 호환)
+      if (!nm) return;
+      (out.byClass[nm] = out.byClass[nm] || []).push({ email: email, name: String(r[1] || r[0]) });
+      const n = classNumOf(nm);
+      if (n && n !== nm) (out.byClass[n] = out.byClass[n] || []).push({ email: email, name: String(r[1] || r[0]) });
+    });
+  });
+  return out;
+}
+
+function classPrepMail_(ss, tz) {
+  const now = new Date();
+  const day = now.getDay();
+  if (day === 0) return; // [v9.46] 일요일 수업 없음(주말반=토요일만) — 브리핑 발송 창 자체를 안 연다
+  const isWknd = (day === 6);
+  const todayStr = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
+  const props = PropertiesService.getScriptProperties();
+  const key = '수업알림_' + todayStr;
+  const sent = String(props.getProperty(key) || '');
+  let sentNew = sent;
+
+  const sch = scheduleMap(ss);
+  // [v9.22] 임박 수업이 하나도 없으면 profiles/emap/state 스캔 없이 조기 종료 (10분 스위프 부담↓)
+  const yest = Utilities.formatDate(new Date(now.getTime() - 86400000), tz, 'yyyy-MM-dd');
+  const anyImminent = Object.keys(sch).filter(num => sch[num].name === num).some(num => {
+    const s = sch[num];
+    if ((String(s.type) === '주말') !== isWknd) return false;
+    const m = String(s.time || '').match(/(\d{1,2})\s*[:시]?\s*(\d{2})?/);
+    if (!m) return false;
+    const start = new Date(now); start.setHours(Number(m[1]), Number(m[2] || 0), 0, 0);
+    const diff = (start - now) / 60000;
+    return diff > 0 && diff <= CLASS_PREP_WINDOW_MIN;
+  });
+  if (!anyImminent) { props.deleteProperty('수업알림_' + yest); return; }
+  const emap = teacherEmailMap_(ss);
+  let cheerLine = ''; // [v9.47·B6] ☀️ 출근 치어 7종(cheer·F열=1(일)~7(토)) → 브리핑 첫인사로 환류 — 시트에 잠들어 있던 콘텐츠 소생
+  {
+    const ctC = ss.getSheetByName('contents');
+    if (ctC && ctC.getLastRow() >= 2) {
+      const ordC = day + 1; // getDay 0(일)~6(토) → cheer 순번 1~7
+      ctC.getRange(2, 1, ctC.getLastRow() - 1, 6).getValues().some(r => {
+        if (String(r[1]) === 'cheer' && Number(r[5]) === ordC && r[3]) { cheerLine = String(r[3]); return true; }
+        return false;
+      });
+    }
+  }
+  const errByClass = {}; // [v9.47·B5] 🧩 연습 포인트 — student_errors(최근 14일·'해결' 제외)를 수업 직전 메일에도
+  {
+    const seM = ss.getSheetByName('student_errors');
+    if (seM && seM.getLastRow() >= 2) {
+      const pfM = ss.getSheetByName('profiles');
+      const infoM = {};
+      if (pfM && pfM.getLastRow() >= 2) pfM.getRange(2, 1, pfM.getLastRow() - 1, 5).getValues().forEach(r => { if (r[0]) infoM[String(r[0]).trim()] = { n: r[1] || r[0], c: String(r[4] || '') }; });
+      const cutM = now.getTime() - 14 * 86400000;
+      const aggM = {}; // [v9.64] 학생×유형 반복 집계 — ×N 표시 + 반복 우선(브리핑과 동일 규칙)
+      seM.getRange(2, 1, seM.getLastRow() - 1, 8).getValues().forEach(r => {
+        if (!r[1] || String(r[7] || '') === '해결') return;
+        const dM = toDate_(r[0]) || (r[6] instanceof Date ? r[6] : null);
+        if (!dM || dM.getTime() < cutM) return;
+        const infM = infoM[String(r[1]).trim()];
+        const clsM = (infM && infM.c) || String(r[2] || '');
+        if (!clsM) return;
+        const kM = String(r[1]).trim() + '|' + String(r[3] || r[4] || '');
+        const gM = aggM[kM] = aggM[kM] || { c: clsM, n: (infM && infM.n) || r[1], memo: '', t: 0, cnt: 0 };
+        gM.cnt++;
+        if (dM.getTime() >= gM.t) { gM.t = dM.getTime(); gM.memo = String(r[4] || r[3] || ''); }
+      });
+      Object.keys(aggM).map(k => aggM[k]).sort((a, b) => (b.cnt - a.cnt) || (b.t - a.t)).forEach(gM => {
+        (errByClass[gM.c] = errByClass[gM.c] || []).push(gM.n + ' — ' + gM.memo.slice(0, 30) + (gM.cnt > 1 ? ' ×' + gM.cnt : ''));
+      });
+    }
+  }
+  const bdayByClass = {}; // [v9.0] 오늘 생일자 → 브리핑 한 줄 (교실 축하 유도)
+  {
+    const pfB = ss.getSheetByName('profiles');
+    if (pfB && pfB.getLastRow() >= 2) {
+      const mmddB = Utilities.formatDate(now, tz, 'MM-dd');
+      pfB.getRange(2, 1, pfB.getLastRow() - 1, 6).getValues().forEach(r => {
+        if (!r[0] || r[3] !== 'student' || !r[5]) return;
+        const v = r[5]; let md = '';
+        if (v instanceof Date) md = Utilities.formatDate(v, tz, 'MM-dd');
+        else { const s0 = String(v).replace(/\D/g, ''); if (s0.length === 8) md = s0.substring(4,6) + '-' + s0.substring(6,8); }
+        if (md === mmddB) (bdayByClass[String(r[4])] = bdayByClass[String(r[4])] || []).push(r[1] || r[0]);
+      });
+    }
+  }
+  const absenceByClass = {}; // [v9.32] 오늘 결석 사전신고 → 강사 브리핑. 학부모가 미리 알렸어도 강사는 수업 준비 때 몰랐다.
+  {
+    const an = ss.getSheetByName('absence_notice');
+    if (an && an.getLastRow() >= 2) {
+      const pfN = ss.getSheetByName('profiles');
+      const infoById = {};
+      if (pfN && pfN.getLastRow() >= 2) {
+        pfN.getRange(2, 1, pfN.getLastRow() - 1, 5).getValues().forEach(r => {
+          if (r[0]) infoById[String(r[0]).trim()] = { name: r[1] || r[0], cls: String(r[4] || '') };
+        });
+      }
+      an.getRange(2, 1, an.getLastRow() - 1, 4).getValues().forEach(r => {
+        if (!r[0] || !r[2] || dstr(r[2], tz) !== todayStr) return;
+        const info = infoById[String(r[0]).trim()];
+        const cls = info ? info.cls : String(r[1] || ''); // profiles 반 우선, 없으면 신고행의 반
+        const nm = info ? info.name : r[0];
+        (absenceByClass[cls] = absenceByClass[cls] || []).push(nm + (r[3] ? '(' + String(r[3]) + ')' : ''));
+      });
+    }
+  }
+  const st = ss.getSheetByName('app_state');
+  const kv = {};
+  if (st && st.getLastRow() >= 2) {
+    st.getRange(2, 1, st.getLastRow() - 1, 2).getValues().forEach(r => { kv[r[0]] = r[1]; });
+  }
+
+  Object.keys(sch).filter(num => sch[num].name === num).forEach(num => { // [v8.3] 반명 키만
+    const s = sch[num];
+    if ((String(s.type) === '주말') !== isWknd) return;
+    const m = String(s.time || '').match(/(\d{1,2})\s*[:시]?\s*(\d{2})?/);
+    if (!m) return;
+    const start = new Date(now);
+    start.setHours(Number(m[1]), Number(m[2] || 0), 0, 0);
+    const diff = (start - now) / 60000;
+    if (diff <= 0 || diff > CLASS_PREP_WINDOW_MIN) return;
+    if (sentNew.indexOf('[' + num + ']') > -1) return;
+    const teachers = emap.byClass[num] || [];
+    if (!teachers.length) { sentNew += '[' + num + ']'; return; }
+
+    const hwT = String((isWknd ? kv['주말의숙제유형'] : kv['오늘의숙제유형']) || '');
+    const hw = String((isWknd ? kv['주말의숙제'] : kv['오늘의숙제']) || '');
+    const quiz = String(kv['오늘의퀴즈'] || '').split('|')[0];
+    const cname = s.name || (num + '반');
+    // [v9.80] 🧩 조 편성표 — 규칙서 §9 "대강 강사는 앱에 늘 있는 넷(진도·판서·좌석표·조 편성표)만으로 수업한다".
+    //   편성이 없거나 시즌 밖이면 조용히 빈 문자열 — 브리핑 본체는 어떤 경우에도 죽지 않는다.
+    const gbText = (function () {
+      try { return groupBoardText_(ss, cname, now, tz); } catch (e) { Logger.log('조 편성표 스킵(' + cname + '): ' + e); return ''; }
+    })();
+    const body = (cheerLine ? cheerLine + '\n\n' : '') + // [v9.47·B6] 요일 출근 치어 첫인사
+      cname + ' 수업 시작 ' + Math.round(diff) + '분 전입니다.\n' +
+      (bdayByClass[cname] ? '\n🎂 오늘 ' + bdayByClass[cname].join(', ') + ' 생일! 반 전체 축하 한 번 어때요?\n' : '') +
+      (absenceByClass[cname] ? '🚫 오늘 결석 예정(학부모 사전신고): ' + absenceByClass[cname].join(', ') + '\n' : '') +
+      (errByClass[cname] ? '🧩 연습 포인트(최근 메모): ' + errByClass[cname].slice(0, 3).join(' · ') + '\n' : '') + '\n' + // [v9.47·B5]
+      '⚡ 오늘의 루틴: 시작 — 숙제 검사 1탭 · 끝 — 왕관 2개(🌟MVP·⚡시냅스 각 1명) · 미션 성공 시 연료 1행\n\n' +
+      '📚 오늘 검사할 숙제' + (hwT ? ' (' + hwT + ')' : '') + '\n' + (hw || '게시된 숙제 없음') + '\n\n' +
+      (quiz ? '⚡ 워밍업 퀴즈: ' + quiz + '\n\n' : '') +
+      (gbText ? gbText + '\n' : '') + // [v9.80] 조·역할·짝·오늘 발표자 — ④소그룹 20분을 그대로 들고 들어갑니다
+      '🔥 연료 미션을 걸 계획이면 수업 시작 때 선언해 주세요!\n\n좋은 수업 되세요 — SYNK LAB';
+    // [v9.125] 발송 성공에만 마킹 — 관문(리허설·쿼터)이 닫힌 채 마킹하면 그 반의 준비 브리핑이 그날 영구 소실된다.
+    //   한 명이라도 나갔으면 마킹(같은 반 재발송 폭주 방지), 전원 실패면 다음 스위프가 창 안에서 재시도.
+    let prepSent = false;
+    teachers.forEach(t => {
+      if (quotaOk(1)) { MailApp.sendEmail(t.email, '[SYNK] 🎬 ' + cname + ' 수업 ' + Math.round(diff) + '분 전 — 오늘의 준비', body); prepSent = true; }
+    });
+    if (prepSent) sentNew += '[' + num + ']';
+    else Logger.log('수업 브리핑 보류(' + cname + ') — 발송 관문 닫힘, 다음 스위프 재시도');
+  });
+  if (sentNew !== sent) props.setProperty(key, sentNew);
+  props.deleteProperty('수업알림_' + yest); // 어제 키 정리 ([v9.22] yest는 상단 선언 재사용)
+}
+
+function checkoutCheerMail_(ss) {
+  const tc = ss.getSheetByName('teacher_checkins');
+  if (!tc || tc.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  // [v9.74] 당일 1회/강사 가드 준비 — 어제 키 청소는 조기 return보다 앞(무기록 날에도 청소돼 키 누수 없음, 리뷰 L1)
+  const now = new Date();
+  const tzCo = ss.getSpreadsheetTimeZone();
+  const todayCo = Utilities.formatDate(now, tzCo, 'yyyy-MM-dd');
+  const sentKey = '퇴근응원_' + todayCo;
+  let sentNames = String(props.getProperty(sentKey) || '');
+  props.deleteProperty('퇴근응원_' + Utilities.formatDate(new Date(now.getTime() - 86400000), tzCo, 'yyyy-MM-dd'));
+  const ptr = Number(props.getProperty('퇴근메일_포인터')) || 1;
+  const last = tc.getLastRow();
+  if (ptr > last) { props.setProperty('퇴근메일_포인터', String(last)); return; } // [v9.34] 시트 재건·행 정리 시 클램프 — 퇴근 응원 메일 장기 침묵 방지
+  if (ptr >= last) return;
+  const width = Math.max(TC_NAME_COL, TC_TYPE_COL, TC_TIME_COL);
+  const rows = tc.getRange(ptr + 1, 1, last - ptr, width).getValues();
+  const emap = teacherEmailMap_(ss); // now는 상단 가드 블록에서 선언([v9.74])
+
+  const pool = [];
+  const ct = ss.getSheetByName('contents');
+  if (ct && ct.getLastRow() >= 2) {
+    ct.getRange(2, 1, ct.getLastRow() - 1, 6).getValues().forEach(r => {
+      if (r[1] === 'cheermail' && r[3]) pool.push(String(r[3]));
+    });
+  }
+
+  // [v9.74] 당일 1회/강사 가드 — 퇴근 버튼 중복 탭이 같은 날 응원 메일을 2통 내보내던 것 차단(유호 07-28 보고).
+  //   마킹은 발송 성공 후에만. 쿼터 소진은 포인터 전진 없이 중단(다음 스위프 재시도), 이메일 미등록은 전진(재시도 무의미).
+  let advanced = 0;
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    const typ = String(r[TC_TYPE_COL - 1] || '');
+    if (typ.indexOf('퇴근') === -1) { advanced = i + 1; continue; }
+    const tRaw = r[TC_TIME_COL - 1];
+    const t = (tRaw instanceof Date) ? tRaw : new Date(tRaw);
+    if (!t || isNaN(t.getTime())) { advanced = i + 1; continue; }
+    if ((now - t) / 60000 < CHECKOUT_MAIL_DELAY_MIN) break; // 아직 5분 미만 → 다음 스위프에서
+    // [v9.32] 당일 가드 — 재건/포인터 리셋 시 과거 퇴근 이력 전체에 응원 메일이 재발송되는 사고 방지.
+    //   오늘 기록만 발송하고 지난 기록은 포인터만 전진시켜 조용히 건너뛴다.
+    if (Utilities.formatDate(t, tzCo, 'yyyy-MM-dd') !== todayCo) { advanced = i + 1; continue; }
+    const who = String(r[TC_NAME_COL - 1] || '').trim();
+    if (who && sentNames.indexOf('|' + who + '|') > -1) { advanced = i + 1; continue; } // [v9.74] 같은 강사 당일 2번째 퇴근 탭 — 메일 1회만
+    const email = emap.byKey[who] || '';
+    if (email && pool.length && !quotaOk(1)) break; // [v9.74·리뷰 H2] 쿼터 소진 — 포인터 전진 없이 중단해 다음 스위프가 재시도
+    if (email && pool.length) {
+      const doy = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+      const msg = pool[(doy + i) % pool.length];
+      MailApp.sendEmail(email, '[SYNK] 🌙 오늘도 수고하셨습니다',
+        (who ? who + ' 선생님,\n\n' : '') + msg + '\n\n— SYNK LAB');
+      sentNames = (sentNames || '|') + who + '|'; // [v9.74] 발송 성공분만 마킹
+      props.setProperty(sentKey, sentNames);
+    }
+    advanced = i + 1;
+  }
+  if (advanced > 0) props.setProperty('퇴근메일_포인터', String(ptr + advanced));
+}
+
+/* ===================== [v5.2] 학부모 스위프 (30분 간격) =====================
+ * 알림 철학: 푸시(메일)는 '등원' 하나만. 칭찬·포인트·진화 같은 긍정 세부 기록은
+ * 메일 없이 앱 안에서만 보여줌 → 알림 피로 없이 열어볼 이유를 만든다.
+ * 1) 새 등원 기록 → 학부모 몽골어 메일 (오늘 기록만, 포인터 기반 중복 방지)
+ * 2) notices 미번역분 → title_mn / body_mn 자동 채움                          */
+
+// [v9.43·자동화] 리드폼 응답 → leads 자동 편입 — "리드폼_응답 시트를 leads로 옮기세요"(수기)를 10분 스위프로 대체.
+//   매핑: 타임스탬프→날짜 · 이름 · 연락처 · 인지채널→유입경로 · 관심과정→메모. 나머지(체험·등록…)는 데스크 후속 기입.
+//   포인터 = Script Properties '리드폼_포인터'(등원알림 패턴·클램프 포함) — 시트 쓰기 0·중복 편입 0.
+function sweepLeadForm_(ss) {
+  const src = ss.getSheetByName('리드폼_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const last = src.getLastRow();
+  let from = Number(props.getProperty('리드폼_포인터')) || 1;
+  if (from > last) { props.setProperty('리드폼_포인터', String(last)); return; }
+  if (from >= last) return;
+  const rows = src.getRange(from + 1, 1, last - from, 5).getValues(); // 타임스탬프·이름·연락처·인지채널·관심과정
+  const ld = ensureSheet(ss, 'leads', ['날짜', '이름', '연락처', '유입경로', '추천인', '체험참석', '등록', '등록권종', '등록일', '미등록사유', '메모', '캠페인']);
+  const out = [];
+  const tz = ss.getSpreadsheetTimeZone();
+  rows.forEach(r => {
+    if (!r[1]) return;
+    out.push([r[0] ? dstr(r[0], tz) : dstr(new Date(), tz), String(r[1]).trim(), String(r[2] || '').trim(),
+      String(r[3] || '기타'), '', '', '', '', '', '', String(r[4] || ''), '리드폼']);
+  });
+  if (out.length) {
+    ld.getRange(ld.getLastRow() + 1, 1, out.length, 12).setValues(out);
+    adminMail('[SYNK] 📥 새 리드 ' + out.length + '건(광고 리드폼)', out.map(o => '· ' + o[1] + ' (' + o[3] + ') ' + o[2]).join('\n') + '\n\nleads 시트에서 체험 일정을 잡아주세요.');
+  }
+  props.setProperty('리드폼_포인터', String(last));
+}
+
+/* ===================== [v9.49] 폼 출석 전개 + AI 숙제 첨삭 ===================== */
+
+// [v9.67] 폼 응답 무효 학생ID 드롭 통보 — profiles에 없는 sid 행은 반영 없이 포인터만 전진하는데(동작 유지),
+//   그 사실이 로그·메일 어디에도 없어 미리채움 링크 오염·손 입력 오타를 영영 모르던 결함 해소(2026-07-26 진단 ③).
+//   약점메모폼 '미매칭' 메일과 동급의 통보만 한다 — 자동 복구는 과설계(정상 운영은 폼 미리채움이라 희귀 사건).
+//   같은 폼·같은 sid는 하루 1회만 알림(safeRun 실패 메일 dedup 패턴) · 원본 행은 폼 응답 탭에 그대로 남는다.
+//   호출처 3곳: sweepAttendanceForm_(출석폼)·aiFeedbackBatch_(숙제폼)·voiceSweep_(목소리폼, 교재연동.js).
+function notifyDroppedSids_(label, sids) {
+  if (!sids || !sids.length) return;
+  try {
+    const tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+    const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+    const props = PropertiesService.getScriptProperties();
+    const key = '무효sid통보_' + label;
+    const prev = String(props.getProperty(key) || '').split('|');
+    const seen = prev[0] === today ? prev.slice(1) : [];
+    const fresh = sids.map(s => String(s).replace(/\|/g, '¦').slice(0, 40)).filter((s, i, a) => a.indexOf(s) === i && seen.indexOf(s) === -1); // '|'는 dedup 구분자라 치환
+    if (!fresh.length) return;
+    adminMail('[SYNK] 🧩 ' + label + ' 무효 학생ID ' + fresh.length + '건 — 응답 미반영',
+      fresh.slice(0, 10).map(s => '· "' + s + '"').join('\n') + (fresh.length > 10 ? '\n· …외 ' + (fresh.length - 10) + '건' : '') +
+      '\n\nprofiles에 없는 학생ID라 집계에 반영되지 않았습니다(포인터는 전진 · 원본 행은 ' + label + '_응답 탭에 남아 있음). ' +
+      '미리채움 링크가 아닌 손 입력이거나 링크 ID 오염일 수 있어요 — 실제 학생이면 profiles 등록(또는 ID 교정) 후 재제출을 안내하세요. (같은 ID는 오늘 다시 알리지 않습니다)');
+    props.setProperty(key, [today].concat(seen, fresh).slice(0, 200).join('|')); // 발송(큐 적재) 성공분만 마킹 + 9KB 보호 — safeRun 실패 메일 패턴(실패 시 다음 스위프 재시도)
+  } catch (e) { Logger.log('notifyDroppedSids_ 실패: ' + e); }
+}
+
+// [v9.49] 출석 폼 응답 → attendance 전개 — 앱 출석(학생당 update 1 소비)의 update-0 대체 경로.
+//   등원알림·미등원·보드·달력은 전부 attendance 시트를 읽으므로 입력 채널 무관 동일 동작.
+//   포인터 = '출석폼_포인터'(sweepLeadForm_ 패턴·클램프 포함), 당일 중복 = attendance 재조회 스킵(expandAttendanceBatch_ 패턴 — 앱·일괄 출석 병행 안전).
+function sweepAttendanceForm_(ss) {
+  const src = ss.getSheetByName('출석폼_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const last = src.getLastRow();
+  const from = Number(props.getProperty('출석폼_포인터')) || 1;
+  if (from > last) { props.setProperty('출석폼_포인터', String(last)); return; }
+  if (from >= last) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = src.getRange(from + 1, 1, last - from, 2).getValues(); // 타임스탬프·학생ID
+  const valid = new Set();
+  const pf = ss.getSheetByName('profiles');
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') valid.add(String(r[0]).trim());
+  });
+  const at = ensureSheet(ss, 'attendance', ['id', 'student_id', 'timestamp', 'method']);
+  const seen = {}; // '날짜|sid' — 같은 날 중복 제출·기존 기록 스킵
+  if (at.getLastRow() >= 2) at.getRange(2, 2, at.getLastRow() - 1, 2).getValues().forEach(r => { // B·C = sid·timestamp
+    if (r[0] && r[1]) seen[dstr(r[1], tz) + '|' + String(r[0]).trim()] = 1;
+  });
+  const out = [], badSid = []; // [v9.67] 무효 sid 수집 — 무통보 드롭 결함 수리
+  rows.forEach(r => {
+    const ts = r[0] instanceof Date ? r[0] : new Date();
+    const sid = String(r[1] || '').trim();
+    if (!sid) return;
+    if (!valid.has(sid)) { badSid.push(sid); return; } // 행은 기존대로 버리되 통보만(notifyDroppedSids_)
+    const key = dstr(ts, tz) + '|' + sid;
+    if (seen[key]) return;
+    seen[key] = 1;
+    out.push(['ATF' + Utilities.formatDate(ts, tz, 'yyyyMMdd') + '-' + sid, sid, ts, '출석(폼)']); // method에 '출석' 포함 = 보드·레이드 판정 호환
+  });
+  if (out.length) at.getRange(at.getLastRow() + 1, 1, out.length, 4).setValues(out);
+  notifyDroppedSids_('출석폼', badSid); // [v9.67] 하루 1회 dedup 내장 — 빈 배열이면 0초
+  props.setProperty('출석폼_포인터', String(last));
+}
+
+// [v9.49] 첨삭 '확인했어요' 정산 — Glide가 hw_feedback J열(학생확인·스크립트 불가침)에 기록하면 10분 스위프가 1회 +5P.
+//   멱등 3중: ①K열 마킹 ②당일 point_logs 재조회(지급 후 마킹 전 크래시 대비 — expandHwBatch v9.31 패턴) ③DAILY_LIMIT 1회/일.
+function sweepFeedbackAck_(ss) {
+  const fb = ss.getSheetByName('hw_feedback');
+  if (!fb || fb.getLastRow() < 2) return;
+  const rows = fb.getRange(2, 1, fb.getLastRow() - 1, 11).getValues();
+  const tz = ss.getSpreadsheetTimeZone();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const valid = new Set();
+  const pf = ss.getSheetByName('profiles');
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') valid.add(String(r[0]).trim());
+  });
+  const doneToday = new Set(); // 오늘 이미 지급된 학생(지급→마킹 사이 크래시 재시도 대비)
+  const pl = ss.getSheetByName('point_logs');
+  if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (r[1] && r[5] && String(r[3] || '') === '첨삭확인' &&
+        Utilities.formatDate(asDate_(r[5]), tz, 'yyyy-MM-dd') === today) doneToday.add(String(r[1]).trim());
+  });
+  rows.forEach((r, i) => {
+    const sid = String(r[1] || '').trim();
+    if (!sid || !valid.has(sid)) return;
+    if (String(r[8]) !== '노출') return;   // I 상태: 검수 통과분만
+    if (!String(r[9] || '')) return;       // J 학생확인: 아직 안 눌렀으면 대기
+    if (String(r[10] || '')) return;       // K 포인트지급: 이미 지급
+    // [리뷰 M2] 행 단위 지급→즉시 마킹 — 지급과 마킹 사이 크래시 창을 행 하나로 좁혀 날짜 경계를 넘는
+    //   재지급을 사실상 차단. 순서는 v9.31 규칙 그대로(지급 먼저 → 마킹은 그 뒤, 실패 시 미마킹 재시도).
+    if (!doneToday.has(sid)) {             // 같은 날 두 번째 확인은 마킹만 하고 지급 생략(DAILY_LIMIT 정합)
+      doneToday.add(sid);
+      appendPoints(ss, [[sid, AI_FEEDBACK_ACK_POINTS, '첨삭확인', '시스템']]);
+    }
+    fb.getRange(i + 2, 11).setValue('지급완료');
+  });
+}
+
+// [v9.55] 이름+반 → student_id 매칭(순수 함수 — tests/safety.test.js가 직접 로드해 검증).
+//   반이 '기타'/공란이면 이름만으로. 반을 지정했는데 그 반에 없으면 이름 전체로 폴백(반 오기재 구제 —
+//   이름이 유일할 때만 확정되므로 안전). 호출부는 결과가 정확히 1명일 때만 매칭 확정.
+function matchStudentsByNameClass_(students, name, cls) {
+  const norm = s => String(s || '').replace(/\s+/g, ' ').trim();
+  const nName = norm(name);
+  if (!nName) return [];
+  const nCls = norm(cls);
+  const byName = students.filter(st => norm(st.n) === nName);
+  if (!nCls || nCls === '기타') return byName.map(st => st.sid);
+  const both = byName.filter(st => norm(st.c) === nCls);
+  return (both.length ? both : byName).map(st => st.sid);
+}
+
+// [v9.55] 약점 메모 폼 응답 → student_errors 전개 — 시트 수기 입력은 그대로 두고 폼 통로를 추가.
+//   포인터 = '약점메모폼_포인터'(sweepLeadForm_ 클램프 패턴). 매칭 실패(0명·동명이인)는 sid 공란+상태='미매칭'
+//   으로 기록 — 소비처 3곳(반 브리핑 errByCls·수업 전 메일 errByClass·aiWeakMap_)이 전부 sid 공란을 스킵하므로
+//   화면·메일 오염 0, 관리자 메일이 복구 경로(H열 '미매칭' 지우고 sid 채우면 다음 계산부터 반영)를 안내한다.
+function sweepTeacherMemoForm_(ss) {
+  const src = ss.getSheetByName('약점메모폼_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const last = src.getLastRow();
+  const from = Number(props.getProperty('약점메모폼_포인터')) || 1;
+  if (from > last) { props.setProperty('약점메모폼_포인터', String(last)); return; }
+  if (from >= last) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = src.getRange(from + 1, 1, last - from, 6).getValues(); // 타임스탬프·강사·반·학생이름·유형·메모
+  const pf = ss.getSheetByName('profiles');
+  const students = [];
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') students.push({ sid: String(r[0]).trim(), n: String(r[1] || ''), c: String(r[4] || '') });
+  });
+  const se = ensureSheet(ss, 'student_errors', ['날짜', 'student_id', '반', '유형', '메모', '입력자', 'created_at', '상태']);
+  const out = [], miss = [];
+  rows.forEach(r => {
+    const ts = r[0] instanceof Date ? r[0] : new Date();
+    const name = String(r[3] || '').trim();
+    const memo = String(r[5] || '').trim();
+    if (!name || !memo) return; // 필수 문항이라 실질 발생 없음 — 빈 응답 방어만
+    const cands = matchStudentsByNameClass_(students, name, String(r[2] || ''));
+    const ok = cands.length === 1;
+    const sid = ok ? cands[0] : '';
+    const cls = ok ? ((students.find(s => s.sid === sid) || {}).c || String(r[2] || '')) : String(r[2] || '');
+    out.push([dstr(ts, tz), sid, cls, String(r[4] || '기타'), memo, String(r[1] || '폼'), ts, ok ? '' : '미매칭']);
+    if (!ok) miss.push('· ' + name + ' (' + (r[2] || '반 미상') + ') — 로스터 후보 ' + cands.length + '명 · 메모: ' + memo.slice(0, 40));
+  });
+  if (out.length) se.getRange(se.getLastRow() + 1, 1, out.length, 8).setValues(out);
+  props.setProperty('약점메모폼_포인터', String(last)); // [v9.74·리뷰 M5 동반 수리] 적재 직후·메일 전 마감 — 메일 실패 시 중복 적재 차단
+  if (miss.length) adminMail('[SYNK] 🧩 약점 메모 미매칭 ' + miss.length + '건',
+    miss.join('\n') + '\n\nstudent_errors 시트에서 해당 행의 student_id를 채우고 상태(H열)의 "미매칭"을 지우면 다음 계산부터 브리핑·AI에 반영됩니다.');
+}
+
+// [v9.74] 학업 기록 폼 응답 → academic_log 전개 — 약점 메모 폼(v9.55) 패턴 그대로(포인터·클램프·미매칭 통보).
+//   값 검증: 급수 1~6 · 모의 0~100 — 범위 밖은 기록하지 않고 메일로만(차트·리포트 원본 오염 방지, 재제출 안내).
+//   미매칭 이름은 sid 공란 + 비고 '미매칭:이름'으로 적재 — sid를 채우면 다음 계산부터 차트·월보에 반영.
+function sweepAcademicForm_(ss) {
+  const src = ss.getSheetByName('학업폼_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const last = src.getLastRow();
+  const from = Number(props.getProperty('학업폼_포인터')) || 1;
+  if (from > last) { props.setProperty('학업폼_포인터', String(last)); return; }
+  if (from >= last) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = src.getRange(from + 1, 1, last - from, 7).getValues(); // 타임스탬프·강사·반·학생이름·유형·값·비고
+  const pf = ss.getSheetByName('profiles');
+  const students = [];
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') students.push({ sid: String(r[0]).trim(), n: String(r[1] || ''), c: String(r[4] || '') });
+  });
+  const al = ensureSheet(ss, 'academic_log', ['log_id', 'student_id', '날짜', '유형', '값', '비고', '입력자']);
+  let seq = 0; // AL 채번 — 기존 최대 번호를 이어간다(수기 입력 AL001~ 예시와 공존)
+  if (al.getLastRow() >= 2) al.getRange(2, 1, al.getLastRow() - 1, 1).getValues().forEach(r => {
+    const m = /^AL(\d+)$/.exec(String(r[0] || '')); if (m) seq = Math.max(seq, Number(m[1]));
+  });
+  const out = [], miss = [];
+  rows.forEach(r => {
+    const ts = r[0] instanceof Date ? r[0] : new Date();
+    const name = String(r[3] || '').trim();
+    if (!name) return; // 필수 문항이라 실질 발생 없음 — 빈 응답 방어만
+    const typRaw = String(r[4] || '');
+    const typ = typRaw.indexOf('급수') > -1 ? 'level' : 'mock';
+    const valStr = String(r[5] == null ? '' : r[5]).trim();
+    const val = Number(valStr.replace(/[^\d.\-]/g, '')); // [리뷰 M3] 음수 부호 보존 — '-5'가 '5'로 세탁돼 통과하지 않게
+    const okVal = valStr !== '' && !isNaN(val) &&
+      (typ === 'level' ? (Number.isInteger(val) && val >= 1 && val <= 6) : (val >= 0 && val <= 100));
+    if (!okVal) { miss.push('· ' + name + ' — 값 "' + valStr + '"이(가) ' + (typ === 'level' ? '급수(1~6)' : '모의점수(0~100)') + ' 범위를 벗어나 기록하지 않았습니다. 폼으로 재제출해 주세요'); return; }
+    const cands = matchStudentsByNameClass_(students, name, String(r[2] || ''));
+    const ok = cands.length === 1;
+    const sid = ok ? cands[0] : '';
+    seq++;
+    const memo = String(r[6] || '').trim();
+    out.push(['AL' + String(seq).padStart(3, '0'), sid, dstr(ts, tz), typ, val,
+      memo + (ok ? '' : (memo ? ' · ' : '') + '미매칭:' + name), String(r[1] || '폼')]);
+    if (!ok) miss.push('· ' + name + ' (' + (r[2] || '반 미상') + ') — 로스터 후보 ' + cands.length + '명 · academic_log에 sid 공란으로 적재됨(student_id를 채우면 다음 계산부터 차트·월보 반영)');
+  });
+  if (out.length) al.getRange(al.getLastRow() + 1, 1, out.length, 7).setValues(out);
+  props.setProperty('학업폼_포인터', String(last)); // [리뷰 M5] 적재 직후·메일 전 마감 — 메일 실패가 같은 응답을 재적재(모의 Δ 왜곡)하지 않게
+  if (miss.length) adminMail('[SYNK] 📊 학업 기록 확인 필요 ' + miss.length + '건', miss.join('\n'));
+}
+
+// [v9.89] 결석 연락 폼 응답 → absence_followup 마감(약점 메모 폼 계보: 포인터·클램프·미매칭 통보).
+//   ① 열린 행(연락여부 빈칸 · 결석일 ≤ 응답일)을 전부 마감한다 — 전화 한 통이 밀린 결석 여러 건을 함께
+//      덮는 현실 반영이자, 오래된 1건이 영원히 남아 매일 알림을 부르는 실패 모드 차단.
+//   ② 열린 행이 없으면 버리지 않고 '수동기록' 행으로 적재한다. 이 행이 쌓인다는 것 자체가
+//      "출석 1탭이 안 들어와 결석 감지가 안 열렸다"는 신호 — 강사의 연락 노력도 보존하고 구멍도 드러낸다.
+function sweepAbsenceForm_(ss) {
+  const src = ss.getSheetByName('결석폼_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const last = src.getLastRow();
+  const from = Number(props.getProperty('결석폼_포인터')) || 1;
+  if (from > last) { props.setProperty('결석폼_포인터', String(last)); return; } // 응답 시트 재생성 대비 클램프
+  if (from >= last) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = src.getRange(from + 1, 1, last - from, 7).getValues(); // 타임스탬프·강사·반·학생이름·연락수단·결과·메모
+  const pf = ss.getSheetByName('profiles');
+  const students = [];
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') students.push({ sid: String(r[0]).trim(), n: String(r[1] || ''), c: String(r[4] || '') });
+  });
+  const W = ABSENCE_FOLLOWUP_HEADERS.length;
+  const sh = ensureSheet(ss, 'absence_followup', ABSENCE_FOLLOWUP_HEADERS);
+  const cur = sh.getLastRow() >= 2 ? sh.getRange(2, 1, sh.getLastRow() - 1, W).getValues() : [];
+  const add = [], miss = [];
+  rows.forEach(r => {
+    const ts = r[0] instanceof Date ? r[0] : new Date();
+    const dayStr = dstr(ts, tz);
+    const stamp = dayStr + ' ' + Utilities.formatDate(ts, tz, 'HH:mm');
+    const name = String(r[3] || '').trim();
+    if (!name) return; // 필수 문항이라 실질 발생 없음 — 빈 응답 방어만
+    const method = String(r[4] || '기타');
+    const note = [String(r[5] || '').trim(), String(r[6] || '').trim()].filter(Boolean).join(' · ');
+    const cands = matchStudentsByNameClass_(students, name, String(r[2] || ''));
+    const ok = cands.length === 1;
+    const sid = ok ? cands[0] : '';
+    // 열린 행(연락여부 빈칸 · 결석일 ≤ 응답일)을 전부 마감. recent = 유예 창 안에 이미 감지된 행이 있었는가
+    //   — 수업 규칙 「결석자 복귀」은 "2회 연속이면 전화"라 같은 학생에 두 번째 연락이 정상적으로 들어온다. 그때 새 행을
+    //   만들면 결석 1건이 2건으로 세어져 복귀율 분모가 부풀므로, 새 행 대신 최근 행의 비고에 덧붙인다.
+    let closed = 0, recentIdx = -1;
+    if (sid) cur.forEach((c, ci) => {
+      if (String(c[1] || '').trim() !== sid) return;
+      const cd = dstr(c[0], tz);
+      if (cd > dayStr) return;                        // 응답일보다 나중의 결석은 이 연락으로 덮을 수 없다
+      if (Math.round((new Date(dayStr + 'T00:00:00') - new Date(cd + 'T00:00:00')) / 86400000) <= ABSENCE_RETURN_DAYS &&
+        (recentIdx < 0 || cd >= dstr(cur[recentIdx][0], tz))) recentIdx = ci;
+      if (String(c[5] || '').trim()) return;          // 이미 마감된 행은 건드리지 않는다(첫 연락 시각 보존)
+      c[5] = 'O'; c[6] = stamp; c[7] = method;
+      c[9] = [String(c[9] || '').trim(), note].filter(Boolean).join(' / ');
+      closed++;
+    });
+    if (!closed && recentIdx >= 0) { // 추가 연락 — 행을 늘리지 않고 기록만 덧붙인다(분모 보호)
+      cur[recentIdx][9] = [String(cur[recentIdx][9] || '').trim(), '추가연락 ' + stamp + ' ' + method + (note ? ' · ' + note : '')].filter(Boolean).join(' / ');
+    } else if (!closed) {
+      add.push([dayStr, sid, String(r[2] || ''), String(r[1] || '폼'), '', 'O', stamp, method, '',
+        [ok ? '수동기록(결석 감지 행 없음 — 출석 1탭 확인 필요)' : '미매칭:' + name, note].filter(Boolean).join(' / ')]);
+    }
+    if (!ok) miss.push('· ' + name + ' (' + (r[2] || '반 미상') + ') — 로스터 후보 ' + cands.length + '명 · absence_followup에 sid 공란으로 적재됨(student_id를 채우면 다음 밤 복귀 판정·집계에 반영)');
+    else if (!closed && recentIdx < 0) miss.push('· ' + name + ' (' + (r[2] || '반 미상') + ') — 연락 기록은 남겼으나 대응하는 결석 감지 행이 없습니다. 그 반의 출석 1탭이 그날 들어왔는지 확인하세요(1탭이 없으면 결석 판정 자체가 안 열립니다)');
+  });
+  if (cur.length) writeIfChanged(sh, 2, 1, cur);                                    // 마감 반영(변경 없으면 쓰기 0)
+  if (add.length) sh.getRange(sh.getLastRow() + 1, 1, add.length, W).setValues(add);
+  props.setProperty('결석폼_포인터', String(last)); // 적재 직후·메일 전 마감 — 메일 실패가 같은 응답을 재적재하지 않게
+  if (miss.length) adminMail('[SYNK] 🔁 결석 연락 기록 확인 필요 ' + miss.length + '건', miss.join('\n'));
+}
+
+// [v9.63] 첨삭 품질 게이트(순수 함수 — tests/safety.test.js가 직접 로드해 검증) — 무인 발행의 안전판.
+//   구조화 출력이 "형태"는 보장해도 "내용"은 보장 못 한다: 빈칸·언어 뒤바뀜(몽골어 칸에 한국어만)·
+//   사과/AI 자기언급·브랜드 금칙어(synk-brand 부정 금지)·형식 잔재를 기계로 거른다.
+//   통과 → 즉시 '노출'(무인) / 미달 → '격리:사유'로 사람 확인 대기. 오탐(정상 카드 격리)은 메일 링크로
+//   복구 가능하지만 미탐(불량 카드 노출)은 학생에게 직행하므로, 규칙은 고정밀 신호만 쓴다(애매하면 통과).
+function fbQualityGate_(card, srcText) {
+  const f = {
+    corrected: String(card && card.corrected || '').trim(),
+    point_mn: String(card && card.point_mn || '').trim(),
+    praise: String(card && card.praise || '').trim(),
+    mission: String(card && card.mission || '').trim()
+  };
+  const src = String(srcText || '').trim();
+  if (!f.corrected) return { ok: false, reason: '빈칸:고친문장' };
+  if (!f.point_mn) return { ok: false, reason: '빈칸:오늘의포인트' };
+  if (!f.praise) return { ok: false, reason: '빈칸:칭찬' };
+  if (!f.mission) return { ok: false, reason: '빈칸:다음미션' };
+  // 언어 검증 — 오늘의포인트=몽골어(키릴 필수), 칭찬·미션=한국어(한글 필수).
+  // 고친문장은 한글 필수이되, 무의미 제출문을 원문 그대로 되돌린 경우(프롬프트 규칙 ⑤)만 예외.
+  if (!/[Ѐ-ӿ]/.test(f.point_mn)) return { ok: false, reason: '몽골어없음:오늘의포인트' };
+  if (!/[가-힣]/.test(f.praise)) return { ok: false, reason: '한글없음:칭찬' };
+  if (!/[가-힣]/.test(f.mission)) return { ok: false, reason: '한글없음:다음미션' };
+  if (!/[가-힣]/.test(f.corrected) && f.corrected !== src) return { ok: false, reason: '한글없음:고친문장' };
+  // 길이 상한 — "최소 수정·1~2문장" 규격의 수 배를 넘으면 폭주(설명문 유입)로 본다. 하한은 두지 않는다(한 단어 교정도 정당).
+  if (f.corrected.length > Math.max(300, src.length * 2)) return { ok: false, reason: '길이초과:고친문장' };
+  if (f.point_mn.length > 500) return { ok: false, reason: '길이초과:오늘의포인트' };
+  if (f.praise.length > 300) return { ok: false, reason: '길이초과:칭찬' };
+  if (f.mission.length > 300) return { ok: false, reason: '길이초과:다음미션' };
+  const all = f.corrected + '\n' + f.point_mn + '\n' + f.praise + '\n' + f.mission;
+  // [v9.65 리뷰 H1] 메타 발언·사과 검사는 AI가 지어내는 칸만 — corrected는 학생 원문 기반이라 사과 단원 숙제
+  //   ("늦어서 죄송합니다")·인공지능 주제 숙제가 정당하게 담긴다(금칙어 검사와 같은 원칙). 형식 잔재는 4칸 전체.
+  const gen = f.point_mn + '\n' + f.praise + '\n' + f.mission;
+  if (/죄송|미안하지만|AI로서|인공지능|as an AI|I can(?:no|')t|도와드릴 수 없|답변할 수 없/i.test(gen)) return { ok: false, reason: '메타문구' };
+  if (all.indexOf('```') !== -1 || all.indexOf('{"') !== -1) return { ok: false, reason: '형식잔재' };
+  // 브랜드 금칙어(synk-brand "부정 금지") — 학생에게 직접 읽히는 격려 칸(칭찬·미션)만 검사.
+  //   고친문장(학생 원문 기반)·오늘의포인트(몽골어 설명)는 제외 — 자기 서술·문법 설명까지 막는 오탐 방지.
+  const banned = ['패배', '실패', '불운', '하락', '부족', '늦었'];
+  const kor = f.praise + '\n' + f.mission;
+  for (let i = 0; i < banned.length; i++) {
+    if (kor.indexOf(banned[i]) !== -1) return { ok: false, reason: '금칙어:' + banned[i] };
+  }
+  return { ok: true, reason: '' };
+}
+
+// [v9.49] 야간 AI 첨삭 배치 — 숙제폼 제출분을 Claude API로 4칸 카드(고친문장·오늘의포인트MN·칭찬·다음미션)로.
+//   비동기 설계 확정(2026-07-21 유호): 실시간 챗은 update 예산·지연으로 불성립, "다음날 아침 도착"형만 성립.
+//   실패 시 그 행부터 포인터 유지 → 다음 밤 재시도. 상한·시간예산 가드로 6분 강제종료 안전.
+function aiFeedbackBatch_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const props = PropertiesService.getScriptProperties();
+  const apiKey = props.getProperty('CLAUDE_API_KEY');
+  if (!apiKey) return; // 키 미설정 = 기능 OFF (NOTION_TOKEN 패턴)
+  const src = ss.getSheetByName('숙제폼_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const last = src.getLastRow();
+  const from = Number(props.getProperty('숙제폼_포인터')) || 1;
+  if (from > last) { props.setProperty('숙제폼_포인터', String(last)); return; }
+  if (from >= last) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = src.getRange(from + 1, 1, last - from, 3).getValues(); // 타임스탬프·학생ID·숙제 문장
+  // [v9.125] 리허설은 배치 입구에서 통째로 차단 — 구 방식(callClaudeFeedback_ throw)은 첫 행에서 break라
+  //   "차단 1건"만 남아 대기량이 안 보였고, permanent로 올리면 반대로 hw_feedback에 '오류' 행이 실적재되고
+  //   포인터가 실전진해 진짜 첨삭이 영영 안 되는 함정이 있다. 입구 차단 = 시트·포인터 불변 + 대기량 보고.
+  if (isRehearsal_()) { rehearsalNote_('AI 첨삭 배치: 대기 ' + rows.length + '건 전량 차단(비용 0·포인터·시트 불변)'); return; }
+  const info = {}; // sid → { name, lv(급수 BO67 — 설명 난도 조절) }
+  const pf = ss.getSheetByName('profiles');
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 67).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') info[String(r[0]).trim()] = { name: r[1] || r[0], lv: Number(r[66]) || 0 };
+  });
+  const fb = ensureSheet(ss, 'hw_feedback',
+    ['id', 'student_id', '제출일', '제출문', '고친문장', '오늘의포인트', '칭찬', '다음미션', '상태', '학생확인', '포인트지급']);
+  const t0 = Date.now();
+  const AI_BUDGET_MS = 120000; // [리뷰 H1] nightJobs 뒤쪽에서 돌므로 자체 예산 2분 — 완주 마커·후속 잡을 굶기지 않는다
+  let made = 0, held = 0, permFails = 0, processed = 0, lastErr = ''; // [v9.63] held=품질 게이트 격리 수
+  const badSid = []; // [v9.67] profiles에 없는 sid 수집 — 무통보 드롭 결함 수리(하루 1회 dedup 통보)
+  for (let i = 0; i < rows.length; i++) {
+    if (made >= AI_FEEDBACK_MAX_PER_RUN || Date.now() - t0 > AI_BUDGET_MS) break;
+    const sid = String(rows[i][1] || '').trim();
+    const text = String(rows[i][2] || '').trim().slice(0, 2000); // 폭주 입력 상한
+    const ts = rows[i][0] instanceof Date ? rows[i][0] : new Date();
+    const stu = info[sid];
+    if (!sid || !stu || !text) { if (sid && !stu) badSid.push(sid); processed = i + 1; continue; } // 무효 행은 건너뛰고 전진 — [v9.67] 미등록 sid만 통보 수집(빈 ID·빈 문장은 폼 필수문항이라 실질 없음)
+    try {
+      const card = callClaudeFeedback_(apiKey, stu, text);
+      const gate = fbQualityGate_(card, text); // [v9.63] 무인 발행 안전판 — 미달 카드는 학생에게 안 나간다
+      if (!gate.ok) held++;
+      fb.appendRow(['FB' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + fb.getLastRow(), sid,
+        dstr(ts, tz), text, String(card.corrected || ''), String(card.point_mn || ''),
+        String(card.praise || ''), String(card.mission || ''),
+        gate.ok ? (AI_FEEDBACK_AUTOPUBLISH ? '노출' : '대기') : '격리:' + gate.reason, '', '']);
+      made++; processed = i + 1;
+      // [리뷰 H1] 성공분 즉시 포인터 전진 — 6분 하드킬(throw 없는 강제 종료)에도 중복 생성·중복 과금 0
+      props.setProperty('숙제폼_포인터', String(from + processed));
+      Utilities.sleep(300); // rate-limit 여유(syncToNotion_ 패턴)
+    } catch (e) {
+      if (e && e.permanent) {
+        // [리뷰 M1] 영구 오류(refusal·잘림·파싱·4xx 요청결함) — 재시도해도 같은 결과라 '오류' 행으로 기록하고 건너뛴다(포이즌 필 차단)
+        permFails++;
+        fb.appendRow(['FB' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + fb.getLastRow(), sid,
+          dstr(ts, tz), text, '', '', '', '', '오류:' + String(e.message || e).slice(0, 80), '', '']);
+        processed = i + 1;
+        props.setProperty('숙제폼_포인터', String(from + processed));
+        continue;
+      }
+      lastErr = String(e && e.message ? e.message : e).slice(0, 200);
+      break; // 실패 행부터 포인터 유지 → 다음 밤 재시도 (일시 오류: 429·5xx·네트워크·키 무효)
+    }
+  }
+  if (processed > 0) props.setProperty('숙제폼_포인터', String(from + processed));
+  notifyDroppedSids_('숙제폼', badSid); // [v9.67]
+  if (made || permFails || lastErr) adminMail('[SYNK] 🤖 AI 첨삭 ' + made + '건 생성' + (held ? '(노출 ' + (made - held) + ' · 격리 ' + held + ')' : '') + (permFails ? ' · 오류 ' + permFails + '건' : '') + (lastErr ? ' · 중단됨' : ''), // [v9.65 리뷰 L2] 격리 있을 때 합산 오독 방지
+    (made ? (AI_FEEDBACK_AUTOPUBLISH ? (made - held > 0 ? '게이트 통과 ' + (made - held) + '건은 앱에 바로 노출되었습니다.\n' : '') : "hw_feedback 시트에서 내용 확인 후 '상태'를 '노출'로 바꾸면 학생에게 공개됩니다(AI_FEEDBACK_AUTOPUBLISH=true면 이 단계 생략).\n") : '') +
+    (held ? "🚧 품질 게이트 격리 " + held + "건 — 시트 '상태' 열의 '격리:사유'를 확인하고, 내용이 멀쩡하면 '노출'로 바꿔 공개하세요(같은 사유가 반복되면 알려주세요).\n" : '') + // [v9.63] 무인 발행의 사람 백스톱 — 격리만 사람 눈
+    ((held || (made && !AI_FEEDBACK_AUTOPUBLISH)) ? '📎 시트 바로가기: ' + ss.getUrl() + '#gid=' + (ss.getSheetByName('hw_feedback') ? ss.getSheetByName('hw_feedback').getSheetId() : 0) + '\n' : '') + // [v9.56] 메일 1클릭으로 I열 처리 · [v9.63] 격리 복구 공용
+    (permFails ? "\n'오류:' 상태 행 " + permFails + '건은 같은 입력 재시도가 무의미해 건너뛰었습니다(hw_feedback에서 확인).' : '') +
+    (lastErr ? '\n마지막 오류: ' + lastErr + '\n실패 지점부터 내일 밤 자동 재시도합니다.' : ''));
+}
+
+// [v9.49] Claude API 호출 — 구조화 출력(output_config.format json_schema)으로 4칸 스키마를 보장받는다.
+//   비-200·refusal·text 블록 부재는 throw → 호출부가 중단·재시도. 모델·톤 규칙은 AI_FEEDBACK_MODEL 주석 참조.
+function callClaudeFeedback_(apiKey, stu, text) {
+  // [v9.120] 리허설 = 비용 0. throw로 올려야 호출부(aiFeedbackBatch_)의 오류 경로를 함께 리허설한다
+  //   — null을 돌려주면 "정상 응답인데 내용이 빈 것"으로 흘러 포인터가 전진해 버린다.
+  if (isRehearsal_()) { rehearsalNote_('AI 첨삭 callClaudeFeedback_ (차단·비용 0)'); throw new Error('리허설 모드: AI 호출 차단'); }
+  const schema = {
+    type: 'object', additionalProperties: false,
+    required: ['corrected', 'point_mn', 'praise', 'mission'],
+    properties: {
+      corrected: { type: 'string', description: '교정한 한국어 문장 — 원문을 최대한 살린 최소 수정. 틀린 곳이 없으면 원문 그대로' },
+      point_mn: { type: 'string', description: '오늘의 포인트 딱 1개 — 가장 중요한 교정 이유를 몽골어 1~2문장으로(한국어 문법 용어는 괄호 병기). 여러 개 나열 금지' },
+      praise: { type: 'string', description: '잘한 점 구체적 칭찬 1문장(한국어 존댓말) — 실제로 잘한 지점을 짚어서, 빈말 금지' },
+      mission: { type: 'string', description: '다음 미션 1문장(한국어) — 오늘의 포인트를 써서 새 문장 하나를 만들게 유도' }
+    }
+  };
+  const body = {
+    model: AI_FEEDBACK_MODEL,
+    max_tokens: 4096, // Sonnet 5는 적응형 사고가 기본 ON이고 사고 토큰이 max_tokens에 포함 — 1024면 JSON이 잘릴 수 있다
+    system: 'SYNK LAB(몽골 울란바토르, 뇌과학 기반 게임화 한국어 학원)의 숙제 첨삭 선생님. 학생이 쓴 한국어 문장을 교정한다. ' +
+      '학생의 급수(1~6, 0=미정)에 맞춰 어휘 난도를 조절하고, 따뜻하되 과장 없는 존댓말을 쓴다. ' +
+      // [v9.63] 무인 발행 규칙 — 검수 없이 학생에게 직행하므로 출력 규격을 여기서 고정(기계 게이트 fbQualityGate_와 쌍)
+      '규칙: ①point_mn은 반드시 몽골어(키릴 문자)로 쓰고 한국어 문법 용어만 괄호 병기 ②praise·mission은 한국어 ' +
+      '③"패배·실패·부족·늦었다" 같은 부정 단어 금지 — 같은 내용도 성장 프레임("~하면 더 강해져요")으로 말한다 ' +
+      '④사과·자기 언급(AI)·메타 발언 금지, 4칸 내용만 채운다 ⑤제출문이 한국어 문장이 아니면(무의미 문자·다른 언어만) ' +
+      'corrected에는 원문을 그대로 두고, praise는 제출한 행동 자체를 격려하고, mission은 한국어 한 문장 도전을 유도한다.',
+    messages: [{ role: 'user', content: '학생: ' + stu.name + ' (급수: ' + (stu.lv || '미정') + ')\n제출 문장:\n' + text }],
+    output_config: { format: { type: 'json_schema', schema: schema } }
+  };
+  const res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+    method: 'post', contentType: 'application/json',
+    headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+    payload: JSON.stringify(body), muteHttpExceptions: true
+  });
+  // [리뷰 M1] 오류 분류: permanent=같은 입력 재시도 무의미(행 건너뜀) / 그 외=일시(배치 중단 후 다음 밤 재시도)
+  const permErr = msg => { const e = new Error(msg); e.permanent = true; return e; };
+  const rc = res.getResponseCode();
+  if (rc !== 200) {
+    const e = new Error('Claude API ' + rc + ': ' + res.getContentText().slice(0, 200));
+    e.permanent = (rc === 400 || rc === 404 || rc === 413 || rc === 422); // 요청 자체 결함 — 429·5xx·401은 일시 취급(전량 중단이 안전)
+    throw e;
+  }
+  const j = JSON.parse(res.getContentText());
+  if (j.stop_reason === 'refusal') throw permErr('Claude 거부(refusal)');
+  if (j.stop_reason === 'max_tokens') throw permErr('출력 잘림(max_tokens) — 사고 토큰 포함 한도 초과');
+  const tb = (j.content || []).filter(b => b.type === 'text')[0]; // thinking 블록이 앞설 수 있어 type으로 선별
+  if (!tb || !tb.text) throw permErr('응답에 text 블록 없음(stop_reason=' + j.stop_reason + ')');
+  try { return JSON.parse(tb.text); } catch (e) { throw permErr('첨삭 JSON 파싱 실패: ' + String(tb.text).slice(0, 80)); }
+}
+
+/* ===================== [v9.50] 🎛️ AI 스튜디오 — 채택 17건 서버측 배선 =====================
+ * 정본 목록 = docs/AI기능_아이디어뱅크_v1.md ✅확정 리스트. 원칙:
+ *   ① 전부 야간/아침/월간 배치 — 학생·학부모는 읽기만(Glide update 소비 0~미미)
+ *   ② CLAUDE_API_KEY 없으면 전부 0초 스킵 또는 템플릿 폴백 — 배포만으로는 아무 일도 안 일어남
+ *   ③ 새 화면 0 — 기존 슬롯(운세 BE·퀴즈 CJ/CK·여정 BY·브리핑⑨·레이더)에 얹는다
+ *   ④ 호출 수 상한(AI_STUDIO_MAX_CALLS)·시간 예산으로 비용·타임아웃 이중 가드 */
+
+// 진화 내레이터 템플릿(B1) — {n}=이름 {m}=몬스터 {g}=문법절 {t}=누적P. AI 없이 실데이터 결정론 조합
+const NARRATE_EVO = [
+  '⚡ {n}의 파트너 {m}이(가) {g}새 형태로 깨어났어요! 누적 {t}P가 만든 순간 🐲',
+  '🐲 진화! {m}이(가) {n}의 노력을 먹고 자랐어요 — {g}오늘이 그 역사적인 날',
+  '✨ {n}, 네 이야기의 새 챕터가 열렸어! {m}이(가) {g}진화했어 🎉',
+  '⚡ 시냅스 폭발! {g}{m}이(가) 새 모습으로 — {n}의 꾸준함이 증명된 날',
+  '🌟 {m} 진화 완료! {n}의 여정에 별이 하나 더 — 누적 {t}P',
+  '🔥 오늘의 주인공 {n} — {g}{m}이(가) 다음 단계로 진화했어요!'];
+
+// 공통 API 헬퍼 — callClaudeFeedback_와 동일 규약(구조화 출력·오류 분류). 실패는 throw — 호출부가 폴백 결정
+function aiCall_(apiKey, system, user, schema, maxTok) {
+  // [v9.125] 리허설 게이트를 이 관문으로 하강 — 구 게이트(aiText_·callClaudeFeedback_)만으론 aiCall_ 직호출
+  //   7곳(월보·학부모 편지·마스터리 등)이 리허설 중 그대로 과금됐다. throw(호출부 오류 경로 리허설)로 올린다.
+  if (isRehearsal_()) { rehearsalNote_('AI 호출 aiCall_ (차단·비용 0)'); const e = new Error('리허설 모드: AI 호출 차단'); e.permanent = true; throw e; }
+  const body = {
+    model: AI_FEEDBACK_MODEL, max_tokens: maxTok || 4096, system: system,
+    messages: [{ role: 'user', content: user }],
+    output_config: { format: { type: 'json_schema', schema: schema } }
+  };
+  const res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+    method: 'post', contentType: 'application/json',
+    headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+    payload: JSON.stringify(body), muteHttpExceptions: true
+  });
+  if (res.getResponseCode() !== 200) throw new Error('Claude API ' + res.getResponseCode() + ': ' + res.getContentText().slice(0, 160));
+  const j = JSON.parse(res.getContentText());
+  if (j.stop_reason === 'refusal' || j.stop_reason === 'max_tokens') throw new Error('응답 불가(' + j.stop_reason + ')');
+  const tb = (j.content || []).filter(b => b.type === 'text')[0];
+  if (!tb || !tb.text) throw new Error('text 블록 없음');
+  return JSON.parse(tb.text);
+}
+// 자유 텍스트 헬퍼 — 키 없음·실패 전부 null(호출부는 null이면 조용히 생략)
+function aiText_(prompt, maxTok) {
+  if (isRehearsal_()) { rehearsalNote_('AI 호출 aiText_ (차단·비용 0)'); return null; } // [v9.120]
+  try {
+    const key = PropertiesService.getScriptProperties().getProperty('CLAUDE_API_KEY');
+    if (!key) return null;
+    const res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+      method: 'post', contentType: 'application/json',
+      headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+      // [v9.54] thinking OFF — Sonnet 5는 thinking 생략 시 적응형 사고가 기본 ON이고 사고 토큰이 max_tokens를
+      //   잠식한다. 짧은 예산(900~1536)의 자유텍스트에서 본문이 잘리거나 비어 폴백률이 오르던 것을,
+      //   사고를 꺼 예산 전액을 본문에 쓰게 교정(구조화 호출 aiCall_·첨삭은 품질 우선으로 사고 유지).
+      payload: JSON.stringify({ model: AI_FEEDBACK_MODEL, max_tokens: maxTok || 1024, thinking: { type: 'disabled' }, messages: [{ role: 'user', content: prompt }] }),
+      muteHttpExceptions: true
+    });
+    if (res.getResponseCode() !== 200) return null;
+    const j = JSON.parse(res.getContentText());
+    const tb = (j.content || []).filter(b => b.type === 'text')[0];
+    return tb && tb.text ? String(tb.text).trim() : null;
+  } catch (e) { return null; }
+}
+
+// 학생 요약 로더 — AI 스튜디오 공용(이름·급수·반·이메일·목표·최애·재원일)
+function aiStudents_(ss) {
+  const pf = ss.getSheetByName('profiles');
+  const list = [];
+  if (!pf || pf.getLastRow() < 2) return list;
+  const w = Math.min(128, pf.getMaxColumns()); // [v9.84] 상담 디테일(DT124~DX128)까지 — 신규생 콜드스타트 폴백 재료
+  pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues().forEach(r => {
+    if (!r[0] || r[3] !== 'student' || String(r[0]).indexOf('DEMO-') === 0) return;
+    list.push({
+      id: String(r[0]).trim(), n: r[1] || r[0], cls: String(r[4] || ''),
+      created: r[14] || '', total: Number(r[15]) || 0, stage: String(r[18] || ''), stk: Number(r[20]) || 0,
+      pEmail: String(r[25] || '').trim(), vision: String(r[52] || '').trim(),
+      lv: w >= 67 ? (Number(r[66]) || 0) : 0, dream: w >= 80 ? String(r[79] || '').trim() : '',
+      fav: w >= 105 ? String(r[104] || '').trim() : '',
+      // [v9.84] 상담 폴백 4종 — 학생 소유 열(dream CB80·fav DA105)이 비어 있을 때만 소비층이 대신 쓴다(앱 입력이 항상 이긴다)
+      taste: w >= 124 ? String(r[123] || '').trim() : '',   // DT124 상담취향(선호그룹·인생드라마·취미)
+      cGoal: w >= 125 ? String(r[124] || '').trim() : '',   // DU125 상담목표(TOPIK 급수·기한)
+      topik0: w >= 126 ? String(r[125] || '').trim() : '',  // DV126 입학TOPIK(0점 좌표)
+      pain: w >= 127 ? String(r[126] || '').trim() : ''     // DW127 상담고충(입학 자기보고)
+    });
+  });
+  return list;
+}
+// 최근 약점 로더 — student_errors(14일·미해결) + 첨삭 '오늘의포인트' 최근 1건
+function aiWeakMap_(ss) {
+  const weak = {};
+  const se = ss.getSheetByName('student_errors');
+  const cut = Date.now() - 14 * 86400000;
+  const aggW = {}; // [v9.64] 학생×유형 집계 — 반복 많은 포인트를 앞세워 AI가 끈질긴 약점부터 공략(유형 태그로 표적도 선명)
+  if (se && se.getLastRow() >= 2) se.getRange(2, 1, se.getLastRow() - 1, 8).getValues().forEach(r => {
+    if (!r[1] || String(r[7] || '') === '해결') return;
+    const d = toDate_(r[0]) || (r[6] instanceof Date ? r[6] : null);
+    if (!d || d.getTime() < cut) return;
+    const k = String(r[1]).trim();
+    const gS = (aggW[k] = aggW[k] || {});
+    const tK = String(r[3] || r[4] || '').slice(0, 10);
+    const eW = gS[tK] = gS[tK] || { type: String(r[3] || ''), memo: '', t: 0, cnt: 0 };
+    eW.cnt++;
+    if (d.getTime() >= eW.t) { eW.t = d.getTime(); eW.memo = String(r[4] || r[3] || ''); }
+  });
+  Object.keys(aggW).forEach(k => {
+    weak[k] = Object.keys(aggW[k]).map(x => aggW[k][x]).sort((a, b) => (b.cnt - a.cnt) || (b.t - a.t))
+      .map(eW => (eW.type ? eW.type + ': ' : '') + eW.memo.slice(0, 30) + (eW.cnt > 1 ? ' (반복 ' + eW.cnt + '회)' : ''));
+  });
+  const fb = ss.getSheetByName('hw_feedback');
+  if (fb && fb.getLastRow() >= 2) fb.getRange(2, 1, fb.getLastRow() - 1, 9).getValues().forEach(r => {
+    if (!r[1] || !String(r[5] || '') || /^(오류|격리)/.test(String(r[8] || ''))) return; // [v9.63] 격리 카드는 약점 재료에서 제외(품질 게이트 미달분이 AI 퀴즈로 새는 것 차단)
+    const k = String(r[1]).trim();
+    (weak[k] = weak[k] || [])._fb = String(r[5]).slice(0, 60); // 마지막 것이 최근(행 순서)
+  });
+  Object.keys(weak).forEach(k => { if (weak[k]._fb) { weak[k].push(weak[k]._fb); delete weak[k]._fb; } });
+  return weak;
+}
+
+// ── 야간 오케스트레이터: H1 한 문장 + A1/A2/A4 개인 퀴즈 + G 오류사전 + H5 반 브리핑 + E5 리텐션 멘트 ──
+function aiStudioBatch_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const props = PropertiesService.getScriptProperties();
+  const apiKey = props.getProperty('CLAUDE_API_KEY');
+  if (!apiKey) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const t0 = Date.now(), BUDGET_MS = 100000;
+  let calls = 0, made = 0, errs = [];
+  const can = () => calls < AI_STUDIO_MAX_CALLS && (Date.now() - t0) < BUDGET_MS;
+
+  const ad = ensureSheet(ss, 'ai_daily', ['student_id', '날짜', '한문장', '퀴즈문제', '퀴즈정답해설']);
+  { // 프룬 — 어제 이전 행 제거(시트 비대·다음날 오독 방지). 남길 것 = 오늘·어제
+    if (ad.getLastRow() >= 2) {
+      const keepD = {}; keepD[today] = 1;
+      keepD[Utilities.formatDate(new Date(Date.now() - 86400000), tz, 'yyyy-MM-dd')] = 1;
+      const rowsD = ad.getRange(2, 1, ad.getLastRow() - 1, 5).getValues().filter(r => keepD[String(r[1])]);
+      ad.getRange(2, 1, ad.getLastRow() - 1, 5).clearContent();
+      if (rowsD.length) ad.getRange(2, 1, rowsD.length, 5).setValues(rowsD);
+    }
+  }
+  const doneToday = {};
+  if (ad.getLastRow() >= 2) ad.getRange(2, 1, ad.getLastRow() - 1, 2).getValues().forEach(r => { if (String(r[1]) === today) doneToday[String(r[0]).trim()] = 1; });
+
+  // [v9.54] 학생·약점 로더 지연 메모이즈 — ①(한문장)과 ③(반브리핑)이 profiles·student_errors·hw_feedback
+  //   전량을 각각 중복 read하던 것을 1회로. 실패 시 캐시가 남지 않으므로 섹션별 try 격리(뒤 섹션이 재시도)는 유지된다.
+  let _stusAll = null, _weakAll = null;
+  const stusAll_ = () => (_stusAll || (_stusAll = aiStudents_(ss)));
+  const weakAll_ = () => (_weakAll || (_weakAll = aiWeakMap_(ss)));
+
+  // ① H1/A1/A2/A4 — 학생별 오늘의 한 문장 + 약점 퀴즈(관심사 반영), 배치 호출
+  try {
+    const stus = stusAll_().filter(s => !doneToday[s.id]);
+    const weak = weakAll_();
+    const schema = {
+      type: 'object', additionalProperties: false, required: ['items'],
+      properties: { items: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['i', 's', 'q', 'a'], properties: {
+        i: { type: 'integer', description: '입력 목록의 인덱스' },
+        s: { type: 'string', description: '오늘의 한 문장 — 그 학생의 약점·관심사를 반영한 짧은 한국어 응원+미니미션 1문장(60자 이내, 몽골어 병기 금지)' },
+        q: { type: 'string', description: '오늘의 퀴즈 문제 1개 — 약점 문법 기반 빈칸/선택 문제, 한국어(80자 이내)' },
+        a: { type: 'string', description: '정답 — 왜 그런지 해설 1문장(몽골어)을 덧붙인다. 형식: "정답: X — 해설(몽골어)"' } } } } }
+    };
+    for (let off = 0; off < stus.length && can(); off += AI_DAILY_BATCH_SIZE) {
+      const chunk = stus.slice(off, off + AI_DAILY_BATCH_SIZE);
+      // [v9.84] 콜드스타트 폴백 사슬 — 최애=학생 자기선언(DA105)‖상담취향, 목표=드림(CB80)‖상담목표‖핵심비전,
+      //   약점=student_errors‖상담 자기보고(입학 첫 주라 앱 기록이 0이어도 상담 답으로 첫날부터 개인화)
+      const userMsg = chunk.map((s, i) => {
+        const fv = s.fav || s.taste, gl = s.dream || s.cGoal || s.vision;
+        const wk = (weak[s.id] || []).slice(-2).join(' / ') || (s.pain ? '입학 자기보고: ' + s.pain.slice(0, 40) : '기록 없음');
+        return i + '. ' + s.n + ' | 급수 ' + (s.lv || '미정') +
+          ' | 약점: ' + wk +
+          (fv ? ' | 최애: ' + fv.slice(0, 40) : '') + (gl ? ' | 목표: ' + gl.slice(0, 30) : '');
+      }).join('\n');
+      try {
+        calls++;
+        const out = aiCall_(apiKey,
+          'SYNK LAB(몽골 울란바토르, 뇌과학 기반 게임화 한국어 학원)의 개인화 튜터. 학생마다 오늘의 한 문장(응원+미니미션)과 약점 기반 퀴즈 1문제를 만든다. ' +
+          '약점이 있으면 반드시 그 문법을 쓰고, 최애(아이돌·게임)가 있으면 예문 소재로 자연스럽게 쓴다(사실 주장 금지 — 가상 서술만). 따뜻하되 과장 없는 반말 응원 톤.',
+          '학생 목록:\n' + userMsg, schema, 8096);
+        const rowsN = [];
+        (out.items || []).forEach(it => {
+          const s = chunk[it.i];
+          if (!s || !it.s || !it.q) return;
+          rowsN.push([s.id, today, String(it.s).slice(0, 90), String(it.q).slice(0, 140), String(it.a || '').slice(0, 180)]);
+        });
+        if (rowsN.length) { ad.getRange(ad.getLastRow() + 1, 1, rowsN.length, 5).setValues(rowsN); made += rowsN.length; }
+        Utilities.sleep(300);
+      } catch (e1) { errs.push('한문장 배치: ' + String(e1.message || e1).slice(0, 80)); break; }
+    }
+  } catch (e) { errs.push('한문장 준비: ' + String(e.message || e).slice(0, 80)); }
+
+  // ② G 오류사전 — 첨삭 신규분에서 몽골어 화자 오류 패턴 축적(학생 식별 정보 저장 안 함 — 비식별 원칙)
+  try {
+    const fb = ss.getSheetByName('hw_feedback');
+    if (fb && fb.getLastRow() >= 2 && can()) {
+      const from = Number(props.getProperty('오류뱅크_포인터')) || 1;
+      const last = fb.getLastRow();
+      if (from < last) {
+        const rowsF = fb.getRange(from + 1, 1, Math.min(last - from, 40), 9).getValues()
+          .filter(r => !/^(오류|격리)/.test(String(r[8] || ''))) // [v9.63] 격리 카드는 오류사전 재료에서 제외
+          .map(r => ({ sub: String(r[3] || '').slice(0, 120), fix: String(r[4] || '').slice(0, 120), pt: String(r[5] || '').slice(0, 80) }))
+          .filter(x => x.sub && x.fix);
+        const takeN = Math.min(last - from, 40);
+        if (rowsF.length) {
+          const ebSchema = { type: 'object', additionalProperties: false, required: ['items'], properties: { items: { type: 'array', items: {
+            type: 'object', additionalProperties: false, required: ['type', 'pattern'], properties: {
+              type: { type: 'string', description: '오류 유형(조사/어순/시제/어휘/철자/높임 등 짧은 분류)' },
+              pattern: { type: 'string', description: '몽골어 화자 특유 패턴 일반화 1문장 — 학생 이름·개인정보 금지' } } } } } };
+          calls++;
+          const out = aiCall_(apiKey,
+            '몽골어 화자의 한국어 오류를 분류·일반화하는 언어학 조수. 개별 문장에서 개인 정보를 제거하고 오류 유형과 패턴만 추출한다.',
+            '오류 사례(제출→교정):\n' + rowsF.map(x => x.sub + ' → ' + x.fix + (x.pt ? ' (' + x.pt + ')' : '')).join('\n'), ebSchema, 4096);
+          const eb = ensureSheet(ss, 'error_bank', ['월', '오류유형', '패턴', 'created_at']);
+          const ym = today.slice(0, 7);
+          const rowsE = (out.items || []).slice(0, 20).map(it => [ym, String(it.type || '').slice(0, 20), String(it.pattern || '').slice(0, 160), today]);
+          if (rowsE.length) eb.getRange(eb.getLastRow() + 1, 1, rowsE.length, 4).setValues(rowsE);
+        }
+        props.setProperty('오류뱅크_포인터', String(from + takeN)); // 성공 시에만 전진(실패는 throw로 위 catch)
+      }
+    }
+  } catch (e) { errs.push('오류사전: ' + String(e.message || e).slice(0, 80)); }
+
+  // ③ H5 반 브리핑 한 줄 — 반별 약점·주간 흐름을 강사용 1문장으로(있으면 calcAll이 브리핑⑨ 최상단에 병합)
+  try {
+    const cs = ss.getSheetByName('class_stats');
+    if (cs && cs.getLastRow() >= 2 && can()) {
+      const weak = weakAll_(); // [v9.54] ①에서 로드했으면 재사용
+      const stus = stusAll_();
+      const wkByCls = {};
+      stus.forEach(s => { (weak[s.id] || []).slice(-1).forEach(w => (wkByCls[s.cls] = wkByCls[s.cls] || []).push(w)); });
+      const clsRows = cs.getRange(2, 1, cs.getLastRow() - 1, 8).getValues().filter(r => r[0] && Number(r[1]) > 0);
+      if (clsRows.length) {
+        const bSchema = { type: 'object', additionalProperties: false, required: ['items'], properties: { items: { type: 'array', items: {
+          type: 'object', additionalProperties: false, required: ['c', 'line'], properties: {
+            c: { type: 'string' }, line: { type: 'string', description: '그 반 강사에게 주는 오늘의 포인트 1문장(한국어, 100자 이내, 구체적으로)' } } } } } };
+        calls++;
+        const out = aiCall_(apiKey, 'SYNK LAB 강사 브리핑 조수. 반별 데이터로 오늘 수업에서 챙길 포인트 1문장씩.',
+          clsRows.map(r => r[0] + ' | 인원 ' + r[1] + ' | 주간평균 ' + r[7] + 'P | 최근 약점: ' + ((wkByCls[r[0]] || []).slice(0, 3).join(', ') || '없음')).join('\n'),
+          bSchema, 4096);
+        const map = {};
+        (out.items || []).forEach(it => { if (it.c && it.line) map[String(it.c)] = String(it.line).slice(0, 140); });
+        setState(ensureSheet(ss, 'app_state', ['key', 'value']), '반브리핑AI', JSON.stringify(map));
+      }
+    }
+  } catch (e) { errs.push('반브리핑: ' + String(e.message || e).slice(0, 80)); }
+
+  // ④ E5 리텐션 개입 멘트 — 감지(규칙·calcAll)가 남긴 목록에 문구만 생성
+  try {
+    const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+    let list = [];
+    try { list = JSON.parse(String(getState(st, '리텐션목록').val || '[]')) || []; } catch (eL) { list = []; }
+    if (!list.length) setState(st, '리텐션멘트', '{}');
+    else if (can()) {
+      const rSchema = { type: 'object', additionalProperties: false, required: ['items'], properties: { items: { type: 'array', items: {
+        type: 'object', additionalProperties: false, required: ['n', 'line'], properties: {
+          n: { type: 'string' }, line: { type: 'string', description: '원장·강사가 그 학생(또는 학부모)에게 건넬 개입 멘트 1문장(한국어, 80자 이내, 다그침 금지·구체적 다리 놓기)' } } } } } };
+      calls++;
+      const out = aiCall_(apiKey, 'SYNK LAB 리텐션 조수. 관심이 필요한 학생별로 부담 없는 개입 멘트 1문장씩. 원인(사유)에 맞춰서.',
+        list.map(x => x.n + ' (' + x.c + ') — ' + x.w).join('\n'), rSchema, 3072);
+      const map = {};
+      (out.items || []).forEach(it => { if (it.n && it.line) map[String(it.n)] = String(it.line).slice(0, 120); });
+      setState(st, '리텐션멘트', JSON.stringify(map));
+    }
+  } catch (e) { errs.push('리텐션멘트: ' + String(e.message || e).slice(0, 80)); }
+
+  if (made || errs.length) adminMail('[SYNK] 🎛️ AI 스튜디오 야간 — 한문장·퀴즈 ' + made + '건' + (errs.length ? ' · 오류 ' + errs.length : ''),
+    '호출 ' + calls + '회 (상한 ' + AI_STUDIO_MAX_CALLS + ')\n' + (errs.length ? '오류:\n' + errs.join('\n') + '\n(실패 항목은 내일 밤 자동 재시도)' : '정상'));
+}
+
+// ── F4 웰컴 스토리(아침) — 신규 등록 감지분 중 학부모 이메일이 채워진 학생에게 세계관 입장 편지 ──
+function welcomeStoryBatch_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const props = PropertiesService.getScriptProperties();
+  let queue = [];
+  try { queue = JSON.parse(props.getProperty('웰컴대기') || '[]') || []; } catch (e) { queue = []; }
+  if (!queue.length) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const byId = {};
+  aiStudents_(ss).forEach(s => { byId[s.id] = s; });
+  const apiKey = props.getProperty('CLAUDE_API_KEY');
+  const ledger = ensureSheet(ss, 'ai_ledger', ['유형', 'student_id', '키', '값', 'created_at']);
+  const remain = [], today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  let sent = 0;
+  queue.forEach(id => {
+    const s = byId[id];
+    if (!s) return; // 프로필에서 사라짐(퇴소·오입력) — 큐에서 제거
+    const ageD = s.created ? Math.floor((Date.now() - new Date(s.created).getTime()) / 86400000) : 0;
+    if (ageD > 45) return; // 45일 지난 웰컴은 의미 없음 — 조용히 폐기
+    if (!s.pEmail) { remain.push(id); return; } // 이메일 대기(§1-3 입력 전)
+    if (!quotaOk(1)) { remain.push(id); return; }
+    let story = null;
+    if (apiKey) story = aiText_('SYNK LAB(몽골 울란바토르, 뇌과학 기반 게임화 한국어 학원)의 웰컴 스토리 작가. 신규 학생 "' + s.n + '"' +
+      ((s.dream || s.cGoal) ? '(목표: ' + (s.dream || s.cGoal).slice(0, 40) + ')' : '') + (s.vision ? '(비전 메모: ' + s.vision.slice(0, 40) + ')' : '') + // [v9.84] 신규생은 드림 입력 전 — 상담목표 폴백
+      '의 세계관 입장 스토리를 5~7문장 한국어로. 시냅스 크루로 임명되는 서사, 성장 파트너와의 첫 만남 예고("몬스터"라는 단어는 쓰지 않기), 따뜻하고 과장 없는 톤. 인사말·서명 없이 본문만.', 1024); // [v9.74] 학부모 수신 편지 — 몬스터→성장 파트너
+    if (!story) story = s.n + ' 크루의 시냅스 여정이 시작됩니다. 첫 출석의 순간, 성장 파트너가 깨어나고 매일의 기록이 이야기가 됩니다. ' +
+      'SYNK LAB의 모든 스토리는 실제 기록으로 만들어집니다 — 이제 주인공은 ' + s.n + ' 입니다.';
+    MailApp.sendEmail(s.pEmail, '[SYNK] 🌟 ' + s.n + ' 크루 임명장',
+      s.n + ' 크루의 입학을 환영합니다!\n\n' + story + '\n\n— SYNK LAB 드림\n(앱에서 ' + s.n + '의 여정 카드가 오늘부터 자랍니다)');
+    ledger.appendRow(['웰컴', id, today, '', today]);
+    sent++;
+  });
+  props.setProperty('웰컴대기', JSON.stringify(remain));
+  if (sent) adminMail('[SYNK] 🌟 웰컴 스토리 ' + sent + '건 발송', '신규 크루 웰컴 편지가 학부모 메일로 나갔습니다. (대기 잔여 ' + remain.length + '건 — 이메일 입력되면 다음 아침 발송)');
+}
+
+// ── B3 이달의 AI 유니크 칭호(월간) — 전월 활동 패턴 → 학생별 긍정 전용 칭호 1개, 여정 카드 노출 ──
+function aiMonthlyTitles_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const props = PropertiesService.getScriptProperties();
+  const apiKey = props.getProperty('CLAUDE_API_KEY');
+  if (!apiKey) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const ym = Utilities.formatDate(new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1), tz, 'yyyy-MM');
+  const ledger = ensureSheet(ss, 'ai_ledger', ['유형', 'student_id', '키', '값', 'created_at']);
+  if (ledger.getLastRow() >= 2 && ledger.getRange(2, 1, ledger.getLastRow() - 1, 3).getValues()
+    .some(r => String(r[0]) === '칭호' && String(r[2]) === ym)) return; // 월키 멱등
+  const pl = ss.getSheetByName('point_logs');
+  const act = {};
+  if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (!r[1] || !r[5] || dstr(r[5], tz).indexOf(ym) !== 0) return;
+    const pts = Number(r[2]) || 0;
+    if (pts <= 0) return;
+    const a = act[String(r[1]).trim()] = act[String(r[1]).trim()] || { p: 0, rs: {} };
+    a.p += pts;
+    const rs = String(r[3] || '');
+    if (rs) a.rs[rs] = (a.rs[rs] || 0) + 1;
+  });
+  const stus = aiStudents_(ss).filter(s => act[s.id] && act[s.id].p > 0);
+  if (!stus.length) return;
+  const tSchema = { type: 'object', additionalProperties: false, required: ['items'], properties: { items: { type: 'array', items: {
+    type: 'object', additionalProperties: false, required: ['i', 't'], properties: {
+      i: { type: 'integer' }, t: { type: 'string', description: '유니크 칭호(한국어 6~12자) — 긍정 전용, 그 학생만의 패턴 반영. 지각·결석 등 부정 소재 절대 금지' } } } } } };
+  const rows = [], today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  for (let off = 0; off < stus.length && off < 90; off += 30) {
+    const chunk = stus.slice(off, off + 30);
+    try {
+      const out = aiCall_(apiKey, 'SYNK LAB(게임화 한국어 학원)의 칭호 작명가. 전월 활동 패턴으로 학생마다 겹치지 않는 긍정 칭호 1개씩("새벽의 문법사냥꾼" 같은 톤).',
+        chunk.map((s, i) => {
+          const a = act[s.id];
+          const top = Object.keys(a.rs).sort((x, y) => a.rs[y] - a.rs[x]).slice(0, 2).join('·');
+          return i + '. ' + s.n + ' | 월 ' + a.p + 'P | 주활동: ' + (top || '출석') + ' | 몬스터: ' + (s.stage || '-');
+        }).join('\n'), tSchema, 4096);
+      (out.items || []).forEach(it => {
+        const s = chunk[it.i];
+        if (s && it.t) rows.push(['칭호', s.id, ym, String(it.t).slice(0, 16), today]);
+      });
+      Utilities.sleep(300);
+    } catch (e) { Logger.log('AI 칭호 배치 실패: ' + e); break; }
+  }
+  if (rows.length) {
+    ledger.getRange(ledger.getLastRow() + 1, 1, rows.length, 5).setValues(rows);
+    adminMail('[SYNK] 🎖️ 이달의 AI 칭호 ' + rows.length + '건', ym + ' 활동 기반 유니크 칭호가 여정 카드에 반영됩니다(다음 calcAll부터).');
+  }
+}
+
+// ── B5 미래의 나 편지(월간) — 재원 80~110일 & 목표 보유 & 학부모 이메일 → 입학 목표 대조 편지 ──
+function futureLetterBatch_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const props = PropertiesService.getScriptProperties();
+  const tz = ss.getSpreadsheetTimeZone();
+  const ym = Utilities.formatDate(new Date(), tz, 'yyyy-MM');
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const ledger = ensureSheet(ss, 'ai_ledger', ['유형', 'student_id', '키', '값', 'created_at']);
+  const sentIds = new Set();
+  if (ledger.getLastRow() >= 2) ledger.getRange(2, 1, ledger.getLastRow() - 1, 2).getValues().forEach(r => { if (String(r[0]) === '편지') sentIds.add(String(r[1])); });
+  const targets = aiStudents_(ss).filter(s => {
+    if (sentIds.has(s.id) || !s.pEmail) return false;
+    const goal = s.dream || s.cGoal || s.vision; // [v9.84] 상담목표(TOPIK 급수·기한)가 비전 카테고리보다 구체 — 인용 재료 승격
+    if (!goal || !s.created) return false;
+    const d = Math.floor((Date.now() - new Date(s.created).getTime()) / 86400000);
+    return d >= 80 && d <= 110; // 재등록 결정 시점(3개월) 창
+  });
+  if (!targets.length) return;
+  const apiKey = props.getProperty('CLAUDE_API_KEY');
+  let sent = 0;
+  targets.slice(0, 20).forEach(s => {
+    if (!quotaOk(1)) return;
+    const goal = s.dream || s.cGoal || s.vision; // [v9.84] 상담목표(TOPIK 급수·기한)가 비전 카테고리보다 구체 — 인용 재료 승격
+    let letter = null;
+    if (apiKey) letter = aiText_('SYNK LAB의 "미래의 나" 편지 작가. 3개월 전 입학하며 목표를 적은 학생에게, 그 목표를 인용하며 실제 데이터로 성장을 비추는 편지를 8~10문장 한국어로. ' +
+      '규칙: "달성/미달" 판정 금지 — "얼마나 왔는지"만. 다정하되 과장 금지. 인사·서명 없이 본문만.\n' +
+      '학생: ' + s.n + '\n입학 때 목표: "' + goal.slice(0, 60) + '"' +
+      (s.topik0 ? '\n입학 때 TOPIK 실측: ' + s.topik0 + (s.lv ? ' → 지금 앱 급수 ' + s.lv + '급' : '') + ' (이 대조를 성장의 증거로 한 문장 녹일 것 — 급수 체계가 달라 직접 비교 단정은 금지)' : '') + // [v9.84·한수더] 입학 시점 실측 = 0점 좌표
+      '\n누적 포인트: ' + s.total + 'P\n성장 파트너 단계: ' + (s.stage || '진행 중') + '\n연속 출석: ' + s.stk + '일', 1536); // [v9.74] 학부모 편지 — 몬스터→성장 파트너
+    if (!letter) letter = '3개월 전, ' + s.n + '은(는) 이렇게 적었습니다 — "' + goal.slice(0, 60) + '"\n\n그날부터 지금까지 누적 ' + s.total + 'P, 성장 파트너는 ' +
+      (s.stage || '성장 중') + ' 단계까지 왔습니다. 목표를 향해 걸어온 거리는 기록이 증명합니다. 다음 3개월의 이야기가 더 기대되는 이유입니다.';
+    MailApp.sendEmail(s.pEmail, '[SYNK] 💌 ' + s.n + '에게 도착한 편지 — 3개월 전의 나로부터',
+      '(자녀와 함께 읽어주세요)\n\n' + letter + '\n\n— SYNK LAB · 3개월의 기록으로 쓴 편지');
+    ledger.appendRow(['편지', s.id, ym, '', today]);
+    sent++;
+  });
+  if (sent) adminMail('[SYNK] 💌 미래의 나 편지 ' + sent + '건 발송', '3개월차 크루의 입학 목표 대조 편지가 나갔습니다 — 재등록 상담과 묶기 좋은 시점입니다.');
+}
+
+// ── H4-라이트 학부모 하이라이트 3장면(월간) — 몽골어는 사전 작성 템플릿만(AI 창작 0 · 원어민 검수 대상) ──
+const HL_TPL = [ // [ko, mn] — {n}=이름 {x}=숫자 {t}=칭호. ⚠ 몽골어 문장은 원어민 검수 1회 권장(아이디어뱅크 선행 조건)
+  ['{n}이(가) 이번 달 「{t}」 칭호를 받았어요.', '{n} энэ сард "{t}" цол хүртлээ.'],
+  ['{n}의 성장 파트너가 새로운 단계로 진화했어요 — 꾸준함의 증거예요.', '{n}-ийн хамтрагч шинэ шатанд хувьслаа — тууштай байдлын баталгаа.'], // [v9.74] 학부모 접점 호칭 교체(성장 파트너·хамтрагч)
+  ['이번 달 경험치 +{x}P를 모았어요.', 'Энэ сард +{x} оноо цуглууллаа.'],
+  ['연속 출석 {x}일 — 습관이 실력이 되는 중이에요.', 'Дараалан {x} өдөр ирлээ — зуршил чадвар болж байна.'],
+  ['이번 달도 교실에서 자기 자리를 지켰어요.', 'Энэ сард ч хичээлдээ тогтмол оролцлоо.']];
+function parentHighlightsMail_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const props = PropertiesService.getScriptProperties();
+  const tz = ss.getSpreadsheetTimeZone();
+  const ym = Utilities.formatDate(new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1), tz, 'yyyy-MM');
+  if (props.getProperty('하이라이트발송월') === ym) return; // 월키 멱등
+  const doneSids = new Set(); // [v9.54] 이번 달 이미 발송된 학생 — 쿼터 보류 이어하기용(아래 quotaShort 참조)
+  const holdHl = String(props.getProperty('하이라이트보류') || '');
+  if (holdHl.indexOf(ym + '|') === 0) holdHl.slice(ym.length + 1).split(',').forEach(x => { if (x) doneSids.add(x); });
+  const pl = ss.getSheetByName('point_logs');
+  const ptsM = {};
+  if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (!r[1] || !r[5] || dstr(r[5], tz).indexOf(ym) !== 0) return;
+    const p = Number(r[2]) || 0;
+    if (p > 0) ptsM[String(r[1]).trim()] = (ptsM[String(r[1]).trim()] || 0) + p;
+  });
+  const titleM = {};
+  const tl = ss.getSheetByName('titles');
+  if (tl && tl.getLastRow() >= 2) tl.getRange(2, 1, tl.getLastRow() - 1, 3).getValues().forEach(r => {
+    if (String(r[0]) === ym && r[1] && !titleM[String(r[1]).trim()]) titleM[String(r[1]).trim()] = String(r[2] || '');
+  });
+  const pf = ss.getSheetByName('profiles');
+  const evoM = {};
+  if (pf && pf.getLastRow() >= 2 && pf.getMaxColumns() >= 54) pf.getRange(2, 1, pf.getLastRow() - 1, 54).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student' && String(r[53] || '').indexOf(ym) === 0) evoM[String(r[0]).trim()] = 1;
+  });
+  // [v9.54] 쿼터 보류 이어하기 — 발송 도중 일일 메일 쿼터가 바닥나면 월 마커를 찍지 않고 발송분만
+  //   '하이라이트보류'(ym|sid,…)에 남기고, morningJobs가 매일 재호출해 남은 학생만 이어 보낸다
+  //   (다이제스트보류 #31과 같은 처방). 구 구현은 쿼터 소진 시에도 마커를 무조건 세팅해
+  //   뒤쪽 학생들이 그 달 하이라이트를 영영 못 받았다(조용한 유실).
+  let sent = 0, quotaShort = false;
+  // [v9.73] 설문 링크 틀 — 폼 미생성이면 빈값(메일은 기존 그대로). 만족도팩 누락에도 안전.
+  const svTpl9 = (typeof MJ_surveyLine_ === 'function') ? String((getState(ensureSheet(ss, 'app_state', ['key', 'value']), '설문폼URL틀') || {}).val || '') : '';
+  aiStudents_(ss).forEach(s => {
+    if (!s.pEmail || doneSids.has(s.id) || quotaShort) return;
+    if (!quotaOk(1)) { quotaShort = true; return; }
+    const scenes = [];
+    const fill = (ti, x, t) => scenes.push(HL_TPL[ti][0].replace('{n}', s.n).replace('{x}', x || '').replace('{t}', t || '') +
+      '\n' + HL_TPL[ti][1].replace('{n}', s.n).replace('{x}', x || '').replace('{t}', t || ''));
+    if (titleM[s.id]) fill(0, '', titleM[s.id]);
+    if (evoM[s.id]) fill(1);
+    if ((ptsM[s.id] || 0) >= 20) fill(2, String(ptsM[s.id]));
+    if (scenes.length < 3 && s.stk >= 7) fill(3, String(s.stk));
+    if (!scenes.length) return; // 데이터 없는 학생에게 지어내지 않는다 — 발송 생략
+    while (scenes.length > 3) scenes.pop();
+    MailApp.sendEmail(s.pEmail, '[SYNK] ✨ ' + s.n + ' — Энэ сарын гурван агшин (이달의 세 장면)',
+      'Энэ сард ' + s.n + '-д ийм агшин байлаа:\n(이번 달 ' + s.n + '에게 이런 순간이 있었어요)\n\n' +
+      scenes.map((sc, i) => (i + 1) + '. ' + sc).join('\n\n') + (svTpl9 ? MJ_surveyLine_(svTpl9, s.id) : '') + '\n\n— SYNK LAB'); // [v9.73] 월간 설문 링크 동봉(학생별 프리필)
+    sent++; doneSids.add(s.id);
+  });
+  if (quotaShort) props.setProperty('하이라이트보류', ym + '|' + Array.from(doneSids).join(','));
+  else { props.setProperty('하이라이트발송월', ym); props.deleteProperty('하이라이트보류'); }
+  if (sent) adminMail('[SYNK] ✨ 학부모 하이라이트 ' + sent + '건 발송', ym + ' 실데이터 장면만 골라 발송(데이터 없는 학생은 생략 — 지어내지 않음).' + (quotaShort ? '\n⚠ 메일 쿼터 도달 — 남은 학생은 내일 아침 자동으로 이어 발송됩니다.' : ''));
+}
+
+// ── F2 SNS 성장 스토리 초안(월간) — 익명 집계만 사용(동의 체계 구축 전 개인 식별 정보 미사용) ──
+function snsDrafts_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const apiKey = PropertiesService.getScriptProperties().getProperty('CLAUDE_API_KEY');
+  if (!apiKey) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const ym = Utilities.formatDate(new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1), tz, 'yyyy-MM');
+  const sd = ensureSheet(ss, '스토리초안', ['월', '제목', '초안', '상태', 'created_at']);
+  ymTextColFix_(sd, 1, tz); // [v9.97] — 여기 멱등이 깨지면 Claude API가 매달 중복 호출된다(비용)
+  if (sd.getLastRow() >= 2 && sd.getRange(2, 1, sd.getLastRow() - 1, 1).getValues().some(r => ymTextOf_(r[0], tz) === ym)) return; // 월키 멱등
+  const pl = ss.getSheetByName('point_logs');
+  let totP = 0, evtN = 0;
+  if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (!r[5] || dstr(r[5], tz).indexOf(ym) !== 0) return;
+    const p = Number(r[2]) || 0;
+    if (p > 0) { totP += p; evtN++; }
+  });
+  if (!evtN) return; // 지난달 데이터 없음(개원 전) — 초안 생성 생략
+  const pf = ss.getSheetByName('profiles');
+  let evoN = 0, stuN = 0;
+  if (pf && pf.getLastRow() >= 2 && pf.getMaxColumns() >= 54) pf.getRange(2, 1, pf.getLastRow() - 1, 54).getValues().forEach(r => {
+    if (!r[0] || r[3] !== 'student') return;
+    stuN++;
+    if (String(r[53] || '').indexOf(ym) === 0) evoN++;
+  });
+  try {
+    const sSchema = { type: 'object', additionalProperties: false, required: ['items'], properties: { items: { type: 'array', items: {
+      type: 'object', additionalProperties: false, required: ['t', 'd'], properties: {
+        t: { type: 'string', description: '게시물 제목(한국어)' }, d: { type: 'string', description: 'FB 게시용 초안 6~9문장 — 한국어 본문 + 마지막에 몽골어 요약 2문장. 학생 실명·개인정보 금지(집계 숫자만)' } } } } } };
+    const out = aiCall_(apiKey, 'SYNK LAB(몽골 울란바토르 게임화 한국어 학원) FB 페이지의 콘텐츠 작가. 과장 광고 톤 금지, 기록·숫자 기반 담백한 자랑.',
+      ym + ' 집계: 크루 ' + stuN + '명 · 총 경험치 ' + totP + 'P · 기록 이벤트 ' + evtN + '건 · 몬스터 진화 ' + evoN + '회.\n이 집계로 서로 다른 각도의 게시물 초안 3개.', sSchema, 4096);
+    const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+    const rows = (out.items || []).slice(0, 3).map(it => [ym, String(it.t || '').slice(0, 60), String(it.d || ''), '검수대기', today]);
+    if (rows.length) {
+      sd.getRange(sd.getLastRow() + 1, 1, rows.length, 5).setValues(rows);
+      adminMail('[SYNK] 📣 SNS 초안 ' + rows.length + '건 생성', '스토리초안 시트에서 검수 후 발행하세요(발행은 항상 사람 — 자동 게시 없음).');
+    }
+  } catch (e) { Logger.log('SNS 초안 실패: ' + e); }
+}
+
+/* ── F1 AI 레벨 진단 — 무료 테스트 폼 → 채점 → 몽골어 진단 리포트 → leads 편입 ──
+ * createLevelTestForm(): 유호님이 에디터에서 1회 ▶ 실행(출석폼 패턴). 문항·정답키는 아래 상수 — 커리큘럼 정본 기준, 유호님 검수 환영. */
+const LEVEL_TEST_Q = [ // [문항, 보기4, 정답 인덱스(0~3)]
+  ['"안녕하세요"의 뜻은?', ['Баяртай', 'Сайн байна уу', 'Баярлалаа', 'Уучлаарай'], 1],
+  ['다음 중 "물"은?', ['ус', 'гал', 'салхи', 'шороо'], 0],
+  ['저는 학생___. 빈칸에 맞는 것은?', ['는', '이에요', '가', '를'], 1],
+  ['"감사합니다"는 언제 쓰나요?', ['사과할 때', '고마울 때', '헤어질 때', '만날 때'], 1],
+  ['숫자 "셋"은?', ['1', '2', '3', '4'], 2],
+  ['"밥을 ___" 맞는 것은?', ['마셔요', '먹어요', '입어요', '신어요'], 1],
+  ['어제 학교에 ___. 맞는 것은?', ['가요', '갈 거예요', '갔어요', '갑니다'], 2],
+  ['"책이 책상 ___ 있어요"', ['위에', '위를', '위가', '위는'], 0],
+  ['"바쁘___ 못 갔어요" — 이유를 나타내는 것은?', ['지만', '아서', '거나', '려고'], 1],
+  ['높임말이 맞는 문장은?', ['선생님이 밥을 먹어요', '선생님께서 진지를 드세요', '선생님이 잘 자요', '선생님은 집에 가'], 1],
+  ['"한국에 ___ 적이 있어요"(경험)', ['가는', '간', '갈', '가던'], 1],
+  ['"비가 오___ 우산을 가져가세요"', ['니까', '지만', '거나', '도록'], 0],
+  ['"동생은 키가 크___ 저는 작아요"(대조)', ['고', '지만', '아서', '니까'], 1],
+  ['"열심히 공부했___ 시험을 잘 봤어요"(결과)', ['지만', '더니', '거나', '려고'], 1],
+  ['"시간이 있___ 같이 영화 봐요"(조건)', ['어서', '으면', '지만', '고'], 1]];
+function createLevelTestForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  // [v9.60] 재실행 안전(멱등) — 구 버전은 무조건 새 폼을 만들고 마지막에 시트 이름만 바꿨다.
+  //   그래서 두 번째 실행이 "이름이 '레벨테스트_응답'인 시트가 이미 있습니다"로 죽으면서
+  //   ①쓸모없는 중복 폼 ②이름 없는 응답 시트 잔재를 남겼다(2026-07-24 22:23 실사고).
+  //   이제 이미 있으면 만들지 않고 기존 URL을 돌려준다. URL 기록이 없으면 시트에 연결된
+  //   폼에서 되찾아 app_state에 복구한다(수동 재생성 불필요).
+  {
+    const stX = ensureSheet(ss, 'app_state', ['key', 'value']);
+    const shX = ss.getSheetByName('레벨테스트_응답');
+    let urlX = '';
+    try { urlX = String((getState(stX, '레벨테스트URL') || {}).val || '').trim(); } catch (eX) {}
+    if (shX) {
+      if (!urlX) { // 시트는 있는데 URL 기록만 없음 → 연결된 폼에서 회수
+        try {
+          const editUrl = shX.getFormUrl();
+          if (editUrl) { urlX = FormApp.openByUrl(editUrl).getPublishedUrl(); setState(stX, '레벨테스트URL', urlX); }
+        } catch (eY) { Logger.log('폼 URL 회수 실패: ' + eY.message); }
+      }
+      const msgX = urlX
+        ? '이미 개통돼 있습니다 — 새로 만들지 않았습니다.\n공유 URL: ' + urlX
+        : "'레벨테스트_응답' 시트는 있는데 연결된 폼을 찾지 못했습니다. 그 시트를 지운 뒤 다시 실행하면 새로 만듭니다.";
+      Logger.log(msgX);
+      return msgX;
+    }
+  }
+  const before = {};
+  ss.getSheets().forEach(sh => { before[sh.getName()] = 1; });
+  const form = FormApp.create('SYNK LAB — 무료 한국어 레벨 테스트 (Үнэгүй түвшин тогтоох тест)');
+  setState(ensureSheet(ss, 'app_state', ['key', 'value']), '레벨테스트URL', form.getPublishedUrl()); // [v9.94] 생성 즉시 기록 — 뒤 단계(응답 시트 연결)에서 타임아웃돼도 앱이 이 폼을 잃지 않는다
+  form.setDescription('15문항 · 5분 · 결과는 몽골어 AI 진단 리포트로 이메일에 도착합니다.\n15 асуулт · 5 минут · Танд монгол хэлээр оношилгооны тайлан имэйлээр очно.');
+  form.addTextItem().setTitle('이름 / Нэр').setRequired(true);
+  form.addTextItem().setTitle('연락처 / Утас').setRequired(true);
+  form.addTextItem().setTitle('이메일 / Имэйл (리포트 수신)').setRequired(true);
+  LEVEL_TEST_Q.forEach((q, i) => {
+    const item = form.addMultipleChoiceItem();
+    item.setTitle((i + 1) + '. ' + q[0]).setChoices(q[1].map(c => item.createChoice(c))).setRequired(true);
+  });
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  SpreadsheetApp.flush();
+  const fresh = ss.getSheets().filter(sh => !before[sh.getName()])[0];
+  if (fresh) fresh.setName('레벨테스트_응답');
+  setState(ensureSheet(ss, 'app_state', ['key', 'value']), '레벨테스트URL', form.getPublishedUrl());
+  Logger.log('레벨 테스트 폼 생성 완료 — 공유 URL: ' + form.getPublishedUrl());
+  return '레벨 테스트 준비 완료. FB·상담에 뿌릴 URL: ' + form.getPublishedUrl();
+}
+
+// [v9.60] 폼 재실행이 남긴 잔재 청소 — ▶ 수동 실행. 자동 생성 이름('설문지 응답 시트N'·'Form Responses N')이면서
+//   **응답이 0건인 시트만** 지운다(이름 붙은 정본 시트·데이터 있는 시트는 절대 건드리지 않는다).
+//   연결된 폼 파일 자체는 지우지 않고 편집 URL만 로그로 안내한다 — 유호님이 Drive에서 확인 후 삭제.
+function cleanupOrphanFormSheets() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const pat = /^(설문지 응답 시트\d+|Form Responses \d+)$/;
+  const removed = [], kept = [], forms = [];
+  ss.getSheets().forEach(sh => {
+    const nm = sh.getName();
+    if (!pat.test(nm)) return;
+    let furl = '';
+    try { furl = sh.getFormUrl() || ''; } catch (e) {}
+    if (sh.getLastRow() >= 2) { kept.push(nm + '(응답 ' + (sh.getLastRow() - 1) + '건 — 보존)'); return; }
+    if (furl) forms.push(nm + ' → ' + furl);
+    ss.deleteSheet(sh);
+    removed.push(nm);
+  });
+  const msg = '잔재 청소: 삭제 ' + removed.length + '개' + (removed.length ? ' (' + removed.join(', ') + ')' : '') +
+    (kept.length ? '\n보존(응답 있음): ' + kept.join(', ') : '') +
+    (forms.length ? '\n\n⚠ 아래 폼 파일은 그대로 남아 있습니다 — Drive에서 확인 후 삭제하세요:\n' + forms.join('\n') : '');
+  Logger.log(msg);
+  return msg;
+}
+function sweepLevelTest_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const src = ss.getSheetByName('레벨테스트_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const from = Number(props.getProperty('레벨테스트_포인터')) || 1;
+  const last = src.getLastRow();
+  if (from >= last) { if (from > last) props.setProperty('레벨테스트_포인터', String(last)); return; }
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = src.getRange(from + 1, 1, last - from, 4 + LEVEL_TEST_Q.length).getValues();
+  const ld = ensureSheet(ss, 'leads', ['날짜', '이름', '연락처', '유입경로', '추천인', '체험참석', '등록', '등록권종', '등록일', '미등록사유', '메모', '캠페인']);
+  let done = 0;
+  const t0L = Date.now(); // [자체 예산] nightJobs 6분 하드킬 보호 — 초과분은 포인터가 남아 다음 밤 이어짐
+  for (let i = 0; i < rows.length && done < 10 && Date.now() - t0L < 60000; i++) {
+    const r = rows[i];
+    const nm = String(r[1] || '').trim(), phone = String(r[2] || '').trim(), email = String(r[3] || '').trim();
+    if (!nm) { props.setProperty('레벨테스트_포인터', String(from + i + 1)); continue; }
+    let score = 0;
+    LEVEL_TEST_Q.forEach((q, qi) => { if (String(r[4 + qi] || '') === q[1][q[2]]) score++; });
+    const lvl = score <= 4 ? { n: '입문', d: '한글·기초 표현부터 탄탄하게' } : score <= 7 ? { n: '초급 1', d: '기초 문장 만들기 단계' }
+      : score <= 10 ? { n: '초급 2', d: '일상 대화 확장 단계' } : score <= 12 ? { n: '중급 1', d: '이유·대조 등 연결 표현 단계' }
+      : { n: '중급 2+', d: '심화 문형·유창성 단계' };
+    let report = aiText_('몽골 학생의 한국어 레벨 테스트 결과로 몽골어 진단 리포트를 써라. 형식: 몽골어 8~10줄(인사→점수와 의미→강점 1개→보완할 것 1개→추천 반→마무리 응원). ' +
+      '마지막 줄에 한국어 1줄 요약. 과장 금지.\n이름: ' + nm + '\n점수: ' + score + '/15\n판정 레벨: ' + lvl.n + ' (' + lvl.d + ')', 1536);
+    if (!report) report = nm + ' — Таны оноо: ' + score + '/15\nТүвшин: ' + lvl.n + '\n' +
+      'SYNK LAB-д тохирох анги: ' + lvl.n + ' анги.\nДэлгэрэнгүй зөвлөгөөг зөвлөх багштай холбогдоорой!\n\n(한국어 요약) ' + nm + '님의 레벨은 ' + lvl.n + ' — ' + lvl.d + '.';
+    if (email && quotaOk(1)) MailApp.sendEmail(email, '[SYNK LAB] 📊 ' + nm + ' — Түвшин тогтоох тестийн үр дүн (레벨 진단 리포트)',
+      report + '\n\n—\nSYNK LAB · Улаанбаатар\n무료 상담·체험 신청은 이 메일에 회신하시면 됩니다. (Үнэгүй зөвлөгөө авахыг хүсвэл энэ имэйлд хариулаарай!)');
+    ld.appendRow([dstr(r[0] instanceof Date ? r[0] : new Date(), tz), nm, phone, '레벨테스트', '', '', '', '', '', '', '점수 ' + score + '/15 · ' + lvl.n + (email ? ' · ' + email : ''), '레벨테스트']);
+    props.setProperty('레벨테스트_포인터', String(from + i + 1));
+    done++;
+  }
+  if (done) adminMail('[SYNK] 📊 레벨 테스트 ' + done + '건 처리', '진단 리포트 발송 + leads 편입 완료. leads 시트에서 상담 연결하세요.');
+}
+
+function parentSweep() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  // [v9.32] 상단 호출도 safeRun 보호 — 여기서 throw하면 아래 폼 편입·수업 브리핑·출결 보드가
+  //   함께 중단되고 구글 기본 실패 요약(최대 하루 지연)에만 의존하게 된다.
+  safeRun('sweepAttendanceForm', function () { sweepAttendanceForm_(ss); }); // [v9.49] 출석 폼 → attendance 전개 (등원알림·보드·미등원판정 앞 — 앱 출석의 update-0 대체)
+  safeRun('expandAttendanceBatch', function () { expandAttendanceBatch_(ss); }); // [v9.36] 수업 시작 출석 1탭(attendance_batch) → attendance 전개 (등원알림·보드·미등원판정 앞)
+  if (PARENT_MAIL_ARRIVAL) safeRun('attendanceNotify', function () { attendanceNotify_(ss); }); // [v7.9] 등원 즉시 알림은 기본 OFF
+  safeRun('translateNotices', function () { translateNotices_(ss); });
+  safeRun('translateTopics', function () { translateTopics_(ss); }); // [v5.7] 이번 주 우리 반 배운 것 → 몽골어
+  safeRun('importFormResponses', importFormResponses); // [v6.3] 상담 폼 접수 편입
+  safeRun('sweepLeadForm', function () { sweepLeadForm_(ss); }); // [v9.43] 광고 리드폼 → leads 자동 편입(수기 이관 폐지)
+  safeRun('msgLinkSweep', function () { MJ_msgLinkSweep_(ss); }); // [v9.71] 학부모 메신저 연결 스위프 — 상담로그 새 수신에서 학생ID를 찾아 messenger_links 자동 연결(새 행 없으면 2읽기 종료)
+  safeRun('sweepFeedbackAck', function () { sweepFeedbackAck_(ss); }); // [v9.49] 첨삭 '확인했어요' → +5P 정산(열람 보상 — 10분 내 반응해야 루프가 산다)
+  safeRun('sweepTeacherMemoForm', function () { sweepTeacherMemoForm_(ss); }); // [v9.55] 약점 메모 폼 → student_errors — classPrepMail보다 앞(같은 틱의 메모가 수업 전 메일에 실린다)
+  safeRun('sweepAcademicForm', function () { sweepAcademicForm_(ss); }); // [v9.74] 학업 기록 폼 → academic_log — 급수·모의 차트 원료(월 빈도라 포인터 조기 종료로 무비용)
+  safeRun('sweepAbsenceForm', function () { sweepAbsenceForm_(ss); }); // [v9.89] 결석 연락 폼 → absence_followup 마감 — checkNoShow보다 앞(같은 틱에 들어온 연락이 오늘 감지분에 바로 반영)
+  safeRun('sweepLectureForm', function () { sweepLectureForm_(ss); }); // [v9.106] 강의폼_응답 → lecture_views
+  safeRun('sweepLessonCloseForm', function () { sweepLessonCloseForm_(ss); }); // [v9.91] 차시 마감폼 → lesson_close — classPrepMail보다 앞(같은 틱의 마감이 다음 수업 브리핑 조 편성에 반영)
+  safeRun('classPrepMail', function () { classPrepMail_(ss, ss.getSpreadsheetTimeZone()); }); // [v6.8]
+  safeRun('checkoutCheerMail', function () { checkoutCheerMail_(ss); }); // [v6.8]
+  safeRun('todayBoard', function () { todayBoard_(ss); }); // [v8.1] 오늘의 출결 보드 (10분 갱신)
+  safeRun('queueInquiries', function () { queueNewInquiries_(ss); }); // [v9.32] 신규 학부모 문의 → 아침 브리핑 큐
+  safeRun('checkNoShow', checkNoShow); // [v9.34] 부활 — 판정 창(수업 시작+30~90분)은 10분 스위프에서만 실제로 걸린다. 반별 1일 1회 app_state 가드 + 당일 출석 0건 반 스킵으로 오경보 없음
+}
+
+function translateTopics_(ss) {
+  const sh = ss.getSheetByName('weekly_topics');
+  if (!sh || sh.getLastRow() < 2) return;
+  if (String(sh.getRange(1, 5).getValue()) === '') sh.getRange(1, 5).setValue('배운내용_mn');
+  const data = sh.getRange(2, 1, sh.getLastRow() - 1, 5).getValues();
+  let done = 0;
+  for (let i = 0; i < data.length && done < 10; i++) {
+    const ko = String(data[i][1] || '');
+    if (!ko || String(data[i][4] || '')) continue;
+    try { sh.getRange(i + 2, 5).setValue(LanguageApp.translate(ko, 'ko', 'mn')); done++; }
+    catch (e) { break; }
+  }
+}
+
+function attendanceNotify_(ss) {
+  if (!NOTIFY_PARENT_ATTENDANCE) return;
+  const at = ss.getSheetByName('attendance');
+  if (!at || at.getLastRow() < 2) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  // [v5.3] 포인터를 Script Properties로 — 30분 스위프의 시트 쓰기(월 ~150업데이트) 제거
+  const props = PropertiesService.getScriptProperties();
+  let from = Number(props.getProperty('등원알림_포인터')) || 1; // 마지막 처리 행 (헤더 = 1)
+  const lastRow = at.getLastRow();
+  if (from > lastRow) { props.setProperty('등원알림_포인터', String(lastRow)); return; } // [v9.34] 시트 재건·행 정리 시 클램프(플래그 ON 대비 잠복 결함 제거)
+  if (from >= lastRow) { return; }
+
+  const pf = ss.getSheetByName('profiles');
+  const info = {};
+  (!pf || pf.getLastRow() < 2 ? [] : pf.getRange(2, 1, pf.getLastRow() - 1, 26).getValues()).forEach(r => { // [v8.2]
+    if (r[0]) info[r[0]] = { name: r[1], pEmail: String(r[25] || '').trim() };
+  });
+
+  const rows = at.getRange(from + 1, 1, lastRow - from, 4).getValues();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const mails = [];
+  rows.forEach(r => {
+    const sid = r[1], d = r[2];
+    if (!sid || !d) return;
+    const s = info[sid];
+    if (!s || s.pEmail.indexOf('@') === -1) return;
+    if (dstr(d, tz) !== today) return; // 과거 날짜 정정 입력은 메일 생략
+    const t = (d instanceof Date) ? Utilities.formatDate(d, tz, 'HH:mm') : '';
+    mails.push({ to: s.pEmail, name: s.name, time: t });
+  });
+
+  if (mails.length && quotaOk(mails.length)) {
+    mails.forEach(m => {
+      MailApp.sendEmail(m.to,
+        '[SYNK] ✅ ' + m.name + (m.time ? ' — ' + m.time : '') + ' ирлээ',
+        'Сайн байна уу! 👋\n\n' +
+        m.name + ' сурагч өнөөдөр' + (m.time ? ' ' + m.time + ' цагт' : '') + ' SYNK-д ирлээ ✅\n' +
+        'Өнөөдрийн магтаал болон оноог аппаас харна уу 🙂\n\n' +
+        '(' + m.name + ' 학생이 오늘' + (m.time ? ' ' + m.time + '에' : '') + ' 등원했습니다.)\n\n' +
+        '— SYNK · Тархи судлалд суурилсан солонгос хэлний академи');
+    });
+  }
+  props.setProperty('등원알림_포인터', String(lastRow)); // 쿼터 부족 시에도 전진 (다음 날 몰림 방지)
+}
+
+function translateNotices_(ss) {
+  const sh = ss.getSheetByName('notices');
+  if (!sh || sh.getLastRow() < 2) return;
+  let headers = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0]
+    .map(h => String(h).trim().toLowerCase());
+  function find(cands) {
+    for (let i = 0; i < headers.length; i++) if (cands.indexOf(headers[i]) > -1) return i;
+    return -1;
+  }
+  let iT = find(['title', 'title_ko', '제목']); // [v9.40] addNotice와 동일 확장 — 구 스키마에서 notice_id를 번역하던 오작동 수정
+  let iB = find(['body', 'body_ko', 'content', '내용', '본문']);
+  if (iT === -1 && iB === -1) { iT = 0; iB = 1; }
+  let iTm = headers.indexOf('title_mn');
+  let iBm = headers.indexOf('body_mn');
+  if (iTm === -1) { sh.getRange(1, sh.getLastColumn() + 1).setValue('title_mn'); iTm = sh.getLastColumn() - 1; }
+  if (iBm === -1) { sh.getRange(1, sh.getLastColumn() + 1).setValue('body_mn'); iBm = sh.getLastColumn() - 1; }
+  const width = sh.getLastColumn();
+  const data = sh.getLastRow() < 2 ? [] : sh.getRange(2, 1, sh.getLastRow() - 1, width).getValues(); // [v8.2]
+  let done = 0;
+  for (let i = 0; i < data.length && done < 20; i++) {
+    const row = data[i];
+    const hasKo = String((iT > -1 ? row[iT] : '') || '') || String((iB > -1 ? row[iB] : '') || '');
+    if (!hasKo) continue;
+    if (String(row[iTm] || '') || String(row[iBm] || '')) continue; // 이미 번역됨
+    try {
+      if (iT > -1 && row[iT]) sh.getRange(i + 2, iTm + 1).setValue(LanguageApp.translate(String(row[iT]), 'ko', 'mn'));
+      if (iB > -1 && row[iB]) sh.getRange(i + 2, iBm + 1).setValue(LanguageApp.translate(String(row[iB]), 'ko', 'mn'));
+      done++;
+    } catch (e) { Logger.log('공지 번역 쿼터 대기: ' + e); break; }
+  }
+  if (done) Logger.log('공지 몽골어 번역: ' + done + '건');
+}
+
+/* ===================== [v5.2] contents 다국어 초벌 번역 =====================
+ * G열 = 몽골어, H열 = 영어. 빈 칸만 채움 · 실행당 60행 (쿼터에 걸리면 내일 재실행).
+ * 기계번역 초안이므로 학습 콘텐츠(숙제·팁)는 몽골어 가능한 크루 검수 권장.        */
+
+/* [v9.39] 번역 열 안전 탐색 — Glide가 시트에 심는 '🔒 Row ID' 열이 라이브 contents의 G(일부 행 H)를
+ * 차지한다(2026-07-18 실측). 위치(7/8) 고정으로 쓰면 Row ID가 번역으로 덮여 Glide 행 식별이 파괴됨.
+ * → 1행에서 label 포함 헤더('몽골어'·'몽골어(G)' 등)를 찾고, 없으면 맨 끝+1 열에 새로 만든다.
+ *   'Row ID' 포함 헤더는 절대 반환하지 않는다. */
+function langColOf_(ct, label) {
+  const w = ct.getLastColumn();
+  const heads = ct.getRange(1, 1, 1, w).getValues()[0].map(h => String(h || ''));
+  for (let c = 0; c < heads.length; c++) {
+    if (heads[c].indexOf('Row ID') > -1) continue;
+    if (heads[c].indexOf(label) > -1) return c + 1;
+  }
+  const col = w + 1;
+  if (ct.getMaxColumns() < col) ct.insertColumnsAfter(ct.getMaxColumns(), col - ct.getMaxColumns());
+  ct.getRange(1, col).setValue(label);
+  return col;
+}
+
+function translateContents() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ct = ss.getSheetByName('contents');
+  if (!ct || ct.getLastRow() < 2) return;
+  // [v9.39] G/H 고정 접근 폐기 — langColOf_로 이름 기반 열 탐색(Row ID 열 보호)
+  const mnCol = langColOf_(ct, '몽골어');
+  const enCol = langColOf_(ct, '영어');
+  const last = ct.getLastRow();
+  const base = ct.getRange(2, 1, last - 1, 6).getValues(); // A~F
+  const mnV = ct.getRange(2, mnCol, last - 1, 1).getValues();
+  const enV = ct.getRange(2, enCol, last - 1, 1).getValues();
+  const targets = ['quote', 'braintip', 'homework', 'monster', 'season', 'grammar']; // [v9.69] grammar 편입 — setupGrammarBank 주석(v9.38d)은 "포함"이라 했으나 실제 배열에 없어 G열 몽골어 초기화 시 자동 복원 경로가 끊겨 있던 주석-코드 불일치 수리(빈칸만 채우므로 큐레이션 번역은 불변)
+  let done = 0;
+  for (let i = 0; i < base.length && done < 60; i++) {
+    const r = base[i];
+    if (targets.indexOf(String(r[1])) === -1) continue;
+    const ko = String(r[3] || r[2] || '');
+    if (!ko) continue;
+    if (String(mnV[i][0] || '') && String(enV[i][0] || '')) continue;
+    try {
+      if (!String(mnV[i][0] || '')) ct.getRange(i + 2, mnCol).setValue(LanguageApp.translate(ko, 'ko', 'mn'));
+      if (!String(enV[i][0] || '')) ct.getRange(i + 2, enCol).setValue(LanguageApp.translate(ko, 'ko', 'en'));
+      done++;
+    } catch (e) { Logger.log('번역 쿼터 도달 — ' + (i + 2) + '행부터 내일 이어서'); break; }
+  }
+  Logger.log('translateContents: ' + done + '행 완료 (몽골어=' + mnCol + '열 · 영어=' + enCol + '열)');
+}
+
+/* ===================== [v9.26] B1 몽골어 컨텐츠 뱅크 (translateContents 부근 다국어 섹션에 인라인 병합) =====================
+ * 원본: scratchpad/b1/final/inject_mongolian.js — 아래 스니펫 헤더·주석 전문 보존(멱등성·setup 재실행 시 G열 초기화 후 재실행 규칙·병렬 상수 배선 후속 결정).
+ * 491조각 = contents G열 upsert 340(homework 210·quiz 100·braintip 30) + 병렬 상수 151(운세 36·SPEAK 41·스토리 74).
+ * ⚠ 아래 사용법의 '새 파일로 붙여넣고' 문구는 인라인 병합으로 대체됨 — injectMongolianContents()만 1회 실행하면 된다. */
+
+/***********************************************************************************************
+ * inject_mongolian.js — SYNK B1 몽골어 컨텐츠 뱅크 주입 스니펫 (생성일 2026-07-10)
+ *
+ * 출처: scratchpad/b1/final/번역_*.json (몽골어_용어집.md v0.1 준수 · 전 491건 커버리지 검증 완료)
+ * 사용법: 이 파일 전체를 Apps Script 프로젝트에 새 파일로 붙여넣고 injectMongolianContents() 1회 실행.
+ *
+ * ① injectMongolianContents() — contents 시트 G열(몽골어) upsert
+ *    · 대상 유형: homework(210) · quiz(100) · braintip(30) — 콘텐츠ID(A열) 매칭
+ *    · G열 형식: homework = D열(내용) 번역 1문자열 / quiz = "문제|정답" D열 형식 미러 / braintip = C열(본문) 번역
+ *    · 멱등: 값이 이미 같으면 건너뜀 — 재실행 시 "갱신 0"이면 정상
+ *    · 기존 G열 값(translateContents 기계번역 초벌 포함)은 큐레이션 번역으로 덮어씀 (의도된 동작)
+ *    · 다른 유형(monster·label·reason·quote·store·boss 등)의 행과 H열(영어)은 일절 건드리지 않음
+ *    · ⚠ setupHomework·setupQuiz·setupBrainTips 계열 재실행(replaceContentType)은 해당 유형 G열을
+ *      초기화하므로, 그 후 이 함수를 다시 1회 실행할 것 (translateContents와 동일한 운용 규칙)
+ *
+ * ② MN_* 병렬 상수 — contents 시트에 없는 코드 내 상수의 몽골어 대응본
+ *    · MN_FORTUNES(36) ↔ FORTUNES (Code.js L713) — 배열 인덱스 1:1
+ *    · MN_SPEAK ↔ SPEAK (L734) — 동일 구조 {today/miss3/miss7/idle: [말투3][문장], evosoon/crown/bday: [문장]}
+ *    · MN_STORY_TITLES(6)/MN_STORY_SCENES(12)/MN_STORY_EMOTIONS(8)/MN_STORY_GRAMMAR(12×4) ↔ L4412~4467
+ *    · MN_HOMEWORK_CATEGORY/MN_QUIZ_CATEGORY/MN_HOMEWORK_CHECKPOINT — 숙제·퀴즈의 부속 필드
+ *      (C열 카테고리·E열 검사포인트는 G열 1칸에 담지 않음 — 아래 상수로 무손실 보존)
+ *    ⚠ 병렬 상수의 연결 배선(홈 화면·app_state에서 어느 언어를 어떻게 노출할지)은 후속 결정.
+ *      이 파일은 데이터만 적재하며 기존 로직(hashPick_·buildStorybook 등)을 일절 수정하지 않는다.
+ *
+ * ⚠ 원어민 감수: 용어집 §7(15항목) + 각 번역 note의 감수 플래그 20건은 감수 후 일괄 치환 예정.
+ *    감수 전에도 주입은 안전 — 치환 시 이 파일의 문자열만 고쳐 재실행하면 된다(멱등).
+ ***********************************************************************************************/
+
+/* ===================== ① contents 시트 G열 upsert 데이터 ===================== */
+
+const MN_CONTENTS_G = {
+  // ---- homework ----
+  "HW101": "Өнөөдөр сурсан 3 үгээрээ тус бүр нэг өгүүлбэр зохиогоод ирээрэй.",
+  "HW102": "Өнөөдөр сурсан үгнээс 2-ыг нэг өгүүлбэрт хамт оруулаад үзээрэй.",
+  "HW103": "Шинэ 3 үгийн эсрэг эсвэл ойролцоо утгатай үгийг олоод ирээрэй.",
+  "HW104": "Өнөөдөр сурсан 5 үгээр мини үгийн дэвтэр хийгээрэй (үг + утга + 1 жишээ өгүүлбэр).",
+  "HW105": "Гэртээ байгаа 5 зүйлийн солонгос нэрийг бичээд ирээрэй.",
+  "HW106": "Өнөөдөр сурсан 3 үгийг оруулаад 3 өгүүлбэртэй мини түүх зохиогоорой.",
+  "HW107": "Өнөөдөр сурсан нэг үгээр эхлээд үгийн сүүл залгах 끝말잇기 тоглоомоор 5 үг залгаад ирээрэй.",
+  "HW108": "Өнөөдөр сурсан 3 үгийг зураг болгон зураад ирээрэй (утгыг нь бичихгүйгээр).",
+  "HW109": "Хамгийн хэцүү 1 үгээ 10 удаа чангаар уншаад тэмдэглээрэй.",
+  "HW110": "Өнөөдөр сурсан 4 үгийг хоёр бүлэгт хувааж, юугаар нь ангилснаа хэлээрэй.",
+  "HW111": "Өнөөдөр сурсан үгнээс нэгийг хаяг, сав баглаанаас олж тэмдэглээрэй.",
+  "HW112": "Өнөөдөр сурсан 1 үгийн утгыг дохио зангаагаар илэрхийлээд үзээрэй.",
+  "HW113": "Өнөөдөр сурсан 3 үгээр өөрийнхөө тухай өгүүлбэр бичээрэй.",
+  "HW114": "Өнөөдөр сурсан үгтэй хамт хэрэглэгддэг 3 хослол олоорой (жишээ: 사진을 찍다).",
+  "HW115": "Толь бичгээс өнөөдөр сурсан 3 үгийн жишээ өгүүлбэрийг гараараа хуулж бичээрэй.",
+  "HW116": "Өнөөдөр сурсан 3 үгийг чанга дуугаар 3 удаа уншаад тэмдэглэгээ хийгээрэй.",
+  "HW117": "Өнөөдөр сурсан 3 үгэнд таарах бодит зүйлийн зургийг аваад ирээрэй.",
+  "HW118": "Эсрэг утгатай үг ашиглаад өнөөдөр үзсэн 2 өгүүлбэрийг эсрэгээр нь хувиргаад үзээрэй.",
+  "HW119": "Гэр бүлдээ өнөөдөр сурсан 3 үгийг зааж өгөөд, ямар байсныг нь тэмдэглээрэй.",
+  "HW120": "Өнөөдөр сурсан үгээ оруулсан 2 асуулт зохиогоорой — хичээл дээр ашиглана.",
+  "HW121": "Өнөөдөр сурсан 5 үгийг 가나다 дарааллаар эрэмбэлээд ирээрэй.",
+  "HW122": "Өнөөдөр сурсан 1 үгээр өдрөө нэг мөрөнд багтааж бичээрэй.",
+  "HW123": "Дуудлага нь төстэй хос үг олж, ялгааг нь тэмдэглээрэй.",
+  "HW124": "Өнөөдөр сурсан үгсийг нэр үг / үйл үг / тэмдэг нэрээр ангилаарай.",
+  "HW125": "Өнөөдөр сурсан 3 үгээр хоёр мөр харилцан яриа зохиогоорой.",
+  "HW126": "Мэдэхгүй 1 үгийн утгыг эхлээд таамаглаж бичээд, дараа нь толь бичгээс шалгаарай.",
+  "HW127": "Өнөөдөр сурсан 5 үгийг эможигоор илэрхийлээд ирээрэй.",
+  "HW128": "Өнөөдөр сурсан 5 үгээр үгийн карт хийгээрэй (урд талд нь үг / ард талд нь утга).",
+  "HW129": "Өнгөрсөн долоо хоногийн 3 үг + өнөөдөр сурсан 3 үгээр 2 өгүүлбэр зохиогоорой.",
+  "HW130": "Өнөөдөр сурсан үгнээс хамгийн дуртай 1 үгээ сонгож, шалтгааныг нь нэг өгүүлбэрээр бичээрэй.",
+  "HW201": "Өнөөдөр үзсэн дүрмээрээ өөрийнхөө тухай 3 өгүүлбэр бичээрэй.",
+  "HW202": "Өнөөдөр үзсэн дүрмээр 2 асуулт зохиогоорой — маргааш найзаасаа асуугаарай.",
+  "HW203": "Өчигдөр хийсэн зүйлээ 3 өгүүлбэрээр бичээрэй (өнгөрсөн цаг).",
+  "HW204": "Маргааш хийх зүйлээ 3 өгүүлбэрээр бичээрэй (төлөвлөгөө илэрхийлэх хэллэг).",
+  "HW205": "Сурах бичгийн 2 өгүүлбэрийг үгүйсгэсэн хэлбэрт оруулаарай.",
+  "HW206": "Өнөөдөр үзсэн дүрэм + өнгөрсөн долоо хоногийн дүрмийг нэг өгүүлбэрт хамтад нь хэрэглээрэй.",
+  "HW207": "Өнөөдөр үзсэн 2 өгүүлбэрээс 조사(нөхцөл)-г олж дугуйлаарай.",
+  "HW208": "Өнөөдөр үзсэн дүрмээр гэр бүлээ танилцуулсан 2 өгүүлбэр бичээрэй.",
+  "HW209": "Сурах бичгээс өнөөдөр үзсэн дүрэм орсон 2 өгүүлбэр олж, доогуур нь зураарай.",
+  "HW210": "Өнөөдөр үзсэн дүрэм + цаг заасан үг (아침·어제 гэх мэт) орсон 2 өгүүлбэр бичээрэй.",
+  "HW211": "Өнөөдөр үзсэн өгүүлбэрийг «(으)세요» (эелдэг хүсэлт) болон «-읍시다» (хамтдаа хийе) хэлбэрт оруулаарай.",
+  "HW212": "Шалтгаан заасан -아/어서 хэлбэрээр 3 өгүүлбэр бичээрэй.",
+  "HW213": "Болзол заасан -으면 хэлбэрээр 2 өгүүлбэр бичээрэй.",
+  "HW214": "Өнөөдөр үзсэн дүрмээр Монголоо танилцуулсан 1 өгүүлбэр бичээрэй.",
+  "HW215": "Өнөөдөр үзсэн 2 өгүүлбэрийг хүндэтгэлийн хэлбэрт оруулаарай.",
+  "HW216": "반말 хэлбэрийн 2 өгүүлбэрийг 존댓말 болгож, 존댓말-ын 2 өгүүлбэрийг 반말 болгож хөрвүүлээрэй.",
+  "HW217": "Өнөөдөр үзсэн дүрмийг өөрийнхөө үгээр нэг мөрөнд багтааж бичээрэй.",
+  "HW218": "Сурах бичгийн нэг өгүүлбэрийн үгсийг холиод, дараа нь буцааж зөв дарааллаар нь эмхлээрэй.",
+  "HW219": "Эсрэгцүүлсэн -지만 хэлбэрээр 2 өгүүлбэр бичээрэй.",
+  "HW220": "Яг одоо хийж байгаа 3 зүйлээ бичээрэй (-고 있다).",
+  "HW221": "누가·언제·어디 гэсэн үг тус бүрээр 1 асуулт зохиогоорой.",
+  "HW222": "Хийж чаддаг 3 зүйлээ бичээрэй (-(으)ㄹ 수 있다).",
+  "HW223": "Өнөөдөр үзсэн дүрмийн 1 жишээ өгүүлбэрийг 3 удаа чанга уншаарай.",
+  "HW224": "Хүсэлт гаргах -아/어 주세요 хэлбэрээр 2 өгүүлбэр бичээрэй.",
+  "HW225": "Харьцуулсан -보다 хэлбэрээр 2 өгүүлбэр бичээрэй.",
+  "HW226": "Өнөөдөр үзсэн дүрмээр амралтын төлөвлөгөөгөө 1 өгүүлбэрээр бичээрэй.",
+  "HW227": "Богино 1 өгүүлбэрийг 3 мэдээлэл багтаасан урт өгүүлбэр болгож өргөжүүлээрэй.",
+  "HW228": "Урт 1 өгүүлбэрийг 2 өгүүлбэр болгож хуваагаарай.",
+  "HW229": "그리고·그래서·하지만 гэсэн үг тус бүрээр өгүүлбэр холбож, тус бүр 1 өгүүлбэр бичээрэй.",
+  "HW230": "Сурах бичгээс хамгийн дуртай 1 жишээ өгүүлбэрээ хуулж бичээд, од өгч, шалтгаанаа бичээрэй.",
+  "HW301": "Өнөөдөр сурсан хэллэгээрээ 30 секунд ганцаараа ярьж, утсандаа бичээрэй.",
+  "HW302": "Толинд харан харилцан яриаг 3 удаа уншаад, дахин дадлага хийх 1 дуудлагаа тэмдэглээрэй.",
+  "HW303": "Гэр бүл, найздаа солонгосоор мэндчилж, 1 өгүүлбэр хэлээд, ямар байсныг тэмдэглээрэй.",
+  "HW304": "Өнөөдөр үзсэн харилцан яриаг ганцаараа 2 дүрд хувааж уншаарай.",
+  "HW305": "Солонгос дууны нэг мөрийг дагаж хэлээрэй (үгийг нь хараад, зөвхөн дуудлагаар).",
+  "HW306": "«오늘 뭐 했어요?» гэдэг асуултад 20 секунд зогсолтгүй хариулж дадлага хийгээрэй.",
+  "HW307": "Өнөөдөр үзсэн харилцан яриаг харалгүйгээр цээжээр хэлж үзээрэй.",
+  "HW308": "Өнөөдрийн он сар өдөр, гараг, цагийг чанга дуугаар 3 удаа хэлээрэй.",
+  "HW309": "Өөрийгөө танилцуулсан 15 секундын бичлэг хийгээрэй (илгээх шаардлагагүй).",
+  "HW310": "Утсаар ярихад хэрэглэдэг эхний мэндчилгээ 3-ыг (여보세요 гэх мэт) хэлж дадлага хийгээрэй.",
+  "HW311": "Дэлгүүрт юм худалдаж авах нөхцөлийг ганцаараа дүрийн тоглолтоор тоглоод үзээрэй.",
+  "HW312": "Зам асуух 3 өгүүлбэрийг чангаар дуудаж дасгал хийгээрэй.",
+  "HW313": "Өнөөдрийн сэтгэл санаагаа 3 өгүүлбэрээр хэлээд үзээрэй.",
+  "HW314": "Сурах бичгийн догол мөрийг 2 дахин хурдан уншиж үзээрэй.",
+  "HW315": "Мөн тэр догол мөрөө маш удаан, тод тод 1 удаа уншаарай.",
+  "HW316": "Нэг өгүүлбэрийг намуухан·энгийн·чанга гэж 3 удаа хэлээрэй.",
+  "HW317": "Өөрөө асуулт зохиож, өөрөө хариулаарай — ийм 2 хос.",
+  "HW318": "Өрөөнийхөө 5 эд зүйлийг хуруугаараа зааж хэлээрэй.",
+  "HW319": "Өнөөдөр сурсан хэллэгээ тоглоом эсвэл тэжээвэр амьтандаа хэлээд үзээрэй.",
+  "HW320": "Богино бичлэгийг 1 минут «сүүдэр яриа» хийж үзээрэй (бичлэгтэй нэгэн зэрэг давтаж ярих).",
+  "HW321": "Дуудахад хэл эргэдэг 1 өгүүлбэрийг 5 удаа давтаарай.",
+  "HW322": "Холбож дуудагддаг (연음) 5 үгийг чангаар дуудаарай (꽃이·같이 г.м).",
+  "HW323": "Өөрийгөө танилцуулах яриагаа шинэчлээд 15 секундэд багтааж хэлээрэй.",
+  "HW324": "Дуртай 3 зүйлээ шалтгаантай нь хамт хэлээрэй.",
+  "HW325": "Маргаашийн төлөвлөгөөгөө чангаар хэлээрэй.",
+  "HW326": "Өнөөдрийн хамгийн сайхан мөчөө нэг өгүүлбэрээр хэлээрэй.",
+  "HW327": "Яг одоо хийж буй үйлдлээ 30 секунд шууд дамжуулагч шиг ярьж өгөөрэй.",
+  "HW328": "Найзаа магтсан 3 өгүүлбэрийг чангаар хэлээрэй.",
+  "HW329": "Ангийнхаа найзын нэрийг оруулсан 2 өгүүлбэр хэлээрэй.",
+  "HW330": "Энэ долоо хоногийн хамгийн дуртай өгүүлбэрээ уншиж бичлэг хийгээд ирээрэй.",
+  "HW401": "Өнөөдөр үзсэн өгүүлбэрийн загвараар 3 мөр өдрийн тэмдэглэл бичээрэй.",
+  "HW402": "Солонгос хоол·драм·дуунаас нэгийг сонгоод 3 өгүүлбэрээр танилцуулаарай.",
+  "HW403": "Өнөөдрийн хичээлээс хамгийн санаанд үлдсэн зүйлээ 2 өгүүлбэрээр товчилж бичээрэй.",
+  "HW404": "Хамт суудаг найздаа өгөх 2 өгүүлбэртэй жижиг захидал бичээрэй — хичээл дээр солилцоно.",
+  "HW405": "Сурах бичгийн нэг зургийг 3 өгүүлбэрээр дүрслээрэй.",
+  "HW406": "Энэ долоо хоногийн үгсээр нөхөх 2 дасгал зохиогоорой — найз чинь хийнэ.",
+  "HW407": "Найздаа илгээх мессеж хэлбэрээр 3 мөр бичээрэй.",
+  "HW408": "Өдрийн хуваариа солонгос хэлээр бичээрэй.",
+  "HW409": "Дэлгүүрээс авах 5 зүйлийн жагсаалтыг солонгос хэлээр бичээрэй.",
+  "HW410": "1 жилийн дараах өөртөө зориулж 2 өгүүлбэр бичээрэй.",
+  "HW411": "Өнөөдрийн хамгийн сайхан мөч 1 өгүүлбэр + шалтгаан 1 өгүүлбэр бичээрэй.",
+  "HW412": "Өнөөдрийн цаг агаар болон хувцаслалтаа 2 өгүүлбэрээр бичээрэй.",
+  "HW413": "Дуртай хоолоо хийх дарааллыг 3 алхмаар бичээрэй.",
+  "HW414": "Талархдаг хүндээ зориулж талархлын 2 өгүүлбэр бичээрэй.",
+  "HW415": "Уучлалт гуйх нэг нөхцөл зохиогоод, уучлалтын 2 өгүүлбэр бичээрэй.",
+  "HW416": "Найзаа төрсөн өдөртөө урих өгүүлбэр бичээрэй.",
+  "HW417": "Дурын нэг зүйлд зориулж нэг мөр зар сурталчилгааны үг зохиогоорой.",
+  "HW418": "Өнөөдрөө сошиал постын нэг тайлбар шиг бичээрэй.",
+  "HW419": "Таалагдсан хэллэгээ хуулж бичээд, өөрийн өгүүлбэр 1-ийг зохиогоорой.",
+  "HW420": "Ангийн найзаасаа авах ярилцлагын 3 асуулт зохиогоорой.",
+  "HW421": "Дараа долоо хоногийн төлөвлөгөөгөө 3 мөр бичээрэй.",
+  "HW422": "Өрөөгөө 3 өгүүлбэрээр дүрслээрэй.",
+  "HW423": "Саяхан зүүдэлсэн зүүдээ (эсвэл зохиомол түүхээ) 2 өгүүлбэрээр бичээрэй.",
+  "HW424": "Солонгост очвол хиймээр байгаа 3 зүйлээ бичээрэй.",
+  "HW425": "Өнөөдөр үзсэн өгүүлбэрийн загвараар 3 мөр богино захидал бичээрэй (хэнд бичихээ өөрөө сонгоорой).",
+  "HW426": "Өнөөдөр сурсан 5 үгээ халхлаад өөрөө цээж бичиг хийгээрэй.",
+  "HW427": "Монгол хэлний 2 өгүүлбэрийг солонгос хэл рүү өөрөө орчуулаарай.",
+  "HW428": "Өнөөдрийн хичээлдээ гарчиг өгөөд, шалтгаанаа нэг мөр бичээрэй.",
+  "HW429": "Нэг зураг юм уу комиксын кадрт тохирох баатрын үг зохиогоорой.",
+  "HW430": "Өнгөрсөн пүрэв гарагт бичсэн нэг зохиолоо улам сайжруулаарай.",
+  "HW501": "Энэ долоо хоногийн үгнээс дахин бататгамаар 3 үгээ сонгож, тус бүрээр 1 өгүүлбэр зохиогоорой.",
+  "HW502": "Энэ долоо хоногийн нэг дүрмийг монголоор тайлбарласан тэмдэглэл бичээрэй.",
+  "HW503": "Солонгос бичлэг 1 минут үзээд сонсогдсон 3 үгээ бичээрэй.",
+  "HW504": "Даваа~пүрэв гарагийн гэрийн даалгавраас нэгийг нь улам сайжруулаарай.",
+  "HW505": "Энэ долоо хоногийн шинэ 10 үгээ өөрөө шалгаад, оноогоо тэмдэглээрэй.",
+  "HW506": "Энэ долоо хоногийн \"Маргаашийн нууц мэх\" 1-ийг сонгож тэмдэглэл хөтлөөрэй (яаж зөв болохыг нь бичээрэй).",
+  "HW507": "Энэ долоо хоногийн дүрмээр шинэ 3 жишээ өгүүлбэр зохиогоорой.",
+  "HW508": "Үгийн картуудаа хольж өөрөө шалгаад, оноогоо тэмдэглээрэй.",
+  "HW509": "Энэ долоо хоногийн гэрийн даалгавраасаа шилдэг бүтээлээ сонгоод, шалтгаанаа бичээрэй.",
+  "HW510": "Энэ долоо хоногт сурсан зүйлээ нэг майнд мап (санааны зураглал) болгон зураарай.",
+  "HW511": "Энэ долоо хоногийн өгүүлбэрээс хамгийн дуртай 1-ээ гоё сайхан дахин бичээрэй.",
+  "HW512": "Энэ долоо хоногийн 3 үгээр 2 өгүүлбэр зохиогоорой.",
+  "HW513": "Багшаасаа асуух 1 асуултаа бэлдэж ирээрэй.",
+  "HW514": "Найздаа өгөх жижиг квизийн 3 асуулт зохиогоорой.",
+  "HW515": "Энэ долоо хоногийн үгсийг сэдвээр нь ангилсан хүснэгт хийгээрэй.",
+  "HW516": "Энэ долоо хоногт сурснаа 3 мөрөнд багтааж дүгнээрэй.",
+  "HW517": "Энэ долоо хоногт өөртөө од өгөөд, шалтгаанаа нэг өгүүлбэрээр бичээрэй.",
+  "HW518": "Дараа долоо хоногийн хичээлийн материалыг гүйлгэж хараад, сонирхсон 1 зүйлээ тэмдэглээрэй.",
+  "HW519": "Энэ долоо хоногт хамгийн олон тааралдсан \"Маргаашийн нууц мэх\"-ээ олоод, зөв өгүүлбэрээр нь бичээрэй.",
+  "HW520": "Лхагва гарагийн бичлэгээ дахин сонсоод, сайжирсан 1 зүйлээ тэмдэглээрэй.",
+  "HW521": "Энэ долоо хоногийн үгнээс 5-ыг сонгоод, халхалж байгаад цээжээр хэлж үзээрэй.",
+  "HW522": "Энэ долоо хоногийн 3 өгүүлбэрийг цээжээр хэлэх сорилт!",
+  "HW523": "Энэ долоо хоногийн хамгийн дуртай 1 үгээ томоор бичээд гоёж чимэглээрэй.",
+  "HW524": "Сурсан зүйлээсээ 1-ийг ээж аавдаа тайлбарлаж өгөөрэй (монголоор ч болно).",
+  "HW525": "Сурах бичгийн энэ долоо хоногийн хуудсыг чангаар 1 удаа бүтнээр нь уншаарай.",
+  "HW526": "Андуурдаг 2 нөхцөлөө жишээ өгүүлбэртэй нь хамт цэгцлээрэй.",
+  "HW527": "Энэ долоо хоногт солонгос хэлээ бодитоор хэрэглэсэн 1 мөчөө тэмдэглээрэй.",
+  "HW528": "Өөрийн гэсэн 5 нүдтэй давталтын чеклист хийгээрэй.",
+  "HW529": "Энэ долоо хоногийн хэллэгүүдээ ашиглаад 4 мөр богино харилцан яриа бичээрэй.",
+  "HW530": "Энэ долоо хоногийн сэтгэгдлээ нэг мөр + дараа долоо хоногийн зорилгоо нэг мөр бичээрэй.",
+  "HW601": "Солонгос бичлэг 5 минут үзээд — шинээр сонссон 1 хэллэгээ бичиж аваарай.",
+  "HW602": "Эргэн тойрныхоо солонгос бүтээгдэхүүн, хаяг самбараас солонгос үг 3-ыг олоорой.",
+  "HW603": "Солонгос хоол 5-ыг дуртай дарааллаараа солонгосоор бичээрэй.",
+  "HW604": "Драмын нэг үзэгдлээс 1 хэллэгийг сонсоод бичиж аваарай.",
+  "HW605": "Дуртай дуучиндаа зориулж солонгосоор дэмжлэгийн 2 өгүүлбэр бичээрэй.",
+  "HW606": "Шоу нэвтрүүлгээс реакцын 1 хэллэгийг (대박 г.м.) утгатай нь хамт бичээрэй.",
+  "HW607": "Солонгосын газрын зургаас 3 хотын нэрийг уншаад бичээрэй.",
+  "HW608": "Солонгос хоол 1: зураг + нэр + амтыг нь нэг үгээр бичээрэй.",
+  "HW609": "Вэбтүүн (웹툰)-ий нэг хэсгийг уншаад 1 шинэ үгийн утгыг таамаглаж үзээрэй.",
+  "HW610": "Мэддэг солонгос брэнд 3-ыг хангылаар бичээрэй.",
+  "HW611": "Драмаас хүндэтгэлийн яриатай 1 үзэгдэл олоорой — хэн хэнд хэлж байна вэ?",
+  "HW612": "Солонгосын нэг уламжлалт баярын тухай судлаад нэг мөрөөр тайлбарлаарай.",
+  "HW613": "Айдолын өөрийгөө танилцуулдаг хэллэгээс нэгийг дуурайж хэлээрэй.",
+  "HW614": "Солонгосын 1 моодны үгийн утгыг олж мэдээрэй.",
+  "HW615": "Дуртай драм, киноныхоо 3 нэрийг хангылаар бичээрэй.",
+  "HW616": "K-гоо сайхан, загварын 3 үг цуглуулаарай.",
+  "HW617": "Солонгосын цаг агаарын аппын дэлгэцийг хараад чангаар уншаарай.",
+  "HW618": "Солонгос 1 дуу сонсонгоо мэддэг 1 үгээ бичиж аваарай.",
+  "HW619": "Мокбан (먹방) бичлэгээс амтны 2 хэллэг цуглуулаарай.",
+  "HW620": "Солонгос, Монголын ижил төстэй 1 зүйлийг нэг өгүүлбэрээр бичээрэй.",
+  "HW621": "태극기, 무궁화 гэх мэт Солонгосын бэлгэдлийн 3 нэрийг бичээрэй.",
+  "HW622": "Метроны шугамын зургаас 3 буудлын нэрийг уншаарай.",
+  "HW623": "Кино постерийн 1 өгүүлбэрийг бичээд ирээрэй.",
+  "HW624": "Солонгос мэндлэх ёсны 1 дүрмийг (хоёр гараар өгөх г.м.) цэгцлээрэй.",
+  "HW625": "Түгээмэл хэрэглэдэг 2 товчлол, эмотиконы утгыг бичээрэй (ㅋㅋ г.м.).",
+  "HW626": "Фандомын 2 үг цуглуулаарай (жишээ: 응원봉).",
+  "HW627": "Солонгос үсэг харагдсан 1 зураг аваад ирээрэй.",
+  "HW628": "Драмын алдартай 1 хэллэг + таалагдсан шалтгаанаа бичээрэй.",
+  "HW629": "Энэ улирлын солонгос хоолноос 1-ийг судлаарай.",
+  "HW630": "Амралтын өдрийн K-плейлистээс 1 дуу + мэдрэмжээ 1 үгээр бичээрэй.",
+  "HW701": "Энэ долоо хоногийн хамгийн дуртай 1 хэллэг + шалтгаанаа 1 өгүүлбэрээр бичээрэй.",
+  "HW702": "Дараа долоо хоногийн зорилгоо солонгос хэлээр 1 өгүүлбэрээр бичээрэй.",
+  "HW703": "Өнгөрсөн долоо хоногийн үгсээ чангаар 1 удаа бүгдийг уншаарай (тэмдэглэхэд л болно).",
+  "HW704": "Ширээгээ цэгцэлж, үгийн дэвтрээ байранд нь тавиарай (1 мөрөөр батлаарай).",
+  "HW705": "Энэ долоо хоногийн тэмдэглэлийнхээ 1 зургийг аваад хадгалаарай.",
+  "HW706": "Энэ долоо хоногт талархсан 1 зүйлээ солонгос хэлээр бичээрэй.",
+  "HW707": "Гийгүүлэгч, эгшгээ бүгдийг нь чангаар 1 удаа уншаарай.",
+  "HW708": "Суниалт хийнгээ 1-20 хүртэл солонгос хэлээр тоолоорой.",
+  "HW709": "Маргааш авч явах 3 зүйлээ солонгос хэлээр хэлээрэй.",
+  "HW710": "Энэ долоо хоногт сайн хийсэн 1 зүйлээ өөрөө магтаж бичээрэй.",
+  "HW711": "«Өнөөдрийн синапс»-аас 1 мэргэн үг сонгоод хуулж бичээрэй.",
+  "HW712": "Солонгос нэр, гарын үсгээ 3 удаа бичиж дадлага хийгээрэй.",
+  "HW713": "Ирээдүйн мөрөөдлөө 1 өгүүлбэрээр шинэчилж бичээрэй.",
+  "HW714": "Дуртай солонгос өгүүлбэр эсвэл дууны үгнээс 1 мөр цуглуулаарай.",
+  "HW715": "Хамгийн амархан 1 өгүүлбэрээ төгс дуудлагатай 3 удаа хэлээрэй.",
+  "HW716": "5 минут нүдээ аниад амарч, мэдрэмжээ 1 үгээр тэмдэглээрэй.",
+  "HW717": "Дараагийн хичээл дээр асуух 1 зүйлээ тэмдэглээрэй.",
+  "HW718": "Гэр бүлтэйгээ солонгос үг таах тоглоом 1 удаа тоглоорой.",
+  "HW719": "Ням гарагийн оройн дэглэмээ 1 мөрөөр бичээрэй.",
+  "HW720": "1 сарын өмнөх өөртөө 1 өгүүлбэр бичээрэй.",
+  "HW721": "Аппын чансааг хараад энэ сарын зорилтот байраа тогтоорой.",
+  "HW722": "Монстроо шалгаад, дараагийн хувьсал хүртэл хэдэн P хэрэгтэйг бичээрэй.",
+  "HW723": "Үгийн дэвтрийнхээ хавтсыг наалт эсвэл зургаар чимээрэй.",
+  "HW724": "Пенал доторх 3 зүйлээ солонгос хэлээр хэлээрэй.",
+  "HW725": "Энэ долоо хоногт сурсан 1 зүйлээ ээж аавдаа гайхуулаарай.",
+  "HW726": "Гэр бүлдээ солонгосоор «잘 자요» гэж хэлээрэй.",
+  "HW727": "Сэрүүлэг эсвэл тэмдэглэлийнхээ 1-ийг солонгос хэл рүү солиорой.",
+  "HW728": "Ус уунгаа тостын 1 солонгос үг хэлж үзээрэй (жишээ: 건배!).",
+  "HW729": "Цонхоор харагдах 3 зүйлээ солонгос хэлээр хэлээрэй.",
+  "HW730": "Долоо хоногоо 3 эможи + 1 үгийн сэтгэгдлээр дүгнээрэй.",
+  // ---- quiz ----
+  "QZ01": "Хоосон зайд аль нь вэ? 학교( ) 가요 — ①에 ②에서|① 에 — очих газар, чиглэлээ 에-гээр заана",
+  "QZ02": "Хоосон зайд аль нь вэ? 도서관( ) 공부해요 — ①에 ②에서|② 에서 — үйлдэл хийж буй газраа 에서-гээр заана",
+  "QZ03": "Хоосон зайд аль нь вэ? 사과( ) 좋아해요 — ①이 ②를|② 를 — 좋아하다-гийн өмнө «юуг» гэдгийг 를-ээр заана",
+  "QZ04": "Хоосон зайд аль нь вэ? 저는 학생( ) — ①이에요 ②예요|① 이에요 — 학생 нь 받침-тай учраас 이에요",
+  "QZ05": "Хоосон зайд аль нь вэ? 친구( ) 만나요 — ①을 ②를|② 를 — 친구 нь 받침-гүй учраас 를",
+  "QZ06": "크다-гийн эсрэг утгатай үг юу вэ?|작다",
+  "QZ07": "덥다-гийн эсрэг утгатай үг юу вэ?|춥다",
+  "QZ08": "사다-гийн эсрэг утгатай үг юу вэ?|팔다",
+  "QZ09": "아버지-гийн 어머니 нь хэн бэ?|할머니",
+  "QZ10": "재미있다-тай ойролцоо утгатай үг аль нь вэ? ①즐겁다 ②슬프다|① 즐겁다",
+  "QZ11": "Өнгөрсөн цаг: 어제 밥을 ___ (먹다)|먹었어요",
+  "QZ12": "Ирээдүй цаг: 내일 학교에 ___ (가다)|갈 거예요",
+  "QZ13": "춥다 + 아/어요 = ?|추워요 — ㅂ дүрмийн бус хувилал",
+  "QZ14": "듣다 + 어요 = ?|들어요 — ㄷ дүрмийн бус хувилал",
+  "QZ15": "물을 ___ 싶어요 (마시다)|마시고 — V고 싶다 (~хыг хүсэж байна)",
+  "QZ16": "안 먹어요 vs 먹지 않아요 — аль нь зөв бэ?|Хоёулаа зөв — аль алиныг нь хэрэглэж болно",
+  "QZ17": "Аль нь зөв бичлэг вэ? ①됬어요 ②됐어요|② 됐어요",
+  "QZ18": "Аль нь зөв бичлэг вэ? ①안녕히 가세요 ②안녕이 가세요|① 안녕히 가세요",
+  "QZ19": "같이-г яаж дууддаг вэ?|가치 — ㅌ нь 이-тэй нийлээд 치 болж дуудагдана",
+  "QZ20": "꽃이-г яаж дууддаг вэ?|꼬치",
+  "QZ21": "감사합니다-г бодитоор яаж дууддаг вэ?|감사함니다 — ㅂ нь ㄴ-ийн өмнө ㅁ болж дуудагдана",
+  "QZ22": "Багшдаа «밥 먹었어?» гэхийн оронд юу гэж хэлэх вэ?|식사하셨어요?",
+  "QZ23": "나이-гийн хүндэтгэлийн үг юу вэ?|연세",
+  "QZ24": "집-ийн хүндэтгэлийн үг юу вэ?|댁",
+  "QZ25": "Анх уулзсан хүнтэй ярихдаа 반말 уу, 존댓말 уу?|존댓말 — 처음 뵙겠습니다",
+  "QZ26": "월요일-ийн дараагийн өдөр юу вэ?|화요일",
+  "QZ27": "사과 3개 — солонгосоор яаж тоолох вэ?|세 개",
+  "QZ28": "Эмнэлэгт ажилладаг хүнийг солонгосоор юу гэдэг вэ?|의사 эсвэл 간호사",
+  "QZ29": "설날-д том хүмүүст гүн бөхийж мэндэлдэг ёсыг юу гэдэг вэ?|세배",
+  "QZ30": "한글-ийг зохиосон хаан хэн бэ?|세종대왕",
+  "QZ31": "Хоосон зайд аль нь вэ? 오늘( ) 날씨가 좋아요 — ①은 ②는|② 는 — 받침-гүй үгэнд 는 залгана",
+  "QZ32": "Хоосон зайд аль нь вэ? 동생( ) 키가 커요 — ①이 ②가|② 가 — 받침-гүй үгэнд 가 залгана",
+  "QZ33": "Хоосон зайд аль нь вэ? 친구( ) 선물을 줘요 — ①에게 ②에서|① 에게 — хүнд өгөх үед 에게",
+  "QZ34": "Хоосон зайд аль нь вэ? 버스( ) 가요 — ①로 ②으로|① 로 — 받침-гүй бол 로",
+  "QZ35": "Хоосон зайд аль нь вэ? 지하철( ) 가요 — ①로 ②으로|① 로 — ㄹ 받침 ч бас 로!",
+  "QZ36": "9시( ) 6시( ) 일해요 — хоёр хоосон зайд юу орох вэ?|부터, 까지 — «~аас … хүртэл» гэсэн утгатай",
+  "QZ37": "형이 나( ) 커요 — харьцуулахад ямар нөхцөл хэрэглэх вэ?|보다 — харьцуулахад «~аас (илүү)» гэсэн утгатай",
+  "QZ38": "빵( ) 우유 — ①와 ②과|② 과 — дэвсгэр үсэгтэй үгийн ард 과 залгана",
+  "QZ39": "하루에 두 번( ) 드세요 — «тус бүр» гэсэн утгатай нөхцөл юу вэ?|씩 — нэг нэгээр нь хуваасан «тус бүр» гэсэн утга",
+  "QZ40": "수영을 ( ) 수 있어요 (하다)|할 — V(으)ㄹ 수 있다 «~ж чадна»",
+  "QZ41": "내일 시험이라서 공부( ) 해요 — ①해야 ②하야|① 해야 — 아/어야 하다 «заавал хийх ёстой»",
+  "QZ42": "여기서 사진을 찍( ) 마세요|지 — «бүү ~» гэсэн утгатай (–지 마세요)",
+  "QZ43": "문 좀 열( ) 주세요 — ①어 ②아|① 어 — 열다 → 열어 болно",
+  "QZ44": "지금 밥을 먹( ) 있어요|고 — яг одоо үргэлжилж буй үйл (–고 있다)",
+  "QZ45": "이 옷 한번 입( ) 보세요 — ①어 ②아|① 어 — оролдож үзэх утга (–어 보다)",
+  "QZ46": "한국에 ( ) 적이 있어요 (가다)|간 — туршлага «~сан удаатай» (–ㄴ 적이 있다)",
+  "QZ47": "자( ) 전에 이를 닦아요|기 — V기 전에 «~хийхээс өмнө»",
+  "QZ48": "수업이 끝( ) 후에 만나요 — ①난 ②은|① 난 — 끝나 + ㄴ 후에 «~дууссаны дараа»",
+  "QZ49": "다리를 다쳐서 ( ) 걸어요 — ①안 ②못|② 못 — «чадахгүй» нөхцөл байдалд 못 хэрэглэнэ",
+  "QZ50": "밥을 먹( ) 식당에 가요|으러 — зорилго + явах хөдөлгөөн «~хийхээр (явах)»",
+  "QZ51": "한국에서 일하( ) 한국어를 배워요|려고 — санаа зорилго «~х гэж»",
+  "QZ52": "비가 오( ) 우산을 가져가세요 — ①니까 ②으니까|① 니까 — 오 + 니까 «учир нь»",
+  "QZ53": "김치는 맵( ) 맛있어요|지만 — «~боловч, гэхдээ» гэсэн утга",
+  "QZ54": "주말에 영화를 보( ) 집에서 쉬어요 — сонголт заах холбоос юу вэ?|거나 — «эсвэл» гэсэн утга",
+  "QZ55": "음악을 들( ) 공부해요 — ①으면서 ②면서|① 으면서 — 듣 → 들으 (ㄷ дүрмийн бус хувирал)",
+  "QZ56": "바쁘다 + 기 때문에 = ?|바쁘기 때문에 — шалтгаан заана (бичгийн найруулга)",
+  "QZ57": "한국에 살( ) 됐어요|게 — 게 되다 «тийм болох» (өөрчлөлт)",
+  "QZ58": "내일부터 운동하( ) 했어요|기로 — шийдвэр «~хийхээр шийдсэн»",
+  "QZ59": "와, 눈이 오( )! — ①네요 ②나요|① 네요 — гайхшрал илэрхийлэх өнгө аяс",
+  "QZ60": "피곤한데 우리 좀 쉴( )? — санал болгох хэлбэр|까요 — «~уу?» гэж санал болгоно",
+  "QZ61": "제가 전화( )게요 — ①할 ②하ㄹ|① 할 — амлалт өгөх хэлбэр (–ㄹ게요)",
+  "QZ62": "배가 고픈( ) 같이 먹을래요? — ①데 ②대|① 데 — нөхцөл байдлаа урьдчилж хэлнэ",
+  "QZ63": "지금 ( ) 사람이 동생이에요 (자다)|자는 — одоо цагийн тодотгол хэлбэр",
+  "QZ64": "어제 ( ) 영화가 재미있었어요 (보다)|본 — өнгөрсөн цагийн тодотгол хэлбэр",
+  "QZ65": "내일 ( ) 곳이 어디예요? (가다)|갈 — ирээдүй цагийн тодотгол хэлбэр",
+  "QZ66": "밥을 먹( ) 때 말하지 마세요|을 — V(으)ㄹ 때 «~х үед»",
+  "QZ67": "여기 앉( ) 돼요? — ①아도 ②어도|① 아도 — зөвшөөрөл асуух хэлбэр (–아도 돼요?)",
+  "QZ68": "교실에서 뛰( ) 안 돼요|면 — дүрэм заасан «–면 안 돼요» хэлбэр",
+  "QZ69": "한국어를 정말 잘하( )! (гайхшрал · шинээр мэдсэн зүйл)|시는군요/는군요",
+  "QZ70": "오늘 정말 춥( )? (батлах · санал нийлэх)|지요 — «тийм биз дээ» гэсэн өнгө аяс",
+  "QZ71": "집에 도착하( ) 바로 잤어요|자마자 — яг дараа нь",
+  "QZ72": "한국어를 배운 ( ) 1년 됐어요|지 — хугацаа өнгөрснийг заана",
+  "QZ73": "제가 요리하( ) 동안 상 좀 차려 주세요|는",
+  "QZ74": "숙제를 하( ) 잠들어 버렸어요|다가 — хийж байгаад өөр үйлдэлд шилжих",
+  "QZ75": "게임하( ) 숙제를 못 했어요|느라고 — шалтгаан (хүсээгүй үр дагавар)",
+  "QZ76": "늦잠 자( ) 바람에 지각했어요|는 — санаандгүй шалтгаан",
+  "QZ77": "내일 비가 ( ) 것 같아요 (오다)|올 — таамаглал",
+  "QZ78": "밖이 시끄러운 걸 보니 학생들이 왔( ) 봐요|나 — үндэслэлтэй таамаглал",
+  "QZ79": "아이스크림을 떨어뜨릴 ( )했어요|뻔 — бараг л болох шахсан",
+  "QZ80": "저는 밥을 빨리 먹는 ( )이에요|편 — хандлага",
+  "QZ81": "한국어는 배( ) 재미있어요 — ①울수록 ②우면|① 울수록 — улам бүр",
+  "QZ82": "건강( ) 위해서 운동해요 — ①을 ②를|① 을 — N을 위해서 (…-ын төлөө)",
+  "QZ83": "감기에 걸리지 않( ) 옷을 따뜻하게 입으세요|도록",
+  "QZ84": "동생도 형( ) 키가 커요 — ойролцоо хэмжээ|만큼",
+  "QZ85": "그 학생은 가수( ) 노래를 잘해요|처럼",
+  "QZ86": "친구가 바빠요 → 친구가 바쁘( ) 했어요|다고 — дам яриа",
+  "QZ87": "어디 가요? → 어디 가( ) 물었어요|냐고 — дам асуулт",
+  "QZ88": "같이 가요! → 같이 가( ) 했어요|자고 — дам санал (хамтдаа хийе гэсэн)",
+  "QZ89": "조용히 하세요 → 조용히 하( ) 하셨어요|라고 — дам тушаал",
+  "QZ90": "어제 그 식당 가 봤는데 정말 맛있( )|더라고요 — өөрийн үзсэнээ дамжуулах",
+  "QZ91": "왜 안 먹어요? — 아까 먹었( )|거든요 — шалтгаанаа хэлэх",
+  "QZ92": "내일 시험이( )! 같이 공부해요|잖아요 — хоёулаа мэддэг зүйлээ сануулах",
+  "QZ93": "어릴 때 자주 가( ) 공원이에요|던 — өнгөрснөө дурсах",
+  "QZ94": "바람에 문이 저절로 ___ (닫다)|닫혔어요 — үйлдэгдэх хэв",
+  "QZ95": "엄마가 아기에게 밥을 ___ (먹다)|먹여요 — үйлдүүлэх хэв",
+  "QZ96": "따뜻하다 → 날씨가 점점 ___|따뜻해져요 — 아/어지다 (өөрчлөлт)",
+  "QZ97": "선생님이 학생들을 웃( ) 해요|게 — 게 하다 (…хийлгэх)",
+  "QZ98": "숙제를 드디어 다 끝내 ( )어요! (сэтгэл онгойх мэдрэмж)|버렸 — 아/어 버리다",
+  "QZ99": "손을 씻( ) 나서 드세요|고 — дарааллыг онцлох",
+  "QZ100": "이 드라마는 정말 ( ) 만해요 (보다)|볼 — санал болгох үнэ цэнэтэй",
+  // ---- braintip ----
+  "BT01": "Шинэ үгс унтаж байхад чинь тархинд хадгалагддаг — шалгалтын өмнө шөнөжин суухаас 7 цаг унтах нь оноог илүү өсгөдөг 😴",
+  "BT02": "Өнөөдөр, маргааш, долоо хоногийн дараа — гурван удаа уулзсан үг насан туршийн найз болдог 📅",
+  "BT03": "Дахин уншихын оронд номоо хааж санаад үз — тархи санах бүрдээ хүчтэй болдог 🎯",
+  "BT04": "Нэг өгүүлбэрийг чангаар давтах бүрд тархины утсан дээр бүрээс (миелин) ороогддог ⚡",
+  "BT05": "Хичээлээ эхлэхэд хэцүү бол «5 минут л» гэж хэлээрэй — нэг эхэлсэн тархи өөрөө урагшилдаг ⏱️",
+  "BT06": "20 минут алхах нь тархиа услахтай адил — салхилсны дараа цээжилсэн үг илүү удаан тогтдог 🚶",
+  "BT07": "Үгийг зурагтай хамт цээжлээрэй — хоёр замаар хадгалагдсан ой хоёр дахин бат бөх 🖼️",
+  "BT08": "Зөвхөн ширээний ард цээжилсэн үг ширээний ард л санагддаг — автобусанд ч нэг өгүүлбэр давтаарай 🚌",
+  "BT09": "Инээж байж сурсан зүйл мартагддаггүй — сонирхолтой байх нь ой санамжийн цавуу 😄",
+  "BT10": "Чангаар хэлсэн өгүүлбэр л жинхэнэ чинийх — өнөөдөр сурснаа нэг өгүүлбэрээр хэлээд үз 🗣️",
+  "BT11": "Утасны дугаар шиг — урт өгүүлбэрийг 3 хэсэгт хуваавал амархан цээжлэгддэг 🧩",
+  "BT12": "Андуурсан мөчид тархи хамгийн ихээр сурдаг — энэ бол синапс шинэ гүүр барьж байгаагийн дохио 🚧",
+  "BT13": "Найздаа тайлбарлаад үз — зааж чадаж байвал чи үнэхээр мэддэг гэсэн үг 👥",
+  "BT14": "Өглөө сэрээд шууд 5 минут давт — шөнөжин цэгцлэгдсэн ой санамж дээр тамга дарна ☀️",
+  "BT15": "Шивэхээс илүү гараараа бич — гараар бичсэн үсэг тархинд илүү гүн хадгалагддаг ✍️",
+  "BT16": "Үгтэй дуу хичээлийн үед анхаарлыг булааж авдаг — харин хичээлийн дараах шагнал болгоход хамгийн гоё 🎧",
+  "BT17": "Тархины 75% нь ус — цангаа бол төвлөрлийн хулгайч 💧",
+  "BT18": "Тархи нэг дор хоёр зүйл хийж чаддаггүй — утсаа өөр өрөөнд тавиарай 📵",
+  "BT19": "«TOPIK-д тэнцэнэ» гэхээс «өнөөдөр 10 үг» гэж зорь — тархи жижиг ялалтыг түлш болгодог 🔥",
+  "BT20": "Хичээлээс харих замдаа өнөөдөр сурсан 3 зүйлээ сана — алхаж яваа тархи ой санамжаа цэгцэлдэг 🌆",
+  "BT21": "Унтахын өмнөх 10 минут бол цээжлэх алтан цаг — юу ч саадгүйгээр шууд хадгалагддаг 🌙",
+  "BT22": "Дуудлага чинь сайжрахад сонсгол ч нээгддэг — ам, чих хоёр нэг хэлхээ 👂",
+  "BT23": "Зөвхөн өчигдрийн өөртэйгөө л харьцуулаарай — бусадтай харьцуулах нь суралцах дааврыг унтраадаг 🪞",
+  "BT24": "25 минут төвлөрөөд 5 минут зүгээр амар — амарч байх зуур тархи бүгдийг цэгцэлдэг 🧹",
+  "BT25": "Хариултаас илүү асуулт тогтдог — «яагаад?» гэж асуусан зүйл удаан хадгалагддаг ❓",
+  "BT26": "5 үгээр богино түүх зохиогоод үз — тархи жагсаалтаас илүү түүхэнд дуртай 📖",
+  "BT27": "«Миний солонгос хэл өдөр бүр сайжирч байна» гэж хэлдэг тархи үнэхээр тийм байдлаар холбогддог 🧠",
+  "BT28": "Өглөө 10 минут наранд гар — энэ шөнийн сайхан нойрыг захиалдаг товчлуур 🌅",
+  "BT29": "Сурснаас хойш 24 цагийн дотор нэг удаа давт — мартах муруйг тэр дороо нугалчихна 📉",
+  "BT30": "Өдөр бүр нэг алхам — синапс нэг дор биш, өдөр бүрийн хуримтлалаар ургадаг 🌱",
+};
+
+function injectMongolianContents() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ct = ss.getSheetByName('contents');
+  if (!ct || ct.getLastRow() < 2) { Logger.log('injectMongolianContents: contents 시트 없음/비어 있음 — 중단'); return; }
+  const mnCol = langColOf_(ct, '몽골어'); // [v9.39] 고정 7열 폐기 — Glide 'Row ID' 열 보호(translateContents와 동일 규칙)
+  const last = ct.getLastRow();
+  const ids = ct.getRange(2, 1, last - 1, 1).getValues();      // A열(콘텐츠ID)만
+  const mnV = ct.getRange(2, mnCol, last - 1, 1).getValues();  // 기존 번역 열 전체 보존 후 대상만 교체
+  let updated = 0, kept = 0;
+  const seen = {};
+  for (let i = 0; i < ids.length; i++) {
+    const id = String(ids[i][0]);
+    if (!Object.prototype.hasOwnProperty.call(MN_CONTENTS_G, id)) continue; // 대상 외 행은 그대로
+    seen[id] = true;
+    const mn = MN_CONTENTS_G[id];
+    if (String(mnV[i][0] || '') === mn) { kept++; continue; } // 멱등 가드
+    mnV[i][0] = mn; updated++;
+  }
+  const missing = Object.keys(MN_CONTENTS_G).filter(function (id) { return !seen[id]; });
+  if (updated) ct.getRange(2, mnCol, mnV.length, 1).setValues(mnV); // 무변동이면 쓰기 생략
+  Logger.log('injectMongolianContents: 갱신 ' + updated + '건 · 이미 최신 ' + kept + '건 · 시트에 없는 id ' + missing.length + '건 (몽골어=' + mnCol + '열)'
+    + (missing.length ? ' → ' + missing.join(', ') + ' (setupHomework*/setupQuiz*/setupBrainTips 실행 여부 확인)' : ''));
+}
+
+/* ===================== ② 병렬 상수 — contents 시트에 없는 유형 =====================
+ * ⚠ 연결 배선은 후속 결정 — 아래 상수는 아직 어디에서도 참조되지 않는다(적재만).            */
+
+// 🔮 운세 — FORTUNES(Code.js L713)와 배열 인덱스 1:1 (FT01~FT36)
+const MN_FORTUNES = [
+  "Өнөөдөр ярьж хариулах аз хүчтэй өдөр ✨ Гараа өргөх мөчид титэм чамд улам ойртоно",
+  "Гэрийн даалгаврын дагина ажиж байгаа өдөр 📝 Дуусгасан тэмдэг чинь ердийнхөөс илүү гялалзана",
+  "Сурснаа найздаа тайлбарлаж өгвөл хоёр дахин сайн тогтох өдөр 🤝",
+  "Өнөөдөр цээжилсэн нэг үг дараагийн шалгалтад яг тэр чигээрээ гарах шинжтэй 🎯",
+  "Багштай харц тулгарах мөчид зөв хариулт санаанд орж ирэх өдөр 👀",
+  "Босс чиний цохилтоос онцгой айж байгаа өдөр ⚔️",
+  "Чимээгүй сууж байхад л синапс чинь өөрөө холбогдох өдөр 🧠",
+  "Нэг асуулт бүхэл ангийг аврах өдөр 🙋 Зоригтой асуугаарай!",
+  "Өнөөдрийн хэцүү асуулт маргаашийн нууц мэх болох өдөр 💪",
+  "Монстр чинь дуудлагыг чинь дуурайхыг хүсэж байгаа өдөр 🗣️",
+  "Солонгосоор өөртэйгөө ярьвал аз дагуулах өдөр 🍀",
+  "Найзтайгаа хамтрах аз оргилдоо хүрсэн өдөр — хамтдаа хийвэл бүх юм бүтнэ 👯",
+  "Ердийнхөөс яг 5 минут илүү — тэр 5 минут хувьслыг чинь ойртуулах өдөр ⏰",
+  "Тэмдэглэл хөтлөх аз гэрэлтэх өдөр ✏️ Өнөөдрийн тэмдэглэл чинь эрдэнэс болно",
+  "Монстр чинь харандааны саванд чинь атаархаж байгаа өдөр ✏️",
+  "Амттангаа идээд цээжилбэл хоёр дахин сайн тогтох өдөр 🍙",
+  "Өнөөдөр анх удаа харсан үгтэйгээ найз болох хувь тавилантай өдөр 📖",
+  "Цонхоор гадагш харсан ч зүгээр — таслал байж өгүүлбэр бүтэн болдог шүү дээ ☁️",
+  "Намуухан дуу ч чанга сонсогдох өдөр 🎤 Өөртөө итгэлтэй байгаарай!",
+  "Өчигдрийн өөрөөсөө яг +1P илүү — энэ бол өнөөдрийн даалгавар 🎯",
+  "Монстр чинь өглөөнөөс л сайхан сэтгэлтэй, ая аялж байна 🎵",
+  "Баллуураа гээчихсэн ч инээгээд өнгөрөөвөл аз ирэх өдөр 😄",
+  "Өнөөдөр үзсэн дүрэм зүүдэнд чинь орж ирэх магадлал 87% 💤",
+  "Нэг солонгос дуу өнөөдрийн шилдэг багш чинь болох өдөр 🎧",
+  "Лигийн өрсөлдөгч нэрийг чинь сонсоод л сандарч эхлэх өдөр 🔥",
+  "Цомгийн дараагийн монстр чамайг сэмхэн ажиж байгаа өдөр 👻",
+  "Өнөөдөр инээмсэглэвэл синапс чинь хоёр дахин бат бөх болно 😊",
+  "Андуурлын аз уу? Үгүй ээ, туршилтын аз орж ирсэн өдөр 🧪",
+  "Хамгийн хэцүү дасгалаа эхэлж хийвэл үлдсэн нь урсаад л бүтэх өдөр 🗝️",
+  "Найзынхаа нэг сайхан талыг хэлж өгвөл чамд хоёр болж эргэж ирэх өдөр 💐",
+  "Өнөөдрийн орд: Синапсын орд — холбоосын эрч хүчээр дүүрэн өдөр ⭐",
+  "Ширээгээ цэгцлэх аз өссөн өдөр — цэвэрхэн ширээн дээр титэм бууж ирдэг 👑",
+  "Урьд нь хэрэглэж байгаагүй шинэ хэллэг туршвал гайхалтай юм болох өдөр 🎲",
+  "Монстр чинь \"Өнөөдөр эзэн минь супер гоё харагдана\" гэж зөгнөжээ 🔮",
+  "Нэг аяга ус уугаад эхэлбэл төвлөрөл чинь дээд түвшиндээ хүрэх өдөр 💧",
+  "Өнөөдрийн нэг алхам чинь түүхийн номын чинь нэг өгүүлбэр болох өдөр 📖",
+];
+
+// 💬 몬스터의 한마디 — SPEAK(L734)와 동일 구조. 말투: [0]=아기말(1-2단계) [1]=친구말(3-5) [2]=현자말(6-7)
+//    evosoon의 {n} 플레이스홀더(다음 진화까지 P)는 원문 그대로 유지됨
+const MN_SPEAK = {
+  today: [
+    ["Ийлээ, ийлээ! (Ирлээ!) Өнөөдөр ч бас хамт өсөх үү? 🐣","Эзний минь үнэр байна! Өнөөдөр ч бас чамд наалдаад байя 🥚","Хи хи, хүлээж байсан шүү! Өнөөдөр юу сурах вэ? 🍼"],
+    ["Чи ирлээ! Хөлийн чимээгээр чинь л таньсан шүү 😊","Чамайг хүлээж байлаа — өнөөдөр ч бас хамт өсье 🌱","Чамайг ирэхээр анги 2 дахин илүү гэрэлтдэг юм, мэдсэн үү? ✨"],
+    ["Тавтай морил. Өнөөдрийн эрдэм ч чамтай хамт бол баяр наадам билээ ✨","Чамайг хүлээж байсан билээ — өнөөдөр ямар мэргэн ухаан цуглуулах бол 📜","Чамайг хаалга нээх агшинд миний өдөр ч эхэлдэг юм шүү 👑"],
+  ],
+  miss3: [
+    ["Цонхоор л ширтээд байнаа~… Эзнийхээ суудлыг би сахиж байгаа! 🐣","Өнөөдөр ч хаалганы чимээ бүрд өндийж харлаа… Чамайг санаад байнаа~ 🥺","Эзнийхээ ширээн дээр тоос суулгахгүй гэж фү фү үлээж байнаа~!"],
+    ["Цонхоор л харж сууна… Чиний суудал энд хэвээрээ шүү 🌱","Дуу хоолойг чинь санасан өдөр байна — ирэхээр чинь хамгийн түрүүнд угтана шүү","Зүгээр ээ, аажуухан ирсэн ч болно. Би энд бөх бат хүлээж байя 💪"],
+    ["Чамайг эзгүйд ч эрдмийн галыг унтраалгүй сахиж байна билээ 🕯️","Хүлээх нь ч бас бясалгал юм шүү — гэхдээ чамайг ирвэл бүр сайхан сан","Чамайг эргэж ирэх замыг гэрэлтүүлж тавьсан билээ. Яарах хэрэггүй ээ ✨"],
+  ],
+  miss7: [
+    ["Эзнийхээ өгсөн оноог чанга тэврээд зоригтой хүлээж байнаа~! Ирэхээр чинь хамгийн түрүүнд тэврэнэ ээ 🤗","Өндөгнөөсөө ч эзнээ дэмжиж байнаа~! Хэзээ ч хамаагүй эргээд ирээрэй 🥚"],
+    ["Чиний цуглуулсан оноо бүгд энд хэвээрээ байгаа — хүссэн үедээ хамтдаа үргэлжлүүлье 🌱","Удаан уулзаагүй ч бид нэг баг шүү. Хаалга үргэлж нээлттэй 🚪"],
+    ["Хол зам тойрч ирэх нь ч аяллын нэг хэсэг билээ — чиний түүх энд мөнхөд үлдэнэ 📜","Од түр үүлэнд халхлагдсан ч гэрэлтсээр л байдаг юм шүү ⭐"],
+  ],
+  idle: [
+    ["Өнөөдөр үүл ширтэж байнаа~ ☁️ Эзэн минь юу хийж байна?","Синапсын үр суулгах дасгал хийж байнаа~ 🌱","Том эвшээгээд суниалаа! Өнөөдөр ч бас хичээе! Тэгье тэгье! 🐣"],
+    ["Даваа гарагт монстр ч бас жаахан нойрмог байдаг… Хамтдаа хичээцгээе ☀️","Өнөөдрийн хоол (амттан) юу вэ? Би ч бас мэдмээр байна 🍙","Үзгийн саванд чинь өдрийн нойр авахаа төсөөллөө 😴"],
+    ["Нам гүм өдөр ч синапс өссөөр байдаг юм шүү 🍃","Өнөөдрийн салхинаас намрын үнэр анхилах шиг — суралцахад сайхан өдөр билээ","Аажуухан явсан ч зүгээр. Зөв зүгт л явж байвал болно юм шүү 🧭"],
+  ],
+  evosoon: ["Бие загатнаад байна… Удахгүй нэг юм болох нь! (Дараагийн хувьсал хүртэл {n}P) ⚡","Хальс минь (бие минь) загатнаад байна! Багахан л үлдлээ! (Хувьсал хүртэл {n}P) 🔥","Хувьслын хүч дүүрч байна… Ердөө {n}P үлдсэн юм шүү ✨"],
+  crown: ["Өнөөдөр титэм өмссөн чинь дэлхийд хамгийн гоё байлаа 👑 Шөнөжин гайхуулна шүү!","Титэм эзнээ таньсан билээ — үнэхээр гялалзаж байлаа 👑","Чиний толгой дээрх титмийг би хамгийн түрүүнд харсан! 👑"],
+  bday: ["Өнөөдөр бол чиний л өдөр! Дэлхийд хамгийн түрүүнд би баяр хүргэе 🎂🎉","Төрсөн өдрийн мэнд — чи мэндэлсэн учраас би ч бас мэндэлж чадсан билээ 🎂"],
+};
+
+// 📖 스토리북 — STORY_GRAMMAR(L4412)와 동일 구조: 월(1~12)×4 [문형(한국어 유지), 의미(몽골어)]
+const MN_STORY_GRAMMAR = [
+  [["-느라고","шалтгаан · шалтаг"],["-았/었더니","өөрөө хийж үзээд гарсан үр дүн"],["-는 바람에","гэнэтийн шалтгаан"],["-기 마련이다","жам ёсны хэрэг"]],  // 1월
+  [["-(으)ㄹ 뻔하다","бараг л болох шахсан"],["-고 말다","эцэст нь тэгж болчихсон"],["-도록","зорилго · хэмжээ"],["-는 김에","дашрамд нь"]],  // 2월
+  [["-자마자","яг дараа нь шууд (-магц)"],["-(으)ㄹ수록","нэг нь өсөхөд нөгөө нь дагаж өөрчлөгдөх (-х тусам)"],["-는 대신에","оронд нь · орлуулах"],["-기만 하면","давтагдах нөхцөл (…л бол)"]],  // 3월
+  [["-다 보니","хийсээр байгаад олж мэдэх"],["-(으)ㄹ 만하다","хийх үнэ цэнэтэй"],["-는 척하다","дүр эсгэх"],["-거든요","шалтгаанаа тайлбарлах"]],  // 4월
+  [["-(으)ㄴ 지","өнгөрсөн хугацаа (хэр удсан)"],["-을/를 통해","арга хэрэгсэл (-ээр дамжуулан)"],["-는 데다가","дээр нь нэмэх"],["-기 나름이다","хэрхэн хийхээс л шалтгаална"]],  // 5월
+  [["-던","эргэн санах · дурсамж"],["-(으)ㄹ 리가 없다","«тийм байх боломжгүй» гэсэн хүчтэй таамаг"],["-곤 하다","зуршил (байнга хийдэг)"],["-(으)면서도","нэгэн зэрэг боловч эсрэг утгатай (мөртлөө)"]],  // 6월
+  [["-느니 차라리","сонголт (…снаас илүү)"],["-는 통에","үймээнээс болсон шалтгаан"],["-기는커녕","«байтугай» гэсэн хүчтэй онцлох утга"],["-(으)ㄹ 겸","хоёр зорилго нэг дор"]],  // 7월
+  [["-다가","үйл дундаа солигдох (шилжилт)"],["-(으)ㄴ 채로","байдал хэвээр нь · чигээрээ"],["-을 뿐만 아니라","зөвхөн … төдийгүй"],["-기 십상이다","амархан тэгж болдог"]],  // 8월
+  [["-더니","ажигласны дараах өөрчлөлт"],["-(으)ㄹ 정도로","хэмжээ (тийм хэмжээнд)"],["-는 한","нөхцөлийн хязгаар (байгаа л бол)"],["-기에","шалтгаан заана (бичгийн хэллэг)"]],  // 9월
+  [["-고 나서","үйлийн дараалал (~хийж дуусаад)"],["-(으)ㄹ 테니까","таамагласан шалтгаан (~байх болохоор)"],["-는 반면에","эсрэгцүүлэл (~байдаг бол харин)"],["-을 비롯해서","төлөөлөх жишээ (~зэргээс эхлээд)"]],  // 10월
+  [["-자","болмогц шууд (~мэгц)"],["-(으)므로","шалтгаан (албан бичгийн хэллэг)"],["-든지","сонголт жагсаах (~ч бай, ~ч бай)"],["-기 위해서","зорилго (~хийхийн тулд)"]],  // 11월
+  [["-았/었더라면","өнгөрсний таамаглал (хэрэв ~сан бол)"],["-(으)ㄹ 겸 해서","давхар зорилго (~хийхийн зэрэгцээ)"],["-는 데 비해","харьцуулалт (~хийдэгтэй харьцуулбал)"],["-고서야","~сны дараа л сая (тэгж байж)"]],  // 12월
+  [["-는 길에","явах ирэх замын зуур"],["-(으)ㄴ/는 덕분에","талархууштай шалтгаан (~ын ачаар)"],["-기로 하다","шийдвэр · амлалт"],["-게 되다","нөхцөл өөрчлөгдсөний үр дүн"]],  // 13월
+  [["-(으)ㄴ/는 편이다","ерөнхий хандлага (тийм талдаа)"],["-(으)ㄹ까 봐","болчих вий гэсэн болгоомжтой таамаг"],["-아/어 놓다","урьдчилан хийж бэлдсэн байдлаа хадгалах"],["-잖아요","хоёулаа мэдэх зүйлээ баталгаажуулах (~шүү дээ)"]],  // 14월
+  [["-더라고요","өөрөө үзсэнээ ярьж дамжуулах"],["-나 보다","харж мэдэрснээс төрсөн таамаг (бололтой)"],["-는 대로","хиймэгц шууд · байгаа чигээр нь"],["-아/어 버리다","бүрэн дуусгачихах"]],  // 15월
+  [["-다 보면","үргэлжлүүлсээр байвал гарах үр дүн"],["-(으)려던 참이다","яг хийх гэж завдаж байсан үе"],["-고 해서","олон шалтгааны нэг нь"],["-은/는 물론이고","мэдээжийн хэрэг дээр нь нэмээд (~төдийгүй)"]],  // 16월
+  [["-던데","үзсэн зүйлээ суурь болгон дурдах"],["-(이)야말로","яг л тэр гэж онцлох"],["-만 해도","ганцхан жишээ дурдахад л"],["-게 하다","хийлгэх (үйлдүүлэх хэв)"]],  // 17월
+  [["-(으)려다가","санаснаа өөрчлөх"],["-는 셈이다","тооцоод үзвэл адилхан гэсэн үг"],["-에 달려 있다","тэр зүйлээс л шалтгаална"],["-다니","санаанд оромгүй гайхшрал (гэнэ ээ!)"]],  // 18월
+  [["-더라도","тэгсэн ч гэсэн гэх буултын таамаг"],["-(으)로 인해","шалтгаан (бичгийн хэллэг)"],["-에 따라","жишиг болгох · дагаж өөрчлөгдөх"],["-고자","зорилго (бичгийн хэллэг)"]],  // 19월
+  [["-(으)ㄴ 끝에","урт үйл явцын эцэст гарсан үр дүн"],["-기가 무섭게","хиймэгц тэр даруй"],["-(으)며","жагсаах · зэрэгцүүлэх (бичгийн хэллэг)"],["-(으)ㅁ으로써","арга хэрэгсэл (бичгийн хэллэг)"]],  // 20월
+  [["-는가 하면","нөгөө талд нь эсрэгцүүлэн жагсаах"],["-(으)ㄹ 뿐이다","зөвхөн л тэр"],["-다시피","мэдэж байгаачлан"],["-(으)ㄴ 나머지","хэтэрхий их болсноос гарсан үр дүн"]],  // 21월
+  [["-에도 불구하고","гэсэн хэдий ч (буулт)"],["-(으)ㄹ 지경이다","тийм болтлоо туйлын хэмжээ"],["-기에 앞서","хийхээсээ өмнө эхлээд"],["-는 가운데","үргэлжилж буй нөхцөл байдлын дунд"]],  // 22월
+  [["-(으)ㄹ 법하다","тийм байж болохуйц таамаг"],["-다 못해","хэмжээнээсээ хальж"],["-아/어 내다","эцсийг нь хүртэл хийж чадах"],["-치고","бүгдэд адил хамаатай · жишгээс гадуур санаанд оромгүй"]],  // 23월
+  [["-(으)ㄹ 따름이다","ердөө л тийм (бичгийн хэллэг)"],["-기 그지없다","хэмжээлшгүй тийм"],["-(으)ㄹ지언정","тэгэх байлаа ч гэсэн хүчтэй буултын сонголт"],["-(으)리라","бат зориг · таамаг (бичгийн хэллэг)"]],  // 24월
+];
+
+// 스토리북 제목 6종 — STORY_TITLES(L4426) 1:1, {boss} 치환 플레이스홀더 유지
+const MN_STORY_TITLES = [
+  "{boss} ба синапсын оч",
+  "{boss} үлдээсэн зүйл",
+  "{boss} бидэнтэй уулзсан тэр үе",
+  "{boss}-оос ч илүү гэрэлтсэн хүүхдүүд",
+  "{boss}-гийн улирал — өсөлтийн улирал",
+  "Баяртай, {boss} — бид өслөө",
+  "{boss} давж гарсны дараах өглөө",
+  "{boss} зааж өгсөн өгүүлбэрүүд",
+  "{boss} авчирсан шөнийг туулах арга",
+  "Нэг сөөмөөр өссөн бид ба {boss}",
+];
+
+// 스토리북 12경 — STORY_SCENES(L4429) 1:1: [장소명, 도착 묘사, 문화 디테일, 보스 등장]
+const MN_STORY_SCENES = [
+  [ // 1월
+    "Цас будран буух Дөксүгүн ордны хэрмэн зам",
+    "Анхны цас будрах үеэр кру нар Дөксүгүн ордны чулуун хэрмийн дагуух замаар алхлаа. Амьсгал нь цагаан уур болон дэгдэж, хэрмэн дээр цас зөөлөн хунгарлав.",
+    "Загас хэлбэртэй халуун боов бунгоппанг хоёр хувааж идэнгээ \"머리부터? 꼬리부터?\" (Толгойноос нь үү, сүүлнээс нь үү?) гэж инээлдэв. Солонгосын өвөл бунгоппаны үнэрээр эхэлдгийг кру нар тэгэхэд мэдэж авлаа.",
+    "Яг тэр үед хэрмийн сүүдэр сонин уртаар сунан, цасан ширхгүүд өөд нь эргэн дүүлэв.",
+  ],
+  [ // 2월
+    "Кванжан захын хоолны гудамж",
+    "Соллаль буюу Солонгосын цагаан сарын амралтаар Кванжан зах хүмүүсийн инээд хөөрөөр дүүрэн байлаа. Кру нар биндэтток шарах чимээг дагаад гудамжны гүн рүү орлоо.",
+    "Алдарт жижиг кимбап, юкхвэ хэмээх махан хоолоо өмнөө тавиад хамгийн бяцхан кру \"이모, 여기 하나 더요!\" (Эгч ээ, нэгийг нэмээд өгөөч!) гэж төгс дуудлагаар хэлэхэд бүгд алга ташлаа.",
+    "Гэтэл захын гэрлүүд нэг нэгээрээ унтарч, гудамжны үзүүрээс хүнд сүүдэр аажуухан мөлхөн гарч ирэв.",
+  ],
+  [ // 3월
+    "Ёыйдогийн интоорын цэцгийн зам",
+    "Дөрөвдүгээр сарын Ёыйдод интоорын цэцэг цас мэт будран нисэж байлаа. Кру нар дэлбээг алгандаа тосон Юнжунно замаар алхлаа.",
+    "Дэвсгэрээ дэлгээд кимбап хуваан идэж байтал хажуугаар өнгөрч явсан эмээ \"학생들 한국말 참 잘하네\" (Сурагчид солонгосоор үнэхээр сайн ярьж байна шүү) гэж инээмсэглэв. Тэр ганцхан үгэнд бүгдийн мөр тэнийв.",
+    "Гэнэт салхи зогсож, будран нисэж байсан интоорын дэлбээнүүд агаарт хөдөлгөөнгүй царцав.",
+  ],
+  [ // 4월
+    "Кёнбоккүн ордонд ханбогтой зугаалга",
+    "Кру нар өнгө өнгийн ханбог өмсөөд Кёнбоккүн ордны Кынжонжон танхимын өмнө зогсов. Бие биенийхээ ханбогийн уяаг зангидаж өгөнгөө удаан инээлдлээ.",
+    "Хаалгач цэргүүдийн ээлж солих ёслолын хэнгэргийн аяар алхаж явтал гадаад жуулчин зураг авахуулахыг хүсэхэд \"김치~\" (Кимчи~) гээд позоо ч барьж өглөө.",
+    "Яг тэр агшин Кынжонжоны дээврийн сахиус барималуудын дундаас үл таних бараан дүрс аажуухан өндийв.",
+  ],
+  [ // 5월
+    "Хан мөрний эрэг дээрх чикен пикник",
+    "Тавдугаар сарын Хан мөрний паркад кру нар дэвсгэр дээрээ чикен, рамёнаа дэлгэлээ. Мөрний сэвшээ салхи сэрүүхэн үлээнэ.",
+    "Хүргэлтийн аппаар захиалсан чикен яг дэвсгэрийн өмнө ирэхийг хараад бүгд \"한국 최고!\" (Солонгос шилдэг нь!) гэж хашхирлаа. Дэлгүүрийн рамён чанагч машины өмнө хөгжилтэй ээлж булаацалдаан ч болов.",
+    "Гэтэл намуухан долгилж байсан Хан мөрөн гэнэт зогсонги болж, усны гүнээс асар том сүүдэр хөвөн гарч ирэв.",
+  ],
+  [ // 6월
+    "Намсан уулын нар жаргах харагдацын тавцан",
+    "Дүүжин замаар Намсан уулын оройд гарсан кру нар үдшийн улаан туяанд будагдсан Сөүлийг ширтэв. Хайрын цоожнуудын хажууд хүсэл бүрээ нэг нэгээр үлдээлээ.",
+    "\"Сөүл ийм уудам байсан юм уу?\" гэж нэг нь шивнэхэд нөгөө кру нь \"Бидний сурсан солонгос хэлээр энэ том хоттой бүхэлд нь ярилцаж чадна шүү дээ\" гэж хариулав.",
+    "Үдшийн туяа оргилдоо хүрэх агшинд цамхгийн сүүдэр гэнэт хоёр дахин уртсан мушгиран хөдөллөө.",
+  ],
+  [ // 7월
+    "Бусаны Хэүндэ далайн эрэг",
+    "Зуны амралтаар кру нар KTX-д сууж Бусан руу аяллаа. Хэүндэгийн элсэн эрэгт хөл тавимагц давалгаа шагайг нь гижигдэв.",
+    "Мильмён, үртэй хотток авч бариад Бусан аялгаар \"마, 억수로 맛있네!\" (Ёстой аймшигтай амттай юм аа!) гэж дуурайж хэлээд бүгд нэг зэрэг инээлдлээ.",
+    "Тэр үед тэнгисийн хаяа бэхэн хар өнгөөр бүрхэгдэж, давалгаа сонин хэмнэлээр хөлбөрч эхэллээ.",
+  ],
+  [ // 8월
+    "Хондэгийн баскинг гудамж",
+    "Баасан гарагийн орой, Хондэгийн алхмаар гудамжинд кру нар баскинг тайзны өмнө цугларлаа. Гитарын эгшиг, алга ташилт гудамжийг дүүргэнэ.",
+    "Тайзнаас микрофон дамжуулж авсан нэг кру солонгос дууны нэг бадгийг дуулахад хажуугаар өнгөрөгсөд уухайлан дэмжив. Токпокки барьсан гар нь чичрэх шахам догдолмоор мөч байлаа.",
+    "Яг тэр мөчид чанга яригч шаржигнаад, тайзны ард харанхуйгаас намуухан инээх чимээ сонсогдов.",
+  ],
+  [ // 9월
+    "Букчон ханок хотхоны гудамж",
+    "Намрын нэгэн үдээс хойш кру нар Букчоны вааран дээвэртэй байшингуудын хоорондох нарийн гудамжуудыг судаллаа. Гудамж бүрд өөр өөр Сөүл нуугдаж байв.",
+    "Ханок кафед тэчүча буюу чавга цай ууж суутал цаасан хаалгаар нэвт гэрэлтэх наранд бүгд үг дуугүй болов. \"Эрт цагийн хүмүүс ийм байшинд сууж хичээлээ хийдэг байж дээ.\"",
+    "Гэтэл гудамжны үзүүрийн хэрмэн дээрх сүүдэр хэн ч алхаагүй байхад өөрөө хөдөлж эхэллээ.",
+  ],
+  [ // 10월
+    "Сораксан уулын алтан намрын авиралт",
+    "Навчис хамгийн улаанаар гялалзах үеэр кру нар бие биеэ татан дэмжсээр Ганхдаг хад хүртэл авирлаа. Уул бүхэлдээ улаанаар бадарч байлаа.",
+    "Оргилын ойролцоох мухлагт аяган рамёнаа үлээн хооллонгоо \"Ууланд идсэн рамён дэлхийд хамгийн амттай\" гэдэг солонгос үнэнийг биеэрээ мэдэрлээ.",
+    "Тэр үед улаан навчис унахаа больж, агаарт эргэлдэн хуйларч эхлэв.",
+  ],
+  [ // 11월
+    "Лотте Уорлдын нэг өдрийн тасалбар",
+    "Улирлын шалгалт дууссаныг тэмдэглэж кру нар Лотте Уорлд руу явлаа. Хөөрхөн толгойн боолтуудаа хуваан зүүгээд карусельны өмнө хамтын зургаа ч даруулав.",
+    "Жайродропын өмнө \"먼저 타\" \"네가 먼저 타\" (Чи түрүүлж суу! — Үгүй, чи түрүүлж!) гэж хэлэлцсээр эцэст нь бүгд хамт суулаа. Буугаад хөл нь чичирсээр удаан инээлдэв.",
+    "Парадын хөгжим гэнэт тасарч, мөсөн гулгуурын талбайн голын гэрэл унтран хүйтэн жавар түгэв.",
+  ],
+  [ // 12월
+    "Босингакийн шинэ жилийн хонх",
+    "Оны сүүлчийн шөнө кру нар Босингакийн өмнөх түмэн олны дунд зогсов. Амьсгалын уур, уухайн чимээ хоёр холилдон шөнийн тэнгэр өөд дэгдэнэ.",
+    "\"쓰리, 투, 원!\" (Гурав, хоёр, нэг!) гэж солонгосоор хоолой сөөтөл хамт тоолж, хонхны дуу эгшиглэмэгц бие биеэ тэврэлдэв. Танил бус орны шинэ жил бидний шинэ жил болсон шөнө байлаа.",
+    "Гучин гурав дахь хонхны дуу эгшиглэх гэж байтал — хонх зогслоо. Талбайн том дэлгэц шаржигнан хар өнгөөр бүрхэгдэв.",
+  ],
+  [ // 13월
+    "Жонжу ханок хотхоны бибимбап гудамж",
+    "Өвлийн өглөөний Жонжу ханок хотхонд кру нар вааран дээврийн нөмөр дэх гудамжаар аажуухан алхлаа. Чулуун шалан дээгүүр цагаан амьсгалын уур дэгдэнэ.",
+    "Гуулин аяганд хийсэн Жонжу бибимбапаа хутгангаа \"이렇게 색이 많은 밥은 처음이야\" (Ийм олон өнгөтэй хоол анх удаа үзэж байна!) гэж инээлдэв. Нэг аяган доторх өнгөний зохицлыг кру нар эхлээд нүдээрээ сурлаа.",
+    "Яг тэр үед дээврийн ирмэг дэх салхин хонхны дуу тэс зогсож, гудамжны манан нэг том бөөгнөрөл болон дүгжирч босов.",
+  ],
+  [ // 14월
+    "Каннын хотын Анмок эргийн кофе гудамж",
+    "Хоёрдугаар сарын Канныне кру нар Анмок эргийн кофены гудамжинд хүрч ирлээ. Өвлийн далай шил мэт гялалзаж, дөнгөж хуурсан кофены үнэр давалгааны чимээтэй холилдон ирнэ.",
+    "Халуун кофе, кофены буурцаг хэлбэртэй боовоо бариад далан дээр зэрэгцэн суулаа. \"바다를 보면서 마시는 커피가 진짜 강릉의 맛이래.\" (Далай харангаа уух кофе л жинхэнэ Канныны амт гэнэ лээ.) Цахлай ганганан ойртоход бүгд боовоо чанга тэврэв.",
+    "Гэтэл тэнгисийн хаяаны манан аажуухан нүүж ирээд, далангийн өмнө асар том хөөсөн бөөн болон хөөж мандав.",
+  ],
+  [ // 15월
+    "Кёнжу хотын Дэрынвоны чулуун хэрэм ба Чомсондэ",
+    "Хаврын эхэн үеийн Кёнжуд кру нар Дэрынвоны зөөлөн толгодын хоорондох жимээр алхлаа. Хэрмийн цаана магнолиа цагаанаар дэлбээлж байв.",
+    "Мянган жилийн өмнө одод ажигладаг байсан Чомсондэ цамхгийн өмнө дөнгөж жигнэсэн хваннам боов хуваан идэнгээ \"신라 사람들도 이 하늘을 봤겠지?\" (Шилла улсын хүмүүс ч энэ тэнгэрийг харж байсан байх даа?) гэж шивнэлдэв. Эртний хот гэнэт маш ойрхон санагдлаа.",
+    "Яг тэр агшин Чомсондэгийн сүүдэр нарны эсрэг зүг рүү эргэж эхлэн, хөвд бүрхсэн чулуунууд өнхрөн нэг тийш цугларав.",
+  ],
+  [ // 16월
+    "Босон хотын ногоон цайны талбайн ногоон шат",
+    "Дөрөвдүгээр сарын Босонд кру нар ногоон давалгаа шат мэт үргэлжлэх цайны талбайн толгод өөд гарлаа. Хаврын бороог угтаж буй цайны навчис ногоон туяагаар гялалзана.",
+    "Дөнгөж түүсэн анхны ургацын цайны навчийг алгандаа тавьж үнэрлээд, харагдацын тавцан дээр ногоон цайны зайрмаг хуваан идлээ. \"우전, 세작 — 찻잎 한 장에도 계절 이름이 붙는구나.\" (Үжон, Сэжак — цайны нэг навчинд ч улирлын нэр өгдөг юм байна.) Кру нар шинэ үгсийг зайрмаг шиг аажуухан амталлаа.",
+    "Гэтэл талбайн зурвасуудын хоорондох манан ногоон өнгөөр будагдаж, толгодын чинээ том бөөн болон нийлж эхлэв.",
+  ],
+  [ // 17월
+    "Тамян хотын Жукногвон хулсан ой",
+    "Тавдугаар сарын Тамянд кру нар тэнгэр өөд сүндэрлэх хулснуудын хоорондох жимээр орлоо. Салхи үлээх бүрд хулсны навчис далайн давалгаа мэт шаржигнана.",
+    "Хулсан саванд агшаасан будааны тагийг нээмэгц уур савсан гарч, хулсны нахиатай хачир амссан нэг кру \"대나무를 먹는 거야?\" (Хулс иддэг юм уу?) гэж нүдээ бүлтийлгэв. Хулсны нахиа өдөрт нэг метр хүртэл өсдөг гэхийг сонсоод бүгд \"우리 같네!\" (Яг бид шиг юм аа!) гэж инээлдлээ.",
+    "Тэр үед салхи ч үгүй атал хулсан ой бүхэлдээ найгаж, хөрсийг сөхөн байшингийн чинээ том хулсны нахиа огцом цухуйв.",
+  ],
+  [ // 18월
+    "Ёсу хотын шөнийн далайн почха гудамж",
+    "Зуны эхэн үдэш кру нар Ёсугийн далайн эргийг дагасан почха буюу задгай мухлагуудын романтик гудамжинд хүрч ирлээ. Боомтын гэрэл хар далайн мандал дээр алтан тоос мэт хөвнө.",
+    "Почхад каткимчи, тукссэү сам хоёрыг амсангаа \"맵지만 자꾸 손이 가!\" (Халуун ногоотой ч гар аяндаа сунгаад л байна!) гэж дуу алдлаа. Мухлагийн эзэгтэй \"우리 여수 밤바다가 노래보다 예쁘지?\" (Манай Ёсугийн шөнийн далай дуунаас ч илүү үзэсгэлэнтэй биз дээ?) гэхэд кру нар толгой чанга дохив.",
+    "Гэтэл далайн мандал дээрх гэрлүүд найган нэг тийш цугларч, зөөлхөн желе мэт хөөж дугтран агаарт хөөрөв.",
+  ],
+  [ // 19월
+    "Борён хотын Дэчон эргийн шаварт наадам",
+    "Зуны тэг дундын Дэчон эрэгт кру нар шаварт наадмын яг гол руу үсрэн орлоо. Саарал шавраар хучигдсан хүмүүс бүгд адилхан царайгаар инээж байв.",
+    "Бие биенийхээ нүүрэнд шавар түрхэлцсээр хэн нь хэн болохоо танихаа болиод, \"이 진흙이 피부에 좋대!\" (Энэ шавар арьсанд сайн гэнэ лээ!) гэсээр улам ч хөгжилтэй түрхэлцэв. Шавран гулгуур дээр зөвхөн дуу хоолойгоор нь бие биеэ олж байлаа.",
+    "Тэр үед далайн татрамын гол хэсэг буцалж, шаврын хөөс уул мэт овоорон гулдран босов.",
+  ],
+  [ // 20월
+    "Жэжү арлын Үдо — чулуун хэрэм ба хэнё",
+    "Наймдугаар сарын Жэжүд кру нар завиар Үдо арал руу гарав. Оюу ногоон далай, хар базальт чулуун хэрэм хоёр зураг мэт үргэлжилнэ.",
+    "Далайн гүнээс шумбалтаа дуусгаад гарч ирсэн хэнё эмээгийн \"호오이—\" (хоо-ой—) гэх сумбисори буюу амьсгаагаа гаргах эгшгийг бүгд чимээгүйхэн чагнав. Үдогийн алдарт самрын зайрмагаа бариад толхаруван чулуун хөшөөний хажууд яг адилхан царай гарган зургаа даруулав.",
+    "Гэтэл эргийн чулуун хэрэм дүр дүр хийн өөрөө хөдөлж, нэг том чулуун биет болон давхарлан өрөгдөж эхлэв.",
+  ],
+  [ // 21월
+    "Андон хотын Хахуэ тосгоны баг бүжгийн талбай",
+    "Намрын эхэн үеийн Андонгийн Хахуэ тосгонд кру нар мөрөн тосгоныг бүтэн тойрон урсах үзэсгэлэнт байдлыг гайхан биширч, баг бүжгийн тоглолтын талбайд суудлаа эзэллээ.",
+    "Хахуэ багны инээсэн царайг дуурайлган зурж, мөрөө хөдөлгөх солонгос бүжгийг ч сурлаа. \"탈을 쓰면 부끄러움이 사라진대!\" (Баг зүүвэл ичих сэтгэл замхардаг гэнэ лээ!) гээд нэг кру баг зүүж солонгос мэндчилгээ хашхирахад талбай дүүрэн алга ташилт нижигнэв.",
+    "Яг тэр агшин талбайн хэнгэргийн чимээ тэс зогсож, нэг модон баг өөрөө өнхрөн гарч ирээд улам улам томорч эхлэв.",
+  ],
+  [ // 22월
+    "Жинжу хотын Намган мөрний усан дэнлүүний наадам",
+    "Аравдугаар сарын Жинжуд кру нар Намган мөрнийг дүүргэсэн юдын буюу усан дэнлүүнүүдийн гэрлийн дундуур алхлаа. Мөрний ус мянга мянган хүслээр гялалзана.",
+    "Кру нар ч хүслийн дэнлүүн дээрээ солонгосоор нямбай гаргацтай хүслээ бичээд мөрөнд хөвүүлэв. \"내년의 나에게 보내는 편지 같아.\" (Ирэх жилийн өөртөө илгээж буй захидал шиг байна.) Дэнлүү холдох тусам сэтгэл дэх хүсэл нь улам тодорч байлаа.",
+    "Гэтэл мөрний салхи эргэлдэж эхлэн, нэг бөөрөнхий жижигхэн хуй мөрөн дээр бууж ирээд дэнлүүнүүдийн дундуур наргиантайгаар сүлжин тоглов.",
+  ],
+  [ // 23월
+    "Сунчонман булангийн зэгсэн талбайн нар жаргалт",
+    "Арван нэгдүгээр сарын Сунчонманд кру нар үзүүр хязгааргүй үргэлжлэх зэгсэн талбайн модон замаар алхлаа. Салхи өнгөрөх бүрд мөнгөлөг зэгс нэг зүг рүү давалгаална.",
+    "Харагдацын тавцан дээр гарахад жаргах нарны туяан дунд хар тогоруунуудын сүрэг V үсэг зурсаар нисэн хөөрөв. \"겨울을 나러 시베리아에서 여기까지 온대.\" (Өвөлжихөөр Сибирээс энд хүртэл нисэж ирдэг гэнэ.) Мянга мянган километр туулж ирсэн шувуудын өмнө кру нар удтал тэнгэр ширтэн зогсов.",
+    "Тэр үед зэгсэн талбайн гол хэсэг дугуй хэлбэртэйгээр налж, зэгсний бөөн өнхөрсөөр улам том бөмбөг мэт хөөж томорлоо.",
+  ],
+  [ // 24월
+    "Мёндон гудамжны зул сарын гэрлэн зам",
+    "Арван хоёрдугаар сарын Мёндонд кру нар кэрол эгшиглэх гэрлийн гудамжинд орж ирлээ. Дэлгүүр бүрийн гялалзах гацуур, хүмүүсийн хөгжилтэй алхаа өвлийн шөнийг гэрэл дулаанаар дүүргэнэ.",
+    "Задгай мухлагийн шарсан амтат төмсөө үлээнгээ хальслан идэж, цаасан аяга дахь одэны халуун шөлөөр хөрсөн гараа дулаацуулав. Мёндон сүмийн өмнө эгшиглэх кэролыг сонсонгоо \"한국의 겨울은 손이 따뜻해지는 계절이구나\" (Солонгосын өвөл гэдэг гар дулаацдаг улирал юм байна) гэж инээмсэглэв.",
+    "Яг тэр агшин гудамжны гацуурын гэрлүүд зэрэг анивчиж, талбайн буланд овоорсон цас маршмеллоу мэт хөөж дугтран өндийв.",
+  ],
+];
+
+// 감정 표현 배지 8종 — STORY_EMOTIONS(L4450) 1:1: [관용구(한국어 유지 — 학습 대상), 뜻(몽골어)]
+const MN_STORY_EMOTIONS = [
+  ["설레다","хүлээлтээр зүрх догдлох"],
+  ["심장이 쿵 내려앉다","гэнэтийн явдалд зүрх түг хийтэл цочих"],
+  ["입술을 깨물다","сэтгэлийн хөдөлгөөнөө дарж, шийдвэрээ хатуу барих"],
+  ["소름이 돋다","гайхшрал, сэтгэл хөдлөлөөс бие жирвэгнэх"],
+  ["가슴이 벅차오르다","Баяр хөөр, сэтгэл хөдлөлөөр дүүрэх"],
+  ["목이 메다","Сэтгэл хөдөлсөндөө үг хэлж чадахгүй болох"],
+  ["어깨가 으쓱해지다","Бахархах сэтгэл төрөх"],
+  ["속이 후련하다","Санаа зовсон зүйл шийдэгдэж, сэтгэл онгойх"],
+  ["눈이 반짝이다","хүлээлт, сониуч сэтгэлээр гялалзах"],
+  ["숨이 턱 막히다","гайхшрал, догдлолоос амьсгаа давхцах мэт болох"],
+  ["주먹을 불끈 쥐다","шийдвэр, зоригоо бататгах"],
+  ["손에 땀을 쥐다","догдлон сэтгэлээ чангалж хүлээх"],
+  ["가슴이 뭉클하다","сэтгэл хөдлөл намуухан ундрах"],
+  ["눈시울이 붉어지다","сэтгэл хөдөлснөөс нүдний хаяа халуу оргих"],
+  ["가슴을 펴다","цээж тэнийж, бахархалтай болох"],
+  ["가슴을 쓸어내리다","тайвширч сэтгэл амрах"],
+];
+
+// 숙제·퀴즈 부속 필드 — C열(카테고리)·E열(검사포인트)의 몽골어. G열 1칸에 담지 않아 별도 보존
+const MN_HOMEWORK_CATEGORY = {
+  "어휘": "Үгийн сан",
+  "문법·문장": "Дүрэм·өгүүлбэр",
+  "말하기": "Ярих",
+  "쓰기": "Бичих",
+  "복습": "Давталт",
+  "K-컬처": "K-соёл",
+  "리셋": "Ресет",
+};
+const MN_QUIZ_CATEGORY = {
+  "조사": "Нөхцөл",
+  "어휘": "Үгийн сан",
+  "문법": "Дүрэм",
+  "맞춤법": "Зөв бичих дүрэм",
+  "발음": "Дуудлага",
+  "높임": "Хүндэтгэлийн үг",
+  "표현": "Хэллэг",
+  "상식": "Ерөнхий мэдлэг",
+  "TOPIK필수": "TOPIK заавал мэдэх",
+  "TOPIK중급": "TOPIK дунд түвшин",
+};
+const MN_HOMEWORK_CHECKPOINT = {
+  "HW101": "Нөхцөл (이/가·을/를) зөв эсэхийг шалгах",
+  "HW102": "Утгын холбоо эв дүйтэй эсэх",
+  "HW103": "Утгыг нь амаар ярьж тайлбарлуулах",
+  "HW104": "Жишээ өгүүлбэрийг сурах бичгээс хуулаагүй эсэх",
+  "HW105": "받침-ийн дуудлагыг шалгах",
+  "HW106": "Цагийн хэрэглээ нэг мөр эсэх",
+  "HW107": "Үнэхээр байдаг үг эсэх",
+  "HW108": "Зургийг хараад үгийг хэлүүлэх",
+  "HW109": "Тэр үгийн дуудлагыг шалгах",
+  "HW110": "Ангиллын үндэслэл логиктой эсэх",
+  "HW111": "Бодитоор олсноо хуваалцах",
+  "HW112": "Хичээл дээр найзууд нь таах",
+  "HW113": "Үнэхээр өөрийнх нь тухай эсэх",
+  "HW114": "Үгийн хослол эв дүйтэй эсэх",
+  "HW115": "Гар бичмэлийг шалгах (хөдөлгөөний ой санамж)",
+  "HW116": "Дуудлагыг шалгах",
+  "HW117": "Зургаа харж үгээ хэлэх",
+  "HW118": "Эсрэг үгийг зөв сонгосон эсэх",
+  "HW119": "Заасан туршлагаа хуваалцах",
+  "HW120": "Асуултын үгийн дараалал",
+  "HW121": "Солонгос үсгийн дарааллын мэдрэмж",
+  "HW122": "Үгийг оновчтой хэрэглэсэн эсэх",
+  "HW123": "Дуудлагын нарийн ялгааг шалгах",
+  "HW124": "Үгийн аймгийн мэдрэмж",
+  "HW125": "Яриа эв дүйтэй эсэх",
+  "HW126": "Хэрхэн таамагласныг нь асуух",
+  "HW127": "Эможи хараад үгийг нь сэргээж хэлэх",
+  "HW128": "Картаар шууд шалгаж үзэх",
+  "HW129": "Өмнөх үгсээ давтаж хэрэглэж байгаа эсэх",
+  "HW130": "Шалтгаан заасан хэллэг (-아/어서)",
+  "HW201": "Хэлбэр зөв эсэх + өөрийнх нь тухай эсэх",
+  "HW202": "Асуултын аялгаар унших",
+  "HW203": "았/었 хэлбэрийн хэрэглээ",
+  "HW204": "(으)ㄹ 거예요",
+  "HW205": "안 / -지 않다-г зөв байранд тавьсан эсэх",
+  "HW206": "Хоёр дүрэм эвтэйхэн нийлсэн эсэх",
+  "HW207": "조사-ын байрлалыг таньж байгаа эсэх",
+  "HW208": "Хүнийг дуудах үг (호칭) зөв эсэх",
+  "HW209": "Жишээ олох чадвар",
+  "HW210": "Цаг заасан үгийн байрлал",
+  "HW211": "(으)세요 / -읍시다",
+  "HW212": "Учир шалтгааны холбоо зөв эсэх",
+  "HW213": "«Хэрэв...» гэсэн утга гарч байгаа эсэх",
+  "HW214": "Оноосон нэрийн бичилт зөв эсэх",
+  "HW215": "-(으)세요 / 께서",
+  "HW216": "Төгсгөлийн нөхцөлийн хувиргалт",
+  "HW217": "Өөрөө тайлбарлаж чадаж байгаа эсэх (гүн ойлголт)",
+  "HW218": "Үгийн дарааллын мэдрэмж",
+  "HW219": "Өмнөх, дараах хэсэг үнэхээр эсрэгцэж байгаа эсэх",
+  "HW220": "Үргэлжилж буй цагийн хэлбэр",
+  "HW221": "Асуух үгийн сонголт зөв эсэх",
+  "HW222": "Чадварын илэрхийлэл",
+  "HW223": "Хэлэнд дадсан эсэх",
+  "HW224": "Эелдэг өнгө аяс гарч байгаа эсэх",
+  "HW225": "Харьцуулж буй зүйл + 조사 зөв эсэх",
+  "HW226": "Ирээдүй цагтай зөв хослуулсан эсэх",
+  "HW227": "Өргөжүүлэх чадвар",
+  "HW228": "Хуваасан цэг нь зөв эсэх",
+  "HW229": "Холбож буй логик зөв эсэх",
+  "HW230": "Өгүүлбэрийг мэдэрч байгаа эсэх",
+  "HW301": "Хичээл дээр 1~2 сурагч дахин үзүүлнэ",
+  "HW302": "Тэр дуудлага дээр төвлөрч сайжруулна",
+  "HW303": "Бодитоор хэрэглэсэн туршлагаа хуваалцах",
+  "HW304": "Дүр тус бүрийн аялгууны ялгаа",
+  "HW305": "연음 (холбож дуудах) шалгах",
+  "HW306": "Хэдэн удаа түр зогссоныг тэмдэглэнэ",
+  "HW307": "Гол өгүүлбэрүүдийг санаж байгаа эсэх",
+  "HW308": "Тоо унших чадвар",
+  "HW309": "Бичлэг хийсэн эсэхээ өөрөө хэлнэ",
+  "HW310": "Утасны ярианы өнгө аяс",
+  "HW311": "Үнэ асуух хэллэг",
+  "HW312": "어디·어떻게",
+  "HW313": "Сэтгэл хөдлөлийн үгс",
+  "HW314": "Хурдан уншихдаа ч зөв дуудаж байгаа эсэх",
+  "HW315": "받침-г тод дуудах",
+  "HW316": "Дуу хоолойгоо тохируулах",
+  "HW317": "Асууж-хариулах бүтэц",
+  "HW318": "Заах үг (이·그·저)",
+  "HW319": "Чөлөөтэй, тайван ярих",
+  "HW320": "Хурдыг нь дагаж амжих",
+  "HW321": "Хэлээ дасгалжуулах",
+  "HW322": "연음 дүрэм (холбож дуудах дүрэм)",
+  "HW323": "Шинэ мэдээлэл орсон эсэх",
+  "HW324": "-아/어서",
+  "HW325": "Ирээдүй цагийн хэллэг",
+  "HW326": "Өнгөрсөн цаг + сэтгэл хөдлөл",
+  "HW327": "-고 있다",
+  "HW328": "Магтаалын үгс",
+  "HW329": "Нэр + 조사",
+  "HW330": "Уран уншлагын байдал",
+  "HW401": "Загвараа ашигласан эсэх + засвар 1~2-хон байхад хангалттай",
+  "HW402": "Шалтгаан заасан хэллэг ашиглах",
+  "HW403": "Гол санааг олох",
+  "HW404": "높임/반말 зөв сонгосон эсэх",
+  "HW405": "Байрлал заасан хэллэг",
+  "HW406": "Яагаад ийм дасгал зохиосноо тайлбарлах",
+  "HW407": "Ярианы хэлний төгсгөл (어미)",
+  "HW408": "Цагийг зөв бичих",
+  "HW409": "Тоо ширхэг заах үг",
+  "HW410": "Ирээдүй цагийн хэллэг",
+  "HW411": "-아/어서",
+  "HW412": "Цаг агаарын үгс",
+  "HW413": "먼저·그다음·마지막",
+  "HW414": "Талархал илэрхийлэх хэллэг",
+  "HW415": "Уучлалт гуйх хэллэг",
+  "HW416": "Урих илэрхийлэл",
+  "HW417": "Сонирхол татах илэрхийлэл",
+  "HW418": "Богино өгүүлбэрийн мэдрэмж",
+  "HW419": "Хэрэглээ",
+  "HW420": "Асуух өгүүлбэр",
+  "HW421": "-(으)려고 하다",
+  "HW422": "있다/없다",
+  "HW423": "Өнгөрсөн цагаар өгүүлэх",
+  "HW424": "-고 싶다",
+  "HW425": "Захидлын хэлбэр",
+  "HW426": "Зөв бичсэн тоогоо тэмдэглэх",
+  "HW427": "Үгийн дараалал хувиргах",
+  "HW428": "Дүгнэх мэдрэмж",
+  "HW429": "Ярианы бөмбөлгийн мэдрэмж",
+  "HW430": "Бие даан сайжруулах",
+  "HW501": "Өөрийгөө шалгасныг магтах",
+  "HW502": "Ойлголтоо шалгах (тайлбарлангаа сурах)",
+  "HW503": "Жинхэнэ яриа мөн эсэх",
+  "HW504": "Сайжруулсан хэсгээ тайлбарлах",
+  "HW505": "Эргэн санах дасгалын зуршил",
+  "HW506": "Учрыг нь олох",
+  "HW507": "Хэрэглэх чадвар",
+  "HW508": "Хуримтлуулан цээжлэх",
+  "HW509": "Өөрийн үнэлгээ",
+  "HW510": "Ойлголтуудыг холбох",
+  "HW511": "Хуулж бичих + хайрлах сэтгэл",
+  "HW512": "Хуримтлуулан хэрэглэх",
+  "HW513": "Асуултын тодорхой байдал",
+  "HW514": "Асуултын зорилго",
+  "HW515": "Ангилах чадвар",
+  "HW516": "Товчлох чадвар",
+  "HW517": "Өөрийгөө таньж мэдэх",
+  "HW518": "Урьдчилан бэлдэх зуршил",
+  "HW519": "Засаж сайжруулах чадвар",
+  "HW520": "Өөртөө өгөх зөвлөгөө",
+  "HW521": "Хөнгөн сэргээн санах дасгал",
+  "HW522": "Цээжилснээ шалгах",
+  "HW523": "Үгэндээ дуртай болох",
+  "HW524": "Бусдад заах нь өөрөө гүнзгий сурах арга",
+  "HW525": "Чөлөөтэй унших чадвар",
+  "HW526": "Нөхцөл ялгаж таних",
+  "HW527": "Бодит хэрэглээгээ мэдрэх",
+  "HW528": "Дадлаа өөрөө төлөвлөх",
+  "HW529": "Сурснаа нэгтгэн ашиглах",
+  "HW530": "Эргэцүүлэн бодох",
+  "HW601": "Хэллэгийн утгыг хамт шалгах",
+  "HW602": "Өдөр тутмын амьдралаас таних",
+  "HW603": "Дараалал, дэс тооны илэрхийлэл",
+  "HW604": "Сонссоноо зөв бичих",
+  "HW605": "Сэтгэл хөдлөлийн үгс",
+  "HW606": "Ярианы хэллэг",
+  "HW607": "Газрын нэрийн дуудлага",
+  "HW608": "Амтны үгс",
+  "HW609": "Агуулгаас нь таамаглах",
+  "HW610": "Гадаад үгийг хангылаар бичих",
+  "HW611": "Хүндэтгэл хэрэглэх нөхцөлийг таних",
+  "HW612": "Соёлын мэдлэг",
+  "HW613": "Хэмнэл, аялга",
+  "HW614": "Шинэ үг хэллэг",
+  "HW615": "Гарчиг унших",
+  "HW616": "Салбарын үгс",
+  "HW617": "Тоо + нэгж",
+  "HW618": "Сонсох дасгалаа хөнгөн эхлүүлэх",
+  "HW619": "Мэдрэхүйн үгс",
+  "HW620": "Харьцуулсан өгүүлбэр",
+  "HW621": "Соёлын ерөнхий мэдлэг",
+  "HW622": "Нийлмэл үг унших",
+  "HW623": "Сурталчилгааны хэллэг унших",
+  "HW624": "Соёлын ёс заншил",
+  "HW625": "Дижитал хэллэг",
+  "HW626": "Хоббины үгс",
+  "HW627": "Эргэн тойрноо ажиглах",
+  "HW628": "Сэтгэгдлээ илэрхийлэх",
+  "HW629": "Улирлын үгс",
+  "HW630": "Сэтгэл хөдлөлийн үг",
+  "HW701": "Дараагийн хичээлийн яриа эхлүүлэх",
+  "HW702": "-고 싶다",
+  "HW703": "Өөрийн тайлагналд итгэх",
+  "HW704": "Сурах орчин",
+  "HW705": "Тэмдэглэх дадал",
+  "HW706": "Талархал илэрхийлэх",
+  "HW707": "Суурь мэдлэгээ сэргээх",
+  "HW708": "Тоо тоолох",
+  "HW709": "Өдөр тутмын үгс",
+  "HW710": "Өөртэйгөө эерэг ярих",
+  "HW711": "Хуулж бичих",
+  "HW712": "Хангыль бичих",
+  "HW713": "Ирээдүйн тухай хэллэг",
+  "HW714": "Сонирхлоо тэмдэглэх",
+  "HW715": "Амжилтын мэдрэмж",
+  "HW716": "Сэтгэл хөдлөлийн үг",
+  "HW717": "Асуулт бэлдэх",
+  "HW718": "Гэр бүлийн оролцоо",
+  "HW719": "Өдөр тутмаа дүрслэх",
+  "HW720": "Өнгөрснөө эргэн харах",
+  "HW721": "Зорилго тавих",
+  "HW722": "Апп ашиглах",
+  "HW723": "Дэвтэртээ хайртай болох",
+  "HW724": "Эд зүйлсийн үгс",
+  "HW725": "Гэр бүлтэй холбох",
+  "HW726": "Мэндчилгээ хэрэглэх",
+  "HW727": "Орчноо солонгосжуулах",
+  "HW728": "Хөгжилтэй хэллэг",
+  "HW729": "Шууд санаж хэлэх",
+  "HW730": "Товч илэрхийлэх",
+};
+
+/* ===================== [v5.2] 학부모 화면 라벨 (한·몽·영 직접 큐레이션) =====================
+ * type='label' → Glide에서 화면 라벨을 데이터로 바인딩할 때 사용 (C=키, D=한국어, G=몽골어, H=영어)
+ * type='reason' → point_logs.reason(C와 일치)을 학부모 화면에서 몽골어로 표시 (Relation→Lookup) */
+
+function setupParentLabels() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  replaceContentType(ss, 'label', [
+    ['L01','label','오늘우리아이','오늘 우리 아이','','','Өнөөдрийн миний хүүхэд','My Child Today'],
+    ['L02','label','등원완료','등원 완료','','','Ирсэн','Checked in'],
+    ['L03','label','등원시간','등원 시간','','','Ирсэн цаг','Arrival time'],
+    ['L04','label','이번주출석','이번 주 출석','','','Энэ долоо хоногийн ирц','Attendance this week'],
+    ['L05','label','이번달출석','이번 달 출석','','','Энэ сарын ирц','Attendance this month'],
+    ['L06','label','칭찬기록','칭찬 기록','','','Магтаалын түүх','Praise history'],
+    ['L07','label','이번달포인트','이번 달 포인트','','','Энэ сарын оноо','Points this month'],
+    ['L08','label','월간리포트','월간 성장 리포트','','','Сарын өсөлтийн тайлан','Monthly growth report'],
+    ['L09','label','공지사항','공지사항','','','Зарлал','Notices'],
+    ['L10','label','내정보','내 정보','','','Миний мэдээлэл','My info'],
+    ['L11','label','문의하기','선생님께 문의','','','Багштай холбогдох','Contact teacher'],
+    ['L12','label','지각','지각','','','Хоцролт','Late'],
+    ['L13','label','출석','출석','','','Ирц','Attendance'],
+    ['L14','label','몬스터','내 몬스터','','','Миний монстер','My monster'],
+    ['L15','label','언어','언어','','','Хэл','Language']
+  ]);
+  replaceContentType(ss, 'reason', [
+    ['R01','reason','숙제완료','숙제 완료','','','Гэрийн даалгавраа хийсэн','Homework done'],
+    ['R02','reason','오늘의 MVP','오늘 수업 최고의 참여자','','','Өнөөдрийн шилдэг оролцогч','Best participant of the day'],
+    ['R03','reason','칭찬','칭찬','','','Магтаал','Praise'],
+    ['R06','reason','오늘의 시냅스','오늘 가장 크게 성장한 학생','','','Өнөөдөр хамгийн их өссөн сурагч','Most improved of the day'],
+    ['R07','reason','리그승리','반 대항 주간 리그 승리','','','Долоо хоногийн ангийн лигийн ялалт','Weekly class league win'],
+    ['R08','reason','월드레이드','전교 월드 레이드 승리','','','Бүх сургуулийн ертөнцийн рейдийн ялалт','World raid victory'],
+    ['R04','reason','생일','생일 축하','','','Төрсөн өдрийн мэнд','Birthday'],
+    ['R05','reason','레이드보상','클래스 레이드 성공','','','Ангийн рейд амжилт','Class raid success'],
+    ['R09','reason','오늘의다짐','스스로 오늘의 목표를 다짐','','','Өнөөдрийн зорилгоо өөрөө тодорхойлсон','Self-set daily goal'] // [v9.28] 학생 셀프 미션
+  ]);
+  Logger.log('✅ 학부모 라벨/사유 번역 입력 완료 — 스토어 상품명 사유는 필요 시 reason 행으로 직접 추가');
+}
+
+/* ===================== [v5.7] 확장팩 콘텐츠 셋업 ===================== */
+
+function setupTeacherCheers() {
+  // [v6.8] 출근 토스트 7종(요일) + 퇴근 응원 메일 30종(일자 로테이션)
+  // 퇴근은 탭 순간이 아니라 5~15분 뒤 이메일로 — 퇴근 버튼 알림은 "퇴근 기록 완료 🌙" 정도로만
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  replaceContentType(ss, 'cheer', [
+    ['CH11','cheer','출근','일요일의 교실 — 주말 크루의 시냅스가 선생님을 기다립니다 ☀️','',1],
+    ['CH12','cheer','출근','한 주의 첫 신호를 켜는 사람 — 좋은 아침입니다 ⚡','',2],
+    ['CH13','cheer','출근','어제의 수업이 오늘의 회로가 됩니다 — 화요일도 잘 부탁드려요','',3],
+    ['CH14','cheer','출근','한 주의 한가운데 — 오늘 교실의 온도는 선생님이 정합니다 🌡️','',4],
+    ['CH15','cheer','출근','목요일, 반복이 미엘린을 만드는 날 — 늘 감사합니다','',5],
+    ['CH16','cheer','출근','금요일, 레이드 정산의 날 — 이번 주 연료 충분히 모였을까요? 🔥','',6],
+    ['CH17','cheer','출근','토요일의 헌신 — 주말 크루의 한 주가 선생님 손에서 시작됩니다','',7]
+  ]);
+  replaceContentType(ss, 'cheermail', [
+    ['CM01','cheermail','퇴근','오늘 교실에서 나온 문장들은 학생들 뇌에서 밤새 재생됩니다 — 편히 쉬세요.','',1],
+    ['CM02','cheermail','퇴근','수업은 끝났지만 미엘린은 지금부터 감깁니다. 오늘의 반복, 감사합니다.','',2],
+    ['CM03','cheermail','퇴근','가장 좋은 수업은 선생님이 잘 쉰 다음 날 나옵니다 — 오늘은 충전의 날.','',3],
+    ['CM04','cheermail','퇴근','오늘 던진 질문 하나가 어떤 학생에겐 진로가 됩니다.','',4],
+    ['CM05','cheermail','퇴근','칠판은 지워져도 배움은 저장됐습니다. 수고하셨어요.','',5],
+    ['CM06','cheermail','퇴근','오늘도 한 반의 하루를 설계하셨습니다 — 쉽지 않은 일을 매일 하고 계세요.','',6],
+    ['CM07','cheermail','퇴근','퇴근길, 오늘 잘된 순간 하나만 떠올려 보세요. 그게 내일의 연료입니다.','',7],
+    ['CM08','cheermail','퇴근','학생들의 "아!" 하는 순간들 — 전부 선생님이 만든 겁니다.','',8],
+    ['CM09','cheermail','퇴근','오늘의 피로는 누군가의 성장 비용이었습니다. 감사합니다.','',9],
+    ['CM10','cheermail','퇴근','교실의 에너지는 공짜가 아니죠. 오늘 쓰신 만큼 푹 채우세요.','',10],
+    ['CM11','cheermail','퇴근','반복해서 가르치는 일의 위대함 — 뇌과학이 증명하고, SYNK가 압니다.','',11],
+    ['CM12','cheermail','퇴근','오늘 출석부의 이름들, 모두 선생님 덕에 하루만큼 자랐습니다.','',12],
+    ['CM13','cheermail','퇴근','잘된 날도, 아쉬운 날도 — 내일의 수업이 또 있습니다.','',13],
+    ['CM14','cheermail','퇴근','선생님의 목소리 톤 하나가 오늘 교실의 온도였습니다.','',14],
+    ['CM15','cheermail','퇴근','오늘 나눈 피드백은 사라지지 않습니다 — 시냅스에 남았어요.','',15],
+    ['CM16','cheermail','퇴근','하루의 마지막 업무가 끝났습니다. 이제 선생님의 시간입니다.','',16],
+    ['CM17','cheermail','퇴근','좋은 교사는 퇴근을 잘하는 교사이기도 합니다. 오늘은 여기까지!','',17],
+    ['CM18','cheermail','퇴근','오늘 웃게 한 학생 수만큼, 내일이 기다려질 겁니다.','',18],
+    ['CM19','cheermail','퇴근','교실 문을 닫는 순간까지가 수업입니다 — 완주 축하드려요.','',19],
+    ['CM20','cheermail','퇴근','몽골의 밤, 한국어가 자라는 중입니다 — 선생님 덕분에.','',20],
+    ['CM21','cheermail','퇴근','지식은 전달이 아니라 점화라고 하죠. 오늘도 여러 개 켜셨습니다.','',21],
+    ['CM22','cheermail','퇴근','수업 준비부터 마무리까지, 보이지 않는 노동에 감사드립니다.','',22],
+    ['CM23','cheermail','퇴근','오늘의 아쉬움은 내일의 교안이 됩니다 — 편하게 내려놓으세요.','',23],
+    ['CM24','cheermail','퇴근','학생이 기억하는 건 진도가 아니라 선생님의 태도입니다. 오늘 좋았습니다.','',24],
+    ['CM25','cheermail','퇴근','이번 주 레이드 게이지, 선생님 손끝에서 올라가는 중입니다 🔥','',25],
+    ['CM26','cheermail','퇴근','목소리 많이 쓰신 날 — 따뜻한 물 한 잔 하세요.','',26],
+    ['CM27','cheermail','퇴근','교실은 무대고, 오늘 공연은 성공적이었습니다.','',27],
+    ['CM28','cheermail','퇴근','가르치며 배우는 사람 — 오늘 선생님도 한 뼘 자랐을 겁니다.','',28],
+    ['CM29','cheermail','퇴근','내일의 교실을 위해, 오늘의 선생님을 먼저 돌보세요.','',29],
+    ['CM30','cheermail','퇴근','SYNK의 하루가 무사히 닫혔습니다 — 마지막 열쇠는 늘 선생님이네요.','',30]
+  ]);
+}
+
+function setupFuelMissions() {
+  // 레이드 연료 미션 — 이름이 Glide 폼 Choice와 정확히 일치해야 함 (raidFriday가 이름→P 매핑)
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  replaceContentType(ss, 'fuel', [
+    ['F01','fuel','⏰ 정시 출석 데이','출석자 전원 지각 0','',20],
+    ['F02','fuel','📚 숙제 올클리어','출석자 전원 숙제 완료','',25],
+    ['F03','fuel','✍️ 받아쓰기 데이','받아쓰기 반 평균 80점 이상','',20],
+    ['F04','fuel','📖 단어 시험 통과','쪽지 단어시험 반 평균 8/10 이상','',20],
+    ['F05','fuel','🎤 전원 한 문장 데이','출석자 전원이 오늘 문형으로 한 문장 말하기','',15],
+    ['F06','fuel','🔇 올 한국어 타임','수업 마지막 10분 한국어만 사용 성공','',15]
+  ]);
+}
+
+function setupBosses() {
+  // D열 = "등장대사|격파대사" · E열에 픽셀 보스 이미지 URL 직접 입력 · F열 = 월 로테이션 순번
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  replaceContentType(ss, 'worldboss', [
+    ['WB01','worldboss','망각의 대군주 제로 🕳️','너희가 배운 모든 것을... 0으로 되돌려주마...|기억하는 자들 앞에서, 망각은 이름을 잃었다!','',1]
+  ]);
+  replaceContentType(ss, 'boss', [
+    ['BOSS01','boss','겨울잠 곰 🐻‍❄️','이불 밖은 위험해… 같이 자자…|이불을 박차고 나온 크루들이 곰을 깨웠다!','',1],
+    ['BOSS02','boss','연휴 후유증 슬라임 🛌','명절도 끝났는데… 조금만 더 쉬자…|다시 잡은 연필 끝에서 슬라임이 녹아내렸다!','',2],
+    ['BOSS03','boss','봄바람 나비 🦋','창밖을 봐… 공부는 무슨…|봄바람보다 설레는 성장 앞에 나비는 날아갔다!','',3],
+    ['BOSS04','boss','황사 안개 스핑크스 🌫️','뿌연 안개 속에서 아무것도 보이지 않을걸…|또렷한 발음이 안개를 갈랐다!','',4],
+    ['BOSS05','boss','딴생각 구름 ☁️','머릿속에 딴 세상을 띄워줄게…|몰입의 햇살이 구름을 걷어냈다!','',5],
+    ['BOSS06','boss','초원의 유혹 늑대 🐺','나가서 놀자… 초원이 부른다…|공부 끝의 초원이 두 배로 달콤함을 늑대도 알았다!','',6],
+    ['BOSS07','boss','방학 망각 크라켄 🐙','방학 동안 배운 걸 전부 삼켜주마…|매일의 복습 작살이 크라켄을 꿰뚫었다!','',7],
+    ['BOSS08','boss','미루기 해골 💀','나중에 해… 내일 해도 돼…|지금 하는 자들 앞에서 미루기는 힘을 잃었다!','',8],
+    ['BOSS09','boss','가을 졸음 요괴 😴','스르르… 눈꺼풀이 무겁지…|또렷한 목소리의 발표가 요괴를 쫓아냈다!','',9],
+    ['BOSS10','boss','시험 불안 그림자 👤','틀리면 어떡하지… 라는 속삭임…|준비된 자의 자신감이 그림자를 지웠다!','',10],
+    ['BOSS11','boss','혹한의 예티 ❄️','영하 30도… 학원은 무리야…|출석 도장의 온기가 예티를 녹였다!','',11],
+    ['BOSS12','boss','산만함 팬텀 👻','연말인데… 잠깐 저것 좀 보고 하자…|집중의 빛 앞에서 유령은 흩어졌다!','',12]
+  ]);
+}
+
+function setupTitleLore() {
+  // 칭호 로어 — C열이 대표칭호(AH) 문자열과 정확히 일치 → Glide Relation·Lookup으로 표시
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  // [v6.1] E열 = 등급 라벨 — 착용 칭호의 등급 Pill과 로어를 Relation 하나로 표시
+  replaceContentType(ss, 'lore', [
+    ['LR01','lore','👑 개근왕','미엘린은 반복을 사랑한다 — 매일 온 너를, 뇌가 기억한다.','👑 레전드',''],
+    ['LR02','lore','🧠 시냅스 챔피언','이번 달, 이 학원에서 가장 많은 연결을 만든 사람.','👑 레전드',''],
+    ['LR03','lore','🚀 로켓 성장','성장 곡선이 수직이 되는 순간이 있다 — 지금이 그 순간이다.','🟣 에픽',''],
+    ['LR04','lore','⚔️ 레이드 영웅','혼자면 빨리 가지만, 함께면 보스를 잡는다.','🟣 에픽',''],
+    ['LR05','lore','🐎 다크호스','아무도 예상하지 못한 질주 — 랭킹이 너를 따라잡지 못했다.','🟣 에픽',''],
+    ['LR06','lore','🔥 불꽃 출석러','끊기지 않은 신호는, 결국 회로가 된다.','🔵 레어',''],
+    ['LR07','lore','🏋️ 우리 반 캐리','반 게이지 뒤에는 너의 어깨가 있다.','🔵 레어',''],
+    ['LR08','lore','📚 숙제왕','복습의 골든타임을 단 한 번도 놓치지 않은 사람.','🔵 레어',''],
+    ['LR09','lore','🌟 이달의 스타','오늘 가장 빛난 사람에게 왕관을. 매 수업, 단 한 명.','🔵 레어',''],
+    ['LR10','lore','💝 정성왕','이번 달, 시냅스가 가장 많이 반짝인 이름 — 어제의 나를 이긴 횟수 1위.','🔵 레어',''],
+    ['LR11','lore','⏰ 지각 제로','시작을 지키는 사람이 끝도 지킨다.','⚪ 일반','']
+  ]);
+}
+
+function setupQuiz() {
+  // [v6.9] 오늘의 시냅스 퀴즈 100 — 기존 30 + TOPIK 필수 문법 70 (초급 40 · 중급 진입 30)
+  // 100일 로테이션 = 3개월+ 무반복. 객관식·정답공개형이라 초급도 부담 0 (노출 학습).
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  replaceContentType(ss, 'quiz', [
+    ['QZ01','quiz','조사','빈칸은? 학교( ) 가요 — ①에 ②에서|① 에 — 방향·도착점은 에',''],
+    ['QZ02','quiz','조사','빈칸은? 도서관( ) 공부해요 — ①에 ②에서|② 에서 — 행동하는 장소는 에서',''],
+    ['QZ03','quiz','조사','빈칸은? 사과( ) 좋아해요 — ①이 ②를|② 를 — 좋아하다의 대상',''],
+    ['QZ04','quiz','조사','저는 학생( ) — ①이에요 ②예요|① 이에요 — 학생은 받침이 있어요',''],
+    ['QZ05','quiz','조사','친구( ) 만나요 — ①을 ②를|② 를 — 친구는 받침이 없어요',''],
+    ['QZ06','quiz','어휘','크다의 반대말은?|작다',''],
+    ['QZ07','quiz','어휘','덥다의 반대말은?|춥다',''],
+    ['QZ08','quiz','어휘','사다의 반대말은?|팔다',''],
+    ['QZ09','quiz','어휘','아버지의 어머니는 누구?|할머니',''],
+    ['QZ10','quiz','어휘','재미있다와 비슷한 말은? ①즐겁다 ②슬프다|① 즐겁다',''],
+    ['QZ11','quiz','문법','과거형: 어제 밥을 ___ (먹다)|먹었어요',''],
+    ['QZ12','quiz','문법','미래: 내일 학교에 ___ (가다)|갈 거예요',''],
+    ['QZ13','quiz','문법','춥다 + 아/어요 = ?|추워요 — ㅂ 불규칙',''],
+    ['QZ14','quiz','문법','듣다 + 어요 = ?|들어요 — ㄷ 불규칙',''],
+    ['QZ15','quiz','문법','물을 ___ 싶어요 (마시다)|마시고 — V고 싶다',''],
+    ['QZ16','quiz','문법','안 먹어요 vs 먹지 않아요 — 틀린 것은?|없음 — 둘 다 맞아요',''],
+    ['QZ17','quiz','맞춤법','맞는 표기는? ①됬어요 ②됐어요|② 됐어요',''],
+    ['QZ18','quiz','맞춤법','맞는 표기는? ①안녕히 가세요 ②안녕이 가세요|① 안녕히 가세요',''],
+    ['QZ19','quiz','발음','같이의 발음은?|가치 — 구개음화',''],
+    ['QZ20','quiz','발음','꽃이의 발음은?|꼬치',''],
+    ['QZ21','quiz','발음','감사합니다의 실제 발음은?|감사함니다 — ㅂ+ㄴ은 ㅁ으로',''],
+    ['QZ22','quiz','높임','선생님께 「밥 먹었어?」 대신 뭐라고 할까요?|식사하셨어요?',''], // [v9.87] 따옴표 없는 축약이 문장 붕괴(07-31 유호 실측) — 몽골어판(«밥 먹었어?» 완전문)과 동급으로
+    ['QZ23','quiz','높임','나이의 높임말은?|연세',''],
+    ['QZ24','quiz','높임','집의 높임말은?|댁',''],
+    ['QZ25','quiz','표현','처음 만난 사람에게는 반말? 존댓말?|존댓말 — 처음 뵙겠습니다',''],
+    ['QZ26','quiz','어휘','월요일 다음 날은?|화요일',''],
+    ['QZ27','quiz','어휘','사과 3개 — 한국어로 세면?|세 개',''],
+    ['QZ28','quiz','어휘','병원에서 일하는 사람은?|의사 또는 간호사',''],
+    ['QZ29','quiz','상식','설날에 어른께 하는 큰절 인사는?|세배',''],
+    ['QZ30','quiz','상식','한글을 만든 왕은?|세종대왕',''],
+    ['QZ31','quiz','TOPIK필수','오늘( ) 날씨가 좋아요 — ①은 ②는|② 는 — 받침 없는 말 + 는',''],
+    ['QZ32','quiz','TOPIK필수','동생( ) 키가 커요 — ①이 ②가|② 가 — 받침 없는 말 + 가',''],
+    ['QZ33','quiz','TOPIK필수','친구( ) 선물을 줘요 — ①에게 ②에서|① 에게 — 사람에게 줄 때',''],
+    ['QZ34','quiz','TOPIK필수','버스( ) 가요 — ①로 ②으로|① 로 — 받침 없으면 로',''],
+    ['QZ35','quiz','TOPIK필수','지하철( ) 가요 — ①로 ②으로|① 로 — ㄹ 받침도 로!',''],
+    ['QZ36','quiz','TOPIK필수','9시( ) 6시( ) 일해요 — 빈칸 두 개는?|부터, 까지',''],
+    ['QZ37','quiz','TOPIK필수','형이 나( ) 커요 — 비교할 때 조사는?|보다',''],
+    ['QZ38','quiz','TOPIK필수','빵( ) 우유 — ①와 ②과|② 과 — 받침 있는 말 + 과',''],
+    ['QZ39','quiz','TOPIK필수','하루에 두 번( ) 드세요 — 하나하나 나눠서?|씩',''],
+    ['QZ40','quiz','TOPIK필수','수영을 ( ) 수 있어요 (하다)|할 — V(으)ㄹ 수 있다',''],
+    ['QZ41','quiz','TOPIK필수','내일 시험이라서 공부( ) 해요 — ①해야 ②하야|① 해야 — 아/어야 하다',''],
+    ['QZ42','quiz','TOPIK필수','여기서 사진을 찍( ) 마세요|지 — 금지',''],
+    ['QZ43','quiz','TOPIK필수','문 좀 열( ) 주세요 — ①어 ②아|① 어 — 열다→열어',''],
+    ['QZ44','quiz','TOPIK필수','지금 밥을 먹( ) 있어요|고 — 진행',''],
+    ['QZ45','quiz','TOPIK필수','이 옷 한번 입( ) 보세요 — ①어 ②아|① 어 — 시도',''],
+    ['QZ46','quiz','TOPIK필수','한국에 ( ) 적이 있어요 (가다)|간 — 경험',''],
+    ['QZ47','quiz','TOPIK필수','자( ) 전에 이를 닦아요|기 — V기 전에',''],
+    ['QZ48','quiz','TOPIK필수','수업이 끝( ) 후에 만나요 — ①난 ②은|① 난 — 끝나+ㄴ 후에',''],
+    ['QZ49','quiz','TOPIK필수','다리를 다쳐서 ( ) 걸어요 — ①안 ②못|② 못 — 능력이 안 될 때',''],
+    ['QZ50','quiz','TOPIK필수','밥을 먹( ) 식당에 가요|으러 — 목적 + 이동',''],
+    ['QZ51','quiz','TOPIK필수','한국에서 일하( ) 한국어를 배워요|려고 — 의도',''],
+    ['QZ52','quiz','TOPIK필수','비가 오( ) 우산을 가져가세요 — ①니까 ②으니까|① 니까 — 오+니까',''],
+    ['QZ53','quiz','TOPIK필수','김치는 맵( ) 맛있어요|지만 — 대조',''],
+    ['QZ54','quiz','TOPIK필수','주말에 영화를 보( ) 집에서 쉬어요 — 선택은?|거나',''],
+    ['QZ55','quiz','TOPIK필수','음악을 들( ) 공부해요 — ①으면서 ②면서|① 으면서 — 듣→들으',''],
+    ['QZ56','quiz','TOPIK필수','바쁘다 + 기 때문에 = ?|바쁘기 때문에 — 이유(문어)',''],
+    ['QZ57','quiz','TOPIK필수','한국에 살( ) 됐어요|게 — 게 되다(변화)',''],
+    ['QZ58','quiz','TOPIK필수','내일부터 운동하( ) 했어요|기로 — 결심',''],
+    ['QZ59','quiz','TOPIK필수','와, 눈이 오( )! — ①네요 ②나요|① 네요 — 감탄',''],
+    ['QZ60','quiz','TOPIK필수','피곤한데 우리 좀 쉴( )? — 제안|까요',''],
+    ['QZ61','quiz','TOPIK필수','제가 전화( )게요 — ①할 ②하ㄹ|① 할 — 약속',''],
+    ['QZ62','quiz','TOPIK필수','배가 고픈( ) 같이 먹을래요? — ①데 ②대|① 데 — 배경 제시',''],
+    ['QZ63','quiz','TOPIK필수','지금 ( ) 사람이 동생이에요 (자다)|자는 — 현재 관형형',''],
+    ['QZ64','quiz','TOPIK필수','어제 ( ) 영화가 재미있었어요 (보다)|본 — 과거 관형형',''],
+    ['QZ65','quiz','TOPIK필수','내일 ( ) 곳이 어디예요? (가다)|갈 — 미래 관형형',''],
+    ['QZ66','quiz','TOPIK필수','밥을 먹( ) 때 말하지 마세요|을 — V(으)ㄹ 때',''],
+    ['QZ67','quiz','TOPIK필수','여기 앉( ) 돼요? — ①아도 ②어도|① 아도 — 허락',''],
+    ['QZ68','quiz','TOPIK필수','교실에서 뛰( ) 안 돼요|면 — 금지 규칙',''],
+    ['QZ69','quiz','TOPIK필수','한국어를 정말 잘하( )! (감탄·새 발견)|시는군요/는군요',''],
+    ['QZ70','quiz','TOPIK필수','오늘 정말 춥( )? (확인·동의)|지요',''],
+    ['QZ71','quiz','TOPIK중급','집에 도착하( ) 바로 잤어요|자마자 — 직후',''],
+    ['QZ72','quiz','TOPIK중급','한국어를 배운 ( ) 1년 됐어요|지 — 시간 경과',''],
+    ['QZ73','quiz','TOPIK중급','제가 요리하( ) 동안 상 좀 차려 주세요|는',''],
+    ['QZ74','quiz','TOPIK중급','숙제를 하( ) 잠들어 버렸어요|다가 — 하던 중 전환',''],
+    ['QZ75','quiz','TOPIK중급','게임하( ) 숙제를 못 했어요|느라고 — 이유(나쁜 결과)',''],
+    ['QZ76','quiz','TOPIK중급','늦잠 자( ) 바람에 지각했어요|는 — 예상 밖 원인',''],
+    ['QZ77','quiz','TOPIK중급','내일 비가 ( ) 것 같아요 (오다)|올 — 추측',''],
+    ['QZ78','quiz','TOPIK중급','밖이 시끄러운 걸 보니 학생들이 왔( ) 봐요|나 — 근거 있는 추측',''],
+    ['QZ79','quiz','TOPIK중급','아이스크림을 떨어뜨릴 ( )했어요|뻔 — 아슬아슬',''],
+    ['QZ80','quiz','TOPIK중급','저는 밥을 빨리 먹는 ( )이에요|편 — 경향',''],
+    ['QZ81','quiz','TOPIK중급','한국어는 배( ) 재미있어요 — ①울수록 ②우면|① 울수록 — 점점 더',''],
+    ['QZ82','quiz','TOPIK중급','건강( ) 위해서 운동해요 — ①을 ②를|① 을 — N을 위해서',''],
+    ['QZ83','quiz','TOPIK중급','감기에 걸리지 않( ) 옷을 따뜻하게 입으세요|도록',''],
+    ['QZ84','quiz','TOPIK중급','동생도 형( ) 키가 커요 — 비슷한 정도|만큼',''],
+    ['QZ85','quiz','TOPIK중급','그 학생은 가수( ) 노래를 잘해요|처럼',''],
+    ['QZ86','quiz','TOPIK중급','친구가 바빠요 → 친구가 바쁘( ) 했어요|다고 — 간접화법',''],
+    ['QZ87','quiz','TOPIK중급','어디 가요? → 어디 가( ) 물었어요|냐고 — 간접 의문',''],
+    ['QZ88','quiz','TOPIK중급','같이 가요! → 같이 가( ) 했어요|자고 — 간접 청유',''],
+    ['QZ89','quiz','TOPIK중급','조용히 하세요 → 조용히 하( ) 하셨어요|라고 — 간접 명령',''],
+    ['QZ90','quiz','TOPIK중급','어제 그 식당 가 봤는데 정말 맛있( )|더라고요 — 직접 경험 전달',''],
+    ['QZ91','quiz','TOPIK중급','왜 안 먹어요? — 아까 먹었( )|거든요 — 이유 알려주기',''],
+    ['QZ92','quiz','TOPIK중급','내일 시험이( )! 같이 공부해요|잖아요 — 아는 사실 환기',''],
+    ['QZ93','quiz','TOPIK중급','어릴 때 자주 가( ) 공원이에요|던 — 과거 회상',''],
+    ['QZ94','quiz','TOPIK중급','바람에 문이 저절로 ___ (닫다)|닫혔어요 — 피동',''],
+    ['QZ95','quiz','TOPIK중급','엄마가 아기에게 밥을 ___ (먹다)|먹여요 — 사동',''],
+    ['QZ96','quiz','TOPIK중급','따뜻하다 → 날씨가 점점 ___|따뜻해져요 — 아/어지다(변화)',''],
+    ['QZ97','quiz','TOPIK중급','선생님이 학생들을 웃( ) 해요|게 — 게 하다',''],
+    ['QZ98','quiz','TOPIK중급','숙제를 드디어 다 끝내 ( )어요! (시원함)|버렸 — 아/어 버리다',''],
+    ['QZ99','quiz','TOPIK중급','손을 씻( ) 나서 드세요|고 — 순서 강조',''],
+    ['QZ100','quiz','TOPIK중급','이 드라마는 정말 ( ) 만해요 (보다)|볼 — 추천 가치','']
+  ]);
+}
+
+/* ===================== [v5.8] 오늘의 숙제 뱅크 (210개 · 요일당 30 · 30주 무반복) =====================
+ * F열 = 요일코드×100 + 순번 (월1 화2 수3 목4 금5 토6 일7)
+ * 월~금 = 평일반(오늘의숙제*), 토·일 = 주말반(주말의숙제*) — calcAll이 저녁 21시 이후 자동 게시.
+ * 강사는 검사 포인트(E열)만 보고 5분 체크 → 숙제완료 버튼 +10P.
+ * ⚠️ 재실행 시 contents 행 +174 → 일회성 싱크 ~210 업데이트 (한가한 날 실행 권장) */
+
+function setupHomework() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  replaceContentType(ss, 'homework', [
+    ['HW101','homework','어휘','오늘 배운 단어 3개로 각각 한 문장씩 만들어 오세요.','조사(이/가·을/를) 확인',101],
+    ['HW102','homework','어휘','오늘 배운 단어 중 2개를 한 문장 안에 같이 넣어 보세요.','의미 연결이 자연스러운지',102],
+    ['HW103','homework','어휘','새 단어 3개의 반대말 또는 비슷한 말을 찾아 오세요.','뜻을 말로 설명시키기',103],
+    ['HW104','homework','어휘','오늘 배운 단어 5개로 미니 단어장(단어+뜻+예문 1개) 만들기.','예문이 교재 복사 아닌지',104],
+    ['HW105','homework','어휘','집에 있는 물건 5개의 한국어 이름을 적어 오세요.','받침 발음 확인',105],
+    ['HW106','homework','어휘','오늘 배운 단어 3개가 들어간 3문장 미니 이야기 만들기.','시제 일관성',106],
+    ['HW107','homework','어휘','오늘 배운 단어 하나로 시작하는 끝말잇기 5개 이어 오기.','실제 있는 단어인지',107],
+    ['HW108','homework','어휘','오늘 배운 단어 3개를 그림으로 그려 오기(뜻은 쓰지 말고).','그림 보고 단어 말하게 하기',108],
+    ['HW109','homework','어휘','제일 어려운 단어 1개를 10번 소리 내어 읽고 체크.','그 단어 발음 확인',109],
+    ['HW110','homework','어휘','오늘 배운 단어 4개를 두 그룹으로 나누고 기준 말하기.','분류 기준의 논리',110],
+    ['HW111','homework','어휘','오늘 배운 단어 중 하나를 간판·포장에서 찾아 메모.','실물 발견 공유',111],
+    ['HW112','homework','어휘','오늘 배운 단어 1개의 뜻을 몸짓으로 표현해 보기.','수업에서 친구가 맞히기',112],
+    ['HW113','homework','어휘','오늘 배운 단어 3개를 나에 관한 문장으로 쓰기.','진짜 자기 얘기인지',113],
+    ['HW114','homework','어휘','오늘 배운 단어와 짝이 되는 말 3개 찾기(예: 사진을 찍다).','연어가 자연스러운지',114],
+    ['HW115','homework','어휘','사전에서 오늘 배운 단어 3개의 예문을 손으로 베껴 쓰기.','손글씨 확인(운동 기억)',115],
+    ['HW116','homework','어휘','오늘 배운 단어 3개를 큰 소리로 3번씩 읽고 체크 표시.','발음 확인',116],
+    ['HW117','homework','어휘','오늘 배운 단어 3개에 해당하는 실물 사진 찍어 오기.','사진 보며 단어 말하기',117],
+    ['HW118','homework','어휘','반대말을 써서 오늘 배운 문장 2개를 뒤집어 보세요.','반의어 정확성',118],
+    ['HW119','homework','어휘','가족에게 오늘 배운 단어 3개를 가르쳐 주고 반응 메모.','가르친 경험 공유',119],
+    ['HW120','homework','어휘','오늘 배운 단어를 넣은 질문 2개 만들기 — 수업에서 사용.','질문 어순',120],
+    ['HW121','homework','어휘','오늘 배운 단어 5개를 가나다순으로 정렬해 오기.','자모 순서 감각',121],
+    ['HW122','homework','어휘','오늘 배운 단어 1개로 나의 하루를 한 줄 요약.','단어 활용 적절성',122],
+    ['HW123','homework','어휘','발음이 비슷한 단어 한 쌍 찾아 차이 메모.','최소대립쌍 확인',123],
+    ['HW124','homework','어휘','오늘 배운 단어를 명사/동사/형용사로 분류하기.','품사 감각',124],
+    ['HW125','homework','어휘','오늘 배운 단어 3개로 두 줄 대화 만들기.','대화 자연스러움',125],
+    ['HW126','homework','어휘','모르는 단어 1개 뜻을 먼저 추측해 쓰고 사전 확인.','추측 과정 물어보기',126],
+    ['HW127','homework','어휘','오늘 배운 단어 5개를 이모지로 표현해 오기.','이모지 보고 단어 복원',127],
+    ['HW128','homework','어휘','오늘 배운 단어 5개로 단어 카드(앞 단어/뒤 뜻) 만들기.','카드로 즉석 테스트',128],
+    ['HW129','homework','어휘','지난주 단어 3개 + 오늘 배운 단어 3개로 문장 2개.','누적 복습 여부',129],
+    ['HW130','homework','어휘','오늘 배운 단어 중 최애 1개와 이유를 한 문장으로.','이유 표현(-아/어서)',130],
+    ['HW201','homework','문법·문장','오늘 배운 문법으로 나에 대한 문장 3개 쓰기.','형태 정확성 + 자기 얘기',201],
+    ['HW202','homework','문법·문장','오늘 배운 문법으로 질문 2개 — 내일 친구에게 묻기.','질문 억양으로 읽기',202],
+    ['HW203','homework','문법·문장','어제 한 일을 3문장으로 쓰기(과거형).','았/었 활용',203],
+    ['HW204','homework','문법·문장','내일 할 일을 3문장으로 쓰기(계획 표현).','(으)ㄹ 거예요',204],
+    ['HW205','homework','문법·문장','교재 문장 2개를 부정문으로 바꾸기.','안 / -지 않다 위치',205],
+    ['HW206','homework','문법·문장','오늘 배운 문법 + 지난주 문법을 한 문장에 같이 쓰기.','결합 자연스러움',206],
+    ['HW207','homework','문법·문장','오늘 배운 문장 2개에서 조사에 동그라미 치기.','조사 위치 인식',207],
+    ['HW208','homework','문법·문장','오늘 배운 문법으로 가족 소개 2문장.','호칭 정확성',208],
+    ['HW209','homework','문법·문장','교재에서 오늘 배운 문법이 들어간 문장 2개 찾아 밑줄.','용례 찾기',209],
+    ['HW210','homework','문법·문장','오늘 배운 문법 + 시간 표현(아침·어제 등) 문장 2개.','시간 부사 위치',210],
+    ['HW211','homework','문법·문장','오늘 배운 문장을 명령문과 청유문으로 바꾸기.','(으)세요 / -읍시다',211],
+    ['HW212','homework','문법·문장','이유 표현(-아/어서)으로 문장 3개.','인과 연결',212],
+    ['HW213','homework','문법·문장','조건 표현(-으면)으로 문장 2개.','가정 의미',213],
+    ['HW214','homework','문법·문장','오늘 배운 문법으로 몽골을 소개하는 문장 1개.','고유명사 표기',214],
+    ['HW215','homework','문법·문장','오늘 배운 문장 2개를 높임말로 바꾸기.','-(으)세요 / 께서',215],
+    ['HW216','homework','문법·문장','반말 2문장을 존댓말로, 존댓말 2문장을 반말로.','종결어미 전환',216],
+    ['HW217','homework','문법·문장','오늘 배운 문법의 규칙을 내 말로 한 줄 정리.','메타 이해',217],
+    ['HW218','homework','문법·문장','교재 문장 하나를 단어 순서 섞었다가 복원하기.','어순 감각',218],
+    ['HW219','homework','문법·문장','대조 표현(-지만)으로 문장 2개.','앞뒤 대조 성립',219],
+    ['HW220','homework','문법·문장','지금 하고 있는 일 3개 쓰기(-고 있다).','진행형',220],
+    ['HW221','homework','문법·문장','누가·언제·어디 질문 각 1개씩 만들기.','의문사 선택',221],
+    ['HW222','homework','문법·문장','할 수 있는 것 3개 쓰기(-(으)ㄹ 수 있다).','능력 표현',222],
+    ['HW223','homework','문법·문장','오늘 배운 문법 예문 1개를 3번 소리 내어 읽기.','입에 붙이기',223],
+    ['HW224','homework','문법·문장','부탁 표현(-아/어 주세요) 문장 2개.','공손한 어감',224],
+    ['HW225','homework','문법·문장','비교 표현(-보다) 문장 2개.','비교 대상 + 조사',225],
+    ['HW226','homework','문법·문장','오늘 배운 문법으로 방학 계획 한 문장.','미래 결합',226],
+    ['HW227','homework','문법·문장','짧은 문장 1개를 정보 3개 담긴 긴 문장으로.','확장 능력',227],
+    ['HW228','homework','문법·문장','긴 문장 1개를 두 문장으로 나누기.','분리 지점',228],
+    ['HW229','homework','문법·문장','그리고·그래서·하지만으로 문장 잇기 각 1개.','접속 논리',229],
+    ['HW230','homework','문법·문장','교재 최애 예문 1개 베껴 쓰고 별점 + 이유.','문장 감상',230],
+    ['HW301','homework','말하기','오늘 배운 표현으로 30초 혼잣말을 폰에 녹음.','수업에서 1~2명 재현',301],
+    ['HW302','homework','말하기','거울 보며 대화문 3번 읽고 어려운 발음 1개 메모.','그 발음 집중 교정',302],
+    ['HW303','homework','말하기','가족·친구에게 한국어 인사 + 한 문장, 반응 메모.','실제 사용 경험 공유',303],
+    ['HW304','homework','말하기','오늘 배운 대화문을 혼자 두 역할로 바꿔 읽기.','역할별 억양 차이',304],
+    ['HW305','homework','말하기','한국 노래 한 소절 따라 말하기(가사 보고 발음만).','연음 확인',305],
+    ['HW306','homework','말하기','"오늘 뭐 했어요?"에 20초 멈추지 않고 대답 연습.','멈춤 횟수 체크',306],
+    ['HW307','homework','말하기','오늘 배운 대화문을 안 보고 외워 말하기 도전.','핵심 문장 회상',307],
+    ['HW308','homework','말하기','오늘 날짜·요일·시간을 소리 내어 3번 말하기.','수 읽기',308],
+    ['HW309','homework','말하기','15초 셀프 소개 영상 찍기(제출은 안 해도 됨).','촬영 여부 자기 보고',309],
+    ['HW310','homework','말하기','전화 첫인사 3가지(여보세요 등) 연습.','전화 어투',310],
+    ['HW311','homework','말하기','가게에서 물건 사는 상황을 혼자 롤플레이.','가격 묻기 표현',311],
+    ['HW312','homework','말하기','길 묻는 문장 3개 소리 내어 연습.','어디·어떻게',312],
+    ['HW313','homework','말하기','오늘 기분을 문장 3개로 말해 보기.','감정 어휘',313],
+    ['HW314','homework','말하기','교재 문단을 2배 속도로 읽기 도전.','속도에서도 정확한지',314],
+    ['HW315','homework','말하기','같은 문단을 아주 천천히 또박또박 1회.','받침 살리기',315],
+    ['HW316','homework','말하기','같은 문장을 작게·보통·크게 3번 말하기.','성량 조절',316],
+    ['HW317','homework','말하기','스스로 질문 만들고 스스로 답하기 2세트.','자문자답 구조',317],
+    ['HW318','homework','말하기','내 방 물건 5개를 손으로 가리키며 말하기.','지시어(이·그·저)',318],
+    ['HW319','homework','말하기','오늘 배운 표현을 인형·반려동물에게 말해 보기.','부담 없는 산출',319],
+    ['HW320','homework','말하기','짧은 영상 1분 그림자 스피킹(동시에 따라 말하기).','속도 따라가기',320],
+    ['HW321','homework','말하기','발음이 꼬이는 문장 1개를 5번 반복.','혀 풀기',321],
+    ['HW322','homework','말하기','연음 단어 5개 소리 내기(꽃이·같이 등).','연음 규칙',322],
+    ['HW323','homework','말하기','자기소개를 15초 최신판으로 업데이트해 말하기.','새 정보 포함',323],
+    ['HW324','homework','말하기','좋아하는 것 3가지를 이유와 함께 말하기.','-아/어서',324],
+    ['HW325','homework','말하기','내일 계획을 소리 내어 말하기.','미래 표현',325],
+    ['HW326','homework','말하기','오늘 최고의 순간을 한 문장으로 말하기.','과거 + 감정',326],
+    ['HW327','homework','말하기','지금 하는 행동을 30초 실황 중계하기.','-고 있다',327],
+    ['HW328','homework','말하기','친구를 칭찬하는 문장 3개 소리 내기.','칭찬 어휘',328],
+    ['HW329','homework','말하기','반 친구 이름을 넣은 문장 2개 말하기.','이름 + 조사',329],
+    ['HW330','homework','말하기','이번 주 최애 문장 낭독을 녹음해 오기.','낭독 태도',330],
+    ['HW401','homework','쓰기','오늘 배운 문형으로 3줄 일기 쓰기.','문형 사용 + 교정은 1~2개만',401],
+    ['HW402','homework','쓰기','한국 음식·드라마·노래 중 하나를 3문장 소개.','이유 표현 사용',402],
+    ['HW403','homework','쓰기','오늘 수업에서 기억 남는 것 2문장 요약.','핵심 파악',403],
+    ['HW404','homework','쓰기','짝에게 주는 쪽지 2문장 — 수업에서 교환.','높임/반말 선택',404],
+    ['HW405','homework','쓰기','교재 그림 하나를 3문장으로 묘사.','위치 표현',405],
+    ['HW406','homework','쓰기','이번 주 단어로 빈칸 문제 2개 출제 — 친구가 풂.','출제 의도 설명',406],
+    ['HW407','homework','쓰기','친구에게 보내는 문자 형식으로 3줄.','구어체 어미',407],
+    ['HW408','homework','쓰기','나의 하루 시간표를 한국어로 쓰기.','시간 표기',408],
+    ['HW409','homework','쓰기','장보기 목록 5개를 한국어로.','단위 명사',409],
+    ['HW410','homework','쓰기','1년 뒤 나에게 보내는 2문장.','미래 표현',410],
+    ['HW411','homework','쓰기','오늘 최고의 순간 1문장 + 이유 1문장.','-아/어서',411],
+    ['HW412','homework','쓰기','오늘 날씨와 내 옷차림 2문장.','날씨 어휘',412],
+    ['HW413','homework','쓰기','좋아하는 음식 만드는 순서 3단계.','먼저·그다음·마지막',413],
+    ['HW414','homework','쓰기','고마운 사람에게 감사 문장 2개.','감사 표현',414],
+    ['HW415','homework','쓰기','사과 상황을 하나 만들어 사과 문장 2개.','사과 표현',415],
+    ['HW416','homework','쓰기','친구를 생일에 초대하는 문장 쓰기.','초대 표현',416],
+    ['HW417','homework','쓰기','아무 물건 하나의 광고 문구 한 줄.','매력 표현',417],
+    ['HW418','homework','쓰기','오늘 하루를 SNS 캡션 1개로.','짧은 문장 감각',418],
+    ['HW419','homework','쓰기','마음에 드는 표현 베껴 쓰고 내 문장 1개 만들기.','응용',419],
+    ['HW420','homework','쓰기','반 친구 인터뷰 질문 3개 만들기.','의문문',420],
+    ['HW421','homework','쓰기','다음 주 계획 3줄 쓰기.','-(으)려고 하다',421],
+    ['HW422','homework','쓰기','내 방을 3문장으로 묘사.','있다/없다',422],
+    ['HW423','homework','쓰기','최근 꾼 꿈(또는 상상 이야기) 2문장.','과거 서술',423],
+    ['HW424','homework','쓰기','한국에 가면 하고 싶은 것 3가지.','-고 싶다',424],
+    ['HW425','homework','쓰기','오늘 배운 문형으로 짧은 편지 3줄(받는 사람 자유).','편지 형식',425],
+    ['HW426','homework','쓰기','오늘 배운 단어 5개를 가리고 스스로 받아쓰기.','맞은 개수 기록',426],
+    ['HW427','homework','쓰기','몽골어 문장 2개를 한국어로 직접 번역.','어순 전환',427],
+    ['HW428','homework','쓰기','오늘 수업에 제목 붙이기 + 이유 한 줄.','요약 감각',428],
+    ['HW429','homework','쓰기','그림·만화 한 컷에 어울리는 대사 만들기.','말풍선 감각',429],
+    ['HW430','homework','쓰기','지난 목요일에 쓴 글 하나를 더 좋게 고치기.','스스로 교정',430],
+    ['HW501','homework','복습','이번 주 단어 중 헷갈리는 3개 골라 각 1문장.','자기 점검 칭찬',501],
+    ['HW502','homework','복습','이번 주 문법 하나를 몽골어로 설명하는 메모 작성.','개념 이해(설명하며 배우기)',502],
+    ['HW503','homework','복습','한국 영상 1분 보고 들리는 단어 3개 적기.','실제 대사인지',503],
+    ['HW504','homework','복습','월~목 숙제 중 하나를 더 좋게 업그레이드.','고친 부분 설명',504],
+    ['HW505','homework','복습','이번 주 새 단어 10개 셀프 테스트, 점수 기록.','인출 연습 습관',505],
+    ['HW506','homework','복습','이번 주 틀린 것 1개 오답노트(왜 틀렸는지).','원인 분석',506],
+    ['HW507','homework','복습','이번 주 문법으로 새 예문 3개 만들기.','응용력',507],
+    ['HW508','homework','복습','단어 카드 섞어 스스로 테스트, 점수 기록.','누적 암기',508],
+    ['HW509','homework','복습','이번 주 숙제 중 최고작 선정 + 이유.','자기 평가',509],
+    ['HW510','homework','복습','이번 주 배운 것 마인드맵 한 장 그리기.','개념 연결',510],
+    ['HW511','homework','복습','이번 주 문장 중 최애 1개를 예쁘게 다시 쓰기.','필사 + 애착',511],
+    ['HW512','homework','복습','이번 주 단어 3개로 문장 2개 만들기.','누적 활용',512],
+    ['HW513','homework','복습','선생님께 할 질문 1개 준비해 오기.','질문의 구체성',513],
+    ['HW514','homework','복습','짝에게 낼 미니 퀴즈 3문제 만들기.','출제 의도',514],
+    ['HW515','homework','복습','이번 주 단어를 주제별로 분류한 표 만들기.','범주화',515],
+    ['HW516','homework','복습','이번 주 배운 내용 3줄 요약.','압축력',516],
+    ['HW517','homework','복습','이번 주 나에게 별점 + 이유 한 문장.','메타 인지',517],
+    ['HW518','homework','복습','다음 주 교재 훑어보고 궁금한 것 1개 메모.','예습 습관',518],
+    ['HW519','homework','복습','이번 주 최다 실수 1개 + 올바른 문장.','교정 능력',519],
+    ['HW520','homework','복습','수요일 녹음 다시 듣고 좋아진 점 1개 메모.','자기 피드백',520],
+    ['HW521','homework','복습','이번 주 단어 5개만 골라 가리고 말해 보기.','가벼운 인출 연습',521],
+    ['HW522','homework','복습','이번 주 문장 3개 암송 도전.','암기 확인',522],
+    ['HW523','homework','복습','이번 주 최애 단어 1개를 크게 쓰고 꾸미기.','애착 형성',523],
+    ['HW524','homework','복습','부모님께 배운 것 1개 설명하기(몽골어 OK).','프로테제 효과',524],
+    ['HW525','homework','복습','교재 이번 주 페이지 소리 내어 통독 1회.','유창성',525],
+    ['HW526','homework','복습','헷갈린 조사 2개 정리(예문 포함).','조사 구분',526],
+    ['HW527','homework','복습','이번 주 한국어를 실제로 쓴 순간 1개 기록.','실사용 인식',527],
+    ['HW528','homework','복습','나만의 복습 체크리스트 5칸 만들기.','습관 설계',528],
+    ['HW529','homework','복습','이번 주 표현으로 짧은 대화 4줄 쓰기.','종합 산출',529],
+    ['HW530','homework','복습','한 주 소감 한 줄 + 다음 주 다짐 한 줄.','성찰',530],
+    ['HW601','homework','K-컬처','한국 영상 5분 시청 — 새로 들은 표현 1개 적기.','표현 뜻 함께 확인',601],
+    ['HW602','homework','K-컬처','주변 한국 제품·간판에서 한국어 3개 찾기.','실생활 인식',602],
+    ['HW603','homework','K-컬처','한국 음식 5개를 좋아하는 순서로 한국어로 적기.','순위·서수 표현',603],
+    ['HW604','homework','K-컬처','드라마 한 장면의 대사 1개 받아 적기.','청취 정확도',604],
+    ['HW605','homework','K-컬처','좋아하는 가수에게 한국어 응원 문장 2개.','감정 어휘',605],
+    ['HW606','homework','K-컬처','예능 리액션 표현 1개(대박 등) 뜻과 함께 적기.','구어 표현',606],
+    ['HW607','homework','K-컬처','한국 지도에서 도시 3개 이름 읽고 쓰기.','지명 발음',607],
+    ['HW608','homework','K-컬처','한국 음식 1개 사진 + 이름 + 맛 한 단어.','미각 어휘',608],
+    ['HW609','homework','K-컬처','웹툰 한 컷 읽고 모르는 단어 1개 뜻 추측.','문맥 추측',609],
+    ['HW610','homework','K-컬처','아는 한국 브랜드 3개를 한글로 쓰기.','외래어 표기',610],
+    ['HW611','homework','K-컬처','드라마에서 존댓말 장면 1개 — 누가 누구에게?','높임 상황 인식',611],
+    ['HW612','homework','K-컬처','한국 명절 1개 조사해 한 줄 설명.','문화 지식',612],
+    ['HW613','homework','K-컬처','아이돌 자기소개 멘트 하나 따라 말하기.','리듬·억양',613],
+    ['HW614','homework','K-컬처','한국 유행어 1개 뜻 조사.','신조어',614],
+    ['HW615','homework','K-컬처','좋아하는 드라마·영화 제목 3개 한글로 쓰기.','제목 읽기',615],
+    ['HW616','homework','K-컬처','K-뷰티·패션 단어 3개 수집.','분야 어휘',616],
+    ['HW617','homework','K-컬처','한국 날씨 앱 화면 보고 소리 내어 읽기.','숫자 + 단위',617],
+    ['HW618','homework','K-컬처','한국 노래 1곡 들으며 아는 단어 1개 적기.','청취 부담 완화',618],
+    ['HW619','homework','K-컬처','먹방에서 맛 표현 2개 수집.','감각 어휘',619],
+    ['HW620','homework','K-컬처','한국과 몽골의 같은 점 1개를 한 문장으로.','비교 문장',620],
+    ['HW621','homework','K-컬처','태극기·무궁화 등 한국 상징 이름 3개.','문화 상식',621],
+    ['HW622','homework','K-컬처','지하철 노선도에서 역 이름 3개 읽기.','합성어 읽기',622],
+    ['HW623','homework','K-컬처','영화 포스터의 문구 1개 적어 오기.','카피 읽기',623],
+    ['HW624','homework','K-컬처','한국 인사 예절 1개(두 손 등) 정리.','문화 매너',624],
+    ['HW625','homework','K-컬처','자주 쓰는 초성·이모티콘 2개 뜻(ㅋㅋ 등).','디지털 표현',625],
+    ['HW626','homework','K-컬처','팬덤 단어 2개(응원봉 등) 수집.','취미 어휘',626],
+    ['HW627','homework','K-컬처','한국어가 보이는 사진 1장 찍어 오기.','주변 탐색',627],
+    ['HW628','homework','K-컬처','드라마 명대사 1개 + 좋아하는 이유.','감상 표현',628],
+    ['HW629','homework','K-컬처','지금 계절의 한국 음식 1개 조사.','계절 어휘',629],
+    ['HW630','homework','K-컬처','주말 K-플레이리스트 1곡 + 느낌 한 단어.','감정 단어',630],
+    ['HW701','homework','리셋','이번 주 최애 표현 1개 + 이유 한 문장.','다음 수업 아이스브레이킹',701],
+    ['HW702','homework','리셋','다음 주 목표를 한국어 한 문장으로.','-고 싶다',702],
+    ['HW703','homework','리셋','지난주 단어장 소리 내어 1번 통독(체크만).','자기 보고 신뢰',703],
+    ['HW704','homework','리셋','책상 정리 + 단어장 제자리(인증 한 줄).','학습 환경',704],
+    ['HW705','homework','리셋','이번 주 필기 사진 1장 찍어 보관.','기록 습관',705],
+    ['HW706','homework','리셋','이번 주 감사한 일 1개를 한국어로.','감사 표현',706],
+    ['HW707','homework','리셋','자음·모음 한 벌 소리 내어 읽기 1회.','기초 리셋',707],
+    ['HW708','homework','리셋','스트레칭하며 1~20을 한국어로 세기.','수 세기',708],
+    ['HW709','homework','리셋','내일 가져갈 준비물 3개 한국어로.','생활 어휘',709],
+    ['HW710','homework','리셋','이번 주 잘한 것 1개 스스로 칭찬 문장.','긍정 자기 대화',710],
+    ['HW711','homework','리셋','오늘의 시냅스(명언) 하나 골라 베껴 쓰기.','필사',711],
+    ['HW712','homework','리셋','내 한국어 이름·서명 연습 3번.','한글 쓰기',712],
+    ['HW713','homework','리셋','미래의 꿈 한 문장 업데이트.','장래 표현',713],
+    ['HW714','homework','리셋','좋아하는 한국어 문장·가사 한 줄 수집.','취향 기록',714],
+    ['HW715','homework','리셋','제일 쉬운 문장 1개를 완벽 발음으로 3번.','성공 경험',715],
+    ['HW716','homework','리셋','5분 눈 감고 쉬고 기분을 한 단어로 기록.','감정 단어',716],
+    ['HW717','homework','리셋','다음 수업에 물어볼 것 1개 메모.','질문 준비',717],
+    ['HW718','homework','리셋','가족과 한국어 단어 맞히기 1회.','가족 참여',718],
+    ['HW719','homework','리셋','일요일 저녁 나의 루틴 한 줄 쓰기.','일상 서술',719],
+    ['HW720','homework','리셋','한 달 전 나에게 한마디.','과거 회고',720],
+    ['HW721','homework','리셋','앱 랭킹 보고 이번 달 목표 순위 정하기.','목표 설정',721],
+    ['HW722','homework','리셋','내 몬스터 확인, 다음 진화까지 몇 P인지 적기.','앱 활용',722],
+    ['HW723','homework','리셋','단어장 표지에 스티커·그림 1개 꾸미기.','애착 형성',723],
+    ['HW724','homework','리셋','필통 속 물건 3개 한국어로.','사물 어휘',724],
+    ['HW725','homework','리셋','부모님께 이번 주 배운 것 1개 자랑하기.','가정 연계',725],
+    ['HW726','homework','리셋','가족에게 한국어로 잘 자요 인사하기.','인사 실천',726],
+    ['HW727','homework','리셋','알람·메모 하나를 한국어로 바꾸기.','환경 한국어화',727],
+    ['HW728','homework','리셋','물 마시며 건배 표현 1개 말해 보기.','재미 표현',728],
+    ['HW729','homework','리셋','창밖에 보이는 것 3개 한국어로.','즉석 어휘',729],
+    ['HW730','homework','리셋','한 주를 이모지 3개 + 한 단어 소감으로.','압축 표현',730]
+  ]);
+}
+
+/* ===================== [v9.18] 📚 학업 성장 축 v1 =====================
+ * 실제 한국어 실력(급수 + 월간 모의점수)을 시간축으로 기록하는 순수 추가 축.
+ * academic_log = 강사가 월 1회 시트에 직접 입력(Glide 업데이트 0).
+ *   유형 level → 값=급수(1~6) · 유형 mock → 값=모의점수(0~100)
+ * calcAcademic_이 calcAll 말미에 편승해 profiles BO~BV(67~74) 스냅샷을 writeIfChanged로 갱신.
+ * 메시지는 언제나 따뜻하게 — '하락'을 쓰지 않고 '다지는 시간'으로 리프레이밍. */
+
+function setupAcademic() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ensureSheet(ss, 'academic_log',
+    ['log_id', 'student_id', '날짜', '유형', '값', '비고', '입력자']);
+  if (sh.getLastRow() < 2) { // 빈 시트(헤더만)일 때만 예시 3행 — 재실행 안전
+    sh.getRange(2, 1, 3, 7).setValues([
+      ['AL001', '(예시)S001', '2026-05-01', 'level', 3, '3급 인증', '(예시)'],
+      ['AL002', '(예시)S001', '2026-06-01', 'mock', 62, '6월 모의', '(예시)'],
+      ['AL003', '(예시)S001', '2026-07-01', 'mock', 69, '7월 모의', '(예시)']
+    ]);
+  }
+  Logger.log('academic_log 준비 완료 (헤더 7열 · 예시 3행)');
+}
+
+// 따뜻한 한마디 — [ko, mn]. 우선순위: 첫기록 > 급수상승 > 점수상승 > 유지/리프레이밍(부정어 없음)
+function academicMsg_(s) {
+  if (s.first) return [
+    '🌱 첫 평가 기록! 여기서부터 성장 스토리가 시작돼요 ✨',
+    '🌱 Анхны үнэлгээ бүртгэгдлээ! Эндээс өсөлтийн түүх эхэлж байна ✨'
+  ];
+  if (s.levelUp) return [
+    '🎉 ' + s.fromLv + '급 → ' + s.toLv + '급! 한국어 뇌에 새 회로가 열렸어요',
+    '🎉 ' + s.fromLv + '-р зэрэг → ' + s.toLv + '-р зэрэг боллоо! Солонгос хэлний тархинд шинэ холбоос нээгдлээ'
+  ];
+  if (s.hasDelta && s.delta > 0) return [
+    '지난달보다 +' + s.delta + '점 📈 꾸준함이 실력이 되고 있어요',
+    'Өнгөрсөн сараас +' + s.delta + ' оноо 📈 Тэвчээр чинь чадвар болж байна'
+  ];
+  return [ // 유지/하락 → 리프레이밍 (금칙어 '하락' 미사용)
+    '이번 달은 실력을 다지는 시간, 다음 도약을 준비 중이에요 💪',
+    'Энэ сар бол чадвараа бэхжүүлэх цаг, дараагийн үсрэлтэд бэлдэж байна 💪'
+  ];
+}
+
+// 학생 1명의 학업 로그(날짜 오름차순) → 스냅샷 객체. calcAcademic_·previewAcademic 공용.
+function academicSnapshot_(logs) {
+  if (!logs || !logs.length) return null;
+  const levels = logs.filter(l => l.type === 'level');
+  const mocks = logs.filter(l => l.type === 'mock');
+  const curLevel = levels.length ? levels[levels.length - 1].val : '';
+  let levelUps = 0, recentLevelUp = false, fromLv = '', toLv = '';
+  for (let k = 1; k < levels.length; k++) if (levels[k].val > levels[k - 1].val) levelUps++;
+  if (levels.length >= 2 && levels[levels.length - 1].val > levels[levels.length - 2].val) {
+    recentLevelUp = true; fromLv = levels[levels.length - 2].val; toLv = levels[levels.length - 1].val;
+  }
+  const curMock = mocks.length ? mocks[mocks.length - 1].val : '';
+  const hasDelta = mocks.length >= 2;
+  const delta = hasDelta ? (curMock - mocks[mocks.length - 2].val) : '';
+  const bestMock = mocks.length ? Math.max.apply(null, mocks.map(m => m.val)) : '';
+  const lastMonth = String(logs[logs.length - 1].ds).substring(0, 7);
+  const lastEntry = logs[logs.length - 1];
+  const state = { first: logs.length === 1, levelUp: false, fromLv: fromLv, toLv: toLv, hasDelta: false, delta: delta };
+  if (!state.first) { // 가장 최근 사건 기준 메시지 (mock 항목이라도 직전 레벨업이 있으면 축하 유지)
+    if (lastEntry.type === 'level' && recentLevelUp) state.levelUp = true;
+    else if (lastEntry.type === 'mock' && hasDelta) state.hasDelta = true;
+    else if (recentLevelUp) state.levelUp = true;
+    else if (hasDelta) state.hasDelta = true;
+  }
+  const msg = academicMsg_(state);
+  return { curLevel: curLevel, curMock: curMock, delta: delta, bestMock: bestMock,
+           levelUps: levelUps, lastMonth: lastMonth, ko: msg[0], mn: msg[1] };
+}
+
+// academic_log를 학생별로 읽어 그룹핑(날짜 오름차순). calcAcademic_·previewAcademic 공용.
+function readAcademicLogs_(ss, tz) {
+  const byId = {};
+  const al = ss.getSheetByName('academic_log');
+  if (!al || al.getLastRow() < 2) return byId;
+  al.getRange(2, 1, al.getLastRow() - 1, 7).getValues().forEach(r => {
+    const sid = r[1], type = String(r[3] || '').trim(), val = Number(r[4]) || 0;
+    if (!sid || (type !== 'level' && type !== 'mock')) return;
+    (byId[sid] = byId[sid] || []).push({ ds: dstr(r[2], tz), type: type, val: val });
+  });
+  Object.keys(byId).forEach(k => byId[k].sort((a, b) => a.ds < b.ds ? -1 : (a.ds > b.ds ? 1 : 0)));
+  return byId;
+}
+
+// [v9.20] 📈 실력 성장 카드(HTML) — 급수 + 최근 모의 미니 막대 + 증감. 게임과 실제 실력을 잇는 핵심 카드.
+function academicTrendHtml_(logs) {
+  logs = logs || [];
+  const levels = logs.filter(l => l.type === 'level');
+  const mocks = logs.filter(l => l.type === 'mock');
+  if (!levels.length && !mocks.length)
+    return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#F9FAFB;border:2px dashed #E5E7EB;border-radius:14px;padding:12px 13px;font-size:12.5px;color:#6B7280;">📈 한국어 실력 성장 — 첫 평가를 기다리고 있어요 ✨</div>';
+  const curLv = levels.length ? levels[levels.length - 1].val : null;
+  const series = mocks.slice(-5).map(m => Number(m.val) || 0);
+  const curMock = series.length ? series[series.length - 1] : null;
+  const prevMock = series.length >= 2 ? series[series.length - 2] : null;
+  const delta = (curMock != null && prevMock != null) ? (curMock - prevMock) : null;
+  let bars = '';
+  series.forEach((sc, i) => {
+    const h = Math.max(Math.round((Math.max(0, Math.min(100, sc)) / 100) * 30), 3);
+    bars += '<div style="display:inline-block;width:9px;height:' + h + 'px;background:' + (i === series.length - 1 ? '#10B981' : '#CFEDDF') + ';border-radius:2px;margin:0 1.5px;vertical-align:bottom;"></div>';
+  });
+  const barBox = series.length
+    ? '<div style="text-align:center;">' + bars + '<div style="font-size:9px;color:#9CA3AF;padding-top:2px;">최근 ' + series.length + '회 모의</div></div>'
+    : '<div style="font-size:11px;color:#9CA3AF;text-align:center;">모의 기록<br>대기 중</div>';
+  const deltaTxt = (delta == null) ? '' : (delta > 0 ? '▲ +' + delta : (delta < 0 ? '△ ' + delta : '– 유지'));
+  const deltaCol = (delta != null && delta > 0) ? '#0E9F6E' : '#9CA3AF';
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#F0FDF4;border:2px solid #BBF7D0;border-radius:14px;padding:11px 13px;">' +
+    '<div style="font-size:11px;color:#6B7280;">📈 한국어 실력 성장</div>' +
+    '<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding-top:4px;">' +
+      '<div><div style="font-size:24px;font-weight:800;color:#0E9F6E;line-height:1;">' + (curLv != null ? curLv + '급' : '—') + '</div><div style="font-size:10px;color:#6B7280;padding-top:2px;">현재 TOPIK 급수</div></div>' +
+      '<div style="flex:1;">' + barBox + '</div>' +
+      '<div style="text-align:right;"><div style="font-size:20px;font-weight:800;">' + (curMock != null ? curMock : '—') + '<span style="font-size:11px;color:#9CA3AF;">/100</span></div><div style="font-size:11px;font-weight:700;color:' + deltaCol + ';">' + deltaTxt + '</div></div>' +
+    '</div></div>';
+}
+
+function calcAcademic_(byId, pfData) { // [v9.22] calcAll에서 byId·pfData 재사용(없으면 자체 읽기 — 수동 실행 호환)
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return; // 콜드스타트 가드
+
+  byId = byId || readAcademicLogs_(ss, tz);
+
+  // profiles 신규열 BO~BW(67~75) 확장 + 헤더 보장 (기존 66열 계산과 분리)
+  if (pf.getMaxColumns() < 75) pf.insertColumnsAfter(pf.getMaxColumns(), 75 - pf.getMaxColumns());
+  const heads = ['현재급수','최근모의점수','직전대비Δ','최고모의점수','레벨업누적','마지막평가월','학업한마디_KO','학업한마디_MN','학업추세HTML']; // [v9.20] +학업추세HTML(BW)
+  heads.forEach((h, i) => { if (String(pf.getRange(1, 67 + i).getValue()) !== h) pf.getRange(1, 67 + i).setValue(h); });
+
+  const rows = pfData || pf.getRange(2, 1, pf.getLastRow() - 1, 15).getValues(); // [v9.22] id(0)·role(3) 재사용
+  const out = rows.map(r => {
+    const sid = r[0];
+    if (!sid || r[3] !== 'student') return ['', '', '', '', '', '', '', '', ''];
+    const snap = academicSnapshot_(byId[sid]);
+    // [v9.20] 기록 없어도 BW(학업추세HTML)는 "첫 평가 대기" 카드로 항상 채움 (홈 카드 자리 안 비게)
+    if (!snap) return ['', '', '', '', '', '', '', '', academicTrendHtml_(byId[sid])];
+    return [snap.curLevel, snap.curMock, snap.delta, snap.bestMock, snap.levelUps, snap.lastMonth, snap.ko, snap.mn, academicTrendHtml_(byId[sid])];
+  });
+  writeIfChanged(pf, 2, 67, out);
+  Logger.log('calcAcademic_ 완료: 학업 로그 ' + Object.keys(byId).length + '명');
+}
+
+// 시트에 쓰지 않고 계산 결과만 로그로 — 배포 전 검증용
+function previewAcademic() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const byId = readAcademicLogs_(ss, tz);
+  const keys = Object.keys(byId);
+  if (!keys.length) { Logger.log('academic_log 비어 있음 — setupAcademic 먼저 실행하세요'); return; }
+  Logger.log('=== previewAcademic (시트 미기록) — ' + keys.length + '명 ===');
+  keys.forEach(sid => {
+    const s = academicSnapshot_(byId[sid]);
+    Logger.log(sid + ' | 급수 ' + (s.curLevel === '' ? '-' : s.curLevel) +
+      ' · 최근모의 ' + (s.curMock === '' ? '-' : s.curMock) +
+      ' · Δ ' + (s.delta === '' ? '-' : s.delta) +
+      ' · 최고 ' + (s.bestMock === '' ? '-' : s.bestMock) +
+      ' · 레벨업 ' + s.levelUps + ' · ' + s.lastMonth +
+      '\n    KO: ' + s.ko + '\n    MN: ' + s.mn);
+  });
+}
+
+/* ===================== [v9.18] 🖼️ 임시 플레이스홀더 이미지 =====================
+ * ⚠️ 임시용 — Recraft 진짜 이미지가 나오기 전, 앱에 빈 이미지 자리가 보이지 않도록 채우는 용도.
+ * contents의 monster/boss/worldboss/store 행 중 이미지URL(E열)이 "빈 행만" placehold.co URL로 채움.
+ * 이미 URL이 있는 행은 절대 덮어쓰지 않음(진짜 이미지 보존). 진짜 이미지가 오면 그 행은 자동 스킵.
+ * 임시 부품이라 bootstrapSynk 재건 목록·healthCheck 시트 점검에는 넣지 않음(academic_log와 반대). */
+function setupPlaceholderImages() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ct = ss.getSheetByName('contents');
+  if (!ct || ct.getLastRow() < 2) { Logger.log('contents 비어 있음 — 플레이스홀더 스킵'); return; }
+  const color = { monster: '3D5AFE', boss: '312E81', worldboss: '1E1B4B', store: 'F5A623' }; // 인디고·다크퍼플·더어둡게·[v9.19]스토어 앰버
+  const n = ct.getLastRow() - 1;
+  const data = ct.getRange(2, 1, n, 6).getValues(); // A~F (콘텐츠ID·유형·이름·설명·이미지URL·순번)
+  let filled = 0;
+  const eCol = data.map(r => {
+    const id = String(r[0] || ''), type = String(r[1] || ''), url = String(r[4] || '').trim();
+    if (color[type] && !url) { // 대상 유형 + 빈 URL만 (기존 URL·비대상 유형은 손대지 않음)
+      const label = id.replace(/[^A-Za-z0-9]/g, '') || type.toUpperCase(); // ASCII만 — placehold.co 한글 깨짐 방지
+      filled++;
+      return ['https://placehold.co/400x400/' + color[type] + '/FFFFFF/png?text=' + label];
+    }
+    return [r[4]]; // 그대로 보존 (진짜 이미지 포함)
+  });
+  writeIfChanged(ct, 2, 5, eCol);
+  Logger.log('임시 플레이스홀더 이미지 ' + filled + '개 채움 (빈 monster/boss/worldboss만 · 기존 URL 보존)');
+}
+
+/* ===================== [v9.25] 🚪 온보딩 콘텐츠 (역할별 첫 화면 안내) =====================
+ * 'onboarding' 시트에 역할별 3줄 안내를 세팅. Glide가 role 필터로 홈 최상단에 표시.
+ * 순수 콘텐츠(계산 로직 아님) — 1회 실행. 몽골어는 초벌이라 원어민 검수 권장. */
+function setupOnboarding() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ensureSheet(ss, 'onboarding', ['role', '제목', '안내KO', '안내MN', '아이콘']);
+  const rows = [
+    ['student', 'SYNK에 온 걸 환영해! 🎮', '출석하고 미션을 하면 네 몬스터가 진화해. 왕관과 포인트를 모아 도감을 채우고, 한국어도 쑥쑥 자라!', 'Ирцээ бүртгүүлж даалгавраа хийвэл таны монстр хувьсана. Титэм ба оноо цуглуулж цомгоо дүүргэ, солонгос хэл ч өснө!', '🐣'],
+    ['parent', '자녀의 성장을 매주 받아보세요 🌱', '매주 자녀의 한국어 성장 리포트가 몽골어로 도착해요. 출석·급수·칭찬을 한눈에 확인하고 함께 응원해 주세요.', 'Долоо хоног бүр хүүхдийнхээ солонгос хэлний ахицын тайланг монголоор хүлээн авна. Ирц, зэрэг, магтаалыг нэг дороос хараарай.', '💌'],
+    ['teacher', '오늘 할 것만 크게 보여요 👩‍🏫', "'오늘의 반' 탭에서 브리핑·체크·왕관 밸런스를 확인하고, 버튼 한 번으로 포인트를 주세요. 하루 한도는 자동 정정돼요.", '', '📋'],
+    ['director', 'SYNK LAB 콕핏 🛰️', '리텐션 레이더·케어 사각·경영 리포트로 학원 전체를 한 화면에서 관리하세요.', '', '🛰️'], // [v9.38] 'admin'→'director' 실데이터 역할값 정합(Glide Visibility도 director)
+  ];
+  sh.getRange(2, 1, rows.length, 5).setValues(rows);
+  Logger.log('온보딩 콘텐츠 ' + rows.length + '역할 세팅 완료 (onboarding 시트)');
+}
+
+/* ===================== [v9.38] 🏫 수업 입력 시트·열 물리 생성 (Glide 폼 바인딩 선행) =====================
+ * W3(학습추적) 신규 구조는 스켈레톤엔 있으나 '기존' 라이브 시트엔 미반영이다(ensureSheet는 생성 시에만 헤더 기록).
+ * 새 앱 조립 전 이 함수를 1회 실행하면 강사 마감폼(weekly_topics F~L)·출석 배치폼(attendance_batch)의
+ * 바인딩 대상 열/시트가 정확한 헤더로 물리 생성된다. 멱등 — 이미 있으면 무해. 수동 헤더 입력(오타 위험) 대체. */
+function setupClassroomInputs() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tp = ensureSheet(ss, 'weekly_topics', ['class_name', '배운내용', '입력자', 'created_at', '배운내용_mn']);
+  ensureLessonCols_(tp); // F~L 승격: 문법태그·전체도달도·예외학생·숙제완료자·연료미션·처리상태·학습전개상태
+  ensureSheet(ss, 'attendance_batch', ['날짜', 'class_name', '출석자목록', '입력자', 'created_at', '처리상태']); // 수업 시작 출석 1탭(멀티선택) — parentSweep이 attendance로 전개
+  ensureSheet(ss, 'mastery_log', ['student_id', 'grammar_id', '상태', '첫기록일', '도달일', '출처', 'updated_at']);   // 스크립트 전용(진화 게이트 재료)
+  ensureSheet(ss, 'student_errors', ['날짜', 'student_id', '반', '유형', '메모', '입력자', 'created_at', '상태']);       // 강사 선택 입력(학생 미노출)
+  // [v9.38c] Glide 폼 대상 입력 시트 일괄 보장 — 배치 함수가 만들 때까지 안 생겨 Glide 바인딩이 막히던 것 방지(멱등, 기존은 무해)
+  ensureSheet(ss, 'hw_batch', ['date', 'class_name', '완료자목록', '입력자', 'created_at', '처리상태']);              // 강사 숙제 멀티체크
+  ensureSheet(ss, 'absence_notice', ['student_id', '반', '날짜', '사유', '등록시각']);                                // 학부모 결석 사전신고
+  ensureSheet(ss, 'inquiries', ['student_id', '이름', '문의내용', '상태', '접수시각']);                                // 학부모 문의
+  // [v9.38] teacher_checkins 헤더 정규화 — 라이브 옛 GPS 스키마(log_id·teacher_id·date·type…)를 코드 기대(이름·구분·시각)로.
+  //   TC_NAME/TYPE/TIME_COL=1/2/3이 이 3열을 위치로 읽으므로 헤더가 어긋나면 출퇴근 보드·퇴근응원 오작동. 빈 시트라 데이터 무손실.
+  const tc = ensureSheet(ss, 'teacher_checkins', ['이름', '구분', '시각']);
+  ['이름', '구분', '시각'].forEach((h, i) => { if (String(tc.getRange(1, i + 1).getValue()) !== h) tc.getRange(1, i + 1).setValue(h); });
+  // [v9.80] profiles 학교·동네 — 조 편성의 "같은 학교·동네 친구는 다른 조로"(규칙서 §5) 재료.
+  //   선택 입력이라 비어 있어도 편성은 돌아가고 그 기준만 생략된다. 열이 없으면 채울 자리조차 없어 여기서 보장한다.
+  //   ⚠ 열 번호를 박지 않는다 — 76·77(BX·BY)은 이미 '오늘의알림'·'나의여정'(v9.20, calcAll이 매일 씀)이고,
+  //     공유 열도 v9.74·v9.81에서 계속 늘어나는 중이다. langColOf_로 이름으로 찾고 없으면 끝에 새로 만든다.
+  const pfG = ss.getSheetByName('profiles');
+  if (pfG) { langColOf_(pfG, '학교'); langColOf_(pfG, '동네'); }
+  ensureSheet(ss, 'groups', GROUPS_HEADERS); // [v9.80] 조 편성 — assignGroupsAll이 채운다(강사 입력 아님)
+  ensureSheet(ss, 'lectures', LECTURE_HEADERS);           // [v9.106]
+  ensureSheet(ss, 'lecture_views', LECTURE_VIEW_HEADERS); // [v9.106]
+  ensureSheet(ss, 'lesson_close', LESSON_CLOSE_HEADERS); // [v9.91] 차시 마감폼 적재처(폼 생성 전에도 Glide 바인딩 가능하게 선보장)
+  Logger.log('수업 입력 구조 생성 완료: weekly_topics F~L 승격 · attendance_batch · mastery_log · student_errors · teacher_checkins 헤더 정규화 · profiles 학교/동네 · groups');
+  return '수업 입력 구조 생성 완료 — 강사 마감폼/출석폼/출퇴근을 이 시트·열에 바인딩하세요.';
+}
+
+/* ===================== [v9.21] 📓 노션 크루 DB 동기화 (앱 → 노션) =====================
+ * profiles(앱 정량 데이터)를 노션 "크루 DB — 학생 통합 정보"에 학생별 upsert.
+ * 노션 인터뷰(정성)와 합쳐 완성된 학생 스토리 허브가 됨. 주 1회(weeklyJobs) 실행.
+ * ⚠️ 토큰은 코드에 넣지 말 것! Script Properties의 'NOTION_TOKEN'에 저장(깃/clasp에 안 올라감).
+ *    설정: notion.so/my-integrations → 통합 생성 → 크루 DB에 연결(Connections) → 토큰을 Script Properties에. */
+const NOTION_DB_ID = '393bd830-9852-80bf-9101-e7c0a62c3d80'; // 크루 DB
+const NOTION_VER = '2022-06-28';
+
+function notionHeaders_() {
+  const token = PropertiesService.getScriptProperties().getProperty('NOTION_TOKEN');
+  if (!token) throw new Error('NOTION_TOKEN 미설정');
+  return { 'Authorization': 'Bearer ' + token, 'Notion-Version': NOTION_VER, 'Content-Type': 'application/json' };
+}
+
+// [v9.98] 동의 문항 A의 제목 = 자유서술 blob에 남는 동의 마커. migrateConsentV186과 한 벌 — 제목을 바꾸면 여기도 바꾼다
+//   (문항 A는 대응 시트 열이 없어 규칙대로 blob에 '[제목] 답'으로 접수 시각과 함께 보존된다 = 행 단위 동의 증빙).
+const CONSENT_Q_TITLE = '개인정보·학습데이터 활용 동의';
+
+// [v9.84·④] 상담시트 자유서술 blob → 학생ID 맵. '📝자유서술→노션' 열이 이름만 약속하고 수동이던 것의 자동화 재료.
+//   서술이 있는 행만·학생ID 중복은 첫 행 우선. 실패는 호출부에서 격리(서술만 생략, 본 동기화는 계속).
+// [v9.98·행 단위 동의] app_state 게이트(v18.6)는 "폼에 문항이 생겼는가"만 보증한다 — 문항 신설 **이전에** 접수된
+//   행과 종이 상담을 손으로 옮긴 행에는 동의 표기가 없다. 08-01 실측에서 그런 행(SYNK-001)이 서술을 가진 채
+//   이관 대기 중인 것을 확인 → 마커 없는 행은 내보내지 않는다(버전 게이트의 한 겹 아래 구멍).
+function consultNarrativeMap_() {
+  const map = {};
+  let skipped = 0;
+  const src = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+  if (!src || src.getLastRow() < 3) return { map: map, skipped: 0 };
+  const lastC = Math.max(62, src.getLastColumn());
+  const hdr = src.getRange(2, 1, 1, lastC).getValues()[0].map(h => String(h || '').trim());
+  const bi = hdr.indexOf('📝자유서술→노션');
+  if (bi === -1) return { map: map, skipped: 0 };
+  src.getRange(3, 1, src.getLastRow() - 2, lastC).getValues().forEach(r => {
+    const sid = String(r[59] || '').trim(), t = String(r[bi] || '').trim();
+    if (!sid || !t || map[sid]) return;
+    if (t.indexOf('[' + CONSENT_Q_TITLE + ']') === -1) { skipped++; return; } // 동의 표기 없는 행 = 이관 안 함
+    map[sid] = t;
+  });
+  return { map: map, skipped: skipped };
+}
+
+// [v9.84·④] 크루 DB에 rich_text 속성 보장 — 이미 있으면 no-op(200), 타입 충돌 등 실패면 false(서술만 생략).
+function notionEnsureProp_(name) {
+  try {
+    // [v9.84·리뷰 M3] GET 선확인 — PATCH가 기존 속성의 "타입을 변환"할 수 있어(예: 유호가 손으로 만든 select),
+    //   이미 있으면 rich_text일 때만 통과, 다른 타입이면 덮지 않고 생략(사람이 만든 구조 불가침).
+    const getR = UrlFetchApp.fetch('https://api.notion.com/v1/databases/' + NOTION_DB_ID, {
+      method: 'get', headers: notionHeaders_(), muteHttpExceptions: true
+    });
+    if (getR.getResponseCode() === 200) {
+      const cur = (JSON.parse(getR.getContentText()).properties || {})[name];
+      if (cur) {
+        if (cur.type === 'rich_text') return true;
+        Logger.log('노션 속성 타입 충돌(' + name + '=' + cur.type + ') — 덮지 않고 서술 이관 생략. 노션에서 속성을 rich_text로 바꾸거나 이름을 비워주세요.');
+        return false;
+      }
+    }
+    const props = {}; props[name] = { rich_text: {} };
+    const resp = UrlFetchApp.fetch('https://api.notion.com/v1/databases/' + NOTION_DB_ID, {
+      method: 'patch', headers: notionHeaders_(), payload: JSON.stringify({ properties: props }), muteHttpExceptions: true
+    });
+    if (resp.getResponseCode() === 200) return true;
+    Logger.log('노션 속성 보장 실패(' + name + '): ' + resp.getContentText().substring(0, 200));
+    return false;
+  } catch (e) { Logger.log('노션 속성 보장 오류(' + name + '): ' + e); return false; }
+}
+
+// 노션 크루 DB의 기존 페이지: 학생ID → pageId 맵 (페이지네이션)
+function notionExistingMap_() {
+  const map = {};
+  let cursor = null, guard = 0;
+  do {
+    const body = { page_size: 100 };
+    if (cursor) body.start_cursor = cursor;
+    const resp = UrlFetchApp.fetch('https://api.notion.com/v1/databases/' + NOTION_DB_ID + '/query', {
+      method: 'post', headers: notionHeaders_(), payload: JSON.stringify(body), muteHttpExceptions: true });
+    if (resp.getResponseCode() !== 200) { throw new Error('노션 쿼리 실패(' + resp.getResponseCode() + '): ' + resp.getContentText().substring(0, 300)); }
+    const data = JSON.parse(resp.getContentText());
+    (data.results || []).forEach(p => {
+      const sp = p.properties && p.properties['학생ID'];
+      const sid = sp && sp.rich_text && sp.rich_text[0] ? sp.rich_text[0].plain_text : '';
+      if (sid) map[sid] = p.id;
+    });
+    cursor = data.has_more ? data.next_cursor : null;
+  } while (cursor && guard++ < 30);
+  return map;
+}
+
+function syncToNotion_() {
+  if (!PropertiesService.getScriptProperties().getProperty('NOTION_TOKEN')) { Logger.log('NOTION_TOKEN 미설정 — 노션 동기화 스킵'); return; }
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return;
+  const w = Math.min(pf.getLastColumn(), 67); // BO(급수 67)까지
+  const rows = pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  let existing;
+  try { existing = notionExistingMap_(); } catch (e) {
+    Logger.log('노션 동기화 중단: ' + e);
+    adminMail('[SYNK] ⚠️ 노션 동기화 중단', '기존 페이지 목록 조회 실패로 동기화를 건너뛰었습니다(중복 생성 방지).\n\n' + e);
+    return;
+  }
+
+  // [v9.84·④] 상담 자유서술(다짐·3-5년 목표·고충·선택이유…) 주간 자동 이관 — 정성+정량 허브 완성.
+  //   맵 로드·속성 보장 실패는 서술만 생략(본 동기화 계속) — 상담시트 장애가 노션 정량 동기화를 못 끊는다.
+  // [v9.84·리뷰 H2 → v9.90] 동의 게이트 — migrateConsentV186(app_state 상담동의=v18.6, 유호 문구 검토 ▶) 전에는 자유서술을
+  //   노션으로 내보내지 않는다(#204 "소급 불가" 취지 그대로). 게이트 앞이라 맵 로드 자체를 생략(데이터 접촉 0).
+  //   [v9.90] 기대값을 v18.5→v18.6으로 함께 올린다 — 마이그레이션만 개정하면 이 게이트가 영영 안 열린 채 침묵한다.
+  //   [v9.98] 게이트 통과 후에도 **행 단위**로 한 번 더 — 문항 신설 전 접수분·종이 상담 이기 행은 마커가 없다.
+  let consultNarr = {}, narrSkipped = 0;
+  const stCn = ss.getSheetByName('app_state');
+  const consentOn = stCn ? String(getState(stCn, '상담동의').val || '') === 'v18.6' : false;
+  if (consentOn) {
+    try {
+      const nr = consultNarrativeMap_();
+      consultNarr = nr.map; narrSkipped = nr.skipped;
+    } catch (e) { Logger.log('상담서술 로드 실패(정량만 동기화): ' + e); }
+  } else {
+    Logger.log('상담서술 이관 보류 — 동의 문항(v18.6) 미적용. migrateConsentV186 ▶ 후 자동 개시.');
+  }
+  // [v9.98] 동의 표기 없는 행 안내 — 원장이 조치할 수 있게(수가 바뀔 때만 재통지: 동기화보류·열충돌과 같은 dedup 관례)
+  if (consentOn && narrSkipped > 0 && stCn) {
+    const sigN = String(narrSkipped);
+    if (String(getState(stCn, '서술동의보류').val || '') !== sigN) {
+      adminMail('[SYNK] 🔏 상담 서술 ' + narrSkipped + '건 이관 보류 — 동의 표기 없음',
+        '동의 문항이 생기기 전에 접수됐거나 종이 상담을 옮겨 적은 행이라 노션으로 내보내지 않았습니다(정량 데이터는 정상 동기화).\n\n' +
+        '종이 동의서를 받아 두셨다면 상담시트 그 학생의 「📝자유서술→노션」 칸 맨 앞에 아래 한 줄을 넣어 주세요 — 다음 주 월요일부터 이관됩니다.\n' +
+        '[' + CONSENT_Q_TITLE + '] 네, 동의합니다 (종이 동의서 보관)\n\n' +
+        '※ 건수가 바뀌기 전까지 다시 알리지 않습니다.');
+      setState(stCn, '서술동의보류', sigN);
+    }
+  }
+  const narrOn = Object.keys(consultNarr).length ? notionEnsureProp_('상담서술') : false;
+
+  let created = 0, updated = 0, failed = 0;
+  rows.forEach(r => {
+    const id = String(r[0] || '');
+    if (!id || r[3] !== 'student') return;
+    if (id.indexOf('DEMO-') === 0) return; // [v9.42] 시연용 데모 학생은 노션 크루 DB에 올리지 않는다(실DB 오염 방지)
+    const name = String(r[1] || id), cls = String(r[4] || ''), stage = String(r[18] || '');
+    const level = Number(r[66]) || null;                        // BO 현재급수
+    const points = Number(r[15]) || 0;                          // P 획득 누계
+    const crowns = (Number(r[48]) || 0) + (Number(r[49]) || 0); // AW+AX 왕관 누적
+    const bestStreak = Number(r[27]) || 0;                      // AB 최고스트릭
+    const rk = String(r[24] || '하').charAt(0);                 // Y 이탈위험 → 상/중/하
+    const risk = ['상', '중', '하'].indexOf(rk) > -1 ? rk : '하';
+    const summary = (stage || '뉴로') + ' · ' + (level ? level + '급' : '평가전') + ' · ' + points + 'P · 왕관 ' + crowns + '회 · 최장연속 ' + bestStreak + '일';
+    const properties = {
+      '이름': { title: [{ text: { content: name } }] },
+      '학생ID': { rich_text: [{ text: { content: id } }] },
+      '반': { rich_text: [{ text: { content: cls } }] },
+      '몬스터단계': { rich_text: [{ text: { content: stage } }] },
+      '총포인트': { number: points }, '왕관수': { number: crowns }, '최장연속출석': { number: bestStreak },
+      '이탈위험': { select: { name: risk } },
+      '나의여정요약': { rich_text: [{ text: { content: summary.substring(0, 1900) } }] },
+      '앱갱신일': { date: { start: today } }
+    };
+    if (level != null) properties['현재급수'] = { number: level };
+    // [v9.125] 회수 경로 — 마커가 사라진(미동의로 재분류·철회) 행은 속성을 「생략」하면 노션의 기존 값이 그대로 남는다.
+    //   빈 배열을 명시적으로 보내야 지워진다(생략과 빈 값은 노션 PATCH에서 의미가 다르다).
+    if (narrOn) properties['상담서술'] = consultNarr[id]
+      ? { rich_text: [{ text: { content: String(consultNarr[id]).substring(0, 1900) } }] }
+      : { rich_text: [] }; // [v9.84·④]+[v9.125]
+    try {
+      const url = existing[id] ? 'https://api.notion.com/v1/pages/' + existing[id] : 'https://api.notion.com/v1/pages';
+      const payload = existing[id] ? { properties: properties } : { parent: { database_id: NOTION_DB_ID }, properties: properties };
+      const resp = UrlFetchApp.fetch(url, { method: existing[id] ? 'patch' : 'post', headers: notionHeaders_(), payload: JSON.stringify(payload), muteHttpExceptions: true });
+      if (resp.getResponseCode() === 200) { existing[id] ? updated++ : created++; }
+      else { failed++; Logger.log('노션 ' + (existing[id] ? '갱신' : '생성') + ' 실패 ' + id + ': ' + resp.getContentText().substring(0, 300)); }
+      Utilities.sleep(350); // 노션 rate limit(~3/s)
+    } catch (e) { failed++; Logger.log('노션 동기화 오류 ' + id + ': ' + e); }
+  });
+  Logger.log('노션 동기화 완료: 생성 ' + created + ' · 갱신 ' + updated + ' · 실패 ' + failed);
+  if (failed > 0) {
+    adminMail('[SYNK] ⚠️ 노션 동기화 일부 실패', '생성 ' + created + ' · 갱신 ' + updated + ' · 실패 ' + failed + '건\n자세한 원인은 Apps Script 실행 로그를 확인하세요.');
+  }
+}
+
+// [v9.21] 수동 실행용 — 드롭다운에서 바로 보이는 정식 함수 (언더바 없음). 임시 testNotion 대체.
+function syncNotionNow() { return syncToNotion_(); }
+
