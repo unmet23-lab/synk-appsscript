@@ -102,3 +102,56 @@ test('훅: Edit·Write·MultiEdit 외 도구에는 반응하지 않는다', () =
   const canon = path.join(ROOT, 'docs', '정본', 'SYNK LAB', 'SYNK LAB 급여 인센티브 정본.txt');
   assert.strictEqual(runHook(canon, 'Read'), '');
 });
+
+/* ── [2026-08-03] 시간축 엣지 ─────────────────────────────────────────────
+ * 지키려는 성질: ①버전 표기가 있어도 기존 호출자는 경로만 본다 ②정본 버전은 **본문**에서 읽는다
+ * ③버전 없는 엣지는 '최신'이 아니라 '모름' ④--add는 @버전을 경로로 오인하지 않는다. */
+
+test('splitVersion — @v1.1은 버전, 경로 속 @는 버전이 아니다', () => {
+  assert.deepStrictEqual(G.splitVersion('docs/a.md@v1.1'), { target: 'docs/a.md', version: 'v1.1' });
+  assert.deepStrictEqual(G.splitVersion('docs/a.md'), { target: 'docs/a.md', version: null });
+  // 폴더명에 @가 들어간 경로를 버전으로 잘라 먹으면 엣지가 통째로 깨진다
+  assert.deepStrictEqual(G.splitVersion('docs/@scope/a.md'), { target: 'docs/@scope/a.md', version: null });
+  assert.deepStrictEqual(G.splitVersion('docs/a.md@배포'), { target: 'docs/a.md@배포', version: null });
+});
+
+test('parseEdges는 버전을 떼고 경로만 준다 — 훅·기존 호출자가 안 깨진다', () => {
+  assert.deepStrictEqual(G.parseEdges('<!-- 파생: a.md@v1.1, b.md -->'), ['a.md', 'b.md']);
+  assert.deepStrictEqual(G.parseEdgesFull('<!-- 파생: a.md@v1.1, b.md -->'),
+    [{ target: 'a.md', version: 'v1.1' }, { target: 'b.md', version: null }]);
+});
+
+test('정본 버전은 본문에서 읽는다 — 파일명을 믿으면 틀린다', () => {
+  // 실제 사례: 파일명은 `반편성_정본_v2.md`인데 본문은 v2.3이다.
+  const g = G.build();
+  assert.strictEqual(g.docs.get('docs/반편성_정본_v2.md').version, 'v2.3',
+    '파일명(v2)이 아니라 본문(v2.3)을 읽어야 한다');
+  assert.strictEqual(g.docs.get('docs/정본/SYNK LAB/SYNK LAB 급여 인센티브 정본.txt').version, 'v1.3');
+});
+
+test('머리말 밖의 vN은 버전이 아니다 — 본문을 훑으면 아무 숫자나 집는다', () => {
+  const long = ['# 제목', '', '내용', '', '', '', '', '', '', '', '', '', '', '한참 뒤에 v9.9 라고 적힘'];
+  assert.strictEqual(G.canonVersion(long.join('\n')), null);
+  assert.strictEqual(G.canonVersion('# 반편성 정본 v2.3 — 4실'), 'v2.3');
+  assert.strictEqual(G.canonVersion('제목만 있고 버전이 없다'), null, '못 읽으면 null이지 추측이 아니다');
+});
+
+test('낡은 인용을 실제로 잡는다 — 급여 정본 v1.3 vs 파생 v1.1', () => {
+  const g = G.build();
+  const stale = g.stale.filter((s) => /급여 인센티브 정본/.test(s.target));
+  assert.ok(stale.length >= 3, `낡은 인용이 ${stale.length}건 — 실측 3건이 사라졌는지 확인할 것`);
+  for (const s of stale) {
+    assert.strictEqual(s.now, 'v1.3');
+    assert.notStrictEqual(s.cited, s.now, '같은 버전인데 낡음으로 올라왔다');
+  }
+  // 같은 정본을 따르지만 v1.3으로 맞춰둔 문서는 낡음이 아니다(거짓양성 차단)
+  assert.ok(!g.stale.some((s) => s.from === 'docs/반편성_정본_v2.md'),
+    '이미 v1.3에 맞춘 문서를 낡음으로 올리면 알림 전체가 신뢰를 잃는다');
+});
+
+test('버전 없는 엣지는 낡음도 최신도 아닌 「모름」이다', () => {
+  const g = G.build();
+  const overlap = g.unversioned.filter((u) => g.stale.some((s) => s.from === u.from && s.target === u.target));
+  assert.deepStrictEqual(overlap, [], '같은 엣지가 모름과 낡음에 동시에 잡히면 집계가 두 번 센다');
+  assert.ok(g.unversioned.length > 0, '미기입이 0이면 집계가 비었는지 확인할 것');
+});

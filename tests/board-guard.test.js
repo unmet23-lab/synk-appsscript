@@ -113,3 +113,35 @@ test('[회귀] replace_all 부분 교체도 검사한다', () => {
     'deny'
   );
 });
+
+/* [2026-08-03 회귀] 보드의 실제 표기는 굵은 **완료**인데 판정은 `/^완료/`였다.
+ * 그래서 완료 줄이 전부 '활성'으로 세어져 활성 상한이 전체 상한처럼 굳었다 — 실제로 새 세션이
+ * 자기 줄을 못 넣고 막혔다. 위 테스트들이 못 잡은 이유가 핵심이다: **아무도 안 쓰는 표기(`완료`)로만
+ * 검사했다.** 가드가 지켜야 하는 건 문법이 아니라 사람이 실제로 쓰는 표기다. */
+const boldRow = (i) => `| 2026-08-01 | 트랙${i} | Code.js | **완료** — 라이브 v9.1${i} |`;
+const boldTable = (n) => ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|',
+  ...Array.from({ length: n }, (_, i) => boldRow(i))].join('\n');
+
+test('[회귀] 굵게 쓴 **완료**도 완료로 센다 — 활성 상한을 잡아먹지 않는다', () => {
+  assert.strictEqual(
+    decide({ tool_name: 'Write', tool_input: { file_path: BOARD, content: boldTable(16) } }),
+    'allow',
+    '**완료** 16줄이 차단됐다 — 완료 줄이 활성으로 세어지고 있다'
+  );
+});
+
+test('[회귀] **완료** 보드에 활성 1줄 추가는 통과한다 — 실제로 막혔던 경로', () => {
+  const board = boldTable(12) + '\n';
+  fs.writeFileSync(BOARD, board, 'utf8');
+  assert.strictEqual(
+    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: 'x', new_string: activeRow(99) } }),
+    'allow'
+  );
+  fs.writeFileSync(BOARD, table(11), 'utf8'); // 뒤 테스트를 위해 원복
+});
+
+test('[회귀] 미완료는 완료가 아니다 — 장식 제거가 판정을 뒤집으면 안 된다', () => {
+  const rows = Array.from({ length: 13 }, (_, i) => `| 2026-08-01 | 트랙${i} | Code.js | **미완료** |`);
+  const t = ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|', ...rows].join('\n');
+  assert.strictEqual(decide({ tool_name: 'Write', tool_input: { file_path: BOARD, content: t } }), 'deny');
+});
