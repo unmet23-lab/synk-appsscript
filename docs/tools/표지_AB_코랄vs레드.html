@@ -84,6 +84,7 @@
 
   <div class="note">
     <b>공정성 자가검증</b> &mdash; 두 캔버스는 같은 코드 &middot; 같은 좌표로 그려지고, 서로 다른 입력은 색 4개(배경 &middot; 글자 &middot; 보조투명도용 글자 &middot; 신호 막대)뿐.
+    보조 텍스트 알파는 08-02 유호님 「흐리다」 관측으로 <b>양판 공통</b> 상향(태그 .6&rarr;.75 &middot; 서브 .55&rarr;.72 &middot; 쪽번호 .5&rarr;.62, 서브 대비 5.5&rarr;8.6).
     신호는 각 판 1점(막대)만 &mdash; R1(5%) 동일 준수.<br>
     <b>실전 송출 전 2조건(정본 &sect;3)</b> &mdash; &#9312; 표지는 <b>몽골어가 주인공</b>(이 시안은 판독용 한국어 주)
     &#9313; 몽골어 문구는 <b>가안</b> &mdash; 에리카쌤 검수 전 송출 금지.<br>
@@ -116,7 +117,7 @@ function draw(id, p){
   // tag — DM Mono 9.5px → 30.2px, ls .18em
   ctx.font='500 '+ (9.5*K) +'px "DM Mono", monospace';
   ctx.letterSpacing=(9.5*K*0.18)+'px';
-  ctx.fillStyle=rgba(p.tx,.6);
+  ctx.fillStyle=rgba(p.tx,.75);
   ctx.fillText('SYNK LAB', L, 38*K);
 
   // h2 — SUIT 900 37px, lh 1.26, ls -0.035em
@@ -129,7 +130,7 @@ function draw(id, p){
   // sub — Inter Tight 13px, 몽골어 가안
   ctx.font='500 '+ (13*K) +'px "Inter Tight", sans-serif';
   ctx.letterSpacing='0px';
-  ctx.fillStyle=rgba(p.tx,.55);
+  ctx.fillStyle=rgba(p.tx,.72);
   ctx.fillText('Миний солонгос хэл хаана байна?', L, (87 + 3*37*1.26 - 37 + 12 + 13)*K);
 
   // 신호 막대 — 각 판의 유일한 1점
@@ -138,7 +139,7 @@ function draw(id, p){
   // page — DM Mono 우하단
   ctx.font='500 '+ (9.5*K) +'px "DM Mono", monospace';
   ctx.letterSpacing=(9.5*K*0.14)+'px';
-  ctx.fillStyle=rgba(p.tx,.5);
+  ctx.fillStyle=rgba(p.tx,.62);
   var t='01 / 05', w=ctx.measureText(t).width;
   ctx.fillText(t, 1080-(24*K)-w, 403*K);
 }
