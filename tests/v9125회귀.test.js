@@ -301,3 +301,17 @@ test('[v9.129] ymTextOf_ — String(Date)가 텍스트로 굳은 셀도 yyyy-MM�
   assert.equal(ctx.ymTextOf_('여름 시즌', 'Asia/Ulaanbaatar'), '여름 시즌');
   assert.equal(ctx.ymTextOf_('Monday 회의록', 'Asia/Ulaanbaatar'), 'Monday 회의록', '요일로 시작하는 일반 텍스트를 날짜로 오변환한다');
 });
+
+/* ═══════ [v9.130] 개원 시뮬(08-02)이 잡은 침묵 — 조 편성표 ═══════ */
+test('[v9.130] groupBoardText_ — 조 편성이 없을 때 빈 문자열 대신 원인과 처방을 돌려준다', () => {
+  const s = code.indexOf('function groupBoardText_');
+  const seg = code.slice(s, code.indexOf('function ', s + 30));
+  assert.equal(/if \(!b\) return '';/.test(seg), false,
+    '빈 문자열 반환이 되살아났다 — 강사 브리핑에서 조 편성표가 「원래 없는 항목」처럼 조용히 사라진다');
+  // 원인 3종을 구분해 각각 다른 처방을 준다
+  assert.ok(seg.includes('setSeasonStart'), '시즌 시작일 미설정 안내가 없다');
+  assert.ok(seg.includes('assignGroupsAll'), '전 반 미편성 안내가 없다');
+  assert.ok(seg.includes('assignGroups("'), '해당 반만 미편성인 경우의 안내가 없다');
+  assert.ok(seg.indexOf('seasonLabelOf_') < seg.indexOf('assignGroupsAll'),
+    '원인 판정 없이 문구만 나열한다 — 세 경우를 실제로 갈라야 처방이 맞는다');
+});
