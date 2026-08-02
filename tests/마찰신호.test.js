@@ -124,3 +124,26 @@ test('실제 장부가 파싱 가능하고 형식이 살아있다', () => {
   assert.ok(rows.length >= 10, `장부 행 ${rows.length}건 — 형식이 깨지면 0건으로 보인다`);
   assert.ok(rows.every((r) => real.KINDS.includes(r.kind)), '모르는 종류가 섞이면 집계에서 조용히 사라진다');
 });
+
+/* [2026-08-03] 번호 충돌 방지 — 장부는 append-only **공유 파일**이라, 각 세션이 자기 작업본만 보고
+ * 번호를 매기면 같은 번호를 두 개 만든다(그날 F015·F016이 실제로 충돌해 옆 세션이 F017로 재번호했다).
+ * 「세션이 각자 base에서 순번을 매기면 충돌한다」는 이 저장소에서 세 번째 형태다
+ * (버전 동시 발번 9건 → bump-version 채번 락 · 버전 이력 체인 누락 · 그리고 이것). */
+
+test('다음 번호는 다른 ref가 이미 쓴 번호를 넘어선다 (로컬 작업본만 보지 않는다)', () => {
+  const real = require(TOOL);
+  const 다른곳 = real.seenElsewhere();
+  assert.ok(다른곳 > 0,
+    'seenElsewhere()가 0이다 — origin/master·로컬 브랜치에서 장부를 하나도 못 읽었다는 뜻이고, 그러면 이 방어는 없는 것과 같다');
+  const { rows } = real.read();
+  const 로컬 = rows.reduce((a, r) => Math.max(a, parseInt(r.id.slice(1), 10) || 0), 0);
+  const 다음 = parseInt(real.nextId(rows).slice(1), 10);
+  assert.equal(다음, Math.max(로컬, 다른곳) + 1,
+    '다음 번호가 로컬·원격 최대 중 큰 쪽 +1이 아니다 — 둘 중 하나를 안 보고 있다');
+});
+
+test('격리 장부(테스트)에서는 git을 보지 않는다 (실 저장소 이력이 픽스처를 밀어내면 검사가 무의미해진다)', () => {
+  const L = mkLedger();
+  const out = run(L, ['add', '실수', '격리 픽스처 신호']);
+  assert.ok(/F00\d/.test(out), '격리 장부인데 실 저장소 번호대(F0NN 큰 값)를 받았다: ' + out.trim());
+});

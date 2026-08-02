@@ -38,9 +38,39 @@ function read() {
   return { text, lines, rows };
 }
 
+/* 다른 세션이 이미 쓴 번호를 훑는다 — 장부는 append-only **공유 파일**이라
+ * 각 세션이 자기 작업본만 보고 번호를 매기면 같은 번호를 두 개 만든다(2026-08-03 실제 충돌: F015·F016).
+ * 이건 이 저장소에서 **세 번째** 같은 형태다 — 버전 동시 발번 9건(bump-version 채번 락으로 해소),
+ * 버전 이력 체인 누락(같은 날), 그리고 이것. 「세션이 각자 base에서 순번을 매기면 충돌한다」가 패턴이다.
+ * bump-version과 달리 태그 예약까지는 하지 않는다(마찰 신호는 재번호로 복구 가능하고, 락은 유지비가 크다)
+ * — 대신 **훑는 범위를 같게** 한다: origin/master + 모든 로컬 브랜치.
+ * 네트워크·git 실패는 막지 않는다(장부 기록이 도구 사정으로 멈추면 신호가 유실된다 — 그게 더 나쁘다). */
+function seenElsewhere() {
+  const { execFileSync } = require('child_process');
+  const ROOT = path.resolve(__dirname, '..');
+  const rel = path.relative(ROOT, LEDGER).replace(/\\/g, '/');
+  const git = (args) => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  const maxIn = (text) => [...text.matchAll(/^\|\s*F(\d+)\s*\|/gm)]
+    .reduce((a, m) => Math.max(a, Number(m[1]) || 0), 0);
+
+  let max = 0;
+  try { git(['fetch', 'origin', '--quiet']); } catch (_) { /* 오프라인 — 아래 로컬 참조만으로 진행 */ }
+  const refs = ['origin/master'];
+  try {
+    git(['for-each-ref', '--format=%(refname:short)', 'refs/heads'])
+      .split('\n').map((s) => s.trim()).filter(Boolean).forEach((b) => refs.push(b));
+  } catch (_) { /* 브랜치 목록 실패 — origin만 본다 */ }
+  refs.forEach((ref) => {
+    try { max = Math.max(max, maxIn(git(['show', ref + ':' + rel]))); } catch (_) { /* 그 ref에 장부가 없다 */ }
+  });
+  return max;
+}
+
 function nextId(rows) {
-  const max = rows.reduce((a, r) => Math.max(a, parseInt(r.id.slice(1), 10) || 0), 0);
-  return 'F' + String(max + 1).padStart(3, '0');
+  const local = rows.reduce((a, r) => Math.max(a, parseInt(r.id.slice(1), 10) || 0), 0);
+  // 테스트는 격리 장부를 쓰므로 git 조회를 건너뛴다(실제 저장소 이력이 픽스처 번호를 밀어버리면 검사가 무의미해진다)
+  const elsewhere = process.env.SYNK_FRICTION_LEDGER ? 0 : seenElsewhere();
+  return 'F' + String(Math.max(local, elsewhere) + 1).padStart(3, '0');
 }
 
 function add(kind, signal, date) {
@@ -159,4 +189,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { read, nextId, LEDGER, KINDS };
+module.exports = { read, nextId, seenElsewhere, LEDGER, KINDS };
