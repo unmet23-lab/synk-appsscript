@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<title>SYNK LAB · Palette for Canva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"/>
+<style>
+  :root{
+    --cream:#F6F1E8;
+    --cream-2:#EFE7D7;
+    --cream-3:#E7DDC7;
+    --paper:#FBF7EE;
+
+    --coral:#FF6B5C;
+    --coral-2:#FF8877;
+    --coral-3:#E8543F;
+    --coral-soft:#FFCFC6;
+    --coral-wash:#FFE9E4;
+
+    --navy:#1A2340;
+    --navy-2:#0F1730;
+    --navy-3:#2A3358;
+    --navy-ink:#131A32;
+
+    --lime:#C8FF3D;
+    --lime-2:#B8E836;
+
+    --ink:#171820;
+    --muted:#7A7566;
+    --muted-2:#3d3a30;
+
+    --kc-hot:#FF3E88;
+    --kc-hot-2:#FF6BA8;
+    --kc-sun:#FFD447;
+    --kc-cool:#4E7CFF;
+
+    --serif:'Instrument Serif', 'Pretendard Variable', Pretendard, serif;
+    --sans:'Pretendard Variable', Pretendard, -apple-system, sans-serif;
+    --mono:'JetBrains Mono', 'Pretendard Variable', ui-monospace, monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:#DFD6C4;
+    font-family:var(--sans);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+    padding:56px 24px 96px;
+  }
+
+  .doc{
+    max-width:1080px;margin:0 auto;
+    background:var(--cream);
+    border-radius:20px;padding:56px 56px 64px;
+    box-shadow:
+      0 30px 60px -30px rgba(15,23,48,.35),
+      0 8px 20px -10px rgba(15,23,48,.18);
+  }
+
+  /* Header --------------------------------------------------------- */
+  .head{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    padding-bottom:24px;border-bottom:1px solid rgba(23,24,32,.15);
+    margin-bottom:40px;
+  }
+  .head-l .kicker{
+    font-family:var(--mono);font-size:10px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--coral);font-weight:600;
+    display:flex;align-items:center;gap:10px;margin-bottom:12px;
+  }
+  .head-l .kicker::before{content:'';width:22px;height:1px;background:var(--coral)}
+  .head-l h1{
+    font-family:var(--serif);font-weight:400;font-size:52px;line-height:1;
+    letter-spacing:-0.025em;color:var(--navy);margin:0 0 8px;
+  }
+  .head-l h1 em{font-style:italic;color:var(--coral)}
+  .head-l .sub{
+    font-family:var(--serif);font-style:italic;font-size:20px;
+    color:var(--navy);opacity:.55;letter-spacing:-0.01em;
+  }
+  .head-r{
+    text-align:right;
+    font-family:var(--mono);font-size:10px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted);line-height:1.8;
+  }
+  .head-r b{color:var(--navy)}
+
+  /* Section titles ------------------------------------------------- */
+  .sec-title{
+    display:flex;align-items:baseline;justify-content:space-between;
+    margin:48px 0 20px;padding-bottom:12px;
+    border-bottom:1px solid rgba(23,24,32,.15);
+  }
+  .sec-title h2{
+    font-family:var(--serif);font-weight:400;font-size:28px;line-height:1;
+    letter-spacing:-0.02em;color:var(--navy);margin:0;
+  }
+  .sec-title h2 em{font-style:italic;color:var(--coral)}
+  .sec-title .num{
+    font-family:var(--mono);font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--muted);
+  }
+
+  /* Swatch grid ---------------------------------------------------- */
+  .grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+  }
+  .sw{
+    background:#fff;border-radius:14px;overflow:hidden;
+    box-shadow:0 4px 12px -6px rgba(15,23,48,.15);
+    border:1px solid rgba(23,24,32,.06);
+    display:flex;flex-direction:column;
+    transition:transform .2s cubic-bezier(.2,.6,.2,1);
+  }
+  .sw:hover{transform:translateY(-2px)}
+  .sw .chip{
+    height:120px;position:relative;
+    display:flex;align-items:flex-end;justify-content:space-between;
+    padding:12px 14px;
+  }
+  .sw .chip .role{
+    font-family:var(--mono);font-size:9px;letter-spacing:.14em;
+    text-transform:uppercase;font-weight:600;
+    padding:4px 8px;border-radius:4px;
+    background:rgba(255,255,255,.85);color:var(--navy);
+    backdrop-filter:blur(4px);
+  }
+  .sw .chip .role.dark{background:rgba(23,24,32,.85);color:#fff}
+  .sw .meta{
+    padding:14px;background:#fff;
+    display:flex;flex-direction:column;gap:4px;
+  }
+  .sw .meta .name{
+    font-family:var(--serif);font-size:20px;line-height:1;
+    letter-spacing:-0.015em;color:var(--navy);
+  }
+  .sw .meta .name em{font-style:italic;color:var(--coral)}
+  .sw .meta .var{
+    font-family:var(--mono);font-size:9px;letter-spacing:.12em;
+    color:var(--muted);text-transform:uppercase;
+  }
+  .sw .meta .hex{
+    font-family:var(--mono);font-size:13px;letter-spacing:.06em;
+    color:var(--navy);font-weight:600;margin-top:4px;
+    display:flex;align-items:center;gap:6px;
+  }
+  .sw .meta .hex::before{
+    content:'#';color:var(--coral);font-weight:500;
+  }
+  .sw .meta .hex-val{color:var(--navy)}
+  .sw .meta .rgb{
+    font-family:var(--mono);font-size:10px;letter-spacing:.04em;
+    color:var(--muted);
+  }
+  .sw .meta .use{
+    font-size:11px;line-height:1.5;color:var(--muted-2);
+    margin-top:6px;padding-top:8px;
+    border-top:1px dashed rgba(23,24,32,.15);
+  }
+
+  /* Hero row for primary trio ------------------------------------- */
+  .hero-row{
+    display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:16px;
+    margin-bottom:16px;
+  }
+  .hero-row .sw .chip{height:180px}
+  .hero-row .sw:first-child .chip{height:180px}
+  .hero-row .sw .meta .name{font-size:26px}
+
+  /* K-culture — brighter swatches on Part 6 ----------------------- */
+  .kc-section{
+    margin-top:48px;
+    padding:32px;border-radius:16px;
+    background:
+      radial-gradient(60% 60% at 100% 0%, rgba(255,62,136,.18), transparent 60%),
+      radial-gradient(60% 60% at 0% 100%, rgba(200,255,61,.22), transparent 60%),
+      var(--paper);
+  }
+  .kc-section .sec-title{border-bottom-color:rgba(23,24,32,.1);margin-top:0}
+  .kc-section .sec-title h2 em{color:var(--kc-hot)}
+
+  /* Combos --------------------------------------------------------- */
+  .combos{
+    display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:20px;
+  }
+  .combo{
+    border-radius:14px;padding:26px;min-height:180px;
+    display:flex;flex-direction:column;justify-content:space-between;
+    box-shadow:0 8px 24px -12px rgba(15,23,48,.25);
+  }
+  .combo .cb-eyebrow{
+    font-family:var(--mono);font-size:10px;letter-spacing:.16em;
+    text-transform:uppercase;font-weight:600;opacity:.75;
+  }
+  .combo .cb-title{
+    font-family:var(--serif);font-size:32px;line-height:1;
+    letter-spacing:-0.02em;margin-top:8px;
+  }
+  .combo .cb-title em{font-style:italic}
+  .combo .cb-stack{
+    display:flex;gap:6px;margin-top:18px;
+  }
+  .combo .cb-stack .st{
+    height:14px;width:36px;border-radius:3px;
+  }
+
+  .combo.a{background:var(--cream);color:var(--navy)}
+  .combo.a .cb-eyebrow{color:var(--coral)}
+  .combo.a .cb-title em{color:var(--coral)}
+
+  .combo.b{background:var(--navy);color:var(--cream)}
+  .combo.b .cb-eyebrow{color:var(--lime)}
+  .combo.b .cb-title em{color:var(--coral-2)}
+
+  .combo.c{background:var(--coral);color:#fff}
+  .combo.c .cb-eyebrow{color:var(--cream);opacity:.9}
+  .combo.c .cb-title em{color:var(--navy)}
+
+  /* Canva import guide -------------------------------------------- */
+  .canva-guide{
+    margin-top:48px;padding:24px 28px;
+    background:var(--navy);color:var(--cream);border-radius:14px;
+    display:flex;justify-content:space-between;align-items:center;gap:32px;
+  }
+  .canva-guide .cg-l{flex:1;min-width:0}
+  .canva-guide .cg-l h3{
+    font-family:var(--serif);font-weight:400;font-size:22px;line-height:1.1;
+    letter-spacing:-0.01em;margin:0 0 6px;color:var(--cream);
+  }
+  .canva-guide .cg-l h3 em{font-style:italic;color:var(--coral-2)}
+  .canva-guide .cg-l p{
+    margin:0;font-size:13px;line-height:1.6;color:rgba(246,241,232,.75);
+  }
+  .canva-guide .cg-r{
+    font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--lime);text-align:right;
+    line-height:2;
+  }
+
+  .hex-list{
+    margin-top:20px;padding:20px 24px;background:#fff;border-radius:12px;
+    border:1px solid rgba(23,24,32,.08);
+    font-family:var(--mono);font-size:12px;line-height:2;
+    letter-spacing:.04em;color:var(--navy);
+    display:grid;grid-template-columns:1fr 1fr;gap:6px 32px;
+  }
+  .hex-list .hx{display:flex;align-items:center;gap:12px}
+  .hex-list .hx .dot{
+    width:14px;height:14px;border-radius:3px;flex:0 0 auto;
+    box-shadow:inset 0 0 0 1px rgba(23,24,32,.1);
+  }
+  .hex-list .hx .lbl{font-weight:600;color:var(--navy);min-width:80px}
+  .hex-list .hx .val{color:var(--muted-2)}
+
+  .foot{
+    margin-top:56px;padding-top:20px;
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-family:var(--mono);font-size:10px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted);
+    border-top:1px solid rgba(23,24,32,.12);
+  }
+  .foot b{color:var(--navy);font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="doc">
+
+  <!-- Header ------------------------------------------------------- -->
+  <div class="head">
+    <div class="head-l">
+      <div class="kicker">Palette for Canva Brand Kit</div>
+      <h1>SYNK LAB <em>Colors.</em></h1>
+      <div class="sub">v10 Crew Dossier · Cream / Coral / Navy / Lime</div>
+    </div>
+    <div class="head-r">
+      Total <b>16</b> colors<br>
+      4 groups<br>
+      HEX + RGB
+    </div>
+  </div>
+
+  <!-- ============ CORE PALETTE (5 primary colors) ============ -->
+  <div class="sec-title">
+    <h2>Core <em>Palette.</em></h2>
+    <div class="num">01 · Primary 5</div>
+  </div>
+
+  <div class="hero-row">
+    <!-- Cream (hero background) -->
+    <div class="sw">
+      <div class="chip" style="background:#F6F1E8">
+        <span class="role">Background · Primary</span>
+      </div>
+      <div class="meta">
+        <div class="var">--cream</div>
+        <div class="name">Cream</div>
+        <div class="hex"><span class="hex-val">F6F1E8</span></div>
+        <div class="rgb">rgb(246, 241, 232)</div>
+        <div class="use">페이지·카드 기본 배경. 따뜻한 오프화이트로 종이 질감 인상을 만들어줌.</div>
+      </div>
+    </div>
+    <!-- Coral (primary accent) -->
+    <div class="sw">
+      <div class="chip" style="background:#FF6B5C">
+        <span class="role dark">Accent · Primary</span>
+      </div>
+      <div class="meta">
+        <div class="var">--coral</div>
+        <div class="name">Coral</div>
+        <div class="hex"><span class="hex-val">FF6B5C</span></div>
+        <div class="rgb">rgb(255, 107, 92)</div>
+        <div class="use">브랜드 주 액센트. 체크·라이브·타이틀 강조에 사용.</div>
+      </div>
+    </div>
+    <!-- Navy (primary ink) -->
+    <div class="sw">
+      <div class="chip" style="background:#1A2340">
+        <span class="role dark">Text · Primary</span>
+      </div>
+      <div class="meta">
+        <div class="var">--navy</div>
+        <div class="name">Navy</div>
+        <div class="hex"><span class="hex-val">1A2340</span></div>
+        <div class="rgb">rgb(26, 35, 64)</div>
+        <div class="use">본문 텍스트·다크 카드 배경. 순검정 대신 신뢰감을 주는 딥 네이비.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:repeat(2,1fr)">
+    <!-- Lime -->
+    <div class="sw">
+      <div class="chip" style="background:#C8FF3D">
+        <span class="role">Accent · Signal</span>
+      </div>
+      <div class="meta">
+        <div class="var">--lime</div>
+        <div class="name">Lime</div>
+        <div class="hex"><span class="hex-val">C8FF3D</span></div>
+        <div class="rgb">rgb(200, 255, 61)</div>
+        <div class="use">시그널·프로그레스·라이브 인디케이터. 네온 라임으로 에너지 축.</div>
+      </div>
+    </div>
+    <!-- Ink -->
+    <div class="sw">
+      <div class="chip" style="background:#171820">
+        <span class="role dark">Text · Ink</span>
+      </div>
+      <div class="meta">
+        <div class="var">--ink</div>
+        <div class="name">Ink</div>
+        <div class="hex"><span class="hex-val">171820</span></div>
+        <div class="rgb">rgb(23, 24, 32)</div>
+        <div class="use">최종 본문 잉크 컬러. Navy보다 조금 더 어두운 그레이-블랙.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CREAM FAMILY (paper tones) ============ -->
+  <div class="sec-title">
+    <h2>Cream <em>Family.</em></h2>
+    <div class="num">02 · Paper tones</div>
+  </div>
+  <div class="grid">
+    <div class="sw">
+      <div class="chip" style="background:#FBF7EE"><span class="role">Page · Lightest</span></div>
+      <div class="meta">
+        <div class="var">--paper</div>
+        <div class="name">Paper</div>
+        <div class="hex"><span class="hex-val">FBF7EE</span></div>
+        <div class="rgb">rgb(251, 247, 238)</div>
+      </div>
+    </div>
+    <div class="sw">
+      <div class="chip" style="background:#F6F1E8"><span class="role">Page · Default</span></div>
+      <div class="meta">
+        <div class="var">--cream</div>
+        <div class="name">Cream</div>
+        <div class="hex"><span class="hex-val">F6F1E8</span></div>
+        <div class="rgb">rgb(246, 241, 232)</div>
+      </div>
+    </div>
+    <div class="sw">
+      <div class="chip" style="background:#EFE7D7"><span class="role">Callout · Bg</span></div>
+      <div class="meta">
+        <div class="var">--cream-2</div>
+        <div class="name">Cream 2</div>
+        <div class="hex"><span class="hex-val">EFE7D7</span></div>
+        <div class="rgb">rgb(239, 231, 215)</div>
+      </div>
+    </div>
+    <div class="sw">
+      <div class="chip" style="background:#E7DDC7"><span class="role">Section · Divider</span></div>
+      <div class="meta">
+        <div class="var">--cream-3</div>
+        <div class="name">Cream 3</div>
+        <div class="hex"><span class="hex-val">E7DDC7</span></div>
+        <div class="rgb">rgb(231, 221, 199)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CORAL FAMILY ============ -->
+  <div class="sec-title">
+    <h2>Coral <em>Family.</em></h2>
+    <div class="num">03 · Accent tones</div>
+  </div>
+  <div class="grid">
+    <div class="sw">
+      <div class="chip" style="background:#FFE9E4"><span class="role">Pill · Wash</span></div>
+      <div class="meta">
+        <div class="var">--coral-wash</div>
+        <div class="name">Coral Wash</div>
+        <div class="hex"><span class="hex-val">FFE9E4</span></div>
+        <div class="rgb">rgb(255, 233, 228)</div>
+      </div>
+    </div>
+    <div class="sw">
+      <div class="chip" style="background:#FFCFC6"><span class="role">Soft · Tint</span></div>
+      <div class="meta">
+        <div class="var">--coral-soft</div>
+        <div class="name">Coral Soft</div>
+        <div class="hex"><span class="hex-val">FFCFC6</span></div>
+        <div class="rgb">rgb(255, 207, 198)</div>
+      </div>
+    </div>
+    <div class="sw">
+      <div class="chip" style="background:#FF8877"><span class="role dark">Accent · Light</span></div>
+      <div class="meta">
+        <div class="var">--coral-2</div>
+        <div class="name">Coral 2</div>
+        <div class="hex"><span class="hex-val">FF8877</span></div>
+        <div class="rgb">rgb(255, 136, 119)</div>
+      </div>
+    </div>
+    <div class="sw">
+      <div class="chip" style="background:#E8543F"><span class="role dark">Accent · Deep</span></div>
+      <div class="meta">
+        <div class="var">--coral-3</div>
+        <div class="name">Coral 3</div>
+        <div class="hex"><span class="hex-val">E8543F</span></div>
+        <div class="rgb">rgb(232, 84, 63)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ NAVY FAMILY ============ -->
+  <div class="sec-title">
+    <h2>Navy <em>Family.</em></h2>
+    <div class="num">04 · Ink & dark surfaces</div>
+  </div>
+  <div class="grid">
+    <div class="sw">
+      <div class="chip" style="background:#2A3358"><span class="role dark">Card · Highlight</span></div>
+      <div class="meta">
+        <div class="var">--navy-3</div>
+        <div class="name">Navy 3</div>
+        <div class="hex"><span class="hex-val">2A3358</span></div>
+        <div class="rgb">rgb(42, 51, 88)</div>
+      </div>
+    </div>
+    <div class="sw">
+      <div class="chip" style="background:#1A2340"><span class="role dark">Text · Default</span></div>
+      <div class="meta">
+        <div class="var">--navy</div>
+        <div class="name">Navy</div>
+        <div class="hex"><span class="hex-val">1A2340</span></div>
+        <div class="rgb">rgb(26, 35, 64)</div>
+      </div>
+    </div>
+    <div class="sw">
+      <div class="chip" style="background:#131A32"><span class="role dark">Text · Deep</span></div>
+      <div class="meta">
+        <div class="var">--navy-ink</div>
+        <div class="name">Navy Ink</div>
+        <div class="hex"><span class="hex-val">131A32</span></div>
+        <div class="rgb">rgb(19, 26, 50)</div>
+      </div>
+    </div>
+    <div class="sw">
+      <div class="chip" style="background:#0F1730"><span class="role dark">Card · Base</span></div>
+      <div class="meta">
+        <div class="var">--navy-2</div>
+        <div class="name">Navy 2</div>
+        <div class="hex"><span class="hex-val">0F1730</span></div>
+        <div class="rgb">rgb(15, 23, 48)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ K-CULTURE EXPLOSION ============ -->
+  <div class="kc-section">
+    <div class="sec-title">
+      <h2>K-Culture <em>Explosion.</em></h2>
+      <div class="num">05 · Part 6 accents only</div>
+    </div>
+    <div class="grid">
+      <div class="sw">
+        <div class="chip" style="background:#FF3E88"><span class="role dark">K-POP · Hot</span></div>
+        <div class="meta">
+          <div class="var">--kc-hot</div>
+          <div class="name">KC Hot Pink</div>
+          <div class="hex"><span class="hex-val">FF3E88</span></div>
+          <div class="rgb">rgb(255, 62, 136)</div>
+        </div>
+      </div>
+      <div class="sw">
+        <div class="chip" style="background:#FF6BA8"><span class="role dark">K-POP · Soft</span></div>
+        <div class="meta">
+          <div class="var">--kc-hot-2</div>
+          <div class="name">KC Pink 2</div>
+          <div class="hex"><span class="hex-val">FF6BA8</span></div>
+          <div class="rgb">rgb(255, 107, 168)</div>
+        </div>
+      </div>
+      <div class="sw">
+        <div class="chip" style="background:#FFD447"><span class="role">Beauty · Sun</span></div>
+        <div class="meta">
+          <div class="var">--kc-sun</div>
+          <div class="name">KC Sun</div>
+          <div class="hex"><span class="hex-val">FFD447</span></div>
+          <div class="rgb">rgb(255, 212, 71)</div>
+        </div>
+      </div>
+      <div class="sw">
+        <div class="chip" style="background:#4E7CFF"><span class="role dark">Dance · Cool</span></div>
+        <div class="meta">
+          <div class="var">--kc-cool</div>
+          <div class="name">KC Cool Blue</div>
+          <div class="hex"><span class="hex-val">4E7CFF</span></div>
+          <div class="rgb">rgb(78, 124, 255)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SIGNATURE COMBOS ============ -->
+  <div class="sec-title">
+    <h2>Signature <em>Combos.</em></h2>
+    <div class="num">06 · Recommended pairings</div>
+  </div>
+  <div class="combos">
+    <div class="combo a">
+      <div>
+        <div class="cb-eyebrow">Default · Page</div>
+        <div class="cb-title">Cream +<br><em>Coral.</em></div>
+      </div>
+      <div class="cb-stack">
+        <div class="st" style="background:#F6F1E8;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)"></div>
+        <div class="st" style="background:#FF6B5C"></div>
+        <div class="st" style="background:#1A2340"></div>
+      </div>
+    </div>
+    <div class="combo b">
+      <div>
+        <div class="cb-eyebrow">Card · Membership</div>
+        <div class="cb-title">Navy +<br><em>Lime.</em></div>
+      </div>
+      <div class="cb-stack">
+        <div class="st" style="background:#1A2340;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)"></div>
+        <div class="st" style="background:#C8FF3D"></div>
+        <div class="st" style="background:#FF8877"></div>
+      </div>
+    </div>
+    <div class="combo c">
+      <div>
+        <div class="cb-eyebrow">Live · In Session</div>
+        <div class="cb-title">Coral +<br><em>Navy.</em></div>
+      </div>
+      <div class="cb-stack">
+        <div class="st" style="background:#FF6B5C;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)"></div>
+        <div class="st" style="background:#1A2340"></div>
+        <div class="st" style="background:#F6F1E8"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CANVA IMPORT GUIDE ============ -->
+  <div class="canva-guide">
+    <div class="cg-l">
+      <h3>Canva 브랜드 키트로 <em>등록하기.</em></h3>
+      <p>Canva → Brand → Brand Kit → Brand Colors에서 아래 HEX 코드를 그룹별로 복사해 붙여넣으세요. Core 5개를 먼저 등록하면 브랜드 팔레트 상단에 고정됩니다.</p>
+    </div>
+    <div class="cg-r">
+      Total <b>16</b><br>
+      Copy · HEX<br>
+      Paste · Canva
+    </div>
+  </div>
+
+  <!-- Full hex list (copyable) -->
+  <div class="hex-list">
+    <div class="hx"><span class="dot" style="background:#F6F1E8"></span><span class="lbl">Cream</span><span class="val">#F6F1E8</span></div>
+    <div class="hx"><span class="dot" style="background:#FF6B5C"></span><span class="lbl">Coral</span><span class="val">#FF6B5C</span></div>
+    <div class="hx"><span class="dot" style="background:#1A2340"></span><span class="lbl">Navy</span><span class="val">#1A2340</span></div>
+    <div class="hx"><span class="dot" style="background:#C8FF3D"></span><span class="lbl">Lime</span><span class="val">#C8FF3D</span></div>
+    <div class="hx"><span class="dot" style="background:#171820"></span><span class="lbl">Ink</span><span class="val">#171820</span></div>
+    <div class="hx"><span class="dot" style="background:#FBF7EE"></span><span class="lbl">Paper</span><span class="val">#FBF7EE</span></div>
+    <div class="hx"><span class="dot" style="background:#EFE7D7"></span><span class="lbl">Cream 2</span><span class="val">#EFE7D7</span></div>
+    <div class="hx"><span class="dot" style="background:#E7DDC7"></span><span class="lbl">Cream 3</span><span class="val">#E7DDC7</span></div>
+    <div class="hx"><span class="dot" style="background:#FFE9E4"></span><span class="lbl">Coral Wash</span><span class="val">#FFE9E4</span></div>
+    <div class="hx"><span class="dot" style="background:#FFCFC6"></span><span class="lbl">Coral Soft</span><span class="val">#FFCFC6</span></div>
+    <div class="hx"><span class="dot" style="background:#FF8877"></span><span class="lbl">Coral 2</span><span class="val">#FF8877</span></div>
+    <div class="hx"><span class="dot" style="background:#E8543F"></span><span class="lbl">Coral 3</span><span class="val">#E8543F</span></div>
+    <div class="hx"><span class="dot" style="background:#2A3358"></span><span class="lbl">Navy 3</span><span class="val">#2A3358</span></div>
+    <div class="hx"><span class="dot" style="background:#131A32"></span><span class="lbl">Navy Ink</span><span class="val">#131A32</span></div>
+    <div class="hx"><span class="dot" style="background:#0F1730"></span><span class="lbl">Navy 2</span><span class="val">#0F1730</span></div>
+    <div class="hx"><span class="dot" style="background:#FF3E88"></span><span class="lbl">KC Hot</span><span class="val">#FF3E88</span></div>
+    <div class="hx"><span class="dot" style="background:#FF6BA8"></span><span class="lbl">KC Pink 2</span><span class="val">#FF6BA8</span></div>
+    <div class="hx"><span class="dot" style="background:#FFD447"></span><span class="lbl">KC Sun</span><span class="val">#FFD447</span></div>
+    <div class="hx"><span class="dot" style="background:#4E7CFF"></span><span class="lbl">KC Cool</span><span class="val">#4E7CFF</span></div>
+  </div>
+
+  <div class="foot">
+    <span><b>SYNK LAB</b> · Palette v10 · Cream / Coral / Navy / Lime</span>
+    <span>19 colors · 5 groups</span>
+  </div>
+
+</div>
+
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79"}' crossorigin="anonymous"></script>
+</body>
+</html>
