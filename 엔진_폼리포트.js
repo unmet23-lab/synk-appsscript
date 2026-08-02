@@ -2201,8 +2201,9 @@ function ymTextOf_(v, tz) {
  *      다시 Date로 파싱**한다. 08-02 라이브 실측 — 자기치유를 돌린 직후에도 운영 탭에 `Wed Jul 01 2026`가 그대로였다.
  *   ③ 정답: 날짜 서식일 때 **먼저 읽어** Date를 Date로 잡고, 그 다음 열을 '@'로 굳히고, 마지막에 문자열을 쓴다.
  *      그래야 쓰는 값이 재파싱되지 않는다. 빈 시트에도 서식은 걸어 둔다(첫 쓰기부터 오염 예방). */
-function ymTextColFix_(sh, col, tz) {
+function ymTextColFix_(sh, col, tz, norm) {
   if (!sh) return 0;
+  const toKey = norm || ymTextOf_; // 기본은 'yyyy-MM'. 시즌 열은 seasonKeyOf_('yyyy-MM-dd')를 넘긴다
   const n = sh.getLastRow() - 1;
   let fixed = 0;
   let vals = null;
@@ -2211,8 +2212,8 @@ function ymTextColFix_(sh, col, tz) {
     for (let i = 0; i < n; i++) {
       const raw = vals[i][0];
       if (raw == null || raw === '') continue;
-      const norm = ymTextOf_(raw, tz);
-      if (typeof raw !== 'string' || norm !== raw) { vals[i][0] = norm; fixed++; }
+      const norm2 = toKey(raw, tz);
+      if (typeof raw !== 'string' || norm2 !== raw) { vals[i][0] = norm2; fixed++; }
     }
   }
   if (sh.getRange(2, col).getNumberFormat() !== '@') {      // ② 서식 고정 — 쓰기보다 반드시 먼저
@@ -2223,6 +2224,52 @@ function ymTextColFix_(sh, col, tz) {
     Logger.log('자기치유: ' + sh.getName() + ' 월 열 오염 ' + fixed + '행 → yyyy-MM 텍스트');
   }
   return fixed;
+}
+/* [v9.144] 🔴 날짜형 키 열 목록을 **골격에서 도출한다** — 월키 Date 오염의 원인 차단.
+ *
+ * 왜 네 번이나 재발했나: 통로(`ymTextColFix_`)는 v9.97에 이미 있었다. 없었던 건 **어느 열에 그
+ * 통로를 태울지**였고, 그게 호출부에 흩어진 **손 목록**이었다. 새 시트에 '월'·'시즌' 열이 생길
+ * 때마다 누군가 한 줄을 기억해 넣어야 했고, 네 번 다 잊었다 —
+ *   스토리북(v9.97) · world_raid + report_cards(v9.126) · groups(v9.132).
+ * 매번 다른 화면·다른 증상이었지만 원인은 하나였다: **목록이 선언과 떨어져 있었다.**
+ * 그래서 네 번 모두 처방이 「그 자리에 한 줄 더」였고, 그건 다섯 번째를 막지 못한다.
+ *
+ * `sheetSkeleton_()`은 새 시트를 선언하는 **바로 그 자리**다. 여기서 도출하면 목록이 낡을 수 없다 —
+ * 시트를 만들며 '월'·'시즌' 열을 넣는 순간 자동으로 치유 대상이 된다.
+ *
+ * ⚠ 08-03 실측: 키 열 12개 중 **6개가 한 번도 처치된 적이 없었다**
+ *   (point_logs·titles·story·crew_projects·kpi_monthly·groups). 다섯 번째 재발이 이미 대기 중이었다. */
+const TEXT_KEY_HEADS_ = { '월': 'ym', 'month': 'ym', '기준월': 'ym', '시즌': 'season' };
+function textKeyCols_() {
+  const out = [];
+  (sheetSkeleton_() || []).forEach(function (row) {
+    const name = row[0];
+    const heads = row[1] || [];
+    for (let i = 0; i < heads.length; i++) {
+      const kind = TEXT_KEY_HEADS_[String(heads[i] == null ? '' : heads[i]).trim()];
+      // break하지 않는다 — league_history처럼 '월'과 '시즌'을 **둘 다** 가진 시트가 있다.
+      if (kind) out.push({ sheet: name, col: i + 1, head: String(heads[i]).trim(), kind: kind });
+    }
+  });
+  return out;
+}
+/* 전 키 열 일괄 치유 — 멱등이고 변경이 없으면 쓰기 0. `sheetSelfHeal_`이 **가장 먼저** 부른다
+ * (뒤따르는 중복 정리·재발간 판정이 전부 이 열을 키로 비교하므로, 정규화가 먼저여야 한다).
+ * 시즌 열은 'yyyy-MM-dd'라 `seasonKeyOf_`를, 월 열은 'yyyy-MM'이라 `ymTextOf_`를 쓴다.
+ * 둘 다 **Date·String(Date) 형태만** 되돌리고 사람이 쓴 일반 텍스트는 건드리지 않는다. */
+function healTextKeyCols_(ss, tz) {
+  const zone = tz || ss.getSpreadsheetTimeZone();
+  const cols = textKeyCols_();
+  const touched = [];
+  let fixed = 0;
+  cols.forEach(function (k) {
+    const sh = ss.getSheetByName(k.sheet);
+    if (!sh) return; // 아직 안 만들어진 시트는 건너뛴다(골격은 선언이지 실재가 아니다)
+    const n = ymTextColFix_(sh, k.col, zone, k.kind === 'season' ? seasonKeyOf_ : ymTextOf_);
+    if (n) { fixed += n; touched.push(k.sheet + '.' + k.head + ' ' + n + '행'); }
+  });
+  if (fixed) Logger.log('자기치유: 날짜형 키 열 오염 ' + fixed + '행 정상화 — ' + touched.join(' · '));
+  return { fixed: fixed, cols: cols.length, touched: touched };
 }
 /* [v9.127] ▶ 공개 래퍼 — `sheetSelfHeal_`은 언더바 private이라 Apps Script 편집기 드롭다운에 **아예 안 뜬다**
  *   (GAS 규약). 그래서 밤을 기다리지 않고 지금 고치려면 시트 메뉴가 유일한 경로였는데, 원격 세션은 시트
@@ -2240,6 +2287,12 @@ function sheetSelfHealNow() {
 }
 function sheetSelfHeal_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  /* ⓪ [v9.144] 날짜형 키 열 전수 치유 — **가장 먼저** 돈다. 아래 ①~③의 중복 정리·재발간 판정이
+   *   전부 이 열을 키로 비교하므로, 정규화가 뒤에 오면 그 판정들이 오염된 값으로 돌아간다.
+   *   대상은 골격에서 도출한다(손 목록이 재발의 원인이었다 — textKeyCols_ 주석 참조).
+   *   아래 개별 ymTextColFix_ 호출은 남겨 둔다: 멱등이라 여기서 치유됐으면 무비용이고,
+   *   그 자리에서 「이 열은 키다」를 읽는 사람에게 알려 준다. */
+  healTextKeyCols_(ss);
   // ①+② 스토리북
   const sb = ss.getSheetByName('synk_stories');
   if (sb && sb.getLastRow() >= 2) {
