@@ -375,6 +375,27 @@ test('[v9.142] 실패하면 첫 오류 원문을 남긴다 — 가설이 틀렸�
   assert.ok(/첫 오류/.test(out), '오류 원문을 남기지 않는다 — 다음 조사가 맨손이 된다');
 });
 
+test('[v9.143] 공유 실패 알림이 폴더 상태를 읽어 원인을 지목한다', () => {
+  /* 「공유 설정 실패」만 적으면 받는 사람이 무엇을 볼지 모른다. 이 실패의 1순위 원인은
+   * 08-03 실측으로 밝혀져 있다 — 폴더가 (다시) 공개면 상속과 충돌해 전부 거부된다.
+   * 그러니 알림은 그 한 줄을 스스로 확인해서 담아야 한다. */
+  const src = readSrc('엔진_폼리포트.js');
+  const s = src.indexOf('function runReportCards_(');
+  const raw = src.slice(s, src.indexOf('\n}\n', s));
+  const body = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  assert.ok(body.includes('createFile('), '주석 제거가 코드까지 지웠다');
+
+  const hint = body.indexOf('folderHint');
+  const read = body.indexOf('folder.getSharingAccess()');
+  const mail = body.indexOf('adminMail(');
+  assert.notEqual(read, -1, '알림이 폴더 상태를 읽지 않는다 — 원인을 지목하지 못한다');
+  assert.ok(hint !== -1 && hint < mail, '폴더 판정이 메일보다 뒤에 있다(메일에 못 실린다)');
+  assert.ok(read < mail, '폴더를 읽기 전에 메일을 보낸다');
+  // 공개일 때는 되돌릴 방법을 말해야 한다(진단만 하고 처방이 없으면 반쪽이다)
+  assert.ok(/제한됨/.test(body), '폴더를 되돌리는 방법(제한됨)을 말하지 않는다');
+  assert.ok(/복구/.test(body), '복구 수단(메뉴)을 안내하지 않는다');
+});
+
 /* ── ③ 저장소 전체 — 공개 공유는 승인된 두 자리에만 있다 ───────────── */
 
 test('[v9.138] 새 공개 공유(setSharing ANYONE)가 승인 없이 늘지 않는다', () => {
