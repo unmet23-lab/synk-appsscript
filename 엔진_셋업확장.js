@@ -44,7 +44,7 @@ function sheetSkeleton_() {
     ['lectures', LECTURE_HEADERS],           // [v9.106] 온라인 강의 카탈로그(유호님이 채운다)
     ['lecture_views', LECTURE_VIEW_HEADERS], // [v9.106] 수강 이력 — 주말반 승급 판정의 나머지 절반
     ['lesson_close', LESSON_CLOSE_HEADERS], // [v9.91] 차시 마감폼 적재 — 진도 3택·미발화자. 조 편성 침묵 점수·이월 경보·4주차 명단의 공통 원천
-    ['hw_feedback', ['id','student_id','제출일','제출문','고친문장','오늘의포인트','칭찬','다음미션','상태','학생확인','포인트지급']], // [v9.49] AI 숙제 첨삭 카드 — aiFeedbackBatch_ 생성. I상태: '노출'=공개(게이트 통과·무인)/'대기'=수동검수 모드/'격리:'·'오류:'=미노출([v9.63]), J학생확인=Glide 전용(스크립트 불가침), K포인트지급=스크립트 전용
+    ['hw_feedback', HW_FEEDBACK_HEADERS], // [v9.49] AI 숙제 첨삭 카드 — aiFeedbackBatch_ 생성. I상태: '노출'=공개(게이트 통과·무인)/'대기'=수동검수 모드/'격리:'·'오류:'=미노출([v9.63]), J학생확인=Glide 전용(스크립트 불가침), K포인트지급=스크립트 전용 · [v9.138] 헤더 정본을 배치와 공유(구 구조는 두 벌이라 갈라졌다) + 수집 4열(숙제ID·오류태그·재작성원본·다시쓰기URL)
     ['student_errors', ['날짜','student_id','반','유형','메모','입력자','created_at','상태']], // [v9.36] 강사 개인 약점 메모(선택 입력) — 리포트·브리핑 노출은 후속(학생 앱 미노출)
     ['onboarding', ['role','제목','안내KO','안내MN','아이콘']], // [v9.38] 역할별 홈 안내 카드(setupOnboarding) — 재건 목록 누락분 보강
     ['system_manifest', ['지표','값','상태']], // [v9.37] buildSystemManifest 출력 — 시트·콘텐츠·트리거·의존성 실측 정본(수동 숫자 대체)
@@ -55,7 +55,14 @@ function sheetSkeleton_() {
     ['world_raid', ['월','보스명','HP','누적데미지','상태']],
     ['league_pairs', ['week','반A','반B','상태','결과']],
     ['academic_log', ['log_id','student_id','날짜','유형','값','비고','입력자']],
-    ['jacket_grants', ['student_id','이름','자격도달일','재원개월','누적P','지급상태']] // [v9.83] 🧥 과잠 자격 대장
+    ['jacket_grants', ['student_id','이름','자격도달일','재원개월','누적P','지급상태']], // [v9.83] 🧥 과잠 자격 대장
+    // [v9.138] 📊 학습 데이터 축적층 — 「2년 축적 → AI 회화 앱」의 원본. 운영 시트가 아니라 **수집기**다.
+    //   quiz_log: 구조상 가장 크게 새던 곳 — 퀴즈 100문항을 매일 띄우면서 학생의 선택을 한 건도 안 받고 있었다.
+    //   문항 텍스트·정답을 행에 함께 스냅샷한다(contents가 개정돼도 2년 뒤 해석이 가능하도록).
+    ['quiz_log', QUIZ_LOG_HEADERS],
+    //   talk_log: 지금 앱이 쌓는 것은 전부 단문·단답이라 **「대화」가 0건**이었다 — 회화 앱을 만들겠다면서
+    //   다회차 주고받기가 한 건도 없는 상태. 이 시트가 그 구멍을 메운다(숙제·퀴즈보다 큰 구멍이다).
+    ['talk_log', TALK_LOG_HEADERS]
   ];
 }
 
@@ -909,7 +916,9 @@ function preflightGlide() {
      ['결석폼URL', 'createAbsenceForm', '강사 결석 연락 기록 버튼(시즌 등급 심사 「결석 복귀율」 원료 — 없으면 지표가 측정 불가)'], // [v9.89]
      ['마감폼URL', 'createLessonCloseForm', '강사 차시 마감 30초(규칙서 §6 강사 입력 2개 중 하나 — 없으면 조 편성 침묵 점수·4주차 명단·이월 경보가 전부 안 열린다)'], // [v9.91]
      ['강의폼URL', 'createLectureForm', '온라인 강의 수강 확인(주말반 승급 판정의 나머지 절반 — 없으면 대면 90분만 보고 채점된다)'], // [v9.106]
-     ['설문폼URL틀', 'createSurveyForm', '월간 만족도 설문(하이라이트 메일 동봉·주간 리포트 집계 — 첫 만족도 기준선)']].forEach(f => { // [v9.75] v9.73 편입 누락분
+     ['설문폼URL틀', 'createSurveyForm', '월간 만족도 설문(하이라이트 메일 동봉·주간 리포트 집계 — 첫 만족도 기준선)'], // [v9.75] v9.73 편입 누락분
+     ['퀴즈폼URL틀', 'createQuizForm', '학생 퀴즈 답하기 버튼(quiz_log 유일 입구 — 없으면 매일 던지는 문제의 답이 한 건도 안 쌓인다. 「무엇을 골랐나」는 소급이 안 된다)'], // [v9.138]
+     ['대화폼URL틀', 'createTalkForm', '학생 「한국어로 말 걸기」 버튼(talk_log 유일 입구 — 앱이 쌓는 것은 전부 단문·단답이라 다회차 대화가 0건이다. 회화 앱의 핵심 재료가 여기서만 나온다)']].forEach(f => { // [v9.138]
       if (getState(st6, f[0]).row < 1) warn('폼 미생성 — ' + f[2] + '가 작동하지 않습니다. 에디터에서 ' + f[1] + ' ▶ 1회 실행 후 calcAll(자동 14/22시)');
     });
   }
@@ -1040,6 +1049,7 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   safeRun('profilesIntegrityNightly', profilesIntegrityNightly_); // [v9.77] 유령 행·user_id 중복·무효 role 매일 감시 — 이상 시에만 메일(동일 내용 dedup), 3열 읽기라 비용 0
   safeRun('translateContentsNightly', translateContents); // [v9.41·자동화] 빈 몽골어·영어 번역을 매일 밤 60행씩 자동 소진 — "translateContents 수동 반복 실행" 절차 제거(빈칸 없으면 API 호출 0)
   safeRun('aiFeedbackBatch', aiFeedbackBatch_); // [v9.49] 숙제폼 제출분 AI 첨삭 생성 — CLAUDE_API_KEY 없으면 0초 스킵
+  safeRun('talkBatch', talkBatch_); // [v9.138] 한국어 대화 답장 — 회화 앱 1세대이자 「다회차 대화」 데이터의 유일한 원천(키 없으면 0초 스킵)
   safeRun('aiStudioBatch', aiStudioBatch_); // [v9.50] AI 스튜디오 — 오늘의 한 문장·개인 퀴즈(H1/A1/A2/A4)·오류사전(G)·반 브리핑(H5)·리텐션 멘트(E5). 키 없으면 0초 스킵
   safeRun('sweepLevelTest', sweepLevelTest_); // [v9.50·F1] 레벨 테스트 응답 채점→AI 진단 리포트 발송→leads 편입(폼 미생성이면 0초 스킵)
   safeRun('demoMonthEndGuard', function () { // [v9.44] 데모 모드가 월말(28일~)까지 살아 있으면 경고 — 다음 달 1일 실배치가 데모 재적으로 지난달을 정산하는 사고 예방
@@ -2765,6 +2775,10 @@ function menuPruneStaleLectures() { menuRun_(pruneStaleLectures); }
 function menuSyncLectureForm() { menuRun_(syncLectureFormChoices); }
 function menuLectureJoinDiag() { menuRun_(lectureJoinDiag); }
 function menuSelfHeal() { menuRun_(sheetSelfHealNow); } // [v9.127] 자기치유 결과 가시화
+function menuCreateQuizForm() { menuRun_(createQuizForm); } // [v9.138] 퀴즈 응답 폼 — 수집층 입구(재실행 안전)
+function menuMigrateHwForm() { menuRun_(migrateHwFormV9138); } // [v9.138] 숙제 폼 증분 — 문항 연결·재작성 경로(멱등)
+function menuCreateTalkForm() { menuRun_(createTalkForm); } // [v9.138] 한국어 대화 폼 — 회화 앱 1세대(재실행 안전)
+function menuDataCoverage() { menuRun_(dataCoverageReport); } // [v9.138] 커버리지 — 읽기 전용이라 언제 눌러도 안전
 
 /* [v9.131] 🗓 시즌 시작일 — **인자가 필요한 유일한 개원 준비 함수**라 ▶ 버튼으로 실행할 수 없었다.
  *   `setSeasonStart`는 인자 없이 부르면 「▶로는 설정되지 않습니다」라고 거부한다(오늘 날짜가 실수로 박히면
@@ -3233,6 +3247,14 @@ function onOpen() {
       //   setSeasonStart는 인자가 필요해 ▶ 버튼으로 실행할 수 없다 → 날짜를 물어보는 프롬프트로 감싼다.
       .addItem('🗓 시즌 시작일 설정(개원 준비 1)', 'seasonStartPrompt')
       .addItem('🧩 전 반 조 편성(개원 준비 2)', 'menuAssignGroups')
+      .addSeparator()
+      /* [v9.138] 📊 학습 데이터 수집 — 「2년 축적 → AI 회화 앱」의 입구.
+       *   개원 전에 눌러야 하는 이유: 학생이 그날 무엇을 골랐는지는 **소급이 안 된다.**
+       *   폼이 없으면 매일 퀴즈를 던지면서 답은 한 건도 안 받는 지금 상태가 그대로 이어진다. */
+      .addItem('🧠 퀴즈 응답 폼 만들기(수집 1단계)', 'menuCreateQuizForm')
+      .addItem('📝 숙제 폼에 수집 문항 넣기(수집 2단계)', 'menuMigrateHwForm')
+      .addItem('🗣 한국어 대화 폼 만들기(수집 3단계)', 'menuCreateTalkForm')
+      .addItem('📊 수집 커버리지 보기(읽기 전용)', 'menuDataCoverage')
       .addToUi();
   } catch (eMenu) { Logger.log('시트 메뉴 생성 스킵: ' + eMenu); } // UI 없는 컨텍스트(트리거 실행)에서는 조용히 통과
 }

@@ -535,11 +535,12 @@ function systemWatchdog(asText) {
       const srcNeed = ['TOPIK목표', 'TOPIK목표기한', 'TOPIK급수', 'TOPIK점수', '학습가능시간', '📝자유서술→노션'];
       const srcMiss = srcNeed.filter(h => chdr.indexOf(h) === -1);
       add(srcMiss.length === 0, '상담 배선 소스 헤더: ' + (srcMiss.length ? srcMiss.join(', ') + ' 미발견 — 상담시트 2행 헤더 개명 여부 확인(취향·목표·페이스라인이 빈칸으로 착지 중)' : srcNeed.length + '종 정상'));
-      // [v9.84→v9.90] 동의 문항(v18.6) 적용 여부 — AI 인용·노션 이관 확대의 선행 조건(소급 불가 계열)이라 적용 전까지 주간 안내.
+      // [v9.84→v9.90] 동의 문항 적용 여부 — AI 인용·노션 이관 확대의 선행 조건(소급 불가 계열)이라 적용 전까지 주간 안내.
       //   v9.90부터 음성·AI 학습 동의(선택)가 붙었다 — 이게 없으면 나중에 모은 녹음을 한 건도 못 쓴다.
+      //   [v9.138] 판 번호를 CONSENT_VERSION 단일 소스로 — 하드코딩이면 개정 때 이 줄이 남아 구 문구를 "적용됨"으로 오인한다.
       if (hasCForm) {
-        const consentOn = stV ? String(getState(stV, '상담동의').val || '') === 'v18.6' : false;
-        add(consentOn, '상담폼 동의 문항(v18.6): ' + (consentOn ? '적용됨(개인정보 필수 + 음성·AI 학습 선택)' : '미적용 — 문구 검토 후 migrateConsentV186 ▶ 1회'));
+        const consentOn = stV ? String(getState(stV, '상담동의').val || '') === CONSENT_VERSION : false;
+        add(consentOn, '상담폼 동의 문항(' + CONSENT_VERSION + '): ' + (consentOn ? '적용됨(개인정보 필수 + 음성·AI 학습 선택)' : '미적용 — 문구 검토 후 migrateConsentV186 ▶ 1회'));
         if (consentOn) {
           const vMiss = CONSENT_EXT_HEADERS.filter(h => chdr.indexOf(h) === -1);
           add(vMiss.length === 0, '음성동의 착지 열: ' + (vMiss.length ? vMiss.join(', ') + ' 유실 — migrateConsentV186 재실행(거부자를 못 읽는 상태)' : '정상'));
@@ -1534,7 +1535,11 @@ function aiFeedbackBatch_() {
   if (from > last) { props.setProperty('숙제폼_포인터', String(last)); return; }
   if (from >= last) return;
   const tz = ss.getSpreadsheetTimeZone();
-  const rows = src.getRange(from + 1, 1, last - from, 3).getValues(); // 타임스탬프·학생ID·숙제 문장
+  /* [v9.138] 3열 → 5열. 뒤 2칸(숙제ID·재작성원본)은 migrateHwFormV9138 이전 폼에는 없어 빈칸으로 온다 —
+   *   getRange는 시트 폭까지만 요구하면 되지만, 폼이 아직 4·5열을 안 만들었을 수 있으므로 물리 폭으로 클램프한다
+   *   (없는 열을 요구하면 배치 전체가 예외로 죽는다). 빈칸은 그대로 빈칸으로 적재된다 — 구 제출분은 문항 연결이 없는 게 사실이다. */
+  const wSrc = Math.min(5, src.getLastColumn());
+  const rows = src.getRange(from + 1, 1, last - from, wSrc).getValues(); // 타임스탬프·학생ID·숙제 문장·[숙제ID]·[재작성원본]
   // [v9.125] 리허설은 배치 입구에서 통째로 차단 — 구 방식(callClaudeFeedback_ throw)은 첫 행에서 break라
   //   "차단 1건"만 남아 대기량이 안 보였고, permanent로 올리면 반대로 hw_feedback에 '오류' 행이 실적재되고
   //   포인터가 실전진해 진짜 첨삭이 영영 안 되는 함정이 있다. 입구 차단 = 시트·포인터 불변 + 대기량 보고.
@@ -1544,8 +1549,9 @@ function aiFeedbackBatch_() {
   if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 67).getValues().forEach(r => {
     if (r[0] && r[3] === 'student') info[String(r[0]).trim()] = { name: r[1] || r[0], lv: Number(r[66]) || 0 };
   });
-  const fb = ensureSheet(ss, 'hw_feedback',
-    ['id', 'student_id', '제출일', '제출문', '고친문장', '오늘의포인트', '칭찬', '다음미션', '상태', '학생확인', '포인트지급']);
+  const fb = ensureSheet(ss, 'hw_feedback', HW_FEEDBACK_HEADERS); // [v9.138] 헤더 하드코딩 2벌 → 단일 정본(시트 골격과 갈라지던 것)
+  hwFeedbackEnsureCols_(fb); // [v9.138] 기존 11열 시트를 15열로 증분 — 없으면 append가 뒤 4칸을 조용히 버린다
+  const hwTpl = String(getState(ensureSheet(ss, 'app_state', ['key', 'value']), '숙제폼재작성틀').val || ''); // 다시쓰기 링크 틀(미생성이면 빈칸)
   const t0 = Date.now();
   const AI_BUDGET_MS = 120000; // [리뷰 H1] nightJobs 뒤쪽에서 돌므로 자체 예산 2분 — 완주 마커·후속 잡을 굶기지 않는다
   let made = 0, held = 0, permFails = 0, processed = 0, lastErr = ''; // [v9.63] held=품질 게이트 격리 수
@@ -1554,6 +1560,8 @@ function aiFeedbackBatch_() {
     if (made >= AI_FEEDBACK_MAX_PER_RUN || Date.now() - t0 > AI_BUDGET_MS) break;
     const sid = String(rows[i][1] || '').trim();
     const text = String(rows[i][2] || '').trim().slice(0, 2000); // 폭주 입력 상한
+    const hwId = String(rows[i][3] || '').trim().slice(0, 20);   // [v9.138] 어느 과제에 대한 답인지(구 제출분은 빈칸)
+    const reDo = String(rows[i][4] || '').trim().slice(0, 40);   // [v9.138] 재작성이면 원본 첨삭 id(FB…) — 3단 데이터의 연결 고리
     const ts = rows[i][0] instanceof Date ? rows[i][0] : new Date();
     const stu = info[sid];
     if (!sid || !stu || !text) { if (sid && !stu) badSid.push(sid); processed = i + 1; continue; } // 무효 행은 건너뛰고 전진 — [v9.67] 미등록 sid만 통보 수집(빈 ID·빈 문장은 폼 필수문항이라 실질 없음)
@@ -1561,10 +1569,15 @@ function aiFeedbackBatch_() {
       const card = callClaudeFeedback_(apiKey, stu, text);
       const gate = fbQualityGate_(card, text); // [v9.63] 무인 발행 안전판 — 미달 카드는 학생에게 안 나간다
       if (!gate.ok) held++;
-      fb.appendRow(['FB' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + fb.getLastRow(), sid,
-        dstr(ts, tz), text, String(card.corrected || ''), String(card.point_mn || ''),
-        String(card.praise || ''), String(card.mission || ''),
-        gate.ok ? (AI_FEEDBACK_AUTOPUBLISH ? '노출' : '대기') : '격리:' + gate.reason, '', '']);
+      const fbId = 'FB' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + fb.getLastRow();
+      // [v9.138] 🔒 학생 제출문·모델 출력에 셀 수식 인젝션 차단(상담AI 셀안전_ 재사용).
+      //   같은 스프레드시트에 profiles(연락처·보호자)가 있어 `=IMPORTDATA(...&profiles!B2:B60)` 한 줄로 유출된다.
+      fb.appendRow([fbId, sid,
+        dstr(ts, tz), 셀안전_(text), 셀안전_(String(card.corrected || '')), 셀안전_(String(card.point_mn || '')),
+        셀안전_(String(card.praise || '')), 셀안전_(String(card.mission || '')),
+        gate.ok ? (AI_FEEDBACK_AUTOPUBLISH ? '노출' : '대기') : '격리:' + gate.reason, '', '',
+        // [v9.138] 수집 4칸 — 다시쓰기URL은 **이 카드의 id**를 프리필해, 학생이 누르면 그 첨삭에 대한 2차 시도로 들어온다
+        셀안전_(hwId), hwTagsClean_(card.error_tags), 셀안전_(reDo), hwRedoUrlOf_(hwTpl, sid, fbId)]);
       made++; processed = i + 1;
       // [리뷰 H1] 성공분 즉시 포인터 전진 — 6분 하드킬(throw 없는 강제 종료)에도 중복 생성·중복 과금 0
       props.setProperty('숙제폼_포인터', String(from + processed));
@@ -1573,8 +1586,10 @@ function aiFeedbackBatch_() {
       if (e && e.permanent) {
         // [리뷰 M1] 영구 오류(refusal·잘림·파싱·4xx 요청결함) — 재시도해도 같은 결과라 '오류' 행으로 기록하고 건너뛴다(포이즌 필 차단)
         permFails++;
+        // [v9.138] 첨삭이 실패해도 제출문·숙제ID·재작성 연결은 남긴다 — AI가 못 고쳤다고 학생이 쓴 문장까지 버릴 이유는 없다
         fb.appendRow(['FB' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + fb.getLastRow(), sid,
-          dstr(ts, tz), text, '', '', '', '', '오류:' + String(e.message || e).slice(0, 80), '', '']);
+          dstr(ts, tz), 셀안전_(text), '', '', '', '', '오류:' + String(e.message || e).slice(0, 80), '', '',
+          셀안전_(hwId), '', 셀안전_(reDo), '']);
         processed = i + 1;
         props.setProperty('숙제폼_포인터', String(from + processed));
         continue;
@@ -1599,14 +1614,22 @@ function callClaudeFeedback_(apiKey, stu, text) {
   // [v9.120] 리허설 = 비용 0. throw로 올려야 호출부(aiFeedbackBatch_)의 오류 경로를 함께 리허설한다
   //   — null을 돌려주면 "정상 응답인데 내용이 빈 것"으로 흘러 포인터가 전진해 버린다.
   if (isRehearsal_()) { rehearsalNote_('AI 첨삭 callClaudeFeedback_ (차단·비용 0)'); throw new Error('리허설 모드: AI 호출 차단'); }
+  /* [v9.138] error_tags 추가 — **같은 호출에 얹으므로 추가 API 비용이 없다.**
+   *   구조: 학생에게 보이는 4칸(교정·포인트·칭찬·미션)은 그대로 두고, 집계용 축 하나를 나란히 받는다.
+   *   왜 필요한가: point_mn은 몽골어 자연어 문장이라 3만 건이 쌓여도 "가장 많이 틀리는 오류 50"을 못 뽑는다.
+   *   태그는 enum으로 묶어 어휘가 흩어지지 않게 한다(자유 문자열이면 같은 오류가 열 이름으로 갈린다). */
   const schema = {
     type: 'object', additionalProperties: false,
-    required: ['corrected', 'point_mn', 'praise', 'mission'],
+    required: ['corrected', 'point_mn', 'praise', 'mission', 'error_tags'],
     properties: {
       corrected: { type: 'string', description: '교정한 한국어 문장 — 원문을 최대한 살린 최소 수정. 틀린 곳이 없으면 원문 그대로' },
       point_mn: { type: 'string', description: '오늘의 포인트 딱 1개 — 가장 중요한 교정 이유를 몽골어 1~2문장으로(한국어 문법 용어는 괄호 병기). 여러 개 나열 금지' },
       praise: { type: 'string', description: '잘한 점 구체적 칭찬 1문장(한국어 존댓말) — 실제로 잘한 지점을 짚어서, 빈말 금지' },
-      mission: { type: 'string', description: '다음 미션 1문장(한국어) — 오늘의 포인트를 써서 새 문장 하나를 만들게 유도' }
+      mission: { type: 'string', description: '다음 미션 1문장(한국어) — 오늘의 포인트를 써서 새 문장 하나를 만들게 유도' },
+      error_tags: {
+        type: 'array', maxItems: 4, items: { type: 'string', enum: HW_ERROR_TAGS },
+        description: '이 제출문에서 실제로 발견한 오류 유형(최대 4개, 많이 틀렸어도 중요한 것부터). 틀린 곳이 없으면 ["오류없음"]. 학생에게 보이지 않는 집계용이므로 정확도만 본다'
+      }
     }
   };
   const body = {
@@ -2274,6 +2297,7 @@ function parentSweep() {
   safeRun('sweepAcademicForm', function () { sweepAcademicForm_(ss); }); // [v9.74] 학업 기록 폼 → academic_log — 급수·모의 차트 원료(월 빈도라 포인터 조기 종료로 무비용)
   safeRun('sweepAbsenceForm', function () { sweepAbsenceForm_(ss); }); // [v9.89] 결석 연락 폼 → absence_followup 마감 — checkNoShow보다 앞(같은 틱에 들어온 연락이 오늘 감지분에 바로 반영)
   safeRun('sweepLectureForm', function () { sweepLectureForm_(ss); }); // [v9.106] 강의폼_응답 → lecture_views
+  safeRun('quizSweep', function () { quizSweep_(ss); }); // [v9.138] 퀴즈폼_응답 → quiz_log — 「무엇을 골랐나」는 그 순간이 지나면 영원히 못 얻는다(소급 불가 축)
   safeRun('sweepLessonCloseForm', function () { sweepLessonCloseForm_(ss); }); // [v9.91] 차시 마감폼 → lesson_close — classPrepMail보다 앞(같은 틱의 마감이 다음 수업 브리핑 조 편성에 반영)
   safeRun('classPrepMail', function () { classPrepMail_(ss, ss.getSpreadsheetTimeZone()); }); // [v6.8]
   safeRun('checkoutCheerMail', function () { checkoutCheerMail_(ss); }); // [v6.8]
@@ -4155,20 +4179,22 @@ function syncToNotion_() {
 
   // [v9.84·④] 상담 자유서술(다짐·3-5년 목표·고충·선택이유…) 주간 자동 이관 — 정성+정량 허브 완성.
   //   맵 로드·속성 보장 실패는 서술만 생략(본 동기화 계속) — 상담시트 장애가 노션 정량 동기화를 못 끊는다.
-  // [v9.84·리뷰 H2 → v9.90] 동의 게이트 — migrateConsentV186(app_state 상담동의=v18.6, 유호 문구 검토 ▶) 전에는 자유서술을
+  // [v9.84·리뷰 H2 → v9.90] 동의 게이트 — migrateConsentV186(app_state 상담동의=CONSENT_VERSION, 유호 문구 검토 ▶) 전에는 자유서술을
   //   노션으로 내보내지 않는다(#204 "소급 불가" 취지 그대로). 게이트 앞이라 맵 로드 자체를 생략(데이터 접촉 0).
   //   [v9.90] 기대값을 v18.5→v18.6으로 함께 올린다 — 마이그레이션만 개정하면 이 게이트가 영영 안 열린 채 침묵한다.
   //   [v9.98] 게이트 통과 후에도 **행 단위**로 한 번 더 — 문항 신설 전 접수분·종이 상담 이기 행은 마커가 없다.
+  //   [v9.138] 하드코딩 → CONSENT_VERSION. 문구를 개정하면 이 게이트가 **스스로 닫힌다**(fail-closed):
+  //   구 문장으로 받은 동의를 새 용도로 쓰지 않기 위해서다. migrateConsentV186 ▶ 1회로 다시 열린다.
   let consultNarr = {}, narrSkipped = 0;
   const stCn = ss.getSheetByName('app_state');
-  const consentOn = stCn ? String(getState(stCn, '상담동의').val || '') === 'v18.6' : false;
+  const consentOn = stCn ? String(getState(stCn, '상담동의').val || '') === CONSENT_VERSION : false;
   if (consentOn) {
     try {
       const nr = consultNarrativeMap_();
       consultNarr = nr.map; narrSkipped = nr.skipped;
     } catch (e) { Logger.log('상담서술 로드 실패(정량만 동기화): ' + e); }
   } else {
-    Logger.log('상담서술 이관 보류 — 동의 문항(v18.6) 미적용. migrateConsentV186 ▶ 후 자동 개시.');
+    Logger.log('상담서술 이관 보류 — 동의 문항(' + CONSENT_VERSION + ') 미적용. migrateConsentV186 ▶ 후 자동 개시.');
   }
   // [v9.98] 동의 표기 없는 행 안내 — 원장이 조치할 수 있게(수가 바뀔 때만 재통지: 동기화보류·열충돌과 같은 dedup 관례)
   if (consentOn && narrSkipped > 0 && stCn) {

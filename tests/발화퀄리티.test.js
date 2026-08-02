@@ -266,6 +266,59 @@ test('음성 보관은 무기한 단일 소스이고 구 기간 문구가 남아
   assert.ok(!help.includes('녹음일로부터 1년'), '구 1년 문구가 남아 있다');
 });
 
+/* [v9.138] 동의 범위 확장 — 「2년 축적 → AI 회화 앱」의 법적 전제.
+ *   구 문구는 용도가 학원 운영으로만 한정돼 있어, 회화 앱을 별도 제품·법인으로 내면 2년치를 통째로 못 썼다.
+ *   동의는 **소급이 불가능**하므로(첫 실학생 서명으로 굳는다) 이 검사가 지키는 것은 코드가 아니라 개원 일정이다.
+ *   조각이 아니라 **조립된 문장**을 만들어 검사한다 — 학생이 읽는 것은 조각이 아니다. */
+function loadConsentTexts() {
+  const s = code.indexOf("const CONSENT_EXT_HEADERS = ['음성동의'];");
+  assert.notEqual(s, -1, '동의 상수 구역 시작을 찾지 못함');
+  const e = code.indexOf('function migrateConsentV186()', s);
+  assert.notEqual(e, -1, '동의 상수 구역 끝(migrateConsentV186)을 찾지 못함');
+  return new Function(`${code.slice(s, e)}
+    return { VOICE_CONSENT_HELP, CONSULT_CONSENT_HELP, CONSENT_SERVICE_SCOPE, CONSENT_DEIDENT,
+             CONSENT_MN_APPROVED, CONSENT_HELP_A_MN, CONSENT_HELP_B_MN, CONSENT_VERSION, 동의문구_ };`)();
+}
+
+test('[v9.138] 동의 문구 두 벌 모두 — 학습 서비스 범위·비식별 약속·제3자 조항이 조립 결과에 있다', () => {
+  const C = loadConsentTexts();
+  [['A(개인정보)', C.CONSULT_CONSENT_HELP], ['B(음성)', C.VOICE_CONSENT_HELP]].forEach(([label, help]) => {
+    assert.ok(help.includes(C.CONSENT_SERVICE_SCOPE),
+      `동의 ${label} 용도에 학습 서비스 개발 범위가 없다 — 회화 앱을 별도 제품으로 내면 이 데이터를 못 쓴다(소급 불가)`);
+    assert.ok(/관계·승계 사업체/.test(help),
+      `동의 ${label}가 법인 분리·양수도를 덮지 않는다 — 별도 법인 출시 시 범위 밖이 된다`);
+    // 범위를 넓힌 대가 = 비식별 약속. 한쪽만 남으면 학생에게 불리한 개정이 되고, 불리한 방향은 소급 적용이 안 된다
+    assert.ok(help.includes(C.CONSENT_DEIDENT),
+      `동의 ${label}에 비식별 사용 약속이 없다 — 용도만 넓히고 대가를 안 준 문구가 된다`);
+    assert.ok(/그 밖의 제3자 제공 없음/.test(help),
+      `동의 ${label}의 제3자 조항이 사라졌다 — '제공 없음'을 지우면 학생 신뢰의 핵심을 버리는 개정이 된다`);
+    assert.ok(help.includes('철회'), `동의 ${label}에 철회 안내가 없다`);
+  });
+});
+
+test('[v9.138] 몽골어 병기 — 검수 게이트가 기본 잠금이고, 켜면 실제로 두 언어가 실린다', () => {
+  const C = loadConsentTexts();
+  // 번역은 AI 초안이다. 검수 전에 라이브 폼에 실리면, 틀린 문장으로 받은 동의가 되어 없느니만 못하다
+  assert.equal(C.CONSENT_MN_APPROVED, false,
+    'CONSENT_MN_APPROVED가 true다 — 원어민·법률 검수를 마쳤다면 이 테스트의 기대값도 함께 바꿔야 한다(무심코 켜지는 것을 막는 자물쇠)');
+  // 게이트가 꺼진 동안은 구 동작과 바이트 동일이어야 한다(병기 도입이 기존 문구를 흔들면 안 된다)
+  assert.equal(C.동의문구_('한국어만', 'МОНГОЛ'), '한국어만', '게이트가 꺼졌는데 몽골어가 실린다');
+  assert.equal(C.동의문구_(C.VOICE_CONSENT_HELP, C.CONSENT_HELP_B_MN), C.VOICE_CONSENT_HELP, '게이트 잠금 중인데 음성 문구가 변형됐다');
+  // 켰을 때 실제로 병기되는지 — 게이트만 있고 배선이 없는 상태(v9.90의 '약속은 주석에, 배선은 없음')를 막는다
+  const 켠결과 = new Function(`const CONSENT_MN_APPROVED = true;
+    ${code.slice(code.indexOf('function 동의문구_('), code.indexOf('\n}', code.indexOf('function 동의문구_(')) + 2)}
+    return 동의문구_('KO본문', 'MN본문');`)();
+  assert.ok(켠결과.includes('KO본문') && 켠결과.includes('MN본문'),
+    '게이트를 켜도 두 언어가 함께 실리지 않는다 — 게이트만 있고 배선이 없다');
+  assert.ok(켠결과.includes('Монгол хэл'), '병기 구분 머리말이 없다 — 학생이 어느 문단이 자기 언어인지 못 찾는다');
+  // 번역 초안 자체가 비어 있으면 게이트를 켜는 순간 한국어만 남는다(조용한 무병기)
+  [['A', C.CONSENT_HELP_A_MN], ['B', C.CONSENT_HELP_B_MN]].forEach(([lb, mn]) => {
+    assert.ok(mn && mn.length > 200, `몽골어 초안 ${lb}가 비었거나 너무 짧다(${mn ? mn.length : 0}자)`);
+    assert.ok(/залгамжлагч/.test(mn), `몽골어 초안 ${lb}에 '승계 사업체' 표현이 없다 — 한국어판과 범위가 어긋난다`);
+    assert.ok(/цуцлах/.test(mn), `몽골어 초안 ${lb}에 '철회' 표현이 없다`);
+  });
+});
+
 test('음성 동의 게이트 — 동의 확인 없이는 녹음이 적재되지 않는다', () => {
   const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
   const s = tb.indexOf('function voiceSweep_(');
@@ -371,8 +424,12 @@ test('voiceConsentMap_은 열이 없으면 null(보류)을 돌려준다', () => 
 test('동의 문항은 제목만 보고 스킵하지 않는다 — 문구 개정이 라이브 폼에 닿아야 한다', () => {
   const fn = section('function migrateConsentV186()', 'function voiceConsentStat_(');
   assert.ok(fn.includes('const syncHelp'), '도움말 동기화 로직이 없다 — 보관 기간을 바꿔도 학생이 읽는 문장은 옛것으로 남는다');
-  assert.ok(fn.includes('syncHelp(titles.indexOf(B), VOICE_CONSENT_HELP'), '음성 동의(B) 문구가 단일 소스와 동기화되지 않는다');
-  assert.ok(/setHelpText\(VOICE_CONSENT_HELP\)/.test(fn), '신규 생성 경로도 단일 소스를 써야 한다(두 벌 방지)');
+  // [v9.138] 몽골어 병기가 붙으면서 한 겹 감싸졌다 — 단일 소스(VOICE_CONSENT_HELP)는 그대로이고,
+  //   조립은 **한 곳(HELP_B)**에서만 일어나야 한다(동기화 경로와 신규 생성 경로가 다른 문장을 쓰면 두 벌이 된다).
+  assert.ok(fn.includes('const HELP_B = 동의문구_(VOICE_CONSENT_HELP, CONSENT_HELP_B_MN)'), '음성 동의(B) 문구가 단일 소스+병기 래퍼로 조립되지 않는다');
+  assert.ok(fn.includes('syncHelp(titles.indexOf(B), HELP_B'), '음성 동의(B) 동기화 경로가 조립된 문구를 쓰지 않는다');
+  assert.ok(/setHelpText\(HELP_B\)/.test(fn), '신규 생성 경로도 같은 조립본을 써야 한다(두 벌 방지)');
+  assert.equal((fn.match(/동의문구_\(VOICE_CONSENT_HELP/g) || []).length, 1, '음성 동의 문구 조립이 2곳 이상 — 두 벌이 되면 학생마다 읽은 문장이 달라진다');
   // 동기화가 제목·선택지·응답을 건드리면 시트 착지가 깨진다
   const sync = fn.slice(fn.indexOf('const syncHelp'), fn.indexOf('const A = CONSENT_Q_TITLE'));
   ['setTitle', 'setChoiceValues', 'deleteItem'].forEach((bad) =>

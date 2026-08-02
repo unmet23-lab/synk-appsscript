@@ -396,7 +396,11 @@ test('[v9.48] 공유값 서버화 — calcAll이 학업 계산 뒤에 공유열�
   assert.ok(code.includes('const SHARED3_COL_START = 120'), '3차 블록 시작(DP120) 상수가 없다');
   const heads3 = code.match(/const SHARED3_COL_HEADERS = \[([\s\S]*?)\];/);
   assert.ok(heads3, 'SHARED3_COL_HEADERS 선언을 찾지 못함');
-  assert.equal(heads3[1].split(',').filter(s => s.trim()).length, 3); // [v9.97] +결석폼URL(DR122)
+  assert.equal(heads3[1].split(',').filter(s => s.trim()).length, 4); // [v9.97] +결석폼URL(DR122) · [v9.138] +퀴즈폼URL(DS123)
+  // [v9.138] 새 열은 **배열 끝에만** 붙는다 — 중간 삽입은 기존 열을 통째로 한 칸씩 밀어 Glide 바인딩을 조용히 어긋내고,
+  //   그 파괴는 다음 calcAll이 값을 쓰는 순간까지 눈에 띄지 않는다(열 이름은 그대로인데 내용만 밀린다).
+  assert.ok(/const SHARED3_COL_HEADERS = \['출퇴근HTML', '결석신고HTML', '결석폼URL', '퀴즈폼URL'\]/.test(code),
+    '3차 블록 열 순서가 바뀌었다 — 기존 3열(DP·DQ·DR)의 자리는 불변이어야 한다');
   assert.ok(fn.includes('writeIfChanged(pf, 2, SHARED3_COL_START,'), '3차 블록 분리 쓰기가 아니면 선점 열 DO119(랭킹보드)를 덮어쓴다');
   assert.ok(fn.includes('.concat(SHARED3_COL_HEADERS)'), 'HEADS_ALL이 3차 블록을 포함하지 않는다 — 분기 반환 길이 가드가 무력화');
 });
@@ -424,7 +428,26 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
 
 test('[v9.49] hw_feedback 골격 — 학생확인(Glide 전용)과 포인트지급(스크립트 전용) 열이 분리돼 있다', () => {
   const body = section('function sheetSkeleton_()', 'function bootstrapSynk()');
-  assert.ok(body.includes("['hw_feedback', ['id','student_id','제출일','제출문','고친문장','오늘의포인트','칭찬','다음미션','상태','학생확인','포인트지급']]"));
+  /* [v9.138] 헤더가 하드코딩 2벌(시트 골격 + 배치의 ensureSheet)에서 단일 정본으로 승격됐다.
+   *   그래서 검사도 문자열 대조가 아니라 **실값의 자리**를 본다 — 진짜 위험은 문구가 아니라 **중간 삽입**이다.
+   *   소비처 4곳이 폭 9·10·11로 읽고 sweepFeedbackAck_는 11번째 열을 손으로 찍으므로,
+   *   앞 11칸의 순서가 하나라도 밀리면 첨삭 카드 내용과 포인트 지급 표시가 통째로 어긋난다(에러 없이). */
+  assert.ok(body.includes("['hw_feedback', HW_FEEDBACK_HEADERS]"), '시트 골격이 헤더 정본 상수를 쓰지 않는다(배치와 두 벌로 갈라진다)');
+  const H = new Function(`${code.slice(code.indexOf('const HW_FEEDBACK_HEADERS = ['), code.indexOf('];', code.indexOf('const HW_FEEDBACK_HEADERS = [')) + 2)}
+    return HW_FEEDBACK_HEADERS;`)();
+  assert.deepEqual(H.slice(0, 11),
+    ['id', 'student_id', '제출일', '제출문', '고친문장', '오늘의포인트', '칭찬', '다음미션', '상태', '학생확인', '포인트지급'],
+    'hw_feedback 앞 11열의 자리가 바뀌었다 — 새 열은 반드시 **끝에만** 붙여야 한다(중간 삽입은 소비처 4곳을 조용히 파괴)');
+  assert.equal(H[9], '학생확인', 'J열(학생확인·Glide 전용)이 제자리에 없다');
+  assert.equal(H[10], '포인트지급', 'K열(포인트지급)이 제자리에 없다 — sweepFeedbackAck_가 11번째 열을 직접 찍는다');
+  // [v9.138] 수집 4열 — 「2년 축적 → AI 회화 앱」의 실제 재료. 빠지면 3단 데이터·오류 집계가 성립하지 않는다
+  ['숙제ID', '오류태그', '재작성원본', '다시쓰기URL'].forEach((h, i) =>
+    assert.equal(H[11 + i], h, `수집 열 ${h}이(가) ${12 + i}번째 자리에 없다`));
+  // 배치가 그 폭을 실제로 쓰는지 — 헤더만 늘리고 append가 11칸이면 뒤 4칸은 영원히 빈다
+  const batch = section('function aiFeedbackBatch_()', 'function callClaudeFeedback_(');
+  assert.ok(batch.includes('hwFeedbackEnsureCols_(fb)'), '기존 11열 시트를 15열로 증분하지 않는다 — append가 뒤 4칸을 조용히 버린다');
+  assert.ok(batch.includes('hwTagsClean_(card.error_tags)'), '오류 태그가 적재되지 않는다');
+  assert.ok(batch.includes('hwId, hwTagsClean_(card.error_tags), reDo, hwRedoUrlOf_('), '수집 4칸이 적재 배열 끝에 오지 않는다');
 });
 
 test('[v9.49] 첨삭 확인 정산은 지급(appendPoints) 성공 뒤에만 지급완료로 표시한다', () => {
@@ -769,10 +792,11 @@ test('[v9.61] preflight는 학생 입력 폼 3종 미생성을 경고한다(버�
   // 2026-07-24 실측: 출석폼URL틀·숙제폼URL틀이 없어 CX102·CY103이 공란 → Glide Open-link 버튼 전원 미렌더.
   // 컴포넌트는 존재해 눈으로 하는 조립 점검을 통과했다 → 기계 경고로 이관.
   const body = section('function preflightGlide()', 'function safeRun(name, fn)');
-  ['출석폼URL틀', '숙제폼URL틀', '약점메모폼URL'].forEach((k) => {
+  // [v9.138] 퀴즈폼 편입 — 수집기의 입구가 없는 것은 "버튼이 안 그려진다"보다 무겁다(그날의 답은 다시 못 받는다)
+  ['출석폼URL틀', '숙제폼URL틀', '약점메모폼URL', '퀴즈폼URL틀'].forEach((k) => {
     assert.ok(body.includes(`'${k}'`), `preflight가 ${k} 부재를 감시해야 한다`);
   });
-  ['createAttendanceForm', 'createHwForm', 'createTeacherMemoForm'].forEach((fn) => {
+  ['createAttendanceForm', 'createHwForm', 'createTeacherMemoForm', 'createQuizForm'].forEach((fn) => {
     assert.ok(body.includes(fn), `경고문이 처방(${fn} 실행)을 담아야 한다`);
   });
 });
@@ -1383,8 +1407,10 @@ test('[v9.84] 노션 상담서술 이관 — 동의 게이트→속성 보장→
   const body = section('function syncToNotion_()', 'function syncNotionNow()');
   // [리뷰 H2] 동의 게이트가 맵 로드보다 앞 — migrateConsentV186(상담동의=v18.6) 전에는 자유서술이 노션으로 나가지 않는다(데이터 접촉 0)
   assertOrder(body, ["'상담동의'", 'consultNarrativeMap_()', "notionEnsureProp_('상담서술')", "properties['상담서술']"]);
-  // [v9.90] 마이그레이션 버전을 올리면 이 게이트도 함께 올라가야 한다 — 한쪽만 올리면 이관이 영영 안 열린 채 침묵한다(선언값 단일 소스 검사)
-  assert.ok(body.includes("=== 'v18.6'"), '동의 게이트 값 비교(v18.6)가 없다 — 마이그레이션 선언값과 어긋나면 상담서술이 영구 보류된다');
+  // [v9.90→v9.138] 마이그레이션 판 번호와 이 게이트는 **같은 상수**를 봐야 한다. 구 검사는 'v18.6' 리터럴을
+  //   요구했는데, 그러면 개정 때마다 테스트까지 세 곳을 손으로 맞춰야 하고 한 곳을 빠뜨리면 이관이 영영 안 열린 채 침묵한다.
+  //   → 리터럴이 아니라 **단일 소스를 쓰는가**를 검사한다(다음 개정에서 저절로 따라온다).
+  assert.ok(body.includes('=== CONSENT_VERSION'), '동의 게이트가 CONSENT_VERSION 단일 소스를 쓰지 않는다 — 판 번호 하드코딩은 개정 때 어긋나 상담서술이 영구 보류된다');
   assert.ok(body.includes('상담서술 이관 보류'), '동의 미적용 시 보류 로그가 없다(침묵 금지)');
   assert.ok(body.includes('상담서술 로드 실패(정량만 동기화)'), '상담시트 장애가 정량 동기화까지 끊는다(격리 부재)');
   const nm = section('function consultNarrativeMap_', 'function notionEnsureProp_');
@@ -1427,18 +1453,30 @@ test('[v9.90] 동의 마이그레이션(v18.6) — 멱등·명시 동의·거부
   assert.ok(body.includes('const A = CONSENT_Q_TITLE'), '문항 A(개인정보·필수)가 없다');
   assert.ok(code.includes("const CONSENT_Q_TITLE = '개인정보·학습데이터 활용 동의'"), '동의 제목 상수가 없다/변형됨');
   assert.ok(body.includes("['네, 동의합니다']"), '명시적 동의 선택지가 없다');
-  assert.ok(body.includes('철회'), '동의 철회 안내가 없다(문구 초안 필수 요소)');
+  /* [v9.138] 문구가 함수 밖 상수로 승격됐다(A=CONSULT_CONSENT_HELP · B=VOICE_CONSENT_HELP) — 그래서 이 테스트는
+   *   "함수가 그 정본을 쓰는가"만 지키고, 문장 내용(철회·범위·비식별)의 **조립 결과 검사**는
+   *   tests/발화퀄리티.test.js가 실값으로 한다. 여기서 문자열을 또 세면 두 곳이 갈라진다. */
+  assert.ok(body.includes('동의문구_(CONSULT_CONSENT_HELP, CONSENT_HELP_A_MN)'), '문항 A가 문구 정본 상수를 쓰지 않는다(함수 안 하드코딩은 개정이 라이브에 안 닿는다)');
+  assert.ok(/const CONSULT_CONSENT_HELP[\s\S]{0,1200}?철회/.test(code), '동의 철회 안내가 문구 정본(A)에 없다(문구 초안 필수 요소)');
   // [v9.90 핵심] 음성 동의는 blob이 아니라 '열'로 받는다 — 열이 없으면 "누가 거부했는지"를 코드가 못 읽어 녹음이 거부자까지 삼킨다
   assert.ok(code.includes("const CONSENT_EXT_HEADERS = ['음성동의']"), '음성동의 착지 헤더 상수가 없다/변형됨');
   assert.ok(body.includes('const B = CONSENT_EXT_HEADERS[0]'), '문항 B 제목이 헤더명 상수를 쓰지 않는다(제목≠헤더면 열에 착지하지 않는다)');
   assert.ok(body.includes("['네, 동의합니다', '아니요, 원하지 않습니다']"), '음성 동의에 거부 선택지가 없다 — 거부 불가 동의는 끼워팔기로 무효화될 수 있다');
   assert.ok(/const B = CONSENT_EXT_HEADERS\[0\][\s\S]*setRequired\(true\)/.test(body), '음성 동의가 필수 응답이 아니다(무응답이면 게이트가 침묵으로 통과된다)');
-  // 시트 열 증분이 실패하면 v18.6을 선언하지 않는다 — 폼 문항만 있고 열이 없는 상태를 "적용됨"으로 오인하면 거부자를 못 읽는다
-  assert.ok(body.includes('if (sheetOk) setState(st, \'상담동의\', \'v18.6\')'), '시트 증분 성공 조건부 선언이 아니다');
+  // 시트 열 증분이 실패하면 판 번호를 선언하지 않는다 — 폼 문항만 있고 열이 없는 상태를 "적용됨"으로 오인하면 거부자를 못 읽는다
+  assert.ok(body.includes("if (sheetOk) setState(st, '상담동의', CONSENT_VERSION)"), '시트 증분 성공 조건부 선언이 아니다(또는 판 번호가 하드코딩됐다)');
   assert.ok(body.includes('학생ID') && body.includes('증분 중단'), '상담시트 스키마 가드(60열=학생ID)가 없다');
   const calls = (code.match(/migrateConsentV186\(\)/g) || []).length;
   assert.equal(calls, 1, '▶ 전용이어야 하는 동의 마이그레이션이 코드 어딘가에서 자동 호출된다(정의 1회 외 호출 ' + (calls - 1) + '건)');
-  assert.ok(code.includes("String(getState(stV, '상담동의').val || '') === 'v18.6'"), '워치독 동의 미적용 감시 게이트가 없다');
+  assert.ok(code.includes("String(getState(stV, '상담동의').val || '') === CONSENT_VERSION"), '워치독 동의 미적용 감시 게이트가 없다(또는 판 번호가 하드코딩됐다)');
+  /* [v9.138] 판 번호 단일 소스 — 선언 1곳 + 게이트 2곳(워치독·노션)이 같은 상수를 보는지 **결과로** 확인한다.
+   *   조각 검사만 하면 "상수는 있는데 어디선가 아직 리터럴을 비교" 하는 상태를 통과시킨다(guard-must-check-result 교훈).
+   *   허용 예외: 주석의 역사 기록('v18.5→v18.6' 같은 경위 서술)은 실행 경로가 아니므로 센다면 오탐이 된다 → 코드 줄만 본다. */
+  const 판리터럴 = code.split('\n')
+    .filter(l => !/^\s*(\/\/|\*|\/\*)/.test(l))          // 주석 줄 제외(경위 서술은 남겨둬야 한다)
+    .filter(l => /'상담동의'/.test(l) && /'v18\.\d/.test(l));
+  assert.equal(판리터럴.length, 0, '동의 판 번호가 실행 코드에 하드코딩돼 있다(CONSENT_VERSION을 써야 한다): ' + 판리터럴.join(' ⏎ '));
+  assert.ok(/const CONSENT_VERSION = 'v18\.\d/.test(code), 'CONSENT_VERSION 단일 소스 정의가 없다');
   // 구 함수명 잔재 검사 — 역사 기록(설계노트 204·버전 문자열)은 허용하되, 정의와 '▶ 실행 지시'는 남아 있으면 안 된다(없는 함수를 유호님이 누른다)
   assert.ok(!code.includes('function migrateConsentV185'), '구 함수 정의(V185)가 남아 있다');
   assert.ok(!code.includes('migrateConsentV185 ▶'), '구 함수 ▶ 실행 안내가 남아 있다 — 유호님이 없는 함수를 실행하게 된다');
