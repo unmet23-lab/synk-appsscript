@@ -235,3 +235,54 @@ test('[v9.126] 출결 보드는 빈 날에도 안내 한 줄을 남긴다 (백�
   assert.ok(seg.indexOf('stuRows.push') < seg.indexOf('const all = rows.concat(stuRows)'),
     '안내 행이 all 조립보다 뒤에 있다 — 화면에 안 나간다');
 });
+
+/* ═══════ [v9.127] 원격 실행·정본 동기화 ═══════ */
+
+test('[v9.127] 경영 계기판 — 구 기본값이 시트에 박혀 있어도 정본 v1.3으로 승계된다', () => {
+  const seg = code.slice(code.indexOf('function updateBizDashboard'), code.indexOf('function bizAlert_') > -1
+    ? code.indexOf('function bizAlert_') : code.indexOf('function updateBizDashboard') + 3000);
+  assert.ok(seg.includes('BIZ_BURN_LEGACY') && seg.includes('BIZ_BEP_LEGACY'),
+    '구 기본값 승계 로직이 없다 — 계기판은 입력칸을 되쓰므로 상수만 고치면 화면이 영영 안 바뀐다');
+  // 정본 값 자체
+  assert.ok(/const BIZ_BEP_DEFAULT = 119;/.test(code), 'BEP 기본값이 정본 v1.3(119명)이 아니다');
+  assert.ok(/const BIZ_BURN_DEFAULT = 5065;/.test(code), '월 번 기본값이 정본 v1.3(5,065만₮)이 아니다');
+  // 유호님이 직접 넣은 값은 보존 — 승계는 "구 기본값과 정확히 같을 때"만
+  assert.ok(seg.includes('bepRaw === BIZ_BEP_LEGACY'), '승계 조건이 정확 일치가 아니다 — 수기 입력값을 덮을 수 있다');
+});
+
+test('[v9.127] 자기치유 공개 래퍼 — 편집기·메뉴 양쪽에서 실행 가능하다', () => {
+  assert.ok(/function sheetSelfHealNow\(\)/.test(code), '공개 래퍼가 없다 — private은 편집기 드롭다운에 안 뜬다');
+  const seg = code.slice(code.indexOf('function sheetSelfHealNow'), code.indexOf('function sheetSelfHeal_'));
+  assert.ok(seg.includes('sheetSelfHeal_()'), '래퍼가 본체를 부르지 않는다');
+  assert.ok(seg.includes('return msg'), '결과 문구를 돌려주지 않는다(메뉴 alert가 빈다)');
+  assert.ok(code.includes("addItem('🩹 시트 자기치유', 'menuSelfHeal')"), '메뉴가 구 private 이름을 가리킨다');
+});
+
+// teacher_checkins 연타 정리 — 실행 검증(삭제가 걸린 로직)
+test('[v9.127] teacher_checkins 연타 중복 — 60초 이내만 접고 정상 출퇴근은 남긴다 (실행 검증)', () => {
+  const base = new Date('2026-08-02T09:00:00Z').getTime();
+  const rows = [
+    ['김강사', '출근', new Date(base)],            // 기준 → 생존
+    ['김강사', '출근', new Date(base + 2000)],     // +2초 → 삭제
+    ['김강사', '출근', new Date(base + 3500)],     // +3.5초 → 삭제
+    ['김강사', '퇴근', new Date(base + 8 * 3600e3)],       // 8시간 뒤 → 생존
+    ['김강사', '퇴근', new Date(base + 8 * 3600e3 + 1500)], // +1.5초 → 삭제
+    ['박강사', '출근', new Date(base + 1000)],     // 다른 사람 → 생존
+    ['김강사', '출근', new Date(base + 90000)],    // +90초(연타 아님) → 생존
+  ];
+  const deleted = [];
+  const tc = {
+    getLastRow: () => rows.length + 1,
+    getRange: (r, c, n, w) => ({ getValues: () => rows.slice(r - 2, r - 2 + n).map(x => x.slice(c - 1, c - 1 + w)) }),
+    deleteRow: (rn) => { deleted.push(rn); rows.splice(rn - 2, 1); },
+  };
+  const s = code.indexOf('/* ⑤ [v9.127] teacher_checkins 연타 중복 정리');
+  const e = code.indexOf('// [v9.6] 🌍 월드 레이드 — 학원 전체');
+  assert.ok(s > -1 && e > s, '⑤ 블록 표식을 찾지 못함');
+  const body = code.slice(s, e).replace(/\}\s*$/, '');
+  new Function('ss', 'TC_NAME_COL', 'TC_TYPE_COL', 'TC_TIME_COL', 'Logger', body)(
+    { getSheetByName: (n) => (n === 'teacher_checkins' ? tc : null) }, 1, 2, 3, { log: () => {} });
+  assert.equal(rows.length, 4, '남은 행 수가 다르다(정상 출퇴근을 지웠거나 연타를 못 걷었다)');
+  assert.deepEqual(rows.map(r => r[0] + r[1]), ['김강사출근', '김강사퇴근', '박강사출근', '김강사출근'],
+    '다른 사람·다른 유형·간격 있는 기록이 훼손됐다');
+});

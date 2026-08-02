@@ -786,7 +786,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.126'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.126] Glide 라이브 전수 점검 — 월키 Date 오염 미보호 시트 2종·상담값 원시 Date·출결 백지 · [v9.125] 앱 전면 최적화 — 5구역 적대 리뷰 결함 26건 수리 + 브랜드 키트 색 전환 · [v9.124] 메뉴 결과 가시화 + 이수율 조인 진단 · [v9.123] 낡은 강의 자리 안전 정리 — 조준을 행 번호에서 내용으로 · [v9.122] 브랜드 폰트 3종을 앱 카드에 적용 — 스택 교체 + 웹폰트 로더 신설(이름만 바꾸면 전 카드가 폴백된다) · [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
+const SYNK_VERSION = 'v9.127'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.127] 원격 실행 경로 신설 + 경영 정본 v1.3 동기화 + 출퇴근 연타 정리 · [v9.126] Glide 라이브 전수 점검 — 월키 Date 오염 미보호 시트 2종·상담값 원시 Date·출결 백지 · [v9.125] 앱 전면 최적화 — 5구역 적대 리뷰 결함 26건 수리 + 브랜드 키트 색 전환 · [v9.124] 메뉴 결과 가시화 + 이수율 조인 진단 · [v9.123] 낡은 강의 자리 안전 정리 — 조준을 행 번호에서 내용으로 · [v9.122] 브랜드 폰트 3종을 앱 카드에 적용 — 스택 교체 + 웹폰트 로더 신설(이름만 바꾸면 전 카드가 폴백된다) · [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -9141,6 +9141,20 @@ function ymTextColFix_(sh, col, tz) {
   if (sh.getRange(2, col).getNumberFormat() !== '@') sh.getRange(1, col, sh.getMaxRows(), 1).setNumberFormat('@');
   return fixed;
 }
+/* [v9.127] ▶ 공개 래퍼 — `sheetSelfHeal_`은 언더바 private이라 Apps Script 편집기 드롭다운에 **아예 안 뜬다**
+ *   (GAS 규약). 그래서 밤을 기다리지 않고 지금 고치려면 시트 메뉴가 유일한 경로였는데, 원격 세션은 시트
+ *   메뉴를 누를 수 없다. 인자 없음·멱등이라 아무 때나 눌러도 안전한 함수이므로 공개 진입점을 둔다.
+ *   반환 문구는 메뉴(menuRun_)가 그대로 alert에 띄운다. */
+function sheetSelfHealNow() {
+  sheetSelfHeal_();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const cnt = n => { const s = ss.getSheetByName(n); return s ? Math.max(s.getLastRow() - 1, 0) : -1; };
+  const msg = '🩹 시트 자기치유 완료\n' +
+    '   report_cards ' + cnt('report_cards') + '행 · world_raid ' + cnt('world_raid') + '행 · synk_stories ' + cnt('synk_stories') + '행\n' +
+    '   (월 열 Date 오염 정상화 + 같은 달·같은 학생 중복 정리 — 상세는 실행 로그)';
+  Logger.log(msg);
+  return msg;
+}
 function sheetSelfHeal_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   // ①+② 스토리북
@@ -9262,6 +9276,37 @@ function sheetSelfHeal_() {
     if (delR.length) {
       delR.sort((a, b) => b - a).forEach(rn => rcH.deleteRow(rn));
       Logger.log('자기치유: report_cards 중복 ' + delR.length + '행 삭제(남은 ' + (nR - delR.length) + '행)');
+    }
+  }
+  /* ⑤ [v9.127] teacher_checkins 연타 중복 정리 — 08-02 실측: 같은 강사의 「출근」이 3초 안에 3건,
+   *   「퇴근」이 2건 쌓여 있었다(버튼 연타·네트워크 재시도). today_board는 최소/최대만 쓰므로 집계는
+   *   무해하지만 출퇴근 이력 화면이 지저분해지고, 근무 시간을 사람이 셀 때 오독을 부른다.
+   *   **같은 이름·같은 유형·60초 이내**만 묶어 가장 이른 1건을 남긴다(정상 출근/퇴근은 몇 시간 간격이라 안 걸린다). */
+  const tcH = ss.getSheetByName('teacher_checkins');
+  if (tcH && tcH.getLastRow() >= 2) {
+    const nT = tcH.getLastRow() - 1;
+    const td = tcH.getRange(2, 1, nT, 3).getValues();
+    const parsed = td.map((r, i) => {
+      const nm = String(r[TC_NAME_COL - 1] || '').trim();
+      const tp = String(r[TC_TYPE_COL - 1] || '').trim();
+      const d = r[TC_TIME_COL - 1];
+      const t = (d instanceof Date) ? d.getTime() : new Date(d).getTime();
+      return { i: i, nm: nm, tp: tp, t: isFinite(t) ? t : 0 };
+    }).filter(x => x.nm && x.tp && x.t);
+    const byNT = {};
+    parsed.forEach(x => { (byNT[x.nm + '|' + x.tp] = byNT[x.nm + '|' + x.tp] || []).push(x); });
+    const delT = [];
+    Object.keys(byNT).forEach(k => {
+      const list = byNT[k].slice().sort((a, b) => a.t - b.t);
+      let anchor = null;
+      list.forEach(x => {
+        if (anchor && x.t - anchor.t <= 60000) { delT.push(x.i + 2); return; } // 60초 이내 = 연타
+        anchor = x;
+      });
+    });
+    if (delT.length) {
+      delT.sort((a, b) => b - a).forEach(rn => tcH.deleteRow(rn));
+      Logger.log('자기치유: teacher_checkins 연타 중복 ' + delT.length + '행 삭제(60초 이내 같은 이름·유형)');
     }
   }
 }
@@ -14965,8 +15010,12 @@ function resetAllTriggers(force) {
  *   ③ 신호등 판정 + 적색경보 — 생존<4.0개월 · 이탈률 8% 2개월 연속(= 마케팅 증액 금지) → 즉시 메일(월 1회 dedup).
  * 운영: 매주 월 07시 주간 통합 리포트 섹션으로 자동 갱신 · 설치 setupBizDashboard() 1회 · 수동 bizDashboardNow(). */
 
-const BIZ_BURN_DEFAULT = 5250; // 월 번(만₮) — 진단 기준치. 사회보험·외국인고용부담금 확정 시 계기판 B3에서 직접 수정
-const BIZ_BEP_DEFAULT = 131;   // 손익분기 재적(명) — 번 6,100만₮ 시나리오. 확정 시 계기판 B4에서 수정
+/* [v9.127] 급여 인센티브 정본 v1.3에 동기화 — 08-02 Glide 실측에서 경영 탭이 「BEP 목표 131명」을 띄우고 있었다
+ *   (정본은 119명). 구 값은 「번 6,100만₮」 시나리오의 잔재이고, 정본은 4실 24반 384석·13명·임대 실계약가
+ *   1,500만₮ 확정을 반영한 **고정비 5,065만₮ · BEP 119명(총 좌석의 31%)**이다.
+ *   검산: 5,065 ÷ 42.7(ARPU) = 118.6 → 119명. 원천 = docs/정본/SYNK/ 급여 인센티브 정본 v1.3. */
+const BIZ_BURN_DEFAULT = 5065; // 월 번(만₮) — 정본 v1.3 고정비. 사회보험·외국인고용부담금 확정 시 계기판 B3에서 직접 수정
+const BIZ_BEP_DEFAULT = 119;   // 손익분기 재적(명) — 정본 v1.3(384석의 31%). 확정 변경 시 계기판 B4에서 수정
 
 function bizSheets_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -15001,8 +15050,17 @@ function updateBizDashboard(asText, kpiData) { // 계기판 시트 갱신 + 요�
   // ── 입력칸 B2:B4 보존 (비면 기본값)
   const inp = sh.db.getLastRow() >= 5 ? sh.db.getRange(2, 2, 4, 1).getValues() : [[''], [''], [''], ['']]; // [v9.33] 입력칸 4개(B5 광고비 추가) — 구 3칸 대시보드는 B5=구분선이라 NaN→0으로 안전 폴백 후 1회 실행에 자가치유
   const cash = Number(inp[0][0]) || 0;
-  const burn = Number(inp[1][0]) || BIZ_BURN_DEFAULT;
-  const bep = Number(inp[2][0]) || BIZ_BEP_DEFAULT;
+  /* [v9.127] 구 기본값 자동 승계 — 이 함수는 입력칸을 **읽은 값 그대로 되쓴다.** 그래서 과거 실행이 구 기본값
+   *   (번 5250·BEP 131)을 시트에 박아 넣은 뒤로는 상수를 고쳐도 화면이 영영 안 바뀐다(08-02 Glide 실측:
+   *   경영 탭이 정본 v1.3의 119명 대신 131명을 표시 중이었다). 셀 값이 **구 기본값과 정확히 같을 때만**
+   *   새 정본값으로 승계한다 — 유호님이 직접 넣은 다른 숫자는 어떤 경우에도 건드리지 않는다. */
+  const BIZ_BURN_LEGACY = 5250, BIZ_BEP_LEGACY = 131;
+  const burnRaw = Number(inp[1][0]) || 0, bepRaw = Number(inp[2][0]) || 0;
+  const burn = (!burnRaw || burnRaw === BIZ_BURN_LEGACY) ? BIZ_BURN_DEFAULT : burnRaw;
+  const bep = (!bepRaw || bepRaw === BIZ_BEP_LEGACY) ? BIZ_BEP_DEFAULT : bepRaw;
+  if (burnRaw === BIZ_BURN_LEGACY || bepRaw === BIZ_BEP_LEGACY) {
+    Logger.log('경영 계기판: 구 기본값 승계 — 번 ' + burnRaw + '→' + burn + ' · BEP ' + bepRaw + '→' + bep + ' (정본 v1.3)');
+  }
   const adSpend = Number(inp[3][0]) || 0; // [v9.33] 이번달 광고비(만₮) — CPL 계산용. 비면 0
 
   // ── 이탈률·전환율 = KPI 단일 소스 (당월 잠정 재계산 멱등 + 전월은 확정 우선)
@@ -15070,7 +15128,7 @@ function updateBizDashboard(asText, kpiData) { // 계기판 시트 갱신 + 요�
   const rows = [
     ['[입력] 현금잔고(만₮)', cash || '', '', '월 1회 직접 입력 — 비어 있으면 생존개월수 미계산'],
     ['[입력] 월 번(만₮)', burn, '', '유지비. 사회보험·외국인고용부담금 확정 시 갱신'],
-    ['[입력] BEP 목표(명)', bep, '', '손익분기 재적 (진단: 114~131명)'],
+    ['[입력] BEP 목표(명)', bep, '', '손익분기 재적 — 급여 인센티브 정본 v1.3 = 119명(384석의 31%)'], // [v9.127] 구 '114~131명' 진단 범위 → 정본 인용
     ['[입력] 이번달 광고비(만₮)', adSpend || '', '', '이번 달 Meta 광고 지출 누계 — 직접 입력(월초 리셋). 비면 CPL 미계산'], // [v9.33] 4번째 입력칸(B5)
     ['── 자동 지표 ──', '갱신 ' + Utilities.formatDate(now, tz, 'MM-dd HH:mm'), '', '매주 월 07시 자동 · 수동 bizDashboardNow()'],
     ['⓪ 생존개월수', surv == null ? '현금잔고 입력 필요' : surv + '개월', stSurv, '현금÷번. 4.0 미만 = 적색(개원조건 미달)'],
@@ -16448,6 +16506,7 @@ function menuCreateLectureForm() { menuRun_(createLectureForm); }
 function menuPruneStaleLectures() { menuRun_(pruneStaleLectures); }
 function menuSyncLectureForm() { menuRun_(syncLectureFormChoices); }
 function menuLectureJoinDiag() { menuRun_(lectureJoinDiag); }
+function menuSelfHeal() { menuRun_(sheetSelfHealNow); } // [v9.127] 자기치유 결과 가시화
 
 /* [v9.124] ▶ 읽기 전용 — 「이수율 조인이 실제로 붙는가」에 한 화면으로 답한다.
  *   이 질문이 따로 필요한 이유: 조인이 깨져도 **에러가 안 난다.** 그냥 rate=null(무데이터)로 조용히 떨어지고,
@@ -16841,7 +16900,8 @@ function onOpen() {
       //   맞다면 배치·스위프(absenceFollowupNightly_·sweepAbsenceForm_·aiFeedbackBatch_ …)를 밤을 기다리지 않고
       //   수동으로 한 번 돌려볼 수 있게 된다 — 지금은 그게 불가능해 스모크 테스트를 정적 검증으로 때우고 있다.
       //   검증체로 sheetSelfHeal_을 고른 이유: 인자 없음 · 멱등 · 야간에 이미 도는 자기치유라 눌러도 무해.
-      .addItem('🩹 시트 자기치유', 'sheetSelfHeal_')
+      // [v9.127] 공개 래퍼로 교체 — 결과가 alert로 보이고, 편집기 드롭다운에서도 실행 가능해진다(구 private은 목록에 안 뜸)
+      .addItem('🩹 시트 자기치유', 'menuSelfHeal')
       .addSeparator()
       // [v9.120] 🧪 배치 리허설 — 개원 전에 배치를 "돌려보고" 검증하기 위한 것.
       //   리허설을 켜면 메일·AI·메신저·STT 호출이 전부 막히고(quotaOk·aiCall_·aiText_·adminMail·MJ_send_·voiceTranscribe_ 게이트 — v9.125 전면 확장),
