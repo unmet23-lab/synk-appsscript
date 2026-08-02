@@ -106,14 +106,13 @@ test('무거운 단계는 이미 끝났으면 건너뛴다 (재실행이 남은 
 
 /* ── 배선 ────────────────────────────────────────────────── */
 
-test('lesson_close가 시트 골격에 있고, 상수는 골격보다 앞에 정의된다 (const TDZ)', () => {
-  const skeletonAt = code.indexOf('const SHEET_SKELETON = [');
+test('lesson_close가 시트 골격에 있고, 헤더 정본 상수가 실존한다', () => {
+  // [v9.135] 골격이 지연 평가 함수로 바뀌어 정의 순서(const TDZ) 제약은 소멸 — 정의 실존만 지킨다.
+  const skeletonAt = code.indexOf('function sheetSkeleton_()');
+  assert.notEqual(skeletonAt, -1, 'sheetSkeleton_()을 찾지 못함');
   const body = code.slice(skeletonAt, code.indexOf('\n  ];', skeletonAt));
   assert.ok(/\['lesson_close', LESSON_CLOSE_HEADERS\]/.test(body), 'lesson_close가 시트 골격에 없다');
-  const defAt = code.indexOf('const LESSON_CLOSE_HEADERS = [');
-  assert.notEqual(defAt, -1, 'LESSON_CLOSE_HEADERS 정의를 찾지 못함');
-  assert.ok(defAt < skeletonAt,
-    'LESSON_CLOSE_HEADERS가 SHEET_SKELETON보다 뒤에 정의됨 — const TDZ로 스크립트 전체가 죽는다');
+  assert.notEqual(code.indexOf('const LESSON_CLOSE_HEADERS = ['), -1, 'LESSON_CLOSE_HEADERS 정의를 찾지 못함');
 });
 
 test('마감 스위프는 10분 틱에 돌고, 수업 전 브리핑보다 먼저다', () => {

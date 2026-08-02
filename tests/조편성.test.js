@@ -255,18 +255,22 @@ test('급수가 같으면 누계 포인트로 가른다 (개원 첫 시즌은 �
 /* ── 배선 — 시트 골격·브리핑 ───────────────────────────────── */
 
 test('groups가 시트 골격에 등록돼 preflightGlide가 자동 생성한다', () => {
-  const i = code.indexOf('const SHEET_SKELETON = [');
-  assert.notEqual(i, -1, 'SHEET_SKELETON을 찾지 못함');
+  const i = code.indexOf('function sheetSkeleton_()');
+  assert.notEqual(i, -1, 'sheetSkeleton_()을 찾지 못함');
   const body = code.slice(i, code.indexOf('\n  ];', i));
   assert.ok(/\['groups', GROUPS_HEADERS\]/.test(body), 'groups가 시트 골격에 없다 — 조립 때 시트가 안 생긴다');
 });
 
-// 2026-07-31 실사고: GROUPS_HEADERS를 파일 끝에 두고 SHEET_SKELETON에서 참조했다가 const TDZ로
-// 스크립트 전체가 ReferenceError로 죽을 뻔했다. 같은 실수를 기계로 막는다.
-test('시트 골격이 참조하는 상수는 골격보다 먼저 정의돼 있다 (const TDZ 방어)', () => {
-  const DECL = 'const SHEET_SKELETON = [';
+// 2026-07-31 실사고: GROUPS_HEADERS를 파일 끝에 두고 시트 골격에서 참조했다가 const TDZ로
+// 스크립트 전체가 ReferenceError로 죽을 뻔했다. [v9.135] 골격을 지연 평가 함수(sheetSkeleton_)로
+// 바꿔 이 사고 계급(정의 위치·파일 순서 의존) 자체를 제거 — 이제 지키는 불변식은
+// 「골격은 톱레벨 const로 되돌아가지 않는다」 + 「참조 상수의 정의가 실존한다」다.
+test('시트 골격은 지연 평가 함수다 — 톱레벨 const로 되돌리면 초기화 순서 사고가 되살아난다', () => {
+  assert.equal(code.includes('const SHEET_SKELETON'), false,
+    '골격이 톱레벨 const로 회귀 — 타파일 상수 참조가 파일 초기화 순서에 따라 전 트리거를 죽인다');
+  const DECL = 'function sheetSkeleton_()';
   const skeletonAt = code.indexOf(DECL);
-  assert.notEqual(skeletonAt, -1, 'SHEET_SKELETON을 찾지 못함');
+  assert.notEqual(skeletonAt, -1, 'sheetSkeleton_()을 찾지 못함');
   // 선언 이후 본문만 보고, 주석(// …)과 문자열('…')을 걷어낸 뒤 남은 식별자만 검사한다.
   // 그러지 않으면 헤더 문자열의 '카드HTML' 같은 대문자나 자기 이름까지 참조로 오인한다.
   const body = code.slice(skeletonAt + DECL.length, code.indexOf('\n  ];', skeletonAt))
@@ -274,10 +278,8 @@ test('시트 골격이 참조하는 상수는 골격보다 먼저 정의돼 있�
   const refs = new Set(body.match(/\b[A-Z][A-Z0-9_]{2,}\b/g) || []);
   assert.ok(refs.has('GROUPS_HEADERS'), '검사 대상에 GROUPS_HEADERS가 안 잡힘 — 테스트가 무력화됨');
   refs.forEach((name) => {
-    const defAt = code.indexOf(`const ${name} `);
-    assert.notEqual(defAt, -1, `SHEET_SKELETON이 참조하는 ${name}의 const 정의를 찾지 못함`);
-    assert.ok(defAt < skeletonAt,
-      `${name}이 SHEET_SKELETON보다 뒤에 정의됨 — const TDZ로 스크립트 전체가 죽는다`);
+    assert.notEqual(code.indexOf(`const ${name} `), -1,
+      `시트 골격이 참조하는 ${name}의 const 정의를 찾지 못함 — 호출 시점 ReferenceError`);
   });
 });
 

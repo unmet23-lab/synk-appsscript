@@ -22,7 +22,9 @@ const ROOT = path.resolve(__dirname, '..');
 const { engineSource } = require('./_engine-source');
 const TOOLS = path.join(ROOT, 'docs', 'tools');
 
-/* 폰트 후보를 나란히 세워 비교하는 실측 도구 — 3종 밖 폰트가 있는 게 목적이라 제외한다. */
+/* 폰트 후보를 나란히 세워 비교하는 실측 도구 — 3종 밖(폐기 포함) 폰트가 있는 게 목적이라
+ * 「폐기 폰트 등장 금지」 검사만 면제한다. [v9.135] 종전엔 파일 단위 면제라 스택 순서·로드·
+ * DM Mono 혼용 검사까지 통째로 빠졌다 — 면제는 면제 사유가 있는 검사에만 건다. */
 const EXEMPT = new Set([
   '_mn_font_probe.html',
   // 구 V9 재현 비교 도구 — 폰트 의도적 동결(brand-color-kit 메모리 참조). 폐기 폰트(Pretendard·Noto·JetBrains Mono)는
@@ -40,17 +42,17 @@ const RETIRED = ['Pretendard', 'Noto Sans KR', 'KoPubWorld', 'Nanum', '맑은 �
 const fontDecls = (src) => src.match(/font-family\s*:[^;}]+/g) || [];
 
 const htmlFiles = fs.existsSync(TOOLS)
-  ? fs.readdirSync(TOOLS).filter((f) => f.endsWith('.html') && !EXEMPT.has(f))
+  ? fs.readdirSync(TOOLS).filter((f) => f.endsWith('.html'))
   : [];
 
 test('폰트 지정 산출물이 최소 1개는 검사된다(스캔이 조용히 0건이 되는 것 방지)', () => {
-  assert.ok(htmlFiles.length > 0, 'docs/tools/*.html을 하나도 못 찾았다 — 경로가 바뀌었는지 확인');
+  assert.ok(htmlFiles.filter((f) => !EXEMPT.has(f)).length > 0, 'docs/tools/*.html을 하나도 못 찾았다 — 경로가 바뀌었는지 확인');
 });
 
 for (const f of htmlFiles) {
   const src = fs.readFileSync(path.join(TOOLS, f), 'utf8');
 
-  test(`${f} — 폐기된 구 폰트를 쓰지 않는다`, () => {
+  if (!EXEMPT.has(f)) test(`${f} — 폐기된 구 폰트를 쓰지 않는다`, () => {
     for (const bad of RETIRED) {
       assert.ok(
         !src.includes(bad),

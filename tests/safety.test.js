@@ -32,8 +32,9 @@ function assertOrder(text, markers) {
 function groupConsts() {
   const s = code.indexOf('const GROUP_COUNT = 4;');
   assert.notEqual(s, -1, '조 편성 상수 블록을 찾지 못함');
-  const e = code.indexOf('// GROUPS_HEADERS는 SHEET_SKELETON보다', s);
-  assert.notEqual(e, -1, '조 편성 상수 블록 끝 표식을 찾지 못함');
+  // [v9.135] 끝 표식을 주석 문구에서 코드 심볼로 교체 — 문구 앵커는 그 문구를 다듬는 순간 가드가 죽는다(worktree-version-collision 교훈 재발 방지). 사이의 주석은 평가해도 무해.
+  const e = code.indexOf('function seasonStartOf_', s);
+  assert.notEqual(e, -1, '조 편성 상수 블록 끝 표식(seasonStartOf_)을 찾지 못함');
   return new Function(`${code.slice(s, e)}
     return { GROUP_COUNT, ROLE_NAMES, ROLE_ICONS, ROLE_TALK, ROLE_DUTY, SEASON_WEEKS,
              TALK_PLAN_MIN, TALK_ROUNDS, FOCUS_START_WEEK, PAIR_PATTERNS };`)();
@@ -167,8 +168,8 @@ test('공개 웹 실행 함수가 새로 생기지 않았다', () => {
 });
 
 test('재건용 핵심 시트 제목이 실제 읽기·쓰기 순서와 일치한다', () => {
-  // [v9.37] skeleton 배열이 모듈 const SHEET_SKELETON으로 승격됨 — 시작 표식을 그 선언부로 이동(의도 동일: 골격 헤더 정합)
-  const body = section('const SHEET_SKELETON', 'function safeRun');
+  // [v9.37] skeleton 배열이 모듈 정본으로 승격 → [v9.135] 지연 평가 함수 sheetSkeleton_()로 전환(의도 동일: 골격 헤더 정합)
+  const body = section('function sheetSkeleton_()', 'function safeRun');
   assert.ok(body.includes(
     "['profiles', ['user_id','이름','이름_몽골','role','class_name','생일','email','연락처','messenger_link','parent_of','tuition','등록일','보호자명','보호자연락처','created_at']]"
   ));
@@ -221,7 +222,7 @@ test.todo('레이드·월간 정산의 중간 실패 복구 구조 추가');
 test('[v9.40] preflightGlide는 콘텐츠 부족분을 자동 복구하고 진단은 그 뒤에 한다', () => {
   const body = section('function preflightGlide()', 'function safeRun');
   assertOrder(body, [
-    'SHEET_SKELETON.forEach',          // ① 시트 골격(월간 산출물 포함) 먼저
+    'sheetSkeleton_()',                // ① 시트 골격(월간 산출물 포함) 먼저
     'contentSetupOf_(tp)',             // ② 부족 유형 자동 설치
     'injectMongolianContents()',       // ③ 큐레이션 몽골어 재주입
     'calcAll()',                       // ④ 계산(콜드스타트 시딩 포함)
@@ -232,7 +233,7 @@ test('[v9.40] preflightGlide는 콘텐츠 부족분을 자동 복구하고 진�
 });
 
 test('[v9.40] 시트 골격에 월간 산출 5종이 있어 Glide가 조립 시점에 테이블로 잡을 수 있다', () => {
-  const body = section('const SHEET_SKELETON', 'function bootstrapSynk()');
+  const body = section('function sheetSkeleton_()', 'function bootstrapSynk()');
   ['synk_stories', 'synk_cards', 'world_raid', 'league_pairs', 'academic_log'].forEach((name) => {
     assert.ok(body.includes(`['${name}',`), `SHEET_SKELETON에 ${name} 누락`);
   });
@@ -422,7 +423,7 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
 });
 
 test('[v9.49] hw_feedback 골격 — 학생확인(Glide 전용)과 포인트지급(스크립트 전용) 열이 분리돼 있다', () => {
-  const body = section('const SHEET_SKELETON', 'function bootstrapSynk()');
+  const body = section('function sheetSkeleton_()', 'function bootstrapSynk()');
   assert.ok(body.includes("['hw_feedback', ['id','student_id','제출일','제출문','고친문장','오늘의포인트','칭찬','다음미션','상태','학생확인','포인트지급']]"));
 });
 
@@ -731,15 +732,12 @@ test('[v9.57] 톱레벨 크로스파일 참조 금지 — 전역 초기화 순�
     topLevel[f] = out;
     declared[f] = new Set([...out.matchAll(/(?:^|[\s;])(?:const|let|var|function)\s+([A-Za-z_$가-힣][\w$가-힣]*)/g)].map((m) => m[1]));
   }
-  // [2026-08-02 분할 2단계] 초기화 순서가 기계 보증되는 참조만 허용한다: 두 파일 다 filePushOrder에
-  // 등재돼 있고 선언 파일(g)이 참조 파일(f)보다 먼저 로드될 때. Apps Script는 파일 순서대로 전역을
-  // 초기화하므로 이 경우는 단일 파일 시절의 위→아래 참조와 동일하게 안전하다(아래 filePushOrder 검사가
-  // ENGINE_FILES 순서 일치를 함께 강제한다). 미등재 파일·역순 참조는 종전대로 전면 금지.
-  const pushOrder = JSON.parse(fs.readFileSync(path.join(ROOT, '.clasp.json'), 'utf8')).filePushOrder || [];
+  // [v9.135] strict 복원 — 분할 2단계가 유일한 톱레벨 크로스파일 참조(SHEET_SKELETON)를 위해 열어 둔
+  // filePushOrder 순방향 허용을 닫는다(골격이 지연 평가 함수로 바뀌어 전제 소멸). 순서가 보증되는
+  // 참조라도 톱레벨 크로스파일 참조는 전면 금지. 이 추출기는 { } 안을 못 보는 사각이 있다 —
+  // 실행 층 이중 검증은 tests/로드시뮬.test.js(정순·역순 vm 평가)가 맡는다.
   for (const f of rootJs) for (const g of rootJs) {
     if (f === g) continue;
-    const fi = pushOrder.indexOf(f), gi = pushOrder.indexOf(g);
-    if (fi > -1 && gi > -1 && gi < fi) continue; // g가 f보다 먼저 로드됨이 보증된 참조
     for (const name of declared[g]) {
       if (declared[f].has(name)) continue; // 동명 재선언은 별개 문제(전역 충돌 검사가 따로 있음)
       const re = new RegExp('(?<![\\w$\uAC00-\uD7A3])' + name.replace(/[$]/g, '\\$&') + '(?![\\w$\uAC00-\uD7A3])');
@@ -1766,7 +1764,7 @@ test('[v9.80] absence_followup 골격 — 감지·연락·복귀 3구간이 한 
   ['날짜', 'student_id', '반', '담당강사', '감지시각', '연락여부', '연락시각', '연락수단', '복귀여부'].forEach((h) => {
     assert.ok(m[1].includes(`'${h}'`), `요구 열 '${h}' 누락`);
   });
-  const skel = section('const SHEET_SKELETON', 'function bootstrapSynk()');
+  const skel = section('function sheetSkeleton_()', 'function bootstrapSynk()');
   assert.ok(skel.includes("['absence_followup', ABSENCE_FOLLOWUP_HEADERS]"),
     '재건 목록(SHEET_SKELETON)에 없으면 원버튼 재건 후 시트가 사라진다');
   assert.ok(!skel.includes("['absence_followup', ['날짜'"),
