@@ -10,6 +10,13 @@
             "shell": "bash",
             "timeout": 120,
             "statusMessage": "clasp 배포 게이트 검사"
+          },
+          {
+            "type": "command",
+            "command": "IN=$(cat); case \"$IN\" in *\"git add\"*|*\"git commit\"*) printf '%s' \"$IN\" | \"/c/Program Files/nodejs/node.exe\" \"C:/Users/q1212/Documents/SYNK-appsscript/.claude/hooks/git-scope-guard.js\" ;; esac",
+            "shell": "bash",
+            "timeout": 30,
+            "statusMessage": "커밋 범위 검사"
           }
         ]
       },
