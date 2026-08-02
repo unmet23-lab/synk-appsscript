@@ -34,6 +34,21 @@ test('정본 판별 — 파일명 또는 docs/정본/ 아래', () => {
   assert.ok(!G.isCanon('docs/세션보드.md'));
 });
 
+/* [2026-08-03] 저장소가 놓인 자리가 규칙을 바꾸면 안 된다.
+ * 실사고: 세션 worktree는 `.claude/worktrees/<이름>/`에 만들어지는데, SKIP을 **절대경로**에 걸고
+ * 있어서 `/worktrees/` 규칙이 그 안의 docs를 통째로 걸러냈다. build()가 0개를 돌려주고도
+ * 예외는 없어서, 정본을 고쳐도 파생 알림이 그냥 안 떴다 — 죽은 장치와 조용한 장치가 똑같이 생겼다. */
+test('SKIP은 상대경로 판정이다 — 저장소가 worktrees 아래 있어도 docs를 버리지 않는다', () => {
+  assert.ok(G.shouldSkip('docs/_archive/옛문서.md'), '_archive는 여전히 걸러야 한다');
+  assert.ok(G.shouldSkip('docs/세션보드_아카이브.md'), '보드 아카이브는 여전히 걸러야 한다');
+  assert.ok(!G.shouldSkip('docs/개원재무_2027_재산정_v1.md'), '평범한 문서를 걸렀다');
+  // 절대경로를 그대로 넣으면 안 된다는 것을 못박는다
+  const abs = path.join(G.ROOT, 'docs', '개원재무_2027_재산정_v1.md');
+  assert.ok(!G.shouldSkip(G.rel(abs)),
+    'rel()을 통과한 경로가 걸러진다 — 세션 worktree에서 그래프가 통째로 빈다');
+  assert.ok(G.build().docs.size > 0, 'build()가 문서를 하나도 못 찾았다 — 알림 장치가 침묵으로 죽는다');
+});
+
 test('실제 저장소에서 급여 정본의 파생이 잡힌다', () => {
   const g = G.build();
   const list = g.derivedOf.get('docs/정본/SYNK LAB/SYNK LAB 급여 인센티브 정본.txt') || [];

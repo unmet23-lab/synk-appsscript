@@ -1208,6 +1208,24 @@ function runReportCards_() {
       const blob = exportSlidePng(REPORT_TEMPLATE_ID, m.pageId)
         .setName(ym + '_' + m.d.sid + '_' + m.d.name + '.png');
       const file = folder.createFile(blob);
+      /* [v9.138] ⚠ 여기의 공개 공유는 **의도적으로 남긴다** — 지우면 학부모 화면이 빈다.
+       *   이 URL은 아래 report_cards.image_url(D열)에 박히고, Glide 학부모 「성장 리포트」 탭의
+       *   Image 컴포넌트가 그 주소로 그림을 읽는다. Glide는 이 Drive 파일에 로그인할 수단이 없어서
+       *   비공개로 바꾸면 카드가 전부 깨진 이미지가 된다. 게다가 SEND_REPORT_EMAIL=false라
+       *   **지금은 메일도 안 나가므로 이 탭이 학부모에게 카드가 닿는 유일한 통로**다.
+       *   같은 세션에서 previewOneReportCard의 공개 공유는 없앴는데(그건 호출자가 0이라 아무것도
+       *   사지 못하는 공유였다) 여기를 남긴 건 봐준 게 아니라 **기능이 매달려 있어서**다.
+       *   ▣ 남은 위험(축소했지만 0은 아니다): 링크를 아는 사람은 인증 없이 카드를 본다. Drive
+       *     공개 링크에는 만료가 없어서 한 번 새면 영구다. 완화책은 둘이고 성격이 다르다 —
+       *     ①**폴더를 「제한됨」으로 잠근다(손실 0에 가깝다)**: 여기서 카드마다 자기 몫의 공유를
+       *       따로 받으므로 폴더를 잠가도 명시 권한은 살아남아 학부모 화면이 안 깨진다. 닫히는 건
+       *       상속 경로뿐이다(폴더째 열려 있으면 프리뷰·미래 파일까지 전부 딸려 열린다).
+       *       단 위 catch가 말하듯 **파일별 공유가 실패해 폴더 공유에 기대던 카드**가 과거에
+       *       있었다면 그것만 깨지므로, 잠근 뒤 성장 리포트 탭을 한 번 보고 확인해야 한다.
+       *     ②「N개월 지난 카드는 공유 해제」: 그만큼 과거 달 카드가 앱에서 사라진다 —
+       *       보안과 학부모 편의의 교환이라 유호님 결정 사안으로 올렸다(2026-08-03).
+       *   ▣ 여기를 고치려는 다음 세션에게: 먼저 Glide 「성장 리포트」 탭이 이 URL을 안 쓰게
+       *     바꾼 다음에 닫아라. 순서가 반대면 라이브 화면이 먼저 죽는다. */
       try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); }
       catch (e) { Logger.log('공유설정 실패(' + m.d.name + ') — 폴더 공유 설정으로 대체'); }
       const url = 'https://lh3.googleusercontent.com/d/' + file.getId();
@@ -1461,7 +1479,26 @@ function fillReportCardSlide_(sl, d) {
   try { insertMonsterImage_(sl, d.monImg); } catch (e) { Logger.log('이미지 실패: ' + e); } // {{MONIMG}}
 }
 
-// 테스트: 학생 1명만 카드 생성 → PNG URL 로그·반환 (report_cards 미기록 · 임시 슬라이드 정리)
+/* [v9.138] 프리뷰 파일 접두어 — 정리 함수가 「내가 만든 프리뷰」만 골라내는 손잡이다.
+ * 배치 카드(ym_sid_name.png)는 report_cards.image_url로 Glide가 읽으므로 절대 섞이면 안 된다. */
+const PREVIEW_CARD_PREFIX = 'PREVIEW_';
+
+/* 테스트: 학생 1명만 카드 생성 → PNG 로그·반환 (report_cards 미기록 · 임시 슬라이드 정리)
+ *
+ * [v9.138] 🔒 공개 공유 제거 — 이 함수는 **공유할 이유가 처음부터 없었다**.
+ *   카드 한 장에 미성년 실명·급수·모의점수·출결·포인트·강사 코멘트가 모여 있는데, 구 코드는
+ *   그걸 ANYONE_WITH_LINK로 열고 lh3 공개 URL을 반환했다. 링크가 한 번이라도 새면
+ *   (채팅 붙여넣기·로그 캡처·화면 공유) 인증 없이 그대로 열린다. Drive 공개 링크에는 만료가 없다.
+ *   호출부를 전부 훑은 결과 **프로그램 호출자는 0개**다 — Apps Script 편집기에서 유호님이 손으로
+ *   돌리는 점검용이고(GLIDE_조립_마스터보드 0-4), URL은 Logger와 반환값으로만 간다. 즉 공개 공유가
+ *   사주던 기능은 **아무것도 없었다**. 소유자 인증 Drive 링크면 충분하다 — 유호님은 파일 소유자라
+ *   그냥 열리고, 남에게는 애초에 열리지 않는다.
+ *   ⚠ 배치(runReportCards_)의 공개 공유는 성격이 다르다 — 그건 Glide가 읽는 화면 배선이라
+ *     여기서 함께 끄면 학부모 성장 리포트 탭이 통째로 빈다. 판단 근거는 그쪽 주석에 적었다.
+ *   ⚠ **코드를 고쳐도 이미 나간 프리뷰 파일은 계속 공개다**(2026-08-02 배포 보안 게이트의 교훈과
+ *     같은 계급 — 코드를 지워도 라이브는 안 닫힌다). closePreviewCardLinks()가 그걸 닫는다.
+ *   파일명에서도 이름을 뺐다(sid만) — 로그에 이름이 남으니 식별엔 지장이 없고, Drive 목록·공유
+ *   화면에 실명이 뜨는 표면만 하나 줄어든다. */
 function previewOneReportCard(studentId) {
   if (!REPORT_TEMPLATE_ID) { Logger.log('REPORT_TEMPLATE_ID 미설정'); return; }
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -1491,22 +1528,103 @@ function previewOneReportCard(studentId) {
   presF.saveAndClose();
 
   Utilities.sleep(1500);
-  const blob = exportSlidePng(REPORT_TEMPLATE_ID, pageId).setName('PREVIEW_' + ym + '_' + d.sid + '_' + d.name + '.png');
+  const blob = exportSlidePng(REPORT_TEMPLATE_ID, pageId)
+    .setName(PREVIEW_CARD_PREFIX + ym + '_' + d.sid + '.png');
   const it = DriveApp.getFoldersByName(REPORT_FOLDER_NAME);
   const folder = it.hasNext() ? it.next() : DriveApp.createFolder(REPORT_FOLDER_NAME);
   const file = folder.createFile(blob);
-  try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (e) {}
-  const pngUrl = 'https://lh3.googleusercontent.com/d/' + file.getId();
+  const pngUrl = file.getUrl(); // [v9.138] 소유자 인증 링크 — setSharing 없음(공개하지 않는다)
 
   // 프리뷰 임시 슬라이드 제거 (템플릿 원본 보존)
   const pres2 = SlidesApp.openById(REPORT_TEMPLATE_ID);
   pres2.getSlides().forEach(s2 => { if (s2.getObjectId() === pageId) s2.remove(); });
   pres2.saveAndClose();
 
-  Logger.log('📇 리포트카드 프리뷰 — ' + d.name + ' (' + d.sid + ')\n🖼️ PNG: ' + pngUrl +
+  Logger.log('📇 리포트카드 프리뷰 — ' + d.name + ' (' + d.sid + ')\n🖼️ PNG(비공개 · 본인 계정에서만 열림): ' + pngUrl +
     '\n데이터: 급수 ' + d.levelText + ' · 모의 ' + d.mockText + '(' + d.scoreText + ') · ' +
     d.attendText + ' · ' + d.stageText + ' · ' + d.pointsText + '\n코멘트: ' + d.comment);
   return pngUrl;
+}
+
+/* [v9.138] 🔒 이미 새어 있는 프리뷰 공개 링크 닫기 — 코드 수정만으로는 안 닫히는 것을 닫는다.
+ *
+ * 위 previewOneReportCard가 v9.138 전까지 실행될 때마다 학생 카드 PNG 한 장을 ANYONE_WITH_LINK로
+ * 열어 놓고 Drive에 영구히 남겼다. 공유 설정은 **파일에 붙어 있지 코드에 붙어 있지 않으므로**,
+ * 코드에서 setSharing을 지워도 과거 파일들은 오늘도 링크만 알면 열린다. 그래서 닫는 실행 경로가 없으면
+ * 이번 수정은 「앞으로 안 샌다」까지만이고 「지금 새는 것」은 그대로다.
+ *
+ * ▣ 왜 PREVIEW_ 접두어만 건드리는가 — 배치 카드는 끄면 안 된다
+ *   runReportCards_가 만든 카드(ym_sid_name.png)는 report_cards.image_url에 박혀 Glide 학부모
+ *   「성장 리포트」 탭의 Image 컴포넌트가 그 URL로 읽는다. 여기서 같이 닫으면 학부모 화면이 통째로
+ *   빈 이미지가 된다. 접두어 필터가 그 사고를 막는 유일한 경계라 테스트가 이걸 직접 검사한다.
+ *
+ * ▣ 판정 불가는 통과가 아니다
+ *   getSharingAccess()가 예외를 던지면 「공개 아님」이 아니라 「모름」이다. 모르면 닫는다 —
+ *   침묵으로 열어두는 쪽이 사고다(음성 동의 게이트가 맵을 못 읽을 때 전원 보류하는 것과 같은 원칙).
+ *
+ * ▣ 되돌릴 수 있다 — 파일을 지우지 않고 공유만 되돌린다. 잘못 닫았으면 다시 공유하면 그만이라
+ *   미리보기 확인 단계를 두지 않았다(비가역이 아니다). 프리뷰는 어차피 버리는 산출물이다. */
+function closePreviewCardLinks() {
+  const it = DriveApp.getFoldersByName(REPORT_FOLDER_NAME);
+  if (!it.hasNext()) {
+    const none = '📁 ' + REPORT_FOLDER_NAME + ' 폴더가 없습니다 — 닫을 프리뷰가 없습니다.';
+    Logger.log(none); return none;
+  }
+  const folder = it.next();
+  /* [v9.138] 🔴 폴더 상속을 먼저 본다 — 이 보고서가 거짓말할 수 있는 유일한 자리다.
+   *   Drive는 폴더 권한을 자식에게 **상속**시키고, 자식 쪽에서 그 상속분을 뗄 수 없다. 그런데
+   *   getSharingAccess()는 그 파일 **자신의** 설정만 돌려주므로, 상속으로 열려 있는 파일도
+   *   PRIVATE로 읽혀 아래에서 「이미 비공개」로 세어진다. 그러면 유호님은 "닫을 게 없었네"를 보는데
+   *   실제로는 전부 열려 있다 — 08-02 「초록은 층에 대한 진술이다」와 같은 함정이다.
+   *   폴더가 공개면 파일별 닫기로는 못 닫으므로, 숫자 대신 **무엇을 해야 하는지**를 말한다. */
+  let folderWarn = '';
+  try {
+    const fa = folder.getSharingAccess();
+    if (fa === DriveApp.Access.ANYONE_WITH_LINK || fa === DriveApp.Access.ANYONE) {
+      folderWarn = '🔴 폴더 자체가 공개입니다 — 파일별로 닫아도 상속으로 계속 열립니다.\n' +
+        '   Drive에서 「' + REPORT_FOLDER_NAME + '」 폴더 공유를 「제한됨」으로 바꾸세요.\n' +
+        '   (배치 카드는 파일마다 자기 공유를 따로 받아 두므로 폴더를 잠가도 학부모 화면은 안 깨집니다.\n' +
+        '    다만 과거에 파일별 공유가 실패해 폴더 공유에 기대던 카드가 있으면 그것만 깨지니,\n' +
+        '    잠근 뒤 학부모 앱 「성장 리포트」 탭을 한 번 확인하세요.)';
+    }
+  } catch (e) {
+    folderWarn = '⚠ 폴더 공유 상태를 읽지 못했습니다 — 아래 숫자가 상속분을 놓쳤을 수 있으니 Drive에서 직접 확인하세요.';
+  }
+  const files = folder.getFiles();
+  let found = 0, closed = 0, already = 0;
+  const failed = [];
+  while (files.hasNext()) {
+    const f = files.next();
+    let name = '';
+    try { name = String(f.getName() || ''); } catch (e) { continue; }
+    if (name.indexOf(PREVIEW_CARD_PREFIX) !== 0) continue; // 배치 카드는 절대 건드리지 않는다
+    found++;
+    let acc = null, known = false;
+    try { acc = f.getSharingAccess(); known = true; } catch (e) {} // 못 읽으면 known=false → 닫는다
+    /* [v9.138] 건너뛰는 조건은 **PRIVATE임이 증명된 것 하나뿐**이다(화이트리스트가 아니라).
+     *   구 코드는 "ANYONE도 ANYONE_WITH_LINK도 아니면 비공개"로 봤는데, Access는 5종이라
+     *   DOMAIN·DOMAIN_WITH_LINK가 그 틈으로 빠져 「이미 비공개」로 집계됐다 — 도메인 전체에
+     *   열린 파일을 닫힌 것으로 세는 fail-open이다. 지금 계정은 개인 Gmail이라 그 값이 설정될 수
+     *   없지만, 운영 도메인 계정으로 이관하는 순간 실재한다. 위의 「판정 불가는 닫는다」와
+     *   같은 방향으로 맞춘다 — 확실히 닫힌 것만 넘기고 나머지는 전부 닫는다. */
+    if (known && acc === DriveApp.Access.PRIVATE) { already++; continue; }
+    try { f.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE); closed++; }
+    catch (e) { failed.push(name + ' — ' + e); }
+  }
+  const msg = ['🔒 리포트카드 프리뷰 공개 링크 정리',
+    '프리뷰 파일 ' + found + '개 검사 → 공개였던 ' + closed + '개를 비공개로 닫았습니다.',
+    '이미 비공개: ' + already + '개' + (failed.length ? ' · 실패: ' + failed.length + '개' : ''),
+    '배치 카드(학부모 성장 리포트용)는 건드리지 않았습니다.'];
+  failed.slice(0, 5).forEach(x => msg.push('  ⚠ ' + x));
+  if (folderWarn) msg.push('', folderWarn); // 폴더가 열려 있으면 위 숫자만으로는 끝이 아니다
+  const out = msg.join('\n');
+  Logger.log(out);
+  return out;
+}
+
+// 메뉴용 래퍼 — 유호님이 편집기를 열지 않고 시트에서 바로 돌릴 수 있게
+function menuClosePreviewCardLinks() {
+  SpreadsheetApp.getUi().alert(closePreviewCardLinks());
 }
 
 /* ===================== [v5] 명예의 전당 (monthlyGameBatch가 호출) ===================== */

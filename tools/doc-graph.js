@@ -27,12 +27,20 @@ const EDGE_RE = /<!--\s*파생\s*:\s*([^>]+?)\s*-->/g;
 
 const rel = (p) => path.relative(ROOT, p).replace(/\\/g, '/');
 
+/** 제외 판정 — 반드시 **상대경로**를 받는다(절대경로를 넣으면 저장소 위치가 규칙을 바꾼다). */
+const shouldSkip = (relPath) => SKIP.some((r) => r.test(relPath));
+
 function walk(dir, out = []) {
   let entries;
   try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (_) { return out; }
   for (const e of entries) {
     const full = path.join(dir, e.name);
-    if (SKIP.some((r) => r.test(full))) continue;
+    /* [2026-08-03] SKIP은 **저장소 기준 상대경로**에 걸어야 한다 — 절대경로에 걸면 저장소가 놓인
+     * 자리가 규칙을 바꾼다. 실제 사고: Claude Code 세션 worktree는 `.claude/worktrees/<이름>/`에
+     * 만들어지는데, 그 절대경로에 `worktrees`가 들어 있어 `/worktrees/` 규칙이 **docs 전체**를
+     * 걸러냈다. 결과는 에러가 아니라 침묵 — 그래프가 0개로 build되고, 정본을 고쳐도 파생 알림이
+     * 안 뜬다. 「장치가 죽었다」가 「알릴 게 없다」와 똑같이 생겼다. */
+    if (shouldSkip(rel(full))) continue;
     if (e.isDirectory()) walk(full, out);
     else if (TEXT_EXT.test(e.name)) out.push(full);
   }
@@ -201,4 +209,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { build, parseEdges, isCanon, addEdge, rel, ROOT };
+module.exports = { build, parseEdges, isCanon, addEdge, rel, shouldSkip, ROOT };
