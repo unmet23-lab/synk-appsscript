@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK 브랜드 컬러 — 포스터</title>
+<!-- 소개용 포스터. 정본 아님 — 규칙 정본=docs/디자인_컨셉_정본_v1.md(v1.3.1) · hex 원본=docs/_archive/브랜드_색상키트_원본_CrewDossier_2026-08-01.html -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&family=DM+Mono:wght@300;400;500&display=swap">
+<style>
+  :root{
+    --cream:#F6F1E8; --coral:#FF6B5C; --navy:#1A2340; --lime:#C8FF3D; --ink:#171820;
+    --paper:#FBF7EE; --cream2:#EFE7D7; --cream3:#E7DDC7;
+    --c-wash:#FFE9E4; --c-soft:#FFCFC6; --c2:#FF8877; --c3:#E8543F;
+    --navy3:#2A3358; --navy-ink:#131A32; --navy2:#0F1730;
+    --kc-hot:#FF3E88; --kc-pink:#FF6BA8; --kc-sun:#FFD447; --kc-cool:#4E7CFF;
+    --mut:rgba(23,24,32,.56); --line:rgba(23,24,32,.12);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:var(--cream2); padding:44px 20px 72px;
+        font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+        color:var(--ink); letter-spacing:-0.02em; -webkit-font-smoothing:antialiased; }
+  .mono{ font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.14em; }
+  .sheet{ width:1040px; margin:0 auto; background:var(--paper); border-radius:18px;
+          padding:60px 64px 44px; box-shadow:0 24px 60px -28px rgba(19,26,50,.35); }
+
+  /* ── top bar ─────────────────────────── */
+  .top{ display:flex; justify-content:space-between; align-items:center;
+        padding-bottom:22px; border-bottom:1px solid var(--line); }
+  .top .l{ display:flex; align-items:center; gap:12px; }
+  .top .tick{ width:26px; height:8px; background:var(--coral); border-radius:2px; }
+  .top .mono{ font-size:11px; font-weight:500; color:var(--navy); }
+  .top .r{ font-size:11px; color:var(--mut); }
+
+  h1{ font-family:'SUIT Variable',sans-serif; font-weight:900; font-size:66px;
+      line-height:1.12; letter-spacing:-0.04em; margin:40px 0 14px; color:var(--ink); }
+  .lead{ font-size:17px; font-weight:500; line-height:1.65; color:var(--navy); max-width:640px; }
+  .lead b{ font-weight:800; }
+
+  .sec{ margin-top:44px; display:flex; align-items:baseline; gap:14px;
+        padding-bottom:10px; border-bottom:1px solid var(--line); }
+  .sec .no{ font-size:11px; color:var(--navy); font-weight:500; }
+  .sec h2{ font-family:'SUIT Variable',sans-serif; font-weight:800; font-size:21px; letter-spacing:-0.03em; }
+  .sec .note{ margin-left:auto; font-size:12.5px; color:var(--mut); font-weight:500; }
+
+  /* ── core swatches ───────────────────── */
+  .core{ display:grid; grid-template-columns:1fr 1.55fr 1fr 1fr 1fr; gap:14px; margin-top:18px; }
+  .sw{ border-radius:12px; overflow:hidden; border:1px solid var(--line); background:#fff0; }
+  .sw .chip{ height:118px; }
+  .sw.big .chip{ height:118px; }
+  .sw .meta{ padding:12px 13px 13px; background:var(--paper); border-top:1px solid var(--line); }
+  .sw .nm{ font-weight:700; font-size:15px; }
+  .sw .role{ font-family:'SUIT Variable',sans-serif; font-size:11.5px; font-weight:500; color:var(--mut); margin-top:2px; }
+  .sw .hx{ font-family:'DM Mono',monospace; font-size:11.5px; letter-spacing:.06em; color:var(--navy); margin-top:7px; }
+
+  /* ── usage demo cards ────────────────── */
+  .demo{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px; }
+  .card{ border-radius:14px; padding:26px 26px 22px; min-height:212px; position:relative;
+         display:flex; flex-direction:column; }
+  .card .tag{ font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.2em; font-weight:500; }
+  .card h3{ font-family:'SUIT Variable',sans-serif; font-weight:800; font-size:27px;
+            letter-spacing:-0.03em; line-height:1.3; margin-top:12px; }
+  .card p{ font-size:13px; line-height:1.7; margin-top:9px; font-weight:500; }
+  .card .foot{ margin-top:auto; padding-top:14px; font-family:'DM Mono',monospace;
+               font-size:10.5px; letter-spacing:.08em; }
+  .d-dark{ background:var(--navy2); color:var(--cream); }
+  .d-dark .tag{ color:var(--coral); }
+  .d-dark .sig{ color:var(--coral); }
+  .d-dark p{ color:rgba(246,241,232,.72); }
+  .d-dark .foot{ color:rgba(246,241,232,.5); }
+  .d-light{ background:var(--paper); border:1px solid var(--line); color:var(--ink); }
+  .d-light .tag{ color:var(--navy); }
+  .d-light .num{ font-family:'SUIT Variable',sans-serif; font-weight:900; font-size:44px; color:var(--c3); letter-spacing:-0.02em; }
+  .d-light p{ color:var(--navy); }
+  .d-light .pill{ display:inline-block; background:var(--c-soft); color:var(--navy-ink);
+                  font-family:'SUIT Variable',sans-serif;
+                  font-size:11.5px; font-weight:700; border-radius:99px; padding:5px 12px; margin-top:10px; width:max-content; }
+  .d-light .foot{ color:var(--mut); }
+
+  /* ── family rows ─────────────────────── */
+  .fam{ margin-top:16px; }
+  .fam .lbl{ display:flex; align-items:baseline; gap:10px; margin:16px 0 8px; }
+  .fam .lbl .mono{ font-size:10.5px; color:var(--navy); font-weight:500; }
+  .fam .lbl .use{ font-family:'SUIT Variable',sans-serif; font-size:11.5px; color:var(--mut); font-weight:500; }
+  .row{ display:grid; grid-template-columns:repeat(5,1fr); gap:10px; }
+  .mini{ border-radius:9px; height:56px; border:1px solid var(--line); position:relative; }
+  .mini .hx{ position:absolute; left:9px; bottom:7px; font-family:'DM Mono',monospace;
+             font-size:9.5px; letter-spacing:.05em; }
+
+  /* ── rules ───────────────────────────── */
+  .rules{ margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .rule{ background:var(--cream); border:1px solid var(--line); border-radius:12px; padding:18px 20px; }
+  .rule .n{ font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.18em; color:var(--navy); font-weight:500; }
+  .rule h4{ font-family:'SUIT Variable',sans-serif; font-weight:800; font-size:16.5px; margin:7px 0 5px; letter-spacing:-0.02em; }
+  .rule p{ font-size:12.5px; line-height:1.65; color:var(--navy); font-weight:500; }
+
+  .foot-bar{ margin-top:40px; padding-top:18px; border-top:1px solid var(--line);
+             display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; }
+  .foot-bar .mono{ font-size:10px; color:var(--mut); letter-spacing:.1em; }
+  .foot-bar .kr{ font-family:'SUIT Variable',sans-serif; font-size:11.5px; color:var(--mut); font-weight:500; }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="top">
+    <div class="l"><span class="tick"></span><span class="mono">SYNK LAB &middot; BRAND COLOR KIT</span></div>
+    <div class="r mono">V10 CREW DOSSIER &middot; 19 COLORS &middot; 5 GROUPS</div>
+  </div>
+
+  <h1>색은 열아홉,<br>화면에는 셋.</h1>
+  <p class="lead">19색은 <b>브랜드가 가진 서랍</b>이고, 한 화면에 올리는 건 <b>바탕 하나 &middot; 잉크 하나 &middot; 신호 한 점</b>뿐이다.
+  그래서 SYNK의 색 한 점은 형광펜 열 자루 값을 한다.</p>
+
+  <!-- 01 · CORE -->
+  <div class="sec"><span class="no mono">01</span><h2>코어 다섯</h2><span class="note">Coral이 주인공 — 카드 폭이 말해준다</span></div>
+  <div class="core">
+    <div class="sw"><div class="chip" style="background:var(--cream)"></div>
+      <div class="meta"><div class="nm">Cream</div><div class="role">밝은 배경</div><div class="hx">#F6F1E8</div></div></div>
+    <div class="sw big"><div class="chip" style="background:var(--coral)"></div>
+      <div class="meta"><div class="nm">Coral</div><div class="role">주 액센트 — 브랜드의 신호</div><div class="hx">#FF6B5C</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--navy)"></div>
+      <div class="meta"><div class="nm">Navy</div><div class="role">본문 텍스트</div><div class="hx">#1A2340</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--lime)"></div>
+      <div class="meta"><div class="nm">Lime</div><div class="role">앱 진행률 전용</div><div class="hx">#C8FF3D</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--ink)"></div>
+      <div class="meta"><div class="nm">Ink</div><div class="role">최종 본문 잉크</div><div class="hx">#171820</div></div></div>
+  </div>
+
+  <!-- 02 · 배경이 색의 옷을 고른다 -->
+  <div class="sec"><span class="no mono">02</span><h2>같은 신호, 배경 따라 다른 옷</h2><span class="note">이 두 장이 전 규칙의 절반이다</span></div>
+  <div class="demo">
+    <div class="card d-dark">
+      <span class="tag">DARK &middot; NAVY 2 #0F1730</span>
+      <h3>다크에서는<br><span class="sig">Coral이 글자도 된다.</span></h3>
+      <p>대비 6.5 — 제목, 강조, 한 점의 막대까지 전부 허용.<br>잉크는 순백이 아니라 Cream #F6F1E8.</p>
+      <div class="foot">CORAL ON DARK &middot; CONTRAST 6.5 &middot; PASS</div>
+    </div>
+    <div class="card d-light">
+      <span class="tag">LIGHT &middot; PAPER #FBF7EE</span>
+      <div style="margin-top:12px"><span class="num">8주</span></div>
+      <p>라이트에서 Coral은 <b>면&middot;알약 전용</b>(대비 2.6 — 크게 써도 글자 금지).<br>강조 글자는 <b style="color:var(--c3)">Coral 3</b>(3.40&middot;대형 한정), 본문은 Ink.</p>
+      <span class="pill">Coral Soft 알약은 이렇게</span>
+      <div class="foot">CORAL = FILL ONLY &middot; TEXT = CORAL 3 / INK</div>
+    </div>
+  </div>
+
+  <!-- 03 · 패밀리 -->
+  <div class="sec"><span class="no mono">03</span><h2>서랍 전체</h2><span class="note">문서 &middot; UI 상태 &middot; 콘텐츠가 꺼내 쓰는 층</span></div>
+  <div class="fam">
+    <div class="lbl"><span class="mono">CREAM FAMILY</span><span class="use">종이 톤 — 페이지·콜아웃·구분면</span></div>
+    <div class="row">
+      <div class="mini" style="background:var(--paper)"><span class="hx" style="color:var(--navy)">#FBF7EE</span></div>
+      <div class="mini" style="background:var(--cream)"><span class="hx" style="color:var(--navy)">#F6F1E8</span></div>
+      <div class="mini" style="background:var(--cream2)"><span class="hx" style="color:var(--navy)">#EFE7D7</span></div>
+      <div class="mini" style="background:var(--cream3)"><span class="hx" style="color:var(--navy)">#E7DDC7</span></div>
+    </div>
+    <div class="lbl"><span class="mono">CORAL FAMILY</span><span class="use">신호의 4단 — Wash 배경부터 Coral 3 글자까지</span></div>
+    <div class="row">
+      <div class="mini" style="background:var(--c-wash)"><span class="hx" style="color:var(--navy)">#FFE9E4</span></div>
+      <div class="mini" style="background:var(--c-soft)"><span class="hx" style="color:var(--navy)">#FFCFC6</span></div>
+      <div class="mini" style="background:var(--c2)"><span class="hx" style="color:var(--navy-ink)">#FF8877</span></div>
+      <div class="mini" style="background:var(--c3)"><span class="hx" style="color:var(--c-wash)">#E8543F</span></div>
+    </div>
+    <div class="lbl"><span class="mono">NAVY FAMILY</span><span class="use">신뢰의 어둠 — 텍스트 4단과 다크 배경</span></div>
+    <div class="row">
+      <div class="mini" style="background:var(--navy3)"><span class="hx" style="color:var(--cream)">#2A3358</span></div>
+      <div class="mini" style="background:var(--navy)"><span class="hx" style="color:var(--cream)">#1A2340</span></div>
+      <div class="mini" style="background:var(--navy-ink)"><span class="hx" style="color:var(--cream)">#131A32</span></div>
+      <div class="mini" style="background:var(--navy2)"><span class="hx" style="color:var(--cream)">#0F1730</span></div>
+    </div>
+    <div class="lbl"><span class="mono">K-CULTURE</span><span class="use">Part 6 콘텐츠 전용 — 브랜드 화면에 들어오지 않는다 (Cool Blue만 리소 2도가 빌려 씀)</span></div>
+    <div class="row">
+      <div class="mini" style="background:var(--kc-hot)"><span class="hx" style="color:var(--c-wash)">#FF3E88</span></div>
+      <div class="mini" style="background:var(--kc-pink)"><span class="hx" style="color:var(--navy-ink)">#FF6BA8</span></div>
+      <div class="mini" style="background:var(--kc-sun)"><span class="hx" style="color:var(--navy-ink)">#FFD447</span></div>
+      <div class="mini" style="background:var(--kc-cool)"><span class="hx" style="color:var(--c-wash)">#4E7CFF</span></div>
+    </div>
+  </div>
+
+  <!-- 04 · 규칙 -->
+  <div class="sec"><span class="no mono">04</span><h2>어길 수 없는 넷</h2></div>
+  <div class="rules">
+    <div class="rule"><span class="n mono">RULE 01</span>
+      <h4>한 화면 = 바탕 1 + 잉크 1 + 신호 1점</h4>
+      <p>눈을 가늘게 떴을 때 색이 한 덩어리로 보이면 통과. 19색은 고를 수 있는 서랍이지, 동시에 쓰라는 허가가 아니다.</p></div>
+    <div class="rule"><span class="n mono">RULE 02</span>
+      <h4>라이트 배경에서 Coral 글자 금지</h4>
+      <p>크기와 무관하다 — 대형 기준(3.0)에도 미달(2.6). 면&middot;알약은 Coral, 강조 글자는 Coral 3, 본문은 Ink.</p></div>
+    <div class="rule"><span class="n mono">RULE 03</span>
+      <h4>Lime은 앱 밖으로 나오지 않는다</h4>
+      <p>진행률&middot;라이브 인디케이터 전용. 캐러셀&middot;포스터에 등장하는 순간 신호가 둘이 되어 규칙 1이 죽는다.</p></div>
+    <div class="rule"><span class="n mono">RULE 04</span>
+      <h4>K-Culture 4색은 Part 6 전용</h4>
+      <p>K-POP&middot;뷰티&middot;댄스 콘텐츠의 폭발용. 브랜드 기본 화면&middot;신뢰 문서에는 들어오지 않는다.</p></div>
+  </div>
+
+  <div class="foot-bar">
+    <span class="kr">규칙 정본 &middot; 디자인_컨셉_정본_v1.md (v1.3.1) &nbsp;&nbsp;적용 &middot; Canva 브랜드 키트 &nbsp;&nbsp;이 문서는 소개용 포스터</span>
+    <span class="mono">SYNK LAB &middot; 2026-08</span>
+  </div>
+
+</div>
+</body>
+</html>

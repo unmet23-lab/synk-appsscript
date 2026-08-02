@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK 브랜드 폰트 — 포스터</title>
+<!-- 소개용 포스터. 정본 아님 — 규칙 정본=docs/브랜드_폰트_정본.md · 업로드 원본=Desktop\SYNK_브랜드폰트\ -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&family=DM+Mono:wght@300;400;500&display=swap">
+<style>
+  :root{
+    --cream:#F6F1E8; --coral:#FF6B5C; --navy:#1A2340; --ink:#171820;
+    --paper:#FBF7EE; --cream2:#EFE7D7; --c-wash:#FFE9E4; --c-soft:#FFCFC6; --c3:#E8543F;
+    --navy-ink:#131A32; --navy2:#0F1730; --kc-cool:#4E7CFF;
+    --mut:rgba(23,24,32,.56); --line:rgba(23,24,32,.12);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:var(--cream2); padding:44px 20px 72px;
+        font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+        color:var(--ink); letter-spacing:-0.02em; -webkit-font-smoothing:antialiased; }
+  .mono{ font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.14em; }
+  .kr{ font-family:'SUIT Variable',sans-serif; }
+  .sheet{ width:1040px; margin:0 auto; background:var(--paper); border-radius:18px;
+          padding:60px 64px 44px; box-shadow:0 24px 60px -28px rgba(19,26,50,.35); }
+
+  .top{ display:flex; justify-content:space-between; align-items:center;
+        padding-bottom:22px; border-bottom:1px solid var(--line); }
+  .top .l{ display:flex; align-items:center; gap:12px; }
+  .top .tick{ width:26px; height:8px; background:var(--coral); border-radius:2px; }
+  .top .mono{ font-size:11px; font-weight:500; color:var(--navy); }
+  .top .r{ font-size:11px; color:var(--mut); }
+
+  h1{ font-family:'SUIT Variable',sans-serif; font-weight:900; font-size:66px;
+      line-height:1.12; letter-spacing:-0.04em; margin:40px 0 14px; }
+  .lead{ font-size:17px; font-weight:500; line-height:1.65; color:var(--navy); max-width:660px; }
+  .lead b{ font-weight:800; }
+
+  .sec{ margin-top:44px; display:flex; align-items:baseline; gap:14px;
+        padding-bottom:10px; border-bottom:1px solid var(--line); }
+  .sec .no{ font-size:11px; color:var(--navy); font-weight:500; }
+  .sec h2{ font-family:'SUIT Variable',sans-serif; font-weight:800; font-size:21px; letter-spacing:-0.03em; }
+  .sec .note{ margin-left:auto; font-family:'SUIT Variable',sans-serif; font-size:12.5px; color:var(--mut); font-weight:500; }
+
+  /* ── specimen blocks ─────────────────── */
+  .spec{ border:1px solid var(--line); border-radius:14px; padding:26px 28px 22px; margin-top:16px;
+         display:grid; grid-template-columns:150px 1fr; gap:24px; background:var(--cream); }
+  .spec .id .mono{ font-size:10px; color:var(--navy); font-weight:500; }
+  .spec .id h3{ font-size:19px; font-weight:800; margin-top:6px; letter-spacing:-0.01em; }
+  .spec .id .role{ font-family:'SUIT Variable',sans-serif; font-size:12px; font-weight:600; color:var(--navy); margin-top:5px; line-height:1.5; }
+  .spec .id .lic{ font-family:'DM Mono',monospace; font-size:9.5px; color:var(--mut); margin-top:10px; letter-spacing:.08em; }
+  .spec .show .big{ line-height:1.18; letter-spacing:-0.03em; }
+  .spec .show .sub{ font-size:12.5px; color:var(--mut); font-weight:500; margin-top:10px;
+                    font-family:'SUIT Variable',sans-serif; letter-spacing:-0.01em; }
+  .wrow{ display:flex; gap:18px; align-items:baseline; margin-top:14px; flex-wrap:wrap; }
+  .wrow .w .g{ font-size:30px; letter-spacing:-0.02em; }
+  .wrow .w .t{ font-family:'DM Mono',monospace; font-size:9px; color:var(--mut); letter-spacing:.12em; margin-top:3px; text-align:center; }
+
+  .spec.dark{ background:var(--navy2); border-color:transparent; color:var(--cream); }
+  .spec.dark .id h3{ color:var(--cream); }
+  .spec.dark .id .role{ color:rgba(246,241,232,.75); }
+  .spec.dark .id .lic{ color:rgba(246,241,232,.45); }
+  .spec.dark .show .sub{ color:rgba(246,241,232,.6); }
+  .spec.dark .id .mono{ color:var(--coral); }
+
+  .hl{ color:var(--c3); }
+  .spec.dark .hl{ color:var(--coral); }
+
+  /* ── stack demo ──────────────────────── */
+  .stackline{ background:var(--cream); border:1px solid var(--line); border-radius:14px;
+              padding:26px 28px; margin-top:16px; }
+  .stackline .code{ font-family:'DM Mono',monospace; font-size:12px; letter-spacing:.02em;
+                    color:var(--navy); background:var(--c-wash); border-radius:8px; padding:10px 14px;
+                    display:inline-block; }
+  .demo3{ font-size:40px; font-weight:700; letter-spacing:-0.02em; margin-top:20px; line-height:1.35; }
+  .demo3 .seg-cy{ border-bottom:5px solid var(--kc-cool); }
+  .demo3 .seg-la{ border-bottom:5px solid var(--c3); }
+  .demo3 .seg-kr{ border-bottom:5px solid var(--navy); }
+  .legend{ display:flex; gap:22px; margin-top:14px; flex-wrap:wrap; }
+  .legend .li{ display:flex; align-items:center; gap:8px;
+               font-family:'SUIT Variable',sans-serif; font-size:12px; font-weight:600; color:var(--navy); }
+  .legend .sw{ width:20px; height:5px; border-radius:2px; }
+  .mn-note{ font-family:'SUIT Variable',sans-serif; font-size:12.5px; color:var(--mut);
+            font-weight:500; margin-top:14px; line-height:1.65; }
+  .mn-note b{ color:var(--navy); font-weight:800; }
+
+  /* ── weights + rules ─────────────────── */
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:18px; }
+  .box{ background:var(--cream); border:1px solid var(--line); border-radius:12px; padding:18px 20px; }
+  .box .n{ font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.18em; color:var(--navy); font-weight:500; }
+  .box h4{ font-family:'SUIT Variable',sans-serif; font-weight:800; font-size:16.5px; margin:7px 0 5px; letter-spacing:-0.02em; }
+  .box p{ font-size:12.5px; line-height:1.65; color:var(--navy); font-weight:500;
+          font-family:'SUIT Variable',sans-serif; letter-spacing:-0.01em; }
+  .wt{ width:100%; border-collapse:collapse; margin-top:14px; }
+  .wt td{ padding:9px 2px; border-top:1px solid var(--line); font-size:13px; vertical-align:baseline; }
+  .wt td.k{ font-family:'DM Mono',monospace; font-size:10.5px; color:var(--mut); letter-spacing:.1em; width:70px; }
+  .wt td.u{ font-family:'SUIT Variable',sans-serif; font-size:11.5px; color:var(--mut); text-align:right; }
+
+  .foot-bar{ margin-top:40px; padding-top:18px; border-top:1px solid var(--line);
+             display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; }
+  .foot-bar .krf{ font-family:'SUIT Variable',sans-serif; font-size:11.5px; color:var(--mut); font-weight:500; }
+  .foot-bar .mono{ font-size:10px; color:var(--mut); }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="top">
+    <div class="l"><span class="tick"></span><span class="mono">SYNK LAB &middot; BRAND TYPE SYSTEM</span></div>
+    <div class="r mono">3 FAMILIES &middot; 12 STYLES &middot; OFL</div>
+  </div>
+
+  <h1>세 글꼴이<br>세 언어를 나눈다.</h1>
+  <p class="lead">한글은 <b>SUIT</b>, 라틴과 몽골 키릴은 <b>Inter Tight</b>, 워드마크와 라벨은 <b>DM Mono</b>.
+  역할은 배타적이고, 폴백 순서 하나가 이 배분을 자동으로 실현한다.</p>
+
+  <!-- 01 · SUIT -->
+  <div class="sec"><span class="no mono">01</span><h2>SUIT — 한글 전용</h2><span class="note">가변 폰트 · 파일 하나로 9웨이트</span></div>
+  <div class="spec">
+    <div class="id">
+      <span class="mono">TF-01 / KR</span>
+      <h3 class="kr" style="font-weight:800">SUIT</h3>
+      <div class="role">한글 본문&middot;헤드&middot;태그라인.<br>키릴이 없어 몽골어는 못 쓴다.</div>
+      <div class="lic">OFL &middot; SUN-TYPEFACE</div>
+    </div>
+    <div class="show">
+      <div class="big kr" style="font-size:56px; font-weight:900">점수를 넘어, <span class="hl">삶을 설계</span>합니다</div>
+      <div class="wrow kr">
+        <span class="w"><span class="g" style="font-weight:400">가나다</span><div class="t">400</div></span>
+        <span class="w"><span class="g" style="font-weight:500">가나다</span><div class="t">500</div></span>
+        <span class="w"><span class="g" style="font-weight:600">가나다</span><div class="t">600</div></span>
+        <span class="w"><span class="g" style="font-weight:800">가나다</span><div class="t">800</div></span>
+        <span class="w"><span class="g" style="font-weight:900">가나다</span><div class="t">900</div></span>
+      </div>
+      <div class="sub">기하학적 산세리프 — 모던하고 지적인 한국어. 트래킹은 본문 &minus;0.02em, 헤드 &minus;0.04em.</div>
+    </div>
+  </div>
+
+  <!-- 02 · Inter Tight -->
+  <div class="sec"><span class="no mono">02</span><h2>Inter Tight — 라틴 + 몽골 키릴</h2><span class="note">몽골 무료권 사실상 표준(Inter 계열)의 자매 서체</span></div>
+  <div class="spec">
+    <div class="id">
+      <span class="mono">TF-02 / EN-MN</span>
+      <h3 style="font-weight:800">Inter Tight</h3>
+      <div class="role">영문&middot;숫자&middot;몽골어 전담.<br>&#1257;&middot;&#1199;까지 보유한 키릴 서브셋.</div>
+      <div class="lic">OFL &middot; RSMS</div>
+    </div>
+    <div class="show">
+      <div class="big" style="font-size:52px; font-weight:700">Speak first, <span class="hl">score follows.</span></div>
+      <div class="big" style="font-size:33px; font-weight:600; margin-top:10px">Сайн уу? <span class="hl">Өнөөдөр</span> эхэлье.</div>
+      <div class="sub">몽골 키릴의 함정 — &ldquo;Cyrillic 지원&rdquo;이라도 <b>&#1257;&middot;&#1199;</b>가 없으면 몽골어가 깨진다. Inter Tight는 실측으로 통과한 서체다.</div>
+    </div>
+  </div>
+
+  <!-- 03 · DM Mono -->
+  <div class="sec"><span class="no mono">03</span><h2>DM Mono — 워드마크 &middot; 라벨</h2><span class="note">격자 위에서 자란 서체 — 「구조를 다루는 브랜드」의 목소리</span></div>
+  <div class="spec dark">
+    <div class="id">
+      <span class="mono">TF-03 / MARK</span>
+      <h3 class="mono" style="letter-spacing:.02em; font-weight:500">DM Mono</h3>
+      <div class="role">워드마크&middot;시스템 라벨&middot;코드 전용.<br>본문 금지. 라틴 서브셋뿐이라<br>한글&middot;몽골어를 넣으면 무너진다.</div>
+      <div class="lic">OFL &middot; COLOPHON</div>
+    </div>
+    <div class="show">
+      <div class="big mono" style="font-size:74px; font-weight:500; letter-spacing:.02em">synk <span style="color:var(--coral)">//</span></div>
+      <div class="wrow">
+        <span class="mono" style="font-size:12px; color:rgba(246,241,232,.75)">SEASON 01 &middot; WEEK 08</span>
+        <span class="mono" style="font-size:12px; color:var(--coral)">LIVE &middot; IN SESSION</span>
+        <span class="mono" style="font-size:12px; color:rgba(246,241,232,.75)">CREW DOSSIER &middot; NO.117</span>
+      </div>
+      <div class="sub">로마자&middot;숫자&middot;기호만. 이 포스터의 모든 영문 라벨이 DM Mono다.</div>
+    </div>
+  </div>
+
+  <!-- 04 · 스택 -->
+  <div class="sec"><span class="no mono">04</span><h2>폴백 한 줄이 번역가다</h2><span class="note">순서를 뒤집으면 배분이 죽는다</span></div>
+  <div class="stackline">
+    <span class="code">font-family: 'Inter Tight', 'SUIT Variable', system-ui, sans-serif;</span>
+    <div class="demo3">
+      <span class="seg-cy">Өнөөдөр</span> <span class="seg-la">SYNK</span><span class="seg-kr">에서 말문이 트였다</span>
+    </div>
+    <div class="legend">
+      <span class="li"><span class="sw" style="background:var(--kc-cool)"></span>몽골 키릴 &rarr; Inter Tight</span>
+      <span class="li"><span class="sw" style="background:var(--c3)"></span>라틴 &rarr; Inter Tight</span>
+      <span class="li"><span class="sw" style="background:var(--navy)"></span>한글 &rarr; Inter Tight에 없음 &rarr; SUIT</span>
+    </div>
+    <div class="mn-note">폴백은 글자 단위로 돈다 — 앞 폰트에 그 글자가 없을 때만 다음으로 넘어간다.
+    그래서 Inter Tight가 앞이어야 라틴&middot;키릴을 가져가고, 한글만 SUIT로 떨어진다.
+    <b>순서를 뒤집으면 SUIT의 라틴 자형이 전부를 삼켜 Inter Tight는 영영 쓰이지 않는다.</b>
+    그리고 몽골어가 한국어와 대등한 자리에서는 <b>1.04배</b> — 같은 크기로 두면 몽골어만 작아 보인다(소문자 높이 0.679 실측).</div>
+  </div>
+
+  <!-- 05 · 웨이트와 금칙 -->
+  <div class="sec"><span class="no mono">05</span><h2>웨이트 네 단과 금칙 넷</h2></div>
+  <div class="grid2">
+    <div class="box">
+      <span class="n mono">WEIGHTS</span>
+      <table class="wt kr">
+        <tr><td class="k">500</td><td style="font-weight:500">본문과 UI의 기본값</td><td class="u">몸통</td></tr>
+        <tr><td class="k">600</td><td style="font-weight:600">강조와 라벨</td><td class="u">힘주기</td></tr>
+        <tr><td class="k">800</td><td style="font-weight:800">헤드와 워드마크</td><td class="u">외치기</td></tr>
+        <tr><td class="k">900</td><td style="font-weight:900">태그라인 한 줄</td><td class="u">선언</td></tr>
+      </table>
+    </div>
+    <div class="box">
+      <span class="n mono">FORBIDDEN</span>
+      <h4>어기면 글자가 깨진다</h4>
+      <p>1&nbsp; DM Mono에 한글&middot;몽골어 금지 — 글리프가 없다<br>
+         2&nbsp; DM Mono 본문 금지 — 워드마크&middot;라벨만<br>
+         3&nbsp; 폐기된 구 한글 폰트 2종 부활 금지 — 정본 &sect;4<br>
+         4&nbsp; 3종 밖 폰트 추가 금지 — 위계는 웨이트로 만든다</p>
+    </div>
+  </div>
+
+  <div class="foot-bar">
+    <span class="krf">규칙 정본 &middot; 브랜드_폰트_정본.md &nbsp;&nbsp;적용 &middot; Canva 브랜드 키트 12스타일 + 앱 카드(v9.122) &nbsp;&nbsp;이 문서는 소개용 포스터</span>
+    <span class="mono">SYNK LAB &middot; 2026-08</span>
+  </div>
+
+</div>
+</body>
+</html>
