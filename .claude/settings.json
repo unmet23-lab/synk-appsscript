@@ -1,5 +1,19 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat >/dev/null; \"/c/Program Files/nodejs/node.exe\" \"C:/Users/q1212/Documents/SYNK-appsscript/tools/rot-check.js\" --hook",
+            "shell": "bash",
+            "timeout": 60,
+            "statusMessage": "주간 부패 점검"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash|PowerShell",
