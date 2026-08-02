@@ -46,6 +46,13 @@
           },
           {
             "type": "command",
+            "command": "IN=$(cat); case \"$IN\" in *MEMORY.md*) printf '%s' \"$IN\" | \"/c/Program Files/nodejs/node.exe\" \"C:/Users/q1212/Documents/SYNK-appsscript/.claude/hooks/memory-index-guard.js\" ;; esac",
+            "shell": "bash",
+            "timeout": 30,
+            "statusMessage": "메모리 인덱스 비대화 검사"
+          },
+          {
+            "type": "command",
             "command": "IN=$(cat); case \"$IN\" in *docs*) printf '%s' \"$IN\" | \"/c/Program Files/nodejs/node.exe\" \"C:/Users/q1212/Documents/SYNK-appsscript/.claude/hooks/doc-propagation.js\" ;; esac",
             "shell": "bash",
             "timeout": 30,
