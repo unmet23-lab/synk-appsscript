@@ -22,6 +22,13 @@
             "shell": "bash",
             "timeout": 30,
             "statusMessage": "세션보드 비대화 검사"
+          },
+          {
+            "type": "command",
+            "command": "IN=$(cat); case \"$IN\" in *docs*) printf '%s' \"$IN\" | \"/c/Program Files/nodejs/node.exe\" \"C:/Users/q1212/Documents/SYNK-appsscript/.claude/hooks/doc-propagation.js\" ;; esac",
+            "shell": "bash",
+            "timeout": 30,
+            "statusMessage": "정본 파생 전파 확인"
           }
         ]
       }
