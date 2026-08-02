@@ -1,0 +1,1424 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>SYNK 팔레트 전환 비교 — 구 V9 Red vs 정본 v10 Coral</title>
+<meta name="viewport" content="width=1440" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&family=JetBrains+Mono:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500;700&family=Pretendard:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* ============ PALETTE TOGGLE — V9 RED(구·폐기) vs v10 CORAL(정본) ============ */
+  :root, :root[data-pal="v9"]{
+    --red:#C74A3A; --red-hover:#E15B48; --red-glow:#FF6551;
+    --red-text-l:#C74A3A; --red-text-d:#FF6551; --btn-text:#F4F2ED;
+    --red-soft:#F5D9D3; --red-wash:#F9E8E4;
+    --glow44:#FF655144; --glow55:#FF655155; --glow66:#FF655166; --glow77:#FF655177;
+    --ink:#080B0C; --ink-2:#1A1A1E; --ink-3:#2A2A30; --ink-soft:#4A4A50;
+    --paper:#F4F2ED; --paper-2:#EAE7DF; --paper-3:#E0DDD3;
+    --mute:#7A7A7A; --mute-2:#A0A0A0; --line:#080B0C18;
+  }
+  :root[data-pal="v10"]{
+    /* v10 Crew Dossier — 정본 v1.4 운용 규칙 반영:
+       면·도트=Coral / 라이트 글자=Coral 3 / 다크 글자=Coral / 코랄 면 위 글자=Ink */
+    --red:#FF6B5C; --red-hover:#E8543F; --red-glow:#FF6B5C;
+    --red-text-l:#E8543F; --red-text-d:#FF6B5C; --btn-text:#171820;
+    --red-soft:#FFCFC6; --red-wash:#FFE9E4;
+    --glow44:#FF6B5C44; --glow55:#FF6B5C55; --glow66:#FF6B5C66; --glow77:#FF6B5C77;
+    --ink:#0F1730; --ink-2:#131A32; --ink-3:#2A3358; --ink-soft:#3E4A6E;
+    --paper:#FBF7EE; --paper-2:#EFE7D7; --paper-3:#E7DDC7;
+    --mute:#7A7A7A; --mute-2:#A0A0A0; --line:#0F173018;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--paper);color:var(--ink);
+    font-family:'Inter Tight',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+  body{padding:64px 72px 120px;}
+  .mono{font-family:'JetBrains Mono',monospace;letter-spacing:.02em;}
+  .dmmono{font-family:'DM Mono',monospace;letter-spacing:.02em;}
+  .k-sans{font-family:'Pretendard','Noto Sans KR',sans-serif;}
+  ::selection{background:var(--red);color:var(--paper);}
+
+  /* the master synk wordmark */
+  .synk{
+    font-family:'Inter Tight',sans-serif;
+    font-weight:500;
+    letter-spacing:-.05em;
+    line-height:.9;
+    text-transform:lowercase;
+  }
+
+  /* ---------- header ---------- */
+  header{
+    display:grid;grid-template-columns:1.1fr 1fr;gap:80px;
+    padding-bottom:56px;border-bottom:1px solid var(--ink);margin-bottom:80px;
+  }
+  .eyebrow{
+    font-family:'DM Mono',monospace;font-size:11px;
+    letter-spacing:.22em;text-transform:uppercase;color:var(--mute);
+    display:flex;justify-content:space-between;margin-bottom:32px;
+  }
+  .eyebrow .stamp{color:var(--red-text-l);}
+  h1{
+    font-family:'Inter Tight',sans-serif;
+    font-size:120px;line-height:.88;letter-spacing:-.055em;font-weight:500;
+    margin-bottom:24px;text-transform:lowercase;
+  }
+  h1 em{font-style:normal;color:var(--red-text-l);font-weight:400;font-family:'Inter Tight',serif;}
+  .lede{font-size:16.5px;line-height:1.6;max-width:560px;color:#2a2a2c;}
+  .lede + .lede{margin-top:14px;}
+  .lede b{font-weight:500;color:var(--ink);}
+  .lede .red{color:var(--red-text-l);font-weight:500;}
+  .meta{display:grid;grid-template-columns:auto 1fr;gap:12px 24px;
+    font-family:'DM Mono',monospace;font-size:12px;align-content:start;padding-top:8px;}
+  .meta dt{color:var(--mute);text-transform:uppercase;letter-spacing:.15em;}
+  .meta dd b{color:var(--red-text-l);}
+
+  /* ---------- palette strip in header ---------- */
+  .pal-strip{
+    display:flex;gap:6px;margin-top:28px;
+  }
+  .pal-strip .sw{
+    width:44px;height:44px;border-radius:6px;position:relative;
+    display:flex;align-items:flex-end;padding:6px;
+    font-family:'DM Mono',monospace;font-size:8px;
+    color:#fff;letter-spacing:.05em;
+  }
+  .pal-strip .sw.lit{color:var(--ink);}
+
+  /* ---------- concept section ---------- */
+  section.concept{padding:56px 0 84px;border-top:1px solid var(--ink);position:relative;}
+  section.concept:first-of-type{border-top:none;padding-top:0;}
+  .con-head{
+    display:grid;grid-template-columns:140px 1fr auto;gap:40px;
+    align-items:baseline;margin-bottom:36px;
+  }
+  .con-num{
+    font-family:'Inter Tight',sans-serif;font-size:140px;line-height:.85;
+    letter-spacing:-.06em;font-weight:500;
+  }
+  .con-num sup{
+    font-size:.15em;color:var(--red-text-l);font-family:'DM Mono',monospace;
+    letter-spacing:.2em;vertical-align:top;margin-left:8px;font-weight:400;
+  }
+  .con-title{
+    font-family:'Inter Tight',sans-serif;font-size:56px;line-height:1;
+    letter-spacing:-.045em;margin-bottom:10px;font-weight:500;text-transform:lowercase;
+  }
+  .con-sub{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--mute);margin-bottom:14px;}
+  .con-sub b{color:var(--red-text-l);font-weight:400;}
+  .con-desc{max-width:620px;font-size:15px;line-height:1.65;color:#2a2a2c;}
+  .con-desc + .con-desc{margin-top:8px;color:#5a5a5c;}
+  .con-desc b{color:var(--ink);font-weight:500;}
+  .con-desc .red{color:var(--red-text-l);font-weight:500;}
+  .con-tags{text-align:right;font-family:'DM Mono',monospace;font-size:11px;
+    color:var(--mute);letter-spacing:.15em;line-height:2;text-transform:uppercase;}
+
+  /* ---------- comparison AB row (mono vs red) ---------- */
+  .ab-label{
+    display:grid;grid-template-columns:1fr 1fr;gap:16px;
+    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.28em;
+    text-transform:uppercase;color:var(--mute);margin-bottom:10px;padding:0 4px;
+  }
+  .ab-label .r{color:var(--red-text-l);}
+  .ab-label span::before{content:"— ";}
+
+  .ab-row{
+    display:grid;grid-template-columns:1fr 1fr;gap:16px;
+    margin-bottom:14px;
+  }
+  .hero{
+    position:relative;padding:56px 44px;min-height:280px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--ink);color:var(--paper);
+    border-radius:2px;overflow:hidden;
+  }
+  .hero.lit{background:var(--paper-2);color:var(--ink);}
+  .hero .tag{position:absolute;top:14px;left:16px;font-family:'DM Mono',monospace;
+    font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:#8a8a8a;}
+  .hero.lit .tag{color:var(--mute);}
+  .hero .btag{position:absolute;bottom:14px;font-family:'DM Mono',monospace;
+    font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:#8a8a8a;}
+  .hero.lit .btag{color:var(--mute);}
+  .hero .btag.r{right:16px;}
+  .hero .btag.l{left:16px;}
+
+  /* ---------- application row (icons, favicon, lockups) ---------- */
+  .app-row{
+    display:grid;grid-template-columns:repeat(6, 1fr);gap:1px;
+    background:var(--ink);border:1px solid var(--ink);border-radius:2px;
+  }
+  .app-cell{
+    background:var(--paper);position:relative;overflow:hidden;
+    padding:28px 20px;min-height:180px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .app-cell.paper2{background:var(--paper-2);}
+  .app-cell.dark{background:var(--ink);color:var(--paper);}
+  .app-cell .tag{position:absolute;top:12px;left:14px;font-family:'DM Mono',monospace;
+    font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);}
+  .app-cell.dark .tag{color:#8a8a8a;}
+  .app-cell .tag.r{color:var(--red-text-l);}
+
+  /* dots */
+  .dot{border-radius:50%;background:currentColor;display:inline-block;}
+  .dot.ring{background:transparent;border:2px solid currentColor;}
+
+  /* ============ verdict section ============ */
+  section.verdict{
+    padding:88px 0 0;border-top:1px solid var(--ink);margin-top:40px;
+  }
+  .verdict-head{
+    display:grid;grid-template-columns:140px 1fr;gap:40px;
+    align-items:baseline;margin-bottom:60px;
+  }
+  .verdict-head .con-num{color:var(--red-text-l);}
+  .verdict-head h2{
+    font-family:'Inter Tight',sans-serif;font-size:56px;line-height:1;
+    letter-spacing:-.045em;font-weight:500;text-transform:lowercase;margin-bottom:10px;
+  }
+  .verdict-head p{font-size:15.5px;line-height:1.65;color:#2a2a2c;max-width:640px;}
+  .verdict-head p b{color:var(--red-text-l);}
+
+  /* pros/cons matrix */
+  .matrix{
+    display:grid;grid-template-columns:repeat(3, 1fr);gap:1px;
+    background:var(--ink);border:1px solid var(--ink);margin-bottom:56px;
+  }
+  .matrix .mcell{background:var(--paper);padding:28px 24px 32px;position:relative;min-height:220px;}
+  .matrix .mcell .num{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.28em;
+    color:var(--red-text-l);text-transform:uppercase;margin-bottom:6px;}
+  .matrix .mcell .name{font-family:'Inter Tight',sans-serif;font-size:32px;font-weight:500;
+    letter-spacing:-.03em;margin-bottom:16px;text-transform:lowercase;}
+  .matrix .mcell h5{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--mute);margin:14px 0 6px;}
+  .matrix .mcell ul{list-style:none;font-size:13.5px;line-height:1.6;color:#2a2a2c;}
+  .matrix .mcell ul li{padding-left:14px;position:relative;}
+  .matrix .mcell ul li::before{content:"·";position:absolute;left:2px;color:var(--red-text-l);font-weight:700;}
+  .matrix .mcell ul.cons li::before{content:"×";color:var(--mute);font-size:10px;top:2px;}
+
+  /* score bar */
+  .scores{
+    display:grid;grid-template-columns:180px repeat(6, 1fr);
+    gap:1px;background:var(--ink);border:1px solid var(--ink);margin-bottom:56px;
+    font-family:'DM Mono',monospace;font-size:11px;
+  }
+  .scores .h,.scores .r{background:var(--paper);padding:14px 12px;text-align:center;letter-spacing:.15em;text-transform:uppercase;color:var(--ink);}
+  .scores .h{background:var(--ink);color:var(--paper);font-weight:500;}
+  .scores .rowlabel{background:var(--paper-2);text-align:left;color:var(--mute);font-size:10px;letter-spacing:.22em;display:flex;align-items:center;padding-left:16px;}
+  .scores .r .bar{
+    height:8px;background:var(--paper-3);border-radius:2px;margin:6px 0 6px;position:relative;overflow:hidden;
+  }
+  .scores .r .bar span{position:absolute;left:0;top:0;bottom:0;background:var(--ink);border-radius:2px;}
+  .scores .r.pick{background:var(--red-wash);}
+  .scores .r.pick .bar span{background:var(--red);}
+  .scores .r .val{font-size:11px;color:var(--ink);letter-spacing:.05em;}
+  .scores .r.pick .val{color:var(--red-text-l);font-weight:500;}
+
+  /* the pick */
+  .pick-block{
+    background:var(--ink);color:var(--paper);padding:64px;border-radius:2px;
+    display:grid;grid-template-columns:1.3fr 1fr;gap:56px;margin-bottom:56px;
+  }
+  .pick-block .lbl{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.32em;
+    text-transform:uppercase;color:var(--red-text-d);margin-bottom:16px;}
+  .pick-block h3{font-family:'Inter Tight',sans-serif;font-size:72px;line-height:.95;
+    letter-spacing:-.045em;font-weight:500;text-transform:lowercase;margin-bottom:20px;}
+  .pick-block h3 em{font-style:normal;color:var(--red-text-d);}
+  .pick-block p{font-size:15.5px;line-height:1.7;color:#c8c8ce;max-width:520px;}
+  .pick-block p + p{margin-top:14px;}
+  .pick-block p b{color:var(--paper);font-weight:500;}
+  .pick-block p .r{color:var(--red-text-d);font-weight:500;}
+  .pick-preview{
+    background:var(--ink-2);border:1px solid var(--ink-3);padding:44px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;
+    border-radius:2px;
+  }
+  .pick-preview .stamp{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.32em;
+    color:var(--red-text-d);text-transform:uppercase;}
+
+  /* mono-vs-red verdict */
+  .mvr{
+    display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--ink);
+    border:1px solid var(--ink);
+  }
+  .mvr .cell{background:var(--paper);padding:36px 32px 40px;}
+  .mvr .cell h4{font-family:'Inter Tight',sans-serif;font-size:28px;font-weight:500;
+    letter-spacing:-.02em;text-transform:lowercase;margin-bottom:6px;}
+  .mvr .cell .lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.28em;
+    color:var(--mute);text-transform:uppercase;margin-bottom:20px;}
+  .mvr .cell.pick{background:var(--red-wash);}
+  .mvr .cell.pick h4{color:var(--red-text-l);}
+  .mvr .cell.pick .lbl{color:var(--red-text-l);}
+  .mvr .cell p{font-size:14px;line-height:1.65;color:#2a2a2c;margin-bottom:10px;}
+  .mvr .cell p b{color:var(--ink);font-weight:500;}
+  .mvr .cell .demo{
+    background:var(--ink);padding:32px;margin:20px 0 24px;
+    display:flex;align-items:center;justify-content:center;gap:24px;min-height:120px;border-radius:2px;
+  }
+
+  /* footer */
+  .footer{
+    margin-top:72px;padding-top:56px;border-top:1px solid var(--ink);
+    display:grid;grid-template-columns:1fr 1fr 1fr;gap:56px;
+  }
+  .footer h4{font-family:'DM Mono',monospace;font-size:11px;
+    letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-bottom:14px;}
+  .footer h4 b{color:var(--red-text-l);font-weight:400;}
+  .footer p{font-size:14px;line-height:1.65;color:#2a2a2c;}
+</style>
+</head>
+<body>
+<!-- 판정 도구: 유호님이 반한 것이 「색」인지 「디자인 시스템」인지 가른다.
+     원본 = Temp의 구 V9 산출물(Synk Trendy Palette Applied.html). 색 외 픽셀 동결. 2026-08-02 -->
+<div id="palbar">
+  <button id="b9" onclick="setPal('v9')">V9 RED <small>구·폐기</small></button>
+  <button id="b10" onclick="setPal('v10')">v10 CORAL <small>정본</small></button>
+</div>
+<style>
+  #palbar{position:fixed;top:16px;right:16px;z-index:99;display:flex;gap:8px;
+    background:var(--paper);border:1px solid var(--ink);border-radius:10px;padding:8px;
+    box-shadow:0 8px 24px -10px rgba(0,0,0,.35);}
+  #palbar button{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;
+    padding:9px 14px;border-radius:6px;border:1px solid var(--ink);background:transparent;
+    color:var(--ink);cursor:pointer;text-transform:uppercase;}
+  #palbar button small{display:block;font-size:8px;letter-spacing:.2em;opacity:.6;}
+  #palbar button.on{background:var(--ink);color:var(--paper);}
+  #palbar button.on small{color:var(--red-text-d);opacity:1;}
+</style>
+
+<!-- ============ HEADER ============ -->
+<header>
+  <div>
+    <div class="eyebrow">
+      <span>synk / palette applied · v.06</span>
+      <span class="stamp" data-v9="구 브랜드 키트 V9 (2026-07 · 폐기)" data-v10="정본 v10 Crew Dossier (v1.4)"></span>
+    </div>
+    <h1>synk<br><em data-v9="in red." data-v10="in coral."></em></h1>
+    <p class="lede">
+      <b data-v9="구 V9 레드 팔레트(폐기)" data-v10="정본 v10 코랄 키트"></b>를 같은 트렌디 미니멀 시리즈에 입혔습니다. 우상단 버튼으로 두 팔레트를 전환해 보세요 — 색 외의 모든 픽셀은 동결입니다.
+      각 컨셉을 <b>왼쪽: 모노(Ink/Paper) — 오른쪽: <span class="red" data-v9="SYNK Red 액센트" data-v10="Coral 액센트"></span></b>로 나란히 놓아,
+      같은 마크에서 색이 어떤 온도를 바꾸는지 바로 비교할 수 있게 구성했어요.
+    </p>
+    <p class="lede">
+      Red는 <b>단서(signal)</b>의 역할입니다. 뉴런 발화의 순간, vesicle이 방출되는 그 <span class="red">0.5초</span>만 red로 표시하고,
+      나머지는 그대로 조용한 잉크로 둡니다. 마지막 섹션에 <b>장단점 매트릭스 + 최종 추천</b>이 있어요.
+    </p>
+
+    <div class="pal-strip" id="palstrip"></div>
+  </div>
+
+  <dl class="meta">
+    <dt>Palette</dt><dd><b data-v9="구 V9 (2026-07 · 폐기)" data-v10="v10 Crew Dossier · 정본 v1.4"></b></dd>
+    <dt>Accent</dt><dd><b data-v9="SYNK Red #C74A3A" data-v10="Coral #FF6B5C · 라이트 글자는 Coral 3"></b></dd>
+    <dt>Dark</dt><dd><span data-v9="Ink #080B0C (무채색)" data-v10="Navy 2 #0F1730 (새벽)"></span></dd>
+    <dt>Light</dt><dd><span data-v9="#F4F2ED / #EAE7DF" data-v10="Paper #FBF7EE / Cream 2 #EFE7D7"></span></dd>
+    <dt>Type</dt><dd>Inter Tight · DM Mono — <b style="color:inherit">동결</b>(비교 변수는 색뿐)</dd>
+    <dt>Rule</dt><dd><span data-v9="red = 5% 신호" data-v10="코랄 = 5% 신호 (정본 R1 동일)"></span></dd>
+    <dt>Concepts</dt><dd>vesicle · emission · doublet · cluster · trace · wordmark</dd>
+  </dl>
+</header>
+
+
+<!-- ============================================================
+     S01 — VESICLE
+     ============================================================ -->
+<section class="concept">
+  <div class="con-head">
+    <div class="con-num">01<sup>vesicle</sup></div>
+    <div>
+      <div class="con-sub">Symbol · <b>Vesicle Release</b></div>
+      <div class="con-title">vesicle</div>
+      <p class="con-desc">
+        pre-synaptic 막에서 vesicle이 <b>떨어져 나오는 순간</b>. 큰 원(모체) + 방출된 작은 두 개.
+        Red 버전에서는 <span class="red">방출된 vesicle 하나</span>가 red로 발화합니다 — 결정적 순간의 신호.
+      </p>
+    </div>
+    <div class="con-tags">Release · Minimal<br>Iconic</div>
+  </div>
+
+  <div class="ab-label">
+    <span>a · mono only</span>
+    <span class="r">b · with synk red</span>
+  </div>
+
+  <div class="ab-row">
+    <!-- MONO -->
+    <div class="hero">
+      <span class="tag">01a · vesicle · mono</span>
+      <div style="display:flex;align-items:center;gap:80px;">
+        <div style="display:flex;align-items:center;gap:22px;">
+          <span class="dot" style="width:64px;height:64px;background:var(--paper);"></span>
+          <span class="dot" style="width:14px;height:14px;background:#7a7a7a;"></span>
+          <span class="dot" style="width:22px;height:22px;background:#c8c8ce;"></span>
+        </div>
+        <div>
+          <div class="synk" style="font-size:150px;color:var(--paper);">synk</div>
+          <div class="dmmono" style="font-size:10px;letter-spacing:.32em;color:#8a8a8a;margin-top:8px;text-transform:uppercase;">ink · paper · mute</div>
+        </div>
+      </div>
+      <span class="btag r">baseline</span>
+    </div>
+
+    <!-- RED -->
+    <div class="hero">
+      <span class="tag">01b · vesicle · red</span>
+      <div style="display:flex;align-items:center;gap:80px;">
+        <div style="display:flex;align-items:center;gap:22px;">
+          <span class="dot" style="width:64px;height:64px;background:var(--paper);"></span>
+          <span class="dot" style="width:14px;height:14px;background:#7a7a7a;"></span>
+          <span class="dot" style="width:22px;height:22px;background:var(--red);box-shadow:0 0 24px var(--glow55);"></span>
+        </div>
+        <div>
+          <div class="synk" style="font-size:150px;color:var(--paper);">synk</div>
+          <div class="dmmono" style="font-size:10px;letter-spacing:.32em;color:var(--red-text-d);margin-top:8px;text-transform:uppercase;">→ released vesicle</div>
+        </div>
+      </div>
+      <span class="btag r" style="color:var(--red-text-d);">firing</span>
+    </div>
+  </div>
+
+  <div class="app-row">
+    <div class="app-cell paper2">
+      <span class="tag">reversed · light</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:20px;">
+        <div style="display:flex;align-items:center;gap:16px;color:var(--ink);">
+          <span class="dot" style="width:44px;height:44px;"></span>
+          <span class="dot" style="width:9px;height:9px;background:#7a7a7a;"></span>
+          <span class="dot" style="width:15px;height:15px;background:var(--red);"></span>
+        </div>
+        <div class="synk" style="font-size:52px;">synk</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag r">tag · pill</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+        <div style="background:var(--red-soft);color:var(--red-text-l);padding:6px 14px;border-radius:99px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-weight:500;">● new · beta</div>
+        <div style="background:var(--red-wash);color:var(--red-text-l);padding:6px 14px;border-radius:99px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;">● live</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">app icon · 1024</span>
+      <div style="width:110px;height:110px;background:var(--ink);border-radius:24px;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <span class="dot" style="width:38px;height:38px;background:var(--paper);"></span>
+        <span class="dot" style="width:8px;height:8px;background:#8a8a8a;"></span>
+        <span class="dot" style="width:12px;height:12px;background:var(--red);"></span>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">favicon · 32</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="width:48px;height:48px;background:var(--ink);border-radius:10px;display:flex;align-items:center;justify-content:center;gap:3px;">
+          <span class="dot" style="width:16px;height:16px;background:var(--paper);"></span>
+          <span class="dot" style="width:4px;height:4px;background:#c9c9c9;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--red);"></span>
+        </div>
+        <div class="dmmono" style="font-size:9px;color:var(--mute);letter-spacing:.2em;">32PX</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">horizontal lockup</span>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span class="dot" style="width:18px;height:18px;"></span>
+        <span class="dot" style="width:5px;height:5px;background:#8a8a8a;"></span>
+        <span class="dot" style="width:8px;height:8px;background:var(--red);"></span>
+        <div class="synk" style="font-size:44px;margin-left:8px;">synk</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">한글 병기</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="dot" style="width:14px;height:14px;"></span>
+          <span class="dot" style="width:4px;height:4px;background:#8a8a8a;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--red);"></span>
+        </div>
+        <div class="k-sans" style="font-size:22px;font-weight:500;letter-spacing:.02em;">싱크</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     S02 — EMISSION
+     ============================================================ -->
+<section class="concept">
+  <div class="con-head">
+    <div class="con-num">02<sup>emission</sup></div>
+    <div>
+      <div class="con-sub">Symbol · <b>Bilateral Emission</b></div>
+      <div class="con-title">emission</div>
+      <p class="con-desc">
+        중심 노드에서 <b>양쪽으로 대칭 방출</b>. Red 버전에서는 <span class="red">중심 노드 자체</span>가 red로 발화 —
+        가장 상징적인 "action potential" 표현.
+      </p>
+    </div>
+    <div class="con-tags">Symmetric · Radiant<br>Firing</div>
+  </div>
+
+  <div class="ab-label">
+    <span>a · mono only</span>
+    <span class="r">b · with synk red</span>
+  </div>
+
+  <div class="ab-row">
+    <div class="hero">
+      <span class="tag">02a · emission · mono</span>
+      <div style="display:flex;align-items:center;gap:64px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span class="dot" style="width:8px;height:8px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:12px;height:12px;background:#7a7a7a;"></span>
+          <span class="dot" style="width:18px;height:18px;background:#c9c9c9;"></span>
+          <span class="dot" style="width:52px;height:52px;background:var(--paper);"></span>
+          <span class="dot" style="width:18px;height:18px;background:#c9c9c9;"></span>
+          <span class="dot" style="width:12px;height:12px;background:#7a7a7a;"></span>
+          <span class="dot" style="width:8px;height:8px;background:var(--ink-soft);"></span>
+        </div>
+        <div>
+          <div class="synk" style="font-size:150px;color:var(--paper);">synk</div>
+          <div class="dmmono" style="font-size:10px;letter-spacing:.32em;color:#8a8a8a;margin-top:8px;text-transform:uppercase;">bilateral · both ways</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero">
+      <span class="tag">02b · emission · red core</span>
+      <div style="display:flex;align-items:center;gap:64px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span class="dot" style="width:8px;height:8px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:12px;height:12px;background:#7a7a7a;"></span>
+          <span class="dot" style="width:18px;height:18px;background:#c9c9c9;"></span>
+          <span class="dot" style="width:52px;height:52px;background:var(--red);box-shadow:0 0 40px var(--glow66);"></span>
+          <span class="dot" style="width:18px;height:18px;background:#c9c9c9;"></span>
+          <span class="dot" style="width:12px;height:12px;background:#7a7a7a;"></span>
+          <span class="dot" style="width:8px;height:8px;background:var(--ink-soft);"></span>
+        </div>
+        <div>
+          <div class="synk" style="font-size:150px;color:var(--paper);">synk</div>
+          <div class="dmmono" style="font-size:10px;letter-spacing:.32em;color:var(--red-text-d);margin-top:8px;text-transform:uppercase;">→ action potential</div>
+        </div>
+      </div>
+      <span class="btag r" style="color:var(--red-text-d);">firing ↔</span>
+    </div>
+  </div>
+
+  <div class="app-row">
+    <div class="app-cell paper2">
+      <span class="tag">reversed · light</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+        <div style="display:flex;align-items:center;gap:9px;color:var(--ink);">
+          <span class="dot" style="width:6px;height:6px;background:#a0a0a0;"></span>
+          <span class="dot" style="width:9px;height:9px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:13px;height:13px;background:var(--ink-3);"></span>
+          <span class="dot" style="width:34px;height:34px;background:var(--red);"></span>
+          <span class="dot" style="width:13px;height:13px;background:var(--ink-3);"></span>
+          <span class="dot" style="width:9px;height:9px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:6px;height:6px;background:#a0a0a0;"></span>
+        </div>
+        <div class="synk" style="font-size:52px;">synk</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag r">signal button</span>
+      <button style="background:var(--red);color:var(--btn-text);border:none;padding:12px 24px;border-radius:8px;font-family:'Inter Tight';font-size:14px;font-weight:500;letter-spacing:-.01em;cursor:pointer;display:flex;align-items:center;gap:10px;">
+        <span class="dot" style="width:6px;height:6px;background:var(--btn-text);"></span>
+        연결 시작
+      </button>
+    </div>
+    <div class="app-cell">
+      <span class="tag">app icon</span>
+      <div style="width:110px;height:110px;background:var(--ink);border-radius:24px;display:flex;align-items:center;justify-content:center;gap:5px;">
+        <span class="dot" style="width:5px;height:5px;background:#8a8a8a;"></span>
+        <span class="dot" style="width:8px;height:8px;background:#c9c9c9;"></span>
+        <span class="dot" style="width:28px;height:28px;background:var(--red);"></span>
+        <span class="dot" style="width:8px;height:8px;background:#c9c9c9;"></span>
+        <span class="dot" style="width:5px;height:5px;background:#8a8a8a;"></span>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">favicon · 32</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="width:48px;height:48px;background:var(--ink);border-radius:10px;display:flex;align-items:center;justify-content:center;gap:2px;">
+          <span class="dot" style="width:3px;height:3px;background:#8a8a8a;"></span>
+          <span class="dot" style="width:5px;height:5px;background:#c9c9c9;"></span>
+          <span class="dot" style="width:12px;height:12px;background:var(--red);"></span>
+          <span class="dot" style="width:5px;height:5px;background:#c9c9c9;"></span>
+          <span class="dot" style="width:3px;height:3px;background:#8a8a8a;"></span>
+        </div>
+        <div class="dmmono" style="font-size:9px;color:var(--mute);letter-spacing:.2em;">32PX</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">horizontal lockup</span>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="dot" style="width:4px;height:4px;background:#a0a0a0;"></span>
+        <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);"></span>
+        <span class="dot" style="width:9px;height:9px;background:var(--ink-3);"></span>
+        <span class="dot" style="width:22px;height:22px;background:var(--red);"></span>
+        <span class="dot" style="width:9px;height:9px;background:var(--ink-3);"></span>
+        <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);"></span>
+        <div class="synk" style="font-size:44px;margin-left:12px;">synk</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">한글 병기</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span class="dot" style="width:4px;height:4px;background:#a0a0a0;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:16px;height:16px;background:var(--red);"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:4px;height:4px;background:#a0a0a0;"></span>
+        </div>
+        <div class="k-sans" style="font-size:22px;font-weight:500;letter-spacing:.02em;">싱크</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     S03 — DOUBLET
+     ============================================================ -->
+<section class="concept">
+  <div class="con-head">
+    <div class="con-num">03<sup>doublet</sup></div>
+    <div>
+      <div class="con-sub">Symbol · <b>Two Neurons</b></div>
+      <div class="con-title">doublet</div>
+      <p class="con-desc">
+        <b>두 개의 큰 원</b> + 그 사이 vesicle 도트. Red 버전에서는
+        <span class="red">두 노드 사이의 vesicle 하나</span>만 red — 관계의 "찰나".
+      </p>
+    </div>
+    <div class="con-tags">Pair · Relational<br>Encounter</div>
+  </div>
+
+  <div class="ab-label">
+    <span>a · mono only</span>
+    <span class="r">b · with synk red</span>
+  </div>
+
+  <div class="ab-row">
+    <div class="hero">
+      <span class="tag">03a · doublet · mono</span>
+      <div style="display:flex;align-items:center;gap:56px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span class="dot" style="width:56px;height:56px;background:var(--paper);"></span>
+          <span class="dot" style="width:5px;height:5px;background:#8a8a8a;"></span>
+          <span class="dot" style="width:8px;height:8px;background:#c9c9c9;"></span>
+          <span class="dot" style="width:5px;height:5px;background:#8a8a8a;"></span>
+          <span class="dot ring" style="width:56px;height:56px;color:#f4f2ed;border-width:6px;"></span>
+        </div>
+        <div>
+          <div class="synk" style="font-size:150px;color:var(--paper);">synk</div>
+          <div class="dmmono" style="font-size:10px;letter-spacing:.32em;color:#8a8a8a;margin-top:8px;text-transform:uppercase;">two nodes · one bridge</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero">
+      <span class="tag">03b · doublet · red bridge</span>
+      <div style="display:flex;align-items:center;gap:56px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span class="dot" style="width:56px;height:56px;background:var(--paper);"></span>
+          <span class="dot" style="width:5px;height:5px;background:#8a8a8a;"></span>
+          <span class="dot" style="width:10px;height:10px;background:var(--red);box-shadow:0 0 20px var(--glow77);"></span>
+          <span class="dot" style="width:5px;height:5px;background:#8a8a8a;"></span>
+          <span class="dot ring" style="width:56px;height:56px;color:#f4f2ed;border-width:6px;"></span>
+        </div>
+        <div>
+          <div class="synk" style="font-size:150px;color:var(--paper);">synk</div>
+          <div class="dmmono" style="font-size:10px;letter-spacing:.32em;color:var(--red-text-d);margin-top:8px;text-transform:uppercase;">→ the bridge</div>
+        </div>
+      </div>
+      <span class="btag r" style="color:var(--red-text-d);">learner × language</span>
+    </div>
+  </div>
+
+  <div class="app-row">
+    <div class="app-cell paper2">
+      <span class="tag">reversed · light</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+        <div style="display:flex;align-items:center;gap:10px;color:var(--ink);">
+          <span class="dot" style="width:40px;height:40px;"></span>
+          <span class="dot" style="width:4px;height:4px;background:#7a7a7a;"></span>
+          <span class="dot" style="width:8px;height:8px;background:var(--red);"></span>
+          <span class="dot" style="width:4px;height:4px;background:#7a7a7a;"></span>
+          <span class="dot ring" style="width:40px;height:40px;color:var(--ink);border-width:5px;"></span>
+        </div>
+        <div class="synk" style="font-size:52px;">synk</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag r">soft badge</span>
+      <div style="background:var(--red-wash);padding:10px 14px;display:flex;align-items:center;gap:10px;border-radius:6px;">
+        <span class="dot" style="width:12px;height:12px;background:var(--ink);"></span>
+        <span class="dot" style="width:3px;height:3px;background:#8a8a8a;"></span>
+        <span class="dot" style="width:5px;height:5px;background:var(--red);"></span>
+        <span class="dot" style="width:3px;height:3px;background:#8a8a8a;"></span>
+        <span class="dot ring" style="width:12px;height:12px;color:var(--ink);border-width:2px;"></span>
+        <span class="dmmono" style="font-size:10px;letter-spacing:.18em;color:var(--red-text-l);text-transform:uppercase;margin-left:6px;">paired</span>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">app icon</span>
+      <div style="width:110px;height:110px;background:var(--ink);border-radius:24px;display:flex;align-items:center;justify-content:center;gap:6px;">
+        <span class="dot" style="width:28px;height:28px;background:var(--paper);"></span>
+        <span class="dot" style="width:6px;height:6px;background:var(--red);"></span>
+        <span class="dot ring" style="width:28px;height:28px;color:#f4f2ed;border-width:4px;"></span>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">favicon · 32</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="width:48px;height:48px;background:var(--ink);border-radius:10px;display:flex;align-items:center;justify-content:center;gap:3px;">
+          <span class="dot" style="width:12px;height:12px;background:var(--paper);"></span>
+          <span class="dot" style="width:4px;height:4px;background:var(--red);"></span>
+          <span class="dot ring" style="width:12px;height:12px;color:#f4f2ed;border-width:2px;"></span>
+        </div>
+        <div class="dmmono" style="font-size:9px;color:var(--mute);letter-spacing:.2em;">32PX</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">horizontal lockup</span>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="dot" style="width:18px;height:18px;"></span>
+          <span class="dot" style="width:3px;height:3px;background:#8a8a8a;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--red);"></span>
+          <span class="dot" style="width:3px;height:3px;background:#8a8a8a;"></span>
+          <span class="dot ring" style="width:18px;height:18px;color:var(--ink);border-width:3px;"></span>
+        </div>
+        <div class="synk" style="font-size:44px;">synk</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">한글 병기</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="dot" style="width:14px;height:14px;"></span>
+          <span class="dot" style="width:3px;height:3px;background:#8a8a8a;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--red);"></span>
+          <span class="dot" style="width:3px;height:3px;background:#8a8a8a;"></span>
+          <span class="dot ring" style="width:14px;height:14px;color:var(--ink);border-width:2.5px;"></span>
+        </div>
+        <div class="k-sans" style="font-size:22px;font-weight:500;letter-spacing:.02em;">싱크</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     S04 — CLUSTER
+     ============================================================ -->
+<section class="concept">
+  <div class="con-head">
+    <div class="con-num">04<sup>cluster</sup></div>
+    <div>
+      <div class="con-sub">Symbol · <b>Asymmetric Cluster</b></div>
+      <div class="con-title">cluster</div>
+      <p class="con-desc">
+        4-5개 노드가 <b>서로 다른 크기</b>로 뭉친 성좌. Red 버전에서는
+        <span class="red">가장 큰 코어 노드</span>가 red — 시스템 안의 "지금 활성화된 하나".
+      </p>
+    </div>
+    <div class="con-tags">Cluster · Asymmetric<br>System</div>
+  </div>
+
+  <div class="ab-label">
+    <span>a · mono only</span>
+    <span class="r">b · with synk red</span>
+  </div>
+
+  <div class="ab-row">
+    <div class="hero">
+      <span class="tag">04a · cluster · mono</span>
+      <div style="display:flex;align-items:center;gap:56px;">
+        <div style="position:relative;width:110px;height:110px;">
+          <span class="dot" style="position:absolute;top:8px;left:44px;width:20px;height:20px;background:#c9c9c9;"></span>
+          <span class="dot" style="position:absolute;top:34px;left:10px;width:14px;height:14px;background:#7a7a7a;"></span>
+          <span class="dot" style="position:absolute;top:38px;left:38px;width:44px;height:44px;background:var(--paper);"></span>
+          <span class="dot" style="position:absolute;top:60px;left:82px;width:10px;height:10px;background:var(--ink-soft);"></span>
+          <span class="dot" style="position:absolute;top:86px;left:44px;width:18px;height:18px;background:#a0a0a0;"></span>
+        </div>
+        <div>
+          <div class="synk" style="font-size:150px;color:var(--paper);">synk</div>
+          <div class="dmmono" style="font-size:10px;letter-spacing:.32em;color:#8a8a8a;margin-top:8px;text-transform:uppercase;">5 nodes · asynchronous</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero">
+      <span class="tag">04b · cluster · red core</span>
+      <div style="display:flex;align-items:center;gap:56px;">
+        <div style="position:relative;width:110px;height:110px;">
+          <span class="dot" style="position:absolute;top:8px;left:44px;width:20px;height:20px;background:#c9c9c9;"></span>
+          <span class="dot" style="position:absolute;top:34px;left:10px;width:14px;height:14px;background:#7a7a7a;"></span>
+          <span class="dot" style="position:absolute;top:38px;left:38px;width:44px;height:44px;background:var(--red);box-shadow:0 0 30px var(--glow55);"></span>
+          <span class="dot" style="position:absolute;top:60px;left:82px;width:10px;height:10px;background:var(--ink-soft);"></span>
+          <span class="dot" style="position:absolute;top:86px;left:44px;width:18px;height:18px;background:#a0a0a0;"></span>
+        </div>
+        <div>
+          <div class="synk" style="font-size:150px;color:var(--paper);">synk</div>
+          <div class="dmmono" style="font-size:10px;letter-spacing:.32em;color:var(--red-text-d);margin-top:8px;text-transform:uppercase;">→ active core</div>
+        </div>
+      </div>
+      <span class="btag r" style="color:var(--red-text-d);">connectome · alive</span>
+    </div>
+  </div>
+
+  <div class="app-row">
+    <div class="app-cell paper2">
+      <span class="tag">reversed · light</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+        <div style="position:relative;width:80px;height:80px;color:var(--ink);">
+          <span class="dot" style="position:absolute;top:6px;left:32px;width:14px;height:14px;background:#7a7a7a;"></span>
+          <span class="dot" style="position:absolute;top:24px;left:6px;width:10px;height:10px;background:var(--ink-soft);"></span>
+          <span class="dot" style="position:absolute;top:28px;left:28px;width:32px;height:32px;background:var(--red);"></span>
+          <span class="dot" style="position:absolute;top:44px;left:62px;width:8px;height:8px;background:#7a7a7a;"></span>
+          <span class="dot" style="position:absolute;top:62px;left:32px;width:12px;height:12px;background:#a0a0a0;"></span>
+        </div>
+        <div class="synk" style="font-size:52px;">synk</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag r">status pill</span>
+      <div style="background:var(--red-soft);color:var(--red-text-l);padding:8px 14px;border-radius:99px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;display:flex;align-items:center;gap:8px;font-weight:500;">
+        <span class="dot" style="width:8px;height:8px;background:var(--red);box-shadow:0 0 8px var(--red-glow);"></span>
+        5 NODES ACTIVE
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">app icon</span>
+      <div style="width:110px;height:110px;background:var(--ink);border-radius:24px;display:flex;align-items:center;justify-content:center;">
+        <div style="position:relative;width:70px;height:70px;">
+          <span class="dot" style="position:absolute;top:4px;left:28px;width:12px;height:12px;background:#c9c9c9;"></span>
+          <span class="dot" style="position:absolute;top:22px;left:6px;width:9px;height:9px;background:#8a8a8a;"></span>
+          <span class="dot" style="position:absolute;top:24px;left:24px;width:28px;height:28px;background:var(--red);"></span>
+          <span class="dot" style="position:absolute;top:38px;left:54px;width:7px;height:7px;background:#8a8a8a;"></span>
+          <span class="dot" style="position:absolute;top:56px;left:28px;width:11px;height:11px;background:#a0a0a0;"></span>
+        </div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">favicon · 32</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="width:48px;height:48px;background:var(--ink);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+          <div style="position:relative;width:32px;height:32px;">
+            <span class="dot" style="position:absolute;top:2px;left:13px;width:5px;height:5px;background:#c9c9c9;"></span>
+            <span class="dot" style="position:absolute;top:10px;left:3px;width:4px;height:4px;background:#8a8a8a;"></span>
+            <span class="dot" style="position:absolute;top:11px;left:11px;width:12px;height:12px;background:var(--red);"></span>
+            <span class="dot" style="position:absolute;top:17px;left:24px;width:3px;height:3px;background:#8a8a8a;"></span>
+            <span class="dot" style="position:absolute;top:25px;left:13px;width:5px;height:5px;background:#a0a0a0;"></span>
+          </div>
+        </div>
+        <div class="dmmono" style="font-size:9px;color:var(--mute);letter-spacing:.2em;">32PX</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">horizontal lockup</span>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="position:relative;width:44px;height:44px;">
+          <span class="dot" style="position:absolute;top:2px;left:18px;width:8px;height:8px;background:#8a8a8a;"></span>
+          <span class="dot" style="position:absolute;top:14px;left:4px;width:6px;height:6px;background:var(--ink-soft);"></span>
+          <span class="dot" style="position:absolute;top:16px;left:15px;width:16px;height:16px;background:var(--red);"></span>
+          <span class="dot" style="position:absolute;top:24px;left:34px;width:5px;height:5px;background:var(--ink-soft);"></span>
+          <span class="dot" style="position:absolute;top:34px;left:18px;width:7px;height:7px;background:#a0a0a0;"></span>
+        </div>
+        <div class="synk" style="font-size:44px;">synk</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">한글 병기</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+        <div style="position:relative;width:36px;height:36px;">
+          <span class="dot" style="position:absolute;top:1px;left:14px;width:6px;height:6px;background:#8a8a8a;"></span>
+          <span class="dot" style="position:absolute;top:11px;left:3px;width:5px;height:5px;background:var(--ink-soft);"></span>
+          <span class="dot" style="position:absolute;top:12px;left:12px;width:13px;height:13px;background:var(--red);"></span>
+          <span class="dot" style="position:absolute;top:19px;left:27px;width:4px;height:4px;background:var(--ink-soft);"></span>
+          <span class="dot" style="position:absolute;top:27px;left:14px;width:6px;height:6px;background:#a0a0a0;"></span>
+        </div>
+        <div class="k-sans" style="font-size:22px;font-weight:500;letter-spacing:.02em;">싱크</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     S05 — TRACE
+     ============================================================ -->
+<section class="concept">
+  <div class="con-head">
+    <div class="con-num">05<sup>trace</sup></div>
+    <div>
+      <div class="con-sub">Symbol · <b>Discretized Signal</b></div>
+      <div class="con-title">trace</div>
+      <p class="con-desc">
+        하나의 파형을 <b>도트로 이산화</b>. Red 버전에서는
+        <span class="red">파형의 peak 두 점</span>이 red — 신호의 최고점.
+      </p>
+    </div>
+    <div class="con-tags">Signal · Rhythmic<br>Discretized</div>
+  </div>
+
+  <div class="ab-label">
+    <span>a · mono only</span>
+    <span class="r">b · with synk red</span>
+  </div>
+
+  <div class="ab-row">
+    <div class="hero">
+      <span class="tag">05a · trace · mono</span>
+      <div style="display:flex;align-items:center;gap:56px;">
+        <div style="display:flex;align-items:center;gap:11px;height:80px;">
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:10px;height:10px;background:#7a7a7a;margin-bottom:16px;"></span>
+          <span class="dot" style="width:16px;height:16px;background:#c9c9c9;margin-bottom:32px;"></span>
+          <span class="dot" style="width:22px;height:22px;background:var(--paper);margin-bottom:44px;"></span>
+          <span class="dot" style="width:16px;height:16px;background:#c9c9c9;margin-bottom:32px;"></span>
+          <span class="dot" style="width:10px;height:10px;background:#7a7a7a;margin-bottom:16px;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:10px;height:10px;background:#7a7a7a;margin-top:16px;"></span>
+          <span class="dot" style="width:16px;height:16px;background:#c9c9c9;margin-top:32px;"></span>
+          <span class="dot" style="width:22px;height:22px;background:var(--paper);margin-top:44px;"></span>
+          <span class="dot" style="width:16px;height:16px;background:#c9c9c9;margin-top:32px;"></span>
+          <span class="dot" style="width:10px;height:10px;background:#7a7a7a;margin-top:16px;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);"></span>
+        </div>
+        <div>
+          <div class="synk" style="font-size:150px;color:var(--paper);">synk</div>
+          <div class="dmmono" style="font-size:10px;letter-spacing:.32em;color:#8a8a8a;margin-top:8px;text-transform:uppercase;">12hz · sampled</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero">
+      <span class="tag">05b · trace · red peaks</span>
+      <div style="display:flex;align-items:center;gap:56px;">
+        <div style="display:flex;align-items:center;gap:11px;height:80px;">
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:10px;height:10px;background:#7a7a7a;margin-bottom:16px;"></span>
+          <span class="dot" style="width:16px;height:16px;background:#c9c9c9;margin-bottom:32px;"></span>
+          <span class="dot" style="width:22px;height:22px;background:var(--red);margin-bottom:44px;box-shadow:0 -10px 30px var(--glow77);"></span>
+          <span class="dot" style="width:16px;height:16px;background:#c9c9c9;margin-bottom:32px;"></span>
+          <span class="dot" style="width:10px;height:10px;background:#7a7a7a;margin-bottom:16px;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:10px;height:10px;background:#7a7a7a;margin-top:16px;"></span>
+          <span class="dot" style="width:16px;height:16px;background:#c9c9c9;margin-top:32px;"></span>
+          <span class="dot" style="width:22px;height:22px;background:var(--red);margin-top:44px;box-shadow:0 10px 30px var(--glow77);"></span>
+          <span class="dot" style="width:16px;height:16px;background:#c9c9c9;margin-top:32px;"></span>
+          <span class="dot" style="width:10px;height:10px;background:#7a7a7a;margin-top:16px;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);"></span>
+        </div>
+        <div>
+          <div class="synk" style="font-size:150px;color:var(--paper);">synk</div>
+          <div class="dmmono" style="font-size:10px;letter-spacing:.32em;color:var(--red-text-d);margin-top:8px;text-transform:uppercase;">→ peaks · signal</div>
+        </div>
+      </div>
+      <span class="btag r" style="color:var(--red-text-d);">peak · trough · peak</span>
+    </div>
+  </div>
+
+  <div class="app-row">
+    <div class="app-cell paper2">
+      <span class="tag">reversed · light</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;color:var(--ink);">
+        <div style="display:flex;align-items:center;gap:7px;height:60px;">
+          <span class="dot" style="width:4px;height:4px;background:#a0a0a0;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);margin-bottom:10px;"></span>
+          <span class="dot" style="width:10px;height:10px;background:var(--ink-3);margin-bottom:22px;"></span>
+          <span class="dot" style="width:16px;height:16px;background:var(--red);margin-bottom:30px;"></span>
+          <span class="dot" style="width:10px;height:10px;background:var(--ink-3);margin-bottom:22px;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);margin-bottom:10px;"></span>
+          <span class="dot" style="width:4px;height:4px;background:#a0a0a0;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);margin-top:10px;"></span>
+          <span class="dot" style="width:10px;height:10px;background:var(--ink-3);margin-top:22px;"></span>
+          <span class="dot" style="width:16px;height:16px;background:var(--red);margin-top:30px;"></span>
+        </div>
+        <div class="synk" style="font-size:52px;">synk</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag r">loading / pulse</span>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="dot" style="width:5px;height:5px;background:#c9c9c9;"></span>
+        <span class="dot" style="width:8px;height:8px;background:#8a8a8a;"></span>
+        <span class="dot" style="width:12px;height:12px;background:var(--red);animation:pulse 1.2s ease-in-out infinite;"></span>
+        <span class="dot" style="width:8px;height:8px;background:#8a8a8a;"></span>
+        <span class="dot" style="width:5px;height:5px;background:#c9c9c9;"></span>
+      </div>
+      <style>@keyframes pulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.35);opacity:.7;}}</style>
+    </div>
+    <div class="app-cell">
+      <span class="tag">app icon</span>
+      <div style="width:110px;height:110px;background:var(--ink);border-radius:24px;display:flex;align-items:center;justify-content:center;">
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span class="dot" style="width:6px;height:6px;background:#8a8a8a;margin-top:14px;"></span>
+          <span class="dot" style="width:10px;height:10px;background:#c9c9c9;"></span>
+          <span class="dot" style="width:16px;height:16px;background:var(--red);margin-bottom:14px;"></span>
+          <span class="dot" style="width:10px;height:10px;background:#c9c9c9;"></span>
+          <span class="dot" style="width:6px;height:6px;background:#8a8a8a;margin-top:14px;"></span>
+        </div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">favicon · 32</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="width:48px;height:48px;background:var(--ink);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+          <div style="display:flex;align-items:center;gap:2px;">
+            <span class="dot" style="width:3px;height:3px;background:#8a8a8a;margin-top:5px;"></span>
+            <span class="dot" style="width:4px;height:4px;background:#c9c9c9;"></span>
+            <span class="dot" style="width:6px;height:6px;background:var(--red);margin-bottom:5px;"></span>
+            <span class="dot" style="width:4px;height:4px;background:#c9c9c9;"></span>
+            <span class="dot" style="width:3px;height:3px;background:#8a8a8a;margin-top:5px;"></span>
+          </div>
+        </div>
+        <div class="dmmono" style="font-size:9px;color:var(--mute);letter-spacing:.2em;">32PX</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">horizontal lockup</span>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="display:flex;align-items:center;gap:4px;">
+          <span class="dot" style="width:4px;height:4px;background:#8a8a8a;margin-top:8px;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:10px;height:10px;background:var(--red);margin-bottom:8px;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:4px;height:4px;background:#8a8a8a;margin-top:8px;"></span>
+        </div>
+        <div class="synk" style="font-size:44px;">synk</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">한글 병기</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+        <div style="display:flex;align-items:center;gap:3px;">
+          <span class="dot" style="width:4px;height:4px;background:#8a8a8a;margin-top:6px;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:9px;height:9px;background:var(--red);margin-bottom:6px;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:4px;height:4px;background:#8a8a8a;margin-top:6px;"></span>
+        </div>
+        <div class="k-sans" style="font-size:22px;font-weight:500;letter-spacing:.02em;">싱크</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     S06 — WORDMARK
+     ============================================================ -->
+<section class="concept">
+  <div class="con-head">
+    <div class="con-num">06<sup>wordmark</sup></div>
+    <div>
+      <div class="con-sub">Typography Only · <b>Wordmark</b></div>
+      <div class="con-title">synk //</div>
+      <p class="con-desc">
+        심볼 없이 <b>워드마크만</b>. Red 버전에서는 <span class="red">// 만</span> red로 —
+        코멘트/이행의 표식이 정확히 액센트 지점.
+      </p>
+    </div>
+    <div class="con-tags">Wordmark · Only<br>Coder-ish</div>
+  </div>
+
+  <div class="ab-label">
+    <span>a · mono only</span>
+    <span class="r">b · with synk red</span>
+  </div>
+
+  <div class="ab-row">
+    <div class="hero">
+      <span class="tag">06a · wordmark · mono</span>
+      <div style="display:flex;align-items:baseline;gap:28px;">
+        <div class="synk" style="font-size:180px;color:var(--paper);">synk</div>
+        <div style="font-family:'Inter Tight',sans-serif;font-weight:300;font-size:180px;color:#4a4a50;letter-spacing:-.08em;line-height:.9;transform:translateY(-.05em);">//</div>
+      </div>
+      <span class="btag l">comment · continue</span>
+    </div>
+
+    <div class="hero">
+      <span class="tag">06b · wordmark · red //</span>
+      <div style="display:flex;align-items:baseline;gap:28px;">
+        <div class="synk" style="font-size:180px;color:var(--paper);">synk</div>
+        <div style="font-family:'Inter Tight',sans-serif;font-weight:300;font-size:180px;color:var(--red-text-d);letter-spacing:-.08em;line-height:.9;transform:translateY(-.05em);text-shadow:0 0 40px var(--glow44);">//</div>
+      </div>
+      <span class="btag l" style="color:var(--red-text-d);">the mark of continuation</span>
+    </div>
+  </div>
+
+  <div class="app-row">
+    <div class="app-cell paper2">
+      <span class="tag">variant · dash</span>
+      <div style="display:flex;align-items:baseline;gap:14px;">
+        <div class="synk" style="font-size:70px;">synk</div>
+        <div style="font-family:'Inter Tight',sans-serif;font-weight:300;font-size:56px;color:var(--red-text-l);letter-spacing:-.08em;">—</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag r">period</span>
+      <div class="synk" style="font-size:56px;">synk<span style="color:var(--red-text-l);">.</span></div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">app icon · s</span>
+      <div style="width:110px;height:110px;background:var(--ink);border-radius:24px;display:flex;align-items:center;justify-content:center;position:relative;">
+        <div class="synk" style="font-size:58px;color:var(--paper);">s</div>
+        <span style="position:absolute;bottom:16px;right:16px;font-family:'Inter Tight';font-weight:300;color:var(--red-text-d);font-size:20px;letter-spacing:-.06em;">//</span>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">favicon · 32</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="width:48px;height:48px;background:var(--ink);border-radius:10px;display:flex;align-items:center;justify-content:center;position:relative;">
+          <div class="synk" style="font-size:24px;color:var(--paper);">s</div>
+          <span style="position:absolute;bottom:6px;right:6px;font-family:'Inter Tight';font-weight:300;color:var(--red-text-d);font-size:11px;letter-spacing:-.06em;">//</span>
+        </div>
+        <div class="dmmono" style="font-size:9px;color:var(--mute);letter-spacing:.2em;">32PX</div>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">wordmark · red only</span>
+      <div style="display:flex;align-items:baseline;gap:10px;">
+        <div class="synk" style="font-size:48px;">synk</div>
+        <span style="font-family:'Inter Tight';font-weight:300;color:var(--red-text-l);font-size:44px;letter-spacing:-.06em;line-height:.9;">//</span>
+      </div>
+    </div>
+    <div class="app-cell">
+      <span class="tag">한글 병기</span>
+      <div style="display:flex;align-items:baseline;gap:10px;">
+        <div class="synk" style="font-size:36px;">synk</div>
+        <span style="font-family:'Inter Tight';font-weight:300;color:var(--red-text-l);font-size:32px;letter-spacing:-.06em;">//</span>
+        <div class="k-sans" style="font-size:20px;font-weight:500;letter-spacing:.02em;color:var(--mute);">싱크</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     VERDICT — pros / cons / recommendation
+     ============================================================ -->
+<section class="verdict">
+  <div class="verdict-head">
+    <div class="con-num">07<sup style="color:var(--red-text-l);">verdict</sup></div>
+    <div>
+      <h2>어느 게 더 잘 어울리는지</h2>
+      <div class="con-sub" style="margin-bottom:14px;">Pros · Cons · Final Recommendation</div>
+      <p>
+        6개 컨셉을 <b>확장성 / 각인력 / 미니사이즈 / 색-감도 / 서사</b> 다섯 축으로 저울질했습니다.
+        결론부터: 심볼 하나만 고른다면 <b>02 emission (red core)</b>, 워드마크 전용이 필요하다면 <b>06 wordmark (red //)</b>,
+        그리고 이 둘을 <b>시스템으로 함께 운영</b>하는 것이 최적입니다.
+      </p>
+    </div>
+  </div>
+
+  <!-- ============ PROS / CONS MATRIX ============ -->
+  <div class="matrix">
+    <div class="mcell">
+      <div class="num">01 · vesicle</div>
+      <div class="name">vesicle</div>
+      <h5>Pros</h5>
+      <ul>
+        <li>가장 <b>지적</b>이고 절제된 톤</li>
+        <li>비대칭 구성 → 즉각적으로 눈에 걸림</li>
+        <li>red를 "방출된 vesicle"에 얹기 좋음</li>
+      </ul>
+      <h5>Cons</h5>
+      <ul class="cons">
+        <li>도트 3개 → 다른 앱 로고와 혼동 위험</li>
+        <li>비대칭이라 32px에서 무너지기 쉬움</li>
+      </ul>
+    </div>
+
+    <div class="mcell">
+      <div class="num" style="color:var(--red-text-l);">02 · emission ★</div>
+      <div class="name">emission</div>
+      <h5>Pros</h5>
+      <ul>
+        <li><b>대칭</b> → 어떤 사이즈에서도 안정</li>
+        <li>중심 red 코어의 각인력이 가장 강함</li>
+        <li>모션(양쪽 도트가 밖으로 튀는) 확장이 자연스러움</li>
+        <li>"연결/발화"라는 브랜드 언어를 그대로 시각화</li>
+      </ul>
+      <h5>Cons</h5>
+      <ul class="cons">
+        <li>도트 7개 → 다소 무거움</li>
+        <li>가로로 넓어 세로 lockup은 감축 필요</li>
+      </ul>
+    </div>
+
+    <div class="mcell">
+      <div class="num">03 · doublet</div>
+      <div class="name">doublet</div>
+      <h5>Pros</h5>
+      <ul>
+        <li>"두 뇌의 접점"이라는 은유가 <b>가장 정직</b></li>
+        <li>실선(●)+ 링(◯) 조합 → 시각적 리듬 좋음</li>
+        <li>learner × language 서사와 딱 맞음</li>
+      </ul>
+      <h5>Cons</h5>
+      <ul class="cons">
+        <li>가로가 매우 길어 <b>앱 아이콘에 불리</b></li>
+        <li>링이 얇아지면 32px에서 붕괴</li>
+      </ul>
+    </div>
+
+    <div class="mcell">
+      <div class="num">04 · cluster</div>
+      <div class="name">cluster</div>
+      <h5>Pros</h5>
+      <ul>
+        <li>비대칭 성좌 → <b>가장 유기적</b>, 살아있는 느낌</li>
+        <li>노드 개수를 늘리는 방식으로 확장 자유</li>
+        <li>red 코어를 어디에 두느냐로 상태 표현 가능</li>
+      </ul>
+      <h5>Cons</h5>
+      <ul class="cons">
+        <li>다섯 도트의 절대 위치를 재현하기 어려움 → <b>가이드 이슈</b></li>
+        <li>대충 그리면 랜덤 점들처럼 보임</li>
+      </ul>
+    </div>
+
+    <div class="mcell">
+      <div class="num">05 · trace</div>
+      <div class="name">trace</div>
+      <h5>Pros</h5>
+      <ul>
+        <li>파형 → <b>움직임의 뉘앙스</b>가 정지 상태에서도 살아있음</li>
+        <li>peak-only red 처리가 우아함</li>
+        <li>loading/pulse UI로 자연 확장</li>
+      </ul>
+      <h5>Cons</h5>
+      <ul class="cons">
+        <li>세로 공간이 큼 → 세로 여백 넉넉해야 함</li>
+        <li>다른 브랜드의 오디오/파형 마크와 <b>겹칠 위험</b></li>
+      </ul>
+    </div>
+
+    <div class="mcell">
+      <div class="num" style="color:var(--red-text-l);">06 · wordmark ★</div>
+      <div class="name">synk //</div>
+      <h5>Pros</h5>
+      <ul>
+        <li>도트 없이 <b>가장 순수한 원본</b> — 유지비용 최저</li>
+        <li>// 만 red → red 사용량이 최소·최적</li>
+        <li>어떤 심볼과도 <b>록업 자유</b>도가 높음</li>
+        <li>코더/PM 톤과 완벽히 맞음</li>
+      </ul>
+      <h5>Cons</h5>
+      <ul class="cons">
+        <li>단독 심볼이 없어 <b>아바타·앱 아이콘 애매</b></li>
+        <li>워드마크만으로는 "왜 synk인지" 서사가 약함</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============ SCORE TABLE ============ -->
+  <div class="scores">
+    <div class="h">기준</div>
+    <div class="h">01 vesicle</div>
+    <div class="h">02 emission</div>
+    <div class="h">03 doublet</div>
+    <div class="h">04 cluster</div>
+    <div class="h">05 trace</div>
+    <div class="h">06 wordmark</div>
+
+    <div class="rowlabel">각인력 · Iconicity</div>
+    <div class="r"><div class="bar"><span style="width:65%"></span></div><div class="val">6.5</div></div>
+    <div class="r pick"><div class="bar"><span style="width:90%"></span></div><div class="val">9.0</div></div>
+    <div class="r"><div class="bar"><span style="width:70%"></span></div><div class="val">7.0</div></div>
+    <div class="r"><div class="bar"><span style="width:60%"></span></div><div class="val">6.0</div></div>
+    <div class="r"><div class="bar"><span style="width:75%"></span></div><div class="val">7.5</div></div>
+    <div class="r"><div class="bar"><span style="width:85%"></span></div><div class="val">8.5</div></div>
+
+    <div class="rowlabel">미니 사이즈 · 32px</div>
+    <div class="r"><div class="bar"><span style="width:55%"></span></div><div class="val">5.5</div></div>
+    <div class="r pick"><div class="bar"><span style="width:85%"></span></div><div class="val">8.5</div></div>
+    <div class="r"><div class="bar"><span style="width:45%"></span></div><div class="val">4.5</div></div>
+    <div class="r"><div class="bar"><span style="width:50%"></span></div><div class="val">5.0</div></div>
+    <div class="r"><div class="bar"><span style="width:70%"></span></div><div class="val">7.0</div></div>
+    <div class="r"><div class="bar"><span style="width:95%"></span></div><div class="val">9.5</div></div>
+
+    <div class="rowlabel">Red 감도 · Accent Fit</div>
+    <div class="r"><div class="bar"><span style="width:70%"></span></div><div class="val">7.0</div></div>
+    <div class="r pick"><div class="bar"><span style="width:95%"></span></div><div class="val">9.5</div></div>
+    <div class="r"><div class="bar"><span style="width:75%"></span></div><div class="val">7.5</div></div>
+    <div class="r"><div class="bar"><span style="width:80%"></span></div><div class="val">8.0</div></div>
+    <div class="r"><div class="bar"><span style="width:80%"></span></div><div class="val">8.0</div></div>
+    <div class="r pick"><div class="bar"><span style="width:90%"></span></div><div class="val">9.0</div></div>
+
+    <div class="rowlabel">확장성 · System</div>
+    <div class="r"><div class="bar"><span style="width:60%"></span></div><div class="val">6.0</div></div>
+    <div class="r pick"><div class="bar"><span style="width:85%"></span></div><div class="val">8.5</div></div>
+    <div class="r"><div class="bar"><span style="width:65%"></span></div><div class="val">6.5</div></div>
+    <div class="r"><div class="bar"><span style="width:80%"></span></div><div class="val">8.0</div></div>
+    <div class="r"><div class="bar"><span style="width:75%"></span></div><div class="val">7.5</div></div>
+    <div class="r pick"><div class="bar"><span style="width:95%"></span></div><div class="val">9.5</div></div>
+
+    <div class="rowlabel">서사력 · Narrative</div>
+    <div class="r"><div class="bar"><span style="width:80%"></span></div><div class="val">8.0</div></div>
+    <div class="r pick"><div class="bar"><span style="width:90%"></span></div><div class="val">9.0</div></div>
+    <div class="r"><div class="bar"><span style="width:85%"></span></div><div class="val">8.5</div></div>
+    <div class="r"><div class="bar"><span style="width:70%"></span></div><div class="val">7.0</div></div>
+    <div class="r"><div class="bar"><span style="width:65%"></span></div><div class="val">6.5</div></div>
+    <div class="r"><div class="bar"><span style="width:70%"></span></div><div class="val">7.0</div></div>
+
+    <div class="rowlabel" style="color:var(--red-text-l);">종합 · Total</div>
+    <div class="r"><div class="bar"><span style="width:66%"></span></div><div class="val">33.0</div></div>
+    <div class="r pick"><div class="bar"><span style="width:89%"></span></div><div class="val">44.5</div></div>
+    <div class="r"><div class="bar"><span style="width:68%"></span></div><div class="val">34.0</div></div>
+    <div class="r"><div class="bar"><span style="width:68%"></span></div><div class="val">34.0</div></div>
+    <div class="r"><div class="bar"><span style="width:73%"></span></div><div class="val">36.5</div></div>
+    <div class="r pick"><div class="bar"><span style="width:87%"></span></div><div class="val">43.5</div></div>
+  </div>
+
+  <!-- ============ THE PICK ============ -->
+  <div class="pick-block">
+    <div>
+      <div class="lbl">final recommendation · 최종 추천</div>
+      <h3>emission <em>+</em> wordmark<br>as one <em>system.</em></h3>
+      <p>
+        하나만 고르지 않기를 권합니다. Synk는 <b>심볼과 워드마크의 역할이 서로 다른</b> 브랜드예요.
+      </p>
+      <p>
+        <b class="r">02 emission</b> 은 앱 아이콘, 파비콘, 소셜 아바타, 모션 인트로 — <b>이미지가 필요한 자리</b>의 얼굴.
+        중심의 red 코어가 "지금 발화하는 뉴런"을 명확히 표현하고, 대칭 구조라 어느 사이즈에서도 무너지지 않아요.
+      </p>
+      <p>
+        <b class="r">06 wordmark (synk //)</b> 은 문서 헤더, 서명, 프로덕트 UI 좌상단 — <b>문장 안에 놓이는 자리</b>의 얼굴.
+        red는 <b>//</b> 두 획에만 얹혀서, 브랜드가 계속되고 있음(continuation)을 조용히 신호합니다.
+      </p>
+      <p>
+        Red 사용량은 <b>전체 면적의 5% 이하</b>로 제한하세요. 이 팔레트에서 red는 <span class="r">"뭔가가 방금 일어났다"</span>는
+        신호이지, 배경이 아닙니다.
+      </p>
+    </div>
+
+    <div class="pick-preview">
+      <span class="stamp">the system · 02 + 06</span>
+      <div style="display:flex;align-items:center;gap:24px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:9px;height:9px;background:#7a7a7a;"></span>
+          <span class="dot" style="width:13px;height:13px;background:#c9c9c9;"></span>
+          <span class="dot" style="width:38px;height:38px;background:var(--red);box-shadow:0 0 30px var(--glow77);"></span>
+          <span class="dot" style="width:13px;height:13px;background:#c9c9c9;"></span>
+          <span class="dot" style="width:9px;height:9px;background:#7a7a7a;"></span>
+          <span class="dot" style="width:6px;height:6px;background:var(--ink-soft);"></span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:14px;">
+        <div class="synk" style="font-size:72px;color:var(--paper);">synk</div>
+        <span style="font-family:'Inter Tight';font-weight:300;color:var(--red-text-d);font-size:64px;letter-spacing:-.08em;line-height:.9;">//</span>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.28em;color:#8a8a8a;text-transform:uppercase;">
+        symbol · emission &nbsp;/&nbsp; wordmark · synk //
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MONO VS RED VERDICT ============ -->
+  <div class="verdict-head" style="margin-top:80px;margin-bottom:32px;">
+    <div class="con-num" style="color:var(--ink);">08<sup>mono · vs · red</sup></div>
+    <div>
+      <h2>모노톤 vs 레드 액센트</h2>
+      <div class="con-sub" style="margin-bottom:14px;">Which coloring wins?</div>
+      <p>
+        Red 팔레트가 확정된 만큼, <b>완전 모노톤</b>과 <b>red 액센트 적용</b> 중 어느 톤을 시스템의 기본형으로 삼을지도 정리했어요.
+      </p>
+    </div>
+  </div>
+
+  <div class="mvr">
+    <div class="cell">
+      <div class="lbl">A · 모노 온리</div>
+      <h4>mono only</h4>
+      <div class="demo">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span class="dot" style="width:8px;height:8px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:12px;height:12px;background:#7a7a7a;"></span>
+          <span class="dot" style="width:32px;height:32px;background:var(--paper);"></span>
+          <span class="dot" style="width:12px;height:12px;background:#7a7a7a;"></span>
+          <span class="dot" style="width:8px;height:8px;background:var(--ink-soft);"></span>
+        </div>
+        <div class="synk" style="font-size:64px;color:var(--paper);">synk</div>
+      </div>
+      <p><b>장점 —</b> 극도로 조용하고 지적. Notion·Linear·Arc 같은 미니멀 프로덕트 톤과 결이 맞음. 인쇄·타 브랜드 협업 시 무례하지 않음.</p>
+      <p><b>단점 —</b> 확정된 red 팔레트를 <b>거의 안 쓰게 됨</b>. 브랜드가 눈에 걸리는 순간이 부족해 "잘 만든 티가 안 남". 스크롤 안에서 <b>미끄러짐</b>.</p>
+    </div>
+
+    <div class="cell pick">
+      <div class="lbl">★ B · red 액센트 · 추천</div>
+      <h4>with synk red</h4>
+      <div class="demo" style="background:var(--ink);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span class="dot" style="width:8px;height:8px;background:var(--ink-soft);"></span>
+          <span class="dot" style="width:12px;height:12px;background:#7a7a7a;"></span>
+          <span class="dot" style="width:32px;height:32px;background:var(--red);box-shadow:0 0 30px var(--glow77);"></span>
+          <span class="dot" style="width:12px;height:12px;background:#7a7a7a;"></span>
+          <span class="dot" style="width:8px;height:8px;background:var(--ink-soft);"></span>
+        </div>
+        <div class="synk" style="font-size:64px;color:var(--paper);">synk</div>
+      </div>
+      <p><b>장점 —</b> Red가 <b>정확히 한 지점</b>에만 놓여 "발화의 순간"이라는 서사와 100% 맞물림. 확정 팔레트를 낭비 없이 사용. UI 안에서 즉각 인지됨.</p>
+      <p><b>단점 —</b> 절제가 없으면 red가 곳곳에 번져 <b>싸구려</b>가 됨. 반드시 <b>"단 하나의 발화점"</b> 규칙을 지켜야 함 (전체 면적의 5% 이하).</p>
+    </div>
+  </div>
+
+</section>
+
+
+<!-- ============ FOOTER ============ -->
+<section class="footer">
+  <div>
+    <h4>rules · <b>red 사용 규칙</b></h4>
+    <p>
+      Red는 <b>단 하나의 발화점</b>에만. 한 화면/한 마크에 red 도트는 <b>1-2개</b>, 전체 면적의 <b>5% 이하</b>.
+      // 이나 마침표(.) 같은 <b>부호</b>에 얹는 것은 예외적으로 허용.
+    </p>
+  </div>
+  <div>
+    <h4>system · <b>02 + 06</b></h4>
+    <p>
+      Symbol은 <b>02 emission</b>, Wordmark는 <b>06 synk //</b>. 둘은 서로를 대체하지 않고, <b>상황</b>이 어느 얼굴을 부를지 정합니다.
+      아이콘 자리 → emission, 문장 자리 → wordmark.
+    </p>
+  </div>
+  <div>
+    <h4>next</h4>
+    <p>
+      이 추천을 확정하시면 다음 단계는 <b>02 emission의 정식 SVG</b>,
+      <b>클리어스페이스/미니사이즈 규정</b>, <b>모션 인트로 (0.6초 발화)</b>,
+      <b>잘못된 사용 예시 8종</b> 을 담은 브랜드 매뉴얼 v10을 정리해드립니다.
+    </p>
+  </div>
+</section>
+
+<script>
+var STRIP={
+  v9:[['C74A3A',0],['E15B48',0],['FF6551',0],['F5D9D3',1],['F9E8E4',1],['080B0C',0],['1A1A1E',0],['2A2A30',0],['4A4A50',0],['F4F2ED',1]],
+  v10:[['FF6B5C',0],['E8543F',0],['FF8877',0],['FFCFC6',1],['FFE9E4',1],['0F1730',0],['131A32',0],['2A3358',0],['1A2340',0],['FBF7EE',1]]
+};
+function setPal(p){
+  document.documentElement.dataset.pal=p;
+  var host=document.getElementById('palstrip'); host.innerHTML='';
+  STRIP[p].forEach(function(it){
+    var d=document.createElement('div'); d.className='sw'+(it[1]?' lit':'');
+    d.style.background='#'+it[0]; d.textContent=it[0]; host.appendChild(d);
+  });
+  document.querySelectorAll('[data-v9]').forEach(function(el){
+    el.textContent = p==='v9' ? el.dataset.v9 : el.dataset.v10;
+  });
+  document.getElementById('b9').classList.toggle('on', p==='v9');
+  document.getElementById('b10').classList.toggle('on', p==='v10');
+}
+setPal('v9');
+</script>
+</body>
+</html>
