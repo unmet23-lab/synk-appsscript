@@ -155,3 +155,42 @@ test('버전 없는 엣지는 낡음도 최신도 아닌 「모름」이다', ()
   assert.deepStrictEqual(overlap, [], '같은 엣지가 모름과 낡음에 동시에 잡히면 집계가 두 번 센다');
   assert.ok(g.unversioned.length > 0, '미기입이 0이면 집계가 비었는지 확인할 것');
 });
+
+/* [2026-08-03 회귀] 그래프에 대해 쓴 글이 그래프를 오염시키면 도구가 자기 자신을 못 믿는다.
+ * memory-graph는 stripCode를 갖고 있었는데 doc-graph는 없었고, 표기법을 설명하는 문서
+ * (docs/_ops/부패점검.md)를 쓰자마자 코드 펜스 안의 예시가 진짜 엣지로 새어
+ * 그 문서가 「낡은 인용」으로 잡혔다. 같은 함정을 다른 파일에서 두 번 밟았다. */
+test('[회귀] 코드 펜스·코드 스팬 안의 파생 예시는 엣지가 아니다', () => {
+  const doc = '# 설명\n\n```\n<!-- 파생: docs/가짜정본.md@v1.1 -->\n```\n\n인라인도 `<!-- 파생: docs/가짜2.md -->` 마찬가지.\n';
+  assert.deepStrictEqual(G.parseEdgesFull(doc), []);
+  assert.deepStrictEqual(G.parseEdges(doc), []);
+});
+
+test('[회귀] 코드 밖의 진짜 선언은 코드 예시와 섞여 있어도 읽는다', () => {
+  const doc = '# 설명\n\n<!-- 파생: docs/진짜.md@v2 -->\n\n```\n<!-- 파생: docs/예시.md -->\n```\n';
+  assert.deepStrictEqual(G.parseEdgesFull(doc), [{ target: 'docs/진짜.md', version: 'v2' }]);
+});
+
+test('[회귀] 표기법 설명 문서가 자기 예시 때문에 낡음으로 잡히지 않는다', () => {
+  const g = G.build();
+  assert.ok(!g.stale.some((s) => s.from === 'docs/_ops/부패점검.md'),
+    '도구를 설명하는 문서가 그 도구에 걸린다 — 알림 전체가 신뢰를 잃는다');
+  assert.ok(!g.docs.get('docs/_ops/부패점검.md').edges.length,
+    '설명 문서에는 진짜 파생 엣지가 없다');
+});
+
+test('[회귀] --add가 코드 펜스 안의 예시를 덮어쓰지 않는다', () => {
+  const name = `docgraph-mask-${process.pid}.md`;
+  const target = path.join(ROOT, 'docs', name);
+  const body = '# 임시\n\n<!-- 파생: docs/브랜드_폰트_정본.md -->\n\n```\n<!-- 파생: docs/예시정본.md -->\n```\n';
+  fs.writeFileSync(target, body, 'utf8');
+  try {
+    G.addEdge(`docs/${name}`, ['docs/반편성_정본_v2.md']);
+    const after = fs.readFileSync(target, 'utf8');
+    assert.ok(after.includes('<!-- 파생: docs/예시정본.md -->'), '코드 펜스 안의 예시가 지워졌다');
+    assert.ok(after.includes('docs/반편성_정본_v2.md'), '새 엣지가 안 심겼다');
+    assert.ok(after.includes('docs/브랜드_폰트_정본.md'), '기존 엣지가 사라졌다');
+  } finally {
+    fs.unlinkSync(target);
+  }
+});

@@ -73,12 +73,25 @@ function splitVersion(raw) {
   return { target: s, version: null };
 }
 
+/* 코드 구역을 **길이를 보존한 채** 지운다.
+ * [2026-08-03] 두 번째로 물린 함정이다. memory-graph는 이미 stripCode를 갖고 있었는데
+ * doc-graph는 없었고, 표기법을 **설명하는** 문서(`docs/_ops/부패점검.md`)를 쓰자마자
+ * 코드 펜스 안의 예시 `<!-- 파생: …정본.txt@v1.1 -->`가 진짜 엣지로 새어
+ * 그 문서가 「낡은 인용」으로 잡혔다. 그래프에 대해 쓴 글이 그래프를 오염시키면
+ * 도구가 자기 자신을 못 믿는다.
+ * 길이를 보존하는 이유 — addEdge가 이 결과의 **인덱스로 원문을 자른다**.
+ * 공백으로 안 채우고 삭제하면 치환이 엉뚱한 자리를 먹는다. */
+function maskCode(text) {
+  return String(text).replace(/```[\s\S]*?```|`[^`\n]*`/g, (m) => ' '.repeat(m.length));
+}
+
 /** 엣지 전문(버전 포함). build()가 쓴다. */
 function parseEdgesFull(text) {
   const out = [];
   let m;
+  const masked = maskCode(text);
   EDGE_RE.lastIndex = 0;
-  while ((m = EDGE_RE.exec(text)) !== null) {
+  while ((m = EDGE_RE.exec(masked)) !== null) {
     for (const part of m[1].split(',')) {
       if (!part.trim()) continue;
       const e = splitVersion(part);
@@ -189,8 +202,21 @@ function addEdge(docRel, canons) {
   const line = `<!-- 파생: ${merged.join(', ')} -->`;
   let next;
   if (existing.length) {
-    let first = true;
-    next = text.replace(EDGE_RE, () => (first ? ((first = false), line) : ''));
+    // 원문에 그냥 replace를 걸면 **코드 펜스 안의 예시**까지 진짜 선언으로 알고 덮어쓴다
+    // (표기법을 설명하는 문서를 이 도구로 건드리는 순간 그 문서가 망가진다).
+    // 마스킹한 사본에서 자리를 찾고, 그 인덱스로 원문을 자른다 — 길이를 보존했으니 자리가 같다.
+    const masked = maskCode(text);
+    const spans = [];
+    EDGE_RE.lastIndex = 0;
+    let mm;
+    while ((mm = EDGE_RE.exec(masked)) !== null) spans.push([mm.index, mm.index + mm[0].length]);
+    let out = '';
+    let cur = 0;
+    spans.forEach(([s, e], i) => {
+      out += text.slice(cur, s) + (i === 0 ? line : ''); // 첫 자리만 남기고 나머지는 접는다
+      cur = e;
+    });
+    next = out + text.slice(cur);
   } else {
     const lines = text.split('\n');
     let at = lines.findIndex((l) => /^#\s/.test(l));
