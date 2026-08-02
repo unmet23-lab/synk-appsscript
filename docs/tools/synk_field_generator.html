@@ -44,12 +44,13 @@
 <div class="wrap">
   <div class="panel">
     <h1>SYNK FIELD 생성기</h1>
-    <p class="hint">정본 v1.3 · 브랜드 키트 「v10 Crew Dossier」 반영. 모드와 카피를 넣고 PNG로 내려받으세요. 바탕·잉크 2색과 신호색 1점은 자동으로 지켜집니다. 다크 배경 = Navy 2 #0F1730 · 신호 = Coral #FF6B5C.</p>
+    <p class="hint">정본 v1.4 · 다크 표지 기본은 <b>플랫</b>(그림 0 — 2026-08-02 유호님 시험 채택). 디더는 시즌 오프닝·수료 같은 의식 순간 전용. 바탕·잉크 2색과 신호색 1점은 자동으로 지켜집니다. 다크 = Navy 2 #0F1730 · 신호 = Coral #FF6B5C.</p>
 
     <div class="fld">
       <label>모드</label>
       <div class="seg" id="mode">
-        <button data-v="dither" class="on">디더</button>
+        <button data-v="dark" class="on">다크 (기본·플랫)</button>
+        <button data-v="dither">디더 (의식 전용)</button>
         <button data-v="type">타이포</button>
         <button data-v="riso">겹침</button>
       </div>
@@ -126,7 +127,8 @@
       <b>R1</b> 2색만 · 신호색 5% 미만<br>
       <b>R2</b> 위계는 밀도와 여백으로<br>
       <b>R3</b> 글자는 절대 건드리지 않는다<br>
-      캐러셀 = 1장 디더 → 가운데 타이포 → 마지막 겹침
+      캐러셀 = 1장 다크(플랫) → 가운데 타이포 → 마지막 겹침<br>
+      디더는 의식 순간 전용(시즌 오프닝·수료·간지) — 캐러셀 금지
     </div>
   </div>
 
@@ -141,7 +143,7 @@ var SIZES = { '4:5':[1080,1350], '1:1':[1080,1080], '9:16':[1080,1920], 'A4':[12
 var SIG = { coral:'#FF6B5C', blue:'#4E7CFF', none:null };
 var FONT = "'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif";
 
-var S = { mode:'dither', ratio:'4:5', label:'SYNK LAB',
+var S = { mode:'dark', ratio:'4:5', label:'SYNK LAB',
           copy:'3개월 뒤,\n말이 트입니다', meta:'시즌 1 · 선착순 24명',
           sig:'coral', seed:17, spokes:8, comp:'tr', obj:'toono' };
 
@@ -344,7 +346,7 @@ function render(){
   var pad = 78*u;
   var sig = SIG[S.sig];
   var copyArr = S.copy.split('\n');
-  var isDark = (S.mode === 'dither');
+  var isDark = (S.mode === 'dither' || S.mode === 'dark');
   var bg = isDark ? '#0F1730' : '#FBF7EE';
   var ink = isDark ? '#F6F1E8' : '#171820';
   var dim = isDark ? '#8A8A94' : '#98A2B3';

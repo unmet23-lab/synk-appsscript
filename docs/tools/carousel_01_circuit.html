@@ -32,7 +32,7 @@
 <body>
 <div class="wrap">
   <h1>SYNK 캐러셀 01 — 입이 멈추는 순간</h1>
-  <p class="sub">디자인 정본 v1.2 · 1080×1350 (4:5) · 문법 = 1장 디더 → 2~4장 타이포 → 5장 겹침</p>
+  <p class="sub">디자인 정본 v1.4 · 1080×1350 (4:5) · 문법 = 1장 다크(플랫) → 2~4장 타이포 → 5장 겹침</p>
   <p class="sub">주제: 아는 것과 말하는 것은 뇌에서 다른 길이다 — 개원 전 인지도 단계용, 참여 유도로 마무리</p>
 
   <div class="bar">
@@ -63,24 +63,10 @@ function lines(c,arr,x,y,size,lh,color,weight){
   return y+(arr.length-1)*size*lh;
 }
 
-function waveField(c, seed){
-  var img=c.getImageData(0,0,W,H), d=img.data, R=prng(seed);
-  var cx=W*0.80, cy=H*0.19, bx=cx+W*0.62, by=cy+H*0.30, k=0.048, far=Math.max(W,H)*0.95, x, y;
-  function put(px,py){ px=px|0; py=py|0; if(px<0||py<0||px>=W||py>=H) return;
-    var i=((py*W+px)<<2); d[i]=246; d[i+1]=241; d[i+2]=232; d[i+3]=255; }
-  for(y=0;y<H;y++){ for(x=0;x<W;x++){
-    var d1=Math.sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy)), d2=Math.sqrt((x-bx)*(x-bx)+(y-by)*(y-by));
-    var v=Math.sin(d1*k)+Math.sin(d2*k), att=Math.max(0,1-Math.min(d1,d2)/far);
-    var p=Math.max(0,(v+0.35)/2.35)*att*att*0.62;
-    if(p>0.004 && R()<p) put(x,y);
-  }}
-  for(var q=0;q<Math.round(W*H*0.0028);q++){ if(R()<0.5) put(R()*W, R()*H); }
-  c.putImageData(img,0,0);
-}
-
+// (v1.4) 1장 디더 아트 제거 — 다크 표지 기본은 플랫(2026-08-02 유호님 시험 채택).
+// 디더는 시즌 오프닝·수료 등 의식 순간 전용으로 강등. 구 waveField 구현은 git 이력에.
 function card1(c){
   c.fillStyle=BG; c.fillRect(0,0,W,H);
-  waveField(c, 29);
   c.fillStyle='rgba(246,241,232,.6)'; c.font='600 25px '+FONT; c.textBaseline='alphabetic';
   tracked(c,'SYNK LAB',PAD,PAD+18,5.4);
   c.fillStyle=SIG; c.fillRect(PAD, H-PAD-330, 78, 9);
