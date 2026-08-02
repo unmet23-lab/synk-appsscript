@@ -1720,6 +1720,77 @@ function menuClosePreviewCardLinks() {
   SpreadsheetApp.getUi().alert(closePreviewCardLinks());
 }
 
+/* [v9.142] 🩹 학부모 카드 링크 복구 — 폴더를 잠근 뒤 빈 화면을 되살리는 유일한 수단.
+ *
+ * ▣ 왜 필요한가
+ *   08-03에 `SYNK_리포트카드` 폴더를 「제한됨」으로 잠갔다(익명으로 전 카드 목록·전체 다운로드가
+ *   되던 유출을 닫기 위해). 그런데 카드들은 **자기 공유가 하나도 없었고** 공개가 전부 폴더 상속이라,
+ *   잠그는 순간 학부모 「성장 리포트」 탭이 통째로 빈 이미지가 됐다. 폴더를 다시 열면 유출이 돌아오므로
+ *   답은 하나다 — **카드마다 자기 몫의 공개 링크를 붙인다.** 그러면 폴더는 잠긴 채로 화면이 산다
+ *   (링크를 아는 사람만 그 한 장을 본다 = 원래 의도했던 모양).
+ *
+ * ▣ 왜 지금은 될 것으로 보는가 (가설이고, 이 함수가 그 가설의 시험이다)
+ *   폴더가 공개이던 동안 setSharing은 양방향 모두 「액세스가 거부됨: DriveApp」이었다. 프로젝트는
+ *   full Drive 스코프(`auth/drive`)를 이미 갖고 있으므로 권한 범위 문제가 아니다. 남는 설명은
+ *   **상속과 충돌하는 자식 권한 변경을 Drive가 거부한다**는 것 — 부모가 「링크가 있는 모든 사용자」인
+ *   동안에는 자식에게서 그걸 빼지도(PRIVATE) 덧쓰지도(ANYONE_WITH_LINK) 못한다.
+ *   폴더를 잠근 지금은 그 충돌이 없으므로 성공해야 한다. **실패하면 가설이 틀린 것이고, 이 함수가
+ *   첫 오류 원문을 그대로 물어다 준다** — 그게 다음 조사의 재료다.
+ *
+ * ▣ 안전
+ *   대상은 `report_cards`의 image_url에서 뽑은 파일 ID뿐이다(폴더를 훑지 않는다 = 프리뷰·남의 파일이
+ *   섞일 수 없다). 이미 공개인 것은 건드리지 않는다(멱등). 되돌리려면 폴더를 잠근 채 이 링크만
+ *   비공개로 바꾸면 된다. */
+function repairReportCardSharing() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const rc = ss.getSheetByName('report_cards');
+  if (!rc || rc.getLastRow() < 2) {
+    const none = 'report_cards가 비어 있습니다 — 복구할 카드가 없습니다.';
+    Logger.log(none); return none;
+  }
+  const rows = rc.getRange(2, 1, rc.getLastRow() - 1, 4).getValues();
+  const ids = [];
+  rows.forEach(r => {
+    const m = String(r[3] || '').match(/googleusercontent\.com\/d\/([-\w]+)/) ||
+              String(r[3] || '').match(/[?&]id=([-\w]+)/) ||
+              String(r[3] || '').match(/\/d\/([-\w]+)/);
+    if (m && ids.indexOf(m[1]) === -1) ids.push(m[1]);
+  });
+  if (!ids.length) {
+    const none = 'report_cards에 Drive 카드 URL이 없습니다(플레이스홀더뿐일 수 있습니다).';
+    Logger.log(none); return none;
+  }
+
+  let ok = 0, already = 0, fail = 0, firstErr = '';
+  ids.forEach(id => {
+    let f = null;
+    try { f = DriveApp.getFileById(id); } catch (e) { fail++; if (!firstErr) firstErr = '파일 열기 실패: ' + e; return; }
+    let acc = null, known = false;
+    try { acc = f.getSharingAccess(); known = true; } catch (e) {}
+    if (known && (acc === DriveApp.Access.ANYONE_WITH_LINK || acc === DriveApp.Access.ANYONE)) { already++; return; }
+    try { f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); ok++; }
+    catch (e) { fail++; if (!firstErr) firstErr = String(e); }
+  });
+
+  const msg = ['🩹 학부모 카드 링크 복구',
+    '카드 ' + ids.length + '개 중 → 복구 ' + ok + '개 · 이미 공개 ' + already + '개 · 실패 ' + fail + '개'];
+  if (fail) {
+    msg.push('', '⚠ 첫 오류: ' + firstErr,
+      '「액세스가 거부됨」이 계속 나오면 폴더 상속 가설이 틀린 것입니다 —',
+      '이 문구를 그대로 남겨 두세요(다음 조사의 출발점).');
+  } else if (ok) {
+    msg.push('', '✅ 폴더는 잠긴 채로 카드만 열렸습니다.',
+      '학부모 앱 「성장 리포트」 탭에서 이미지가 다시 보이는지 확인해 주세요.');
+  }
+  const out = msg.join('\n');
+  Logger.log(out);
+  return out;
+}
+
+function menuRepairReportCardSharing() {
+  SpreadsheetApp.getUi().alert(repairReportCardSharing());
+}
+
 /* ===================== [v5] 명예의 전당 (monthlyGameBatch가 호출) ===================== */
 
 // [v5.7] 이달의 보스 — contents type='boss' 순번(F열) 월 로테이션. D열 = "등장대사|격파대사"
