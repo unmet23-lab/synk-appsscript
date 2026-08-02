@@ -302,6 +302,37 @@ test('정본에 하중을 받는 조항이 남아 있다', () => {
   }
 });
 
+/* ─── 6-b. Canva 대조기가 낡지 않았다 ────────────────────────────────────── */
+/* Canva는 repo 테스트가 볼 수 없는 유일한 적용면이다(브라우저 밖에서 읽을 방법이 없다).
+ * 그래서 「붙여넣어 실행하는 대조기」를 두되, **그 대조기의 기대값이 정본과 어긋나는 것**을 여기서 막는다.
+ * 검증기가 조용히 낡으면 「검증했다」는 초록불만 남고 실제로는 아무것도 안 지킨다 —
+ * 없는 것보다 위험하다(memory `guard-must-check-result`). */
+const CANVA_CHECKER = path.join(ROOT, 'docs', 'tools', 'canva_키트_검증.js');
+
+test('Canva 대조기가 키트 19색을 그대로 담고 있다', () => {
+  assert.ok(fs.existsSync(CANVA_CHECKER), 'docs/tools/canva_키트_검증.js가 없다 — Canva 점검의 유일한 자동화 수단이다');
+  const src = fs.readFileSync(CANVA_CHECKER, 'utf8');
+  const inChecker = new Set((src.match(/'#[0-9a-fA-F]{6}'\s*:/g) || []).map((s) => s.slice(1, 8).toLowerCase()));
+  for (const hex of Object.keys(KIT)) {
+    assert.ok(inChecker.has(hex.toLowerCase()), `대조기에 ${KIT[hex]} ${hex}가 빠졌다 — 그 색의 드리프트를 영영 못 잡는다`);
+  }
+  assert.equal(inChecker.size, 19, `대조기가 ${inChecker.size}색을 담고 있다 — 키트는 19색이다`);
+});
+
+test('Canva 대조기가 v1.5 이전의 「Part 6 only」 팔레트 이름을 기대하지 않는다', () => {
+  const src = fs.readFileSync(CANVA_CHECKER, 'utf8');
+  const expected = src.match(/'05 K-Culture[^']*'/g) || [];
+  assert.ok(expected.length > 0, '대조기에 05 K-Culture 팔레트 기대값이 없다');
+  // 주석의 설명 인용은 세지 않는다 — 기대값 배열에 든 문자열만 본다
+  for (const e of expected) {
+    assert.ok(
+      !/Part 6 only/.test(e),
+      `대조기가 낡은 팔레트 이름을 기대하고 있다: ${e}\n` +
+        `  v1.5에서 KC Sun이 모드 C 2도 잉크로 빠져 「Part 6 only」는 그 색에 대해 거짓이다.`
+    );
+  }
+});
+
 /* ─── 7. 정본이 가리키는 파일이 실제로 있다 ─────────────────────────────── */
 /* 08-03에 낡은 서술 2건이 발견된 계열의 결함 — 문서가 없는 파일을 가리키면 그 지시는 조용히 죽는다. */
 test('정본·키트가 가리키는 파일이 실재한다', () => {
