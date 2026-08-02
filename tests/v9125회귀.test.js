@@ -276,9 +276,15 @@ test('[v9.127] teacher_checkins 연타 중복 — 60초 이내만 접고 정상 
     ['김강사', '출근', new Date(base + 90000)],    // +90초(연타 아님) → 생존
   ];
   const deleted = [];
+  const fmt = { applied: null, cur: '' };   // [v9.133] 시각 열 표시 형식 보증
   const tc = {
     getLastRow: () => rows.length + 1,
-    getRange: (r, c, n, w) => ({ getValues: () => rows.slice(r - 2, r - 2 + n).map(x => x.slice(c - 1, c - 1 + w)) }),
+    getMaxRows: () => rows.length + 1,
+    getRange: (r, c, n, w) => ({
+      getValues: () => rows.slice(r - 2, r - 2 + n).map(x => x.slice(c - 1, c - 1 + w)),
+      getNumberFormat: () => fmt.cur,
+      setNumberFormat: (f) => { fmt.applied = f; fmt.cur = f; },
+    }),
     deleteRow: (rn) => { deleted.push(rn); rows.splice(rn - 2, 1); },
   };
   const s = code.indexOf('/* ⑤ [v9.127] teacher_checkins 연타 중복 정리');
@@ -290,6 +296,54 @@ test('[v9.127] teacher_checkins 연타 중복 — 60초 이내만 접고 정상 
   assert.equal(rows.length, 4, '남은 행 수가 다르다(정상 출퇴근을 지웠거나 연타를 못 걷었다)');
   assert.deepEqual(rows.map(r => r[0] + r[1]), ['김강사출근', '김강사퇴근', '박강사출근', '김강사출근'],
     '다른 사람·다른 유형·간격 있는 기록이 훼손됐다');
+  // [v9.133] 서식이 없으면 정상 Date가 `2026-07-24T04:22:17.691Z`로 렌더돼 사람이 「데이터가 깨졌다」고 읽는다
+  //   (08-02 실측에서 실제로 그렇게 보고됐다). 시트를 새로 만들면 서식이 사라지므로 매번 보증한다.
+  assert.equal(fmt.applied, 'yyyy-mm-dd hh:mm', '시각 열 표시 형식을 보증하지 않는다 — ISO 원문 렌더가 되살아난다');
+});
+
+/* [v9.133] 08-02 실측으로 잡은 자기 결함: 서식 보증을 「행 2개 이상」 가드 안에 넣었더니
+ *   테스트 잔재를 지워 빈 시트가 된 순간 영영 건너뛰게 됐다 — 서식이 가장 필요한 때가 바로 그때인데.
+ *   빈 시트일 때야말로 첫 기록이 처음부터 제대로 보이도록 미리 깔아야 한다. */
+test('[v9.133] 데이터가 0행이어도 시각 열 서식은 걸린다 (빈 시트를 건너뛰지 않는다)', () => {
+  const fmt = { applied: null, cur: '' };
+  const tc = {
+    getLastRow: () => 1,          // 헤더만 = 방금 잔재를 지운 상태
+    getMaxRows: () => 100,
+    getRange: () => ({
+      getValues: () => [],
+      getNumberFormat: () => fmt.cur,
+      setNumberFormat: (f) => { fmt.applied = f; fmt.cur = f; },
+    }),
+    deleteRow: () => {},
+  };
+  const s = code.indexOf('/* ⑤ [v9.127] teacher_checkins 연타 중복 정리');
+  const e = code.indexOf('// [v9.6] 🌍 월드 레이드 — 학원 전체');
+  const body = code.slice(s, e).replace(/\}\s*$/, '');
+  new Function('ss', 'TC_NAME_COL', 'TC_TYPE_COL', 'TC_TIME_COL', 'Logger', body)(
+    { getSheetByName: (n) => (n === 'teacher_checkins' ? tc : null) }, 1, 2, 3, { log: () => {} });
+  assert.equal(fmt.applied, 'yyyy-mm-dd hh:mm',
+    '빈 시트를 건너뛴다 — 첫 출근 기록이 다시 ISO 원문으로 보인다');
+});
+
+test('[v9.133] 시각 열 서식이 이미 맞으면 다시 쓰지 않는다 (쿼터 보호)', () => {
+  const rows = [['김강사', '출근', new Date('2026-08-02T09:00:00Z')]];
+  const fmt = { applied: null, cur: 'yyyy-mm-dd hh:mm' };
+  const tc = {
+    getLastRow: () => rows.length + 1,
+    getMaxRows: () => rows.length + 1,
+    getRange: () => ({
+      getValues: () => rows.map(x => x.slice(0, 3)),
+      getNumberFormat: () => fmt.cur,
+      setNumberFormat: (f) => { fmt.applied = f; fmt.cur = f; },
+    }),
+    deleteRow: () => {},
+  };
+  const s = code.indexOf('/* ⑤ [v9.127] teacher_checkins 연타 중복 정리');
+  const e = code.indexOf('// [v9.6] 🌍 월드 레이드 — 학원 전체');
+  const body = code.slice(s, e).replace(/\}\s*$/, '');
+  new Function('ss', 'TC_NAME_COL', 'TC_TYPE_COL', 'TC_TIME_COL', 'Logger', body)(
+    { getSheetByName: (n) => (n === 'teacher_checkins' ? tc : null) }, 1, 2, 3, { log: () => {} });
+  assert.equal(fmt.applied, null, '서식이 같은데도 매번 다시 쓴다 — 자기치유는 매일 밤 도는 함수다');
 });
 
 test('[v9.129] ymTextOf_ — String(Date)가 텍스트로 굳은 셀도 yyyy-MM으로 되돌린다', () => {
