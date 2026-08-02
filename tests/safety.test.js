@@ -612,6 +612,14 @@ test('[v9.54] 루트의 모든 엔진 .js가 .claspignore 허용목록에 있다
   const rootJs = fs.readdirSync(ROOT).filter((f) => f.endsWith('.js'));
   assert.ok(rootJs.length >= 1, '루트 .js 목록을 읽지 못함');
   for (const f of rootJs) {
+    // [2026-08-03] `_` 접두 = 「의도적 비배포」 표식(첫 사례: 보안 사유로 철회한 두뇌 웹화면).
+    //   다만 표식만으로는 실수로 흘린 임시 파일과 구분되지 않으므로, 머리말에 사유가 적혀 있어야만 예외로 인정한다.
+    if (f.startsWith('_')) {
+      const head = fs.readFileSync(path.join(ROOT, f), 'utf8').slice(0, 1500);
+      assert.ok(head.includes('라이브 미배포'),
+        `${f} 는 _ 접두라 clasp push에서 빠지는데 머리말에 사유가 없다 — 의도적 보류라면 「라이브 미배포」와 되살리는 조건을 적고, 아니라면 지우거나 이름을 바꿔라`);
+      continue;
+    }
     const ok = allows.some((p) => {
       const re = new RegExp('^' + p.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$');
       return re.test(f);
