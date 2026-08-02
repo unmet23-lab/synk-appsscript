@@ -447,7 +447,8 @@ test('[v9.49] hw_feedback 골격 — 학생확인(Glide 전용)과 포인트지�
   const batch = section('function aiFeedbackBatch_()', 'function callClaudeFeedback_(');
   assert.ok(batch.includes('hwFeedbackEnsureCols_(fb)'), '기존 11열 시트를 15열로 증분하지 않는다 — append가 뒤 4칸을 조용히 버린다');
   assert.ok(batch.includes('hwTagsClean_(card.error_tags)'), '오류 태그가 적재되지 않는다');
-  assert.ok(batch.includes('hwId, hwTagsClean_(card.error_tags), reDo, hwRedoUrlOf_('), '수집 4칸이 적재 배열 끝에 오지 않는다');
+  // [v9.138] 학생 입력(숙제ID·재작성원본)은 셀안전_를 거쳐야 한다 — 폼 텍스트는 남의 글이고, 같은 시트에 profiles가 있다
+  assert.ok(batch.includes('셀안전_(hwId), hwTagsClean_(card.error_tags), 셀안전_(reDo), hwRedoUrlOf_('), '수집 4칸이 적재 배열 끝에 오지 않거나 수식 인젝션 방어를 거치지 않는다');
 });
 
 test('[v9.49] 첨삭 확인 정산은 지급(appendPoints) 성공 뒤에만 지급완료로 표시한다', () => {
