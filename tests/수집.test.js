@@ -15,7 +15,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const { ROOT, engineSource } = require('./_engine-source');
-const code = engineSource();
+/* 줄바꿈 정규화 — git이 체크아웃 시 CRLF로 바꾸는 환경(Windows)에서 '\n}\n' 같은 표식이 통째로 안 잡힌다.
+ * 08-03 실측: 리베이스 직후 이 파일의 9건이 「섹션 끝 표식을 찾지 못함」으로 한꺼번에 죽었다 —
+ * 코드는 멀쩡한데 테스트만 죽는 형태라, 원인을 모르면 진짜 결함을 찾아 헤매게 된다. */
+const code = engineSource().replace(/\r\n/g, '\n');
 
 function section(startMarker, endMarker) {
   const s = code.indexOf(startMarker);
