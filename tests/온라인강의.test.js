@@ -62,7 +62,7 @@ test('[v9.106] 강의ID는 앞뒤 공백에 관계없이 맞는다 (폼 자유�
 
 test('[v9.106] 이수율 대상은 주말반 학생뿐이다 (평일반은 대면으로 시수가 찬다)', () => {
   const body = section('function lectureRatesOf_(ss)', 'function createLectureForm()');
-  assert.ok(body.includes("sch.type !== '주말'"), '주말반 한정 필터가 없다 — 평일반까지 이수율을 매긴다');
+  assert.ok(body.includes("String(sch.type).trim() !== '주말'"), '주말반 한정 필터가 없다 — 평일반까지 이수율을 매긴다 (v9.125: trim 정규화 포함 — 후행 공백이면 대상 0명이 되던 구멍)');
   assert.ok(body.includes('schedOf('), '반유형을 scheduleMap이 아니라 다른 곳에서 읽는다');
   // 선택 강의가 필수 분모에 섞이면 이수율이 구조적으로 낮게 나온다
   assert.ok(/필수|TRUE/.test(body), '필수 여부 필터가 없다');
@@ -164,7 +164,9 @@ test('[v9.106] 시청 확인은 한국어 한 문장 산출로 받는다 (체크
 test('[v9.121] 선택지 문자열은 한 곳에서만 만든다 (생성·동기화가 같은 모양)', () => {
   const build = section('function lectureChoices_(ss)', 'function syncLectureFormChoices()');
   assert.ok(build.includes("' - '"), '구분자가 바뀌었다 — sweepLectureForm_이 앞부분을 강의ID로 자르는 계약이 깨진다');
-  assert.ok(build.includes('slice(0, 200)'), '폼 목록 상한이 사라졌다');
+  assert.ok(build.includes('slice(-200)'), '폼 목록 상한이 사라졌다 (v9.125: 뒤에서 200개 — 앞에서 자르면 잘리는 쪽이 최신 시즌이다)');
+  // [v9.125] 공백 ID 차단 — trim 전 truthy 검사는 스페이스 한 칸을 빈 선택지('')로 만들었다(setChoiceValues 거부 → 4단계 차단)
+  assert.ok(/trim\(\);\s*if \(!id\) return;/.test(build), '공백 강의ID 필터가 없다 — 빈 선택지가 폼 생성을 막는다');
   // 생성부가 자기만의 선택지 조립을 되살리면 두 모양이 갈린다
   const create = section('function createLectureForm()', 'function sweepLectureForm_(ss)');
   assert.ok(create.includes('lectureChoices_(ss)'), '생성부가 공용 빌더를 안 쓴다 — 모양이 갈릴 수 있다');
@@ -245,6 +247,8 @@ function runPrune(lectureRows, viewRows, profileLevels) {
     getLastColumn: () => width,
     getRange: (r, c, n, w) => ({
       getValues: () => rows.slice(r - 2, r - 2 + n).map((row) => row.slice(c - 1, c - 1 + w)),
+      // [v9.125] 삭제 직전 내용 재확인용 단일 셀 읽기 — 실물 Range 계약과 동일
+      getValue: () => { const row = rows[r - 2]; return row ? row[c - 1] : ''; },
     }),
     deleteRows: (r, n) => { deleted.push(r); rows.splice(r - 2, n); },
   });

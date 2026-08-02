@@ -1804,9 +1804,11 @@ test('[v9.80] 강사별 집계·배점 — 무데이터를 0점으로 환산하�
 test('[v9.80] checkNoShow — 시트 적재가 메일보다 먼저이고, 재시도해도 행이 늘지 않는다', () => {
   const body = section('function checkNoShow()', 'function absenceFollowupNightly_()');
   // 지표 원본이 쿼터·메일 실패에 종속되면 안 된다(메일은 알림, 행은 데이터)
+  // [v9.125] 순서 계약 확장 — ①적재가 메일보다 먼저(메일은 알림, 행은 데이터) ②발송 관문(리허설·쿼터)이
+  //   마킹(setState)보다 앞에서 return — 닫힌 관문에 키를 찍으면 그날 미등원 알림이 영구 소실된다.
   assertOrder(body, [
     'af.getRange(afRow, 1, add.length',
-    'if (absent.length > 0 && quotaOk(1))',
+    "if (!quotaOk(1)) { Logger.log('미등원 통보 보류",
     'MailApp.sendEmail(ADMIN_EMAIL',
     "setState(st, key, absent.length + '명')"
   ]);
