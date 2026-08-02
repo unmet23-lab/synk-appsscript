@@ -2779,6 +2779,9 @@ function menuCreateQuizForm() { menuRun_(createQuizForm); } // [v9.138] 퀴즈 �
 function menuMigrateHwForm() { menuRun_(migrateHwFormV9138); } // [v9.138] 숙제 폼 증분 — 문항 연결·재작성 경로(멱등)
 function menuCreateTalkForm() { menuRun_(createTalkForm); } // [v9.138] 한국어 대화 폼 — 회화 앱 1세대(재실행 안전)
 function menuDataCoverage() { menuRun_(dataCoverageReport); } // [v9.138] 커버리지 — 읽기 전용이라 언제 눌러도 안전
+// [2026-08-03] 동의 문항 갱신 — 정의는 엔진_폼리포트.js. 멱등이라 문구를 고칠 때마다 다시 눌러도 안전하고,
+//   몽골어 검수 후(CONSENT_MN_APPROVED=true) 한 번 더 눌러야 병기가 라이브 폼에 반영된다.
+function menuMigrateConsent() { menuRun_(migrateConsentV186); }
 
 /* [v9.131] 🗓 시즌 시작일 — **인자가 필요한 유일한 개원 준비 함수**라 ▶ 버튼으로 실행할 수 없었다.
  *   `setSeasonStart`는 인자 없이 부르면 「▶로는 설정되지 않습니다」라고 거부한다(오늘 날짜가 실수로 박히면
@@ -3251,6 +3254,10 @@ function onOpen() {
       /* [v9.138] 📊 학습 데이터 수집 — 「2년 축적 → AI 회화 앱」의 입구.
        *   개원 전에 눌러야 하는 이유: 학생이 그날 무엇을 골랐는지는 **소급이 안 된다.**
        *   폼이 없으면 매일 퀴즈를 던지면서 답은 한 건도 안 받는 지금 상태가 그대로 이어진다. */
+      /* [2026-08-03] 동의 갱신을 맨 앞에 둔 이유 — 수집의 **법적 전제**이고, 문구를 개정할 때마다
+       *   다시 눌러야 한다(몽골어 검수 후 1회 더). 편집기 드롭다운에서만 돌 수 있어 유호님이
+       *   "어디 있냐"고 물으신 함수다 — 두 번 쓸 것을 메뉴에 올린다. */
+      .addItem('🔏 동의 문항 갱신(수집 0단계·문구 바뀔 때마다)', 'menuMigrateConsent')
       .addItem('🧠 퀴즈 응답 폼 만들기(수집 1단계)', 'menuCreateQuizForm')
       .addItem('📝 숙제 폼에 수집 문항 넣기(수집 2단계)', 'menuMigrateHwForm')
       .addItem('🗣 한국어 대화 폼 만들기(수집 3단계)', 'menuCreateTalkForm')
