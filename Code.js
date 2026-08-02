@@ -786,7 +786,7 @@
 const ADMIN_EMAIL = 'unmet23@gmail.com'; // 운영 전환 시 founder@synk.im
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.19] 구 시트(10Q-Yhqgy2…) 접근 불가로 현행 상담 스프레드시트로 교체
 
-const SYNK_VERSION = 'v9.125'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.125] 앱 전면 최적화 — 5구역 적대 리뷰 결함 26건 수리 + 브랜드 키트 색 전환 · [v9.124] 메뉴 결과 가시화 + 이수율 조인 진단 · [v9.123] 낡은 강의 자리 안전 정리 — 조준을 행 번호에서 내용으로 · [v9.122] 브랜드 폰트 3종을 앱 카드에 적용 — 스택 교체 + 웹폰트 로더 신설(이름만 바꾸면 전 카드가 폴백된다) · [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
+const SYNK_VERSION = 'v9.126'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.126] Glide 라이브 전수 점검 — 월키 Date 오염 미보호 시트 2종·상담값 원시 Date·출결 백지 · [v9.125] 앱 전면 최적화 — 5구역 적대 리뷰 결함 26건 수리 + 브랜드 키트 색 전환 · [v9.124] 메뉴 결과 가시화 + 이수율 조인 진단 · [v9.123] 낡은 강의 자리 안전 정리 — 조준을 행 번호에서 내용으로 · [v9.122] 브랜드 폰트 3종을 앱 카드에 적용 — 스택 교체 + 웹폰트 로더 신설(이름만 바꾸면 전 카드가 폴백된다) · [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
@@ -3902,7 +3902,22 @@ function syncProfiles() {
   // [v9.84] 증분 문항은 위치 가변(migrateConsultV184가 "뒤에 추가"만 보장) — importFormResponses와 같은 헤더 이름 해석. 중복 헤더는 첫 열 우선.
   const cHdr = src.getRange(2, 1, 1, lastC).getValues()[0];
   const cCol = {}; cHdr.forEach((h, i) => { const k = String(h || '').trim(); if (k && cCol[k] === undefined) cCol[k] = i; });
-  const cv = (row, name) => { const i = cCol[name]; return i === undefined ? '' : String(row[i] || '').trim(); };
+  // [v9.126] Date 정규화 — 상담시트의 「TOPIK목표기한」처럼 `2027-10` 형태로 적은 칸을 시트가 날짜로 자동 파싱하면
+  //   getValues()가 Date를 돌려주고, String(Date)가 그대로 학생 카드에 실린다(08-02 라이브 실측:
+  //   홈 「🌟 나의 목표: TOPIK 3~4급 · Fri Oct 01 2027 15:00:00 GMT+0800 (Ulaanbaatar Standard Time)」).
+  //   화면에서 셀은 `2027-10`으로 보이므로 눈으로는 절대 안 걸린다 — 읽는 지점에서 한 번에 막는다.
+  const cv = (row, name) => {
+    const i = cCol[name];
+    if (i === undefined) return '';
+    const raw = row[i];
+    if (raw instanceof Date && !isNaN(raw.getTime())) {
+      // 시분초가 0이면 날짜만(운영 표기), 아니면 분까지 — 어느 쪽도 원시 Date 문자열은 내보내지 않는다
+      const p2 = n => (n < 10 ? '0' : '') + n;
+      const ymd = raw.getFullYear() + '-' + p2(raw.getMonth() + 1) + '-' + p2(raw.getDate());
+      return (raw.getHours() || raw.getMinutes()) ? ymd + ' ' + p2(raw.getHours()) + ':' + p2(raw.getMinutes()) : ymd;
+    }
+    return String(raw || '').trim();
+  };
 
   const dstLast = dst.getLastRow();
   const keep = {};
@@ -5145,6 +5160,16 @@ function todayBoard_(ss) {
     else if (hasClassToday(ss, String(r[4]), schMap)) stuRows.push(['🧑‍🎓 학생', r[1] || r[0], String(r[4]), '—', '']);
   });
   stuRows.sort((a, b) => a[2] === b[2] ? String(a[3]).localeCompare(String(b[3])) : String(a[2]).localeCompare(String(b[2])));
+  /* [v9.126] 빈 상태 안내 — 08-02 라이브 실측: 일요일(무수업)에 출결 탭이 **완전한 백지**로 뜬다.
+   *   데이터상으로는 정상이지만 강사·원장 화면에서는 「오늘 수업이 없음」과 「앱이 고장남」이 구별되지 않는다
+   *   (성장 리포트 탭은 '첫 리포트는 다음 달 1일에 도착해요'라고 말해 주는데 여기만 침묵했다).
+   *   Glide 컬렉션은 행이 0이면 아무것도 안 그리므로, 안내를 **행 하나로** 만들어 준다. */
+  if (!rows.length && !stuRows.length) {
+    const dow = now.getDay();
+    stuRows.push(dow === 0
+      ? ['ℹ️ 안내', '오늘은 일요일 — 수업이 없는 날이에요', '', '—', '']
+      : ['ℹ️ 안내', '아직 등원·출근 기록이 없어요 (10분마다 자동 갱신)', '', '—', '']);
+  }
   const all = rows.concat(stuRows);
   const last = bd.getLastRow();
   if (last - 1 > all.length) bd.getRange(all.length + 2, 1, Math.max(last - 1 - all.length, 1), 5).clearContent();
@@ -8378,10 +8403,17 @@ function runReportCards_() {
 
   const rc = ensureSheet(ss, 'report_cards',
     ['card_id', 'student_id', '월', 'image_url', '칭호', '코멘트', 'created_at']);
+  /* [v9.126] 🔴 월 열 Date 오염 = 이 멱등 가드의 사망 지점 — 08-02 라이브에서 37행(정상 9행)이 발견됐다.
+   *   `setValues`로 '2026-08' 문자열을 쓰면 시트가 날짜로 자동 파싱해 Date로 되읽히고, 셀 표시는 여전히
+   *   '2026-08'이라 눈으로는 멀쩡하다. 그런데 String(Date)='Fri Aug 01 2026…' ≠ ym → **가드가 영영 안 맞고
+   *   매 실행이 전원 카드를 다시 만든다**(Slides 복제·Drive 파일·학부모 메일이 매번 중복). 학부모 화면엔
+   *   같은 카드가 6장 쌓여 있었다. v9.97이 스토리북에서 잡은 것과 같은 계급인데 이 시트만 배선이 빠져 있었다.
+   *   ①열을 텍스트로 정상화 ②비교값도 ymTextOf_로 정규화 — 둘 다 해야 과거 오염분까지 산다. */
+  ymTextColFix_(rc, 3, tz);
   const done = new Set();
   if (rc.getLastRow() >= 2) {
     rc.getRange(2, 1, rc.getLastRow() - 1, 3).getValues().forEach(r => {
-      done.add(String(r[2]) + '|' + r[1]);
+      done.add(ymTextOf_(r[2], tz) + '|' + r[1]);
     });
   }
   const pendingAll = students.filter(r => !done.has(ym + '|' + r[0]));
@@ -9166,11 +9198,16 @@ function sheetSelfHeal_() {
   const wr = ss.getSheetByName('world_raid');
   if (wr && wr.getLastRow() >= 2) {
     const tz = ss.getSpreadsheetTimeZone();
+    /* [v9.126] 월 열 Date 오염 정상화 — 08-02 라이브 실측: 운영 탭 월드 레이드 표에
+     *   `Wed Jul 01 2026 00:00:00 GMT+0800 (Ulaanbaatar Standard Time)`가 원장 화면에 그대로 노출됐고,
+     *   그 행은 String(Date) 키라 '2026-07'과 다른 버킷이 되어 **중복 정리에서도 영영 안 묶였다.**
+     *   report_cards와 같은 계급(v9.97 보호 목록에서 누락된 시트). 읽기 전에 고친다. */
+    ymTextColFix_(wr, 1, tz);
     const ymNow = Utilities.formatDate(new Date(), tz, 'yyyy-MM');
     const n3 = wr.getLastRow() - 1;
     const wd = wr.getRange(2, 1, n3, 5).getValues();
     const byM = {};
-    wd.forEach((r, i) => { const ym = String(r[0] || ''); if (ym) (byM[ym] = byM[ym] || []).push(i); });
+    wd.forEach((r, i) => { const ym = ymTextOf_(r[0], tz); if (ym) (byM[ym] = byM[ym] || []).push(i); });
     const del2 = [];
     Object.keys(byM).filter(ym => byM[ym].length >= 2).forEach(ym => {
       const idxs = byM[ym];
@@ -9192,6 +9229,40 @@ function sheetSelfHeal_() {
       Logger.log('자기치유: world_raid ' + ym + ' ' + idxs.length + '행 → 1행(HP ' + hp + '·데미지 ' + maxDmg + ')');
     });
     del2.sort((a, b) => b - a).forEach(rn => wr.deleteRow(rn));
+  }
+  /* ④ [v9.126] report_cards 「같은 달·같은 학생」 중복 정리 — 위 가드 수리는 **새 중복을 막을 뿐**이고
+   *   이미 쌓인 것은 스스로 사라지지 않는다(08-02 실측 37행 · 학부모 화면에 같은 카드 6장).
+   *   남길 행 = image_url이 살아 있는 것 중 가장 최근(created_at) — 카드 이미지가 없는 행은 학부모 화면에서
+   *   빈 카드가 되므로 우선순위가 낮다. 하나도 없으면 첫 행을 남긴다(전멸 방지). */
+  const rcH = ss.getSheetByName('report_cards');
+  if (rcH && rcH.getLastRow() >= 2) {
+    const tzR = ss.getSpreadsheetTimeZone();
+    ymTextColFix_(rcH, 3, tzR);
+    const nR = rcH.getLastRow() - 1;
+    const rd = rcH.getRange(2, 1, nR, 7).getValues();
+    const byKey = {};
+    rd.forEach((r, i) => {
+      const sid = String(r[1] || '').trim(), ym = ymTextOf_(r[2], tzR);
+      if (!sid || !ym) return;
+      (byKey[ym + '|' + sid] = byKey[ym + '|' + sid] || []).push(i);
+    });
+    const delR = [];
+    Object.keys(byKey).filter(k => byKey[k].length >= 2).forEach(k => {
+      const idxs = byKey[k];
+      const scored = idxs.slice().sort((a, b) => {
+        const ua = String(rd[a][3] || '') ? 1 : 0, ub = String(rd[b][3] || '') ? 1 : 0;
+        if (ua !== ub) return ub - ua;                       // image_url 있는 쪽 우선
+        const ta = new Date(rd[a][6]).getTime() || 0, tb = new Date(rd[b][6]).getTime() || 0;
+        return tb - ta;                                       // 그 다음 최신 우선
+      });
+      const keepI = scored[0];
+      idxs.forEach(i => { if (i !== keepI) delR.push(i + 2); });
+      Logger.log('자기치유: report_cards ' + k + ' ' + idxs.length + '행 → 1행');
+    });
+    if (delR.length) {
+      delR.sort((a, b) => b - a).forEach(rn => rcH.deleteRow(rn));
+      Logger.log('자기치유: report_cards 중복 ' + delR.length + '행 삭제(남은 ' + (nR - delR.length) + '행)');
+    }
   }
 }
 

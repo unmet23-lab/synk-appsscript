@@ -144,3 +144,94 @@ test('[v9.125] 시즌 종료 게이트 — groupBoardOf_·todayPairsBySid_·grou
     assert.ok(seg.includes('> SEASON_WEEKS'), mark + '에 시즌 종료 상한이 없다 — 시즌 사이 2주간 유령 차시가 찍힌다');
   });
 });
+
+/* ═══════ [v9.126] Glide 라이브 전수 점검(08-02)이 잡은 결함 — 실측 근거가 있는 것만 ═══════ */
+
+// 자기치유 ④ 블록을 잘라 실제로 실행한다(삭제가 걸린 로직이라 문구 검사로는 부족하다)
+function runRcDedupe(rows) {
+  const deleted = [];
+  const rc = {
+    getName: () => 'report_cards',
+    getLastRow: () => rows.length + 1,
+    getMaxRows: () => rows.length + 10,
+    getRange: (r, c, n, w) => ({
+      getValues: () => rows.slice(r - 2, r - 2 + n).map(x => x.slice(c - 1, c - 1 + (w || 1))),
+      setValues: () => {},
+      getNumberFormat: () => '@',
+      setNumberFormat: () => {},
+    }),
+    deleteRow: (rn) => { deleted.push(rn); rows.splice(rn - 2, 1); },
+  };
+  const s = code.indexOf('/* ④ [v9.126] report_cards');
+  const e = code.indexOf('// [v9.6] 🌍 월드 레이드 — 학원 전체');
+  assert.ok(s > -1 && e > s, '자기치유 ④ 블록 표식을 찾지 못함');
+  const body = code.slice(s, e).replace(/\}\s*$/, ''); // 함수 닫는 중괄호 제거
+  const fn = new Function('ss', 'ymTextColFix_', 'ymTextOf_', 'Logger', body);
+  fn(
+    { getSheetByName: (n) => (n === 'report_cards' ? rc : null), getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar' },
+    () => 0,
+    (v) => String(v == null ? '' : v).trim(),
+    { log: () => {} }
+  );
+  return { deleted, remaining: rows.map(r => r[0] + '/' + r[1] + '/' + r[2]) };
+}
+
+const rcRow = (id, sid, ym, url, created) => [id, sid, ym, url || '', '칭호', '코멘트', created || '2026-08-01'];
+
+test('[v9.126] report_cards 중복 정리 — 같은 달·같은 학생은 1장만 남는다 (실행 검증)', () => {
+  const rows = [
+    rcRow('C1', 'SYNK-001', '2026-08', 'http://img/1', '2026-08-01'),
+    rcRow('C2', 'SYNK-001', '2026-08', 'http://img/2', '2026-08-02'), // 최신·이미지 있음 → 생존
+    rcRow('C3', 'SYNK-001', '2026-08', '', '2026-08-03'),             // 이미지 없음 → 최신이어도 탈락
+    rcRow('C4', 'SYNK-002', '2026-08', 'http://img/4', '2026-08-01'), // 다른 학생 → 보존
+    rcRow('C5', 'SYNK-001', '2026-07', 'http://img/5', '2026-07-01'), // 다른 달 → 보존
+  ];
+  const r = runRcDedupe(rows);
+  assert.deepEqual(r.remaining, ['C2/SYNK-001/2026-08', 'C4/SYNK-002/2026-08', 'C5/SYNK-001/2026-07'],
+    '중복이 안 걷혔거나 다른 학생·다른 달을 지웠다');
+});
+
+test('[v9.126] report_cards 중복 정리 — 이미지가 하나도 없으면 전멸시키지 않는다', () => {
+  const rows = [
+    rcRow('C1', 'SYNK-001', '2026-08', '', '2026-08-01'),
+    rcRow('C2', 'SYNK-001', '2026-08', '', '2026-08-02'),
+  ];
+  const r = runRcDedupe(rows);
+  assert.equal(r.remaining.length, 1, '전멸했거나 정리가 안 됐다');
+});
+
+test('[v9.126] report_cards 멱등 가드가 월 열 Date 오염에 면역이다', () => {
+  const seg = code.slice(code.indexOf('function runReportCards_'), code.indexOf('function reportCardData_'));
+  assert.ok(seg.includes('ymTextColFix_(rc, 3, tz)'), '월 열 정상화가 없다 — 매 실행이 전원 카드를 다시 만든다');
+  assert.ok(seg.includes("done.add(ymTextOf_(r[2], tz)"), '가드 비교값이 정규화되지 않았다');
+  assert.equal(/done\.add\(String\(r\[2\]\)/.test(seg), false, '구 String(r[2]) 비교가 되살아났다(라이브 37행 중복의 원인)');
+});
+
+test('[v9.126] world_raid 월 열도 Date 오염에서 보호된다', () => {
+  const s = code.indexOf('// ③ world_raid 월 중복 정리');
+  const seg = code.slice(s, s + 1500);
+  assert.ok(seg.includes('ymTextColFix_(wr, 1, tz)'), '월 열 정상화가 없다 — 원장 화면에 원시 Date가 그대로 뜬다');
+  assert.ok(seg.includes('ymTextOf_(r[0], tz)'), '중복 판정 키가 정규화되지 않았다(Date 행이 영영 안 묶인다)');
+});
+
+test('[v9.126] 상담시트 값 읽기(cv)가 Date를 원시 문자열로 흘리지 않는다', () => {
+  const s = code.indexOf('const cv = (row, name) =>');
+  const seg = code.slice(s, s + 900);
+  assert.ok(seg.includes('raw instanceof Date'), 'Date 분기가 없다 — 학생 홈에 "Fri Oct 01 2027 …"이 노출된다');
+  // 실제 동작 검증 — 잘라내 실행
+  const fnSrc = code.slice(s, code.indexOf('};', s) + 2).replace('const cv = ', 'return ');
+  const cv = new Function('cCol', fnSrc + '')({ '기한': 0 });
+  const d = new Date(2027, 9, 1);
+  assert.equal(cv([d], '기한'), '2027-10-01', 'Date가 yyyy-MM-dd로 정규화되지 않는다');
+  assert.equal(cv(['2027-10'], '기한'), '2027-10', '문자열 값을 훼손한다');
+  assert.equal(cv([''], '기한'), '', '빈 값 처리가 다르다');
+});
+
+test('[v9.126] 출결 보드는 빈 날에도 안내 한 줄을 남긴다 (백지 ≠ 고장)', () => {
+  const s = code.indexOf('function todayBoard_');
+  const seg = code.slice(s, code.indexOf('function expandHwBatch', s));
+  assert.ok(seg.includes('!rows.length && !stuRows.length'), '빈 상태 분기가 없다');
+  assert.ok(seg.includes('일요일'), '무수업일 안내 문구가 없다');
+  assert.ok(seg.indexOf('stuRows.push') < seg.indexOf('const all = rows.concat(stuRows)'),
+    '안내 행이 all 조립보다 뒤에 있다 — 화면에 안 나간다');
+});
