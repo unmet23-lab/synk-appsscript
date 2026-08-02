@@ -19,6 +19,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
+const { engineSource } = require('./_engine-source');
 const TOOLS = path.join(ROOT, 'docs', 'tools');
 
 /* 폰트 후보를 나란히 세워 비교하는 실측 도구 — 3종 밖 폰트가 있는 게 목적이라 제외한다. */
@@ -135,7 +136,7 @@ test('브랜드 폰트 정본 문서가 존재한다', () => {
 
 /* CARD_FONT 교체 완료(08-01, lectures 트랙 세션이 Code.js를 놓은 직후). */
 test('Code.js CARD_FONT가 브랜드 3종을 쓴다', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'Code.js'), 'utf8');
+  const src = engineSource();
   const m = src.match(/const CARD_FONT = "([^"]+)"/);
   assert.ok(m, 'Code.js에서 CARD_FONT 상수를 못 찾았다');
   const decl = m[1];
@@ -152,8 +153,9 @@ test('Code.js CARD_FONT가 브랜드 3종을 쓴다', () => {
  * 에러도 안 나고 화면도 그럴싸해서 사람 눈으로는 「적용됐다」와 구별이 안 된다.
  * 그래서 ① 로더가 두 폰트를 다 부르는지 ② 카드 루트마다 실제로 붙었는지를 결과로 검사한다. */
 test('CARD_WEBFONT가 두 웹폰트를 실제로 로드한다', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'Code.js'), 'utf8');
-  const m = src.match(/const CARD_WEBFONT = ([\s\S]*?);\n/);
+  const src = engineSource();
+  // `\r?\n` — CRLF 사본에서 `;\r\n`이 되어 매치가 통째로 실패하던 것을 막는다(08-02 옆 세션 경고, safety.test.js v9.107과 같은 계열).
+  const m = src.match(/const CARD_WEBFONT = ([\s\S]*?);\r?\n/);
   assert.ok(m, 'CARD_WEBFONT 상수가 없다 — CARD_FONT만 바꾸면 전 카드가 폴백된다(정본 §9)');
   const decl = m[1];
   assert.ok(/sun-typeface\/SUIT/.test(decl), 'CARD_WEBFONT가 SUIT를 안 부른다 → 한글이 폴백된다');
@@ -162,7 +164,7 @@ test('CARD_WEBFONT가 두 웹폰트를 실제로 로드한다', () => {
 });
 
 test('카드 루트마다 CARD_WEBFONT가 붙어 있다', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'Code.js'), 'utf8');
+  const src = engineSource();
   const roots = src.match(/'<div style="' \+ CARD_FONT/g) || [];
   assert.ok(roots.length > 0, "카드 루트 패턴을 못 찾았다 — 렌더 구조가 바뀌었는지 확인");
   const loaded = src.match(/CARD_WEBFONT \+ '<div style="' \+ CARD_FONT/g) || [];
