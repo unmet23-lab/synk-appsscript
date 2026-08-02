@@ -291,3 +291,13 @@ test('[v9.127] teacher_checkins 연타 중복 — 60초 이내만 접고 정상 
   assert.deepEqual(rows.map(r => r[0] + r[1]), ['김강사출근', '김강사퇴근', '박강사출근', '김강사출근'],
     '다른 사람·다른 유형·간격 있는 기록이 훼손됐다');
 });
+
+test('[v9.129] ymTextOf_ — String(Date)가 텍스트로 굳은 셀도 yyyy-MM으로 되돌린다', () => {
+  // 08-02 라이브 실측값 그대로 — 이 형태가 Date 분기·시리얼 분기를 둘 다 빠져나가 두 번의 수리를 통과했다
+  assert.equal(ctx.ymTextOf_('Wed Jul 01 2026 00:00:00 GMT+0800 (Ulaanbaatar Standard Time)', 'Asia/Ulaanbaatar'), '2026-07');
+  assert.equal(ctx.ymTextOf_('Mon Jun 01 2026 00:00:00 GMT+0800 (Ulaanbaatar Standard Time)', 'Asia/Ulaanbaatar'), '2026-06');
+  // 사람이 쓴 텍스트는 건드리지 않는다
+  assert.equal(ctx.ymTextOf_('2026-08', 'Asia/Ulaanbaatar'), '2026-08');
+  assert.equal(ctx.ymTextOf_('여름 시즌', 'Asia/Ulaanbaatar'), '여름 시즌');
+  assert.equal(ctx.ymTextOf_('Monday 회의록', 'Asia/Ulaanbaatar'), 'Monday 회의록', '요일로 시작하는 일반 텍스트를 날짜로 오변환한다');
+});
