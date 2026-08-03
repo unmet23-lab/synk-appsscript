@@ -62,7 +62,11 @@ function sheetSkeleton_() {
     ['quiz_log', QUIZ_LOG_HEADERS],
     //   talk_log: 지금 앱이 쌓는 것은 전부 단문·단답이라 **「대화」가 0건**이었다 — 회화 앱을 만들겠다면서
     //   다회차 주고받기가 한 건도 없는 상태. 이 시트가 그 구멍을 메운다(숙제·퀴즈보다 큰 구멍이다).
-    ['talk_log', TALK_LOG_HEADERS]
+    ['talk_log', TALK_LOG_HEADERS],
+    //   [v9.147] teacher_gold: 학생 데이터가 아니라 **정답(채점표)**을 쌓는 유일한 시트. 무인 발행이라
+    //   「강사가 실제로 한 교정」이 어디에도 안 남는데, 그게 없으면 2년 뒤 모델 선택을 감으로 한다.
+    //   강사판정·강사교정·사유·강사 4열은 **Glide가 채운다**(주 5행이라 update 예산 ≈ 월 20).
+    ['teacher_gold', GOLD_HEADERS]
   ];
 }
 
@@ -1078,6 +1082,7 @@ function monthlyReportJob()       { safeRun('monthlyReport', monthlyReport); }  
 
 function weeklyJobs() {    // 매주 월 07시
   safeRun('raidMonday', raidMonday); // 게임(레이드) 설정 — 시트 쓰기만, 메일 리포트 아님
+  safeRun('goldenSample', goldenSampleWeekly_); // [v9.147] 강사 교정 골든셋 무작위 표본 — 2년 뒤 모델 선택의 채점표(소급 불가)
   let lpText = ''; // [v9.86·D] 주간 교안 초안 — 생성은 여기서, 링크 보고는 아래 통합 리포트 섹션으로(메일 순증 0)
   safeRun('lessonPlanDrafts', function () { lpText = lessonPlanDrafts_(); });
   let silText = ''; // [v9.91] 4주차 침묵 학생 명단 — 시즌 4주차 주에만 값이 생긴다(그 외 주는 섹션 생략)

@@ -212,7 +212,8 @@ function setupSeasons() {
 //   systemWatchdog(주간 요약)과 nightJobs(당일 신규만 admin 알림)가 함께 사용해 발각 지연을 7일→1일로 단축.
 function unknownReasonScan_(ss) {
   const KNOWN_RS = ['숙제', 'MVP', '시냅스', '칭찬', '정정', '생일', '레이드', '발표', '일일한도',
-    '출석', '이월', '스토어', '구매', '교환', '퀴즈', '챌린지', '연료', '보너스', '참여', '이벤트', '오늘의다짐', '첨삭']; // [v9.49] 첨삭확인(+5P) — '숙제'를 포함하면 숙제왕 카운트(4689행 indexOf('숙제'))가 오염되므로 별도 키워드
+    '출석', '이월', '스토어', '구매', '교환', '퀴즈', '챌린지', '연료', '보너스', '참여', '이벤트', '오늘의다짐', '첨삭',
+    '재작성']; // [v9.147] 재작성 보상 — '퀴즈응답'은 기존 '퀴즈' 키워드에 이미 걸린다(중복 등재 불필요) // [v9.49] 첨삭확인(+5P) — '숙제'를 포함하면 숙제왕 카운트(4689행 indexOf('숙제'))가 오염되므로 별도 키워드
   const plW = ss.getSheetByName('point_logs');
   const unknown = {};
   if (plW && plW.getLastRow() >= 2) {
@@ -1555,6 +1556,7 @@ function aiFeedbackBatch_() {
   const t0 = Date.now();
   const AI_BUDGET_MS = 120000; // [리뷰 H1] nightJobs 뒤쪽에서 돌므로 자체 예산 2분 — 완주 마커·후속 잡을 굶기지 않는다
   let made = 0, held = 0, permFails = 0, processed = 0, lastErr = ''; // [v9.63] held=품질 게이트 격리 수
+  let rwPrep = null, rwPaid = 0; // [v9.147] 재작성 보상 — 재작성 제출이 하나도 없는 밤에는 준비조차 하지 않는다(읽기 0)
   const badSid = []; // [v9.67] profiles에 없는 sid 수집 — 무통보 드롭 결함 수리(하루 1회 dedup 통보)
   for (let i = 0; i < rows.length; i++) {
     if (made >= AI_FEEDBACK_MAX_PER_RUN || Date.now() - t0 > AI_BUDGET_MS) break;
@@ -1579,6 +1581,14 @@ function aiFeedbackBatch_() {
         // [v9.138] 수집 4칸 — 다시쓰기URL은 **이 카드의 id**를 프리필해, 학생이 누르면 그 첨삭에 대한 2차 시도로 들어온다
         셀안전_(hwId), hwTagsClean_(card.error_tags), 셀안전_(reDo), hwRedoUrlOf_(hwTpl, sid, fbId)]);
       made++; processed = i + 1;
+      /* [v9.147] 재작성 보상 — **적재에 성공한 뒤에만** 판정한다(수집이 보상보다 앞선다).
+       *   준비(hw_feedback·point_logs 각 1회 읽기)는 첫 재작성에서만 일어난다.
+       *   ⚠ 여기서 참조하는 교정문은 **원본 첨삭(reDo)의 것**이지 방금 만든 카드의 것이 아니다 —
+       *     "이번에 받은 교정"이 아니라 "지난번 교정을 보고 고쳐 썼는가"를 재는 것이 이 보상의 뜻이다. */
+      if (reDo) {
+        if (!rwPrep) rwPrep = 재작성준비_(ss, tz);
+        if (재작성판정_(rwPrep, sid, text, reDo) === '지급') rwPaid++;
+      }
       // [리뷰 H1] 성공분 즉시 포인터 전진 — 6분 하드킬(throw 없는 강제 종료)에도 중복 생성·중복 과금 0
       props.setProperty('숙제폼_포인터', String(from + processed));
       Utilities.sleep(300); // rate-limit 여유(syncToNotion_ 패턴)
@@ -1599,7 +1609,9 @@ function aiFeedbackBatch_() {
     }
   }
   if (processed > 0) props.setProperty('숙제폼_포인터', String(from + processed));
+  재작성지급_(ss, rwPrep); // [v9.147] 지급은 배치 끝에 1회(appendPoints 락 경합·채번 부담 최소화)
   notifyDroppedSids_('숙제폼', badSid); // [v9.67]
+  if (rwPrep && (rwPaid || rwPrep.echo)) Logger.log('재작성 ' + rwPaid + '건 보상 · 에코 ' + rwPrep.echo + '건 무지급'); // [v9.147]
   if (made || permFails || lastErr) adminMail('[SYNK] 🤖 AI 첨삭 ' + made + '건 생성' + (held ? '(노출 ' + (made - held) + ' · 격리 ' + held + ')' : '') + (permFails ? ' · 오류 ' + permFails + '건' : '') + (lastErr ? ' · 중단됨' : ''), // [v9.65 리뷰 L2] 격리 있을 때 합산 오독 방지
     (made ? (AI_FEEDBACK_AUTOPUBLISH ? (made - held > 0 ? '게이트 통과 ' + (made - held) + '건은 앱에 바로 노출되었습니다.\n' : '') : "hw_feedback 시트에서 내용 확인 후 '상태'를 '노출'로 바꾸면 학생에게 공개됩니다(AI_FEEDBACK_AUTOPUBLISH=true면 이 단계 생략).\n") : '') +
     (held ? "🚧 품질 게이트 격리 " + held + "건 — 시트 '상태' 열의 '격리:사유'를 확인하고, 내용이 멀쩡하면 '노출'로 바꿔 공개하세요(같은 사유가 반복되면 알려주세요).\n" : '') + // [v9.63] 무인 발행의 사람 백스톱 — 격리만 사람 눈
@@ -1952,7 +1964,9 @@ function welcomeStoryBatch_() {
     if (!s.pEmail) { remain.push(id); return; } // 이메일 대기(§1-3 입력 전)
     if (!quotaOk(1)) { remain.push(id); return; }
     let story = null;
-    if (apiKey) story = aiText_('SYNK LAB(몽골 울란바토르, 뇌과학 기반 게임화 한국어 학원)의 웰컴 스토리 작가. 신규 학생 "' + s.n + '"' +
+    // [v9.147] AI 호출만 끈다(STORY_AI_ON=false) — **기능은 유지**. 이 메일은 학부모 첫 접점이라(개원일엔 전원 신규)
+    //   연출로 분류해 폐지하면 학원비를 내는 쪽의 첫인상 채널이 사라진다. 아래 템플릿 폴백이 그대로 발송된다.
+    if (apiKey && STORY_AI_ON) story = aiText_('SYNK LAB(몽골 울란바토르, 뇌과학 기반 게임화 한국어 학원)의 웰컴 스토리 작가. 신규 학생 "' + s.n + '"' +
       ((s.dream || s.cGoal) ? '(목표: ' + (s.dream || s.cGoal).slice(0, 40) + ')' : '') + (s.vision ? '(비전 메모: ' + s.vision.slice(0, 40) + ')' : '') + // [v9.84] 신규생은 드림 입력 전 — 상담목표 폴백
       '의 세계관 입장 스토리를 5~7문장 한국어로. 시냅스 크루로 임명되는 서사, 성장 파트너와의 첫 만남 예고("몬스터"라는 단어는 쓰지 않기), 따뜻하고 과장 없는 톤. 인사말·서명 없이 본문만.', 1024); // [v9.74] 학부모 수신 편지 — 몬스터→성장 파트너
     if (!story) story = s.n + ' 크루의 시냅스 여정이 시작됩니다. 첫 출석의 순간, 성장 파트너가 깨어나고 매일의 기록이 이야기가 됩니다. ' +
@@ -2040,7 +2054,8 @@ function futureLetterBatch_() {
     if (!quotaOk(1)) return;
     const goal = s.dream || s.cGoal || s.vision; // [v9.84] 상담목표(TOPIK 급수·기한)가 비전 카테고리보다 구체 — 인용 재료 승격
     let letter = null;
-    if (apiKey) letter = aiText_('SYNK LAB의 "미래의 나" 편지 작가. 3개월 전 입학하며 목표를 적은 학생에게, 그 목표를 인용하며 실제 데이터로 성장을 비추는 편지를 8~10문장 한국어로. ' +
+    // [v9.147] AI 호출만 끈다(STORY_AI_ON=false) — 기능 유지·템플릿 폴백 발송(재등록 결정 시점 3개월 창의 학부모 편지)
+    if (apiKey && STORY_AI_ON) letter = aiText_('SYNK LAB의 "미래의 나" 편지 작가. 3개월 전 입학하며 목표를 적은 학생에게, 그 목표를 인용하며 실제 데이터로 성장을 비추는 편지를 8~10문장 한국어로. ' +
       '규칙: "달성/미달" 판정 금지 — "얼마나 왔는지"만. 다정하되 과장 금지. 인사·서명 없이 본문만.\n' +
       '학생: ' + s.n + '\n입학 때 목표: "' + goal.slice(0, 60) + '"' +
       (s.topik0 ? '\n입학 때 TOPIK 실측: ' + s.topik0 + (s.lv ? ' → 지금 앱 급수 ' + s.lv + '급' : '') + ' (이 대조를 성장의 증거로 한 문장 녹일 것 — 급수 체계가 달라 직접 비교 단정은 금지)' : '') + // [v9.84·한수더] 입학 시점 실측 = 0점 좌표

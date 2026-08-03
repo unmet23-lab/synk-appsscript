@@ -587,6 +587,52 @@ function dataCoverageReport() {
   if (!턴) L.push('  ⚠️ 0턴 — 대화 폼이 없거나(SYNK 메뉴 ▸ 한국어 대화 폼 만들기) CLAUDE_API_KEY가 없습니다.');
   else if (최장 < 3) L.push('  ⚠️ 아직 이어지는 대화가 없습니다(최장 ' + 최장 + '턴) — 답장이 질문으로 끝나는지, 학생이 답장을 읽는 화면이 있는지 확인하세요.');
 
+  /* ⑤ [v9.147] 참여율 — **기능 압축의 부작용을 재는 유일한 계기다.**
+   *   압축 판정의 축이 「학생을 로그 입구까지 데려오는가」였는데, 그걸 재는 숫자가 없으면
+   *   압축이 감량인지 출혈인지 영영 모른 채 지나간다(적대 리뷰가 지목한 가장 큰 구멍).
+   *   분모는 재원 학생 수, 분자는 최근 7일에 **무엇이든 하나라도 낸** 학생 수다 —
+   *   총량(건수)은 소수의 열성 학생이 혼자 끌어올릴 수 있어 참여를 못 잰다. */
+  const 최근 = new Date(Date.now() - 7 * 86400000);
+  const 활동 = new Set();
+  const 최근카운트 = (name, sidCol, dateCol, width) => {
+    const sh = ss.getSheetByName(name);
+    if (!sh || sh.getLastRow() < 2) return;
+    const w = Math.min(width, sh.getLastColumn());
+    sh.getRange(2, 1, sh.getLastRow() - 1, w).getValues().forEach(r => {
+      const s = String(r[sidCol] || '').trim();
+      const d = r[dateCol] ? asDate_(r[dateCol]) : null;
+      if (s && d && d >= 최근) 활동.add(s);
+    });
+  };
+  최근카운트('hw_feedback', 1, 2, 3);   // 숙제 제출(첨삭 행 = 제출의 증거)
+  최근카운트('quiz_log', 1, 9, 10);      // 퀴즈 응답
+  최근카운트('talk_log', 1, 6, 7);       // 대화
+  let 재원 = 0;
+  const pfC = ss.getSheetByName('profiles');
+  if (pfC && pfC.getLastRow() >= 2) pfC.getRange(2, 1, pfC.getLastRow() - 1, 4).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') 재원++;
+  });
+  L.push('');
+  L.push('■ 참여율 (압축이 감량인지 출혈인지를 가르는 숫자)');
+  L.push('  최근 7일에 하나라도 낸 학생 ' + 활동.size + '/' + 재원 + '명'
+    + (재원 ? ' (' + Math.round(활동.size / 재원 * 100) + '%)' : ''));
+  if (재원 && 활동.size < 재원 * 0.5) L.push('  ⚠️ 절반 아래입니다 — 총량이 늘어도 이 숫자가 내려가면 압축이 접속을 깎고 있다는 뜻입니다(끈 기능을 되살릴 판단 재료).');
+
+  // ⑥ [v9.147] 골든셋 — 학생이 아니라 **정답**을 쌓는 칸. 이게 비면 2년 뒤 모델 선택을 감으로 한다
+  const gd = ss.getSheetByName('teacher_gold');
+  let 표본 = 0, 응답G = 0, 수정 = 0;
+  if (gd && gd.getLastRow() >= 2) gd.getRange(2, 1, gd.getLastRow() - 1, GOLD_HEADERS.length).getValues().forEach(r => {
+    표본++;
+    const v = String(r[6] || '').trim(); // G 강사판정
+    if (v) 응답G++;
+    if (String(r[7] || '').trim()) 수정++; // H 강사교정
+  });
+  L.push('');
+  L.push('■ 강사 교정 골든셋 (2년 뒤 「어느 모델이 우리 학생에게 맞는가」의 채점표)');
+  L.push('  표본 ' + 표본 + '건 · 강사 응답 ' + 응답G + '건 · 그중 교정 수정 ' + 수정 + '건');
+  if (표본 && !응답G) L.push('  ⚠️ 표본은 뽑히는데 응답이 0 — 강사가 그 탭을 안 보고 있습니다(유인이 0인 업무라 예상된 실패 모드입니다).');
+  else if (응답G && 수정 === 응답G) L.push('  ⚠️ 전부 「고칠 곳이 있다」로만 쌓였습니다 — 「AI가 맞았다」 라벨이 0이면 재현율을 못 재는 반쪽 채점표가 됩니다.');
+
   const head = '📊 학습 데이터 커버리지 — ' + Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd') + '\n'
     + '(「2년 축적 → AI 회화 앱」 진척. 중요한 것은 총량이 아니라 **비어 있는 유형**입니다)\n\n';
   const report = head + L.join('\n')
@@ -666,4 +712,151 @@ function quizSweep_(ss) {
   props.setProperty('퀴즈폼_포인터', String(last));
   notifyDroppedSids_('퀴즈폼', badSid);
   if (out.length) Logger.log('퀴즈 응답 ' + out.length + '건 적재(quiz_log)');
+  퀴즈응답포인트_(ss, out, tz); // [v9.147] 적재된 응답에만 지급 — 지급이 적재보다 앞서면 "받았는데 안 쌓인 답"이 생긴다
+}
+
+/* [v9.147] 🎯 퀴즈 응답 포인트 — 「데이터를 낳는 행동」에 보상을 옮기는 두 경로 중 하나(다른 하나는 재작성).
+ * 설계 결정 3개:
+ *   ① **정답 여부와 무관하게 지급한다.** 정답에만 주면 확신도 3택이 거짓말을 시작한다 — '찍었어요'를 고르면
+ *      손해라고 느끼는 순간 그 축이 죽고, 확신도는 quiz_log에서 가장 값비싼 열이다(정답인데 찍음 = 모르는 것).
+ *   ② **1일 1회 상한.** 퀴즈는 10초짜리 행동이라 무제한이면 파밍이 되고, 파밍된 응답은 데이터도 오염시킨다.
+ *   ③ 지급은 **적재 뒤**에만(위 호출 위치) — 순서가 뒤집히면 "포인트는 받았는데 로그엔 없는" 행이 생긴다.
+ * 멱등: 오늘 이미 '퀴즈응답'을 받은 학생은 건너뛴다(sweepFeedbackAck_ 패턴) + DAILY_LIMIT 야간 정정이 2차 그물. */
+function 퀴즈응답포인트_(ss, loaded, tz) {
+  if (!loaded || !loaded.length) return;
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const doneToday = new Set();
+  const pl = ss.getSheetByName('point_logs');
+  if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (r[1] && r[5] && String(r[3] || '') === '퀴즈응답' &&
+        Utilities.formatDate(asDate_(r[5]), tz, 'yyyy-MM-dd') === today) doneToday.add(String(r[1]).trim());
+  });
+  const grants = [];
+  loaded.forEach(row => {
+    const sid = String(row[1] || '').trim();
+    // 이 스위프에서 같은 학생이 3문항을 냈어도 1회 — doneToday에 즉시 넣어 루프 안에서도 상한이 선다
+    if (!sid || doneToday.has(sid)) return;
+    doneToday.add(sid);
+    grants.push([sid, PT.퀴즈응답, '퀴즈응답', '시스템']);
+  });
+  if (grants.length) appendPoints(ss, grants);
+}
+
+/* ═══════════════ [v9.147] 🔁 재작성 보상 — 3단 데이터의 마지막 단에 유인을 붙인다 ═══════════════
+ * 「교정을 받고 실제로 고쳐 썼는가」는 학습이 일어났는지의 유일한 신호인데, 이 행동에는 보상이 0이었다
+ * (숙제 제출·첨삭 확인 탭에는 있었다). 기능 압축의 핵심 교환 = 손일의 몫을 데이터를 낳는 행동으로 옮긴다.
+ *
+ * 🔴 **복붙 게이트가 이 보상의 전제다.** 무인 발행(AI_FEEDBACK_AUTOPUBLISH=true)이라 학생은 교정문을 먼저 본다 —
+ *   제출 자체에 포인트를 걸면 합리적 학생은 교정문을 그대로 에코한다. 그러면 3단의 마지막 단이 「몽골어 화자의
+ *   언어」가 아니라 **모델 출력의 복제물**이 되어, 이 데이터의 값(유형 커버리지) 자체가 훼손된다.
+ * ⚠ 잡는 것은 「그대로 베낀 것」뿐이다 — 교정문을 참고해 자기 말로 다시 쓰는 것은 정상 학습이고 막지 않는다.
+ * ⚠ 상한(주 1회)은 **지급 상한이지 재작성 횟수 제한이 아니다** — 더 써도 데이터는 전부 쌓인다.
+ * ⚠ 이 게이트는 지급만 막는다. 지급을 못 받은 재작성도 hw_feedback에는 그대로 남는다(수집이 채점보다 우선). */
+/* 정규화 후 교정문이 제출문의 이 비율 이상을 덮으면 「그대로 베낌」으로 본다.
+ * 0.7인 이유(회귀가 정한 값): 0.8에서는 **교정문을 통째로 붙이고 "감사합니다" 다섯 글자만 더한 제출이
+ *   통과**했다(tests/기능압축.test.js가 잡았다). 0.7이면 그건 막히고, 교정문 뒤에 자기 문장을 한 줄
+ *   더 쓴 제출(새 글이 30%를 넘음)은 통과한다 — 후자는 막으면 안 되는 정상 학습이다. */
+const REWRITE_ECHO_RATIO = 0.7;
+const REWRITE_COOLDOWN_DAYS = 7;  // 지급 상한 주기(주 1회)
+
+/* 정규화 — 공백·문장부호·대소문자를 걷어낸다. "띄어쓰기만 바꾼 복붙"이 게이트를 통과하지 않게. */
+function 재작성정규화_(s) {
+  return String(s || '').toLowerCase().replace(/[\s.,!?~"'()‘’“”]/g, '');
+}
+
+/* 에코 판정 — 교정문이 없으면(첨삭 실패·구 행) 판정 불가라 **지급한다**
+ *   (「모름」을 불리하게 세지 않는다 — 결석 복귀율에서 세운 원칙과 같다). */
+function 재작성에코_(text, corrected) {
+  const a = 재작성정규화_(text), b = 재작성정규화_(corrected);
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (a.indexOf(b) > -1 && b.length >= a.length * REWRITE_ECHO_RATIO) return true;
+  return false;
+}
+
+/* 배치 1회분 준비 — hw_feedback(id→고친문장)과 최근 지급 이력을 각 1회만 읽는다.
+ * 재작성 제출이 한 건도 없는 밤에는 호출되지 않는다(호출부가 첫 재작성에서 지연 생성). */
+function 재작성준비_(ss, tz) {
+  const corr = {};
+  const fb = ss.getSheetByName('hw_feedback');
+  if (fb && fb.getLastRow() >= 2) fb.getRange(2, 1, fb.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (r[0]) corr[String(r[0]).trim()] = String(r[4] || ''); // A id · E 고친문장
+  });
+  const recent = new Set();
+  const since = new Date(Date.now() - REWRITE_COOLDOWN_DAYS * 86400000);
+  const pl = ss.getSheetByName('point_logs');
+  if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (r[1] && r[5] && String(r[3] || '') === '재작성' && asDate_(r[5]) >= since) recent.add(String(r[1]).trim());
+  });
+  return { corr: corr, recent: recent, grants: [], echo: 0, tz: tz };
+}
+
+/* 한 행 판정 — 지급 대상이면 grants에 쌓는다(실지급은 배치 끝에 1회). 반환값은 로그·집계용 사유. */
+function 재작성판정_(prep, sid, text, reDo) {
+  if (!prep || !sid || !reDo) return '';
+  if (prep.recent.has(sid)) return '상한';                              // 주 1회 — 이번 주 이미 받음
+  if (재작성에코_(text, prep.corr[reDo])) { prep.echo++; return '에코'; } // 교정문 복붙 — 무지급
+  prep.recent.add(sid);
+  prep.grants.push([sid, PT.재작성, '재작성', '시스템']);
+  return '지급';
+}
+
+function 재작성지급_(ss, prep) {
+  if (!prep || !prep.grants.length) return;
+  appendPoints(ss, prep.grants);
+  Logger.log('재작성 보상 ' + prep.grants.length + '건 지급' + (prep.echo ? ' · 에코 ' + prep.echo + '건 무지급' : ''));
+}
+
+/* ═══════════════ [v9.147] 🥇 강사 교정 골든셋 — 2년 뒤 모델 선택의 채점표 ═══════════════
+ * 문제: AI 첨삭이 무인 발행이라 **「강사가 실제로 한 교정」이 어디에도 안 남는다.** 2년치 학생 데이터가 있어도
+ *   "어느 모델이 우리 학생에게 더 나은 교정을 하는가"는 **정답이 붙은 평가 세트** 없이는 못 잰다 —
+ *   없으면 2년 뒤에도 감으로 고른다. 나중에 만들려면 강사를 다시 앉혀야 하므로 그릇은 지금 만든다.
+ *
+ * 🔑 **무작위 표본**이 이 설계의 핵심이다(적대 리뷰가 잡은 편향):
+ *   강사에게 "틀린 걸 골라 고쳐 주세요"라고 하면 눈에 띄게 틀린 것만 쌓여 「AI가 맞았다」 라벨이 0이 된다 —
+ *   정밀도만 있고 재현율이 없는 **반쪽 채점표**가 된다. 그래서 매주 무작위 n건을 뽑아 그 카드에 대해 묻는다
+ *   ("이 교정, 그대로 두시겠어요? 고치시겠어요?"). **동의도 답이고 수정도 답이다.**
+ * 🔑 **평가 전용이다 — 발행된 첨삭을 소급 정정하지 않는다.** 학생이 이미 본 카드를 뒤늦게 바꾸면
+ *   3단 데이터(원문→교정→재작성)의 정합이 깨진다(어느 교정에 대한 재작성인지 모호해진다).
+ *   강사가 "이건 학생에게 다시 알려야 한다"고 판단하면 그건 수업에서 말하는 일이고, 이 시트의 일이 아니다.
+ * ⚠ 운용 시작 = **파일럿 첫 첨삭 발행 시점**(지금은 실학생 0명이라 표본이 안 뽑힌다). 그릇만 먼저 둔다. */
+const GOLD_HEADERS = ['id', 'fb_id', 'student_id', '제출일', '원문', 'AI교정', '강사판정', '강사교정', '사유', '오류태그', '강사', 'created_at'];
+const GOLD_VERDICTS = ['AI 교정이 맞다', '고칠 곳이 있다', '원문이 이미 맞다'];
+const GOLD_SAMPLE_PER_WEEK = 5; // 주당 무작위 표본 — 강사 1인 5건이 현실적 상한(유인이 0인 업무다)
+
+/* 표본 추출 — 지난 7일 '노출' 카드 중 아직 안 뽑힌 것에서 무작위 n건. 매주 월요일 1회(weeklyJobs).
+ * 무작위성은 hashPick_ 같은 결정적 해시가 아니라 진짜 난수를 쓴다 — 결정적이면 같은 학생·같은 유형이
+ * 매주 뽑혀 표본이 한쪽으로 굳는다(그게 정확히 이 시트가 피하려는 편향이다). */
+function goldenSampleWeekly_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const fb = ss.getSheetByName('hw_feedback');
+  if (!fb || fb.getLastRow() < 2) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const gold = ensureSheet(ss, 'teacher_gold', GOLD_HEADERS);
+  const already = new Set();
+  if (gold.getLastRow() >= 2) gold.getRange(2, 2, gold.getLastRow() - 1, 1).getValues().forEach(r => {
+    if (r[0]) already.add(String(r[0]).trim());
+  });
+  const since = new Date(Date.now() - 7 * 86400000);
+  const pool = [];
+  fb.getRange(2, 1, fb.getLastRow() - 1, 13).getValues().forEach(r => {
+    const id = String(r[0] || '').trim();
+    if (!id || already.has(id)) return;
+    if (String(r[8] || '') !== '노출') return;      // I 상태 — 학생에게 실제로 나간 카드만이 평가 대상이다
+    if (!String(r[4] || '').trim()) return;          // E 고친문장 없음(오류 행)
+    const d = r[2] ? asDate_(r[2]) : null;
+    if (!d || d < since) return;
+    pool.push({ id: id, sid: String(r[1] || ''), d: dstr(r[2], tz), src: String(r[3] || ''), corr: String(r[4] || ''), tags: String(r[12] || '') });
+  });
+  if (!pool.length) return;
+  for (let i = pool.length - 1; i > 0; i--) { // Fisher-Yates — slice(0,n)만 하면 시트 순서(=시간순)가 그대로 표본이 된다
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+  }
+  const pick = pool.slice(0, GOLD_SAMPLE_PER_WEEK);
+  const now = new Date();
+  const rows = pick.map((p, i) => ['GD' + Utilities.formatDate(now, tz, 'yyyyMMdd') + '-' + (i + 1),
+    p.id, p.sid, p.d, 셀안전_(p.src), 셀안전_(p.corr), '', '', '', p.tags, '', now]);
+  gold.getRange(gold.getLastRow() + 1, 1, rows.length, GOLD_HEADERS.length).setValues(rows);
+  Logger.log('골든셋 표본 ' + rows.length + '건 적재(teacher_gold)');
 }
