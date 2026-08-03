@@ -61,6 +61,24 @@ test('과잉 차단하지 않는다 — pull이 아닌 clasp 명령은 통과', 
   }
 });
 
+test('검색을 벌하지 않는다 — 인용된 인자 안의 clasp pull은 통과 (2026-08-04 실측 오탐)', () => {
+  /* 이 가드를 넣은 당일, 보드를 grep하려던 명령이 차단됐다 — 인용 인자 안의 문구를
+   * 실행 명령으로 읽었다. 08-01 heredoc 오탐과 같은 계열이라 통과 목록에 못박는다. */
+  for (const cmd of [
+    'grep -n "clasp pull 차단" docs/세션보드.md',
+    "rg 'clasp pull' docs/",
+    'echo "clasp pull 은 작업본을 덮는다"',
+  ]) {
+    assert.equal(runGuard(cmd).decision, null, '검색·출력이 차단됐다(오탐): ' + cmd);
+  }
+});
+
+test('인용된 실행 경로는 여전히 잡는다 (오탐 수리가 탐지를 깎지 않았다)', () => {
+  // 산문만 죽이고 실행 경로는 살려야 한다 — 이 둘을 한 번에 검사한다.
+  assert.equal(runGuard('"C:/Users/q1212/AppData/Roaming/npm/clasp.cmd" pull').decision, 'deny',
+    '인용된 clasp 실행 경로의 pull을 놓쳤다 — 오탐 수리가 탐지 구멍을 냈다');
+});
+
 test('문서화를 벌하지 않는다 — 커밋 메시지에 적기만 한 clasp pull은 통과', () => {
   const cmd = "git commit -F - <<'EOF'\nops: 마찰 F040 — 확인에 clasp pull 금지\n\n라이브 잔재 확인에 clasp pull을 쓰면 작업본이 덮인다.\nEOF";
   const r = runGuard(cmd);
