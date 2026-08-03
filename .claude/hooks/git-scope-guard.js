@@ -52,21 +52,36 @@ function stripNonExecutedText(s) {
 const exec = stripNonExecutedText(cmd);
 if (/GIT_SCOPE_BYPASS=1/.test(exec)) process.exit(0);
 
+/* git 전역 옵션을 흡수하는 공용 접두사 — 아래 규칙은 **전부** 이것으로 시작해야 한다.
+ * 왜: 규칙들이 `\bgit\s+add\b` 처럼 서브커맨드가 `git` 바로 뒤에 온다고 가정했는데,
+ * 실제로는 `git -C <경로> add -A` 를 상시로 쓴다(settings.json 권한 목록에도 그 형태가 잔뜩 있다).
+ * 2026-08-04 실측: 규칙 5개가 **하나도** 그 형태를 잡지 못했고, 못 잡는 방향은 「통과」였다.
+ * 호출부마다 고치면 다음 규칙에서 또 틀리므로 상수 하나를 공유하고,
+ * 회귀(tests/git범위가드)가 **모든 규칙이 -C 형태를 잡는지**를 검사한다.
+ *   값을 따로 받는 옵션(-C <경로> · -c k=v · --git-dir <경로> …)과 값 없는 플래그(--no-pager)를 함께 흡수한다. */
+const G = '\\bgit\\s+(?:(?:-[Cc]|--git-dir|--work-tree|--exec-path|--namespace)(?:=\\S+|\\s+\\S+)\\s+|--?[\\w-]+\\s+)*';
+const re = (body, flags) => new RegExp(G + body, flags);
+
+/* `-C <경로>`가 붙으면 그 저장소가 대상이다 — 아래 ④⑤는 git 상태를 실제로 읽으므로
+ * cwd 대신 그 경로에서 물어야 한다(안 그러면 남의 저장소 상태로 판정한다). */
+const cdir = /\bgit\s+(?:[^&|;]*?\s)?-C\s+(['"]?)([^'"\s]+)\1/.exec(exec);
+const gitCwd = cdir ? cdir[2] : process.cwd();
+
 const 대안 = '\n→ 대신: git commit -m "..." -- 경로A 경로B'
   + '\n   (경로를 주면 인덱스를 무시하고 그 파일만 커밋된다 — 남이 스테이징해둔 것이 있어도 안 딸려온다)'
   + '\n   묶어 쓰려면 한 호출 안에서: git add 경로A 경로B && git commit -m "..."'
   + '\n   의도적 예외라면 명령 앞에 GIT_SCOPE_BYPASS=1 을 붙인다.';
 
 /* ① git add -A / --all / . — untracked까지 담는다(F015: 유호님 git 밖 정본·자격증명 폴더가 같은 트리에 있다) */
-if (/\bgit\s+add\b[^&|;]*?(\s-A\b|\s--all\b|\s\.(\s|$))/.test(exec)) {
+if (re('add\\b[^&|;]*?(\\s-A\\b|\\s--all\\b|\\s\\.(\\s|$))').test(exec)) {
   deny('[git-scope-guard] `git add -A` · `git add .` 차단 — 내가 지정하지 않은 파일까지 담는다.'
     + '\n이 저장소는 세션 여럿이 같은 작업 트리를 공유하고, 유호님의 git 밖 정본과 자격증명 폴더가 그 안에 있다.'
     + '\n2026-08-03 실사고(F015): 이 명령이 사업문서 2종을 커밋해 push까지 갔다.' + 대안);
 }
 
 /* ② git commit -a / --all — untracked는 안 담지만 **남의 tracked 수정**을 담는다(F013·F014 계열) */
-if (/\bgit\s+commit\b[^&|;]*?(\s-a\b|\s--all\b|\s-[a-zA-Z]*a[a-zA-Z]*\b)/.test(exec)
-    && !/\bgit\s+commit\b[^&|;]*?\s--\s/.test(exec)) {
+if (re('commit\\b[^&|;]*?(\\s-a\\b|\\s--all\\b|\\s-[a-zA-Z]*a[a-zA-Z]*\\b)').test(exec)
+    && !re('commit\\b[^&|;]*?\\s--\\s').test(exec)) {
   deny('[git-scope-guard] `git commit -a` 차단 — 추적 중인 **남의 미커밋 수정**까지 함께 커밋된다.'
     + '\n같은 작업 트리를 세션 5~6개가 공유한다(F013·F014 실사고).' + 대안);
 }
@@ -75,8 +90,8 @@ if (/\bgit\s+commit\b[^&|;]*?(\s-a\b|\s--all\b|\s-[a-zA-Z]*a[a-zA-Z]*\b)/.test(e
  * 이 트리의 미추적 파일은 대개 **다른 세션이 방금 만든 작업물**이다(F025 실사고: 옆 세션의
  * 미커밋 테스트 파일과 codex/ 디렉터리가 정리 한 번에 소멸). dry-run(-n)만 통과 —
  * 커밋과 달리 범위를 좁혀도(경로 지정) 남의 신작을 지우는 성질이 그대로라 경로 예외를 두지 않는다. */
-if (/\bgit\s+clean\b/.test(exec)
-    && !/\bgit\s+clean\b[^&|;]*?(\s-n\b|\s--dry-run\b)/.test(exec)) {
+if (re('clean\\b').test(exec)
+    && !re('clean\\b[^&|;]*?(\\s-n\\b|\\s--dry-run\\b)').test(exec)) {
   deny('[git-scope-guard] `git clean` 차단 — 미추적 파일은 git의 어떤 안전망에도 없어 복구가 불가능하고,'
     + '\n이 공유 트리의 미추적 파일은 대개 다른 세션이 방금 만든 작업물이다(F025 실사고).'
     + '\n→ 확인만 하려면: git clean -n (dry-run — 지우지 않고 목록만)'
@@ -91,11 +106,11 @@ if (/\bgit\s+clean\b/.test(exec)
  * 「rebase in progress」를 **한 글자도 표시하지 않는다**. 범위를 확인하는 습관(`--short`)이
  * 오히려 이 상태를 가린다. 그래서 사람의 주의가 아니라 훅이 본다.
  * 인덱스는 저장소당 하나인데 리베이스는 그 인덱스를 독점한다고 가정한다 — 이 트리에선 거짓이다. */
-if (/\bgit\s+(commit|cherry-pick|revert|merge)\b/.test(exec)) {
+if (re('(commit|cherry-pick|revert|merge)\\b').test(exec)) {
   const { execFileSync } = require('child_process');
   let gitDir = null;
   try {
-    gitDir = execFileSync('git', ['rev-parse', '--git-dir'], { encoding: 'utf8' }).trim();
+    gitDir = execFileSync('git', ['rev-parse', '--absolute-git-dir'], { encoding: 'utf8', cwd: gitCwd }).trim();
   } catch { /* git이 없거나 저장소 밖 — 가드가 판단할 자리가 아니다 */ }
   if (gitDir) {
     const fs = require('fs');
@@ -123,13 +138,13 @@ if (/\bgit\s+(commit|cherry-pick|revert|merge)\b/.test(exec)) {
  * 🔑되감기 자체는 금지하지 않는다(정당한 필요가 있다 — 오늘 나도 abort가 필요했다).
  * 막는 것은 **트리에 미커밋 수정이 있는데 확인 없이 되감는 것**이고,
  * 깨끗한 트리에서는 조용히 통과한다(과잉 차단은 BYPASS 습관을 만든다 — ①~③과 같은 원칙). */
-if (/\bgit\s+(rebase|merge|cherry-pick|revert)\s+--abort\b/.test(exec)
-    || /\bgit\s+reset\b[^&|;]*?\s--hard\b/.test(exec)
-    || /\bgit\s+(checkout|restore)\b[^&|;]*?\s--\s+\./.test(exec)) {
+if (re('(rebase|merge|cherry-pick|revert)\\s+--abort\\b').test(exec)
+    || re('reset\\b[^&|;]*?\\s--hard\\b').test(exec)
+    || re('(checkout|restore)\\b[^&|;]*?\\s--\\s+\\.').test(exec)) {
   const { execFileSync } = require('child_process');
   let 더러운 = [];
   try {
-    더러운 = execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { encoding: 'utf8' })
+    더러운 = execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { encoding: 'utf8', cwd: gitCwd })
       .split('\n').filter((l) => l.trim()).slice(0, 12);
   } catch { /* 저장소 밖 — 가드가 판단할 자리가 아니다 */ }
   if (더러운.length) {
