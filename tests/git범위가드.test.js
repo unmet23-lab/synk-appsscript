@@ -16,10 +16,20 @@ const { ROOT } = require('./_engine-source');
 
 const HOOK = path.join(ROOT, '.claude', 'hooks', 'git-scope-guard.js');
 
+/* [2026-08-04] 가드가 **저장소 상태**(진행 중인 rebase·미커밋 수정)를 보게 되면서
+ * 이 테스트들은 기본 cwd(=공유 저장소)에서 돌면 **옆 세션이 merge 중일 때 실패**하게 됐다.
+ * 실제로 한 번은 3건 실패, 재실행에선 통과했다 — 재현되지 않는 빨간불은 테스트를 꺼버리게 만든다.
+ * 그래서 판정용 cwd를 **깨끗한 임시 저장소**로 고정한다(가드가 보는 세계를 테스트가 통제한다).
+ * 상태를 일부러 만들어야 하는 검사는 아래 `가드_at`으로 각자 저장소를 세운다. */
+const 깨끗한저장소 = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'scope-guard-clean-'));
+execFileSync('git', ['init', '-q'], { cwd: 깨끗한저장소 });
+process.on('exit', () => { try { fs.rmSync(깨끗한저장소, { recursive: true, force: true }); } catch {} });
+
 function 가드(command) {
   const out = execFileSync(process.execPath, [HOOK], {
     input: JSON.stringify({ tool_input: { command } }),
     encoding: 'utf8',
+    cwd: 깨끗한저장소,
   });
   if (!out.trim()) return { 차단: false, 사유: '' };
   const j = JSON.parse(out);
@@ -103,4 +113,116 @@ test('훅이 settings.json에 실제로 등록돼 있다 (파일만 있고 안 �
   const bash = pre.filter((h) => /Bash/.test(String(h.matcher || '')));
   assert.ok(bash.length >= 1 && JSON.stringify(bash).indexOf('git-scope-guard') >= 0,
     'Bash 매처에 걸려 있지 않으면 git 명령을 못 본다');
+});
+
+/* ── ④ rebase·merge 진행 중 커밋 차단 (2026-08-04 F038) ─────────────────────
+ * 실사고: 옆 세션이 리베이스를 도는 동안 다른 세션이 `git commit -- 경로`를 했고,
+ * 그 커밋이 detached HEAD 위에 얹혀 리베이스 순서 안으로 들어갔다.
+ * 🔑 범인은 부주의가 아니라 **도구가 상태를 안 보여준 것**이다 — `git status --short`는
+ * 「rebase in progress」를 표시하지 않는다. 그래서 사람의 주의가 아니라 훅이 본다.
+ * 여기서도 통과 목록을 차단 목록과 같은 무게로 검사한다(과잉 차단 = BYPASS 학습). */
+
+function 임시저장소(진행파일, fn) {
+  const dir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'scope-guard-'));
+  try {
+    execFileSync('git', ['init', '-q'], { cwd: dir });
+    if (진행파일) {
+      const target = path.join(dir, '.git', 진행파일);
+      if (진행파일.endsWith('HEAD')) fs.writeFileSync(target, 'deadbeef\n');
+      else fs.mkdirSync(target, { recursive: true });
+    }
+    return fn(dir);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+function 가드_at(command, cwd) {
+  const out = execFileSync(process.execPath, [HOOK], {
+    input: JSON.stringify({ tool_input: { command } }), encoding: 'utf8', cwd,
+  });
+  if (!out.trim()) return { 차단: false, 사유: '' };
+  const h = JSON.parse(out).hookSpecificOutput || {};
+  return { 차단: h.permissionDecision === 'deny', 사유: String(h.permissionDecisionReason || '') };
+}
+
+test('rebase·merge 진행 중이면 커밋을 막는다 — 남의 작업 순서 안으로 들어간다', () => {
+  [['rebase-merge', 'rebase'], ['rebase-apply', 'rebase'], ['MERGE_HEAD', 'merge'],
+   ['CHERRY_PICK_HEAD', 'cherry-pick'], ['REVERT_HEAD', 'revert']].forEach(([f, 이름]) => {
+    임시저장소(f, (dir) => {
+      const r = 가드_at('git commit -m "x" -- a.md', dir);
+      assert.ok(r.차단, `${f} 진행 중인데 커밋을 막지 못했다`);
+      assert.ok(r.사유.includes(이름), `차단 사유가 무엇이 진행 중인지 말하지 않는다: ${r.사유}`);
+      assert.ok(/--short/.test(r.사유), '「--short는 이 상태를 안 보여준다」는 핵심 정보가 빠졌다');
+    });
+  });
+});
+
+test('진행 중이 아니면 통과한다 — 평소 커밋을 막으면 안 된다', () => {
+  임시저장소(null, (dir) => {
+    assert.equal(가드_at('git commit -m "x" -- a.md', dir).차단, false, '평범한 커밋을 막았다');
+  });
+});
+
+test('진행 중이어도 커밋이 아닌 명령·의식적 우회는 통과한다', () => {
+  임시저장소('rebase-merge', (dir) => {
+    ['git status', 'git add a.md', 'git rebase --continue', 'git rebase --abort',
+     'GIT_SCOPE_BYPASS=1 git commit -m "x" -- a.md'].forEach((c) => {
+      assert.equal(가드_at(c, dir).차단, false, '진행 중에도 허용돼야 하는 명령을 막았다: ' + c);
+    });
+  });
+});
+
+test('저장소 밖에서도 훅이 죽지 않는다 — 가드가 터지면 모든 Bash가 막힌다', () => {
+  const dir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'no-git-'));
+  try {
+    assert.equal(가드_at('git commit -m "x" -- a.md', dir).차단, false);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+/* ── ⑤ 되감기 차단 (2026-08-04 F037) ────────────────────────────────────────
+ * 실사고: `git rebase --abort`가 작업 트리를 HEAD로 되돌리며 옆 세션의 미커밋 편집 2파일을 쓸어냈다.
+ * ③ git clean이 「미추적」을 지킨다면 ⑤는 「추적 중인 남의 수정」을 지킨다 — 둘 다 reflog에 안 남는다.
+ * 🔑 되감기 자체는 금지하지 않는다. 깨끗한 트리에서는 통과해야 한다(그래야 BYPASS를 학습하지 않는다). */
+
+function 더러운저장소(fn) {
+  return 임시저장소(null, (dir) => {
+    fs.writeFileSync(path.join(dir, 'a.md'), '처음\n');
+    execFileSync('git', ['add', 'a.md'], { cwd: dir });
+    execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'init'], { cwd: dir });
+    fs.writeFileSync(path.join(dir, 'a.md'), '남이 지금 편집 중\n');  // 미커밋 수정
+    return fn(dir);
+  });
+}
+
+test('미커밋 수정이 있으면 되감기를 막는다 — 남의 편집은 reflog에도 안 남는다', () => {
+  더러운저장소((dir) => {
+    ['git rebase --abort', 'git merge --abort', 'git reset --hard', 'git reset --hard origin/master',
+     'git checkout -- .', 'git restore -- .'].forEach((c) => {
+      const r = 가드_at(c, dir);
+      assert.ok(r.차단, '되감기를 막지 못했다: ' + c);
+      assert.ok(/미커밋/.test(r.사유), '차단 사유에 원리가 없다: ' + c);
+      assert.ok(/a\.md/.test(r.사유), '무엇이 사라질지 보여주지 않는다 — 그러면 판단할 수 없다');
+    });
+  });
+});
+
+test('트리가 깨끗하면 되감기는 통과한다 (정당한 abort를 막으면 안 된다)', () => {
+  임시저장소(null, (dir) => {
+    ['git rebase --abort', 'git reset --hard', 'git checkout -- .'].forEach((c) => {
+      assert.equal(가드_at(c, dir).차단, false, '깨끗한 트리인데 막았다: ' + c);
+    });
+  });
+});
+
+test('되감기가 아닌 checkout·restore는 더러운 트리에서도 통과한다 (범위가 좁으면 안전하다)', () => {
+  더러운저장소((dir) => {
+    ['git checkout -b 새브랜치', 'git checkout master', 'git restore --staged a.md',
+     'GIT_SCOPE_BYPASS=1 git reset --hard',
+     'git commit -m "docs: reset --hard 사고 기록" -- a.md'].forEach((c) => {
+      assert.equal(가드_at(c, dir).차단, false, '안전한 명령을 막았다: ' + c);
+    });
+  });
 });

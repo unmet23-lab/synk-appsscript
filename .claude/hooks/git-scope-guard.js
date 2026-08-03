@@ -84,4 +84,63 @@ if (/\bgit\s+clean\b/.test(exec)
     + '\n   의도적 예외라면 명령 앞에 GIT_SCOPE_BYPASS=1 을 붙인다.');
 }
 
+/* ④ rebase·merge 진행 중의 commit — 2026-08-04 실사고(F038).
+ * 옆 세션이 리베이스를 도는 동안 다른 세션이 `git commit -- 경로`를 했고, 그 커밋이
+ * **detached HEAD 위에 얹혀** 리베이스 순서 안으로 들어갔다(HEAD가 리베이스 도중 전진해 인덱스가 꼬임).
+ * 🔑범인은 부주의가 아니라 **도구가 상태를 안 보여준 것**이다 — `git status --short`는
+ * 「rebase in progress」를 **한 글자도 표시하지 않는다**. 범위를 확인하는 습관(`--short`)이
+ * 오히려 이 상태를 가린다. 그래서 사람의 주의가 아니라 훅이 본다.
+ * 인덱스는 저장소당 하나인데 리베이스는 그 인덱스를 독점한다고 가정한다 — 이 트리에선 거짓이다. */
+if (/\bgit\s+(commit|cherry-pick|revert|merge)\b/.test(exec)) {
+  const { execFileSync } = require('child_process');
+  let gitDir = null;
+  try {
+    gitDir = execFileSync('git', ['rev-parse', '--git-dir'], { encoding: 'utf8' }).trim();
+  } catch { /* git이 없거나 저장소 밖 — 가드가 판단할 자리가 아니다 */ }
+  if (gitDir) {
+    const fs = require('fs');
+    const p = require('path');
+    const 진행 = [
+      ['rebase-merge', 'rebase'], ['rebase-apply', 'rebase'],
+      ['MERGE_HEAD', 'merge'], ['CHERRY_PICK_HEAD', 'cherry-pick'], ['REVERT_HEAD', 'revert'],
+    ].find(([name]) => fs.existsSync(p.join(gitDir, name)));
+    if (진행) {
+      deny(`[git-scope-guard] ${진행[1]} 진행 중 — 새 커밋을 만들지 않는다.`
+        + '\n지금 커밋하면 detached HEAD 위에 얹혀 그 작업의 순서 안으로 들어간다(2026-08-04 F038 실사고).'
+        + '\n⚠ `git status --short`는 이 상태를 표시하지 않는다 — 범위만 확인하면 못 본다.'
+        + '\n→ 먼저: git status (짧은 형식 말고 전체 — 진행 상태가 첫 줄에 나온다)'
+        + `\n   그 작업을 마치거나(git ${진행[1]} --continue) 되돌린 뒤(--abort) 커밋한다.`
+        + '\n   다른 세션의 작업이면 끝날 때까지 기다린다.'
+        + '\n   의도적 예외라면 명령 앞에 GIT_SCOPE_BYPASS=1 을 붙인다.');
+    }
+  }
+}
+
+/* ⑤ 작업 트리를 통째로 되감는 명령 — 2026-08-04 실사고(F037).
+ * `git rebase --abort`가 작업 트리를 HEAD로 되돌리며 **옆 세션의 미커밋 편집 2파일을 쓸어냈다**
+ * (abort를 한 것은 나고, 피해는 남이 봤다). ③ `git clean`이 미추적을 지우는 것과 같은 자리 —
+ * 이쪽은 **추적 중인 남의 수정**을 지운다. 역시 reflog에도 stash에도 남지 않는다.
+ * 🔑되감기 자체는 금지하지 않는다(정당한 필요가 있다 — 오늘 나도 abort가 필요했다).
+ * 막는 것은 **트리에 미커밋 수정이 있는데 확인 없이 되감는 것**이고,
+ * 깨끗한 트리에서는 조용히 통과한다(과잉 차단은 BYPASS 습관을 만든다 — ①~③과 같은 원칙). */
+if (/\bgit\s+(rebase|merge|cherry-pick|revert)\s+--abort\b/.test(exec)
+    || /\bgit\s+reset\b[^&|;]*?\s--hard\b/.test(exec)
+    || /\bgit\s+(checkout|restore)\b[^&|;]*?\s--\s+\./.test(exec)) {
+  const { execFileSync } = require('child_process');
+  let 더러운 = [];
+  try {
+    더러운 = execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { encoding: 'utf8' })
+      .split('\n').filter((l) => l.trim()).slice(0, 12);
+  } catch { /* 저장소 밖 — 가드가 판단할 자리가 아니다 */ }
+  if (더러운.length) {
+    deny('[git-scope-guard] 되감기 차단 — 작업 트리에 **미커밋 수정**이 있다.'
+      + '\n이 트리는 세션 여럿이 공유하고, 그 수정은 대개 다른 세션이 지금 작업 중인 것이다.'
+      + '\n되감으면 그 편집은 reflog·stash 어디에도 남지 않는다(2026-08-04 F037 실사고: 옆 세션 2파일 소멸).'
+      + '\n\n지금 트리의 미커밋 수정:\n  ' + 더러운.join('\n  ')
+      + '\n\n→ 남의 것이면: 그 세션에 알리고 커밋될 때까지 기다린다.'
+      + '\n   내 것이면: 먼저 커밋하거나 `git stash push -- 경로`로 대피시킨 뒤 되감는다.'
+      + '\n   의도적 예외라면 명령 앞에 GIT_SCOPE_BYPASS=1 을 붙인다.');
+  }
+}
+
 process.exit(0);
