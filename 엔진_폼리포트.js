@@ -488,6 +488,56 @@ function voiceConsentStat_() {
   return r;
 }
 
+/* [v9.151] 소급 불가 수리 ① — 동의의 행 단위 결합 (판정 정본 = memory masterplan-v3-2026-08-04).
+ * 지금까지 동의 버전은 app_state 전역 1값('상담동의'=CONSENT_VERSION)뿐이라, 「이 학생이 어느 판(版) 문구에
+ * 동의했는지」가 행에 남지 않았다. v18.5(선택)→v18.9(필수)처럼 문구가 갈린 뒤에는 이미 받은 응답이 무엇에
+ * 대한 동의였는지 되돌아가 알 수 없다 — 소급 불가. 그래서 응답이 **처음 관측된 날**의 정본 판을 행에 찍는다.
+ *   · 스탬프는 불변 — 이미 찍힌 행은 재실행·문구 개정이 덮지 않는다(그 행의 근거는 그날의 판이다).
+ *   · 가동 전부터 있던 응답에는 버전을 지어내지 않는다 — '기록전(≤현재판)'으로 정직하게 남긴다
+ *     (소급 기재는 「참인 채 거짓을 말하는 코드」가 된다).
+ *   · 헤더 증분 규약 = migrateConsentV186과 동일(항상 끝에만 추가 · 기존 열 위치 불변 · 숨김 상속 차단).
+ *   · 발동 = syncProfiles가 매일 부른다(스스로 발화하지 않는 장치는 안 돈다). 실패는 격리 — 동기화를 못 깬다. */
+function 동의버전스탬프_(consultSh) {
+  try {
+    const consult = consultSh || SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+    if (!consult) return;
+    const w0 = consult.getLastColumn(), lastRow = consult.getLastRow();
+    if (w0 < 1 || lastRow < 3) return;
+    let hdr = consult.getRange(2, 1, 1, w0).getValues()[0].map(h => String(h || '').trim());
+    if (hdr.indexOf(CONSENT_EXT_HEADERS[0]) === -1) return; // 음성동의 열 자체가 없으면 대상이 없다(migrateConsentV186 미실행)
+    const need = ['음성동의버전', '버전확인일'];
+    let wH = 0; hdr.forEach((h, i) => { if (h) wH = i + 1; });
+    let col = Math.max(62, wH) + 1;
+    const firstNew = col; let addedN = 0;
+    need.forEach(h => {
+      if (hdr.indexOf(h) !== -1) return;
+      if (consult.getMaxColumns() < col) consult.insertColumnsAfter(consult.getMaxColumns(), col - consult.getMaxColumns());
+      consult.getRange(2, col).setValue(h);
+      addedN++; col++;
+    });
+    if (addedN) consult.showColumns(firstNew, addedN); // 숨김 열 옆 삽입의 숨김 상속 차단(V184 리뷰 M3와 동일)
+    const w1 = consult.getLastColumn();
+    hdr = consult.getRange(2, 1, 1, w1).getValues()[0].map(h => String(h || '').trim());
+    const ci = hdr.indexOf(CONSENT_EXT_HEADERS[0]), vi = hdr.indexOf('음성동의버전'), di = hdr.indexOf('버전확인일');
+    if (ci === -1 || vi === -1 || di === -1) return;
+    const st = ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'app_state', ['key', 'value']);
+    const first = String(getState(st, '동의스탬프_가동').val || '') === '';
+    const ver = first ? '기록전(≤' + CONSENT_VERSION + ')' : CONSENT_VERSION;
+    const today = Utilities.formatDate(new Date(), SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd');
+    const rows = consult.getRange(3, 1, lastRow - 2, w1).getValues();
+    let stamped = 0;
+    rows.forEach((r, i) => {
+      if (!String(r[ci] || '').trim()) return; // 무응답은 찍지 않는다 — 응답이 생기는 날, 그날의 판이 찍힌다
+      if (String(r[vi] || '').trim()) return;  // 이미 찍힘 — 불변
+      consult.getRange(i + 3, vi + 1).setValue(ver);
+      consult.getRange(i + 3, di + 1).setValue(today);
+      stamped++;
+    });
+    if (first) setState(st, '동의스탬프_가동', today);
+    if (stamped) Logger.log('동의버전스탬프_: ' + stamped + '행 — ' + ver);
+  } catch (e) { Logger.log('동의버전스탬프_ 실패(격리 — 동기화는 계속): ' + e); }
+}
+
 // [v9.33] 콜드 광고 트래픽용 미니 리드폼 — 이름·연락처·인지채널·관심과정 4문항. 68문항(v18.4) 온보딩 상담폼(createConsultForm)과 완전 별개(그 폼은 건드리지 않음).
 //         광고 CTA는 이 폼만 연결. 응답은 이 스프레드시트의 '리드폼_응답' 시트로 떨어지며, 원장이 이름·연락처·인지채널(→유입경로)을 leads 시트로 수기 이관.
 function createLeadForm() {

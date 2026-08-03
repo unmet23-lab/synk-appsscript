@@ -236,8 +236,12 @@ function hwFormUrlOf_(tmpl, sid, hwId) {
  * 왜 필요한가: 이 데이터의 값은 「몽골어 화자가 어디서 무너지는지의 지도」인데(아래 커버리지 리포트 주석),
  *   2년간 프롬프트·모델을 바꿔가며 쌓으면 **「학생이 어려워한 것」과 「그때 우리 답이 나빴던 것」이 한 덩어리로 섞인다.**
  *   섞이면 지도가 틀어지고, 무엇으로 만든 답인지는 **되돌아가 알 수 없다**(원본 음성 보관과 같은 계열).
+ * [v9.151] `audio_ref`(맨 끝) — 음성 원본 참조(Drive 파일ID 등). 보존 정책 = **무제한**(유호 확정 2026-08-04 ·
+ *   판정 정본 = memory masterplan-v3-2026-08-04). 텍스트 폼 수집인 지금은 빈칸이고, 회화 앱(SYNK-talk)이
+ *   녹음을 시작하는 날부터 원본 참조가 여기 착지한다 — 원본 없이 전사만 남기면 윗줄의 「원본 음성 보관」
+ *   소급 불가가 그대로 실현된다(동의 문구는 이미 녹음 수집을 약속했다 — 약속만 있고 데이터가 없던 구멍).
  * ⚠ 새 열은 **반드시 끝에** 붙인다 — 이 시트는 r[1]·r[2]·r[3]·r[4]·r[6] 위치 접근을 쓴다(앞에 끼우면 전부 밀린다). */
-const TALK_LOG_HEADERS = ['id', 'student_id', '턴', '학생문', 'AI답', '오류태그', '제출일', 'created_at', 'model', 'prompt_ver'];
+const TALK_LOG_HEADERS = ['id', 'student_id', '턴', '학생문', 'AI답', '오류태그', '제출일', 'created_at', 'model', 'prompt_ver', 'audio_ref'];
 const TALK_MAX_PER_RUN = 25;   // 야간 1회 상한 — 초과분은 포인터가 남아 다음 밤 이어진다(첨삭 배치와 같은 규약)
 const TALK_CONTEXT_TURNS = 6;  // 문맥으로 되돌려 보내는 직전 턴 수 — 「대화」가 되려면 앞말을 기억해야 한다
 
@@ -408,7 +412,7 @@ function talkBatch_() {
       // 🔒 학생문은 물론 AI답도 감싼다 — 프롬프트 인젝션으로 모델에게 `=…`로 시작하는 답을 뱉게 할 수 있다
       const row = ['TK' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + sid + '-' + turn, sid, turn,
         셀안전_(text), 셀안전_(String(card.reply || '')), hwTagsClean_(card.error_tags), dstr(ts, tz), new Date(),
-        model, pver];
+        model, pver, '']; // [v9.151] audio_ref — 텍스트 폼 경로는 빈칸(녹음이 붙는 날 원본 참조가 들어온다)
       tl.appendRow(row);
       logRows.push(row); // 같은 실행 안에서 같은 학생이 여러 번 나와도 문맥이 이어지게(하루 1턴 가드가 있어 드물지만 공짜다)
       turns[sid] = turn; todayDone[sid] = 1;
@@ -421,7 +425,7 @@ function talkBatch_() {
         permFails++;
         // 실패 행에도 model·prompt_ver를 남긴다 — 「어느 버전에서 실패가 몰렸나」가 나중에 유일한 단서다
         tl.appendRow(['TK' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + sid + '-오류', sid, (turns[sid] || 0) + 1,
-          셀안전_(text), '', '', dstr(ts, tz), new Date(), model, pver]);
+          셀안전_(text), '', '', dstr(ts, tz), new Date(), model, pver, '']);
         processed = i + 1;
         props.setProperty('대화폼_포인터', String(from + processed));
         continue;
