@@ -104,7 +104,8 @@ function syncProfiles() {
         const caK = keep[userId] && keep[userId].created_at;
         const caD = caK ? (caK instanceof Date ? caK : toDate_(caK)) : null;
         const tenureDays = caD ? Math.floor((now - caD) / 86400000) : '';
-        exitSh.getRange(exitSh.getLastRow() + 1, 1, 1, 5).setValues([[userId, row[0] || '', row[3] || '',
+        // [v9.153] 소독 채널로 append — 이름·반은 상담시트 원문(남의 글). skip 비교는 append라 도달 불가지만, 시트 쓰기 통로를 writeIfChanged 하나로 통일한다
+        writeIfChanged(exitSh, exitSh.getLastRow() + 1, 1, [[userId, row[0] || '', row[3] || '',
           Utilities.formatDate(now, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd'), tenureDays]]);
         exitedIds.add(String(userId));
       }
@@ -190,7 +191,7 @@ function syncProfiles() {
       removedInfo.push({ id: String(v[0] || ''), name: String(v[1] || '').trim() });
       return [todaySnap, String(v[0] || ''), String(v[1] || ''), JSON.stringify(v).slice(0, 49500)]; // 50k 셀 상한 안전판
     });
-    snapSh.getRange(snapSh.getLastRow() + 1, 1, snaps.length, 4).setValues(snaps);
+    writeIfChanged(snapSh, snapSh.getLastRow() + 1, 1, snaps); // [v9.153] 소독 채널로 append(통로 통일) — 이름 칸은 원문 왕복값, row_json은 '[' 시작이라 소독 미적용=JSON.parse 복원 무해
     const addedNew = newSeq.filter(e => !e.used).map(e => ({ id: String(e.id), name: String(e.main[1] || '').trim() }));
     const idSwap = removedInfo.filter(rm => rm.name && addedNew.some(ad => ad.name === rm.name && ad.id !== rm.id));
     if (idSwap.length) {
