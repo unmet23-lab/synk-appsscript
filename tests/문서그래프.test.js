@@ -126,7 +126,7 @@ test('정본 버전은 본문에서 읽는다 — 파일명을 믿으면 틀린�
   const g = G.build();
   assert.strictEqual(g.docs.get('docs/반편성_정본_v2.md').version, 'v2.3',
     '파일명(v2)이 아니라 본문(v2.3)을 읽어야 한다');
-  assert.strictEqual(g.docs.get('docs/정본/SYNK LAB/SYNK LAB 급여 인센티브 정본.txt').version, 'v1.3');
+  assert.strictEqual(g.docs.get('docs/정본/SYNK LAB/SYNK LAB 급여 인센티브 정본.txt').version, 'v1.4');
 });
 
 test('머리말 밖의 vN은 버전이 아니다 — 본문을 훑으면 아무 숫자나 집는다', () => {
@@ -172,11 +172,11 @@ test('버전이 같으면 낡음이 아니다 — 거짓양성이 나면 알림 
   }
 });
 
-test('실저장소: 급여 정본을 v1.3으로 맞춘 파생은 낡음으로 올라오지 않는다', () => {
+test('실저장소: 급여 정본을 v1.4로 맞춘 파생은 낡음으로 올라오지 않는다', () => {
   const g = G.build();
   const canon = 'docs/정본/SYNK LAB/SYNK LAB 급여 인센티브 정본.txt';
-  assert.strictEqual(g.docs.get(canon).version, 'v1.3');
-  const wrong = g.stale.filter((s) => s.target === canon && s.cited === 'v1.3');
+  assert.strictEqual(g.docs.get(canon).version, 'v1.4');
+  const wrong = g.stale.filter((s) => s.target === canon && s.cited === 'v1.4');
   assert.deepStrictEqual(wrong, [], '이미 맞춘 문서를 낡음으로 올렸다');
 });
 
