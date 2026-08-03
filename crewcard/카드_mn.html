@@ -3340,7 +3340,7 @@ section.page{
  * window.SYNK_ENDPOINT = Apps Script 크루카드 웹앱 배포 URL(…/exec) 문자열.
  * 토큰은 일부러 없다 — 공개 폼의 토큰은 소스에 노출돼 무의미(서버 크루카드.js 머리말의 무토큰 결정 참조).
  * 바인딩은 마크업에 정적으로 베이크됨(data-field/-column/-value) — 런타임 라벨 매칭에 의존하지 않는다. */
-window.SYNK_ENDPOINT = window.SYNK_ENDPOINT || '';
+window.SYNK_ENDPOINT = window.SYNK_ENDPOINT || 'https://script.google.com/macros/s/AKfycbzzrNG2L1RUX93BN9pUHtrBM0q2cWucLtvD2smQsLz6mj9WPgoqn7xtq4oyFfMg-6ZLhQ/exec';
 (function(){
   var CFG = { url: (typeof window.SYNK_ENDPOINT === 'string' ? window.SYNK_ENDPOINT : '') };
   /* 배포 후: <script>window.SYNK_ENDPOINT='https://script.google.com/macros/s/…/exec'</script> 를 이 블록 위에 두거나 아래 빈 문자열에 직접 붙여넣는다 */
