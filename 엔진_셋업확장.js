@@ -1495,10 +1495,8 @@ function seasonKeyOf_(v, tz) {
   // String(Date)가 텍스트로 굳은 형태(v9.129와 같은 계열)
   if (/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\s+\d{4}/.test(s)) {
     const p = new Date(s);
-    if (!isNaN(p.getTime())) {
-      const p2 = n => (n < 10 ? '0' : '') + n;
-      return p.getFullYear() + '-' + p2(p.getMonth() + 1) + '-' + p2(p.getDate());
-    }
+    // 로컬 게터 금지 — 런타임 시간대(GAS=스크립트 tz, CI=UTC)에 따라 날짜가 밀린다. tz 인자가 결정해야 한다.
+    if (!isNaN(p.getTime())) return Utilities.formatDate(p, tz || Session.getScriptTimeZone(), 'yyyy-MM-dd');
   }
   return s;
 }

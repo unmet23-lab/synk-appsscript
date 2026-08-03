@@ -2216,10 +2216,8 @@ function ymTextOf_(v, tz) {
    *   요일·영문 월로 시작하는 형태만 되돌린다 — 사람이 쓴 일반 텍스트를 날짜로 오변환하지 않기 위해. */
   if (/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\s+\d{4}/.test(s)) {
     const p = new Date(s);
-    if (!isNaN(p.getTime())) {
-      const m2 = p.getMonth() + 1;
-      return p.getFullYear() + '-' + (m2 < 10 ? '0' : '') + m2;
-    }
+    // 로컬 게터 금지 — 런타임 시간대(GAS=스크립트 tz, CI=UTC)에 따라 월이 밀린다. tz 인자가 결정해야 한다.
+    if (!isNaN(p.getTime())) return Utilities.formatDate(p, tz || Session.getScriptTimeZone(), 'yyyy-MM');
   }
   return s;
 }

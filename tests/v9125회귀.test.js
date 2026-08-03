@@ -14,8 +14,19 @@ const tbCode = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
 const mjCode = fs.readFileSync(path.join(ROOT, '만족도팩.js'), 'utf8');
 
 const stub = new Proxy(function () {}, { get: () => stub, apply: () => stub });
+// Utilities.formatDate만 진짜 구현 — tz 인자를 실제로 존중해야 UTC 러너(CI)에서도 GAS와 같은 답이 나온다.
+// 나머지 멤버는 기존 stub 그대로. GAS 패턴 중 이 코드베이스가 쓰는 토큰(yyyy·MM·dd·HH·mm·ss)만 지원.
+const gasFormatDate = (d, tz, fmt) => {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', {
+    timeZone: tz, hourCycle: 'h23', year: 'numeric', month: '2-digit',
+    day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit',
+  }).formatToParts(new Date(d.getTime())).map((p) => [p.type, p.value]));
+  const map = { yyyy: parts.year, MM: parts.month, dd: parts.day, HH: parts.hour, mm: parts.minute, ss: parts.second };
+  return fmt.replace(/yyyy|MM|dd|HH|mm|ss/g, (t) => map[t]);
+};
+const utils = new Proxy({ formatDate: gasFormatDate }, { get: (t, k) => (k in t ? t[k] : stub) });
 const ctx = {
-  SpreadsheetApp: stub, PropertiesService: stub, Utilities: stub, Session: stub,
+  SpreadsheetApp: stub, PropertiesService: stub, Utilities: utils, Session: stub,
   MailApp: stub, GmailApp: stub, UrlFetchApp: stub, DriveApp: stub, FormApp: stub,
   DocumentApp: stub, ScriptApp: stub, CacheService: stub, LockService: stub,
   HtmlService: stub, Logger: { log: () => {} }, console,
