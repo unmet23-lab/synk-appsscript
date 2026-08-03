@@ -121,12 +121,41 @@ test('parseEdges는 버전을 떼고 경로만 준다 — 훅·기존 호출자�
     [{ target: 'a.md', version: 'v1.1' }, { target: 'b.md', version: null }]);
 });
 
+/* [2026-08-04] 이 테스트는 원래 실저장소 정본의 버전을 **리터럴로 박고** 있었다.
+ * 그 결과 정본이 개정될 때마다 테스트가 따라 깨졌고, 하루에 두 번(급여 v1.5 → v1.6)
+ * master를 빨갛게 만들어 남의 배포를 멈춰 세웠다. 리터럴은 지키는 게 아니라 인질이었다.
+ *   → 지키려는 성질을 그대로 쓴다: 「그래프가 읽은 버전 = 본문이 말하는 버전」,
+ *     그리고 「그 값은 파일명 stem이 아니다」. 판번호가 올라도 이 성질은 안 변한다.
+ * (같은 결: worktree-version-collision — 특정 문구에 앵커 걸면 그 문구가 바뀔 때 가드가 죽는다) */
+const CANON_SAMPLES = [
+  'docs/반편성_정본_v2.md',                                  // 파일명 stem(v2) ≠ 본문(v2.3)
+  'docs/정본/SYNK LAB/SYNK LAB 급여 인센티브 정본.txt',       // 파일명에 버전이 아예 없다
+];
+
 test('정본 버전은 본문에서 읽는다 — 파일명을 믿으면 틀린다', () => {
-  // 실제 사례: 파일명은 `반편성_정본_v2.md`인데 본문은 v2.3이다.
   const g = G.build();
-  assert.strictEqual(g.docs.get('docs/반편성_정본_v2.md').version, 'v2.3',
-    '파일명(v2)이 아니라 본문(v2.3)을 읽어야 한다');
-  assert.strictEqual(g.docs.get('docs/정본/SYNK LAB/SYNK LAB 급여 인센티브 정본.txt').version, 'v1.5'); // 31b9233(위성 20점 폐지·B안) 추종
+  for (const rel of CANON_SAMPLES) {
+    const body = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+    const fromBody = G.canonVersion(body);
+    assert.match(String(fromBody), /^v\d+(\.\d+)+$/, `${rel} 머리말에서 버전을 못 읽었다`);
+    assert.strictEqual(g.docs.get(rel).version, fromBody,
+      `${rel} — 그래프가 본문이 아닌 다른 곳에서 버전을 읽고 있다`);
+    // 파일명에서 주워온 값이면 stem과 같아진다(`_v2.md` → 'v2').
+    const stem = (path.basename(rel).match(/_(v\d+(?:\.\d+)*)\./) || [])[1];
+    if (stem) assert.notStrictEqual(fromBody, stem, `${rel} — 파일명 stem을 버전으로 읽었다`);
+  }
+});
+
+/* 위 사고의 재발 방지 — 실저장소 정본의 버전을 리터럴로 단언하면 이 파일이 스스로 막는다.
+ * 픽스처(임시로 쓰고 지우는 docgraph-* 파일)는 리터럴을 계속 써도 된다. 거기가 탐지 능력을
+ * 못박는 자리이고, 남이 개정할 일이 없어 인질이 되지 않는다. */
+test('가드: 실저장소 정본의 버전을 리터럴로 박지 않는다', () => {
+  const self = fs.readFileSync(__filename, 'utf8').split('\n');
+  const offenders = self
+    .map((line, i) => ({ line, no: i + 1 }))
+    .filter(({ line }) => /docs\/[^'"]*정본[^'"]*['"]\)\s*\.version\s*,\s*['"]v\d/.test(line));
+  assert.deepStrictEqual(offenders.map((o) => o.no), [],
+    '정본 버전을 리터럴로 단언하면 개정될 때마다 빨간불이 된다 — 본문에서 읽어 대조하라');
 });
 
 test('머리말 밖의 vN은 버전이 아니다 — 본문을 훑으면 아무 숫자나 집는다', () => {
@@ -172,11 +201,10 @@ test('버전이 같으면 낡음이 아니다 — 거짓양성이 나면 알림 
   }
 });
 
-test('실저장소: 급여 정본을 v1.5로 맞춘 파생은 낡음으로 올라오지 않는다', () => {
-  const g = G.build();
-  const canon = 'docs/정본/SYNK LAB/SYNK LAB 급여 인센티브 정본.txt';
-  assert.strictEqual(g.docs.get(canon).version, 'v1.5'); // 31b9233 추종
-  const wrong = g.stale.filter((s) => s.target === canon && s.cited === 'v1.5');
+test('실저장소: 현재 판을 인용한 파생은 낡음으로 올라오지 않는다', () => {
+  // 정본을 특정하지 않는다 — 「인용한 값 = 지금 값」인데 낡음으로 잡혔으면 그 자체가 거짓양성이다.
+  // 버전 리터럴이 없으므로 어느 정본이 개정돼도 이 테스트는 따라 깨지지 않는다(오히려 범위는 넓어졌다).
+  const wrong = G.build().stale.filter((s) => s.cited === s.now);
   assert.deepStrictEqual(wrong, [], '이미 맞춘 문서를 낡음으로 올렸다');
 });
 
