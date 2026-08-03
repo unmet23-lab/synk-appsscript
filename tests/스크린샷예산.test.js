@@ -21,6 +21,14 @@ const { spawnSync } = require('node:child_process');
 const HOOK = process.env.SYNK_TEST_HOOK || path.resolve(__dirname, '..', '.claude', 'hooks', 'screenshot-budget.js');
 const FREE = 4;
 const HARD = 9;
+const DAY_FREE = 12;
+const DAY_HARD = 25;
+const BLOCK_FREE = 6;
+const BLOCK_HARD = 12;
+
+// 카운터를 통째로 임시 폴더에 격리한다. 일일 예산이 생긴 뒤로는 이게 필수다 —
+// 안 하면 이 테스트가 실환경 하루 예산(25장)을 먹어 치우고, 반대로 실환경이 테스트를 흔든다.
+const BUDGET_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-budget-test-'));
 
 let seq = 0;
 function freshSession() {
@@ -28,7 +36,9 @@ function freshSession() {
   return `synk-test-${process.pid}-${seq}`;
 }
 
-function call(sessionId, { tool = 'mcp__claude-in-chrome__computer', action = 'screenshot', input } = {}) {
+// day 기본값 = 세션 id. 테스트마다 **하루 예산도 따로** 쓰게 만들어, 앞 테스트의 소비가
+// 뒤 테스트의 조용함을 깨지 않게 한다. 일일 예산 자체를 보는 검사는 day를 명시해 공유한다.
+function call(sessionId, { tool = 'mcp__claude-in-chrome__computer', action = 'screenshot', input, day } = {}) {
   const r = spawnSync(process.execPath, [HOOK], {
     input: JSON.stringify({
       session_id: sessionId,
@@ -36,6 +46,7 @@ function call(sessionId, { tool = 'mcp__claude-in-chrome__computer', action = 's
       tool_input: input !== undefined ? input : { action },
     }),
     encoding: 'utf8',
+    env: { ...process.env, SYNK_BUDGET_DIR: BUDGET_DIR, SYNK_BUDGET_DAY: day || sessionId },
   });
   const out = (r.stdout || '').trim();
   if (!out) return { decision: 'allow', reason: '', silent: true };
@@ -43,17 +54,17 @@ function call(sessionId, { tool = 'mcp__claude-in-chrome__computer', action = 's
   return { decision: j.permissionDecision, reason: j.permissionDecisionReason, silent: false };
 }
 
-function reset(sessionId) {
-  spawnSync(process.execPath, [HOOK, '--reset', '--session', sessionId], { encoding: 'utf8' });
+function reset(sessionId, { day, all = false } = {}) {
+  const args = all ? [HOOK, '--reset'] : [HOOK, '--reset', '--session', sessionId];
+  spawnSync(process.execPath, args, {
+    encoding: 'utf8',
+    env: { ...process.env, SYNK_BUDGET_DIR: BUDGET_DIR, SYNK_BUDGET_DAY: day || sessionId },
+  });
 }
 
 test.after(() => {
-  // 테스트가 남긴 카운터 정리 (실환경 예산을 건드리지 않는다)
-  const dir = path.join(os.tmpdir(), 'synk-screenshot-budget');
   try {
-    for (const f of fs.readdirSync(dir)) {
-      if (f.startsWith(`synk-test-${process.pid}-`)) fs.unlinkSync(path.join(dir, f));
-    }
+    fs.rmSync(BUDGET_DIR, { recursive: true, force: true });
   } catch (_) {}
 });
 
@@ -98,13 +109,15 @@ test('차단된 시도는 세지 않는다 (리셋 없이 영원히 막히면 �
   assert.ok(r.silent, '리셋 후 첫 장은 예산 안이라 조용해야 한다');
 });
 
-test('세션이 다르면 예산도 따로다 (남의 세션이 내 예산을 먹지 않는다)', () => {
+test('세션이 다르면 세션 예산은 따로다 (남의 세션이 내 세션 예산을 먹지 않는다)', () => {
+  // 같은 날로 묶어서 본다 — day를 나눠 버리면 이 검사가 저절로 통과해 버린다.
+  const day = freshSession();
   const a = freshSession();
   const b = freshSession();
-  for (let i = 1; i <= HARD; i += 1) call(a);
-  const r = call(b);
-  assert.strictEqual(r.decision, 'allow', '다른 세션의 소비가 내 예산에 잡혔다');
-  assert.ok(r.silent);
+  for (let i = 1; i <= HARD; i += 1) call(a, { day });
+  const r = call(b, { day });
+  assert.strictEqual(r.decision, 'allow', '다른 세션의 소비가 내 세션 예산에 잡혔다');
+  assert.ok(r.silent, `누적 ${HARD + 1}장은 아직 일일 예산(${DAY_FREE}) 안이라 조용해야 한다`);
 });
 
 test('zoom도 그림이므로 함께 센다', () => {
@@ -207,6 +220,9 @@ test('settings.json 매처에 그림을 낳는 도구가 전부 등록돼 있다
     'mcp__Claude_Browser__computer',
     'mcp__computer-use__screenshot',
     'mcp__computer-use__computer_batch',
+    // 08-05: 액션 수 상한을 신설하면서 라우팅도 같이 넓혔다. 배치 도구가 하나라도 빠지면
+    // 훅이 아무리 정확해도 안 불리고, 죽는 방향은 언제나 「통과」다.
+    'mcp__computer-use__teach_batch',
   ]) {
     assert.ok(
       new RegExp(entry.matcher).test(tool),
@@ -227,6 +243,99 @@ test('판정층은 하나다 — settings.json이 액션을 따로 걸러선 안
     !/case .*\bin \*(screenshot|zoom)/.test(cmd),
     'settings.json이 액션을 다시 거르고 있다 — 판정이 두 곳이면 두 곳 다 고쳐야 하고, 08-04엔 둘 다 배치를 몰랐다'
   );
+});
+
+// ── 4번째 실패(08-05 실측)의 회귀 ─────────────────────────────────────────────
+// 훅도 매처도 멀쩡한데 하루 146장이 통과했다. 샌 곳은 **예산의 단위**였다:
+// 상한이 세션당이라 하루 24세션이면 상한도 24배가 된다. 처방 = 일일 누적 층.
+
+// 하루치를 상한까지 채운다 — 세션당 5장(세션 상한 9 이내)씩 여러 세션으로.
+function fillDay(day) {
+  let last;
+  for (let i = 0; i < DAY_HARD / 5; i += 1) {
+    const s = freshSession();
+    for (let k = 0; k < 5; k += 1) last = call(s, { day });
+  }
+  return last;
+}
+
+test('세션을 갈아타도 일일 예산은 이어진다 (08-04엔 이 경로로 하루 146장이 통과했다)', () => {
+  const day = freshSession();
+  const last = fillDay(day);
+  assert.strictEqual(last.decision, 'allow', `${DAY_HARD}장째는 아직 상한 이내여야 한다`);
+
+  const r = call(freshSession(), { day });
+  assert.strictEqual(r.decision, 'deny', '새 세션을 열었더니 일일 예산이 리셋됐다 — 4번째 실패의 재발');
+  assert.match(r.reason, /일일 상한/, '왜 막혔는지(일일 상한)가 안 보인다');
+  assert.match(r.reason, /read_page/, '대체 수단이 없다');
+});
+
+test('세션만 리셋해도 일일 예산은 남는다 (리셋으로 우회할 수 있으면 층이 없는 것과 같다)', () => {
+  const day = freshSession();
+  const s = freshSession();
+  for (let i = 0; i < DAY_HARD - 5; i += 1) call(freshSession(), { day });
+  for (let i = 0; i < 5; i += 1) call(s, { day });
+
+  reset(s, { day });                       // 세션 예산만 푼다
+  const r = call(s, { day });
+  assert.strictEqual(r.decision, 'deny', '세션 리셋이 일일 예산까지 풀었다');
+  assert.match(r.reason, /일일 상한/);
+});
+
+test('전체 리셋(--reset)은 일일 예산도 푼다 (금지가 목적이 아니다)', () => {
+  const day = freshSession();
+  fillDay(day);
+  assert.strictEqual(call(freshSession(), { day }).decision, 'deny', '전제: 이미 일일 상한');
+
+  reset(null, { day, all: true });
+  const r = call(freshSession(), { day });
+  assert.strictEqual(r.decision, 'allow', '전체 리셋 후에도 막혔다 — 빠져나갈 통로가 없다');
+});
+
+test('날이 바뀌면 일일 예산이 초기화된다', () => {
+  const d1 = freshSession();
+  const d2 = freshSession();
+  fillDay(d1);
+  assert.strictEqual(call(freshSession(), { day: d1 }).decision, 'deny', '전제: d1은 이미 상한');
+
+  const r = call(freshSession(), { day: d2 });
+  assert.strictEqual(r.decision, 'allow', '날이 바뀌었는데 예산이 안 풀렸다');
+  assert.ok(r.silent, '새 날의 첫 장은 조용해야 한다');
+});
+
+// ── 한 호출의 액션 수 (20블록 룩백) ───────────────────────────────────────────
+// 그림과 무관한 층이다. 클릭만 든 대형 배치도 결과 블록을 그만큼 만들고,
+// 20블록을 넘기면 다음 턴이 프리픽스를 통째로 재캐시한다(쓰기 = 읽기의 12.5배).
+
+test(`그림이 없어도 액션이 ${BLOCK_HARD}개를 넘으면 차단한다`, () => {
+  const acts = Array(BLOCK_HARD + 1).fill('left_click');
+  const r = call(freshSession(), {
+    tool: 'mcp__computer-use__computer_batch',
+    input: BATCH_FLAT(...acts),
+  });
+  assert.strictEqual(r.decision, 'deny', `액션 ${BLOCK_HARD + 1}개짜리 배치가 통과했다`);
+  assert.match(r.reason, /20/, '왜 막는지(20블록 룩백)를 안 알려준다');
+  assert.match(r.reason, /--reset/, '빠져나갈 통로를 안 알려준다');
+});
+
+test(`액션 ${BLOCK_FREE + 1}개부터는 통과하되 눈에 보인다`, () => {
+  const acts = Array(BLOCK_FREE + 1).fill('left_click');
+  const r = call(freshSession(), {
+    tool: 'mcp__claude-in-chrome__browser_batch',
+    input: BATCH_NESTED(...acts),
+  });
+  assert.strictEqual(r.decision, 'allow', '경고 구간인데 막혔다');
+  assert.ok(!r.silent, '경고 구간인데 조용하다');
+  assert.match(r.reason, new RegExp(`액션 ${BLOCK_FREE + 1}개`), '몇 개인지가 안 보인다');
+});
+
+test(`액션 ${BLOCK_FREE}개까지는 조용하다 (평범한 배치를 벌주면 배치를 못 쓴다)`, () => {
+  const acts = Array(BLOCK_FREE).fill('left_click');
+  const r = call(freshSession(), {
+    tool: 'mcp__computer-use__computer_batch',
+    input: BATCH_FLAT(...acts),
+  });
+  assert.ok(r.silent, '평범한 크기의 배치가 잔소리를 유발했다');
 });
 
 test('망가진 입력에도 작업을 막지 않는다 (예산 관리는 안전장치가 아니다)', () => {

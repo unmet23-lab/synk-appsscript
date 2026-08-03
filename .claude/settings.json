@@ -61,7 +61,7 @@
         ]
       },
       {
-        "matcher": "mcp__claude-in-chrome__computer|mcp__claude-in-chrome__browser_batch|mcp__Claude_Browser__computer|mcp__computer-use__screenshot|mcp__computer-use__zoom|mcp__computer-use__computer_batch",
+        "matcher": "mcp__claude-in-chrome__computer|mcp__claude-in-chrome__browser_batch|mcp__Claude_Browser__computer|mcp__computer-use__screenshot|mcp__computer-use__zoom|mcp__computer-use__computer_batch|mcp__computer-use__teach_batch",
         "hooks": [
           {
             "type": "command",
