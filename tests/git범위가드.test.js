@@ -105,6 +105,39 @@ test('git clean의 안전한 형태는 통과한다 (과잉 차단은 BYPASS 습
   });
 });
 
+/* git 전역 옵션 뒤에 오는 서브커맨드 — 2026-08-04 실측 구멍.
+ * 규칙들이 `\bgit\s+add\b` 처럼 서브커맨드가 `git` 바로 뒤에 온다고 가정했는데,
+ * 실제로 상시 쓰는 형태는 `git -C <경로> add -A` 다(settings.json 권한 목록에도 그 형태가 잔뜩 있다).
+ * 규칙 5개가 **하나도** 못 잡았고, 못 잡는 방향은 「통과」였다. 공용 접두사 G 로 처방. */
+test('git 전역 옵션(-C·-c·--no-pager) 뒤에 와도 잡는다 (F053 계열)', () => {
+  const R = 'C:/some/repo';
+  [
+    `git -C ${R} add -A`,
+    `git -C ${R} add .`,
+    `git -C "${R}" add --all`,
+    `git -C ${R} commit -am "x"`,
+    `git -C ${R} clean -fd`,
+    'git -c user.name=x add -A',
+    'git --no-pager add -A',
+    `git -C ${R} -c core.pager=cat add -A`,
+  ].forEach((c) => {
+    assert.ok(가드(c).차단, '전역 옵션 뒤의 서브커맨드를 놓쳤다: ' + c);
+  });
+});
+
+test('전역 옵션이 붙어도 정상 형태는 통과한다 (과잉 차단 방지)', () => {
+  const R = 'C:/some/repo';
+  [
+    `git -C ${R} commit -m "x" -- a.js b.js`,
+    `git -C ${R} status`,
+    `git -C ${R} log --oneline -5`,
+    `git -C ${R} clean -n`,
+    `git -C ${R} add a.js b.js`,
+  ].forEach((c) => {
+    assert.equal(가드(c).차단, false, '정상 명령을 막았다: ' + c);
+  });
+});
+
 test('훅이 settings.json에 실제로 등록돼 있다 (파일만 있고 안 불리면 없는 것과 같다)', () => {
   const s = JSON.parse(fs.readFileSync(path.join(ROOT, '.claude', 'settings.json'), 'utf8'));
   const pre = (s.hooks && s.hooks.PreToolUse) || [];

@@ -27,7 +27,7 @@
           },
           {
             "type": "command",
-            "command": "IFS= read -r -d '' IN || true; case \"$IN\" in *\"git add\"*|*\"git commit\"*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/git-scope-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\" ;; esac",
+            "command": "IFS= read -r -d '' IN || true; case \"$IN\" in *git*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/git-scope-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\" ;; esac",
             "shell": "bash",
             "timeout": 30,
             "statusMessage": "커밋 범위 검사"
