@@ -173,6 +173,34 @@ function syncProfiles() {
     }
     return;
   }
+  // [v9.151] 소급 불가 수리 ②·④ (판정 정본 = memory masterplan-v3-2026-08-04)
+  //   ② 삭제 전 전 열 스냅샷 — 아래 deleteRow는 상태열(P~CB 래칫·Glide 소유열)까지 통째로 지우는데 백업은
+  //      30일뿐이라 31일 뒤엔 복구 불가였다. 삭제 자체는 유지한다(행 오귀속 방지 불변식 [v9.34]) — 지우기
+  //      전에 전 열을 JSON 1칸으로 보관만 한다(열이 늘어도 안 깨지게 열 나열 대신 JSON).
+  //   ④ 학생ID 불변 가드 — 같은 이름이 「삭제+신규」로 동시에 관측되면 id 교체로 본다. id가 바뀌면
+  //      talk_log·quiz_log·point_logs의 과거 이력이 새 id에 붙지 않는다(조인 단절 = 소급 불가).
+  //      id는 영구 불변이 규율 — 동명이인 구분·개명은 이름 칸에서 한다(실사례 = profiles 김재헌21).
+  const removedInfo = [];
+  if (removedRows.length) {
+    const snapSh = ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'exit_snapshot', ['보관일', 'student_id', '이름', 'row_json']);
+    const wide = dst.getMaxColumns();
+    const todaySnap = Utilities.formatDate(now, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd');
+    const snaps = removedRows.map(rn => {
+      const v = dst.getRange(rn, 1, 1, wide).getValues()[0];
+      removedInfo.push({ id: String(v[0] || ''), name: String(v[1] || '').trim() });
+      return [todaySnap, String(v[0] || ''), String(v[1] || ''), JSON.stringify(v).slice(0, 49500)]; // 50k 셀 상한 안전판
+    });
+    snapSh.getRange(snapSh.getLastRow() + 1, 1, snaps.length, 4).setValues(snaps);
+    const addedNew = newSeq.filter(e => !e.used).map(e => ({ id: String(e.id), name: String(e.main[1] || '').trim() }));
+    const idSwap = removedInfo.filter(rm => rm.name && addedNew.some(ad => ad.name === rm.name && ad.id !== rm.id));
+    if (idSwap.length) {
+      adminMail('[SYNK] ⚠️ 학생ID 변경 의심 — 이력 단절 위험',
+        idSwap.map(rm => '· ' + rm.name + ': 구 id ' + rm.id + ' 행이 삭제되고 같은 이름의 새 id가 등록됐습니다').join('\n') +
+        '\n\nid가 바뀌면 그 학생의 talk_log·quiz_log·point_logs 이력이 새 id에 붙지 않습니다(소급 불가).' +
+        '\nid는 바꾸지 말고 유지하세요 — 동명이인·개명은 이름 칸에서 구분합니다.' +
+        '\n실수라면 상담시트 학생ID(BH)를 구 id로 되돌리면 다음 동기화가 정상 복원합니다(전 열 보관 = exit_snapshot).');
+    }
+  }
   // [v9.34] 물리 행 정리 — ① 사라진 학생 행은 전 열 통째 삭제(아래 행이 상태열과 함께 당겨져 정합 유지)
   //   ② 신규 학생은 기존 학생 블록 끝에 '빈 행'을 삽입해 배치(비학생 행의 잔존 상태열을 물려받지 않게).
   //   비학생 행은 학생 뒤 배치 불변식([v7.0]) 그대로 유지된다.
@@ -245,6 +273,9 @@ function syncProfiles() {
       }
     }
   } catch (eW) { Logger.log('웰컴 대기열 등록 실패: ' + eW); }
+  // [v9.151] 동의 행 단위 스탬프 — 응답이 관측된 날의 정본 판(版)을 상담시트 행에 남긴다(구현·원칙 = 엔진_폼리포트.js).
+  //   src를 그대로 넘겨 openById 중복을 피한다. 자체 try로 격리돼 있어 실패해도 동기화는 계속된다.
+  if (typeof 동의버전스탬프_ === 'function') 동의버전스탬프_(src);
   Logger.log(out.length + '명 동기화 완료');
   calcAll();
   } catch (e) { // [v9.19] 조용한 실패 방지 — 연결 끊기면 매일 아침 알림 (profiles 스테일 조기 감지)

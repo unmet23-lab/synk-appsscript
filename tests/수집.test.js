@@ -237,7 +237,7 @@ test('[v9.145] talk_log는 model·prompt_ver를 남기고, 새 열은 반드시 
   // 앞에 끼우면 r[1]·r[2]·r[3]·r[4]·r[6] 위치 접근이 통째로 밀린다(이 저장소는 열 밀림으로 여러 번 당했다)
   assert.deepEqual(H.slice(0, 8), ['id', 'student_id', '턴', '학생문', 'AI답', '오류태그', '제출일', 'created_at'],
     '기존 8열의 순서가 바뀌었다 — 위치로 읽는 코드가 전부 어긋난다');
-  assert.deepEqual(H.slice(8), ['model', 'prompt_ver'], '새 열이 끝에 있지 않다');
+  assert.deepEqual(H.slice(8), ['model', 'prompt_ver', 'audio_ref'], '새 열이 끝에 있지 않다'); // [v9.151] audio_ref = 음성 원본 참조(무제한 보존 · 유호 확정 08-04)
 });
 
 test('[v9.145] 성공 행과 실패 행이 **둘 다** 헤더 길이만큼 쓴다 — 하나만 고치면 열이 어긋난다', () => {
