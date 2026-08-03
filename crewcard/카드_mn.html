@@ -3460,8 +3460,10 @@ window.SYNK_ENDPOINT = window.SYNK_ENDPOINT || 'https://script.google.com/macros
     if(!CFG.url){ alert(T.noUrl); return; }
     btn.disabled = true; btn.textContent = T.submitting;
     fetch(CFG.url, { method:'POST',
-      /* charset을 명시한다 — 브라우저 기본값에 기대면 안 된다(08-04 실측: charset 없는 요청은
-       * 서버에서 한글·키릴이 U+FFFD로 깨져 저장됐다). text/plain은 CORS 안전목록이라 preflight가 없다. */
+      /* Content-Type을 명시한다. ⚠ 08-04 정정: 처음엔 「charset 없는 요청이 한글을 깨뜨린다」고 판정했으나
+       * 재실측에서 뒤집혔다 — 깨진 원인은 헤더가 아니라 **Windows 셸이 본문을 CP949로 인코딩한 것**이었고,
+       * UTF-8 바이트는 charset 선언과 무관하게 정상 저장된다(한글·몽골 키릴 Ө·ү 실측 확인).
+       * 이 줄은 버그 수정이 아니라 브라우저 기본값 의존을 없애는 명시화다. text/plain은 CORS 안전목록이라 preflight가 없다. */
       headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
       body: JSON.stringify({ form:'crew_card', lang: LANG, hp: (document.getElementById('synkHp')||{}).value || '', data: data }) })
       .then(function(r){ return r.json(); })
