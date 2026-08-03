@@ -45,6 +45,27 @@ function stripNonExecutedText(s) {
 }
 const execCmd = stripNonExecutedText(cmd);
 
+/* 0-A) clasp pull 차단 — **읽기처럼 생겼는데 작업본 덮어쓰기**다(F040 실사고).
+ *   라이브 잔재를 "확인"하려고 부른 pull이 메인 작업본 `Code.js`를 라이브(v9.154)로 되돌려
+ *   옆 세션의 v9.155 커밋 내용이 로컬에서 사라졌다. 그때 복구된 이유는 그 파일이 **커밋돼 있어서**다
+ *   (`git checkout` 한 번). 같은 명령이 **미커밋 편집**에 닿으면 git·stash·reflog 어디에도 사본이 없다
+ *   — F025·F037이 「유일한 무보호 상태」라 부른 그것. **피해가 작았던 건 설계가 아니라 운이었다.**
+ *   그래서 발생 1회에도 기계로 옮긴다(되돌림 비용이 「즉시 복구」가 아니라 「영구 소실」이라서).
+ *
+ *   push/deploy 판정보다 **앞**에 둔다 — pull은 배포가 아니라서 아래 게이트에 애초에 닿지 않는다.
+ *   BYPASS는 존중한다: 라이브 편집을 정말로 회수하려는 정당한 용법이 있고, 못 끄는 가드는
+ *   사람이 우회하는 법을 배우게 만든다(v6.11 「과잉 차단은 BYPASS 습관을 만든다」). */
+if (/clasp(\.cmd|\.ps1)?["']?\s+(--?\S+\s+)*pull\b/i.test(execCmd) && !cmd.includes('CLASP_GUARD_BYPASS=1')) {
+  deny(
+    '[clasp-guard] clasp pull 차단 — 이건 읽기가 아니라 **작업본 덮어쓰기**다.\n' +
+      '라이브를 확인하려던 pull이 옆 세션의 커밋 내용을 로컬에서 되돌린 실사고가 있다(F040).\n' +
+      '미커밋 편집에 닿으면 git 어디에도 사본이 없어 복구 자체가 불가능하다.\n' +
+      '→ 라이브 내용 확인: Apps Script 편집기에서 눈으로 보거나, 작업본이 **아닌** 임시 디렉터리에서 받는다.\n' +
+      '→ 로컬을 라이브로 되돌리는 것이 정말 의도라면 `git status` 전문으로 남의 미커밋 변경이 없는지\n' +
+      '   확인한 뒤 CLASP_GUARD_BYPASS=1 을 붙인다.'
+  );
+}
+
 // clasp 호출어 바로 뒤에 push/deploy가 올 때만 발동 — list-deployments, login 등은 통과
 if (!/clasp(\.cmd|\.ps1)?["']?\s+(--?\S+\s+)*(push|deploy)\b/i.test(execCmd)) process.exit(0);
 
