@@ -52,13 +52,25 @@ function stripMd(s) {
  * 줄머리나 구분자(· — : 등) 뒤면 항목 표시다.
  * 항목이면 ⏳부터 끝까지를 돌려준다(앞은 배경이지 항목이 아니다). 아니면 null.
  */
-const MARKER_PREV = new Set(['·', '—', '–', '-', ':', '.', '!', '?', ';', '▶', ']', '】', '>', '|', '*']);
+const MARKER_PREV = new Set(['·', '—', '–', '-', ':', '.', '!', '?', ';', '▶', ']', '】', '>', '|', '*', ')']);
+
+// 괄호 안의 ⏳는 양쪽 다 실재한다 — 여는 괄호만 보고는 못 가른다:
+//   "(⏳유호 승인 대기·미검증 출처 명기)."  ← 괄호 자체가 항목이다
+//   "(⏳ 미결 다수)일 가능성. 그렇다면 …"    ← 문장이 괄호 뒤로 이어진다 = 지시어
+// 가르는 것은 **괄호가 닫힌 뒤에 문장이 계속되는가**다.
+function parenIsItem(clean, i) {
+  const close = clean.indexOf(')', i);
+  if (close === -1) return true;                 // 안 닫히면 줄 끝까지가 항목이다
+  return clean.slice(close + 1).trim().length <= 2; // 뒤에 문장이 남으면 지시어
+}
+
 function markerClause(clean) {
   for (let i = 0; i < clean.length; i++) {
     if (clean[i] !== '⏳') continue;
     let j = i - 1;
     while (j >= 0 && /\s/.test(clean[j])) j--;
     if (j < 0 || MARKER_PREV.has(clean[j])) return clean.slice(i).trim();
+    if (clean[j] === '(' && parenIsItem(clean, i)) return clean.slice(i).trim();
   }
   return null;
 }
@@ -73,10 +85,13 @@ function extract(dir) {
     const mtime = fs.statSync(full).mtimeMs;
     body.split('\n').forEach((line, i) => {
       if (!line.includes('⏳')) return;
-      // 범례 줄(상태 기호 목록)은 항목이 아니다: "상태 = 💡새 / 🔍검토 / ⏳판단대기 / ✅채택"
-      if (/[💡🔍]/.test(line) && line.includes('/')) return;
       const clean = markerClause(stripMd(line));
       if (clean === null) return;
+      // 범례("💡새 / 🔍검토 / ⏳판단대기 / ✅채택")는 항목이 아니다. 단 판별은 **⏳ 바로 옆 모양**으로만 한다 —
+      // 첫 판은 「줄 어딘가에 🔍가 있고 '/'가 있으면 범례」로 봤는데, 긴 메모리 줄은 경로·날짜에 '/'가
+      // 흔하고 🔍도 본문에 쓰여서 **진짜 미결이 조용히 사라졌다**(실측 2건). 넓은 가드가 큐를 줄이면
+      // 아무도 눈치채지 못한다 — 거짓양성보다 이쪽이 나쁘다.
+      if (/^⏳\S*\s*\/\s*[💡🔍✅⚠🚫]/.test(clean)) return;
       // 장식뿐인 줄(「## ⏳」 같은 헤더)만 거른다. **길이가 아니라 글자 수로 센다** —
       // 길이로 재면 `##` 같은 기호가 통과하고, 하한을 올리면 「⏳ 티원」 같은
       // 짧은 한국어 항목이 통째로 사라진다(한글은 2글자로도 완결된 항목이다).

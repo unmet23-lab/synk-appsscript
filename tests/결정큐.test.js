@@ -129,14 +129,39 @@ test('문장 속 ⏳는 항목이 아니다 — 조각이 결정으로 배달되
   assert.equal(items[0].text, '⏳유호 결정 2건');
 });
 
-test('상태 기호 범례는 항목이 아니다', () => {
+test('괄호 안 ⏳ — 항목과 지시어를 가른다 (실제 메모리 문자열로 못박음)', () => {
+  // 거짓음성 3건이 실제로 났다. 「가드는 두 방향으로 틀린다」 — 잡는 것만 보고
+  // 놓치는 것을 안 보면 큐가 조용히 짧아진다. 아래는 실제 메모리에서 가져온 문자열이다.
+  assert.equal(q.markerClause('아이디어 보드 v1.4: 카드로 승격(⏳유호 승인 대기·미검증 출처 명기).'),
+    '⏳유호 승인 대기·미검증 출처 명기).');
+  assert.equal(q.markerClause('## 라임 조사 — 라임은 유령 색이다 (⏳유호 발전안 선택 대기)'),
+    '⏳유호 발전안 선택 대기)');
+  assert.equal(q.markerClause('카드 색 브랜드 키트 전환(v9.125) ⏳유호 Glide 설정 1클릭.'),
+    '⏳유호 Glide 설정 1클릭.');
+  // 반대편 — 괄호 뒤로 문장이 이어지면 지시어다
+  assert.equal(q.markerClause('유호의 결정 큐(15건+, 이 세션 시점 ⏳ 미결 다수)일 가능성. 그렇다면 큐가 3배가 된다'), null);
+  assert.equal(q.markerClause('착수 게이트=platform-rebuild ⏳3건). 그때 선행 1건으로 가드를 제안함'), null);
+});
+
+test('상태 기호 범례는 항목이 아니다 — 단 범례 판별이 진짜를 먹지 않는다', () => {
+  // 양방향으로 검사한다. 첫 판의 범례 필터는 「줄에 🔍가 있고 '/'가 있으면 범례」였는데,
+  // 긴 메모리 줄은 경로(C:/…)·날짜·구분자에 '/'가 흔하고 🔍도 본문에 쓰인다 →
+  // 진짜 미결 2건이 조용히 사라졌다. 넓은 가드가 큐를 줄이면 아무도 눈치채지 못한다.
   const dir = fixture({
     'MEMORY.md': '- [l](l.md)',
-    'l.md': '# L\n- 상태 = 💡새 / 🔍검토 / ⏳판단대기 / ✅채택\n- ⏳ 진짜 미결 하나',
+    'l.md': [
+      '# L',
+      '- 수정(이동 금지) · 기각도 지우지 않음. 상태 = 💡새 / 🔍검토 / ⏳판단대기 / ✅채택 /',   // 범례
+      '- 🔍조사 결과 경로는 C:/Users/q1212 였다. ⏳유호 결정 = 자동 시작 여부',              // 진짜(🔍+/ 둘 다 있음)
+      '- ⏳ 유호 답 대기: 3문항 자가진단 결과 / usage credits 상한 설정 여부',                // 진짜(/ 있음)
+    ].join('\n'),
   });
   const items = q.extract(dir);
-  assert.equal(items.length, 1, `범례가 항목으로 새어들었다: ${JSON.stringify(items.map((i) => i.text))}`);
-  assert.match(items[0].text, /진짜 미결/);
+  const texts = items.map((i) => i.text);
+  assert.equal(items.length, 2, `범례/진짜 구분 실패: ${JSON.stringify(texts)}`);
+  assert.ok(texts.some((t) => /자동 시작 여부/.test(t)), '🔍·/가 든 줄의 진짜 미결이 사라졌다');
+  assert.ok(texts.some((t) => /3문항 자가진단/.test(t)), '/가 든 줄의 진짜 미결이 사라졌다');
+  assert.ok(!texts.some((t) => /판단대기/.test(t)), '범례가 항목으로 새어들었다');
 });
 
 test('짧은 한국어 항목도 살아남는다 — 장식 거르기가 실제 항목을 먹지 않는다', () => {
