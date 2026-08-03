@@ -17,7 +17,22 @@ const path = require('path');
 
 // 테스트는 실제 장부를 건드리면 안 된다 — 회귀 테스트가 기록을 오염시키면 그 기록은 증거가 못 된다
 const LEDGER = process.env.SYNK_FRICTION_LEDGER || path.resolve(__dirname, '..', 'docs', '_ops', '마찰신호.md');
+/* 채번 락 회귀는 **진짜 저장소 위에서** 돌려야 탐지력이 있다(태그 push가 실제로 거절되는지를 본다).
+ * 그래서 장부와 별도로 저장소 루트도 갈아끼울 수 있게 둔다 — 격리 저장소를 준 테스트만 git을 만진다. */
+const ROOT = process.env.SYNK_FRICTION_ROOT || path.resolve(__dirname, '..');
 const KINDS = ['교정', '거절', '실수', '마찰'];
+const TAG_PREFIX = 'friction-';   // 예약 태그: friction-F041 (릴리스 태그 synk-v9.NNN과 구분)
+const MAX_TRIES = 20;
+// 격리 장부만 준 테스트는 git을 안 만진다. 격리 저장소까지 준 테스트는 락을 실제로 건다.
+const ISOLATED = !!process.env.SYNK_FRICTION_LEDGER && !process.env.SYNK_FRICTION_ROOT;
+
+/** 실패를 null로 돌려주는 git — 장부 기록이 git 사정으로 멈추면 안 된다(신호 유실이 더 나쁘다). */
+function gitQuiet(args) {
+  const { execFileSync } = require('child_process');
+  try {
+    return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  } catch (_) { return null; }
+}
 
 function today() {
   const d = new Date();
@@ -42,35 +57,67 @@ function read() {
  * 각 세션이 자기 작업본만 보고 번호를 매기면 같은 번호를 두 개 만든다(2026-08-03 실제 충돌: F015·F016).
  * 이건 이 저장소에서 **세 번째** 같은 형태다 — 버전 동시 발번 9건(bump-version 채번 락으로 해소),
  * 버전 이력 체인 누락(같은 날), 그리고 이것. 「세션이 각자 base에서 순번을 매기면 충돌한다」가 패턴이다.
- * bump-version과 달리 태그 예약까지는 하지 않는다(마찰 신호는 재번호로 복구 가능하고, 락은 유지비가 크다)
- * — 대신 **훑는 범위를 같게** 한다: origin/master + 모든 로컬 브랜치.
+ * 훑는 범위: origin/master + 모든 로컬 브랜치 + **예약 태그**.
  * 네트워크·git 실패는 막지 않는다(장부 기록이 도구 사정으로 멈추면 신호가 유실된다 — 그게 더 나쁘다). */
-function seenElsewhere() {
-  const { execFileSync } = require('child_process');
-  const ROOT = path.resolve(__dirname, '..');
+function seenElsewhere(opts) {
   const rel = path.relative(ROOT, LEDGER).replace(/\\/g, '/');
-  const git = (args) => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-  const maxIn = (text) => [...text.matchAll(/^\|\s*F(\d+)\s*\|/gm)]
+  const maxIn = (text) => [...String(text).matchAll(/^\|\s*F(\d+)\s*\|/gm)]
     .reduce((a, m) => Math.max(a, Number(m[1]) || 0), 0);
 
   let max = 0;
-  try { git(['fetch', 'origin', '--quiet']); } catch (_) { /* 오프라인 — 아래 로컬 참조만으로 진행 */ }
+  if (!opts || opts.fetch !== false) gitQuiet(['fetch', 'origin', '--tags', '--quiet']);
   const refs = ['origin/master'];
-  try {
-    git(['for-each-ref', '--format=%(refname:short)', 'refs/heads'])
-      .split('\n').map((s) => s.trim()).filter(Boolean).forEach((b) => refs.push(b));
-  } catch (_) { /* 브랜치 목록 실패 — origin만 본다 */ }
+  (gitQuiet(['for-each-ref', '--format=%(refname:short)', 'refs/heads']) || '')
+    .split('\n').map((s) => s.trim()).filter(Boolean).forEach((b) => refs.push(b));
   refs.forEach((ref) => {
-    try { max = Math.max(max, maxIn(git(['show', ref + ':' + rel]))); } catch (_) { /* 그 ref에 장부가 없다 */ }
+    const text = gitQuiet(['show', ref + ':' + rel]);
+    if (text !== null) max = Math.max(max, maxIn(text));   // null = 그 ref에 장부가 없다
+  });
+  // 예약 태그 — 아직 **장부에 쓰이지도 않은** '방금 가져간' 번호까지 포함한다(bump-version과 같은 이유)
+  (gitQuiet(['tag', '-l', TAG_PREFIX + 'F*']) || '').split('\n').forEach((t) => {
+    const m = /F(\d+)\s*$/.exec(t.trim());
+    if (m) max = Math.max(max, Number(m[1]) || 0);
   });
   return max;
 }
 
-function nextId(rows) {
+function nextId(rows, opts) {
   const local = rows.reduce((a, r) => Math.max(a, parseInt(r.id.slice(1), 10) || 0), 0);
-  // 테스트는 격리 장부를 쓰므로 git 조회를 건너뛴다(실제 저장소 이력이 픽스처 번호를 밀어버리면 검사가 무의미해진다)
-  const elsewhere = process.env.SYNK_FRICTION_LEDGER ? 0 : seenElsewhere();
+  // 격리 장부 테스트는 git 조회를 건너뛴다(실제 저장소 이력이 픽스처 번호를 밀어버리면 검사가 무의미해진다)
+  const elsewhere = ISOLATED ? 0 : seenElsewhere(opts);
   return 'F' + String(Math.max(local, elsewhere) + 1).padStart(3, '0');
+}
+
+/* 채번 락 — git push의 원자성을 번호 예약에 쓴다(bump-version과 같은 방식).
+ *
+ * 왜 훑기만으로는 안 되나 (2026-08-04 실물 충돌 F041 — 내 것과 옆 세션 것 둘):
+ *   seenElsewhere는 **이미 기록된** 번호만 본다. 두 세션이 같은 순간에 훑으면 같은 답을 보고
+ *   둘 다 그 번호를 쓴다. 훑는 범위를 아무리 넓혀도 「아직 아무 데도 안 쓰인 순간」은 못 덮는다 —
+ *   이건 탐지 범위의 문제가 아니라 **고르는 행위가 원자적이지 않다**는 문제다.
+ *   (이 파일의 옛 주석은 "마찰 신호는 재번호로 복구 가능하니 락은 과하다"고 판단했는데,
+ *    실제로 충돌하자 복구는 「둘 중 누가 물러날지」를 사람이 정하는 일이 됐다. 유호님 결정으로 락 추가.)
+ *
+ * ⚠ 원칙은 그대로 지킨다 — **기록이 도구 사정으로 멈추면 안 된다.** 오프라인이면 예약을 건너뛰고
+ *   훑은 번호로 진행하되 그 사실을 경고로 드러낸다(조용히 넘어가면 예약된 줄 알고 또 충돌한다). */
+function allocateId(rows) {
+  if (ISOLATED) return nextId(rows);                       // 격리 장부 — git 접촉 금지
+
+  const online = gitQuiet(['fetch', 'origin', '--tags', '--quiet']) !== null;
+  let n = parseInt(nextId(rows, { fetch: false }).slice(1), 10);
+  if (!online) {
+    console.error('⚠ origin fetch 실패 — 번호를 예약하지 못했다. 오프라인 동안 다른 세션이 같은 번호를 쓸 수 있다(그때는 재번호).');
+    return 'F' + String(n).padStart(3, '0');
+  }
+
+  for (let i = 0; i < MAX_TRIES; i++, n++) {
+    const id = 'F' + String(n).padStart(3, '0');
+    const tag = TAG_PREFIX + id;
+    if (gitQuiet(['tag', tag]) === null) continue;          // 로컬에 이미 있다 → 다음 후보
+    if (gitQuiet(['push', 'origin', tag]) !== null) return id;   // 원격이 보증 = 내 번호
+    gitQuiet(['tag', '-d', tag]);                           // 원격이 거절 = 누가 방금 가져갔다
+  }
+  console.error(`[friction] ${MAX_TRIES}회 시도에도 번호를 예약하지 못했다. 잠시 뒤 다시 시도한다.`);
+  process.exit(1);
 }
 
 function add(kind, signal, date) {
@@ -85,7 +132,7 @@ function add(kind, signal, date) {
   // '|'는 표를 깨뜨린다 — 삼키지 말고 치환해서 장부가 파싱 불가가 되는 것을 막는다
   const safe = signal.replace(/\|/g, '/').replace(/\n/g, ' ').trim();
   const { lines, rows } = read();
-  const id = nextId(rows);
+  const id = allocateId(rows);
   const row = `| ${id} | ${date || today()} | ${kind} | ${safe} | |`;
   // 표의 마지막 행 뒤에 넣는다(파일 끝이 아니라) — 아래에 다른 서술이 붙어도 안전하게
   let at = lines.length;
@@ -189,4 +236,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { read, nextId, seenElsewhere, LEDGER, KINDS };
+module.exports = { read, nextId, allocateId, seenElsewhere, LEDGER, KINDS, TAG_PREFIX };
