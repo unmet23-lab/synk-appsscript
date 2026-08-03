@@ -2779,6 +2779,9 @@ function menuCreateQuizForm() { menuRun_(createQuizForm); } // [v9.138] 퀴즈 �
 function menuMigrateHwForm() { menuRun_(migrateHwFormV9138); } // [v9.138] 숙제 폼 증분 — 문항 연결·재작성 경로(멱등)
 function menuCreateTalkForm() { menuRun_(createTalkForm); } // [v9.138] 한국어 대화 폼 — 회화 앱 1세대(재실행 안전)
 function menuDataCoverage() { menuRun_(dataCoverageReport); } // [v9.138] 커버리지 — 읽기 전용이라 언제 눌러도 안전
+// [v9.146] 대화 수집 점검 — 조기 반환 4개 중 무엇에 걸렸는지 지목한다(「안 생김」의 원인이 넷이라 눈으로는 구분 불가).
+//   읽기 전용이 아니다: talk_log 헤더 치유를 겸한다(배치 안쪽 치유는 첫 대화 전까지 실행되지 않는다). 멱등.
+function menuTalkLogCheck() { menuRun_(talkLogCheck); }
 // [2026-08-03] 동의 문항 갱신 — 정의는 엔진_폼리포트.js. 멱등이라 문구를 고칠 때마다 다시 눌러도 안전하고,
 //   몽골어 검수 후(CONSENT_MN_APPROVED=true) 한 번 더 눌러야 병기가 라이브 폼에 반영된다.
 function menuMigrateConsent() { menuRun_(migrateConsentV186); }
@@ -3264,6 +3267,7 @@ function onOpen() {
       .addItem('📝 숙제 폼에 수집 문항 넣기(수집 2단계)', 'menuMigrateHwForm')
       .addItem('🗣 한국어 대화 폼 만들기(수집 3단계)', 'menuCreateTalkForm')
       .addItem('📊 수집 커버리지 보기(읽기 전용)', 'menuDataCoverage')
+      .addItem('🔎 대화 수집 점검(밤 배치 확인·머리글 치유)', 'menuTalkLogCheck')
       .addToUi();
   } catch (eMenu) { Logger.log('시트 메뉴 생성 스킵: ' + eMenu); } // UI 없는 컨텍스트(트리거 실행)에서는 조용히 통과
 }

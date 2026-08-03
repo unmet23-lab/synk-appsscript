@@ -439,6 +439,63 @@ function talkBatch_() {
     + (lastErr ? '\n마지막 오류: ' + lastErr + '\n실패 지점부터 내일 밤 자동 재시도합니다.' : ''));
 }
 
+/* [v9.146] 🔎 대화 수집 점검 — 「오늘 밤 배치에 잘 들어갔나」를 10초에 답한다.
+ *
+ * 왜 필요한가: v9.145로 `model`·`prompt_ver` 2열을 넣었는데, **확인할 방법이 없었다.**
+ *   시트를 눈으로 열어도 「비어 있는 게 정상인지 고장인지」를 구분할 수 없다 —
+ *   `talkBatch_`는 조기 반환이 4개(키 없음·응답 0건·포인터 끝·리허설)이고, 그중 무엇에 걸려도
+ *   증상은 똑같이 **「아무 일도 안 일어남」**이다. 「모름」과 「정상」이 같은 모양인 그 형태다.
+ * 그래서 이 함수는 결과가 아니라 **조건부터** 보여준다 — 안 생겼다면 넷 중 무엇 때문인지 지목한다.
+ *
+ * ⚠ 읽기 전용이 **아니다**(헤더 치유를 겸한다). 그게 의도다 —
+ *   `talkHeaderHeal_`은 `talkBatch_` 안쪽 조기 반환 **뒤에** 있어서, 학생이 첫 대화를 쓰기 전까지는
+ *   영영 실행되지 않는다. 여기서 부르면 배치를 기다리지 않고 지금 이름표가 붙는다. 멱등이라 여러 번 눌러도 안전. */
+function talkLogCheck() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const props = PropertiesService.getScriptProperties();
+  const out = [];
+
+  out.push('■ 배치가 돌기 위한 조건');
+  out.push(props.getProperty('CLAUDE_API_KEY')
+    ? '  ✅ CLAUDE_API_KEY 설정됨'
+    : '  ⛔ CLAUDE_API_KEY 없음 → 대화 기능 전체가 꺼져 있습니다(밤 배치가 0초에 끝납니다)');
+  const src = ss.getSheetByName('대화폼_응답');
+  if (!src) {
+    out.push('  ⛔ 「대화폼_응답」 시트 없음 → SYNK 메뉴 「🗣 한국어 대화 폼 만들기」를 먼저 누르세요');
+  } else {
+    const answered = Math.max(0, src.getLastRow() - 1);
+    if (!answered) {
+      out.push('  ⏸ 대화폼 응답 0건 → 학생이 쓴 글이 없어 오늘 밤 배치는 **아무것도 만들지 않습니다**(고장 아님)');
+    } else {
+      const ptr = Number(props.getProperty('대화폼_포인터')) || 1;
+      out.push('  ✅ 응답 ' + answered + '건 · 아직 답장 안 만든 것 ' + Math.max(0, src.getLastRow() - ptr) + '건');
+    }
+  }
+  if (isRehearsal_()) out.push('  ⚠ 지금 리허설 모드 → 배치가 입구에서 차단됩니다(비용 0·기록도 0)');
+
+  out.push('', '■ talk_log 상태');
+  const tl = ss.getSheetByName('talk_log');
+  if (!tl) {
+    out.push('  아직 없음 — 첫 답장이 만들어질 때 자동 생성됩니다');
+  } else {
+    talkHeaderHeal_(tl);   // 배치를 기다리지 않고 지금 이름표를 붙인다
+    out.push('  머리글: ' + tl.getRange(1, 1, 1, TALK_LOG_HEADERS.length).getValues()[0].join(' · '));
+    const n = Math.max(0, tl.getLastRow() - 1);
+    out.push('  기록 ' + n + '행');
+    if (n) {
+      const show = Math.min(3, n);
+      tl.getRange(tl.getLastRow() - show + 1, 1, show, TALK_LOG_HEADERS.length).getValues()
+        .forEach(r => out.push('   · ' + r[0] + '   model=' + (r[8] || '(빈칸)') + '   prompt_ver=' + (r[9] || '(빈칸)')));
+      out.push('  ※ v9.145 이전에 쌓인 행은 두 칸이 비어 있습니다 — 소급이 안 되는 값이라 정상입니다');
+    }
+  }
+
+  out.push('', '■ 지금 배치가 쓸 값(위 기록과 대조하세요)');
+  out.push('  model = ' + (typeof AI_FEEDBACK_MODEL === 'undefined' ? '(못 읽음)' : AI_FEEDBACK_MODEL));
+  out.push('  prompt_ver = ' + talkPromptVer_());
+  return out.join('\n');
+}
+
 /* ──────────────── ② 커버리지 계기판 — 양이 아니라 「유형」을 잰다 ──────────────── */
 
 /* [v9.138] 📊 수집 커버리지 리포트 — 아무도 안 재던 지표.
