@@ -72,10 +72,30 @@ test('카드 HTML — 제출·자동저장·허니팟·퀴즈 배선', () => {
     assert.ok(/'Content-Type':\s*'text\/plain;charset=UTF-8'/.test(html), `[${name}] 제출 fetch의 Content-Type 명시가 사라졌다`);
     assert.ok(!html.includes('크루카드_토큰') && !html.includes('SYNK_ENDPOINT.token'), `[${name}] 무토큰 결정 위반 — 클라이언트에 토큰 언급 잔재`);
     assert.ok(html.includes('quiz (.quiz-opts)'), `[${name}] 퀴즈 수집 패스 없음 — Q1~Q4가 시트에 안 간다`);
+    // 동의는 .opts 밖(.agree)이라 기본 수집 패스가 못 본다 — 빠지면 동의 기록이 시트에 안 남는다(08-04 실측)
+    assert.ok(html.includes(".querySelectorAll('.consent .agree')"), `[${name}] 동의 수집 패스 없음 — consent_privacy/media가 빈칸으로 남는다`);
     assert.ok(html.includes('quiz single-select'), `[${name}] 퀴즈 단일선택 배선 없음`);
     assert.ok(html.includes("'synk.crewcard.v14'"), `[${name}] 자동저장 키가 v14가 아니다`);
     assert.ok(html.includes('reg_year_month='), `[${name}] fYear 보정(등록일 합성) 소실`);
     assert.ok(/@media \(max-width:760px\)/.test(html), `[${name}] 모바일 반응형 소실 — 원격(구글폼 겸용) 입구가 죽는다`);
+  }
+});
+
+test('카드 HTML — 모든 <script> 블록이 실제로 파싱된다', () => {
+  /* 08-04 실사고: 주석 안에 스크립트 종료 태그를 문자로 썼더니 HTML 파서가 거기서 블록을 끊어
+   * 제출·자동저장 스크립트 전체가 죽었다. 그런데 「문자열이 있는가」만 보던 기존 검사는 전부 초록이었다
+   * — 문자열은 남아 있었기 때문이다. 가드는 조각이 아니라 **적용된 결과**(=파싱되는가)를 봐야 한다. */
+  for (const [name, html] of [['kr', htmlKr], ['mn', htmlMn]]) {
+    const blocks = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+    assert.ok(blocks.length >= 4, `[${name}] 스크립트 블록이 ${blocks.length}개 — 조기 종료로 잘렸을 수 있다`);
+    blocks.forEach((code, i) => {
+      assert.doesNotThrow(() => new Function(code), `[${name}] 스크립트 블록 ${i + 1}이 파싱되지 않는다 — 그 블록의 기능이 통째로 죽는다`);
+    });
+    // 제출 배선은 마지막 블록에 있다 — 그 블록이 끊기면 버튼이 아무 일도 안 한다
+    const submit = blocks.find((b) => b.includes('SYNK_ENDPOINT'));
+    assert.ok(submit, `[${name}] 제출 스크립트 블록을 찾지 못했다`);
+    assert.ok(submit.includes('synkSubmitBtn') && submit.includes("addEventListener('click'"),
+      `[${name}] 제출 블록이 잘려 클릭 핸들러까지 닿지 않는다`);
   }
 });
 
