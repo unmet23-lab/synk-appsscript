@@ -106,6 +106,9 @@ test('[감사] --dry를 실제로 돌리면: 다음 번호를 내놓고, 번호�
   const git = (args) =>
     spawnSync('git', args, { cwd: ROOT, encoding: 'utf8' }).stdout || '';
 
+  // --dry 내부의 fetch --tags를 스냅샷 전에 똑같이 돌려 기준선을 맞춘다 — 신선 클론(CI)에선
+  // fetch가 끌어온 origin 태그를 「--dry가 만든 태그」로 오판한다(12연속 CI 실패의 실원인).
+  git(['fetch', 'origin', '--tags', '--quiet']);
   const tagsBefore = git(['tag', '-l', 'synk-v9.*']).trim();
   const codeBefore = fs.readFileSync(path.join(ROOT, 'Code.js'));
 
