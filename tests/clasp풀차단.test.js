@@ -40,6 +40,17 @@ test('clasp pull은 차단된다 (읽기가 아니라 작업본 덮어쓰기)', 
   assert.match(r.out, /덮어쓰기/, '차단 사유가 「덮어쓰기」를 설명하지 않는다: ' + r.out);
 });
 
+/* 막기만 하고 「그럼 뭘 쓰라는 건지」를 안 주면 사람은 BYPASS를 습관으로 배운다(v6.11).
+ * 옆 세션이 실사고 근거로 정당 용법을 하나 줬다 — 편집기 버퍼가 push를 덮어쓴 것을
+ * 발각한 유일한 수단이 **repo 밖 임시 디렉터리 pull-diff**였다. F040(작업본 덮어쓰기)과
+ * 방향이 반대라 접을 이유가 없고, 차단 문구가 그걸 드러내야 한다. */
+test('차단 문구가 정당 용법(repo 밖 임시 디렉터리 pull-diff)을 알려준다', () => {
+  const out = runGuard('clasp pull').out;
+  assert.match(out, /임시 디렉터리/, '대안을 안 준다 — 금지만 하면 BYPASS가 습관이 된다: ' + out);
+  assert.match(out, /diff/, '정당 용법의 실제 명령 형태가 없다: ' + out);
+  assert.match(out, /CLASP_GUARD_BYPASS=1/, '우회 레버를 안 알려준다: ' + out);
+});
+
 test('경로·플래그가 붙은 형태도 차단된다 (사람이 실제로 쓰는 표기)', () => {
   for (const cmd of [
     'clasp pull --versionNumber 3',
