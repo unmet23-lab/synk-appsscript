@@ -1482,8 +1482,17 @@ test('[v9.90] 동의 마이그레이션(v18.6) — 멱등·명시 동의·거부
   // [v9.90 핵심] 음성 동의는 blob이 아니라 '열'로 받는다 — 열이 없으면 "누가 거부했는지"를 코드가 못 읽어 녹음이 거부자까지 삼킨다
   assert.ok(code.includes("const CONSENT_EXT_HEADERS = ['음성동의']"), '음성동의 착지 헤더 상수가 없다/변형됨');
   assert.ok(body.includes('const B = CONSENT_EXT_HEADERS[0]'), '문항 B 제목이 헤더명 상수를 쓰지 않는다(제목≠헤더면 열에 착지하지 않는다)');
-  assert.ok(body.includes("['네, 동의합니다', '아니요, 원하지 않습니다']"), '음성 동의에 거부 선택지가 없다 — 거부 불가 동의는 끼워팔기로 무효화될 수 있다');
+  /* [v18.9 · 2026-08-03 유호 결정] 구 검사는 **거부 선택지의 존재를 요구**했다(끼워팔기 무효 리스크 회피).
+   *   유호님이 방향을 바꿨다 — 처음 만나는 사용자부터 전부, 목적·기간 제한 없이 받는다. 그래서 이 검사는
+   *   「거부 가능한가」를 묻지 않는다. 대신 **선택지가 정본 상수 한 곳에서 나오는지**를 지킨다:
+   *   A·B가 각자 하드코딩되면 다음 개정 때 한쪽만 바뀌어 조용히 갈라진다(구 구조의 실패 유형). */
+  assert.ok(body.includes("const 동의선택 = ['네, 동의합니다']"), '동의 선택지 단일 소스가 없다/변형됨');
+  assert.equal((body.match(/setChoiceValues\(동의선택\)/g) || []).length, 2, '두 문항이 선택지 정본 상수를 쓰지 않는다(하드코딩은 개정 때 한쪽만 바뀐다)');
   assert.ok(/const B = CONSENT_EXT_HEADERS\[0\][\s\S]*setRequired\(true\)/.test(body), '음성 동의가 필수 응답이 아니다(무응답이면 게이트가 침묵으로 통과된다)');
+  /* [v18.9] 라이브에 이미 선 폼은 syncHelp 경로로만 지나간다 — 도움말만 고치면 화면엔 옛 선택지가
+   *   남은 채 함수는 "갱신했습니다"라고 보고한다(참인 채 거짓을 말하는 형태). 선택지도 맞추는지 검사. */
+  assert.ok(/const syncHelp = \([\s\S]{0,700}?setChoiceValues\(choices\)/.test(body), 'syncHelp가 기존 폼의 선택지를 정본으로 맞추지 않는다 — 개정이 라이브 화면에 닿지 않는다');
+  assert.ok(/syncHelp\(titles\.indexOf\(A\)[^;]*동의선택\)/.test(body) && /syncHelp\(titles\.indexOf\(B\)[^;]*동의선택\)/.test(body), '두 문항의 syncHelp 호출이 선택지 정본을 넘기지 않는다');
   // 시트 열 증분이 실패하면 판 번호를 선언하지 않는다 — 폼 문항만 있고 열이 없는 상태를 "적용됨"으로 오인하면 거부자를 못 읽는다
   assert.ok(body.includes("if (sheetOk) setState(st, '상담동의', CONSENT_VERSION)"), '시트 증분 성공 조건부 선언이 아니다(또는 판 번호가 하드코딩됐다)');
   assert.ok(body.includes('학생ID') && body.includes('증분 중단'), '상담시트 스키마 가드(60열=학생ID)가 없다');
