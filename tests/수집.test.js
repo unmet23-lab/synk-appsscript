@@ -290,6 +290,21 @@ test('[v9.145] 이미 서 있는 시트에 새 열 이름표를 붙인다 — en
   assert.ok(/return;/.test(heal), '멱등 조기 반환이 없다 — 야간 배치가 매일 헤더를 다시 쓴다');
 });
 
+test('[v9.146] 점검 함수는 「왜 안 생겼나」의 원인 넷을 전부 지목하고, 헤더 치유를 겸한다', () => {
+  const fn = section('function talkLogCheck()', '\n}\n');
+  // 조기 반환 4개가 전부 같은 증상(아무 일도 안 일어남)을 내므로, 넷을 구분해 주지 않으면 점검이 아니다
+  assert.ok(fn.includes('CLAUDE_API_KEY'), '키 미설정을 진단하지 않는다');
+  assert.ok(fn.includes('대화폼_응답'), '응답 0건(가장 흔한 원인)을 진단하지 않는다');
+  assert.ok(fn.includes('대화폼_포인터'), '이미 처리된 건지(포인터)를 진단하지 않는다');
+  assert.ok(fn.includes('isRehearsal_'), '리허설 차단 상태를 진단하지 않는다');
+  // 배치 안쪽 치유는 조기 반환 뒤에 있어 첫 대화 전까지 안 돈다 — 여기서 불러야 지금 붙는다
+  assert.ok(fn.includes('talkHeaderHeal_'), '점검이 헤더 치유를 겸하지 않는다 — 배치를 기다려야만 이름표가 붙는다');
+  // 지금 쓸 값을 보여줘야 시트의 기록과 대조할 수 있다(대조 없이는 「맞는 값인지」를 모른다)
+  assert.ok(fn.includes('talkPromptVer_()'), '지금 배치가 쓸 prompt_ver를 보여주지 않는다');
+  assert.ok(/menuTalkLogCheck/.test(code) && /addItem\([^)]*menuTalkLogCheck|'menuTalkLogCheck'/.test(code),
+    '점검이 메뉴에 배선되지 않았다 — 유호님이 부를 수단이 없으면 만든 것과 도는 것은 다르다');
+});
+
 test('[v9.138] 새 학생 열은 선점 구간을 침범하지 않는다 — 이 저장소는 열 충돌로 세 번 당했다', () => {
   const s4 = code.match(/const SHARED4_COL_START = (\d+)/);
   assert.ok(s4, '4차 블록 시작 상수가 없다');
