@@ -215,9 +215,79 @@ test('[v9.138] 대화 배치 — 하루 1턴 상한·리허설 차단·실패해
   // 외부 발송 0 — 학생에게 가는 경로는 앱 화면뿐이어야 한다(메일·메신저로 새면 승인 없는 외부 발송이 된다)
   assert.ok(!/MailApp\.sendEmail\([^)]*sid/.test(fn), '학생에게 직접 메일을 보낸다 — 답장은 시트에만 쓴다');
   const call = section('function callClaudeTalk_(', 'const res = UrlFetchApp.fetch');
-  assert.ok(call.includes('질문 하나로 끝'), '답장이 질문으로 끝나도록 강제하지 않는다 — 턴이 1에서 멈추면 대화 데이터가 안 쌓인다');
   assert.ok(call.includes('enum: HW_ERROR_TAGS'), '대화에서도 오류 태그를 같은 어휘로 받지 않는다(두 축이 갈라진다)');
-  assert.ok(/개인정보\(주소·전화·비밀번호\)를 묻지 않는다/.test(call), '봇이 개인정보를 묻지 않는다는 제약이 없다');
+  /* [v9.145] 프롬프트 제약은 이제 TALK_SYSTEM_PROMPT 상수에 산다(prompt_ver 해시가 변경을 보게 하려고 뽑았다).
+   * 검사 대상을 함수 본문에 둔 채로 두면, 상수에서 제약을 지워도 테스트가 통과한다 — 가드가 눈머는 그 형태다. */
+  const sysM = code.match(/const TALK_SYSTEM_PROMPT =[\s\S]*?';\n/);
+  assert.ok(sysM, 'TALK_SYSTEM_PROMPT 상수를 찾지 못함');
+  const sys = sysM[0];
+  assert.ok(sys.includes('질문 하나로 끝'), '답장이 질문으로 끝나도록 강제하지 않는다 — 턴이 1에서 멈추면 대화 데이터가 안 쌓인다');
+  assert.ok(/개인정보\(주소·전화·비밀번호\)를 묻지 않는다/.test(sys), '봇이 개인정보를 묻지 않는다는 제약이 없다');
+  assert.ok(/AI·시스템 자기 언급 금지/.test(sys), '봇이 자기가 AI라고 말하지 않는다는 제약이 없다');
+});
+
+/* ── ⑤ [v9.145] 대화 출처 기록 — 「학생이 어려워한 것」과 「그때 우리 답이 나빴던 것」을 가른다 ── */
+
+test('[v9.145] talk_log는 model·prompt_ver를 남기고, 새 열은 반드시 끝에 붙는다', () => {
+  const m = code.match(/const TALK_LOG_HEADERS = (\[[^\]]*\]);/);
+  assert.ok(m, 'TALK_LOG_HEADERS 정의를 찾지 못함');
+  const H = JSON.parse(m[1].replace(/'/g, '"'));
+  assert.ok(H.includes('model') && H.includes('prompt_ver'),
+    '출처가 안 남는다 — 2년 뒤 이 대화를 무엇이 만들었는지 되돌아가 알 수 없다(소급 불가)');
+  // 앞에 끼우면 r[1]·r[2]·r[3]·r[4]·r[6] 위치 접근이 통째로 밀린다(이 저장소는 열 밀림으로 여러 번 당했다)
+  assert.deepEqual(H.slice(0, 8), ['id', 'student_id', '턴', '학생문', 'AI답', '오류태그', '제출일', 'created_at'],
+    '기존 8열의 순서가 바뀌었다 — 위치로 읽는 코드가 전부 어긋난다');
+  assert.deepEqual(H.slice(8), ['model', 'prompt_ver'], '새 열이 끝에 있지 않다');
+});
+
+test('[v9.145] 성공 행과 실패 행이 **둘 다** 헤더 길이만큼 쓴다 — 하나만 고치면 열이 어긋난다', () => {
+  const m = code.match(/const TALK_LOG_HEADERS = (\[[^\]]*\]);/);
+  const need = JSON.parse(m[1].replace(/'/g, '"')).length;
+  const fn = section('function talkBatch_()', '\n}\n');
+  // 성공 경로: const row = [ ... ]  · 실패 경로: tl.appendRow([ ... ])
+  const rowLit = fn.match(/const row = \[([\s\S]*?)\];/);
+  assert.ok(rowLit, '성공 행 리터럴을 찾지 못함');
+  const failLit = fn.match(/permanent[\s\S]*?tl\.appendRow\(\[([\s\S]*?)\]\);/);
+  assert.ok(failLit, '실패 행 리터럴을 찾지 못함');
+  // 최상위 콤마만 센다(중첩 호출 안의 콤마는 제외)
+  const countTop = (s) => {
+    let d = 0, n = 1;
+    for (const ch of s) {
+      if ('([{'.includes(ch)) d++;
+      else if (')]}'.includes(ch)) d--;
+      else if (ch === ',' && d === 0) n++;
+    }
+    return n;
+  };
+  assert.equal(countTop(rowLit[1]), need, `성공 행이 ${countTop(rowLit[1])}칸 — 헤더는 ${need}칸이다`);
+  assert.equal(countTop(failLit[1]), need, `실패 행이 ${countTop(failLit[1])}칸 — 헤더는 ${need}칸이다(실패 행을 빠뜨렸다)`);
+  assert.ok(/\bmodel\b/.test(rowLit[1]) && /\bpver\b/.test(rowLit[1]), '성공 행에 model·pver가 안 들어간다');
+  assert.ok(/\bmodel\b/.test(failLit[1]) && /\bpver\b/.test(failLit[1]), '실패 행에 model·pver가 안 들어간다');
+});
+
+test('[v9.145] prompt_ver는 손으로 올리는 상수가 아니라 프롬프트에서 계산된다', () => {
+  const fn = section('function talkPromptVer_()', '\n}\n');
+  assert.ok(fn.includes('computeDigest'), 'prompt_ver가 해시가 아니다 — 손으로 관리하는 번호는 언젠가 안 올라가고, 그 순간 이 열은 거짓을 말한다');
+  // 답을 바꾸는 세 가지가 전부 지문에 들어가야 한다
+  assert.ok(fn.includes('TALK_SYSTEM_PROMPT'), '시스템 프롬프트가 지문에 안 들어간다');
+  assert.ok(fn.includes('AI_FEEDBACK_MODEL'), '모델이 지문에 안 들어간다');
+  assert.ok(fn.includes('TALK_CONTEXT_TURNS'), '문맥 턴 수가 지문에 안 들어간다(길이가 바뀌면 답도 바뀐다)');
+  // 시스템 프롬프트는 상수를 참조해야 한다 — 인라인으로 되돌리면 지문이 변경을 못 본다
+  const call = section('function callClaudeTalk_(', 'const res = UrlFetchApp.fetch');
+  assert.ok(/system:\s*TALK_SYSTEM_PROMPT/.test(call),
+    '시스템 프롬프트가 인라인이다 — 프롬프트를 고쳐도 prompt_ver가 그대로여서 데이터가 조용히 섞인다');
+  // 톱레벨 계산 금지 — AI_FEEDBACK_MODEL은 Code.js에 있고 라이브 파일 로드 순서가 보장되지 않는다
+  assert.ok(!/^const TALK_PROMPT_VER\s*=/m.test(code),
+    'prompt_ver를 톱레벨에서 계산한다 — 로드 순서에 따라 undefined를 지문에 넣는다(v9.57 계열 사고)');
+});
+
+test('[v9.145] 이미 서 있는 시트에 새 열 이름표를 붙인다 — ensureSheet는 시트가 없을 때만 헤더를 쓴다', () => {
+  const batch = section('function talkBatch_()', '\n}\n');
+  assert.ok(batch.includes('talkHeaderHeal_'),
+    '헤더 치유 호출이 없다 — v9.139로 이미 만들어진 8열 시트는 값만 들어가고 머리글이 없는 채로 남는다');
+  const heal = section('function talkHeaderHeal_(', '\n}\n');
+  assert.ok(heal.includes('getMaxColumns'), '시트 물리 열이 모자랄 때 넓히지 않는다');
+  assert.ok(/return;/.test(heal), '멱등 조기 반환이 없다 — 야간 배치가 매일 헤더를 다시 쓴다');
 });
 
 test('[v9.138] 새 학생 열은 선점 구간을 침범하지 않는다 — 이 저장소는 열 충돌로 세 번 당했다', () => {

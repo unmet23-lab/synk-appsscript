@@ -232,9 +232,52 @@ function hwFormUrlOf_(tmpl, sid, hwId) {
  *
  * 안전: CLAUDE_API_KEY 없으면 0초 스킵 · 리허설이면 입구 차단(비용 0) · 학생당 하루 1턴 ·
  *   실행당 상한 · 응답은 시트에만 쓴다(외부 발송 0). */
-const TALK_LOG_HEADERS = ['id', 'student_id', '턴', '학생문', 'AI답', '오류태그', '제출일', 'created_at'];
+/* [v9.145] 뒤 2열(`model`·`prompt_ver`)은 **소급 불가 항목**이라 학생이 쓰기 전에 넣는다.
+ * 왜 필요한가: 이 데이터의 값은 「몽골어 화자가 어디서 무너지는지의 지도」인데(아래 커버리지 리포트 주석),
+ *   2년간 프롬프트·모델을 바꿔가며 쌓으면 **「학생이 어려워한 것」과 「그때 우리 답이 나빴던 것」이 한 덩어리로 섞인다.**
+ *   섞이면 지도가 틀어지고, 무엇으로 만든 답인지는 **되돌아가 알 수 없다**(원본 음성 보관과 같은 계열).
+ * ⚠ 새 열은 **반드시 끝에** 붙인다 — 이 시트는 r[1]·r[2]·r[3]·r[4]·r[6] 위치 접근을 쓴다(앞에 끼우면 전부 밀린다). */
+const TALK_LOG_HEADERS = ['id', 'student_id', '턴', '학생문', 'AI답', '오류태그', '제출일', 'created_at', 'model', 'prompt_ver'];
 const TALK_MAX_PER_RUN = 25;   // 야간 1회 상한 — 초과분은 포인터가 남아 다음 밤 이어진다(첨삭 배치와 같은 규약)
 const TALK_CONTEXT_TURNS = 6;  // 문맥으로 되돌려 보내는 직전 턴 수 — 「대화」가 되려면 앞말을 기억해야 한다
+
+/* 대화 시스템 프롬프트 — 상수로 뽑은 이유는 재사용이 아니라 **버전을 기계가 계산하게** 하기 위해서다. */
+const TALK_SYSTEM_PROMPT = 'SYNK LAB(몽골 울란바토르 한국어 학원)의 한국어 대화 상대. 학생과 한국어로 편지처럼 주고받는다. '
+  + '학생의 급수(1~6, 0=미정)에 맞춰 어휘·문장 길이를 조절한다 — 급수가 낮으면 짧고 쉬운 문장만 쓴다. '
+  + '규칙: ①먼저 학생이 쓴 **내용**에 사람처럼 반응한다(교정부터 하지 않는다 — 말이 막히는 이유는 문법이 아니라 재미가 없어서다) '
+  + '②틀린 표현은 답장 맨 끝에 한 줄로만, 「이렇게 하면 더 자연스러워요: …」 형태로 ③반드시 질문 하나로 끝낸다 '
+  + '④"패배·실패·부족" 같은 부정 단어 금지 ⑤AI·시스템 자기 언급 금지 ⑥학생이 몽골어로 써도 한국어로 답하되, '
+  + '아주 어려워하면 핵심 단어만 몽골어를 괄호 병기한다 ⑦개인정보(주소·전화·비밀번호)를 묻지 않는다.';
+
+/* prompt_ver — **사람이 올리는 번호가 아니라 프롬프트에서 계산한 지문(8자리)**이다.
+ *
+ * 손으로 관리하는 버전 상수는 언젠가 반드시 안 올라간다. 그 순간 이 열은 「참인 채 거짓을 말하는」 열이 된다
+ *   — 값이 v3이라고 적혀 있는데 실제 프롬프트는 다른 것(하루에 2건 겪은 실패 유형: catch의 「대체했다」·
+ *   getSharingAccess의 파일 자신만 보기). 잘못 쓸 수 없는 통로를 만드는 쪽이 조항을 하나 더 붙이는 것보다 낫다.
+ * 무엇이 답을 바꾸는가 = 시스템 프롬프트 + 모델 + 문맥 턴 수. 셋 중 **하나라도 바뀌면 지문이 바뀐다.**
+ *   해시만으로는 「무엇이」 바뀌었는지 모르지만, 데이터를 층으로 가르는 데 필요한 것은 「언제 갈렸는가」이고
+ *   실제 내용은 git 이력에 있다.
+ * ⚠ 톱레벨에서 계산하지 않는다 — AI_FEEDBACK_MODEL은 Code.js에 있고 라이브 파일 로드 순서가 보장되지 않는다
+ *   (Code.js 주석 190번 · 골격 지연 평가와 같은 이유). 반드시 호출 시점에 계산한다. */
+function talkPromptVer_() {
+  const raw = TALK_SYSTEM_PROMPT + '|model=' + (typeof AI_FEEDBACK_MODEL === 'undefined' ? '?' : AI_FEEDBACK_MODEL)
+    + '|ctx=' + TALK_CONTEXT_TURNS;
+  const d = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, raw, Utilities.Charset.UTF_8);
+  return d.map(b => ((b & 0xFF) + 0x100).toString(16).slice(1)).join('').slice(0, 8);
+}
+
+/* 이미 만들어진 talk_log에 **새 열의 이름표를 붙인다.**
+ * `ensureSheet`는 시트가 **없을 때만** 헤더를 쓴다(Code.js) — 그래서 v9.139로 이미 8열짜리가
+ * 라이브에 서 있으면, 10칸짜리 행을 append해도 데이터만 들어가고 머리글은 8개인 채로 남는다.
+ * 값은 있는데 그 열이 무엇인지 아무도 모르는 상태 = 「모름」을 「정상」으로 바꾸는 그 형태다.
+ * 멱등하다 — 이미 길면 즉시 반환하므로 야간 배치가 매일 불러도 무비용이다. */
+function talkHeaderHeal_(sh) {
+  const need = TALK_LOG_HEADERS.length;
+  if (sh.getMaxColumns() < need) sh.insertColumnsAfter(sh.getMaxColumns(), need - sh.getMaxColumns());
+  const cur = sh.getRange(1, 1, 1, need).getValues()[0];
+  if (String(cur[need - 1] || '').trim() === TALK_LOG_HEADERS[need - 1]) return; // 이미 붙어 있다
+  sh.getRange(1, 1, 1, need).setValues([TALK_LOG_HEADERS]);
+}
 
 function createTalkForm() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -285,12 +328,7 @@ function callClaudeTalk_(apiKey, stu, history, text) {
   const body = {
     model: AI_FEEDBACK_MODEL,
     max_tokens: 2048,
-    system: 'SYNK LAB(몽골 울란바토르 한국어 학원)의 한국어 대화 상대. 학생과 한국어로 편지처럼 주고받는다. '
-      + '학생의 급수(1~6, 0=미정)에 맞춰 어휘·문장 길이를 조절한다 — 급수가 낮으면 짧고 쉬운 문장만 쓴다. '
-      + '규칙: ①먼저 학생이 쓴 **내용**에 사람처럼 반응한다(교정부터 하지 않는다 — 말이 막히는 이유는 문법이 아니라 재미가 없어서다) '
-      + '②틀린 표현은 답장 맨 끝에 한 줄로만, 「이렇게 하면 더 자연스러워요: …」 형태로 ③반드시 질문 하나로 끝낸다 '
-      + '④"패배·실패·부족" 같은 부정 단어 금지 ⑤AI·시스템 자기 언급 금지 ⑥학생이 몽골어로 써도 한국어로 답하되, '
-      + '아주 어려워하면 핵심 단어만 몽골어를 괄호 병기한다 ⑦개인정보(주소·전화·비밀번호)를 묻지 않는다.',
+    system: TALK_SYSTEM_PROMPT,   // 상수 참조 — 여기 인라인으로 되돌리면 prompt_ver가 변경을 못 본다
     messages: history.concat([{ role: 'user', content: text }]),
     output_config: { format: { type: 'json_schema', schema: schema } }
   };
@@ -337,6 +375,7 @@ function talkBatch_() {
     if (r[0] && r[3] === 'student') info[String(r[0]).trim()] = { name: r[1] || r[0], lv: Number(r[66]) || 0 };
   });
   const tl = ensureSheet(ss, 'talk_log', TALK_LOG_HEADERS);
+  talkHeaderHeal_(tl);   // [v9.145] 이미 서 있는 8열 시트에 model·prompt_ver 이름표를 붙인다
   // 학생당 하루 1턴 — 상한이 없으면 한 명이 밤새 눌러 그날 예산을 혼자 태운다(비용은 사람 수가 아니라 열정에 비례한다)
   const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
   const turns = {}, todayDone = {};
@@ -349,6 +388,8 @@ function talkBatch_() {
     if (String(r[6] || '') === today) todayDone[s] = 1;
   });
 
+  const pver = talkPromptVer_();          // 실행 1회 계산 — 배치 중엔 안 바뀐다
+  const model = typeof AI_FEEDBACK_MODEL === 'undefined' ? '' : AI_FEEDBACK_MODEL;
   const t0 = Date.now();
   const BUDGET_MS = 120000;
   let made = 0, processed = 0, skipped = 0, permFails = 0, lastErr = '';
@@ -366,7 +407,8 @@ function talkBatch_() {
       const card = callClaudeTalk_(apiKey, stu, talkHistory_(logRows, sid), text);
       // 🔒 학생문은 물론 AI답도 감싼다 — 프롬프트 인젝션으로 모델에게 `=…`로 시작하는 답을 뱉게 할 수 있다
       const row = ['TK' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + sid + '-' + turn, sid, turn,
-        셀안전_(text), 셀안전_(String(card.reply || '')), hwTagsClean_(card.error_tags), dstr(ts, tz), new Date()];
+        셀안전_(text), 셀안전_(String(card.reply || '')), hwTagsClean_(card.error_tags), dstr(ts, tz), new Date(),
+        model, pver];
       tl.appendRow(row);
       logRows.push(row); // 같은 실행 안에서 같은 학생이 여러 번 나와도 문맥이 이어지게(하루 1턴 가드가 있어 드물지만 공짜다)
       turns[sid] = turn; todayDone[sid] = 1;
@@ -377,8 +419,9 @@ function talkBatch_() {
       if (e && e.permanent) {
         // 답장을 못 만들어도 **학생이 쓴 문장은 남긴다** — 대화 데이터의 절반은 이미 여기 있다
         permFails++;
+        // 실패 행에도 model·prompt_ver를 남긴다 — 「어느 버전에서 실패가 몰렸나」가 나중에 유일한 단서다
         tl.appendRow(['TK' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + sid + '-오류', sid, (turns[sid] || 0) + 1,
-          셀안전_(text), '', '', dstr(ts, tz), new Date()]);
+          셀안전_(text), '', '', dstr(ts, tz), new Date(), model, pver]);
         processed = i + 1;
         props.setProperty('대화폼_포인터', String(from + processed));
         continue;
