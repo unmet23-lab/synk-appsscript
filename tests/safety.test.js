@@ -707,6 +707,19 @@ test('[v9.157] 폼 응답의 시트 직기입은 행소독_ 통로를 지난다 
     assert.equal(/\.setValues\((?:out|add)\)|\.appendRow\(\[/.test(body), false, label + '에 소독 없는 적재가 남아 있다');
   });
 
+  /* [v9.159] voiceSweep_ — 8번째 스위프. **위 배열에 넣을 수 없다**: 교재연동.js는 `ENGINE_FILES` 밖이라
+   *   fnOf(엔진 합본)가 못 찾고, 못 찾으면 그 자리는 「검사했는데 아무것도 안 본」 상태가 된다.
+   *   그래서 상담AI.js를 다루는 방식대로 파일을 직접 읽는다(_engine-source를 건드리지 않는다).
+   *   위험이 같은 계급인 이유: 목소리 폼의 `미션`이 **학생·강사 손입력**이고, voice_log·point_logs가
+   *   `profiles`(연락처)와 같은 스프레드시트에 산다 — v9.157이 7경로를 막을 때 유일하게 남았던 자리다. */
+  const tbSrc = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
+  const vsFrom = tbSrc.indexOf('function voiceSweep_(');
+  assert.notEqual(vsFrom, -1, 'voiceSweep_ 정의를 찾지 못함 — 이름이 바뀌었으면 이 검사도 함께 옮겨라');
+  const vs = tbSrc.slice(vsFrom, tbSrc.indexOf('\nfunction ', vsFrom + 10));
+  assert.ok(/setValues\(행소독_\(vOut\)\)/.test(vs), 'voice_log 적재가 소독 통로를 지나지 않는다 — 목소리 폼 미션이 raw로 실린다');
+  assert.ok(/setValues\(행소독_\(pOut\)\)/.test(vs), 'point_logs 적재가 소독 통로를 지나지 않는다');
+  assert.equal(/\.setValues\((?:vOut|pOut)\)/.test(vs), false, 'voiceSweep_에 소독 없는 적재가 남아 있다');
+
   // ── 탐지 능력은 픽스처로 못박는다 — 실제 셀안전_ 정의를 평가(정의 이동·문자 집합 약화 감지) ──
   const talkSrc = fs.readFileSync(path.join(ROOT, '상담AI.js'), 'utf8');
   const defFrom = talkSrc.indexOf('function 셀안전_');
