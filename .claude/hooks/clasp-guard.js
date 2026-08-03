@@ -69,9 +69,15 @@ if (/clasp(\.cmd|\.ps1)?["']?\s+(--?\S+\s+)*pull\b/i.test(execCmd) && !cmd.inclu
     '[clasp-guard] clasp pull 차단 — 이건 읽기가 아니라 **작업본 덮어쓰기**다.\n' +
       '라이브를 확인하려던 pull이 옆 세션의 커밋 내용을 로컬에서 되돌린 실사고가 있다(F040).\n' +
       '미커밋 편집에 닿으면 git 어디에도 사본이 없어 복구 자체가 불가능하다.\n' +
-      '→ 라이브 내용 확인: Apps Script 편집기에서 눈으로 보거나, 작업본이 **아닌** 임시 디렉터리에서 받는다.\n' +
-      '→ 로컬을 라이브로 되돌리는 것이 정말 의도라면 `git status` 전문으로 남의 미커밋 변경이 없는지\n' +
-      '   확인한 뒤 CLASP_GUARD_BYPASS=1 을 붙인다.'
+      '\n✅ 정당한 용법 — **repo 밖 임시 디렉터리로 받아 작업본과 diff**(이건 막으려는 게 아니다):\n' +
+      '     mkdir /tmp/live && cp .clasp.json /tmp/live/ && cd /tmp/live \\\n' +
+      '       && CLASP_GUARD_BYPASS=1 clasp pull && diff -r /tmp/live <작업본>\n' +
+      '   왜 필요한가: **편집기를 열어둔 채 clasp push하면 편집기의 오래된 버퍼가 나중에 자동 저장되며\n' +
+      '   push를 덮어쓴다**(2026-08-04 실사고 — 그때 이 pull-diff가 유일한 발각 수단이었다).\n' +
+      '   작업본 안에서 받는 것만 위험하다(F040) — 방향이 반대인 이 용법까지 접을 필요는 없다.\n' +
+      '→ 그냥 라이브를 눈으로만 볼 거면 Apps Script 편집기가 더 싸다.\n' +
+      '→ **작업본을** 라이브로 되돌리는 게 정말 의도라면 `git status` 전문으로 남의 미커밋 변경이\n' +
+      '   없는지 확인한 뒤 CLASP_GUARD_BYPASS=1 을 붙인다.'
   );
 }
 
