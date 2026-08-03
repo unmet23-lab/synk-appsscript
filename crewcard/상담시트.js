@@ -25,7 +25,19 @@ const 증분헤더_ = [
   '집중시간대', '학습공간',                        // 반 배정·학습 설계
   '듣기자신감', '말하기자신감', '읽기자신감', '쓰기자신감',  // 레벨 배정(1~5)
   '졸업후목표비자', '장학금의향',                  // 비자·재정 로드맵
-  '걱정요인', '인지진단'                           // 이탈 리스크 · 학습 설계
+  '걱정요인', '인지진단',                          // 이탈 리스크 · 학습 설계
+  // ── 2차 증분(08-04 유호 "관리에 필요한데 없는 건 다 넣어라") ──
+  //    원칙은 1차와 같다: 원본 103문항은 crew_cards가 정본이고 여기엔 **읽고 판단하는 한 칸**만 만든다.
+  //    체크박스 묶음·1~5 척도는 열을 쪼개지 않고 사람이 읽는 문장으로 접어 넣는다(열 폭발 방지).
+  '담당자',                                        // 누가 접수했나 — 후속 상담 배정
+  '거주형태', '아르바이트계획',                    // 시간표·수업 배치 제약
+  '한국어학습이력', '몽골내한국활동',              // 레벨 배정 근거(세종학당·TOPIK반 경험)
+  '한자자신감',                                    // 듣·말·읽·쓰 4종 옆의 5번째 축
+  '목표강도', '관심전공분야', '진학타임라인',      // 목표 관리·진학 지도
+  '한국체류총기간', '한국연고', '비자보유이력',    // 비자 실무
+  '영어시험종류',                                  // 진학 요건
+  '한국관심경로', '한국어노출경로',                // 동기 유지 상담·수업 소재 선택
+  'K컬처참여강도', 'K컬처활동형태', 'K컬처세부'    // 특강 편성
 ];
 
 const 처리상태_ = ['신규접수', '검토중', '상담완료', '반배정', '앱편입', '보류', '취소'];
@@ -78,6 +90,86 @@ const 가치라벨_ = {
   values_expertise: '전문성', values_community: '커뮤니티'
 };
 
+const 왜한국라벨_ = {
+  why_korea_kpop_idol: 'K-POP·아이돌', why_korea_kdrama: 'K-드라마', why_korea_education: '교육·명문대',
+  why_korea_career: '취업 기회', why_korea_proximity: '가까운 거리', why_korea_relatives: '친척·지인',
+  why_korea_safety: '치안', why_korea_it: 'IT·스마트시티', why_korea_beauty_fashion: 'K-뷰티·패션',
+  why_korea_healthcare: '의료·복지', why_korea_food: '한식', why_korea_immigration: '비자·이민'
+};
+const 비자이력라벨_ = {
+  visa_history_c3: 'C-3 단기방문', visa_history_d4: 'D-4 어학연수', visa_history_d2: 'D-2 유학',
+  visa_history_h2: 'H-2 방문취업', visa_history_f1_f4: 'F-1·F-4 동포', visa_history_none: '없음'
+};
+const 영어시험라벨_ = {
+  english_test_none: '없음', english_test_toeic: 'TOEIC', english_test_ielts: 'IELTS',
+  english_test_toefl: 'TOEFL', english_test_other: '기타'
+};
+const 현지활동라벨_ = {
+  local_activity_sejong: '세종학당', local_activity_topik_class: 'TOPIK 준비반',
+  local_activity_kr_parttime: '한국기업 알바', local_activity_kpop_fanclub: '팬클럽·커버댄스',
+  local_activity_none: '없음'
+};
+const 전공관심라벨_ = {
+  field_interest_business: '경영·경제', field_interest_it: 'IT·컴공', field_interest_design: '디자인·예술',
+  field_interest_medical: '의료·보건', field_interest_engineering: '공학', field_interest_humanities: '인문·어학',
+  field_interest_media: '미디어·방송'
+};
+const 학습방식라벨_ = {
+  learning_style_1on1: '1:1 코칭', learning_style_small_group: '소그룹 4~6인',
+  learning_style_large_class: '정규 대형', learning_style_online: '온라인 병행',
+  learning_style_immersion: '원어 몰입', learning_style_grammar: '문법·시험', learning_style_conversation: '회화·발음'
+};
+const K추가라벨_ = {
+  kc_more_kdrama: 'K-드라마 몰입', kc_more_kfood: 'K-푸드·요리', kc_more_kfashion: 'K-패션',
+  kc_more_kvariety: 'K-예능', kc_more_seoul_tour: '서울 투어', kc_more_kpop_concert: '콘서트·팬미팅'
+};
+
+/* 1~5 척도 묶음 → 「이름 4 · 이름 2」 한 칸. 0·빈칸은 통째로 뺀다(0을 「낮음」으로 읽히게 두지 않는다). */
+function 강도요약_(data, 축) {
+  return Object.keys(축).map(function (k) {
+    const n = Number(data[k]);
+    return n ? 축[k] + ' ' + n : '';
+  }).filter(String).join(' · ');
+}
+const 목표축_ = {
+  vision_topik_intensity: 'TOPIK', vision_university_intensity: '진학', vision_career_intensity: '취업',
+  vision_kculture_intensity: 'K컬처', vision_native_intensity: '회화'
+};
+const 노출축_ = {
+  exposure_drama_intensity: '드라마·영화', exposure_kpop_intensity: 'K-POP', exposure_shortform_intensity: '유튜브·틱톡',
+  exposure_real_speaker_intensity: '원어민 대화', exposure_study_mat_intensity: '교재·앱'
+};
+
+/* 양극 척도(1~5) → 어느 쪽으로 기울었는지. 3은 어느 극도 아니므로 「중간」으로 따로 읽는다
+ * — 숫자만 옮기면 강사가 매번 「1이 어느 쪽이더라」를 되물어야 한다. */
+const 성향축_ = [
+  { col: 'trait_extroversion', 낮: '내향', 높: '외향' },
+  { col: 'trait_planning', 낮: '계획형', 높: '즉흥형' },
+  { col: 'trait_social_study', 낮: '혼자 학습', 높: '그룹 학습' },
+  { col: 'trait_visual_auditory', 낮: '시각형', 높: '청각형' },
+  { col: 'trait_theory_practice', 낮: '이론형', 높: '실전형' }
+];
+function 극요약_(n, 낮, 높) {
+  n = Number(n);
+  if (!n) return '';
+  return (n === 3 ? '중간' : (n < 3 ? 낮 : 높)) + '(' + n + ')';
+}
+function 성향요약_(data) {
+  return 성향축_.map(function (a) { return 극요약_(data[a.col], a.낮, a.높); }).filter(String).join(' · ');
+}
+
+/* K컬처 세부는 트랙별로 접는다 — 관심도 3종(보컬·댄스·뷰티)은 이미 각자 열이 있고, 여기엔 그 아래 문항만. */
+function K세부요약_(data) {
+  return [
+    ['보컬', ['kc_vocal_style', 'kc_vocal_role', 'kc_vocal_stage']],
+    ['댄스', ['kc_dance_genre', 'kc_dance_career', 'kc_dance_goal']],
+    ['뷰티', ['kc_beauty_part', 'kc_beauty_look', 'kc_beauty_career']]
+  ].map(function (p) {
+    const vals = p[1].map(function (c) { return data[c] ? String(data[c]) : ''; }).filter(String);
+    return vals.length ? p[0] + ' ' + vals.join('/') : '';
+  }).filter(String).join(' | ');
+}
+
 /* 크루카드 data(컬럼:값) → 상담시트 {헤더명: 값}.
  * 🔴 「반」·「학생ID」는 일부러 비운다 — 배정과 편입은 사람의 결정이다. */
 function 크루카드_상담매핑_(data, lang, serial, 접수시각) {
@@ -86,6 +178,11 @@ function 크루카드_상담매핑_(data, lang, serial, 접수시각) {
     '[어떤 크루가 되고 싶은가] ' + v('crew_intro')].filter(function (s) { return s.replace(/^\[[^\]]*\]\s*/, ''); }).join('\n');
   const 퀴즈 = [1, 2, 3, 4].map(function (n) { return v('quiz_q' + n); }).filter(String)
     .map(function (a, i) { return 'Q' + (i + 1) + ' ' + a; }).join(' / ');
+  /* 지망 사유 3종은 열을 새로 만들지 않고 자유서술 뒤에 붙인다 — 서술형은 읽는 자리가 한 곳이어야 한다. */
+  const 지망사유 = [1, 2, 3].map(function (n) {
+    const key = ['school_1st_reason', 'school_2nd_reason', 'school_3rd_reason'][n - 1];
+    return v(key) ? '[' + n + '순위 선택 이유] ' + v(key) : '';
+  }).filter(String).join('\n');
 
   const o = {
     '등록일': 접수시각,
@@ -106,8 +203,14 @@ function 크루카드_상담매핑_(data, lang, serial, 접수시각) {
     '지망대학1순위': v('school_1st'), '지망대학2순위': v('school_2nd'), '지망대학3순위': v('school_3rd'),
     '유학예산': v('finance_budget'), '학비조달주체': v('finance_sponsor'), '가족지지': v('family_support'),
     'KPOP댄스희망': v('kc_dance_interest'), '보컬트레이닝': v('kc_vocal_interest'), 'K뷰티메이크업': v('kc_beauty_interest'),
-    '선호그룹': v('fav_artist'), '인생드라마': v('fav_drama'), '취미관심사': v('kc_more_kfood') ? '' : '',
-    '📝자유서술→노션': 서술,
+    '선호그룹': v('fav_artist'), '인생드라마': v('fav_drama'),
+    '취미관심사': v('fav_place') ? '가고 싶은 곳: ' + v('fav_place') : '',
+    // 시트에 이미 있던 빈 열들 — 새 열을 만들기 전에 여기부터 채운다(같은 뜻의 열을 두 개 만들지 않는다)
+    '성격유형': 성향요약_(data),
+    '학습_방식': 다중요약_(data, 'learning_style_', 학습방식라벨_),
+    '관심K분야': 다중요약_(data, 'kc_more_', K추가라벨_),
+    '인지채널': 극요약_(data['trait_visual_auditory'], '시각형', '청각형'),
+    '📝자유서술→노션': [서술, 지망사유].filter(String).join('\n'),
     // ── 증분 ──
     '처리상태': '신규접수', '접수출처': '크루카드-' + (lang === 'mn' ? '몽골어' : '한국어'), '크루카드번호': serial,
     '개인정보동의': v('consent_privacy'), '초상권동의': v('consent_media'),
@@ -115,9 +218,23 @@ function 크루카드_상담매핑_(data, lang, serial, 접수시각) {
     '듣기자신감': v('lang_listening_intensity'), '말하기자신감': v('lang_speaking_intensity'),
     '읽기자신감': v('lang_reading_intensity'), '쓰기자신감': v('lang_writing_intensity'),
     '졸업후목표비자': 다중요약_(data, 'visa_target_', 비자라벨_), '장학금의향': v('scholarship'),
-    '걱정요인': 다중요약_(data, 'worry_', 걱정라벨_), '인지진단': 퀴즈
+    '걱정요인': 다중요약_(data, 'worry_', 걱정라벨_), '인지진단': 퀴즈,
+    // ── 2차 증분 ──
+    '담당자': v('advisor'),
+    '거주형태': v('living'), '아르바이트계획': v('parttime'),
+    '한국어학습이력': v('prior_study'), '몽골내한국활동': 다중요약_(data, 'local_activity_', 현지활동라벨_),
+    '한자자신감': v('lang_hanja_intensity'),
+    '목표강도': 강도요약_(data, 목표축_),
+    '관심전공분야': 다중요약_(data, 'field_interest_', 전공관심라벨_),
+    '진학타임라인': [v('tl_synk_register') && ('SYNK 등록 ' + v('tl_synk_register')),
+      v('tl_apply') && ('지원 ' + v('tl_apply'))].filter(String).join(' · '),
+    '한국체류총기간': v('total_stay'), '한국연고': v('korea_tie'),
+    '비자보유이력': 다중요약_(data, 'visa_history_', 비자이력라벨_),
+    '영어시험종류': 다중요약_(data, 'english_test_', 영어시험라벨_),
+    '한국관심경로': 다중요약_(data, 'why_korea_', 왜한국라벨_),
+    '한국어노출경로': 강도요약_(data, 노출축_),
+    'K컬처참여강도': v('kc_load'), 'K컬처활동형태': v('kc_style'), 'K컬처세부': K세부요약_(data)
   };
-  delete o['취미관심사'];   // 크루카드에 대응 항목이 없다 — 빈 값으로 덮어쓰지 않는다
   return o;
 }
 
@@ -137,8 +254,11 @@ function 상담시트_이관_(data, lang, serial) {
     for (let i = 0; i < 기존.length; i++) if (String(기존[i][0]) === serial) return { ok: true, skip: 'dup' };
   }
 
-  const tz = ss.getSpreadsheetTimeZone() || 'Asia/Ulaanbaatar';
-  const 접수시각 = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  /* ⚠ 스프레드시트 타임존을 믿지 않는다 — 실측(08-04) 이 파일의 TZ는 America/Los_Angeles다.
+   *   그대로 쓰면 크루카드번호는 `SL-20260804`인데 같은 행 등록일은 `2026-08-03`으로 하루 어긋난다
+   *   (몽골 오전 = LA 전날 오후). 학원 소재지 = 울란바토르 하나뿐이므로 채번(크루카드.js)과 같은
+   *   기준으로 못 박는다. 시트 TZ를 고치는 쪽은 이 파일을 함께 읽는 메인 프로젝트까지 흔든다. */
+  const 접수시각 = Utilities.formatDate(new Date(), TZ_, 'yyyy-MM-dd');
   const o = 크루카드_상담매핑_(data, lang, serial, 접수시각);
 
   const row = new Array(h.width).fill('');

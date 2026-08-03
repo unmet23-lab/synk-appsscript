@@ -18,6 +18,9 @@
 
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY';
 const CREW_TAB = 'crew_cards';
+/* 날짜 기준 = 학원 소재지 하나. 스프레드시트 TZ(실측 America/Los_Angeles)를 쓰면
+ * 채번(SL-YYYYMMDD)과 등록일이 하루 어긋난다 — 상담시트.js 이관부 주석 참조. */
+const TZ_ = 'Asia/Ulaanbaatar';
 /* ⛔ 공유 토큰 검사를 일부러 두지 않는다(08-04 인계 갭① 종결).
  *   이 폼은 공개 링크로 배포된다 — 토큰을 넣어도 페이지 소스에 그대로 노출돼 1분이면 베껴 쓴다(보안 연극).
  *   실방어 = 허니팟(hp) + DAILY_CAP + MAX_BODY/MAX_CELL + 락 채번 + doGet 무부작용.
@@ -82,7 +85,7 @@ function doPost(e) {
     if (!data || !Object.keys(data).length) return 크루_응답_({ ok: false, error: 'empty' });
 
     const props = PropertiesService.getScriptProperties();
-    const today = Utilities.formatDate(new Date(), 'Asia/Ulaanbaatar', 'yyyyMMdd');
+    const today = Utilities.formatDate(new Date(), TZ_, 'yyyyMMdd');
     const capKey = 'cap:' + today;
     if (Number(props.getProperty(capKey) || 0) >= DAILY_CAP) {
       return 크루_응답_({ ok: false, error: 'daily-cap' });

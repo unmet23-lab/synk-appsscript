@@ -2558,8 +2558,15 @@ section.page{
     Object.entries(inputs).forEach(([k,el])=>{
       if(el && !NO_RESTORE.has(k) && saved[k] != null) el.value = saved[k];
     });
-    // also clear any leftover date fields from a previous version
-    ['year','month','day'].forEach(k => { if(inputs[k]) inputs[k].value = ''; });
+    // 등록일은 「열자마자 오늘」 — 손으로 적지 않는다(유호 2026-08-04).
+    //   저장본을 복원하지 않고 **매번 오늘로 다시 쓴다**: 카드는 접수 시점을 찍는 문서라
+    //   어제 열어둔 탭이 오늘 제출되면 어제 날짜가 남는다(아이패드 현장 상시 오픈 = 실제 시나리오).
+    //   덮어쓰기는 그대로 가능 — 사람이 고친 값이 최종이다. 표지 한 칸이 전 페이지 미니칩으로 번진다.
+    (function 등록일_오늘로(){
+      const t = new Date(), p2 = n => (n < 10 ? '0' : '') + n;
+      const 오늘 = { year: String(t.getFullYear()), month: p2(t.getMonth()+1), day: p2(t.getDate()) };
+      ['year','month','day'].forEach(k => { if(inputs[k]) inputs[k].value = 오늘[k]; });
+    })();
 
     // ---- utils ----
     const pad2 = v => {

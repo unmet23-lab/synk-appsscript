@@ -185,3 +185,86 @@ test('상담시트 이관 — 안전 불변식(학생ID 비움·소독·중복 �
   const 진입 = server.slice(server.indexOf('function doGet'), server.indexOf('function 크루_탭_'));
   assert.ok(!/상담시트_샘플정리_|deleteRow/.test(진입), 'doGet/doPost가 삭제 경로에 닿는다');
 });
+
+test('등록일 — 카드를 열면 오늘 날짜가 이미 들어가 있다(KR·MN)', () => {
+  // 유호 요청(08-04): 「켜자마자 날짜는 전부 입력되어 있었으면」.
+  // 문자열 존재만 보면 블록이 죽어도 초록이 된다(F047과 같은 함정) → 실제로 실행해 값을 본다.
+  for (const [이름, html] of [['KR', htmlKr], ['MN', htmlMn]]) {
+    const m = html.match(/\(function 등록일_오늘로\(\)\{[\s\S]*?\}\)\(\);/);
+    assert.ok(m, `${이름}: 등록일 자동 입력 블록이 없다`);
+    const inputs = { year: {}, month: {}, day: {} };
+    new Function('inputs', m[0])(inputs);
+    const t = new Date(), p2 = (n) => (n < 10 ? '0' : '') + n;
+    assert.equal(inputs.year.value, String(t.getFullYear()), `${이름}: 연도가 오늘이 아니다`);
+    assert.equal(inputs.month.value, p2(t.getMonth() + 1), `${이름}: 월이 오늘이 아니다`);
+    assert.equal(inputs.day.value, p2(t.getDate()), `${이름}: 일이 오늘이 아니다`);
+    // 저장본 복원은 그대로 막혀 있어야 한다 — 어제 값이 되살아나면 자동 입력이 무의미하다
+    assert.ok(/NO_RESTORE = new Set\(\['year','month','day'\]\)/.test(html), `${이름}: 날짜가 저장본에서 복원된다`);
+  }
+});
+
+test('날짜 기준 — 채번과 등록일이 같은 타임존(시트 TZ를 믿지 않는다)', () => {
+  // 실측: 이 스프레드시트 TZ는 America/Los_Angeles다. 시트 TZ로 등록일을 찍으면
+  // 크루카드번호 SL-20260804 와 등록일 2026-08-03 이 같은 행에서 하루 어긋난다.
+  assert.ok(/const TZ_ = 'Asia\/Ulaanbaatar'/.test(server), 'TZ_ 정본 상수가 없다');
+  assert.ok(!/getSpreadsheetTimeZone/.test(상담), '등록일이 시트 TZ를 쓴다 — 채번과 하루 어긋난다');
+  const 채번 = server.match(/Utilities\.formatDate\(.*yyyyMMdd'\)/)[0];
+  assert.ok(채번.includes('TZ_'), `채번이 TZ_를 안 쓴다: ${채번}`);
+  assert.ok(/Utilities\.formatDate\(new Date\(\), TZ_, 'yyyy-MM-dd'\)/.test(상담), '등록일이 TZ_를 안 쓴다');
+});
+
+test('상담시트 증분 — 선언한 헤더가 전부 실제로 채워지고, 라벨 키가 카드 컬럼에 있다', () => {
+  // 헤더만 늘리고 매핑을 빠뜨리면 열은 생기는데 영원히 빈칸이다 — 「연동됐다」로 보이는 최악의 실패.
+  const 헤더fn = 상담.match(/const 증분헤더_ = \[[\s\S]*?\n\];/)[0];
+  const 증분 = new Function(`${헤더fn}; return 증분헤더_;`)();
+  const 매핑 = 상담.slice(상담.indexOf('function 크루카드_상담매핑_'), 상담.indexOf('function 상담시트_이관_'));
+  for (const h of 증분) {
+    assert.ok(매핑.includes(`'${h}'`), `헤더 「${h}」를 선언만 하고 매핑이 없다 — 열이 영원히 빈칸이 된다`);
+  }
+  assert.ok(증분.length >= 33, `증분 헤더가 ${증분.length}개 — 2차 증분(관리 항목)이 빠졌다`);
+
+  // 라벨 맵의 키는 전부 실제 카드 컬럼이어야 한다. 오타 1글자면 그 옵션만 조용히 사라진다.
+  const cols = new Set(COLUMNS);
+  const 맵들 = 상담.match(/const [^\s]*라벨_ = \{[\s\S]*?\n\};/g) || [];
+  assert.ok(맵들.length >= 11, `라벨 맵이 ${맵들.length}종 — 2차 증분 맵이 빠졌다`);
+  for (const src of 맵들) {
+    const 이름 = src.match(/const ([^\s]+) =/)[1];
+    const 맵 = new Function(`${src}; return ${이름};`)();
+    for (const k of Object.keys(맵)) {
+      assert.ok(cols.has(k), `${이름}.${k} 가 COLUMNS에 없다 — 그 선택지는 시트에 영원히 안 찍힌다`);
+    }
+  }
+  // 1~5 척도 축도 같은 함정 — 축 키가 틀리면 요약이 통째로 빈칸이 된다
+  for (const 축이름 of ['목표축_', '노출축_']) {
+    const src = 상담.match(new RegExp(String.raw`const ${축이름} = \{[\s\S]*?\n\};`))[0];
+    const 축 = new Function(`${src}; return ${축이름};`)();
+    for (const k of Object.keys(축)) assert.ok(cols.has(k), `${축이름}.${k} 가 COLUMNS에 없다`);
+  }
+  const 성향 = new Function(`${상담.match(/const 성향축_ = \[[\s\S]*?\n\];/)[0]}; return 성향축_;`)();
+  for (const a of 성향) assert.ok(cols.has(a.col), `성향축_.${a.col} 가 COLUMNS에 없다`);
+});
+
+test('상담시트 증분 — 실제로 값이 찍힌다(선언·매핑이 아니라 결과로 확인)', () => {
+  // 헤더도 있고 매핑 키도 있는데 라벨 접두어가 어긋나 빈칸이 나오는 게 이 구조의 고유 실패다.
+  // 그래서 문자열이 아니라 **매핑 함수를 실제로 돌려** 칸이 차는지 본다.
+  const pure = 상담.slice(0, 상담.indexOf('function 상담시트_이관_'));
+  const 매핑 = new Function(pure + '; return 크루카드_상담매핑_;')();
+  const 증분 = new Function(pure + '; return 증분헤더_;')();
+
+  const 가짜 = {};
+  COLUMNS.forEach((c) => { 가짜[c] = true; });        // 전 문항 응답 — 체크박스·척도 모두 참으로 읽힌다
+  const out = 매핑(가짜, 'kr', 'SL-20260804-999', '2026-08-04');
+
+  const 빈칸 = 증분.filter((h) => !String(out[h] || '').trim());
+  assert.deepEqual(빈칸, [], `전 문항을 채웠는데 빈칸으로 남는 증분 열: ${빈칸.join(', ')}`);
+
+  // 안전 불변식은 결과에서도 성립해야 한다 — 매핑이 우회로로 ID·반을 만들지 않는지
+  assert.equal(out['학생ID'], undefined, '매핑 결과가 학생ID를 만든다');
+  assert.equal(out['반'], undefined, '매핑 결과가 「반」을 만든다');
+
+  // 빈 제출이면 요약 칸은 빈칸이어야 한다(빈 값을 「없음」 같은 가짜 값으로 채우지 않는다)
+  const 빈출력 = 매핑({}, 'mn', 'SL-20260804-000', '2026-08-04');
+  assert.equal(빈출력['목표강도'], '', '빈 제출인데 목표강도에 값이 생긴다');
+  assert.equal(빈출력['성격유형'], '', '빈 제출인데 성격유형에 값이 생긴다');
+  assert.equal(빈출력['접수출처'], '크루카드-몽골어', '접수출처가 언어를 반영하지 않는다');
+});
