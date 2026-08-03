@@ -1,14 +1,13 @@
 name: syntax-check
 
-# 모든 push에서 Apps Script 소스(.js)와 appsscript.json의 구문을 검사한다.
+# 모든 push에서 Apps Script 소스(.js)와 appsscript.json의 구문 + 전체 테스트를 검사한다.
 # 실패하면 GitHub이 커밋 작성자에게 이메일로 알린다 (기본 알림 설정).
 # 목적: 어떤 세션·어떤 경로로 커밋됐든 깨진 코드가 조용히 쌓이는 것 방지.
+# 경로 필터를 두지 않는다 — 테스트가 docs(버전_이력 등)·tools도 검사하므로,
+# .js만 거르면 문서만 깨는 커밋이 CI를 「안 돌아서 초록」으로 통과한다(2026-08-04 실사고).
 
 on:
   push:
-    paths:
-      - "**.js"
-      - "appsscript.json"
 
 jobs:
   check:
