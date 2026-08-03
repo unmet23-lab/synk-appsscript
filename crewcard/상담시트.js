@@ -252,3 +252,99 @@ function 상담시트_샘플정리_() {
   for (let i = 대상.length - 1; i >= 0; i--) sh.deleteRow(대상[i].row);
   Logger.log('삭제 %s건', 대상.length);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+ * 상담 운영 흐름 — 접수 현황판 + 절차 안내 (재실행 안전)
+ *   대시보드 탭 기존 내용은 건드리지 않고 **아래에 블록을 붙인다**(마커로 찾아 갱신).
+ *   숫자는 수식이라 시트가 스스로 갱신한다 — 코드를 다시 돌릴 필요가 없다.
+ * ═══════════════════════════════════════════════════════════════════ */
+const 접수판_마커_ = '▣ 크루카드 접수 현황';
+const 안내_마커_ = '▣ 크루카드 접수 → 앱 편입 절차';
+
+/* 마커가 있으면 그 행부터, 없으면 기존 내용 두 줄 아래부터 — 같은 자리에 덮어써서 블록이 늘어나지 않는다. */
+function 블록시작행_(sh, 마커, 여백) {
+  const last = sh.getLastRow();
+  if (last >= 1) {
+    const col = sh.getRange(1, 1, last, 1).getValues();
+    for (let i = 0; i < col.length; i++) if (String(col[i][0] || '').indexOf(마커) === 0) return i + 1;
+  }
+  return last + (여백 || 2);
+}
+
+function 상담시트_접수판_() {
+  const ss = SpreadsheetApp.openById(CONSULT_SHEET_ID);
+  const sh = ss.getSheetByName('대시보드');
+  if (!sh) { Logger.log('대시보드 탭 없음'); return; }
+  const c = 상담헤더맵_(ss.getSheetByName(CONSULT_TAB));
+  const A1 = function (name) {   // 헤더명 → 상담데이터입력의 열 전체 범위(3행부터)
+    const i = c.map[name];
+    if (i === undefined) return null;
+    const L = 열문자_(i + 1);
+    return "'" + CONSULT_TAB + "'!" + L + '3:' + L;
+  };
+  const 상태열 = A1('처리상태'), 출처열 = A1('접수출처'), 반열 = A1('반'), ID열 = A1('학생ID'), 등록열 = A1('등록일');
+  if (!상태열) { Logger.log('증분 열이 없다 — 상담시트_업그레이드_ 먼저'); return; }
+
+  const r0 = 블록시작행_(sh, 접수판_마커_, 3);
+  const rows = [];
+  rows.push([접수판_마커_, '', '', '', '', '', '']);
+  rows.push(['숫자는 수식이라 시트가 스스로 갱신합니다. 크루카드 제출이 들어오면 바로 반영됩니다.', '', '', '', '', '', '']);
+  rows.push(['', '', '', '', '', '', '']);
+  rows.push(['처리상태', '건수', '', '접수출처', '건수', '', '한눈에']);
+  처리상태_.forEach(function (s, i) {
+    const 출처 = ['크루카드-한국어', '크루카드-몽골어', '워크인·기타'];
+    const o = 출처[i];
+    rows.push([
+      s, '=COUNTIF(' + 상태열 + ',"' + s + '")', '',
+      o || '', o ? (o === '워크인·기타'
+        ? '=COUNTA(' + 상태열 + ')-COUNTIF(' + 출처열 + ',"크루카드-*")'
+        : '=COUNTIF(' + 출처열 + ',"' + o + '")') : '', '',
+      i === 0 ? '=CONCATENATE("총 접수 ",COUNTA(' + 상태열 + '),"건")'
+        : i === 1 ? '=CONCATENATE("반 배정 대기 ",COUNTIF(' + 반열 + ',"")-COUNTBLANK(' + 상태열 + '),"건")'
+        : i === 2 ? '=CONCATENATE("앱 미편입 ",COUNTA(' + 상태열 + ')-COUNTA(' + ID열 + '),"건")'
+        : i === 3 ? '=CONCATENATE("오늘 접수 ",COUNTIF(' + 등록열 + ',TEXT(TODAY(),"yyyy-mm-dd")),"건")' : ''
+    ]);
+  });
+  sh.getRange(r0, 1, rows.length, 7).setValues(rows);
+  sh.getRange(r0, 1, 1, 7).merge().setBackground(브랜드_.navy).setFontColor(브랜드_.lime)
+    .setFontWeight('bold').setFontSize(12).setVerticalAlignment('middle');
+  sh.setRowHeight(r0, 30);
+  sh.getRange(r0 + 1, 1, 1, 7).merge().setFontColor('#6B7280').setFontSize(9);
+  sh.getRange(r0 + 3, 1, 1, 7).setBackground(브랜드_.cream).setFontWeight('bold');
+  sh.getRange(r0 + 4, 7, 4, 1).setFontWeight('bold').setFontColor(브랜드_.coral);
+  Logger.log('✅ 접수 현황판 — 대시보드 %s행부터 %s행', r0, rows.length);
+}
+
+function 열문자_(n) { let s = ''; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = (n - m - 1) / 26; } return s; }
+
+function 상담시트_안내_() {
+  const ss = SpreadsheetApp.openById(CONSULT_SHEET_ID);
+  const sh = ss.getSheetByName('사용안내');
+  if (!sh) { Logger.log('사용안내 탭 없음'); return; }
+  const r0 = 블록시작행_(sh, 안내_마커_, 3);
+  const L = [
+    [안내_마커_],
+    [''],
+    ['크루카드(태블릿·링크)로 들어온 접수는 이 시트 「상담데이터입력」에 자동으로 한 줄 쌓입니다.'],
+    ['⚠ 단 학생ID와 반은 비어서 들어옵니다 — 공개 링크라 아무나 제출할 수 있기 때문입니다.'],
+    ['   학생ID가 비어 있는 동안에는 앱(Glide) 로스터에 절대 들어가지 않습니다. 안전장치입니다.'],
+    [''],
+    ['① 신규접수  — 크루카드가 자동으로 넣습니다. 원장이 할 일 없음.'],
+    ['② 검토중    — 내용을 읽고 진짜 상담 대상인지 판단합니다. 장난·중복이면 「취소」로.'],
+    ['③ 상담완료  — 대면·전화 상담을 마쳤습니다. 필요하면 비고에 메모.'],
+    ['④ 반배정    — 「반」 열에서 24반 중 하나를 고릅니다(평일11A~18D · 주말11A~14D).'],
+    ['⑤ 앱편입    — 「학생ID」를 채웁니다. 이 순간부터 다음 날 아침 동기화로 앱에 학생이 생깁니다.'],
+    ['             ID 규칙은 기존 학생과 같은 형식을 따르세요(예: SYNK-0NN).'],
+    ['⑥ 보류/취소 — 진행하지 않는 건. 행을 지우지 말고 상태로 남겨두면 통계가 정확해집니다.'],
+    [''],
+    ['📌 크루카드번호(SL-YYYYMMDD-NNN)가 crew_cards 탭의 원본과 이어지는 열쇠입니다.'],
+    ['   상담시트에는 관리에 쓰이는 항목만 옮겨 왔고, 응답 전체(182열)는 crew_cards에 그대로 있습니다.'],
+    ['📌 접수 건수·대기 건수는 「대시보드」 탭 아래 ▣ 크루카드 접수 현황에서 자동으로 셉니다.']
+  ];
+  sh.getRange(r0, 1, L.length, 1).setValues(L);
+  sh.getRange(r0, 1).setBackground(브랜드_.navy).setFontColor(브랜드_.lime).setFontWeight('bold').setFontSize(12);
+  sh.setRowHeight(r0, 28);
+  sh.getRange(r0 + 3, 1, 3, 1).setFontColor(브랜드_.coral);
+  sh.setColumnWidth(1, 780);
+  Logger.log('✅ 절차 안내 — 사용안내 %s행부터 %s행', r0, L.length);
+}
