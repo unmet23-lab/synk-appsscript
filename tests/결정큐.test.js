@@ -99,6 +99,46 @@ test('미결이 없으면 아무 말도 하지 않는다', () => {
   assert.equal(q.render(r, DAY('2026-08-03')), '', '빈 큐인데 말을 걸면 매일 소음이 된다');
 });
 
+test('완료 보고가 미결로 올라오지 않는다 — ⏳ 이후만 항목이다', () => {
+  // 실제로 났던 결함: 「✅ …완료(커밋) … ⏳남은 건 X」 줄이 통째로 큐에 올라
+  // 방금 끝낸 일 3건이 상위 10위 안에 들어갔다. 미결의 본문은 ⏳ 뒤에 있다.
+  const dir = fixture({
+    'MEMORY.md': '- [d](d.md)',
+    'd.md': '# D\n- ✅ 배포 완료(abc1234) — 전부 끝냈다. ⏳남은 건 유호님 확인 하나',
+  });
+  const items = q.extract(dir);
+  assert.equal(items.length, 1);
+  assert.match(items[0].text, /남은 건 유호님 확인/);
+  assert.ok(!/배포 완료/.test(items[0].text), `완료 보고가 항목 본문에 섞였다: ${items[0].text}`);
+});
+
+test('문장 속 ⏳는 항목이 아니다 — 조각이 결정으로 배달되지 않는다', () => {
+  // 실제로 났던 결함: "위 ⏳3건 미결 상태에서 답함", "(⏳ 미결 다수)일 가능성" 같은
+  // 본문 속 지시어가 큐에 올라, 문장 중간부터 시작하는 조각이 폰으로 갔다(52건 중 5건).
+  assert.equal(q.markerClause('위 ⏳3건 미결 상태에서 답함'), null);
+  assert.equal(q.markerClause('(⏳ 미결 다수)일 가능성'), null);
+  assert.equal(q.markerClause('배경 설명 · ⏳유호 결정 2건'), '⏳유호 결정 2건');
+  assert.equal(q.markerClause('⏳ 줄머리 항목'), '⏳ 줄머리 항목');
+
+  const dir = fixture({
+    'MEMORY.md': '- [m](m.md)',
+    'm.md': '# M\n- 위 ⏳3건 미결 상태에서 답함\n- 무언가 함 · ⏳유호 결정 2건',
+  });
+  const items = q.extract(dir);
+  assert.equal(items.length, 1, `문장 속 ⏳가 항목이 됐다: ${JSON.stringify(items.map((i) => i.text))}`);
+  assert.equal(items[0].text, '⏳유호 결정 2건');
+});
+
+test('상태 기호 범례는 항목이 아니다', () => {
+  const dir = fixture({
+    'MEMORY.md': '- [l](l.md)',
+    'l.md': '# L\n- 상태 = 💡새 / 🔍검토 / ⏳판단대기 / ✅채택\n- ⏳ 진짜 미결 하나',
+  });
+  const items = q.extract(dir);
+  assert.equal(items.length, 1, `범례가 항목으로 새어들었다: ${JSON.stringify(items.map((i) => i.text))}`);
+  assert.match(items[0].text, /진짜 미결/);
+});
+
 test('짧은 한국어 항목도 살아남는다 — 장식 거르기가 실제 항목을 먹지 않는다', () => {
   // 실제로 났던 결함: 「⏳ 티원」(⏳ 제외 2글자)이 장식으로 오인돼 통째로 사라졌다.
   const dir = fixture({

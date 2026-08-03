@@ -44,6 +44,25 @@ function stripMd(s) {
     .trim();
 }
 
+/* ⏳ 는 이 메모리에서 **두 가지로 쓰인다** — 실측으로 드러난 사실이다:
+ *   ①항목 표시(줄머리·구분자 뒤): "- ⏳ 유호님 몫: …"   ← 이게 큐다
+ *   ②본문 속 지시어: "위 ⏳3건 미결 상태에서", "(⏳ 미결 다수)일 가능성"  ← 큐가 아니다
+ * 둘을 안 가르면 문장 조각이 결정으로 배달된다(실측: 52건 중 5건이 조각이었다).
+ * 가르는 기준은 **⏳ 앞의 마지막 글자** — 글자·숫자·'(' 뒤면 문장 속이고,
+ * 줄머리나 구분자(· — : 등) 뒤면 항목 표시다.
+ * 항목이면 ⏳부터 끝까지를 돌려준다(앞은 배경이지 항목이 아니다). 아니면 null.
+ */
+const MARKER_PREV = new Set(['·', '—', '–', '-', ':', '.', '!', '?', ';', '▶', ']', '】', '>', '|', '*']);
+function markerClause(clean) {
+  for (let i = 0; i < clean.length; i++) {
+    if (clean[i] !== '⏳') continue;
+    let j = i - 1;
+    while (j >= 0 && /\s/.test(clean[j])) j--;
+    if (j < 0 || MARKER_PREV.has(clean[j])) return clean.slice(i).trim();
+  }
+  return null;
+}
+
 function extract(dir) {
   const items = [];
   for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.md') && n !== INDEX)) {
@@ -54,7 +73,10 @@ function extract(dir) {
     const mtime = fs.statSync(full).mtimeMs;
     body.split('\n').forEach((line, i) => {
       if (!line.includes('⏳')) return;
-      const clean = stripMd(line);
+      // 범례 줄(상태 기호 목록)은 항목이 아니다: "상태 = 💡새 / 🔍검토 / ⏳판단대기 / ✅채택"
+      if (/[💡🔍]/.test(line) && line.includes('/')) return;
+      const clean = markerClause(stripMd(line));
+      if (clean === null) return;
       // 장식뿐인 줄(「## ⏳」 같은 헤더)만 거른다. **길이가 아니라 글자 수로 센다** —
       // 길이로 재면 `##` 같은 기호가 통과하고, 하한을 올리면 「⏳ 티원」 같은
       // 짧은 한국어 항목이 통째로 사라진다(한글은 2글자로도 완결된 항목이다).
@@ -187,4 +209,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { extract, rank, pick, build, render, stripMd, todayIndex };
+module.exports = { extract, rank, pick, build, render, stripMd, todayIndex, markerClause };
