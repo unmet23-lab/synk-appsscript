@@ -430,10 +430,14 @@ test('동의 문항은 제목만 보고 스킵하지 않는다 — 문구 개정
   assert.ok(fn.includes('syncHelp(titles.indexOf(B), HELP_B'), '음성 동의(B) 동기화 경로가 조립된 문구를 쓰지 않는다');
   assert.ok(/setHelpText\(HELP_B\)/.test(fn), '신규 생성 경로도 같은 조립본을 써야 한다(두 벌 방지)');
   assert.equal((fn.match(/동의문구_\(VOICE_CONSENT_HELP/g) || []).length, 1, '음성 동의 문구 조립이 2곳 이상 — 두 벌이 되면 학생마다 읽은 문장이 달라진다');
-  // 동기화가 제목·선택지·응답을 건드리면 시트 착지가 깨진다
+  /* 동기화가 제목·문항을 건드리면 시트 착지와 기존 응답이 깨진다(제목 = 헤더명 = 착지 키).
+   * [v18.9] **선택지는 예외로 허용한다** — 거부 선택지를 없애는 개정이 라이브 폼에 닿아야 하는데,
+   *   금지해 두면 도움말만 바뀌고 화면엔 옛 선택지가 남은 채 "갱신했습니다"가 나온다. 선택지 변경은
+   *   열 이름을 바꾸지 않으므로 착지에 영향이 없고, 이미 접수된 응답 값도 시트에 그대로 남는다. */
   const sync = fn.slice(fn.indexOf('const syncHelp'), fn.indexOf('const A = CONSENT_Q_TITLE'));
-  ['setTitle', 'setChoiceValues', 'deleteItem'].forEach((bad) =>
+  ['setTitle', 'deleteItem'].forEach((bad) =>
     assert.ok(!sync.includes(bad), `도움말 동기화가 ${bad}를 호출한다 — 열 착지·기존 응답이 깨진다`));
+  assert.ok(sync.includes('it.setChoiceValues(choices)'), '동기화가 선택지를 정본으로 맞추지 않는다 — 선택지 개정이 라이브 화면에 영원히 안 닿는다');
 });
 
 test('출석 원본은 실행당 1회만 읽는다(반 18개 × 전체 읽기 방지)', () => {

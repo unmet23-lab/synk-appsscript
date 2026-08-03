@@ -260,7 +260,8 @@ const CONSULT_CONSENT_HELP = '수집: 이 설문의 응답(연락처·보호자 
   + CONSENT_SERVICE_SCOPE + ' / ' + CONSENT_DEIDENT + ' / '
   + '보관: 재원 기간 및 성장 기록 보존 기간 / 그 밖의 제3자 제공 없음 · 동의 철회는 언제든 학원으로 연락 주세요.';
 
-const VOICE_CONSENT_HELP = '※ 선택 문항입니다 — 어느 쪽을 고르셔도 수업·성적·반 배정에 어떤 불이익도 없습니다.\n'
+const VOICE_CONSENT_HELP = '※ 필수 문항입니다 — SYNK LAB의 말하기 수업은 여러분의 목소리로 배워서 여러분을 고쳐 주는 방식입니다. '
+  + '녹음과 그 활용에 동의하지 않으시면 발음 교정·모의 면접·회화 앱을 제공해 드릴 수 없습니다.\n'
   + '수집: 수업·발음 연습·모의 면접(비자·취업) 중 녹음된 목소리와 그것을 글로 옮긴 기록 / '
   + '용도: 발음·말하기·면접 답변에 대한 개인 피드백과, 그 피드백을 만드는 AI의 학습, 그리고 '
   + CONSENT_SERVICE_SCOPE + ' / ' + CONSENT_DEIDENT + ' / '
@@ -284,7 +285,8 @@ const CONSENT_HELP_A_MN = 'Цуглуулах зүйл: энэ судалгаа�
   + 'Сургалтын үйлчилгээ хөгжүүлэхэд ашиглахдаа нэр, холбоо барих мэдээллийг устгасан хэлбэрээр л ашиглана / '
   + 'Хадгалах хугацаа: суралцах хугацаа болон өсөлтийн бүртгэл хадгалах хугацаа / '
   + 'Бусад гуравдагч этгээдэд дамжуулахгүй · Зөвшөөрлөө цуцлах бол хэдийд ч сургуульд хандана уу.';
-const CONSENT_HELP_B_MN = '※ Сонголтот асуулт — аль хариултыг сонгосон ч хичээл, дүн, анги хуваарилалтад ямар ч сөрөг нөлөө байхгүй.\n'
+const CONSENT_HELP_B_MN = '※ Заавал бөглөх асуулт — SYNK LAB-ын ярианы хичээл нь таны дуу хоолойгоор сурч, таныг залруулдаг арга юм. '
+  + 'Бичлэг хийх болон түүнийг ашиглахыг зөвшөөрөхгүй бол дуудлагын залруулга, ярилцлагын бэлтгэл, ярианы аппыг үзүүлэх боломжгүй.\n'
   + 'Цуглуулах зүйл: хичээл, дуудлагын дасгал, ярилцлагын бэлтгэл (виз, ажил)-ийн үеэр бичигдсэн дуу хоолой болон түүнийг бичвэрт буулгасан тэмдэглэл / '
   + 'Хэрэглэх зорилго: дуудлага, ярианы чадвар, ярилцлагын хариултад хувийн санал өгөх, тэрхүү саналыг бүтээх AI-г сургах, '
   + 'мөн SYNK LAB болон түүний холбоотой, залгамжлагч байгууллагын бүтээх солонгос хэл сурах үйлчилгээ (апп, AI сургалтын хэрэгсэл)-ийг хөгжүүлэх, сайжруулах / '
@@ -306,7 +308,7 @@ function 동의문구_(ko, mn) {
  *   실행하는 이름이자 문서·메뉴에 박힌 이름이라, 재번호가 그쪽까지 번지면 손해가 더 크다(파일명 규칙과 같은 논리).
  * ⚠ 이 값을 올리면 노션 상담서술 이관이 **자동으로 보류된다**(fail-closed) — 새 문구가 라이브 폼에 닿기
  *   전까지는 "구 문장으로 받은 동의"로 새 용도를 쓰면 안 되기 때문이다. migrateConsentV186 ▶ 1회로 풀린다. */
-const CONSENT_VERSION = 'v18.8';
+const CONSENT_VERSION = 'v18.9';
 
 // [v9.84·204 → v9.90·205 → v9.138·207] ▶ 1회(유호 문구 검토 후) — 온라인 상담폼 동의 문항 (정본 = CONSENT_VERSION).
 //   오프라인 도시에 v3.3 동의·서명 블록(상담통합_실행지_v966 §5)의 온라인 짝 — 지금까지 온라인 폼엔 동의가 0개였다.
@@ -367,31 +369,47 @@ function migrateConsentV186() {
      *   보관 기간처럼 나중에 확정되는 값이 코드에만 바뀌고 학생이 실제로 읽는 문장은 옛것으로 남는 구멍이었다
      *   (동의는 학생이 읽은 문장이 정본이므로, 어긋나면 코드가 가진 근거가 무효가 된다).
      *   제목·선택지·시트 착지는 그대로 두고 도움말만 정본과 맞춘다 — 기존 응답은 손대지 않는다. */
-    const syncHelp = (idx, help, label) => {
+    /* [v18.9] 도움말만 맞추면 **선택지는 옛날 그대로 남는다.** v18.9는 문항 B의 '아니요'를 없애는
+     *   개정인데, 이미 라이브에 선 폼은 이 경로로만 지나가므로 도움말만 고치면 화면에는 여전히 거부
+     *   선택지가 있고 함수는 "갱신했습니다"라고 보고한다 — 참인 채 거짓을 말하는 그 형태.
+     *   그래서 선택지도 정본과 대조해 함께 맞춘다(같으면 건드리지 않는다 = 멱등). */
+    const syncHelp = (idx, help, label, choices) => {
       const it = fItems[idx].asMultipleChoiceItem();
-      if (String(it.getHelpText() || '') === help) { out.push(label + ': 이미 있음 · 문구 최신'); return; }
-      it.setHelpText(help);
-      out.push(label + ': 이미 있음 — 📝 문구를 정본으로 갱신했습니다');
+      const 현재선택 = it.getChoices().map(c => c.getValue());
+      const 문구같음 = String(it.getHelpText() || '') === help;
+      const 선택같음 = 현재선택.length === choices.length && 현재선택.every((v, i) => v === choices[i]);
+      if (문구같음 && 선택같음) { out.push(label + ': 이미 있음 · 문구·선택지 최신'); return; }
+      if (!문구같음) it.setHelpText(help);
+      if (!선택같음) it.setChoiceValues(choices);
+      out.push(label + ': 이미 있음 — 📝 ' + [!문구같음 ? '문구' : '', !선택같음 ? '선택지(' + 현재선택.join('/') + ' → ' + choices.join('/') + ')' : '']
+        .filter(Boolean).join('·') + '를 정본으로 갱신했습니다');
     };
+    const 동의선택 = ['네, 동의합니다']; // A·B 공통 — v18.9부터 거부 선택지 없음
 
     const A = CONSENT_Q_TITLE; // [v9.98] 제목 하드코딩 2곳 → 단일 소스. 이 제목이 곧 blob의 행 단위 동의 마커라 어긋나면 전 행이 미동의로 분류된다
     // [v9.138] 용도에 학습 서비스 개발 + 비식별 약속을 넣는다(문장 정본 = CONSULT_CONSENT_HELP · 병기만 여기서 감싼다)
     const HELP_A = 동의문구_(CONSULT_CONSENT_HELP, CONSENT_HELP_A_MN);
-    if (titles.indexOf(A) !== -1) syncHelp(titles.indexOf(A), HELP_A, '폼 A(개인정보·필수)');
+    if (titles.indexOf(A) !== -1) syncHelp(titles.indexOf(A), HELP_A, '폼 A(개인정보·필수)', 동의선택);
     else {
       form.addMultipleChoiceItem().setTitle(A).setHelpText(HELP_A)
-        .setChoiceValues(['네, 동의합니다']).setRequired(true);
+        .setChoiceValues(동의선택).setRequired(true);
       out.push('폼 A(개인정보·필수): 추가 — 응답은 자유서술 칸에 타임스탬프와 함께 보존됩니다');
     }
 
     // 문항 B — 제목이 곧 시트 헤더명이어야 열에 착지한다(importFormResponses 헤더 이름 매칭)
     const B = CONSENT_EXT_HEADERS[0]; // '음성동의'
     const HELP_B = 동의문구_(VOICE_CONSENT_HELP, CONSENT_HELP_B_MN); // [v9.138] 단일 소스는 그대로, 병기만 감싼다
-    if (titles.indexOf(B) !== -1) syncHelp(titles.indexOf(B), HELP_B, '폼 B(음성·AI 학습·선택)');
+    /* [v18.9 · 2026-08-03 유호 결정] 문항 B를 **필수·거부 선택지 없음**으로 전환.
+     *   구 구조(v9.90)는 '아니요' 선택지를 둬 끼워팔기 무효 리스크를 피했지만, 유호님이 방향을 바꿨다 —
+     *   **처음 만나는 사용자부터 전부, 목적·기간 제한 없이 받는다.** 정당성의 근거는 문구로 세운다:
+     *   음성 학습은 부수 목적이 아니라 이 학원 말하기 수업의 본질이라, 동의하지 않으면 제공할 서비스가 없다.
+     *   ⚠ 기존 '아니요' 응답자와 종이 동의서 학생을 위해 **게이트(voiceConsentMap_)는 그대로 둔다** —
+     *     선택지가 사라져도 셀에 남은 'no'는 여전히 읽히고 voiceWithdraw도 그 값을 계속 쓴다. */
+    if (titles.indexOf(B) !== -1) syncHelp(titles.indexOf(B), HELP_B, '폼 B(음성·AI 학습·필수)', 동의선택);
     else {
       form.addMultipleChoiceItem().setTitle(B).setHelpText(HELP_B)
-        .setChoiceValues(['네, 동의합니다', '아니요, 원하지 않습니다']).setRequired(true);
-      out.push('폼 B(음성·AI 학습·선택): 추가 — 응답이 상담시트 "' + B + '" 열에 착지합니다(거부자 기계 식별 가능)');
+        .setChoiceValues(동의선택).setRequired(true);
+      out.push('폼 B(음성·AI 학습·필수): 추가 — 응답이 상담시트 "' + B + '" 열에 착지합니다');
     }
     if (sheetOk) setState(st, '상담동의', CONSENT_VERSION); // 워치독 감시 게이트 — 시트 열까지 성립했을 때만 적용 선언
     else out.push('⚠️ 시트 열 증분이 실패해 ' + CONSENT_VERSION + ' 선언을 보류했습니다 — 폼 문항만으로는 거부자를 못 읽습니다');
