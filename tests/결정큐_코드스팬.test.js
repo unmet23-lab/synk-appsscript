@@ -60,8 +60,17 @@ test('기존 두 용법 판별은 그대로 — 줄머리 표시는 여전히 �
   assert.ok(items[0].text.includes('개원일 확정'));
 });
 
-test('실저장소: 이 도구의 회고 문단이 큐에 없다(거짓양성만 검사)', () => {
-  const q = Q.build({ count: 3 });
+test('실저장소: 이 도구의 회고 문단이 큐에 없다(거짓양성만 검사)', (t) => {
+  /* 메모리 볼트는 repo 밖(로컬 홈)이라 CI 러너엔 애초에 없다 — 거기선 검사할 실저장소가 없으므로
+   * 건너뛴다. 위 픽스처 케이스들이 탐지 능력을 못박고 있고, 이 케이스는 실저장소가 있을 때만
+   * 의미가 있다. ENOENT만 골라 건너뛰고 다른 오류는 그대로 터뜨린다(볼트가 깨진 것은 숨기지 않는다). */
+  let q;
+  try {
+    q = Q.build({ count: 3 });
+  } catch (e) {
+    if (e && e.code === 'ENOENT') return t.skip('메모리 볼트 없는 환경(CI) — 대조할 실저장소가 없다');
+    throw e;
+  }
   const ghost = q.ranked.filter((it) => /두 용법으로 쓰이는데/.test(it.text));
   assert.deepStrictEqual(ghost, [], '자기 결함 회고가 다시 결정으로 올라왔다');
 });
