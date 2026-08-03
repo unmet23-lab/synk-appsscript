@@ -41,7 +41,16 @@ function stripNonExecutedText(s) {
     // heredoc 본문: <<EOF / <<'EOF' / <<-"EOF" … 줄 처음의 같은 태그까지
     .replace(/<<-?\s*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\1[\s\S]*?^\s*\2\s*$/gm, ' <<HEREDOC ')
     // -m / --message 의 인용 문자열 본문
-    .replace(/(-m|--message)\s+(['"])[\s\S]*?\2/g, '$1 MSG');
+    .replace(/(-m|--message)\s+(['"])[\s\S]*?\2/g, '$1 MSG')
+    /* 인용된 인자 본문 — 2026-08-04 재발: `grep -n "…clasp pull 차단…"` 이 차단됐다.
+     * 08-01 heredoc 오탐과 **같은 계열**이다(실행되지 않는 텍스트를 명령으로 읽음). 그때는
+     * heredoc만 막았는데, 인용 인자에도 같은 구멍이 있었다 — 검색·문서화가 벌받으면
+     * 사람은 BYPASS를 배운다(v6.11).
+     * ⚠ 다만 통째로 지우면 **인용된 실행 경로**(`"C:/…/clasp.cmd" push`)의 clasp가 같이 사라져
+     *   진짜 배포를 놓친다. 그래서 지우는 게 아니라 **치환**한다: 인용 안이 clasp 실행 경로로
+     *   끝나면 ` clasp `로, 아니면 ` QUOTED `로. 실행 경로는 살리고 산문만 죽인다. */
+    .replace(/(['"])([\s\S]*?)\1/g, (m, _q, body) =>
+      /clasp(\.cmd|\.ps1|\.exe)?\s*$/i.test(body) ? ' clasp ' : ' QUOTED ');
 }
 const execCmd = stripNonExecutedText(cmd);
 
