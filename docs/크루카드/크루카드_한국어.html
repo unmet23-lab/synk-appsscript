@@ -3335,8 +3335,8 @@ section.page{
 
 <script>
 /* ================= v14 · 자동저장 + 시트 제출 (SYNK 크루카드 웹앱) =================
- * SYNK_ENDPOINT.url  = Apps Script 크루카드 웹앱 배포 URL(…/exec)
- * SYNK_ENDPOINT.token= 웹앱 Script Property '크루카드_토큰'과 같은 값
+ * window.SYNK_ENDPOINT = Apps Script 크루카드 웹앱 배포 URL(…/exec) 문자열.
+ * 토큰은 일부러 없다 — 공개 폼의 토큰은 소스에 노출돼 무의미(서버 크루카드.js 머리말의 무토큰 결정 참조).
  * 바인딩은 마크업에 정적으로 베이크됨(data-field/-column/-value) — 런타임 라벨 매칭에 의존하지 않는다. */
 window.SYNK_ENDPOINT = window.SYNK_ENDPOINT || '';
 (function(){
