@@ -882,6 +882,10 @@ function raidMonday() {
   if (rows.length) rd.getRange(rd.getLastRow() + 1, 1, rows.length, 6).setValues(rows);
 
   // [v9.1] 반 대항 리그 — 인원 비슷한 반끼리 자동 '제안' (원장이 Glide에서 반만 바꾸면 오버라이드)
+  // [v9.147] 시즌 오프 — LEAGUE_ON=false면 매칭 자체를 만들지 않는다(빈 대진표가 화면에 남으면
+  //   "고장난 리그"로 보인다 — 끄는 것과 고장난 것은 학생 눈에 같아 보이므로 흔적을 안 남긴다).
+  //   레이드 생성(위)은 그대로 — 집단 이벤트 3종 중 레이드만 남기는 것이 이번 압축의 결정이다.
+  if (!LEAGUE_ON) { Logger.log('레이드 생성: ' + rows.length + '개 반 · 리그=시즌 오프'); return; }
   const lg = ensureSheet(ss, 'league_pairs', ['week','반A','반B','상태','결과']);
   const hasWk = lg.getLastRow() >= 2 && lg.getRange(2, 1, lg.getLastRow() - 1, 1).getValues()
     .some(r => String(r[0]) === weekKey);
@@ -904,6 +908,7 @@ function raidMonday() {
 
 // [v9.1] 반 대항 리그 정산 — 일요일 밤, 1인당 주간평균으로 승패 (인원차 공정 보정)
 function leagueSettle_() {
+  if (!LEAGUE_ON) return; // [v9.147] 리그 시즌 오프 — 호출부(nightJobs safeRun)는 유지하고 여기서 조기 반환(LEAGUE_DAILY_CAST 관례)
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const now = new Date();
@@ -1848,7 +1853,7 @@ function restoreDrill() {
 // 매일 22시. ① MVP·오늘의 시냅스: 같은 날·같은 반 각 1명(최초 지급만 유효)  ② 숙제완료·생일축하: 학생당 하루 1회
 // 초과분은 자동 정정(-P) + 원장 경고. 정정은 성장·잔액·레이드 데미지·칭호 카운트까지 대칭으로 되돌린다.
 // today 기준 검사라 자정이 지나면 자동 초기화 — 다음 날은 다시 지급 가능.
-const DAILY_LIMIT = { '숙제완료': 1, '생일축하': 1, '오늘의다짐': 1, '칭찬': 1, '첨삭확인': 1 }; // 사유(정확 일치)별 학생당 일일 한도 — [v9.28] 학생 셀프 미션 1일 1회 · [v9.47·B4] 칭찬(PT.칭찬)도 학생당 1일 1회(왕관과 차별화되는 "작은 인정"·경제 보호, 초과분 야간 자동 정정+강사 통보)
+const DAILY_LIMIT = { '숙제완료': 1, '생일축하': 1, '오늘의다짐': 1, '칭찬': 1, '첨삭확인': 1, '퀴즈응답': 1, '재작성': 1 }; // 사유(정확 일치)별 학생당 일일 한도 — [v9.28] 학생 셀프 미션 1일 1회 · [v9.47·B4] 칭찬(PT.칭찬)도 학생당 1일 1회(왕관과 차별화되는 "작은 인정"·경제 보호, 초과분 야간 자동 정정+강사 통보)
 const CLASS_AWARDS = ['오늘의 MVP', '오늘의 시냅스']; // [v7.6] 반당 하루 1명 왕관 2종
 const TAG_MN = { '발음↑': 'Дуудлага ↑', '열정': 'Хичээл зүтгэл', '친구도움': 'Найздаа тусалсан', '집중력': 'Төвлөрөл' }; // [v9.0] 칭찬 태그 몽골어
 function dailyGuard() {

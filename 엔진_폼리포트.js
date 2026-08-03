@@ -1885,6 +1885,7 @@ const STORY_EMOTIONS = [ // [v9.7] 감정 표현 배지 — 막의 감정 곡선
   ['가슴을 펴다','당당하고 자랑스러워지다'],['가슴을 쓸어내리다','안심하여 마음을 놓다']];
 
 function buildMonthlyStorybook_() {
+  if (!STORYBOOK_ON) return; // [v9.147] 월간 스토리북 시즌 오프 — 읽기 노출이나 로그 0(월간 카드 synk_cards는 유지)
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const now = new Date();
@@ -2468,6 +2469,10 @@ function worldBossOf(ss) {
 }
 
 function worldRaidMonthly_() { // 매월 1일: 지난달 판정·보상 → 이번 달 소환 (멱등)
+  // [v9.147] 월드레이드 시즌 오프 — 집단 이벤트를 레이드 1종으로 압축(유호 08-03). 호출부는 유지.
+  //   ⚠ 되살릴 때 주의: 이 함수는 「지난달 판정 → 이번 달 소환」 2단이라, 끈 기간의 world_raid 행은
+  //   판정되지 않은 채 남는다. true로 돌리면 그달치부터 다시 도는 것이 맞고 과거 행 소급 판정은 하지 않는다.
+  if (!WORLD_RAID_ON) return;
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const now = new Date();
