@@ -18,6 +18,10 @@
 
 const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY';
 const CREW_TAB = 'crew_cards';
+/* ⛔ 공유 토큰 검사를 일부러 두지 않는다(08-04 인계 갭① 종결).
+ *   이 폼은 공개 링크로 배포된다 — 토큰을 넣어도 페이지 소스에 그대로 노출돼 1분이면 베껴 쓴다(보안 연극).
+ *   실방어 = 허니팟(hp) + DAILY_CAP + MAX_BODY/MAX_CELL + 락 채번 + doGet 무부작용.
+ *   남용이 실제로 관측되면: DAILY_CAP 하향 → 새 배포로 /exec URL 교체(구 URL 즉시 무효)가 대응 절차다. */
 const DAILY_CAP = 300;          // 익명 엔드포인트 남용 방지 — 하루 접수 상한
 const MAX_BODY = 100000;        // 100KB — 정상 제출은 ~10KB
 const MAX_CELL = 2000;          // 서술형 1칸 상한(시트 오염 방지)
