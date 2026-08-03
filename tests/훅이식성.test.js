@@ -1,0 +1,168 @@
+/**
+ * 훅 이식성 회귀 (F044)
+ *
+ * 왜 있나 — 2026-08-04 실측: `.claude/settings.json`의 훅 등록 6건이 전부
+ * 로컬 절대경로(`C:/Users/…`·`/c/Program Files/nodejs/node.exe`)를 박고 있어서
+ * 클라우드 세션(claude.ai/code · 리눅스 샌드박스)에서는 가드 5종이 **전부 안 돌았다.**
+ * 게다가 훅 파일 자체는 저장소에 있어 따라가므로 **있는 것처럼 보였고**,
+ * 경로 부재는 비차단 오류라 **실패 방향이 「통과」**였다 — 통과와 미실행이 같은 모양.
+ *
+ * 이 파일이 지키는 것 3가지:
+ *  ① 등록 명령에 로컬 절대경로가 다시 들어오지 않는다 (이식성)
+ *  ② 가드를 실행할 수 없으면 **통과가 아니라 차단**한다 (실패 방향)
+ *  ③ 가드가 가리키는 파일이 실제로 존재한다 (죽은 참조 금지)
+ *
+ * ⚠ ②의 탐지력은 「PATH를 비운 환경에서 정말 차단되는가」로 못박는다 —
+ *    문구만 보는 검사는 표현이 바뀌면 같이 눈이 먼다.
+ * ⚠ bash가 없는 환경에서는 행동 검사를 **skip으로 드러낸다**(조용한 통과 금지).
+ *
+ * 🔬 변이 실측(2026-08-04) — 수리 이전 형태(로컬 절대경로·실패 절 없음)로 되돌린 사본에서
+ *    9건 중 **6건이 빨개졌다**. 나머지 3건이 통과한 이유는 정직하게 적어 둔다:
+ *      · 「범위 과잉 차단」·「저장소 경로 못 찾음」·「리눅스식 환경」은 **이 기계에 윈도우 경로가
+ *        실제로 있어서** 옛 형태도 여기서는 돌기 때문이다. 즉 이 세 건은 **가드 동작**을 지키지
+ *        **이식성**을 지키지 않는다 — 이식성의 탐지력은 위 3건(①②③)이 진다.
+ *      · 리눅스 샌드박스를 이 기계에서 완전히 흉내낼 수는 없다. 진짜 증명은 폰 세션 실사용 1회다.
+ */
+
+const test = require('node:test');
+const assert = require('node:assert');
+const fs = require('node:fs');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+
+const ROOT = path.resolve(__dirname, '..');
+// SYNK_TEST_SETTINGS = 변이 실험용 이음매. 평소엔 실저장소 설정을 본다.
+// (탐지력은 「옛 형태로 되돌린 사본에서 빨개지는가」로 못박는다 — 실저장소를 흔들지 않고.)
+const SETTINGS = process.env.SYNK_TEST_SETTINGS || path.join(ROOT, '.claude', 'settings.json');
+
+const settings = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
+const allHooks = Object.entries(settings.hooks).flatMap(([event, groups]) =>
+  groups.flatMap((g) => g.hooks.map((h) => ({ event, matcher: g.matcher || '-', command: h.command })))
+);
+const preToolUse = allHooks.filter((h) => h.event === 'PreToolUse');
+
+// ── bash 탐색: 없으면 행동 검사를 skip으로 드러낸다 ─────────────────
+// ⚠ 절대경로를 먼저 시도한다 — PATH를 비운 채 돌리는 검사가 있어서
+//    `bash`(PATH 의존)로는 그 검사가 「셸을 못 찾음」으로 죽는다(실측 1회).
+function findBash() {
+  const candidates = [
+    process.env.SYNK_TEST_BASH,
+    'C:/Program Files/Git/bin/bash.exe',
+    '/bin/bash',
+    '/usr/bin/bash',
+    'bash',
+  ].filter(Boolean);
+  for (const c of candidates) {
+    const r = spawnSync(c, ['-c', 'echo ok'], { encoding: 'utf8' });
+    if (!r.error && r.status === 0) return c;
+  }
+  return null;
+}
+const BASH = findBash();
+
+function runHook(command, payload, env) {
+  return spawnSync(BASH, ['-c', command], {
+    input: JSON.stringify(payload),
+    encoding: 'utf8',
+    env,
+  });
+}
+
+// ── ① 이식성 ────────────────────────────────────────────────────────
+test('훅 등록에 로컬 절대경로가 없다 (다른 기계·클라우드에서도 돈다)', () => {
+  const offenders = allHooks.filter((h) => /C:\/Users\/|\/c\/Program Files\//i.test(h.command));
+  assert.deepStrictEqual(
+    offenders.map((o) => `${o.event}:${o.command.slice(0, 60)}`),
+    [],
+    '훅 명령에 로컬 절대경로가 박혔다 — 그 기계 밖에서는 가드가 통째로 죽는다(F044)'
+  );
+});
+
+test('훅은 저장소 위치를 CLAUDE_PROJECT_DIR로 찾는다 (폴백은 cwd)', () => {
+  for (const h of allHooks) {
+    assert.match(
+      h.command,
+      /\$\{CLAUDE_PROJECT_DIR:-\$PWD\}/,
+      `${h.event} 훅이 저장소 경로를 하드코딩했다: ${h.command.slice(0, 80)}`
+    );
+  }
+});
+
+test('node는 PATH에서 찾는다 (node.exe 하드코딩 금지)', () => {
+  for (const h of allHooks) {
+    assert.doesNotMatch(h.command, /node\.exe/, `${h.event} 훅이 node.exe를 하드코딩했다`);
+    assert.match(h.command, /command -v node/, `${h.event} 훅이 node 존재를 확인하지 않는다`);
+  }
+});
+
+// ── ② 실패 방향 ─────────────────────────────────────────────────────
+test('PreToolUse 가드는 실행 불가 시 차단한다 (조용한 통과 금지)', () => {
+  for (const h of preToolUse) {
+    // 🔑 차단은 exit 2가 아니라 stdout JSON(permissionDecision:deny)이 실제 통로다 —
+    //    2026-08-04 실측으로 확인했다(가드 본체도 이 방식으로 막는다). exit 2는 이중 안전.
+    assert.match(
+      h.command,
+      /"permissionDecision":\\?"deny\\?"/,
+      `${h.matcher} 가드에 「실행 불가 = deny」 절이 없다 — 통과와 미실행이 같은 모양이 된다`
+    );
+    assert.match(h.command, /exit 2/, `${h.matcher} 가드에 exit 2 이중 안전이 없다`);
+  }
+});
+
+// ── ③ 죽은 참조 금지 ────────────────────────────────────────────────
+test('훅이 가리키는 파일이 실제로 존재한다', () => {
+  for (const h of allHooks) {
+    const m = h.command.match(/\$\{CLAUDE_PROJECT_DIR:-\$PWD\}\/([^"]+)/);
+    assert.ok(m, `${h.event} 훅에서 대상 파일 경로를 못 읽었다`);
+    const target = path.join(ROOT, m[1]);
+    assert.ok(fs.existsSync(target), `훅이 없는 파일을 가리킨다: ${m[1]}`);
+  }
+});
+
+// ── 행동 검사 (탐지력) ──────────────────────────────────────────────
+const SKIP = BASH ? false : 'bash 없음 — 이 환경에서는 행동 검사를 돌리지 않는다';
+const SCOPE_CMD = () => preToolUse.find((h) => h.command.includes('git-scope-guard')).command;
+const mk = (c) => ({ tool_name: 'Bash', tool_input: { command: c } });
+// 차단 판정 = stdout에 permissionDecision:"deny" JSON이 나오는가(가드 본체와 같은 통로).
+function decision(r) {
+  const out = (r.stdout || '').trim();
+  if (!out) return 'allow';
+  return JSON.parse(out).hookSpecificOutput.permissionDecision;
+}
+
+test('행동: 범위 과잉 명령은 차단되고, 경로 지정 명령은 통과한다', { skip: SKIP }, () => {
+  const cmd = SCOPE_CMD();
+  const env = { ...process.env, CLAUDE_PROJECT_DIR: ROOT.replace(/\\/g, '/') };
+
+  // 범위 과잉(F015 실사고의 그 명령) — 차단되어야 한다
+  assert.strictEqual(
+    decision(runHook(cmd, mk('git ' + 'add' + ' -A'), env)),
+    'deny',
+    '범위 과잉 명령이 차단되지 않았다 — 가드가 안 돈다'
+  );
+
+  // 경로 지정 — 통과해야 한다 (거짓양성 금지)
+  assert.strictEqual(decision(runHook(cmd, mk('git ' + 'add' + ' docs/세션보드.md'), env)), 'allow', '정상 명령이 막혔다 — 거짓양성');
+
+  // 무관한 명령 — 통과
+  assert.strictEqual(decision(runHook(cmd, mk('ls -la'), env)), 'allow', '무관한 명령이 막혔다');
+});
+
+test('행동: node를 못 찾으면 통과가 아니라 차단이다 (F044의 핵심)', { skip: SKIP }, () => {
+  // PATH를 비워 node를 못 찾게 만든다. command -v 는 셸 빌트인이라 PATH 없이도 동작한다.
+  const r = runHook(SCOPE_CMD(), mk('git ' + 'add' + ' -A'), { PATH: '', CLAUDE_PROJECT_DIR: ROOT.replace(/\\/g, '/') });
+  assert.strictEqual(decision(r), 'deny', 'node가 없을 때 가드가 조용히 통과했다 — 고치기 전 F044의 증상 그대로');
+  assert.strictEqual(r.status, 2, 'exit 2 이중 안전이 안 걸렸다');
+  assert.match(r.stderr || '', /가드 미실행/, '차단 사유가 사람에게 안 보인다');
+});
+
+test('행동: 저장소 경로를 못 찾으면 차단이다', { skip: SKIP }, () => {
+  const r = runHook(SCOPE_CMD(), mk('git ' + 'add' + ' -A'), { ...process.env, CLAUDE_PROJECT_DIR: '/존재하지-않는-경로' });
+  assert.strictEqual(decision(r), 'deny', '훅 파일을 못 찾을 때 조용히 통과했다');
+});
+
+test('행동: 리눅스식 환경(CLAUDE_PROJECT_DIR만·윈도우 경로 없음)에서도 가드가 산다', { skip: SKIP }, () => {
+  // 클라우드 세션의 조건 모사 — 윈도우 절대경로가 존재하지 않아도 돌아야 한다.
+  const env = { PATH: process.env.PATH, CLAUDE_PROJECT_DIR: ROOT.replace(/\\/g, '/') };
+  assert.strictEqual(decision(runHook(SCOPE_CMD(), mk('git ' + 'add' + ' -A'), env)), 'deny', '최소 환경에서 가드가 죽었다');
+});
