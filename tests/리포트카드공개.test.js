@@ -272,22 +272,11 @@ test('[v9.138] 🔴 폴더가 공개면 숫자만 말하지 않고 그 사실을
     '폴더를 잠그면 학부모 카드가 함께 깨진다는 사실을 숨긴다 — 08-03 실측으로 확인된 결과다');
 });
 
-test('[v9.140] 배치 공유 실패를 세고 원장에게 알린다 (조용한 실패 금지)', () => {
-  // 구 코드는 '폴더 공유 설정으로 대체'라고만 로그했고, 그 문장이 몇 달간 문제를 가렸다.
-  // 폴더를 잠근 뒤에는 대체 수단이 없으므로 이 알림이 유일한 신호다.
-  const src = readSrc('엔진_폼리포트.js');
-  const s = src.indexOf('function runReportCards_(');
-  const raw = src.slice(s, src.indexOf('\n}\n', s));
-  // 주석을 걷어내고 **코드만** 본다 — 옛 문구를 설명하는 주석에 걸려 거짓 실패하지 않도록
-  const body = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
-  assert.ok(body.includes('createFile('), '주석 제거가 코드까지 지웠다');
-  assert.ok(/shareFail\+\+/.test(body), '공유 실패를 세지 않는다 — 몇 건이 깨졌는지 알 수 없다');
-  assert.ok(!body.includes('폴더 공유 설정으로 대체'),
-    '「폴더 공유 설정으로 대체」가 코드에 남아 있다 — 폴더를 잠근 지금 그 대체 수단은 존재하지 않는다');
-  const notify = body.indexOf('adminMail(\'[SYNK] ⚠️ 리포트카드 공유 설정 실패');
-  assert.notEqual(notify, -1, '공유 실패를 원장에게 알리지 않는다 — 시트엔 URL이 적히고 화면만 빈다');
-  assert.ok(body.indexOf('if (shareFail)') < notify, '실패가 없어도 알림이 나간다(오탐)');
-});
+/* [v9.156] 구 `[v9.140] 배치 공유 실패를 세고 알린다` 제거 — **그 실패가 존재하지 않게 됐다.**
+ *   그 검사는 「공개 공유가 실패하면 학부모 탭이 빈다」를 지켰는데, 이제 공개 공유를 아예 하지 않는다.
+ *   사라진 기능을 요구하는 회귀는 다음 사람이 「고치는」 대신 「꺼버리게」 만든다(08-03 교훈의 역방향 사례).
+ *   ⚠ 지운 것으로 끝내지 않는다 — 그 검사가 지키던 「조용한 실패 금지」는 아래
+ *   `미발송 감시로 교체됐다`가 이어받는다(감시 대상만 「공유 실패」→「학부모에게 못 감」으로 이동). */
 
 test('[v9.138] 폴더가 비공개면 불필요한 경고를 붙이지 않는다 (오탐 0)', () => {
   reset();
@@ -321,90 +310,131 @@ const RC_ROWS = [
   ['2026-08-S2', 'S2', '2026-08', 'https://lh3.googleusercontent.com/d/ID_B'],
   ['2026-06-S3', 'S3', '2026-06', 'https://placehold.co/600x800/png'], // 플레이스홀더 — Drive 아님
 ];
-/** report_cards를 보게 만든 뒤 복구 함수를 돌린다. Drive는 id→파일 맵으로 스텁. */
-function runRepair(rows, filesById) {
+/** report_cards·voice_log를 보게 만든 뒤 **닫기** 함수를 돌린다. Drive는 id→파일 맵으로 스텁. */
+function runClose(rcRows, vlRows, filesById) {
   state.byId = filesById;
   const prev = ctx.SpreadsheetApp;
   ctx.SpreadsheetApp = {
     getActiveSpreadsheet: () => ({
       getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar',
-      getSheetByName: (n) => (n === 'report_cards' ? rcSheet(rows) : null),
+      getSheetByName: (n) => (n === 'report_cards' ? rcSheet(rcRows)
+        : n === 'voice_log' ? vlSheet(vlRows || []) : null),
     }),
     getUi: () => ({ alert: () => {} }),
   };
-  try { return ctx.repairReportCardSharing(); } finally { ctx.SpreadsheetApp = prev; }
+  try { return ctx.closeStudentFileLinks(); } finally { ctx.SpreadsheetApp = prev; }
+}
+/** voice_log 스텁 — 5열(student_id·제출일·미션·파일URL·file_id)까지 읽는다. */
+function vlSheet(rows) {
+  return {
+    getLastRow: () => rows.length + 1,
+    getRange: (r, c, nr, nc) => ({ getValues: () => rows.map((x) => x.slice(0, nc)) }),
+  };
 }
 
-test('[v9.142] 카드 링크 복구 — report_cards의 카드에만 공개 링크를 되살린다', () => {
+test('[v9.156] 🔒 닫기 — report_cards와 voice_log의 파일을 PRIVATE로 만든다', () => {
   reset();
-  const a = makeFile('2026-08_S1.png', ACCESS.PRIVATE);
-  const b = makeFile('2026-08_S2.png', ACCESS.PRIVATE);
-  const out = runRepair(RC_ROWS, { ID_A: a, ID_B: b });
+  const a1 = makeFile('2026-08_S1.png', ACCESS.ANYONE_WITH_LINK);
+  const b1 = makeFile('2026-08_S2.png', ACCESS.ANYONE_WITH_LINK);
+  const v1 = makeFile('voice_S1.m4a', ACCESS.ANYONE_WITH_LINK);
+  const out = runClose(RC_ROWS, [['S1', '2026-08-01', '미션', 'https://x/d/VID', 'VID']],
+    { ID_A: a1, ID_B: b1, VID: v1 });
 
-  assert.equal(rec.sharing.length, 2, 'Drive 카드 2개를 복구하지 않았다');
+  assert.equal(rec.sharing.length, 3, '카드 2 + 음성 1 = 3개를 닫지 않았다 (실측 ' + rec.sharing.length + ')');
   rec.sharing.forEach((s) => {
-    assert.equal(s.access, ACCESS.ANYONE_WITH_LINK, '공개 링크로 되살리지 않았다');
-    assert.equal(s.permission, PERM.VIEW, '보기 권한이 아니다');
+    assert.equal(s.access, ACCESS.PRIVATE, '공개를 닫지 않았다 — 학생 파일이 여전히 링크로 열린다');
+    assert.equal(s.permission, PERM.NONE, '권한을 NONE으로 내리지 않았다');
   });
-  assert.ok(/복구 2개/.test(out), '복구 건수를 보고하지 않는다');
+  assert.ok(/닫음 3개/.test(out), '닫은 건수를 보고하지 않는다');
+  assert.ok(/음성/.test(out), '종류별 내역에 음성이 없다 — 음성이 대상에서 빠졌는지 알 수 없다');
 });
 
-test('[v9.142] 🔴 폴더를 훑지 않는다 — 대상은 report_cards가 지목한 파일뿐', () => {
-  // 폴더 순회로 만들면 프리뷰·남의 파일까지 공개로 열어버린다. 시트가 화이트리스트다.
+test('[v9.156] 🔴 폴더를 훑지 않는다 — 대상은 시트가 지목한 파일뿐', () => {
+  // 폴더 순회로 만들면 남의 파일까지 건드린다. 시트가 화이트리스트다(여는 함수 때와 같은 원칙).
   reset();
-  state.folderFiles = [makeFile('PREVIEW_hack.png', ACCESS.PRIVATE), makeFile('남의파일.png', ACCESS.PRIVATE)];
-  const a = makeFile('2026-08_S1.png', ACCESS.PRIVATE);
-  runRepair([RC_ROWS[0]], { ID_A: a });
-  assert.equal(rec.sharing.length, 1, '시트에 없는 파일까지 건드렸다 — 프리뷰가 다시 공개된다');
+  state.folderFiles = [makeFile('남의파일.png', ACCESS.ANYONE_WITH_LINK)];
+  const a1 = makeFile('2026-08_S1.png', ACCESS.ANYONE_WITH_LINK);
+  runClose([RC_ROWS[0]], [], { ID_A: a1 });
+  assert.equal(rec.sharing.length, 1, '시트에 없는 파일까지 건드렸다');
   assert.equal(rec.sharing[0].name, '2026-08_S1.png');
 });
 
-test('[v9.142] 이미 공개면 다시 쓰지 않는다 (멱등)', () => {
+test('[v9.156] 이미 비공개면 다시 쓰지 않는다 (멱등)', () => {
   reset();
-  const a = makeFile('2026-08_S1.png', ACCESS.ANYONE_WITH_LINK);
-  const out = runRepair([RC_ROWS[0]], { ID_A: a });
-  assert.equal(rec.sharing.length, 0, '이미 공개인 카드에 불필요한 Drive 쓰기를 한다');
-  assert.ok(/이미 공개 1개/.test(out));
+  const a1 = makeFile('2026-08_S1.png', ACCESS.PRIVATE);
+  const out = runClose([RC_ROWS[0]], [], { ID_A: a1 });
+  assert.equal(rec.sharing.length, 0, '이미 비공개인 파일에 불필요한 Drive 쓰기를 한다');
+  assert.ok(/이미 비공개 1개/.test(out));
 });
 
-test('[v9.142] 실패하면 첫 오류 원문을 남긴다 — 가설이 틀렸을 때의 재료', () => {
+test('[v9.156] 🔑 fail-open 방지 — 상태를 못 읽으면 「닫기」를 시도한다', () => {
+  /* Access는 5종이라 「ANYONE 계열만 공개」로 보면 DOMAIN 계열이 틈으로 빠진다.
+   * 닫는 함수에서는 판정을 뒤집어야 안전하다 — **PRIVATE임이 증명된 것만** 건너뛴다.
+   * 상태를 못 읽는 파일(getSharingAccess 예외)은 열려 있을 수 있으므로 닫아야 한다. */
   reset();
-  const a = makeFile('2026-08_S1.png', ACCESS.PRIVATE, { setThrows: true });
-  const out = runRepair([RC_ROWS[0]], { ID_A: a });
+  const unknown = makeFile('상태불명.png', ACCESS.ANYONE_WITH_LINK, { getThrows: true });
+  runClose([RC_ROWS[0]], [], { ID_A: unknown });
+  assert.equal(rec.sharing.length, 1, '상태를 못 읽었다고 건너뛰었다 — 열린 파일이 열린 채 남는다');
+});
+
+test('[v9.156] 실패하면 첫 오류 원문을 남긴다', () => {
+  reset();
+  const a1 = makeFile('2026-08_S1.png', ACCESS.ANYONE_WITH_LINK, { setThrows: true });
+  const out = runClose([RC_ROWS[0]], [], { ID_A: a1 });
   assert.ok(/실패 1개/.test(out), '실패 건수를 숨긴다');
-  assert.ok(/첫 오류/.test(out), '오류 원문을 남기지 않는다 — 다음 조사가 맨손이 된다');
+  assert.ok(/첫 오류/.test(out), '오류 원문을 남기지 않는다');
 });
 
-test('[v9.143] 공유 실패 알림이 폴더 상태를 읽어 원인을 지목한다', () => {
-  /* 「공유 설정 실패」만 적으면 받는 사람이 무엇을 볼지 모른다. 이 실패의 1순위 원인은
-   * 08-03 실측으로 밝혀져 있다 — 폴더가 (다시) 공개면 상속과 충돌해 전부 거부된다.
-   * 그러니 알림은 그 한 줄을 스스로 확인해서 담아야 한다. */
+test('[v9.156] 🔴 배치가 카드를 공개로 열지 않는다 — 이게 이 판의 핵심', () => {
+  /* 닫는 함수가 있어도 배치가 매달 다시 열면 아무 의미가 없다. 결과(코드)로 검사한다. */
   const src = readSrc('엔진_폼리포트.js');
   const s = src.indexOf('function runReportCards_(');
   const raw = src.slice(s, src.indexOf('\n}\n', s));
   const body = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
   assert.ok(body.includes('createFile('), '주석 제거가 코드까지 지웠다');
+  assert.ok(!/setSharing/.test(body), 'runReportCards_가 아직 공개 공유를 한다 — 매달 카드가 다시 열린다');
+  assert.ok(body.includes('SEND_REPORT_EMAIL'), '메일 발송 경로가 사라졌다 — 카드가 학부모에게 닿을 길이 없다');
+});
 
-  const hint = body.indexOf('folderHint');
-  const read = body.indexOf('folder.getSharingAccess()');
-  const mail = body.indexOf('adminMail(');
-  assert.notEqual(read, -1, '알림이 폴더 상태를 읽지 않는다 — 원인을 지목하지 못한다');
-  assert.ok(hint !== -1 && hint < mail, '폴더 판정이 메일보다 뒤에 있다(메일에 못 실린다)');
-  assert.ok(read < mail, '폴더를 읽기 전에 메일을 보낸다');
-  // 공개일 때는 되돌릴 방법을 말해야 한다(진단만 하고 처방이 없으면 반쪽이다)
-  assert.ok(/제한됨/.test(body), '폴더를 되돌리는 방법(제한됨)을 말하지 않는다');
-  assert.ok(/복구/.test(body), '복구 수단(메뉴)을 안내하지 않는다');
+test('[v9.156] 🔴 음성 스위프가 녹음을 공개로 열지 않고, 성장 카드에 재생 링크를 싣지 않는다', () => {
+  const src = readSrc('교재연동.js');
+  const s = src.indexOf('function voiceSweep_(');
+  const raw = src.slice(s, src.indexOf('\n}\n', s));
+  const body = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  assert.ok(!/setSharing/.test(body), 'voiceSweep_가 아직 미성년 녹음을 공개로 연다');
+
+  const g = src.indexOf('function buildVoiceGrowthCards_(');
+  // ⚠ 주석을 먼저 지운다 — 「왜 링크를 뺐는가」를 적은 주석에 [듣기](url)가 들어 있어, 안 지우면 주석이 코드로 잡힌다
+  const gbody = src.slice(g, src.indexOf('\n}\n', g))
+    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  assert.ok(gbody.includes('목소리 타임랩스'), '주석 제거가 코드까지 지웠다');
+  assert.ok(!/\[듣기\]\(/.test(gbody), '성장 카드가 아직 공개 URL을 [듣기] 링크로 싣는다');
+  assert.ok(/처음의 나/.test(gbody) && /오늘의 나/.test(gbody), '대비 구조가 사라졌다 — 링크만 빼고 값은 남겨야 한다');
+});
+
+test('[v9.156] 미발송 감시로 교체됐다 — 「공유 실패」가 아니라 「학부모에게 못 감」을 알린다', () => {
+  /* 장치를 지울 때는 그 장치가 지키던 것이 어디로 갔는지 함께 옮긴다.
+   * 공개 링크를 없앴으므로 조용한 실패의 자리는 「보낼 이메일이 없어 카드가 안 감」으로 이동했다. */
+  const src = readSrc('엔진_폼리포트.js');
+  const s = src.indexOf('function runReportCards_(');
+  // ⚠ 주석 제거 후 검사 — 「무엇을 왜 제거했는가」를 적은 주석에 옛 변수명이 나온다(주석≠코드)
+  const body = src.slice(s, src.indexOf('\n}\n', s))
+    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  assert.ok(body.includes('createFile('), '주석 제거가 코드까지 지웠다');
+  assert.ok(/noMail/.test(body), '미발송 감시가 없다 — 카드가 아무에게도 안 가도 배치는 "성공"이라 말한다');
+  assert.ok(/adminMail\(/.test(body), '미발송을 알리지 않는다');
+  assert.ok(!/shareFail/.test(body), '죽은 공유 실패 변수가 남아 있다');
 });
 
 /* ── ③ 저장소 전체 — 공개 공유는 승인된 두 자리에만 있다 ───────────── */
 
 test('[v9.138] 새 공개 공유(setSharing ANYONE)가 승인 없이 늘지 않는다', () => {
   const GRANT = /setSharing\(\s*DriveApp\.Access\.ANYONE/g;
-  /* 승인된 자리 — 둘 다 「끄면 라이브 화면이 죽는」 배선이라 남긴 것이지, 안전해서가 아니다.
-   *   엔진_폼리포트.js runReportCards_ : report_cards.image_url → Glide 학부모 성장 리포트 탭
-   *   교재연동.js      voiceSweep_     : voice_log/목소리성장카드 → 학생 앱 녹음 재생
-   * 여기 숫자를 올리려면 「이 URL이 어디로 흘러가고, 없으면 무엇이 죽는가」를 먼저 답해야 한다. */
-  const APPROVED = { '엔진_폼리포트.js': 2, '교재연동.js': 1 }; // [v9.142] 폼리포트 2 = 배치 + 카드 링크 복구
+  /* [v9.156] **승인 자리는 0이다.** 구 목록은 둘을 남겼고(리포트카드·음성) 그때는 「끄면 라이브 화면이
+   *   죽는다」가 근거였다. 유호님이 08-04에 그 교환을 뒤집었다 — 화면을 바꾸고 공개를 없앤다.
+   *   여기에 자리를 다시 늘리려면 「이 URL이 어디로 흘러가고, 학생이 식별되는가」를 먼저 답해야 한다.
+   *   학생이 식별되는 파일이면 답은 「늘리지 않는다」이다. */
+  const APPROVED = {}; // [v9.156] 0자리 — 유호님 「B로 가자」 결정으로 학생 파일 공개 공유를 전부 폐지했다
 
   const roots = fs.readdirSync(ROOT).filter((f) => f.endsWith('.js'));
   assert.ok(roots.length >= 5, '루트 .js 목록을 못 읽었다 — 이 검사가 아무것도 안 보고 통과한다');

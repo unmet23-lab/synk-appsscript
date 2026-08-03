@@ -1353,7 +1353,7 @@ function runReportCards_() {
   const it = DriveApp.getFoldersByName(REPORT_FOLDER_NAME);
   const folder = it.hasNext() ? it.next() : DriveApp.createFolder(REPORT_FOLDER_NAME);
   const rows = [], mails = [];
-  let shareFail = 0, shareFirstErr = ''; // [v9.140] 공유 설정 실패 — 조용히 넘기지 않는다
+  // [v9.155] shareFail/shareFirstErr 제거 — 공개 공유를 하지 않으므로 실패할 대상이 없다(감시는 미발송으로 이관)
   made.forEach(m => {
     Utilities.sleep(350); // [v5.3] 연속 export 429 방지
     try { // [v9.19] 카드별 격리 — 1건(429 등) 실패가 배치 전체를 중단·중복 생성시키지 않도록
@@ -1384,8 +1384,14 @@ function runReportCards_() {
        *   그 문장이 문제를 몇 달 숨겼다 — 실제로 이 호출은 줄곧 실패하고 있었고, 카드가 열려 보인 건
        *   폴더가 공개였기 때문이다. 폴더를 잠근 지금 그 대체 수단은 **존재하지 않으므로**,
        *   조용히 넘어가면 학부모 화면이 이유 없이 빈 채로 남는다. */
-      try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); }
-      catch (e) { shareFail++; if (!shareFirstErr) shareFirstErr = String(e); Logger.log('공유설정 실패(' + m.d.name + '): ' + e); }
+      /* [v9.155] 🔒 공개 공유를 **하지 않는다**(유호님 08-04 「B로 가자」 결정 · 근거·경위 = docs/개인정보처리방침_초안_v1.md §0-B).
+       *   구 설계는 학생 실명·급수·포인트가 박힌 PNG를 ANYONE_WITH_LINK로 열어 Glide 학부모 탭이 읽게 했다.
+       *   Drive 공개 링크에는 만료가 없어 한 번 새면 영구이고, 그 상태를 개인정보처리방침에 정직하게 적으려니
+       *   「링크를 아는 사람은 누구나 봅니다」가 되어 — 유호님이 그 문장을 쓰는 대신 구조를 바꾸기로 했다.
+       *   ⚠ **지금이 가장 싼 시점이다**: 실학생 0명(카드는 데모·테스트분뿐)이라 깨질 학부모 화면이 없다.
+       *   대체 통로 = **메일 PNG 첨부**(SEND_REPORT_EMAIL을 기본 true로 승격 · Code.js).
+       *   ⚠ url은 계속 기록한다 — 원장이 로그인 상태로 열어 확인하는 내부 경로이고, 학부모 화면은
+       *     Glide에서 이미지 컴포넌트를 걷어내는 것으로 정리한다(유호님 몫 · 설치 문서에 안내). */
       const url = 'https://lh3.googleusercontent.com/d/' + file.getId();
       rows.push([ym + '-' + m.d.sid, m.d.sid, ym, url,
         m.d.title, m.d.comment, new Date()]);
@@ -1397,34 +1403,21 @@ function runReportCards_() {
   });
   if (rows.length) rc.getRange(rc.getLastRow() + 1, 1, rows.length, 7).setValues(rows);
 
-  /* [v9.140] 공유 실패는 「카드가 만들어졌다」와 함께 조용히 지나가면 안 된다 — 시트에는 URL이
-   *   멀쩡히 적히고 배치는 "성공"이라 말하는데, 학부모 화면만 빈다. 표시가 나는 유일한 자리가 여기다. */
-  if (shareFail) {
-    /* [v9.143] 알림이 **원인까지 지목**하게 한다. 「공유 설정 실패」만 적으면 받는 사람이
-     *   무엇을 봐야 할지 모른다 — 08-03 실측으로 이 실패의 1순위 원인은 밝혀져 있다:
-     *   **폴더가 공개로 (다시) 바뀌면 상속과 충돌해 자식 권한 변경이 전부 거부된다.**
-     *   그래서 메일을 쓰기 직전에 폴더 상태를 읽어 그 한 줄을 같이 넣는다. 추측을 지우는 값이
-     *   Drive 호출 1회보다 크다. */
-    let folderHint = '';
-    try {
-      const fa = folder.getSharingAccess();
-      folderHint = (fa === DriveApp.Access.ANYONE_WITH_LINK || fa === DriveApp.Access.ANYONE)
-        ? '🔴 확인됨 — ' + REPORT_FOLDER_NAME + ' 폴더가 지금 **공개**입니다. 이게 1순위 원인입니다.\n' +
-          '   Drive에서 그 폴더 공유를 「제한됨」으로 되돌리면 이 실패가 사라집니다.\n' +
-          '   (폴더가 공개면 유출이기도 합니다 — 링크 하나로 전 학생 카드 목록·전체 다운로드가 열립니다.)\n\n'
-        : '폴더는 「제한됨」입니다 — 1순위 원인은 아니므로 아래 오류 원문을 보고 판단해야 합니다.\n\n';
-    } catch (e) { folderHint = '폴더 공유 상태를 읽지 못했습니다(Drive에서 직접 확인 필요).\n\n'; }
-
-    Logger.log('⚠ 리포트카드 공유 설정 실패 ' + shareFail + '건 — 학부모 화면에서 이미지가 안 보입니다: ' + shareFirstErr);
-    adminMail('[SYNK] ⚠️ 리포트카드 공유 설정 실패 ' + shareFail + '건',
-      '카드 ' + shareFail + '장이 만들어졌지만 「링크가 있는 모든 사람이 보기」 설정에 실패했습니다.\n' +
-      '앱의 학부모 「성장 리포트」 탭에서 그 카드들이 빈 이미지로 보입니다.\n\n' +
-      folderHint +
-      '첫 오류: ' + shareFirstErr + '\n\n' +
-      '2026-08-03 이력: 같은 오류(액세스가 거부됨: DriveApp)가 계속 나고 있었는데, ' +
-      REPORT_FOLDER_NAME + ' 폴더가 공개라 상속으로 가려져 드러나지 않았습니다. 원인은 권한 범위가 ' +
-      '아니라 **폴더 상속과의 충돌**이었고, 폴더를 잠그자 같은 호출이 그대로 성공했습니다.\n' +
-      '복구 수단: 시트 SYNK 메뉴 → 「🩹 학부모 카드 링크 복구」');
+  /* [v9.155] 감시 대상 교체 — 「공유 실패」에서 **「카드가 학부모에게 못 간 학생」**으로.
+   *   구 감시(v9.140·143)는 공개 공유가 실패하면 학부모 탭이 빈다는 것을 잡았다. 이제 공개 공유를
+   *   하지 않으므로 그 실패는 존재하지 않고, 대신 **보낼 이메일이 없으면 카드가 아무에게도 닿지 않는다**
+   *   — 조용한 실패의 자리가 그리로 옮겨간 것이다(장치를 지울 때는 그 장치가 지키던 것이 어디로
+   *   갔는지 함께 옮긴다). 카드는 만들어지고 시트에도 적히므로 배치는 여전히 "성공"이라 말한다. */
+  const noMail = rows.length - mails.length;
+  if (noMail > 0) {
+    Logger.log('⚠ 리포트카드 ' + noMail + '장이 발송되지 않았습니다(보호자 이메일 없음)');
+    adminMail('[SYNK] ⚠️ 리포트카드 ' + noMail + '장 미발송 — 보호자 이메일 없음',
+      '이번 ' + label + ' 카드 ' + rows.length + '장 중 ' + noMail + '장을 **보내지 못했습니다.**\n' +
+      '보호자 이메일(profiles Z열)이 비어 있는 학생입니다.\n\n' +
+      '[v9.155] 카드는 이제 **메일 첨부로만** 전달됩니다(공개 링크 폐지 — 유호님 08-04 결정).\n' +
+      '즉 이메일이 없는 학생의 카드는 만들어져도 보호자에게 닿지 않습니다.\n\n' +
+      '조치: 상담시트에서 그 학생의 보호자 이메일을 채우면 다음 배치부터 자동 발송됩니다.\n' +
+      '(원장님은 Drive ' + REPORT_FOLDER_NAME + ' 폴더에서 로그인 상태로 직접 보실 수 있습니다.)');
   }
 
   if (mails.length && quotaOk(mails.length)) {
@@ -1816,75 +1809,83 @@ function menuClosePreviewCardLinks() {
   SpreadsheetApp.getUi().alert(closePreviewCardLinks());
 }
 
-/* [v9.142] 🩹 학부모 카드 링크 복구 — 폴더를 잠근 뒤 빈 화면을 되살리는 유일한 수단.
+/* [v9.155] 🔒 학생 파일 공개 링크 **닫기** — 유호님 08-04 「B로 가자」 결정의 실행부.
  *
- * ▣ 왜 필요한가
- *   08-03에 `SYNK_리포트카드` 폴더를 「제한됨」으로 잠갔다(익명으로 전 카드 목록·전체 다운로드가
- *   되던 유출을 닫기 위해). 그런데 카드들은 **자기 공유가 하나도 없었고** 공개가 전부 폴더 상속이라,
- *   잠그는 순간 학부모 「성장 리포트」 탭이 통째로 빈 이미지가 됐다. 폴더를 다시 열면 유출이 돌아오므로
- *   답은 하나다 — **카드마다 자기 몫의 공개 링크를 붙인다.** 그러면 폴더는 잠긴 채로 화면이 산다
- *   (링크를 아는 사람만 그 한 장을 본다 = 원래 의도했던 모양).
+ * ▣ 무엇이 바뀌었나
+ *   구 함수(v9.142 `repairReportCardSharing`)는 반대 방향이었다 — 폴더를 잠근 뒤 카드를 **여는**
+ *   수단이었고, 그때는 그게 옳았다(공개 링크가 학부모에게 카드가 닿는 유일한 통로였다).
+ *   이제 통로가 **메일 첨부**로 바뀌었으므로 여는 함수는 남겨두면 안 된다 — 남기면 언젠가
+ *   누군가 실행해서 방금 닫은 것을 되연다. **그래서 지우지 않고 방향을 뒤집어 교체한다.**
  *
- * ▣ 왜 지금은 될 것으로 보는가 (가설이고, 이 함수가 그 가설의 시험이다)
- *   폴더가 공개이던 동안 setSharing은 양방향 모두 「액세스가 거부됨: DriveApp」이었다. 프로젝트는
- *   full Drive 스코프(`auth/drive`)를 이미 갖고 있으므로 권한 범위 문제가 아니다. 남는 설명은
- *   **상속과 충돌하는 자식 권한 변경을 Drive가 거부한다**는 것 — 부모가 「링크가 있는 모든 사용자」인
- *   동안에는 자식에게서 그걸 빼지도(PRIVATE) 덧쓰지도(ANYONE_WITH_LINK) 못한다.
- *   폴더를 잠근 지금은 그 충돌이 없으므로 성공해야 한다. **실패하면 가설이 틀린 것이고, 이 함수가
- *   첫 오류 원문을 그대로 물어다 준다** — 그게 다음 조사의 재료다.
+ * ▣ 왜 코드 수정만으로는 안 끝나는가 (08-03 교훈)
+ *   **공유 설정은 파일에 붙지 코드에 붙지 않는다.** `setSharing` 호출을 지운 것은 「앞으로 안 연다」
+ *   까지고, **이미 열린 파일은 오늘도 열린다.** 그래서 닫는 실행 경로를 함께 낸다.
  *
- * ▣ 안전
- *   대상은 `report_cards`의 image_url에서 뽑은 파일 ID뿐이다(폴더를 훑지 않는다 = 프리뷰·남의 파일이
- *   섞일 수 없다). 이미 공개인 것은 건드리지 않는다(멱등). 되돌리려면 폴더를 잠근 채 이 링크만
- *   비공개로 바꾸면 된다. */
-function repairReportCardSharing() {
+ * ▣ 대상 — 학생이 식별되는 파일 두 종류
+ *   ① 리포트카드: `report_cards.image_url`의 Drive 파일(실명·급수·포인트가 박힌 PNG)
+ *   ② 음성 녹음: `voice_log.file_id`(미성년 목소리 = 몽골법상 생체정보 계열로 읽힐 수 있다)
+ *   폴더를 훑지 않고 **시트에 기록된 것만** 건드린다(남의 파일이 섞일 수 없다).
+ *
+ * ▣ fail-open 방지 (v9.138 교훈)
+ *   `DriveApp.Access`는 5종이라 「ANYONE 계열만 공개」로 보면 DOMAIN 계열이 틈으로 빠진다.
+ *   → **PRIVATE임이 증명된 것만 건너뛴다**(상태를 못 읽으면 닫기를 시도한다 = 안전측).
+ *   멱등이라 여러 번 눌러도 안전하다. */
+function closeStudentFileLinks() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const 대상 = []; // {id, 종류}
+
   const rc = ss.getSheetByName('report_cards');
-  if (!rc || rc.getLastRow() < 2) {
-    const none = 'report_cards가 비어 있습니다 — 복구할 카드가 없습니다.';
-    Logger.log(none); return none;
+  if (rc && rc.getLastRow() >= 2) {
+    rc.getRange(2, 1, rc.getLastRow() - 1, 4).getValues().forEach(r => {
+      const u = String(r[3] || '');
+      const m = u.match(/googleusercontent\.com\/d\/([-\w]+)/) || u.match(/[?&]id=([-\w]+)/) || u.match(/\/d\/([-\w]+)/);
+      if (m && !대상.some(x => x.id === m[1])) 대상.push({ id: m[1], 종류: '리포트카드' });
+    });
   }
-  const rows = rc.getRange(2, 1, rc.getLastRow() - 1, 4).getValues();
-  const ids = [];
-  rows.forEach(r => {
-    const m = String(r[3] || '').match(/googleusercontent\.com\/d\/([-\w]+)/) ||
-              String(r[3] || '').match(/[?&]id=([-\w]+)/) ||
-              String(r[3] || '').match(/\/d\/([-\w]+)/);
-    if (m && ids.indexOf(m[1]) === -1) ids.push(m[1]);
-  });
-  if (!ids.length) {
-    const none = 'report_cards에 Drive 카드 URL이 없습니다(플레이스홀더뿐일 수 있습니다).';
+  const vl = ss.getSheetByName('voice_log');
+  if (vl && vl.getLastRow() >= 2) {
+    vl.getRange(2, 1, vl.getLastRow() - 1, 5).getValues().forEach(r => {
+      const fid = String(r[4] || '').trim(); // file_id 열
+      if (fid && !대상.some(x => x.id === fid)) 대상.push({ id: fid, 종류: '음성' });
+    });
+  }
+  if (!대상.length) {
+    const none = '닫을 파일이 없습니다(report_cards·voice_log에 Drive 파일 기록 없음).';
     Logger.log(none); return none;
   }
 
-  let ok = 0, already = 0, fail = 0, firstErr = '';
-  ids.forEach(id => {
+  let closed = 0, already = 0, fail = 0, firstErr = '';
+  const 종류별 = {};
+  대상.forEach(t => {
     let f = null;
-    try { f = DriveApp.getFileById(id); } catch (e) { fail++; if (!firstErr) firstErr = '파일 열기 실패: ' + e; return; }
+    try { f = DriveApp.getFileById(t.id); } catch (e) { fail++; if (!firstErr) firstErr = '파일 열기 실패: ' + e; return; }
     let acc = null, known = false;
     try { acc = f.getSharingAccess(); known = true; } catch (e) {}
-    if (known && (acc === DriveApp.Access.ANYONE_WITH_LINK || acc === DriveApp.Access.ANYONE)) { already++; return; }
-    try { f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); ok++; }
-    catch (e) { fail++; if (!firstErr) firstErr = String(e); }
+    if (known && acc === DriveApp.Access.PRIVATE) { already++; return; } // PRIVATE 증명된 것만 스킵
+    try {
+      f.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE);
+      closed++; 종류별[t.종류] = (종류별[t.종류] || 0) + 1;
+    } catch (e) { fail++; if (!firstErr) firstErr = String(e); }
   });
 
-  const msg = ['🩹 학부모 카드 링크 복구',
-    '카드 ' + ids.length + '개 중 → 복구 ' + ok + '개 · 이미 공개 ' + already + '개 · 실패 ' + fail + '개'];
+  const msg = ['🔒 학생 파일 공개 링크 닫기',
+    '대상 ' + 대상.length + '개 → 닫음 ' + closed + '개 · 이미 비공개 ' + already + '개 · 실패 ' + fail + '개'];
+  if (closed) msg.push('  (' + Object.keys(종류별).map(k => k + ' ' + 종류별[k]).join(' · ') + ')');
   if (fail) {
     msg.push('', '⚠ 첫 오류: ' + firstErr,
-      '「액세스가 거부됨」이 계속 나오면 폴더 상속 가설이 틀린 것입니다 —',
-      '이 문구를 그대로 남겨 두세요(다음 조사의 출발점).');
-  } else if (ok) {
-    msg.push('', '✅ 폴더는 잠긴 채로 카드만 열렸습니다.',
-      '학부모 앱 「성장 리포트」 탭에서 이미지가 다시 보이는지 확인해 주세요.');
+      '「액세스가 거부됨」이면 폴더 상속과 충돌하는 것입니다 — 폴더 공유 상태를 먼저 확인하세요.');
+  } else if (closed) {
+    msg.push('', '✅ 닫혔습니다. 이제 이 파일들은 로그인한 소유자만 볼 수 있습니다.',
+      '⚠ Glide 학부모 「성장 리포트」 탭의 이미지가 비게 됩니다 — 그 컴포넌트를 걷어내세요.',
+      '   카드는 이제 보호자 이메일로 PNG 첨부 발송됩니다(SEND_REPORT_EMAIL=true).');
   }
   const out = msg.join('\n');
   Logger.log(out);
   return out;
 }
 
-function menuRepairReportCardSharing() {
-  SpreadsheetApp.getUi().alert(repairReportCardSharing());
+function menuCloseStudentFileLinks() {
+  SpreadsheetApp.getUi().alert(closeStudentFileLinks());
 }
 
 /* ===================== [v5] 명예의 전당 (monthlyGameBatch가 호출) ===================== */
