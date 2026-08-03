@@ -107,7 +107,7 @@
 
 **그다음 진짜 메신저로**:
 3. 유호님 개인 페이스북 계정으로 **SYNK LAB 페이지에 메시지**를 보냅니다 (예: `Сайн байна уу`)
-4. 몇 초 뒤 몽골어 답장이 오면 완료입니다
+4. 몇 초 뒤 답장이 오면 완료입니다. **첫 답장은 「저는 SYNK LAB의 자동 상담 봇입니다」(한·몽 병기)로 시작**하고 그다음에 답변이 옵니다 — [v9.154]에서 넣은 **Meta 정책 필수 고지**라 뺄 수 없습니다(두 번째 턴부터는 안 붙습니다)
 5. 스프레드시트에 **`상담로그`** 시트가 새로 생겨 대화가 쌓입니다
 
 ---
@@ -136,46 +136,85 @@
 | 4 | 몽골어 답변 감수 | 실제 대화 20건쯤 쌓인 뒤 에리카쌤(또는 감수자)이 어색한 표현을 잡아주면 지식 문구를 고칩니다 |
 | 5 | Meta 앱 검수(App Review) | 지금은 **개발 모드**라 페이지 관리자·테스터에게만 답합니다. 일반 학부모에게 열려면 `pages_messaging` 권한 검수가 필요합니다 — **신청 문구는 아래 STEP 5에 준비돼 있습니다** |
 
-> ⚠ **5번이 가장 중요합니다.** STEP 4까지 마쳐도 처음에는 **유호님 본인 계정에만** 답장이 갑니다. 일반 학부모 응대까지 가려면 Meta 검수를 통과해야 하고, 보통 며칠 걸립니다. 광고를 켜기 전에 미리 신청해 두는 것이 안전합니다.
+> ⚠ **5번이 가장 중요합니다.** STEP 4까지 마쳐도 처음에는 **유호님 본인 계정과 테스터에게만** 답장이 갑니다. 일반 학부모 응대까지 가려면 Meta 검수를 통과해야 하는데, **선행 요건 2건(개인정보처리방침 URL·비즈니스 인증)이 아직 없고 심사도 약 20일 걸립니다** — 상세는 STEP 5. 광고를 켜실 계획이면 그만큼 앞당겨 준비하세요.
 
 ---
 
-## STEP 5 — Meta 앱 검수 신청 (15분 + 심사 대기 며칠) <!-- [v9.152] 신설 — "신청 문구는 제가 작성합니다" 약속 이행 -->
+## STEP 5 — Meta 앱 검수 신청 <!-- [v9.154] 웹 실측으로 전면 개정 — 초판(v9.152)은 선행 요건 3건이 빠져 있었다 -->
 
-STEP 4에서 유호님 계정으로 답장이 오는 것까지 확인한 뒤에 신청하세요(심사자는 실제로 작동하는 봇을 봅니다).
+> 🔴 **먼저 읽으세요 — 검수는 「문구를 잘 쓰면 되는 일」이 아닙니다.** 2026-08-04 실측 결과, 신청 **전에** 갖춰야 하는 것이 셋 있고 **그중 둘을 유호님이 아직 안 갖고 계십니다.** 문구는 그다음 문제입니다.
+> **STEP 4까지만 해도 봇은 유호님·테스터에게 정상 작동합니다** — 몽골어 검수와 내부 테스트는 검수 없이 지금 할 수 있습니다. 검수는 **일반 학부모에게 열 때** 필요합니다.
+
+### 5-0. 신청 전 필수 3종 (이게 진짜 관문)
+
+| # | 필요한 것 | 지금 상태 | 없으면 |
+|---|---|---|---|
+| 1 | **개인정보처리방침 URL** (공개·라이브·HTTPS) | ❌ 홈페이지가 없어 URL이 없음 | **신청 자체가 안 됨** — Meta가 링크를 실제로 열어 확인합니다 |
+| 2 | **비즈니스 인증(Business Verification)** — 사업자 등록 서류 + 라이브 웹사이트 | ❓ 개원 전(2027-02)이라 서류 상태 확인 필요 | 고급 액세스 승인 불가 |
+| 3 | 작동하는 봇 (STEP 0~4 완료) | 코드 준비 완료 | 심사자가 테스트할 대상이 없음 |
+
+**1번이 최소 비용 해법이 있습니다** — 홈페이지 전체가 아니라 **개인정보처리방침 페이지 1장**이면 됩니다(무료 호스팅 가능). 이걸 만들면 검수 신청이 열리고, 나중에 홈페이지를 만들 때 그대로 옮기면 됩니다. **말씀 주시면 제가 초안을 씁니다** — 봇이 무엇을 수집하고(메시지 내용·이름·연락처), 어디에 저장하며(구글 스프레드시트), 누구에게 보내는지(Anthropic Claude API로 답변 생성)를 정직하게 적어야 합니다.
+
+> ⚠ **심사 기간은 「며칠」이 아니라 최근 기준 약 20일**입니다(예전 10일 → 늘어남). 광고를 켜실 계획이면 그만큼 앞당겨 신청하세요.
+
+### 5-1. 신청 절차
 
 1. developers.facebook.com → 내 앱 → `SYNK LAB 상담` → 왼쪽 메뉴 **앱 검수(App Review)** → **권한 및 기능(Permissions and Features)**
 2. 목록에서 **`pages_messaging`** 을 찾아 **고급 액세스 요청(Request Advanced Access)** 클릭
-3. 신청 양식에 아래를 채웁니다 — **사용 설명은 그대로 복사해 붙여넣으세요** (Meta 심사는 영어가 안전합니다):
+3. 신청 양식의 사용 설명에 **아래를 그대로 복사해 붙여넣으세요**(영어가 안전합니다):
 
    ```
-   SYNK LAB is a Korean-language academy in Ulaanbaatar, Mongolia.
-   This app powers an automated FAQ assistant on our Facebook Page ("SYNK LAB").
-   When a parent or student sends a message to our Page, the app replies with
-   approved information about the academy (opening date, class structure,
-   class size, weekly parent reports in Mongolian, etc.).
-   Questions outside our approved knowledge base (e.g. tuition before it is
-   finalized) are NOT answered by the bot: it tells the user a teacher will
-   contact them soon, and notifies our staff by email.
-   The app only replies to user-initiated messages within the standard
-   24-hour messaging window. It never sends promotional broadcasts.
-   We do not collect contact information from users who appear to be minors —
-   they are asked to have a parent or guardian contact the Page instead.
+   SYNK LAB is a Korean-language academy in Ulaanbaatar, Mongolia
+   (opening February 2027; currently accepting pre-opening enquiries).
+
+   This app powers an automated FAQ assistant on our Facebook Page
+   "SYNK LAB". It only reacts to messages that a user sends to our Page,
+   and only within the standard 24-hour messaging window. It never sends
+   promotional broadcasts and never initiates conversations.
+
+   At the start of every conversation the assistant discloses that it is
+   an automated bot, in Mongolian and Korean, before answering anything.
+
+   It answers from a fixed, pre-approved knowledge base about the academy
+   (opening date, teaching method, level system, class size, native-speaker
+   classes). Anything outside that knowledge base — for example tuition
+   fees, which we have not finalized — is NOT answered: the assistant tells
+   the user that a teacher will contact them and notifies our staff.
+   It never invents prices, dates or guarantees of results.
+
+   Message text is sent to Anthropic's Claude API to generate the reply,
+   and conversation logs are stored in our private Google Sheet. This is
+   described in our privacy policy.
+
+   If a user appears to be a minor, the assistant does not ask for or store
+   contact details; it asks them to have a parent or guardian contact the
+   Page instead.
    ```
 
-4. **심사자용 테스트 방법(Test Instructions)** 칸에는:
+4. **심사자용 테스트 방법(Test Instructions)** 칸:
 
    ```
    1) Open our Facebook Page "SYNK LAB" and send any message,
       e.g. "Сайн байна уу" (Mongolian) or "When do classes start?"
-   2) The bot replies within a few seconds in Mongolian
-      (or the language of your message).
+   2) The first reply begins with the automated-bot disclosure, then
+      answers in Mongolian (or in the language you wrote in).
    3) Ask "Төлбөр хэд вэ?" (How much is tuition?) to see the human-handoff
-      behavior: the bot does not invent a price and says a teacher will
-      contact you.
+      behaviour: the bot does not invent a price and tells you a teacher
+      will contact you.
+   All replies are sent within seconds; there is no human in the loop.
    ```
 
-5. **화면 녹화(Screencast)** 를 요구하면: 휴대폰 화면 녹화를 켜고 3번의 대화(인사 → 답장 → 수강료 질문 → 인계 답변)를 30초쯤 찍어 올리시면 됩니다.
-6. 제출 → 보통 며칠 안에 결과 메일이 옵니다. **반려되면 반려 사유를 캡처해서 보여주세요** — 문구를 고쳐 재신청합니다.
+5. **화면 녹화(Screencast)** 요구 시: 휴대폰 화면 녹화로 위 3단계(공개 문구가 보이는 첫 답장 → 수강료 질문 → 인계 답변)를 30초쯤 찍어 올리면 됩니다. **첫 답장의 봇 공개 문구가 화면에 보이게** 찍는 것이 중요합니다.
+6. 제출 → 결과 메일. **반려되면 사유를 캡처해서 보여주세요** — 사유별로 문구·코드를 고쳐 재신청합니다.
 
-> 승인 전까지도 봇은 유호님(관리자)과 테스터에게는 정상 작동합니다. 테스터를 추가하려면: 앱 대시보드 → **앱 역할(App Roles)** → 테스터 추가.
+### 5-2. 정책상 우리가 이미 지키는 것 (반려 사유 예방)
+
+| 요건 | 우리 상태 |
+|---|---|
+| 대화 시작 시 자동화 공개 | ✅ [v9.154] 첫 응답 맨 앞에 **코드가 붙입니다**(한·몽 병기) — 모델 판단에 안 맡깁니다 |
+| 모든 입력에 30초 내 응답 | ✅ 정지·상한 초과·API 오류 **모든 경로**에서 인계문을 즉시 돌려줍니다(침묵하는 경로 0) |
+| 24시간 창 준수·홍보 발송 금지 | ✅ 받은 메시지에만 답합니다. 먼저 거는 경로가 코드에 없습니다 |
+| 없는 정보 지어내지 않기 | ✅ 미확정 10주제는 프롬프트에 아예 안 들어가고 자동 인계됩니다 |
+| 미성년 연락처 미수집 | ✅ [v9.152] 금칙+프롬프트 양쪽에 규칙 |
+
+> 승인 전까지도 봇은 유호님(관리자)과 테스터에게 정상 작동합니다. 테스터 추가: 앱 대시보드 → **앱 역할(App Roles)** → 테스터.

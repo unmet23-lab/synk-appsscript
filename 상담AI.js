@@ -124,17 +124,21 @@ function 상담_응답_(obj) {
 function 상담응답_(세션, 사용자말) {
   const props = PropertiesService.getScriptProperties();
   const key = props.getProperty('CLAUDE_API_KEY');
+  /* [v9.154] 봇 공개 — 이 세션의 **첫 응답**에만 자동화 고지를 앞에 붙인다(근거·문구 = contents_상담AI.js `상담_봇공개`).
+   * 정지·상한·API오류 경로까지 **전부** 통과시키는 이유: 그 경로의 인계문도 봇이 보내는 첫 메시지일 수 있고,
+   * 「어떤 경로로 답하든 첫 마디에 밝힌다」가 정책 요건이다(일부 경로만 붙이면 그 턴이 곧 위반이다). */
+  const 공개 = (상담_이력_(세션).length === 0) ? (상담_봇공개 + '\n\n') : '';
   if (props.getProperty('상담AI_OFF') === '1' || !key) {
     상담_기록_(세션, 'user', 사용자말, true, null);
     상담_기록_(세션, 'bot', 상담_인계문, true, null, key ? '정지(상담AI_OFF)' : 'API키 없음');
     상담_인계알림_(세션, 사용자말, key ? '봇 정지 상태' : 'API 키 미설정');
-    return { reply: 상담_인계문, handoff: true };
+    return { reply: 공개 + 상담_인계문, handoff: true };
   }
   if (!상담_상한통과_(props)) {
     상담_기록_(세션, 'user', 사용자말, true, null);
     상담_기록_(세션, 'bot', 상담_인계문, true, null, '일일 상한 초과');
     상담_인계알림_(세션, 사용자말, '일일 호출 상한 초과 — 오늘은 사람이 받아야 합니다');
-    return { reply: 상담_인계문, handoff: true };
+    return { reply: 공개 + 상담_인계문, handoff: true };
   }
 
   // ⚠ 사용자 발화는 호출 '뒤'에 기록한다 — 먼저 쓰면 상담_이력_가 그 줄을 읽어 같은 말이 두 번 들어간다
@@ -145,7 +149,7 @@ function 상담응답_(세션, 사용자말) {
     상담_기록_(세션, 'user', 사용자말, false, null);
     상담_기록_(세션, 'bot', 상담_인계문, true, null, 'API 오류: ' + String(err && err.message || err).slice(0, 160));
     상담_인계알림_(세션, 사용자말, 'API 오류 — ' + String(err && err.message || err).slice(0, 160));
-    return { reply: 상담_인계문, handoff: true };
+    return { reply: 공개 + 상담_인계문, handoff: true };
   }
 
   const 답 = String(out.data.reply || '').trim() || 상담_인계문;
@@ -154,7 +158,7 @@ function 상담응답_(세션, 사용자말) {
   상담_기록_(세션, 'bot', 답, 인계, out.usage, 인계 ? ('인계: ' + (out.data.handoff_reason || '')) : '');
   if (out.data.lead_name || out.data.lead_contact) 상담_리드적재_(세션, out.data);
   if (인계) 상담_인계알림_(세션, 사용자말, out.data.handoff_reason || '봇이 답할 수 없는 질문');
-  return { reply: 인계 ? (답 === 상담_인계문 ? 답 : 답 + '\n\n' + 상담_인계문) : 답, handoff: 인계 };
+  return { reply: 공개 + (인계 ? (답 === 상담_인계문 ? 답 : 답 + '\n\n' + 상담_인계문) : 답), handoff: 인계 };
 }
 
 // Claude 호출 — 시스템(지식)은 프롬프트 캐싱으로 고정, 대화 이력만 매번 바뀐다
