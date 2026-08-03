@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cat >/dev/null; \"/c/Program Files/nodejs/node.exe\" \"C:/Users/q1212/Documents/SYNK-appsscript/tools/rot-check.js\" --hook",
+            "command": "cat >/dev/null; R=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/rot-check.js\"; if command -v node >/dev/null && [ -f \"$R\" ]; then node \"$R\" --hook; else echo \"주간 점검 건너뜀: node 또는 $R 없음(F044)\" >&2; fi",
             "shell": "bash",
             "timeout": 60,
             "statusMessage": "주간 부패 점검"
@@ -20,14 +20,14 @@
         "hooks": [
           {
             "type": "command",
-            "command": "IN=$(cat); case \"$IN\" in *clasp*) printf '%s' \"$IN\" | \"/c/Program Files/nodejs/node.exe\" \"C:/Users/q1212/Documents/SYNK-appsscript/.claude/hooks/clasp-guard.js\" ;; esac",
+            "command": "IN=$(cat); case \"$IN\" in *clasp*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/clasp-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\" ;; esac",
             "shell": "bash",
             "timeout": 120,
             "statusMessage": "clasp 배포 게이트 검사"
           },
           {
             "type": "command",
-            "command": "IN=$(cat); case \"$IN\" in *\"git add\"*|*\"git commit\"*) printf '%s' \"$IN\" | \"/c/Program Files/nodejs/node.exe\" \"C:/Users/q1212/Documents/SYNK-appsscript/.claude/hooks/git-scope-guard.js\" ;; esac",
+            "command": "IN=$(cat); case \"$IN\" in *\"git add\"*|*\"git commit\"*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/git-scope-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\" ;; esac",
             "shell": "bash",
             "timeout": 30,
             "statusMessage": "커밋 범위 검사"
@@ -39,21 +39,21 @@
         "hooks": [
           {
             "type": "command",
-            "command": "IN=$(cat); case \"$IN\" in *.md*) printf '%s' \"$IN\" | \"/c/Program Files/nodejs/node.exe\" \"C:/Users/q1212/Documents/SYNK-appsscript/.claude/hooks/board-guard.js\" ;; esac",
+            "command": "IN=$(cat); case \"$IN\" in *.md*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/board-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\" ;; esac",
             "shell": "bash",
             "timeout": 30,
             "statusMessage": "세션보드 비대화 검사"
           },
           {
             "type": "command",
-            "command": "IN=$(cat); case \"$IN\" in *MEMORY.md*) printf '%s' \"$IN\" | \"/c/Program Files/nodejs/node.exe\" \"C:/Users/q1212/Documents/SYNK-appsscript/.claude/hooks/memory-index-guard.js\" ;; esac",
+            "command": "IN=$(cat); case \"$IN\" in *MEMORY.md*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/memory-index-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\" ;; esac",
             "shell": "bash",
             "timeout": 30,
             "statusMessage": "메모리 인덱스 비대화 검사"
           },
           {
             "type": "command",
-            "command": "IN=$(cat); case \"$IN\" in *docs*) printf '%s' \"$IN\" | \"/c/Program Files/nodejs/node.exe\" \"C:/Users/q1212/Documents/SYNK-appsscript/.claude/hooks/doc-propagation.js\" ;; esac",
+            "command": "IN=$(cat); case \"$IN\" in *docs*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/doc-propagation.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\" ;; esac",
             "shell": "bash",
             "timeout": 30,
             "statusMessage": "정본 파생 전파 확인"
