@@ -1,14 +1,39 @@
 @echo off
-rem memory-push — 로컬 메모리 정본을 synk-memory(클라우드 사본)로 밀고,
-rem 클라우드가 수거한 결정 답변(_큐/결정_답변.md)을 끌어온다.
-rem 작업 스케줄러(SYNK_MemoryPush)가 시간마다 실행한다. PC가 꺼져 있으면 안 돌지만,
-rem 클라우드 결정 큐는 이 동기화 없이도 마지막 push본으로 계속 돈다.
+rem memory-push: sync local memory canon to synk-memory (cloud copy),
+rem and pull down decision answers (_kyu/decision replies) committed by Actions.
+rem Runs hourly via Task Scheduler (SYNK_MemoryPush). If the PC is off, only this
+rem sync pauses - the cloud queue keeps running on the last pushed copy.
 rem
-rem git add -A 사용 근거: 이 저장소는 memory 폴더 단독 repo다(공유 작업 트리 아님).
-rem 새 메모리 파일을 반드시 쓸어 담아야 해서 -A가 올바른 의미다 — git-scope-guard의
-rem 전제(세션 여럿이 한 트리 공유)가 여기엔 성립하지 않는다.
-cd /d "C:\Users\q1212\.claude\projects\C--Users-q1212-Documents-SYNK-appsscript\memory"
+rem WHY ASCII ONLY: cmd.exe parses batch files in the OEM codepage (CP949 here),
+rem so Korean text in EXECUTABLE lines gets mangled and breaks parsing - the
+rem 2026-08-04 v2 of this file failed exactly that way (cd silently failed and
+rem git nearly ran in the wrong repo). Keep every line pure ASCII.
+rem
+rem WHY git add -A: this is the memory-only repo (not the shared worktree).
+rem New memory files must always be swept in; git-scope-guard's premise
+rem (multiple sessions sharing one tree) does not apply here.
+rem
+rem FAILURE HANDLING (coordinated with the Obsidian-track session 08-04):
+rem two committers exist (local + cloud Actions). If rebase conflicts, the repo
+rem would be stuck mid-rebase and every later run fails silently - so on failure
+rem we abort the rebase (restore) and append to sync-fail.log, which rides along
+rem in the next successful commit and becomes visible in the cloud too.
+setlocal
+set MEMDIR=C:\Users\q1212\.claude\projects\C--Users-q1212-Documents-SYNK-appsscript\memory
+set LOG=%MEMDIR%\sync-fail.log
+cd /d "%MEMDIR%"
+if errorlevel 1 exit /b 1
 git add -A
 git diff --cached --quiet || git commit -m "auto: memory sync"
 git pull --rebase origin master
+if errorlevel 1 (
+  git rebase --abort 2>nul
+  echo %date% %time% pull --rebase FAILED - possible conflict, check manually >> "%LOG%"
+  exit /b 1
+)
 git push origin master
+if errorlevel 1 (
+  echo %date% %time% push FAILED - check network or credentials >> "%LOG%"
+  exit /b 1
+)
+endlocal
