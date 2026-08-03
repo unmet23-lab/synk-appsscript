@@ -19,7 +19,7 @@
    → 봇이 모르는 질문이면 답하지 않고 유호님께 인계 메일
 ```
 
-**봇이 절대 못 하는 것**: 수강료·주소·시간표·환불 규정을 말하는 것. 이 7개 주제는 `contents_상담AI.js`에 `확정: false`로 잠겨 있어 물어보면 무조건 사람에게 넘깁니다. 값이 확정된 뒤 `true`로 바꾸면 그때부터 답합니다.
+**봇이 절대 못 하는 것**: 수강료·주소·정확한 수업 시각·연락처·체험 절차·할인·환불·대상 연령·결석 보강·반 배정을 말하는 것. 이 미확정 주제들은 `contents_상담AI.js`에 `확정: false`로 잠겨 있어 물어보면 무조건 사람에게 넘깁니다. 값이 확정된 뒤 `true`로 바꾸면 그때부터 답합니다. <!-- [v9.152] 지식 정합 — 정원 16명·수업 요일은 확정 승격, 구멍 3건 등재 -->
 
 ---
 
@@ -134,6 +134,48 @@
 | 2 | 학원 주소·대표 전화 | 개원 장소 확정 후 |
 | 3 | 무료 체험·레벨체크 운영 방식 | 절차가 정해지면 |
 | 4 | 몽골어 답변 감수 | 실제 대화 20건쯤 쌓인 뒤 에리카쌤(또는 감수자)이 어색한 표현을 잡아주면 지식 문구를 고칩니다 |
-| 5 | Meta 앱 검수(App Review) | 지금은 **개발 모드**라 페이지 관리자·테스터에게만 답합니다. 일반 학부모에게 열려면 `pages_messaging` 권한 검수가 필요합니다 — 신청 문구는 제가 작성합니다 |
+| 5 | Meta 앱 검수(App Review) | 지금은 **개발 모드**라 페이지 관리자·테스터에게만 답합니다. 일반 학부모에게 열려면 `pages_messaging` 권한 검수가 필요합니다 — **신청 문구는 아래 STEP 5에 준비돼 있습니다** |
 
 > ⚠ **5번이 가장 중요합니다.** STEP 4까지 마쳐도 처음에는 **유호님 본인 계정에만** 답장이 갑니다. 일반 학부모 응대까지 가려면 Meta 검수를 통과해야 하고, 보통 며칠 걸립니다. 광고를 켜기 전에 미리 신청해 두는 것이 안전합니다.
+
+---
+
+## STEP 5 — Meta 앱 검수 신청 (15분 + 심사 대기 며칠) <!-- [v9.152] 신설 — "신청 문구는 제가 작성합니다" 약속 이행 -->
+
+STEP 4에서 유호님 계정으로 답장이 오는 것까지 확인한 뒤에 신청하세요(심사자는 실제로 작동하는 봇을 봅니다).
+
+1. developers.facebook.com → 내 앱 → `SYNK LAB 상담` → 왼쪽 메뉴 **앱 검수(App Review)** → **권한 및 기능(Permissions and Features)**
+2. 목록에서 **`pages_messaging`** 을 찾아 **고급 액세스 요청(Request Advanced Access)** 클릭
+3. 신청 양식에 아래를 채웁니다 — **사용 설명은 그대로 복사해 붙여넣으세요** (Meta 심사는 영어가 안전합니다):
+
+   ```
+   SYNK LAB is a Korean-language academy in Ulaanbaatar, Mongolia.
+   This app powers an automated FAQ assistant on our Facebook Page ("SYNK LAB").
+   When a parent or student sends a message to our Page, the app replies with
+   approved information about the academy (opening date, class structure,
+   class size, weekly parent reports in Mongolian, etc.).
+   Questions outside our approved knowledge base (e.g. tuition before it is
+   finalized) are NOT answered by the bot: it tells the user a teacher will
+   contact them soon, and notifies our staff by email.
+   The app only replies to user-initiated messages within the standard
+   24-hour messaging window. It never sends promotional broadcasts.
+   We do not collect contact information from users who appear to be minors —
+   they are asked to have a parent or guardian contact the Page instead.
+   ```
+
+4. **심사자용 테스트 방법(Test Instructions)** 칸에는:
+
+   ```
+   1) Open our Facebook Page "SYNK LAB" and send any message,
+      e.g. "Сайн байна уу" (Mongolian) or "When do classes start?"
+   2) The bot replies within a few seconds in Mongolian
+      (or the language of your message).
+   3) Ask "Төлбөр хэд вэ?" (How much is tuition?) to see the human-handoff
+      behavior: the bot does not invent a price and says a teacher will
+      contact you.
+   ```
+
+5. **화면 녹화(Screencast)** 를 요구하면: 휴대폰 화면 녹화를 켜고 3번의 대화(인사 → 답장 → 수강료 질문 → 인계 답변)를 30초쯤 찍어 올리시면 됩니다.
+6. 제출 → 보통 며칠 안에 결과 메일이 옵니다. **반려되면 반려 사유를 캡처해서 보여주세요** — 문구를 고쳐 재신청합니다.
+
+> 승인 전까지도 봇은 유호님(관리자)과 테스터에게는 정상 작동합니다. 테스터를 추가하려면: 앱 대시보드 → **앱 역할(App Roles)** → 테스터 추가.
