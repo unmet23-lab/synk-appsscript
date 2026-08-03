@@ -31,3 +31,10 @@ secrets/
 #   ignore하는 이유는 격리가 아니라 커밋 사고 방지다: 자체 .git을 가진 중첩 저장소라
 #   `git add`에 딸리면 통째로 담기고, untracked로 두면 매 `git status`에 떠서 진짜 신호를 가린다.
 ARC-AGI-3-Agents/
+
+# [2026-08-03] 벤더 실측 하네스(tools/bench)는 Python이라 캐시·런타임 생성물이 딸린다.
+#   _fixture_recordings/ 는 채점기가 **실행할 때마다 새로 만드는** 픽스처다 — 커밋하면
+#   「생성물이 정본인 척」하게 되고, 기대값을 고칠 때 두 곳이 갈라진다.
+__pycache__/
+*.pyc
+tools/bench/_fixture_recordings/
