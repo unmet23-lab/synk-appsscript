@@ -9,6 +9,7 @@ const ROOT = path.resolve(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
 const server = read('crewcard/크루카드.js');
+const 상담 = read('crewcard/상담시트.js');
 const htmlKr = read('crewcard/카드_kr.html');
 const htmlMn = read('crewcard/카드_mn.html');
 const schema = JSON.parse(read('docs/크루카드/크루카드_스키마.json'));
@@ -156,7 +157,31 @@ test('수식 인젝션 차단 — doPost의 시트 쓰기 경로가 전부 소�
 
 test('HtmlService 노출 표면 — 밑줄 없는 전역 함수는 doGet·doPost뿐', () => {
   // 이 프로젝트는 HtmlService를 반환하므로 google.script.run 표면이 곧 공격 표면이다.
-  const fns = [...server.matchAll(/^function ([A-Za-z가-힣_][\w가-힣]*)\s*\(/gm)].map((m) => m[1]);
+  // 상담시트.js도 같은 프로젝트라 노출 표면이 합쳐진다 — 한 파일만 검사하면 새 파일이 사각이 된다
+  const fns = [...(server + '\n' + 상담).matchAll(/^function ([A-Za-z가-힣_][\w가-힣]*)\s*\(/gm)].map((m) => m[1]);
   const exposed = fns.filter((n) => !n.endsWith('_') && !['doGet', 'doPost'].includes(n));
   assert.deepEqual(exposed, [], `밑줄 종결이 아닌 전역 함수: ${exposed} — 익명자가 부를 수 있다`);
+});
+
+test('상담시트 이관 — 안전 불변식(학생ID 비움·소독·중복 차단·반 정본 24)', () => {
+  // 공개 폼이 곧바로 앱 로스터가 되면 장난 제출 한 번이 학생 계정이 된다.
+  // syncProfiles가 학생ID 없는 행을 건너뛰는 성질이 유일한 안전 지점이므로, 이관은 ID를 비워야만 한다.
+  const 매핑 = 상담.slice(상담.indexOf('function 크루카드_상담매핑_'), 상담.indexOf('function 상담시트_이관_'));
+  assert.ok(!/['"]학생ID['"]\s*:/.test(매핑), '이관 매핑이 학생ID를 채운다 — 공개 접수가 앱 로스터로 직행한다');
+  assert.ok(!/['"]반['"]\s*:/.test(매핑), '이관 매핑이 「반」을 채운다 — 배정은 사람의 결정이어야 한다');
+
+  const 이관 = 상담.slice(상담.indexOf('function 상담시트_이관_'), 상담.indexOf('function 상담_첫빈행_'));
+  assert.ok(이관.includes('셀안전_('), '이관 경로가 소독을 안 지난다 — 상담시트로 수식 인젝션 우회');
+  assert.ok(이관.includes("=== serial) return { ok: true, skip: 'dup' }"), '중복 이관 차단이 없다');
+  assert.ok(이관.includes('상담_첫빈행_'), 'appendRow를 쓰면 서식만 있는 빈 행 아래로 튄다');
+
+  // 반 키 정본 24종 — docs/반편성_정본_v2.md와 갈리면 드롭다운이 거짓을 가리킨다
+  const 반fn = 상담.match(/function 반키정본_\(\)[\s\S]*?\n\}/)[0].replace(/\r\n/g, '\n');
+  const 반키 = new Function(반fn.slice(반fn.indexOf('{') + 1, 반fn.lastIndexOf('}')))();
+  assert.equal(반키.length, 24, `반 키가 ${반키.length}종 — 4실 24반 정본과 다르다`);
+  assert.ok(반키.includes('평일11A') && 반키.includes('평일18D') && 반키.includes('주말14D'), '반 키 형식이 정본과 다르다');
+
+  // 삭제 함수(샘플정리)는 유지보수용이다 — 익명 진입점에서 부르는 순간 공개 GET/POST가 행을 지운다
+  const 진입 = server.slice(server.indexOf('function doGet'), server.indexOf('function 크루_탭_'));
+  assert.ok(!/상담시트_샘플정리_|deleteRow/.test(진입), 'doGet/doPost가 삭제 경로에 닿는다');
 });

@@ -106,6 +106,10 @@ function doPost(e) {
       });
       sh.appendRow(row);
       props.setProperty(capKey, String(Number(props.getProperty(capKey) || 0) + 1));
+      /* 상담데이터입력에도 1행(학생ID 비움 — 상담시트.js 머리말). 원본은 crew_cards가 정본이므로
+       * 이관이 실패해도 접수 자체는 이미 성립했다 → 삼키고 로그만 남긴다(제출자에게 실패를 보이지 않는다). */
+      try { 상담시트_이관_(data, body.lang, serial); }
+      catch (e2) { console.warn('[크루카드] 상담시트 이관 실패(접수는 정상): ' + e2); }
     } finally {
       lock.releaseLock();
     }
