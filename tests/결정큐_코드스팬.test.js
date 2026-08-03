@@ -14,6 +14,15 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const Q = require('../tools/decision-queue.js');
+const { memoryDir } = require('../tools/memory-graph.js');
+
+/* [2026-08-04 · 내가 CI를 깨뜨린 자리] 메모리 정본은 **repo 밖**(`~/.claude/projects/…/memory`)에 산다.
+ * 그래서 「실저장소 검사」는 이 머신에서만 성립하고 CI 러너에는 그 폴더가 아예 없다 —
+ * 로컬 638 pass가 CI 초록의 증명이 못 됐다(08-04 CI 트랙의 「로컬에만 있는 환경에 기대면 CI가 검출한다」와 같은 계열).
+ * 🔑그래서 **탐지 능력은 픽스처가 전부 지고**, 실저장소 검사는 **폴더가 있을 때만** 도는 보너스로 낮춘다.
+ * 조용히 통과시키지 않고 skip으로 드러낸다 — 통과와 미실행은 같은 모양이면 안 된다. */
+const MEM = memoryDir();
+const HAS_MEMORY = fs.existsSync(MEM);
 
 /* extract()는 디렉터리를 받으므로 픽스처 볼트를 만든다 —
  * 실저장소로 검사하면 「버그가 아직 있을 것」을 요구하는 회귀가 된다(guard-must-check-result). */
@@ -60,8 +69,19 @@ test('기존 두 용법 판별은 그대로 — 줄머리 표시는 여전히 �
   assert.ok(items[0].text.includes('개원일 확정'));
 });
 
-test('실저장소: 이 도구의 회고 문단이 큐에 없다(거짓양성만 검사)', () => {
+test('실저장소: 이 도구의 회고 문단이 큐에 없다(거짓양성만 검사)', {
+  skip: HAS_MEMORY ? false : `메모리 정본이 이 머신에 없다(${MEM}) — repo 밖이라 CI에는 존재하지 않는다`,
+}, () => {
   const q = Q.build({ count: 3 });
   const ghost = q.ranked.filter((it) => /두 용법으로 쓰이는데/.test(it.text));
   assert.deepStrictEqual(ghost, [], '자기 결함 회고가 다시 결정으로 올라왔다');
+});
+
+/* 위 검사를 skip으로 낮춘 대신, **그 상황 자체**를 픽스처로 못박는다 —
+ * 「폴더가 없으면 조용히 0건」이 되면 클라우드 cron이 영영 침묵해도 아무도 모른다. */
+test('메모리 폴더가 없으면 크게 실패한다 — 빈 큐로 위장하지 않는다', () => {
+  const gone = path.join(os.tmpdir(), `dq-없는폴더-${process.pid}`);
+  assert.ok(!fs.existsSync(gone));
+  assert.throws(() => Q.extract(gone), /메모리 디렉터리를 못 찾음/,
+    '경로를 못 찾은 것은 「미결 0건」과 같은 모양이면 안 된다');
 });
