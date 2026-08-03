@@ -1024,7 +1024,11 @@ function writeIfChanged(sheet, row, col, values) {
   if (!values.length) return false;
   const rng = sheet.getRange(row, col, values.length, values[0].length);
   if (JSON.stringify(rng.getValues()) === JSON.stringify(values)) return false;
-  rng.setValues(values);
+  // [v9.153] 문자열 셀은 셀안전_(상담AI.js·런타임 호출=로드 순서 무관)로 소독해 쓴다 — 이 통로로 상담시트 원문(남의 글)이
+  //   profiles에 실리므로 `=` 시작 문자열이 라이브 수식이 되는 것을 채널에서 차단. Date·number는 제외(String 강제=타입 파괴).
+  //   비교는 소독 전 원문: 아포스트로피 접두는 저장 시 소비돼 getValues가 원문을 돌려주므로,
+  //   소독본으로 비교하면 그 블록이 매 실행 「다름」이 되어 [v9.25] 무변경 skip이 죽는다.
+  rng.setValues(values.map(r => r.map(v => typeof v === 'string' ? 셀안전_(v) : v)));
   return true;
 }
 
