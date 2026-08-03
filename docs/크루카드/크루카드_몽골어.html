@@ -3288,6 +3288,13 @@ section.page{
       if (c && c.getAttribute('data-column') && c.getAttribute('data-value'))
         out[c.getAttribute('data-column')] = c.getAttribute('data-value');
     });
+    // 동의(.consent .agree) — .opts 밖이라 위의 단일/다중 패스가 둘 다 못 본다.
+    // 동의 여부는 기록이 남아야 하는 칸이라 빠지면 시트에 빈칸으로 남는다(08-04 실측).
+    document.querySelectorAll('.consent .agree').forEach(g => {
+      const c = g.querySelector('input:checked');
+      if (c && c.getAttribute('data-column') && c.getAttribute('data-value'))
+        out[c.getAttribute('data-column')] = c.getAttribute('data-value');
+    });
     // meta
     out.submitted_at = new Date().toISOString();
     return out;
@@ -3343,7 +3350,8 @@ section.page{
 window.SYNK_ENDPOINT = window.SYNK_ENDPOINT || 'https://script.google.com/macros/s/AKfycbzzrNG2L1RUX93BN9pUHtrBM0q2cWucLtvD2smQsLz6mj9WPgoqn7xtq4oyFfMg-6ZLhQ/exec';
 (function(){
   var CFG = { url: (typeof window.SYNK_ENDPOINT === 'string' ? window.SYNK_ENDPOINT : '') };
-  /* 배포 후: <script>window.SYNK_ENDPOINT='https://script.google.com/macros/s/…/exec'</script> 를 이 블록 위에 두거나 아래 빈 문자열에 직접 붙여넣는다 */
+  /* 배포 URL은 위 줄에 직접 넣는다. ⚠ 이 주석 안에 스크립트 종료 태그를 문자로 쓰지 말 것 —
+     HTML 파서는 주석인지 모르고 거기서 블록을 끊는다(08-04 실사고: 제출 스크립트 전체가 죽었다). */
   var LANG = 'mn';
   var T = {"submit": "Илгээх", "submitting": "Илгээж байна…", "saved": "Хариулт энэ төхөөрөмжид түр хадгалагдана", "savedAt": "Түр хадгалагдсан · ", "done": "Илгээгдлээ · Картын дугаар ", "fail": "Илгээж чадсангүй — интернетээ шалгаад дахин дарна уу. Хариулт энэ төхөөрөмжид хадгалагдсан.", "noUrl": "Илгээх хаяг тохируулагдаагүй — хариулт зөвхөн энэ төхөөрөмжид хадгалагдана", "needName": "Нэрээ оруулна уу.", "needPhone": "Утасны дугаараа оруулна уу.", "needConsent": "Хувийн мэдээлэл цуглуулах зөвшөөрлийг (эхний асуулт) зөвшөөрсөн байх шаардлагатай.", "again": "Дахин илгээх"};
   var DRAFT_KEY = 'synk.crewcard.v14.draft.' + LANG;
