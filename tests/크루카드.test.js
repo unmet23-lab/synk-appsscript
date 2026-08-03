@@ -67,6 +67,8 @@ test('카드 HTML — 제출·자동저장·허니팟·퀴즈 배선', () => {
     assert.ok(html.includes('id="synkHp"'), `[${name}] 허니팟 입력 없음`);
     assert.ok(html.includes("form:'crew_card'"), `[${name}] 제출 페이로드 form 식별자 없음`);
     assert.ok(html.includes('hp: (document.getElementById'), `[${name}] 허니팟이 페이로드에 안 실린다`);
+    // 08-04 실측: charset 없는 POST는 한글·키릴이 U+FFFD로 깨져 저장된다 — 브라우저 기본값에 기대지 않는다
+    assert.ok(/'Content-Type':\s*'text\/plain;charset=UTF-8'/.test(html), `[${name}] 제출 fetch에 charset=UTF-8 명시가 없다 — 몽골어 학생 데이터가 깨질 수 있다`);
     assert.ok(!html.includes('크루카드_토큰') && !html.includes('SYNK_ENDPOINT.token'), `[${name}] 무토큰 결정 위반 — 클라이언트에 토큰 언급 잔재`);
     assert.ok(html.includes('quiz (.quiz-opts)'), `[${name}] 퀴즈 수집 패스 없음 — Q1~Q4가 시트에 안 간다`);
     assert.ok(html.includes('quiz single-select'), `[${name}] 퀴즈 단일선택 배선 없음`);
