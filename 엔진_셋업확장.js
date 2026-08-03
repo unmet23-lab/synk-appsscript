@@ -2483,7 +2483,7 @@ function sweepLessonCloseForm_(ss) {
     out.push([dstr(ts, tz), cls, lessonNo, week, String(r[3] || ''), sids.join(','), names.join(','),
       String(r[1] || '폼'), dstr(ts, tz, 'yyyy-MM-dd'), bad.length ? '미매칭' : '']);
   });
-  if (out.length) lc.getRange(lc.getLastRow() + 1, 1, out.length, LESSON_CLOSE_HEADERS.length).setValues(out);
+  if (out.length) lc.getRange(lc.getLastRow() + 1, 1, out.length, LESSON_CLOSE_HEADERS.length).setValues(행소독_(out)); // [v9.157] 진도·미발화자 이름은 강사 손입력 — 같은 시트에 profiles가 산다
   props.setProperty('마감폼_포인터', String(last)); // 적재 직후·메일 전 마감 — 메일 실패가 같은 응답을 재적재하지 않게
   if (miss.length && quotaOk(1)) {
     adminMail('[SYNK] 📋 차시 마감폼 — 이름 매칭 실패 ' + miss.length + '건',
@@ -3165,7 +3165,7 @@ function sweepLectureForm_(ss) {
     if (!sid) miss.push('- ' + nm + ' (강의 ' + lid + ') — 로스터 후보 ' + cands.length + '명');
     out.push([dstr(ts, tz), sid, nm, cls, lid, String(r[3] || ''), dstr(ts, tz, 'yyyy-MM-dd'), sid ? '' : '미매칭']);
   });
-  if (out.length) vw.getRange(vw.getLastRow() + 1, 1, out.length, LECTURE_VIEW_HEADERS.length).setValues(out);
+  if (out.length) vw.getRange(vw.getLastRow() + 1, 1, out.length, LECTURE_VIEW_HEADERS.length).setValues(행소독_(out)); // [v9.157] 이름·한줄요약은 학생 손입력(강의폼은 학생에게 배포된다)
   props.setProperty('강의폼_포인터', String(last)); // 적재 직후 마감 — 메일 실패가 같은 응답을 재적재하지 않게
   if (miss.length && quotaOk(1)) {
     adminMail('[SYNK] 온라인 강의 — 이름 매칭 실패 ' + miss.length + '건',
