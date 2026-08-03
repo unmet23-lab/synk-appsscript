@@ -147,3 +147,83 @@ test('격리 장부(테스트)에서는 git을 보지 않는다 (실 저장소 �
   const out = run(L, ['add', '실수', '격리 픽스처 신호']);
   assert.ok(/F00\d/.test(out), '격리 장부인데 실 저장소 번호대(F0NN 큰 값)를 받았다: ' + out.trim());
 });
+
+/* [2026-08-04] 채번 락 — 위 「훑기」 방어가 실제로 뚫린 뒤 추가됐다(F041이 두 개: 이 세션 것과 옆 세션 것).
+ * 훑기는 **이미 기록된** 번호만 본다 → 두 세션이 같은 순간에 훑으면 같은 답을 본다. 범위의 문제가 아니라
+ * 고르는 행위가 원자적이지 않다는 문제다. 그래서 bump-version과 같은 방식(태그 push 원자성)으로 예약한다.
+ *
+ * 이 검사는 **격리된 픽스처 저장소**(bare origin + 클론 2개)에서 돈다 — 실 저장소·네트워크에 기대면
+ * CI에서 반드시 깨지고, 무엇보다 회귀가 실 장부에 태그를 남기게 된다. git이 없으면 조용히 통과시키지 않고
+ * skip으로 드러낸다(통과와 미실행이 같은 모양이면 안 된다). */
+
+function git(cwd, args) {
+  return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+}
+
+/** bare origin 하나를 공유하는 작업본 2개를 만든다 — 두 세션이 같은 base에서 출발한 상황 그대로. */
+function mkFixtureRepos() {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'friction-lock-'));
+  const origin = path.join(base, 'origin.git');
+  git(base, ['init', '--bare', '-b', 'master', 'origin.git']);
+
+  const A = path.join(base, 'A');
+  fs.mkdirSync(A);
+  git(A, ['init', '-b', 'master']);
+  git(A, ['config', 'user.email', 'test@synk.local']);
+  git(A, ['config', 'user.name', 'test']);
+  const led = path.join(A, 'docs', '_ops');
+  fs.mkdirSync(led, { recursive: true });
+  fs.writeFileSync(path.join(led, '마찰신호.md'), HEAD, 'utf8');
+  git(A, ['add', '-A']);
+  git(A, ['commit', '-m', 'fixture']);
+  git(A, ['remote', 'add', 'origin', origin]);
+  git(A, ['push', '-u', 'origin', 'master']);
+
+  const B = path.join(base, 'B');
+  git(base, ['clone', origin, 'B']);
+  git(B, ['config', 'user.email', 'test@synk.local']);
+  git(B, ['config', 'user.name', 'test']);
+  return { origin, A, B };
+}
+
+/** 그 저장소를 루트로 삼아 도구를 돌린다 — SYNK_FRICTION_ROOT를 주면 락이 실제로 걸린다. */
+function runIn(repo, args) {
+  return execFileSync(process.execPath, [TOOL, ...args], {
+    encoding: 'utf8', stdio: 'pipe',
+    env: {
+      ...process.env,
+      SYNK_FRICTION_ROOT: repo,
+      SYNK_FRICTION_LEDGER: path.join(repo, 'docs', '_ops', '마찰신호.md'),
+    },
+  });
+}
+
+test('채번 락: 같은 base를 보는 두 작업본이 같은 번호를 받지 않는다 (F041 실물 충돌의 회귀)', (t) => {
+  let repos;
+  try { repos = mkFixtureRepos(); }
+  catch (e) { return t.skip('픽스처 저장소를 못 만들었다(git 없음?): ' + e.message); }
+
+  // A가 먼저 채번 → F003을 예약(origin에 태그가 올라간다)
+  const outA = runIn(repos.A, ['add', '실수', 'A 세션 신호']);
+  assert.match(outA, /F003/, 'A가 F003을 못 받았다: ' + outA.trim());
+
+  /* B는 A의 **장부 커밋을 보지 못한다**(A는 아직 커밋·push를 안 했다) — 훑기만으로는 F003이 그대로 나온다.
+   * 예약 태그가 있어야만 B가 F004로 밀린다. 이게 이 락이 막는 유일한 자리다. */
+  const outB = runIn(repos.B, ['add', '실수', 'B 세션 신호']);
+  assert.doesNotMatch(outB, /F003/, '충돌 재현 — B가 A와 같은 F003을 받았다(락이 안 걸렸다): ' + outB.trim());
+  assert.match(outB, /F004/, 'B가 F004를 못 받았다: ' + outB.trim());
+
+  const tags = git(repos.origin, ['tag', '-l']).split('\n').map((s) => s.trim()).filter(Boolean);
+  assert.deepEqual(tags.sort(), ['friction-F003', 'friction-F004'],
+    'origin에 예약 태그 2개가 남아야 한다(예약이 원격에 보증된 증거) — 실제: ' + tags.join(','));
+});
+
+test('채번 락은 실 저장소를 오염시키지 않는다 (격리 장부만 준 호출은 태그를 만들지 않는다)', () => {
+  const real = require(TOOL);
+  const before = execFileSync('git', ['tag', '-l', real.TAG_PREFIX + 'F*'],
+    { cwd: path.join(__dirname, '..'), encoding: 'utf8' }).trim();
+  run(mkLedger(), ['add', '실수', '격리 호출']);
+  const after = execFileSync('git', ['tag', '-l', real.TAG_PREFIX + 'F*'],
+    { cwd: path.join(__dirname, '..'), encoding: 'utf8' }).trim();
+  assert.equal(after, before, '격리 장부 호출이 실 저장소에 예약 태그를 남겼다 — 테스트가 기록을 오염시킨다');
+});
