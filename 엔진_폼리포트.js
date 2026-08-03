@@ -1106,8 +1106,12 @@ function importFormResponses() {
       if (narrative.length && colOf['📝자유서술→노션'] && colOf['📝자유서술→노션'] <= 59) { // [v9.19] v18.3: 📝노션이관→📝자유서술→노션
         rowArr[colOf['📝자유서술→노션'] - 1] = narrative.join('\n\n');
       }
-      consult.getRange(newRow, 1, 1, 59).setValues([rowArr]);
-      if (extArr) consult.getRange(newRow, 63, 1, extArr.length).setValues([extArr]); // [v9.66·리뷰 H1] 증분 구간 통째 1회 쓰기(60~62 건너뜀) — 개별 setValue였다면 행 재사용 시 옛 학생 값이 남았다
+      // [v9.157] 폼 답 = 외부인의 글 — '='·'+'·'-' 선두는 상담시트(수강·납입 동거)에서 라이브 수식이 된다.
+      //   행소독_(Code.js 공용 통로)로 문자열만 소독 — 생년월일 Date·등록일 ts는 타입 보존(Date 변환이 위에서
+      //   먼저 끝난 뒤라 파싱과 간섭 없음). profiles는 writeIfChanged 채널이 막지만 이 시트는 직기입이라
+      //   이 함수의 관문이 여기다(같은 시트에 쓰는 다른 경로는 각자의 관문을 통과해야 한다 — 크루카드 웹앱 등).
+      consult.getRange(newRow, 1, 1, 59).setValues(행소독_([rowArr]));
+      if (extArr) consult.getRange(newRow, 63, 1, extArr.length).setValues(행소독_([extArr])); // [v9.66·리뷰 H1] 증분 구간 통째 1회 쓰기(60~62 건너뜀) — 개별 setValue였다면 행 재사용 시 옛 학생 값이 남았다
 
       // 학생ID 직접 채번 (수식 비의존)
       maxSynk++;
@@ -1116,10 +1120,10 @@ function importFormResponses() {
 
       // form_responses 기록
       const frRow = fr.getLastRow() + 1;
-      fr.getRange(frRow, 1, 1, 4).setValues([[
+      fr.getRange(frRow, 1, 1, 4).setValues(행소독_([[
         'R' + String(frRow).padStart(3, '0'), ts,
-        ans['이름(한국어)'] || ans['이름(몽골어)'] || '(무명)', '폼 자동접수'
-      ]]);
+        ans['이름(한국어)'] || ans['이름(몽골어)'] || '(무명)', '폼 자동접수' // [v9.157] 이름도 폼 유래 — form_responses(본 시트, profiles 동거)도 같은 관문
+      ]]));
     });
 
     setState(st, '폼처리시각', newTs);

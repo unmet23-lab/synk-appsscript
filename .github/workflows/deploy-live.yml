@@ -1,0 +1,77 @@
+name: deploy-live
+
+# 커밋 메시지에 [배포]가 있으면 라이브(Apps Script)까지 반영한다.
+# 목적: 유호님 PC가 꺼져 있어도 폰(클라우드 세션)에서 코드 수정 → 라이브까지 갈 수 있게.
+#
+# 🔑 왜 「모든 push」가 아니라 「[배포] 표식」인가 — 이 저장소는 멀티 세션이다.
+#    모든 push에 걸면 옆 세션의 문서 커밋 하나가 라이브를 밀어버린다(의도하지 않은 배포).
+#    표식을 요구하면 배포는 여전히 「의도한 행위」로 남는다. 손 배포와 같은 무게.
+#    → 폰에서 "배포해줘" = 세션이 커밋 메시지에 [배포]를 넣거나, 빈 커밋 하나를 얹는다.
+#
+# 순서는 /deploy 스킬과 동일하게 유지한다 — 구문검사 → 테스트 → clasp push.
+# (보안 검토는 커밋 「전」 단계라 여기 없다. 그건 커밋을 만드는 세션이 /deploy로 수행한다.)
+#
+# ⚠ 라이브 타깃은 하나뿐이라 배포는 원리적으로 직렬 — concurrency로 동시 실행을 막는다.
+# ⚠ 시크릿이 없으면 「조용히 건너뛰지」 않고 실패시킨다.
+#    (통과와 미실행이 같은 모양이면 안 된다 — CLAUDE.md 신뢰성 조항)
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: clasp-live
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # workflow_dispatch(손 발화)이거나, 커밋 메시지에 [배포]가 있을 때만.
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[배포]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 0) 자격증명 시크릿 존재 확인
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          if [ -z "$CLASPRC_JSON" ]; then
+            echo "::error::CLASPRC_JSON 시크릿이 없다. 라이브 배포 불가 — 조용한 미배포를 막기 위해 실패로 끝낸다."
+            exit 1
+          fi
+          echo "시크릿 확인됨"
+
+      - name: 1) 구문 검사 (모든 .js)
+        run: |
+          set -e
+          for f in *.js; do
+            [ -e "$f" ] || continue
+            echo "checking $f"
+            node --check "$f"
+          done
+          node -e "JSON.parse(require('fs').readFileSync('appsscript.json','utf8')); console.log('appsscript.json OK')"
+
+      - name: 2) 안전 테스트 전량
+        run: node --test tests/*.test.js
+
+      - name: 3) clasp 인증 파일 생성
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          node -e "const j=require(process.env.HOME+'/.clasprc.json'); if(!j.tokens||!j.tokens.default||!j.tokens.default.refresh_token){console.error('clasprc 형식이 예상과 다르다'); process.exit(1)} console.log('clasprc 형식 OK')"
+
+      - name: 4) clasp 설치
+        run: npm install -g @google/clasp@3.3.0
+
+      - name: 5) 라이브 push
+        run: clasp push --force
+
+      - name: 6) 자격증명 삭제 (러너에 남기지 않는다)
+        if: always()
+        run: rm -f "$HOME/.clasprc.json"
