@@ -3252,7 +3252,7 @@ function onOpen() {
       //   PREVIEW_ 접두어만 건드리므로 학부모 성장 리포트 카드는 그대로다. 여러 번 눌러도 결과가 같다(멱등).
       .addItem('🔒 리포트카드 프리뷰 공개 링크 닫기', 'menuClosePreviewCardLinks')
       // [v9.142] 폴더를 잠그면 학부모 카드도 함께 죽는다(공개가 전부 폴더 상속이었다) — 카드마다 자기 링크를 붙여 되살린다.
-      .addItem('🩹 학부모 카드 링크 복구', 'menuRepairReportCardSharing')
+      .addItem('🔒 학생 파일 공개 링크 닫기', 'menuCloseStudentFileLinks') // [v9.155] 구 「🩹 복구」(=여는 함수)를 방향 반대로 교체
       .addSeparator()
       // [v9.131] 개원 준비 2종 — 이 둘을 안 하면 강사 브리핑의 조 편성표가 영구 공백이다(v9.130에서 화면이 이유를 말하게 했지만, 실행 경로가 없으면 소용없다).
       //   setSeasonStart는 인자가 필요해 ▶ 버튼으로 실행할 수 없다 → 날짜를 물어보는 프롬프트로 감싼다.

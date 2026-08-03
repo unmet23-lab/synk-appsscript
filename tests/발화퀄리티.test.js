@@ -328,10 +328,16 @@ test('음성 동의 게이트 — 동의 확인 없이는 녹음이 적재되지
   // 판정 불가(맵 null)를 통과로 바꾸면 게이트가 침묵으로 열린다 — 보류가 기본값이어야 한다
   assert.ok(/const state = consent \? \(consent\[sid\] \|\| ''\) : null/.test(sweep),
     '동의 맵을 못 읽었을 때 보류로 떨어지지 않는다');
-  // 게이트는 적재·공유전환·포인트보다 앞이어야 한다(뒤면 이미 저장된 뒤 막는 셈)
+  // 게이트는 적재·포인트보다 앞이어야 한다(뒤면 이미 저장된 뒤 막는 셈)
   const gate = sweep.indexOf("state !== 'yes'");
-  ['vOut.push(', 'pOut.push(', 'setSharing('].forEach((after) =>
+  ['vOut.push(', 'pOut.push('].forEach((after) =>
     assert.ok(sweep.indexOf(after) > gate, `게이트가 ${after}보다 뒤에 있다 — 이미 처리된 뒤 막힌다`));
+  /* [v9.156] 구 검사는 `setSharing(`도 순서 목록에 넣었다(공유 전환이 게이트 뒤인지). 이제 그 호출이
+   * **아예 없어야 한다** — 유호님 08-04 「B로 가자」 결정으로 미성년 녹음의 공개 전환을 폐지했다.
+   * 순서 검사를 부재 검사로 바꾼다: 순서만 보면 「게이트 뒤에서 다시 공개로 여는」 코드를 통과시킨다. */
+  const sweepCode = sweep.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  assert.ok(!/setSharing/.test(sweepCode),
+    'voiceSweep_가 녹음을 공개로 전환한다 — 미성년 목소리가 링크만으로 열린다(v9.156에서 폐지한 경로)');
   assert.ok(sweep.includes('held.length') && sweep.includes('adminMail'),
     '보류를 통지하지 않는다 — 학생 쪽에서 "왜 반영이 안 되지"가 미스터리로 남는다');
   assert.ok(!/DriveApp[\s\S]{0,80}remove|setTrashed/.test(sweep),
