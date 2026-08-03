@@ -21,9 +21,10 @@ description: SYNK 배포 파이프라인 — 구문검사(node --check) → 안�
    ```
    이어서 **안전 불변식 테스트**를 돌린다 — 구문은 멀쩡해도 실데이터를 지키는 불변식(야간작업 순서·브리핑 큐 보존·아카이브 8열·리포트 PNG 첨부 등)을 깨는 변경을 라이브 반영 전에 잡는다.
    ```bash
-   "/c/Program Files/nodejs/node.exe" --test tests/*.test.js
+   "/c/Program Files/nodejs/node.exe" tools/test-ci.js
    ```
    **`fail` 0이 아니면 배포 중단**(`todo`는 미구현 후속 과제 표시라 무시). 정상 리팩터로 마커 문자열이 바뀌어 실패하면 테스트를 함께 갱신하고 재실행한다.
+   > `node --test tests/*.test.js`가 아니라 **`tools/test-ci.js`를 쓴다.** 같은 스위트를 **빈 HOME·TZ=UTC**로 돌려 CI를 모사한다 — 로컬 머신에는 CI에 없는 것(로컬 시간대·홈의 메모리 정본·자격증명)이 있어서 **로컬 초록이 CI 초록을 뜻하지 않는다.** 2026-08-04에 두 세션이 각각 이 함정을 밟았고(F036·F039), 한 번은 **빨간 CI 위에서 라이브 배포가 나갔다** — clasp-guard는 로컬 스위트만 보므로 이 층은 게이트가 아니라 여기서 잡아야 한다. 급할 때 평소 러너로 돌렸다면 **보고에 "로컬 기준"이라고 층을 밝힌다.**
 3. **appsscript.json 검증**: `node -e "JSON.parse(require('fs').readFileSync('appsscript.json','utf8'))"` — 임시 webapp 설정 등 검증 잔재가 남아있지 않은지 눈으로도 확인.
 4. **보안 검토** — **반드시 커밋 전에.** `/security-review`는 *미커밋 변경분*을 읽으므로 커밋한 뒤엔 볼 것이 없다.
    ```bash
