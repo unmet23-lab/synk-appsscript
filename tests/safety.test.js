@@ -667,6 +667,70 @@ test('[v9.66] v18.4 증분 기입은 보호 구간(60~62열)을 건너뛰고 이
     'CONSULT_EXT_HEADERS 정본 배열이 변형됨 — 시트 헤더·폼 문항 제목과 함께 바꿔야 한다');
 });
 
+test('[v9.157] 폼 응답의 시트 직기입은 행소독_ 통로를 지난다 — 수식 인젝션 차단(문자열만·타입 보존)', () => {
+  // ── 통로 자체 ──
+  const gate = section('function 행소독_(rows)', 'function dstr(');
+  assert.ok(/typeof v === 'string'\s*\?\s*셀안전_\(v\)\s*:\s*v/.test(gate),
+    '행소독_이 문자열만 소독하지 않는다 — typeof 가드가 빠지면 생년월일 Date·포인트 숫자가 문자열화된다');
+  assert.ok(gate.includes('Array.isArray(r)'), '행소독_이 1차원(한 행) 입력을 처리하지 않는다');
+
+  // ── 적용된 결과 검사(guard-must-check-result): 폼 유래 직기입 4곳이 전부 통로를 지나야 한다 ──
+  const imp = section('function importFormResponses()', 'function setupStore()');
+  assert.ok(imp.includes('setValues(행소독_([rowArr]))'), '상담시트 1~59열 기입이 소독 통로를 지나지 않는다');
+  assert.ok(imp.includes('setValues(행소독_([extArr]))'), '상담시트 증분(63~) 기입이 소독 통로를 지나지 않는다');
+  assert.ok(/fr\.getRange\([\s\S]{0,60}setValues\(행소독_\(/.test(imp), 'form_responses 기입(이름=폼 유래)이 소독 통로를 지나지 않는다');
+  assert.equal(/setValues\(\[rowArr\]\)|setValues\(\[extArr\]\)|setValues\(\[\[\s*'R'/.test(imp), false,
+    '소독 없는 직기입 경로가 되살아났다');
+  // 스위프 3종 — 리드폼(공개 광고 CTA)·강의폼(학생 배포)·마감폼(강사). 전부 같은 스프레드시트에 profiles가 산다
+  //   구간은 함수 경계로 자른다 — 「포인터 저장」 같은 문구 표식은 클램프용으로 함수 앞부분에도 나와서
+  //   적재 코드 앞에서 잘리고, 그러면 가드가 통과해도 아무것도 검사하지 않은 셈이 된다(실제로 그렇게 잘렸다).
+  const fnOf = (name) => {
+    const s = code.indexOf('function ' + name + '(');
+    assert.notEqual(s, -1, name + ' 정의를 찾지 못함');
+    const e = code.indexOf('\nfunction ', s + 10);
+    return code.slice(s, e === -1 ? code.length : e);
+  };
+  //   폼 스위프 전수 — 공개 폼(리드·레벨테스트)·학생 배포 폼(강의)·강사 폼(마감·약점·학업·결석).
+  //   목적지가 전부 profiles·leads와 같은 스프레드시트다. 하나라도 빠지면 그 입구로 같은 공격이 그대로 들어온다.
+  const sweeps = [
+    ['sweepLeadForm_', 'leads(광고 리드폼)'],
+    ['sweepLevelTest_', 'leads(레벨테스트 — 공개 마케팅 폼)'],
+    ['sweepLectureForm_', 'lecture_views(강의폼)'],
+    ['sweepLessonCloseForm_', 'lesson_close(차시 마감폼)'],
+    ['sweepTeacherMemoForm_', 'student_errors(약점 메모폼)'],
+    ['sweepAcademicForm_', 'academic_log(학업폼)'],
+    ['sweepAbsenceForm_', 'absence_followup(결석 연락폼)'],
+  ];
+  sweeps.forEach(([name, label]) => {
+    const body = fnOf(name);
+    assert.ok(/\.(?:setValues|appendRow)\(행소독_\(/.test(body), label + ' 적재가 소독 통로를 지나지 않는다 — 폼 응답이 raw로 실린다');
+    assert.equal(/\.setValues\((?:out|add)\)|\.appendRow\(\[/.test(body), false, label + '에 소독 없는 적재가 남아 있다');
+  });
+
+  // ── 탐지 능력은 픽스처로 못박는다 — 실제 셀안전_ 정의를 평가(정의 이동·문자 집합 약화 감지) ──
+  const talkSrc = fs.readFileSync(path.join(ROOT, '상담AI.js'), 'utf8');
+  const defFrom = talkSrc.indexOf('function 셀안전_');
+  const defTo = talkSrc.indexOf('function 상담_기록_(', defFrom); // 끝 표식은 심볼 — '\n}' 앵커는 본문에 블록이 생기면 잘린다
+  assert.ok(defFrom >= 0 && defTo > defFrom, '상담AI.js에서 셀안전_ 정의를 찾지 못함 — 런타임 전역 참조가 깨진다');
+  const cellSafe = new Function(talkSrc.slice(defFrom, defTo) + '\nreturn 셀안전_;')();
+  const safe_ = (v) => (typeof v === 'string' ? cellSafe(v) : v);
+  // 시트가 수식으로 평가하는 선두는 = + - 3종. `-IMPORTDATA(...)`는 `=-IMPORTDATA(...)`로 평가돼 URL을 그대로 페치한다
+  //   → 문자 집합을 /^[=+]/로 좁히는 개정이 오면 여기서 죽는다(그 전엔 = + 두 건만 검사해 절반이 열려 있었다).
+  [['=IMPORTRANGE("k","A1")', '= 선두(유출 수식)'],
+   ['+82 10-1234-5678', '+ 선두(연락처 답)'],
+   ['-IMPORTDATA("https://x")', '- 선두(음수처럼 보이는 수식)'],
+   ['@SUM(A1)', '@ 선두'],
+   ['\tfoo', '탭 선두'],
+   ['\rfoo', '캐리지리턴 선두']].forEach(([v, label]) => {
+    assert.equal(safe_(v), "'" + v, label + '가 무력화되지 않는다');
+  });
+  assert.equal(safe_('Бат-Эрдэнэ'), 'Бат-Эрдэнэ', '정상 몽골 이름이 변형되면 안 된다');
+  assert.equal(safe_("'=이미소독"), "'=이미소독", '멱등하지 않다 — 이미 소독된 값에 접두가 겹친다');
+  const d = new Date(2026, 0, 15);
+  assert.equal(safe_(d), d, 'Date(생년월일 변환·등록일 ts)는 소독을 건너뛰고 타입이 보존돼야 한다');
+  assert.equal(safe_(3922), 3922, '숫자(포인트·수강료)가 문자열로 강제되면 안 된다');
+});
+
 test('[v9.66] 상담 마이그레이션은 멱등 — 스키마 가드가 앞서고, 있는 것은 전부 건너뛴다', () => {
   const mig = section('function migrateConsultV184()', 'function createLeadForm()');
   // 순서: 60열=학생ID 스키마 가드 → 시트 헤더 존재 스킵 → 폼 제목 존재 스킵 → 예능 선택지 존재 스킵

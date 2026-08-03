@@ -1204,7 +1204,10 @@ function sweepLeadForm_(ss) {
       String(r[3] || '기타'), '', '', '', '', '', '', String(r[4] || ''), '리드폼']);
   });
   if (out.length) {
-    ld.getRange(ld.getLastRow() + 1, 1, out.length, 12).setValues(out);
+    // [v9.157] 광고 리드폼 = 공개 폼(페이스북·인스타 CTA) — 이름·연락처·메모가 응답자의 글 그대로다.
+    //   leads는 profiles(학생·보호자 연락처)와 같은 스프레드시트라, '=' 선두 한 줄이면 그 시트가 스스로
+    //   IMPORTDATA로 개인정보를 밖으로 보낸다. 10분 스위프라 상시 열린 입구였다.
+    ld.getRange(ld.getLastRow() + 1, 1, out.length, 12).setValues(행소독_(out));
     adminMail('[SYNK] 📥 새 리드 ' + out.length + '건(광고 리드폼)', out.map(o => '· ' + o[1] + ' (' + o[3] + ') ' + o[2]).join('\n') + '\n\nleads 시트에서 체험 일정을 잡아주세요.');
   }
   props.setProperty('리드폼_포인터', String(last));
@@ -1357,7 +1360,7 @@ function sweepTeacherMemoForm_(ss) {
     out.push([dstr(ts, tz), sid, cls, String(r[4] || '기타'), memo, String(r[1] || '폼'), ts, ok ? '' : '미매칭']);
     if (!ok) miss.push('· ' + name + ' (' + (r[2] || '반 미상') + ') — 로스터 후보 ' + cands.length + '명 · 메모: ' + memo.slice(0, 40));
   });
-  if (out.length) se.getRange(se.getLastRow() + 1, 1, out.length, 8).setValues(out);
+  if (out.length) se.getRange(se.getLastRow() + 1, 1, out.length, 8).setValues(행소독_(out)); // [v9.157] 메모=강사 자유 서술
   props.setProperty('약점메모폼_포인터', String(last)); // [v9.74·리뷰 M5 동반 수리] 적재 직후·메일 전 마감 — 메일 실패 시 중복 적재 차단
   if (miss.length) adminMail('[SYNK] 🧩 약점 메모 미매칭 ' + miss.length + '건',
     miss.join('\n') + '\n\nstudent_errors 시트에서 해당 행의 student_id를 채우고 상태(H열)의 "미매칭"을 지우면 다음 계산부터 브리핑·AI에 반영됩니다.');
@@ -1407,7 +1410,7 @@ function sweepAcademicForm_(ss) {
       memo + (ok ? '' : (memo ? ' · ' : '') + '미매칭:' + name), String(r[1] || '폼')]);
     if (!ok) miss.push('· ' + name + ' (' + (r[2] || '반 미상') + ') — 로스터 후보 ' + cands.length + '명 · academic_log에 sid 공란으로 적재됨(student_id를 채우면 다음 계산부터 차트·월보 반영)');
   });
-  if (out.length) al.getRange(al.getLastRow() + 1, 1, out.length, 7).setValues(out);
+  if (out.length) al.getRange(al.getLastRow() + 1, 1, out.length, 7).setValues(행소독_(out)); // [v9.157] 비고=강사 자유 서술
   props.setProperty('학업폼_포인터', String(last)); // [리뷰 M5] 적재 직후·메일 전 마감 — 메일 실패가 같은 응답을 재적재(모의 Δ 왜곡)하지 않게
   if (miss.length) adminMail('[SYNK] 📊 학업 기록 확인 필요 ' + miss.length + '건', miss.join('\n'));
 }
@@ -1472,7 +1475,7 @@ function sweepAbsenceForm_(ss) {
     else if (!closed && recentIdx < 0) miss.push('· ' + name + ' (' + (r[2] || '반 미상') + ') — 연락 기록은 남겼으나 대응하는 결석 감지 행이 없습니다. 그 반의 출석 1탭이 그날 들어왔는지 확인하세요(1탭이 없으면 결석 판정 자체가 안 열립니다)');
   });
   if (cur.length) writeIfChanged(sh, 2, 1, cur);                                    // 마감 반영(변경 없으면 쓰기 0)
-  if (add.length) sh.getRange(sh.getLastRow() + 1, 1, add.length, W).setValues(add);
+  if (add.length) sh.getRange(sh.getLastRow() + 1, 1, add.length, W).setValues(행소독_(add)); // [v9.157] 갱신(writeIfChanged)만 소독되고 신규 append는 무방비였다 — 한 함수 안에서 방어가 갈리던 자리
   props.setProperty('결석폼_포인터', String(last)); // 적재 직후·메일 전 마감 — 메일 실패가 같은 응답을 재적재하지 않게
   if (miss.length) adminMail('[SYNK] 🔁 결석 연락 기록 확인 필요 ' + miss.length + '건', miss.join('\n'));
 }
@@ -2288,7 +2291,8 @@ function sweepLevelTest_() {
       'SYNK LAB-д тохирох анги: ' + lvl.n + ' анги.\nДэлгэрэнгүй зөвлөгөөг зөвлөх багштай холбогдоорой!\n\n(한국어 요약) ' + nm + '님의 레벨은 ' + lvl.n + ' — ' + lvl.d + '.';
     if (email && quotaOk(1)) MailApp.sendEmail(email, '[SYNK LAB] 📊 ' + nm + ' — Түвшин тогтоох тестийн үр дүн (레벨 진단 리포트)',
       report + '\n\n—\nSYNK LAB · Улаанбаатар\n무료 상담·체험 신청은 이 메일에 회신하시면 됩니다. (Үнэгүй зөвлөгөө авахыг хүсвэл энэ имэйлд хариулаарай!)');
-    ld.appendRow([dstr(r[0] instanceof Date ? r[0] : new Date(), tz), nm, phone, '레벨테스트', '', '', '', '', '', '', '점수 ' + score + '/15 · ' + lvl.n + (email ? ' · ' + email : ''), '레벨테스트']);
+    // [v9.157] 레벨테스트도 공개 마케팅 폼(FB·상담에 URL 배포) — 리드폼과 목적지(leads)·위협이 같다
+    ld.appendRow(행소독_([dstr(r[0] instanceof Date ? r[0] : new Date(), tz), nm, phone, '레벨테스트', '', '', '', '', '', '', '점수 ' + score + '/15 · ' + lvl.n + (email ? ' · ' + email : ''), '레벨테스트']));
     props.setProperty('레벨테스트_포인터', String(from + i + 1));
     done++;
   }
