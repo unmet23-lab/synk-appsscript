@@ -160,11 +160,14 @@ function voiceSweep_(ss) {
     if (!fileUrl) return;
     const mission = cMission >= 0 ? String(r[cMission] || '').trim() : '';
     const fid = (fileUrl.match(/[?&]id=([-\w]+)/) || fileUrl.match(/\/d\/([-\w]+)/) || [])[1] || '';
-    // 학부모 메일·앱 재생을 위해 링크 공개(링크를 아는 사람만) — 실패해도 기록은 남긴다
-    if (fid) {
-      try { DriveApp.getFileById(fid).setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); }
-      catch (e) { Logger.log('공유 전환 실패(' + sid + '): ' + e); }
-    }
+    /* [v9.155] 🔒 공개 전환을 **하지 않는다**(유호님 08-04 「B로 가자」 결정 · 근거 = docs/개인정보처리방침_초안_v1.md §0-B).
+     *   구 설계는 앱 재생을 위해 학생 녹음을 ANYONE_WITH_LINK로 열었다. 그런데 이 파일은 **미성년의 목소리**이고
+     *   코드 스스로 「몽골법상 생체정보 계열로 읽힐 수 있다」고 적어 뒀다(엔진_폼리포트.js VOICE_RETENTION_MONTHS 주석).
+     *   보관이 무기한이라 공개도 무기한이 되고, Drive 공개 링크에는 만료가 없어 한 번 새면 영구다.
+     *   ▣ 대체 경로는 이미 있다 — **전사문**(v9.107). 그때 코드가 적은 판단이 그대로 근거가 된다:
+     *     「링크는 눌러야 비교되고, 두 파일을 번갈아 듣는 사람은 거의 없다. 전사문이 있으면 눈으로 한 번에 대비된다.」
+     *     즉 성장 카드의 값은 재생이 아니라 대비였고, 그 값은 링크 없이도 그대로 산다(buildVoiceGrowthCards_ 참조).
+     *   ▣ 원본은 지우지 않는다 — 학원 내부 자산(피드백·AI 학습)이고 동의 범위 안이다. 다만 **밖에서 열리지 않는다.** */
     vOut.push([sid, ts, mission, fileUrl, fid, new Date()]);
     const key = dstr(ts, tz) + '|' + sid;
     if (!givenKey[key]) { // 하루 1회만 지급(여러 번 제출해도 기록은 전부, 포인트는 1회)
@@ -540,10 +543,14 @@ function buildVoiceGrowthCards_(ss) {
      *   두 파일을 번갈아 듣는 사람은 거의 없다. 전사문이 있으면 **눈으로 한 번에 대비**된다
      *   ("처음엔 이렇게 말했고, 오늘은 이렇게 말한다") — STT가 성장 서사에 실제로 값을 내는 지점.
      *   전사가 없는 구간(미설정·실패·포맷 미지원)에서는 그 줄만 조용히 빠지고 카드는 그대로 산다. */
+    /* [v9.155] 🔒 `[듣기](url)` 링크 제거 — 그 URL이 곧 공개 링크였다(위 voiceSweep_ 참조).
+     *   v9.107이 전사문을 넣으며 적은 판단이 이 제거의 근거다: **값은 재생이 아니라 대비**이고,
+     *   전사문이 그 대비를 눈으로 한 번에 보여준다. 링크를 빼도 카드의 값은 그대로 남는다.
+     *   ⚠ 전사가 아직 없는 구간(STT 미설정·실패)에서는 날짜·미션만 남는다 — 그래도 「며칠의 거리」는 산다. */
     const q = (t) => t ? '\n> “' + (t.length > 140 ? t.slice(0, 140) + '…' : t) + '”' : '';
     return ['## 🎧 나의 목소리 타임랩스\n\n' +
-      '**' + d1 + ' 처음의 나** — [듣기](' + s.first.url + ')' + (s.first.mission ? ' · ' + s.first.mission : '') + q(s.first.text) + '\n\n' +
-      '**' + d2 + ' 오늘의 나** — [듣기](' + s.last.url + ')' + (s.last.mission ? ' · ' + s.last.mission : '') + q(s.last.text) + '\n\n' +
+      '**' + d1 + ' 처음의 나**' + (s.first.mission ? ' · ' + s.first.mission : '') + q(s.first.text) + '\n\n' +
+      '**' + d2 + ' 오늘의 나**' + (s.last.mission ? ' · ' + s.last.mission : '') + q(s.last.text) + '\n\n' +
       days + '일의 거리만큼 목소리가 자랐어요. 다음 무대에서 또 만나요! 🎤'];
   });
   const col = tbProfileCol_(pf, '목소리성장카드');
