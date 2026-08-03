@@ -71,6 +71,30 @@ test('의도적 예외는 BYPASS로만 열린다 (우회가 눈에 보이게)', 
   assert.equal(가드('git add -A').차단, true, 'BYPASS 없이 통과하면 게이트가 없는 것과 같다');
 });
 
+test('git clean을 막는다 — 미추적 파일은 복구 경로가 0이다 (F025)', () => {
+  [
+    'git clean -fd',
+    'git clean -f',
+    'git clean -fdx',
+    'git clean -fd codex/',   // 경로를 좁혀도 남의 신작을 지우는 성질은 그대로다
+  ].forEach((c) => {
+    const r = 가드(c);
+    assert.ok(r.차단, '막지 못했다: ' + c);
+    assert.ok(/미추적|dry-run/.test(r.사유), '차단 사유에 원리·대안이 없다: ' + c);
+  });
+});
+
+test('git clean의 안전한 형태는 통과한다 (과잉 차단은 BYPASS 습관을 만든다)', () => {
+  [
+    'git clean -n',                          // dry-run — 지우지 않는다
+    'git clean --dry-run -d',
+    'GIT_SCOPE_BYPASS=1 git clean -fd',      // 의식적 우회
+    'git commit -m "docs: git clean 사고 기록" -- docs/a.md',  // 메시지에 적기만 한 것
+  ].forEach((c) => {
+    assert.equal(가드(c).차단, false, '안전한 명령을 막았다: ' + c);
+  });
+});
+
 test('훅이 settings.json에 실제로 등록돼 있다 (파일만 있고 안 불리면 없는 것과 같다)', () => {
   const s = JSON.parse(fs.readFileSync(path.join(ROOT, '.claude', 'settings.json'), 'utf8'));
   const pre = (s.hooks && s.hooks.PreToolUse) || [];
