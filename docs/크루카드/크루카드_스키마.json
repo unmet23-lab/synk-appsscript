@@ -1,0 +1,1079 @@
+{
+  "schema_version": "1.0.0",
+  "source": "SYNK LAB Crew Dossier v10.html",
+  "generated_at": "2026-08-01",
+  "notes": {
+    "column_style": "snake_case (English)",
+    "form_language": "Korean (한국어)",
+    "multi_select_storage": "Sheet에서는 각 옵션별 컬럼 분리 후 TRUE/FALSE로 저장 (Google Form 자동 방식)",
+    "intensity_scale": "1~5 정수 (약함=1, 강함=5)",
+    "sensitive_section": "재정 계획(finance_*)은 유학 희망 시에만 작성 — required: false + condition_note"
+  },
+  "meta_fields": [
+    {
+      "field_id": "submitted_at",
+      "label": "제출 일시",
+      "type": "timestamp",
+      "column": "submitted_at",
+      "auto": true,
+      "note": "Sheet 자동 기록 (Apps Script)"
+    },
+    {
+      "field_id": "ref_serial",
+      "label": "Ref 시리얼",
+      "type": "text",
+      "column": "ref_serial",
+      "auto": true,
+      "note": "SL-YYYYMMDD-NNN"
+    },
+    {
+      "field_id": "advisor",
+      "label": "담당 상담사",
+      "type": "text",
+      "column": "advisor",
+      "auto": false,
+      "source": "Page 01 · 담당 크루"
+    },
+    {
+      "field_id": "class_name",
+      "label": "반 이름",
+      "type": "text",
+      "column": "class_name",
+      "auto": false,
+      "source": "Page 01 · Class · 반 이름"
+    },
+    {
+      "field_id": "reg_year_month",
+      "label": "등록 년월",
+      "type": "text",
+      "column": "reg_year_month",
+      "auto": false,
+      "source": "Page 01 · YYYY.MM"
+    },
+    {
+      "field_id": "consent_privacy",
+      "label": "개인정보 수집·이용 동의",
+      "type": "single",
+      "column": "consent_privacy",
+      "required": true,
+      "options": [
+        "동의합니다",
+        "동의하지 않습니다"
+      ]
+    },
+    {
+      "field_id": "consent_media",
+      "label": "초상권·컨텐츠 활용 동의",
+      "type": "single",
+      "column": "consent_media",
+      "required": true,
+      "options": [
+        "동의합니다",
+        "동의하지 않습니다"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "section_id": "profile",
+      "page": "02 Profile",
+      "label": "기본 프로필",
+      "fields": [
+        {
+          "field_id": "name_mn",
+          "label": "이름 (몽골어)",
+          "type": "text",
+          "column": "name_mn"
+        },
+        {
+          "field_id": "name_kr",
+          "label": "이름 (한국어)",
+          "type": "text",
+          "column": "name_kr"
+        },
+        {
+          "field_id": "birthdate",
+          "label": "생년월일",
+          "type": "date",
+          "column": "birthdate",
+          "format": "YYYY-MM-DD"
+        },
+        {
+          "field_id": "gender",
+          "label": "성별",
+          "type": "single",
+          "column": "gender",
+          "options": [
+            "남",
+            "여"
+          ]
+        },
+        {
+          "field_id": "phone",
+          "label": "연락처",
+          "type": "phone",
+          "column": "phone"
+        },
+        {
+          "field_id": "sns",
+          "label": "SNS · Facebook/Instagram",
+          "type": "text",
+          "column": "sns",
+          "required": false
+        },
+        {
+          "field_id": "email",
+          "label": "이메일",
+          "type": "email",
+          "column": "email"
+        },
+        {
+          "field_id": "residence",
+          "label": "거주지역",
+          "type": "text",
+          "column": "residence"
+        },
+        {
+          "field_id": "edu_status",
+          "label": "현재 학적",
+          "type": "single",
+          "column": "edu_status",
+          "options": [
+            "재학",
+            "졸업",
+            "휴학"
+          ]
+        },
+        {
+          "field_id": "edu_level",
+          "label": "최종 학력",
+          "type": "single",
+          "column": "edu_level",
+          "options": [
+            "고등학교",
+            "전문대",
+            "대학교",
+            "대학원"
+          ]
+        },
+        {
+          "field_id": "school",
+          "label": "학교명",
+          "type": "text",
+          "column": "school",
+          "required": false
+        },
+        {
+          "field_id": "major",
+          "label": "전공",
+          "type": "text",
+          "column": "major",
+          "required": false
+        },
+        {
+          "field_id": "topik_level",
+          "label": "TOPIK 현재 수준",
+          "type": "single",
+          "column": "topik_level",
+          "options": [
+            "미응시",
+            "초급 1~2급",
+            "중급 3~4급",
+            "고급 5~6급"
+          ]
+        },
+        {
+          "field_id": "korean_level",
+          "label": "한국어 회화",
+          "type": "single",
+          "column": "korean_level",
+          "options": [
+            "완전 초보",
+            "기초",
+            "초중급",
+            "중급",
+            "고급"
+          ]
+        },
+        {
+          "field_id": "english_test",
+          "label": "영어 성적",
+          "type": "multi",
+          "column_prefix": "english_test",
+          "options": [
+            "없음",
+            "TOEIC",
+            "IELTS",
+            "TOEFL",
+            "기타"
+          ]
+        },
+        {
+          "field_id": "english_level",
+          "label": "영어 회화",
+          "type": "single",
+          "column": "english_level",
+          "options": [
+            "상",
+            "중",
+            "하"
+          ]
+        },
+        {
+          "field_id": "occupation",
+          "label": "현재 직업 상태",
+          "type": "single",
+          "column": "occupation",
+          "options": [
+            "학생",
+            "재직 중",
+            "구직 중",
+            "기타"
+          ]
+        },
+        {
+          "field_id": "living",
+          "label": "거주 형태",
+          "type": "single",
+          "column": "living",
+          "options": [
+            "부모 · 가족",
+            "자취 · 독립",
+            "기숙사",
+            "친척집"
+          ]
+        },
+        {
+          "field_id": "daily_hours",
+          "label": "하루 학습 가능 시간",
+          "type": "single",
+          "column": "daily_hours",
+          "options": [
+            "1~2 시간",
+            "3~4 시간",
+            "5~6 시간",
+            "7 시간 이상"
+          ]
+        },
+        {
+          "field_id": "peak_focus",
+          "label": "가장 집중되는 시간대",
+          "type": "single",
+          "column": "peak_focus",
+          "options": [
+            "아침 05–09",
+            "오전 09–13",
+            "오후 13–18",
+            "저녁 18–22",
+            "심야 22–02"
+          ]
+        },
+        {
+          "field_id": "study_space",
+          "label": "학습 공간",
+          "type": "single",
+          "column": "study_space",
+          "options": [
+            "독방 · 조용함",
+            "공용 · 다소 소음",
+            "카페 · 이동 중"
+          ]
+        },
+        {
+          "field_id": "family_support",
+          "label": "가족의 유학 지지도",
+          "type": "single",
+          "column": "family_support",
+          "options": [
+            "매우 지지",
+            "지지",
+            "중립",
+            "망설임"
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "mission",
+      "page": "03 Mission",
+      "label": "핵심 비전 · Why Korea",
+      "fields": [
+        {
+          "field_id": "vision_topik",
+          "label": "TOPIK 단기 고득점",
+          "type": "intensity_1_5",
+          "column": "vision_topik_intensity"
+        },
+        {
+          "field_id": "vision_university",
+          "label": "한국 유명 대학 · 대학원 진학",
+          "type": "intensity_1_5",
+          "column": "vision_university_intensity"
+        },
+        {
+          "field_id": "vision_career",
+          "label": "한국 취업 · 전문직 비자",
+          "type": "intensity_1_5",
+          "column": "vision_career_intensity"
+        },
+        {
+          "field_id": "vision_kculture",
+          "label": "K-POP · 댄스 · K-뷰티 · 미디어",
+          "type": "intensity_1_5",
+          "column": "vision_kculture_intensity"
+        },
+        {
+          "field_id": "vision_native",
+          "label": "원어민 수준 일상 회화",
+          "type": "intensity_1_5",
+          "column": "vision_native_intensity"
+        },
+        {
+          "field_id": "why_korea",
+          "label": "왜 한국인가",
+          "type": "multi",
+          "column_prefix": "why_korea",
+          "options": [
+            "K-POP · 아이돌 문화",
+            "K-드라마 · 영화",
+            "교육 수준 · 명문 대학",
+            "한국 기업 취업 기회",
+            "몽골과 가까운 거리",
+            "친척 · 지인이 한국에",
+            "치안 · 안전한 사회",
+            "첨단 IT · 스마트 시티",
+            "K-뷰티 · 패션",
+            "의료 · 복지 시스템",
+            "한식 · 식문화",
+            "비자 · 이민 문호"
+          ]
+        },
+        {
+          "field_id": "why_now_story",
+          "label": "한국 유학, 왜 지금인가요?",
+          "type": "paragraph",
+          "column": "why_now_story",
+          "required": false,
+          "max_length": 200
+        },
+        {
+          "field_id": "worry",
+          "label": "가장 걱정되는 것",
+          "type": "multi",
+          "column_prefix": "worry",
+          "options": [
+            "언어의 벽 · 못 알아들음",
+            "외로움 · 향수병",
+            "문화 충격 · 관계",
+            "학비 · 생활비 부담",
+            "비자 거절 가능성",
+            "차별 · 편견 경험",
+            "가족과의 이별",
+            "공부 강도 · 성적 압박",
+            "건강 · 식사 · 기후",
+            "진로 · 취업 불확실"
+          ]
+        },
+        {
+          "field_id": "future_10y",
+          "label": "10년 후 나의 무대",
+          "type": "single",
+          "column": "future_10y",
+          "options": [
+            "한국 정착",
+            "몽골 복귀",
+            "제3국 진출",
+            "아직 미정"
+          ]
+        },
+        {
+          "field_id": "topik_target",
+          "label": "TOPIK 목표 급수",
+          "type": "single",
+          "column": "topik_target",
+          "options": [
+            "1~2급 초급",
+            "3~4급 중급",
+            "5~6급 고급"
+          ]
+        },
+        {
+          "field_id": "success_definition",
+          "label": "나에게 '성공한 유학'이란?",
+          "type": "text",
+          "column": "success_definition",
+          "required": false
+        }
+      ]
+    },
+    {
+      "section_id": "korea_visa",
+      "page": "04 Visa",
+      "label": "한국 경험 & 비자",
+      "fields": [
+        {
+          "field_id": "visited_korea",
+          "label": "한국 방문 경험",
+          "type": "single",
+          "column": "visited_korea",
+          "options": [
+            "있음",
+            "없음"
+          ]
+        },
+        {
+          "field_id": "recent_visit",
+          "label": "최근 방문 시기·목적",
+          "type": "text",
+          "column": "recent_visit",
+          "required": false,
+          "condition": "visited_korea = 있음"
+        },
+        {
+          "field_id": "total_stay",
+          "label": "총 체류 기간",
+          "type": "text",
+          "column": "total_stay",
+          "required": false,
+          "condition": "visited_korea = 있음"
+        },
+        {
+          "field_id": "korea_tie",
+          "label": "한국 지인 · 연고",
+          "type": "single",
+          "column": "korea_tie",
+          "options": [
+            "있음",
+            "없음"
+          ]
+        },
+        {
+          "field_id": "visa_history",
+          "label": "과거 신청 · 발급 받은 비자 유형",
+          "type": "multi",
+          "column_prefix": "visa_history",
+          "options": [
+            "C-3 단기방문",
+            "D-4 어학연수",
+            "D-2 유학",
+            "H-2 방문취업",
+            "F-1 · F-4 재외동포",
+            "없음"
+          ]
+        },
+        {
+          "field_id": "visa_target",
+          "label": "졸업 후 목표 취업 · 장기 체류 비자",
+          "type": "multi",
+          "column_prefix": "visa_target",
+          "options": [
+            "D-10 구직",
+            "E-7 특정활동 (전문직)",
+            "E-9 비전문 취업",
+            "D-8 · D-9 창업 · 무역",
+            "F-2 거주 (점수제)",
+            "F-5 영주",
+            "미정 · 상담 필요"
+          ]
+        },
+        {
+          "field_id": "visa_denied",
+          "label": "비자 거절 경험",
+          "type": "single",
+          "column": "visa_denied",
+          "options": [
+            "있음",
+            "없음"
+          ]
+        },
+        {
+          "field_id": "visa_denied_reason",
+          "label": "거절 사유 (해당 시 기재)",
+          "type": "paragraph",
+          "column": "visa_denied_reason",
+          "required": false,
+          "condition": "visa_denied = 있음"
+        },
+        {
+          "field_id": "exposure_drama",
+          "label": "K-드라마 · 영화",
+          "type": "intensity_1_5",
+          "column": "exposure_drama_intensity"
+        },
+        {
+          "field_id": "exposure_kpop",
+          "label": "K-POP · 음악",
+          "type": "intensity_1_5",
+          "column": "exposure_kpop_intensity"
+        },
+        {
+          "field_id": "exposure_shortform",
+          "label": "유튜브 · 틱톡 · 예능",
+          "type": "intensity_1_5",
+          "column": "exposure_shortform_intensity"
+        },
+        {
+          "field_id": "exposure_real_speaker",
+          "label": "한국인 친구 · 원어민 대화",
+          "type": "intensity_1_5",
+          "column": "exposure_real_speaker_intensity"
+        },
+        {
+          "field_id": "exposure_study_mat",
+          "label": "교재 · 문법서 · 학습 앱",
+          "type": "intensity_1_5",
+          "column": "exposure_study_mat_intensity"
+        },
+        {
+          "field_id": "fav_artist",
+          "label": "가장 좋아하는 아티스트 · 배우",
+          "type": "text",
+          "column": "fav_artist",
+          "required": false
+        },
+        {
+          "field_id": "fav_drama",
+          "label": "인상 깊었던 드라마 · 영화",
+          "type": "text",
+          "column": "fav_drama",
+          "required": false
+        },
+        {
+          "field_id": "fav_place",
+          "label": "가고 싶은 장소 · 도시",
+          "type": "text",
+          "column": "fav_place",
+          "required": false
+        },
+        {
+          "field_id": "local_activity",
+          "label": "몽골 내 한국 관련 활동",
+          "type": "multi",
+          "column_prefix": "local_activity",
+          "options": [
+            "세종학당 수강",
+            "한국어능력시험 준비반",
+            "한국 기업 아르바이트",
+            "K-POP 팬클럽 · 커버댄스",
+            "없음"
+          ]
+        },
+        {
+          "field_id": "prior_study",
+          "label": "한국어 학습 이력",
+          "type": "single",
+          "column": "prior_study",
+          "options": [
+            "없음",
+            "6개월 미만",
+            "6개월~1년",
+            "1~2년",
+            "2년 이상"
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "study_path",
+      "page": "05 Path",
+      "label": "학업 목표 & 계획",
+      "fields": [
+        {
+          "field_id": "region_wish",
+          "label": "희망 지역",
+          "type": "multi",
+          "column_prefix": "region_wish",
+          "options": [
+            "서울권",
+            "경기 · 인천",
+            "충청권",
+            "영남권",
+            "호남권",
+            "강원 · 제주",
+            "상관없음"
+          ]
+        },
+        {
+          "field_id": "school_1st",
+          "label": "01 1순위 학교 / 전공",
+          "type": "text",
+          "column": "school_1st",
+          "required": false
+        },
+        {
+          "field_id": "school_1st_reason",
+          "label": "1순위 선택 이유",
+          "type": "text",
+          "column": "school_1st_reason",
+          "required": false
+        },
+        {
+          "field_id": "school_2nd",
+          "label": "02 2순위 학교 / 전공",
+          "type": "text",
+          "column": "school_2nd",
+          "required": false
+        },
+        {
+          "field_id": "school_2nd_reason",
+          "label": "2순위 선택 이유",
+          "type": "text",
+          "column": "school_2nd_reason",
+          "required": false
+        },
+        {
+          "field_id": "school_3rd",
+          "label": "03 3순위 학교 / 전공",
+          "type": "text",
+          "column": "school_3rd",
+          "required": false
+        },
+        {
+          "field_id": "school_3rd_reason",
+          "label": "3순위 선택 이유",
+          "type": "text",
+          "column": "school_3rd_reason",
+          "required": false
+        },
+        {
+          "field_id": "degree_target",
+          "label": "목표 학위",
+          "type": "single",
+          "column": "degree_target",
+          "options": [
+            "어학연수 (D-4)",
+            "학사",
+            "편입",
+            "석사",
+            "박사"
+          ]
+        },
+        {
+          "field_id": "field_interest",
+          "label": "전공 관심 분야",
+          "type": "multi",
+          "column_prefix": "field_interest",
+          "options": [
+            "경영 · 경제",
+            "IT · 컴공",
+            "디자인 · 예술",
+            "의료 · 보건",
+            "공학",
+            "인문 · 어학",
+            "미디어 · 방송"
+          ]
+        },
+        {
+          "field_id": "tl_synk_register",
+          "label": "타임라인 · SYNK LAB 등록",
+          "type": "text",
+          "column": "tl_synk_register",
+          "required": false,
+          "format": "YYYY.MM"
+        },
+        {
+          "field_id": "tl_topik_target",
+          "label": "타임라인 · TOPIK 목표",
+          "type": "text",
+          "column": "tl_topik_target",
+          "required": false,
+          "format": "YYYY.MM"
+        },
+        {
+          "field_id": "tl_apply",
+          "label": "타임라인 · 지원 시기",
+          "type": "text",
+          "column": "tl_apply",
+          "required": false,
+          "format": "YYYY.MM"
+        },
+        {
+          "field_id": "tl_enroll",
+          "label": "타임라인 · 입학·진출",
+          "type": "text",
+          "column": "tl_enroll",
+          "required": false,
+          "format": "YYYY.MM"
+        },
+        {
+          "field_id": "finance_budget",
+          "label": "연간 예산",
+          "type": "single",
+          "column": "finance_budget",
+          "required": false,
+          "options": [
+            "~1,000만원",
+            "1,000~2,000만원",
+            "2,000만원 이상"
+          ],
+          "condition_note": "유학 희망 시에만 작성"
+        },
+        {
+          "field_id": "finance_sponsor",
+          "label": "재정 후원",
+          "type": "single",
+          "column": "finance_sponsor",
+          "required": false,
+          "options": [
+            "본인",
+            "부모",
+            "친척",
+            "기타"
+          ],
+          "condition_note": "유학 희망 시에만 작성"
+        },
+        {
+          "field_id": "finance_guardian",
+          "label": "비상 연락 · 보호자",
+          "type": "text",
+          "column": "finance_guardian",
+          "required": false,
+          "condition_note": "유학 희망 시에만 작성"
+        },
+        {
+          "field_id": "finance_guardian_phone",
+          "label": "보호자 연락처",
+          "type": "phone",
+          "column": "finance_guardian_phone",
+          "required": false,
+          "condition_note": "유학 희망 시에만 작성"
+        },
+        {
+          "field_id": "scholarship",
+          "label": "장학금 신청 의향",
+          "type": "single",
+          "column": "scholarship",
+          "options": [
+            "강력히 희망",
+            "정보 안내 요청",
+            "필요 없음"
+          ]
+        },
+        {
+          "field_id": "parttime",
+          "label": "아르바이트 병행 계획",
+          "type": "single",
+          "column": "parttime",
+          "options": [
+            "필수 · 즉시",
+            "학기 적응 후",
+            "계획 없음"
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "traits",
+      "page": "06 Traits",
+      "label": "성향 & 학습 특성",
+      "fields": [
+        {
+          "field_id": "trait_extroversion",
+          "label": "성향 · 내향 ← → 외향",
+          "type": "spectrum_1_5",
+          "column": "trait_extroversion",
+          "left": "내향",
+          "right": "외향"
+        },
+        {
+          "field_id": "trait_planning",
+          "label": "성향 · 계획 ← → 즉흥",
+          "type": "spectrum_1_5",
+          "column": "trait_planning",
+          "left": "계획",
+          "right": "즉흥"
+        },
+        {
+          "field_id": "trait_social_study",
+          "label": "성향 · 혼자 ← → 그룹 학습",
+          "type": "spectrum_1_5",
+          "column": "trait_social_study",
+          "left": "혼자",
+          "right": "그룹"
+        },
+        {
+          "field_id": "trait_visual_auditory",
+          "label": "성향 · 시각 ← → 청각",
+          "type": "spectrum_1_5",
+          "column": "trait_visual_auditory",
+          "left": "시각",
+          "right": "청각"
+        },
+        {
+          "field_id": "trait_theory_practice",
+          "label": "성향 · 이론 ← → 실전",
+          "type": "spectrum_1_5",
+          "column": "trait_theory_practice",
+          "left": "이론",
+          "right": "실전"
+        },
+        {
+          "field_id": "trait_chronotype",
+          "label": "성향 · 야행성 ← → 아침형",
+          "type": "spectrum_1_5",
+          "column": "trait_chronotype",
+          "left": "야행성",
+          "right": "아침형"
+        },
+        {
+          "field_id": "learning_style",
+          "label": "선호 학습 방식",
+          "type": "multi",
+          "column_prefix": "learning_style",
+          "options": [
+            "1:1 밀착 코칭",
+            "소그룹 · 4~6인",
+            "정규 대형 클래스",
+            "온라인 병행",
+            "드라마 · K-POP 원어 몰입",
+            "문법 · 시험 중심",
+            "회화 · 발음 교정"
+          ]
+        },
+        {
+          "field_id": "quiz_q1",
+          "label": "Q1. 새로운 단어 20개를 외운다면?",
+          "type": "single",
+          "column": "quiz_q1",
+          "options": [
+            "단어장 · 반복 낭독",
+            "이미지 · 색깔로 연상",
+            "문장 · 스토리로 만들기",
+            "실제 대화에 써보기"
+          ]
+        },
+        {
+          "field_id": "quiz_q2",
+          "label": "Q2. 어려운 문제 앞에서 나는?",
+          "type": "single",
+          "column": "quiz_q2",
+          "options": [
+            "순서대로 · 하나씩",
+            "큰 그림 · 직관",
+            "남에게 설명하며",
+            "쉬었다가 다시"
+          ]
+        },
+        {
+          "field_id": "quiz_q3",
+          "label": "Q3. 가장 오래 몰입해본 활동은?",
+          "type": "single",
+          "column": "quiz_q3",
+          "options": [
+            "혼자 · 조용히",
+            "팀 · 함께",
+            "손 · 몸으로",
+            "머리 · 이론"
+          ]
+        },
+        {
+          "field_id": "quiz_q4",
+          "label": "Q4. 동기 부여의 원천은?",
+          "type": "single",
+          "column": "quiz_q4",
+          "options": [
+            "성취 · 결과",
+            "인정 · 칭찬",
+            "자율 · 자유",
+            "관계 · 소속"
+          ]
+        },
+        {
+          "field_id": "lang_listening",
+          "label": "듣기 · Listening",
+          "type": "intensity_1_5",
+          "column": "lang_listening_intensity"
+        },
+        {
+          "field_id": "lang_speaking",
+          "label": "말하기 · Speaking",
+          "type": "intensity_1_5",
+          "column": "lang_speaking_intensity"
+        },
+        {
+          "field_id": "lang_reading",
+          "label": "읽기 · Reading",
+          "type": "intensity_1_5",
+          "column": "lang_reading_intensity"
+        },
+        {
+          "field_id": "lang_writing",
+          "label": "쓰기 · Writing",
+          "type": "intensity_1_5",
+          "column": "lang_writing_intensity"
+        },
+        {
+          "field_id": "lang_hanja",
+          "label": "한자 · Hanja",
+          "type": "intensity_1_5",
+          "column": "lang_hanja_intensity"
+        },
+        {
+          "field_id": "values_top3",
+          "label": "내가 소중히 여기는 가치 (Top 3)",
+          "type": "multi",
+          "column_prefix": "values",
+          "options": [
+            "안정성 · 예측 가능",
+            "도전 · 성장",
+            "가족과의 시간",
+            "글로벌 커리어",
+            "창업 · 자율성",
+            "사회 기여",
+            "K-컬처 · 예술 표현",
+            "경제적 성공",
+            "전문성 · 장인정신",
+            "우정 · 커뮤니티"
+          ],
+          "max_select": 3
+        }
+      ]
+    },
+    {
+      "section_id": "kculture",
+      "page": "07 K-Culture",
+      "label": "당신의 K",
+      "fields": [
+        {
+          "field_id": "kc_vocal",
+          "label": "K-POP 보컬 관심도",
+          "type": "single",
+          "column": "kc_vocal_interest",
+          "options": [
+            "매우 희망",
+            "관심 있음",
+            "관심 없음"
+          ]
+        },
+        {
+          "field_id": "kc_vocal_style",
+          "label": "K-POP 보컬 · 스타일",
+          "type": "text",
+          "column": "kc_vocal_style",
+          "required": false
+        },
+        {
+          "field_id": "kc_vocal_role",
+          "label": "K-POP 보컬 · 롤모델",
+          "type": "text",
+          "column": "kc_vocal_role",
+          "required": false
+        },
+        {
+          "field_id": "kc_vocal_stage",
+          "label": "K-POP 보컬 · 무대 경험",
+          "type": "text",
+          "column": "kc_vocal_stage",
+          "required": false
+        },
+        {
+          "field_id": "kc_dance",
+          "label": "Idol Dance 관심도",
+          "type": "single",
+          "column": "kc_dance_interest",
+          "options": [
+            "매우 희망",
+            "관심 있음",
+            "관심 없음"
+          ]
+        },
+        {
+          "field_id": "kc_dance_genre",
+          "label": "Dance · 장르",
+          "type": "text",
+          "column": "kc_dance_genre",
+          "required": false
+        },
+        {
+          "field_id": "kc_dance_career",
+          "label": "Dance · 경력",
+          "type": "text",
+          "column": "kc_dance_career",
+          "required": false
+        },
+        {
+          "field_id": "kc_dance_goal",
+          "label": "Dance · 무대 목표",
+          "type": "text",
+          "column": "kc_dance_goal",
+          "required": false
+        },
+        {
+          "field_id": "kc_beauty",
+          "label": "K-Beauty 관심도",
+          "type": "single",
+          "column": "kc_beauty_interest",
+          "options": [
+            "매우 희망",
+            "관심 있음",
+            "관심 없음"
+          ]
+        },
+        {
+          "field_id": "kc_beauty_part",
+          "label": "K-Beauty · 관심 파트",
+          "type": "text",
+          "column": "kc_beauty_part",
+          "required": false
+        },
+        {
+          "field_id": "kc_beauty_look",
+          "label": "K-Beauty · 선호 룩",
+          "type": "text",
+          "column": "kc_beauty_look",
+          "required": false
+        },
+        {
+          "field_id": "kc_beauty_career",
+          "label": "K-Beauty · 진로 관심",
+          "type": "text",
+          "column": "kc_beauty_career",
+          "required": false
+        },
+        {
+          "field_id": "kc_more",
+          "label": "추가 관심 트랙",
+          "type": "multi",
+          "column_prefix": "kc_more",
+          "options": [
+            "K-드라마 · 원어 몰입",
+            "K-푸드 · 요리 클래스",
+            "K-패션 · 스타일링",
+            "K-예능 · 미디어 리터러시",
+            "서울 시티 투어",
+            "K-POP 콘서트 · 팬미팅"
+          ]
+        },
+        {
+          "field_id": "kc_load",
+          "label": "주간 참여 강도",
+          "type": "single",
+          "column": "kc_load",
+          "options": [
+            "주 1회 · 가볍게 취미로",
+            "주 2회 · 진지하게 몰입",
+            "주 3회 이상 · 진로로 준비"
+          ]
+        },
+        {
+          "field_id": "kc_style",
+          "label": "선호하는 활동 형태",
+          "type": "single",
+          "column": "kc_style",
+          "options": [
+            "팀 · 그룹 활동",
+            "1:1 개인 코칭",
+            "무대 · 촬영 중심"
+          ]
+        },
+        {
+          "field_id": "crew_intro",
+          "label": "SYNK LAB에서 나는 어떤 크루가 되고 싶은가요?",
+          "type": "paragraph",
+          "column": "crew_intro",
+          "required": false
+        }
+      ]
+    }
+  ]
+}
