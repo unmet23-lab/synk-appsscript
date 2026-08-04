@@ -255,10 +255,15 @@ test('트리가 깨끗하면 되감기는 통과한다 (정당한 abort를 막�
 test('되감기가 아닌 checkout·restore는 더러운 트리에서도 통과한다 (범위가 좁으면 안전하다)', () => {
   더러운저장소((dir) => {
     ['git checkout -b 새브랜치', 'git checkout master', 'git restore --staged a.md',
-     'GIT_SCOPE_BYPASS=1 git reset --hard',
-     'git commit -m "docs: reset --hard 사고 기록" -- a.md'].forEach((c) => {
+     'GIT_SCOPE_BYPASS=1 git reset --hard'].forEach((c) => {
       assert.equal(가드_at(c, dir).차단, false, '안전한 명령을 막았다: ' + c);
     });
+    /* 경로를 못 박은 커밋은 **⑤가** 막으면 안 된다 — 그게 이 검사의 원래 뜻이다.
+     * (⑧ 신설 뒤로는 같은 명령이 다른 이유로 걸릴 수 있다: 이 픽스처의 a.md 는 주인 기록이 없어
+     *  「모름」이다. 그건 ⑧이 일하는 것이지 ⑤의 오탐이 아니므로, 사유로 둘을 가른다.
+     *  「차단 여부」만 재면 두 규칙이 한 칸에 뭉개져 ⑤의 오탐이 다시 생겨도 안 보인다.) */
+    const r = 가드_at('git commit -m "docs: reset --hard 사고 기록" -- a.md', dir);
+    assert.doesNotMatch(r.사유, /되감기/, '⑤가 경로 지정 커밋을 되감기로 오인했다');
   });
 });
 
@@ -451,4 +456,156 @@ test('전처리에 눈이 멀지 않는다 — stripNonExecutedText 가 -m 을 �
   // 규칙 ⑥ 이 실수로 같은 것을 보면 **항상 통과**가 되고, 그 방향은 조용하다.
   const r = 가드('git commit -m "백틱 `x`" -- a.js');
   assert.equal(r.차단, true, '메시지 본문을 못 보고 있다 — 원본 cmd 가 아니라 전처리 결과를 검사한 것');
+});
+
+/* ───────── 규칙 ⑧ · 범위 **안의 내용** (F073 · F104 · 2026-08-05) ─────────
+ *
+ * 왜 있나: ①~⑦ 은 전부 **명령의 범위**만 본다. 그런데 실사고 3건(d64ad85·b489f2e·6711ff2)은
+ *   전부 이 가드가 권하는 `commit -- 경로` 형태로 났다 — 경로를 못 박아도 커밋되는 건 그 경로의
+ *   **작업본 현재 상태**라, 같은 파일에 남이 편집해 둔 줄이 함께 실린다.
+ *
+ * 🔴 이 묶음의 최우선 불변식 = **「내가 만졌다」가 「내 것뿐이다」로 접히지 않는다.**
+ *   b489f2e 는 내가 편집한 보드를 내가 커밋한 사고다 — 파일 단위 소유로는 원리상 안 보인다.
+ *
+ * 실저장소가 아니라 **픽스처 저장소 + 픽스처 상태 디렉터리** 위에서 돈다(작업본소유자 회귀와 같은 이음매).
+ *   실저장소에 기대면 「지금 누가 살아있나」에 따라 초록/빨강이 흔들린다 — 재현 안 되는 빨강은 테스트를 꺼버리게 만든다. */
+const os = require('node:os');
+const store8 = require(path.join(ROOT, '.claude', 'hooks', 'lib', 'handoff-store.js'));
+const 임시8 = [];
+process.on('exit', () => { for (const d of 임시8) { try { fs.rmSync(d, { recursive: true, force: true }); } catch {} } });
+
+function 픽스처8() {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'scope8-repo-'));
+  const state = fs.mkdtempSync(path.join(os.tmpdir(), 'scope8-state-'));
+  임시8.push(repo, state);
+  const g = (...a) => execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', '-c', 'commit.gpgsign=false', ...a],
+    { cwd: repo, encoding: 'utf8' });
+  g('init', '-q');
+  fs.writeFileSync(path.join(repo, '보드.md'), '| 내 줄 |\n| 남의 줄 |\n');
+  fs.writeFileSync(path.join(repo, '엔진.js'), 'let a = 1;\n');
+  g('add', '-A'); g('commit', '-qm', 'seed');
+  return { repo, state, g };
+}
+/** track-collision 이 쌓는 것과 **같은 이름 규칙**으로 놓는다(safeId 는 lib 것을 쓴다 — 두 곳에 적으면 갈라진다). */
+function 만진기록(state, repo, sid, touched, 분전 = 1) {
+  const p = path.join(state, `track-${store8.projectKey(repo)}-${store8.safeId(sid)}.json`);
+  fs.writeFileSync(p, JSON.stringify({ baseline: 'x', lastHead: 'x', touched, warned: [] }));
+  const t = new Date(Date.now() - 분전 * 60000);
+  fs.utimesSync(p, t, t);
+}
+function 가드8({ repo, state, 나 = 'local_me', ownerRoot }, command) {
+  const env = { ...process.env, SYNK_CTXBUDGET_DIR: state, CLAUDE_CODE_HOST_SESSION_ID: 나 };
+  env.SYNK_OWNER_ROOT = ownerRoot === undefined ? repo : ownerRoot;
+  const out = execFileSync(process.execPath, [HOOK], {
+    input: JSON.stringify({ tool_input: { command } }), encoding: 'utf8', cwd: repo, env,
+  });
+  if (!out.trim()) return { 차단: false, 사유: '' };
+  const h = JSON.parse(out).hookSpecificOutput || {};
+  return { 차단: h.permissionDecision === 'deny', 사유: String(h.permissionDecisionReason || '') };
+}
+
+test('🔴 ⑧ 내가 만진 파일이어도 **남이 함께 만졌으면** 펼쳐 보인다 (b489f2e·6711ff2 재현)', () => {
+  const f = 픽스처8();
+  fs.writeFileSync(path.join(f.repo, '보드.md'), '| 내 줄 · 수정 |\n');   // 남의 줄이 사라진 상태
+  만진기록(f.state, f.repo, 'local_me', ['보드.md']);
+  만진기록(f.state, f.repo, 'local_peer', ['보드.md']);
+  const r = 가드8(f, 'git commit -m "보드 갱신" -- 보드.md');
+  assert.equal(r.차단, true, '파일 단위 소유로 접혀 「내것」으로 통과했다 — 이 사고는 원리상 안 보이게 된다');
+  assert.match(r.사유, /peer/, '누구와 함께 만졌는지를 안 알려준다');
+  assert.match(r.사유, /남의 줄/, 'diff 본문을 안 펼쳤다 — 이름만 세는 검사(--stat)는 이 사고를 못 본다');
+});
+
+test('🔴 ⑧ 「내가 이미 커밋한 파일」은 소유 근거가 못 된다 (F104 신고 원문 그대로)', () => {
+  /* 신고 원문: 「커밋 직전 diff 를 안 봐 남의 세리프 부활을 내 커밋에 실어 push 했다(d64ad85)」.
+   * 그때 그 파일을 내 것으로 읽은 근거가 **내가 앞서 그 파일을 커밋했다는 사실**이었다.
+   * 픽스처로 그 상태를 그대로 만든다: 내가 커밋한 이력이 있는 파일 + 그 뒤 남이 되살린 서체. */
+  const f = 픽스처8();
+  fs.writeFileSync(path.join(f.repo, '카드.html'), 'font-family: SUIT;\n');
+  f.g('add', '카드.html'); f.g('commit', '-qm', '내가 앞서 커밋한 파일');
+  fs.writeFileSync(path.join(f.repo, '카드.html'), "font-family: SUIT;\n--kc-serif:'Fraunces';\n");
+  만진기록(f.state, f.repo, 'local_peer', ['카드.html']);
+  const r = 가드8(f, 'git commit -m "주석 현행화" -- 카드.html');
+  assert.equal(r.차단, true, '커밋 이력을 소유 근거로 읽으면 d64ad85 가 그대로 재현된다');
+  assert.match(r.사유, /Fraunces/, '무엇이 함께 실릴지 안 펼쳤다 — 커밋 「직전」에 보여야 의미가 있다');
+});
+
+test('⑧ 증명된 내 것뿐이면 **조용히 통과한다** (노이즈 가드는 BYPASS 를 학습시킨다)', () => {
+  const f = 픽스처8();
+  fs.writeFileSync(path.join(f.repo, '엔진.js'), 'let a = 2;\n');
+  만진기록(f.state, f.repo, 'local_me', ['엔진.js']);
+  assert.equal(가드8(f, 'git commit -m "엔진 수정" -- 엔진.js').차단, false, '내 것만 있는데 막았다');
+});
+
+test('⑧ 자기 처방을 막지 않는다 — 같은 명령을 그대로 다시 실행하면 통과한다 (맹점 ③ · F103)', () => {
+  const f = 픽스처8();
+  fs.writeFileSync(path.join(f.repo, '보드.md'), '| 바뀐 줄 |\n');
+  만진기록(f.state, f.repo, 'local_peer', ['보드.md']);
+  const 첫 = 가드8(f, 'git commit -m "x" -- 보드.md');
+  assert.equal(첫.차단, true, '처음엔 펼쳐야 한다');
+  assert.match(첫.사유, /다시 실행/, '처방을 안 적었다 — 남는 탈출구가 BYPASS 하나뿐이면 우회가 정상 통로가 된다');
+  assert.equal(가드8(f, 'git commit -m "x" -- 보드.md').차단, false, '처방대로 재실행했는데 또 막혔다(F103 재현)');
+});
+
+test('⑧ 그 사이 내용이 바뀌면 **다시** 펼친다 (한 번 본 것으로 영구 면제되지 않는다)', () => {
+  const f = 픽스처8();
+  fs.writeFileSync(path.join(f.repo, '보드.md'), '| 1차 |\n');
+  만진기록(f.state, f.repo, 'local_peer', ['보드.md']);
+  assert.equal(가드8(f, 'git commit -m "x" -- 보드.md').차단, true);
+  assert.equal(가드8(f, 'git commit -m "x" -- 보드.md').차단, false, '면제가 안 걸렸다');
+  fs.writeFileSync(path.join(f.repo, '보드.md'), '| 2차 — 남이 그 사이 쓴 줄 |\n');
+  const r = 가드8(f, 'git commit -m "x" -- 보드.md');
+  assert.equal(r.차단, true, '내용이 바뀌었는데 옛 면제가 그대로 살아 통과했다');
+  assert.match(r.사유, /2차/, '바뀐 내용을 안 펼쳤다');
+});
+
+test('⑧ 미추적 신규 파일도 본다 — diff 가 비었다고 「변경 없음」으로 새지 않는다', () => {
+  const f = 픽스처8();
+  fs.writeFileSync(path.join(f.repo, '남의신작.js'), 'const 남의것 = true;\n');
+  const r = 가드8(f, 'git commit -m "x" -- 남의신작.js');
+  assert.equal(r.차단, true, '미추적 파일이 통째로 검사 밖이다(미추적은 무보호 상태다 · F025)');
+  assert.match(r.사유, /남의것/, '내용을 안 보여줬다 — 미추적은 git diff 가 원래 비어 있다');
+});
+
+test('⑧ 경로가 `add` 쪽에만 있는 형태도 잡는다 (가드가 함께 권하는 통로다)', () => {
+  const f = 픽스처8();
+  fs.writeFileSync(path.join(f.repo, '보드.md'), '| 남이 쓴 줄 |\n');
+  만진기록(f.state, f.repo, 'local_peer', ['보드.md']);
+  const r = 가드8(f, 'git add 보드.md && git commit -m "x"');
+  assert.equal(r.차단, true, 'add 쪽 경로를 안 읽으면 이 형태가 통째로 검사 밖이 된다');
+});
+
+test('🔴 ⑧ 소유 판정을 못 돌리면 **통과가 아니라** 펼친다 (모름은 안전이 아니다)', () => {
+  const f = 픽스처8();
+  fs.writeFileSync(path.join(f.repo, '엔진.js'), 'let a = 3;\n');
+  만진기록(f.state, f.repo, 'local_me', ['엔진.js']);
+  const 밖 = fs.mkdtempSync(path.join(os.tmpdir(), 'scope8-notrepo-'));
+  임시8.push(밖);
+  const r = 가드8({ ...f, ownerRoot: 밖 }, 'git commit -m "x" -- 엔진.js');
+  assert.equal(r.차단, true, '판정 불가가 「미커밋 0건」과 같은 모양이 됐다 — 있는데 안심시키는 가드다');
+});
+
+test('⑧ 읽기 명령을 막지 않는다 — 서브커맨드를 토큰으로 가른다', () => {
+  const f = 픽스처8();
+  fs.writeFileSync(path.join(f.repo, '보드.md'), '| 뭔가 |\n');
+  만진기록(f.state, f.repo, 'local_peer', ['보드.md']);
+  /* 🔑 **스테이징을 채워 둔다.** 안 채우면 이 오탐이 잠복형이 된다: 정규식으로 서브커맨드를 재면
+   *   `git log --oneline commit` 이 커밋으로 오인되지만, 범위가 비면 거기서 조용히 빠져나가
+   *   차단까지 가지 않는다 — **검사는 초록인데 결함은 살아 있는** 상태다(변이 ⑥이 이걸로 새어 나갔다).
+   *   스테이징이 있으면 그 오인이 곧바로 「읽기 명령 차단」으로 드러난다. */
+  execFileSync('git', ['add', '보드.md'], { cwd: f.repo });
+  for (const c of ['git log --oneline commit', 'git show HEAD:보드.md', 'git diff HEAD -- 보드.md', 'git status']) {
+    assert.equal(가드8(f, c).차단, false, `읽기 명령을 막았다: ${c}`);
+  }
+  // 반대 방향도 함께 못박는다 — 진짜 커밋은 그 스테이징을 범위로 읽어 잡아야 한다(ⓒ 분기).
+  assert.equal(가드8(f, 'git commit -m "x"').차단, true, '범위를 안 준 커밋이 스테이징을 안 본다');
+});
+
+test('⑧ 범위가 **디렉터리**여도 그 안을 본다 (경로를 폴더로 주는 건 일상이다)', () => {
+  const f = 픽스처8();
+  fs.mkdirSync(path.join(f.repo, 'tests'));
+  fs.writeFileSync(path.join(f.repo, 'tests', '남의검사.test.js'), 'assert(남의것);\n');
+  만진기록(f.state, f.repo, 'local_peer', ['tests/남의검사.test.js']);
+  const r = 가드8(f, 'git commit -m "x" -- tests');
+  assert.equal(r.차단, true, '디렉터리로 주면 그 안이 통째로 검사 밖이 된다 — 새는 방향은 언제나 통과다');
+  assert.match(r.사유, /남의검사/, '무엇이 실릴지 안 보여줬다');
 });

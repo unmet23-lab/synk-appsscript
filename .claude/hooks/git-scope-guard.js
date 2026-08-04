@@ -277,4 +277,170 @@ for (let m; (m = 메시지인용.exec(cmd)) !== null;) {
     + '\n   의도적 예외라면 명령 앞에 GIT_SCOPE_BYPASS=1 을 붙인다.');
 }
 
+/* ⑧ **범위 안의 내용** — 규칙 ①~⑦ 전부가 못 보던 자리 (F073 · F104 · 2026-08-05).
+ *
+ * 🔑 이 가드가 여섯 곳에서 권하는 `git commit -m "…" -- 경로` 는 **인덱스**로부터는 지켜주지만
+ *    **파일 안**으로부터는 안 지켜준다. 경로를 못 박아도 커밋되는 건 그 경로의 **작업본 현재 상태**라,
+ *    같은 파일에 남이 편집해 둔 줄이 있으면 통째로 함께 실린다. 실측 3건이 전부 이 형태다:
+ *      · d64ad85 — 남이 되살린 Part 06 서체가 내 「주석 현행화」 커밋에 실려 push (F104 신고 원문)
+ *      · b489f2e — 남의 「브랜드킷 재실측」 줄 편집이 내 보드 커밋에 실림
+ *      · 6711ff2 — 같은 세션이 하루 안에 재발. 이번엔 남의 줄 **삭제**가 실림
+ *    F073 까지 세면 **4번째**다. 지침이 「3번째 = 원인을 쓸 수 없게 만든다」를 요구하는 자리.
+ *
+ * 왜 프로즈로는 안 됐나: 규약에 「커밋 전 `git diff --stat` 전량 확인」이 이미 있다. 그런데
+ *   `--stat` 은 **파일 이름만** 보여준다 — 셋 다 그 파일이 자기 범위인 걸 알고 있었고,
+ *   모르던 건 **그 안에 남의 hunk 가 들어있다는 것**이다. 이름을 세는 검사는 원리상 못 본다.
+ *
+ * 무엇을 재나: 범위 안에서 **「내 것뿐」이라고 증명되지 않는** 파일. 판정층은 새로 만들지 않고
+ *   `tools/작업본소유자.js` 하나에서 가져온다(같은 판정을 두 곳에 적으면 갈라진다 — 맹점 ④).
+ *   증명된 내 것 = 종류가 `내것` **이고** `함께`(나 말고 만진 세션)가 비어 있을 때뿐이다.
+ *   ⚠ 「모름」은 안전이 아니다 — Bash·스크립트가 쓴 파일은 아무 기록도 안 남는다(6711ff2 가 그 형태).
+ *
+ * 어떻게 막나 — **차단이 아니라 「보여주고 다시」**다. 안 본 diff 면 그 자리에서 **내용을 펼쳐** deny 하고,
+ *   같은 명령을 그대로 재실행하면 통과한다(같은 내용이면 해시가 같다). 파일이 그 사이 바뀌면
+ *   해시가 달라져 다시 펼친다. 🔑처방이 「같은 명령 재실행」이라 **가드가 자기 처방을 막을 수 없다**
+ *   (맹점 ③ · F103 이 정확히 그걸로 났다). BYPASS 를 정상 통로로 만들지 않는 것이 설계 목표다. */
+{
+  const { execFileSync } = require('child_process');
+  const p = require('path');
+
+  /** 따옴표를 존중하는 최소 토크나이저 — 한글 경로엔 공백이 없지만 `docs/정본/SYNK STUDIO/` 는 있다. */
+  const 토큰 = (s) => (s.match(/"[^"]*"|'[^']*'|\S+/g) || []).map((t) => t.replace(/^(['"])(.*)\1$/, '$2'));
+  const 씻기 = (t) => t.replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/+$/, '');
+
+  /* 서브커맨드를 **토큰으로** 가른다.
+   * ⚠ 이유를 정확히 적는다 — 처음엔 「정규식 G+commit 은 `git log --oneline commit` 같은 읽기 명령까지
+   *   잡는다」고 적었는데 **실측으로 거짓이었다**: 흡수기 `--?[\w-]+\s+` 는 대시로 시작하는 토큰만 삼켜서,
+   *   `log`·`branch`·`show` 처럼 대시 없는 서브커맨드가 앞에 오면 거기서 막힌다(8종 실측 · 오탐 0).
+   *   틀린 근거를 주석에 남기면 다음 사람이 그걸 믿고 판단하므로 원문을 고쳐 둔다.
+   * 그래서 진짜 이유는 둘이다:
+   *   ① 아래 ⓑ가 `add` **뒤의 경로들**을 필요로 한다 — 정규식은 위치를 안 돌려준다.
+   *   ② 값을 받는 옵션이 늘어나면 정규식은 조용히 어긋나지만(새는 방향은 통과), 토큰 판정은 목록 하나만 고친다. */
+  const 값받는옵션 = /^(-[Cc]|--git-dir|--work-tree|--exec-path|--namespace)$/;
+  function 서브커맨드(seg) {
+    const ts = 토큰(seg);
+    const gi = ts.findIndex((t) => t === 'git' || t.endsWith('/git') || t.endsWith('\\git.exe'));
+    if (gi < 0) return null;
+    for (let i = gi + 1; i < ts.length; i += 1) {
+      const t = ts[i];
+      if (값받는옵션.test(t)) { i += 1; continue; }
+      if (t.startsWith('-')) continue;          // --no-pager · -c k=v · --git-dir=… 등 값을 붙여 쓴 꼴
+      return { 이름: t, 뒤: ts.slice(i + 1) };
+    }
+    return null;
+  }
+
+  const 세그들 = exec.split(/&&|\|\||[;|\n]/);
+  const 커밋세그 = 세그들.filter((seg) => {
+    const s = 서브커맨드(seg);
+    return s && s.이름 === 'commit' && !re(마침꼴).test(seg);
+  });
+  /* 저장소 밖이면 ⑧은 통째로 비켜선다 — ④⑤와 같은 자리다(「가드가 판단할 자리가 아니다」).
+   * ⚠ 이것은 **판정층 고장과 다르다**: 저장소 밖에선 커밋 자체가 성립하지 않지만, 저장소 안에서
+   *   소유 판정만 못 돌린 것은 「미커밋 0건」이 아니라 **모름**이고 그건 아래에서 펼친다. */
+  let 저장소인가 = false;
+  try {
+    execFileSync('git', ['rev-parse', '--absolute-git-dir'], { encoding: 'utf8', cwd: gitCwd });
+    저장소인가 = true;
+  } catch { 저장소인가 = false; }
+  if (커밋세그.length && 저장소인가) {
+
+    /* 범위 = ⓐ `commit … -- 경로들` ⓑ 같은 호출의 `git add 경로들` ⓒ 둘 다 없으면 스테이징된 것.
+     * ⓒ 를 빠뜨리면 `git add` 를 앞선 호출에서 한 형태가 통째로 검사 밖이 된다(새는 방향은 통과). */
+    let 범위 = [];
+    for (const seg of 커밋세그) {
+      const ts = 토큰(seg);
+      const i = ts.indexOf('--');
+      if (i >= 0) 범위.push(...ts.slice(i + 1));
+    }
+    if (!범위.length) {
+      for (const seg of 세그들) {
+        const s = 서브커맨드(seg);
+        if (s && s.이름 === 'add') 범위.push(...s.뒤.filter((t) => !t.startsWith('-')));
+      }
+    }
+    let 스테이징만 = false;
+    if (!범위.length) {
+      스테이징만 = true;
+      try {
+        범위 = execFileSync('git', ['-c', 'core.quotepath=false', 'diff', '--cached', '--name-only'],
+          { encoding: 'utf8', cwd: gitCwd }).split('\n').filter(Boolean);
+      } catch { /* 저장소 밖 — 가드가 판단할 자리가 아니다 */ }
+    }
+    범위 = 범위.map(씻기).filter(Boolean);
+
+    if (범위.length) {
+      /* 판정층은 하나 — 작업본소유자를 **읽기만** 한다. 그게 못 돌면 「전부 모름」으로 내려간다:
+       * 판정 불가를 통과로 번역하면 이 규칙은 있는 것보다 나쁘다(있는데 안심시킨다). */
+      if (!process.env.SYNK_OWNER_ROOT) process.env.SYNK_OWNER_ROOT = gitCwd;
+      let 항목 = null;
+      try {
+        const r = require(p.join(__dirname, '..', '..', 'tools', '작업본소유자.js')).조사();
+        /* ⚠ `git못부름` 은 **빈 항목 배열과 함께** 온다 — `.항목` 만 꺼내 쓰면 「미커밋 0건」과
+         *   구별이 안 되고, 그 0 은 조용한 통과가 된다. 판정 불가는 통과가 아니라 「전부 모름」이다. */
+        항목 = r.git못부름 ? null : r.항목;
+      } catch { 항목 = null; }
+
+      const 안에드나 = (f) => 범위.some((r) => r === '.' || f === r || f.startsWith(`${r}/`));
+      let 위험;
+      if (항목 === null) {
+        위험 = 범위.map((f) => ({ 파일: f, 왜: '소유 판정을 못 돌렸다(모름)' }));
+      } else {
+        위험 = 항목.filter((i) => !i.트리 && 안에드나(i.파일))
+          .filter((i) => !(i.종류 === '내것' && (!i.함께 || !i.함께.length)))
+          .map((i) => ({
+            파일: i.파일,
+            왜: i.함께 && i.함께.length
+              ? `나 말고 ${i.함께.map((s) => s.sid.replace(/^local_/, '').slice(0, 8)).join(', ')} 도 만졌다`
+              : ({ 남의살아있는: '지금 도는 **남의** 작업본', 끝난세션: '끝난 세션이 남긴 것', 모름: '주인 **모름**(Bash·스크립트·외부 앱이 썼다)' }[i.종류] || i.종류),
+          }));
+      }
+
+      if (위험.length) {
+        /* 무엇이 실릴지 **펼쳐서** 보여준다. `--stat` 은 이름만 세서 이 사고를 원리상 못 본다. */
+        const 조각 = [];
+        for (const { 파일 } of 위험.slice(0, 8)) {
+          let d = '';
+          try {
+            d = execFileSync('git', ['-c', 'core.quotepath=false', 'diff', 'HEAD', '--', 파일],
+              { encoding: 'utf8', cwd: gitCwd, maxBuffer: 8 << 20 });
+          } catch { d = ''; }
+          if (!d.trim()) {
+            // 미추적 신규 파일은 diff 가 비어 있다 — 비었다고 「변경 없음」으로 읽으면 통째로 사각이 된다.
+            try { d = `(미추적 신규 파일 — 앞부분)\n${fs.readFileSync(p.join(gitCwd, 파일), 'utf8')}`; } catch { d = '(내용을 못 읽었다)'; }
+          }
+          const 줄 = d.split('\n');
+          조각.push(`── ${파일}\n${줄.slice(0, 40).join('\n')}${줄.length > 40 ? `\n… ${줄.length - 40}줄 잘림 — 전량: git diff HEAD -- ${파일}` : ''}`);
+        }
+        const 본문 = 조각.join('\n');
+
+        /* 「이 내용을 이미 펼쳐 봤나」를 해시로 기억한다. 시계·mtime 에 안 기댄다(CI·환경 의존 금지). */
+        const 해시 = require('crypto').createHash('sha1')
+          .update(`${범위.slice().sort().join('|')}\n${위험.map((w) => w.파일).sort().join('|')}\n${본문}`).digest('hex');
+        const store = require(p.join(__dirname, 'lib', 'handoff-store.js'));
+        const 기억 = p.join(store.stateDir(),
+          `commitscope-${store.projectKey(gitCwd)}-${store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || 'nosid')}.json`);
+        let 본것 = [];
+        try { 본것 = JSON.parse(fs.readFileSync(기억, 'utf8')).seen || []; } catch { 본것 = []; }
+        if (!본것.includes(해시)) {
+          try {
+            fs.mkdirSync(p.dirname(기억), { recursive: true });
+            fs.writeFileSync(기억, JSON.stringify({ seen: [해시, ...본것].slice(0, 60) }));
+          } catch { /* 기억을 못 써도 판정은 한다 — 다음에 한 번 더 펼쳐질 뿐이다(안전한 방향) */ }
+          deny(`[git-scope-guard] 커밋 범위 안에 **내 것이라고 증명되지 않는** 변경이 ${위험.length}건 있다.`
+            + '\n경로를 못 박아도 커밋되는 건 그 경로의 **작업본 현재 상태**다 — 같은 파일에 남이 편집해 둔 줄은 함께 실린다.'
+            + '\n실측 3건이 전부 이 형태다(d64ad85 남의 서체 부활 · b489f2e·6711ff2 남의 보드 줄) — F073 까지 4번째.'
+            + `\n\n${위험.map((w) => `  · ${w.파일}  ← ${w.왜}`).join('\n')}`
+            + (스테이징만 ? '\n  (범위를 안 줬다 — 지금 **스테이징된 것**을 기준으로 쟀다)' : '')
+            + `\n\n지금 이 명령이 실어 갈 내용:\n${본문}`
+            + '\n\n→ 위가 **전부 내가 만든 것이면** 같은 명령을 그대로 다시 실행한다(이제 통과한다).'
+            + '\n   남의 것이 섞였으면 그 파일을 범위에서 빼고 커밋한 뒤 그 세션에 알린다(고쳐서 대신 커밋하지 않는다).'
+            + '\n   ⚠ 이 창은 「봤다」가 아니라 「보여줬다」만 기록한다 — 위 diff 를 실제로 읽는 것은 사람·모델 몫이다.'
+            + '\n   누구 것인지: node tools/작업본소유자.js');
+        }
+      }
+    }
+  }
+}
+
 process.exit(0);
