@@ -16,6 +16,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
+const wt = require(path.join(__dirname, 'worktrees.js'));
 
 // 이음매는 테스트 격리 전용 — 로직을 끄지 않고 위치만 바꾼다. **세 훅이 같은 이름을 봐야 한다**
 // (갈라지면 바통이 안 넘어가고, 증상은 「조용히 아무 일도 안 일어남」이라 눈에 안 띈다).
@@ -30,14 +31,38 @@ const SWEEP_TTL_MS = 24 * 60 * 60 * 1000; // 카운터 등 잡파일: 하루 지
  *   `C:\Users\...`(백슬래시)가 **서로 다른 키**를 내 상태가 조용히 둘로 갈렸다
  *   (`cec367f48f` vs `de787defcb`). 대소문자·끝슬래시는 이미 지웠는데 구분자만 남아 있었다.
  *   증상은 「아무 일도 안 일어남」이라 눈에 안 띈다 — 이 파일이 존재하는 이유 ②(프로젝트 격리)와
- *   같은 함정의 다른 입구다. 호출부가 `path.resolve` 를 쓰든 리터럴을 쓰든 같은 키여야 한다. */
+ *   같은 함정의 다른 입구다. 호출부가 `path.resolve` 를 쓰든 리터럴을 쓰든 같은 키여야 한다.
+ *
+ * 🔴 **그리고 세 번째 입구가 있었다 — 워크트리**(2026-08-04 실측, 유호님 "전에 설정했는데 잘 안 됐다").
+ *   `.claude/worktrees/…` 에서 돌던 세션의 바통이 **다른 키**(`1fc2df68ae`)로 떨어져,
+ *   메인 저장소 세션의 `take()` prefix 와 안 맞아 **영영 안 집혔다.** 워크트리는 남의 저장소가
+ *   아니라 **같은 저장소의 다른 체크아웃**이라 인계는 이어져야 한다. 그때 살아있던 바통 3개 중
+ *   메인이 집을 수 있는 것이 **0개**였다 — 증상은 여기서도 「조용히 아무 일도 안 일어남」이다.
+ *   `lib/worktrees.js` 가 track-collision 을 고치며 이미 같은 처방을 냈는데(F079) 이 파일만
+ *   남아 있었다. CLAUDE.md 「호출부마다 고치는 대신 잘못 쓸 수 없는 공용 통로」의 미적용 자리.
+ *
+ * ⚠ 메인에서 부르면 값이 **지금까지와 완전히 같다**(worktrees.mainWorktree 계약) — 이미 굴러가는
+ *   메인 세션의 상태는 안 깨지고, 워크트리 세션만 같은 키로 합류한다. git 을 못 부르면 cwd 그대로. */
 function projectKey(cwd) {
-  const norm = String(cwd || '').replace(/[\\/]+/g, '/').replace(/\/+$/, '').toLowerCase();
+  const base = wt.mainWorktree(cwd);
+  const norm = String(base || cwd || '').replace(/[\\/]+/g, '/').replace(/\/+$/, '').toLowerCase();
   return crypto.createHash('sha1').update(norm).digest('hex').slice(0, 10);
 }
 
+/** 세션 id → 파일명에 쓸 수 있는 꼴.
+ *
+ * ⚠ **뭉개진 글자는 구분자를 잃는다.** 옛 구현은 `[^A-Za-z0-9_-]` 를 전부 `_` 로 바꿔서,
+ *   비ASCII id 둘(`같은세션`·`다른세션`)이 **같은 파일명**(`____`)이 됐다. 그러면 한 세션의
+ *   억제 표식이 옆 세션을 통째로 침묵시키고, 증상은 「알림이 안 뜬다」뿐이라 눈에 안 띈다.
+ *   실제 id 는 UUID(ASCII)라 지금 터지지는 않지만, 터질 때 조용한 종류라 원천을 막는다.
+ *
+ * 🔑 **ASCII 만으로 된 id 는 값이 지금과 완전히 같다** — 굴러가는 세션들의 상태 파일은 안 깨진다.
+ *   뭉갠 자국이 생겼을 때만 원문 해시 6자를 꼬리로 붙여 서로 다른 이름이 되게 한다. */
 function safeId(id) {
-  return String(id || 'unknown').replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 60);
+  const 원문 = String(id || 'unknown');
+  const 안전 = 원문.replace(/[^A-Za-z0-9_-]/g, '_');
+  if (안전 === 원문) return 안전.slice(0, 60);
+  return 안전.slice(0, 53) + '-' + crypto.createHash('sha1').update(원문).digest('hex').slice(0, 6);
 }
 
 function batonName(cwd, sessionId) {

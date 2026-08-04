@@ -30,6 +30,9 @@ const fs = require('fs');
 const path = require('path');
 const store = require(path.join(__dirname, 'lib', 'handoff-store.js'));
 const report = require(path.join(__dirname, 'lib', 'session-report.js'));
+// 컨텍스트를 재는 규칙과 바닥값은 **공용 통로 하나**에서 온다 — 이 값을 읽는 훅이
+// track-boundary 까지 둘이 됐고, 두 곳에 적으면 갈라진다(CLAUDE.md 가드 등록층 ④ · F063).
+const { currentContext, FLOOR } = require(path.join(__dirname, 'lib', 'context-size.js'));
 
 // 컨텍스트 창 — 모델마다 다르다(F058). 처음엔 200k 로 박아 뒀다가 실측으로 뒤집혔다:
 // 이 저장소 트랜스크립트 전수의 최대 관측치 = opus-4-8 999,167 · opus-5 997,026 ·
@@ -45,8 +48,7 @@ function windowFor(model) {
   return 200_000;
 }
 
-// 08-04 실측 바닥값. 「컴팩트해도 여기까지만 내려간다」를 사람 말로 보여주는 데 쓴다.
-const FLOOR = 68_500;
+// 바닥값(FLOOR)은 lib/context-size.js 에 있다 — track-boundary 와 같은 수를 봐야 한다.
 
 // ⚠ 임계는 **창 한계가 아니라 비용 축**이다. 창이 1M 이라 300k 도 30% 에 불과하지만,
 //   비용은 창의 몇 퍼센트냐가 아니라 **절대 토큰 × 남은 턴 수**로 붙는다(하루 소비의 88% 가
@@ -126,31 +128,7 @@ try {
 const tp = String(input.transcript_path || '');
 if (!tp || !fs.existsSync(tp)) process.exit(0);
 
-/**
- * 트랜스크립트에서 **마지막** usage 를 찾아 `{ tokens, model }` 을 낸다. 못 찾으면 null.
- * 모델을 같이 돌려주는 이유 = 창 크기가 모델마다 다르기 때문(F058).
- * 같은 줄에서 뽑는다 — 따로 찾으면 토큰과 모델이 다른 턴 것이 섞인다.
- */
-function currentContext(file) {
-  let lines;
-  try { lines = fs.readFileSync(file, 'utf8').split('\n'); } catch (_) { return null; }
-  for (let i = lines.length - 1; i >= 0; i--) {
-    const l = lines[i];
-    if (!l || l.indexOf('"usage"') === -1) continue; // 파싱 비용 절약 — 매 턴 도는 훅이다
-    let o;
-    try { o = JSON.parse(l); } catch (_) { continue; }
-    const u = o && o.message && o.message.usage;
-    if (!u) continue;
-    const n =
-      (Number(u.input_tokens) || 0) +
-      (Number(u.cache_read_input_tokens) || 0) +
-      (Number(u.cache_creation_input_tokens) || 0);
-    if (n > 0) return { tokens: n, model: String((o.message && o.message.model) || '') };
-  }
-  return null;
-}
-
-const info = currentContext(tp);
+const info = currentContext(tp); // 규칙은 lib/context-size.js 에 있다(두 훅 공용)
 if (info === null) process.exit(0);
 
 const ctx = info.tokens;
@@ -205,6 +183,9 @@ const handoffMsg = report.buildHandoff(cwd, sid, { dirty });
 // 🔴 부터 **바통을 떨군다** — 세션이 어떻게 끝나든(창을 그냥 닫아 SessionEnd 가 못 돌아도)
 // 다음 세션이 이어받게 하는 보험이다. 평범한 종료는 session-end-handoff 가 따로 떨군다.
 if (stage >= 2) store.drop(cwd, sid, handoffMsg, { ctx, trigger: `context-${stage === 3 ? 'last' : 'hard'}` });
+// 🔴 부터는 **파일로도** 남긴다 — 바통(자동 입력)이 안 닿는 자리(다른 계정·폰)의 보조 통로.
+// 유호님 08-04: "새 세션에서 바로 이어서 할 수 있게 프롬프트나 텍스트파일을 전달".
+if (stage >= 2) report.writeHandoffFile(cwd, handoffMsg, { sessionId: sid, reason: `컨텍스트 ${Math.round(ctx / 1000)}k` });
 
 // ⚠ 퍼센트를 앞세우지 않는다 — **거짓 안심을 준다**(유호님 "오푸스·페이블만 쓸 것", 08-04).
 //   그 둘은 창이 1M 이라 끊어야 할 지점에서도 「31%」로 보인다. 실제 근거는 창 점유율이 아니라
