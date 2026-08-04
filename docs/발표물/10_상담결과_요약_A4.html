@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK LAB 상담 결과 요약 — A4 1장</title>
+<!--
+  SYNK LAB 발표물 10번 — 상담 결과 요약 1장 (A4 세로 · 단면)
+  정본 = docs/정본/SYNK/SYNK 발표물 제작 프롬프트 v1.txt v1.4 §10 + [공통 블록]
+  레벨 매핑 = 2026-08-04 유호님 확정(6레벨 · 상한 TOPIK 5급) · memory topik-scope-5geup-2026-08-04
+
+  ▶ 이 종이의 진짜 독자는 상담에 온 사람이 아니라 **그 자리에 없던 결정권자**다.
+     어머니가 상담에 오고 학원비는 아버지나 조부모가 정하는 일이 흔하다.
+     그래서 ① 인쇄 고정부는 몽골어가 주 언어이고 한국어를 작게 병기한다
+            ② 왼쪽 칸은 반드시 학부모 눈앞에서 손으로 채운다(미리 채워 건네지 않는다)
+
+  ▶ 몽골어 칸은 전부 비어 있다 — 에리카쌤 검수 전 확정 금지.
+     각 칸에 「몽골어 글자 수 한도」를 적어 두었다. 한국어보다 20~30% 길어지므로
+     번역이 들어와도 레이아웃이 안 깨지도록 미리 자리를 넓게 잡은 것이다.
+
+  ▶ 인쇄 — Ctrl+P → "PDF로 저장" · 용지 A4 · 방향 세로 · 여백 "없음" · "배경 그래픽" 켜기
+-->
+<style>
+@page { size: A4 portrait; margin: 0; }
+
+:root{
+  --blue:#3D5AFE; --orange:#FF6D00; --gold:#FFC400;
+  --paper:#FDFCF8; --ink:#1A237E; --midnight:#101528;
+  --hair:rgba(26,35,126,.22);
+  --fill:#3B4374;
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+html,body{
+  background:var(--paper); color:var(--ink);
+  font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
+  font-weight:500;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+.mono{ font-family:'DM Mono',ui-monospace,'Cascadia Mono','Consolas',monospace; }
+
+.sheet{
+  width:210mm; height:297mm; padding:9mm 9mm 7mm;
+  display:flex; flex-direction:column; overflow:hidden;
+  background:var(--paper);
+}
+
+/* ── 머리 ─────────────────────────────────────────────── */
+.top{
+  background:var(--midnight); color:var(--paper);
+  border-radius:2mm; padding:3.6mm 5mm;
+  display:flex; align-items:center; justify-content:space-between; flex:0 0 auto;
+}
+/* 몽골어가 주 언어 — 한국어는 그 아래 작게 병기한다(§10 ①) */
+.top .mnhead{ font-size:5.4mm; font-weight:800; color:#5F6894; letter-spacing:.06em; }
+.top .kohead{ font-size:3.4mm; font-weight:500; color:#C9CEE6; margin-top:1.4mm; }
+.top .mark{ font-size:5mm; font-weight:700; letter-spacing:.30em; }
+
+/* ── 2단 ──────────────────────────────────────────────── */
+.cols{ display:flex; gap:4mm; margin-top:4.4mm; flex:1 1 auto; min-height:0; }
+.left{ flex:0 0 45%; display:flex; flex-direction:column; gap:2.6mm; }
+.right{
+  flex:1 1 auto; display:flex; flex-direction:column; gap:2.4mm;
+  background:#F4F6FF; border:.3mm solid var(--hair); border-radius:2mm;
+  padding:3.4mm 3.8mm;
+}
+
+.lbl{ font-size:2.5mm; font-weight:800; letter-spacing:.04em; color:var(--blue); }
+.lbl .ko{ color:#7A81AE; font-weight:500; }
+
+/* 손으로 채우는 칸 — 밑줄, 볼펜이 편하도록 8mm 이상 (§10 사양) */
+.fill{ border-bottom:.4mm solid var(--fill); height:8.4mm; }
+.fill.tall{ height:15mm; }
+.grid2{ display:flex; gap:3mm; }
+.grid2 > *{ flex:1 1 0; }
+
+.block{ border:.35mm solid var(--hair); border-radius:1.8mm; padding:2.6mm 3mm; background:#fff; }
+.block.hot{ border-color:var(--orange); border-width:.5mm; background:#FFF6EE; }
+
+/* 몽골어 대기 칸 — 글자 수 한도를 적어 둔다(번역이 들어와도 안 깨지게) */
+.mn{ font-size:2.2mm; color:#A7ADCC; letter-spacing:.03em; margin-top:.9mm; }
+.mn::before{ content:'MN '; font-family:'DM Mono',ui-monospace,monospace; font-size:1.9mm; letter-spacing:.08em; }
+
+/* ── 6칸 여정 띠 (5번 로드맵의 축소판) ─────────────────── */
+.band{ display:flex; gap:.9mm; margin-top:1.6mm; }
+.band .c{
+  flex:1 1 0; border:.3mm solid var(--hair); border-radius:1mm;
+  padding:1.3mm .4mm; text-align:center; background:#F7F9FF;
+}
+.band .c.jump{ background:#FFF9E8; }
+.band .c .l{ font-size:2.3mm; font-weight:800; }
+.band .c .g{ font-size:2mm; color:#6C74A8; margin-top:.4mm; }
+.bandnote{ font-size:2.2mm; color:#7A81AE; margin-top:1.4mm; line-height:1.4; }
+
+/* 목적지 좌표 — 학부모가 실제로 묻는 것은 급수가 아니라 「어디까지 가야 하나」 */
+.dest{ display:flex; gap:2.4mm; margin-top:1.8mm; }
+.dest .d{ flex:1 1 0; border:.4mm solid var(--orange); border-radius:1.4mm; padding:1.6mm 2mm; background:#FFF6EE; }
+.dest .d .k{ font-size:2.1mm; font-weight:800; color:var(--orange); }
+.dest .d .v{ font-size:2.9mm; font-weight:800; margin-top:.6mm; }
+
+/* ── 오른쪽 인쇄 고정부 ────────────────────────────────── */
+.r h3{ font-size:3.4mm; font-weight:800; letter-spacing:-.01em; }
+.r h3 .ko{ font-size:2.5mm; color:#7A81AE; font-weight:500; margin-left:1.4mm; }
+.cyc{ display:flex; flex-direction:column; gap:1.3mm; margin-top:1.8mm; }
+.cyc .s{ display:flex; align-items:flex-start; gap:2.2mm; }
+.cyc .s .n{
+  flex:0 0 auto; width:4.6mm; height:4.6mm; border-radius:50%;
+  background:var(--blue); color:#fff; font-size:2.4mm; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+}
+.cyc .s .t{ font-size:2.8mm; line-height:1.4; }
+.cyc .s .t b{ font-weight:800; }
+
+.pow{ display:flex; gap:2mm; margin-top:1.8mm; }
+.pow .p{ flex:1 1 0; border:.3mm solid var(--hair); border-radius:1.4mm; padding:2mm 1.8mm; background:#fff; }
+.pow .p .t{ font-size:2.6mm; font-weight:800; line-height:1.3; }
+.pow .p .r{ font-size:2.2mm; color:#6C74A8; margin-top:1mm; line-height:1.35; }
+
+.app{ display:flex; flex-wrap:wrap; gap:1.4mm; margin-top:1.6mm; }
+.app .chip{
+  font-size:2.4mm; font-weight:800; padding:1.1mm 2.2mm; border-radius:1mm;
+  background:#fff; border:.3mm solid var(--hair);
+}
+.app .chip.g{ background:var(--gold); border-color:#D9A600; color:#3A2E00; }
+
+.contact{ margin-top:auto; border-top:.4mm solid var(--hair); padding-top:2.4mm; }
+.contact .row{ display:flex; gap:2.4mm; margin-top:1.6mm; }
+.contact .row .c{ flex:1 1 0; }
+.contact .row .c .k{ font-size:2.1mm; font-weight:800; color:#6C74A8; }
+.contact .row .c .b{ border-bottom:.35mm solid var(--fill); height:5.4mm; }
+
+/* ── 바닥 ─────────────────────────────────────────────── */
+.foot{
+  flex:0 0 auto; margin-top:2.4mm; display:flex; justify-content:space-between;
+  align-items:flex-end; font-size:2.3mm; color:#7A81AE; line-height:1.45;
+}
+.foot .hedge{ max-width:150mm; }
+.foot .hedge b{ color:var(--ink); font-weight:800; }
+
+@media screen{
+  body{ background:#E7E9F2; padding:8mm; }
+  .sheet{ box-shadow:0 2mm 8mm rgba(16,21,40,.18); margin:0 auto; }
+}
+</style>
+</head>
+<body>
+
+<section class="sheet">
+
+  <header class="top">
+    <div>
+      <div class="mnhead">_______________________________</div>
+      <div class="kohead">상담 결과 요약 · SYNK LAB</div>
+      <div class="mn" style="color:#5F6894">헤드라인 24자 이내</div>
+    </div>
+    <div class="mark mono">SYNK</div>
+  </header>
+
+  <div class="cols">
+
+    <!-- ════ 왼쪽 · 이 학생의 것 (눈앞에서 손으로 채운다) ════ -->
+    <div class="left">
+
+      <div class="grid2">
+        <div>
+          <div class="lbl">_________ <span class="ko">이름</span></div>
+          <div class="fill"></div>
+        </div>
+        <div>
+          <div class="lbl">_________ <span class="ko">상담일</span></div>
+          <div class="fill"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="lbl">_________ <span class="ko">상담한 사람</span></div>
+        <div class="fill"></div>
+      </div>
+
+      <div class="block">
+        <div class="lbl">_________ <span class="ko">지금 자리</span></div>
+        <div class="fill"></div>
+        <div style="font-size:2.3mm;color:#6C74A8;margin-top:1.4mm">
+          ☐ 첫 수업 날 레벨테스트로 확인
+          <span class="mn">10자</span>
+        </div>
+      </div>
+
+      <div class="block hot">
+        <div class="lbl" style="color:var(--orange)">_________ <span class="ko">이 학생이 말한 목표 — 본인의 말 그대로</span></div>
+        <div class="fill tall"></div>
+        <div class="mn">28자 이내</div>
+      </div>
+
+      <div class="block">
+        <div class="lbl">_________ <span class="ko">목표까지의 길</span></div>
+
+        <!-- 5번 커리큘럼 로드맵의 6칸 띠 축소판 (2026-08-04 확정 매핑) -->
+        <div class="band">
+          <div class="c"><div class="l">Lv1</div><div class="g">1급</div></div>
+          <div class="c"><div class="l">Lv2</div><div class="g">2급</div></div>
+          <div class="c"><div class="l">Lv3</div><div class="g">2급</div></div>
+          <div class="c jump"><div class="l">Lv4</div><div class="g">2~3급</div></div>
+          <div class="c jump"><div class="l">Lv5</div><div class="g">3~4급</div></div>
+          <div class="c jump"><div class="l">Lv6</div><div class="g">4~5급</div></div>
+        </div>
+        <div class="bandnote">시작 Lv ____ → 목표 ____급 · 정규 과정 ____시즌
+          <span class="mn">18자</span>
+        </div>
+
+        <div class="dest">
+          <div class="d"><div class="k">_______</div><div class="v">한국 대학 입학선<br>TOPIK 3급 · Lv4</div></div>
+          <div class="d"><div class="k">_______</div><div class="v">졸업·전공선<br>TOPIK 4급 · Lv5</div></div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <div class="lbl">_________ <span class="ko">추천 반</span></div>
+          <div class="fill"></div>
+        </div>
+        <div>
+          <div class="lbl">_________ <span class="ko">요일 · 시간</span></div>
+          <div class="fill"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="lbl">_________ <span class="ko">이 학생에게 특히 맞을 것</span></div>
+        <div class="fill"></div>
+      </div>
+
+      <div>
+        <div class="lbl">_________ <span class="ko">안내한 수강 조건</span></div>
+        <div class="fill"></div>
+      </div>
+
+      <div class="block hot">
+        <div class="lbl" style="color:var(--orange)">_________ <span class="ko">다음 단계 — 하나만, 날짜와 함께</span></div>
+        <div class="fill"></div>
+        <div class="mn">20자 이내</div>
+      </div>
+
+    </div>
+
+    <!-- ════ 오른쪽 · SYNK가 하는 것 (인쇄 고정) ════ -->
+    <div class="right r">
+
+      <div>
+        <h3>____________________<span class="ko">8주 동안 무엇이 일어나는가</span></h3>
+        <div class="cyc">
+          <div class="s"><div class="n">1</div><div class="t"><b>Learn</b> — 배웁니다. 매일의 워밍업부터 이미 한국어 수업입니다.<div class="mn">34자</div></div></div>
+          <div class="s"><div class="n">2</div><div class="t"><b>Plan</b> — 방향을 정합니다. 「나침반」 세션에서 목적을 먼저 묻습니다.<div class="mn">34자</div></div></div>
+          <div class="s"><div class="n">3</div><div class="t"><b>Experience</b> — 몸으로 겪습니다. 「싱크 크루」 프로젝트를 팀으로 완성합니다.<div class="mn">36자</div></div></div>
+          <div class="s"><div class="n">4</div><div class="t"><b>Record</b> — 기록으로 남깁니다. 「싱크 포트폴리오」에 쌓입니다.<div class="mn">32자</div></div></div>
+        </div>
+      </div>
+
+      <div>
+        <h3>____________________<span class="ko">매달 집으로 가는 것</span></h3>
+        <div style="font-size:2.7mm;line-height:1.45;margin-top:1.4mm">
+          <b>월간 리포트카드</b> — 앱이 매월 자동으로 발행합니다. 이번 달에 무엇을 했고 어디까지 왔는지가 한 장으로 옵니다.
+          <div class="mn">44자</div>
+        </div>
+      </div>
+
+      <div>
+        <h3>____________________<span class="ko">앱에서 아이가 겪는 것</span></h3>
+        <div class="app">
+          <span class="chip">몬스터 7단계 진화</span>
+          <span class="chip g">포인트 · 왕관</span>
+          <span class="chip">반 전체 레이드</span>
+          <span class="chip">스트릭</span>
+        </div>
+        <div style="font-size:2.2mm;color:#6C74A8;margin-top:1.3mm;line-height:1.4">
+          뉴로 → 스파키 → 링커 → 서킷 → 미엘로 → 플로우 → 싱크마스터
+          <div class="mn">30자</div>
+        </div>
+      </div>
+
+      <div>
+        <h3>____________________<span class="ko">AI가 대신하기 어려운 세 가지 힘</span></h3>
+        <div class="pow">
+          <div class="p">
+            <div class="t">① 질문하는 힘</div>
+            <div class="r">무엇이 진짜 문제인지 스스로 묻고 정의하는 힘<br><b>→ 나침반 세션</b><div class="mn">26자</div></div>
+          </div>
+          <div class="p">
+            <div class="t">② 스스로 하는 힘</div>
+            <div class="r">시키지 않아도 먼저 움직이고 끝까지 해내는 힘<br><b>→ 싱크 크루</b><div class="mn">26자</div></div>
+          </div>
+          <div class="p">
+            <div class="t">③ 마음을 얻는 힘</div>
+            <div class="r">사람과 통하고 신뢰를 쌓는 힘<br><b>→ 반 레이드 · 발표</b><div class="mn">26자</div></div>
+          </div>
+        </div>
+        <div style="font-size:2.2mm;color:#6C74A8;margin-top:1.3mm;line-height:1.4">
+          이 힘이 자라면 한국어 실력도 더 단단해집니다.
+          <div class="mn">24자</div>
+        </div>
+      </div>
+
+      <div class="contact">
+        <h3>____________________<span class="ko">상담 문의</span></h3>
+        <div class="row">
+          <div class="c"><div class="k">페이스북</div><div class="b"></div></div>
+          <div class="c"><div class="k">전화</div><div class="b"></div></div>
+        </div>
+        <div class="row">
+          <div class="c"><div class="k">주소</div><div class="b"></div></div>
+          <div class="c"><div class="k">상담 시간</div><div class="b"></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="hedge">
+      <b>급수와 기간은 약속이 아닙니다.</b> 승급은 기간이 아니라 <b>개인별 도달제</b>이며, 8주차 승급 평가를 통과하면 올라가고 아직이면 ‘다시 도전’으로 한 바퀴 더 다집니다. ·
+      학생의 사진·영상은 언제나 사전 동의를 받고, 언제든 철회하실 수 있습니다.
+      <div class="mn">96자</div>
+    </div>
+    <div class="mono" style="white-space:nowrap">v1.0 · 2026-08-04</div>
+  </div>
+
+</section>
+
+</body>
+</html>
