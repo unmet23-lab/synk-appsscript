@@ -86,6 +86,28 @@ test('사본임을 본문 머리말이 스스로 말한다 (만든 날·읽기 �
   assert.match(html, /memory\/x\.md/, '원본 경로가 없다 — 출처를 못 되짚는다');
 });
 
+// ── ⑤ 자동 배선의 감시 (장치를 만들었으면 발동 조건도 만든다 · F026) ──────
+test('주간 부패 점검이 예약 작업 로그를 읽는다 (안 도는 것이 조용하면 안 된다)', () => {
+  const rot = fs.readFileSync(path.join(TOOLS, 'rot-check.js'), 'utf8');
+  assert.match(rot, /notebooklm-drive\.log/,
+    'rot-check가 실행 로그를 안 본다 — 드라이브가 꺼지면 생성기는 멈추는데 아무도 그 로그를 안 연다');
+  assert.match(rot, /noteboo?klmDriveSection|nblmDriveSection/,
+    '감시 섹션이 없다');
+  assert.match(rot, /'노트북LM 자동 갱신 실패'/, '실패를 🔴로 올리지 않는다');
+  // 수집 배열에 실제로 끼워졌는가 — 함수만 있고 안 불리면 「장치는 있는데 발화 없음」이다
+  assert.match(rot, /\[mem, doc, fri, har, nbl, nbd\]/,
+    '감시 섹션이 검사기 목록에 안 들어갔다 — 만들어만 두고 안 부르는 형태(F026)');
+});
+
+test('로그가 없으면 부패가 아니다 (아직 안 쓰는 것과 낡은 것을 가른다)', () => {
+  const rot = fs.readFileSync(path.join(TOOLS, 'rot-check.js'), 'utf8');
+  const i = rot.indexOf('function nblmDriveSection()');
+  assert.notEqual(i, -1);
+  const 본문 = rot.slice(i, rot.indexOf('\n}\n', i));
+  assert.match(본문, /if \(!fs\.existsSync\(log\)\) return \{ present: false \}/,
+    '로그 부재를 부패로 센다 — 다른 기계·첫 실행 전에 헛경보가 나고, 헛경보를 내는 가드는 곧 꺼진다');
+});
+
 test('HTML 이스케이프 — 본문의 꺾쇠가 태그로 새지 않는다', () => {
   const D = require(path.join(TOOLS, 'notebooklm-drive.js'));
   const html = D.toHtml('T', '2026-08-04', [{ 원본: 'a.md', 내용: '<script>alert(1)</script> & <b>' }]);

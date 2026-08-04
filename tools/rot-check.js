@@ -127,6 +127,29 @@ function notebooklmSection() {
   return { present: true, made: m ? m[1] : '(날짜 미검출)', changed };
 }
 
+function nblmDriveSection() {
+  /* 노트북LM **자동 갱신** 배선(예약 작업 SYNK_NotebookLM)의 감시.
+   *
+   * 왜 필요한가 — 자동화를 붙이면 「안 도는 것」이 「아무 일도 안 일어남」으로 나타난다.
+   * 드라이브가 꺼져 있거나 크롬이 실패하면 생성기는 정직하게 멈추고 로그만 남기는데,
+   * **그 로그를 아무도 안 연다.** 장치를 만들고 발동 조건을 안 만든 형태(F026)의 재발이라
+   * 여기서 읽는다 — 「자동이니까 되겠지」가 정확히 조용한 실패의 모양이다.
+   *
+   * 로그가 없으면 부패가 아니다(아직 한 번도 안 돌았거나 이 기계가 아니다). */
+  const log = path.join(__dirname, 'notebooklm-drive.log');
+  if (!fs.existsSync(log)) return { present: false };
+  const lines = fs.readFileSync(log, 'utf8').split(/\r?\n/).filter((l) => /\bOK\b|FAILED/.test(l));
+  if (!lines.length) return { present: true, unknown: true };
+  const last = lines[lines.length - 1];
+  const failed = /FAILED/.test(last);
+  const 마지막성공 = [...lines].reverse().find((l) => /\bOK\b/.test(l)) || null;
+  // 로그 줄머리 = `%date% %time%` (예: 2026-08-04 12:24:57.19)
+  const 날짜 = (s) => (s && s.match(/(\d{4}-\d{2}-\d{2})/) || [])[1] || null;
+  const 성공일 = 날짜(마지막성공);
+  const 지난날 = 성공일 ? Math.floor((Date.now() - new Date(성공일 + 'T00:00:00').getTime()) / 86400000) : null;
+  return { present: true, failed, last, 성공일, 지난날 };
+}
+
 /* ── 판정 ────────────────────────────────────────────────────────────────── */
 // 🔴 = 무언가가 이미 거짓을 말하고 있다(고치기 전엔 그래프·문서가 거짓말한다)
 // ⚠  = 아직 거짓은 아니지만 방치하면 🔴이 된다
@@ -138,12 +161,13 @@ function collect() {
   const fri = attempt('friction', frictionSection);
   const har = attempt('harness', harnessSection);
   const nbl = attempt('notebooklm', notebooklmSection);
+  const nbd = attempt('notebooklm-drive', nblmDriveSection);
 
   const red = [];
   const warn = [];
   const notes = [];
 
-  for (const s of [mem, doc, fri, har, nbl]) {
+  for (const s of [mem, doc, fri, har, nbl, nbd]) {
     if (!s.ok) red.push({ kind: '검사기 고장', text: `${s.name} 검사가 실패했다 — ${s.error}` });
   }
 
@@ -183,6 +207,23 @@ function collect() {
         '올라간 사본은 저장소가 만질 수 없으므로 스스로 안 낫는다. ' +
         '수리: node tools/notebooklm-export.js → 노트북LM에서 옛 노트북을 지우고 새로 올린다',
     });
+  }
+
+  if (nbd.ok && nbd.value.present && !nbd.value.unknown) {
+    if (nbd.value.failed) {
+      red.push({
+        kind: '노트북LM 자동 갱신 실패',
+        text: `예약 작업 SYNK_NotebookLM 마지막 실행이 실패했다 — ${nbd.value.last.trim()}\n` +
+          '     드라이브 데스크톱이 꺼졌거나 크롬 실패. 노트북LM 소스는 그 시점에서 멈춰 있다' +
+          '(화면상으론 「있는 것」처럼 보이므로 조용한 낡음이다). 수리: node tools/notebooklm-drive.js',
+      });
+    } else if (nbd.value.지난날 !== null && nbd.value.지난날 >= 3) {
+      warn.push({
+        kind: '노트북LM 자동 갱신 멈춤',
+        text: `마지막 성공이 ${nbd.value.성공일}(${nbd.value.지난날}일 전) — 매일 도는 배선인데 안 돌고 있다. ` +
+          'PC가 꺼져 있었다면 정상이지만, 켜져 있었다면 예약 작업을 확인하라(schtasks /query /tn SYNK_NotebookLM).',
+      });
+    }
   }
 
   if (fri.ok && fri.value.open.length >= EVOLVE_THRESHOLD) {
