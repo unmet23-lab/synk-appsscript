@@ -189,6 +189,33 @@ test('행동: 정규화가 실제로 무엇을 받아 무엇을 내는가 (픽�
   ]) assert.equal(평가(입력), 기대, `정규화(${JSON.stringify(입력)})`);
 });
 
+test('🔴 moveItem 은 인덱스로 부른다 — 라이브가 잡은 결함(소스 검사가 못 보던 층)', () => {
+  /* 2026-08-04 원격 실행이 던졌다: moveItem(item, toIndex) 오버로드는 제네릭 Item 을 받는데
+   * addTextItem() 은 TextItem 을 돌려준다. 회귀 17·변이 15/15 전부 초록인 채로 살아남았다 —
+   * **시그니처는 실행해야 보이는 층**이라 소스 검사로는 거기까지 못 간다. 재발만 막는다. */
+  const 자리 = 함수본문(폼리포트, '면접SID자리_');
+  assert.ok(/form\.moveItem\(현재, 목표\)/.test(자리), '이동이 인덱스 두 개 형태가 아니다');
+  /* ⚠ 이 검사는 처음에 **자기 주석을 잡았다** — 위 설명문에 적은 `moveItem(item, toIndex)` 를
+   *   진짜 호출로 세어 빨간불을 냈다. 결함을 설명한 문장이 그 결함으로 세어지면 안 된다.
+   *   그래서 주석 줄을 걷어내고 **코드 줄만** 본다(가드가 자기 산문에 눈머는 형태의 반대쪽). */
+  const 코드줄 = 폼리포트.split('\n').filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l));
+  const 나쁜호출 = 코드줄.filter((l) => /moveItem\(\s*(item|it)\s*[,)]/.test(l));
+  assert.deepEqual(나쁜호출, [],
+    'moveItem 에 아이템 객체를 그대로 넘기는 곳이 있다 — 라이브에서 예외로 죽는다(getIndex() 를 넘겨라)');
+  // 방향에 따라 목표가 달라야 한다(빼는 순간 뒤가 한 칸 당겨진다)
+  assert.ok(/현재 < 이름at \? 이름at : 이름at \+ 1/.test(자리), '이동 방향별 목표 보정이 없다');
+});
+
+test('🔑 자리 잡기를 **양쪽 경로**에서 부른다 — 맨 끝에 박힌 폼이 영영 안 고쳐지면 안 된다', () => {
+  /* 라이브가 지금 정확히 그 상태였다: addTextItem 은 성공하고 moveItem 만 던져서
+   * 학생ID 칸이 「5. 자료 활용 동의」 뒤에 남았다. 새로 넣는 경로에서만 자리를 잡으면 못 고친다. */
+  const 증분 = 함수본문(폼리포트, 'migrateInterviewSid');
+  const i분기 = 증분.indexOf('if (at !== -1)');
+  const i추가 = 증분.indexOf('addTextItem');
+  assert.ok(/면접SID자리_\(/.test(증분.slice(i분기, i추가)), '이미 있음 경로가 자리를 안 고친다');
+  assert.ok(/면접SID자리_\(/.test(증분.slice(i추가)), '새로 넣는 경로가 자리를 안 잡는다');
+});
+
 test('개인 링크 메뉴도 발동 조건이 같이 있다', () => {
   assert.match(셋업, /function menuInterviewPersonalLink\(\)\s*\{\s*menuRun_\(interviewPersonalLink\);/,
     '메뉴 래퍼가 없다');
