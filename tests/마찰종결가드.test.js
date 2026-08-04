@@ -181,3 +181,92 @@ test('실저장소 — 거짓양성만 본다: 이미 닫힌 번호를 단 커�
   assert.ok(!/장부 미종결/.test(r.stdout) || !new RegExp(id).test(r.stdout),
     `이미 닫힌 ${id} 에 짖었다 — 거짓양성`);
 });
+
+// ── F107 — 「고치고 → 신고」 순서에서 가드가 **원리상** 못 짖던 자리 ────────────────────
+//
+// 이 저장소의 정상 순서는 고치고 나서 신고다. 그러면 수리 커밋에는 아직 없는 번호가 못 들어가고
+// (행이 없으니까), 번호를 다는 유일한 커밋이 신고 커밋이 된다 — 그런데 신고 커밋은 면제다.
+// 즉 **번호를 단 커밋과 행을 안 건드린 커밋이 영원히 겹치지 않아** 가드가 한 번도 못 짖었다.
+// 실물: 92b3925 는 제목에 「해소 장치 동반: b7a2a18·fff91f0」이라 적고도 해소 칸이 빈 채 남았다.
+
+/** 신고 커밋의 실제 모양 — 장부에 행을 더하면서 그 번호를 제목에 단다. */
+function 신고커밋(f, 행, 제목) {
+  fs.appendFileSync(f.장부, 행);
+  f.git('add', '-A');
+  const out = f.git('commit', '-m', 제목);
+  const r = spawnSync(process.execPath, [HOOK], {
+    input: JSON.stringify({
+      tool_name: 'Bash',
+      tool_input: { command: 'git commit -F msg.txt -- docs/_ops/마찰신호.md' },
+      tool_response: { stdout: out, stderr: '' },
+      cwd: f.dir,
+    }),
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      SYNK_FRICTION_LEDGER: f.장부,
+      SYNK_FRICTION_GUARD_DIR: f.상태,
+      CLAUDE_CODE_HOST_SESSION_ID: 'fixture-session',
+    },
+  });
+  let json = null;
+  try { json = JSON.parse(r.stdout); } catch (_) { /* 침묵 */ }
+  return { raw: r.stdout, json, status: r.status, 짖었나: !!(json && json.hookSpecificOutput) };
+}
+
+test('🔴 F107 — 신설 행이 **스스로 해소를 지목**하면 신고 커밋이라도 짖는다', () => {
+  const f = 픽스처();
+  const r = 신고커밋(f,
+    '| F903 | 2026-08-05 | 실수 | 무언가를 잘못 읽었다. 해소=tools/무언가.js + 훅(abc1234) | |\n',
+    'docs: 마찰 F903 — 신고하면서 해소를 적었다 (해소 장치 동반: abc1234)');
+  assert.equal(r.status, 0, '조용한 게 아니라 죽었다');
+  assert.ok(r.짖었나,
+    '해소를 스스로 지목한 신설 행에 조용했다 — 이 순서에서는 이 커밋 말고 짖을 기회가 영영 없다(F107)');
+  assert.match(r.json.hookSpecificOutput.additionalContext, /F903/);
+  assert.match(r.json.hookSpecificOutput.additionalContext, /스스로 해소를 지목/);
+});
+
+test('🔴 해소를 안 지목한 평범한 신고 커밋은 **여전히** 조용하다 (예외가 면제를 통째로 먹으면 안 된다)', () => {
+  const f = 픽스처();
+  const r = 신고커밋(f,
+    '| F904 | 2026-08-05 | 마찰 | 그냥 신고만 한다 — 아직 안 고쳤다 | |\n',
+    'docs: 마찰 F904 — 방금 신고했다');
+  assert.equal(r.짖었나, false,
+    '평범한 신고에 짖으면 신호를 기록할 때마다 경고가 뜬다 — 사람은 그런 가드를 끈다(F049)');
+});
+
+test('🔴 행 **갱신**(-/+ 둘 다)은 해소 문구가 있어도 면제 — 예외는 신설에만 붙는다', () => {
+  const f = 픽스처();
+  // F900 을 고쳐 쓴다(신설이 아니라 갱신). 해소 칸은 아직 빈 채, 신호문에만 해소 얘기를 붙인다.
+  const 원본 = fs.readFileSync(f.장부, 'utf8');
+  fs.writeFileSync(f.장부, 원본.replace(
+    '| F900 | 2026-08-05 | 실수 | 픽스처 — 아직 안 닫힌 신호 | |',
+    '| F900 | 2026-08-05 | 실수 | 픽스처 — 조사해 보니 해소=아직 검증 중인 후보 | |'));
+  f.git('add', '-A');
+  const out = f.git('commit', '-m', 'docs: 마찰 F900 — 신호문에 조사 결과를 덧붙인다');
+  const r = spawnSync(process.execPath, [HOOK], {
+    input: JSON.stringify({
+      tool_name: 'Bash',
+      tool_input: { command: 'git commit -F msg.txt -- docs/_ops/마찰신호.md' },
+      tool_response: { stdout: out, stderr: '' },
+      cwd: f.dir,
+    }),
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      SYNK_FRICTION_LEDGER: f.장부,
+      SYNK_FRICTION_GUARD_DIR: f.상태,
+      CLAUDE_CODE_HOST_SESSION_ID: 'fixture-session',
+    },
+  });
+  assert.equal(r.stdout.trim(), '',
+    '갱신 커밋에 짖었다 — 신호문을 다듬을 때마다 경고가 뜨면 그것도 소음이다');
+});
+
+test('🔴 판별식은 friction.js 하나에서 온다 — 훅이 자기 사본을 들고 있으면 갈라진다 (맹점 ④)', () => {
+  const 본문 = fs.readFileSync(HOOK, 'utf8');
+  assert.match(본문, /장부\.해소주장/,
+    '훅이 friction.js 의 해소주장을 안 쓴다 — 같은 판정을 두 곳에 적으면 갈라지고, 갈라지는 방향은 언제나 「통과」다');
+  const 장부 = require(path.join(ROOT, 'tools', 'friction.js'));
+  assert.equal(typeof 장부.해소주장, 'function', 'friction.js 가 해소주장을 export 하지 않는다');
+});
