@@ -129,11 +129,33 @@ test('카드 HTML — 모든 <script> 블록이 실제로 파싱된다', () => {
   }
 });
 
-test('MN 전용 — Таны 키릴 서체(Cormorant) 배선', () => {
-  // Fraunces·Gowun Batang·Playfair엔 Ө/Ү가 없다(구글폰트 unicode-range 실측 2026-08-04).
-  // Cormorant cyrillic-ext = U+0460-052F가 U+04AE(Ү)·U+04E8(Ө)를 덮는다.
-  assert.ok(htmlMn.includes('family=Cormorant'), 'MN 폰트 링크에 Cormorant가 없다');
-  assert.ok(htmlMn.includes("font-family:'Cormorant','Fraunces'"), 'kc-t-kor 스택이 Cormorant 우선이 아니다');
+/* 08-05 유호님 확정으로 **방향이 뒤집힌 자리**다. 옛 검사는 Cormorant 를 강제했다 —
+ * 근거는 "Fraunces·Gowun Batang·Playfair엔 Ө/Ү가 없고 Cormorant cyrillic-ext 가 덮는다"였다.
+ * 그 근거가 실측으로 무너졌다: ①Ө·Ү 는 **Inter Tight 도 그린다**(canvas measureText 폭 대조)
+ * ②Cormorant 가 쓰이던 유일한 문구 「Таны」엔 Ө·Ү 가 아예 없었다. → 세리프 3종 전량 제거,
+ * 정본 3종(SUIT·Inter Tight·DM Mono)으로 통일(91e7963).
+ * 검사는 「없어야 할 것이 없다」만 본다 — 버그가 남아 있기를 요구하지 않는다. */
+const SERIF_RETIRED = ['Cormorant', 'Fraunces', 'Gowun+Batang', 'Gowun Batang', 'Playfair'];
+// 주석은 이력이라 검사 대상이 아니다 — 제거 경위를 적은 주석이 자기 검사에 걸리면
+// 다음 사람은 이력을 지워서 초록을 만든다(가드가 자기 처방을 막는 형태).
+const 주석제거 = (s) => s.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+const 세리프위반 = (html) => SERIF_RETIRED.filter((f) => 주석제거(html).includes(f));
+
+test('KR·MN — 폐기 세리프 재도입 금지 (유호 08-05 확정: 정본 3종 통일)', () => {
+  for (const [name, html] of [['kr', htmlKr], ['mn', htmlMn]]) {
+    assert.deepStrictEqual(세리프위반(html), [],
+      `[${name}] 폐기 세리프가 되살아났다 — 정본 3종(SUIT·Inter Tight·DM Mono) 밖이다`);
+  }
+});
+
+test('세리프 검사 자신의 탐지력 — 픽스처로 못박는다', () => {
+  // 실저장소가 깨끗해도 이 검사가 죽지 않았음을 증명한다(실저장소만 보면 통과와 미실행이 같은 모양).
+  assert.deepStrictEqual(세리프위반("<link href='...css2?family=Cormorant:wght@400'>"), ['Cormorant'],
+    '폰트 링크의 세리프를 못 잡는다');
+  assert.deepStrictEqual(세리프위반(".kc-t-kor{font-family:'Fraunces','Gowun Batang',serif}"),
+    ['Fraunces', 'Gowun Batang'], 'CSS 스택의 세리프를 못 잡는다');
+  assert.deepStrictEqual(세리프위반('<!-- 세리프 3종(Fraunces·Gowun Batang·Cormorant) 제거 -->'), [],
+    '제거 경위를 적은 주석을 위반으로 센다 — 거짓양성');
 });
 
 test('서버 보안 불변식 — doGet 무부작용·hp 선차단·일일상한·락 채번', () => {
