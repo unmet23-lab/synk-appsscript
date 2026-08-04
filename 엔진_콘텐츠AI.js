@@ -2309,6 +2309,7 @@ function parentSweep() {
   safeRun('translateNotices', function () { translateNotices_(ss); });
   safeRun('translateTopics', function () { translateTopics_(ss); }); // [v5.7] 이번 주 우리 반 배운 것 → 몽골어
   safeRun('importFormResponses', importFormResponses); // [v6.3] 상담 폼 접수 편입
+  safeRun('crewIntakeWatch', function () { crewIntakeWatch_(ss); }); // [v9.171] 크루카드 접수·재제출·이관유실·상한 감시 — 접수를 「알리는」 층(폼을 닫으면서 알림이 0이 됐다)
   safeRun('sweepLeadForm', function () { sweepLeadForm_(ss); }); // [v9.43] 광고 리드폼 → leads 자동 편입(수기 이관 폐지)
   safeRun('msgLinkSweep', function () { MJ_msgLinkSweep_(ss); }); // [v9.71] 학부모 메신저 연결 스위프 — 상담로그 새 수신에서 학생ID를 찾아 messenger_links 자동 연결(새 행 없으면 2읽기 종료)
   safeRun('sweepFeedbackAck', function () { sweepFeedbackAck_(ss); }); // [v9.49] 첨삭 '확인했어요' → +5P 정산(열람 보상 — 10분 내 반응해야 루프가 산다)
