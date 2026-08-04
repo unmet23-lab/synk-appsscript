@@ -220,10 +220,15 @@ test('🔴 writeHandoffFile — 옛 한 파일 구조의 인계문을 세션별 
   const dir = path.join(d, 'docs', '_ops');
   fs.mkdirSync(dir, { recursive: true });
   const 목차 = path.join(dir, '인계문.md');
+  // ⚠ 머리의 시각은 **지금**에서 만든다 — 날짜를 박아 두면 TTL(12시간)이 지나는 순간 이주분이
+  //   곧바로 prune 돼 이 시험이 스스로 빨개진다(f0000ae 가 같은 자리에서 CI 를 빨갛게 했다).
+  const n = new Date();
+  const p2 = (x) => String(x).padStart(2, '0');
+  const 오늘 = `${n.getFullYear()}-${p2(n.getMonth() + 1)}-${p2(n.getDate())} ${p2(n.getHours())}:${p2(n.getMinutes())}`;
   // 옛 형식 그대로 — 세션별 파일은 하나도 없는 상태
   fs.writeFileSync(목차, '# 다음 세션 인계문 (자동 생성 · 최근 3개)\n\n'
     + ['aaaa1111', 'bbbb2222', 'cccc3333']
-      .map((s) => `## 2026-08-05 00:0${s[0] === 'a' ? 1 : s[0] === 'b' ? 2 : 3} · 세션 ${s} · 세션 정리\n\n\`\`\`\n${s} 의 옛 인계문\n\`\`\`\n`)
+      .map((s) => `## ${오늘} · 세션 ${s} · 세션 정리\n\n\`\`\`\n${s} 의 옛 인계문\n\`\`\`\n`)
       .join('\n'));
 
   report.writeHandoffFile(d, '새 구조 첫 인계문', { sessionId: 'dddd4444' });
