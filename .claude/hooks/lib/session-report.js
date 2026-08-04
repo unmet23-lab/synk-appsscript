@@ -12,6 +12,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const wt = require(path.join(__dirname, 'worktrees.js'));
 
 function git(cwd, args, timeout) {
   try {
@@ -130,7 +131,10 @@ function writeHandoffFile(cwd, msg, meta) {
   if (!String(msg || '').trim()) return null;
   const m = meta || {};
   try {
-    const dir = path.join(String(cwd || '.'),인계파일[0], 인계파일[1]);
+    // ⚠ 워크트리에서 불려도 **메인** 작업 트리에 쓴다 — 유호님이 여는 파일은 하나다.
+    //   projectKey 를 mainWorktree 로 고칠 때(c7083b4) 이 파일만 raw cwd 로 남아 있었다
+    //   (같은 함정의 4번째 입구 — ①대소문자 ②구분자 ③워크트리 키 ④인계문 파일).
+    const dir = path.join(wt.mainWorktree(String(cwd || '.')), 인계파일[0], 인계파일[1]);
     const file = path.join(dir, 인계파일[2]);
     fs.mkdirSync(dir, { recursive: true });
 
@@ -140,13 +144,25 @@ function writeHandoffFile(cwd, msg, meta) {
     const d = new Date();
     const p2 = (n) => String(n).padStart(2, '0');
     const 시각 = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
-    const 머리 = `## ${시각} · 세션 ${String(m.sessionId || '?').slice(0, 8)}${m.reason ? ` · ${m.reason}` : ''}`;
+    // `local_` 접두(내부 에이전트 id 표기)는 떼고 자른다 — 안 떼면 8자 중 6자가 접두라
+    // 세션 구분 정보가 2자만 남는다(실측: `local_0b`·`local_85` 꼴로 뭉개졌다).
+    const sid8 = String(m.sessionId || '?').replace(/^local_/, '').slice(0, 8);
+    const 머리 = `## ${시각} · 세션 ${sid8}${m.reason ? ` · ${m.reason}` : ''}`;
     const 새블록 = `${머리}\n\n\`\`\`\n${msg}\n\`\`\`\n`;
 
     let 옛것 = '';
     try { 옛것 = fs.readFileSync(file, 'utf8'); } catch (_) { /* 없으면 새로 */ }
     // 머리말은 다시 쓰지 않는다 — 옛 본문에서 기존 블록만 떼어 낸다.
-    const 블록들 = 옛것.split(/^## /m).slice(1).map((s) => '## ' + s.trimEnd());
+    let 블록들 = 옛것.split(/^## /m).slice(1).map((s) => '## ' + s.trimEnd());
+    // 같은 세션의 옛 블록은 **교체**한다 — 한 세션이 여러 번 쓰면(🔴 도달→트랙 경계→종료)
+    // 3칸을 전부 차지해 **남의 트랙 블록을 밀어낸다.** 바통(store.drop)이 같은 세션을
+    // 덮어쓰는 것과 같은 판정. 08-04 실측: 한 번의 시험 3연타가 실블록을 전부 밀어냈다.
+    if (sid8 !== '?') {
+      블록들 = 블록들.filter((b) => {
+        const 첫줄 = b.split('\n', 1)[0];
+        return !(첫줄.indexOf(` 세션 ${sid8} `) !== -1 || 첫줄.endsWith(` 세션 ${sid8}`));
+      });
+    }
     const 합본 = [새블록.trimEnd(), ...블록들].slice(0, 3).join('\n\n');
 
     fs.writeFileSync(file,

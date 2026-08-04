@@ -45,7 +45,7 @@ const msg = report.buildHandoff(cwd, sid, { dirty, reason: reason || undefined }
 store.drop(cwd, sid, msg, { trigger: `session-end:${reason || 'other'}` });
 // 파일로도 남긴다 — 바통은 새 창이 **자동으로** 물지만, 자동 입력이 안 닿는 자리
 // (다른 계정·폰·자동 입력 실패)에서는 유호님이 열어서 복사할 것이 있어야 한다.
-const 파일 = report.writeHandoffFile(cwd, msg, { sessionId: sid, reason: reason || undefined });
+const 파일 = report.writeHandoffFile(cwd, msg, { sessionId: report.hostSessionId(sid), reason: reason || undefined });
 
 // SessionEnd 의 출력은 유호님 화면에 스치듯 지나간다 — 짧게 한 줄만.
 process.stdout.write(JSON.stringify({
