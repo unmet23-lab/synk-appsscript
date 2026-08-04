@@ -14,7 +14,9 @@ const fs = require('node:fs');
 const { execFileSync } = require('node:child_process');
 const { ROOT } = require('./_engine-source');
 
-const HOOK = path.join(ROOT, '.claude', 'hooks', 'git-scope-guard.js');
+// SYNK_TEST_SCOPE_HOOK = 변이 실험용 이음매(스크린샷예산의 SYNK_TEST_HOOK 과 같은 목적, 이름만 분리 —
+// 한 변수를 두 훅이 나눠 쓰면 test-ci 가 전체를 돌릴 때 한쪽 변이가 다른 쪽에 새어 든다).
+const HOOK = process.env.SYNK_TEST_SCOPE_HOOK || path.join(ROOT, '.claude', 'hooks', 'git-scope-guard.js');
 
 /* [2026-08-04] 가드가 **저장소 상태**(진행 중인 rebase·미커밋 수정)를 보게 되면서
  * 이 테스트들은 기본 cwd(=공유 저장소)에서 돌면 **옆 세션이 merge 중일 때 실패**하게 됐다.
@@ -258,4 +260,48 @@ test('되감기가 아닌 checkout·restore는 더러운 트리에서도 통과�
       assert.equal(가드_at(c, dir).차단, false, '안전한 명령을 막았다: ' + c);
     });
   });
+});
+
+/* ── 규칙 ⑥: 커밋 메시지를 셸 인용에 맡기지 않는다 (F054·F056·F060 — 같은 자리 3번째) ──
+ * 프로즈가 두 번 실패한 자리다. v7.11 「셸이 둘이다」 조항이 있는 상태에서 F060 이 났고,
+ * F056 은 처방(스크래치패드 + -F)까지 적어둔 뒤였다. 그래서 기계로 옮겼고, 여기서 그 탐지력을 잰다.
+ *
+ * ⚠ 이 규칙은 **거짓양성이 특히 비싸다** — 커밋 메시지에 코드를 인용하는 것은 이 저장소의 일상이고
+ *   (지금 이 커밋도 그렇다), 과하게 막으면 BYPASS 를 습관으로 배운다. 그래서 안전한 형태
+ *   (작은따옴표·이스케이프·-F·$ 뒤 숫자)를 차단 목록과 같은 무게로 검사한다. */
+
+test('커밋 메시지 안에서 셸이 해석하는 문자를 막는다 (사라지거나 딴것으로 바뀐다)', () => {
+  const 위험 = [
+    ['git commit -m "인용 `mono` 있음" -- a.js', '백틱 — F060 실사고 그대로'],
+    ['git commit -m "오늘 $(date) 기준" -- a.js', '명령 치환 $( )'],
+    ['git commit -m "경로 $HOME 아래" -- a.js', '변수 확장 $HOME'],
+    ['git commit -m "값 ${VAR} 참조" -- a.js', '변수 확장 ${ }'],
+    ['git commit --message="백틱 `x` 포함" -- a.js', '--message= 형태도 같은 통로다'],
+  ];
+  for (const [c, why] of 위험) {
+    const r = 가드(c);
+    assert.equal(r.차단, true, `안 막았다(${why}): ${c}`);
+    assert.match(r.사유, /-F/, '대안(-F)을 안 알려준다 — 막기만 하는 가드는 BYPASS를 학습시킨다');
+  }
+});
+
+test('셸이 해석하지 않는 형태는 통과한다 (코드 인용은 이 저장소의 일상이다)', () => {
+  const 안전 = [
+    "git commit -m 'fix: `mono` 인용 — 작은따옴표는 리터럴이다' -- a.js",
+    'git commit -m "이스케이프한 \\`백틱\\` 과 \\$변수 는 글자다" -- a.js',
+    'git commit -F /tmp/msg.txt -- a.js',
+    'git commit -m "가격 $100 인상" -- a.js',
+    'git commit -m "평범한 제목" -- a.js',
+    'git log --oneline -5',
+  ];
+  for (const c of 안전) {
+    assert.equal(가드(c).차단, false, `안전한 형태를 막았다: ${c}`);
+  }
+});
+
+test('전처리에 눈이 멀지 않는다 — stripNonExecutedText 가 -m 을 지운 뒤를 보면 이 결함은 안 보인다', () => {
+  // 이 검사가 있는 이유: 위쪽 규칙들은 `exec`(= -m "…" 이 MSG 로 치환된 문자열)를 본다.
+  // 규칙 ⑥ 이 실수로 같은 것을 보면 **항상 통과**가 되고, 그 방향은 조용하다.
+  const r = 가드('git commit -m "백틱 `x`" -- a.js');
+  assert.equal(r.차단, true, '메시지 본문을 못 보고 있다 — 원본 cmd 가 아니라 전처리 결과를 검사한 것');
 });
