@@ -166,10 +166,22 @@ test('doGet 은 여전히 HtmlService 를 반환하지 않는다 (⛔ 2026-08-03
   assert.ok(!/HtmlService/.test(doget), 'doGet 에 HtmlService 가 들어왔다 — 상담AI.js 머리말 ⛔ 참조');
 });
 
+/* 🔴 실행층 방어(F081 계열) — 이 함수는 ScriptApp.getService()·MailApp·UrlFetchApp 를 쓴다.
+ *   웹앱 미배포·쿼터 같은 **환경 조건에서만** 던지는 자리라 소스 검사로는 안 보인다. 예외가 새면
+ *   호출부(상담응답_)가 봇 답변을 전송하기도 전에 doPost 의 catch 로 튀어 학부모가 침묵을 받는다. */
+test('인계 알림이 통째로 실패해도 봇 답변 경로를 죽이지 않는다', () => {
+  const 겉 = 엔진.slice(엔진.indexOf('function 상담_인계알림_('), 엔진.indexOf('function 상담_인계알림본_('));
+  assert.ok(/try \{[\s\S]*상담_인계알림본_[\s\S]*\} catch/.test(겉),
+    '인계 본체가 try 로 감싸이지 않았다 — 여기서 던지면 학부모에게 답이 안 나간다');
+  assert.ok(겉.includes('초안 회로 실패'), '실패했을 때 유호님께 알리는 최후 메일이 없다 — 조용히 사라진다');
+  assert.ok(/catch \(__\)/.test(겉), '최후 메일마저 실패할 때를 안 잡는다 — 그 예외가 그대로 새어 나간다');
+});
+
 test('인계 메일은 초안 생성이 실패해도 나간다 (폴백 — 인계는 마지막 안전망)', () => {
-  const fn = 엔진.slice(엔진.indexOf('function 상담_인계알림_('), 엔진.indexOf('function 상담_인계초안_('));
+  // ⚠ 구간은 본체만 자른다 — 상담_인계메일_ 까지 삼키면 그 안의 adminMail 폴백을 본체 것으로 오인한다
+  const fn = 엔진.slice(엔진.indexOf('function 상담_인계알림본_('), 엔진.indexOf('function 상담_인계메일_('));
   assert.ok(fn.includes('원문만 보냅니다'), '초안 실패 폴백 메일이 없다 — 인계 자체가 조용히 죽는다');
-  assert.ok((fn.match(/adminMail\(/g) || []).length >= 2, '폴백·본선 두 경로 모두 adminMail 을 불러야 한다');
+  assert.ok((fn.match(/상담_인계메일_\(/g) || []).length >= 2, '폴백·본선 두 경로 모두 즉시 발송 통로를 타야 한다');
   assert.ok(fn.includes('slice(0, 500)'), '초안을 셀 상한 아래로 자르지 않는다 — JSON이 2000자에서 잘려 발송이 죽는다');
 });
 
