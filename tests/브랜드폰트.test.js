@@ -40,21 +40,43 @@ const RETIRED = ['Pretendard', 'Noto Sans KR', 'KoPubWorld', 'Nanum', '맑은 �
  * 실제로 초판이 그렇게 죽어 있었고, 변이 테스트(순서를 일부러 뒤집기)로 잡았다. */
 const fontDecls = (src) => src.match(/font-family\s*:[^;}]+/g) || [];
 
-const htmlFiles = fs.existsSync(TOOLS)
-  ? fs.readdirSync(TOOLS).filter((f) => f.endsWith('.html'))
-  : [];
+/* 주석은 렌더에 안 나온다 — 정책 대상은 **살아 있는 지정**뿐이다.
+ * 2026-08-05 실측: 등록층을 넓히자마자 이 검사가 5파일에서 빨개졌는데, 원인은 전부
+ * 「구 지정은 Pretendard 였다」·「Noto Sans KR 은 폐기 서체다」라고 **적어 둔 문장**이었다.
+ * 즉 폐기를 기록한 행위 자체가 위반으로 잡혔다. 가드가 실작업을 벌주면 사람이 가드를 끈다 —
+ * `tools/발표물린트.js` 가 자기 주석에 걸렸던 것과 같은 부류다(그쪽은 이미 이렇게 고쳤다). */
+const stripComments = (src) => src
+  .replace(/<!--[\s\S]*?-->/g, '')
+  .replace(/\/\*[\s\S]*?\*\//g, '')
+  .replace(/(^|[^:])\/\/[^\n]*/g, '$1'); // `https://` 를 주석으로 오인하지 않도록 앞 문자 확인
+
+/* 2026-08-05 · 라이브 접수 폼·대외 게시물을 등록층에 넣는다.
+ * 08-04 감사가 밝힌 것: 이 가드가 초록이었던 건 맞아서가 아니라 **그 파일들을 안 봤기 때문**이다.
+ * 목록은 여기 새로 적지 않고 `tools/브랜드렌더린트.js` 의 `대상` 하나에서 파생시킨다.
+ * 이 등록이 **즉시** 잡은 것: 개인정보처리방침_게시용이 3종을 선언만 하고 웹폰트를 하나도
+ * 안 불러오고 있었다(아래 「쓴 폰트를 실제로 로드한다」가 빨개졌다). */
+const { 대상: RENDER_TARGETS } = require('../tools/브랜드렌더린트');
+
+/* [표시이름, 절대경로] — docs/tools 는 파일명만, 등록층은 상대경로를 그대로 보여준다. */
+const htmlTargets = [
+  ...(fs.existsSync(TOOLS) ? fs.readdirSync(TOOLS).filter((f) => f.endsWith('.html')) : [])
+    .map((f) => [f, path.join(TOOLS, f)]),
+  ...RENDER_TARGETS.map((rel) => [rel, path.join(ROOT, rel)]),
+].filter(([, abs]) => fs.existsSync(abs));
 
 test('폰트 지정 산출물이 최소 1개는 검사된다(스캔이 조용히 0건이 되는 것 방지)', () => {
-  assert.ok(htmlFiles.filter((f) => !EXEMPT.has(f)).length > 0, 'docs/tools/*.html을 하나도 못 찾았다 — 경로가 바뀌었는지 확인');
+  assert.ok(htmlTargets.filter(([f]) => !EXEMPT.has(f)).length > 0, 'docs/tools/*.html을 하나도 못 찾았다 — 경로가 바뀌었는지 확인');
+  assert.ok(htmlTargets.length > RENDER_TARGETS.length, '등록층만 잡히고 docs/tools 가 안 잡혔다 — 경로 확인');
 });
 
-for (const f of htmlFiles) {
-  const src = fs.readFileSync(path.join(TOOLS, f), 'utf8');
+for (const [f, abs] of htmlTargets) {
+  const src = fs.readFileSync(abs, 'utf8');
 
   if (!EXEMPT.has(f)) test(`${f} — 폐기된 구 폰트를 쓰지 않는다`, () => {
+    const live = stripComments(src);
     for (const bad of RETIRED) {
       assert.ok(
-        !src.includes(bad),
+        !live.includes(bad),
         `${f}에 폐기 폰트 「${bad}」가 남아 있다. 정본 docs/브랜드_폰트_정본.md의 3종만 쓴다`
       );
     }
@@ -92,8 +114,8 @@ for (const f of htmlFiles) {
 /* DM Mono엔 키릴·한글 글리프가 아예 없다(2026-08-01 google/fonts METADATA.pb 실검증:
  * 서브셋이 latin·latin-ext 뿐). 몽골어를 넣으면 통째로 다른 폰트로 폴백돼 워드마크가 무너진다. */
 test('DM Mono를 쓰는 파일은 한글·키릴을 같은 지정에 섞지 않는다', () => {
-  for (const f of htmlFiles) {
-    const src = fs.readFileSync(path.join(TOOLS, f), 'utf8');
+  for (const [f, abs] of htmlTargets) {
+    const src = fs.readFileSync(abs, 'utf8');
     for (const decl of fontDecls(src)) {
       if (!decl.includes('DM Mono')) continue;
       assert.ok(
@@ -122,9 +144,9 @@ const ALLOWED_FAMILIES = new Set([...BRAND_FAMILIES, ...SYSTEM_FALLBACKS].map((s
 
 test('3종 밖 폰트가 새로 들어오지 않는다(화이트리스트 — 블랙리스트로는 못 막는다)', () => {
   const violations = [];
-  for (const f of htmlFiles) {
+  for (const [f, abs] of htmlTargets) {
     if (EXEMPT.has(f)) continue; // 비교 도구는 3종 밖 폰트가 있는 것이 목적
-    const src = fs.readFileSync(path.join(TOOLS, f), 'utf8');
+    const src = fs.readFileSync(abs, 'utf8');
     for (const decl of fontDecls(src)) {
       for (const token of decl.replace(/^font-family\s*:/, '').split(',')) {
         const name = token.trim().replace(/^["']|["']$/g, '').trim();

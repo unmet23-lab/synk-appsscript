@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SYNK LAB — 개인정보처리방침 / Privacy Policy</title>
 <meta name="description" content="SYNK LAB (Ulaanbaatar, Mongolia) — Korean language academy. Privacy policy for our Facebook Messenger consultation assistant and learning app.">
+<!-- 2026-08-05 · 웹폰트 로드 신설. 이 파일은 정본 3종을 **선언만 하고 하나도 안 불러오고 있었다**
+     (@font-face 0 · CDN 0 · base64 0 실측). 만든 사람 PC 엔 3종이 설치돼 있어 화면은 멀쩡했고,
+     그래서 아무도 못 봤다 — **방문자 브라우저에서는 셋 다 조용히 폴백**하고 있었다.
+     대외 게시물이라 보는 쪽이 전부 남의 기계다. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&amp;family=DM+Mono:wght@400;500&amp;display=swap">
 <!--
   ════════════════════════════════════════════════════════════════
   SYNK LAB 개인정보처리방침 — 게시용 한 장 사이트
@@ -28,13 +36,23 @@
     --paper:#FBF7EE; --ink:#171820; --navy:#0F1730; --navy2:#1A2340;
     --cream:#F6F1E8; --cream2:#E7DDC7; --coral:#FF6B5C; --coral-soft:#FFE9E4;
     --rule:#E7DDC7;
+    /* 2026-08-05 신설 — 키트 밖 회색(#5C5850 9곳·#8A8578 1곳)의 대체 잉크.
+       ⚠ 이 파일의 이름표는 키트와 **뒤집혀 있다**: 여기 `--navy`(#0F1730)가 키트의 Navy 2 이고,
+         `--navy2`(#1A2340)가 키트의 Navy 다. 값은 전부 키트 안이라 렌더는 옳다 —
+         이름만 헷갈리니 새로 넣는 것은 키트 이름을 그대로 쓴다(--navy-3 = Navy 3). */
+    --navy-3:#2A3358;
   }
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
   body{
     margin:0; background:var(--paper); color:var(--ink);
-    font-family:"SUIT","Inter Tight",-apple-system,BlinkMacSystemFont,"Segoe UI",
-      "Noto Sans KR","Malgun Gothic",Roboto,sans-serif;
+    /* 2026-08-05 · 정본 스택으로 되돌린다(DESIGN.md §3).
+       구 스택의 결함 셋 — ① **Inter Tight 가 SUIT 보다 뒤**였다. 폴백은 글리프 단위라 이 순서가
+       3언어(라틴·키릴·한글)를 자동 분기하는데, 뒤집히면 그 분기가 죽는다(정본이 「바꾸지 말 것」이라 못박은 줄).
+       ② `Noto Sans KR` 은 **폐기 서체**다(구 지정 — 발표물린트 DEAD 목록에 있다).
+       ③ `Roboto` 는 키트 밖이다. 렌더 실측: 261 요소가 이 둘을 스택에 물고 있었다. */
+    font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,
+      'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
     font-size:16px; line-height:1.75; letter-spacing:-0.01em;
   }
   .wrap{max-width:760px; margin:0 auto; padding:0 24px}
@@ -73,23 +91,28 @@
     font-size:14px;
   }
   nav.jump a{color:var(--ink); text-decoration:none; margin-right:20px; font-weight:600}
-  nav.jump a:hover{color:var(--coral)}
-  nav.jump span{color:#8A8578}
+  /* 호버도 라이트 배경 위 코랄 글자다(2.62) — 색을 밝히는 대신 **잉크를 진하게** 해서
+     상태 변화를 준다. 정본이 「본문 크기 강조는 색이 아니라 웨이트」라고 한 것과 같은 축이다. */
+  nav.jump a:hover{color:var(--navy); text-decoration:underline}
+  nav.jump span{color:var(--navy-3)}   /* 구 #8A8578 — 키트 밖 회색, 대비 3.44 미달 */
 
   section.doc{padding-top:44px}
   h2.doc-title{
     font-size:25px; margin:0 0 8px; letter-spacing:-0.02em; line-height:1.35;
     padding-bottom:14px; border-bottom:3px solid var(--navy);
   }
-  .doc-sub{color:#5C5850; font-size:15px; margin:0 0 34px}
+  .doc-sub{color:var(--navy-3); font-size:15px; margin:0 0 34px}
 
   h3{
     font-size:18px; margin:40px 0 12px; letter-spacing:-0.015em; line-height:1.4;
     display:flex; gap:10px; align-items:baseline;
   }
   h3 .num{
-    color:var(--coral); font-weight:700; font-size:15px;
-    font-family:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace; flex:none;
+    /* 조항 번호 22곳 — 라이트 위 코랄 글자였다(2.62). 15px 라 Coral 3(3.23)로도 미달이고,
+       대형 기준(3.0)을 노리려면 18.7px bold 로 키워야 하는데 그건 본문 h3(18px)보다 커진다.
+       번호는 이미 모노 서체 + 700 웨이트로 구별되니 색까지 쓸 필요가 없다(정본 §87). */
+    color:var(--navy-3); font-weight:700; font-size:15px;
+    font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace; flex:none;
   }
   h4{font-size:15.5px; margin:24px 0 8px; color:var(--navy)}
   p{margin:0 0 14px}
@@ -99,7 +122,7 @@
   em{font-style:normal; background:var(--coral-soft); padding:0 3px; border-radius:2px}
 
   blockquote{
-    margin:20px 0; padding:14px 18px; background:#fff;
+    margin:20px 0; padding:14px 18px; background:var(--cream);
     border-left:3px solid var(--coral); font-size:15px;
   }
   blockquote p:last-child{margin-bottom:0}
@@ -108,17 +131,21 @@
   table{border-collapse:collapse; width:100%; min-width:460px; font-size:14.5px}
   th,td{border:1px solid var(--rule); padding:10px 12px; text-align:left; vertical-align:top}
   th{background:var(--navy); color:var(--cream); font-weight:600; white-space:nowrap}
-  tbody tr:nth-child(even){background:#fff}
+  tbody tr:nth-child(even){background:var(--cream)}  /* 얼룩말 줄 — 순백 대신 Cream (철칙 ①) */
 
+  /* 구값은 `background:#fff` + 그 위 코랄 글자였다 — 철칙 ①(순백 금지)과 ②(라이트 위 코랄 글자
+     금지)를 한 자리에서 둘 다 어겼다. 정본이 이 자리에 정한 값이 따로 있다:
+     Coral Wash 는 DESIGN.md §2 에 **「강조 패널 바닥」**으로 등재돼 있다.
+     즉 코랄은 없어지는 게 아니라 **글자에서 면으로 옮겨간다** — 철칙 ②가 시킨 그대로다. */
   .note{
-    background:#fff; border:1px solid var(--rule); border-radius:4px;
+    background:var(--coral-soft); border:1px solid var(--rule); border-radius:4px;
     padding:16px 18px; margin:22px 0; font-size:15px;
   }
-  .note strong:first-child{color:var(--coral)}
+  .note strong:first-child{color:var(--navy-3)}
 
   footer{
     border-top:1px solid var(--rule); padding:32px 0 56px;
-    font-size:14px; color:#5C5850;
+    font-size:14px; color:var(--navy-3);
   }
   footer .wrap{max-width:760px}
 

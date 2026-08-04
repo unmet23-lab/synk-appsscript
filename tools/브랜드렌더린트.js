@@ -36,6 +36,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
+const ROOT = path.resolve(__dirname, '..');
+
 /* ── 정본 값 ────────────────────────────────────────────────────────────────
  * 키트 19색·서체 3종은 여기 두 상수가 유일한 원천이다. 두 곳에 적으면 갈라진다. */
 const KIT = {
@@ -50,10 +52,44 @@ const KIT = {
  * 폴백 낱말(system-ui·sans-serif…)은 CDN 이 죽었을 때 레이아웃을 지키는 안전망이라
  * 금지 대상이 아니다(정본 §7). 실제로 **그려진** 폰트만 본다. */
 const FONTS_OK = ['Inter Tight', 'SUIT Variable', 'SUIT', 'DM Mono'];
+/* ⚠ 이 목록은 **DESIGN.md §3 이 적어 둔 정본 스택에서 뽑는다.** 가드가 정본이 권장하는
+ *   폴백을 위반으로 잡으면, 사람은 정본을 따랐는데 빨간불을 보게 되고 결국 가드를 끈다
+ *   (F094 가 지목한 재발 원인이 정확히 「처방을 따를 수 없어 표기가 갈라진다」였다).
+ *   정본 스택: 'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif
+ *             'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace */
 const GENERIC_OK = [
   'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif', 'serif',
   'monospace', 'ui-monospace', 'ui-sans-serif', 'ui-serif',
-  'Segoe UI', 'Malgun Gothic', '맑은 고딕', 'Cascadia Mono', 'Consolas', 'SFMono-Regular',
+  'Segoe UI', 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo',
+  'Cascadia Mono', 'Consolas', 'SFMono-Regular', 'Menlo',
+];
+
+/* ── 등록층 ────────────────────────────────────────────────────────────────
+ * 「가드는 로직보다 등록층에서 샌다」의 그 층이다. 2026-08-04 감사에서 소스 가드 3종이
+ * 전부 초록이었는데, 맞아서가 아니라 **이 파일들이 목록에 없었기 때문**이었다.
+ * 목록은 여기 하나뿐이다 — `tests/브랜드렌더린트.test.js` 가 이걸 import 해서 쓴다.
+ * 두 곳에 적으면 갈라지고, 갈라지는 방향은 언제나 「통과」다. */
+const 대상 = [
+  'crewcard/카드_kr.html',                    // 라이브 접수 폼(doGet 서빙) — 고객 대면
+  'crewcard/카드_mn.html',
+  'docs/크루카드/크루카드_한국어.html',        // 위 두 파일의 docs 사본(크루카드사본.js 가 동일성 강제)
+  'docs/크루카드/크루카드_몽골어.html',
+  'docs/개인정보처리방침_게시용.html',         // 법적 대외 게시물
+];
+
+/* 제외 — **이유를 적지 않은 제외는 두지 않는다.** 이유 없는 제외가 곧 등록층의 구멍이다.
+ * 각 항목의 수치는 2026-08-05 실측값이다(제외가 「깨끗해서」가 아님을 남긴다). */
+const 제외 = [
+  ['docs/크루카드/자형확인_몽골키릴.html',
+    '자형 비교 하네스 — 여러 서체를 나란히 그리는 것이 이 파일의 목적이고 __SynkNoSuchFont__ 더미까지 있다. 대외물 아님. (실측 7/40/2)'],
+  ['docs/정본/SYNK LAB/자료/SYNK LAB Crew Card · 한국어_구판_참고용.html',
+    '구판 참고용 = 역사 보존물. 고치면 「그때 무엇이었는지」가 사라진다(_archive 와 같은 성격). (실측 157/271/28)'],
+  ['docs/정본/SYNK LAB/자료/SYNK LAB Crew Card · Монгол_구판_참고용.html',
+    '위와 같음. (실측 157/271/29)'],
+  ['docs/정본/SYNK LAB/자료/_src_오프라인_신규_등록서.html',
+    '⏳제외가 아니라 **인계**다 — 흰 면 35곳이 살아 있다. _src_→빌드 통로는 발표물 빌드 트랙(세션 5d53cc35)이 들고 있어 손대면 충돌한다.'],
+  ['docs/정본/SYNK LAB/자료/SYNK_LAB_오프라인_신규_등록서.html',
+    '⏳위 _src_ 에서 빌드되는 산출물이라 직접 고치면 다음 빌드에 덮인다. 위와 함께 인계.'],
 ];
 
 const CHROME_CANDIDATES = [
@@ -124,6 +160,21 @@ function 측정기소스(kitHexes, fontsOk, genericOk) {
   //   즉 대가가 실재해서 스스로 남용을 막는다. 색·서체 검사는 그대로 적용한다(장식도 키트 안이어야 한다).
   const 장식 = (el) => el.closest('[aria-hidden="true"]') !== null;
 
+  // ── 면 검사는 **텍스트와 무관하게** 전 요소를 돈다 ──────────────────────────
+  // 철칙 ①(순백·순검정 금지)은 글자만의 규칙이 아니다. 처음엔 이 검사를 아래 글자 루프
+  // 안에 뒀는데, 그러면 **직접 텍스트를 가진 요소만** 보게 된다 —
+  // 실측: 그 상태로 카드가 「흰 면 22곳」만 냈고, 정작 소스엔 background:#fff 패널이
+  // 6규칙 더 있었다(자식에게 텍스트를 넘긴 컨테이너라 루프에 안 걸렸다).
+  // 가드가 「22곳」이라고 말하면 사람은 그게 전부인 줄 안다 — 부분 집계가 완전 집계처럼 보이는 게
+  // 이 부류의 진짜 위험이다.
+  for (const el of document.querySelectorAll('*')) {
+    if (안그려짐.has(el.tagName)) continue;
+    const bgc = hex(getComputedStyle(el).backgroundColor);
+    if (bgc && bgc !== 'TRANSPARENT' && !KIT.has(bgc)) {
+      키트밖색.push({ sel: 셀렉터(el), hex: bgc, 자리: '면', 숨김: !el.getClientRects().length });
+    }
+  }
+
   for (const el of document.querySelectorAll('*')) {
     if (안그려짐.has(el.tagName)) continue;
     // 직접 자식으로 텍스트를 가진 요소만 — 안 그러면 래퍼가 상속색으로 중복 계산된다.
@@ -157,6 +208,7 @@ function 측정기소스(kitHexes, fontsOk, genericOk) {
     // ③ 대비 — 장식은 면제(위 주석)
     if (장식(el)) continue;
     const bg = 배경찾기(el);
+
     if (!bg.hex) { 그라디언트건너뜀++; continue; }
     const r = ratio(fg, bg.hex);
     const 대형 = size >= 24 || (size >= 18.66 && weight >= 700);
@@ -218,8 +270,11 @@ function 측정(file, chrome) {
 /* ── CLI ──────────────────────────────────────────────────────────────────── */
 function main(argv) {
   const json = argv.includes('--json');
+  // 인자가 없으면 등록층 전량을 돈다 — 「어느 파일을 봤는지」를 사람이 매번 타이핑하게 두면
+  // 목록이 손에서 갈라진다(F080 이 그 자리였다).
   const files = argv.filter((a) => !a.startsWith('--'));
-  if (!files.length) { console.error('사용법: node tools/브랜드렌더린트.js [--json] <파일...>'); return 2; }
+  const 표적 = files.length ? files : 대상.map((p) => path.join(ROOT, p));
+  if (!files.length) console.log(`등록층 ${대상.length}개 · 제외 ${제외.length}개(이유는 tools/브랜드렌더린트.js 의 \`제외\`)`);
 
   const chrome = findChrome();
   if (!chrome) {
@@ -229,7 +284,7 @@ function main(argv) {
 
   const 전체 = {};
   let 위반합 = 0;
-  for (const f of files) {
+  for (const f of 표적) {
     let r;
     try { r = 측정(f, chrome); }
     catch (e) { console.error(`✗ ${f} — ${e.message}`); return 2; }
@@ -258,4 +313,4 @@ function main(argv) {
 }
 
 if (require.main === module) process.exit(main(process.argv.slice(2)));
-module.exports = { KIT, FONTS_OK, GENERIC_OK, findChrome, 측정 };
+module.exports = { KIT, FONTS_OK, GENERIC_OK, findChrome, 측정, 대상, 제외, ROOT };
