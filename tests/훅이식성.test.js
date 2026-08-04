@@ -217,3 +217,69 @@ test('행동: 리눅스식 환경(CLAUDE_PROJECT_DIR만·윈도우 경로 없음
   const env = { PATH: process.env.PATH, CLAUDE_PROJECT_DIR: ROOT.replace(/\\/g, '/') };
   assert.strictEqual(decision(runHook(SCOPE_CMD(), mk('git ' + 'add' + ' -A'), env)), 'deny', '최소 환경에서 가드가 죽었다');
 });
+
+/* ─── ④ 날문자(보이지 않는 제어문자) 금지 ──────────────────────────────────────
+ * 왜 있나 — 2026-08-04 실측: 훅 두 곳이 구분자 상수를 **날문자 그대로** 들고 있었다.
+ *   · code-edit-guard.js `공백표` = 0x01 · track-collision.js `SEP` = 0x1F
+ *   둘 다 **바로 위 주석이 「반드시 이스케이프로 적는다」고 금지한** 형태다. 규칙은 있었고
+ *   지키는 눈이 없었다.
+ * 지워지면 어떻게 되나 — 새는 방향이 서로 다른데 둘 다 나쁘다:
+ *   · 공백표가 빈 문자열 → `length !== 1` 방어가 걸려 **모든 Bash 명령이 막힌다**(전면 마비)
+ *   · SEP 가 빈 문자열 → 커밋 제목이 글자 단위로 쪼개진다(**조용히** 틀린다)
+ * 🔴 이 검사가 프로즈로 안 되는 증거 — 이 결함을 고치는 편집이 주석 안에 날문자를 **한 번 더**
+ *    심었다. 편집 통로가 이스케이프 표기를 날문자로 바꿔 놨고 화면에는 아무 표시도 없었다.
+ *    사람이 볼 수 없는 것을 사람에게 맡길 수 없다.
+ * 탐지력은 픽스처로 못박고 실저장소에는 거짓양성만 검사한다(F023 — 회귀가 「버그가 아직
+ * 있을 것」을 요구하면 고치는 순간 빨간불이 된다).
+ */
+const 허용제어 = new Set([9, 10, 13]); // 탭·LF·CR 만 정상
+
+function 날문자들(원문) {
+  const 결과 = [];
+  원문.split(/\r?\n/).forEach((줄, i) => {
+    for (const c of 줄) {
+      const p = c.codePointAt(0);
+      if (p < 32 && !허용제어.has(p)) 결과.push({ 줄: i + 1, 코드: p });
+    }
+  });
+  return 결과;
+}
+
+function 훅JS전부(디렉터리) {
+  const 목록 = [];
+  for (const e of fs.readdirSync(디렉터리, { withFileTypes: true })) {
+    const p = path.join(디렉터리, e.name);
+    if (e.isDirectory()) 목록.push(...훅JS전부(p));      // lib/ 도 같은 무게로 본다
+    else if (e.name.endsWith('.js')) 목록.push(p);
+  }
+  return 목록;
+}
+
+test('④ 훅 소스에 날문자가 없다 (구분자 상수는 이스케이프 표기로)', () => {
+  const 위반 = [];
+  for (const f of 훅JS전부(path.join(ROOT, '.claude', 'hooks'))) {
+    for (const v of 날문자들(fs.readFileSync(f, 'utf8'))) {
+      위반.push(`${path.relative(ROOT, f).replace(/\\/g, '/')}:${v.줄} = 0x${v.코드.toString(16).padStart(2, '0')}`);
+    }
+  }
+  assert.deepStrictEqual(위반, [],
+    '훅 소스에 날문자가 있다 — 이스케이프 표기(백슬래시 u 형태)로 바꾼다:\n  ' + 위반.join('\n  '));
+});
+
+test('④ 탐지력 — 날문자는 잡고, 이스케이프 표기는 안 잡는다(양방향)', () => {
+  const 날 = String.fromCharCode(1);
+  const 백슬래시 = String.fromCharCode(92);
+  const 따옴표 = String.fromCharCode(39);
+
+  // 잡아야 하는 쪽 — 고치기 전의 그 형태 그대로
+  const 깨진판 = `const 공백표 = ${따옴표}${날}${따옴표};`;
+  assert.strictEqual(날문자들(깨진판).length, 1, '날문자를 못 잡는다 — 검사가 장식이다');
+
+  // 잡으면 안 되는 쪽 — 고친 뒤의 형태(거짓양성이면 다음 사람이 검사를 끈다)
+  const 고친판 = `const 공백표 = ${따옴표}${백슬래시}u0001${따옴표};`;
+  assert.deepStrictEqual(날문자들(고친판), [], '이스케이프 표기를 위반으로 셌다 — 거짓양성');
+
+  // 탭·개행은 소스에 정상적으로 있다
+  const 평범 = 'a' + String.fromCharCode(9) + 'b' + String.fromCharCode(10) + 'c';
+  assert.deepStrictEqual(날문자들(평범), [], '탭·개행을 위반으로 셌다 — 저장소 전체가 빨개진다');
+});
