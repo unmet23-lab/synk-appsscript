@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<title>SYNK LAB · Элсэлтийн өргөдөл · Enrollment Application Form</title>
+<style>
+/*@FONTS@*/
+
+/* ─────────────────────────────────────────────────────────────
+   SYNK LAB · 오프라인 신규 등록서 (Элсэлтийн өргөдөл)
+   브랜드 키트 v10 Crew Dossier 19색 · 폰트 3종 잠금
+   색 규율 — 이 문서가 쓰는 색은 전부 키트 안이다.
+     · Lime  = 앱 전용(성장·획득)      → 이 문서 사용 금지
+     · KC 4색 = Part 6 / 모드C 전용     → 이 문서 사용 금지
+     · Coral  = 라이트에서 「면」만, 글자는 Coral 3(24px↑ 또는 18.7px↑ bold)
+     · Coral 면 위 글자 = Ink 또는 Navy 2 만 (흰 2.8 · Cream 2.5 미달)
+   폰트 규율 — 폴백 0을 목표로 글자별 담당을 고정한다.
+     · Inter Tight = 키릴(몽골)·라틴·₮·№·→   ← 유일하게 Өө·Үү를 가진다
+     · SUIT        = 한글 전용             ← 키릴·₮·№ 없음
+     · DM Mono     = 라틴 시스템 라벨 전용   ← 381글리프, 키릴·₮·№·→ 없음
+   ───────────────────────────────────────────────────────────── */
+
+:root{
+  /* 01 Core */
+  --cream:#F6F1E8; --coral:#FF6B5C; --navy:#1A2340; --ink:#171820;
+  /* 02 Cream family */
+  --paper:#FBF7EE; --cream-2:#EFE7D7; --cream-3:#E7DDC7;
+  /* 03 Coral family */
+  --coral-wash:#FFE9E4; --coral-soft:#FFCFC6; --coral-3:#E8543F;
+  /* 04 Navy family */
+  --navy-3:#2A3358; --navy-2:#0F1730;
+  /* 서체 — 스택 순서가 곧 언어 배분이다. 뒤집으면 언어가 잘못된 서체로 간다. */
+  --mn:'Inter Tight','SUIT',sans-serif;
+  --kr:'SUIT','Inter Tight',sans-serif;
+  --mono:'DM Mono','Inter Tight','SUIT',monospace;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+@page{ size:A4; margin:0 }
+
+html,body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--mn);
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+  -webkit-font-smoothing:antialiased;
+}
+
+.page{
+  width:210mm; min-height:297mm;
+  padding:9mm 10mm 7mm;
+  display:flex; flex-direction:column;
+  background:var(--paper);
+}
+
+/* ── 머리 판 ─────────────────────────────────────────────── */
+.plate{
+  background:var(--navy-2);
+  border-radius:2.4mm;
+  padding:5.4mm 6mm 5mm;
+  display:flex; align-items:flex-end; justify-content:space-between; gap:6mm;
+  color:var(--cream);
+}
+.plate-l{display:flex;flex-direction:column;gap:1.6mm}
+.lockup{
+  font-family:var(--mono); font-weight:500;
+  font-size:2.5mm; letter-spacing:.34em; color:var(--coral);
+}
+.title{
+  font-family:var(--mn); font-weight:700;
+  font-size:8.6mm; line-height:1; letter-spacing:-.012em; color:var(--cream);
+}
+.title-en{
+  font-family:var(--mono); font-weight:400;
+  font-size:2.35mm; letter-spacing:.26em; color:var(--cream);
+  opacity:.78;
+}
+.tagline{
+  font-family:var(--mono); font-weight:300;
+  font-size:1.95mm; letter-spacing:.2em; color:var(--cream);
+  opacity:.62; margin-top:.6mm;
+}
+
+/* 관리용 · OFFICE USE — 접수 담당이 채우는 칸 */
+.office{display:flex;flex-direction:column;gap:1.8mm;flex:0 0 auto}
+.office-cap{
+  font-family:var(--mono); font-weight:400;
+  font-size:1.85mm; letter-spacing:.24em; color:var(--coral); text-align:right;
+}
+.office-row{display:flex;gap:1.8mm}
+.owell{
+  background:#fff; border-radius:1mm;
+  width:24mm; height:7.6mm; position:relative;
+}
+.owell.wide{width:30mm}
+.owell span{
+  position:absolute; top:.9mm; left:1.6mm;
+  font-family:var(--mono); font-weight:400;
+  font-size:1.7mm; letter-spacing:.14em; color:var(--navy-3);
+}
+
+/* ── 섹션 머리 ───────────────────────────────────────────── */
+.sec{display:flex;align-items:center;gap:2.2mm;margin:4.2mm 0 2mm}
+.sec-n{
+  background:var(--coral); color:var(--ink);      /* 코랄 면 위 글자 = Ink */
+  font-family:var(--mono); font-weight:500;
+  font-size:2.3mm; letter-spacing:.1em;
+  padding:.9mm 1.6mm .8mm; border-radius:.9mm;
+}
+.sec-mn{font-family:var(--mn);font-weight:600;font-size:3.5mm;color:var(--navy);letter-spacing:-.005em}
+.sec-en{font-family:var(--mono);font-weight:400;font-size:2mm;letter-spacing:.22em;color:var(--navy-3);opacity:.85}
+.sec-rule{flex:1;height:.3mm;background:var(--cream-3);border-radius:.3mm}
+
+/* ── 기입 칸 ─────────────────────────────────────────────── */
+.row{display:flex;gap:2.4mm;margin-bottom:2.4mm}
+.fw{
+  position:relative; flex:1;
+  height:13mm; background:#fff;
+  border:.3mm solid var(--cream-3); border-radius:1.2mm;
+}
+.fw .fl{
+  position:absolute; top:1.5mm; left:2.4mm;
+  font-family:var(--mn); font-weight:500;
+  font-size:2.5mm; color:var(--navy-3); letter-spacing:-.004em;
+}
+.fw .fe{
+  position:absolute; top:1.75mm; right:2.4mm;
+  font-family:var(--mono); font-weight:400;
+  font-size:1.75mm; letter-spacing:.16em; color:var(--navy-3); opacity:.55;
+}
+
+/* 선택지 줄 — 체크박스 묶음 */
+.pick{
+  flex:1; background:#fff;
+  border:.3mm solid var(--cream-3); border-radius:1.2mm;
+  padding:2mm 2.6mm 1.9mm;
+  display:flex; flex-direction:column; gap:1.5mm;
+}
+.pick-h{display:flex;align-items:baseline;gap:1.8mm}
+.pick-h .mn{font-family:var(--mn);font-weight:500;font-size:2.5mm;color:var(--navy-3)}
+.pick-h .en{font-family:var(--mono);font-weight:400;font-size:1.75mm;letter-spacing:.16em;color:var(--navy-3);opacity:.55}
+.opts{display:flex;gap:3.4mm;flex-wrap:wrap}
+.opt{display:flex;align-items:center;gap:1.3mm}
+.cb{
+  width:3.6mm;height:3.6mm;flex:0 0 auto;
+  border:.32mm solid var(--navy-3); border-radius:.6mm; background:#fff;
+}
+.opt .t{font-family:var(--mn);font-weight:500;font-size:2.45mm;color:var(--ink);white-space:nowrap}
+.opt .t em{font-style:normal;font-family:var(--mono);font-weight:400;font-size:1.75mm;letter-spacing:.14em;color:var(--navy-3);opacity:.6}
+
+/* ── 하단 2단 (환불 · 동의) ───────────────────────────────── */
+.duo{display:flex;gap:3.4mm;align-items:stretch}
+.col{display:flex;flex-direction:column;flex:1}
+.col.refund{flex:0 0 74mm}
+.panel{
+  flex:1; background:#fff;
+  border:.3mm solid var(--cream-3); border-radius:1.2mm;
+  padding:2.6mm 2.8mm;
+}
+.legal-mn{font-family:var(--mn);font-weight:400;font-size:2.35mm;line-height:1.45;color:var(--ink)}
+.legal-en{font-family:var(--mn);font-weight:400;font-size:2.05mm;line-height:1.42;color:var(--navy-3);opacity:.72;margin-top:1.2mm}
+
+/* 환불 원장 — 규정을 읽지 않아도 보이게 만드는 자리 */
+.ledger{
+  margin-top:2.4mm; background:var(--coral-wash);
+  border:.3mm solid var(--coral-soft); border-radius:1.2mm;
+  padding:2.2mm 2.4mm;
+}
+.ledger-f{
+  font-family:var(--mono); font-weight:400;
+  font-size:1.8mm; letter-spacing:.04em; color:var(--navy-3);
+  text-align:center; margin-bottom:2mm;
+  white-space:nowrap;          /* 수식이 접히면 괄호만 다음 줄에 남는다 */
+}
+.strip{display:flex;align-items:stretch;gap:1.6mm}
+.led{
+  flex:1; background:#fff; border-radius:1mm;
+  padding:1.5mm 1.6mm 1.7mm; text-align:center;
+}
+.led.out{background:var(--coral)}              /* 면은 코랄, 글자는 Ink */
+.led .k{
+  font-family:var(--mono); font-weight:400;
+  font-size:1.65mm; letter-spacing:.16em; color:var(--navy-3);
+  display:block; margin-bottom:.7mm;
+}
+.led.out .k{color:var(--ink);opacity:.72}
+.led .v{font-family:var(--mn);font-weight:700;font-size:3.1mm;color:var(--ink);letter-spacing:-.01em}
+.led .s{font-family:var(--mono);font-weight:400;font-size:1.6mm;letter-spacing:.13em;color:var(--navy-3);display:block;margin-top:.4mm;opacity:.7}
+.led.out .s{color:var(--ink);opacity:.62}
+.arw{
+  align-self:center; flex:0 0 auto;
+  width:0;height:0;
+  border-top:1.3mm solid transparent;
+  border-bottom:1.3mm solid transparent;
+  border-left:1.8mm solid var(--coral-3);
+}
+
+/* 동의 3줄 */
+.cons{display:flex;flex-direction:column;gap:2mm;height:100%}
+.cline{display:flex;gap:2.2mm;align-items:flex-start}
+.cnum{
+  flex:0 0 auto; background:var(--cream-2); color:var(--navy);
+  font-family:var(--mono); font-weight:500; font-size:1.9mm; letter-spacing:.08em;
+  padding:.7mm 1.2mm .6mm; border-radius:.7mm; margin-top:.2mm;
+}
+.ctext{flex:1}
+.ctext .mn{font-family:var(--mn);font-weight:400;font-size:2.3mm;line-height:1.4;color:var(--ink)}
+.ctext .mn b{font-weight:600}
+.ctext .en{font-family:var(--mn);font-weight:400;font-size:1.95mm;line-height:1.38;color:var(--navy-3);opacity:.7;display:block;margin-top:.5mm}
+.cpick{display:flex;gap:2.2mm;margin-top:1.2mm;flex-wrap:wrap}
+.cdiv{height:.3mm;background:var(--cream-3);border-radius:.3mm}
+
+/* ── 서명 ────────────────────────────────────────────────── */
+.sign{display:flex;gap:2.4mm}
+.sw{
+  position:relative; flex:1;
+  height:24mm; background:#fff;
+  border:.3mm solid var(--cream-3); border-radius:1.2mm;
+}
+.sw .fl{position:absolute;top:1.6mm;left:2.4mm;font-family:var(--mn);font-weight:500;font-size:2.3mm;color:var(--navy-3)}
+/* 몽골어 라벨이 길어 EN 라벨과 부딪힌다 — EN 을 아래 모서리로 내려 충돌 자체를 없앤다 */
+.sw .fe{position:absolute;bottom:1.5mm;right:2.4mm;font-family:var(--mono);font-weight:400;font-size:1.7mm;letter-spacing:.16em;color:var(--navy-3);opacity:.55}
+
+.seal{flex:0 0 50mm;background:var(--cream-2);border-color:var(--cream-3);
+  display:flex;align-items:center;justify-content:center;gap:2.8mm;padding:0 3mm}
+.seal-ring{
+  width:13mm;height:13mm;flex:0 0 auto;border-radius:50%;
+  border:.35mm dashed var(--navy-3); opacity:.55;
+}
+.seal-t{display:flex;flex-direction:column;gap:1mm}
+.seal-t .k{font-family:var(--mono);font-weight:400;font-size:1.65mm;letter-spacing:.12em;color:var(--navy-3);white-space:nowrap}
+.seal-t .n{display:flex;align-items:baseline;gap:1.2mm;white-space:nowrap}
+.seal-t .n .ko{font-family:var(--kr);font-weight:600;font-size:3.1mm;color:var(--ink)}
+.seal-t .n .en{font-family:var(--mn);font-weight:500;font-size:2.3mm;color:var(--navy-3)}
+
+/* ── 꼬리 ────────────────────────────────────────────────── */
+.foot{
+  margin-top:auto; padding-top:3.4mm;
+  border-top:.3mm solid var(--cream-3);
+  display:flex; justify-content:space-between; align-items:baseline; gap:4mm;
+  font-family:var(--mono); font-weight:300;
+  font-size:1.8mm; letter-spacing:.18em; color:var(--navy-3); opacity:.72;
+}
+.foot .r{display:flex;gap:4mm}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ═══ 머리 판 ═══ -->
+  <div class="plate">
+    <div class="plate-l">
+      <div class="lockup">SYNK &middot; LAB</div>
+      <div class="title">Элсэлтийн өргөдөл</div>
+      <div class="title-en">ENROLLMENT APPLICATION FORM &middot; V.02 / 2026</div>
+      <div class="tagline">NEUROSCIENCE-BASED KOREAN LANGUAGE ACADEMY &middot; ULAANBAATAR &middot; MN</div>
+    </div>
+    <div class="office">
+      <div class="office-cap">OFFICE USE ONLY</div>
+      <div class="office-row">
+        <div class="owell"><span>NO.</span></div>
+        <div class="owell wide"><span>STUDENT ID</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ §01 수강생 ═══ -->
+  <div class="sec">
+    <span class="sec-n">&sect;01</span>
+    <span class="sec-mn">Суралцагчийн мэдээлэл</span>
+    <span class="sec-en">STUDENT INFORMATION</span>
+    <span class="sec-rule"></span>
+  </div>
+  <div class="row">
+    <div class="fw"><span class="fl">Нэр (кирилл)</span><span class="fe">FULL NAME</span></div>
+    <div class="fw"><span class="fl">Нэр (солонгос)</span><span class="fe">KOREAN NAME</span></div>
+  </div>
+  <div class="row">
+    <div class="fw" style="flex:1.15"><span class="fl">Төрсөн огноо</span><span class="fe">DATE OF BIRTH</span></div>
+    <div class="fw" style="flex:.72"><span class="fl">Хүйс</span><span class="fe">GENDER</span></div>
+    <div class="fw" style="flex:1.15"><span class="fl">Утасны дугаар</span><span class="fe">PHONE</span></div>
+    <div class="fw" style="flex:1.35"><span class="fl">И-мэйл</span><span class="fe">EMAIL</span></div>
+  </div>
+  <div class="row">
+    <div class="fw"><span class="fl">Гэрийн хаяг</span><span class="fe">ADDRESS</span></div>
+  </div>
+
+  <!-- ═══ §02 보호자 ═══ -->
+  <div class="sec">
+    <span class="sec-n">&sect;02</span>
+    <span class="sec-mn">Асран хамгаалагч</span>
+    <span class="sec-en">GUARDIAN &middot; IF MINOR</span>
+    <span class="sec-rule"></span>
+  </div>
+  <div class="row">
+    <div class="fw" style="flex:1.5"><span class="fl">Асран хамгаалагчийн нэр</span><span class="fe">GUARDIAN NAME</span></div>
+    <div class="fw"><span class="fl">Хамаарал</span><span class="fe">RELATIONSHIP</span></div>
+    <div class="fw" style="flex:1.15"><span class="fl">Утасны дугаар</span><span class="fe">PHONE</span></div>
+    <div class="fw"><span class="fl">Гарын үсэг</span><span class="fe">SIGNATURE</span></div>
+  </div>
+
+  <!-- ═══ §03 등록 ═══ -->
+  <div class="sec">
+    <span class="sec-n">&sect;03</span>
+    <span class="sec-mn">Элсэлтийн мэдээлэл</span>
+    <span class="sec-en">ENROLLMENT DETAILS</span>
+    <span class="sec-rule"></span>
+  </div>
+  <div class="row">
+    <div class="fw"><span class="fl">Анги</span><span class="fe">CLASS</span></div>
+    <div class="fw"><span class="fl">Элссэн огноо</span><span class="fe">ENROLLMENT DATE</span></div>
+    <div class="fw"><span class="fl">Төлбөр (₮)</span><span class="fe">TUITION &middot; MNT</span></div>
+  </div>
+  <div class="row">
+    <div class="pick" style="flex:.82">
+      <div class="pick-h"><span class="mn">Сургалтын хугацаа</span><span class="en">COURSE PERIOD</span></div>
+      <div class="opts">
+        <span class="opt"><span class="cb"></span><span class="t">1 сар <em>1 MO</em></span></span>
+        <span class="opt"><span class="cb"></span><span class="t">3 сар <em>3 MO</em></span></span>
+        <span class="opt"><span class="cb"></span><span class="t">6 сар <em>6 MO</em></span></span>
+      </div>
+    </div>
+    <div class="pick" style="flex:1.18">
+      <div class="pick-h"><span class="mn">Төлбөрийн хэлбэр</span><span class="en">PAYMENT METHOD</span></div>
+      <div class="opts">
+        <span class="opt"><span class="cb"></span><span class="t">БЭЛЭН <em>CASH</em></span></span>
+        <span class="opt"><span class="cb"></span><span class="t">КАРТ <em>CARD</em></span></span>
+        <span class="opt"><span class="cb"></span><span class="t">ШИЛЖҮҮЛЭГ <em>TRANSFER</em></span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ §04 환불 · §05 동의 (2단) ═══ -->
+  <div class="duo">
+
+    <div class="col refund">
+      <div class="sec" style="margin-top:4.2mm">
+        <span class="sec-n">&sect;04</span>
+        <span class="sec-mn">Төлбөр буцаах журам</span>
+        <span class="sec-rule"></span>
+      </div>
+      <div class="panel">
+        <div class="legal-mn">Нийт төлсөн төлбөрийн <b>50%</b>-ийг суутган, үлдэх <b>50%</b>-иас ашиглаагүй хугацааны хувь тэнцүүлэн буцаана.</div>
+        <div class="legal-en">50% of the total paid tuition is non-refundable. The remaining 50% is refunded in proportion to the unused course period.</div>
+        <div class="ledger">
+          <div class="ledger-f">REFUND = ( TOTAL &times; 50% ) &times; ( REMAINING &divide; TOTAL )</div>
+          <div class="strip">
+            <span class="led"><span class="k">TOTAL</span><span class="v">600,000</span><span class="s">6 MO</span></span>
+            <span class="arw"></span>
+            <span class="led"><span class="k">USED</span><span class="v">3</span><span class="s">MONTHS</span></span>
+            <span class="arw"></span>
+            <span class="led out"><span class="k">REFUND</span><span class="v">150,000</span><span class="s">MNT</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="sec" style="margin-top:4.2mm">
+        <span class="sec-n">&sect;05</span>
+        <span class="sec-mn">Зөвшөөрөл</span>
+        <span class="sec-en">CONSENT</span>
+        <span class="sec-rule"></span>
+      </div>
+      <div class="panel">
+        <div class="cons">
+
+          <div class="cline">
+            <span class="cnum">01</span>
+            <div class="ctext">
+              <div class="mn"><b>Хувийн мэдээлэл цуглуулах</b> — SYNK нь сургалт зохион байгуулах зорилгоор дээрх хувийн мэдээллийг цуглуулж, ашиглахыг зөвшөөрч байна.</div>
+              <span class="en">Personal data collection — I consent to SYNK collecting and using the above personal information for educational purposes.</span>
+              <div class="cpick">
+                <span class="opt"><span class="cb"></span><span class="t">ЗӨВШӨӨРЧ <em>AGREE</em></span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="cdiv"></div>
+
+          <div class="cline">
+            <span class="cnum">02</span>
+            <div class="ctext">
+              <div class="mn"><b>Дүрс бичлэг ашиглах эрх</b> — Хичээл болон контент бүтээх явцад авсан гэрэл зураг, видео бичлэгийг SYNK-ийн сурталчилгаа, олон нийтийн сүлжээнд ашиглахыг зөвшөөрч байна.</div>
+              <span class="en">Photo / video (portrait) rights — I consent to SYNK using photos and videos taken during classes and content production for promotion and social media.</span>
+              <div class="cpick">
+                <span class="opt"><span class="cb"></span><span class="t">ЗӨВШӨӨРЧ <em>AGREE</em></span></span>
+                <span class="opt"><span class="cb"></span><span class="t">ЗӨВШӨӨРӨХГҮЙ <em>DECLINE</em></span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="cdiv"></div>
+
+          <div class="cline">
+            <span class="cnum">03</span>
+            <div class="ctext">
+              <div class="mn"><b>Төлбөр буцаах журам</b> — Дээрх төлбөр буцаах журамтай танилцаж, хүлээн зөвшөөрсөн.</div>
+              <span class="en">Refund policy — I have read and accepted the refund policy stated above.</span>
+              <div class="cpick">
+                <span class="opt"><span class="cb"></span><span class="t">ЗӨВШӨӨРЧ <em>AGREE</em></span></span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ §06 서명 ═══ -->
+  <div class="sec">
+    <span class="sec-n">&sect;06</span>
+    <span class="sec-mn">Гарын үсэг</span>
+    <span class="sec-en">SIGNATURES</span>
+    <span class="sec-rule"></span>
+  </div>
+  <div class="sign">
+    <div class="sw" style="flex:.8"><span class="fl">Огноо</span><span class="fe">DATE</span></div>
+    <div class="sw"><span class="fl">Суралцагчийн гарын үсэг</span><span class="fe">STUDENT</span></div>
+    <div class="sw"><span class="fl">Асран хамгаалагчийн гарын үсэг</span><span class="fe">GUARDIAN</span></div>
+    <div class="sw seal">
+      <div class="seal-ring"></div>
+      <div class="seal-t">
+        <span class="k">SYNK LAB &middot; DIRECTOR</span>
+        <span class="n"><span class="ko">양유호</span><span class="en">&middot; Yang Yuho</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 꼬리 ═══ -->
+  <div class="foot">
+    <span>SYNK LAB &middot; ULAANBAATAR &middot; MONGOLIA</span>
+    <span class="r">
+      <span>FILE &middot; ENROLLMENT-FORM</span>
+      <span>GEN &middot; 2026.08.04</span>
+      <span>PAGE &middot; 01 / 01</span>
+    </span>
+  </div>
+
+</div>
+</body>
+</html>
