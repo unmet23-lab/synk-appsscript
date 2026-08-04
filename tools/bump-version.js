@@ -200,10 +200,110 @@ function collectUsedVersions() {
 
 /* ── CLI ──────────────────────────────────────────────────────────────── */
 
+/* ── 상수와 헤더 태그를 한 동작으로 ──────────────────────────────────────
+ *
+ * 왜 (2026-08-04 실측, 하루 두 번 · v9.180·v9.181):
+ *   검사(safety [v9.55])는 **엔진 7파일을 이어붙인 문자열**의 최고 `[v9.N]` 태그와
+ *   `Code.js` 의 `SYNK_VERSION` 상수가 같은지 본다. 그런데 그 둘은 **두 번에 나뉘어** 쓰였다:
+ *     ⓐ `--desc` 없이 돌리면 상수만 오르고 체인 항목이 안 붙는다 → 반드시 빨개진다
+ *     ⓑ 세션이 기능을 짜면서 엔진 파일 헤더에 `[v9.181]` 을 먼저 박고, 채번은 나중에 한다
+ *   그 사이 창에서 CI 가 빨개지고, **그 적색은 남의 배포 게이트까지 막는다**(실측: 보드 두 줄이
+ *   「타 세션 미커밋이라 배포만 대기」였다). 자기 트랙 안에서 끝나지 않는 결함이다.
+ *
+ * 처방 = 「잘못 쓸 수 없는 통로」로 옮긴다(CLAUDE.md 신뢰성).
+ *   ⓐ `--desc` 를 **채번 전에** 강제한다(채번 뒤에 막으면 번호만 태운다).
+ *   ⓑ 짜는 동안에는 `[vNEXT]` 라고 적는다 — 이 자리표는 `\[v9\.\d+` 에 안 걸려 **애초에 안 빨개진다.**
+ *      채번이 상수를 쓰는 **같은 실행에서** 모든 엔진 파일의 `[vNEXT]` 를 `[v9.N]` 으로 바꾼다.
+ *   🔑 순서를 바꾸라고 사람에게 시키는 대신, 순서가 하나뿐인 통로를 만든 것이다. */
+const PLACEHOLDER = /\[vNEXT\]/g;
+
+/* SYNK_BUMP_ROOT = **보는 저장소만** 바꾸는 이음매(로직은 안 끈다 · SYNK_TRACK_ROOT·SYNK_OWNER_ROOT 와 같은 패턴).
+ * 탐지력은 픽스처가 져야 한다 — 실저장소에 `[vNEXT]` 를 심어 놓고 재는 순간 그게 사고다. */
+function rootDir() { return process.env.SYNK_BUMP_ROOT || ROOT; }
+function codePath() { return path.join(rootDir(), 'Code.js'); }
+
+/** 엔진 파일 목록의 정본은 tests/_engine-source.js 하나다 — 여기 다시 적으면 분할 때 갈라진다.
+ *  픽스처에는 그 파일이 없으므로, 그때는 있는 것만 본다. */
+function engineFiles() {
+  let 목록;
+  try { 목록 = require('../tests/_engine-source.js').ENGINE_FILES; }
+  catch (_) { 목록 = ['Code.js']; }   // 목록을 못 읽어도 Code.js 는 반드시 본다
+  const r = rootDir();
+  return 목록.filter((f) => fs.existsSync(path.join(r, f)));
+}
+
+/** 엔진 전체에서 최고 `[v9.N]` 태그. 없으면 null. */
+function maxTagInEngines() {
+  let max = null;
+  for (const f of engineFiles()) {
+    let src; try { src = fs.readFileSync(path.join(rootDir(), f), 'utf8'); } catch (_) { continue; }
+    for (const m of src.matchAll(/\[v9\.(\d+)\]/g)) {
+      const n = Number(m[1]);
+      if (max === null || n > max) max = n;
+    }
+  }
+  return max;
+}
+
+/** `[vNEXT]` 가 남아 있는 파일들. */
+function pendingPlaceholders() {
+  return engineFiles().filter((f) => {
+    try { return PLACEHOLDER.test(fs.readFileSync(path.join(rootDir(), f), 'utf8')) && (PLACEHOLDER.lastIndex = 0, true); }
+    catch (_) { return false; }
+  });
+}
+
+/** 자리표를 확정 번호로 바꾼다. Code.js 는 상수 줄과 함께 이미 쓰였으므로 그 내용을 넘겨받는다. */
+function stampPlaceholders(ver, codeSrcAfter) {
+  const 바뀐것 = [];
+  const 쓸것 = [];
+  for (const f of engineFiles()) {
+    const p = path.join(rootDir(), f);
+    let src = f === 'Code.js' && codeSrcAfter !== undefined ? codeSrcAfter : null;
+    if (src === null) { try { src = fs.readFileSync(p, 'utf8'); } catch (_) { continue; } }
+    if (!/\[vNEXT\]/.test(src)) { if (f === 'Code.js' && codeSrcAfter !== undefined) 쓸것.push([p, src]); continue; }
+    const n = (src.match(/\[vNEXT\]/g) || []).length;
+    쓸것.push([p, src.replace(PLACEHOLDER, '[' + ver + ']')]);
+    바뀐것.push(f + '×' + n);
+  }
+  // 전부 계산한 뒤에 쓴다 — 중간에 실패하면 절반만 바뀐 상태가 남는다
+  for (const [p, s] of 쓸것) fs.writeFileSync(p, s);
+  return 바뀐것;
+}
+
+/** `--check` — 지금 상태가 CI 를 빨갛게 만드는가. 되돌림 비용 0이라 아무 때나 돌려도 된다. */
+function check() {
+  const 문제 = [];
+  const cur = versionOf(fs.readFileSync(codePath(), 'utf8'));
+  const 남은 = pendingPlaceholders();
+  if (남은.length) 문제.push('[vNEXT] 자리표가 남아 있다: ' + 남은.join(', ') + ' → 커밋 전에 `--desc` 로 채번하면 함께 확정된다');
+  const max = maxTagInEngines();
+  if (cur && max !== null) {
+    const curN = Number(String(cur).replace(/^v9\./, ''));
+    if (curN !== max) {
+      문제.push(`SYNK_VERSION ${cur} ≠ 엔진 최고 태그 v9.${max}`
+        + (max > curN ? ' — 태그를 먼저 박았다. `[vNEXT]` 로 적고 채번에 맡겨라(그 사이 CI 가 빨개지고 남의 배포까지 막힌다)'
+                      : ' — 상수만 올랐다. `--desc` 없이 돌렸을 때 이렇게 된다'));
+    }
+  }
+  if (문제.length) { 문제.forEach((m) => console.error('✗ ' + m)); return 1; }
+  console.log('✅ 버전 표기 일치 — SYNK_VERSION ' + cur + ' = 엔진 최고 태그 · [vNEXT] 잔존 0');
+  return 0;
+}
+
 function main(argv) {
+  if (argv.includes('--check')) { const c = check(); if (c) process.exitCode = c; return c; }
+
   const dry = argv.includes('--dry');
   const di = argv.indexOf('--desc');
   const desc = di >= 0 ? argv[di + 1] : '';
+
+  /* 🔑 채번 **전에** 막는다 — 아래 push 로 번호를 확보한 뒤에 throw 하면 그 번호는 영영 태워진다.
+   *   desc 없이 상수만 올리는 것은 「실수」가 아니라 **반드시 CI 를 빨갛게 만드는 상태**다. */
+  if (!dry && !desc) {
+    throw new Error('--desc "한 줄 요약" 이 필요합니다 — 없이 돌리면 상수만 오르고 [v9.N] 체인 항목이 안 붙어 '
+      + 'CI 가 즉시 빨개집니다(safety [v9.55]). 번호만 미리 보려면 --dry 를 쓰세요.');
+  }
   const ti = argv.indexOf('--toil');
   const toilSpec = ti >= 0 ? argv[ti + 1] : '';
   // 형식 오류는 **채번 전에** 잡는다 — 채번 뒤에 터지면 번호는 예약됐는데 기록은 없는 상태가 된다
@@ -241,9 +341,14 @@ function main(argv) {
     // [F017] origin/master의 **현재** 줄을 함께 넘긴다 — 위에서 이미 fetch했으므로 최신이다.
     // 못 읽으면(오프라인·초기 저장소) null이 가고 병합은 건너뛴다. 병합 실패가 채번을 막지는 않는다.
     const originSrc = gitQuiet(['show', 'origin/master:Code.js']);
-    fs.writeFileSync(CODE, replaceVersionLine(src, cand, desc, originSrc));
+    /* 상수 줄과 엔진 파일들의 `[vNEXT]` 를 **한 실행에서** 확정한다.
+     * 계산을 전부 끝낸 뒤 쓰기 때문에, 중간에 죽어도 절반만 확정된 상태가 남지 않는다. */
+    const 새Code = replaceVersionLine(src, cand, desc, originSrc);
+    const 찍은것 = stampPlaceholders(cand, 새Code);
     console.log('✅ 예약 완료: ' + cand + '  (태그 ' + tag + ' origin push 성공 = 이 번호는 내 것)');
-    console.log('   Code.js SYNK_VERSION 기입됨. 커밋 제목·태그·docs/버전_이력.md에 [' + cand + ']를 쓰세요.');
+    console.log('   Code.js SYNK_VERSION 기입됨'
+      + (찍은것.length ? ' · [vNEXT] → [' + cand + '] 확정: ' + 찍은것.join(', ') : '')
+      + '. 커밋 제목과 docs/버전_이력.md에 [' + cand + ']를 쓰세요.');
 
     /* 손일 장부 기입 — 번호가 확정된 뒤에 한다(장부의 ID가 곧 이 번호다).
      * ⚠ 장부 기입 실패가 채번을 되돌리지 않는다 — 번호는 이미 origin이 보증했고,
@@ -264,6 +369,7 @@ function main(argv) {
 module.exports = {
   parseVer, cmpVer, maxVer, nextVer, versionOf, replaceVersionLine, collectUsedVersions, main,
   chainEntries, mergeChain, entryVer,
+  engineFiles, maxTagInEngines, pendingPlaceholders, stampPlaceholders, check,
 };
 
 if (require.main === module) {

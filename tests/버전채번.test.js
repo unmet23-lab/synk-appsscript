@@ -205,6 +205,107 @@ test('[F017] 실저장소 줄을 자기 자신과 병합해도 항목 수가 늘
   assert.equal(after, before + 1, `항목이 ${before} → ${after}로 변했다(새 항목 1개만 늘어야 한다)`);
 });
 
+/* ── 상수와 헤더 태그를 한 동작으로 (2026-08-04 · 하루 두 번 빨개졌다) ──────────
+ *
+ * safety [v9.55] 는 **엔진 7파일을 이어붙인 문자열**의 최고 `[v9.N]` 과 `Code.js` 의 SYNK_VERSION 을
+ * 대조한다. 그 둘이 두 번에 나뉘어 쓰이던 것이 v9.180·v9.181 두 번의 CI 적색이었고,
+ * 그 적색은 **남의 배포 게이트까지 막았다**(자기 트랙 안에서 안 끝나는 결함).
+ */
+const os = require('node:os');
+const 임시들 = [];
+function 픽스처(파일들) {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-bump-'));
+  임시들.push(d);
+  for (const [f, s] of Object.entries(파일들)) fs.writeFileSync(path.join(d, f), s);
+  return d;
+}
+function 그루트에서(d, fn) {
+  const 원래 = process.env.SYNK_BUMP_ROOT;
+  process.env.SYNK_BUMP_ROOT = d;
+  try { return fn(); } finally {
+    if (원래 === undefined) delete process.env.SYNK_BUMP_ROOT; else process.env.SYNK_BUMP_ROOT = 원래;
+  }
+}
+test.after(() => { for (const d of 임시들) { try { fs.rmSync(d, { recursive: true, force: true }); } catch (_) {} } });
+
+test('🔑 [vNEXT] 자리표는 CI 검사 패턴에 안 걸린다 — 그게 존재 이유다', () => {
+  // safety [v9.55] 가 쓰는 패턴 그대로. 자리표가 여기 걸리면 「짜는 동안 안 빨개진다」가 무너진다.
+  assert.equal('[vNEXT] 궤적 레일'.match(/\[v9\.(\d+)\]/g), null,
+    '자리표가 버전 태그로 읽힌다 — 이러면 자리표를 쓰는 순간 CI 가 빨개져 아무도 안 쓴다');
+  assert.ok('[v9.181] 궤적 레일'.match(/\[v9\.(\d+)\]/g), '진짜 태그는 여전히 걸려야 한다(탐지력)');
+});
+
+test('🔴 --desc 없이는 **채번 전에** 막는다 — 뒤에서 막으면 번호만 태운다', () => {
+  assert.throws(() => bump.main([]), /--desc/,
+    'desc 없이 통과시켰다 — 상수만 오르고 체인 항목이 안 붙어 CI 가 즉시 빨개진다');
+  // 🔑 순서가 핵심이다. origin 에 태그를 push 한 뒤에 throw 하면 그 번호는 영영 못 쓴다.
+  const g = src.indexOf('--desc "한 줄 요약" 이 필요합니다');
+  const t = src.indexOf("git(['tag', tag]");
+  assert.ok(g > 0 && t > 0 && g < t,
+    `--desc 게이트가 채번(git tag)보다 뒤에 있다 — 번호를 태우고 나서 막는 꼴이다 (게이트 ${g}, 채번 ${t})`);
+});
+
+test('🔑 자리표를 엔진 전체에서 **한 번에** 확정한다', () => {
+  const d = 픽스처({
+    'Code.js': "const SYNK_VERSION = 'v9.5'; // 안내 · 최신 [v9.5] 다섯\n",
+    '엔진_궤적.js': '/* [vNEXT] 궤적 레일 */\nfunction a(){}\n// [vNEXT] 두 번째 자리\n',
+    '엔진_수집.js': '/* 손 안 댄 파일 */\n',
+  });
+  const 바뀐 = 그루트에서(d, () => bump.stampPlaceholders('v9.6'));
+  const 궤적 = fs.readFileSync(path.join(d, '엔진_궤적.js'), 'utf8');
+  assert.ok(!/\[vNEXT\]/.test(궤적), `자리표가 남았다:\n${궤적}`);
+  assert.equal((궤적.match(/\[v9\.6\]/g) || []).length, 2, '한 파일 안의 자리표를 전부 바꾸지 않았다');
+  assert.ok(바뀐.some((x) => x.startsWith('엔진_궤적.js')), `바뀐 파일을 보고하지 않았다: ${JSON.stringify(바뀐)}`);
+  assert.equal(fs.readFileSync(path.join(d, '엔진_수집.js'), 'utf8'), '/* 손 안 댄 파일 */\n',
+    '자리표가 없는 파일을 건드렸다');
+});
+
+test('🔴 --check 가 **양쪽 방향** 다 잡는다 — 태그가 앞서도, 상수가 앞서도', () => {
+  // ⓑ 태그를 먼저 박은 경우(엔진 파일 헤더에 손으로 씀) — v9.180 때 이 모양이었다
+  const 앞선태그 = 픽스처({
+    'Code.js': "const SYNK_VERSION = 'v9.5'; // 안내 · 최신 [v9.5] 다섯\n",
+    '엔진_궤적.js': '/* [v9.6] 아직 채번 안 한 태그 */\n',
+  });
+  assert.equal(그루트에서(앞선태그, () => bump.check()), 1, '태그가 상수보다 앞선 상태를 통과시켰다');
+
+  // ⓐ 상수만 오른 경우(--desc 없이 돌림) — v9.181 때 이 모양이었다
+  const 앞선상수 = 픽스처({
+    'Code.js': "const SYNK_VERSION = 'v9.7'; // 안내 · 최신 [v9.5] 다섯\n",
+  });
+  assert.equal(그루트에서(앞선상수, () => bump.check()), 1, '상수만 오른 상태를 통과시켰다');
+
+  // 자리표가 남은 채 커밋되려는 경우
+  const 자리표잔존 = 픽스처({
+    'Code.js': "const SYNK_VERSION = 'v9.5'; // 안내 · 최신 [v9.5] 다섯\n",
+    '엔진_궤적.js': '/* [vNEXT] 아직 안 굳었다 */\n',
+  });
+  assert.equal(그루트에서(자리표잔존, () => bump.check()), 1, '자리표가 남았는데 통과시켰다 — 그대로 배포된다');
+
+  // 맞는 상태는 통과한다(거짓양성 0)
+  const 정상 = 픽스처({
+    'Code.js': "const SYNK_VERSION = 'v9.5'; // 안내 · 최신 [v9.5] 다섯\n",
+    '엔진_궤적.js': '/* [v9.4] 옛 항목은 있어도 된다 */\n',
+  });
+  assert.equal(그루트에서(정상, () => bump.check()), 0, '정상 상태를 빨갛게 만들었다');
+});
+
+test('실저장소에 [vNEXT] 자리표가 남아 있지 않다 (거짓양성 0)', () => {
+  /* ⚠ 여기서 `check()` 전체를 부르지 않는다. 상수↔태그 일치는 safety [v9.55] 가 이미 판정하는데,
+   *   같은 것을 두 곳에서 판정하면 ①남이 채번하는 중일 때 둘이 같이 빨개져 원인이 흐려지고
+   *   ②둘이 갈라지는 날 어느 쪽이 옳은지 알 수 없다(CLAUDE.md — 같은 판정을 두 층에 두지 않는다).
+   *   이 테스트가 지키는 것은 v9.55 가 **볼 수 없는** 것 하나다: 자리표가 확정 안 된 채 실려 나가는 것.
+   *   자리표는 `[v9.N]` 패턴에 안 걸리므로 v9.55 는 영원히 침묵한다. 탐지력은 위 픽스처가 진다. */
+  assert.deepEqual(bump.pendingPlaceholders(), [],
+    '[vNEXT] 가 남은 채로 있다 — 채번(`--desc`)을 돌리면 확정된다. 이대로 커밋하면 자리표가 라이브로 나간다');
+});
+
+test('🔑 엔진 파일 목록은 손으로 적지 않고 _engine-source 에서 파생된다', () => {
+  const 정본 = require(path.join(ROOT, 'tests', '_engine-source.js')).ENGINE_FILES;
+  const 도구 = bump.engineFiles();
+  for (const f of 정본) assert.ok(도구.includes(f), `${f} 를 안 본다 — 목록이 갈라지면 그 파일의 태그가 검사에서 빠진다`);
+  assert.ok(!/const ENGINE_FILES\s*=\s*\[/.test(src), 'bump-version 이 목록을 다시 적었다 — 분할할 때 조용히 갈라진다');
+});
+
 test('[F017] 파싱 보조 — 체인 조각과 버전 추출', () => {
   const c = bump.chainEntries('// 안내 · 최신 [v9.5] 다섯 · [v9.4] 넷 · [v9.3] 셋');
   // 「최신」 도막도 항목이다 — head에 남기면 상대의 가장 새 항목이 비교에서 빠진다(F017의 정체).
