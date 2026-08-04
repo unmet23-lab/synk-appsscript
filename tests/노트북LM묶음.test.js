@@ -39,6 +39,8 @@ const 잡아야_하는_것 = [
   ['이메일', '학생 계정 student.batbold@gmail.com 로 초대'],
   ['API 키', 'AIzaSyA1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r 를 시트에'],
   ['API 키', 'sk-abcdefghijklmnopqrstuvwxyz012345 로 호출'],
+  // 구글의 새 발급 형식(`AQ.…`) — `AIza` 만 보던 시절엔 그냥 통과했다(08-05 실물로 확인)
+  ['API 키', '제미나이 키 AQ.FAKE0FAKE0FAKE0FAKE0FAKE0FAKE0 를 메모에'],
   ['텔레그램 토큰', '봇 토큰 1234567890:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw'],
 ];
 
