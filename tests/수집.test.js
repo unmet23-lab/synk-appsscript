@@ -496,6 +496,16 @@ test('[v9.173] 정상(거짓양성) 표본은 `불변: true` + 기대태그 [오
   assert.equal(오류[0].불변, false, '오류 항목까지 불변이면 교정 채점이 통째로 건너뛰어진다');
 });
 
+test('[v9.176] 정답이 쌓였는데 전송 통로가 안 열려 있으면 월간 계기판이 말한다 — 설치는 6개월 뒤에나 값을 한다', () => {
+  const 본문 = section('function dataCoverageMonthly_()', '\n}\n');
+  assert.ok(/s\.골든응답 && !PropertiesService\.getScriptProperties\(\)\.getProperty\(GH_TOKEN_KEY\)/.test(본문),
+    '통로 미개통을 아무도 말하지 않는다 — 안 해도 그 사이 아무 일이 없어서 「채점표는 있는데 못 읽는」 상태로 2년이 간다');
+  assert.ok(/골든픽스처_자동전송_설치\.md/.test(본문), '무엇을 하면 되는지 문서를 지목하지 않는다');
+  assert.ok(/내보내기/.test(본문), '대안(드라이브로 받아 옮기기)이 살아 있다는 것을 안 알린다 — 못 하면 막힌 줄 안다');
+  assert.equal(/getProperty\(GH_TOKEN_KEY\)\s*\)?\s*[;,]?\s*\n?\s*.*\+\s*(token|tok)/.test(본문), false,
+    '토큰 값을 메일 본문에 싣는다 — 존재 여부만 봐야 한다');
+});
+
 /* ── [v9.175] 픽스처 자동 전송 — 바깥으로 나가는 쓰기라 「무엇을 향해 쏘는가」를 못박는다 ── */
 const 전송 = () => section('function pushGoldenFixture_()', '\n}\n');
 
