@@ -18,22 +18,27 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 
 /* 검사 대상 = 실제 배포되는 파일. 목록을 베끼지 않고 .claspignore에서 읽는다.
- * (clasp-guard가 08-01에 하드코딩 목록 때문에 파일 절반을 못 보던 것과 같은 함정 — [[guard-must-check-result]]) */
-function deployTargets() {
+ * (clasp-guard가 08-01에 하드코딩 목록 때문에 파일 절반을 못 보던 것과 같은 함정 — [[guard-must-check-result]])
+ *
+ * ⚠ 2026-08-04(F061): 이 저장소에는 clasp 프로젝트가 **둘**이다(루트 · crewcard/).
+ *   ROOT를 상수로 박아 두면 크루카드를 배포할 때 **메인 코드를 검사하고 크루카드 코드는
+ *   한 줄도 안 본다** — 오탐(무관한 파일에 막힘)과 미탐(배포되는 코드가 검사 밖)이 동시에 났다.
+ *   그래서 프로젝트 루트를 인자로 받는다. 기본값은 ROOT라 기존 호출부(/deploy·CLI)는 그대로다. */
+function deployTargets(root = ROOT) {
   try {
-    const pats = fs.readFileSync(path.join(ROOT, '.claspignore'), 'utf8')
+    const pats = fs.readFileSync(path.join(root, '.claspignore'), 'utf8')
       .split(/\r?\n/).map((l) => l.trim())
       .filter((l) => l.startsWith('!')).map((l) => l.slice(1).trim()).filter(Boolean);
     if (pats.length) return pats;
   } catch (_) {}
-  return ['*.js']; // 폴백은 항상 '더 많이 검사하는' 쪽
+  return ['*.js']; // 폴백은 항상 '더 많이 검사하는' 쪽(crewcard처럼 .claspignore가 없는 프로젝트가 여기로 온다)
 }
 function globToRe(g) {
   return new RegExp('^' + g.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*') + '$');
 }
-function targetJsFiles() {
-  const res = deployTargets().map(globToRe);
-  return fs.readdirSync(ROOT).filter((f) => f.endsWith('.js') && res.some((re) => re.test(f)));
+function targetJsFiles(root = ROOT) {
+  const res = deployTargets(root).map(globToRe);
+  return fs.readdirSync(root).filter((f) => f.endsWith('.js') && res.some((re) => re.test(f)));
 }
 
 /* 최상위 함수 단위로 자른다. Apps Script 파일은 평평해서 `function foo(` 가 항상 1열에서 시작한다.
@@ -89,17 +94,22 @@ function parseDeploymentLine(line) {
  *   checkDeployments() = **순간의 성질**. 러너 도중엔 임시 배포가 있는 게 정상 → bypass가 끈다.
  * 우회 레버는 늘리지 않았다. 대신 기존 레버가 끌 수 있는 범위를 좁혔다.
  * ──────────────────────────────────────────────────────────────────────────────── */
-function checkCode() {
+function checkCode(root = ROOT) {
   const problems = [];
   let anon = false;
   try {
-    const m = JSON.parse(fs.readFileSync(path.join(ROOT, 'appsscript.json'), 'utf8'));
+    const m = JSON.parse(fs.readFileSync(path.join(root, 'appsscript.json'), 'utf8'));
     anon = !!(m.webapp && m.webapp.access === 'ANYONE_ANONYMOUS');
   } catch (_) {}
 
-  for (const f of targetJsFiles()) {
+  // 서브 프로젝트면 파일명 앞에 상대 경로를 붙인다 — 어느 프로젝트의 파일인지 안 보이면
+  // 「메인 코드가 걸렸나」와 헷갈려 엉뚱한 곳을 고치게 된다.
+  const rel = path.relative(ROOT, root).replace(/\\/g, '/');
+  const label = (f) => (rel ? `${rel}/${f}` : f);
+
+  for (const f of targetJsFiles(root)) {
     let src;
-    try { src = fs.readFileSync(path.join(ROOT, f), 'utf8'); } catch (_) { continue; }
+    try { src = fs.readFileSync(path.join(root, f), 'utf8'); } catch (_) { continue; }
 
     /* 1) 소스에 박힌 고정 인증 토큰.
      *    조준은 '긴 문자열'이 아니라 **비교**다 — `const SHEET_ID = '1Ze_…'` 같은 대입 상수는
@@ -110,7 +120,7 @@ function checkCode() {
     while ((t = tok.exec(src)) !== null) {
       if (!looksSecret(t[2])) continue; // 연산 이름 등 사람이 지은 식별자는 통과
       problems.push(
-        `${f}:${lineOf(src, t.index)} 소스에 박힌 고정 토큰으로 인증(…${t[2].slice(-6)})` +
+        `${label(f)}:${lineOf(src, t.index)} 소스에 박힌 고정 토큰으로 인증(…${t[2].slice(-6)})` +
         (anon ? ' — 웹앱이 ANYONE_ANONYMOUS라 이 문자열 하나가 유일한 방어선이다' : '') +
         ' → PropertiesService.getScriptProperties() 로 옮길 것'
       );
@@ -124,7 +134,7 @@ function checkCode() {
       let d;
       while ((d = bad.exec(fn.body)) !== null) {
         problems.push(
-          `${f}:${fn.line + fn.body.slice(0, d.index).split('\n').length - 1} doGet 안에서 파괴적 연산 ${d[1]}() ` +
+          `${label(f)}:${fn.line + fn.body.slice(0, d.index).split('\n').length - 1} doGet 안에서 파괴적 연산 ${d[1]}() ` +
           '→ GET은 부작용이 없어야 한다(doPost로 옮길 것)'
         );
       }
@@ -137,7 +147,7 @@ function checkCode() {
 /* 3) 임시 배포 잔존. **코드를 지워도 라이브는 안 닫힌다** — versioned 배포는 그 시점 코드를
  *    영구 고정해 계속 서빙하므로, 원복 push 뒤에도 그 URL은 살아서 러너를 그대로 응답한다.
  *    조회 실패(오프라인·미로그인)는 위반이 아니라 '확인 불가'라 통과시킨다. */
-function checkDeployments() {
+function checkDeployments(root = ROOT) {
   const problems = [];
   try {
     /* Windows의 clasp는 .cmd 배치라 execFileSync로 직접 못 띄운다. shell:true는 되지만
@@ -148,7 +158,9 @@ function checkDeployments() {
     const file = isWin ? (process.env.ComSpec || 'cmd.exe') : bin;
     const args = isWin ? ['/c', bin, 'deployments'] : ['deployments'];
     const out = execFileSync(file, args, {
-      cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 20000,
+      // cwd = 그 프로젝트 — clasp는 cwd의 .clasp.json으로 대상을 정한다.
+      // ROOT로 박아 두면 크루카드를 배포하면서 **메인의 배포 목록**을 보게 된다(F061).
+      cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 20000,
     });
     out.split(/\r?\n/).forEach((l) => {
       const d = parseDeploymentLine(l);
@@ -165,16 +177,31 @@ function checkDeployments() {
 }
 
 // check() = 둘 다. /deploy 4단계와 CLI용(사람이 직접 돌릴 땐 전부 본다).
-const check = () => [...checkCode(), ...checkDeployments()];
+const check = (root = ROOT) => [...checkCode(root), ...checkDeployments(root)];
+
+/* 이 저장소의 clasp 프로젝트 전부(루트 + 하위 .clasp.json). CLI로 사람이 돌릴 때 쓴다 —
+ * 프로젝트가 둘인데 하나만 보고 「통과」라 말하면 그게 F061의 미탐 쪽이다. */
+function claspProjects() {
+  const out = fs.existsSync(path.join(ROOT, '.clasp.json')) ? [ROOT] : [];
+  for (const d of fs.readdirSync(ROOT, { withFileTypes: true })) {
+    if (!d.isDirectory() || d.name.startsWith('.') || d.name === 'node_modules') continue;
+    const p = path.join(ROOT, d.name);
+    if (fs.existsSync(path.join(p, '.clasp.json'))) out.push(p);
+  }
+  return out;
+}
 
 // 오탐/미탐이 갈리는 지점은 테스트가 직접 잡는다(tests/배포표면.test.js)
-module.exports = { check, checkCode, checkDeployments, looksSecret, topLevelFunctions, parseDeploymentLine };
+module.exports = { check, checkCode, checkDeployments, claspProjects, looksSecret, topLevelFunctions, parseDeploymentLine };
 
 if (require.main === module) {
-  const p = check();
+  // CLI는 **프로젝트 전부**를 본다 — 하나만 보고 통과라 말하면 F061의 미탐 쪽이다.
+  const projects = claspProjects();
+  const p = projects.flatMap((r) => check(r));
+  const 이름 = projects.map((r) => path.relative(ROOT, r) || '(루트)').join(' · ');
   if (p.length) {
     console.error('[deploy-security-check] 배포 표면 위반 ' + p.length + '건:\n- ' + p.join('\n- '));
     process.exit(1);
   }
-  console.log('[deploy-security-check] 통과 — 배포 표면 이상 없음');
+  console.log(`[deploy-security-check] 통과 — 배포 표면 이상 없음(프로젝트 ${projects.length}: ${이름})`);
 }

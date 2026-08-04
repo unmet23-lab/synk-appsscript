@@ -54,6 +54,49 @@ function stripNonExecutedText(s) {
 }
 const execCmd = stripNonExecutedText(cmd);
 
+/* 배포 대상 프로젝트 판별 — 이 저장소에는 clasp 프로젝트가 **둘**이다(루트 · crewcard/).
+ *
+ * 2026-08-04 F061 실사고: 크루카드 배포가 메인의 무관한 미커밋(엔진_수집.js)과 빨간 테스트에 막혔다.
+ *   배포 집합은 그 프로젝트의 디렉터리가 정하는데 가드는 항상 ROOT 기준으로 검사했다.
+ *   결과는 오탐만이 아니었다 — **크루카드 코드는 보안 검사를 한 줄도 안 받고 있었다**(미탐).
+ *   그리고 정당한 배포가 막히면 사람은 BYPASS 를 배운다(v6.11) — 우회 습관을 만드는 가드가
+ *   가장 나쁜 가드다.
+ *
+ * 🔑 오판정의 두 방향이 **비대칭**이라 판별을 보수적으로 짠다:
+ *     메인인데 서브로 봄 → 메인 검사가 통째로 안 돈다(미탐 · 위험)
+ *     서브인데 메인으로 봄 → 기존 동작(오탐 · F061 재발이지만 안전)
+ *   그래서 못 찾으면 ROOT 로 떨어진다. 폴백은 언제나 '더 많이 검사하는' 쪽이다.
+ *
+ * clasp 는 cwd 의 .clasp.json 으로 대상을 정한다. `cd crewcard && clasp push` 처럼 한 호출 안에서
+ * 옮겨가는 형태가 일반적이라 cwd 만 보면 항상 메인으로 판정한다 — 그래서 명령을 세그먼트로 쪼개
+ * **clasp 가 도는 시점의 디렉터리**를 확정한다(그 뒤의 cd 는 배포와 무관하다).
+ * 원본 cmd 를 보되 `^cd …$` 형태의 세그먼트만 인정하므로, 커밋 메시지 안에 적힌 문장에는 안 속는다. */
+function deployProjectRoot() {
+  const base = callerCwd && fs.existsSync(callerCwd) ? callerCwd : ROOT;
+  let dir = base;
+  for (const seg of cmd.split(/&&|\|\||;|\n/)) {
+    const m = /^\s*(?:cd|pushd|Set-Location|sl)\s+(?:-\S+\s+)*(['"]?)(.+?)\1\s*$/i.exec(seg);
+    if (m) {
+      const p = m[2].trim();
+      if (p && p !== '-') dir = path.resolve(dir, p);
+      continue;
+    }
+    if (/clasp/i.test(seg)) break; // 여기서 배포가 돈다 — 디렉터리 확정
+  }
+  for (let cur = dir, i = 0; i < 6; i += 1) {
+    if (fs.existsSync(path.join(cur, '.clasp.json'))) return cur;
+    const up = path.dirname(cur);
+    if (up === cur) break;
+    cur = up;
+  }
+  return ROOT;
+}
+const PROJ = deployProjectRoot();
+const 서브 = path.resolve(PROJ) !== path.resolve(ROOT);
+// git status 는 저장소 루트 상대 경로를 준다 — 서브 프로젝트 파일을 가리려면 이 접두사가 필요하다.
+const PREFIX = 서브 ? path.relative(ROOT, PROJ).replace(/\\/g, '/') + '/' : '';
+const 프로젝트명 = 서브 ? PREFIX.replace(/\/$/, '') : '(루트)';
+
 /* 0-A) clasp pull 차단 — **읽기처럼 생겼는데 작업본 덮어쓰기**다(F040 실사고).
  *   라이브 잔재를 "확인"하려고 부른 pull이 메인 작업본 `Code.js`를 라이브(v9.154)로 되돌려
  *   옆 세션의 v9.155 커밋 내용이 로컬에서 사라졌다. 그때 복구된 이유는 그 파일이 **커밋돼 있어서**다
@@ -95,7 +138,7 @@ if (!/clasp(\.cmd|\.ps1)?["']?\s+(--?\S+\s+)*(push|deploy)\b/i.test(execCmd)) pr
 {
   let codeProblems;
   try {
-    codeProblems = require(path.join(ROOT, 'tools', 'deploy-security-check.js')).checkCode();
+    codeProblems = require(path.join(ROOT, 'tools', 'deploy-security-check.js')).checkCode(PROJ);
   } catch (e) {
     codeProblems = ['보안 검사(코드) 실행 실패: ' + String((e && e.message) || e).split('\n')[0]];
   }
@@ -148,30 +191,56 @@ if (callerCwd) {
 
 const problems = [];
 
-// 1) 루트 *.js 전부 구문검사 (/deploy 2단계와 동일)
-for (const f of fs.readdirSync(ROOT)) {
+// 1) 배포되는 프로젝트의 *.js 전부 구문검사 (/deploy 2단계와 동일)
+for (const f of fs.readdirSync(PROJ)) {
   if (!f.endsWith('.js')) continue;
   try {
-    run(process.execPath, ['--check', path.join(ROOT, f)]);
+    run(process.execPath, ['--check', path.join(PROJ, f)]);
   } catch (e) {
     const lines = String(e.stderr || e.message).trim().split('\n');
     const detail = lines.find((l) => /error/i.test(l)) || lines[0] || '';
-    problems.push(`구문 오류 ${f}: ${detail.trim()}`);
+    problems.push(`구문 오류 ${PREFIX}${f}: ${detail.trim()}`);
   }
 }
 
-// 2) 안전 불변식 테스트 (구문이 깨져 있으면 의미 없으니 생략)
-//    node v24는 --test에 디렉토리를 못 받으므로 *.test.js를 명시 나열한다.
+/* 2) 안전 불변식 테스트 (구문이 깨져 있으면 의미 없으니 생략)
+ *    node v24는 --test에 디렉토리를 못 받으므로 *.test.js를 명시 나열한다.
+ *
+ *    서브 프로젝트는 **그 프로젝트를 읽는 테스트만** 돈다(F061) — 메인의 무관한 빨간불이
+ *    크루카드 배포를 막던 것이 정확히 이 자리다. 판별은 테스트 소스가 프로젝트 경로를
+ *    참조하는가로 한다(목록을 손으로 적으면 파일이 늘 때 조용히 빠진다 · [[guard-must-check-result]]).
+ *
+ *    ⚠ 이 좁히기는 **미탐 방향**이다 — 고르기가 실패하면 「테스트 0건 통과」가 되어 초록으로 보인다.
+ *      그래서 0건이면 통과가 아니라 **차단**한다(F047의 「목록이 조용히 비어도 초록」과 같은 처방). */
 if (problems.length === 0) {
-  const testFiles = fs
+  const 전체 = fs
     .readdirSync(path.join(ROOT, 'tests'))
-    .filter((f) => f.endsWith('.test.js'))
-    .map((f) => path.join(ROOT, 'tests', f));
+    .filter((f) => f.endsWith('.test.js'));
+  let testFiles;
+  if (서브) {
+    const key = PREFIX.replace(/\/$/, '');
+    testFiles = 전체.filter((f) => {
+      try { return fs.readFileSync(path.join(ROOT, 'tests', f), 'utf8').includes(key); }
+      catch (_) { return false; }
+    });
+    if (!testFiles.length) {
+      problems.push(
+        `${프로젝트명} 프로젝트를 검사하는 테스트가 0건 — 고르기가 실패했거나 회귀가 없다.\n` +
+        `  0건을 「통과」로 읽으면 배포가 무검증으로 나간다(그래서 통과가 아니라 차단이다).\n` +
+        `  → tests/ 안에 "${key}" 를 참조하는 회귀를 두거나, 정말 예외면 CLASP_GUARD_BYPASS=1.`
+      );
+    }
+  } else {
+    testFiles = 전체;
+  }
   if (testFiles.length) {
     try {
-      run(process.execPath, ['--test', ...testFiles]);
+      run(process.execPath, ['--test', ...testFiles.map((f) => path.join(ROOT, 'tests', f))]);
     } catch (_) {
-      problems.push('안전 테스트 실패: node --test tests/*.test.js 를 통과해야 배포 가능');
+      problems.push(
+        `안전 테스트 실패(${프로젝트명} 관련 ${testFiles.length}개): ` +
+        `node --test ${testFiles.map((f) => 'tests/' + f).join(' ')} 를 통과해야 배포 가능`
+      );
     }
   }
 }
@@ -183,10 +252,10 @@ if (problems.length === 0) {
  * 이 훅의 존재 이유가 정작 파일 절반에서 작동하지 않았다.
  * .claspignore 주석은 그 3종이 빠지면 "반쪽 배포"라고 스스로 적어 두었는데 가드만 몰랐다.
  * → 목록을 베끼지 않는다. 배포 집합을 정하는 파일에서 그대로 읽는다([[guard-must-check-result]] 패턴). */
-function deployTargets() {
+function deployTargets(root) {
   try {
     const pats = fs
-      .readFileSync(path.join(ROOT, '.claspignore'), 'utf8')
+      .readFileSync(path.join(root, '.claspignore'), 'utf8')
       .split(/\r?\n/)
       .map((l) => l.trim())
       .filter((l) => l.startsWith('!'))
@@ -194,8 +263,10 @@ function deployTargets() {
       .filter(Boolean);
     if (pats.length) return pats;
   } catch (_) {}
-  // .claspignore를 못 읽으면 넓게 잡는다 — 폴백은 항상 '더 많이 검사하는' 쪽
-  return ['appsscript.json', '*.js'];
+  /* .claspignore가 없으면 넓게 잡는다 — 폴백은 항상 '더 많이 검사하는' 쪽.
+   * crewcard/ 가 정확히 이 경우다(허용목록이 없어 clasp가 디렉터리 전부를 민다).
+   * .html 을 빼면 카드_kr/mn.html 이 미커밋인 채 배포될 수 있다 — 그 둘이 크루카드 화면 자체다. */
+  return ['appsscript.json', '*.js', '*.gs', '*.html', '*.json'];
 }
 function globToRe(g) {
   return new RegExp('^' + g.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*') + '$');
@@ -203,7 +274,7 @@ function globToRe(g) {
 
 // 3) 배포 대상 파일 미커밋 금지 (커밋 → git push → clasp push 순서 강제)
 try {
-  const targets = deployTargets().map(globToRe);
+  const targets = deployTargets(PROJ).map(globToRe);
   // core.quotepath=false — 끄지 않으면 한글 파일명이 "\354\203\201…" 로 이스케이프돼 매칭이 통째로 빗나간다
   //   (상담AI.js·교재연동.js·만족도팩.js가 전부 한글이라 이 한 줄이 없으면 목록을 고쳐도 여전히 못 잡는다)
   const dirty = run('git', ['-c', 'core.quotepath=false', 'status', '--porcelain'])
@@ -215,7 +286,17 @@ try {
       if (arrow !== -1) p = p.slice(arrow + 4).trim();
       return p.replace(/^"|"$/g, '');
     })
-    .filter((p) => targets.some((re) => re.test(p)));
+    /* 그 프로젝트가 실제로 배포하는 파일만 본다(F061).
+     * git status 는 저장소 루트 상대 경로를 주므로, 서브 프로젝트는 접두사를 떼고 매칭한다 —
+     * 접두사를 안 떼면 `crewcard/상담시트.js` 가 `*.js`(= `^[^/]*\.js$`)에 안 걸려 **전부 통과**한다.
+     * 반대로 루트 배포에서는 하위 디렉터리 파일이 `[^/]*` 때문에 자연히 빠진다. */
+    .filter((p) => {
+      if (서브) {
+        if (!p.startsWith(PREFIX)) return false;
+        return targets.some((re) => re.test(p.slice(PREFIX.length)));
+      }
+      return targets.some((re) => re.test(p));
+    });
   if (dirty.length) problems.push(`미커밋 배포 파일(${dirty.join(', ')}): 커밋 먼저`);
 } catch (_) {
   problems.push('git status 확인 실패 — 저장소 상태를 확인할 수 없어 차단');
@@ -235,7 +316,7 @@ try {
  *    **코드를 지워도 라이브는 안 닫힌다** — versioned 배포는 그 시점 코드를 영구 서빙한다.
  *    모듈이 깨지면 통과가 아니라 차단이다(이 파일 3번 검사의 'git status 확인 실패'와 같은 방향). */
 try {
-  problems.push(...require(path.join(ROOT, 'tools', 'deploy-security-check.js')).checkDeployments());
+  problems.push(...require(path.join(ROOT, 'tools', 'deploy-security-check.js')).checkDeployments(PROJ));
 } catch (e) {
   problems.push(
     '배포 표면 검사 실행 실패(tools/deploy-security-check.js): ' +
@@ -245,7 +326,7 @@ try {
 
 if (problems.length) {
   deny(
-    '[clasp-guard] 배포 게이트 차단:\n- ' +
+    `[clasp-guard] 배포 게이트 차단 — 프로젝트 ${프로젝트명}:\n- ` +
       problems.join('\n- ') +
       '\n→ /deploy 스킬 순서(구문검사→테스트→커밋→git push→clasp push)로 진행할 것. 검증된 예외 절차만 CLASP_GUARD_BYPASS=1 로 우회.'
   );
