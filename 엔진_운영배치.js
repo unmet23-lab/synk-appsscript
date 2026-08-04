@@ -33,6 +33,74 @@ function consultPace_(goalLv, dueRaw, hoursRaw, now) {
   return '🎯 TOPIK ' + goalLv + '까지 약 ' + weeks + '주' + (hoursRaw ? ' — 하루 ' + hoursRaw + '의 꾸준함으로' : '');
 }
 
+/* ── 진로 4칸 정본 ─ 「의도」가 사는 곳 ─────────────────────────────────────
+ * 로드맵 ④(유학 집약 봇)의 재료는 **의도 → 결과**의 짝이다. 결과 쪽은 outcome_log(엔진_궤적.js)가
+ * 맡고, 의도 쪽이 여기다. 넷 다 상담시트에 이미 들어와 있는데 앱은 한 칸도 안 읽고 있었다.
+ *
+ * 🔑 왜 한 칸으로 접지 않고 **4열 그대로** 옮기나: 옆의 DT124~DX128(상담 디테일)은 사람이 읽는
+ *   문장이라 접는 게 맞았다. 이 넷은 사람이 아니라 **집계가 읽는다**(「학사를 목표한 92명 중 몇 명이
+ *   실제로 학사로 갔나」). 문장으로 접으면 그 질문에 다시 대답할 수 없다 — 접는 순간 자유서술이 된다.
+ * ⚠ TOPIK목표는 여기 없다 — 이미 DU125(상담목표)에 기한과 함께 들어가 있다(같은 값 두 열 금지). */
+const CAREER_HEADS_ = ['졸업후진로', '희망진학과정', '목표비자', '관심전공'];
+const CAREER_SRC_ = ['졸업후진로', '희망진학과정', '졸업후목표비자', '관심전공분야']; // 상담시트 헤더명(같지 않은 둘이 있다)
+/* EA131~ED134. ⚠ 「DT128 다음이니 129」가 아니다 — 129는 오늘의만남(v9.99), 130은 대화폼URL(SHARED4)이
+ *   이미 주인이다. 이 저장소는 열 충돌로 **세 번** 당했고(오늘의알림 덮임·DO119 선점·리뷰 B1),
+ *   그래서 빈자리는 눈으로 세지 말고 tests/safety.test.js의 열 레지스트리에서 읽는다(거기에 등록도 한다). */
+const CAREER_COL_ = 131;
+
+/* 핵심비전(BA53) 폴백 — 원장이 손으로 쓴 V열이 **언제나 우선**이고, 비었을 때만 합성한다.
+ *
+ * 왜 필요한가: BA53은 웰컴 스토리·미래 편지·데일리·여정 카드 4곳이 개인화 앵커로 읽는 칸인데,
+ *   그 칸을 채우던 것은 사람이 하는 상담이었다. 접수가 크루카드로 넘어오면 **신규 학생 전원이
+ *   빈 앵커로 들어온다** — 4개 산출물이 조용히 「누구에게나 같은 말」이 된다(F050 계열: 조용한 공백).
+ * 왜 자유서술(성공한 유학이란)을 안 쓰나: 그 blob은 행 단위 동의 마커 게이트 뒤에 있고(v9.125),
+ *   크루카드 blob엔 그 마커가 없다. 게이트를 우회하는 대신 **동의와 무관한 선택형 답**만 조합한다.
+ * 파생값임이 드러나야 한다 — 원장이 이 칸을 보고 「내가 쓴 줄」로 착각하면 안 고친다. */
+function 진로비전_(cv, row) {
+  const 진로 = cv(row, '졸업후진로'), 과정 = cv(row, '희망진학과정');
+  const 전공 = String(cv(row, '관심전공분야') || '').split(',')[0].trim();
+  const 급수 = cv(row, 'TOPIK목표');
+  const 조각 = [진로, 과정 && (과정 + (전공 ? '(' + 전공 + ')' : '')), 급수 && ('TOPIK ' + 급수)].filter(String);
+  return 조각.length ? '자기신고: ' + 조각.join(' · ') : '';
+}
+
+/* ── profiles 뒤쪽 블록 기입 — 점거 가드·헤더 보장·writeIfChanged·tail-clear의 **단일 통로** ──
+ *
+ * 왜 통로로 뽑았나: 이 저장소는 열 충돌로 **세 번** 당했다(오늘의알림 덮임 · 리그 DO119 선점 · 리뷰 B1).
+ *   그 뒤 v9.84가 DT124 블록에 점거 가드를 손으로 얹었는데, 두 번째 블록(진로 4열)을 붙이는 순간
+ *   같은 12줄을 다시 베끼게 됐다 — CLAUDE.md 「같은 절차에서 2번째 = 실수가 아니라 시스템 결함」.
+ *   베끼면 세 번째 블록에서 한 줄이 빠지고, **빠지는 방향은 언제나 「그냥 덮어쓴다」**다.
+ *
+ * 🔑 새 블록을 붙일 때 손으로 쓸 것은 (시작 열 · 헤더 · 값) 셋뿐이다. 방어는 여기 한 곳에만 있다.
+ * ⚠ 시작 열은 눈으로 세지 말고 tests/safety.test.js 열 레지스트리에서 읽고, 거기에 등록도 한다.
+ *
+ * @param holdCnt 학생 뒤에 보존되는 행 수(데모 학생) — tail-clear가 그 시연값을 매일 지우지 않게.
+ * @return 기입했으면 true / 남의 헤더를 발견해 보류했으면 false.
+ */
+function profilesBlockWrite_(dst, start, heads, rows, stateKey, label, lastNow, holdCnt) {
+  const st = ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'app_state', ['key', 'value']);
+  const end = start + heads.length - 1;
+  if (dst.getMaxColumns() < end) dst.insertColumnsAfter(dst.getMaxColumns(), end - dst.getMaxColumns());
+  const cur = dst.getRange(1, start, 1, heads.length).getValues()[0].map(h => String(h || '').trim());
+  const clash = cur.map((h, i) => (h && h !== heads[i]) ? (h + '(' + (start + i) + '열)') : '').filter(String);
+  if (clash.length) {
+    const sig = clash.join(',');
+    if (String(getState(st, stateKey).val || '') !== sig) {
+      adminMail('[SYNK] ⚠️ ' + label + ' 열 충돌 — 기입 보류',
+        'profiles ' + start + '~' + end + '열에 다른 주인 헤더가 있어 ' + label + ' 기입을 멈췄습니다: ' + sig +
+        '\n열 이동·개명 후 syncProfiles가 다음 아침 자동 재개합니다. (같은 상태면 다시 알리지 않습니다)');
+      setState(st, stateKey, sig);
+    }
+    return false; // 🔑 보류의 뜻은 「덮지 않는다」다 — 여기서 계속 내려가면 가드가 장식이 된다
+  }
+  if (String(getState(st, stateKey).val || '') !== '') setState(st, stateKey, ''); // 해소 → 재무장
+  heads.forEach((h, i) => { if (cur[i] !== h) dst.getRange(1, start + i).setValue(h); });
+  if (rows.length) writeIfChanged(dst, 2, start, rows);
+  const tail = lastNow - 1 - rows.length - holdCnt;
+  if (tail > 0) dst.getRange(rows.length + holdCnt + 2, start, tail, heads.length).clearContent();
+  return true;
+}
+
 function syncProfiles() {
   try { // [v8.2] 상담시트 미연결·권한 오류에도 앱 본체는 무사
   const book = SpreadsheetApp.openById(CONSULT_SHEET_ID);
@@ -122,7 +190,8 @@ function syncProfiles() {
         payFee[userId] || '', row[2], row[12], row[14], createdAt],
       lvl: row[18] || '',    // S 한국어수준 → AY(51): 강사 뷰 '레벨'
       risk: row[60] || '',   // BI ⚠위험신호 → AZ(52): 원장 콕핏 전용
-      vision: row[21] || '', // V 핵심비전 → BA(53): 케어 대화용 한 줄
+      vision: row[21] || 진로비전_(cv, row), // V 핵심비전 → BA(53): 케어 대화용 한 줄. 비면 크루카드 선택형 답으로 합성(원장 手記가 우선)
+      career: CAREER_SRC_.map(n => cv(row, n)), // → DY129~EB132: 「의도」 4칸. 결과(outcome_log)와 짝지어야 궤적이 된다
       // [v9.84] 상담 디테일 2차 — 받아둔 답을 앱이 쓰게(콜드스타트 해소·강사뷰·0점 좌표·페이스). 전부 이름 해석이라 열 이동에 안전.
       taste: [cv(row, '선호그룹'), cv(row, '인생드라마'), cv(row, '취미관심사')].filter(String).join(' · ').slice(0, 120), // → DT124: AI 최애 폴백
       cGoal: (cv(row, 'TOPIK목표') ? 'TOPIK ' + cv(row, 'TOPIK목표') + (cv(row, 'TOPIK목표기한') ? ' · ' + cv(row, 'TOPIK목표기한') : '') : ''), // → DU125: 목표 폴백
@@ -240,25 +309,12 @@ function syncProfiles() {
     //   (학생만·데모 보존 tail-clear·writeIfChanged). ⚠ 점거 가드: 24시간 내 열 충돌 계열 사고 2건(오늘의알림 덮임·
     //   리그 DO119 선점)의 회귀 장치 — 5칸 중 하나라도 남의 헤더가 있으면 기입 전체를 멈추고 상태 변화 시 1회만 알린다.
     const DT_HEADS = ['상담취향', '상담목표', '입학TOPIK', '상담고충', '페이스라인'];
-    if (dst.getMaxColumns() < 128) dst.insertColumnsAfter(dst.getMaxColumns(), 128 - dst.getMaxColumns());
-    const dtCur = dst.getRange(1, 124, 1, 5).getValues()[0].map(h => String(h || '').trim());
-    const dtClash = dtCur.map((h, i) => (h && h !== DT_HEADS[i]) ? (h + '(' + (124 + i) + '열)') : '').filter(String);
-    const stDT = ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'app_state', ['key', 'value']);
-    if (dtClash.length) {
-      const sigDT = dtClash.join(',');
-      if (String(getState(stDT, '상담열충돌').val || '') !== sigDT) {
-        adminMail('[SYNK] ⚠️ 상담 디테일 열 충돌 — 기입 보류', 'profiles DT124~DX128에 다른 주인 헤더가 있어 상담 디테일 기입을 멈췄습니다: ' + sigDT +
-          '\n열 이동·개명 후 syncProfiles가 다음 아침 자동 재개합니다. (같은 상태면 다시 알리지 않습니다)');
-        setState(stDT, '상담열충돌', sigDT);
-      }
-    } else {
-      if (String(getState(stDT, '상담열충돌').val || '') !== '') setState(stDT, '상담열충돌', ''); // 해소 → 재무장
-      DT_HEADS.forEach((h, i) => { if (dtCur[i] !== h) dst.getRange(1, 124 + i).setValue(h); });
-      const quint = ordered.map(e => [e.taste || '', e.cGoal || '', e.topik0 || '', e.pain || '', e.pace || '']);
-      if (quint.length) writeIfChanged(dst, 2, 124, quint);
-      const qTail = lastNow - 1 - quint.length - demoStu.length;
-      if (qTail > 0) dst.getRange(quint.length + demoStu.length + 2, 124, qTail, 5).clearContent();
-    }
+    const quint = ordered.map(e => [e.taste || '', e.cGoal || '', e.topik0 || '', e.pain || '', e.pace || '']);
+    profilesBlockWrite_(dst, 124, DT_HEADS, quint, '상담열충돌', '상담 디테일', lastNow, demoStu.length);
+
+    /* [궤적] 「의도」 4열 → EA131~ED134. 위 블록과 **같은 통로**를 지난다 — 방어를 손으로 베끼지 않는다. */
+    profilesBlockWrite_(dst, CAREER_COL_, CAREER_HEADS_, ordered.map(e => e.career || ['', '', '', '']),
+      '진로열충돌', '진로 4열', lastNow, demoStu.length);
   }
   setState(ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'app_state', ['key', 'value']), '동기화보류_상태', ''); // [v9.22] 정상 동기화 → 보류 알림 재무장
   // [v9.50·F4] 신규 학생 웰컴 스토리 대기열 — 등록 감지 즉시 큐에 넣고, 학부모 이메일(§1-3)이 채워진 아침에 welcomeStoryBatch_가 발송
@@ -277,6 +333,12 @@ function syncProfiles() {
   // [v9.151] 동의 행 단위 스탬프 — 응답이 관측된 날의 정본 판(版)을 상담시트 행에 남긴다(구현·원칙 = 엔진_폼리포트.js).
   //   src를 그대로 넘겨 openById 중복을 피한다. 자체 try로 격리돼 있어 실패해도 동기화는 계속된다.
   if (typeof 동의버전스탬프_ === 'function') 동의버전스탬프_(src);
+  /* [궤적] 의도(상담시트 진로 4문항) × 결과(면접폼·수기 관측) → outcome_log·trajectory.
+   *   왜 여기가 발동층인가: ① 이 함수가 이미 상담시트를 열어 두었다(openById 중복 회피 —
+   *   동의버전스탬프_와 같은 이유) ② morningJobs가 매일 부른다 = 스스로 발화하는 자리다.
+   *   메뉴 버튼을 만들지 않은 것은 의도다 — 유호님이 눌러야 도는 장치는 결국 안 눌린다.
+   *   typeof 가드 = 엔진_궤적.js가 라이브에 안 올라간 배포에서도 동기화 본체는 살아남는다. */
+  if (typeof 궤적갱신_ === 'function') 궤적갱신_(src);
   Logger.log(out.length + '명 동기화 완료');
   calcAll();
   } catch (e) { // [v9.19] 조용한 실패 방지 — 연결 끊기면 매일 아침 알림 (profiles 스테일 조기 감지)

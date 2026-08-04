@@ -134,7 +134,7 @@ const 현지활동라벨_ = {
 const 전공관심라벨_ = {
   field_interest_business: '경영·경제', field_interest_it: 'IT·컴공', field_interest_design: '디자인·예술',
   field_interest_medical: '의료·보건', field_interest_engineering: '공학', field_interest_humanities: '인문·어학',
-  field_interest_media: '미디어·방송'
+  field_interest_media: '미디어·방송', field_interest_undecided: '미정'
 };
 const 학습방식라벨_ = {
   learning_style_1on1: '1:1 코칭', learning_style_small_group: '소그룹 4~6인',

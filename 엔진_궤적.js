@@ -1,0 +1,304 @@
+// SYNK 엔진 분할부 — 궤적. 「무엇을 목표했고, 실제로 어디로 갔나」를 한 사람으로 잇는 레일.
+// 로드 순서 정본 = .clasp.json filePushOrder · 합본 테스트 정본 = tests/_engine-source.js ENGINE_FILES.
+/* ═══════════════════════════════════════════════════════════════════════════
+ * 왜 이 파일이 있나 (2026-08-04 · 로드맵 ④ 「유학 집약 봇」의 재료)
+ * ───────────────────────────────────────────────────────────────────────────
+ * 경쟁자가 복제할 수 없는 자산은 「몽골 학생이 무엇을 목표했고 실제로 어디로 갔는가」의 짝이다.
+ * 대조에서 나온 것: **의도는 이미 넘치게 쌓이는데(크루카드 100+문항), 결과를 담는 자리가 없었다.**
+ *   · exit_log      = 퇴소일·재원일수만 있다 — 「나갔다」는 알지만 「어디로」는 없다
+ *   · hall_of_fame  = 자유서술 업적 — 사람은 읽지만 집계는 못 읽는다
+ *   · 면접기록_응답  = 결과가 있는데 익명이라 사람과 안 이어졌다(→ 학생ID 칸이 그래서 생겼다)
+ *
+ * 🔴 이것이 소급 불가인 이유: 학생이 떠난 뒤엔 연락이 끊긴다. **지금 자리를 안 만들면
+ *   2027년 1기 졸업생의 결과는 영영 못 받는다.** 코드를 나중에 짜도 데이터는 안 돌아온다.
+ *
+ * ── 두 축을 직교로 나눈 것이 이 설계의 요점이다 ──────────────────────────
+ *   결과종류 = **어느 길로 갔나**(유학·취업·창업…)   단계 = **그 길에서 어디까지 갔나**(지원·합격·입국)
+ *   섞으면(「비자 거절」을 결과종류에 넣으면) 「거절당한 사람이 목표하던 길」이 통째로 사라진다.
+ *   거절은 결과가 아니라 **어느 길 위의 한 단계**다 — 재도전이 정상이기 때문이다.
+ *
+ * ── 시트 2장 ──────────────────────────────────────────────────────────────
+ *   outcome_log = 관측 「사건」 원장(append-only, 1인 N행). 자동 수확 + 원장 수기(드롭다운 검증).
+ *   trajectory  = 파생 조인표(1인 1행, 매번 재작성). 의도 4칸 × 최신 결과 × 대조 판정.
+ *   trajectory는 **파생**이다 — 손으로 고치면 다음 아침에 덮인다. 고칠 곳은 언제나 outcome_log다.
+ *
+ * ⛔ Glide 바인딩 금지 — 두 시트 다 어느 화면에도 올리지 않는다. 학생 본인의 진로 목표는
+ *   profiles EA131~ED134에 이미 있고(본인 것이라 본인이 봐도 된다), 여기엔 **남의 결과까지**
+ *   모여 있다. 핵심비전(BA53)·⚠상담위험(AZ52)과 같은 계급으로 취급한다.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+const OUTCOME_TAB_ = 'outcome_log';
+const TRAJECTORY_TAB_ = 'trajectory';
+
+const OUTCOME_HEADERS_ = ['student_id', '이름', '관측일', '단계', '결과종류', '기관·회사명',
+  '비자종류', '출처', '활용동의', '비고', '근거키', 'created_at'];
+
+/* 근거키 = 멱등의 전부다. 같은 응답을 두 번 수확하면 한 사람이 두 번 합격한 것처럼 집계된다.
+ * 값 규약 = '출처:학생ID:원천식별자' — 원천이 늘어도 앞머리로 구분된다. */
+const OUTCOME_KEY_COL_ = 11; // 0-based, OUTCOME_HEADERS_ 안의 '근거키'
+
+const TRAJECTORY_HEADERS_ = ['student_id', '이름', '반', '처리상태',
+  '졸업후진로', '희망진학과정', '목표비자', '관심전공', 'TOPIK목표',
+  '최종단계', '결과종류', '기관·회사명', '실비자', '관측일', '출처', '의도↔결과', '갱신일'];
+
+/* 결과종류 — 「어느 길」. 원장 수기 드롭다운의 정본이기도 하다.
+ * ⚠ 문구를 고치면 이미 기록된 행과 갈라진다. 늘리는 것은 안전하고, **고치는 것은 소급 마이그레이션**이다. */
+const OUTCOME_KINDS_ = [
+  '유학(D-2·D-4) 비자', '한국 대학·대학원 입학', '어학연수(D-4)',
+  '한국 취업(E-9 비전문)', '한국 취업(E-7 전문직)', '한국 취업(기타)',
+  '한국 창업·무역(D-8·D-9)', '결혼이민(F-6)', '방문·기타 비자',
+  '제3국 유학·취업', '몽골 내 진학·취업', '중도 포기·연기', '기타·미상'
+];
+
+/* 단계 — 「어디까지」. 시간순이 아니라 상태다(거절 뒤 재지원이 정상이라 되돌아갈 수 있다). */
+const OUTCOME_STAGES_ = ['지원·접수', '합격·승인', '불합격·거절', '보류·추가서류', '대기중', '출국·입국', '정착 확인'];
+
+/* 출처 — **확인된 것과 들은 것을 갈라 두는 칸**이다. 이 칸이 없으면 소문이 통계가 된다. */
+const OUTCOME_SOURCES_ = ['면접폼(자동)', '본인 제보', '보호자 제보', '강사 확인', '학원 서류 확인', 'SNS·소문(미확인)'];
+
+const OUTCOME_VISAS_ = ['D-2 유학', 'D-4 어학연수', 'E-9 비전문취업', 'E-7 전문직', 'D-10 구직',
+  'D-8·D-9 창업무역', 'F-2 거주', 'F-5 영주', 'F-6 결혼이민', 'H-2 방문취업', 'C-3 단기방문', '기타', '해당없음'];
+
+/* 결과종류 → 경로 버킷. 대조는 **버킷끼리** 한다 — 「학사를 목표했는데 석사로 갔다」를 불일치로
+ * 세면 판정이 소음이 된다. 우리가 알고 싶은 것은 「유학을 목표했는데 취업으로 갔다」다.
+ * ⚠ 자동 수확은 면접 종류밖에 모른다(어학이냐 학위냐를 구별할 정보가 폼에 없다) — 그래서
+ *   버킷을 굵게 잡는 것이 정확도를 포기한 게 아니라 **모르는 것을 안다고 하지 않는 것**이다. */
+const OUTCOME_PATH_ = {
+  '유학(D-2·D-4) 비자': '유학', '한국 대학·대학원 입학': '유학', '어학연수(D-4)': '유학',
+  '한국 취업(E-9 비전문)': '취업', '한국 취업(E-7 전문직)': '취업', '한국 취업(기타)': '취업',
+  '한국 창업·무역(D-8·D-9)': '창업', '결혼이민(F-6)': '정착', '방문·기타 비자': '기타',
+  '제3국 유학·취업': '제3국', '몽골 내 진학·취업': '몽골', '중도 포기·연기': '중단', '기타·미상': '기타'
+};
+
+/* 면접 종류 → 결과종류. 면접폼 INTERVIEW_KINDS(엔진_폼리포트.js)와 짝이다.
+ * ⚠ 그쪽 선택지를 늘리면 여기 없는 값이 들어와 '기타·미상'으로 떨어진다 — 조용히 틀리지는
+ *   않지만 조용히 뭉개진다. 회귀(tests/궤적.test.js)가 두 목록의 정합을 검사한다. */
+const INTERVIEW_TO_KIND_ = {
+  '한국 유학 비자 인터뷰': '유학(D-2·D-4) 비자',
+  'EPS 취업(E-9) 면접·시험': '한국 취업(E-9 비전문)',
+  '한국 기업 취업 면접': '한국 취업(기타)',
+  '한국 대학·대학원 입학 면접': '한국 대학·대학원 입학',
+  '한국 방문·기타 비자 인터뷰': '방문·기타 비자',
+  '기타': '기타·미상'
+};
+
+/* 면접폼 「결과」 → 단계. 폼의 4지선다와 짝이다. */
+const INTERVIEW_TO_STAGE_ = {
+  '합격·승인': '합격·승인',
+  '불합격·거절': '불합격·거절',
+  '추가 서류 요청·보류': '보류·추가서류',
+  '아직 기다리는 중': '대기중'
+};
+
+/* ── 진입점 — syncProfiles 말미에서 매일 아침 1회 ──────────────────────────
+ * @param src 상담데이터입력 시트(이미 열려 있는 것을 그대로 받는다 — openById 중복 회피).
+ *
+ * 자체 try로 격리한다: 궤적이 실패해도 로스터 동기화는 이미 끝나 있고, 그걸 되돌릴 이유가 없다.
+ * 실패를 삼키되 **조용히는 아니게** — 상태가 바뀔 때만 1회 알린다(매일 같은 메일은 곧 안 읽힌다). */
+function 궤적갱신_(src) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet(); // try 밖 — 여기서 던지면 경보조차 못 보낸다
+  try {
+    const 수확 = 궤적수확_면접_(ss);
+    const 커버 = 궤적재작성_(ss, src);
+    Logger.log('궤적 갱신 — 신규 관측 ' + 수확 + '건 · 결과 확인 ' + 커버.known + '/' + 커버.total + '명');
+    궤적경보_(ss, '');
+  } catch (e) {
+    Logger.log('궤적 갱신 실패: ' + e);
+    궤적경보_(ss, String(e).slice(0, 200));
+  }
+}
+
+/* 상태 변화 시 1회 알림 — 같은 실패가 매일 오면 그 메일은 읽히지 않는다(F072: 큐에 노이즈 금지). */
+function 궤적경보_(ss, sig) {
+  try {
+    const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+    if (String(getState(st, '궤적실패').val || '') === sig) return;
+    if (sig) {
+      adminMail('[SYNK] ⚠️ 궤적 갱신 실패', '의도↔결과 레일(outcome_log·trajectory) 갱신이 실패했습니다: ' + sig +
+        '\n로스터 동기화 자체는 정상입니다. 같은 상태면 다시 알리지 않습니다.');
+    }
+    setState(st, '궤적실패', sig);
+  } catch (e) { /* 알림 실패로 배치를 죽이지 않는다 */ }
+}
+
+/* ── outcome_log 준비 — 헤더 + 드롭다운 검증 ────────────────────────────────
+ * 왜 드롭다운인가: 이 시트의 절반은 **원장이 손으로 적는다**(졸업생 소식은 사람에게서 온다).
+ *   자유 입력이면 「E-9」·「E9 취업」·「이피나인」이 섞이고, 그 순간 집계는 영원히 불가능해진다.
+ *   2년 뒤 모델 학습에 쓸 값이므로 어휘를 **입력 시점에** 못 박는다 — 나중 정규화는 소급이 안 된다.
+ * 검증 재적용은 판(版)이 바뀔 때만 — 매일 500행에 setDataValidation을 걸면 그냥 낭비다. */
+const OUTCOME_VALIDATION_VER_ = 'v1';
+function 궤적_결과시트_(ss) {
+  const sh = ensureSheet(ss, OUTCOME_TAB_, OUTCOME_HEADERS_);
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  if (String(getState(st, '궤적검증판').val || '') === OUTCOME_VALIDATION_VER_) return sh;
+  const rows = 500; // 선반영 구간 — 원장이 그 아래에 적으면 검증이 없지만, 그건 500명 졸업 뒤의 이야기다
+  if (sh.getMaxRows() < rows + 1) sh.insertRowsAfter(sh.getMaxRows(), rows + 1 - sh.getMaxRows());
+  [[4, OUTCOME_STAGES_], [5, OUTCOME_KINDS_], [7, OUTCOME_VISAS_], [8, OUTCOME_SOURCES_]].forEach(function (p) {
+    /* setAllowInvalid(true) = 경고만. false(거부)로 하면 **자동 수확이 막힌다** — 면접폼 선택지가
+     * 늘어난 날 목록에 없는 값이 들어오면 배치가 통째로 예외로 죽는다. 사람에겐 경고가 보이고
+     * 기계는 계속 도는 쪽을 고른다(가드가 데이터 유입 자체를 끊으면 안 된다). */
+    const rule = SpreadsheetApp.newDataValidation().requireValueInList(p[1], true).setAllowInvalid(true).build();
+    sh.getRange(2, p[0], rows, 1).setDataValidation(rule);
+  });
+  sh.getRange(1, 1, 1, OUTCOME_HEADERS_.length).setFontWeight('bold');
+  setState(st, '궤적검증판', OUTCOME_VALIDATION_VER_);
+  return sh;
+}
+
+/* ── 자동 수확 ① 면접기록_응답 → outcome_log ───────────────────────────────
+ * 🔑 **헤더 이름으로 읽는다.** 위치로 읽으면 안 된다 — migrateInterviewSid가 라이브 폼에 문항을
+ *   끼워 넣으면 응답 시트에 열이 하나 붙고, 위치 파싱은 그날 조용히 어긋난다(결석 폼의 경고와 같다).
+ * 🔑 활용동의는 **거르지 않고 실어 나른다.** 학원이 자기 학생의 진로를 기록하는 것은 운영이고,
+ *   「AI 학습에 써도 되는가」는 그 다음 질문이다. 여기서 걸러 버리면 동의 안 한 사람의 결과가
+ *   운영 통계에서까지 사라져 커버리지가 거짓이 된다 — 대신 칸에 담아 **내보낼 때** 거른다.
+ * @return 새로 적재한 행 수
+ */
+function 궤적수확_면접_(ss) {
+  const shIv = ss.getSheetByName('면접기록_응답');
+  if (!shIv || shIv.getLastRow() < 2) return 0;
+
+  const w = shIv.getLastColumn();
+  const hdr = shIv.getRange(1, 1, 1, w).getValues()[0].map(function (h) { return String(h || '').trim(); });
+  const col = {};
+  hdr.forEach(function (h, i) { if (h && col[h] === undefined) col[h] = i; }); // 중복 헤더는 첫 열 우선(cv와 같은 규칙)
+  const cSid = col['학생ID'];
+  if (cSid === undefined) return 0; // 아직 migrateInterviewSid 전 — 조인 키가 없으니 수확할 것도 없다
+
+  const sh = 궤적_결과시트_(ss);
+  const 있음 = {};
+  if (sh.getLastRow() >= 2) {
+    sh.getRange(2, OUTCOME_KEY_COL_ + 1, sh.getLastRow() - 1, 1).getValues()
+      .forEach(function (r) { if (r[0]) 있음[String(r[0])] = 1; });
+  }
+
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = shIv.getRange(2, 1, shIv.getLastRow() - 1, w).getValues();
+  const 신규 = [];
+  const now = new Date();
+  rows.forEach(function (r) {
+    const sid = String(r[cSid] == null ? '' : r[cSid]).trim();
+    if (!sid) return;                                   // 익명 응답 — 질문 은행에는 그대로 기여한다(설계)
+    const ts = r[0];                                    // 폼 연결 시트의 1열은 언제나 타임스탬프
+    const 원천 = ts instanceof Date ? ts.toISOString() : String(ts || '');
+    const key = '면접폼:' + sid + ':' + 원천;
+    if (!원천 || 있음[key]) return;
+    있음[key] = 1;                                      // 같은 배치 안 중복도 막는다
+
+    const kind = INTERVIEW_TO_KIND_[String(r[col['면접 종류']] || '').trim()] || '기타·미상';
+    const stage = INTERVIEW_TO_STAGE_[String(r[col['결과']] || '').trim()] || '대기중';
+    신규.push([sid, String(r[col['이름']] || '').trim(), 궤적_관측일_(r[col['시기']], ts, tz),
+      stage, kind, String(r[col['장소·기관']] || '').trim(), '',
+      '면접폼(자동)', String(r[col['자료활용동의']] || '').trim(), '', key, now]);
+  });
+
+  if (!신규.length) return 0;
+  const at = sh.getLastRow() + 1;
+  if (sh.getMaxRows() < at + 신규.length - 1) sh.insertRowsAfter(sh.getMaxRows(), at + 신규.length - 1 - sh.getMaxRows());
+  // writeIfChanged = 소독 채널. 이름·기관명은 폼에 사람이 적은 글이라 '=' 로 시작하면 라이브 수식이 된다
+  writeIfChanged(sh, at, 1, 신규);
+  return 신규.length;
+}
+
+/* 관측일 — 면접 「시기」(예: 2026-05)가 있으면 그것이 사실에 가깝다. 없으면 제출 시각으로 떨어진다.
+ * ⚠ 폼의 자유 입력이라 「2026년 5월」·「2026.5」·「05/2026」이 다 온다 — 연·월만 뽑는다. */
+function 궤적_관측일_(시기, ts, tz) {
+  const m = String(시기 == null ? '' : 시기).match(/(20\d{2})\s*[.\-\/년]?\s*(\d{1,2})/);
+  if (m) {
+    const mo = Number(m[2]);
+    if (mo >= 1 && mo <= 12) return m[1] + '-' + ('0' + mo).slice(-2);
+  }
+  return ts instanceof Date ? Utilities.formatDate(ts, tz, 'yyyy-MM') : '';
+}
+
+/* ── trajectory 재작성 — 의도 × 최신 결과 × 대조 ───────────────────────────
+ * 상담시트에서 읽는 이유: profiles는 **퇴소자를 지운다**(v9.34 행 정합 불변식). 궤적이 필요한
+ *   바로 그 사람들이 거기엔 없다. 상담시트는 나간 사람도 남아 있는 유일한 원장이다.
+ * @return {total, known} 커버리지
+ */
+function 궤적재작성_(ss, src) {
+  if (!src) return { total: 0, known: 0 };
+  const lastRow = src.getLastRow();
+  if (lastRow < 3) return { total: 0, known: 0 };
+  const lastC = Math.max(62, src.getLastColumn());
+  const hdr = src.getRange(2, 1, 1, lastC).getValues()[0];
+  const col = {};
+  hdr.forEach(function (h, i) { const k = String(h || '').trim(); if (k && col[k] === undefined) col[k] = i; });
+  const g = function (row, name) { const i = col[name]; return i === undefined ? '' : String(row[i] == null ? '' : row[i]).trim(); };
+
+  const 최신 = 궤적_최신관측_(ss);
+  const data = src.getRange(3, 1, lastRow - 2, lastC).getValues();
+  const tz = ss.getSpreadsheetTimeZone();
+  const 갱신일 = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const out = [];
+  let known = 0;
+  data.forEach(function (row) {
+    const sid = String(row[59] == null ? '' : row[59]).trim(); // BH 학생ID — 없으면 아직 사람이 아니라 접수다
+    if (!sid || !row[0]) return;
+    const 진로 = g(row, '졸업후진로'), 과정 = g(row, '희망진학과정');
+    const 비자 = g(row, '졸업후목표비자'), 전공 = g(row, '관심전공분야');
+    const o = 최신[sid];
+    if (o) known++;
+    out.push([sid, String(row[0]).trim(), String(row[3] || '').trim(), g(row, '처리상태'),
+      진로, 과정, 비자, 전공, g(row, 'TOPIK목표'),
+      o ? o.stage : '', o ? o.kind : '', o ? o.org : '', o ? o.visa : '', o ? o.when : '', o ? o.source : '',
+      궤적_대조_(진로, 과정, 비자, o), 갱신일]);
+  });
+
+  const sh = ensureSheet(ss, TRAJECTORY_TAB_, TRAJECTORY_HEADERS_);
+  if (sh.getMaxRows() < out.length + 1) sh.insertRowsAfter(sh.getMaxRows(), out.length + 1 - sh.getMaxRows());
+  if (out.length) writeIfChanged(sh, 2, 1, out);
+  const tail = sh.getLastRow() - 1 - out.length; // 상담시트에서 사라진 사람의 옛 줄
+  if (tail > 0) sh.getRange(out.length + 2, 1, tail, TRAJECTORY_HEADERS_.length).clearContent();
+
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  setState(st, '궤적커버리지', known + '/' + out.length + ' (' + 갱신일 + ')');
+  return { total: out.length, known: known };
+}
+
+/* 학생별 최신 관측 1건. 최신 = 관측일 우선, 같으면 **뒤 행**(나중에 적은 것이 최신이다).
+ * ⚠ 「최신만 본다」는 정보를 버리는 선택이다 — 전 이력은 outcome_log에 그대로 남는다.
+ *   trajectory는 「지금 이 사람은 어디에 있나」 한 줄이고, 이력을 여기 늘어놓으면 못 읽는 표가 된다. */
+function 궤적_최신관측_(ss) {
+  const sh = ss.getSheetByName(OUTCOME_TAB_);
+  const map = {};
+  if (!sh || sh.getLastRow() < 2) return map;
+  const vals = sh.getRange(2, 1, sh.getLastRow() - 1, OUTCOME_HEADERS_.length).getValues();
+  vals.forEach(function (r) {
+    const sid = String(r[0] == null ? '' : r[0]).trim();
+    if (!sid) return;
+    const when = String(r[2] == null ? '' : r[2]).trim();
+    const prev = map[sid];
+    if (prev && String(prev.when) > when) return; // 문자열 비교로 충분하다 — 전부 yyyy-MM 규격
+    map[sid] = { when: when, stage: String(r[3] || ''), kind: String(r[4] || ''),
+      org: String(r[5] || ''), visa: String(r[6] || ''), source: String(r[7] || '') };
+  });
+  return map;
+}
+
+/* 의도 버킷 — **가까운 목표부터** 본다. 「10년 후 한국 정착」과 「내년 학사 진학」이 같이 있으면
+ * 우리가 관측하는 결과는 후자 쪽이다. 순서를 뒤집으면 진학한 사람이 전부 「불일치」로 찍힌다. */
+function 궤적_의도버킷_(진로, 과정, 비자) {
+  if (과정) return '유학';
+  const v = String(비자 || '');
+  if (/E-9|E-7|D-10/.test(v)) return '취업';
+  if (/D-8|D-9/.test(v)) return '창업';
+  if (/F-2|F-5/.test(v)) return '정착';
+  if (/몽골/.test(진로)) return '몽골';
+  if (/제3국/.test(진로)) return '제3국';
+  if (/한국 정착/.test(진로)) return '정착';
+  return '';
+}
+
+/* 대조 판정 — 이 한 칸이 로드맵 ④의 학습 신호다.
+ * 🔑 「모른다」를 「일치」로 세지 않는다. 미관측·의도 미정·진행중은 각자 이름을 갖는다 —
+ *   뭉치는 순간 커버리지가 부풀고, 부푼 커버리지는 「데이터가 쌓이고 있다」는 착각이 된다. */
+function 궤적_대조_(진로, 과정, 비자, o) {
+  if (!o) return '미관측';
+  if (o.stage === '지원·접수' || o.stage === '대기중' || o.stage === '보류·추가서류') return '진행중';
+  if (o.stage === '불합격·거절') return '좌절(재도전 가능)';
+  const 의도 = 궤적_의도버킷_(진로, 과정, 비자);
+  if (!의도) return '의도 미정';
+  const 결과 = OUTCOME_PATH_[o.kind] || '';
+  if (!결과 || 결과 === '기타') return '분류 불가';
+  return 의도 === 결과 ? '일치' : ('불일치(' + 의도 + '→' + 결과 + ')');
+}

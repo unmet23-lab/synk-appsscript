@@ -5,7 +5,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const ROOT = path.resolve(__dirname, '..');
+// SYNK_TEST_SRC_ROOT = 변이 실험용 이음매(궤적·면접궤적 테스트와 같은 규약). 평소엔 실소스를 본다.
+// 탐지력은 「사본을 변이시키면 빨개지는가」로 재고, **실파일은 절대 안 건드린다**(F065·F067·code-edit-guard).
+const ROOT = process.env.SYNK_TEST_SRC_ROOT || path.resolve(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
 const server = read('crewcard/크루카드.js');
@@ -25,10 +27,16 @@ const htmlColumns = (html) =>
   new Set([...html.matchAll(/data-column="([a-z0-9_]+)"/g)].map((x) => x[1]));
 
 test('COLUMNS 정본 — 크기·중복·머리 3열·Serial 열 위치', () => {
-  // [2026-08-04] 182 → 184: 마케팅 어트리뷰션 source·referrer 추가(맨 뒤 고정)
-  assert.equal(COLUMNS.length, 184, 'COLUMNS가 184열이 아니다 — 스키마와 같이 바꿨는지 확인');
-  assert.deepEqual(COLUMNS.slice(-2), ['source', 'referrer'],
-    'source·referrer가 맨 뒤가 아니다 — 중간에 끼우면 라이브 crew_cards의 기존 열이 한 칸씩 밀린다');
+  // [2026-08-04] 182 → 184: 마케팅 어트리뷰션 source·referrer / 184 → 185: field_interest_undecided
+  assert.equal(COLUMNS.length, 185, 'COLUMNS가 185열이 아니다 — 스키마와 같이 바꿨는지 확인');
+  /* 🔑 지키는 것은 「무엇이 맨 뒤인가」가 아니라 **「기존 열의 자리가 안 밀렸는가」**다.
+   *   라이브 crew_cards 헤더는 이름이 아니라 위치로 붙으므로 중간 삽입은 그 뒤 전부를 한 칸씩 민다.
+   *   그래서 새 열은 언제나 append 이고, 검사는 옛 열의 **인덱스**를 못 박는다
+   *   (「마지막 둘」로 못 박으면 다음 append 때 그 검사부터 깨져서 진짜 불변식이 흐려진다). */
+  assert.equal(COLUMNS.indexOf('source'), 182, 'source 자리가 밀렸다 — 중간에 열을 끼웠다');
+  assert.equal(COLUMNS.indexOf('referrer'), 183, 'referrer 자리가 밀렸다 — 중간에 열을 끼웠다');
+  assert.equal(COLUMNS.indexOf('field_interest_undecided'), 184,
+    '「아직 미정」 열이 맨 뒤가 아니다 — field_interest_* 무리 옆에 끼우면 그 뒤가 전부 밀린다');
   assert.equal(new Set(COLUMNS).size, COLUMNS.length, '중복 컬럼');
   assert.deepEqual(COLUMNS.slice(0, 3), ['submitted_at', 'ref_serial', 'lang']);
   // 크루_다음번호_가 B열(2번째)을 ref_serial로 읽는다 — 열 순서를 바꾸면 채번이 눈이 먼다
@@ -64,6 +72,21 @@ test('베이크된 HTML ↔ COLUMNS — 양방향 정합 (KR·MN 동일)', () =>
 test('서빙본(crewcard/) = 문서본(docs/크루카드/) 바이트 동일 — 두 벌이 갈라지면 여기서 죽는다', () => {
   assert.equal(htmlKr, read('docs/크루카드/크루카드_한국어.html'), 'KR 두 벌이 다르다 — 한쪽만 고쳤다');
   assert.equal(htmlMn, read('docs/크루카드/크루카드_몽골어.html'), 'MN 두 벌이 다르다 — 한쪽만 고쳤다');
+});
+
+test('🔑 2행에 **박힌** 스키마 = 정본 JSON — 런타임이 읽는 것은 파일이 아니라 이쪽이다', () => {
+  /* 08-04 실측으로 발견한 조용한 드리프트: source·referrer 를 정본 JSON 에만 넣고 카드 2행의
+   *   base64 를 안 구웠다. loadSchema 의 상대 경로(`data/…json`)는 **폴백일 뿐 실제로 안 탄다** —
+   *   window.__resources.fieldSchema 가 먼저 이긴다. 그래서 정본을 고쳐도 라이브는 안 바뀐다.
+   * 🔑 이건 「문서가 코드와 다르다」가 아니라 **「정본이라 부르는 파일이 실행에 안 쓰인다」**다.
+   *   증상이 0이라 눈으로는 영원히 안 걸린다. 굽는 도구 = tools/크루카드_스키마굽기.js */
+  const 정본 = read('docs/크루카드/크루카드_스키마.json');
+  for (const [name, html] of [['kr', htmlKr], ['mn', htmlMn]]) {
+    const m = /"fieldSchema":\s*"data:application\/json;base64,([A-Za-z0-9+/=]+)"/.exec(html);
+    assert.ok(m, `[${name}] 2행 base64 스키마 앵커가 사라졌다`);
+    assert.equal(Buffer.from(m[1], 'base64').toString('utf8'), 정본,
+      `[${name}] 박힌 스키마가 정본과 다르다 — \`node tools/크루카드_스키마굽기.js\` 로 굽고 커밋하라`);
+  }
 });
 
 test('카드 HTML — 제출·자동저장·허니팟·퀴즈 배선', () => {
@@ -464,4 +487,70 @@ test('재제출 — 인지채널은 못 덮고, 추천인은 덮는다', () => {
   assert.equal(h.값(3, '인지채널'), '페이스북',
     '재제출이 유입경로를 덮었다 — 「페이스북 광고로 알았다」가 「추천」으로 바뀌면 어트리뷰션이 통째로 밀린다');
   assert.equal(h.값(3, '추천인'), '솔롱고', '나중에 적어 준 추천인이 반영되지 않았다');
+});
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * 진로 5문항 제출 게이트 [2026-08-04 유호님 확정]
+ *
+ * 왜 있나: 로드맵 ④(유학 집약 봇)의 재료는 「무엇을 목표했고 실제로 어디로 갔나」의 짝이다.
+ *   왼쪽(의도)이 비면 오른쪽(결과)을 아무리 모아도 궤적이 안 만들어진다. 그리고 **소급 불가**다 —
+ *   입학 상담은 인생에 한 번이고, 그때 안 받은 답은 3년 뒤에 못 받는다.
+ * 이 블록이 지키는 것 중 가장 중요한 건 「필수화」가 아니라 **「빠져나갈 곳이 있는가」**다.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+const 게이트 = (html) => {
+  const m = /var CAREER_REQ = (\[[\s\S]*?\n  \]);/.exec(html);
+  assert.ok(m, 'CAREER_REQ 정의를 못 찾았다 — 제출 게이트가 사라졌거나 형태가 바뀌었다');
+  return new Function('return ' + m[1])();
+};
+
+test('🔴 진로 5문항이 제출을 막는다 (KR·MN 동일) — 왼쪽이 비면 궤적이 안 만들어진다', () => {
+  const 기대 = ['future_10y', 'topik_target', 'degree_target', 'visa_target', 'field_interest'];
+  for (const [name, html] of [['kr', htmlKr], ['mn', htmlMn]]) {
+    assert.deepEqual(게이트(html).map((q) => q.field), 기대, `[${name}] 게이트 대상 5문항이 바뀌었다`);
+  }
+});
+
+test('🔴 다섯 전부에 「아직 미정」이 있다 — 빠져나갈 곳 없는 필수는 아무거나 찍게 만든다', () => {
+  /* 이 검사가 이 블록에서 제일 중요하다. 정직한 「모르겠다」가 없는 필수 문항은 답을 받는 게 아니라
+   * **거짓 목표를 만든다**. 그렇게 들어온 값으로 만든 궤적은 없느니만 못하다 —
+   * 「학사를 목표했는데 E-9로 갔다」가 사실은 「아무거나 눌렀다」인지 구별할 수 없기 때문이다.
+   * 「미정」은 결측이 아니라 관측된 상태다: 상담에서 먼저 물어야 할 사람이 누구인지 알려준다. */
+  const 탈출구 = { future_10y: '아직 미정', topik_target: '아직 미정', degree_target: '아직 미정',
+    visa_target: '미정 · 상담 필요', field_interest: '아직 미정' };
+  for (const [name, html] of [['kr', htmlKr], ['mn', htmlMn]]) {
+    for (const q of 게이트(html)) {
+      const v = 탈출구[q.field];
+      const col = q.col || (q.prefix + 'undecided');
+      assert.ok(html.includes(`data-field="${q.field}" data-column="${col}" data-value="${v}"`),
+        `[${name}] 「${q.field}」에 「${v}」 선택지가 없다 — 필수인데 빠져나갈 곳이 없으면 거짓 데이터가 쌓인다`);
+    }
+  }
+});
+
+test('게이트가 실제로 제출을 끊는다 — 판정만 하고 흘려보내지 않는다', () => {
+  for (const [name, html] of [['kr', htmlKr], ['mn', htmlMn]]) {
+    const sub = html.slice(html.indexOf('function submit(){')).slice(0, 400);
+    assert.match(sub, /var miss = validateMin\(data\);[\s\S]*?if\(miss\)\{[^}]*return;/,
+      `[${name}] 미충족인데 return 하지 않는다 — 경고만 띄우고 그대로 전송된다`);
+    assert.ok(/focusField\(miss\.field\)/.test(sub),
+      `[${name}] 미충족 문항으로 데려가지 않는다 — 3,500줄 카드에서 어디를 고칠지 모른다`);
+  }
+});
+
+test('KR·MN 게이트는 라벨만 다르다 — 갈라지면 몽골어 접수만 진로가 빈 채로 들어온다', () => {
+  const 키 = (html) => 게이트(html).map((q) => [q.field, q.col || '', q.prefix || ''].join('|'));
+  assert.deepEqual(키(htmlKr), 키(htmlMn), '두 판의 게이트 대상이 다르다 — 절반이 궤적에서 빠진다');
+  for (const [name, html] of [['kr', htmlKr], ['mn', htmlMn]]) {
+    assert.ok(/"needCareer":/.test(html), `[${name}] needCareer 안내 문구가 없다 — undefined 가 alert 에 뜬다`);
+    게이트(html).forEach((q) => assert.ok(q.label && q.label.trim(), `[${name}] ${q.field} 라벨이 비었다`));
+  }
+});
+
+test('「아직 미정」 전공이 시트 요약에 실린다 — 라벨이 없으면 그 답만 통째로 사라진다', () => {
+  /* 다중 문항은 다중요약_가 라벨 맵을 돌며 TRUE 인 것만 문장으로 접는다.
+   * 맵에 없는 컬럼은 **조용히 빠진다** — 필수로 만들어 놓고 그 답이 시트에서 증발하면
+   * 「미정을 고른 사람」과 「아무것도 안 고른 사람」이 같은 빈칸이 된다. */
+  assert.match(상담, /field_interest_undecided:\s*'미정'/,
+    '전공관심라벨_에 field_interest_undecided 가 없다 — 「아직 미정」 응답이 요약 칸에서 사라진다');
 });

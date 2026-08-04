@@ -29,7 +29,7 @@ const ROOT = path.resolve(__dirname, '..');
  *  [v9.138] 엔진_수집.js 편입 — 학습 데이터 수집층(퀴즈 로그·숙제 문항 연결·오류 태그·회화 로그).
  *  누락하면 sheetSkeleton_이 참조하는 QUIZ_LOG_HEADERS를 테스트가 못 찾아, 로드 순서 가드가 오탐으로 죽는다
  *  (조편성.test.js의 「시트 골격은 지연 평가 함수다」가 실제로 그렇게 잡아냈다 — 가드가 제 일을 한 사례). */
-const ENGINE_FILES = ['Code.js', '엔진_운영배치.js', '엔진_폼리포트.js', '엔진_콘텐츠AI.js', '엔진_셋업확장.js', '엔진_수집.js'];
+const ENGINE_FILES = ['Code.js', '엔진_운영배치.js', '엔진_폼리포트.js', '엔진_콘텐츠AI.js', '엔진_셋업확장.js', '엔진_수집.js', '엔진_궤적.js'];
 
 /** 엔진 전체를 한 문자열로. 파일 사이는 개행으로만 잇는다(표식 검색에 영향 없게). */
 function engineSource() {

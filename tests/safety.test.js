@@ -418,7 +418,9 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
   const len2 = code.match(/const SHARED2_COL_HEADERS = \[([\s\S]*?)\];/)[1].split(',').filter(s => s.trim()).length;
   const s3 = Number(code.match(/const SHARED3_COL_START = (\d+)/)[1]); // [v9.82] 3차 블록(출퇴근·결석 카드)
   const len3 = code.match(/const SHARED3_COL_HEADERS = \[([\s\S]*?)\];/)[1].split(',').filter(s => s.trim()).length;
-  const reserved = { 105: '최애(v9.50·A4, 학생 Set Column)', 106: '목소리폼URL(교재연동)', 107: '목소리성장카드(교재연동)', 108: '필살기노트(교재연동)', 119: '랭킹보드HTML(v9.81, calcAll 리그 카드)', 129: '오늘의만남(v9.99, calcAll 소그룹 3라운드 짝)' };
+  const reserved = { 105: '최애(v9.50·A4, 학생 Set Column)', 106: '목소리폼URL(교재연동)', 107: '목소리성장카드(교재연동)', 108: '필살기노트(교재연동)', 119: '랭킹보드HTML(v9.81, calcAll 리그 카드)', 129: '오늘의만남(v9.99, calcAll 소그룹 3라운드 짝)',
+    // [궤적] 의도 4칸 — 130(대화폼URL/SHARED4) 바로 뒤. 「DT128 다음이니 129」로 세다 두 열을 밟을 뻔했다.
+    131: '졸업후진로(궤적 의도)', 132: '희망진학과정(궤적 의도)', 133: '목표비자(궤적 의도)', 134: '관심전공(궤적 의도)' };
   Object.keys(reserved).forEach(cs => {
     const c = Number(cs);
     assert.ok(!(c >= s1 && c <= s1 + len1 - 1) && !(c >= s2 && c <= s2 + len2 - 1) && !(c >= s3 && c <= s3 + len3 - 1),
@@ -428,6 +430,9 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
   assert.ok(code.includes("pf.getRange('DA1').getValue()) !== '최애'"), 'DA105 최애 보장 코드가 사라짐 — 레지스트리 갱신 필요');
   assert.ok(code.includes("pf.getRange('DO1').getValue()) !== '랭킹보드HTML'"), 'DO119 랭킹보드 보장 코드가 사라짐 — 레지스트리 갱신 필요');
   assert.ok(code.includes("pf.getRange('DY1').setValue('오늘의만남')"), 'DY129 오늘의만남 보장 코드가 사라짐 — 레지스트리 갱신 필요'); // [v9.99]
+  assert.ok(code.includes('const CAREER_COL_ = 131'), '진로 4열 시작이 131이 아니다 — 레지스트리와 갈라지면 다음 블록이 남의 열을 밟는다');
+  assert.ok(code.match(/const CAREER_HEADS_ = \[([\s\S]*?)\];/)[1].split(',').filter(x => x.trim()).length === 4,
+    '진로 블록 폭이 4가 아니다 — 레지스트리 131~134와 갈라졌다');
   const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
   ['DB1', 'DC1', 'DD1'].forEach(cell => assert.ok(tb.includes("getRange('" + cell + "')"), '교재연동.js ' + cell + ' 보장 코드가 사라짐 — 레지스트리 갱신 필요'));
 });
@@ -1495,9 +1500,14 @@ test('[v9.84] 상담 배선 — 읽기 폭 동적·이름 해석·DT124~DX128 �
   assert.ok(body.includes('Math.max(62, src.getLastColumn())'), '상담 읽기 폭이 62 고정 — v18.4 증분(선호그룹 등)을 통째로 못 읽는다');
   assert.ok(body.includes("cv(row, '선호그룹')") && body.includes("cv(row, 'TOPIK목표기한')"), '증분 문항 헤더 이름 해석이 없다(열 이동에 취약)');
   assert.ok(body.includes("consultBlobField_(cv(row, '📝자유서술→노션'), '한국어고충')"), '자유서술 blob 고충 추출이 없다');
-  // 점거 가드가 기입보다 앞 — 24시간 내 열 충돌 계열 사고 2건(오늘의알림 덮임·DO119 선점)의 회귀 장치
-  assertOrder(body, ['const dtClash', 'writeIfChanged(dst, 2, 124, quint)', 'qTail, 5).clearContent()']);
-  assert.ok(body.includes("adminMail('[SYNK] ⚠️ 상담 디테일 열 충돌"), '점거 충돌 시 상태 변화 1회 알림이 없다');
+  /* 점거 가드 — 24시간 내 열 충돌 계열 사고 2건(오늘의알림 덮임·DO119 선점)의 회귀 장치.
+   * [궤적] 두 번째 블록(진로 4열)이 붙으면서 손코딩 12줄이 공용 통로 profilesBlockWrite_로 승격됐다.
+   *   그래서 검사도 「syncProfiles 안에 가드가 있나」가 아니라 **「기입이 통로를 지나나」**를 본다 —
+   *   통로를 안 지나는 기입이 하나라도 생기면 그게 다음 사고다. */
+  assert.ok(body.includes("profilesBlockWrite_(dst, 124, DT_HEADS, quint, '상담열충돌'"), 'DT124 기입이 공용 통로를 지나지 않는다');
+  const guard = section('function profilesBlockWrite_(', 'function syncProfiles()');
+  assertOrder(guard, ['const clash', 'return false', 'writeIfChanged(dst, 2, start, rows)', 'clearContent()']);
+  assert.ok(guard.includes("adminMail('[SYNK] ⚠️ ' + label + ' 열 충돌"), '점거 충돌 시 상태 변화 1회 알림이 없다');
   assert.ok(body.includes("['상담취향', '상담목표', '입학TOPIK', '상담고충', '페이스라인']"), 'DT_HEADS 정본 배열이 변형됨 — 시트·문서·레지스트리 함께 갱신 필요');
   assert.ok(body.includes("[e.taste || '', e.cGoal || '', e.topik0 || '', e.pain || '', e.pace || '']"), 'quint 5열 구성이 변형됨');
 });
@@ -1515,7 +1525,7 @@ test('[v9.84] 상담 디테일 열 비침범 — DT124~DX128이 공유 블록(SH
     blocks.forEach(b => assert.ok(!(c >= b[0] && c <= b[0] + b[1] - 1),
       '공유 블록(' + b[0] + '~' + (b[0] + b[1] - 1) + ')이 상담 디테일 열 ' + c + '을 침범 — 리뷰 B1 계열 재발'));
   }
-  assert.ok(code.includes('writeIfChanged(dst, 2, 124, quint)'), 'DT124 기입 코드가 사라짐 — 이 검사·레지스트리 갱신 필요');
+  assert.ok(code.includes('profilesBlockWrite_(dst, 124, DT_HEADS, quint,'), 'DT124 기입 코드가 사라짐 — 이 검사·레지스트리 갱신 필요');
 });
 
 test('[v9.84] 페이스라인·blob 추출 — 실행 검증(경계·과장 금지 포함)', () => {
