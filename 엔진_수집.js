@@ -1084,13 +1084,40 @@ const GH_PATH = 'evals/픽스처_실학생.json';   // 합성 픽스처(evals/�
 const GH_BRANCH = 'master';
 const GH_TOKEN_KEY = 'GITHUB_TOKEN_SYNKTALK';
 
+/* [v9.177] 연결만 확인한다 — **읽기 전용**(GET /repos), 아무것도 쓰지 않는다.
+ * 왜 따로 있나: 이 설치는 골든셋에 데이터가 있어야 GitHub까지 가는데, 데이터는 개원 뒤에나 쌓인다.
+ *   그러면 **토큰이 진짜 되는지를 6개월 뒤에 처음 알게 된다** — 그때 틀렸으면 그 판을 통째로 놓친다.
+ *   설치한 날 확인할 수 있어야 설치가 끝난 것이다.
+ * 실패를 **구별해서** 말한다 — 401(값이 잘렸거나 만료) / 404(저장소가 토큰 범위 밖) / 권한 부족은
+ *   각각 고치는 곳이 다르다. "실패했습니다" 한 줄이면 어디를 고칠지 모른다. */
+function 골든전송점검_() {
+  const token = PropertiesService.getScriptProperties().getProperty(GH_TOKEN_KEY);
+  if (!token) return { ok: false, msg: '토큰이 없습니다 — 스크립트 속성 ' + GH_TOKEN_KEY + ' (절차: docs/골든픽스처_자동전송_설치.md)' };
+  const res = UrlFetchApp.fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO, {
+    headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' },
+    muteHttpExceptions: true
+  });
+  const code = res.getResponseCode();
+  if (code === 401) return { ok: false, msg: '토큰이 거부됐습니다(401) — 값이 잘려 들어갔거나 만료됐습니다. 새로 발급해 속성 값만 바꾸세요.' };
+  if (code === 404) return { ok: false, msg: '저장소가 안 보입니다(404) — 토큰의 Repository access에 ' + GH_REPO + '이 들어갔는지 확인하세요.' };
+  if (code !== 200) return { ok: false, msg: 'GitHub 응답 ' + code + ' — ' + res.getContentText().slice(0, 120) };
+  const p = JSON.parse(res.getContentText()).permissions || {};
+  if (!p.push) return { ok: false, msg: '읽기는 되는데 쓰기 권한이 없습니다 — 토큰 Permissions의 Contents를 「Read and write」로 바꾸세요.' };
+  return { ok: true, msg: '연결 OK — ' + GH_OWNER + '/' + GH_REPO + ' 쓰기 권한 확인(비공개 저장소).' };
+}
+
 function pushGoldenFixture_() {
   const token = PropertiesService.getScriptProperties().getProperty(GH_TOKEN_KEY);
   if (!token) return 'GitHub 토큰이 없습니다 — 설정 절차는 docs/골든픽스처_자동전송_설치.md 에 클릭 단위로 있습니다.\n'
     + '(스크립트 속성 이름: ' + GH_TOKEN_KEY + ')';
   const r = 골든픽스처_();
-  if (typeof r === 'string') return r;            // 골든셋이 비었다 — 빈 파일을 올려 덮지 않는다
-  if (!r.건수) return '채점에 쓸 항목이 0건이라 올리지 않았습니다(' + r.요약 + ').';
+  /* 보낼 것이 없어도 **연결은 확인해서 알려 준다** — 여기서 조용히 끝내면 설치가 맞았는지
+   * 데이터가 쌓이는 6개월 뒤에나 알게 된다(그때 틀렸으면 그 판을 통째로 놓친다). */
+  if (typeof r === 'string' || !r.건수) {
+    const c = 골든전송점검_();
+    return (typeof r === 'string' ? r : '채점에 쓸 항목이 0건이라 올리지 않았습니다(' + r.요약 + ').')
+      + '\n\n' + (c.ok ? '✅ ' : '⚠️ ') + c.msg;
+  }
 
   const api = 'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + encodeURI(GH_PATH);
   const head = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };

@@ -506,6 +506,22 @@ test('[v9.176] 정답이 쌓였는데 전송 통로가 안 열려 있으면 월�
     '토큰 값을 메일 본문에 싣는다 — 존재 여부만 봐야 한다');
 });
 
+test('[v9.177] 연결 점검은 읽기 전용이고, 실패를 구별해서 말한다 — 설치한 날 확인돼야 설치가 끝난 것이다', () => {
+  const 점검 = section('function 골든전송점검_()', '\n}\n');
+  assert.equal(/method:\s*'put'|method:\s*'post'|method:\s*'delete'/i.test(점검), false,
+    '점검이 쓰기를 한다 — 확인하려다 저장소를 건드리면 점검을 못 누르게 된다');
+  assert.ok(/api\.github\.com\/repos\/' \+ GH_OWNER \+ '\/' \+ GH_REPO/.test(점검), '저장소 자체를 보지 않는다');
+  for (const [코드, 단서] of [['401', '만료'], ['404', 'Repository access'], ['push', 'Read and write']]) {
+    assert.ok(점검.includes(코드) && 점검.includes(단서),
+      `${코드} 실패에 고칠 곳을 안 알려준다 — 「실패했습니다」 한 줄이면 어디를 손볼지 모른다`);
+  }
+  assert.equal(/msg:[^}]*\+\s*token/.test(점검), false, '토큰 값을 메시지에 싣는다');
+
+  // 보낼 것이 없을 때도 점검 결과를 함께 낸다(여기서 조용히 끝나면 6개월 뒤에나 알게 된다)
+  const 전송 = section('function pushGoldenFixture_()', '\n}\n');
+  assert.ok(/골든전송점검_\(\)/.test(전송), '보낼 것이 없으면 그냥 끝난다 — 토큰이 맞는지 확인할 방법이 없어진다');
+});
+
 /* ── [v9.175] 픽스처 자동 전송 — 바깥으로 나가는 쓰기라 「무엇을 향해 쏘는가」를 못박는다 ── */
 const 전송 = () => section('function pushGoldenFixture_()', '\n}\n');
 
