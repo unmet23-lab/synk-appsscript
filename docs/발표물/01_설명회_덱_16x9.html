@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK LAB 학부모 설명회 덱 — 16:9 · 16장 + 리허설표</title>
+<!--
+  SYNK LAB 발표물 1번 — 학부모 설명회 슬라이드 덱 (16:9 · 16장)
+  브랜드 키트 = docs/발표물/_브랜드킷.md   로고 = W5(주입: tools/로고주입.js)
+  산출물 사양 = docs/정본/SYNK/SYNK 발표물 제작 프롬프트 v1.txt v1.4 §1 + [공통 블록]
+  대본(정본)  = docs/정본/SYNK LAB/About Synk lab/SYNK_리라이팅_v2/08_설명회_원장_스피치.txt v5
+
+  ▶ 이 덱의 설계를 지배하는 것은 디자인이 아니라 **순차통역**이다.
+     원고의 ▷ 가 통역이 끊기는 지점이고, 통역이 들어가면 청중의 시선이 화면에 오래 머문다.
+     그래서 ① 한 슬라이드 = 한 메시지  ② 한국어는 12자 내외 헤드라인 + 필요할 때 한 줄
+            ③ 문단을 절대 올리지 않는다 — 청중이 먼저 읽어버리면 원장의 다음 말이 김이 빠진다
+     **슬라이드가 대본을 대신하지 않는다. 대본을 받친다.**
+
+  ▶ 몽골어는 전부 「____」로 비어 있다(에리카쌤 검수 전 확정 금지).
+     한국어 아래 같은 크기 · 60~70% 밝기 자리를 미리 잡아 두었다.
+
+  ▶ 마지막 장은 슬라이드가 아니라 **원장 리허설표**다(투사용 아님, 인쇄해서 손에 들 것).
+
+  ▶ 인쇄/투사 — Ctrl+P → "PDF로 저장" · 용지 크기 조정 없음 · 여백 "없음" · "배경 그래픽" 켜기
+     16:9(338.7 × 190.5mm)로 잡혀 있어 프로젝터·PDF 뷰어에서 전체화면이 딱 맞는다.
+-->
+<style>
+@page { size: 338.667mm 190.5mm; margin: 0; }
+
+:root{
+  --blue:#3D5AFE; --orange:#FF6D00; --gold:#FFC400;
+  --paper:#FDFCF8; --ink:#1A237E; --midnight:#0B1A2E;
+  --hair:rgba(26,35,126,.20); --mute:#6C74A8; --body:#414A80;
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{
+  background:var(--paper); color:var(--ink);
+  font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
+  font-weight:500; line-height:1.5;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+/* 🚫 한글·키릴 금지 — DM Mono엔 글리프가 없다 */
+.mono{ font-family:'DM Mono',ui-monospace,'Cascadia Mono','Consolas',monospace; }
+
+.sl{
+  width:338.667mm; height:190.5mm; padding:20mm 24mm 16mm;
+  display:flex; flex-direction:column; justify-content:center;
+  overflow:hidden; background:var(--paper); position:relative;
+  page-break-after:always; break-after:page;
+}
+.sl:last-child{ page-break-after:auto; break-after:auto; }
+
+/* 설명회장은 조명이 밝고 뒷줄이 멀다 — 본문 최소 32pt(≈11.3mm) 기준으로 설계한다.
+   헤드라인은 그보다 훨씬 크게. 장당 요소는 5개를 넘지 않는다. */
+h1{ font-size:30mm; font-weight:800; line-height:1.08; letter-spacing:-.045em; }
+h1 em{ font-style:normal; color:var(--orange); }
+h1.sm{ font-size:24mm; }
+.one{ font-size:11.5mm; color:var(--body); margin-top:9mm; line-height:1.45; font-weight:500; }
+.one b{ color:var(--ink); font-weight:800; }
+
+/* 몽골어 자리 — 한국어 아래, **같은 크기**, 60~70% 밝기(정본 §1).
+   ⚠ 「같은 크기」를 지키는 게 핵심이다. 처음엔 14mm(≈40pt)로 잡았다가 3열 슬라이드에서
+      19.8pt 까지 내려갔다 — 번역이 들어오면 그 크기로 투사되는데, 설명회장 뒷줄은 못 읽는다.
+      자리를 작게 잡아 두면 나중에 번역을 줄이게 된다. 순서가 틀렸다. */
+.mn{ font-size:14mm; color:rgba(26,35,126,.34); letter-spacing:.06em; margin-top:6mm; font-weight:700; line-height:1.2; }
+h1 + .mn{ font-size:22mm; }
+h1.sm + .mn{ font-size:18mm; }
+.mn.s{ font-size:12mm; margin-top:5mm; }
+.dark .mn{ color:rgba(253,252,248,.36); }
+.dark .one{ color:#B9C2E0; }
+.dark .one b{ color:var(--paper); }
+
+/* 쪽 번호 · 구간 표시 */
+.tag{ position:absolute; left:24mm; top:13mm; font-size:4.6mm; font-weight:700; letter-spacing:.24em; color:var(--blue); }
+.dark .tag{ color:var(--gold); }
+.pn{ position:absolute; right:24mm; bottom:11mm; font-size:4.6mm; font-weight:700; color:var(--mute); letter-spacing:.1em; }
+.dark .pn{ color:#5F6894; }
+
+/* 미드나잇 반전 */
+.dark{ background:var(--midnight); color:var(--paper); }
+.dark::before{
+  content:''; position:absolute; inset:0;
+  background-image:
+    radial-gradient(circle at 2mm 2mm, rgba(61,90,254,.28) 0 .7mm, transparent .7mm),
+    radial-gradient(circle at 9mm 9mm, rgba(255,196,0,.14) 0 .5mm, transparent .5mm);
+  background-size:16mm 16mm, 16mm 16mm;
+}
+.dark > *{ position:relative; }
+
+.symbol{ width:42mm; height:27mm; }
+.symbol svg{ width:100%; height:100%; display:block; }
+.symbol.sm{ width:34mm; height:22mm; }
+
+.rule{ height:1.4mm; background:linear-gradient(90deg,var(--gold) 0 24%, rgba(255,196,0,.2) 24% 100%); margin:6mm 0; }
+
+/* 3열 (세 가지 힘) — 좌→우 순서 고정 */
+.col3{ display:flex; gap:9mm; margin-top:11mm; }
+.col3 .c{ flex:1 1 0; border:.6mm solid var(--hair); border-radius:5mm; padding:9mm 7mm; background:#fff; }
+.col3 .c .n{ font-size:5mm; font-weight:700; color:var(--blue); letter-spacing:.18em; }
+.col3 .c .t{ font-size:13mm; font-weight:800; margin-top:4mm; line-height:1.2; letter-spacing:-.03em; }
+.col3 .c .mn{ font-size:13mm; margin-top:4mm; }   /* 위 .t 와 같은 크기(정본 §1) */
+/* ⚠ 투사면 글자는 32pt(≈11.3mm) 아래로 내리지 않는다 — 설명회장은 조명이 밝고 뒷줄이 멀다.
+   처음엔 보조 라벨을 6.6~8mm(19~23pt)로 잡았다가 이 기준에 걸렸다. */
+.col3 .c .real{ font-size:11.4mm; font-weight:800; color:var(--orange); margin-top:6mm; padding-top:4.4mm; border-top:.4mm dashed var(--hair); line-height:1.2; }
+
+/* 실물 배지 — 「말」이 아니라 「물건」을 보여주는 자리 */
+.real1{ display:inline-block; margin-top:9mm; font-size:11.4mm; font-weight:800; color:#3A2E00;
+  background:var(--gold); padding:3.4mm 7mm; border-radius:12mm; }
+
+/* 사진 자리 — 개원 전이라 실사진이 없다. 무엇을 찍을지 지시문으로 남긴다 */
+.photo{ margin-top:9mm; border:.7mm dashed var(--blue); border-radius:4mm; padding:7mm 8mm;
+  background:rgba(61,90,254,.05); font-size:6.4mm; color:var(--blue); font-weight:700; line-height:1.45; }
+.dark .photo{ border-color:rgba(255,196,0,.5); background:rgba(255,196,0,.07); color:var(--gold); }
+
+/* 세 질문 (맺음) */
+.q3{ margin-top:9mm; }
+.q3 li{ list-style:none; font-size:12mm; font-weight:800; line-height:1.35; letter-spacing:-.025em; margin-top:5mm; }
+.q3 li span{ color:var(--orange); }
+
+/* 연락처 */
+.cts{ display:flex; gap:10mm; margin-top:10mm; }
+.cts .c{ flex:1 1 0; }
+.cts .c .k{ font-size:5mm; font-weight:700; color:var(--gold); letter-spacing:.1em; }
+.cts .c .v{ font-size:11.4mm; color:rgba(253,252,248,.5); margin-top:2.6mm; letter-spacing:.03em; }
+
+/* ══ 리허설표(마지막 장 · 투사용 아님) ══ */
+.reh{ background:#fff; justify-content:flex-start; padding:14mm 16mm; }
+.reh h2{ font-size:8mm; font-weight:800; letter-spacing:-.025em; }
+.reh .sub{ font-size:3.8mm; color:var(--body); margin-top:2.4mm; line-height:1.45; }
+.reh table{ width:100%; border-collapse:collapse; margin-top:3.6mm; font-size:3mm; line-height:1.3; }
+.reh th,.reh td{ text-align:left; padding:1.1mm 2.2mm; border-bottom:.25mm solid var(--hair); vertical-align:top; }
+.reh th{ font-size:2.9mm; color:var(--mute); font-weight:800; letter-spacing:.08em; background:#F2F5FF; }
+.reh td.n{ font-weight:800; white-space:nowrap; font-family:'DM Mono',ui-monospace,monospace; color:var(--blue); }
+.reh td.c{ white-space:nowrap; color:var(--mute); font-family:'DM Mono',ui-monospace,monospace; }
+.reh tr.mark td{ background:#FFF9E9; }
+.reh .note{ margin-top:3.6mm; border-left:1mm solid var(--orange); padding:2mm 0 2mm 4mm; font-size:3.2mm; line-height:1.45; color:#4A4133; }
+.reh .note b{ color:var(--ink); font-weight:800; }
+
+@media screen{
+  body{ background:#C9CEDD; padding:8mm; }
+  .sl{ box-shadow:0 4mm 14mm rgba(11,26,46,.25); margin:0 auto 8mm; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════ 01 · 표지 ════════ -->
+<section class="sl dark">
+  <div class="tag mono">SYNK LAB</div>
+  <div>
+    <!-- LOGO SLOT ▸ 주입은 tools/로고주입.js -->
+    <div class="symbol">
+      <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#FDFCF8">syn</text>
+            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6D00"/>
+          </svg>
+    </div>
+    <div class="rule"></div>
+    <h1>점수를 넘어,<br><em>삶을 설계합니다</em></h1>
+    <div class="mn">____________</div>
+  </div>
+  <div class="pn mono">01</div>
+</section>
+
+<!-- ════════ 02 · 약속 하나, 질문 하나 ════════ -->
+<section class="sl">
+  <div class="tag mono">OPENING</div>
+  <h1>약속 하나,<br><em>질문 하나</em></h1>
+  <div class="mn">____________</div>
+  <div class="pn mono">02</div>
+</section>
+
+<!-- ════════ 03 · 약속 ════════ -->
+<section class="sl">
+  <div class="tag mono">THE PROMISE</div>
+  <h1 class="sm">TOPIK은 확실하게<br><em>준비시킵니다</em></h1>
+  <div class="mn">____________</div>
+  <div class="one">그 기본은 저희가 책임집니다.</div>
+  <div class="pn mono">03</div>
+</section>
+
+<!-- ════════ 04 · 질문 ════════ -->
+<section class="sl dark">
+  <div class="tag mono">THE QUESTION</div>
+  <h1 class="sm">TOPIK,<br>그 다음에 <em>우리 아이는?</em></h1>
+  <div class="mn">____________</div>
+  <div class="pn mono">04</div>
+</section>
+
+<!-- ════════ 05 · AI 시대 ════════ -->
+<section class="sl">
+  <div class="tag mono">THE ERA</div>
+  <h1>손안에 <em>박사급 AI</em></h1>
+  <div class="mn">____________</div>
+  <div class="one">누구나 씁니다. 값도 쌉니다.</div>
+  <div class="pn mono">05</div>
+</section>
+
+<!-- ════════ 06 · 점수는 기본 ════════ -->
+<section class="sl">
+  <div class="tag mono">SO WHAT</div>
+  <h1 class="sm">점수는 이제<br><em>기본입니다</em></h1>
+  <div class="mn">____________</div>
+  <div class="one">자격증은 반드시 필요합니다. <b>다만 그것만으로는 충분하지 않습니다.</b></div>
+  <div class="pn mono">06</div>
+</section>
+
+<!-- ════════ 07 · 한 장면 ════════ -->
+<section class="sl dark">
+  <div class="tag mono">A SCENE</div>
+  <h1>“나 이제 <em>뭐 하지?</em>”</h1>
+  <div class="mn">____________</div>
+  <div class="one">합격한 다음 날, 아이가 조용히 묻습니다.</div>
+  <div class="pn mono">07</div>
+</section>
+
+<!-- ════════ 08 · 세 가지 힘 ════════ -->
+<section class="sl">
+  <div class="tag mono">THREE POWERS</div>
+  <h1 class="sm" style="font-size:15mm">AI가 대신하기 어려운 <em>세 가지 힘</em></h1>
+  <div class="col3">
+    <div class="c">
+      <div class="n mono">01</div>
+      <div class="t">질문하는 힘</div>
+      <div class="mn">______</div>
+      <div class="real">「나침반」 세션</div>
+    </div>
+    <div class="c">
+      <div class="n mono">02</div>
+      <div class="t">스스로 하는 힘</div>
+      <div class="mn">______</div>
+      <div class="real">「싱크 크루」</div>
+    </div>
+    <div class="c">
+      <div class="n mono">03</div>
+      <div class="t">마음을 얻는 힘</div>
+      <div class="mn">______</div>
+      <div class="real">반 레이드 · 발표</div>
+    </div>
+  </div>
+  <div class="pn mono">08</div>
+</section>
+
+<!-- ════════ 09 · 뇌과학 학습법 ════════ -->
+<section class="sl">
+  <div class="tag mono">SYNK DOES · 01</div>
+  <h1 class="sm">몸이 깨어날 때<br><em>뇌는 깊이 배웁니다</em></h1>
+  <div class="mn">____________</div>
+  <div class="one">매 수업, 100% 한국어 K컬처 워밍업으로 시작합니다.</div>
+  <div class="photo">
+    <svg width="7mm" height="7mm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1mm">
+      <path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.5"/>
+    </svg>
+    사진 자리 — <b>워밍업 장면</b>: 교실에서 학생들이 한국어 구령에 맞춰 함께 움직이는 순간(얼굴 정면 아닌 각도).</div>
+  <div class="pn mono">09</div>
+</section>
+
+<!-- ════════ 10 · 싱크 크루 ════════ -->
+<section class="sl">
+  <div class="tag mono">SYNK DOES · 02</div>
+  <h1 class="sm">팀으로 만든<br><em>진짜 경험</em></h1>
+  <div class="mn">____________</div>
+  <div class="one">기획 → 도전 → 다시 → 완성. 시즌마다 한 바퀴 돕니다.</div>
+  <div class="real1">시즌 포트폴리오 1건</div>
+  <div class="pn mono">10</div>
+</section>
+
+<!-- ════════ 11 · 나침반 ════════ -->
+<section class="sl">
+  <div class="tag mono">SYNK DOES · 03</div>
+  <h1 class="sm">“왜 배우는가”를<br><em>계속 묻습니다</em></h1>
+  <div class="mn">____________</div>
+  <div class="one">목적이 있는 아이는, 힘들어도 다시 일어섭니다.</div>
+  <div class="real1">드림맵 카드</div>
+  <div class="pn mono">11</div>
+</section>
+
+<!-- ════════ 12 · 한국어 + 영어 ════════ -->
+<section class="sl">
+  <div class="tag mono">SYNK DOES · 04</div>
+  <h1 class="sm">한국어에<br><em>영어까지</em></h1>
+  <div class="mn">____________</div>
+  <div class="one">아이의 세계를 그만큼 더 넓게 엽니다.</div>
+  <div class="real1">월간 리포트카드</div>
+  <div class="pn mono">12</div>
+</section>
+
+<!-- ════════ 13 · 졸업할 때 3가지 ════════ -->
+<section class="sl">
+  <div class="tag mono">WHAT THEY TAKE</div>
+  <h1 class="sm" style="font-size:16mm">졸업할 때 <em>들고 나가는 세 가지</em></h1>
+  <div class="col3">
+    <div class="c">
+      <div class="n mono">01</div>
+      <div class="t">TOPIK 급수</div>
+      <div class="mn">______</div>
+      <div class="real">준비 과정의 기록까지</div>
+    </div>
+    <div class="c">
+      <div class="n mono">02</div>
+      <div class="t">팀으로 만든<br>결과물</div>
+      <div class="mn">______</div>
+      <div class="real">「싱크 포트폴리오」</div>
+    </div>
+    <div class="c">
+      <div class="n mono">03</div>
+      <div class="t">자기만의<br>5년 로드맵</div>
+      <div class="mn">______</div>
+      <div class="real">아이가 직접 그린다</div>
+    </div>
+  </div>
+  <div class="pn mono">13</div>
+</section>
+
+<!-- ════════ 14 · 정직 고지 ════════
+     🔑 이 장은 화면이 **말을 멈추는 자리**다.
+     원장이 「아직 졸업생도, 벽에 걸린 합격 사진도 없습니다」를 말하는 구간이라
+     화면에 정보를 얹으면 그 말의 무게가 흩어진다. 한 줄만 남기고 시선을 사람에게 돌린다. -->
+<section class="sl dark">
+  <div class="tag mono">HONESTLY</div>
+  <h1 class="sm">저희는<br><em>새 학원입니다</em></h1>
+  <div class="mn">____________</div>
+  <div class="one">약속을 앞세우는 대신, <b>준비를 먼저 했습니다.</b></div>
+  <div class="pn mono">14</div>
+</section>
+
+<!-- ════════ 15 · 오늘 저녁 세 질문 ════════ -->
+<section class="sl">
+  <div class="tag mono">TONIGHT</div>
+  <h1 class="sm" style="font-size:16mm">오늘 저녁, <em>물어봐 주세요</em></h1>
+  <ol class="q3">
+    <li><span>1.</span> “너는 왜 이 공부를 하고 있다고 생각해?”</li>
+    <li><span>2.</span> “TOPIK을 따서, 결국 무엇을 해 보고 싶어?”</li>
+    <li><span>3.</span> “네가 진짜 좋아하고 잘하는 건 뭐야?”</li>
+  </ol>
+  <div class="mn s">________________</div>
+  <div class="pn mono">15</div>
+</section>
+
+<!-- ════════ 16 · 마무리 + 상담 안내 ════════ -->
+<section class="sl dark">
+  <div class="tag mono">THANK YOU</div>
+  <h1 class="sm">점수를 넘어,<br><em>삶을 설계합니다</em></h1>
+  <div class="mn">____________</div>
+  <div class="cts">
+    <div class="c"><div class="k mono">FACEBOOK</div><div class="v">_______</div></div>
+    <div class="c"><div class="k mono">PHONE</div><div class="v">_______</div></div>
+    <div class="c"><div class="k mono">ADDRESS</div><div class="v">_______</div></div>
+    <div class="c"><div class="k mono">HOURS</div><div class="v">_______</div></div>
+  </div>
+  <div class="pn mono">16</div>
+</section>
+
+<!-- ════════ 리허설표 (투사용 아님 · 인쇄해 손에 든다) ════════ -->
+<section class="sl reh">
+  <h2>원장 리허설표 — 어느 ▷ 구간에 어느 장을 띄우는가</h2>
+  <div class="sub">
+    대본 = <code>08_설명회_원장_스피치.txt</code> v5 · ▷ = 통역이 끊기는 지점(본문 43개) ·
+    <b>이 장은 투사하지 않습니다</b>(인쇄해 손에 들거나 발표자 화면에만) · 낭독 약 6분 · 통역 포함 실소요 12분 안팎.
+  </div>
+  <table>
+    <tr><th style="width:14mm">장</th><th style="width:48mm">화면</th><th style="width:34mm">대본 구간</th><th>넘기는 신호 — 이 말을 하기 직전에 넘긴다</th></tr>
+    <tr><td class="n">01</td><td>표지 · 슬로건</td><td class="c">입장~시작 전</td><td>청중 착석 동안 띄워 둔다. 첫 마디와 함께 02로.</td></tr>
+    <tr><td class="n">02</td><td>약속 하나, 질문 하나</td><td class="c">▷ 1</td><td>“약속 하나와 질문 하나를 들고 이 자리에 섰습니다”</td></tr>
+    <tr><td class="n">03</td><td>TOPIK은 확실하게</td><td class="c">▷ 2</td><td>“먼저 약속입니다”</td></tr>
+    <tr><td class="n">04</td><td>그 다음에 우리 아이는?</td><td class="c">▷ 3</td><td>“그리고 질문입니다”</td></tr>
+    <tr><td class="n">05</td><td>손안에 박사급 AI</td><td class="c">▷ 4–6</td><td>“지금 우리는 어떤 시대에 살고 있습니까”</td></tr>
+    <tr><td class="n">06</td><td>점수는 이제 기본</td><td class="c">▷ 7–8</td><td>“그래서 여쭙고 싶습니다”</td></tr>
+    <tr><td class="n">07</td><td>“나 이제 뭐 하지?”</td><td class="c">▷ 9–15</td><td>“한 장면을 상상해 보겠습니다”</td></tr>
+    <tr class="mark"><td class="n">08</td><td>세 가지 힘 (3열)</td><td class="c">▷ 16–24</td><td>“저는 세 가지라고 확신합니다” — <b>이 장은 오래 머문다(9구간)</b></td></tr>
+    <tr><td class="n">09</td><td>몸이 깨어날 때</td><td class="c">▷ 25–26</td><td>“하나. 뇌과학 학습법입니다”</td></tr>
+    <tr><td class="n">10</td><td>팀으로 만든 진짜 경험</td><td class="c">▷ 27–28</td><td>“둘. 「싱크 크루」 프로젝트입니다”</td></tr>
+    <tr><td class="n">11</td><td>“왜 배우는가”를 묻습니다</td><td class="c">▷ 29–30</td><td>“셋. 「나침반」 세션입니다”</td></tr>
+    <tr><td class="n">12</td><td>한국어에 영어까지</td><td class="c">▷ 31</td><td>“넷. 한국어에 영어까지 더합니다”</td></tr>
+    <tr><td class="n">13</td><td>졸업할 때 세 가지 (3열)</td><td class="c">▷ 32–34</td><td>“자격증 하나만 가지고 나가지 않습니다”</td></tr>
+    <tr class="mark"><td class="n">14</td><td>저희는 새 학원입니다</td><td class="c">▷ 35–39</td><td>“정직하게 말씀드릴 것이 하나 있습니다” — <b>화면이 말을 멈추는 자리. 시선을 사람에게.</b></td></tr>
+    <tr><td class="n">15</td><td>오늘 저녁, 물어봐 주세요</td><td class="c">▷ 40–42</td><td>“오늘 집에 돌아가시면”</td></tr>
+    <tr><td class="n">16</td><td>슬로건 + 상담 안내</td><td class="c">▷ 43 ~ 끝</td><td>“그 길을 SYNK LAB이…” — 질의응답 내내 띄워 둔다</td></tr>
+  </table>
+  <div class="note">
+    <b>정본 §1 목록과 다른 점 2가지</b> — ① <b>14장(정직 고지) 신설.</b> 정본 목록엔 대본 §5
+    (“아직 졸업생도, 벽에 걸린 합격 사진도 없습니다”)에 대응하는 화면이 없어 ▷ 35–39 다섯 구간이 비었습니다.
+    가장 개인적인 대목이라 <b>한 줄만 남겨 시선을 사람에게 돌리는</b> 장으로 만들었습니다.
+    ② <b>상담 안내를 마무리 장에 합침</b> — 16장 상한을 지키면서, 질의응답 동안 슬로건과 연락처가 함께 떠 있는 편이 쓸모 있습니다.<br>
+    <b>몽골어는 전부 비어 있습니다</b>(에리카쌤 검수 전 확정 금지). 자리는 한국어와 <b>같은 크기</b>로 잡아 뒀습니다 —
+    작게 잡아 두면 번역이 온 뒤에 번역을 줄이게 됩니다. 항목은 대본 부록 A(통역사 사전 대조표)와 같습니다.
+  </div>
+</section>
+
+</body>
+</html>

@@ -96,6 +96,22 @@ test('자립형이 깨지면 잡는다 — 외부 자원·CDN', () => {
   assert.strictEqual(run(page({ cssComment: '@import url("https://f.test/x.css");' })).code, 1, '@import 를 통과시켰다');
 });
 
+test('인쇄면의 이모지를 잡는다 — 단, 화살표·기호 활자는 벌주지 않는다', () => {
+  // 정본 ■9: 이모지를 그대로 인쇄하지 않고 단색 라인 아이콘으로 치환한다.
+  // 실측: 설명회 덱의 「사진 자리」에 📷 를 넣었다가 걸렸다.
+  const bad = run(page({ text: '📷 사진 자리 — 워밍업 장면' }));
+  assert.strictEqual(bad.code, 1, '이모지를 통과시켰다 — 인쇄하면 그림문자가 그대로 찍힌다');
+  assert.match(bad.out, /이모지/);
+
+  assert.strictEqual(run(page({ text: '✂ 잘라서 보관하세요' })).code, 1,
+    '가위(✂)는 색 이모지로 렌더된다 — 인쇄면에서는 라인 아이콘이어야 한다');
+
+  // 🔑 활자로 쓰는 기호는 벌주지 않는다. 범위(2600–27BF)로 검사했을 때
+  //   ☐·→·▷ 까지 잡혀 멀쩡한 산출물 3개가 빨개졌다 — 그래서 유니코드 속성으로 좁혔다.
+  const ok = run(page({ text: '☐ 첫 수업 날 확인 · 기획 → 도전 → 완성 · ▷ 통역 지점 · 1시즌 = 8주' }));
+  assert.strictEqual(ok.code, 0, `활자 기호(☐ → ▷)를 이모지로 잡았다:\n${ok.out}`);
+});
+
 test('구 서체가 CSS 스택에만 남아도 잡는다 (본문 텍스트엔 안 보인다)', () => {
   const v = run(page({ font: "'Pretendard'" }));
   assert.strictEqual(v.code, 1, 'CSS 안의 구 서체를 통과시켰다 — 화면은 멀쩡해 보이고 렌더만 바뀐다');
