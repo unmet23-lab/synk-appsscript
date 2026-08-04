@@ -216,7 +216,11 @@ const 임시들 = [];
 function 픽스처(파일들) {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-bump-'));
   임시들.push(d);
-  for (const [f, s] of Object.entries(파일들)) fs.writeFileSync(path.join(d, f), s);
+  for (const [f, s] of Object.entries(파일들)) {
+    const p = path.join(d, f);
+    fs.mkdirSync(path.dirname(p), { recursive: true }); // 'docs/버전_이력.md' 같은 하위 경로도 받는다
+    fs.writeFileSync(p, s);
+  }
   return d;
 }
 function 그루트에서(d, fn) {
@@ -287,6 +291,69 @@ test('🔴 --check 가 **양쪽 방향** 다 잡는다 — 태그가 앞서도, 
     '엔진_궤적.js': '/* [v9.4] 옛 항목은 있어도 된다 */\n',
   });
   assert.equal(그루트에서(정상, () => bump.check()), 0, '정상 상태를 빨갛게 만들었다');
+});
+
+/* ── 세 번째 다리 — docs/버전_이력.md (F082) ────────────────────────────────
+ *
+ * 버전 표기는 **세 곳**에 있다: ①SYNK_VERSION 상수 ②엔진 헤더 태그 ③이력 문서.
+ * `--check` 는 ①②만 봤는데, ③이 어긋나도 CI 는 똑같이 빨개진다(safety [2026-08-03]).
+ * 즉 「✅ 일치」라고 답한 **직후에** CI 가 터지는 상태가 존재했다.
+ * 🔑 틀리는 preflight 는 없느니만 못하다 — 사람이 그 답을 믿고 커밋하기 때문에,
+ *    검사가 없을 때보다 **더 확신을 갖고** 빨간 상태를 밀어 넣는다.
+ * F078 을 닫으며 "--check 로 잡는다"고 적어 놓고 이 다리를 안 넣은 것이 F082 다.
+ */
+test('🔴 --check 가 docs/버전_이력.md 도 본다 — 여기가 어긋나도 CI 는 똑같이 빨개진다 (F082)', () => {
+  const 이력뒤처짐 = 픽스처({
+    'Code.js': "const SYNK_VERSION = 'v9.9'; // 안내 · 최신 [v9.9] 아홉\n",
+    'docs/버전_이력.md': '# 버전 이력\n\n- [v9.8] 여덟\n',
+  });
+  assert.equal(그루트에서(이력뒤처짐, () => bump.check()), 1,
+    '채번만 하고 이력 줄을 안 쓴 상태를 통과시켰다 — 커밋 직후 safety [2026-08-03] 이 빨개진다');
+
+  const 이력앞섬 = 픽스처({
+    'Code.js': "const SYNK_VERSION = 'v9.9'; // 안내 · 최신 [v9.9] 아홉\n",
+    'docs/버전_이력.md': '# 버전 이력\n\n- [v9.9] 아홉\n- [v9.10] 열 — 상수엔 없는 번호\n',
+  });
+  assert.equal(그루트에서(이력앞섬, () => bump.check()), 1,
+    '이력에만 있는 번호를 통과시켰다 — 양방향으로 틀린다(가드는 한쪽만 보면 반대편이 통째로 샌다)');
+
+  const 정상 = 픽스처({
+    'Code.js': "const SYNK_VERSION = 'v9.9'; // 안내 · 최신 [v9.9] 아홉\n",
+    'docs/버전_이력.md': '# 버전 이력\n\n- [v9.7] 일곱\n- [v9.9] 아홉\n',
+  });
+  assert.equal(그루트에서(정상, () => bump.check()), 0, '맞는 상태를 빨갛게 만들었다(거짓양성)');
+});
+
+test('🔴 머리말에 박힌 「현재 버전 = v9.NNN」 도 --check 가 잡는다 (36개 버전 뒤처진 채 이틀)', () => {
+  const 박힘 = 픽스처({
+    'Code.js': "const SYNK_VERSION = 'v9.9'; // 안내 · 최신 [v9.9] 아홉\n",
+    // 태그 최고값은 9로 **맞다** — 머리말 하나만 틀린 상태를 격리해서 잰다
+    'docs/버전_이력.md': '> 현재 버전 = **v9.107**\n\n---\n\n- [v9.9] 아홉\n',
+  });
+  assert.equal(그루트에서(박힘, () => bump.check()), 1,
+    '머리말 하드코딩을 통과시켰다 — 값이 두 곳에 있으면 갈리고, 아무도 안 고치는 쪽이 반드시 낡는다');
+});
+
+test('🔑 이력 문서가 없으면 「검사 안 함」이라고 말한다 — 통과와 미실행이 같은 문장이면 초록이 거짓말을 한다', () => {
+  const 문서없음 = 픽스처({ 'Code.js': "const SYNK_VERSION = 'v9.9'; // 안내 · 최신 [v9.9] 아홉\n" });
+  const 말한것 = [];
+  const 원래 = console.log;
+  console.log = (s) => 말한것.push(String(s));
+  let r;
+  try { r = 그루트에서(문서없음, () => bump.check()); } finally { console.log = 원래; }
+  assert.equal(r, 0, '문서가 없다고 빨갛게 만들면 픽스처·서브 프로젝트가 통째로 막힌다');
+  assert.match(말한것.join('\n'), /검사하지 않았다/,
+    '이력 다리를 건너뛰고도 통과와 똑같은 문장을 냈다 — 「없음」이 「맞음」으로 읽힌다(F047 과 같은 형태)');
+});
+
+test('🔒 safety 가 CI 를 빨갛게 만드는 파일을 --check 도 본다 — 둘이 갈라지면 preflight 가 거짓말을 한다', () => {
+  /* 위 픽스처들은 **지금** 동작을 재고, 이 줄은 **앞으로 갈라지는 것**을 막는다.
+   * safety 쪽이 검사를 옮기거나 --check 에서 이 다리를 빼면 여기서 먼저 죽는다. */
+  const safety = fs.readFileSync(path.join(ROOT, 'tests', 'safety.test.js'), 'utf8');
+  assert.ok(safety.includes('버전_이력.md'),
+    '전제가 사라졌다 — safety 가 이력 문서를 더는 안 본다면 이 결합 검사도 다시 정해야 한다');
+  assert.ok(src.includes('버전_이력.md'),
+    'safety 는 이력 문서로 CI 를 빨갛게 만드는데 --check 는 그 파일을 아예 안 본다 (F082 재발)');
 });
 
 test('실저장소에 [vNEXT] 자리표가 남아 있지 않다 (거짓양성 0)', () => {

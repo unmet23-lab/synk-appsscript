@@ -245,6 +245,38 @@ function maxTagInEngines() {
   return max;
 }
 
+/* ═══ 세 번째 다리 — docs/버전_이력.md (F082) ═══
+ * 버전 표기는 **세 곳**에 있다: ①SYNK_VERSION 상수 ②엔진 헤더 태그 ③이력 문서.
+ * `--check` 는 ①②만 봤다. 그런데 ③이 어긋나도 CI 는 똑같이 빨개진다(safety [2026-08-03]).
+ * 즉 「✅ 일치」라고 답한 직후에 CI 가 터지는 상태가 존재했다 — 예측이 틀리는 preflight 는
+ * 없느니만 못하다(사람이 그 답을 믿고 커밋한다). F078 을 닫으며 「--check 로 잡는다」고
+ * 적어 놓고 이 다리를 안 넣은 것이 F082 다.
+ * 자유서술이라 **자동 기입은 못 해도 탐지는 된다** — 못 고치는 것과 못 보는 것은 다르다. */
+function historyDocPath() { return path.join(rootDir(), 'docs', '버전_이력.md'); }
+function historyDoc() {
+  try { return fs.readFileSync(historyDocPath(), 'utf8'); } catch (_) { return null; }
+}
+
+/** 이력 문서의 최고 `[v9.N]`. 문서가 없으면(픽스처) null = **「검사 안 함」이지 「통과」가 아니다.** */
+function maxTagInHistoryDoc() {
+  const doc = historyDoc();
+  if (doc === null) return null;
+  let max = null;
+  for (const m of doc.matchAll(/\[v9\.(\d+)\]/g)) {
+    const n = Number(m[1]);
+    if (max === null || n > max) max = n;
+  }
+  return max;
+}
+
+/** 머리말(첫 `---` 앞)에 박힌 「현재 버전 = v9.NNN」. 아무도 안 고쳐서 반드시 낡는다 — 없으면 null. */
+function hardcodedHeadVersion() {
+  const doc = historyDoc();
+  if (doc === null) return null;
+  const m = doc.split(/^---$/m)[0].match(/현재 버전\s*=\s*\**v9\.\d+/);
+  return m ? m[0] : null;
+}
+
 /** `[vNEXT]` 가 남아 있는 파일들. */
 function pendingPlaceholders() {
   return engineFiles().filter((f) => {
@@ -277,17 +309,33 @@ function check() {
   const cur = versionOf(fs.readFileSync(codePath(), 'utf8'));
   const 남은 = pendingPlaceholders();
   if (남은.length) 문제.push('[vNEXT] 자리표가 남아 있다: ' + 남은.join(', ') + ' → 커밋 전에 `--desc` 로 채번하면 함께 확정된다');
+  const curN = cur ? Number(String(cur).replace(/^v9\./, '')) : null;
   const max = maxTagInEngines();
-  if (cur && max !== null) {
-    const curN = Number(String(cur).replace(/^v9\./, ''));
-    if (curN !== max) {
-      문제.push(`SYNK_VERSION ${cur} ≠ 엔진 최고 태그 v9.${max}`
-        + (max > curN ? ' — 태그를 먼저 박았다. `[vNEXT]` 로 적고 채번에 맡겨라(그 사이 CI 가 빨개지고 남의 배포까지 막힌다)'
-                      : ' — 상수만 올랐다. `--desc` 없이 돌렸을 때 이렇게 된다'));
-    }
+  if (curN !== null && max !== null && curN !== max) {
+    문제.push(`SYNK_VERSION ${cur} ≠ 엔진 최고 태그 v9.${max}`
+      + (max > curN ? ' — 태그를 먼저 박았다. `[vNEXT]` 로 적고 채번에 맡겨라(그 사이 CI 가 빨개지고 남의 배포까지 막힌다)'
+                    : ' — 상수만 올랐다. `--desc` 없이 돌렸을 때 이렇게 된다'));
   }
+
+  // 세 번째 다리 — 여기가 어긋나도 CI 는 똑같이 빨개진다(F082)
+  const docMax = maxTagInHistoryDoc();
+  if (curN !== null && docMax !== null && docMax !== curN) {
+    문제.push(`docs/버전_이력.md 최고 태그 v9.${docMax} ≠ SYNK_VERSION ${cur}`
+      + (docMax < curN ? ' — 채번했는데 이력 줄을 안 썼다. 그 파일 **맨 아래**에 `[' + cur + '] 한 줄 요약` 을 추가하라(/deploy 5단계)'
+                       : ' — 이력에 없는 번호를 적었다. 상수와 같은 번호로 맞춰라'));
+  }
+  const 박힌머리말 = hardcodedHeadVersion();
+  if (박힌머리말) {
+    문제.push(`docs/버전_이력.md 머리말에 「${박힌머리말}」이 박혀 있다 — 아무도 안 고쳐서 반드시 낡는다`
+      + '(실측: 36개 버전 뒤처진 채 이틀). 현재 버전은 맨 아래 마지막 항목이 말한다');
+  }
+
   if (문제.length) { 문제.forEach((m) => console.error('✗ ' + m)); return 1; }
-  console.log('✅ 버전 표기 일치 — SYNK_VERSION ' + cur + ' = 엔진 최고 태그 · [vNEXT] 잔존 0');
+  /* ⚠ 검사한 것만 검사했다고 말한다 — 「통과」와 「미실행」이 같은 문장이면 초록이 거짓말을 한다.
+   *   픽스처 루트에는 이력 문서가 없으므로 그 경우를 침묵으로 덮지 않는다. */
+  console.log('✅ 버전 표기 일치 — SYNK_VERSION ' + cur + ' = 엔진 최고 태그 · [vNEXT] 잔존 0'
+    + (docMax === null ? ' · ⚠docs/버전_이력.md 없음 — 이력 다리는 검사하지 않았다'
+                       : ' · 이력 문서 v9.' + docMax + ' 일치'));
   return 0;
 }
 
@@ -349,6 +397,14 @@ function main(argv) {
     console.log('   Code.js SYNK_VERSION 기입됨'
       + (찍은것.length ? ' · [vNEXT] → [' + cand + '] 확정: ' + 찍은것.join(', ') : '')
       + '. 커밋 제목과 docs/버전_이력.md에 [' + cand + ']를 쓰세요.');
+    /* 🔑 지시만 하지 말고 **지금 상태를 재서** 말한다(F082). 위 한 줄은 v9.116 부터 있었는데도
+     *   이력 줄 누락으로 CI 가 빨개진 적이 있다 — 「쓰세요」는 안 썼는지를 보지 않기 때문이다.
+     *   여기가 유일하게 확실한 발화 지점이다: 채번한 사람이 지금 이 화면을 보고 있다. */
+    const docMax = maxTagInHistoryDoc();
+    if (docMax !== null && docMax !== parseVer(cand)[1]) {
+      console.log('   ⚠ 이력 문서 최고는 아직 v9.' + docMax + ' — 그 파일 **맨 아래**에 한 줄 추가하기 전까지'
+        + ' CI 는 빨갛고 남의 배포까지 막힌다. 확인은 `node tools/bump-version.js --check`.');
+    }
 
     /* 손일 장부 기입 — 번호가 확정된 뒤에 한다(장부의 ID가 곧 이 번호다).
      * ⚠ 장부 기입 실패가 채번을 되돌리지 않는다 — 번호는 이미 origin이 보증했고,
@@ -370,6 +426,7 @@ module.exports = {
   parseVer, cmpVer, maxVer, nextVer, versionOf, replaceVersionLine, collectUsedVersions, main,
   chainEntries, mergeChain, entryVer,
   engineFiles, maxTagInEngines, pendingPlaceholders, stampPlaceholders, check,
+  historyDocPath, maxTagInHistoryDoc, hardcodedHeadVersion,
 };
 
 if (require.main === module) {
