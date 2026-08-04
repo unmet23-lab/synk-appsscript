@@ -153,7 +153,13 @@ test('screenshot-budget 은 판정층이 하나다 (배치·우회 형태를 앞
     !/case "\$IN" in \*(screenshot|zoom)/.test(ent.command),
     'settings.json 이 액션을 다시 거르고 있다 — 08-04엔 그 필터와 훅이 둘 다 배치를 몰랐다'
   );
-  for (const tool of ['mcp__claude-in-chrome__computer', 'mcp__claude-in-chrome__browser_batch', 'mcp__computer-use__computer_batch']) {
+  for (const tool of [
+    'mcp__claude-in-chrome__computer', 'mcp__claude-in-chrome__browser_batch', 'mcp__computer-use__computer_batch',
+    // 08-04(5번째 실패): 배치 형태만 보다가 **액션 필드 없는 단건 도구**를 놓쳤다.
+    // 훅은 이것들을 그림 1장으로 세는데 매처가 안 잡으면 호출 자체가 없다.
+    // 어느 도구가 그림이냐를 훅에 물어 자동 추적하는 검사는 tests/스크린샷예산.test.js 에 있다.
+    'mcp__computer-use__scroll', 'mcp__computer-use__teach_step', 'mcp__claude-in-chrome__gif_creator',
+  ]) {
     assert.ok(new RegExp(ent.matcher).test(tool), `매처가 ${tool} 를 안 잡는다`);
   }
 });

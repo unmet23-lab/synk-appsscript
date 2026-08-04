@@ -34,6 +34,12 @@
 //   처방 = **일일 누적 예산을 겹친다**(세션당은 그대로 두고 둘 중 먼저 걸리는 쪽이 이긴다).
 //   ⚠ 세션 예산만 리셋해도 일일 예산은 살아 있다 — 그게 이 층을 만든 이유다.
 //
+// 5번째 실패(2026-08-04, 유호님 「토큰 설계 시스템을 설명해봐」에 답하려 코드를 읽다 발견) —
+//   앞의 넷을 다 막고도 통로가 셋 남아 있었다. settings.json 매처가
+//   `mcp__computer-use__scroll`·`teach_step`·`claude-in-chrome__gif_creator` 를 안 잡아 **훅에 닿지도 않았고**,
+//   훅 자신도 도구 이름 판정에서 scroll 을 몰랐다(액션 판정은 알았는데 — 아래 IMAGE_NAMES 주석).
+//   ⭐ 앞의 넷은 전부 사고가 난 뒤 실측으로 잡았고, 이건 **사고 전에 독해로 잡은 첫 건**이다.
+//
 // 같은 커밋의 두 번째 층: **한 호출의 액션 수**(BLOCK_*).
 //   근거는 캐시 구조다 — 프롬프트 캐시의 breakpoint는 뒤로 최대 20블록만 훑는데,
 //   한 턴이 그 폭을 넘기면 다음 턴이 이전 캐시를 못 찾고 **프리픽스를 통째로 다시 쓴다**.
@@ -139,8 +145,18 @@ try {
 const tool = String(input.tool_name || '');
 const ti = input.tool_input || {};
 
-// 그림을 낳는 액션. zoom·scroll도 이미지를 되돌려준다(08-04 실측: scroll 6회 중 5회가 이미지).
-const IMAGE_ACTION = /^(screenshot|zoom|scroll)$/;
+// 그림을 낳는 이름. zoom·scroll도 이미지를 되돌려준다(08-04 실측: scroll 6회 중 5회가 이미지).
+//
+// 5번째 실패(2026-08-04) — 같은 파일 **안에서** 판정이 갈라져 있었다.
+//   액션 판정은 scroll 을 알았는데, 도구 이름 판정은 `/__(screenshot|zoom)$/` 로 따로 적혀
+//   `mcp__computer-use__scroll`(액션 필드가 없는 독립 도구)이 두 층 다 빠져나갔다.
+//   3번째 실패의 처방이 「파서가 둘이면 또 갈라진다」였는데, 목록이 둘이면 똑같이 갈라진다.
+//   → 목록을 하나로 두고 둘 다 여기서 파생시킨다. 한 곳만 고쳐도 양쪽이 따라온다.
+const IMAGE_NAMES = ['screenshot', 'zoom', 'scroll'];
+// 액션 필드 없이 이름만으로 그림인 도구는 위 목록 + 전용 도구(gif_creator 는 결과가 GIF다).
+const IMAGE_TOOL_NAMES = IMAGE_NAMES.concat(['gif_creator']);
+const IMAGE_ACTION = new RegExp(`^(${IMAGE_NAMES.join('|')})$`);
+const IMAGE_TOOL = new RegExp(`__(${IMAGE_TOOL_NAMES.join('|')})$`);
 
 // 입력 트리에서 이미지 액션의 **개수**를 센다.
 // 키 위치로 찾지 않는 이유 = 배치 형태가 둘이고 중첩이 다르다(실측):
@@ -182,8 +198,14 @@ function countActions(v, depth) {
   return n;
 }
 
-// 이름 자체가 그림인 도구(mcp__computer-use__screenshot 등)는 액션 필드가 없다.
-const shots = /__(screenshot|zoom)$/.test(tool) ? 1 : countImageActions(ti, 0);
+// 이름 자체가 그림인 도구(mcp__computer-use__screenshot·scroll·zoom, gif_creator)는 액션 필드가 없다.
+//
+// ⚠ `mcp__computer-use__scroll` 이 이미지를 되돌려주는지는 **미실측**이다 — 실측된 건
+//   `mcp__claude-in-chrome__computer` 의 action=scroll(6회 중 5회 이미지·58만 자)이고,
+//   같은 스크린샷 기반 서버라 같게 센다. 이 비대칭이 판정 근거다:
+//     넣고 틀리면 → 예산이 조금 빨리 찬다(리셋 통로가 있다)
+//     빼고 틀리면 → 통째로 샌다(그리고 새는 방향은 언제나 「통과」라 안 보인다)
+const shots = IMAGE_TOOL.test(tool) ? 1 : countImageActions(ti, 0);
 const blocks = countActions(ti, 0);
 
 const ALT =
