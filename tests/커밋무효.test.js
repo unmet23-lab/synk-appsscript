@@ -1,0 +1,165 @@
+/* commit-noop-guard 회귀 — 「커밋했다고 믿었는데 아무것도 안 들어간」 경우를 잡는가.
+ *
+ * 왜 있나 (F071 · 2026-08-04): 직전 세션이 남긴 미커밋 8건을 **두 세션이 동시에 이어받았고**,
+ *   상대가 1분 먼저 같은 파일을 커밋한 탓에 내 `git commit -F msg -- 경로들` 이
+ *   「nothing to commit」 상태 목록만 뱉고 **성공처럼 조용히 지나갔다.**
+ *   git 은 이걸 오류로 부르지 않는다 — 그래서 결과를 검사하는 층이 필요했다.
+ *
+ * 검사 방식 — 이 훅은 git 을 부르지 않는다(입력 JSON → 출력 JSON 이 전부).
+ *   그래서 픽스처는 **훅이 받는 payload 그 자체**이고, 실저장소도 CI 도 필요 없다.
+ *   payload 모양은 실측으로 확정했다(PostToolUse 탐침: tool_input.command + tool_response.stdout).
+ *
+ * 🔴 이 훅의 최우선 불변식은 「막지 않는다」다 — 도구는 이미 실행됐고, no-op 자체는 손상이 아니다.
+ *   위험한 건 그걸 「커밋했다」고 보고하는 것이다. **모든 경로에서** permissionDecision 부재를 검사한다.
+ */
+'use strict';
+
+const test = require('node:test');
+const assert = require('node:assert');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+
+const HOOK = process.env.SYNK_TEST_NOOP_HOOK
+  || path.resolve(__dirname, '..', '.claude', 'hooks', 'commit-noop-guard.js');
+
+/** 훅을 돌리고 {경고냐, 본문} 을 준다. */
+function run({ tool = 'Bash', command, stdout = '', stderr = '', response }) {
+  const payload = {
+    hook_event_name: 'PostToolUse',
+    tool_name: tool,
+    tool_input: { command },
+    tool_response: response !== undefined ? response : { stdout, stderr },
+  };
+  const r = spawnSync(process.execPath, [HOOK], { input: JSON.stringify(payload), encoding: 'utf8' });
+  assert.strictEqual(r.status, 0, `훅이 비정상 종료했다 — 결과 검사 훅이 작업을 세우면 안 된다\n${r.stderr}`);
+  const out = String(r.stdout || '').trim();
+  if (!out) return { 경고: false, 본문: '', raw: '' };
+  const j = JSON.parse(out);
+  // 불변식: 절대 차단하지 않는다.
+  assert.ok(!j.hookSpecificOutput || !('permissionDecision' in j.hookSpecificOutput),
+    'PostToolUse 훅이 permissionDecision 을 냈다 — 이 훅은 알리기만 해야 한다');
+  return { 경고: true, 본문: String(j.hookSpecificOutput?.additionalContext || ''), raw: out };
+}
+
+// ───────────────────────── 탐지 ─────────────────────────
+
+test('같은 내용을 남이 먼저 커밋해 비어버린 커밋을 잡는다 (F071 실사고 재현)', () => {
+  const v = run({
+    command: 'git commit -F msg.txt -- "docs/발표물/01_설명회_덱_16x9.html" tools/발표물린트.js',
+    stdout: 'Changes not staged for commit:\n\tmodified:   .claude/settings.json\n\nno changes added to commit (use "git add" and/or "git commit -a")',
+  });
+  assert.ok(v.경고, '실사고 그대로의 출력을 통과시켰다 — 이걸 놓치면 「커밋했다」가 거짓 보고가 된다');
+  assert.match(v.본문, /F071/);
+  assert.match(v.본문, /Session-Id/, '주인 확인 절차를 안내하지 않았다');
+});
+
+test('작업 트리가 깨끗해 아무것도 안 들어간 경우를 잡는다', () => {
+  const v = run({
+    command: 'git commit -m "docs: 보드 갱신" -- docs/세션보드.md',
+    stdout: 'On branch master\nnothing to commit, working tree clean',
+  });
+  assert.ok(v.경고, '「nothing to commit」 을 통과시켰다');
+});
+
+test('경로가 git 이 아는 파일과 안 맞은 경우를 잡는다 — 미추적 새 파일의 전형', () => {
+  const v = run({
+    command: 'git commit -m "feat: 새 훅" -- .claude/hooks/새훅.js',
+    stderr: "error: pathspec '.claude/hooks/새훅.js' did not match any file(s) known to git",
+  });
+  assert.ok(v.경고, 'pathspec 오류를 통과시켰다 — 미추적은 이력 어디에도 없는 무보호 상태다(F025)');
+  assert.match(v.본문, /git add/, '새 파일 처방(add 가 먼저)을 안 줬다');
+});
+
+test('🔑 git 전역 옵션이 껴 있어도 잡는다 — 앵커를 `git commit` 붙어 있기에 걸면 샌다', () => {
+  const v = run({
+    command: 'git -c user.name=t -c commit.gpgsign=false commit -m "x" -- a.js',
+    stdout: 'nothing to commit, working tree clean',
+  });
+  assert.ok(v.경고, '`git -c … commit` 형태를 놓쳤다 — 테스트·CI 가 흔히 쓰는 형태다');
+});
+
+test('tool_response 가 객체가 아니라 문자열로 와도 잡는다', () => {
+  const v = run({ command: 'git commit -m "x" -- a.js', response: 'nothing to commit, working tree clean' });
+  assert.ok(v.경고, 'payload 모양 하나에만 맞춰 두면 하네스가 바뀌는 날 조용히 눈이 먼다');
+});
+
+// ─────────────────── 거짓양성 (벌주면 안 된다) ───────────────────
+
+test('🔑 커밋 제목에 그 문구가 들어간 **성공한** 커밋을 벌주지 않는다', () => {
+  // git 은 성공하면 제목을 되뱉는다. 이 저장소는 커밋 제목에 가드 이야기를 자주 쓴다 —
+  // 원문에서 문구를 찾으면 자기 언급에 걸려 성공한 커밋이 빨개진다.
+  const v = run({
+    command: 'git commit -F msg.txt -- .claude/hooks/commit-noop-guard.js',
+    stdout: '[master 6c76663] feat: nothing to commit 을 잡는 훅\n 2 files changed, 120 insertions(+)',
+  });
+  assert.ok(!v.경고, `성공한 커밋을 경고했다 — 가드가 실작업을 벌주면 사람이 가드를 끈다:\n${v.본문}`);
+});
+
+test('--dry-run 은 안 들어가는 게 정상이다 — 벌주지 않는다', () => {
+  const v = run({ command: 'git commit --dry-run -- docs/x.md', stdout: 'nothing to commit, working tree clean' });
+  assert.ok(!v.경고, 'dry-run 을 경고했다 — 확인 용법을 막으면 BYPASS 를 습관으로 가르친다');
+});
+
+test('🔑 문서를 검색하다 그 문구를 본 것을 커밋으로 오인하지 않는다', () => {
+  // F049 실측 계열: clasp-guard 가 `grep "clasp pull"` 을 막아 검색 자체가 차단됐다.
+  const v = run({
+    command: 'grep -n "git commit 이 nothing to commit 을 뱉으면" CLAUDE.md',
+    stdout: '65:  · git commit 이 nothing to commit 을 뱉으면 …',
+  });
+  assert.ok(!v.경고, '인용된 산문을 실행으로 읽었다 — 문서화·검색을 벌하는 가드가 된다');
+});
+
+test('커밋이 아예 없는 명령은 건드리지 않는다', () => {
+  const v = run({ command: 'git status --short', stdout: ' M docs/세션보드.md' });
+  assert.ok(!v.경고, 'commit 이 없는데 발화했다');
+});
+
+test('성공한 평범한 커밋은 조용하다 (거짓양성 0)', () => {
+  const v = run({
+    command: 'git commit -m "docs: 보드" -- docs/세션보드.md',
+    stdout: '[master abc1234] docs: 보드\n 1 file changed, 1 insertion(+)',
+  });
+  assert.ok(!v.경고, '정상 커밋에 발화했다');
+});
+
+test('Bash·PowerShell 밖의 도구는 무시한다', () => {
+  const v = run({ tool: 'Edit', command: 'git commit -m "x"', stdout: 'nothing to commit' });
+  assert.ok(!v.경고, '매처 밖 도구에 발화했다');
+});
+
+// ─────────────────── 등록층 (훅이 정확해도 안 불리면 통과다) ───────────────────
+
+test('🔴 settings.json 에 PostToolUse 로 등록돼 있고, 라우팅이 훅보다 넓다', () => {
+  const fs = require('node:fs');
+  const p = path.resolve(__dirname, '..', '.claude', 'settings.json');
+  const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+  const groups = j.hooks?.PostToolUse || [];
+  assert.ok(groups.length, 'PostToolUse 등록이 아예 없다 — 훅 파일만 있고 안 불린다(F044·F053 계열)');
+
+  const mine = groups.filter((g) => (g.hooks || []).some((h) => String(h.command || '').includes('commit-noop-guard.js')));
+  assert.ok(mine.length, 'commit-noop-guard 가 등록돼 있지 않다');
+
+  for (const g of mine) {
+    // 훅은 Bash·PowerShell 을 본다. 매처가 그보다 좁으면 그 자체가 구멍이다.
+    assert.match(g.matcher || '', /Bash/, '매처가 Bash 를 안 넘긴다');
+    assert.match(g.matcher || '', /PowerShell/, '매처가 PowerShell 을 안 넘긴다 — 훅은 보는데 라우팅이 좁다');
+    // 앞단 case 필터도 훅보다 좁으면 안 된다. 훅의 앵커는 `git`.
+    const cmd = (g.hooks || []).map((h) => h.command || '').join('\n');
+    const 필터 = cmd.match(/case\s+"\$IN"\s+in\s+([^)]+)\)/);
+    if (필터) {
+      assert.match(필터[1], /\*git\*/,
+        `앞단 필터가 훅보다 좁다 — 훅은 \`git … commit\` 을 보는데 필터는 ${필터[1]} 만 넘긴다(F063 형태)`);
+    }
+  }
+});
+
+test('실행 불가를 조용한 통과로 만들지 않는다 — 등록 명령이 실패를 드러낸다', () => {
+  const fs = require('node:fs');
+  const p = path.resolve(__dirname, '..', '.claude', 'settings.json');
+  const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+  const cmd = (j.hooks?.PostToolUse || [])
+    .flatMap((g) => g.hooks || []).map((h) => h.command || '')
+    .filter((c) => c.includes('commit-noop-guard.js')).join('\n');
+  assert.match(cmd, /CLAUDE_PROJECT_DIR/, '경로가 로컬 절대경로면 다른 기계에서 통째로 죽는다(F044)');
+  assert.match(cmd, /미실행/, 'node·훅 파일이 없을 때 조용히 지나간다 — 실행 불가는 드러나야 한다');
+});

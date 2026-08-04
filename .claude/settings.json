@@ -106,6 +106,20 @@
         ]
       }
     ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' IN || true; case \"$IN\" in *git*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/commit-noop-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { echo \"SYNK commit-noop-guard 미실행: $H (node 또는 훅 파일 없음 — F044)\" >&2; exit 1; }; printf %s \"$IN\" | node \"$H\" ;; esac",
+            "shell": "bash",
+            "timeout": 20,
+            "statusMessage": "커밋 결과 검사"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
