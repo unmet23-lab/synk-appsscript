@@ -102,6 +102,10 @@ const CASES = [
   ['doc-propagation', 'Edit', {
     file_path: path.join(ROOT, 'docs', '급여_정본.md'), old_string: 'a', new_string: 'b',
   }, 'docs 정본 편집'],
+  // F064(2026-08-04): 인라인 스크립트는 git 명령이 아니라 git-scope-guard 에 닿지도 않았다 —
+  // 라우팅이 좁아서가 아니라 **통로 자체가 없던** 자리라 훅을 새로 세웠다.
+  ['shell-inline-guard', 'Bash', { command: 'node -e "console.log(1)" ' + '"\\$SP"' }, '인라인 스크립트의 \\$ 이스케이프'],
+  ['shell-inline-guard', 'Bash', { command: "git commit -F - <<X\n@'\n제목\n'@\nX" }, 'Bash 에 PowerShell here-string'],
 ];
 
 test('훅이 전부 settings.json 에 등록돼 있고, 등록이 가리키는 파일이 실재한다', () => {
