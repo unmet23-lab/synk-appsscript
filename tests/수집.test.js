@@ -496,6 +496,59 @@ test('[v9.173] 정상(거짓양성) 표본은 `불변: true` + 기대태그 [오
   assert.equal(오류[0].불변, false, '오류 항목까지 불변이면 교정 채점이 통째로 건너뛰어진다');
 });
 
+/* ── [v9.175] 픽스처 자동 전송 — 바깥으로 나가는 쓰기라 「무엇을 향해 쏘는가」를 못박는다 ── */
+const 전송 = () => section('function pushGoldenFixture_()', '\n}\n');
+
+test('[v9.175] 토큰은 소스에 없다 — 스크립트 속성에서만 읽는다', () => {
+  const 본문 = 전송();
+  assert.ok(/PropertiesService\.getScriptProperties\(\)\.getProperty\(GH_TOKEN_KEY\)/.test(본문),
+    '토큰을 스크립트 속성에서 읽지 않는다');
+  assert.equal(/gh[pousr]_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{20,}/.test(code), false,
+    '소스에 GitHub 토큰처럼 생긴 문자열이 있다 — git 이력에 박히면 되돌릴 수 없다');
+});
+
+test('[v9.175] 토큰이 로그·반환문으로 새지 않는다 (실패 응답도 잘라서 낸다)', () => {
+  const 본문 = 전송();
+  assert.equal(/Logger\.log\([^)]*token/.test(본문), false, '토큰을 로그에 싣는다 — 실행 로그는 화면에 그대로 뜬다');
+  assert.equal(/return[^;]*\+\s*token|token\s*\+/.test(본문.replace(/'Bearer ' \+ token/g, '')), false,
+    '토큰을 문자열에 이어 붙여 돌려준다 — 메뉴 alert에 그대로 뜬다');
+  assert.ok(/getContentText\(\)\.slice\(0,/.test(본문), 'GitHub 응답 본문을 통째로 돌려준다 — 자르지 않으면 무엇이 섞일지 모른다');
+});
+
+test('[v9.175] 조준이 상수다 — 소유자·저장소·경로·브랜치를 인자로 받지 않는다', () => {
+  assert.ok(/function pushGoldenFixture_\(\)/.test(code), '인자를 받는다 — 잘못 조준할 여지를 남기면 언젠가 그렇게 된다');
+  for (const c of ['GH_OWNER', 'GH_REPO', 'GH_PATH', 'GH_BRANCH']) {
+    assert.ok(new RegExp(`const ${c} = '`).test(code), `${c}가 상수로 고정돼 있지 않다`);
+  }
+  assert.equal(/const GH_PATH = 'evals\/픽스처\.json'/.test(code), false,
+    '합성 픽스처를 덮어쓴다 — 유형 커버리지를 재던 표본이 사라진다(둘은 다른 질문에 답한다)');
+});
+
+test('[v9.175] 자동 배치에 넣지 않는다 — 바깥으로 나가는 쓰기는 사람이 누를 때만 돈다', () => {
+  const 셋업 = fs.readFileSync(path.join(ROOT, '엔진_셋업확장.js'), 'utf8').replace(/\r\n/g, '\n');
+  for (const 배치 of ['morningJobs', 'nightJobs', 'weeklyJobs', 'monthlyJobs']) {
+    const i = 셋업.indexOf(`function ${배치}(`);
+    if (i === -1) continue;
+    const 본문 = 셋업.slice(i, 셋업.indexOf('\n}\n', i));
+    assert.equal(/pushGoldenFixture_|menuPushGolden/.test(본문), false,
+      `${배치}가 픽스처를 자동 전송한다 — 비가역 외부 쓰기가 승인 없이 도는 경로가 생긴다`);
+  }
+});
+
+test('[v9.175] 메뉴에 등록돼 있다 — 만들어도 안 불리면 없는 것이다', () => {
+  const 셋업 = fs.readFileSync(path.join(ROOT, '엔진_셋업확장.js'), 'utf8').replace(/\r\n/g, '\n');
+  assert.ok(/function menuPushGolden\(\)\s*\{\s*menuRun_\(pushGoldenFixture_\);/.test(셋업), '메뉴 래퍼가 없다');
+  assert.ok(/addItem\('[^']*SYNK-talk[^']*', 'menuPushGolden'\)/.test(셋업),
+    'onOpen 메뉴에 항목이 없다 — 함수는 있는데 누를 자리가 없다(등록층 누락)');
+});
+
+test('[v9.175] 두 출구가 같은 문서 생성부를 쓴다 — 비식별 규칙이 한쪽에서만 갱신되면 조용히 샌다', () => {
+  for (const fn of ['function exportGoldenFixture_()', 'function pushGoldenFixture_()']) {
+    const 본문 = section(fn, '\n}\n');
+    assert.ok(/골든픽스처_\(\)/.test(본문), `${fn}가 문서 생성부를 따로 조립한다 — 두 벌이 되면 갈라진다`);
+  }
+});
+
 test('[v9.174] 대조 근거가 없는 오류 표본은 「채점불가」로 따로 센다 — 표본 부족이 점수로 위장된다', () => {
   // 전면 재작성이라 어절 diff가 비고(추측을 확신처럼 적지 않는다) 오류태그 열도 빈 행.
   // SYNK-talk 채점기는 이런 항목을 분모에서 빼므로, 내보낸 건수만 보면 채점 가능 수를 오해한다.

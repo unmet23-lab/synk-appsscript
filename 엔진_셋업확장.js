@@ -2794,6 +2794,10 @@ function menuDataCoverage() { menuRun_(dataCoverageReport); } // [v9.138] 커버
 // [v9.166] 골든셋 → 회화 앱 평가 픽스처. 시트는 안 건드리고 내 드라이브에 JSON 1개를 새로 만든다.
 //   식별자는 함수 안에서 전부 잘려 나간다(동의 v18.9의 「비식별 사용」 · 목적지가 git이라 되돌릴 수 없음).
 function menuExportGolden() { menuRun_(exportGoldenFixture_); }
+// [v9.175] 같은 픽스처를 SYNK-talk 저장소에 **직접** 올린다(손으로 받아 옮기는 절차 제거).
+//   ⚠ 바깥으로 나가는 쓰기다 — 배치에 넣지 않고 메뉴에만 둔다. 그 클릭이 승인이다.
+//   토큰이 없으면 실패가 아니라 설치 절차를 안내한다(문서 = docs/골든픽스처_자동전송_설치.md).
+function menuPushGolden() { menuRun_(pushGoldenFixture_); }
 // [v9.146] 대화 수집 점검 — 조기 반환 4개 중 무엇에 걸렸는지 지목한다(「안 생김」의 원인이 넷이라 눈으로는 구분 불가).
 //   읽기 전용이 아니다: talk_log 헤더 치유를 겸한다(배치 안쪽 치유는 첫 대화 전까지 실행되지 않는다). 멱등.
 function menuTalkLogCheck() { menuRun_(talkLogCheck); }
@@ -3283,6 +3287,7 @@ function onOpen() {
       .addItem('🗣 한국어 대화 폼 만들기(수집 3단계)', 'menuCreateTalkForm')
       .addItem('📊 수집 커버리지 보기(읽기 전용)', 'menuDataCoverage')
       .addItem('📤 골든셋 → 회화 앱 픽스처 내보내기', 'menuExportGolden')
+      .addItem('🚀 골든셋 → SYNK-talk 저장소로 바로 보내기', 'menuPushGolden')
       .addItem('🔎 대화 수집 점검(밤 배치 확인·머리글 치유)', 'menuTalkLogCheck')
       .addToUi();
   } catch (eMenu) { Logger.log('시트 메뉴 생성 스킵: ' + eMenu); } // UI 없는 컨텍스트(트리거 실행)에서는 조용히 통과
