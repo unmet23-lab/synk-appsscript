@@ -286,3 +286,90 @@ test('codex CLI 가 있으면 로그인 상태다 (없으면 skip — 통과와 
   const j = JSON.parse(fs.readFileSync(auth, 'utf8'));
   assert.ok(j.tokens || j.OPENAI_API_KEY, 'codex 자격증명이 비어 있다 — 검수가 조용히 안 돈다');
 });
+
+// ─────────────── 방향 스탬프 (제안 61d775a5b85d 채택분 · 소급이 안 되는 종류라 쓰는 시점에 박는다)
+
+test('방향 지문은 결정론적이고, 정본이 1바이트만 바뀌어도 달라진다', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-방향-'));
+  const p = path.join(d, '제품방향.md');
+  fs.writeFileSync(p, '방향 본문');
+  const a = 검수.방향지문(p);
+  assert.strictEqual(a, 검수.방향지문(p), '같은 파일인데 지문이 흔들린다 — 장부 대조가 불가능해진다');
+  fs.writeFileSync(p, '방향 본문.');
+  assert.notStrictEqual(검수.방향지문(p), a, '정본이 바뀌었는데 지문이 같다 — 개정을 못 가른다');
+});
+
+test('🔴 정본이 없으면 빈 값이 아니라 「없음」을 박는다 — 방향 없이 돈 것과 안 적힌 것이 같은 모양이면 안 된다', () => {
+  const 없는경로 = path.join(os.tmpdir(), 'synk-방향-없는파일-' + process.pid, '제품방향.md');
+  assert.strictEqual(검수.방향지문(없는경로), '없음');
+});
+
+test('🔑 실저장소 정본이 실제로 읽힌다 — 이음매만 맞고 대상이 비면 회귀가 공허해진다', () => {
+  assert.notStrictEqual(검수.방향지문(), '없음',
+    'docs/제품방향.md 를 못 읽는다 — 검수자가 방향 없이 도는 상태다');
+});
+
+test('🔴 판정 행이 **대상과 방향**을 싣는다 — 키만 있으면 그 판정이 어느 변경·어느 방향의 것인지 행이 스스로 못 말한다', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-제안장부-'));
+  const 제안장부 = path.join(d, '검수제안.jsonl');
+  fs.writeFileSync(제안장부, JSON.stringify({
+    종류: '제안', 시각: '2026-08-05T00:00:00.000Z',
+    대상: { 종류: 'commit', 값: 'deadbee' }, 키: 'k9',
+    제목: '픽스처 제안', 무엇을: 'ㄱ', 왜: 'ㄴ', 구현방향: 'ㄷ', 크기: '중', 관련기능: 'ㄹ',
+  }) + '\n');
+
+  const r = spawnSync(process.execPath,
+    [path.join(ROOT, 'tools', 'codex-review.js'), '--제안판정', 'k9', '--채택', '--사유', '회귀 시험'],
+    { encoding: 'utf8', env: { ...process.env, SYNK_REVIEW_PROPOSALS: 제안장부 } });
+  assert.strictEqual(r.status, 0, `판정이 실패했다: ${r.stderr}`);
+
+  const 행들 = fs.readFileSync(제안장부, 'utf8').trim().split('\n').map((l) => JSON.parse(l));
+  const 판정 = 행들.find((x) => x.종류 === '판정');
+  assert.ok(판정, '판정 행이 안 적혔다');
+  assert.deepStrictEqual(판정.대상, { 종류: 'commit', 값: 'deadbee' },
+    '판정 행이 원 제안의 대상을 안 물려받았다 — 어느 변경의 판정인지 복원할 수 없다');
+  assert.strictEqual(판정.방향, 검수.방향지문(),
+    '판정 행에 방향 지문이 없다 — 방향이 개정되면 이 판정의 전제를 복원할 방법이 사라진다');
+});
+
+/* 🔑 이 검사는 변이 시험이 만들어냈다 — 방향 스탬프를 기능지도·제안 행에서 통째로 빼도 28건이
+ *   전부 초록이었다. 그 행은 실제 codex 호출로만 쓰여 **어떤 검사도 닿지 않는 자리**였다. */
+test('🔴 선파악이 쓰는 기능지도·제안 행에도 방향과 대상이 박힌다 (codex 호출 없이 조립만 검사)', () => {
+  const 결과 = {
+    기능지도: [{ 기능: 'ㄱ', 설명: 'ㄴ' }],
+    제안: [
+      { 제목: '새 제안', 무엇을: 'a', 왜: 'b', 구현방향: 'c', 크기: '소', 관련기능: 'ㄱ' },
+      { 제목: '이미 기각된 제안', 무엇을: 'a', 왜: 'b', 구현방향: 'c', 크기: '소', 관련기능: 'ㄱ' },
+    ],
+  };
+  const 기각키 = 검수.제안키(결과.제안[1]);
+  const 현황 = new Map([[기각키, { 상태: '기각' }]]);
+  const { 기록행들, 신규 } = 검수.선파악행들(
+    { 종류: 'commit', 값: 'cafe123' }, 결과, 현황, '2026-08-05T00:00:00.000Z');
+
+  const 지도행 = 기록행들.find((r) => r.종류 === '기능지도');
+  const 제안행 = 기록행들.find((r) => r.종류 === '제안');
+  for (const [이름, 행] of [['기능지도', 지도행], ['제안', 제안행]]) {
+    assert.ok(행, `${이름} 행이 안 만들어졌다`);
+    assert.strictEqual(행.방향, 검수.방향지문(), `${이름} 행에 방향 지문이 없다`);
+    assert.deepStrictEqual(행.대상, { 종류: 'commit', 값: 'cafe123' }, `${이름} 행에 대상이 없다`);
+  }
+  assert.strictEqual(신규.length, 1, '기각된 제안이 다시 올라왔다 — 기각의 뜻이 사라진다');
+});
+
+/* ⚠ 여기서 「실장부의 모든 판정 행에 방향이 있다」를 요구하면 **과거가 소급되기를 요구하는 검사**가 된다.
+ *   스탬프 이전에 쓰인 행은 원리상 그 필드가 없고, 그건 결함이 아니라 도입 시점의 사실이다.
+ *   탐지력은 위 픽스처가 진다(현재 코드가 쓰는 행에 반드시 박힌다). 실장부에서 볼 것은 호환뿐이다. */
+test('실장부 — 방향 없는 옛 판정 행이 섞여 있어도 제안현황이 안 깨진다 (스탬프 도입 전 행 호환)', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-옛장부-'));
+  const 장부p = path.join(d, '검수제안.jsonl');
+  fs.writeFileSync(장부p, [
+    JSON.stringify({ 종류: '제안', 키: 'old1', 대상: { 종류: 'commit', 값: 'aaa' }, 제목: '옛 제안' }),
+    JSON.stringify({ 종류: '판정', 키: 'old1', 상태: '채택', 사유: '방향 필드가 없던 시절 행' }),
+  ].join('\n') + '\n');
+  const 현황 = 검수.제안현황(장부p);
+  assert.strictEqual(현황.get('old1').상태, '채택', '방향 없는 옛 행을 읽다가 상태가 사라졌다');
+
+  // 실장부도 실제로 읽힌다 — 픽스처만 맞고 실물이 깨지면 그 사실이 안 보인다
+  assert.doesNotThrow(() => 검수.제안현황(), '실장부를 못 읽는다');
+});
