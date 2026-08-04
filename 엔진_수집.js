@@ -1031,10 +1031,16 @@ function exportGoldenFixture_() {
     항목: 항목
   };
   const 정상수 = 항목.filter(x => x.종류 === '정상').length;
-  doc.한계.push('이번 판: 오류 ' + (항목.length - 정상수) + ' · 정상 ' + 정상수 + ' · 강사 미응답으로 제외 ' + 미응답 + '건.');
+  /* [v9.174] 채점기가 「판정불가」로 빼는 항목을 **내보내는 쪽에서도 센다.** 오류 항목인데
+   *   포함·불포함·기대태그가 모두 비면 대조할 근거가 없다(전면 재작성 + 오류태그 공란).
+   *   그런 항목은 SYNK-talk 채점에서 분모에서 빠지므로, 「30건 내보냄」이 30건 채점 가능으로
+   *   읽히면 **표본 부족이 점수로 위장된다.** 숫자를 내는 자리에서 미리 갈라 준다. */
+  const 채점불가 = 항목.filter(x => x.종류 === '오류' && !x.포함.length && !x.불포함.length && !x.기대태그.length).length;
+  doc.한계.push('이번 판: 오류 ' + (항목.length - 정상수) + ' · 정상 ' + 정상수 + ' · 강사 미응답으로 제외 ' + 미응답
+    + '건 · 채점 불가 ' + 채점불가 + '건(대조 근거가 없어 채점 분모에서 빠진다 — 강사 교정을 더 받아야 한다).');
   const name = 'SYNK_골든픽스처_' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '.json';
   const file = DriveApp.createFile(name, JSON.stringify(doc, null, 2), MimeType.PLAIN_TEXT);
-  const msg = '픽스처 ' + 항목.length + '건 내보냄(정상 ' + 정상수 + ' · 미응답 제외 ' + 미응답 + ')\n파일: ' + name
+  const msg = '픽스처 ' + 항목.length + '건 내보냄(정상 ' + 정상수 + ' · 채점불가 ' + 채점불가 + ' · 미응답 제외 ' + 미응답 + ')\n파일: ' + name
     + '\n내 드라이브에서 받아 SYNK-talk의 evals/ 에 넣으면 교정 엔진 채점에 바로 씁니다.';
   Logger.log(msg + '\n' + file.getUrl());
   return msg;
