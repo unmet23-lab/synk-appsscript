@@ -506,6 +506,16 @@ test('[v9.176] 정답이 쌓였는데 전송 통로가 안 열려 있으면 월�
     '토큰 값을 메일 본문에 싣는다 — 존재 여부만 봐야 한다');
 });
 
+test('[v9.179] 설치 확인은 편집기에서도 돈다 — 확인 수단이 하나뿐이면 그 하나가 막힌 날 영영 모른다', () => {
+  // 밑줄 함수는 편집기 드롭다운에 안 뜨고 메뉴는 시트 UI가 필요하다. 이 시트는 무거워
+  // 원격에서 못 여는 날이 있다(08-04 렌더러 정지 실측) → 공개 진입점을 하나 둔다.
+  assert.ok(/\nfunction checkGoldenPush\(\)/.test(code), '공개 진입점이 없다 — 시트가 안 열리면 확인 방법이 0이 된다');
+  const 본문 = section('function checkGoldenPush()', '\n}\n');
+  assert.ok(/골든전송점검_\(\)/.test(본문), '점검 본체를 부르지 않는다 — 두 벌이 되면 갈라진다');
+  assert.equal(/getProperty\(GH_TOKEN_KEY\)/.test(본문), false, '공개 함수가 토큰을 직접 만진다 — 노출 표면에 비밀을 올리지 않는다');
+  assert.equal(/UrlFetchApp|method:\s*'put'/.test(본문), false, '공개 함수가 직접 네트워크를 친다 — 점검 본체에 위임해야 조준이 한 곳이다');
+});
+
 test('[v9.177] 연결 점검은 읽기 전용이고, 실패를 구별해서 말한다 — 설치한 날 확인돼야 설치가 끝난 것이다', () => {
   const 점검 = section('function 골든전송점검_()', '\n}\n');
   assert.equal(/method:\s*'put'|method:\s*'post'|method:\s*'delete'/i.test(점검), false,

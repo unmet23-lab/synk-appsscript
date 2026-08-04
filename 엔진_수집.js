@@ -1106,6 +1106,18 @@ function 골든전송점검_() {
   return { ok: true, msg: '연결 OK — ' + GH_OWNER + '/' + GH_REPO + ' 쓰기 권한 확인(비공개 저장소).' };
 }
 
+/* [v9.179] 설치 확인 — **공개**로 둔다(밑줄이 없다). 이유는 노출 표면 계산이 아니라 가용성이다:
+ *   밑줄 함수는 편집기 드롭다운에 안 뜨고, 메뉴는 시트 UI가 필요한데 이 스프레드시트는 무거워
+ *   원격에서 못 여는 날이 있다(08-04 실측: 렌더러 정지 45초 타임아웃). **확인 수단이 하나뿐이면
+ *   그 하나가 막힌 날 설치가 맞는지 영영 모른다** — 그리고 이 설치는 6개월 뒤에나 증상이 난다.
+ * 노출 판정: 읽기 전용(GET /repos)이고 토큰도 다른 비밀도 돌려주지 않는다. 상태 변경 0. */
+function checkGoldenPush() {
+  const c = 골든전송점검_();
+  const msg = (c.ok ? '✅ ' : '⚠️ ') + c.msg;
+  Logger.log(msg);
+  return msg;
+}
+
 function pushGoldenFixture_() {
   const token = PropertiesService.getScriptProperties().getProperty(GH_TOKEN_KEY);
   if (!token) return 'GitHub 토큰이 없습니다 — 설정 절차는 docs/골든픽스처_자동전송_설치.md 에 클릭 단위로 있습니다.\n'
