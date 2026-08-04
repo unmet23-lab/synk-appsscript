@@ -80,3 +80,12 @@ jobs:
       - name: 6) 자격증명 삭제 (러너에 남기지 않는다)
         if: always()
         run: rm -f "$HOME/.clasprc.json"
+
+      # 폰 배포에는 clasp-guard 가 없다(로컬 훅이다). 그래서 같은 점검을 여기서 한 번 더 낸다 —
+      # 배포 통로가 둘인데 한쪽에만 달면, 느슨한 쪽이 실질 정책이 된다(F081 · 학생ID 게이트와 같은 형태).
+      # 차단하지 않는다: 배포를 막으면 「배포 뒤 1회 실행」 자체가 불가능해진다.
+      - name: 7) 배포 뒤 라이브 1회 실행 목록 (F081)
+        if: always()
+        run: |
+          RANGE="$(git describe --tags --abbrev=0 --match 'synk-v*' HEAD^ 2>/dev/null)..HEAD" || RANGE=""
+          node tools/실행층점검.js ${RANGE:+--range "$RANGE"}

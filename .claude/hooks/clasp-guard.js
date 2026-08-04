@@ -266,4 +266,34 @@ if (problems.length) {
       '\n→ /deploy 스킬 순서(구문검사→테스트→커밋→git push→clasp push)로 진행할 것. 검증된 예외 절차만 CLASP_GUARD_BYPASS=1 로 우회.'
   );
 }
+
+/* 6) 배포 뒤 라이브 1회 실행이 필요한가 (F081) — **차단이 아니라 할 일 목록**이다.
+ *    막으면 실행 자체가 불가능해지므로 여기서 막는 건 뜻이 없다. 대신 배포가 나가는
+ *    바로 이 순간에 스스로 말하게 한다 — 프로즈로 두면 다음 배포에서 잊는다
+ *    (CLAUDE.md 「장치와 그 발동 조건은 같은 커밋에서 정한다」).
+ *    기준점은 **직전 버전 태그**다: bump-version 이 배포마다 태그를 채므로,
+ *    HEAD^ 에서 보이는 최신 태그가 「지난 배포」다(이번 배포의 태그는 HEAD 에 있어 빠진다). */
+try {
+  const 점검 = require(path.join(ROOT, 'tools', '실행층점검.js'));
+  let range;
+  try {
+    range = run('git', ['describe', '--tags', '--abbrev=0', '--match', 'synk-v*', 'HEAD^']).trim() + '..HEAD';
+  } catch (_) {
+    range = ''; // 태그가 없으면 도구의 기본값(마지막 커밋)으로 — 그 사실은 도구가 스스로 밝힌다
+  }
+  const 글 = 점검.체크리스트(점검.훑기({ range, 프로젝트: PROJ }));
+  if (글) {
+    process.stdout.write(JSON.stringify({
+      systemMessage: 글,
+      hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: 글 },
+    }));
+  }
+} catch (e) {
+  // 이 검사가 죽어도 배포는 막지 않는다(할 일 목록이지 게이트가 아니다). 단 조용히 넘기지도 않는다.
+  process.stdout.write(JSON.stringify({
+    systemMessage: '[실행층점검] 실행 실패 — 배포 뒤 필수 실행 목록을 **못 만들었다**: '
+      + String((e && e.message) || e).split('\n')[0]
+      + '\n통과가 아니라 미실행이다. 폼·드라이브를 만졌다면 직접 확인할 것(F081).',
+  }));
+}
 process.exit(0);
