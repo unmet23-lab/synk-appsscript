@@ -845,6 +845,26 @@ function createAcademicForm() {
  * 필수·거부 가능 — 동의 없이 모은 기록은 후배 연습 자료로도 AI 학습으로도 못 쓴다(소급 불가, migrateConsentV186과 같은 계열)
  * ④ 핵심 칸은 9·11번 — '받은 질문 전부'와 '심사관이 다시 물은 것'. 이 둘이 시뮬레이터의 질문 은행과 모순 탐지 채점표가 된다. */
 const INTERVIEW_KINDS = ['한국 유학 비자 인터뷰', 'EPS 취업(E-9) 면접·시험', '한국 기업 취업 면접', '한국 대학·대학원 입학 면접', '한국 방문·기타 비자 인터뷰', '기타'];
+
+/* ── 궤적 연결 고리 — 로드맵 ④(유학 집약 봇)의 재료 ────────────────────────
+ * 2026-08-04 대조에서 나온 것: **의도와 결과가 둘 다 쌓이는데 안 이어진다.**
+ *   의도 = 크루카드 100+문항(졸업후진로·희망진학과정·비자목표 7종·전공관심 7종) → 상담시트
+ *   결과 = 이 면접폼의 「결과(합격·승인/불합격·거절/…)」
+ *   그런데 이 폼은 익명이라(이름 선택·setCollectEmail(false)) 둘을 한 사람으로 묶을 키가 없다.
+ *   궤적은 「A를 목표한 사람이 실제로 B로 갔다」일 때만 생긴다 — 두 더미로는 안 만들어진다.
+ *
+ * 🔑 그래서 **필수가 아니라 선택**이다. 익명은 실수가 아니라 값을 하는 설계다 —
+ *   이 폼의 1순위 자산은 질문 은행이고(memory vr-interview-sim), 거절 경험은 특히 밝히기 싫은
+ *   정보라 실명 강제는 회수율을 깎는다. 적은 사람은 궤적이 되고, 안 적은 사람은 지금처럼
+ *   질문 은행에 그대로 기여한다 — 1순위 자산에 비용 0으로 ④의 문만 연다.
+ *
+ * ⚠ 소급 불가는 「문항」이 아니라 「연결」이었다. 문항은 이미 다 받고 있었고(내 옛 전제가 틀렸다),
+ *   지금 키를 안 심으면 **이미 들어온 기록은 영원히 못 잇는다.**
+ *
+ * 제목은 상담시트 60열 헤더와 같은 '학생ID' — 조인 키라 어긋나면 연결이 통째로 죽는다.
+ * 생성부와 마이그레이션 **두 곳이 이 상수를 본다**(두 곳에 적으면 갈라진다 · CONSENT_Q_TITLE과 같은 이유). */
+const INTERVIEW_SID_TITLE = '학생ID';
+const INTERVIEW_SID_HELP = 'SYNK-001 형식입니다. 모르거나 밝히고 싶지 않으면 비워두세요 — 익명 그대로 접수되고, 자료로도 똑같이 쓰입니다.';
 function createInterviewLogForm() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
@@ -888,6 +908,7 @@ function createInterviewLogForm() {
 
   form.addSectionHeaderItem().setTitle('1. 누구의 경험인가요').setHelpText('이 부분은 전부 선택입니다 — 익명으로 남기셔도 자료로 잘 쓰입니다.');
   txt('이름', false, '익명을 원하시면 비워두세요');
+  txt(INTERVIEW_SID_TITLE, false, INTERVIEW_SID_HELP); // 궤적 조인 키 — 선택. 라이브 폼은 migrateInterviewSid 가 같은 자리에 넣는다
   mc('지금 신분', ['재학생', '졸업생', '학부모·지인', '기타'], false);
   txt('연락처', false, '내용을 더 여쭤봐도 될 때만 남겨주세요');
 
@@ -930,6 +951,60 @@ function createInterviewLogForm() {
     '편집용: ' + form.getEditUrl());
   Logger.log('✅ 면접 기록 폼 생성 완료: ' + form.getPublishedUrl());
   return '✅ 면접 기록 폼 생성 완료: ' + form.getPublishedUrl();
+}
+
+/* ── 🔗 궤적 연결 고리 증분 — 라이브 면접폼에 학생ID 1칸 (멱등) ──────────────
+ * 왜 **별도 함수**인가: createInterviewLogForm 은 살아 있는 폼을 절대 건드리지 않는다
+ *   (배포된 링크·QR가 미아가 되면 안 되므로 — 그 판단은 옳다). 그래서 생성부만 고치면
+ *   이미 선 폼에는 **영원히 안 닿는다.** 「장치와 그 발동 조건은 같은 커밋에서」(CLAUDE.md) —
+ *   발동은 시트 메뉴 「🔗 면접폼 학생ID 칸 넣기」(menuMigrateInterviewSid · v9.141 계보).
+ *
+ * ⚠ 위치를 옮기는 이유: addTextItem 은 **폼 맨 끝**에 붙는다. 그대로 두면 「5. 자료 활용 동의」
+ *   뒤에 학생ID가 오는 순서가 된다. 1번 섹션 「이름」 바로 뒤로 옮긴다.
+ * ⚠ 문항을 끼워 넣으면 응답 시트에 열이 생긴다 — 안전한지 실측했다: 면접기록_응답을 읽는 곳은
+ *   엔진_콘텐츠AI 의 회수량 집계 하나뿐이고 **getLastRow()만 쓴다**(열 위치 파싱 없음).
+ *   결석 폼처럼 위치로 파싱하는 폼이었다면 이 증분은 금지였다(그 파일 주석의 경고).
+ * ⚠ 기존 응답 행은 손대지 않는다 — 새 열은 빈칸으로 남고, 그게 정확하다(그때는 안 물었다). */
+function migrateInterviewSid() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const fid = String(getState(st, '면접폼ID').val || '');
+  if (!fid) { const m = '⚠️ 면접폼ID 미연결 — 먼저 「🛂 면접 기록 폼 만들기」를 실행하세요(새로 만들면 학생ID 칸이 처음부터 들어갑니다).'; Logger.log(m); return m; }
+
+  let form;
+  try { form = FormApp.openById(fid); }
+  catch (e) { const m = '⚠️ 면접폼을 열지 못했습니다(' + e + ') — 폼 삭제·권한을 확인하세요. 새 폼을 만들지 않았습니다.'; Logger.log(m); return m; }
+
+  const items = form.getItems();
+  const titles = items.map(x => String(x.getTitle()).trim());
+  const at = titles.indexOf(INTERVIEW_SID_TITLE);
+
+  if (at !== -1) {
+    /* 이미 있음 — 제목만 보고 스킵하면 문구 개정이 라이브에 영원히 안 닿는다(v9.103과 같은 구멍).
+     * 🔑 필수 여부도 본다: 이 칸이 필수로 바뀌면 익명 회수가 죽고, 그건 이 폼의 1순위 자산을
+     *   잃는 것이다. 정본은 「선택」이라 발견하면 되돌린다. */
+    if (items[at].getType() !== FormApp.ItemType.TEXT) {
+      const m = '⚠️ 「' + INTERVIEW_SID_TITLE + '」 문항이 있는데 단답형이 아닙니다 — 손으로 확인하세요(자동 변경하지 않았습니다).';
+      Logger.log(m); return m;
+    }
+    const it = items[at].asTextItem();
+    const 문구같음 = String(it.getHelpText() || '') === INTERVIEW_SID_HELP;
+    const 선택임 = !it.isRequired();
+    if (문구같음 && 선택임) { const m = '✅ 학생ID 문항: 이미 있음 — 스킵(멱등).'; Logger.log(m); return m; }
+    if (!선택임) it.setRequired(false);
+    if (!문구같음) it.setHelpText(INTERVIEW_SID_HELP);
+    const m = '📝 학생ID 문항: 이미 있음 — ' + [!문구같음 ? '안내 문구' : '', !선택임 ? '필수→선택(익명 회수 보호)' : ''].filter(Boolean).join('·') + '를 정본으로 되돌렸습니다.';
+    Logger.log(m); return m;
+  }
+
+  const item = form.addTextItem().setTitle(INTERVIEW_SID_TITLE).setHelpText(INTERVIEW_SID_HELP);
+  const 이름at = titles.indexOf('이름');
+  if (이름at !== -1) form.moveItem(item, 이름at + 1);
+  const m = '✅ 학생ID 칸을 넣었습니다' + (이름at !== -1 ? '(1번 섹션 「이름」 바로 뒤)' : ' — 다만 「이름」 문항을 못 찾아 맨 끝에 붙었습니다. 폼 편집기에서 위로 올려 주세요.')
+    + '\n**선택 문항입니다** — 익명으로 남기던 회수는 그대로입니다.'
+    + '\n이 칸이 채워진 기록만 「무엇을 목표했고 실제로 어디로 갔는지」로 이어집니다(로드맵 ④ 재료).'
+    + '\n배포 링크: ' + form.getPublishedUrl();
+  Logger.log(m); return m;
 }
 
 /* ── [v9.89] 🔁 결석 연락 기록 폼 — 「결석 복귀율」의 입력 레일(약점 메모 폼 v9.55·v9.64 계보) ──
