@@ -33,6 +33,23 @@ const ROOT = process.env.SYNK_OWNER_ROOT || path.resolve(__dirname, '..');
 //   lib 사본을 깔아야 하고, 그건 곧 판정기가 갈라진다는 뜻이다.
 const store = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'handoff-store.js'));
 
+/* 워크트리 — 이 도구의 사각지대였다 (F079 · 옆 세션 local_dee95eb9 이 실사고로 잡아 넘겼다).
+ * 두 겹이었고 **둘 다 「보이는 것이 0건」으로 조용히 새는** 방향이다:
+ *   ⓐ `git status` 는 자기 트리만 본다 — 실측: 옆 트리가 2건을 들고 있는데 메인은 0건으로 셌다.
+ *   ⓑ 🔴 더 깊은 것 — 상태 파일 접두의 `projectKey` 가 **트리마다 다르다**
+ *      (실측: 메인 cec367f48f vs 워크트리 1fc2df68ae·9514265e22·80c1561a3e).
+ *      감지 로직을 아무리 고쳐도 **재료가 갈라져 있어** 워크트리 세션은 파일 목록에서부터 안 잡힌다.
+ * 처방 = 쓰는 쪽(track-collision)이 **메인 트리 키로 통일**했고(ba17f78), 읽는 이쪽도 같은 키를 쓴다.
+ *   메인에서 돌 때 값이 안 변하므로 오늘의 계약은 안 깨진다 — 넓히기만 한다. */
+let wt = null;
+try { wt = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'worktrees.js')); } catch (_) { wt = null; }
+
+/** 상태 파일 접두의 기준 — 트리가 달라도 **메인 하나로** 모은다. lib 이 없으면 옛 동작 그대로. */
+function 키기준(r) {
+  if (!wt) return r;
+  try { return wt.mainWorktree(r) || r; } catch (_) { return r; }
+}
+
 /** 심장박동 유효 시간. 이보다 오래된 세션은 「끝난 것」으로 본다.
  *  짧게 잡으면 살아있는 세션을 죽었다고 해 사고가 나고(위험한 방향),
  *  길게 잡으면 끝난 세션을 살아있다고 해 조심하게 된다(안전한 방향). 그래서 넉넉히 잡는다. */
@@ -56,17 +73,26 @@ function git(args) {
 function 미커밋들() {
   const out = git(['status', '--porcelain', '-uall']);
   if (out === null) return null;
-  return out.split(/\r?\n/).filter(Boolean).map((l) => {
-    const p = l.slice(3);
-    const 뒤 = p.split(' -> ').pop();               // 이름 바뀜: 새 경로가 지금 자리다
-    return 뒤.replace(/^"(.*)"$/, '$1');
-  });
+  const 씻기 = (l) => l.slice(3).split(' -> ').pop().replace(/^"(.*)"$/, '$1');  // 이름 바뀜: 새 경로가 지금 자리다
+  const 목록 = out.split(/\r?\n/).filter(Boolean).map((l) => ({ 파일: 씻기(l), 트리: null }));
+
+  /* 다른 작업 트리의 미커밋도 같이 센다 — 안 세면 「0건」이 되고, 그 0 은 안전과 구별되지 않는다.
+   * ⚠ 비용: othersDirty 는 트리 5개에 ≈330ms 다. anyOthers() 는 fs 두 번(<1ms)이라 먼저 거른다. */
+  try {
+    if (wt && wt.anyOthers(ROOT)) {
+      for (const t of wt.othersDirty(ROOT) || []) {
+        const 이름 = String(t.path || '').split(/[\\/]/).filter(Boolean).pop() || '다른 트리';
+        for (const f of t.files || []) 목록.push({ 파일: f, 트리: 이름 });
+      }
+    }
+  } catch (_) { /* 워크트리 조회 실패가 메인 판정을 막지는 않는다 */ }
+  return 목록;
 }
 
 /** 세션별 {sid, 분, touched}. track-collision 이 쌓아 둔 것을 읽기만 한다. */
 function 세션들() {
   const dir = store.stateDir();
-  const 접두 = `track-${store.projectKey(ROOT)}-`;
+  const 접두 = `track-${store.projectKey(키기준(ROOT))}-`;   // 트리가 달라도 메인 키 하나로 (F079)
   let 목록;
   try { 목록 = fs.readdirSync(dir); } catch (_) { return []; }
   const now = Date.now();
@@ -84,7 +110,7 @@ function 세션들() {
   return 결과.sort((a, b) => a.분 - b.분);
 }
 
-const 판정 = { 내것: '내것', 남의살아있는: '남의살아있는', 끝난세션: '끝난세션', 모름: '모름' };
+const 판정 = { 내것: '내것', 남의살아있는: '남의살아있는', 끝난세션: '끝난세션', 모름: '모름', 다른트리: '다른트리' };
 
 function 조사() {
   const 파일들 = 미커밋들();
@@ -92,14 +118,18 @@ function 조사() {
   const 나 = store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
   if (파일들 === null) return { git못부름: true, 나, 항목: [], 세션수: ss.length };
 
-  const 항목 = 파일들.map((f) => {
+  const 항목 = 파일들.map(({ 파일: f, 트리 }) => {
     const 주인 = ss.filter((s) => s.touched.includes(f));
     const 산주인 = 주인.filter((s) => s.분 <= 살아있음_분);
-    if (나 && 산주인.some((s) => s.sid === 나)) return { 파일: f, 종류: 판정.내것, 주인: [] };
+    /* 🔑 다른 트리의 파일은 **절대 「내 것」이 될 수 없다** — 경로가 트리 루트 상대라
+     *   메인의 같은 경로와 글자가 겹칠 뿐이다. 겹친다고 내 것으로 세면 「남의 트리 변경」이
+     *   조용히 사라진다(새는 방향은 언제나 통과다). 주인을 못 찾으면 모름으로 둔다. */
+    if (트리) return { 파일: f, 트리, 종류: 판정.다른트리, 주인: [] };
+    if (나 && 산주인.some((s) => s.sid === 나)) return { 파일: f, 트리, 종류: 판정.내것, 주인: [] };
     const 남 = 산주인.filter((s) => s.sid !== 나);
-    if (남.length) return { 파일: f, 종류: 판정.남의살아있는, 주인: 남 };
-    if (주인.length) return { 파일: f, 종류: 판정.끝난세션, 주인 };
-    return { 파일: f, 종류: 판정.모름, 주인: [] };
+    if (남.length) return { 파일: f, 트리, 종류: 판정.남의살아있는, 주인: 남 };
+    if (주인.length) return { 파일: f, 트리, 종류: 판정.끝난세션, 주인 };
+    return { 파일: f, 트리, 종류: 판정.모름, 주인: [] };
   });
   return { git못부름: false, 나, 항목, 세션수: ss.filter((s) => s.분 <= 살아있음_분).length };
 }
@@ -111,15 +141,24 @@ function 보고(r, { 훅 }) {
   const 위험 = r.항목.filter((i) => i.종류 === 판정.남의살아있는);
   const 모름 = r.항목.filter((i) => i.종류 === 판정.모름);
   const 유물 = r.항목.filter((i) => i.종류 === 판정.끝난세션);
+  const 다른트리 = r.항목.filter((i) => i.종류 === 판정.다른트리);
 
-  // 훅 모드: 🔴가 없으면 침묵한다. 잔소리하는 장치는 읽히지 않게 된다.
-  if (훅 && !위험.length) return '';
+  // 훅 모드: 위험이 없으면 침묵한다. 잔소리하는 장치는 읽히지 않게 된다.
+  // 다른 트리의 미커밋도 위험에 넣는다 — 그건 남의 세션이 지금 들고 있는 것이다(F079).
+  if (훅 && !위험.length && !다른트리.length) return '';
 
   const 줄 = [];
   줄.push(`[작업본소유자] 미커밋 ${r.항목.length}건 · 살아있는 세션 ${r.세션수}개`);
   if (위험.length) {
     줄.push('', `🔴 살아있는 남의 작업본 ${위험.length}건 — **편집하지 않는다**(F073: 내 편집이 남의 커밋에 실려 나간다)`);
     for (const i of 위험) 줄.push(`   · ${i.파일}  ← ${i.주인.map((s) => `${짧게(s.sid)}·${s.분}분 전`).join(', ')}`);
+  }
+  if (다른트리.length) {
+    const 트리별 = {};
+    for (const i of 다른트리) (트리별[i.트리] = 트리별[i.트리] || []).push(i.파일);
+    줄.push('', `🌿 **다른 작업 트리**의 미커밋 ${다른트리.length}건 — 그 트리 세션이 지금 들고 있다(F079)`);
+    for (const [t, fs2] of Object.entries(트리별)) 줄.push(`   · ${t}: ${fs2.join(', ')}`);
+    줄.push('   메인의 `git status` 엔 안 뜬다 — 「0건」으로 보이던 자리다. 그 트리에서 커밋될 때까지 기다린다.');
   }
   if (유물.length) {
     줄.push('', `⚪ 끝난 세션이 남긴 것 ${유물.length}건 — 이어받아도 된다(미추적은 무보호 상태다 · F025)`);
