@@ -1,0 +1,72 @@
+#!/usr/bin/env node
+/**
+ * session-decisions — 세션 시작에 **유호님이 답해야 풀리는 것**을 띄운다.
+ *
+ * 왜 있나 (2026-08-05 · 유호님 확정):
+ *   유호님 질문 — "이 버그들을 잡는 게 3년 계획에 도움이 되나?"
+ *   실측으로 답이 갈렸다: 마찰 101건 중 **79%가 AI 자기 살림 도구**에 대한 것이고
+ *   유호님 사업 물건은 6%였다. 그런데 정작 3년 계획의 속도를 정하는 것은
+ *   **유호님 답을 기다리는 미결 57건**이다(memory decision-queue-bottleneck).
+ *   그 큐는 tools/decision-queue.js 가 이미 세고 있었는데 **헤르메스 텔레그램으로만 나갔다** —
+ *   PC 앞에 앉은 세션 시작 화면에는 한 번도 안 떴다. 이 훅이 그 자리를 채운다.
+ *
+ * 유호님 지시 — 「도전안을 받아들이되 **그 뒤에도 수리할 것들도 같이** 나오게」:
+ *   그래서 기존 startup 훅(rot-check·session-handoff·작업본소유자)을 **하나도 건드리지 않는다.**
+ *   이 훅은 더하기만 한다. 수리 목록을 감추는 변경은 이 파일의 목적에 반한다.
+ *
+ * 설계:
+ *   ① **읽기 전용** — decision-queue 의 원칙을 그대로 물려받는다. 메모리도 repo 도 쓰지 않는다.
+ *   ② **판정을 두 곳에 적지 않는다** — 순위·회전·차단자 계산은 전부 tools/decision-queue.js 에서
+ *      require 해 온다. 여기서 다시 구현하면 두 목록이 갈라진다(CLAUDE.md 신뢰성 4항).
+ *   ③ **미실행이 「0건」처럼 보이면 안 된다** — 메모리 정본이 없는 환경(클라우드 세션·CI)에서는
+ *      조용히 빈 출력을 내지 말고 **왜 못 셌는지**를 말한다. 통과와 미실행은 같은 모양이면 안 된다.
+ *   ④ **매 세션 상주 비용** — 3건·각 2줄로 묶는다. 전체는 `node tools/decision-queue.js --all`.
+ */
+'use strict';
+
+const MAX_LEN = 96;   // 터미널 한 줄로 읽히는 길이(텔레그램용 300자보다 짧게 — 매 세션 상주한다)
+const COUNT = 3;
+
+/** 한 줄로 접는다 — 개행·연속 공백을 없애고 길면 자른다 */
+function oneLine(s, limit = MAX_LEN) {
+  const flat = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+  return flat.length > limit ? flat.slice(0, limit - 1) + '…' : flat;
+}
+
+/** 토픽 슬러그에서 꼬리 날짜를 떼 화면을 좁힌다 (print-doc-pipeline-2026-08-04 → print-doc-pipeline) */
+function shortTopic(topic) {
+  return String(topic || '').replace(/-\d{4}-\d{2}-\d{2}$/, '');
+}
+
+function main() {
+  let q;
+  try {
+    // decision-queue 는 날문자 센티널(CODE_MARK)을 담고 있어 손 편집이 위험한 파일이다.
+    // 여기서는 **읽기만** 한다 — 배선이 그 파일을 고치지 않아도 되도록 export 를 쓴다.
+    const dq = require('../../tools/decision-queue.js');
+    q = dq.build({ count: COUNT });
+  } catch (e) {
+    // ③ 미실행을 침묵으로 위장하지 않는다. 단 세션 시작을 막지도 않는다(exit 0).
+    process.stdout.write(`🗳 결정 큐를 못 셌다 — ${oneLine(e && e.message, 120)}\n`);
+    return;
+  }
+
+  if (!q || !q.total) {
+    process.stdout.write('🗳 유호님 답 대기 0건 — 결정 큐가 비었습니다.\n');
+    return;
+  }
+
+  const out = [`🗳 유호님 답 대기 ${q.total}건 — 오늘 ${q.today.length}건 (전체: node tools/decision-queue.js --all)`];
+  q.today.forEach((it, i) => {
+    const head = it.unblocks > 0
+      ? `⛔ 이거 하나면 ${it.unblocks}건이 함께 풀립니다`
+      : `[${shortTopic(it.topic)}]`;
+    out.push(`  ${i + 1}. ${head}`);
+    out.push(`     ${oneLine(it.text)}`);
+  });
+  out.push('  답은 그냥 여기 쓰시면 됩니다 — 제가 읽고 반영합니다.');
+  process.stdout.write(out.join('\n') + '\n');
+}
+
+if (require.main === module) main();
+module.exports = { oneLine, shortTopic, MAX_LEN, COUNT };
