@@ -83,6 +83,35 @@ function lint(file) {
     .map((m) => m[1]).filter((t) => /[ㄱ-힣Ѐ-ӿ]/.test(t));
   if (monoBad.length) bad.push(`DM Mono 에 한글·키릴: ${monoBad.join(' | ')}`);
 
+  // 🔑 DM Mono 는 .mono 클래스 통로로만 입힌다 — CSS 가 다른 셀렉터로 입히면 위의 내용
+  //   검사(class="mono" 기준)가 그 자리를 영영 못 본다. 실측: 01 덱 리허설표가
+  //   `.reh td.c{font-family:'DM Mono'…}` 로 한글 셀을 mono 에 태웠는데 린트는 초록이었다.
+  //   라우팅은 검사보다 넓어야 한다 — 통로를 하나로 강제해야 내용 검사가 완전해진다.
+  //   예외: ::before/::after 는 마크업 클래스를 못 다는 대신 content 가 CSS 안에 있으니 그걸 직접 검사한다.
+  const monoRoute = [];
+  for (const chunk of css.split('}')) {
+    const parts = chunk.split('{');
+    if (parts.length < 2) continue;
+    const decls = parts.pop();
+    const sel = (parts.pop() || '').trim();
+    if (!/DM Mono/i.test(decls)) continue;
+    const content = decls.match(/content\s*:\s*['"]([^'"]*)['"]/);
+    if (content) {
+      if (/[ㄱ-힣Ѐ-ӿ]/.test(content[1])) monoRoute.push(`${sel} (content "${content[1]}" 에 한글·키릴)`);
+      continue;
+    }
+    const badSel = sel.split(',').map((s) => s.trim()).filter((s) => s && !/\.mono\b/.test(s));
+    if (badSel.length) monoRoute.push(badSel.join(', '));
+  }
+  if (monoRoute.length) bad.push(`DM Mono 를 .mono 통로 밖에서 입힌다(내용 검사가 못 보는 자리): ${monoRoute.join(' · ')}`);
+
+  // 세 번째 모노 통로 — 시맨틱 태그(code·kbd·tt)는 브라우저 기본 모노스페이스라
+  //   한글이 들어가면 굴림체로 폴백한다(01 덱의 <code>08_설명회_…</code> 실측 — PDF 폰트
+  //   덤프에서 GulimChe 가 한글 잉크를 그리고 있었다). 라틴 파일명·코드는 무방하다.
+  const semMono = [...body.matchAll(/<(code|kbd|tt)\b[^>]*>([^<]*)</g)]
+    .map((m) => m[2]).filter((t) => /[ㄱ-힣Ѐ-ӿ]/.test(t));
+  if (semMono.length) bad.push(`시맨틱 모노 태그(code·kbd·tt)에 한글·키릴 — 굴림 폴백: ${semMono.join(' | ')}`);
+
   // 이모지를 그대로 인쇄하지 않는다(정본 ■9) — 단색 라인 아이콘으로 치환한다.
   //
   // ⚠ 범위로 잡으면 안 된다. 처음 코드포인트 구간(2600–27BF)으로 검사했더니

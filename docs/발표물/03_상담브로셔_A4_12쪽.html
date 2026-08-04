@@ -24,7 +24,7 @@
 :root{
   --coral:#FF6B5C; --coral-3:#E8543F; --coral-wash:#FFE9E4; --coral-soft:#FFCFC6;
   --paper:#FBF7EE; --navy:#1A2340; --navy-2:#0F1730; --navy-3:#2A3358;
-  --cream:#F6F1E8; --cream-2:#EFE7D7; --cream-3:#E7DDC7; --ink:#171820;
+  --cream:#F6F1E8; --cream-2:#EFE7D7; --cream-3:#E7DDC7; --ink:#171820; /* 코랄 면 위 글자 전용 — 본문 잉크는 --navy */
   --hair:rgba(42,51,88,.25);
 }
 *{ box-sizing:border-box; margin:0; padding:0; }
@@ -97,9 +97,8 @@ p b, b{ color:var(--navy); font-weight:800; }
 .cover::before{
   content:''; position:absolute; inset:0;
   background-image:
-    radial-gradient(circle at 1.2mm 1.2mm, rgba(255,107,92,.28) 0 .42mm, transparent .42mm),
     radial-gradient(circle at 6mm 6mm, rgba(246,241,232,.13) 0 .28mm, transparent .28mm);
-  background-size:10mm 10mm, 10mm 10mm;
+  background-size:10mm 10mm;
 }
 .cover > *{ position:relative; }
 .cover h1{ font-size:14mm; font-weight:800; line-height:1.14; letter-spacing:-.04em; }
@@ -165,7 +164,6 @@ tr.hi td{ background:var(--coral-wash); }
 .it .num{
   flex:0 0 auto; width:7.4mm; height:7.4mm; border-radius:50%; background:var(--navy-2); color:var(--cream);
   font-weight:700; font-size:3.8mm; display:flex; align-items:center; justify-content:center;
-  font-family:'DM Mono',ui-monospace,monospace;
 }
 .it .t{ font-size:4.4mm; font-weight:800; letter-spacing:-.015em; line-height:1.3; }
 .it .d{ font-size:3.5mm; color:var(--navy-3); margin-top:1.8mm; line-height:1.56; }
@@ -175,27 +173,29 @@ tr.hi td{ background:var(--coral-wash); }
 .band .c{ flex:1 1 0; border-radius:1.8mm; border:.3mm solid var(--hair); overflow:hidden; background:#fff; }
 .band .c .cap{ padding:2.6mm 1mm 2.2mm; text-align:center;
   background:repeating-linear-gradient(45deg, rgba(42,51,88,.06) 0 1.1mm, transparent 1.1mm 2.6mm), var(--cream-2); }
-.band .c.j .cap{ background:repeating-radial-gradient(circle at 1.2mm 1.2mm, rgba(42,51,88,.14) 0 .3mm, transparent .3mm 2.6mm), var(--cream-2); }
+.band .c.j .cap{ background:var(--navy-2); }
 .band .c .lv{ font-size:5mm; font-weight:800; line-height:1; color:var(--navy); letter-spacing:-.03em; }
-.band .c.j .lv{ color:var(--navy); }
+.band .c.j .lv{ color:var(--cream); }
 .band .c .r{ padding:2mm 1mm; text-align:center; border-top:.25mm solid var(--hair); }
 .band .c .r .kk{ font-size:2.1mm; color:var(--navy-3); font-weight:700; letter-spacing:.08em; }
 .band .c .r .vv{ font-size:2.9mm; font-weight:800; margin-top:.6mm; }
 .dest{ display:flex; gap:3.4mm; margin-top:4.4mm; }
-.dest .d{ flex:1 1 0; border:.45mm solid var(--coral-soft); border-radius:2.4mm; padding:3mm 3.6mm; background:var(--coral-wash); }
+.dest .d{ flex:1 1 0; border:.45mm solid var(--hair); border-radius:2.4mm; padding:3mm 3.6mm; background:var(--cream-2); }
+.dest .d.deg{ border-color:var(--coral-soft); background:var(--coral-wash); }
 .dest .d .kk{ font-size:2.4mm; font-weight:700; color:var(--navy-3); letter-spacing:.1em; }
 .dest .d .vv{ font-size:3.6mm; font-weight:800; margin-top:1mm; }
+.dest .d.deg .vv{ font-weight:900; }
 
 /* ── 약속 (p10) ──────────────────────────────────────── */
 .vow{ display:flex; flex-direction:column; gap:4mm; margin-top:5mm; }
-.vow .v{ border-left:1.1mm solid var(--coral-3); padding:2.6mm 0 2.6mm 5mm; }
+.vow .v{ border-left:1.1mm solid var(--navy-3); padding:2.6mm 0 2.6mm 5mm; }
 .vow .v .t{ font-size:4.9mm; font-weight:800; letter-spacing:-.015em; }
 .vow .v .d{ font-size:3.7mm; color:var(--navy-3); margin-top:2.2mm; line-height:1.6; }
 
 /* ── 세 걸음 + 연락처 (p11) ──────────────────────────── */
 .steps{ display:flex; gap:3.4mm; margin-top:5mm; }
 .steps .s{ flex:1 1 0; border:.35mm solid var(--hair); border-radius:2.6mm; padding:4mm 3.6mm; background:#fff; text-align:center; }
-.steps .s .n{ font-size:6mm; font-weight:800; color:var(--navy); line-height:1; font-family:'DM Mono',ui-monospace,monospace; }
+.steps .s .n{ font-size:6mm; font-weight:800; color:var(--navy); line-height:1; }
 .steps .s .t{ font-size:4.1mm; font-weight:800; margin-top:2.6mm; line-height:1.3; }
 .steps .s .d{ font-size:3.2mm; color:var(--navy-3); margin-top:2mm; line-height:1.5; }
 .contact{ margin-top:6mm; border-top:.5mm solid var(--hair); padding-top:4.4mm; display:flex; gap:6mm; }
@@ -401,17 +401,17 @@ tr.hi td{ background:var(--coral-wash); }
       그리고 그 첫 칸에 <b>매일의 K컬처 워밍업이 엔진처럼</b> 놓여 전체를 밀어 올립니다.</p>
 
     <div class="four" style="margin-top:5mm">
-      <div class="it"><div class="num">1</div><div>
+      <div class="it"><div class="num mono">1</div><div>
         <div class="t">「나침반」 세션 — 방향을 먼저 정합니다</div>
         <div class="d">입학할 때, 그리고 시즌마다 목적·로드맵 워크숍을 엽니다. 왜 한국어를 배우는가, 5년 뒤의 나는
           어떤 모습인가, TOPIK을 언제 어디에 쓸 것인가 — 아이가 직접 답을 채웁니다. 결과물은 아이가 소유하는 드림맵 카드.</div>
       </div></div>
-      <div class="it"><div class="num">2</div><div>
+      <div class="it"><div class="num mono">2</div><div>
         <div class="t">「싱크 크루」 — 팀으로 진짜 경험을 만듭니다</div>
         <div class="d">시즌마다 팀이 K컬처 실전 프로젝트 하나를 <b>기획 → 도전 → 다시 → 완성</b>합니다.
           울란바토르 한국어 소개 영상, K컬처 공연 같은 결과물이 남습니다.</div>
       </div></div>
-      <div class="it"><div class="num">3</div><div>
+      <div class="it"><div class="num mono">3</div><div>
         <div class="t">「싱크 포트폴리오」 — 성장이 증거로 쌓입니다</div>
         <div class="d">졸업할 때 아이는 자격증 한 장이 아니라 실제 포트폴리오와 자신만의 로드맵을 함께 들고 나갑니다.</div>
       </div></div>
@@ -426,7 +426,7 @@ tr.hi td{ background:var(--coral-wash); }
   <div class="ph"><span class="sec mono">WHAT MAKES US DIFFERENT</span><span class="no mono">07</span></div>
   <h2>SYNK 통합 교육 시스템 —<br><em>네 가지 차별점</em></h2>
   <div class="bd">
-    <div class="it" style="border:0; padding:0; margin-top:4mm"><div class="num">1</div><div>
+    <div class="it" style="border:0; padding:0; margin-top:4mm"><div class="num mono">1</div><div>
       <div class="t">학원 3곳의 시간과 비용을 하나로 — 올인원</div>
     </div></div>
     <div class="vs">
@@ -449,7 +449,7 @@ tr.hi td{ background:var(--coral-wash); }
       지금 어느 프로그램이 열려 있는지는 상담에서 그대로 안내해 드립니다 —
       열리지 않은 것을 열려 있다고 말씀드리지 않는 것이 저희 원칙입니다.</div>
 
-    <div class="it" style="border:0; padding:0; margin-top:5mm"><div class="num">2</div><div>
+    <div class="it" style="border:0; padding:0; margin-top:5mm"><div class="num mono">2</div><div>
       <div class="t">각 분야 최정예가 만드는 시너지</div>
     </div></div>
     <table style="margin-top:2.6mm">
@@ -462,14 +462,14 @@ tr.hi td{ background:var(--coral-wash); }
       상담에서 <span class="blank">____________</span> 이름과 함께 말씀드립니다.
       <b>확인하실 수 있는 것만 적는 것이 저희 원칙입니다.</b></div>
 
-    <div class="it" style="border:0; padding:0; margin-top:5mm"><div class="num">3</div><div>
+    <div class="it" style="border:0; padding:0; margin-top:5mm"><div class="num mono">3</div><div>
       <div class="t">자체 교재와 시즌 커리큘럼 — 과정이 보이는 목표 관리</div>
       <div class="d">자체 제작 교재 <b>시냅스 코어 6권</b> + 회화 교재 <b>시냅스 톡 4권</b>.
         수업은 시즌(8주 = 두 달) 단위로 돌고, <b>승급은 기간이 아니라 도달</b>로 정합니다.
         읽기·듣기·말하기·쓰기 4개 영역 정기 점검, 매달 월간 리포트카드, 전담 멘토의 취약 지점 밀착 관리.</div>
     </div></div>
 
-    <div class="it" style="border:0; padding:0; margin-top:4mm"><div class="num">4</div><div>
+    <div class="it" style="border:0; padding:0; margin-top:4mm"><div class="num mono">4</div><div>
       <div class="t">지금 투자할수록 커지는 한국어 경쟁력</div>
       <div class="d">K컬처는 이미 글로벌 산업의 핵심축이고, 한국어는 취업·네트워크·문화 이해에서
         측정 가능한 경쟁 우위입니다. 유학·K컬처 진출·글로벌 취업까지 진로 로드맵이 이어집니다.</div>
@@ -514,7 +514,7 @@ tr.hi td{ background:var(--coral-wash); }
 
     <div class="dest">
       <div class="d"><div class="kk mono">ENTRY</div><div class="vv">한국 대학 입학선 — TOPIK 3급 · Lv4</div></div>
-      <div class="d"><div class="kk mono">DEGREE</div><div class="vv">졸업·전공선 — TOPIK 4급 · Lv5~6</div></div>
+      <div class="d deg"><div class="kk mono">DEGREE</div><div class="vv">졸업·전공선 — TOPIK 4급 · Lv5~6</div></div>
     </div>
 
     <p style="margin-top:5mm"><b>정규 과정 Lv1~6 전 구간을 저희 교재 시냅스 코어 6권으로 완주합니다(TOPIK 5급까지).</b>
@@ -599,11 +599,11 @@ tr.hi td{ background:var(--coral-wash); }
   <div class="lede">오늘 결정하지 않으셔도 됩니다. 세 걸음이면 아이에게 맞는 자리가 보입니다.</div>
   <div class="bd">
     <div class="steps">
-      <div class="s"><div class="n">01</div><div class="t">상담 신청</div>
+      <div class="s"><div class="n mono">01</div><div class="t">상담 신청</div>
         <div class="d">페이스북 메신저가 가장 빠릅니다. 아이의 지금 상태를 함께 봅니다.</div></div>
-      <div class="s"><div class="n">02</div><div class="t">레벨테스트</div>
+      <div class="s"><div class="n mono">02</div><div class="t">레벨테스트</div>
         <div class="d">첫 수업 날 시작 레벨을 정합니다. 지금 실력이 어디든 정확히 거기서 출발합니다.</div></div>
-      <div class="s"><div class="n">03</div><div class="t">「나침반」 세션</div>
+      <div class="s"><div class="n mono">03</div><div class="t">「나침반」 세션</div>
         <div class="d">왜 배우는지부터 아이가 직접 적습니다. 드림맵 카드를 들고 시작합니다.</div></div>
     </div>
 

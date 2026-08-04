@@ -23,9 +23,9 @@
 <style>
 @page { size: A4 portrait; margin: 0; }
 :root{
-  --coral:#FF6B5C; --coral-3:#E8543F; --coral-wash:#FFE9E4; --coral-soft:#FFCFC6;
+  --coral:#FF6B5C; --coral-3:#E8543F; /* 라이트 강조 글자 전용 — 24px↑ 또는 18.7px↑ bold */ --coral-wash:#FFE9E4; --coral-soft:#FFCFC6;
   --paper:#FBF7EE; --navy:#1A2340; --navy-2:#0F1730; --navy-3:#2A3358;
-  --cream:#F6F1E8; --cream-2:#EFE7D7; --cream-3:#E7DDC7; --ink:#171820;
+  --cream:#F6F1E8; --cream-2:#EFE7D7; --cream-3:#E7DDC7; --ink:#171820; /* 코랄 면 위 글자 전용 — 본문 잉크는 --navy */
   --hair:rgba(42,51,88,.25);
 }
 *{ box-sizing:border-box; margin:0; padding:0; }
@@ -46,7 +46,7 @@ html,body{
 .banner .t{ font-size:5.4mm; font-weight:800; letter-spacing:-.02em; }
 .banner .t em{ font-style:normal; color:var(--coral); }
 .banner .d{ font-size:3mm; color:var(--cream-3); margin-top:2.6mm; line-height:1.55; }
-.banner .warn{ font-size:3mm; color:var(--cream); margin-top:2.6mm; font-weight:800; }
+.banner .warn{ font-size:3mm; color:var(--coral); margin-top:2.6mm; font-weight:800; }
 
 .face{
   font-size:3.4mm; font-weight:800; letter-spacing:.14em; color:var(--navy-3);
@@ -57,7 +57,7 @@ html,body{
 .slot .head{ display:flex; align-items:baseline; justify-content:space-between; gap:4mm; }
 .slot .role{ font-size:2.5mm; font-weight:800; letter-spacing:.1em; color:var(--navy-3); }
 .slot .lim{
-  font-size:2.6mm; font-weight:800; color:var(--ink); background:var(--coral);
+  font-size:2.6mm; font-weight:800; color:var(--navy); background:var(--cream-3);
   padding:.7mm 2.2mm; border-radius:3mm; white-space:nowrap;
 }
 /* 번역이 들어갈 자리 — 몽골어 한도만큼 실제로 비워 둔다 */
@@ -94,7 +94,7 @@ html,body{
 
   <div class="banner">
     <div class="t">몽골어판 <em>번역 작업본</em> — 학부모 안내문</div>
-    <div class="d">한국어판(<code>02_학부모_안내문_A4_kr.html</code>)과 같은 순서·같은 블록입니다.
+    <div class="d">한국어판(<b>02_학부모_안내문_A4_kr.html</b>)과 같은 순서·같은 블록입니다.
       각 칸의 <b style="color:var(--cream)">한도</b>는 한국어 원문 글자 수 × 1.3을 5자 단위로 올린 값입니다 —
       몽골어가 한국어보다 20~30% 길어지는 만큼을 미리 비워 둔 것입니다. 한도 안에서는 자유롭게 의역해 주세요.</div>
     <div class="warn">[!] 이 파일은 인쇄용이 아닙니다. 번역이 채워지면 한국어판 조판으로 옮겨 몽골어 인쇄본을 따로 만듭니다.</div>
@@ -311,7 +311,7 @@ html,body{
     번역을 줄이는 대신 조판을 고칩니다.
   </div>
 
-  <div class="note" style="border-left-color:var(--navy-3)">
+  <div class="note">
     <b>브랜드 잠금(번역에서도 유지)</b> — ① 「기획 → 도전 → 다시 → 완성」은 확정 표기입니다.
     ② 실수와 재도전을 부정적으로 옮기지 않습니다 — 한국어 원문의 금칙어 8종에 해당하는 몽골어 단어를 쓰지 않습니다(‘다시’ 계열로 옮깁니다).
     ③ 비교 대상은 언제나 ‘어제의 나’이며, 다른 아이와 견주는 문장을 만들지 않습니다.

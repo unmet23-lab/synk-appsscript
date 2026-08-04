@@ -60,9 +60,8 @@ html,body{
 .hero::before{  /* 노드 격자 — 아주 옅게. 인쇄에서 질감으로만 읽힌다 */
   content:''; position:absolute; inset:0;
   background-image:
-    radial-gradient(circle at 1.1mm 1.1mm, rgba(255,107,92,.28) 0 .42mm, transparent .42mm),
     radial-gradient(circle at 5.6mm 5.6mm, rgba(246,241,232,.13) 0 .28mm, transparent .28mm);
-  background-size:9mm 9mm, 9mm 9mm;
+  background-size:9mm 9mm;
 }
 .hero::after{ /* 아래 크림 헤어라인 — 반전면과 본문을 가르는 브랜드 선 (신호 예산 밖이라 중립) */
   content:''; position:absolute; left:0; right:0; bottom:0; height:.7mm;
@@ -78,7 +77,7 @@ html,body{
   font-size:13.6mm; font-weight:800; line-height:1.02; letter-spacing:-.035em;
   color:var(--cream-3); /* 신호 예산 밖 — 바탕을 반 단 낮추고 em이 밝은 Cream으로 선다 */
 }
-.hero h1 em{ font-style:normal; color:var(--cream); }
+.hero h1 em{ font-style:normal; color:var(--cream); border-bottom:.8mm solid var(--cream); }
 .hero .deck{
   font-size:3.6mm; color:var(--cream-3); margin-top:3.6mm; line-height:1.5; max-width:210mm;
 }
@@ -119,7 +118,6 @@ html,body{
   width:6.6mm; height:6.6mm; border-radius:50%; background:var(--paper);
   border:.7mm solid var(--navy-3); display:flex; align-items:center; justify-content:center;
   font-size:2.5mm; font-weight:700; color:var(--navy-3);
-  font-family:'DM Mono',ui-monospace,monospace;
 }
 .node.last b{ background:var(--coral); border-color:var(--coral-3); color:var(--ink); } /* 목표 관문 — 이 지면의 코랄 ① */
 .rail .tip{ position:absolute; right:0; top:50%; margin-top:-1.6mm; }
@@ -134,7 +132,7 @@ html,body{
 
 /* 두 구간 = 채움 정도 + 패턴 이중 표기 (몽골 현지 흑백 재복사 전제)
    램프는 중립으로 접었다 — 기초=옅은 채움·빗금, 도약=짙은 채움·도트. 코랄은 목표 마커만. */
-.core .accent{ background:var(--cream-3); }
+.core .accent{ background:rgba(42,51,88,.45); } /* Navy 3 45% — 도약(--navy-3 100%)과 같은 축의 옅은 단 */
 .core .cap{
   background:
     repeating-linear-gradient(45deg, rgba(42,51,88,.06) 0 1.1mm, transparent 1.1mm 2.6mm),
@@ -171,17 +169,17 @@ html,body{
 /* ══ 아래 두 줄 ═══════════════════════════════════════════════════ */
 .strip{ display:flex; gap:3mm; margin-top:5mm; flex:0 0 auto; align-items:stretch; }
 
-/* 도달제 — 이 로드맵의 정직함을 담당하는 칸. 신호색 강조 ① */
+/* 도달제 — 이 로드맵의 정직함을 담당하는 칸. 중립 패널(코랄 예산 밖) */
 .gate{
-  flex:1 1 0; border:.5mm solid var(--coral-soft); border-radius:2.4mm; background:var(--coral-wash);
+  flex:1 1 0; border:.5mm solid var(--hair); border-radius:2.4mm; background:var(--cream-2);
   padding:3.6mm 4.6mm; display:flex; gap:4.4mm; align-items:center;
 }
 .gate .txt h3{ font-size:4.4mm; font-weight:800; letter-spacing:-.015em; }
-/* em 4.4mm(≈16.6px)는 Coral 3 글자 기준(18.7px bold) 미달 — 글자 대신 코랄 「선」으로 강조 */
-.gate .txt h3 em{ font-style:normal; border-bottom:.6mm solid var(--coral-3); }
+/* em 4.4mm(≈16.6px)는 Coral 3 글자 기준(18.7px bold) 미달 — 중립화: 밑줄 「선」도 navy 로 */
+.gate .txt h3 em{ font-style:normal; border-bottom:.6mm solid var(--navy-3); }
 .gate .txt p{ font-size:2.9mm; line-height:1.5; margin-top:1.6mm; color:var(--navy-3); }
 
-/* 목적지 — 학부모가 실제로 묻는 것. 신호색 강조 ② */
+/* 목적지 — 학부모가 실제로 묻는 것. 이 지면의 코랄 ② */
 .dest{
   flex:0 0 92mm; border:.5mm solid var(--coral-soft); border-radius:2.4mm; background:var(--coral-wash);
   padding:3.6mm 4.6mm; display:flex; flex-direction:column; justify-content:center;
@@ -202,7 +200,7 @@ html,body{
 .math .c.hi{ background:var(--navy-2); border-color:var(--navy-2); }
 .math .c.hi .k{ color:var(--cream-3); }
 .math .c.hi .v{ color:var(--cream-3); } /* 신호 예산 밖 — 바탕을 낮추고 em이 밝은 Cream으로 선다 */
-.math .c.hi .v em{ font-style:normal; color:var(--cream); }
+.math .c.hi .v em{ font-style:normal; color:var(--cream); border-bottom:.8mm solid var(--cream); }
 
 /* ══ 바닥 ════════════════════════════════════════════════════════ */
 .foot{
@@ -233,17 +231,17 @@ html,body{
   border:.25mm solid var(--cream-3); background:var(--cream-2);
   display:flex; flex-direction:column; align-items:center; justify-content:center;
 }
-.wk .no{ font-size:3mm; font-weight:800; color:var(--navy-3); font-family:'DM Mono',ui-monospace,monospace; }
+.wk .no{ font-size:3mm; font-weight:800; color:var(--navy-3); }
 .wk .lb{ font-size:2.2mm; color:var(--navy-3); margin-top:.6mm; }
-.wk.exam{ background:var(--coral); border-color:var(--coral-3); } /* 마일스톤 주 — 이 지면의 코랄 ① */
-.wk.exam .no{ color:var(--ink); }
-.wk.exam .lb{ color:var(--ink); font-weight:800; }
+.wk.exam{ background:var(--navy-2); border-color:var(--navy-2); } /* 마일스톤 주 — navy 반전(코랄 예산 밖) */
+.wk.exam .no{ color:var(--cream); }
+.wk.exam .lb{ color:var(--cream); font-weight:800; }
 .wk.cap{ background:var(--navy-2); border-color:var(--navy-2); }
 .wk.cap .no{ color:var(--cream); }
-.wk.cap .lb{ color:var(--coral); font-weight:800; }
+.wk.cap .lb{ color:var(--coral); font-weight:800; } /* 캡스톤 글자 — 이 지면의 코랄 ①·②(시즌 03·06 두 곳뿐) */
 
 .breaks{ display:flex; gap:3mm; flex:0 0 auto; }
-.brk{ flex:1 1 0; border:.45mm dashed var(--coral-soft); border-radius:2.4mm; background:var(--coral-wash); padding:2.8mm 3.6mm; } /* 방학 패널 — 이 지면의 코랄 ② (대시 유지) */
+.brk{ flex:1 1 0; border:.45mm dashed var(--hair); border-radius:2.4mm; background:var(--cream-2); padding:2.8mm 3.6mm; } /* 방학 패널 — 중립(대시 유지 · 코랄 예산 밖) */
 .brk .k{ font-size:2.4mm; font-weight:800; color:var(--navy-3); letter-spacing:.1em; }
 .brk .v{ font-size:3.6mm; font-weight:800; margin-top:1.2mm; }
 .brk .v i{ font-style:normal; letter-spacing:.06em; color:var(--navy-3); }
@@ -305,12 +303,12 @@ html,body{
       <div class="trackwrap">
 
         <div class="rail">
-          <div class="node"><b>01</b></div>
-          <div class="node"><b>02</b></div>
-          <div class="node"><b>03</b></div>
-          <div class="node"><b>04</b></div>
-          <div class="node"><b>05</b></div>
-          <div class="node last"><b>06</b></div>
+          <div class="node"><b class="mono">01</b></div>
+          <div class="node"><b class="mono">02</b></div>
+          <div class="node"><b class="mono">03</b></div>
+          <div class="node"><b class="mono">04</b></div>
+          <div class="node"><b class="mono">05</b></div>
+          <div class="node last"><b class="mono">06</b></div>
           <svg class="tip" width="3.6mm" height="3.2mm" viewBox="0 0 12 11" aria-hidden="true">
             <path d="M0 0 L12 5.5 L0 11 Z" fill="#2A3358"/>
           </svg>
@@ -380,7 +378,7 @@ html,body{
 
       <div class="gate">
         <svg width="17mm" height="17mm" viewBox="0 0 48 48" fill="none"
-             stroke="#E8543F" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+             stroke="#2A3358" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M40 24a16 16 0 1 1-4.7-11.3"/><path d="M36 4v9h-9"/>
         </svg>
         <div class="txt">
@@ -455,60 +453,60 @@ html,body{
       <div class="season">
         <div class="name"><div class="idx mono">SEASON 01</div><div class="t">첫 목소리</div><div class="mn">____________</div></div>
         <div class="weeks">
-          <div class="wk"><div class="no">1</div></div><div class="wk"><div class="no">2</div></div>
-          <div class="wk"><div class="no">3</div></div><div class="wk"><div class="no">4</div><div class="lb">모듈 ①</div></div>
-          <div class="wk"><div class="no">5</div></div><div class="wk"><div class="no">6</div></div>
-          <div class="wk"><div class="no">7</div></div><div class="wk exam"><div class="no">8</div><div class="lb">승급 평가</div></div>
+          <div class="wk"><div class="no mono">1</div></div><div class="wk"><div class="no mono">2</div></div>
+          <div class="wk"><div class="no mono">3</div></div><div class="wk"><div class="no mono">4</div><div class="lb">모듈 ①</div></div>
+          <div class="wk"><div class="no mono">5</div></div><div class="wk"><div class="no mono">6</div></div>
+          <div class="wk"><div class="no mono">7</div></div><div class="wk exam"><div class="no mono">8</div><div class="lb">승급 평가</div></div>
         </div>
       </div>
 
       <div class="season">
         <div class="name"><div class="idx mono">SEASON 02</div><div class="t">____</div><div class="mn">____________</div></div>
         <div class="weeks">
-          <div class="wk"><div class="no">1</div></div><div class="wk"><div class="no">2</div></div>
-          <div class="wk"><div class="no">3</div></div><div class="wk"><div class="no">4</div><div class="lb">모듈 ①</div></div>
-          <div class="wk"><div class="no">5</div></div><div class="wk"><div class="no">6</div></div>
-          <div class="wk"><div class="no">7</div></div><div class="wk exam"><div class="no">8</div><div class="lb">승급 평가</div></div>
+          <div class="wk"><div class="no mono">1</div></div><div class="wk"><div class="no mono">2</div></div>
+          <div class="wk"><div class="no mono">3</div></div><div class="wk"><div class="no mono">4</div><div class="lb">모듈 ①</div></div>
+          <div class="wk"><div class="no mono">5</div></div><div class="wk"><div class="no mono">6</div></div>
+          <div class="wk"><div class="no mono">7</div></div><div class="wk exam"><div class="no mono">8</div><div class="lb">승급 평가</div></div>
         </div>
       </div>
 
       <div class="season">
         <div class="name"><div class="idx mono">SEASON 03</div><div class="t">____</div><div class="mn">____________</div></div>
         <div class="weeks">
-          <div class="wk"><div class="no">1</div></div><div class="wk"><div class="no">2</div></div>
-          <div class="wk"><div class="no">3</div></div><div class="wk"><div class="no">4</div><div class="lb">모듈 ①</div></div>
-          <div class="wk"><div class="no">5</div></div><div class="wk"><div class="no">6</div></div>
-          <div class="wk"><div class="no">7</div></div><div class="wk cap"><div class="no">8</div><div class="lb">승급 + 캡스톤</div></div>
+          <div class="wk"><div class="no mono">1</div></div><div class="wk"><div class="no mono">2</div></div>
+          <div class="wk"><div class="no mono">3</div></div><div class="wk"><div class="no mono">4</div><div class="lb">모듈 ①</div></div>
+          <div class="wk"><div class="no mono">5</div></div><div class="wk"><div class="no mono">6</div></div>
+          <div class="wk"><div class="no mono">7</div></div><div class="wk cap"><div class="no mono">8</div><div class="lb">승급 + 캡스톤</div></div>
         </div>
       </div>
 
       <div class="season">
         <div class="name"><div class="idx mono">SEASON 04</div><div class="t">____</div><div class="mn">____________</div></div>
         <div class="weeks">
-          <div class="wk"><div class="no">1</div></div><div class="wk"><div class="no">2</div></div>
-          <div class="wk"><div class="no">3</div></div><div class="wk"><div class="no">4</div><div class="lb">모듈 ①</div></div>
-          <div class="wk"><div class="no">5</div></div><div class="wk"><div class="no">6</div></div>
-          <div class="wk"><div class="no">7</div></div><div class="wk exam"><div class="no">8</div><div class="lb">승급 평가</div></div>
+          <div class="wk"><div class="no mono">1</div></div><div class="wk"><div class="no mono">2</div></div>
+          <div class="wk"><div class="no mono">3</div></div><div class="wk"><div class="no mono">4</div><div class="lb">모듈 ①</div></div>
+          <div class="wk"><div class="no mono">5</div></div><div class="wk"><div class="no mono">6</div></div>
+          <div class="wk"><div class="no mono">7</div></div><div class="wk exam"><div class="no mono">8</div><div class="lb">승급 평가</div></div>
         </div>
       </div>
 
       <div class="season">
         <div class="name"><div class="idx mono">SEASON 05</div><div class="t">____</div><div class="mn">____________</div></div>
         <div class="weeks">
-          <div class="wk"><div class="no">1</div></div><div class="wk"><div class="no">2</div></div>
-          <div class="wk"><div class="no">3</div></div><div class="wk"><div class="no">4</div><div class="lb">모듈 ①</div></div>
-          <div class="wk"><div class="no">5</div></div><div class="wk"><div class="no">6</div></div>
-          <div class="wk"><div class="no">7</div></div><div class="wk exam"><div class="no">8</div><div class="lb">승급 평가</div></div>
+          <div class="wk"><div class="no mono">1</div></div><div class="wk"><div class="no mono">2</div></div>
+          <div class="wk"><div class="no mono">3</div></div><div class="wk"><div class="no mono">4</div><div class="lb">모듈 ①</div></div>
+          <div class="wk"><div class="no mono">5</div></div><div class="wk"><div class="no mono">6</div></div>
+          <div class="wk"><div class="no mono">7</div></div><div class="wk exam"><div class="no mono">8</div><div class="lb">승급 평가</div></div>
         </div>
       </div>
 
       <div class="season">
         <div class="name"><div class="idx mono">SEASON 06</div><div class="t">____</div><div class="mn">____________</div></div>
         <div class="weeks">
-          <div class="wk"><div class="no">1</div></div><div class="wk"><div class="no">2</div></div>
-          <div class="wk"><div class="no">3</div></div><div class="wk"><div class="no">4</div><div class="lb">모듈 ①</div></div>
-          <div class="wk"><div class="no">5</div></div><div class="wk"><div class="no">6</div></div>
-          <div class="wk"><div class="no">7</div></div><div class="wk cap"><div class="no">8</div><div class="lb">승급 + 캡스톤</div></div>
+          <div class="wk"><div class="no mono">1</div></div><div class="wk"><div class="no mono">2</div></div>
+          <div class="wk"><div class="no mono">3</div></div><div class="wk"><div class="no mono">4</div><div class="lb">모듈 ①</div></div>
+          <div class="wk"><div class="no mono">5</div></div><div class="wk"><div class="no mono">6</div></div>
+          <div class="wk"><div class="no mono">7</div></div><div class="wk cap"><div class="no mono">8</div><div class="lb">승급 + 캡스톤</div></div>
         </div>
       </div>
 
