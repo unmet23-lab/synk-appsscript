@@ -23,6 +23,26 @@ function runHook(filePath, tool = 'Edit') {
   return out.trim();
 }
 
+/* [2026-08-04] 정본 경로를 **리터럴로 박지 않는다.** 이 파일은 바로 아래(§시간축)에서 「버전 리터럴은
+ * 지키는 게 아니라 인질이었다」를 이미 배웠는데, **경로**엔 그 교훈을 안 썼다. 그 대가:
+ * 유호님이 급여·수업규칙 정본을 `About Syestem/SYNK_리라이팅_v2/` 로 옮기자(b454140+dee30cf)
+ * 이 파일의 테스트 5개가 ENOENT 로 죽어 master 가 빨개졌다 — **정작 재려던 성질(파생 엣지·훅 알림)은
+ * 멀쩡했는데** 주소를 못 찾아 죽은 것이다. 파일이 옮겨졌다는 사실 자체는 `깨진 참조는 없다`가 잡는다.
+ *   → 이름으로 찾는다. 못 찾으면 조용히 건너뛰지 말고 **거기서 실패한다**(0건 통과 방지). */
+function 정본찾기(파일명) {
+  const 뿌리 = path.join(ROOT, 'docs', '정본');
+  const 훑기 = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => {
+    const p = path.join(d, e.name);
+    return e.isDirectory() ? 훑기(p) : (e.name === 파일명 ? [p] : []);
+  });
+  const 찾음 = 훑기(뿌리);
+  assert.strictEqual(찾음.length, 1,
+    `docs/정본 아래에서 "${파일명}" 을 ${찾음.length}개 찾았다 — 0이면 이름이 바뀐 것이고, 2 이상이면 사본이 생긴 것이다`);
+  return { abs: 찾음[0], rel: G.rel(찾음[0]) };
+}
+
+const 급여정본 = 정본찾기('SYNK LAB 급여 인센티브 정본.txt');
+
 test('파생 주석 파싱 — 여러 줄·쉼표 나열 모두 읽는다', () => {
   const edges = G.parseEdges('제목\n<!-- 파생: a.md, b.md -->\n본문\n<!-- 파생: c.md -->\n');
   assert.deepStrictEqual(edges, ['a.md', 'b.md', 'c.md']);
@@ -30,7 +50,7 @@ test('파생 주석 파싱 — 여러 줄·쉼표 나열 모두 읽는다', () =
 
 test('정본 판별 — 파일명 또는 docs/정본/ 아래', () => {
   assert.ok(G.isCanon('docs/브랜드_폰트_정본.md'));
-  assert.ok(G.isCanon('docs/정본/SYNK LAB/SYNK LAB 급여 인센티브 정본.txt'));
+  assert.ok(G.isCanon(급여정본.rel));
   assert.ok(!G.isCanon('docs/세션보드.md'));
 });
 
@@ -51,7 +71,7 @@ test('SKIP은 상대경로 판정이다 — 저장소가 worktrees 아래 있어
 
 test('실제 저장소에서 급여 정본의 파생이 잡힌다', () => {
   const g = G.build();
-  const list = g.derivedOf.get('docs/정본/SYNK LAB/SYNK LAB 급여 인센티브 정본.txt') || [];
+  const list = g.derivedOf.get(급여정본.rel) || [];
   assert.ok(list.includes('docs/개원재무_2027_재산정_v1.md'), '개원재무는 급여 정본의 파생이다');
   assert.ok(list.length >= 3, `파생이 ${list.length}종 — 엣지가 사라졌는지 확인할 것`);
 });
@@ -77,14 +97,14 @@ test('--add는 없는 정본을 거부한다(오탈자 엣지 차단)', () => {
 });
 
 test('훅: 정본을 편집하면 파생 목록을 알린다', () => {
-  const out = runHook(path.join(ROOT, 'docs', '정본', 'SYNK LAB', 'SYNK LAB 급여 인센티브 정본.txt'));
+  const out = runHook(급여정본.abs);
   assert.ok(out, '정본 편집인데 침묵하면 장치가 죽은 것');
   const j = JSON.parse(out);
   assert.ok(j.hookSpecificOutput.additionalContext.includes('개원재무'));
 });
 
 test('훅은 절대 차단하지 않는다 — permissionDecision을 내지 않는다', () => {
-  const out = runHook(path.join(ROOT, 'docs', '정본', 'SYNK LAB', 'SYNK LAB 급여 인센티브 정본.txt'));
+  const out = runHook(급여정본.abs);
   const j = JSON.parse(out);
   assert.strictEqual(j.hookSpecificOutput.permissionDecision, undefined,
     '차단도 allow도 하지 않는다 — 권한 판정을 대신하면 나중 deny 규칙을 조용히 뚫는다');
@@ -99,8 +119,7 @@ test('훅: docs 밖 파일에는 침묵한다', () => {
 });
 
 test('훅: Edit·Write·MultiEdit 외 도구에는 반응하지 않는다', () => {
-  const canon = path.join(ROOT, 'docs', '정본', 'SYNK LAB', 'SYNK LAB 급여 인센티브 정본.txt');
-  assert.strictEqual(runHook(canon, 'Read'), '');
+  assert.strictEqual(runHook(급여정본.abs, 'Read'), '');
 });
 
 /* ── [2026-08-03] 시간축 엣지 ─────────────────────────────────────────────
@@ -129,7 +148,7 @@ test('parseEdges는 버전을 떼고 경로만 준다 — 훅·기존 호출자�
  * (같은 결: worktree-version-collision — 특정 문구에 앵커 걸면 그 문구가 바뀔 때 가드가 죽는다) */
 const CANON_SAMPLES = [
   'docs/반편성_정본_v2.md',                                  // 파일명 stem(v2) ≠ 본문(v2.3)
-  'docs/정본/SYNK LAB/SYNK LAB 급여 인센티브 정본.txt',       // 파일명에 버전이 아예 없다
+  급여정본.rel,                                              // 파일명에 버전이 아예 없다
 ];
 
 test('정본 버전은 본문에서 읽는다 — 파일명을 믿으면 틀린다', () => {
