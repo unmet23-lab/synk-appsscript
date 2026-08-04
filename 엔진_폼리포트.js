@@ -1322,17 +1322,29 @@ const CREW_CAP_WARN_ = 0.8;                 // 상한의 80%에서 미리 알린
 const CREW_WATCH_KEY_ = '크루접수_통보지문';
 const CREW_CAP_KEY_ = '크루접수_상한경고일';
 const CREW_WATCH_MAX_ = 200;                // 지문 보관 상한 — 넘치면 오래된 쪽이 잘린다(잘림의 대가는 오탐 1통이지 미탐이 아니다)
+const CREW_ERR_TAB_ = 'crew_errors';        // 웹앱 doPost가 삼킨 오류의 착지 탭(crewcard/크루카드.js ERR_TAB 사본)
 
 function crewIntakeWatch_(ss) {
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
 
-  let consult, crew;
+  let consult, crew, errs;
   try {
     const book = SpreadsheetApp.openById(CONSULT_SHEET_ID);
     consult = book.getSheetByName('상담데이터입력');
     crew = book.getSheetByName(CREW_TAB_);
+    errs = book.getSheetByName(CREW_ERR_TAB_);   // 첫 오류 전엔 탭 자체가 없다 — 없으면 오류 0건으로 본다
   } catch (e) { Logger.log('크루접수 감시 — 상담 스프레드시트 열기 실패(조용히 스킵): ' + e); return; }
-  if (!consult || !crew) { Logger.log('크루접수 감시 — 탭 없음(상담데이터입력/' + CREW_TAB_ + ')'); return; }
+
+  /* 🔴 웹앱 오류 수확은 아래 두 전제조건보다 **먼저** 한다(적대 리뷰 H3).
+   *   오류 알림은 상담시트 스키마와 논리적으로 무관한데, 전에는 그 가드 뒤에 있어
+   *   **상담시트가 흔들리는 날 — 즉 오류가 가장 많은 날 — 감시가 먼저 죽었다.**
+   *   조기 반환 경로에서도 오류만으로 1통을 보낸다. */
+  const 오류행 = crewErrRows_(errs);
+  if (!consult || !crew) {
+    Logger.log('크루접수 감시 — 탭 없음(상담데이터입력/' + CREW_TAB_ + ')');
+    crewErrOnly_(errs, 오류행);
+    return;
+  }
 
   const width = consult.getLastColumn();
   const hdr = consult.getRange(2, 1, 1, width).getValues()[0];
@@ -1340,7 +1352,11 @@ function crewIntakeWatch_(ss) {
   hdr.forEach(function (h, i) { const k = String(h).trim(); if (k && col[k] === undefined) col[k] = i; });
   const c번호 = col['크루카드번호'], c상태 = col['처리상태'];
   // 증분 전 시트면 감시할 열 자체가 없다 — 조용히 스킵하되 로그로 드러낸다(통과와 미실행이 같은 모양이면 안 된다)
-  if (c번호 === undefined || c상태 === undefined) { Logger.log('크루접수 감시 — 상담시트 증분 전(크루카드번호/처리상태 열 없음)'); return; }
+  if (c번호 === undefined || c상태 === undefined) {
+    Logger.log('크루접수 감시 — 상담시트 증분 전(크루카드번호/처리상태 열 없음)');
+    crewErrOnly_(errs, 오류행);
+    return;
+  }
   const c이름 = col['이름(한국어)'] === undefined ? 0 : col['이름(한국어)'];
 
   const lastR = consult.getLastRow();
@@ -1406,7 +1422,7 @@ function crewIntakeWatch_(ss) {
   // 지문은 알릴 게 없어도 항상 갱신한다(감소분 반영). 알림 실패로 손실되는 건 통보 1회뿐.
   setState(st, CREW_WATCH_KEY_, 'v1:' + 현재.slice(-CREW_WATCH_MAX_).join(','));
   if (초회) { Logger.log('크루접수 감시 — 기준선 %s건 저장(첫 실행은 침묵)', 현재.length); return; }
-  if (!새것.length && !유실.length && !capLine) return;   // 침묵이 기본값
+  if (!새것.length && !유실.length && !capLine && !오류행.length) return;   // 침묵이 기본값
 
   const 신규 = [], 갱신 = [], 잠김 = [];
   새것.forEach(function (s) {
@@ -1428,18 +1444,77 @@ function crewIntakeWatch_(ss) {
   if (유실.length) body.push('🔴 이관 유실 의심 ' + 유실.length + '건 — crew_cards에는 있는데 상담데이터입력에 없습니다\n' +
     유실.map(function (s) { return '· ' + s; }).join('\n') +
     '\n→ 이 접수는 원장 큐에 안 보입니다. crew_cards에서 내용을 확인해 수기로 넣거나 재제출을 안내하세요.');
+  if (오류행.length) body.push(crewErr절_(오류행));
   if (capLine) body.push(capLine);
 
   if (quotaOk(1)) {
-    const 제목 = 유실.length ? '[SYNK] 🔴 크루카드 접수 — 확인 필요'
+    const 제목 = (유실.length || 오류행.length) ? '[SYNK] 🔴 크루카드 접수 — 확인 필요'
       : (신규.length ? '[SYNK] 📝 크루카드 신규 접수 ' + 신규.length + '건' : '[SYNK] 🔄 크루카드 재제출 알림');
     MailApp.sendEmail(ADMIN_EMAIL, 제목, body.join('\n\n'));
     /* 상한 경고를 «보낸 뒤에» 오늘 표식을 남긴다 — 읽기만 하고 안 남기면 하루 1회 가드가
      * 선언만 있고 발동하지 않아 10분마다 같은 경고가 나간다(회귀가 잡은 실수).
      * 쿼터로 못 보냈을 땐 표식도 남기지 않는다 — 다음 틱이 다시 시도해야 경고가 유실되지 않는다. */
     if (capLine) setState(st, CREW_CAP_KEY_, 오늘);
+    crewErrMark_(errs, 오류행);
   }
-  Logger.log('크루접수 감시 — 신규 %s · 갱신 %s · 잠김 %s · 유실 %s', 신규.length, 갱신.length, 잠김.length, 유실.length);
+  Logger.log('크루접수 감시 — 신규 %s · 갱신 %s · 잠김 %s · 유실 %s · 웹앱오류 %s', 신규.length, 갱신.length, 잠김.length, 유실.length, 오류행.length);
+}
+
+/* ── 웹앱 오류 회수 3종 ─────────────────────────────────────────────────
+ * doPost가 'internal'로 삼킨 실패는 호출자(제출자)에게만 보이고 트리거 실패 자동 메일 층
+ * 밖이다 — 이 통로가 유일한 감시다. 「통보」 칸이 빈 행만 사건이고, 표식은 지문이 아니라
+ * **행에** 남기므로 탭을 통째로 비워도 침묵에 빠지지 않는다.
+ * 셋으로 가른 이유: 상담시트 전제조건에 걸려 조기 반환하는 경로에서도 같은 절·같은 표식
+ * 규약을 써야 하는데, 본문에 인라인으로 두면 그 경로가 사본을 갖게 된다(둘은 반드시 갈라진다). */
+function crewErrRows_(errs) {
+  const out = [];
+  if (!errs || errs.getLastRow() < 2) return out;
+  const vals = errs.getRange(2, 1, errs.getLastRow() - 1, 4).getValues();
+  vals.forEach(function (v, i) {
+    if (String(v[3] || '').trim()) return;                        // 이미 통보한 행
+    // 세 칸이 다 비면 사건이 아니라 빈 행이다 — 원장이 이 탭을 손보면(경보가 그리로 부른다)
+    // 빈 행이 생기고, 그걸 오류로 세면 「🔴 웹앱 오류 498건」 같은 거짓 경보가 나간다(적대 리뷰 M1).
+    if (!String(v[0] || '').trim() && !String(v[1] || '').trim() && !String(v[2] || '').trim()) return;
+    out.push({
+      row: i + 2,
+      키: String(v[0] instanceof Date ? v[0].getTime() : (v[0] || '')),  // 표식 직전 대조용(행 밀림 방지)
+      at: v[0] instanceof Date ? Utilities.formatDate(v[0], CREW_TZ_, 'MM-dd HH:mm') : String(v[0] || '').slice(0, 16),
+      // 웹앱이 이미 접지만, 이 메일의 본문 구조가 줄바꿈이라 읽는 쪽에서도 접는다(2겹 — 이름 칸과 같은 계열)
+      요약: (String(v[1] || '') + ' · ' + String(v[2] || '')).replace(/[\s﻿]+/g, ' ').trim().slice(0, 120)
+    });
+  });
+  return out;
+}
+
+function crewErr절_(오류행) {
+  const 보임 = 오류행.slice(0, 10);   // 폭주해도 메일은 읽을 수 있는 길이로 — 전량은 탭에 있다
+  return '🔴 접수 웹앱 오류 ' + 오류행.length + '건 — 제출자가 실패 화면을 봤고, 그 접수는 시트에 없을 수 있습니다\n' +
+    보임.map(function (o) { return '· ' + o.at + ' · ' + o.요약; }).join('\n') +
+    (오류행.length > 보임.length ? '\n· … 외 ' + (오류행.length - 보임.length) + '건' : '') +
+    '\n→ crew_errors 탭에서 원인을 보세요. 같은 시각 접수가 crew_cards에 없으면 그 지원자에게 재제출을 안내해야 합니다.';
+}
+
+/* 표식은 **보낸 뒤에만** 남긴다 — 못 보낸 틱은 표식이 없어 다음 틱이 다시 문다.
+ * 10건 초과분도 남긴다(건수로 세어 알렸으므로 「통보됨」이 맞고, 안 남기면 매 틱 재경보).
+ * ⚠ 스냅샷과 도장 사이(메일 발송 1~3초)에 사람이 행을 지우거나 정렬하면 인덱스가 밀려
+ *   **안 알린 행에 「통보」가 찍힌다**(그 오류는 영원히 침묵). 그래서 찍기 직전 그 행의
+ *   1열을 다시 읽어 스냅샷과 대조하고, 다르면 건너뛴다 — 대가는 재경보 1통이지 미탐이 아니다. */
+function crewErrMark_(errs, 오류행) {
+  오류행.forEach(function (o) {
+    try {
+      const 지금 = errs.getRange(o.row, 1).getValue();
+      if (String(지금 instanceof Date ? 지금.getTime() : (지금 || '')) !== o.키) return;
+      errs.getRange(o.row, 4).setValue(new Date());
+    } catch (e) { Logger.log('크루접수 감시 — 오류 통보 표식 실패(행 %s): %s', o.row, e); }
+  });
+}
+
+/* 상담시트 전제조건에 걸린 경로 전용 — 웹앱 오류만으로 1통. */
+function crewErrOnly_(errs, 오류행) {
+  if (!오류행.length || !quotaOk(1)) return;
+  MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🔴 크루카드 접수 — 확인 필요', crewErr절_(오류행));
+  crewErrMark_(errs, 오류행);
+  Logger.log('크루접수 감시 — 상담시트를 못 읽었지만 웹앱 오류 %s건은 알렸다', 오류행.length);
 }
 
 function importFormResponses() {
