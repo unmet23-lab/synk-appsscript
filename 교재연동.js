@@ -23,7 +23,7 @@
  *
  * profiles 신규 열(헤더는 setupTextbookLink가 세팅):
  *   DB 목소리폼URL(학생별 미리채움) · DC 목소리성장카드 · DD 필살기노트
- * 신규 시트: voice_log [student_id, 제출일, 미션, 파일URL, file_id, created_at]
+ * 신규 시트: voice_log — 열 정본은 VOICE_LOG_HEADERS(v9.107 전사 3열 · [v9.187] 급수 증분)
  * ============================================================ */
 
 // ── 자체 상수(리터럴만 — 톱레벨 타파일 참조 금지 규칙 준수) ──────────────
@@ -126,13 +126,16 @@ function voiceSweep_(ss) {
   const cFile = head.findIndex(h => h.indexOf('녹음') > -1 || h.indexOf('파일') > -1);
   if (cSid < 0 || cFile < 0) { Logger.log('voiceSweep_: 응답 탭에서 학생ID/녹음 열을 못 찾음 — 폼 문항 제목 확인'); return; }
 
-  const valid = new Set();
+  // [v9.187] 폭 67 — 급수(BO67) 스냅샷 재료(첨삭·대화·퀴즈와 같은 위치 규약 r[66]).
+  //   새 응답이 있을 때만 여기 온다(위 포인터 조기 반환) — 야간 1회라 비용 무시 가능.
+  const valid = new Set(), lvOf = {};
   const pf = ss.getSheetByName('profiles');
-  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().forEach(r => {
-    if (r[0] && r[3] === 'student') valid.add(String(r[0]).trim());
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 67).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') { const k = String(r[0]).trim(); valid.add(k); lvOf[k] = Number(r[66]) || 0; }
   });
 
   const vl = ensureSheet(ss, 'voice_log', VOICE_LOG_HEADERS);
+  헤더보정_(vl, VOICE_LOG_HEADERS); // [v9.187] 이미 서 있는 9열 시트에 급수 이름표(엔진_수집.js 공용 치유 — 런타임 호출이라 로드 순서 무관)
   const pl = ensureSheet(ss, 'point_logs', ['id', 'student_id', 'points', 'reason', 'given_by', 'created_at', 'month', '태그']);
   // 멱등: 이미 지급된 '날짜|sid' (지급→포인터 저장 사이 크래시 재시도 대비)
   const givenKey = {};
@@ -168,7 +171,8 @@ function voiceSweep_(ss) {
      *     「링크는 눌러야 비교되고, 두 파일을 번갈아 듣는 사람은 거의 없다. 전사문이 있으면 눈으로 한 번에 대비된다.」
      *     즉 성장 카드의 값은 재생이 아니라 대비였고, 그 값은 링크 없이도 그대로 산다(buildVoiceGrowthCards_ 참조).
      *   ▣ 원본은 지우지 않는다 — 학원 내부 자산(피드백·AI 학습)이고 동의 범위 안이다. 다만 **밖에서 열리지 않는다.** */
-    vOut.push([sid, ts, mission, fileUrl, fid, new Date()]);
+    // [v9.187] 전사 3칸은 빈칸으로 두고(야간 STT가 채운다) 맨 끝에 급수 스냅샷 — 헤더 정본과 같은 폭으로 쓴다
+    vOut.push([sid, ts, mission, fileUrl, fid, new Date(), '', '', '', lvOf[sid] || 0]);
     const key = dstr(ts, tz) + '|' + sid;
     if (!givenKey[key]) { // 하루 1회만 지급(여러 번 제출해도 기록은 전부, 포인트는 1회)
       givenKey[key] = 1;
@@ -183,7 +187,7 @@ function voiceSweep_(ss) {
    *   `=IMPORTDATA("...?d="&TEXTJOIN(",",1,profiles!H2:H400))` 한 줄로 개인정보가 밖으로 나간다(클릭 불요).
    *   pOut은 지금은 상수뿐이지만 함께 통과시킨다 — **같은 방어를 자리마다 판단해 얹으면 다음 자리가 빠진다.**
    *   `행소독_`(Code.js)은 문자열만 소독하고 Date·number는 타입 보존한다(ts·포인트 숫자 안전). */
-  if (vOut.length) vl.getRange(vl.getLastRow() + 1, 1, vOut.length, 6).setValues(행소독_(vOut));
+  if (vOut.length) vl.getRange(vl.getLastRow() + 1, 1, vOut.length, VOICE_LOG_HEADERS.length).setValues(행소독_(vOut));
   if (pOut.length) pl.getRange(pl.getLastRow() + 1, 1, pOut.length, 8).setValues(행소독_(pOut));
   notifyDroppedSids_('목소리폼', badSid); // [v9.67] 함수 안 런타임 호출 — 톱레벨 크로스파일 금지 규칙과 무관
   props.setProperty('목소리폼_포인터', String(last));
@@ -335,7 +339,9 @@ const STT_DAILY_CAP = 30;                 // 하루 전사 상한 — 비용 폭
 const STT_MAX_BYTES = 10 * 1024 * 1024;   // 인라인 요청 한도
 const STT_OK_MIME = ['audio/flac', 'audio/x-flac', 'audio/wav', 'audio/x-wav', 'audio/wave',
   'audio/mpeg', 'audio/mp3', 'audio/ogg', 'audio/webm', 'audio/amr', 'audio/3gpp'];
-const VOICE_LOG_HEADERS = ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at', '전사', '전사상태', '전사일시'];
+/* [v9.187] '급수'(맨 끝) — 녹음 시점의 학생 급수 스냅샷(제품방향 §불변식 2 「학생·레벨·시점」의 레벨 축).
+ *   발음 데이터는 급수 층이 없으면 "초급의 더듬거림"과 "고급의 남은 억양"이 한 덩어리로 섞인다. */
+const VOICE_LOG_HEADERS = ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at', '전사', '전사상태', '전사일시', '급수'];
 
 /* GCP 액세스 토큰 — ①서비스 계정(GCP_SA_JSON) ②없으면 스크립트 자체 토큰(매니페스트에 스코프를 넣은 경우).
  * 토큰은 1시간짜리라 캐시에 50분 보관한다(매 파일마다 토큰 발급하면 그 자체가 쿼터·지연이다). */
@@ -402,11 +408,8 @@ function sttOne_(fileId, token) {
 function voiceTranscribe_(ss) {
   const vl = ss.getSheetByName('voice_log');
   if (!vl || vl.getLastRow() < 2) return;
-  // 열 확장 — 구 6열 시트도 그대로 살아야 하므로 헤더를 보장하고 나서 읽는다
-  if (vl.getLastColumn() < VOICE_LOG_HEADERS.length) {
-    vl.insertColumnsAfter(vl.getLastColumn(), VOICE_LOG_HEADERS.length - vl.getLastColumn());
-  }
-  VOICE_LOG_HEADERS.forEach((h, i) => { if (String(vl.getRange(1, i + 1).getValue()) !== h) vl.getRange(1, i + 1).setValue(h); });
+  // 열 확장 — 구 6열 시트도 그대로 살아야 하므로 헤더를 보장하고 나서 읽는다([v9.187] 공용 치유로 통일 — 로직 두 벌 방지)
+  헤더보정_(vl, VOICE_LOG_HEADERS);
 
   const tz = ss.getSpreadsheetTimeZone();
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);

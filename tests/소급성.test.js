@@ -49,11 +49,13 @@ test('[v9.151] ③ 학생ID 불변 가드 — 같은 이름의 「삭제+신규�
   assert.ok(sync.includes('exit_snapshot)'), '알림이 복구 경로(exit_snapshot)를 안내하지 않는다 — 경보만 있고 출구가 없다');
 });
 
-test('[v9.151] ④ talk_log audio_ref — 맨 끝에 있고, 무제한 보존 선언이 코드에 산다', () => {
+test('[v9.151] ④ talk_log audio_ref — 고정 위치(11번째)에 있고, 무제한 보존 선언이 코드에 산다', () => {
   const m = code.match(/const TALK_LOG_HEADERS = (\[[^\]]*\]);/);
   assert.ok(m, 'TALK_LOG_HEADERS 정의를 찾지 못함');
   const H = JSON.parse(m[1].replace(/'/g, '"'));
-  assert.equal(H[H.length - 1], 'audio_ref', 'audio_ref가 맨 끝이 아니다 — 위치 접근(r[1]~r[6])이 밀리거나 열이 없다');
+  // [v9.187] 「맨 끝」→「고정 11번째」 — 급수 열이 뒤에 붙으면서(스키마 감사) 「끝」은 더 이상 위치의 증거가 아니다.
+  //   지키려는 불변식은 처음부터 「앞에 끼우지 않는다(위치 접근 r[1]~r[6] 불변)」였고, 인덱스 고정이 그걸 더 세게 잰다.
+  assert.equal(H[10], 'audio_ref', 'audio_ref가 11번째(고정 위치)가 아니다 — 위치 접근이 밀리거나 열이 없다');
   // 보존 정책이 헤더 주석에 선언돼 있어야 한다 — SYNK-talk이 녹음을 설계하는 날 이 주석이 계약이다
   const at = code.indexOf('const TALK_LOG_HEADERS');
   const near = code.slice(Math.max(0, at - 1500), at);

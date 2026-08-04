@@ -31,9 +31,18 @@
  *   숙제ID    — 어느 과제가 어떤 오류를 부르는지. 구 폼은 자유 텍스트라 210문항과 끊겨 있었다(교재 개정 근거이기도 하다)
  *   오류태그  — 같은 API 호출에서 함께 받는다(추가 비용 ≈ 0). 자연어 설명만으로는 3만 건을 집계할 수 없다
  *   재작성원본 — 이 제출이 어떤 첨삭에 대한 **2차 시도**인지. 원문→교정→재작성 3단이 여기서 조인으로 복원된다
- *   다시쓰기URL — 그 2차 시도로 들어가는 입구(스크립트가 채운다) */
+ *   다시쓰기URL — 그 2차 시도로 들어가는 입구(스크립트가 채운다)
+ *
+ * [v9.187] 맨 뒤 4열 — 스키마 감사(제품방향 §설계 불변식 2 「학생·레벨·시점을 키로」)가 잡은 구멍. 전부 소급 불가 계열:
+ *   숙제문항  — 문항 **텍스트** 스냅샷. 이 파일 머리의 원칙 2를 quiz_log만 지키고 여기는 ID만 남기고 있었다
+ *               (contents가 개정되면 "그날 무엇을 시켰는지"가 해석 불능이 된다). 재작성 행은 빈칸(원본 첨삭에서 조인).
+ *   급수      — 제출 시점의 학생 급수(profiles BO67 스냅샷). profiles는 현재값이라 승급하면 과거가 지워지고,
+ *               academic_log 'level'은 강사 월 1회 입력이라 월 정밀도+입력 의존 — 행에 박아야 확실하다.
+ *   model·prompt_ver — 교정문은 모델 출력물이다. talk_log가 v9.145에서 넣은 근거(「학생이 어려워한 것」과
+ *               「그때 우리 답이 나빴던 것」이 섞인다)가 원문↔교정 병렬쌍인 여기에 더 강하게 적용된다. */
 const HW_FEEDBACK_HEADERS = ['id', 'student_id', '제출일', '제출문', '고친문장', '오늘의포인트', '칭찬', '다음미션',
-  '상태', '학생확인', '포인트지급', '숙제ID', '오류태그', '재작성원본', '다시쓰기URL'];
+  '상태', '학생확인', '포인트지급', '숙제ID', '오류태그', '재작성원본', '다시쓰기URL',
+  '숙제문항', '급수', 'model', 'prompt_ver'];
 
 /* 오류 태그 통제 어휘 — **자유 문자열이면 같은 오류가 열 가지 이름으로 쌓여 태그를 넣은 의미가 사라진다.**
  * JSON schema의 enum으로 모델에 강제하고, 집계도 이 상수를 읽는다(어휘와 집계가 갈라지지 않게).
@@ -65,15 +74,23 @@ function hwTagsClean_(tags) {
   return out.join(', ');
 }
 
-/* 기존 11열 hw_feedback을 15열로 증분 — 헤더만 보고 없는 것만 붙인다(멱등).
- * 이게 없으면 appendRow가 시트 폭을 넘는 칸을 조용히 버려, 태그·재작성 연결이 **적재되는 척하며 사라진다**. */
-function hwFeedbackEnsureCols_(fb) {
-  const need = HW_FEEDBACK_HEADERS.length;
-  if (fb.getMaxColumns() < need) fb.insertColumnsAfter(fb.getMaxColumns(), need - fb.getMaxColumns());
-  const cur = fb.getRange(1, 1, 1, need).getValues()[0];
-  HW_FEEDBACK_HEADERS.forEach((h, i) => {
-    if (String(cur[i] || '').trim() !== h) fb.getRange(1, i + 1).setValue(h);
+/* [v9.187] 공용 헤더 치유 — 이미 서 있는 시트에 새 열의 이름표를 붙인다(멱등·값 불변).
+ * `ensureSheet`는 시트가 **없을 때만** 헤더를 쓰므로, 라이브 시트에 열을 늘리면 반드시 이 통로를 지나야 한다 —
+ * 없으면 appendRow가 시트 폭을 넘는 칸을 조용히 버려, 새 열이 **적재되는 척하며 사라진다**.
+ * 같은 로직이 hw·talk 두 벌로 갈라져 있던 것을 급수 열 추가(수집 4시트 동시)를 계기로 한 벌로 모았다
+ * — 헤더 정본 배열이 유일한 입력이라, 정본을 고치면 치유도 같이 움직인다. */
+function 헤더보정_(sh, HEADERS) {
+  const need = HEADERS.length;
+  if (sh.getMaxColumns() < need) sh.insertColumnsAfter(sh.getMaxColumns(), need - sh.getMaxColumns());
+  const cur = sh.getRange(1, 1, 1, need).getValues()[0];
+  HEADERS.forEach((h, i) => {
+    if (String(cur[i] || '').trim() !== h) sh.getRange(1, i + 1).setValue(h);
   });
+}
+
+/* 기존 hw_feedback을 정본 폭으로 증분 — 이름은 소비처 4곳이 불러서 유지, 본체는 공용 치유로. */
+function hwFeedbackEnsureCols_(fb) {
+  헤더보정_(fb, HW_FEEDBACK_HEADERS);
 }
 
 /* 「다시 써보기」 링크 — 학생ID + 원본 첨삭 id를 함께 프리필한다.
@@ -126,7 +143,12 @@ function migrateHwFormV9138() {
 /* 문항 텍스트·정답을 행에 함께 박는다(위 원칙 2). '확신도'는 소요 시간의 대체재 —
  * 폼으로는 초를 잴 수 없지만, 맞았는지보다 **얼마나 확신했는지**가 회화 앱 개인화에 더 쓸모 있다
  * (정답이어도 '찍었어요'면 모르는 것이고, 오답인데 '확실해요'면 잘못 배운 것이다 — 둘은 처방이 다르다). */
-const QUIZ_LOG_HEADERS = ['id', 'student_id', '퀴즈ID', '유형', '문제', '고른답', '정답', '정답여부', '확신도', '제출일', 'created_at'];
+/* ⚠ '유형' 칸에 실리는 값은 contents의 C열(분류: 문법 카테고리)이다 — contents B열(유형='quiz')이 아니다.
+ *   이름이 어긋나 있지만 라이브 헤더 개명은 Glide 바인딩·과거 데이터와 어긋날 위험만 있고 값은 멀쩡하므로
+ *   여기 주석으로 못박는다(2년 뒤 조인할 사람이 헤더 이름만 믿지 않게).
+ * [v9.187] '급수'(맨 끝) — 응답 시점의 학생 급수 스냅샷(제품방향 §불변식 2 「학생·레벨·시점」의 레벨 축).
+ *   profiles는 현재값이라 승급하면 과거 응답의 난이도 맥락이 지워진다 — 행에 박아야 남는다. */
+const QUIZ_LOG_HEADERS = ['id', 'student_id', '퀴즈ID', '유형', '문제', '고른답', '정답', '정답여부', '확신도', '제출일', 'created_at', '급수'];
 const QUIZ_CONFIDENCE = ['확실해요', '아마도', '찍었어요'];
 
 /* 채점 정규화 — 원문자·공백·문장부호를 걷어낸다. 학생이 '①'로 쓰든 '1'로 쓰든 '1 번'으로 쓰든 같은 답이다. */
@@ -240,8 +262,10 @@ function hwFormUrlOf_(tmpl, sid, hwId) {
  *   판정 정본 = memory masterplan-v3-2026-08-04). 텍스트 폼 수집인 지금은 빈칸이고, 회화 앱(SYNK-talk)이
  *   녹음을 시작하는 날부터 원본 참조가 여기 착지한다 — 원본 없이 전사만 남기면 윗줄의 「원본 음성 보관」
  *   소급 불가가 그대로 실현된다(동의 문구는 이미 녹음 수집을 약속했다 — 약속만 있고 데이터가 없던 구멍).
- * ⚠ 새 열은 **반드시 끝에** 붙인다 — 이 시트는 r[1]·r[2]·r[3]·r[4]·r[6] 위치 접근을 쓴다(앞에 끼우면 전부 밀린다). */
-const TALK_LOG_HEADERS = ['id', 'student_id', '턴', '학생문', 'AI답', '오류태그', '제출일', 'created_at', 'model', 'prompt_ver', 'audio_ref'];
+ * ⚠ 새 열은 **반드시 끝에** 붙인다 — 이 시트는 r[1]·r[2]·r[3]·r[4]·r[6] 위치 접근을 쓴다(앞에 끼우면 전부 밀린다).
+ * [v9.187] `급수`(맨 끝) — 대화 시점의 학생 급수. 답장이 급수에 맞춰 조절되므로(아래 시스템 프롬프트)
+ *   「몇 급 학생의 문장인가」가 없으면 2년 뒤 이 대화들을 난이도 층으로 가를 수 없다(소급 불가 계열). */
+const TALK_LOG_HEADERS = ['id', 'student_id', '턴', '학생문', 'AI답', '오류태그', '제출일', 'created_at', 'model', 'prompt_ver', 'audio_ref', '급수'];
 const TALK_MAX_PER_RUN = 25;   // 야간 1회 상한 — 초과분은 포인터가 남아 다음 밤 이어진다(첨삭 배치와 같은 규약)
 const TALK_CONTEXT_TURNS = 6;  // 문맥으로 되돌려 보내는 직전 턴 수 — 「대화」가 되려면 앞말을 기억해야 한다
 
@@ -272,15 +296,11 @@ function talkPromptVer_() {
 
 /* 이미 만들어진 talk_log에 **새 열의 이름표를 붙인다.**
  * `ensureSheet`는 시트가 **없을 때만** 헤더를 쓴다(Code.js) — 그래서 v9.139로 이미 8열짜리가
- * 라이브에 서 있으면, 10칸짜리 행을 append해도 데이터만 들어가고 머리글은 8개인 채로 남는다.
+ * 라이브에 서 있으면, 긴 행을 append해도 데이터만 들어가고 머리글은 8개인 채로 남는다.
  * 값은 있는데 그 열이 무엇인지 아무도 모르는 상태 = 「모름」을 「정상」으로 바꾸는 그 형태다.
- * 멱등하다 — 이미 길면 즉시 반환하므로 야간 배치가 매일 불러도 무비용이다. */
+ * 이름은 소비처(talkBatch_·talkLogCheck)가 불러서 유지, 본체는 공용 치유(헤더보정_·멱등)로. */
 function talkHeaderHeal_(sh) {
-  const need = TALK_LOG_HEADERS.length;
-  if (sh.getMaxColumns() < need) sh.insertColumnsAfter(sh.getMaxColumns(), need - sh.getMaxColumns());
-  const cur = sh.getRange(1, 1, 1, need).getValues()[0];
-  if (String(cur[need - 1] || '').trim() === TALK_LOG_HEADERS[need - 1]) return; // 이미 붙어 있다
-  sh.getRange(1, 1, 1, need).setValues([TALK_LOG_HEADERS]);
+  헤더보정_(sh, TALK_LOG_HEADERS);
 }
 
 function createTalkForm() {
@@ -332,7 +352,11 @@ function callClaudeTalk_(apiKey, stu, history, text) {
   const body = {
     model: AI_FEEDBACK_MODEL,
     max_tokens: 2048,
-    system: TALK_SYSTEM_PROMPT,   // 상수 참조 — 여기 인라인으로 되돌리면 prompt_ver가 변경을 못 본다
+    /* 상수 참조 — 여기 인라인으로 되돌리면 prompt_ver가 변경을 못 본다.
+     * [v9.187] 급수 접미 — 프롬프트는 처음부터 「급수에 맞춰 조절」을 지시했는데 정작 급수를 **안 보내고 있었다**
+     *   (stu 인자를 받고도 본문에서 한 번도 안 씀 — 모델은 학생 문장에서 급수를 추측할 수밖에 없었다).
+     *   급수는 학생마다 다른 **데이터**라 지문(prompt_ver)에는 안 넣는 게 맞다 — 지문은 상수부만 잰다. */
+    system: TALK_SYSTEM_PROMPT + '\n[이 학생] 급수: ' + (stu.lv || '미정'),
     messages: history.concat([{ role: 'user', content: text }]),
     output_config: { format: { type: 'json_schema', schema: schema } }
   };
@@ -412,7 +436,8 @@ function talkBatch_() {
       // 🔒 학생문은 물론 AI답도 감싼다 — 프롬프트 인젝션으로 모델에게 `=…`로 시작하는 답을 뱉게 할 수 있다
       const row = ['TK' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + sid + '-' + turn, sid, turn,
         셀안전_(text), 셀안전_(String(card.reply || '')), hwTagsClean_(card.error_tags), dstr(ts, tz), new Date(),
-        model, pver, '']; // [v9.151] audio_ref — 텍스트 폼 경로는 빈칸(녹음이 붙는 날 원본 참조가 들어온다)
+        // [v9.151] audio_ref — 텍스트 폼 경로는 빈칸(녹음이 붙는 날 원본 참조가 들어온다) · [v9.187] 급수 스냅샷
+        model, pver, '', Number(stu.lv) || 0];
       tl.appendRow(row);
       logRows.push(row); // 같은 실행 안에서 같은 학생이 여러 번 나와도 문맥이 이어지게(하루 1턴 가드가 있어 드물지만 공짜다)
       turns[sid] = turn; todayDone[sid] = 1;
@@ -423,9 +448,9 @@ function talkBatch_() {
       if (e && e.permanent) {
         // 답장을 못 만들어도 **학생이 쓴 문장은 남긴다** — 대화 데이터의 절반은 이미 여기 있다
         permFails++;
-        // 실패 행에도 model·prompt_ver를 남긴다 — 「어느 버전에서 실패가 몰렸나」가 나중에 유일한 단서다
+        // 실패 행에도 model·prompt_ver·급수를 남긴다 — 「어느 버전에서 실패가 몰렸나」가 나중에 유일한 단서다
         tl.appendRow(['TK' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + sid + '-오류', sid, (turns[sid] || 0) + 1,
-          셀안전_(text), '', '', dstr(ts, tz), new Date(), model, pver, '']);
+          셀안전_(text), '', '', dstr(ts, tz), new Date(), model, pver, '', Number(stu.lv) || 0]);
         processed = i + 1;
         props.setProperty('대화폼_포인터', String(from + processed));
         continue;
@@ -726,10 +751,12 @@ function quizSweep_(ss) {
   const tz = ss.getSpreadsheetTimeZone();
   const rows = src.getRange(from + 1, 1, last - from, 5).getValues(); // 타임스탬프·학생ID·퀴즈ID·내 답·확신도
 
-  const valid = new Set();
+  // [v9.187] 폭 67 — 급수(BO67) 스냅샷 재료. 첨삭·대화 배치와 같은 위치 규약(r[66]).
+  //   새 행이 있을 때만 여기 오므로(위 포인터 조기 반환) 10분 스위프의 상시 비용은 늘지 않는다.
+  const valid = new Set(), lvOf = {};
   const pf = ss.getSheetByName('profiles');
-  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().forEach(r => {
-    if (r[0] && r[3] === 'student') valid.add(String(r[0]).trim());
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 67).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') { const k = String(r[0]).trim(); valid.add(k); lvOf[k] = Number(r[66]) || 0; }
   });
 
   // 문항 스냅샷 재료 — contents A=ID · B=유형 · C=분류 · D='문제|정답'
@@ -742,6 +769,7 @@ function quizSweep_(ss) {
   });
 
   const ql = ensureSheet(ss, 'quiz_log', QUIZ_LOG_HEADERS);
+  헤더보정_(ql, QUIZ_LOG_HEADERS); // [v9.187] 이미 서 있는 11열 시트에 급수 이름표 — 없으면 새 칸이 조용히 버려진다
   const seen = {}; // '퀴즈ID|sid' — 같은 문항 재제출은 첫 답만 센다(고쳐 낸 답은 "무엇을 골랐나"를 오염시킨다)
   if (ql.getLastRow() >= 2) ql.getRange(2, 2, ql.getLastRow() - 1, 2).getValues().forEach(r => {
     if (r[0] && r[1]) seen[String(r[1]).trim() + '|' + String(r[0]).trim()] = 1;
@@ -769,7 +797,7 @@ function quizSweep_(ss) {
     out.push(['QL' + Utilities.formatDate(ts, tz, 'yyyyMMdd') + '-' + sid + '-' + qid, sid, 셀안전_(qid),
       meta.cat, meta.q, 셀안전_(ans), meta.a,
       g.ok === null ? '판정보류' : (g.ok ? '정답' : '오답'), // 원칙: 판정 못 해도 행은 남는다
-      셀안전_(conf), dstr(ts, tz), new Date()]);
+      셀안전_(conf), dstr(ts, tz), new Date(), lvOf[sid] || 0]); // [v9.187] 급수 스냅샷(0=미정)
   });
   if (out.length) ql.getRange(ql.getLastRow() + 1, 1, out.length, QUIZ_LOG_HEADERS.length).setValues(out);
   props.setProperty('퀴즈폼_포인터', String(last));
@@ -1035,6 +1063,10 @@ function 골든픽스처_() {
     버전: '실측 v1',
     만든날: Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd'),
     출처: 'SYNK LAB teacher_gold — 실학생 원문 + 강사 교정. 비식별(student_id·fb_id·강사명·날짜 제거).',
+    /* [v9.187] 어휘 동봉 — 두 저장소는 오류태그 23종을 **이름만** 공유한다(SYNK-talk에 사본).
+     * 목록 전체를 픽스처에 실어 보내면 받는 쪽이 자기 사본과 diff해 갈라짐을 그날 알 수 있다
+     * (안 실으면 한쪽이 태그를 늘린 날부터 채점기가 모르는 태그를 조용히 오답 처리한다). */
+    어휘: HW_ERROR_TAGS,
     한계: [
       '표본은 무작위이지만 **우리 학원 학생**의 분포다 — 몽골어 화자 일반의 분포가 아니다.',
       '「포함/불포함」은 어절 diff로 자동 도출한 것이라 비어 있을 수 있다. 빈 배열은 그 검사를 건너뛴다(추측해 넣지 않는다).',
