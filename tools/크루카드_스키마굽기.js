@@ -30,7 +30,9 @@ const RE = /("fieldSchema":\s*"data:application\/json;base64,)([A-Za-z0-9+/=]+)(
 
 function main() {
   const check = process.argv.includes('--check');
-  const json = fs.readFileSync(SCHEMA, 'utf8');
+  /* LF 정규화 — autocrlf=true 체크아웃(Windows)은 이 파일을 CRLF로 내려준다. raw로 구우면
+   * 굽는 기계의 OS에 따라 base64가 달라져, 같은 정본인데 CI(LF)와 로컬(CRLF)이 서로를 적색으로 본다. */
+  const json = fs.readFileSync(SCHEMA, 'utf8').replace(/\r\n/g, '\n');
   JSON.parse(json); // 깨진 JSON을 구워 넣지 않는다 — 구우면 카드 전체의 스키마가 죽는다
   const b64 = Buffer.from(json, 'utf8').toString('base64');
   let 갈라짐 = 0;
