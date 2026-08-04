@@ -1,0 +1,87 @@
+# SYNK DESIGN.md — 시각 산출물 공통 규칙 (AI 진입로)
+
+> **눈에 보이는 것을 만들기 전에 이 파일부터 읽는다** — HTML·인쇄물·발표물·웹앱·앱 화면·SNS 이미지·지도/표 전부.
+> **값의 정본은 각 링크 문서다.** 이 파일은 요약+진입로이고, 어긋나면 정본이 이긴다
+> — 동기화는 `tests/디자인정본.test.js`가 기계로 지킨다(인용 HEX 실존·폰트 스택 동일·링크 실존).
+> 외부 디자인 스킬(§6)과 충돌하면 **SYNK 킷이 항상 이긴다.** 스킬은 킷이 침묵하는 디테일만 채운다.
+
+## 1. 정체성 — SYNK FIELD
+
+컨셉 정본 = [디자인 컨셉 정본](docs/디자인_컨셉_정본_v1.md) — 전 산출물의 「왜」가 있다.
+
+- 3규칙: **신호는 하나(Coral)** · **위계는 색이 아니라 밀도**(크기·웨이트·여백) · **타이포는 안 건드린다**.
+- 모티프 = **시냅스 노드·링크** — 이름 SYNK(=동기화)의 그림이다. 🚫 게르 천창 모티프(유호님 판단 대기).
+- 🚫 타사 DESIGN.md(Apple·Notion 등) 반입 금지 — 킷과 섞이면 정체성이 죽는다. 참고 열람만(§7).
+
+## 2. 색 — v10 Crew Dossier 킷
+
+정본 = 컨셉 정본 §10~11 (코랄 5단·모드 A/B/C·대비표 — 대비표는 `tests/브랜드색.test.js`가 상시 재계산).
+
+| 층 | 이름 | HEX | 요점 |
+|---|---|---|---|
+| 바탕(라이트) | Paper | `#FBF7EE` | 순백 금지 |
+| 잉크(라이트) | Ink | `#171820` | 본문·대형 타이포 — 대비 16.53 |
+| 잉크(발표물 본문) | Navy | `#1A2340` | 순검정 금지 — 대비 14.46 |
+| 보조 잉크·괘선 | Navy 3 | `#2A3358` | |
+| 바탕(다크·반전면) | Navy 2 | `#0F1730` | 표지·머리 띠·챕터 브레이크 |
+| 잉크(다크 위) | Cream | `#F6F1E8` | 순백 아님 — 대비 15.74 |
+| 반전면 보조 | Cream 3 | `#E7DDC7` | |
+| **신호(유일)** | **Coral** | `#FF6B5C` | 다크=글자·면 / 라이트=**면만** |
+| 신호 — 라이트 글자 | Coral 3 | `#E8543F` | 24px↑ 또는 18.7px↑ bold 한정(3.40) |
+| 신호 — 여린 면 | Coral Wash | `#FFE9E4` | 강조 패널 바닥 |
+| 2도 잉크(모드 C) | KC Sun | `#FFD447` | 글자 금지 |
+| 성장·획득(앱 전용) | Lime | `#C8FF3D` | 인쇄물·캐러셀 반입 금지 |
+
+**철칙 4** — ① 순백·순검정 금지. ② 라이트 배경에 Coral **글자** 금지(크기 불문 — 글자는 Coral 3,
+본문 크기 강조는 색이 아니라 웨이트). ③ 코랄 면 위 글자는 **Ink·Navy 2만**(흰색·Cream 금지 —
+세상 버튼의 기본값 「색 배경+흰 글자」가 여기선 미달 2.8이다). ④ 한 지면 = 바탕+잉크+**신호 1점**,
+강조 최대 2곳 — Lime·KC 4색은 전용 구역(앱 성장층·Part 6) 밖 반입 금지.
+
+## 3. 타이포 — 3종 배타
+
+정본 = [브랜드 폰트 정본](docs/브랜드_폰트_정본.md) (SUIT Variable · Inter Tight · DM Mono — 유호님 확정, 구 지정 폐기).
+
+```css
+--synk-font:      'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+--synk-font-mono: 'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
+```
+
+- **Inter Tight가 SUIT보다 앞** — 폴백이 글리프 단위라 이 순서가 3언어(라틴·키릴·한글)를 자동 분기한다. 순서를 바꾸지 말 것.
+- 🚫 **DM Mono에 한글·키릴 금지**(글리프 없음 — 즉시 깨진다). `₮`·`№`·키릴은 **Inter Tight만**.
+- 웨이트: 본문 500 · 헤드 800 · 태그라인 SUIT 900 / Inter Tight 500 소문자. 트래킹: 산세리프 음수 · 모노 양수.
+- 몽골어가 한국어와 대등한 자리는 **1.04배** 광학 보정(`--synk-mn-scale`).
+
+## 4. 로고
+
+정본 = [발표물 브랜드킷](docs/발표물/_브랜드킷.md) §3 — **SVG 도형 정본을 복사한다**(좌표를 손으로 다시 그리지 않는다).
+
+- 기본 = **W5** `syn<` · 가로 넉넉하면 **W1** `syn< //` · 정사각/워터마크 = 심볼 S1·S4.
+- `<`는 언제나 Coral — 로고의 유일한 신호. `//`는 세 번째 색이 아니라 **잉크의 저채도**(3색 금지).
+- 🚫 골드 복귀 금지 — 두 번째 액센트는 없다. 강조는 웨이트·크기가 진다.
+
+## 5. 산출물별 정본·통로
+
+| 산출물 | 정본·검사 통로 |
+|---|---|
+| 발표물·인쇄물 10종 | [발표물 브랜드킷](docs/발표물/_브랜드킷.md) + `tools/발표물린트.js` + 빌드 `tools/발표물빌드.js`(폰트 임베드) |
+| 인쇄 공통 규격 | `@page` margin 0 · `print-color-adjust: exact` · **자립형 1파일**(외부 자원 0) · 색+패턴 이중 표기(흑백 재복사 전제) |
+| 바탕화면 지도·표 | 유호님 지시: PDF+HTML 쌍으로 바탕화면 `SYNK_지도`에 — PDF는 헤드리스 크롬, `@media print` 없으면 색이 안 찍힌다 |
+| 콘텐츠(보이스·금칙어) | `.claude/skills/synk-brand` — 시각이 아니라 말의 규칙 |
+| 앱(Glide) | [GLIDE 조립가이드](docs/GLIDE_조립가이드_v947.md) — 「고쳤다」는 코드가 아니라 **렌더 픽셀**로 증명 |
+| 접수 폼(크루카드) | ⚠ 라이브가 킷 미적용 상태 — 수리 대기·유호님 판정은 memory `brand-kit-application-audit-2026-08-04` |
+
+## 6. 완성도 스킬 — 킷 다음에, 킷 아래에서
+
+`.claude/skills/`에 설치(2026-08-05 · MIT · 전문 검수 후 반입). **순서: 킷으로 골격 → 스킬로 디테일 → 린트/검수.**
+
+| 스킬 | 언제 | 출처 |
+|---|---|---|
+| `make-interfaces-feel-better` | UI·HTML 디테일 제작+검수 — 동심원 모서리·광학 정렬·그림자·tabular-nums·히트 영역. **인쇄물엔 typography/surfaces만 해당** | jakubkrehel |
+| `emil-design-eng` | 애니메이션·인터랙션 설계 판단 — 빈도→목적→이징→시간 결정 틀, 이징 커브 값 | emilkowalski |
+| `/review-animations` | 모션 코드 **적대 검수**(수동 호출 전용) — 기본이 「막기」, 통과는 획득 | emilkowalski |
+
+- 미설치 판정(재제안 금지): apple-design(킷과 충돌)·pick-ui-library(라이브러리 없음)·prototype(/forge 중복)·improve-animations·find-animation-opportunities(자체앱 단계에 재고).
+
+## 7. 레퍼런스 — 필요할 때 브라우저로 연다 (상시 MCP 연결 금지 — 이미지 토큰)
+
+- [lazyweb.com](https://www.lazyweb.com/) 실화면 25만+ · [namethatui.com](https://namethatui.com/) UI 요소 명칭 사전 · [motionsites.ai](https://motionsites.ai/) 모션 갤러리(프롬프트 복사) · [getdesign.md](https://getdesign.md/) 타사 시스템 분석(열람만)
