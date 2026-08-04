@@ -225,6 +225,45 @@ test('tools/인계문.js — stdout 전문이 그대로 「새 세션 첫 메시
   assert.ok(fs.existsSync(path.join(d, 'docs', '_ops', '인계문.md')), '파일 사본을 안 남겼다 — 파일 통로(다른 계정·폰)가 빈다');
 });
 
+/* 사본 파일은 칸이 3개뿐이고 **세션들이 공유한다.** 그래서 점검차 한 번 돌리는 것만으로도
+ * 내 블록이 맨 위로 들어가며 가장 오래된 남의 블록을 밀어낸다 — 2026-08-05 실측: 확인차
+ * 돌렸더니 살아있는 옆 세션의 블록이 파일에서 사라졌고, 그때 store 바통은 take() 로 이미
+ * 비어 있어 **그 파일이 마지막 사본이었다.** 막 시작한 세션은 커밋도 보드 줄도 없어 블록이
+ * 사실상 비는데, 그 빈 블록이 「맨 위를 복사하라」고 적힌 자리를 차지한다(F096 재현).
+ * 탐지력은 픽스처로 못박는다 — 실저장소 파일은 건드리지 않는다. */
+test('tools/인계문.js --no-save — 남의 블록을 밀어내지 않는다(점검이 인계를 지우면 안 된다)', () => {
+  const TOOL = path.join(ROOT, 'tools', '인계문.js');
+  const d = 임시('synk-tb-nosave-');
+  const 사본 = path.join(d, 'docs', '_ops', '인계문.md');
+  fs.mkdirSync(path.dirname(사본), { recursive: true });
+
+  // 살아있는 남의 세션 3칸을 미리 채워 둔다 — 한 칸이라도 밀리면 실패해야 한다.
+  const 원본 = '# 다음 세션 인계문 (자동 생성 · 최근 3개)\n\n'
+    + ['aaaaaaaa', 'bbbbbbbb', 'cccccccc']
+      .map((s) => `## 2026-08-05 00:00 · 세션 ${s} · 세션 정리\n\n\`\`\`\n남의 트랙 ${s}\n\`\`\`\n`)
+      .join('\n');
+  fs.writeFileSync(사본, 원본);
+
+  const r = spawnSync(process.execPath, [TOOL, '--no-save'], {
+    cwd: d, encoding: 'utf8', timeout: 20000,
+    env: { ...process.env, CLAUDE_CODE_HOST_SESSION_ID: 'nosave-test-sess' },
+  });
+  assert.equal(r.status, 0, `도구가 실패 종료했다: ${r.stderr}`);
+  // 복붙 통로는 살아 있어야 한다 — 안 쓰는 대신 화면 출력까지 죽으면 처방이 통째로 빈다.
+  assert.match(r.stdout, /^SYNK 이어서 작업한다/, '--no-save 가 stdout 까지 죽였다 — 복붙할 실물이 사라진다(F096 그 증상)');
+  assert.equal(fs.readFileSync(사본, 'utf8'), 원본,
+    '🔴 --no-save 인데 공유 사본을 건드렸다 — 점검 한 번이 살아있는 남의 인계문을 지운다(store 바통이 비면 그 파일이 마지막 사본이다)');
+});
+
+/* 장치와 발동 조건은 같은 커밋에서 — 플래그만 만들고 처방이 안 가리키면 아무도 안 쓴다. */
+test('🔴 처방-실행층 결속 — 「수동 재출력」 안내는 --no-save 를 준다', () => {
+  const 본문 = fs.readFileSync(path.join(HOOKS, 'context-budget.js'), 'utf8');
+  const m = 본문.match(/수동 재출력 `([^`]+)`/);
+  assert.ok(m, '「수동 재출력」 안내가 사라졌다 — 유호님이 다시 뽑을 통로가 빈다');
+  assert.match(m[1], /--no-save/,
+    `🔴 재출력 처방이 사본을 갱신한다(${m[1]}) — 점검하러 돌린 한 번이 남의 인계문을 밀어낸다`);
+});
+
 test('🔴 처방-실행층 결속 — wake·/close·track-boundary 가 가리키는 인계문 도구가 실재한다', () => {
   assert.ok(fs.existsSync(path.join(ROOT, 'tools', '인계문.js')), '도구 실물이 없다');
   for (const [파일, 이름] of [
