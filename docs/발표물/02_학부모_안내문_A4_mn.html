@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<title>SYNK LAB 학부모 안내문 — 몽골어판 번역 작업본 (A4 양면)</title>
+<!--
+  SYNK LAB 발표물 2번 — 학부모 안내문 리플렛 · **몽골어판 번역 작업본**
+  짝 파일 = 02_학부모_안내문_A4_kr.html (한국어판 · 레이아웃 정본)
+  산출물 사양 = 발표물 제작 프롬프트 v1.4 §2 「몽골어판」 절
+
+  ▶ 이 파일의 핵심은 번역문이 아니라 **여유 설계**다.
+     몽골어는 한국어보다 20~30% 길어진다. 번역이 들어온 뒤에 레이아웃이 깨지면
+     그때는 조판을 다시 하는 게 아니라 번역을 잘라내게 된다 — 그 순서가 틀렸다.
+     그래서 **먼저 자리를 넓게 잡아 두고** 그 안에서 번역을 받는다.
+
+  ▶ 글자 수 한도는 지어낸 값이 아니다. 한국어판 각 블록의 실제 글자 수를 세어
+     ×1.3 한 뒤 5자 단위로 올림했다(한국어 총 1,699자 / 40블록 실측).
+     번역자는 한도를 넘지 않는 선에서 자유롭게 의역하면 된다.
+
+  ▶ ⛔ 이 파일은 **인쇄용이 아니다.** 번역이 채워지면 한국어판과 같은 조판으로
+     옮겨 몽골어 인쇄본을 따로 만든다. 에리카쌤 검수 전에는 어떤 문구도 확정하지 않는다.
+-->
+<style>
+@page { size: A4 portrait; margin: 0; }
+:root{
+  --blue:#3D5AFE; --orange:#FF6D00; --gold:#FFC400;
+  --paper:#FDFCF8; --ink:#1A237E; --midnight:#0B1A2E;
+  --hair:rgba(26,35,126,.20); --mute:#6C74A8;
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{
+  background:var(--paper); color:var(--ink);
+  font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
+  font-weight:500; line-height:1.5;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+.mono{ font-family:'DM Mono',ui-monospace,'Cascadia Mono','Consolas',monospace; }
+
+.sheet{ width:210mm; min-height:297mm; padding:14mm 15mm; background:var(--paper); margin:0 auto; }
+
+.banner{
+  background:var(--midnight); color:var(--paper); border-radius:2.4mm;
+  padding:5mm 6mm; margin-bottom:6mm;
+}
+.banner .t{ font-size:5.4mm; font-weight:800; letter-spacing:-.02em; }
+.banner .t em{ font-style:normal; color:var(--gold); }
+.banner .d{ font-size:3mm; color:#B9C2E0; margin-top:2.6mm; line-height:1.55; }
+.banner .warn{ font-size:3mm; color:var(--gold); margin-top:2.6mm; font-weight:800; }
+
+.face{
+  font-size:3.4mm; font-weight:800; letter-spacing:.14em; color:var(--blue);
+  margin:7mm 0 3mm; padding-bottom:1.8mm; border-bottom:.6mm solid var(--blue);
+}
+
+.slot{ border:.3mm solid var(--hair); border-radius:2mm; padding:3.2mm 3.6mm; margin-top:3mm; background:#fff; }
+.slot .head{ display:flex; align-items:baseline; justify-content:space-between; gap:4mm; }
+.slot .role{ font-size:2.5mm; font-weight:800; letter-spacing:.1em; color:var(--blue); }
+.slot .lim{
+  font-size:2.6mm; font-weight:800; color:#3A2E00; background:var(--gold);
+  padding:.7mm 2.2mm; border-radius:3mm; white-space:nowrap;
+}
+/* 번역이 들어갈 자리 — 몽골어 한도만큼 실제로 비워 둔다 */
+.mnbox{
+  margin-top:2.4mm; border:.4mm dashed var(--blue); border-radius:1.6mm;
+  background:#F7F9FF; min-height:9mm; padding:2mm 2.6mm;
+  color:#9AA0C4; font-size:2.7mm; letter-spacing:.06em;
+}
+.mnbox.tall{ min-height:16mm; }
+.mnbox.xl{ min-height:22mm; }
+/* 참고용 한국어 원문 — 번역 대상. 인쇄본에는 들어가지 않는다 */
+.ko{ font-size:2.9mm; color:#414A80; margin-top:2.4mm; line-height:1.5; }
+.ko b{ color:var(--ink); font-weight:800; }
+.ko .lbl{ font-size:2.3mm; font-weight:800; color:var(--mute); letter-spacing:.1em; display:block; margin-bottom:1mm; }
+
+.note{
+  margin-top:7mm; border-left:1mm solid var(--orange); padding:2.6mm 0 2.6mm 4.4mm;
+  font-size:2.9mm; line-height:1.55; color:#4A4133;
+}
+.note b{ color:var(--ink); font-weight:800; }
+
+.sum{ display:flex; gap:3mm; margin-top:4mm; }
+.sum .c{ flex:1 1 0; border:.3mm solid var(--hair); border-radius:2mm; padding:3mm 3.4mm; background:#fff; }
+.sum .c .k{ font-size:2.4mm; font-weight:800; color:var(--mute); letter-spacing:.1em; }
+.sum .c .v{ font-size:5mm; font-weight:800; margin-top:1.2mm; }
+.sum .c .s{ font-size:2.4mm; color:var(--mute); margin-top:.8mm; }
+
+@media screen{ body{ background:#DFE3EE; padding:8mm; } .sheet{ box-shadow:0 3mm 12mm rgba(11,26,46,.22); } }
+</style>
+</head>
+<body>
+
+<section class="sheet">
+
+  <div class="banner">
+    <div class="t">몽골어판 <em>번역 작업본</em> — 학부모 안내문</div>
+    <div class="d">한국어판(<code>02_학부모_안내문_A4_kr.html</code>)과 같은 순서·같은 블록입니다.
+      각 칸의 <b style="color:var(--gold)">한도</b>는 한국어 원문 글자 수 × 1.3을 5자 단위로 올린 값입니다 —
+      몽골어가 한국어보다 20~30% 길어지는 만큼을 미리 비워 둔 것입니다. 한도 안에서는 자유롭게 의역해 주세요.</div>
+    <div class="warn">⛔ 이 파일은 인쇄용이 아닙니다. 번역이 채워지면 한국어판 조판으로 옮겨 몽골어 인쇄본을 따로 만듭니다.</div>
+  </div>
+
+  <div class="sum">
+    <div class="c"><div class="k mono">KO TOTAL</div><div class="v">1,699자</div><div class="s">한국어 원문 실측</div></div>
+    <div class="c"><div class="k mono">MN BUDGET</div><div class="v">2,210자</div><div class="s">×1.3 여유 설계</div></div>
+    <div class="c"><div class="k mono">BLOCKS</div><div class="v">40</div><div class="s">번역 단위</div></div>
+  </div>
+
+  <!-- ══════════ 앞면 ══════════ -->
+  <div class="face">FRONT · 앞면</div>
+
+  <div class="slot">
+    <div class="head"><span class="role">H1 · 헤드라인</span><span class="lim mono">25</span></div>
+    <div class="mnbox">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>학부모님의 아이가, 점수를 넘어섭니다</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">LEAD · 리드</span><span class="lim mono">35</span></div>
+    <div class="mnbox">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>TOPIK 준비는 끝까지. 그리고 그 이상을.</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">NOTE · 개원 고지</span><span class="lim mono">80</span></div>
+    <div class="mnbox tall">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>SYNK LAB은 2027년 2월 개원을 준비하고 있습니다. 이 안내문은 개원 전에 미리 보내드리는 소개입니다.</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">H2-1 · 제목</span><span class="lim mono">25</span></div>
+    <div class="mnbox">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>TOPIK 준비, 끝까지 함께합니다</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">P1 · 본문 (가장 긴 블록)</span><span class="lim mono">200</span></div>
+    <div class="mnbox xl">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>가장 궁금하신 것부터 말씀드립니다. SYNK LAB의 승급은 <b>기간이 아니라 도달로</b> 정합니다. “몇 개월이면 몇 급” 같은 약속은 하지 않습니다 — 대신 아이가 목표한 급수에 도달할 때까지 준비 과정을 끝까지 책임지고, 지금 어디까지 왔는지를 매달 리포트카드로 보여드립니다.</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">P2</span><span class="lim mono">85</span></div>
+    <div class="mnbox tall">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>TOPIK이 있어야 한국 유학과 취업의 길이 열립니다. 이것은 저희가 드리는 약속이고, 동시에 시작일 뿐입니다.</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">P3</span><span class="lim mono">80</span></div>
+    <div class="mnbox tall">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>그리고 저희는 여기서 멈추지 않습니다. <b>점수를 딴 다음, 아이가 그 점수로 무엇을 할지까지 함께 설계합니다.</b></div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">H2-2 · 제목</span><span class="lim mono">20</span></div>
+    <div class="mnbox">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>왜 ‘그 이상’이 필요할까요</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">P4</span><span class="lim mono">100</span></div>
+    <div class="mnbox tall">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>지금은 AI 시대입니다. AI가 번역을 하고, 글을 쓰고, 시험 문제도 풉니다. 시험 점수만 높은 것의 가치는 빠르게 낮아지고 있습니다.</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">P5</span><span class="lim mono">80</span></div>
+    <div class="mnbox tall">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>그래서 <b>점수는 이제 출발 조건일 뿐입니다.</b> 그 위에 아이만의 목적과 경험이 있어야 진짜 경쟁력이 됩니다.</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">P6</span><span class="lim mono">35</span></div>
+    <div class="mnbox">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>AI가 대신하기 어려운 세 가지 힘이 있습니다.</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">POWER 01 · 제목 / 설명</span><span class="lim mono">10 / 55</span></div>
+    <div class="mnbox">____________________________</div>
+    <div class="mnbox tall">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span><b>질문하는 힘</b> / “나는 왜 이걸 배우지?” 무엇이 진짜 문제인지 스스로 묻고 정의하는 힘</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">POWER 02 · 제목 / 설명</span><span class="lim mono">12 / 35</span></div>
+    <div class="mnbox">____________________________</div>
+    <div class="mnbox">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span><b>스스로 하는 힘</b> / 시키지 않아도 먼저 움직이고, 끝까지 해내는 힘</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">POWER 03 · 제목 / 설명</span><span class="lim mono">12 / 25</span></div>
+    <div class="mnbox">____________________________</div>
+    <div class="mnbox">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span><b>마음을 얻는 힘</b> / 사람과 통하고, 신뢰를 쌓는 힘</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">P7 · 앞면 마무리</span><span class="lim mono">100</span></div>
+    <div class="mnbox tall">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>이 세 가지는 문제집을 푸는 것만으로는 길러지지 않습니다. 직접 몸으로 겪어야 자라고, 그렇게 쌓인 경험이 <b>아이만의 이야기</b>가 됩니다.</div>
+  </div>
+
+  <!-- ══════════ 뒷면 ══════════ -->
+  <div class="face">BACK · 뒷면</div>
+
+  <div class="slot">
+    <div class="head"><span class="role">H2-3 · 제목</span><span class="lim mono">26</span></div>
+    <div class="mnbox">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>SYNK LAB이 실제로 하는 4가지</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">CARD 1 · 제목 / 설명</span><span class="lim mono">30 / 105</span></div>
+    <div class="mnbox">____________________________</div>
+    <div class="mnbox tall">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span><b>K컬처 워밍업 — 뇌를 깨우고 시작합니다.</b><br>매 수업, 100% 한국어로 진행하는 K컬처 신체활동으로 시작합니다. 몸이 깨어날 때, 뇌는 가장 깊이 배웁니다. 그래서 더 오래 기억합니다.</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">CARD 2 · 제목 / 설명</span><span class="lim mono">40 / 135</span></div>
+    <div class="mnbox">____________________________</div>
+    <div class="mnbox xl">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span><b>「싱크 크루」 프로젝트 — 아이만의 이야기를 만듭니다.</b><br>시즌마다 팀이 K컬처 프로젝트 하나를 기획하고, 도전하고, 다시 도전하고, 완성합니다. 예: 울란바토르 한국어 소개 영상, K컬처 공연. 이 과정 전체가 아이의 진짜 경험이 됩니다.</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">CARD 3 · 제목 / 설명</span><span class="lim mono">30 / 140</span></div>
+    <div class="mnbox">____________________________</div>
+    <div class="mnbox xl">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span><b>「나침반」 세션 — 목적을 찾습니다.</b><br>“왜 한국어를 배우는가”, “5년 뒤 나는 어떤 사람이 될까”를 아이가 직접 씁니다. 그 답은 드림맵 카드로 남고, 시즌마다 새로 그립니다. 목적이 있는 아이는 힘들어도 다시 일어섭니다.</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">CARD 4 · 제목 / 설명</span><span class="lim mono">50 / 75</span></div>
+    <div class="mnbox">____________________________</div>
+    <div class="mnbox tall">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span><b>한국어 + 글로벌 영어 — 하나의 등록으로 두 언어를 배웁니다.</b><br>한국어를 중심에 두고 영어를 함께 배웁니다. 갈 수 있는 나라와 할 수 있는 일이 그만큼 늘어납니다.</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">FOOTNOTE · 위성 단계 개설</span><span class="lim mono">85</span></div>
+    <div class="mnbox tall">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>* 글로벌 영어를 비롯한 위성 프로그램은 개원과 함께 댄스·회화부터 열고, 나머지는 준비되는 순서대로 더해 갑니다.</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">H2-4 · 제목</span><span class="lim mono">28</span></div>
+    <div class="mnbox">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>졸업할 때, 아이가 들고 나가는 3가지</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">TRI 01 / 02 / 03</span><span class="lim mono">45 / 35 / 15</span></div>
+    <div class="mnbox tall">____________________________</div>
+    <div class="mnbox tall">____________________________</div>
+    <div class="mnbox">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>① <b>TOPIK 급수</b> — 기간이 아니라 도달로, 목표 급수까지 준비합니다<br>
+      ② <b>「싱크 포트폴리오」</b> — 팀으로 직접 만든 결과물의 기록<br>
+      ③ <b>자기만의 5년 로드맵</b></div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">P8</span><span class="lim mono">65</span></div>
+    <div class="mnbox tall">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>자격증 하나만 가지고 나가지 않습니다. <b>“내가 무엇을 할 사람인지” 아는 아이로 자랍니다.</b></div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">CUT BOX · 제목 + 질문 3</span><span class="lim mono">25 / 25 · 40 · 30</span></div>
+    <div class="mnbox">____________________________</div>
+    <div class="mnbox tall">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span><b>오늘 저녁, 아이에게 묻는 세 가지</b><br>
+      1. “너는 왜 한국어를 배우고 싶어?”<br>
+      2. “TOPIK을 따면, 그걸로 무엇을 해보고 싶어?”<br>
+      3. “네가 정말 좋아하고 잘하는 건 뭐야?”</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">CUT BOX · 꼬리말</span><span class="lim mono">85</span></div>
+    <div class="mnbox tall">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>아이의 대답이 짧아도 괜찮습니다. 이런 질문의 답은 천천히 나옵니다. <b>바로 이 질문들에서 진짜 교육이 시작됩니다.</b></div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">PROMISE</span><span class="lim mono">140</span></div>
+    <div class="mnbox xl">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>아이가 목표한 TOPIK에 도달할 때까지 함께하고, 그것을 어디에 쓸지 알고, 자기 삶을 스스로 설계하는 사람으로 자라도록 끝까지 함께하겠습니다. 자세한 내용은 상담에서 안내해 드립니다.</div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">CONTACT · 라벨 4종</span><span class="lim">각 <span class="mono">15</span></span></div>
+    <div class="mnbox tall">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>페이스북 메신저(가장 빠른 문의) · 전화 · 주소 · 상담 시간<br>
+      <span style="color:var(--mute)">※ 값 자체(URL·번호·주소)는 번역 대상이 아닙니다. 라벨만 옮겨 주세요.</span></div>
+  </div>
+
+  <div class="slot">
+    <div class="head"><span class="role">SLOGAN · 마스터 슬로건</span><span class="lim mono">25</span></div>
+    <div class="mnbox">____________________________</div>
+    <div class="ko"><span class="lbl mono">KO</span>점수를 넘어, 삶을 설계합니다.
+      <span style="color:var(--mute)">※ 브랜드 마스터 슬로건입니다. 직역보다 몽골어에서 같은 무게로 울리는 문장을 우선해 주세요.</span></div>
+  </div>
+
+  <div class="note">
+    <b>번역자에게</b> — 이 원문은 몽골어로 옮길 것을 전제로 썼습니다. 한국어에만 있는 관용구를 쓰지 않았고,
+    은유는 몽골어에도 같은 뜻이 있는 것만 남겼습니다. 직역해도 뜻이 살아야 정상입니다.
+    뜻이 어색해지는 문장이 있으면 <b>의역해 주시고, 어디를 바꿨는지 알려 주세요.</b><br>
+    한도를 넘겨야만 뜻이 산다고 판단되는 칸이 있으면, 자르지 말고 <b>그 칸 번호와 필요한 길이를 알려 주세요</b> —
+    번역을 줄이는 대신 조판을 고칩니다.
+  </div>
+
+  <div class="note" style="border-left-color:var(--blue)">
+    <b>브랜드 잠금(번역에서도 유지)</b> — ① 「기획 → 도전 → 다시 → 완성」은 확정 표기입니다.
+    ② 실수와 재도전을 부정적으로 옮기지 않습니다 — 한국어 원문의 금칙어 8종에 해당하는 몽골어 단어를 쓰지 않습니다(‘다시’ 계열로 옮깁니다).
+    ③ 비교 대상은 언제나 ‘어제의 나’이며, 다른 아이와 견주는 문장을 만들지 않습니다.
+    ④ 「싱크 크루」·「나침반」·「싱크 포트폴리오」·「드림맵 카드」는 고유명이라 음역하고, 첫 등장에 한 번만 뜻을 덧붙입니다.
+    ⑤ 급수·기간을 약속하는 표현으로 옮기지 않습니다 — 원문이 일부러 피한 부분입니다.
+  </div>
+
+</section>
+
+</body>
+</html>
