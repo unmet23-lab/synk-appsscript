@@ -480,6 +480,29 @@ test('🔴 다른 작업 트리가 **미커밋으로 들고 있는** 파일을 �
   assert.strictEqual(r.판정, undefined, '차단했다 — 이 훅은 정보만 준다');
 });
 
+test('🔴 새 폴더의 **미추적** 파일도 본다 — `-uall` 없으면 통째로 접혀 사라진다 (F085)', (t) => {
+  if (!있나) return t.skip('git 없음');
+  /* 58ce9737 실측 지적: `git status --porcelain` 은 새 폴더를 `?? src/` 로 뭉쳐서
+   * 그 안의 파일이 목록에서 **사라진다**. 추적 파일의 수정은 멀쩡히 보이므로 라이브에선
+   * 정상으로 보이고, 하필 그 사각이 **미추적**이다 — 이력·stash·reflog 어디에도 없다(F025).
+   * 그래서 픽스처를 「새 폴더 + 그 안의 새 파일」로 잡는다. 평평한 새 파일은 접히지 않아
+   * `-uall` 을 빼도 통과한다(같은 층위: F052 의 평평한 픽스처가 정규화 변이를 가렸던 자리). */
+  const dir = 픽스처저장소();
+  const 상태 = 상태폴더();
+  커밋(dir, 'docs/정본/엔진_시험.js', 'a', 'init', 'sess-A');
+  const wtDir = 워크트리붙이기(dir, '옆트리', 'peer-branch');
+  if (!wtDir) return t.skip('git worktree 를 못 만들었다');
+
+  const 새파일 = 'src/옆트리것.js';
+  fs.mkdirSync(path.join(wtDir, 'src'), { recursive: true });
+  fs.writeFileSync(path.join(wtDir, 새파일), '옆 트리가 새로 만든 것');
+
+  const r = 훅(dir, { file: 새파일, sid: 'sess-A', stateDir: 상태 });
+  assert.equal(r.조용, false,
+    '새 폴더 안의 미추적 파일을 놓쳤다 — `?? src/` 로 접혀 파일명이 목록에 없다(-uall 누락)');
+  assert.match(r.본문, /src\/옆트리것\.js/, '접힌 폴더 이름만 보고 파일을 못 짚었다');
+});
+
 test('아무도 안 들고 있으면 조용하다 (거짓양성이 곧 무시로 이어진다)', (t) => {
   if (!있나) return t.skip('git 없음');
   const dir = 픽스처저장소();

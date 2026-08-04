@@ -142,7 +142,12 @@ function othersDirty(cwd) {
   const 결과 = [];
   for (const w of 전부) {
     if (w.prunable || 같은곳(w.path, 나)) continue;
-    const out = git(['status', '--porcelain'], w.path);
+    /* 🔑 `-uall` 이 없으면 **새 폴더의 미추적 파일이 통째로 접힌다** — `?? src/옆트리것.js` 가
+     *   `?? src/` 로 뭉쳐 파일이 목록에서 사라진다. 추적 파일의 수정은 멀쩡히 보이므로
+     *   **라이브에선 정상으로 보인다**(58ce9737 실측 지적 · F085). 하필 그 사각이 미추적이라
+     *   더 나쁘다 — 이력·stash·reflog 어디에도 없는 유일한 무보호 상태다(F025).
+     *   같은 자리를 오늘 `tools/작업본소유자.js` 도 밟았다(67fecc0). 2번째라 회귀로 잠근다. */
+    const out = git(['status', '--porcelain', '-uall'], w.path);
     if (out === null) continue;                 // 그 트리를 못 읽었다 — 조용히 건너뛴다
     const 파일 = out.split(/\r?\n/).filter(Boolean).map((줄) => {
       const p = 줄.slice(3);
