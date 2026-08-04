@@ -941,9 +941,12 @@ function createInterviewLogForm() {
   linkFormTab_(ss, before, '면접기록_응답');
   setState(st, '면접폼ID', form.getId());
   setState(st, '면접폼URL', form.getPublishedUrl());
+  면접URL틀보증_(st, form); // [v9.180] 개인 링크 틀 — 새 폼도 만든 그 자리에서 갖는다(뒤에 따로 눌러야 하면 안 눌린다)
   adminMail('[SYNK] 🛂 면접 기록 폼 생성 완료',
-    '배포 링크:\n' + form.getPublishedUrl() +
-    '\n\n어디에 뿌리면 좋은지:\n' +
+    '배포 링크(공개·익명):\n' + form.getPublishedUrl() +
+    '\n\n같은 폼의 개인 링크(학생ID 미리채움)는 시트 메뉴 「🔗 면접폼 개인 링크 만들기」에서 만듭니다 —\n' +
+    '신원을 이미 아는 분(개별 연락하는 졸업생·상담 자리·테스트 고객)에게만 보내세요.\n' +
+    '\n어디에 뿌리면 좋은지:\n' +
     '① 졸업생·수료생 단톡·페이스북 그룹 (가장 회수율이 높은 곳)\n' +
     '② 상담 온 학생 중 "비자 인터뷰 봤다"는 사람 — 상담 자리에서 QR로\n' +
     '③ 재학생 중 유학·취업 지원 예정자 — 다녀온 직후에 부탁하면 기억이 살아 있습니다\n\n' +
@@ -990,21 +993,93 @@ function migrateInterviewSid() {
     const it = items[at].asTextItem();
     const 문구같음 = String(it.getHelpText() || '') === INTERVIEW_SID_HELP;
     const 선택임 = !it.isRequired();
-    if (문구같음 && 선택임) { const m = '✅ 학생ID 문항: 이미 있음 — 스킵(멱등).'; Logger.log(m); return m; }
     if (!선택임) it.setRequired(false);
     if (!문구같음) it.setHelpText(INTERVIEW_SID_HELP);
-    const m = '📝 학생ID 문항: 이미 있음 — ' + [!문구같음 ? '안내 문구' : '', !선택임 ? '필수→선택(익명 회수 보호)' : ''].filter(Boolean).join('·') + '를 정본으로 되돌렸습니다.';
+    /* [v9.180] 문항이 이미 있어도 **여기서 빠져나가지 않는다** — 개인 링크 틀은 문항과 별개로
+     *   유실될 수 있고(app_state 정리·구 폼 복구), 그때 조용히 스킵하면 「칸은 있는데 링크가 없는」
+     *   상태가 영영 안 고쳐진다. 멱등은 「아무것도 안 한다」가 아니라 「같은 결과로 수렴한다」다. */
+    const 틀 = 면접URL틀보증_(st, form);
+    const 고친것 = [!문구같음 ? '안내 문구' : '', !선택임 ? '필수→선택(익명 회수 보호)' : ''].filter(Boolean).join('·');
+    const m = (고친것 ? '📝 학생ID 문항: 이미 있음 — ' + 고친것 + '를 정본으로 되돌렸습니다.'
+      : '✅ 학생ID 문항: 이미 있음 — 스킵(멱등).') + '\n' + 틀.msg;
     Logger.log(m); return m;
   }
 
   const item = form.addTextItem().setTitle(INTERVIEW_SID_TITLE).setHelpText(INTERVIEW_SID_HELP);
   const 이름at = titles.indexOf('이름');
   if (이름at !== -1) form.moveItem(item, 이름at + 1);
+  const 틀2 = 면접URL틀보증_(st, form); // 칸을 넣은 그 자리에서 개인 링크 틀도 만든다(문항이 있어야 만들 수 있다)
   const m = '✅ 학생ID 칸을 넣었습니다' + (이름at !== -1 ? '(1번 섹션 「이름」 바로 뒤)' : ' — 다만 「이름」 문항을 못 찾아 맨 끝에 붙었습니다. 폼 편집기에서 위로 올려 주세요.')
     + '\n**선택 문항입니다** — 익명으로 남기던 회수는 그대로입니다.'
     + '\n이 칸이 채워진 기록만 「무엇을 목표했고 실제로 어디로 갔는지」로 이어집니다(로드맵 ④ 재료).'
-    + '\n배포 링크: ' + form.getPublishedUrl();
+    + '\n' + 틀2.msg
+    + '\n공개 링크(익명·지금까지 뿌린 그것): ' + form.getPublishedUrl();
   Logger.log(m); return m;
+}
+
+/* ── 🔗 링크 둘로 — 공개는 익명 그대로, 아는 사람에게만 개인 링크 ────────────────
+ * 유호님 확정(2026-08-04): 「처음 테스트하는 고객도 필요하고, 정규 인원 말고도 쓸 일이 분명 있다.」
+ *
+ * 왜 공개 링크에 프리필을 안 넣나: 그러면 기본값이 익명→실명으로 **뒤집힌다.** 이 폼의 1순위
+ *   자산은 질문 은행이고 거절 경험은 특히 밝히기 싫은 정보라, 실명이 기본이 되는 순간 회수율이 깎인다.
+ * 그래서 링크를 둘로 나눈다 — **같은 폼·같은 응답 시트**라 회수가 갈리지 않는다.
+ *   ① 공개 링크(면접폼URL) = 지금까지 뿌린 그것. 학생ID 빈칸. 졸업생 그룹·QR.
+ *   ② 개인 링크(면접폼URL틀) = 신원을 이미 아는 사람에게 1:1로. 학생ID가 채워진 채 열린다.
+ * 🔑 ②로 온 사람만 궤적이 되고, ①로 온 사람은 지금처럼 질문 은행에 기여한다. 잃는 것이 없다.
+ * ⚠ ②도 **지우고 보낼 수 있다** — 미리채움은 잠금이 아니다. 그게 맞다(강제였다면 ①과 같은 문제다). */
+function 면접URL틀보증_(st, form) {
+  const 있던것 = String(getState(st, '면접폼URL틀').val || '');
+  let tpl = '';
+  try { tpl = prefillTemplateOf_(form, INTERVIEW_SID_TITLE); }
+  catch (e) { return { tpl: '', msg: '⚠️ 개인 링크 틀을 못 만들었습니다(' + e + ') — 공개 링크는 그대로 씁니다.' }; }
+  if (tpl !== 있던것) setState(st, '면접폼URL틀', tpl);
+  return { tpl: tpl, msg: '🔗 개인 링크 틀 ' + (있던것 ? (tpl === 있던것 ? '확인됨' : '갱신됨') : '생성됨')
+    + ' — 시트 메뉴 「🔗 면접폼 개인 링크 만들기」에서 학생ID를 넣으면 그 사람 링크가 나옵니다.' };
+}
+
+/* 입력 → 정규 학생ID. 못 알아보면 ''.
+ * ⚠ MJ_extractSid_(만족도팩)를 안 쓴 이유는 **정반대 요구**여서다 — 그건 유효 집합에 있는 것만
+ *   돌려준다(제3자 추측 차단이 목적). 여기서 반드시 통해야 하는 건 「아직 명단에 없는 사람」이다.
+ * 🔑 조립은 채번과 **같은 통로**(학생ID_포맷_)를 쓴다 — 'SYNK-' + 번호를 여기서 따로 이으면
+ *   상담시트가 만든 것과 한 글자만 달라도 조인이 통째로 죽는다(같은 파일 L1099의 경고). */
+function 면접학생ID정규화_(입력) {
+  const s = String(입력 || '').trim().toUpperCase();
+  if (/^\d{1,4}$/.test(s)) return 학생ID_포맷_(s);            // 「1」·「001」 — 유호님이 번호만 칠 때
+  const m = s.match(/^SYNK[\s_-]*(\d{1,4})$/);                // 「synk 1」·「SYNK001」·「SYNK-001」
+  return m ? 학생ID_포맷_(m[1]) : '';
+}
+
+/* 메뉴: 학생ID 하나를 받아 그 사람의 개인 링크를 돌려준다.
+ * ⚠ 명단에 없는 ID도 **거절하지 않는다** — 상담만 하고 앱에 아직 안 들어온 사람·테스트 고객이
+ *   정확히 그 상태이고, 그들을 막으면 이 기능이 존재할 이유가 없어진다. 대신 상태를 말해 준다. */
+function interviewPersonalLink() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const tpl = String(getState(st, '면접폼URL틀').val || '');
+  if (!tpl) return '⚠️ 개인 링크 틀이 아직 없습니다 — 먼저 「🔗 면접폼에 학생ID 칸 넣기」를 한 번 누르세요.';
+
+  const ui = SpreadsheetApp.getUi();
+  const a = ui.prompt('🔗 면접폼 개인 링크', '학생ID를 입력하세요 (예: SYNK-001 · 번호만 쳐도 됩니다)', ui.ButtonSet.OK_CANCEL);
+  if (a.getSelectedButton() !== ui.Button.OK) return '취소했습니다.';
+  const sid = 면접학생ID정규화_(a.getResponseText());
+  if (!sid) return '⚠️ 학생ID 형식이 아닙니다(SYNK-001 형태여야 합니다).\n'
+    + '학생ID가 없는 분에게는 **공개 링크**를 그대로 보내세요 — 익명으로 접수되고 질문 은행에는 똑같이 기여합니다.\n'
+    + '공개 링크: ' + String(getState(st, '면접폼URL').val || '(app_state 면접폼URL 없음)');
+
+  /* 명단 대조는 알림용이다(차단용이 아니다). profiles A=학생ID·B=이름. */
+  let 누구 = '⚠️ 아직 앱 명단에 없는 ID입니다 — 상담만 하신 분·테스트 고객이면 정상입니다.';
+  try {
+    const pf = ss.getSheetByName('profiles');
+    if (pf && pf.getLastRow() >= 2) {
+      const rows = pf.getRange(2, 1, pf.getLastRow() - 1, 2).getValues();
+      const hit = rows.filter(r => String(r[0]).trim() === sid)[0];
+      if (hit) 누구 = '✅ 명단 확인: ' + sid + ' ' + String(hit[1] || '').trim();
+    }
+  } catch (e) { 누구 = '(명단 대조 실패: ' + e + ' — 링크 자체는 정상입니다)'; }
+
+  return 누구 + '\n\n개인 링크 (이 분에게만 보내세요):\n' + tpl.replace(/SIDTOKEN/g, encodeURIComponent(sid))
+    + '\n\n· 열면 학생ID가 채워진 채로 뜹니다. 본인이 지우고 보낼 수도 있습니다(익명 선택권은 그대로).\n'
+    + '· 여러 사람에게 뿌릴 때는 공개 링크를 쓰세요 — 개인 링크를 단톡에 올리면 남의 ID로 제출됩니다.';
 }
 
 /* ── [v9.89] 🔁 결석 연락 기록 폼 — 「결석 복귀율」의 입력 레일(약점 메모 폼 v9.55·v9.64 계보) ──
