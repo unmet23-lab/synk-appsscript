@@ -41,6 +41,12 @@ function 더럽힌다(repo, rel, 내용) {
   fs.mkdirSync(path.dirname(p), { recursive: true });
   fs.writeFileSync(p, 내용);
 }
+/** 파일이 바뀐 시각을 뒤로 민다. ⚪ 판정은 **심장박동과 파일 시각의 선후**로 갈리므로(F089),
+ *  시각을 안 정하면 픽스처는 「끝난 지 400분인 세션이 방금 쓴 파일」이라는 실재하지 않는 상태가 된다. */
+function 나이먹인다(repo, rel, 분전) {
+  const t = new Date(Date.now() - 분전 * 60000);
+  fs.utimesSync(path.join(repo, rel), t, t);
+}
 /** track-collision 이 쌓는 것과 **같은 이름 규칙**으로 상태 파일을 놓는다(safeId 는 lib 것을 쓴다). */
 function 세션기록(state, repo, sid, touched, 분전) {
   const p = path.join(state, `track-${store.projectKey(repo)}-${store.safeId(sid)}.json`);
@@ -64,6 +70,7 @@ test('🔴 살아있는 남의 작업본을 유물과 갈라 낸다 (F073 실사
   더럽힌다(repo, '유물.js', 'orphan\n');
   세션기록(state, repo, 'local_aaaa1111', ['엔진_궤적.js'], 1);    // 살아있음
   세션기록(state, repo, 'local_bbbb2222', ['유물.js'], 400);       // 끝난 지 오래
+  나이먹인다(repo, '유물.js', 401);                                 // 그 세션이 살아 있을 때 쓴 것 (F089)
 
   const out = 돌린다({ repo, state, 나: 'local_cccc3333' });
   assert.match(out, /🔴[\s\S]*엔진_궤적\.js/, '살아있는 남의 작업본을 안 짚었다');
@@ -131,8 +138,57 @@ test('--hook 은 🔴가 없으면 침묵한다 (잔소리는 안 읽힌다)', {
   const { repo, state } = 픽스처();
   더럽힌다(repo, '유물.js', 'orphan\n');
   세션기록(state, repo, 'local_old0', ['유물.js'], 400);
+  나이먹인다(repo, '유물.js', 401);
   assert.strictEqual(돌린다({ repo, state, 나: 'local_me00', 인자: ['--hook'] }).trim(), '',
     '위험이 없는데 훅이 말했다 — 매 세션 울리면 읽히지 않게 된다');
+});
+
+/* ── ⚪ 유물 주장의 반증 (F089 · 이 도구가 이 세션에 낸 실오판) ─────────────────
+ * 실사고: `Code.js` 를 ⚪「이어받아도 된다」로 내놨는데 실제로는 **살아있는** 세션이
+ *   `node tools/bump-version.js`(Bash)로 방금 고친 것이었다. Bash 가 쓴 파일은 만진 기록이
+ *   안 남고(track-collision 은 Edit·Write 만 본다), 40분 전 끝난 세션의 **옛 기록이 이겼다.**
+ * 🔑 기록은 「누가 언젠가 만졌다」만 말한다. 그 뒤에 누가 덮어썼는지는 기록에 없다 —
+ *   그래서 ⚪(=손대도 된다고 말하는 유일한 칸)는 **시각으로 반증**되어야 한다. */
+
+test('🔴 끝난 세션의 기록이 있어도 **그 뒤에 바뀐** 파일은 ⚪가 아니다 (F089 실오판 재현)', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  더럽힌다(repo, 'Code.js', 'bumped by a live session via Bash\n');   // 지금 바뀌었다
+  세션기록(state, repo, 'local_dead01', ['Code.js'], 40);             // 40분 전 끝난 세션의 옛 기록
+  const out = 돌린다({ repo, state, 나: 'local_me00' });
+  assert.ok(!/⚪[\s\S]*Code\.js/.test(out),
+    `죽은 세션의 옛 기록만 보고 「이어받아도 된다」고 했다 — 그대로 커밋하면 F073 재현이다:\n${out}`);
+  assert.match(out, /❔[\s\S]*Code\.js/, `유물이 아니면 모름이어야 한다:\n${out}`);
+  assert.match(out, /Code\.js[^\n]*그 뒤에 바뀌었다/,
+    `칸만 바꾸고 이유를 안 적었다 — 이유가 없으면 옛 기록을 믿고 되돌린다:\n${out}`);
+});
+
+test('⚪ 진짜 유물은 그대로 ⚪다 — 반증이 거짓양성을 만들지 않는다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  더럽힌다(repo, '진짜유물.js', 'orphan\n');
+  세션기록(state, repo, 'local_dead02', ['진짜유물.js'], 400);
+  나이먹인다(repo, '진짜유물.js', 401);                               // 그 세션이 살아 있을 때 쓴 것
+  assert.match(돌린다({ repo, state, 나: 'local_me00' }), /⚪[\s\S]*진짜유물\.js/,
+    '반증이 과해 진짜 유물까지 모름으로 밀었다 — 이어받을 것이 매번 「확인하라」가 되면 안 읽힌다');
+});
+
+test('🔑 여유는 훅 순서를 견딘다 — track-collision 은 PreToolUse 라 상태가 파일보다 먼저 쓰인다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  더럽힌다(repo, '직후.js', 'x\n');
+  세션기록(state, repo, 'local_dead03', ['직후.js'], 400);
+  나이먹인다(repo, '직후.js', 399);        // 심장박동보다 1분 **뒤** — 편집이 훅 다음에 일어난 정상 순서
+  assert.match(돌린다({ repo, state, 나: 'local_me00' }), /⚪[\s\S]*직후\.js/,
+    '정상 훅 순서를 반증으로 읽었다 — 모든 유물이 모름이 되어 구분이 사라진다');
+});
+
+test('🔴 바뀐 때를 못 재면 ⚪라고 우기지 않는다 (삭제된 파일)', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state, g } = 픽스처();
+  더럽힌다(repo, '지워진.js', 'x\n');
+  g('add', '-A'); g('commit', '-qm', 'add');
+  fs.rmSync(path.join(repo, '지워진.js'));                            // 삭제 → statSync 불가
+  세션기록(state, repo, 'local_dead04', ['지워진.js'], 400);
+  const out = 돌린다({ repo, state, 나: 'local_me00' });
+  assert.ok(!/⚪[\s\S]*지워진\.js/.test(out), `못 잰 것을 유물로 단정했다:\n${out}`);
+  assert.match(out, /지워진\.js[^\n]*못 쟀다/, `못 쟀다는 사실을 숨겼다 — 통과와 미실행이 같은 모양이면 안 된다:\n${out}`);
 });
 
 test('--hook 은 🔴가 있으면 반드시 말한다', { skip: !git있나 && 'git 없음' }, () => {

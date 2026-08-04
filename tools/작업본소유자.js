@@ -55,6 +55,16 @@ function 키기준(r) {
  *  길게 잡으면 끝난 세션을 살아있다고 해 조심하게 된다(안전한 방향). 그래서 넉넉히 잡는다. */
 const 살아있음_분 = Number(process.env.SYNK_OWNER_ALIVE_MIN || 30);
 
+/* ⚪ 유물 주장의 반증 여유. 심장박동이 멎은 뒤에 바뀐 파일은 그 세션의 것일 수 없다.
+ *  🔴 실사고 2026-08-04(F089): 이 도구가 `Code.js` 를 ⚪「이어받아도 된다」로 내놨는데, 실제로는
+ *     **살아있는** 세션이 `node tools/bump-version.js`(Bash)로 방금 고친 것이었다. Bash 가 쓴 파일은
+ *     만진 기록이 안 남고(track-collision 은 Edit·Write 만 본다), 40분 전 끝난 세션의 **옛 기록이
+ *     그 자리를 이겼다.** 새는 방향은 언제나 통과다 — 그대로 이어받아 커밋했으면 F073 재현이다.
+ *  그래서 유물 주장은 파일 mtime 으로 반증한다. **판정을 올리지 않고 「모름」의 범위만 넓힌다** —
+ *  ⚪는 「손대도 된다」고 말하는 유일한 칸이라, 확신이 없으면 거기 두지 않는 것이 맞다.
+ *  여유가 필요한 이유: track-collision 은 PreToolUse 라 상태 파일이 **파일보다 먼저** 쓰인다. */
+const 유물여유_분 = Number(process.env.SYNK_OWNER_STALE_MIN || 2);
+
 function git(args) {
   const r = spawnSync('git', ['-c', 'core.quotepath=false', ...args], {
     cwd: ROOT, encoding: 'utf8', timeout: 5000, windowsHide: true,
@@ -89,7 +99,13 @@ function 미커밋들() {
   return 목록;
 }
 
-/** 세션별 {sid, 분, touched}. track-collision 이 쌓아 둔 것을 읽기만 한다. */
+/** 파일이 마지막으로 바뀐 시각(ms). 못 읽으면 **null(=모름)** — 0(=아주 옛날)과 구별한다.
+ *  삭제된 파일은 여기서 null 이 되고, 그건 「유물임을 확인 못 했다」는 뜻이지 유물이라는 뜻이 아니다. */
+function 파일시각(f) {
+  try { return fs.statSync(path.join(ROOT, f)).mtimeMs; } catch (_) { return null; }
+}
+
+/** 세션별 {sid, 분, 박동, touched}. track-collision 이 쌓아 둔 것을 읽기만 한다. */
 function 세션들() {
   const dir = store.stateDir();
   const 접두 = `track-${store.projectKey(키기준(ROOT))}-`;   // 트리가 달라도 메인 키 하나로 (F079)
@@ -100,12 +116,13 @@ function 세션들() {
   for (const f of 목록) {
     if (!f.startsWith(접두) || !f.endsWith('.json')) continue;
     const p = path.join(dir, f);
-    let j; let 분;
+    let j; let 분; let 박동;
     try {
-      분 = Math.round((now - fs.statSync(p).mtimeMs) / 60000);
+      박동 = fs.statSync(p).mtimeMs;
+      분 = Math.round((now - 박동) / 60000);
       j = JSON.parse(fs.readFileSync(p, 'utf8'));
     } catch (_) { continue; }
-    결과.push({ sid: f.slice(접두.length, -5), 분, touched: Array.isArray(j.touched) ? j.touched : [] });
+    결과.push({ sid: f.slice(접두.length, -5), 분, 박동, touched: Array.isArray(j.touched) ? j.touched : [] });
   }
   return 결과.sort((a, b) => a.분 - b.분);
 }
@@ -128,7 +145,15 @@ function 조사() {
     if (나 && 산주인.some((s) => s.sid === 나)) return { 파일: f, 트리, 종류: 판정.내것, 주인: [] };
     const 남 = 산주인.filter((s) => s.sid !== 나);
     if (남.length) return { 파일: f, 트리, 종류: 판정.남의살아있는, 주인: 남 };
-    if (주인.length) return { 파일: f, 트리, 종류: 판정.끝난세션, 주인 };
+    /* ⚪ 유물이라고 말하려면 **그 세션이 끝난 뒤로 안 바뀌었어야** 한다 (F089).
+     *   기록만 보면 「누가 언젠가 만졌다」는 것뿐이고, 그 뒤에 다른 통로(Bash·외부 앱·git)가
+     *   덮어썼는지는 기록에 안 남는다. 시각으로 반증되면 ⚪가 아니라 ❔로 내린다. */
+    if (주인.length) {
+      const 박동 = Math.max(...주인.map((s) => s.박동));
+      const 바뀐때 = 파일시각(f);
+      if (바뀐때 !== null && 바뀐때 <= 박동 + 유물여유_분 * 60000) return { 파일: f, 트리, 종류: 판정.끝난세션, 주인 };
+      return { 파일: f, 트리, 종류: 판정.모름, 주인: [], 반증: { 주인, 잰것: 바뀐때 !== null } };
+    }
     return { 파일: f, 트리, 종류: 판정.모름, 주인: [] };
   });
   return { git못부름: false, 나, 항목, 세션수: ss.filter((s) => s.분 <= 살아있음_분).length };
@@ -167,7 +192,12 @@ function 보고(r, { 훅 }) {
   if (모름.length) {
     줄.push('', `❔ 주인 모름 ${모름.length}건 — Edit·Write 를 안 거친 변경(Bash·외부 앱·git)이라 기록이 없다.`);
     줄.push('   **모름은 안전이 아니다** — 만지기 전에 `git log --oneline -5` 와 보드로 확인한다.');
-    for (const i of 모름) 줄.push(`   · ${i.파일}`);
+    for (const i of 모름) {
+      // 유물로 볼 뻔한 것은 **왜 아닌지**까지 적는다 — 이유 없이 칸만 바뀌면 옛 기록을 믿고 되돌린다(F089).
+      if (!i.반증) { 줄.push(`   · ${i.파일}`); continue; }
+      const 누구 = i.반증.주인.map((s) => `${짧게(s.sid)}·${s.분}분 전`).join(', ');
+      줄.push(`   · ${i.파일}  ⚠ ${누구} 의 기록이 있지만 ${i.반증.잰것 ? '**그 뒤에 바뀌었다**' : '**바뀐 때를 못 쟀다**'} — 유물이 아니다(다른 통로가 썼다)`);
+    }
   }
   return 줄.join('\n');
 }
