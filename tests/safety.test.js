@@ -5,7 +5,7 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-const { ENGINE_FILES, engineSource } = require('./_engine-source');
+const { ENGINE_FILES, engineSource, sharedBlocks } = require('./_engine-source');
 const MANIFEST_PATH = path.join(ROOT, 'appsscript.json');
 const code = engineSource(); // 엔진 전체를 한 문자열로 — 파일이 쪼개져도 아래 표식 검사가 그대로 산다
 
@@ -413,12 +413,22 @@ test('[v9.48] 공유값 서버화 — calcAll이 학업 계산 뒤에 공유열�
 
 test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105 최애·DB~DD 교재연동 3열)과 겹치지 않는다', () => {
   // 리뷰 B1 재발 차단: 공유 블록을 확장할 때 이미 주인이 있는 열을 침범하면 첫 calcAll이 데이터를 파괴한다.
-  const s1 = 85, len1 = code.match(/const SHARED_COL_HEADERS = \[([\s\S]*?)\];/)[1].split(',').filter(s => s.trim()).length;
-  const s2 = Number(code.match(/const SHARED2_COL_START = (\d+)/)[1]);
-  const len2 = code.match(/const SHARED2_COL_HEADERS = \[([\s\S]*?)\];/)[1].split(',').filter(s => s.trim()).length;
-  const s3 = Number(code.match(/const SHARED3_COL_START = (\d+)/)[1]); // [v9.82] 3차 블록(출퇴근·결석 카드)
-  const len3 = code.match(/const SHARED3_COL_HEADERS = \[([\s\S]*?)\];/)[1].split(',').filter(s => s.trim()).length;
-  const reserved = { 105: '최애(v9.50·A4, 학생 Set Column)', 106: '목소리폼URL(교재연동)', 107: '목소리성장카드(교재연동)', 108: '필살기노트(교재연동)', 119: '랭킹보드HTML(v9.81, calcAll 리그 카드)', 129: '오늘의만남(v9.99, calcAll 소그룹 3라운드 짝)' };
+  /* [F080] 블록 목록을 손으로 적지 않는다 — 이 검사는 SHARED1~3만 알고 4차 블록은 검사 밖이었다(같은 파일의
+   *   상담 디테일 검사는 알고 있었다 = 두 손 목록이 이미 갈라져 있었다). 이제 둘 다 sharedBlocks 하나에서 파생한다. */
+  const blocks = sharedBlocks(code);
+  assert.ok(blocks.length >= 4, '공유 블록 파생이 4개 미만 — 검사 대상이 사라졌다(파생기가 죽으면 이 검사는 조용히 통과한다)');
+  // 파생기가 **하나도 빠뜨리지 않았는지**를 소스 쪽에서 되센다 — 헤더 상수 이름이 어긋난 블록은 조용히 검사 밖으로 나간다
+  assert.equal(blocks.length, (code.match(/const SHARED\d*_COL_START = \d+/g) || []).length,
+    'SHARED*_COL_START 개수와 파생된 블록 수가 다르다 — 헤더 상수를 못 찾은 블록이 검사 밖에 있다');
+  const reserved = {
+    105: '최애(v9.50·A4, 학생 Set Column)', 106: '목소리폼URL(교재연동)', 107: '목소리성장카드(교재연동)',
+    108: '필살기노트(교재연동)', 119: '랭킹보드HTML(v9.81, calcAll 리그 카드)', 129: '오늘의만남(v9.99, calcAll 소그룹 3라운드 짝)',
+    /* 🔴 아래 둘은 **코드가 만든 열이 아니다** — `langColOf_`가 이름으로 여는 열이라 자리는 라이브에서만 정해진다.
+     *   08-04 라이브 실측에서 131·132에 앉아 있었고, 진로 4열을 131로 박았다가 그 위를 덮을 뻔했다(F080).
+     *   레지스트리에 없으면 「비었다」로 읽히므로, 실측한 자리를 여기 적어 다음 블록이 못 밟게 한다. */
+    131: '학교(langColOf_ — 코드가 여는 열이 아니다 · 08-04 라이브 실측)',
+    132: '동네(langColOf_ — 코드가 여는 열이 아니다 · 08-04 라이브 실측)',
+  };
   /* ⚠ 이 레지스트리는 **코드가 만드는 열만** 안다. 라이브 profiles 에는 코드가 모르는 열이 자란다 —
    *   Glide 가 심는 「🔒 Row ID」, langColOf_ 가 이름으로 만드는 「학교」·「동네」(조 편성).
    *   그래서 여기서 「비었다」고 읽은 번호가 라이브에선 이미 남의 것일 수 있다(08-04 라이브 실측:
@@ -426,9 +436,12 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
    *   이름으로 찾아라**(profilesBlockAt_). 아래 검사가 그 규율을 지킨다. */
   Object.keys(reserved).forEach(cs => {
     const c = Number(cs);
-    assert.ok(!(c >= s1 && c <= s1 + len1 - 1) && !(c >= s2 && c <= s2 + len2 - 1) && !(c >= s3 && c <= s3 + len3 - 1),
-      '공유 블록이 선점 열 ' + c + '(' + reserved[cs] + ')을 침범 — 리뷰 B1 재발');
+    blocks.forEach(b => assert.ok(!(c >= b.start && c <= b.end),
+      b.name + '(' + b.start + '~' + b.end + ')이 선점 열 ' + c + '(' + reserved[cs] + ')을 침범 — 리뷰 B1 재발'));
   });
+  // 블록끼리도 겹치면 안 된다 — 새 블록의 시작을 잘못 세면 앞 블록의 꼬리를 덮는다(에러 없이 값만 밀린다)
+  blocks.forEach((a, i) => blocks.slice(i + 1).forEach(b => assert.ok(a.end < b.start || b.end < a.start,
+    a.name + '(' + a.start + '~' + a.end + ')과 ' + b.name + '(' + b.start + '~' + b.end + ')이 겹친다')));
   // 선점 주인들이 실제로 그 열을 쓰는지(레지스트리의 근거) — 코드가 바뀌면 이 목록도 갱신해야 한다
   assert.ok(code.includes("pf.getRange('DA1').getValue()) !== '최애'"), 'DA105 최애 보장 코드가 사라짐 — 레지스트리 갱신 필요');
   assert.ok(code.includes("pf.getRange('DO1').getValue()) !== '랭킹보드HTML'"), 'DO119 랭킹보드 보장 코드가 사라짐 — 레지스트리 갱신 필요');
@@ -1526,17 +1539,13 @@ test('[v9.84] 상담 배선 — 읽기 폭 동적·이름 해석·DT124~DX128 �
 });
 
 test('[v9.84] 상담 디테일 열 비침범 — DT124~DX128이 공유 블록(SHARED·2·3 자동 검출)과 겹치지 않는다', () => {
-  // v9.74 레지스트리와 독립 검사 — 동시 편집 트랙과의 텍스트 충돌을 피하면서, 미래의 SHARED3+ 성장도 자동으로 잡는다
-  const blocks = [];
-  [['SHARED_COL_START', 'SHARED_COL_HEADERS'], ['SHARED2_COL_START', 'SHARED2_COL_HEADERS'], ['SHARED3_COL_START', 'SHARED3_COL_HEADERS'], ['SHARED4_COL_START', 'SHARED4_COL_HEADERS']].forEach(p => {
-    const s = code.match(new RegExp('const ' + p[0] + ' = (\\d+)'));
-    const h = code.match(new RegExp('const ' + p[1] + ' = \\[([\\s\\S]*?)\\];'));
-    if (s && h) blocks.push([Number(s[1]), h[1].split(',').filter(x => x.trim()).length]);
-  });
+  /* [F080] 블록 목록은 손으로 적지 않는다 — 여기와 v9.74 레지스트리 검사가 각자 손 목록을 들고 있다가
+   *   한쪽만 4차 블록을 아는 상태로 갈라졌다. 이제 둘 다 sharedBlocks 하나에서 파생한다. */
+  const blocks = sharedBlocks(code);
   assert.ok(blocks.length >= 2, '공유 블록 상수를 찾지 못함 — 검사 자체가 무력화됨');
   for (let c = 124; c <= 128; c++) {
-    blocks.forEach(b => assert.ok(!(c >= b[0] && c <= b[0] + b[1] - 1),
-      '공유 블록(' + b[0] + '~' + (b[0] + b[1] - 1) + ')이 상담 디테일 열 ' + c + '을 침범 — 리뷰 B1 계열 재발'));
+    blocks.forEach(b => assert.ok(!(c >= b.start && c <= b.end),
+      b.name + '(' + b.start + '~' + b.end + ')이 상담 디테일 열 ' + c + '을 침범 — 리뷰 B1 계열 재발'));
   }
   assert.ok(code.includes('profilesBlockWrite_(dst, 124, DT_HEADS, quint,'), 'DT124 기입 코드가 사라짐 — 이 검사·레지스트리 갱신 필요');
 });
