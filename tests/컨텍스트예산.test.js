@@ -194,6 +194,25 @@ test('🔑 AI 는 🔴 첫 도달에만 깨운다 — 정리는 자동으로, �
   }
 });
 
+test('🔑 컴팩트로 내려가면 단계도 내려간다 — 안 내리면 다음 사이클이 통째로 침묵한다', () => {
+  // 08-04 실측(유호님 "다른 화면들에서도 되는지 확인해줘"로 발견): 760k 까지 갔다가
+  // 컴팩트로 174k 가 된 세션의 stage 가 4로 남아 있었다. 그 상태로는 다시
+  // 300·400·500·600k 를 넘어도 전부 억제되고 **700k 에 닿아야** 입을 연다 —
+  // 컴팩트 한 번이 알림 400k 구간을 통째로 삼킨다.
+  const st = newDir('drop'); const cwd = newDir('p-drop');
+  const at = (c) => stop(c, { stateDir: st, cwd, sid: 'COMPACT' });
+
+  assert.match(at(760_000).msg, /⚫/, '760k 에서 안 울렸다(전제 실패)');
+  assert.strictEqual(at(174_000).json, null, '내려가는 길에 말을 걸었다 — 줄어든 건 알릴 일이 아니다');
+
+  // 여기가 핵심 — 카운터가 안 내려갔으면 아래 셋이 전부 조용하다
+  const back = at(310_000);
+  assert.match(back.msg, /🔴/, '컴팩트 뒤 다시 300k 를 넘었는데 침묵한다 — 단계가 안 내려갔다');
+  assert.ok(back.json.hookSpecificOutput, '새 사이클인데 AI 정리가 안 붙었다 — 컴팩트 뒤엔 다시 깨워야 한다');
+  assert.match(at(410_000).msg, /한참 지났다/, '400k 도 침묵한다');
+  assert.match(at(520_000).msg, /⚫/, '500k 도 침묵한다');
+});
+
 test('🔑 단계당 1회 · 상승은 놓치지 않는다', () => {
   const st = newDir('dedup'); const cwd = newDir('proj');
   const at = (c) => stop(c, { stateDir: st, cwd, sid: 'SAME' });
