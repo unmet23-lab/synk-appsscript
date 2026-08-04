@@ -1127,6 +1127,148 @@ function setupConsultTrigger() {
   Logger.log('✅ 상담시트 onEdit 트리거 생성 — 「처리상태」를 반배정/앱편입으로 바꾸면 학생ID가 즉시 발급됩니다');
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+ * 크루카드 접수 감시 [v9.171] — 접수를 「알리는」 층
+ * ───────────────────────────────────────────────────────────────────
+ * 왜 필요한가: 접수 알림은 `importFormResponses` 안에만 있었다(구글폼 경로). 08-04에 폼을
+ *   닫으면서 그 함수는 영원히 「신규 응답 없음」으로 조기 return하게 됐고, 크루카드 doPost에는
+ *   알림이 없다 → **접수가 들어와도 아무도 부르지 않는 상태**가 됐다. 쌓이기만 하는 건 자동화가 아니다.
+ *
+ * 🔴 왜 웹앱이 아니라 여기인가: 크루카드 doPost에서 메일을 쏘면 **익명 POST가 메일을 발사**한다
+ *   — 반복 제출로 메일 폭탄을 만들 수 있는 스팸 벡터다. 그래서 알림은 «쓰는 쪽»이 아니라
+ *   «읽는 쪽»에 둔다. 이미 10분마다 도는 parentSweep이 상담시트를 읽어 판단한다(새 트리거 0개).
+ *
+ * 판정의 축 = **「행별 최신 크루카드번호」 집합의 증가분**. 하나의 집합이 세 가지를 다 잡는다:
+ *   ①새 행 등장 = 신규접수 ②미착수 재제출(그 행의 최신 번호가 교체됨) ③착수 이후 재제출
+ *   (덮지 않고 번호만 앞에 붙으므로 역시 새 번호가 등장한다 — [v9.168] 잠금 케이스가
+ *    「원장이 그 칸을 안 보면 영원히 모른다」였던 구멍이 여기서 메워진다).
+ *   **줄어드는 것은 알리지 않는다** — 원장이 처리해서 빠진 것이지 사건이 아니다.
+ * ⚠ 마지막 serial을 마커로 쓰지 않는다 — crew_cards를 비우면 채번이 001부터 다시 시작해
+ *   마커보다 작아지고 그때부터 **영원히 침묵**한다(08-04 정리 때 실제로 그 상태를 만들었다).
+ * ═══════════════════════════════════════════════════════════════════ */
+const CREW_TAB_ = 'crew_cards';
+const CREW_TZ_ = 'Asia/Ulaanbaatar';        // 채번 기준(crewcard/크루카드.js TZ_)과 같아야 «오늘»이 갈리지 않는다
+const CREW_CAP_ = 300;                      // crewcard/크루카드.js DAILY_CAP 사본 — 회귀가 동치를 잠근다
+const CREW_CAP_WARN_ = 0.8;                 // 상한의 80%에서 미리 알린다(막힌 뒤에 아는 건 늦다)
+const CREW_WATCH_KEY_ = '크루접수_통보지문';
+const CREW_CAP_KEY_ = '크루접수_상한경고일';
+const CREW_WATCH_MAX_ = 200;                // 지문 보관 상한 — 넘치면 오래된 쪽이 잘린다(잘림의 대가는 오탐 1통이지 미탐이 아니다)
+
+function crewIntakeWatch_(ss) {
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+
+  let consult, crew;
+  try {
+    const book = SpreadsheetApp.openById(CONSULT_SHEET_ID);
+    consult = book.getSheetByName('상담데이터입력');
+    crew = book.getSheetByName(CREW_TAB_);
+  } catch (e) { Logger.log('크루접수 감시 — 상담 스프레드시트 열기 실패(조용히 스킵): ' + e); return; }
+  if (!consult || !crew) { Logger.log('크루접수 감시 — 탭 없음(상담데이터입력/' + CREW_TAB_ + ')'); return; }
+
+  const width = consult.getLastColumn();
+  const hdr = consult.getRange(2, 1, 1, width).getValues()[0];
+  const col = {};
+  hdr.forEach(function (h, i) { const k = String(h).trim(); if (k && col[k] === undefined) col[k] = i; });
+  const c번호 = col['크루카드번호'], c상태 = col['처리상태'];
+  // 증분 전 시트면 감시할 열 자체가 없다 — 조용히 스킵하되 로그로 드러낸다(통과와 미실행이 같은 모양이면 안 된다)
+  if (c번호 === undefined || c상태 === undefined) { Logger.log('크루접수 감시 — 상담시트 증분 전(크루카드번호/처리상태 열 없음)'); return; }
+  const c이름 = col['이름(한국어)'] === undefined ? 0 : col['이름(한국어)'];
+
+  const lastR = consult.getLastRow();
+  const rows = lastR >= 3 ? consult.getRange(3, 1, lastR - 2, width).getValues() : [];
+  const 최신 = {};              // 최신 serial → 그 행의 요약
+  const 이력전문 = [];          // 유실 판정용 — 이력 문자열 전문(직전 번호까지 들어 있다)
+  rows.forEach(function (r) {
+    const 이력 = String(r[c번호] || '').trim();
+    if (!이력) return;
+    이력전문.push(이력);
+    const s = (이력.match(/^SL-\d{8}-\d{3}/) || [''])[0];
+    if (!s) return;
+    최신[s] = {
+      name: String(r[c이름] || '').trim() || '(무명)',
+      상태: String(r[c상태] || '').trim(),
+      재제출: 이력.indexOf('←') !== -1
+    };
+  });
+
+  const 현재 = Object.keys(최신).sort();
+  const 이전문 = String(getState(st, CREW_WATCH_KEY_).val || '');
+  /* 🔴 접두어 `v1:`가 «저장된 적 있음»의 표식이다 — 없으면 첫 실행.
+   *   처음엔 목록만 저장했는데, 접수가 0건이면 지문이 **빈 문자열**이라 「저장된 적 없음」과
+   *   구별되지 않았다. 그 상태에선 초회 판정이 영영 참이라 **개원 후 첫 접수 1건이 침묵**한다
+   *   — 이 장치가 막으려던 바로 그 실패다(회귀가 잡았다). 접두어는 포맷 버전 표시도 겸한다. */
+  const 초회 = 이전문.indexOf('v1:') !== 0;
+  const 이전 = 초회 ? [] : (이전문.slice(3) ? 이전문.slice(3).split(',') : []);
+  const 새것 = 초회 ? [] : 현재.filter(function (s) { return 이전.indexOf(s) === -1; });
+
+  // ── 유실: crew_cards에 있는데 상담시트 어디에도 안 보이는 번호 ──
+  //   doPost는 이관 실패를 삼키고 로그만 남긴다(접수 자체는 성립시키려는 의도) → 그 행은
+  //   원장 큐에서 «보이지 않는 채로» 사라진다. 막는 것과 유실시키는 것은 다르다.
+  //   ⚠ 최근 2시간으로 좁힌다 — 세 번 이상 재제출하면 옛 번호가 이력에서 밀려나 오탐이 된다.
+  const 유실 = [];
+  const crewLast = crew.getLastRow();
+  let 오늘건수 = 0;
+  const 오늘 = Utilities.formatDate(new Date(), CREW_TZ_, 'yyyyMMdd');
+  if (crewLast >= 2) {
+    const n = Math.min(CREW_WATCH_MAX_, crewLast - 1);
+    const vals = crew.getRange(crewLast - n + 1, 1, n, 2).getValues();   // A=submitted_at · B=ref_serial
+    const 기준 = Date.now() - 2 * 60 * 60 * 1000;
+    const 전문 = 이력전문.join('|');
+    vals.forEach(function (v) {
+      const m = /^SL-(\d{8})-(\d{3})$/.exec(String(v[1] || ''));
+      if (!m) return;
+      if (m[1] === 오늘) 오늘건수 = Math.max(오늘건수, Number(m[2]));   // 채번은 1부터 증가 → 최대값이 오늘 건수
+      const t = v[0] instanceof Date ? v[0].getTime() : 0;
+      if (t && t < 기준) return;
+      if (전문.indexOf(m[0]) === -1) 유실.push(m[0]);
+    });
+  }
+
+  // ── 상한 근접: 막히면 학생은 실패 화면을 보고 원장은 모른다. 하루 1회만 알린다 ──
+  const capLine = (오늘건수 >= Math.floor(CREW_CAP_ * CREW_CAP_WARN_) &&
+    String(getState(st, CREW_CAP_KEY_).val || '') !== 오늘)
+    ? '⚠️ 오늘 접수 ' + 오늘건수 + '건 / 상한 ' + CREW_CAP_ + '건 — 상한에 닿으면 새 제출이 거부됩니다.'
+    : '';
+
+  // 지문은 알릴 게 없어도 항상 갱신한다(감소분 반영). 알림 실패로 손실되는 건 통보 1회뿐.
+  setState(st, CREW_WATCH_KEY_, 'v1:' + 현재.slice(-CREW_WATCH_MAX_).join(','));
+  if (초회) { Logger.log('크루접수 감시 — 기준선 %s건 저장(첫 실행은 침묵)', 현재.length); return; }
+  if (!새것.length && !유실.length && !capLine) return;   // 침묵이 기본값
+
+  const 신규 = [], 갱신 = [], 잠김 = [];
+  새것.forEach(function (s) {
+    const r = 최신[s];
+    const line = '· ' + r.name + ' (' + s + (r.상태 ? ' · ' + r.상태 : '') + ')';
+    if (!r.재제출) 신규.push(line);
+    else if (r.상태 === '신규접수' || r.상태 === '검토중' || !r.상태) 갱신.push(line);
+    else 잠김.push(line);
+  });
+
+  const body = [];
+  if (신규.length) body.push('📝 신규 접수 ' + 신규.length + '건\n' + 신규.join('\n') +
+    '\n→ 상담데이터입력의 「처리상태」를 「반배정」으로 바꾸면 학생ID가 자동 발급됩니다.');
+  if (갱신.length) body.push('🔄 재제출 ' + 갱신.length + '건 — 아직 착수 전이라 **최신 내용으로 갱신됐습니다**\n' + 갱신.join('\n') +
+    '\n→ 따로 하실 일은 없습니다.');
+  if (잠김.length) body.push('🔴 재제출 ' + 잠김.length + '건 — 이미 진행 중인 행이라 **반영하지 않았습니다**\n' + 잠김.join('\n') +
+    '\n→ crew_cards 탭에서 그 번호의 원본을 열어, 바뀐 것 중 필요한 것만 손으로 옮기세요.\n' +
+    '   (자동으로 덮으면 반·담당자·학생ID가 날아갑니다.)');
+  if (유실.length) body.push('🔴 이관 유실 의심 ' + 유실.length + '건 — crew_cards에는 있는데 상담데이터입력에 없습니다\n' +
+    유실.map(function (s) { return '· ' + s; }).join('\n') +
+    '\n→ 이 접수는 원장 큐에 안 보입니다. crew_cards에서 내용을 확인해 수기로 넣거나 재제출을 안내하세요.');
+  if (capLine) body.push(capLine);
+
+  if (quotaOk(1)) {
+    const 제목 = 유실.length ? '[SYNK] 🔴 크루카드 접수 — 확인 필요'
+      : (신규.length ? '[SYNK] 📝 크루카드 신규 접수 ' + 신규.length + '건' : '[SYNK] 🔄 크루카드 재제출 알림');
+    MailApp.sendEmail(ADMIN_EMAIL, 제목, body.join('\n\n'));
+    /* 상한 경고를 «보낸 뒤에» 오늘 표식을 남긴다 — 읽기만 하고 안 남기면 하루 1회 가드가
+     * 선언만 있고 발동하지 않아 10분마다 같은 경고가 나간다(회귀가 잡은 실수).
+     * 쿼터로 못 보냈을 땐 표식도 남기지 않는다 — 다음 틱이 다시 시도해야 경고가 유실되지 않는다. */
+    if (capLine) setState(st, CREW_CAP_KEY_, 오늘);
+  }
+  Logger.log('크루접수 감시 — 신규 %s · 갱신 %s · 잠김 %s · 유실 %s', 신규.length, 갱신.length, 잠김.length, 유실.length);
+}
+
 function importFormResponses() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
