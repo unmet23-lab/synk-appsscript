@@ -43,10 +43,16 @@ function consultPace_(goalLv, dueRaw, hoursRaw, now) {
  * ⚠ TOPIK목표는 여기 없다 — 이미 DU125(상담목표)에 기한과 함께 들어가 있다(같은 값 두 열 금지). */
 const CAREER_HEADS_ = ['졸업후진로', '희망진학과정', '목표비자', '관심전공'];
 const CAREER_SRC_ = ['졸업후진로', '희망진학과정', '졸업후목표비자', '관심전공분야']; // 상담시트 헤더명(같지 않은 둘이 있다)
-/* EA131~ED134. ⚠ 「DT128 다음이니 129」가 아니다 — 129는 오늘의만남(v9.99), 130은 대화폼URL(SHARED4)이
- *   이미 주인이다. 이 저장소는 열 충돌로 **세 번** 당했고(오늘의알림 덮임·DO119 선점·리뷰 B1),
- *   그래서 빈자리는 눈으로 세지 말고 tests/safety.test.js의 열 레지스트리에서 읽는다(거기에 등록도 한다). */
-const CAREER_COL_ = 131;
+/* ⚠ **이 블록에는 고정 열 번호가 없다.** 처음엔 EA131로 박았다가 두 번 연속 틀렸다:
+ *   ① 「DT128 다음이니 129」로 셌는데 129는 오늘의만남(v9.99)·130은 대화폼URL(SHARED4)이 주인이었다
+ *      → 회귀(tests/수집.test.js 선점 구간)가 잡았다.
+ *   ② 131로 옮겼더니 **라이브 profiles에는 이미 「학교」·「동네」가 거기 있었다**(08-04 타 세션 라이브 실측).
+ *      코드 레지스트리는 131이 비었다고 말하는데 시트는 아니었다 — 레지스트리가 **코드가 만드는 열만**
+ *      알기 때문이다. 라이브에는 코드가 모르는 열이 자란다: Glide가 심는 「🔒 Row ID」,
+ *      langColOf_가 이름으로 만드는 「학교」·「동네」(조 편성).
+ * 🔑 그래서 자리를 **이름으로 찾는다**(profilesBlockAt_). v9.39가 contents에서 정확히 같은 사고를
+ *   겪고 langColOf_를 만든 것과 같은 규약이다 — 「현재 상태는 현재를 읽어 판정한다」의 열 판(版).
+ *   레지스트리에 번호를 등록하지 않는 대신, **번호를 안 쓴다는 것**을 회귀가 지킨다. */
 
 /* 핵심비전(BA53) 폴백 — 원장이 손으로 쓴 V열이 **언제나 우선**이고, 비었을 때만 합성한다.
  *
@@ -77,6 +83,25 @@ function 진로비전_(cv, row) {
  * @param holdCnt 학생 뒤에 보존되는 행 수(데모 학생) — tail-clear가 그 시연값을 매일 지우지 않게.
  * @return 기입했으면 true / 남의 헤더를 발견해 보류했으면 false.
  */
+/* 블록 시작 열을 **이름으로** 찾는다 — 없으면 맨 끝+1에 새로 연다(langColOf_와 같은 규약).
+ *
+ * 왜 이름인가: 라이브 profiles 에는 **코드가 모르는 열이 자란다.** Glide 가 심는 「🔒 Row ID」,
+ *   `langColOf_`가 이름으로 만드는 「학교」·「동네」. 코드 안의 열 레지스트리는 *코드가 만드는 열*만
+ *   알기 때문에, 거기서 「비었다」고 읽은 번호가 라이브에선 이미 남의 것일 수 있다(08-04 실측).
+ * ⚠ 첫 헤더만 찾는다 — 나머지가 어긋나 있으면 그건 **점거**이고, 판정은 profilesBlockWrite_ 의
+ *   가드가 한다(여기서 또 판정하면 같은 판정이 두 곳에 살고, 두 곳은 언제나 갈라진다).
+ * ⚠ 「Row ID」가 든 헤더는 절대 반환하지 않는다 — 덮으면 Glide 행 식별이 파괴된다(v9.39 실사고).
+ */
+function profilesBlockAt_(dst, heads) {
+  const w = dst.getLastColumn();
+  const cur = dst.getRange(1, 1, 1, w).getValues()[0].map(h => String(h || '').trim());
+  for (let c = 0; c < cur.length; c++) {
+    if (cur[c].indexOf('Row ID') > -1) continue;
+    if (cur[c] === heads[0]) return c + 1;
+  }
+  return w + 1; // 맨 끝에 새로 연다 — 다음 실행부터는 위 탐색이 같은 자리를 되찾는다
+}
+
 function profilesBlockWrite_(dst, start, heads, rows, stateKey, label, lastNow, holdCnt) {
   const st = ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'app_state', ['key', 'value']);
   const end = start + heads.length - 1;
@@ -312,9 +337,10 @@ function syncProfiles() {
     const quint = ordered.map(e => [e.taste || '', e.cGoal || '', e.topik0 || '', e.pain || '', e.pace || '']);
     profilesBlockWrite_(dst, 124, DT_HEADS, quint, '상담열충돌', '상담 디테일', lastNow, demoStu.length);
 
-    /* [궤적] 「의도」 4열 → EA131~ED134. 위 블록과 **같은 통로**를 지난다 — 방어를 손으로 베끼지 않는다. */
-    profilesBlockWrite_(dst, CAREER_COL_, CAREER_HEADS_, ordered.map(e => e.career || ['', '', '', '']),
-      '진로열충돌', '진로 4열', lastNow, demoStu.length);
+    /* [궤적] 「의도」 4열. 위 블록과 **같은 통로**를 지난다 — 방어를 손으로 베끼지 않는다.
+     * 시작 열은 상수가 아니라 **이름으로 찾는다**(라이브에 코드가 모르는 열이 자라기 때문 · 위 주석). */
+    profilesBlockWrite_(dst, profilesBlockAt_(dst, CAREER_HEADS_), CAREER_HEADS_,
+      ordered.map(e => e.career || ['', '', '', '']), '진로열충돌', '진로 4열', lastNow, demoStu.length);
   }
   setState(ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'app_state', ['key', 'value']), '동기화보류_상태', ''); // [v9.22] 정상 동기화 → 보류 알림 재무장
   // [v9.50·F4] 신규 학생 웰컴 스토리 대기열 — 등록 감지 즉시 큐에 넣고, 학부모 이메일(§1-3)이 채워진 아침에 welcomeStoryBatch_가 발송
