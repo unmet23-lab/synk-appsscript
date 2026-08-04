@@ -151,7 +151,7 @@ test('boardTrack — 내 커밋 해시로 내 줄을 찾고, 못 찾으면 남�
   assert.equal(report.boardTrack(임시('synk-tb-noboard-'), ['5e5b03f x']), null, '보드가 없는데 죽거나 뭘 집었다');
 });
 
-test('writeHandoffFile — 파일로 남고, 덮어쓰지 않고 쌓이며, 3개를 넘기지 않는다', () => {
+test('writeHandoffFile — 파일로 남고, 최신 3개를 펴 보이되 밀려난 것도 안 버린다', () => {
   const d = 임시('synk-tb-file-');
   const f1 = report.writeHandoffFile(d, '첫째 인계문', { sessionId: 'aaaaaaaa' });
   assert.ok(f1 && fs.existsSync(f1), '인계문 파일이 안 만들어졌다 — 유호님이 열어서 복사할 통로가 없다');
@@ -165,8 +165,18 @@ test('writeHandoffFile — 파일로 남고, 덮어쓰지 않고 쌓이며, 3개
   report.writeHandoffFile(d, '셋째 인계문', { sessionId: 'cccccccc' });
   report.writeHandoffFile(d, '넷째 인계문', { sessionId: 'dddddddd' });
   본문 = fs.readFileSync(f1, 'utf8');
-  assert.equal((본문.match(/^## /gm) || []).length, 3, '3개 상한을 안 지켰다 — 파일이 무한히 자란다');
-  assert.ok(!/첫째 인계문/.test(본문), '가장 오래된 것이 안 밀려났다');
+  // 목차에 그대로 펴 보이는 것은 3개까지 — 유호님의 「맨 위 블록을 복사」 습관을 그대로 둔다.
+  assert.equal((본문.match(/^## \d{4}-/gm) || []).length, 3, '펼침 3개 상한을 안 지켰다 — 목차가 무한히 자란다');
+  // 🔑 유호님 확정(08-05 · F099 본안): **밀려나도 사라지지는 않는다.**
+  //   옛 구조는 여기서 「첫째」가 지워지는 것을 정상으로 봤다. 그게 축출이었다 —
+  //   칸(3)보다 살아있는 세션(실측 10)이 많으면 정상 종료만으로 남의 인계문이 사라진다.
+  assert.ok(!/```\n첫째 인계문\n```/.test(본문), '펼침에서 안 내려갔다 — 최신 3개가 아니다');
+  assert.ok(/\(인계문\/aaaaaaaa\.md\)/.test(본문),
+    '🔴 밀려난 인계문이 목차에서 통째로 사라졌다 — 링크로라도 남아야 한다(F099 본안)');
+  const 세션파일 = path.join(path.dirname(f1), '인계문', 'aaaaaaaa.md');
+  assert.ok(fs.existsSync(세션파일),
+    '🔴 세션별 파일이 지워졌다 — 남이 쓰기만 해도 내 인계문이 사라진다(F099 그 사고)');
+  assert.match(fs.readFileSync(세션파일, 'utf8'), /첫째 인계문/, '세션 파일 내용이 비었다');
 
   // 빈 인계문은 파일을 건드리지 않는다(빈 블록이 맨 위를 차지하면 다음 세션이 그걸 문다)
   assert.equal(report.writeHandoffFile(d, '   ', { sessionId: 'e' }), null, '빈 인계문을 파일에 썼다');
@@ -175,6 +185,65 @@ test('writeHandoffFile — 파일로 남고, 덮어쓰지 않고 쌓이며, 3개
   const 올해 = new Date().getFullYear();
   const 시 = (본문.match(new RegExp('^## ' + 올해 + '-\\d\\d-\\d\\d (\\d\\d):', 'm')) || [])[1];
   assert.equal(시, String(new Date().getHours()).padStart(2, '0'), '🔴 인계문 시각이 로컬 시각이 아니다(UTC 로 찍혔다)');
+});
+
+/* F099 본안(유호님 확정 08-05) — 이 저장소의 실제 조건: 살아있는 세션이 **10개**인데
+ * 옛 구조의 칸은 3개였다. 그래서 「정상 종료」만으로도 남의 인계문이 사라졌다(실측 86초 만에
+ * 세 칸 전부 갈림). 세션 수가 칸 수를 넘겨도 **아무도 잃지 않는다**를 못박는다 —
+ * 이게 안 지켜지면 계정 간 인계라는 이 파일의 존재 이유가 무너진다. */
+test('🔴 writeHandoffFile — 세션 10개가 써도 축출 0 (칸보다 세션이 많은 게 이 저장소의 상시 조건)', () => {
+  const d = 임시('synk-tb-noevict-');
+  const ids = Array.from({ length: 10 }, (_, i) => `sess${String(i).padStart(4, '0')}`);
+  let f = null;
+  for (const id of ids) f = report.writeHandoffFile(d, `${id} 의 인계문`, { sessionId: id });
+
+  const 폴더 = path.join(path.dirname(f), '인계문');
+  for (const id of ids) {
+    const p = path.join(폴더, `${id}.md`);
+    assert.ok(fs.existsSync(p), `🔴 ${id} 의 인계문이 사라졌다 — 남이 쓰기만 해도 내 바통이 없어진다`);
+    assert.match(fs.readFileSync(p, 'utf8'), new RegExp(`${id} 의 인계문`), `${id} 파일 내용이 어긋난다`);
+  }
+
+  // 목차는 전부를 **가리킨다** — 펴 보이든 링크든, 10개가 다 닿아야 한다.
+  const 목차 = fs.readFileSync(f, 'utf8');
+  for (const id of ids) {
+    assert.ok(목차.indexOf(id) !== -1, `🔴 목차에서 ${id} 로 가는 길이 없다 — 파일은 있는데 못 찾으면 없는 것과 같다`);
+  }
+  assert.equal((목차.match(/^## \d{4}-/gm) || []).length, 3, '펼침이 3개가 아니다(복붙 습관이 깨진다)');
+});
+
+/* 구조를 고치는 변경이 그 구조가 지키던 것을 부수는 자리 — 목차를 폴더에서 파생시키는데
+ * 폴더가 비어 있으면 첫 쓰기가 옛 블록 3개를 통째로 밀어낸다. 이 이주는 **한 번뿐이고
+ * 되돌릴 수 없어서**(옛 블록은 다른 어디에도 없다) 회귀로 못박는다. */
+test('🔴 writeHandoffFile — 옛 한 파일 구조의 인계문을 세션별 파일로 이주시킨다(착지 순간 증발 방지)', () => {
+  const d = 임시('synk-tb-migrate-');
+  const dir = path.join(d, 'docs', '_ops');
+  fs.mkdirSync(dir, { recursive: true });
+  const 목차 = path.join(dir, '인계문.md');
+  // 옛 형식 그대로 — 세션별 파일은 하나도 없는 상태
+  fs.writeFileSync(목차, '# 다음 세션 인계문 (자동 생성 · 최근 3개)\n\n'
+    + ['aaaa1111', 'bbbb2222', 'cccc3333']
+      .map((s) => `## 2026-08-05 00:0${s[0] === 'a' ? 1 : s[0] === 'b' ? 2 : 3} · 세션 ${s} · 세션 정리\n\n\`\`\`\n${s} 의 옛 인계문\n\`\`\`\n`)
+      .join('\n'));
+
+  report.writeHandoffFile(d, '새 구조 첫 인계문', { sessionId: 'dddd4444' });
+
+  for (const s of ['aaaa1111', 'bbbb2222', 'cccc3333']) {
+    const p = path.join(dir, '인계문', `${s}.md`);
+    assert.ok(fs.existsSync(p), `🔴 옛 인계문 ${s} 가 이주되지 않았다 — 바꾸는 순간 살아있는 인계문이 증발한다`);
+    assert.match(fs.readFileSync(p, 'utf8'), new RegExp(`${s} 의 옛 인계문`), `${s} 이주 내용이 어긋난다`);
+  }
+  // 이주분 3 + 새것 1 = 4개가 모두 목차에서 닿아야 한다
+  const 본문 = fs.readFileSync(목차, 'utf8');
+  for (const s of ['aaaa1111', 'bbbb2222', 'cccc3333', 'dddd4444']) {
+    assert.ok(본문.indexOf(s) !== -1, `🔴 목차에서 ${s} 로 가는 길이 없다`);
+  }
+
+  // **두 번 돌아도 덮지 않는다** — 이주가 그 세션의 최신 인계문을 옛것으로 되돌리면 안 된다.
+  report.writeHandoffFile(d, 'aaaa1111 의 새 인계문', { sessionId: 'aaaa1111' });
+  report.writeHandoffFile(d, '또 다른 세션', { sessionId: 'eeee5555' });
+  assert.match(fs.readFileSync(path.join(dir, '인계문', 'aaaa1111.md'), 'utf8'), /aaaa1111 의 새 인계문/,
+    '🔴 이주가 최신 인계문을 옛 블록으로 되돌렸다 — 옛것이 새것을 덮는다');
 });
 
 test('writeHandoffFile — 같은 세션이 다시 쓰면 **교체**된다(3칸을 혼자 차지하지 않는다)', () => {
