@@ -15,15 +15,20 @@ const test = require('node:test');
 const assert = require('node:assert');
 const path = require('node:path');
 const fs = require('node:fs');
+const os = require('node:os');
 const { spawnSync } = require('node:child_process');
 
 // SYNK_TEST_CODEEDIT_HOOK = 변이 실험용 이음매. 평소엔 실훅을 본다.
 const HOOK = process.env.SYNK_TEST_CODEEDIT_HOOK
   || path.resolve(__dirname, '..', '.claude', 'hooks', 'code-edit-guard.js');
 
-function 가드(command, tool = 'Bash') {
+const 저장소 = path.resolve(__dirname, '..');
+
+/* cwd 를 **명시로 넘긴다.** 훅은 상대 경로를 cwd 기준으로 푸는데, 러너의 cwd 에 기대면
+ * 「어디서 돌리느냐」에 따라 초록이 갈린다 — repo 밖 환경에 기댄 검사는 CI 에서 깨진다. */
+function 가드(command, tool = 'Bash', cwd = 저장소) {
   const r = spawnSync(process.execPath, [HOOK], {
-    input: JSON.stringify({ tool_name: tool, tool_input: { command } }),
+    input: JSON.stringify({ tool_name: tool, tool_input: { command }, cwd }),
     encoding: 'utf8',
   });
   const out = (r.stdout || '').trim();
@@ -35,6 +40,21 @@ function 가드(command, tool = 'Bash') {
     사유: String(h.permissionDecisionReason || ''),
   };
 }
+
+/* 「대상이 지금 있는가」를 보는 규칙이 생겨서, 있고 없음을 **진짜 파일로** 만들어 검사한다.
+ * 저장소 안에 만들지 않는다 — 검사가 작업 트리를 더럽히면 남의 커밋에 실려 나간다(F037). */
+const 임시들 = [];
+function 픽스처(파일들) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'codeedit-'));
+  임시들.push(dir);
+  for (const [상대, 내용] of Object.entries(파일들)) {
+    const p = path.join(dir, 상대);
+    fs.mkdirSync(path.dirname(p), { recursive: true });
+    if (내용 === null) fs.mkdirSync(p, { recursive: true }); else fs.writeFileSync(p, 내용);
+  }
+  return dir;
+}
+test.after(() => { for (const d of 임시들) { try { fs.rmSync(d, { recursive: true, force: true }); } catch (_) { /* 청소 실패는 검사 결과가 아니다 */ } } });
 
 test('훅 파일이 있고 실행된다 (없으면 아래 검사가 전부 무의미해진다)', () => {
   assert.ok(fs.existsSync(HOOK), 'code-edit-guard.js 가 없다');
@@ -84,13 +104,97 @@ test('리다이렉트로 코드 파일을 덮어쓰면 막는다', () => {
 
 test('tee · cp/mv 덮어쓰기 · PowerShell 쓰기 cmdlet 도 같은 통로다', () => {
   assert.equal(가드('cat a | tee Code.js').차단, true, 'tee 를 놓쳤다');
-  assert.equal(가드('cp /tmp/eval-score.js.bak tools/eval-score.js').차단, true,
+  /* 🔑 F067 을 **실제로 있는 파일**로 못 박는다.
+   *   원래 이 줄은 `tools/eval-score.js` 를 썼는데 그건 SYNK-talk 파일이라 이 저장소엔 없다.
+   *   규칙이 「대상이 있나」를 안 물어보던 시절엔 그래도 초록이었다 — 즉 **없는 파일을 지킨다고
+   *   주장하는 초록**이었다. 픽스처를 F067 모양으로 만들어 넘긴다(cwd 를 그 저장소로). */
+  const 톡 = 픽스처({ 'tools/eval-score.js': 'const 점수 = 1;' });
+  assert.equal(가드('cp /tmp/eval-score.js.bak tools/eval-score.js', 'Bash', 톡).차단, true,
     '백업 되돌리기가 곧 덮어쓰기다 — F065·F067 이 실패한 바로 그 단계다');
   assert.equal(가드('mv new.js Code.js').차단, true, 'mv 덮어쓰기를 놓쳤다');
   assert.equal(가드('Set-Content -Path Code.js -Value $x', 'PowerShell').차단, true,
     'PowerShell 쓰기 cmdlet 을 놓쳤다 — 셸이 둘이라는 걸 훅이 알아야 한다');
   assert.equal(가드('$x | Out-File tests/safety.test.js', 'PowerShell').차단, true, 'Out-File 을 놓쳤다');
   assert.equal(가드('[IO.File]::WriteAllText("Code.js", $s)', 'PowerShell').차단, true, 'WriteAllText 를 놓쳤다');
+});
+
+// ── ②-b cp·mv 는 「덮어쓸 것이 있을 때만」 덮어쓰기다 (F076) ────────────────
+/* F076 실사고: 이 훅이 rename(`mv X X_구판.html`)과 새 사본 뜨기까지 막아서 한 세션이
+ * **2회 연속 CODE_EDIT_BYPASS** 했다. 오탐이 잦으면 우회가 손버릇이 되고, 그 손버릇은
+ * 진짜 덮어쓰기도 같은 손짓으로 통과시킨다 — 가드가 사는 방식이 아니라 죽는 방식이다.
+ * 그래서 **통과해야 하는 쪽과 막아야 하는 쪽을 같은 무게로** 못 박는다. */
+
+test('🔑 대상이 없으면 막지 않는다 — rename 과 새 사본은 이 통로가 아니다 (F076)', () => {
+  const dir = 픽스처({
+    'docs/정본/SYNK LAB/자료/크루카드_한국어.html': '<p>정본</p>',
+    '엔진_수집.js': 'const a = 1;',
+  });
+  for (const c of [
+    // F076 ②: 정본 자료 「구판」 표시 — 공백과 한글이 든 실제 경로 모양 그대로
+    'mv "docs/정본/SYNK LAB/자료/크루카드_한국어.html" "docs/정본/SYNK LAB/자료/크루카드_한국어_구판_참고용.html"',
+    // F076 ①: 정본 → 사본(바탕화면 배포). 없는 이름에 만드는 것은 아무것도 안 지운다
+    'cp "docs/정본/SYNK LAB/자료/크루카드_한국어.html" "docs/사본/크루카드_배포본.html"',
+    'mv 엔진_수집.js 엔진_수집_구판.js',
+  ]) {
+    const r = 가드(c, 'Bash', dir);
+    assert.equal(r.차단, false, `없는 이름에 만드는 것을 막았다 — BYPASS 를 가르치는 자리다: ${c}\n${r.사유}`);
+  }
+});
+
+test('그래도 「이미 있는」 코드 파일을 덮으면 막는다 — 느슨해진 게 아니다', () => {
+  const dir = 픽스처({
+    'docs/정본/SYNK LAB/자료/크루카드_한국어.html': '<p>정본</p>',
+    'docs/정본/SYNK LAB/자료/크루카드_한국어_구판_참고용.html': '<p>구판</p>',
+    'Code.js': 'const a = 1;',
+  });
+  for (const c of [
+    // 같은 명령인데 **대상이 이미 있다** — 위 테스트와 오직 이 한 가지만 다르다
+    'mv "docs/정본/SYNK LAB/자료/크루카드_한국어.html" "docs/정본/SYNK LAB/자료/크루카드_한국어_구판_참고용.html"',
+    'cp /tmp/Code.js.bak Code.js',
+  ]) {
+    const r = 가드(c, 'Bash', dir);
+    assert.equal(r.차단, true, `있는 파일을 덮는데 통과시켰다: ${c}`);
+    assert.match(r.사유, /이미 있는|덮어쓴다/, '무엇 때문에 막는지가 안 보인다');
+  }
+});
+
+test('🔴 공백이 든 경로를 조각내지 않는다 — 조각은 언제나 「없는 파일」이라 조용히 통과한다', () => {
+  /* 이게 F076 아래 깔려 있던 두 번째 결함이다. 인용을 풀 때 공백을 지우면
+   * `docs/정본/SYNK LAB/자료/X.html` 이 `자료/X.html` 로 잘리고, 그 조각은 무엇을 물어도
+   * 「없다」가 나온다. 즉 대상 검사를 붙여도 **공백 든 경로는 영원히 통과**한다.
+   * 이 저장소 경로 상당수가 공백을 품으므로, 새는 방향은 통과 쪽이다. */
+  const dir = 픽스처({ 'docs/정본/SYNK LAB/자료/등록서.html': '<p>x</p>' });
+  const r = 가드('cp /tmp/x.html "docs/정본/SYNK LAB/자료/등록서.html"', 'Bash', dir);
+  assert.equal(r.차단, true, '공백 든 경로를 조각내 「없는 파일」로 읽었다');
+  assert.match(r.사유, /SYNK LAB\/자료\/등록서\.html/, '사람에게 보이는 경로가 조각나 있다 — 조각을 보고 판정했다는 뜻이다');
+});
+
+test('디렉터리로 옮기면 진짜 대상은 `대상/원본이름` 이다', () => {
+  const dir = 픽스처({
+    'Code.js': 'const a = 1;',
+    'backup/Code.js': 'const a = 0;',
+    'backup/.keep': '',
+    '새폴더/.keep': '',
+  });
+  assert.equal(가드('cp Code.js backup/', 'Bash', dir).차단, true,
+    '대상 토큰만 보고 넘겼다 — backup/Code.js 가 이미 있다');
+  assert.equal(가드('cp Code.js 새폴더/', 'Bash', dir).차단, false,
+    '빈 폴더로 복사하는 것까지 막았다 — 지울 것이 없다');
+});
+
+test('대상을 특정할 수 없으면 막는다 — 모름을 통과로 번역하지 않는다', () => {
+  const dir = 픽스처({ 'Code.js': 'const a = 1;' });
+  for (const c of ['cp /tmp/a.js $대상.js', 'mv 구본.js *.js']) {
+    assert.equal(가드(c, 'Bash', dir).차단, true, `글롭·변수를 「없다」로 읽었다: ${c}`);
+  }
+});
+
+test('PowerShell 명명 인자는 자리가 아니라 이름으로 읽는다', () => {
+  const dir = 픽스처({ 'Code.js': 'const a = 1;', '새것.js': 'const b = 2;' });
+  assert.equal(가드('Copy-Item -Destination Code.js -Path 새것.js', 'PowerShell', dir).차단, true,
+    '-Destination 이 앞에 오면 대상이 뒤집힌다');
+  assert.equal(가드('Copy-Item -Destination 없던것.js -Path 새것.js', 'PowerShell', dir).차단, false,
+    '없는 대상까지 막았다');
 });
 
 // ── ③ 인라인 스크립트의 쓰기 (F050·F065) ───────────────────────────────────
