@@ -64,6 +64,13 @@ const OUTCOME_SOURCES_ = ['면접폼(자동)', '본인 제보', '보호자 제�
 const OUTCOME_VISAS_ = ['D-2 유학', 'D-4 어학연수', 'E-9 비전문취업', 'E-7 전문직', 'D-10 구직',
   'D-8·D-9 창업무역', 'F-2 거주', 'F-5 영주', 'F-6 결혼이민', 'H-2 방문취업', 'C-3 단기방문', '기타', '해당없음'];
 
+/* [v9.184] 활용동의 — **면접폼 문구와 글자까지 같아야 한다.** 자동 수확은 폼 답을 그대로 실어 오는데
+ * (`자료활용동의` 필수 2지선다), 원장 수기 칸만 자유 입력이라 「예」·「ㅇㅇ」·「동의함」이 섞이던 자리였다.
+ * 이 칸의 유일한 소비처는 **내보낼 때의 거름망**이라, 어휘가 갈라지면 동의한 사람이 조용히 빠진다
+ * (거름망은 못 읽은 값을 「동의 아님」으로 떨어뜨린다 — 안전한 방향으로 틀리지만 그래도 틀린다).
+ * ⚠ 빈칸은 목록에 넣지 않는다 — 「미확인」과 「아니요」는 다른 상태고, 빈칸이 이미 미확인이다. */
+const OUTCOME_CONSENTS_ = ['네, 동의합니다', '아니요, 원하지 않습니다'];
+
 /* 결과종류 → 경로 버킷. 대조는 **버킷끼리** 한다 — 「학사를 목표했는데 석사로 갔다」를 불일치로
  * 세면 판정이 소음이 된다. 우리가 알고 싶은 것은 「유학을 목표했는데 취업으로 갔다」다.
  * ⚠ 자동 수확은 면접 종류밖에 모른다(어학이냐 학위냐를 구별할 정보가 폼에 없다) — 그래서
@@ -136,14 +143,15 @@ function 궤적경보_(ss, sig) {
  *   자유 입력이면 「E-9」·「E9 취업」·「이피나인」이 섞이고, 그 순간 집계는 영원히 불가능해진다.
  *   2년 뒤 모델 학습에 쓸 값이므로 어휘를 **입력 시점에** 못 박는다 — 나중 정규화는 소급이 안 된다.
  * 검증 재적용은 판(版)이 바뀔 때만 — 매일 500행에 setDataValidation을 걸면 그냥 낭비다. */
-const OUTCOME_VALIDATION_VER_ = 'v1';
+const OUTCOME_VALIDATION_VER_ = 'v2'; // [v9.184] 활용동의(9열) 편입 — 판이 바뀌었으니 다음 실행에서 1회 재적용된다
 function 궤적_결과시트_(ss) {
   const sh = ensureSheet(ss, OUTCOME_TAB_, OUTCOME_HEADERS_);
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
   if (String(getState(st, '궤적검증판').val || '') === OUTCOME_VALIDATION_VER_) return sh;
   const rows = 500; // 선반영 구간 — 원장이 그 아래에 적으면 검증이 없지만, 그건 500명 졸업 뒤의 이야기다
   if (sh.getMaxRows() < rows + 1) sh.insertRowsAfter(sh.getMaxRows(), rows + 1 - sh.getMaxRows());
-  [[4, OUTCOME_STAGES_], [5, OUTCOME_KINDS_], [7, OUTCOME_VISAS_], [8, OUTCOME_SOURCES_]].forEach(function (p) {
+  [[4, OUTCOME_STAGES_], [5, OUTCOME_KINDS_], [7, OUTCOME_VISAS_], [8, OUTCOME_SOURCES_],
+    [9, OUTCOME_CONSENTS_]].forEach(function (p) {
     /* setAllowInvalid(true) = 경고만. false(거부)로 하면 **자동 수확이 막힌다** — 면접폼 선택지가
      * 늘어난 날 목록에 없는 값이 들어오면 배치가 통째로 예외로 죽는다. 사람에겐 경고가 보이고
      * 기계는 계속 도는 쪽을 고른다(가드가 데이터 유입 자체를 끊으면 안 된다). */

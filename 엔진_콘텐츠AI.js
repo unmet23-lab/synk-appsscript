@@ -498,7 +498,14 @@ function systemWatchdog(asText) {
     'monthly_snapshot','titles','achievements','story','manual_titles','teacher_stats',
     'report_cards','league_history','class_fuel','weekly_topics','hw_batch','today_board',
     'league_pairs','world_raid','synk_stories','synk_cards','academic_log',
-    'exit_log','absence_notice','inquiries','payments']; // [v9.28] 신규 시트 4종
+    'exit_log','absence_notice','inquiries','payments', // [v9.28] 신규 시트 4종
+    /* [v9.184] 궤적 레일 2종. **문자열이 아니라 상수를 쓴다** — 이 목록은 손 목록이라 새 시트가
+     * 생길 때마다 낡았고(Code.js 「워치독 reqSheets 등록」 주석이 그 흔적이다), 탭 이름을 두 곳에
+     * 적으면 이름을 바꾼 날 워치독만 옛 이름을 찾아 「누락 시트」를 매주 외친다.
+     * 🔴 왜 이 둘이 특히 필요한가: outcome_log 의 절반은 **원장이 손으로 적는다.** 탭을 실수로
+     *   지우거나 이름을 바꾸면 ensureSheet 가 빈 시트를 새로 만들고, 배치 로그는 그대로 정상을
+     *   보고한다 — 손으로 적은 졸업생 소식이 사라졌다는 신호가 어디에도 안 뜬다(소급 불가). */
+    OUTCOME_TAB_, TRAJECTORY_TAB_];
   const missSheet = reqSheets.filter(n => !ss.getSheetByName(n));
   add(missSheet.length === 0, missSheet.length ? '누락 시트: ' + missSheet.join(', ') : '시트 구조 정상 (' + reqSheets.length + '종)');
   const plRows = pl ? pl.getLastRow() - 1 : 0; // pl = point_logs (섹션 4에서 조회)
