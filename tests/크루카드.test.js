@@ -25,7 +25,10 @@ const htmlColumns = (html) =>
   new Set([...html.matchAll(/data-column="([a-z0-9_]+)"/g)].map((x) => x[1]));
 
 test('COLUMNS 정본 — 크기·중복·머리 3열·Serial 열 위치', () => {
-  assert.equal(COLUMNS.length, 182, 'COLUMNS가 182열이 아니다 — 스키마와 같이 바꿨는지 확인');
+  // [2026-08-04] 182 → 184: 마케팅 어트리뷰션 source·referrer 추가(맨 뒤 고정)
+  assert.equal(COLUMNS.length, 184, 'COLUMNS가 184열이 아니다 — 스키마와 같이 바꿨는지 확인');
+  assert.deepEqual(COLUMNS.slice(-2), ['source', 'referrer'],
+    'source·referrer가 맨 뒤가 아니다 — 중간에 끼우면 라이브 crew_cards의 기존 열이 한 칸씩 밀린다');
   assert.equal(new Set(COLUMNS).size, COLUMNS.length, '중복 컬럼');
   assert.deepEqual(COLUMNS.slice(0, 3), ['submitted_at', 'ref_serial', 'lang']);
   // 크루_다음번호_가 B열(2번째)을 ref_serial로 읽는다 — 열 순서를 바꾸면 채번이 눈이 먼다
@@ -275,7 +278,10 @@ test('상담시트 증분 — 실제로 값이 찍힌다(선언·매핑이 아�
  *   문자열 grep으로는 «덮지 않는다»를 증명할 수 없어 가짜 시트로 실제 이관을 돌린다.
  * ═══════════════════════════════════════════════════════════════════ */
 const 이관헤더_ = ['이름(한국어)', '이름(몽골어)', '연락처', '이메일', '거주지역',
-  '등록일', '접수출처', '처리상태', '크루카드번호', '학생ID', '반', '담당자'];
+  '등록일', '접수출처', '처리상태', '크루카드번호', '학생ID', '반', '담당자',
+  // [2026-08-04] 어트리뷰션 2열. 없으면 매핑이 `h.map[name] === undefined`로 **조용히 건너뛰어**
+  // 재제출 거동이 검사되지 않은 채 초록이 된다(가드가 지킨다는 열을 실제로 열지 않는 계열).
+  '인지채널', '추천인'];
 
 function 가짜시트_(headers, dataRows) {
   const W = headers.length;
@@ -416,4 +422,46 @@ test('재제출 — 이력 칸은 횟수에 비례해 자라지 않는다(라이
   g.이관({ name_kr: '솔롱고', phone: '88112233' }, 'kr', 'SL-20260809-001');
   g.이관({ name_kr: '솔롱고', phone: '88112233' }, 'kr', 'SL-20260809-002');
   assert.equal(g.값(3, '크루카드번호'), 'SL-20260809-002 ← SL-20260809-001');
+});
+
+/* ═══════════════════════════════════════════════════════════════════
+ * 어트리뷰션 2열 [2026-08-04] — 「인지채널 수복」
+ *   이 열은 원래 마케팅 유입경로 자리인데 크루카드가 학습 성향(시각형/청각형)을 덮어써
+ *   KPI 채널 집계가 「시각형(4)」을 유입 채널로 세고 있었다. 되찾은 뒤 다시 안 밀리게 못박는다.
+ * ═══════════════════════════════════════════════════════════════════ */
+test('인지채널은 학습 성향이 아니라 유입경로 8버킷이다 — 성향은 성격유형으로 간다', () => {
+  const pure = 상담.slice(0, 상담.indexOf('function 상담시트_이관_'));
+  const 매핑 = new Function(pure + '; return 크루카드_상담매핑_;')();
+  const out = 매핑({ source: '추천', referrer: '바야르', trait_visual_auditory: 4 },
+    'kr', 'SL-20260804-001', '2026-08-04');
+  assert.equal(out['인지채널'], '추천',
+    '인지채널이 유입경로가 아니다 — 이 열은 엔진_운영배치 computeKpiMetrics가 채널 어트리뷰션으로 읽는다');
+  assert.equal(out['추천인'], '바야르');
+  // 잃은 정보가 없어야 수복이 성립한다(성향축_에 trait_visual_auditory가 살아 있는지)
+  assert.match(String(out['성격유형']), /청각형/,
+    '시각/청각 성향이 어디에도 안 남았다 — 인지채널을 되찾으면서 정보를 잃었다');
+});
+
+test('유입경로 값은 leads·리드폼과 같은 8버킷이다 — 새 분류를 만들면 지표가 갈린다', () => {
+  const 버킷 = ['페이스북', '인스타', '틱톡', '추천', '오픈데이', '학교제휴', '워크인', '기타'];
+  const html = fs.readFileSync(path.join(ROOT, 'crewcard', '카드_kr.html'), 'utf8');
+  const mn = fs.readFileSync(path.join(ROOT, 'crewcard', '카드_mn.html'), 'utf8');
+  for (const b of 버킷) {
+    assert.ok(html.includes(`data-column="source" data-value="${b}"`), `KR 카드에 버킷 「${b}」가 없다`);
+    // 🔴 몽골어판도 data-value는 한국어다 — 번역하면 시트에 두 언어 값이 섞여 집계가 반쪽이 된다
+    assert.ok(mn.includes(`data-column="source" data-value="${b}"`), `MN 카드의 버킷 「${b}」가 한국어 값이 아니다`);
+  }
+});
+
+test('재제출 — 인지채널은 못 덮고, 추천인은 덮는다', () => {
+  // 유입경로는 「처음 어디로 들어왔나」라 접수출처와 같은 계급이다. 재제출로 밀리면 CPL이 거짓이 된다.
+  // 추천인은 반대다 — 처음엔 몰랐다가 나중에 적어 주는 것이 정상이라 최신값이 맞다.
+  const h = 이관하네스_();
+  h.시트.sh = 가짜시트_(이관헤더_, []);
+  h.이관({ name_kr: '바트', phone: '99112233', source: '페이스북' }, 'kr', 'SL-20260804-001');
+  h.이관({ name_kr: '바트', phone: '99112233', source: '추천', referrer: '솔롱고' }, 'kr', 'SL-20260805-001');
+  assert.equal(h.시트.sh.grid.length, 3, '재제출이 행을 늘렸다');
+  assert.equal(h.값(3, '인지채널'), '페이스북',
+    '재제출이 유입경로를 덮었다 — 「페이스북 광고로 알았다」가 「추천」으로 바뀌면 어트리뷰션이 통째로 밀린다');
+  assert.equal(h.값(3, '추천인'), '솔롱고', '나중에 적어 준 추천인이 반영되지 않았다');
 });

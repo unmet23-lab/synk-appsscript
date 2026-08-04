@@ -1545,6 +1545,22 @@ section.page{
       <div class="field" data-field="residence" data-column="residence" data-type="text"><div class="k">거주지역 <span class="en">Residence</span></div><div class="v" contenteditable="true" spellcheck="false" data-field="residence" data-column="residence"></div></div>
     </div>
 
+    <!-- 유입경로 — leads·리드폼과 같은 8버킷. data-value는 두 언어판 모두 한국어로 고정한다(집계가 갈리면 안 된다). -->
+    <div class="field" data-field="source" data-column="source" data-type="single">
+      <div class="k">SYNK LAB을 어떻게 알게 되셨나요? <span class="en">How did you hear about us?</span></div>
+      <div class="opts" data-single="source">
+        <label class="opt"><input type="checkbox" name="source" data-field="source" data-column="source" data-value="페이스북"><span>페이스북 <span class="en">Facebook</span></span></label>
+        <label class="opt"><input type="checkbox" name="source" data-field="source" data-column="source" data-value="인스타"><span>인스타그램 <span class="en">Instagram</span></span></label>
+        <label class="opt"><input type="checkbox" name="source" data-field="source" data-column="source" data-value="틱톡"><span>틱톡 <span class="en">TikTok</span></span></label>
+        <label class="opt"><input type="checkbox" name="source" data-field="source" data-column="source" data-value="추천"><span>친구·지인 추천 <span class="en">Referral</span></span></label>
+        <label class="opt"><input type="checkbox" name="source" data-field="source" data-column="source" data-value="오픈데이"><span>오픈데이·설명회 <span class="en">Open day</span></span></label>
+        <label class="opt"><input type="checkbox" name="source" data-field="source" data-column="source" data-value="학교제휴"><span>학교 제휴 <span class="en">School</span></span></label>
+        <label class="opt"><input type="checkbox" name="source" data-field="source" data-column="source" data-value="워크인"><span>직접 방문 <span class="en">Walk-in</span></span></label>
+        <label class="opt"><input type="checkbox" name="source" data-field="source" data-column="source" data-value="기타"><span>기타 <span class="en">Other</span></span></label>
+      </div>
+    </div>
+    <div class="field" data-field="referrer" data-column="referrer" data-type="text"><div class="k">추천해 주신 분 <span class="en">Referred by</span></div><div class="v" contenteditable="true" spellcheck="false" data-field="referrer" data-column="referrer" data-placeholder="「친구·지인 추천」을 고르셨다면 그분 이름을 적어 주세요 (선택)"></div></div>
+
     <div class="sec-head" style="margin-top:32px">
       <h3>학력 <em>· Academic</em></h3>
       <span class="en">Education</span>

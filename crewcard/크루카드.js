@@ -62,7 +62,11 @@ const COLUMNS = [
   'kc_vocal_style', 'kc_vocal_role', 'kc_vocal_stage', 'kc_dance_interest', 'kc_dance_genre', 'kc_dance_career',
   'kc_dance_goal', 'kc_beauty_interest', 'kc_beauty_part', 'kc_beauty_look', 'kc_beauty_career', 'kc_more_kdrama',
   'kc_more_kfood', 'kc_more_kfashion', 'kc_more_kvariety', 'kc_more_seoul_tour', 'kc_more_kpop_concert', 'kc_load',
-  'kc_style', 'crew_intro'
+  'kc_style', 'crew_intro',
+  /* [2026-08-04] 마케팅 어트리뷰션 2칸. **반드시 맨 뒤에** 붙인다 — 중간에 끼우면
+   * 라이브 crew_cards의 기존 열이 통째로 한 칸씩 밀린다(헤더는 이름으로 매칭하지 않는다).
+   * source = leads·리드폼과 **같은 8버킷**(새 분류를 만들면 대시보드 「③ 추천 신규 비율」이 즉시 거짓말을 한다). */
+  'source', 'referrer'
 ];
 
 function doGet(e) {
@@ -122,14 +126,28 @@ function doPost(e) {
   }
 }
 
+/* [2026-08-04] 열 폭·헤더 맞추기를 **매번** 한다(멱등).
+ * 전에는 `getLastRow() === 0`일 때만 만들었다 — 탭이 처음 생기는 순간에만. 그래서 COLUMNS가
+ * 늘어난 날 라이브 탭은 **옛 폭 그대로**고, appendRow가 폭을 넘겨 접수가 통째로 실패한다.
+ * 하필 그 실패는 제출자에게 `{ok:false, error:'internal'}`로만 보이고(원인은 밖으로 안 흘린다),
+ * 상담시트 이관은 try로 감싸 삼키는데 **이건 그 바깥이라 접수 자체가 사라진다.**
+ * 즉 「열 2개 추가」라는 작은 변경이 접수 창구를 조용히 닫을 수 있었다.
+ * 🔑 헤더는 **늘어난 꼬리만** 채운다 — 기존 이름은 사람이 고쳤을 수 있어 덮지 않는다. */
 function 크루_탭_() {
   const ss = SpreadsheetApp.openById(CONSULT_SHEET_ID);
   let sh = ss.getSheetByName(CREW_TAB);
   if (!sh) sh = ss.insertSheet(CREW_TAB);
+  if (sh.getMaxColumns() < COLUMNS.length) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), COLUMNS.length - sh.getMaxColumns());
+  }
   if (sh.getLastRow() === 0) {
-    if (sh.getMaxColumns() < COLUMNS.length) sh.insertColumnsAfter(sh.getMaxColumns(), COLUMNS.length - sh.getMaxColumns());
     sh.getRange(1, 1, 1, COLUMNS.length).setValues([COLUMNS]).setFontWeight('bold');
     sh.setFrozenRows(1);
+  } else {
+    const w = sh.getLastColumn();
+    if (w < COLUMNS.length) {
+      sh.getRange(1, w + 1, 1, COLUMNS.length - w).setValues([COLUMNS.slice(w)]).setFontWeight('bold');
+    }
   }
   return sh;
 }
