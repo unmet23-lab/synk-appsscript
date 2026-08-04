@@ -547,6 +547,66 @@ test('KR·MN 게이트는 라벨만 다르다 — 갈라지면 몽골어 접수�
   }
 });
 
+/** HTML 안 최상위 function 본문을 이름으로 잘라 온다(중괄호 깊이 추적). */
+function 함수본문_(src, name) {
+  const i = src.indexOf('function ' + name + '(');
+  assert.notEqual(i, -1, name + ' 함수를 못 찾았다');
+  let d = 0, on = false;
+  for (let j = i; j < src.length; j++) {
+    if (src[j] === '{') { d++; on = true; }
+    else if (src[j] === '}') { d--; if (on && d === 0) return src.slice(i, j + 1); }
+  }
+  assert.fail(name + ' 본문 끝을 못 찾았다');
+}
+
+test('🔴 런타임이 만드는 data-column이 전부 COLUMNS에 있다 — 없으면 그 답만 조용히 사라진다', () => {
+  /* 2026-08-04 적대 리뷰가 실측한 사고: bindSchema는 로드 시 다중 문항 체크박스의 data-column을
+   *   `column_prefix + '_' + slugifyOption(옵션)` 으로 **덮어쓴다**. 그런데 slugifyOption의 폴백은
+   *   `[^a-z0-9]+ → _` 라 **한글만 있는 옵션에서 빈 문자열**을 만든다 — 새로 넣은 「아직 미정」이
+   *   정확히 그 경우였고, data-column이 `field_interest_` 가 되어 서버 COLUMNS에 없는 키로 전송됐다.
+   * 🔑 증상은 「제출은 성공했는데 그 칸만 빈다」 — 화면·로그·기존 회귀 어디에도 안 뜬다.
+   *   그래서 문자열이 아니라 **실제 슬러그를 계산해** COLUMNS와 대조한다. */
+  const slug = new Function(함수본문_(htmlKr, 'slugifyOption') + '\nreturn slugifyOption;')();
+  const baked = JSON.parse(Buffer.from(
+    /"fieldSchema":\s*"data:application\/json;base64,([A-Za-z0-9+/=]+)"/.exec(htmlKr)[1], 'base64').toString('utf8'));
+  const 빈슬러그 = [], 유령 = [];
+  for (const sec of baked.sections) {
+    for (const f of sec.fields) {
+      if (f.type !== 'multi' || !f.column_prefix) continue;
+      for (const o of f.options || []) {
+        const s = slug(o);
+        if (!s) { 빈슬러그.push(`${f.field_id}/${o}`); continue; }
+        if (!COLUMNS.includes(f.column_prefix + '_' + s)) 유령.push(`${f.field_id}/${o} → ${f.column_prefix}_${s}`);
+      }
+    }
+  }
+  assert.deepEqual(유령, [], '런타임 슬러그가 COLUMNS에 없는 열을 만든다 — 그 답은 시트에 영영 안 실린다');
+  assert.deepEqual(빈슬러그, [], 'slugifyOption 테이블에 없는 한글 옵션 — 빈 슬러그가 나온다(테이블에 추가하라)');
+});
+
+test('🔑 빈 슬러그면 정적 bake를 덮어쓰지 않는다 — 테이블 누락이 데이터 유실이 되지 않게', () => {
+  /* 위 검사는 「지금」을 지킨다. 이 검사는 **다음에 한글 옵션을 추가하는 사람**을 지킨다 —
+   * 테이블에 넣는 걸 잊어도 마크업의 정적 bake가 살아남아 답이 사라지지 않는다(2겹). */
+  for (const [name, html] of [['kr', htmlKr], ['mn', htmlMn]]) {
+    const 덮는곳 = html.split('\n').filter((l) => /setAttribute\('data-column', field\.column_prefix/.test(l));
+    assert.ok(덮는곳.length >= 2, `[${name}] data-column 덮어쓰기 지점을 못 찾았다 — 검사가 무력화됐다`);
+    덮는곳.forEach((l) => assert.ok(/_sl\b|_slT\b/.test(l),
+      `[${name}] 슬러그 확인 없이 바로 덮어쓴다: ${l.trim().slice(0, 90)}`));
+  }
+});
+
+test('🔑 하이라이트 지우기가 조기 반환보다 먼저다 — 동의에서 막히면 옛 테두리가 남는다', () => {
+  /* validateMin이 동의에서 걸리면 field=null 로 돌아오는데, 그때 focusField가 먼저 return 하면
+   * 직전에 칠한 진로 문항 테두리가 남아 **이미 채운 칸**을 가리킨다. 비개발자 접수자가 엉뚱한 칸을 연다. */
+  for (const [name, html] of [['kr', htmlKr], ['mn', htmlMn]]) {
+    const fn = 함수본문_(html, 'focusField');
+    const i지움 = fn.indexOf("$$('.synk-need')");
+    const i반환 = fn.indexOf('if(!fieldId) return;');
+    assert.ok(i지움 !== -1 && i반환 !== -1, `[${name}] focusField 구조가 바뀌었다`);
+    assert.ok(i지움 < i반환, `[${name}] 조기 반환이 하이라이트 지우기보다 앞이다 — 옛 테두리가 남는다`);
+  }
+});
+
 test('「아직 미정」 전공이 시트 요약에 실린다 — 라벨이 없으면 그 답만 통째로 사라진다', () => {
   /* 다중 문항은 다중요약_가 라벨 맵을 돌며 TRUE 인 것만 문장으로 접는다.
    * 맵에 없는 컬럼은 **조용히 빠진다** — 필수로 만들어 놓고 그 답이 시트에서 증발하면

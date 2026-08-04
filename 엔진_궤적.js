@@ -34,8 +34,13 @@ const OUTCOME_HEADERS_ = ['student_id', '이름', '관측일', '단계', '결과
   '비자종류', '출처', '활용동의', '비고', '근거키', 'created_at'];
 
 /* 근거키 = 멱등의 전부다. 같은 응답을 두 번 수확하면 한 사람이 두 번 합격한 것처럼 집계된다.
- * 값 규약 = '출처:학생ID:원천식별자' — 원천이 늘어도 앞머리로 구분된다. */
-const OUTCOME_KEY_COL_ = 11; // 0-based, OUTCOME_HEADERS_ 안의 '근거키'
+ * 값 규약 = '출처:학생ID:원천식별자' — 원천이 늘어도 앞머리로 구분된다.
+ *
+ * 🔴 이 자리는 **손으로 숫자를 적었다가 한 칸 틀렸다**(적대 리뷰가 스텁 시트로 재현: 같은 응답이
+ *   매일 아침 다시 적재돼 3일이면 3배). 조회가 근거키 대신 created_at 을 읽었는데 **에러가 안 난다** —
+ *   존재하는 열이라 getRange 가 안 던지고, 로그는 매일 「신규 관측 N건」을 정상처럼 보고했다.
+ *   그래서 숫자를 없앤다: 정본 배열에서 파생시키면 두 곳이 갈라질 수 없다. */
+const OUTCOME_KEY_COL_ = OUTCOME_HEADERS_.indexOf('근거키'); // 0-based
 
 const TRAJECTORY_HEADERS_ = ['student_id', '이름', '반', '처리상태',
   '졸업후진로', '희망진학과정', '목표비자', '관심전공', 'TOPIK목표',
@@ -98,6 +103,11 @@ const INTERVIEW_TO_STAGE_ = {
 function 궤적갱신_(src) {
   const ss = SpreadsheetApp.getActiveSpreadsheet(); // try 밖 — 여기서 던지면 경보조차 못 보낸다
   try {
+    /* 🔑 **자리를 먼저 만든다.** 수확 안에서 만들면 면접 응답이 0건일 때(=개원 전 지금) 조기 반환에
+     *   걸려 시트가 영영 안 생긴다 — 그런데 이 시트의 절반은 **원장이 손으로 적는 것**이다.
+     *   적을 자리가 없으면 유호님이 탭을 손으로 만들게 되고, 그 순간 헤더 문구·드롭다운 13종/7종이
+     *   정본과 갈라진다. 어휘가 갈라지면 집계는 영원히 불가능하다(나중 정규화는 소급이 안 된다). */
+    궤적_관측일서식_(궤적_결과시트_(ss), ss.getSpreadsheetTimeZone());
     const 수확 = 궤적수확_면접_(ss);
     const 커버 = 궤적재작성_(ss, src);
     Logger.log('궤적 갱신 — 신규 관측 ' + 수확 + '건 · 결과 확인 ' + 커버.known + '/' + 커버.total + '명');
@@ -143,6 +153,23 @@ function 궤적_결과시트_(ss) {
   sh.getRange(1, 1, 1, OUTCOME_HEADERS_.length).setFontWeight('bold');
   setState(st, '궤적검증판', OUTCOME_VALIDATION_VER_);
   return sh;
+}
+
+/* 🔴 관측일 열 서식 고정 — **이 저장소의 월키 Date 오염 5번째 자리다.**
+ * 관측일은 'yyyy-MM' 문자열인데, 서식이 자동인 열에 쓰면 시트가 그걸 **Date 로 재파싱한다**
+ * (08-02 라이브 실측: 운영 탭에 `Wed Jul 01 2026` 가 그대로 남아 있었다).
+ * 그러면 다음 실행의 getValues 는 Date 를 돌려주고, 궤적_최신관측_ 의 문자열 비교가
+ * **시간순이 아니라 요일·영문월 알파벳순**이 된다 — 옛 관측이 최신을 이기고, 「좌절」이어야 할
+ * 사람이 「일치」로 찍힌다. 화면에 오류는 안 뜬다.
+ * ⚠ outcome_log 는 sheetSkeleton_ 에 없어 healTextKeyCols_ 의 자기치유가 **안 닿는다**(헤더도
+ *   '관측일'이라 TEXT_KEY_HEADS_ 에 안 걸린다). 그래서 여기서 직접 기존 통로를 태운다 —
+ *   ymTextColFix_ 는 읽기→'@'→쓰기 순서가 보장돼 있고 **이미 오염된 행도 되돌린다**.
+ * 왜 매 실행 거는가: 검증판 상태로 스킵하면 원장이 열을 손으로 지우고 다시 만든 날 서식이 사라진다.
+ *   비용은 서식 조회 1회 + (오염 0이면) 쓰기 0이다. */
+function 궤적_관측일서식_(sh, tz) {
+  try {
+    if (typeof ymTextColFix_ === 'function') ymTextColFix_(sh, 3, tz); // 3열 = 관측일
+  } catch (e) { Logger.log('궤적 관측일 서식 고정 스킵: ' + e); }
 }
 
 /* ── 자동 수확 ① 면접기록_응답 → outcome_log ───────────────────────────────
@@ -225,9 +252,9 @@ function 궤적재작성_(ss, src) {
   hdr.forEach(function (h, i) { const k = String(h || '').trim(); if (k && col[k] === undefined) col[k] = i; });
   const g = function (row, name) { const i = col[name]; return i === undefined ? '' : String(row[i] == null ? '' : row[i]).trim(); };
 
-  const 최신 = 궤적_최신관측_(ss);
-  const data = src.getRange(3, 1, lastRow - 2, lastC).getValues();
   const tz = ss.getSpreadsheetTimeZone();
+  const 최신 = 궤적_최신관측_(ss, tz);
+  const data = src.getRange(3, 1, lastRow - 2, lastC).getValues();
   const 갱신일 = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
   const out = [];
   let known = 0;
@@ -246,6 +273,12 @@ function 궤적재작성_(ss, src) {
 
   const sh = ensureSheet(ss, TRAJECTORY_TAB_, TRAJECTORY_HEADERS_);
   if (sh.getMaxRows() < out.length + 1) sh.insertRowsAfter(sh.getMaxRows(), out.length + 1 - sh.getMaxRows());
+  /* 🔴 날짜꼴 두 열도 텍스트로 굳힌다 — outcome_log 와 같은 이유(월키 Date 오염 5번째).
+   * 여기선 부작용이 하나 더 있다: 셀이 Date 로 굳으면 writeIfChanged 의 JSON 비교가 매번 「다름」이
+   * 되어 [v9.25] 무변경 skip 이 죽고 **매일 아침 전 행을 다시 쓴다**(조용한 쿼터 낭비). */
+  [14, 17].forEach(function (c) { // 14=관측일(yyyy-MM) · 17=갱신일(yyyy-MM-dd)
+    if (sh.getRange(1, c).getNumberFormat() !== '@') sh.getRange(1, c, sh.getMaxRows(), 1).setNumberFormat('@');
+  });
   if (out.length) writeIfChanged(sh, 2, 1, out);
   const tail = sh.getLastRow() - 1 - out.length; // 상담시트에서 사라진 사람의 옛 줄
   if (tail > 0) sh.getRange(out.length + 2, 1, tail, TRAJECTORY_HEADERS_.length).clearContent();
@@ -258,7 +291,7 @@ function 궤적재작성_(ss, src) {
 /* 학생별 최신 관측 1건. 최신 = 관측일 우선, 같으면 **뒤 행**(나중에 적은 것이 최신이다).
  * ⚠ 「최신만 본다」는 정보를 버리는 선택이다 — 전 이력은 outcome_log에 그대로 남는다.
  *   trajectory는 「지금 이 사람은 어디에 있나」 한 줄이고, 이력을 여기 늘어놓으면 못 읽는 표가 된다. */
-function 궤적_최신관측_(ss) {
+function 궤적_최신관측_(ss, tz) {
   const sh = ss.getSheetByName(OUTCOME_TAB_);
   const map = {};
   if (!sh || sh.getLastRow() < 2) return map;
@@ -266,7 +299,10 @@ function 궤적_최신관측_(ss) {
   vals.forEach(function (r) {
     const sid = String(r[0] == null ? '' : r[0]).trim();
     if (!sid) return;
-    const when = String(r[2] == null ? '' : r[2]).trim();
+    /* 🔴 되읽기도 방어한다 — 쓰기 쪽 서식('@')만으로는 **이미 오염된 셀**과 사람이 손으로 적은
+     *   날짜 셀이 안 걸린다. ymTextOf_ 는 Date·시리얼·String(Date) 세 형태를 전부 'yyyy-MM'으로
+     *   되돌리고 문자열은 그대로 둔다(재파싱 금지 — tz 경계에서 전달로 밀린다). */
+    const when = (typeof ymTextOf_ === 'function' ? ymTextOf_(r[2], tz) : String(r[2] == null ? '' : r[2])).trim();
     const prev = map[sid];
     if (prev && String(prev.when) > when) return; // 문자열 비교로 충분하다 — 전부 yyyy-MM 규격
     map[sid] = { when: when, stage: String(r[3] || ''), kind: String(r[4] || ''),
@@ -277,15 +313,42 @@ function 궤적_최신관측_(ss) {
 
 /* 의도 버킷 — **가까운 목표부터** 본다. 「10년 후 한국 정착」과 「내년 학사 진학」이 같이 있으면
  * 우리가 관측하는 결과는 후자 쪽이다. 순서를 뒤집으면 진학한 사람이 전부 「불일치」로 찍힌다. */
+/* 🔴 「미정」은 값이 아니라 **상태**다. 있는 것처럼 세면 없는 의도로 판정이 나간다.
+ * 진로 5문항을 필수로 만들면서 세 문항에 「아직 미정」을 새로 만들었는데(그 자체는 옳다 —
+ * 탈출구 없는 필수는 아무거나 찍게 만든다), 그 값을 여기서 안 걸러 **정직하게 미정을 고른 학생이
+ * 가짜 불일치로 찍히던** 자리다. 「모른다를 일치로 세지 않는다」의 반대 방향 위반.
+ * 판정은 Code.js 의 미정값_ 하나뿐이다 — 여정 카드·핵심비전도 같은 통로를 쓴다(두 곳에 적으면 갈라진다).
+ *
+ * 희망진학과정 → 버킷. **값을 본다**(존재가 아니라).
+ * 원천이 둘이라 어휘가 다르다: 크루카드(어학연수 (D-4)·학사·편입·석사·박사·아직 미정) ·
+ * 구글 상담폼(어학연수·전문대·학사·편입·석사·박사·**취업비자준비**). 후자를 유학으로 세면
+ * EPS 취업자가 전원 「불일치」로 찍힌다.
+ * ⚠ 모르는 값은 유학이 아니라 **''(미정)**으로 떨어뜨린다 — 선택지가 늘어난 날 조용히 틀리는 대신
+ *   판정을 보류하는 쪽이 안전하다(부푼 커버리지보다 빈 커버리지가 정직하다). */
+function 궤적_과정버킷_(과정) {
+  const v = String(과정 == null ? '' : 과정).trim();
+  if (미정값_(v)) return '';
+  if (/취업|비자준비/.test(v)) return '취업';
+  if (/어학연수|전문대|학사|편입|석사|박사|대학|유학/.test(v)) return '유학';
+  return '';
+}
+
 function 궤적_의도버킷_(진로, 과정, 비자) {
-  if (과정) return '유학';
+  const p = 궤적_과정버킷_(과정);
+  if (p) return p;
+  /* 🔑 **경로를 말하는 답만 버킷이 된다.** 대조는 「어느 길로 갔나」끼리만 뜻이 있는데,
+   *   같은 문항 안에도 경로가 아닌 답이 섞여 있다:
+   *     · F-2 거주·F-5 영주 = 그 길의 **끝**이지 길이 아니다(대개 D-2·E-7을 거쳐 도달한다)
+   *     · 「한국 정착」(10년 후 무대) = **목적지**다. 유학으로도 취업으로도 갈 수 있다.
+   *   이것들을 '정착' 버킷으로 세면, E-9 취업에 성공한 사람이 「불일치(정착→취업)」로 찍힌다 —
+   *   목표를 향해 한 걸음 간 사람을 이탈로 세는 것이다. 회귀가 실제로 그 판정을 냈다.
+   *   → 경로를 말하지 않는 답은 ''(의도 미정)으로 둔다. **판정 수가 줄어도 남는 판정이 정직하다.**
+   *   반면 「몽골 복귀」·「제3국 진출」은 한국행 경로를 **배제**하므로 그 자체로 경로다. */
   const v = String(비자 || '');
   if (/E-9|E-7|D-10/.test(v)) return '취업';
   if (/D-8|D-9/.test(v)) return '창업';
-  if (/F-2|F-5/.test(v)) return '정착';
   if (/몽골/.test(진로)) return '몽골';
   if (/제3국/.test(진로)) return '제3국';
-  if (/한국 정착/.test(진로)) return '정착';
   return '';
 }
 
