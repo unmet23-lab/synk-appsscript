@@ -1014,6 +1014,7 @@ function safeRun(name, fn) {
 
 function morningJobs() {   // 매일 07시
   rehearsalForceOff_(); // [v9.120] 리허설이 켜진 채 배치가 오면 그날 알림이 통째로 죽는다 — TTL과 별개의 두 번째 안전장치
+  safeRun('학생ID발급', function () { 학생ID_발급_(); }); // [v9.164] 반배정·앱편입인데 ID가 빈 행을 채운다. **syncProfiles보다 앞** — 뒤에 두면 그날 아침 앱에 못 들어가고 하루 밀린다. onEdit 트리거가 죽어도 여기서 잡히는 두 번째 발동층
   safeRun('syncProfiles', syncProfiles);       // [v7.0] 동기화 먼저 — 신규 학생 생일을 당일부터 인식
   safeRun('birthdayCheck', birthdayCheck);
   safeRun('checkConsultDelay', checkConsultDelay);
@@ -1220,7 +1221,11 @@ function resetAllTriggers(force) {
   //   시각·주기는 setupTextbookLink와 동일(매일 23시) · 전체 삭제 직후라 중복 설치 불가.
   const tbOnR = textbookLinkOn_();
   if (tbOnR) ScriptApp.newTrigger('교재연동Nightly').timeBased().everyDays(1).atHour(23).create();
-  Logger.log('✅ 트리거 통합 재설치 완료: ' + (tbOnR ? '11개' : '10개') + ' (10분 스위프 · 3시 백업 · 7시 아침작업 · 8시 브리핑 · 14/22시 계산 · 월 7시 주간 · 1일 5/6/7시 월간' + (tbOnR ? ' · 23시 교재연동' : ' — 교재연동 미개통이라 교재연동Nightly 제외, setupTextbookLink ▶ 시 +1') + ')');
+  // [v9.164] 상담시트 onEdit(학생ID 즉시 발급)도 **여기서 반드시 재설치**한다 — 위 전체 삭제 루프가
+  //   setupConsultTrigger가 만든 트리거까지 지운다. 교재연동Nightly가 같은 이유로 실종됐던 결함([v9.67])의 재발.
+  //   시간 기반이 아니라 조용히 안 도는 것으로만 드러나므로(발급이 아침 백스톱까지 밀린다) 목록 누락이 더 위험하다.
+  ScriptApp.newTrigger('onConsultEdit').forSpreadsheet(CONSULT_SHEET_ID).onEdit().create();
+  Logger.log('✅ 트리거 통합 재설치 완료: ' + (tbOnR ? '12개' : '11개') + ' (10분 스위프 · 3시 백업 · 7시 아침작업 · 8시 브리핑 · 14/22시 계산 · 월 7시 주간 · 1일 5/6/7시 월간 · 상담시트 onEdit' + (tbOnR ? ' · 23시 교재연동' : ' — 교재연동 미개통이라 교재연동Nightly 제외, setupTextbookLink ▶ 시 +1') + ')');
 }
 
 /* ===================== [v9.26] 📟 경영계기판 — 6지표 신호등 대시보드 =====================
