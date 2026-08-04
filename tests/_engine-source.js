@@ -47,4 +47,27 @@ function engineParts() {
   }));
 }
 
-module.exports = { ROOT, ENGINE_FILES, engineSource, engineParts };
+/** profiles 공유 블록 전량 — `SHARED*_COL_START` 를 **소스에서 훑어** 낸다.
+ *
+ * 왜 손 목록이 아닌가 (F080): 같은 목록이 두 곳에 손으로 적혀 있었고, 이미 갈라져 있었다 —
+ *   safety.test.js 의 선점열 레지스트리는 SHARED1~3 까지만 알고(4차 블록이 검사 밖),
+ *   같은 파일의 상담 디테일 검사는 SHARED4 를 알았다. **한쪽만 갱신되는 것이 기본값**이고,
+ *   갈라진 쪽은 언제나 「통과」로 샌다(CLAUDE.md 「목록은 하나에서 파생시킨다」).
+ * 그래서 5차 블록이 생기면 아무도 손대지 않아도 두 검사가 동시에 그것을 본다.
+ *
+ * @returns {{name:string,start:number,len:number,end:number}[]} 시작 열 오름차순
+ */
+function sharedBlocks(code) {
+  const out = [];
+  const re = /const (SHARED(\d*)_COL_START) = (\d+)/g;
+  let m;
+  while ((m = re.exec(code))) {
+    const heads = code.match(new RegExp('const SHARED' + m[2] + '_COL_HEADERS = \\[([\\s\\S]*?)\\];'));
+    if (!heads) continue; // 시작만 있고 헤더가 없으면 블록이 아니다
+    const len = heads[1].split(',').filter((x) => x.trim()).length;
+    out.push({ name: m[1], start: Number(m[3]), len, end: Number(m[3]) + len - 1 });
+  }
+  return out.sort((a, b) => a.start - b.start);
+}
+
+module.exports = { ROOT, ENGINE_FILES, engineSource, engineParts, sharedBlocks };
