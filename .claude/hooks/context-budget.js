@@ -156,13 +156,21 @@ if (info === null) process.exit(0);
 const ctx = info.tokens;
 const WINDOW = windowFor(info.model);
 const T = thresholds(WINDOW); // 창을 안 뒤에야 임계가 정해진다
-if (ctx < T.WARN) process.exit(0); // 임계 아래에선 아무 말도 하지 않는다
 
 const cwd = input.cwd || process.cwd();
 const sid = input.session_id;
 
-const stage = stageOf(ctx, T);
+const stage = ctx < T.WARN ? 0 : stageOf(ctx, T);
 const prev = store.readStage(cwd, sid);
+
+// 🔑 **컨텍스트가 내려가면 단계도 따라 내린다.**
+//   안 내리면 컴팩트 뒤의 다음 사이클이 통째로 침묵한다 — 08-04 실측: 760k 까지 갔다가
+//   컴팩트로 174k 가 된 세션의 stage 가 4로 남아, 다시 300·400·500·600k 를 넘어도
+//   전부 억제되고 700k 에 닿아야 입을 열게 돼 있었다. 컴팩트 한 번이 알림 400k 구간을
+//   통째로 삼킨다. 억제 카운터는 「가장 높이 갔던 곳」이 아니라 **지금 어디인지**를 담아야 한다.
+//   ⚠ 내려갈 때는 말하지 않는다 — 줄어든 건 좋은 일이고, 알릴 것은 오르는 쪽뿐이다.
+if (stage < prev) { store.writeStage(cwd, sid, stage); process.exit(0); }
+if (stage === 0) process.exit(0); // 임계 아래에선 아무 말도 하지 않는다
 if (prev >= stage) process.exit(0); // 같은 단계에서 두 번 말하지 않는다
 store.writeStage(cwd, sid, stage);
 
