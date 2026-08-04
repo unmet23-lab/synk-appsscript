@@ -30,9 +30,9 @@ test('🔑 두 선택지 모두 추론 = max — 모델만 고르게 하고 효�
   assert.strictEqual(정책.검수선택지.luna.model, 'gpt-5.6-luna');
 });
 
-test('기본 픽은 sol — 아무것도 안 고르면 프런티어가 본다', () => {
-  assert.strictEqual(정책.검수기본, 'sol');
-  assert.strictEqual(정책.검수선택().model, 'gpt-5.6-sol');
+test('기본 픽은 luna — 유호 확정 2026-08-05 "sol 쓰니까 너무 비싸다" · sol 은 `--검수 sol` 명시로만', () => {
+  assert.strictEqual(정책.검수기본, 'luna');
+  assert.strictEqual(정책.검수선택().model, 'gpt-5.6-luna');
 });
 
 test('사람이 실제로 쓰는 표기를 다 받는다 — "5.6 sol max" 는 모델+효력 조합이지 모델명이 아니다', () => {
