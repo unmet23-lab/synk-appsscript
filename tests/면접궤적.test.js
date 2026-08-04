@@ -89,6 +89,11 @@ test('마이그레이션이 멱등이다 — 이미 있으면 문항을 또 만�
   const i추가 = 증분.indexOf('addTextItem');
   assert.notEqual(i검사, -1, '기존 문항 존재 검사가 없다 — 누를 때마다 칸이 하나씩 늘어난다');
   assert.notEqual(i분기, -1, '존재 검사 결과를 쓰는 분기가 없다 — 세어만 보고 그냥 추가한다');
+  /* 분기가 보는 값이 **그 검사에서 나온 것**인지까지 본다 — 변이 실측에서 텍스트는 그대로 두고
+   * 대입만 끊는 형태(`const at = -1; titles.indexOf(...)`)가 두 검사를 모두 통과했다.
+   * 소스 검사는 여기까지가 한계다(실행층 검사가 아니다) — 그 한계를 아는 채로 못을 하나 더 박는다. */
+  assert.match(증분, /const at = titles\.indexOf\(INTERVIEW_SID_TITLE\);/,
+    '분기가 보는 값이 존재 검사의 결과가 아니다 — 검사는 돌지만 결과는 버려진다');
   assert.ok(i검사 < i분기 && i분기 < i추가, '존재 검사→분기→추가 순서가 깨졌다');
   assert.ok(/\breturn\b/.test(증분.slice(i분기, i추가)),
     '이미 있을 때 빠져나오지 않는다 — 분기만 있고 return 이 없으면 아래 addTextItem 이 그대로 돈다');
@@ -112,6 +117,82 @@ test('🔑 발동 조건이 같이 있다 — 메뉴에 올라가 있지 않으�
   assert.match(셋업, /function menuMigrateInterviewSid\(\)\s*\{\s*menuRun_\(migrateInterviewSid\);/,
     '메뉴 래퍼가 없다');
   assert.match(셋업, /addItem\('[^']*학생ID[^']*',\s*'menuMigrateInterviewSid'\)/,
+    '시트 메뉴에 등재되지 않았다 — 함수만 있으면 유호님이 못 누른다');
+});
+
+// ── [v9.180] 링크 둘로 — 공개는 익명, 아는 사람에게만 개인 링크 ────────────────
+/* 유호님 확정: 「처음 테스트하는 고객도 필요하고, 정규 인원 말고도 쓸 일이 분명 있다.」
+ * 이 절이 지키는 것은 **잃는 것이 없어야 한다**는 것이다 — 공개 링크의 익명이 유지되고,
+ * 두 링크가 같은 폼이라 회수가 갈리지 않는다. 한쪽이라도 어긋나면 v9.178의 조인 키가 헛돈다. */
+
+test('🔴 공개 링크에는 프리필이 섞이지 않는다 — 기본값이 익명→실명으로 뒤집히면 회수율이 죽는다', () => {
+  const 생성 = 함수본문(폼리포트, 'createInterviewLogForm');
+  assert.ok(/setState\(st, '면접폼URL', form\.getPublishedUrl\(\)\)/.test(생성),
+    '공개 링크가 발행 URL 그대로가 아니다 — 지금까지 뿌린 링크·QR가 미아가 된다');
+  assert.equal(/setState\(st, '면접폼URL',[^)]*SIDTOKEN/.test(생성), false,
+    '공개 링크에 프리필 토큰이 들어갔다 — 익명 기본값이 뒤집힌다');
+});
+
+test('개인 링크 틀을 만드는 곳이 하나다 — 두 곳이면 한쪽만 갱신되는 날이 온다', () => {
+  const 쓰는곳 = 폼리포트.split('\n').filter((l) => /setState\([^)]*'면접폼URL틀'/.test(l));
+  assert.equal(쓰는곳.length, 1, `면접폼URL틀 기입이 ${쓰는곳.length}곳이다 — 면접URL틀보증_ 하나로 모아라`);
+  assert.ok(/function 면접URL틀보증_\(/.test(폼리포트), '공용 통로 함수가 없다');
+});
+
+test('🔑 마이그레이션의 **두 경로 모두** 개인 링크 틀을 보증한다', () => {
+  /* 「이미 있음」 가지에서 조기 반환하면 「칸은 있는데 링크 틀은 없는」 상태가 영영 안 고쳐진다.
+   * 멱등은 「아무것도 안 한다」가 아니라 「같은 결과로 수렴한다」다. */
+  const 증분 = 함수본문(폼리포트, 'migrateInterviewSid');
+  const i분기 = 증분.indexOf('if (at !== -1)');
+  const i추가 = 증분.indexOf('addTextItem');
+  assert.ok(/면접URL틀보증_\(st, form\)/.test(증분.slice(i분기, i추가)), '이미 있음 경로가 틀을 보증하지 않는다');
+  assert.ok(/면접URL틀보증_\(st, form\)/.test(증분.slice(i추가)), '새로 넣는 경로가 틀을 보증하지 않는다');
+  assert.ok(/면접URL틀보증_\(st, form\)/.test(함수본문(폼리포트, 'createInterviewLogForm')),
+    '새 폼을 만들 때 틀이 안 생긴다 — 나중에 따로 눌러야 하면 안 눌린다');
+});
+
+test('🔴 명단에 없는 학생ID를 거절하지 않는다 — 그게 유호님이 지목한 바로 그 경우다', () => {
+  /* 「처음 테스트하는 고객」은 정의상 profiles 에 없다. 대조는 알림용이지 차단용이 아니다. */
+  const 링크 = 함수본문(폼리포트, 'interviewPersonalLink');
+  const i대조 = 링크.indexOf('profiles');
+  assert.notEqual(i대조, -1, '명단 대조 자체가 없다 — 누구 링크인지 확인할 방법이 사라진다');
+  assert.equal(/return[^\n]*명단에 없/.test(링크), false,
+    '명단에 없다고 링크를 안 주고 끝낸다 — 테스트 고객·상담만 한 분이 전부 막힌다');
+  assert.ok(링크.indexOf('개인 링크 (이 분에게만') > i대조, '대조 뒤에 링크를 돌려주지 않는다');
+  assert.ok(/단톡에 올리면 남의 ID로 제출/.test(링크), '개인 링크를 뿌리면 안 되는 이유를 안 알려준다');
+});
+
+test('틀이 없으면 안내하고 멈춘다 (빈 틀로 깨진 링크를 건네지 않는다)', () => {
+  const 링크 = 함수본문(폼리포트, 'interviewPersonalLink');
+  const i가드 = 링크.indexOf("if (!tpl)");
+  const i프롬프트 = 링크.indexOf('ui.prompt');
+  assert.ok(i가드 !== -1 && i가드 < i프롬프트,
+    '틀 검사가 없거나 프롬프트 뒤다 — 다 입력하고 나서야 못 만든다고 알게 된다');
+});
+
+test('🔑 학생ID 조립이 채번과 같은 통로다 — 한 글자만 달라도 조인이 통째로 죽는다', () => {
+  const 정규 = 함수본문(폼리포트, '면접학생ID정규화_');
+  assert.ok(/학생ID_포맷_\(/.test(정규), '채번 통로를 안 쓴다');
+  assert.equal(/'SYNK-'\s*\+/.test(정규), false, "'SYNK-' 를 여기서 따로 이어 붙인다 — 같은 파일 L1099 의 경고");
+});
+
+test('행동: 정규화가 실제로 무엇을 받아 무엇을 내는가 (픽스처)', () => {
+  /* 소스 검사만으로는 「형식을 본다」까지고, 「무엇을 통과시키나」는 못 잰다 — 실행해서 잰다.
+   * 학생ID_포맷_ 도 실소스에서 잘라 와 함께 평가한다(스텁을 쓰면 통로가 같은지 못 본다). */
+  const 평가 = new Function(
+    함수본문(폼리포트, '학생ID_포맷_') + '\n' + 함수본문(폼리포트, '면접학생ID정규화_') +
+    '\nreturn 면접학생ID정규화_;')();
+  for (const [입력, 기대] of [
+    ['SYNK-001', 'SYNK-001'], ['synk 1', 'SYNK-001'], ['SYNK001', 'SYNK-001'],
+    ['  synk-7  ', 'SYNK-007'], ['1', 'SYNK-001'], ['023', 'SYNK-023'], ['1234', 'SYNK-1234'],
+    ['DEMO-01', ''], ['SYNK-', ''], ['', ''], ['SYNK-1 그리고 아무 말', ''],
+  ]) assert.equal(평가(입력), 기대, `정규화(${JSON.stringify(입력)})`);
+});
+
+test('개인 링크 메뉴도 발동 조건이 같이 있다', () => {
+  assert.match(셋업, /function menuInterviewPersonalLink\(\)\s*\{\s*menuRun_\(interviewPersonalLink\);/,
+    '메뉴 래퍼가 없다');
+  assert.match(셋업, /addItem\('[^']*개인 링크[^']*',\s*'menuInterviewPersonalLink'\)/,
     '시트 메뉴에 등재되지 않았다 — 함수만 있으면 유호님이 못 누른다');
 });
 
