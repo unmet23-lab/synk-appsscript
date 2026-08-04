@@ -83,6 +83,13 @@
             "shell": "bash",
             "timeout": 30,
             "statusMessage": "정본 파생 전파 확인"
+          },
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/track-collision.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { echo \"SYNK track-collision 미실행: $H (node 또는 훅 파일 없음 — F044)\" >&2; exit 1; }; printf %s \"$IN\" | node \"$H\"",
+            "shell": "bash",
+            "timeout": 20,
+            "statusMessage": "병렬 트랙 착지 확인"
           }
         ]
       },
