@@ -282,21 +282,30 @@ function 굽기(htmlPath) {
   return { ok: true, 대상, 폰트, 크기: fs.statSync(대상).size };
 }
 
-/** 정본 도장 갱신 — 지도 HTML 안의 엣지를 정본 현재 커밋으로 다시 쓴다 */
+/** 정본 도장 갱신 — **파생 주석 안만** 정본 현재 커밋으로 다시 쓴다.
+ *  ⚠ 예전엔 파일 전역 split/join 이었다 — 본문이 제 정본 경로를 언급하는 지도
+ *    (DESIGN.md 전후비교)의 보이는 글·CSS 주석에까지 도장이 박혔다(2026-08-05 실측 2건).
+ *    주석 밖 도장은 다음 stamp 가 안 고치는 죽은 복제라, 쓰는 범위를 주석으로 못박고
+ *    주석은 치환이 아니라 파싱→재조립한다(경로가 다른 경로의 접두어여도 안 샌다). */
 function 도장찍기(htmlPath) {
-  let html = fs.readFileSync(htmlPath, 'utf8');
-  const 엣지들 = 엣지읽기(html);
-  if (!엣지들.length) return { ok: false, 이유: '정본 선언(<!-- 파생: … -->)이 없다 — 먼저 심어야 한다' };
+  const 원본 = fs.readFileSync(htmlPath, 'utf8');
+  if (!엣지읽기(원본).length) return { ok: false, 이유: '정본 선언(<!-- 파생: … -->)이 없다 — 먼저 심어야 한다' };
 
   const 찍은것 = [];
-  for (const e of 엣지들) {
-    const 현재 = 정본커밋(e.정본);
-    if (!현재) { 찍은것.push(`${e.정본} → (커밋 이력 없음, 건너뜀)`); continue; }
-    const 짧게 = 현재.slice(0, 7);
-    const 옛 = e.도장 ? `${e.정본}@${e.도장}` : e.정본;
-    html = html.split(옛).join(`${e.정본}@${짧게}`);
-    찍은것.push(`${e.정본} @${짧게}`);
-  }
+  // 바깥 순회는 클론으로 — 안의 엣지읽기가 공용 엣지_RE.lastIndex 를 움직여도 안 어긋난다
+  const html = 원본.replace(new RegExp(엣지_RE.source, 엣지_RE.flags), (주석) => {
+    const 조각들 = 엣지읽기(주석).map((e) => {
+      const 현재 = 정본커밋(e.정본);
+      if (!현재) {
+        찍은것.push(`${e.정본} → (커밋 이력 없음, 건너뜀)`);
+        return e.도장 ? `${e.정본}@${e.도장}` : e.정본;
+      }
+      const 짧게 = 현재.slice(0, 7);
+      찍은것.push(`${e.정본} @${짧게}`);
+      return `${e.정본}@${짧게}`;
+    });
+    return 조각들.length ? `<!-- 파생: ${조각들.join(', ')} -->` : 주석;
+  });
   fs.writeFileSync(htmlPath, html, 'utf8');
   return { ok: true, 찍은것 };
 }
