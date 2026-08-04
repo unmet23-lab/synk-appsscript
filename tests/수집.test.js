@@ -390,6 +390,14 @@ test('[v9.138] 퀴즈ID와 문제는 같은 선택에서 나온다 — 두 사�
 
 const GOLD_H = ['id', 'fb_id', 'student_id', '제출일', '원문', 'AI교정', '강사판정', '강사교정', '사유', '오류태그', '강사', 'created_at'];
 
+/* [v9.170] 판정 문자열은 **소스에서 뽑아 쓴다** — 손으로 베끼면 픽스처만 통과하는 테스트가 된다.
+ * (여기 값은 Glide 강사 탭 「골든셋」 Choice 옵션 표와 같아야 하는 그 문자열이다) */
+const GOLD_V = (() => {
+  const m = code.match(/const GOLD_VERDICTS = (\[[^\]]*\]);/);
+  assert.ok(m, 'GOLD_VERDICTS 정의를 찾지 못함 — 판정 분기가 죽은 채 초록이 된다');
+  return JSON.parse(m[1].replace(/'/g, '"'));
+})();
+
 function loadExport(rows) {
   const s = code.indexOf('const FIXTURE_MIN_LEN');
   assert.notEqual(s, -1, 'FIXTURE_MIN_LEN 정의를 찾지 못함');
@@ -397,6 +405,7 @@ function loadExport(rows) {
   const sheet = { getLastRow: () => rows.length + 1, getRange: () => ({ getValues: () => rows }) };
   const ctx = {
     GOLD_HEADERS: GOLD_H,
+    GOLD_VERDICTS: GOLD_V,
     SpreadsheetApp: { getActiveSpreadsheet: () => ({
       getSheetByName: n => (n === 'teacher_gold' ? sheet : null),
       getSpreadsheetTimeZone: () => 'Asia/Seoul'
@@ -413,7 +422,7 @@ function loadExport(rows) {
 
 test('[v9.166] 픽스처에 식별자는 한 글자도 나가지 않는다 — 목적지가 git이라 되돌릴 수 없다', () => {
   const rows = [['GD20260804-1', 'FB-77', 'SYNK-012', '2026-08-01',
-    '저가 몽골 사람입니다.', '저는 몽골 사람입니다.', '고칠 곳 있음', '저는 몽골 사람이에요.',
+    '저가 몽골 사람입니다.', '저는 몽골 사람입니다.', GOLD_V[1], '저는 몽골 사람이에요.',
     '조사 오류', '조사:주격(이/가·은/는)', '바트 선생님', '2026-08-04T00:00:00']];
   const { api, saved } = loadExport(rows);
   api.exportGoldenFixture();
@@ -431,7 +440,7 @@ test('[v9.166] 픽스처에 식별자는 한 글자도 나가지 않는다 — �
 test('[v9.166] 강사가 아직 안 본 행은 픽스처가 되지 않는다 — 정답 없는 항목은 채점표가 아니다', () => {
   const rows = [
     ['GD-1', 'FB1', 'S1', 'D', '원문 하나입니다.', 'AI 교정본입니다.', '', '', '', '조사:주격(이/가·은/는)', '', ''],
-    ['GD-2', 'FB2', 'S2', 'D', '저가 학생입니다.', '저는 학생입니다.', '고칠 곳 있음', '저는 학생이에요.', '', '조사:주격(이/가·은/는)', '', '']
+    ['GD-2', 'FB2', 'S2', 'D', '저가 학생입니다.', '저는 학생입니다.', GOLD_V[1], '저는 학생이에요.', '', '조사:주격(이/가·은/는)', '', '']
   ];
   const { api, saved } = loadExport(rows);
   api.exportGoldenFixture();
@@ -441,13 +450,47 @@ test('[v9.166] 강사가 아직 안 본 행은 픽스처가 되지 않는다 —
 });
 
 test('[v9.166] 「AI가 맞았다」 승인 행도 담는다 — 빠지면 재현율 없는 반쪽 채점표가 된다', () => {
-  const rows = [['GD-1', 'FB1', 'S1', 'D', '저는 학생입니다.', '저는 학생입니다.', 'AI가 맞음', '', '', '오류없음', '', '']];
+  const rows = [['GD-1', 'FB1', 'S1', 'D', '저는 학생입니다.', '저는 학생입니다.', GOLD_V[0], '', '', '오류없음', '', '']];
   const { api, saved } = loadExport(rows);
   api.exportGoldenFixture();
   const doc = JSON.parse(saved().content);
   assert.equal(doc.항목.length, 1, '강사가 승인만 한 행이 통째로 버려졌다');
   assert.equal(doc.항목[0].출처, 'AI교정_강사승인');
   assert.equal(doc.항목[0].종류, '정상', '오류없음 + 원문=교정이면 거짓양성 검사용 정상 항목이다');
+});
+
+/* [v9.170] 아래 3건 = Glide 「골든셋」 조립 중 드러난 구멍. 셋 다 **조용히 틀린 정답**을 만든다 —
+ * 픽스처는 정상으로 보이고, 2년 뒤 모델 선택이 그 표를 기준으로 갈린다. */
+test('[v9.170] 「원문이 이미 맞다」의 정답은 원문이다 — AI교정을 정답으로 실으면 판정이 뒤집힌다', () => {
+  const rows = [['GD-1', 'FB1', 'S1', 'D', '저는 학교에 가요.', '저는 학교에 갑니다.', GOLD_V[2], '', '', '높임:종결어미', '', '']];
+  const { api, saved } = loadExport(rows);
+  api.exportGoldenFixture();
+  const doc = JSON.parse(saved().content);
+  assert.equal(doc.항목.length, 1, '강사가 「원문이 맞다」고 답한 행이 버려졌다 — 거짓양성 검사 표본이 사라진다');
+  assert.equal(doc.항목[0].기대교정, '저는 학교에 가요.',
+    'AI교정이 정답으로 실렸다 — 강사는 AI가 과교정했다고 판정했는데 채점표는 AI를 정답으로 친다');
+  assert.equal(doc.항목[0].출처, '원문유지_강사판정');
+  assert.deepEqual(doc.항목[0].기대태그, [], 'AI가 붙인 오류태그가 남았다 — 강사가 함께 부정한 태그다');
+  assert.equal(doc.항목[0].종류, '정상', '원문=교정이고 태그가 없으면 정상(거짓양성) 표본이다');
+});
+
+test('[v9.170] 「고칠 곳이 있다」인데 교정칸이 비면 픽스처가 아니다 — 반쪽 응답은 정답이 아니다', () => {
+  const rows = [['GD-1', 'FB1', 'S1', 'D', '저가 학생입니다.', '저는 학생입니다.', GOLD_V[1], '', '', '조사:주격(이/가·은/는)', '', '']];
+  const { api, saved } = loadExport(rows);
+  api.exportGoldenFixture();
+  const doc = JSON.parse(saved().content);
+  assert.equal(doc.항목.length, 0,
+    '강사가 「AI가 틀렸다」고만 하고 교정을 안 적었는데 그 AI교정이 정답으로 실렸다');
+  assert.ok(doc.한계.some(l => /제외 1건/.test(l)),
+    '반쪽 응답이 제외 수에 안 잡혔다 — 픽스처가 「다 채워졌다」로 보인다');
+});
+
+test('[v9.170] 모르는 판정 문자열은 정답으로 치지 않는다 — Glide 옵션표가 어긋나면 조용히 오염된다', () => {
+  const rows = [['GD-1', 'FB1', 'S1', 'D', '저가 학생입니다.', '저는 학생입니다.', '대충 맞음', '', '', '', '', '']];
+  const { api, saved } = loadExport(rows);
+  api.exportGoldenFixture();
+  const doc = JSON.parse(saved().content);
+  assert.equal(doc.항목.length, 0, 'GOLD_VERDICTS에 없는 판정이 AI교정을 정답으로 승격시켰다');
 });
 
 test('[v9.166] diff는 교정 지점을 뽑고, 확신이 없으면 비운다', () => {
