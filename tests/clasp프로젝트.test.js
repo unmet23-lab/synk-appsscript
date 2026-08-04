@@ -20,7 +20,9 @@ const fs = require('node:fs');
 const os = require('node:os');
 
 const REPO = path.resolve(__dirname, '..');
-const lib = require(path.join(REPO, '.claude', 'hooks', 'lib', 'clasp-project.js'));
+// SYNK_TEST_CLASP_LIB = 변이 실험용 이음매. 평소엔 실모듈을 본다(실저장소를 흔들지 않고 탐지력만 잰다).
+const lib = require(process.env.SYNK_TEST_CLASP_LIB
+  || path.join(REPO, '.claude', 'hooks', 'lib', 'clasp-project.js'));
 
 /* 픽스처 = 프로젝트 둘짜리 가짜 저장소.
  *   <root>/.clasp.json + .claspignore(!appsscript.json !Code.js)
