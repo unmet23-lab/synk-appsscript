@@ -21,16 +21,17 @@
 'use strict';
 const fs = require('fs');
 
-function deny(reason) {
+function out(decision, reason) {
   process.stdout.write(JSON.stringify({
     hookSpecificOutput: {
       hookEventName: 'PreToolUse',
-      permissionDecision: 'deny',
+      permissionDecision: decision,
       permissionDecisionReason: reason,
     },
   }));
   process.exit(0);
 }
+const deny = (reason) => out('deny', reason);
 
 let cmd = '';
 try {
@@ -155,6 +156,49 @@ if (re('(rebase|merge|cherry-pick|revert)\\s+--abort\\b').test(exec)
       + '\n\n→ 남의 것이면: 그 세션에 알리고 커밋될 때까지 기다린다.'
       + '\n   내 것이면: 먼저 커밋하거나 `git stash push -- 경로`로 대피시킨 뒤 되감는다.'
       + '\n   의도적 예외라면 명령 앞에 GIT_SCOPE_BYPASS=1 을 붙인다.');
+  }
+}
+
+/* ⑦ git stash — 규칙⑤(되감기)와 **같은 자리, 방향만 다르다**. 되감기는 남의 수정을 지우고,
+ *   stash 는 남의 수정을 **어딘가로 옮긴다**. 둘 다 「내 트리인 줄 알았는데 공유 트리였다」가 원인.
+ *
+ *   2026-08-04 F066 실사고: 한 세션이 CI 실패 원인을 가리려고 `git stash` 를 걸었는데,
+ *   그 안에 **다른 세션이 121줄 수정 중이던 clasp-guard.js** 가 들어갔다. 그 명령이 2분 타임아웃에
+ *   걸려 pop 이 실행되지 않을 뻔했고, 실제로 그 사이 **원 세션이 「내 편집이 사라졌다」고 오판해
+ *   복구를 시작하기 직전까지 갔다**(F068). 피해가 작았던 건 설계가 아니라 pop 이 제때 돈 덕이다.
+ *
+ *   🔑 stash 를 금지하지는 않는다 — 규칙⑤의 안내문이 「내 것이면 stash 로 대피시켜라」라고
+ *      권하고 있고, 그건 여전히 옳다. 가르는 기준은 **범위**다:
+ *        경로 미지정 → 트리 전체를 쓸어 담는다. 남의 것이 반드시 함께 간다 → 차단
+ *        경로 지정   → 의도가 좁다. 통과시키되 그 경로의 미커밋을 보여준다(내 것이 맞는지 확인용)
+ *      깨끗한 트리에서는 조용히 통과한다(과잉 차단은 BYPASS 습관을 만든다). */
+{
+  const st = re('stash\\b\\s*(\\S*)').exec(exec);
+  const sub = st ? String(st[1] || '') : null;
+  if (st && !/^(list|show|pop|apply|drop|clear|branch|create|store)$/.test(sub)) {
+    const { execFileSync } = require('child_process');
+    let 더러운 = [];
+    try {
+      더러운 = execFileSync('git', ['-c', 'core.quotepath=false', 'status', '--porcelain', '--untracked-files=no'],
+        { encoding: 'utf8', cwd: gitCwd }).split('\n').filter((l) => l.trim()).slice(0, 12);
+    } catch { /* 저장소 밖 — 가드가 판단할 자리가 아니다 */ }
+    const 경로지정 = /stash\b[^&|;]*?\s--\s+\S/.test(exec);
+    if (더러운.length && !경로지정) {
+      deny('[git-scope-guard] 경로 없는 `git stash` 차단 — 작업 트리를 **통째로** 쓸어 담는다.'
+        + '\n이 트리는 세션 여럿이 공유하고, 지금 있는 미커밋은 대개 다른 세션이 작업 중인 것이다.'
+        + '\n2026-08-04 F066 실사고: 진단하려고 건 stash 에 옆 세션의 121줄 편집이 딸려 들어갔고,'
+        + '\npop 이 늦어 그 세션이 「내 편집이 사라졌다」고 오판해 복구를 시작하기 직전까지 갔다(F068).'
+        + '\n\n지금 트리의 미커밋 수정:\n  ' + 더러운.join('\n  ')
+        + '\n\n→ 내 것만 대피시키려면 경로를 준다: git stash push -- 경로A 경로B'
+        + '\n   진단하려고 잠시 치우는 거라면 **치우지 말고 읽는다**: git show HEAD:경로'
+        + '\n   (남의 미커밋 파일은 진단 목적이라도 stash·checkout 하지 않는다)'
+        + '\n   의도적 예외라면 명령 앞에 GIT_SCOPE_BYPASS=1 을 붙인다.');
+    }
+    if (더러운.length && 경로지정) {
+      out('allow', '[git-scope-guard] 경로를 준 stash — 그 파일이 **내 편집이 맞는지** 확인했나.'
+        + ' 남의 것이면 진단 목적이라도 치우지 말고 `git show HEAD:경로` 로 읽는다(F066).'
+        + '\n지금 트리의 미커밋:\n  ' + 더러운.join('\n  '));
+    }
   }
 }
 
