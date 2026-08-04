@@ -150,6 +150,24 @@ function nblmDriveSection() {
   return { present: true, failed, last, 성공일, 지난날 };
 }
 
+function mapSection() {
+  /* 바탕화면 SYNK_지도 폴더 — 유호님이 실제로 여는 사본이 repo 정본과 갈라졌는지.
+   * 도구(tools/지도대장.js)는 e27a93a 로 들어왔는데 **발화 지점이 0**이었다(「장치와
+   * 발동 조건은 같은 커밋에서」 미충족 · 커밋 메시지에 미완성으로 명시). 여기가 그 발동
+   * 조건이다 — 주간 점검이 돌 때마다 같이 잰다(2026-08-04).
+   * 폴더가 없으면 부패가 아니라 미실행이다(CI·클라우드·다른 기계). */
+  const M = require('./지도대장.js');
+  const 결과 = M.훑기();
+  if (!결과.있음) return { present: false, dir: 결과.dir };
+  const 문제지도 = 결과.지도들.filter((m) => m.문제.length);
+  return {
+    present: true,
+    지도수: 결과.지도들.length,
+    문제수: 문제지도.reduce((a, m) => a + m.문제.length, 0),
+    지도들: 문제지도.map((m) => ({ 이름: m.이름, 첫문제: (m.문제[0] || '').split('\n')[0] })),
+  };
+}
+
 function toilSection() {
   /* 손일 장부(docs/_ops/손일장부.md)가 자라고 있는지.
    *
@@ -182,12 +200,13 @@ function collect() {
   const nbl = attempt('notebooklm', notebooklmSection);
   const nbd = attempt('notebooklm-drive', nblmDriveSection);
   const toi = attempt('toil', toilSection);
+  const map = attempt('지도', mapSection);
 
   const red = [];
   const warn = [];
   const notes = [];
 
-  for (const s of [mem, doc, fri, har, nbl, nbd, toi]) {
+  for (const s of [mem, doc, fri, har, nbl, nbd, toi, map]) {
     if (!s.ok) red.push({ kind: '검사기 고장', text: `${s.name} 검사가 실패했다 — ${s.error}` });
   }
 
@@ -244,6 +263,16 @@ function collect() {
           'PC가 꺼져 있었다면 정상이지만, 켜져 있었다면 예약 작업을 확인하라(schtasks /query /tn SYNK_NotebookLM).',
       });
     }
+  }
+
+  if (map.ok && map.value.present && map.value.문제수) {
+    warn.push({
+      kind: '지도 사본 갈림',
+      text: `바탕화면 SYNK_지도 ${map.value.지도수}종 중 문제 ${map.value.문제수}건 — ` +
+        map.value.지도들.slice(0, 3).map((m) => `${m.이름}(${m.첫문제})`).join(' · ') +
+        ' — 유호님이 여는 사본이 정본과 갈라졌거나 신선도를 모른다.' +
+        ' 상세: node tools/지도대장.js · 수리: --bake / --stamp',
+    });
   }
 
   if (toi.ok && toi.value.present && toi.value.stale) {
@@ -377,4 +406,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { collect, render, dueNow, stamp, stateFile, harnessSection, toilSection, EVOLVE_THRESHOLD };
+module.exports = { collect, render, dueNow, stamp, stateFile, harnessSection, toilSection, mapSection, EVOLVE_THRESHOLD };

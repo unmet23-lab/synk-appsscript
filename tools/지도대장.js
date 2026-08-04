@@ -39,7 +39,9 @@ const path = require('path');
 const crypto = require('crypto');
 const { execFileSync, spawnSync } = require('child_process');
 
-const ROOT = path.resolve(__dirname, '..');
+/** repo 루트 — 환경변수가 이음매다(테스트가 픽스처 git 저장소로 「낡음」 탐지력을 CI에서 잰다.
+ *  실저장소 이력은 CI에서 shallow 라 조상 판정이 조용히 어긋날 수 있다 — 그래서 픽스처가 진다). */
+const ROOT = path.resolve(process.env.SYNK_지도_ROOT || path.join(__dirname, '..'));
 const 상태파일 = '.지도대장.json';
 
 /** 지도 폴더 — 환경변수가 이음매다(테스트 픽스처가 실폴더를 안 건드리고 탐지력만 잰다). */
