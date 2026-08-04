@@ -3,8 +3,9 @@
 //
 // 왜 있나 — 2026-08-04 유호님 「토큰이 너무 많다」에 답하려는데 잴 수단이 없어
 // 매번 추정하게 됐다. 그 자리에서 만든 집계가 실측으로 전제를 뒤집었다:
-// 지침 압축(예상 범인)은 4~5%가 상한이고, 실제 범인은 **컨텍스트 재읽기 88%**와
-// **도구 결과의 89%를 먹은 이미지**였다. 정본 = memory `token-audit-2026-08-04`.
+// 지침 압축(예상 범인)은 4~5%가 상한이고, 실제 범인은 **캐시 쓰기 47%·재읽기 42%**와
+// **도구 결과의 89%를 먹은 이미지**였다(3차 정가 환산 · TTL 가중 반영).
+// 정본 = memory `token-audit-2026-08-04`.
 //
 // 쓰는 법:
 //   node tools/token-audit.js              # 최근 7일
@@ -23,7 +24,11 @@ const readline = require('readline');
 
 // 실제 과금 비율(입력 1 기준) — 캐시읽기는 싸고 출력은 비싸다.
 // 절대액이 아니라 **어디를 고쳐야 효과가 큰지**를 가르는 용도다.
-const W = { read: 0.1, create: 1.25, input: 1, output: 5 };
+// ⚠ 캐시 생성은 TTL 로 단가가 갈린다(5분 1.25× · 1시간 2×). 2026-08-04 전 턴 전수에서
+//   생성의 99.8%가 1시간이었다 — 1.25× 단일 가중치는 생성 비용을 60% 과소평가해
+//   「재읽기 88%」 비중을 부풀렸다(정본 memory token-audit-2026-08-04). 그래서
+//   usage.cache_creation 내역으로 가르고, 내역이 없는 옛 전사는 1시간으로 센다.
+const W = { read: 0.1, create5m: 1.25, create1h: 2, input: 1, output: 5 };
 
 function parseArgs(argv) {
   const a = { days: 7, tools: false, dir: null };
@@ -46,7 +51,7 @@ const fmt = (x) => x.toLocaleString('en-US');
 
 async function scanFile(file, wantTools) {
   const rl = readline.createInterface({ input: fs.createReadStream(file), crlfDelay: Infinity });
-  const s = { turns: 0, input: 0, create: 0, read: 0, output: 0, firstIn: null, tools: {} };
+  const s = { turns: 0, input: 0, create: 0, create5m: 0, create1h: 0, read: 0, output: 0, firstIn: null, tools: {} };
   const useName = wantTools ? new Map() : null;
   for await (const line of rl) {
     if (!line.trim()) continue;
@@ -59,6 +64,13 @@ async function scanFile(file, wantTools) {
       s.turns += 1;
       s.input += n(u.input_tokens);
       s.create += n(u.cache_creation_input_tokens);
+      const cc = u.cache_creation;
+      if (cc && (cc.ephemeral_5m_input_tokens != null || cc.ephemeral_1h_input_tokens != null)) {
+        s.create5m += n(cc.ephemeral_5m_input_tokens);
+        s.create1h += n(cc.ephemeral_1h_input_tokens);
+      } else {
+        s.create1h += n(u.cache_creation_input_tokens);
+      }
       s.read += n(u.cache_read_input_tokens);
       s.output += n(u.output_tokens);
     }
@@ -116,7 +128,8 @@ async function main() {
   }
 
   const sum = (k) => rows.reduce((t, r) => t + r[k], 0);
-  const weighted = sum('read') * W.read + sum('create') * W.create + sum('input') * W.input + sum('output') * W.output;
+  const createW = sum('create5m') * W.create5m + sum('create1h') * W.create1h;
+  const weighted = sum('read') * W.read + createW + sum('input') * W.input + sum('output') * W.output;
 
   console.log(`\n=== 토큰 실측 — 최근 ${a.days}일 · 세션 ${rows.length}개 ===\n`);
   console.log('id       시각          턴수      캐시읽기      캐시생성        출력   턴당비용');
@@ -127,10 +140,10 @@ async function main() {
     );
   }
 
-  console.log('\n--- 어디로 갔나 (가중 환산: 읽기 0.1× · 생성 1.25× · 출력 5×) ---');
+  console.log('\n--- 어디로 갔나 (가중 환산: 읽기 0.1× · 생성 5분 1.25×·1시간 2× · 출력 5×) ---');
   const parts = [
     ['컨텍스트 재읽기', sum('read') * W.read, sum('read')],
-    ['캐시 생성', sum('create') * W.create, sum('create')],
+    ['캐시 생성', createW, sum('create')],
     ['출력', sum('output') * W.output, sum('output')],
     ['순입력', sum('input') * W.input, sum('input')],
   ].sort((x, y) => y[1] - x[1]);
@@ -141,7 +154,7 @@ async function main() {
   const fi = rows.map((r) => r.firstIn).filter(Boolean).sort((x, y) => x - y);
   if (fi.length) {
     console.log(`\n  세션 시작 오버헤드(지침·메모리·도구정의): 중앙값 ${fmt(fi[Math.floor(fi.length / 2)])}`);
-    console.log(`  → 세션 ${rows.length}개 전부 합쳐도 가중 비용의 ${(fi.reduce((t, x) => t + x, 0) * W.create / weighted * 100).toFixed(2)}%.`);
+    console.log(`  → 세션 ${rows.length}개 전부 합쳐도 가중 비용의 ${(fi.reduce((t, x) => t + x, 0) * W.create1h / weighted * 100).toFixed(2)}%.`);
     console.log('    긴 세션의 누적 재읽기가 압도적이다 — **세션은 짧게 끊는 편이 싸다.**');
   }
 

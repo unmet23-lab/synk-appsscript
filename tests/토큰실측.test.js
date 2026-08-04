@@ -96,6 +96,47 @@ test('세션 시작 오버헤드를 첫 요청에서 집는다', () => {
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+/* 캐시 생성 가중치 — 2026-08-04 전수 실측에서 생성의 99.8%가 1시간 TTL(2×)였는데
+ * 도구는 1.25× 단일 가중치로 세어 생성 비용을 60% 과소평가했다(비중 판정이 이 위에
+ * 서 있었다). TTL 내역으로 가르는 것을 픽스처로 못박는다 — 양방향 다 잰다. */
+test('캐시 생성 1시간 TTL은 2×로 센다 — 1.25×면 순위가 뒤집힌다', () => {
+  // 생성 1,000×2=2,000 > 재읽기 15,000×0.1=1,500. 옛 1.25×면 1,250<1,500로 뒤집힌다.
+  const dir = fixtureDir([turn({
+    input_tokens: 0, cache_creation_input_tokens: 1000, cache_read_input_tokens: 15000, output_tokens: 0,
+    cache_creation: { ephemeral_5m_input_tokens: 0, ephemeral_1h_input_tokens: 1000 },
+  })]);
+  const r = run(['--dir', dir, '--days', '3650']);
+  assert.match(r.out, /1시간 2×/, '표시된 가중치 라벨이 실제 계산과 다르다');
+  const body = r.out.split('어디로 갔나')[1] || '';
+  const first = body.split('\n').filter((l) => /%/.test(l))[0] || '';
+  assert.match(first, /캐시 생성/, '1시간 생성이 1.25×로 과소평가돼 재읽기에 밀렸다');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('캐시 생성 5분 TTL은 1.25× 그대로다 — 전부 2×로 뭉개면 안 된다', () => {
+  // 같은 수치인데 5분이면 1,000×1.25=1,250 < 1,500 → 재읽기가 1위여야 한다
+  const dir = fixtureDir([turn({
+    input_tokens: 0, cache_creation_input_tokens: 1000, cache_read_input_tokens: 15000, output_tokens: 0,
+    cache_creation: { ephemeral_5m_input_tokens: 1000, ephemeral_1h_input_tokens: 0 },
+  })]);
+  const r = run(['--dir', dir, '--days', '3650']);
+  const body = r.out.split('어디로 갔나')[1] || '';
+  const first = body.split('\n').filter((l) => /%/.test(l))[0] || '';
+  assert.match(first, /컨텍스트 재읽기/, '5분 생성까지 2×로 과대평가됐다 — TTL을 안 가른 것이다');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('cache_creation 내역이 없는 옛 전사는 1시간(2×)으로 센다 — 과소 쪽으로 접히지 않는다', () => {
+  const dir = fixtureDir([turn({
+    input_tokens: 0, cache_creation_input_tokens: 1000, cache_read_input_tokens: 15000, output_tokens: 0,
+  })]);
+  const r = run(['--dir', dir, '--days', '3650']);
+  const body = r.out.split('어디로 갔나')[1] || '';
+  const first = body.split('\n').filter((l) => /%/.test(l))[0] || '';
+  assert.match(first, /캐시 생성/, '내역 없는 생성이 1.25×(실측 0.2%짜리 단가)로 접혔다');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 test('망가진 줄이 섞여도 나머지를 센다 (전사는 언제든 잘려 있을 수 있다)', () => {
   tmpSeq += 1;
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), `synk-tokenaudit-bad-${process.pid}-`));
