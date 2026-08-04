@@ -47,6 +47,13 @@ description: SYNK 배포 파이프라인 — 구문검사(node --check) → 안�
    - `docs/버전_이력.md` 맨 아래에 같은 번호로 한 줄 추가.
 6. **GitHub 백업**: `git push origin master`.
 7. **라이브 배포**: `clasp push --force`.
+   - ⚠ **push 는 라이브를 바꾸지 않는 프로젝트가 있다.** 웹앱이 **고정 버전 배포**를 서빙하면 push 는 프로젝트 파일만 갱신하고 접수 URL 은 옛 스냅샷을 계속 준다. 2026-08-05 실사고: 브랜드 키트 수리를 push 하고 「라이브 반영」이라 말할 뻔했는데, crewcard `@16` 이 v9.186 시점 카드를 그대로 서빙하고 있었다. (루트 프로젝트는 `@HEAD` 서빙이라 push 가 곧 라이브다 — **프로젝트마다 다르다**.)
+   - 그래서 push 뒤 **`node tools/배포판점검.js`** 로 확인한다. 낡았으면 그 도구가 **명령을 통째로** 준다:
+     ```bash
+     cd <프로젝트> && clasp deploy --deploymentId <기존ID> --description "<설명> #fp:<지문>"
+     ```
+     **⛔ `--deploymentId` 를 빼면 새 배포가 생겨 접수 주소가 둘로 갈린다**(메모리 `crewcard-fork-handoff` 의 실사고). 실행 후 `clasp deployments` 로 **개수가 그대로**인지 본다.
+   - `#fp:` 는 배포된 내용의 지문이다. `clasp` 이 배포 시각을 안 주기 때문에(실측) 설명에 심어 라이브가 스스로 「어느 코드인지」 말하게 한 것 — 지우지 말 것. 잊어도 `deploy-freshness` 훅이 push 직후 알린다.
 8. **보고**: 커밋 해시 + "GitHub·라이브 동기화 완료"를 1줄로. 트리거가 코드를 쓰는 시각(07시 morning, 14/22시 calc, 월 07시 weekly)을 감안해 첫 실전 작동 시점을 알려줄 것.
 
 ## 금지
