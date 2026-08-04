@@ -202,10 +202,48 @@ function 범위(파일들) {
  * ⚠ 이 셋 중 하나라도 빠지면 「읽기 전용」이 사실이 아니게 된다. 지우지 말 것. */
 const 잠금플래그 = ['--ignore-user-config', '-c', 'sandbox_mode="read-only"', '-c', 'approval_policy="never"'];
 
-/* 모델은 못 박는다 — `--ignore-user-config` 가 사용자 설정의 모델 지정도 함께 버리기 때문에,
- * 안 박으면 회차마다 다른 모델이 검수해 결과가 흔들린다. 없는 모델명이면 실행이 실패하고
- * 그건 `확인 불가`(2)로 드러난다 — 조용히 다른 모델로 도는 것보다 낫다. */
-const 모델 = process.env.SYNK_REVIEW_MODEL || 'gpt-5.6-sol';
+/* ■ 모델·추론 수준을 **둘 다** 못 박는다 — 여기가 이 파일의 유일한 모델 결정 자리다.
+ *
+ * 🔴 왜 「둘 다」인가 (2026-08-05에 잡은 내 구멍): `--ignore-user-config` 는 사용자 설정의
+ *   모델뿐 아니라 **`model_reasoning_effort` 도 함께 버린다.** 그런데 `gpt-5.6-sol` 의
+ *   `default_reasoning_level` 은 **`low`** 다(models_cache.json 실측). 즉 모델만 박으면
+ *   최상급 모델을 **가장 얕은 추론으로** 돌리게 된다 — 겉보기엔 「최신 모델을 쓴다」인데
+ *   실제로는 아니다. **효력은 모델보다 레버가 크다**(같은 모델의 low↔max 차이가
+ *   같은 효력의 sol↔terra 차이보다 크다).
+ *
+ * ■ 무엇을 어디에 쓰는가 — 축 셋으로 정한다(CLAUDE.md 모델 라우팅 조항의 이 파이프라인 적용):
+ *   ①되돌림 비용: 놓치면 라이브가 깨지는 자리인가 → 검수는 그렇다 → 최상급.
+ *   ②판단인가 변환인가: **변환이면 최하급이 옳다.** 2단계는 산문을 JSON 으로 옮기는
+ *     순수 변환인데, 여기에 똑똑한 모델을 쓰면 오히려 **「고쳐서」 옮길 위험**이 생긴다
+ *     (STT 가 학생의 발음 오류를 고쳐 전사해 데이터를 없애는 것과 같은 계열).
+ *   ③빈도: 매 배포마다 도는가 → 시간이 곧 비용. 1단계가 이미 5~8분이라 `max`·`ultra` 는
+ *     기본값으로 두지 않는다(필요한 날만 `--효력 max`).
+ *
+ * 바꾸는 법: 환경변수 or CLI(`--모델`·`--효력`). 없는 모델·효력이면 codex 가 거부하고
+ *   그건 `확인 불가`(2)로 드러난다 — 조용히 다른 값으로 도는 것보다 낫다. */
+const 효력들 = ['low', 'medium', 'high', 'xhigh', 'max', 'ultra'];
+const 모델설정 = {
+  // 적대 검수 = 정밀 검증 → 최상급 모델 + 기본보다 크게 올린 추론
+  분석: {
+    model: process.env.SYNK_REVIEW_MODEL || 'gpt-5.6-sol',
+    effort: process.env.SYNK_REVIEW_EFFORT || 'xhigh',
+  },
+  // 산문 → JSON = 기계적 변환 → 최하급. 능력이 아니라 **충실함**이 필요한 자리다.
+  구조화: {
+    model: process.env.SYNK_REVIEW_FMT_MODEL || 'gpt-5.4-mini',
+    effort: process.env.SYNK_REVIEW_FMT_EFFORT || 'low',
+  },
+};
+
+/* 모델·효력을 codex 플래그로. 효력은 여기서 검사한다 — 오타를 codex 에 넘기면 조용히 기본값
+ * (`gpt-5.6-sol` = `low`)으로 돌 위험이 있고, 그건 「최상급 모델을 쓴다」고 믿으면서 아닌 상태다. */
+function 모델플래그(설정) {
+  if (!효력들.includes(설정.effort)) {
+    const e = new Error(`알 수 없는 추론 수준 "${설정.effort}" — 가능: ${효력들.join(' · ')}`);
+    e.확인불가 = true; throw e;
+  }
+  return ['-m', 설정.model, '-c', `model_reasoning_effort="${설정.effort}"`];
+}
 
 function codex(args, 입력, timeoutMs, 라벨) {
   const isWin = process.platform === 'win32';
@@ -239,8 +277,8 @@ function codex실행(대상, timeoutMs) {
   const 구조 = path.join(임시, 'review.json');
 
   // 1단계 — 분석(리뷰 하네스). 커스텀 프롬프트는 못 준다(위 「막다른 길」 참조) — 렌즈는 CLAUDE.md 가 진다.
-  codex(['exec', 'review', ...대상.flags, ...잠금플래그, '-m', 모델, '--ephemeral', '-o', 산문],
-    '', timeoutMs, 'codex 검수(1단계 분석)');
+  codex(['exec', 'review', ...대상.flags, ...잠금플래그, ...모델플래그(모델설정.분석), '--ephemeral', '-o', 산문],
+    '', timeoutMs, `codex 검수(1단계 분석 · ${모델설정.분석.model}/${모델설정.분석.effort})`);
 
   let raw;
   try { raw = fs.readFileSync(산문, 'utf8').trim(); } catch (_) {
@@ -259,8 +297,8 @@ function codex실행(대상, timeoutMs) {
 
 --- 원문 ---
 ${raw}`;
-  codex(['exec', ...잠금플래그, '--output-schema', 스키마경로, '--ephemeral', '-o', 구조, '-'],
-    변환, Math.min(timeoutMs, 300000), 'codex 검수(2단계 구조화)');
+  codex(['exec', ...잠금플래그, ...모델플래그(모델설정.구조화), '--output-schema', 스키마경로, '--ephemeral', '-o', 구조, '-'],
+    변환, Math.min(timeoutMs, 300000), `codex 검수(2단계 구조화 · ${모델설정.구조화.model}/${모델설정.구조화.effort})`);
 
   let j;
   try {
@@ -361,9 +399,14 @@ function main(argv) {
   const 기각들 = jsonl(기각경로);
   const 범위들 = 범위(대상.파일들);
 
+  // 1회성 상향/하향 — 어려운 변경이면 `--효력 max`, 급하면 `--효력 medium`
+  if (argv.includes('--모델')) 모델설정.분석.model = argv[argv.indexOf('--모델') + 1];
+  if (argv.includes('--효력')) 모델설정.분석.effort = argv[argv.indexOf('--효력') + 1];
+
   console.log(`대상: ${대상.종류} ${대상.값} · 파일 ${대상.파일들.length}개`);
   console.log(`검수 범위(clasp 프로젝트): ${범위들.length ? 범위들.join(', ') : '없음 — 배포 파일이 아닌 변경'}`);
   if (기각들.length) console.log(`기각 이력 ${기각들.length}건으로 재발 지적을 걸러낸다.`);
+  console.log(`모델: 분석=${모델설정.분석.model}/${모델설정.분석.effort} · 구조화=${모델설정.구조화.model}/${모델설정.구조화.effort}`);
   console.log('codex 검수 중… (읽기 전용 샌드박스 · 보통 5~8분 · 2단계)');
 
   const 초 = argv.includes('--timeout') ? Number(argv[argv.indexOf('--timeout') + 1]) : 900;
@@ -386,6 +429,8 @@ function main(argv) {
   append(기록경로, {
     시각: new Date().toISOString(),
     대상: { 종류: 대상.종류, 값: 대상.값 },
+    // 어느 모델이 어느 추론 수준으로 봤는지 남긴다 — 나중에 「그때 왜 못 잡았나」를 물을 수 있어야 한다
+    모델: { 분석: { ...모델설정.분석 }, 구조화: { ...모델설정.구조화 } },
     범위: 범위들,
     지문: 유효지문(대상),
     요약: 결과.요약 || '',
@@ -409,7 +454,7 @@ function main(argv) {
   return 차단.length ? 1 : 0;
 }
 
-module.exports = { 게이트판정, 유효지문, 키, 범위, 대상결정, 미커밋파일들, 차단급, 기록경로, 기각경로 };
+module.exports = { 게이트판정, 유효지문, 키, 범위, 대상결정, 미커밋파일들, 차단급, 기록경로, 기각경로, 모델설정, 효력들, 모델플래그 };
 
 if (require.main === module) {
   try {
