@@ -83,12 +83,16 @@ function scanPII(text) {
 }
 
 // ── 수집 ────────────────────────────────────────────────────────────────
-function walk(dir, out = []) {
+/* ⚠ 거부 판정은 **걷는 뿌리 기준 상대경로**로 한다 — 절대경로에 걸면 뿌리 자체가 인질이 된다.
+ * 실측(2026-08-05): 워크트리 세션의 REPO 는 `…\.claude\worktrees\<이름>\` 아래라, `worktrees`
+ * 거부 규칙이 docs **전량**을 걸러 수집이 조용히 0이 됐다(같은 코드가 메인 트리·CI에선 초록). */
+function walk(dir, out = [], base) {
+  const root = base || dir;
   if (!fs.existsSync(dir)) return out;
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name);
-    if (DENY_DIR.some((re) => re.test(p))) continue;
-    if (e.isDirectory()) walk(p, out);
+    if (DENY_DIR.some((re) => re.test(path.sep + path.relative(root, p)))) continue;
+    if (e.isDirectory()) walk(p, out, root);
     else if (e.name.toLowerCase().endsWith('.md')) out.push(p);
   }
   return out;

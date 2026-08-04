@@ -149,6 +149,21 @@ test('한 폴더에 평탄화해도 이름이 겹치지 않는다 (겹치면 조
   assert.deepEqual(중복, [], `평탄화 이름 충돌 — 뒤엣것이 앞엣것을 덮는다: ${중복.join(', ')}`);
 });
 
+test('걷는 뿌리가 「거부 폴더 이름」 아래 있어도 수집은 산다 (워크트리 세션의 docs 전멸 실측 2026-08-05)', () => {
+  // 거부 판정을 절대경로에 걸면 REPO 자체가 `…\worktrees\…` 아래일 때(워크트리 세션)
+  // docs 전량이 걸러져 수집이 조용히 0이 된다 — 거부는 걷는 뿌리 기준 상대경로여야 한다.
+  const { walk } = require(TOOL);
+  const 임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'nblm-walk-'));
+  const 뿌리 = path.join(임시, 'worktrees', 'wt-1', 'docs');
+  fs.mkdirSync(path.join(뿌리, '_archive'), { recursive: true });
+  fs.writeFileSync(path.join(뿌리, '살아있다.md'), 'x');
+  fs.writeFileSync(path.join(뿌리, '_archive', '낡음.md'), 'x');
+  const got = walk(뿌리).map((p) => path.basename(p));
+  assert.deepEqual(got, ['살아있다.md'],
+    '뿌리 경로의 worktrees 가 전량을 걸렀거나(0개), 상대경로 전환이 _archive 거부를 죽였다(2개)');
+  fs.rmSync(임시, { recursive: true, force: true });
+});
+
 // ── ⑤ 생성기 ↔ 부패 점검 왕복 (앵커가 어긋나면 낡음을 못 잰다) ──────────
 test('부패 점검이 읽는 앵커와 생성기가 쓰는 문구가 맞는다 (격리 폴더 왕복)', () => {
   const 임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'nblm-rt-'));
