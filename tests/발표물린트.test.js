@@ -95,6 +95,20 @@ test('🔑 DM Mono 를 .mono 밖 CSS 셀렉터로 입히면 잡는다 (01 덱 �
   assert.strictEqual(okT.code, 0, `라틴 전용 <code> 를 잡았다(거짓양성):\n${okT.out}`);
 });
 
+/* 08-05 폰트 임베드 이관에서 이 검사가 6종 전부를 빨갛게 만들었다 — @font-face 는 폰트를
+ * **정의**만 하고 어떤 요소에도 안 입히는데 「.mono 밖에서 입힌다」로 셌다.
+ * 양방향으로 못박는다: 예외가 탐지력까지 없애면 통로 하나가 통째로 열린다. */
+test('🔑 @font-face 의 DM Mono 선언은 「입히는 자리」가 아니다 (임베드 거짓양성)', () => {
+  const face = "@font-face{font-family:'DM Mono';font-weight:400;src:url(data:font/woff2;base64,AAAA) format('woff2')}";
+  const ok = run(page({ extraCss: face }));
+  assert.strictEqual(ok.code, 0, `@font-face 선언을 위반으로 잡았다 — 임베드본이 통째로 빨개진다:\n${ok.out}`);
+
+  // 탐지력 보존 — 같은 파일에 @font-face 가 있어도 진짜 위반은 그대로 잡아야 한다
+  const still = run(page({ extraCss: `${face}\n.reh td{ font-family:'DM Mono',monospace; }` }));
+  assert.strictEqual(still.code, 1, '@font-face 예외가 뒤따르는 진짜 위반까지 덮었다 — 통로가 열렸다');
+  assert.match(still.out, /\.mono 통로 밖/);
+});
+
 test('🔑 「졌다」는 단독 낱말일 때만 잡는다 — 「즐거워졌다」를 벌주지 않는다', () => {
   // 실측: 상담 브로셔의 핀란드 인용문 「학교가 더 즐거워졌다」가 부분일치로 금칙어에 걸렸다.
   // 가드가 실작업을 벌주면 사람이 가드를 끈다. 탐지력은 유지하고 거짓양성만 없앤다.
