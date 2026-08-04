@@ -1853,13 +1853,25 @@ function aiStudioBatch_() {
   const can = () => calls < AI_STUDIO_MAX_CALLS && (Date.now() - t0) < BUDGET_MS;
 
   const ad = ensureSheet(ss, 'ai_daily', ['student_id', '날짜', '한문장', '퀴즈문제', '퀴즈정답해설']);
-  { // 프룬 — 어제 이전 행 제거(시트 비대·다음날 오독 방지). 남길 것 = 오늘·어제
-    if (ad.getLastRow() >= 2) {
-      const keepD = {}; keepD[today] = 1;
-      keepD[Utilities.formatDate(new Date(Date.now() - 86400000), tz, 'yyyy-MM-dd')] = 1;
-      const rowsD = ad.getRange(2, 1, ad.getLastRow() - 1, 5).getValues().filter(r => keepD[String(r[1])]);
-      ad.getRange(2, 1, ad.getLastRow() - 1, 5).clearContent();
+  /* 프룬 — 어제 이전 행을 ai_daily에서 내린다(시트 비대·다음날 오독 방지). 남길 것 = 오늘·어제
+   * [v9.188] 두 가지를 고쳤다. 구 코드는 **그냥 지웠다** —
+   *   ① 아카이브 0: 학생별 맞춤 문제·해설이 매일 밤 영구 소실됐다. 그건 quiz_log 응답이 가리키는
+   *      문항 원문이자 3년차 봇 학습 재료다(소급 불가라 하루 지나면 되찾을 방법이 없다).
+   *      → ai_daily_archive로 **옮긴 뒤에** 지운다. 옮기기가 실패하면 지우지도 않는다.
+   *   ② 순서: clearContent가 setValues보다 **먼저**라, 그 사이 6분 타임아웃이 나면 남겼어야 할
+   *      오늘 것까지 사라졌다. → 살릴 것을 먼저 쓰고 **남은 구간만** 지운다(중간에 죽어도 데이터는 온전). */
+  if (ad.getLastRow() >= 2) {
+    const keepD = {}; keepD[today] = 1;
+    keepD[Utilities.formatDate(new Date(Date.now() - 86400000), tz, 'yyyy-MM-dd')] = 1;
+    const allD = ad.getRange(2, 1, ad.getLastRow() - 1, 5).getValues().filter(r => String(r[0] || '').trim());
+    const oldD = allD.filter(r => !keepD[String(r[1])]);
+    if (oldD.length) {
+      const arcD = ensureSheet(ss, 'ai_daily_archive', ['student_id', '날짜', '한문장', '퀴즈문제', '퀴즈정답해설']);
+      arcD.getRange(arcD.getLastRow() + 1, 1, oldD.length, 5).setValues(oldD); // 실패하면 여기서 던진다 — 아래 삭제에 닿지 않는다
+      const rowsD = allD.filter(r => keepD[String(r[1])]);
       if (rowsD.length) ad.getRange(2, 1, rowsD.length, 5).setValues(rowsD);
+      const restD = (ad.getLastRow() - 1) - rowsD.length;
+      if (restD > 0) ad.getRange(2 + rowsD.length, 1, restD, 5).clearContent();
     }
   }
   const doneToday = {};
