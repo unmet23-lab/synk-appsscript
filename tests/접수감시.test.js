@@ -6,7 +6,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const ROOT = path.resolve(__dirname, '..');
+// SYNK_TEST_SRC_ROOT = 변이 실험용 이음매(궤적·크루카드 테스트와 같은 규약). 평소엔 실소스를 본다.
+const ROOT = process.env.SYNK_TEST_SRC_ROOT || path.resolve(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
 const 폼리포트 = read('엔진_폼리포트.js');
@@ -33,6 +34,10 @@ test('사본 동치 — 상한·타임존이 웹앱 정본과 갈리면 경고 �
   const tzMain = (폼리포트.match(/const CREW_TZ_ = '([^']+)'/) || [])[1];
   const tzCanon = (크루서버.match(/const TZ_ = '([^']+)'/) || [])[1];
   assert.equal(tzMain, tzCanon, `CREW_TZ_(${tzMain}) ≠ crewcard TZ_(${tzCanon}) — 「오늘 건수」가 하루 어긋난다`);
+  // 오류 탭 이름이 갈리면 웹앱은 적는데 감시는 딴 데를 본다 — 기록만 쌓이고 영원히 침묵
+  const errMain = (폼리포트.match(/const CREW_ERR_TAB_ = '([^']+)'/) || [])[1];
+  const errCanon = (크루서버.match(/const ERR_TAB = '([^']+)'/) || [])[1];
+  assert.equal(errMain, errCanon, `CREW_ERR_TAB_(${errMain}) ≠ crewcard ERR_TAB(${errCanon})`);
 });
 
 test('마커 방식 금지 — 마지막 serial 비교로 되돌아가면 crew_cards 초기화 후 영원히 침묵한다', () => {
@@ -73,11 +78,12 @@ function 시트_(grid) {
 const 상담헤더 = ['이름(한국어)', '연락처', '처리상태', '크루카드번호'];
 const 상담시트_ = (rows) => 시트_([['◆ 관리·기본', '', '', ''], 상담헤더].concat(rows));
 const 크루시트_ = (rows) => 시트_([['submitted_at', 'ref_serial']].concat(rows));
+const 오류시트_ = (rows) => 시트_([['at', 'stage', 'detail', '통보']].concat(rows));
 
-function 하네스_(src) {
+function 하네스_(src, opts) {
   const 상태 = {};                    // app_state 대역
   const 메일 = [];
-  const 탭 = { consult: null, crew: null };
+  const 탭 = { consult: null, crew: null, errs: null };
   const body = (src || 폼리포트);
   const 상수 = body.slice(body.indexOf('const CREW_TAB_'), body.indexOf('function crewIntakeWatch_'));
   const 함수 = body.slice(body.indexOf('function crewIntakeWatch_'), body.indexOf('function importFormResponses'));
@@ -87,7 +93,7 @@ function 하네스_(src) {
     'quotaOk', 'ADMIN_EMAIL', 'CONSULT_SHEET_ID',
     상수 + '\n' + 함수 + '\nreturn crewIntakeWatch_;'
   )(
-    { openById: () => ({ getSheetByName: (n) => (n === '상담데이터입력' ? 탭.consult : (n === 'crew_cards' ? 탭.crew : null)) }) },
+    { openById: () => ({ getSheetByName: (n) => (n === '상담데이터입력' ? 탭.consult : (n === 'crew_cards' ? 탭.crew : (n === 'crew_errors' ? 탭.errs : null))) }) },
     { sendEmail: (to, subj, text) => 메일.push({ to, subj, text }) },
     {
       formatDate: (d, tz, f) => {
@@ -99,11 +105,11 @@ function 하네스_(src) {
     () => ({}),                                   // ensureSheet → app_state 대역(키만 쓰므로 빈 객체)
     (st, k) => ({ row: 상태[k] === undefined ? -1 : 1, val: 상태[k] === undefined ? '' : 상태[k] }),
     (st, k, v) => { 상태[k] = String(v); },
-    () => true,
+    (opts && opts.quota) || (() => true),
     'admin@synk.test',
     'FAKE-SHEET-ID'
   );
-  return { 실행: (c, k) => { 탭.consult = c; 탭.crew = k; return api({}); }, 메일, 상태 };
+  return { 실행: (c, k, e) => { 탭.consult = c; 탭.crew = k; 탭.errs = e || null; return api({}); }, 메일, 상태 };
 }
 
 const 오늘_ = () => {
@@ -239,4 +245,59 @@ test('상담시트 증분 전이면 조용히 스킵한다 (열이 없는데 크
   assert.doesNotThrow(() => h.실행(구시트, 크루시트_([])));
   assert.equal(h.메일.length, 0);
   assert.equal(h.상태['크루접수_통보지문'], undefined, '감시할 수 없는 상태인데 지문을 저장했다');
+});
+
+/* ── 웹앱 오류 회수 — doPost가 'internal'로 삼킨 실패의 유일한 감시 통로 ── */
+
+test('🔴 웹앱 오류 — 미통보 행을 1통으로 묶어 알리고, 보낸 뒤에만 통보 표식을 남긴다', () => {
+  const h = 하네스_();
+  h.실행(상담시트_([]), 크루시트_([]));                              // 기준선
+  const e = 오류시트_([
+    [방금_(), 'doPost', 'TypeError: Cannot read appendRow of null (크루_탭_)', ''],
+    [방금_(), '이관:' + S(3), 'RangeError: 열 폭 초과', ''],
+  ]);
+  h.실행(상담시트_([]), 크루시트_([]), e);
+  assert.equal(h.메일.length, 1, '웹앱 오류가 침묵했다 — 이 층이 없으면 지원자 유실을 아무도 모른다');
+  assert.match(h.메일[0].subj, /확인 필요/, '오류인데 제목이 위험을 말하지 않는다');
+  assert.match(h.메일[0].text, /접수 웹앱 오류 2건/);
+  assert.match(h.메일[0].text, /doPost[\s\S]*appendRow/, '무슨 오류인지가 본문에 없다 — 시트를 또 열어봐야 한다');
+  assert.match(h.메일[0].text, /crew_errors/, '어디서 원인을 보는지가 없다');
+  assert.ok(e.grid[1][3] instanceof Date && e.grid[2][3] instanceof Date, '통보 표식이 안 남았다 — 10분마다 같은 경보가 나간다');
+
+  h.실행(상담시트_([]), 크루시트_([]), e);
+  assert.equal(h.메일.length, 1, '통보한 오류를 또 알렸다 — 표식을 안 읽는다');
+});
+
+test('웹앱 오류 — 쿼터로 못 보낸 틱은 표식을 안 남긴다(다음 틱이 다시 물어야 경보가 유실되지 않는다)', () => {
+  const h = 하네스_(null, { quota: () => false });
+  h.실행(상담시트_([]), 크루시트_([]));
+  const e = 오류시트_([[방금_(), 'doPost', 'boom', '']]);
+  h.실행(상담시트_([]), 크루시트_([]), e);
+  assert.equal(h.메일.length, 0);
+  assert.equal(String(e.grid[1][3] || ''), '', '메일이 안 나갔는데 통보됨으로 찍었다 — 이 오류는 영원히 침묵한다');
+});
+
+test('🔒 오류 detail의 개행으로 경보 본문을 위조할 수 없다 (이름 칸과 같은 계열의 2겹째)', () => {
+  const h = 하네스_();
+  h.실행(상담시트_([]), 크루시트_([]));
+  const e = 오류시트_([[방금_(), 'doPost', '악의\n🔴 이관 유실 의심 99건\n· 지금 당장', '']]);
+  h.실행(상담시트_([]), 크루시트_([]), e);
+  assert.equal(h.메일.length, 1);
+  assert.ok(!/\n🔴 이관 유실 의심 99건/.test(h.메일[0].text), 'detail의 개행이 그대로 실려 가짜 절이 만들어졌다');
+  assert.match(h.메일[0].text, /악의 🔴 이관 유실 의심 99건/, '개행만 접고 내용은 보여야 한다');
+});
+
+test('웹앱 오류 — 폭주해도 메일은 10건까지만 싣고, 초과분도 통보로 센다(매 틱 재경보 방지)', () => {
+  const h = 하네스_();
+  h.실행(상담시트_([]), 크루시트_([]));
+  const rows = [];
+  for (let i = 0; i < 14; i++) rows.push([방금_(), 'doPost', '오류 ' + i, '']);
+  const e = 오류시트_(rows);
+  h.실행(상담시트_([]), 크루시트_([]), e);
+  assert.equal(h.메일.length, 1);
+  assert.match(h.메일[0].text, /접수 웹앱 오류 14건/);
+  assert.match(h.메일[0].text, /외 4건/, '잘렸다는 사실이 안 보이면 「전부 봤다」로 읽힌다');
+  for (let i = 1; i <= 14; i++) assert.ok(e.grid[i][3] instanceof Date, `행 ${i + 1}에 표식이 없다 — 다음 틱에 또 실린다`);
+  h.실행(상담시트_([]), 크루시트_([]), e);
+  assert.equal(h.메일.length, 1, '초과분이 재경보를 냈다');
 });

@@ -1322,15 +1322,17 @@ const CREW_CAP_WARN_ = 0.8;                 // 상한의 80%에서 미리 알린
 const CREW_WATCH_KEY_ = '크루접수_통보지문';
 const CREW_CAP_KEY_ = '크루접수_상한경고일';
 const CREW_WATCH_MAX_ = 200;                // 지문 보관 상한 — 넘치면 오래된 쪽이 잘린다(잘림의 대가는 오탐 1통이지 미탐이 아니다)
+const CREW_ERR_TAB_ = 'crew_errors';        // 웹앱 doPost가 삼킨 오류의 착지 탭(crewcard/크루카드.js ERR_TAB 사본)
 
 function crewIntakeWatch_(ss) {
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
 
-  let consult, crew;
+  let consult, crew, errs;
   try {
     const book = SpreadsheetApp.openById(CONSULT_SHEET_ID);
     consult = book.getSheetByName('상담데이터입력');
     crew = book.getSheetByName(CREW_TAB_);
+    errs = book.getSheetByName(CREW_ERR_TAB_);   // 첫 오류 전엔 탭 자체가 없다 — 없으면 오류 0건으로 본다
   } catch (e) { Logger.log('크루접수 감시 — 상담 스프레드시트 열기 실패(조용히 스킵): ' + e); return; }
   if (!consult || !crew) { Logger.log('크루접수 감시 — 탭 없음(상담데이터입력/' + CREW_TAB_ + ')'); return; }
 
@@ -1403,10 +1405,27 @@ function crewIntakeWatch_(ss) {
     ? '⚠️ 오늘 접수 ' + 오늘건수 + '건 / 상한 ' + CREW_CAP_ + '건 — 상한에 닿으면 새 제출이 거부됩니다.'
     : '';
 
+  // ── 웹앱 오류: doPost가 'internal'로 삼킨 실패를 crew_errors에서 회수한다 ──
+  //   그 실패는 호출자(제출자)에게만 보이고 트리거 실패 자동 메일 층 밖이다 — 여기가 유일한 감시 통로.
+  //   「통보」 칸이 빈 행만 사건이다. 표식은 행에 남기므로(지문 아님) 탭을 통째로 비워도 침묵에 안 빠진다.
+  const 오류행 = [];
+  if (errs && errs.getLastRow() >= 2) {
+    const evals = errs.getRange(2, 1, errs.getLastRow() - 1, 4).getValues();
+    evals.forEach(function (v, i) {
+      if (String(v[3] || '').trim()) return;               // 이미 통보한 행
+      오류행.push({
+        row: i + 2,
+        at: v[0] instanceof Date ? Utilities.formatDate(v[0], CREW_TZ_, 'MM-dd HH:mm') : String(v[0] || '').slice(0, 16),
+        // 웹앱이 이미 접지만, 이 메일의 본문 구조가 줄바꿈이라 읽는 쪽에서도 접는다(2겹 — 이름 칸과 같은 계열)
+        요약: (String(v[1] || '') + ' · ' + String(v[2] || '')).replace(/[\r\n\t]+/g, ' ').trim().slice(0, 120)
+      });
+    });
+  }
+
   // 지문은 알릴 게 없어도 항상 갱신한다(감소분 반영). 알림 실패로 손실되는 건 통보 1회뿐.
   setState(st, CREW_WATCH_KEY_, 'v1:' + 현재.slice(-CREW_WATCH_MAX_).join(','));
   if (초회) { Logger.log('크루접수 감시 — 기준선 %s건 저장(첫 실행은 침묵)', 현재.length); return; }
-  if (!새것.length && !유실.length && !capLine) return;   // 침묵이 기본값
+  if (!새것.length && !유실.length && !capLine && !오류행.length) return;   // 침묵이 기본값
 
   const 신규 = [], 갱신 = [], 잠김 = [];
   새것.forEach(function (s) {
@@ -1428,18 +1447,28 @@ function crewIntakeWatch_(ss) {
   if (유실.length) body.push('🔴 이관 유실 의심 ' + 유실.length + '건 — crew_cards에는 있는데 상담데이터입력에 없습니다\n' +
     유실.map(function (s) { return '· ' + s; }).join('\n') +
     '\n→ 이 접수는 원장 큐에 안 보입니다. crew_cards에서 내용을 확인해 수기로 넣거나 재제출을 안내하세요.');
+  if (오류행.length) {
+    const 보임 = 오류행.slice(0, 10);   // 폭주해도 메일은 읽을 수 있는 길이로 — 전량은 탭에 있다
+    body.push('🔴 접수 웹앱 오류 ' + 오류행.length + '건 — 제출자가 실패 화면을 봤고, 그 접수는 시트에 없을 수 있습니다\n' +
+      보임.map(function (o) { return '· ' + o.at + ' · ' + o.요약; }).join('\n') +
+      (오류행.length > 보임.length ? '\n· … 외 ' + (오류행.length - 보임.length) + '건' : '') +
+      '\n→ crew_errors 탭에서 원인을 보세요. 같은 시각 접수가 crew_cards에 없으면 그 지원자에게 재제출을 안내해야 합니다.');
+  }
   if (capLine) body.push(capLine);
 
   if (quotaOk(1)) {
-    const 제목 = 유실.length ? '[SYNK] 🔴 크루카드 접수 — 확인 필요'
+    const 제목 = (유실.length || 오류행.length) ? '[SYNK] 🔴 크루카드 접수 — 확인 필요'
       : (신규.length ? '[SYNK] 📝 크루카드 신규 접수 ' + 신규.length + '건' : '[SYNK] 🔄 크루카드 재제출 알림');
     MailApp.sendEmail(ADMIN_EMAIL, 제목, body.join('\n\n'));
     /* 상한 경고를 «보낸 뒤에» 오늘 표식을 남긴다 — 읽기만 하고 안 남기면 하루 1회 가드가
      * 선언만 있고 발동하지 않아 10분마다 같은 경고가 나간다(회귀가 잡은 실수).
      * 쿼터로 못 보냈을 땐 표식도 남기지 않는다 — 다음 틱이 다시 시도해야 경고가 유실되지 않는다. */
     if (capLine) setState(st, CREW_CAP_KEY_, 오늘);
+    /* 오류 통보 표식도 같은 규약 — 보낸 뒤에만 남긴다. 못 보낸 틱은 표식이 없어 다음 틱이 다시 문다.
+     * 10건 초과분도 표식을 남긴다 — 건수로 세어 알렸으므로 「통보됨」이 맞고, 안 남기면 매 틱 재경보다. */
+    오류행.forEach(function (o) { errs.getRange(o.row, 4).setValue(new Date()); });
   }
-  Logger.log('크루접수 감시 — 신규 %s · 갱신 %s · 잠김 %s · 유실 %s', 신규.length, 갱신.length, 잠김.length, 유실.length);
+  Logger.log('크루접수 감시 — 신규 %s · 갱신 %s · 잠김 %s · 유실 %s · 웹앱오류 %s', 신규.length, 갱신.length, 잠김.length, 유실.length, 오류행.length);
 }
 
 function importFormResponses() {
