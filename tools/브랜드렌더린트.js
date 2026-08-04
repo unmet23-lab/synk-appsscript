@@ -116,7 +116,10 @@ function findChrome() {
 
 /* ── 페이지 안에서 도는 측정기 ───────────────────────────────────────────────
  * 문자열로 주입한다. 여기 안에서는 저장소의 어떤 것도 참조할 수 없다. */
-function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope) {
+/* `freeze:false` 는 **회귀 전용 탈출구**다 — 시간정지를 끄면 픽스처가 실제로 물리는지 재려고
+ * 둔다. 인자로 받는 이유: 페이지가 읽는 플래그(window.__…)로 두면 검사 대상 파일이 그 값을
+ * 켜서 가드를 통째로 우회할 수 있다. 호출자만 줄 수 있어야 탈출구가 구멍이 되지 않는다. */
+function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freeze) {
   return `(() => {
   const KIT = new Set(${JSON.stringify(kitHexes)});
   const FONTS_OK = new Set(${JSON.stringify(fontsOk)});
@@ -125,6 +128,18 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope) {
   const KC_SCOPE = ${JSON.stringify(kcScope)};
   // 예약 서체는 **그 구역 안에서만** 통과한다. 밖에서 같은 폰트가 나오면 그대로 위반이다.
   const KC구역 = (el) => el.closest(KC_SCOPE) !== null;
+
+  /* ⚠ 시간축을 멈추고 잰다 — **전환 중간 프레임은 저자가 지정한 색이 아니다.**
+   * 2026-08-05 CI 실측: \`.m-card-lbl .dot\` 의 \`transition:background .3s\` 가
+   * Cream(rgba) → Lime 으로 넘어가는 **중간값 #D3FC65** 가 「키트 밖 색」으로 잡혔다.
+   * 같은 커밋이 로컬에선 통과하고 CI 에선 실패하는 플래키였고(러너가 느려 전환 중에 재였다),
+   * 원인 파일은 멀쩡한데 가드만 빨간 전형적인 형태다 — **재는 층이 값을 깨뜨리면 안 된다.**
+   * transition:none 을 얹으면 진행 중이던 전환이 최종값으로 즉시 스냅하고,
+   * animation:none 은 프레임을 기본 상태로 되돌린다. 둘 다 「정적 지정값」에 맞추는 방향이다. */
+  const 시간정지 = document.createElement('style');
+  시간정지.textContent = '*,*::before,*::after{transition:none !important;animation:none !important}';
+  if (${freeze !== false}) document.head.appendChild(시간정지);
+  void document.body.offsetHeight; // 강제 리플로우 — 스냅을 확정시킨 뒤에 잰다
 
   const hex = (rgb) => {
     const m = String(rgb).match(/-?[\\d.]+/g);
@@ -244,10 +259,10 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope) {
 })()`;
 }
 
-function 측정(file, chrome) {
+function 측정(file, chrome, opts = {}) {
   const html = fs.readFileSync(file, 'utf8');
   const 주입 = `<script>window.addEventListener('load', () => {
-    let r; try { r = ${측정기소스(Object.keys(KIT), FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_SCOPE)}; }
+    let r; try { r = ${측정기소스(Object.keys(KIT), FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_SCOPE, opts.freeze)}; }
     catch (e) { r = { 오류: String(e && e.stack || e) }; }
     const pre = document.createElement('pre');
     pre.id = 'SYNK_LINT_OUT';

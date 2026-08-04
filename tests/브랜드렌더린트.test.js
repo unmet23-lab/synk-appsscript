@@ -94,6 +94,28 @@ test('정본 3종 밖 서체를 잡되, **폴백 스택은 통과**시킨다', {
   assert.equal(좋음.키트밖서체.length, 0, `정본 스택을 위반으로 잡았다: ${JSON.stringify(좋음.키트밖서체)}`);
 });
 
+/* 전환·애니메이션 중간 프레임은 저자가 지정한 색이 아니다. 이걸 재면 원인 파일이 멀쩡한데
+ * 가드만 빨개지고, 게다가 **타이밍에 걸리므로 로컬은 통과하고 CI 만 실패한다**(2026-08-05 실측:
+ * `.dot` 의 `transition:background .3s` 중간값 #D3FC65 로 CI 가 4런 연속 적색).
+ * 픽스처는 10초짜리 전환·애니메이션을 걸어 둔다 — 시간정지가 없으면 이 검사가 물린다. */
+test('전환·애니메이션 중간 프레임을 재지 않는다 (CI 만 빨개지던 플래키)', { skip: 크롬없음 }, () => {
+  const p = 픽스처('motion', `
+    <style>@keyframes drift{0%{background:#FF0000}100%{background:#00FF00}}</style>
+    <div id="a" style="background:rgba(246,241,232,.55);transition:background 10s linear"><span style="color:#171820">전환</span></div>
+    <div id="b" style="background:#C8FF3D;animation:drift 10s linear infinite"><span style="color:#171820">회전</span></div>
+    <script>requestAnimationFrame(()=>{document.getElementById('a').style.background='#C8FF3D'})<\/script>`);
+  const r = 측정(p, CHROME);
+  const 중간값 = r.키트밖색.filter((v) => v.hex !== 'TRANSPARENT');
+  assert.deepStrictEqual(중간값, [],
+    `전환·애니메이션 중간색을 위반으로 잡았다 — 저자가 지정한 값이 아니다: ${JSON.stringify(중간값)}`);
+
+  // 🔑 이 픽스처가 **실제로 물리는지**를 같이 못박는다 — 시간정지를 끄면 위반이 나와야 한다.
+  //   안 나온다면 위 통과는 「고쳐서」가 아니라 「검사가 죽어서」일 수도 있다(통과와 미실행이 같은 모양).
+  const 변이 = 측정(p, CHROME, { freeze: false });
+  assert.ok(변이.키트밖색.length > 0,
+    '시간정지를 꺼도 위반이 안 나온다 — 이 픽스처는 아무것도 증명하지 않는다');
+});
+
 /* Part 06 예약 서체(정본 §4-1)의 무게는 **경계**에 있다 — 「이 폰트를 허용한다」가 아니라
  * 「이 구역 안에서만 허용한다」다. 경계는 조상 체인이라 소스 검색으로는 원리상 못 재고,
  * 렌더 층에서만 갈린다. 두 방향을 같이 못박는다 — 한쪽만 재면 반대쪽으로 샌다. */
