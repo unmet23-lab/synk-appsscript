@@ -45,6 +45,9 @@ const DENY_DIR = [
 const ALLOW = [
   'unmet23@gmail.com', 'unmet27@gmail.com', '77yuhbs@gmail.com',  // 유호님 본인 계정
   'info@qpay.mn', '+976 7610 2211',                                // QPay 공개 고객센터
+  // SYNK 공개 연락처 — 둘 다 개인정보처리방침에 **게시된** 주소다(비공개 개인정보가 아니다)
+  'hello@synk.im',                                                 // 삭제·철회 접수 창구
+  'founder@synk.im',                                               // 개인정보 관리 책임자(양유호)
   'demo0X@synk.test',                                              // 문서용 더미
 ];
 
