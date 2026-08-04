@@ -116,6 +116,18 @@
             "statusMessage": "스크린샷 예산 검사"
           }
         ]
+      },
+      {
+        "matcher": "mcp__(claude-in-chrome|Claude_Browser|computer-use)__(navigate|form_input|computer|browser_batch|computer_batch|type|key|file_upload|upload_image|javascript_tool|teach_step|teach_batch|write_clipboard)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/credential-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\"",
+            "shell": "bash",
+            "timeout": 20,
+            "statusMessage": "자격증명 화면 검사"
+          }
+        ]
       }
     ],
     "PostToolUse": [
