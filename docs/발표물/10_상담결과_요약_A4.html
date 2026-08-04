@@ -23,15 +23,15 @@
 @page { size: A4 portrait; margin: 0; }
 
 :root{
-  --blue:#3D5AFE; --orange:#FF6D00; --gold:#FFC400;
-  --paper:#FDFCF8; --ink:#1A237E;
-  --midnight:#0B1A2E;            /* 디자인 컨셉 정본 v1.2 확정값 */
-  --hair:rgba(26,35,126,.20); --mute:#6C74A8; --rule:#3B4374;
+  --coral:#FF6B5C; --coral-3:#E8543F; --coral-wash:#FFE9E4; --coral-soft:#FFCFC6;
+  --paper:#FBF7EE; --navy:#1A2340; --navy-2:#0F1730; --navy-3:#2A3358;
+  --cream:#F6F1E8; --cream-2:#EFE7D7; --cream-3:#E7DDC7; --ink:#171820;
+  --hair:rgba(42,51,88,.25);
 }
 *{ box-sizing:border-box; margin:0; padding:0; }
 
 html,body{
-  background:var(--paper); color:var(--ink);
+  background:var(--paper); color:var(--navy);
   font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
   font-weight:500;
   -webkit-print-color-adjust:exact; print-color-adjust:exact;
@@ -47,75 +47,75 @@ html,body{
 
 /* ══ 머리 반전면 ══════════════════════════════════════ */
 .hero{
-  background:var(--midnight); color:var(--paper);
+  background:var(--navy-2); color:var(--cream);
   padding:5.4mm 9mm 5mm; position:relative; overflow:hidden; flex:0 0 auto;
 }
 .hero::before{
   content:''; position:absolute; inset:0;
   background-image:
-    radial-gradient(circle at 1mm 1mm, rgba(61,90,254,.30) 0 .38mm, transparent .38mm),
-    radial-gradient(circle at 4.5mm 4.5mm, rgba(255,196,0,.15) 0 .26mm, transparent .26mm);
+    radial-gradient(circle at 1mm 1mm, rgba(255,107,92,.28) 0 .38mm, transparent .38mm),
+    radial-gradient(circle at 4.5mm 4.5mm, rgba(246,241,232,.13) 0 .26mm, transparent .26mm);
   background-size:8mm 8mm, 8mm 8mm;
 }
 .hero::after{
   content:''; position:absolute; left:0; right:0; bottom:0; height:.6mm;
-  background:linear-gradient(90deg,var(--gold) 0 26%, rgba(255,196,0,.18) 26% 100%);
+  background:linear-gradient(90deg,var(--cream) 0 26%, rgba(246,241,232,.18) 26% 100%);
 }
 .hero .in{ position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
-.eyebrow{ font-size:2.4mm; font-weight:700; letter-spacing:.28em; color:#8E9AC4; }
+.eyebrow{ font-size:2.4mm; font-weight:700; letter-spacing:.28em; color:var(--cream-3); }
 /* 몽골어가 주 언어 — 한국어는 그 아래 작게 병기(§10 ①) */
-.hero .mnhead{ font-size:6.6mm; font-weight:800; color:#4E5880; letter-spacing:.04em; margin-top:2.6mm; line-height:1.1; }
-.hero .kohead{ font-size:3.1mm; color:#B9C2E0; margin-top:2mm; }
+.hero .mnhead{ font-size:6.6mm; font-weight:800; color:var(--cream-3); letter-spacing:.04em; margin-top:2.6mm; line-height:1.1; }
+.hero .kohead{ font-size:3.1mm; color:var(--cream-3); margin-top:2mm; }
 
 /* ⚠ .symbol 은 정사각이 아니다 — W5 축약 워드마크 가로:세로 = 1.5:1. 주입은 tools/로고주입.js */
 .lockup{ display:flex; flex-direction:column; align-items:flex-end; gap:1.8mm; flex:0 0 auto; }
 .symbol{ width:21mm; height:13.4mm; flex:0 0 auto; }
 .symbol svg{ width:100%; height:100%; display:block; }
-.lockup .tag{ font-size:2.1mm; color:var(--gold); }
+.lockup .tag{ font-size:2.1mm; font-weight:700; color:var(--cream); }
 
 /* ══ 2단 ══════════════════════════════════════════════ */
 .cols{ display:flex; gap:4mm; margin-top:4mm; flex:1 1 auto; min-height:0; }
 .left{ flex:0 0 45%; display:flex; flex-direction:column; gap:2.4mm; }
 .right{
   flex:1 1 auto; display:flex; flex-direction:column; gap:2.2mm;
-  background:#F2F5FF; border:.3mm solid var(--hair); border-radius:2.2mm; padding:3.2mm 3.6mm;
+  background:var(--cream-2); border:.3mm solid var(--hair); border-radius:2.2mm; padding:3.2mm 3.6mm;
 }
 
-.lbl{ font-size:2.4mm; font-weight:800; letter-spacing:.03em; color:var(--blue); }
-.lbl .ko{ color:var(--mute); font-weight:500; }
-.fill{ border-bottom:.4mm solid var(--rule); height:8.4mm; }
+.lbl{ font-size:2.4mm; font-weight:800; letter-spacing:.03em; color:var(--navy-3); }
+.lbl .ko{ color:var(--navy-3); font-weight:500; }
+.fill{ border-bottom:.4mm solid var(--navy-3); height:8.4mm; }
 .fill.tall{ height:14mm; }
 .g2{ display:flex; gap:3mm; }
 .g2 > *{ flex:1 1 0; }
 
 .box{ border:.3mm solid var(--hair); border-radius:1.8mm; padding:2.4mm 3mm; background:#fff; }
-.box.sig{ border:.5mm solid var(--orange); background:#FFF6EE; }   /* 신호색 강조 — 지면에 2곳만 */
+.box.sig{ border:.5mm solid var(--coral); background:var(--coral-wash); }   /* 신호색 강조 — 지면에 2곳만 */
 
-.mn{ font-size:2.1mm; color:#A9AFCE; letter-spacing:.03em; margin-top:.8mm; }
+.mn{ font-size:2.1mm; color:var(--navy-3); letter-spacing:.03em; margin-top:.8mm; }
 .mn::before{ content:'MN '; font-family:'DM Mono',ui-monospace,monospace; font-size:1.8mm; letter-spacing:.09em; }
 
 /* 6칸 여정 띠 — 5번 로드맵의 축소판 */
 .band{ display:flex; gap:1mm; margin-top:1.6mm; }
-.band .c{ flex:1 1 0; border-radius:1mm; padding:1.4mm .3mm; text-align:center; border:.25mm solid var(--hair); background:#F7F9FF; }
-.band .c.j{ background:#FFF9E9; border-color:rgba(199,154,0,.4); }
+.band .c{ flex:1 1 0; border-radius:1mm; padding:1.4mm .3mm; text-align:center; border:.25mm solid var(--hair); background:var(--cream-2); }
+.band .c.j{ background:var(--coral-wash); border-color:var(--coral-soft); }
 .band .c .l{ font-size:2.3mm; font-weight:800; }
-.band .c .g{ font-size:2mm; color:var(--mute); margin-top:.4mm; font-family:'DM Mono',ui-monospace,monospace; }
-.bandnote{ font-size:2.4mm; color:#4A5286; margin-top:1.6mm; font-weight:800; }
+.band .c .g{ font-size:2mm; color:var(--navy-3); margin-top:.4mm; font-family:'DM Mono',ui-monospace,monospace; }
+.bandnote{ font-size:2.4mm; color:var(--navy-3); margin-top:1.6mm; font-weight:800; }
 
 .dest{ display:flex; gap:2.2mm; margin-top:1.8mm; }
-.dest .d{ flex:1 1 0; border-radius:1.4mm; padding:1.6mm 2mm; background:#fff; border:.3mm solid rgba(255,109,0,.45); }
-.dest .d .k{ font-size:1.9mm; font-weight:700; color:var(--orange); letter-spacing:.09em; }
+.dest .d{ flex:1 1 0; border-radius:1.4mm; padding:1.6mm 2mm; background:#fff; border:.3mm solid var(--cream-3); }
+.dest .d .k{ font-size:1.9mm; font-weight:800; color:var(--navy-3); letter-spacing:.09em; }
 .dest .d .v{ font-size:2.8mm; font-weight:800; margin-top:.6mm; line-height:1.28; }
 
 /* ══ 오른쪽 인쇄 고정부 ═══════════════════════════════ */
-.r h3{ font-size:2.4mm; font-weight:700; letter-spacing:.14em; color:var(--blue); }
-.r .mnh{ font-size:3.4mm; font-weight:800; color:#9AA3C9; letter-spacing:.03em; margin-top:.8mm; }
-.r .koh{ font-size:2.3mm; color:var(--mute); margin-top:.5mm; }
+.r h3{ font-size:2.4mm; font-weight:700; letter-spacing:.14em; color:var(--navy-3); }
+.r .mnh{ font-size:3.4mm; font-weight:800; color:var(--navy-3); letter-spacing:.03em; margin-top:.8mm; }
+.r .koh{ font-size:2.3mm; color:var(--navy-3); margin-top:.5mm; }
 
 .cyc{ display:flex; flex-direction:column; gap:1.2mm; margin-top:1.6mm; }
 .cyc .s{ display:flex; align-items:flex-start; gap:2mm; }
 .cyc .s .n{
-  flex:0 0 auto; width:4.4mm; height:4.4mm; border-radius:50%; background:var(--blue); color:#fff;
+  flex:0 0 auto; width:4.4mm; height:4.4mm; border-radius:50%; background:var(--navy-2); color:var(--cream);
   font-size:2.2mm; font-weight:700; display:flex; align-items:center; justify-content:center;
   font-family:'DM Mono',ui-monospace,monospace;
 }
@@ -125,33 +125,33 @@ html,body{
 .pow{ display:flex; gap:1.8mm; margin-top:1.6mm; }
 .pow .p{ flex:1 1 0; border:.25mm solid var(--hair); border-radius:1.4mm; padding:1.8mm 1.6mm; background:#fff; }
 .pow .p .t{ font-size:2.5mm; font-weight:800; line-height:1.28; }
-.pow .p .r{ font-size:2.1mm; color:var(--mute); margin-top:.9mm; line-height:1.34; }
-.pow .p .r b{ color:var(--blue); font-weight:800; }
+.pow .p .r{ font-size:2.1mm; color:var(--navy-3); margin-top:.9mm; line-height:1.34; }
+.pow .p .r b{ color:var(--navy); font-weight:800; }
 
 .chips{ display:flex; flex-wrap:wrap; gap:1.2mm; margin-top:1.5mm; }
 .chips span{ font-size:2.3mm; font-weight:800; padding:1mm 2mm; border-radius:1mm; background:#fff; border:.25mm solid var(--hair); }
-.chips span.g{ background:var(--gold); border-color:#C79A00; color:#3A2E00; }
+.chips span.g{ background:var(--navy-2); border-color:var(--navy-2); color:var(--cream); }
 
 .contact{ margin-top:auto; border-top:.4mm solid var(--hair); padding-top:2.2mm; }
 .contact .row{ display:flex; gap:2.2mm; margin-top:1.4mm; }
 .contact .row .c{ flex:1 1 0; }
-.contact .row .c .k{ font-size:2mm; font-weight:700; color:var(--mute); letter-spacing:.06em; }
-.contact .row .c .b{ border-bottom:.35mm solid var(--rule); height:5.2mm; }
+.contact .row .c .k{ font-size:2mm; font-weight:700; color:var(--navy-3); letter-spacing:.06em; }
+.contact .row .c .b{ border-bottom:.35mm solid var(--navy-3); height:5.2mm; }
 
 /* ══ 바닥 ═════════════════════════════════════════════ */
 .foot{
   flex:0 0 auto; margin-top:2.6mm; padding:2.4mm 0 6mm; border-top:.3mm solid var(--hair);
   display:flex; justify-content:space-between; align-items:flex-end; gap:6mm;
-  font-size:2.2mm; color:#7A81AE; line-height:1.5;
+  font-size:2.2mm; color:var(--navy-3); line-height:1.5;
 }
-.foot b{ color:var(--ink); font-weight:800; }
+.foot b{ color:var(--navy); font-weight:800; }
 .foot .end{ text-align:right; white-space:nowrap; }
-.foot .end .s{ font-size:2.6mm; font-weight:800; color:var(--ink); }
-.foot .end .v{ font-size:2mm; color:#9AA0C4; margin-top:1mm; }
+.foot .end .s{ font-size:2.6mm; font-weight:800; color:var(--navy); }
+.foot .end .v{ font-size:2mm; color:var(--navy-3); margin-top:1mm; }
 
 @media screen{
-  body{ background:#DFE3EE; padding:8mm; }
-  .sheet{ box-shadow:0 3mm 12mm rgba(11,26,46,.22); margin:0 auto; }
+  body{ background:var(--cream-2); padding:8mm; }
+  .sheet{ box-shadow:0 3mm 12mm rgba(15,23,48,.22); margin:0 auto; }
 }
 </style>
 </head>
@@ -170,8 +170,8 @@ html,body{
         <!-- LOGO SLOT ▸ 로고 파일이 오면 이 svg 만 교체 (브랜드킷 §3) -->
         <div class="symbol">
           <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#FDFCF8">syn</text>
-            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6D00"/>
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
+            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
           </svg>
         </div>
         <div>
@@ -197,11 +197,11 @@ html,body{
         <div class="box">
           <div class="lbl">________ <span class="ko">지금 자리</span></div>
           <div class="fill"></div>
-          <div style="font-size:2.2mm;color:var(--mute);margin-top:1.2mm">☐ 첫 수업 날 레벨테스트로 확인<span class="mn">10자</span></div>
+          <div style="font-size:2.2mm;color:var(--navy-3);margin-top:1.2mm">☐ 첫 수업 날 레벨테스트로 확인<span class="mn">10자</span></div>
         </div>
 
         <div class="box sig">
-          <div class="lbl" style="color:var(--orange)">________ <span class="ko">이 학생이 말한 목표 — 본인의 말 그대로</span></div>
+          <div class="lbl" style="color:var(--navy-3)">________ <span class="ko">이 학생이 말한 목표 — 본인의 말 그대로</span></div>
           <div class="fill tall"></div>
           <div class="mn">28자 이내</div>
         </div>
@@ -232,7 +232,7 @@ html,body{
         <div><div class="lbl">________ <span class="ko">안내한 수강 조건</span></div><div class="fill"></div></div>
 
         <div class="box sig">
-          <div class="lbl" style="color:var(--orange)">________ <span class="ko">다음 단계 — 하나만, 날짜와 함께</span></div>
+          <div class="lbl" style="color:var(--navy-3)">________ <span class="ko">다음 단계 — 하나만, 날짜와 함께</span></div>
           <div class="fill"></div>
           <div class="mn">20자 이내</div>
         </div>
@@ -271,7 +271,7 @@ html,body{
           <div class="chips">
             <span>몬스터 7단계 진화</span><span class="g">포인트 · 왕관</span><span>반 전체 레이드</span><span>스트릭</span>
           </div>
-          <div style="font-size:2.1mm;color:var(--mute);margin-top:1.2mm;line-height:1.4">
+          <div style="font-size:2.1mm;color:var(--navy-3);margin-top:1.2mm;line-height:1.4">
             뉴로 → 스파키 → 링커 → 서킷 → 미엘로 → 플로우 → 싱크마스터<div class="mn">30자</div>
           </div>
         </div>
@@ -285,7 +285,7 @@ html,body{
             <div class="p"><div class="t">② 스스로 하는 힘</div><div class="r">시키지 않아도 먼저 움직이고 끝까지 해내는 힘<br><b>→ 싱크 크루</b><div class="mn">26자</div></div></div>
             <div class="p"><div class="t">③ 마음을 얻는 힘</div><div class="r">사람과 통하고 신뢰를 쌓는 힘<br><b>→ 반 레이드 · 발표</b><div class="mn">26자</div></div></div>
           </div>
-          <div style="font-size:2.1mm;color:var(--mute);margin-top:1.2mm">이 힘이 자라면 한국어 실력도 더 단단해집니다.<div class="mn">24자</div></div>
+          <div style="font-size:2.1mm;color:var(--navy-3);margin-top:1.2mm">이 힘이 자라면 한국어 실력도 더 단단해집니다.<div class="mn">24자</div></div>
         </div>
 
         <div class="contact">

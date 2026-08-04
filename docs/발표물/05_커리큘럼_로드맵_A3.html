@@ -15,19 +15,24 @@
 @page { size: A3 landscape; margin: 0; }
 
 :root{
-  --blue:#3D5AFE;      /* 주조 */
-  --orange:#FF6D00;    /* 신호 — 아껴 쓴다. 한 지면에 강조 2곳까지 */
-  --gold:#FFC400;      /* 보상 */
-  --paper:#FDFCF8;     /* 바탕 (순백 금지) */
-  --ink:#1A237E;       /* 잉크 (순검정 금지) */
-  --midnight:#0B1A2E;  /* 반전면 — 디자인 컨셉 정본 v1.2 확정값. #101528은 탈락값이다 */
-  --hair:rgba(26,35,126,.20);
-  --mute:#6C74A8;
+  --coral:#FF6B5C;       /* 신호 — 아껴 쓴다. 한 지면에 강조 2곳까지 */
+  --coral-3:#E8543F;     /* 라이트면 강조 — 24px↑ 또는 18.7px↑bold 글자·선만 */
+  --coral-wash:#FFE9E4;  /* 강조 패널 바닥 */
+  --coral-soft:#FFCFC6;  /* 강조 패널 보더 */
+  --paper:#FBF7EE;       /* 바탕 (순백 금지) */
+  --navy:#1A2340;        /* 잉크 (순검정 금지) */
+  --navy-2:#0F1730;      /* 반전면 바탕 — 브랜드 키트 v2.0 확정값 */
+  --navy-3:#2A3358;      /* 보조 잉크·괘선 */
+  --cream:#F6F1E8;       /* 반전면 잉크 */
+  --cream-2:#EFE7D7;     /* 중립 패널 바닥 */
+  --cream-3:#E7DDC7;     /* 반전면 보조·옅은 룰 */
+  --ink:#171820;         /* 코랄 면 위 글자 전용 */
+  --hair:rgba(42,51,88,.25);
 }
 *{ box-sizing:border-box; margin:0; padding:0; }
 
 html,body{
-  background:var(--paper); color:var(--ink);
+  background:var(--paper); color:var(--navy);
   font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
   font-weight:500;
   -webkit-print-color-adjust:exact; print-color-adjust:exact;
@@ -48,33 +53,34 @@ html,body{
    시냅스 노드 모티프 — 이름 SYNK(동기화)의 그림이고 앱 몬스터 진화와 같은 계열이다.
    🚫 게르 천창 모티프는 쓰지 않는다(상업 사용 범위가 유호님 판단 대기). */
 .hero{
-  background:var(--midnight); color:var(--paper);
+  background:var(--navy-2); color:var(--cream);
   padding:8mm 14mm 7.6mm;
   position:relative; overflow:hidden; flex:0 0 auto;
 }
 .hero::before{  /* 노드 격자 — 아주 옅게. 인쇄에서 질감으로만 읽힌다 */
   content:''; position:absolute; inset:0;
   background-image:
-    radial-gradient(circle at 1.1mm 1.1mm, rgba(61,90,254,.30) 0 .42mm, transparent .42mm),
-    radial-gradient(circle at 5.6mm 5.6mm, rgba(255,196,0,.16) 0 .28mm, transparent .28mm);
+    radial-gradient(circle at 1.1mm 1.1mm, rgba(255,107,92,.28) 0 .42mm, transparent .42mm),
+    radial-gradient(circle at 5.6mm 5.6mm, rgba(246,241,232,.13) 0 .28mm, transparent .28mm);
   background-size:9mm 9mm, 9mm 9mm;
 }
-.hero::after{ /* 아래 골드 헤어라인 — 반전면과 본문을 가르는 브랜드 선 */
+.hero::after{ /* 아래 크림 헤어라인 — 반전면과 본문을 가르는 브랜드 선 (신호 예산 밖이라 중립) */
   content:''; position:absolute; left:0; right:0; bottom:0; height:.7mm;
-  background:linear-gradient(90deg,var(--gold) 0 22%, rgba(255,196,0,.18) 22% 100%);
+  background:linear-gradient(90deg,var(--cream-3) 0 22%, rgba(231,221,199,.18) 22% 100%);
 }
 .hero .in{ position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:14mm; }
 
 .eyebrow{
-  font-size:2.9mm; font-weight:700; letter-spacing:.30em; color:#8E9AC4;
+  font-size:2.9mm; font-weight:700; letter-spacing:.30em; color:var(--cream-3);
   margin-bottom:3.4mm;
 }
 .hero h1{
   font-size:13.6mm; font-weight:800; line-height:1.02; letter-spacing:-.035em;
+  color:var(--cream-3); /* 신호 예산 밖 — 바탕을 반 단 낮추고 em이 밝은 Cream으로 선다 */
 }
-.hero h1 em{ font-style:normal; color:var(--gold); }
+.hero h1 em{ font-style:normal; color:var(--cream); }
 .hero .deck{
-  font-size:3.6mm; color:#B9C2E0; margin-top:3.6mm; line-height:1.5; max-width:210mm;
+  font-size:3.6mm; color:var(--cream-3); margin-top:3.6mm; line-height:1.5; max-width:210mm;
 }
 
 /* ── 워드마크 락업 ─────────────────────────────────────────────
@@ -85,7 +91,7 @@ html,body{
 .symbol{ width:27mm; height:17mm; flex:0 0 auto; }
 .symbol svg{ width:100%; height:100%; display:block; }
 .lockup .wm{ line-height:1; text-align:right; }
-.lockup .wm .tag{ font-size:2.7mm; color:var(--gold); letter-spacing:.02em; font-weight:500; }
+.lockup .wm .tag{ font-size:2.7mm; color:var(--cream); letter-spacing:.02em; font-weight:500; }
 
 /* ══ 진입점 + 여정 ═══════════════════════════════════════════════ */
 .journey{ display:flex; align-items:stretch; margin-top:8mm; flex:1 1 auto; min-height:0; }
@@ -94,11 +100,11 @@ html,body{
   flex:0 0 46mm; padding-right:6mm; display:flex; flex-direction:column; justify-content:center;
 }
 .entry .kicker{
-  font-size:2.6mm; font-weight:800; letter-spacing:.16em; color:var(--orange); margin-bottom:3.2mm;
+  font-size:2.6mm; font-weight:800; letter-spacing:.16em; color:var(--navy-3); margin-bottom:3.2mm;
 }
-.entry h2{ font-size:6mm; font-weight:800; line-height:1.28; letter-spacing:-.02em; }
-.entry h2 span{ color:var(--blue); }
-.entry p{ font-size:3.2mm; line-height:1.55; margin-top:3.2mm; color:#4A5286; }
+.entry h2{ font-size:6mm; font-weight:700; line-height:1.28; letter-spacing:-.02em; }
+.entry h2 span{ font-weight:800; } /* 색 대신 웨이트 한 단으로 강조 — 신호 예산 밖 */
+.entry p{ font-size:3.2mm; line-height:1.55; margin-top:3.2mm; color:var(--navy-3); }
 
 .trackwrap{ flex:1 1 auto; display:flex; flex-direction:column; min-height:0; }
 
@@ -106,16 +112,16 @@ html,body{
 .rail{ position:relative; height:8mm; display:flex; align-items:center; flex:0 0 auto; }
 .rail::before{
   content:''; position:absolute; left:-6mm; right:3mm; top:50%; margin-top:-.3mm;
-  height:.6mm; background:var(--blue); border-radius:.3mm;
+  height:.6mm; background:var(--navy-3); border-radius:.3mm;
 }
 .node{ flex:1 1 0; display:flex; justify-content:center; position:relative; }
 .node b{
   width:6.6mm; height:6.6mm; border-radius:50%; background:var(--paper);
-  border:.7mm solid var(--blue); display:flex; align-items:center; justify-content:center;
-  font-size:2.5mm; font-weight:700; color:var(--blue);
+  border:.7mm solid var(--navy-3); display:flex; align-items:center; justify-content:center;
+  font-size:2.5mm; font-weight:700; color:var(--navy-3);
   font-family:'DM Mono',ui-monospace,monospace;
 }
-.node.last b{ background:var(--gold); border-color:#C79A00; color:#3A2E00; }
+.node.last b{ background:var(--coral); border-color:var(--coral-3); color:var(--ink); } /* 목표 관문 — 이 지면의 코랄 ① */
 .rail .tip{ position:absolute; right:0; top:50%; margin-top:-1.6mm; }
 
 .levels{ flex:1 1 auto; display:flex; gap:2.4mm; margin-top:2.6mm; min-height:0; }
@@ -126,39 +132,40 @@ html,body{
 }
 .lv .accent{ height:1.6mm; flex:0 0 auto; }
 
-/* 두 구간 = 색 + 패턴 이중 표기 (몽골 현지 흑백 재복사 전제) */
-.core .accent{ background:var(--blue); }
+/* 두 구간 = 채움 정도 + 패턴 이중 표기 (몽골 현지 흑백 재복사 전제)
+   램프는 중립으로 접었다 — 기초=옅은 채움·빗금, 도약=짙은 채움·도트. 코랄은 목표 마커만. */
+.core .accent{ background:var(--cream-3); }
 .core .cap{
   background:
-    repeating-linear-gradient(45deg, rgba(61,90,254,.06) 0 1.1mm, transparent 1.1mm 2.6mm),
-    #F2F5FF;
+    repeating-linear-gradient(45deg, rgba(42,51,88,.06) 0 1.1mm, transparent 1.1mm 2.6mm),
+    var(--cream-2);
 }
-.jump .accent{ background:var(--gold); }
+.jump .accent{ background:var(--navy-3); }
 .jump .cap{
   background:
-    repeating-radial-gradient(circle at 1.3mm 1.3mm, rgba(255,196,0,.30) 0 .3mm, transparent .3mm 2.6mm),
-    #FFF9E9;
+    repeating-radial-gradient(circle at 1.3mm 1.3mm, rgba(42,51,88,.16) 0 .3mm, transparent .3mm 2.6mm),
+    var(--cream-3);
 }
 
 .lv .cap{ padding:3.2mm 2.4mm 2.8mm; text-align:center; border-bottom:.3mm solid var(--hair); }
 .lv .cap .n{ font-size:8.6mm; font-weight:800; line-height:.94; letter-spacing:-.04em; }
-.core .cap .n{ color:var(--blue); }
-.jump .cap .n{ color:#8A6A00; }
+.core .cap .n{ color:var(--navy); }
+.jump .cap .n{ color:var(--navy); }
 .lv .cap .band{
   display:inline-block; margin-top:2.2mm; padding:.9mm 2.6mm; border-radius:4mm;
   font-size:2.4mm; font-weight:800; letter-spacing:.04em;
 }
-.core .cap .band{ background:var(--blue); color:#fff; }
-.jump .cap .band{ background:var(--gold); color:#3A2E00; }
+.core .cap .band{ background:var(--paper); color:var(--navy); }
+.jump .cap .band{ background:var(--navy-3); color:var(--cream); }
 
-.row{ padding:2.6mm 2.4mm; border-bottom:.25mm solid rgba(26,35,126,.11); text-align:center; }
+.row{ padding:2.6mm 2.4mm; border-bottom:.25mm solid var(--cream-3); text-align:center; }
 .row:last-child{ border-bottom:0; }
-.row .k{ font-size:2.3mm; font-weight:700; letter-spacing:.13em; color:var(--mute); margin-bottom:1.2mm; }
+.row .k{ font-size:2.3mm; font-weight:700; letter-spacing:.13em; color:var(--navy-3); margin-bottom:1.2mm; }
 .row .v{ font-size:4mm; font-weight:800; line-height:1.24; letter-spacing:-.01em; }
 .row .v.sm{ font-size:3.1mm; font-weight:500; line-height:1.42; letter-spacing:0; }
 
 /* 몽골어 대기 칸 — 에리카쌤 검수 전 확정 금지 */
-.mn{ font-size:2.5mm; color:#A9AFCE; letter-spacing:.04em; margin-top:1.3mm; font-weight:500; }
+.mn{ font-size:2.5mm; color:var(--navy-3); letter-spacing:.04em; margin-top:1.3mm; font-weight:500; }
 .mn::before{ content:'MN '; font-family:'DM Mono',ui-monospace,monospace; font-size:2.1mm; letter-spacing:.09em; }
 
 /* ══ 아래 두 줄 ═══════════════════════════════════════════════════ */
@@ -166,46 +173,47 @@ html,body{
 
 /* 도달제 — 이 로드맵의 정직함을 담당하는 칸. 신호색 강조 ① */
 .gate{
-  flex:1 1 0; border:.5mm solid var(--orange); border-radius:2.4mm; background:#FFF6EE;
+  flex:1 1 0; border:.5mm solid var(--coral-soft); border-radius:2.4mm; background:var(--coral-wash);
   padding:3.6mm 4.6mm; display:flex; gap:4.4mm; align-items:center;
 }
 .gate .txt h3{ font-size:4.4mm; font-weight:800; letter-spacing:-.015em; }
-.gate .txt h3 em{ font-style:normal; color:var(--orange); }
-.gate .txt p{ font-size:2.9mm; line-height:1.5; margin-top:1.6mm; color:#4A4133; }
+/* em 4.4mm(≈16.6px)는 Coral 3 글자 기준(18.7px bold) 미달 — 글자 대신 코랄 「선」으로 강조 */
+.gate .txt h3 em{ font-style:normal; border-bottom:.6mm solid var(--coral-3); }
+.gate .txt p{ font-size:2.9mm; line-height:1.5; margin-top:1.6mm; color:var(--navy-3); }
 
 /* 목적지 — 학부모가 실제로 묻는 것. 신호색 강조 ② */
 .dest{
-  flex:0 0 92mm; border:.5mm solid var(--orange); border-radius:2.4mm; background:#FFF6EE;
+  flex:0 0 92mm; border:.5mm solid var(--coral-soft); border-radius:2.4mm; background:var(--coral-wash);
   padding:3.6mm 4.6mm; display:flex; flex-direction:column; justify-content:center;
 }
-.dest .k{ font-size:2.5mm; font-weight:800; letter-spacing:.11em; color:var(--orange); }
+.dest .k{ font-size:2.5mm; font-weight:800; letter-spacing:.11em; color:var(--navy-3); }
 .dest .r{ display:flex; align-items:baseline; gap:2.6mm; margin-top:2.2mm; }
 .dest .r .g{ font-size:5mm; font-weight:800; }
-.dest .r .l{ font-size:3.1mm; color:#5A5240; }
+.dest .r .l{ font-size:3.1mm; color:var(--navy-3); }
 .dest .r .p{
-  margin-left:auto; font-size:3mm; font-weight:800; color:#fff; background:var(--orange);
+  margin-left:auto; font-size:3mm; font-weight:800; color:var(--ink); background:var(--coral);
   padding:.7mm 2.4mm; border-radius:3mm;
 }
 
 .math{ display:flex; gap:3mm; margin-top:3.4mm; flex:0 0 auto; }
 .math .c{ flex:1 1 0; border:.3mm solid var(--hair); border-radius:2.2mm; padding:3mm 3.6mm; background:#fff; }
-.math .c .k{ font-size:2.3mm; font-weight:700; color:var(--mute); letter-spacing:.13em; }
+.math .c .k{ font-size:2.3mm; font-weight:700; color:var(--navy-3); letter-spacing:.13em; }
 .math .c .v{ font-size:4mm; font-weight:800; margin-top:1.4mm; line-height:1.28; letter-spacing:-.01em; }
-.math .c.hi{ background:var(--midnight); border-color:var(--midnight); }
-.math .c.hi .k{ color:#8E9AC4; }
-.math .c.hi .v{ color:var(--paper); }
-.math .c.hi .v em{ font-style:normal; color:var(--gold); }
+.math .c.hi{ background:var(--navy-2); border-color:var(--navy-2); }
+.math .c.hi .k{ color:var(--cream-3); }
+.math .c.hi .v{ color:var(--cream-3); } /* 신호 예산 밖 — 바탕을 낮추고 em이 밝은 Cream으로 선다 */
+.math .c.hi .v em{ font-style:normal; color:var(--cream); }
 
 /* ══ 바닥 ════════════════════════════════════════════════════════ */
 .foot{
   margin-top:3.4mm; padding:3mm 0 8mm; flex:0 0 auto;
   border-top:.3mm solid var(--hair);
   display:flex; justify-content:space-between; align-items:flex-end; gap:10mm;
-  font-size:2.6mm; color:#7A81AE; line-height:1.5;
+  font-size:2.6mm; color:var(--navy-3); line-height:1.5;
 }
 .foot .end{ text-align:right; white-space:nowrap; }
-.foot .end .s{ font-size:3mm; font-weight:800; color:var(--ink); letter-spacing:-.01em; }
-.foot .end .v{ font-size:2.4mm; color:#9AA0C4; margin-top:1.2mm; }
+.foot .end .s{ font-size:3mm; font-weight:800; color:var(--navy); letter-spacing:-.01em; }
+.foot .end .v{ font-size:2.4mm; color:var(--navy-3); margin-top:1.2mm; }
 
 /* ══ 뒷면 · 학사 일정표 ═══════════════════════════════════════════ */
 .cal{ margin-top:7mm; flex:1 1 auto; display:flex; flex-direction:column; gap:2.8mm; min-height:0; }
@@ -214,41 +222,41 @@ html,body{
   border:.3mm solid var(--hair); border-radius:2.4mm; overflow:hidden; background:#fff;
 }
 .season .name{
-  flex:0 0 56mm; padding:3mm 4.6mm; background:#F2F5FF;
+  flex:0 0 56mm; padding:3mm 4.6mm; background:var(--cream-2);
   border-right:.3mm solid var(--hair); display:flex; flex-direction:column; justify-content:center;
 }
-.season .name .idx{ font-size:2.5mm; font-weight:700; color:var(--blue); letter-spacing:.16em; }
+.season .name .idx{ font-size:2.5mm; font-weight:700; color:var(--navy-3); letter-spacing:.16em; }
 .season .name .t{ font-size:4.6mm; font-weight:800; margin-top:1.2mm; line-height:1.22; letter-spacing:-.02em; }
 .weeks{ flex:1 1 auto; display:flex; gap:1.5mm; padding:2.6mm 3.4mm; align-items:center; }
 .wk{
   flex:1 1 0; align-self:stretch; border-radius:1.4mm;
-  border:.25mm solid rgba(26,35,126,.16); background:#F7F9FF;
+  border:.25mm solid var(--cream-3); background:var(--cream-2);
   display:flex; flex-direction:column; align-items:center; justify-content:center;
 }
-.wk .no{ font-size:3mm; font-weight:800; color:#5B639C; font-family:'DM Mono',ui-monospace,monospace; }
-.wk .lb{ font-size:2.2mm; color:#7A81AE; margin-top:.6mm; }
-.wk.exam{ background:var(--gold); border-color:#C79A00; }
-.wk.exam .no{ color:#3A2E00; }
-.wk.exam .lb{ color:#5A4700; font-weight:800; }
-.wk.cap{ background:var(--midnight); border-color:var(--midnight); }
-.wk.cap .no{ color:var(--paper); }
-.wk.cap .lb{ color:var(--gold); font-weight:800; }
+.wk .no{ font-size:3mm; font-weight:800; color:var(--navy-3); font-family:'DM Mono',ui-monospace,monospace; }
+.wk .lb{ font-size:2.2mm; color:var(--navy-3); margin-top:.6mm; }
+.wk.exam{ background:var(--coral); border-color:var(--coral-3); } /* 마일스톤 주 — 이 지면의 코랄 ① */
+.wk.exam .no{ color:var(--ink); }
+.wk.exam .lb{ color:var(--ink); font-weight:800; }
+.wk.cap{ background:var(--navy-2); border-color:var(--navy-2); }
+.wk.cap .no{ color:var(--cream); }
+.wk.cap .lb{ color:var(--coral); font-weight:800; }
 
 .breaks{ display:flex; gap:3mm; flex:0 0 auto; }
-.brk{ flex:1 1 0; border:.45mm dashed var(--orange); border-radius:2.4mm; background:#FFF6EE; padding:2.8mm 3.6mm; }
-.brk .k{ font-size:2.4mm; font-weight:800; color:var(--orange); letter-spacing:.1em; }
+.brk{ flex:1 1 0; border:.45mm dashed var(--coral-soft); border-radius:2.4mm; background:var(--coral-wash); padding:2.8mm 3.6mm; } /* 방학 패널 — 이 지면의 코랄 ② (대시 유지) */
+.brk .k{ font-size:2.4mm; font-weight:800; color:var(--navy-3); letter-spacing:.1em; }
 .brk .v{ font-size:3.6mm; font-weight:800; margin-top:1.2mm; }
-.brk .v i{ font-style:normal; letter-spacing:.06em; color:#B08050; }
+.brk .v i{ font-style:normal; letter-spacing:.06em; color:var(--navy-3); }
 
 .note{
-  margin-top:3.4mm; flex:0 0 auto; border-left:1mm solid var(--blue);
-  padding:2.4mm 0 2.4mm 4.4mm; font-size:2.9mm; line-height:1.55; color:#3B4374;
+  margin-top:3.4mm; flex:0 0 auto; border-left:1mm solid var(--navy-3); /* 왼줄 — 신호 예산 밖이라 중립 */
+  padding:2.4mm 0 2.4mm 4.4mm; font-size:2.9mm; line-height:1.55; color:var(--navy-3);
 }
-.note b{ color:var(--ink); font-weight:800; }
+.note b{ color:var(--navy); font-weight:800; }
 
 @media screen{
-  body{ background:#DFE3EE; padding:8mm; }
-  .sheet{ box-shadow:0 3mm 12mm rgba(11,26,46,.22); margin:0 auto 8mm; }
+  body{ background:var(--cream-2); padding:8mm; }
+  .sheet{ box-shadow:0 3mm 12mm rgba(15,23,48,.22); margin:0 auto 8mm; }
 }
 </style>
 </head>
@@ -271,8 +279,8 @@ html,body{
              지금은 시냅스 노드 3점 임시 도형 — 「채워야 할 칸」에 올려 두었다. -->
         <div class="symbol">
           <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#FDFCF8">syn</text>
-            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6D00"/>
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
+            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
           </svg>
         </div>
         <div class="wm">
@@ -304,7 +312,7 @@ html,body{
           <div class="node"><b>05</b></div>
           <div class="node last"><b>06</b></div>
           <svg class="tip" width="3.6mm" height="3.2mm" viewBox="0 0 12 11" aria-hidden="true">
-            <path d="M0 0 L12 5.5 L0 11 Z" fill="#3D5AFE"/>
+            <path d="M0 0 L12 5.5 L0 11 Z" fill="#2A3358"/>
           </svg>
         </div>
 
@@ -372,7 +380,7 @@ html,body{
 
       <div class="gate">
         <svg width="17mm" height="17mm" viewBox="0 0 48 48" fill="none"
-             stroke="#FF6D00" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+             stroke="#E8543F" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M40 24a16 16 0 1 1-4.7-11.3"/><path d="M36 4v9h-9"/>
         </svg>
         <div class="txt">
@@ -430,8 +438,8 @@ html,body{
         <!-- LOGO SLOT -->
         <div class="symbol">
           <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#FDFCF8">syn</text>
-            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6D00"/>
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
+            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
           </svg>
         </div>
         <div class="wm">

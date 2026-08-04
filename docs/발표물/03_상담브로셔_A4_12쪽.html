@@ -22,13 +22,14 @@
 @page { size: A4 portrait; margin: 0; }
 
 :root{
-  --blue:#3D5AFE; --orange:#FF6D00; --gold:#FFC400;
-  --paper:#FDFCF8; --ink:#1A237E; --midnight:#0B1A2E;
-  --hair:rgba(26,35,126,.20); --mute:#6C74A8; --body:#414A80;
+  --coral:#FF6B5C; --coral-3:#E8543F; --coral-wash:#FFE9E4; --coral-soft:#FFCFC6;
+  --paper:#FBF7EE; --navy:#1A2340; --navy-2:#0F1730; --navy-3:#2A3358;
+  --cream:#F6F1E8; --cream-2:#EFE7D7; --cream-3:#E7DDC7; --ink:#171820;
+  --hair:rgba(42,51,88,.25);
 }
 *{ box-sizing:border-box; margin:0; padding:0; }
 html,body{
-  background:var(--paper); color:var(--ink);
+  background:var(--paper); color:var(--navy);
   font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
   font-weight:500; line-height:1.72;
   -webkit-print-color-adjust:exact; print-color-adjust:exact;
@@ -48,16 +49,16 @@ html,body{
 
 /* ── 쪽 머리 ─────────────────────────────────────────── */
 .ph{ display:flex; align-items:center; justify-content:space-between; flex:0 0 auto; margin-bottom:7mm; }
-.ph .sec{ font-size:2.6mm; font-weight:700; letter-spacing:.2em; color:var(--blue); }
-.ph .no{ font-size:2.8mm; font-weight:700; color:var(--mute); letter-spacing:.1em; }
+.ph .sec{ font-size:2.6mm; font-weight:700; letter-spacing:.2em; color:var(--navy-3); }
+.ph .no{ font-size:2.8mm; font-weight:700; color:var(--navy-3); letter-spacing:.1em; }
 
 h2{ font-size:8.6mm; font-weight:800; line-height:1.24; letter-spacing:-.03em; flex:0 0 auto; }
-h2 em{ font-style:normal; color:var(--orange); }
-.lede{ font-size:4.3mm; color:var(--body); margin-top:4.6mm; line-height:1.62; flex:0 0 auto; }
+h2 em{ font-style:normal; color:var(--coral-3); }
+.lede{ font-size:4.3mm; color:var(--navy-3); margin-top:4.6mm; line-height:1.62; flex:0 0 auto; }
 .bd{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; }
-p{ font-size:4mm; color:var(--body); margin-top:4.6mm; }
-p b, b{ color:var(--ink); font-weight:800; }
-.hl{ font-weight:800; color:var(--ink); box-shadow:inset 0 -2mm 0 rgba(255,196,0,.45); }
+p{ font-size:4mm; color:var(--navy-3); margin-top:4.6mm; }
+p b, b{ color:var(--navy); font-weight:800; }
+.hl{ font-weight:800; color:var(--navy); box-shadow:inset 0 -2mm 0 rgba(255,107,92,.20); }
 
 /* 내용이 적은 쪽은 활자를 키워 **선언 지면**으로 만든다.
    같은 글을 작게 놓고 아래를 비우면 「할 말이 없는 쪽」으로 읽힌다 —
@@ -86,26 +87,26 @@ p b, b{ color:var(--ink); font-weight:800; }
   flex:0 0 auto; margin-top:6mm; padding-top:3.4mm; border-top:.4mm solid var(--hair);
   display:flex; align-items:flex-start; gap:3.4mm;
 }
-.script .q{ font-size:6mm; line-height:.9; color:var(--gold); font-weight:800; flex:0 0 auto; }
-.script .t{ font-size:3.6mm; color:var(--body); line-height:1.55; font-style:italic; }
+.script .q{ font-size:6mm; line-height:.9; color:var(--navy-3); font-weight:800; flex:0 0 auto; }
+.script .t{ font-size:3.6mm; color:var(--navy-3); line-height:1.55; font-style:italic; }
 .script .t b{ font-style:normal; }
-.script .lb{ font-size:2.3mm; font-weight:700; color:var(--mute); letter-spacing:.12em; display:block; margin-bottom:1mm; font-style:normal; }
+.script .lb{ font-size:2.3mm; font-weight:700; color:var(--navy-3); letter-spacing:.12em; display:block; margin-bottom:1mm; font-style:normal; }
 
 /* ── 표지·뒤표지 ─────────────────────────────────────── */
-.cover{ background:var(--midnight); color:var(--paper); justify-content:space-between; }
+.cover{ background:var(--navy-2); color:var(--cream); justify-content:space-between; }
 .cover::before{
   content:''; position:absolute; inset:0;
   background-image:
-    radial-gradient(circle at 1.2mm 1.2mm, rgba(61,90,254,.30) 0 .42mm, transparent .42mm),
-    radial-gradient(circle at 6mm 6mm, rgba(255,196,0,.15) 0 .28mm, transparent .28mm);
+    radial-gradient(circle at 1.2mm 1.2mm, rgba(255,107,92,.28) 0 .42mm, transparent .42mm),
+    radial-gradient(circle at 6mm 6mm, rgba(246,241,232,.13) 0 .28mm, transparent .28mm);
   background-size:10mm 10mm, 10mm 10mm;
 }
 .cover > *{ position:relative; }
 .cover h1{ font-size:14mm; font-weight:800; line-height:1.14; letter-spacing:-.04em; }
-.cover h1 em{ font-style:normal; color:var(--gold); }
-.cover .sub{ font-size:4mm; color:#B9C2E0; margin-top:6mm; line-height:1.6; max-width:130mm; }
-.cover .rule{ height:.8mm; background:linear-gradient(90deg,var(--gold) 0 26%, rgba(255,196,0,.2) 26% 100%); margin:8mm 0; }
-.cover .meta{ font-size:2.8mm; color:#8E9AC4; line-height:1.6; }
+.cover h1 em{ font-style:normal; color:var(--coral); }
+.cover .sub{ font-size:4mm; color:var(--cream-3); margin-top:6mm; line-height:1.6; max-width:130mm; }
+.cover .rule{ height:.8mm; background:linear-gradient(90deg,var(--coral) 0 26%, rgba(255,107,92,.2) 26% 100%); margin:8mm 0; }
+.cover .meta{ font-size:2.8mm; color:var(--cream-3); line-height:1.6; }
 .symbol{ width:44mm; height:28mm; }
 .symbol svg{ width:100%; height:100%; display:block; }
 .symbol.sm{ width:22mm; height:14mm; }
@@ -113,106 +114,106 @@ p b, b{ color:var(--ink); font-weight:800; }
 /* ── 근거 카드 (p3) ──────────────────────────────────── */
 .cards{ display:flex; flex-direction:column; gap:4mm; margin-top:5mm; }
 .card{ border:.35mm solid var(--hair); border-radius:2.6mm; padding:5.4mm 5.6mm; background:#fff; }
-.card .n{ font-size:2.8mm; font-weight:700; color:var(--blue); letter-spacing:.14em; }
+.card .n{ font-size:2.8mm; font-weight:700; color:var(--navy-3); letter-spacing:.14em; }
 .card .t{ font-size:5.2mm; font-weight:800; margin-top:1.8mm; letter-spacing:-.02em; line-height:1.3; }
-.card .d{ font-size:3.7mm; color:var(--body); margin-top:2.6mm; line-height:1.6; }
-.card .src{ font-size:2.9mm; color:var(--mute); margin-top:2.8mm; padding-top:2.4mm; border-top:.25mm dashed var(--hair); line-height:1.5; }
+.card .d{ font-size:3.7mm; color:var(--navy-3); margin-top:2.6mm; line-height:1.6; }
+.card .src{ font-size:2.9mm; color:var(--navy-3); margin-top:2.8mm; padding-top:2.4mm; border-top:.25mm dashed var(--hair); line-height:1.5; }
 
 /* ── 3단 도식 (p4) ───────────────────────────────────── */
 .flow{ display:flex; align-items:stretch; gap:0; margin-top:6mm; }
 .flow .st{ flex:1 1 0; border:.35mm solid var(--hair); border-radius:2.6mm; padding:5mm 4mm; text-align:center; background:#fff; }
-.flow .st.hi{ background:var(--midnight); border-color:var(--midnight); }
-.flow .st .i{ font-size:2.5mm; font-weight:700; color:var(--blue); letter-spacing:.14em; }
-.flow .st.hi .i{ color:var(--gold); }
+.flow .st.hi{ background:var(--navy-2); border-color:var(--navy-2); }
+.flow .st .i{ font-size:2.5mm; font-weight:700; color:var(--navy-3); letter-spacing:.14em; }
+.flow .st.hi .i{ color:var(--coral); }
 .flow .st .t{ font-size:4.6mm; font-weight:800; margin-top:2.2mm; line-height:1.3; letter-spacing:-.015em; }
-.flow .st.hi .t{ color:var(--paper); }
-.flow .st .d{ font-size:3.2mm; color:var(--mute); margin-top:2mm; line-height:1.5; }
-.flow .st.hi .d{ color:#B9C2E0; }
+.flow .st.hi .t{ color:var(--cream); }
+.flow .st .d{ font-size:3.2mm; color:var(--navy-3); margin-top:2mm; line-height:1.5; }
+.flow .st.hi .d{ color:var(--cream-3); }
 .flow .ar{ flex:0 0 9mm; display:flex; align-items:center; justify-content:center; }
 
 /* ── 세 가지 힘 (p5) ─────────────────────────────────── */
 .pw3{ display:flex; gap:3.4mm; margin-top:5mm; }
 .pw3 .p{ flex:1 1 0; border:.35mm solid var(--hair); border-radius:2.6mm; padding:4mm 3.6mm; background:#fff; }
-.pw3 .p .n{ font-size:2.5mm; font-weight:700; color:var(--blue); letter-spacing:.12em; }
+.pw3 .p .n{ font-size:2.5mm; font-weight:700; color:var(--navy-3); letter-spacing:.12em; }
 .pw3 .p .t{ font-size:4.6mm; font-weight:800; margin-top:1.8mm; line-height:1.25; letter-spacing:-.015em; }
-.pw3 .p .d{ font-size:3.3mm; color:var(--body); margin-top:2.4mm; line-height:1.55; }
-.pw3 .p .r{ font-size:3.2mm; font-weight:800; color:var(--orange); margin-top:2.8mm; padding-top:2.4mm; border-top:.25mm dashed var(--hair); }
+.pw3 .p .d{ font-size:3.3mm; color:var(--navy-3); margin-top:2.4mm; line-height:1.55; }
+.pw3 .p .r{ font-size:3.2mm; font-weight:800; color:var(--navy-3); margin-top:2.8mm; padding-top:2.4mm; border-top:.25mm dashed var(--hair); }
 
 /* ── 표 공통 ─────────────────────────────────────────── */
 table{ width:100%; border-collapse:collapse; margin-top:5mm; font-size:3.7mm; }
 th,td{ text-align:left; padding:3.8mm 4mm; border-bottom:.3mm solid var(--hair); vertical-align:top; }
-th{ font-size:2.9mm; color:var(--mute); font-weight:800; letter-spacing:.1em; background:#F2F5FF; }
-td.k{ font-weight:800; color:var(--ink); white-space:nowrap; }
-td.g{ color:var(--mute); }
-tr.hi td{ background:#FFF9E9; }
+th{ font-size:2.9mm; color:var(--navy-3); font-weight:800; letter-spacing:.1em; background:var(--cream-2); }
+td.k{ font-weight:800; color:var(--navy); white-space:nowrap; }
+td.g{ color:var(--navy-3); }
+tr.hi td{ background:var(--coral-wash); }
 
 /* ── 비교 도식 (p7) ──────────────────────────────────── */
 .vs{ display:flex; gap:3.4mm; margin-top:4.4mm; }
 .vs .col{ flex:1 1 0; border-radius:2.6mm; padding:4mm 4.2mm; }
-.vs .col.old{ background:#F0EFEA; border:.35mm solid rgba(26,35,126,.14); }
-.vs .col.new{ background:var(--midnight); color:var(--paper); }
+.vs .col.old{ background:var(--cream-2); border:.35mm solid var(--cream-3); }
+.vs .col.new{ background:var(--navy-2); color:var(--cream); }
 .vs .col .h{ font-size:2.6mm; font-weight:700; letter-spacing:.12em; }
-.vs .col.old .h{ color:#8A8577; }
-.vs .col.new .h{ color:var(--gold); }
+.vs .col.old .h{ color:var(--navy-3); }
+.vs .col.new .h{ color:var(--coral); }
 .vs .col li{ font-size:3.6mm; margin-top:2.8mm; list-style:none; line-height:1.5; }
-.vs .col.old li{ color:#6E6A5E; }
-.vs .col.new li{ color:#DCE1F2; }
+.vs .col.old li{ color:var(--navy-3); }
+.vs .col.new li{ color:var(--cream-3); }
 .vs .col li::before{ content:'— '; opacity:.5; }
 
 .four{ display:flex; flex-direction:column; gap:3.4mm; margin-top:4.4mm; }
 .it{ display:flex; gap:4mm; border:.35mm solid var(--hair); border-radius:2.6mm; padding:3.6mm 4.2mm; background:#fff; }
 .it .num{
-  flex:0 0 auto; width:7.4mm; height:7.4mm; border-radius:50%; background:var(--blue); color:#fff;
+  flex:0 0 auto; width:7.4mm; height:7.4mm; border-radius:50%; background:var(--navy-2); color:var(--cream);
   font-weight:700; font-size:3.8mm; display:flex; align-items:center; justify-content:center;
   font-family:'DM Mono',ui-monospace,monospace;
 }
 .it .t{ font-size:4.4mm; font-weight:800; letter-spacing:-.015em; line-height:1.3; }
-.it .d{ font-size:3.5mm; color:var(--body); margin-top:1.8mm; line-height:1.56; }
+.it .d{ font-size:3.5mm; color:var(--navy-3); margin-top:1.8mm; line-height:1.56; }
 
 /* ── 6레벨 띠 (p8) ───────────────────────────────────── */
 .band{ display:flex; gap:1.6mm; margin-top:5mm; }
 .band .c{ flex:1 1 0; border-radius:1.8mm; border:.3mm solid var(--hair); overflow:hidden; background:#fff; }
 .band .c .cap{ padding:2.6mm 1mm 2.2mm; text-align:center;
-  background:repeating-linear-gradient(45deg, rgba(61,90,254,.06) 0 1.1mm, transparent 1.1mm 2.6mm), #F2F5FF; }
-.band .c.j .cap{ background:repeating-radial-gradient(circle at 1.2mm 1.2mm, rgba(255,196,0,.3) 0 .3mm, transparent .3mm 2.6mm), #FFF9E9; }
-.band .c .lv{ font-size:5mm; font-weight:800; line-height:1; color:var(--blue); letter-spacing:-.03em; }
-.band .c.j .lv{ color:#8A6A00; }
+  background:repeating-linear-gradient(45deg, rgba(42,51,88,.06) 0 1.1mm, transparent 1.1mm 2.6mm), var(--cream-2); }
+.band .c.j .cap{ background:repeating-radial-gradient(circle at 1.2mm 1.2mm, rgba(42,51,88,.14) 0 .3mm, transparent .3mm 2.6mm), var(--cream-2); }
+.band .c .lv{ font-size:5mm; font-weight:800; line-height:1; color:var(--navy); letter-spacing:-.03em; }
+.band .c.j .lv{ color:var(--navy); }
 .band .c .r{ padding:2mm 1mm; text-align:center; border-top:.25mm solid var(--hair); }
-.band .c .r .kk{ font-size:2.1mm; color:var(--mute); font-weight:700; letter-spacing:.08em; }
+.band .c .r .kk{ font-size:2.1mm; color:var(--navy-3); font-weight:700; letter-spacing:.08em; }
 .band .c .r .vv{ font-size:2.9mm; font-weight:800; margin-top:.6mm; }
 .dest{ display:flex; gap:3.4mm; margin-top:4.4mm; }
-.dest .d{ flex:1 1 0; border:.45mm solid var(--orange); border-radius:2.4mm; padding:3mm 3.6mm; background:#FFF6EE; }
-.dest .d .kk{ font-size:2.4mm; font-weight:700; color:var(--orange); letter-spacing:.1em; }
+.dest .d{ flex:1 1 0; border:.45mm solid var(--coral-soft); border-radius:2.4mm; padding:3mm 3.6mm; background:var(--coral-wash); }
+.dest .d .kk{ font-size:2.4mm; font-weight:700; color:var(--navy-3); letter-spacing:.1em; }
 .dest .d .vv{ font-size:3.6mm; font-weight:800; margin-top:1mm; }
 
 /* ── 약속 (p10) ──────────────────────────────────────── */
 .vow{ display:flex; flex-direction:column; gap:4mm; margin-top:5mm; }
-.vow .v{ border-left:1.1mm solid var(--orange); padding:2.6mm 0 2.6mm 5mm; }
+.vow .v{ border-left:1.1mm solid var(--coral-3); padding:2.6mm 0 2.6mm 5mm; }
 .vow .v .t{ font-size:4.9mm; font-weight:800; letter-spacing:-.015em; }
-.vow .v .d{ font-size:3.7mm; color:var(--body); margin-top:2.2mm; line-height:1.6; }
+.vow .v .d{ font-size:3.7mm; color:var(--navy-3); margin-top:2.2mm; line-height:1.6; }
 
 /* ── 세 걸음 + 연락처 (p11) ──────────────────────────── */
 .steps{ display:flex; gap:3.4mm; margin-top:5mm; }
 .steps .s{ flex:1 1 0; border:.35mm solid var(--hair); border-radius:2.6mm; padding:4mm 3.6mm; background:#fff; text-align:center; }
-.steps .s .n{ font-size:6mm; font-weight:800; color:var(--blue); line-height:1; font-family:'DM Mono',ui-monospace,monospace; }
+.steps .s .n{ font-size:6mm; font-weight:800; color:var(--navy); line-height:1; font-family:'DM Mono',ui-monospace,monospace; }
 .steps .s .t{ font-size:4.1mm; font-weight:800; margin-top:2.6mm; line-height:1.3; }
-.steps .s .d{ font-size:3.2mm; color:var(--mute); margin-top:2mm; line-height:1.5; }
+.steps .s .d{ font-size:3.2mm; color:var(--navy-3); margin-top:2mm; line-height:1.5; }
 .contact{ margin-top:6mm; border-top:.5mm solid var(--hair); padding-top:4.4mm; display:flex; gap:6mm; }
 .contact .rows{ flex:1 1 auto; display:grid; grid-template-columns:1fr 1fr; column-gap:6mm; }
-.contact h3{ grid-column:1/-1; font-size:2.7mm; font-weight:700; color:var(--blue); letter-spacing:.14em; }
+.contact h3{ grid-column:1/-1; font-size:2.7mm; font-weight:700; color:var(--navy-3); letter-spacing:.14em; }
 .contact .r{ margin-top:3mm; }
 .contact .r .k{ font-size:3.4mm; font-weight:800; }
-.contact .r .v{ border-bottom:.4mm solid #3B4374; height:5.6mm; font-size:3mm; color:#B08050; letter-spacing:.04em; margin-top:1.2mm; }
-.qr{ flex:0 0 30mm; height:30mm; border:.5mm dashed var(--blue); border-radius:2mm; background:#fff;
+.contact .r .v{ border-bottom:.4mm solid var(--navy-3); height:5.6mm; font-size:3mm; color:var(--navy-3); letter-spacing:.04em; margin-top:1.2mm; }
+.qr{ flex:0 0 30mm; height:30mm; border:.5mm dashed var(--navy-3); border-radius:2mm; background:#fff;
   display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
-  color:var(--mute); font-size:2.5mm; line-height:1.4; }
+  color:var(--navy-3); font-size:2.5mm; line-height:1.4; }
 
-.fn{ font-size:3.1mm; color:var(--mute); margin-top:3.4mm; line-height:1.55; }
-.blank{ color:#B08050; letter-spacing:.06em; }
+.fn{ font-size:3.1mm; color:var(--navy-3); margin-top:3.4mm; line-height:1.55; }
+.blank{ color:var(--navy-3); letter-spacing:.06em; }
 
 @media screen{
-  body{ background:#DFE3EE; padding:8mm; }
-  .pg{ box-shadow:0 3mm 12mm rgba(11,26,46,.2); margin:0 auto 8mm; }
+  body{ background:var(--cream-2); padding:8mm; }
+  .pg{ box-shadow:0 3mm 12mm rgba(15,23,48,.2); margin:0 auto 8mm; }
 }
 </style>
 </head>
@@ -224,8 +225,8 @@ tr.hi td{ background:#FFF9E9; }
     <!-- LOGO SLOT ▸ 주입은 tools/로고주입.js (브랜드킷 §3) -->
     <div class="symbol">
       <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#FDFCF8">syn</text>
-            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6D00"/>
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
+            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
           </svg>
     </div>
   </div>
@@ -317,7 +318,7 @@ tr.hi td{ background:#FFF9E9; }
         <div class="d">100% 한국어 K컬처 신체활동</div>
       </div>
       <div class="ar">
-        <svg width="7mm" height="7mm" viewBox="0 0 24 24" fill="none" stroke="#3D5AFE" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+        <svg width="7mm" height="7mm" viewBox="0 0 24 24" fill="none" stroke="#2A3358" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14"/><path d="M13 6l6 6-6 6"/></svg>
       </div>
       <div class="st">
         <div class="i mono">STEP 2</div>
@@ -325,7 +326,7 @@ tr.hi td{ background:#FFF9E9; }
         <div class="d">문법·어휘·독해·회화 체계 수업</div>
       </div>
       <div class="ar">
-        <svg width="7mm" height="7mm" viewBox="0 0 24 24" fill="none" stroke="#3D5AFE" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+        <svg width="7mm" height="7mm" viewBox="0 0 24 24" fill="none" stroke="#2A3358" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14"/><path d="M13 6l6 6-6 6"/></svg>
       </div>
       <div class="st hi">
         <div class="i mono">STEP 3</div>
@@ -390,10 +391,10 @@ tr.hi td{ background:#FFF9E9; }
   <div class="bd">
     <table>
       <tr><th style="width:26mm">단계</th><th style="width:44mm">프로그램</th><th>아이가 얻는 것</th></tr>
-      <tr><td class="k">배움 <span class="mono" style="color:#6C74A8">Learn</span></td><td class="k">K컬처 워밍업</td><td>몸으로 열린 한국어 + 이어지는 정규 수업</td></tr>
-      <tr><td class="k">방향 <span class="mono" style="color:#6C74A8">Plan</span></td><td class="k">「나침반」 세션</td><td>드림맵 카드 — 아이가 소유하는 목적과 로드맵</td></tr>
-      <tr><td class="k">경험 <span class="mono" style="color:#6C74A8">Experience</span></td><td class="k">「싱크 크루」</td><td>시즌당 포트폴리오 1건</td></tr>
-      <tr class="hi"><td class="k">기록 <span class="mono" style="color:#8A6A00">Record</span></td><td class="k">「싱크 포트폴리오」</td><td>드림맵 + 결과물 + 급수의 증명</td></tr>
+      <tr><td class="k">배움 <span class="mono" style="color:var(--navy-3)">Learn</span></td><td class="k">K컬처 워밍업</td><td>몸으로 열린 한국어 + 이어지는 정규 수업</td></tr>
+      <tr><td class="k">방향 <span class="mono" style="color:var(--navy-3)">Plan</span></td><td class="k">「나침반」 세션</td><td>드림맵 카드 — 아이가 소유하는 목적과 로드맵</td></tr>
+      <tr><td class="k">경험 <span class="mono" style="color:var(--navy-3)">Experience</span></td><td class="k">「싱크 크루」</td><td>시즌당 포트폴리오 1건</td></tr>
+      <tr class="hi"><td class="k">기록 <span class="mono" style="color:var(--navy-3)">Record</span></td><td class="k">「싱크 포트폴리오」</td><td>드림맵 + 결과물 + 급수의 증명</td></tr>
     </table>
 
     <p style="margin-top:6mm">하루에도, 한 시즌에도 같은 사이클이 돕니다.
@@ -584,7 +585,7 @@ tr.hi td{ background:#FFF9E9; }
       </div>
     </div>
     <p class="lede" style="margin-top:6mm">진짜 변화는 성적표보다 <b>태도</b>에서 먼저 나타납니다.
-      “학원 가기 싫어요”라고 하던 아이가 어느 날 <span class="hl">“오늘 수업 있죠?”</span>라고 먼저 물어봅니다.
+      “학원 가기 싫어요”라고 하던 아이가 어느 날 <span class="hl" style="box-shadow:none">“오늘 수업 있죠?”</span>라고 먼저 물어봅니다.
       학부모님께는 매달 데이터로 확인되는 성장 과정을, 학생에게는 진심으로 기다려지는 학습 경험을 드리겠습니다.</p>
   </div>
   <div class="script"><span class="q">“</span><span class="t"><span class="lb mono">SCRIPT</span>
@@ -613,7 +614,7 @@ tr.hi td{ background:#FFF9E9; }
     <div class="contact">
       <div class="rows">
         <h3 class="mono">CONTACT</h3>
-        <div class="r"><div class="k">페이스북 메신저 <span style="font-weight:500;color:#6C74A8;font-size:2.5mm">가장 빠른 문의</span></div>
+        <div class="r"><div class="k">페이스북 메신저 <span style="font-weight:500;color:var(--navy-3);font-size:2.5mm">가장 빠른 문의</span></div>
           <div class="v">facebook.com/____________</div></div>
         <div class="r"><div class="k">전화</div><div class="v">____________</div></div>
         <div class="r"><div class="k">위치</div><div class="v">____________</div></div>
@@ -632,8 +633,8 @@ tr.hi td{ background:#FFF9E9; }
     <!-- LOGO SLOT ▸ 주입은 tools/로고주입.js -->
     <div class="symbol sm">
       <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#FDFCF8">syn</text>
-            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6D00"/>
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
+            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
           </svg>
     </div>
   </div>
@@ -647,7 +648,7 @@ tr.hi td{ background:#FFF9E9; }
 
   <div class="meta">
     SYNK LAB · 몽골 울란바토르<br>
-    <span class="mono" style="color:#5F6894">03 · BROCHURE · v1.0 · 2026-08-04</span>
+    <span class="mono" style="color:var(--cream-3)">03 · BROCHURE · v1.0 · 2026-08-04</span>
   </div>
 </section>
 

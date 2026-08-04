@@ -23,14 +23,15 @@
 @page { size: A4 portrait; margin: 0; }
 
 :root{
-  --blue:#3D5AFE; --orange:#FF6D00; --gold:#FFC400;
-  --paper:#FDFCF8; --ink:#1A237E; --midnight:#0B1A2E;
-  --hair:rgba(26,35,126,.20); --mute:#6C74A8;
+  --coral:#FF6B5C; --coral-3:#E8543F; --coral-wash:#FFE9E4; --coral-soft:#FFCFC6;
+  --paper:#FBF7EE; --navy:#1A2340; --navy-2:#0F1730; --navy-3:#2A3358;
+  --cream:#F6F1E8; --cream-2:#EFE7D7; --cream-3:#E7DDC7; --ink:#171820;
+  --hair:rgba(42,51,88,.25);
 }
 *{ box-sizing:border-box; margin:0; padding:0; }
 
 html,body{
-  background:var(--paper); color:var(--ink);
+  background:var(--paper); color:var(--navy);
   font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
   font-weight:500; line-height:1.62;
   -webkit-print-color-adjust:exact; print-color-adjust:exact;
@@ -49,7 +50,7 @@ html,body{
 
 /* ══ 앞면 헤더 — 상단 약 25% 미드나잇 반전 ══════════════════ */
 .hero{
-  background:var(--midnight); color:var(--paper);
+  background:var(--navy-2); color:var(--cream);
   height:74mm; padding:13mm 15mm 10mm;
   position:relative; overflow:hidden; flex:0 0 auto;
   display:flex; flex-direction:column; justify-content:space-between;
@@ -57,97 +58,97 @@ html,body{
 .hero::before{
   content:''; position:absolute; inset:0;
   background-image:
-    radial-gradient(circle at 1.1mm 1.1mm, rgba(61,90,254,.30) 0 .4mm, transparent .4mm),
-    radial-gradient(circle at 5.5mm 5.5mm, rgba(255,196,0,.15) 0 .27mm, transparent .27mm);
+    radial-gradient(circle at 1.1mm 1.1mm, rgba(255,107,92,.28) 0 .4mm, transparent .4mm),
+    radial-gradient(circle at 5.5mm 5.5mm, rgba(246,241,232,.13) 0 .27mm, transparent .27mm);
   background-size:9mm 9mm, 9mm 9mm;
 }
 .hero::after{
   content:''; position:absolute; left:0; right:0; bottom:0; height:.8mm;
-  background:linear-gradient(90deg,var(--gold) 0 30%, rgba(255,196,0,.18) 30% 100%);
+  background:linear-gradient(90deg,var(--cream-3) 0 30%, rgba(231,221,199,.18) 30% 100%);
 }
 .hero > *{ position:relative; }
 .hero h1{ font-size:11.4mm; font-weight:800; line-height:1.14; letter-spacing:-.035em; }
-.hero h1 em{ font-style:normal; color:var(--gold); }
-.hero .lead{ font-size:3.6mm; color:#B9C2E0; margin-top:4.4mm; line-height:1.55; }
+.hero h1 em{ font-style:normal; color:var(--coral); }
+.hero .lead{ font-size:3.6mm; color:var(--cream-3); margin-top:4.4mm; line-height:1.55; }
 .hero .foot{ display:flex; align-items:flex-end; justify-content:space-between; gap:8mm; }
-.hero .note{ font-size:2.9mm; color:#8E9AC4; line-height:1.5; max-width:110mm; }
+.hero .note{ font-size:2.9mm; color:var(--cream-3); line-height:1.5; max-width:110mm; }
 /* ⚠ .symbol 은 정사각이 아니다 — W5 축약 워드마크 가로:세로 = 1.5:1. 주입은 tools/로고주입.js */
 .lockup{ display:flex; flex-direction:column; align-items:flex-end; gap:2mm; flex:0 0 auto; }
 .symbol{ width:24mm; height:15.4mm; flex:0 0 auto; }
 .symbol svg{ width:100%; height:100%; display:block; }
-.lockup .tag{ font-size:2.2mm; color:var(--gold); }
+.lockup .tag{ font-size:2.2mm; font-weight:700; color:var(--cream); }
 
 /* ══ 본문 블록 ═══════════════════════════════════════════════ */
 .blk{ margin-top:7mm; }
 .blk:first-child{ margin-top:5mm; }
 h2{
   font-size:5.4mm; font-weight:800; letter-spacing:-.02em; line-height:1.3;
-  padding-bottom:2.4mm; border-bottom:.7mm solid var(--blue); display:inline-block;
+  padding-bottom:2.4mm; border-bottom:.7mm solid var(--navy-3); display:inline-block;
 }
 .blk p{ font-size:3.5mm; margin-top:3.4mm; }
 .blk p.tight{ margin-top:1.8mm; }
 strong{ font-weight:800; }
-.hl{ font-weight:800; box-shadow:inset 0 -2.2mm 0 rgba(255,196,0,.42); }
+.hl{ font-weight:800; box-shadow:inset 0 -2.2mm 0 rgba(255,107,92,.20); }
 
 /* 세 가지 힘 — 아이콘 3개 가로 배치 (정본 §2 앞면 블록 2) */
 .powers{ display:flex; gap:4mm; margin-top:5mm; }
 .pw{ flex:1 1 0; border:.35mm solid var(--hair); border-radius:2.4mm; padding:4mm 3.6mm; background:#fff; }
 .pw .ic{ display:block; margin-bottom:2.8mm; }
-.pw .n{ font-size:2.6mm; font-weight:700; color:var(--blue); letter-spacing:.1em; }
+.pw .n{ font-size:2.6mm; font-weight:700; color:var(--navy-3); letter-spacing:.1em; }
 .pw .t{ font-size:4.2mm; font-weight:800; margin-top:1.4mm; line-height:1.25; letter-spacing:-.015em; }
-.pw .d{ font-size:2.9mm; color:#414A80; margin-top:2mm; line-height:1.5; }
+.pw .d{ font-size:2.9mm; color:var(--navy-3); margin-top:2mm; line-height:1.5; }
 
-.after{ font-size:3.3mm; margin-top:4.4mm; color:#414A80; }
+.after{ font-size:3.3mm; margin-top:4.4mm; color:var(--navy-3); }
 
 /* ══ 뒷면 ════════════════════════════════════════════════════ */
 .four{ display:flex; flex-direction:column; gap:3.4mm; margin-top:4.4mm; }
 .card{ display:flex; gap:4mm; border:.35mm solid var(--hair); border-radius:2.4mm; padding:3.6mm 4mm; background:#fff; }
 .card .num{
   flex:0 0 auto; width:8mm; height:8mm; border-radius:50%;
-  background:var(--blue); color:#fff; font-weight:800; font-size:4.2mm;
+  background:var(--coral); color:var(--ink); font-weight:800; font-size:4.2mm;
   display:flex; align-items:center; justify-content:center;
   font-family:'DM Mono',ui-monospace,monospace;
 }
 .card .bd .t{ font-size:4mm; font-weight:800; letter-spacing:-.015em; }
-.card .bd .d{ font-size:3.1mm; margin-top:1.6mm; line-height:1.52; color:#414A80; }
+.card .bd .d{ font-size:3.1mm; margin-top:1.6mm; line-height:1.52; color:var(--navy-3); }
 
 .three{ display:flex; gap:3.4mm; margin-top:4.4mm; }
-.tri{ flex:1 1 0; border-radius:2.4mm; padding:3.6mm 3.4mm; background:#F2F5FF; border:.35mm solid var(--hair); }
-.tri .k{ font-size:2.6mm; font-weight:700; color:var(--blue); letter-spacing:.1em; }
+.tri{ flex:1 1 0; border-radius:2.4mm; padding:3.6mm 3.4mm; background:var(--cream-2); border:.35mm solid var(--hair); }
+.tri .k{ font-size:2.6mm; font-weight:700; color:var(--navy-3); letter-spacing:.1em; }
 .tri .t{ font-size:3.5mm; font-weight:800; margin-top:1.4mm; line-height:1.34; }
 
 /* 오늘 저녁 질문 — 골드 박스 + 절취선 (원고가 "잘라서 보관"을 명시) */
 .cut{
-  margin-top:5.4mm; border:.6mm dashed #C79A00; border-radius:2.6mm;
-  background:#FFF9E9; padding:5mm 5.4mm; position:relative;
+  margin-top:5.4mm; border:.6mm dashed var(--coral-soft); border-radius:2.6mm;
+  background:var(--coral-wash); padding:5mm 5.4mm; position:relative;
 }
-.cut .scissors{ position:absolute; top:-2.4mm; left:5mm; background:var(--paper); padding:0 1.6mm; font-size:3.4mm; color:#A98400; }
+.cut .scissors{ position:absolute; top:-2.4mm; left:5mm; background:var(--paper); padding:0 1.6mm; font-size:3.4mm; color:var(--navy-3); }
 .cut h3{ font-size:4.6mm; font-weight:800; letter-spacing:-.015em; }
 .cut ol{ margin:3.4mm 0 0 5mm; }
 .cut li{ font-size:3.6mm; font-weight:800; margin-top:2mm; line-height:1.44; }
-.cut .tail{ font-size:2.9mm; color:#6B5A20; margin-top:3.2mm; line-height:1.5; }
+.cut .tail{ font-size:2.9mm; color:var(--navy-3); margin-top:3.2mm; line-height:1.5; }
 
-.promise{ margin-top:5mm; border-left:1.1mm solid var(--orange); padding:2.6mm 0 2.6mm 5mm; }
-.promise .k{ font-size:2.7mm; font-weight:800; color:var(--orange); letter-spacing:.1em; }
+.promise{ margin-top:5mm; border-left:1.1mm solid var(--navy-3); padding:2.6mm 0 2.6mm 5mm; }
+.promise .k{ font-size:2.7mm; font-weight:800; color:var(--navy-3); letter-spacing:.1em; }
 .promise p{ font-size:3.4mm; margin-top:2mm; line-height:1.56; }
 
 .contact{ margin-top:auto; padding-top:4.4mm; border-top:.5mm solid var(--hair); display:flex; gap:6mm; align-items:flex-start; }
 .contact .rows{ flex:1 1 auto; }
-.contact h3{ font-size:2.7mm; font-weight:700; color:var(--blue); letter-spacing:.14em; }
+.contact h3{ font-size:2.7mm; font-weight:700; color:var(--navy-3); letter-spacing:.14em; }
 .contact .r{ display:flex; align-items:baseline; gap:3.4mm; margin-top:2.8mm; }
 .contact .r .k{ flex:0 0 24mm; font-size:3mm; font-weight:800; }
 /* ⚠ 여기는 손으로 채우는 칸이 아니라 **인쇄되는 값**이다. 그래서 밑줄이 아니라
    「____」로 미기입 상태가 눈에 보이게 둔다 — 안 그러면 빈 줄인 채로 수천 장이 찍힌다.
    (10번 상담 결과 요약의 밑줄 칸과 성격이 다르다. 거기는 상담 테이블에서 손으로 채운다.) */
 .contact .r .v{
-  flex:1 1 auto; border-bottom:.4mm solid #3B4374; height:5.4mm;
-  font-size:3mm; color:#B08050; letter-spacing:.04em; padding-bottom:.6mm;
+  flex:1 1 auto; border-bottom:.4mm solid var(--navy-3); height:5.4mm;
+  font-size:3mm; color:var(--navy-3); letter-spacing:.04em; padding-bottom:.6mm;
 }
-.contact .r .hint{ font-size:2.5mm; color:var(--mute); }
+.contact .r .hint{ font-size:2.5mm; color:var(--navy-3); }
 .qr{
-  flex:0 0 30mm; height:30mm; border:.5mm dashed var(--blue); border-radius:2mm;
+  flex:0 0 30mm; height:30mm; border:.5mm dashed var(--navy-3); border-radius:2mm;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  text-align:center; color:var(--mute); font-size:2.5mm; line-height:1.4; background:#fff;
+  text-align:center; color:var(--navy-3); font-size:2.5mm; line-height:1.4; background:#fff;
 }
 
 .slogan{
@@ -155,9 +156,9 @@ strong{ font-weight:800; }
   display:flex; justify-content:space-between; align-items:flex-end;
 }
 .slogan .s{ font-size:4.6mm; font-weight:800; letter-spacing:-.02em; }
-.slogan .v{ font-size:2.4mm; color:#9AA0C4; }
+.slogan .v{ font-size:2.4mm; color:var(--navy-3); }
 
-.fn{ font-size:2.6mm; color:var(--mute); margin-top:2.2mm; line-height:1.45; }
+.fn{ font-size:2.6mm; color:var(--navy-3); margin-top:2.2mm; line-height:1.45; }
 
 /* ── 뒷면 밀도 조정 ─────────────────────────────────────────
    정본 §2는 "글을 새로 쓰지 않는다 — 줄바꿈·강조·배치만 설계한다"라고 못박는다.
@@ -197,8 +198,8 @@ strong{ font-weight:800; }
 .back .slogan .s{ font-size:4mm; }
 
 @media screen{
-  body{ background:#DFE3EE; padding:8mm; }
-  .sheet{ box-shadow:0 3mm 12mm rgba(11,26,46,.22); margin:0 auto 8mm; }
+  body{ background:var(--cream-2); padding:8mm; }
+  .sheet{ box-shadow:0 3mm 12mm rgba(15,23,48,.22); margin:0 auto 8mm; }
 }
 </style>
 </head>
@@ -218,8 +219,8 @@ strong{ font-weight:800; }
         <!-- LOGO SLOT ▸ 로고 파일이 오면 이 svg 만 교체 (브랜드킷 §3) -->
         <div class="symbol">
           <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#FDFCF8">syn</text>
-            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6D00"/>
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
+            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
           </svg>
         </div>
         <div>
@@ -248,15 +249,15 @@ strong{ font-weight:800; }
 
       <div class="powers">
         <div class="pw">
-          <svg class="ic" width="9mm" height="9mm" viewBox="0 0 48 48" fill="none" stroke="#3D5AFE" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 18a6 6 0 1 1 8 5.7c-1.3.5-2 1.7-2 3.1V29"/><circle cx="24" cy="37" r="1.6" fill="#3D5AFE"/>
+          <svg class="ic" width="9mm" height="9mm" viewBox="0 0 48 48" fill="none" stroke="#2A3358" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 18a6 6 0 1 1 8 5.7c-1.3.5-2 1.7-2 3.1V29"/><circle cx="24" cy="37" r="1.6" fill="#2A3358"/>
           </svg>
           <div class="n mono">01</div>
           <div class="t">질문하는 힘</div>
           <div class="d">“나는 왜 이걸 배우지?” 무엇이 진짜 문제인지 스스로 묻고 정의하는 힘</div>
         </div>
         <div class="pw">
-          <svg class="ic" width="9mm" height="9mm" viewBox="0 0 48 48" fill="none" stroke="#3D5AFE" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="ic" width="9mm" height="9mm" viewBox="0 0 48 48" fill="none" stroke="#2A3358" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14 34l8-20 4 12 4-6 4 14"/><path d="M10 40h28"/>
           </svg>
           <div class="n mono">02</div>
@@ -264,7 +265,7 @@ strong{ font-weight:800; }
           <div class="d">시키지 않아도 먼저 움직이고, 끝까지 해내는 힘</div>
         </div>
         <div class="pw">
-          <svg class="ic" width="9mm" height="9mm" viewBox="0 0 48 48" fill="none" stroke="#3D5AFE" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="ic" width="9mm" height="9mm" viewBox="0 0 48 48" fill="none" stroke="#2A3358" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="18" cy="19" r="5"/><circle cx="31" cy="24" r="4"/><path d="M9 37c1.5-5 5-7.5 9-7.5s6.9 2.2 8.6 6"/>
           </svg>
           <div class="n mono">03</div>

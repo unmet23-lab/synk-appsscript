@@ -28,7 +28,7 @@ function page(opts) {
 <style>
 ${o.cssComment || ''}
 @page { size: A4 portrait; margin: 0; }
-:root{ --midnight:${o.midnight || '#0B1A2E'}; }
+:root{ --midnight:${o.midnight || '#0F1730'}; }
 html,body{ font-family:${o.font || "'Inter Tight','SUIT Variable'"},sans-serif; print-color-adjust:exact; }
 .mono{ font-family:'DM Mono',ui-monospace,monospace; }
 </style></head><body>
@@ -62,7 +62,11 @@ test('반전면에 탈락한 색이 되살아나면 잡는다', () => {
   const v = run(page({ midnight: '#101528' }));
   assert.strictEqual(v.code, 1, '탈락값 #101528 을 그냥 통과시켰다');
   assert.match(v.out, /탈락한 색/);
-  assert.match(v.out, /#0B1A2E/, '확정값을 알려주지 않으면 고칠 수가 없다');
+  assert.match(v.out, /#0F1730/, '확정값(키트 Navy 2)을 알려주지 않으면 고칠 수가 없다');
+
+  // 구 미드나잇도 키트 이관(08-04)으로 탈락 — 배포물 6종을 접던 값이라 부활 확률이 가장 높다
+  const old = run(page({ midnight: '#0B1A2E' }));
+  assert.strictEqual(old.code, 1, '구 미드나잇 #0B1A2E 를 통과시켰다 — 키트 v2.0 반전면은 Navy 2 다');
 });
 
 test('🔑 DM Mono 에 한글이 들어가면 잡는다 (글리프가 없어 인쇄에서 깨진다)', () => {
