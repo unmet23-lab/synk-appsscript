@@ -172,7 +172,7 @@ test('🔑 AI 를 깨우지 않는다 — additionalContext 를 내지 않는다
   assert.ok(v.json.systemMessage, '유호님 화면용 systemMessage 가 없다');
 });
 
-test('🔑 단계당 1회 · 상승은 놓치지 않는다 (세션당 최대 3번)', () => {
+test('🔑 단계당 1회 · 상승은 놓치지 않는다', () => {
   const st = newDir('dedup'); const cwd = newDir('proj');
   const at = (c) => stop(c, { stateDir: st, cwd, sid: 'SAME' });
   assert.ok(at(210_000).json, '첫 🟡 이 없다');
@@ -180,7 +180,56 @@ test('🔑 단계당 1회 · 상승은 놓치지 않는다 (세션당 최대 3�
   assert.match(at(305_000).msg, /🔴/, '🔴 로 올라갔는데 조용하다');
   assert.strictEqual(at(320_000).json, null, '🔴 도 1회여야 한다');
   assert.match(at(520_000).msg, /⚫/, '⚫ 로 올라갔는데 조용하다');
-  assert.strictEqual(at(600_000).json, null, '⚫ 도 1회여야 한다');
+  assert.strictEqual(at(600_000).json, null, '같은 ⚫ 구간(500~700k)에서 두 번 떴다');
+});
+
+test('🔑 ⚫ 위에서도 200k 마다 다시 운다 — 침묵 구간이 가장 비싼 구간이었다', () => {
+  // 08-04 실측: ⚫ 를 한 번 띄우면 영원히 침묵해서 세 세션이 600k·771k·786k 까지 **무신호**로
+  // 올라갔다. 500k→786k 는 한 턴에 78만 토큰을 다시 읽는 구간인데 정확히 거기가 무신호였다.
+  const st = newDir('repeat'); const cwd = newDir('p-repeat');
+  const at = (c) => stop(c, { stateDir: st, cwd, sid: 'LONG' });
+  assert.match(at(520_000).msg, /⚫/, '첫 ⚫ 이 없다');
+  assert.strictEqual(at(690_000).json, null, 'STEP(200k) 안인데 또 떴다 — 재발화가 소음이 된다');
+
+  const second = at(710_000);
+  assert.match(second.msg, /⚫/, '700k 를 넘겼는데 침묵한다 — 실측에서 786k 까지 무신호였던 그 구멍');
+  assert.match(second.msg, /2번째 경고/, '몇 번째인지 안 세면 같은 문구가 배경 소음이 된다');
+
+  assert.strictEqual(at(850_000).json, null, '두 번째 ⚫ 직후 또 떴다');
+  assert.match(at(910_000).msg, /3번째 경고/, '900k 를 넘겼는데 침묵한다');
+  // 재발화도 바통을 남긴다 — 그 구간에서 창을 그냥 닫아도 다음 세션이 이어받아야 한다
+  assert.ok(batons(st).length >= 1, '⚫ 재발화가 바통을 안 떨궜다');
+});
+
+test('창이 작은 모델은 재발화 지점이 창 밖이라 자연히 1회로 남는다', () => {
+  // haiku(창 200k): LAST=180k · STEP=40k → 다음 발화는 220k 인데 창을 넘어 도달 불가.
+  // 재발화를 넣었다고 작은 창에서 소음이 늘면 안 된다.
+  const st = newDir('h-rep'); const cwd = newDir('p-h-rep');
+  const at = (c) => stop(c, { stateDir: st, cwd, sid: 'H', model: 'claude-haiku-4-5-20251001' });
+  assert.match(at(185_000).msg, /⚫/, 'haiku ⚫ 이 없다');
+  assert.strictEqual(at(199_000).json, null, 'haiku 가 창 안에서 재발화했다 — 소음이다');
+});
+
+test('🔑 절차 나열이 아니라 한 줄 실행을 준다 — 경고 8번에도 786k 까지 갔다', () => {
+  // 부족한 건 알림이 아니라 **끊는 비용**이었다(유호님 확정 08-04). 커밋·보드·메모리 셋을
+  // 손으로 하려니 매번 「나중에」가 됐다. 그래서 경고는 실행 한 줄을 준다.
+  for (const c of [210_000, 310_000, 520_000]) {
+    assert.match(stop(c).msg, /\/close/, `${c} 경고에 끊기를 실행할 한 줄이 없다`);
+  }
+});
+
+test('🔑 훅이 가리키는 /close 스킬이 실재한다 — 문구만 있고 스킬이 없으면 아무 일도 안 일어난다', () => {
+  // 「라우팅은 훅보다 넓어야 한다」와 같은 계열: 훅이 아무리 정확해도 가리키는 곳이 비면
+  // 유호님이 `/close` 를 쳤을 때 조용히 아무 일도 안 일어난다(새는 방향은 언제나 「통과」).
+  assert.match(fs.readFileSync(STOP_HOOK, 'utf8'), /\/close/, '훅이 /close 를 안 가리킨다');
+  const skill = path.join(ROOT, '.claude', 'skills', 'close', 'SKILL.md');
+  assert.ok(fs.existsSync(skill), '훅은 /close 를 가리키는데 스킬 파일이 없다');
+  const s = fs.readFileSync(skill, 'utf8');
+  assert.match(s, /^name: close$/m, '스킬 이름이 close 가 아니다 — 그 이름으로는 안 불린다');
+  // 인계되는 셋(커밋·보드 줄·메모리)을 다 다뤄야 「한 번에 끝난다」가 참이 된다
+  for (const [needle, what] of [[/board-move\.js/, '보드 줄 이관'], [/MEMORY\.md/, '메모리'], [/git commit -F/, '범위 지정 커밋']]) {
+    assert.match(s, needle, `/close 스킬에 ${what} 절차가 없다 — 인계가 반쪽이 된다`);
+  }
 });
 
 // ── 인계 문구 ───────────────────────────────────────────────────────────────
