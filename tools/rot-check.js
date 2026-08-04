@@ -104,6 +104,29 @@ function harnessSection() {
   return { present: true, canonical: H.VER, stamp, stale: !stamp || stamp !== H.VER };
 }
 
+function notebooklmSection() {
+  // 하네스 폴더와 결정적으로 다른 점: 노트북LM 묶음은 **올린 뒤 손이 닿지 않는다.**
+  // 자료는 구글 계정 안으로 복사돼 버려서, 저장소가 아무리 바뀌어도 그쪽은 그대로다.
+  // 즉 「스스로 낡음을 말하는」 배너조차 올라간 사본에는 만든 날짜로 굳어 있다 —
+  // 낡음을 알려야 할 상대는 폴더가 아니라 **올린 사람**이다. 그래서 주간 점검이 진다.
+  const N = require('./notebooklm-export.js'); // require는 생성기를 실행하지 않는다
+  const dir = process.env.SYNK_NOTEBOOKLM_OUT || N.DEFAULT_OUT;
+  const readme = path.join(dir, 'README_먼저읽기.md');
+  if (!fs.existsSync(readme)) return { present: false }; // 아직 안 쓰는 것 = 부패 아님
+  const madeAt = fs.statSync(readme).mtimeMs;
+  // 앵커는 굵기표시(**)를 건너뛰고 날짜만 본다 — 문구 앵커는 문구가 바뀌면 죽고,
+  // 죽어도 경고는 그대로 떠서 「(날짜 미검출)」이라는 쓸모없는 값으로 조용히 낡는다.
+  // 생성기와 이 앵커가 어긋나는지는 tests/노트북LM묶음.test.js가 왕복으로 검사한다.
+  const m = fs.readFileSync(readme, 'utf8').match(/만든 날\s*\**\s*(\d{4}-\d{2}-\d{2})/);
+  const changed = [];
+  for (const { root } of N.SOURCE_ROOTS) {
+    for (const f of N.walk(root)) {
+      if (fs.statSync(f).mtimeMs > madeAt) changed.push(path.basename(f));
+    }
+  }
+  return { present: true, made: m ? m[1] : '(날짜 미검출)', changed };
+}
+
 /* ── 판정 ────────────────────────────────────────────────────────────────── */
 // 🔴 = 무언가가 이미 거짓을 말하고 있다(고치기 전엔 그래프·문서가 거짓말한다)
 // ⚠  = 아직 거짓은 아니지만 방치하면 🔴이 된다
@@ -114,12 +137,13 @@ function collect() {
   const doc = attempt('doc', docSection);
   const fri = attempt('friction', frictionSection);
   const har = attempt('harness', harnessSection);
+  const nbl = attempt('notebooklm', notebooklmSection);
 
   const red = [];
   const warn = [];
   const notes = [];
 
-  for (const s of [mem, doc, fri, har]) {
+  for (const s of [mem, doc, fri, har, nbl]) {
     if (!s.ok) red.push({ kind: '검사기 고장', text: `${s.name} 검사가 실패했다 — ${s.error}` });
   }
 
@@ -147,6 +171,17 @@ function collect() {
       kind: '이식 폴더 낡음',
       text: `바탕화면 SYNK_하네스 = ${har.value.stamp || '(스탬프 미검출)'} · 정본 = ${har.value.canonical}` +
         ' — 다른 도구(Codex·Kimi·웹·Obsidian)가 낡은 지침을 읽는다. 수리: node tools/harness-export.js',
+    });
+  }
+
+  if (nbl.ok && nbl.value.present && nbl.value.changed.length) {
+    const n = nbl.value.changed.length;
+    warn.push({
+      kind: '노트북LM 묶음 낡음',
+      text: `묶음(만든 날 ${nbl.value.made}) 이후 원천 ${n}개가 바뀌었다 — ` +
+        `${nbl.value.changed.slice(0, 3).join(', ')}${n > 3 ? ` 외 ${n - 3}건` : ''}. ` +
+        '올라간 사본은 저장소가 만질 수 없으므로 스스로 안 낫는다. ' +
+        '수리: node tools/notebooklm-export.js → 노트북LM에서 옛 노트북을 지우고 새로 올린다',
     });
   }
 

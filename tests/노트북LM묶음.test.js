@@ -149,6 +149,40 @@ test('한 폴더에 평탄화해도 이름이 겹치지 않는다 (겹치면 조
   assert.deepEqual(중복, [], `평탄화 이름 충돌 — 뒤엣것이 앞엣것을 덮는다: ${중복.join(', ')}`);
 });
 
+// ── ⑤ 생성기 ↔ 부패 점검 왕복 (앵커가 어긋나면 낡음을 못 잰다) ──────────
+test('부패 점검이 읽는 앵커와 생성기가 쓰는 문구가 맞는다 (격리 폴더 왕복)', () => {
+  const 임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'nblm-rt-'));
+  const OUT = path.join(임시, 'SYNK_노트북LM');
+  const { execFileSync } = require('child_process');
+  execFileSync(process.execPath, [TOOL, '--out', OUT], { cwd: REPO, encoding: 'utf8' });
+
+  // 실제 rot-check가 쓰는 그 앵커로 읽는다 — 사본 정규식을 두면 둘이 따로 낡는다
+  const src = fs.readFileSync(path.join(REPO, 'tools', 'rot-check.js'), 'utf8');
+  // ⚠ rot-check에는 `.match(…)` 앵커가 여럿이다(하네스 쪽도 있다) — 「첫 번째」로 집으면
+  //   엉뚱한 앵커를 검사하고 초록이 된다. 반드시 「만든 날」을 담은 것으로 지목한다.
+  const mAnchor = src.match(/\.match\((\/[^\n]*만든 날[^\n]*?\/)\)/);
+  assert.ok(mAnchor, 'rot-check에서 노트북LM 앵커를 못 찾았다 — 배선이 사라졌거나 형태가 바뀌었다');
+  const anchor = new RegExp(mAnchor[1].slice(1, -1));
+
+  const readme = path.join(OUT, 'README_먼저읽기.md');
+  assert.ok(fs.existsSync(readme), '생성기가 README_먼저읽기.md를 안 만들었다 — 점검기가 찾는 파일명이다');
+  const hit = fs.readFileSync(readme, 'utf8').match(anchor);
+  assert.ok(hit && /^\d{4}-\d{2}-\d{2}$/.test(hit[1]),
+    '점검기 앵커가 생성기 문구를 못 읽는다 — 경고는 뜨는데 「(날짜 미검출)」로 조용히 쓸모없어진다');
+
+  // 만든 날짜가 사본에 실제로 박혀 있는가 (§1-5 잠금 조건 2)
+  const 자료 = fs.readdirSync(OUT).filter((f) => f.startsWith('기억__') || f.startsWith('문서__'));
+  assert.ok(자료.length > 50, `자료가 너무 적다(${자료.length}개) — 수집이 조용히 비었다`);
+  const 표본 = fs.readFileSync(path.join(OUT, 자료[0]), 'utf8');
+  assert.match(표본, /만든 날: \d{4}-\d{2}-\d{2}/, '사본에 만든 날짜가 없다(정본 분열 잠금 위반)');
+  assert.match(표본, /여기서 결정하지 않는다/, '읽기 전용 문구가 없다(잠금 조건 1)');
+  assert.match(표본, /원본 = SYNK-appsscript 저장소/, '원본 경로가 없다 — 출처를 못 되짚는다');
+
+  assert.ok(fs.existsSync(path.join(OUT, '_빠진_파일.md')),
+    '제외 목록이 없다 — 「자료가 없어 못 답한 것」과 「일부러 뺀 것」이 같은 모양이 된다');
+  fs.rmSync(임시, { recursive: true, force: true });
+});
+
 // ── require 부작용 없음 ─────────────────────────────────────────────────
 test('require만으로는 아무것도 만들지 않는다 (테스트가 바탕화면을 건드리면 안 된다)', () => {
   const { DEFAULT_OUT } = require(TOOL);

@@ -96,6 +96,13 @@ function walk(dir, out = []) {
 const flatName = (prefix, rel) =>
   `${prefix}__${rel.replace(/[\\/]/g, '__')}`;
 
+// 톱레벨에 둔 이유: rot-check(주간 부패 점검)가 「묶음을 만든 뒤 원천이 몇 개 바뀌었나」를
+// 세려면 원천 목록을 알아야 한다. 생성기 안에 가둬두면 그 점검을 다시 쓸 수 없다.
+const SOURCE_ROOTS = [
+  { prefix: '기억', root: MEM, label: '판정 이력(memory)' },
+  { prefix: '문서', root: path.join(REPO, 'docs'), label: '정본 문서(docs)' },
+];
+
 function main() {
   const args = process.argv.slice(2);
   const DRY = args.includes('--dry');
@@ -125,10 +132,7 @@ function main() {
 
 `;
 
-  const sources = [
-    { prefix: '기억', root: MEM, label: '판정 이력(memory)' },
-    { prefix: '문서', root: path.join(REPO, 'docs'), label: '정본 문서(docs)' },
-  ];
+  const sources = SOURCE_ROOTS;
 
   if (!DRY && fs.existsSync(OUT)) {
     fs.rmSync(OUT, { recursive: true, force: true });   // 재생성이므로 통째로 새로
@@ -224,4 +228,4 @@ ${blocked.length === 0 ? '| — | (없음) | — | — |' :
 
 if (require.main === module) main();
 
-module.exports = { scanPII, walk, flatName, DEFAULT_OUT, ALLOW, DENY_DIR };
+module.exports = { scanPII, walk, flatName, DEFAULT_OUT, ALLOW, DENY_DIR, SOURCE_ROOTS };
