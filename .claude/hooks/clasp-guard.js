@@ -259,6 +259,31 @@ try {
   );
 }
 
+/* 5-C) 이종(GPT/Codex) 검수 확인 — **BYPASS 뒤**가 맞다.
+ *    임시 doGet 러너는 언제나 bypass로 나가는데(러너 코드가 미커밋이라), 그 미커밋 임시 코드에
+ *    5분짜리 이종 검수를 요구하면 따를 수 없는 처방이 된다 — 그런 처방은 우회를 정상 통로로
+ *    만든다(F103). 5-A(보안)와 달리 이건 절차 층이라 의식적 우회를 존중한다.
+ *
+ *    🔑 **차단하는 것은 「검수 안 함」이 아니라 「차단급 지적을 안 고치고 배포」뿐이다.**
+ *      폰 클라우드 세션에는 codex 자격증명이 없어 검수를 돌릴 수 없다(`[배포]` 커밋 → deploy-live).
+ *      「검수 없으면 차단」으로 짜면 그 경로가 통째로 죽는다 — 따를 수 없는 처방의 교과서적 형태다.
+ *      그래서 없으면 알리고(none/scope), 지적을 무시하면 막는다(block). 처방은 둘 다 실행 가능하다:
+ *      고치거나, 사유를 달아 기각하거나.
+ *
+ *    검수 자체는 여기서 돌리지 않는다 — 훅 안에서 5분을 쓸 수는 없다. 이건 **조회**다(네트워크 0). */
+let 검수알림 = '';
+try {
+  const r = require(path.join(ROOT, 'tools', 'codex-review.js')).게이트판정(PROJ, ROOT);
+  if (r.level === 'block') problems.push(r.lines.join('\n  '));
+  else if (r.level !== 'ok') 검수알림 = r.lines.join('\n');
+} catch (e) {
+  // 게이트가 죽어도 배포는 막지 않는다(절차 층이라). 단 **조용히 넘기지도 않는다**.
+  검수알림 =
+    '[이종검수] 게이트 실행 실패 — 검수 여부를 **확인 못 했다**: ' +
+    String((e && e.message) || e).split('\n')[0] +
+    '\n통과가 아니라 미실행이다.';
+}
+
 if (problems.length) {
   deny(
     `[clasp-guard] 배포 게이트 차단 — 프로젝트 ${프로젝트명}:\n- ` +
@@ -273,6 +298,11 @@ if (problems.length) {
  *    (CLAUDE.md 「장치와 그 발동 조건은 같은 커밋에서 정한다」).
  *    기준점은 **직전 버전 태그**다: bump-version 이 배포마다 태그를 채므로,
  *    HEAD^ 에서 보이는 최신 태그가 「지난 배포」다(이번 배포의 태그는 HEAD 에 있어 빠진다). */
+/* ⚠ 알림은 **한 번만** 쓴다 — stdout 에 JSON 객체를 두 번 쓰면 통째로 파싱에 실패해
+ *   두 알림이 **둘 다** 사라진다(실패 방향은 여기서도 「조용함」이다). 그래서 모아서 한 번. */
+const 알림들 = [];
+if (검수알림) 알림들.push(검수알림);
+
 try {
   const 점검 = require(path.join(ROOT, 'tools', '실행층점검.js'));
   let range;
@@ -282,18 +312,19 @@ try {
     range = ''; // 태그가 없으면 도구의 기본값(마지막 커밋)으로 — 그 사실은 도구가 스스로 밝힌다
   }
   const 글 = 점검.체크리스트(점검.훑기({ range, 프로젝트: PROJ }));
-  if (글) {
-    process.stdout.write(JSON.stringify({
-      systemMessage: 글,
-      hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: 글 },
-    }));
-  }
+  if (글) 알림들.push(글);
 } catch (e) {
   // 이 검사가 죽어도 배포는 막지 않는다(할 일 목록이지 게이트가 아니다). 단 조용히 넘기지도 않는다.
+  알림들.push('[실행층점검] 실행 실패 — 배포 뒤 필수 실행 목록을 **못 만들었다**: '
+    + String((e && e.message) || e).split('\n')[0]
+    + '\n통과가 아니라 미실행이다. 폼·드라이브를 만졌다면 직접 확인할 것(F081).');
+}
+
+if (알림들.length) {
+  const 글 = 알림들.join('\n\n');
   process.stdout.write(JSON.stringify({
-    systemMessage: '[실행층점검] 실행 실패 — 배포 뒤 필수 실행 목록을 **못 만들었다**: '
-      + String((e && e.message) || e).split('\n')[0]
-      + '\n통과가 아니라 미실행이다. 폼·드라이브를 만졌다면 직접 확인할 것(F081).',
+    systemMessage: 글,
+    hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: 글 },
   }));
 }
 process.exit(0);

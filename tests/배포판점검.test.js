@@ -170,8 +170,18 @@ test('알림 훅은 **차단하지 않는다** — push 뒤에 뜨는 알림이 
     const r = spawnSync(process.execPath, [훅], {
       input: JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'cd crewcard && clasp push --force' }, cwd: ROOT }),
       encoding: 'utf8',
-      // APPDATA·PATH 를 비워 clasp 조회를 실패시킨다 → 확인 불가 → **반드시 알린다**
-      env: { ...process.env, CLAUDE_PROJECT_DIR: ROOT, APPDATA: 빈곳, PATH: path.dirname(process.execPath) },
+      /* APPDATA·PATH 를 비워 clasp 조회를 실패시킨다 → 확인 불가 → **반드시 알린다**
+       *
+       * 🔑 PATH 는 `빈곳` 이어야 한다 — 2026-08-05 이종 검수(Codex)가 잡은 결함:
+       *   여기 원래 `path.dirname(process.execPath)` 가 있었는데, **POSIX(nvm·Homebrew)에서는
+       *   그 폴더가 npm 전역 바이너리 자리와 같다.** 즉 이 픽스처가 유호님의 **실제 로그인된
+       *   clasp 을 실행**해 라이브 배포 상태를 조회하고, 그 결과에 따라 `ok`/`stale`/`unknown`
+       *   이 갈려 단언이 기계마다 달라진다. 이 PC(Windows)는 node 와 npm 전역이 다른 폴더라
+       *   **안 터졌다** — 로컬 초록이 방어가 안 되는 자리의 표본이다(CLAUDE.md 「repo 밖 환경에
+       *   기대는 검사는 CI에서 깨진다」).
+       *   node 는 위에서 `process.execPath` 절대경로로 띄우고 훅도 cmd 를 ComSpec 절대경로로
+       *   부르므로, PATH 를 비워도 **clasp 만** 못 찾는다 — 정확히 이 테스트가 원하는 상태다. */
+      env: { ...process.env, CLAUDE_PROJECT_DIR: ROOT, APPDATA: 빈곳, PATH: 빈곳 },
       timeout: 60000,
     });
     assert.strictEqual(r.status, 0, `알림 훅이 0 아닌 코드로 끝났다: ${r.stderr}`);

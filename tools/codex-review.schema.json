@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["요약", "지적"],
+  "properties": {
+    "요약": {
+      "type": "string",
+      "description": "변경 전체에 대한 한두 문장 판정. 문제가 없으면 없다고 명확히 쓴다."
+    },
+    "지적": {
+      "type": "array",
+      "description": "발견한 결함만. 스타일 취향은 넣지 않는다. 없으면 빈 배열.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["등급", "파일", "라인", "제목", "근거", "수정방향"],
+        "properties": {
+          "등급": {
+            "type": "string",
+            "enum": ["P0", "P1", "P2", "P3"],
+            "description": "P0=라이브 데이터 손상·보안. P1=배포 전 반드시. P2=고쳐야 하나 배포는 가능. P3=사소."
+          },
+          "파일": { "type": "string", "description": "저장소 상대 경로" },
+          "라인": { "type": "integer", "description": "1-기반 행 번호. 모르면 0." },
+          "제목": { "type": "string", "description": "한 줄 요약" },
+          "근거": {
+            "type": "string",
+            "description": "어떤 입력·상태에서 무엇이 잘못되는지 구체적으로. 추측이면 추측이라고 밝힌다."
+          },
+          "수정방향": { "type": "string", "description": "권장 수정. 코드를 고치지는 않는다." }
+        }
+      }
+    }
+  }
+}
