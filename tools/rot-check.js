@@ -150,6 +150,25 @@ function nblmDriveSection() {
   return { present: true, failed, last, 성공일, 지난날 };
 }
 
+function toilSection() {
+  /* 손일 장부(docs/_ops/손일장부.md)가 자라고 있는지.
+   *
+   * 다른 섹션과 성격이 다르다 — 여기서 썩는 것은 파일이 아니라 **기억**이다.
+   * 손일을 없애는 순간 「그게 얼마나 자주·몇 분이었나」를 잴 마지막 기회가 지나가고,
+   * 그 뒤에는 아무도 되살릴 수 없다(소급 불가). 그래서 검사 대상은 「낡았나」가 아니라
+   * **「기입 통로가 아직 도는가」**다.
+   *
+   * ⚠ 매 릴리스가 손일을 없애는 것은 아니므로 임계를 날짜로 둔다 — 버전 수로 재면
+   *   개원 전처럼 릴리스가 잦은 구간에서 경고가 노이즈가 되고, 노이즈가 되면 꺼진다.
+   * 장부가 없거나 한 줄도 없으면 부패가 아니다(아직 안 쓰는 것). */
+  const T = require('./toil.js');
+  if (!fs.existsSync(T.ledgerPath())) return { present: false };
+  const { rows } = T.read();
+  const idle = T.daysSinceLast(rows);
+  const limit = Number(process.env.SYNK_TOIL_IDLE_DAYS || 30);
+  return { present: true, count: rows.length, idle, limit, stale: idle !== null && idle >= limit };
+}
+
 /* ── 판정 ────────────────────────────────────────────────────────────────── */
 // 🔴 = 무언가가 이미 거짓을 말하고 있다(고치기 전엔 그래프·문서가 거짓말한다)
 // ⚠  = 아직 거짓은 아니지만 방치하면 🔴이 된다
@@ -162,12 +181,13 @@ function collect() {
   const har = attempt('harness', harnessSection);
   const nbl = attempt('notebooklm', notebooklmSection);
   const nbd = attempt('notebooklm-drive', nblmDriveSection);
+  const toi = attempt('toil', toilSection);
 
   const red = [];
   const warn = [];
   const notes = [];
 
-  for (const s of [mem, doc, fri, har, nbl, nbd]) {
+  for (const s of [mem, doc, fri, har, nbl, nbd, toi]) {
     if (!s.ok) red.push({ kind: '검사기 고장', text: `${s.name} 검사가 실패했다 — ${s.error}` });
   }
 
@@ -224,6 +244,15 @@ function collect() {
           'PC가 꺼져 있었다면 정상이지만, 켜져 있었다면 예약 작업을 확인하라(schtasks /query /tn SYNK_NotebookLM).',
       });
     }
+  }
+
+  if (toi.ok && toi.value.present && toi.value.stale) {
+    warn.push({
+      kind: '손일 장부 정체',
+      text: `마지막 기입이 ${toi.value.idle}일 전(기준 ${toi.value.limit}일) — 그 사이 사람 일을 없앤 릴리스가 정말 없었나. ` +
+        '없앤 뒤에는 「그게 얼마나 자주였나」를 다시 못 잰다(소급 불가). ' +
+        '기입: node tools/bump-version.js --desc "..." --toil "없앤 손일::주기::대체 장치"',
+    });
   }
 
   if (fri.ok && fri.value.open.length >= EVOLVE_THRESHOLD) {
@@ -348,4 +377,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { collect, render, dueNow, stamp, stateFile, harnessSection, EVOLVE_THRESHOLD };
+module.exports = { collect, render, dueNow, stamp, stateFile, harnessSection, toilSection, EVOLVE_THRESHOLD };
