@@ -5,7 +5,7 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 
 // require 자체가 네트워크·키 파일을 건드리면 이 줄에서 죽는다 — 그것이 첫 검사다.
-const { 키추출, 판정추출, 토큰대조 } = require('../tools/몽골어대조.js');
+const { 키추출, 판정추출, 문법파싱, 파일분해, 재시도가능, 토큰대조 } = require('../tools/몽골어대조.js');
 
 test('키추출: BOM·개행·여분 공백을 벗기고 AQ. 형식을 집는다', () => {
   assert.strictEqual(키추출('﻿  AQ.FAKE0FAKE0FAKE0FAKE0FAKE0\n'), 'AQ.FAKE0FAKE0FAKE0FAKE0FAKE0');
@@ -35,18 +35,60 @@ test('판정추출: 형식을 안 지킨 답·빈 답은 null — 통과가 아�
   assert.strictEqual(판정추출(undefined), null);
 });
 
+test('문법파싱: 구조화 JSON 을 1순위로 읽는다 (문제문장까지)', () => {
+  const r = 문법파싱('{"판정":"파손","이유":"어미 결합 오류","문제문장":"Өнөөдөр …"}');
+  assert.deepStrictEqual(r, { 판정: '파손', 이유: '어미 결합 오류', 문제문장: 'Өнөөдөр …' });
+});
+
+test('문법파싱: JSON 이 깨지면 산문 정규식으로 폴백한다', () => {
+  const r = 문법파싱('판정: 어색 — 나열이 부자연스럽다');
+  assert.strictEqual(r.판정, '어색');
+});
+
+test('문법파싱: JSON 인데 판정 값이 등급 밖이면 폴백·실패 순으로 떨어진다 (모르는 값을 통과로 안 읽는다)', () => {
+  assert.strictEqual(문법파싱('{"판정":"양호","이유":"…"}'), null);
+  assert.strictEqual(문법파싱(''), null);
+});
+
+test('파일분해: 한국어 / --- / 몽골어 3부를 가른다 (CRLF·BOM 포함)', () => {
+  const r = 파일분해('﻿점수를 넘어.\r\n---\r\nОнооноос давж.\r\n');
+  assert.deepStrictEqual(r, { 원문: '점수를 넘어.', 번역: 'Онооноос давж.' });
+});
+
+test('파일분해: 구분줄이 없거나 블록이 비면 null — 반쪽을 조용히 검문하지 않는다', () => {
+  assert.strictEqual(파일분해('한국어만 있는 파일'), null);
+  assert.strictEqual(파일분해('한국어\n---\n   '), null);
+  assert.strictEqual(파일분해('\n---\n몽골어'), null);
+});
+
+test('파일분해: 번역 블록 안의 --- 는 구분자가 아니라 본문이다 (첫 구분자만 가른다)', () => {
+  const r = 파일분해('원문\n---\n번역 첫 줄\n---\n번역 둘째 줄');
+  assert.strictEqual(r.번역, '번역 첫 줄\n---\n번역 둘째 줄');
+});
+
+test('재시도가능: 429·500·503 만 재시도 — 400(요청 결함)·401(키 결함)·404(모델 없음)는 즉시 실패', () => {
+  assert.ok(재시도가능(429) && 재시도가능(500) && 재시도가능(503));
+  assert.ok(!재시도가능(400) && !재시도가능(401) && !재시도가능(404));
+});
+
 test('토큰대조: 동일 문장이면 표식 0', () => {
   const r = 토큰대조('오늘 그 문 앞에', '오늘 그 문 앞에');
   assert.strictEqual(r.다른토큰, 0);
-  assert.ok(!r.원문표시.includes('«') && !r.역번역표시.includes('«'));
+  assert.ok(!r.원문표시.includes('⟦') && !r.역번역표시.includes('⟦'));
 });
 
 test('토큰대조: 달라진 토큰만 양쪽에서 표식된다', () => {
   const r = 토큰대조('오늘 그 문 앞에 서 볼래?', '오늘 그 문의 앞에 서라 어떻게 하나?');
   assert.ok(r.다른토큰 > 0);
-  assert.ok(r.원문표시.includes('«서»') || r.원문표시.includes('«볼래?»'));
-  assert.ok(r.역번역표시.includes('«문의»') && r.역번역표시.includes('«서라»'));
+  assert.ok(r.원문표시.includes('⟦서⟧') || r.원문표시.includes('⟦볼래?⟧'));
+  assert.ok(r.역번역표시.includes('⟦문의⟧') && r.역번역표시.includes('⟦서라⟧'));
   assert.ok(r.원문표시.startsWith('오늘 그 '), '같은 머리는 표식 없이 남아야 한다');
+});
+
+test('토큰대조: 기본 표식은 «» 가 아니다 — «» 는 몽골어 표준 인용부호라 본문과 충돌한다', () => {
+  const r = 토큰대조('그 «Синк» 학원', '그 다른 학원');
+  assert.ok(r.원문표시.includes('⟦«Синк»⟧'), '본문의 «» 는 그대로 두고 ⟦⟧ 로 감싼다');
+  assert.ok(!r.원문표시.includes('««'), '표식이 인용부호와 겹쳐 이중 «« 를 만들면 안 된다');
 });
 
 test('토큰대조: 표식 함수를 주면 그걸 쓴다 (TTY 색상 주입 자리)', () => {
