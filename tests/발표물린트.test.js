@@ -71,6 +71,20 @@ test('🔑 DM Mono 에 한글이 들어가면 잡는다 (글리프가 없어 인
   assert.match(v.out, /DM Mono/);
 });
 
+test('🔑 「졌다」는 단독 낱말일 때만 잡는다 — 「즐거워졌다」를 벌주지 않는다', () => {
+  // 실측: 상담 브로셔의 핀란드 인용문 「학교가 더 즐거워졌다」가 부분일치로 금칙어에 걸렸다.
+  // 가드가 실작업을 벌주면 사람이 가드를 끈다. 탐지력은 유지하고 거짓양성만 없앤다.
+  const ok = run(page({ text: '학생들이 “학교가 더 즐거워졌다”고 응답했습니다. 성적도 좋아졌다고 합니다.' }));
+  assert.strictEqual(ok.code, 0, `정상 표현을 금칙어로 잡았다:\n${ok.out}`);
+
+  const bad = run(page({ text: '지난 시합에서 졌다.' }));
+  assert.strictEqual(bad.code, 1, '진짜 금칙어를 놓쳤다 — 거짓양성을 없애다 탐지력까지 없애면 안 된다');
+  assert.match(bad.out, /졌다/);
+
+  assert.strictEqual(run(page({ text: '이미 늦었다.' })).code, 1, '「늦었다」를 놓쳤다');
+  assert.strictEqual(run(page({ text: '준비가 깊어졌다.' })).code, 0, '「깊어졌다」를 잡았다');
+});
+
 test('금칙어 8종과 폐기 표기를 잡는다', () => {
   assert.strictEqual(run(page({ text: '실패해도 괜찮습니다' })).code, 1, '금칙어를 통과시켰다');
   assert.strictEqual(run(page({ text: 'Define → Build → Execute 사이클' })).code, 1, '폐기 사이클을 통과시켰다');
