@@ -64,9 +64,17 @@ html,body{
   color:var(--cream);
 }
 .plate-l{display:flex;flex-direction:column;gap:1.6mm}
-.lockup{
+
+/* 워드마크 W5 「syn<」 — 도형 정본 = docs/발표물/로고/후보시트.html (08-04 유호님 확정 1순위).
+   좌표계 0 0 300 110 · 기준선 y=86 · 글자 72/600 · 「<」 는 글리프가 아니라 패스라 안 깨진다.
+   정본 시트는 아직 구 팔레트(#FDFCF8·#FF6D00)라 v1.3 매핑으로 갈아 넣는다 → Cream · Coral. */
+.lockup{display:flex;align-items:center;gap:2.6mm}
+.wm{height:8.2mm;width:auto;display:block}
+.wm text{font-family:var(--mn)}
+.lockup-div{width:.3mm;height:5mm;background:var(--cream);opacity:.3;border-radius:.3mm}
+.lockup-t{
   font-family:var(--mono); font-weight:500;
-  font-size:2.5mm; letter-spacing:.34em; color:var(--coral);
+  font-size:2.5mm; letter-spacing:.34em; color:var(--cream); opacity:.8;
 }
 .title{
   font-family:var(--mn); font-weight:700;
@@ -252,7 +260,14 @@ html,body{
   <!-- ═══ 머리 판 ═══ -->
   <div class="plate">
     <div class="plate-l">
-      <div class="lockup">SYNK &middot; LAB</div>
+      <div class="lockup">
+        <svg class="wm" viewBox="-8 -2 181 116" role="img" aria-label="syn&lt;">
+          <text x="0" y="86" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
+          <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
+        </svg>
+        <span class="lockup-div"></span>
+        <span class="lockup-t">SYNK &middot; LAB</span>
+      </div>
       <div class="title">Элсэлтийн өргөдөл</div>
       <div class="title-en">ENROLLMENT APPLICATION FORM &middot; V.02 / 2026</div>
       <div class="tagline">NEUROSCIENCE-BASED KOREAN LANGUAGE ACADEMY &middot; ULAANBAATAR &middot; MN</div>
