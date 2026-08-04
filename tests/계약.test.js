@@ -44,15 +44,24 @@ test('골든 판정 문자열이 계약과 같다 (Glide Choice 옵션 표가 �
     '판정 문자열이 갈라졌다 — 이 값은 Glide 화면의 선택지와 문자 단위로 묶여 있어 조용히 미응답 처리된다');
 });
 
-test('픽스처 내보내기가 계약이 약속한 필드를 전부 만든다', () => {
-  // exportGoldenFixture_가 push하는 객체의 키를 소스에서 뽑는다.
-  // 이 항목이 계약보다 좁아지면 SYNK-talk의 채점기가 없는 필드를 읽어 조용히 0점 처리한다.
-  const i = 수집.indexOf('function exportGoldenFixture_(');
-  assert.notEqual(i, -1, 'exportGoldenFixture_를 못 찾았다');
-  const 본문 = 수집.slice(i, 수집.indexOf('\n}\n', i));
-  const j = 본문.indexOf('항목.push({');
-  assert.notEqual(j, -1, '픽스처 항목을 만드는 자리를 못 찾았다');
-  const 블록 = 본문.slice(j, 본문.indexOf('});', j));
+/* ⚠ 아래 두 검사는 **특정 함수에 붙이지 않는다.**
+ *   08-04 실측: 처음엔 `exportGoldenFixture_` 본문을 잘라서 그 안을 봤는데, 타 세션이 항목
+ *   조립부를 **다른 함수로 분리**하자 앵커가 통째로 죽었다("자리를 못 찾았다"). 이 저장소가
+ *   이미 적어 둔 교훈 그대로다 — **문구 앵커는 문구가 바뀌면 죽는다.**
+ *   그래서 「어느 함수인가」가 아니라 **「파일 어딘가에 픽스처를 만드는 자리」**로 찾는다. */
+function 블록찾기(시작표식, 끝표식) {
+  const j = 수집.indexOf(시작표식);
+  assert.notEqual(j, -1,
+    `픽스처를 만드는 자리를 못 찾았다(${시작표식}) — 조립 방식이 바뀌었다면 이 테스트도 함께 옮겨라`);
+  const e = 수집.indexOf(끝표식, j);
+  assert.notEqual(e, -1, `${시작표식} 의 끝(${끝표식})을 못 찾았다`);
+  return 수집.slice(j, e);
+}
+
+test('픽스처 항목이 계약이 약속한 필드를 전부 만든다', () => {
+  // 계약보다 좁아지면 SYNK-talk 채점기가 없는 필드를 읽고 **폴백이 조용히 통과시킨다**
+  // (`fx.포함 || []` 형태라 「검사 통과」와 「검사 안 함」이 같은 모양이 된다 — v9.173 실사고).
+  const 블록 = 블록찾기('항목.push({', '});');
   for (const f of 계약.픽스처_항목필드) {
     assert.ok(new RegExp(`(^|[\\s{,])${f}\\s*:`, 'm').test(블록),
       `픽스처 항목에 계약 필드 「${f}」가 없다 — 채점기가 그 검사를 조용히 건너뛴다`);
@@ -60,10 +69,9 @@ test('픽스처 내보내기가 계약이 약속한 필드를 전부 만든다',
 });
 
 test('픽스처 최상위 필드도 계약대로 만든다', () => {
-  const i = 수집.indexOf('function exportGoldenFixture_(');
-  const 본문 = 수집.slice(i, 수집.indexOf('\n}\n', i));
+  const 블록 = 블록찾기('const doc = {', '\n  };');
   for (const f of 계약.픽스처_최상위필드) {
-    assert.ok(new RegExp(`(^|[\\s{,])${f}\\s*:`, 'm').test(본문) || 본문.includes(`doc.${f}`),
+    assert.ok(new RegExp(`(^|[\\s{,])${f}\\s*:`, 'm').test(블록) || 수집.includes(`doc.${f}`),
       `픽스처 최상위에 계약 필드 「${f}」가 없다`);
   }
 });
