@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["요약", "체크"],
+  "properties": {
+    "요약": { "type": "string", "description": "전수 체크 총평 1~2문장" },
+    "체크": {
+      "type": "array",
+      "description": "변경이 만들거나 바꾼 기능 하나당 한 항목 — 빠뜨린 기능이 없어야 한다",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["기능", "판정", "근거"],
+        "properties": {
+          "기능": { "type": "string" },
+          "판정": { "type": "string", "enum": ["정상", "의심", "깨짐"], "description": "정상=의도대로 동작 · 의심=조건부/불확실 · 깨짐=의도대로 동작하지 않음" },
+          "근거": { "type": "string", "description": "코드의 어느 지점이 왜 그 판정인지" }
+        }
+      }
+    }
+  }
+}

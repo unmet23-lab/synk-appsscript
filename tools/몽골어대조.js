@@ -18,9 +18,13 @@
 
 'use strict';
 const fs = require('fs');
+// 모델·사고 수준은 모델정책이 정본이다(유호님 확정 "flash high" · 2026-08-05) — 여기 하드코딩하지 않는다.
+// 이 파일의 「2.5-flash 는 신규 키에 404」 실측이 그 정본의 근거 중 하나로 들어가 있다.
+const 정책 = require('./모델정책.js');
 
 const 기본키경로 = 'C:/Users/q1212/SYNK_보안/제미나이.txt';
-const 기본모델 = 'gemini-3.6-flash'; // 2.5-flash 는 신규 키에 404 (08-05 실측)
+const 제미나이픽 = 정책.제미나이설정(); // 기본 = gemini-3.6-flash / thinking_level=high
+const 기본모델 = 제미나이픽.model;
 const BASE = 'https://generativelanguage.googleapis.com/v1beta';
 const 호출타임아웃 = 60_000;
 const 재시도지연 = [5_000, 15_000]; // 무료 티어 분당 상한(429)·순간 장애(500/503)용
@@ -114,8 +118,15 @@ async function 제미나이(key, model, prompt, opts = {}) {
         headers: { 'x-goog-api-key': key, 'content-type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          ...(opts.schema
-            ? { generationConfig: { responseMimeType: 'application/json', responseSchema: opts.schema } }
+          // 사고 수준은 정책 픽의 모델일 때만 싣는다 — env GEMINI_MODEL 로 딴 모델을 골랐으면
+          // 그 모델이 이 파라미터를 받는지 모르므로 안 보낸다(조용한 400 방지).
+          ...(opts.schema || opts.thinking
+            ? {
+                generationConfig: {
+                  ...(opts.schema ? { responseMimeType: 'application/json', responseSchema: opts.schema } : {}),
+                  ...(opts.thinking ? { thinkingConfig: { thinkingLevel: opts.thinking } } : {}),
+                },
+              }
             : {}),
         }),
         signal: AbortSignal.timeout(호출타임아웃),
@@ -171,19 +182,21 @@ async function main() {
     process.exit(1);
   }
   const model = process.env.GEMINI_MODEL || 기본모델;
+  const thinking = model === 제미나이픽.model ? 제미나이픽.thinking_level : undefined;
   const 색 = process.stdout.isTTY ? (t) => `\x1b[31m${t}\x1b[0m` : undefined;
 
   // 직렬 호출 — 무료 티어 분당 상한을 나란히 때리지 않는다. 문법(판정층)이 먼저다.
   const 문법답 = await 제미나이(key, model,
     `다음 몽골어 글의 문법과 자연스러움만 평가해라. 원문·의도는 모른다고 가정한다.\n여러 문장이면 전부 보고 가장 나쁜 문장 기준으로 판정한다.\n문제가 있으면 문제문장 필드에 그 문장을 원문 그대로 담아라.\n\n${mn}`,
-    { schema: 문법스키마 });
+    { schema: 문법스키마, thinking });
   const 역번역 = await 제미나이(key, model,
-    `다음 몽골어를 한국어로 "직역"해라. 자연스럽게 다듬지 말고 어색하면 어색한 채로, 문장 수와 순서를 그대로 유지해 옮겨라. 번역문만 출력.\n\n${mn}`);
+    `다음 몽골어를 한국어로 "직역"해라. 자연스럽게 다듬지 말고 어색하면 어색한 채로, 문장 수와 순서를 그대로 유지해 옮겨라. 번역문만 출력.\n\n${mn}`,
+    { thinking });
 
   const 문법 = 문법파싱(문법답);
   const 역실패 = !역번역;
 
-  console.log(`모델: ${model} · 무료 티어(학생 개인정보 금지)`);
+  console.log(`모델: ${model}${thinking ? ' · thinking=' + thinking : ''} · 무료 티어(학생 개인정보 금지)`);
   console.log('\n■ 문법·자연스러움 (원문 안 보여주고 채점)');
   if (문법) {
     console.log(`  판정: ${문법.판정}${문법.이유 ? ' — ' + 문법.이유 : ''}`);
