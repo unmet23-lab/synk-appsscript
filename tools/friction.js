@@ -9,6 +9,7 @@
 //   node tools/friction.js                          집계
 //   node tools/friction.js add 실수 "설명"           신호 추가(오늘 날짜, ID 자동)
 //   node tools/friction.js add 교정 "설명" --date 2026-08-01
+//   node tools/friction.js add 실수 "설명" --해소 "무엇이 막았나"   이미 고치고 신고할 때(F107)
 //   node tools/friction.js resolve F006 "무엇이 막았나"
 //   node tools/friction.js --open                   살아있는 신호만
 'use strict';
@@ -120,7 +121,28 @@ function allocateId(rows) {
   process.exit(1);
 }
 
-function add(kind, signal, date) {
+/* 신고문이 **이미 착지한 해소를 스스로 지목**하는가 — 지목하면 그 문구를 돌려준다.
+ *
+ * 왜 있나 (F107 · 2026-08-05): 이 저장소의 정상 순서는 「고치고 → 신고」다.
+ *   그러면 수리 커밋에는 아직 없는 번호가 들어갈 수 없고(행이 없으니까),
+ *   번호를 다는 유일한 커밋은 **신고 커밋**인데 friction-close-guard 는 신고 커밋을 면제한다.
+ *   → 번호를 단 커밋과 행을 안 건드린 커밋이 **영원히 겹치지 않아** 가드가 원리상 못 짖는다.
+ *   실제로 F107 은 신고 제목에 「해소 장치 동반: b7a2a18·fff91f0」이라 적고도 칸은 빈 채 남았다.
+ *
+ * 이 축은 세 번째다(F092 안 고치고 닫음 · F096 고치고 안 닫음 · F107 가드가 있는데 못 봄) —
+ *   CLAUDE.md 신뢰성: 3번째는 **원인을 쓸 수 없게** 만든다. 그래서 탐지가 아니라 통로를 바꾼다.
+ *   판별식은 여기 하나만 두고 훅이 require 한다(같은 판정을 두 곳에 적으면 갈라진다 · 맹점 ④).
+ *
+ * ⚠ 왜 이 좁은 문구인가 — 장부 108행 전수 실측으로 골랐다.
+ *   「착지한 sha 가 있으면」은 거짓양성 12건(신고문은 **원인** 커밋을 늘 지목한다),
+ *   「해소 계열 낱말 + 착지 sha」는 1건 + 아직 열린 F105 를 오지목했다. 이 규칙만 0건이다.
+ *   좁아서 표기를 바꾸면 샌다 — 그래서 이건 **보조**고, 본체는 아래 `--해소` 통로다. */
+function 해소주장(signal) {
+  const m = /해소\s*[=:]|해소\s*장치/.exec(String(signal || ''));
+  return m ? m[0].trim() : null;
+}
+
+function add(kind, signal, date, 해소) {
   if (!KINDS.includes(kind)) {
     console.error(`[friction] 종류는 ${KINDS.join('·')} 중 하나여야 한다 (받은 값: ${kind})`);
     process.exit(1);
@@ -131,9 +153,32 @@ function add(kind, signal, date) {
   }
   // '|'는 표를 깨뜨린다 — 삼키지 말고 치환해서 장부가 파싱 불가가 되는 것을 막는다
   const safe = signal.replace(/\|/g, '/').replace(/\n/g, ' ').trim();
+  const 해소safe = String(해소 || '').replace(/\|/g, '/').replace(/\n/g, ' ').trim();
+
+  /* 「고치고 → 신고」인데 해소 칸을 비우는 조합을 여기서 막는다 — 그게 F107 이 샌 자리다. */
+  const 주장 = 해소주장(safe);
+  if (주장 && !해소safe) {
+    console.error(
+      `[friction] 이 신고문은 이미 착지한 해소를 스스로 지목한다("${주장}") — 그런데 해소 칸은 빈 채 행이 태어난다.\n`
+      + '  그 조합이 F107 이 새어 나간 자리다: 번호를 다는 커밋이 신고 커밋 하나뿐이라\n'
+      + '  friction-close-guard 는 그 커밋을 면제하고, 열린 행은 아무도 못 본 채 남는다.\n'
+      + '\n'
+      + '  → 이미 고쳤으면 한 번에 적는다(행이 해소된 채로 태어난다):\n'
+      + `     node tools/friction.js add ${kind} "신고문" --해소 "무엇이 실제로 막았나"\n`
+      + '  → 아직 안 고쳤으면 신고문에서 해소 얘기를 빼고, 고친 뒤에 닫는다:\n'
+      + `     node tools/friction.js add ${kind} "신고문(해소 언급 없이)"\n`
+      + '     node tools/friction.js resolve F0NN "무엇이 막았나"',
+    );
+    process.exit(1);
+  }
+
   const { lines, rows } = read();
   const id = allocateId(rows);
-  const row = `| ${id} | ${date || today()} | ${kind} | ${safe} | |`;
+  /* 빈 해소 칸은 예전 그대로 `| |` 한 칸으로 둔다 — 템플릿에 빈 문자열을 끼우면 `|  |` 가 되고,
+   * 장부 형식을 그대로 읽는 검사·도구가 조용히 갈라진다(회귀가 실제로 잡았다). */
+  const row = 해소safe
+    ? `| ${id} | ${date || today()} | ${kind} | ${safe} | ${해소safe} |`
+    : `| ${id} | ${date || today()} | ${kind} | ${safe} | |`;
   // 표의 마지막 행 뒤에 넣는다(파일 끝이 아니라) — 아래에 다른 서술이 붙어도 안전하게
   let at = lines.length;
   for (let i = lines.length - 1; i >= 0; i--) {
@@ -142,6 +187,7 @@ function add(kind, signal, date) {
   lines.splice(at, 0, row);
   fs.writeFileSync(LEDGER, lines.join('\n'), 'utf8');
   console.log(`  + ${id}  ${kind}  ${safe}`);
+  if (해소safe) console.log(`  ✔ ${id} 해소 → ${해소safe}   (신고와 동시에 닫았다 — 열린 채 남지 않는다)`);
 }
 
 function resolve(id, by) {
@@ -224,10 +270,21 @@ function main() {
   }
   const cmd = args[0];
   if (cmd === 'add') {
-    const di = args.indexOf('--date');
-    const date = di !== -1 ? args[di + 1] : null;
-    const rest = di !== -1 ? args.slice(1, di) : args.slice(1);
-    add(rest[0], rest.slice(1).join(' '), date);
+    /* `--date` 는 토큰 1개, `--해소` 는 다음 플래그 전까지 전부 — 신고문과 같은 규칙이라
+     * 따옴표를 빠뜨려도 말이 잘리지 않는다(셸이 둘인 저장소다 · CLAUDE.md 실행). */
+    const 남은 = args.slice(1);
+    let date = null; let 해소 = null; const 본문 = [];
+    for (let i = 0; i < 남은.length; i++) {
+      if (남은[i] === '--date') { date = 남은[++i] || null; continue; }
+      if (남은[i] === '--해소') {
+        const 조각 = [];
+        while (i + 1 < 남은.length && !/^--/.test(남은[i + 1])) 조각.push(남은[++i]);
+        해소 = 조각.join(' ');
+        continue;
+      }
+      본문.push(남은[i]);
+    }
+    add(본문[0], 본문.slice(1).join(' '), date, 해소);
   } else if (cmd === 'resolve') {
     resolve(args[1], args.slice(2).join(' '));
   } else {
@@ -236,4 +293,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { read, nextId, allocateId, seenElsewhere, LEDGER, KINDS, TAG_PREFIX };
+module.exports = { read, nextId, allocateId, seenElsewhere, 해소주장, LEDGER, KINDS, TAG_PREFIX };
