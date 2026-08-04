@@ -83,6 +83,15 @@ function lint(file) {
     .map((m) => m[1]).filter((t) => /[ㄱ-힣Ѐ-ӿ]/.test(t));
   if (monoBad.length) bad.push(`DM Mono 에 한글·키릴: ${monoBad.join(' | ')}`);
 
+  // 이모지를 그대로 인쇄하지 않는다(정본 ■9) — 단색 라인 아이콘으로 치환한다.
+  //
+  // ⚠ 범위로 잡으면 안 된다. 처음 코드포인트 구간(2600–27BF)으로 검사했더니
+  //   ☐(체크박스)·→(화살표)·▷ 같은 **활자**까지 잡아 멀쩡한 산출물 3개가 빨개졌다.
+  //   가드가 실작업을 벌주면 사람이 가드를 끈다. 유니코드 속성으로 「그림문자」만 고른다.
+  //   Extended_Pictographic = 그림으로 렌더되는 문자(📷 ✂ ⛔). ☐ → ▷ · 는 여기 안 든다.
+  const emoji = [...new Set(body.match(/\p{Extended_Pictographic}/gu) || [])];
+  if (emoji.length) bad.push(`인쇄면에 이모지: ${emoji.join(' ')} (단색 라인 아이콘으로 바꿀 것)`);
+
   // 구 서체가 CSS 스택에 남아 있는지도 본다(본문 텍스트엔 안 보이지만 렌더는 바뀐다)
   const deadFont = ['Pretendard', 'Noto Sans KR', 'KoPubWorld'].filter((f) => css.includes(f));
   if (deadFont.length) bad.push(`CSS 스택에 구 서체: ${deadFont.join(', ')}`);
