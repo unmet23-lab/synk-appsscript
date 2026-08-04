@@ -14,6 +14,7 @@ const assert = require('node:assert');
 const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
+const { execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const 점검 = require(path.join(ROOT, 'tools', '실행층점검.js'));
@@ -108,6 +109,83 @@ test('체크리스트에 무엇을·왜 실행해야 하는지가 다 있다', (
   assert.match(글, /면접URL틀보증_/, '실행할 함수 이름이 없다');
   assert.match(글, /F081/, '근거가 없다');
   assert.match(글, /두 번 돌려/, '멱등이 수렴이 아니었다는 교훈(재실행 확인)이 빠졌다');
+});
+
+// ── 🔴 실행하라는 이름이 실행 가능한 이름인가 ([v9.184] 실측) ──────────────
+
+test('🔴 안쪽 헬퍼가 바깥 함수 이름을 가로채지 않는다 — 실행 못 하는 이름을 주면 목록이 죽는다', () => {
+  /* 실측: `systemWatchdog` 안의 변경을 보고 **`add()` 를 실행하라**고 답했다. `add` 는 그 함수
+   *   안쪽 보조 함수라 Apps Script 편집기 ▶ 로 부를 수가 없다(같은 파일에 둘이라 구별도 안 된다).
+   *   원인은 안쪽 선언이 구간을 열어 **바깥 함수 구간이 첫 헬퍼 직전에서 끊긴** 것이다. */
+  const dir = 픽스처({
+    'x.js': [
+      'function 배치_() {',              // 1  ← 실행 가능한 이름은 이것뿐이다
+      '  function add(ok) { return ok; }', // 2  안쪽 헬퍼
+      '  const 꾸미기 = () => 1;',         // 3  안쪽 화살표
+      '  DriveApp.getFileById(b);',        // 4  ← API 는 헬퍼 **뒤**에 있다
+      '}',                                 // 5
+    ].join('\n'),
+  });
+  const 항목 = 점검.파일훑기(path.join(dir, 'x.js'), 'x.js', null);
+  assert.equal(항목.length, 1, `DriveApp 을 못 찾았다: ${JSON.stringify(항목)}`);
+  assert.equal(항목[0].함수, '배치_',
+    `안쪽 헬퍼(${항목[0].함수})로 귀속됐다 — 편집기에서 부를 수 없는 이름이라 체크리스트가 못 쓰게 된다`);
+});
+
+test('🔑 실저장소 — systemWatchdog 이 안쪽 add() 로 쪼개지지 않는다 (거짓양성)', () => {
+  /* 커밋에 기대지 않는다(그 커밋이 흘러가면 검사가 죽는다) — **구간 계산 자체**를 실파일로 잰다.
+   * 이 파일은 안쪽 `add` 가 두 개(정확히 이 결함이 난 자리)라 실저장소 반례로 딱 맞다. */
+  const src = fs.readFileSync(path.join(ROOT, '엔진_콘텐츠AI.js'), 'utf8');
+  const 구간 = 점검.함수구간(점검.주석지우기(src).split('\n'));
+  assert.ok(구간.some((f) => f.이름 === 'systemWatchdog'), '최상위 함수 systemWatchdog 을 못 찾았다');
+  assert.ok(!구간.some((f) => f.이름 === 'add'), '안쪽 헬퍼 add 가 구간을 열었다 — 바깥 함수 본문을 가로챈다');
+  const w = 구간.find((f) => f.이름 === 'systemWatchdog');
+  const 다음 = 구간.filter((f) => f.s > w.s).sort((a, b) => a.s - b.s)[0];
+  assert.ok(w.e > w.s + 20, `systemWatchdog 구간이 ${w.e - w.s}줄로 잘렸다 — 첫 헬퍼에서 끊긴 모양이다`);
+  assert.ok(!다음 || 다음.s > w.s + 20, '바로 뒤에 붙은 구간이 있다(안쪽 선언이 샜다)');
+});
+
+// ── 🔴 모르는 인자를 조용히 삼키지 않는다 ([v9.184] 실측) ───────────────────
+
+test('🔴 모르는 인자는 막는다 — 오타 하나가 배포 점검을 거짓 초록으로 만든다', () => {
+  /* 실측: `--from` 이라고 잘못 줬더니 무시하고 기본값(마지막 커밋)으로 떨어졌는데
+   *   화면엔 「실행층 전용 API 변경 없음」 초록 한 줄이 그대로 나왔고, 나는 그걸 믿었다. */
+  assert.deepEqual(점검.인자검사(['--from', 'synk-v9.183']), ['--from', 'synk-v9.183'],
+    '모르는 인자를 못 알아본다');
+  assert.deepEqual(점검.인자검사(['--range', 'A..B', '--quiet']), [],
+    '멀쩡한 인자를 모른다고 한다 — 거짓양성이 곧 무시로 이어진다');
+  assert.deepEqual(점검.인자검사(['--files', 'a.js,b.js']), [],
+    '값 플래그의 **다음 토큰은 값**인데 그것까지 인자로 셌다');
+});
+
+test('🔴 CLI 가 실제로 막는가 — 그리고 초록일 때 무엇을 쟀는지 말하는가', () => {
+  /* 문구가 아니라 **실행**으로 잰다. 이 도구의 결함 둘 다 「소스엔 적혀 있는데 그 경로가 안 돈」 형태였다. */
+  const 실행 = (args) => {
+    try {
+      return { code: 0, out: execFileSync(process.execPath, [path.join(ROOT, 'tools', '실행층점검.js'), ...args],
+        { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }) };
+    } catch (e) {
+      /* 🔴 **실행 실패를 「막았다」로 번역하지 않는다.** 처음 이 파일은 execFileSync 를 require 하지
+       *   않은 채였다 — ReferenceError 가 이 catch 로 떨어져 `{code: undefined, out: ''}` 가 됐고,
+       *   바로 아래 「exit 0 이 아니다」 단언이 **통과**했다(도구를 부른 적조차 없는데 차단으로 보였다).
+       *   exit code 가 아닌 것(`status` 없음 = 스폰 실패·코드 오류)은 삼키지 말고 그대로 터뜨린다. */
+      if (typeof e.status !== 'number') throw e;
+      return { code: e.status, out: String(e.stdout || '') + String(e.stderr || '') };
+    }
+  };
+
+  const 오타 = 실행(['--from', 'synk-v9.183']);
+  assert.notEqual(오타.code, 0, '모르는 인자인데 exit 0 이다 — 배포 로그에선 통과와 구별되지 않는다');
+  assert.match(오타.out, /모르는 인자/, '무엇이 틀렸는지 안 말한다');
+  assert.ok(!/변경 없음/.test(오타.out), '🔴 모르는 인자인데 「변경 없음」 초록을 냈다 — 이게 나를 속인 그 출력이다');
+
+  // 자동 범위(인자 없음)일 때는 **초록이어도** 무엇만 봤는지 밝힌다
+  assert.match(실행([]).out, /HEAD~1\.\.HEAD 만 봤다/,
+    '항목 0건일 때 기준을 버렸다 — 「마지막 커밋만 봤다」가 하필 초록일 때만 사라진다');
+  // 범위를 명시했으면 그 경고가 뜨면 안 된다(거짓양성)
+  const 명시 = 실행(['--range', 'HEAD..HEAD']);
+  assert.match(명시.out, /변경 없음/, '빈 범위인데 조용하지 않다');
+  assert.ok(!/만 봤다/.test(명시.out), '범위를 명시했는데 자동 범위 경고가 떴다');
 });
 
 // ── 실저장소 (거짓양성만) ──────────────────────────────────────────────────

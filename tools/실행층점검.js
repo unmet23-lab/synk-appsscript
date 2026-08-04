@@ -56,16 +56,24 @@ function 주석지우기(src) {
 
 /** 함수 선언 줄 목록 — 한 함수의 구간은 [자기 시작, 다음 함수 시작 - 1] 로 잡는다.
  *  중괄호를 세지 않는 이유: 문자열·정규식 안의 괄호까지 정확히 세려면 파서가 필요한데,
- *  이건 「배포 뒤 무엇을 실행할지」를 고르는 용도라 구간이 조금 넓어도 해가 없다. */
+ *  이건 「배포 뒤 무엇을 실행할지」를 고르는 용도라 구간이 조금 넓어도 해가 없다.
+ *
+ * 🔴 **안쪽 헬퍼는 구간을 열지 않는다**(들여쓰기 0 만 센다). 실측 [v9.184]: `systemWatchdog`
+ *   안의 변경을 보고 **`add()` 를 실행하라**고 답했다 — `add` 는 그 함수 **안쪽** 보조 함수(340행)라
+ *   Apps Script 편집기 ▶ 로 부를 수가 없다. 게다가 같은 파일에 `add` 가 둘(340·751)이라 이름만으론
+ *   어느 쪽인지도 모른다. **실행하라는 지시가 실행 불가능한 이름을 가리키면 그 목록은 안 읽힌다** —
+ *   이 도구의 존재 이유가 「읽히는 체크리스트」인데 거기서 무너진다.
+ *   안쪽 선언이 구간을 열면 바깥 함수의 구간이 **첫 헬퍼 직전에서 끊겨**, 본문 대부분이
+ *   헬퍼 이름으로 귀속된다(넓게 잡는 건 해가 없지만 **엉뚱한 이름으로** 잡는 건 해가 있다). */
 function 함수구간(줄) {
   const 시작 = [];
   for (let i = 0; i < 줄.length; i++) {
     /* ⚠ 식별자를 ASCII 로 적으면 이 저장소에선 **아무것도 못 찾는다** — 함수 이름이 한글이다
      *   (`면접URL틀보증_`·`궤적갱신_`). 처음에 `\w` 로 짰다가 F081 이 난 그 커밋을 미탐했다.
      *   가드는 **사람이 실제로 쓰는 표기로** 검사한다(CLAUDE.md 가드 맹점 ①). */
-    const m = 줄[i].match(/^\s*(?:async\s+)?function\s+([\p{L}_$][\p{L}\p{N}_$]*)/u)
-      || 줄[i].match(/^\s*(?:const|let|var)\s+([\p{L}_$][\p{L}\p{N}_$]*)\s*=\s*(?:async\s*)?(?:function|\()/u);
-    if (m) 시작.push({ 이름: m[1], 줄: i });
+    const m = 줄[i].match(/^([ \t]*)(?:async\s+)?function\s+([\p{L}_$][\p{L}\p{N}_$]*)/u)
+      || 줄[i].match(/^([ \t]*)(?:const|let|var)\s+([\p{L}_$][\p{L}\p{N}_$]*)\s*=\s*(?:async\s*)?(?:function|\()/u);
+    if (m && m[1].length === 0) 시작.push({ 이름: m[2], 줄: i });
   }
   return 시작.map((s, k) => ({
     이름: s.이름,
@@ -138,10 +146,12 @@ function 훑기(opt = {}) {
   let 기준 = '지정된 파일 목록(변경 줄을 모르므로 파일 전체를 본다)';
   const 범위모드 = !files;
 
+  let 자동범위 = false;
   if (범위모드) {
     if (!범위) {
       // 직전 배포 기준점이 없으면 **마지막 커밋만** 본다 — 그 사실을 숨기지 않는다
       범위 = 'HEAD~1..HEAD';
+      자동범위 = true;
       기준 = '직전 배포 기준점이 없어 **마지막 커밋만** 봤다(더 넓게 보려면 --range 로 준다)';
     } else {
       기준 = `범위 ${범위}`;
@@ -150,7 +160,7 @@ function 훑기(opt = {}) {
       files = git(['diff', '--name-only', 범위]).split('\n').map((s) => s.trim()).filter(Boolean);
     } catch (e) {
       return {
-        항목: [], 범위, 잰것: false,
+        항목: [], 범위, 잰것: false, 자동범위,
         기준: `범위(${범위})를 읽지 못했다 — ${String((e && e.message) || e).split('\n')[0]}`,
       };
     }
@@ -165,7 +175,7 @@ function 훑기(opt = {}) {
     if (프로젝트 && path.resolve(abs) !== 프로젝트 && !path.resolve(abs).startsWith(프로젝트 + path.sep)) continue;
     항목.push(...파일훑기(abs, f, 범위모드 ? 바뀐줄들(범위, f) : null));
   }
-  return { 항목, 범위, 기준, 잰것: true };
+  return { 항목, 범위, 기준, 잰것: true, 자동범위 };
 }
 
 /** 사람이 읽는 체크리스트. 항목이 없으면 빈 문자열(조용). */
@@ -197,20 +207,52 @@ function 체크리스트(r) {
   ].join('\n');
 }
 
-module.exports = { API목록, 훑기, 체크리스트, 파일훑기, 함수구간, 주석지우기 };
+/* 🔴 인자를 **모르면 막는다.** 실측 [v9.184]: `--from` 이라고 잘못 줬더니 조용히 무시되고
+ *   기본값(마지막 커밋)으로 떨어졌는데, 화면엔 「실행층 전용 API 변경 없음」이라는 **초록 한 줄**이
+ *   그대로 나왔다 — 나는 그걸 믿었다. 이 파일 머리말이 「통과와 미실행을 같은 모양으로 두지 않는다」고
+ *   적어 둔 바로 그 위반이다(오타 하나가 배포 점검을 통째로 거짓 초록으로 만든다).
+ *   값을 받는 플래그의 **다음 토큰은 값**이라 검사에서 건너뛴다(`--range HEAD~1..HEAD` 의 범위 문자열). */
+const 값플래그 = ['--range', '--files', '--프로젝트', '--project'];
+const 단독플래그 = ['--quiet'];
+function 인자검사(argv) {
+  const 모름 = [];
+  for (let i = 0; i < argv.length; i++) {
+    const t = argv[i];
+    if (값플래그.includes(t)) { i++; continue; }
+    if (단독플래그.includes(t)) continue;
+    모름.push(t);
+  }
+  return 모름;
+}
+
+module.exports = { API목록, 훑기, 체크리스트, 파일훑기, 함수구간, 주석지우기, 인자검사, 값플래그, 단독플래그 };
 
 if (require.main === module) {
   const argv = process.argv.slice(2);
+  const 모름 = 인자검사(argv);
+  if (모름.length) {
+    process.stderr.write(`[실행층점검] ⚠ 모르는 인자: ${모름.join(' ')}\n`
+      + `  쓸 수 있는 것: ${값플래그.join(' ')} (값 1개씩) · ${단독플래그.join(' ')}\n`
+      + '  **검사하지 않았다.** 조용히 기본값으로 떨어지면 오타 하나가 거짓 초록이 된다(F081 계열).\n');
+    process.exit(2);
+  }
   const 값 = (이름) => {
     const i = argv.indexOf(이름);
     return i > -1 ? argv[i + 1] : undefined;
   };
-  const 글 = 체크리스트(훑기({
+  const r = 훑기({
     range: 값('--range'),
     files: 값('--files') ? 값('--files').split(',').map((s) => s.trim()).filter(Boolean) : undefined,
     프로젝트: 값('--프로젝트') || 값('--project'),
-  }));
+  });
+  const 글 = 체크리스트(r);
   if (글) process.stdout.write(글 + '\n');
-  else if (!argv.includes('--quiet')) process.stdout.write('[실행층점검] 실행층 전용 API 변경 없음 — 배포 뒤 필수 실행 없음.\n');
+  else if (!argv.includes('--quiet')) {
+    /* 🔑 항목이 0건일 때야말로 **무엇을 쟀는지** 같이 말해야 한다. 예전엔 여기서 기준을 버려서,
+     *   「마지막 커밋만 봤다」는 사실이 **하필 초록일 때만** 사라졌다(경고가 필요한 바로 그 경우다). */
+    process.stdout.write('[실행층점검] 실행층 전용 API 변경 없음 — 배포 뒤 필수 실행 없음.'
+      + (r.자동범위 ? ` ⚠ 단 ${r.범위} 만 봤다 — 배포 범위가 더 넓으면 --range 로 다시 재라.` : ` (기준: ${r.기준})`)
+      + '\n');
+  }
   process.exit(0);
 }
