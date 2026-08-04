@@ -51,6 +51,23 @@ test('같은 내용을 남이 먼저 커밋해 비어버린 커밋을 잡는다 
   assert.ok(v.경고, '실사고 그대로의 출력을 통과시켰다 — 이걸 놓치면 「커밋했다」가 거짓 보고가 된다');
   assert.match(v.본문, /F071/);
   assert.match(v.본문, /Session-Id/, '주인 확인 절차를 안내하지 않았다');
+  // 🔑 「주인이 나인지 봐라」만으로는 부족하다 — **내 id 가 무엇인지**를 같이 줘야 한다.
+  //   트레일러는 CLAUDE_CODE_HOST_SESSION_ID 인데 스크래치패드·트랜스크립트 경로의 UUID 는
+  //   다른 식별자다. 실측 1회: 둘을 대조해 **내 커밋을 남의 것으로 뒤집을 뻔했다.**
+  assert.match(v.본문, /CLAUDE_CODE_HOST_SESSION_ID/,
+    '내 세션 id 를 어디서 읽는지 안 알려줬다 — 다른 식별자로 대조하면 판정이 뒤집힌다');
+});
+
+test('🔑 안내에 지금 세션의 실제 id 를 박아 준다 (사람이 다시 찾게 만들지 않는다)', () => {
+  const 원래 = process.env.CLAUDE_CODE_HOST_SESSION_ID;
+  process.env.CLAUDE_CODE_HOST_SESSION_ID = 'local_TESTID-1234';
+  try {
+    const v = run({ command: 'git commit -m "x" -- a.js', stdout: 'nothing to commit, working tree clean' });
+    assert.match(v.본문, /local_TESTID-1234/, '환경의 세션 id 를 안내에 안 실었다');
+  } finally {
+    if (원래 === undefined) delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
+    else process.env.CLAUDE_CODE_HOST_SESSION_ID = 원래;
+  }
 });
 
 test('작업 트리가 깨끗해 아무것도 안 들어간 경우를 잡는다', () => {

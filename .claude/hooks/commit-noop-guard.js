@@ -81,8 +81,10 @@ const 본문 =
   + '커밋한 탓에 내 커밋이 조용히 no-op 이 됐다. git 은 이걸 오류로 부르지 않는다 — 상태 목록만\n'
   + '뱉고 정상 종료한다. 그래서 **「커밋했다」고 보고하면 그 보고가 거짓이 된다.**\n\n'
   + '→ 보고하기 전에:\n'
-  + '   1) `git log --oneline -3 --format="%h %(trailers:key=Session-Id,valueonly) %s"` — **주인이 나인지** 본다.\n'
-  + '      author 는 전 세션 공통이라 구분자가 아니다(F041).\n'
+  + '   1) `git log -3 --format="%h %(trailers:key=Session-Id,valueonly) %s"` — **주인이 나인지** 본다.\n'
+  + `      ⚠ 내 id 는 **$CLAUDE_CODE_HOST_SESSION_ID**(지금 이 세션 = ${process.env.CLAUDE_CODE_HOST_SESSION_ID || '미설정'})다.\n`
+  + '      스크래치패드·트랜스크립트 경로의 UUID 와 **다른 식별자**라, 그걸로 대조하면 내 커밋이\n'
+  + '      「남의 것」으로 뒤집힌다(실측 1회). author 는 전 세션 공통이라 애초에 구분자가 아니다(F041).\n'
   + '   2) 내 변경이 아직 남아 있으면(`git status`) 경로 지정을 고쳐 다시 커밋한다.\n'
   + '      새 파일이면 `git add -- <경로>` 가 먼저다 — 미추적은 이력·stash·reflog 어디에도 없다(F025).\n'
   + '   3) 남이 먼저 넣은 것이면 **그 커밋을 읽고** 내 작업과 겹치는지 본다. 중복 구현이 F070 이다.';
