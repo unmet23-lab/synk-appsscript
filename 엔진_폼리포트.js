@@ -1019,6 +1019,114 @@ function createAbsenceForm() {
   Logger.log('편집용: ' + form.getEditUrl());
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+ * 학생ID(SYNK-NNN) 채번 — 번호를 만드는 곳은 여기 하나다 [v9.164]
+ *   상담시트에는 유일성 제약이 없다. 'SYNK-' + 번호를 다른 데서 조립하면 같은 번호가
+ *   두 번 나가고, 그 순간 앱에서 두 학생이 한 사람이 된다(profiles 키가 학생ID다).
+ *   ⚠ **ScriptLock은 프로젝트마다 별개다** — 그래서 채번은 이 프로젝트에서만 한다.
+ *     크루카드 웹앱(별도 프로젝트)은 학생ID를 비운 채 넘기고, 채우는 건 여기뿐이다.
+ * ═══════════════════════════════════════════════════════════════════ */
+const 학생ID_열_ = 60;                          // BH · 상담데이터입력 v18.1~ (syncProfiles의 row[59])
+const 학생ID_패턴_ = /^SYNK-(\d+)$/;
+const 학생ID_발급상태_ = ['반배정', '앱편입'];   // crewcard/상담시트.js 처리상태_와 같은 낱말을 쓴다
+
+function 학생ID_최대번호_(consult) {
+  const last = consult.getLastRow();
+  if (last < 3) return 0;
+  const col = consult.getRange(3, 학생ID_열_, last - 2, 1).getValues();
+  let max = 0;
+  for (let i = 0; i < col.length; i++) {
+    const m = String(col[i][0]).match(학생ID_패턴_);
+    if (m) max = Math.max(max, parseInt(m[1], 10));
+  }
+  return max;
+}
+
+/* [v5] slice → padStart: SYNK-1000 이후 ID 중복 방지 */
+function 학생ID_포맷_(n) { return 'SYNK-' + String(n).padStart(3, '0'); }
+
+/* 처리상태가 「반배정」·「앱편입」인데 학생ID가 빈 행에 ID를 발급한다 [v9.164]
+ *   유호님 요청(08-04): 「드롭다운만 바꾸면 ID가 알아서 붙게」. 손 타이핑은 없애되
+ *   **사람이 결정한다는 게이트는 남긴다** — 공개 링크(크루카드) 접수가 스스로 로스터에
+ *   들어오면 장난 제출 한 번이 학생 계정이 된다.
+ *   재실행 안전: 이미 ID가 있으면 손대지 않는다. 이름이 빈 행에는 발급하지 않는다
+ *   (syncProfiles가 row[0]을 이름으로 그대로 쓰므로 무명 학생이 생긴다).
+ *   반환 = 발급 목록 [{row, name, id}] */
+function 학생ID_발급_() {
+  let consult;
+  try {
+    consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
+  } catch (e) { Logger.log('학생ID 발급 — 상담시트 열기 실패: ' + e); return []; }
+  if (!consult) { Logger.log("학생ID 발급 — '상담데이터입력' 탭 없음"); return []; }
+
+  const lock = LockService.getScriptLock();
+  // 대기 초과는 실패가 아니다 — 다른 배치가 상담시트를 쥔 것뿐이고, morningJobs 백스톱이 다음에 잡는다.
+  if (!lock.tryLock(30000)) { Logger.log('학생ID 발급 — 락 대기 초과(다음 스위프가 처리)'); return []; }
+  try {
+    const last = consult.getLastRow();
+    if (last < 3) return [];
+    const width = Math.max(학생ID_열_, consult.getLastColumn());
+    const hdr = consult.getRange(2, 1, 1, width).getValues()[0];
+    const colOf = {};
+    hdr.forEach(function (h, i) { const k = String(h).trim(); if (k && colOf[k] === undefined) colOf[k] = i; });
+    const c상태 = colOf['처리상태'];
+    // 「처리상태」는 크루카드 증분 열이다 — 상담시트 업그레이드 전이면 발급 자체를 열지 않는다.
+    if (c상태 === undefined) { Logger.log('학생ID 발급 — 「처리상태」 열 없음(상담시트 증분 전)'); return []; }
+    const c이름 = colOf['이름(한국어)'] === undefined ? 0 : colOf['이름(한국어)'];
+
+    const rows = consult.getRange(3, 1, last - 2, width).getValues();
+    let next = 학생ID_최대번호_(consult);   // 채번 정본 — 여기서 따로 스캔하지 않는다
+    const 발급 = [];
+    for (let i = 0; i < rows.length; i++) {
+      if (학생ID_발급상태_.indexOf(String(rows[i][c상태] || '').trim()) === -1) continue;
+      if (String(rows[i][학생ID_열_ - 1] || '').trim()) continue;   // 이미 있으면 그대로 둔다
+      const 이름 = String(rows[i][c이름] || '').trim();
+      if (!이름) continue;                                          // 무명 행에는 발급하지 않는다
+      next++;
+      const id = 학생ID_포맷_(next);
+      consult.getRange(3 + i, 학생ID_열_).setValue(id);
+      발급.push({ row: 3 + i, name: 이름, id: id });
+    }
+    if (발급.length) {
+      Logger.log('학생ID 발급 %s건: %s', 발급.length,
+        발급.map(function (x) { return x.id + '(' + x.name + '·' + x.row + '행)'; }).join(', '));
+    }
+    return 발급;
+  } finally { lock.releaseLock(); }
+}
+
+/* 상담시트 설치형 onEdit — 드롭다운을 바꾼 그 자리에서 ID가 보이게 한다 [v9.164]
+ *   ⚠ 이름에 밑줄을 붙이지 않는다 — 트리거 핸들러·메뉴는 밑줄 종결 함수를 못 부른다(조용히 안 돈다).
+ *   ⚠ 상담시트의 **모든 편집**이 이 함수를 때린다 → 시트·행·열을 좁게 확인하고 즉시 return.
+ *   ⚠ 트리거가 죽어도 morningJobs의 학생ID_발급_이 같은 일을 한다(발동층 2겹). */
+function onConsultEdit(e) {
+  try {
+    if (!e || !e.range) return;
+    const sh = e.range.getSheet();
+    if (sh.getName() !== '상담데이터입력') return;
+    if (e.range.getLastRow() < 3) return;                 // 헤더 구역 편집은 무시
+    const c상태 = sh.getRange(2, 1, 1, sh.getLastColumn()).getValues()[0].indexOf('처리상태');
+    if (c상태 === -1) return;
+    // 붙여넣기로 여러 열이 한꺼번에 바뀔 수 있으므로 «범위가 처리상태 열을 포함하는가»로 본다
+    if (e.range.getColumn() > c상태 + 1 || e.range.getLastColumn() < c상태 + 1) return;
+    const 발급 = 학생ID_발급_();
+    if (발급.length) {
+      sh.getParent().toast(발급.map(function (x) { return x.name + ' → ' + x.id; }).join(', '), '학생ID 발급', 8);
+    }
+  } catch (err) {
+    Logger.log('onConsultEdit 실패(삼킴): ' + err);   // 트리거 예외가 시트 편집을 막지 않게 한다
+  }
+}
+
+/* 설치형 트리거 생성 — 상담시트는 이 프로젝트의 컨테이너가 아니라 **외부 파일**이라
+ * 단순 트리거(onEdit)로는 절대 안 걸린다. 재실행 안전(같은 핸들러가 있으면 안 만든다). */
+function setupConsultTrigger() {
+  const 있음 = ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === 'onConsultEdit'; });
+  if (있음) { Logger.log('상담시트 onEdit 트리거 이미 있음 — 새로 만들지 않는다'); return; }
+  ScriptApp.newTrigger('onConsultEdit').forSpreadsheet(CONSULT_SHEET_ID).onEdit().create();
+  Logger.log('✅ 상담시트 onEdit 트리거 생성 — 「처리상태」를 반배정/앱편입으로 바꾸면 학생ID가 즉시 발급됩니다');
+}
+
 function importFormResponses() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
@@ -1055,13 +1163,9 @@ function importFormResponses() {
     let newTs = lastTs;
 
     // 현재 최대 SYNK 번호 (한 배치 내 연속 채번)
-    const lastRowC = consult.getLastRow();
-    const biCol = lastRowC >= 3 ? consult.getRange(3, 60, lastRowC - 2, 1).getValues() : []; // [opt] BH 전체 열 — 600행 초과 시 maxSynk 정확(ID 중복 방지). getLastRow<3 가드로 헤더만 있을 때 크래시 방지
-    let maxSynk = 0;
-    biCol.forEach(r => {
-      const m = String(r[0]).match(/^SYNK-(\d+)$/);
-      if (m) maxSynk = Math.max(maxSynk, parseInt(m[1], 10));
-    });
+    // [v9.164] 여기서 직접 스캔하던 것을 채번 정본(학생ID_최대번호_)으로 합쳤다 — 번호를 만드는 곳이
+    //   둘이면 언젠가 한쪽만 고쳐지고, 그 결과는 «같은 ID를 가진 두 학생»이다(상담시트에 유일성 제약 없음).
+    let maxSynk = 학생ID_최대번호_(consult);
 
     responses.forEach(resp => {
       const ts = resp.getTimestamp();
@@ -1113,10 +1217,9 @@ function importFormResponses() {
       consult.getRange(newRow, 1, 1, 59).setValues(행소독_([rowArr]));
       if (extArr) consult.getRange(newRow, 63, 1, extArr.length).setValues(행소독_([extArr])); // [v9.66·리뷰 H1] 증분 구간 통째 1회 쓰기(60~62 건너뜀) — 개별 setValue였다면 행 재사용 시 옛 학생 값이 남았다
 
-      // 학생ID 직접 채번 (수식 비의존)
+      // 학생ID 직접 채번 (수식 비의존) — 포맷은 학생ID_포맷_ 하나만 쓴다
       maxSynk++;
-      // [v5] slice → padStart: SYNK-1000 이후 ID 중복 방지
-      consult.getRange(newRow, 60).setValue('SYNK-' + String(maxSynk).padStart(3, '0')); // [v8.4] BH
+      consult.getRange(newRow, 학생ID_열_).setValue(학생ID_포맷_(maxSynk)); // [v8.4] BH
 
       // form_responses 기록
       const frRow = fr.getLastRow() + 1;
