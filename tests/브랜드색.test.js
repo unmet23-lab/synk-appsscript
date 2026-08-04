@@ -101,10 +101,19 @@ const jsFiles = [...ENGINE_FILES, '상담AI.js', '교재연동.js', '만족도�
   fs.readdirSync(ROOT).filter((f) => /^contents_.*\.js$/.test(f))
 );
 
+/* 2026-08-05 · 라이브 접수 폼·대외 게시물을 등록층에 넣는다.
+ * 감사(08-04)가 밝힌 것: 이 가드가 초록이었던 건 맞아서가 아니라 **그 파일들을 안 봤기 때문**이다.
+ * 목록은 여기 새로 적지 않고 `tools/브랜드렌더린트.js` 의 `대상` 하나에서 파생시킨다 —
+ * 두 곳에 적으면 갈라지고, 갈라지는 방향은 언제나 「통과」다.
+ * ⚠ 렌더 린트는 크롬에 기대서 **CI 에선 통째로 skip 된다.** 즉 CI 에서 이 파일들을 실제로
+ *   지키는 건 지금 이 소스 가드다 — 등록이 여기 있어야 하는 이유가 그것이다. */
+const { 대상: RENDER_TARGETS } = require('../tools/브랜드렌더린트');
+
 /* 검사 대상 = 브랜드가 닿는 표면 전부. [상대경로, 내용] */
 const targets = [
   ...toolFiles.map((f) => [path.join('docs/tools', f), path.join(TOOLS, f)]),
   ...jsFiles.map((f) => [f, path.join(ROOT, f)]),
+  ...RENDER_TARGETS.map((rel) => [rel, path.join(ROOT, rel)]),
 ]
   .filter(([, abs]) => fs.existsSync(abs))
   .map(([rel, abs]) => [rel, readStripped(abs)]);

@@ -14,8 +14,10 @@
 <style>/* ========================================================================
    SYNK LAB · Crew Dossier v8 — Shared design system
    Palette · Cream / Coral / Deep Navy / Lime accent
-   Typography · Instrument Serif (display) + Pretendard (body/UI)
-               + JetBrains Mono (labels/serials)
+   Typography · Inter Tight + SUIT Variable + DM Mono (정본 3종 · docs/브랜드_폰트_정본.md)
+     ⚠ 구 주석은 Instrument Serif + Pretendard + JetBrains Mono 라고 적고 있었는데
+       셋 다 **이 파일에 없다.** 2026-08-05 세리프 제거 때 그 사실이 드러났다 —
+       스택은 진작 바뀌었고 「이게 무슨 폰트인지」를 적은 줄만 옛날에 남아 있었다.
    ======================================================================== */
 
 :root{
@@ -56,9 +58,10 @@
   --kc-cool:#4E7CFF;
 
   /* Type ------------------------------------------------------------
-     한글은 항상 Pretendard로 통일되도록 각 스택 끝에 Pretendard 배치.
-     Instrument Serif · JetBrains Mono는 라틴 문자에만 적용되고,
-     한글은 자동으로 Pretendard로 fallback됨.                       */
+     정본 3종만 쓴다. **Inter Tight 가 SUIT 보다 앞**인 것이 핵심이다 —
+     폴백이 글리프 단위라 이 순서가 라틴·키릴·한글을 자동으로 갈라 준다(정본이 「바꾸지 말 것」).
+     세 변수가 값이 같은 것은 실수가 아니다: 세리프·모노가 따로 필요했던 이유(장식 서체)가
+     2026-08-05 에 사라졌고, 위계는 이제 웨이트·크기가 진다(정본 §87).           */
   --serif:'Inter Tight', 'SUIT Variable', SUIT, serif;
   --sans:'Inter Tight', 'SUIT Variable', SUIT, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --mono:'Inter Tight', 'SUIT Variable', SUIT, ui-monospace, monospace;
@@ -70,7 +73,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
-  background:#DFD6C4;
+  background:var(--cream-3);  /* 구값 #DFD6C4 — 키트 밖. 지면 바깥 바탕은 Cream 3 가 정본값 */
   font-family:var(--sans);
   color:var(--ink);
   -webkit-font-smoothing:antialiased;
@@ -304,7 +307,7 @@ section.page{
 
 /* Consent block -------------------------------------------------------- */
 .consent{
-  background:#fff;border-radius:12px;padding:20px 22px;
+  background:var(--paper);border-radius:12px;padding:20px 22px;
   border:1px solid rgba(23,24,32,.1);margin-top:14px;
 }
 .consent h4{
@@ -382,7 +385,7 @@ section.page{
   .cov-meter{
     margin-top:28px;
     display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:0;
-    background:#fff;border-radius:14px;
+    background:var(--paper);border-radius:14px;
     box-shadow:0 14px 32px -20px rgba(15,23,48,.28);
     border:1px solid rgba(23,24,32,.06);
     overflow:hidden;
@@ -533,7 +536,8 @@ section.page{
     display:flex;align-items:center;gap:6px;
   }
   .m-card-lbl .dot{
-    width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.55);
+    /* 코랄 카드 위의 점이라 밝은 쪽이 맞다 — 다만 순백 대신 Cream 을 옅게 (철칙 ①) */
+    width:5px;height:5px;border-radius:50%;background:rgba(246,241,232,.55);
     display:inline-block;transition:background .3s var(--ease);
   }
   .m-card-lbl.done .dot{background:var(--lime)}
@@ -690,8 +694,7 @@ section.page{
   section.page.page-cover{padding:44px 56px 40px}
 
   /* ---------- Font normalization ----------
-     JetBrains Mono / Instrument Serif는 라틴 문자에만.
-     한글 텍스트가 들어가는 라벨류는 시각적 통일을 위해 Pretendard로 강제. */
+     라벨류를 --mono 로 모은다. 지금은 세 변수가 같은 정본 3종 스택이라 서체가 갈리지 않는다. */
   .field .k,
   .m-card-lbl,
   .cov-meter .k,
@@ -741,7 +744,7 @@ section.page{
   .cov-top .brand{font-family:var(--mono)}
   .cov-top .brand .sub{font-family:var(--mono)}
   .cov-top .no{font-family:var(--mono)}
-  /* 미니칩과 대시보드 칩의 한글 값은 Pretendard로 */
+  /* 미니칩과 대시보드 칩의 한글 값은 본문 스택(--sans)으로 */
   .m-chip .row .k, .m-chip .row .v:not(.mono){
     font-family:var(--sans);letter-spacing:.02em;text-transform:none;
   }
@@ -966,7 +969,7 @@ section.page{
     display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:24px;
   }
   .kc-card{
-    background:#fff;border-radius:16px;padding:20px;
+    background:var(--paper);border-radius:16px;padding:20px;
     box-shadow:0 14px 32px -18px rgba(15,23,48,.35);
     display:flex;flex-direction:column;gap:10px;
     position:relative;overflow:hidden;
@@ -1083,7 +1086,7 @@ section.page{
   .tag{
     display:inline-flex;align-items:center;gap:6px;cursor:pointer;
     padding:6px 12px;border-radius:999px;
-    background:rgba(255,255,255,.55);
+    background:rgba(251,247,238,.55);  /* 순백 대신 Paper 를 옅게 (철칙 ①) */
     border:1px solid rgba(23,24,32,.14);
     font-size:12px;color:var(--navy-3);user-select:none;
     transition:all .16s var(--ease);
@@ -1157,7 +1160,7 @@ section.page{
 
   /* "Matrix" — column headers over rows of intensity picks */
   .mtx{
-    background:#fff;border-radius:12px;padding:14px 18px 12px;
+    background:var(--paper);border-radius:12px;padding:14px 18px 12px;
     border:1px solid rgba(23,24,32,.08);margin-top:8px;
   }
   .mtx-head{
@@ -1278,7 +1281,7 @@ section.page{
 
   /* Advisor notes strip on the last page */
   .adv-notes{
-    background:#fff;border:1px dashed rgba(23,24,32,.22);border-radius:12px;
+    background:var(--paper);border:1px dashed rgba(23,24,32,.22);border-radius:12px;
     padding:16px 18px;margin-top:14px;
   }
   .adv-notes .hd{
@@ -1350,7 +1353,7 @@ section.page{
     display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-top:16px;
   }
   .first-class .card{
-    background:#fff;border-radius:12px;padding:14px 16px;
+    background:var(--paper);border-radius:12px;padding:14px 16px;
     border:1px solid rgba(23,24,32,.08);
     display:flex;flex-direction:column;gap:8px;
   }
@@ -3400,7 +3403,7 @@ section.page{
 
 
 
-<input type="text" id="synkHp" name="company_website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;height:1px;width:1px;opacity:0">
+<input type="text" id="synkHp" name="company_website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;height:1px;width:1px;opacity:0;background:transparent">
 <div id="synkSubmitBar" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 16px;background:#1A2340;color:#FBF7EE;font-family:var(--sans);box-shadow:0 -8px 24px rgba(15,23,48,.35)">
   <span id="synkSaveState" style="font-size:11px;opacity:.75;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
   <div style="display:flex;gap:10px;align-items:center;flex:0 0 auto">
