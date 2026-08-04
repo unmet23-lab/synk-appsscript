@@ -14,6 +14,10 @@ secrets/
 # [2026-08-01] 자격증명은 절대 커밋하지 않는다 — git 이력은 영구적이고 repo는 복제·공유된다.
 #   [2026-08-03] 자격증명 정본은 repo 밖 C:\Users\q1212\SYNK_보안\ 으로 이동 완료(정본 README 참조).
 #   아래 규칙은 삭제하지 않는다 — 재유입(실수 복사·복원) 방지용 영구 가드다.
+#   [2026-08-04] ⚠ 아래 `**/` 두 줄은 **중복이다** — gitignore 에서 슬래시 없는 패턴은 이미
+#     모든 하위 경로를 잡는다(실측: `.clasprc.json` 규칙 하나로 `깊이/더/.clasprc.json` 까지 무시됐다).
+#     그런데도 지우지 않는다. 자격증명 노출은 **되돌릴 수 없고**(git 이력은 영구·repo 는 복제된다)
+#     중복 한 줄의 비용은 0이다. 비대칭이 명확한 자리에선 아는 채로 남기는 쪽이 맞다.
 로그인.txt
 **/로그인.txt
 *비밀번호*
@@ -43,3 +47,22 @@ tools/bench/_fixture_recordings/
 # [2026-08-04] 예약 작업(SYNK_NotebookLM)이 남기는 실행 로그. 기기별이고 매 실행 늘어난다.
 #   추적하면 병행 세션 커밋마다 딸려 들어가 diff를 가린다. 지워도 다음 실행에 다시 생긴다.
 tools/notebooklm-drive.log
+
+# [2026-08-04 · F079] Claude Code 런타임 생성물. **여기 있어야 하는 이유가 따로 있다.**
+#   지금까지 이 규칙들은 `.git/info/exclude` 에만 있었는데, 그건 **커밋되지 않는 로컬 파일**이라
+#   클론한 기계(폰 클라우드 세션·다른 PC·CI)에는 아예 없다. 이 저장소에서만 안전하고
+#   다른 곳에선 무방비였다는 뜻이다 — 그리고 그건 `git status` 를 봐서는 절대 안 보인다.
+#   F079 실측: `.claude/worktrees/` 는 저장소 **안**에 있는데 git 눈에 안 띄어, 거기서 돌던
+#   세션의 작업이 어느 감지 장치에도 안 잡혔다. 「저장소 안인데 무시되는 파일이 가장 위험하다」.
+#   ⚠ `info/exclude` 쪽은 지우지 않는다 — Claude Code 가 관리하는 파일이고, 중복은 무해하다.
+#      **정본은 여기다**(이식되는 쪽이 정본이다). 회귀 = tests/무시규칙.test.js
+.claude/worktrees/
+.claude/checkpoints/
+.claude/mailbox/
+.claude/routines/.state/
+.claude/scheduled_tasks.json
+.claude/scheduled_tasks.lock
+.claude/agent-registry.json
+.claude/agent-memory-local
+.claude/first-run
+.claude/assistant-daemon-state.json
