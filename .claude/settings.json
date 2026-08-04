@@ -36,6 +36,18 @@
             "statusMessage": "미커밋 작업본 소유자 확인"
           }
         ]
+      },
+      {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' _IGNORE || true; D=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/session-decisions.js\"; { command -v node >/dev/null && [ -f \"$D\" ]; } || { echo \"SYNK session-decisions 미실행: $D (node 또는 훅 파일 없음 — F044)\" >&2; exit 1; }; node \"$D\"",
+            "shell": "bash",
+            "timeout": 20,
+            "statusMessage": "유호님 결정 대기 확인"
+          }
+        ]
       }
     ],
     "PreToolUse": [
