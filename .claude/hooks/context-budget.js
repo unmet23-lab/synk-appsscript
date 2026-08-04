@@ -68,16 +68,19 @@ const WARN_ABS = 200_000; // 🟡 슬슬 트랙을 닫을 준비
 const HARD_ABS = 300_000; // 🔴 지금 끊어라 — 여기가 무릎이다
 const LAST_ABS = 500_000; // ⚫ 마지막 경고. 🔴 뒤 완전 침묵이면 900k 를 넘겨도 무소식이었다(결함 ⑤).
 
-// ⚫ **위에도 같은 구멍이 그대로 남아 있었다**(결함 ⑤의 재발 — 08-04 실측).
-//   ⚫ 를 한 번 띄우면 그 뒤로 영원히 침묵해서, 하루 실측에서 세 세션이
-//   600k·771k·786k 까지 **무신호로** 올라갔다. 500k→786k 구간은 한 턴에 78만 토큰을
-//   다시 읽는 **가장 비싼 구간**인데 정확히 거기가 무신호였다.
-//   그래서 ⚫ 뒤로는 침묵이 아니라 **STEP 마다 다시 운다**(유호님 확정, 08-04).
-//   200k 로 정한 이유 = 1M 창에서 700k·900k 두 번만 더 늘어난다(100k 면 4~5번 — 소음).
-const REPEAT_ABS = 200_000;
+// 🔴 **위가 통째로 침묵 구간이었다**(결함 ⑤의 재발 — 08-04 실측).
+//   단계당 1회라 300k 에서 한 번 울면 500k 까지 무신호, ⚫ 뒤로는 영원히 무신호였다.
+//   하루 실측에서 세 세션이 600k·771k·786k 까지 **아무 신호 없이** 올라갔다.
+//   그래서 🔴(HARD) 부터는 **STEP 마다 다시 운다.**
+//
+//   ⚠ 간격이 200k→100k 로 좁아졌다. 유호님 지시가 뒤집혔기 때문이다:
+//     08-04 오전 "너무 많이 뜨게는 하지 마" → 같은 날 저녁 **"조금 더 떠도 될 것 같다.
+//     뜬지 안 뜬지 내가 체크를 못했나?"** — 여덟 번을 띄우고도 못 보셨다는 뜻이라,
+//     소음을 걱정할 게 아니라 **눈에 닿는 횟수**를 늘려야 하는 국면이다.
+//   1M 창 기준 200·300·400·500·600·700·800·900k = 최대 8회.
+const REPEAT_ABS = 100_000;
 
-// 창이 작은 모델도 같은 비율로 — haiku(200k 창)면 STEP 40k 지만 LAST 가 180k 라
-// 다음 발화 지점 220k 는 창 밖이다. 즉 작은 창에서는 자연히 1회로 남는다.
+// 창이 작은 모델도 같은 비율로 — haiku(200k 창)면 HARD 150k · STEP 40k 라 창 안에서 2번.
 function thresholds(win) {
   return {
     WARN: Math.min(WARN_ABS, Math.round(win * 0.60)),
@@ -92,25 +95,25 @@ function thresholds(win) {
 //   그래서 두 축 중 **먼저 걸리는 쪽**을 쓴다: 큰 창은 비용 축(절대값), 작은 창은 용량 축(비율).
 //   1M 창 → 200k/300k/500k(+700k·900k) · 200k 창 → 120k/150k/180k.
 
-// 발화는 **단계당 1회**다(유호님 지시 08-04: "너무 많이 뜨게는 하지 마").
-// 1M 창 기준 세션당 최대 5번(🟡·🔴·⚫ 500k·⚫ 700k·⚫ 900k).
-// 매 턴 띄우면 경고가 배경 소음이 되고 정작 단계 상승을 놓친다.
+// 발화는 **단계당 1회**다. 매 턴 띄우면 경고가 배경 소음이 되고 정작 단계 상승을 놓친다.
+// 단계는 🟡 하나 + 🔴 위로 STEP 마다 하나씩이라, 1M 창에서 세션당 최대 8번.
 
-/** ctx → 단계. 1=🟡 2=🔴 3=⚫ 그리고 **4 이상은 ⚫ 재발화**(LAST 부터 STEP 마다 +1). */
+/** ctx → 단계. 1=🟡(WARN) · 2 이상은 HARD 부터 STEP 마다 +1. */
 function stageOf(ctx, t) {
-  if (ctx >= t.LAST) return 3 + Math.floor((ctx - t.LAST) / t.STEP);
-  if (ctx >= t.HARD) return 2;
+  if (ctx >= t.HARD) return 2 + Math.floor((ctx - t.HARD) / t.STEP);
   return 1;
 }
 
-function levelOf(stage) { return stage === 1 ? '🟡' : stage === 2 ? '🔴' : '⚫'; }
+/** 색은 단계가 아니라 **컨텍스트**로 정한다 — 창이 다른 모델에서도 같은 뜻이어야 한다. */
+function levelOf(ctx, t) { return ctx >= t.LAST ? '⚫' : ctx >= t.HARD ? '🔴' : '🟡'; }
 
 function headOf(stage) {
   if (stage === 1) return '슬슬 트랙을 닫을 준비';
   if (stage === 2) return '지금 끊을 지점이다';
   if (stage === 3) return '한참 지났다 — 지금 끊어라';
   // 4번째부터는 「몇 번째로 말하는지」를 세어 보여준다 — 같은 문구가 반복되면 배경이 된다.
-  return `${stage - 2}번째 경고 — 아직 안 끊었다`;
+  // 단계 번호 = 그 세션에서 이번이 몇 번째 발화인지와 같다(단계당 1회니까).
+  return `${stage}번째 경고 — 아직 안 끊었다`;
 }
 
 let input;
@@ -159,8 +162,15 @@ const cwd = input.cwd || process.cwd();
 const sid = input.session_id;
 
 const stage = stageOf(ctx, T);
-if (store.readStage(cwd, sid) >= stage) process.exit(0); // 같은 단계에서 두 번 말하지 않는다
+const prev = store.readStage(cwd, sid);
+if (prev >= stage) process.exit(0); // 같은 단계에서 두 번 말하지 않는다
 store.writeStage(cwd, sid, stage);
+
+// 🔴 **첫 도달에만** AI 를 깨워 정리를 시킨다 — 세션당 정확히 1회.
+// 유호님 08-04: "지금은 자동화가 아니야. 억지로 내가 신경써야" — 화면에 문구만 띄우는 건
+// 계기판이지 자동화가 아니었다. 여기서 AI 가 커밋·보드 줄·메모리를 끝내 두면
+// 유호님에게 남는 손일은 **창을 닫는 것 하나**가 된다(그건 어떤 훅도 대신 못 한다).
+const wake = prev < 2 && stage >= 2;
 
 const dirty = report.dirtyCount(cwd);
 const pct = Math.round((ctx / WINDOW) * 100);
@@ -193,7 +203,7 @@ if (stage >= 2) store.drop(cwd, sid, handoffMsg, { ctx, trigger: `context-${stag
 //   **한 턴마다 그만큼을 통째로 다시 읽는다**는 것이다(하루 비용의 88% 가 그 재읽기였다).
 //   그래서 절대값과 턴당 재읽기를 앞에 놓고, 퍼센트는 괄호 안 참고로만 남긴다.
 const msg =
-  `${levelOf(stage)} [context-budget] 컨텍스트 ${k(ctx)} — ${headOf(stage)}. ` +
+  `${levelOf(ctx, T)} [context-budget] 컨텍스트 ${k(ctx)} — ${headOf(stage)}. ` +
   `**한 턴마다 ${k(ctx)} 를 다시 읽는다**(창 ${k(WINDOW)} 의 ${pct}% — 창은 기준이 아니다).\n` +
   `${steps}\n` +
   `왜 컴팩트가 아니라 종료인가: 바닥값이 ${k(FLOOR)}라 컴팩트 도달점(≈${k(FLOOR + 5000)})이 ` +
@@ -201,13 +211,29 @@ const msg =
   report.frame(handoffMsg) +
   '\n💡 창을 새로 열거나 `/clear` 하면 위 문구가 **자동으로 입력**된다(복붙 불필요).';
 
-// ⚠ systemMessage 만 낸다 — `hookSpecificOutput.additionalContext` 를 붙이면 안 된다.
+// ⚠ AI 를 깨우는 것(`additionalContext`)은 **🔴 첫 도달 1회로 못 박는다.**
 //
-// 신설 당일(2026-08-04) 실측된 자기모순: additionalContext 는 AI 에게 주입돼 **새 턴을 깨운다**.
-//   Stop 훅이라 매 턴 끝에 발화하므로, 임계를 넘긴 뒤엔 유호님 입력이 없어도
-//   [훅 발화 → AI 턴 → 그 턴의 Stop → 훅 발화] 가 무한히 돈다.
-//   실측 4연속: 144k → 147k → 148k → 149k. **컨텍스트를 아끼려고 만든 훅이 컨텍스트를 먹었다.**
-//   AI 에게 알릴 실익도 없다 — 끊는 판단과 실행은 유호님 몫이다.
-// 회귀: tests/컨텍스트예산.test.js 「AI 를 깨우지 않는다」.
-process.stdout.write(JSON.stringify({ systemMessage: msg }));
+// 신설 당일(2026-08-04) 무한 루프를 실측했다: additionalContext 는 AI 턴을 깨우고,
+//   Stop 훅이라 그 턴이 끝나면 또 발화한다 → [훅 → AI 턴 → Stop → 훅] 이 유호님 입력
+//   없이 돈다(실측 4연속 144k→147k→148k→149k). **컨텍스트를 아끼려던 훅이 컨텍스트를 먹었다.**
+//   그때 처방은 「아예 안 깨운다」였다. 그 대가가 유호님이 매번 직접 정리하는 것이었고,
+//   같은 날 저녁 그게 마찰로 돌아왔다 — "지금은 자동화가 아니야. 억지로 내가 신경써야."
+//
+// 루프를 막는 건 「안 깨우기」가 아니라 **단계 억제**다: wake 는 `prev < 2 && stage >= 2`
+//   라 세션당 딱 한 번 참이 된다. AI 가 깨어나 정리하며 컨텍스트가 올라 다음 단계에
+//   닿아도 그때는 prev >= 2 라 다시 깨우지 않는다(화면 문구만 나간다).
+// 회귀: tests/컨텍스트예산.test.js 「AI 는 🔴 첫 도달에만 깨운다」.
+const out = { systemMessage: msg };
+if (wake) {
+  out.hookSpecificOutput = {
+    hookEventName: 'Stop',
+    additionalContext: [
+      `[context-budget] 컨텍스트가 ${k(ctx)} 를 넘었다. **이건 유호님이 방금 시킨 일이 아니라 훅이 자동 발동한 것이다.**`,
+      '유호님에게 남는 손일이 「창 닫기」 하나가 되도록 **지금 인계를 끝내라** — `/close` 스킬의 절차를 따른다:',
+      '① `git status` 전문으로 내 미커밋만 가려 범위 지정 커밋 ② `docs/세션보드.md` 의 내 트랙 줄에 **다음 할 일 1줄** ③ 굵직한 판정이 있으면 메모리에.',
+      '끝나면 **한 줄로 보고하고 멈춘다.** 새 작업을 시작하지 않는다 — 끊을지 말지는 유호님이 정한다.',
+    ].join('\n'),
+  };
+}
+process.stdout.write(JSON.stringify(out));
 process.exit(0);
