@@ -194,6 +194,28 @@ test('한글 정본 경로를 통째로 받는다 — ASCII 문자군 정규식�
   assert.strictEqual(엣지들[1].도장, null);
 });
 
+test('--stamp 도장은 파생 주석 안에만 — 본문이 정본 경로를 언급해도 오염되지 않는다 (2026-08-05 실측 2건)', () => {
+  const repo = makeRepo();
+  const maps = makeMaps([{
+    이름: '본문언급',
+    html: '<!-- 파생: docs/정본.md -->\n<html><body>\n' +
+      '<h2>docs/정본.md 를 소개하는 지도</h2>\n' +
+      '<footer>정본 = docs/정본.md</footer>\n</body></html>',
+    pdf: 콘솔라스PDF,
+  }]);
+  const r = run(['--stamp', '본문언급'], { SYNK_지도_DIR: maps, SYNK_지도_ROOT: repo.dir });
+  assert.strictEqual(r.code, 0, r.out);
+  const 갱신 = fs.readFileSync(path.join(maps, '본문언급.html'), 'utf8');
+  const 도장 = repo.h2.slice(0, 7);
+  assert.ok(
+    갱신.includes(`<!-- 파생: docs/정본.md@${도장} -->`),
+    '파생 주석에 도장이 안 찍혔다'
+  );
+  // 전역 치환이었을 때 아래 두 곳에 @가 박혀 인쇄본에 커밋 해시가 노출됐다
+  assert.ok(갱신.includes('<h2>docs/정본.md 를 소개하는 지도</h2>'), '본문 헤딩에 도장이 새어 들어갔다');
+  assert.ok(갱신.includes('정본 = docs/정본.md</footer>'), '푸터에 도장이 새어 들어갔다');
+});
+
 test('--readme 는 지도 표를 폴더에서 생성한다 (손 목록은 실제와 갈라진다 · F080 계열)', () => {
   const repo = makeRepo();
   const maps = makeMaps([{
