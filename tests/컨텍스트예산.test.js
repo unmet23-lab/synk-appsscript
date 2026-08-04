@@ -224,6 +224,96 @@ test('인계 문구는 Session-Id 트레일러로 이 세션 커밋을 찾는다
   assert.match(none, /커밋 없음/, `못 찾았으면 못 찾았다고 해야 한다: ${none}`);
 });
 
+test('🔑 창 크기는 모델마다 다르다 — 200k 고정은 5배 틀렸다 (F058)', () => {
+  // 실측: opus-4-8 999,167 · opus-5 997,026 · fable-5 897,285 · sonnet-5 674,888 · haiku 189,467.
+  // 200k 로 박아 두면 「223k / 200k (112%)」 처럼 100%를 넘는 계기판이 나온다.
+  const at = (model) => {
+    const tp = path.join(tmpRoot, `w-${seq++}.jsonl`);
+    fs.writeFileSync(tp, JSON.stringify({
+      type: 'assistant',
+      message: { model, usage: { input_tokens: 500, cache_read_input_tokens: 152_000, cache_creation_input_tokens: 2_000 } },
+    }) + '\n');
+    const r = spawnSync(process.execPath, [HOOK], {
+      input: JSON.stringify({ session_id: `w-${model}`, hook_event_name: 'Stop', transcript_path: tp, cwd: tmpRoot }),
+      encoding: 'utf8',
+      env: { ...process.env, SYNK_CTXBUDGET_DIR: fs.mkdtempSync(path.join(tmpRoot, 'w-state-')) },
+    });
+    return JSON.parse((r.stdout || '').trim()).systemMessage;
+  };
+  assert.match(at('claude-opus-5'), /\/ 1000k/, 'opus 창이 1M 이 아니다');
+  assert.match(at('claude-sonnet-5'), /\/ 1000k/, 'sonnet 창이 1M 이 아니다');
+  assert.match(at('claude-haiku-4-5-20251001'), /\/ 200k/, 'haiku 창이 200k 가 아니다');
+  // 모르는 모델은 **작은 쪽** — 크게 잡으면 퍼센트가 작아 보여 늦게 알린다
+  assert.match(at('claude-미래모델-9'), /\/ 200k/, '모르는 모델을 큰 창으로 가정했다');
+  // 어떤 모델이든 퍼센트가 100 을 넘으면 계기판이 아니다
+  for (const m of ['claude-opus-5', 'claude-haiku-4-5-20251001', 'claude-미래모델-9']) {
+    const p = Number(/\((\d+)%\)/.exec(at(m))[1]);
+    assert.ok(p <= 100, `${m}: ${p}% — 100을 넘었다`);
+  }
+});
+
+test('🔑 바통은 🔴 에서만 떨어진다 (다음 세션이 옛 인계문을 물지 않게)', () => {
+  const y = fs.mkdtempSync(path.join(tmpRoot, 'baton-y-'));
+  runHook([line(125_000, 2_000, 500)], { stateDir: y });
+  assert.ok(!fs.existsSync(path.join(y, 'handoff.json')), '🟡 인데 바통을 떨궜다 — 아직 끊을 때가 아니다');
+
+  const r = fs.mkdtempSync(path.join(tmpRoot, 'baton-r-'));
+  const v = runHook([line(155_000, 2_000, 500)], { stateDir: r });
+  const baton = path.join(r, 'handoff.json');
+  assert.ok(fs.existsSync(baton), '🔴 인데 바통이 없다 — 다음 세션이 이어받을 게 없다');
+  assert.match(JSON.parse(fs.readFileSync(baton, 'utf8')).message, /이어서 작업한다/, '바통 내용이 인계문이 아니다');
+  assert.match(v.msg, /자동으로 입력/, '🔴 안내에 자동 입력 설명이 없다');
+});
+
+// ── session-handoff (SessionStart) ──────────────────────────────────────────
+const HANDOFF_HOOK = path.join(ROOT, '.claude', 'hooks', 'session-handoff.js');
+function runHandoff(stateDir, source) {
+  const r = spawnSync(process.execPath, [HANDOFF_HOOK], {
+    input: JSON.stringify({ hook_event_name: 'SessionStart', source: source || 'startup', cwd: ROOT }),
+    encoding: 'utf8',
+    env: { ...process.env, SYNK_CTXBUDGET_DIR: stateDir },
+  });
+  const out = (r.stdout || '').trim();
+  return out ? JSON.parse(out) : null;
+}
+
+test('🔑 새 세션이 바통을 첫 메시지로 물고 시작한다 — 그리고 바통은 사라진다', () => {
+  const dir = fs.mkdtempSync(path.join(tmpRoot, 'ho-'));
+  runHook([line(155_000, 2_000, 500)], { stateDir: dir });
+
+  const first = runHandoff(dir);
+  assert.ok(first, '바통이 있는데 아무것도 안 냈다');
+  assert.strictEqual(first.hookSpecificOutput.hookEventName, 'SessionStart');
+  assert.match(first.hookSpecificOutput.initialUserMessage, /이어서 작업한다/, '첫 메시지가 인계문이 아니다');
+
+  // 안 지우면 며칠 뒤 새 세션이 옛 인계문을 물고 시작한다 — 그게 이 검사의 이유다
+  assert.strictEqual(runHandoff(dir), null, '두 번째 세션도 같은 바통을 물었다 — 일회용이어야 한다');
+});
+
+test('오래된 바통·resume·바통 없음은 조용히 통과한다 (거짓양성 0)', () => {
+  const stale = fs.mkdtempSync(path.join(tmpRoot, 'stale-'));
+  fs.writeFileSync(path.join(stale, 'handoff.json'),
+    JSON.stringify({ at: 1, message: '아주 오래된 인계문' })); // at=1 → TTL 훨씬 초과
+  assert.strictEqual(runHandoff(stale), null, '12시간 넘은 바통을 물었다 — 트랙이 이미 바뀌었다');
+
+  const res = fs.mkdtempSync(path.join(tmpRoot, 'res-'));
+  runHook([line(155_000, 2_000, 500)], { stateDir: res });
+  assert.strictEqual(runHandoff(res, 'resume'), null, 'resume 은 컨텍스트가 살아 있어 인계문이 중복 지시가 된다');
+
+  assert.strictEqual(runHandoff(fs.mkdtempSync(path.join(tmpRoot, 'none-'))), null, '바통도 없는데 반응했다');
+});
+
+test('등록층 — session-handoff 가 SessionStart(startup·clear)에 등록돼 있다', () => {
+  const s = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
+  const found = ((s.hooks && s.hooks.SessionStart) || [])
+    .filter((e) => (e.hooks || []).some((h) => /hooks\/session-handoff\.js/.test(String(h.command || ''))));
+  assert.strictEqual(found.length, 1, 'session-handoff 가 SessionStart 에 등록돼 있지 않다');
+  for (const m of ['startup', 'clear']) {
+    assert.ok(new RegExp(found[0].matcher).test(m), `매처가 ${m} 를 안 잡는다 — 그 경로로 연 세션은 인계를 못 받는다`);
+  }
+  assert.ok(!new RegExp(found[0].matcher).test('resume'), 'resume 까지 잡는다 — 이어붙인 세션에 중복 지시가 간다');
+});
+
 test('등록층 — Stop 에 등록돼 있고, 앞단에서 좁히는 필터가 없다', () => {
   const s = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
   const entries = (s.hooks && s.hooks.Stop) || [];
