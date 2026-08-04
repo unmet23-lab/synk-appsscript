@@ -45,6 +45,31 @@ function 함수본문(src, name) {
   assert.fail(name + ' 본문 끝을 못 찾았다');
 }
 
+/** 톱레벨 문자열 const 를 실값으로 꺼낸다(상수() 는 배열·객체 리터럴 전용이라 못 받는다). */
+function 문자열상수(src, name) {
+  const m = new RegExp('const ' + name + " = '([^']*)'").exec(src);
+  assert.ok(m, name + ' 문자열 상수를 못 찾았다');
+  return m[1];
+}
+
+/** 함수 **안**의 배열 리터럴을 주입한 바인딩으로 평가한다.
+ * 문자열 대조가 아니라 값을 보기 위한 이음매다 — 같은 목록을 다른 바인딩으로 두 번 평가하면
+ * 「상수를 참조하는가, 이름을 또 적었는가」가 결과로 갈린다(문구 검사로는 절대 안 갈린다 · F087). */
+function 배열리터럴(src, decl, binding) {
+  const i = src.indexOf(decl);
+  assert.notEqual(i, -1, decl + ' 를 못 찾았다');
+  const open = src.indexOf('[', i);
+  let depth = 0;
+  for (let j = open; j < src.length; j++) {
+    if (src[j] === '[') depth++;
+    else if (src[j] === ']') {
+      depth--;
+      if (!depth) return new Function(...Object.keys(binding), 'return ' + src.slice(open, j + 1))(...Object.values(binding));
+    }
+  }
+  assert.fail(decl + ' 리터럴 끝을 못 찾았다');
+}
+
 /** 순수 함수만 꺼내 실행한다(시트 API에 안 닿는 것들). */
 function 실행(names) {
   const src = names.map((n) => (n.startsWith('const ') ? '' : '') + (n.indexOf('function ') === 0 ? 함수본문(궤적, n.slice(9)) : n)).join('\n');
@@ -441,4 +466,47 @@ test('trajectory는 파생이다 — 매번 재작성되고 옛 꼬리를 지운
   const fn = 함수본문(궤적, '궤적재작성_');
   assert.ok(/clearContent\(\)/.test(fn), '옛 꼬리 행을 안 지운다 — 사라진 사람이 통계에 계속 산다');
   assert.ok(/writeIfChanged\(sh, 2, 1, out\)/.test(fn), '재작성이 소독 통로를 안 지난다');
+});
+
+test('🔑 활용동의 드롭다운이 면접폼 문구와 **글자까지** 같다 — 갈라지면 동의한 사람이 내보내기에서 빠진다', () => {
+  /* 자동 수확은 폼 답을 그대로 실어 온다. 원장 수기 칸만 자유 입력이면 「예」·「동의함」이 섞이고,
+   *   이 칸의 유일한 소비처인 **내보내기 거름망**이 그 값을 못 읽어 동의한 사람을 조용히 뺀다.
+   *   그래서 여기서 보는 것은 「드롭다운이 있는가」가 아니라 **「두 목록의 값이 같은가」**다. */
+  const 폼문구 = /mc\('자료활용동의', (\[[^\]]*\])/.exec(폼리포트);
+  assert.ok(폼문구, '면접폼의 자료활용동의 문항을 못 찾았다 — 문항이 사라졌거나 이름이 바뀌었다');
+  assert.deepEqual(상수(궤적, 'OUTCOME_CONSENTS_'), JSON.parse(폼문구[1].replace(/'/g, '"')),
+    '활용동의 드롭다운과 면접폼 선택지가 갈라졌다 — 한쪽만 고치면 수확된 행이 매번 경고로 뜬다');
+
+  // 실제로 검증이 걸리는가 — 9열(활용동의)이 재적용 목록에 있어야 한다
+  const 판 = 함수본문(궤적, '궤적_결과시트_');
+  const 열 = (판.match(/\[(\d+), OUTCOME_\w+_\]/g) || []).map((s) => Number(/\[(\d+)/.exec(s)[1]));
+  const i동의 = 상수(궤적, 'OUTCOME_HEADERS_').indexOf('활용동의') + 1;
+  assert.ok(열.includes(i동의), `활용동의(${i동의}열)에 드롭다운이 안 걸린다 — 목록만 만들고 안 쓴 것이다`);
+  /* 판(版)을 안 올리면 **이미 v1 을 본 시트는 영원히 재적용을 스킵한다** — 코드는 맞는데 라이브만 옛 상태다. */
+  assert.notEqual(문자열상수(궤적, 'OUTCOME_VALIDATION_VER_'), 'v1',
+    '검증 목록을 바꾸고 OUTCOME_VALIDATION_VER_ 를 안 올렸다 — 기존 시트는 스킵 게이트에 걸려 갱신되지 않는다');
+});
+
+test('🔴 워치독이 궤적 2시트를 본다 — 탭이 사라져도 배치 로그는 정상을 보고한다', () => {
+  /* 왜 이게 회귀로 남는가: outcome_log 의 **절반은 원장이 손으로 적는다.** 탭을 실수로 지우거나
+   *   이름을 바꾸면 ensureSheet 가 빈 시트를 새로 만들고 수확은 계속 성공한다 — 손으로 적은
+   *   졸업생 소식이 사라졌다는 신호가 어디에도 안 뜬다. 그리고 그 데이터는 **소급이 안 된다.**
+   *   워치독의 「누락 시트」 줄이 이 사고를 사람에게 알리는 유일한 층이다. */
+  const 콘텐츠AI = fs.readFileSync(path.join(ROOT, '엔진_콘텐츠AI.js'), 'utf8');
+  const OUT = 문자열상수(궤적, 'OUTCOME_TAB_');
+  const TRJ = 문자열상수(궤적, 'TRAJECTORY_TAB_');
+  const DECL = 'const reqSheets = ';
+
+  const 실목록 = 배열리터럴(콘텐츠AI, DECL, { OUTCOME_TAB_: OUT, TRAJECTORY_TAB_: TRJ });
+  assert.ok(실목록.includes(OUT), `워치독 필수 시트 목록에 ${OUT} 이 없다 — 탭이 사라져도 아무도 안 외친다`);
+  assert.ok(실목록.includes(TRJ), `워치독 필수 시트 목록에 ${TRJ} 가 없다`);
+
+  /* 🔑 이름을 두 곳에 적지 않았는지 **결과로** 가른다. 상수를 갈아 끼워 목록이 따라 갈리면
+   *   참조고, 안 갈리면 문자열을 또 적은 것이다(그때 탭 이름을 바꾸면 워치독만 옛 이름을 찾아
+   *   매주 「누락 시트」를 외친다 — 가드가 늑대소년이 되는 자리다). */
+  const 변이 = 배열리터럴(콘텐츠AI, DECL, { OUTCOME_TAB_: 'ZZ_결과', TRAJECTORY_TAB_: 'ZZ_궤적' });
+  assert.ok(변이.includes('ZZ_결과') && 변이.includes('ZZ_궤적'),
+    '워치독이 탭 이름을 문자열로 또 적었다 — 엔진_궤적.js 의 OUTCOME_TAB_·TRAJECTORY_TAB_ 를 참조해야 한다');
+  assert.ok(!변이.includes(OUT) && !변이.includes(TRJ),
+    '상수를 갈았는데 옛 이름이 목록에 남아 있다 — 참조와 하드코딩이 섞였다');
 });
