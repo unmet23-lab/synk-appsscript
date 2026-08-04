@@ -44,8 +44,37 @@ if (!files.length) {
   process.exit(1);
 }
 
+/* 테스트가 읽는 파일들의 (경로·수정시각·크기) 스냅샷.
+ *
+ * 왜 있나 (2026-08-04 실측, 거짓 적색 2회):
+ *   이 저장소는 세션이 동시에 여럿 돈다. 스위트가 20초 넘게 도는 동안 **옆 세션이
+ *   Code.js·HTML 을 편집하면** 테스트가 중간 상태를 읽고 빨간불이 된다. 그런데 그
+ *   적색은 진짜 적색과 **모양이 완전히 같다** — 실제로 그걸 보고 남의 살아있는
+ *   작업본(Code.js)을 고치러 갈 뻔했다. 통과/미실행을 가르는 것과 같은 규율이다:
+ *   **거짓 적색과 진짜 적색이 같은 모양이면 안 된다.** */
+function snapshot() {
+  const out = new Map();
+  const walk = (dir, depth) => {
+    let ents;
+    try { ents = fs.readdirSync(dir, { withFileTypes: true }); } catch (_) { return; }
+    for (const e of ents) {
+      // `.claude/state` 는 훅이 매 턴 갱신하는 런타임 상태라 늘 바뀐다 — 세면 경고에 노이즈만 는다.
+      if (e.name === 'node_modules' || e.name === '.git' || e.name === 'state') continue;
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) { if (depth > 0) walk(p, depth - 1); continue; }
+      if (!/\.(js|json|md|html|txt)$/i.test(e.name)) continue;
+      try { const s = fs.statSync(p); out.set(path.relative(ROOT, p), `${s.mtimeMs}:${s.size}`); } catch (_) { /* 사라진 파일 */ }
+    }
+  };
+  walk(ROOT, 0);
+  for (const d of ['tests', 'tools', 'docs', '.claude']) walk(path.join(ROOT, d), 2);
+  return out;
+}
+
 console.log(`[test-ci] CI 모사: TZ=UTC · HOME=${fakeHome}(빈 폴더) · 테스트 ${files.length}파일`);
+const before = snapshot();
 const r = spawnSync(process.execPath, ['--test', ...files], { cwd: ROOT, env, stdio: 'inherit' });
+const after = snapshot();
 
 fs.rmSync(fakeHome, { recursive: true, force: true });
 
@@ -54,6 +83,21 @@ if (r.error) {
   process.exit(1);
 }
 const code = r.status === null ? 1 : r.status;
+
+// 도는 동안 바뀐 파일 — 스위트가 스스로 만드는 임시물은 위 스냅샷 대상에 없다(tmp 로 나간다).
+const moved = [];
+for (const [p, v] of after) if (before.has(p) && before.get(p) !== v) moved.push(p);
+for (const p of before.keys()) if (!after.has(p)) moved.push(`${p} (삭제됨)`);
+
+if (code !== 0 && moved.length) {
+  console.error('');
+  console.error(`[test-ci] ⚠ **이 적색은 못 믿는다** — 테스트가 도는 동안 ${moved.length}개 파일이 바뀌었다(옆 세션이 편집 중).`);
+  for (const p of moved.slice(0, 8)) console.error(`   · ${p}`);
+  if (moved.length > 8) console.error(`   · … 외 ${moved.length - 8}건`);
+  console.error('   → **고치러 가기 전에 재실행하라.** 08-04 실측: 이 거짓 적색 2회, 하마터면 남의 작업본을 고칠 뻔했다.');
+  console.error('   → 여전히 빨갛고 이 경고가 없으면 그건 진짜다. 누구 파일인지는 `node tools/작업본소유자.js`.');
+}
+
 console.log(code === 0
   ? '[test-ci] ✅ CI 모사 초록 — 이 결과는 CI에서도 초록이다'
   : '[test-ci] ❌ CI 모사 실패 — 로컬에서는 통과해도 CI는 여기서 막힌다');
