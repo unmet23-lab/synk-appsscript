@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// context-budget — 컨텍스트가 「끊을 지점」에 닿았는지 매 턴 알린다 (Stop 훅)
+// context-budget — 컨텍스트가 「끊을 지점」에 닿았는지 알린다 (Stop 훅)
 //
 // 왜 있나 — 2026-08-04 실측으로 전제가 뒤집혔다.
 //   이 저장소의 **바닥값(컴팩트해도 안 줄어드는 상주분)이 68,539 토큰**이다.
-//   시스템 프롬프트 + 도구 스키마 + CLAUDE.md(17.5KB) + MEMORY.md(23.7KB) — 200k 창의 34%.
+//   시스템 프롬프트 + 도구 스키마 + CLAUDE.md(17.5KB) + MEMORY.md(23.7KB).
 //   그래서:
 //     · 컴팩트 도달점  = 바닥 68.5k + 요약문 ≈ 73k
 //     · 새 세션 시작점 = 68.5k  ← **더 작고, 요약 손실이 0이다**
@@ -14,26 +14,22 @@
 //   훅은 이벤트에 반응만 하고 이벤트를 일으키지 못한다 · 슬래시 명령 실행 불가 ·
 //   autoCompactEnabled 는 on/off 뿐이고 **임계값은 하드코딩이라 못 바꾼다** ·
 //   PreCompact 훅은 컴팩트를 **막는** 방향만 된다(exit 2). 즉 살 수 있는 건 알림층뿐이다.
+//   같은 이유로 **세션을 자동으로 끄는 것도 불가능하다**(`continue:false` 도 턴만 멈춘다).
 //
 // 재료가 추정이 아니다 — 트랜스크립트 jsonl 의 assistant 레코드에 API 가 돌려준 **실제 usage** 가 박힌다.
 //   컨텍스트 = input_tokens + cache_read_input_tokens + cache_creation_input_tokens
 //   (바이트 수로 추정하면 시스템 프롬프트·도구 스키마가 안 잡혀 실제의 절반이 나온다 — 08-04 실측)
-//   컴팩트가 일어나도 이 값은 API 가 실제로 받은 양이라 자동으로 내려간다. 별도 처리가 필요 없다.
+//   컴팩트가 일어나도 이 값은 API 가 실제로 받은 양이라 자동으로 내려간다.
 //
-// ⚠ 트랜스크립트는 비동기로 쓰여 현재 턴이 아직 안 실렸을 수 있다(공식 문서). 그래서 이 훅이 읽는 값은
-//   **최대 한 턴 뒤처진다**(≈5k). 임계를 여유 있게 잡은 이유다 — 정밀 계측기가 아니라 신호등이다.
+// ⚠ 트랜스크립트는 비동기로 쓰여 현재 턴이 아직 안 실렸을 수 있다(공식 문서). 이 훅이 읽는 값은
+//   **최대 한 턴 뒤처진다**(≈5k). 정밀 계측기가 아니라 신호등이다.
 //
 // 절대 막지 않는다. 끊을지 말지는 유호님 판단이고, 훅은 판단 재료만 준다.
 'use strict';
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
-const { spawnSync } = require('child_process');
-
-// 발화는 **단계당 1회**다(유호님 지시 08-04: "너무 많이 뜨게는 하지 마").
-// 매 턴 띄우면 경고가 배경 소음이 되고, 정작 🟡→🔴 상승을 놓친다.
-// 이음매는 테스트 격리 전용 — 로직을 끄지 않고 카운터 위치만 바꾼다.
-const STATE_DIR = process.env.SYNK_CTXBUDGET_DIR || path.join(os.tmpdir(), 'synk-context-budget');
+const store = require(path.join(__dirname, 'lib', 'handoff-store.js'));
+const report = require(path.join(__dirname, 'lib', 'session-report.js'));
 
 // 컨텍스트 창 — 모델마다 다르다(F058). 처음엔 200k 로 박아 뒀다가 실측으로 뒤집혔다:
 // 이 저장소 트랜스크립트 전수의 최대 관측치 = opus-4-8 999,167 · opus-5 997,026 ·
@@ -52,8 +48,15 @@ function windowFor(model) {
 // 08-04 실측 바닥값. 「컴팩트해도 여기까지만 내려간다」를 사람 말로 보여주는 데 쓴다.
 const FLOOR = 68_500;
 
-const WARN = 120_000; // 슬슬 트랙을 닫을 준비 — 아직 여유는 있다
-const HARD = 150_000; // 지금 끊어라 — 자동 컴팩트(창 한계 근처)가 걸리기 전에
+// ⚠ 임계는 **창 한계가 아니라 비용 축**이다. 창이 1M 이라 150k 는 15% 에 불과하지만,
+//   08-04 토큰 실측에서 하루 소비의 88% 가 「이미 실린 컨텍스트의 재읽기」였다 —
+//   비용은 창의 몇 퍼센트냐가 아니라 **절대 토큰 × 남은 턴 수**로 붙는다.
+const WARN = 120_000; // 🟡 슬슬 트랙을 닫을 준비
+const HARD = 150_000; // 🔴 지금 끊어라 — 여기서부터 한 턴마다 이만큼을 다시 읽는다
+const LAST = 300_000; // ⚫ 마지막 경고. 🔴 뒤 완전 침묵이면 500k 를 넘겨도 무소식이었다(08-04 결함).
+
+// 발화는 **단계당 1회**다(유호님 지시 08-04: "너무 많이 뜨게는 하지 마").
+// 세션당 최대 3번(🟡·🔴·⚫). 매 턴 띄우면 경고가 배경 소음이 되고 정작 단계 상승을 놓친다.
 
 let input;
 try {
@@ -67,16 +70,12 @@ if (!tp || !fs.existsSync(tp)) process.exit(0);
 
 /**
  * 트랜스크립트에서 **마지막** usage 를 찾아 `{ tokens, model }` 을 낸다. 못 찾으면 null.
- * 모델을 같이 돌려주는 이유 = 창 크기가 모델마다 다르기 때문(haiku 200k · 그 외 1M · F058).
+ * 모델을 같이 돌려주는 이유 = 창 크기가 모델마다 다르기 때문(F058).
  * 같은 줄에서 뽑는다 — 따로 찾으면 토큰과 모델이 다른 턴 것이 섞인다.
  */
 function currentContext(file) {
   let lines;
-  try {
-    lines = fs.readFileSync(file, 'utf8').split('\n');
-  } catch (_) {
-    return null;
-  }
+  try { lines = fs.readFileSync(file, 'utf8').split('\n'); } catch (_) { return null; }
   for (let i = lines.length - 1; i >= 0; i--) {
     const l = lines[i];
     if (!l || l.indexOf('"usage"') === -1) continue; // 파싱 비용 절약 — 매 턴 도는 훅이다
@@ -94,104 +93,48 @@ function currentContext(file) {
 }
 
 const info = currentContext(tp);
-if (info === null || info.tokens < WARN) process.exit(0); // 조용히 통과 — 임계 아래에선 아무 말도 하지 않는다
+if (info === null || info.tokens < WARN) process.exit(0); // 임계 아래에선 아무 말도 하지 않는다
+
 const ctx = info.tokens;
-const WINDOW = windowFor(info.model); // 모델마다 창이 다르다(F058) — 모르는 모델은 작은 쪽 가정
+const WINDOW = windowFor(info.model);
+const cwd = input.cwd || process.cwd();
+const sid = input.session_id;
 
-/** 미커밋이 남았는지. 끊으라고 말하려면 이게 0이어야 안전하다(F025·F037). */
-function dirtyFiles(cwd) {
-  try {
-    const r = spawnSync('git', ['status', '--porcelain'], {
-      cwd: cwd || process.cwd(), encoding: 'utf8', timeout: 5000,
-    });
-    if (r.error || r.status !== 0) return null; // git 을 못 부르면 「모름」 — 0건과 구별한다
-    return (r.stdout || '').split('\n').filter((s) => s.trim()).length;
-  } catch (_) {
-    return null;
-  }
-}
+const stage = ctx >= LAST ? 3 : ctx >= HARD ? 2 : 1;
+if (store.readStage(cwd, sid) >= stage) process.exit(0); // 같은 단계에서 두 번 말하지 않는다
+store.writeStage(cwd, sid, stage);
 
-const dirty = dirtyFiles(input.cwd);
+const dirty = report.dirtyCount(cwd);
 const pct = Math.round((ctx / WINDOW) * 100);
 const k = (n) => `${Math.round(n / 1000)}k`;
+
+const LEVEL = { 1: '🟡', 2: '🔴', 3: '⚫' };
+const HEAD = { 1: '슬슬 트랙을 닫을 준비', 2: '지금 끊을 지점이다', 3: '한참 지났다 — 지금 끊어라' };
 
 // 끊기 절차 — 「인계되는 것은 커밋·보드 줄·메모리 셋뿐」(CLAUDE.md 세션 규약)
 let steps;
 if (dirty === null) {
   steps = '① 미커밋 확인(`git status` 전문) → ② 커밋 → ③ 보드 줄에 다음 할 일 1줄 → ④ 세션 종료';
 } else if (dirty > 0) {
-  steps = `① **미커밋 ${dirty}건 먼저 커밋**(범위 지정 `+ '`git commit -m "..." -- 경로들`' +
+  steps = `① **미커밋 ${dirty}건 먼저 커밋**(범위 지정 ` + '`git commit -m "..." -- 경로들`' +
     ') → ② 보드 줄에 다음 할 일 1줄 → ③ 세션 종료';
 } else {
   steps = '미커밋 0건 — ① 보드 줄에 다음 할 일 1줄 → ② 세션 종료. 지금 끊으면 잃는 게 없다.';
 }
 
-const stage = ctx >= HARD ? 2 : 1;
-const level = stage === 2 ? '🔴' : '🟡';
-const head = stage === 2 ? '지금 끊을 지점이다' : '슬슬 트랙을 닫을 준비';
+const handoffMsg = report.buildHandoff(cwd, sid, { dirty });
 
-// 단계당 1회 — 같은 단계에서 이미 말했으면 조용히 나간다(🟡 뒤 🔴 로 올라가면 한 번 더).
-const stateFile = path.join(
-  STATE_DIR,
-  `${String(input.session_id || 'unknown').replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 80)}.json`
-);
-let said = 0;
-try { said = Number(JSON.parse(fs.readFileSync(stateFile, 'utf8')).stage) || 0; } catch (_) { said = 0; }
-if (said >= stage) process.exit(0);
-try {
-  fs.mkdirSync(STATE_DIR, { recursive: true });
-  fs.writeFileSync(stateFile, JSON.stringify({ stage, at: Date.now() }));
-} catch (_) {
-  /* 카운터를 못 써도 알림은 낸다 — 다만 그 세션에선 매 턴 뜬다 */
-}
-
-/**
- * 새 세션에 **그대로 붙여넣을** 인계 문구(유호님 지시 08-04).
- * 세션 간에 넘어가는 것은 커밋·보드 줄·메모리 셋뿐이라(CLAUDE.md), 그 셋의 주소를 적는다.
- * 이 세션이 뭘 했는지는 추정하지 않고 **`Session-Id` 트레일러로 실제 커밋을 찾는다**(F041 —
- * author·시각 인접성은 세션 구분자가 아니다).
- *
- * ⚠ id 가 **둘**이다. 훅 입력의 `session_id` 는 내부 에이전트 id 고, 트레일러에 박히는 것은
- *   `CLAUDE_CODE_HOST_SESSION_ID`(호스트 세션 id)다 — prepare-commit-msg 가 그렇게 쓰고,
- *   그 파일이 "내부 id 는 쓰지 말 것"이라 명시해 뒀다. 처음에 둘을 같은 것으로 가정했다가
- *   **자기 커밋을 하나도 못 찾았다**(08-04 실측). 트레일러와 같은 원천을 쓴다.
- */
-function handoff(cwd, fallbackId) {
-  const sessionId = process.env.CLAUDE_CODE_HOST_SESSION_ID || fallbackId;
-  const lines = [];
-  if (sessionId) {
-    const r = spawnSync('git', ['log', '--format=%h %s', '-20', `--grep=Session-Id: ${sessionId}`], {
-      cwd: cwd || process.cwd(), encoding: 'utf8', timeout: 5000,
-    });
-    if (!r.error && r.status === 0) {
-      for (const l of String(r.stdout || '').split('\n')) if (l.trim()) lines.push(l.trim());
-    }
-  }
-  const did = lines.length
-    ? lines.map((l) => `· ${l}`).join('\n')
-    : '· (이 세션 이름으로 된 커밋 없음 — 보드 줄과 메모리에서 찾을 것)';
-  return (
-    '── 새 세션 열고 아래를 그대로 붙여넣으세요 ──\n' +
-    'SYNK 이어서 작업한다. 직전 세션에서 한 것:\n' +
-    `${did}\n` +
-    `· 미커밋 ${dirty === null ? '(확인 필요)' : `${dirty}건`}\n` +
-    '먼저 `git log --oneline -10` 과 `docs/세션보드.md` 를 열어 내 트랙 줄을 찾고, ' +
-    '관련 메모리를 읽은 뒤 다음 할 일부터 이어라.\n' +
-    '──────────────────────────────'
-  );
-}
-
-const handoffMsg = handoff(input.cwd, input.session_id);
+// 🔴 부터 **바통을 떨군다** — 세션이 어떻게 끝나든(창을 그냥 닫아 SessionEnd 가 못 돌아도)
+// 다음 세션이 이어받게 하는 보험이다. 평범한 종료는 session-end-handoff 가 따로 떨군다.
+if (stage >= 2) store.drop(cwd, sid, handoffMsg, { ctx, trigger: `context-${stage === 3 ? 'last' : 'hard'}` });
 
 const msg =
-  `${level} [context-budget] 컨텍스트 ${k(ctx)} / ${k(WINDOW)} (${pct}%) — ${head}.\n` +
+  `${LEVEL[stage]} [context-budget] 컨텍스트 ${k(ctx)} / ${k(WINDOW)} (${pct}%) — ${HEAD[stage]}.\n` +
   `${steps}\n` +
-  `왜 컴팩트가 아니라 종료인가: 이 저장소 바닥값이 ${k(FLOOR)}라 컴팩트 도달점(≈${k(FLOOR + 5000)})이 ` +
+  `왜 컴팩트가 아니라 종료인가: 바닥값이 ${k(FLOOR)}라 컴팩트 도달점(≈${k(FLOOR + 5000)})이 ` +
   `새 세션 시작점(${k(FLOOR)})보다 크다. 세션 재시작이 더 작고 요약 손실도 0이다.\n\n` +
-  handoffMsg +
-  (stage === 2
-    ? '\n💡 창을 새로 열거나 `/clear` 하면 위 문구가 **자동으로 입력**된다(복붙 불필요).'
-    : '');
+  report.frame(handoffMsg) +
+  '\n💡 창을 새로 열거나 `/clear` 하면 위 문구가 **자동으로 입력**된다(복붙 불필요).';
 
 // ⚠ systemMessage 만 낸다 — `hookSpecificOutput.additionalContext` 를 붙이면 안 된다.
 //
@@ -199,25 +142,7 @@ const msg =
 //   Stop 훅이라 매 턴 끝에 발화하므로, 임계를 넘긴 뒤엔 유호님 입력이 없어도
 //   [훅 발화 → AI 턴 → 그 턴의 Stop → 훅 발화] 가 무한히 돈다.
 //   실측 4연속: 144k → 147k → 148k → 149k. **컨텍스트를 아끼려고 만든 훅이 컨텍스트를 먹었다.**
-//   AI 에게 알릴 실익도 없다 — 끊는 판단과 실행은 유호님 몫이고, AI 는 알아도 할 게 없다.
+//   AI 에게 알릴 실익도 없다 — 끊는 판단과 실행은 유호님 몫이다.
 // 회귀: tests/컨텍스트예산.test.js 「AI 를 깨우지 않는다」.
-// 🔴 에서 **바통을 떨군다** — 다음 세션의 SessionStart 훅(session-handoff.js)이 이걸 주워
-// `initialUserMessage` 로 넣는다. 그래서 유호님은 복붙 없이 창만 새로 열면 된다(유호님 지시 08-04).
-//
-// ⚠ 세션을 **자동으로 끄는 건 불가능하다**(공식 문서 실측: 어떤 훅도 세션을 종료하지 못하고
-//   `continue:false` 도 턴만 멈춘다). 그래서 자동화되는 건 「이어서 시작」 쪽 절반뿐이고,
-//   끄는 건 유호님이 창을 닫거나 `/clear` 하는 한 동작으로 남는다. 그 한 동작을 없앨 방법은 없다.
-if (stage === 2) {
-  try {
-    fs.mkdirSync(STATE_DIR, { recursive: true });
-    fs.writeFileSync(
-      path.join(STATE_DIR, 'handoff.json'),
-      JSON.stringify({ at: Date.now(), cwd: input.cwd || '', message: handoffMsg })
-    );
-  } catch (_) {
-    /* 바통을 못 떨궈도 경고는 낸다 — 인계 문구가 화면에 이미 있다 */
-  }
-}
-
 process.stdout.write(JSON.stringify({ systemMessage: msg }));
 process.exit(0);

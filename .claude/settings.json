@@ -97,6 +97,19 @@
           }
         ]
       }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/session-end-handoff.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { echo \"SYNK session-end-handoff 미실행: $H (node 또는 훅 파일 없음 — F044)\" >&2; exit 1; }; printf %s \"$IN\" | node \"$H\"",
+            "shell": "bash",
+            "timeout": 20,
+            "statusMessage": "인계 바통 남기기"
+          }
+        ]
+      }
     ]
   },
   "permissions": {
