@@ -12,6 +12,12 @@ SYNK 인쇄물 검사 — 만들어진 PDF 를 직접 열어 브랜드 키트 �
    그래서 이 검사기는 선언이 아니라 **실사용**을 읽는다 — 컨텐츠 스트림을 해석해
    Tf 로 선택되고 Tj/TJ 로 그려진 폰트, 그리고 실제 페인트 연산에 걸린 색만 센다.
 
+   세 번째 결함(08-04 발표물 6종 검사에서 실측): scn 의 **이름 피연산자(Pattern)** 를 몰라
+   `/Pattern cs /P117 scn … re f` 를 「초기 상태 검정 페인트」로 오인했다 — 크롬은 CSS
+   radial-gradient 도트를 타일링 패턴으로 낸다. 이번엔 「실패」 쪽으로 샜지만(안전한 방향)
+   가드가 실작업을 벌주면 사람이 가드를 끈다. 지금은 패턴 정의를 열어 **패턴이 실제로 칠할
+   색**을 센다. 회귀 = `--selftest` (tests/인쇄물키트검사.test.js 가 CI 에서 발화).
+
 판정 3축:
   ① 쪽수  — 정해진 쪽수와 정확히 일치하는가
   ② 폰트  — 실제로 그린 서체가 브랜드 3종뿐인가 (Type3·Courier·Malgun = 폴백의 증거)
@@ -173,18 +179,54 @@ def decode(raw, kind, tu):
     return "".join(tu.get(c, "�") for c in codes)
 
 
-def run(stream, resources, fonts_used, fills, strokes, depth=0, cache=None):
-    """컨텐츠 스트림을 해석해 실제로 쓰인 폰트·색만 모은다. 폼 XObject 는 재귀."""
+def pattern_colors(po, resources, fonts_used, fills, strokes, depth, cache):
+    """패턴이 실제로 칠할 색을 센다 — 타일링(1)은 내용 스트림 재귀, 셰이딩(2)은 함수 C0/C1."""
+    try:
+        pt = po.get("/PatternType")
+        if pt == 1:
+            run(po.get_data().decode("latin-1", "replace"),
+                po.get("/Resources") or resources, fonts_used, fills, strokes, depth + 1, cache)
+        elif pt == 2:
+            sh = po.get("/Shading")
+            if isinstance(sh, IndirectObject):
+                sh = sh.get_object()
+            fn = (sh or {}).get("/Function")
+            if isinstance(fn, IndirectObject):
+                fn = fn.get_object()
+            fns = fn if isinstance(fn, list) else [fn] if fn is not None else []
+            flat = []
+            for f in fns:
+                if isinstance(f, IndirectObject):
+                    f = f.get_object()
+                subs = f.get("/Functions") if hasattr(f, "get") else None
+                flat.extend([s.get_object() if isinstance(s, IndirectObject) else s for s in subs] if subs else [f])
+            for f in flat:
+                for key in ("/C0", "/C1"):
+                    arr = f.get(key) if hasattr(f, "get") else None
+                    if arr is not None and len(arr) >= 3:
+                        fills[hexof(*[float(x) for x in arr[:3]])] += 1
+    except Exception:
+        pass
+
+
+def run(stream, resources, fonts_used, fills, strokes, depth=0, cache=None,
+        init_fill="#000000", init_stroke="#000000"):
+    """컨텐츠 스트림을 해석해 실제로 쓰인 폰트·색만 모은다. 폼 XObject 는 재귀(색 상태 상속)."""
     if depth > 6:
         return
     cache = {} if cache is None else cache
     fdict = (resources or {}).get("/Font") or {}
     xobjs = (resources or {}).get("/XObject") or {}
 
-    st = []                       # 피연산자 (kind, val)
-    fill = stroke = "#000000"     # PDF 초기 색
+    st = []                            # 피연산자 (kind, val)
+    fill, stroke = init_fill, init_stroke   # 페이지 스트림 = PDF 초기 검정 · XObject = 호출자 상태
     font, ftu = None, {}
     gstack = []
+    # 크롬은 패턴 타일 이음새에 폭 ~0.00006유닛(0.00002mm) 짜리 봉합 rect 를 임의 색으로
+    # 채운다 — 잉크 면적 0 이라 실체가 없다(05 로드맵에서 #333355·#404040 로 실측).
+    # 경로가 「퇴화 rect 뿐」인 채우기는 세지 않는다. 스트로크는 퇴화 rect 라도 선이 찍히므로 그대로 센다.
+    EPS = 0.05                         # PDF 유닛 · 실컨텐츠 최소 두께(≈0.3mm=0.85u)보다 훨씬 작다
+    degen = None                       # None=경로 없음 · True=퇴화 rect 뿐 · False=실경로 있음
 
     for kind, val in tokens(stream):
         if kind in ("num", "name", "lit", "hex"):
@@ -208,9 +250,22 @@ def run(stream, resources, fonts_used, fills, strokes, depth=0, cache=None):
             elif op in ("k", "K") and len(nums) >= 4:
                 c = cmyk(*nums[-4:])
                 fill, stroke = (c, stroke) if op == "k" else (fill, c)
-            elif op in ("sc", "scn", "SC", "SCN") and nums:
-                c = hexof(*nums[-3:]) if len(nums) >= 3 else hexof(nums[0], nums[0], nums[0])
-                fill, stroke = (c, stroke) if op in ("sc", "scn") else (fill, c)
+            elif op in ("sc", "scn", "SC", "SCN"):
+                # 이름 피연산자 = Pattern 색공간. 잉크는 패턴 정의 안에 있으므로 거기서 세고,
+                # 현재 색은 센티널로 바꿔 페인트 연산에서 이중 계수·검정 오인을 막는다(3번째 결함).
+                pname = next((v for k, v in st if k == "name"), None)
+                if pname is not None:
+                    pats = (resources or {}).get("/Pattern") or {}
+                    po = pats.get("/" + str(pname))
+                    if isinstance(po, IndirectObject):
+                        po = po.get_object()
+                    if po is not None:
+                        pattern_colors(po, resources, fonts_used, fills, strokes, depth, cache)
+                    c = "(pattern)"
+                    fill, stroke = (c, stroke) if op in ("sc", "scn") else (fill, c)
+                elif nums:
+                    c = hexof(*nums[-3:]) if len(nums) >= 3 else hexof(nums[0], nums[0], nums[0])
+                    fill, stroke = (c, stroke) if op in ("sc", "scn") else (fill, c)
             elif op == "Tf":
                 key = next((v for k, v in st if k == "name"), None)
                 d = fdict.get("/" + str(key))
@@ -229,11 +284,29 @@ def run(stream, resources, fonts_used, fills, strokes, depth=0, cache=None):
                     rec["runs"] += 1
                     for k, v in strs:
                         rec["chars"].update(decode(v, k, ftu))
-                fills[fill] += 1          # 텍스트는 채우기 색으로 그려진다(렌더모드 0)
-            elif op in ("f", "F", "f*", "b", "b*", "B", "B*"):
-                fills[fill] += 1
+                if fill != "(pattern)":   # 패턴 잉크는 정의에서 이미 셌다
+                    fills[fill] += 1      # 텍스트는 채우기 색으로 그려진다(렌더모드 0)
+            elif op == "re" and len(nums) >= 4:
+                d = abs(nums[-2]) < EPS or abs(nums[-1]) < EPS
+                degen = d if degen is None else (degen and d)
+            elif op in ("m", "l", "c", "v", "y"):
+                degen = False
+            elif op in ("f", "F", "f*"):
+                if fill != "(pattern)" and degen is not True:
+                    fills[fill] += 1
+                degen = None
+            elif op in ("b", "b*", "B", "B*"):
+                if fill != "(pattern)":
+                    fills[fill] += 1
+                if stroke != "(pattern)":
+                    strokes[stroke] += 1
+                degen = None
             elif op in ("S", "s"):
-                strokes[stroke] += 1
+                if stroke != "(pattern)":
+                    strokes[stroke] += 1
+                degen = None
+            elif op == "n":
+                degen = None
             elif op == "Do":
                 key = next((v for k, v in st if k == "name"), None)
                 xo = xobjs.get("/" + str(key))
@@ -242,19 +315,61 @@ def run(stream, resources, fonts_used, fills, strokes, depth=0, cache=None):
                 if xo is not None and xo.get("/Subtype") == "/Form":
                     run(xo.get_data().decode("latin-1", "replace"),
                         xo.get("/Resources") or resources,
-                        fonts_used, fills, strokes, depth + 1, cache)
+                        fonts_used, fills, strokes, depth + 1, cache,
+                        init_fill=fill, init_stroke=stroke)
         except Exception:
             pass
         st = []
 
 
+class _FakeStream(dict):
+    """selftest 용 최소 패턴 객체 — pypdf 스트림처럼 get()·get_data() 만 흉내낸다."""
+    def __init__(self, d, data):
+        super().__init__(d)
+        self._d = data
+
+    def get_data(self):
+        return self._d.encode("latin-1")
+
+
+def selftest():
+    """3번째 결함(Pattern → 검정 오인) 회귀 픽스처. 탐지력은 여기가 지고,
+    tests/인쇄물키트검사.test.js 가 CI 에서 이걸 발화시킨다(python 없으면 skip 으로 드러남)."""
+    fonts, fills, strokes = {}, Counter(), Counter()
+    tile = _FakeStream({"/PatternType": 1, "/Resources": {}}, "1 0 0 rg 0 0 5 5 re f")
+    res = {"/Pattern": {"/P1": tile}, "/Font": {}, "/XObject": {}}
+    run("/Pattern cs /P1 scn 0 0 10 10 re f 0 1 0 rg 0 0 1 1 re f", res, fonts, fills, strokes)
+    assert fills.get("#FF0000") == 1, "타일링 패턴 안의 빨강을 못 셌다: %r" % dict(fills)
+    assert "#000000" not in fills, "패턴 칠을 초기 검정으로 오인했다(3번째 결함 재발): %r" % dict(fills)
+    assert fills.get("#00FF00") == 1, "패턴 뒤 일반 색 복원이 깨졌다: %r" % dict(fills)
+    # 거짓양성만 없애고 탐지력은 유지 — 진짜 검정 페인트는 여전히 잡는다
+    fonts2, fills2, strokes2 = {}, Counter(), Counter()
+    run("0 0 10 10 re f", {}, fonts2, fills2, strokes2)
+    assert fills2.get("#000000") == 1, "진짜 검정 페인트를 놓치게 됐다: %r" % dict(fills2)
+    # 크롬의 타일 이음새 슬리버(면적 0 rect 채우기)는 세지 않는다 — 단 스트로크·실경로는 여전히 센다
+    fonts3, fills3, strokes3 = {}, Counter(), Counter()
+    run(".2 .2 .3333 rg 0 0 157 .00006 re f  1 0 0 RG 0 0 157 .00006 re S  0 0 1 rg 0 0 157 .00006 re 0 0 5 5 re f",
+        {}, fonts3, fills3, strokes3)
+    assert "#333355" not in fills3, "면적 0 슬리버 채우기를 세고 있다: %r" % dict(fills3)
+    assert strokes3.get("#FF0000") == 1, "퇴화 rect 스트로크(실제로 선이 찍힌다)를 놓쳤다"
+    assert fills3.get("#0000FF") == 1, "퇴화+실경로 혼합 채우기를 놓쳤다"
+    print("selftest OK — 패턴 3건 + 검정 탐지력 1건 + 슬리버 3건")
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("pdf")
+    ap.add_argument("pdf", nargs="?")
     ap.add_argument("--pages", type=int, default=None)
     ap.add_argument("--forbid", default="")
     ap.add_argument("-v", "--verbose", action="store_true")
+    ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args()
+
+    if a.selftest:
+        selftest()
+        return
+    if not a.pdf:
+        ap.error("pdf 경로가 필요하다 (--selftest 제외)")
 
     r = PdfReader(a.pdf)
     fails = []

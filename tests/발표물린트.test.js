@@ -27,6 +27,7 @@ function page(opts) {
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>t</title>
 <style>
 ${o.cssComment || ''}
+${o.extraCss || ''}
 @page { size: A4 portrait; margin: 0; }
 :root{ --midnight:${o.midnight || '#0F1730'}; }
 html,body{ font-family:${o.font || "'Inter Tight','SUIT Variable'"},sans-serif; print-color-adjust:exact; }
@@ -73,6 +74,25 @@ test('🔑 DM Mono 에 한글이 들어가면 잡는다 (글리프가 없어 인
   const v = run(page({ monoText: 'DESTINATION · 한국 유학' }));
   assert.strictEqual(v.code, 1, 'DM Mono 안의 한글을 통과시켰다');
   assert.match(v.out, /DM Mono/);
+});
+
+test('🔑 DM Mono 를 .mono 밖 CSS 셀렉터로 입히면 잡는다 (01 덱 리허설표 실측 구멍)', () => {
+  // class="mono" 내용 검사는 CSS font-family 경로를 못 본다 — 통로를 하나로 강제해야 완전해진다.
+  const bad = run(page({ extraCss: ".reh td{ font-family:'DM Mono',monospace; }" }));
+  assert.strictEqual(bad.code, 1, 'CSS 경로의 DM Mono 를 통과시켰다 — 내용 검사가 못 보는 통로다');
+  assert.match(bad.out, /\.mono 통로 밖/);
+
+  // ::before 는 마크업 클래스를 못 다는 대신 content 가 CSS 안에 있다 — 라틴이면 통과, 한글이면 실패
+  const okC = run(page({ extraCss: ".mn::before{ content:'MN '; font-family:'DM Mono',monospace; }" }));
+  assert.strictEqual(okC.code, 0, `한글 없는 content 의사요소를 잡았다(거짓양성):\n${okC.out}`);
+  const badC = run(page({ extraCss: ".mn::before{ content:'몽골 '; font-family:'DM Mono',monospace; }" }));
+  assert.strictEqual(badC.code, 1, 'content 속 한글을 놓쳤다 — 의사요소 예외가 탐지력까지 없앴다');
+
+  // 세 번째 통로 — <code> 등 시맨틱 모노 태그의 한글은 브라우저 기본 모노가 굴림으로 폴백한다
+  const badT = run(page({ extra: '<div>대본 = <code>08_설명회_스피치.txt</code></div>' }));
+  assert.strictEqual(badT.code, 1, '<code> 속 한글을 통과시켰다 — 굴림 폴백이 인쇄에 그대로 나간다');
+  const okT = run(page({ extra: '<div>파일 = <code>run.sh</code></div>' }));
+  assert.strictEqual(okT.code, 0, `라틴 전용 <code> 를 잡았다(거짓양성):\n${okT.out}`);
 });
 
 test('🔑 「졌다」는 단독 낱말일 때만 잡는다 — 「즐거워졌다」를 벌주지 않는다', () => {

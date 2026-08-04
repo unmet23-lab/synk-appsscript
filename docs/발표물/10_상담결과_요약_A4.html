@@ -23,9 +23,11 @@
 @page { size: A4 portrait; margin: 0; }
 
 :root{
-  --coral:#FF6B5C; --coral-3:#E8543F; --coral-wash:#FFE9E4; --coral-soft:#FFCFC6;
+  --coral:#FF6B5C; --coral-wash:#FFE9E4; --coral-soft:#FFCFC6;
+  --coral-3:#E8543F; /* 라이트 강조 글자 전용 — 24px↑ 또는 18.7px↑ bold */
   --paper:#FBF7EE; --navy:#1A2340; --navy-2:#0F1730; --navy-3:#2A3358;
-  --cream:#F6F1E8; --cream-2:#EFE7D7; --cream-3:#E7DDC7; --ink:#171820;
+  --cream:#F6F1E8; --cream-2:#EFE7D7; --cream-3:#E7DDC7;
+  --ink:#171820; /* 코랄 면 위 글자 전용 — 본문 잉크는 --navy */
   --hair:rgba(42,51,88,.25);
 }
 *{ box-sizing:border-box; margin:0; padding:0; }
@@ -53,9 +55,8 @@ html,body{
 .hero::before{
   content:''; position:absolute; inset:0;
   background-image:
-    radial-gradient(circle at 1mm 1mm, rgba(255,107,92,.28) 0 .38mm, transparent .38mm),
     radial-gradient(circle at 4.5mm 4.5mm, rgba(246,241,232,.13) 0 .26mm, transparent .26mm);
-  background-size:8mm 8mm, 8mm 8mm;
+  background-size:8mm 8mm;
 }
 .hero::after{
   content:''; position:absolute; left:0; right:0; bottom:0; height:.6mm;
@@ -64,7 +65,7 @@ html,body{
 .hero .in{ position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
 .eyebrow{ font-size:2.4mm; font-weight:700; letter-spacing:.28em; color:var(--cream-3); }
 /* 몽골어가 주 언어 — 한국어는 그 아래 작게 병기(§10 ①) */
-.hero .mnhead{ font-size:6.6mm; font-weight:800; color:var(--cream-3); letter-spacing:.04em; margin-top:2.6mm; line-height:1.1; }
+.hero .mnhead{ font-size:6.6mm; font-weight:800; color:var(--cream); letter-spacing:.04em; margin-top:2.6mm; line-height:1.1; }
 .hero .kohead{ font-size:3.1mm; color:var(--cream-3); margin-top:2mm; }
 
 /* ⚠ .symbol 은 정사각이 아니다 — W5 축약 워드마크 가로:세로 = 1.5:1. 주입은 tools/로고주입.js */
@@ -97,13 +98,13 @@ html,body{
 /* 6칸 여정 띠 — 5번 로드맵의 축소판 */
 .band{ display:flex; gap:1mm; margin-top:1.6mm; }
 .band .c{ flex:1 1 0; border-radius:1mm; padding:1.4mm .3mm; text-align:center; border:.25mm solid var(--hair); background:var(--cream-2); }
-.band .c.j{ background:var(--coral-wash); border-color:var(--coral-soft); }
+.band .c.j{ background:var(--cream-2); border:.5mm solid var(--navy-3); }   /* 흑백 재복사 생존 — 색이 아니라 보더가 구분을 진다 */
 .band .c .l{ font-size:2.3mm; font-weight:800; }
-.band .c .g{ font-size:2mm; color:var(--navy-3); margin-top:.4mm; font-family:'DM Mono',ui-monospace,monospace; }
+.band .c .g{ font-size:2mm; color:var(--navy-3); margin-top:.4mm; }
 .bandnote{ font-size:2.4mm; color:var(--navy-3); margin-top:1.6mm; font-weight:800; }
 
 .dest{ display:flex; gap:2.2mm; margin-top:1.8mm; }
-.dest .d{ flex:1 1 0; border-radius:1.4mm; padding:1.6mm 2mm; background:#fff; border:.3mm solid var(--cream-3); }
+.dest .d{ flex:1 1 0; border-radius:1.4mm; padding:1.6mm 2mm; background:var(--paper); border:.3mm solid var(--cream-3); }
 .dest .d .k{ font-size:1.9mm; font-weight:800; color:var(--navy-3); letter-spacing:.09em; }
 .dest .d .v{ font-size:2.8mm; font-weight:800; margin-top:.6mm; line-height:1.28; }
 
@@ -117,19 +118,18 @@ html,body{
 .cyc .s .n{
   flex:0 0 auto; width:4.4mm; height:4.4mm; border-radius:50%; background:var(--navy-2); color:var(--cream);
   font-size:2.2mm; font-weight:700; display:flex; align-items:center; justify-content:center;
-  font-family:'DM Mono',ui-monospace,monospace;
 }
 .cyc .s .t{ font-size:2.6mm; line-height:1.4; }
 .cyc .s .t b{ font-weight:800; }
 
 .pow{ display:flex; gap:1.8mm; margin-top:1.6mm; }
-.pow .p{ flex:1 1 0; border:.25mm solid var(--hair); border-radius:1.4mm; padding:1.8mm 1.6mm; background:#fff; }
+.pow .p{ flex:1 1 0; border:.25mm solid var(--hair); border-radius:1.4mm; padding:1.8mm 1.6mm; background:var(--paper); }
 .pow .p .t{ font-size:2.5mm; font-weight:800; line-height:1.28; }
 .pow .p .r{ font-size:2.1mm; color:var(--navy-3); margin-top:.9mm; line-height:1.34; }
 .pow .p .r b{ color:var(--navy); font-weight:800; }
 
 .chips{ display:flex; flex-wrap:wrap; gap:1.2mm; margin-top:1.5mm; }
-.chips span{ font-size:2.3mm; font-weight:800; padding:1mm 2mm; border-radius:1mm; background:#fff; border:.25mm solid var(--hair); }
+.chips span{ font-size:2.3mm; font-weight:800; padding:1mm 2mm; border-radius:1mm; background:var(--paper); border:.25mm solid var(--hair); }
 .chips span.g{ background:var(--navy-2); border-color:var(--navy-2); color:var(--cream); }
 
 .contact{ margin-top:auto; border-top:.4mm solid var(--hair); padding-top:2.2mm; }
@@ -197,7 +197,8 @@ html,body{
         <div class="box">
           <div class="lbl">________ <span class="ko">지금 자리</span></div>
           <div class="fill"></div>
-          <div style="font-size:2.2mm;color:var(--navy-3);margin-top:1.2mm">☐ 첫 수업 날 레벨테스트로 확인<span class="mn">10자</span></div>
+          <!-- 체크박스는 글리프가 아니라 CSS 박스 — ☐(U+2610)는 브랜드 3종 어디에도 없어 폰트를 깔아도 폴백한다(등록서 실측) -->
+          <div style="font-size:2.2mm;color:var(--navy-3);margin-top:1.2mm"><span style="display:inline-block;width:2mm;height:2mm;border:.3mm solid var(--navy-3);border-radius:.3mm;vertical-align:-.2mm;margin-right:.8mm"></span>첫 수업 날 레벨테스트로 확인<span class="mn">10자</span></div>
         </div>
 
         <div class="box sig">
@@ -209,12 +210,12 @@ html,body{
         <div class="box">
           <div class="lbl">________ <span class="ko">목표까지의 길</span></div>
           <div class="band">
-            <div class="c"><div class="l">Lv1</div><div class="g">1</div></div>
-            <div class="c"><div class="l">Lv2</div><div class="g">2</div></div>
-            <div class="c"><div class="l">Lv3</div><div class="g">2~3</div></div>
-            <div class="c j"><div class="l">Lv4</div><div class="g">3</div></div>
-            <div class="c j"><div class="l">Lv5</div><div class="g">3~4</div></div>
-            <div class="c j"><div class="l">Lv6</div><div class="g">4~5</div></div>
+            <div class="c"><div class="l">Lv1</div><div class="g mono">1</div></div>
+            <div class="c"><div class="l">Lv2</div><div class="g mono">2</div></div>
+            <div class="c"><div class="l">Lv3</div><div class="g mono">2~3</div></div>
+            <div class="c j"><div class="l">Lv4</div><div class="g mono">3</div></div>
+            <div class="c j"><div class="l">Lv5</div><div class="g mono">3~4</div></div>
+            <div class="c j"><div class="l">Lv6</div><div class="g mono">4~5</div></div>
           </div>
           <div class="bandnote">시작 Lv ____ → 목표 ____급 · 정규 과정 ____시즌<span class="mn">18자</span></div>
           <div class="dest">
@@ -247,10 +248,10 @@ html,body{
           <div class="mnh">__________________</div>
           <div class="koh">8주 동안 무엇이 일어나는가</div>
           <div class="cyc">
-            <div class="s"><div class="n">1</div><div class="t"><b>Learn</b> — 배웁니다. 매일의 워밍업부터 이미 한국어 수업입니다.<div class="mn">34자</div></div></div>
-            <div class="s"><div class="n">2</div><div class="t"><b>Plan</b> — 방향을 정합니다. 「나침반」 세션에서 목적을 먼저 묻습니다.<div class="mn">34자</div></div></div>
-            <div class="s"><div class="n">3</div><div class="t"><b>Experience</b> — 몸으로 겪습니다. 「싱크 크루」를 팀으로 완성합니다.<div class="mn">36자</div></div></div>
-            <div class="s"><div class="n">4</div><div class="t"><b>Record</b> — 기록으로 남깁니다. 「싱크 포트폴리오」에 쌓입니다.<div class="mn">32자</div></div></div>
+            <div class="s"><div class="n mono">1</div><div class="t"><b>Learn</b> — 배웁니다. 매일의 워밍업부터 이미 한국어 수업입니다.<div class="mn">34자</div></div></div>
+            <div class="s"><div class="n mono">2</div><div class="t"><b>Plan</b> — 방향을 정합니다. 「나침반」 세션에서 목적을 먼저 묻습니다.<div class="mn">34자</div></div></div>
+            <div class="s"><div class="n mono">3</div><div class="t"><b>Experience</b> — 몸으로 겪습니다. 「싱크 크루」를 팀으로 완성합니다.<div class="mn">36자</div></div></div>
+            <div class="s"><div class="n mono">4</div><div class="t"><b>Record</b> — 기록으로 남깁니다. 「싱크 포트폴리오」에 쌓입니다.<div class="mn">32자</div></div></div>
           </div>
         </div>
 
