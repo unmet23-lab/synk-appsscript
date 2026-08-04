@@ -333,9 +333,20 @@ test('🔑 세션이 여러 개여도 서로 덮지 않는다 — 최신 하나�
   assert.ok(got.json, '바통이 셋인데 아무것도 못 집었다');
   assert.match(got.json.hookSpecificOutput.initialUserMessage, /표식:SESS-C/,
     '가장 최근 바통이 아닌 것을 집었다 — 직전 세션이 아니라 옛 트랙을 이어간다');
-  assert.match(got.msg, /더 오래된 바통 2건은 버렸다/, '뒤처진 바통을 안 버렸다 — 다음 세션이 또 문다');
-  assert.strictEqual(batons(st).length, 0, '집은 뒤에도 바통이 남았다 — 일회용이어야 한다');
-  assert.strictEqual(startHook(st, cwd).json, null, '두 번째 세션도 뭔가를 물었다');
+
+  // 🔑 뒤처진 바통을 **함께 지우면 그 트랙은 영영 안 이어진다.** 08-04 실사고: 창을 여러 개
+  //   쓰는 이 환경에선 300k 를 넘긴 세션이 동시에 여럿이라, 새 창 하나가 열릴 때마다 다른
+  //   트랙의 인계문이 통째로 삭제됐다(1분 차이로 뒤엣것이 앞엣것을 밀어냈다).
+  assert.match(got.msg, /2건이 \*\*아직 대기/, '남은 인계문이 있다는 걸 안 알렸다');
+  assert.strictEqual(batons(st).length, 2, '집지 않은 바통까지 지웠다 — 그 트랙은 영영 안 이어진다');
+
+  // 창을 더 열면 남은 것을 **최신 순으로 하나씩** 이어받는다
+  assert.match(startHook(st, cwd).json.hookSpecificOutput.initialUserMessage, /표식:SESS-B/,
+    '두 번째 창이 다음 바통을 못 받았다');
+  assert.match(startHook(st, cwd).json.hookSpecificOutput.initialUserMessage, /표식:SESS-A/,
+    '세 번째 창이 마지막 바통을 못 받았다');
+  assert.strictEqual(batons(st).length, 0, '다 소비했는데 파일이 남았다');
+  assert.strictEqual(startHook(st, cwd).json, null, '다 소비했는데 또 물었다');
 });
 
 test('🔑 다른 저장소의 바통은 물지 않는다 (결함 ②)', () => {

@@ -31,8 +31,8 @@ const cwd = input.cwd || process.cwd();
 const baton = store.take(cwd); // 이 저장소의 최신 바통 1개(집으면 지운다) + 오래된 것 청소
 if (!baton || !String(baton.message || '').trim()) process.exit(0);
 
-const extra = baton.alsoDropped > 0
-  ? ` (같은 저장소의 더 오래된 바통 ${baton.alsoDropped}건은 버렸다 — 필요하면 \`git log\` 로 확인)`
+const extra = baton.remaining > 0
+  ? ` (다른 트랙 인계문 ${baton.remaining}건이 **아직 대기 중** — 창을 하나 더 열면 그게 이어받는다)`
   : '';
 
 process.stdout.write(JSON.stringify({

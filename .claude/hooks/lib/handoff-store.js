@@ -105,9 +105,14 @@ function drop(cwd, sessionId, message, meta) {
 }
 
 /**
- * **이 프로젝트**의 바통 중 가장 최근 것을 집어 오고, 집은 것은 지운다(일회용).
+ * **이 프로젝트**의 바통 중 가장 최근 것을 집어 오고, **집은 것만** 지운다(일회용).
  * 다른 프로젝트 바통은 건드리지 않는다 — 남의 저장소 세션이 이어받으면 안 된다.
- * 같은 프로젝트의 더 오래된 바통들도 함께 지운다: 안 지우면 그 다음 세션이 옛것을 문다.
+ *
+ * ⚠ 처음엔 뒤처진 바통도 **함께 지웠다**("안 지우면 다음 세션이 옛것을 문다"). 그게 틀렸다 —
+ *   08-04 실측: 창을 여러 개 쓰는 이 환경에선 300k 를 넘긴 세션이 동시에 여럿이라, 새 창
+ *   하나가 열릴 때마다 **다른 트랙의 인계문이 통째로 삭제**됐다. 실제로 이 저장소에서
+ *   1분 차이로 떨어진 바통 둘 중 뒤엣것이 앞엣것을 밀어냈다. 잃는 쪽이 무는 쪽보다 나쁘다.
+ *   이제 남은 바통은 **다음에 여는 창이 순서대로 이어받는다**(TTL 12시간이 안전판이다).
  */
 function take(cwd) {
   sweep();
@@ -129,9 +134,9 @@ function take(cwd) {
 
   found.sort((a, b) => Number(b.j.at) - Number(a.j.at));
   const winner = found[0];
-  // 집은 것도, 뒤처진 것도 전부 지운다 — 남기면 다음 세션이 또 문다
-  for (const { p } of found) { try { fs.unlinkSync(p); } catch (_) { /* 진행 */ } }
-  return { ...winner.j, alsoDropped: found.length - 1 };
+  // **집은 것만** 지운다. 나머지는 다음에 여는 창의 몫이다(위 ⚠ 참조).
+  try { fs.unlinkSync(winner.p); } catch (_) { /* 진행 */ }
+  return { ...winner.j, remaining: found.length - 1 };
 }
 
 /* safeId 도 내보낸다 — track-collision 이 같은 STATE_DIR 에 세션별 파일을 쓴다.
