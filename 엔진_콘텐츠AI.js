@@ -1531,6 +1531,39 @@ function fbQualityGate_(card, srcText) {
   return { ok: true, reason: '' };
 }
 
+/* [v9.187] 첨삭 시스템 프롬프트 — 상수로 뽑은 이유는 재사용이 아니라 **버전을 기계가 계산하게** 하기 위해서다
+ * (talk의 TALK_SYSTEM_PROMPT와 같은 규약 · 인라인으로 되돌리면 prompt_ver가 변경을 못 본다). */
+const FB_SYSTEM_PROMPT = 'SYNK LAB(몽골 울란바토르, 뇌과학 기반 게임화 한국어 학원)의 숙제 첨삭 선생님. 학생이 쓴 한국어 문장을 교정한다. ' +
+  '학생의 급수(1~6, 0=미정)에 맞춰 어휘 난도를 조절하고, 따뜻하되 과장 없는 존댓말을 쓴다. ' +
+  // [v9.63] 무인 발행 규칙 — 검수 없이 학생에게 직행하므로 출력 규격을 여기서 고정(기계 게이트 fbQualityGate_와 쌍)
+  '규칙: ①point_mn은 반드시 몽골어(키릴 문자)로 쓰고 한국어 문법 용어만 괄호 병기 ②praise·mission은 한국어 ' +
+  '③"패배·실패·부족·늦었다" 같은 부정 단어 금지 — 같은 내용도 성장 프레임("~하면 더 강해져요")으로 말한다 ' +
+  '④사과·자기 언급(AI)·메타 발언 금지, 4칸 내용만 채운다 ⑤제출문이 한국어 문장이 아니면(무의미 문자·다른 언어만) ' +
+  'corrected에는 원문을 그대로 두고, praise는 제출한 행동 자체를 격려하고, mission은 한국어 한 문장 도전을 유도한다.';
+
+/* [v9.187] 첨삭 prompt_ver — talkPromptVer_와 같은 규약(손 번호 금지 · 지문 8자리).
+ * 교정문은 모델 출력물이라, 프롬프트·모델이 바뀌면 「학생이 어려워한 것」과 「그때 우리 교정이 나빴던 것」이
+ * 한 덩어리로 섞인다 — 지문이 있어야 2년치 병렬쌍을 층으로 가른다. 무엇이 답을 바꾸는가 = 시스템 프롬프트 + 모델.
+ * (구조화 schema 서술도 답에 영향을 주지만 talk와 같은 한계로 지문 밖이다 — 지문의 뜻은 「언제 갈렸는가」다.)
+ * ⚠ 톱레벨 계산 금지 — AI_FEEDBACK_MODEL은 Code.js에 있고 라이브 파일 로드 순서가 보장되지 않는다. */
+function fbPromptVer_() {
+  const raw = FB_SYSTEM_PROMPT + '|model=' + (typeof AI_FEEDBACK_MODEL === 'undefined' ? '?' : AI_FEEDBACK_MODEL);
+  const d = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, raw, Utilities.Charset.UTF_8);
+  return d.map(b => ((b & 0xFF) + 0x100).toString(16).slice(1)).join('').slice(0, 8);
+}
+
+/* [v9.187] 숙제ID → 문항 본문(contents A=ID · B='homework' · D=본문). 첨삭 행에 문항 **텍스트**를 스냅샷하는 재료 —
+ * 엔진_수집.js 머리의 원칙 2(「ID만 저장하면 2년 뒤 해석 불능」)를 quiz_log만 지키고 hw_feedback은 어기고 있었다.
+ * 배치당 최대 1회 지연 로드(숙제ID 있는 행이 하나도 없는 밤에는 읽기 0). */
+function hwQuestionMap_(ss) {
+  const map = {};
+  const ct = ss.getSheetByName('contents');
+  if (ct && ct.getLastRow() >= 2) ct.getRange(2, 1, ct.getLastRow() - 1, 4).getValues().forEach(r => {
+    if (String(r[1] || '') === 'homework' && r[0]) map[String(r[0]).trim()] = String(r[3] || '');
+  });
+  return map;
+}
+
 // [v9.49] 야간 AI 첨삭 배치 — 숙제폼 제출분을 Claude API로 4칸 카드(고친문장·오늘의포인트MN·칭찬·다음미션)로.
 //   비동기 설계 확정(2026-07-21 유호): 실시간 챗은 update 예산·지연으로 불성립, "다음날 아침 도착"형만 성립.
 //   실패 시 그 행부터 포인터 유지 → 다음 밤 재시도. 상한·시간예산 가드로 6분 강제종료 안전.
@@ -1563,6 +1596,10 @@ function aiFeedbackBatch_() {
   const fb = ensureSheet(ss, 'hw_feedback', HW_FEEDBACK_HEADERS); // [v9.138] 헤더 하드코딩 2벌 → 단일 정본(시트 골격과 갈라지던 것)
   hwFeedbackEnsureCols_(fb); // [v9.138] 기존 11열 시트를 15열로 증분 — 없으면 append가 뒤 4칸을 조용히 버린다
   const hwTpl = String(getState(ensureSheet(ss, 'app_state', ['key', 'value']), '숙제폼재작성틀').val || ''); // 다시쓰기 링크 틀(미생성이면 빈칸)
+  // [v9.187] 출처 2열 + 문항 스냅샷 재료 — talk 배치와 같은 규약(실행 1회 계산 · 배치 중엔 안 바뀐다)
+  const model = typeof AI_FEEDBACK_MODEL === 'undefined' ? '' : AI_FEEDBACK_MODEL;
+  const pver = fbPromptVer_();
+  let hwQ = null; // 숙제ID → 문항 본문 — 숙제ID 있는 행을 처음 만날 때 1회 로드(없는 밤엔 읽기 0)
   const t0 = Date.now();
   const AI_BUDGET_MS = 120000; // [리뷰 H1] nightJobs 뒤쪽에서 돌므로 자체 예산 2분 — 완주 마커·후속 잡을 굶기지 않는다
   let made = 0, held = 0, permFails = 0, processed = 0, lastErr = ''; // [v9.63] held=품질 게이트 격리 수
@@ -1577,6 +1614,10 @@ function aiFeedbackBatch_() {
     const ts = rows[i][0] instanceof Date ? rows[i][0] : new Date();
     const stu = info[sid];
     if (!sid || !stu || !text) { if (sid && !stu) badSid.push(sid); processed = i + 1; continue; } // 무효 행은 건너뛰고 전진 — [v9.67] 미등록 sid만 통보 수집(빈 ID·빈 문장은 폼 필수문항이라 실질 없음)
+    // [v9.187] 문항 텍스트 스냅샷 — contents는 개정되므로 ID만으로는 2년 뒤 "무엇을 시켰는지"가 안 남는다.
+    //   실패 행에도 실어야 하므로 try 밖에서 준비한다(재작성 행은 숙제ID가 비어 빈칸 — 원본 첨삭에서 조인).
+    if (hwId && !hwQ) hwQ = hwQuestionMap_(ss);
+    const 문항 = hwId && hwQ ? (hwQ[hwId] || '') : '';
     try {
       const card = callClaudeFeedback_(apiKey, stu, text);
       const gate = fbQualityGate_(card, text); // [v9.63] 무인 발행 안전판 — 미달 카드는 학생에게 안 나간다
@@ -1589,7 +1630,9 @@ function aiFeedbackBatch_() {
         셀안전_(String(card.praise || '')), 셀안전_(String(card.mission || '')),
         gate.ok ? (AI_FEEDBACK_AUTOPUBLISH ? '노출' : '대기') : '격리:' + gate.reason, '', '',
         // [v9.138] 수집 4칸 — 다시쓰기URL은 **이 카드의 id**를 프리필해, 학생이 누르면 그 첨삭에 대한 2차 시도로 들어온다
-        셀안전_(hwId), hwTagsClean_(card.error_tags), 셀안전_(reDo), hwRedoUrlOf_(hwTpl, sid, fbId)]);
+        셀안전_(hwId), hwTagsClean_(card.error_tags), 셀안전_(reDo), hwRedoUrlOf_(hwTpl, sid, fbId),
+        // [v9.187] 감사 4칸 — 문항 스냅샷·급수(제출 시점)·출처 2열(문항은 contents 소유 콘텐츠라 소독 불요 — quiz 스냅샷과 동일)
+        문항, Number(stu.lv) || 0, model, pver]);
       made++; processed = i + 1;
       /* [v9.147] 재작성 보상 — **적재에 성공한 뒤에만** 판정한다(수집이 보상보다 앞선다).
        *   준비(hw_feedback·point_logs 각 1회 읽기)는 첫 재작성에서만 일어난다.
@@ -1609,7 +1652,8 @@ function aiFeedbackBatch_() {
         // [v9.138] 첨삭이 실패해도 제출문·숙제ID·재작성 연결은 남긴다 — AI가 못 고쳤다고 학생이 쓴 문장까지 버릴 이유는 없다
         fb.appendRow(['FB' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + fb.getLastRow(), sid,
           dstr(ts, tz), 셀안전_(text), '', '', '', '', '오류:' + String(e.message || e).slice(0, 80), '', '',
-          셀안전_(hwId), '', 셀안전_(reDo), '']);
+          셀안전_(hwId), '', 셀안전_(reDo), '',
+          문항, Number(stu.lv) || 0, model, pver]); // [v9.187] 실패 행에도 감사 4칸 — 「어느 버전에서 실패가 몰렸나」의 단서
         processed = i + 1;
         props.setProperty('숙제폼_포인터', String(from + processed));
         continue;
@@ -1657,13 +1701,7 @@ function callClaudeFeedback_(apiKey, stu, text) {
   const body = {
     model: AI_FEEDBACK_MODEL,
     max_tokens: 4096, // Sonnet 5는 적응형 사고가 기본 ON이고 사고 토큰이 max_tokens에 포함 — 1024면 JSON이 잘릴 수 있다
-    system: 'SYNK LAB(몽골 울란바토르, 뇌과학 기반 게임화 한국어 학원)의 숙제 첨삭 선생님. 학생이 쓴 한국어 문장을 교정한다. ' +
-      '학생의 급수(1~6, 0=미정)에 맞춰 어휘 난도를 조절하고, 따뜻하되 과장 없는 존댓말을 쓴다. ' +
-      // [v9.63] 무인 발행 규칙 — 검수 없이 학생에게 직행하므로 출력 규격을 여기서 고정(기계 게이트 fbQualityGate_와 쌍)
-      '규칙: ①point_mn은 반드시 몽골어(키릴 문자)로 쓰고 한국어 문법 용어만 괄호 병기 ②praise·mission은 한국어 ' +
-      '③"패배·실패·부족·늦었다" 같은 부정 단어 금지 — 같은 내용도 성장 프레임("~하면 더 강해져요")으로 말한다 ' +
-      '④사과·자기 언급(AI)·메타 발언 금지, 4칸 내용만 채운다 ⑤제출문이 한국어 문장이 아니면(무의미 문자·다른 언어만) ' +
-      'corrected에는 원문을 그대로 두고, praise는 제출한 행동 자체를 격려하고, mission은 한국어 한 문장 도전을 유도한다.',
+    system: FB_SYSTEM_PROMPT, // [v9.187] 상수 참조 — 인라인으로 되돌리면 prompt_ver(fbPromptVer_)가 변경을 못 본다
     messages: [{ role: 'user', content: '학생: ' + stu.name + ' (급수: ' + (stu.lv || '미정') + ')\n제출 문장:\n' + text }],
     output_config: { format: { type: 'json_schema', schema: schema } }
   };

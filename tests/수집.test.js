@@ -237,7 +237,7 @@ test('[v9.145] talk_log는 model·prompt_ver를 남기고, 새 열은 반드시 
   // 앞에 끼우면 r[1]·r[2]·r[3]·r[4]·r[6] 위치 접근이 통째로 밀린다(이 저장소는 열 밀림으로 여러 번 당했다)
   assert.deepEqual(H.slice(0, 8), ['id', 'student_id', '턴', '학생문', 'AI답', '오류태그', '제출일', 'created_at'],
     '기존 8열의 순서가 바뀌었다 — 위치로 읽는 코드가 전부 어긋난다');
-  assert.deepEqual(H.slice(8), ['model', 'prompt_ver', 'audio_ref'], '새 열이 끝에 있지 않다'); // [v9.151] audio_ref = 음성 원본 참조(무제한 보존 · 유호 확정 08-04)
+  assert.deepEqual(H.slice(8), ['model', 'prompt_ver', 'audio_ref', '급수'], '새 열이 끝에 있지 않다'); // [v9.151] audio_ref = 음성 원본 참조(무제한 보존 · 유호 확정 08-04) · [v9.187] 급수 = 레벨 스냅샷
 });
 
 test('[v9.145] 성공 행과 실패 행이 **둘 다** 헤더 길이만큼 쓴다 — 하나만 고치면 열이 어긋난다', () => {
@@ -285,9 +285,91 @@ test('[v9.145] 이미 서 있는 시트에 새 열 이름표를 붙인다 — en
   const batch = section('function talkBatch_()', '\n}\n');
   assert.ok(batch.includes('talkHeaderHeal_'),
     '헤더 치유 호출이 없다 — v9.139로 이미 만들어진 8열 시트는 값만 들어가고 머리글이 없는 채로 남는다');
-  const heal = section('function talkHeaderHeal_(', '\n}\n');
+  // [v9.187] 치유 본체는 공용 하나(헤더보정_) — 로직이 시트마다 제 벌이면 한쪽만 고쳐져 조용히 갈라진다
+  const heal = section('function 헤더보정_(', '\n}\n');
   assert.ok(heal.includes('getMaxColumns'), '시트 물리 열이 모자랄 때 넓히지 않는다');
-  assert.ok(/return;/.test(heal), '멱등 조기 반환이 없다 — 야간 배치가 매일 헤더를 다시 쓴다');
+  assert.ok(heal.includes("!== h"), '멱등이 아니다 — 이미 맞는 헤더도 매일 다시 쓴다(변경 있을 때만 setValue여야 한다)');
+  assert.ok(section('function talkHeaderHeal_(', '\n}\n').includes('헤더보정_'), 'talk 치유가 공용 본체를 안 쓴다(두 벌 갈라짐)');
+  assert.ok(section('function hwFeedbackEnsureCols_(', '\n}\n').includes('헤더보정_'), 'hw 치유가 공용 본체를 안 쓴다');
+  assert.ok(section('function quizSweep_(ss)', '\n}\n').includes('헤더보정_(ql, QUIZ_LOG_HEADERS)'),
+    'quiz_log에 치유가 없다 — 라이브 11열 시트에서 급수 칸이 조용히 버려진다');
+  const 교재 = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8').replace(/\r\n/g, '\n');
+  assert.ok(교재.includes('헤더보정_(vl, VOICE_LOG_HEADERS)'), 'voice_log에 공용 치유가 없다 — 9열 시트에서 급수 칸이 버려진다');
+});
+
+/* ─────────────────────────────────────────────────────────────
+ * [v9.187] 학습데이터 스키마 감사분 — 제품방향 §설계 불변식 2 「학생·레벨·시점을 키로 남긴다」.
+ * 레벨(급수)이 수집 4시트 전부에 없었고, 첨삭엔 출처(model·prompt_ver)와 문항 텍스트도 없었다.
+ * 전부 소급 불가 계열 — profiles 급수는 승급하면 과거가 지워지는 현재값이다.
+ * ───────────────────────────────────────────────────────────── */
+
+const 교재소스 = () => fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8').replace(/\r\n/g, '\n');
+
+test('[v9.187] 수집 4시트 전부 급수가 맨 끝 열에 있다 — 기존 열 순서는 불변', () => {
+  const QH = JSON.parse(code.match(/const QUIZ_LOG_HEADERS = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
+  assert.deepEqual(QH.slice(0, 11), ['id', 'student_id', '퀴즈ID', '유형', '문제', '고른답', '정답', '정답여부', '확신도', '제출일', 'created_at'],
+    'quiz_log 기존 11열 순서가 바뀌었다 — 위치로 읽는 코드가 전부 어긋난다');
+  assert.deepEqual(QH.slice(11), ['급수'], 'quiz_log 급수가 맨 끝이 아니다');
+  const HH = JSON.parse(code.match(/const HW_FEEDBACK_HEADERS = (\[[\s\S]*?\]);/)[1].replace(/'/g, '"'));
+  assert.deepEqual(HH.slice(0, 15), ['id', 'student_id', '제출일', '제출문', '고친문장', '오늘의포인트', '칭찬', '다음미션',
+    '상태', '학생확인', '포인트지급', '숙제ID', '오류태그', '재작성원본', '다시쓰기URL'], 'hw_feedback 기존 15열 순서가 바뀌었다');
+  assert.deepEqual(HH.slice(15), ['숙제문항', '급수', 'model', 'prompt_ver'], 'hw_feedback 감사 4열이 끝에 없다');
+  const VH = JSON.parse(교재소스().match(/const VOICE_LOG_HEADERS = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
+  assert.deepEqual(VH.slice(0, 9), ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at', '전사', '전사상태', '전사일시'],
+    'voice_log 기존 9열 순서가 바뀌었다');
+  assert.deepEqual(VH.slice(9), ['급수'], 'voice_log 급수가 맨 끝이 아니다');
+  // talk_log는 [v9.145] 검사(H.slice(8))가 급수까지 함께 못박는다 — 여기 다시 적으면 정본이 두 벌이 된다
+});
+
+test('[v9.187] 급수가 행에 실제로 실린다 — 열만 만들면 이름표 붙은 빈 칸이다', () => {
+  const quiz = section('function quizSweep_(ss)', '\n}\n');
+  assert.ok(/lvOf\[k\] = Number\(r\[66\]\) \|\| 0/.test(quiz), 'quiz가 profiles BO67(급수)을 읽지 않는다');
+  assert.ok(/lvOf\[sid\] \|\| 0\]\)/.test(quiz), 'quiz 적재 행에 급수가 없다');
+  const talk = section('function talkBatch_()', '\n}\n');
+  assert.equal((talk.match(/Number\(stu\.lv\) \|\| 0\]/g) || []).length, 2,
+    'talk 성공·실패 행 중 한쪽에 급수가 빠졌다(실패 행도 학생 문장 절반을 담는 데이터다)');
+  const vs = (() => { const t = 교재소스(); return t.slice(t.indexOf('function voiceSweep_(ss)'), t.indexOf('function writeVoiceLinks_')); })();
+  assert.ok(/lvOf\[k\] = Number\(r\[66\]\) \|\| 0/.test(vs), 'voice가 profiles BO67(급수)을 읽지 않는다');
+  assert.ok(/lvOf\[sid\] \|\| 0\]\)/.test(vs), 'voice 적재 행에 급수가 없다');
+});
+
+test('[v9.187] 대화가 급수를 실제로 전달한다 — 「급수에 맞춰 조절」 지시만 있고 급수를 안 보내던 결함의 회귀', () => {
+  // 결함의 실물: callClaudeTalk_가 stu를 인자로 받고도 본문에서 한 번도 안 썼다 — 모델은 급수를 추측할 수밖에 없었다
+  const call = section('function callClaudeTalk_(', 'const res = UrlFetchApp.fetch');
+  assert.ok(/system:\s*TALK_SYSTEM_PROMPT \+ [^,]*stu\.lv/.test(call),
+    '시스템 프롬프트에 학생 급수가 안 실린다 — 「급수에 맞춰 조절한다」가 죽은 지시로 돌아간다');
+});
+
+test('[v9.187] 첨삭도 출처(model·prompt_ver)와 문항 텍스트를 남긴다 — 행 폭은 헤더와 같다', () => {
+  const fn = section('function fbPromptVer_()', '\n}\n');
+  assert.ok(fn.includes('computeDigest'), 'fbPromptVer_가 해시가 아니다 — 손 번호는 언젠가 안 올라간다');
+  assert.ok(fn.includes('FB_SYSTEM_PROMPT') && fn.includes('AI_FEEDBACK_MODEL'), '프롬프트·모델이 지문에 안 들어간다');
+  assert.ok(!/^const FB_PROMPT_VER\s*=/m.test(code), 'prompt_ver를 톱레벨에서 계산한다 — 로드 순서에 따라 undefined가 지문에 들어간다');
+  const call = section('function callClaudeFeedback_(', 'const res = UrlFetchApp.fetch');
+  assert.ok(/system:\s*FB_SYSTEM_PROMPT/.test(call),
+    '첨삭 시스템 프롬프트가 인라인이다 — 프롬프트를 고쳐도 prompt_ver가 그대로여서 병렬쌍이 조용히 섞인다');
+  const batch = section('function aiFeedbackBatch_()', 'function callClaudeFeedback_(');
+  assert.ok(batch.includes('fbPromptVer_()'), '배치가 지문을 계산하지 않는다');
+  assert.ok(/hwQ = hwQuestionMap_\(ss\)/.test(batch), '문항 텍스트 스냅샷 로드가 없다 — ID만 남으면 2년 뒤 해석 불능(원칙 2)');
+  // 성공·실패 행 폭 = 헤더 폭(19) — 주석의 문장 콤마가 세어지지 않게 라인 주석은 걷어내고 센다
+  const HH = JSON.parse(code.match(/const HW_FEEDBACK_HEADERS = (\[[\s\S]*?\]);/)[1].replace(/'/g, '"'));
+  const countTop = (s) => {
+    let d = 0, n = 1;
+    for (const ch of s.replace(/\/\/[^\n]*/g, '')) {
+      if ('([{'.includes(ch)) d++;
+      else if (')]}'.includes(ch)) d--;
+      else if (ch === ',' && d === 0) n++;
+    }
+    return n;
+  };
+  const okLit = batch.match(/fb\.appendRow\(\[fbId,([\s\S]*?)\]\);/);
+  assert.ok(okLit, '성공 행 리터럴을 찾지 못함');
+  assert.equal(countTop(okLit[1]) + 1, HH.length, `성공 행이 ${countTop(okLit[1]) + 1}칸 — 헤더는 ${HH.length}칸이다`);
+  /* 앵커는 `e.permanent`(코드)다 — 그냥 'permanent'는 위쪽 v9.125 **주석**의 같은 단어에 먼저 걸려
+   * 성공 행을 실패 행으로 오인하고 19=19 자기일관 초록이 된다(변이 시험이 실제로 잡은 구멍). */
+  const failLit = batch.match(/e\.permanent[\s\S]*?fb\.appendRow\(\[([\s\S]*?)\]\);/);
+  assert.ok(failLit, '실패 행 리터럴을 찾지 못함');
+  assert.equal(countTop(failLit[1]), HH.length, `실패 행이 ${countTop(failLit[1])}칸 — 헤더는 ${HH.length}칸이다(실패 행을 빠뜨렸다)`);
 });
 
 test('[v9.146] 점검 함수는 「왜 안 생겼나」의 원인 넷을 전부 지목하고, 헤더 치유를 겸한다', () => {
@@ -398,6 +480,13 @@ const GOLD_V = (() => {
   return JSON.parse(m[1].replace(/'/g, '"'));
 })();
 
+/* [v9.187] 오류태그 어휘도 소스에서 뽑는다 — 픽스처가 어휘 전량을 동봉하므로 샌드박스에 실값이 필요하다. */
+const HW_TAGS = (() => {
+  const m = code.match(/const HW_ERROR_TAGS = \[([\s\S]*?)\];/);
+  assert.ok(m, 'HW_ERROR_TAGS 정의를 찾지 못함');
+  return new Function(`return [${m[1]}];`)();
+})();
+
 function loadExport(rows) {
   const s = code.indexOf('const FIXTURE_MIN_LEN');
   assert.notEqual(s, -1, 'FIXTURE_MIN_LEN 정의를 찾지 못함');
@@ -406,6 +495,7 @@ function loadExport(rows) {
   const ctx = {
     GOLD_HEADERS: GOLD_H,
     GOLD_VERDICTS: GOLD_V,
+    HW_ERROR_TAGS: HW_TAGS, // [v9.187] 픽스처가 어휘 전량을 동봉한다(두 저장소 어휘 잠금)
     SpreadsheetApp: { getActiveSpreadsheet: () => ({
       getSheetByName: n => (n === 'teacher_gold' ? sheet : null),
       getSpreadsheetTimeZone: () => 'Asia/Seoul'
@@ -435,6 +525,8 @@ test('[v9.166] 픽스처에 식별자는 한 글자도 나가지 않는다 — �
   assert.equal(doc.항목.length, 1);
   assert.equal(doc.항목[0].기대교정, '저는 몽골 사람이에요.', '강사교정이 있으면 그것이 정답이어야 한다(AI교정이 아니라)');
   assert.deepEqual(doc.항목[0].기대태그, ['조사:주격(이/가·은/는)']);
+  // [v9.187] 어휘 동봉 — 두 저장소는 태그 23종을 이름만 공유한다(사본). 전량을 실어야 받는 쪽이 갈라짐을 그날 안다
+  assert.deepEqual(doc.어휘, HW_TAGS, '오류태그 어휘 전량이 픽스처에 동봉되지 않는다 — 사본이 갈라져도 아무도 모른다');
 });
 
 test('[v9.166] 강사가 아직 안 본 행은 픽스처가 되지 않는다 — 정답 없는 항목은 채점표가 아니다', () => {
