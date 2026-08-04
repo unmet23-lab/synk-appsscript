@@ -418,9 +418,12 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
   const len2 = code.match(/const SHARED2_COL_HEADERS = \[([\s\S]*?)\];/)[1].split(',').filter(s => s.trim()).length;
   const s3 = Number(code.match(/const SHARED3_COL_START = (\d+)/)[1]); // [v9.82] 3차 블록(출퇴근·결석 카드)
   const len3 = code.match(/const SHARED3_COL_HEADERS = \[([\s\S]*?)\];/)[1].split(',').filter(s => s.trim()).length;
-  const reserved = { 105: '최애(v9.50·A4, 학생 Set Column)', 106: '목소리폼URL(교재연동)', 107: '목소리성장카드(교재연동)', 108: '필살기노트(교재연동)', 119: '랭킹보드HTML(v9.81, calcAll 리그 카드)', 129: '오늘의만남(v9.99, calcAll 소그룹 3라운드 짝)',
-    // [궤적] 의도 4칸 — 130(대화폼URL/SHARED4) 바로 뒤. 「DT128 다음이니 129」로 세다 두 열을 밟을 뻔했다.
-    131: '졸업후진로(궤적 의도)', 132: '희망진학과정(궤적 의도)', 133: '목표비자(궤적 의도)', 134: '관심전공(궤적 의도)' };
+  const reserved = { 105: '최애(v9.50·A4, 학생 Set Column)', 106: '목소리폼URL(교재연동)', 107: '목소리성장카드(교재연동)', 108: '필살기노트(교재연동)', 119: '랭킹보드HTML(v9.81, calcAll 리그 카드)', 129: '오늘의만남(v9.99, calcAll 소그룹 3라운드 짝)' };
+  /* ⚠ 이 레지스트리는 **코드가 만드는 열만** 안다. 라이브 profiles 에는 코드가 모르는 열이 자란다 —
+   *   Glide 가 심는 「🔒 Row ID」, langColOf_ 가 이름으로 만드는 「학교」·「동네」(조 편성).
+   *   그래서 여기서 「비었다」고 읽은 번호가 라이브에선 이미 남의 것일 수 있다(08-04 라이브 실측:
+   *   진로 4열을 131로 박았는데 그 자리에 학교·동네가 있었다). **새 블록은 번호를 박지 말고
+   *   이름으로 찾아라**(profilesBlockAt_). 아래 검사가 그 규율을 지킨다. */
   Object.keys(reserved).forEach(cs => {
     const c = Number(cs);
     assert.ok(!(c >= s1 && c <= s1 + len1 - 1) && !(c >= s2 && c <= s2 + len2 - 1) && !(c >= s3 && c <= s3 + len3 - 1),
@@ -430,9 +433,19 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
   assert.ok(code.includes("pf.getRange('DA1').getValue()) !== '최애'"), 'DA105 최애 보장 코드가 사라짐 — 레지스트리 갱신 필요');
   assert.ok(code.includes("pf.getRange('DO1').getValue()) !== '랭킹보드HTML'"), 'DO119 랭킹보드 보장 코드가 사라짐 — 레지스트리 갱신 필요');
   assert.ok(code.includes("pf.getRange('DY1').setValue('오늘의만남')"), 'DY129 오늘의만남 보장 코드가 사라짐 — 레지스트리 갱신 필요'); // [v9.99]
-  assert.ok(code.includes('const CAREER_COL_ = 131'), '진로 4열 시작이 131이 아니다 — 레지스트리와 갈라지면 다음 블록이 남의 열을 밟는다');
-  assert.ok(code.match(/const CAREER_HEADS_ = \[([\s\S]*?)\];/)[1].split(',').filter(x => x.trim()).length === 4,
-    '진로 블록 폭이 4가 아니다 — 레지스트리 131~134와 갈라졌다');
+  /* 🔴 진로 4열은 **번호를 박지 않는다.** 두 번 연속 틀렸다 — ①「DT128 다음이니 129」로 셌는데
+   *   129·130이 주인 있는 열이었다(tests/수집.test.js 선점 검사가 잡음) ②131로 옮겼더니
+   *   **라이브 profiles 에 이미 「학교」·「동네」가 있었다**(타 세션 라이브 실측).
+   *   세 번째를 프로즈로 막지 않는다 — 번호를 쓰는 것 자체를 금지한다. */
+  assert.ok(!/CAREER_COL_\s*=\s*\d/.test(code),
+    '진로 블록이 고정 열 번호를 되살렸다 — 라이브에는 코드가 모르는 열이 자란다(Row ID·학교·동네)');
+  assert.match(code, /profilesBlockWrite_\(dst, profilesBlockAt_\(dst, CAREER_HEADS_\)/,
+    '진로 블록이 이름 해석(profilesBlockAt_)을 안 거친다');
+  const nameAt = section('function profilesBlockAt_(', 'function profilesBlockWrite_(');
+  assert.ok(/Row ID/.test(nameAt), '이름 해석이 Glide 「🔒 Row ID」 열을 건너뛰지 않는다 — 덮으면 행 식별이 파괴된다');
+  assert.ok(/return w \+ 1/.test(nameAt), '못 찾았을 때 맨 끝에 새로 열지 않는다 — 0이나 -1이면 A열을 덮는다');
+  assert.equal(code.match(/const CAREER_HEADS_ = \[([\s\S]*?)\];/)[1].split(',').filter(x => x.trim()).length, 4,
+    '진로 블록 폭이 4가 아니다 — 헤더·값·문서가 갈라졌다');
   const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
   ['DB1', 'DC1', 'DD1'].forEach(cell => assert.ok(tb.includes("getRange('" + cell + "')"), '교재연동.js ' + cell + ' 보장 코드가 사라짐 — 레지스트리 갱신 필요'));
 });
