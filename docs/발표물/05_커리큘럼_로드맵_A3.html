@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK LAB 커리큘럼 로드맵 — A3 양면</title>
+<!--
+  SYNK LAB 발표물 5번 — 커리큘럼 로드맵 1장 (앞면) + 연간 학사 일정표 (뒷면)
+  정본 = docs/정본/SYNK/SYNK 발표물 제작 프롬프트 v1.txt v1.4 §5 + [공통 블록]
+  원천 = docs/정본/SYNK LAB/About Synk lab/SYNK_리라이팅_v2/10_SYNK_LAB_수업_커리큘럼.txt v3.2
+
+  ▶ 인쇄 방법 — 브라우저에서 Ctrl+P → "PDF로 저장"
+     · 용지 A3 · 방향 가로 · 여백 "없음" · "배경 그래픽" 켜기
+     · 이 파일은 외부 링크·이미지·폰트 CDN을 쓰지 않는다(자립형 1파일).
+-->
+<style>
+/* ── 용지 ──────────────────────────────────────────────────────────
+   여백 0으로 잠근다 — 크롬이 머리글에 날짜·URL을 찍는 것을 원천 차단한다. */
+@page { size: A3 landscape; margin: 0; }
+
+:root{
+  /* 디자인 잠금값 (프롬프트 정본 [공통 블록] ■9) */
+  --blue:#3D5AFE;      /* 주조 · 루미너스 블루 */
+  --orange:#FF6D00;    /* 강조 · 에너지 오렌지 */
+  --gold:#FFC400;      /* 보상 · 크라운 골드 */
+  --paper:#FDFCF8;     /* 바탕 · 웜 화이트 (순백 금지) */
+  --ink:#1A237E;       /* 잉크 · 딥 네이비 (순검정 대신) */
+  --midnight:#101528;  /* 반전 · 미드나잇 */
+  --hair:rgba(26,35,126,.22);
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+html,body{
+  background:var(--paper);
+  color:var(--ink);
+  /* 서체 3종 잠금. 로컬에 없으면 시스템 폴백으로 내려간다 — 레이아웃은 유지되고 결만 약해진다.
+     라틴·키릴(몽골어)용 Inter Tight 를 SUIT 보다 앞에 둔다(정본 ■9). */
+  font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
+  font-weight:500;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+
+/* 워드마크·시스템 라벨 전용. ⚠ 한글·몽골어 금지 — 글리프가 없어 깨진다(정본 ■9 금칙①) */
+.mono{ font-family:'DM Mono',ui-monospace,'Cascadia Mono','Consolas',monospace; }
+
+.sheet{
+  width:420mm; height:297mm;
+  padding:13mm 14mm 11mm;
+  display:flex; flex-direction:column;
+  position:relative; overflow:hidden;
+  background:var(--paper);
+  page-break-after:always; break-after:page;
+}
+.sheet:last-child{ page-break-after:auto; break-after:auto; }
+
+/* ── 머리 띠 (미드나잇 반전) ───────────────────────────────────── */
+.top{
+  background:var(--midnight); color:var(--paper);
+  border-radius:2.6mm;
+  padding:5.4mm 7mm;
+  display:flex; align-items:center; justify-content:space-between;
+  flex:0 0 auto;
+}
+.top h1{ font-size:8.4mm; font-weight:800; letter-spacing:-.02em; line-height:1.1; }
+.top .sub{ font-size:3.5mm; font-weight:500; color:#C9CEE6; margin-top:1.6mm; letter-spacing:.01em; }
+.wm{ text-align:right; }
+.wm .mark{ font-size:6.6mm; font-weight:700; letter-spacing:.30em; color:var(--paper); }
+.wm .slogan{ font-size:3.1mm; color:var(--gold); margin-top:1.4mm; font-weight:500; }
+
+/* ── 진입점 + 여정선 ──────────────────────────────────────────── */
+.journey{ display:flex; align-items:stretch; gap:0; margin-top:3mm; flex:1 1 auto; }
+
+/* 수평 여정선 + 관문 (정본 §5 「절대 하지 말 것」 — 계단식 상승 그래프로 그리지 않는다.
+   레벨을 올라가는 그래프로 그리면 성적 상승 보장처럼 읽힌다. 평평한 길 위의 관문으로 그린다.) */
+.trackwrap{ flex:1 1 auto; display:flex; flex-direction:column; padding-left:5mm; min-height:0; }
+.rail{ position:relative; height:6mm; margin-bottom:1.6mm; display:flex; gap:2.2mm; align-items:center; }
+.rail::before{
+  content:''; position:absolute; left:-5mm; right:2mm; top:50%;
+  height:.6mm; margin-top:-.3mm; background:var(--blue); border-radius:.3mm;
+}
+.dot{ flex:1 1 0; display:flex; justify-content:center; position:relative; }
+.dot span{
+  width:4.4mm; height:4.4mm; border-radius:50%;
+  background:var(--paper); border:.65mm solid var(--blue);
+}
+.dot.last span{ background:var(--gold); border-color:#D9A600; }
+.rail .tip{ position:absolute; right:-1.4mm; top:50%; margin-top:-1.6mm; }
+
+.entry{
+  flex:0 0 44mm; padding-right:5mm;
+  display:flex; flex-direction:column; justify-content:center;
+  border-right:.5mm dashed var(--orange);
+}
+.entry .badge{
+  display:inline-block; align-self:flex-start;
+  background:var(--orange); color:#fff;
+  font-size:3.1mm; font-weight:800; letter-spacing:.02em;
+  padding:1.5mm 3mm; border-radius:1.4mm; margin-bottom:3.4mm;
+}
+.entry h2{ font-size:5.2mm; font-weight:800; line-height:1.32; letter-spacing:-.01em; }
+.entry p{ font-size:3.3mm; line-height:1.5; margin-top:2.8mm; color:#3B4374; }
+.entry .mn{ margin-top:3.4mm; }
+
+.levels{ flex:1 1 auto; display:flex; gap:2.2mm; min-height:0; }
+
+.lv{
+  flex:1 1 0; display:flex; flex-direction:column;
+  border:.35mm solid var(--hair); border-radius:2.2mm; overflow:hidden;
+}
+
+/* 두 구간 구분 = 색 + 패턴 이중 표기 (흑백 복사 대비 · 정본 §5 사양) */
+.core{
+  background:
+    repeating-linear-gradient(45deg,
+      rgba(61,90,254,.055) 0 1.1mm, transparent 1.1mm 2.6mm),
+    #F4F6FF;
+}
+.master{
+  background:
+    repeating-radial-gradient(circle at 1.3mm 1.3mm,
+      rgba(255,196,0,.34) 0 .32mm, transparent .32mm 2.6mm),
+    #FFF9E8;
+}
+
+.lv .cap{
+  padding:3mm 2.4mm 2.6mm; text-align:center;
+  border-bottom:.35mm solid var(--hair);
+}
+.lv .cap .n{ font-size:6.4mm; font-weight:800; line-height:1; letter-spacing:-.02em; }
+.core .cap .n{ color:var(--blue); }
+.master .cap .n{ color:#8A6A00; }
+.lv .cap .track{
+  font-size:2.5mm; font-weight:800; letter-spacing:.04em; margin-top:1.8mm;
+  padding:.9mm 0; border-radius:1mm;
+}
+.core .cap .track{ background:var(--blue); color:#fff; }
+.master .cap .track{ background:var(--gold); color:#3A2E00; }
+
+.row{
+  padding:2.5mm 2.4mm;
+  border-bottom:.3mm solid rgba(26,35,126,.13);
+  text-align:center;
+}
+.row:last-child{ border-bottom:0; }
+.row .k{
+  font-size:2.4mm; font-weight:800; letter-spacing:.05em;
+  color:#6C74A8; text-transform:uppercase; margin-bottom:1.2mm;
+}
+.row .v{ font-size:3.5mm; font-weight:800; line-height:1.3; }
+.row .v.small{ font-size:3.1mm; font-weight:500; line-height:1.42; }
+
+/* 몽골어 대기 칸 — 에리카쌤 검수 전에는 채우지 않는다 */
+.mn{
+  font-size:2.6mm; color:#9AA0C4; letter-spacing:.04em;
+  margin-top:1.3mm; font-weight:500;
+}
+.mn::before{ content:'MN '; font-family:'DM Mono',ui-monospace,monospace; font-size:2.2mm; letter-spacing:.08em; }
+
+/* ── 도달제 순환 띠 ───────────────────────────────────────────── */
+.gate{
+  margin-top:3.6mm; flex:0 0 auto;
+  border:.45mm solid var(--orange); border-radius:2.2mm;
+  background:#FFF6EE;
+  padding:3.2mm 6mm;
+  display:flex; align-items:center; gap:6mm;
+}
+.gate .ico{ flex:0 0 auto; }
+.gate .txt h3{ font-size:4.4mm; font-weight:800; letter-spacing:-.01em; }
+.gate .txt p{ font-size:3.2mm; line-height:1.5; margin-top:1.6mm; color:#4A4133; }
+.gate .txt strong{ color:var(--orange); font-weight:800; }
+
+/* ── 바닥 산수 띠 ─────────────────────────────────────────────── */
+.math{
+  margin-top:3.4mm; flex:0 0 auto;
+  display:flex; align-items:stretch; gap:2.6mm;
+}
+.math .cell{
+  flex:1 1 0; border:.35mm solid var(--hair); border-radius:2mm;
+  padding:3.2mm 3.6mm; background:#fff;
+}
+.math .cell .k{ font-size:2.5mm; font-weight:800; color:#6C74A8; letter-spacing:.05em; }
+.math .cell .v{ font-size:4.2mm; font-weight:800; margin-top:1.4mm; line-height:1.25; }
+.math .cell.hi{ background:var(--midnight); border-color:var(--midnight); }
+.math .cell.hi .k{ color:#9AA3CC; }
+.math .cell.hi .v{ color:var(--paper); }
+.math .cell.hi .v em{ font-style:normal; color:var(--gold); }
+
+.foot{
+  margin-top:3.4mm; flex:0 0 auto;
+  display:flex; justify-content:space-between; align-items:flex-end;
+  font-size:2.7mm; color:#7A81AE; line-height:1.45;
+}
+.foot .src{ max-width:250mm; }
+
+/* ── 뒷면 · 학사 일정표 ───────────────────────────────────────── */
+.cal{ margin-top:6mm; flex:1 1 auto; display:flex; flex-direction:column; gap:3mm; }
+
+.season{
+  display:flex; align-items:stretch; gap:2.6mm;
+  border:.35mm solid var(--hair); border-radius:2.2mm; overflow:hidden;
+  background:#fff;
+}
+.season .name{
+  flex:0 0 52mm; padding:3mm 4mm; background:#F4F6FF;
+  border-right:.35mm solid var(--hair);
+  display:flex; flex-direction:column; justify-content:center;
+}
+.season .name .idx{ font-size:2.5mm; font-weight:800; color:var(--blue); letter-spacing:.06em; }
+.season .name .t{ font-size:4.2mm; font-weight:800; margin-top:1mm; line-height:1.25; }
+.season .name .mn{ margin-top:1.2mm; }
+
+.weeks{ flex:1 1 auto; display:flex; gap:1.4mm; padding:2.6mm 3mm; align-items:center; }
+.wk{
+  flex:1 1 0; height:11mm; border-radius:1.2mm;
+  border:.3mm solid rgba(26,35,126,.18); background:#F7F9FF;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+}
+.wk .no{ font-size:2.7mm; font-weight:800; color:#5B639C; }
+.wk .lb{ font-size:2.2mm; color:#7A81AE; margin-top:.5mm; }
+.wk.exam{ background:var(--gold); border-color:#D9A600; }
+.wk.exam .no{ color:#3A2E00; }
+.wk.exam .lb{ color:#5A4700; font-weight:800; }
+.wk.capstone{ background:var(--midnight); border-color:var(--midnight); }
+.wk.capstone .no{ color:var(--paper); }
+.wk.capstone .lb{ color:var(--gold); font-weight:800; }
+
+.breaks{
+  display:flex; gap:2.6mm; margin-top:1mm;
+}
+.brk{
+  flex:1 1 0; border:.45mm dashed var(--orange); border-radius:2.2mm;
+  background:#FFF6EE; padding:3mm 3.6mm;
+}
+.brk .k{ font-size:2.6mm; font-weight:800; color:var(--orange); letter-spacing:.04em; }
+.brk .v{ font-size:3.6mm; font-weight:800; margin-top:1.3mm; }
+.brk .blank{ letter-spacing:.06em; color:#B08050; }
+
+.note{
+  margin-top:3.4mm; flex:0 0 auto;
+  border-left:.9mm solid var(--blue); padding:2.6mm 0 2.6mm 4mm;
+  font-size:3mm; line-height:1.5; color:#3B4374;
+}
+
+@media screen{
+  body{ background:#E7E9F2; padding:8mm; }
+  .sheet{ box-shadow:0 2mm 8mm rgba(16,21,40,.18); margin:0 auto 8mm; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ 앞면 · 6레벨 로드맵 ══════════════ -->
+<section class="sheet">
+
+  <header class="top">
+    <div>
+      <h1>어디서 시작해서, 어디까지 가나요</h1>
+      <div class="sub">SYNK LAB 커리큘럼 6레벨 로드맵 · TOPIK 1~6급 · CEFR A1~C2 대응</div>
+    </div>
+    <div class="wm">
+      <div class="mark mono">SYNK</div>
+      <div class="slogan">점수를 넘어, 삶을 설계합니다</div>
+    </div>
+  </header>
+
+  <div class="journey">
+
+    <!-- 진입점 — 왼쪽 끝 (정본 §5 ④) -->
+    <div class="entry">
+      <span class="badge">START · 첫날 레벨테스트</span>
+      <h2>여기서 시작하는 게 아니라,<br>당신의 자리에서 시작합니다.</h2>
+      <p>시작 레벨은 첫날 레벨테스트로 정합니다.<br>지금 실력이 어디든, 정확히 거기서 시작합니다.</p>
+      <div class="mn">____________________</div>
+    </div>
+
+    <!-- 여정선 = 평평한 길 + 6개의 관문 (계단식 상승 그래프 금지 · 정본 §5) -->
+    <div class="trackwrap">
+
+      <div class="rail">
+        <div class="dot"><span></span></div>
+        <div class="dot"><span></span></div>
+        <div class="dot"><span></span></div>
+        <div class="dot"><span></span></div>
+        <div class="dot"><span></span></div>
+        <div class="dot last"><span></span></div>
+        <svg class="tip" width="3.4mm" height="3.2mm" viewBox="0 0 12 11" aria-hidden="true">
+          <path d="M0 0 L12 5.5 L0 11 Z" fill="#3D5AFE"/>
+        </svg>
+      </div>
+
+    <div class="levels">
+
+      <div class="lv core">
+        <div class="cap"><div class="n">Lv1</div><div class="track">시냅스 코어</div></div>
+        <div class="row"><div class="k">TOPIK</div><div class="v">준비~1급</div></div>
+        <div class="row"><div class="k">CEFR</div><div class="v">A1</div></div>
+        <div class="row"><div class="k">교재</div><div class="v">코어 1권</div></div>
+        <div class="row"><div class="k">회화</div><div class="v">톡 1권</div></div>
+        <div class="row"><div class="k">마치면</div><div class="v small">한글·인사<br>자기소개</div><div class="mn">____________</div></div>
+        <div class="row"><div class="k">기간</div><div class="v small">1시즌 · 8주</div></div>
+      </div>
+
+      <div class="lv core">
+        <div class="cap"><div class="n">Lv2</div><div class="track">시냅스 코어</div></div>
+        <div class="row"><div class="k">TOPIK</div><div class="v">2급</div></div>
+        <div class="row"><div class="k">CEFR</div><div class="v">A2</div></div>
+        <div class="row"><div class="k">교재</div><div class="v">코어 2권</div></div>
+        <div class="row"><div class="k">회화</div><div class="v">톡 1권</div></div>
+        <div class="row"><div class="k">마치면</div><div class="v small">일상 대화<br>기본 문형</div><div class="mn">____________</div></div>
+        <div class="row"><div class="k">기간</div><div class="v small">1시즌 · 8주</div></div>
+      </div>
+
+      <div class="lv core">
+        <div class="cap"><div class="n">Lv3</div><div class="track">시냅스 코어</div></div>
+        <div class="row"><div class="k">TOPIK</div><div class="v">3급</div></div>
+        <div class="row"><div class="k">CEFR</div><div class="v">B1</div></div>
+        <div class="row"><div class="k">교재</div><div class="v">코어 3권</div></div>
+        <div class="row"><div class="k">회화</div><div class="v">톡 2권</div></div>
+        <div class="row"><div class="k">마치면</div><div class="v small">익숙한 주제에<br>내 의견</div><div class="mn">____________</div></div>
+        <div class="row"><div class="k">기간</div><div class="v small">1시즌 · 8주</div></div>
+      </div>
+
+      <div class="lv core">
+        <div class="cap"><div class="n">Lv4</div><div class="track">시냅스 코어</div></div>
+        <div class="row"><div class="k">TOPIK</div><div class="v">4급</div></div>
+        <div class="row"><div class="k">CEFR</div><div class="v">B2</div></div>
+        <div class="row"><div class="k">교재</div><div class="v">코어 4권</div></div>
+        <div class="row"><div class="k">회화</div><div class="v">톡 3권</div></div>
+        <div class="row"><div class="k">마치면</div><div class="v small">사회적 주제<br>논리 전개</div><div class="mn">____________</div></div>
+        <div class="row"><div class="k">기간</div><div class="v small">1시즌 · 8주</div></div>
+      </div>
+
+      <div class="lv core">
+        <div class="cap"><div class="n">Lv5</div><div class="track">시냅스 코어</div></div>
+        <div class="row"><div class="k">TOPIK</div><div class="v">5급</div></div>
+        <div class="row"><div class="k">CEFR</div><div class="v">C1</div></div>
+        <div class="row"><div class="k">교재</div><div class="v">코어 5권</div></div>
+        <div class="row"><div class="k">회화</div><div class="v">톡 4권</div></div>
+        <div class="row"><div class="k">마치면</div><div class="v small">전문·추상 주제<br>유창하게</div><div class="mn">____________</div></div>
+        <div class="row"><div class="k">기간</div><div class="v small">1시즌 · 8주</div></div>
+      </div>
+
+      <div class="lv master">
+        <div class="cap"><div class="n">Lv6</div><div class="track">마스터 트랙</div></div>
+        <div class="row"><div class="k">TOPIK</div><div class="v">6급</div></div>
+        <div class="row"><div class="k">CEFR</div><div class="v">C1~C2</div></div>
+        <div class="row"><div class="k">교재</div><div class="v small">전문 수험 교재</div></div>
+        <div class="row"><div class="k">회화</div><div class="v">톡 4권</div></div>
+        <div class="row"><div class="k">마치면</div><div class="v small">정확·뉘앙스까지<br>(원어민급 지향)</div><div class="mn">____________</div></div>
+        <div class="row"><div class="k">기간</div><div class="v small">1시즌 · 8주</div></div>
+      </div>
+
+    </div><!-- /levels -->
+    </div><!-- /trackwrap -->
+  </div>
+
+  <!-- 도달제 순환 — 이 띠가 이 로드맵의 정직함을 담당한다 (정본 §5 ②) -->
+  <div class="gate">
+    <svg class="ico" width="19mm" height="19mm" viewBox="0 0 48 48" fill="none"
+         stroke="#FF6D00" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M40 24a16 16 0 1 1-4.7-11.3"/>
+      <path d="M36 4v9h-9"/>
+    </svg>
+    <div class="txt">
+      <h3>승급은 기간이 아니라 <strong>도달제</strong>입니다</h3>
+      <p>8주차 승급 평가를 통과하면 다음 관문으로 올라갑니다. 아직이면 <strong>‘다시 도전’</strong>으로 한 바퀴 더 단단하게 다집니다 —
+        같은 자리를 한 번 더 도는 것이 아니라, 다음 관문을 확실히 넘기 위한 한 바퀴입니다.<br>
+        진도 예시는 <strong>최단 기준 · 개인별 도달제</strong>이며, “몇 개월이면 몇 급” 같은 기간 약속은 하지 않습니다.</p>
+      <div class="mn">________________________________________________</div>
+    </div>
+  </div>
+
+  <!-- 이 그림이 반드시 말해야 하는 산수 (정본 §5 ①) -->
+  <div class="math">
+    <div class="cell"><div class="k">1 SEASON</div><div class="v">8주 = 교재 1권<br>= 달력 두 달</div></div>
+    <div class="cell"><div class="k">1 YEAR</div><div class="v">연 6시즌<br>= 12개월에 한 바퀴</div></div>
+    <div class="cell"><div class="k">TRACK</div><div class="v">Lv1~5 자체 교재<br>Lv6 전문 교재 마스터</div></div>
+    <div class="cell hi"><div class="k">PROMISE</div><div class="v">정규 과정 =<br><em>12개월 6시즌 구성</em></div></div>
+  </div>
+
+  <div class="foot">
+    <div class="src">
+      정규 과정은 5급까지 우리 교재 시냅스 코어로, 6급은 전문 교재로 마스터합니다. ·
+      회화는 별도 트랙으로 시냅스 톡 4권이 레벨에 맞춰 따라옵니다. ·
+      교재 진행 현황: 골격·레벨별 요목 확정 / 1권 원고 완성(원어민 검수를 앞두고 있습니다) / 2~6권 집필 중 / 시냅스 톡 4권 설계 단계.
+    </div>
+    <div class="mono" style="white-space:nowrap">v1.0 · 2026-08-04</div>
+  </div>
+
+</section>
+
+
+<!-- ══════════════ 뒷면 · 연간 학사 일정표 ══════════════ -->
+<section class="sheet">
+
+  <header class="top">
+    <div>
+      <h1>그래서, 언제 도나요</h1>
+      <div class="sub">연간 학사 일정 · 수업 48주 + 휴업 4주 = 52주 · 정확히 12개월에 닫힙니다</div>
+    </div>
+    <div class="wm">
+      <div class="mark mono">SYNK</div>
+      <div class="slogan">점수를 넘어, 삶을 설계합니다</div>
+    </div>
+  </header>
+
+  <div class="cal">
+
+    <div class="season">
+      <div class="name">
+        <div class="idx mono">SEASON 1</div>
+        <div class="t">첫 목소리</div>
+        <div class="mn">____________</div>
+      </div>
+      <div class="weeks">
+        <div class="wk"><div class="no">1</div></div>
+        <div class="wk"><div class="no">2</div></div>
+        <div class="wk"><div class="no">3</div></div>
+        <div class="wk"><div class="no">4</div><div class="lb">모듈 ①</div></div>
+        <div class="wk"><div class="no">5</div></div>
+        <div class="wk"><div class="no">6</div></div>
+        <div class="wk"><div class="no">7</div></div>
+        <div class="wk exam"><div class="no">8</div><div class="lb">승급 평가</div></div>
+      </div>
+    </div>
+
+    <div class="season">
+      <div class="name">
+        <div class="idx mono">SEASON 2</div>
+        <div class="t">____</div>
+        <div class="mn">____________</div>
+      </div>
+      <div class="weeks">
+        <div class="wk"><div class="no">1</div></div>
+        <div class="wk"><div class="no">2</div></div>
+        <div class="wk"><div class="no">3</div></div>
+        <div class="wk"><div class="no">4</div><div class="lb">모듈 ①</div></div>
+        <div class="wk"><div class="no">5</div></div>
+        <div class="wk"><div class="no">6</div></div>
+        <div class="wk"><div class="no">7</div></div>
+        <div class="wk exam"><div class="no">8</div><div class="lb">승급 평가</div></div>
+      </div>
+    </div>
+
+    <div class="season">
+      <div class="name">
+        <div class="idx mono">SEASON 3</div>
+        <div class="t">____</div>
+        <div class="mn">____________</div>
+      </div>
+      <div class="weeks">
+        <div class="wk"><div class="no">1</div></div>
+        <div class="wk"><div class="no">2</div></div>
+        <div class="wk"><div class="no">3</div></div>
+        <div class="wk"><div class="no">4</div><div class="lb">모듈 ①</div></div>
+        <div class="wk"><div class="no">5</div></div>
+        <div class="wk"><div class="no">6</div></div>
+        <div class="wk"><div class="no">7</div></div>
+        <div class="wk capstone"><div class="no">8</div><div class="lb">승급 + 캡스톤</div></div>
+      </div>
+    </div>
+
+    <div class="season">
+      <div class="name">
+        <div class="idx mono">SEASON 4</div>
+        <div class="t">____</div>
+        <div class="mn">____________</div>
+      </div>
+      <div class="weeks">
+        <div class="wk"><div class="no">1</div></div>
+        <div class="wk"><div class="no">2</div></div>
+        <div class="wk"><div class="no">3</div></div>
+        <div class="wk"><div class="no">4</div><div class="lb">모듈 ①</div></div>
+        <div class="wk"><div class="no">5</div></div>
+        <div class="wk"><div class="no">6</div></div>
+        <div class="wk"><div class="no">7</div></div>
+        <div class="wk exam"><div class="no">8</div><div class="lb">승급 평가</div></div>
+      </div>
+    </div>
+
+    <div class="season">
+      <div class="name">
+        <div class="idx mono">SEASON 5</div>
+        <div class="t">____</div>
+        <div class="mn">____________</div>
+      </div>
+      <div class="weeks">
+        <div class="wk"><div class="no">1</div></div>
+        <div class="wk"><div class="no">2</div></div>
+        <div class="wk"><div class="no">3</div></div>
+        <div class="wk"><div class="no">4</div><div class="lb">모듈 ①</div></div>
+        <div class="wk"><div class="no">5</div></div>
+        <div class="wk"><div class="no">6</div></div>
+        <div class="wk"><div class="no">7</div></div>
+        <div class="wk exam"><div class="no">8</div><div class="lb">승급 평가</div></div>
+      </div>
+    </div>
+
+    <div class="season">
+      <div class="name">
+        <div class="idx mono">SEASON 6</div>
+        <div class="t">____</div>
+        <div class="mn">____________</div>
+      </div>
+      <div class="weeks">
+        <div class="wk"><div class="no">1</div></div>
+        <div class="wk"><div class="no">2</div></div>
+        <div class="wk"><div class="no">3</div></div>
+        <div class="wk"><div class="no">4</div><div class="lb">모듈 ①</div></div>
+        <div class="wk"><div class="no">5</div></div>
+        <div class="wk"><div class="no">6</div></div>
+        <div class="wk"><div class="no">7</div></div>
+        <div class="wk capstone"><div class="no">8</div><div class="lb">승급 + 캡스톤</div></div>
+      </div>
+    </div>
+
+    <!-- 휴업 4주 — 주차는 아직 확정 전이라 비워 둔다(몽골 공휴일 날짜를 지어내지 않는다) -->
+    <div class="breaks">
+      <div class="brk"><div class="k">휴업 ①</div><div class="v">차강사르 · <span class="blank">____</span>주차</div></div>
+      <div class="brk"><div class="k">휴업 ②</div><div class="v">나담 · <span class="blank">____</span>주차</div></div>
+      <div class="brk"><div class="k">휴업 ③</div><div class="v">연말 · <span class="blank">____</span>주차</div></div>
+      <div class="brk"><div class="k">휴업 ④</div><div class="v">여름 조정 · <span class="blank">____</span>주차</div></div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <strong>이 달력의 산수</strong> — 8주 × 6시즌 = 수업 48주, 여기에 휴업 4주를 더하면 정확히 52주입니다.
+    앞면의 “연 6시즌 = 12개월에 한 바퀴”가 이 산수로 증명됩니다.<br>
+    <strong>승급 평가는 각 시즌 8주차</strong>에 있습니다 — 결과를 언제 보게 되는지 달력에서 바로 찾으실 수 있습니다.
+    3시즌·6시즌이 끝나는 자리에는 <strong>크루 캡스톤 공개일</strong>이 열려 반년마다 한 번씩 학부모님을 초대합니다.<br>
+    <span style="color:#6C74A8">※ 6개월권은 8주 × 3시즌 + 버퍼 2주로, 결제 만료와 시즌 종료가 맞물립니다.</span>
+    <div class="mn">________________________________________________________________</div>
+  </div>
+
+  <div class="foot">
+    <div class="src">
+      시즌 이름은 1시즌 「첫 목소리」만 확정입니다. 2~6시즌 이름은 정해지는 대로 시즌 달력과 함께 안내합니다. ·
+      휴업 4주의 정확한 주차는 확정 전이므로 비워 두었습니다.
+    </div>
+    <div class="mono" style="white-space:nowrap">v1.0 · 2026-08-04</div>
+  </div>
+
+</section>
+
+</body>
+</html>
