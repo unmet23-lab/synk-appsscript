@@ -1162,10 +1162,16 @@ function importFormResponses() {
     const fr = ensureSheet(ss, 'form_responses', ['접수ID', '타임스탬프', '이름', '경로', '처리상태']); // [v9.34] 무가드 참조 → 시트 부재 시 채번 후 크래시·같은 응답 10분마다 재기입(증식) 차단
     let newTs = lastTs;
 
-    // 현재 최대 SYNK 번호 (한 배치 내 연속 채번)
-    // [v9.164] 여기서 직접 스캔하던 것을 채번 정본(학생ID_최대번호_)으로 합쳤다 — 번호를 만드는 곳이
-    //   둘이면 언젠가 한쪽만 고쳐지고, 그 결과는 «같은 ID를 가진 두 학생»이다(상담시트에 유일성 제약 없음).
-    let maxSynk = 학생ID_최대번호_(consult);
+    /* [v9.167] 이 함수는 더 이상 학생ID를 발급하지 않는다 — 게이트를 크루카드와 통일한다.
+     *   실측(08-04): app_state '상담폼ID'가 살아 있고 폼은 「게시됨」이다 → 이 경로는 지금도 10분마다 돈다.
+     *   구 동작은 «폼 제출 = 즉시 학생ID = 앱 로스터»였다. 크루카드는 정반대로 사람이 처리상태를
+     *   「반배정」으로 바꿔야 발급된다([v9.164]). 같은 시트에 정책이 둘이면 느슨한 쪽이 실질 정책이다.
+     *   → 폼 행도 「신규접수」로 큐에 넣고 발급은 학생ID_발급_ 하나에 맡긴다(채번 통로 = 정말로 한 곳). */
+    const c처리상태 = colOf['처리상태'], c접수출처 = colOf['접수출처'];
+    if (c처리상태 === undefined) {
+      // 상담시트 증분(크루카드 업그레이드) 전 상태. 발급도 큐잉도 못 하므로 눈에 보이게 남긴다.
+      Logger.log('⚠️ 상담시트에 「처리상태」 열이 없다 — 폼 접수 행이 발급 큐에 안 잡힌다(크루카드 시트 업그레이드 필요)');
+    }
 
     responses.forEach(resp => {
       const ts = resp.getTimestamp();
@@ -1214,12 +1220,16 @@ function importFormResponses() {
       //   행소독_(Code.js 공용 통로)로 문자열만 소독 — 생년월일 Date·등록일 ts는 타입 보존(Date 변환이 위에서
       //   먼저 끝난 뒤라 파싱과 간섭 없음). profiles는 writeIfChanged 채널이 막지만 이 시트는 직기입이라
       //   이 함수의 관문이 여기다(같은 시트에 쓰는 다른 경로는 각자의 관문을 통과해야 한다 — 크루카드 웹앱 등).
+      // [v9.167] 운영 흐름 열은 응답이 아니라 **이 경로가** 채운다 — 폼에는 해당 문항이 없다.
+      //   행 재사용 시 옛 값이 남지 않도록 extArr 안에서 덮는다(60~62 보호 구간은 그대로 건너뜀).
+      if (extArr && c처리상태 !== undefined && c처리상태 >= 63) extArr[c처리상태 - 63] = '신규접수';
+      if (extArr && c접수출처 !== undefined && c접수출처 >= 63) extArr[c접수출처 - 63] = '구글폼';
+
       consult.getRange(newRow, 1, 1, 59).setValues(행소독_([rowArr]));
       if (extArr) consult.getRange(newRow, 63, 1, extArr.length).setValues(행소독_([extArr])); // [v9.66·리뷰 H1] 증분 구간 통째 1회 쓰기(60~62 건너뜀) — 개별 setValue였다면 행 재사용 시 옛 학생 값이 남았다
 
-      // 학생ID 직접 채번 (수식 비의존) — 포맷은 학생ID_포맷_ 하나만 쓴다
-      maxSynk++;
-      consult.getRange(newRow, 학생ID_열_).setValue(학생ID_포맷_(maxSynk)); // [v8.4] BH
+      // ⚠ 학생ID는 여기서 채우지 않는다 — 채우는 순간 공개 폼 제출이 곧 앱 로스터가 된다.
+      //   발급 통로는 학생ID_발급_ 하나(처리상태 「반배정」·「앱편입」 · onConsultEdit + morningJobs 백스톱).
 
       // form_responses 기록
       const frRow = fr.getLastRow() + 1;
@@ -1234,8 +1244,8 @@ function importFormResponses() {
 
   if (quotaOk(1)) {
     MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 📝 신규 상담 접수 ' + responses.length + '건',
-      '새 상담 설문이 상담시트에 자동 기록되었습니다.\n' +
-      '담당 크루 배정 후 form_responses의 처리상태에 "완료"를 입력하세요.');
+      '새 상담 설문이 상담시트에 「신규접수」로 기록되었습니다.\n' +
+      '앱에 넣으려면 상담데이터입력의 「처리상태」를 「반배정」으로 바꾸세요 — 학생ID가 자동 발급됩니다.'); // [v9.167] 크루카드와 같은 게이트
   }
   syncProfiles();
   Logger.log('폼 응답 ' + responses.length + '건 처리');
@@ -1358,10 +1368,23 @@ function cleanupFormTest() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
   const winRows2 = Math.min(600, consult.getMaxRows() - 7); // [v9.54] 물리 행수 클램프(importFormResponses와 동일 처방)
-  const colA = winRows2 > 0 ? consult.getRange(8, 1, winRows2, 1).getValues() : [];
-  let cleaned = 0;
-  colA.forEach((r, i) => {
-    if (r[0]) { consult.getRange(8 + i, 1, 1, Math.max(68, consult.getLastColumn())).clearContent(); cleaned++; } // [v9.66] v18.4 증분 열까지 청소(폭 동적)
+  /* [v9.167] ⚠ 이 함수는 「A열에 값이 있으면 지운다」였다 — 상담시트가 테스트판이던 시절의 전제다.
+   *   지금 이 시트에는 크루카드 실접수와 발급된 학생이 함께 산다. 편집기 함수 드롭다운은 합성 클릭에
+   *   미끄러지는 것으로 실측됐고(08-04), 한 번 잘못 고르면 8행 아래가 통째로 지워진다 — 되돌릴 수 없다.
+   *   → **자기 것만 지운다**: 학생ID가 붙은 행(실학생)과 크루카드 접수 행은 건드리지 않는다. */
+  const width = Math.max(68, consult.getLastColumn());
+  const hdr = consult.getRange(2, 1, 1, width).getValues()[0];
+  const idx = {};
+  hdr.forEach((h, i) => { const k = String(h).trim(); if (k && idx[k] === undefined) idx[k] = i; });
+  const c출처 = idx['접수출처'];
+  const rows = winRows2 > 0 ? consult.getRange(8, 1, winRows2, width).getValues() : [];
+  let cleaned = 0, 보호 = 0;
+  rows.forEach((r, i) => {
+    if (!r[0]) return;
+    const 실학생 = String(r[학생ID_열_ - 1] || '').trim();
+    const 출처 = c출처 === undefined ? '' : String(r[c출처] || '').trim();
+    if (실학생 || (출처 && 출처 !== '구글폼')) { 보호++; return; }   // 폼 테스트 잔재만 지운다
+    consult.getRange(8 + i, 1, 1, width).clearContent(); cleaned++; // [v9.66] v18.4 증분 열까지 청소(폭 동적)
   });
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
   setState(st, '폼처리시각', 0);
@@ -1372,7 +1395,7 @@ function cleanupFormTest() {
       if (String(r[3]) === '폼 자동접수') fr.getRange(2 + i, 1, 1, 5).clearContent();
     });
   }
-  Logger.log('정리: ' + cleaned + '건');
+  Logger.log('정리: %s건 · 보호(실학생·크루카드 접수): %s건', cleaned, 보호); // [v9.167] 안 지운 것도 세어 보여준다 — 「0건 정리」가 성공으로 읽히면 안 된다
 }
 
 function setupTables() {
