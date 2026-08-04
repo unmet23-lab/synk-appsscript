@@ -35,8 +35,19 @@ const { spawnSync } = require('child_process');
 // 이음매는 테스트 격리 전용 — 로직을 끄지 않고 카운터 위치만 바꾼다.
 const STATE_DIR = process.env.SYNK_CTXBUDGET_DIR || path.join(os.tmpdir(), 'synk-context-budget');
 
-// 컨텍스트 창. 200k 가정 — 모델이 바뀌면 이 값만 고친다.
-const WINDOW = 200_000;
+// 컨텍스트 창 — 모델마다 다르다(F058). 처음엔 200k 로 박아 뒀다가 실측으로 뒤집혔다:
+// 이 저장소 트랜스크립트 전수의 최대 관측치 = opus-4-8 999,167 · opus-5 997,026 ·
+// fable-5 897,285 · sonnet-5 674,888 · haiku-4-5 189,467. 즉 실제 창은 **1M**이었고
+// 200k 가정은 5배 작아 「223k / 200k (112%)」 같은 값을 화면에 냈다.
+const WINDOWS = [
+  [/^claude-haiku/, 200_000],
+  [/^claude-(opus|sonnet|fable)/, 1_000_000],
+];
+// 모르는 모델은 **작은 쪽**으로 가정한다 — 창을 크게 잡으면 퍼센트가 작아 보여 늦게 알린다.
+function windowFor(model) {
+  for (const [re, w] of WINDOWS) if (re.test(String(model || ''))) return w;
+  return 200_000;
+}
 
 // 08-04 실측 바닥값. 「컴팩트해도 여기까지만 내려간다」를 사람 말로 보여주는 데 쓴다.
 const FLOOR = 68_500;
@@ -54,7 +65,11 @@ try {
 const tp = String(input.transcript_path || '');
 if (!tp || !fs.existsSync(tp)) process.exit(0);
 
-/** 트랜스크립트에서 **마지막** usage 를 찾아 컨텍스트 토큰 수를 낸다. 못 찾으면 null. */
+/**
+ * 트랜스크립트에서 **마지막** usage 를 찾아 `{ tokens, model }` 을 낸다. 못 찾으면 null.
+ * 모델을 같이 돌려주는 이유 = 창 크기가 모델마다 다르기 때문(haiku 200k · 그 외 1M · F058).
+ * 같은 줄에서 뽑는다 — 따로 찾으면 토큰과 모델이 다른 턴 것이 섞인다.
+ */
 function currentContext(file) {
   let lines;
   try {
@@ -73,13 +88,15 @@ function currentContext(file) {
       (Number(u.input_tokens) || 0) +
       (Number(u.cache_read_input_tokens) || 0) +
       (Number(u.cache_creation_input_tokens) || 0);
-    if (n > 0) return n;
+    if (n > 0) return { tokens: n, model: String((o.message && o.message.model) || '') };
   }
   return null;
 }
 
-const ctx = currentContext(tp);
-if (ctx === null || ctx < WARN) process.exit(0); // 조용히 통과 — 임계 아래에선 아무 말도 하지 않는다
+const info = currentContext(tp);
+if (info === null || info.tokens < WARN) process.exit(0); // 조용히 통과 — 임계 아래에선 아무 말도 하지 않는다
+const ctx = info.tokens;
+const WINDOW = windowFor(info.model); // 모델마다 창이 다르다(F058) — 모르는 모델은 작은 쪽 가정
 
 /** 미커밋이 남았는지. 끊으라고 말하려면 이게 0이어야 안전하다(F025·F037). */
 function dirtyFiles(cwd) {
@@ -164,12 +181,17 @@ function handoff(cwd, fallbackId) {
   );
 }
 
+const handoffMsg = handoff(input.cwd, input.session_id);
+
 const msg =
   `${level} [context-budget] 컨텍스트 ${k(ctx)} / ${k(WINDOW)} (${pct}%) — ${head}.\n` +
   `${steps}\n` +
   `왜 컴팩트가 아니라 종료인가: 이 저장소 바닥값이 ${k(FLOOR)}라 컴팩트 도달점(≈${k(FLOOR + 5000)})이 ` +
   `새 세션 시작점(${k(FLOOR)})보다 크다. 세션 재시작이 더 작고 요약 손실도 0이다.\n\n` +
-  handoff(input.cwd, input.session_id);
+  handoffMsg +
+  (stage === 2
+    ? '\n💡 창을 새로 열거나 `/clear` 하면 위 문구가 **자동으로 입력**된다(복붙 불필요).'
+    : '');
 
 // ⚠ systemMessage 만 낸다 — `hookSpecificOutput.additionalContext` 를 붙이면 안 된다.
 //
@@ -179,5 +201,23 @@ const msg =
 //   실측 4연속: 144k → 147k → 148k → 149k. **컨텍스트를 아끼려고 만든 훅이 컨텍스트를 먹었다.**
 //   AI 에게 알릴 실익도 없다 — 끊는 판단과 실행은 유호님 몫이고, AI 는 알아도 할 게 없다.
 // 회귀: tests/컨텍스트예산.test.js 「AI 를 깨우지 않는다」.
+// 🔴 에서 **바통을 떨군다** — 다음 세션의 SessionStart 훅(session-handoff.js)이 이걸 주워
+// `initialUserMessage` 로 넣는다. 그래서 유호님은 복붙 없이 창만 새로 열면 된다(유호님 지시 08-04).
+//
+// ⚠ 세션을 **자동으로 끄는 건 불가능하다**(공식 문서 실측: 어떤 훅도 세션을 종료하지 못하고
+//   `continue:false` 도 턴만 멈춘다). 그래서 자동화되는 건 「이어서 시작」 쪽 절반뿐이고,
+//   끄는 건 유호님이 창을 닫거나 `/clear` 하는 한 동작으로 남는다. 그 한 동작을 없앨 방법은 없다.
+if (stage === 2) {
+  try {
+    fs.mkdirSync(STATE_DIR, { recursive: true });
+    fs.writeFileSync(
+      path.join(STATE_DIR, 'handoff.json'),
+      JSON.stringify({ at: Date.now(), cwd: input.cwd || '', message: handoffMsg })
+    );
+  } catch (_) {
+    /* 바통을 못 떨궈도 경고는 낸다 — 인계 문구가 화면에 이미 있다 */
+  }
+}
+
 process.stdout.write(JSON.stringify({ systemMessage: msg }));
 process.exit(0);
