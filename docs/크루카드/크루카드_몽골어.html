@@ -4,12 +4,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&amp;display=swap">
-<!-- 2026-08-05 · 세리프 3종(Fraunces·Gowun Batang·Cormorant) 제거 — 유호님 확정.
-     정본 §87 「위계는 폰트 수가 아니라 웨이트·크기로 만든다」가 이 자리를 이미 규정했다.
-     ⚠ 위 주석이 내세우던 근거(「Fraunces 가 키릴을 담는다」·「Cormorant 가 Ө·Ү 를 그린다」)는
-       실측으로 무너졌다 — **Inter Tight 도 Ө 를 그린다**(폭 28.59 vs 폴백 28.89, 2026-08-05).
-       게다가 Cormorant 가 쓰이던 딱 한 곳의 문구 「Таны」엔 Ө·Ү 가 아예 없었다.
-     곁들여 얻은 것: 이 CDN 요청이 사라져 몽골 현지에서 조용히 폴백할 표면이 하나 줄었다. -->
+<!-- Special typefaces reserved ONLY for the K-Culture "Таны K." headline (Part 06).
+     Cormorant carries the Mongolian Cyrillic Ө·Ү; Fraunces carries the editorial Latin
+     voice for the sibling italic "K."; Gowun Batang stays as an optional Korean fallback.
+     ⚠ 2026-08-05 에 이 세 서체가 「정본 3종만」을 근거로 통째로 지워졌다가 유호님 판정으로
+       되살아났다 — Part 06 은 **일부러 다른 서체를 쓰는 특별면**이다. 지운 쪽이 틀린 게 아니라
+       그 예약이 이 주석에만 살아 있었던 게 원인이라, 정본 §6 에 예외 조항을 박고
+       쓰는 통로를 --kc-serif / --kc-serif-head 두 변수로 좁혔다. 그 밖에서는 쓰지 않는다. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,400;1,9..144,900&amp;family=Gowun+Batang:wght@400;700&amp;family=Cormorant:ital,wght@0,500;0,600;0,700;1,500;1,700&amp;display=swap">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SYNK LAB · Crew Card v14 · Монгол</title>
@@ -63,6 +65,14 @@
   --serif:'Inter Tight', 'SUIT Variable', SUIT, serif;
   --sans:'Inter Tight', 'SUIT Variable', SUIT, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --mono:'Inter Tight', 'SUIT Variable', SUIT, ui-monospace, monospace;
+
+  /* ⚠ Part 06 K-Culture 전용 예약 서체 — 정본 3종의 **유일한 예외**다(유호님 08-05 확정).
+     08-05 에 한 번 「3종만」을 근거로 통째로 지워졌다가 되살렸다. 지운 쪽이 틀린 게 아니라
+     **정본에 예외가 안 적혀 있었다** — 예약이 파일 주석에만 살면 정본을 따르는 사람이 지운다.
+     그래서 ①정본 §6 에 조항을 박고 ②쓰는 통로를 이 변수 둘로 좁혔다.
+     이 변수 밖에서 세리프를 직접 지정하면 tests/크루카드.test.js 가 막는다. */
+  --kc-serif:'Fraunces','Gowun Batang',serif;                          /* 라틴 에디토리얼 "K." */
+  --kc-serif-head:'Cormorant','Fraunces','Gowun Batang',var(--serif);  /* 키릴 헤드라인 — Cormorant 가 Ө·Ү 를 그린다 */
 
   /* Motion */
   --ease:cubic-bezier(.2,.6,.2,1);
@@ -763,9 +773,9 @@ section.page{
     letter-spacing:0;
   }
   .kc-page .kc-title .kc-t-kor{
-    /* Fraunces first so Mongolian Cyrillic renders in the same editorial voice
+    /* Cormorant first so Mongolian Cyrillic renders in the same editorial voice
        as the sibling italic "K."; Gowun Batang kept as an optional Korean fallback. */
-    font-family:var(--serif); /* 구 주석의 「Таны는 Cormorant」 근거는 무너졌다 — Inter Tight 도 Ө 를 그리고, 이 문구엔 Ө·Ү 가 없다 */
+    font-family:var(--kc-serif-head);
     font-optical-sizing:auto;
     font-variation-settings:"SOFT" 100, "opsz" 96;
     font-weight:500;
@@ -780,9 +790,9 @@ section.page{
   }
   .kc-page .kc-title .kc-t-k{
     position:relative;
-    /* 구값 Fraunces 의 가변축(SOFT·WONK·opsz)은 함께 지운다 — 그 폰트가 없으면
-       아무 일도 하지 않으면서 「여기 세리프가 있다」고 거짓말하는 줄만 남는다. */
-    font-family:var(--serif);
+    font-family:var(--kc-serif);
+    font-optical-sizing:auto;
+    font-variation-settings:"SOFT" 100, "WONK" 1, "opsz" 144;
     font-weight:900;
     font-style:italic;
     font-size:148px;
@@ -803,7 +813,7 @@ section.page{
   }
   .kc-page .kc-title .kc-t-k .kc-dot{
     display:inline-block;
-    font-family:var(--serif);
+    font-family:var(--kc-serif);
     font-style:italic;
     -webkit-text-fill-color:var(--kc-hot);
     color:var(--kc-hot);
@@ -818,7 +828,7 @@ section.page{
     position:absolute;
     top:-6px;
     left:calc(100% - 4px);
-    font-family:var(--serif);
+    font-family:var(--kc-serif);
     font-size:22px;
     color:var(--kc-hot);
     transform:rotate(-8deg);
@@ -860,15 +870,19 @@ section.page{
     isolation:isolate;
     display:flex;align-items:baseline;flex-wrap:wrap;
     gap:8px;
-    font-family:var(--serif);
+    font-family:var(--kc-serif);
+    font-optical-sizing:auto;
+    font-variation-settings:"SOFT" 100, "opsz" 144;
     font-weight:900;font-style:italic;
     font-size:34px;line-height:.95;
     color:var(--navy);
     margin:2px 0 0;letter-spacing:-0.035em;
   }
-  /* the small prefix (K-POP / Idol / K-) */
+  /* the small serif prefix (K-POP / Idol / K-) */
   .kc-card .kc-h4-a{
-    font-family:var(--serif);
+    font-family:var(--kc-serif);
+    font-optical-sizing:auto;
+    font-variation-settings:"opsz" 24;
     font-weight:600;font-style:normal;
     font-size:20px;
     letter-spacing:-0.01em;
