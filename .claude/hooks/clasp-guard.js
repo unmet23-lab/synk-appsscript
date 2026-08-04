@@ -67,31 +67,10 @@ const execCmd = stripNonExecutedText(cmd);
  *     서브인데 메인으로 봄 → 기존 동작(오탐 · F061 재발이지만 안전)
  *   그래서 못 찾으면 ROOT 로 떨어진다. 폴백은 언제나 '더 많이 검사하는' 쪽이다.
  *
- * clasp 는 cwd 의 .clasp.json 으로 대상을 정한다. `cd crewcard && clasp push` 처럼 한 호출 안에서
- * 옮겨가는 형태가 일반적이라 cwd 만 보면 항상 메인으로 판정한다 — 그래서 명령을 세그먼트로 쪼개
- * **clasp 가 도는 시점의 디렉터리**를 확정한다(그 뒤의 cd 는 배포와 무관하다).
- * 원본 cmd 를 보되 `^cd …$` 형태의 세그먼트만 인정하므로, 커밋 메시지 안에 적힌 문장에는 안 속는다. */
-function deployProjectRoot() {
-  const base = callerCwd && fs.existsSync(callerCwd) ? callerCwd : ROOT;
-  let dir = base;
-  for (const seg of cmd.split(/&&|\|\||;|\n/)) {
-    const m = /^\s*(?:cd|pushd|Set-Location|sl)\s+(?:-\S+\s+)*(['"]?)(.+?)\1\s*$/i.exec(seg);
-    if (m) {
-      const p = m[2].trim();
-      if (p && p !== '-') dir = path.resolve(dir, p);
-      continue;
-    }
-    if (/clasp/i.test(seg)) break; // 여기서 배포가 돈다 — 디렉터리 확정
-  }
-  for (let cur = dir, i = 0; i < 6; i += 1) {
-    if (fs.existsSync(path.join(cur, '.clasp.json'))) return cur;
-    const up = path.dirname(cur);
-    if (up === cur) break;
-    cur = up;
-  }
-  return ROOT;
-}
-const PROJ = deployProjectRoot();
+ * 판별·매칭의 알맹이는 lib/clasp-project.js 에 있다 — 훅 본문에 두면 **테스트가 불가능하다**
+ * (훅을 한 번 실행하면 테스트 48개와 clasp 네트워크 조회까지 돈다). 회귀 tests/clasp프로젝트.test.js. */
+const 프로젝트 = require(path.join(__dirname, 'lib', 'clasp-project.js'));
+const PROJ = 프로젝트.resolveProject(cmd, callerCwd, ROOT);
 const 서브 = path.resolve(PROJ) !== path.resolve(ROOT);
 // git status 는 저장소 루트 상대 경로를 준다 — 서브 프로젝트 파일을 가리려면 이 접두사가 필요하다.
 const PREFIX = 서브 ? path.relative(ROOT, PROJ).replace(/\\/g, '/') + '/' : '';
@@ -213,25 +192,14 @@ for (const f of fs.readdirSync(PROJ)) {
  *    ⚠ 이 좁히기는 **미탐 방향**이다 — 고르기가 실패하면 「테스트 0건 통과」가 되어 초록으로 보인다.
  *      그래서 0건이면 통과가 아니라 **차단**한다(F047의 「목록이 조용히 비어도 초록」과 같은 처방). */
 if (problems.length === 0) {
-  const 전체 = fs
-    .readdirSync(path.join(ROOT, 'tests'))
-    .filter((f) => f.endsWith('.test.js'));
-  let testFiles;
-  if (서브) {
+  const testFiles = 프로젝트.testsFor(PROJ, ROOT);
+  if (서브 && !testFiles.length) {
     const key = PREFIX.replace(/\/$/, '');
-    testFiles = 전체.filter((f) => {
-      try { return fs.readFileSync(path.join(ROOT, 'tests', f), 'utf8').includes(key); }
-      catch (_) { return false; }
-    });
-    if (!testFiles.length) {
-      problems.push(
-        `${프로젝트명} 프로젝트를 검사하는 테스트가 0건 — 고르기가 실패했거나 회귀가 없다.\n` +
-        `  0건을 「통과」로 읽으면 배포가 무검증으로 나간다(그래서 통과가 아니라 차단이다).\n` +
-        `  → tests/ 안에 "${key}" 를 참조하는 회귀를 두거나, 정말 예외면 CLASP_GUARD_BYPASS=1.`
-      );
-    }
-  } else {
-    testFiles = 전체;
+    problems.push(
+      `${프로젝트명} 프로젝트를 검사하는 테스트가 0건 — 고르기가 실패했거나 회귀가 없다.\n` +
+      `  0건을 「통과」로 읽으면 배포가 무검증으로 나간다(그래서 통과가 아니라 차단이다).\n` +
+      `  → tests/ 안에 "${key}" 를 참조하는 회귀를 두거나, 정말 예외면 CLASP_GUARD_BYPASS=1.`
+    );
   }
   if (testFiles.length) {
     try {
@@ -245,36 +213,15 @@ if (problems.length === 0) {
   }
 }
 
-/* 배포 대상 파일 목록 — **.claspignore가 유일 정본**이다.
- * 2026-08-01 감사에서 발각: 여기에 목록을 하드코딩했더니(Code.js·contents_*·appsscript.json)
- * 실제로 배포되는 상담AI.js·교재연동.js·만족도팩.js 3종이 감시 밖이었다. 즉 그 파일들은
- * **미커밋인 채로 clasp push가 통과**했다 — 라이브가 git 이력보다 앞서가는 것을 막겠다는
- * 이 훅의 존재 이유가 정작 파일 절반에서 작동하지 않았다.
- * .claspignore 주석은 그 3종이 빠지면 "반쪽 배포"라고 스스로 적어 두었는데 가드만 몰랐다.
- * → 목록을 베끼지 않는다. 배포 집합을 정하는 파일에서 그대로 읽는다([[guard-must-check-result]] 패턴). */
-function deployTargets(root) {
-  try {
-    const pats = fs
-      .readFileSync(path.join(root, '.claspignore'), 'utf8')
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter((l) => l.startsWith('!'))
-      .map((l) => l.slice(1).trim())
-      .filter(Boolean);
-    if (pats.length) return pats;
-  } catch (_) {}
-  /* .claspignore가 없으면 넓게 잡는다 — 폴백은 항상 '더 많이 검사하는' 쪽.
-   * crewcard/ 가 정확히 이 경우다(허용목록이 없어 clasp가 디렉터리 전부를 민다).
-   * .html 을 빼면 카드_kr/mn.html 이 미커밋인 채 배포될 수 있다 — 그 둘이 크루카드 화면 자체다. */
-  return ['appsscript.json', '*.js', '*.gs', '*.html', '*.json'];
-}
-function globToRe(g) {
-  return new RegExp('^' + g.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*') + '$');
-}
-
+/* 배포 대상 파일 목록 — **.claspignore가 유일 정본**이다(목록을 베끼지 않는다).
+ * 2026-08-01 감사에서 발각: 여기에 목록을 하드코딩했더니 실제로 배포되는 상담AI.js·교재연동.js·
+ * 만족도팩.js 3종이 감시 밖이었다 — 라이브가 git 이력보다 앞서가는 것을 막겠다는 이 훅의 존재
+ * 이유가 정작 파일 절반에서 작동하지 않았다([[guard-must-check-result]] 패턴).
+ * 판정은 lib/clasp-project.js 로 옮겼다(프로젝트가 둘이 되면서 순수 함수로 떼야 테스트가 된다). */
 // 3) 배포 대상 파일 미커밋 금지 (커밋 → git push → clasp push 순서 강제)
+//    무엇이 배포 대상인가는 lib/clasp-project.js 의 isDeployFile 이 판정한다 — 접두사 함정
+//    (`crewcard/상담시트.js` 가 `*.js` 에 안 걸리는 것)이 거기 주석과 회귀에 못박혀 있다.
 try {
-  const targets = deployTargets(PROJ).map(globToRe);
   // core.quotepath=false — 끄지 않으면 한글 파일명이 "\354\203\201…" 로 이스케이프돼 매칭이 통째로 빗나간다
   //   (상담AI.js·교재연동.js·만족도팩.js가 전부 한글이라 이 한 줄이 없으면 목록을 고쳐도 여전히 못 잡는다)
   const dirty = run('git', ['-c', 'core.quotepath=false', 'status', '--porcelain'])
@@ -286,17 +233,7 @@ try {
       if (arrow !== -1) p = p.slice(arrow + 4).trim();
       return p.replace(/^"|"$/g, '');
     })
-    /* 그 프로젝트가 실제로 배포하는 파일만 본다(F061).
-     * git status 는 저장소 루트 상대 경로를 주므로, 서브 프로젝트는 접두사를 떼고 매칭한다 —
-     * 접두사를 안 떼면 `crewcard/상담시트.js` 가 `*.js`(= `^[^/]*\.js$`)에 안 걸려 **전부 통과**한다.
-     * 반대로 루트 배포에서는 하위 디렉터리 파일이 `[^/]*` 때문에 자연히 빠진다. */
-    .filter((p) => {
-      if (서브) {
-        if (!p.startsWith(PREFIX)) return false;
-        return targets.some((re) => re.test(p.slice(PREFIX.length)));
-      }
-      return targets.some((re) => re.test(p));
-    });
+    .filter((p) => 프로젝트.isDeployFile(p, PROJ, ROOT));
   if (dirty.length) problems.push(`미커밋 배포 파일(${dirty.join(', ')}): 커밋 먼저`);
 } catch (_) {
   problems.push('git status 확인 실패 — 저장소 상태를 확인할 수 없어 차단');
