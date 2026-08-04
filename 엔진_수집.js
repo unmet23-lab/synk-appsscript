@@ -966,8 +966,12 @@ function fixtureDiff_(원문, 교정) {
  *   `google.script.run`으로 **밑줄 없는 전역 전부**를 원장 권한으로 부른다(실측 171개). 지금 그런 페이지는
  *   없지만, 이 함수는 「학생 문장을 파일로 만들어내는」 종류라 그 목록에 올려둘 이유가 없다.
  *   메뉴는 `menuExportGolden`이 내부에서 부르므로 밑줄이 있어도 그대로 동작한다.
+ *
+ * [v9.175] **문서를 만드는 곳은 여기 하나다** — 출구가 둘(드라이브·GitHub)이 되면서 분리했다.
+ *   두 출구가 각자 doc을 조립하면 비식별 규칙이 한쪽에서만 갱신되는 날이 온다(그 실패는 조용하다).
+ *   골든셋이 비면 **문자열**을 돌려준다 — 호출부가 그대로 사람에게 보여 준다.
  */
-function exportGoldenFixture_() {
+function 골든픽스처_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const gd = ss.getSheetByName('teacher_gold');
   if (!gd || gd.getLastRow() < 2) return '골든셋이 비어 있습니다 — 표본은 매주 월요일 배치가 뽑고, 강사 응답은 Glide 강사 탭 「골든셋」에서 채웁니다.';
@@ -1038,10 +1042,73 @@ function exportGoldenFixture_() {
   const 채점불가 = 항목.filter(x => x.종류 === '오류' && !x.포함.length && !x.불포함.length && !x.기대태그.length).length;
   doc.한계.push('이번 판: 오류 ' + (항목.length - 정상수) + ' · 정상 ' + 정상수 + ' · 강사 미응답으로 제외 ' + 미응답
     + '건 · 채점 불가 ' + 채점불가 + '건(대조 근거가 없어 채점 분모에서 빠진다 — 강사 교정을 더 받아야 한다).');
-  const name = 'SYNK_골든픽스처_' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '.json';
-  const file = DriveApp.createFile(name, JSON.stringify(doc, null, 2), MimeType.PLAIN_TEXT);
-  const msg = '픽스처 ' + 항목.length + '건 내보냄(정상 ' + 정상수 + ' · 채점불가 ' + 채점불가 + ' · 미응답 제외 ' + 미응답 + ')\n파일: ' + name
+  return { doc: doc, 요약: '정상 ' + 정상수 + ' · 채점불가 ' + 채점불가 + ' · 미응답 제외 ' + 미응답, 건수: 항목.length, tz: tz };
+}
+
+/* [v9.175] 출구 ① 내 드라이브 JSON. 손으로 받아 옮기는 경로 — 출구 ②(GitHub)가 막혔을 때의 대비책이다. */
+function exportGoldenFixture_() {
+  const r = 골든픽스처_();
+  if (typeof r === 'string') return r;
+  const name = 'SYNK_골든픽스처_' + Utilities.formatDate(new Date(), r.tz, 'yyyyMMdd') + '.json';
+  const file = DriveApp.createFile(name, JSON.stringify(r.doc, null, 2), MimeType.PLAIN_TEXT);
+  const msg = '픽스처 ' + r.건수 + '건 내보냄(' + r.요약 + ')\n파일: ' + name
     + '\n내 드라이브에서 받아 SYNK-talk의 evals/ 에 넣으면 교정 엔진 채점에 바로 씁니다.';
   Logger.log(msg + '\n' + file.getUrl());
+  return msg;
+}
+
+/* ═══════════ [v9.175] 출구 ② 픽스처를 SYNK-talk 저장소에 직접 올린다 ═══════════
+ * 왜: 이 루프는 **6개월마다 한 번** 돈다. 드라이브에서 받아 옮기는 손 절차는 그 주기에서 가장 잘
+ *   잊히는 종류다 — 2년에 네 번뿐이라 습관이 되지 않는다. 손일이 된 순간 「분기에 한 번 하다가
+ *   안 하게 된다」가 v9.166 주석에 이미 적혀 있었는데, 그 손일을 우리가 만들고 있었다.
+ *
+ * 🔒 안전 설계 — 이 함수는 **바깥으로 나가는 쓰기**다. 네 가지로 가둔다:
+ *   ① **바깥에서 들어오는 문은 만들지 않는다.** 웹앱(doGet)을 열어 저쪽이 당겨가게 하면 프로젝트의
+ *      밑줄 없는 전역 전부가 노출 표면이 된다(실측 171개). 나가는 쪽만 만들면 그 표면이 0이다.
+ *   ② **토큰은 소스에 없다** — 스크립트 속성에서 읽고, 로그·반환문에 절대 싣지 않는다.
+ *   ③ **대상이 상수다** — 소유자·저장소·경로·브랜치를 인자로 받지 않는다. 잘못 조준할 여지를 없앤다.
+ *      대상 저장소는 **비공개**임을 실측 확인했다(2026-08-04 · 학생 문장이 공개로 나가면 동의 위반).
+ *   ④ **자동 배치에 넣지 않는다** — 메뉴에서 사람이 누를 때만 돈다. 비가역 외부 실행이라 그 클릭이 승인이다.
+ * ⚠ 이름이 `_`로 끝나는 이유는 exportGoldenFixture_와 같다(노출 표면 최소화). */
+const GH_OWNER = 'unmet23-lab';
+const GH_REPO = 'SYNK-talk';
+const GH_PATH = 'evals/픽스처_실학생.json';   // 합성 픽스처(evals/픽스처.json)를 덮지 않는다 — 둘은 다른 질문에 답한다
+const GH_BRANCH = 'master';
+const GH_TOKEN_KEY = 'GITHUB_TOKEN_SYNKTALK';
+
+function pushGoldenFixture_() {
+  const token = PropertiesService.getScriptProperties().getProperty(GH_TOKEN_KEY);
+  if (!token) return 'GitHub 토큰이 없습니다 — 설정 절차는 docs/골든픽스처_자동전송_설치.md 에 클릭 단위로 있습니다.\n'
+    + '(스크립트 속성 이름: ' + GH_TOKEN_KEY + ')';
+  const r = 골든픽스처_();
+  if (typeof r === 'string') return r;            // 골든셋이 비었다 — 빈 파일을 올려 덮지 않는다
+  if (!r.건수) return '채점에 쓸 항목이 0건이라 올리지 않았습니다(' + r.요약 + ').';
+
+  const api = 'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + encodeURI(GH_PATH);
+  const head = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+  // 기존 파일이 있으면 sha가 있어야 갱신된다. 없으면(404) 새로 만든다.
+  const got = UrlFetchApp.fetch(api + '?ref=' + GH_BRANCH, { headers: head, muteHttpExceptions: true });
+  let sha = null;
+  if (got.getResponseCode() === 200) sha = JSON.parse(got.getContentText()).sha;
+  else if (got.getResponseCode() !== 404) return 'GitHub 조회 실패(' + got.getResponseCode() + ') — 토큰 권한이 contents:write 인지 확인해 주세요.';
+
+  const body = {
+    message: '골든 픽스처 갱신 — 실학생 ' + r.건수 + '건 (' + r.요약 + ')',
+    content: Utilities.base64Encode(JSON.stringify(r.doc, null, 2), Utilities.Charset.UTF_8),
+    branch: GH_BRANCH
+  };
+  if (sha) body.sha = sha;
+  const put = UrlFetchApp.fetch(api, {
+    method: 'put', contentType: 'application/json', headers: head,
+    payload: JSON.stringify(body), muteHttpExceptions: true
+  });
+  const code = put.getResponseCode();
+  if (code !== 200 && code !== 201) {
+    // 응답 본문에는 토큰이 없지만, 혹시 모를 반향을 막으려 앞부분만 자른다
+    return 'GitHub 업로드 실패(' + code + ') — ' + put.getContentText().slice(0, 200);
+  }
+  const msg = 'SYNK-talk에 픽스처 ' + r.건수 + '건 올렸습니다(' + r.요약 + ').\n경로: ' + GH_PATH
+    + '\n저쪽에서 채점: node tools/eval-score.js evals/출력_v1.json --fixture ' + GH_PATH;
+  Logger.log(msg);
   return msg;
 }
