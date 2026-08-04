@@ -998,8 +998,9 @@ function migrateInterviewSid() {
     /* [v9.180] 문항이 이미 있어도 **여기서 빠져나가지 않는다** — 개인 링크 틀은 문항과 별개로
      *   유실될 수 있고(app_state 정리·구 폼 복구), 그때 조용히 스킵하면 「칸은 있는데 링크가 없는」
      *   상태가 영영 안 고쳐진다. 멱등은 「아무것도 안 한다」가 아니라 「같은 결과로 수렴한다」다. */
+    const 옮김 = 면접SID자리_(form, items[at].getIndex(), titles.indexOf('이름'));
     const 틀 = 면접URL틀보증_(st, form);
-    const 고친것 = [!문구같음 ? '안내 문구' : '', !선택임 ? '필수→선택(익명 회수 보호)' : ''].filter(Boolean).join('·');
+    const 고친것 = [!문구같음 ? '안내 문구' : '', !선택임 ? '필수→선택(익명 회수 보호)' : '', 옮김 ? '자리' : ''].filter(Boolean).join('·');
     const m = (고친것 ? '📝 학생ID 문항: 이미 있음 — ' + 고친것 + '를 정본으로 되돌렸습니다.'
       : '✅ 학생ID 문항: 이미 있음 — 스킵(멱등).') + '\n' + 틀.msg;
     Logger.log(m); return m;
@@ -1007,7 +1008,7 @@ function migrateInterviewSid() {
 
   const item = form.addTextItem().setTitle(INTERVIEW_SID_TITLE).setHelpText(INTERVIEW_SID_HELP);
   const 이름at = titles.indexOf('이름');
-  if (이름at !== -1) form.moveItem(item, 이름at + 1);
+  면접SID자리_(form, item.getIndex(), 이름at);
   const 틀2 = 면접URL틀보증_(st, form); // 칸을 넣은 그 자리에서 개인 링크 틀도 만든다(문항이 있어야 만들 수 있다)
   const m = '✅ 학생ID 칸을 넣었습니다' + (이름at !== -1 ? '(1번 섹션 「이름」 바로 뒤)' : ' — 다만 「이름」 문항을 못 찾아 맨 끝에 붙었습니다. 폼 편집기에서 위로 올려 주세요.')
     + '\n**선택 문항입니다** — 익명으로 남기던 회수는 그대로입니다.'
@@ -1035,6 +1036,24 @@ function 면접URL틀보증_(st, form) {
   if (tpl !== 있던것) setState(st, '면접폼URL틀', tpl);
   return { tpl: tpl, msg: '🔗 개인 링크 틀 ' + (있던것 ? (tpl === 있던것 ? '확인됨' : '갱신됨') : '생성됨')
     + ' — 시트 메뉴 「🔗 면접폼 개인 링크 만들기」에서 학생ID를 넣으면 그 사람 링크가 나옵니다.' };
+}
+
+/* 학생ID 문항을 「이름」 바로 뒤로 — **인덱스 두 개로만 부른다.**
+ * 🔴 라이브가 잡은 결함(2026-08-04 18:53 실행 로그): `moveItem(item, toIndex)` 오버로드는 제네릭
+ *   `Item`을 받는데 `addTextItem()`이 돌려주는 것은 `TextItem`이라 그대로 넘기면 던진다 —
+ *   "The parameters (FormApp.TextItem,number) don't match the method signature".
+ *   회귀 17건·변이 15/15가 전부 초록이었는데도 살아남았다: **시그니처는 실행해야만 보이는 층**이고
+ *   이 저장소의 폼 검사는 전부 소스 텍스트층이다(그 한계를 알고 쓰는 것이지 대체재가 아니다).
+ * ⚠ 앞에서 뒤로 옮길 때와 뒤에서 앞으로 옮길 때 목표 인덱스가 다르다 — 빼는 순간 뒤가 한 칸 당겨진다.
+ * ⚠ 이 함수는 **양쪽 경로에서 부른다.** 새로 넣을 때만 자리를 잡으면, 이미 맨 끝에 박힌 폼
+ *   (= 위 예외로 이동만 실패한 라이브가 정확히 그 상태다)은 영영 안 고쳐진다.
+ * 반환 = 실제로 옮겼는가(호출부 보고 문구용). */
+function 면접SID자리_(form, 현재, 이름at) {
+  if (이름at === -1) return false;                  // 기준이 없으면 맨 끝에 그대로 둔다
+  const 목표 = 현재 < 이름at ? 이름at : 이름at + 1;  // 앞에서 빼면 「이름」이 한 칸 당겨진다
+  if (현재 === 목표) return false;
+  form.moveItem(현재, 목표);                        // ← 인덱스·인덱스 오버로드
+  return true;
 }
 
 /* 입력 → 정규 학생ID. 못 알아보면 ''.
