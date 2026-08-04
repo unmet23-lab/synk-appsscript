@@ -178,3 +178,75 @@ test('짧은 한국어 항목도 살아남는다 — 장식 거르기가 실제 
 test('마크다운 장식은 벗기되 내용은 남긴다', () => {
   assert.equal(q.stripMd('- **⏳ 굵게** `코드` [[막힘>x]] [링크](u)'), '⏳ 굵게 코드 x 링크');
 });
+
+/* ── 날짜 게이트 (2026-08-04 신설) ─────────────────────────────────────────
+ * ⏳는 「몰라서 못 정함」과 **「알지만 아직 때가 아님」** 둘 다에 쓰인다.
+ * 후자를 그냥 두면 매일 배달돼 큐 전체가 배경 소음이 된다 — 이 도구가 풀려는
+ * 병목을 이 도구가 도로 만든다. 게이트는 미룰 뿐 **버리지 않는다**(scheduled).
+ */
+test('날짜 게이트 — 아직 때가 안 된 항목은 배달하지 않는다', () => {
+  const dir = fixture({
+    'MEMORY.md': '- [g](g.md)',
+    'g.md': [
+      '# G',
+      '- ⏳2026-12 얼리버드 가격 확정 — 광고 P2 실측 뒤',
+      '- ⏳ 지금 답해야 하는 것',
+    ].join('\n'),
+  });
+  const 이전 = q.build({ dir, date: DAY('2026-08-04') });
+  assert.equal(이전.total, 1, '미래 항목이 큐에 남았다 — 4개월간 매일 배달된다');
+  assert.match(이전.ranked[0].text, /지금 답해야/);
+  assert.equal(이전.scheduled.length, 1, '미룬 항목이 조용히 사라졌다 — 미실행과 부재가 같은 모양이면 안 된다');
+  assert.match(이전.scheduled[0].text, /얼리버드/);
+
+  const 이후 = q.build({ dir, date: DAY('2026-12-01') });
+  assert.equal(이후.total, 2, '그 달이 됐는데도 안 뜬다 — 게이트가 안 열렸다');
+  assert.equal(이후.scheduled.length, 0);
+});
+
+test('날짜 게이트 — 날짜처럼 안 생긴 숫자는 게이트가 아니다', () => {
+  // 버전·수량·연도범위를 게이트로 오인하면 진짜 미결이 조용히 사라진다(넓은 가드가 큐를 먹는 계열).
+  assert.equal(q.gateDate('⏳2026-13 달이 13월'), null, '13월을 게이트로 셌다');
+  assert.equal(q.gateDate('⏳2026-00 0월'), null, '0월을 게이트로 셌다');
+  assert.equal(q.gateDate('⏳2026-2027 연도 범위'), null, '연도 범위를 게이트로 셌다');
+  assert.equal(q.gateDate('⏳ v9.164 배포 대기'), null, '버전 번호를 게이트로 셌다');
+  assert.equal(q.gateDate('⏳ 그냥 미결'), null);
+  assert.equal(q.gateDate('⏳2026-12 확정'), Date.UTC(2026, 11, 1), '연-월 게이트를 못 읽었다');
+  assert.equal(q.gateDate('⏳2026-12-10 신청'), Date.UTC(2026, 11, 10), '연-월-일 게이트를 못 읽었다');
+});
+
+test('날짜 게이트 — 게이트가 걸려도 항목 본문은 안 잘린다', () => {
+  const dir = fixture({
+    'MEMORY.md': '- [g](g.md)',
+    'g.md': '# G\n- ⏳2026-12 얼리버드 가격 확정',
+  });
+  const r = q.build({ dir, date: DAY('2026-08-04') });
+  assert.match(r.scheduled[0].text, /⏳2026-12 얼리버드 가격 확정/,
+    '날짜를 벗겨내면 예약 목록에서 언제부터인지 사람이 못 읽는다');
+});
+
+test('헤더의 ⏳는 구획 이름이지 항목이 아니다 — 빈 배달을 막는다', () => {
+  // 실측(2026-08-04): 하루치 3칸 중 2칸이 「⏳ 남은 것」류 헤더였다. 배달됐는데 무엇을 답할지 모른다.
+  const dir = fixture({
+    'MEMORY.md': '- [h](h.md)',
+    'h.md': [
+      '# H',
+      '## ⏳ 남은 것',          // 헤더 = 구획 이름
+      '- ⏳ 진짜 답해야 하는 것', // 불릿 = 항목
+      '### ⏳ 유호님 대기',
+    ].join('\n'),
+  });
+  const items = q.extract(dir);
+  assert.equal(items.length, 1, `헤더가 항목으로 배달됐다: ${JSON.stringify(items.map((i) => i.text))}`);
+  assert.match(items[0].text, /진짜 답해야/);
+});
+
+test('헤더 필터가 진짜 항목을 먹지 않는다 — # 이 문장 속에 있는 경우', () => {
+  // 넓은 가드가 큐를 조용히 줄이는 계열을 막는다(이 파일 「범례 판별」 테스트와 같은 취지).
+  const dir = fixture({
+    'MEMORY.md': '- [h](h.md)',
+    'h.md': '# H\n- ⏳ 이슈 #12 처리 여부\n  ⏳ 들여쓴 문단도 항목이다',
+  });
+  const items = q.extract(dir);
+  assert.equal(items.length, 2, `# 가 든 항목이나 들여쓴 항목이 사라졌다: ${JSON.stringify(items.map((i) => i.text))}`);
+});
