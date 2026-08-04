@@ -116,7 +116,7 @@ html,body{
       rgba(61,90,254,.055) 0 1.1mm, transparent 1.1mm 2.6mm),
     #F4F6FF;
 }
-.master{
+.jump{
   background:
     repeating-radial-gradient(circle at 1.3mm 1.3mm,
       rgba(255,196,0,.34) 0 .32mm, transparent .32mm 2.6mm),
@@ -181,6 +181,11 @@ html,body{
 }
 .math .cell .k{ font-size:2.5mm; font-weight:800; color:#6C74A8; letter-spacing:.05em; }
 .math .cell .v{ font-size:4.2mm; font-weight:800; margin-top:1.4mm; line-height:1.25; }
+/* 목적지 칸 — 학부모가 실제로 묻는 것은 급수가 아니라 「어디까지 가야 하나」다.
+   한국 학부 입학 요건 TOPIK 3급 · 졸업(및 전문 계열) 4급 — 이 두 선이 이 로드맵의 좌표다. */
+.math .cell.dest{ border-color:var(--orange); background:#FFF6EE; }
+.math .cell.dest .k{ color:var(--orange); }
+.math .cell.dest .v em{ font-style:normal; color:var(--orange); font-weight:800; }
 .math .cell.hi{ background:var(--midnight); border-color:var(--midnight); }
 .math .cell.hi .k{ color:#9AA3CC; }
 .math .cell.hi .v{ color:var(--paper); }
@@ -256,7 +261,7 @@ html,body{
   <header class="top">
     <div>
       <h1>어디서 시작해서, 어디까지 가나요</h1>
-      <div class="sub">SYNK LAB 커리큘럼 6레벨 로드맵 · TOPIK 1~6급 · CEFR A1~C2 대응</div>
+      <div class="sub">SYNK LAB 커리큘럼 6레벨 로드맵 · TOPIK 1~5급 · CEFR A1~C1 대응 · 시냅스 코어 6권 완주</div>
     </div>
     <div class="wm">
       <div class="mark mono">SYNK</div>
@@ -292,62 +297,62 @@ html,body{
     <div class="levels">
 
       <div class="lv core">
-        <div class="cap"><div class="n">Lv1</div><div class="track">시냅스 코어</div></div>
-        <div class="row"><div class="k">TOPIK</div><div class="v">준비~1급</div></div>
+        <div class="cap"><div class="n">Lv1</div><div class="track">기초 구간</div></div>
+        <div class="row"><div class="k">TOPIK</div><div class="v">1급</div></div>
         <div class="row"><div class="k">CEFR</div><div class="v">A1</div></div>
         <div class="row"><div class="k">교재</div><div class="v">코어 1권</div></div>
         <div class="row"><div class="k">회화</div><div class="v">톡 1권</div></div>
-        <div class="row"><div class="k">마치면</div><div class="v small">한글·인사<br>자기소개</div><div class="mn">____________</div></div>
+        <div class="row"><div class="k">마치면</div><div class="v small">한글을 읽고<br>나를 소개한다</div><div class="mn">____________</div></div>
         <div class="row"><div class="k">기간</div><div class="v small">1시즌 · 8주</div></div>
       </div>
 
       <div class="lv core">
-        <div class="cap"><div class="n">Lv2</div><div class="track">시냅스 코어</div></div>
+        <div class="cap"><div class="n">Lv2</div><div class="track">기초 구간</div></div>
         <div class="row"><div class="k">TOPIK</div><div class="v">2급</div></div>
         <div class="row"><div class="k">CEFR</div><div class="v">A2</div></div>
         <div class="row"><div class="k">교재</div><div class="v">코어 2권</div></div>
         <div class="row"><div class="k">회화</div><div class="v">톡 1권</div></div>
-        <div class="row"><div class="k">마치면</div><div class="v small">일상 대화<br>기본 문형</div><div class="mn">____________</div></div>
+        <div class="row"><div class="k">마치면</div><div class="v small">일상 대화의<br>기본 문형</div><div class="mn">____________</div></div>
         <div class="row"><div class="k">기간</div><div class="v small">1시즌 · 8주</div></div>
       </div>
 
       <div class="lv core">
-        <div class="cap"><div class="n">Lv3</div><div class="track">시냅스 코어</div></div>
-        <div class="row"><div class="k">TOPIK</div><div class="v">3급</div></div>
-        <div class="row"><div class="k">CEFR</div><div class="v">B1</div></div>
+        <div class="cap"><div class="n">Lv3</div><div class="track">기초 구간</div></div>
+        <div class="row"><div class="k">TOPIK</div><div class="v">2급</div></div>
+        <div class="row"><div class="k">CEFR</div><div class="v">A2</div></div>
         <div class="row"><div class="k">교재</div><div class="v">코어 3권</div></div>
         <div class="row"><div class="k">회화</div><div class="v">톡 2권</div></div>
-        <div class="row"><div class="k">마치면</div><div class="v small">익숙한 주제에<br>내 의견</div><div class="mn">____________</div></div>
+        <div class="row"><div class="k">마치면</div><div class="v small">익숙한 일상을<br>막힘없이</div><div class="mn">____________</div></div>
         <div class="row"><div class="k">기간</div><div class="v small">1시즌 · 8주</div></div>
       </div>
 
-      <div class="lv core">
-        <div class="cap"><div class="n">Lv4</div><div class="track">시냅스 코어</div></div>
-        <div class="row"><div class="k">TOPIK</div><div class="v">4급</div></div>
-        <div class="row"><div class="k">CEFR</div><div class="v">B2</div></div>
+      <div class="lv jump">
+        <div class="cap"><div class="n">Lv4</div><div class="track">도약 구간</div></div>
+        <div class="row"><div class="k">TOPIK</div><div class="v">2~3급</div></div>
+        <div class="row"><div class="k">CEFR</div><div class="v">A2~B1</div></div>
         <div class="row"><div class="k">교재</div><div class="v">코어 4권</div></div>
-        <div class="row"><div class="k">회화</div><div class="v">톡 3권</div></div>
-        <div class="row"><div class="k">마치면</div><div class="v small">사회적 주제<br>논리 전개</div><div class="mn">____________</div></div>
+        <div class="row"><div class="k">회화</div><div class="v">톡 2권</div></div>
+        <div class="row"><div class="k">마치면</div><div class="v small">내 의견을<br>이유와 함께</div><div class="mn">____________</div></div>
         <div class="row"><div class="k">기간</div><div class="v small">1시즌 · 8주</div></div>
       </div>
 
-      <div class="lv core">
-        <div class="cap"><div class="n">Lv5</div><div class="track">시냅스 코어</div></div>
-        <div class="row"><div class="k">TOPIK</div><div class="v">5급</div></div>
-        <div class="row"><div class="k">CEFR</div><div class="v">C1</div></div>
+      <div class="lv jump">
+        <div class="cap"><div class="n">Lv5</div><div class="track">도약 구간</div></div>
+        <div class="row"><div class="k">TOPIK</div><div class="v">3~4급</div></div>
+        <div class="row"><div class="k">CEFR</div><div class="v">B1~B2</div></div>
         <div class="row"><div class="k">교재</div><div class="v">코어 5권</div></div>
-        <div class="row"><div class="k">회화</div><div class="v">톡 4권</div></div>
-        <div class="row"><div class="k">마치면</div><div class="v small">전문·추상 주제<br>유창하게</div><div class="mn">____________</div></div>
+        <div class="row"><div class="k">회화</div><div class="v">톡 3권</div></div>
+        <div class="row"><div class="k">마치면</div><div class="v small">사회적 주제를<br>논리로 풀어</div><div class="mn">____________</div></div>
         <div class="row"><div class="k">기간</div><div class="v small">1시즌 · 8주</div></div>
       </div>
 
-      <div class="lv master">
-        <div class="cap"><div class="n">Lv6</div><div class="track">마스터 트랙</div></div>
-        <div class="row"><div class="k">TOPIK</div><div class="v">6급</div></div>
-        <div class="row"><div class="k">CEFR</div><div class="v">C1~C2</div></div>
-        <div class="row"><div class="k">교재</div><div class="v small">전문 수험 교재</div></div>
+      <div class="lv jump">
+        <div class="cap"><div class="n">Lv6</div><div class="track">도약 구간</div></div>
+        <div class="row"><div class="k">TOPIK</div><div class="v">4~5급</div></div>
+        <div class="row"><div class="k">CEFR</div><div class="v">B2~C1</div></div>
+        <div class="row"><div class="k">교재</div><div class="v">코어 6권</div></div>
         <div class="row"><div class="k">회화</div><div class="v">톡 4권</div></div>
-        <div class="row"><div class="k">마치면</div><div class="v small">정확·뉘앙스까지<br>(원어민급 지향)</div><div class="mn">____________</div></div>
+        <div class="row"><div class="k">마치면</div><div class="v small">전문·추상 주제까지<br>유창하게</div><div class="mn">____________</div></div>
         <div class="row"><div class="k">기간</div><div class="v small">1시즌 · 8주</div></div>
       </div>
 
@@ -375,13 +380,15 @@ html,body{
   <div class="math">
     <div class="cell"><div class="k">1 SEASON</div><div class="v">8주 = 교재 1권<br>= 달력 두 달</div></div>
     <div class="cell"><div class="k">1 YEAR</div><div class="v">연 6시즌<br>= 12개월에 한 바퀴</div></div>
-    <div class="cell"><div class="k">TRACK</div><div class="v">Lv1~5 자체 교재<br>Lv6 전문 교재 마스터</div></div>
+    <div class="cell dest"><div class="k">한국 유학 목적지</div><div class="v">입학선 <em>TOPIK 3급</em> · Lv4<br>졸업·전공선 <em>4급</em> · Lv5</div></div>
     <div class="cell hi"><div class="k">PROMISE</div><div class="v">정규 과정 =<br><em>12개월 6시즌 구성</em></div></div>
   </div>
 
   <div class="foot">
     <div class="src">
-      정규 과정은 5급까지 우리 교재 시냅스 코어로, 6급은 전문 교재로 마스터합니다. ·
+      TOPIK 급은 넓습니다. SYNK의 레벨은 그보다 촘촘해서, 한 급을 두 시즌에 걸쳐 확실히 다지는 구간이 있습니다 —
+      급수를 빨리 넘기는 것보다 넘은 자리에서 안 무너지는 것이 실제 실력이기 때문입니다. ·
+      정규 과정 Lv1~6 전 구간을 우리 교재 시냅스 코어 6권으로 완주합니다(TOPIK 5급까지). ·
       회화는 별도 트랙으로 시냅스 톡 4권이 레벨에 맞춰 따라옵니다. ·
       교재 진행 현황: 골격·레벨별 요목 확정 / 1권 원고 완성(원어민 검수를 앞두고 있습니다) / 2~6권 집필 중 / 시냅스 톡 4권 설계 단계.
     </div>
