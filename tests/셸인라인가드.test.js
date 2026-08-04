@@ -125,6 +125,67 @@ test('여러 줄이어도 이스케이프가 깨끗하면 막지 않는다 (경�
   assert.match(r.사유, /Write/, '무엇으로 옮기라는 건지가 없다');
 });
 
+// ── ③ 코드 파일 제자리 수정 (F050·F065·F067 — 같은 자리 3번째) ──────────────
+// 두 번 다 변이 테스트를 빨리 돌리려다 났고, 두 번 다 원복이 실패해 파일이 변이 상태로 남았다.
+// 실패가 조용한 것이 이 계열의 특징이라, 「막혔다」가 눈에 보이는 편이 낫다.
+
+test('sed -i 로 저장소 파일을 고치면 막는다 (F067 실사고 그대로)', () => {
+  for (const c of [
+    'sed -i "s/a/b/" Code.js',
+    'sed -i.bak "s/a/b/" tools/doc-graph.js',
+    'perl -pi -e "s/a/b/" 엔진_수집.js',
+    'sed --in-place "s/a/b/" tests/safety.test.js',
+  ]) {
+    const r = 가드(c);
+    assert.equal(r.차단, true, `제자리 수정을 막지 않았다: ${c}`);
+    assert.match(r.사유, /Edit/, '무엇으로 대신할지(Edit 도구)를 안 알려준다');
+  }
+});
+
+test('인라인 스크립트의 파일 쓰기도 막는다 (F065 — 원복이 안 돌면 변이가 남는다)', () => {
+  for (const c of [
+    `python3 -c "open('Code.js','w').write(s)"`,
+    `node -e "require('fs').writeFileSync('tools/x.js', s)"`,
+  ]) {
+    assert.equal(가드(c).차단, true, `파일 쓰기를 막지 않았다: ${c}`);
+  }
+});
+
+test('임시 경로는 통과한다 — 변이본을 사본으로 만드는 것이 권장 경로다', () => {
+  for (const c of [
+    'sed -i "s/a/b/" /tmp/mut-guard.js',
+    'sed -i "s/a/b/" "C:/Users/q1212/AppData/Local/Temp/claude/x/scratchpad/mut.js"',
+    `node -e "require('fs').writeFileSync('/tmp/scratchpad/mut.js', s)"`,
+  ]) {
+    assert.equal(가드(c).차단, false, `권장 경로를 막았다 — 변이 검증 자체가 불가능해진다: ${c}`);
+  }
+});
+
+test('커밋 메시지 안에 적힌 sed -i 에는 안 속는다 (문서화를 벌하면 BYPASS 를 배운다)', () => {
+  // 신설 당일 실측: 이 규칙을 설명하는 커밋 메시지가 이 규칙에 막혔다.
+  // clasp-guard 가 08-01 에 겪은 오탐(커밋 메시지의 "clasp push")과 같은 계열이다.
+  for (const c of [
+    'git commit -m "feat: sed -i 로 파일 고치는 걸 막는다" -- a.js',
+    'git commit -m "perl 은 -i 를 -pi 처럼 결합한다" -- a.js',
+    `git commit -m 'python -c "open(f,\\'w\\')" 도 막는다' -- a.js`,
+    'git commit -F - <<EOF\nsed -i 사고 기록\nEOF',
+  ]) {
+    assert.equal(가드(c).차단, false, `실행되지 않는 텍스트를 명령으로 읽었다: ${c}`);
+  }
+});
+
+test('제자리 수정이 아닌 sed·awk 는 건드리지 않는다 (읽기는 일상이다)', () => {
+  for (const c of [
+    'sed -e "s/a/b/" Code.js',
+    'sed -n "1,20p" Code.js',
+    'awk "{print \\$1}" a.txt',
+    'grep -i foo Code.js',
+    'sed "s/a/b/" Code.js | grep -i foo',
+  ]) {
+    assert.equal(가드(c).차단, false, `읽기 전용 명령을 막았다: ${c}`);
+  }
+});
+
 test('BYPASS 는 통한다 (금지가 목적이 아니다)', () => {
   assert.equal(가드('SHELL_INLINE_BYPASS=1 node -e "console.log(\\$X)"').조용, true,
     '의도적 예외 통로가 막혔다');
