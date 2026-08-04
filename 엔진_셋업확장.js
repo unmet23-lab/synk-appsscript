@@ -1167,6 +1167,10 @@ function monthlyJobs() {   // 매월 1일 05시 — 순서 고정이 핵심
   safeRun('buildExecReport', buildExecReport_);       // [v9.14] ①.8 📊 경영 리포트
   safeRun('kpiSnapshotPrevMonth', kpiSnapshotPrevMonth_); // [v9.26] ①.9 📈 전월 KPI 확정 스냅샷 (attendance 미아카이브라 순서 무관·아카이브 전 배치)
   safeRun('archiveMonthly', archiveMonthly);     // ② 그다음 아카이브
+  // [v9.166] ③ 커버리지 자동 발화 — 계기판을 시트 메뉴에만 두면 「6개월마다 열어본다」가 아무도 안 하는 일이 된다.
+  //   아카이브 뒤에 둔 이유: archiveMonthly가 옮기는 것은 point_logs뿐이라 수집층 카운트에 영향이 없고,
+  //   그달 배치가 전부 끝난 상태를 재는 편이 맞다. 정상이면 메일 0통(재원 0명이면 통째로 침묵).
+  safeRun('dataCoverageMail', dataCoverageMonthly_);
   // [v9.32] 완주 마커 — 반드시 맨 마지막 줄(nightJobs와 동일 패턴). 8개 직렬 체인이 6분 타임아웃으로
   //   중간 증발하면 이 줄이 실행되지 않아 워치독이 감지한다. archiveMonthly는 다음 달 소급 아카이브로
   //   자기치유되지만 스토리북·카드·경영리포트는 그달 치가 영구 증발하므로 마커 감지가 필요.
@@ -2787,6 +2791,9 @@ function menuCreateQuizForm() { menuRun_(createQuizForm); } // [v9.138] 퀴즈 �
 function menuMigrateHwForm() { menuRun_(migrateHwFormV9138); } // [v9.138] 숙제 폼 증분 — 문항 연결·재작성 경로(멱등)
 function menuCreateTalkForm() { menuRun_(createTalkForm); } // [v9.138] 한국어 대화 폼 — 회화 앱 1세대(재실행 안전)
 function menuDataCoverage() { menuRun_(dataCoverageReport); } // [v9.138] 커버리지 — 읽기 전용이라 언제 눌러도 안전
+// [v9.166] 골든셋 → 회화 앱 평가 픽스처. 시트는 안 건드리고 내 드라이브에 JSON 1개를 새로 만든다.
+//   식별자는 함수 안에서 전부 잘려 나간다(동의 v18.9의 「비식별 사용」 · 목적지가 git이라 되돌릴 수 없음).
+function menuExportGolden() { menuRun_(exportGoldenFixture_); }
 // [v9.146] 대화 수집 점검 — 조기 반환 4개 중 무엇에 걸렸는지 지목한다(「안 생김」의 원인이 넷이라 눈으로는 구분 불가).
 //   읽기 전용이 아니다: talk_log 헤더 치유를 겸한다(배치 안쪽 치유는 첫 대화 전까지 실행되지 않는다). 멱등.
 function menuTalkLogCheck() { menuRun_(talkLogCheck); }
@@ -3275,6 +3282,7 @@ function onOpen() {
       .addItem('📝 숙제 폼에 수집 문항 넣기(수집 2단계)', 'menuMigrateHwForm')
       .addItem('🗣 한국어 대화 폼 만들기(수집 3단계)', 'menuCreateTalkForm')
       .addItem('📊 수집 커버리지 보기(읽기 전용)', 'menuDataCoverage')
+      .addItem('📤 골든셋 → 회화 앱 픽스처 내보내기', 'menuExportGolden')
       .addItem('🔎 대화 수집 점검(밤 배치 확인·머리글 치유)', 'menuTalkLogCheck')
       .addToUi();
   } catch (eMenu) { Logger.log('시트 메뉴 생성 스킵: ' + eMenu); } // UI 없는 컨텍스트(트리거 실행)에서는 조용히 통과
