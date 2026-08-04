@@ -262,6 +262,49 @@ test('되감기가 아닌 checkout·restore는 더러운 트리에서도 통과�
   });
 });
 
+/* ── 규칙 ⑦: stash 는 남의 수정을 「지우는」 대신 「옮긴다」 (F066·F068) ──────────────
+ * 되감기(규칙⑤)와 같은 자리, 방향만 다르다. 실사고에서 pop 이 늦어 원 세션이
+ * 「내 편집이 사라졌다」고 오판해 복구를 시작하기 직전까지 갔다 — 피해가 작았던 건 운이었다.
+ * 가르는 기준은 금지가 아니라 **범위**다: 경로 없으면 남의 것이 반드시 함께 간다. */
+
+test('경로 없는 stash 는 더러운 트리에서 막는다 (F066 — 옆 세션 121줄이 딸려 갔다)', () => {
+  더러운저장소((dir) => {
+    ['git stash', 'git stash -u', 'git stash push', 'git stash save "잠깐"'].forEach((c) => {
+      const r = 가드_at(c, dir);
+      assert.equal(r.차단, true, `트리 전체를 쓸어담는데 막지 않았다: ${c}`);
+      assert.match(r.사유, /git show HEAD:/, '치우지 말고 읽는 대안(git show HEAD:경로)을 안 준다');
+    });
+  });
+});
+
+test('경로를 준 stash 는 통과하되 확인을 요구한다 (자기 대피는 정당하다)', () => {
+  더러운저장소((dir) => {
+    const r = 가드_at('git stash push -- a.md', dir);
+    assert.equal(r.차단, false, '경로를 준 대피까지 막으면 자기 편집을 지킬 방법이 없다(규칙⑤가 권하는 경로다)');
+    assert.ok(r.사유, '조용히 지나갔다 — 그 파일이 남의 것인지 확인할 계기가 사라진다');
+  });
+});
+
+test('복구·조회 계열은 건드리지 않는다 (pop 은 오히려 되살리는 쪽이다)', () => {
+  더러운저장소((dir) => {
+    ['git stash pop', 'git stash list', 'git stash apply', 'git stash show', 'git stash drop'].forEach((c) => {
+      assert.strictEqual(가드_at(c, dir).사유, '', `조회·복구를 막거나 잔소리했다: ${c}`);
+    });
+  });
+});
+
+test('깨끗한 트리에서는 stash 도 조용하다 (과잉 차단은 BYPASS 를 가르친다)', () => {
+  임시저장소(null, (dir) => {
+    assert.strictEqual(가드_at('git stash', dir).사유, '', '잃을 것이 없는데 막았다');
+  });
+});
+
+test('stash 도 BYPASS 는 통한다', () => {
+  더러운저장소((dir) => {
+    assert.equal(가드_at('GIT_SCOPE_BYPASS=1 git stash', dir).차단, false, '의도적 예외 통로가 막혔다');
+  });
+});
+
 /* ── 규칙 ⑥: 커밋 메시지를 셸 인용에 맡기지 않는다 (F054·F056·F060 — 같은 자리 3번째) ──
  * 프로즈가 두 번 실패한 자리다. v7.11 「셸이 둘이다」 조항이 있는 상태에서 F060 이 났고,
  * F056 은 처방(스크래치패드 + -F)까지 적어둔 뒤였다. 그래서 기계로 옮겼고, 여기서 그 탐지력을 잰다.
