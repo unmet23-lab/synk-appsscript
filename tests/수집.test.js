@@ -162,7 +162,7 @@ test('[v9.138] 숙제 폼 증분은 멱등이고, 구 링크를 죽이지 않는
 });
 
 test('[v9.138] 커버리지 리포트는 총량이 아니라 빈 유형을 먼저 말한다', () => {
-  const fn = section('function dataCoverageReport()', '\n}\n');
+  const fn = section('function dataCoverageReport(', '\n}\n'); // 인자 목록은 앵커에 넣지 않는다(v9.166에서 opts가 붙어 한 번 죽었다)
   assert.ok(fn.includes('아직 한 건도 못 잡은 오류 유형'), '빈 유형 표기가 없다 — 총량만 보면 "많이 모았다"는 착시가 생긴다');
   assert.ok(/HW_ERROR_TAGS\.filter\(t => t !== '오류없음' && !태그수\[t\]\)/.test(fn), '빈칸 계산에서 「오류없음」을 빼지 않는다(영원히 안 채워지는 칸이 섞인다)');
   // 읽기 전용이어야 아무 때나 눌러도 안전하다(6개월마다 열어보는 용도)
@@ -378,4 +378,111 @@ test('[v9.138] 퀴즈ID와 문제는 같은 선택에서 나온다 — 두 사�
   // ID가 없으면 링크를 주지 않는다(해석 불능 응답 방지)
   const url = section('function quizFormUrlOf_(', '\n}\n');
   assert.ok(/if \(!tmpl \|\| !qid\) return ''/.test(url), '퀴즈ID 없이도 링크를 준다 — 무엇에 대한 답인지 모르는 행이 쌓인다');
+});
+
+/* ─────────────────────────────────────────────────────────────
+ * [v9.166] 커버리지 자동 발화 + 골든셋 → 회화 앱 픽스처 내보내기
+ *
+ * 내보내기는 **실제 출력을 검사**한다. 「식별자를 안 담는다」는 소스 문자열로 증명할 수 없다 —
+ * 담기는 곳이 출력이라서, 소스에 student_id가 안 보여도 열 인덱스 하나만 밀리면 그대로 실린다.
+ * 그리고 이 실패는 되돌릴 수 없다(목적지가 git 저장소다).
+ * ───────────────────────────────────────────────────────────── */
+
+const GOLD_H = ['id', 'fb_id', 'student_id', '제출일', '원문', 'AI교정', '강사판정', '강사교정', '사유', '오류태그', '강사', 'created_at'];
+
+function loadExport(rows) {
+  const s = code.indexOf('const FIXTURE_MIN_LEN');
+  assert.notEqual(s, -1, 'FIXTURE_MIN_LEN 정의를 찾지 못함');
+  let saved = null;
+  const sheet = { getLastRow: () => rows.length + 1, getRange: () => ({ getValues: () => rows }) };
+  const ctx = {
+    GOLD_HEADERS: GOLD_H,
+    SpreadsheetApp: { getActiveSpreadsheet: () => ({
+      getSheetByName: n => (n === 'teacher_gold' ? sheet : null),
+      getSpreadsheetTimeZone: () => 'Asia/Seoul'
+    }) },
+    Utilities: { formatDate: () => '20260804' },
+    DriveApp: { createFile: (name, content) => { saved = { name: name, content: content }; return { getUrl: () => 'https://drive/x' }; } },
+    MimeType: { PLAIN_TEXT: 'text/plain' },
+    Logger: { log: () => {} }
+  };
+  const api = new Function(...Object.keys(ctx), `${code.slice(s)}
+    return { exportGoldenFixture: exportGoldenFixture_, fixtureDiff_: fixtureDiff_, 역소독_: 역소독_ };`)(...Object.values(ctx));
+  return { api: api, saved: () => saved };
+}
+
+test('[v9.166] 픽스처에 식별자는 한 글자도 나가지 않는다 — 목적지가 git이라 되돌릴 수 없다', () => {
+  const rows = [['GD20260804-1', 'FB-77', 'SYNK-012', '2026-08-01',
+    '저가 몽골 사람입니다.', '저는 몽골 사람입니다.', '고칠 곳 있음', '저는 몽골 사람이에요.',
+    '조사 오류', '조사:주격(이/가·은/는)', '바트 선생님', '2026-08-04T00:00:00']];
+  const { api, saved } = loadExport(rows);
+  api.exportGoldenFixture();
+  const out = saved().content;
+  assert.equal(out.includes('SYNK-012'), false, 'student_id가 실렸다 — 동의 v18.9의 「비식별 사용」 약속 위반');
+  assert.equal(out.includes('FB-77'), false, 'fb_id 유출');
+  assert.equal(out.includes('바트'), false, '강사명 유출');
+  assert.equal(out.includes('2026-08-01'), false, '제출일 유출 — 소수 인원에선 날짜가 사실상 식별자로 동작한다');
+  const doc = JSON.parse(out);
+  assert.equal(doc.항목.length, 1);
+  assert.equal(doc.항목[0].기대교정, '저는 몽골 사람이에요.', '강사교정이 있으면 그것이 정답이어야 한다(AI교정이 아니라)');
+  assert.deepEqual(doc.항목[0].기대태그, ['조사:주격(이/가·은/는)']);
+});
+
+test('[v9.166] 강사가 아직 안 본 행은 픽스처가 되지 않는다 — 정답 없는 항목은 채점표가 아니다', () => {
+  const rows = [
+    ['GD-1', 'FB1', 'S1', 'D', '원문 하나입니다.', 'AI 교정본입니다.', '', '', '', '조사:주격(이/가·은/는)', '', ''],
+    ['GD-2', 'FB2', 'S2', 'D', '저가 학생입니다.', '저는 학생입니다.', '고칠 곳 있음', '저는 학생이에요.', '', '조사:주격(이/가·은/는)', '', '']
+  ];
+  const { api, saved } = loadExport(rows);
+  api.exportGoldenFixture();
+  const doc = JSON.parse(saved().content);
+  assert.equal(doc.항목.length, 1, '강사 무응답 행이 픽스처에 섞였다 — AI 출력을 정답으로 채점하게 된다');
+  assert.equal(doc.항목[0].입력, '저가 학생입니다.');
+});
+
+test('[v9.166] 「AI가 맞았다」 승인 행도 담는다 — 빠지면 재현율 없는 반쪽 채점표가 된다', () => {
+  const rows = [['GD-1', 'FB1', 'S1', 'D', '저는 학생입니다.', '저는 학생입니다.', 'AI가 맞음', '', '', '오류없음', '', '']];
+  const { api, saved } = loadExport(rows);
+  api.exportGoldenFixture();
+  const doc = JSON.parse(saved().content);
+  assert.equal(doc.항목.length, 1, '강사가 승인만 한 행이 통째로 버려졌다');
+  assert.equal(doc.항목[0].출처, 'AI교정_강사승인');
+  assert.equal(doc.항목[0].종류, '정상', '오류없음 + 원문=교정이면 거짓양성 검사용 정상 항목이다');
+});
+
+test('[v9.166] diff는 교정 지점을 뽑고, 확신이 없으면 비운다', () => {
+  const { api } = loadExport([]);
+  const d = api.fixtureDiff_('저가 몽골 사람입니다.', '저는 몽골 사람입니다.');
+  assert.deepEqual(d.불포함, ['저가'], '틀린 어절을 못 짚었다');
+  assert.deepEqual(d.포함, ['저는'], '고친 어절을 못 짚었다');
+  // 1글자는 우연히 겹쳐 근거가 못 된다
+  assert.equal(api.fixtureDiff_('나 밥 먹다', '나 밥 먹었다').포함.some(w => w.length < 2), false);
+  // 전면 재작성이면 「이 단어가 핵심」이라는 의미를 잃는다 → 빈 배열(추측을 확신처럼 적지 않는다)
+  const 전면 = api.fixtureDiff_('어제 친구 만나서 밥 먹고 영화 봤다', '어제는 친구를 만나 저녁을 먹은 뒤 영화를 보았습니다');
+  assert.deepEqual(전면, { 포함: [], 불포함: [] }, '전면 재작성인데 일부 어절을 근거로 내놨다');
+  assert.deepEqual(api.fixtureDiff_('', '저는 학생입니다'), { 포함: [], 불포함: [] });
+});
+
+test('[v9.166] 역소독은 수식 문자 앞의 아포스트로피만 벗긴다', () => {
+  const { api } = loadExport([]);
+  assert.equal(api.역소독_("'=IMPORTDATA(x)"), '=IMPORTDATA(x)', '소독 흔적이 픽스처 입력에 그대로 남는다');
+  assert.equal(api.역소독_("'-저는 학생입니다"), '-저는 학생입니다');
+  assert.equal(api.역소독_("'저는 학생입니다"), "'저는 학생입니다", '문장이 정당하게 쓴 아포스트로피를 벗겼다');
+  assert.equal(api.역소독_(''), '');
+});
+
+test('[v9.166] 커버리지 월간 발화 — 배선·침묵 조건이 발송보다 앞에 있다', () => {
+  // ① 어느 트리거에도 안 걸리면 영원히 안 돈다(골든셋과 같은 형태의 실패)
+  const mj = section('function monthlyJobs()', 'function runExecReportNow');
+  assert.ok(mj.includes("safeRun('dataCoverageMail', dataCoverageMonthly_)"),
+    '커버리지 월간 발화가 monthlyJobs에 없다 — 계기판이 다시 사람 기억에 걸린다');
+  // ② 개원 전(재원 0) 침묵과 ⚠️ 없을 때 침묵이 **메일 발송보다 앞에** 있어야 한다.
+  //    순서가 뒤집히면 「정상인데 매달 오는 메일」이 되고, 그러면 정작 필요할 때 안 읽힌다.
+  const fn = section('function dataCoverageMonthly_()', '\n}\n');
+  const i재원 = fn.indexOf('if (!s.재원)');
+  const i경고 = fn.indexOf("indexOf('⚠️') === -1");
+  const i메일 = fn.indexOf('MailApp.sendEmail');
+  assert.ok(i재원 > -1 && i경고 > -1 && i메일 > -1, '침묵 조건 또는 발송부가 사라졌다');
+  assert.ok(i재원 < i메일 && i경고 < i메일, '침묵 조건이 발송 뒤에 있다 — 조용해야 할 때 메일이 나간다');
+  assert.ok(fn.indexOf('quotaOk(1)') > -1 && fn.indexOf('quotaOk(1)') < i메일, '메일 쿼터 가드 없이 발송한다');
 });

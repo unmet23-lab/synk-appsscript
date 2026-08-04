@@ -513,7 +513,10 @@ function talkLogCheck() {
  *   — 수집이 수동적 축적에서 능동적 사냥으로 바뀌는 지점이고, 「6개월마다 열어본다」의 실행 수단이다
  *   (데이터의 결함은 쌓을 때가 아니라 **쓸 때** 드러난다. 2년 뒤 처음 열어보면 되돌릴 방법이 없다).
  * 읽기 전용 — 시트를 쓰지 않는다(언제 눌러도 안전). */
-function dataCoverageReport() {
+/* [v9.166] opts.raw = true면 {text, stats}를 준다(기본 호출은 문자열 그대로 — menuDataCoverage 무영향).
+ * 월간 자동 발화가 판단에 쓸 숫자를 **리포트 텍스트에서 파싱하지 않기 위해서**다.
+ * 문구 앵커는 문구가 바뀌는 순간 조용히 죽고, 그 형태의 실패는 「경고가 안 온다」로 나타난다. */
+function dataCoverageReport(opts) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const L = [];
   const 태그수 = {};
@@ -642,7 +645,55 @@ function dataCoverageReport() {
   const report = head + L.join('\n')
     + '\n\n다음 수: 빈 유형이 있으면 그 문법을 겨냥한 숙제·퀴즈를 다음 시즌에 넣으세요 — 안 나오는 오류는 안 쌓입니다.';
   Logger.log(report);
+  if (opts && opts.raw) {
+    return { text: report, stats: {
+      빈유형: 빈칸, 재원: 재원, 활동: 활동.size,
+      골든표본: 표본, 골든응답: 응답G, 골든수정: 수정,
+      첨삭: 첨삭, 태그있음: 태그있음, 퀴즈응답: 응답, 대화턴: 턴
+    } };
+  }
   return report;
+}
+
+/* [v9.166] 커버리지 월간 자동 발화 — 계기판이 시트 메뉴에만 있으면 아무도 안 누른다.
+ * 지침 「스스로 발화하지 않는 장치는 안 돈다」의 실측 사례가 바로 이 파일 안에 있었다:
+ * 골든셋은 weeklyJobs에 걸려 매주 표본을 뽑는데, **그 표본이 비어 있는지 알려주는 계기판은
+ * 사람이 눌러야만 돌았다.** 예상 실패 모드를 미리 적어둬도 아무도 안 열면 값이 0이다.
+ *
+ * 침묵의 규칙 2개 — 빨간불 피로가 이 장치를 죽이는 유일한 경로라서:
+ *   ① **재원 0명이면 통째로 침묵**한다. 개원 전엔 데이터 0이 정상이고, 매달 경고를 보내면
+ *      정작 데이터가 쌓이기 시작하는 개원 시점엔 이미 안 읽는 메일이 되어 있다.
+ *   ② 문제 없으면 침묵한다. **보낼지 말지의 기준은 dataCoverageReport 안의 ⚠️ 한 벌뿐**이다 —
+ *      여기서 임계값을 새로 정하면 두 벌이 되어 조용히 갈린다.
+ *      (아래 처방 문구의 조건은 「무엇을 적을까」일 뿐이라, 하나도 안 맞아도 리포트 전문은 그대로 나간다.
+ *       그래야 리포트에 새 ⚠️가 생겼는데 여기 처방이 없어서 침묵하는 구멍이 안 생긴다.)
+ * 그리고 진단만 하고 처방이 없으면 결국 손일로 돌아오므로 「이번 달 할 것」을 함께 적는다. */
+function dataCoverageMonthly_() {
+  const r = dataCoverageReport({ raw: true });
+  if (!r || !r.stats) return;
+  const s = r.stats;
+  if (!s.재원) { Logger.log('커버리지 월간 — 재원 0명이라 침묵(개원 전 정상)'); return; }
+  if (r.text.indexOf('⚠️') === -1) { Logger.log('커버리지 월간 — 경고 없음, 메일 생략'); return; }
+
+  const 처방 = [];
+  if (s.골든표본 && !s.골든응답) 처방.push(
+    '① 골든셋에 강사 응답이 0건입니다 — Glide 강사 탭 「골든셋」이 조립됐는지, 강사가 주 5건을 채우고 있는지 보세요.\n' +
+    '   이 칸이 비면 2년 뒤 「어느 AI가 우리 학생에게 맞는가」를 감으로 고릅니다. 소급 불가(강사를 다시 앉힐 수 없음).');
+  if (s.골든응답 && s.골든수정 === s.골든응답) 처방.push(
+    '① 골든셋이 전부 「고칠 곳이 있다」로만 쌓였습니다 — 「AI가 맞았다」 라벨이 0이면 재현율을 못 잽니다.\n' +
+    '   강사에게 「AI 교정이 이미 맞으면 그대로 통과시켜 주세요」를 한 번 안내하세요.');
+  if (s.빈유형 && s.빈유형.length) 처방.push(
+    '② 아직 한 건도 못 잡은 오류 유형 ' + s.빈유형.length + '종 — 다음 시즌 숙제·퀴즈에 이 문법을 넣으세요:\n' +
+    '   ' + s.빈유형.slice(0, 3).join(' · ') + (s.빈유형.length > 3 ? ' (외 ' + (s.빈유형.length - 3) + '종은 아래 리포트에)' : ''));
+  if (s.활동 < s.재원 * 0.5) 처방.push(
+    '③ 최근 7일 참여 ' + s.활동 + '/' + s.재원 + '명 — 분모가 마르면 총량이 늘어도 유형은 안 채워집니다.');
+
+  if (!quotaOk(1)) return;
+  const body = '이번 달 손볼 곳입니다. 문제가 없으면 이 메일은 오지 않습니다.\n\n'
+    + (처방.length ? 처방.join('\n\n') + '\n\n' : '')
+    + '────────────────\n\n' + r.text;
+  MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 📊 학습 데이터 — 손볼 곳 ' + 처방.length + '건', body);
+  Logger.log('커버리지 월간 메일 발송(처방 ' + 처방.length + '건)');
 }
 
 /* 학생별 퀴즈 폼 링크 — SIDTOKEN·QZTOKEN 두 자리를 함께 치환한다(formUrlOf는 sid 한 자리 전용).
@@ -863,4 +914,107 @@ function goldenSampleWeekly_() {
     p.id, p.sid, p.d, 셀안전_(p.src), 셀안전_(p.corr), '', '', '', p.tags, '', now]);
   gold.getRange(gold.getLastRow() + 1, 1, rows.length, GOLD_HEADERS.length).setValues(rows);
   Logger.log('골든셋 표본 ' + rows.length + '건 적재(teacher_gold)');
+}
+
+const FIXTURE_MIN_LEN = 2; // diff 어절 최소 길이 — 1글자(을·를·이)는 우연히 겹쳐 근거가 못 된다
+
+/* [v9.166] 셀안전_의 역연산 — 선행 아포스트로피를 **그 뒤가 수식 문자일 때만** 벗긴다.
+ * Sheets가 왕복 과정에서 이미 소비했으면 no-op이고, 남아 있으면 정확히 하나만 제거한다.
+ * (일반 문장이 정당하게 쓴 아포스트로피는 건드리지 않는다 — 조건을 뒤 문자에 걸어서.) */
+function 역소독_(v) {
+  const s = String(v == null ? '' : v);
+  return /^'[=+\-@\t\r]/.test(s) ? s.slice(1) : s;
+}
+
+/* [v9.166] 원문↔교정의 어절 차이로 「반드시 나와야/나오면 안 되는 말」을 뽑는다.
+ * 한국어는 조사가 어절에 붙어 있어 어절 단위 diff가 교정 지점과 잘 맞는다
+ * (「저가 몽골 사람입니다」→「저는 …」이면 불포함 [저가]·포함 [저는]).
+ * 🔑 확실하지 않으면 **빈 배열을 준다** — 빈 배열은 그 검사를 건너뛸 뿐 실패시키지 않는다.
+ *   추측한 단어를 넣으면 채점기가 엉뚱한 것을 재고, 그건 「틀린 채점표」라 없느니만 못하다.
+ *   (talk repo 픽스처의 「확신 없는 것을 확실한 것처럼 적지 않는다」와 같은 규칙) */
+function fixtureDiff_(원문, 교정) {
+  const a = String(원문 || '').trim().split(/\s+/).filter(Boolean);
+  const b = String(교정 || '').trim().split(/\s+/).filter(Boolean);
+  if (!a.length || !b.length) return { 포함: [], 불포함: [] };
+  const setA = {}, setB = {};
+  a.forEach(w => { setA[w] = 1; });
+  b.forEach(w => { setB[w] = 1; });
+  const 불포함 = a.filter(w => !setB[w] && w.length >= FIXTURE_MIN_LEN);
+  const 포함 = b.filter(w => !setA[w] && w.length >= FIXTURE_MIN_LEN);
+  // 전면 재작성이면 diff가 문장 전체가 되어 「이 단어가 교정의 핵심」이라는 의미를 잃는다.
+  const 변화 = Math.max(포함.length, 불포함.length) / Math.max(a.length, b.length);
+  if (변화 > 0.5) return { 포함: [], 불포함: [] };
+  return { 포함: 포함.slice(0, 3), 불포함: 불포함.slice(0, 3) };
+}
+
+/* [v9.166] 골든셋 → 회화 앱(SYNK-talk) 평가 픽스처 내보내기.
+ *
+ * 왜 필요한가: 두 저장소가 오류태그 23종 이름만 공유하고 데이터로는 끊겨 있다. 이 통로가 없으면
+ * 개원 후 실학생 교정을 **손으로 복붙**하게 되고, 손일이 된 순간 분기에 한 번 하다가 안 하게 된다.
+ *
+ * 🔴 나가는 것을 최소로 자른다 — student_id·fb_id·강사명·제출일·created_at을 **전부 버린다.**
+ *   ① 평가에 필요한 것은 원문·교정·태그 셋뿐이다.
+ *   ② 동의 v18.9는 범위 확장의 **대가로 「비식별 사용」을 약속**한 것이라 식별자 포함은 동의 위반이다.
+ *   ③ 목적지가 git 저장소다 — 한 번 커밋되면 이력에서 지워지지 않는다(되돌릴 수 없는 종류의 사고).
+ *   제출일까지 버리는 이유: 소수 인원에서는 날짜+반이 사실상 식별자로 동작한다.
+ *
+ * 두 종류를 모두 담는다 — 「AI가 틀렸다」만 모으면 재현율을 못 잰다(반쪽 채점표):
+ *   · 강사교정 있음 → 기대교정 = 강사교정  (AI가 놓친 것)
+ *   · 강사판정만 있고 교정 없음 → 기대교정 = AI교정  (AI가 맞았다는 강사 승인)
+ *
+ * ⚠ 이름이 `_`로 끝나는 이유 = 노출 표면. HtmlService 페이지가 익명에게 한 번이라도 나가면 받은 쪽이
+ *   `google.script.run`으로 **밑줄 없는 전역 전부**를 원장 권한으로 부른다(실측 171개). 지금 그런 페이지는
+ *   없지만, 이 함수는 「학생 문장을 파일로 만들어내는」 종류라 그 목록에 올려둘 이유가 없다.
+ *   메뉴는 `menuExportGolden`이 내부에서 부르므로 밑줄이 있어도 그대로 동작한다.
+ */
+function exportGoldenFixture_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const gd = ss.getSheetByName('teacher_gold');
+  if (!gd || gd.getLastRow() < 2) return '골든셋이 비어 있습니다 — 표본은 매주 월요일 배치가 뽑고, 강사 응답은 Glide 강사 탭 「골든셋」에서 채웁니다.';
+  const tz = ss.getSpreadsheetTimeZone();
+  const rows = gd.getRange(2, 1, gd.getLastRow() - 1, GOLD_HEADERS.length).getValues();
+  const 항목 = [];
+  let 미응답 = 0;
+  rows.forEach(r => {
+    const 원문 = 역소독_(r[4]).trim();
+    const ai = 역소독_(r[5]).trim();
+    const 판정 = String(r[6] || '').trim();
+    const 강사교정 = 역소독_(r[7]).trim();
+    if (!원문) return;
+    if (!판정 && !강사교정) { 미응답++; return; } // 강사가 아직 안 본 행 — 정답이 없으므로 픽스처가 아니다
+    const 교정 = 강사교정 || ai;
+    if (!교정) { 미응답++; return; }
+    const 태그 = String(r[9] || '').split(',').map(t => t.trim()).filter(Boolean);
+    const 정상 = (태그.length === 0 || (태그.length === 1 && 태그[0] === '오류없음')) && 원문 === 교정;
+    const d = fixtureDiff_(원문, 교정);
+    항목.push({
+      id: 'G' + String(항목.length + 1).padStart(3, '0'),
+      종류: 정상 ? '정상' : '오류',
+      출처: 강사교정 ? '강사교정' : 'AI교정_강사승인',
+      입력: 원문,
+      기대태그: 태그,
+      기대교정: 교정,
+      포함: d.포함,
+      불포함: d.불포함
+    });
+  });
+  const doc = {
+    버전: '실측 v1',
+    만든날: Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd'),
+    출처: 'SYNK LAB teacher_gold — 실학생 원문 + 강사 교정. 비식별(student_id·fb_id·강사명·날짜 제거).',
+    한계: [
+      '표본은 무작위이지만 **우리 학원 학생**의 분포다 — 몽골어 화자 일반의 분포가 아니다.',
+      '「포함/불포함」은 어절 diff로 자동 도출한 것이라 비어 있을 수 있다. 빈 배열은 그 검사를 건너뛴다(추측해 넣지 않는다).',
+      '거짓양성 검사가 부족하면 정상 문장을 따로 보태야 한다 — 아래 종류별 수를 보고 판단할 것.'
+    ],
+    항목: 항목
+  };
+  const 정상수 = 항목.filter(x => x.종류 === '정상').length;
+  doc.한계.push('이번 판: 오류 ' + (항목.length - 정상수) + ' · 정상 ' + 정상수 + ' · 강사 미응답으로 제외 ' + 미응답 + '건.');
+  const name = 'SYNK_골든픽스처_' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '.json';
+  const file = DriveApp.createFile(name, JSON.stringify(doc, null, 2), MimeType.PLAIN_TEXT);
+  const msg = '픽스처 ' + 항목.length + '건 내보냄(정상 ' + 정상수 + ' · 미응답 제외 ' + 미응답 + ')\n파일: ' + name
+    + '\n내 드라이브에서 받아 SYNK-talk의 evals/ 에 넣으면 교정 엔진 채점에 바로 씁니다.';
+  Logger.log(msg + '\n' + file.getUrl());
+  return msg;
 }

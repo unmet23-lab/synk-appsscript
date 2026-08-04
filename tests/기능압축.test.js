@@ -165,7 +165,7 @@ test('[v9.147] 골든셋은 무작위 표본이고 주간 배치에 걸려 있�
 });
 
 test('[v9.147] 커버리지 계기판은 참여율을 재고, 골든셋의 예상 실패 모드를 먼저 말한다', () => {
-  const r = section('function dataCoverageReport()', 'function quizFormUrlOf_');
+  const r = section('function dataCoverageReport(', 'function quizFormUrlOf_'); // 인자 목록은 앵커에 넣지 않는다(v9.166에서 opts가 붙어 한 번 죽었다)
   // 참여율 = 압축이 감량인지 출혈인지를 가르는 유일한 숫자. 총량만 보면 소수 열성 학생이 가린다.
   assert.ok(r.includes('참여율'), '참여율 섹션이 없다 — 압축의 부작용을 재는 계기가 없다');
   assert.ok(r.includes("최근카운트('hw_feedback'") && r.includes("최근카운트('quiz_log'") && r.includes("최근카운트('talk_log'"),
