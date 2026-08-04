@@ -36,6 +36,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
@@ -49,6 +50,16 @@ const allHooks = Object.entries(settings.hooks).flatMap(([event, groups]) =>
   groups.flatMap((g) => g.hooks.map((h) => ({ event, matcher: g.matcher || '-', command: h.command })))
 );
 const preToolUse = allHooks.filter((h) => h.event === 'PreToolUse');
+const 훅이름 = (h) => (String(h.command).match(/hooks\/([a-z-]+)\.js/) || [])[1] || '';
+
+/* 정보성 훅 — **가드가 아니다.** 막는 게 목적이 아니라 알리는 게 목적이다.
+ * 이런 훅에 「못 돌면 deny」를 걸면, 편의 기능 하나가 고장났다고 **모든 Edit/Write 가 막힌다.**
+ * 그건 F044 가 막으려던 것(가드의 조용한 통과)과 다른 방향의 사고다.
+ *
+ * ⚠ 이 예외는 **선언만으로는 못 얻는다.** 바로 아래 검사가 「그 훅이 정말 판정을 안 내는지」를
+ *   행동으로 확인한다 — 진짜 가드를 이 목록에 적어 넣으면 그 자리에서 빨간불이 난다.
+ *   경고 경로까지 포함한 전체 증명은 tests/트랙충돌.test.js 가 진다. */
+const 정보성 = new Set(['track-collision']);
 
 // ── bash 탐색: 없으면 행동 검사를 skip으로 드러낸다 ─────────────────
 // ⚠ 절대경로를 먼저 시도한다 — PATH를 비운 채 돌리는 검사가 있어서
@@ -106,7 +117,9 @@ test('node는 PATH에서 찾는다 (node.exe 하드코딩 금지)', () => {
 
 // ── ② 실패 방향 ─────────────────────────────────────────────────────
 test('PreToolUse 가드는 실행 불가 시 차단한다 (조용한 통과 금지)', () => {
-  for (const h of preToolUse) {
+  const 가드들 = preToolUse.filter((h) => !정보성.has(훅이름(h)));
+  assert.ok(가드들.length >= 4, `가드가 ${가드들.length}건뿐 — 정보성 목록이 가드를 삼키고 있다`);
+  for (const h of 가드들) {
     // 🔑 차단은 exit 2가 아니라 stdout JSON(permissionDecision:deny)이 실제 통로다 —
     //    2026-08-04 실측으로 확인했다(가드 본체도 이 방식으로 막는다). exit 2는 이중 안전.
     assert.match(
@@ -115,6 +128,35 @@ test('PreToolUse 가드는 실행 불가 시 차단한다 (조용한 통과 금�
       `${h.matcher} 가드에 「실행 불가 = deny」 절이 없다 — 통과와 미실행이 같은 모양이 된다`
     );
     assert.match(h.command, /exit 2/, `${h.matcher} 가드에 exit 2 이중 안전이 없다`);
+  }
+});
+
+test('정보성 훅은 반대로 **차단하면 안 된다** — 그 예외를 행동으로 증명한다', () => {
+  const 대상 = preToolUse.filter((h) => 정보성.has(훅이름(h)));
+  assert.strictEqual(대상.length, 정보성.size,
+    '정보성으로 선언했는데 PreToolUse 등록이 없다 — 목록이 낡았다(안 도는 훅을 면제하고 있다)');
+
+  for (const h of 대상) {
+    const 이름 = 훅이름(h);
+    assert.ok(!/"permissionDecision":\\?"deny\\?"/.test(h.command),
+      `${이름} 은 정보성인데 등록에 「실행 불가 = deny」 절이 있다 — 편의 기능이 작업을 세운다`);
+
+    // 행동 확인 — 상태 폴더만 격리한다(저장소는 진짜를 봐야 판정 경로가 실제로 돈다).
+    const 격리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-hookkind-'));
+    const r = spawnSync(process.execPath, [path.join(ROOT, '.claude', 'hooks', `${이름}.js`)], {
+      input: JSON.stringify({ tool_name: 'Edit', tool_input: { file_path: path.join(ROOT, 'Code.js') } }),
+      encoding: 'utf8',
+      env: { ...process.env, SYNK_CTXBUDGET_DIR: 격리, CLAUDE_CODE_HOST_SESSION_ID: `hookkind-${process.pid}` },
+    });
+    try { fs.rmSync(격리, { recursive: true, force: true }); } catch (_) { /* 진행 */ }
+
+    assert.strictEqual(r.status, 0, `${이름} 이 0 아닌 코드로 끝났다 — 정보성 훅이 작업을 세운다`);
+    const out = (r.stdout || '').trim();
+    if (out) {
+      const d = JSON.parse(out).hookSpecificOutput?.permissionDecision;
+      assert.strictEqual(d, undefined,
+        `${이름} 이 permissionDecision(${d})을 냈다 — 정보성 예외를 쓸 자격이 없다`);
+    }
   }
 });
 

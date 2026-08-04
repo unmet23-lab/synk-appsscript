@@ -24,9 +24,15 @@ const STATE_DIR = process.env.SYNK_CTXBUDGET_DIR || path.join(os.tmpdir(), 'synk
 const BATON_TTL_MS = 12 * 60 * 60 * 1000; // 인계문: 12시간 넘으면 트랙이 이미 바뀌었다고 본다
 const SWEEP_TTL_MS = 24 * 60 * 60 * 1000; // 카운터 등 잡파일: 하루 지나면 지운다
 
-/** cwd → 짧고 안정적인 프로젝트 키. 경로를 그대로 파일명에 쓸 수 없어 해시로 줄인다. */
+/** cwd → 짧고 안정적인 프로젝트 키. 경로를 그대로 파일명에 쓸 수 없어 해시로 줄인다.
+ *
+ * ⚠ **구분자를 먼저 통일한다.** 2026-08-04 실측: 같은 저장소인데 `C:/Users/...`(슬래시)와
+ *   `C:\Users\...`(백슬래시)가 **서로 다른 키**를 내 상태가 조용히 둘로 갈렸다
+ *   (`cec367f48f` vs `de787defcb`). 대소문자·끝슬래시는 이미 지웠는데 구분자만 남아 있었다.
+ *   증상은 「아무 일도 안 일어남」이라 눈에 안 띈다 — 이 파일이 존재하는 이유 ②(프로젝트 격리)와
+ *   같은 함정의 다른 입구다. 호출부가 `path.resolve` 를 쓰든 리터럴을 쓰든 같은 키여야 한다. */
 function projectKey(cwd) {
-  const norm = String(cwd || '').replace(/[\\/]+$/, '').toLowerCase();
+  const norm = String(cwd || '').replace(/[\\/]+/g, '/').replace(/\/+$/, '').toLowerCase();
   return crypto.createHash('sha1').update(norm).digest('hex').slice(0, 10);
 }
 
@@ -128,4 +134,7 @@ function take(cwd) {
   return { ...winner.j, alsoDropped: found.length - 1 };
 }
 
-module.exports = { stateDir, projectKey, batonName, stagePath, readStage, writeStage, sweep, drop, take, BATON_TTL_MS, SWEEP_TTL_MS };
+/* safeId 도 내보낸다 — track-collision 이 같은 STATE_DIR 에 세션별 파일을 쓴다.
+ * 파일명 규칙을 그쪽에서 다시 적으면 sweep() 이 못 알아보는 이름이 생기고, 증상은
+ * 「조용히 안 지워짐」이라 눈에 안 띈다(이 파일이 존재하는 이유 ③과 같은 함정). */
+module.exports = { stateDir, projectKey, safeId, batonName, stagePath, readStage, writeStage, sweep, drop, take, BATON_TTL_MS, SWEEP_TTL_MS };
