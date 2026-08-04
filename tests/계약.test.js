@@ -75,15 +75,19 @@ test('계약 파일 자체가 비지 않았다 (빈 계약은 모든 검사를 �
   assert.ok(new Set(계약.오류태그).size === 계약.오류태그.length, '오류태그에 중복이 있다 — 집계가 두 칸으로 갈린다');
 });
 
-test('형제 저장소 SYNK-talk의 계약 파일이 이 저장소와 바이트까지 같다', (t) => {
+test('형제 저장소 SYNK-talk의 계약 파일이 이 저장소와 같다 (줄바꿈만 제외)', (t) => {
   // 형제는 이 저장소 밖이다 — CI엔 없다. 없음을 통과로 만들지 않고 skip으로 드러낸다.
   const 형제 = path.join(REPO, '..', 'SYNK-talk', '계약', '수집_교정_계약.json');
   if (!fs.existsSync(형제)) {
     return t.skip('형제 저장소 SYNK-talk가 이 기계에 없다 — 실물 대조는 로컬에서만 (탐지는 위 검사들이 진다)');
   }
-  const 내것 = fs.readFileSync(계약경로);
-  const 저것 = fs.readFileSync(형제);
-  assert.ok(내것.equals(저것),
-    'SYNK-talk의 계약 파일이 다르다 — 한쪽만 고쳤다. 두 저장소에 같은 바이트로 넣어야 계약이 계약이다\n' +
+  /* 줄바꿈은 정규화하고 나머지는 바이트로 본다.
+   * 실측(08-04): 이 저장소는 `계약/`에 eol 지정이 없어 core.autocrlf=true 아래 **새 클론에서
+   * CRLF로 나오고**, SYNK-talk는 `* text=auto eol=lf`라 언제나 LF다 — 내용이 같은데도 대조가
+   * 빨개진다. `.gitattributes`로 파일 쪽도 못박았지만, **거짓 경보를 내는 가드는 곧 꺼지므로**
+   * 검사 자체도 체크아웃 정책에 안 흔들리게 둔다. 줄바꿈 차이는 계약의 분열이 아니다. */
+  const 정규화 = (p) => fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
+  assert.equal(정규화(형제), 정규화(계약경로),
+    'SYNK-talk의 계약 파일이 다르다 — 한쪽만 고쳤다. 두 저장소에 같은 내용으로 넣어야 계약이 계약이다\n' +
     `  이 저장소: ${계약경로}\n  형제:      ${형제}`);
 });
