@@ -28,6 +28,7 @@
  *   node tools/codex-review.js --commit <sha>
  *   node tools/codex-review.js --base master
  *   node tools/codex-review.js --uncommitted
+ *   node tools/codex-review.js --검수 luna        # 픽 전환(기본 sol · 선택지·근거 = tools/모델정책.js)
  *   node tools/codex-review.js --기각 <키> --사유 "왜 기각했는지"
  *   node tools/codex-review.js --확인             # 게이트용 조회(검수 안 돌림·부작용 0)
  */
@@ -202,48 +203,23 @@ function 범위(파일들) {
  * ⚠ 이 셋 중 하나라도 빠지면 「읽기 전용」이 사실이 아니게 된다. 지우지 말 것. */
 const 잠금플래그 = ['--ignore-user-config', '-c', 'sandbox_mode="read-only"', '-c', 'approval_policy="never"'];
 
-/* ■ 모델·추론 수준을 **둘 다** 못 박는다 — 여기가 이 파일의 유일한 모델 결정 자리다.
+/* ■ 모델·추론 수준은 **`tools/모델정책.js` 가 혼자 정한다** — 여기엔 사본을 두지 않는다.
+ *   벤더가 둘(코덱스·제미나이)이 된 뒤로 결정이 두 곳에 있으면 갈라지고, 갈라지는 방향은
+ *   언제나 얕은 쪽이다. 왜 그렇게 정했는지(효력이 모델보다 레버다 · 변환은 최하급이 옳다 ·
+ *   선택지를 sol·luna 둘로 닫은 이유)는 전부 그 파일 주석에 있다.
  *
- * 🔴 왜 「둘 다」인가 (2026-08-05에 잡은 내 구멍): `--ignore-user-config` 는 사용자 설정의
- *   모델뿐 아니라 **`model_reasoning_effort` 도 함께 버린다.** 그런데 `gpt-5.6-sol` 의
- *   `default_reasoning_level` 은 **`low`** 다(models_cache.json 실측). 즉 모델만 박으면
- *   최상급 모델을 **가장 얕은 추론으로** 돌리게 된다 — 겉보기엔 「최신 모델을 쓴다」인데
- *   실제로는 아니다. **효력은 모델보다 레버가 크다**(같은 모델의 low↔max 차이가
- *   같은 효력의 sol↔terra 차이보다 크다).
- *
- * ■ 무엇을 어디에 쓰는가 — 축 셋으로 정한다(CLAUDE.md 모델 라우팅 조항의 이 파이프라인 적용):
- *   ①되돌림 비용: 놓치면 라이브가 깨지는 자리인가 → 검수는 그렇다 → 최상급.
- *   ②판단인가 변환인가: **변환이면 최하급이 옳다.** 2단계는 산문을 JSON 으로 옮기는
- *     순수 변환인데, 여기에 똑똑한 모델을 쓰면 오히려 **「고쳐서」 옮길 위험**이 생긴다
- *     (STT 가 학생의 발음 오류를 고쳐 전사해 데이터를 없애는 것과 같은 계열).
- *   ③빈도: 매 배포마다 도는가 → 시간이 곧 비용. 1단계가 이미 5~8분이라 `max`·`ultra` 는
- *     기본값으로 두지 않는다(필요한 날만 `--효력 max`).
- *
- * 바꾸는 법: 환경변수 or CLI(`--모델`·`--효력`). 없는 모델·효력이면 codex 가 거부하고
- *   그건 `확인 불가`(2)로 드러난다 — 조용히 다른 값으로 도는 것보다 낫다. */
-const 효력들 = ['low', 'medium', 'high', 'xhigh', 'max', 'ultra'];
+ * 고르는 법: `--검수 sol|luna`(또는 `SYNK_REVIEW_PICK`) · 1회성 하향은 `--효력 high`.
+ *   모르는 이름은 **기본값으로 접지 않고 거절**한다 — 오타를 조용히 sol 로 읽으면
+ *   「luna 로 돌렸다」고 믿는 상태가 만들어진다. */
+const 정책 = require(path.join(ROOT, 'tools', '모델정책.js'));
+const 효력들 = 정책.효력들;
+const 모델플래그 = 정책.코덱스플래그;
+/* require 시점엔 **기본 픽만** 놓는다 — env·CLI 는 main() 에서 얹는다. 이 모듈은 clasp-guard 훅도
+ * require 하므로, 여기서 env 오타로 던지면 **가드가 통째로 죽는다**(등록층 누수 · CLAUDE.md 맹점 ①). */
 const 모델설정 = {
-  // 적대 검수 = 정밀 검증 → 최상급 모델 + 기본보다 크게 올린 추론
-  분석: {
-    model: process.env.SYNK_REVIEW_MODEL || 'gpt-5.6-sol',
-    effort: process.env.SYNK_REVIEW_EFFORT || 'xhigh',
-  },
-  // 산문 → JSON = 기계적 변환 → 최하급. 능력이 아니라 **충실함**이 필요한 자리다.
-  구조화: {
-    model: process.env.SYNK_REVIEW_FMT_MODEL || 'gpt-5.4-mini',
-    effort: process.env.SYNK_REVIEW_FMT_EFFORT || 'low',
-  },
+  분석: 정책.검수선택(),
+  구조화: { ...정책.구조화설정 },
 };
-
-/* 모델·효력을 codex 플래그로. 효력은 여기서 검사한다 — 오타를 codex 에 넘기면 조용히 기본값
- * (`gpt-5.6-sol` = `low`)으로 돌 위험이 있고, 그건 「최상급 모델을 쓴다」고 믿으면서 아닌 상태다. */
-function 모델플래그(설정) {
-  if (!효력들.includes(설정.effort)) {
-    const e = new Error(`알 수 없는 추론 수준 "${설정.effort}" — 가능: ${효력들.join(' · ')}`);
-    e.확인불가 = true; throw e;
-  }
-  return ['-m', 설정.model, '-c', `model_reasoning_effort="${설정.effort}"`];
-}
 
 function codex(args, 입력, timeoutMs, 라벨) {
   const isWin = process.platform === 'win32';
@@ -399,15 +375,21 @@ function main(argv) {
   const 기각들 = jsonl(기각경로);
   const 범위들 = 범위(대상.파일들);
 
-  // 1회성 상향/하향 — 어려운 변경이면 `--효력 max`, 급하면 `--효력 medium`
-  if (argv.includes('--모델')) 모델설정.분석.model = argv[argv.indexOf('--모델') + 1];
-  if (argv.includes('--효력')) 모델설정.분석.effort = argv[argv.indexOf('--효력') + 1];
+  // 선택지는 둘뿐이다(sol·luna · 둘 다 max). `--효력` 은 1회성 조정 — 급하면 `--효력 high`.
+  try {
+    모델설정.분석 = 정책.분석설정(argv);
+    모델플래그(모델설정.분석);      // 조합 검사를 **먼저** 한다 — 몇 분 기다린 뒤 오타를 알 이유가 없다
+    모델플래그(모델설정.구조화);    // 2단계도 지금 — 1단계가 끝난 뒤 죽으면 그 몇 분이 통째로 버려진다
+  } catch (e) {
+    console.error('🔴 확인 불가 — 검수가 **안 돌았다**(통과가 아니다): ' + e.message);
+    return 2;
+  }
 
   console.log(`대상: ${대상.종류} ${대상.값} · 파일 ${대상.파일들.length}개`);
   console.log(`검수 범위(clasp 프로젝트): ${범위들.length ? 범위들.join(', ') : '없음 — 배포 파일이 아닌 변경'}`);
   if (기각들.length) console.log(`기각 이력 ${기각들.length}건으로 재발 지적을 걸러낸다.`);
-  console.log(`모델: 분석=${모델설정.분석.model}/${모델설정.분석.effort} · 구조화=${모델설정.구조화.model}/${모델설정.구조화.effort}`);
-  console.log('codex 검수 중… (읽기 전용 샌드박스 · 보통 5~8분 · 2단계)');
+  console.log(`모델: 분석=${모델설정.분석.model}/${모델설정.분석.effort}(${모델설정.분석.이름}) · 구조화=${모델설정.구조화.model}/${모델설정.구조화.effort}`);
+  console.log(`codex 검수 중… (읽기 전용 샌드박스 · 2단계 · ${모델설정.분석.effort} 추론 — xhigh 실측이 5~8분이었다)`);
 
   const 초 = argv.includes('--timeout') ? Number(argv[argv.indexOf('--timeout') + 1]) : 900;
   let 결과;
