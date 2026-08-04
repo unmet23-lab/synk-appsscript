@@ -13,7 +13,12 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
+      # fetch-depth: 0 = 전체 이력. 기본값 1(얕은 클론)이면 `HEAD~1` 이 없어서
+      # 실저장소 이력을 재는 검사(tests/실행층점검 등)가 CI 에서만 깨진다 — 로컬은 초록인데.
+      # ⚠ 이력 없이도 **조용히 통과하지는 않는다**: 범위를 못 읽으면 그 검사는 skip 으로 드러난다.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 20
