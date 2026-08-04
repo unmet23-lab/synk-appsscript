@@ -79,11 +79,13 @@ html,body{
 
 /* ── 워드마크 락업 ─────────────────────────────────────────────
    LOGO SLOT — 로고 파일이 도착하면 .symbol 안의 svg 만 교체한다(브랜드킷 §3). */
-.lockup{ display:flex; align-items:center; gap:3.4mm; flex:0 0 auto; }
-.symbol{ width:13mm; height:13mm; flex:0 0 auto; }
-.lockup .wm{ line-height:1; }
-.lockup .wm .name{ font-size:8.2mm; font-weight:700; letter-spacing:.26em; }
-.lockup .wm .tag{ font-size:2.7mm; color:var(--gold); margin-top:2.4mm; letter-spacing:.02em; font-weight:500; }
+/* ⚠ .symbol 은 정사각이 아니다 — W5 축약 워드마크의 가로:세로 = 1.5:1 이라 그 비율로 잡는다.
+   주입은 손이 아니라 `node tools/로고주입.js`(파일마다 복사되는 것을 손으로 맞추면 어긋난다). */
+.lockup{ display:flex; flex-direction:column; align-items:flex-end; gap:2.4mm; flex:0 0 auto; }
+.symbol{ width:27mm; height:17mm; flex:0 0 auto; }
+.symbol svg{ width:100%; height:100%; display:block; }
+.lockup .wm{ line-height:1; text-align:right; }
+.lockup .wm .tag{ font-size:2.7mm; color:var(--gold); letter-spacing:.02em; font-weight:500; }
 
 /* ══ 진입점 + 여정 ═══════════════════════════════════════════════ */
 .journey{ display:flex; align-items:stretch; margin-top:8mm; flex:1 1 auto; min-height:0; }
@@ -268,15 +270,12 @@ html,body{
         <!-- LOGO SLOT ▸ 로고 파일이 오면 이 svg 만 교체한다 (브랜드킷 §3).
              지금은 시냅스 노드 3점 임시 도형 — 「채워야 할 칸」에 올려 두었다. -->
         <div class="symbol">
-          <svg viewBox="0 0 48 48" fill="none" stroke="#FDFCF8" stroke-width="2.4" stroke-linecap="round">
-            <path d="M12 34 L24 14 L36 34" stroke="#FFC400"/>
-            <circle cx="12" cy="34" r="4.4" fill="#0B1A2E"/>
-            <circle cx="24" cy="14" r="4.4" fill="#0B1A2E"/>
-            <circle cx="36" cy="34" r="4.4" fill="#0B1A2E"/>
+          <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#FDFCF8">syn</text>
+            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6D00"/>
           </svg>
         </div>
         <div class="wm">
-          <div class="name mono">SYNK</div>
           <div class="tag">점수를 넘어, 삶을 설계합니다</div>
         </div>
       </div>
@@ -430,15 +429,12 @@ html,body{
       <div class="lockup">
         <!-- LOGO SLOT -->
         <div class="symbol">
-          <svg viewBox="0 0 48 48" fill="none" stroke="#FDFCF8" stroke-width="2.4" stroke-linecap="round">
-            <path d="M12 34 L24 14 L36 34" stroke="#FFC400"/>
-            <circle cx="12" cy="34" r="4.4" fill="#0B1A2E"/>
-            <circle cx="24" cy="14" r="4.4" fill="#0B1A2E"/>
-            <circle cx="36" cy="34" r="4.4" fill="#0B1A2E"/>
+          <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#FDFCF8">syn</text>
+            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6D00"/>
           </svg>
         </div>
         <div class="wm">
-          <div class="name mono">SYNK</div>
           <div class="tag">점수를 넘어, 삶을 설계합니다</div>
         </div>
       </div>

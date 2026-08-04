@@ -67,10 +67,11 @@ html,body{
 .hero .mnhead{ font-size:6.6mm; font-weight:800; color:#4E5880; letter-spacing:.04em; margin-top:2.6mm; line-height:1.1; }
 .hero .kohead{ font-size:3.1mm; color:#B9C2E0; margin-top:2mm; }
 
-.lockup{ display:flex; align-items:center; gap:2.4mm; flex:0 0 auto; }
-.symbol{ width:9mm; height:9mm; flex:0 0 auto; }
-.lockup .name{ font-size:5.6mm; font-weight:700; letter-spacing:.24em; line-height:1; }
-.lockup .tag{ font-size:2.1mm; color:var(--gold); margin-top:1.6mm; }
+/* ⚠ .symbol 은 정사각이 아니다 — W5 축약 워드마크 가로:세로 = 1.5:1. 주입은 tools/로고주입.js */
+.lockup{ display:flex; flex-direction:column; align-items:flex-end; gap:1.8mm; flex:0 0 auto; }
+.symbol{ width:21mm; height:13.4mm; flex:0 0 auto; }
+.symbol svg{ width:100%; height:100%; display:block; }
+.lockup .tag{ font-size:2.1mm; color:var(--gold); }
 
 /* ══ 2단 ══════════════════════════════════════════════ */
 .cols{ display:flex; gap:4mm; margin-top:4mm; flex:1 1 auto; min-height:0; }
@@ -168,15 +169,12 @@ html,body{
       <div class="lockup">
         <!-- LOGO SLOT ▸ 로고 파일이 오면 이 svg 만 교체 (브랜드킷 §3) -->
         <div class="symbol">
-          <svg viewBox="0 0 48 48" fill="none" stroke="#FDFCF8" stroke-width="2.6" stroke-linecap="round">
-            <path d="M12 34 L24 14 L36 34" stroke="#FFC400"/>
-            <circle cx="12" cy="34" r="4.4" fill="#0B1A2E"/>
-            <circle cx="24" cy="14" r="4.4" fill="#0B1A2E"/>
-            <circle cx="36" cy="34" r="4.4" fill="#0B1A2E"/>
+          <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#FDFCF8">syn</text>
+            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6D00"/>
           </svg>
         </div>
         <div>
-          <div class="name mono">SYNK</div>
           <div class="tag">점수를 넘어, 삶을 설계합니다</div>
         </div>
       </div>
