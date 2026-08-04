@@ -1,0 +1,232 @@
+/* 인계문수거 회귀 — 죽은 세션의 인계문만 거두고, 살아있는 세션 것은 절대 안 거두는가 (F111).
+ *
+ * 왜 있나: 세션별 인계문은 「그 세션의 /close」만이 커밋하는데, /close 는 인계문을 커밋 뒤에
+ *   쓰고(순서 결함) 죽은 세션은 /close 자체를 못 한다. 미추적 인계문은 목차 재생성 TTL 12h 가
+ *   지우면 영영 유실이다(F025). 이 도구가 그 구멍을 기계로 막는다 — 대신 이 도구가 넓게 새면
+ *   「살아있는 세션의 작업본을 거둬 가는」 F073 형태의 사고가 되므로, 여기서는 **거두는 쪽**과
+ *   **안 거두는 쪽**을 같은 무게로 고정한다(통과 목록도 차단 목록과 같은 무게 — CLAUDE.md).
+ *
+ * 검사 방식 — 픽스처 저장소 + 픽스처 심장박동(SYNK_OWNER_ROOT · SYNK_CTXBUDGET_DIR 이음매).
+ *   실저장소 검사는 없다 — 실저장소의 인계문 상태는 세션마다 달라 불안정 테스트가 된다.
+ */
+'use strict';
+
+const test = require('node:test');
+const assert = require('node:assert');
+const path = require('node:path');
+const fs = require('node:fs');
+const os = require('node:os');
+const { spawnSync } = require('node:child_process');
+
+const TOOL = path.resolve(__dirname, '..', 'tools', '인계문수거.js');
+const store = require(path.resolve(__dirname, '..', '.claude', 'hooks', 'lib', 'handoff-store.js'));
+
+const git있나 = (() => { const r = spawnSync('git', ['--version'], { encoding: 'utf8' }); return !r.error && r.status === 0; })();
+
+const 폴더 = 'docs/_ops/인계문';
+const 목차 = 'docs/_ops/인계문.md';
+
+const 임시들 = [];
+function 픽스처() {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-handoff-repo-'));
+  const state = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-handoff-state-'));
+  임시들.push(repo, state);
+  const g = (...a) => spawnSync('git', ['-c', 'core.quotepath=false', ...a], { cwd: repo, encoding: 'utf8' });
+  g('init', '-q');
+  // 도구 내부의 commit 은 저장소 설정을 그대로 쓴다 — 픽스처에 신원을 심어 CI 에서도 돌게 한다.
+  g('config', 'user.name', 't'); g('config', 'user.email', 't@t'); g('config', 'commit.gpgsign', 'false');
+  fs.mkdirSync(path.join(repo, 폴더), { recursive: true });
+  fs.writeFileSync(path.join(repo, 목차), '# 목차 seed\n');
+  fs.writeFileSync(path.join(repo, 'seed.txt'), 'seed\n');
+  g('add', '-A'); g('commit', '-qm', 'seed');
+  return { repo, state, g };
+}
+function 인계문두기(repo, sid8, 내용) {
+  const p = path.join(repo, 폴더, `${sid8}.md`);
+  fs.writeFileSync(p, 내용 || `<!-- at:1 -->\n## 세션 ${sid8}\n\n\`\`\`\n다음 할 일\n\`\`\`\n`);
+  return p;
+}
+/** track-collision 과 같은 이름 규칙으로 심장박동을 놓는다(작업본소유자.test.js 와 같은 헬퍼). */
+function 심장박동(state, repo, sid, 분전) {
+  const p = path.join(state, `track-${store.projectKey(repo)}-${store.safeId(sid)}.json`);
+  fs.writeFileSync(p, JSON.stringify({ baseline: 'x', lastHead: 'x', touched: [], warned: [] }));
+  const t = new Date(Date.now() - 분전 * 60000);
+  fs.utimesSync(p, t, t);
+}
+function 돌린다({ repo, state, 나, 인자 = [], env추가 = {} }) {
+  const env = { ...process.env, SYNK_OWNER_ROOT: repo, SYNK_CTXBUDGET_DIR: state, ...env추가 };
+  if (나 === undefined) delete env.CLAUDE_CODE_HOST_SESSION_ID; else env.CLAUDE_CODE_HOST_SESSION_ID = 나;
+  return spawnSync(process.execPath, [TOOL, ...인자], { encoding: 'utf8', env });
+}
+function 커밋수(g) { const r = g('rev-list', '--count', 'HEAD'); return Number(String(r.stdout).trim()); }
+function 마지막커밋파일들(g) {
+  return String(g('show', '--name-only', '--format=', 'HEAD').stdout).split(/\r?\n/).filter(Boolean);
+}
+
+test.after(() => { for (const d of 임시들) { try { fs.rmSync(d, { recursive: true, force: true }); } catch (_) {} } });
+
+test('🔴 죽은 세션의 미추적 인계문을 거둔다 — 내용이 이력에 실린다(F025 보호)', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state, g } = 픽스처();
+  인계문두기(repo, 'dead0001', '<!-- at:1 -->\n## 세션 dead0001\n\n유실되면 안 되는 본문\n');
+  심장박동(state, repo, 'local_dead0001-aaaa-bbbb', 400);   // 끝난 지 오래
+  const 전 = 커밋수(g);
+  const r = 돌린다({ repo, state, 나: 'local_me000000', 인자: ['--실행'] });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.strictEqual(커밋수(g), 전 + 1, '수거 커밋이 안 생겼다');
+  assert.ok(마지막커밋파일들(g).includes(`${폴더}/dead0001.md`), '죽은 세션 파일이 커밋에 없다');
+  const 실린내용 = String(g('show', `HEAD:${폴더}/dead0001.md`).stdout);
+  assert.ok(실린내용.includes('유실되면 안 되는 본문'), '내용이 이력에 안 실렸다 — 보호가 목적이다');
+  assert.match(String(r.stdout), /커밋했다/);
+});
+
+test('🔴 심장박동이 아예 없는 세션(기록 소실)도 죽은 것으로 보고 거둔다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state, g } = 픽스처();
+  인계문두기(repo, 'ghost001');
+  const r = 돌린다({ repo, state, 나: 'local_me000000', 인자: ['--실행'] });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(마지막커밋파일들(g).includes(`${폴더}/ghost001.md`));
+});
+
+test('🔴 살아있는 세션의 인계문은 절대 안 거둔다 — 보류로 보고한다 (새는 방향이 곧 F073 이다)', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state, g } = 픽스처();
+  인계문두기(repo, 'alive001');
+  심장박동(state, repo, 'local_alive001-cccc', 1);          // 지금 돌고 있다
+  const 전 = 커밋수(g);
+  const r = 돌린다({ repo, state, 나: 'local_me000000', 인자: ['--실행'] });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.strictEqual(커밋수(g), 전, '살아있는 세션 파일로 커밋이 생겼다 — 이 도구가 사고가 됐다');
+  assert.match(String(r.stdout), /보류[\s\S]*alive001/, '왜 안 거뒀는지(보류)를 안 알려줬다');
+  const st = String(g('status', '--porcelain', '-uall').stdout);
+  assert.ok(st.includes('alive001.md'), '파일이 사라졌다 — 남겨야 한다');
+});
+
+test('내 세션 파일은 살아있어도 거둔다 — /close 6단계의 자기 인계문 커밋 자리', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state, g } = 픽스처();
+  인계문두기(repo, 'me000000');
+  심장박동(state, repo, 'local_me000000-dddd', 1);          // 나 자신 = 살아있음
+  const r = 돌린다({ repo, state, 나: 'local_me000000-dddd', 인자: ['--실행'] });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(마지막커밋파일들(g).includes(`${폴더}/me000000.md`), '내 파일이 커밋에 없다');
+});
+
+test('🔴 범위 밖 방관자는 절대 안 실린다 — 남의 스테이징이 올라와 있어도(pathspec 이 못박는다)', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state, g } = 픽스처();
+  인계문두기(repo, 'dead0002');
+  fs.writeFileSync(path.join(repo, '방관자.txt'), '남의 미커밋\n');
+  fs.appendFileSync(path.join(repo, 'seed.txt'), '남의 수정\n');
+  g('add', '--', '방관자.txt');                              // 남의 세션이 스테이징까지 해 둔 상황
+  const r = 돌린다({ repo, state, 나: 'local_me000000', 인자: ['--실행'] });
+  assert.strictEqual(r.status, 0, r.stderr);
+  const 실림 = 마지막커밋파일들(g);
+  assert.ok(실림.includes(`${폴더}/dead0002.md`));
+  assert.ok(!실림.includes('방관자.txt') && !실림.includes('seed.txt'),
+    `범위 밖이 커밋에 실렸다: ${실림.join(', ')}`);
+  const st = String(g('status', '--porcelain', '-uall').stdout);
+  assert.ok(st.includes('방관자.txt') && st.includes('seed.txt'), '방관자 미커밋이 보존되지 않았다');
+});
+
+test('세션 파일 꼴이 아닌 이름(한글·비 md)은 주인을 특정 못 하므로 스킵하고 보고한다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state, g } = 픽스처();
+  fs.writeFileSync(path.join(repo, 폴더, '한글이름.md'), 'x\n');
+  const 전 = 커밋수(g);
+  const r = 돌린다({ repo, state, 나: 'local_me000000', 인자: ['--실행'] });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.strictEqual(커밋수(g), 전, '잡파일만으로 커밋이 생겼다');
+  assert.match(String(r.stdout), /스킵[\s\S]*한글이름\.md/);
+});
+
+test('추적-수정·추적-삭제(TTL 청소 자국)도 주인이 죽었으면 거둔다 — 안 거두면 영영 더럽다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state, g } = 픽스처();
+  const 수정 = 인계문두기(repo, 'dead0003');
+  const 삭제 = 인계문두기(repo, 'dead0004');
+  g('add', '-A'); g('commit', '-qm', '두 세션 파일이 이미 추적됨');
+  fs.appendFileSync(수정, '재종료로 덧쓴 블록\n');
+  fs.unlinkSync(삭제);                                       // 목차 재생성 TTL 이 지운 모양
+  const r = 돌린다({ repo, state, 나: 'local_me000000', 인자: ['--실행'] });
+  assert.strictEqual(r.status, 0, r.stderr);
+  const 실림 = 마지막커밋파일들(g);
+  assert.ok(실림.includes(`${폴더}/dead0003.md`) && 실림.includes(`${폴더}/dead0004.md`),
+    `수정·삭제가 커밋에 없다: ${실림.join(', ')}`);
+  const st = String(g('status', '--porcelain', '-uall', '--', 폴더).stdout).trim();
+  assert.strictEqual(st, '', `수거 뒤에도 인계문 자리가 더럽다: ${st}`);
+});
+
+test('파생 목차는 세션 파일을 거둘 때만 동반 커밋한다 — 목차 홀로는 안 거둔다(소음 방지)', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state, g } = 픽스처();
+  fs.appendFileSync(path.join(repo, 목차), '목차 재생성 자국\n');
+  const 전 = 커밋수(g);
+  const 홀로 = 돌린다({ repo, state, 나: 'local_me000000', 인자: ['--실행'] });
+  assert.strictEqual(홀로.status, 0, 홀로.stderr);
+  assert.strictEqual(커밋수(g), 전, '목차 홀로 커밋됐다');
+  인계문두기(repo, 'dead0005');
+  const 동반 = 돌린다({ repo, state, 나: 'local_me000000', 인자: ['--실행'] });
+  assert.strictEqual(동반.status, 0, 동반.stderr);
+  const 실림 = 마지막커밋파일들(g);
+  assert.ok(실림.includes(목차) && 실림.includes(`${폴더}/dead0005.md`), `동반이 안 됐다: ${실림.join(', ')}`);
+});
+
+test('진행 중인 git 작업(merge 등)에서는 거두지 않고 사유를 말한다 — 미실행과 통과를 가른다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state, g } = 픽스처();
+  인계문두기(repo, 'dead0006');
+  const gitdir = String(g('rev-parse', '--git-dir').stdout).trim();
+  fs.writeFileSync(path.join(repo, gitdir, 'MERGE_HEAD'), '0'.repeat(40) + '\n');
+  const 전 = 커밋수(g);
+  const r = 돌린다({ repo, state, 나: 'local_me000000', 인자: ['--실행'] });
+  assert.strictEqual(r.status, 2, '명시 실행의 실패가 조용히 0 으로 끝났다');
+  assert.strictEqual(커밋수(g), 전, '진행 중 작업 위에 커밋했다');
+  assert.match(String(r.stdout), /MERGE_HEAD|진행 중/);
+});
+
+test('--hook 은 빈손이면 침묵하고, 거둘 게 있으면 한 줄로 말한다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  const 빈손 = 돌린다({ repo, state, 나: 'local_me000000', 인자: ['--hook'] });
+  assert.strictEqual(빈손.status, 0, 빈손.stderr);
+  assert.strictEqual(String(빈손.stdout).trim(), '', '빈손인데 말했다 — 잔소리하는 장치는 읽히지 않게 된다');
+  인계문두기(repo, 'dead0007');
+  const 수거 = 돌린다({ repo, state, 나: 'local_me000000', 인자: ['--hook'] });
+  assert.strictEqual(수거.status, 0, 수거.stderr);
+  assert.match(String(수거.stdout), /1건.*커밋했다/);
+});
+
+test('기본 모드는 보고만 한다 — 커밋하지 않고 --실행 안내를 남긴다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state, g } = 픽스처();
+  인계문두기(repo, 'dead0008');
+  const 전 = 커밋수(g);
+  const r = 돌린다({ repo, state, 나: 'local_me000000' });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.strictEqual(커밋수(g), 전, '보고 모드가 커밋했다');
+  assert.match(String(r.stdout), /--실행/);
+});
+
+test('🔑 생존 판정은 작업본소유자와 같은 손잡이 하나다 — SYNK_OWNER_ALIVE_MIN 을 함께 따른다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state, g } = 픽스처();
+  인계문두기(repo, 'dead0009');
+  심장박동(state, repo, 'local_dead0009-eeee', 400);
+  const 전 = 커밋수(g);
+  // 손잡이를 1000분으로 넓히면 400분 전 박동도 「살아있음」이어야 한다 — 판정층이 하나라는 증명.
+  const r = 돌린다({ repo, state, 나: 'local_me000000', 인자: ['--실행'], env추가: { SYNK_OWNER_ALIVE_MIN: '1000' } });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.strictEqual(커밋수(g), 전, '수거했다 — 생존 판정이 작업본소유자와 갈라져 있다(판정층 이원화)');
+  assert.match(String(r.stdout), /보류[\s\S]*dead0009/);
+});
+
+/* ── 등록층 — 가드·수거는 로직보다 등록층에서 샌다(CLAUDE.md 맹점 목록) ────────────────── */
+
+test('등록: SessionStart 훅이 인계문수거 --hook 을 이식 가능한 꼴로 부른다', () => {
+  const s = fs.readFileSync(path.resolve(__dirname, '..', '.claude', 'settings.json'), 'utf8');
+  const j = JSON.parse(s);
+  const 명령들 = (j.hooks.SessionStart || []).flatMap((e) => e.hooks.map((h) => h.command));
+  const 내명령 = 명령들.filter((c) => c.includes('인계문수거.js'));
+  assert.strictEqual(내명령.length, 1, `SessionStart 에 인계문수거 등록이 ${내명령.length}건이다(1건이어야 한다)`);
+  assert.ok(내명령[0].includes('${CLAUDE_PROJECT_DIR:-$PWD}'), '로컬 절대경로 등록은 다른 기계에서 통째로 죽는다(F044)');
+  assert.ok(내명령[0].includes('--hook'), '--hook 모드가 아니면 세션 시작마다 표를 쏟는다');
+  assert.ok(/command -v node/.test(내명령[0]), 'node 부재를 침묵으로 넘기면 미실행과 통과가 같은 모양이 된다');
+});
+
+test('등록: /close 6단계가 인계문 작성 직후 --실행 을 부른다 — 순서 결함(쓰기가 커밋 뒤)의 봉합', () => {
+  const skill = fs.readFileSync(path.resolve(__dirname, '..', '.claude', 'skills', 'close', 'SKILL.md'), 'utf8');
+  const 쓰기 = skill.indexOf('tools/인계문.js');
+  const 수거 = skill.indexOf('tools/인계문수거.js --실행');
+  assert.ok(쓰기 >= 0, '/close 에서 인계문 쓰기 단계를 못 찾았다 — 전제가 바뀌었으면 이 회귀도 다시 본다');
+  assert.ok(수거 > 쓰기, '/close 가 인계문을 쓴 「뒤」에 수거를 부르지 않는다 — 자기 인계문이 다시 고아가 된다');
+});
