@@ -105,7 +105,7 @@ function doPost(e) {
     // 채번+기록은 락 안에서 원자적으로 — 동시 제출 2건이 같은 번호를 받는 것을 막는다
     const lock = LockService.getScriptLock();
     lock.waitLock(20000);
-    let serial;
+    let serial, 이관오류 = null;
     try {
       const sh = 크루_탭_();
       serial = 'SL-' + today + '-' + ('00' + 크루_다음번호_(sh, today)).slice(-3);
@@ -125,11 +125,15 @@ function doPost(e) {
       try { 상담시트_이관_(data, body.lang, serial); }
       catch (e2) {
         console.warn('[크루카드] 상담시트 이관 실패(접수는 정상): ' + e2);
-        크루_오류로그_('이관:' + serial, e2);                    // 유실 경보(crewIntakeWatch_)가 원인까지 갖게 한다
+        /* 기록은 **락 밖으로** 미룬다 — 기록 1회가 시트 왕복 2번(≈1초)이라 임계구역이 그만큼 길어지고,
+         * 하필 이 경로는 이관이 계통적으로 깨진 날 매 제출마다 밟힌다. 그러면 뒤 제출들의
+         * waitLock(20000)이 타임아웃 나고 그 타임아웃이 또 오류를 낳는 자기증폭 고리가 된다. */
+        이관오류 = e2;
       }
     } finally {
       lock.releaseLock();
     }
+    if (이관오류) 크루_오류로그_('이관:' + serial, 이관오류);      // 유실 경보(crewIntakeWatch_)가 원인까지 갖게 한다
     return 크루_응답_({ ok: true, serial: serial });
   } catch (err) {
     /* 이 catch가 삼키는 실패는 어디에도 안 보였다 — Apps Script 자동 실패 메일은 「트리거 실패」에만
@@ -195,17 +199,27 @@ function 크루_오류로그_(stage, err) {
   try {
     const props = PropertiesService.getScriptProperties();
     const key = 'errlog:' + Utilities.formatDate(new Date(), TZ_, 'yyyyMMdd');
-    if (Number(props.getProperty(key) || 0) >= ERR_DAILY_CAP) return;   // 상한 뒤는 조용히 버린다(원본은 console에 남는다)
+    const n = Number(props.getProperty(key) || 0);
+    if (n >= ERR_DAILY_CAP) return;   // 상한 뒤는 조용히 버린다(원본은 console에 남는다)
     const ss = SpreadsheetApp.openById(CONSULT_SHEET_ID);
     let sh = ss.getSheetByName(ERR_TAB);
-    if (!sh) {
-      sh = ss.insertSheet(ERR_TAB);
+    if (!sh) sh = ss.insertSheet(ERR_TAB);
+    /* 헤더는 **매번** 확인한다(멱등) — 만드는 순간에만 쓰면, 사람이 1행을 지웠거나 탭을 손으로
+     * 먼저 만들어 둔 경우 오류가 1행에 착지하고 읽는 쪽의 `getLastRow() >= 2` 가드에 걸려
+     * **그 오류는 영원히 안 보인다**. 같은 파일 크루_탭_이 이미 배운 함정([v9.163])이다. */
+    if (sh.getLastRow() === 0) {
       sh.getRange(1, 1, 1, 4).setValues([['at', 'stage', 'detail', '통보']]).setFontWeight('bold');
       sh.setFrozenRows(1);
     }
-    const detail = String((err && err.stack) || err).replace(/\s+/g, ' ').slice(0, 500);
-    sh.appendRow([new Date(), 셀안전_(String(stage).slice(0, 40)), 셀안전_(detail), '']);
-    props.setProperty(key, String(Number(props.getProperty(key) || 0) + 1));   // 기록이 성립한 뒤에만 상한을 소모
+    /* 마지막 한 칸은 「여기서 잘렸다」를 남기는 데 쓴다 — 조용한 절단은 이 장치가 없애려던 바로 그 형태다.
+     * 접수가 계통적으로 깨진 날(열 변경 등) 상한 50에 닿으면 나머지 250건이 흔적 없이 사라져
+     * 원장이 규모를 5분의 1로 과소평가한다(적대 리뷰 H4). */
+    const 마지막 = (n === ERR_DAILY_CAP - 1);
+    const detail = 마지막
+      ? '오늘 오류 기록이 상한(' + ERR_DAILY_CAP + '건)에 닿아 이후는 생략합니다 — 실제 실패는 이보다 많습니다. 원문은 Apps Script 실행 로그에 있습니다.'
+      : String((err && err.stack) || err).replace(/\s+/g, ' ').slice(0, 500);
+    sh.appendRow([new Date(), 셀안전_(마지막 ? '상한도달' : String(stage).slice(0, 40)), 셀안전_(detail), '']);
+    props.setProperty(key, String(n + 1));   // 기록이 성립한 뒤에만 상한을 소모
   } catch (e3) {
     console.error('[크루카드] 오류 기록 실패(원 오류는 위 로그에): ' + e3);
   }
