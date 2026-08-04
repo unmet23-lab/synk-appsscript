@@ -166,16 +166,38 @@ test('doPost가 삼키는 두 실패(최상위·이관) 모두 crew_errors 기�
   assert.match(doPost, /catch \(err\) \{[\s\S]*크루_오류로그_\('doPost', err\)[\s\S]*error: 'internal'/,
     '최상위 catch가 기록 없이(또는 응답 뒤에) 오류를 삼킨다 — 무감시로 회귀');
   // 이관 catch — 유실 경보는 「없어졌다」만 알지 「왜」를 모른다. 원인은 여기서만 잡힌다.
-  assert.ok(doPost.includes("크루_오류로그_('이관:' + serial, e2)"),
+  assert.ok(doPost.includes("크루_오류로그_('이관:' + serial, 이관오류)"),
     '이관 실패가 기록을 안 지난다 — 유실 경보에 원인이 영영 안 붙는다');
 });
 
+test('🔑 이관 오류 기록은 락 **밖**이다 — 이관이 계통적으로 깨진 날 접수 처리량이 함께 죽는다', () => {
+  /* 기록 1회 = 시트 왕복 2번(≈1초). 임계구역 안에서 하면 그만큼 락이 길어지고, 하필 이 경로는
+   * 이관이 계통적으로 깨진 날 **매 제출마다** 밟힌다 → 뒤 제출의 waitLock(20000)이 타임아웃 나고
+   * 그 타임아웃이 또 오류를 낳는 자기증폭 고리가 된다(적대 리뷰 M3). */
+  const doPost = server.slice(server.indexOf('function doPost'), server.indexOf('function 크루_탭_'));
+  const i해제 = doPost.indexOf('lock.releaseLock()');
+  const i기록 = doPost.indexOf("크루_오류로그_('이관:'");
+  assert.ok(i해제 !== -1 && i기록 !== -1, 'doPost 구조가 바뀌었다');
+  assert.ok(i기록 > i해제, '이관 오류 기록이 releaseLock보다 앞이다 — 임계구역 안에서 시트를 왕복한다');
+  // 최상위 catch의 기록은 finally가 이미 락을 푼 뒤라 문제없다(그쪽은 검사 대상 아님)
+});
+
 function 오류로그하네스_(over) {
-  const 저장 = { rows: [], props: {}, sh: null, 생성: 0 };
-  const fakeSheet = () => ({
-    getRange: () => ({ setValues() { return this; }, setFontWeight() { return this; } }),
+  const 저장 = { rows: [], props: {}, sh: null, 생성: 0, 헤더: null };
+  // 시트 대역은 실제와 같은 「행이 쌓인다」 성질을 갖는다 — getLastRow를 상수로 두면
+  // 헤더 치유 조건(M4)이 검사 밖으로 나간다(하네스가 관대해서 초록이 되는 계열).
+  const fakeSheet = (초기행) => ({
+    rows: 초기행 || [],
+    getLastRow() { return this.rows.length; },
+    getRange(r, c, nr, nc) {
+      const self = this;
+      return {
+        setValues(v) { if (r === 1) { 저장.헤더 = v[0]; self.rows[0] = v[0]; } return this; },
+        setFontWeight() { return this; },
+      };
+    },
     setFrozenRows: () => {},
-    appendRow: (r) => 저장.rows.push(r),
+    appendRow(r) { this.rows.push(r); 저장.rows.push(r); },
   });
   const SS = (over && over.SpreadsheetApp) || {
     openById: () => ({
@@ -183,6 +205,7 @@ function 오류로그하네스_(over) {
       insertSheet: () => { 저장.생성++; 저장.sh = fakeSheet(); return 저장.sh; },
     }),
   };
+  저장.시트놓기 = (초기행) => { 저장.sh = fakeSheet(초기행); return 저장.sh; };
   const src = server.match(/function 크루_오류로그_\(stage, err\)[\s\S]*?\n\}/)[0];
   const 셀안전src = server.match(/function 셀안전_\(v\)[\s\S]*?\n\}/)[0];
   const fn = new Function(
@@ -198,10 +221,12 @@ function 오류로그하네스_(over) {
   return { fn, 저장 };
 }
 
-test('크루_오류로그_ — 실제로 적는다: 탭 생성·개행 접기·수식 소독·길이 절단', () => {
+test('크루_오류로그_ — 실제로 적는다: 탭 생성·헤더 4열·개행 접기·수식 소독·길이 절단', () => {
   const { fn, 저장 } = 오류로그하네스_();
   fn('doPost', { stack: '=IMPORTDATA("https://evil")\n  at 크루_탭_ (크루카드:1)\t끝' });
   assert.equal(저장.생성, 1, '탭이 없으면 만들어야 한다 — 첫 오류가 기록처를 못 찾으면 안 된다');
+  assert.deepEqual(저장.헤더, ['at', 'stage', 'detail', '통보'],
+    '헤더가 4열이 아니다 — 스위프는 열을 번호로 읽으므로 「통보」 자리가 밀리면 전 행이 통보됨으로 읽힌다');
   assert.equal(저장.rows.length, 1);
   const [, stage, detail, 통보] = 저장.rows[0];
   assert.equal(stage, 'doPost');
@@ -210,6 +235,30 @@ test('크루_오류로그_ — 실제로 적는다: 탭 생성·개행 접기·�
   assert.ok(!/[\r\n\t]/.test(detail), '개행·탭이 살아 있다 — 경보 메일 본문 위조 재료가 된다');
   fn('x', { stack: 'A'.repeat(9999) });
   assert.ok(저장.rows[1][2].length <= 500, `detail이 ${저장.rows[1][2].length}자 — 상한 없이 시트가 오염된다`);
+});
+
+test('🔑 머리글 없는 crew_errors도 치유한다 — 1행에 착지하면 스위프가 영원히 못 본다', () => {
+  /* 사람이 1행을 지웠거나 탭을 손으로 먼저 만들어 둔 경우, 헤더를 만들 때만 쓰면 오류가 1행에
+   * 착지하고 읽는 쪽의 `getLastRow() >= 2` 가드에 걸려 **그 오류는 영원히 안 보인다**.
+   * 같은 파일 크루_탭_이 [v9.163]에 이미 배운 함정이다(적대 리뷰 M4). */
+  const { fn, 저장 } = 오류로그하네스_();
+  저장.시트놓기([]);                       // 탭은 있는데 비어 있다(생성 경로를 안 탄다)
+  fn('doPost', new Error('boom'));
+  assert.deepEqual(저장.헤더, ['at', 'stage', 'detail', '통보'], '빈 탭에 헤더를 안 깔았다');
+  assert.equal(저장.sh.getLastRow(), 2, `오류가 ${저장.sh.getLastRow()}행에 있다 — 2행이어야 스위프가 본다`);
+});
+
+test('🔴 상한 절단이 조용하지 않다 — 마지막 한 칸에 「여기서 잘렸다」를 남긴다', () => {
+  /* 접수가 계통적으로 깨진 날 상한 50에 닿으면 나머지 250건이 흔적 없이 사라져 원장이
+   * 규모를 5분의 1로 과소평가한다. 조용한 절단은 이 장치가 없애려던 바로 그 형태다(적대 리뷰 H4). */
+  const { fn, 저장 } = 오류로그하네스_();
+  저장.props['errlog:20260805'] = '49';     // 다음 기록이 마지막 칸(상한 50)
+  fn('doPost', new Error('진짜 오류'));
+  assert.equal(저장.rows.length, 1);
+  assert.equal(저장.rows[0][1], '상한도달', '마지막 칸을 절단 표식으로 쓰지 않는다');
+  assert.match(String(저장.rows[0][2]), /상한\(50건\)|이보다 많습니다/, '무엇이 잘렸는지가 본문에 없다');
+  fn('doPost', new Error('그다음'));
+  assert.equal(저장.rows.length, 1, '상한 뒤에도 계속 적는다');
 });
 
 test('크루_오류로그_ — 일일 상한: 오류 유발 반복 제출이 시트를 무한 증식시키지 못한다', () => {
