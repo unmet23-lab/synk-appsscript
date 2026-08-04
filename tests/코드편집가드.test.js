@@ -26,10 +26,12 @@ const 저장소 = path.resolve(__dirname, '..');
 
 /* cwd 를 **명시로 넘긴다.** 훅은 상대 경로를 cwd 기준으로 푸는데, 러너의 cwd 에 기대면
  * 「어디서 돌리느냐」에 따라 초록이 갈린다 — repo 밖 환경에 기댄 검사는 CI 에서 깨진다. */
-function 가드(command, tool = 'Bash', cwd = 저장소) {
+function 가드(command, tool = 'Bash', cwd = 저장소, env = null) {
   const r = spawnSync(process.execPath, [HOOK], {
     input: JSON.stringify({ tool_name: tool, tool_input: { command }, cwd }),
     encoding: 'utf8',
+    // env = 홈 표기(`~`·`$HOME`) 검사용. 실제 홈에 기대면 기계마다 초록이 갈린다.
+    env: env ? { ...process.env, ...env } : process.env,
   });
   const out = (r.stdout || '').trim();
   if (!out) return { 차단: false, 조용: true, 사유: '' };
@@ -195,6 +197,66 @@ test('PowerShell 명명 인자는 자리가 아니라 이름으로 읽는다', (
     '-Destination 이 앞에 오면 대상이 뒤집힌다');
   assert.equal(가드('Copy-Item -Destination 없던것.js -Path 새것.js', 'PowerShell', dir).차단, false,
     '없는 대상까지 막았다');
+});
+
+/* ── ②-b 잔여분 — 「해소」 뒤에 실측으로 드러난 3건 ─────────────────────────
+ * F076 을 해소한 뒤 **신고된 그 두 명령을 그대로 다시 넣어 봤더니 아직 막혔다.**
+ * 둘 다 `$HOME/OneDrive/Desktop/…` 이었는데 홈 표기가 unknown 으로 떨어져
+ * 「모르면 막는다」에 걸린 것이다 — 장부는 해소인데 신고자는 그대로 막히는 상태였다.
+ * 🔑 교훈: 마찰을 닫을 땐 **신고에 적힌 입력 그대로**를 회귀에 넣는다. 원인을 고쳤다는
+ *   확신은 그 입력이 통과하는 걸 본 것과 다르다. */
+
+test('`~`·`$HOME` 은 펼쳐서 본다 — 안 펼치면 F076 신고 명령이 그대로 막힌다', () => {
+  const 홈 = 픽스처({ 'OneDrive/Desktop/있는것.html': '<p>x</p>' });
+  const 환경 = { HOME: 홈, USERPROFILE: 홈 };
+  assert.equal(가드('mv "$HOME/OneDrive/Desktop/없는것.html" "$HOME/OneDrive/Desktop/없는것_구판_참고용.html"', 'Bash', 저장소, 환경).조용,
+    true, 'F076 신고 명령 ②(구판 rename)가 아직 막힌다');
+  assert.equal(가드('cp docs/x.html "~/OneDrive/Desktop/새 사본 · 한국어.html"', 'Bash', 저장소, 환경).조용,
+    true, 'F076 신고 명령 ①(바탕화면 사본)이 아직 막힌다 — `~` 를 못 펼쳤다');
+  /* ⚠ 펼치기가 **통과 핑계**가 되면 안 된다 — 같은 표기라도 대상이 있으면 막아야 한다.
+   *   이 줄이 없으면 「$HOME 이면 통과」라는 변이가 초록으로 지나간다. */
+  assert.equal(가드('cp 정본.html "$HOME/OneDrive/Desktop/있는것.html"', 'Bash', 저장소, 환경).차단,
+    true, '$HOME 을 펼치고도 **있는** 대상을 놓쳤다');
+});
+
+test('인용된 디렉터리 대상도 본다 — 확장자가 없다고 지우면 대상이 통째로 사라진다', () => {
+  /* 인용 없는 `dir/` 는 원래 살아남았지만, 인용되면 `keepQuoted` 가 확장자로 걸러 **지웠다**.
+   * 이 저장소의 실제 경로엔 공백이 흔해서(`SYNK LAB`) 디렉터리 대상은 대개 인용된다 —
+   * 즉 실사용 쪽이 통째로 새고 있었다. */
+  const dir = 픽스처({ '자료 폴더/원본.js': 'const a = 1;', '원본.js': 'const b = 2;', 'Code.js': 'const c = 3;' });
+  assert.equal(가드('cp Code.js "자료 폴더/"', 'Bash', dir).조용, true,
+    '충돌하지 않는 복사를 막았다 — 디렉터리라고 무조건 막으면 F076 이 되돌아온다');
+  assert.equal(가드('cp 원본.js "자료 폴더/"', 'Bash', dir).차단, true,
+    '인용된 디렉터리(끝 슬래시)가 샜다 — 진짜 자리는 `자료 폴더/원본.js` 다');
+  assert.equal(가드('cp 원본.js "자료 폴더"', 'Bash', dir).차단, true,
+    '끝 슬래시가 없으면 대상이 지워진다 — `cp x.js "$HOME/OneDrive/Desktop"` 형태가 통째로 샌다');
+});
+
+test('명령 자리가 아닌 `cp`·`mv` 는 명령이 아니다 (검색어·인자 자리 · F049 계열)', () => {
+  /* 🔬 변이 실측이 잡아낸 빈틈이다 — 「명령 자리에서만 본다」는 제한을 지운 변이를 넣었더니
+   *   **아무 테스트도 빨개지지 않았다.** 제한이 무엇을 지키는지 회귀가 증명하지 못하고 있었다.
+   *   지우면 `grep -rn cp A B` 의 `cp` 가 명령으로 읽혀 B 를 「덮어쓸 대상」으로 본다. */
+  const dir = 픽스처({ 'Code.js': 'const a = 1;', 'tests/safety.test.js': '// x' });
+  assert.equal(가드('grep -rn cp Code.js tests/safety.test.js', 'Bash', dir).조용, true,
+    '검색어 자리의 cp 를 명령으로 읽었다');
+  assert.equal(가드('echo mv Code.js tests/safety.test.js', 'Bash', dir).조용, true,
+    '인자 자리의 mv 를 명령으로 읽었다');
+});
+
+test('근거를 경우별로 갈라 적는다 — git 밖이면 「되돌릴 수단이 없다」', () => {
+  /* F076 은 「막았다」만이 아니라 **틀린 근거를 읊었다**는 신고이기도 하다. 바탕화면 사본에
+   * 대고 「python subprocess 가 중간에 죽었다」를 읽히면 다음부터 메시지를 안 읽고,
+   * 그때부터 BYPASS 는 손버릇이 된다. 그래서 문구도 회귀로 못박는다. */
+  const 밖 = 픽스처({ '있는것.js': 'const a = 1;' });               // 임시 폴더 위엔 `.git` 이 없다
+  const r1 = 가드('cp 정본.js 있는것.js', 'Bash', 밖);
+  assert.equal(r1.차단, true, 'git 밖 대상을 놓쳤다 — repo 밖이라고 봐주면 F067 이 그대로 샌다');
+  assert.match(r1.사유, /되돌릴 수단이 없는/, 'git 밖인데 「되돌릴 수 있다」는 전제로 적혔다');
+
+  const 안 = 픽스처({ '있는것.js': 'const a = 1;', '.git/HEAD': 'ref: refs/heads/master' });
+  const r2 = 가드('cp 정본.js 있는것.js', 'Bash', 안);
+  assert.equal(r2.차단, true, '저장소 안 대상을 놓쳤다');
+  assert.match(r2.사유, /F065|4단계/, '되돌릴 수단이 있는 자리인데 근거가 안 바뀌었다');
+  assert.doesNotMatch(r2.사유, /되돌릴 수단이 없는/, '저장소 안인데 「되돌릴 수 없다」로 적혔다');
 });
 
 // ── ③ 인라인 스크립트의 쓰기 (F050·F065) ───────────────────────────────────

@@ -249,11 +249,99 @@ for (const 규칙 of 쓰기규칙) {
  *
  * ⚠ 모르면 막는다. 글롭·변수처럼 대상을 특정할 수 없으면 「없다」가 아니라 **모른다**이고,
  *   가드에서 모름을 통과로 번역하면 새는 방향은 언제나 통과다. */
-const 이동RE = /\b(cp|mv|copy|move|Copy-Item|Move-Item)\b([^\n;|&]*)/gi;
+/* cp·mv 의 인자는 **전부 경로**다. 그래서 여기서는 `실행부` 를 쓰지 않고 **원본을 인용째**
+ * 토큰으로 가른다 — 인용 안을 산문으로 보고 지우면 `cp x.js "자료 폴더"` 처럼 확장자도
+ * 구분자도 없는 **대상이 통째로 사라지고**, 사라진 대상은 무엇을 물어도 「없다」라 조용히 통과한다.
+ * (`keepQuoted` 를 넓히는 길도 있었지만 그러면 규칙①②가 인용 안 산문을 명령으로 읽어 F049 가 되돌아온다.)
+ *
+ * 대신 앵커를 좁힌다: cp·mv 가 **명령 자리**(첫 토큰이거나 구분자 뒤)에 있을 때만 본다.
+ * 인용 안에 적힌 `mv a.js b.js`(커밋 메시지·메모)는 토큰 하나로 뭉쳐 있어 명령이 될 수 없다. */
+const 이동이름 = /^(?:cp|cpi|mv|mi|copy|move|Copy-Item|Move-Item)$/i;
+const 앞말 = /^(?:sudo|time|nohup|command|env|nice)$/i;   // `sudo cp …` 도 cp 다
+const 환경대입 = /^[A-Za-z_]\w*=/;                         // `FOO=1 cp …`
+
+function 이동호출들(원본) {
+  const s = String(원본)
+    .replace(/<<-?\s*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\1[\s\S]*?^\s*\2\s*$/gm, ' <<HEREDOC ')
+    .replace(/(-m|--message)\s+(['"])[\s\S]*?\2/g, '$1 MSG');
+
+  const 토큰 = [];
+  let 현재 = '', 인용됨 = false, 담김 = false;
+  const 끊는다 = () => { if (담김) 토큰.push({ 값: 현재, 인용됨 }); 현재 = ''; 인용됨 = false; 담김 = false; };
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (c === '"' || c === "'") {                 // 인용 안의 공백·구분자는 글자다
+      const 끝 = s.indexOf(c, i + 1);
+      if (끝 < 0) { 현재 += s.slice(i + 1); 담김 = true; break; }
+      현재 += s.slice(i + 1, 끝); 인용됨 = true; 담김 = true; i = 끝; continue;
+    }
+    if (c === '$' && s[i + 1] === '(') {          // 치환은 통째로 남긴다 — 지우면 「모름」이 안 보인다
+      let 깊이 = 1, j = i + 2;
+      while (j < s.length && 깊이 > 0) { if (s[j] === '(') 깊이++; else if (s[j] === ')') 깊이--; j++; }
+      현재 += s.slice(i, j); 담김 = true; i = j - 1; continue;
+    }
+    if (c === '`') {
+      const 끝 = s.indexOf('`', i + 1);
+      const j = 끝 < 0 ? s.length : 끝 + 1;
+      현재 += s.slice(i, j); 담김 = true; i = j - 1; continue;
+    }
+    // `SYNK\ LAB` 만 이스케이프로 본다 — 윈도 경로 구분자(`C:\Users`)를 먹으면 경로가 망가진다
+    if (c === '\\' && /[\s'"\\]/.test(s[i + 1] || '')) { 현재 += s[++i]; 담김 = true; continue; }
+    if (/\s/.test(c)) { 끊는다(); if (c === '\n') 토큰.push({ 구분: true }); continue; }
+    if (c === ';' || c === '|' || c === '&') { 끊는다(); 토큰.push({ 구분: true }); continue; }
+    현재 += c; 담김 = true;
+  }
+  끊는다();
+
+  const 호출 = [];
+  let 명령자리 = true;
+  for (let i = 0; i < 토큰.length; i++) {
+    const t = 토큰[i];
+    if (t.구분) { 명령자리 = true; continue; }
+    if (!명령자리) continue;
+    if (!t.인용됨 && (앞말.test(t.값) || 환경대입.test(t.값))) continue;   // 명령 자리를 유지한 채 건너뛴다
+    if (!t.인용됨 && 이동이름.test(t.값.replace(/^\\/, ''))) {
+      const 인자 = [];
+      let j = i + 1;
+      for (; j < 토큰.length && !토큰[j].구분; j++) 인자.push(토큰[j]);
+      호출.push({ 이름: t.값, 인자 });
+      i = j - 1;
+    }
+    명령자리 = false;
+  }
+  return 호출;
+}
+
+/* 홈 표기는 **펼친다** — `~/…` 와 `$HOME/…` 은 셸이 반드시 같은 자리로 푸는 것이라
+ * 「모른다」가 아니다. 안 펼치면 unknown 으로 떨어져 차단되는데, 그러면 **F076 이 기록한
+ * 그 두 명령이 여전히 막힌다** — 바탕화면 사본 배포도 구판 rename 도 둘 다
+ * `$HOME/OneDrive/Desktop/…` 였다(F076 해소 뒤 실측으로 드러난 잔여분).
+ * ⚠ 그 밖의 변수·치환·글롭은 그대로 unknown 이다 — 펼치기가 통과 핑계가 되면 안 된다. */
+const 홈 = process.env.HOME || process.env.USERPROFILE || require('os').homedir();
+const 홈펼침 = (s) => (홈 ? String(s)
+  .replace(/^~(?=[\\/]|$)/, 홈)
+  .replace(/\$\{?HOME\}?(?![A-Za-z0-9_])/g, 홈)
+  .replace(/%USERPROFILE%/gi, 홈)
+  .replace(/\$env:USERPROFILE/gi, 홈)
+  : String(s));
+
+/** 위로 올라가며 `.git` 을 찾는다 — 되돌릴 수단이 있는 자리인가.
+ *  외부 명령을 부르지 않는다(가드의 실패 안전을 외부 명령에 기대면 안 된다 · F044).
+ *  ⚠ **못 찾았을 때만** 「되돌릴 수 없다」를 덧붙인다 — 잘못 짚어도 문구가 조용해질 뿐 틀리진 않는다. */
+function git밖인가(p) {
+  let d = path.dirname(path.isAbsolute(p) ? p : path.resolve(작업디렉터리, p));
+  for (let i = 0; i < 64; i++) {
+    try { if (fs.existsSync(path.join(d, '.git'))) return false; } catch (_) { return false; }
+    const 위 = path.dirname(d);
+    if (위 === d) return true;
+    d = 위;
+  }
+  return false;
+}
 
 /** 'yes' | 'no' | 'unknown' — 이 자리에 지금 무언가 있는가. */
 function 있나(p) {
-  const s = 되돌림(p);
+  const s = 홈펼침(되돌림(p));
   /* 글롭·변수·틸드는 해석 못 한다. `$` 는 **뒤를 보지 않고** 잡는다 — `\w` 로 좁혔더니
    * `$대상.js` 처럼 한글로 시작하는 변수를 놓쳤고(JS 의 `\w` 는 ASCII 다), 놓친 방향은 통과였다. */
   if (!s || /[*?]|\$|%\w+%|(^|[\\/])~([\\/]|$)/.test(s)) return 'unknown';
@@ -264,7 +352,7 @@ function 있나(p) {
 
 /** 디렉터리로 옮기면 진짜 대상은 `대상/원본이름` 이다 — 대상 토큰만 보면 통째로 눈이 먼다. */
 function 실제대상들(원본들, 대상) {
-  const s = 되돌림(대상);
+  const s = 홈펼침(되돌림(대상));
   let 디렉터리 = false;
   try { 디렉터리 = fs.statSync(path.isAbsolute(s) ? s : path.resolve(작업디렉터리, s)).isDirectory(); } catch (_) { /* 없으면 파일 자리다 */ }
   if (!디렉터리) return [대상];
@@ -272,18 +360,18 @@ function 실제대상들(원본들, 대상) {
   return 원본들.map((o) => `${앞}/${path.basename(되돌림(o))}`);
 }
 
-let mv;
-while ((mv = 이동RE.exec(실행부))) {
-  const 토큰 = (mv[2].match(/\S+/g) || []);
+for (const { 이름, 인자 } of 이동호출들(cmd)) {
   const 위치 = [];
   let 대상 = null;
-  for (let i = 0; i < 토큰.length; i++) {
-    const t = 토큰[i];
-    // PowerShell 명명 인자 — 자리로만 읽으면 `Copy-Item -Destination b -Path a` 에서 대상이 뒤집힌다.
-    if (/^-{1,2}(?:Destination|Dest)$/i.test(t)) { 대상 = 토큰[++i] || 대상; continue; }
-    if (/^-{1,2}(?:Path|LiteralPath)$/i.test(t)) { if (토큰[i + 1]) 위치.push(토큰[++i]); continue; }
-    if (/^-/.test(t)) continue;   // 그 밖의 플래그
-    위치.push(t);
+  for (let i = 0; i < 인자.length; i++) {
+    const t = 인자[i];
+    if (!t.인용됨 && /^-/.test(t.값)) {
+      // PowerShell 명명 인자 — 자리로만 읽으면 `Copy-Item -Destination b -Path a` 에서 대상이 뒤집힌다.
+      if (/^-{1,2}(?:Destination|Dest|Target)$/i.test(t.값)) { 대상 = (인자[++i] || {}).값 || 대상; continue; }
+      if (/^-{1,2}(?:Path|LiteralPath)$/i.test(t.값)) { if (인자[i + 1]) 위치.push(인자[++i].값); continue; }
+      continue;   // 그 밖의 플래그
+    }
+    위치.push(t.값);
   }
   if (대상 === null) 대상 = 위치.pop() || null;
   if (!대상 || !위치.length) continue;   // `mv a` 같은 조각은 판정 재료가 아니다
@@ -292,15 +380,19 @@ while ((mv = 이동RE.exec(실행부))) {
     if (!코드대상인가(후보)) continue;
     const 상태 = 있나(후보);
     if (상태 === 'no') continue;         // 🔑 덮어쓸 것이 없다 — rename·새 사본이다 (F076)
-    const 이름 = mv[1];
     out('deny', 상태 === 'unknown'
       ? `[code-edit-guard] \`${이름}\` 의 대상을 특정할 수 없다 — \`${되돌림(후보)}\``
         + '\n글롭·변수가 섞여 있어 **덮어쓰는지 아닌지를 못 읽는다.** 모름을 통과로 바꾸지 않는다.'
         + '\n대상을 하나씩 풀어서 쓰면 이 훅은 rename·새 사본을 막지 않는다.'
         + 처방
       : `[code-edit-guard] \`${이름}\` 가 **이미 있는** 코드 파일을 덮어쓴다 — \`${되돌림(후보)}\``
-        + '\n셸 변이는 (백업→변이→검사→원복) 4단계라 중간에 죽으면 **변이 상태로 남는다**.'
-        + ' 2026-08-04 F065: python subprocess 가 자식 stdout 을 CP949 로 디코드하다 예외를 던져 원복 라인이 아예 실행되지 않았다.'
+        /* 근거를 경우별로 갈라 적는다 — 무관한 사고를 읊는 메시지가 F076 의 절반이었다.
+         * 바탕화면 사본에 대고 「python subprocess 가 중간에 죽었다」를 읽히면 사람은
+         * 다음부터 메시지를 안 읽고, 그때부터 BYPASS 는 손버릇이 된다. */
+        + (git밖인가(홈펼침(되돌림(후보)))
+          ? '\n⚠ 이 경로 위에는 `.git` 이 없다 — **되돌릴 수단이 없는 자리**다. 덮으면 이전 내용은 그대로 사라진다.'
+          : '\n셸 변이는 (백업→변이→검사→원복) 4단계라 중간에 죽으면 **변이 상태로 남는다**.'
+            + ' 2026-08-04 F065: python subprocess 가 자식 stdout 을 CP949 로 디코드하다 예외를 던져 원복 라인이 아예 실행되지 않았다.')
         + '\n(대상이 **없는** 이름이면 막지 않는다 — rename 과 새 사본은 이 통로가 아니다 · F076)'
         + 처방);
   }
