@@ -94,6 +94,26 @@ test('정본 3종 밖 서체를 잡되, **폴백 스택은 통과**시킨다', {
   assert.equal(좋음.키트밖서체.length, 0, `정본 스택을 위반으로 잡았다: ${JSON.stringify(좋음.키트밖서체)}`);
 });
 
+/* Part 06 예약 서체(정본 §4-1)의 무게는 **경계**에 있다 — 「이 폰트를 허용한다」가 아니라
+ * 「이 구역 안에서만 허용한다」다. 경계는 조상 체인이라 소스 검색으로는 원리상 못 재고,
+ * 렌더 층에서만 갈린다. 두 방향을 같이 못박는다 — 한쪽만 재면 반대쪽으로 샌다. */
+test('Part 06 예약 서체는 .kc-page 안에서만 통과한다 (경계가 곧 예외다)', { skip: 크롬없음 }, () => {
+  const 안 = 측정(픽스처('kc-inside',
+    '<div class="kc-page"><p style="font-family:Fraunces,serif;color:#171820">K</p></div>'), CHROME);
+  assert.equal(안.키트밖서체.length, 0,
+    `예약 구역 안의 Fraunces 를 위반으로 잡았다 — 그러면 사람은 정본 §4-1 을 따르고도 빨간불을 본다: ${JSON.stringify(안.키트밖서체)}`);
+
+  const 밖 = 측정(픽스처('kc-outside',
+    '<div class="page"><p style="font-family:Fraunces,serif;color:#171820">K</p></div>'), CHROME);
+  assert.ok(밖.키트밖서체.some((v) => v.font === 'Fraunces'),
+    '구역 밖 Fraunces 를 놓쳤다 — 예외가 저장소 전체로 새는 방향이다');
+
+  // 조상 체인으로 재는지: 손자 요소도 구역 안이어야 한다(closest 가 아니라 자기 클래스만 보면 여기서 샌다)
+  const 손자 = 측정(픽스처('kc-descendant',
+    '<div class="kc-card"><span><b style="font-family:Cormorant,serif;color:#171820">Ө</b></span></div>'), CHROME);
+  assert.equal(손자.키트밖서체.length, 0, `구역의 손자 요소를 밖으로 판정했다: ${JSON.stringify(손자.키트밖서체)}`);
+});
+
 test('그라디언트 배경은 대비 **판정을 포기**한다 (억지로 재면 오탐이 쏟아진다)', { skip: 크롬없음 }, () => {
   const p = 픽스처('gradient', '<div style="background:linear-gradient(90deg,#0F1730,#FF6B5C)"><p style="color:#F6F1E8">x</p></div>');
   const r = 측정(p, CHROME);

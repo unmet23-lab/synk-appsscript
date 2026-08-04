@@ -64,6 +64,16 @@ const GENERIC_OK = [
   'Cascadia Mono', 'Consolas', 'SFMono-Regular', 'Menlo',
 ];
 
+/* ── Part 06 K-Culture 예약 서체 — 정본 3종의 유일한 예외 (유호님 08-05 확정) ──
+ * 정본 `docs/브랜드_폰트_정본.md` §4-1. K-Culture 면은 **일부러 다른 서체를 쓰는 특별면**이다.
+ * 🔑 예외는 「이 폰트를 허용한다」가 아니라 **「이 구역 안에서만 허용한다」**다.
+ *   폰트 이름만 화이트리스트에 얹으면 예외가 저장소 전체로 새고, 그러면 다음 감사가
+ *   본문에 섞여 든 Fraunces 를 「등록된 서체」로 읽는다. 경계를 함께 적어야 예외가 예외로 남는다.
+ * 2026-08-05 실사고: 이 예약이 카드 파일 **주석에만** 있어서, 정본을 따른 세션이 통째로 지웠다.
+ *   주석은 가드가 아니다 — 그래서 여기(기계)와 정본(사람) 양쪽에 적는다. */
+const KC_FONTS_OK = ['Fraunces', 'Gowun Batang', 'Cormorant'];
+const KC_SCOPE = '.kc-page, .kc-card';
+
 /* ── 등록층 ────────────────────────────────────────────────────────────────
  * 「가드는 로직보다 등록층에서 샌다」의 그 층이다. 2026-08-04 감사에서 소스 가드 3종이
  * 전부 초록이었는데, 맞아서가 아니라 **이 파일들이 목록에 없었기 때문**이었다.
@@ -106,11 +116,15 @@ function findChrome() {
 
 /* ── 페이지 안에서 도는 측정기 ───────────────────────────────────────────────
  * 문자열로 주입한다. 여기 안에서는 저장소의 어떤 것도 참조할 수 없다. */
-function 측정기소스(kitHexes, fontsOk, genericOk) {
+function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope) {
   return `(() => {
   const KIT = new Set(${JSON.stringify(kitHexes)});
   const FONTS_OK = new Set(${JSON.stringify(fontsOk)});
   const GENERIC_OK = new Set(${JSON.stringify(genericOk)});
+  const KC_FONTS_OK = new Set(${JSON.stringify(kcFontsOk)});
+  const KC_SCOPE = ${JSON.stringify(kcScope)};
+  // 예약 서체는 **그 구역 안에서만** 통과한다. 밖에서 같은 폰트가 나오면 그대로 위반이다.
+  const KC구역 = (el) => el.closest(KC_SCOPE) !== null;
 
   const hex = (rgb) => {
     const m = String(rgb).match(/-?[\\d.]+/g);
@@ -200,7 +214,7 @@ function 측정기소스(kitHexes, fontsOk, genericOk) {
       const f = raw.trim().replace(/^["']|["']$/g, '');
       if (!f) continue;
       서체집계.set(f, (서체집계.get(f) || 0) + 1);
-      if (!FONTS_OK.has(f) && !GENERIC_OK.has(f)) {
+      if (!FONTS_OK.has(f) && !GENERIC_OK.has(f) && !(KC_FONTS_OK.has(f) && KC구역(el))) {
         키트밖서체.push({ sel: 셀렉터(el), font: f, 숨김, 글: 직접텍스트.slice(0, 28) });
       }
     }
@@ -233,7 +247,7 @@ function 측정기소스(kitHexes, fontsOk, genericOk) {
 function 측정(file, chrome) {
   const html = fs.readFileSync(file, 'utf8');
   const 주입 = `<script>window.addEventListener('load', () => {
-    let r; try { r = ${측정기소스(Object.keys(KIT), FONTS_OK, GENERIC_OK)}; }
+    let r; try { r = ${측정기소스(Object.keys(KIT), FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_SCOPE)}; }
     catch (e) { r = { 오류: String(e && e.stack || e) }; }
     const pre = document.createElement('pre');
     pre.id = 'SYNK_LINT_OUT';
@@ -313,4 +327,4 @@ function main(argv) {
 }
 
 if (require.main === module) process.exit(main(process.argv.slice(2)));
-module.exports = { KIT, FONTS_OK, GENERIC_OK, findChrome, 측정, 대상, 제외, ROOT };
+module.exports = { KIT, FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_SCOPE, findChrome, 측정, 대상, 제외, ROOT };

@@ -129,33 +129,67 @@ test('카드 HTML — 모든 <script> 블록이 실제로 파싱된다', () => {
   }
 });
 
-/* 08-05 유호님 확정으로 **방향이 뒤집힌 자리**다. 옛 검사는 Cormorant 를 강제했다 —
- * 근거는 "Fraunces·Gowun Batang·Playfair엔 Ө/Ү가 없고 Cormorant cyrillic-ext 가 덮는다"였다.
- * 그 근거가 실측으로 무너졌다: ①Ө·Ү 는 **Inter Tight 도 그린다**(canvas measureText 폭 대조)
- * ②Cormorant 가 쓰이던 유일한 문구 「Таны」엔 Ө·Ү 가 아예 없었다. → 세리프 3종 전량 제거,
- * 정본 3종(SUIT·Inter Tight·DM Mono)으로 통일(91e7963).
- * 검사는 「없어야 할 것이 없다」만 본다 — 버그가 남아 있기를 요구하지 않는다. */
-const SERIF_RETIRED = ['Cormorant', 'Fraunces', 'Gowun+Batang', 'Gowun Batang', 'Playfair'];
-// 주석은 이력이라 검사 대상이 아니다 — 제거 경위를 적은 주석이 자기 검사에 걸리면
-// 다음 사람은 이력을 지워서 초록을 만든다(가드가 자기 처방을 막는 형태).
+/* ── Part 06 K-Culture 예약 서체 ─────────────────────────────────────────────
+ * 2026-08-05 실사고: 이 서체들이 「정본은 3종만」을 근거로 **통째로 지워졌다가** 유호님
+ * 판정으로 되살아났다("파트6는 특별한 페이지라 일부러 다른 폰트를 사용했다"). 지운 쪽이
+ * 틀린 게 아니다 — 예약이 **파일 주석에만** 살아 있었고 정본에는 예외가 없었다.
+ * 주석은 가드가 아니라서, 정본을 성실히 따를수록 지우게 되는 상태였다.
+ *
+ * 그래서 세 곳에 박는다: 정본 §4-1(사람) · 렌더 린트의 `.kc-page` 구역 경계(기계) · 여기.
+ * 🔑 검사는 **양방향**이다 — 예약이 사라져도 잡고, 통로 밖으로 번져도 잡는다.
+ *   한 방향만 보면 반대쪽으로 샌다: 「금지만」 검사하면 이번 삭제를 못 잡았고,
+ *   「존재만」 검사하면 Fraunces 가 본문으로 번지는 걸 못 잡는다. */
+const { KC_FONTS_OK } = require('../tools/브랜드렌더린트');
+// 주석은 이력이라 검사 대상이 아니다 — 경위를 적은 주석이 자기 검사에 걸리면
+// 다음 사람은 이력을 지워서 초록을 만든다(가드가 자기 처방을 막는 형태 · F103).
 const 주석제거 = (s) => s.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
-const 세리프위반 = (html) => SERIF_RETIRED.filter((f) => 주석제거(html).includes(f));
+const KC_예약 = { kr: ['Fraunces', 'Gowun Batang'], mn: ['Fraunces', 'Gowun Batang', 'Cormorant'] };
 
-test('KR·MN — 폐기 세리프 재도입 금지 (유호 08-05 확정: 정본 3종 통일)', () => {
+/** `--kc-*` 통로 **밖**에서 예약 서체를 직접 지정한 선언들. 통로 안이면 정상이다. */
+const 통로밖사용 = (html) => {
+  const bad = [];
+  for (const decl of 주석제거(html).match(/(?:font-family|--[\w-]+)\s*:[^;}]+/g) || []) {
+    if (/^\s*--kc-/.test(decl)) continue;
+    for (const f of KC_FONTS_OK) if (decl.includes(f)) bad.push(f);
+  }
+  return bad;
+};
+
+test('Part 06 예약 서체가 살아 있다 — 08-05 에 한 번 통째로 지워졌다', () => {
   for (const [name, html] of [['kr', htmlKr], ['mn', htmlMn]]) {
-    assert.deepStrictEqual(세리프위반(html), [],
-      `[${name}] 폐기 세리프가 되살아났다 — 정본 3종(SUIT·Inter Tight·DM Mono) 밖이다`);
+    const live = 주석제거(html);
+    for (const v of ['--kc-serif', '--kc-serif-head']) {
+      assert.ok(new RegExp(`${v}\\s*:`).test(live),
+        `[${name}] ${v} 통로가 사라졌다 — Part 06 은 일부러 다른 서체를 쓰는 특별면이다(정본 §4-1)`);
+    }
+    for (const f of KC_예약[name]) {
+      assert.ok(live.includes(`family=${f.replace(/ /g, '+')}`),
+        `[${name}] 폰트 링크에서 ${f} 가 빠졌다 — 이름만 남고 로드가 없으면 조용히 폴백한다`);
+    }
   }
 });
 
-test('세리프 검사 자신의 탐지력 — 픽스처로 못박는다', () => {
-  // 실저장소가 깨끗해도 이 검사가 죽지 않았음을 증명한다(실저장소만 보면 통과와 미실행이 같은 모양).
-  assert.deepStrictEqual(세리프위반("<link href='...css2?family=Cormorant:wght@400'>"), ['Cormorant'],
-    '폰트 링크의 세리프를 못 잡는다');
-  assert.deepStrictEqual(세리프위반(".kc-t-kor{font-family:'Fraunces','Gowun Batang',serif}"),
-    ['Fraunces', 'Gowun Batang'], 'CSS 스택의 세리프를 못 잡는다');
-  assert.deepStrictEqual(세리프위반('<!-- 세리프 3종(Fraunces·Gowun Batang·Cormorant) 제거 -->'), [],
-    '제거 경위를 적은 주석을 위반으로 센다 — 거짓양성');
+test('예약 서체는 --kc-* 통로 밖에서 쓰이지 않는다 (예외가 저장소로 새지 않게)', () => {
+  for (const [name, html] of [['kr', htmlKr], ['mn', htmlMn]]) {
+    assert.deepStrictEqual(통로밖사용(html), [],
+      `[${name}] 예약 서체가 --kc-* 밖에서 직접 지정됐다 — 예외는 Part 06 구역 안에서만이다`);
+  }
+});
+
+test('두 검사 자신의 탐지력 — 픽스처로 못박는다', () => {
+  // 실저장소가 통과하는 동안에도 이 검사들이 죽지 않았음을 증명한다
+  // (실저장소만 보면 「통과」와 「미실행」이 같은 모양이다).
+  assert.deepStrictEqual(통로밖사용(".t{font-family:'Fraunces',serif}"), ['Fraunces'],
+    '통로 밖 직접 지정을 못 잡는다');
+  assert.deepStrictEqual(통로밖사용("  --kc-serif:'Fraunces','Gowun Batang',serif;"), [],
+    '통로 안 선언을 위반으로 센다 — 거짓양성');
+  assert.deepStrictEqual(통로밖사용('<!-- Fraunces 를 지웠다 -->'), [],
+    '경위를 적은 주석을 위반으로 센다 — 거짓양성');
+  // 「사라짐」 쪽 탐지력: 통로를 지운 사본이 실제로 물리는가
+  assert.throws(
+    () => assert.ok(/--kc-serif\s*:/.test(주석제거(htmlKr).replace(/--kc-serif/g, '--x'))),
+    '통로가 사라진 사본을 통과시킨다 — 이번 사고를 다시 못 잡는다'
+  );
 });
 
 test('서버 보안 불변식 — doGet 무부작용·hp 선차단·일일상한·락 채번', () => {
