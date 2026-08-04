@@ -268,3 +268,133 @@ test('상담시트 증분 — 실제로 값이 찍힌다(선언·매핑이 아�
   assert.equal(빈출력['성격유형'], '', '빈 제출인데 성격유형에 값이 생긴다');
   assert.equal(빈출력['접수출처'], '크루카드-몽골어', '접수출처가 언어를 반영하지 않는다');
 });
+
+/* ═══════════════════════════════════════════════════════════════════
+ * 재제출 정책 [v9.168] — 「행이 어떻게 되는가」로 검사한다
+ *   이 정책의 값은 전부 결과에 있다: 행이 늘어나는가, 사람이 넣은 값이 살아남는가.
+ *   문자열 grep으로는 «덮지 않는다»를 증명할 수 없어 가짜 시트로 실제 이관을 돌린다.
+ * ═══════════════════════════════════════════════════════════════════ */
+const 이관헤더_ = ['이름(한국어)', '이름(몽골어)', '연락처', '이메일', '거주지역',
+  '등록일', '접수출처', '처리상태', '크루카드번호', '학생ID', '반', '담당자'];
+
+function 가짜시트_(headers, dataRows) {
+  const W = headers.length;
+  const pad = (r) => { const o = r.slice(); while (o.length < W) o.push(''); return o; };
+  const grid = [new Array(W).fill(''), pad(headers)];
+  (dataRows || []).forEach((r) => grid.push(pad(r)));
+  return {
+    grid,
+    getLastRow: () => grid.length,
+    getLastColumn: () => W,
+    getRange(r, c, nr = 1, nc = 1) {
+      return {
+        getValues: () => {
+          const out = [];
+          for (let i = 0; i < nr; i++) out.push((grid[r - 1 + i] || new Array(W).fill('')).slice(c - 1, c - 1 + nc));
+          return out;
+        },
+        setValues: (vals) => {
+          for (let i = 0; i < nr; i++) {
+            if (!grid[r - 1 + i]) grid[r - 1 + i] = new Array(W).fill('');
+            for (let j = 0; j < nc; j++) grid[r - 1 + i][c - 1 + j] = vals[i][j];
+          }
+        },
+        setValue: (v) => { if (!grid[r - 1]) grid[r - 1] = new Array(W).fill(''); grid[r - 1][c - 1] = v; },
+      };
+    },
+  };
+}
+
+function 이관하네스_(src) {
+  const 보관 = { sh: null };
+  const 셀안전 = (v) => (/^[=+\-@\t\r]/.test(String(v)) ? "'" + String(v) : String(v));
+  const SS = { openById: () => ({ getSheetByName: (n) => (n === '상담데이터입력' ? 보관.sh : null) }) };
+  const U = { formatDate: () => '2026-08-09' };
+  const api = new Function('SpreadsheetApp', 'Utilities', '셀안전_', 'MAX_CELL', 'CONSULT_SHEET_ID', 'TZ_',
+    (src || 상담) + '\nreturn { 이관: 상담시트_이관_, 키: 동일인키_ };')(SS, U, 셀안전, 2000, 'FAKE', 'Asia/Ulaanbaatar');
+  api.시트 = 보관;
+  api.열 = (name) => 이관헤더_.indexOf(name);
+  api.값 = (row, name) => 보관.sh.grid[row - 1][이관헤더_.indexOf(name)];
+  return api;
+}
+
+test('재제출 — 같은 사람은 행이 늘지 않는다(미착수면 최신 제출이 정본)', () => {
+  const h = 이관하네스_();
+  h.시트.sh = 가짜시트_(이관헤더_, []);
+
+  const r1 = h.이관({ name_kr: '바트', phone: '99112233', residence: '울란바토르', email: 'a@b.c' }, 'kr', 'SL-20260809-001');
+  assert.equal(r1.merge, 'new', '첫 제출은 새 행이어야 한다');
+  assert.equal(h.시트.sh.grid.length, 3, '첫 제출 후 데이터 1행');
+  assert.equal(h.값(3, '처리상태'), '신규접수');
+
+  // 같은 사람이 국가번호·하이픈까지 다르게 적어도 같은 사람이다
+  const r2 = h.이관({ name_kr: '바트', phone: '+976 9911-2233', residence: '다르한' }, 'kr', 'SL-20260809-002');
+  assert.equal(r2.merge, 'update', '재제출인데 새 행이 생겼다 — 원장이 둘 다 반배정하면 학생ID가 두 번 나간다');
+  assert.equal(h.시트.sh.grid.length, 3, '재제출로 행이 늘었다');
+  assert.equal(h.값(3, '거주지역'), '다르한', '미착수 행인데 최신 내용으로 안 바뀌었다');
+  assert.equal(h.값(3, '크루카드번호'), 'SL-20260809-002 ← SL-20260809-001',
+    '크루카드번호 이력이 끊기면 이 행이 crew_cards의 어느 원본에서 왔는지 못 찾는다');
+
+  // 빈 값으로는 덮지 않는다 — 부분 재제출이 이미 받아둔 답을 지우면 재제출이 손해가 된다
+  const r3 = h.이관({ name_kr: '바트', phone: '99112233' }, 'kr', 'SL-20260809-003');
+  assert.equal(r3.merge, 'update');
+  assert.equal(h.값(3, '거주지역'), '다르한', '빈 값이 기존 답을 지웠다');
+  assert.equal(h.값(3, '이메일'), 'a@b.c', '빈 값이 기존 이메일을 지웠다');
+});
+
+test('재제출 — 「언제·어디로·어디까지」는 재제출이 못 바꾼다', () => {
+  const h = 이관하네스_();
+  h.시트.sh = 가짜시트_(이관헤더_, []);
+  h.이관({ name_kr: '바트', phone: '99112233' }, 'kr', 'SL-20260809-001');
+  const 등록일0 = h.값(3, '등록일'), 출처0 = h.값(3, '접수출처');
+  h.시트.sh.grid[2][h.열('처리상태')] = '검토중';          // 원장이 큐에서 한 칸 옮겨둔 상태
+
+  h.이관({ name_kr: '바트', phone: '99112233', residence: '다르한' }, 'mn', 'SL-20260809-002');
+  assert.equal(h.값(3, '등록일'), 등록일0, '등록일이 재제출 날짜로 밀리면 접수→상담 리드타임이 통째로 거짓이 된다');
+  assert.equal(h.값(3, '접수출처'), 출처0, '접수출처는 최초 유입 경로다');
+  assert.equal(h.값(3, '처리상태'), '검토중', '재제출이 처리상태를 「신규접수」로 되돌렸다 — 원장 진행이 리셋된다');
+});
+
+test('재제출 — 사람이 손댄 행은 한 칸도 덮지 않는다(공개 접수가 결정을 못 이긴다)', () => {
+  for (const 상태 of ['상담완료', '반배정', '앱편입', '보류', '취소']) {
+    const h = 이관하네스_();
+    h.시트.sh = 가짜시트_(이관헤더_, [
+      ['바트', 'Бат', '99112233', 'a@b.c', '울란바토르', '2026-08-01', '크루카드-한국어', 상태, 'SL-20260801-001', 'SYNK-002', '평일11A', '유호'],
+    ]);
+    const 전 = h.시트.sh.grid[2].slice();
+
+    const r = h.이관({ name_kr: '바트', phone: '99112233', residence: '다르한', email: 'evil@x.y' }, 'kr', 'SL-20260809-009');
+    assert.equal(r.merge, 'locked', `${상태} 행이 잠기지 않았다`);
+    assert.equal(h.시트.sh.grid.length, 3, `${상태}인데 재제출이 새 행을 만들었다 — 학생ID 이중 발급 경로`);
+    assert.equal(h.값(3, '학생ID'), 'SYNK-002', `${상태}: 공개 제출이 학생ID를 건드렸다`);
+    assert.equal(h.값(3, '반'), '평일11A', `${상태}: 공개 제출이 배정을 덮었다`);
+    assert.equal(h.값(3, '담당자'), '유호', `${상태}: 공개 제출이 담당자를 덮었다`);
+    assert.equal(h.값(3, '거주지역'), '울란바토르', `${상태}: 공개 제출이 상담 기록을 덮었다`);
+    // 바뀌어도 되는 건 크루카드번호 하나뿐
+    전.forEach((v, i) => {
+      if (i === h.열('크루카드번호')) return;
+      assert.equal(h.시트.sh.grid[2][i], v, `${상태}: ${이관헤더_[i]} 칸이 바뀌었다`);
+    });
+    assert.equal(h.값(3, '크루카드번호'), 'SL-20260809-009 ← SL-20260801-001', '재제출 사실이 안 남으면 원장이 영원히 모른다');
+  }
+});
+
+test('동일인키_ — 놓치는 쪽으로만 틀린다(잘못 합치면 남의 상담 기록을 덮는다)', () => {
+  const { 키 } = 이관하네스_();
+  assert.equal(키('바트', '+976 9911-2233'), 키('바트', '99112233'), '국가번호·하이픈 표기가 다르면 다른 사람이 된다');
+  assert.equal(키('바 트', '99112233'), 키('바트', '99112233'), '공백 표기 흔들림');
+  assert.equal(키('바트', '00976 99112233'), 키('바트', '99112233'), '00 국제전화 접두');
+  assert.notEqual(키('바트', '99112233'), 키('솔롱고', '99112233'), '형제가 가족 번호를 같이 적으면 한 사람으로 합쳐진다');
+  assert.notEqual(키('바트', '99112233'), 키('바트', '88112233'), '동명이인이 합쳐진다');
+  assert.equal(키('', '99112233'), '', '이름이 비면 키가 없어야 한다 — 빈 키끼리 서로 같아지면 남남이 합쳐진다');
+  assert.equal(키('바트', ''), '', '연락처가 비면 키가 없어야 한다');
+  // 한국 번호는 976으로 시작하지 않으므로 그대로 — 잘라내면 서로 다른 번호가 같아질 수 있다
+  assert.notEqual(키('김재헌', '01055421768'), 키('김재헌', '01055421769'));
+});
+
+test('재제출 — 이름·연락처가 비면 절대 합치지 않는다(빈 키 사고)', () => {
+  const h = 이관하네스_();
+  h.시트.sh = 가짜시트_(이관헤더_, [['', '', '', '', '', '2026-08-01', '크루카드-한국어', '신규접수', 'SL-20260801-001']]);
+  const r = h.이관({ name_kr: '', phone: '' }, 'kr', 'SL-20260809-001');
+  assert.notEqual(r.merge, 'update', '이름·연락처가 빈 제출이 남의 빈 행에 덮어썼다');
+});
