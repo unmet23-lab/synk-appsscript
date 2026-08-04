@@ -16,6 +16,12 @@
  * 사용:
  *   node tools/bump-version.js --desc "인센티브 배점 3지표 완성"   # 채번 + Code.js 기입
  *   node tools/bump-version.js --dry                              # 다음 번호만 조회(예약 안 함)
+ *   node tools/bump-version.js --desc "..." --toil "없앤 손일::주기::대체 장치"   # + 손일 장부 기입
+ *
+ * --toil 은 이 릴리스가 **사람이 하던 일을 없앴을 때만** 쓴다(대부분의 버전은 해당 없음).
+ * 왜 여기 붙였나: 손일 기록은 3년 뒤 「원장 전용 AI 비서」의 제품 명세가 되는데, 별도 명령으로
+ * 두면 아무도 안 부른다 — 이 도구는 매 릴리스에 반드시 지나가는 유일한 통로다.
+ * 자세한 근거 = tools/toil.js 머리말 · docs/_ops/손일장부.md.
  *
  * 태그는 `synk-v9.114` 형태로 남는다(일반 릴리스 태그와 구분). 커밋을 안 해서 번호가 비는 것은
  * 무해하다 — 이 체계가 보장하는 것은 "연속"이 아니라 "유일"이다.
@@ -198,6 +204,10 @@ function main(argv) {
   const dry = argv.includes('--dry');
   const di = argv.indexOf('--desc');
   const desc = di >= 0 ? argv[di + 1] : '';
+  const ti = argv.indexOf('--toil');
+  const toilSpec = ti >= 0 ? argv[ti + 1] : '';
+  // 형식 오류는 **채번 전에** 잡는다 — 채번 뒤에 터지면 번호는 예약됐는데 기록은 없는 상태가 된다
+  if (toilSpec) require('./toil.js').parseSpec(toilSpec);
 
   // gitQuiet는 실패 시에만 null을 준다(성공 시 빈 문자열일 수 있으므로 !로 판정하면 항상 실패로 읽힌다)
   if (gitQuiet(['fetch', 'origin', '--tags', '--quiet']) === null) {
@@ -234,6 +244,18 @@ function main(argv) {
     fs.writeFileSync(CODE, replaceVersionLine(src, cand, desc, originSrc));
     console.log('✅ 예약 완료: ' + cand + '  (태그 ' + tag + ' origin push 성공 = 이 번호는 내 것)');
     console.log('   Code.js SYNK_VERSION 기입됨. 커밋 제목·태그·docs/버전_이력.md에 [' + cand + ']를 쓰세요.');
+
+    /* 손일 장부 기입 — 번호가 확정된 뒤에 한다(장부의 ID가 곧 이 번호다).
+     * ⚠ 장부 기입 실패가 채번을 되돌리지 않는다 — 번호는 이미 origin이 보증했고,
+     *   여기서 throw하면 「예약은 됐는데 실패로 보이는」 상태가 되어 다음 세션이 번호를 또 태운다.
+     *   friction.js와 같은 원칙: 기록이 도구 사정으로 멈추면 안 되고, 멈췄으면 드러내야 한다. */
+    if (toilSpec) {
+      try { require('./toil.js').add(cand, toilSpec); }
+      catch (e) {
+        console.error('⚠ 손일 장부 기입 실패(번호는 유효): ' + ((e && e.message) || e));
+        console.error('   손으로: node tools/toil.js add ' + cand + ' "' + toilSpec + '"');
+      }
+    }
     return cand;
   }
   throw new Error(MAX_TRIES + '회 시도했으나 번호를 확보하지 못했습니다 — origin 접근을 확인하세요');
