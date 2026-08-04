@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNK LAB — 개인정보처리방침 / Privacy Policy</title>
+<meta name="description" content="SYNK LAB (Ulaanbaatar, Mongolia) — Korean language academy. Privacy policy for our Facebook Messenger consultation assistant and learning app.">
+<!--
+  ════════════════════════════════════════════════════════════════
+  SYNK LAB 개인정보처리방침 — 게시용 한 장 사이트
+  정본 = docs/개인정보처리방침_초안_v1.md (v4). 본문을 고칠 때는 정본을 먼저 고친다.
+
+  ⛔ 게시 전에 채워야 하는 것 = 아래 [[...]] 7곳뿐이다.
+     검색해서 찾을 것: "[["
+     1 [[상호]]  2 [[주소]]  3 [[대표 이메일]]  4 [[관리책임자]]
+     5 [[사업자등록번호]]  6 [[페이스북 페이지 이름]]  7 [[시행일]]
+
+  이 페이지 하나가 Meta 검수의 두 요건을 동시에 냅니다:
+     ① 개인정보처리방침 공개 URL
+     ② 비즈니스 인증용 「웹사이트」(상호·주소·연락처가 실려 있어야 함)
+  ════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --paper:#FBF7EE; --ink:#171820; --navy:#0F1730; --navy2:#1A2340;
+    --cream:#F6F1E8; --cream2:#E7DDC7; --coral:#FF6B5C; --coral-soft:#FFE9E4;
+    --rule:#E7DDC7;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"SUIT","Inter Tight",-apple-system,BlinkMacSystemFont,"Segoe UI",
+      "Noto Sans KR","Malgun Gothic",Roboto,sans-serif;
+    font-size:16px; line-height:1.75; letter-spacing:-0.01em;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:0 24px}
+
+  /* ── 상단 신원 띠 — 비즈니스 인증이 읽는 부분 ───────────── */
+  header{background:var(--navy); color:var(--cream); padding:52px 0 44px}
+  header .wrap{max-width:760px}
+  .mark{
+    font-size:13px; letter-spacing:0.22em; text-transform:uppercase;
+    color:var(--coral); font-weight:600; margin:0 0 14px;
+  }
+  header h1{font-size:30px; line-height:1.3; margin:0 0 10px; letter-spacing:-0.02em}
+  header p.lede{margin:0 0 26px; color:var(--cream2); font-size:16px}
+  .id-grid{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    gap:2px; background:rgba(246,241,232,.14); border:1px solid rgba(246,241,232,.14);
+  }
+  .id-grid div{background:var(--navy); padding:13px 16px}
+  .id-grid dt{
+    font-size:11px; letter-spacing:0.13em; text-transform:uppercase;
+    color:var(--cream2); opacity:.72; margin:0 0 4px;
+  }
+  .id-grid dd{margin:0; font-size:15px; color:var(--cream); word-break:break-word}
+
+  /* ── 채워야 하는 빈칸 ─────────────────────────────────── */
+  .fill{
+    background:var(--coral); color:var(--navy); font-weight:700;
+    padding:1px 7px; border-radius:3px; white-space:nowrap;
+  }
+  header .fill{box-shadow:0 0 0 1px rgba(246,241,232,.3)}
+
+  /* ── 본문 ─────────────────────────────────────────────── */
+  main{padding:0 0 72px}
+  nav.jump{
+    border-bottom:1px solid var(--rule); padding:16px 0; margin-bottom:44px;
+    font-size:14px;
+  }
+  nav.jump a{color:var(--ink); text-decoration:none; margin-right:20px; font-weight:600}
+  nav.jump a:hover{color:var(--coral)}
+  nav.jump span{color:#8A8578}
+
+  section.doc{padding-top:44px}
+  h2.doc-title{
+    font-size:25px; margin:0 0 8px; letter-spacing:-0.02em; line-height:1.35;
+    padding-bottom:14px; border-bottom:3px solid var(--navy);
+  }
+  .doc-sub{color:#5C5850; font-size:15px; margin:0 0 34px}
+
+  h3{
+    font-size:18px; margin:40px 0 12px; letter-spacing:-0.015em; line-height:1.4;
+    display:flex; gap:10px; align-items:baseline;
+  }
+  h3 .num{
+    color:var(--coral); font-weight:700; font-size:15px;
+    font-family:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace; flex:none;
+  }
+  h4{font-size:15.5px; margin:24px 0 8px; color:var(--navy)}
+  p{margin:0 0 14px}
+  ul{margin:0 0 14px; padding-left:20px}
+  li{margin-bottom:7px}
+  strong{font-weight:700}
+  em{font-style:normal; background:var(--coral-soft); padding:0 3px; border-radius:2px}
+
+  blockquote{
+    margin:20px 0; padding:14px 18px; background:#fff;
+    border-left:3px solid var(--coral); font-size:15px;
+  }
+  blockquote p:last-child{margin-bottom:0}
+
+  .tbl-scroll{overflow-x:auto; margin:0 0 18px; -webkit-overflow-scrolling:touch}
+  table{border-collapse:collapse; width:100%; min-width:460px; font-size:14.5px}
+  th,td{border:1px solid var(--rule); padding:10px 12px; text-align:left; vertical-align:top}
+  th{background:var(--navy); color:var(--cream); font-weight:600; white-space:nowrap}
+  tbody tr:nth-child(even){background:#fff}
+
+  .note{
+    background:#fff; border:1px solid var(--rule); border-radius:4px;
+    padding:16px 18px; margin:22px 0; font-size:15px;
+  }
+  .note strong:first-child{color:var(--coral)}
+
+  footer{
+    border-top:1px solid var(--rule); padding:32px 0 56px;
+    font-size:14px; color:#5C5850;
+  }
+  footer .wrap{max-width:760px}
+
+  a{color:var(--navy); text-underline-offset:3px}
+
+  @media (max-width:560px){
+    body{font-size:15.5px}
+    header{padding:38px 0 32px}
+    header h1{font-size:24px}
+    h2.doc-title{font-size:21px}
+    .wrap{padding:0 18px}
+  }
+  @media print{
+    header{background:#fff !important; color:#000 !important; -webkit-print-color-adjust:exact}
+    .id-grid div{background:#fff !important}
+    .id-grid dt,.id-grid dd{color:#000 !important}
+    nav.jump{display:none}
+    body{font-size:11pt}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="mark">SYNK LAB · Ulaanbaatar, Mongolia</p>
+    <h1>개인정보처리방침<br>Privacy Policy</h1>
+    <p class="lede">
+      몽골 울란바토르의 한국어 학원입니다. 이 페이지는 학원이 학생·보호자의 개인정보를
+      어떻게 다루는지 밝힙니다.<br>
+      <span style="opacity:.8">A Korean-language academy in Ulaanbaatar, Mongolia.
+      This page covers our Facebook Messenger consultation assistant and our learning app.</span>
+    </p>
+
+    <dl class="id-grid">
+      <div><dt>상호 / Legal name</dt><dd><span class="fill">[[상호]]</span></dd></div>
+      <div><dt>주소 / Address</dt><dd><span class="fill">[[주소]]</span></dd></div>
+      <div><dt>문의·삭제요청 / Contact</dt><dd><span class="fill">[[대표 이메일]]</span></dd></div>
+      <div><dt>책임자 / Data contact</dt><dd><span class="fill">[[관리책임자]]</span></dd></div>
+      <div><dt>사업자등록번호 / Reg. no.</dt><dd><span class="fill">[[사업자등록번호]]</span></dd></div>
+      <div><dt>페이스북 페이지</dt><dd><span class="fill">[[페이스북 페이지 이름]]</span></dd></div>
+    </dl>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+  <nav class="jump">
+    <a href="#ko">한국어</a><a href="#en">English</a>
+    <span>시행일 / Effective: <span class="fill">[[시행일]]</span></span>
+  </nav>
+
+  <!-- ═══════════════════ 한국어 ═══════════════════ -->
+  <section class="doc" id="ko">
+    <h2 class="doc-title">SYNK LAB 개인정보처리방침</h2>
+    <p class="doc-sub">
+      SYNK LAB(이하 "학원")은 학생과 보호자의 개인정보를 어떻게 다루는지 이 문서에 정직하게
+      밝힙니다. 좋게 보이기 위해 실제와 다르게 적지 않았습니다.
+    </p>
+
+    <h3><span class="num">1</span> 수집하는 정보</h3>
+
+    <h4>① 상담·등록 신청서 (크루카드 등록 페이지 · 광고 리드폼)</h4>
+    <ul>
+      <li>학생 이름, <strong>생년월일</strong>, 연락처</li>
+      <li>보호자 이름·연락처·이메일</li>
+      <li>한국어 학습 배경, 목표(TOPIK 급수·목표 시기), 학습 가능 시간</li>
+      <li>관심사·취향(수업 개인화에 씁니다)</li>
+      <li>자유서술 답변 — 한국어 학습의 어려움, 학원을 고른 이유, 3~5년 목표 등</li>
+    </ul>
+
+    <h4>② 페이스북 메신저 상담 (자동 응답 봇)</h4>
+    <ul>
+      <li><strong>주고받은 대화 내용 전체</strong></li>
+      <li>페이스북이 부여한 <strong>대화 식별번호</strong>(계정을 구분하기 위한 번호)</li>
+      <li>상담·체험을 신청하시며 직접 알려주신 이름·연락처·<strong>자녀 나이</strong></li>
+      <li>상대가 학생 본인(미성년)으로 보이면 <em>연락처를 요청하지 않고</em>, 보호자께서 연락
+        주시도록 안내합니다.</li>
+    </ul>
+
+    <h4>③ 학습 앱 사용 기록 (재원생)</h4>
+    <ul>
+      <li>출결, 과제 제출과 그 내용, 퀴즈 응답, 학습 포인트·성장 기록</li>
+      <li>앱에서 AI와 나눈 한국어 연습 대화</li>
+      <li>학원이 내부적으로 매기는 <strong>「이탈위험」 등급</strong>(아래 2항 참조)</li>
+    </ul>
+
+    <h4>④ 음성 녹음 — 말하기 수업 수강 시 필수</h4>
+    <ul>
+      <li>수업·발음 연습·모의 면접 중 녹음된 목소리와, 그것을 글로 옮긴 기록</li>
+      <li><em>선택 항목이 아닙니다.</em> 학원의 말하기 수업은 학생의 목소리로 배워 학생을
+        교정하는 방식이라, 녹음과 그 활용에 동의하지 않으시면
+        <strong>발음 교정·모의 면접·회화 앱을 제공해 드릴 수 없습니다.</strong>
+        다른 수업은 이용하실 수 있습니다.</li>
+    </ul>
+
+    <h4>⑤ 사진·영상·활동 결과물 — 선택 항목입니다</h4>
+    <ul>
+      <li>수업·K컬처 활동 중 촬영된 <strong>사진·영상</strong>(얼굴·목소리·촬영본 전체를
+        포함합니다)과 수업 프로젝트 결과물</li>
+      <li><strong>동의 없이는 올라가지 않습니다.</strong> 학원 홍보(SNS·홈페이지·브로슈어)에
+        쓰는 것은 등록 카드의 <strong>「초상권·콘텐츠 활용 동의」</strong> 항목에서 직접
+        고르시고, 마음이 바뀌면 <strong>언제든 활용 중단(철회)을 요청</strong>하실 수 있습니다.</li>
+      <li><em>동의하지 않으셔도 수업·앱·성장 기록 등 모든 경험은 똑같이 제공됩니다.</em>
+        위 ④ 음성 녹음과 달리 이 항목은 수업 제공의 조건이 아닙니다.</li>
+    </ul>
+
+    <blockquote><p>아이의 얼굴과 이야기는 학원의 홍보 재료이기 전에 아이의 것입니다.
+      이 순서는 바뀌지 않습니다.</p></blockquote>
+
+    <h3><span class="num">2</span> 이용 목적</h3>
+    <ul>
+      <li>상담과 반 배정, 수업 운영, 출결·진도 관리</li>
+      <li><strong>학습 개인화</strong> — 응원 문장, 퀴즈, 성장 리포트의 소재</li>
+      <li><strong>보호자 안내</strong> — 매주 몽골어 학습 리포트 발송</li>
+      <li><strong>학습 이탈 위험 판단</strong> — 출결·참여 기록을 바탕으로 학원이 학생을
+        「이탈위험」 등급으로 분류해, 먼저 연락드리고 도움을 드리기 위해 씁니다. 이 등급은
+        <em>성적 평가가 아니며 학생·보호자에게 불이익을 주는 데 쓰지 않습니다.</em></li>
+      <li>학원 운영 통계(개인을 식별하지 않는 형태)</li>
+      <li><strong>SYNK LAB과 그 관계·승계 사업체가 만드는 한국어 학습 서비스(앱·AI 학습 도구)의
+        개발과 개선</strong> — 이 목적으로 밖으로 내보낼 때는
+        <strong>이름·연락처를 지운 형태로만</strong> 사용합니다.</li>
+    </ul>
+    <p>학원은 개인정보를 <strong>광고 목적으로 판매하거나 제3자에게 넘기지 않습니다.</strong></p>
+
+    <h3><span class="num">3</span> 자동화된 응대와 판단</h3>
+    <ul>
+      <li>페이스북 페이지의 상담은 <strong>자동 응답 봇</strong>이 먼저 답합니다. 봇은 대화 시작
+        시 자동화임을 밝히고, 확정되지 않은 정보(수강료 등)는 답하지 않고 담당 선생님에게
+        넘깁니다. <strong>언제든 사람과의 상담을 요청하실 수 있습니다.</strong></li>
+      <li>위 2항의 「이탈위험」 등급은 자동으로 계산되지만,
+        <em>그 등급만으로 학생에 대한 결정을 내리지 않습니다</em> — 사람이 확인하고 판단합니다.</li>
+    </ul>
+
+    <h3><span class="num">4</span> 처리를 맡기는 곳 (수탁자)</h3>
+    <p>아래 회사의 시스템을 사용합니다. 이들은 우리를 대신해 저장·처리할 뿐, 자기 목적으로
+      쓰지 않습니다.</p>
+    <div class="tbl-scroll">
+    <table>
+      <thead><tr><th>회사</th><th>무엇에 쓰나</th><th>어떤 정보가 가나</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Google</strong><br>(Workspace·Sheets·Drive·Forms·Gmail·Apps Script)</td>
+            <td>저장, 신청서 수집, 리포트 발송</td><td>1항 전부</td></tr>
+        <tr><td><strong>Google Cloud</strong><br>(Speech-to-Text)</td>
+            <td>음성을 글로 옮기기</td><td><strong>녹음 파일 원본</strong></td></tr>
+        <tr><td><strong>Glide</strong></td>
+            <td>학생·보호자용 앱 화면</td><td>학습 기록, 이름, 반</td></tr>
+        <tr><td><strong>Anthropic</strong><br>(Claude AI)</td>
+            <td>상담 답변·과제 첨삭·학습 피드백 생성</td>
+            <td>보내신 <strong>메시지 내용</strong>, 과제·연습 문장</td></tr>
+        <tr><td><strong>Meta</strong><br>(Facebook·Messenger)</td>
+            <td>상담 대화 채널</td><td>메신저로 주고받은 내용</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="note"><strong>국외 이전</strong> — 위 회사들의 서버는 몽골 밖(주로 미국)에
+      있습니다. 학원 서비스를 이용하시면 이 이전에 동의하시는 것이 됩니다.</div>
+
+    <h3><span class="num">5</span> 보관 기간</h3>
+    <div class="tbl-scroll">
+    <table>
+      <thead><tr><th>정보</th><th>보관 기간</th></tr></thead>
+      <tbody>
+        <tr><td><strong>음성 녹음과 그 기록</strong></td>
+            <td><strong>기간 제한 없이 보관합니다</strong> — 여러 해에 걸친 "처음 목소리 vs 오늘
+              목소리" 성장 기록을 위해서입니다</td></tr>
+        <tr><td>재원생의 학습·성장 기록</td>
+            <td><strong>기간 제한 없이 보관합니다</strong>(성장 기록의 성격상 누적 보관이
+              목적입니다)</td></tr>
+        <tr><td>상담 문의 대화·연락처<br>(등록하지 않으신 경우 포함)</td>
+            <td>상담 이력 관리를 위해 보관하며, <strong>삭제를 요청하시면 지웁니다</strong></td></tr>
+        <tr><td>시스템 백업</td>
+            <td>30일 (휴지통에서 추가 30일 뒤 완전 삭제 — 최대 60일)</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <blockquote><p>삭제 요청 시에도 <strong>휴지통 보관 기간(약 30일)</strong> 동안은 복구
+      가능한 상태로 남았다가 완전히 지워집니다.</p></blockquote>
+
+    <h3><span class="num">6</span> 자녀 자료를 받아보시는 방법</h3>
+    <p>학생의 <strong>녹음 파일</strong>과 <strong>성장 리포트 카드</strong>는
+      <em>인터넷에 공개하지 않습니다.</em> 학원 계정으로 로그인해야만 열 수 있습니다.</p>
+    <ul>
+      <li><strong>성장 리포트 카드</strong>는 보호자 이메일로 <strong>이미지 파일을 첨부해</strong>
+        보내드립니다.</li>
+      <li><strong>녹음 파일</strong>은 외부에 공유하지 않습니다. 대신 학생 앱의
+        「목소리 타임랩스」에서 <strong>처음과 지금의 발음을 글로 옮긴 기록</strong>으로 성장을
+        확인하실 수 있습니다.</li>
+      <li>그 밖의 학생 정보(연락처·상담 내용·성적 원본)도 학원 계정으로 접근이 제한되어
+        있습니다.</li>
+    </ul>
+    <blockquote><p>보호자 이메일이 등록되어 있지 않으면 리포트 카드를 보내드릴 수 없습니다 —
+      상담 시 이메일을 꼭 알려주세요.</p></blockquote>
+
+    <h3><span class="num">7</span> 여러분의 권리 — 열람·정정·삭제·철회</h3>
+    <p>위 <strong><span class="fill">[[대표 이메일]]</span></strong>로 연락 주시면 처리합니다.</p>
+    <ul>
+      <li>어떤 정보를 갖고 있는지 <strong>열람</strong></li>
+      <li>틀린 정보의 <strong>정정</strong></li>
+      <li><strong>삭제</strong> 요청 — 녹음·학습 기록·상담 대화 모두 대상입니다</li>
+      <li><strong>동의 철회</strong> — 즉시 중단하고, 보관 중인 녹음도 삭제합니다</li>
+      <li><strong>초상권 철회</strong> — 사진·영상의 홍보 활용을 중단합니다. 이 철회는
+        <em>수업·앱·성장 기록에 아무 영향을 주지 않습니다</em></li>
+    </ul>
+    <div class="note"><strong>정직하게 밝히는 한계</strong> — 동의를 철회하시면 그 시점에 보관
+      중인 녹음을 모두 삭제합니다. 다만 <strong>이미 AI 학습에 사용된 부분은 되돌릴 수
+      없습니다</strong> — 학습이 끝난 모델에서 특정 사람의 목소리만 빼낼 방법이 없기
+      때문입니다. 철회 이후로는 사용하지 않습니다.</div>
+    <p>처리 기간: 요청하신 날로부터 <strong>7일 이내</strong>에 처리하고 결과를 알려드립니다
+      (백업 사본은 위 5항의 보관 주기에 따라 지워집니다).</p>
+
+    <h3><span class="num">8</span> 미성년자</h3>
+    <ul>
+      <li>미성년 학생의 개인정보는 <strong>보호자 동의</strong>를 전제로 수집합니다.</li>
+      <li>상담 봇은 학생 본인으로 보이는 경우 <strong>연락처를 요청하지 않고</strong> 보호자
+        연락을 안내합니다.</li>
+      <li>보호자께서는 언제든 자녀의 정보에 대해 위 7항의 권리를 행사하실 수 있습니다.</li>
+    </ul>
+
+    <h3><span class="num">9</span> 안전조치</h3>
+    <ul>
+      <li>자료는 학원 계정으로 접근이 제한된 저장소에 보관합니다.</li>
+      <li>시스템 접근 권한은 필요한 담당자에게만 부여합니다.</li>
+      <li>외부에서 받은 글이 시스템에 명령으로 실행되지 않도록 처리합니다.</li>
+    </ul>
+
+    <h3><span class="num">10</span> 방침 변경</h3>
+    <p>이 방침을 바꿀 때는 이 페이지에 변경 내용과 시행일을 함께 게시합니다.</p>
+
+    <h3><span class="num">11</span> 문의 · 삭제 요청 창구</h3>
+    <div class="tbl-scroll">
+    <table>
+      <tbody>
+        <tr><th>개인정보 관리 책임자</th><td><span class="fill">[[관리책임자]]</span></td></tr>
+        <tr><th>연락처(삭제·철회 요청)</th><td><span class="fill">[[대표 이메일]]</span></td></tr>
+        <tr><th>주소</th><td><span class="fill">[[주소]]</span></td></tr>
+        <tr><th>대상 서비스</th><td>페이스북 페이지
+          「<span class="fill">[[페이스북 페이지 이름]]</span>」의 상담 봇, SYNK LAB 학습 앱</td></tr>
+        <tr><th>시행일</th><td><span class="fill">[[시행일]]</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ English ═══════════════════ -->
+  <section class="doc" id="en">
+    <h2 class="doc-title">Privacy Policy</h2>
+    <p class="doc-sub">
+      <strong>Data controller:</strong> <span class="fill">[[상호]]</span> (SYNK LAB), a
+      Korean-language academy in Ulaanbaatar, Mongolia.<br>
+      <strong>Services covered:</strong> the automated consultation assistant on our Facebook
+      Page "<span class="fill">[[페이스북 페이지 이름]]</span>", and the SYNK LAB learning app.
+    </p>
+
+    <h3><span class="num">1</span> Information we collect</h3>
+    <ul>
+      <li><strong>(a) Enquiry / enrolment form.</strong> Student name, <strong>date of
+        birth</strong>, contact details; guardian name, phone and email; learning background and
+        goals; interests; free-text answers (difficulties with Korean, why they chose us, 3–5
+        year goals).</li>
+      <li><strong>(b) Facebook Messenger assistant.</strong> <strong>The full content of
+        messages exchanged</strong>, the <strong>page-scoped user ID</strong> Facebook assigns to
+        the conversation, and any name, contact details or <strong>child's age</strong> you
+        volunteer when requesting a consultation. We do <em>not request</em> contact details from
+        users who appear to be minors; we ask them to have a guardian contact us instead.</li>
+      <li><strong>(c) App usage by enrolled students.</strong> Attendance, homework and its
+        content, quiz answers, learning points and progress records, Korean practice
+        conversations with our AI, and an internal <strong>"drop-out risk" rating</strong>
+        (see 2).</li>
+      <li><strong>(d) Voice recordings — required for our speaking course.</strong> Audio
+        recorded during lessons, pronunciation practice or mock interviews, and its transcript.
+        This is <em>not optional</em> for that course: our speaking method teaches from the
+        student's own voice, so without consent we cannot provide pronunciation correction, mock
+        interviews or the conversation app. Other courses remain available.</li>
+      <li><strong>(e) Photos, video and project outputs — optional.</strong> Images and video
+        recorded during lessons and K-culture activities (including face, voice and the full
+        footage), and class project outputs. <strong>Nothing is published without
+        consent</strong>: use for academy promotion (social media, website, brochures) is a
+        separate opt-in choice on the enrolment card, and consent may be <strong>withdrawn at any
+        time</strong>. <em>Declining changes nothing about the service</em> — lessons, the app and
+        progress records are provided identically. Unlike (d), this is not a condition of
+        enrolment.</li>
+    </ul>
+
+    <h3><span class="num">2</span> How we use it</h3>
+    <p>Consultation and class placement; running lessons and tracking attendance and progress;
+      personalising learning content; sending weekly progress reports to guardians in Mongolian;
+      <strong>assessing drop-out risk</strong> so we can reach out and help — this rating is not
+      an academic evaluation and is never used to disadvantage a student; aggregate operational
+      statistics; and <strong>developing and improving Korean-learning services (apps and AI
+      learning tools) built by SYNK LAB and its affiliated or successor entities</strong>. When
+      data is exported for that development purpose, <strong>names and contact details are
+      removed</strong>. We do not sell personal data or share it for advertising.</p>
+
+    <h3><span class="num">3</span> Automated processing</h3>
+    <p>Consultations on our Facebook Page are first answered by an <strong>automated
+      bot</strong>, which <strong>discloses that it is automated at the start of every
+      conversation</strong>. It does not answer questions outside its approved knowledge base
+      (for example tuition fees, which are not finalised); those are passed to a human teacher.
+      <strong>You may ask to speak to a person at any time.</strong> The drop-out risk rating is
+      calculated automatically but <em>no decision about a student is made on that rating
+      alone</em> — a person reviews it.</p>
+
+    <h3><span class="num">4</span> Processors</h3>
+    <p>Google (Workspace, Sheets, Drive, Forms, Gmail, Apps Script) for storage, form collection
+      and email; <strong>Google Cloud Speech-to-Text for transcription — the audio file itself is
+      sent</strong>; Glide for the student/guardian app; <strong>Anthropic (Claude AI) to generate
+      replies, homework feedback and learning feedback — message and practice text is
+      sent</strong>; and Meta (Facebook/Messenger) as the consultation channel.
+      <strong>These providers' servers are located outside Mongolia (primarily in the United
+      States).</strong></p>
+
+    <h3><span class="num">5</span> Retention</h3>
+    <p>Voice recordings and transcripts, and enrolled students' learning and progress records:
+      <strong>retained without a fixed time limit</strong>, to support multi-year progress
+      records. Consultation conversations and contact details (including from people who do not
+      enrol): kept for consultation history and <strong>deleted on request</strong>. System
+      backups: 30 days, plus up to 30 further days in trash before permanent deletion.</p>
+
+    <h3><span class="num">6</span> How guardians receive their child's material</h3>
+    <p>Student <strong>voice recordings</strong> and <strong>progress report cards</strong> are
+      <em>not published on the internet</em> — they can only be opened by an authenticated
+      academy account. Report cards are delivered to the guardian's email <strong>as an image
+      attachment</strong>. Recordings are not shared externally; instead the student app shows a
+      "voice timelapse" comparing <strong>transcripts</strong> of their first and most recent
+      recordings. All other student data (contact details, consultation content, source records)
+      is likewise restricted to academy accounts.</p>
+
+    <h3><span class="num">7</span> Your rights — access, correction, deletion, withdrawal</h3>
+    <p>Contact us using the details in section 11 to request access, correction,
+      <strong>deletion</strong> (of recordings, learning records and consultation conversations),
+      or <strong>withdrawal of consent</strong>. On withdrawal we stop using the data immediately
+      and delete stored recordings. <strong>One honest limitation: material already used to train
+      an AI model cannot be reversed</strong>, because there is no way to remove one person's
+      voice from a model after training; we do not use it after withdrawal. We respond within
+      <strong>7 days</strong>; backup copies are erased on the cycle in section 5.</p>
+
+    <h3><span class="num">8</span> Minors</h3>
+    <p>Personal data of minors is collected on the basis of guardian consent. Our assistant does
+      not request contact details from users who appear to be minors. Guardians may exercise all
+      rights in section 7 on their child's behalf.</p>
+
+    <h3><span class="num">9</span> Security</h3>
+    <p>Data is held in storage restricted to academy accounts. Access is granted only to staff
+      who need it. Text received from outside is handled so that it cannot execute as a command
+      in our systems.</p>
+
+    <h3><span class="num">10</span> Changes</h3>
+    <p>Changes to this policy will be posted on this page with their effective date.</p>
+
+    <h3><span class="num">11</span> Contact and data-deletion requests</h3>
+    <div class="tbl-scroll">
+    <table>
+      <tbody>
+        <tr><th>Data protection contact</th><td><span class="fill">[[관리책임자]]</span></td></tr>
+        <tr><th>Email (deletion &amp; withdrawal)</th><td><span class="fill">[[대표 이메일]]</span></td></tr>
+        <tr><th>Address</th><td><span class="fill">[[주소]]</span></td></tr>
+        <tr><th>Business registration</th><td><span class="fill">[[사업자등록번호]]</span></td></tr>
+        <tr><th>Effective date</th><td><span class="fill">[[시행일]]</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong><span class="fill">[[상호]]</span></strong> · SYNK LAB —
+      <span class="fill">[[주소]]</span> · <span class="fill">[[대표 이메일]]</span></p>
+    <p>시행일 / Effective date: <span class="fill">[[시행일]]</span></p>
+  </div>
+</footer>
+
+</body>
+</html>
