@@ -46,9 +46,15 @@ function git(args) {
   return String(r.stdout || '');
 }
 
-/** 미커밋 경로들. git 을 못 부르면 **null(=모름)** — 빈 배열(=없음)과 구별한다. */
+/** 미커밋 경로들. git 을 못 부르면 **null(=모름)** — 빈 배열(=없음)과 구별한다.
+ *
+ * 🔴 `-uall` 이 없으면 **새 폴더의 미추적 파일이 통째로 접힌다** — `docs/정본/엔진_시험.js` 가
+ *    `?? docs/` 한 줄이 되어 파일이 목록에서 사라진다(실측). 하필 미추적이 이력·stash·reflog
+ *    어디에도 없는 유일한 무보호 상태(F025)인데, 거기가 사각이었다. 추적 파일의 수정은
+ *    멀쩡히 보이므로 **라이브에서는 정상으로 보인다** — 옆 세션(dee95eb9)이 자기 변이 검사에서
+ *    「픽스처가 평평하면 경로 처리가 안 시험된다」를 넘겨줘, 중첩 픽스처를 넣다가 드러났다. */
 function 미커밋들() {
-  const out = git(['status', '--porcelain']);
+  const out = git(['status', '--porcelain', '-uall']);
   if (out === null) return null;
   return out.split(/\r?\n/).filter(Boolean).map((l) => {
     const p = l.slice(3);

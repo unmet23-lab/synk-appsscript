@@ -75,6 +75,33 @@ test('🔴 살아있는 남의 작업본을 유물과 갈라 낸다 (F073 실사
   assert.ok(!위험구간.includes('유물.js'), '유물이 위험 구획에 섞였다 — 갈라 보는 것이 이 도구의 존재 이유다');
 });
 
+test('🔑 중첩 경로에서 맞아떨어진다 — 픽스처가 평평하면 이 자리가 통째로 안 시험된다', { skip: !git있나 && 'git 없음' }, () => {
+  /* 옆 세션(local_dee95eb9)이 자기 변이 검사에서 먼저 밟은 함정을 넘겨받았다:
+   * 시험 파일을 저장소 최상위에 두면 경로에 **구분자가 아예 없어**, 구분자 정규화를 지워도
+   * 통과한다. 라이브 목록은 `crewcard/…`·`tests/…`·`docs/크루카드/…` 처럼 거의 전부 중첩이다.
+   * 🔑 `path.normalize()` 류를 잘못 끼우면 윈도에서 `docs\정본\…` 이 되어 git 의 슬래시 경로와
+   *    영영 안 맞고, 결과는 전부 「❔ 모름」이다 — 있는 것보다 나쁜 상태이면서 조용하다. */
+  const { repo, state } = 픽스처();
+  const 중첩 = 'docs/정본/엔진_시험.js';          // 하위 폴더 2단 + 한글(quotepath 도 같이 걸린다)
+  더럽힌다(repo, 중첩, 'nested\n');
+  세션기록(state, repo, 'local_nest01', [중첩], 1);
+  const out = 돌린다({ repo, state, 나: 'local_me00' });
+  assert.match(out, /🔴/, `중첩 경로를 못 맞췄다 — 라이브 목록은 대부분 중첩이라 이게 어긋나면 전부 「모름」이 된다:\n${out}`);
+  assert.ok(out.includes(중첩), `표시가 슬래시 경로 그대로가 아니다:\n${out}`);
+});
+
+test('이름이 바뀐 파일은 **새 경로**로 판정한다 (git 의 "옛 -> 새" 형식)', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  const g = (...a) => spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', '-c', 'commit.gpgsign=false', ...a],
+    { cwd: repo, encoding: 'utf8' });
+  더럽힌다(repo, 'src/옛이름.js', 'x\n');
+  g('add', '-A'); g('commit', '-qm', 'add');
+  g('mv', 'src/옛이름.js', 'src/새이름.js');       // 스테이징된 rename → "R  옛 -> 새"
+  세션기록(state, repo, 'local_ren01', ['src/새이름.js'], 1);
+  const out = 돌린다({ repo, state, 나: 'local_me00' });
+  assert.match(out, /🔴[\s\S]*새이름\.js/, `rename 을 새 경로로 안 읽었다 — 옛 경로로 대조하면 주인을 영영 못 찾는다:\n${out}`);
+});
+
 test('내 작업본은 위험으로 세지 않는다', { skip: !git있나 && 'git 없음' }, () => {
   const { repo, state } = 픽스처();
   더럽힌다(repo, '내파일.js', 'mine\n');
