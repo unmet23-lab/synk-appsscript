@@ -11,10 +11,25 @@
  *   원장이 확인하고 ID를 채우는 순간 정식 편입된다 — 공개 접수와 로스터 사이의 유일한 안전 지점.
  *
  * 중복 이관 금지: 크루카드번호(ref_serial)를 조인 키로 쓰고, 같은 번호가 이미 있으면 건너뛴다.
+ *
+ * 📌 재제출 정책 [v9.168] — **crew_cards는 제출 1건 = 1행(append-only), 여기는 사람 1명 = 1행.**
+ *   같은 사람이 다시 내도 새 행을 만들지 않는다. 행이 둘이면 원장이 둘 다 「반배정」으로 바꿀 수 있고,
+ *   그 순간 학생ID가 두 번 나가 앱에서 한 사람이 학생 둘이 된다(profiles 키가 학생ID다 ·
+ *   syncProfiles는 중복 id도 행 수를 보존하므로 로스터에 그대로 두 줄이 생긴다).
+ *   덮는 조건은 **사람이 아직 손대지 않았을 때뿐**이다 — 공개 링크 접수가 사람의 결정(반·담당자·
+ *   학생ID)을 덮으면 [v9.167]에서 세운 「사람이 게이트」가 뒤로 뚫린다.
  * ═══════════════════════════════════════════════════════════════════ */
 
 const CONSULT_TAB = '상담데이터입력';
 const CONSULT_HDR_ROW = 2;   // 헤더는 2행, 데이터는 3행부터(기존 규약)
+
+/* 재제출이 덮을 수 있는 상태 = 아직 사람이 안 건드린 접수. 빈 상태도 여기에 넣는다
+ * (증분 전 행·손으로 지운 행 — 어차피 원장 큐에 안 잡히는 행이라 최신 내용이 낫다). */
+const 미착수상태_ = ['신규접수', '검토중', ''];
+
+/* 재제출이 덮지 않는 3열 — 「언제·어디로 들어왔나」와 「사람이 어디까지 진행했나」.
+ * 등록일이 재제출 날짜로 밀리면 접수→상담 리드타임 지표가 통째로 거짓이 된다. */
+const 재제출_불변열_ = ['등록일', '접수출처', '처리상태'];
 
 /* 크루카드에만 있던 항목 중 **관리에 실제로 쓰이는 것**만 증분한다.
  * 이미 상담시트에 있는 항목(K컬처 4종·유학예산·학비조달·가족지지·학습가능시간 등)은 옮기지 않는다
@@ -238,6 +253,35 @@ function 크루카드_상담매핑_(data, lang, serial, 접수시각) {
   return o;
 }
 
+/* 동일인 판정 키 = 이름(공백 제거) + 연락처(숫자만·국가번호 정규화) [v9.168]
+ *   왜 둘 다인가: 연락처만 보면 형제가 가족 번호를 같이 적었을 때 두 사람이 한 행으로 합쳐지고,
+ *     이름만 보면 동명이인이 합쳐진다. 둘 다 크루카드 필수 문항이라 항상 값이 있다.
+ *   왜 이메일이 아닌가: 크루카드에서 선택 문항이라 빈칸이 정상이고, 빈 키는 전부 서로 같아진다.
+ *   ⚠ 오타로 이름·번호가 달라지면 못 잡는다 — **놓치는 쪽으로만 틀리게** 만든 것이다.
+ *     못 잡으면 행이 하나 더 생겨 원장 눈에 보이지만, 잘못 합치면 남의 상담 기록을 덮는다. */
+function 동일인키_(이름, 연락처) {
+  const n = String(이름 == null ? '' : 이름).replace(/\s+/g, '');
+  let p = String(연락처 == null ? '' : 연락처).replace(/\D/g, '').replace(/^0{2}/, '');
+  if (p.length > 8 && p.indexOf('976') === 0) p = p.slice(3);   // +976 99112233 = 99112233
+  return (n && p) ? n + '|' + p : '';
+}
+
+/* 같은 사람의 기존 행 번호(없으면 0). 이름·연락처 두 열만 읽는다(전 폭 읽기는 102열 × 수백 행). */
+function 상담_동일인행_(sh, h, 이름, 연락처) {
+  const key = 동일인키_(이름, 연락처);
+  const c이름 = h.map['이름(한국어)'], c연락 = h.map['연락처'];
+  if (!key || c이름 === undefined || c연락 === undefined) return 0;
+  const last = sh.getLastRow();
+  if (last < CONSULT_HDR_ROW + 1) return 0;
+  const n = last - CONSULT_HDR_ROW;
+  const 이름들 = sh.getRange(CONSULT_HDR_ROW + 1, c이름 + 1, n, 1).getValues();
+  const 연락들 = sh.getRange(CONSULT_HDR_ROW + 1, c연락 + 1, n, 1).getValues();
+  for (let i = 0; i < n; i++) {
+    if (동일인키_(이름들[i][0], 연락들[i][0]) === key) return CONSULT_HDR_ROW + 1 + i;
+  }
+  return 0;
+}
+
 /* 상담데이터입력에 1행 append. 실패해도 crew_cards 적재는 이미 끝났으므로 doPost 전체를 죽이지 않는다. */
 function 상담시트_이관_(data, lang, serial) {
   const ss = SpreadsheetApp.openById(CONSULT_SHEET_ID);
@@ -261,6 +305,40 @@ function 상담시트_이관_(data, lang, serial) {
   const 접수시각 = Utilities.formatDate(new Date(), TZ_, 'yyyy-MM-dd');
   const o = 크루카드_상담매핑_(data, lang, serial, 접수시각);
 
+  /* ── 재제출: 같은 사람의 행이 이미 있으면 새 행을 만들지 않는다 [v9.168] ── */
+  const 기존행 = 상담_동일인행_(sh, h, o['이름(한국어)'], o['연락처']);
+  if (기존행) {
+    const c번호 = h.map['크루카드번호'], c상태 = h.map['처리상태'];
+    const 현재 = sh.getRange(기존행, 1, 1, h.width).getValues()[0];
+    const 상태 = c상태 === undefined ? '' : String(현재[c상태] || '').trim();
+    const 이전번호 = c번호 === undefined ? '' : String(현재[c번호] || '').trim();
+    /* 번호는 덮지 않고 **이어 쓴다** — 이 행이 crew_cards의 어느 원본들에서 왔는지가 유일한 추적 실이다.
+     * 최신이 맨 앞(원장이 대조할 때 먼저 볼 것) · 같은 번호 재기록은 중복시키지 않는다. */
+    const 번호이력 = (이전번호 && 이전번호.indexOf(serial) !== 0)
+      ? serial + ' ← ' + 이전번호 : (이전번호 || serial);
+
+    if (미착수상태_.indexOf(상태) !== -1) {
+      /* 아직 아무도 안 건드린 접수 = 최신 제출이 정본이다(재제출의 8할은 오타 수정이다).
+       * ⚠ **빈 값으로는 덮지 않는다** — 부분 재제출이 이미 받아둔 답을 지우면 재제출이 손해가 된다. */
+      const row = 현재.slice();
+      Object.keys(o).forEach(function (name) {
+        const i = h.map[name];
+        if (i === undefined || 재제출_불변열_.indexOf(name) !== -1) return;
+        const v = String(o[name] == null ? '' : o[name]);
+        if (!v) return;
+        row[i] = 셀안전_(v.slice(0, MAX_CELL));
+      });
+      if (c번호 !== undefined) row[c번호] = 번호이력;
+      sh.getRange(기존행, 1, 1, h.width).setValues([row]);
+      return { ok: true, row: 기존행, merge: 'update' };
+    }
+    /* 사람이 이미 손댄 행(상담완료·반배정·앱편입·보류·취소) — **한 칸도 덮지 않는다.**
+     * 반·담당자·학생ID가 거기 있고, 학생ID가 붙은 뒤의 이 행은 곧 앱 로스터다.
+     * 재제출이 있었다는 사실만 크루카드번호 칸에 남기고, 반영 여부는 원장이 crew_cards 원본을 보고 정한다. */
+    if (c번호 !== undefined) sh.getRange(기존행, c번호 + 1).setValue(번호이력);
+    return { ok: true, row: 기존행, merge: 'locked' };
+  }
+
   const row = new Array(h.width).fill('');
   Object.keys(o).forEach(function (name) {
     const i = h.map[name];
@@ -270,7 +348,7 @@ function 상담시트_이관_(data, lang, serial) {
   // 첫 빈 행을 찾아 쓴다 — 상담시트는 서식만 잡힌 빈 행이 아래에 길게 깔려 있어 appendRow가 그 끝으로 튄다
   const 기입행 = 상담_첫빈행_(sh, h.map['이름(한국어)'] + 1);
   sh.getRange(기입행, 1, 1, h.width).setValues([row]);
-  return { ok: true, row: 기입행 };
+  return { ok: true, row: 기입행, merge: 'new' };
 }
 
 /* 이름 열 기준 첫 빈 행. 서식만 있는 빈 행 때문에 getLastRow()가 부풀어 있어 그대로 쓰면 수백 행 아래에 꽂힌다. */
