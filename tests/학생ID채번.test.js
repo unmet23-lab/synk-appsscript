@@ -41,11 +41,35 @@ test('채번 통로가 하나다 — SYNK 번호를 조립하는 곳은 학생ID
   const 조립 = [...코드만(폼리포트).matchAll(/'SYNK-'\s*\+/g)].length;
   assert.equal(조립, 1, `'SYNK-' + … 조립이 ${조립}곳 — 학생ID_포맷_ 하나만 남아야 한다`);
 
-  // 옛 통로(인라인 스캔) 금지 — importFormResponses는 정본 함수를 부른다
+  // 옛 통로(인라인 스캔) 금지
   const imp = section(폼리포트, 'function importFormResponses()', 'function setupStore()');
-  assert.ok(imp.includes('학생ID_최대번호_(consult)'), 'importFormResponses가 채번 정본을 안 쓴다');
-  assert.ok(imp.includes('학생ID_포맷_(maxSynk)'), 'importFormResponses가 포맷 정본을 안 쓴다');
   assert.ok(!/match\(\/\^SYNK-/.test(imp), 'importFormResponses에 인라인 SYNK 스캔이 되살아났다');
+});
+
+test('구글폼 접수도 게이트를 지난다 — 제출만으로는 학생ID가 안 붙는다 [v9.167]', () => {
+  // 실측 08-04: app_state '상담폼ID'가 살아 있고 폼은 「게시됨」 — 이 경로는 지금도 10분마다 돈다.
+  // 같은 시트에 정책이 둘이면(폼=즉시 발급 / 크루카드=사람 게이트) **느슨한 쪽이 실질 정책**이 된다.
+  const imp = 코드만(section(폼리포트, 'function importFormResponses()', 'function setupStore()'));
+
+  assert.ok(!/학생ID_포맷_\(/.test(imp),
+    'importFormResponses가 다시 학생ID를 조립한다 — 폼 제출 = 앱 로스터가 된다');
+  assert.ok(!/학생ID_열_/.test(imp),
+    'importFormResponses가 학생ID 열에 쓴다 — 발급 통로는 학생ID_발급_ 하나여야 한다');
+
+  // 대신 같은 큐에 넣는다 — 처리상태가 비면 원장 화면에서 보이지 않아 조용히 유실된다
+  assert.ok(imp.includes("'신규접수'") && imp.includes("'구글폼'"),
+    '폼 접수 행이 처리상태/접수출처를 안 채운다 — 발급 큐에서 보이지 않는다');
+});
+
+test('cleanupFormTest는 실학생·크루카드 접수를 지우지 않는다 [v9.167]', () => {
+  // 이 함수의 구 전제는 「상담시트 = 테스트판」이었다. 지금은 실접수와 발급된 학생이 같이 산다.
+  // 편집기 함수 드롭다운은 합성 클릭에 미끄러지는 것으로 실측됐고(08-04), 오실행 1회 = 되돌릴 수 없는 소실.
+  const cln = 코드만(section(폼리포트, 'function cleanupFormTest()', 'function setupTables()'));
+  assert.ok(/학생ID_열_ - 1/.test(cln), '학생ID 보유 행(실학생) 보호가 없다 — 오실행 1회로 로스터가 지워진다');
+  assert.ok(cln.includes("idx['접수출처']") && cln.includes("!== '구글폼'"),
+    '크루카드 접수 행 보호가 없다 — 발급 대기 중인 실접수가 지워진다');
+  assert.ok(!/if \(r\[0\]\) \{ consult\.getRange\(8 \+ i/.test(cln),
+    '옛 무조건 삭제(A열에 값만 있으면 지운다)가 되살아났다');
 });
 
 test('발급 게이트 — 상태·기존ID·이름을 모두 확인하고, 공개 접수는 스스로 ID를 못 만든다', () => {
