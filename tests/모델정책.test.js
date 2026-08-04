@@ -50,6 +50,19 @@ test('🔑 모르는 픽은 기본값으로 접지 않고 **거절**한다 — �
   }
 });
 
+test('🔑 버전이 틀린 표기도 거절한다 — "5.5 luna" 를 luna 로 접으면 「5.5를 돌렸다」고 믿게 된다 (이종 검수 지적 655cc9ad)', () => {
+  for (const 나쁨 of ['5.5 luna max', '5.5 sol', 'gpt-5.7-sol', '4 sol']) {
+    assert.throws(() => 정책.검수선택(나쁨), /버전/, `"${나쁨}" 가 거절되지 않았다`);
+  }
+  assert.strictEqual(정책.검수선택('5.6 luna max').model, 'gpt-5.6-luna', '맞는 버전 표기가 막혔다');
+});
+
+test('🔑 폐지된 --모델 과 값 없는 --검수 는 조용히 무시되지 않는다 (이종 검수 지적 b3140c6c)', () => {
+  assert.throws(() => 정책.분석설정(['--모델', 'gpt-5.6-terra']), /폐지/);
+  assert.throws(() => 정책.분석설정(['--검수']), /픽이 없다/);
+  assert.throws(() => 정책.분석설정(['--검수', '--효력', 'high']), /픽이 없다/);
+});
+
 test('검수선택은 **사본**을 준다 — --효력 1회성 조정이 다음 호출의 기본값을 오염시키면 안 된다', () => {
   const a = 정책.검수선택('sol');
   a.effort = 'low';
@@ -123,11 +136,48 @@ test('코덱스효력 표가 벤더 실물(models_cache.json)과 같다 — 손�
 
 // ───────────────────────────────── 제미나이 — 최상 픽 잠금
 
-test('🔑 제미나이 최상 = gemini-3.1-pro-preview / thinking_level=high — 유호 지시(2026-08-05) "최고 수준" 잠금', () => {
+test('🔑 제미나이 기본 = flash/high — 유호 확정(2026-08-05 "flash high로 세팅해줘") 잠금', () => {
+  assert.strictEqual(정책.제미나이.기본, '무료최상');
+  const p = 정책.제미나이설정();
+  assert.strictEqual(p.model, 'gemini-3.6-flash', '플래시 최신 실측(2026-08-05 라이브 목록)과 다르다');
+  assert.strictEqual(p.thinking_level, 'high');
+});
+
+test('🔑 몽골어대조(첫 라이브 호출자)가 정책 픽을 실제로 소비한다 — 정책이 죽은 장치면 P1 재발 (지적 944e2a1c)', () => {
+  const 대조 = require(path.join(ROOT, 'tools', '몽골어대조.js'));
+  assert.ok(대조, '몽골어대조 require 실패');
+  const src = require('node:fs').readFileSync(path.join(ROOT, 'tools', '몽골어대조.js'), 'utf8');
+  assert.match(src, /제미나이설정\(\)/, '몽골어대조가 정책 픽을 안 읽는다');
+  assert.doesNotMatch(src, /기본모델 = 'gemini-/, '모델이 다시 하드코딩됐다');
+  assert.match(src, /thinkingLevel/, '사고 수준이 요청에 안 실린다');
+});
+
+test('제미나이 키는 파일에서만 읽고, 모르는 토큰 여럿이면 null (조용한 401 방지 · 지적 a7be9e8a)', () => {
+  const fs = require('node:fs');
+  const os = require('node:os');
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-gk-'));
+  const 이전 = process.env.GEMINI_KEY_PATH;
+  try {
+    const f = path.join(d, 'k.txt');
+    fs.writeFileSync(f, '﻿설명 텍스트\nAQ.abc123\n');
+    process.env.GEMINI_KEY_PATH = f;
+    assert.strictEqual(정책.제미나이키(), 'AQ.abc123', '아는 접두어(AQ.)를 못 골랐다');
+    fs.writeFileSync(f, 'tok1 tok2\n');
+    assert.strictEqual(정책.제미나이키(), null, '모르는 토큰 여럿인데 아무거나 집었다');
+    fs.writeFileSync(f, '단일토큰\n');
+    assert.strictEqual(정책.제미나이키(), '단일토큰');
+    process.env.GEMINI_KEY_PATH = path.join(d, '없는파일.txt');
+    assert.strictEqual(정책.제미나이키(), null, '없는 파일인데 null 이 아니다');
+  } finally {
+    if (이전 === undefined) delete process.env.GEMINI_KEY_PATH;
+    else process.env.GEMINI_KEY_PATH = 이전;
+  }
+});
+
+test('최상(3.1-pro/high) 픽은 이름만 남아 있다 — 결제를 켜는 날 기본만 바꾸면 되게', () => {
   const p = 정책.제미나이설정('최상');
   assert.strictEqual(p.model, 'gemini-3.1-pro-preview');
   assert.strictEqual(p.thinking_level, 'high');
-  assert.strictEqual(정책.제미나이.기본, '최상');
 });
 
 test('🔑 폴백허용=false — 무료 키로 최상을 못 부르면 **말하고 멈춘다**(조용히 flash 로 내려가면 「최고로 세팅했다」가 거짓이 된다)', () => {
@@ -136,8 +186,6 @@ test('🔑 폴백허용=false — 무료 키로 최상을 못 부르면 **말하
 
 test('무료최상 픽이 이름 붙어 있고, 결제 필요 여부가 표에 박혀 있다 — 등급 착오는 코드가 먼저 안다', () => {
   const p = 정책.제미나이설정('무료최상');
-  assert.strictEqual(p.model, 'gemini-3-flash-preview');
-  assert.strictEqual(p.thinking_level, 'high');
   assert.strictEqual(p.무료등급, true);
   assert.strictEqual(정책.제미나이설정('최상').무료등급, false, '3.1 Pro 는 API 무료 등급이 없다(공식 FAQ) — 이게 true 로 바뀌면 누가 실측 없이 고친 것');
 });

@@ -75,7 +75,9 @@ const 검수기본 = 'sol';
 
 /* 사람이 쓰는 표기를 받아준다 — `sol` · `luna` · `5.6 sol max` · `gpt-5.6-sol` 전부 같은 것을 뜻한다.
  * 다만 **모르는 이름은 기본값으로 접지 않고 거절한다**: 오타를 조용히 sol 로 읽으면
- * 「luna 로 돌렸다」고 믿는 상태가 만들어지고, 그건 이 파일이 막으려는 바로 그 병이다. */
+ * 「luna 로 돌렸다」고 믿는 상태가 만들어지고, 그건 이 파일이 막으려는 바로 그 병이다.
+ * 버전 숫자도 같은 무게로 본다 — `5.5 luna` 를 luna 로 접으면 「5.5를 돌렸다」고 믿게 된다
+ * (2026-08-05 이종 검수 P2 지적: 비문자를 다 지우는 정규화가 오타 거절을 무력화하고 있었다). */
 function 검수선택(이름) {
   const 원 = String(이름 == null || 이름 === '' ? 검수기본 : 이름);
   const n = 원.toLowerCase().replace(/[^a-z]/g, '').replace(/^gpt/, '').replace(/max$/, '');
@@ -86,7 +88,14 @@ function 검수선택(이름) {
       `(terra 는 2026-08-05 유호님 판정으로 뺐다)`
     );
   }
-  return { ...검수선택지[키], 이름: 키 };
+  const 픽 = { ...검수선택지[키], 이름: 키 };
+  // 표기에 버전 숫자가 있으면 고른 모델의 실제 버전과 맞아야 한다 — 다르면 접지 않고 거절.
+  for (const v of String(원).match(/\d+(?:\.\d+)*/g) || []) {
+    if (!픽.model.includes(v)) {
+      throw 확인불가(`"${원}" 의 버전 ${v} 는 ${픽.model} 과 다르다 — 그 버전은 선택지에 없다`);
+    }
+  }
+  return 픽;
 }
 
 /* 1단계 = 분석(적대 검수). 되돌림 비용이 큰 자리라 최상급 + 최고 효력.
@@ -94,7 +103,16 @@ function 검수선택(이름) {
  *   급하면 `--효력 high`, 그날만 더 깊게는 `--효력 ultra`(sol 만 받는다 · luna 는 max 가 천장). */
 function 분석설정(argv) {
   const a = Array.isArray(argv) ? argv : [];
-  const 픽 = a.includes('--검수') ? a[a.indexOf('--검수') + 1] : process.env.SYNK_REVIEW_PICK;
+  // 옛 `--모델` 은 조용히 무시하지 않는다 — 무시하면 그 호출자는 딴 모델로 돌면서 제 모델이라 믿는다.
+  if (a.includes('--모델')) {
+    throw 확인불가('`--모델` 은 폐지됐다 — `--검수 sol|luna` 를 쓴다 (선택지는 tools/모델정책.js)');
+  }
+  let 픽 = process.env.SYNK_REVIEW_PICK;
+  if (a.includes('--검수')) {
+    픽 = a[a.indexOf('--검수') + 1];
+    // 값이 없거나 다음 플래그를 집으면 기본값으로 접지 않는다 — 「luna 를 골랐다」는 착각을 만든다.
+    if (!픽 || /^--/.test(픽)) throw 확인불가('`--검수` 뒤에 픽이 없다 — `--검수 sol` 또는 `--검수 luna`');
+  }
   const 설정 = 검수선택(픽);
   if (a.includes('--효력')) 설정.effort = String(a[a.indexOf('--효력') + 1] || '');
   return 설정;
@@ -143,23 +161,42 @@ function 코덱스플래그(설정) {
  *   없다.** 무료 등급이 있는 건 `gemini-3-flash-preview` 다. 그리고 유호님의 **Google AI Pro 구독은
  *   API 결제가 아니다**(그건 gemini.google.com·AI Studio 쪽 소비자 구독) — 섞이기 쉬운 자리라 적어둔다.
  *
- * 그래서 픽을 **둘 다 이름 붙여** 두고 `폴백허용 = false` 로 둔다. 무료 키로 최상을 부르면
- *   **말하고 멈춘다.** 조용히 flash 로 내려가면 「최고로 세팅했다」고 믿으면서 아닌 상태가 된다. */
+ * 그래서 픽을 **둘 다 이름 붙여** 두고 `폴백허용 = false` 로 둔다 — 못 부르면 **말하고 멈춘다.**
+ *   조용히 다른 모델로 갈아타면 「이걸로 세팅했다」가 거짓이 된다.
+ *
+ * ✅ **기본 = 무료최상(flash/high) — 유호님 확정(2026-08-05 "제미나이는 flash high로 세팅해줘").**
+ *   플래시의 최신은 문서가 아니라 **라이브 목록 실측**으로 정했다(2026-08-05 · 실키 조회 58종 중
+ *   플래시 최신 = `gemini-3.6-flash` · 몽골어대조.js 의 「2.5는 404」 실측과 합치).
+ *   3.1-pro 픽은 이름만 남겨둔다 — 결제를 켜는 날 기본을 「최상」으로 바꾸면 끝이게. */
 const 제미나이사고 = {
-  'gemini-3.1-pro-preview': ['low', 'medium', 'high'],
-  'gemini-3-flash-preview': ['minimal', 'low', 'medium', 'high'],
+  'gemini-3.1-pro-preview': ['low', 'medium', 'high'],   // 공식 문서(미실측 — 무료 키로는 못 부른다)
+  // high 만 실측했다(2026-08-05 프로브 · thoughtsTokenCount 126 로 사고 실사용 확인).
+  // 다른 수준은 안 재서 안 적는다 — 쓰려면 프로브부터(--제미나이확인).
+  'gemini-3.6-flash': ['high'],
 };
 
 const 제미나이 = {
   최상: { model: 'gemini-3.1-pro-preview', thinking_level: 'high', 무료등급: false },
-  무료최상: { model: 'gemini-3-flash-preview', thinking_level: 'high', 무료등급: true },
-  기본: '최상',
+  무료최상: { model: 'gemini-3.6-flash', thinking_level: 'high', 무료등급: true },
+  기본: '무료최상',
   폴백허용: false,
 };
 
-/* 요청 **전송 모양은 여기서 정하지 않는다** — 신규 `interactions`(generation_config.thinking_level)와
- * 구 `generateContent`(config.thinking_config.thinking_level)로 표면이 둘이고, 아직 부르는 쪽이 없다.
- * 여기는 「무엇을·얼마나 깊게」만 정하고 「어떻게 싣는가」는 부르는 쪽이 진다. */
+/* 키는 파일에서만 읽는다 — `$env:GEMINI_API_KEY="<키>"` 식 안내는 리터럴 키를 PSReadLine
+ * 기록·트랜스크립트에 남긴다(2026-08-05 이종 검수 P2 지적로 고침). 경로·추출 규칙은
+ * 몽골어대조.js 가 먼저 실측으로 깔았다(AQ. 형식 실재) — 여기가 정본이 되고 그쪽이 소비한다. */
+const 제미나이키경로 = () => process.env.GEMINI_KEY_PATH || 'C:/Users/q1212/SYNK_보안/제미나이.txt';
+function 제미나이키() {
+  const p = 제미나이키경로();
+  if (!fs.existsSync(p)) return null;
+  const tokens = String(fs.readFileSync(p, 'utf8')).replace(/^\uFEFF/, '').trim().split(/\s+/).filter(Boolean);
+  const known = tokens.find((t) => /^(AIza|AQ\.|sk-)/.test(t));
+  if (known) return known;
+  return tokens.length === 1 ? tokens[0] : null; // 모르는 토큰 여럿 = 아무거나 집어 조용히 401 내느니 null
+}
+
+/* 전송 모양: 부르는 쪽(몽골어대조.js · 향후 라이브시트 층)은 `generateContent` 에
+ * `generationConfig.thinkingConfig.thinkingLevel` 로 싣는다(2026-08-05 실측 통과 형태). */
 function 제미나이설정(이름) {
   const 키 = 이름 == null || 이름 === '' ? 제미나이.기본 : String(이름);
   const p = 제미나이[키];
@@ -200,10 +237,10 @@ function 코덱스캐시() {
 }
 
 async function 제미나이확인() {
-  const key = process.env.GEMINI_API_KEY;
+  const key = 제미나이키();
   if (!key) {
-    console.error('🔴 GEMINI_API_KEY 가 없다 — 조회를 **안 돌린 것**이지 「모델이 없다」가 아니다.');
-    console.error('   PowerShell 한 줄: $env:GEMINI_API_KEY="<AI Studio 키>"; node tools/모델정책.js --제미나이확인');
+    console.error(`🔴 키를 못 읽었다(${제미나이키경로()}) — 조회를 **안 돌린 것**이지 「모델이 없다」가 아니다.`);
+    console.error('   키는 파일로만 다룬다(셸에 리터럴로 치면 기록에 남는다) — 경로 변경은 env GEMINI_KEY_PATH.');
     return 2;
   }
   const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', {
@@ -221,6 +258,30 @@ async function 제미나이확인() {
     if (!ok) 최악 = 1;
     console.log(`${ok ? '✅' : '🔴'} ${키}: ${p.model} / thinking_level=${p.thinking_level}` +
       (ok ? '' : ' — 이 키로는 안 보인다(모델 ID 가 낡았거나 등급 밖)'));
+  }
+  // 기본 픽은 존재만이 아니라 **사고 수준까지** 산다 — 목록에 있어도 파라미터가 거절되면 못 쓴다.
+  const 기본 = 제미나이설정();
+  try {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${기본.model}:generateContent`, {
+      method: 'POST',
+      headers: { 'x-goog-api-key': key, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: '1+1=? 숫자만.' }] }],
+        generationConfig: { thinkingConfig: { thinkingLevel: 기본.thinking_level } },
+      }),
+      signal: AbortSignal.timeout(60000),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      최악 = 1;
+      console.log(`🔴 프로브 실패: ${기본.model}/${기본.thinking_level} → ${r.status} ${String((j.error && j.error.message) || '').slice(0, 160)}`);
+    } else {
+      const 사고 = j.usageMetadata && j.usageMetadata.thoughtsTokenCount;
+      console.log(`✅ 프로브: ${기본.model}/${기본.thinking_level} 응답 OK · 사고 토큰 ${사고 == null ? '(미보고)' : 사고}`);
+    }
+  } catch (e) {
+    console.error('🔴 프로브 자체가 못 돌았다(네트워크/타임아웃): ' + e.message);
+    return 2;
   }
   if (최악) console.log('\n표가 낡았으면 tools/모델정책.js 의 제미나이 픽을 고친다 — 조용히 다른 모델로 돌지 않는다.');
   return 최악;
@@ -258,7 +319,7 @@ function 출력() {
 
 module.exports = {
   효력들, 코덱스효력, 검수선택지, 검수기본, 검수선택, 분석설정, 구조화설정, 코덱스플래그, 코덱스캐시,
-  제미나이, 제미나이사고, 제미나이설정,
+  제미나이, 제미나이사고, 제미나이설정, 제미나이키, 제미나이키경로,
 };
 
 if (require.main === module) {

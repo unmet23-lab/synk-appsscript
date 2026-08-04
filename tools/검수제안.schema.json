@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["요약", "기능지도", "제안"],
+  "properties": {
+    "요약": { "type": "string", "description": "이 변경의 설계 의도를 검수자가 파악한 대로 2~3문장" },
+    "기능지도": {
+      "type": "array",
+      "description": "이 변경이 새로 만들거나 바꾸는 기능 전부 — 최종 검수가 이 지도로 전수 체크한다",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["기능", "설명"],
+        "properties": {
+          "기능": { "type": "string" },
+          "설명": { "type": "string" }
+        }
+      }
+    },
+    "제안": {
+      "type": "array",
+      "description": "기능 업그레이드 제안 — 실제로 값어치 있는 것만. 없으면 빈 배열",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["제목", "무엇을", "왜", "구현방향", "크기", "관련기능"],
+        "properties": {
+          "제목": { "type": "string" },
+          "무엇을": { "type": "string", "description": "무엇을 바꾸자는 것인지 구체적으로" },
+          "왜": { "type": "string", "description": "어떤 실질 가치가 생기는지" },
+          "구현방향": { "type": "string", "description": "어떻게 구현하면 되는지 방향" },
+          "크기": { "type": "string", "enum": ["소", "중", "대"], "description": "소=1시간 내 · 중=반나절 · 대=하루+ 또는 방향 전환" },
+          "관련기능": { "type": "string", "description": "기능지도의 어느 기능에 대한 제안인지" }
+        }
+      }
+    }
+  }
+}

@@ -23,14 +23,17 @@
  *   안 그러면 같은 지적이 매번 오고 내가 매번 다시 판단한다 — 그럼 검수는 상시 세금이 되지
  *   감가하는 비용이 안 된다.
  *
- * 사용:
- *   node tools/codex-review.js                    # 미커밋이 있으면 그것, 없으면 HEAD 커밋
- *   node tools/codex-review.js --commit <sha>
- *   node tools/codex-review.js --base master
- *   node tools/codex-review.js --uncommitted
- *   node tools/codex-review.js --검수 luna        # 픽 전환(기본 sol · 선택지·근거 = tools/모델정책.js)
- *   node tools/codex-review.js --기각 <키> --사유 "왜 기각했는지"
- *   node tools/codex-review.js --확인             # 게이트용 조회(검수 안 돌림·부작용 0)
+ * 사용 (유호님 설계 3단 파이프라인 · 2026-08-05):
+ *   ① node tools/codex-review.js --제안           # 설계 선파악 — 기능지도 + 업그레이드 제안(sol/max)
+ *   ② node tools/codex-review.js --제안판정 <키> --채택 [--사유 ".."]   # 클로드가 제안을 판정
+ *      node tools/codex-review.js --제안판정 <키> --기각 --사유 "왜"    # 기각은 다음 회차에 안 올라온다
+ *   ③ node tools/codex-review.js                  # 최종 검수 = 버그 사냥 + 기능 전수 체크
+ *
+ *   대상 지정: (기본) 미커밋 있으면 그것, 없으면 HEAD / --commit <sha> / --base <브랜치> / --uncommitted
+ *   픽 전환:   --검수 luna   (기본 sol · 선택지·근거 = tools/모델정책.js)
+ *   빠르게:    --버그만      (기능 전수 체크 생략 — 유호님 「빠르게」 모드)
+ *   지적 기각: --기각 <키> --사유 "왜 기각했는지"
+ *   게이트 조회: --확인      (검수 안 돌림·부작용 0)
  */
 'use strict';
 const { execFileSync } = require('child_process');
@@ -49,7 +52,10 @@ const 프로젝트 = require(path.join(ROOT, '.claude', 'hooks', 'lib', 'clasp-p
  * 그쪽이 이미 **의식적인** 정식 레버다. */
 const 기록경로 = process.env.SYNK_REVIEW_LEDGER || path.join(ROOT, 'docs', '_ops', '검수기록.jsonl');
 const 기각경로 = process.env.SYNK_REVIEW_REJECTS || path.join(ROOT, 'docs', '_ops', '검수기각.jsonl');
+const 제안경로 = process.env.SYNK_REVIEW_PROPOSALS || path.join(ROOT, 'docs', '_ops', '검수제안.jsonl');
 const 스키마경로 = path.join(__dirname, 'codex-review.schema.json');
+const 제안스키마경로 = path.join(__dirname, '검수제안.schema.json');
+const 기능체크스키마경로 = path.join(__dirname, '기능체크.schema.json');
 
 /* 차단급 — P0(라이브 데이터 손상·보안) · P1(배포 전 반드시). P2/P3 는 알리되 막지 않는다.
  * 등급을 넓히면 사람이 우회를 배운다(v6.11) — 막는 것은 정말 막아야 하는 것만. */
@@ -161,6 +167,137 @@ function 범위(파일들) {
     if (파일들.some((f) => 프로젝트.isDeployFile(f, p, ROOT))) out.push(이름);
   }
   return out;
+}
+
+// ─────────────────────────────────────────────────────────────── 업그레이드 제안 층 (2026-08-05 유호님 설계)
+
+/* 유호님이 정한 검수 파이프라인의 1단이다:
+ *   ① 검수자(sol/max)가 변경의 **설계·기능을 선파악**해 기능지도 + 업그레이드 제안을 낸다 (--제안)
+ *   ② 클로드가 제안마다 채택/기각을 **판정**하고 장부에 남긴다 (--제안판정)
+ *   ③ 채택이면 구현 후, 기각이면 원래 방향 그대로 → 최종 검수(버그 + 기능 전수 체크)로 간다
+ *
+ * ■ 제안은 **절대 배포를 막지 않는다.** 차단으로 만들면 codex 없는 폰 클라우드 경로가 통째로
+ *   죽는다 — 「따를 수 없는 처방」의 재생산이다(F103). 제안 없음·제안 미판정은 게이트와 무관하다.
+ * ■ 기각된 제안은 다음 제안 프롬프트에 「다시 내지 마라」로 실린다 — 지적 기각 이력과 같은 축
+ *   (재제안 방지). 지적과 달리 이건 codex 쪽에서도 걸러진다: 제안 단계는 `exec`(커스텀 프롬프트
+ *   가능)라 기각 이력을 **먹일 수 있다.** review 단계가 못 먹이는 것과 갈리는 지점(위 막다른 길). */
+
+const 제안키 = (p) => {
+  const norm = String(p.제목 || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  // 지적 키와 네임스페이스를 가른다('제안\0') — 같은 문구라도 지적 기각이 제안을 못 지우게.
+  return crypto.createHash('sha256').update('제안\0' + norm).digest('hex').slice(0, 12);
+};
+
+/* 장부(제안됨→채택/기각 판정 누적)를 키별 최신 상태로 접는다.
+ * 판정은 키에 대해 **영구**다 — 같은 제안이 다시 올라와도(재제안 행) 앞선 채택/기각을 지우지 않는다.
+ * 지우면 기각의 뜻(다시 보지 않는다)이 사라진다. */
+function 제안현황(경로) {
+  const 상태 = new Map();
+  for (const r of jsonl(경로 || 제안경로)) {
+    if (!r.키) continue;
+    if (r.종류 === '제안') {
+      const 이전 = 상태.get(r.키);
+      상태.set(r.키, { ...r, 상태: 이전 && 이전.상태 !== '제안됨' ? 이전.상태 : '제안됨', 사유: 이전 ? 이전.사유 : undefined });
+    } else if (r.종류 === '판정' && 상태.has(r.키)) {
+      상태.set(r.키, { ...상태.get(r.키), 상태: r.상태, 사유: r.사유 });
+    }
+  }
+  return 상태;
+}
+
+/* 대상 diff 를 프롬프트에 **인라인**한다 — 에이전트가 스스로 git 을 돌리게 두면 무엇을 읽었는지
+ * 확정할 수 없다. 너무 크면 통계+파일 목록으로 접고 「직접 읽어라」로 넘긴다(읽기 전용이라 안전). */
+const 디프상한 = 180000;
+function 디프수집(대상) {
+  let d = '';
+  if (대상.종류 === 'commit') d = git(['-c', 'core.quotepath=false', 'show', 대상.값]);
+  else if (대상.종류 === 'base') d = git(['-c', 'core.quotepath=false', 'diff', 대상.값 + '...HEAD']);
+  else {
+    d = git(['-c', 'core.quotepath=false', 'diff', 'HEAD']);
+    // 미추적 파일은 diff 에 안 나온다 — 전문을 붙인다(새 파일이 제안 대상의 핵심인 경우가 많다)
+    const 미추적 = git(['-c', 'core.quotepath=false', 'ls-files', '--others', '--exclude-standard']).split('\n').filter(Boolean);
+    for (const f of 미추적) {
+      try {
+        const 본문 = fs.readFileSync(path.join(ROOT, f), 'utf8');
+        d += `\n--- 미추적 새 파일: ${f} ---\n${본문.length > 40000 ? 본문.slice(0, 40000) + '\n…(잘림)' : 본문}`;
+      } catch (_) { d += `\n--- 미추적 새 파일: ${f} (읽기 실패 — 직접 읽어라) ---`; }
+    }
+  }
+  if (d.length > 디프상한) {
+    return `(diff 가 ${d.length.toLocaleString()}자로 상한을 넘어 접었다 — 아래 파일들을 저장소에서 직접 읽어라)\n파일 목록:\n` +
+      대상.파일들.map((f) => '  - ' + f).join('\n');
+  }
+  return d;
+}
+
+/* 앱의 방향 정본 — 유호님 확정 4개년 로드맵(2026-08-05 "gpt에도 내 계획을 알아야 할 것 같아").
+ * 검수자가 방향을 모르면 업그레이드 제안이 아무 데나 향한다 — 그래서 선파악·기능체크 프롬프트에
+ * 매번 실린다. 파일이 없으면 **없다고 크게 말한다**(조용히 방향 없이 돌면 그게 미탐이다). */
+const 방향경로 = path.join(ROOT, 'docs', '제품방향.md');
+const 방향상한 = 6000;
+function 방향텍스트() {
+  try {
+    const t = fs.readFileSync(방향경로, 'utf8').trim();
+    return t.length > 방향상한 ? t.slice(0, 방향상한) + '\n…(상한 초과로 잘림 — docs/제품방향.md 를 압축하라)' : t;
+  } catch (_) {
+    console.error('⚠ docs/제품방향.md 가 없다 — 검수자가 앱의 방향을 모른 채 제안한다(만들어라).');
+    return '';
+  }
+}
+const 방향블록 = (방향) => (방향 ? `\n앱의 방향 (유호님 확정 — 제안과 판정은 이 방향에 복무해야 하고, 어긋나는 제안은 내지 마라):\n${방향}\n` : '');
+
+function 제안프롬프트(diff텍스트, 기각제목들, 방향) {
+  return `당신은 SYNK 저장소의 이종 검수자다. 지금은 **설계 선파악 단계**다 — 버그를 찾지 마라(그건 다음 단계다).
+아래 변경의 설계와 기능을 정밀히 파악한 뒤 두 가지를 내라:
+
+1) 기능지도 — 이 변경이 새로 만들거나 바꾸는 기능 **전부**. 빠뜨리지 마라 — 최종 검수가 이 지도로 전수 체크한다.
+2) 업그레이드 제안 — 이 변경을 기능적으로 한 단계 올릴 **구체적** 제안. 실제로 값어치 있는 것만 —
+   억지 제안·장식을 위한 장식 금지. 진짜 없으면 빈 배열이 옳은 답이다.
+   각 제안의 크기: 소=1시간 내 · 중=반나절 · 대=하루 이상 또는 방향 전환.
+${방향블록(방향)}
+${기각제목들.length ? `이미 기각된 제안 — **같은 것을 다시 내지 마라**:\n${기각제목들.map((t) => '  · ' + t).join('\n')}\n` : ''}
+--- 변경 내용 ---
+${diff텍스트}`;
+}
+
+function 기능체크프롬프트(diff텍스트, 채택제안들, 방향) {
+  return `당신은 SYNK 저장소의 이종 검수자다. 지금은 **기능 전수 체크 단계**다 — 방금 구현이 끝난 변경이다.
+아래 변경이 만들거나 바꾸는 기능을 **하나도 빠짐없이** 스스로 나열하고, 각각 실제로 그 일을 하는지 판정하라
+(정상 / 의심 / 깨짐 + 코드 근거). 목록은 diff 에서 직접 뽑아라 — 남이 준 목록을 믿지 말고 전수를 다시 세라.
+방향에 어긋나는 설계를 발견하면 「의심」으로 표시하고 근거에 어느 조항과 어긋나는지 적어라.
+${방향블록(방향)}
+${채택제안들.length ? `이번에 채택돼 함께 구현됐어야 하는 업그레이드 — 실제로 구현됐는지도 각각 체크에 넣어라:\n${채택제안들.map((t) => '  · ' + t).join('\n')}\n` : ''}
+--- 변경 내용 ---
+${diff텍스트}`;
+}
+
+/* 기능체크 결과를 지적으로 변환 — 게이트·기각 레버·재발 필터를 **한 통로**로 태우기 위해서다.
+ * 깨짐 = 차단급(P1): 기능이 의도대로 안 도는 채 배포되는 것이 이 게이트가 막는 바로 그것.
+ * 의심 = P3(알림): 막지 않는다 — 의심을 차단으로 만들면 사람이 우회를 배운다. */
+function 기능체크지적들(체크) {
+  return (체크 || [])
+    .filter((c) => c.판정 === '깨짐' || c.판정 === '의심')
+    .map((c) => ({
+      등급: c.판정 === '깨짐' ? 'P1' : 'P3',
+      파일: '(기능체크)',
+      라인: 0,
+      제목: `기능 ${c.판정}: ${c.기능}`,
+      근거: c.근거 || '',
+      수정방향: c.판정 === '깨짐' ? '기능을 고치고 재검수하거나, 오판이면 사유와 함께 기각' : '확인해 보고 문제면 고친다',
+    }));
+}
+
+/* codex exec + 스키마 직행 한 번 — 제안·기능체크 공용. `exec` 는 스키마를 지키므로(실측)
+ * 2단계 구조화가 필요 없다. 실패는 전부 확인 불가(2)로 드러난다. */
+function 스키마실행(프롬프트, 스키마, timeoutMs, 라벨) {
+  const 임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-review-'));
+  const out = path.join(임시, 'out.json');
+  codex(['exec', ...잠금플래그, ...모델플래그(모델설정.분석), '--output-schema', 스키마, '--ephemeral', '-o', out, '-'],
+    프롬프트, timeoutMs, 라벨);
+  try { return JSON.parse(fs.readFileSync(out, 'utf8')); } catch (e) {
+    const err = new Error(`${라벨} 결과가 스키마와 다르다(` + String(e.message) + ')');
+    err.확인불가 = true; throw err;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────── 프롬프트
@@ -340,7 +477,80 @@ function 게이트판정(projRoot, root = ROOT, 장부 = {}) {
 
 // ─────────────────────────────────────────────────────────────── CLI
 
+/* ① 설계 선파악 — 기능지도 + 업그레이드 제안. 결과는 장부에 「제안됨」으로 쌓이고,
+ * 클로드가 --제안판정 으로 채택/기각을 정한다. **배포 게이트와 무관하다**(위 설계 주석). */
+function 제안실행(argv, 대상, timeoutMs) {
+  const 현황 = 제안현황();
+  const 기각제목들 = [...현황.values()].filter((p) => p.상태 === '기각').map((p) => p.제목).slice(-50);
+  const diff = 디프수집(대상);
+
+  console.log(`설계 선파악 중… (${모델설정.분석.model}/${모델설정.분석.effort} · 읽기 전용 샌드박스)`);
+  const 결과 = 스키마실행(제안프롬프트(diff, 기각제목들, 방향텍스트()), 제안스키마경로, timeoutMs,
+    `codex 선파악(${모델설정.분석.model}/${모델설정.분석.effort})`);
+
+  const now = new Date().toISOString();
+  append(제안경로, { 종류: '기능지도', 시각: now, 대상: { 종류: 대상.종류, 값: 대상.값 }, 기능지도: 결과.기능지도 || [] });
+
+  console.log('\n── 기능지도 (검수자가 파악한 이 변경의 기능) ──');
+  for (const f of 결과.기능지도 || []) console.log(`  · ${f.기능} — ${f.설명}`);
+
+  const 신규 = [];
+  for (const p of 결과.제안 || []) {
+    const k = 제안키(p);
+    const 이전 = 현황.get(k);
+    if (이전 && 이전.상태 === '기각') continue;        // 기각된 것은 내 앞에 다시 오지 않는다
+    if (이전 && 이전.상태 === '채택') continue;        // 이미 채택된 것도 — 구현 몫이지 재판정 몫이 아니다
+    append(제안경로, { 종류: '제안', 시각: now, 대상: { 종류: 대상.종류, 값: 대상.값 }, 키: k, ...p });
+    신규.push({ ...p, 키: k });
+  }
+
+  console.log(`\n── 업그레이드 제안 ${신규.length}건 ──`);
+  if (!신규.length) console.log('  (없음 — 검수자가 올릴 것이 없다고 판단했다)');
+  for (const p of 신규) {
+    console.log(`\n[${p.크기}] ${p.제목}   (관련: ${p.관련기능})`);
+    console.log(`  무엇을: ${p.무엇을}`);
+    console.log(`  왜: ${p.왜}`);
+    console.log(`  방향: ${p.구현방향}`);
+    console.log(`  판정: node tools/codex-review.js --제안판정 ${p.키} --채택`);
+    console.log(`        node tools/codex-review.js --제안판정 ${p.키} --기각 --사유 "..."`);
+  }
+  if (신규.length) {
+    console.log('\n다음 순서: 제안마다 채택/기각을 판정한다 — 채택이면 구현 후, 기각이면 그대로 최종 검수(node tools/codex-review.js).');
+    console.log('크기 「대」또는 방향을 바꾸는 제안은 클로드가 정하지 말고 유호님께 선택지로 올린다.');
+  }
+  console.log(`\n기록: ${path.relative(ROOT, 제안경로).replace(/\\/g, '/')}`);
+  return 0;
+}
+
 function main(argv) {
+  // 제안 판정 — 클로드(또는 유호님)가 채택/기각을 장부에 남긴다
+  if (argv.includes('--제안판정')) {
+    const k = argv[argv.indexOf('--제안판정') + 1];
+    const 채택 = argv.includes('--채택');
+    const 기각 = argv.includes('--기각');
+    const 사유 = argv.includes('--사유') ? argv[argv.indexOf('--사유') + 1] : '';
+    if (!k || 채택 === 기각) {
+      console.error('사용: --제안판정 <키> --채택 [--사유 "..."]  또는  --제안판정 <키> --기각 --사유 "왜"');
+      return 2;
+    }
+    if (기각 && !사유) {
+      console.error('기각에는 사유가 필요하다 — 없으면 다음 회차에 왜 안 하는지 설명할 수 없다.');
+      return 2;
+    }
+    const 현황 = 제안현황();
+    if (!현황.has(k)) {
+      console.error(`모르는 제안 키 "${k}" — 오타로 허공에 판정을 남기면 진짜 제안이 미판정으로 남는다.`);
+      return 2;
+    }
+    append(제안경로, { 종류: '판정', 시각: new Date().toISOString(), 키: k, 상태: 채택 ? '채택' : '기각', 사유 });
+    const p = 현황.get(k);
+    console.log(`${채택 ? '채택' : '기각'}: ${p.제목}${사유 ? ' — ' + 사유 : ''}`);
+    console.log(채택
+      ? '구현한 뒤 최종 검수(node tools/codex-review.js)를 돌린다 — 기능체크가 구현 여부까지 본다.'
+      : '이 제안은 다음 선파악 프롬프트에 「기각됨」으로 실려 다시 올라오지 않는다.');
+    return 0;
+  }
+
   // 기각 등록
   if (argv.includes('--기각')) {
     const k = argv[argv.indexOf('--기각') + 1];
@@ -385,13 +595,29 @@ function main(argv) {
     return 2;
   }
 
+  const 초 = argv.includes('--timeout') ? Number(argv[argv.indexOf('--timeout') + 1]) : 900;
+
+  // ① 설계 선파악 모드 — 버그 검수 대신 기능지도+업그레이드 제안만 내고 끝낸다
+  if (argv.includes('--제안')) {
+    console.log(`대상: ${대상.종류} ${대상.값} · 파일 ${대상.파일들.length}개`);
+    try {
+      return 제안실행(argv, 대상, 초 * 1000);
+    } catch (e) {
+      if (e.확인불가) {
+        console.error('🔴 확인 불가 — 선파악이 **안 돌았다**: ' + e.message);
+        console.error('   제안 단계는 게이트와 무관하다 — 최종 검수(버그+기능체크)로 그냥 진행해도 된다.');
+        return 2;
+      }
+      throw e;
+    }
+  }
+
   console.log(`대상: ${대상.종류} ${대상.값} · 파일 ${대상.파일들.length}개`);
   console.log(`검수 범위(clasp 프로젝트): ${범위들.length ? 범위들.join(', ') : '없음 — 배포 파일이 아닌 변경'}`);
   if (기각들.length) console.log(`기각 이력 ${기각들.length}건으로 재발 지적을 걸러낸다.`);
   console.log(`모델: 분석=${모델설정.분석.model}/${모델설정.분석.effort}(${모델설정.분석.이름}) · 구조화=${모델설정.구조화.model}/${모델설정.구조화.effort}`);
   console.log(`codex 검수 중… (읽기 전용 샌드박스 · 2단계 · ${모델설정.분석.effort} 추론 — xhigh 실측이 5~8분이었다)`);
 
-  const 초 = argv.includes('--timeout') ? Number(argv[argv.indexOf('--timeout') + 1]) : 900;
   let 결과;
   try {
     결과 = codex실행(대상, 초 * 1000);
@@ -404,7 +630,29 @@ function main(argv) {
     throw e;
   }
 
-  const 지적 = (결과.지적 || []).map((f) => ({ ...f, 키: 키(f) }));
+  /* ③-2 기능 전수 체크 — 버그 사냥(위)과 별개 패스로, 바뀐 기능 하나하나가 실제로 도는지 본다.
+   * 유호님 설계(2026-08-05): 「검수자가 최종적으로 꼼꼼히 버그 체크하고 **업데이트되는 기능
+   * 세세히 전부 체크**」. 지적 0건과 「기능 X 는 본 적도 없음」이 같은 모양이면 안 되는 자리다.
+   * 깨짐은 P1 지적으로 변환돼 같은 게이트를 탄다. `--버그만` 은 유호님 「빠르게」 모드용. */
+  let 기체 = null;
+  if (!argv.includes('--버그만')) {
+    const 채택제안들 = [...제안현황().values()].filter((p) => p.상태 === '채택').map((p) => p.제목).slice(-20);
+    console.log('기능 전수 체크 중… (같은 모델 · 별도 패스)');
+    try {
+      기체 = 스키마실행(기능체크프롬프트(디프수집(대상), 채택제안들, 방향텍스트()), 기능체크스키마경로,
+        Math.min(초 * 1000, 900000), `codex 기능체크(${모델설정.분석.model}/${모델설정.분석.effort})`);
+    } catch (e) {
+      if (e.확인불가) {
+        console.error('🔴 확인 불가 — 기능체크가 **안 돌았다**(통과가 아니다): ' + e.message);
+        return 2;
+      }
+      throw e;
+    }
+  } else {
+    console.log('(--버그만: 기능 전수 체크 생략 — 유호님 「빠르게」 모드)');
+  }
+
+  const 지적 = [...(결과.지적 || []), ...기능체크지적들(기체 && 기체.체크)].map((f) => ({ ...f, 키: 키(f) }));
   const 기각키 = new Set(기각들.map((r) => r.키));
   const 신규 = 지적.filter((f) => !기각키.has(f.키));
 
@@ -417,12 +665,21 @@ function main(argv) {
     지문: 유효지문(대상),
     요약: 결과.요약 || '',
     지적,
+    기능체크: (기체 && 기체.체크) || [],
     // 1단계 산문을 그대로 보관한다 — 2단계 구조화가 무엇을 떨어뜨렸는지 나중에 대조할 수 있어야 한다.
     원문: 결과.원문 || '',
   });
 
   console.log('\n── 검수 결과 ──');
   console.log(결과.요약 || '(요약 없음)');
+  if (기체) {
+    console.log('\n── 기능 전수 체크 ──');
+    if (!(기체.체크 || []).length) console.log('  (검수자가 체크할 기능을 하나도 못 찾았다 — diff 가 기능 변경이 아닐 때만 정상)');
+    for (const c of 기체.체크 || []) {
+      const 표 = c.판정 === '정상' ? '✅' : c.판정 === '의심' ? '⚠' : '🔴';
+      console.log(`  ${표} ${c.기능}${c.판정 !== '정상' ? ' — ' + String(c.근거 || '').slice(0, 140) : ''}`);
+    }
+  }
   if (!신규.length) console.log('\n새 지적 0건.');
   for (const f of 신규) {
     console.log(`\n[${f.등급}] ${f.파일}${f.라인 ? ':' + f.라인 : ''} — ${f.제목}`);
@@ -436,7 +693,10 @@ function main(argv) {
   return 차단.length ? 1 : 0;
 }
 
-module.exports = { 게이트판정, 유효지문, 키, 범위, 대상결정, 미커밋파일들, 차단급, 기록경로, 기각경로, 모델설정, 효력들, 모델플래그 };
+module.exports = {
+  게이트판정, 유효지문, 키, 범위, 대상결정, 미커밋파일들, 차단급, 기록경로, 기각경로, 모델설정, 효력들, 모델플래그,
+  제안경로, 제안키, 제안현황, 제안프롬프트, 기능체크프롬프트, 기능체크지적들, 방향텍스트, 방향경로, 방향상한, 디프상한,
+};
 
 if (require.main === module) {
   try {
