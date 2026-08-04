@@ -4,11 +4,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&amp;display=swap">
-<!-- Special typefaces reserved ONLY for the K-Culture "Таны K." headline (Part 06).
-     Fraunces carries Cyrillic + Latin glyphs, so Mongolian renders in the same
-     editorial voice as the Latin "K." Gowun Batang stays as an optional Korean
-     fallback for the KR original but is not the primary face here. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,400;1,9..144,900&amp;family=Gowun+Batang:wght@400;700&amp;family=Cormorant:ital,wght@0,500;0,600;0,700;1,500;1,700&amp;display=swap">
+<!-- 2026-08-05 · 세리프 3종(Fraunces·Gowun Batang·Cormorant) 제거 — 유호님 확정.
+     정본 §87 「위계는 폰트 수가 아니라 웨이트·크기로 만든다」가 이 자리를 이미 규정했다.
+     ⚠ 위 주석이 내세우던 근거(「Fraunces 가 키릴을 담는다」·「Cormorant 가 Ө·Ү 를 그린다」)는
+       실측으로 무너졌다 — **Inter Tight 도 Ө 를 그린다**(폭 28.59 vs 폴백 28.89, 2026-08-05).
+       게다가 Cormorant 가 쓰이던 딱 한 곳의 문구 「Таны」엔 Ө·Ү 가 아예 없었다.
+     곁들여 얻은 것: 이 CDN 요청이 사라져 몽골 현지에서 조용히 폴백할 표면이 하나 줄었다. -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SYNK LAB · Crew Card v14 · Монгол</title>
@@ -41,8 +42,12 @@
   --lime-2:#B8E836;
 
   --ink:#171820;
-  --muted:#7A7566;
-  --muted-2:#3d3a30;
+  /* 2026-08-05 · 키트 밖 회색 174곳을 이 두 줄로 잡는다(호출부는 안 만진다).
+     구값 --muted:#7A7566 은 Cream 위 대비 4.09 로 본문 기준 4.5 에 **아깝게** 미달했고,
+     --muted-2:#3d3a30 은 대비는 통과하지만 키트 19색 밖이었다. 둘 다 조용히 새던 자리다.
+     대체값은 DESIGN.md §2 표 그대로다 — 보조 잉크 = Navy 3 · 본문 잉크 = Navy. */
+  --muted:#2A3358;    /* Navy 3 — 보조 라벨(9~11px 대문자). Cream 위 10.9 */
+  --muted-2:#1A2340;  /* Navy   — 본문(12.5~14px).        Cream 위 13.4 */
 
   /* K-culture accent (Part 6 폭발용) — 팔레트 안에서 톤 유지 */
   --kc-hot:#FF3E88;
@@ -95,9 +100,13 @@ section.page{
 }
 
 /* Reusable label / eyebrow / kicker ------------------------------------- */
+/* ⚠ 라이트 배경 위 코랄 **글자**는 크기 불문 금지다(DESIGN.md 철칙 4 ②).
+   10px 짜리 라벨은 Coral 3(#E8543F)로 낮춰도 3.23 이라 본문 기준 4.5 에 여전히 미달한다 —
+   「코랄을 한 단계 어둡게」로 끝나지 않는 자리라 유호님이 Navy 3 으로 확정했다(2026-08-05).
+   신호로서의 코랄은 사라지지 않는다 — **면**(버튼·칩·카드 배경)에 그대로 남는다. */
 .kicker{
   font-family:var(--mono);font-size:10px;letter-spacing:.18em;
-  text-transform:uppercase;color:var(--coral);font-weight:600;
+  text-transform:uppercase;color:var(--muted);font-weight:600;
   display:flex;align-items:center;gap:10px;
 }
 .kicker::before{
@@ -142,7 +151,7 @@ section.page{
   text-transform:uppercase;color:var(--muted);
   display:flex;justify-content:space-between;
 }
-.field .k .en{color:var(--coral);font-weight:600}
+.field .k .en{color:var(--muted);font-weight:600}  /* 40곳 — 라이트 위 코랄 글자 최대 표면 */
 .field .v{
   font-family:var(--sans);font-size:15px;line-height:1.4;
   color:var(--navy);
@@ -190,10 +199,10 @@ section.page{
 }
 .opt:hover{border-color:var(--coral);color:var(--coral)}
 .opt:has(input:checked){
-  background:var(--coral);color:#fff;border-color:var(--coral);
+  background:var(--coral);color:var(--ink);border-color:var(--coral);
   box-shadow:0 6px 16px -8px rgba(255,107,92,.6);
 }
-.opt:has(input:checked) input{background:#fff;border-color:#fff}
+.opt:has(input:checked) input{background:var(--cream);border-color:var(--cream)}
 .opt:has(input:checked) input::after{border-color:var(--coral)}
 .opt .en{font-family:var(--mono);font-size:10px;letter-spacing:.08em;opacity:.7}
 .opt:has(input:checked) .en{opacity:.85}
@@ -226,7 +235,7 @@ section.page{
   font-family:var(--mono);font-size:10px;letter-spacing:.1em;
   text-transform:uppercase;font-weight:600;
 }
-.pill.navy{background:var(--navy);color:#fff}
+.pill.navy{background:var(--navy);color:var(--cream)}
 .pill.lime{background:var(--lime);color:var(--navy)}
 
 /* Text field with prefix/suffix inline ---------------------------------- */
@@ -264,7 +273,8 @@ section.page{
 }
 .kc-page .part-title{color:var(--navy);font-size:72px;line-height:.95}
 .kc-page .part-title em{color:inherit;font-size:1em;font-style:normal}
-.kc-page .kicker{color:var(--kc-hot)}
+/* KC Hot 은 라이트 위에서 2.96 이라 **글자로는** 못 쓴다 — 면·괘선으로만 남긴다(::before 는 유지). */
+.kc-page .kicker{color:var(--muted)}
 .kc-page .kicker::before{background:var(--kc-hot)}
 
 /* Signature canvas ----------------------------------------------------- */
@@ -285,7 +295,7 @@ section.page{
 .sig-wrap .sig-clear{
   position:absolute;right:20px;top:18px;
   font-family:var(--mono);font-size:10px;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--coral);cursor:pointer;
+  text-transform:uppercase;color:var(--muted);cursor:pointer;
   background:none;border:0;padding:4px 8px;
 }
 .sig-wrap .sig-clear:hover{color:var(--coral-3);text-decoration:underline}
@@ -335,7 +345,7 @@ section.page{
     <rect width="1200" height="800" fill="#F6F1E8"></rect>
     <rect x="120" y="180" width="960" height="500" rx="28" fill="#FF6B5C"></rect>
     <circle cx="1020" cy="240" r="90" fill="#C8FF3D"></circle>
-    <text x="600" y="112" text-anchor="middle" font-family="'Times New Roman', serif" font-style="italic" font-size="44" fill="#1A2340" font-weight="700">SYNK LAB · Крю карт</text>
+    <text x="600" y="112" text-anchor="middle" font-family="'Inter Tight','SUIT Variable',SUIT,sans-serif" font-style="italic" font-size="44" fill="#1A2340" font-weight="700">SYNK LAB · Крю карт</text>
   </svg>
 </div><script>(function(){var s=document.getElementById("__splash");if(!s)return;function hide(){s.style.opacity="0";setTimeout(function(){if(s&&s.parentNode)s.parentNode.removeChild(s);},300);}if(document.readyState==="complete")hide();else window.addEventListener("load",hide);})();</script>
 <style>
@@ -392,10 +402,10 @@ section.page{
   .cov-meter .v.mono{font-family:var(--mono);font-size:13px;letter-spacing:.06em;font-weight:600}
   .cov-meter .cell.hero{
     background:linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
-    color:#fff;
+    color:var(--cream);
   }
-  .cov-meter .cell.hero .k{color:rgba(255,255,255,.7)}
-  .cov-meter .cell.hero .v{color:#fff}
+  .cov-meter .cell.hero .k{color:rgba(246,241,232,.7)}
+  .cov-meter .cell.hero .v{color:var(--cream)}
   .cov-meter .cell.hero .v em{
     font-style:italic;color:var(--lime);font-weight:400;
   }
@@ -433,7 +443,7 @@ section.page{
   }
   .cov-hero .eyebrow{
     font-family:var(--mono);font-size:11px;letter-spacing:.2em;
-    text-transform:uppercase;color:var(--coral);margin-bottom:18px;
+    text-transform:uppercase;color:var(--muted);margin-bottom:18px;
     display:flex;align-items:center;gap:12px;
   }
   .cov-hero .eyebrow::before{
@@ -447,7 +457,9 @@ section.page{
   .cov-hero h1 em{font-style:normal;color:inherit}
   .cov-hero .en{
     font-family:var(--serif);font-style:italic;font-size:26px;
-    color:var(--coral);margin-top:14px;letter-spacing:-0.01em;
+    /* 이 한 곳만 코랄이 살아남는다 — 26px 라 DESIGN.md §2 「신호 — 라이트 글자 = Coral 3,
+       24px↑ 한정」의 조건을 유일하게 만족한다(3.23 ≥ 대형 기준 3.0). */
+    color:var(--coral-3);margin-top:14px;letter-spacing:-0.01em;
   }
   .cov-hero .lede{
     margin-top:26px;font-size:14px;line-height:1.7;color:var(--muted-2);
@@ -462,7 +474,7 @@ section.page{
       radial-gradient(140% 100% at 0% 0%, rgba(255,255,255,.14), transparent 55%),
       linear-gradient(135deg, var(--coral) 0%, var(--coral-2) 100%);
     border-radius:20px;padding:28px 32px 26px;
-    color:#fff;position:relative;overflow:hidden;
+    color:var(--ink);position:relative;overflow:hidden;  /* 코랄 면 → Ink (철칙 ③) */
     box-shadow:
       0 24px 44px -18px rgba(255,107,92,.55),
       inset 0 0 0 1px rgba(255,255,255,.15);
@@ -523,14 +535,14 @@ section.page{
 
   /* Real input — replaces contenteditable */
   .m-input{
-    background:transparent;border:0;outline:none;color:#fff;
+    background:transparent;border:0;outline:none;color:var(--ink);
     font:inherit;padding:0 0 4px;
     border-bottom:1px solid rgba(255,255,255,.5);
     width:100%;min-width:100px;
     transition:border-color .2s var(--ease);
     caret-color:var(--lime);
   }
-  .m-input::placeholder{color:rgba(255,255,255,.5);font-style:italic}
+  .m-input::placeholder{color:rgba(23,24,32,.5);font-style:italic}
   .m-input:focus{border-bottom-color:var(--lime)}
   .m-input.mono{font-family:var(--mono);font-size:15px;letter-spacing:.06em;font-weight:500}
   .m-input.serif{font-family:var(--serif);font-size:26px;letter-spacing:-0.01em}
@@ -540,11 +552,11 @@ section.page{
   .m-date{
     display:inline-flex;align-items:baseline;gap:6px;
     font-family:var(--mono);font-size:15px;letter-spacing:.04em;
-    color:#fff;font-weight:500;
+    color:var(--ink);font-weight:500;
   }
-  .m-date .sep{color:rgba(255,255,255,.55);padding:0 2px}
+  .m-date .sep{color:rgba(23,24,32,.55);padding:0 2px}
   .m-date input{
-    background:transparent;border:0;outline:none;color:#fff;
+    background:transparent;border:0;outline:none;color:var(--ink);
     font:inherit;letter-spacing:.04em;
     border-bottom:1px solid rgba(255,255,255,.5);
     width:2.3ch;text-align:center;padding:0 0 3px;
@@ -555,7 +567,7 @@ section.page{
   .m-date input::-webkit-outer-spin-button,
   .m-date input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   .m-date input:focus{border-bottom-color:var(--lime)}
-  .m-date input::placeholder{color:rgba(255,255,255,.45)}
+  .m-date input::placeholder{color:rgba(23,24,32,.45)}
 
   /* Grid for lower card (Class + Advisor + Serial) */
   .m-card-grid{
@@ -587,7 +599,9 @@ section.page{
     background:linear-gradient(90deg,var(--coral),var(--lime));
     transition:width .5s var(--ease);border-radius:2px;
   }
-  .m-progress .count b{color:var(--coral);font-weight:600;letter-spacing:.05em}
+  /* 크림 위 코랄 글자였다 — 카드 아래 완료 스트립이라 배경은 Cream 이다.
+     Ink 로 올려 muted 스트립(Navy 3) 안에서 숫자만 도드라지게 한다(색이 아니라 명도·웨이트로). */
+  .m-progress .count b{color:var(--ink);font-weight:600;letter-spacing:.05em}
   .m-progress .status{flex:0 0 auto;color:var(--navy);font-weight:600}
 
   /* Cover top brand row — small refinement */
@@ -631,7 +645,7 @@ section.page{
   .cov-ribbon .txt b{color:var(--navy);font-weight:600}
   .cov-ribbon .txt .en{
     display:block;font-family:var(--mono);font-size:9.5px;
-    letter-spacing:.16em;text-transform:uppercase;color:var(--coral);
+    letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
     margin-bottom:5px;font-weight:600;line-height:1;
   }
 
@@ -644,7 +658,7 @@ section.page{
   .m-chip{
     flex:0 0 auto;
     background:linear-gradient(135deg,var(--coral) 0%, var(--coral-2) 100%);
-    color:#fff;border-radius:12px;padding:12px 16px;
+    color:var(--ink);border-radius:12px;padding:12px 16px;  /* 코랄 면 → Ink (철칙 ③) */
     box-shadow:0 10px 22px -12px rgba(255,107,92,.55);
     min-width:160px;
   }
@@ -750,7 +764,7 @@ section.page{
   .kc-page .kc-title .kc-t-kor{
     /* Fraunces first so Mongolian Cyrillic renders in the same editorial voice
        as the sibling italic "K."; Gowun Batang kept as an optional Korean fallback. */
-    font-family:'Cormorant','Fraunces','Gowun Batang',var(--serif); /* v14: Fraunces엔 키릴이 없다(실측) — Таны는 Cormorant */
+    font-family:var(--serif); /* 구 주석의 「Таны는 Cormorant」 근거는 무너졌다 — Inter Tight 도 Ө 를 그리고, 이 문구엔 Ө·Ү 가 없다 */
     font-optical-sizing:auto;
     font-variation-settings:"SOFT" 100, "opsz" 96;
     font-weight:500;
@@ -765,9 +779,9 @@ section.page{
   }
   .kc-page .kc-title .kc-t-k{
     position:relative;
-    font-family:'Fraunces', 'Times New Roman', serif;
-    font-optical-sizing:auto;
-    font-variation-settings:"SOFT" 100, "WONK" 1, "opsz" 144;
+    /* 구값 Fraunces 의 가변축(SOFT·WONK·opsz)은 함께 지운다 — 그 폰트가 없으면
+       아무 일도 하지 않으면서 「여기 세리프가 있다」고 거짓말하는 줄만 남는다. */
+    font-family:var(--serif);
     font-weight:900;
     font-style:italic;
     font-size:148px;
@@ -788,7 +802,7 @@ section.page{
   }
   .kc-page .kc-title .kc-t-k .kc-dot{
     display:inline-block;
-    font-family:'Fraunces', serif;
+    font-family:var(--serif);
     font-style:italic;
     -webkit-text-fill-color:var(--kc-hot);
     color:var(--kc-hot);
@@ -803,7 +817,7 @@ section.page{
     position:absolute;
     top:-6px;
     left:calc(100% - 4px);
-    font-family:'Fraunces', serif;
+    font-family:var(--serif);
     font-size:22px;
     color:var(--kc-hot);
     transform:rotate(-8deg);
@@ -845,19 +859,15 @@ section.page{
     isolation:isolate;
     display:flex;align-items:baseline;flex-wrap:wrap;
     gap:8px;
-    font-family:'Fraunces','Times New Roman',serif;
-    font-optical-sizing:auto;
-    font-variation-settings:"SOFT" 100, "opsz" 144;
+    font-family:var(--serif);
     font-weight:900;font-style:italic;
     font-size:34px;line-height:.95;
     color:var(--navy);
     margin:2px 0 0;letter-spacing:-0.035em;
   }
-  /* the small serif prefix (K-POP / Idol / K-) */
+  /* the small prefix (K-POP / Idol / K-) */
   .kc-card .kc-h4-a{
-    font-family:'Fraunces','Gowun Batang','Nanum Myeongjo',serif;
-    font-optical-sizing:auto;
-    font-variation-settings:"opsz" 24;
+    font-family:var(--serif);
     font-weight:600;font-style:normal;
     font-size:20px;
     letter-spacing:-0.01em;
@@ -904,7 +914,9 @@ section.page{
   /* accent-color per track (drives the gradient + period + marker) */
   .kc-card.pop{--kc-accent:var(--kc-hot)}
   .kc-card.dance{--kc-accent:var(--kc-cool)}
-  .kc-card.beauty{--kc-accent:#E9A611} /* darker sun so on-white is readable */
+  /* 구값 #E9A611(골드)은 키트 19색 밖이었다 — KC Sun 은 애초에 「글자 금지」(DESIGN.md §2)라
+     이 자리에 올 수 없었다. KC 4색 중 아직 트랙에 안 배정된 Pink 2 로 간다. */
+  .kc-card.beauty{--kc-accent:var(--kc-hot-2)} /* darker sun so on-white is readable */
 
   /* legacy .kc-h4-mark span is now decorative-only (retained in markup
      as a tiny corner accent so the previous nodes don't go to waste)  */
@@ -1076,12 +1088,12 @@ section.page{
   }
   .tag:hover{border-color:var(--coral);color:var(--coral)}
   .tag.on{
-    background:var(--navy);border-color:var(--navy);color:#fff;
+    background:var(--navy);border-color:var(--navy);color:var(--cream);
     box-shadow:0 6px 14px -8px rgba(15,23,48,.55);
   }
   .tag.on::before{content:'✓';color:var(--lime)}
   .tag.hot.on{background:var(--coral);border-color:var(--coral)}
-  .tag.hot.on::before{color:#fff}
+  .tag.hot.on::before{color:var(--ink)}
 
   /* Two-column probe list — used a lot */
   .probe-2{display:grid;grid-template-columns:1fr 1fr;gap:6px 26px}
@@ -1109,7 +1121,7 @@ section.page{
 
   /* Fear/worry list — softer red vibe */
   .tag.worry{background:var(--coral-wash)}
-  .tag.worry.on{background:var(--coral);border-color:var(--coral);color:#fff}
+  .tag.worry.on{background:var(--coral);border-color:var(--coral);color:var(--ink)}
   .tag.worry.on::before{content:'✓';color:var(--lime)}
 
   /* Story card — a nice full-width tall input for narrative answers */
@@ -1192,7 +1204,7 @@ section.page{
   .callout .tx b{color:var(--navy);font-weight:600}
   .callout .tx .en{
     display:block;font-family:var(--mono);font-size:9.5px;
-    letter-spacing:.16em;text-transform:uppercase;color:var(--coral);
+    letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
     margin-bottom:5px;font-weight:600;line-height:1;
   }
 
@@ -1228,7 +1240,7 @@ section.page{
   .promise{
     margin-top:20px;
     background:linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
-    color:#fff;border-radius:14px;padding:18px 22px;
+    color:var(--cream);border-radius:14px;padding:18px 22px;
     position:relative;overflow:hidden;
   }
   .promise::after{
@@ -1250,13 +1262,13 @@ section.page{
   }
   .promise li{
     font-size:12.5px;line-height:1.5;
-    padding-left:20px;position:relative;color:rgba(255,255,255,.86);
+    padding-left:20px;position:relative;color:rgba(246,241,232,.86);
   }
   .promise li::before{
     content:'';position:absolute;left:0;top:8px;
     width:10px;height:2px;background:var(--lime);
   }
-  .promise li b{color:#fff;font-weight:600}
+  .promise li b{color:var(--cream);font-weight:600}
 
   /* Advisor notes strip on the last page */
   .adv-notes{
@@ -1305,7 +1317,7 @@ section.page{
   }
   .next h5{
     font-family:var(--mono);font-size:10px;letter-spacing:.18em;
-    text-transform:uppercase;color:var(--coral);margin:0 0 10px;font-weight:600;
+    text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600;
   }
   .next ul{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:8px 24px}
   .next li{
@@ -1396,7 +1408,7 @@ section.page{
         <div class="live">LIVE · IN SESSION</div>
         <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;line-height:1.6">
           Crew Card<br>
-          <b style="color:var(--coral)">No. <span data-live="serial-no">—</span></b>
+          <b style="color:var(--muted)">No. <span data-live="serial-no">—</span></b>
         </div>
       </div>
     </div>
@@ -1968,15 +1980,15 @@ section.page{
     </div>
     <div class="grid-3">
       <div class="field" data-field="fav_artist" data-column="fav_artist" data-type="text">
-        <div class="k">Хамгийн дуртай <b style="color:var(--coral)">Артист · жүжигчин</b></div>
+        <div class="k">Хамгийн дуртай <b style="color:var(--muted)">Артист · жүжигчин</b></div>
         <div class="v" contenteditable="true" spellcheck="false" data-placeholder="жиш) NewJeans, IU" data-field="fav_artist" data-column="fav_artist"></div>
       </div>
       <div class="field" data-field="fav_drama" data-column="fav_drama" data-type="text">
-        <div class="k">Сэтгэлд хоногшсон <b style="color:var(--coral)">Драм · кино</b></div>
+        <div class="k">Сэтгэлд хоногшсон <b style="color:var(--muted)">Драм · кино</b></div>
         <div class="v" contenteditable="true" spellcheck="false" data-placeholder="жиш) My Mister, Squid Game" data-field="fav_drama" data-column="fav_drama"></div>
       </div>
       <div class="field" data-field="fav_place" data-column="fav_place" data-type="text">
-        <div class="k">Очиж үзэхийг хүсдэг <b style="color:var(--coral)">Газар · хот</b></div>
+        <div class="k">Очиж үзэхийг хүсдэг <b style="color:var(--muted)">Газар · хот</b></div>
         <div class="v" contenteditable="true" spellcheck="false" data-placeholder="жиш) Сөүл Хонгде, Пусан Хэүндэ" data-field="fav_place" data-column="fav_place"></div>
       </div>
     </div>
@@ -2045,9 +2057,9 @@ section.page{
       <span class="en">1st · 2nd · 3rd + шалтгаан</span>
     </div>
     <div class="grid-3">
-      <div class="field" data-field="school_1st" data-column="school_1st" data-type="text"><div class="k"><span style="color:var(--coral)">01</span> 1-р сонголт сургууль / мэргэжил</div><div class="v" contenteditable="true" spellcheck="false" data-placeholder="жиш) Сонгюнгван их сургууль · менежмент" data-field="school_1st" data-column="school_1st"></div><div class="hint" contenteditable="true" data-placeholder="Сонгосон шалтгаан (нэг мөр)" data-field="school_1st_reason" data-column="school_1st_reason">Сонгосон шалтгаан</div></div>
-      <div class="field" data-field="school_2nd" data-column="school_2nd" data-type="text"><div class="k"><span style="color:var(--coral)">02</span> 2-р сонголт сургууль / мэргэжил</div><div class="v" contenteditable="true" spellcheck="false" data-field="school_2nd" data-column="school_2nd"></div><div class="hint" contenteditable="true" data-placeholder="Сонгосон шалтгаан (нэг мөр)" data-field="school_2nd_reason" data-column="school_2nd_reason">Сонгосон шалтгаан</div></div>
-      <div class="field" data-field="school_3rd" data-column="school_3rd" data-type="text"><div class="k"><span style="color:var(--coral)">03</span> 3-р сонголт сургууль / мэргэжил</div><div class="v" contenteditable="true" spellcheck="false" data-field="school_3rd" data-column="school_3rd"></div><div class="hint" contenteditable="true" data-placeholder="Сонгосон шалтгаан (нэг мөр)" data-field="school_3rd_reason" data-column="school_3rd_reason">Сонгосон шалтгаан</div></div>
+      <div class="field" data-field="school_1st" data-column="school_1st" data-type="text"><div class="k"><span style="color:var(--muted)">01</span> 1-р сонголт сургууль / мэргэжил</div><div class="v" contenteditable="true" spellcheck="false" data-placeholder="жиш) Сонгюнгван их сургууль · менежмент" data-field="school_1st" data-column="school_1st"></div><div class="hint" contenteditable="true" data-placeholder="Сонгосон шалтгаан (нэг мөр)" data-field="school_1st_reason" data-column="school_1st_reason">Сонгосон шалтгаан</div></div>
+      <div class="field" data-field="school_2nd" data-column="school_2nd" data-type="text"><div class="k"><span style="color:var(--muted)">02</span> 2-р сонголт сургууль / мэргэжил</div><div class="v" contenteditable="true" spellcheck="false" data-field="school_2nd" data-column="school_2nd"></div><div class="hint" contenteditable="true" data-placeholder="Сонгосон шалтгаан (нэг мөр)" data-field="school_2nd_reason" data-column="school_2nd_reason">Сонгосон шалтгаан</div></div>
+      <div class="field" data-field="school_3rd" data-column="school_3rd" data-type="text"><div class="k"><span style="color:var(--muted)">03</span> 3-р сонголт сургууль / мэргэжил</div><div class="v" contenteditable="true" spellcheck="false" data-field="school_3rd" data-column="school_3rd"></div><div class="hint" contenteditable="true" data-placeholder="Сонгосон шалтгаан (нэг мөр)" data-field="school_3rd_reason" data-column="school_3rd_reason">Сонгосон шалтгаан</div></div>
     </div>
 
     <div class="grid-2" style="margin-top:16px">
@@ -2089,7 +2101,7 @@ section.page{
     </div>
 
     <div class="sec-head">
-      <h3>Санхүүгийн төлөвлөгөө <em>· Sponsor</em> <span style="font-family:var(--sans);font-size:11px;font-weight:500;font-style:normal;letter-spacing:0;color:var(--kc-hot);margin-left:8px;padding:3px 8px;border:1px solid var(--kc-hot);border-radius:999px;vertical-align:middle">Гадаадад суралцахыг хүсвэл л бөглөнө</span></h3>
+      <h3>Санхүүгийн төлөвлөгөө <em>· Sponsor</em> <span style="font-family:var(--sans);font-size:11px;font-weight:500;font-style:normal;letter-spacing:0;color:var(--muted);margin-left:8px;padding:3px 8px;border:1px solid var(--kc-hot);border-radius:999px;vertical-align:middle">Гадаадад суралцахыг хүсвэл л бөглөнө</span></h3>
       <span class="en">Budget · Family · Optional</span>
     </div>
     <div class="grid-2">
@@ -2300,7 +2312,7 @@ section.page{
         <h2 class="part-title kc-title">
           <span class="kc-t-kor">Таны</span><span class="kc-t-k">K<span class="kc-dot">.</span></span>
           <span class="kc-t-marks" aria-hidden="true">
-            <span class="kc-star">✦</span>
+            <span class="kc-star" aria-hidden="true">✦</span>
             <span class="kc-underline"></span>
           </span>
         </h2>
@@ -2531,13 +2543,13 @@ section.page{
           <li><div class="cb"></div><div><b>Үнэлгээний тайлан илгээх</b><div class="en">Report Emailed</div></div></li>
         </ul>
       </div>
-      <div class="card" style="background:linear-gradient(135deg, var(--coral) 0%, var(--coral-2) 100%);color:#fff;border:0">
-        <h6 style="color:#fff;opacity:.85">First Class · Эхний хичээл</h6>
-        <div class="big" style="color:#fff">Welcome, <em style="color:inherit;font-style:normal">Crew.</em></div>
-        <div class="sm" style="color:rgba(255,255,255,.9)">
-          Эхний хичээлийн өдөр · <b style="color:#fff" contenteditable="true" spellcheck="false" data-placeholder="YYYY . MM . DD">____ . __ . __</b><br>
-          Цаг · <b style="color:#fff" contenteditable="true" spellcheck="false" data-placeholder="HH : MM">__ : __</b><br>
-          Байршил · <b style="color:#fff">SYNK LAB · Ulaanbaatar</b>
+      <div class="card" style="background:linear-gradient(135deg, var(--coral) 0%, var(--coral-2) 100%);color:var(--ink);border:0">
+        <h6 style="color:var(--ink);opacity:.85">First Class · Эхний хичээл</h6>
+        <div class="big" style="color:var(--ink)">Welcome, <em style="color:inherit;font-style:normal">Crew.</em></div>
+        <div class="sm" style="color:rgba(23,24,32,.9)">
+          Эхний хичээлийн өдөр · <b style="color:var(--ink)" contenteditable="true" spellcheck="false" data-placeholder="YYYY . MM . DD">____ . __ . __</b><br>
+          Цаг · <b style="color:var(--ink)" contenteditable="true" spellcheck="false" data-placeholder="HH : MM">__ : __</b><br>
+          Байршил · <b style="color:var(--ink)">SYNK LAB · Ulaanbaatar</b>
         </div>
         <div style="margin-top:auto;padding-top:12px;border-top:1px dashed rgba(255,255,255,.35);font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.9">
           Ref · <b>SL-<span contenteditable="true" spellcheck="false" data-placeholder="YYYYMMDD">________</span>-<span data-live="serial-ref">XXX</span></b>
@@ -3382,7 +3394,7 @@ section.page{
   <span id="synkSaveState" style="font-size:11px;opacity:.75;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
   <div style="display:flex;gap:10px;align-items:center;flex:0 0 auto">
     <span id="synkSerialOut" style="font-family:var(--mono);font-size:12px;color:#C8FF3D"></span>
-    <button id="synkSubmitBtn" type="button" style="background:#FF6B5C;color:#fff;border:0;border-radius:999px;padding:10px 22px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans)">Илгээх</button>
+    <button id="synkSubmitBtn" type="button" style="background:var(--coral);color:var(--ink);border:0;border-radius:999px;padding:10px 22px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans)">Илгээх</button>
   </div>
 </div>
 <div id="synkSubmitSpacer" style="height:64px"></div>
