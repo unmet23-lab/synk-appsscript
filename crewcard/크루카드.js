@@ -28,6 +28,8 @@ const TZ_ = 'Asia/Ulaanbaatar';
 const DAILY_CAP = 300;          // 익명 엔드포인트 남용 방지 — 하루 접수 상한
 const MAX_BODY = 100000;        // 100KB — 정상 제출은 ~10KB
 const MAX_CELL = 2000;          // 서술형 1칸 상한(시트 오염 방지)
+const ERR_TAB = 'crew_errors';  // doPost 런타임 오류 착지 탭 — 알림은 메인 crewIntakeWatch_가 읽어서 낸다
+const ERR_DAILY_CAP = 50;       // 오류 기록도 익명 입력이 낳는다 — 상한 없이는 오류 유발 반복 제출이 시트를 무한 증식시킨다
 
 /* 컬럼 정본 — 카드 HTML 내장 스키마(6섹션 103필드+메타)에서 기계 생성.
  * multi 필드는 옵션별 TRUE 컬럼으로 전개(구글폼 자동 방식과 동일 규약). */
@@ -103,7 +105,7 @@ function doPost(e) {
     // 채번+기록은 락 안에서 원자적으로 — 동시 제출 2건이 같은 번호를 받는 것을 막는다
     const lock = LockService.getScriptLock();
     lock.waitLock(20000);
-    let serial;
+    let serial, 이관오류 = null;
     try {
       const sh = 크루_탭_();
       serial = 'SL-' + today + '-' + ('00' + 크루_다음번호_(sh, today)).slice(-3);
@@ -121,12 +123,25 @@ function doPost(e) {
       /* 상담데이터입력에도 1행(학생ID 비움 — 상담시트.js 머리말). 원본은 crew_cards가 정본이므로
        * 이관이 실패해도 접수 자체는 이미 성립했다 → 삼키고 로그만 남긴다(제출자에게 실패를 보이지 않는다). */
       try { 상담시트_이관_(data, body.lang, serial); }
-      catch (e2) { console.warn('[크루카드] 상담시트 이관 실패(접수는 정상): ' + e2); }
+      catch (e2) {
+        console.warn('[크루카드] 상담시트 이관 실패(접수는 정상): ' + e2);
+        /* 기록은 **락 밖으로** 미룬다 — 기록 1회가 시트 왕복 2번(≈1초)이라 임계구역이 그만큼 길어지고,
+         * 하필 이 경로는 이관이 계통적으로 깨진 날 매 제출마다 밟힌다. 그러면 뒤 제출들의
+         * waitLock(20000)이 타임아웃 나고 그 타임아웃이 또 오류를 낳는 자기증폭 고리가 된다. */
+        이관오류 = e2;
+      }
     } finally {
       lock.releaseLock();
     }
+    if (이관오류) 크루_오류로그_('이관:' + serial, 이관오류);      // 유실 경보(crewIntakeWatch_)가 원인까지 갖게 한다
     return 크루_응답_({ ok: true, serial: serial });
   } catch (err) {
+    /* 이 catch가 삼키는 실패는 어디에도 안 보였다 — Apps Script 자동 실패 메일은 「트리거 실패」에만
+     * 오고, 웹앱 doPost 오류는 호출자에게 'internal'로만 돌아간다. 접수는 라이브 파이프라인이라
+     * 조용한 실패 = 지원자 유실. 그래서 시트에 적어 두면, 이미 감시되는 층(10분 트리거의
+     * crewIntakeWatch_ — 트리거 실패는 자동 메일이 온다)이 미통보 건을 묶어 1통으로 알린다. */
+    console.error('[크루카드] doPost 실패: ' + ((err && err.stack) || err));
+    크루_오류로그_('doPost', err);
     return 크루_응답_({ ok: false, error: 'internal' });        // 내부 오류 내용은 밖으로 흘리지 않는다
   }
 }
@@ -169,6 +184,45 @@ function 크루_다음번호_(sh, today) {
     if (m && m[1] === today) max = Math.max(max, Number(m[2]));
   }
   return max + 1;
+}
+
+/* doPost 런타임 오류를 crew_errors 탭에 적는다 — 이 웹앱에서 「알리는」 유일하게 안전한 방법.
+ *
+ * ⛔ 여기서 메일을 쏘지 않는 이유는 접수 알림과 같다(무토큰 익명 POST = 메일 폭탄 벡터).
+ *   기록만 하고, 알림은 읽는 쪽(메인 crewIntakeWatch_ · 10분 트리거 = 감시되는 층)이 낸다.
+ * 🔒 이 함수는 절대 throw 하면 안 된다 — 오류 처리 중의 오류가 응답을 죽이면
+ *   「기록하려다 접수 응답까지 잃는」 역전이 된다. 실패하면 console에만 남기고 삼킨다.
+ * 🔒 detail은 공백류를 접고 자른다 — 예외 문자열엔 공격자 입력 조각이 섞일 수 있고,
+ *   경보 메일의 본문 구조가 줄바꿈이라 개행이 살아 있으면 가짜 절을 만든다(이름 칸과 같은 계열).
+ *   셀안전_도 지난다(오류 문자열로 수식 인젝션 우회 차단). */
+function 크루_오류로그_(stage, err) {
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const key = 'errlog:' + Utilities.formatDate(new Date(), TZ_, 'yyyyMMdd');
+    const n = Number(props.getProperty(key) || 0);
+    if (n >= ERR_DAILY_CAP) return;   // 상한 뒤는 조용히 버린다(원본은 console에 남는다)
+    const ss = SpreadsheetApp.openById(CONSULT_SHEET_ID);
+    let sh = ss.getSheetByName(ERR_TAB);
+    if (!sh) sh = ss.insertSheet(ERR_TAB);
+    /* 헤더는 **매번** 확인한다(멱등) — 만드는 순간에만 쓰면, 사람이 1행을 지웠거나 탭을 손으로
+     * 먼저 만들어 둔 경우 오류가 1행에 착지하고 읽는 쪽의 `getLastRow() >= 2` 가드에 걸려
+     * **그 오류는 영원히 안 보인다**. 같은 파일 크루_탭_이 이미 배운 함정([v9.163])이다. */
+    if (sh.getLastRow() === 0) {
+      sh.getRange(1, 1, 1, 4).setValues([['at', 'stage', 'detail', '통보']]).setFontWeight('bold');
+      sh.setFrozenRows(1);
+    }
+    /* 마지막 한 칸은 「여기서 잘렸다」를 남기는 데 쓴다 — 조용한 절단은 이 장치가 없애려던 바로 그 형태다.
+     * 접수가 계통적으로 깨진 날(열 변경 등) 상한 50에 닿으면 나머지 250건이 흔적 없이 사라져
+     * 원장이 규모를 5분의 1로 과소평가한다(적대 리뷰 H4). */
+    const 마지막 = (n === ERR_DAILY_CAP - 1);
+    const detail = 마지막
+      ? '오늘 오류 기록이 상한(' + ERR_DAILY_CAP + '건)에 닿아 이후는 생략합니다 — 실제 실패는 이보다 많습니다. 원문은 Apps Script 실행 로그에 있습니다.'
+      : String((err && err.stack) || err).replace(/\s+/g, ' ').slice(0, 500);
+    sh.appendRow([new Date(), 셀안전_(마지막 ? '상한도달' : String(stage).slice(0, 40)), 셀안전_(detail), '']);
+    props.setProperty(key, String(n + 1));   // 기록이 성립한 뒤에만 상한을 소모
+  } catch (e3) {
+    console.error('[크루카드] 오류 기록 실패(원 오류는 위 로그에): ' + e3);
+  }
 }
 
 /* 수식 인젝션 차단 — 시트에 문자열로 들어갈 값은 전부 이 통로를 지난다.
