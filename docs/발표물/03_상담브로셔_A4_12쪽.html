@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK LAB 상담 브로셔 — A4 12쪽</title>
+<!--
+  SYNK LAB 발표물 3번 — 상담 브로셔 (A4 세로 · 12쪽)
+  브랜드 키트 = docs/발표물/_브랜드킷.md   로고 = W5(주입: tools/로고주입.js)
+  산출물 사양 = docs/정본/SYNK/SYNK 발표물 제작 프롬프트 v1.txt v1.4 §3 + [공통 블록]
+  원천 원고   = docs/정본/SYNK LAB/About Synk lab/SYNK_리라이팅_v2/01_..._상담브로셔.txt v3.2
+
+  ▶ 이 물건의 결정적 차이 — **혼자 읽는 문서가 아니라 둘이 같이 보는 물건**이다.
+     그래서 ① 한 쪽 = 상담에서 한 번 멈추는 지점
+            ② 쪽마다 하단에 「이 쪽에서 원장이 할 말 한 문장」
+               (학부모에겐 요약으로, 원장에겐 대본으로 동시에 작동한다)
+            ③ 학부모가 가져가 배우자에게 보여줄 것을 전제 — 원장 없이 읽혀도 뜻이 통해야 한다
+
+  ▶ 인쇄 — Ctrl+P → "PDF로 저장" · A4 · 세로 · 여백 "없음" · "배경 그래픽" 켜기
+     양면 인쇄하면 6장이 된다. 표지(p1)와 뒤표지(p12)가 바깥면이 되도록 묶는다.
+-->
+<style>
+@page { size: A4 portrait; margin: 0; }
+
+:root{
+  --blue:#3D5AFE; --orange:#FF6D00; --gold:#FFC400;
+  --paper:#FDFCF8; --ink:#1A237E; --midnight:#0B1A2E;
+  --hair:rgba(26,35,126,.20); --mute:#6C74A8; --body:#414A80;
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{
+  background:var(--paper); color:var(--ink);
+  font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
+  font-weight:500; line-height:1.72;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+/* 활자 크기는 「학부모 대면물은 밀도를 높인다」에 맞춘 값이다(디자인 컨셉 정본의 대상별 밀도 분기).
+   처음엔 한 단계 작게 잡았다가 쪽당 45~170mm 가 비었다 — 12쪽인데 지면이 절반씩 비면
+   얇아 보이고, 여백이 학부모에게 「내용 없음」으로 읽힌다. 본문은 8pt 아래로 내리지 않는다. */
+/* 🚫 한글·키릴 금지 — DM Mono엔 글리프가 없다 */
+.mono{ font-family:'DM Mono',ui-monospace,'Cascadia Mono','Consolas',monospace; }
+
+.pg{
+  width:210mm; height:297mm; padding:16mm 17mm 13mm;
+  display:flex; flex-direction:column; overflow:hidden; background:var(--paper);
+  position:relative; page-break-after:always; break-after:page;
+}
+.pg:last-child{ page-break-after:auto; break-after:auto; }
+
+/* ── 쪽 머리 ─────────────────────────────────────────── */
+.ph{ display:flex; align-items:center; justify-content:space-between; flex:0 0 auto; margin-bottom:7mm; }
+.ph .sec{ font-size:2.6mm; font-weight:700; letter-spacing:.2em; color:var(--blue); }
+.ph .no{ font-size:2.8mm; font-weight:700; color:var(--mute); letter-spacing:.1em; }
+
+h2{ font-size:8.6mm; font-weight:800; line-height:1.24; letter-spacing:-.03em; flex:0 0 auto; }
+h2 em{ font-style:normal; color:var(--orange); }
+.lede{ font-size:4.3mm; color:var(--body); margin-top:4.6mm; line-height:1.62; flex:0 0 auto; }
+.bd{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; }
+p{ font-size:4mm; color:var(--body); margin-top:4.6mm; }
+p b, b{ color:var(--ink); font-weight:800; }
+.hl{ font-weight:800; color:var(--ink); box-shadow:inset 0 -2mm 0 rgba(255,196,0,.45); }
+
+/* 내용이 적은 쪽은 활자를 키워 **선언 지면**으로 만든다.
+   같은 글을 작게 놓고 아래를 비우면 「할 말이 없는 쪽」으로 읽힌다 —
+   한 쪽 = 상담에서 한 번 멈추는 지점이므로, 멈출 만한 무게가 지면에 있어야 한다. */
+.stmt h2{ font-size:12mm; line-height:1.2; }
+.stmt .bd{ justify-content:center; }
+.stmt p{ font-size:4.8mm; margin-top:6mm; line-height:1.7; }
+.stmt .lede{ font-size:5.4mm; line-height:1.55; }
+.roomy h2{ font-size:9.6mm; }
+.roomy p{ font-size:4.4mm; margin-top:5.4mm; }
+.roomy .lede{ font-size:4.7mm; }
+/* 이 쪽들은 본문이 아니라 카드·도식이 주라, 글자만 키우면 아래가 그대로 빈다.
+   남는 자리를 컴포넌트 안쪽 여백으로 돌려 지면을 채운다. */
+.roomy .flow{ margin-top:9mm; }
+.roomy .flow .st{ padding:8mm 4.6mm; }
+.roomy .pw3{ margin-top:8mm; gap:4.2mm; }
+.roomy .pw3 .p{ padding:6mm 4.6mm; }
+.roomy .vow{ gap:7mm; margin-top:8mm; }
+.roomy .vow .v{ padding:4.4mm 0 4.4mm 6mm; }
+.roomy .steps{ margin-top:8mm; gap:4.2mm; }
+.roomy .steps .s{ padding:7mm 4.2mm; }
+.roomy .contact{ margin-top:9mm; }
+
+/* ── 쪽 바닥 = 원장 대본 ──────────────────────────────── */
+.script{
+  flex:0 0 auto; margin-top:6mm; padding-top:3.4mm; border-top:.4mm solid var(--hair);
+  display:flex; align-items:flex-start; gap:3.4mm;
+}
+.script .q{ font-size:6mm; line-height:.9; color:var(--gold); font-weight:800; flex:0 0 auto; }
+.script .t{ font-size:3.6mm; color:var(--body); line-height:1.55; font-style:italic; }
+.script .t b{ font-style:normal; }
+.script .lb{ font-size:2.3mm; font-weight:700; color:var(--mute); letter-spacing:.12em; display:block; margin-bottom:1mm; font-style:normal; }
+
+/* ── 표지·뒤표지 ─────────────────────────────────────── */
+.cover{ background:var(--midnight); color:var(--paper); justify-content:space-between; }
+.cover::before{
+  content:''; position:absolute; inset:0;
+  background-image:
+    radial-gradient(circle at 1.2mm 1.2mm, rgba(61,90,254,.30) 0 .42mm, transparent .42mm),
+    radial-gradient(circle at 6mm 6mm, rgba(255,196,0,.15) 0 .28mm, transparent .28mm);
+  background-size:10mm 10mm, 10mm 10mm;
+}
+.cover > *{ position:relative; }
+.cover h1{ font-size:14mm; font-weight:800; line-height:1.14; letter-spacing:-.04em; }
+.cover h1 em{ font-style:normal; color:var(--gold); }
+.cover .sub{ font-size:4mm; color:#B9C2E0; margin-top:6mm; line-height:1.6; max-width:130mm; }
+.cover .rule{ height:.8mm; background:linear-gradient(90deg,var(--gold) 0 26%, rgba(255,196,0,.2) 26% 100%); margin:8mm 0; }
+.cover .meta{ font-size:2.8mm; color:#8E9AC4; line-height:1.6; }
+.symbol{ width:44mm; height:28mm; }
+.symbol svg{ width:100%; height:100%; display:block; }
+.symbol.sm{ width:22mm; height:14mm; }
+
+/* ── 근거 카드 (p3) ──────────────────────────────────── */
+.cards{ display:flex; flex-direction:column; gap:4mm; margin-top:5mm; }
+.card{ border:.35mm solid var(--hair); border-radius:2.6mm; padding:5.4mm 5.6mm; background:#fff; }
+.card .n{ font-size:2.8mm; font-weight:700; color:var(--blue); letter-spacing:.14em; }
+.card .t{ font-size:5.2mm; font-weight:800; margin-top:1.8mm; letter-spacing:-.02em; line-height:1.3; }
+.card .d{ font-size:3.7mm; color:var(--body); margin-top:2.6mm; line-height:1.6; }
+.card .src{ font-size:2.9mm; color:var(--mute); margin-top:2.8mm; padding-top:2.4mm; border-top:.25mm dashed var(--hair); line-height:1.5; }
+
+/* ── 3단 도식 (p4) ───────────────────────────────────── */
+.flow{ display:flex; align-items:stretch; gap:0; margin-top:6mm; }
+.flow .st{ flex:1 1 0; border:.35mm solid var(--hair); border-radius:2.6mm; padding:5mm 4mm; text-align:center; background:#fff; }
+.flow .st.hi{ background:var(--midnight); border-color:var(--midnight); }
+.flow .st .i{ font-size:2.5mm; font-weight:700; color:var(--blue); letter-spacing:.14em; }
+.flow .st.hi .i{ color:var(--gold); }
+.flow .st .t{ font-size:4.6mm; font-weight:800; margin-top:2.2mm; line-height:1.3; letter-spacing:-.015em; }
+.flow .st.hi .t{ color:var(--paper); }
+.flow .st .d{ font-size:3.2mm; color:var(--mute); margin-top:2mm; line-height:1.5; }
+.flow .st.hi .d{ color:#B9C2E0; }
+.flow .ar{ flex:0 0 9mm; display:flex; align-items:center; justify-content:center; }
+
+/* ── 세 가지 힘 (p5) ─────────────────────────────────── */
+.pw3{ display:flex; gap:3.4mm; margin-top:5mm; }
+.pw3 .p{ flex:1 1 0; border:.35mm solid var(--hair); border-radius:2.6mm; padding:4mm 3.6mm; background:#fff; }
+.pw3 .p .n{ font-size:2.5mm; font-weight:700; color:var(--blue); letter-spacing:.12em; }
+.pw3 .p .t{ font-size:4.6mm; font-weight:800; margin-top:1.8mm; line-height:1.25; letter-spacing:-.015em; }
+.pw3 .p .d{ font-size:3.3mm; color:var(--body); margin-top:2.4mm; line-height:1.55; }
+.pw3 .p .r{ font-size:3.2mm; font-weight:800; color:var(--orange); margin-top:2.8mm; padding-top:2.4mm; border-top:.25mm dashed var(--hair); }
+
+/* ── 표 공통 ─────────────────────────────────────────── */
+table{ width:100%; border-collapse:collapse; margin-top:5mm; font-size:3.7mm; }
+th,td{ text-align:left; padding:3.8mm 4mm; border-bottom:.3mm solid var(--hair); vertical-align:top; }
+th{ font-size:2.9mm; color:var(--mute); font-weight:800; letter-spacing:.1em; background:#F2F5FF; }
+td.k{ font-weight:800; color:var(--ink); white-space:nowrap; }
+td.g{ color:var(--mute); }
+tr.hi td{ background:#FFF9E9; }
+
+/* ── 비교 도식 (p7) ──────────────────────────────────── */
+.vs{ display:flex; gap:3.4mm; margin-top:4.4mm; }
+.vs .col{ flex:1 1 0; border-radius:2.6mm; padding:4mm 4.2mm; }
+.vs .col.old{ background:#F0EFEA; border:.35mm solid rgba(26,35,126,.14); }
+.vs .col.new{ background:var(--midnight); color:var(--paper); }
+.vs .col .h{ font-size:2.6mm; font-weight:700; letter-spacing:.12em; }
+.vs .col.old .h{ color:#8A8577; }
+.vs .col.new .h{ color:var(--gold); }
+.vs .col li{ font-size:3.6mm; margin-top:2.8mm; list-style:none; line-height:1.5; }
+.vs .col.old li{ color:#6E6A5E; }
+.vs .col.new li{ color:#DCE1F2; }
+.vs .col li::before{ content:'— '; opacity:.5; }
+
+.four{ display:flex; flex-direction:column; gap:3.4mm; margin-top:4.4mm; }
+.it{ display:flex; gap:4mm; border:.35mm solid var(--hair); border-radius:2.6mm; padding:3.6mm 4.2mm; background:#fff; }
+.it .num{
+  flex:0 0 auto; width:7.4mm; height:7.4mm; border-radius:50%; background:var(--blue); color:#fff;
+  font-weight:700; font-size:3.8mm; display:flex; align-items:center; justify-content:center;
+  font-family:'DM Mono',ui-monospace,monospace;
+}
+.it .t{ font-size:4.4mm; font-weight:800; letter-spacing:-.015em; line-height:1.3; }
+.it .d{ font-size:3.5mm; color:var(--body); margin-top:1.8mm; line-height:1.56; }
+
+/* ── 6레벨 띠 (p8) ───────────────────────────────────── */
+.band{ display:flex; gap:1.6mm; margin-top:5mm; }
+.band .c{ flex:1 1 0; border-radius:1.8mm; border:.3mm solid var(--hair); overflow:hidden; background:#fff; }
+.band .c .cap{ padding:2.6mm 1mm 2.2mm; text-align:center;
+  background:repeating-linear-gradient(45deg, rgba(61,90,254,.06) 0 1.1mm, transparent 1.1mm 2.6mm), #F2F5FF; }
+.band .c.j .cap{ background:repeating-radial-gradient(circle at 1.2mm 1.2mm, rgba(255,196,0,.3) 0 .3mm, transparent .3mm 2.6mm), #FFF9E9; }
+.band .c .lv{ font-size:5mm; font-weight:800; line-height:1; color:var(--blue); letter-spacing:-.03em; }
+.band .c.j .lv{ color:#8A6A00; }
+.band .c .r{ padding:2mm 1mm; text-align:center; border-top:.25mm solid var(--hair); }
+.band .c .r .kk{ font-size:2.1mm; color:var(--mute); font-weight:700; letter-spacing:.08em; }
+.band .c .r .vv{ font-size:2.9mm; font-weight:800; margin-top:.6mm; }
+.dest{ display:flex; gap:3.4mm; margin-top:4.4mm; }
+.dest .d{ flex:1 1 0; border:.45mm solid var(--orange); border-radius:2.4mm; padding:3mm 3.6mm; background:#FFF6EE; }
+.dest .d .kk{ font-size:2.4mm; font-weight:700; color:var(--orange); letter-spacing:.1em; }
+.dest .d .vv{ font-size:3.6mm; font-weight:800; margin-top:1mm; }
+
+/* ── 약속 (p10) ──────────────────────────────────────── */
+.vow{ display:flex; flex-direction:column; gap:4mm; margin-top:5mm; }
+.vow .v{ border-left:1.1mm solid var(--orange); padding:2.6mm 0 2.6mm 5mm; }
+.vow .v .t{ font-size:4.9mm; font-weight:800; letter-spacing:-.015em; }
+.vow .v .d{ font-size:3.7mm; color:var(--body); margin-top:2.2mm; line-height:1.6; }
+
+/* ── 세 걸음 + 연락처 (p11) ──────────────────────────── */
+.steps{ display:flex; gap:3.4mm; margin-top:5mm; }
+.steps .s{ flex:1 1 0; border:.35mm solid var(--hair); border-radius:2.6mm; padding:4mm 3.6mm; background:#fff; text-align:center; }
+.steps .s .n{ font-size:6mm; font-weight:800; color:var(--blue); line-height:1; font-family:'DM Mono',ui-monospace,monospace; }
+.steps .s .t{ font-size:4.1mm; font-weight:800; margin-top:2.6mm; line-height:1.3; }
+.steps .s .d{ font-size:3.2mm; color:var(--mute); margin-top:2mm; line-height:1.5; }
+.contact{ margin-top:6mm; border-top:.5mm solid var(--hair); padding-top:4.4mm; display:flex; gap:6mm; }
+.contact .rows{ flex:1 1 auto; display:grid; grid-template-columns:1fr 1fr; column-gap:6mm; }
+.contact h3{ grid-column:1/-1; font-size:2.7mm; font-weight:700; color:var(--blue); letter-spacing:.14em; }
+.contact .r{ margin-top:3mm; }
+.contact .r .k{ font-size:3.4mm; font-weight:800; }
+.contact .r .v{ border-bottom:.4mm solid #3B4374; height:5.6mm; font-size:3mm; color:#B08050; letter-spacing:.04em; margin-top:1.2mm; }
+.qr{ flex:0 0 30mm; height:30mm; border:.5mm dashed var(--blue); border-radius:2mm; background:#fff;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+  color:var(--mute); font-size:2.5mm; line-height:1.4; }
+
+.fn{ font-size:3.1mm; color:var(--mute); margin-top:3.4mm; line-height:1.55; }
+.blank{ color:#B08050; letter-spacing:.06em; }
+
+@media screen{
+  body{ background:#DFE3EE; padding:8mm; }
+  .pg{ box-shadow:0 3mm 12mm rgba(11,26,46,.2); margin:0 auto 8mm; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ p1 · 표지 ══════════ -->
+<section class="pg cover">
+  <div>
+    <!-- LOGO SLOT ▸ 주입은 tools/로고주입.js (브랜드킷 §3) -->
+    <div class="symbol">
+      <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#FDFCF8">syn</text>
+            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6D00"/>
+          </svg>
+    </div>
+  </div>
+
+  <div>
+    <h1>진짜 한국어는<br><em>SYNK</em>에서 시작됩니다</h1>
+    <div class="rule"></div>
+    <div class="sub">뇌과학이 설계하고, K컬처가 완성하고,<br>목적이 방향을 잡는 한국어 교육</div>
+  </div>
+
+  <div class="meta">
+    SYNK LAB · 몽골 울란바토르 · 2027년 2월 개원 예정<br>
+    이 브로셔는 상담 자리에서 함께 넘겨 보는 물건입니다.
+  </div>
+</section>
+
+<!-- ══════════ p2 · 문제 제기 ══════════ -->
+<section class="pg stmt">
+  <div class="ph"><span class="sec mono">THE PROBLEM</span><span class="no mono">02</span></div>
+  <h2>문법은 완벽한데,<br>왜 말하려고 하면 <em>입이 얼어붙을까요?</em></h2>
+  <div class="bd">
+    <p>학부모님, 이런 순간을 보신 적 있을 겁니다. 아이가 단어장을 수백 번 넘기고 문법 규칙을 다 외웠는데,
+      정작 한국 사람 앞에서는 머릿속이 하얗게 비어버리는 순간. 분명 열심히 했는데, 왜 말이 나오지 않을까요?</p>
+    <p class="lede" style="margin-top:6mm"><span class="hl">아이의 재능이나 노력의 문제가 아닙니다.</span>
+      문제는 우리가 당연하게 여겨온 학습 방법 그 자체입니다.</p>
+    <p>대부분의 한국어 수업은 아직도 조용한 교실에서 문법과 단어를 기계적으로 암기하는
+      <b>시험 과목 방식</b>에 머물러 있습니다. 그러나 언어는 감정을 느끼고, 몸으로 경험하고,
+      실제 상황에서 부딪힐 때 가장 빠르고 오래 기억됩니다.</p>
+    <p>SYNK LAB은 이 원리 위에 한국어 학습에 특화된 <b>독자적 시스템</b>을 설계했습니다.</p>
+  </div>
+  <div class="script"><span class="q">“</span><span class="t"><span class="lb mono">SCRIPT</span>
+    아이 탓이 아닙니다. 방법이 그렇게 설계돼 있었을 뿐이에요.</span></div>
+</section>
+
+<!-- ══════════ p3 · 검증된 원리 3건 ══════════ -->
+<section class="pg">
+  <div class="ph"><span class="sec mono">THE EVIDENCE</span><span class="no mono">03</span></div>
+  <h2>세계가 검증해 온 <em>학습의 원리</em></h2>
+  <div class="lede">저희가 지어낸 이야기가 아닙니다. 이미 국가와 학교가 실행해 본 것을 가져왔습니다.</div>
+  <div class="bd">
+    <div class="cards">
+      <div class="card">
+        <div class="n mono">01 · FINLAND</div>
+        <div class="t">핀란드 ‘움직이는 학교(Liikkuva koulu)’</div>
+        <div class="d">PISA 최상위권을 오랫동안 지켜온 핀란드가 국가 차원에서 전국으로 확산시킨 프로그램입니다.
+          핵심 원리는 단 하나 — <b>신체 활동과 정규 수업을 하나의 흐름으로 통합하는 것.</b></div>
+        <div class="src">핀란드 정부 보고서에 따르면 참여 학교의 교사들은 학생들의 집중력이 눈에 띄게 향상됐다고 보고했고,
+          학생 다수가 “학교가 더 즐거워졌다”고 응답한 것으로 전해집니다.</div>
+      </div>
+      <div class="card">
+        <div class="n mono">02 · NAPERVILLE</div>
+        <div class="t">하버드 의대 존 레이티 교수 × 네이퍼빌 ‘0교시 체육’</div>
+        <div class="d">하버드 의대 정신과 존 레이티 교수는 저서 『운동화 신은 뇌(Spark)』에서 미국 네이퍼빌
+          센트럴 고등학교의 0교시 체육 사례를 소개합니다. 정규 수업 전 유산소 운동을 도입한 결과,
+          <b>읽기·이해력이 17% 향상</b>된 것으로 보고되었습니다.</div>
+        <div class="src">출처: 존 레이티, 『운동화 신은 뇌(Spark)』.</div>
+      </div>
+      <div class="card">
+        <div class="n mono">03 · GERMANY</div>
+        <div class="t">독일 인지신경과학의 제스처–어휘 연구</div>
+        <div class="d">막스플랑크 연구소를 비롯한 독일 인지신경과학 연구들에서는, <b>제스처와 신체 움직임을 동반해
+          어휘를 학습한 그룹</b>이 앉아서 암기한 그룹보다 기억률이 높았던 것으로 전해집니다.</div>
+        <div class="src">시각·청각·운동감각이 동시에 자극될 때 뇌는 더 강한 신경 연결을 만들고,
+          그것이 장기 기억으로 이어지는 것으로 설명됩니다.</div>
+      </div>
+    </div>
+    <p class="lede" style="margin-top:5mm">수십 년의 데이터가 내린 결론은 하나입니다.
+      <span class="hl">몸이 깨어날 때, 뇌는 가장 깊이 배운다.</span></p>
+  </div>
+  <div class="script"><span class="q">“</span><span class="t"><span class="lb mono">SCRIPT</span>
+    저희가 만든 이야기가 아니라, 이미 검증된 걸 한국어 수업에 옮긴 겁니다.</span></div>
+</section>
+
+<!-- ══════════ p4 · SYNK의 핵심 ══════════ -->
+<section class="pg roomy">
+  <div class="ph"><span class="sec mono">THE METHOD</span><span class="no mono">04</span></div>
+  <h2>“워밍업부터<br><em>이미 한국어 수업입니다</em>”</h2>
+  <div class="bd">
+    <p>일반적인 워밍업은 몸을 푸는 준비 단계일 뿐입니다. SYNK LAB의 K컬처 워밍업은 다릅니다.
+      처음부터 끝까지 <b>100% 한국어로 진행되는 K컬처 신체활동</b>입니다.
+      K팝 댄스, K드라마 장면 연기, K뷰티 체험, K보컬 프로그램 — 모든 지시와 표현이 한국어입니다.</p>
+    <p>이 순간 아이는 이미 한국어로 듣고, 한국어로 이해하고, 한국어로 움직이고 있습니다.
+      영하 30도의 울란바토르 아침에도, 교실에 들어서는 순간부터 몸과 뇌가 함께 깨어납니다.</p>
+
+    <div class="flow">
+      <div class="st">
+        <div class="i mono">STEP 1</div>
+        <div class="t">몸과 뇌 깨우기</div>
+        <div class="d">100% 한국어 K컬처 신체활동</div>
+      </div>
+      <div class="ar">
+        <svg width="7mm" height="7mm" viewBox="0 0 24 24" fill="none" stroke="#3D5AFE" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+      </div>
+      <div class="st">
+        <div class="i mono">STEP 2</div>
+        <div class="t">활성화된 뇌로 학습</div>
+        <div class="d">문법·어휘·독해·회화 체계 수업</div>
+      </div>
+      <div class="ar">
+        <svg width="7mm" height="7mm" viewBox="0 0 24 24" fill="none" stroke="#3D5AFE" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+      </div>
+      <div class="st hi">
+        <div class="i mono">STEP 3</div>
+        <div class="t">장기 기억 전환</div>
+        <div class="d">몸으로 느낀 언어 감각이 남는다</div>
+      </div>
+    </div>
+
+    <p style="margin-top:5mm">그리고 뇌가 가장 활성화된 바로 그 순간, 정규 한국어 수업이 시작됩니다.
+      수업과 연결된 짧고 집중된 한 번의 신체활동만으로도 충분한 효과를 낸다는 것 —
+      핀란드의 학교에서, 네이퍼빌의 교실에서 확인된 바로 그 메커니즘입니다.</p>
+  </div>
+  <div class="script"><span class="q">“</span><span class="t"><span class="lb mono">SCRIPT</span>
+    저희 수업은 몸이 깨어난 다음에 시작합니다. 순서가 다릅니다.</span></div>
+</section>
+
+<!-- ══════════ p5 · 세 가지 힘 ══════════ -->
+<section class="pg roomy">
+  <div class="ph"><span class="sec mono">BEYOND SCORES</span><span class="no mono">05</span></div>
+  <h2>그런데, 잘 외우는 것만으로는<br><em>충분하지 않습니다</em></h2>
+  <div class="bd">
+    <p>AI가 웬만한 사람보다 더 많이 알고 더 빨리 계산하는 시대에, 점수만으로는 아이의 미래를 지킬 수 없습니다.
+      그래서 SYNK는 ‘어떻게 배우는가’와 함께 <b>‘왜 배우는가’</b>를 설계합니다.
+      SYNK라는 이름의 뜻이 여기 있습니다 — <span class="hl">학습과 목적 발견의 동기화(synchronize).</span></p>
+
+    <div class="pw3">
+      <div class="p">
+        <div class="n mono">01</div>
+        <div class="t">질문하는 힘</div>
+        <div class="d">무엇이 진짜 문제인지 스스로 묻고 정의하는 힘</div>
+        <div class="r">→ 「나침반」 세션</div>
+      </div>
+      <div class="p">
+        <div class="n mono">02</div>
+        <div class="t">스스로 하는 힘</div>
+        <div class="d">시키지 않아도 먼저 움직이고 끝까지 해내는 힘</div>
+        <div class="r">→ 「싱크 크루」 프로젝트</div>
+      </div>
+      <div class="p">
+        <div class="n mono">03</div>
+        <div class="t">마음을 얻는 힘</div>
+        <div class="d">사람과 통하고 신뢰를 쌓는 힘</div>
+        <div class="r">→ 반 레이드 · 발표</div>
+      </div>
+    </div>
+
+    <p style="margin-top:5mm">데이터로 학습되지 않고, <b>오직 직접 겪은 경험에서만 자라는 힘</b>입니다.
+      그리고 이 힘이 자라면 한국어 실력도 더 단단해집니다.</p>
+    <p>“TOPIK 5급만 따면 돼”라는 학생과 “한국 IT 기업과 몽골을 잇는 다리가 될 거야, 5급은 그 첫 무기”라는 학생.
+      같은 단어장을 펴도 외우는 깊이가 다르고, 힘들 때 다시 일어서는 이유가 다릅니다.</p>
+  </div>
+  <div class="script"><span class="q">“</span><span class="t"><span class="lb mono">SCRIPT</span>
+    점수는 저희가 책임집니다. 그 다음을 같이 설계하는 게 저희 일이고요.</span></div>
+</section>
+
+<!-- ══════════ p6 · 사이클 ══════════ -->
+<section class="pg">
+  <div class="ph"><span class="sec mono">THE CYCLE</span><span class="no mono">06</span></div>
+  <h2>SYNK의 모든 프로그램은<br><em>하나의 사이클</em> 위에서 돕니다</h2>
+  <div class="lede">Learn → Plan → Experience → Record.
+    배우고, 방향을 정하고, 몸으로 겪고, 기록으로 남깁니다. <b>이 네 단어가 SYNK 설명의 전부입니다.</b></div>
+  <div class="bd">
+    <table>
+      <tr><th style="width:26mm">단계</th><th style="width:44mm">프로그램</th><th>아이가 얻는 것</th></tr>
+      <tr><td class="k">배움 <span class="mono" style="color:#6C74A8">Learn</span></td><td class="k">K컬처 워밍업</td><td>몸으로 열린 한국어 + 이어지는 정규 수업</td></tr>
+      <tr><td class="k">방향 <span class="mono" style="color:#6C74A8">Plan</span></td><td class="k">「나침반」 세션</td><td>드림맵 카드 — 아이가 소유하는 목적과 로드맵</td></tr>
+      <tr><td class="k">경험 <span class="mono" style="color:#6C74A8">Experience</span></td><td class="k">「싱크 크루」</td><td>시즌당 포트폴리오 1건</td></tr>
+      <tr class="hi"><td class="k">기록 <span class="mono" style="color:#8A6A00">Record</span></td><td class="k">「싱크 포트폴리오」</td><td>드림맵 + 결과물 + 급수의 증명</td></tr>
+    </table>
+
+    <p style="margin-top:6mm">하루에도, 한 시즌에도 같은 사이클이 돕니다.
+      그리고 그 첫 칸에 <b>매일의 K컬처 워밍업이 엔진처럼</b> 놓여 전체를 밀어 올립니다.</p>
+
+    <div class="four" style="margin-top:5mm">
+      <div class="it"><div class="num">1</div><div>
+        <div class="t">「나침반」 세션 — 방향을 먼저 정합니다</div>
+        <div class="d">입학할 때, 그리고 시즌마다 목적·로드맵 워크숍을 엽니다. 왜 한국어를 배우는가, 5년 뒤의 나는
+          어떤 모습인가, TOPIK을 언제 어디에 쓸 것인가 — 아이가 직접 답을 채웁니다. 결과물은 아이가 소유하는 드림맵 카드.</div>
+      </div></div>
+      <div class="it"><div class="num">2</div><div>
+        <div class="t">「싱크 크루」 — 팀으로 진짜 경험을 만듭니다</div>
+        <div class="d">시즌마다 팀이 K컬처 실전 프로젝트 하나를 <b>기획 → 도전 → 다시 → 완성</b>합니다.
+          울란바토르 한국어 소개 영상, K컬처 공연 같은 결과물이 남습니다.</div>
+      </div></div>
+      <div class="it"><div class="num">3</div><div>
+        <div class="t">「싱크 포트폴리오」 — 성장이 증거로 쌓입니다</div>
+        <div class="d">졸업할 때 아이는 자격증 한 장이 아니라 실제 포트폴리오와 자신만의 로드맵을 함께 들고 나갑니다.</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="script"><span class="q">“</span><span class="t"><span class="lb mono">SCRIPT</span>
+    이 네 단어만 기억하셔도 됩니다. 하루에도, 한 시즌에도 이렇게 돕니다.</span></div>
+</section>
+
+<!-- ══════════ p7 · 네 가지 차별점 ══════════ -->
+<section class="pg">
+  <div class="ph"><span class="sec mono">WHAT MAKES US DIFFERENT</span><span class="no mono">07</span></div>
+  <h2>SYNK 통합 교육 시스템 —<br><em>네 가지 차별점</em></h2>
+  <div class="bd">
+    <div class="it" style="border:0; padding:0; margin-top:4mm"><div class="num">1</div><div>
+      <div class="t">학원 3곳의 시간과 비용을 하나로 — 올인원</div>
+    </div></div>
+    <div class="vs">
+      <div class="col old">
+        <div class="h">기존 분산 교육</div>
+        <li>학원 3곳 = 비용 3배</li>
+        <li>복잡한 시간표 조율</li>
+        <li>매일 이동으로 소모</li>
+      </div>
+      <div class="col new">
+        <div class="h">SYNK 통합 시스템</div>
+        <li>단 하나의 등록으로 전부 해결</li>
+        <li>코어 수업 1개 + 자유 참여 프로그램</li>
+        <li>한 공간에서 모든 학습 완결</li>
+      </div>
+    </div>
+    <div class="fn">한 번의 등록으로 — 정규 한국어 수업 / 글로벌 영어 / TOPIK 집중 대비 /
+      K컬처 활동(댄스·보컬·뷰티·원어민 회화) / 6레벨 맞춤 시스템.<br>
+      * 자유 참여 프로그램은 개원과 함께 <b>댄스·회화부터</b> 열고, 나머지는 준비되는 순서대로 더해 갑니다.
+      지금 어느 프로그램이 열려 있는지는 상담에서 그대로 안내해 드립니다 —
+      열리지 않은 것을 열려 있다고 말씀드리지 않는 것이 저희 원칙입니다.</div>
+
+    <div class="it" style="border:0; padding:0; margin-top:5mm"><div class="num">2</div><div>
+      <div class="t">각 분야 최정예가 만드는 시너지</div>
+    </div></div>
+    <table style="margin-top:2.6mm">
+      <tr><td class="k" style="width:44mm">K컬처 현장 전문가</td><td>실제 한류 산업 경험에서 나온 살아 있는 한국어</td></tr>
+      <tr><td class="k">글로벌 영어 전문가</td><td>실전 글로벌 소통</td></tr>
+      <tr><td class="k">언어교육 전문가</td><td>체계적인 문법·구조 교육</td></tr>
+      <tr><td class="k">문화 브릿지 전문가</td><td>몽골어와 한국어를 모두 아는 멘토링</td></tr>
+    </table>
+    <div class="fn">* 강사진은 개원 전까지 채용을 마칩니다. 지금 어느 축이 확보됐고 어느 축을 채용 중인지는
+      상담에서 <span class="blank">____________</span> 이름과 함께 말씀드립니다.
+      <b>확인하실 수 있는 것만 적는 것이 저희 원칙입니다.</b></div>
+
+    <div class="it" style="border:0; padding:0; margin-top:5mm"><div class="num">3</div><div>
+      <div class="t">자체 교재와 시즌 커리큘럼 — 과정이 보이는 목표 관리</div>
+      <div class="d">자체 제작 교재 <b>시냅스 코어 6권</b> + 회화 교재 <b>시냅스 톡 4권</b>.
+        수업은 시즌(8주 = 두 달) 단위로 돌고, <b>승급은 기간이 아니라 도달</b>로 정합니다.
+        읽기·듣기·말하기·쓰기 4개 영역 정기 점검, 매달 월간 리포트카드, 전담 멘토의 취약 지점 밀착 관리.</div>
+    </div></div>
+
+    <div class="it" style="border:0; padding:0; margin-top:4mm"><div class="num">4</div><div>
+      <div class="t">지금 투자할수록 커지는 한국어 경쟁력</div>
+      <div class="d">K컬처는 이미 글로벌 산업의 핵심축이고, 한국어는 취업·네트워크·문화 이해에서
+        측정 가능한 경쟁 우위입니다. 유학·K컬처 진출·글로벌 취업까지 진로 로드맵이 이어집니다.</div>
+    </div></div>
+  </div>
+  <div class="script"><span class="q">“</span><span class="t"><span class="lb mono">SCRIPT</span>
+    세 곳에 나눠 내시던 것을, 저희는 한 곳에서 끝냅니다.</span></div>
+</section>
+
+<!-- ══════════ p8 · 6레벨 로드맵 ══════════ -->
+<section class="pg">
+  <div class="ph"><span class="sec mono">THE ROADMAP</span><span class="no mono">08</span></div>
+  <h2>어디서 시작해서,<br><em>어디까지 가나요</em></h2>
+  <div class="lede">시작 레벨은 첫날 레벨테스트로 정합니다. 지금 실력이 어디든, 정확히 거기서 출발합니다.</div>
+  <div class="bd">
+    <div class="band">
+      <div class="c"><div class="cap"><div class="lv">Lv1</div></div>
+        <div class="r"><div class="kk mono">TOPIK</div><div class="vv">1급</div></div>
+        <div class="r"><div class="kk mono">CEFR</div><div class="vv">A1</div></div>
+        <div class="r"><div class="kk">마치면</div><div class="vv" style="font-size:2.4mm;font-weight:500">한글을 읽고<br>나를 소개</div></div></div>
+      <div class="c"><div class="cap"><div class="lv">Lv2</div></div>
+        <div class="r"><div class="kk mono">TOPIK</div><div class="vv">2급</div></div>
+        <div class="r"><div class="kk mono">CEFR</div><div class="vv">A2</div></div>
+        <div class="r"><div class="kk">마치면</div><div class="vv" style="font-size:2.4mm;font-weight:500">일상 대화의<br>기본 문형</div></div></div>
+      <div class="c"><div class="cap"><div class="lv">Lv3</div></div>
+        <div class="r"><div class="kk mono">TOPIK</div><div class="vv">2~3급</div></div>
+        <div class="r"><div class="kk mono">CEFR</div><div class="vv">A2~B1</div></div>
+        <div class="r"><div class="kk">마치면</div><div class="vv" style="font-size:2.4mm;font-weight:500">익숙한 일상을<br>막힘없이</div></div></div>
+      <div class="c j"><div class="cap"><div class="lv">Lv4</div></div>
+        <div class="r"><div class="kk mono">TOPIK</div><div class="vv">3급</div></div>
+        <div class="r"><div class="kk mono">CEFR</div><div class="vv">B1</div></div>
+        <div class="r"><div class="kk">마치면</div><div class="vv" style="font-size:2.4mm;font-weight:500">내 의견을<br>이유와 함께</div></div></div>
+      <div class="c j"><div class="cap"><div class="lv">Lv5</div></div>
+        <div class="r"><div class="kk mono">TOPIK</div><div class="vv">3~4급</div></div>
+        <div class="r"><div class="kk mono">CEFR</div><div class="vv">B1~B2</div></div>
+        <div class="r"><div class="kk">마치면</div><div class="vv" style="font-size:2.4mm;font-weight:500">사회적 주제를<br>논리로</div></div></div>
+      <div class="c j"><div class="cap"><div class="lv">Lv6</div></div>
+        <div class="r"><div class="kk mono">TOPIK</div><div class="vv">4~5급</div></div>
+        <div class="r"><div class="kk mono">CEFR</div><div class="vv">B2~C1</div></div>
+        <div class="r"><div class="kk">마치면</div><div class="vv" style="font-size:2.4mm;font-weight:500">전문·추상 주제<br>유창하게</div></div></div>
+    </div>
+
+    <div class="dest">
+      <div class="d"><div class="kk mono">ENTRY</div><div class="vv">한국 대학 입학선 — TOPIK 3급 · Lv4</div></div>
+      <div class="d"><div class="kk mono">DEGREE</div><div class="vv">졸업·전공선 — TOPIK 4급 · Lv5~6</div></div>
+    </div>
+
+    <p style="margin-top:5mm"><b>정규 과정 Lv1~6 전 구간을 저희 교재 시냅스 코어 6권으로 완주합니다(TOPIK 5급까지).</b>
+      TOPIK 급은 넓어서, 저희 레벨은 그보다 촘촘하게 한 급을 두 관문에 걸쳐 다지는 구간을 둡니다 —
+      급수를 빨리 넘기는 것보다 넘은 자리에서 안 무너지는 것이 실제 실력이기 때문입니다.</p>
+    <p>1시즌 = 8주 = 교재 1권 = 달력 두 달. 연 6시즌이면 12개월에 한 바퀴입니다.
+      8주차 승급 평가를 통과하면 다음 관문으로 올라가고, 아직이면 <b>‘다시 도전’</b>으로 한 바퀴 더 단단하게 다집니다.</p>
+    <div class="fn">“6개월에 3급” 같은 개월 수 약속을 저희는 하지 않습니다 — 국립국어원 표준 교육과정은
+      한 급을 오르는 데 약 180~200시간을 상정하는데, 개월 수만 말하는 약속에는 이 산수가 비어 있는 경우가 많기 때문입니다.
+      전체 계산은 상담에서 숫자 그대로 보여드립니다.</div>
+  </div>
+  <div class="script"><span class="q">“</span><span class="t"><span class="lb mono">SCRIPT</span>
+    아이가 지금 어디에 있고 어디까지 가는지, 이 한 장이 답합니다.</span></div>
+</section>
+
+<!-- ══════════ p9 · 실물 ══════════ -->
+<section class="pg">
+  <div class="ph"><span class="sec mono">ALREADY RUNNING</span><span class="no mono">09</span></div>
+  <h2>계획서가 아니라,<br><em>이미 돌아가는 시스템</em>입니다</h2>
+  <div class="lede">이 브로셔에 적은 앱과 자동화는 개원 후의 약속이 아니라, 지금 실제로 돌아가는 시스템입니다.
+    원장이 AI를 파트너 삼아 직접 개발했고, 개원 전인 지금도 판올림을 거듭하고 있습니다.</div>
+  <div class="bd">
+    <table>
+      <tr><th style="width:34mm">무엇이</th><th>지금 어떤 상태인가</th></tr>
+      <tr><td class="k">학생용 앱</td><td>몬스터 7단계 진화(뉴로 → 스파키 → 링커 → 서킷 → 미엘로 → 플로우 → 싱크마스터),
+        포인트·왕관·스트릭, 반 전체 레이드, 월간 리포트카드. <b>실제로 돌아가고 있습니다.</b></td></tr>
+      <tr><td class="k">운영 자동화</td><td>상담 신청 10분마다 자동 수집 · 매일 새벽 3시 전체 백업(30일 보관) ·
+        아침 8시 원장 브리핑 메일 · 하루 2회 포인트 재계산 · 매주 재등록·미납 점검 · 매월 성장 스냅샷.</td></tr>
+      <tr><td class="k">수업 기록</td><td>소그룹 발화 기록부터 결석한 학생의 복귀 관리까지 시스템이 따라갑니다.</td></tr>
+      <tr class="hi"><td class="k">자체 교재</td><td>6권 골격·레벨별 요목 <b>확정</b> / 1권 원고 <b>완성 — 원어민 검수를 앞두고 있습니다</b> /
+        2~6권은 개원 일정에 맞춰 <b>집필 중</b> / 회화 교재 시냅스 톡 4권은 <b>설계 단계</b>.</td></tr>
+    </table>
+    <p style="margin-top:5mm"><b>상담 오시면 화면 그대로 보여드립니다.</b> 말로만 설명하지 않습니다.</p>
+
+    <h2 style="font-size:5mm; margin-top:7mm">몽골 학생에게 맞춰 설계했습니다</h2>
+    <p>몽골어와 한국어는 어순(SOV)이 같고 격조사 체계도 닮았습니다. 그래서 몽골 학생은 한국어 문법의 큰 그림을 빨리 잡습니다.
+      저희 커리큘럼은 <b>여기서 아낀 시간을</b> 몽골 학생이 진짜 어려워하는 발음(받침, 된소리/거센소리 구분)과
+      중급부터 벽이 되는 한자어에 <b>다시 투자합니다.</b> 교재의 문법 설명에는 몽골어 대조 팁이 함께 실립니다 —
+      몽골 학생을 위해 처음부터 다시 쓴 교재라서 가능한 일입니다.</p>
+  </div>
+  <div class="script"><span class="q">“</span><span class="t"><span class="lb mono">SCRIPT</span>
+    이건 계획이 아니라 지금 돌아가는 화면입니다. 지금 보여드릴까요?</span></div>
+</section>
+
+<!-- ══════════ p10 · 정직한 약속 ══════════ -->
+<section class="pg roomy">
+  <div class="ph"><span class="sec mono">HONEST PROMISES</span><span class="no mono">10</span></div>
+  <h2>저희가 <em>못 하는 것</em>부터<br>먼저 말씀드리겠습니다</h2>
+  <div class="lede">좋은 것만 적힌 브로셔는 어디에나 있습니다. 저희는 없는 것을 먼저 적습니다.</div>
+  <div class="bd">
+    <div class="vow">
+      <div class="v">
+        <div class="t">하나. 아직 재학생도, 성과 사례도 없습니다</div>
+        <div class="d">2027년 2월 개원을 준비하는 중입니다. 그래서 “몇 명이 몇 급에 합격했다”는 말씀을 드릴 수 없습니다.
+          대신 <b>이미 만들어 둔 것</b>을 보여드립니다 — 커리큘럼, 앱, 자동화, 교재 골격.
+          약속은 말로 하면 가볍지만, 만들어 둔 것은 무겁습니다.</div>
+      </div>
+      <div class="v">
+        <div class="t">둘. 급수도, 기간도 보장하지 않습니다</div>
+        <div class="d">승급은 기간이 아니라 <b>도달</b>로 정합니다. “몇 개월이면 몇 급”이라고 말씀드리는 순간
+          그것은 교육이 아니라 영업이 된다고 생각합니다. 대신 지금 어디까지 왔는지를
+          <b>매달 리포트카드로</b> 숫자 그대로 보여드립니다.</div>
+      </div>
+      <div class="v">
+        <div class="t">셋. 아이의 사진·영상은 언제나 동의가 먼저입니다</div>
+        <div class="d">학생의 사진과 영상은 <b>사전 동의를 받고</b> 사용하며, <b>언제든 철회하실 수 있습니다.</b>
+          동의하지 않으셔도 모든 경험은 똑같이 제공됩니다 — 동의 여부가 아이의 수업에 영향을 주지 않습니다.</div>
+      </div>
+    </div>
+    <p class="lede" style="margin-top:6mm">진짜 변화는 성적표보다 <b>태도</b>에서 먼저 나타납니다.
+      “학원 가기 싫어요”라고 하던 아이가 어느 날 <span class="hl">“오늘 수업 있죠?”</span>라고 먼저 물어봅니다.
+      학부모님께는 매달 데이터로 확인되는 성장 과정을, 학생에게는 진심으로 기다려지는 학습 경험을 드리겠습니다.</p>
+  </div>
+  <div class="script"><span class="q">“</span><span class="t"><span class="lb mono">SCRIPT</span>
+    저희가 못 하는 것부터 말씀드리는 게 맞다고 생각했습니다.</span></div>
+</section>
+
+<!-- ══════════ p11 · 시작하는 세 걸음 ══════════ -->
+<section class="pg roomy">
+  <div class="ph"><span class="sec mono">GETTING STARTED</span><span class="no mono">11</span></div>
+  <h2>지금, 아이의 방향을<br><em>함께 설계할 시간</em>입니다</h2>
+  <div class="lede">오늘 결정하지 않으셔도 됩니다. 세 걸음이면 아이에게 맞는 자리가 보입니다.</div>
+  <div class="bd">
+    <div class="steps">
+      <div class="s"><div class="n">01</div><div class="t">상담 신청</div>
+        <div class="d">페이스북 메신저가 가장 빠릅니다. 아이의 지금 상태를 함께 봅니다.</div></div>
+      <div class="s"><div class="n">02</div><div class="t">레벨테스트</div>
+        <div class="d">첫 수업 날 시작 레벨을 정합니다. 지금 실력이 어디든 정확히 거기서 출발합니다.</div></div>
+      <div class="s"><div class="n">03</div><div class="t">「나침반」 세션</div>
+        <div class="d">왜 배우는지부터 아이가 직접 적습니다. 드림맵 카드를 들고 시작합니다.</div></div>
+    </div>
+
+    <p style="margin-top:6mm">세계가 검증해 온 과학적 학습법, 빈틈없이 설계된 시즌 커리큘럼,
+      누구나 좋아할 수밖에 없는 K컬처의 재미, 그리고 아이만의 목적을 찾아주는 로드맵.
+      <span class="hl">방법이 달라지면, 결과가 달라집니다.</span></p>
+
+    <div class="contact">
+      <div class="rows">
+        <h3 class="mono">CONTACT</h3>
+        <div class="r"><div class="k">페이스북 메신저 <span style="font-weight:500;color:#6C74A8;font-size:2.5mm">가장 빠른 문의</span></div>
+          <div class="v">facebook.com/____________</div></div>
+        <div class="r"><div class="k">전화</div><div class="v">____________</div></div>
+        <div class="r"><div class="k">위치</div><div class="v">____________</div></div>
+        <div class="r"><div class="k">상담 시간</div><div class="v">____________</div></div>
+      </div>
+      <div class="qr">QR 코드 자리<br>메신저 바로 연결</div>
+    </div>
+  </div>
+  <div class="script"><span class="q">“</span><span class="t"><span class="lb mono">SCRIPT</span>
+    오늘 결정하지 않으셔도 됩니다. 레벨테스트부터 보시죠.</span></div>
+</section>
+
+<!-- ══════════ p12 · 뒤표지 ══════════ -->
+<section class="pg cover">
+  <div>
+    <!-- LOGO SLOT ▸ 주입은 tools/로고주입.js -->
+    <div class="symbol sm">
+      <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#FDFCF8">syn</text>
+            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6D00"/>
+          </svg>
+    </div>
+  </div>
+
+  <div>
+    <h1>점수를 넘어,<br><em>삶을 설계합니다</em></h1>
+    <div class="rule"></div>
+    <div class="sub">SYNK LAB은 단순한 한국어 어학원이 아닙니다.<br>
+      한국어를 중심으로 영어·K컬처·진로·미래 경쟁력까지<br>통합 설계된 차세대 교육 플랫폼입니다.</div>
+  </div>
+
+  <div class="meta">
+    SYNK LAB · 몽골 울란바토르<br>
+    <span class="mono" style="color:#5F6894">03 · BROCHURE · v1.0 · 2026-08-04</span>
+  </div>
+</section>
+
+</body>
+</html>

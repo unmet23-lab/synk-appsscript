@@ -24,10 +24,15 @@ const W5_DARK = `<svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
             <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6D00"/>
           </svg>`;
 
-/** LOGO SLOT 주석 바로 뒤의 <svg>…</svg> 를 확정 로고로 갈아끼운다. */
+/**
+ * LOGO SLOT 주석 바로 뒤의 <svg>…</svg> 를 확정 로고로 갈아끼운다.
+ *
+ * ⚠ 감싸는 div 의 class 를 `symbol` 로 못박지 말 것. 브로셔 뒤표지는 `symbol sm`(작은 판)이라
+ *   처음 정규식이 그 슬롯을 **아예 못 잡았다** — 그리고 못 잡은 것은 「어긋남 0」으로 보인다.
+ *   가드가 새는 방향은 언제나 「통과」다. 그래서 class 는 무엇이든 받고, 슬롯 개수를 같이 보고한다.
+ */
 function inject(html) {
-  // 주석 → (공백) → svg 블록. 여러 개 있어도 전부.
-  const re = /(<!--\s*LOGO SLOT[\s\S]*?-->\s*(?:<div class="symbol">\s*)?)<svg[\s\S]*?<\/svg>/g;
+  const re = /(<!--\s*LOGO SLOT[\s\S]*?-->\s*(?:<div class="symbol[^"]*">\s*)?)<svg[\s\S]*?<\/svg>/g;
   let hits = 0;
   const out = html.replace(re, (m, head) => { hits++; return head + W5_DARK; });
   return { out, hits };

@@ -15,7 +15,13 @@
 const fs = require('fs');
 
 // 정본 = docs/정본/SYNK/SYNK 발표물 제작 프롬프트 v1.txt [공통 블록] ■2
-const BANNED = ['패배', '졌다', '실패', '불운', '하락', '부족', '안 됨', '늦었다'];
+//
+// ⚠ 「졌다」·「늦었다」는 **단독 낱말일 때만** 금칙어다. 한글 음절 뒤에 붙으면 전혀 다른 말이 된다
+//   — 「즐거워졌다」·「좋아졌다」·「나아졌다」는 정반대 뜻인데 부분일치로 잡으면 다 걸린다
+//   (실측: 상담 브로셔의 핀란드 인용문 「학교가 더 즐거워졌다」가 금칙어로 잡혔다).
+//   가드가 실작업을 벌주면 사람이 가드를 끈다. 그래서 앞 글자가 한글이면 통과시킨다.
+const BANNED = ['패배', '실패', '불운', '하락', '부족', '안 됨'];
+const BANNED_STANDALONE = ['졌다', '늦었다'];
 
 // 폐기 표기 — 되살아나면 그 산출물은 폐기다(정본 ■3·■5·■7·■9)
 const DEAD = [
@@ -49,7 +55,9 @@ function lint(file) {
   const info = [];
   const hit = (list) => list.filter((w) => text.includes(w));
 
-  const banned = hit(BANNED);
+  const banned = hit(BANNED).concat(
+    BANNED_STANDALONE.filter((w) => new RegExp(`(^|[^가-힣])${w}`).test(text))
+  );
   if (banned.length) bad.push(`금칙어 8종: ${banned.join(', ')}`);
 
   const dead = hit(DEAD);
