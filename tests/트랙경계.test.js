@@ -37,13 +37,21 @@ function 임시(prefix) {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 }
 
-/** 훅을 실제로 돌린다. 상태 폴더를 갈아 끼워 세션당 1회 억제를 격리한다. */
+/** 훅을 실제로 돌린다. 상태 폴더를 갈아 끼워 세션당 1회 억제를 격리한다.
+ *  🔴 cwd 는 주어진 게 없으면 **임시 폴더**다 — 절대 ROOT(실저장소)를 기본값으로 삼지 않는다.
+ *  훅이 cwd 아래 docs/_ops/인계문.md 를 실제로 쓰기 때문에, ROOT 로 돌리면 이 스위트가
+ *  돌 때마다 실인계문이 가짜 블록(세션 s1·block…)으로 밀려난다(F096 실사고 — CI·로컬 검증마다
+ *  진짜 인계가 증발했고, 유호님이 "복사해 붙이라"고 안내받은 파일이 오염돼 있었다). */
 function 돌려(입력, stateDir) {
+  const cwd = 입력.cwd || 임시('synk-tb-cwd-');
   const r = spawnSync(process.execPath, [HOOK], {
-    input: JSON.stringify(입력),
+    input: JSON.stringify({ ...입력, cwd }),
     encoding: 'utf8',
-    env: { ...process.env, SYNK_CTXBUDGET_DIR: stateDir },
-    cwd: 입력.cwd || ROOT,
+    // 🔴 호스트 세션 id 를 **비운다** — 안 비우면 시험을 돌린 실세션의 id 가 훅에 새서
+    //   ①가짜 블록이 진짜 세션 행세를 하고(변이 검증의 카나리아까지 무력화) ②그 세션의
+    //   실커밋이 가짜 인계문에 실린다(08-04 실측: 가짜 3블록에 실커밋 목록이 들어 있었다).
+    env: { ...process.env, SYNK_CTXBUDGET_DIR: stateDir, CLAUDE_CODE_HOST_SESSION_ID: '' },
+    cwd,
   });
   const out = String(r.stdout || '').trim();
   if (!out) return { 발화: false, 본문: '' };
@@ -65,10 +73,14 @@ function 트랜스크립트(총량) {
 test('track-boundary — 발동 조건: 성공 커밋 + 300k 이상일 때만 운다', () => {
   const 큰 = 트랜스크립트(400_000);
   const 작은 = 트랜스크립트(120_000);
-  const 기본 = { tool_name: 'Bash', cwd: ROOT, tool_input: { command: 'git commit -m "x" -- a.md' } };
+  const 기본 = { tool_name: 'Bash', tool_input: { command: 'git commit -m "x" -- a.md' } };
 
-  assert.equal(돌려({ ...기본, session_id: 's1', tool_response: 성공, transcript_path: 큰 }, 임시('synk-tb-a-')).발화,
+  const s1cwd = 임시('synk-tb-s1cwd-');
+  assert.equal(돌려({ ...기본, cwd: s1cwd, session_id: 's1', tool_response: 성공, transcript_path: 큰 }, 임시('synk-tb-a-')).발화,
     true, '성공 커밋 + 400k 인데 침묵했다 — 이러면 장치가 없는 것과 같다');
+  // 인계문 파일은 **입력 cwd 아래**에 남아야 한다 — 실저장소가 아니라(위 돌려() 주석의 실사고)
+  assert.ok(fs.existsSync(path.join(s1cwd, 'docs', '_ops', '인계문.md')),
+    '발화했는데 인계문 파일이 입력 cwd 아래에 없다 — 그럼 어딘가 다른 곳(실저장소?)에 쓴 것이다');
 
   assert.equal(돌려({ ...기본, session_id: 's2', tool_response: 노옵, transcript_path: 큰 }, 임시('synk-tb-b-')).발화,
     false, '🔴 no-op 커밋을 「트랙이 닫혔다」로 셌다 — 아무것도 안 들어갔는데 끊으라고 한다(F071)');
@@ -93,7 +105,8 @@ test('track-boundary — 세션당 1회. 두 번째 커밋에는 침묵한다(�
   // 🔑 **사람이 실제로 쓰는 표기로 검사한다** — 진짜 session_id 는 UUID 다(CLAUDE.md 가드 맹점 ①).
   const A = '17027542-8024-46b6-932b-559733264a1e';
   const B = '7dd54149-844f-4dc1-893a-e2f470207d85';
-  const inp = { tool_name: 'Bash', cwd: ROOT, session_id: A, tool_input: { command: 'git commit -m "x" -- a.md' }, tool_response: 성공, transcript_path: tp };
+  // cwd 고정 — 세션당 1회 표식이 projectKey(cwd) 로 갈리므로, 호출마다 cwd 가 바뀌면 억제가 안 보인다
+  const inp = { tool_name: 'Bash', cwd: 임시('synk-tb-once-cwd-'), session_id: A, tool_input: { command: 'git commit -m "x" -- a.md' }, tool_response: 성공, transcript_path: tp };
   assert.equal(돌려(inp, dir).발화, true, '첫 번째가 안 울었다');
   assert.equal(돌려(inp, dir).발화, false, '🔴 같은 세션에서 두 번 울었다 — 커밋할 때마다 뜨면 무시된다');
   // 다른 세션은 각자 한 번씩 운다(억제가 전역이면 옆 세션이 통째로 침묵한다)
@@ -113,7 +126,7 @@ test('safeId — 뭉개진 id 끼리 같은 파일이 되지 않는다 (억제�
 });
 
 test('track-boundary — 차단하지 않는다 (커밋은 이미 끝났고 끊는 건 유호님 손이다)', () => {
-  const r = 돌려({ tool_name: 'Bash', cwd: ROOT, session_id: 'block', tool_input: { command: 'git commit -m "x" -- a.md' }, tool_response: 성공, transcript_path: 트랜스크립트(400_000) }, 임시('synk-tb-blk-'));
+  const r = 돌려({ tool_name: 'Bash', session_id: 'block', tool_input: { command: 'git commit -m "x" -- a.md' }, tool_response: 성공, transcript_path: 트랜스크립트(400_000) }, 임시('synk-tb-blk-'));
   assert.equal(r.발화, true);
   assert.ok(!/"permissionDecision"\s*:\s*"deny"|"decision"\s*:\s*"block"/.test(JSON.stringify(r)),
     '🔴 계기판이어야 할 훅이 차단을 냈다');
@@ -164,6 +177,66 @@ test('writeHandoffFile — 파일로 남고, 덮어쓰지 않고 쌓이며, 3개
   assert.equal(시, String(new Date().getHours()).padStart(2, '0'), '🔴 인계문 시각이 로컬 시각이 아니다(UTC 로 찍혔다)');
 });
 
+test('writeHandoffFile — 같은 세션이 다시 쓰면 **교체**된다(3칸을 혼자 차지하지 않는다)', () => {
+  const d = 임시('synk-tb-dedupe-');
+  report.writeHandoffFile(d, '남의 트랙 인계문', { sessionId: 'other111' });
+  report.writeHandoffFile(d, '내 첫판', { sessionId: 'mine2222' });
+  const f = report.writeHandoffFile(d, '내 최신판', { sessionId: 'mine2222' });
+  const 본문 = fs.readFileSync(f, 'utf8');
+  assert.ok(/내 최신판/.test(본문), '최신판이 없다');
+  assert.ok(!/내 첫판/.test(본문),
+    '🔴 같은 세션의 옛 블록이 남았다 — 한 세션이 여러 번 쓰면(🔴→경계→종료) 3칸을 다 차지해 남의 트랙을 밀어낸다(F096 실사고)');
+  assert.ok(/남의 트랙 인계문/.test(본문), '🔴 남의 블록이 밀려났다 — 교체가 아니라 축출이 됐다');
+  assert.equal((본문.match(/^## /gm) || []).length, 2, '블록 수가 어긋난다(남의 것 1 + 내 것 1이어야 한다)');
+});
+
+test('writeHandoffFile — 워크트리에서 불러도 **메인** 저장소 파일에 쓴다 (같은 함정 4번째 입구)', (t) => {
+  const g = (a, c) => spawnSync('git', a, { cwd: c, encoding: 'utf8', timeout: 15000 });
+  if (g(['--version']).error) return t.skip('git 없음');
+  const 메인 = 임시('synk-tb-wtmain-');
+  g(['init', '-q'], 메인);
+  g(['config', 'user.email', 't@t'], 메인);
+  g(['config', 'user.name', 't'], 메인);
+  fs.writeFileSync(path.join(메인, 'a.txt'), 'x');
+  g(['add', 'a.txt'], 메인);
+  g(['commit', '-qm', 'init'], 메인);
+  const 워크 = path.join(메인, '.claude', 'worktrees', 'wt1');
+  const 만듦 = g(['worktree', 'add', '-q', 워크], 메인);
+  if (만듦.status !== 0) return t.skip('git worktree 불가 — 이 환경에서 검사 못 함(통과로 위장하지 않는다)');
+
+  const f = report.writeHandoffFile(워크, '워크트리에서 쓴 인계문', { sessionId: 'wtsess' });
+  assert.ok(f, '워크트리 cwd 에서 파일을 못 썼다');
+  const 실경로 = (p) => { try { return fs.realpathSync(p).toLowerCase(); } catch (_) { return path.resolve(p).toLowerCase(); } };
+  assert.equal(실경로(f), 실경로(path.join(메인, 'docs', '_ops', '인계문.md')),
+    `🔴 메인이 아니라 ${f} 에 썼다 — 유호님이 여는 파일과 다른 자리라 인계문이 유령이 된다(바통 워크트리 유실과 같은 형태)`);
+});
+
+test('tools/인계문.js — stdout 전문이 그대로 「새 세션 첫 메시지」다', () => {
+  const TOOL = path.join(ROOT, 'tools', '인계문.js');
+  assert.ok(fs.existsSync(TOOL), '🔴 tools/인계문.js 가 없다 — wake·/close 가 가리키는 실행층이 비었다(F053 형태)');
+  const d = 임시('synk-tb-tool-');
+  const r = spawnSync(process.execPath, [TOOL], {
+    cwd: d, encoding: 'utf8', timeout: 20000,
+    env: { ...process.env, CLAUDE_CODE_HOST_SESSION_ID: 'tool-test-sess' },
+  });
+  assert.equal(r.status, 0, `도구가 실패 종료했다: ${r.stderr}`);
+  assert.match(r.stdout, /^SYNK 이어서 작업한다/, 'stdout 머리가 인계문이 아니다 — 복붙하면 지시문이 아닌 것이 들어간다');
+  assert.ok(!/── 다음 세션 인계문 ──/.test(r.stdout), 'stdout 에 장식 테두리가 섞였다 — 복붙 지시문이 오염된다');
+  assert.ok(fs.existsSync(path.join(d, 'docs', '_ops', '인계문.md')), '파일 사본을 안 남겼다 — 파일 통로(다른 계정·폰)가 빈다');
+});
+
+test('🔴 처방-실행층 결속 — wake·/close·track-boundary 가 가리키는 인계문 도구가 실재한다', () => {
+  assert.ok(fs.existsSync(path.join(ROOT, 'tools', '인계문.js')), '도구 실물이 없다');
+  for (const [파일, 이름] of [
+    [path.join(HOOKS, 'context-budget.js'), 'context-budget(wake ④)'],
+    [path.join(HOOKS, 'track-boundary.js'), 'track-boundary'],
+    [path.join(ROOT, '.claude', 'skills', 'close', 'SKILL.md'), '/close 스킬'],
+  ]) {
+    assert.ok(fs.readFileSync(파일, 'utf8').indexOf('node tools/인계문.js') !== -1,
+      `${이름} 이 인계문 출력 도구를 안 가리킨다 — 지시문구가 화면에 나오는 경로가 끊긴다(F096)`);
+  }
+});
+
 test('handoff-store — 워크트리와 메인이 **같은 키**를 받는다 (바통이 유실되던 자리)', () => {
   // require 캐시를 피해 새로 읽는다 — 다른 테스트가 이미 물고 있을 수 있다
   const store = require(path.join(HOOKS, 'lib', 'handoff-store.js'));
@@ -211,4 +284,16 @@ test('🔴 등록층 — settings.json 이 track-boundary 를 실제로 부르�
     '🔴 node·훅 파일이 없을 때 조용히 넘어간다 — 실행 불가는 드러나야 한다(F044)');
   assert.ok(/CLAUDE_PROJECT_DIR/.test(cmd) && /PWD/.test(cmd),
     '🔴 등록이 로컬 절대경로다 — 다른 기계·클라우드에서 통째로 죽는다(F044)');
+});
+
+// ⚠ 실저장소 검사는 **거짓양성만** — 이 스위트가 쓰는 가짜 세션 id 가 실인계문에 박혔는지만 본다.
+//   (옆 세션이 그 순간 실인계문을 쓰는 건 정상이라, 내용 전체 불변을 걸면 거짓 적색이 난다.)
+//   맨 끝에 둔다 — 앞의 모든 훅 실행이 끝난 뒤의 상태를 봐야 한다.
+test('🔴 이 스위트는 실저장소 docs/_ops/인계문.md 를 오염시키지 않는다 (F096)', () => {
+  let 본문 = '';
+  try { 본문 = fs.readFileSync(path.join(ROOT, 'docs', '_ops', '인계문.md'), 'utf8'); } catch (_) { return; }
+  const 가짜 = /^## .* · 세션 (s[1-6]|block|17027542|7dd54149|aaaaaaaa|bbbbbbbb|cccccccc|dddddddd|mine2222|other111|wtsess|tool-tes)( · |\s*$)/m;
+  const 잡힘 = 본문.match(가짜);
+  assert.equal(잡힘, null,
+    `🔴 시험의 가짜 세션 블록이 실인계문에 있다(세션 ${잡힘 && 잡힘[1]}) — 유호님이 "복사해 붙이라"고 안내받는 파일이 오염됐다(F096 실사고). 훅 호출에 cwd 를 실저장소로 준 테스트를 찾아라`);
 });
