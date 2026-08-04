@@ -278,6 +278,38 @@ test('임시 경로 쓰기는 통과한다 — 변이본을 사본으로 뜨는 
   }
 });
 
+/* ── 셸 변수 경로 (F088) ───────────────────────────────────────────────────
+ * 실사고: `d=$(mktemp -d)` 로 뜬 임시 디렉터리의 `$d/src/x.js` 를 「코드 파일 덮어쓰기」로 막았다.
+ *   변수를 못 푸는 fail-closed 자체는 옳지만, **훅이 준 처방을 따를 수가 없었다** —
+ *   「임시 파일이면 스크래치패드로 옮겨라」인데 이미 스크래치패드였다. 이 세션에서도 한 번 더 났다.
+ * 🔑 그래서 판정을 낮추지 않고 **모르는 것의 범위만 좁혔다.** 아래 두 묶음이 그 경계를 못박는다 —
+ *   푼 것은 통과, 못 푼 것은 여전히 차단. 한쪽만 검사하면 「느슨해졌다」를 못 본다. */
+
+test('같은 명령 안에서 선언된 변수는 풀어서 본다 — 임시 경로면 통과 (F088)', () => {
+  for (const c of [
+    'd=$(mktemp -d) && node tools/x.js > "$d/src/out.js"',
+    'SP=/c/Users/q1212/AppData/Local/Temp/claude/x/scratchpad; git show HEAD:tests/a.test.js > "$SP/mirror/tests/a.test.js"',
+    'export OUT="/tmp/probe"; echo x > ${OUT}/y.js',
+    'd=$(mktemp -d); sed -i "s/a/b/" "$d/mut.js"',
+    '$d = "C:/Users/q1212/AppData/Local/Temp/claude/w"; Set-Content "$d/a.js" -Value "x"',
+  ]) {
+    const tool = c.startsWith('$d =') ? 'PowerShell' : 'Bash';
+    assert.equal(가드(c, tool).조용, true, `풀 수 있는 임시 변수 경로를 막았다: ${c}`);
+  }
+});
+
+test('🔴 변수를 못 풀거나 값이 임시가 아니면 그대로 막는다 — 느슨해진 게 아니다 (F088)', () => {
+  for (const [c, 왜] of [
+    ['echo x > "$UNKNOWN_DIR/Code.js"', '선언이 없는 변수 — 값을 알 방법이 없으면 막는 게 계약이다'],
+    ['echo x > "$HOME/proj/Code.js"', '바깥에서 온 환경변수도 이 명령 안엔 선언이 없다'],
+    ['SP=docs; echo x > "$SP/index.html"', '선언은 있지만 값이 임시가 아니다'],
+    ['d=/tmp; echo x > "$d/../Documents/SYNK-appsscript/Code.js"', '`..` 로 임시 밖을 가리킨다 — 정규화 없이 재면 통과로 샌다'],
+    ['d=$(git rev-parse --show-toplevel); echo x > "$d/Code.js"', 'mktemp 아닌 명령치환은 값을 모른다'],
+  ]) {
+    assert.equal(가드(c).차단, true, `${왜}: ${c}`);
+  }
+});
+
 /* ── 아래 두 묶음은 병렬 세션(c04e7b7)이 shell-inline-guard 안에 세웠던 회귀다.
  *    같은 트랙이 두 훅으로 갈라졌다가 이쪽으로 합쳐지면서, 그 훅에서 규칙이 빠진다.
  *    **탐지 능력이 이관 과정에서 조용히 사라지지 않도록** 여기로 옮겨 못박는다. */
