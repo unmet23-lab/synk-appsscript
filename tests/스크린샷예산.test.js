@@ -19,6 +19,9 @@ const { spawnSync } = require('node:child_process');
 
 // SYNK_TEST_HOOK = 변이 실험용 이음매. 평소엔 실훅을 본다(실저장소를 흔들지 않고 탐지력만 잰다).
 const HOOK = process.env.SYNK_TEST_HOOK || path.resolve(__dirname, '..', '.claude', 'hooks', 'screenshot-budget.js');
+// SYNK_TEST_SETTINGS = 같은 목적의 이음매(등록층 쪽). 이게 없던 동안 매처 검사는 실파일만 봐서
+// **탐지력을 잴 방법이 없었다** — 변이를 넣으려면 실저장소의 등록을 망가뜨려야 했기 때문이다.
+const SETTINGS = process.env.SYNK_TEST_SETTINGS || path.resolve(__dirname, '..', '.claude', 'settings.json');
 const FREE = 4;
 const HARD = 9;
 const DAY_FREE = 12;
@@ -204,10 +207,92 @@ test('이름 자체가 그림인 도구도 센다 (액션 필드가 없다)', ()
   assert.ok(!r.silent, 'mcp__computer-use__screenshot 이 예산에서 빠졌다');
 });
 
+// ── 5번째 실패(08-04 독해)의 회귀 ─────────────────────────────────────────────
+// 앞의 넷을 다 막고도 통로가 셋 남아 있었다. 원인이 두 층에 하나씩:
+//   ① 훅 **안에서** 목록이 갈라졌다 — 액션 판정은 scroll 을 아는데 도구 이름 판정은 몰랐다.
+//   ② 매처가 scroll·teach_step·gif_creator 를 안 잡아 훅에 닿지도 않았다.
+// 아래 셋이 각각 ①의 탐지력, ②의 라우팅, 그리고 둘이 **다시 갈라지는 것**을 잡는다.
+
+/** 이름만으로(액션 필드 없이) 훅이 그림으로 세는지 물어본다. FREE 를 넘겨 경고가 붙는지로 판정. */
+function countsAsImage(tool) {
+  const s = freshSession();
+  for (let i = 0; i <= FREE; i += 1) {
+    if (!call(s, { tool, input: {} }).silent) return true;
+  }
+  return false;
+}
+
+test('독립 scroll 도구도 센다 — 액션 필드가 없어 두 층 다 빠져나갔다', () => {
+  assert.ok(
+    countsAsImage('mcp__computer-use__scroll'),
+    'mcp__computer-use__scroll 이 예산에서 빠졌다 — 액션으로 오는 scroll 은 세면서 도구로 오면 안 센다'
+  );
+});
+
+test('gif_creator 도 센다 (결과가 GIF 다 — 정지 이미지보다 크다)', () => {
+  assert.ok(countsAsImage('mcp__claude-in-chrome__gif_creator'), 'gif_creator 가 예산에서 빠졌다');
+});
+
+test('이름이 비슷할 뿐인 도구는 세지 않는다 (라우팅을 넓혀도 권장 경로를 벌주지 않는다)', () => {
+  for (const tool of [
+    'mcp__claude-in-chrome__upload_image',   // 이미지를 **올린다** — 결과가 그림이 아니다
+    'mcp__Claude_Browser__read_page',
+    'mcp__computer-use__cursor_position',
+    'mcp__computer-use__type',
+  ]) {
+    assert.ok(!countsAsImage(tool), `${tool} 가 그림으로 잡혔다 — 거짓양성`);
+  }
+});
+
+test('ref 기반 scroll_to 는 세지 않는다 (그게 스크린샷 대신 권장하는 경로다)', () => {
+  const s = freshSession();
+  for (let i = 0; i <= FREE; i += 1) {
+    assert.ok(call(s, { action: 'scroll_to' }).silent, 'scroll_to 가 예산에 잡혔다 — 대체 수단을 벌주면 갈아탈 곳이 없다');
+  }
+});
+
+// ★ 핵심 회귀 — 훅과 매처가 **다시 갈라지는 것**을 잡는다.
+// 기대값(어떤 도구가 그림이냐)을 하드코딩하지 않는다: 훅에 직접 물어보고, **센다고 답한 것만**
+// 매처를 요구한다. 그래서 훅의 IMAGE_TOOL_NAMES 에 이름을 추가하면서 매처를 안 넓히면
+// 여기서 빨간불이 난다 — 훅등록.test.js 의 「라우팅은 훅보다 넓다」를 액션 없는 도구에 적용한 것.
+// 목록은 **실재하는 MCP 도구**만 담는다(지어낸 이름을 매처에 요구하면 등록이 쓰레기로 자란다).
+const REMOTE_TOOLS = [
+  'mcp__computer-use__screenshot', 'mcp__computer-use__zoom', 'mcp__computer-use__scroll',
+  'mcp__computer-use__teach_step', 'mcp__computer-use__cursor_position', 'mcp__computer-use__type',
+  'mcp__computer-use__left_click', 'mcp__computer-use__key', 'mcp__computer-use__wait',
+  'mcp__claude-in-chrome__gif_creator', 'mcp__claude-in-chrome__read_page',
+  'mcp__claude-in-chrome__find', 'mcp__claude-in-chrome__get_page_text',
+  'mcp__claude-in-chrome__navigate', 'mcp__claude-in-chrome__upload_image',
+  'mcp__Claude_Browser__read_page', 'mcp__Claude_Browser__find',
+];
+
+test('훅이 그림으로 세는 도구는 매처도 전부 잡는다 (둘이 갈라지면 조용히 샌다)', (t) => {
+  const p = SETTINGS;
+  if (!fs.existsSync(p)) return t.skip('settings.json 없음 — 이 검사는 실저장소에서만 돈다');
+  const cfg = JSON.parse(fs.readFileSync(p, 'utf8'));
+  const entry = (cfg.hooks?.PreToolUse || []).find((e) =>
+    (e.hooks || []).some((h) => String(h.command || '').includes('screenshot-budget.js'))
+  );
+  assert.ok(entry, 'screenshot-budget 훅이 등록돼 있지 않다');
+
+  const missing = [];
+  let counted = 0;
+  for (const tool of REMOTE_TOOLS) {
+    if (!countsAsImage(tool)) continue; // 훅이 관심 없는 도구 — 라우팅을 따질 자리가 아니다
+    counted += 1;
+    if (!new RegExp(entry.matcher).test(tool)) missing.push(tool);
+  }
+  assert.deepStrictEqual(
+    missing, [],
+    `훅은 세는데 매처가 안 잡는다 — 호출되지 않으면 통과가 된다: ${missing.join(', ')}`
+  );
+  assert.ok(counted >= 4, `이름만으로 그림인 도구가 ${counted}건뿐 — REMOTE_TOOLS 가 훅 규칙을 못 따라가고 있다`);
+});
+
 // 훅이 아무리 정확해도 **매처에 없으면 애초에 안 불린다.** 08-04에 샌 진짜 층이 여기다:
 // 훅은 zoom을 알았지만 settings.json 매처가 배치 도구를 몰랐고, 죽는 방향이 「통과」였다.
 test('settings.json 매처에 그림을 낳는 도구가 전부 등록돼 있다', (t) => {
-  const p = path.resolve(__dirname, '..', '.claude', 'settings.json');
+  const p = SETTINGS;
   if (!fs.existsSync(p)) return t.skip('settings.json 없음 — 이 검사는 실저장소에서만 돈다');
   const cfg = JSON.parse(fs.readFileSync(p, 'utf8'));
   const entry = (cfg.hooks?.PreToolUse || []).find((e) =>
@@ -223,6 +308,10 @@ test('settings.json 매처에 그림을 낳는 도구가 전부 등록돼 있다
     // 08-05: 액션 수 상한을 신설하면서 라우팅도 같이 넓혔다. 배치 도구가 하나라도 빠지면
     // 훅이 아무리 정확해도 안 불리고, 죽는 방향은 언제나 「통과」다.
     'mcp__computer-use__teach_batch',
+    // 08-04(5번째): 배치는 다 잡았는데 **액션 필드 없는 단건 도구** 셋이 빠져 있었다.
+    'mcp__computer-use__scroll',
+    'mcp__computer-use__teach_step',
+    'mcp__claude-in-chrome__gif_creator',
   ]) {
     assert.ok(
       new RegExp(entry.matcher).test(tool),
@@ -232,7 +321,7 @@ test('settings.json 매처에 그림을 낳는 도구가 전부 등록돼 있다
 });
 
 test('판정층은 하나다 — settings.json이 액션을 따로 걸러선 안 된다', (t) => {
-  const p = path.resolve(__dirname, '..', '.claude', 'settings.json');
+  const p = SETTINGS;
   if (!fs.existsSync(p)) return t.skip('settings.json 없음');
   const cfg = JSON.parse(fs.readFileSync(p, 'utf8'));
   const cmd = (cfg.hooks?.PreToolUse || [])
