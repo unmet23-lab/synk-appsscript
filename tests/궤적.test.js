@@ -148,8 +148,9 @@ test('🔑 활용동의로 수확을 거르지 않는다 — 거르면 커버리
 test('🔴 대조 판정 — 「모른다」를 「일치」로 세지 않는다', () => {
   /* 뭉치는 순간 커버리지가 부풀고, 부푼 커버리지는 「데이터가 쌓이고 있다」는 착각이 된다.
    * 이 저장소는 같은 형태로 이미 당했다(무데이터를 만점으로 세던 채점기 · 534e8a8). */
-  const src = [함수본문(궤적, '궤적_의도버킷_'), 함수본문(궤적, '궤적_대조_'),
-    '\nconst OUTCOME_PATH_ = ' + JSON.stringify(상수(궤적, 'OUTCOME_PATH_')) + ';'].join('\n');
+  const src = [함수본문(궤적, '궤적_과정버킷_'), 함수본문(궤적, '궤적_의도버킷_'), 함수본문(궤적, '궤적_대조_'),
+    '\nconst OUTCOME_PATH_ = ' + JSON.stringify(상수(궤적, 'OUTCOME_PATH_')) + ';',
+    '\nfunction 미정값_(v){ return !v || /미정|모름|모르|정하지/.test(String(v)); }'].join('\n');
   const 대조 = new Function(src + '\nreturn 궤적_대조_;')();
 
   assert.equal(대조('한국 정착', '학사', '', null), '미관측', '관측이 없는데 판정을 냈다');
@@ -164,13 +165,18 @@ test('🔴 대조 판정 — 「모른다」를 「일치」로 세지 않는다
 });
 
 test('의도 버킷은 **가까운 목표**를 먼저 본다 — 뒤집으면 진학자가 전부 불일치로 찍힌다', () => {
-  const src = 함수본문(궤적, '궤적_의도버킷_');
+  const src = [함수본문(궤적, '궤적_과정버킷_'), 함수본문(궤적, '궤적_의도버킷_'),
+    '\nfunction 미정값_(v){ return !v || /미정|모름|모르|정하지/.test(String(v)); }'].join('\n');
   const 버킷 = new Function(src + '\nreturn 궤적_의도버킷_;')();
   // 10년 후 「한국 정착」 + 내년 「학사」 → 우리가 관측하는 것은 후자다
   assert.equal(버킷('한국 정착', '학사', 'F-5 영주'), '유학');
   assert.equal(버킷('한국 정착', '', 'E-7 전문직'), '취업');
   assert.equal(버킷('몽골 복귀', '', ''), '몽골');
   assert.equal(버킷('', '', ''), '', '아무 답도 없는데 버킷을 지어냈다');
+  /* 🔑 경로가 아닌 답은 버킷이 안 된다 — 목적지(한국 정착·F-5 영주)를 경로로 세면
+   *   E-9 취업에 성공한 사람이 「불일치(정착→취업)」로 찍힌다(목표를 향해 간 사람을 이탈로 센다). */
+  assert.equal(버킷('한국 정착', '', ''), '', '10년 후 목적지를 경로로 셌다');
+  assert.equal(버킷('', '', 'F-5 영주'), '', '길의 끝(영주)을 길로 셌다');
 });
 
 test('관측일 — 자유 입력 「시기」의 여러 표기를 연-월로 접고, 못 읽으면 제출 시각으로 떨어진다', () => {
@@ -210,6 +216,223 @@ test('⛔ 두 시트가 Glide 금지 선언과 함께 있다 — 남의 결과�
   assert.match(궤적, /⛔ Glide 바인딩 금지/, 'Glide 금지 선언이 사라졌다 — 다음 조립 때 올라간다');
   assert.ok(!/setAppState_|CARD_FONT|Glide/.test(함수본문(궤적, '궤적재작성_')),
     'trajectory가 앱 상태·카드로 새어 나가는 경로가 생겼다');
+});
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * 실행 층 — 소스 검사가 놓친 것들 [2026-08-04 적대 리뷰]
+ *
+ * 위쪽 소스 검사 15건은 **전부 초록인 채로** HIGH 3건을 통과시켰다. 공통점이 하나다:
+ *   「순서가 맞는가」·「그 문자열이 있는가」만 봤고 **「값이 맞는가」를 안 봤다.**
+ * 그래서 여기서는 시트를 흉내 내 **실제로 돌린다.** 문구를 바꿔도 안 걸리고, 동작이 틀리면 걸린다.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/** 시트 스텁 — getRange/getValues/setValues/서식만. Apps Script 없이 도는 최소한. */
+function 가짜시트_(이름, 격자) {
+  const g = 격자.map((r) => r.slice());
+  const 서식 = {};
+  return {
+    _g: g, _서식: 서식,
+    getName: () => 이름,
+    getLastRow: () => g.length,
+    getLastColumn: () => g.reduce((m, r) => Math.max(m, r.length), 0),
+    getMaxRows: () => Math.max(g.length, 1000),
+    getMaxColumns: () => 40,
+    insertRowsAfter() { return this; },
+    insertColumnsAfter() { return this; },
+    setFrozenRows() { return this; },
+    getFormUrl: () => '',
+    getRange(r, c, nr, nc) {
+      nr = nr || 1; nc = nc || 1;
+      return {
+        getValues() {
+          const out = [];
+          for (let i = 0; i < nr; i++) {
+            const row = g[r - 1 + i] || [];
+            const o = [];
+            for (let j = 0; j < nc; j++) o.push(row[c - 1 + j] === undefined ? '' : row[c - 1 + j]);
+            out.push(o);
+          }
+          return out;
+        },
+        getValue() { return this.getValues()[0][0]; },
+        setValues(v) {
+          v.forEach((row, i) => {
+            const ri = r - 1 + i;
+            while (g.length <= ri) g.push([]);
+            row.forEach((val, j) => { g[ri][c - 1 + j] = val; });
+          });
+          return this;
+        },
+        setValue(v) { return this.setValues([[v]]); },
+        setFontWeight() { return this; },
+        setNumberFormat(f) { 서식[c] = f; return this; },
+        getNumberFormat() { return 서식[c] || ''; },
+        setDataValidation() { return this; },
+        clearContent() { return this; },
+      };
+    },
+  };
+}
+
+/** 엔진_궤적.js 를 스텁 전역과 함께 평가해 함수들을 꺼낸다. */
+function 궤적로드_(시트들) {
+  const 상태 = {};
+  const ss = {
+    getSheetByName: (n) => 시트들[n] || null,
+    getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar',
+    insertSheet: (n) => (시트들[n] = 가짜시트_(n, [[]])),
+  };
+  const 전역 = {
+    SpreadsheetApp: {
+      getActiveSpreadsheet: () => ss,
+      newDataValidation: () => ({ requireValueInList() { return this; }, setAllowInvalid() { return this; }, build: () => ({}) }),
+    },
+    Logger: { log() {} },
+    Utilities: { formatDate: (d, tz, f) => {
+      const p = (n) => (n < 10 ? '0' : '') + n;
+      const s = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+      return f === 'yyyy-MM' ? s.slice(0, 7) : s;
+    } },
+    ensureSheet: (s, n, h) => 시트들[n] || (시트들[n] = 가짜시트_(n, [h.slice()])),
+    writeIfChanged: (sh, r, c, v) => { sh.getRange(r, c, v.length, v[0].length).setValues(v); return true; },
+    getState: (st, k) => ({ row: 상태[k] === undefined ? -1 : 1, val: 상태[k] === undefined ? '' : 상태[k] }),
+    setState: (st, k, v) => { 상태[k] = v; },
+    adminMail: () => {},
+    미정값_: (v) => !v || /미정|모름|모르|정하지/.test(String(v)),
+    // 실제 구현과 같은 계약: Date→'yyyy-MM', 문자열은 그대로
+    ymTextOf_: (v, tz) => {
+      if (v instanceof Date) { const p = (n) => (n < 10 ? '0' : '') + n; return v.getFullYear() + '-' + p(v.getMonth() + 1); }
+      return String(v == null ? '' : v);
+    },
+    ymTextColFix_: (sh, col) => { sh.getRange(1, col, sh.getMaxRows(), 1).setNumberFormat('@'); return 0; },
+  };
+  const 이름 = Object.keys(전역);
+  const 꺼낼 = ['궤적갱신_', '궤적수확_면접_', '궤적재작성_', '궤적_최신관측_', '궤적_결과시트_', 'OUTCOME_HEADERS_', 'OUTCOME_KEY_COL_'];
+  const fn = new Function(...이름, 궤적 + '\nreturn {' + 꺼낼.join(',') + '};');
+  return Object.assign(fn(...이름.map((n) => 전역[n])), { ss, 시트들, 상태 });
+}
+
+const 면접헤더_ = ['타임스탬프', '이름', '학생ID', '지금 신분', '연락처', '면접 종류', '시기',
+  '장소·기관', '사용 언어', '걸린 시간', '받은 질문 전부', '어떻게 답했나요',
+  '다시 물어보거나 서류를 지적한 부분', '준비하면서 가장 어려웠던 것', '결과',
+  '거절·보류였다면 들은 사유', '다음 사람에게 한마디', '자료활용동의'];
+
+const 면접행_ = (ts, sid, 종류, 시기, 결과, 동의) => {
+  const r = new Array(면접헤더_.length).fill('');
+  r[0] = ts; r[1] = '바트'; r[2] = sid; r[5] = 종류; r[6] = 시기; r[14] = 결과; r[17] = 동의;
+  return r;
+};
+
+test('🔴 수확이 정말 멱등이다 — 3번 돌려도 행이 안 는다 (근거키 열이 한 칸 밀려 있었다)', () => {
+  /* 소스 검사(「조회→분기→적재 순서」)는 이 결함에서 **초록이었다.** 상수가 근거키가 아니라
+   * created_at 을 가리켜 조회가 영원히 miss 했고, 에러도 안 났다(존재하는 열이라 getRange가 안 던진다).
+   * 로그는 매일 「신규 관측 N건」을 정상처럼 보고했다. 그래서 순서가 아니라 **행 수**를 잰다. */
+  const 시트 = { 면접기록_응답: 가짜시트_('면접기록_응답', [면접헤더_,
+    면접행_(new Date(2026, 4, 10), 'SYNK-001', '한국 유학 비자 인터뷰', '2026-05', '합격·승인', '네, 동의합니다'),
+    면접행_(new Date(2026, 4, 11), 'SYNK-002', 'EPS 취업(E-9) 면접·시험', '2026-05', '불합격·거절', '아니요, 원하지 않습니다')]) };
+  const m = 궤적로드_(시트);
+  assert.equal(m.OUTCOME_HEADERS_[m.OUTCOME_KEY_COL_], '근거키',
+    '근거키 열 상수가 헤더의 근거키를 안 가리킨다 — 멱등 조회가 엉뚱한 열을 읽는다');
+  assert.equal(m.궤적수확_면접_(m.ss), 2, '첫 수확이 2건이 아니다');
+  const 행수 = () => m.시트들.outcome_log._g.length - 1;
+  assert.equal(행수(), 2);
+  assert.equal(m.궤적수확_면접_(m.ss), 0, '두 번째 수확이 0건이 아니다 — 멱등이 죽었다');
+  assert.equal(m.궤적수확_면접_(m.ss), 0, '세 번째 수확이 0건이 아니다');
+  assert.equal(행수(), 2, `3회 실행 후 행이 ${행수()}개다 — 매일 아침 복제된다`);
+});
+
+test('🔑 활용동의로 거르지 않는다 — 「아니요」 응답도 실린다 (문구가 아니라 행동으로)', () => {
+  /* 옛 부정 정규식은 동의값을 변수로 한 번만 빼면 통째로 샜다(리뷰가 실측). 그래서 결과를 본다. */
+  const 시트 = { 면접기록_응답: 가짜시트_('면접기록_응답', [면접헤더_,
+    면접행_(new Date(2026, 4, 11), 'SYNK-002', '한국 기업 취업 면접', '2026-05', '합격·승인', '아니요, 원하지 않습니다')]) };
+  const m = 궤적로드_(시트);
+  assert.equal(m.궤적수확_면접_(m.ss), 1, '동의 안 한 응답이 수확에서 빠졌다 — 운영 커버리지가 동의율만큼 거짓이 된다');
+  const 행 = m.시트들.outcome_log._g[1];
+  assert.equal(행[m.OUTCOME_HEADERS_.indexOf('활용동의')], '아니요, 원하지 않습니다',
+    '활용동의 값이 안 실렸다 — 나중에 내보낼 때 거를 수단이 없다');
+});
+
+test('🔴 관측일 열이 텍스트로 굳는다 — 안 굳히면 최신 판정이 요일·월 알파벳순으로 뒤집힌다', () => {
+  /* 이 저장소의 월키 Date 오염 5번째 자리. outcome_log 는 sheetSkeleton_ 밖이라 자기치유도 안 닿는다. */
+  const m = 궤적로드_({});
+  const sh = m.궤적_결과시트_(m.ss);
+  m.궤적갱신_(null); // 서식 고정 통로를 태운다(상담시트 null 이라 재작성은 조기 반환)
+  assert.equal(m.시트들.outcome_log._서식[3], '@',
+    'outcome_log 관측일(3열)에 텍스트 서식이 없다 — 시트가 2026-05 를 Date 로 재파싱한다');
+});
+
+test('🔴 최신 관측은 시간순이다 — 셀이 Date 로 굳어 있어도', () => {
+  /* 오염된 셀을 되읽는 쪽도 방어해야 한다: 2026-05(금)과 2027-01(금)은 요일이 같아
+   * String(Date) 비교에서 'May' > 'Jan' 이 되어 **옛 합격이 새 거절을 이긴다.** */
+  const H = ['student_id', '이름', '관측일', '단계', '결과종류', '기관·회사명', '비자종류', '출처', '활용동의', '비고', '근거키', 'created_at'];
+  const 시트 = { outcome_log: 가짜시트_('outcome_log', [H,
+    ['SYNK-001', '바트', new Date(2026, 4, 1), '합격·승인', '한국 대학·대학원 입학', '', '', '면접폼(자동)', '', '', 'k1', ''],
+    ['SYNK-001', '바트', new Date(2027, 0, 1), '불합격·거절', '유학(D-2·D-4) 비자', '', '', '면접폼(자동)', '', '', 'k2', '']]) };
+  const m = 궤적로드_(시트);
+  const 최신 = m.궤적_최신관측_(m.ss, 'Asia/Ulaanbaatar');
+  assert.equal(최신['SYNK-001'].when, '2027-01',
+    '옛 관측이 최신을 이겼다 — 좌절이어야 할 사람이 일치로 찍힌다(로드맵 ④ 학습 신호가 반대로 저장된다)');
+  assert.equal(최신['SYNK-001'].stage, '불합격·거절');
+});
+
+test('🔑 outcome_log 자리는 면접 응답이 0건이어도 생긴다 — 절반은 원장이 손으로 적는다', () => {
+  /* 수확 안에서만 만들면 개원 전(응답 0건)에는 시트가 영영 안 생긴다. 그러면 유호님이 탭을 손으로
+   * 만들게 되고, 그 순간 헤더·드롭다운 어휘가 정본과 갈라진다(갈라지면 집계가 영원히 불가능). */
+  const m = 궤적로드_({});
+  m.궤적갱신_(null);
+  assert.ok(m.시트들.outcome_log, '면접 응답이 없으면 outcome_log 가 안 생긴다 — 원장이 적을 자리가 없다');
+  assert.deepEqual(m.시트들.outcome_log._g[0], m.OUTCOME_HEADERS_, '헤더가 정본과 다르다');
+});
+
+test('🔴 「아직 미정」·「취업비자준비」가 유학 의도로 둔갑하지 않는다', () => {
+  /* 진로 5문항을 필수로 만들며 「아직 미정」을 신설했는데, 버킷이 **값이 아니라 존재**만 보고 있었다.
+   * 정직하게 미정을 고른 학생이 가짜 불일치로 찍히는 것 = 「모른다를 일치로 세지 않는다」의 반대 위반. */
+  const src = [함수본문(궤적, '궤적_과정버킷_'), 함수본문(궤적, '궤적_의도버킷_'), 함수본문(궤적, '궤적_대조_'),
+    '\nconst OUTCOME_PATH_ = ' + JSON.stringify(상수(궤적, 'OUTCOME_PATH_')) + ';',
+    '\nfunction 미정값_(v){ return !v || /미정|모름|모르|정하지/.test(String(v)); }'].join('\n');
+  const 버킷 = new Function(src + '\nreturn 궤적_의도버킷_;')();
+  const 대조 = new Function(src + '\nreturn 궤적_대조_;')();
+
+  assert.equal(버킷('한국 정착', '아직 미정', '미정'), '', '「아직 미정」을 유학 의도로 셌다');
+  assert.equal(버킷('한국 정착', '취업비자준비', ''), '취업',
+    '상담폼의 「취업비자준비」를 유학으로 셌다 — EPS 취업자가 전원 불일치로 찍힌다');
+  assert.equal(버킷('한국 정착', '학사', ''), '유학', '정상 진학 의도가 깨졌다');
+  assert.equal(버킷('한국 정착', '어학연수 (D-4)', ''), '유학');
+  assert.equal(버킷('', '듣도보도 못한 새 선택지', ''), '',
+    '모르는 값을 유학으로 밀었다 — 선택지가 늘면 조용히 틀린다(보류가 정답)');
+  assert.equal(대조('한국 정착', '아직 미정', '미정', { stage: '합격·승인', kind: '한국 취업(E-9 비전문)' }), '의도 미정',
+    '없는 의도로 불일치 판정을 냈다');
+});
+
+test('🔑 「아직 미정」이 학생 화면·AI 프롬프트에 문장으로 안 실린다', () => {
+  /* 「🎯 TOPIK 아직 미정까지 약 48주」는 응원이 아니라, 정직하게 모르겠다를 고른 대가다.
+   * 읽는 곳이 셋(cGoal·pace·핵심비전)이라 프로즈 대신 공용 통로(Code.js 미정값_)를 지나는지 본다. */
+  const code = fs.readFileSync(path.join(ROOT, 'Code.js'), 'utf8');
+  assert.match(code, /function 미정값_\(v\)/, '미정 판정 공용 통로가 없다 — 세 곳이 각자 판정하면 갈라진다');
+  const pace = 함수본문(배치, 'consultPace_');
+  assert.ok(/미정값_\(goalLv\)/.test(pace), '페이스라인이 미정을 안 거른다');
+  const sync = 함수본문(배치, 'syncProfiles');
+  assert.ok(/미정값_\(cv\(row, 'TOPIK목표'\)\)/.test(sync), '상담목표(DU125)가 미정을 안 거른다');
+  /* ⚠ 처음엔 `/미정값_/.test(본문)` 으로 봤는데 **변이 실측에서 샜다** — 네 칸 중 하나만 통로를
+   *   지나도 문자열은 그대로 있다. 문구가 아니라 **결과**를 본다(이 파일의 다른 실행 검사와 같은 규약). */
+  const 비전 = new Function(함수본문(배치, '진로비전_') +
+    '\nfunction 미정값_(v){ return !v || /미정|모름|모르|정하지/.test(String(v)); }\nreturn 진로비전_;')();
+  const cv = (row, n) => row[n] || '';
+  assert.equal(비전(cv, { 졸업후진로: '아직 미정', 희망진학과정: '아직 미정', 관심전공분야: '미정', TOPIK목표: '아직 미정' }), '',
+    '전부 미정인데 케어 한 줄을 지어냈다 — 「자기신고: 아직 미정 · 아직 미정(미정) · TOPIK 아직 미정」');
+  assert.equal(비전(cv, { 졸업후진로: '한국 정착', 희망진학과정: '학사', 관심전공분야: 'IT·컴공', TOPIK목표: '3~4급 중급' }),
+    '자기신고: 한국 정착 · 학사(IT·컴공) · TOPIK 3~4급 중급', '정상 답까지 지워졌다');
+  assert.equal(비전(cv, { 졸업후진로: '한국 정착', 희망진학과정: '아직 미정', 관심전공분야: '미정', TOPIK목표: '아직 미정' }),
+    '자기신고: 한국 정착', '미정 칸만 빠지고 답한 칸은 남아야 한다');
+  /* 전공은 다중 요약이다 — 「IT·컴공, 미정」을 통째로 미정으로 보면 **답한 것까지 지운다**(변이가 잡았다) */
+  assert.equal(비전(cv, { 졸업후진로: '', 희망진학과정: '학사', 관심전공분야: 'IT·컴공, 미정', TOPIK목표: '' }),
+    '자기신고: 학사(IT·컴공)', '다중 전공에 미정이 섞였다고 멀쩡한 답까지 지웠다');
+  assert.equal(비전(cv, { 졸업후진로: '', 희망진학과정: '학사', 관심전공분야: '미정, 공학', TOPIK목표: '' }),
+    '자기신고: 학사(공학)', '앞자리가 미정이면 뒤의 진짜 답을 못 찾는다');
+  // 실행 검증 — 통로가 실제로 그 문자열을 잡는가
+  const 미정값_ = new Function(함수본문(code, '미정값_') + '\nreturn 미정값_;')();
+  ['아직 미정', '미정', '미정 · 상담 필요', ''].forEach((v) => assert.equal(미정값_(v), true, `「${v}」를 미정으로 안 본다`));
+  ['학사', '3~4급 중급', 'E-9 비전문'].forEach((v) => assert.equal(미정값_(v), false, `「${v}」를 미정으로 잘못 본다`));
 });
 
 test('trajectory는 파생이다 — 매번 재작성되고 옛 꼬리를 지운다', () => {

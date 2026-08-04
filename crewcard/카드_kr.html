@@ -2968,7 +2968,9 @@ section.page{
           inp.setAttribute('data-field', field.field_id);
           inp.setAttribute('data-value', matched);
           if (field.type === 'multi' && field.column_prefix){
-            inp.setAttribute('data-column', field.column_prefix + '_' + slugifyOption(matched));
+            // 슬러그가 비면 덮어쓰지 않는다 — 정적 bake 가 정본(slugifyOption 머리말)
+            const _sl = slugifyOption(matched);
+            if (_sl) inp.setAttribute('data-column', field.column_prefix + '_' + _sl);
           } else if (field.column){
             inp.setAttribute('data-column', field.column);
           }
@@ -3036,7 +3038,8 @@ section.page{
         if (matched){
           tag.setAttribute('data-field', field.field_id);
           tag.setAttribute('data-value', matched);
-          if (field.column_prefix) tag.setAttribute('data-column', field.column_prefix + '_' + slugifyOption(matched));
+          const _slT = field.column_prefix ? slugifyOption(matched) : '';
+          if (_slT) tag.setAttribute('data-column', field.column_prefix + '_' + _slT); // 빈 슬러그면 정적 bake 유지
         }
       });
     });
@@ -3083,7 +3086,9 @@ section.page{
           inp.setAttribute('data-field', field.field_id);
           inp.setAttribute('data-value', matched);
           if (field.type === 'multi' && field.column_prefix){
-            inp.setAttribute('data-column', field.column_prefix + '_' + slugifyOption(matched));
+            // 슬러그가 비면 덮어쓰지 않는다 — 정적 bake 가 정본(slugifyOption 머리말)
+            const _sl = slugifyOption(matched);
+            if (_sl) inp.setAttribute('data-column', field.column_prefix + '_' + _sl);
           } else if (field.column){
             inp.setAttribute('data-column', field.column);
           }
@@ -3252,7 +3257,7 @@ section.page{
       // region_wish
       '서울권':'seoul','경기 · 인천':'gyeonggi','충청권':'chungcheong','영남권':'yeongnam','호남권':'honam','강원 · 제주':'gangwon_jeju','상관없음':'any',
       // field_interest
-      '경영 · 경제':'business','it · 컴공':'it','디자인 · 예술':'design','의료 · 보건':'medical','공학':'engineering','인문 · 어학':'humanities','미디어 · 방송':'media',
+      '경영 · 경제':'business','it · 컴공':'it','디자인 · 예술':'design','의료 · 보건':'medical','공학':'engineering','인문 · 어학':'humanities','미디어 · 방송':'media','아직 미정':'undecided',
       // english_test
       'toeic':'toeic','ielts':'ielts','toefl':'toefl','기타':'other',
       // local_activity
@@ -3268,6 +3273,11 @@ section.page{
       'k-드라마 · 원어 몰입':'kdrama','k-푸드 · 요리 클래스':'kfood','k-패션 · 스타일링':'kfashion',
       'k-예능 · 미디어 리터러시':'kvariety','서울 시티 투어':'seoul_tour','k-pop 콘서트 · 팬미팅':'kpop_concert'
     };
+    /* 🔴 폴백은 **라틴 문자가 하나도 없는 옵션에서 빈 문자열을 만든다**(한글만 있으면 전부 날아간다).
+     *   그대로 돌려주면 호출부가 data-column 을 `prefix_` 로 덮어써 정적 bake 를 파괴하고,
+     *   서버 COLUMNS 에 없는 키로 전송돼 **그 답만 조용히 사라진다** — 제출은 성공하고 화면도 정상이라
+     *   눈으로는 절대 안 걸린다(2026-08-04 적대 리뷰가 「아직 미정」에서 실측).
+     *   → 못 만들면 '' 를 돌려주고 **호출부가 덮어쓰기를 포기한다**(마크업의 정적 bake 가 정본으로 남는다). */
     return table[opt.toLowerCase()] || opt.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
   }
 
@@ -3530,11 +3540,13 @@ window.SYNK_ENDPOINT = window.SYNK_ENDPOINT || 'https://script.google.com/macros
   /* 미충족 문항으로 데려가 테두리를 켠다. 표시는 한 번에 하나만 — 여러 개를 동시에 칠하면
    * 「어디부터 고치지」가 되고, 그건 안 고치는 쪽으로 끝난다. */
   function focusField(fieldId){
+    // 🔑 지우기가 **조기 반환보다 먼저**다 — 동의 미체크(fieldId=null)로 막히면 직전에 칠한 테두리가
+    //    그대로 남아, 이미 채운 칸을 가리키며 「여기다」라고 말한다(비개발자 접수자가 엉뚱한 칸을 연다).
+    $$('.synk-need').forEach(function(n){ n.classList.remove('synk-need'); });
     if(!fieldId) return;
     var el = document.querySelector('[data-field="'+fieldId+'"]');
     if(!el) return;
     var box = (el.closest && el.closest('.field')) || el;
-    $$('.synk-need').forEach(function(n){ n.classList.remove('synk-need'); });
     box.classList.add('synk-need');
     try{ box.scrollIntoView({ behavior:'smooth', block:'center' }); }catch(_){ box.scrollIntoView(); }
   }

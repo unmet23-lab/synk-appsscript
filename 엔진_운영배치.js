@@ -22,7 +22,9 @@ function consultRowConsented_(blob) {
 // [v9.84·도전안] 페이스라인 — TOPIK목표+기한+하루 학습가능시간을 역산해 한 줄로. 판정·보장 없이 "남은 주"만
 //   (과장 금지). 기한 파싱 실패·이미 경과·5년+(오입력)면 침묵('') — 그 구간은 사람 상담의 영역.
 function consultPace_(goalLv, dueRaw, hoursRaw, now) {
-  if (!goalLv || !dueRaw) return '';
+  /* [v9.181] 급수가 「아직 미정」이면 침묵한다 — 「🎯 TOPIK 아직 미정까지 약 48주」는 응원이 아니라
+   * 학생이 정직하게 「모르겠다」를 고른 대가다. 판정은 공용 통로(Code.js 미정값_) 하나를 지난다. */
+  if (미정값_(goalLv) || !dueRaw) return '';
   const m = String(dueRaw).match(/(20\d{2})\s*[.\-\/년]?\s*(\d{1,2})/);
   if (!m) return '';
   const mo = Number(m[2]);
@@ -63,9 +65,14 @@ const CAREER_SRC_ = ['졸업후진로', '희망진학과정', '졸업후목표�
  *   크루카드 blob엔 그 마커가 없다. 게이트를 우회하는 대신 **동의와 무관한 선택형 답**만 조합한다.
  * 파생값임이 드러나야 한다 — 원장이 이 칸을 보고 「내가 쓴 줄」로 착각하면 안 고친다. */
 function 진로비전_(cv, row) {
-  const 진로 = cv(row, '졸업후진로'), 과정 = cv(row, '희망진학과정');
-  const 전공 = String(cv(row, '관심전공분야') || '').split(',')[0].trim();
-  const 급수 = cv(row, 'TOPIK목표');
+  /* ⚠ 「아직 미정」은 문장에 싣지 않는다 — 「자기신고: 아직 미정 · 아직 미정(미정) · TOPIK 아직 미정」이
+   *   케어 한 줄로 나가면 그건 개인화가 아니라 소음이다. 판정은 공용 통로(Code.js 미정값_) 하나. */
+  const 산 = (n) => { const v = cv(row, n); return 미정값_(v) ? '' : v; };
+  const 진로 = 산('졸업후진로'), 과정 = 산('희망진학과정'), 급수 = 산('TOPIK목표');
+  /* ⚠ 전공은 **다중 요약**(「IT·컴공, 미정」처럼 쉼표로 이어진다)이라 통째로 미정값_에 물리면
+   *   멀쩡한 답까지 지워진다(변이 실측이 잡았다). 조각별로 걸러 **첫 진짜 답**을 쓴다. */
+  const 전공 = String(cv(row, '관심전공분야') || '').split(',')
+    .map((s) => s.trim()).filter((s) => s && !미정값_(s))[0] || '';
   const 조각 = [진로, 과정 && (과정 + (전공 ? '(' + 전공 + ')' : '')), 급수 && ('TOPIK ' + 급수)].filter(String);
   return 조각.length ? '자기신고: ' + 조각.join(' · ') : '';
 }
@@ -216,10 +223,11 @@ function syncProfiles() {
       lvl: row[18] || '',    // S 한국어수준 → AY(51): 강사 뷰 '레벨'
       risk: row[60] || '',   // BI ⚠위험신호 → AZ(52): 원장 콕핏 전용
       vision: row[21] || 진로비전_(cv, row), // V 핵심비전 → BA(53): 케어 대화용 한 줄. 비면 크루카드 선택형 답으로 합성(원장 手記가 우선)
-      career: CAREER_SRC_.map(n => cv(row, n)), // → DY129~EB132: 「의도」 4칸. 결과(outcome_log)와 짝지어야 궤적이 된다
+      career: CAREER_SRC_.map(n => cv(row, n)), // → 「의도」 4칸(자리는 profilesBlockAt_가 이름으로 찾는다). 결과(outcome_log)와 짝지어야 궤적이 된다
       // [v9.84] 상담 디테일 2차 — 받아둔 답을 앱이 쓰게(콜드스타트 해소·강사뷰·0점 좌표·페이스). 전부 이름 해석이라 열 이동에 안전.
       taste: [cv(row, '선호그룹'), cv(row, '인생드라마'), cv(row, '취미관심사')].filter(String).join(' · ').slice(0, 120), // → DT124: AI 최애 폴백
-      cGoal: (cv(row, 'TOPIK목표') ? 'TOPIK ' + cv(row, 'TOPIK목표') + (cv(row, 'TOPIK목표기한') ? ' · ' + cv(row, 'TOPIK목표기한') : '') : ''), // → DU125: 목표 폴백
+      // ⚠ 「아직 미정」이면 목표줄을 만들지 않는다 — 「TOPIK 아직 미정 · 2027-06」은 목표가 아니다(미정값_ 통로)
+      cGoal: (미정값_(cv(row, 'TOPIK목표')) ? '' : 'TOPIK ' + cv(row, 'TOPIK목표') + (cv(row, 'TOPIK목표기한') ? ' · ' + cv(row, 'TOPIK목표기한') : '')), // → DU125: 목표 폴백
       // → DV126: 입학 시점 실측(성장 서사 0점 좌표). [v9.98] 라벨 부착 — 08-01 실데이터가 '없음 20'(급수 없음·점수 20)으로
       //   붙어 학부모 편지 프롬프트에 뜻 모를 문자열로 들어가던 것(AI가 20을 급수로 읽을 여지)을 제거.
       topik0: [cv(row, 'TOPIK급수') ? '급수 ' + cv(row, 'TOPIK급수') : '', cv(row, 'TOPIK점수') ? cv(row, 'TOPIK점수') + '점' : ''].filter(String).join(' · ').slice(0, 40),

@@ -1543,7 +1543,9 @@ test('[v9.84] 상담 디테일 열 비침범 — DT124~DX128이 공유 블록(SH
 
 test('[v9.84] 페이스라인·blob 추출 — 실행 검증(경계·과장 금지 포함)', () => {
   const blobF = loadFunction('function consultBlobField_', 'function syncProfiles()', 'consultBlobField_', {});
-  const paceF = loadFunction('function consultBlobField_', 'function syncProfiles()', 'consultPace_', {});
+  // [v9.181] consultPace_ 가 공용 통로 미정값_(Code.js)를 지난다 — 「TOPIK 아직 미정까지 약 48주」 차단
+  const paceF = loadFunction('function consultBlobField_', 'function syncProfiles()', 'consultPace_',
+    { 미정값_: (v) => !v || /미정|모름|모르|정하지/.test(String(v)) });
   const b = '[나의 다짐 노트] 꿈이 있다\n중간 줄\n\n[한국어고충] 발음이 어렵고\n암기가 약해요\n\n[기타 질문] 없음';
   assert.equal(blobF(b, '한국어고충'), '발음이 어렵고\n암기가 약해요'); // 문단 내 단일 개행은 값의 일부
   assert.equal(blobF(b, '없는문항'), '');
