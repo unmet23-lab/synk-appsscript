@@ -1549,6 +1549,24 @@ section.page{
       <div class="field" data-field="residence" data-column="residence" data-type="text"><div class="k">Оршин суугаа газар <span class="en">Residence</span></div><div class="v" contenteditable="true" spellcheck="false" data-field="residence" data-column="residence"></div></div>
     </div>
 
+    <!-- 유입경로 — 🔴 data-value는 **한국어 그대로** 둔다. 몽골어로 바꾸면 시트에 두 언어의 값이 섞여
+         「③ 추천 신규 비율」이 반쪽만 센다(이 파일의 다른 single 필드도 전부 같은 규약이다).
+         ⏳ 라벨 몽골어는 초안 — docs/몽골어_검수_발주서.md 묶음에서 원어민 감수 대상. -->
+    <div class="field" data-field="source" data-column="source" data-type="single">
+      <div class="k">SYNK LAB-ийн талаар хаанаас мэдсэн бэ? <span class="en">How did you hear about us?</span></div>
+      <div class="opts" data-single="source">
+        <label class="opt"><input type="checkbox" name="source" data-field="source" data-column="source" data-value="페이스북"><span>Фэйсбүүк <span class="en">Facebook</span></span></label>
+        <label class="opt"><input type="checkbox" name="source" data-field="source" data-column="source" data-value="인스타"><span>Инстаграм <span class="en">Instagram</span></span></label>
+        <label class="opt"><input type="checkbox" name="source" data-field="source" data-column="source" data-value="틱톡"><span>ТикТок <span class="en">TikTok</span></span></label>
+        <label class="opt"><input type="checkbox" name="source" data-field="source" data-column="source" data-value="추천"><span>Найз/танилын зөвлөмж <span class="en">Referral</span></span></label>
+        <label class="opt"><input type="checkbox" name="source" data-field="source" data-column="source" data-value="오픈데이"><span>Нээлттэй өдөр/танилцуулга <span class="en">Open day</span></span></label>
+        <label class="opt"><input type="checkbox" name="source" data-field="source" data-column="source" data-value="학교제휴"><span>Сургуулийн хамтын ажиллагаа <span class="en">School</span></span></label>
+        <label class="opt"><input type="checkbox" name="source" data-field="source" data-column="source" data-value="워크인"><span>Өөрөө ирсэн <span class="en">Walk-in</span></span></label>
+        <label class="opt"><input type="checkbox" name="source" data-field="source" data-column="source" data-value="기타"><span>Бусад <span class="en">Other</span></span></label>
+      </div>
+    </div>
+    <div class="field" data-field="referrer" data-column="referrer" data-type="text"><div class="k">Зөвлөсөн хүн <span class="en">Referred by</span></div><div class="v" contenteditable="true" spellcheck="false" data-field="referrer" data-column="referrer" data-placeholder="«Найз/танилын зөвлөмж» гэж сонгосон бол тэр хүний нэрийг бичнэ үү (заавал биш)"></div></div>
+
     <div class="sec-head" style="margin-top:32px">
       <h3>Боловсрол <em>· Academic</em></h3>
       <span class="en">Education</span>
