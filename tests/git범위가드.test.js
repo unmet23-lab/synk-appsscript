@@ -262,6 +262,110 @@ test('되감기가 아닌 checkout·restore는 더러운 트리에서도 통과�
   });
 });
 
+/* ── F103: 가드가 **자기 처방을 막지 않는가** (2026-08-05) ─────────────────────────
+ * 실사고: 병합 충돌을 해소하려는데 ④가 `git merge --continue` 를, 이어서 ⑤가 `git merge --abort` 를
+ * 막았다. 안내문이 지시하는 두 탈출구가 **둘 다** 막혀 남은 통로가 GIT_SCOPE_BYPASS 뿐이었다.
+ * 처방을 따를 수 없으면 우회가 정상 통로가 된다(memory `guard-detection-layers`).
+ *
+ * 🔑 그때 이 파일에는 이미 「진행 중에도 --continue·--abort 는 통과한다」 검사가 있었다(위 202행).
+ *    그런데 그 검사가 쓴 동사는 `rebase` 하나였고, `rebase` 는 ④의 목록에 **처음부터 없었다** —
+ *    통과한 이유가 처방이 맞아서가 아니라 규칙이 그 동사를 아예 안 봐서였다. 검사가 공허했고,
+ *    그 비대칭(merge 는 막히고 rebase 는 통과)이 곧 버그였는데 한 칸만 재느라 안 보였다.
+ *    그래서 여기서는 **(진행 중인 작업) × (탈출구)** 를 전수로 돈다. */
+
+const 진행목록 = [['MERGE_HEAD', 'merge'], ['rebase-merge', 'rebase'], ['rebase-apply', 'rebase'],
+  ['CHERRY_PICK_HEAD', 'cherry-pick'], ['REVERT_HEAD', 'revert']];
+
+test('진행 중인 작업의 탈출구는 전수로 통과한다 — 한 동사만 재면 통과가 우연이다 (F103)', () => {
+  진행목록.forEach(([파일, op]) => {
+    ['--continue', '--abort', '--skip', '--quit'].forEach((탈출) => {
+      임시저장소(파일, (dir) => {
+        const c = `git ${op} ${탈출}`;
+        assert.equal(가드_at(c, dir).차단, false, `자기 처방을 막았다: ${c} (${파일} 진행 중)`);
+      });
+    });
+  });
+});
+
+test('④의 차단 사유가 시키는 명령이 실제로 통과한다 — 따를 수 없는 처방은 처방이 아니다 (F103)', () => {
+  임시저장소('MERGE_HEAD', (dir) => {
+    const r = 가드_at('git commit -m "x" -- a.md', dir);
+    assert.ok(r.차단, '전제가 깨졌다 — 진행 중 커밋이 안 막혔다');
+    const 지시 = [...r.사유.matchAll(/git\s+(?:merge|rebase|cherry-pick|revert)\s+--[a-z]+/g)].map((m) => m[0]);
+    assert.ok(지시.length >= 2, `안내문이 탈출구(마치기·되돌리기)를 안 준다: ${r.사유}`);
+    지시.forEach((c) => {
+      assert.equal(가드_at(c, dir).차단, false, `안내문이 시킨 명령을 같은 가드가 막는다: ${c}`);
+    });
+  });
+});
+
+test('해소 스테이징을 마침 명령과 한 호출로 묶어도 통과한다 — 체인째 막지 않는다 (F103)', () => {
+  임시저장소('MERGE_HEAD', (dir) => {
+    assert.equal(가드_at('git add a.md && git merge --continue', dir).차단, false,
+      '체인 안의 commit 계열 단어 하나 때문에 해소 스테이징까지 통째로 막았다');
+    assert.equal(가드_at('git add a.md && git commit -m "해소"', dir).차단, true,
+      '진행 중 맨 커밋은 여전히 막아야 한다 — 체인 분해가 ④를 무르게 만들면 안 된다(F038)');
+  });
+});
+
+/* ⚠ 이 검사는 **변이 시험이 찾아냈다**. 위 검사만으로는 체인 분해를 지워도 초록이었다 —
+ * 명령 전체에서 마침꼴을 한 번만 찾으면 `add && continue` 는 어차피 통과하기 때문이다.
+ * 분해가 실제로 지키는 것은 그 반대 방향이다: **탈출구 한 조각을 앞에 붙여 커밋을 세탁하는 것.**
+ * 예외를 두면 그 예외가 체인 전체에 번지지 않는지를 같이 못박아야 한다. */
+test('탈출구를 앞에 붙여도 뒤따르는 커밋은 그대로 막는다 — 예외가 체인을 세탁하면 안 된다 (F103)', () => {
+  임시저장소('MERGE_HEAD', (dir) => {
+    ['git merge --continue && git commit -m "x" -- a.md',
+     'git merge --abort; git commit -m "x" -- a.md',
+     'git merge --abort || git commit -m "x" -- a.md'].forEach((c) => {
+      assert.equal(가드_at(c, dir).차단, true, `탈출구 한 조각이 체인 전체를 통과시켰다: ${c}`);
+    });
+  });
+});
+
+/* 위 셋은 .git 안에 진행 파일만 놓은 **가짜** 픽스처라 트리가 깨끗하다.
+ * 진짜 충돌은 트리를 더럽히고(unmerged), 그때 ⑤가 abort 를 막는 것이 F103 의 나머지 절반이었다. */
+function 충돌저장소({ 남의수정 = false }, fn) {
+  const dir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'scope-guard-conflict-'));
+  const g = (...a) => execFileSync('git',
+    ['-c', 'user.email=t@t', '-c', 'user.name=t', '-c', 'commit.gpgsign=false', ...a], { cwd: dir, stdio: 'pipe' });
+  try {
+    g('init', '-q');
+    fs.writeFileSync(path.join(dir, 'a.md'), '기준\n');
+    fs.writeFileSync(path.join(dir, '남의파일.md'), '남의 것\n');   // 한글 이름 = core.quotepath 회귀를 겸한다
+    g('add', 'a.md', '남의파일.md'); g('commit', '-qm', 'base');
+    g('checkout', '-q', '-b', 'other');
+    fs.writeFileSync(path.join(dir, 'a.md'), '저쪽\n'); g('commit', '-qam', 'other');
+    g('checkout', '-q', '-');                                        // 기본 브랜치 이름에 안 기댄다
+    fs.writeFileSync(path.join(dir, 'a.md'), '이쪽\n'); g('commit', '-qam', 'mine');
+    try { g('merge', 'other'); } catch { /* 충돌로 실패하는 것이 이 픽스처의 목적이다 */ }
+    assert.ok(fs.existsSync(path.join(dir, '.git', 'MERGE_HEAD')),
+      '픽스처가 충돌 merge 를 못 만들었다 — 아래 검사가 통과해도 아무 뜻이 없다');
+    if (남의수정) fs.writeFileSync(path.join(dir, '남의파일.md'), '남이 지금 고치는 중\n');
+    return fn(dir);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+}
+
+test('충돌로 더러워진 트리에서도 탈출구는 열려 있다 — 충돌 파일은 그 작업 자신의 상태다 (F103)', () => {
+  충돌저장소({}, (dir) => {
+    ['git merge --continue', 'GIT_EDITOR=true git merge --continue', 'git merge --abort',
+     'git add a.md && git merge --continue'].forEach((c) => {
+      assert.equal(가드_at(c, dir).차단, false, `충돌 해소의 유일한 통로를 막았다: ${c}`);
+    });
+    assert.equal(가드_at('git reset --hard', dir).차단, true,
+      'reset --hard 는 그 작업의 탈출구가 아니라 뭉툭한 도구다 — 충돌분까지 그대로 세야 한다(F037)');
+  });
+});
+
+test('충돌 중이라도 무관한 남의 미커밋이 있으면 abort 를 막는다 — F037 보호는 그대로 (F103)', () => {
+  충돌저장소({ 남의수정: true }, (dir) => {
+    const r = 가드_at('git merge --abort', dir);
+    assert.ok(r.차단, '남의 편집이 쓸려나가는데 통과시켰다 — 충돌분 제외가 규칙⑤를 통째로 무르게 만들었다');
+    assert.match(r.사유, /남의파일\.md/,
+      '무엇이 사라질지 안 보여준다(한글이 8진 이스케이프로 나오면 이 검사가 잡는다 — core.quotepath)');
+    assert.match(r.사유, /충돌 중인 \d+개는 뺐다/, '무엇을 위험으로 셌는지 밝히지 않으면 판단이 안 선다');
+  });
+});
+
 /* ── 규칙 ⑦: stash 는 남의 수정을 「지우는」 대신 「옮긴다」 (F066·F068) ──────────────
  * 되감기(규칙⑤)와 같은 자리, 방향만 다르다. 실사고에서 pop 이 늦어 원 세션이
  * 「내 편집이 사라졌다」고 오판해 복구를 시작하기 직전까지 갔다 — 피해가 작았던 건 운이었다.

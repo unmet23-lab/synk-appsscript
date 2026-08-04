@@ -107,7 +107,26 @@ if (re('clean\\b').test(exec)
  * 「rebase in progress」를 **한 글자도 표시하지 않는다**. 범위를 확인하는 습관(`--short`)이
  * 오히려 이 상태를 가린다. 그래서 사람의 주의가 아니라 훅이 본다.
  * 인덱스는 저장소당 하나인데 리베이스는 그 인덱스를 독점한다고 가정한다 — 이 트리에선 거짓이다. */
-if (re('(commit|cherry-pick|revert|merge)\\b').test(exec)) {
+/* 🔑 2026-08-05 F103: 이 규칙이 **자기 처방을 막았다**. 안내문은 「마치거나(--continue) 되돌린 뒤(--abort)」
+ *   라고 적어두고, 그 두 명령이 다시 동사 목록의 `merge` 에 걸려 deny 됐다(실측 재현: 둘 다 deny).
+ *   남는 탈출구가 GIT_SCOPE_BYPASS 하나뿐이면 **우회가 정상 통로가 된다** — memory `guard-detection-layers`.
+ *   ⚠ 장부가 적어둔 원인 후보 「env 접두어(GIT_EDITOR=)를 매처가 못 읽는다」는 **실측으로 반증됐다**:
+ *      접두어를 떼도 똑같이 deny 다. `git rebase --continue` 가 통과하던 것도 처방이 맞아서가 아니라
+ *      `rebase` 가 이 목록에 없어서 생긴 **우연**이었다(같은 축인데 한쪽만 막히는 비대칭이 증거다).
+ *   그래서 둘을 가른다:
+ *     · 진행 중인 작업을 **마치거나 되돌리는** 형태(--continue/--abort/--skip/--quit)
+ *       → 새 커밋을 그 위에 얹는 게 아니라 그 작업 자체를 끝낸다. ④는 비켜선다.
+ *       여기서 allow 로 조기 종료하지 않는다 — 그러면 ⑤(--abort 의 「더러운 트리」 검사)가 죽는다.
+ *       ④가 비켜서도 --abort 는 ⑤가 계속 본다(보호는 그대로, 통로만 열린다).
+ *     · 그 밖의 커밋 생성(F038 원형: 남의 rebase 중 `git commit -- 경로`) → 그대로 차단.
+ *   그리고 **체인을 분해해서 본다** — `git add <해소한 파일> && git merge --continue` 가
+ *   commit 계열 단어 하나 때문에 통째로 막히던 것이 F103 의 나머지 절반이다.
+ *   (①②③은 이미 `[^&|;]` 로 구분자를 안 넘는데 ④만 명령 전체를 한 덩어리로 봤다.) */
+const 마침꼴 = '(merge|rebase|cherry-pick|revert)\\b[^&|;]*?\\s--(continue|abort|skip|quit)\\b';
+const 커밋생성 = exec
+  .split(/&&|\|\||[;|\n]/)
+  .some((seg) => re('(commit|cherry-pick|revert|merge)\\b').test(seg) && !re(마침꼴).test(seg));
+if (커밋생성) {
   const { execFileSync } = require('child_process');
   let gitDir = null;
   try {
@@ -125,8 +144,11 @@ if (re('(commit|cherry-pick|revert|merge)\\b').test(exec)) {
         + '\n지금 커밋하면 detached HEAD 위에 얹혀 그 작업의 순서 안으로 들어간다(2026-08-04 F038 실사고).'
         + '\n⚠ `git status --short`는 이 상태를 표시하지 않는다 — 범위만 확인하면 못 본다.'
         + '\n→ 먼저: git status (짧은 형식 말고 전체 — 진행 상태가 첫 줄에 나온다)'
-        + `\n   그 작업을 마치거나(git ${진행[1]} --continue) 되돌린 뒤(--abort) 커밋한다.`
-        + '\n   다른 세션의 작업이면 끝날 때까지 기다린다.'
+        + `\n   **그 ${진행[1]} 가 내 것이면** 커밋으로 끝내지 말고 그 작업의 통로로 끝낸다:`
+        + `\n     충돌 파일을 고친 뒤  git add <고친 파일> && git ${진행[1]} --continue`
+        + `\n     되돌리려면        git ${진행[1]} --abort`
+        + '\n     (이 두 형태는 이 규칙이 비켜선다 — BYPASS 를 붙일 필요가 없다. F103)'
+        + '\n   다른 세션의 작업이면 **끝날 때까지 기다린다**(남의 병합을 대신 마치지 않는다).'
         + '\n   의도적 예외라면 명령 앞에 GIT_SCOPE_BYPASS=1 을 붙인다.');
     }
   }
@@ -145,14 +167,34 @@ if (re('(rebase|merge|cherry-pick|revert)\\s+--abort\\b').test(exec)
   const { execFileSync } = require('child_process');
   let 더러운 = [];
   try {
-    더러운 = execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { encoding: 'utf8', cwd: gitCwd })
-      .split('\n').filter((l) => l.trim()).slice(0, 12);
+    /* ⚠ core.quotepath=false 없으면 한글 경로가 8진 이스케이프로 나온다 — 이 저장소는 경로가 전부
+     * 한글이라, 「무엇이 위험한지 보여주는」 바로 그 목록이 **읽을 수 없는 채로** 뜬다(⑦은 이미 이걸 붙였다). */
+    더러운 = execFileSync('git', ['-c', 'core.quotepath=false', 'status', '--porcelain', '--untracked-files=no'],
+      { encoding: 'utf8', cwd: gitCwd }).split('\n').filter((l) => l.trim());
   } catch { /* 저장소 밖 — 가드가 판단할 자리가 아니다 */ }
+
+  /* 🔑 2026-08-05 F103 잔여 절반: `--abort` 는 ④를 비켜서게 해도 여기서 **영원히** 막혔다.
+   *   충돌 난 merge·rebase 는 정의상 트리가 더럽다(충돌 파일이 unmerged 로 뜬다). 그래서
+   *   「트리가 더러우면 되감기 금지」가 **그 작업의 유일한 탈출구**를 상시 차단한다 → 또 BYPASS.
+   *   가르는 기준: unmerged 항목은 **그 작업 자신의 상태**지 남이 편집하던 것이 아니다.
+   *   abort 가 그걸 버리는 건 사고가 아니라 abort 의 정의다. 그러니 위험 계산에서 뺀다.
+   *   ⚠ 빼는 것은 **그 작업의 정식 탈출구(--abort)일 때만**이다 — reset --hard·checkout -- . 는
+   *      그 작업과 무관한 뭉툭한 도구라 전부 그대로 센다(F037 보호는 거기서 온전하다).
+   *   남의 tracked 수정(M·A·D…)은 여전히 센다 — 그게 F037 이 지키려던 바로 그것이다. */
+  const 탈출구 = re('(rebase|merge|cherry-pick|revert)\\s+--abort\\b').test(exec);
+  const unmerged = (l) => /^(DD|AU|UD|UA|DU|AA|UU)\s/.test(l);
+  const 충돌수 = 더러운.filter(unmerged).length;
+  if (탈출구) 더러운 = 더러운.filter((l) => !unmerged(l));
+  더러운 = 더러운.slice(0, 12);
+
   if (더러운.length) {
     deny('[git-scope-guard] 되감기 차단 — 작업 트리에 **미커밋 수정**이 있다.'
       + '\n이 트리는 세션 여럿이 공유하고, 그 수정은 대개 다른 세션이 지금 작업 중인 것이다.'
       + '\n되감으면 그 편집은 reflog·stash 어디에도 남지 않는다(2026-08-04 F037 실사고: 옆 세션 2파일 소멸).'
       + '\n\n지금 트리의 미커밋 수정:\n  ' + 더러운.join('\n  ')
+      + (탈출구 && 충돌수
+        ? `\n(충돌 중인 ${충돌수}개는 뺐다 — 그건 이 작업 자신의 상태라 abort 가 버리는 게 정상이다. 위는 그와 무관한 수정이다.)`
+        : '')
       + '\n\n→ 남의 것이면: 그 세션에 알리고 커밋될 때까지 기다린다.'
       + '\n   내 것이면: 먼저 커밋하거나 `git stash push -- 경로`로 대피시킨 뒤 되감는다.'
       + '\n   의도적 예외라면 명령 앞에 GIT_SCOPE_BYPASS=1 을 붙인다.');
