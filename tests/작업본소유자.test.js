@@ -151,6 +151,54 @@ test('🔑 심장박동 경계는 안전한 쪽으로 틀린다 — 애매하면
     '경계 안쪽을 죽었다고 판정했다 — 이 방향으로 틀리면 남의 작업본을 편집하게 된다');
 });
 
+/* ── 워크트리 (F079 · 옆 세션 local_dee95eb9 이 실사고로 잡아 넘겼다) ──────────
+ * 두 겹의 사각지대였고 **둘 다 「0건」으로 조용히 새는** 방향이다:
+ *   ⓐ `git status` 는 자기 트리만 본다 ⓑ 상태 파일 접두의 projectKey 가 트리마다 다르다.
+ * 실측 당시: 옆 트리가 2건을 들고 있는데 이 도구는 그것을 세지 않았다. */
+function 워크트리픽스처() {
+  const { repo, state } = 픽스처();
+  const g = (dir, ...a) => spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', '-c', 'commit.gpgsign=false', ...a],
+    { cwd: dir, encoding: 'utf8' });
+  const wtDir = path.join(repo, '.wt', 'branch-a');
+  const r = g(repo, 'worktree', 'add', '-b', 'wt-a', wtDir);
+  if (r.status !== 0) return null;                       // 워크트리를 못 만들면 이 검사는 의미 없다
+  /* 🔑 **추적 파일을 고친** 모양으로 만든다 — 라이브에서 실제로 본 형태가 그것이다
+   *   (옆 트리가 `.claude/hooks/code-edit-guard.js` 를 수정 중이었다).
+   *   ⚠ 새 폴더의 **미추적** 파일로 만들면 이 검사가 통과하지 못한다 — 공용 통로
+   *   `lib/worktrees.js` 가 `git status --porcelain` 을 `-uall` 없이 불러 `src/` 로 접기 때문이다
+   *   (이 도구가 같은 자리에서 이미 한 번 당했고, 그 통로는 다른 세션 소유라 여기서 안 고쳤다). */
+  더럽힌다(wtDir, 'src/옆트리것.js', 'theirs\n');
+  g(wtDir, 'add', '-A'); g(wtDir, 'commit', '-qm', 'wt seed');
+  더럽힌다(wtDir, 'src/옆트리것.js', 'theirs modified\n');
+  return { repo, state, wtDir };
+}
+
+test('🔴 다른 작업 트리의 미커밋을 센다 — 메인 status 엔 안 뜬다', { skip: !git있나 && 'git 없음' }, (t) => {
+  const f = 워크트리픽스처();
+  if (!f) return t.skip('git worktree 를 못 만들었다 — 탐지력을 못 잰다(통과로 위장하지 않는다)');
+  const out = 돌린다({ repo: f.repo, state: f.state, 나: 'local_me00' });
+  assert.match(out, /🌿/, `다른 트리의 미커밋을 통째로 놓쳤다 — 「0건」과 「안전」이 같은 모양이 된다:\n${out}`);
+  assert.ok(out.includes('옆트리것.js'), `그 파일을 안 짚었다:\n${out}`);
+  assert.match(out, /branch-a/, '어느 트리인지 안 알려줬다 — 어디로 가서 봐야 할지 모른다');
+});
+
+test('🔑 다른 트리의 파일은 경로가 겹쳐도 「내 것」이 되지 않는다', { skip: !git있나 && 'git 없음' }, (t) => {
+  const f = 워크트리픽스처();
+  if (!f) return t.skip('git worktree 를 못 만들었다');
+  // 내가 메인에서 같은 상대 경로를 만진 것으로 기록해 둔다 — 글자만 겹치는 상황을 만든다.
+  세션기록(f.state, f.repo, 'local_me00', ['src/옆트리것.js'], 1);
+  const out = 돌린다({ repo: f.repo, state: f.state, 나: 'local_me00' });
+  assert.match(out, /🌿[\s\S]*옆트리것\.js/,
+    `경로가 겹친다고 내 것으로 삼켰다 — 남의 트리 변경이 조용히 사라지는 방향이다:\n${out}`);
+});
+
+test('--hook 은 다른 트리 미커밋만 있어도 말한다 (침묵이 안전으로 읽히지 않게)', { skip: !git있나 && 'git 없음' }, (t) => {
+  const f = 워크트리픽스처();
+  if (!f) return t.skip('git worktree 를 못 만들었다');
+  assert.match(돌린다({ repo: f.repo, state: f.state, 나: 'local_me00', 인자: ['--hook'] }), /🌿/,
+    '다른 트리에 미커밋이 있는데 훅이 침묵했다');
+});
+
 test('🔴 SessionStart 에 등록돼 있고, 실행 불가가 조용한 통과가 아니다', () => {
   const j = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', '.claude', 'settings.json'), 'utf8'));
   const cmd = (j.hooks?.SessionStart || []).flatMap((g) => g.hooks || [])
