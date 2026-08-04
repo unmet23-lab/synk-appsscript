@@ -35,11 +35,11 @@ const DEAD = [
 /**
  * 반전면 색. #101528 은 **탈락한 값**이다(디자인 컨셉 정본 v1.2) —
  * 채도 43%라 축소하면 순검정과 구별되지 않아 인스타 썸네일·저가 안드로이드에서 색조가 죽는다.
- * 발표물 정본 ■9 에는 아직 옛 값이 적혀 있으나, 같은 자리에 「표지·간지는 디자인 컨셉 정본 우선」이
- * 명시돼 있다. 반전면은 표지·간지이므로 #0B1A2E 가 이긴다.
+ * #0B1A2E(구 미드나잇)도 2026-08-04 브랜드 키트 이관(_브랜드킷.md v2.0)으로 탈락 —
+ * 반전면 확정값은 키트의 Navy 2 다.
  */
-const MIDNIGHT_OK = '#0B1A2E';
-const MIDNIGHT_DEAD = ['#101528', '#08080B'];
+const MIDNIGHT_OK = '#0F1730';
+const MIDNIGHT_DEAD = ['#101528', '#08080B', '#0B1A2E'];
 
 function lint(file) {
   const html = fs.readFileSync(file, 'utf8');

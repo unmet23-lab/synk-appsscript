@@ -109,6 +109,23 @@ const targets = [
   .filter(([, abs]) => fs.existsSync(abs))
   .map(([rel, abs]) => [rel, readStripped(abs)]);
 
+/* 08-04 배포물 6종 키트 이관과 함께 발표물 폴더를 죽은색·동결색 검사(2·3절)에 넣는다 —
+ * 이전엔 스캔 범위 밖이라 62 초록인데도 구 팔레트가 살았다(memory print-doc-pipeline).
+ * 단 RGB 숫자 검사(4절)엔 넣지 않는다: 그 검사의 표적(캔버스 픽셀 코드)은 JS 에만 있고,
+ * 정적 HTML 의 svg 좌표·mm 수치는 폐기색 triplet 과 우연히 겹치는 오탐 표면이다.
+ * 발표물의 색 자체는 로고정본색.test.js 의 화이트리스트(키트 밖 0)가 더 세게 잠근다. */
+const PRESENT_DIR = path.join(ROOT, 'docs', '발표물');
+const printTargets = ['', '로고']
+  .flatMap((sub) => {
+    const d = path.join(PRESENT_DIR, sub);
+    return fs.existsSync(d)
+      ? fs.readdirSync(d).filter((f) => f.endsWith('.html')).map((f) => path.posix.join('docs/발표물', sub, f))
+      : [];
+  })
+  .map((rel) => [rel, path.join(ROOT, rel)])
+  .filter(([, abs]) => fs.existsSync(abs))
+  .map(([rel, abs]) => [rel, readStripped(abs)]);
+
 /* ─── 0. 스캔이 조용히 0건이 되는 것 방지 ─────────────────────────────────── */
 test('색 검사 대상 파일을 실제로 찾는다(경로가 바뀌면 가드가 죽는다)', () => {
   assert.ok(targets.length >= 10, `검사 대상이 ${targets.length}개뿐 — docs/tools 또는 엔진 파일 경로를 확인하라`);
@@ -127,7 +144,7 @@ test('키트 19색이 hex 원천 HTML과 전부 일치한다', () => {
 });
 
 /* ─── 2. 죽은 색 회귀 차단 ────────────────────────────────────────────────── */
-for (const [rel, src] of targets) {
+for (const [rel, src] of targets.concat(printTargets)) {
   test(`${rel} — 폐기된 구 색이 되살아나지 않았다`, () => {
     const up = src.toUpperCase();
     for (const [hex, fix] of Object.entries(DEAD)) {
@@ -147,7 +164,7 @@ for (const [rel, src] of targets) {
 test('자리 한정 폐기색(#FF6D00·#3D5AFE)이 새로 늘지 않았다', () => {
   for (const [hex, { known, why }] of Object.entries(FROZEN)) {
     const hits = [];
-    for (const [rel, src] of targets) {
+    for (const [rel, src] of targets.concat(printTargets)) {
       const n = (src.toUpperCase().match(new RegExp(hex, 'g')) || []).length;
       if (n) hits.push(`${rel} ${n}건`);
     }

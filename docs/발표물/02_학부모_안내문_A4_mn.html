@@ -23,13 +23,14 @@
 <style>
 @page { size: A4 portrait; margin: 0; }
 :root{
-  --blue:#3D5AFE; --orange:#FF6D00; --gold:#FFC400;
-  --paper:#FDFCF8; --ink:#1A237E; --midnight:#0B1A2E;
-  --hair:rgba(26,35,126,.20); --mute:#6C74A8;
+  --coral:#FF6B5C; --coral-3:#E8543F; --coral-wash:#FFE9E4; --coral-soft:#FFCFC6;
+  --paper:#FBF7EE; --navy:#1A2340; --navy-2:#0F1730; --navy-3:#2A3358;
+  --cream:#F6F1E8; --cream-2:#EFE7D7; --cream-3:#E7DDC7; --ink:#171820;
+  --hair:rgba(42,51,88,.25);
 }
 *{ box-sizing:border-box; margin:0; padding:0; }
 html,body{
-  background:var(--paper); color:var(--ink);
+  background:var(--paper); color:var(--navy);
   font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
   font-weight:500; line-height:1.5;
   -webkit-print-color-adjust:exact; print-color-adjust:exact;
@@ -39,52 +40,52 @@ html,body{
 .sheet{ width:210mm; min-height:297mm; padding:14mm 15mm; background:var(--paper); margin:0 auto; }
 
 .banner{
-  background:var(--midnight); color:var(--paper); border-radius:2.4mm;
+  background:var(--navy-2); color:var(--cream); border-radius:2.4mm;
   padding:5mm 6mm; margin-bottom:6mm;
 }
 .banner .t{ font-size:5.4mm; font-weight:800; letter-spacing:-.02em; }
-.banner .t em{ font-style:normal; color:var(--gold); }
-.banner .d{ font-size:3mm; color:#B9C2E0; margin-top:2.6mm; line-height:1.55; }
-.banner .warn{ font-size:3mm; color:var(--gold); margin-top:2.6mm; font-weight:800; }
+.banner .t em{ font-style:normal; color:var(--coral); }
+.banner .d{ font-size:3mm; color:var(--cream-3); margin-top:2.6mm; line-height:1.55; }
+.banner .warn{ font-size:3mm; color:var(--cream); margin-top:2.6mm; font-weight:800; }
 
 .face{
-  font-size:3.4mm; font-weight:800; letter-spacing:.14em; color:var(--blue);
-  margin:7mm 0 3mm; padding-bottom:1.8mm; border-bottom:.6mm solid var(--blue);
+  font-size:3.4mm; font-weight:800; letter-spacing:.14em; color:var(--navy-3);
+  margin:7mm 0 3mm; padding-bottom:1.8mm; border-bottom:.6mm solid var(--navy-3);
 }
 
 .slot{ border:.3mm solid var(--hair); border-radius:2mm; padding:3.2mm 3.6mm; margin-top:3mm; background:#fff; }
 .slot .head{ display:flex; align-items:baseline; justify-content:space-between; gap:4mm; }
-.slot .role{ font-size:2.5mm; font-weight:800; letter-spacing:.1em; color:var(--blue); }
+.slot .role{ font-size:2.5mm; font-weight:800; letter-spacing:.1em; color:var(--navy-3); }
 .slot .lim{
-  font-size:2.6mm; font-weight:800; color:#3A2E00; background:var(--gold);
+  font-size:2.6mm; font-weight:800; color:var(--ink); background:var(--coral);
   padding:.7mm 2.2mm; border-radius:3mm; white-space:nowrap;
 }
 /* 번역이 들어갈 자리 — 몽골어 한도만큼 실제로 비워 둔다 */
 .mnbox{
-  margin-top:2.4mm; border:.4mm dashed var(--blue); border-radius:1.6mm;
-  background:#F7F9FF; min-height:9mm; padding:2mm 2.6mm;
-  color:#9AA0C4; font-size:2.7mm; letter-spacing:.06em;
+  margin-top:2.4mm; border:.4mm dashed var(--navy-3); border-radius:1.6mm;
+  background:var(--cream-2); min-height:9mm; padding:2mm 2.6mm;
+  color:var(--navy-3); font-size:2.7mm; letter-spacing:.06em;
 }
 .mnbox.tall{ min-height:16mm; }
 .mnbox.xl{ min-height:22mm; }
 /* 참고용 한국어 원문 — 번역 대상. 인쇄본에는 들어가지 않는다 */
-.ko{ font-size:2.9mm; color:#414A80; margin-top:2.4mm; line-height:1.5; }
-.ko b{ color:var(--ink); font-weight:800; }
-.ko .lbl{ font-size:2.3mm; font-weight:800; color:var(--mute); letter-spacing:.1em; display:block; margin-bottom:1mm; }
+.ko{ font-size:2.9mm; color:var(--navy-3); margin-top:2.4mm; line-height:1.5; }
+.ko b{ color:var(--navy); font-weight:800; }
+.ko .lbl{ font-size:2.3mm; font-weight:800; color:var(--navy-3); letter-spacing:.1em; display:block; margin-bottom:1mm; }
 
 .note{
-  margin-top:7mm; border-left:1mm solid var(--orange); padding:2.6mm 0 2.6mm 4.4mm;
-  font-size:2.9mm; line-height:1.55; color:#4A4133;
+  margin-top:7mm; border-left:1mm solid var(--navy-3); padding:2.6mm 0 2.6mm 4.4mm;
+  font-size:2.9mm; line-height:1.55; color:var(--navy-3);
 }
-.note b{ color:var(--ink); font-weight:800; }
+.note b{ color:var(--navy); font-weight:800; }
 
 .sum{ display:flex; gap:3mm; margin-top:4mm; }
 .sum .c{ flex:1 1 0; border:.3mm solid var(--hair); border-radius:2mm; padding:3mm 3.4mm; background:#fff; }
-.sum .c .k{ font-size:2.4mm; font-weight:800; color:var(--mute); letter-spacing:.1em; }
+.sum .c .k{ font-size:2.4mm; font-weight:800; color:var(--navy-3); letter-spacing:.1em; }
 .sum .c .v{ font-size:5mm; font-weight:800; margin-top:1.2mm; }
-.sum .c .s{ font-size:2.4mm; color:var(--mute); margin-top:.8mm; }
+.sum .c .s{ font-size:2.4mm; color:var(--navy-3); margin-top:.8mm; }
 
-@media screen{ body{ background:#DFE3EE; padding:8mm; } .sheet{ box-shadow:0 3mm 12mm rgba(11,26,46,.22); } }
+@media screen{ body{ background:var(--cream-2); padding:8mm; } .sheet{ box-shadow:0 3mm 12mm rgba(15,23,48,.22); } }
 </style>
 </head>
 <body>
@@ -94,7 +95,7 @@ html,body{
   <div class="banner">
     <div class="t">몽골어판 <em>번역 작업본</em> — 학부모 안내문</div>
     <div class="d">한국어판(<code>02_학부모_안내문_A4_kr.html</code>)과 같은 순서·같은 블록입니다.
-      각 칸의 <b style="color:var(--gold)">한도</b>는 한국어 원문 글자 수 × 1.3을 5자 단위로 올린 값입니다 —
+      각 칸의 <b style="color:var(--cream)">한도</b>는 한국어 원문 글자 수 × 1.3을 5자 단위로 올린 값입니다 —
       몽골어가 한국어보다 20~30% 길어지는 만큼을 미리 비워 둔 것입니다. 한도 안에서는 자유롭게 의역해 주세요.</div>
     <div class="warn">[!] 이 파일은 인쇄용이 아닙니다. 번역이 채워지면 한국어판 조판으로 옮겨 몽골어 인쇄본을 따로 만듭니다.</div>
   </div>
@@ -292,14 +293,14 @@ html,body{
     <div class="head"><span class="role">CONTACT · 라벨 4종</span><span class="lim">각 <span class="mono">15</span></span></div>
     <div class="mnbox tall">____________________________</div>
     <div class="ko"><span class="lbl mono">KO</span>페이스북 메신저(가장 빠른 문의) · 전화 · 주소 · 상담 시간<br>
-      <span style="color:var(--mute)">※ 값 자체(URL·번호·주소)는 번역 대상이 아닙니다. 라벨만 옮겨 주세요.</span></div>
+      <span style="color:var(--navy-3)">※ 값 자체(URL·번호·주소)는 번역 대상이 아닙니다. 라벨만 옮겨 주세요.</span></div>
   </div>
 
   <div class="slot">
     <div class="head"><span class="role">SLOGAN · 마스터 슬로건</span><span class="lim mono">25</span></div>
     <div class="mnbox">____________________________</div>
     <div class="ko"><span class="lbl mono">KO</span>점수를 넘어, 삶을 설계합니다.
-      <span style="color:var(--mute)">※ 브랜드 마스터 슬로건입니다. 직역보다 몽골어에서 같은 무게로 울리는 문장을 우선해 주세요.</span></div>
+      <span style="color:var(--navy-3)">※ 브랜드 마스터 슬로건입니다. 직역보다 몽골어에서 같은 무게로 울리는 문장을 우선해 주세요.</span></div>
   </div>
 
   <div class="note">
@@ -310,7 +311,7 @@ html,body{
     번역을 줄이는 대신 조판을 고칩니다.
   </div>
 
-  <div class="note" style="border-left-color:var(--blue)">
+  <div class="note" style="border-left-color:var(--navy-3)">
     <b>브랜드 잠금(번역에서도 유지)</b> — ① 「기획 → 도전 → 다시 → 완성」은 확정 표기입니다.
     ② 실수와 재도전을 부정적으로 옮기지 않습니다 — 한국어 원문의 금칙어 8종에 해당하는 몽골어 단어를 쓰지 않습니다(‘다시’ 계열로 옮깁니다).
     ③ 비교 대상은 언제나 ‘어제의 나’이며, 다른 아이와 견주는 문장을 만들지 않습니다.

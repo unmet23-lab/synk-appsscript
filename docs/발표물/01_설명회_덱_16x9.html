@@ -27,13 +27,19 @@
 @page { size: 338.667mm 190.5mm; margin: 0; }
 
 :root{
-  --blue:#3D5AFE; --orange:#FF6D00; --gold:#FFC400;
-  --paper:#FDFCF8; --ink:#1A237E; --midnight:#0B1A2E;
-  --hair:rgba(26,35,126,.20); --mute:#6C74A8; --body:#414A80;
+  /* 01 Core */
+  --cream:#F6F1E8; --coral:#FF6B5C; --navy:#1A2340; --ink:#171820;
+  /* 02 Cream family */
+  --paper:#FBF7EE; --cream-2:#EFE7D7; --cream-3:#E7DDC7;
+  /* 03 Coral family */
+  --coral-wash:#FFE9E4; --coral-soft:#FFCFC6; --coral-3:#E8543F;
+  /* 04 Navy family */
+  --navy-3:#2A3358; --navy-2:#0F1730;
+  --hair:rgba(42,51,88,.25);
 }
 *{ box-sizing:border-box; margin:0; padding:0; }
 html,body{
-  background:var(--paper); color:var(--ink);
+  background:var(--paper); color:var(--navy);
   font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
   font-weight:500; line-height:1.5;
   -webkit-print-color-adjust:exact; print-color-adjust:exact;
@@ -52,36 +58,37 @@ html,body{
 /* 설명회장은 조명이 밝고 뒷줄이 멀다 — 본문 최소 32pt(≈11.3mm) 기준으로 설계한다.
    헤드라인은 그보다 훨씬 크게. 장당 요소는 5개를 넘지 않는다. */
 h1{ font-size:30mm; font-weight:800; line-height:1.08; letter-spacing:-.045em; }
-h1 em{ font-style:normal; color:var(--orange); }
+h1 em{ font-style:normal; color:var(--coral-3); }
+.dark h1 em{ color:var(--coral); }
 h1.sm{ font-size:24mm; }
-.one{ font-size:11.5mm; color:var(--body); margin-top:9mm; line-height:1.45; font-weight:500; }
-.one b{ color:var(--ink); font-weight:800; }
+.one{ font-size:11.5mm; color:var(--navy-3); margin-top:9mm; line-height:1.45; font-weight:500; }
+.one b{ color:var(--navy); font-weight:800; }
 
 /* 몽골어 자리 — 한국어 아래, **같은 크기**, 60~70% 밝기(정본 §1).
    ⚠ 「같은 크기」를 지키는 게 핵심이다. 처음엔 14mm(≈40pt)로 잡았다가 3열 슬라이드에서
       19.8pt 까지 내려갔다 — 번역이 들어오면 그 크기로 투사되는데, 설명회장 뒷줄은 못 읽는다.
       자리를 작게 잡아 두면 나중에 번역을 줄이게 된다. 순서가 틀렸다. */
-.mn{ font-size:14mm; color:rgba(26,35,126,.34); letter-spacing:.06em; margin-top:6mm; font-weight:700; line-height:1.2; }
+.mn{ font-size:14mm; color:rgba(26,35,64,.34); letter-spacing:.06em; margin-top:6mm; font-weight:700; line-height:1.2; }
 h1 + .mn{ font-size:22mm; }
 h1.sm + .mn{ font-size:18mm; }
 .mn.s{ font-size:12mm; margin-top:5mm; }
-.dark .mn{ color:rgba(253,252,248,.36); }
-.dark .one{ color:#B9C2E0; }
-.dark .one b{ color:var(--paper); }
+.dark .mn{ color:rgba(246,241,232,.36); }
+.dark .one{ color:var(--cream-3); }
+.dark .one b{ color:var(--cream); }
 
 /* 쪽 번호 · 구간 표시 */
-.tag{ position:absolute; left:24mm; top:13mm; font-size:4.6mm; font-weight:700; letter-spacing:.24em; color:var(--blue); }
-.dark .tag{ color:var(--gold); }
-.pn{ position:absolute; right:24mm; bottom:11mm; font-size:4.6mm; font-weight:700; color:var(--mute); letter-spacing:.1em; }
-.dark .pn{ color:#5F6894; }
+.tag{ position:absolute; left:24mm; top:13mm; font-size:4.6mm; font-weight:700; letter-spacing:.24em; color:var(--navy-3); }
+.dark .tag{ color:var(--cream-3); }
+.pn{ position:absolute; right:24mm; bottom:11mm; font-size:4.6mm; font-weight:700; color:var(--navy-3); letter-spacing:.1em; }
+.dark .pn{ color:var(--cream-3); }
 
 /* 미드나잇 반전 */
-.dark{ background:var(--midnight); color:var(--paper); }
+.dark{ background:var(--navy-2); color:var(--cream); }
 .dark::before{
   content:''; position:absolute; inset:0;
   background-image:
-    radial-gradient(circle at 2mm 2mm, rgba(61,90,254,.28) 0 .7mm, transparent .7mm),
-    radial-gradient(circle at 9mm 9mm, rgba(255,196,0,.14) 0 .5mm, transparent .5mm);
+    radial-gradient(circle at 2mm 2mm, rgba(255,107,92,.28) 0 .7mm, transparent .7mm),
+    radial-gradient(circle at 9mm 9mm, rgba(246,241,232,.13) 0 .5mm, transparent .5mm);
   background-size:16mm 16mm, 16mm 16mm;
 }
 .dark > *{ position:relative; }
@@ -90,54 +97,54 @@ h1.sm + .mn{ font-size:18mm; }
 .symbol svg{ width:100%; height:100%; display:block; }
 .symbol.sm{ width:34mm; height:22mm; }
 
-.rule{ height:1.4mm; background:linear-gradient(90deg,var(--gold) 0 24%, rgba(255,196,0,.2) 24% 100%); margin:6mm 0; }
+.rule{ height:1.4mm; background:linear-gradient(90deg,var(--coral) 0 24%, rgba(255,107,92,.2) 24% 100%); margin:6mm 0; }
 
 /* 3열 (세 가지 힘) — 좌→우 순서 고정 */
 .col3{ display:flex; gap:9mm; margin-top:11mm; }
 .col3 .c{ flex:1 1 0; border:.6mm solid var(--hair); border-radius:5mm; padding:9mm 7mm; background:#fff; }
-.col3 .c .n{ font-size:5mm; font-weight:700; color:var(--blue); letter-spacing:.18em; }
+.col3 .c .n{ font-size:5mm; font-weight:700; color:var(--navy-3); letter-spacing:.18em; }
 .col3 .c .t{ font-size:13mm; font-weight:800; margin-top:4mm; line-height:1.2; letter-spacing:-.03em; }
 .col3 .c .mn{ font-size:13mm; margin-top:4mm; }   /* 위 .t 와 같은 크기(정본 §1) */
 /* ⚠ 투사면 글자는 32pt(≈11.3mm) 아래로 내리지 않는다 — 설명회장은 조명이 밝고 뒷줄이 멀다.
    처음엔 보조 라벨을 6.6~8mm(19~23pt)로 잡았다가 이 기준에 걸렸다. */
-.col3 .c .real{ font-size:11.4mm; font-weight:800; color:var(--orange); margin-top:6mm; padding-top:4.4mm; border-top:.4mm dashed var(--hair); line-height:1.2; }
+.col3 .c .real{ font-size:11.4mm; font-weight:800; color:var(--coral-3); margin-top:6mm; padding-top:4.4mm; border-top:.4mm dashed var(--hair); line-height:1.2; }
 
 /* 실물 배지 — 「말」이 아니라 「물건」을 보여주는 자리 */
-.real1{ display:inline-block; margin-top:9mm; font-size:11.4mm; font-weight:800; color:#3A2E00;
-  background:var(--gold); padding:3.4mm 7mm; border-radius:12mm; }
+.real1{ display:inline-block; margin-top:9mm; font-size:11.4mm; font-weight:800; color:var(--ink);
+  background:var(--coral); padding:3.4mm 7mm; border-radius:12mm; }
 
 /* 사진 자리 — 개원 전이라 실사진이 없다. 무엇을 찍을지 지시문으로 남긴다 */
-.photo{ margin-top:9mm; border:.7mm dashed var(--blue); border-radius:4mm; padding:7mm 8mm;
-  background:rgba(61,90,254,.05); font-size:6.4mm; color:var(--blue); font-weight:700; line-height:1.45; }
-.dark .photo{ border-color:rgba(255,196,0,.5); background:rgba(255,196,0,.07); color:var(--gold); }
+.photo{ margin-top:9mm; border:.7mm dashed var(--coral-soft); border-radius:4mm; padding:7mm 8mm;
+  background:var(--coral-wash); font-size:6.4mm; color:var(--navy-3); font-weight:700; line-height:1.45; }
+.dark .photo{ border-color:rgba(255,107,92,.5); background:rgba(255,107,92,.07); color:var(--coral); }
 
 /* 세 질문 (맺음) */
 .q3{ margin-top:9mm; }
 .q3 li{ list-style:none; font-size:12mm; font-weight:800; line-height:1.35; letter-spacing:-.025em; margin-top:5mm; }
-.q3 li span{ color:var(--orange); }
+.q3 li span{ color:var(--coral-3); }
 
 /* 연락처 */
 .cts{ display:flex; gap:10mm; margin-top:10mm; }
 .cts .c{ flex:1 1 0; }
-.cts .c .k{ font-size:5mm; font-weight:700; color:var(--gold); letter-spacing:.1em; }
-.cts .c .v{ font-size:11.4mm; color:rgba(253,252,248,.5); margin-top:2.6mm; letter-spacing:.03em; }
+.cts .c .k{ font-size:5mm; font-weight:700; color:var(--coral); letter-spacing:.1em; }
+.cts .c .v{ font-size:11.4mm; color:var(--cream-3); margin-top:2.6mm; letter-spacing:.03em; }
 
 /* ══ 리허설표(마지막 장 · 투사용 아님) ══ */
-.reh{ background:#fff; justify-content:flex-start; padding:14mm 16mm; }
+.reh{ background:var(--paper); justify-content:flex-start; padding:14mm 16mm; }
 .reh h2{ font-size:8mm; font-weight:800; letter-spacing:-.025em; }
-.reh .sub{ font-size:3.8mm; color:var(--body); margin-top:2.4mm; line-height:1.45; }
+.reh .sub{ font-size:3.8mm; color:var(--navy-3); margin-top:2.4mm; line-height:1.45; }
 .reh table{ width:100%; border-collapse:collapse; margin-top:3.6mm; font-size:3mm; line-height:1.3; }
 .reh th,.reh td{ text-align:left; padding:1.1mm 2.2mm; border-bottom:.25mm solid var(--hair); vertical-align:top; }
-.reh th{ font-size:2.9mm; color:var(--mute); font-weight:800; letter-spacing:.08em; background:#F2F5FF; }
-.reh td.n{ font-weight:800; white-space:nowrap; font-family:'DM Mono',ui-monospace,monospace; color:var(--blue); }
-.reh td.c{ white-space:nowrap; color:var(--mute); font-family:'DM Mono',ui-monospace,monospace; }
-.reh tr.mark td{ background:#FFF9E9; }
-.reh .note{ margin-top:3.6mm; border-left:1mm solid var(--orange); padding:2mm 0 2mm 4mm; font-size:3.2mm; line-height:1.45; color:#4A4133; }
-.reh .note b{ color:var(--ink); font-weight:800; }
+.reh th{ font-size:2.9mm; color:var(--navy-3); font-weight:800; letter-spacing:.08em; background:var(--cream-2); }
+.reh td.n{ font-weight:800; white-space:nowrap; font-family:'DM Mono',ui-monospace,monospace; color:var(--navy-3); }
+.reh td.c{ white-space:nowrap; color:var(--navy-3); font-family:'DM Mono',ui-monospace,monospace; }
+.reh tr.mark td{ background:var(--coral-wash); }
+.reh .note{ margin-top:3.6mm; border-left:1mm solid var(--coral-3); padding:2mm 0 2mm 4mm; font-size:3.2mm; line-height:1.45; color:var(--navy-3); }
+.reh .note b{ color:var(--navy); font-weight:800; }
 
 @media screen{
-  body{ background:#C9CEDD; padding:8mm; }
-  .sl{ box-shadow:0 4mm 14mm rgba(11,26,46,.25); margin:0 auto 8mm; }
+  body{ background:var(--cream-2); padding:8mm; }
+  .sl{ box-shadow:0 4mm 14mm rgba(15,23,48,.25); margin:0 auto 8mm; }
 }
 </style>
 </head>
@@ -150,8 +157,8 @@ h1.sm + .mn{ font-size:18mm; }
     <!-- LOGO SLOT ▸ 주입은 tools/로고주입.js -->
     <div class="symbol">
       <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#FDFCF8">syn</text>
-            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6D00"/>
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
+            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
           </svg>
     </div>
     <div class="rule"></div>
