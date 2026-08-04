@@ -1,0 +1,169 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const ROOT = path.resolve(__dirname, '..');
+const 대장 = require(path.join(ROOT, 'tools', '시스템대장.js'));
+const bump = require(path.join(ROOT, 'tools', 'bump-version.js'));
+const bumpSrc = fs.readFileSync(path.join(ROOT, 'tools', 'bump-version.js'), 'utf8');
+
+/* 시스템 대장 (2026-08-05 유호님 "구축할 때마다 기록을 남기는 시스템") — 이 테스트가 지키는 것 셋:
+ * ①정본(docs/시스템_대장.md)의 형식 — 렌더러·기입기가 같은 문법을 읽으므로 여기가 깨지면 둘 다 죽는다.
+ * ②기입은 채번 게이트(bump-version --종류)가 강제한다 — 게이트가 채번 **앞**에 있어야 번호가 안 탄다.
+ * ③렌더 HTML 의 계약 — 대외판에 (내부) 구역이 새면 내부 용어가 외부로 나간다. */
+
+const 픽스처MD = [
+  '# 대장',
+  '',
+  '## 접수·상담 (대외)',
+  '',
+  '| 상태 | 시스템 | 한 줄 | 시작 | 최근 |',
+  '|---|---|---|---|---|',
+  '| 🟢 | 크루카드 접수 | 접수 카드 한 장 | [v9.155] | [v9.186] |',
+  '| 🟡 Meta 검수 대기 | 상담AI | DM 1차 응대 | ~v9.53 | [v9.185] |',
+  '',
+  '## 개발 파이프라인 (내부)',
+  '',
+  '| 상태 | 시스템 | 한 줄 | 시작 | 최근 |',
+  '|---|---|---|---|---|',
+  '| 🟢 | 배포 게이트 | 5층 게이트 | 08-02 | 08-05 |',
+  '',
+].join('\n');
+
+test('파싱 — 구역·노출·행·상태 사유가 그대로 읽힌다', () => {
+  const p = 대장.파싱(픽스처MD);
+  assert.equal(p.문제.length, 0, p.문제.join('\n'));
+  assert.equal(p.구역들.length, 2);
+  assert.deepEqual(p.구역들.map((g) => [g.이름, g.노출, g.행들.length]),
+    [['접수·상담', '대외', 2], ['개발 파이프라인', '내부', 1]]);
+  const 상담 = p.구역들[0].행들[1];
+  assert.equal(상담.상태, '🟡 Meta 검수 대기', '상태 칸의 사유가 잘렸다 — 🟡의 「왜」가 계기판의 핵심이다');
+  assert.equal(상담.시작, '~v9.53');
+});
+
+test('검증 — 허용 밖 상태·중복 시스템·빈 한 줄·표기 없는 구역을 전부 적발한다', () => {
+  assert.equal(대장.검증(대장.파싱(픽스처MD)).length, 0, '정상 픽스처를 빨갛게 만들었다(거짓양성)');
+
+  const 잘못상태 = 픽스처MD.replace('| 🟢 | 크루카드', '| 🔵 | 크루카드');
+  assert.ok(대장.검증(대장.파싱(잘못상태)).some((m) => /🟢\/🟡\/⚪/.test(m)), '허용 밖 상태를 통과시켰다');
+
+  const 중복 = 픽스처MD.replace('| 🟢 | 배포 게이트', '| 🟢 | 크루카드 접수');
+  assert.ok(대장.검증(대장.파싱(중복)).some((m) => /중복/.test(m)), '같은 시스템이 두 구역에 있는데 침묵했다');
+
+  const 빈한줄 = 픽스처MD.replace('접수 카드 한 장', '');
+  assert.ok(대장.검증(대장.파싱(빈한줄)).some((m) => /한 줄이 비었다/.test(m)));
+
+  const 표기없음 = 픽스처MD.replace('## 접수·상담 (대외)', '## 접수·상담');
+  assert.ok(대장.파싱(표기없음).문제.some((m) => /\(대외\)\/\(내부\)/.test(m)),
+    '노출 표기 없는 구역을 통과시켰다 — 그 구역은 어느 판에도 못 실린다');
+});
+
+test('기입 — 신설 행이 지정 구역 표의 맨 아래에 🟡로 붙는다', () => {
+  const 새md = 대장.기입(픽스처MD, { 구역: '접수·상담', 시스템: '결제 레일', 한줄: '몽골 결제 한 번에', 버전: 'v9.200' });
+  const p = 대장.파싱(새md);
+  assert.equal(대장.검증(p).length, 0, '기입 결과가 형식 검증을 통과하지 못한다');
+  const 구 = p.구역들.find((g) => g.이름 === '접수·상담');
+  assert.equal(구.행들.length, 3);
+  const 신 = 구.행들[2];
+  assert.deepEqual([신.상태, 신.시스템, 신.시작, 신.최근], ['🟡 반영 대기', '결제 레일', '[v9.200]', '[v9.200]'],
+    '신설 행이 구역 맨 아래에 🟡 반영 대기로 붙지 않았다');
+  assert.equal(p.구역들.find((g) => g.이름 === '개발 파이프라인').행들.length, 1, '남의 구역이 바뀌었다');
+});
+
+test('기입 — 없는 구역·중복 시스템·표를 깨는 문자는 채번 전에 throw 로 막힌다', () => {
+  assert.throws(() => 대장.신설검증(픽스처MD, { 구역: '없는구역', 시스템: 'x', 한줄: 'y' }), /구역 「없는구역」이 대장에 없다/);
+  assert.throws(() => 대장.신설검증(픽스처MD, { 구역: '접수·상담', 시스템: '크루카드 접수', 한줄: 'y' }), /이미 있다/);
+  assert.throws(() => 대장.신설검증(픽스처MD, { 구역: '접수·상담', 시스템: 'a|b', 한줄: 'y' }), /표가 깨진다/);
+  assert.throws(() => 대장.신설검증(픽스처MD, { 구역: '접수·상담', 시스템: '', 한줄: 'y' }), /값이 비었다/);
+});
+
+test('최근갱신 — 「최근」 칸만 바뀌고 상태 사유·나머지 칸은 그대로다', () => {
+  const 새md = 대장.최근갱신(픽스처MD, { 시스템: '상담AI', 버전: 'v9.201' });
+  const 행 = 대장.파싱(새md).구역들[0].행들[1];
+  assert.deepEqual([행.상태, 행.한줄, 행.시작, 행.최근],
+    ['🟡 Meta 검수 대기', 'DM 1차 응대', '~v9.53', '[v9.201]'],
+    '최근 갱신이 다른 칸을 건드렸다(상태 사유가 지워지면 🟡의 이유가 사라진다)');
+  assert.throws(() => 대장.최근갱신(픽스처MD, { 시스템: '없는 것', 버전: 'v9.201' }), /대장에 없다/);
+});
+
+test('CRLF 정본에서도 줄끝이 보존된다 — 보드 이관 F046 과 같은 함정', () => {
+  const crlf = 픽스처MD.replace(/\n/g, '\r\n');
+  const 새md = 대장.기입(crlf, { 구역: '접수·상담', 시스템: 'x', 한줄: 'y', 버전: 'v9.200' });
+  assert.ok(새md.includes('\r\n'), 'CRLF 가 LF 로 뭉개졌다 — diff 전체가 바뀐 것처럼 보인다');
+  assert.ok(!/[^\r]\n/.test(새md.replace(/^\n/, '')), 'LF 가 섞였다 — 줄끝이 갈라진 파일이 됐다');
+});
+
+test('이력제목맵 — 버전_이력.md 항목 제목을 코드포인트 안전하게 뽑는다', () => {
+  const map = 대장.이력제목맵('- **[v9.5]** 다섯 번째 — 상세한 설명\n본문\n- **[v9.6]** 여섯\n');
+  assert.equal(map.get('v9.5'), '다섯 번째 — 상세한 설명');
+  assert.equal(map.get('v9.6'), '여섯');
+  assert.equal(map.get('v9.7'), undefined);
+});
+
+test('렌더 계약 — 대외판엔 (내부) 구역이 없고, 내부판엔 전부 있다', () => {
+  const p = 대장.파싱(픽스처MD);
+  const 메타 = { 날짜: '2026-08-05', 도장: 'abc1234' };
+  const 내부 = 대장.내부HTML(p, new Map([['v9.155', '크루카드 웹앱']]), 메타);
+  const 대외 = 대장.대외HTML(p, 메타);
+
+  assert.ok(내부.includes('배포 게이트') && 내부.includes('크루카드 접수'), '내부판에 구역이 빠졌다');
+  assert.ok(내부.includes('크루카드 웹앱'), '내부판 기술 상세(이력 제목)가 안 실렸다');
+  assert.ok(!대외.includes('배포 게이트'), '(내부) 구역이 대외판으로 샜다 — 내부 용어가 외부로 나간다');
+  assert.ok(대외.includes('크루카드 접수') && 대외.includes('준비 중'), '대외판 행·🟡 표기가 빠졌다');
+
+  for (const [이름, html] of [['내부판', 내부], ['대외판', 대외]]) {
+    assert.match(html, /<!-- 파생: docs\/시스템_대장\.md@abc1234 -->/,
+      `${이름}에 정본 선언(파생 엣지)이 없다 — 지도대장이 「무엇의 사본인지 모른다」로 적발한다`);
+    assert.match(html, /--mono:\s*Consolas/,
+      `${이름} 모노 스택 맨 앞이 Consolas 가 아니다 — 지도대장 PDF 폰트 게이트가 굽기를 거부한다`);
+    assert.match(html, /print-color-adjust:\s*exact/, `${이름}에 인쇄 색 보존이 없다 — PDF 에서 색이 안 찍힌다`);
+  }
+});
+
+test('렌더 — 셀 내용은 이스케이프된다(대장 셀은 남의 손을 탈 수 있는 자유 텍스트다)', () => {
+  const 주입 = 픽스처MD.replace('접수 카드 한 장', '<script>alert(1)</script>');
+  const p = 대장.파싱(주입);
+  for (const html of [대장.내부HTML(p, new Map(), { 날짜: 'd', 도장: null }), 대장.대외HTML(p, { 날짜: 'd', 도장: null })])
+    assert.ok(!html.includes('<script>alert'), '셀의 스크립트가 그대로 실렸다');
+});
+
+test('실저장소 정본 — docs/시스템_대장.md 가 형식 검증 0문제로 통과한다', () => {
+  const md = fs.readFileSync(대장.대장경로(), 'utf8');
+  const p = 대장.파싱(md);
+  assert.equal(대장.검증(p).length, 0, 대장.검증(p).join('\n'));
+  assert.ok(p.구역들.some((g) => g.노출 === '대외') && p.구역들.some((g) => g.노출 === '내부'),
+    '정본에 (대외)/(내부) 구역이 한쪽뿐이다 — 두 판 체계의 전제가 무너졌다');
+});
+
+/* ── 채번 게이트 — 기록이 「안 남을 수 있는」 경로를 막는 자리 ─────────────── */
+
+/* ⚠ 아래 두 테스트의 순서 규칙: **소스 검사가 런타임 probe 보다 먼저다.**
+ * 게이트를 지운 변이에서 probe(main 실호출)가 먼저 돌면 throw 대신 실채번(origin push)으로
+ * 흘러간다 — 변이 시험이 번호를 태우는 부작용(memory `mutation-test-side-effects`의 형태).
+ * 소스 검사가 먼저 죽으면 probe 는 실행되지 않는다. 변이 시험은 어차피 격리 사본에서만. */
+test('🔴 --종류 없이는 채번 전에 막힌다 — 그리고 --desc 게이트보다 뒤다(기존 계약 보존)', () => {
+  // 🔑 순서가 핵심 — 채번(git tag) 뒤에서 막으면 번호만 태운다(--desc 게이트와 같은 검사)
+  const g = bumpSrc.indexOf('--종류 신설|보강|수리 가 필요합니다');
+  const t = bumpSrc.indexOf("git(['tag', tag]");
+  assert.ok(g > 0 && t > 0 && g < t, `--종류 게이트가 채번보다 뒤에 있다 (게이트 ${g}, 채번 ${t})`);
+  assert.throws(() => bump.main([]), /--desc/, '--desc 게이트가 먼저다 — 기존 테스트·습관과의 계약');
+  assert.throws(() => bump.main(['--desc', '시험']), /--종류/, '--종류 없이 통과시켰다 — 대장에 기록이 안 남는 채번이 존재하게 된다');
+});
+
+test('🔴 신설 스펙 검증도 채번 전이다 — 빈 값·없는 구역·없는 시스템(보강)이 번호를 못 태운다', () => {
+  // 검증 호출이 fetch·채번 코드보다 앞인지 **소스로 먼저** 못박는다(위와 같은 fail-fast 원칙)
+  const v = bumpSrc.indexOf('대장도구.신설검증');
+  const f = bumpSrc.indexOf("gitQuiet(['fetch', 'origin', '--tags'");
+  assert.ok(v > 0 && f > 0 && v < f, `대장 검증이 fetch/채번보다 뒤에 있다 (검증 ${v}, fetch ${f})`);
+  assert.throws(() => bump.main(['--desc', '시험', '--종류', '엉뚱']), /신설\|보강\|수리/);
+  assert.throws(() => bump.main(['--desc', '시험', '--종류', '신설']), /값이 비었다/);
+  assert.throws(() => bump.main(['--desc', '시험', '--종류', '신설', '--시스템', 'x', '--한줄', 'y', '--구역', '없는구역']),
+    /대장에 없다/);
+  assert.throws(() => bump.main(['--desc', '시험', '--종류', '보강', '--시스템', '이런시스템은없다']), /대장에 없다/);
+});
+
+test('--dry 는 --종류 없이도 돈다 — 조회에 기록 게이트를 세우면 아무도 조회를 안 한다', () => {
+  // (실행은 버전채번.test.js [감사] 케이스가 이미 서브프로세스로 검증한다 — 여기선 게이트 조건만)
+  assert.match(bumpSrc, /if \(!dry && !종류\)/, '--dry 가 종류 게이트에 걸리게 바뀌었다');
+});
