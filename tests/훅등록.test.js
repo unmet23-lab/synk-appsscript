@@ -32,13 +32,21 @@ function settings() {
   return JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
 }
 
-/** settings.json 에서 훅별 { matcher, command } 를 뽑는다 */
+/**
+ * settings.json 에서 훅별 { event, matcher, command } 를 뽑는다.
+ *
+ * ⚠ 전 이벤트를 훑는다 — PreToolUse 만 보던 시절엔 **다른 이벤트에 등록된 훅이 통째로 안 보였다**.
+ *   「등록이 없으면 안 돈다」를 검사하는 테스트가 정작 등록층의 일부만 보면, 미등록 훅이
+ *   초록으로 통과한다(가드가 새는 방향은 언제나 「통과」다 · F053).
+ */
 function registry() {
   const out = new Map();
-  for (const e of settings().hooks.PreToolUse || []) {
-    for (const h of e.hooks || []) {
-      const m = /hooks\/([a-z-]+)\.js/.exec(String(h.command || ''));
-      if (m) out.set(m[1], { matcher: e.matcher, command: String(h.command) });
+  for (const [event, entries] of Object.entries(settings().hooks || {})) {
+    for (const e of entries || []) {
+      for (const h of e.hooks || []) {
+        const m = /hooks\/([a-z-]+)\.js/.exec(String(h.command || ''));
+        if (m) out.set(m[1], { event, matcher: e.matcher, command: String(h.command) });
+      }
     }
   }
   return out;
