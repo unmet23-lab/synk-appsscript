@@ -138,7 +138,9 @@ test('deploy-freshness 가 PostToolUse 에 등록돼 있고 파일이 실재한�
 });
 
 test('🔑 라우팅이 훅보다 넓다 — 훅이 보는 명령을 case 필터가 전부 통과시킨다 (맹점 ③)', () => {
-  const 훅정규식 = /\bclasp\b[^\n]*?\s(push|deploy)\b/;
+  /* 정규식은 **훅에서 가져온다**. 여기 사본을 적었더니 변이 테스트에서 드러났다 —
+   * 훅을 `push` 만 보게 좁혀도 이 검사는 자기 사본을 봐서 초록이었다(2026-08-05 실측). */
+  const { 배포명령: 훅정규식 } = require(path.join(ROOT, '.claude', 'hooks', 'deploy-freshness.js'));
   const 표본 = [
     'clasp push',
     'clasp push --force',
@@ -158,22 +160,28 @@ test('🔑 라우팅이 훅보다 넓다 — 훅이 보는 명령을 case 필터
 });
 
 test('알림 훅은 **차단하지 않는다** — push 뒤에 뜨는 알림이 작업을 세우면 안 된다', () => {
+  /* 🔑 단언을 `if (출력이 있으면)` 안에 두었더니 **아무것도 검사하지 않았다**(2026-08-05 변이로 적발).
+   *   그때 배포판이 마침 초록이라 훅이 조용했고, 조건문이 통째로 건너뛰어 「차단하도록 뒤집는」
+   *   변이가 초록으로 통과했다. 그래서 **반드시 말하게 만드는 상태**를 만들어 놓고 잰다:
+   *   clasp 를 못 찾게 하면 판정은 `unreachable` 이 되고 훅은 알림을 낸다. */
   const 훅 = path.join(ROOT, '.claude', 'hooks', 'deploy-freshness.js');
-  for (const cmd of ['cd crewcard && clasp push --force', 'echo 무관']) {
+  const 빈곳 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-noclasp-'));
+  try {
     const r = spawnSync(process.execPath, [훅], {
-      input: JSON.stringify({ tool_name: 'Bash', tool_input: { command: cmd }, cwd: ROOT }),
+      input: JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'cd crewcard && clasp push --force' }, cwd: ROOT }),
       encoding: 'utf8',
-      // 네트워크·자격증명이 없는 환경(CI)에서도 **0으로** 끝나야 한다
-      env: { ...process.env, CLAUDE_PROJECT_DIR: ROOT },
+      // APPDATA·PATH 를 비워 clasp 조회를 실패시킨다 → 확인 불가 → **반드시 알린다**
+      env: { ...process.env, CLAUDE_PROJECT_DIR: ROOT, APPDATA: 빈곳, PATH: path.dirname(process.execPath) },
       timeout: 60000,
     });
-    assert.strictEqual(r.status, 0, `알림 훅이 0 아닌 코드로 끝났다(${cmd}): ${r.stderr}`);
+    assert.strictEqual(r.status, 0, `알림 훅이 0 아닌 코드로 끝났다: ${r.stderr}`);
     const out = (r.stdout || '').trim();
-    if (out) {
-      assert.strictEqual(JSON.parse(out).hookSpecificOutput?.permissionDecision, undefined,
-        '알림인데 permissionDecision 을 냈다 — 편의 기능이 배포를 세운다');
-    }
-  }
+    assert.ok(out, '알려야 하는 상태인데 조용했다 — 확인 불가를 통과로 접었다');
+    const j = JSON.parse(out);
+    assert.strictEqual(j.hookSpecificOutput?.permissionDecision, undefined,
+      '알림인데 permissionDecision 을 냈다 — 편의 기능이 배포를 세운다');
+    assert.match(j.systemMessage, /확인 불가/);
+  } finally { fs.rmSync(빈곳, { recursive: true, force: true }); }
 });
 
 test('무관한 명령에는 조용하다 (거짓양성 0 — 짖는 알림은 곧 무시된다)', () => {

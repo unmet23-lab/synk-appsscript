@@ -17,6 +17,16 @@ const path = require('path');
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..', '..');
 
+/* 이 훅이 보는 명령 — **여기가 유일한 정의다.**
+ * 회귀에 같은 정규식을 한 번 더 적었다가 변이 테스트에서 걸렸다: 훅을 `push` 만 보게 좁혀도
+ * 테스트는 자기가 들고 있는 사본을 봐서 **초록**이었다. 갈라지는 방향은 언제나 「통과」다.
+ * `clasp deployments` 는 조회라 안 걸린다(`deploy` 뒤 낱말 경계로 갈린다).
+ * push 뿐 아니라 deploy 도 본다 — 갱신 직후에 **초록을 확인**해 주는 쪽이 고리를 닫는다. */
+const 배포명령 = /\bclasp\b[^\n]*?\s(push|deploy)\b/;
+module.exports = { 배포명령 };
+
+if (require.main !== module) return;
+
 let 입력 = '';
 process.stdin.setEncoding('utf8');
 process.stdin.on('data', (c) => { 입력 += c; });
@@ -25,9 +35,7 @@ process.stdin.on('end', () => {
   try { ev = JSON.parse(입력 || '{}'); } catch (_) { process.exit(0); }
 
   const cmd = String(ev?.tool_input?.command || '');
-  /* `clasp deployments` 는 조회다 — `deploy` 뒤 낱말 경계로 갈린다(`deployments` 는 안 걸린다).
-   * push 뿐 아니라 deploy 도 본다: 갱신한 직후에 **초록을 확인**해 주는 쪽이 고리를 닫는다. */
-  if (!/\bclasp\b[^\n]*?\s(push|deploy)\b/.test(cmd)) process.exit(0);
+  if (!배포명령.test(cmd)) process.exit(0);
 
   let 점검, 프로젝트;
   try {
