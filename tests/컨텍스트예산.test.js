@@ -84,48 +84,64 @@ function batons(stateDir) {
 // ── 측정 ────────────────────────────────────────────────────────────────────
 
 test('임계 아래에서는 조용하다 — 평소 작업을 방해하지 않는다', () => {
-  for (const c of [40_000, 90_000, 119_000]) {
-    assert.strictEqual(stop(c).json, null, `${c} 토큰에서 말을 걸었다 — 120k 아래는 조용해야 한다`);
+  // 131세션 시뮬레이션으로 정한 무릎: 🟡200k·🔴300k·⚫500k. 150k 아래 세션 32개를 다
+  // 합쳐도 전체 비용의 1.1% 라, 그 자리에서 울리는 건 비용과 무관한 소음이다.
+  for (const c of [40_000, 150_000, 199_000]) {
+    assert.strictEqual(stop(c).json, null, `${c} 토큰에서 말을 걸었다 — 200k 아래는 조용해야 한다`);
   }
 });
 
-test('단계 3종 — 🟡 120k · 🔴 150k · ⚫ 300k', () => {
-  assert.match(stop(125_000).msg, /🟡/);
-  assert.match(stop(155_000).msg, /🔴/);
-  // ⚫ 가 없으면 🔴 뒤로는 500k 를 넘겨도 무소식이었다(08-04 결함 ⑤)
-  const last = stop(320_000);
-  assert.match(last.msg, /⚫/, '300k 를 넘겼는데 마지막 경고가 없다');
+test('단계 3종 — 🟡 200k · 🔴 300k · ⚫ 500k', () => {
+  assert.match(stop(210_000).msg, /🟡/);
+  assert.match(stop(310_000).msg, /🔴/);
+  // ⚫ 가 없으면 🔴 뒤로는 900k 를 넘겨도 무소식이었다(08-04 결함 ⑤)
+  const last = stop(520_000);
+  assert.match(last.msg, /⚫/, '500k 를 넘겼는데 마지막 경고가 없다');
   assert.match(last.msg, /한참 지났다/, '⚫ 문구가 🔴 와 구별되지 않는다');
 });
 
+test('🔑 창이 작은 모델도 울린다 — 절대값만 쓰면 haiku 는 영원히 침묵한다', () => {
+  // 임계를 200k 로 올리자마자 생긴 구멍: haiku 는 창이 200k 라 200k 를 넘을 수가 없다.
+  // 두 축(비용=절대값 · 용량=창 비율) 중 먼저 걸리는 쪽을 쓴다 → 200k 창이면 120k/150k/180k.
+  const h = (c) => stop(c, { model: 'claude-haiku-4-5-20251001' });
+  assert.strictEqual(h(110_000).json, null, 'haiku 창의 55% 인데 울렸다');
+  assert.match(h(130_000).msg, /🟡/, 'haiku 가 창의 65% 인데 침묵한다 — 절대값만 보고 있다');
+  assert.match(h(160_000).msg, /🔴/, 'haiku 가 창의 80% 인데 🔴 가 아니다');
+  assert.match(h(190_000).msg, /⚫/, 'haiku 가 창의 95% 인데 ⚫ 가 아니다');
+  // 큰 창은 비용 축 그대로 — 비율로만 잡으면 1M 의 60% = 600k 라 너무 늦다
+  assert.strictEqual(stop(190_000, { model: 'claude-opus-5' }).json, null, 'opus 190k 에서 울렸다');
+});
+
 test('컨텍스트는 세 항목의 합이다 — 한 항목만으로는 못 넘는다', () => {
-  const v = stop(0, { lines: [line(60_000, 60_000, 15_000)] });
-  assert.ok(v.json, '60k+60k+15k = 135k 인데 조용하다 — 합산이 아니라 한 항목만 보고 있다');
-  assert.match(v.msg, /135k/, `합산값이 안 보인다: ${v.msg}`);
+  const v = stop(0, { lines: [line(100_000, 100_000, 15_000)] });
+  assert.ok(v.json, '100k+100k+15k = 215k 인데 조용하다 — 합산이 아니라 한 항목만 보고 있다');
+  assert.match(v.msg, /215k/, `합산값이 안 보인다: ${v.msg}`);
 });
 
 test('🔑 마지막 usage 를 읽는다 — 컴팩트로 컨텍스트가 내려가면 신호도 꺼진다', () => {
-  const v = stop(0, { lines: [line(175_000, 2_000, 500), line(70_000, 3_000, 500)] });
+  const v = stop(0, { lines: [line(350_000, 2_000, 500), line(70_000, 3_000, 500)] });
   assert.strictEqual(v.json, null, '컴팩트 후 73.5k 인데 아직 경고한다 — 옛 값을 보고 있다');
 });
 
 test('usage 없는 줄·깨진 줄이 섞여도 마지막 usage 를 찾아낸다', () => {
   const v = stop(0, {
-    lines: [JSON.stringify({ type: 'user' }), line(130_000, 2_000, 500), JSON.stringify({ type: 'user' }), '', '{망가진'],
+    lines: [JSON.stringify({ type: 'user' }), line(230_000, 2_000, 500), JSON.stringify({ type: 'user' }), '', '{망가진'],
   });
   assert.ok(v.json, '뒤에 잡음이 붙자 못 찾았다 — 역방향 탐색이 첫 실패에서 멈춘다');
 });
 
 test('🔑 창 크기는 모델마다 다르다 — 200k 고정은 5배 틀렸다 (F058)', () => {
-  const pctOf = (m) => Number(/\((\d+)%\)/.exec(stop(155_000, { model: m }).msg)[1]);
-  assert.match(stop(155_000, { model: 'claude-opus-5' }).msg, /\/ 1000k/, 'opus 창이 1M 이 아니다');
-  assert.match(stop(155_000, { model: 'claude-sonnet-5' }).msg, /\/ 1000k/, 'sonnet 창이 1M 이 아니다');
-  assert.match(stop(155_000, { model: 'claude-haiku-4-5-20251001' }).msg, /\/ 200k/, 'haiku 창이 200k 가 아니다');
+  assert.match(stop(310_000, { model: 'claude-opus-5' }).msg, /\/ 1000k/, 'opus 창이 1M 이 아니다');
+  assert.match(stop(310_000, { model: 'claude-sonnet-5' }).msg, /\/ 1000k/, 'sonnet 창이 1M 이 아니다');
+  // 작은 창 모델은 그 창을 넘을 수 없으므로 창 안쪽 값으로 잰다
+  assert.match(stop(160_000, { model: 'claude-haiku-4-5-20251001' }).msg, /\/ 200k/, 'haiku 창이 200k 가 아니다');
   // 모르는 모델은 **작은 쪽** — 크게 잡으면 퍼센트가 작아 보여 늦게 알린다
-  assert.match(stop(155_000, { model: 'claude-미래-9' }).msg, /\/ 200k/, '모르는 모델을 큰 창으로 가정했다');
-  for (const m of ['claude-opus-5', 'claude-haiku-4-5-20251001', 'claude-미래-9']) {
-    assert.ok(pctOf(m) <= 100, `${m}: 퍼센트가 100 을 넘었다 — 계기판이 아니다`);
-  }
+  assert.match(stop(160_000, { model: 'claude-미래-9' }).msg, /\/ 200k/, '모르는 모델을 큰 창으로 가정했다');
+  // 어떤 모델에서도 퍼센트가 100 을 넘으면 계기판이 아니다
+  const pct = (m, c) => Number(/\((\d+)%\)/.exec(stop(c, { model: m }).msg)[1]);
+  assert.ok(pct('claude-opus-5', 310_000) <= 100, 'opus 퍼센트가 100 초과');
+  assert.ok(pct('claude-haiku-4-5-20251001', 190_000) <= 100, 'haiku 퍼센트가 100 초과');
+  assert.ok(pct('claude-미래-9', 190_000) <= 100, '모르는 모델 퍼센트가 100 초과');
 });
 
 test('트랜스크립트가 없거나 usage 가 없으면 조용히 통과한다 (거짓양성 0)', () => {
@@ -139,7 +155,7 @@ test('트랜스크립트가 없거나 usage 가 없으면 조용히 통과한다
 test('🔑 AI 를 깨우지 않는다 — additionalContext 를 내지 않는다', () => {
   // 08-04 실측: additionalContext 는 AI 턴을 깨우고, Stop 훅이라 그 턴이 끝나면 또 발화한다.
   // 유호님 입력 없이 144k→147k→148k→149k 4연속. 컨텍스트를 아끼려는 훅이 컨텍스트를 먹었다.
-  const v = stop(155_000);
+  const v = stop(310_000);
   assert.strictEqual(v.json.hookSpecificOutput, undefined,
     'hookSpecificOutput 이 붙었다 — additionalContext 는 AI 턴을 깨워 무한 루프가 된다');
   assert.ok(v.json.systemMessage, '유호님 화면용 systemMessage 가 없다');
@@ -148,12 +164,12 @@ test('🔑 AI 를 깨우지 않는다 — additionalContext 를 내지 않는다
 test('🔑 단계당 1회 · 상승은 놓치지 않는다 (세션당 최대 3번)', () => {
   const st = newDir('dedup'); const cwd = newDir('proj');
   const at = (c) => stop(c, { stateDir: st, cwd, sid: 'SAME' });
-  assert.ok(at(125_000).json, '첫 🟡 이 없다');
-  for (let i = 0; i < 3; i++) assert.strictEqual(at(126_000 + i * 1000).json, null, `🟡 에서 ${i + 2}번째로 또 떴다`);
-  assert.match(at(158_000).msg, /🔴/, '🔴 로 올라갔는데 조용하다');
-  assert.strictEqual(at(160_000).json, null, '🔴 도 1회여야 한다');
-  assert.match(at(320_000).msg, /⚫/, '⚫ 로 올라갔는데 조용하다');
-  assert.strictEqual(at(400_000).json, null, '⚫ 도 1회여야 한다');
+  assert.ok(at(210_000).json, '첫 🟡 이 없다');
+  for (let i = 0; i < 3; i++) assert.strictEqual(at(215_000 + i * 1000).json, null, `🟡 에서 ${i + 2}번째로 또 떴다`);
+  assert.match(at(305_000).msg, /🔴/, '🔴 로 올라갔는데 조용하다');
+  assert.strictEqual(at(320_000).json, null, '🔴 도 1회여야 한다');
+  assert.match(at(520_000).msg, /⚫/, '⚫ 로 올라갔는데 조용하다');
+  assert.strictEqual(at(600_000).json, null, '⚫ 도 1회여야 한다');
 });
 
 // ── 인계 문구 ───────────────────────────────────────────────────────────────
@@ -171,16 +187,16 @@ test('🔑 인계문은 Session-Id 트레일러로 이 세션 커밋만 집는�
 
   // 🔑 훅 입력의 session_id 는 **내부 에이전트 id** — 트레일러에 박히는 건 호스트 id 다.
   //   전자로 찾으면 자기 커밋을 하나도 못 찾는다(08-04 실측).
-  const mine = stop(155_000, { cwd: repo, sid: 'agent-내부id', env: { CLAUDE_CODE_HOST_SESSION_ID: 'sid-MINE' } });
+  const mine = stop(310_000, { cwd: repo, sid: 'agent-내부id', env: { CLAUDE_CODE_HOST_SESSION_ID: 'sid-MINE' } });
   assert.match(mine.msg, /내 커밋이다/, `호스트 id 로도 자기 커밋을 못 찾았다: ${mine.msg}`);
   assert.doesNotMatch(mine.msg, /남의 커밋이다/, '남의 세션 커밋을 인계문에 넣었다');
 
-  const none = stop(155_000, { cwd: repo, sid: 'agent-내부id' });
+  const none = stop(310_000, { cwd: repo, sid: 'agent-내부id' });
   assert.match(none.msg, /커밋 없음/, '못 찾았으면 못 찾았다고 해야 한다(빈칸·거짓 금지)');
 });
 
 test('미커밋 판정 — 모름(git 불가)과 0건을 구별한다', () => {
-  const v = stop(155_000, { cwd: path.join(tmpRoot, '없는경로-git아님') });
+  const v = stop(310_000, { cwd: path.join(tmpRoot, '없는경로-git아님') });
   assert.strictEqual(v.status, 0, 'git 을 못 부르는 위치에서 훅이 실패 종료했다');
   assert.doesNotMatch(v.msg, /잃는 게 없다/, '판정 불가인데 「미커밋 0건」 쪽 문구를 냈다');
   assert.match(v.msg, /미커밋 확인/, '판정 불가일 때 확인을 시키지 않는다');
@@ -189,16 +205,16 @@ test('미커밋 판정 — 모름(git 불가)과 0건을 구별한다', () => {
 // ── 바통: 다중 세션·다중 프로젝트 격리 (08-04 결함 ①②) ──────────────────────
 
 test('바통은 🔴 부터 떨어진다 — 🟡 에선 아직 아니다', () => {
-  const y = newDir('by'); stop(125_000, { stateDir: y, sid: 'A' });
+  const y = newDir('by'); stop(210_000, { stateDir: y, sid: 'A' });
   assert.strictEqual(batons(y).length, 0, '🟡 인데 바통을 떨궜다');
-  const r = newDir('br'); stop(155_000, { stateDir: r, sid: 'A' });
+  const r = newDir('br'); stop(310_000, { stateDir: r, sid: 'A' });
   assert.strictEqual(batons(r).length, 1, '🔴 인데 바통이 없다 — 다음 세션이 이어받을 게 없다');
 });
 
 test('🔑 세션이 여러 개여도 서로 덮지 않는다 — 최신 하나만 이어받는다 (결함 ①)', () => {
   // 실사고: 🔴에 닿은 세션이 셋인 날, 내 인계문이 「구글폼 접수」 트랙 것으로 덮였다.
   const st = newDir('multi'); const cwd = newDir('one-proj');
-  for (const sid of ['SESS-A', 'SESS-B', 'SESS-C']) stop(155_000, { stateDir: st, cwd, sid });
+  for (const sid of ['SESS-A', 'SESS-B', 'SESS-C']) stop(310_000, { stateDir: st, cwd, sid });
   assert.strictEqual(batons(st).length, 3, `세션별로 갈라지지 않았다: ${batons(st)}`);
 
   // 셋을 **구별 가능하게** 만든다. 이게 없으면 「최신을 집는가」를 검사하는 척만 하게 된다 —
@@ -224,7 +240,7 @@ test('🔑 다른 저장소의 바통은 물지 않는다 (결함 ②)', () => {
   const st = newDir('proj-iso');
   const mine = newDir('repo-mine');
   const other = newDir('repo-other');
-  stop(155_000, { stateDir: st, cwd: other, sid: 'OTHER' });
+  stop(310_000, { stateDir: st, cwd: other, sid: 'OTHER' });
   assert.strictEqual(batons(st).length, 1, '남의 저장소 바통이 안 떨어졌다(전제 실패)');
 
   assert.strictEqual(startHook(st, mine).json, null, '다른 저장소 세션의 인계문을 물었다');
@@ -235,7 +251,7 @@ test('🔑 다른 저장소의 바통은 물지 않는다 (결함 ②)', () => {
 test('오래된 바통·resume·compact·무바통은 조용히 통과한다 (거짓양성 0)', () => {
   const stale = newDir('stale');
   const cwd = newDir('p-stale');
-  stop(155_000, { stateDir: stale, cwd, sid: 'OLD' });
+  stop(310_000, { stateDir: stale, cwd, sid: 'OLD' });
   // at 을 12시간 넘게 되돌린다 — 트랙이 이미 바뀐 인계문은 이어받으면 방해다
   for (const f of batons(stale)) {
     const p = path.join(stale, f);
@@ -245,7 +261,7 @@ test('오래된 바통·resume·compact·무바통은 조용히 통과한다 (�
   assert.strictEqual(startHook(stale, cwd).json, null, '12시간 넘은 바통을 물었다');
 
   const live = newDir('live'); const c2 = newDir('p-live');
-  stop(155_000, { stateDir: live, cwd: c2, sid: 'X' });
+  stop(310_000, { stateDir: live, cwd: c2, sid: 'X' });
   assert.strictEqual(startHook(live, c2, 'resume').json, null, 'resume 은 컨텍스트가 살아 있어 중복 지시가 된다');
   assert.strictEqual(startHook(live, c2, 'compact').json, null, 'compact 도 이어지는 세션이다');
   assert.ok(startHook(live, c2, 'startup').json, 'startup 은 물어야 한다');
@@ -307,7 +323,7 @@ test('두 겹이 서로 덮는다 — 같은 세션의 Stop 바통과 SessionEnd
   // 창을 강제로 닫으면 SessionEnd 가 못 돈다 → Stop 이 🔴에서 미리 떨군 게 보험이다.
   // 둘 다 돌면 파일이 둘이 아니라 **하나(나중 것)**여야 한다 — 안 그러면 뒤처진 바통이 쌓인다.
   const st = newDir('two'); const cwd = newDir('p-two');
-  stop(155_000, { stateDir: st, cwd, sid: 'SAME' });
+  stop(310_000, { stateDir: st, cwd, sid: 'SAME' });
   fs.writeFileSync(path.join(cwd, 'y.txt'), 'y');
   endHook(st, cwd, 'SAME');
   assert.strictEqual(batons(st).length, 1, `같은 세션인데 바통이 ${batons(st).length}개 — 세션별 1개여야 한다`);
