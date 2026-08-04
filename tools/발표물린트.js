@@ -49,7 +49,12 @@ function lint(file) {
   // ⚠ CSS 주석도 걷어낸다. 안 걷으면 「#101528 은 탈락값이다」라고 적어 둔 주석 자체를
   //   위반으로 잡는다(실측 — 이 린트가 처음 돈 날 자기 주석에 걸렸다).
   //   가드는 「실제로 렌더에 쓰이는 표기」만 봐야 한다.
-  const css = (html.match(/<style[\s\S]*?<\/style>/g) || []).join('\n').replace(/\/\*[\s\S]*?\*\//g, '');
+  // ⚠ `<style>` 태그 자체를 떼고 본다. 안 떼면 **첫 규칙의 셀렉터에 `<style>` 이 붙어**
+  //   `@font-face` 가 `<style>\n@font-face` 로 읽힌다(08-05 픽스처가 잡았다). 지금껏 안 물린 건
+  //   첫 규칙이 늘 `.mono`·`@page` 라 우연히 통과했을 뿐이다 — 셀렉터 기준 판정 전부의 이음매다.
+  const css = (html.match(/<style[\s\S]*?<\/style>/g) || []).join('\n')
+    .replace(/<\/?style[^>]*>/g, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
 
   const bad = [];
   const info = [];
@@ -95,6 +100,11 @@ function lint(file) {
     const decls = parts.pop();
     const sel = (parts.pop() || '').trim();
     if (!/DM Mono/i.test(decls)) continue;
+    // ⚠ @font-face 는 폰트를 **정의**할 뿐 어떤 요소에도 **입히지 않는다.** 이 검사의 표적은
+    //   「입히는 자리」라 선언 블록을 잡으면 거짓양성이다(08-05 임베드 이관에서 6종 전부 빨개졌다).
+    //   같은 함정을 인쇄물_키트검사가 먼저 밟았다 — 「선언을 읽고 사용을 안 읽었다」.
+    //   ⚠ @media 는 제외 대상이 아니다: 위 파싱이 중첩 안쪽 셀렉터를 뽑으므로 그대로 검사된다.
+    if (/^@font-face\b/i.test(sel)) continue;
     const content = decls.match(/content\s*:\s*['"]([^'"]*)['"]/);
     if (content) {
       if (/[ㄱ-힣Ѐ-ӿ]/.test(content[1])) monoRoute.push(`${sel} (content "${content[1]}" 에 한글·키릴)`);
