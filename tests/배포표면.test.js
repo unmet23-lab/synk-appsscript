@@ -22,9 +22,13 @@ const { looksSecret, topLevelFunctions, parseDeploymentLine } = mod;
  * 되돌리기는 한 줄이면 되고 그때 아무 테스트도 안 죽는다 — 그래서 여기서 죽인다. */
 test('clasp-guard — 코드 검사는 BYPASS 앞, 배포 검사는 뒤', () => {
   const guard = fs.readFileSync(path.join(__dirname, '..', '.claude', 'hooks', 'clasp-guard.js'), 'utf8');
-  const iCode = guard.indexOf('.checkCode()');
+  /* ⚠ 앵커를 **인자 형태에 묶지 않는다.** 원래 `.checkCode()` 를 정확히 찾았는데, F061 수리로
+   *   프로젝트를 넘기게 되자(`.checkCode(PROJ)`) 호출이 멀쩡한데도 「사라졌다」로 빨간불이 났다.
+   *   검사하려는 것은 **순서**지 인자가 아니다([[worktree-version-collision]] 「문구 앵커는
+   *   문구가 바뀌면 죽는다」와 같은 자리). 여는 괄호까지만 앵커로 쓴다. */
+  const iCode = guard.indexOf('.checkCode(');
   const iBypass = guard.search(/cmd\.includes\('CLASP_GUARD_BYPASS=1'\)\s*\)\s*process\.exit\(0\)/);
-  const iDeploy = guard.indexOf('.checkDeployments()');
+  const iDeploy = guard.indexOf('.checkDeployments(');
 
   assert.notStrictEqual(iCode, -1, 'checkCode() 호출이 사라졌다 — 훅이 코드 검사를 안 한다');
   assert.notStrictEqual(iBypass, -1, 'BYPASS 조기 종료 앵커를 못 찾았다 — 훅 구조가 바뀌었으니 이 테스트를 갱신할 것');
