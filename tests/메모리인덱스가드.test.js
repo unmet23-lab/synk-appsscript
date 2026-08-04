@@ -132,3 +132,41 @@ test('실제 settings.json에 훅이 등록돼 있다', () => {
   const cmds = (s.hooks.PreToolUse || []).flatMap((e) => (e.hooks || []).map((h) => h.command || ''));
   assert.ok(cmds.some((c) => c.includes('memory-index-guard.js')), '훅이 settings.json에 없다');
 });
+
+/* ── --check : 재는 층을 하나로 (F052) ────────────────────────────────────────
+ * 실사고: 인덱스 줄 길이를 awk 로 재고 「250자 위반」이라 보고했는데, awk 는 **바이트**를 세고
+ * 훅은 JS 문자를 센다. 한글이 3바이트라 175자가 324로 보였다. 실측 대조(08-04, 실 MEMORY.md):
+ * 같은 파일이 훅 기준 3건 · awk 기준 43건 — **14배**.
+ * 처방은 「조심해서 재라」가 아니라 **훅이 쓰는 판정기를 그대로 CLI 로 노출하는 것**이다. */
+
+const HOOKJS = path.join(__dirname, '..', '.claude', 'hooks', 'memory-index-guard.js');
+function check(본문) {
+  const f = path.join(fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'midx-')), 'MEMORY.md');
+  fs.writeFileSync(f, 본문);
+  const r = require('node:child_process').spawnSync(process.execPath, [HOOKJS, '--check', f], { encoding: 'utf8' });
+  return { code: r.status, out: String(r.stdout || '') };
+}
+
+test('--check 는 훅과 같은 기준(JS 문자)으로 잰다 — 한글이 바이트로 부풀어도 안 속는다', () => {
+  // 한글 200자 = 600바이트. awk·wc -m 으로 재면 위반처럼 보이지만 훅 기준으로는 상한 안이다.
+  const 한글줄 = '- [x](x.md) — ' + '가'.repeat(200);
+  assert.ok(한글줄.length <= 250, '픽스처 전제가 깨졌다(문자 기준 상한 이내여야 한다)');
+  assert.ok(Buffer.byteLength(한글줄, 'utf8') > 250, '픽스처 전제가 깨졌다(바이트로는 넘어야 한다)');
+  const r = check(`# 인덱스\n${한글줄}\n`);
+  assert.strictEqual(r.code, 0, '바이트로 재는 층과 섞였다 — 정확히 F052 의 형태다');
+  assert.match(r.out, /위반 0건/);
+});
+
+test('--check 는 진짜 위반을 행 번호와 길이로 짚는다', () => {
+  const 긴줄 = '- [y](y.md) — ' + '나'.repeat(300);
+  const r = check(`# 인덱스\n- [a](a.md) — 짧다\n${긴줄}\n`);
+  assert.strictEqual(r.code, 1, '위반이 있는데 0으로 끝났다 — 통과와 미실행이 같은 모양이면 안 된다');
+  assert.match(r.out, /3행/, '몇 행인지가 안 보인다');
+  assert.match(r.out, new RegExp(String(긴줄.length)), '실제 길이를 안 보여준다');
+});
+
+test('--check 는 인덱스 줄만 본다 (제목·설명 문단은 대상이 아니다)', () => {
+  const 긴설명 = '> ' + '다'.repeat(400);
+  const r = check(`# 인덱스\n${긴설명}\n- [a](a.md) — 짧다\n`);
+  assert.strictEqual(r.code, 0, '인덱스 줄이 아닌 것을 셌다 — 훅과 대상이 갈렸다');
+});

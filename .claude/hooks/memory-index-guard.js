@@ -38,6 +38,43 @@ function deny(reason) {
   process.exit(0);
 }
 
+/* --check <파일> : 훅과 **같은 판정기**로 지금 상태를 잰다 (F052 의 처방).
+ *
+ * 2026-08-04 실사고: 인덱스 줄 길이를 `awk` 로 재고 「250자 위반」이라 보고했는데,
+ *   awk 는 **바이트**를 세고 훅은 JS 문자를 센다. 한글이 3바이트라 175자가 324로 보였다.
+ *   같은 사이클에 v7.10 「재는 층이 값을 깨뜨리지 않는지 본다」를 박아놓고 몇 분 뒤 밟은 것이다.
+ *
+ * 🔑 프로즈로 「조심해서 재라」고 쓰는 대신 **잴 통로를 하나로** 만든다 — 훅이 막는 기준과
+ *   사람이 재는 기준이 같은 코드에서 나오면 층이 갈릴 수가 없다.
+ *   (CLAUDE.md 「호출부마다 고치는 대신 잘못 쓸 수 없는 공용 통로를 만든다」) */
+if (process.argv.includes('--check')) {
+  const i = process.argv.indexOf('--check');
+  const target = process.argv[i + 1];
+  if (!target) {
+    console.error('사용법: node .claude/hooks/memory-index-guard.js --check <MEMORY.md 경로>');
+    process.exit(2);
+  }
+  let 본문;
+  try { 본문 = fs.readFileSync(target, 'utf8'); }
+  catch (e) { console.error(`읽을 수 없다: ${target}`); process.exit(2); }
+  const 줄 = 본문.split(/\r?\n/);
+  const 위반 = [];
+  줄.forEach((l, n) => {
+    if (!l.trim().startsWith('- ')) return; // 훅과 같은 대상(인덱스 줄)만
+    if (l.length > MAX_LINE) 위반.push({ n: n + 1, len: l.length, head: l.slice(0, 50) });
+  });
+  const 인덱스줄 = 줄.filter((l) => l.trim().startsWith('- ')).length;
+  console.log(`[memory-index-guard --check] ${target}`);
+  console.log(`  인덱스 줄 ${인덱스줄}개 · 상한 ${MAX_LINE}자(JS 문자 기준 — 바이트가 아니다)`);
+  if (!위반.length) {
+    console.log('  ✅ 위반 0건');
+    process.exit(0);
+  }
+  for (const v of 위반) console.log(`  ✖ ${v.n}행 ${v.len}자 — ${v.head}…`);
+  console.log(`\n  ⚠ wc -m·awk length 로 재면 한글이 3배로 부풀어 다른 숫자가 나온다(F052).`);
+  process.exit(1);
+}
+
 let input;
 try {
   input = JSON.parse(fs.readFileSync(0, 'utf8'));
