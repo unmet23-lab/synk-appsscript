@@ -36,21 +36,19 @@ try {
  *   `git commit -F - <<'EOF' … clasp push … EOF` 의 heredoc 본문이 매칭돼 **커밋 자체가 막혔다**.
  *   가드는 실행되는 명령을 봐야지 사람이 쓴 문장을 보면 안 된다 — 문서화를 벌하는 가드는
  *   결국 사람이 우회하는 법(BYPASS 남발)을 배우게 만든다. */
+/* 알맹이는 lib/shell-text.js 에 있다 — 2026-08-04 code-edit-guard 를 세우며 **두 번째 사본**이
+ * 생길 뻔했다. 이 판정(heredoc·커밋 메시지·인용 산문)은 이미 두 번 틀렸는데, 가드마다 다시 적으면
+ * 새 가드가 옛 오탐을 그대로 되밟는다. CLAUDE.md 「호출부마다 고치는 대신 공용 통로를 만든다」.
+ *
+ * ⚠ 다만 통째로 지우면 **인용된 실행 경로**(`"C:/…/clasp.cmd" push`)의 clasp가 같이 사라져
+ *   진짜 배포를 놓친다. 그래서 지우는 게 아니라 **치환**한다: 인용 안이 clasp 실행 경로로
+ *   끝나면 ` clasp `로, 아니면 ` QUOTED `로. 실행 경로는 살리고 산문만 죽인다.
+ *   무엇을 살릴지는 가드마다 다르므로 여기서 정한다(공용 통로는 「어떻게」만 가진다). */
 function stripNonExecutedText(s) {
-  return s
-    // heredoc 본문: <<EOF / <<'EOF' / <<-"EOF" … 줄 처음의 같은 태그까지
-    .replace(/<<-?\s*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\1[\s\S]*?^\s*\2\s*$/gm, ' <<HEREDOC ')
-    // -m / --message 의 인용 문자열 본문
-    .replace(/(-m|--message)\s+(['"])[\s\S]*?\2/g, '$1 MSG')
-    /* 인용된 인자 본문 — 2026-08-04 재발: `grep -n "…clasp pull 차단…"` 이 차단됐다.
-     * 08-01 heredoc 오탐과 **같은 계열**이다(실행되지 않는 텍스트를 명령으로 읽음). 그때는
-     * heredoc만 막았는데, 인용 인자에도 같은 구멍이 있었다 — 검색·문서화가 벌받으면
-     * 사람은 BYPASS를 배운다(v6.11).
-     * ⚠ 다만 통째로 지우면 **인용된 실행 경로**(`"C:/…/clasp.cmd" push`)의 clasp가 같이 사라져
-     *   진짜 배포를 놓친다. 그래서 지우는 게 아니라 **치환**한다: 인용 안이 clasp 실행 경로로
-     *   끝나면 ` clasp `로, 아니면 ` QUOTED `로. 실행 경로는 살리고 산문만 죽인다. */
-    .replace(/(['"])([\s\S]*?)\1/g, (m, _q, body) =>
-      /clasp(\.cmd|\.ps1|\.exe)?\s*$/i.test(body) ? ' clasp ' : ' QUOTED ');
+  return require(path.join(__dirname, 'lib', 'shell-text.js')).stripNonExecutedText(s, {
+    keepQuoted: /clasp(\.cmd|\.ps1|\.exe)?\s*$/i,
+    keepAs: ' clasp ',
+  });
 }
 const execCmd = stripNonExecutedText(cmd);
 

@@ -106,6 +106,14 @@ const CASES = [
   // 라우팅이 좁아서가 아니라 **통로 자체가 없던** 자리라 훅을 새로 세웠다.
   ['shell-inline-guard', 'Bash', { command: 'node -e "console.log(1)" ' + '"\\$SP"' }, '인라인 스크립트의 \\$ 이스케이프'],
   ['shell-inline-guard', 'Bash', { command: "git commit -F - <<X\n@'\n제목\n'@\nX" }, 'Bash 에 PowerShell here-string'],
+  /* F050·F065·F067(2026-08-04) + 직전 세션의 네 번째 — 셸로 코드 파일을 변이시키다 원복이 실패해
+   * 파일이 변이 상태로 남았다. 표면이 넓어(sed·cp·리다이렉트·PowerShell cmdlet·인라인 스크립트)
+   * 앞단 필터를 두면 규칙이 늘 때마다 조용히 샌다 — 그래서 이 훅은 case 필터 없이 등록한다.
+   * 필터가 다시 생기면 아래 세 줄이 그 자리에서 빨간불을 낸다. */
+  ['code-edit-guard', 'Bash', { command: 'sed -i "s/a/b/" tools/eval-score.js' }, 'sed -i 로 코드 파일 in-place(F067)'],
+  ['code-edit-guard', 'Bash', { command: 'cat tmp.js > Code.js' }, '리다이렉트로 코드 파일 덮어쓰기'],
+  ['code-edit-guard', 'PowerShell', { command: 'Set-Content -Path Code.js -Value $x' }, 'PowerShell 쓰기 cmdlet'],
+  ['code-edit-guard', 'Bash', { command: `python -c "open('tests/safety.test.js','w').write(s)"` }, '인라인 스크립트의 코드 파일 쓰기(F050·F065)'],
 ];
 
 test('훅이 전부 settings.json 에 등록돼 있고, 등록이 가리키는 파일이 실재한다', () => {
