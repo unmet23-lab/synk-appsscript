@@ -38,7 +38,15 @@ const RETIRED = ['Pretendard', 'Noto Sans KR', 'KoPubWorld', 'Nanum', '맑은 �
 /* font-family 선언을 뽑는다. 값이 따옴표로 **시작**하는 게 정상이므로(`font-family:'Inter Tight',…`)
  * 문자 클래스에서 따옴표를 빼면 매치가 `font-family:`에서 끊겨 아래 검사가 통째로 죽는다.
  * 실제로 초판이 그렇게 죽어 있었고, 변이 테스트(순서를 일부러 뒤집기)로 잡았다. */
-const fontDecls = (src) => src.match(/font-family\s*:[^;}]+/g) || [];
+/* ⚠ `font-family:` 만 보면 **CSS 변수 선언이 통째로 빠져나간다.** 2026-08-05 실측:
+ *   `--kc-serif:'Fraunces',…` 로 선언하고 `font-family:var(--kc-serif)` 로 쓰면
+ *   이 검사는 `var(...)` 만 읽고 통과시킨다 — 폰트 이름이 사는 자리가 한 칸 옮겨갔을 뿐인데
+ *   화이트리스트 전체가 눈이 먼다(같은 파일을 렌더 린트는 26건으로 잡았다).
+ *   서체를 담는 커스텀 속성도 같은 무게로 본다. */
+const fontDecls = (src) => [
+  ...(src.match(/font-family\s*:[^;}]+/g) || []),
+  ...(src.match(/--[\w-]*(?:font|serif|sans|mono)[\w-]*\s*:[^;}]+/g) || []),
+];
 
 /* 주석은 렌더에 안 나온다 — 정책 대상은 **살아 있는 지정**뿐이다.
  * 2026-08-05 실측: 등록층을 넓히자마자 이 검사가 5파일에서 빨개졌는데, 원인은 전부
@@ -133,7 +141,11 @@ test('DM Mono를 쓰는 파일은 한글·키릴을 같은 지정에 섞지 않�
  *
  * 허용 = 브랜드 3종 + CSS 제네릭/시스템 폴백(실측으로 열거 — 저장소 전체에서 이 목록이 전부였다).
  * 폴백은 CDN이 죽었을 때 레이아웃을 지키는 안전망이라 금지 대상이 아니다(정본 §7). */
-const BRAND_FAMILIES = ['Inter Tight', 'SUIT Variable', 'DM Mono'];
+/* 목록은 tools/브랜드렌더린트.js 하나에서 파생시킨다 — 두 곳에 적었더니 **실제로 갈라져 있었다.**
+ * 렌더 린트는 `SUIT`(jsDelivr SUIT-Variable.css 가 함께 정의하는 별칭)를 허용하는데 여기엔
+ * 없었고, 위에서 변수 선언까지 보게 만든 순간 카드 4종이 「SUIT」로 빨개졌다.
+ * 그 전까지 안 걸린 건 맞아서가 아니라 `--serif:` 선언을 아무도 안 봤기 때문이다. */
+const { FONTS_OK: BRAND_FAMILIES, KC_FONTS_OK } = require('../tools/브랜드렌더린트');
 const SYSTEM_FALLBACKS = [
   'system-ui', 'ui-monospace', '-apple-system', 'BlinkMacSystemFont',
   'sans-serif', 'serif', 'monospace', 'cursive',
@@ -141,6 +153,15 @@ const SYSTEM_FALLBACKS = [
   'Consolas', 'SFMono-Regular', 'Menlo', 'Monaco', 'Courier New', 'inherit', 'initial', 'unset',
 ];
 const ALLOWED_FAMILIES = new Set([...BRAND_FAMILIES, ...SYSTEM_FALLBACKS].map((s) => s.toLowerCase()));
+
+/* Part 06 K-Culture 예약 서체 — 정본 §4-1 의 유일한 예외(유호님 08-05 확정).
+ * 🔑 예외의 무게는 **경계**에 있다: 이름만 허용 목록에 얹으면 예외가 저장소 전체로 샌다.
+ *   소스 층에서 잴 수 있는 경계는 「`--kc-*` 선언 안인가」다 — 그래서 카드가 그 통로 하나만
+ *   쓰도록 좁혀 뒀다(구역 경계 자체는 렌더 린트가 `.kc-page` 조상으로 잰다).
+ * 목록은 위 BRAND_FAMILIES 와 같은 출처에서 온다 — 두 곳에 적으면 갈라지고,
+ * 갈라지는 방향은 언제나 「통과」다. */
+const KC_ALLOWED = new Set(KC_FONTS_OK.map((s) => s.toLowerCase()));
+const isKcDecl = (decl) => /^\s*--kc-/.test(decl);
 
 test('3종 밖 폰트가 새로 들어오지 않는다(화이트리스트 — 블랙리스트로는 못 막는다)', () => {
   const violations = [];
@@ -152,7 +173,9 @@ test('3종 밖 폰트가 새로 들어오지 않는다(화이트리스트 — �
         const name = token.trim().replace(/^["']|["']$/g, '').trim();
         // HTML이 섞여 들어온 파싱 부스러기는 폰트 이름이 아니다 — 폰트명은 라틴·숫자·하이픈·공백뿐
         if (!name || !/^[-A-Za-z0-9 ]+$/.test(name)) continue;
-        if (!ALLOWED_FAMILIES.has(name.toLowerCase())) violations.push(`${f}: 「${name}」`);
+        if (ALLOWED_FAMILIES.has(name.toLowerCase())) continue;
+        if (isKcDecl(decl) && KC_ALLOWED.has(name.toLowerCase())) continue; // Part 06 예약 — 그 통로 안에서만
+        violations.push(`${f}: 「${name}」`);
       }
     }
   }
