@@ -29,6 +29,19 @@ const SRC_PREFIX = '_src_';
 /** 소스 → 산출물 이름. 접두만 뗀다 — 산출물 파일명은 절대 안 바꾼다(대외 링크·유호님 즐겨찾기가 걸려 있다). */
 const outNameOf = (srcName) => srcName.slice(SRC_PREFIX.length);
 
+const MARKER = '/*@FONTS@*/';
+
+/** 줄끝만 통일한다 — 파이썬 write_text·git autocrlf 를 거치며 CRLF 가 섞여도 내용 대조가 안 흔들리게. */
+const normalize = (s) => s.replace(/\r\n/g, '\n');
+
+/**
+ * 산출물에서 임베드된 @font-face 묶음을 도로 마커로 되돌린다 → 소스와 1:1 비교가 된다.
+ * 빌드가 `marker → faces.join('\n')` 이라 되돌리는 것도 그 한 덩어리다.
+ * base64 안엔 `}` 가 안 나온다(알파벳이 A-Za-z0-9+/=) — `[^}]*` 가 안전한 이유.
+ */
+const unembed = (html) =>
+  normalize(html).replace(/@font-face\{[^}]*\}(?:\n@font-face\{[^}]*\})*/, MARKER);
+
 /** 파이썬 실행기를 찾는다. 못 찾으면 **통과가 아니라 실패** — 조용히 건너뛰면 낡은 산출물이 초록으로 남는다. */
 function findPython() {
   for (const cmd of ['python', 'py', 'python3']) {
@@ -57,18 +70,23 @@ function main() {
     return 1;
   }
 
-  // --check = 「소스가 산출물보다 새로운가」만 본다. 굽지 않으므로 파이썬이 없어도 답할 수 있다.
+  // --check = 「산출물이 이 소스에서 나온 게 맞는가」를 **내용으로** 본다. 굽지 않으므로 파이썬이 없어도 답한다.
+  //
+  // ⚠ mtime 으로 재면 **CI 에서 깨진다**(08-05 실측: 로컬 1254/0 초록인데 원격은 빨강).
+  //   git 은 파일 시각을 보존하지 않아 새 클론에선 소스·산출물 mtime 이 사실상 동시고 순서가
+  //   제멋대로다. 시각은 repo 밖 환경 상태지 내용이 아니다 — 그래서 판정을 내용으로 옮겼다.
+  //   내용 대조는 더 세기도 하다: 「소스를 고치고 안 구웠다」를 시각이 아니라 **차이 자체**로 잡는다.
   if (checkOnly) {
     const stale = [];
     for (const s of srcs) {
       const out = path.join(DIR, outNameOf(s));
       if (!fs.existsSync(out)) { stale.push(`${outNameOf(s)} — 산출물 없음`); continue; }
-      if (fs.statSync(path.join(DIR, s)).mtimeMs > fs.statSync(out).mtimeMs) {
-        stale.push(`${outNameOf(s)} — 소스가 더 새롭다`);
-      }
       const html = fs.readFileSync(out, 'utf8');
-      if (!/@font-face/.test(html)) stale.push(`${outNameOf(s)} — 산출물에 @font-face 가 없다(임베드 안 된 사본)`);
-      if (html.includes('/*@FONTS@*/')) stale.push(`${outNameOf(s)} — 마커가 그대로 남았다(치환 실패본)`);
+      if (!/@font-face/.test(html)) { stale.push(`${outNameOf(s)} — 산출물에 @font-face 가 없다(임베드 안 된 사본)`); continue; }
+      if (html.includes(MARKER)) { stale.push(`${outNameOf(s)} — 마커가 그대로 남았다(치환 실패본)`); continue; }
+      if (unembed(html) !== normalize(fs.readFileSync(path.join(DIR, s), 'utf8'))) {
+        stale.push(`${outNameOf(s)} — 소스와 산출물 내용이 어긋난다(소스를 고치고 안 구웠다)`);
+      }
     }
     if (stale.length) {
       console.log(`🔴 발표물 빌드 필요 ${stale.length}건 — \`node tools/발표물빌드.js --pdf\` 를 돌려라`);
