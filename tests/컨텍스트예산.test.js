@@ -100,6 +100,17 @@ test('단계 3종 — 🟡 200k · 🔴 300k · ⚫ 500k', () => {
   assert.match(last.msg, /한참 지났다/, '⚫ 문구가 🔴 와 구별되지 않는다');
 });
 
+test('🔑 퍼센트가 거짓 안심을 주지 않는다 — 창이 아니라 턴당 재읽기를 앞세운다', () => {
+  // opus·fable 만 쓰면 창이 늘 1M 이라, 끊어야 할 지점에서도 「31%」로 보인다(유호님 조건, 08-04).
+  // 실제 근거는 창 점유율이 아니라 **한 턴마다 그만큼을 통째로 다시 읽는다**는 것이다.
+  const m = stop(310_000, { model: 'claude-opus-5' }).msg;
+  const head = m.split('\n')[0];
+  assert.match(head, /한 턴마다 310k 를 다시 읽는다/, '턴당 재읽기 비용이 첫 줄에 없다');
+  assert.match(head, /창은 기준이 아니다/, '창 퍼센트가 기준으로 오해될 여지를 안 막았다');
+  // 퍼센트가 절대값보다 먼저 나오면 「31%밖에 안 찼네」로 읽힌다
+  assert.ok(head.indexOf('310k') < head.indexOf('31%'), '퍼센트가 절대값보다 앞에 나온다');
+});
+
 test('🔑 창이 작은 모델도 울린다 — 절대값만 쓰면 haiku 는 영원히 침묵한다', () => {
   // 임계를 200k 로 올리자마자 생긴 구멍: haiku 는 창이 200k 라 200k 를 넘을 수가 없다.
   // 두 축(비용=절대값 · 용량=창 비율) 중 먼저 걸리는 쪽을 쓴다 → 200k 창이면 120k/150k/180k.
@@ -131,14 +142,14 @@ test('usage 없는 줄·깨진 줄이 섞여도 마지막 usage 를 찾아낸다
 });
 
 test('🔑 창 크기는 모델마다 다르다 — 200k 고정은 5배 틀렸다 (F058)', () => {
-  assert.match(stop(310_000, { model: 'claude-opus-5' }).msg, /\/ 1000k/, 'opus 창이 1M 이 아니다');
-  assert.match(stop(310_000, { model: 'claude-sonnet-5' }).msg, /\/ 1000k/, 'sonnet 창이 1M 이 아니다');
+  assert.match(stop(310_000, { model: 'claude-opus-5' }).msg, /창 1000k/, 'opus 창이 1M 이 아니다');
+  assert.match(stop(310_000, { model: 'claude-sonnet-5' }).msg, /창 1000k/, 'sonnet 창이 1M 이 아니다');
   // 작은 창 모델은 그 창을 넘을 수 없으므로 창 안쪽 값으로 잰다
-  assert.match(stop(160_000, { model: 'claude-haiku-4-5-20251001' }).msg, /\/ 200k/, 'haiku 창이 200k 가 아니다');
+  assert.match(stop(160_000, { model: 'claude-haiku-4-5-20251001' }).msg, /창 200k/, 'haiku 창이 200k 가 아니다');
   // 모르는 모델은 **작은 쪽** — 크게 잡으면 퍼센트가 작아 보여 늦게 알린다
-  assert.match(stop(160_000, { model: 'claude-미래-9' }).msg, /\/ 200k/, '모르는 모델을 큰 창으로 가정했다');
+  assert.match(stop(160_000, { model: 'claude-미래-9' }).msg, /창 200k/, '모르는 모델을 큰 창으로 가정했다');
   // 어떤 모델에서도 퍼센트가 100 을 넘으면 계기판이 아니다
-  const pct = (m, c) => Number(/\((\d+)%\)/.exec(stop(c, { model: m }).msg)[1]);
+  const pct = (m, c) => Number(/(\d+)%/.exec(stop(c, { model: m }).msg)[1]);
   assert.ok(pct('claude-opus-5', 310_000) <= 100, 'opus 퍼센트가 100 초과');
   assert.ok(pct('claude-haiku-4-5-20251001', 190_000) <= 100, 'haiku 퍼센트가 100 초과');
   assert.ok(pct('claude-미래-9', 190_000) <= 100, '모르는 모델 퍼센트가 100 초과');

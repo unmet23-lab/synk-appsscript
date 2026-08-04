@@ -156,8 +156,13 @@ const handoffMsg = report.buildHandoff(cwd, sid, { dirty });
 // 다음 세션이 이어받게 하는 보험이다. 평범한 종료는 session-end-handoff 가 따로 떨군다.
 if (stage >= 2) store.drop(cwd, sid, handoffMsg, { ctx, trigger: `context-${stage === 3 ? 'last' : 'hard'}` });
 
+// ⚠ 퍼센트를 앞세우지 않는다 — **거짓 안심을 준다**(유호님 "오푸스·페이블만 쓸 것", 08-04).
+//   그 둘은 창이 1M 이라 끊어야 할 지점에서도 「31%」로 보인다. 실제 근거는 창 점유율이 아니라
+//   **한 턴마다 그만큼을 통째로 다시 읽는다**는 것이다(하루 비용의 88% 가 그 재읽기였다).
+//   그래서 절대값과 턴당 재읽기를 앞에 놓고, 퍼센트는 괄호 안 참고로만 남긴다.
 const msg =
-  `${LEVEL[stage]} [context-budget] 컨텍스트 ${k(ctx)} / ${k(WINDOW)} (${pct}%) — ${HEAD[stage]}.\n` +
+  `${LEVEL[stage]} [context-budget] 컨텍스트 ${k(ctx)} — ${HEAD[stage]}. ` +
+  `**한 턴마다 ${k(ctx)} 를 다시 읽는다**(창 ${k(WINDOW)} 의 ${pct}% — 창은 기준이 아니다).\n` +
   `${steps}\n` +
   `왜 컴팩트가 아니라 종료인가: 바닥값이 ${k(FLOOR)}라 컴팩트 도달점(≈${k(FLOOR + 5000)})이 ` +
   `새 세션 시작점(${k(FLOOR)})보다 크다. 세션 재시작이 더 작고 요약 손실도 0이다.\n\n` +
