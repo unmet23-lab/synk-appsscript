@@ -68,20 +68,50 @@ const WARN_ABS = 200_000; // 🟡 슬슬 트랙을 닫을 준비
 const HARD_ABS = 300_000; // 🔴 지금 끊어라 — 여기가 무릎이다
 const LAST_ABS = 500_000; // ⚫ 마지막 경고. 🔴 뒤 완전 침묵이면 900k 를 넘겨도 무소식이었다(결함 ⑤).
 
-// ⚠ 절대값만 쓰면 **창이 작은 모델은 영원히 안 울린다** — haiku 는 창이 200k 라
-//   컨텍스트가 200k 를 넘을 수가 없다. 임계를 올리자마자 생긴 구멍이다(08-04).
-//   그래서 두 축 중 **먼저 걸리는 쪽**을 쓴다: 큰 창은 비용 축(절대값), 작은 창은 용량 축(비율).
-//   1M 창 → 200k/300k/500k · 200k 창 → 120k/150k/180k.
+// ⚫ **위에도 같은 구멍이 그대로 남아 있었다**(결함 ⑤의 재발 — 08-04 실측).
+//   ⚫ 를 한 번 띄우면 그 뒤로 영원히 침묵해서, 하루 실측에서 세 세션이
+//   600k·771k·786k 까지 **무신호로** 올라갔다. 500k→786k 구간은 한 턴에 78만 토큰을
+//   다시 읽는 **가장 비싼 구간**인데 정확히 거기가 무신호였다.
+//   그래서 ⚫ 뒤로는 침묵이 아니라 **STEP 마다 다시 운다**(유호님 확정, 08-04).
+//   200k 로 정한 이유 = 1M 창에서 700k·900k 두 번만 더 늘어난다(100k 면 4~5번 — 소음).
+const REPEAT_ABS = 200_000;
+
+// 창이 작은 모델도 같은 비율로 — haiku(200k 창)면 STEP 40k 지만 LAST 가 180k 라
+// 다음 발화 지점 220k 는 창 밖이다. 즉 작은 창에서는 자연히 1회로 남는다.
 function thresholds(win) {
   return {
     WARN: Math.min(WARN_ABS, Math.round(win * 0.60)),
     HARD: Math.min(HARD_ABS, Math.round(win * 0.75)),
     LAST: Math.min(LAST_ABS, Math.round(win * 0.90)),
+    STEP: Math.max(1, Math.min(REPEAT_ABS, Math.round(win * 0.20))),
   };
 }
 
+// ⚠ 절대값만 쓰면 **창이 작은 모델은 영원히 안 울린다** — haiku 는 창이 200k 라
+//   컨텍스트가 200k 를 넘을 수가 없다. 임계를 올리자마자 생긴 구멍이다(08-04).
+//   그래서 두 축 중 **먼저 걸리는 쪽**을 쓴다: 큰 창은 비용 축(절대값), 작은 창은 용량 축(비율).
+//   1M 창 → 200k/300k/500k(+700k·900k) · 200k 창 → 120k/150k/180k.
+
 // 발화는 **단계당 1회**다(유호님 지시 08-04: "너무 많이 뜨게는 하지 마").
-// 세션당 최대 3번(🟡·🔴·⚫). 매 턴 띄우면 경고가 배경 소음이 되고 정작 단계 상승을 놓친다.
+// 1M 창 기준 세션당 최대 5번(🟡·🔴·⚫ 500k·⚫ 700k·⚫ 900k).
+// 매 턴 띄우면 경고가 배경 소음이 되고 정작 단계 상승을 놓친다.
+
+/** ctx → 단계. 1=🟡 2=🔴 3=⚫ 그리고 **4 이상은 ⚫ 재발화**(LAST 부터 STEP 마다 +1). */
+function stageOf(ctx, t) {
+  if (ctx >= t.LAST) return 3 + Math.floor((ctx - t.LAST) / t.STEP);
+  if (ctx >= t.HARD) return 2;
+  return 1;
+}
+
+function levelOf(stage) { return stage === 1 ? '🟡' : stage === 2 ? '🔴' : '⚫'; }
+
+function headOf(stage) {
+  if (stage === 1) return '슬슬 트랙을 닫을 준비';
+  if (stage === 2) return '지금 끊을 지점이다';
+  if (stage === 3) return '한참 지났다 — 지금 끊어라';
+  // 4번째부터는 「몇 번째로 말하는지」를 세어 보여준다 — 같은 문구가 반복되면 배경이 된다.
+  return `${stage - 2}번째 경고 — 아직 안 끊었다`;
+}
 
 let input;
 try {
@@ -122,13 +152,13 @@ if (info === null) process.exit(0);
 
 const ctx = info.tokens;
 const WINDOW = windowFor(info.model);
-const { WARN, HARD, LAST } = thresholds(WINDOW); // 창을 안 뒤에야 임계가 정해진다
-if (ctx < WARN) process.exit(0); // 임계 아래에선 아무 말도 하지 않는다
+const T = thresholds(WINDOW); // 창을 안 뒤에야 임계가 정해진다
+if (ctx < T.WARN) process.exit(0); // 임계 아래에선 아무 말도 하지 않는다
 
 const cwd = input.cwd || process.cwd();
 const sid = input.session_id;
 
-const stage = ctx >= LAST ? 3 : ctx >= HARD ? 2 : 1;
+const stage = stageOf(ctx, T);
 if (store.readStage(cwd, sid) >= stage) process.exit(0); // 같은 단계에서 두 번 말하지 않는다
 store.writeStage(cwd, sid, stage);
 
@@ -136,18 +166,20 @@ const dirty = report.dirtyCount(cwd);
 const pct = Math.round((ctx / WINDOW) * 100);
 const k = (n) => `${Math.round(n / 1000)}k`;
 
-const LEVEL = { 1: '🟡', 2: '🔴', 3: '⚫' };
-const HEAD = { 1: '슬슬 트랙을 닫을 준비', 2: '지금 끊을 지점이다', 3: '한참 지났다 — 지금 끊어라' };
-
 // 끊기 절차 — 「인계되는 것은 커밋·보드 줄·메모리 셋뿐」(CLAUDE.md 세션 규약)
+//
+// ⚠ 절차를 나열하지 않는다. 08-04 실측: 경고가 8번 떴는데도 세션은 786k 까지 갔다.
+//   부족한 건 알림이 아니라 **끊는 비용**이었다 — 커밋·보드·메모리 셋을 손으로 하려니
+//   「나중에」가 됐다. 그래서 알림을 늘리는 대신 **한 줄로 실행되게** 한다(유호님 확정, 08-04).
+//   `/close` 스킬이 그 셋을 순서대로 처리한다(.claude/skills/close/SKILL.md).
+const CLOSE = '**`/close`**';
 let steps;
 if (dirty === null) {
-  steps = '① 미커밋 확인(`git status` 전문) → ② 커밋 → ③ 보드 줄에 다음 할 일 1줄 → ④ 세션 종료';
+  steps = `${CLOSE} 라고 입력하면 미커밋 확인·커밋·보드 줄·인계까지 한 번에 끝난다.`;
 } else if (dirty > 0) {
-  steps = `① **미커밋 ${dirty}건 먼저 커밋**(범위 지정 ` + '`git commit -m "..." -- 경로들`' +
-    ') → ② 보드 줄에 다음 할 일 1줄 → ③ 세션 종료';
+  steps = `미커밋 ${dirty}건 — ${CLOSE} 라고 입력하면 범위 지정 커밋·보드 줄·인계까지 한 번에 끝난다.`;
 } else {
-  steps = '미커밋 0건 — ① 보드 줄에 다음 할 일 1줄 → ② 세션 종료. 지금 끊으면 잃는 게 없다.';
+  steps = `미커밋 0건 — ${CLOSE} 로 보드 줄만 정리하면 끝. 지금 끊으면 잃는 게 없다.`;
 }
 
 const handoffMsg = report.buildHandoff(cwd, sid, { dirty });
@@ -161,7 +193,7 @@ if (stage >= 2) store.drop(cwd, sid, handoffMsg, { ctx, trigger: `context-${stag
 //   **한 턴마다 그만큼을 통째로 다시 읽는다**는 것이다(하루 비용의 88% 가 그 재읽기였다).
 //   그래서 절대값과 턴당 재읽기를 앞에 놓고, 퍼센트는 괄호 안 참고로만 남긴다.
 const msg =
-  `${LEVEL[stage]} [context-budget] 컨텍스트 ${k(ctx)} — ${HEAD[stage]}. ` +
+  `${levelOf(stage)} [context-budget] 컨텍스트 ${k(ctx)} — ${headOf(stage)}. ` +
   `**한 턴마다 ${k(ctx)} 를 다시 읽는다**(창 ${k(WINDOW)} 의 ${pct}% — 창은 기준이 아니다).\n` +
   `${steps}\n` +
   `왜 컴팩트가 아니라 종료인가: 바닥값이 ${k(FLOOR)}라 컴팩트 도달점(≈${k(FLOOR + 5000)})이 ` +
