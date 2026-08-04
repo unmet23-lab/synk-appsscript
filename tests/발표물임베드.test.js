@@ -75,16 +75,30 @@ test('픽스처 — 마커가 그대로 남은 치환 실패본을 잡는다', (
   assert.match(v.out, /마커가 그대로/);
 });
 
-test('픽스처 — 소스가 산출물보다 새로우면 잡는다 (빌드를 안 돌린 상태)', () => {
+/* 🔑 판정은 **내용**이지 시각이 아니다. mtime 으로 재던 초판이 로컬 1254/0 초록인데 CI 에선
+ * 빨갰다 — git 이 파일 시각을 보존하지 않아 새 클론에선 순서가 제멋대로다(08-05 원격 run 실측).
+ * 그래서 이 픽스처는 시각을 건드리지 않고 **내용을 어긋나게** 해서 잡히는지 본다. */
+test('🔑 픽스처 — 소스를 고치고 안 구우면 잡는다 (시각이 아니라 내용으로)', () => {
   const d = fixture({
-    '_src_a.html': '<style>/*@FONTS@*/</style>',
-    'a.html': `<style>${FACE}</style>`,
+    '_src_a.html': '<style>/*@FONTS@*/\n@page{size:A4}\n.새문단{color:red}</style>',
+    'a.html': `<style>${FACE}\n@page{size:A4}</style>`, // 소스의 새 규칙이 안 반영된 낡은 산출물
   });
-  const old = new Date(Date.now() - 60000);
-  fs.utimesSync(path.join(d, 'a.html'), old, old);
   const v = check(d);
   assert.strictEqual(v.code, 1, '소스를 고치고 빌드를 안 돌렸는데 통과시켰다');
-  assert.match(v.out, /소스가 더 새롭다/);
+  assert.match(v.out, /내용이 어긋난다/);
+});
+
+test('픽스처 — 시각이 뒤집혀도 내용이 같으면 통과한다 (CI 새 클론 재현)', () => {
+  const d = fixture({
+    '_src_a.html': '<style>/*@FONTS@*/\n@page{size:A4}</style>',
+    'a.html': `<style>${FACE}\n@page{size:A4}</style>`,
+  });
+  // 새 클론에서 소스가 산출물보다 「새로」 보이는 상태를 그대로 만든다
+  const older = new Date(Date.now() - 60000);
+  fs.utimesSync(path.join(d, 'a.html'), older, older);
+  const v = check(d);
+  assert.strictEqual(v.code, 0,
+    `내용이 같은데 시각만 보고 잡았다 — 이게 CI 를 빨갛게 만든 결함이다:\n${v.out}`);
 });
 
 test('🔑 픽스처 — 소스가 0건이면 「할 일 없음」이 아니라 실패다 (스캔이 조용히 죽는 것 방지)', () => {
