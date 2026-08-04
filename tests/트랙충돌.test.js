@@ -61,7 +61,7 @@ function 커밋(dir, 파일, 내용, 제목, sid) {
 }
 
 /** 훅 호출. 세션마다 state 디렉터리를 갈라 서로 간섭하지 않게 한다. */
-function 훅(dir, { file, sid = 'sess-A', stateDir, tool = 'Edit' } = {}) {
+function 훅(dir, { file, sid = 'sess-A', stateDir, tool = 'Edit', dirtyMs = 0 } = {}) {
   const r = spawnSync(process.execPath, [HOOK], {
     input: JSON.stringify({ tool_name: tool, tool_input: { file_path: file ? path.join(dir, file) : undefined } }),
     encoding: 'utf8',
@@ -70,6 +70,8 @@ function 훅(dir, { file, sid = 'sess-A', stateDir, tool = 'Edit' } = {}) {
       SYNK_TRACK_ROOT: dir,
       SYNK_CTXBUDGET_DIR: stateDir,
       CLAUDE_CODE_HOST_SESSION_ID: sid,
+      // 탐지력 검사는 **시계에 묶이면 안 된다** — 기본 0(매번 검사). 스로틀 자체는 아래 전용 검사가 본다.
+      SYNK_TRACK_DIRTY_MS: String(dirtyMs),
     },
   });
   const out = (r.stdout || '').trim();
@@ -441,4 +443,228 @@ test('🔑 내가 쓴 상태 파일을 작업본소유자가 읽는다 — 형�
   // 반대 방향도 본다 — 전부 🔴로 칠하는 것도 「잡았다」처럼 보인다.
   assert.ok(!/살아있는 남의 작업본/.test(조회('sess-B').stdout),
     '내가 만진 파일을 남의 것이라 했다 — 세션 id 대조가 어긋났다');
+});
+
+// ── 신호 ④ 다른 작업 트리의 살아있는 미커밋 (F079) ─────────────────────────
+/* F079 실사고: 세션 둘이 **같은 시각 같은 파일 두 개**를 각자 고쳤다. 한쪽이 워크트리였고,
+ * 감지 장치가 셋이나 있었는데 셋 다 못 봤다 — ①이 훅은 master 착지 커밋만 보고
+ * ②작업본소유자는 메인의 `git status` 만 보고 ③상태 폴더 키가 cwd 해시라 **두 세션이
+ * 서로의 존재조차 몰랐다.** ③이 가장 깊다: 감지기를 고쳐도 재료가 갈라져 있었다.
+ *
+ * ⚠ 여기서 새는 방향은 언제나 「조용」이다. 워크트리를 못 읽으면 겹침 0 = 통과로 보인다. */
+
+/** 픽스처 저장소에 워크트리를 붙인다. 커밋이 하나는 있어야 한다. */
+function 워크트리붙이기(dir, 이름, 브랜치) {
+  const p = path.join(dir, '.wt', 이름);
+  const r = gitIn(dir, ['worktree', 'add', '-q', '-b', 브랜치, p]);
+  return r.status === 0 ? p : null;
+}
+
+test('🔴 다른 작업 트리가 **미커밋으로 들고 있는** 파일을 만지면 알린다 (F079)', (t) => {
+  if (!있나) return t.skip('git 없음 — 픽스처를 못 만든다');
+  const dir = 픽스처저장소();
+  const 상태 = 상태폴더();
+  const 시험파일 = 'docs/정본/엔진_시험.js';   // 하위 폴더 + 한글 (위와 같은 이유)
+  커밋(dir, 시험파일, 'a', 'init', 'sess-A');
+
+  const wtDir = 워크트리붙이기(dir, '옆트리', 'peer-branch');
+  if (!wtDir) return t.skip('git worktree 를 못 만들었다');
+  // 옆 트리가 그 파일을 **고쳐서 들고만 있다** — 커밋은 안 했다. 이게 F079 의 실제 모양이다.
+  fs.writeFileSync(path.join(wtDir, 시험파일), '옆 트리가 고치는 중');
+
+  const r = 훅(dir, { file: 시험파일, sid: 'sess-A', stateDir: 상태 });
+  assert.equal(r.조용, false, '살아있는 남의 편집을 못 봤다 — 커밋이 아니라 안 잡힌다는 게 F079 다');
+  assert.match(r.본문, /다른 작업 트리가 지금 미커밋으로 들고 있다/, '무엇 때문에 알리는지가 안 보인다');
+  assert.match(r.본문, /옆트리/, '어느 트리인지 안 알려주면 확인하러 갈 데가 없다');
+  assert.match(r.본문, /docs\/정본\/엔진_시험\.js/, '한글 경로가 이스케이프돼 깨졌다 — 그러면 대조가 전부 빗나간다');
+  assert.strictEqual(r.판정, undefined, '차단했다 — 이 훅은 정보만 준다');
+});
+
+test('아무도 안 들고 있으면 조용하다 (거짓양성이 곧 무시로 이어진다)', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  const 상태 = 상태폴더();
+  커밋(dir, 'docs/정본/엔진_시험.js', 'a', 'init', 'sess-A');
+  커밋(dir, 'docs/정본/다른것.js', 'a', 'init2', 'sess-A');
+  const wtDir = 워크트리붙이기(dir, '옆트리', 'peer-branch');
+  if (!wtDir) return t.skip('git worktree 를 못 만들었다');
+  fs.writeFileSync(path.join(wtDir, 'docs/정본/다른것.js'), '옆 트리가 고치는 중');
+
+  // 옆 트리가 든 것은 `다른것.js` 다. 내가 만지는 건 `엔진_시험.js` — 겹치지 않는다.
+  assert.equal(훅(dir, { file: 'docs/정본/엔진_시험.js', sid: 'sess-A', stateDir: 상태 }).조용, true,
+    '겹치지도 않는데 알렸다 — 잔소리하는 장치는 읽히지 않게 된다');
+});
+
+test('내 작업 트리가 든 미커밋은 내 것이라 안 알린다 (자기 자신을 남으로 세지 않는다)', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  const 상태 = 상태폴더();
+  const 시험파일 = 'docs/정본/엔진_시험.js';
+  커밋(dir, 시험파일, 'a', 'init', 'sess-A');
+  워크트리붙이기(dir, '옆트리', 'peer-branch');   // 트리는 있지만 깨끗하다
+  fs.writeFileSync(path.join(dir, 시험파일), '내가 고치는 중');   // 더러운 건 **내 트리**다
+
+  assert.equal(훅(dir, { file: 시험파일, sid: 'sess-A', stateDir: 상태 }).조용, true,
+    '내 미커밋을 남의 것이라 했다 — 그러면 매 편집마다 나를 경고한다');
+});
+
+test('같은 파일로 두 번 알리지 않는다 (안 읽히는 경고는 없는 것과 같다)', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  const 상태 = 상태폴더();
+  const 시험파일 = 'docs/정본/엔진_시험.js';
+  커밋(dir, 시험파일, 'a', 'init', 'sess-A');
+  const wtDir = 워크트리붙이기(dir, '옆트리', 'peer-branch');
+  if (!wtDir) return t.skip('git worktree 를 못 만들었다');
+  fs.writeFileSync(path.join(wtDir, 시험파일), '옆 트리가 고치는 중');
+
+  assert.equal(훅(dir, { file: 시험파일, sid: 'sess-A', stateDir: 상태 }).조용, false, '1회차가 조용했다');
+  assert.equal(훅(dir, { file: 시험파일, sid: 'sess-A', stateDir: 상태 }).조용, true, '2회차도 알렸다 — 잔소리다');
+});
+
+/* ⚠ lib 은 **훅 옆에서** 가져온다. `__dirname/../.claude/hooks/lib` 로 고정하면 변이 실험이
+ *   사본 훅을 갈아끼워도 여기는 늘 실 lib 을 본다 — 그러면 무엇을 변이시켜도 초록이라,
+ *   「지킨다고 주장만 하는 회귀」가 된다. 실제로 처음엔 그렇게 짰고 변이 3건이 통과했다. */
+const libIn = (이름) => require(path.join(path.dirname(HOOK), 'lib', 이름));
+
+test('🔑 워크트리에서 실행해도 **같은 상태 파일**에 쓴다 — 이게 가장 깊은 구멍이었다 (F079)', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  const 상태 = 상태폴더();
+  커밋(dir, 'docs/정본/엔진_시험.js', 'a', 'init', 'sess-A');
+  const wtDir = 워크트리붙이기(dir, '옆트리', 'peer-branch');
+  if (!wtDir) return t.skip('git worktree 를 못 만들었다');
+
+  /* 🔑 **결과로 검사한다.** 키 함수를 직접 부르면 훅이 그 키를 실제로 쓰는지는 안 보인다 —
+   *   훅 안에서 옛 계산으로 되돌려도 통과해 버린다(변이 J 가 정확히 그렇게 빠져나갔다).
+   *   같은 세션 id 로 메인과 워크트리에서 각각 훅을 돌려, **파일이 하나로 모이는지**를 본다. */
+  훅(dir, { file: 'docs/정본/엔진_시험.js', sid: 'sess-A', stateDir: 상태 });
+  훅(wtDir, { file: 'docs/정본/엔진_시험.js', sid: 'sess-A', stateDir: 상태 });
+
+  const 상태파일 = fs.readdirSync(상태).filter((f) => f.startsWith('track-'));
+  assert.strictEqual(상태파일.length, 1,
+    `메인과 워크트리가 상태 파일을 ${상태파일.length}개로 갈랐다 — 그러면 두 세션은 서로의 존재조차 모른다(실측 cec367f48f vs 1fc2df68ae): ${상태파일.join(', ')}`);
+
+  /* 🔑 하위 호환도 같은 무게로 못 박는다. 메인에서의 키가 **옛 값 그대로**여야
+   *   `tools/작업본소유자.js` 가 이 훅의 상태 파일을 계속 읽는다(오늘 조율한 계약). */
+  const store = libIn('handoff-store.js');
+  assert.strictEqual(상태파일[0], `track-${store.projectKey(dir)}-sess-A.json`,
+    '메인 키가 바뀌었다 — 작업본소유자가 이 훅의 상태 파일을 못 찾게 된다(계약 파기)');
+});
+
+test('🔑 공통 `.git` 을 **git 없이** 푼다 — 매 편집마다 도는 자리라 spawn 이 곧 비용이다', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  커밋(dir, 'docs/정본/엔진_시험.js', 'a', 'init', 'sess-A');
+  const wtDir = 워크트리붙이기(dir, '옆트리', 'peer-branch');
+  if (!wtDir) return t.skip('git worktree 를 못 만들었다');
+
+  /* git 을 못 찾는 자식에서 물어본다. fs 분기가 죽어 있으면 폴백(spawn)도 실패해 null 이 나온다.
+   * 실측: git 한 번이 68ms 였고 fs 로는 0.01ms 다 — 편집 100번이면 7초 대 1ms. */
+  const 코드 = `const wt=require(${JSON.stringify(path.join(path.dirname(HOOK), 'lib', 'worktrees.js').replace(/\\/g, '/'))});`
+    + `process.stdout.write(JSON.stringify([wt.gitCommonDir(process.argv[1]),wt.gitCommonDir(process.argv[2]),wt.anyOthers(process.argv[2])]));`;
+  const r = spawnSync(process.execPath, ['-e', 코드, dir, wtDir], {
+    encoding: 'utf8', env: { PATH: '', SystemRoot: process.env.SystemRoot || '' },
+  });
+  assert.strictEqual(r.status, 0, `자식이 죽었다: ${r.stderr}`);
+  const [메인공통, 워크공통, 있나others] = JSON.parse(r.stdout);
+  assert.ok(메인공통, 'git 없이 메인의 공통 .git 을 못 풀었다');
+  assert.strictEqual(워크공통, 메인공통,
+    'git 없이 워크트리의 `.git` **파일**(gitdir: …)을 못 풀었다 — 워크트리 세션만 조용히 눈이 먼다');
+  assert.strictEqual(있나others, true, 'git 없이 워크트리 존재를 못 봤다');
+});
+
+test('커밋 충돌과 워크트리 충돌이 같이 있으면 **둘 다** 낸다 (하나를 삼키면 그게 사각지대다)', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  const 상태 = 상태폴더();
+  const 내파일 = 'docs/정본/엔진_시험.js';
+  const 남파일 = 'docs/정본/다른것.js';
+  커밋(dir, 내파일, 'a', 'init', 'sess-A');
+  커밋(dir, 남파일, 'a', 'init2', 'sess-A');
+  훅(dir, { file: 내파일, sid: 'sess-A', stateDir: 상태 });   // 기준점 + 내가 만졌다고 기록
+  훅(dir, { file: 남파일, sid: 'sess-A', stateDir: 상태 });
+  커밋(dir, 남파일, 'b', '남의 커밋', 'sess-B');               // ① 커밋 충돌 재료
+
+  const wtDir = 워크트리붙이기(dir, '옆트리', 'peer-branch');
+  if (!wtDir) return t.skip('git worktree 를 못 만들었다');
+  fs.writeFileSync(path.join(wtDir, 내파일), '옆 트리가 고치는 중'); // ② 워크트리 충돌 재료
+
+  const r = 훅(dir, { file: 내파일, sid: 'sess-A', stateDir: 상태 });
+  assert.equal(r.조용, false, '둘 다 있는데 조용했다');
+  assert.match(r.본문, /남의 커밋 \D*\d+건\D*이 내 자리에 착지했다/, '커밋 신호가 사라졌다');
+  assert.match(r.본문, /다른 작업 트리가 지금 미커밋으로 들고 있다/, '워크트리 신호가 사라졌다');
+  assert.match(r.요약, /착지했다[\s\S]*미커밋으로 들고 있다/, '요약 한 줄이 둘 중 하나만 말한다');
+});
+
+test('🔴 **내가 먼저 만진 뒤** 남이 잡아도 알린다 — 이 순서가 F079 의 실제 모양이었다', (t) => {
+  if (!있나) return t.skip('git 없음');
+  /* 처음엔 스로틀을 「처음 만지는 파일일 때만 검사」 하나로 뒀는데, 그러면 이 순서를 통째로 놓친다.
+   * 양쪽이 각자 먼저 손대고 **나중에** 겹치는 게 실제 사고 모양이라, 놓치는 방향이 곧 사각지대다.
+   * 그래서 스로틀을 둘로 갈랐다 — 검사는 시간으로, 알림은 파일당 1회. */
+  const dir = 픽스처저장소();
+  const 상태 = 상태폴더();
+  const 시험파일 = 'docs/정본/엔진_시험.js';
+  커밋(dir, 시험파일, 'a', 'init', 'sess-A');
+
+  const wtDir = 워크트리붙이기(dir, '옆트리', 'peer-branch');
+  if (!wtDir) return t.skip('git worktree 를 못 만들었다');
+
+  // ① 내가 먼저 만진다 — 이때 옆 트리는 아직 깨끗하다
+  assert.equal(훅(dir, { file: 시험파일, sid: 'sess-A', stateDir: 상태 }).조용, true, '아직 아무도 안 잡았는데 알렸다');
+  // ② 그 **뒤에** 옆 트리가 같은 파일을 잡는다
+  fs.writeFileSync(path.join(wtDir, 시험파일), '옆 트리가 나중에 고치기 시작');
+  // ③ 내가 다시 만진다 — 여기서 알려야 한다(검사 스로틀은 시간이지 「처음」이 아니다)
+  const r = 훅(dir, { file: 시험파일, sid: 'sess-A', stateDir: 상태 });
+  assert.equal(r.조용, false, '먼저 만졌다는 이유로 영영 안 보게 됐다 — F079 를 그대로 놓치는 자리다');
+  assert.match(r.본문, /다른 작업 트리가 지금 미커밋으로 들고 있다/);
+});
+
+test('비용 스로틀이 실제로 억제한다 — 주기 안에서는 다시 묻지 않는다', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  const 상태 = 상태폴더();
+  const 시험파일 = 'docs/정본/엔진_시험.js';
+  커밋(dir, 시험파일, 'a', 'init', 'sess-A');
+  const wtDir = 워크트리붙이기(dir, '옆트리', 'peer-branch');
+  if (!wtDir) return t.skip('git worktree 를 못 만들었다');
+
+  훅(dir, { file: 시험파일, sid: 'sess-A', stateDir: 상태, dirtyMs: 600000 });  // 1회차: 깨끗
+  fs.writeFileSync(path.join(wtDir, 시험파일), '이제 잡았다');                   // 그 뒤 더러워짐
+  assert.equal(훅(dir, { file: 시험파일, sid: 'sess-A', stateDir: 상태, dirtyMs: 600000 }).조용, true,
+    '주기 안인데 다시 물었다 — 스로틀이 안 걸리면 편집마다 327ms 를 태운다');
+});
+
+test('🔑 워크트리가 없으면 비싼 검사를 아예 안 한다 (fs 로 먼저 거른다)', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const wt = libIn('worktrees.js');
+  const dir = 픽스처저장소();
+  커밋(dir, 'docs/정본/엔진_시험.js', 'a', 'init', 'sess-A');
+  assert.strictEqual(wt.anyOthers(dir), false, '워크트리가 없는데 있다고 했다 — 그러면 매번 git 을 부른다');
+  assert.deepStrictEqual(wt.othersDirty(dir), [], '빠른 경로가 빈 배열을 안 냈다');
+
+  const wtDir = 워크트리붙이기(dir, '옆트리', 'peer-branch');
+  if (!wtDir) return t.skip('git worktree 를 못 만들었다');
+  assert.strictEqual(wt.anyOthers(dir), true, '워크트리가 생겼는데 못 봤다 — 여기서 놓치면 전부 놓친다');
+  /* 🔑 **워크트리 쪽에서 물어도** 같은 답이어야 한다. `.git` 이 디렉터리가 아니라
+   *   `gitdir: …` 한 줄짜리 파일이라, 그 분기를 안 다루면 워크트리 세션만 조용히 눈이 먼다. */
+  assert.strictEqual(wt.anyOthers(wtDir), true, '워크트리 안에서 물었더니 못 봤다(.git 파일 분기)');
+  assert.strictEqual(wt.gitCommonDir(wtDir), wt.gitCommonDir(dir), '같은 저장소인데 공통 .git 이 갈렸다');
+});
+
+test('검사 시각을 저장한다 — 안 쓰면 스로틀이 조용히 죽어 매 편집마다 git 을 부른다', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  const 상태 = 상태폴더();
+  const 시험파일 = 'docs/정본/엔진_시험.js';
+  커밋(dir, 시험파일, 'a', 'init', 'sess-A');
+  워크트리붙이기(dir, '옆트리', 'peer-branch');   // 깨끗한 트리 — 경고는 안 나온다
+  훅(dir, { file: 시험파일, sid: 'sess-A', stateDir: 상태 });
+  훅(dir, { file: 시험파일, sid: 'sess-A', stateDir: 상태 });
+
+  const 파일들 = fs.readdirSync(상태).filter((f) => f.startsWith('track-'));
+  assert.ok(파일들.length, '상태 파일이 없다');
+  const j = JSON.parse(fs.readFileSync(path.join(상태, 파일들[0]), 'utf8'));
+  assert.ok(j.dirtyChecked && Number(j.dirtyChecked[시험파일]) > 0,
+    '검사 시각이 상태에 안 남았다 — 경고가 안 나온 경우에도 남겨야 스로틀이 산다');
 });

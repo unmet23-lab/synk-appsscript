@@ -36,6 +36,7 @@ const { spawnSync } = require('child_process');
 const ROOT = process.env.SYNK_TRACK_ROOT || path.resolve(__dirname, '..', '..');
 const 보드 = path.join(ROOT, 'docs', '세션보드.md');
 const store = require(path.join(__dirname, 'lib', 'handoff-store.js'));
+const wt = require(path.join(__dirname, 'lib', 'worktrees.js'));
 
 /** 실패를 null 로 돌려주는 git — 이 훅은 편의지 안전장치가 아니다. git 사정으로 작업을 세우지 않는다.
  *
@@ -63,7 +64,12 @@ if (!/^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool)) process.exit(0);
  * 내부 에이전트 id 로 대조하면 내 커밋을 하나도 못 알아보고, 그러면 내 커밋마다 나를 경고한다. */
 const 내세션 = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || input.session_id || '').trim();
 
-const 상태경로 = path.join(store.stateDir(), `track-${store.projectKey(ROOT)}-${store.safeId(내세션)}.json`);
+/* 🔑 상태 파일 키는 cwd 가 아니라 **메인 작업 트리**로 잡는다 (F079).
+ *   cwd 해시로 잡으면 워크트리 세션이 다른 키를 받아(실측 `cec367f48f` vs `1fc2df68ae`)
+ *   메인 세션과 **서로의 존재를 아예 못 본다** — 감지기를 아무리 고쳐도 재료가 갈라져 있다.
+ *   메인에서 부르면 값이 지금까지와 완전히 같으므로, 작업본소유자가 이 파일을 읽는 계약도
+ *   그대로다(넓히기만 하고 되돌리지 않는 변경). */
+const 상태경로 = path.join(store.stateDir(), `track-${store.projectKey(wt.mainWorktree(ROOT))}-${store.safeId(내세션)}.json`);
 function 상태읽기() {
   try {
     const j = JSON.parse(fs.readFileSync(상태경로, 'utf8'));
@@ -96,12 +102,78 @@ const 이전 = 상태읽기();
 const 만진목록 = new Set((이전 && 이전.touched) || []);
 if (이번파일) 만진목록.add(이번파일);
 
+/* ── 신호 ④ 다른 작업 트리가 **지금 들고 있는 미커밋** (F079) ─────────────────
+ * 위 ①~③ 은 전부 커밋을 본다. 그런데 F079 실사고에서 상대는 **커밋을 안 한 상태**였다 —
+ * 워크트리에 살아있는 편집으로 들고 있었고, 그건 메인의 `git status` 에도 `master` 로그에도
+ * 안 나온다. 감지 장치가 셋이나 있었는데 셋 다 못 본 이유다.
+ *
+ * ⚠ 스로틀이 **둘**이고, 섞으면 안 된다. 처음엔 「처음 만지는 파일일 때만」 하나로 뒀는데
+ *   그게 F079 를 그대로 놓친다: 내가 A 를 만진 **뒤에** 남이 A 를 잡기 시작하면 영영 안 본다.
+ *   실제 사고 순서가 그 모양이었다(양쪽이 각자 먼저 손대고 나중에 겹쳤다).
+ *     · **검사** 스로틀 = 파일별 시간(비용 억제) — 지났으면 다시 묻는다
+ *     · **알림** 스로틀 = 파일별 1회(잔소리 억제) — 한 번 말했으면 끝
+ *   작업 트리가 자기 하나뿐이면 `worktree list` 한 번으로 끝난다(대부분의 세션이 여기다). */
+/* 재검사 주기. 짧게 잡을 수 있는 이유는 `worktrees.anyOthers()` 가 fs 로 먼저 걸러서
+ * **워크트리를 안 쓰는 세션은 아예 비용이 없기** 때문이다(실측: 트리 5개 327ms vs 없으면 <1ms).
+ * 주기를 늘려 비용을 아끼는 쪽은 그만큼 **못 보는 창**을 만들고, 그 창이 곧 F079 다.
+ * 이음매는 테스트 격리 전용 — 로직을 끄지 않고 시계만 바꾼다(SYNK_OWNER_ALIVE_MIN 과 같은 패턴). */
+const 재검사주기 = Number(process.env.SYNK_TRACK_DIRTY_MS ?? 20000);
+const 알린더러움 = new Set((이전 && 이전.warnedDirty) || []);
+const 검사시각 = { ...((이전 && 이전.dirtyChecked) || {}) };
+let 워크트리경고 = null;
+let 이번에검사함 = false;
+if (이번파일 && !알린더러움.has(이번파일) && Date.now() - Number(검사시각[이번파일] || 0) > 재검사주기) {
+  검사시각[이번파일] = Date.now();
+  이번에검사함 = true;   // 🔑 검사 시각을 **반드시 저장해야** 스로틀이 산다(안 쓰면 매번 다시 돈다)
+  const 남들 = wt.othersDirty(ROOT);
+  const 걸린것 = (남들 || []).filter((w) => w.files.includes(이번파일));
+  if (걸린것.length) {
+    워크트리경고 = { 파일: 이번파일, 트리: 걸린것 };
+    알린더러움.add(이번파일);
+  }
+}
+// 만진 적 없는 파일의 검사 기록은 버린다 — 상태 파일이 무한히 자라지 않게.
+for (const k of Object.keys(검사시각)) if (!만진목록.has(k)) delete 검사시각[k];
+
+/** 훅의 유일한 출구. 낼 것이 없으면 조용히 끝낸다 — 이 훅은 **절대 차단하지 않는다**. */
+function 내보내기(본문들, 요약) {
+  const 있는것 = 본문들.filter(Boolean);
+  if (있는것.length) {
+    process.stdout.write(JSON.stringify({
+      systemMessage: 요약,
+      hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: 있는것.join('\n\n───\n\n') },
+    }));
+  }
+  process.exit(0);
+}
+
+function 워크트리본문() {
+  if (!워크트리경고) return null;
+  const 줄 = 워크트리경고.트리.map((w) => {
+    const 이름 = path.basename(w.path);
+    const 가지 = w.branch ? ` · ${w.branch}` : '';
+    return `  · ${이름}${가지}\n      ${w.path}\n      미커밋 ${w.files.length}건 — 그중 내 파일: ${워크트리경고.파일}`;
+  });
+  return `[track-collision] 내가 만지려는 \`${워크트리경고.파일}\` 을 **다른 작업 트리가 지금 미커밋으로 들고 있다.**\n`
+    + `${줄.join('\n')}\n\n`
+    + '왜 알리나: 커밋이 아니라 **살아있는 편집**이라 `git log` 에도 메인 `git status` 에도 안 나온다.\n'
+    + 'F079 실사고 — 세션 둘이 같은 시각 같은 파일 둘을 각자 고쳤는데 감지 장치 셋이 전부 못 봤다.\n\n'
+    + '→ 계속하기 전에:\n'
+    + '   1) 같은 트랙이면 **새로 짓지 말고 물린다** — 저쪽이 먼저 커밋하면 내 것과 충돌하거나 덮인다.\n'
+    + '   2) 저쪽 작업본은 **건드리지 않는다**(F073: 내 편집이 남의 커밋에 실려 나간다).\n'
+    + '   3) 조율한 사실을 **커밋 메시지나 보드 줄에 1줄** 남긴다(메시지는 전달이 보장되지 않는다).';
+}
+const 워크트리요약 = 워크트리경고
+  ? `⚠ ${워크트리경고.파일} 을 다른 작업 트리가 미커밋으로 들고 있다 — ${워크트리경고.트리.map((w) => path.basename(w.path)).join(', ')}`
+  : '';
+
 /* 기준점(baseline) = **이 세션이 처음 이 훅을 부른 시점의 HEAD**.
  * 시계가 아니라 커밋 그래프로 잡는다 — 시각 비교는 시간대·클럭 어긋남에 물리고,
  * 이 저장소는 이미 시트 TZ 로 두 번 데였다(F062). */
 if (!이전 || !이전.baseline) {
-  상태쓰기({ baseline: HEAD, lastHead: HEAD, touched: [...만진목록], warned: [] });
-  process.exit(0); // 첫 호출엔 비교 대상이 없다
+  상태쓰기({ baseline: HEAD, lastHead: HEAD, touched: [...만진목록], warned: [], warnedDirty: [...알린더러움], dirtyChecked: 검사시각 });
+  // 커밋 비교 대상은 없지만 **워크트리 신호는 첫 호출에도 유효하다** — 시작하자마자 남의 자리를 밟을 수 있다.
+  내보내기([워크트리본문()], 워크트리요약);
 }
 
 const 기준 = String(이전.baseline);
@@ -109,10 +181,10 @@ const 알린것 = new Set(이전.warned || []);
 
 // HEAD 가 그대로면 새 커밋이 없다 — 가장 흔한 경우를 rev-parse 한 번으로 끝낸다.
 if (이전.lastHead === HEAD) {
-  if (이번파일 && !((이전.touched || []).includes(이번파일))) {
-    상태쓰기({ ...이전, touched: [...만진목록] });
+  if ((이번파일 && !((이전.touched || []).includes(이번파일))) || 이번에검사함) {
+    상태쓰기({ ...이전, touched: [...만진목록], warnedDirty: [...알린더러움], dirtyChecked: 검사시각 });
   }
-  process.exit(0);
+  내보내기([워크트리본문()], 워크트리요약);
 }
 
 /* 기준..HEAD. rebase·force-push 로 기준이 도달 불가가 되면 git 이 실패한다 —
@@ -125,8 +197,8 @@ if (이전.lastHead === HEAD) {
 const SEP = '';
 const 로그 = git(['log', `${기준}..HEAD`, '--no-merges', `--format=%H${SEP}%ct${SEP}%s${SEP}%(trailers:key=Session-Id,valueonly)`]);
 if (로그 === null) {
-  상태쓰기({ baseline: HEAD, lastHead: HEAD, touched: [...만진목록], warned: [] });
-  process.exit(0);
+  상태쓰기({ baseline: HEAD, lastHead: HEAD, touched: [...만진목록], warned: [], warnedDirty: [...알린더러움], dirtyChecked: 검사시각 });
+  내보내기([워크트리본문()], 워크트리요약);
 }
 
 const 새커밋 = 로그.split('\n').filter(Boolean).map((줄) => {
@@ -234,9 +306,11 @@ for (const c of 새커밋) {
   lastHead: HEAD,
   touched: [...만진목록],
   warned: [...new Set([...알린것, ...새커밋.map((c) => c.sha)])].slice(-200),
+  warnedDirty: [...알린더러움],
+  dirtyChecked: 검사시각,
 });
 
-if (!충돌.length) process.exit(0);
+if (!충돌.length) 내보내기([워크트리본문()], 워크트리요약);
 
 const 나이 = (ct) => {
   const 분 = Math.max(0, Math.round((Date.now() / 1000 - ct) / 60));
@@ -271,8 +345,9 @@ const 본문 =
   + '   2) 내 작업과 겹치면 조율은 실행 조율만(편집권·순서·인계). 방향·비가역 승인은 유호님 몫이다.\n'
   + '   3) 조율한 사실을 **커밋 메시지나 보드 줄에 1줄** 남긴다(메시지는 전달이 보장되지 않는다).';
 
-process.stdout.write(JSON.stringify({
-  systemMessage: `⚠ 남의 커밋 ${충돌.length}건이 내 자리에 착지했다 — ${충돌.map((c) => c.sha.slice(0, 7)).join(', ')}`,
-  hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: 본문 },
-}));
-process.exit(0);
+// 워크트리 신호가 함께 있으면 둘 다 낸다 — 하나를 삼키면 그게 곧 사각지대가 된다.
+내보내기(
+  [본문, 워크트리본문()],
+  `⚠ 남의 커밋 ${충돌.length}건이 내 자리에 착지했다 — ${충돌.map((c) => c.sha.slice(0, 7)).join(', ')}`
+  + (워크트리경고 ? ` · ${워크트리요약.replace(/^⚠ /, '')}` : ''),
+);
