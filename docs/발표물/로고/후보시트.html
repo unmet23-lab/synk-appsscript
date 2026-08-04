@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK 로고 — 브랜드 키트 적용 (확정 W5·W1 + 보조 라이브러리)</title>
+<!--
+  유호님이 준 로고 3종을 브랜드 키트 색으로 옮긴 것. 형태는 하나도 안 바꿨다.
+  ▶ 이미지가 아니라 벡터다. `syn<` = s·y·n·`<`, 심볼 = `~ ^ ^ <` 넉 자(= s·y·n·k).
+  ▶ 2026-08-04 유호님 확정: **메인 = W5(축약) + W1(풀)**. 나머지는 보조 라이브러리.
+  ▶ 🔑 도형은 <defs> 에 **한 번만** 정의하고 <use> 로 꺼내 쓴다.
+     처음엔 카드마다 path 를 복붙했는데, 심볼 간격을 넓히자 락업 두 개가 조용히 깨졌다
+     (좌표를 한 곳만 고쳤으니까). 복붙이 원인이었으므로 원인을 없앴다.
+-->
+<style>
+:root{
+  --blue:#3D5AFE; --orange:#FF6D00; --gold:#FFC400;
+  --paper:#FDFCF8; --ink:#1A237E; --midnight:#0B1A2E;
+  --hair:rgba(26,35,126,.2); --mute:#6C74A8;
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{
+  background:#DFE3EE; color:var(--ink); padding:10mm 8mm 20mm;
+  font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic',sans-serif; font-weight:500;
+}
+.wrap{ max-width:1180px; margin:0 auto; }
+h1{ font-size:8.4mm; font-weight:800; letter-spacing:-.025em; }
+.sub{ font-size:3.6mm; color:#4A5286; margin-top:2.4mm; line-height:1.6; max-width:215mm; }
+h2{ font-size:5.2mm; font-weight:800; margin-top:14mm; padding-bottom:2.2mm; border-bottom:.7mm solid var(--blue); }
+h2 span{ font-size:3.2mm; font-weight:500; color:var(--mute); margin-left:3mm; }
+
+.grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:6mm; margin-top:6mm; }
+.c{ border-radius:3mm; overflow:hidden; border:.4mm solid var(--hair); background:#fff; }
+.c.main{ border:.9mm solid var(--orange); box-shadow:0 1mm 5mm rgba(255,109,0,.18); }
+.c .stage{ padding:8mm 6mm; display:flex; align-items:center; justify-content:center; min-height:48mm; }
+.c .stage.d{ background:var(--midnight); }
+.c .stage.l{ background:var(--paper); }
+.c .stage.g{ background:#E9E7E0; }
+.c .cap{ padding:3.4mm 4.4mm 4.4mm; border-top:.3mm solid var(--hair); }
+.c .cap .id{
+  display:inline-block; font-family:ui-monospace,monospace; font-size:2.9mm; font-weight:800;
+  background:var(--ink); color:#fff; padding:.8mm 2.4mm; border-radius:1.4mm; letter-spacing:.06em;
+}
+.c .cap .id.rec{ background:var(--orange); }
+.c .cap .t{ font-size:3.5mm; font-weight:800; margin-top:2.2mm; }
+.c .cap .d{ font-size:2.9mm; color:#4A5286; margin-top:1.4mm; line-height:1.5; }
+.c .cap .m{ font-size:2.7mm; color:var(--mute); margin-top:1.4mm; font-family:ui-monospace,monospace; }
+
+table{ width:100%; border-collapse:collapse; margin-top:5mm; font-size:3.2mm; background:#fff; border-radius:2mm; overflow:hidden; }
+th,td{ text-align:left; padding:2.6mm 3.4mm; border-bottom:.3mm solid var(--hair); }
+th{ font-size:2.8mm; color:var(--mute); font-weight:800; letter-spacing:.06em; }
+td.n{ text-align:right; font-family:ui-monospace,monospace; }
+.ok{ color:#0A7A3D; font-weight:800; } .bad{ color:#C0281E; font-weight:800; }
+
+.note{ margin-top:7mm; border-left:1.1mm solid var(--orange); padding:3.4mm 0 3.4mm 5mm; font-size:3.3mm; line-height:1.65; color:#4A4133; }
+.note.b{ border-left-color:var(--blue); }
+.note b{ color:var(--ink); font-weight:800; }
+code{ font-family:ui-monospace,monospace; background:rgba(26,35,126,.07); padding:.3mm 1.2mm; border-radius:1mm; }
+.hidden{ position:absolute; width:0; height:0; overflow:hidden; }
+</style>
+</head>
+<body>
+
+<!-- ══════════ 도형 정본 — 여기만 고치면 전부 따라온다 ══════════
+     좌표계: 워드마크 0 0 300 110 · 심볼 0 0 240 110 (둘 다 아래쪽 여유 포함)
+     'syn' 은 서체 조판, 나머지는 순수 도형이라 폰트가 없어도 안 깨진다. -->
+<svg class="hidden" aria-hidden="true">
+  <defs>
+    <!-- 심볼 ~ ^ ^ <  (= s · y · n · k) · 간격 균등, 마지막 글자 앞만 살짝 넓게 -->
+    <g id="sym" fill="none" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter">
+      <path d="M10 62 C17 50, 29 50, 36 60 C41 67, 48 67, 52 58"/>
+      <path d="M68 68 L88 34 L108 68"/>
+      <path d="M124 68 L144 34 L164 68"/>
+      <path d="M228 22 L186 52 L228 82"/>
+    </g>
+    <!-- 워드마크 조각 — 기준선 y=86, 글자 크기 72 -->
+    <text id="syn" x="0" y="86" font-family="Inter Tight, system-ui, sans-serif"
+          font-size="72" font-weight="600" letter-spacing="-1">syn</text>
+    <path id="chev" d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z"/>
+    <g id="slash">
+      <path d="M196 92 L216 40 L228 40 L208 92 Z"/>
+      <path d="M234 92 L254 40 L266 40 L246 92 Z"/>
+    </g>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <h1>SYNK 로고 — 브랜드 키트 적용</h1>
+  <div class="sub">
+    유호님이 준 3종을 <b>형태 그대로</b> 두고 색과 조합만 바꿨습니다. 이미지가 아니라 벡터입니다 —
+    <code>syn&lt;</code>는 s·y·n·<code>&lt;</code>, 심볼은 <code>~ ^ ^ &lt;</code> 넉 자(= s·y·n·k)라 전부 도형으로 성립합니다.<br>
+    <b>2026-08-04 확정 — 메인은 W5(축약)와 W1(풀).</b> 나머지는 자리에 맞춰 꺼내 쓰는 보조 라이브러리입니다.
+  </div>
+
+  <!-- ══════════ 워드마크 ══════════ -->
+  <h2>워드마크 <span>W1~W6 · <code>syn&lt;</code></span></h2>
+  <div class="grid">
+
+    <div class="c main">
+      <div class="stage d">
+        <svg width="230" height="84" viewBox="-8 -2 181 116">
+          <use href="#syn" fill="#FDFCF8"/><use href="#chev" fill="#FF6D00"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id rec">W5 · 메인</span>
+        <div class="t">축약형 <code>syn&lt;</code> — 유호님 확정 1순위</div>
+        <div class="d">가장 깔끔하고 가장 넓게 쓰입니다. 머리 띠·명함·앱 상단·도장 — 가로가 좁은 자리는 전부 이걸로.</div>
+        <div class="m">가로:세로 1.5:1</div>
+      </div>
+    </div>
+
+    <div class="c main">
+      <div class="stage d">
+        <svg width="300" height="110" viewBox="-8 -2 296 116">
+          <use href="#syn" fill="#FDFCF8"/><use href="#chev" fill="#FF6D00"/><use href="#slash" fill="#FFC400"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id rec">W1 · 메인(풀)</span>
+        <div class="t">어두운 바탕 · <code>&lt;</code> 오렌지 + <code>//</code> 골드</div>
+        <div class="d">가로가 넉넉한 자리(표지·배너·간지)용. 원본의 빨강·초록이 하던 강한 분리를 브랜드 색으로 옮긴 것입니다.</div>
+        <div class="m">골드/미드나잇 10.94:1</div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="stage l">
+        <svg width="300" height="110" viewBox="-8 -2 296 116">
+          <use href="#syn" fill="#1A237E"/><use href="#chev" fill="#FF6D00"/><use href="#slash" fill="#3D5AFE"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id">W3 · W1의 밝은 바탕 짝</span>
+        <div class="t">밝은 바탕 · <code>//</code> 블루</div>
+        <div class="d">골드는 웜 화이트 위에서 안 보이므로 밝은 바탕에선 블루로 바꿉니다. W1을 밝은 종이에 쓸 땐 자동으로 이것.</div>
+        <div class="m">블루/웜화이트 5.00:1</div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="stage l">
+        <svg width="230" height="84" viewBox="-8 -2 181 116">
+          <use href="#syn" fill="#1A237E"/><use href="#chev" fill="#FF6D00"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id">W5-L · W5의 밝은 바탕 짝</span>
+        <div class="t">축약형 · 밝은 바탕</div>
+        <div class="d"><code>&lt;</code>는 오렌지 그대로입니다 — 양쪽 바탕에서 다 살아남는 유일한 강조색이라 배경을 안 탑니다.</div>
+        <div class="m">오렌지/웜화이트 2.75:1</div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="stage d">
+        <svg width="300" height="110" viewBox="-8 -2 296 116">
+          <use href="#syn" fill="#FDFCF8"/><use href="#chev" fill="#FF6D00"/><use href="#slash" fill="#3D5AFE"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id">W2 · 보류</span>
+        <div class="t">어두운 바탕 · <code>//</code> 블루</div>
+        <div class="d">주조색이라 논리적이지만 미드나잇이 이미 짙은 남색이라 묻힙니다. 작게 찍으면 사라집니다.</div>
+        <div class="m">블루/미드나잇 3.41:1 ✗</div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="stage g">
+        <svg width="300" height="110" viewBox="-8 -2 296 116">
+          <use href="#syn" fill="#111"/><use href="#chev" fill="#111"/><use href="#slash" fill="#555"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id">W6 · 필수 보조</span>
+        <div class="t">1도 흑백 — 복사·팩스·도장용</div>
+        <div class="d">고를 대상이 아니라 <b>반드시 함께 있어야 하는 판</b>입니다. 몽골 현지 재복사를 전제하니까요.</div>
+        <div class="m">색 정보 의존 0</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════ 심볼 ══════════ -->
+  <h2>심볼 <span>S1~S4 · <code>~ ^ ^ &lt;</code> = s·y·n·k</span></h2>
+  <div class="grid">
+
+    <div class="c">
+      <div class="stage d">
+        <svg width="272" height="112" viewBox="0 0 240 110"><use href="#sym" stroke="#FDFCF8"/></svg>
+      </div>
+      <div class="cap">
+        <span class="id rec">S1 · 어두운 바탕 기본</span>
+        <div class="t">단색 — 원본 그대로</div>
+        <div class="d">도장·앱 아이콘·워터마크처럼 작게 쓰는 자리는 단색이 정답입니다. 어디에 얹어도 안 깨집니다.</div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="stage l">
+        <svg width="272" height="112" viewBox="0 0 240 110"><use href="#sym" stroke="#1A237E"/></svg>
+      </div>
+      <div class="cap">
+        <span class="id rec">S4 · 밝은 바탕 기본</span>
+        <div class="t">단색 딥 네이비 — S1의 짝</div>
+        <div class="d">순검정 대신 잉크색을 씁니다(키트 규칙).</div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="stage d">
+        <svg width="272" height="112" viewBox="0 0 240 110">
+          <g fill="none" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter">
+            <path d="M10 62 C17 50, 29 50, 36 60 C41 67, 48 67, 52 58" stroke="#FDFCF8"/>
+            <path d="M68 68 L88 34 L108 68" stroke="#FDFCF8"/>
+            <path d="M124 68 L144 34 L164 68" stroke="#FDFCF8"/>
+            <path d="M228 22 L186 52 L228 82" stroke="#FF6D00"/>
+          </g>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id">S2</span>
+        <div class="t">마지막 <code>&lt;</code>만 오렌지</div>
+        <div class="d">워드마크와 같은 규칙(<code>&lt;</code>=신호색)이라 둘이 한 가족으로 읽힙니다. 큰 자리에서만.</div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="stage d">
+        <svg width="272" height="112" viewBox="0 0 240 110">
+          <g fill="none" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter">
+            <path d="M10 62 C17 50, 29 50, 36 60 C41 67, 48 67, 52 58" stroke="#FFC400"/>
+            <path d="M68 68 L88 34 L108 68" stroke="#FDFCF8"/>
+            <path d="M124 68 L144 34 L164 68" stroke="#FDFCF8"/>
+            <path d="M228 22 L186 52 L228 82" stroke="#FF6D00"/>
+          </g>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id">S3</span>
+        <div class="t">3색 — 시작(골드)과 끝(오렌지)</div>
+        <div class="d">화려하지만 작게 줄이면 색이 서로를 먹습니다. 대형 사인·배너 한정.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════ 락업 ══════════ -->
+  <h2>락업 <span>L1~L3 · 심볼 + 워드마크 조합</span></h2>
+  <div class="grid">
+
+    <div class="c">
+      <div class="stage d">
+        <svg width="330" height="70" viewBox="0 0 470 100">
+          <g transform="translate(0,8) scale(0.62)"><use href="#sym" stroke="#FDFCF8"/></g>
+          <line x1="172" y1="18" x2="172" y2="78" stroke="rgba(253,252,248,.3)" stroke-width="2"/>
+          <g transform="translate(196,4) scale(0.72)">
+            <use href="#syn" fill="#FDFCF8"/><use href="#chev" fill="#FF6D00"/>
+          </g>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id">L1</span>
+        <div class="t">가로 락업 — 심볼 · 구분선 · <code>syn&lt;</code></div>
+        <div class="d">간판·배너·이메일 서명처럼 가로로 긴 자리. 심볼이 브랜드를 세우고 워드마크가 이름을 말합니다.</div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="stage d">
+        <svg width="230" height="140" viewBox="0 0 240 200">
+          <g transform="translate(0,10) scale(1)"><use href="#sym" stroke="#FDFCF8"/></g>
+          <g transform="translate(44,96) scale(0.66)">
+            <use href="#syn" fill="#FDFCF8"/><use href="#chev" fill="#FF6D00"/>
+          </g>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id">L2</span>
+        <div class="t">세로 락업 — 심볼 위, 이름 아래</div>
+        <div class="d">정사각에 가까운 자리(간판 상단·포스터·프로필 이미지).</div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="stage d">
+        <svg width="330" height="76" viewBox="0 0 430 100">
+          <g transform="translate(0,8) scale(0.66)">
+            <use href="#syn" fill="#FDFCF8"/><use href="#chev" fill="#FF6D00"/>
+          </g>
+          <text x="200" y="46" font-family="Inter Tight, system-ui, sans-serif" font-size="17" font-weight="700" letter-spacing="4.4" fill="#FFC400">SYNK LAB</text>
+          <text x="200" y="70" font-family="Inter Tight, SUIT Variable, system-ui, sans-serif" font-size="15" font-weight="500" fill="#B9C2E0">점수를 넘어, 삶을 설계합니다</text>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id rec">L3 · 인쇄물 머리 띠</span>
+        <div class="t">W5 + 사업체명 + 슬로건</div>
+        <div class="d">발표물 4종의 머리 띠가 쓰는 자리입니다. 메인 W5를 그대로 얹었습니다.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════ 근거 ══════════ -->
+  <h2>대비 실측 <span>색 배정의 근거 — 눈이 아니라 계산</span></h2>
+  <table>
+    <tr><th>요소</th><th>바탕</th><th class="n">대비비</th><th>판정</th></tr>
+    <tr><td>크라운 골드 #FFC400</td><td>미드나잇 #0B1A2E</td><td class="n" id="c1">—</td><td class="ok">최선</td></tr>
+    <tr><td>루미너스 블루 #3D5AFE</td><td>미드나잇 #0B1A2E</td><td class="n" id="c2">—</td><td class="bad">묻힘</td></tr>
+    <tr><td>루미너스 블루 #3D5AFE</td><td>웜 화이트 #FDFCF8</td><td class="n" id="c3">—</td><td class="ok">최선</td></tr>
+    <tr><td>크라운 골드 #FFC400</td><td>웜 화이트 #FDFCF8</td><td class="n" id="c4">—</td><td class="bad">사라짐</td></tr>
+    <tr><td>에너지 오렌지 #FF6D00</td><td>미드나잇 #0B1A2E</td><td class="n" id="c5">—</td><td class="ok">양쪽 통과</td></tr>
+    <tr><td>에너지 오렌지 #FF6D00</td><td>웜 화이트 #FDFCF8</td><td class="n" id="c6">—</td><td class="ok">양쪽 통과</td></tr>
+  </table>
+
+  <div class="note">
+    <b>규칙은 두 줄입니다.</b><br>
+    ① <code>&lt;</code>는 <b>언제나 에너지 오렌지</b> — 양쪽 바탕에서 다 살아남는 유일한 강조색이라 배경을 안 탑니다.<br>
+    ② <code>//</code>는 <b>바탕을 따라갑니다</b> — 어두우면 골드(W1), 밝으면 블루(W3). 한 색으로 통일하면 둘 중 한 배경에서 반드시 사라집니다.<br>
+    <b>흑백 대비</b> — 색이 다 빠져도 <code>syn</code>·<code>&lt;</code>·<code>//</code>의 형태만으로 성립합니다. 색은 강조일 뿐 정보가 아닙니다(W6).
+  </div>
+
+  <div class="note b">
+    <b>서체 정본과의 충돌 1건.</b>
+    브랜드 폰트 정본은 「워드마크 = DM Mono」로 잠겨 있는데, 유호님이 준 실제 로고는 <b>모노스페이스가 아니라 그로테스크</b>입니다.
+    실물 로고가 규칙보다 뒤에 나왔으니 <b>로고가 이깁니다.</b> 라틴 담당 브랜드 서체 <b>Inter Tight</b>로 조판했습니다.<br>
+    ⚠ <b>더 나은 길</b> — 원본 벡터 파일(.ai/.svg)이 있으면 그게 가장 정확합니다. 지금 <code>syn</code>은 서체로 조판한 것이라
+    Inter Tight가 없는 기기에서는 자형이 미세하게 달라집니다. <code>&lt;</code>·<code>//</code>·심볼은 순수 도형이라 이 문제가 없습니다.
+  </div>
+
+</div>
+
+<script>
+// 대비비는 눈으로 판정하지 않는다 — WCAG 상대휘도로 계산해 표에 박는다.
+(function(){
+  const lin = c => { c/=255; return c <= .03928 ? c/12.92 : Math.pow((c+.055)/1.055, 2.4); };
+  const lum = hex => { const n = parseInt(hex.slice(1),16);
+    return .2126*lin((n>>16)&255) + .7152*lin((n>>8)&255) + .0722*lin(n&255); };
+  const ratio = (a,b) => { const l1=lum(a), l2=lum(b); const [hi,lo]=l1>l2?[l1,l2]:[l2,l1]; return (hi+.05)/(lo+.05); };
+  [['c1','#FFC400','#0B1A2E'],['c2','#3D5AFE','#0B1A2E'],['c3','#3D5AFE','#FDFCF8'],
+   ['c4','#FFC400','#FDFCF8'],['c5','#FF6D00','#0B1A2E'],['c6','#FF6D00','#FDFCF8']]
+  .forEach(([id,f,b]) => document.getElementById(id).textContent = ratio(f,b).toFixed(2) + ' : 1');
+})();
+</script>
+</body>
+</html>
