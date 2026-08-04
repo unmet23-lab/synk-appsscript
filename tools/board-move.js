@@ -19,14 +19,20 @@
  *   ③ **아카이브를 먼저 쓰고, 다시 읽어 확인한 뒤에 보드에서 지운다.**
  *      순서가 핵심이다 — 중간에 죽으면 결과는 「양쪽에 다 있음」(눈에 보이고 무해)이지
  *      「어디에도 없음」(조용하고 영구)이 아니다. 유실 대신 중복으로 실패하게 만든다.
- *   ④ **쓰고 나서 스스로 커밋한다**(마찰 F102, 2026-08-05 실사고).
- *      ③의 「유실 대신 중복」 보장은 **단일 세션 전제**였다. 두 파일을 미커밋으로 두면
- *      보드 삭제는 **남의 커밋에 실려 나가고**(F073 형태) 아카이브 추가는 내 미커밋에만
- *      남아, 옮긴 줄이 **커밋된 어느 파일에도 없는** 창이 열린다 — 파일시스템은 중복인데
- *      git 은 유실이다. 커밋을 호출자에게 맡기면 잊는 자리라(그게 F102 였다) 통로에 묶는다.
+ *   ④ **③을 파일 층에서 git 층으로 올린다**(마찰 F102, 2026-08-05 실사고).
+ *      ③의 「유실 대신 중복」 보장은 **단일 세션 전제**였다. 이 저장소의 보장 경계는
+ *      파일시스템이 아니라 **커밋**이라, 두 파일이 미커밋이면 보드 삭제만 **남의 커밋에
+ *      실려 나가고**(F073) 아카이브 추가는 내 미커밋에 남아 — 파일시스템은 중복인데
+ *      git 은 유실이다. 그래서 순서를 이렇게 못박는다:
+ *        아카이브 쓰기 → **아카이브만 단독 커밋** → 확인 → 그 **뒤에야** 보드에서 지운다.
+ *      보드 삭제를 작업본에 쓰는 것 자체가 위험한 행위다(그 순간부터 남이 실어갈 수 있다).
+ *   ⑤ **보드는 깨끗할 때만 커밋한다.** `세션보드.md` 는 상시 여러 세션이 더럽히고
+ *      (실측 08-05 01:04: 한 순간에 6개 세션) 자동 커밋이 곧 **남의 선언 수거**가 된다.
+ *      안 해도 안전하다 — 아카이브가 이미 커밋됐으니 최악은 눈에 보이는 중복이다.
+ *      아카이브가 더러우면 아예 **아무것도 쓰지 않고** 멈춘다(줄은 보드에 그대로).
  *
  * 사용:
- *   node tools/board-move.js "friction.js 채번 락"     # 이관 + 두 파일 즉시 커밋
+ *   node tools/board-move.js "friction.js 채번 락"     # 이관 + 커밋(아카이브 먼저)
  *   node tools/board-move.js "..." --dry               # 계획만 보고 쓰지 않는다
  *
  *   ⛔ `--no-commit` 같은 탈출구는 두지 않는다 — 그 구멍이 F102 자체다.
@@ -101,44 +107,70 @@ const topOf = (p) => { const r = git(['rev-parse', '--show-toplevel'], path.dirn
 const root = topOf(BOARD);
 const inRepo = !!root && root === topOf(ARCHIVE);
 const rel = (p) => path.relative(root, p).split(path.sep).join('/');
-const statusOf = () => (git(['status', '--porcelain', '--', rel(BOARD), rel(ARCHIVE)], root).stdout || '').trim();
-/* 이관 전부터 더러웠다면 내 커밋이 **남의 미커밋까지** 싣는다(F073). 조용히 싣지 않고 드러낸다. */
-const dirtyBefore = inRepo ? statusOf().split(/\r?\n/).filter(Boolean) : [];
+const dirtyOf = (p) => (git(['status', '--porcelain', '--', rel(p)], root).stdout || '').trim();
+/** 「커밋됐나」는 작업본이 아니라 **커밋된 내용**으로 판정한다(F071: 조용한 no-op 이 난다). */
+const headHas = (p, s) => { const r = git(['show', `HEAD:${rel(p)}`], root); return r.status === 0 && r.stdout.includes(s); };
+const track = (row.match(/\*\*(.+?)\*\*/) || [null, needle])[1];
+const commit = (p, subject, body) => git(['commit', '-m', `${subject}\n\n${body}`, '--', rel(p)], root);
 
-/* 아카이브 **먼저** — 그리고 다시 읽어 확인한 뒤에야 보드에서 지운다.
- * 여기서 죽으면 양쪽에 다 있는 상태(중복=보이고 무해)로 남는다. 반대 순서는 유실이다. */
+/* 이관 **전부터** 더러웠는지 잰다. 쓴 뒤에 재면 내가 만든 더러움과 구분되지 않는다. */
+const archiveDirty = inRepo ? dirtyOf(ARCHIVE) : '';
+const boardDirty = inRepo ? dirtyOf(BOARD) : '';
+
+/* ⛔ 아카이브에 남의 미커밋이 있으면 **아무것도 쓰지 않고** 멈춘다.
+ * 여기서 커밋하면 남의 삽입을 함께 실어간다(F073 역방향). 안 쓰고 멈추면 줄은 보드에 그대로라 안전하다. */
+if (archiveDirty) {
+  die('아카이브에 이관 전부터 미커밋이 있다 — 내 커밋이 남의 것을 실어가므로 **아무것도 쓰지 않았다**:\n' +
+    '  ' + archiveDirty.split(/\r?\n/).join('\n  ') + '\n' +
+    '  그 세션이 커밋한 뒤 다시 돌려라(줄은 보드에 그대로 있어 잃을 게 없다).');
+}
+
+/* ── ① 아카이브를 쓰고 **아카이브만 단독 커밋**한다 ────────────────
+ * 순서가 곧 durability 다. 이 저장소의 보장 경계는 파일시스템이 아니라 **git 커밋**이고,
+ * 보드 삭제를 작업본에 쓰는 순간 그 삭제는 **남의 커밋에 실려 나갈 수 있다**(F073).
+ * 그래서 아카이브가 **커밋되기 전에는 보드를 건드리지 않는다** — 그 사이에 무슨 일이 나도
+ * 최악이 「양쪽에 다 있음」(중복=보이고 무해)이지 「어디에도 없음」(조용하고 영구)이 아니다.
+ * 원칙 ③(아카이브 먼저)을 파일 층에서 git 층으로 올린 것이다. */
 fs.writeFileSync(ARCHIVE, newArchive, 'utf8');
 if (!fs.readFileSync(ARCHIVE, 'utf8').includes(row)) {
   die('아카이브에 쓴 뒤 다시 읽었는데 그 줄이 없다 — 보드는 건드리지 않았다(줄은 안전하다).');
 }
-fs.writeFileSync(BOARD, newBoard, 'utf8');
 
-/* ── 그리고 **바로 커밋한다**(F102) ──────────────────────────────
- * 여기서 손을 떼면 파일시스템은 「양쪽에 다 있음」인데 git 은 「어디에도 없음」이 될 수 있다. */
 if (!inRepo) {
+  fs.writeFileSync(BOARD, newBoard, 'utf8');
   console.log('[board-move] 완료(파일) · ⚠ git 저장소 밖이라 **커밋은 안 했다** — 픽스처가 아니라면 지금 직접 커밋해라(F102).');
   process.exit(0);
 }
-const track = (row.match(/\*\*(.+?)\*\*/) || [null, needle])[1];
-if (dirtyBefore.length) {
-  console.log('[board-move] ⚠ 이관 전부터 미커밋이던 것이 이 커밋에 함께 실린다 — 남의 것일 수 있다(F073):');
-  dirtyBefore.forEach((l) => console.log('    ' + l));
+
+const ca = commit(ARCHIVE, `docs: 보드 아카이브 — 「${track}」 완료 줄 선기록`,
+  ['board-move 자동 커밋(F102) — 보드에서 지우기 **전에** 아카이브를 먼저 못박는다.',
+    '이 커밋이 있어야 보드 삭제가 남의 커밋에 실려 나가도 최악이 「중복」이지 유실이 아니다.'].join('\n'));
+if (!headHas(ARCHIVE, row)) {
+  die('아카이브 추가가 커밋되지 않았다 — **보드는 건드리지 않았다**(줄은 보드에 그대로라 안전하다):\n' +
+    `  git commit -m "docs: 보드 아카이브 선기록" -- "${rel(ARCHIVE)}"\n` +
+    '  git: ' + ((ca.stderr || '') + (ca.stdout || '')).trim().split(/\r?\n/).slice(0, 4).join(' / '));
 }
-const msg = [
-  `docs: 보드 — 「${track}」 완료 줄 아카이브로 이관`, '',
-  'board-move 자동 커밋(F102) — 두 파일을 미커밋으로 두면 보드 삭제만 남의 커밋에',
-  '실려 나가고 아카이브 추가는 내 미커밋에 남아, 옮긴 줄이 커밋된 어느 파일에도 없는',
-  '창이 열린다. 쓰기와 커밋을 한 통로로 묶어 호출자가 잊을 수 없게 한다.',
-].concat(dirtyBefore.length
-  ? ['', '⚠ 아래는 이관 전부터 미커밋이라 함께 실렸다:', ...dirtyBefore.map((l) => '  ' + l)]
-  : []).join('\n');
-const c = git(['commit', '-m', msg, '--', rel(BOARD), rel(ARCHIVE)], root);
-/* 커밋했다고 믿지 말고 결과를 본다 — 동시 세션에선 조용한 no-op 이 난다(F071). */
-const left = statusOf();
+
+/* ── ② 아카이브가 **커밋된 것을 확인한 뒤에야** 보드에서 지운다 ──── */
+fs.writeFileSync(BOARD, newBoard, 'utf8');
+
+/* 보드는 상시 여러 세션이 더럽히는 파일이다(실측 08-05 01:04: 한 순간에 6개 세션).
+ * 그래서 **깨끗할 때만** 커밋한다 — 더러우면 내 커밋이 남의 선언을 통째로 수거한다.
+ * 안 해도 안전하다: 아카이브가 이미 커밋됐으니 최악은 눈에 보이는 중복이다. */
+if (boardDirty) {
+  console.log('[board-move] 완료 — 아카이브 **선기록 커밋** 후 보드에서 제거했다.');
+  console.log('  ⚠ 보드에 이관 전부터 남의 미커밋이 있어 **보드 삭제는 커밋하지 않았다**(남의 선언을 수거하지 않는다):');
+  boardDirty.split(/\r?\n/).forEach((l) => console.log('    ' + l));
+  console.log('  그대로 둬도 안전하다 — 아카이브가 이미 커밋돼 최악이 「중복」이다.');
+  process.exit(0);
+}
+const cb = commit(BOARD, `docs: 보드 — 「${track}」 완료 줄 제거(아카이브 이관 완료)`,
+  'board-move 자동 커밋(F102) — 아카이브 선기록이 커밋된 뒤에만 실행된다.');
+const left = dirtyOf(BOARD);
 if (left) {
-  die('두 파일을 커밋하지 못했다 — **지금 직접 커밋해라**(이 상태로 세션이 끝나면 옮긴 줄이 사라진다 · F102):\n' +
-    `  git commit -m "docs: 보드 이관" -- "${rel(BOARD)}" "${rel(ARCHIVE)}"\n` +
+  die('보드 삭제를 커밋하지 못했다 — 아카이브는 이미 커밋됐으니 **줄은 안전하다**(지금은 중복 상태):\n' +
+    `  git commit -m "docs: 보드 이관" -- "${rel(BOARD)}"\n` +
     '  남은 것: ' + left.split(/\r?\n/).join(' / ') + '\n' +
-    '  git: ' + ((c.stderr || '') + (c.stdout || '')).trim().split(/\r?\n/).slice(0, 4).join(' / '));
+    '  git: ' + ((cb.stderr || '') + (cb.stdout || '')).trim().split(/\r?\n/).slice(0, 4).join(' / '));
 }
-console.log('[board-move] 완료 — 아카이브 확인 → 보드에서 제거 → **두 파일 커밋**까지 끝냈다(F102).');
+console.log('[board-move] 완료 — 아카이브 선기록 커밋 → 보드에서 제거 → 보드 커밋(F102).');

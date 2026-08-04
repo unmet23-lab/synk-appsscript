@@ -147,24 +147,65 @@ test('[F102] 커밋이 실패하면 **조용히 성공하지 않는다** (줄은
 
   const r = run(fx, ['옮길 트랙 갑']);
   assert.notEqual(r.status, 0, '커밋이 막혔는데 성공(0)으로 끝났다 — 호출자가 F102 창을 못 본다');
-  assert.match(String(r.stderr), /직접 커밋/, '무엇을 해야 하는지 안 알려준다');
+  assert.match(String(r.stderr), /git commit -m/, '무엇을 쳐야 하는지 안 알려준다');
   assertNeverLost(fx, '커밋 실패');
+  // 아카이브 선기록이 커밋 못 됐으면 **보드는 아예 안 건드린다** — 그래야 남이 보드를 커밋해도 안 잃는다.
+  assert.ok(read(fx.board).includes(ROW), '아카이브가 커밋 안 됐는데 보드에서 지웠다 — 그 순간부터 남의 커밋에 실려 나간다');
   assert.ok(read(fx.archive).includes(ROW), '커밋이 막혔다고 줄까지 잃으면 안 된다');
 });
 
-/* 이 커밋은 두 파일을 통째로 싣는다 — 이관 **전부터** 미커밋이던 게 있으면 남의 것일 수 있다(F073).
- * 양방향으로 잠근다: 깨끗하면 조용하고, 더러우면 무엇이 실렸는지 이름을 댄다.
- * (측정을 쓰기 **뒤**로 옮기면 내가 만든 변경까지 「원래 있던 것」으로 잡혀 경고가 늘 떠 무시하게 된다.) */
-test('[F102] 함께 실리는 남의 미커밋을 이름으로 드러낸다 (깨끗하면 조용하다)', { skip: !hasGit && 'git 없음' }, () => {
-  const clean = run(mkRepoFixture(), ['옮길 트랙 갑']);
-  assert.doesNotMatch(String(clean.stdout), /함께 실린다/, '깨끗한데 경고가 떴다 — 늘 뜨는 경고는 안 읽힌다');
-
+/* ⛔ 보드는 **상시** 여러 세션이 더럽히는 파일이다(실측 08-05 01:04: 한 순간에 6개 세션).
+ * 두 파일을 함께 자동 커밋하면 그 커밋이 곧 **남의 선언 수거**가 된다(F073 역방향).
+ * 그래서 보드는 깨끗할 때만 커밋한다 — 안 해도 안전하다(아카이브가 이미 커밋돼 최악이 중복). */
+test('[F102] 보드에 남의 미커밋이 있으면 **보드는 커밋하지 않는다** (남의 선언을 수거하지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
   const fx = mkRepoFixture();
-  fs.writeFileSync(fx.archive, read(fx.archive) + '\n<!-- 남의 미커밋 -->\n', 'utf8');
+  const 남의선언 = '| 2026-08-05 | **남의 트랙 병** | z.js | 진행중 |';
+  fs.writeFileSync(fx.board, read(fx.board).replace(ROW, ROW + '\n' + 남의선언), 'utf8');
+
   const r = run(fx, ['옮길 트랙 갑']);
   assert.equal(r.status, 0, '이관 실패: ' + r.stderr);
-  assert.match(String(r.stdout), /함께 실린다/, '남의 미커밋을 조용히 실었다');
-  assert.match(String(r.stdout), /세션보드_아카이브\.md/, '무엇이 실렸는지 이름을 안 댔다');
+  assertNeverLost(fx, '보드 경합');
+
+  // 아카이브는 **커밋됐다** — 이게 유실 방지의 전부다.
+  assert.ok(atHead(fx, '세션보드_아카이브.md').includes(ROW), '아카이브 선기록이 커밋 안 됐다');
+  // 보드는 커밋 안 됐고, 남의 선언이 내 커밋에 실려가지 않았다.
+  assert.ok(!atHead(fx, '세션보드.md').includes(남의선언), '남의 미커밋 선언이 내 커밋에 실려 나갔다(F073)');
+  assert.match(String(r.stdout), /보드 삭제는 커밋하지 않았다/, '건너뛴 사실을 안 알렸다');
+  // 한글 경로가 8진 이스케이프(`"\354\204\270…"`)로 나오면 이 저장소에선 경고가 읽히지 않는다.
+  assert.match(String(r.stdout), /세션보드\.md/, '어느 파일이 걸렸는지 읽을 수 있게 안 나온다');
+});
+
+/* 아카이브가 더러우면 **아무것도 쓰지 않는다** — 커밋하면 남의 삽입을 함께 실어가고,
+ * 안 쓰고 멈추면 줄은 보드에 그대로라 잃을 게 없다. */
+test('[F102] 아카이브에 남의 미커밋이 있으면 **아무것도 쓰지 않고** 멈춘다', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mkRepoFixture();
+  const 남의삽입 = read(fx.archive) + '| 2026-08-05 | **남의 이관 병** | z.js | 완료 |\n';
+  fs.writeFileSync(fx.archive, 남의삽입, 'utf8');
+  const before = read(fx.board);
+
+  const r = run(fx, ['옮길 트랙 갑']);
+  assert.notEqual(r.status, 0, '남의 미커밋 위에 그냥 커밋했다');
+  assert.equal(read(fx.board), before, '거부인데 보드가 변했다');
+  assert.equal(read(fx.archive), 남의삽입, '거부인데 아카이브에 내 줄을 섞었다');
+  assertNeverLost(fx, '아카이브 경합');
+});
+
+/* 🔑 F083 — 신고 조건 그대로: 「보드 삭제만 커밋되고 아카이브 추가는 미커밋」.
+ * 그 상태가 **만들어질 수 없어야** 한다. 판정은 순서로 한다 —
+ * 보드에서 지워진 시점에 아카이브 선기록은 이미 커밋돼 있다. */
+test('[F102·F083] 보드 삭제가 커밋된 판에서 아카이브 추가가 미커밋인 상태는 만들어지지 않는다', { skip: !hasGit && 'git 없음' }, () => {
+  for (const 판 of ['깨끗', '보드더러움']) {
+    const fx = mkRepoFixture();
+    if (판 === '보드더러움') fs.writeFileSync(fx.board, read(fx.board) + '| 2026-08-05 | **남** | z.js | 진행중 |\n', 'utf8');
+    const r = run(fx, ['옮길 트랙 갑']);
+    assert.equal(r.status, 0, `[${판}] 이관 실패: ` + r.stderr);
+
+    const 보드에서지워졌다 = !atHead(fx, '세션보드.md').includes(ROW) || !read(fx.board).includes(ROW);
+    if (보드에서지워졌다) {
+      assert.ok(atHead(fx, '세션보드_아카이브.md').includes(ROW),
+        `[${판}] 보드에서 지워졌는데 아카이브 추가가 **커밋 안 됐다** — 남이 보드를 커밋하면 그 줄은 사라진다`);
+    }
+  }
 });
 
 test('[F102] 저장소 밖이면 「커밋 안 했다」를 **드러낸다** (통과와 미실행이 같은 모양이면 안 된다)', () => {
