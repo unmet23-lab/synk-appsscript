@@ -145,7 +145,11 @@ try {
 const tool = String(input.tool_name || '');
 const ti = input.tool_input || {};
 
-// 그림을 낳는 이름. zoom·scroll도 이미지를 되돌려준다(08-04 실측: scroll 6회 중 5회가 이미지).
+// 그림을 낳는 이름. **전사 151개 전수 실측**(2026-08-04, 유호님 "재봐")으로 경계가 확정됐다 —
+// 액션별 이미지 응답률: screenshot 1,184건 89% · scroll 149건 **90%** · zoom 56건 73% ·
+// left_click 1,321건 **0%** · wait·key·type·right_click·double/triple_click·hover·drag 735건 **0%**.
+// 즉 그림을 낳는 액션은 정확히 이 셋뿐이고, 나머지는 한 장도 안 낳는다.
+// (도구 단위로는 못 가른다 — chrome__computer 는 한 도구가 이 액션들을 다 받아 「36%」로 뭉갠다.)
 //
 // 5번째 실패(2026-08-04) — 같은 파일 **안에서** 판정이 갈라져 있었다.
 //   액션 판정은 scroll 을 알았는데, 도구 이름 판정은 `/__(screenshot|zoom)$/` 로 따로 적혀
@@ -200,9 +204,14 @@ function countActions(v, depth) {
 
 // 이름 자체가 그림인 도구(mcp__computer-use__screenshot·scroll·zoom, gif_creator)는 액션 필드가 없다.
 //
-// ⚠ `mcp__computer-use__scroll` 이 이미지를 되돌려주는지는 **미실측**이다 — 실측된 건
-//   `mcp__claude-in-chrome__computer` 의 action=scroll(6회 중 5회 이미지·58만 자)이고,
-//   같은 스크린샷 기반 서버라 같게 센다. 이 비대칭이 판정 근거다:
+// ⚠ `mcp__computer-use__scroll` 은 **호출 기록이 0건**이라 직접 잰 값이 없다(전사 151개 전수).
+//   대신 두 서버의 **액션별 패턴이 관측된 전 항목에서 일치**한다는 근거로 같게 센다:
+//     이미지를 낳음  chrome scroll 90% · screenshot 89% · zoom 73%
+//                    computer-use screenshot 11/11 · zoom 3/3   ← 둘 다 낳는다
+//     안 낳음        chrome left_click·wait·key·type·hover 0%
+//                    computer-use left_click 0/1 · open_application 0/11 · read_clipboard 0/1
+//   두 서버가 같은 액션 집합을 쓰고 겹치는 항목이 전부 일치하므로, scroll 만 다를 이유가 없다.
+//   그래도 외삽은 외삽이다 — 확정은 실제 호출 1회뿐이고, 그때까지는 이 비대칭이 판정 근거다:
 //     넣고 틀리면 → 예산이 조금 빨리 찬다(리셋 통로가 있다)
 //     빼고 틀리면 → 통째로 샌다(그리고 새는 방향은 언제나 「통과」라 안 보인다)
 const shots = IMAGE_TOOL.test(tool) ? 1 : countImageActions(ti, 0);

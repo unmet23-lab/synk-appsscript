@@ -184,7 +184,7 @@ test('배치 1회가 그림 3장이면 예산도 3장을 먹는다 (컨텍스트
   assert.match(r2.reason, /5\/9/, '누적 장수가 배치 내부까지 반영되지 않았다');
 });
 
-test('scroll도 그림을 되돌려주므로 센다 (08-04 실측: 6회 중 5회가 이미지)', () => {
+test('scroll도 그림을 되돌려주므로 센다 (전수 실측: 149건 중 134건 = 90%가 이미지)', () => {
   const s = freshSession();
   for (let i = 1; i <= FREE; i += 1) call(s, { action: 'scroll' });
   const r = call(s, { action: 'scroll' });
@@ -244,7 +244,9 @@ test('이름이 비슷할 뿐인 도구는 세지 않는다 (라우팅을 넓혀
   }
 });
 
-test('ref 기반 scroll_to 는 세지 않는다 (그게 스크린샷 대신 권장하는 경로다)', () => {
+// 전수 실측이 이 경계를 확정했다: scroll 은 90%가 이미지인데 scroll_to 는 3건 전부 **0장**이다.
+// 이름이 한 글자 차이인데 비용이 정반대라, 앵커를 `^scroll$` 로 못박는 것이 핵심이다.
+test('ref 기반 scroll_to 는 세지 않는다 (그게 스크린샷 대신 권장하는 경로다 · 실측 0%)', () => {
   const s = freshSession();
   for (let i = 0; i <= FREE; i += 1) {
     assert.ok(call(s, { action: 'scroll_to' }).silent, 'scroll_to 가 예산에 잡혔다 — 대체 수단을 벌주면 갈아탈 곳이 없다');
