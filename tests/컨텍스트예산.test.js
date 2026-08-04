@@ -55,7 +55,13 @@ function runHook(lines, opts) {
     transcript_path: 'transcript_path' in o ? o.transcript_path : tp,
     cwd: o.cwd || path.join(tmpRoot, 'not-a-git-repo'),
   });
-  const r = spawnSync(process.execPath, [HOOK], { input, encoding: 'utf8', timeout: 20000 });
+  // 발화는 단계당 1회라 카운터가 남는다 — 기본은 **호출마다 새 폴더**로 격리하고,
+  // 중복 억제를 검사하는 테스트만 stateDir 를 공유해 넘긴다.
+  const stateDir = o.stateDir || fs.mkdtempSync(path.join(tmpRoot, 'state-'));
+  const r = spawnSync(process.execPath, [HOOK], {
+    input, encoding: 'utf8', timeout: 20000,
+    env: { ...process.env, SYNK_CTXBUDGET_DIR: stateDir },
+  });
   const out = (r.stdout || '').trim();
   if (!out) return { silent: true, status: r.status, msg: '' };
   const j = JSON.parse(out);
@@ -140,6 +146,82 @@ test('미커밋이 있으면 커밋을 먼저 시키고, 없으면 끊어도 된
   fs.writeFileSync(path.join(repo, '새파일.txt'), 'x');
   const dirty = runHook([line(155_000, 1_000, 500)], { cwd: repo });
   assert.match(dirty.msg, /미커밋 1건 먼저 커밋/, `미커밋 1건을 못 셌다: ${dirty.msg}`);
+});
+
+test('🔑 AI 를 깨우지 않는다 — additionalContext 를 내지 않는다', () => {
+  // 신설 당일 실측된 자기모순: additionalContext 는 AI 에게 주입돼 새 턴을 깨우고,
+  // Stop 훅이라 그 턴이 끝나면 또 발화한다 → 유호님 입력 없이 144k→147k→148k→149k 로 4연속.
+  // 컨텍스트를 아끼려는 훅이 컨텍스트를 먹는다. systemMessage(유호님 화면)만 낸다.
+  const v = runHook([line(155_000, 1_000, 500)]);
+  assert.ok(!v.silent, '경고가 안 나왔다');
+  assert.strictEqual(v.json.hookSpecificOutput, undefined,
+    'hookSpecificOutput 이 붙었다 — additionalContext 는 AI 턴을 깨워 무한 루프가 된다');
+  assert.ok(v.json.systemMessage, '유호님 화면용 systemMessage 가 없다');
+});
+
+test('🔑 단계당 1회만 발화한다 — 같은 단계에서 두 번째부터는 조용하다', () => {
+  const dir = fs.mkdtempSync(path.join(tmpRoot, 'dedup-'));
+  const first = runHook([line(125_000, 2_000, 500)], { stateDir: dir });
+  assert.ok(!first.silent, '첫 발화가 없다');
+  for (let i = 0; i < 3; i++) {
+    const again = runHook([line(126_000 + i * 1000, 2_000, 500)], { stateDir: dir });
+    assert.ok(again.silent, `같은 🟡 단계에서 ${i + 2}번째로 또 떴다 — 경고가 배경 소음이 된다`);
+  }
+});
+
+test('🟡 뒤 🔴 로 올라가면 한 번 더 말한다 (단계 상승은 놓치지 않는다)', () => {
+  const dir = fs.mkdtempSync(path.join(tmpRoot, 'esc-'));
+  assert.match(runHook([line(125_000, 2_000, 500)], { stateDir: dir }).msg, /🟡/);
+  const up = runHook([line(158_000, 2_000, 500)], { stateDir: dir });
+  assert.ok(!up.silent, '🔴 로 올라갔는데 조용하다 — 중복 억제가 단계 상승까지 삼켰다');
+  assert.match(up.msg, /🔴/, '단계 표식이 안 올라갔다');
+  assert.ok(runHook([line(160_000, 2_000, 500)], { stateDir: dir }).silent, '🔴 도 1회여야 한다');
+});
+
+test('🔑 인계 문구가 붙는다 — 새 세션에 그대로 붙여넣을 수 있어야 한다', () => {
+  const v = runHook([line(155_000, 1_000, 500)]);
+  assert.match(v.msg, /새 세션 열고 아래를 그대로 붙여넣으세요/, '인계 블록이 없다');
+  assert.match(v.msg, /세션보드\.md/, '보드 주소가 없다 — 인계되는 셋 중 하나다');
+  assert.match(v.msg, /메모리/, '메모리 언급이 없다');
+  assert.match(v.msg, /미커밋/, '미커밋 상태가 인계 문구에 없다');
+});
+
+test('인계 문구는 Session-Id 트레일러로 이 세션 커밋을 찾는다 (author·시각으로 추정하지 않는다)', (t) => {
+  const g = (args, cwd) => spawnSync('git', args, { cwd, encoding: 'utf8', timeout: 10000 });
+  if (g(['--version']).error) return t.skip('git 없음');
+
+  const repo = fs.mkdtempSync(path.join(tmpRoot, 'sid-'));
+  if (g(['init'], repo).status !== 0) return t.skip('git init 실패');
+  g(['config', 'user.email', 't@t'], repo);
+  g(['config', 'user.name', 't'], repo);
+  fs.writeFileSync(path.join(repo, 'a.txt'), 'x');
+  g(['add', 'a.txt'], repo);
+  g(['commit', '-m', '내 커밋이다\n\nSession-Id: sid-MINE'], repo);
+  fs.writeFileSync(path.join(repo, 'b.txt'), 'y');
+  g(['add', 'b.txt'], repo);
+  g(['commit', '-m', '남의 커밋이다\n\nSession-Id: sid-OTHER'], repo);
+
+  const tp = path.join(tmpRoot, 'sid.jsonl');
+  fs.writeFileSync(tp, line(155_000, 1_000, 500) + '\n');
+  const run = (env) => {
+    const r = spawnSync(process.execPath, [HOOK], {
+      // 훅 입력의 session_id 는 **내부 에이전트 id** — 트레일러에 박히는 값이 아니다.
+      input: JSON.stringify({ session_id: 'agent-내부id', hook_event_name: 'Stop', transcript_path: tp, cwd: repo }),
+      encoding: 'utf8',
+      env: { ...process.env, SYNK_CTXBUDGET_DIR: fs.mkdtempSync(path.join(tmpRoot, 'sid-state-')), ...env },
+    });
+    return JSON.parse((r.stdout || '').trim()).systemMessage;
+  };
+
+  // 🔑 트레일러와 **같은 원천**(CLAUDE_CODE_HOST_SESSION_ID)을 써야 자기 커밋을 찾는다.
+  //   처음엔 입력의 session_id 로 찾다가 하나도 못 찾았다(08-04 실측). id 가 둘인 게 원인.
+  const mine = run({ CLAUDE_CODE_HOST_SESSION_ID: 'sid-MINE' });
+  assert.match(mine, /내 커밋이다/, `호스트 세션 id 로도 자기 커밋을 못 찾았다: ${mine}`);
+  assert.doesNotMatch(mine, /남의 커밋이다/, '남의 세션 커밋을 인계 문구에 넣었다 — 트레일러로 갈라야 한다');
+
+  // 내부 에이전트 id 로는 못 찾는 게 정상이고, 그때 「없음」을 솔직히 말해야 한다(빈칸·거짓 아님)
+  const none = run({ CLAUDE_CODE_HOST_SESSION_ID: '' });
+  assert.match(none, /커밋 없음/, `못 찾았으면 못 찾았다고 해야 한다: ${none}`);
 });
 
 test('등록층 — Stop 에 등록돼 있고, 앞단에서 좁히는 필터가 없다', () => {
