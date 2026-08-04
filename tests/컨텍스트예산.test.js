@@ -91,13 +91,13 @@ test('임계 아래에서는 조용하다 — 평소 작업을 방해하지 않�
   }
 });
 
-test('단계 3종 — 🟡 200k · 🔴 300k · ⚫ 500k', () => {
+test('색 3종 — 🟡 200k · 🔴 300k · ⚫ 500k', () => {
   assert.match(stop(210_000).msg, /🟡/);
   assert.match(stop(310_000).msg, /🔴/);
+  assert.match(stop(410_000).msg, /🔴/, '400k 가 아직 ⚫ 이면 마지막 색을 너무 일찍 쓴다');
+  assert.match(stop(410_000).msg, /한참 지났다/, '3단계 문구가 앞 단계와 구별되지 않는다');
   // ⚫ 가 없으면 🔴 뒤로는 900k 를 넘겨도 무소식이었다(08-04 결함 ⑤)
-  const last = stop(520_000);
-  assert.match(last.msg, /⚫/, '500k 를 넘겼는데 마지막 경고가 없다');
-  assert.match(last.msg, /한참 지났다/, '⚫ 문구가 🔴 와 구별되지 않는다');
+  assert.match(stop(520_000).msg, /⚫/, '500k 를 넘겼는데 마지막 색이 아니다');
 });
 
 test('🔑 퍼센트가 거짓 안심을 주지 않는다 — 창이 아니라 턴당 재읽기를 앞세운다', () => {
@@ -163,13 +163,35 @@ test('트랜스크립트가 없거나 usage 가 없으면 조용히 통과한다
 
 // ── 발화 억제 ───────────────────────────────────────────────────────────────
 
-test('🔑 AI 를 깨우지 않는다 — additionalContext 를 내지 않는다', () => {
-  // 08-04 실측: additionalContext 는 AI 턴을 깨우고, Stop 훅이라 그 턴이 끝나면 또 발화한다.
-  // 유호님 입력 없이 144k→147k→148k→149k 4연속. 컨텍스트를 아끼려는 훅이 컨텍스트를 먹었다.
-  const v = stop(310_000);
-  assert.strictEqual(v.json.hookSpecificOutput, undefined,
-    'hookSpecificOutput 이 붙었다 — additionalContext 는 AI 턴을 깨워 무한 루프가 된다');
-  assert.ok(v.json.systemMessage, '유호님 화면용 systemMessage 가 없다');
+test('🔑 AI 는 🔴 첫 도달에만 깨운다 — 정리는 자동으로, 루프는 없이', () => {
+  // 두 실패를 동시에 막는 테스트다.
+  //  ① 08-04 오전: additionalContext 가 AI 턴을 깨우고 Stop 훅이라 그 턴 끝에 또 발화 →
+  //     유호님 입력 없이 144k→147k→148k→149k 4연속. 아끼려던 훅이 컨텍스트를 먹었다.
+  //  ② 08-04 저녁: 그래서 아예 안 깨웠더니 유호님이 매번 직접 정리해야 했다 —
+  //     "지금은 자동화가 아니야. 억지로 내가 신경써야."
+  // 처방은 「깨우지 않기」가 아니라 **세션당 1회로 못 박기**다.
+  const st = newDir('wake'); const cwd = newDir('p-wake');
+  const at = (c) => stop(c, { stateDir: st, cwd, sid: 'W' });
+
+  const warn = at(210_000);
+  assert.strictEqual(warn.json.hookSpecificOutput, undefined, '🟡 에서 AI 를 깨웠다 — 아직 정리할 때가 아니다');
+
+  const hard = at(310_000);
+  assert.ok(hard.json.hookSpecificOutput, '🔴 인데 AI 를 안 깨웠다 — 유호님이 직접 정리해야 한다');
+  assert.strictEqual(hard.json.hookSpecificOutput.hookEventName, 'Stop');
+  const inj = hard.json.hookSpecificOutput.additionalContext;
+  assert.match(inj, /\/close/, '깨우면서 무엇을 하라고 안 알려준다');
+  assert.match(inj, /유호님이 방금 시킨 일이 아니라/, '자동 발동임을 안 밝히면 유호님 지시로 오인한다');
+  assert.match(inj, /새 작업을 시작하지 않는다/, '깨운 AI 가 새 일을 벌이면 컨텍스트가 더 는다');
+  assert.ok(hard.json.systemMessage, '유호님 화면용 systemMessage 가 없다');
+
+  // 여기가 루프 방지의 핵심 — 단계가 올라가도 **두 번은 안 깨운다**
+  for (const c of [410_000, 520_000, 910_000]) {
+    const v = at(c);
+    assert.ok(v.json, `${c} 에서 단계가 올랐는데 화면 문구도 없다`);
+    assert.strictEqual(v.json.hookSpecificOutput, undefined,
+      `${c} 에서 AI 를 또 깨웠다 — [훅→AI턴→Stop→훅] 무한 루프의 입구다`);
+  }
 });
 
 test('🔑 단계당 1회 · 상승은 놓치지 않는다', () => {
@@ -178,36 +200,37 @@ test('🔑 단계당 1회 · 상승은 놓치지 않는다', () => {
   assert.ok(at(210_000).json, '첫 🟡 이 없다');
   for (let i = 0; i < 3; i++) assert.strictEqual(at(215_000 + i * 1000).json, null, `🟡 에서 ${i + 2}번째로 또 떴다`);
   assert.match(at(305_000).msg, /🔴/, '🔴 로 올라갔는데 조용하다');
-  assert.strictEqual(at(320_000).json, null, '🔴 도 1회여야 한다');
+  assert.strictEqual(at(320_000).json, null, '같은 단계(300~400k)에서 두 번 떴다');
   assert.match(at(520_000).msg, /⚫/, '⚫ 로 올라갔는데 조용하다');
-  assert.strictEqual(at(600_000).json, null, '같은 ⚫ 구간(500~700k)에서 두 번 떴다');
+  assert.strictEqual(at(560_000).json, null, '같은 단계(500~600k)에서 두 번 떴다');
 });
 
-test('🔑 ⚫ 위에서도 200k 마다 다시 운다 — 침묵 구간이 가장 비싼 구간이었다', () => {
-  // 08-04 실측: ⚫ 를 한 번 띄우면 영원히 침묵해서 세 세션이 600k·771k·786k 까지 **무신호**로
-  // 올라갔다. 500k→786k 는 한 턴에 78만 토큰을 다시 읽는 구간인데 정확히 거기가 무신호였다.
+test('🔑 🔴 위로 100k 마다 다시 운다 — 침묵 구간이 가장 비싼 구간이었다', () => {
+  // 08-04 실측: 단계당 1회라 300k 에서 울면 500k 까지 무신호, ⚫ 뒤로는 영구 침묵이었다.
+  // 세 세션이 600k·771k·786k 까지 아무 신호 없이 올라갔다. 유호님 지시도 뒤집혔다 —
+  // "너무 많이 뜨게는 하지 마" → **"조금 더 떠도 될 것 같다. 뜬지 안 뜬지 체크를 못했나?"**
   const st = newDir('repeat'); const cwd = newDir('p-repeat');
   const at = (c) => stop(c, { stateDir: st, cwd, sid: 'LONG' });
-  assert.match(at(520_000).msg, /⚫/, '첫 ⚫ 이 없다');
-  assert.strictEqual(at(690_000).json, null, 'STEP(200k) 안인데 또 떴다 — 재발화가 소음이 된다');
+  const fired = [];
+  for (let c = 210_000; c <= 950_000; c += 10_000) if (at(c).json) fired.push(c);
 
-  const second = at(710_000);
-  assert.match(second.msg, /⚫/, '700k 를 넘겼는데 침묵한다 — 실측에서 786k 까지 무신호였던 그 구멍');
-  assert.match(second.msg, /2번째 경고/, '몇 번째인지 안 세면 같은 문구가 배경 소음이 된다');
-
-  assert.strictEqual(at(850_000).json, null, '두 번째 ⚫ 직후 또 떴다');
-  assert.match(at(910_000).msg, /3번째 경고/, '900k 를 넘겼는데 침묵한다');
-  // 재발화도 바통을 남긴다 — 그 구간에서 창을 그냥 닫아도 다음 세션이 이어받아야 한다
-  assert.ok(batons(st).length >= 1, '⚫ 재발화가 바통을 안 떨궜다');
+  // 200·300·400·…·900k = 8회. 실측에서 무신호였던 600~900k 구간이 여기 들어와야 한다.
+  assert.deepStrictEqual(
+    fired.map((c) => Math.round(c / 1000)),
+    [210, 300, 400, 500, 600, 700, 800, 900],
+    `발화 지점이 100k 격자와 다르다: ${fired.map((c) => Math.round(c / 1000) + 'k')}`
+  );
+  assert.ok(batons(st).length >= 1, '재발화 구간에서 바통을 안 떨궜다 — 창을 그냥 닫으면 인계가 끊긴다');
 });
 
-test('창이 작은 모델은 재발화 지점이 창 밖이라 자연히 1회로 남는다', () => {
-  // haiku(창 200k): LAST=180k · STEP=40k → 다음 발화는 220k 인데 창을 넘어 도달 불가.
-  // 재발화를 넣었다고 작은 창에서 소음이 늘면 안 된다.
+test('창이 작은 모델도 창 안에서 여러 번 운다 (haiku 200k)', () => {
+  // 절대값 격자(100k)를 그대로 쓰면 haiku 는 창이 200k 라 두 번째가 창 밖이 된다.
+  // STEP 도 창 비율로 접혀야 한다 — HARD 150k · STEP 40k → 150k·190k.
   const st = newDir('h-rep'); const cwd = newDir('p-h-rep');
   const at = (c) => stop(c, { stateDir: st, cwd, sid: 'H', model: 'claude-haiku-4-5-20251001' });
-  assert.match(at(185_000).msg, /⚫/, 'haiku ⚫ 이 없다');
-  assert.strictEqual(at(199_000).json, null, 'haiku 가 창 안에서 재발화했다 — 소음이다');
+  assert.match(at(155_000).msg, /🔴/, 'haiku 가 창의 78% 인데 조용하다');
+  assert.strictEqual(at(180_000).json, null, 'haiku STEP(40k) 안인데 또 떴다');
+  assert.match(at(195_000).msg, /⚫/, 'haiku 가 창의 97% 인데 두 번째가 없다 — 절대 격자만 보고 있다');
 });
 
 test('🔑 절차 나열이 아니라 한 줄 실행을 준다 — 경고 8번에도 786k 까지 갔다', () => {
