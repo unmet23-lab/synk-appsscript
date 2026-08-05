@@ -73,8 +73,13 @@ test('MCP 서버 등록도 같은 방어를 들고 있다', () => {
 
   // cwd 는 절대경로여야 한다 — 없거나 틀리면 서버가 **엉뚱한 곳에 빈 DB를 새로 만들고**
   // 「결과 0건」을 조용히 돌려준다(2026-08-05 실측). 드러나는 실패가 조용한 오답보다 낫다.
-  assert.ok(server.cwd && path.isAbsolute(server.cwd),
+  // ⚠ path.isAbsolute 를 쓰면 안 된다 — 그건 **검사가 도는 OS**의 규약으로 판정한다.
+  //   리눅스 CI 에서 "C:\Users\..." 는 상대경로가 되어 빨간불이 난다(08-05 실측 · 로컬 모사는 Windows 라 못 봤다).
+  //   여기서 재는 것은 「설정이 절대경로냐」지 「이 기계에서 절대경로냐」가 아니다.
+  const 절대경로 = (p) => /^([A-Za-z]:[\\/]|\/)/.test(String(p || ''));
+  assert.ok(server.cwd && 절대경로(server.cwd),
     'MCP 서버에 절대경로 cwd 가 없다 — repo 밖에서 뜨면 빈 그래프를 새로 만든다');
+  assert.equal(절대경로('.code-review-graph'), false, '탐지력 — 상대경로를 절대경로로 오인한다');
 });
 
 test('등록층 — settings.json 이 갱신 훅을 실제로 부른다', () => {
