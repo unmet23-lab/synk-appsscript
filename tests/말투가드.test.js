@@ -113,6 +113,21 @@ test('③ 실저장소 화이트리스트 전량 — 거짓양성 0건 (탐지�
   execFileSync('node', [HOOK, '--check'], { cwd: ROOT, encoding: 'utf8' }); // 위반 있으면 exit 1 → throw
 });
 
+/* 「SNS·DM 은 파일 밖이라 못 막는다」는 절반만 맞았다 — 아래 둘은 파일 안에 있다.
+ * 경로 **실재까지** 못박는 이유: 정규식 오타·파일명 변경의 새는 방향은 언제나 「통과」라서,
+ * 대상에서 조용히 빠져도 초록은 그대로다(F044 등록층). */
+test('③ 파일 안에 있는 SNS·DM 실문구가 대상이다 (경로 실재까지)', () => {
+  const 접점 = [
+    ['docs', 'DM상담_Phase0_절차서.md'],                                        // Meta 자동응답 실문구
+    ['.claude', 'skills', 'synk-content', 'references', '캐러셀', '캐러셀_5세트.md'], // SNS 산출물
+  ];
+  for (const seg of 접점) {
+    const p = path.join(ROOT, ...seg);
+    assert.ok(fs.existsSync(p), `${seg.join('/')} 가 없다 — 이름이 바뀌면 규칙이 조용히 빗나간다`);
+    assert.ok(훅판정('아직 Lv2밖에 안 됐네요', p).차단, `${seg.join('/')} 가 검사 대상이 아니다`);
+  }
+});
+
 /* ── ④ 등록층 — 훅이 실제로 발화하는가 (가드는 로직보다 등록층에서 샌다) ──── */
 
 test('④ settings.json 에 등록돼 있고, 라우팅이 훅보다 좁지 않다', () => {
