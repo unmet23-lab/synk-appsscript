@@ -92,6 +92,28 @@ function writeStage(cwd, sessionId, stage) {
   } catch (_) { return false; }
 }
 
+/** 인계문 블록을 이 세션에서 **이미 지시했는지**. 처음 부른 쪽만 true (F122).
+ *
+ * 블록을 지시하는 훅이 둘이다 — context-budget(Stop, 300k 도달) · track-boundary(커밋 착지, 300k 이상).
+ * 임계가 같은 값이라 한 세션에서 **둘 다** 울고, 서로를 몰라 유호님 화면에 같은 블록이 두 번 나갔다
+ * (유호님 08-06: "마지막쯤 한번, 마지막에 또 한번"). 판정을 두 곳에 적으면 갈라지므로 상태는
+ * 여기 하나에 둔다 — 이 파일이 존재하는 이유(③ 흩어진 규칙)와 같은 형태다.
+ *
+ * ⚠ 못 쓰면 **true(=지시한다)** 로 답한다. 중복이 침묵보다 낫다 — 블록이 안 나가면 인계가 통째로 빈다.
+ */
+function claimBlock(cwd, sessionId) {
+  const p = path.join(STATE_DIR, `block-${projectKey(cwd)}-${safeId(sessionId)}.json`);
+  try {
+    const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+    if (j && Number(j.at) && Date.now() - Number(j.at) <= SWEEP_TTL_MS) return false;
+  } catch (_) { /* 없거나 못 읽으면 아직 안 나간 것으로 본다 */ }
+  try {
+    fs.mkdirSync(STATE_DIR, { recursive: true });
+    fs.writeFileSync(p, JSON.stringify({ at: Date.now(), cwd: String(cwd || '') }));
+  } catch (_) { /* 못 써도 지시는 낸다 */ }
+  return true;
+}
+
 /** 오래된 파일을 지운다. 읽기·쓰기 어느 쪽에서 불러도 되게 **조용히 실패**한다. */
 function sweep() {
   let removed = 0;
@@ -167,4 +189,4 @@ function take(cwd) {
 /* safeId 도 내보낸다 — track-collision 이 같은 STATE_DIR 에 세션별 파일을 쓴다.
  * 파일명 규칙을 그쪽에서 다시 적으면 sweep() 이 못 알아보는 이름이 생기고, 증상은
  * 「조용히 안 지워짐」이라 눈에 안 띈다(이 파일이 존재하는 이유 ③과 같은 함정). */
-module.exports = { stateDir, projectKey, safeId, batonName, stagePath, readStage, writeStage, sweep, drop, take, BATON_TTL_MS, SWEEP_TTL_MS };
+module.exports = { stateDir, projectKey, safeId, batonName, stagePath, readStage, writeStage, claimBlock, sweep, drop, take, BATON_TTL_MS, SWEEP_TTL_MS };
