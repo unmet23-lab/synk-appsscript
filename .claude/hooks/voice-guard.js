@@ -102,6 +102,11 @@ function 위반찾기(text) {
 
 const 대상인가 = (p) => 대상.some((re) => re.test(p));
 
+/* 규칙을 다른 도구가 빌려 쓴다 — `tools/몽골어대조.js` 가 **역번역된 한국어**에 같은 자를 댄다.
+ * 훅은 파일만 보고, 번역은 파일 밖에서 뉘앙스가 뒤집힌다. 자를 두 벌 만들면 갈라지므로 하나에서 파생시킨다. */
+module.exports = { 위반찾기, 규칙, 검사본, 주석제거, 대상인가 };
+if (require.main !== module) return; // require 로 불렸으면 여기까지 — 아래는 CLI·훅 본체다
+
 /* --check [경로…] : 훅과 **같은 판정기**로 지금 상태를 잰다(F052 — 잴 통로를 하나로).
  * 경로를 안 주면 화이트리스트 전량. */
 if (process.argv.includes('--check')) {
