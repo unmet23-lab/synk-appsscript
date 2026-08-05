@@ -83,6 +83,81 @@ test('계약 파일 자체가 비지 않았다 (빈 계약은 모든 검사를 �
   assert.ok(new Set(계약.오류태그).size === 계약.오류태그.length, '오류태그에 중복이 있다 — 집계가 두 칸으로 갈린다');
 });
 
+/* ── M0 계약 동결: learning_events (N1) ─────────────────────────────────────
+ * 여기부터는 「학습 행동 한 건」의 규격이다. 아직 테이블도 열도 없다(M0 = 엔진 코드 0줄).
+ * 그래서 검사할 수 있는 것은 **계약 자신의 정합성**과 **계약이 라이브를 정확히 가리키는가** 둘이다.
+ * ⚠ 「아직 없다」를 단언하는 검사는 넣지 않는다 — 구현되는 날 빨개지는 회귀는 버그가 남아
+ *   있기를 요구하는 회귀다. 대신 미구현 항목은 라이브_대응으로 옮겨질 때 자동으로 감시 대상이 된다. */
+const LE = 계약.learning_events;
+const 전필드 = Object.values(LE.필드).flat();
+
+test('learning_events 필드가 전부 정확히 한 번 분류된다 (미분류·이중분류가 곧 계약의 구멍이다)', () => {
+  const 라이브 = Object.keys(LE.라이브_대응);
+  const 미구현 = LE.미구현;
+
+  assert.equal(new Set(전필드).size, 전필드.length,
+    `필드가 두 묶음에 중복됐다 — 어느 묶음의 규칙을 따르는지 읽는 사람마다 달라진다: ${전필드.filter((f, i) => 전필드.indexOf(f) !== i).join(', ')}`);
+
+  const 겹침 = 라이브.filter((f) => 미구현.includes(f));
+  assert.deepEqual(겹침, [], `라이브이면서 동시에 미구현인 필드: ${겹침.join(', ')} — 구현했으면 미구현에서 빼라`);
+
+  const 미분류 = 전필드.filter((f) => !라이브.includes(f) && !미구현.includes(f));
+  assert.deepEqual(미분류, [],
+    `분류되지 않은 필드: ${미분류.join(', ')} — 필드를 늘렸으면 라이브_대응이나 미구현 중 한쪽에 넣어라. 안 넣으면 "있는 줄 알았는데 아무도 안 만드는" 필드가 된다`);
+
+  const 유령 = [...라이브, ...미구현].filter((f) => !전필드.includes(f));
+  assert.deepEqual(유령, [], `필드 목록에 없는 것이 분류돼 있다: ${유령.join(', ')} — 필드를 지웠는데 분류만 남았다`);
+});
+
+test('계약이 가리키는 라이브 열이 실제로 수집층 헤더에 있다 (열 개명이 계약을 조용히 죽인다)', () => {
+  /* 특정 상수 이름에 매달지 않는다 — 시트가 늘면 상수도 는다. 파일 안의 *_HEADERS 를 전부 모아 합집합으로 본다.
+   * ⚠ voice_log 헤더는 이 파일 밖(교재연동이 자체 관리 — 스키마감사 「잔여」)이라, 그 시트에만 있는 열은
+   *   여기 대응에 넣지 않았다. 넣으려면 이 검사부터 그 파일로 넓혀야 한다. */
+  const 헤더합 = new Set();
+  let 상수수 = 0;
+  for (const m of 수집.matchAll(/const \w+_HEADERS = (\[[\s\S]*?\]);/g)) {
+    상수수++;
+    for (const h of new Function('return ' + m[1])()) 헤더합.add(h);
+  }
+  assert.ok(상수수 >= 3,
+    `수집층에서 헤더 상수를 ${상수수}개밖에 못 뽑았다 — 정규식이 죽었으면 이 검사는 무엇이든 통과시킨다`);
+
+  for (const [필드, 열들] of Object.entries(LE.라이브_대응)) {
+    assert.ok(Array.isArray(열들) && 열들.length, `라이브_대응 「${필드}」에 열이 없다`);
+    for (const 열 of 열들) {
+      assert.ok(헤더합.has(열),
+        `계약이 「${필드}」는 라이브 열 「${열}」로 있다고 적었는데 수집층 헤더에 없다 — 열을 개명·삭제했다면 계약도 같이 고쳐라(안 고치면 L0 이관 때 이 필드가 통째로 증발한다)`);
+    }
+  }
+});
+
+test('learning_events 값목록이 닫혀 있고 비어 있지 않다 (빈 통제 어휘는 자유 문자열과 같다)', () => {
+  for (const [이름, 값들] of Object.entries(LE.값목록)) {
+    assert.ok(값들.length >= 3, `값목록 「${이름}」이 ${값들.length}개뿐이다 — 축이 되려면 구분이 있어야 한다`);
+    assert.equal(new Set(값들).size, 값들.length, `값목록 「${이름}」에 중복이 있다 — 집계가 두 칸으로 갈린다`);
+  }
+  // 오류태그와 같은 이유로 크기를 못박는다. 줄었다면 왜 줄었는지가 먼저다.
+  assert.equal(LE.값목록.task_type.length, 6, `task_type이 6종이 아니다(${LE.값목록.task_type.length})`);
+  assert.equal(LE.값목록.source_kind.length, 4, `source_kind가 4종이 아니다(${LE.값목록.source_kind.length})`);
+  // 값목록이 있는 필드는 실제 필드 목록에도 있어야 한다 — 어휘만 남고 필드가 사라지면 아무도 모른다
+  for (const 이름 of Object.keys(LE.값목록)) {
+    assert.ok(전필드.includes(이름), `값목록 「${이름}」에 해당하는 필드가 없다 — 필드를 지웠거나 이름이 갈렸다`);
+  }
+  assert.ok(전필드.length >= 30,
+    `learning_events 필드가 ${전필드.length}개로 얇아졌다 — 지웠다면 그 필드가 소급 불가인지부터 확인하라`);
+});
+
+test('유호님 확정 대기인 항목이 계약 필드에 몰래 들어오지 않았다', () => {
+  /* privacy_class 는 §9 기각(「이 행을 훈련에 써도 되나」를 말하는 열 금지 · 재제안 금지)과
+   * 부록 A-10 ⑤ 사이에 낀 미해결이다. 확정 전에 필드로 들어가면 기각을 코드로 뒤집는 셈이 된다. */
+  const 보류 = Object.keys(LE.보류_유호확정대기);
+  assert.ok(보류.length, '보류 목록이 비었다 — 해소했다면 이 검사도 함께 지워라(빈 목록은 아무것도 안 지킨다)');
+  for (const f of 보류) {
+    assert.ok(!전필드.includes(f),
+      `「${f}」는 유호님 확정 대기인데 계약 필드에 들어와 있다 — 확정을 받고 보류 목록에서 빼는 것이 순서다`);
+  }
+});
+
 test('형제 저장소 SYNK-talk의 계약 파일이 이 저장소와 같다 (줄바꿈만 제외)', (t) => {
   // 형제는 이 저장소 밖이다 — CI엔 없다. 없음을 통과로 만들지 않고 skip으로 드러낸다.
   const 형제 = path.join(REPO, '..', 'SYNK-talk', '계약', '수집_교정_계약.json');
@@ -97,5 +172,6 @@ test('형제 저장소 SYNK-talk의 계약 파일이 이 저장소와 같다 (�
   const 정규화 = (p) => fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
   assert.equal(정규화(형제), 정규화(계약경로),
     'SYNK-talk의 계약 파일이 다르다 — 한쪽만 고쳤다. 두 저장소에 같은 내용으로 넣어야 계약이 계약이다\n' +
+    '  고치는 법: node tools/계약동기화.js  (손으로 옮기지 마라 — c1 「불변」이 그렇게 갈렸다)\n' +
     `  이 저장소: ${계약경로}\n  형제:      ${형제}`);
 });
