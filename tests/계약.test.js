@@ -139,6 +139,13 @@ test('learning_events 값목록이 닫혀 있고 비어 있지 않다 (빈 통�
   // 오류태그와 같은 이유로 크기를 못박는다. 줄었다면 왜 줄었는지가 먼저다.
   assert.equal(LE.값목록.task_type.length, 6, `task_type이 6종이 아니다(${LE.값목록.task_type.length})`);
   assert.equal(LE.값목록.source_kind.length, 4, `source_kind가 4종이 아니다(${LE.값목록.source_kind.length})`);
+  /* c4 = c3 6종 + 3종. 값 추가는 하위호환이지만 **삭제·개명은 과거 집계를 깨뜨린다**(값목록_규칙).
+   * 이름을 하나씩 못박는 이유: 개수만 세면 하나를 지우고 하나를 더해도 통과한다. */
+  for (const v of ['intervention.delivered', 'correction.viewed', 'data_use.granted']) {
+    assert.ok(LE.값목록.event_type.includes(v),
+      `c4가 추가한 event_type 「${v}」가 없다 — 없으면 AI 개입·교정 조회·훈련 승격이 계약 밖 사건이 된다(L0 §3-2·§6-1·C0 §9)`);
+  }
+  assert.equal(LE.값목록.event_type.length, 9, `event_type이 9종이 아니다(${LE.값목록.event_type.length})`);
   // 값목록이 있는 필드는 실제 필드 목록에도 있어야 한다 — 어휘만 남고 필드가 사라지면 아무도 모른다
   for (const 이름 of Object.keys(LE.값목록)) {
     assert.ok(전필드.includes(이름), `값목록 「${이름}」에 해당하는 필드가 없다 — 필드를 지웠거나 이름이 갈렸다`);
@@ -147,14 +154,15 @@ test('learning_events 값목록이 닫혀 있고 비어 있지 않다 (빈 통�
     `learning_events 필드가 ${전필드.length}개로 얇아졌다 — 지웠다면 그 필드가 소급 불가인지부터 확인하라`);
 });
 
-test('유호님 확정 대기인 항목이 계약 필드에 몰래 들어오지 않았다', () => {
-  /* privacy_class 는 §9 기각(「이 행을 훈련에 써도 되나」를 말하는 열 금지 · 재제안 금지)과
-   * 부록 A-10 ⑤ 사이에 낀 미해결이다. 확정 전에 필드로 들어가면 기각을 코드로 뒤집는 셈이 된다. */
-  const 보류 = Object.keys(LE.보류_유호확정대기);
-  assert.ok(보류.length, '보류 목록이 비었다 — 해소했다면 이 검사도 함께 지워라(빈 목록은 아무것도 안 지킨다)');
-  for (const f of 보류) {
+test('필드로 만들지 않기로 한 항목이 계약 필드에 몰래 들어오지 않았다', () => {
+  /* privacy_class 는 §9 유호님 기각(「이 행을 훈련에 써도 되나」를 말하는 열 금지 · 재제안 금지)이다.
+   * c4에서 「보류·확정 대기」가 아니라 **금지 목록**임을 이름으로 못박았다(L0 §6-2로 해소).
+   * 필드로 들어가면 기각을 코드로 뒤집는 셈이 된다. */
+  const 금지 = Object.keys(LE.필드로_만들지_않는다);
+  assert.ok(금지.length, '금지 목록이 비었다 — 지웠다면 이 검사도 함께 지워라(빈 목록은 아무것도 안 지킨다)');
+  for (const f of 금지) {
     assert.ok(!전필드.includes(f),
-      `「${f}」는 유호님 확정 대기인데 계약 필드에 들어와 있다 — 확정을 받고 보류 목록에서 빼는 것이 순서다`);
+      `「${f}」는 필드로 만들지 않기로 한 것인데 계약 필드에 들어와 있다 — 유호님 기각을 코드가 뒤집었다`);
   }
 });
 
