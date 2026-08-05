@@ -30,19 +30,10 @@ const TOOLS = path.join(ROOT, 'docs', 'tools');
 const CANON = path.join(ROOT, 'docs', '디자인_컨셉_정본_v1.md');
 const HEX_SOURCE = path.join(ROOT, 'docs', '_archive', '브랜드_색상키트_원본_CrewDossier_2026-08-01.html');
 
-/* ─── 확정 19색 (Canva 등록 순서 = 팔레트 5개) ─────────────────────────────── */
-const KIT = {
-  // 01 Core
-  '#F6F1E8': 'Cream', '#FF6B5C': 'Coral', '#1A2340': 'Navy', '#C8FF3D': 'Lime', '#171820': 'Ink',
-  // 02 Cream Family
-  '#FBF7EE': 'Paper', '#EFE7D7': 'Cream 2', '#E7DDC7': 'Cream 3',
-  // 03 Coral Family
-  '#FFE9E4': 'Coral Wash', '#FFCFC6': 'Coral Soft', '#FF8877': 'Coral 2', '#E8543F': 'Coral 3',
-  // 04 Navy Family
-  '#2A3358': 'Navy 3', '#131A32': 'Navy Ink', '#0F1730': 'Navy 2',
-  // 05 K-Culture (KC Sun만 v1.5에서 모드 C 2도 잉크로 편입 · 나머지 3색은 Part 6 전용)
-  '#FF3E88': 'KC Hot Pink', '#FF6BA8': 'KC Pink 2', '#FFD447': 'KC Sun', '#4E7CFF': 'KC Cool Blue',
-};
+/* ─── 확정 19색 — 2026-08-06 토큰 단일화: 목록의 정본은 docs/디자인_토큰.json 하나다.
+ *     (같은 목록을 두 곳에 적으면 갈라진다 — 여기는 파생만 한다. 팔레트 구분·직책도 JSON에 있다.) */
+const 토큰 = require('../docs/디자인_토큰.json');
+const KIT = Object.fromEntries(토큰.색.킷19.map((c) => [c.hex.toUpperCase(), c.이름]));
 
 /* 완전히 죽은 색 — 어느 층에서도 되살아나면 안 된다. 등장 자체를 막는다. */
 const DEAD = {
@@ -191,6 +182,22 @@ test('자리 한정 폐기색(#FF6D00·#3D5AFE)이 새로 늘지 않았다', () 
 /* 08-01 실사고 — hex·rgba 문자열 검색을 전부 통과한 파일에서 구 색이 캔버스 픽셀 3,097개로 살아 있었다.
  * 원인은 색을 숫자로 하나씩 쓴 코드(`d[i]=245; d[i+1]=241; d[i+2]=232;`). 어떤 문자열 패턴에도 안 걸린다.
  * 오탐 실측 = 현재 저장소 전체에서 0건이므로 기계화해도 안전하다. */
+/* SVG 패스 좌표는 색이 될 수 없는 층이다 — 2026-08-06 실측: 아이콘 원본(Phosphor 256 격자)의
+ * `d="…M8,8… 11…"` 이 #08080B(8,8,11)·#101528(16,21,40) 삼중항과 우연히 일치해 첫 오탐 2건.
+ * 색은 fill·stroke·hex 문자열로만 살고 그 층은 2절이 그대로 지키므로, 여기서만 d 속성을 걷어낸다.
+ * 아래 픽스처 2줄이 「걷어내고도 잡는다 / 패스는 안 잡는다」를 함께 못박는다. */
+const stripSvgPathData = (src) => src.replace(/\bd="[^"]*"/g, ' ');
+test('픽스처: RGB 숫자 탐지는 살아 있고, SVG 패스 좌표는 잡지 않는다', () => {
+  const detect = (src) => {
+    const s = stripSvgPathData(src);
+    return Object.keys(DEAD).some((hex) => {
+      const [r, g, b] = rgb(hex);
+      return new RegExp(`\\b${r}\\b[\\s\\S]{0,50}?\\b${g}\\b[\\s\\S]{0,50}?\\b${b}\\b`).test(s);
+    });
+  };
+  assert.ok(detect('d[i]=245; d[i+1]=241; d[i+2]=232;'), '캔버스 픽셀 대입(#F5F1E8)을 놓친다 — 탐지력이 죽었다');
+  assert.ok(!detect('<path d="M8,8a4,4,0,0,1,11,0Z"/>'), 'SVG 패스 좌표를 색으로 오인한다');
+});
 test('폐기색을 RGB 숫자로 직접 쓴 곳이 없다(캔버스 픽셀 우회 차단)', () => {
   const hits = [];
   for (const [hex, fix] of Object.entries(DEAD)) {
@@ -198,7 +205,7 @@ test('폐기색을 RGB 숫자로 직접 쓴 곳이 없다(캔버스 픽셀 우�
     // 세 성분이 짧은 창 안에 순서대로 나타나는 경우만 — 좌표·크기 숫자와의 우연한 일치를 피한다
     const re = new RegExp(`\\b${r}\\b[\\s\\S]{0,50}?\\b${g}\\b[\\s\\S]{0,50}?\\b${b}\\b`);
     for (const [rel, src] of targets) {
-      const m = src.match(re);
+      const m = stripSvgPathData(src).match(re);
       if (m) hits.push(`${rel}: rgb(${r},${g},${b}) = ${hex} → ${fix}\n      ${JSON.stringify(m[0].slice(0, 60))}`);
     }
   }

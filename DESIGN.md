@@ -66,6 +66,7 @@
 | 산출물 | 정본·검사 통로 |
 |---|---|
 | 발표물·인쇄물 10종 | [발표물 브랜드킷](docs/발표물/_브랜드킷.md) + `tools/발표물린트.js` + 빌드 `tools/발표물빌드.js`(폰트 임베드) |
+| 디자인 토큰(색·서체 값의 기계 원천) | [디자인 토큰](docs/디자인_토큰.json) → `node tools/토큰빌드.js` → `docs/tools/synk-tokens.css` — **새 산출물은 토큰을 소비**(동결된 구 산출물 소급 개서 금지 · 정합 = `tests/토큰정본.test.js`) |
 | 인쇄 공통 규격 | `@page` margin 0 · `print-color-adjust: exact` · **자립형 1파일**(외부 자원 0) · 색+패턴 이중 표기(흑백 재복사 전제) |
 | 바탕화면 지도·표 | 유호님 지시: PDF+HTML 쌍으로 바탕화면 `SYNK_지도`에 — PDF는 헤드리스 크롬, `@media print` 없으면 색이 안 찍힌다 |
 | 콘텐츠(보이스·금칙어) | `.claude/skills/synk-brand` — 시각이 아니라 말의 규칙 |
