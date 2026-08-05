@@ -74,3 +74,5 @@ tools/notebooklm-drive.log
 .claude/agent-memory-local
 .claude/first-run
 .claude/assistant-daemon-state.json
+# Added by code-review-graph
+.code-review-graph/
