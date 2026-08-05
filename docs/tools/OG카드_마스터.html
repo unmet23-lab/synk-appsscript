@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>SYNK OG 카드 마스터 1200×630</title>
+<!-- 링크 미리보기(페북·인스타·카톡) 마스터 카드 — 값 원천 = docs/디자인_토큰.json v10
+     빌드: python docs/tools/브랜드폰트_임베드.py (폰트 서브셋 임베드) → 헤드리스 크롬 1200×630 스크린샷
+     로고 = 발표물 브랜드킷 §3 W5 도형 정본 복사(좌표 재작도 금지) · 슬로건 = 확정 정본
+     아래 link 는 「빌드 전 미리보기」용 — 최종 픽셀은 임베드 폰트가 결정한다(SUIT 900 포함) -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&family=DM+Mono:wght@300;400;500&display=swap">
+<style>
+/*@FONTS@*/
+/*@SUIT900@*/
+*{margin:0;box-sizing:border-box}
+html,body{width:1200px;height:630px;overflow:hidden}
+body{background:#0F1730;color:#F6F1E8;position:relative;
+  font-family:'Inter Tight','SUIT',system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif}
+/* 시냅스 노드·링크 모티프 — 잉크의 저채도(Navy 3), 배경보다 살짝 밝게만 */
+svg.net{position:absolute;inset:0}
+.wrap{position:absolute;left:96px;bottom:88px}
+.lab{font-family:'DM Mono',ui-monospace,Consolas,monospace;font-size:22px;letter-spacing:.24em;
+  color:#FF6B5C;margin-bottom:26px}
+.logo{width:420px;display:block;margin-left:-14px}
+.slogan{font-family:'SUIT','Inter Tight',system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  font-weight:900;font-size:52px;letter-spacing:-0.04em;line-height:1.3;margin-top:18px}
+</style></head><body>
+
+<svg class="net" viewBox="0 0 1200 630" fill="none">
+  <g stroke="#2A3358" stroke-width="2">
+    <path d="M840 120 L1010 210 L920 350"/>
+    <path d="M1010 210 L1130 150"/>
+    <path d="M920 350 L1080 430 L1010 210" opacity=".55"/>
+  </g>
+  <g fill="#2A3358">
+    <circle cx="840" cy="120" r="7"/><circle cx="1130" cy="150" r="5"/>
+    <circle cx="920" cy="350" r="6"/><circle cx="1080" cy="430" r="5"/>
+  </g>
+  <circle cx="1010" cy="210" r="9" fill="#FF6B5C"/>
+</svg>
+
+<div class="wrap">
+  <div class="lab">SYNK LAB</div>
+  <!-- W5 축약 워드마크 · 어두운 바탕 (도형 정본) -->
+  <svg class="logo" viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
+    <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif"
+          font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
+    <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
+  </svg>
+  <div class="slogan">점수를 넘어,<br>삶을 설계합니다</div>
+</div>
+
+</body></html>

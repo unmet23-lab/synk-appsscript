@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SYNK 사운드 아이덴티티 — 후보 시청 (2026-08-06)</title>
+<!-- 값 원천 = docs/디자인_토큰.json v10 · 이 파일은 2026-08-06 동결 판단재료(스냅샷) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&family=DM+Mono:wght@300;400;500&display=swap">
+<style>
+*{box-sizing:border-box;margin:0}
+body{background:#FBF7EE;color:#171820;max-width:860px;margin:0 auto;padding:48px 28px 80px;
+  font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  font-weight:500;letter-spacing:-0.02em}
+h1{font-weight:800;letter-spacing:-0.04em;font-size:30px;line-height:1.25}
+h2{font-weight:800;letter-spacing:-0.04em;font-size:19px;margin:40px 0 4px}
+p.sub{color:#2A3358;font-size:14px;margin-top:8px;line-height:1.65}
+.mono{font-family:'DM Mono',ui-monospace,Consolas,monospace;letter-spacing:.08em;font-size:11px;text-transform:uppercase;color:#2A3358}
+.rules{background:#FFE9E4;border-radius:14px;padding:18px 20px;margin-top:20px;font-size:14px;line-height:1.8}
+.rules b{font-weight:800}
+.ev{margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.card{background:#F6F1E8;border:1px solid #E7DDC7;border-radius:14px;padding:16px 14px}
+.card h3{font-size:14.5px;font-weight:800;letter-spacing:-0.02em}
+.card .d{font-size:12px;color:#2A3358;margin:4px 0 12px;line-height:1.55}
+button{display:block;width:100%;margin-top:8px;padding:11px 12px;border:0;border-radius:11px;
+  background:#FF6B5C;color:#171820;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer}
+button:active{background:#E8543F}
+button span{display:block;font-family:'DM Mono',ui-monospace,Consolas,monospace;font-weight:400;
+  font-size:9.5px;letter-spacing:.06em;margin-top:3px;color:#171820;opacity:.75}
+.pick{margin-top:36px;font-size:15px;line-height:1.7}
+</style></head><body>
+
+<h1>사운드 아이덴티티 — 첫 후보 9개</h1>
+<p class="sub">게임화 앱인데 소리 규칙이 브랜드에 없었다 — 학생이 하루 수십 번 듣게 될 층.
+아래는 방향을 가르기 위한 <b>합성 스케치</b>다(최종 음원 아님 · Web Audio 합성이라 파일 0개).
+버튼을 누르면 그 자리에서 소리가 난다 — 폰에서도 열린다.</p>
+
+<div class="rules"><b>규칙 초안 4 (유호님 판정 대상)</b><br>
+① 한 소리 <b>400ms 이하</b> — 하루 수십 회 반복을 버티는 길이 ·
+② <b>실패음은 없다</b> — 오답에도 하강음·버저 금지, 「다음 시도 초대」 음만(금칙어 정신의 소리판) ·
+③ 파형은 <b>사인·트라이앵글만</b>(배음 적어 반복 피로가 낮다 — 카지노 금관·벨 금지) ·
+④ 음고는 <b>C 펜타토닉 안</b> — 연속으로 울려도 불협이 안 생긴다.</div>
+
+<h2>1 · 포인트 획득 <span class="mono">가장 자주 울린다 — 가장 짧아야 한다</span></h2>
+<div class="ev">
+<div class="card"><h3>A · 픽</h3><div class="d">한 음 위로 스치기. 존재감 최소 — 「쌓였다」를 소리 점 하나로.</div>
+<button onclick="pik()">듣기<span>sine C6→G6 · 90ms</span></button></div>
+<div class="card"><h3>B · 동전</h3><div class="d">두 음 짧은 상행. 게임 문법에 가장 가깝다.</div>
+<button onclick="coin()">듣기<span>tri E6+A6 · 120ms</span></button></div>
+<div class="card"><h3>C · 물방울</h3><div class="d">부드러운 글라이드 한 방울. 셋 중 가장 조용한 성격.</div>
+<button onclick="drop()">듣기<span>sine A5→D6 · 110ms</span></button></div>
+</div>
+
+<h2>2 · 성취(퀘스트·레벨업) <span class="mono">하루 몇 번 — 조금 길어도 된다</span></h2>
+<div class="ev">
+<div class="card"><h3>A · 3음 상행</h3><div class="d">C-E-G 정공법. 명확한 「해냈다」.</div>
+<button onclick="up3()">듣기<span>tri C5·E5·G5 · 270ms</span></button></div>
+<div class="card"><h3>B · 화음 번짐</h3><div class="d">두 음이 동시에 울리고 잦아든다. 차분한 명품 쪽.</div>
+<button onclick="bloom()">듣기<span>sine C5+G5 · 320ms</span></button></div>
+<div class="card"><h3>C · 펜타 아르페지오</h3><div class="d">네 음이 굴러 올라간다. 가장 화려한 후보.</div>
+<button onclick="arp()">듣기<span>sine C5·D5·E5·G5 · 340ms</span></button></div>
+</div>
+
+<h2>3 · 알림(숙제 도착 등) <span class="mono">앱 밖에서도 울린다 — 가장 점잖아야 한다</span></h2>
+<div class="ev">
+<div class="card"><h3>A · 단음</h3><div class="d">한 음, 낮은 볼륨. 「똑」.</div>
+<button onclick="one()">듣기<span>sine E5 · 140ms</span></button></div>
+<div class="card"><h3>B · 두 음 하강</h3><div class="d">부드러운 마침. 재촉하지 않는 초대(브랜드 보이스의 소리판).</div>
+<button onclick="down2()">듣기<span>sine G5→E5 · 240ms</span></button></div>
+<div class="card"><h3>C · 목금</h3><div class="d">아주 짧고 둥근 타점 하나.</div>
+<button onclick="wood()">듣기<span>tri A4 · 70ms</span></button></div>
+</div>
+
+<p class="pick"><b>유호님 결정 3+1</b> — 각 줄에서 하나씩(예: <b>1B · 2B · 3B</b>), 그리고 규칙 초안 4개 가부.
+고르시면 그 성격(주파수·길이·파형)을 토큰 곁에 「사운드 규칙」으로 박고, 실제 음원 제작은 앱 UI 단계에서 이 규칙대로 발주합니다.</p>
+
+<script>
+let C;
+const ctx=()=> C||(C=new (window.AudioContext||window.webkitAudioContext)());
+function tone(f0,dur,type,when=0,f1,g=0.13){
+  const c=ctx(),t=c.currentTime+when,o=c.createOscillator(),v=c.createGain();
+  o.type=type;o.frequency.setValueAtTime(f0,t);
+  if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  v.gain.setValueAtTime(g,t);v.gain.exponentialRampToValueAtTime(0.0008,t+dur);
+  o.connect(v).connect(c.destination);o.start(t);o.stop(t+dur+.02);
+}
+const pik =()=>tone(1046,.09,'sine',0,1568);
+const coin=()=>{tone(1318,.05,'triangle');tone(1760,.07,'triangle',.05)};
+const drop=()=>tone(880,.11,'sine',0,1174);
+const up3 =()=>{tone(523,.09,'triangle');tone(659,.09,'triangle',.09);tone(784,.12,'triangle',.18)};
+const bloom=()=>{tone(523,.32,'sine',0,null,.10);tone(784,.32,'sine',.02,null,.08)};
+const arp =()=>{[523,587,659,784].forEach((f,i)=>tone(f,.10,'sine',i*.075))};
+const one =()=>tone(659,.14,'sine',0,null,.09);
+const down2=()=>{tone(784,.12,'sine',0,null,.09);tone(659,.14,'sine',.11,null,.08)};
+const wood=()=>tone(440,.07,'triangle',0,null,.11);
+</script>
+</body></html>
