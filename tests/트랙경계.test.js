@@ -360,16 +360,83 @@ test('🔴 처방-실행층 결속 — 「수동 재출력」 안내는 --no-sav
     `🔴 재출력 처방이 사본을 갱신한다(${m[1]}) — 점검하러 돌린 한 번이 남의 인계문을 밀어낸다`);
 });
 
-test('🔴 처방-실행층 결속 — wake·/close·track-boundary 가 가리키는 인계문 도구가 실재한다', () => {
+test('🔴 처방-실행층 결속 — wake·/close·블록 지시가 가리키는 인계문 도구가 실재한다', () => {
   assert.ok(fs.existsSync(path.join(ROOT, 'tools', '인계문.js')), '도구 실물이 없다');
+  // ⚠ 두 훅의 블록 지시문은 **lib/session-report.js(blockOrder)** 하나에서 파생된다(F122).
+  //   훅 파일 본문을 뒤지면 파생 뒤에는 영영 못 찾는다 — 출처를 따라간다.
   for (const [파일, 이름] of [
-    [path.join(HOOKS, 'context-budget.js'), 'context-budget(wake ④)'],
-    [path.join(HOOKS, 'track-boundary.js'), 'track-boundary'],
+    [path.join(HOOKS, 'context-budget.js'), 'context-budget(수동 재출력 안내)'],
+    [path.join(HOOKS, 'lib', 'session-report.js'), 'blockOrder(두 훅의 블록 지시 원천)'],
     [path.join(ROOT, '.claude', 'skills', 'close', 'SKILL.md'), '/close 스킬'],
   ]) {
     assert.ok(fs.readFileSync(파일, 'utf8').indexOf('node tools/인계문.js') !== -1,
       `${이름} 이 인계문 출력 도구를 안 가리킨다 — 지시문구가 화면에 나오는 경로가 끊긴다(F096)`);
   }
+});
+
+/* F122 (유호님 08-06 교정: "마지막쯤 한번, 마지막에 또 한번") — 블록을 지시하는 훅이 **둘**이고
+ * 임계가 같은 값(300k)이라 한 세션에서 둘 다 운다. 서로를 모른 채 각자 「코드 블록으로 붙여라」를
+ * 시켜서 같은 블록이 두 번 나갔다. 상태를 handoff-store 한 곳에 두고 못박는다.
+ *
+ * **양쪽 순서를 다 검사한다** — 어느 쪽이 먼저 우는지는 커밋이 턴 어디에 떨어지느냐에 달렸고
+ * 고정돼 있지 않다. 한 순서만 검사하면 반대 순서로 조용히 두 번 나간다. */
+test('🔴 F122 — 두 훅이 같은 세션에서 울어도 인계문 블록은 한 번만 지시된다', () => {
+  const CB = path.join(HOOKS, 'context-budget.js');
+  const 커밋 = { tool_name: 'Bash', tool_input: { command: 'git commit -m "x" -- a.md' }, tool_response: 성공 };
+
+  const 예산 = (cwd, sid, st) => {
+    const r = spawnSync(process.execPath, [CB], {
+      input: JSON.stringify({ session_id: sid, hook_event_name: 'Stop', transcript_path: 트랜스크립트(400_000), cwd }),
+      encoding: 'utf8', cwd, timeout: 20000,
+      env: { ...process.env, SYNK_CTXBUDGET_DIR: st, CLAUDE_CODE_HOST_SESSION_ID: '' },
+    });
+    const j = JSON.parse(String(r.stdout || '{}'));
+    // AI 를 움직이는 것은 additionalContext 뿐이다 — systemMessage(유호님 화면)는 다른 채널이다
+    return (j.hookSpecificOutput && j.hookSpecificOutput.additionalContext) || '';
+  };
+  const 경계 = (cwd, sid, st) => 돌려({ ...커밋, cwd, session_id: sid, transcript_path: 트랜스크립트(400_000) }, st).본문;
+
+  const 블록수 = (s) => (String(s).match(/── 다음 세션 인계문 ──/g) || []).length;
+  const A = '17027542-8024-46b6-932b-559733264a1e';
+  const B = '7dd54149-844f-4dc1-893a-e2f470207d85';
+
+  for (const [이름, 먼저, 나중] of [['경계→예산', 경계, 예산], ['예산→경계', 예산, 경계]]) {
+    const st = 임시('synk-f122-'); const cwd = 임시('synk-f122-cwd-');
+    const 첫 = 먼저(cwd, A, st);
+    const 둘 = 나중(cwd, A, st);
+
+    assert.equal(블록수(첫) + 블록수(둘), 1,
+      `🔴 ${이름}: 한 세션에서 인계문 블록이 ${블록수(첫) + 블록수(둘)}번 지시됐다 — 유호님 화면에 같은 블록이 두 번 나간다(F122 그 증상)`);
+    assert.equal(블록수(첫), 1, `🔴 ${이름}: 먼저 운 훅이 블록을 안 냈다 — 복사할 실물이 화면에 없다(F096)`);
+    // 두 번째는 **침묵이 아니다** — 블록만 빠지고 「이미 지시됐다」는 알려야 한다.
+    //   통째로 조용해지면 첫 지시를 AI 가 흘렸을 때 인계가 통째로 빈다.
+    assert.ok(둘.trim().length > 0, `🔴 ${이름}: 두 번째 훅이 통째로 침묵했다 — 첫 지시를 흘리면 인계가 없다`);
+    assert.match(둘, /이미 지시됐다/, `🔴 ${이름}: 두 번째 훅이 블록도 안 내고 이유도 안 알린다 — AI 가 빠진 걸 결함으로 읽는다`);
+
+    // 옆 세션은 제 몫을 받는다 — 억제가 세션을 안 가르면 남의 세션이 통째로 침묵한다
+    assert.equal(블록수(먼저(cwd, B, st)), 1,
+      `🔴 ${이름}: 억제가 세션을 안 갈랐다 — 옆 세션의 인계문이 통째로 사라진다(바통 전역 1개였던 그 결함과 같은 형태)`);
+  }
+});
+
+/* claimBlock 은 **부작용이 있는 판정**이다(부르면 표식이 탄다). 지시를 내지 않는 발화가
+ * 표식을 태우면 정작 지시해야 할 훅이 침묵한다 — 증상은 「인계문이 아예 안 나옴」이다. */
+test('🔴 F122 — 깨우지 않는 발화는 블록 표식을 태우지 않는다', () => {
+  const CB = path.join(HOOKS, 'context-budget.js');
+  const st = 임시('synk-f122-warn-'); const cwd = 임시('synk-f122-warncwd-');
+  const sid = '2f9a7c31-0d55-4a1e-9f2c-6b8e4d0a7c11';
+  const 돌림 = (ctx) => {
+    const r = spawnSync(process.execPath, [CB], {
+      input: JSON.stringify({ session_id: sid, hook_event_name: 'Stop', transcript_path: 트랜스크립트(ctx), cwd }),
+      encoding: 'utf8', cwd, timeout: 20000,
+      env: { ...process.env, SYNK_CTXBUDGET_DIR: st, CLAUDE_CODE_HOST_SESSION_ID: '' },
+    });
+    const j = JSON.parse(String(r.stdout || '{}'));
+    return (j.hookSpecificOutput && j.hookSpecificOutput.additionalContext) || '';
+  };
+  assert.equal(돌림(210_000), '', '🟡 에서 AI 를 깨웠다 — 아직 정리할 때가 아니다');
+  assert.match(돌림(310_000), /── 다음 세션 인계문 ──/,
+    '🔴 🟡 발화가 블록 표식을 미리 태웠다 — 정작 🔴 에서 블록이 안 나온다(침묵은 중복보다 나쁘다)');
 });
 
 test('handoff-store — 워크트리와 메인이 **같은 키**를 받는다 (바통이 유실되던 자리)', () => {
@@ -427,7 +494,7 @@ test('🔴 등록층 — settings.json 이 track-boundary 를 실제로 부르�
 test('🔴 이 스위트는 실저장소 docs/_ops/인계문.md 를 오염시키지 않는다 (F096)', () => {
   let 본문 = '';
   try { 본문 = fs.readFileSync(path.join(ROOT, 'docs', '_ops', '인계문.md'), 'utf8'); } catch (_) { return; }
-  const 가짜 = /^## .* · 세션 (s[1-6]|block|17027542|7dd54149|aaaaaaaa|bbbbbbbb|cccccccc|dddddddd|mine2222|other111|wtsess|tool-tes)( · |\s*$)/m;
+  const 가짜 = /^## .* · 세션 (s[1-6]|block|17027542|7dd54149|2f9a7c31|aaaaaaaa|bbbbbbbb|cccccccc|dddddddd|mine2222|other111|wtsess|tool-tes)( · |\s*$)/m;
   const 잡힘 = 본문.match(가짜);
   assert.equal(잡힘, null,
     `🔴 시험의 가짜 세션 블록이 실인계문에 있다(세션 ${잡힘 && 잡힘[1]}) — 유호님이 "복사해 붙이라"고 안내받는 파일이 오염됐다(F096 실사고). 훅 호출에 cwd 를 실저장소로 준 테스트를 찾아라`);

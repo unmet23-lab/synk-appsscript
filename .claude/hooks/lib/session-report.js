@@ -110,6 +110,37 @@ function frame(msg) {
   return `── 다음 세션 인계문 ──\n${msg}\n──────────────────────`;
 }
 
+/**
+ * 인계문 블록 **지시문** — 세션당 한 번만 나간다 (F122).
+ *
+ * 지시하는 훅이 둘(context-budget · track-boundary)인데 문구도 판정도 각자 적고 있었다.
+ * 임계가 같은 값(300k)이라 한 세션에서 둘 다 울고, 서로를 몰라 블록이 두 번 나갔다
+ * (유호님 08-06: "마지막쯤 한번, 마지막에 또 한번"). 문구는 여기 하나에서 파생시킨다 —
+ * 두 곳에 적으면 한 쪽만 고쳐지고 증상은 조용히 「두 번 나감」이다(CLAUDE.md 등록층 ④).
+ *
+ * 두 번째로 부른 쪽에는 **블록을 주지 않는다.** 훅은 AI 가 실제로 화면에 냈는지 못 보지만
+ * AI 는 제 출력을 보므로, 「아직 안 냈으면 지금 한 번」의 판단만 그쪽에 남긴다.
+ */
+function blockOrder(cwd, sessionId, 인계문) {
+  const store = require(path.join(__dirname, 'handoff-store.js'));
+  if (!store.claimBlock(cwd, sessionId)) {
+    return {
+      첫판: false,
+      본문: '⚠ 인계문 블록은 **이 세션에서 이미 지시됐다**(다른 훅이 먼저 냈다 · F122). '
+        + '아직 화면에 안 냈으면 지금 한 번 낸다 — **이미 냈으면 다시 붙이지 않는다.** '
+        + '같은 블록이 두 번 나가면 유호님이 어느 것을 복사할지 알 수 없다.',
+    };
+  }
+  return {
+    첫판: true,
+    본문: '**아래 인계문 전문을 코드 블록으로 화면에 그대로 옮긴다** — 파일 경로나 「자동 입력된다」 '
+      + '안내로 **대체 금지**(복사할 실물이 화면에 있어야 한다 · 08-04 실측: 실물 없는 안내는 '
+      + '유호님에게 「안 된다」로 보였다). 이 발화 뒤 커밋·보드가 더 진행됐으면 `node tools/인계문.js` 로 '
+      + '새로 뽑아 그걸 붙인다. **세션당 한 블록만** — 아래는 지금 시점의 미리보기다.\n\n'
+      + frame(인계문),
+  };
+}
+
 /** 인계문이 쌓이는 파일. repo 안이라 **커밋하면 3계정 어디서든 보인다.** */
 const 인계파일 = ['docs', '_ops', '인계문.md'];
 /** 세션별 인계문이 사는 폴더 — **저장은 여기가 정본**이고 위 파일은 파생 목차다. */
@@ -255,4 +286,4 @@ function writeHandoffFile(cwd, msg, meta) {
   } catch (_) { return null; }
 }
 
-module.exports = { dirtyCount, myCommits, hostSessionId, boardTrack, buildHandoff, frame, writeHandoffFile };
+module.exports = { dirtyCount, myCommits, hostSessionId, boardTrack, buildHandoff, frame, blockOrder, writeHandoffFile };
