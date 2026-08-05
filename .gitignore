@@ -44,6 +44,14 @@ __pycache__/
 *.pyc
 tools/bench/_fixture_recordings/
 
+# [2026-08-05] repo 안 synk-talk/ 는 정본이 아니다 — 정본은 C:\Users\q1212\Documents\SYNK-talk(자체 git repo).
+#   이 트리는 자체 .git 없는 Expo 스타터 스캐폴드로 실측됐다(정본과 diff — 정본에만 .github·docs·evals가 있고
+#   겹치는 파일도 전부 템플릿 기본값). untracked 로 두면 매 git status 에 57건이 떠서 진짜 신호를 가리고,
+#   git add 에 딸리면 통째로 담긴다(ARC-AGI-3-Agents/ 와 같은 계열). 삭제는 유호님 승인 대기 — 그 전까지 이 줄이 방어선.
+#   ⚠ 이 규칙은 **임시**다 — 삭제와 같은 커밋에서 이 블록도 걷는다(tests/무시규칙.test.js 가 실물·규칙 동거를 강제:
+#   실물 없이 규칙만 남으면 다음 오붙여넣기가 영원히 조용해진다 — F079 재발 형태).
+synk-talk/
+
 # [2026-08-04] 예약 작업(SYNK_NotebookLM)이 남기는 실행 로그. 기기별이고 매 실행 늘어난다.
 #   추적하면 병행 세션 커밋마다 딸려 들어가 diff를 가린다. 지워도 다음 실행에 다시 생긴다.
 tools/notebooklm-drive.log
