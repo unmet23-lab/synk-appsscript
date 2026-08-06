@@ -308,7 +308,10 @@ test('[v9.145] 이미 서 있는 시트에 새 열 이름표를 붙인다 — en
 
 const 교재소스 = () => fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8').replace(/\r\n/g, '\n');
 
-test('[v9.187] 수집 4시트 전부 급수가 맨 끝 열에 있다 — 기존 열 순서는 불변', () => {
+/* [v9.190] 제목을 「급수가 맨 끝」에서 「증분은 끝에만」으로 고친다 — hw_feedback은 이미 급수 뒤에
+ *   3열이 더 있어(model·prompt_ver…) 구 제목이 자기 본문과 어긋나 있었다. 지키는 것은 처음부터
+ *   **기존 열 순서 불변 + 새 열은 끝에 추가**였고, 그래야 위치로 읽는 코드가 안 밀린다. */
+test('[v9.187] 수집 4시트 — 기존 열 순서 불변, 새 열은 맨 끝에만 붙는다', () => {
   const QH = JSON.parse(code.match(/const QUIZ_LOG_HEADERS = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
   assert.deepEqual(QH.slice(0, 11), ['id', 'student_id', '퀴즈ID', '유형', '문제', '고른답', '정답', '정답여부', '확신도', '제출일', 'created_at'],
     'quiz_log 기존 11열 순서가 바뀌었다 — 위치로 읽는 코드가 전부 어긋난다');
@@ -320,7 +323,7 @@ test('[v9.187] 수집 4시트 전부 급수가 맨 끝 열에 있다 — 기존 
   const VH = JSON.parse(교재소스().match(/const VOICE_LOG_HEADERS = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
   assert.deepEqual(VH.slice(0, 9), ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at', '전사', '전사상태', '전사일시'],
     'voice_log 기존 9열 순서가 바뀌었다');
-  assert.deepEqual(VH.slice(9), ['급수'], 'voice_log 급수가 맨 끝이 아니다');
+  assert.deepEqual(VH.slice(9), ['급수', '미션ID'], 'voice_log 증분 2열(급수·미션ID)이 이 순서로 끝에 있지 않다 — 라이브 시트가 이 순서로 서 있어 바꾸면 이름표와 값이 어긋난다');
   // talk_log는 [v9.145] 검사(H.slice(8))가 급수까지 함께 못박는다 — 여기 다시 적으면 정본이 두 벌이 된다
 });
 
@@ -333,7 +336,11 @@ test('[v9.187] 급수가 행에 실제로 실린다 — 열만 만들면 이름�
     'talk 성공·실패 행 중 한쪽에 급수가 빠졌다(실패 행도 학생 문장 절반을 담는 데이터다)');
   const vs = (() => { const t = 교재소스(); return t.slice(t.indexOf('function voiceSweep_(ss)'), t.indexOf('function writeVoiceLinks_')); })();
   assert.ok(/lvOf\[k\] = Number\(r\[66\]\) \|\| 0/.test(vs), 'voice가 profiles BO67(급수)을 읽지 않는다');
-  assert.ok(/lvOf\[sid\] \|\| 0\]\)/.test(vs), 'voice 적재 행에 급수가 없다');
+  /* [v9.190] 앵커를 `0])`(=급수가 맨 끝)에서 **push 배열 안**으로 옮긴다. 이 검사의 뜻은 "급수가 행에
+   *   실린다"인데 구 앵커는 "급수가 마지막 칸이다"를 요구했다 — 미션ID가 뒤에 붙자 정상 적용이 ❌로 보였다.
+   *   push 배열을 잘라서 보므로 범위는 오히려 좁아진다(함수 아무 데나 있는 문자열로는 통과 못 한다). */
+  const vPush = (vs.match(/vOut\.push\(\[[\s\S]*?\]\);/) || [''])[0];
+  assert.ok(/lvOf\[sid\] \|\| 0/.test(vPush), 'voice 적재 행에 급수가 없다');
 });
 
 test('[v9.187] 대화가 급수를 실제로 전달한다 — 「급수에 맞춰 조절」 지시만 있고 급수를 안 보내던 결함의 회귀', () => {
