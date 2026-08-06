@@ -434,7 +434,7 @@ test('🔑 세션이 여러 개여도 서로 덮지 않는다 — 최신 하나�
   assert.strictEqual(batons(st).length, 3, `세션별로 갈라지지 않았다: ${batons(st)}`);
 
   // 셋을 **구별 가능하게** 만든다. 이게 없으면 「최신을 집는가」를 검사하는 척만 하게 된다 —
-  // 실제로 변이(최신 대신 최古 선택)를 넣었을 때 초록으로 통과했다(08-04 변이 실측).
+  // 실제로 변이(최신 대신 가장 오래된 것 선택)를 넣었을 때 초록으로 통과했다(08-04 변이 실측).
   const order = ['SESS-A', 'SESS-B', 'SESS-C'];
   for (const f of batons(st)) {
     const p = path.join(st, f);
