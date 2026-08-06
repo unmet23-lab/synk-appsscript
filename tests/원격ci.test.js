@@ -15,7 +15,8 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-const { 판정, 담는가만들기 } = require(path.join(ROOT, 'tools', '원격ci.js'));
+const 도구경로 = path.join(ROOT, 'tools', '원격ci.js');
+const { 판정, 상태결정, 브랜치정하기, 담는가만들기 } = require(도구경로);
 
 const run = (o) => ({
   headSha: 'a'.repeat(40), status: 'completed', conclusion: 'success',
@@ -88,6 +89,41 @@ test('담은 것과 안 담은 것이 섞이면 담은 것만 본다', () => {
   assert.equal(판정({ runs, 담는가 }).상태, '초록', '내 커밋을 안 담은 적색을 내 적색으로 읽었다');
 });
 
+// ── 미실행의 두 종류 · 브랜치 (적대 반박 1패스가 잡은 것) ──────────────────
+
+test('🔴 push 안 된 커밋은 「미push」다 — 「웹훅 끊김」과 처방이 반대다', () => {
+  /* 둘 다 run 0건이라 증상이 같다. 한 문구로 내면 처방(`gh workflow run --ref master`)이
+   * origin 을 돌려 내 커밋을 영영 안 담는다 — 따라 해도 안 풀리는 처방이 된다. */
+  const r = 상태결정({ push됨: false, runs: [], 담는가: 전부아님 });
+  assert.equal(r.상태, '미push');
+});
+
+test('🔴 미push 는 초록 run 이 있어도 이긴다 — 남의 초록을 내 초록으로 읽지 않는다', () => {
+  const r = 상태결정({ push됨: false, runs: [run({})], 담는가: 전부담김 });
+  assert.equal(r.상태, '미push', 'push 도 안 한 커밋을 초록이라 했다');
+});
+
+test('push 됐으면 평소 판정으로 넘어간다', () => {
+  assert.equal(상태결정({ push됨: true, runs: [run({})], 담는가: 전부담김 }).상태, '초록');
+  assert.equal(상태결정({ push됨: true, runs: [], 담는가: 전부담김 }).상태, '미검증');
+});
+
+test('분리 HEAD·빈 값은 master 로 떨어진다 — 「HEAD 라는 브랜치」를 조회하면 0건이 미검증이 된다', () => {
+  assert.equal(브랜치정하기('HEAD'), 'master');
+  assert.equal(브랜치정하기(''), 'master');
+  assert.equal(브랜치정하기(undefined), 'master');
+  assert.equal(브랜치정하기(' master\n'), 'master');
+  assert.equal(브랜치정하기('claude/foo-bar'), 'claude/foo-bar', '진짜 브랜치를 master 로 뭉갰다');
+});
+
+test('🔴 gh 조회에 --branch 를 실제로 넘긴다 (남의 브랜치 초록이 내 초록이 된다)', () => {
+  /* ⚠ 주석을 지우고 본다 — 위 설명 주석에 `--branch` 가 적혀 있어 검사가 산문을 보고 통과한다(F087). */
+  const 소스 = require('node:fs').readFileSync(도구경로, 'utf8')
+    .split('\n').filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join('\n');
+  assert.match(소스, /'run',\s*'list'[\s\S]{0,120}'--branch'/,
+    'gh run list 가 브랜치 필터 없이 돈다 — 폰 작업 claude/* run 이 같은 목록에 섞인다');
+});
+
 // ── 거짓양성 (실저장소) ────────────────────────────────────────────────────
 
 const git있음 = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).status === 0;
@@ -103,4 +139,27 @@ test('실저장소: 없는 헤드·쓰레기 입력은 null 이지 예외가 아
   assert.equal(담는가('not-a-sha'), null, '형식이 아닌 입력');
   assert.equal(담는가(''), null);
   assert.equal(담는가(undefined), null);
+});
+
+test('🔴 행동: 커밋이 아닌 인자는 「모름」이다 — exit 0 을 「읽었다」로 읽지 않는다',
+  { skip: !git있음 && 'git 없음' }, () => {
+    /* `git rev-parse --help` 는 exit 0 + 빈 출력이다. 그걸 통과시키면 대상이 빈 문자열이 되고
+     * 커밋 칸이 빈 채로 확신에 찬 「미검증」 + 있지도 않은 웹훅 처방이 나온다.
+     * 네트워크를 안 탄다 — rev-parse 단계에서 끝나므로 CI 에서도 그대로 돈다. */
+    const r = spawnSync(process.execPath, [도구경로, '--help'], { cwd: ROOT, encoding: 'utf8' });
+    assert.notEqual(r.status, 0, '커밋이 아닌 인자로 초록을 냈다');
+    assert.match(String(r.stderr) + String(r.stdout), /모름/,
+      '「모름」이 아니라 다른 판정을 냈다 — 못 잰 것을 잰 것처럼 말한다');
+  });
+
+test('🔴 지침·안내가 가리키는 경로가 실재한다 (죽은 명령을 상주 지침이 가리키면 안 된다)', () => {
+  const fs = require('node:fs');
+  const 상대 = 'tools/원격ci.js';
+  assert.ok(fs.existsSync(path.join(ROOT, 상대)), `${상대} 가 없다`);
+  for (const [파일, 사유] of [
+    ['CLAUDE.md', '매 턴 상주하는 지침이 없는 명령을 가리킨다'],
+    ['tools/test-ci.js', 'CI 모사 마지막 안내가 이 도구를 안 가리킨다 — 스스로 발화하지 않는 장치는 안 돈다'],
+  ]) {
+    assert.match(fs.readFileSync(path.join(ROOT, 파일), 'utf8'), new RegExp(상대), `${파일}: ${사유}`);
+  }
 });

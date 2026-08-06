@@ -44,6 +44,22 @@ function 담는가만들기(대상) {
   };
 }
 
+/* 분리 HEAD 면 `--abbrev-ref` 가 브랜치가 아니라 'HEAD' 를 준다 — 그대로 넘기면 gh 가
+ * 「HEAD 라는 브랜치」를 찾아 0건이 나오고, 그게 「미검증」으로 둔갑한다. */
+function 브랜치정하기(원시) {
+  const s = String(원시 || '').trim();
+  return (!s || s === 'HEAD') ? 'master' : s;
+}
+
+/* 🔴 push 안 된 커밋은 원격이 **검사할 수가 없다** — 「웹훅이 끊겼다」와 증상이 같지만
+ *   원인도 처방도 반대다(전자는 push, 후자는 재발화). 둘을 한 문구로 내면 처방대로 따라도
+ *   영영 안 풀린다: `gh workflow run --ref master` 는 origin 을 돌려 내 커밋을 안 담는다.
+ *   미실행 두 종류가 같은 모양이면 안 된다(CLAUDE.md 신뢰성 조항) — 그래서 먼저 가른다. */
+function 상태결정({ push됨, runs, 담는가 }) {
+  if (!push됨) return { 상태: '미push', 판정불가: 0, 담긴: 0 };
+  return 판정({ runs, 담는가 });
+}
+
 /* 순수 판정 — 탐지력은 여기에 픽스처를 부어 못박는다(실저장소 이력에 기대면 그 커밋이
  * 흘러간 뒤 검사가 죽는다 · CLAUDE.md 가드 맹점 ②). */
 function 판정({ runs, 담는가 }) {
@@ -62,30 +78,47 @@ function 판정({ runs, 담는가 }) {
   return { 상태: 완료[0].conclusion === 'success' ? '초록' : '적색', run: 완료[0], 판정불가, 담긴: 담긴.length };
 }
 
-function main() {
-  const 인자 = process.argv[2] || 'HEAD';
-  const 해석 = sh('git', ['rev-parse', 인자]);
-  if (!해석.ok) { console.error(`[원격ci] ❔ 모름 — 커밋을 못 읽었다: ${해석.사유}`); process.exit(1); }
-  const 대상 = 해석.out.trim();
-
-  // 남의 push 로 생긴 run 헤드는 fetch 전엔 로컬에 없다 → 판정불가만 잔뜩 는다. 실패해도 진행.
-  sh('git', ['fetch', 'origin', '--quiet']);
-
-  const 창 = 100; // 이보다 뒤로 밀린 run 은 못 본다 → 「미검증」으로 나온다(안전한 방향이다)
-  const gh = sh('gh', ['run', 'list', `--workflow=${CI_워크플로}`, '--limit', String(창),
-    '--json', 'headSha,status,conclusion,createdAt,databaseId']);
+/* gh 를 못 돌리면 「모름」으로 끝낸다 — 빈 목록을 돌려주면 그게 「미검증」으로 둔갑한다. */
+function gh조회(브랜치, 창) {
+  const gh = sh('gh', ['run', 'list', `--workflow=${CI_워크플로}`, '--branch', 브랜치,
+    '--limit', String(창), '--json', 'headSha,status,conclusion,createdAt,databaseId']);
   if (!gh.ok) {
     console.error(`[원격ci] ❔ 모름 — gh 를 못 돌렸다: ${gh.사유}`);
     console.error('   초록이 아니다. gh auth status 로 인증부터 본다.');
     process.exit(1);
   }
-  let runs;
-  try { runs = JSON.parse(gh.out); } catch (e) {
+  try { return JSON.parse(gh.out); } catch (e) {
     console.error(`[원격ci] ❔ 모름 — gh 출력이 JSON 이 아니다: ${e.message}`);
     process.exit(1);
   }
+}
 
-  const r = 판정({ runs, 담는가: 담는가만들기(대상) });
+function main() {
+  const 인자 = process.argv[2] || 'HEAD';
+  const 해석 = sh('git', ['rev-parse', 인자]);
+  /* ⚠ exit 0 을 「읽었다」로 읽지 않는다 — `git rev-parse --help` 는 **exit 0 + 빈 출력**이라
+   *   대상이 빈 문자열로 통과하고, 그 뒤 조상 대조가 전부 실패해 확신에 찬 「미검증」이 나온다.
+   *   헤드 쪽에서는 이 뭉개기를 막아 놓고(담는가만들기) 대상 쪽에 안 쓰면 자기모순이다. */
+  const 대상 = 해석.ok ? 해석.out.trim() : '';
+  if (!/^[0-9a-f]{40}$/i.test(대상)) {
+    console.error(`[원격ci] ❔ 모름 — 커밋을 못 읽었다: ${해석.사유 || `"${인자}" 가 커밋이 아니다`}`);
+    process.exit(1);
+  }
+
+  // 남의 push 로 생긴 run 헤드는 fetch 전엔 로컬에 없다 → 판정불가만 잔뜩 는다. 실패해도 진행.
+  sh('git', ['fetch', 'origin', '--quiet']);
+
+  /* 🔴 브랜치를 안 거르면 **남의 브랜치 초록이 내 초록으로 보인다**. syntax-check 은 브랜치
+   *   필터가 없어(on: push) 폰 작업 `claude/*` run 이 같은 목록에 섞이는데, 그 헤드가 내 커밋을
+   *   담고 있어도 검사한 나무는 내 브랜치가 아니다. 새는 방향이 「통과」라 이쪽을 먼저 막는다. */
+  const 브랜치 = 브랜치정하기(sh('git', ['rev-parse', '--abbrev-ref', 'HEAD']).out);
+  const push됨 = sh('git', ['merge-base', '--is-ancestor', 대상, `origin/${브랜치}`]).ok;
+
+  const 창 = 100; // 이보다 뒤로 밀린 run 은 못 본다 → 「미검증」으로 나온다(안전한 방향이다)
+  // push 도 안 됐으면 원격에 물어볼 것이 없다 — 네트워크를 아끼는 게 아니라 답이 이미 정해졌다.
+  const runs = push됨 ? gh조회(브랜치, 창) : [];
+
+  const r = 상태결정({ push됨, runs, 담는가: 담는가만들기(대상) });
   const 짧게 = 대상.slice(0, 7);
   const run쪽 = r.run ? `run ${r.run.databaseId} (헤드 ${String(r.run.headSha).slice(0, 7)} · ${r.run.createdAt})` : '';
 
@@ -95,10 +128,14 @@ function main() {
     console.log(`   → gh run view ${r.run.databaseId} --log-failed`);
   } else if (r.상태 === '대기') {
     console.log(`[원격ci] ⏳ 대기 — ${짧게} 를 담은 ${run쪽} 이 아직 ${r.run.status}. 초록이 아니다.`);
+  } else if (r.상태 === '미push') {
+    console.log(`[원격ci] 🔴 원격 미검증 — ${짧게} 는 아직 origin/${브랜치} 에 없다(push 전).`);
+    console.log('   원격은 없는 커밋을 검사할 수 없다 — 웹훅 문제가 아니라 내 손이 안 간 것이다.');
+    console.log(`   → git push origin ${브랜치}`);
   } else {
-    console.log(`[원격ci] 🔴 원격 미검증 — ${짧게} 를 담은 ${CI_워크플로} run 이 **0건**이다(최근 ${창}건 안에서).`);
-    console.log('   웹훅이 끊기면 이렇게 된다. 화면에선 「아직 안 돎」과 초록이 같은 모양이라 안 보인다.');
-    console.log(`   → gh workflow run ${CI_워크플로} --ref master`);
+    console.log(`[원격ci] 🔴 원격 미검증 — ${짧게} 를 담은 ${CI_워크플로} run 이 **0건**이다(${브랜치} 최근 ${창}건 안에서).`);
+    console.log('   push 는 됐는데 run 이 없다 = 웹훅이 끊겼다. 화면에선 「아직 안 돎」과 초록이 같은 모양이라 안 보인다.');
+    console.log(`   → gh workflow run ${CI_워크플로} --ref ${브랜치}`);
   }
   if (r.판정불가) {
     console.log(`   ⚠ run 헤드 ${r.판정불가}개는 로컬에 없어 못 봤다(남의 브랜치일 수 있다) — 판정에서 뺐다.`);
@@ -108,4 +145,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { 판정, 담는가만들기, CI_워크플로 };
+module.exports = { 판정, 상태결정, 브랜치정하기, 담는가만들기, CI_워크플로 };
