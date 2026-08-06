@@ -245,46 +245,73 @@ function 날문자들(원문) {
   return 결과;
 }
 
-function 훅JS전부(디렉터리) {
-  const 목록 = [];
-  for (const e of fs.readdirSync(디렉터리, { withFileTypes: true })) {
-    const p = path.join(디렉터리, e.name);
-    if (e.isDirectory()) 목록.push(...훅JS전부(p));      // lib/ 도 같은 무게로 본다
-    else if (e.name.endsWith('.js')) 목록.push(p);
-  }
-  return 목록;
-}
-
 /* 🔴 스캔 범위는 훅 디렉터리보다 넓어야 한다 (F158).
  *   SessionStart 훅으로 등록돼 **훅처럼 도는** 스크립트가 tools/ 에 산다
  *   (작업본소유자·rot-check·인계문수거·session-decisions 가 부르는 것들).
  *   실측: tools/작업본소유자.js 에 0x1F 를 심었을 때 이 검사가 조용히 통과시켰고,
  *   범위를 넓혀 재보니 tools/decision-queue.js 에 NUL 이 이미 하나 들어 있었다.
- *   「훅 폴더 밖」이라는 이유로 눈이 멀면 새는 방향은 언제나 통과다. */
-const 날문자스캔대상 = () => [
-  ...훅JS전부(path.join(ROOT, '.claude', 'hooks')),
-  ...훅JS전부(path.join(ROOT, 'tools')),
-];
+ *   「훅 폴더 밖」이라는 이유로 눈이 멀면 새는 방향은 언제나 통과다.
+ *
+ * 🔴 그래서 **폴더를 적지 않는다**(2026-08-07 2차 · cc51710).
+ *   「.claude/hooks + tools」로 넓힌 판을 저장소 전량과 대조해 보니 실물 6자리 중 **5자리가
+ *   그 밖**이었다 — `엔진_두뇌.js` 의 복합키 구분자 2건(**라이브 Apps Script 코드**)과
+ *   `tests/브리지방.test.js` 픽스처 3건. 폴더를 손으로 적는 한 목록이 곧 다음 구멍이라,
+ *   범위를 **git 이 아는 파일 전량**으로 둔다. 이러면 node_modules·.git·gitignore 된
+ *   `.claude/worktrees`(이 저장소의 임시 사본)가 규칙 하나로 빠지고, 새 폴더가 생겨도
+ *   커밋되는 순간 자동으로 대상이 된다.
+ *   · `-z` 로 받는다 — core.quotepath 기본값이 한글 경로를 이스케이프해서 그대로 쓰면
+ *     `tools/작업본소유자.js` 가 **없는 파일**이 되고, 없으면 조용히 통과다(F157 과 같은 함정).
+ *   · git 이 없으면 **skip 으로 드러낸다** — 통과와 미실행이 같은 모양이면 안 된다. */
+const 날문자스캔대상 = () => {
+  const r = spawnSync('git', ['-C', ROOT, 'ls-files', '-z', '--', '*.js', '*.mjs', '*.cjs'],
+    { encoding: 'utf8' });
+  if (r.status !== 0) return null;
+  return r.stdout.split('\u0000').filter(Boolean)
+    .filter((상대) => fs.existsSync(path.join(ROOT, 상대)));   // 지웠지만 아직 스테이지 안 된 것
+};
 
-test('④ 훅·도구 소스에 날문자가 없다 (구분자 상수는 이스케이프 표기로)', () => {
+test('④ 추적되는 JS 소스에 날문자가 없다 (구분자 상수는 이스케이프 표기로)', (t) => {
+  const 목록 = 날문자스캔대상();
+  if (!목록) return t.skip('git ls-files 를 못 돌렸다 — 검사를 **안 돌렸다**(통과 아님)');
+
   const 위반 = [];
-  for (const f of 날문자스캔대상()) {
-    for (const v of 날문자들(fs.readFileSync(f, 'utf8'))) {
-      위반.push(`${path.relative(ROOT, f).replace(/\\/g, '/')}:${v.줄} = 0x${v.코드.toString(16).padStart(2, '0')}`);
+  for (const 상대 of 목록) {
+    for (const v of 날문자들(fs.readFileSync(path.join(ROOT, 상대), 'utf8'))) {
+      위반.push(`${상대}:${v.줄} = 0x${v.코드.toString(16).padStart(2, '0')}`);
     }
   }
   assert.deepStrictEqual(위반, [],
-    '훅·도구 소스에 날문자가 있다 — 이스케이프 표기(백슬래시 u 형태)로 바꾼다:\n  ' + 위반.join('\n  '));
+    'JS 소스에 날문자가 있다 — 이스케이프 표기(백슬래시 u 형태)로 바꾼다:\n  ' + 위반.join('\n  '));
 });
 
 /* 위 검사는 「위반 0건」과 「아무것도 안 봤다」가 같은 모양이다 — 범위를 따로 못박는다.
  * 탐지력(아래 양방향 검사)은 판정 함수를 재고, 이건 그 함수가 **어디에 닿는지**를 잰다. */
-test('④ 스캔 범위가 tools/ 까지 닿는다 — 훅처럼 도는 스크립트가 거기 산다 (F158)', () => {
-  const 대상 = 날문자스캔대상().map((f) => path.relative(ROOT, f).replace(/\\/g, '/'));
-  assert.ok(대상.includes('tools/작업본소유자.js'),
-    'SessionStart 훅으로 등록된 스크립트가 스캔 밖이다 — 여기가 F158 로 실제로 샌 자리다');
-  assert.ok(대상.includes('.claude/hooks/track-collision.js'),
-    '넓히면서 원래 보던 곳을 잃었다 — 라우팅은 넓히되 버리지 않는다');
+test('④ 스캔 범위 — 훅·도구·**라이브 엔진**·테스트에 다 닿는다 (F158)', (t) => {
+  const 목록 = 날문자스캔대상();
+  if (!목록) return t.skip('git ls-files 를 못 돌렸다 — 검사를 **안 돌렸다**(통과 아님)');
+  const 대상 = new Set(목록);
+
+  const 닿아야 = [
+    ['tools/작업본소유자.js', 'SessionStart 훅으로 등록된 스크립트가 스캔 밖이다 — 여기가 F158 로 처음 샌 자리다'],
+    ['.claude/hooks/track-collision.js', '넓히면서 원래 보던 곳을 잃었다 — 라우팅은 넓히되 버리지 않는다'],
+    // 🔴 실물이 여기 있었다 — 복합키 구분자 2건. 라이브에 올라가는 코드다(.claspignore 가 엔진_*.js 를 허용한다).
+    ['엔진_두뇌.js', '라이브 Apps Script 코드가 스캔 밖이다 — 실제 위반 2건이 나온 자리다(cc51710)'],
+    // 픽스처가 날문자면 그 테스트는 자기가 무엇을 재는지 모른 채 초록이 된다.
+    ['tests/브리지방.test.js', '테스트 픽스처가 스캔 밖이다 — 위반 3건이 나온 자리다(cc51710)'],
+  ];
+  for (const [경로, 사유] of 닿아야) assert.ok(대상.has(경로), `${사유}: ${경로}`);
+
+  // 훅으로 등록된 스크립트는 **전부** 대상이어야 한다 — 목록을 손으로 적지 않으므로 자동으로 따라온다.
+  const 등록된 = new Set();
+  for (const h of allHooks) {
+    for (const [, 경로] of String(h.command).matchAll(/\$\{CLAUDE_PROJECT_DIR:-\$PWD\}\/([^"'\s]+\.js)/g)) {
+      등록된.add(경로);
+    }
+  }
+  assert.ok(등록된.size >= 20,
+    `등록 명령에서 스크립트 경로를 못 뽑았다(${등록된.size}건) — 표기가 바뀌었으면 이 검사부터 고친다`);
+  assert.deepStrictEqual([...등록된].filter((p) => !대상.has(p)), [],
+    '훅으로 등록됐는데 날문자 스캔 밖인 스크립트가 있다');
 });
 
 test('④ 탐지력 — 날문자는 잡고, 이스케이프 표기는 안 잡는다(양방향)', () => {
