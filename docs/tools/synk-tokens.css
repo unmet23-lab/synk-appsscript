@@ -20,11 +20,14 @@
   --synk-kc-pink-2:#FF6BA8; /* Part 6 전용 */
   --synk-kc-sun:#FFD447; /* 모드 C 2도 잉크 — 글자 금지 */
   --synk-kc-cool-blue:#4E7CFF; /* Part 6 전용 */
+  --synk-slate:#8A93AD; /* 보조 잉크 2(3번째 글자 층) — 바닥은 Navy 2·Navy·Navy Ink만(Navy 3 위 4.00 미달 · Paper 2.86 금지) */
+  --synk-slate-2:#5F657D; /* 보조 잉크 2(3번째 글자 층) — 바닥은 Paper·Cream·Cream 2·Coral Wash만(Cream 3 위 4.27 미달 · 다크 금지) */
   /* 시맨틱(라이트 기본) */
   --synk-바탕:#FBF7EE; /* = Paper */
   --synk-잉크:#171820; /* = Ink */
   --synk-발표물본문잉크:#1A2340; /* = Navy */
   --synk-보조잉크:#2A3358; /* = Navy 3 */
+  --synk-보조잉크2:#5F657D; /* = Slate 2 */
   --synk-신호_면:#FF6B5C; /* = Coral */
   --synk-신호_글자_대형:#E8543F; /* = Coral 3 */
   --synk-신호_바닥:#FFE9E4; /* = Coral Wash */
@@ -39,6 +42,7 @@
   --synk-바탕:#0F1730; /* = Navy 2 */
   --synk-잉크:#F6F1E8; /* = Cream */
   --synk-보조잉크:#E7DDC7; /* = Cream 3 */
+  --synk-보조잉크2:#8A93AD; /* = Slate */
   --synk-신호:#FF6B5C; /* = Coral */
   --synk-신호_보조:#FF8877; /* = Coral 2 */
   --synk-눌림:#E8543F; /* = Coral 3 */

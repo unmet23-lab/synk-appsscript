@@ -18,19 +18,22 @@ const { spawnSync } = require('node:child_process');
 const ROOT = path.resolve(__dirname, '..');
 const 토큰 = require('../docs/디자인_토큰.json');
 
-test('① 킷은 정확히 19색 — hex 형식·이름·hex 전부 유일하다', () => {
-  const 킷 = 토큰.색.킷19;
-  assert.equal(킷.length, 19, '19색이 아니다 — 키트 개정은 유호님 확정 + 정본·Canva·테스트 동시 이동이다');
+/* 킷 개수 — 19(v10 Crew Dossier 08-01) + Slate 2색(08-07 유호님 확정) = 21 */
+const 킷개수 = 21;
+
+test(`① 킷은 정확히 ${킷개수}색 — hex 형식·이름·hex 전부 유일하다`, () => {
+  const 킷 = 토큰.색.킷;
+  assert.equal(킷.length, 킷개수, `${킷개수}색이 아니다 — 키트 개정은 유호님 확정 + 정본·Canva·테스트 동시 이동이다`);
   for (const c of 킷) {
     assert.match(c.hex, /^#[0-9A-F]{6}$/, `${c.이름} hex 형식(대문자 6자리) 위반: ${c.hex}`);
     assert.ok(c.직책, `${c.이름}에 직책이 없다 — 모든 색에 직책이 있는 것이 킷의 문법이다`);
   }
-  assert.equal(new Set(킷.map((c) => c.hex)).size, 19, 'hex 중복');
-  assert.equal(new Set(킷.map((c) => c.이름)).size, 19, '이름 중복');
+  assert.equal(new Set(킷.map((c) => c.hex)).size, 킷개수, 'hex 중복');
+  assert.equal(new Set(킷.map((c) => c.이름)).size, 킷개수, '이름 중복');
 });
 
 test('② 시맨틱은 킷 이름만 참조한다(hex 신설 금지)', () => {
-  const 이름들 = new Set(토큰.색.킷19.map((c) => c.이름));
+  const 이름들 = new Set(토큰.색.킷.map((c) => c.이름));
   for (const [모드, 표] of Object.entries(토큰.색.시맨틱)) {
     if (모드.startsWith('_')) continue;
     for (const [자리, 값] of Object.entries(표)) {
@@ -41,7 +44,7 @@ test('② 시맨틱은 킷 이름만 참조한다(hex 신설 금지)', () => {
 
 test('③-1 DESIGN.md 가 인용하는 hex 전수가 킷 안에 있다', () => {
   const md = fs.readFileSync(path.join(ROOT, 'DESIGN.md'), 'utf8').toUpperCase();
-  const 킷hex = new Set(토큰.색.킷19.map((c) => c.hex));
+  const 킷hex = new Set(토큰.색.킷.map((c) => c.hex));
   const 인용 = [...new Set(md.match(/#[0-9A-F]{6}\b/g) || [])];
   assert.ok(인용.length >= 10, `DESIGN.md hex 인용이 ${인용.length}개뿐 — 추출이 헛돌고 있다`);
   for (const h of 인용) assert.ok(킷hex.has(h), `DESIGN.md 의 ${h}가 킷에 없다 — 토큰과 요약 문서가 갈라졌다`);

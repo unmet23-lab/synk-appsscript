@@ -77,6 +77,34 @@ test('키트 밖 회색·순백·순검정을 **글자와 면 양쪽에서** 잡
   assert.ok(hexes.includes('#FFFFFF'), '순백 **면**을 놓쳤다 — 철칙 ①은 글자만의 규칙이 아니다');
 });
 
+/* 조항 ⓔ(v1.8) — Slate·Slate 2 는 「킷에 있는 색」이라 ②키트밖색으로는 절대 안 걸린다.
+ * 이 색의 유일한 오용은 **바닥을 바꿔 쓰는 것**이고, 그건 ①대비만이 잡는다.
+ * 조항이 글로만 살면 다음 사람이 지운다 — 그래서 실제로 물리는지를 여기서 못박는다. */
+test('Slate(다크 전용)를 라이트 바닥에 쓰면 잡는다 — 조항 ⓔ의 유일한 오용 형태', { skip: 크롬없음 }, () => {
+  const p = 픽스처('slate-on-light', '<div style="background:#FBF7EE"><p style="color:#8A93AD;font-size:32px">v9.187</p></div>');
+  const r = 측정(p, CHROME);
+  assert.equal(r.키트밖색.length, 0, 'Slate 는 킷 색이다 — ②로 걸리면 안 된다(그러면 이 테스트는 딴 것을 재는 것이다)');
+  assert.equal(r.대비위반.length, 1, 'Slate on Paper(2.86)를 못 잡았다 — 32px 라 대형 기준 3.0 인데도 미달이다');
+  assert.equal(r.대비위반[0].fg, '#8A93AD');
+});
+
+test('Slate 2(라이트 전용)를 다크 바닥에 쓰면 소형에서 잡는다 — 대형은 3.07 이라 말로 막는 구간', { skip: 크롬없음 }, () => {
+  const p = 픽스처('slate2-on-dark', '<div style="background:#0F1730"><p style="color:#5F657D;font-size:12px">v9.187</p></div>');
+  const r = 측정(p, CHROME);
+  assert.equal(r.대비위반.length, 1, 'Slate 2 on Navy 2(3.07)를 소형에서 못 잡았다');
+  assert.ok(r.대비위반[0].대비 < 4.5 && r.대비위반[0].대비 > 3,
+    `대비가 ${r.대비위반[0].대비} — 3.07 근처여야 한다. 4.5 아래·3.0 위라서 **대형이면 통과**하고, 그 틈은 정본 조항 ⓔ가 막는다`);
+});
+
+test('허용 바닥의 Slate·Slate 2 는 통과한다 (자기 처방을 막지 않는지 · F103)', { skip: 크롬없음 }, () => {
+  const p = 픽스처('slate-ok',
+    '<div style="background:#0F1730"><p style="color:#8A93AD;font-size:12px">다크 3층</p></div>'
+    + '<div style="background:#FBF7EE"><p style="color:#5F657D;font-size:12px">라이트 3층</p></div>');
+  const r = 측정(p, CHROME);
+  assert.deepEqual(r.대비위반, [], '조항이 시키는 대로 썼는데 빨간불이면 사람은 가드를 끈다');
+  assert.deepEqual(r.키트밖색, [], 'Slate 2색이 킷 파생에 안 실렸다');
+});
+
 test('텍스트가 없는 컨테이너의 면도 잡는다 (자식에게 글을 넘긴 패널이 숨던 자리)', { skip: 크롬없음 }, () => {
   const p = 픽스처('panel', '<div style="background:#FFFFFF"><span style="color:#171820">글은 자식에</span></div>');
   const r = 측정(p, CHROME);
@@ -231,7 +259,7 @@ test('라이브 카드와 docs 사본이 바이트 단위로 같다', () => {
 });
 
 /* ── 4. 정본 값이 두 곳에 적히지 않았는지 ─────────────────────────────────── */
-test('키트 19색이 DESIGN.md 와 어긋나지 않는다', () => {
+test('킷이 DESIGN.md 와 어긋나지 않는다', () => {
   const design = fs.readFileSync(path.join(ROOT, 'DESIGN.md'), 'utf8');
   // DESIGN.md §2 표에 적힌 색은 전부 이 도구의 KIT 안에 있어야 한다.
   const 표색 = new Set((design.match(/`#[0-9A-Fa-f]{6}`/g) || []).map((s) => s.slice(1, -1).toUpperCase()));

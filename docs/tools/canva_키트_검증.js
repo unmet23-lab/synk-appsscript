@@ -7,7 +7,7 @@
  *   정본 v1.5가 KC Sun을 모드 C 2도 잉크로 빼내 「Part 6 only」가 그 색에는 거짓이 돼 있었다.
  *   색 이름(`KC Sun (Part6·겹침 잉크)`)만 갱신되고 팔레트 이름은 낡은 채 남아 서로 모순이었다.
  *
- * 이 파일의 기대값은 `tests/브랜드색.test.js`가 정본 19색과 대조해 **낡지 않게 잠근다** —
+ * 이 파일의 기대값은 `tests/브랜드색.test.js`가 정본 킷(디자인_토큰.json)과 대조해 **낡지 않게 잠근다** —
  * 검증기가 스스로 낡으면 검증기가 있다는 사실이 더 위험하다.
  *
  * ── 쓰는 법 (유호님 기준 클릭 단위) ──────────────────────────────────
@@ -23,13 +23,15 @@
 (() => {
   'use strict';
 
-  // 정본 19색 — docs/_archive/브랜드_색상키트_원본_CrewDossier_2026-08-01.html 이 hex 원천
+  // 정본 21색 — 19색의 hex 원천 = docs/_archive/브랜드_색상키트_원본_CrewDossier_2026-08-01.html
+  //             06 Slate 2색은 2026-08-07 유호님 확정 추가 (컨셉 정본 조항 ⓔ)
   const KIT = {
     '#f6f1e8': 'Cream', '#ff6b5c': 'Coral', '#1a2340': 'Navy', '#c8ff3d': 'Lime', '#171820': 'Ink',
     '#fbf7ee': 'Paper', '#efe7d7': 'Cream 2', '#e7ddc7': 'Cream 3',
     '#ffe9e4': 'Coral Wash', '#ffcfc6': 'Coral Soft', '#ff8877': 'Coral 2', '#e8543f': 'Coral 3',
     '#2a3358': 'Navy 3', '#131a32': 'Navy Ink', '#0f1730': 'Navy 2',
     '#ff3e88': 'KC Hot Pink', '#ff6ba8': 'KC Pink 2', '#ffd447': 'KC Sun', '#4e7cff': 'KC Cool Blue',
+    '#8a93ad': 'Slate', '#5f657d': 'Slate 2',
   };
 
   // 팔레트 이름은 「오용 차단 장치」다 — 이름에 제한을 박아 두면 쓰는 사람이 규칙을 안 찾아봐도 걸린다.
@@ -39,6 +41,7 @@
     '03 Coral Family',
     '04 Navy Family',
     '05 K-Culture (3색 Part 6 전용 · Sun=모드C 2도)', // v1.5 — Sun만 모드 C로 빠졌다
+    '06 Slate (3층 잉크 · Slate=다크 / Slate 2=라이트)', // v1.8 — 바닥을 바꿔 쓰면 대비 미달
   ];
 
   // 시맨틱이 박힌 색 이름 — 지워지면 그 자리가 바로 오용된다(라임=v1.6, Sun=v1.5)
@@ -70,7 +73,7 @@
   for (const hex of found) {
     if (!KIT[hex]) problems.push(`키트에 없는 색이 들어와 있다: ${hex}`);
   }
-  if (found.length !== 19) problems.push(`색이 ${found.length}개다 — 키트는 19색이다`);
+  if (found.length !== 21) problems.push(`색이 ${found.length}개다 — 키트는 21색이다`);
 
   for (const p of PALETTES) {
     if (!leaves.includes(p)) {
@@ -84,7 +87,7 @@
   }
 
   if (problems.length === 0) {
-    console.log('%c✅ 전부 일치 — 19색 · 팔레트 5개 이름 · 시맨틱 색 이름 2건', 'color:#027a48;font-weight:bold;font-size:14px');
+    console.log('%c✅ 전부 일치 — 21색 · 팔레트 6개 이름 · 시맨틱 색 이름 2건', 'color:#027a48;font-weight:bold;font-size:14px');
   } else {
     console.log('%c✘ 정본과 어긋난 곳 ' + problems.length + '건', 'color:#b91c1c;font-weight:bold;font-size:14px');
     problems.forEach((p) => console.log('   • ' + p));
