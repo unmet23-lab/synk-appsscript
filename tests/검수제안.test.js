@@ -173,6 +173,80 @@ test('제안·기능체크 스키마가 구조화 출력 규약을 지킨다 —
   }
 });
 
+// ───────────────────────────────── 변경지문(change_id) · 계보 — 제안 61d775a5b85d 채택분
+
+test('🔑 변경지문은 내용으로 갈린다 — 같은 diff는 같고, 한 글자만 달라도 다르다', () => {
+  assert.strictEqual(검수.변경지문('DIFF'), 검수.변경지문('DIFF'));
+  assert.notStrictEqual(검수.변경지문('DIFF'), 검수.변경지문('DIFf'));
+  assert.match(검수.변경지문('x'), /^[0-9a-f]{12}$/);
+});
+
+test('🔑 선파악 기능지도·제안 행에 변경지문이 박힌다 (안 박히면 최종이 지도를 못 찾는다)', () => {
+  const 결과 = { 기능지도: [{ 기능: 'A', 설명: 'ㄱ' }], 제안: [{ 제목: 'P', 무엇을: 'a', 왜: 'b', 구현방향: 'c', 크기: '소', 관련기능: 'A' }] };
+  const { 기록행들 } = 검수.선파악행들({ 종류: 'uncommitted', 값: '(미커밋)' }, 결과, new Map(), 'T', 'dir00', 'chg00');
+  assert.strictEqual(기록행들.length, 2);
+  for (const 행 of 기록행들) assert.strictEqual(행.변경, 'chg00', `${행.종류} 행에 변경지문이 없다`);
+});
+
+test('🔑 판정 행은 변경지문을 원 제안에서 **복사**한다 — 다시 재면 딴 변경을 가리킨다', () => {
+  const p = 임시장부([{ ...제안행('k1', 'ㄱ'), 변경: 'chg99' }]);
+  assert.strictEqual(판정실행(['--제안판정', 'k1', '--채택'], p).status, 0);
+  const 마지막 = fs.readFileSync(p, 'utf8').trim().split('\n').map(JSON.parse).pop();
+  assert.strictEqual(마지막.종류, '판정');
+  assert.strictEqual(마지막.변경, 'chg99');
+});
+
+// ───────────────────────────────── 폐루프 대조 — 제안 590c00590105 채택분(알림이지 차단이 아니다)
+
+test('🔑 선파악이 알던 기능을 최종이 안 짚으면 미확인으로 드러난다 · 이름 흔들림(공백·대소문자)은 흡수한다', () => {
+  const 지도 = [{ 기능: 'Alpha 기능' }, { 기능: '베타' }, { 기능: '감마' }];
+  const 체크 = [{ 기능: 'alpha  기능' }, { 기능: ' 베타 ' }];
+  assert.deepStrictEqual(검수.미확인기능들(지도, 체크), ['감마']);
+  assert.deepStrictEqual(검수.미확인기능들(지도, 지도), [], '같은 목록인데 미확인이 남는다');
+});
+
+test('🔑 선파악이 없으면 null — 「대조 안 함」과 「미확인 0건」이 같은 모양이면 안 된다', () => {
+  const p = 임시장부([{ 종류: '기능지도', 시각: 'T', 변경: 'chgAA', 기능지도: [{ 기능: 'A' }] }]);
+  assert.strictEqual(검수.선파악지도('없는변경', p), null);
+  assert.deepStrictEqual(검수.선파악지도('chgAA', p), [{ 기능: 'A' }]);
+});
+
+test('🔑 미확인·학습데이터는 지적 배열에 섞이지 않는다 — 둘 다 알림이지 차단 레버가 아니다', () => {
+  // 채택 판정문이 명시적으로 「미매칭은 반드시 알림(미확인)이지 차단이 아니다」로 못박았다.
+  // 누가 지적 조립부에 얹으면 P1 이 되어 배포를 막는다 — 그 시도를 여기로 데려온다.
+  const src = fs.readFileSync(path.join(ROOT, 'tools', 'codex-review.js'), 'utf8');
+  const 줄 = src.split('\n').find((l) => l.includes('const 지적 = ['));
+  assert.ok(줄, '지적 조립부를 소스에서 못 찾았다');
+  assert.doesNotMatch(줄, /미확인|학습데이터/, '미확인·학습데이터가 지적으로 변환된다(차단 레버에 얹혔다)');
+});
+
+// ───────────────────────────────── 학습데이터 영향 계약 — 제안 16967d287d18 채택분
+
+test('🔑 두 프롬프트 다 「해당 없으면 빈 배열」을 시킨다 — 기능마다 「없음」을 적게 하면 노이즈가 검사를 끈다', () => {
+  for (const p of [검수.제안프롬프트('d', [], ''), 검수.기능체크프롬프트('d', [], '')]) {
+    assert.match(p, /수집·시트 스키마·학생 산출물/, '학습데이터 지시가 프롬프트에 없다');
+    assert.match(p, /빈 배열/);
+    assert.match(p, /기능마다 「없음」을 적지 마라/);
+  }
+});
+
+test('학습데이터 줄은 외부 PII 전송을 눈에 띄게 표시한다 · 빈 입력에서 죽지 않는다', () => {
+  const 줄 = 검수.학습데이터줄들([{ 기능: 'A', 영향: '생성', 원문보존: true, 키: '학생ID', 스키마버전: 'c8', 외부PII전송: true }]);
+  assert.match(줄[0], /외부 PII 전송/);
+  assert.deepStrictEqual(검수.학습데이터줄들(null), []);
+});
+
+test('스키마 두 벌 다 학습데이터를 계약 5필드로 요구한다 (기능 참조 + 영향 3값)', () => {
+  for (const f of ['검수제안.schema.json', '기능체크.schema.json']) {
+    const s = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools', f), 'utf8'));
+    assert.ok(s.required.includes('학습데이터'), `${f} 루트 required 에 학습데이터가 없다`);
+    const it = s.properties.학습데이터.items;
+    assert.deepStrictEqual(it.required, ['기능', '영향', '원문보존', '키', '스키마버전', '외부PII전송']);
+    // 「없음」이 열거에 있으면 채택 때 잘라낸 「전 항목 없음 선언」이 그대로 되살아난다
+    assert.deepStrictEqual(it.properties.영향.enum, ['조회', '생성', '스키마변경']);
+  }
+});
+
 // ───────────────────────────────── 게이트 무관성 (제안은 절대 안 막는다)
 
 test('🔑 기각 안 된 제안이 산더미여도 게이트판정은 제안 장부를 아예 안 본다', () => {
