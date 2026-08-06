@@ -406,6 +406,47 @@ test('Canva 대조기가 v1.5 이전의 「Part 6 only」 팔레트 이름을 �
   }
 });
 
+/* ─── 6-c. 대조기를 **실제로 돌려본다** ────────────────────────────────────
+ * 6-b 는 소스에 hex 가 들어 있는지만 본다 — 그건 대조기의 **자료**지 **판정**이 아니다.
+ * v1.10 에서 실측된 구멍: KIT 에 Emerald 를 넣었는데 개수 비교는 `!== 22` 인 채였다.
+ * 6-b 는 초록인데 올바른 키트를 보고 빨간불이 났을 것이다 — 등록을 증명할 유일한 도구가
+ * 거짓 적색을 내면 사람은 되레 등록이 잘못됐다고 믿는다.
+ * 그래서 여기서는 **정본대로 등록된 화면을 넣고 초록이 나오는지**를 본다(memory `guard-must-check-result`). */
+const vm = require('node:vm');
+
+function 대조기실행(스와치들, 잎들) {
+  const ctx = {
+    console: { log() {} },
+    document: {
+      querySelectorAll(sel) {
+        if (sel === '[aria-label]') return 스와치들.map((h) => ({ getAttribute: () => h }));
+        return 잎들.map((t) => ({ childElementCount: 0, textContent: t }));
+      },
+    },
+  };
+  return vm.runInNewContext(fs.readFileSync(CANVA_CHECKER, 'utf8'), ctx);
+}
+
+/* 화면의 텍스트(팔레트·색 이름)는 대조기 자신의 기대값에서 뽑는다 — 그쪽은 6-b·6-b'가 따로 잠근다.
+ * 여기서 비순환으로 검사하는 것은 **hex 목록(정본 토큰)과 개수 판정**이다. */
+function 정본화면_잎() {
+  const src = fs.readFileSync(CANVA_CHECKER, 'utf8');
+  const 배열 = src.slice(src.indexOf('const PALETTES'), src.indexOf('const leaves'));
+  return (배열.match(/'((?:[^'\\]|\\.)*)'/g) || []).map((s) => s.slice(1, -1));
+}
+
+test('대조기: 정본대로 등록된 화면이면 초록이다 (개수를 손으로 적으면 여기서 깨진다)', () => {
+  const 결과 = 대조기실행(Object.keys(KIT).map((h) => h.toLowerCase()), 정본화면_잎());
+  assert.deepEqual(결과, 'PASS', `정본 ${킷개수}색을 그대로 넣었는데 대조기가 문제를 냈다 — 대조기 쪽이 낡았다`);
+});
+
+test('대조기: 색 하나가 빠지면 잡는다 (탐지력 픽스처)', () => {
+  const 일부 = Object.keys(KIT).map((h) => h.toLowerCase()).slice(1);
+  const 결과 = 대조기실행(일부, 정본화면_잎());
+  assert.ok(Array.isArray(결과) && 결과.some((p) => p.startsWith('빠진 색:')),
+    `색을 하나 빼도 대조기가 통과시켰다 — 탐지력이 죽었다: ${JSON.stringify(결과)}`);
+});
+
 /* ─── 7. 정본이 가리키는 파일이 실제로 있다 ─────────────────────────────── */
 /* 08-03에 낡은 서술 2건이 발견된 계열의 결함 — 문서가 없는 파일을 가리키면 그 지시는 조용히 죽는다. */
 test('정본·키트가 가리키는 파일이 실재한다', () => {
