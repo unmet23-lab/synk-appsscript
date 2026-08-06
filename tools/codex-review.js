@@ -564,7 +564,109 @@ function 제안실행(argv, 대상, timeoutMs) {
   return 0;
 }
 
+// ─────────────────────────────────────────── ②설계 심문 (①배포 검수와 다른 일)
+
+/* ■ 대상은 **코드가 아니라 설계 문서**(계약·L0·C0)이고, 도는 시점은 매 배포가 아니라 **동결 직전 1회**다.
+ *   2026-08-06 유호님이 이걸 껐던 실제 이유는 「가치 없음」이 아니라 **조립+대기 20분이 유호님 앞에서
+ *   흘렀다**는 것이다(F121). 그래서 이 함수의 존재 이유는 심문 자체가 아니라 **손 조립을 없애는 것**이고,
+ *   부르는 쪽은 이걸 백그라운드로 던진 뒤 다른 일을 한다 — 그때 20분은 유호님 시간이 아니게 된다.
+ *
+ * 🔑 장부를 검수기록과 **섞지 않는다**: `게이트판정()` 이 검수기록을 읽어 배포를 막는데, 심문 행이 거기
+ *   섞이면 「설계 문서를 심문했다」가 「이 코드를 검수했다」로 읽힌다. 대상이 다른 기록은 장부도 다르다. */
+const 심문경로 = process.env.SYNK_INTERROGATION_LEDGER || path.join(ROOT, 'docs', '_ops', '심문기록.jsonl');
+const 심문템플릿 = process.env.SYNK_INTERROGATION_TEMPLATE || path.join(ROOT, 'docs', '_ops', '동결심문_프롬프트.md');
+const 심문결과폴더 = process.env.SYNK_INTERROGATION_OUT || path.join(ROOT, 'docs', '_ops', '심문결과');
+
+const 확인불가 = (m) => { const e = new Error(m); e.확인불가 = true; return e; };
+
+/* memory 인덱스의 🚫 줄 **전량**. 골라 넣지 않는 이유는 템플릿 주석에 있다.
+ * 경로는 ROOT 에서 파생한다 — 하드코딩하면 다른 기계에서 통째로 죽는다(가드 맹점 ①과 같은 계열).
+ * 🔑 **repo 밖 파일이라 없을 수 있다.** 그때 빈 목록으로 접지 않고 **거절**한다: 닫힌 결정을 안 실은
+ *   심문은 유호님이 이미 기각한 안을 그대로 다시 물어 오고, 그건 심문의 모양을 한 재제안이다. */
+function 금지목록(경로) {
+  const slug = ROOT.replace(/:/g, '-').replace(/[\\/]/g, '-');
+  const p = 경로 || process.env.SYNK_MEMORY_INDEX || path.join(os.homedir(), '.claude', 'projects', slug, 'memory', 'MEMORY.md');
+  if (!fs.existsSync(p)) {
+    throw 확인불가(`memory 인덱스를 못 찾았다: ${p}\n  (SYNK_MEMORY_INDEX 로 경로를 줄 수 있다. 닫힌 결정 없이 도는 심문은 재제안을 물어 온다.)`);
+  }
+  const 줄 = fs.readFileSync(p, 'utf8').split('\n').filter((l) => l.includes('🚫'));
+  if (!줄.length) throw 확인불가(`memory 인덱스에 🚫 줄이 0건이다: ${p} — 추출이 깨졌다고 본다`);
+  return 줄.join('\n');
+}
+
+/* 마커 치환. **못 찾으면 던진다** — 조용히 원문 그대로 보내면 심문자는 빈 자리를 공격하고,
+ * 그 결과는 「지적 없음」과 같은 모양이 된다(이 파일이 산문 정규식 파싱을 안 하는 것과 같은 이유). */
+/* ☠️ 첫 `---` **위는 잘라 버린다** — 거긴 사람용 운영 메모(켜짐/꺼짐 표식·이 파일의 내력)다.
+ *   2026-08-06 실측: 전문을 보냈더니 GPT가 머리말의 ⏸꺼짐을 읽고 "정본 지시에 따라 실행하지
+ *   않았습니다"로 **거부**했다 — 종료코드 0, 241바이트, 겉보기엔 성공. 지시문과 운영 메모가
+ *   한 파일에 살면 **모델은 둘을 안 가른다.** 경계는 파일이 아니라 이 한 줄이 긋는다. */
+function 심문본문(전문) {
+  const i = 전문.indexOf('\n---');
+  if (i === -1) throw 확인불가(`템플릿에 --- 구분선이 없다 — 운영 메모와 지시문의 경계가 없으면 머리말이 심문자에게 간다`);
+  return 전문.slice(i + 4).replace(/^\s*\n/, '');
+}
+
+function 심문프롬프트(대상경로, 템플릿경로, 금지경로) {
+  if (!fs.existsSync(대상경로)) throw 확인불가(`심문 대상이 없다: ${대상경로}`);
+  let t = 심문본문(fs.readFileSync(템플릿경로 || 심문템플릿, 'utf8'));
+  for (const [마커, 값] of [['{{금지목록}}', 금지목록(금지경로)], ['{{대상문서}}', fs.readFileSync(대상경로, 'utf8')]]) {
+    if (!t.includes(마커)) throw 확인불가(`템플릿에 ${마커} 마커가 없다: ${심문템플릿} — 치환 없이 보내면 빈 심문이 「통과」로 보인다`);
+    t = t.split(마커).join(값);
+  }
+  return t;
+}
+
+function 심문실행(argv, timeoutMs) {
+  const 대상 = argv[argv.indexOf('--심문') + 1];
+  if (!대상 || /^--/.test(대상)) {
+    console.error('사용: node tools/codex-review.js --심문 <설계문서 경로> [--검수 sol|luna] [--timeout 초]');
+    return 2;
+  }
+  /* 픽을 **여기서** 얹는다 — 이 분기는 main 맨 앞이라 아래쪽 `모델설정.분석 = 정책.분석설정(argv)`
+   * 를 안 탄다. 안 얹으면 `--심문 X --검수 sol` 이 조용히 luna 로 돈다(= 이 파일이 막으려는 병).
+   * 조합 검사도 지금 — 20분 기다린 뒤 오타를 알 이유가 없다. */
+  모델설정.분석 = 정책.분석설정(argv);
+  모델플래그(모델설정.분석);
+  const 절대 = path.resolve(대상);
+  const 프롬프트 = 심문프롬프트(절대);
+  const 지문 = crypto.createHash('sha256').update(fs.readFileSync(절대)).digest('hex').slice(0, 12);
+  fs.mkdirSync(심문결과폴더, { recursive: true });
+  const 결과 = path.join(심문결과폴더, `${path.basename(절대, path.extname(절대))}-${지문}.md`);
+
+  console.log(`설계 심문 — ${대상} (지문 ${지문}) · ${모델설정.분석.model}/${모델설정.분석.effort}`);
+  codex(['exec', ...잠금플래그, ...모델플래그(모델설정.분석), '--ephemeral', '-o', 결과, '-'], 프롬프트, timeoutMs, '설계 심문');
+  const 내용 = fs.existsSync(결과) ? fs.readFileSync(결과, 'utf8').trim() : '';
+  if (!내용) throw 확인불가('심문이 빈 출력을 냈다 — 확인 불가이므로 동결 불가다');
+  /* 🔴 형식 검사 = **거부 탐지**다. 빈 출력만 보면 08-06 의 241바이트 거부를 못 잡는다(안 비어 있었다).
+   *   템플릿이 요구하는 건 등급 표기이거나 명시적 「지적 0건」 — 둘 다 없으면 심문이 안 돈 것이다. */
+  if (!/\[?P[012]\]?/.test(내용) && !/지적\s*0\s*건/.test(내용)) {
+    throw 확인불가(
+      `심문 결과에 [P0|P1|P2] 등급도 「지적 0건」도 없다 — 형식 미준수이거나 심문이 **거부**됐다.\n` +
+      `  결과를 직접 읽어라: ${path.relative(ROOT, 결과).replace(/\\/g, '/')}\n` +
+      `  (2026-08-06 실측: 템플릿 머리말의 「꺼짐」 표식을 읽고 거부 → 종료코드 0 · 241바이트 · 겉보기 성공)`
+    );
+  }
+  /* 대상 **지문**을 박는 이유: 문서가 한 바이트라도 바뀌면 이 심문은 무효다(게이트 조항⑤ 재심문). */
+  append(심문경로, {
+    종류: '심문', 시각: new Date().toISOString(),
+    대상: path.relative(ROOT, 절대).replace(/\\/g, '/'), 대상지문: 지문,
+    모델: 모델설정.분석.model, 효력: 모델설정.분석.effort, 방향: 방향지문(),
+    결과: path.relative(ROOT, 결과).replace(/\\/g, '/'),
+  });
+  console.log(`\n결과: ${path.relative(ROOT, 결과).replace(/\\/g, '/')}`);
+  console.log(`기록: ${path.relative(ROOT, 심문경로).replace(/\\/g, '/')}`);
+  console.log('다음: 지적 전건을 채택/기각+사유로 가른다. P0 기각은 유호님께 1줄 보고(조용한 봉인 차단).');
+  return 0;
+}
+
 function main(argv) {
+  /* ②설계 심문 — 대상이 문서라 미커밋 판정·지문 결속(①의 것)을 타지 않는다. 그래서 맨 앞에서 가른다.
+   * 기본 타임아웃이 ① 보다 긴 이유: 실측 20분(F121). 여기서 짧게 끊으면 「확인 불가」만 쌓인다. */
+  if (argv.includes('--심문')) {
+    const 초 = argv.includes('--timeout') ? Number(argv[argv.indexOf('--timeout') + 1]) : 1800;
+    return 심문실행(argv, 초 * 1000);
+  }
+
   // 제안 판정 — 클로드(또는 유호님)가 채택/기각을 장부에 남긴다
   if (argv.includes('--제안판정')) {
     const k = argv[argv.indexOf('--제안판정') + 1];
@@ -747,6 +849,7 @@ function main(argv) {
 module.exports = {
   게이트판정, 유효지문, 키, 범위, 대상결정, 미커밋파일들, 차단급, 기록경로, 기각경로, 모델설정, 효력들, 모델플래그, 잠금플래그,
   제안경로, 제안키, 제안현황, 제안프롬프트, 선파악행들, 기능체크프롬프트, 기능체크지적들, 방향텍스트, 방향지문, 방향경로, 방향상한, 디프상한,
+  심문프롬프트, 금지목록, 심문템플릿, 심문경로,
 };
 
 if (require.main === module) {
