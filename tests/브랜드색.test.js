@@ -35,7 +35,7 @@ const HEX_SOURCE = path.join(ROOT, 'docs', '_archive', '브랜드_색상키트_�
 const 토큰 = require('../docs/디자인_토큰.json');
 const KIT = Object.fromEntries(토큰.색.킷.map((c) => [c.hex.toUpperCase(), c.이름]));
 /* 19(v10 Crew Dossier · 08-01) + Slate 2색(08-07 유호님 확정) */
-const 킷개수 = 21;
+const 킷개수 = 22;
 
 /* hex 원천 HTML 밖의 색 — **08-01 원본 HTML 은 그날의 스냅샷이지 킷의 미래가 아니다.**
  * 그 문서를 소급 개서하면 「그때 무엇이었는지」가 사라지므로(_archive 성격), 나중에 더해진 색은
