@@ -252,6 +252,59 @@ test('인계문 — 트랙 없음을 「멈춰라」가 아니라 「새 트랙�
   }
 });
 
+/* 🔴 F172 (2026-08-07) — 인계문 목차가 **반쪽으로 커밋됐다**.
+ * `writeFileSync` 는 자른 뒤에 쓰는데, 그 창에서 수거 도구가 `git commit` 으로 스냅샷을 떠
+ * 1b2f681 에 마지막 줄이 중간에서 끊긴 목차가 들어갔다(부모보다 **짧아졌다**). 내용은 폴더
+ * 파생이라 다음 /close 가 덮어 복구되지만, 그 사이 목차를 여는 다른 계정·폰은 링크가 끊긴
+ * 것을 본다 — F111 통로가 있는 이유가 그 열람이다. 세션 여럿이 상시 커밋하는 저장소라
+ * 그 창은 언제든 다시 열린다. */
+test('writeHandoffFile — 목차·세션 파일을 임시파일+rename 으로 갈아 끼운다 (F172)', () => {
+  const d = 임시('synk-tb-f172-');
+  const 목차 = report.writeHandoffFile(d, '첫 인계', { sessionId: 'local_aaaa1111' });
+  assert.ok(목차 && fs.existsSync(목차), '목차를 못 만들었다');
+  const 원본 = fs.readFileSync(목차, 'utf8');
+  assert.match(원본, /첫 인계/, '첫 기록이 목차에 안 실렸다');
+
+  // ① 임시 파일이 남으면 git 이 그걸 본다(그 자체가 새 오염이다).
+  const 잔여 = (p) => fs.readdirSync(p).filter((f) => f.endsWith('.tmp'));
+  assert.deepEqual(잔여(path.dirname(목차)), [], '목차 폴더에 임시 파일이 남았다');
+  const 세션폴더 = path.join(path.dirname(목차), '인계문');
+  assert.deepEqual(잔여(세션폴더), [], '세션 폴더에 임시 파일이 남았다');
+
+  // ② 🔑 쓰기가 실패하면 **옛 목차가 그대로 남는다.** 임시 경로를 폴더로 막아 스테이징을
+  //    실패시킨다 — 제자리 쓰기였다면 목차가 바뀐다(= 스냅샷이 반쪽을 볼 수 있는 상태).
+  fs.mkdirSync(`${목차}.${process.pid}.tmp`);
+  report.writeHandoffFile(d, '둘째 인계', { sessionId: 'local_bbbb2222' });
+  assert.equal(fs.readFileSync(목차, 'utf8'), 원본,
+    '🔴 목차를 제자리에서 덮어썼다 — 자르고-쓰는 창이 그대로다(F172)');
+
+  // ③ 세션 파일 쪽은 막히지 않았으므로 정상 기록됐다(②가 통째 실패로 초록이 되면 안 된다).
+  assert.ok(잔여 && fs.readdirSync(세션폴더).some((f) => f.startsWith('bbbb2222')),
+    '둘째 세션 파일이 안 써졌다 — ②가 「아무것도 안 했다」로 통과했을 수 있다');
+
+  // ④ **갈아 끼우기가 실패하면 임시 파일을 걷는다.** 남은 `.tmp` 는 미추적 파일이라
+  //    그 자체가 새 오염이다(F025: 미추적은 이력·stash 어디에도 없는 유일한 무보호 상태).
+  //    대상을 폴더로 만들면 tmp 쓰기는 성공하고 rename 만 실패한다 — 청소 경로가 그때 돈다.
+  const d2 = 임시('synk-tb-f172b-');
+  const 목차2 = report.writeHandoffFile(d2, '첫 인계', { sessionId: 'local_cccc3333' });
+  fs.rmSync(목차2);
+  fs.mkdirSync(목차2);
+  report.writeHandoffFile(d2, '둘째 인계', { sessionId: 'local_dddd4444' });
+  assert.deepEqual(잔여(path.dirname(목차2)), [],
+    '🔴 갈아 끼우기가 실패한 뒤 임시 파일이 남았다 — 미추적 잔여물이 저장소에 쌓인다');
+});
+
+/* 원인을 **쓸 수 없게** 만든다 — 호출부마다 고치면 다음 호출부에서 되살아난다
+ * (CLAUDE.md 신뢰성: 3번째는 옛 통로를 테스트로 금지). */
+test('🔴 session-report 는 원자쓰기 밖에서 fs.writeFileSync 를 쓰지 않는다 (F172)', () => {
+  const src = fs.readFileSync(path.join(HOOKS, 'lib', 'session-report.js'), 'utf8');
+  const 개수 = (src.match(/fs\.writeFileSync\(/g) || []).length;
+  assert.equal(개수, 1,
+    `fs.writeFileSync 가 ${개수}곳이다 — 원자쓰기() 안의 1곳만 허용한다(나머지는 자르고-쓰는 창을 되살린다)`);
+  assert.match(src, /function 원자쓰기[\s\S]{0,400}renameSync/,
+    '원자쓰기가 rename 으로 갈아 끼우지 않는다 — 이름만 원자다');
+});
+
 test('board-id — 지문 규칙이 작업본소유자.짧게 와 갈라지지 않는다 (F165)', () => {
   const 보드id = require(path.join(HOOKS, 'lib', 'board-id.js'));
   const owner = require(path.join(ROOT, 'tools', '작업본소유자.js'));
