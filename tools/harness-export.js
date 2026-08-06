@@ -158,7 +158,7 @@ function main() {
 
 | | 파일 | 확정 |
 |---|---|---|
-| **색** | \`정본/디자인_컨셉_정본_v1.md\` | 「v10 Crew Dossier」 19색 + 「06 Slate」 2색 = **21색** · 신호색 = **Coral \`#FF6B5C\`** |
+| **색** | \`정본/디자인_컨셉_정본_v1.md\` | 「v10 Crew Dossier」 19색 + 「06 Slate」 2색 + 「07 Lime Family」 2색 = **23색** · 신호색 = **Coral \`#FF6B5C\`** |
 | **폰트** | \`정본/브랜드_폰트_정본.md\` | **SUIT**(한글) · **Inter Tight**(라틴+몽골 키릴) · **DM Mono**(워드마크) |
 
 **코랄 + 노랑 조합** = 모드 C(2도 겹침): 바탕 Paper \`#FBF7EE\` / 잉크 **KC Sun \`#FFD447\` + Coral \`#FF6B5C\`**, 블렌드 multiply → 겹친 자리가 진한 주황(\`#FF591A\` 계열).
