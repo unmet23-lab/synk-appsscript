@@ -260,7 +260,20 @@ const 내id = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
 if (resulting !== null && 내id) {
   const 보드id = require(path.join(__dirname, 'lib', 'board-id.js'));
   const 트랙칸 = (line) => (cellsOfRow(line)[1] || '').trim();
-  const 주인말함 = (line) => /\b[0-9a-f]{7,40}\b/.test(line) || 보드id.줄의지문(line).length > 0;
+  const 내지문 = 보드id.지문(내id);
+  /* 🔴 [2026-08-07] **접두를 빠뜨린 지문**이 「해시」로 통과하던 자리 — F165 가 다른 문으로 재발했다.
+   *   실측: 상태 칸에 `` `b6cb681a` `` 라고(접두 없이) 적었더니 이 가드는 hex 8자리를 커밋 해시로
+   *   보고 통과시켰는데, 같은 줄을 인계문이 읽고 「내 보드 줄을 못 찾았다」를 냈다 — 읽는 쪽
+   *   (`board-id.줄의지문`)은 `local_` 접두가 붙은 것만 지문으로 세기 때문이다. 같은 모양이 지금
+   *   보드에 하나 더 있다. 쓰는 쪽이 받는 표기가 읽는 쪽보다 넓으면 그 틈은 늘 「통과」로 샌다.
+   *   ⚠ 해시 자체는 계속 통과시킨다 — ✅종결 줄이 자기 커밋 해시를 적는 것은 읽는 쪽이 실제로
+   *   쓰는 재료다(형제 저장소 해시 포함 · F142). 막는 것은 **내 지문을 접두 없이 쓴 그 한 가지**뿐이라
+   *   거짓양성이 0 이다(내 지문과 우연히 같은 짧은 해시는 접두를 붙이면 그대로 통과한다). */
+  const 주인말함 = (line) => {
+    if (보드id.줄의지문(line).length > 0) return true;
+    return (String(line).match(/\b[0-9a-f]{7,40}\b/g) || [])
+      .some((h) => h.toLowerCase() !== 내지문);
+  };
   let 이전 = null;
   try { 이전 = fs.readFileSync(filePath, 'utf8'); } catch (_) { 이전 = null; }
   if (이전 !== null) {
@@ -269,11 +282,11 @@ if (resulting !== null && 내id) {
       .filter((l) => !옛트랙.has(트랙칸(l)))
       .filter((l) => !주인말함(l));
     if (무명.length) {
-      const 내지문 = 보드id.지문(내id);
       deny(
         '[board-guard] 새 보드 줄에 **주인 표식이 없다**(F165):\n- ' +
           무명.map((l) => 트랙칸(l).replace(/\*/g, '').slice(0, 50) + '…').join('\n- ') +
-          `\n→ 줄 어딘가에 **내 세션 지문 \`local_${내지문}\`** 를 적어라(커밋 해시가 이미 적혀 있으면 그것도 된다).` +
+          `\n→ 줄 어딘가에 **내 세션 지문 \`local_${내지문}\`** 를 적어라 — **\`local_\` 접두까지 그대로**` +
+          `(커밋 해시가 이미 적혀 있으면 그것도 된다). 접두를 뗀 \`${내지문}\` 는 읽는 쪽이 못 읽는다.` +
           `\n   상태 칸이 흔한 자리다: \`작업중 (\`local_${내지문}\`) — …\`` +
           '\n   왜: 지문도 해시도 없는 줄은 **인계문이 「내 줄 없음」으로 읽어** 다음 세션이 자기 트랙을 잃고,' +
           '\n   board-move 는 주인이 살아있는지 못 봐 그 줄을 아카이브로 옮긴다(F146·F165).'

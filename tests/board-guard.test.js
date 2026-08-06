@@ -250,6 +250,28 @@ test('🔴 [F165] 자기 처방 — 차단 사유가 시키는 그대로 쓰면 
   );
 });
 
+/* 🔴 [2026-08-07 실측] **접두를 뗀 지문**이 「해시」로 통과하던 자리 — F165 가 다른 문으로 재발했다.
+ * 상태 칸에 `` `b6cb681a` `` 라고 적으면 이 가드는 hex 8자리를 커밋 해시로 보고 통과시키는데,
+ * 읽는 쪽(board-id.줄의지문)은 `local_` 접두가 붙은 것만 지문으로 세서 인계문이 「내 줄 못 찾았다」를 낸다.
+ * 쓰는 쪽이 받는 표기가 읽는 쪽보다 넓으면 그 틈은 언제나 **통과**로 샌다(CLAUDE.md 가드 맹점 ③). */
+test('🔴 [F165-b] `local_` 접두를 뗀 내 지문은 해시로 쳐 주지 않는다', () => {
+  const 접두없음 = '| 2026-08-07 | 접두 뺀 트랙 | a.js | 🔵착수(지문 `3fd8f6db`) |';
+  const r = 판정({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: row(10), new_string: `${row(10)}\n${접두없음}` } }, 나);
+  assert.strictEqual(r.결정, 'deny',
+    '🔴 접두 없는 지문이 통과했다 — 가드는 초록인데 인계문은 그 줄의 주인을 못 읽는다');
+  assert.match(r.사유, /접두/, '무엇이 틀렸는지(접두) 안 말하면 같은 자리를 또 밟는다');
+  // 자기 처방 — 사유가 시키는 대로 접두를 붙이면 통과한다(F103)
+  assert.strictEqual(
+    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: row(10), new_string: `${row(10)}\n| 2026-08-07 | 접두 뺀 트랙 | a.js | 🔵착수(지문 \`local_3fd8f6db\`) |` } }, 나),
+    'allow', '접두를 붙였는데도 막힌다 — 따를 수 없는 처방이다'
+  );
+  // 거짓양성 0: **남의** 짧은 해시는 그대로 통과한다(막는 건 내 지문 한 가지뿐이다)
+  assert.strictEqual(
+    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: row(10), new_string: `${row(10)}\n| 2026-08-07 | 해시 트랙 | a.js | ✅종결(5e5b03f) |` } }, 나),
+    'allow', '🔴 평범한 커밋 해시 줄까지 막았다 — 일상 통로를 막는 가드는 꺼진다'
+  );
+});
+
 test('🔴 [F165] 상태 칸 갱신은 지문 없이도 통과 — 트랙 칸이 같으면 새 줄이 아니다', () => {
   /* 보드 편집의 가장 흔한 모양이다. 여기서 막으면 가드가 일상 통로를 막는 거짓양성이 된다. */
   assert.strictEqual(
