@@ -95,25 +95,50 @@ test('정본 3종 밖 서체를 잡되, **폴백 스택은 통과**시킨다', {
 });
 
 /* 전환·애니메이션 중간 프레임은 저자가 지정한 색이 아니다. 이걸 재면 원인 파일이 멀쩡한데
- * 가드만 빨개지고, 게다가 **타이밍에 걸리므로 로컬은 통과하고 CI 만 실패한다**(2026-08-05 실측:
- * `.dot` 의 `transition:background .3s` 중간값 #D3FC65 로 CI 가 4런 연속 적색).
- * 픽스처는 10초짜리 전환·애니메이션을 걸어 둔다 — 시간정지가 없으면 이 검사가 물린다. */
-test('전환·애니메이션 중간 프레임을 재지 않는다 (CI 만 빨개지던 플래키)', { skip: 크롬없음 }, () => {
+ * 가드만 빨개지고, 게다가 **타이밍에 걸리므로 로컬은 통과하고 CI 만 실패한다**(2026-08-04 실측:
+ * `.m-card-lbl .dot` 의 `transition:background .3s` 중간값 #D3FC65 로 CI 적색 · F105).
+ *
+ * 🔑 진행률을 **손으로 못박는다**(`currentTime`). 앞 판은 rAF 로 전환을 걸어 두기만 했는데,
+ *   load 시점의 진행이 ≈0 이라 값이 시작색(키트 안) 그대로였다 — 즉 **전환 팔이 공허**했고
+ *   위반은 애니메이션 팔에서만 나와서, 정작 CI 를 빨갛게 만든 그 형태를 아무도 재현하지
+ *   않고 있었다(2026-08-06 실측: 시간정지를 꺼도 나오는 건 `#FF0000@div#b` 하나뿐이었다).
+ *   러너 속도에 기대면 픽스처 자신이 플래키가 된다 — 그래서 시간을 재지 않고 **세운다**.
+ * 세 종류를 다 건다: CSS 전환 · CSS 애니메이션 · WAAPI(`element.animate`).
+ *   WAAPI 는 `animation:none` 으로 **안 멈춘다**(실측 중간값 #808000). */
+test('전환·애니메이션·WAAPI 중간 프레임을 재지 않는다 (CI 만 빨개지던 플래키 · F105)', { skip: 크롬없음 }, () => {
   const p = 픽스처('motion', `
     <style>@keyframes drift{0%{background:#FF0000}100%{background:#00FF00}}</style>
     <div id="a" style="background:rgba(246,241,232,.55);transition:background 10s linear"><span style="color:#171820">전환</span></div>
     <div id="b" style="background:#C8FF3D;animation:drift 10s linear infinite"><span style="color:#171820">회전</span></div>
-    <script>requestAnimationFrame(()=>{document.getElementById('a').style.background='#C8FF3D'})<\/script>`);
+    <div id="c" style="background:#C8FF3D"><span style="color:#171820">WAAPI</span></div>
+    <script>
+    /* 페이지 자신의 load 리스너가 **먼저** 돈다 — 측정기는 body 끝에 주입돼 등록이 더 늦다.
+       그래서 여기서 세워 둔 「진행 50%」 상태를 측정기가 그대로 본다.
+       ⚠ 이 픽스처 안에 body 닫는 태그를 문자로 쓰지 말 것 — 측정기가 그 첫 자리에 주입돼
+         스크립트 안으로 들어가고, 증상은 「측정기가 결과를 못 냈다」로만 나온다(실측). */
+    window.addEventListener('load', () => {
+      const a = document.getElementById('a');
+      a.style.background = '#C8FF3D';
+      getComputedStyle(a).backgroundColor;              // 전환 시작을 확정시킨다
+      document.getElementById('c').animate(
+        [{ backgroundColor: '#FF0000' }, { backgroundColor: '#00FF00' }],
+        { duration: 10000, iterations: Infinity });
+      for (const an of document.getAnimations()) an.currentTime = 5000;   // 셋 다 정확히 50%
+    });
+    </script>`);
   const r = 측정(p, CHROME);
   const 중간값 = r.키트밖색.filter((v) => v.hex !== 'TRANSPARENT');
   assert.deepStrictEqual(중간값, [],
     `전환·애니메이션 중간색을 위반으로 잡았다 — 저자가 지정한 값이 아니다: ${JSON.stringify(중간값)}`);
 
-  // 🔑 이 픽스처가 **실제로 물리는지**를 같이 못박는다 — 시간정지를 끄면 위반이 나와야 한다.
-  //   안 나온다면 위 통과는 「고쳐서」가 아니라 「검사가 죽어서」일 수도 있다(통과와 미실행이 같은 모양).
+  // 🔑 세 팔이 **각자** 물리는지 따로 못박는다 — 합계만 보면 한 팔이 공허해져도 다른 팔이 가려준다.
+  //   그게 앞 판이 F105 의 실제 형태(전환)를 놓친 경로다.
   const 변이 = 측정(p, CHROME, { freeze: false });
-  assert.ok(변이.키트밖색.length > 0,
-    '시간정지를 꺼도 위반이 안 나온다 — 이 픽스처는 아무것도 증명하지 않는다');
+  const 잡힌곳 = new Set(변이.키트밖색.filter((v) => v.hex !== 'TRANSPARENT').map((v) => v.sel));
+  for (const [sel, 종류] of [['div#a', 'CSS 전환'], ['div#b', 'CSS 애니메이션'], ['div#c', 'WAAPI']]) {
+    assert.ok(잡힌곳.has(sel),
+      `${종류} 팔이 공허하다 — 시간정지를 꺼도 중간색이 안 나온다(잡힌 곳: ${[...잡힌곳].join(', ') || '없음'}). 이 팔은 아무것도 증명하지 않는다`);
+  }
 });
 
 /* Part 06 예약 서체(정본 §4-1)의 무게는 **경계**에 있다 — 「이 폰트를 허용한다」가 아니라
