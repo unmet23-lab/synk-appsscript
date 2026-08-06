@@ -182,6 +182,76 @@ test('boardTrack — 해시 없는 줄도 내 세션 지문으로 찾는다 (F16
   assert.ok(해시로 && /해시 트랙/.test(해시로.track) && 해시로.근거 === '해시', '🔴 해시 경로가 죽었다');
 });
 
+/* 🔴 F170 (2026-08-07) — 「트랙 종결」과 「트랙 없음」이 **한 문구**로 나갔다.
+ * 트랙 없이 끝난 세션의 인계문이 「보드를 열어 확인하고 정말 없으면 없다고 말하고 멈춰라」로
+ * 나가서, 다음 세션은 그걸 「이어갈 게 없다」가 아니라 「내가 뭘 놓쳤나」로 읽고 커밋 트레일러·
+ * 보드·장부를 처음부터 되훑었다. 세션 셋이 연달아 그렇게 탔다(116b4059 → 83d5c0d2 → 그 다음).
+ * 트랙이 없는 세션에게 옳은 다음 수는 **멈춤이 아니라 새 트랙**이고, 「없다」가 사실인지 모름인지는
+ * 이 통로가 **이미 읽은 보드**로 잴 수 있다 — 지문 없는 옛 줄이 0 이면 사실이다. */
+test('인계문 — 트랙 없음을 「멈춰라」가 아니라 「새 트랙」으로 넘긴다 (F170)', () => {
+  const 머리 = '| 날짜 | 트랙/작업 | 파일 | 상태 |\n|---|---|---|---|\n';
+  const 보드 = (prefix, 줄들) => {
+    const d = 임시(prefix);
+    fs.mkdirSync(path.join(d, 'docs'), { recursive: true });
+    fs.writeFileSync(path.join(d, 'docs', '세션보드.md'), 머리 + 줄들.join(''));
+    return d;
+  };
+  const 원래 = process.env.CLAUDE_CODE_HOST_SESSION_ID;
+  process.env.CLAUDE_CODE_HOST_SESSION_ID = 'local_ba86eeb2-565d-438b-85c1-6d98aeb187a7';
+  try {
+    // ① 줄이 전부 지문을 달았다 → 「내 트랙 없음」은 **가능성이 아니라 사실**. 다시 열 이유가 없다.
+    const 확정 = 보드('synk-tb-f170a-', [
+      '| 2026-08-07 | 남의 트랙 | a.js | 작업중 (`local_11112222`) — 남이 하는 일 |\n',
+      '| 2026-08-07 | 또 다른 남의 트랙 | b.js | ✅종결 (`local_33334444`) — 끝 |\n',
+    ]);
+    assert.equal(report.무주줄(확정), 0,
+      '지문이 다 적힌 보드인데 무주줄을 셌다 — 머리글·구분선을 데이터 줄로 셌을 것이다');
+    const a = report.buildHandoff(확정, null, { dirty: 0 });
+    assert.doesNotMatch(a, /멈춰라/,
+      `🔴 트랙 없이 끝난 세션에 「멈춰라」가 나갔다 — F170 이 그대로다:\n${a}`);
+    assert.match(a, /새 트랙/, '다음 수를 안 줬다 — 「없다」로만 끝나면 새 세션이 보드·장부를 되훑는다');
+    assert.match(a, /다시 열 필요 없다/, '이미 보드를 읽고도 「보드를 열어 확인하라」를 시켰다');
+    assert.doesNotMatch(a, /남의 트랙/, '남의 보드 줄을 내 트랙으로 실었다(F073)');
+
+    // ② 주인을 밝힐 재료가 **아무것도 없는** 줄만 모호다 — 모름은 모름으로 두되 **수를 밝힌다**.
+    //    🔴 해시 줄까지 모호로 세면 실제 보드 18줄 중 17줄이 모호라, 새 문구가 「보드 전문을
+    //    읽어라」로 되돌아간다(첫 구현이 실측에 그렇게 반박당했다). 해시 줄은 boardTrack 이
+    //    이미 해시로 가렸으므로 여기서 다시 의심하지 않는다.
+    const 모호 = 보드('synk-tb-f170b-', [
+      '| 2026-08-07 | 남의 트랙 | a.js | 작업중 (`local_11112222`) — 남이 하는 일 |\n',
+      '| 2026-08-04 | 해시로 밝힌 줄 | b.js | ✅종결(5e5b03f) — 지문은 없지만 해시가 있다 |\n',
+      '| 2026-08-04 | 재료 없는 줄 | c.js | 미확정 |\n',
+    ]);
+    assert.equal(report.무주줄(모호), 1,
+      '🔴 해시로 주인을 밝힌 줄까지 셌다 — 실저장소에선 17/18 이 모호가 되어 고친 게 없어진다');
+    const b = report.buildHandoff(모호, null, { dirty: 0 });
+    assert.match(b, /\*\*1개\*\*/,
+      `모호한 줄 수를 안 밝혔다 — 확정과 같은 모양이 되면 가른 의미가 없다:\n${b}`);
+    assert.doesNotMatch(b, /다시 열 필요 없다/, '🔴 모름을 사실로 단정했다');
+    assert.doesNotMatch(b, /멈춰라/, '모호한 쪽에 「멈춰라」가 남아 있다');
+    assert.match(b, /새 트랙/, '모호한 쪽에 다음 수가 없다');
+
+    // ③ 보드를 못 읽으면 수를 지어내지 않는다(`옛 줄 null개` 가 나가면 안 된다).
+    const 없음 = 임시('synk-tb-f170c-');
+    assert.equal(report.무주줄(없음), null, '보드가 없는데 수를 지어냈다');
+    const c = report.buildHandoff(없음, null, { dirty: 0 });
+    assert.doesNotMatch(c, /null/, `🔴 보드를 못 읽고도 수를 적었다:\n${c}`);
+    assert.match(c, /못 읽었다/, '못 읽은 것을 밝히지 않았다');
+
+    // ④ 반대 방향 — 내 줄이 있으면 이 문구가 나오면 안 된다.
+    //    (한쪽만 검사하면 no-track 분기를 통째로 지워도 초록이다 · CLAUDE.md 가드 맹점)
+    const 있음 = 보드('synk-tb-f170d-', [
+      '| 2026-08-07 | 내 트랙 | a.js | 작업중 (`local_ba86eeb2`) — 다음=회귀 붙이기 |\n',
+    ]);
+    const d2 = report.buildHandoff(있음, null, { dirty: 0 });
+    assert.match(d2, /다음=회귀 붙이기/, '내 줄이 있는데 상태/다음을 안 실었다');
+    assert.doesNotMatch(d2, /새 트랙을 잡아라/, '🔴 내 트랙이 있는데 새 트랙을 잡으라고 했다');
+  } finally {
+    if (원래 === undefined) delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
+    else process.env.CLAUDE_CODE_HOST_SESSION_ID = 원래;
+  }
+});
+
 test('board-id — 지문 규칙이 작업본소유자.짧게 와 갈라지지 않는다 (F165)', () => {
   const 보드id = require(path.join(HOOKS, 'lib', 'board-id.js'));
   const owner = require(path.join(ROOT, 'tools', '작업본소유자.js'));
