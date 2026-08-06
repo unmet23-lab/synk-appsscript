@@ -272,3 +272,52 @@ test('[회귀] --add가 코드 펜스 안의 예시를 덮어쓰지 않는다', 
     fs.unlinkSync(target);
   }
 });
+
+/* ── 지도 누락 ─────────────────────────────────────────────────────────────
+ * [2026-08-07] 엣지 검사가 못 보는 축: *연결이 낡았다*가 아니라 *색인에 아예 없다*.
+ * 실사고 — 08-05 신설 `제품방향.md`가 스스로 「공용 정본」을 선언하는데 `문서_지도.md`는
+ * 「제품 방향의 최신 정본 = SYNK_CONTEXT.md」인 채였다(정본 지목 두 갈래, 사흘).
+ * 탐지력은 **픽스처로** 못박는다 — 실저장소 누락 건수를 박으면 그것을 고치는 순간 빨개진다
+ * (가드의 맹점 ②: 버그가 아직 있을 것을 요구하는 회귀 금지). 실저장소에는 거짓양성만 검사한다.
+ */
+const 지도픽스처 = (지도본문, ...경로들) => new Map([
+  ['docs/문서_지도.md', { rel: 'docs/문서_지도.md', text: 지도본문 }],
+  ...경로들.map((r) => [r, { rel: r, text: '' }]),
+]);
+
+test('지도 누락 — 색인 밖 최상위 문서를 잡는다(픽스처)', () => {
+  const g = G.findMapGaps(지도픽스처(
+    '| **세션보드.md** | 선언판 |\n',
+    'docs/세션보드.md', 'docs/제품방향.md', 'docs/코어엔진_설계.md',
+  ));
+  assert.equal(g.noMap, false);
+  assert.deepEqual(g.missing, ['docs/제품방향.md', 'docs/코어엔진_설계.md']); // 가나다순(ㅈ→ㅋ)
+});
+
+test('지도 누락 — 하위 폴더는 안 센다(지도가 폴더 단위로 적는 자리)', () => {
+  const g = G.findMapGaps(지도픽스처('| _ops/ | 마찰신호 |\n', 'docs/_ops/마찰신호.md', 'docs/정본/급여.md'));
+  assert.deepEqual(g.missing, [], '하위 폴더 문서가 누락으로 올라왔다 — 알림이 매주 거짓말을 한다');
+});
+
+test('지도 누락 — 비슷한 이름에 묻히지 않는다(제품방향.md ≠ 제품방향_대조감사.md)', () => {
+  const g = G.findMapGaps(지도픽스처('| 제품방향_대조감사.md | 감사 |\n', 'docs/제품방향.md'));
+  assert.deepEqual(g.missing, ['docs/제품방향.md'], '긴 이름에 짧은 이름이 묻혀 미탐이 났다');
+});
+
+test('지도가 없으면 「누락 0」이 아니라 noMap 이다(미실행이 통과처럼 보이면 안 된다)', () => {
+  const g = G.findMapGaps(new Map([['docs/제품방향.md', { rel: 'docs/제품방향.md', text: '' }]]));
+  assert.equal(g.noMap, true);
+  assert.deepEqual(g.missing, []);
+});
+
+test('실저장소: 지도에 실렸다고 판정한 문서는 진짜로 실려 있다(거짓양성 0)', () => {
+  const g = G.build();
+  assert.equal(g.mapGaps.noMap, false, `${G.DOC_MAP} 을 못 읽었다`);
+  const 실린것 = [...g.docs.keys()]
+    .filter((r) => /^docs\/[^/]+\.md$/.test(r) && r !== G.DOC_MAP && !g.mapGaps.missing.includes(r));
+  assert.ok(실린것.length > 0, '최상위 문서를 하나도 못 읽었다 — SKIP 규칙을 의심하라');
+  const 지도 = g.docs.get(G.DOC_MAP).text;
+  for (const r of 실린것) {
+    assert.ok(지도.includes(path.basename(r)), `${r} 을 「실렸다」로 판정했는데 지도 본문에 없다`);
+  }
+});
