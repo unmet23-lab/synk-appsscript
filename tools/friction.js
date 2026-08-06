@@ -24,6 +24,10 @@ const ROOT = process.env.SYNK_FRICTION_ROOT || path.resolve(__dirname, '..');
 const KINDS = ['교정', '거절', '실수', '마찰'];
 const TAG_PREFIX = 'friction-';   // 예약 태그: friction-F041 (릴리스 태그 synk-v9.NNN과 구분)
 const MAX_TRIES = 20;
+const LOCK = LEDGER + '.lock';
+const LOCK_TRIES = 50;            // × LOCK_WAIT_MS = 5초까지 기다린다
+const LOCK_WAIT_MS = 100;
+const LOCK_STALE_MS = 30_000;     // 죽은 세션이 남긴 락은 이 시간 뒤 회수한다
 // 격리 장부만 준 테스트는 git을 안 만진다. 격리 저장소까지 준 테스트는 락을 실제로 건다.
 const ISOLATED = !!process.env.SYNK_FRICTION_LEDGER && !process.env.SYNK_FRICTION_ROOT;
 
@@ -33,6 +37,50 @@ function gitQuiet(args) {
   try {
     return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
   } catch (_) { return null; }
+}
+
+/* 읽기→쓰기를 직렬화한다. **채번 락은 번호만 지키고 파일 내용은 안 지킨다.**
+ *
+ * 왜 있나 (F148 · 2026-08-07 실측): add() 는 read() 로 파일 전체를 버퍼에 담고,
+ *   그 사이 allocateId() 가 git fetch + tag push 로 **네트워크를 다녀온다**(초 단위).
+ *   돌아와서 낡은 버퍼에 한 줄 끼워 통째로 writeFileSync 하니, 그 창에 옆 세션이 쓴 행이
+ *   흔적 없이 사라진다. 실제로 내 F145 가 옆 세션의 F146 추가에 덮여 없어졌고 —
+ *   번호는 안 겹쳤다(태그 락이 일했다). 남은 흔적은 F144 다음이 F146 이라는 구멍뿐이었다.
+ *   ☠ 도구는 성공을 출력했고 오류는 없었다. git-scope-guard 가 커밋 diff 를 보여주지
+ *   않았으면 콘솔만 믿고 넘어갔을 것이다 — **사라진 쪽은 아무 신호도 남기지 않는다.**
+ *
+ * `wx` 는 「없을 때만 만든다」를 커널이 원자적으로 판정한다(존재 확인과 생성 사이에 창이 없다).
+ * 세션 7개가 동시에 도는 저장소라 보드·장부처럼 모두가 append 하는 파일은 전부 같은 구조다.
+ *
+ * ⚠ 원칙은 그대로 지킨다 — **기록이 도구 사정으로 멈추면 안 된다**(신호 유실이 더 나쁘다).
+ *   락을 끝내 못 잡으면 막지 말고 **경고를 내고 진행한다**. 조용히 넘어가면 지켜진 줄 안다. */
+function withLock(fn) {
+  for (let i = 0; i < LOCK_TRIES; i++) {
+    let fd = null;
+    try {
+      fd = fs.openSync(LOCK, 'wx');
+    } catch (e) {
+      if (e.code !== 'EEXIST') throw e;
+      /* 죽은 세션(크래시·Ctrl-C)이 남긴 락을 회수한다 — 안 그러면 한 번의 사고가 장부를 영구히 잠근다.
+       * 회수 자체도 경쟁하지만 지는 쪽은 unlink 가 실패할 뿐이라 손실이 없다. */
+      try {
+        if (Date.now() - fs.statSync(LOCK).mtimeMs > LOCK_STALE_MS) fs.unlinkSync(LOCK);
+      } catch (_) { /* 그 사이 주인이 풀었다 */ }
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, LOCK_WAIT_MS);
+      continue;
+    }
+    try {
+      return fn();
+    } finally {
+      fs.closeSync(fd);
+      try { fs.unlinkSync(LOCK); } catch (_) { /* 누가 낡은 락으로 보고 회수했다 */ }
+    }
+  }
+  console.error(
+    `⚠ 장부 락을 ${(LOCK_TRIES * LOCK_WAIT_MS) / 1000}초 동안 못 잡았다 — 락 없이 진행한다(기록을 멈추지 않는다).\n`
+    + `  남은 락이 죽은 세션 것이면 지워도 된다: ${LOCK}`,
+  );
+  return fn();
 }
 
 function today() {
@@ -172,43 +220,55 @@ function add(kind, signal, date, 해소) {
     process.exit(1);
   }
 
-  const { lines, rows } = read();
-  const id = allocateId(rows);
+  /* 채번은 락 **밖**에서 한다 — git fetch·tag push 로 네트워크를 다녀오는데,
+   * 그걸 락 안에 두면 보유 시간이 초 단위가 되고 그때 LOCK_STALE_MS 가 산 락을 회수해 버린다.
+   * 번호는 이미 태그 락이 원자적으로 지킨다(F148 때 번호는 안 겹쳤다) — 안 지켜지던 건 파일이다. */
+  const id = allocateId(read().rows);
   /* 빈 해소 칸은 예전 그대로 `| |` 한 칸으로 둔다 — 템플릿에 빈 문자열을 끼우면 `|  |` 가 되고,
    * 장부 형식을 그대로 읽는 검사·도구가 조용히 갈라진다(회귀가 실제로 잡았다). */
   const row = 해소safe
     ? `| ${id} | ${date || today()} | ${kind} | ${safe} | ${해소safe} |`
     : `| ${id} | ${date || today()} | ${kind} | ${safe} | |`;
-  // 표의 마지막 행 뒤에 넣는다(파일 끝이 아니라) — 아래에 다른 서술이 붙어도 안전하게
-  let at = lines.length;
-  for (let i = lines.length - 1; i >= 0; i--) {
-    if (/^\|\s*F\d+\s*\|/.test(lines[i].trim())) { at = i + 1; break; }
-  }
-  lines.splice(at, 0, row);
-  fs.writeFileSync(LEDGER, lines.join('\n'), 'utf8');
+  /* 🔴 낡은 버퍼가 아니라 **락 안에서 다시 읽은** 내용에 끼운다 — 이 재읽기가 F148 의 수리다.
+   * 위에서 read() 한 lines 를 재사용하면 채번이 네트워크를 다녀온 사이의 남의 행이 사라진다. */
+  withLock(() => {
+    const { lines } = read();
+    // 표의 마지막 행 뒤에 넣는다(파일 끝이 아니라) — 아래에 다른 서술이 붙어도 안전하게
+    let at = lines.length;
+    for (let i = lines.length - 1; i >= 0; i--) {
+      if (/^\|\s*F\d+\s*\|/.test(lines[i].trim())) { at = i + 1; break; }
+    }
+    lines.splice(at, 0, row);
+    fs.writeFileSync(LEDGER, lines.join('\n'), 'utf8');
+  });
   console.log(`  + ${id}  ${kind}  ${safe}`);
   if (해소safe) console.log(`  ✔ ${id} 해소 → ${해소safe}   (신고와 동시에 닫았다 — 열린 채 남지 않는다)`);
 }
 
 function resolve(id, by) {
-  const { lines, rows } = read();
-  const r = rows.find((x) => x.id.toUpperCase() === String(id).toUpperCase());
-  if (!r) {
-    console.error(`[friction] ${id} 를 못 찾았다.`);
-    process.exit(1);
-  }
-  if (r.resolved) {
-    console.error(`[friction] ${r.id} 는 이미 해소로 기록돼 있다: ${r.resolved}`);
-    process.exit(1);
-  }
   const safe = String(by || '').replace(/\|/g, '/').trim();
   if (!safe) {
     console.error('[friction] 무엇이 이 신호를 막았는지 적는다(조항·훅·커밋). 빈 해소는 기록하지 않는다.');
     process.exit(1);
   }
-  lines[r.line] = `| ${r.id} | ${r.date} | ${r.kind} | ${r.signal} | ${safe} |`;
-  fs.writeFileSync(LEDGER, lines.join('\n'), 'utf8');
-  console.log(`  ✔ ${r.id} 해소 → ${safe}`);
+  /* 찾기·검사·쓰기를 **한 락 안에서** 한다(F148) — 밖에서 읽고 안에서 쓰면 그 사이 남의 행이 덮인다.
+   * resolve 는 행 번호(r.line)로 쓰기 때문에 add 보다 더 위험하다: 그 사이 누가 행을 끼우면
+   * 낡은 번호가 **엉뚱한 행**을 가리켜 남의 신호를 내 해소문으로 덮어쓴다.
+   * ⚠ 락 안에서는 process.exit 를 부르지 않는다 — finally 가 안 돌아 락 파일이 남는다. */
+  const 실패 = withLock(() => {
+    const { lines, rows } = read();
+    const r = rows.find((x) => x.id.toUpperCase() === String(id).toUpperCase());
+    if (!r) return `[friction] ${id} 를 못 찾았다.`;
+    if (r.resolved) return `[friction] ${r.id} 는 이미 해소로 기록돼 있다: ${r.resolved}`;
+    lines[r.line] = `| ${r.id} | ${r.date} | ${r.kind} | ${r.signal} | ${safe} |`;
+    fs.writeFileSync(LEDGER, lines.join('\n'), 'utf8');
+    console.log(`  ✔ ${r.id} 해소 → ${safe}`);
+    return null;
+  });
+  if (실패) {
+    console.error(실패);
+    process.exit(1);
+  }
 }
 
 function report(openOnly) {
@@ -293,4 +353,7 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { read, nextId, allocateId, seenElsewhere, 해소주장, LEDGER, KINDS, TAG_PREFIX };
+module.exports = {
+  read, nextId, allocateId, seenElsewhere, 해소주장, withLock,
+  LEDGER, KINDS, TAG_PREFIX, LOCK, LOCK_STALE_MS,
+};

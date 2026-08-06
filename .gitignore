@@ -67,6 +67,8 @@ tools/notebooklm-drive.log
 .claude/routines/.state/
 .claude/scheduled_tasks.json
 .claude/scheduled_tasks.lock
+# 마찰 장부 쓰기 락 — 실행 중에만 존재하는 런타임 부산물(F148)
+docs/_ops/마찰신호.md.lock
 .claude/agent-registry.json
 .claude/agent-memory-local
 .claude/first-run
