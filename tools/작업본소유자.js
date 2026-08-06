@@ -208,11 +208,43 @@ function 판정들(파일들, ss, 나, 뿌리, 저장소) {
   });
 }
 
+/** 원격에서 대기 중인 클라우드(폰) 브랜치 — `master` 에 아직 안 들어온 것만.
+ *
+ * 🔴 왜 있나 (2026-08-07): 이 저장소의 충돌 감지는 전부 **로컬 HEAD** 기준이다
+ *    (track-collision 은 `기준..HEAD` 를 본다). 그런데 폰의 클라우드 세션은 `master` 가 아니라
+ *    `claude/*` 브랜치로 push 하고, 그건 fetch 전까지 로컬에 **존재하지 않는다** —
+ *    그래서 PC 세션은 폰 작업을 끝까지 못 본다. 실측: PDF 16종·문서 40여 곳을 고친 브랜치가
+ *    하루 가까이 대기 중이었는데 어떤 장치도 말하지 않았다(유호님이 물어서야 드러났다).
+ *    「PC 켠 채로 폰」은 이 저장소가 가정한 적 없는 조합이고(08-05 전제 = 폰 쓸 땐 PC 꺼짐),
+ *    그 조합에서만 열리는 사각이다. 여는 방향은 여기서도 「조용함」이었다.
+ *
+ * ⚠ fetch 없이 로컬 캐시만 보는 것은 **고치려는 병 그 자체**(낡은 스냅샷)라서 하지 않는다.
+ *   못 따면 0건이 아니라 **null(=못 봄)** 이다 — 형제 저장소의 `못본형제` 와 같은 규칙.
+ *   리모트가 아예 없으면 대기가 원리적으로 없으므로 빈 배열(픽스처 저장소가 여기 해당한다).
+ */
+function 원격대기(뿌리 = ROOT) {
+  const 리모트 = git(['remote'], 뿌리);
+  if (리모트 === null || !리모트.split(/\r?\n/).includes('origin')) return [];
+  if (git(['fetch', '--quiet', 'origin'], 뿌리) === null) return null;
+  /* 구분자 = 제어문자 US(0x1F). 브랜치 제목엔 한글과 가운뎃점이 흔해 보이는 구분자를 못 쓴다.
+   * 소스에는 날문자를 적지 않는다 — 눈에 안 보여 어느 편집이 지워도 티가 안 나고, 그러면 구분자가
+   * 빈 문자열이 되어 제목이 글자 단위로 쪼개진다(track-collision 이 겪은 그 자리 · F091).
+   * git 쪽은 형식 문자열의 hex 이스케이프로, JS 쪽은 유니코드 이스케이프로 적는다. */
+  const out = git(['for-each-ref', '--no-merged', 'origin/master',
+    '--format=%(refname:short)%1f%(committerdate:relative)%1f%(contents:subject)',
+    'refs/remotes/origin/claude/'], 뿌리);
+  if (out === null) return null;
+  return out.split(/\r?\n/).filter(Boolean).map((줄) => {
+    const [이름, 언제, 제목] = 줄.split('\u001F');
+    return { 이름: String(이름 || ''), 언제: String(언제 || ''), 제목: String(제목 || '') };
+  });
+}
+
 function 조사() {
   const 나 = store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
   const ss = 세션들();
   const 파일들 = 미커밋들();
-  if (파일들 === null) return { git못부름: true, 나, 항목: [], 세션수: ss.length, 못본형제: [] };
+  if (파일들 === null) return { git못부름: true, 나, 항목: [], 세션수: ss.length, 못본형제: [], 원격: null };
 
   const 항목 = 판정들(파일들, ss, 나, ROOT, null);
   /* 형제 저장소도 **같은 판정**을 거친다. 못 읽으면 건너뛰지 않고 이름을 들고 나간다 —
@@ -223,7 +255,7 @@ function 조사() {
     if (목록 === null) { 못본형제.push(저장소); continue; }
     항목.push(...판정들(목록, 형제세션들(뿌리, 저장소, ss), 나, 뿌리, 저장소));
   }
-  return { git못부름: false, 나, 항목, 세션수: ss.filter(살았나).length, 못본형제 };
+  return { git못부름: false, 나, 항목, 세션수: ss.filter(살았나).length, 못본형제, 원격: 원격대기() };
 }
 
 const 짧게 = (s) => s.replace(/^local_/, '').slice(0, 8);
@@ -246,7 +278,11 @@ function 보고(r, { 훅 }) {
 
   // 훅 모드: 위험이 없으면 침묵한다. 잔소리하는 장치는 읽히지 않게 된다.
   // 다른 트리의 미커밋도 위험에 넣는다 — 그건 남의 세션이 지금 들고 있는 것이다(F079).
-  if (훅 && !위험.length && !다른트리.length && !형제모름.length && !r.못본형제.length) return '';
+  /* 원격 대기 = 폰(클라우드) 세션이 `claude/*` 브랜치에 남긴 것. null 은 「못 봄」이라 0건이 아니다. */
+  const 원격들 = r.원격 || [];
+  const 원격못봄 = r.원격 === null && !r.git못부름; // git 자체를 못 부른 건 위에서 이미 말했다
+  if (훅 && !위험.length && !다른트리.length && !형제모름.length && !r.못본형제.length
+      && !원격들.length && !원격못봄) return '';
   /* 형제 때문에 입을 여는 경우엔 **형제만** 말한다 — 내 저장소의 ⚪·❔ 까지 매 세션 쏟으면
    * 그 순간부터 아무도 안 읽는다(이 도구가 침묵을 지키는 이유와 같다). */
   const 간략 = 훅 && !위험.length && !다른트리.length;
@@ -275,6 +311,16 @@ function 보고(r, { 훅 }) {
   }
   if (r.못본형제.length) {
     줄.push('', `⚠ 형제 저장소 ${r.못본형제.join(', ')} 를 **못 읽었다** — 0건이 아니라 판정 불가다.`);
+  }
+  if (원격들.length) {
+    줄.push('', `☁ **원격에 대기 중인 클라우드(폰) 브랜치 ${원격들.length}개** — master 에 아직 안 들어왔다`);
+    for (const b of 원격들) 줄.push(`   · ${b.이름}  (${b.언제})  ${b.제목}`);
+    줄.push('   로컬엔 없던 것이다 — track-collision 은 로컬 HEAD 만 봐서 이 자리가 통째로 사각이었다.');
+    줄.push(`   내용부터 본다: \`git log master..${원격들[0].이름} --oneline\` · \`git diff --stat master...${원격들[0].이름}\``);
+    줄.push('   ⚠ 오래 둘수록 master 와 벌어져 병합이 비싸진다 — 볼 게 없으면 브랜치를 지운다.');
+  }
+  if (원격못봄) {
+    줄.push('', '⚠ 원격을 **못 읽었다**(fetch 실패) — 대기 중인 폰 브랜치가 0건이라는 뜻이 아니다.');
   }
   if (유물.length && !간략) {
     줄.push('', `⚪ 끝난 세션이 남긴 것 ${유물.length}건 — 이어받아도 된다(미추적은 무보호 상태다 · F025)`);
