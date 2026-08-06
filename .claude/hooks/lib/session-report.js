@@ -13,6 +13,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const wt = require(path.join(__dirname, 'worktrees.js'));
+const store = require(path.join(__dirname, 'handoff-store.js'));
 
 function git(cwd, args, timeout) {
   try {
@@ -22,19 +23,47 @@ function git(cwd, args, timeout) {
   } catch (_) { return null; }
 }
 
-/** 미커밋 파일 수. git 을 못 부르면 **null(=모름)** — 0건과 구별해야 한다(「끊어도 된다」를 잘못 말하지 않게). */
+/* ⚠ 이 프로젝트의 트랙은 저장소 **둘**을 함께 만진다 — 아래 둘은 형제 저장소도 읽는다(F142).
+ *   좌표는 조립하지 않고 handoff-store 의 `siblings()` 하나에서만 받는다(같은 판정을 두 곳에
+ *   적으면 갈라지고, 갈라진 쪽 증상은 조용한 「없음」이다). 형제가 없는 기계(CI)에선 조용히 빠진다. */
+
+/** 미커밋 파일 수(형제 저장소 합산). git 을 못 부르면 **null(=모름)** — 0건과 구별해야 한다
+ *  (「끊어도 된다」를 잘못 말하지 않게). 🔑 내 저장소를 못 읽었으면 형제 수로 덮지 않는다. */
 function dirtyCount(cwd) {
-  const out = git(cwd, ['status', '--porcelain']);
-  if (out === null) return null;
-  return out.split('\n').filter((s) => s.trim()).length;
+  const 세기 = (root) => {
+    const out = git(root, ['status', '--porcelain']);
+    return out === null ? null : out.split('\n').filter((s) => s.trim()).length;
+  };
+  const 본 = 세기(cwd);
+  if (본 === null) return null;
+  let n = 본;
+  for (const { 뿌리 } of store.siblings(cwd)) n += 세기(뿌리) || 0;
+  return n;
 }
 
-/** 이 세션이 쓴 커밋. 트레일러로만 판단한다 — author·시각 인접성은 세션 구분자가 아니다(F041). */
+/** 이 세션이 쓴 커밋. 트레일러로만 판단한다 — author·시각 인접성은 세션 구분자가 아니다(F041).
+ *
+ *  F142(2026-08-07 실사고): 형제 저장소(SYNK-talk)에 7커밋을 한 세션의 인계문이 「커밋 없음」으로
+ *  나갔다 — 트랙 절반이 거기서 도는데 여기만 읽었다. 그대로 넘기면 다음 세션이 직전 작업을 못 찾는다.
+ *
+ *  🔑 형제 표식은 **해시 뒤**에 붙인다 — `boardTrack` 이 `split(' ')[0]` 으로 해시를 떼어
+ *    보드 줄을 찾으므로, 앞에 붙이면 보드 줄 인계가 통째로 죽는다(보드는 talk 해시도 적는다). */
 function myCommits(cwd, hostSessionId) {
   if (!hostSessionId) return [];
-  const out = git(cwd, ['log', '--format=%h %s', '-20', `--grep=Session-Id: ${hostSessionId}`]);
-  if (out === null) return [];
-  return out.split('\n').map((s) => s.trim()).filter(Boolean);
+  const 모음 = [];
+  const 읽기 = (root, 표) => {
+    const out = git(root, ['log', '--format=%h %s', '-20', `--grep=Session-Id: ${hostSessionId}`]);
+    if (out === null) return;
+    for (const s of out.split('\n')) {
+      const t = s.trim();
+      if (!t) continue;
+      const i = t.indexOf(' ');
+      모음.push(표 && i > 0 ? `${t.slice(0, i)} (${표}) ${t.slice(i + 1)}` : t);
+    }
+  };
+  읽기(cwd, '');
+  for (const { 뿌리, 저장소 } of store.siblings(cwd)) 읽기(뿌리, 저장소);
+  return 모음;
 }
 
 function hostSessionId(fallback) {
