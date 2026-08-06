@@ -587,6 +587,63 @@ test('⑧ 그 사이 내용이 바뀌면 **다시** 펼친다 (한 번 본 것�
   assert.match(r.사유, /2차/, '바뀐 내용을 안 펼쳤다');
 });
 
+/* 🔴 F141 — 처방이 **실행 불가능해지는** 자리(F103 계열 · 2026-08-06 실측 4회 연속 재차단).
+ * `세션보드.md`·`마찰신호.md` 처럼 여러 세션이 상시 덧쓰는 파일은 시도할 때마다 내용이 달라져
+ * 「같은 명령을 그대로 다시 실행하면 통과한다」에 **영영 못 닿는다.** 남는 문이 BYPASS 하나면
+ * 우회가 정상 통로가 된다 — 그래서 끝나야 하고, 끝내되 **보여주면서** 끝나야 한다. */
+test('🔴 ⑧ 매 시도마다 내용이 바뀌어도 끝난다 — 3번째는 통과하고 그 창에 바뀐 것이 실린다 (F141)', () => {
+  const f = 픽스처8();
+  const 보드 = path.join(f.repo, '보드.md');
+  만진기록(f.state, f.repo, 'local_peer', ['보드.md']);
+  const 명령 = 'git commit -m "x" -- 보드.md';
+
+  fs.writeFileSync(보드, '| 1차 |\n');
+  assert.equal(가드8(f, 명령).차단, true, '첫 창은 펼치고 막아야 한다');
+  fs.writeFileSync(보드, '| 2차 — 옆 세션이 그 사이 덧썼다 |\n');
+  const r2 = 가드8(f, 명령);
+  assert.equal(r2.차단, true, '바뀐 내용은 한 번 더 보여준다');
+  assert.match(r2.사유, /2차/, '바뀐 줄을 안 펼쳤다');
+  fs.writeFileSync(보드, '| 3차 — 또 덧썼다 |\n');
+  const r3 = 가드8(f, 명령);
+  assert.equal(r3.차단, false,
+    '무한 차단이다 — 처방(같은 명령 재실행)에 영영 못 닿으면 BYPASS 가 정상 통로가 된다(F103 재현)');
+  assert.match(r3.사유, /3차/,
+    '통과시키면서 그 사이 바뀐 것을 안 보여줬다 — 그건 보호가 아니라 그냥 조용한 통과다');
+});
+
+test('⑧ 두 번째 창은 **바뀐 것만** 싣는다 (같은 diff 를 다시 훑게 하지 않는다)', () => {
+  const f = 픽스처8();
+  fs.writeFileSync(path.join(f.repo, '보드.md'), '| 보드 1차 |\n');
+  fs.writeFileSync(path.join(f.repo, '엔진.js'), 'let a = 2; // 엔진쪽줄\n');
+  만진기록(f.state, f.repo, 'local_peer', ['보드.md', '엔진.js']);
+  const 명령 = 'git commit -m "x" -- 보드.md 엔진.js';
+  const r1 = 가드8(f, 명령);
+  assert.match(r1.사유, /── 엔진\.js/, '첫 창은 둘 다 펼쳐야 한다');
+
+  fs.writeFileSync(path.join(f.repo, '보드.md'), '| 보드 2차 |\n');   // 보드만 바뀐다
+  const r2 = 가드8(f, 명령);
+  assert.equal(r2.차단, true);
+  assert.match(r2.사유, /보드 2차/, '바뀐 파일을 안 펼쳤다');
+  assert.doesNotMatch(r2.사유, /── 엔진\.js/,
+    '안 바뀐 파일까지 다시 펼쳤다 — 두 번째 창의 값은 「무엇이 그 사이 바뀌었나」 하나뿐이다');
+});
+
+test('⑧ 회차는 **범위별**로 센다 — 딴 명령의 회차를 물려받아 조용히 통과하지 않는다', () => {
+  const f = 픽스처8();
+  const 보드 = path.join(f.repo, '보드.md');
+  만진기록(f.state, f.repo, 'local_peer', ['보드.md', '엔진.js']);
+  fs.writeFileSync(보드, '| 1차 |\n');
+  가드8(f, 'git commit -m "x" -- 보드.md');
+  fs.writeFileSync(보드, '| 2차 |\n');
+  가드8(f, 'git commit -m "x" -- 보드.md');          // 여기까지 보드 범위 2회
+
+  fs.writeFileSync(path.join(f.repo, '엔진.js'), 'let a = 9; // 남이 쓴 줄\n');
+  const r = 가드8(f, 'git commit -m "x" -- 엔진.js');
+  assert.equal(r.차단, true,
+    '다른 범위인데 앞선 회차를 물려받아 첫 시도부터 통과했다 — 회차를 전역으로 세면 그게 구멍이다');
+  assert.match(r.사유, /남이 쓴 줄/, '첫 창인데 내용을 안 펼쳤다');
+});
+
 test('⑧ 미추적 신규 파일도 본다 — diff 가 비었다고 「변경 없음」으로 새지 않는다', () => {
   const f = 픽스처8();
   fs.writeFileSync(path.join(f.repo, '남의신작.js'), 'const 남의것 = true;\n');
