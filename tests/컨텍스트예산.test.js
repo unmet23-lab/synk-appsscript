@@ -301,6 +301,59 @@ test('🔑 인계문은 Session-Id 트레일러로 이 세션 커밋만 집는�
   assert.match(none.msg, /커밋 없음/, '못 찾았으면 못 찾았다고 해야 한다(빈칸·거짓 금지)');
 });
 
+test('🔑 인계문은 형제 저장소(SYNK-talk)의 커밋·미커밋도 본다 — F142', (t) => {
+  // 실사고 2026-08-07: talk 에 7커밋을 한 세션의 인계문이 「커밋 없음」으로 나갔다.
+  // 트랙 절반이 형제에서 도는데 세션 저장소만 읽었다 — 다음 세션이 직전 작업을 못 찾는다.
+  const g = (a, c) => spawnSync('git', a, { cwd: c, encoding: 'utf8', timeout: 10000 });
+  if (g(['--version']).error) return t.skip('git 없음');
+
+  // 좌표 규칙은 `<root>/../<이름>` — 픽스처도 그 모양으로 짓는다.
+  const parent = newDir('형제');
+  const repo = path.join(parent, 'main');
+  const talk = path.join(parent, 'SYNK-talk');
+  fs.mkdirSync(repo); fs.mkdirSync(talk);
+  for (const c of [repo, talk]) {
+    if (g(['init'], c).status !== 0) return t.skip('git init 실패');
+    g(['config', 'user.email', 't@t'], c); g(['config', 'user.name', 't'], c);
+  }
+  fs.writeFileSync(path.join(repo, 'a.txt'), 'x'); g(['add', 'a.txt'], repo);
+  g(['commit', '-m', '세션 저장소 커밋\n\nSession-Id: sid-MINE'], repo);
+  fs.writeFileSync(path.join(talk, 'b.txt'), 'y'); g(['add', 'b.txt'], talk);
+  g(['commit', '-m', '형제 저장소 커밋\n\nSession-Id: sid-MINE'], talk);
+
+  // 이음매를 명시한다 — 주변 환경의 SYNK_OWNER_SIBLINGS 에 좌우되면 안 된다.
+  const 원래 = process.env.SYNK_OWNER_SIBLINGS;
+  process.env.SYNK_OWNER_SIBLINGS = '../SYNK-talk';
+  try {
+    const report = require(path.join(HOOKS, 'lib', 'session-report.js'));
+    const commits = report.myCommits(repo, 'sid-MINE');
+    assert.ok(commits.some((c) => /형제 저장소 커밋/.test(c)),
+      `형제 저장소 커밋을 못 봤다 — 「커밋 없음」으로 넘어간다: ${JSON.stringify(commits)}`);
+    assert.ok(commits.some((c) => /\(SYNK-talk\)/.test(c)),
+      '어느 저장소 커밋인지 표시가 없다 — 새 세션이 엉뚱한 저장소를 연다');
+
+    // 🔑 표식은 해시 **뒤**에 붙어야 한다. 앞에 붙이면 boardTrack 의 해시 추출이 죽고
+    //   보드 줄 인계가 통째로 사라진다(보드는 talk 해시도 적는다).
+    const talk해시 = String(g(['rev-parse', '--short', 'HEAD'], talk).stdout || '').trim();
+    fs.mkdirSync(path.join(repo, 'docs'), { recursive: true });
+    fs.writeFileSync(path.join(repo, 'docs', '세션보드.md'),
+      `| 날짜 | 트랙/작업 | 파일 | 상태 |\n|---|---|---|---|\n| 2026-08-07 | 형제 트랙 | talk | ✅종결(${talk해시}) · 다음=X |\n`);
+    const track = report.boardTrack(repo, commits);
+    assert.ok(track && /형제 트랙/.test(track.track),
+      `형제 해시로 보드 줄을 못 찾았다 — 표식이 해시를 가렸다: ${JSON.stringify(track)}`);
+
+    // 미커밋도 같은 사각이다 — 형제에 남긴 작업본이 「0건 = 끊어도 된다」로 보이면 안 된다.
+    // 절대값이 아니라 **증분**으로 본다(세션 저장소 쪽 잡파일에 검사가 흔들리지 않게).
+    const 전 = report.dirtyCount(repo);
+    fs.writeFileSync(path.join(talk, 'c.txt'), 'z');
+    assert.strictEqual(report.dirtyCount(repo), 전 + 1,
+      '형제 저장소의 미커밋을 안 셌다 — 인계문이 「미커밋 0건」이라 말한다');
+  } finally {
+    if (원래 === undefined) delete process.env.SYNK_OWNER_SIBLINGS;
+    else process.env.SYNK_OWNER_SIBLINGS = 원래;
+  }
+});
+
 test('미커밋 판정 — 모름(git 불가)과 0건을 구별한다', () => {
   const v = stop(310_000, { cwd: path.join(tmpRoot, '없는경로-git아님') });
   assert.strictEqual(v.status, 0, 'git 을 못 부르는 위치에서 훅이 실패 종료했다');
