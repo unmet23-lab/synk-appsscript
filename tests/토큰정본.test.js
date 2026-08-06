@@ -19,7 +19,7 @@ const ROOT = path.resolve(__dirname, '..');
 const 토큰 = require('../docs/디자인_토큰.json');
 
 /* 킷 개수 — 19(v10 Crew Dossier 08-01) + Slate 2색(08-07 유호님 확정) = 21 */
-const 킷개수 = 21;
+const 킷개수 = 22;
 
 test(`① 킷은 정확히 ${킷개수}색 — hex 형식·이름·hex 전부 유일하다`, () => {
   const 킷 = 토큰.색.킷;

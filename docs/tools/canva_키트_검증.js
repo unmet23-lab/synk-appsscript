@@ -23,8 +23,9 @@
 (() => {
   'use strict';
 
-  // 정본 21색 — 19색의 hex 원천 = docs/_archive/브랜드_색상키트_원본_CrewDossier_2026-08-01.html
+  // 정본 22색 — 19색의 hex 원천 = docs/_archive/브랜드_색상키트_원본_CrewDossier_2026-08-01.html
   //             06 Slate 2색은 2026-08-07 유호님 확정 추가 (컨셉 정본 조항 ⓔ)
+  //             07 Lime Family 1색은 2026-08-07 유호님 확정 추가 (컨셉 정본 조항 ⓕ)
   const KIT = {
     '#f6f1e8': 'Cream', '#ff6b5c': 'Coral', '#1a2340': 'Navy', '#c8ff3d': 'Lime', '#171820': 'Ink',
     '#fbf7ee': 'Paper', '#efe7d7': 'Cream 2', '#e7ddc7': 'Cream 3',
@@ -32,6 +33,7 @@
     '#2a3358': 'Navy 3', '#131a32': 'Navy Ink', '#0f1730': 'Navy 2',
     '#ff3e88': 'KC Hot Pink', '#ff6ba8': 'KC Pink 2', '#ffd447': 'KC Sun', '#4e7cff': 'KC Cool Blue',
     '#8a93ad': 'Slate', '#5f657d': 'Slate 2',
+    '#b8e836': 'Lime 2',
   };
 
   // 팔레트 이름은 「오용 차단 장치」다 — 이름에 제한을 박아 두면 쓰는 사람이 규칙을 안 찾아봐도 걸린다.
@@ -42,12 +44,14 @@
     '04 Navy Family',
     '05 K-Culture (3색 Part 6 전용 · Sun=모드C 2도)', // v1.5 — Sun만 모드 C로 빠졌다
     '06 Slate (3층 잉크 · Slate=다크 / Slate 2=라이트)', // v1.8 — 바닥을 바꿔 쓰면 대비 미달
+    '07 Lime Family (Lime 2 · 라이트에선 면으로만)',      // v1.9 — Paper 위 1.34 라 글자로 쓰면 안 보인다
   ];
 
   // 시맨틱이 박힌 색 이름 — 지워지면 그 자리가 바로 오용된다(라임=v1.6, Sun=v1.5)
   const NAMED = {
     '#c8ff3d': 'Lime (앱 성장·획득 전용)',
     '#ffd447': 'KC Sun (Part6·겹침 잉크)',
+    '#b8e836': 'Lime 2 (라이트=면만)',
   };
 
   const leaves = [...document.querySelectorAll('*')]
@@ -73,7 +77,7 @@
   for (const hex of found) {
     if (!KIT[hex]) problems.push(`키트에 없는 색이 들어와 있다: ${hex}`);
   }
-  if (found.length !== 21) problems.push(`색이 ${found.length}개다 — 키트는 21색이다`);
+  if (found.length !== 22) problems.push(`색이 ${found.length}개다 — 키트는 22색이다`);
 
   for (const p of PALETTES) {
     if (!leaves.includes(p)) {
@@ -87,7 +91,7 @@
   }
 
   if (problems.length === 0) {
-    console.log('%c✅ 전부 일치 — 21색 · 팔레트 6개 이름 · 시맨틱 색 이름 2건', 'color:#027a48;font-weight:bold;font-size:14px');
+    console.log('%c✅ 전부 일치 — 22색 · 팔레트 7개 이름 · 시맨틱 색 이름 3건', 'color:#027a48;font-weight:bold;font-size:14px');
   } else {
     console.log('%c✘ 정본과 어긋난 곳 ' + problems.length + '건', 'color:#b91c1c;font-weight:bold;font-size:14px');
     problems.forEach((p) => console.log('   • ' + p));
