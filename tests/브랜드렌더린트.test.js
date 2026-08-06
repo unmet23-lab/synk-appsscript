@@ -18,7 +18,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const 린트 = require('../tools/브랜드렌더린트');
-const { findChrome, 측정, 대상, 제외, KIT, ROOT } = 린트;
+const { findChrome, 측정, 대상, 제외, KIT, 킷밖_유예, ROOT } = 린트;
 
 const CHROME = findChrome();
 const 크롬없음 = !CHROME && '크롬이 없다 — 렌더 검사를 **안 돌렸다**(통과 아님). CHROME_PATH 로 지정 가능';
@@ -45,6 +45,19 @@ test('제외는 전부 이유를 달고 있다 (이유 없는 제외가 등록�
   for (const [rel, 이유] of 제외) {
     assert.ok(이유 && 이유.length >= 20, `제외 이유가 비었거나 너무 짧다: ${rel}`);
     assert.ok(fs.existsSync(path.join(ROOT, rel)), `제외 목록에 없는 파일이 남아 있다: ${rel}`);
+  }
+});
+
+/* 「킷밖 유예」는 색을 통과시키는 문이다 — 판정이 끝나면 반드시 닫혀야 하는데,
+ * 닫는 것을 사람이 기억해야 하면 안 닫힌다. 킷에 편입되는 순간 이 항목은 거짓이 되므로
+ * 그때 빨개지게 해 둔다(유예가 영구 화이트리스트로 굳는 것이 이 장치의 유일한 실패 형태다). */
+test('킷밖 유예가 낡지 않았다 — 킷에 편입됐으면 유예를 지운다', () => {
+  const 킷hex = new Set(require('../docs/디자인_토큰.json').색.킷.map((c) => c.hex.toUpperCase()));
+  for (const [hex, v] of Object.entries(킷밖_유예)) {
+    assert.ok(!킷hex.has(hex.toUpperCase()),
+      `${v.이름} ${hex} 이 킷에 들어왔다 — 유예는 이제 거짓이다. tools/브랜드렌더린트.js 의 킷밖_유예 에서 지워라`);
+    assert.ok(v.왜 && v.왜.length >= 40, `${hex} 유예에 사유가 부실하다 — 이유 없는 통과는 두지 않는다`);
+    assert.ok(/⏳/.test(v.왜), `${hex} 유예에 누가 판정할지가 없다 — 주인 없는 유예는 안 닫힌다`);
   }
 });
 

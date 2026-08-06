@@ -50,11 +50,14 @@ const KIT = Object.fromEntries(
  * 이유를 적지 않은 통과는 두지 않는다(등록층 조항). 킷 편입 여부는 유호님 확정 사안이라
  * 여기서 임의로 킷에 넣지 않고, 대신 「누가·어디서·왜」를 남겨 판정 전까지 빨간불이 되지 않게만 한다. */
 const 킷밖_유예 = {
-  '#B8E836': 'Lime 2 — 크루카드 접수 폼 3곳(.dot.lime·del:nth-child(3))이 렌더 중. '
-    + '08-06 토큰 단일화가 이 파일까지 오지 않아 킷에는 없고 이 상수에만 있었다(08-07 파생 전환에서 드러남). '
-    + '⏳유호님 판정 = 킷 편입 or 크루카드에서 제거.',
+  '#B8E836': {
+    이름: 'Lime 2',
+    왜: '크루카드 접수 폼 3곳(.dot.lime · .del:nth-child(3))이 렌더 중. 08-06 토큰 단일화가 이 파일까지 '
+      + '오지 않아 킷에는 없고 이 상수에만 있었다(08-07 파생 전환에서 드러남 · F143). '
+      + '⏳유호님 판정 = 킷 편입 or 크루카드에서 제거.',
+  },
 };
-for (const [hex, why] of Object.entries(킷밖_유예)) KIT[hex] = `⏳${why.split(' —')[0]}`;
+for (const [hex, v] of Object.entries(킷밖_유예)) KIT[hex] = `⏳${v.이름}(킷 밖·유예)`;
 /* 정본 = docs/브랜드_폰트_정본.md §3 — 「모든 산출물은 이 3종만」.
  * 폴백 낱말(system-ui·sans-serif…)은 CDN 이 죽었을 때 레이아웃을 지키는 안전망이라
  * 금지 대상이 아니다(정본 §7). 실제로 **그려진** 폰트만 본다. */
@@ -384,4 +387,4 @@ function main(argv) {
 }
 
 if (require.main === module) process.exit(main(process.argv.slice(2)));
-module.exports = { KIT, FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_SCOPE, findChrome, 측정, 대상, 제외, ROOT };
+module.exports = { KIT, 킷밖_유예, FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_SCOPE, findChrome, 측정, 대상, 제외, ROOT };
