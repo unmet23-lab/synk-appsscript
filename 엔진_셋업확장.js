@@ -2789,6 +2789,7 @@ function menuLectureJoinDiag() { menuRun_(lectureJoinDiag); }
 function menuSelfHeal() { menuRun_(sheetSelfHealNow); } // [v9.127] 자기치유 결과 가시화
 function menuCreateQuizForm() { menuRun_(createQuizForm); } // [v9.138] 퀴즈 응답 폼 — 수집층 입구(재실행 안전)
 function menuMigrateHwForm() { menuRun_(migrateHwFormV9138); } // [v9.138] 숙제 폼 증분 — 문항 연결·재작성 경로(멱등)
+function menuMigrateVoiceForm() { menuRun_(migrateVoiceFormMissionId); } // [v9.190] 목소리 폼 미션ID 증분(멱등 — 야간 배치도 부른다)
 // 🔗 면접폼에 학생ID 1칸(선택) — 의도(크루카드)와 결과(면접 합·불)를 한 사람으로 잇는 조인 키.
 //   생성부는 살아 있는 폼을 안 건드리므로 이 클릭이 유일한 통로다(멱등 · 익명 회수는 그대로).
 function menuMigrateInterviewSid() { menuRun_(migrateInterviewSid); }
@@ -3291,6 +3292,9 @@ function onOpen() {
       .addItem('🧠 퀴즈 응답 폼 만들기(수집 1단계)', 'menuCreateQuizForm')
       .addItem('📝 숙제 폼에 수집 문항 넣기(수집 2단계)', 'menuMigrateHwForm')
       .addItem('🗣 한국어 대화 폼 만들기(수집 3단계)', 'menuCreateTalkForm')
+      /* [v9.190] 야간 배치가 매일 자기적용하므로 평소엔 누를 일이 없다 — 밤을 기다리지 않고
+       *   지금 적용하고 싶을 때의 손잡이다(자동만 있고 수동이 없으면 재시도 경로가 하루 단위가 된다). */
+      .addItem('🎙 목소리 폼에 미션ID 넣기(자동 적용됨·수동 재시도용)', 'menuMigrateVoiceForm')
       /* 궤적 연결 고리 — 의도(크루카드 100+문항)와 결과(면접 합·불)가 둘 다 쌓이는데 안 이어져 있었다.
        *   문항이 아니라 **연결**이 소급 불가다: 지금 키를 안 심으면 이미 들어온 기록은 영원히 못 잇는다. */
       .addItem('🔗 면접폼에 학생ID 칸 넣기(궤적 연결·선택 문항)', 'menuMigrateInterviewSid')

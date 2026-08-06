@@ -344,6 +344,63 @@ test('음성 동의 게이트 — 동의 확인 없이는 녹음이 적재되지
     '보류분을 자동 삭제한다 — 오판이면 복구 불가이고 종이 동의서 학생일 수 있다');
 });
 
+/* [v9.190] 미션ID — 발음 데이터의 과업 축(유호님 승인 08-06). 두 가지가 소급 불가라 여기서 못박는다:
+ *   ① 안 받은 미션ID는 영원히 없다  ② 잘못된 열에서 받은 값은 「받았는데 틀린」 데이터라 더 나쁘다. */
+test('미션ID 열 판별 — 「미션ID」가 「미션」을 품는다는 것을 실제로 돌려서 확인한다', () => {
+  const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
+  const s = tb.indexOf('const cSid = head.findIndex');
+  assert.notEqual(s, -1, 'voiceSweep_ 열 판별부를 찾지 못함');
+  const e = tb.indexOf('\n', tb.indexOf('const cFile = head.findIndex', s));
+  // 문자열 검사가 아니라 **실제 소스를 실행**한다 — 정규식만 보면 로직이 바뀌어도 통과한다
+  const pick = new Function('head', tb.slice(s, e) + '\n return { cSid, cMission, cMissionId, cFile };');
+
+  const 정상 = pick(['타임스탬프', '학생ID', '미션', '녹음 파일 업로드', '미션ID']);
+  assert.equal(정상.cMission, 2, '정상 순서에서 미션 열을 못 찾는다');
+  assert.equal(정상.cMissionId, 4, '정상 순서에서 미션ID 열을 못 찾는다');
+
+  /* 핵심 — 폼 문항 순서를 유호님이 바꾸면 이 배치가 온다. 순진한 indexOf('미션')은 여기서
+   * 미션ID 열을 '미션'으로 집어 자유문자열 칸에 ID를 싣는다(예외 없이 조용한 오적재). */
+  const 역순 = pick(['타임스탬프', '학생ID', '미션ID', '미션', '녹음 파일 업로드']);
+  assert.equal(역순.cMissionId, 2, '역순에서 미션ID를 못 찾는다');
+  assert.equal(역순.cMission, 3, '역순에서 미션ID 열을 「미션」으로 오인한다 — 자유문자열 칸에 ID가 실린다');
+
+  // 마이그레이션 전 구 폼(3문항)도 그대로 살아야 한다 — 미션ID 없음 = -1, 미션은 정상
+  const 구폼 = pick(['타임스탬프', '학생ID', '미션', '녹음 파일 업로드']);
+  assert.equal(구폼.cMissionId, -1, '구 폼에서 없는 미션ID가 잡힌다');
+  assert.equal(구폼.cMission, 2, '구 폼의 미션 열 판별이 깨졌다 — 마이그레이션 전 응답이 유실된다');
+});
+
+test('미션ID 증분은 멱등이고, 이미 뿌려진 학생별 링크를 죽이지 않는다', () => {
+  const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
+  const s = tb.indexOf('function migrateVoiceFormMissionId()');
+  assert.notEqual(s, -1, '미션ID 증분 함수가 없다');
+  const fn = tb.slice(s, tb.indexOf('\n}\n', s));
+
+  // 필수로 만들면 이 문항이 없는 구 프리필 링크로 들어온 학생이 제출을 못 한다(숙제폼 v9.138과 같은 계급)
+  assert.ok(/setTitle\('미션ID'\)\s*\.setRequired\(false\)/.test(fn), '미션ID가 선택 응답이 아니다 — 구 링크로 들어온 학생이 제출을 못 한다');
+  // 멱등 — 야간 배치가 매일 부르므로 가드가 없으면 문항이 매일 하나씩 늘어난다
+  assert.ok(/if \(!had\)/.test(fn) && /indexOf\('미션ID'\) > -1/.test(fn), '멱등 가드가 없다 — 야간 배치가 매일 문항을 하나씩 추가한다');
+  // profiles DB열에 이미 뿌려진 학생별 링크가 죽으면 안 된다 → 기존 키를 덮지 않고 별도 키로 낸다
+  assert.ok(!/setState\(st, '목소리폼URL틀'/.test(fn), "기존 '목소리폼URL틀'을 덮어쓴다 — profiles에 이미 뿌려진 학생별 링크가 죽는다");
+  assert.ok(/setState\(st, '목소리폼미션틀'/.test(fn), '미션별 링크 틀을 별도 키로 내지 않는다');
+  // 틀은 문항이 생긴 **뒤에** 뽑아야 프리필 자리가 잡힌다
+  assert.ok(fn.indexOf("addTextItem().setTitle('미션ID')") < fn.indexOf("setState(st, '목소리폼미션틀'"),
+    'URL 틀 생성이 문항 추가보다 앞이다 — 프리필 자리가 안 잡힌 틀이 저장된다');
+  // 이미 있을 때 침묵해야 한다 — 매일 같은 메일이 오면 알림이 아니라 소음이고, 진짜 알림이 묻힌다
+  assert.ok(/if \(had\) return ''/.test(fn), '이미 적용된 뒤에도 매일 메일을 보낸다');
+
+  // 클릭 0회 경로 — 야간 배치가 부르되 **스위프보다 앞**이어야 그날 응답부터 열을 읽는다
+  const nightly = tb.slice(tb.indexOf('function 교재연동Nightly()'), tb.indexOf('// ── A-1.'));
+  assert.ok(nightly.includes('migrateVoiceFormMissionId'), '야간 배치가 부르지 않는다 — 클릭 없이는 영원히 적용 안 된다');
+  assert.ok(nightly.indexOf('migrateVoiceFormMissionId') < nightly.indexOf('voiceSweep_'),
+    '증분이 스위프보다 뒤다 — 그날 응답은 미션ID 열 없이 적재된다');
+
+  // 맨 끝 증분이어야 앞을 읽는 소비처(전사 7~9열·삭제 6열·점검 8열)가 안 밀린다
+  const hdr = tb.match(/const VOICE_LOG_HEADERS = \[([^\]]+)\]/)[1].split(',').map(x => x.trim().replace(/'/g, ''));
+  assert.equal(hdr[hdr.length - 1], '미션ID', '미션ID가 맨 끝이 아니다 — 앞을 고정 인덱스로 읽는 소비처가 통째로 밀린다');
+  assert.equal(hdr.indexOf('전사'), 6, '전사 열 위치가 밀렸다 — voiceTranscribe_의 getRange(row, 7, 1, 3)이 엉뚱한 칸을 쓴다');
+});
+
 test('철회 실행 경로가 있다 — 무기한 보관의 유일한 삭제 트리거', () => {
   const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
   const s = tb.indexOf('function voiceWithdraw(');

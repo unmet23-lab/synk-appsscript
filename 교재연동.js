@@ -72,8 +72,48 @@ function voiceFormFinishSetup() {
   }
   setState(st, '목소리폼ID', form.getId());
   setState(st, '목소리폼URL틀', prefillTemplateOf_(form, '학생ID')); // SIDTOKEN 치환형 — 학생별 원터치
+  try { migrateVoiceFormMissionId(); } catch (e) { Logger.log('미션ID 증분 보류: ' + e); } // 새로 연결한 폼도 과업 축을 갖고 시작한다
   Logger.log('✅ 목소리 폼 연결 완료. setupTextbookLink ▶ 실행(1회) 후, 다음 야간 배치부터 profiles DB열에 학생별 링크가 채워집니다.');
   Logger.log('※ 파일 업로드 폼은 학생이 구글 계정 로그인 상태여야 제출됩니다(안드로이드 폰은 대부분 로그인 상태).');
+}
+
+/* [v9.190] 🎙 목소리 폼에 「미션ID」 문항을 증분 추가한다 (유호님 승인 2026-08-06 · 멱등).
+ *
+ * 왜: '미션'이 자유 문자열이라 같은 과제가 여러 표기로 쌓인다. 발음 데이터에 **과업 축**이 없으면
+ *   "무엇을 읽었을 때의 발음인지"로 묶을 수가 없고, 그 손실은 소급 복구가 안 된다(학습데이터_스키마감사 잔여 1건).
+ *
+ * 설계 — migrateHwFormV9138 과 같은 계급이라 같은 세 가지를 지킨다:
+ *   ① **선택 응답** — 필수로 만들면 이미 배포된 학생별 프리필 링크(이 문항이 없는)가 전부 제출 불가가 된다.
+ *   ② **기존 '목소리폼URL틀'을 건드리지 않는다** — profiles DB열에 이미 뿌려진 학생별 링크가 그대로 살아야 한다.
+ *      미션별 링크는 **별도 키** '목소리폼미션틀'로 낸다(숙제폼URL틀 / 숙제폼재작성틀 2키 규약과 동일).
+ *   ③ 틀은 **문항이 생긴 뒤에** 뽑는다 — 먼저 뽑으면 프리필 자리가 안 잡힌 틀이 저장된다.
+ *
+ * 실행: 교재연동Nightly 가 매일 부른다 — **클릭 0회로 자기적용**되고, 폼을 새로 만들어도 다시 치유된다
+ *   (유호님 "원격으로 진행" 08-06 · 크롬 브리지가 끊겨 있어 편집기 ▶ 를 쓸 수 없는 상태의 처방이기도 하다).
+ *   이미 있으면 조용히 틀만 갱신하고 빈 문자열을 돌려준다 — 매일 같은 메일이 오면 그건 알림이 아니라 소음이다. */
+function migrateVoiceFormMissionId() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const fid = String(getState(st, '목소리폼ID').val || '');
+  if (!fid) return '';                       // 폼 미연결 — 조용히 대기(다른 기능과 동일한 스위치 원칙)
+  let form;
+  try { form = FormApp.openById(fid); }
+  catch (e) { Logger.log('⚠️ 목소리 폼 접근 실패(권한/삭제 확인): ' + e); return ''; }
+
+  const had = form.getItems().map(x => String(x.getTitle()).trim()).indexOf('미션ID') > -1;
+  if (!had) {
+    form.addTextItem().setTitle('미션ID').setRequired(false)
+      .setHelpText('선생님이 준 링크로 열었다면 자동으로 채워져 있어요 — 비워 두셔도 제출됩니다');
+  }
+  setState(st, '목소리폼미션틀', prefillTemplate2_(form, '학생ID', '미션ID', 'MISSIONTOKEN'));
+  if (had) return '';                        // 이미 있음 — 야간 배치가 매일 부르므로 침묵이 정상이다
+
+  const msg = '🎙 목소리 폼에 「미션ID」 문항을 추가했습니다(선택 응답 — 비워도 제출됩니다).\n'
+    + '미션별 링크 틀 = app_state 「목소리폼미션틀」 — SIDTOKEN·MISSIONTOKEN 을 바꿔 쓰면 그 미션 전용 링크가 됩니다.\n'
+    + '기존 학생별 링크(profiles 「목소리폼URL」)는 그대로 살아 있습니다.';
+  Logger.log(msg);
+  adminMail('[SYNK] 🎙 목소리 폼 미션ID 문항 추가', msg);
+  return msg;
 }
 
 // ── 유호님 ▶ 1회: 시트·열·야간 트리거 설치(멱등) ───────────────────────
@@ -99,6 +139,8 @@ function setupTextbookLink() {
 function 교재연동Nightly() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   try { masteryFromFeedback_(ss); } catch (e) { Logger.log('masteryFromFeedback_ 오류: ' + e); }
+  // [v9.190] 폼 문항 자기적용 — **스위프보다 앞**이어야 그날 응답부터 미션ID 열을 읽는다(멱등·이미 있으면 침묵)
+  try { migrateVoiceFormMissionId(); } catch (e) { Logger.log('migrateVoiceFormMissionId 오류: ' + e); }
   try { voiceSweep_(ss); } catch (e) { Logger.log('voiceSweep_ 오류: ' + e); }
   try { voiceTranscribe_(ss); } catch (e) { Logger.log('voiceTranscribe_ 오류: ' + e); } // [v9.107] 적재 직후 전사 — 성장 카드가 전사문을 실을 수 있게 카드 생성보다 앞
   try { writeVoiceLinks_(ss); } catch (e) { Logger.log('writeVoiceLinks_ 오류: ' + e); }
@@ -122,7 +164,10 @@ function voiceSweep_(ss) {
   // 응답 열 위치는 헤더로 찾는다(문항 순서를 유호님이 바꿔도 안전)
   const head = src.getRange(1, 1, 1, src.getLastColumn()).getValues()[0].map(h => String(h || ''));
   const cSid = head.findIndex(h => h.indexOf('학생ID') > -1);
-  const cMission = head.findIndex(h => h.indexOf('미션') > -1);
+  /* [v9.190] ⚠ '미션ID'는 '미션'을 부분문자열로 품는다 — 먼저 집고, '미션'은 **그 열을 뺀 뒤** 찾는다.
+   *   순서를 안 가르면 폼 문항 순서가 바뀌는 순간 ID가 자유문자열 칸에 실린다(예외 없이 조용한 오적재). */
+  const cMissionId = head.findIndex(h => h.replace(/\s/g, '').indexOf('미션ID') > -1);
+  const cMission = head.findIndex((h, i) => i !== cMissionId && h.indexOf('미션') > -1);
   const cFile = head.findIndex(h => h.indexOf('녹음') > -1 || h.indexOf('파일') > -1);
   if (cSid < 0 || cFile < 0) { Logger.log('voiceSweep_: 응답 탭에서 학생ID/녹음 열을 못 찾음 — 폼 문항 제목 확인'); return; }
 
@@ -172,7 +217,9 @@ function voiceSweep_(ss) {
      *     즉 성장 카드의 값은 재생이 아니라 대비였고, 그 값은 링크 없이도 그대로 산다(buildVoiceGrowthCards_ 참조).
      *   ▣ 원본은 지우지 않는다 — 학원 내부 자산(피드백·AI 학습)이고 동의 범위 안이다. 다만 **밖에서 열리지 않는다.** */
     // [v9.187] 전사 3칸은 빈칸으로 두고(야간 STT가 채운다) 맨 끝에 급수 스냅샷 — 헤더 정본과 같은 폭으로 쓴다
-    vOut.push([sid, ts, mission, fileUrl, fid, new Date(), '', '', '', lvOf[sid] || 0]);
+    // [v9.190] 미션ID는 프리필 링크로만 들어온다 — 학생이 손으로 채우는 칸이 아니라 비어도 정상이다
+    vOut.push([sid, ts, mission, fileUrl, fid, new Date(), '', '', '', lvOf[sid] || 0,
+      cMissionId >= 0 ? String(r[cMissionId] || '').trim() : '']);
     const key = dstr(ts, tz) + '|' + sid;
     if (!givenKey[key]) { // 하루 1회만 지급(여러 번 제출해도 기록은 전부, 포인트는 1회)
       givenKey[key] = 1;
@@ -340,8 +387,11 @@ const STT_MAX_BYTES = 10 * 1024 * 1024;   // 인라인 요청 한도
 const STT_OK_MIME = ['audio/flac', 'audio/x-flac', 'audio/wav', 'audio/x-wav', 'audio/wave',
   'audio/mpeg', 'audio/mp3', 'audio/ogg', 'audio/webm', 'audio/amr', 'audio/3gpp'];
 /* [v9.187] '급수'(맨 끝) — 녹음 시점의 학생 급수 스냅샷(제품방향 §불변식 2 「학생·레벨·시점」의 레벨 축).
- *   발음 데이터는 급수 층이 없으면 "초급의 더듬거림"과 "고급의 남은 억양"이 한 덩어리로 섞인다. */
-const VOICE_LOG_HEADERS = ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at', '전사', '전사상태', '전사일시', '급수'];
+ *   발음 데이터는 급수 층이 없으면 "초급의 더듬거림"과 "고급의 남은 억양"이 한 덩어리로 섞인다.
+ * [v9.190] '미션ID'(맨 끝) — 과업 축(유호님 승인 08-06 · 스키마 감사 잔여 1건).
+ *   '미션'은 자유 문자열이라 같은 과제가 다섯 표기로 쌓인다 — "무엇을 읽었을 때의 발음인가"로 묶을 수가 없다.
+ *   맨 끝 증분이라 앞을 읽는 소비처(전사 7~9열·삭제 6열·점검 8열)는 전부 그대로다. */
+const VOICE_LOG_HEADERS = ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at', '전사', '전사상태', '전사일시', '급수', '미션ID'];
 
 /* GCP 액세스 토큰 — ①서비스 계정(GCP_SA_JSON) ②없으면 스크립트 자체 토큰(매니페스트에 스코프를 넣은 경우).
  * 토큰은 1시간짜리라 캐시에 50분 보관한다(매 파일마다 토큰 발급하면 그 자체가 쿼터·지연이다). */
