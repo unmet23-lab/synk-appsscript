@@ -367,6 +367,50 @@ test('🔑 인계문은 형제 저장소(SYNK-talk)의 커밋·미커밋도 본�
   }
 });
 
+test('🔑 보드 줄을 못 찾았으면 「찾아라」가 아니라 「못 찾았다」로 넘긴다', (t) => {
+  // 실사고 2026-08-07: 트랙 없이 끝난 세션(d3bf3daf — 커밋이 인계문 수거·보드 아카이브뿐)의
+  // 인계문이 「보드를 열어 **내 트랙 줄을 찾고** 이어라」로 나갔다. 없는 줄을 찾으라고 시키면
+  // 다음 세션은 보드 전문을 뒤지다 손에 잡히는 뒷정리로 그 자리를 채운다 — 인계가 아니다.
+  const g = (a, c) => spawnSync('git', a, { cwd: c, encoding: 'utf8', timeout: 10000 });
+  if (g(['--version']).error) return t.skip('git 없음');
+
+  const repo = newDir('보드없음');
+  if (g(['init'], repo).status !== 0) return t.skip('git init 실패');
+  g(['config', 'user.email', 't@t'], repo); g(['config', 'user.name', 't'], repo);
+  fs.writeFileSync(path.join(repo, 'a.txt'), 'x'); g(['add', 'a.txt'], repo);
+  g(['commit', '-m', '뒷정리 커밋\n\nSession-Id: sid-MINE'], repo);
+  const 해시 = String(g(['rev-parse', '--short', 'HEAD'], repo).stdout || '').trim();
+
+  const report = require(path.join(HOOKS, 'lib', 'session-report.js'));
+  const 보드 = path.join(repo, 'docs', '세션보드.md');
+  fs.mkdirSync(path.dirname(보드), { recursive: true });
+  const 머리 = '| 날짜 | 트랙/작업 | 파일 | 상태 |\n|---|---|---|---|\n';
+
+  // ① 내 해시가 없는 보드 — 남의 줄만 있다.
+  fs.writeFileSync(보드, `${머리}| 2026-08-07 | 남의 트랙 | x | ✅종결(deadbee) · 다음=Z |\n`);
+
+  const 원래 = process.env.CLAUDE_CODE_HOST_SESSION_ID;
+  process.env.CLAUDE_CODE_HOST_SESSION_ID = 'sid-MINE';
+  try {
+    const a = report.buildHandoff(repo, null, { dirty: 0 });
+    assert.match(a, /못 찾았다/, `보드에 내 줄이 없는데 「못 찾았다」를 안 말한다:\n${a}`);
+    assert.doesNotMatch(a, /트랙 줄을 찾고/,
+      `없는 줄을 「찾아라」로 시킨다 — 다음 세션이 없는 것을 뒤진다:\n${a}`);
+    assert.doesNotMatch(a, /남의 트랙/, '남의 보드 줄을 내 트랙으로 실었다(F073)');
+
+    // ② 같은 보드에 내 해시가 들어오면 반대 방향 — 「못 찾았다」가 아니라 상태/다음이 실려야 한다.
+    //    (한쪽만 검사하면 문구를 통째로 지워도 초록이다.)
+    fs.appendFileSync(보드, `| 2026-08-07 | 내 트랙 | y | ✅종결(${해시}) · 다음=S1 배달 |\n`);
+    const b = report.buildHandoff(repo, null, { dirty: 0 });
+    assert.match(b, /내 트랙/, `내 해시가 보드에 있는데 줄을 못 실었다:\n${b}`);
+    assert.match(b, /다음=S1 배달/, '상태/다음 칸이 안 실렸다 — 주소만 있고 내용이 없다');
+    assert.doesNotMatch(b, /못 찾았다/, '줄을 찾았는데 못 찾았다고 말한다');
+  } finally {
+    if (원래 === undefined) delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
+    else process.env.CLAUDE_CODE_HOST_SESSION_ID = 원래;
+  }
+});
+
 test('미커밋 판정 — 모름(git 불가)과 0건을 구별한다', () => {
   const v = stop(310_000, { cwd: path.join(tmpRoot, '없는경로-git아님') });
   assert.strictEqual(v.status, 0, 'git 을 못 부르는 위치에서 훅이 실패 종료했다');
