@@ -85,6 +85,13 @@ const GENERIC_OK = [
 const KC_FONTS_OK = ['Fraunces', 'Gowun Batang', 'Cormorant'];
 const KC_SCOPE = '.kc-page, .kc-card';
 
+/* 색 전용 경계 — **서체 경계보다 한 칸 넓다**(유호님 확정 2026-08-07 「C안」).
+ * 크루카드 표지 03 칸은 Part 6 을 예고하는 자리라 KC 핑크가 거기서는 뜻을 진다.
+ * 🔴 **서체는 같이 넓히지 않는다** — 예고 1칸에 Fraunces 까지 들어오면 그 칸이 Part 6 행세를 한다.
+ *   상수를 둘로 나눈 이유가 그것이다. 하나로 뒀으면 다음 사람이 색을 넓히면서 서체를 조용히 같이 넓힌다
+ *   (「경계를 함께 적어야 예외가 예외로 남는다」 — 위 서체 예약 주석과 같은 축). */
+const KC_COLOR_SCOPE = KC_SCOPE + ', .kc-preview';
+
 /* ── Part 06 K-Culture 예약 **색** — 서체와 같은 경계를 색에도 적용한다 ────────
  * 정본 `DESIGN.md` 철칙 ④: 「Lime·KC 4색은 전용 구역(앱 성장층·Part 6) 밖 반입 금지」.
  * 2026-08-07까지 이 린트는 **킷 멤버십만** 봐서, KC 색이 Part 6 밖에 있어도 초록이었다
@@ -105,14 +112,11 @@ const KC_COLORS = Object.fromEntries(
  * 고객 대면 화면을 내 판단으로 바꾸지 않고, 판정 전까지 빨간불이 되지 않게만 한다.
  * 키 = `파일:셀렉터` · 값 = 사유. **이유 없는 통과는 두지 않는다.** */
 const 구역밖_유예 = {
-  'crewcard/카드_kr.html:div.del::before':
-    '⏳유호님 판정 대기 — 표지 4칸 띠가 KC Cool Blue(02 Roadmap)·KC Hot Pink(04 Class)를 Part 6 밖에서 쓴다. 색이 뜻을 안 진다(정작 K-컬처인 03 은 Lime 2). 고객 대면 라이브라 승인 사안. 2026-08-07 실측.',
-  'crewcard/카드_mn.html:div.del::before':
-    '⏳위 한국어판과 **같은 자리**(몽골어 라이브). 한쪽만 고치면 두 언어가 갈라지므로 판정도 함께 받는다.',
-  'docs/크루카드/크루카드_한국어.html:div.del::before':
-    '⏳위 라이브 파일의 docs 사본 — 크루카드사본.js 가 동일성을 강제하므로 라이브 판정 전에는 여기만 못 고친다.',
-  'docs/크루카드/크루카드_몽골어.html:div.del::before':
-    '⏳위 몽골어 라이브의 docs 사본 — 동일성 강제 대상이라 같은 판정을 기다린다.',
+  /* 2026-08-07 — 비었다. 표지 4칸 띠 4건이 유호님 「C안」 확정으로 **해소**됐다(유예 → 결정).
+   * 처리 방향이 중요하다: 색을 화이트리스트에 얹어 통과시킨 게 아니라 **경계를 넓혔다**
+   * (`KC_COLOR_SCOPE` 의 `.kc-preview`). 유예는 「판정 전까지 빨간불만 끈다」는 임시 장치이고,
+   * 판정이 나면 여기서 빠져야 한다 — 안 빼면 결정이 임시 조치의 모습으로 남는다.
+   * 장치 자체는 남긴다(다음 라이브 위반이 또 생긴다). 빈 채로 두는 것이 정상 상태다. */
 };
 
 /* ── 등록층 ────────────────────────────────────────────────────────────────
@@ -160,7 +164,7 @@ function findChrome() {
 /* `freeze:false` 는 **회귀 전용 탈출구**다 — 시간정지를 끄면 픽스처가 실제로 물리는지 재려고
  * 둔다. 인자로 받는 이유: 페이지가 읽는 플래그(window.__…)로 두면 검사 대상 파일이 그 값을
  * 켜서 가드를 통째로 우회할 수 있다. 호출자만 줄 수 있어야 탈출구가 구멍이 되지 않는다. */
-function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freeze, kcColors) {
+function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freeze, kcColors, kcColorScope) {
   return `(() => {
   const KIT = new Set(${JSON.stringify(kitHexes)});
   const FONTS_OK = new Set(${JSON.stringify(fontsOk)});
@@ -168,6 +172,8 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freez
   const KC_FONTS_OK = new Set(${JSON.stringify(kcFontsOk)});
   const KC_COLORS = new Set(${JSON.stringify(Object.keys(kcColors || {}))});
   const KC_SCOPE = ${JSON.stringify(kcScope)};
+  // 색 경계는 서체 경계보다 한 칸 넓다(예고 1칸) — 둘을 **따로** 들고 있어야 안 섞인다.
+  const KC_COLOR_SCOPE = ${JSON.stringify(kcColorScope || kcScope)};
   // 예약 서체는 **그 구역 안에서만** 통과한다. 밖에서 같은 폰트가 나오면 그대로 위반이다.
   const KC구역 = (el) => el.closest(KC_SCOPE) !== null;
 
@@ -253,7 +259,7 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freez
   /* 직책 검사 — 킷 안이라도 **제 구역 밖이면** 위반이다(DESIGN.md 철칙 ④).
    * 의사요소는 제 소유 요소의 구역을 그대로 쓴다(::before 는 el 안에 그려진다). */
   const 구역검사 = (el, hexv, 자리, 접미 = '') => {
-    if (!KC_COLORS.has(hexv) || el.closest(KC_SCOPE)) return;
+    if (!KC_COLORS.has(hexv) || el.closest(KC_COLOR_SCOPE)) return;
     구역밖색.push({ sel: 셀렉터(el) + 접미, hex: hexv, 자리, 숨김: !el.getClientRects().length });
   };
   const 색집계 = new Map(), 서체집계 = new Map();
@@ -373,7 +379,7 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freez
 function 측정(file, chrome, opts = {}) {
   const html = fs.readFileSync(file, 'utf8');
   const 주입 = `<script>window.addEventListener('load', () => {
-    let r; try { r = ${측정기소스(Object.keys(KIT), FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_SCOPE, opts.freeze, opts.kcColors === undefined ? KC_COLORS : opts.kcColors)}; }
+    let r; try { r = ${측정기소스(Object.keys(KIT), FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_SCOPE, opts.freeze, opts.kcColors === undefined ? KC_COLORS : opts.kcColors, opts.kcColorScope || KC_COLOR_SCOPE)}; }
     catch (e) { r = { 오류: String(e && e.stack || e) }; }
     const pre = document.createElement('pre');
     pre.id = 'SYNK_LINT_OUT';
@@ -469,6 +475,6 @@ function main(argv) {
 
 if (require.main === module) process.exit(main(process.argv.slice(2)));
 module.exports = {
-  KIT, 킷밖_유예, 구역밖_유예, FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_COLORS, KC_SCOPE,
+  KIT, 킷밖_유예, 구역밖_유예, FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_COLORS, KC_SCOPE, KC_COLOR_SCOPE,
   findChrome, 측정, 대상, 제외, ROOT,
 };

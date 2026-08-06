@@ -77,9 +77,13 @@ test('구역밖 유예가 낡지 않았다 — 죽은 경로·주인 없는 유�
     assert.ok(fs.existsSync(path.join(ROOT, rel)), `유예가 없는 파일을 가리킨다: ${rel}`);
     assert.ok(사유 && 사유.length >= 15, `${키} 유예에 사유가 없다 — 이유 없는 통과는 두지 않는다`);
   }
-  // 주인은 묶음 중 최소 하나엔 명시돼야 한다(사본 줄은 원본을 가리키는 것으로 충분하다).
-  assert.ok(Object.values(구역밖_유예).some((s) => /⏳/.test(s)),
-    '구역밖 유예 전체에 판정 주인(⏳)이 하나도 없다 — 주인 없는 유예는 안 닫힌다');
+  /* 유예마다 판정 주인(⏳)이 있어야 한다. `some` 이 아니라 `every` 인 이유가 둘이다:
+   * ① `some` 은 **유예가 최소 1건 남아 있기를 요구**한다 = 버그가 남아 있기를 요구하는 회귀다
+   *    (실제로 2026-08-07 표지 띠 4건이 「C안」으로 해소돼 목록이 비자 이 줄이 빨개졌다).
+   * ② 주인 없는 유예 1건은 나머지가 멀쩡해도 안 닫힌다 — 검사는 건별이어야 한다. */
+  for (const [키, 사유] of Object.entries(구역밖_유예)) {
+    assert.match(사유, /⏳/, `${키} 유예에 판정 주인(⏳)이 없다 — 주인 없는 유예는 안 닫힌다`);
+  }
 });
 
 /* ── 1. 탐지력 — 픽스처 ───────────────────────────────────────────────────── */
@@ -214,6 +218,26 @@ test('KC 구역 안의 KC 색은 통과한다 (자기 처방을 막지 않는지
      </div></section>`);
   const r = 측정(p, CHROME);
   assert.deepEqual(r.구역밖색, [], `제 구역 안의 KC 색을 위반으로 잡았다 — 따를 수 없는 처방이 된다: ${JSON.stringify(r.구역밖색)}`);
+});
+
+/* ── 예고 1칸 — 유호님 확정 2026-08-07 「C안」 ────────────────────────────────
+ * 색 경계(`KC_COLOR_SCOPE`)만 넓히고 서체 경계(`KC_SCOPE`)는 그대로 뒀다.
+ * 아래 두 시험이 **그 분리 자체**를 못 박는다 — 하나라도 빠지면 다음 사람이 상수를 다시 합친다. */
+test('예고 1칸(.kc-preview) 안의 KC 색은 통과한다 (자기 처방 검사 · F103)', { skip: 크롬없음 }, () => {
+  const p = 픽스처('kc-preview-color',
+    `<style>.del::before{content:'';display:inline-block;width:3px;height:12px;background:#FF3E88}</style>
+     <div class="del kc-preview"><span style="color:#171820">03 · K-Track</span></div>`);
+  const r = 측정(p, CHROME);
+  assert.deepEqual(r.구역밖색, [],
+    `예고 1칸의 KC 색을 위반으로 잡았다 — 유호님이 확정한 화면이 영구 빨간불이 된다: ${JSON.stringify(r.구역밖색)}`);
+});
+
+test('예고 1칸은 **서체까지** 넓히지 않는다 (색만 넓힌 경계가 서체로 새는지)', { skip: 크롬없음 }, () => {
+  const p = 픽스처('kc-preview-font',
+    '<div class="del kc-preview"><p style="font-family:Fraunces,serif;color:#171820">K</p></div>');
+  const r = 측정(p, CHROME);
+  assert.ok(r.키트밖서체.some((v) => v.font === 'Fraunces'),
+    '예고 1칸에서 Part 6 서체가 통과했다 — 예고가 Part 6 행세를 하게 되고, 두 상수를 나눈 이유가 사라진다');
 });
 
 test('KC 색 목록은 토큰의 05 K-Culture 팔레트에서 파생한다 (손 사본 금지 · F143)', () => {

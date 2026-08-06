@@ -436,9 +436,12 @@ section.page{
     content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
     background:var(--coral);
   }
-  .cov-deliverables .del:nth-child(2)::before{background:var(--kc-cool)}
-  .cov-deliverables .del:nth-child(3)::before{background:var(--lime-2)}
-  .cov-deliverables .del:nth-child(4)::before{background:var(--kc-hot)}
+  /* 유호님 확정 2026-08-07 「C안」(3안 렌더 비교 후 선택) — 띠는 신호색 하나로 가고
+     **한 칸만** KC 핑크다. 그 한 칸이 실제로 K-컬처(Part 6)라 **색이 뜻을 진다.**
+     전엔 02·04 가 KC 색이고 정작 03 이 Lime 2 라, 색과 뜻이 어긋나 있었다.
+     🔴 경계는 `.kc-preview` 이고 **색에만** 넓혔다 — 서체 경계(브랜드렌더린트 `KC_SCOPE`)는 그대로다.
+        예고 1칸에 Part 6 서체까지 딸려 들어가면 예외가 예외로 안 남는다. */
+  .cov-deliverables .del.kc-preview::before{background:var(--kc-hot)}
   .cov-deliverables .idx{
     font-family:var(--mono);font-size:9px;letter-spacing:.14em;
     color:var(--muted);font-weight:600;
@@ -1517,7 +1520,8 @@ section.page{
           <h5>Хувьчилсан <em>замнал.</em></h5>
           <div class="desc">TOPIK · их сургууль · ажилд орох хүртэлх таны цэг бүрийн төлөвлөгөө</div>
         </div>
-        <div class="del">
+        <!-- 예고 1칸 — KC 색이 Part 6 밖에 정당하게 서는 유일한 자리(유호님 확정 C안) -->
+        <div class="del kc-preview">
           <div class="idx">03 · K-Track</div>
           <h5>K-соёлын <em>тохирцоо.</em></h5>
           <div class="desc">Дуулал · бүжиг · гоо-сайхан · медиа дотроос таны трэкийг сонгоно</div>
