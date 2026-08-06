@@ -115,6 +115,43 @@ test('실저장소의 발표물이 전부 임베드본이다 (거짓양성 0)', 
   assert.strictEqual(v.code, 0, `실저장소 발표물이 임베드 검사를 통과하지 못했다:\n${v.out}`);
 });
 
+/* ── 폰트 스택 린트 ────────────────────────────────────────────────
+ * 위 검사들은 「@font-face 가 들어갔나」까지만 본다. 실제로 08-06 에 걸린 건 그 다음 층이다:
+ * 임베드는 멀쩡한데 **소스가 안 실린 이름('SUIT Variable')을 폴백보다 앞에서 불러서**
+ * 한글이 전부 이 PC 에 깔린 폰트로 나가고 있었다(PDF 실측 BAAAAA+SUITVariable-ExtraBold).
+ * 안 깔린 기계에선 굵기가 내려앉는다 — 양쪽 다 화면은 멀쩡해 보인다.
+ */
+const GOOD_STACK = "body{font-family:'Inter Tight','SUIT',system-ui,'Malgun Gothic',sans-serif;font-weight:800}";
+
+test('🔑 픽스처 — 임베드 안 된 폰트를 폴백보다 앞에서 부르면 잡는다', () => {
+  const d = fixture({
+    '_src_a.html': `<style>/*@FONTS@*/\nbody{font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,sans-serif}</style>`,
+    'a.html': `<style>${FACE}\nbody{font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,sans-serif}</style>`,
+  });
+  const v = check(d);
+  assert.strictEqual(v.code, 1, '기계에 깔린 폰트가 그리게 되는 소스를 통과시켰다');
+  assert.match(v.out, /SUIT Variable/);
+});
+
+test('픽스처 — 임베드 굵기 범위를 넘는 굵기를 잡는다 (가짜 볼드 합성)', () => {
+  const d = fixture({
+    '_src_a.html': '<style>/*@FONTS@*/\nh1{font-weight:950}</style>',
+    'a.html': `<style>${FACE}\nh1{font-weight:950}</style>`,
+  });
+  const v = check(d);
+  assert.strictEqual(v.code, 1, '어떤 face 도 없는 굵기를 통과시켰다');
+  assert.match(v.out, /굵기 950/);
+});
+
+test('픽스처 — 멀쩡한 스택·굵기는 안 잡는다 (거짓양성 0)', () => {
+  const d = fixture({
+    '_src_a.html': `<style>/*@FONTS@*/\n${GOOD_STACK}</style>`,
+    'a.html': `<style>${FACE}\n${GOOD_STACK}</style>`,
+  });
+  const v = check(d);
+  assert.strictEqual(v.code, 0, `임베드된 이름만 부르는 소스를 잡았다:\n${v.out}`);
+});
+
 /* 소스 쪽도 못박는다 — 마커가 사라지면 빌드가 「마커 없음」으로 죽는데,
  * 그 실패는 빌드를 돌린 사람만 본다. 회귀가 먼저 말하게 한다. */
 test('실저장소 소스 전량에 /*@FONTS@*/ 마커가 있다', (t) => {
