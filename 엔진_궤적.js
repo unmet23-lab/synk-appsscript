@@ -142,7 +142,7 @@ function 궤적경보_(ss, sig) {
  * 왜 드롭다운인가: 이 시트의 절반은 **원장이 손으로 적는다**(졸업생 소식은 사람에게서 온다).
  *   자유 입력이면 「E-9」·「E9 취업」·「이피나인」이 섞이고, 그 순간 집계는 영원히 불가능해진다.
  *   2년 뒤 모델 학습에 쓸 값이므로 어휘를 **입력 시점에** 못 박는다 — 나중 정규화는 소급이 안 된다.
- * 검증 재적용은 판(版)이 바뀔 때만 — 매일 500행에 setDataValidation을 걸면 그냥 낭비다. */
+ * 검증 재적용은 판이 바뀔 때만 — 매일 500행에 setDataValidation을 걸면 그냥 낭비다. */
 const OUTCOME_VALIDATION_VER_ = 'v2'; // [v9.184] 활용동의(9열) 편입 — 판이 바뀌었으니 다음 실행에서 1회 재적용된다
 function 궤적_결과시트_(ss) {
   const sh = ensureSheet(ss, OUTCOME_TAB_, OUTCOME_HEADERS_);

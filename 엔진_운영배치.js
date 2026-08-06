@@ -53,7 +53,7 @@ const CAREER_SRC_ = ['졸업후진로', '희망진학과정', '졸업후목표�
  *      알기 때문이다. 라이브에는 코드가 모르는 열이 자란다: Glide가 심는 「🔒 Row ID」,
  *      langColOf_가 이름으로 만드는 「학교」·「동네」(조 편성).
  * 🔑 그래서 자리를 **이름으로 찾는다**(profilesBlockAt_). v9.39가 contents에서 정확히 같은 사고를
- *   겪고 langColOf_를 만든 것과 같은 규약이다 — 「현재 상태는 현재를 읽어 판정한다」의 열 판(版).
+ *   겪고 langColOf_를 만든 것과 같은 규약이다 — 「현재 상태는 현재를 읽어 판정한다」의 열 판.
  *   레지스트리에 번호를 등록하지 않는 대신, **번호를 안 쓴다는 것**을 회귀가 지킨다. */
 
 /* 핵심비전(BA53) 폴백 — 원장이 손으로 쓴 V열이 **언제나 우선**이고, 비었을 때만 합성한다.
@@ -222,7 +222,7 @@ function syncProfiles() {
         payFee[userId] || '', row[2], row[12], row[14], createdAt],
       lvl: row[18] || '',    // S 한국어수준 → AY(51): 강사 뷰 '레벨'
       risk: row[60] || '',   // BI ⚠위험신호 → AZ(52): 원장 콕핏 전용
-      vision: row[21] || 진로비전_(cv, row), // V 핵심비전 → BA(53): 케어 대화용 한 줄. 비면 크루카드 선택형 답으로 합성(원장 手記가 우선)
+      vision: row[21] || 진로비전_(cv, row), // V 핵심비전 → BA(53): 케어 대화용 한 줄. 비면 크루카드 선택형 답으로 합성(원장 수기가 우선)
       career: CAREER_SRC_.map(n => cv(row, n)), // → 「의도」 4칸(자리는 profilesBlockAt_가 이름으로 찾는다). 결과(outcome_log)와 짝지어야 궤적이 된다
       // [v9.84] 상담 디테일 2차 — 받아둔 답을 앱이 쓰게(콜드스타트 해소·강사뷰·0점 좌표·페이스). 전부 이름 해석이라 열 이동에 안전.
       taste: [cv(row, '선호그룹'), cv(row, '인생드라마'), cv(row, '취미관심사')].filter(String).join(' · ').slice(0, 120), // → DT124: AI 최애 폴백
@@ -364,7 +364,7 @@ function syncProfiles() {
       }
     }
   } catch (eW) { Logger.log('웰컴 대기열 등록 실패: ' + eW); }
-  // [v9.151] 동의 행 단위 스탬프 — 응답이 관측된 날의 정본 판(版)을 상담시트 행에 남긴다(구현·원칙 = 엔진_폼리포트.js).
+  // [v9.151] 동의 행 단위 스탬프 — 응답이 관측된 날의 정본 판을 상담시트 행에 남긴다(구현·원칙 = 엔진_폼리포트.js).
   //   src를 그대로 넘겨 openById 중복을 피한다. 자체 try로 격리돼 있어 실패해도 동기화는 계속된다.
   if (typeof 동의버전스탬프_ === 'function') 동의버전스탬프_(src);
   /* [궤적] 의도(상담시트 진로 4문항) × 결과(면접폼·수기 관측) → outcome_log·trajectory.
@@ -2209,7 +2209,7 @@ function raidStoryDaily() {
   const boss = bossOfMonth(ss, Number(Utilities.formatDate(now, tz, 'M')));
   const bN = boss ? boss.name : '이달의 보스';
   const PARTS = ['왼쪽 눈', '오른쪽 뿔', '꼬리', '왼팔', '코어', '등딱지', '오른발'];
-  const VERB = { '숙제': '숙제 완검(完劍)으로', 'MVP': '오늘의 MVP 필살기로', '시냅스': '반짝이는 시냅스 스파크로', '칭찬': '빛나는 태도 광선으로',
+  const VERB = { '숙제': '숙제 완검으로', 'MVP': '오늘의 MVP 필살기로', '시냅스': '반짝이는 시냅스 스파크로', '칭찬': '빛나는 태도 광선으로',
                  '생일': '생일 축포로', '출석': '출석 러시로', '레이드': '승리의 기세로' };
   function verbOf(rs) { for (var k in VERB) { if (rs.indexOf(k) > -1) return VERB[k]; } return '기습 공격으로'; }
   function pick(arr, seed) {
