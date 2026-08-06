@@ -262,6 +262,19 @@ test('🔑 두 단계 모두 추론 수준이 **명시**돼 있다 — 기본값
   }
 });
 
+/* 🔴 F132(2026-08-06 실측): 읽기 전용 잠금을 실제로 지는 것은 `--ignore-user-config` **하나**다.
+ *   그게 있으면 `-s workspace-write` 도 `-c sandbox_mode=` 도 read-only 를 못 열고, 빼는 순간 열린다.
+ *   `-c sandbox_mode="read-only"` 는 기본값과 같은 값이라 **먹은 것과 무시된 것이 같은 모양**이었다 —
+ *   그래서 그 줄을 잠금 근거로 읽고 이 플래그를 지우는 편집이 이 검사가 막는 사고다. */
+test('🔒 읽기 전용 잠금의 진짜 근거 `--ignore-user-config` 가 검수 호출에 붙어 나간다 (F132)', () => {
+  assert.ok(
+    검수.잠금플래그.includes('--ignore-user-config'),
+    '검수 codex 호출에서 --ignore-user-config 가 빠졌다 — 이 플래그 없이는 사용자 config 의 '
+    + 'trust_level="trusted"·node_repl MCP 가 살아나 검수자가 쓰기까지 할 수 있다. '
+    + '-c sandbox_mode= 는 대체재가 아니다(F132 실측: read-only 를 열지도 닫지도 못한다)'
+  );
+});
+
 test('변환 단계(2단계)가 분석 단계보다 얕다 — 순수 변환에 최상급을 쓰면 「고쳐서」 옮긴다', () => {
   const 분석 = 검수.효력들.indexOf(검수.모델설정.분석.effort);
   const 구조화 = 검수.효력들.indexOf(검수.모델설정.구조화.effort);
