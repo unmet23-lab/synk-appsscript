@@ -6,8 +6,15 @@ name: syntax-check
 # 경로 필터를 두지 않는다 — 테스트가 docs(버전_이력 등)·tools도 검사하므로,
 # .js만 거르면 문서만 깨는 커밋이 CI를 「안 돌아서 초록」으로 통과한다(2026-08-04 실사고).
 
+# 🔴 workflow_dispatch 가 왜 있나 (2026-08-06 실측 · GitHub Actions 대규모 장애 15:22 UTC~).
+#    push 웹훅이 throttle 되면서 master 커밋 6건에 **run 이 아예 안 생겼다**(SHA로도 0건,
+#    커밋을 담은 상위 run 으로도 0건 — 32개 run 헤드 전수 대조). 그런데 `on: push` 만 있으면
+#    그 상태를 되돌릴 손잡이가 없다: rerun 은 run 이 있어야 하고, 남은 수단은 빈 커밋뿐이다.
+#    ⚠ 「run 0건」은 「초록」과 화면에서 같은 모양이다 — 손잡이가 없으면 미검증이 그대로 굳는다.
+#    복구: `gh workflow run syntax-check.yml --ref master`
 on:
   push:
+  workflow_dispatch:
 
 jobs:
   check:
