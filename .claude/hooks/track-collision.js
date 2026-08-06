@@ -88,15 +88,17 @@ const HEAD = (git(['rev-parse', 'HEAD']) || '').trim();
 if (!HEAD) process.exit(0); // git 이 없거나 저장소가 아니다
 
 /* 이번 호출에서 만진 파일 — 저장소 상대 경로로 정규화한다.
- * MultiEdit·NotebookEdit 도 file_path 를 쓴다. 저장소 밖(스크래치패드)은 담지 않는다. */
-function 저장소상대(p) {
-  if (!p) return null;
-  const abs = path.resolve(String(p));
-  const rel = path.relative(ROOT, abs);
-  if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
-  return rel.replace(/\\/g, '/');
-}
-const 이번파일 = 저장소상대((input.tool_input && input.tool_input.file_path) || '');
+ * MultiEdit·NotebookEdit 도 file_path 를 쓴다. 저장소 밖(스크래치패드)은 담지 않는다.
+ *
+ * 🔑 **형제 저장소(`../SYNK-talk/…`)는 담는다** (F134·F137 이 남겨 둔 사각).
+ *   옛 판정은 ROOT 밖이면 전부 null 이었고, 그래서 이 프로젝트 트랙 절반(talk 파일)은
+ *   만진 기록이 **아예 안 남았다** — 읽는 쪽(작업본소유자)이 형제를 세게 된 뒤에도
+ *   주인 칸은 언제나 ❔모름이었다. 좌표는 lib 하나에서 파생시킨다(양쪽에 적으면 갈라지고,
+ *   갈라진 쪽의 증상은 「전부 모름」이라 양쪽 회귀가 다 초록으로 보인다). */
+const 준경로 = String((input.tool_input && input.tool_input.file_path) || '').trim();
+// ⚠ 빈 값은 **여기서** 끊는다 — `path.resolve('')` 는 cwd 가 되고, cwd 가 ROOT 하위면
+//   만지지도 않은 폴더가 만진 목록에 들어간다(조용히 틀리는 쪽).
+const 이번파일 = 준경로 ? store.touchKey(ROOT, path.resolve(준경로)) : null;
 
 const 이전 = 상태읽기();
 const 만진목록 = new Set((이전 && 이전.touched) || []);

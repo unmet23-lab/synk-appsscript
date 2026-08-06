@@ -69,6 +69,61 @@ function batonName(cwd, sessionId) {
   return `handoff-${projectKey(cwd)}-${safeId(sessionId)}.json`;
 }
 
+/* ── 형제 저장소 좌표 (F134·F137 이 남겨 둔 사각 — 「주인 가르기」) ─────────────
+ * 이 프로젝트의 트랙은 저장소 **둘**을 함께 만진다(보드 줄 절반이 「SYNK-talk: …」다).
+ * 그런데 만진 기록의 좌표는 「ROOT 상대 경로」 하나뿐이었고, ROOT 밖 경로는 쓰는 쪽
+ * (track-collision)이 **버렸다** — 그래서 형제 파일의 주인은 언제나 ❔모름이었다.
+ * F134 는 「안 보임 → 모름」까지만 올렸고(읽는 쪽 확장), 여기가 그 위 칸이다.
+ *
+ * 🔑 좌표를 두 곳에 적으면 그 순간 갈라지고, 갈라진 쪽의 증상은 **「전부 모름」**이다 —
+ *   쓰는 쪽·읽는 쪽 회귀가 각자 자기 가정을 적어 두므로 **양쪽 다 초록으로 보인다.**
+ *   그래서 쓰는 쪽과 읽는 쪽이 아래 셋만 쓴다(여기 말고 다른 데서 좌표를 조립하면 안 된다).
+ *
+ * ⚠ 접두를 `../` 로 잡는 이유 = `git status` 가 내놓는 저장소 상대 경로는 **절대 `../` 로
+ *   시작하지 않는다.** 저장소 이름만 붙이면(`SYNK-talk/…`) 저장소 **안**의 같은 이름 폴더와
+ *   글자가 겹쳐 남의 파일을 내 것으로 읽는다 — 그 폴더는 이 저장소에 실제로 있었다(`synk-talk/`).
+ *   오귀속은 「내것」 쪽으로 새고, 그건 곧 남의 작업본을 편집해도 된다는 말이 된다(F073). */
+const SIBLING_DEFAULT = ['SYNK-talk'];
+
+/** 형제 저장소들 `[{뿌리, 저장소}]`. 경로 규칙은 `tools/계약동기화.js` 와 같은 `<root>/../<이름>`.
+ *  이 기계에 없으면 **조용히 빠진다** — CI 엔 형제가 없고, 거기서 없는 것을 못 읽었다고 울면
+ *  거짓 경보가 되어 장치가 꺼진다(못 읽은 것과 없는 것은 읽는 쪽이 갈라 말한다).
+ *  이음매 `SYNK_OWNER_SIBLINGS` = 테스트 격리 전용. **쓰는 쪽·읽는 쪽이 같은 이름을 봐야 한다** —
+ *  이음매가 갈라지면 한쪽 픽스처만 형제를 보고, 계약 검사가 통째로 헛돈다. */
+function siblings(root) {
+  const 지정 = String(process.env.SYNK_OWNER_SIBLINGS || '').trim();
+  const 후보 = 지정
+    ? 지정.split(/[;,]/).map((s) => s.trim()).filter(Boolean).map((s) => path.resolve(root, s))
+    : SIBLING_DEFAULT.map((n) => path.resolve(root, '..', n));
+  const 본 = new Set([path.resolve(root)]);
+  const 결과 = [];
+  for (const 뿌리 of 후보) {
+    if (본.has(뿌리)) continue;
+    본.add(뿌리);
+    if (!fs.existsSync(path.join(뿌리, '.git'))) continue;
+    결과.push({ 뿌리, 저장소: path.basename(뿌리) });
+  }
+  return 결과;
+}
+
+/** 형제 좌표의 접두. 읽는 쪽은 이걸 **벗겨** 그 저장소의 상대 경로로 되돌린다. */
+function siblingPrefix(name) { return `../${name}/`; }
+
+/** 절대경로 → 만진 기록의 좌표.
+ *  ROOT 안이면 상대 경로 · 형제 안이면 `../<이름>/상대` · 둘 다 아니면 **null**(스크래치패드 등).
+ *  ⚠ ROOT 안 판정이 **먼저**다 — 순서를 뒤집으면 형제가 ROOT 하위에 체크아웃된 경우
+ *    같은 파일이 두 좌표를 갖고, 그 갈라짐은 「모름」으로만 보인다. */
+function touchKey(root, abs) {
+  const 안 = path.relative(root, abs);
+  if (안 && !안.startsWith('..') && !path.isAbsolute(안)) return 안.replace(/\\/g, '/');
+  for (const { 뿌리, 저장소 } of siblings(root)) {
+    const rel = path.relative(뿌리, abs);
+    if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) continue;
+    return siblingPrefix(저장소) + rel.replace(/\\/g, '/');
+  }
+  return null;
+}
+
 function stateDir() { return STATE_DIR; }
 
 /** 세션별 단계 카운터(발화 중복 억제용). 프로젝트 키를 붙여 저장소 간 간섭을 막는다. */
@@ -189,4 +244,8 @@ function take(cwd) {
 /* safeId 도 내보낸다 — track-collision 이 같은 STATE_DIR 에 세션별 파일을 쓴다.
  * 파일명 규칙을 그쪽에서 다시 적으면 sweep() 이 못 알아보는 이름이 생기고, 증상은
  * 「조용히 안 지워짐」이라 눈에 안 띈다(이 파일이 존재하는 이유 ③과 같은 함정). */
-module.exports = { stateDir, projectKey, safeId, batonName, stagePath, readStage, writeStage, claimBlock, sweep, drop, take, BATON_TTL_MS, SWEEP_TTL_MS };
+module.exports = {
+  stateDir, projectKey, safeId, batonName, stagePath, readStage, writeStage, claimBlock, sweep, drop, take,
+  siblings, siblingPrefix, touchKey,
+  BATON_TTL_MS, SWEEP_TTL_MS,
+};
