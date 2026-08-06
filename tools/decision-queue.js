@@ -290,8 +290,11 @@ function build(opts = {}) {
   return { total: ranked.length, ranked, today: pick(ranked, count, date), blockers, scheduled, 버려진: items.버려진 || [] };
 }
 
-/* 걸러진 ⏳ 한 줄 — 세션 시작 훅이 이 출력을 그대로 보여주므로 **장치가 스스로 발화한다**
- * (CLAUDE.md: 스스로 발화하지 않는 장치는 안 돈다). 목록은 --버려진 에 있다. */
+/* 걸러진 ⏳ 한 줄 — 목록은 --버려진 에 있다.
+ * [2026-08-07 · F173] 이 주석은 원래 「세션 시작 훅이 이 출력을 그대로 보여준다」였는데 **거짓이었다**:
+ * session-decisions 훅은 render() 를 안 쓰고 자기 텍스트를 다시 조립하느라 이 한 줄만 빠졌고,
+ * 그래서 매 세션 유일하게 읽히는 화면에는 폐기함이 **한 번도** 안 떴다(보안 제안 1건이 이틀간 안 보였다).
+ * 판정을 두 곳에 적으면 갈라진다(신뢰성 ④) — 훅은 이 함수를 require 해 같은 문구를 쓴다. export 필수. */
 function 버려진줄(r) {
   const n = (r.버려진 || []).length;
   return n ? `⚠ ⏳ ${n}줄이 항목이 아닌 것으로 걸러졌다 — 진짜 미결이 섞였는지 확인: node tools/decision-queue.js --버려진` : '';
@@ -486,6 +489,6 @@ function main() {
 
 if (require.main === module) main();
 module.exports = {
-  extract, rank, pick, build, render, stripMd, todayIndex, markerClause, gateDate, 줄판정,
+  extract, rank, pick, build, render, stripMd, todayIndex, markerClause, gateDate, 줄판정, 버려진줄,
   한장, 시트읽기, 닫음, 지문, 한장밀림, SHEET, 주기일,
 };
