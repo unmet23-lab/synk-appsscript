@@ -138,7 +138,19 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freez
    * animation:none 은 프레임을 기본 상태로 되돌린다. 둘 다 「정적 지정값」에 맞추는 방향이다. */
   const 시간정지 = document.createElement('style');
   시간정지.textContent = '*,*::before,*::after{transition:none !important;animation:none !important}';
-  if (${freeze !== false}) document.head.appendChild(시간정지);
+  if (${freeze !== false}) {
+    document.head.appendChild(시간정지);
+    /* ⚠ CSS 두 줄로는 **element.animate() (WAAPI)** 가 안 멈춘다 — animation:none 은 CSS 애니메이션만 지운다.
+     * 실측 2026-08-06: WAAPI 로 배경을 red→green 시킨 요소가 시간정지를 켠 채 중간값 #808000 으로 잡혔다.
+     * getAnimations() 는 전환·CSS 애니메이션·WAAPI 를 한 목록으로 주므로 여기서 **원인 종류 전체**를 끈다.
+     * 🔑 정직하게 적어 둔다 — 변이 실측에서 **위 CSS 두 줄을 지워도 픽스처는 전부 초록이었다**(이 취소가
+     *   혼자 다 덮는다). 두 줄을 남기는 이유는 하나뿐이다: getAnimations 가 없는 옛 크롬에서 폴백이
+     *   된다. 그러니 이 CSS 를 「검증된 방어」로 읽지 말 것 — 오늘 이것을 지지하는 픽스처는 없다.
+     *   (⚠ 이 주석은 템플릿 문자열 **안**이다 — 백틱을 쓰면 측정기 소스가 그 자리에서 끊긴다.) */
+    for (const a of (document.getAnimations ? document.getAnimations() : [])) {
+      try { a.cancel(); } catch (e) { /* 이미 끝난 것 */ }
+    }
+  }
   void document.body.offsetHeight; // 강제 리플로우 — 스냅을 확정시킨 뒤에 잰다
 
   const hex = (rgb) => {
