@@ -268,6 +268,101 @@ test('--해소 는 따옴표를 빠뜨려도 말이 안 잘린다 (셸이 둘인
   assert.match(rowsOf(led)[2], /훅을 신설했다 그리고 회귀를 붙였다/);
 });
 
+/* ── F148: 동시 추가가 서로를 먹는 것 ──────────────────────────────────────────
+ * 실사고: add() 가 파일을 버퍼에 담고 → allocateId() 가 네트워크(git tag push)를 다녀와 →
+ * 낡은 버퍼를 통째로 덮어썼다. 그 창에 옆 세션이 쓴 F145 가 흔적 없이 사라졌다.
+ *
+ * ⚠ 이 검사를 「프로세스 여럿을 동시에 던지고 다 살아남나 본다」로 짜면 안 된다 —
+ *   격리 장부에는 네트워크가 없어 창이 마이크로초라 충돌이 **안 나고**, 그러면 버그를
+ *   되돌려도 초록이다(= 탐지력 0인데 초록이라 있는 줄 안다). 그래서 **락을 밖에서 잡아**
+ *   창을 결정론적으로 벌린다. 두 방향의 변이를 각각 다른 단언이 잡는다:
+ *     · 락을 통째로 없애면      → 「아직 안 썼다」 단언이 깨진다
+ *     · 락은 두되 낡은 버퍼를 쓰면 → 「남의 행이 살아남았다」 단언이 깨진다 */
+function spawnAdd(ledger, 신호) {
+  const { spawn } = require('child_process');
+  const p = spawn(process.execPath, [TOOL, 'add', '마찰', 신호], {
+    stdio: 'pipe', env: { ...process.env, SYNK_FRICTION_LEDGER: ledger },
+  });
+  return new Promise((res) => p.on('close', (code) => res(code)));
+}
+const 잠깐 = (ms) => new Promise((r) => setTimeout(r, ms));
+
+test('F148 — 채번 중에 옆 세션이 쓴 행을 덮어쓰지 않는다 (락 + 락 안에서 재읽기)', async () => {
+  const led = mkLedger();
+  const lock = led + '.lock';
+  const fd = fs.openSync(lock, 'wx');          // 옆 세션이 쓰는 중인 상태를 만든다
+
+  const 끝 = spawnAdd(led, '내 신호');
+  await 잠깐(600);
+
+  // ① 락이 실제로 막고 있나 — 락을 없애는 변이는 여기서 죽는다
+  assert.equal(rowsOf(led).length, 2,
+    '락을 잡고 있는데 add 가 이미 써 버렸다 — 직렬화가 없으면 겹치는 순간 한쪽이 사라진다');
+
+  // 그 사이 옆 세션이 한 줄 넣는다(=사고 당시의 F146)
+  fs.writeFileSync(led, fs.readFileSync(led, 'utf8').replace(
+    /(\| F002 \|[^\n]*\n)/, '$1| F900 | 2026-08-07 | 실수 | 옆 세션이 방금 쓴 행 | |\n'), 'utf8');
+
+  fs.closeSync(fd);
+  fs.unlinkSync(lock);
+  assert.equal(await 끝, 0, 'add 가 락 해제 뒤 정상 종료해야 한다');
+
+  const 행 = rowsOf(led);
+  // ② 낡은 버퍼로 덮어쓰는 변이는 여기서 죽는다 — 이게 F148 그 자체다
+  assert.ok(행.some((l) => /F900/.test(l)),
+    '옆 세션이 쓴 행이 사라졌다 — F148 실사고 그대로다(도구는 성공을 출력하고 아무 신호도 안 남긴다)');
+  assert.ok(행.some((l) => /내 신호/.test(l)), '내 행도 들어가야 한다');
+  assert.equal(행.length, 4, '픽스처 2 + 옆 세션 1 + 내 것 1 — 어느 쪽도 잃지 않는다');
+});
+
+test('F148 — 죽은 세션이 남긴 낡은 락은 회수한다 (한 번의 크래시가 장부를 영구히 잠그면 안 된다)', () => {
+  const led = mkLedger();
+  const lock = led + '.lock';
+  fs.closeSync(fs.openSync(lock, 'wx'));
+  const 옛날 = (Date.now() - require(TOOL).LOCK_STALE_MS - 60_000) / 1000;
+  fs.utimesSync(lock, 옛날, 옛날);
+
+  run(led, ['add', '마찰', '낡은 락 뒤에 도착했다']);
+  assert.equal(rowsOf(led).length, 3, '낡은 락 때문에 기록이 멈췄다 — 기록은 도구 사정으로 멈추면 안 된다');
+  assert.ok(!fs.existsSync(lock), '락을 회수해 쓰고 나서 다시 풀어야 한다');
+});
+
+test('F148 — 실패해도 락을 남기지 않는다 (락 안 process.exit 은 finally 를 건너뛴다)', () => {
+  const led = mkLedger();
+  const r = run(led, ['resolve', 'F999', '없는 번호'], true);
+  assert.ok(r.failed, '없는 번호는 실패해야 한다');
+  assert.ok(!fs.existsSync(led + '.lock'),
+    '락이 남았다 — 다음 세션이 5초 기다리다 락 없이 진행하게 되고 F148 이 되돌아온다');
+});
+
+test('F148 — resolve 도 락 안에서 읽는다 (행 번호는 그 사이 밀린다)', async () => {
+  const led = mkLedger();
+  const lock = led + '.lock';
+  const fd = fs.openSync(lock, 'wx');
+
+  const { spawn } = require('child_process');
+  const p = spawn(process.execPath, [TOOL, 'resolve', 'F002', '무엇이 막았나'], {
+    stdio: 'pipe', env: { ...process.env, SYNK_FRICTION_LEDGER: led },
+  });
+  const 끝 = new Promise((res) => p.on('close', res));
+  await 잠깐(600);
+  assert.match(rowsOf(led)[1], /\| \|$/, '락을 잡고 있는데 resolve 가 이미 썼다');
+
+  /* F002 **위에** 행을 끼운다 — 밖에서 읽은 행 번호를 그대로 쓰면 한 칸 밀려
+   * 엉뚱한 행(여기서는 F900)을 내 해소문으로 덮는다. */
+  fs.writeFileSync(led, fs.readFileSync(led, 'utf8').replace(
+    /(\| F001 \|[^\n]*\n)/, '$1| F900 | 2026-08-07 | 실수 | 밀어내는 행 | |\n'), 'utf8');
+
+  fs.closeSync(fd);
+  fs.unlinkSync(lock);
+  assert.equal(await 끝, 0);
+
+  const 행 = rowsOf(led);
+  assert.match(행.find((l) => /F900/.test(l)), /밀어내는 행 \| \|$/,
+    '남의 행이 내 해소문으로 덮였다 — 낡은 행 번호로 쓰면 이렇게 된다');
+  assert.match(행.find((l) => /F002/.test(l)), /무엇이 막았나/, 'F002 가 해소돼야 한다');
+});
+
 test('해소주장 판별식 — 실장부에서 거짓양성 0 (탐지력은 위 픽스처가 진다)', () => {
   const real = require(TOOL);
   const 오지목 = real.read().rows.filter((r) => r.resolved && real.해소주장(r.signal))
