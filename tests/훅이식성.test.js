@@ -255,15 +255,36 @@ function 훅JS전부(디렉터리) {
   return 목록;
 }
 
-test('④ 훅 소스에 날문자가 없다 (구분자 상수는 이스케이프 표기로)', () => {
+/* 🔴 스캔 범위는 훅 디렉터리보다 넓어야 한다 (F158).
+ *   SessionStart 훅으로 등록돼 **훅처럼 도는** 스크립트가 tools/ 에 산다
+ *   (작업본소유자·rot-check·인계문수거·session-decisions 가 부르는 것들).
+ *   실측: tools/작업본소유자.js 에 0x1F 를 심었을 때 이 검사가 조용히 통과시켰고,
+ *   범위를 넓혀 재보니 tools/decision-queue.js 에 NUL 이 이미 하나 들어 있었다.
+ *   「훅 폴더 밖」이라는 이유로 눈이 멀면 새는 방향은 언제나 통과다. */
+const 날문자스캔대상 = () => [
+  ...훅JS전부(path.join(ROOT, '.claude', 'hooks')),
+  ...훅JS전부(path.join(ROOT, 'tools')),
+];
+
+test('④ 훅·도구 소스에 날문자가 없다 (구분자 상수는 이스케이프 표기로)', () => {
   const 위반 = [];
-  for (const f of 훅JS전부(path.join(ROOT, '.claude', 'hooks'))) {
+  for (const f of 날문자스캔대상()) {
     for (const v of 날문자들(fs.readFileSync(f, 'utf8'))) {
       위반.push(`${path.relative(ROOT, f).replace(/\\/g, '/')}:${v.줄} = 0x${v.코드.toString(16).padStart(2, '0')}`);
     }
   }
   assert.deepStrictEqual(위반, [],
-    '훅 소스에 날문자가 있다 — 이스케이프 표기(백슬래시 u 형태)로 바꾼다:\n  ' + 위반.join('\n  '));
+    '훅·도구 소스에 날문자가 있다 — 이스케이프 표기(백슬래시 u 형태)로 바꾼다:\n  ' + 위반.join('\n  '));
+});
+
+/* 위 검사는 「위반 0건」과 「아무것도 안 봤다」가 같은 모양이다 — 범위를 따로 못박는다.
+ * 탐지력(아래 양방향 검사)은 판정 함수를 재고, 이건 그 함수가 **어디에 닿는지**를 잰다. */
+test('④ 스캔 범위가 tools/ 까지 닿는다 — 훅처럼 도는 스크립트가 거기 산다 (F158)', () => {
+  const 대상 = 날문자스캔대상().map((f) => path.relative(ROOT, f).replace(/\\/g, '/'));
+  assert.ok(대상.includes('tools/작업본소유자.js'),
+    'SessionStart 훅으로 등록된 스크립트가 스캔 밖이다 — 여기가 F158 로 실제로 샌 자리다');
+  assert.ok(대상.includes('.claude/hooks/track-collision.js'),
+    '넓히면서 원래 보던 곳을 잃었다 — 라우팅은 넓히되 버리지 않는다');
 });
 
 test('④ 탐지력 — 날문자는 잡고, 이스케이프 표기는 안 잡는다(양방향)', () => {
