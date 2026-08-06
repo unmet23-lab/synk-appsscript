@@ -387,6 +387,11 @@ if (require.main === module) {
         console.log(명령 === '--bake'
           ? `✅ ${m.이름}.pdf 재생성 (${r.크기.toLocaleString()} 바이트 · 폰트 ${r.폰트.length}종)`
           : `✅ ${m.이름} 도장: ${r.찍은것.join(' · ')}`);
+        // ⚠ 도장은 **HTML 을 고친다** — 이미 구운 뒤에 찍으면 그 PDF 가 그 자리에서 낡는다.
+        //   순서는 stamp → bake 다. 2026-08-06 에 한 세션에서 세 번 밟은 자리라 여기서 말해 준다.
+        if (명령 === '--stamp' && 상태읽기(path.dirname(m.html))[path.basename(m.html)]) {
+          console.log(`   → 도장이 HTML 을 바꿨다. 이어서: node tools/지도대장.js --bake "${m.이름}"`);
+        }
       } else {
         실패 += 1;
         console.error(`🔴 ${m.이름} — ${r.이유}`);
