@@ -356,3 +356,54 @@ test('🔴 SessionStart 에 등록돼 있고, 실행 불가가 조용한 통과�
   assert.match(cmd, /CLAUDE_PROJECT_DIR/, '로컬 절대경로면 다른 기계에서 통째로 죽는다(F044)');
   assert.match(cmd, /미실행/, 'node·파일이 없을 때 조용히 지나간다 — 실행 불가는 드러나야 한다');
 });
+
+/* ── 원격 대기 브랜치 (폰=클라우드 세션) ──────────────────────────────────────
+ * 왜 여기 붙나: 이 저장소의 충돌 감지는 전부 로컬 HEAD 기준인데, 클라우드 세션은
+ * `claude/*` 브랜치로 push 한다 — fetch 전엔 로컬에 없으므로 **PC 세션에 통째로 안 보인다.**
+ * 픽스처의 origin 은 로컬 폴더라 네트워크에 의존하지 않는다(CI 에서 깨지지 않는다). */
+function 원격붙인다(repo, { 브랜치, 병합 = false }) {
+  const 원본 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-own-origin-'));
+  임시들.push(원본);
+  const G = (cwd) => (...a) => spawnSync('git',
+    ['-c', 'user.name=t', '-c', 'user.email=t@t', '-c', 'commit.gpgsign=false', ...a], { cwd, encoding: 'utf8' });
+  const go = G(원본);
+  go('init', '-q', '-b', 'master');
+  fs.writeFileSync(path.join(원본, 'seed.txt'), 'seed\n');
+  go('add', '-A'); go('commit', '-qm', 'seed');
+  go('checkout', '-qb', 브랜치);
+  fs.writeFileSync(path.join(원본, '폰작업.md'), '폰에서 고친 것\n');
+  go('add', '-A'); go('commit', '-qm', 'docs: 인쇄본 PDF 16종 (유호님 지시)');
+  if (병합) { go('checkout', '-q', 'master'); go('merge', '-q', '--no-ff', '-m', 'merge', 브랜치); }
+  const g = G(repo);
+  g('remote', 'add', 'origin', 원본);
+  return 원본;
+}
+
+test('☁ 원격에 대기 중인 클라우드(폰) 브랜치를 잡는다 — 로컬 HEAD 만 보면 안 보이는 자리', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  원격붙인다(repo, { 브랜치: 'claude/synk-docs-update-xg7oka' });
+  const out = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'] });
+  assert.match(out, /claude\/synk-docs-update-xg7oka/, '대기 중인 폰 브랜치를 이름으로 말해야 한다');
+  assert.match(out, /인쇄본 PDF 16종/, '무슨 작업인지(커밋 제목)까지 줘야 열어볼지 판단할 수 있다');
+});
+
+test('🔴 이미 master 에 들어간 브랜치는 말하지 않는다 — 상시 잔소리는 장치를 죽인다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  원격붙인다(repo, { 브랜치: 'claude/이미병합됨', 병합: true });
+  const out = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'] });
+  assert.doesNotMatch(out, /이미병합됨/, '병합된 브랜치까지 세면 매 세션 뜨고, 그러면 진짜 대기도 안 읽힌다');
+});
+
+test('🔴 원격을 못 읽은 것과 「0건」은 같은 모양이면 안 된다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  spawnSync('git', ['remote', 'add', 'origin', path.join(os.tmpdir(), '없는-원격-' + process.pid)],
+    { cwd: repo, encoding: 'utf8' });
+  const out = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'] });
+  assert.match(out, /못 읽었다/, 'fetch 실패를 침묵으로 처리하면 「대기 0건」과 구별이 안 된다');
+});
+
+test('리모트가 없으면 침묵한다 — 대기가 원리적으로 없는 저장소다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  const out = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'] });
+  assert.doesNotMatch(out, /못 읽었다|대기 중인 클라우드/, 'origin 이 없는 저장소에서 경고를 내면 거짓양성이다');
+});
