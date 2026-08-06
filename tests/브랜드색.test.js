@@ -30,10 +30,20 @@ const TOOLS = path.join(ROOT, 'docs', 'tools');
 const CANON = path.join(ROOT, 'docs', '디자인_컨셉_정본_v1.md');
 const HEX_SOURCE = path.join(ROOT, 'docs', '_archive', '브랜드_색상키트_원본_CrewDossier_2026-08-01.html');
 
-/* ─── 확정 19색 — 2026-08-06 토큰 단일화: 목록의 정본은 docs/디자인_토큰.json 하나다.
+/* ─── 확정 21색 — 2026-08-06 토큰 단일화: 목록의 정본은 docs/디자인_토큰.json 하나다.
  *     (같은 목록을 두 곳에 적으면 갈라진다 — 여기는 파생만 한다. 팔레트 구분·직책도 JSON에 있다.) */
 const 토큰 = require('../docs/디자인_토큰.json');
-const KIT = Object.fromEntries(토큰.색.킷19.map((c) => [c.hex.toUpperCase(), c.이름]));
+const KIT = Object.fromEntries(토큰.색.킷.map((c) => [c.hex.toUpperCase(), c.이름]));
+/* 19(v10 Crew Dossier · 08-01) + Slate 2색(08-07 유호님 확정) */
+const 킷개수 = 21;
+
+/* hex 원천 HTML 밖의 색 — **08-01 원본 HTML 은 그날의 스냅샷이지 킷의 미래가 아니다.**
+ * 그 문서를 소급 개서하면 「그때 무엇이었는지」가 사라지므로(_archive 성격), 나중에 더해진 색은
+ * 여기에 **원천을 적어** 등재한다. 이유 없는 예외는 두지 않는다. */
+const 원천밖 = {
+  '#8A93AD': 'Slate — 2026-08-07 유호님 확정 추가(다크 3층 잉크). 원천 = 컨셉 정본 조항 ⓔ · memory kit-slate-gray-2026-08-07',
+  '#5F657D': 'Slate 2 — 위와 같음(라이트 3층 잉크). #6B7186 을 그대로 못 올린 이유까지 조항 ⓔ에 있다',
+};
 
 /* 완전히 죽은 색 — 어느 층에서도 되살아나면 안 된다. 등장 자체를 막는다. */
 const DEAD = {
@@ -133,14 +143,31 @@ test('색 검사 대상 파일을 실제로 찾는다(경로가 바뀌면 가드
   assert.ok(withHex.length >= 8, `hex를 가진 파일이 ${withHex.length}개뿐 — 스캔이 헛돌고 있다`);
 });
 
-/* ─── 1. 키트 19색이 hex 원천과 일치한다 ──────────────────────────────────── */
-test('키트 19색이 hex 원천 HTML과 전부 일치한다', () => {
+/* ─── 1. 키트가 hex 원천과 일치한다 ───────────────────────────────────────── */
+test(`키트 ${킷개수}색이 hex 원천과 전부 일치한다`, () => {
   assert.ok(fs.existsSync(HEX_SOURCE), `hex 원천이 없다: ${path.relative(ROOT, HEX_SOURCE)} — 08-02에 Downloads에서 이관한 정본이다`);
   const src = fs.readFileSync(HEX_SOURCE, 'utf8').toUpperCase();
-  assert.equal(Object.keys(KIT).length, 19, '키트는 19색이다 — 표를 고쳤다면 정본·Canva·이 테스트가 함께 움직여야 한다');
+  assert.equal(Object.keys(KIT).length, 킷개수, `키트는 ${킷개수}색이다 — 표를 고쳤다면 정본·Canva·이 테스트가 함께 움직여야 한다`);
   for (const [hex, name] of Object.entries(KIT)) {
+    if (원천밖[hex]) continue; // 원천이 다른 색 — 아래 테스트가 그 근거를 따로 검사한다
     assert.ok(src.includes(hex), `원천 HTML에 ${name} ${hex}가 없다 — 키트 표와 원천이 어긋났다`);
   }
+});
+
+/* 예외가 예외로 남는지 — 「원천밖」은 **빠져나가는 문**이라 셋을 함께 잠근다:
+ *   ① 실제로 킷에 있는 색인가(죽은 예외가 쌓이면 다음 사람이 그 목록을 신뢰한다)
+ *   ② 원천 HTML 에 정말 없는가(있으면 예외가 필요 없다 — 조용히 검사를 건너뛰게 된다)
+ *   ③ 근거 문서가 실재하는가(사유 문자열은 얼마든지 쓸 수 있다) */
+test('hex 원천 밖 색은 근거가 실재한다(예외가 통로가 되지 않게)', () => {
+  const src = fs.readFileSync(HEX_SOURCE, 'utf8').toUpperCase();
+  const canon = fs.readFileSync(CANON, 'utf8');
+  for (const [hex, why] of Object.entries(원천밖)) {
+    assert.ok(KIT[hex], `${hex} 가 킷에 없는데 예외로 남아 있다 — 죽은 예외는 지운다`);
+    assert.ok(!src.includes(hex), `${hex} 는 원천 HTML 에 있다 — 예외가 필요 없으니 「원천밖」에서 빼라`);
+    assert.ok(why.length > 30, `${hex} 예외에 사유가 부실하다`);
+    assert.ok(canon.includes(hex), `정본에 ${hex} 가 없다 — 근거 없이 킷에 들어온 색이다 (${why})`);
+  }
+  assert.ok(canon.includes('조항 ⓔ'), '정본에서 조항 ⓔ(보조 잉크 2)가 사라졌다 — Slate 의 바닥 한정이 이 조항에만 있다');
 });
 
 /* ─── 2. 죽은 색 회귀 차단 ────────────────────────────────────────────────── */
@@ -354,14 +381,14 @@ test('정본에 하중을 받는 조항이 남아 있다', () => {
  * 없는 것보다 위험하다(memory `guard-must-check-result`). */
 const CANVA_CHECKER = path.join(ROOT, 'docs', 'tools', 'canva_키트_검증.js');
 
-test('Canva 대조기가 키트 19색을 그대로 담고 있다', () => {
+test(`Canva 대조기가 키트 ${킷개수}색을 그대로 담고 있다`, () => {
   assert.ok(fs.existsSync(CANVA_CHECKER), 'docs/tools/canva_키트_검증.js가 없다 — Canva 점검의 유일한 자동화 수단이다');
   const src = fs.readFileSync(CANVA_CHECKER, 'utf8');
   const inChecker = new Set((src.match(/'#[0-9a-fA-F]{6}'\s*:/g) || []).map((s) => s.slice(1, 8).toLowerCase()));
   for (const hex of Object.keys(KIT)) {
     assert.ok(inChecker.has(hex.toLowerCase()), `대조기에 ${KIT[hex]} ${hex}가 빠졌다 — 그 색의 드리프트를 영영 못 잡는다`);
   }
-  assert.equal(inChecker.size, 19, `대조기가 ${inChecker.size}색을 담고 있다 — 키트는 19색이다`);
+  assert.equal(inChecker.size, 킷개수, `대조기가 ${inChecker.size}색을 담고 있다 — 키트는 ${킷개수}색이다`);
 });
 
 test('Canva 대조기가 v1.5 이전의 「Part 6 only」 팔레트 이름을 기대하지 않는다', () => {

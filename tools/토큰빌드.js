@@ -20,7 +20,7 @@ const OUT = path.join(ROOT, 'docs', 'tools', 'synk-tokens.css');
 const slug = (이름) => 이름.toLowerCase().replace(/\s+/g, '-');
 
 // 시맨틱 값은 킷 「이름」 참조다 — 모르는 이름이면 조용히 넘기지 않고 죽는다.
-const 킷맵 = Object.fromEntries(토큰.색.킷19.map((c) => [c.이름, c.hex]));
+const 킷맵 = Object.fromEntries(토큰.색.킷.map((c) => [c.이름, c.hex]));
 function hexOf(이름, 자리) {
   if (!킷맵[이름]) throw new Error(`시맨틱 「${자리}」가 킷에 없는 이름을 참조한다: ${이름}`);
   return 킷맵[이름];
@@ -31,7 +31,7 @@ function build() {
   L.push('/* 자동 생성 — 손으로 고치지 말 것. 원천 = docs/디자인_토큰.json · 빌드 = node tools/토큰빌드.js */');
   L.push('/* 조항(코랄 글자 금지·순백 금지 등)의 정본 = DESIGN.md·디자인_컨셉_정본_v1.md — 변수는 값만 나른다. */');
   L.push(':root{');
-  for (const c of 토큰.색.킷19) L.push(`  --synk-${slug(c.이름)}:${c.hex}; /* ${c.직책} */`);
+  for (const c of 토큰.색.킷) L.push(`  --synk-${slug(c.이름)}:${c.hex}; /* ${c.직책} */`);
   const 라 = 토큰.색.시맨틱.라이트;
   L.push('  /* 시맨틱(라이트 기본) */');
   for (const [k, v] of Object.entries(라)) L.push(`  --synk-${slug(k)}:${hexOf(v, `라이트.${k}`)}; /* = ${v} */`);
@@ -57,7 +57,7 @@ if (require.main === module) {
     console.log('[토큰빌드] 정합 OK');
   } else {
     fs.writeFileSync(OUT, css);
-    console.log(`[토큰빌드] ${path.relative(ROOT, OUT)} 생성 (킷 ${토큰.색.킷19.length}색 + 시맨틱 + 서체)`);
+    console.log(`[토큰빌드] ${path.relative(ROOT, OUT)} 생성 (킷 ${토큰.색.킷.length}색 + 시맨틱 + 서체)`);
   }
 }
 
