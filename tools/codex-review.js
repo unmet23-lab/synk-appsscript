@@ -389,7 +389,35 @@ function 스키마실행(프롬프트, 스키마, timeoutMs, 라벨) {
  *   「-c 가 막고 있으니 괜찮다」고 읽는 것**이다. 그 순간 잠금이 통째로 열린다.
  *
  * ⚠ 이 셋 중 하나라도 빠지면 「읽기 전용」이 사실이 아니게 된다. 지우지 말 것. */
-const 잠금플래그 = ['--ignore-user-config', '-c', 'sandbox_mode="read-only"', '-c', 'approval_policy="never"'];
+
+/* 🔴 **샌드박스는 디스크를 막지 네트워크를 안 막는다**(F133 · 2026-08-06 실측).
+ *   위 잠금은 **파일 쓰기만** 막는다. codex 의 `features` 는 stage=stable 이면 **기본이 true** 라
+ *   `--ignore-user-config` 로도 안 꺼진다 — `codex features list` 실측에서 `apps`(GitHub MCP)·
+ *   `browser_use`·`computer_use` 가 전부 true 였다. 실사고: 발주 런에서 에이전트가
+ *   `mcp__codex_apps__github_create_branch` 로 **원격 저장소 쓰기**를 시도했다(디스크는 잠겨 있었다).
+ *   즉 「읽기 전용」이라 부르던 상태에서 검수자는 GitHub·브라우저·데스크톱에 닿을 수 있었다.
+ *
+ *   여기 담는 기준은 **repo 밖으로 나가는 문**뿐이다(연산·표시 기능은 안 건드린다 — 검수 품질을
+ *   조용히 깎는다). `--disable X` = `-c features.X=false`.
+ *   ⚠ 이름이 바뀌면 codex 가 `Unknown feature flag` 로 **죽는다** — 조용히 열리는 게 아니라
+ *   확인 불가로 드러난다(그 방향이 맞다 · 미실행과 통과가 같은 모양이면 안 된다).
+ *
+ *   🔬 **먹었는지 쟀다**(F132 의 교훈 — 플래그는 붙였다고 먹은 게 아니다). 같은 프롬프트·같은 모델로
+ *   조건 하나만 바꿔 두 번 돌리고 **롤아웃의 실제 도구 목록**을 대조했다:
+ *     옛 잠금(이 줄들 없이) → `codex_apps` **있음** · 새 잠금 → `codex_apps` **없음**.
+ *   남는 것은 `~/.agents/skills` 가 주입하는 **산문**뿐이다(도구가 아니라 문장 — 나갈 수단은 없다).
+ *   `--ignore-user-config` 는 config.toml 만 끊지 그 스킬 폴더를 안 끊는다. */
+const 외부도구들 = [
+  'apps',                          // codex_apps MCP — GitHub 원격 읽기·쓰기(실사고 통로)
+  'plugins', 'plugin_sharing', 'remote_plugin', // 커넥터(실측 당시 Canva 가 도구 목록에 있었다)
+  'browser_use', 'browser_use_external', 'browser_use_full_cdp_access', 'in_app_browser',
+  'computer_use',                  // 데스크톱 조작
+  'skill_mcp_dependency_install',  // 검수 중 MCP 의존성 설치 = 바깥에서 실행물을 들인다
+];
+const 잠금플래그 = [
+  '--ignore-user-config', '-c', 'sandbox_mode="read-only"', '-c', 'approval_policy="never"',
+  ...외부도구들.flatMap((f) => ['--disable', f]),
+];
 
 /* ■ 모델·추론 수준은 **`tools/모델정책.js` 가 혼자 정한다** — 여기엔 사본을 두지 않는다.
  *   벤더가 둘(코덱스·제미나이)이 된 뒤로 결정이 두 곳에 있으면 갈라지고, 갈라지는 방향은
@@ -659,7 +687,35 @@ function 심문실행(argv, timeoutMs) {
   return 0;
 }
 
+/* 🔴 F135(2026-08-06 실측): `--help` 를 줬더니 거절이 아니라 **기본 동작(미커밋 검수)** 으로 떨어져
+ *   14분짜리 sol 런이 조용히 시작됐다. 이 파일은 모델 픽에 대해 「모르는 이름은 기본값으로 접지 않고
+ *   거절한다」를 이미 쓰고 있었는데 **최상위 인자 파싱만** 그 규칙 밖이었다 — 한 파일 안에서 층마다
+ *   엄격도가 다르면 **느슨한 층이 실질 정책**이 된다.
+ *   값을 받는 플래그는 뒤 토큰을 건너뛴다(`--사유 "--x"` 같은 값을 인자로 오인하지 않는다). */
+const 값플래그 = ['--심문', '--제안판정', '--기각', '--사유', '--timeout', '--commit', '--base', '--모델', '--검수', '--효력'];
+const 홑플래그 = ['--채택', '--확인', '--제안', '--버그만', '--uncommitted'];
+const 아는플래그 = new Set([...값플래그, ...홑플래그]);
+const 사용법 = [
+  '사용:',
+  '  node tools/codex-review.js [--commit <sha> | --base <브랜치> | --uncommitted] [--버그만] [--검수 sol|luna] [--효력 high] [--timeout 초]',
+  '  node tools/codex-review.js --제안                      선파악(기능지도+업그레이드 제안)',
+  '  node tools/codex-review.js --제안판정 <키> --채택|--기각 --사유 "왜"',
+  '  node tools/codex-review.js --기각 <키> --사유 "왜"      틀린 지적 등록',
+  '  node tools/codex-review.js --확인                      배포 게이트 조회',
+  '  node tools/codex-review.js --심문 <설계문서 경로>        ②설계 심문',
+].join('\n');
+
 function main(argv) {
+  if (argv.includes('--help') || argv.includes('-h')) { console.log(사용법); return 0; }
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (값플래그.includes(a)) { i++; continue; }          // 바로 뒤는 값이다
+    if (!a.startsWith('--') || 아는플래그.has(a)) continue;
+    console.error(`🔴 모르는 인자 "${a}" — 기본 동작으로 접지 않는다(F135: --help 하나가 14분짜리 런을 조용히 시작시켰다).`);
+    console.error(사용법);
+    return 2;
+  }
+
   /* ②설계 심문 — 대상이 문서라 미커밋 판정·지문 결속(①의 것)을 타지 않는다. 그래서 맨 앞에서 가른다.
    * 기본 타임아웃이 ① 보다 긴 이유: 실측 20분(F121). 여기서 짧게 끊으면 「확인 불가」만 쌓인다. */
   if (argv.includes('--심문')) {
@@ -847,7 +903,8 @@ function main(argv) {
 }
 
 module.exports = {
-  게이트판정, 유효지문, 키, 범위, 대상결정, 미커밋파일들, 차단급, 기록경로, 기각경로, 모델설정, 효력들, 모델플래그, 잠금플래그,
+  게이트판정, 유효지문, 키, 범위, 대상결정, 미커밋파일들, 차단급, 기록경로, 기각경로, 모델설정, 효력들, 모델플래그, 잠금플래그, 외부도구들,
+  값플래그, 홑플래그, 아는플래그,
   제안경로, 제안키, 제안현황, 제안프롬프트, 선파악행들, 기능체크프롬프트, 기능체크지적들, 방향텍스트, 방향지문, 방향경로, 방향상한, 디프상한,
   심문프롬프트, 금지목록, 심문템플릿, 심문경로,
 };

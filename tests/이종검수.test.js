@@ -275,6 +275,71 @@ test('🔒 읽기 전용 잠금의 진짜 근거 `--ignore-user-config` 가 검�
   );
 });
 
+/* 🔴 F133(2026-08-06 실측): 위 잠금은 **디스크만** 막는다. codex 의 features 는 stage=stable 이면
+ *   기본이 true 라 `--ignore-user-config` 로도 안 꺼지고, 그 상태에서 에이전트가
+ *   `mcp__codex_apps__github_create_branch` 로 **원격 저장소 쓰기**를 시도했다(디스크는 잠겨 있었다).
+ *   이 검사가 막는 사고 = 「읽기 전용이니 괜찮다」고 읽고 이 목록을 지우는 편집. */
+test('🔒 바깥으로 나가는 문(GitHub·브라우저·데스크톱)이 검수 호출에서 꺼져 나간다 (F133)', () => {
+  for (const f of 검수.외부도구들) {
+    const i = 검수.잠금플래그.indexOf('--disable');
+    assert.ok(i !== -1, '잠금에 --disable 이 하나도 없다 — 네트워크 문이 통째로 열려 있다');
+    assert.ok(
+      검수.잠금플래그.some((x, n) => x === f && 검수.잠금플래그[n - 1] === '--disable'),
+      `${f} 가 --disable 로 안 나간다 — 샌드박스는 디스크를 막지 네트워크를 안 막는다(F133)`
+    );
+  }
+  // 실사고 통로 3개는 이름으로 못박는다 — 배열을 비우면 위 루프는 0회로 조용히 통과한다.
+  for (const f of ['apps', 'browser_use', 'computer_use']) {
+    assert.ok(검수.외부도구들.includes(f), `${f} 가 차단 목록에서 빠졌다 (F133 실사고 통로)`);
+  }
+});
+
+/* 이름이 바뀌면 codex 는 `Unknown feature flag` 로 죽는다 = 검수가 **안 도는** 것으로 드러난다.
+ * 그건 조용히 열리는 것보다 낫지만, 14분 런이 시작된 뒤에 알 이유는 없다. codex 가 있는 기계에서만
+ * 실측하고 CI 에서는 **skip 으로 드러낸다**(통과와 미실행이 같은 모양이면 안 된다). */
+test('외부도구 이름이 이 기계의 codex 가 아는 이름이다 (없으면 skip)', (t) => {
+  const bin = process.platform === 'win32'
+    ? path.join(process.env.APPDATA || '', 'npm', 'codex.cmd') : 'codex';
+  if (process.platform === 'win32' && !fs.existsSync(bin)) return t.skip('codex CLI 없음 — 이름 대조 미실행');
+  const r = process.platform === 'win32'
+    ? spawnSync(process.env.ComSpec || 'cmd.exe', ['/c', bin, 'features', 'list'], { encoding: 'utf8' })
+    : spawnSync(bin, ['features', 'list'], { encoding: 'utf8' });
+  if (r.status !== 0 || !r.stdout) return t.skip('codex features list 실패 — 이름 대조 미실행');
+  const 아는이름 = new Set(r.stdout.split('\n').map((l) => l.trim().split(/\s+/)[0]).filter(Boolean));
+  for (const f of 검수.외부도구들) {
+    assert.ok(아는이름.has(f), `codex 가 모르는 feature 이름 "${f}" — 검수 런이 시작하자마자 죽는다`);
+  }
+});
+
+/* 🔴 F135(2026-08-06 실사고): `--help` 가 거절이 아니라 **기본 동작**으로 떨어져 14분짜리 런이
+ *   조용히 시작됐다. 느슨한 층이 실질 정책이 되는 자리다. */
+test('🔒 모르는 인자는 기본 동작으로 접히지 않는다 — 거절 + 사용법 (F135)', () => {
+  const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'codex-review.js'), '--없는플래그'], { encoding: 'utf8' });
+  assert.strictEqual(r.status, 2, '모르는 인자가 검수를 시작시켰다(F135 재발)');
+  assert.match(r.stderr, /사용:/, '거절만 하고 따라갈 사용법을 안 준다(F103: 따를 수 없는 처방)');
+  assert.doesNotMatch(r.stdout, /codex 검수 중/, '거절해 놓고 codex 를 불렀다');
+});
+
+test('--help 는 사용법을 내고 끝난다 (0) — 이게 F135 의 실제 입력이었다', () => {
+  const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'codex-review.js'), '--help'], { encoding: 'utf8' });
+  assert.strictEqual(r.status, 0, `--help 가 0 이 아니다: ${r.stderr}`);
+  assert.match(r.stdout, /--심문/, '사용법에 심문 통로가 없다');
+});
+
+/* 화이트리스트는 손으로 적은 목록이라 **새 플래그가 붙으면 조용히 거절당한다**(반대 방향 사고).
+ * 그래서 목록을 소스에서 파생시켜 대조한다 — 판정을 두 곳에 적으면 갈라지고, 갈라지는 쪽은 늘 얕다. */
+test('🔑 코드가 실제로 읽는 플래그가 전부 화이트리스트에 있다 (새 플래그를 붙이면 여기서 잡힌다)', () => {
+  const 소스 = ['tools/codex-review.js', 'tools/모델정책.js']
+    .map((p) => fs.readFileSync(path.join(ROOT, p), 'utf8')).join('\n');
+  const 쓰는것 = new Set([...소스.matchAll(/argv?\.(?:includes|indexOf)\('(--[^']+)'/g)].map((m) => m[1]));
+  assert.ok(쓰는것.size >= 10, `소스에서 뽑은 플래그가 ${쓰는것.size}개뿐 — 스캔이 헛돌았다`);
+  for (const f of 쓰는것) {
+    if (f === '--help') continue;                    // 조기 반환으로 처리된다
+    if (f === '--제미나이확인') continue;             // 모델정책.js 자체 CLI(이 도구 인자가 아니다)
+    assert.ok(검수.아는플래그.has(f), `코드는 ${f} 를 읽는데 화이트리스트에 없다 — 쓰는 순간 거절당한다`);
+  }
+});
+
 test('변환 단계(2단계)가 분석 단계보다 얕다 — 순수 변환에 최상급을 쓰면 「고쳐서」 옮긴다', () => {
   const 분석 = 검수.효력들.indexOf(검수.모델설정.분석.effort);
   const 구조화 = 검수.효력들.indexOf(검수.모델설정.구조화.effort);
@@ -473,11 +538,22 @@ test('심문: --- 구분선이 없는 템플릿은 거절 — 경계가 없으�
   );
 });
 
-test('심문(실저장소): 템플릿에 --- 경계가 있고, 그 위 운영 메모가 프롬프트에 안 실린다', () => {
+test('심문(실저장소): 템플릿에 --- 경계가 있고, 그 위 운영 메모가 프롬프트에 안 실린다', (ctx) => {
   const t = fs.readFileSync(검수.심문템플릿, 'utf8');
   assert.ok(t.includes('\n---'), '실저장소 템플릿에 --- 경계가 없다');
-  // 실재료로 조립해 본다 — 이음매만 맞고 실물이 새면 그 사실이 안 보인다.
-  // 대상은 아무 md 나 좋다(여기선 이 저장소의 방향 정본) — 검사하는 건 **프롬프트가 무엇으로 시작하는가**다.
-  const p = 검수.심문프롬프트(검수.방향경로);
+  /* 아래 조립은 **repo 밖**(홈의 memory 인덱스)에 기댄다 — CI 는 빈 HOME 이라 여기서 죽는다.
+   * 실측: 이 한 줄이 master CI 를 빨갛게 만들었다(run 31110105803·31110558301·31112128282,
+   * 셋 다 `fail 1` = 이 테스트 하나). 로컬 초록이 CI 초록이 아니라는 조항의 실사고다.
+   * 탐지력은 위 픽스처 4건이 지므로, 실저장소 조립은 인덱스가 있을 때만 재고 없으면
+   * **skip 으로 드러낸다**(통과와 미실행이 같은 모양이면 안 된다). */
+  let p;
+  try {
+    // 실재료로 조립해 본다 — 이음매만 맞고 실물이 새면 그 사실이 안 보인다.
+    // 대상은 아무 md 나 좋다(여기선 이 저장소의 방향 정본) — 검사하는 건 **프롬프트가 무엇으로 시작하는가**다.
+    p = 검수.심문프롬프트(검수.방향경로);
+  } catch (e) {
+    if (e.확인불가) return ctx.skip('memory 인덱스 없음(빈 HOME) — 실재료 조립 미실행');
+    throw e;
+  }
   assert.match(p.slice(0, 60), /당신은 독립 반대심문자다/, '프롬프트가 지시문으로 시작하지 않는다 — 운영 메모가 앞에 붙었다');
 });
