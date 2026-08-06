@@ -123,6 +123,11 @@ def main():
     ap.add_argument("src")
     ap.add_argument("out")
     ap.add_argument("--pdf", default=None)
+    # 인쇄물은 폴백이 곧 사고라 기본이 「깬다」. 다만 내부 지도는 ✅🔴⛔ 같은 **이모지**를 상태 언어로
+    # 쓰는데 그건 어느 텍스트 폰트에도 없고 OS 가 컬러로 그린다 — 그걸 이유로 임베드를 통째로 막으면
+    # 지도는 영원히 「이 PC 폰트」로 나간다. 그래서 막는 대신 **무엇이 폴백되는지 찍고 통과**시킨다.
+    ap.add_argument("--폴백허용", action="store_true",
+                    help="브랜드 폰트에 없는 글자를 오류가 아니라 경고로 처리한다(목록을 찍는다)")
     a = ap.parse_args()
 
     src = pathlib.Path(a.src).read_text(encoding="utf-8")
@@ -138,11 +143,12 @@ def main():
     # 🔴 어느 브랜드 폰트도 못 그리는 글자 = 폴백이 생긴다는 뜻. 조용히 넘기지 않고 깬다.
     orphans = sorted(c for c in chars if c not in coverage)
     if orphans:
-        raise SystemExit(
-            "브랜드 폰트 3종 어디에도 없는 글자 %d개 → 폴백 발생: %s\n"
-            "   (해당 글자를 CSS 도형으로 바꾸거나 문구를 고칠 것)"
-            % (len(orphans), " ".join("%s U+%04X" % (c, ord(c)) for c in orphans))
-        )
+        말 = "브랜드 폰트 3종 어디에도 없는 글자 %d개 → 폴백 발생: %s" % (
+            len(orphans), " ".join("%s U+%04X" % (c, ord(c)) for c in orphans))
+        if not a.폴백허용:
+            raise SystemExit(말 + "\n   (해당 글자를 CSS 도형으로 바꾸거나 문구를 고칠 것)")
+        print("⚠ " + 말)
+        print("   --폴백허용 이라 통과시킨다. 이 글자들만 OS 글꼴이 그린다(나머지는 임베드본).")
 
     out_html = src.replace("/*@FONTS@*/", "\n".join(faces))
     outp = pathlib.Path(a.out)

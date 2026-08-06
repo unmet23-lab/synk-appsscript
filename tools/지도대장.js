@@ -36,6 +36,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const zlib = require('zlib');
 const crypto = require('crypto');
 const { execFileSync, spawnSync } = require('child_process');
 
@@ -198,12 +199,14 @@ function 훑기(dir) {
         );
       }
 
-      // ③ 폰트 게이트 — 화면에선 멀쩡하고 **PDF에서만** 계기판 성격이 죽는다(실측된 사고)
+      // ③ 폰트 게이트 — 화면에선 멀쩡하고 **PDF에서만** 브랜드 서체가 죽는다(실측된 사고 2건)
       const 폰트 = 임베드폰트(pdfPath);
-      if (폰트 !== null && !폰트.some((n) => /Consolas/i.test(n))) {
+      const 빠짐 = 폰트 === null ? [] : 빠진서체(폰트);
+      if (빠짐.length) {
         지도.문제.push(
-          `PDF에 모노 폰트(Consolas)가 임베드되지 않았다 — 인쇄본에서 계기판 성격이 죽는다.\n` +
-          `     원인은 거의 항상 CSS --mono 스택 맨 앞이 Consolas 가 아닌 것. 고치고 --bake.`
+          `PDF에 브랜드 서체가 없다: ${빠짐.join('·')} — 이 기계에 깔린 글꼴로 나갔다는 뜻이다.\n` +
+          `     임베드된 것: ${폰트.join(', ') || '(없음)'}\n` +
+          `     고치는 법: node tools/지도대장.js --bake "${이름}" (굽기가 폰트를 HTML 에 실어 넣는다)`
         );
       }
     }
@@ -214,17 +217,47 @@ function 훑기(dir) {
   return { 있음: true, dir, 지도들 };
 }
 
-/** PDF에서 임베드 폰트 이름을 뽑는다(못 읽으면 null — 없음과 구분한다) */
+/** PDF에서 임베드 폰트 이름을 뽑는다(못 읽으면 null — 없음과 구분한다)
+ *  ⚠ 평문 `/BaseFont` 만 훑으면 **압축 오브젝트 스트림 안의 폰트를 통째로 놓친다.**
+ *    2026-08-06 실측: 같은 PDF 를 평문으로 세면 「굴림체 1종」, 스트림을 풀면 SUIT 4종이 나왔다.
+ *    그 오독으로 「브랜드 폰트 0건」이라 보고했다 — 안 보이는 것을 없는 것으로 세면 안 된다. */
 function 임베드폰트(pdfPath) {
   let buf;
   try { buf = fs.readFileSync(pdfPath); } catch (_) { return null; }
-  const s = buf.toString('latin1');
   const out = new Set();
-  const re = /\/BaseFont\s*\/([A-Za-z0-9+,#-]+)/g;
-  let m;
-  while ((m = re.exec(s)) !== null) out.add(m[1].replace(/^[A-Z]{6}\+/, ''));
+  const 훑기 = (s) => {
+    const re = /\/(?:BaseFont|FontName)\s*\/([A-Za-z0-9+,#._-]+)/g;
+    let m;
+    while ((m = re.exec(s)) !== null) out.add(m[1].replace(/^[A-Z]{6}\+/, ''));
+  };
+
+  const s = buf.toString('latin1');
+  훑기(s);
+
+  // stream…endstream 을 전부 inflate 시도한다(이미지·비압축은 그냥 실패하고 넘어간다)
+  let i = 0;
+  while ((i = s.indexOf('stream', i)) !== -1) {
+    let start = i + 6;
+    if (s[start] === '\r') start++;
+    if (s[start] === '\n') start++;
+    const end = s.indexOf('endstream', start);
+    if (end === -1) break;
+    try { 훑기(zlib.inflateSync(buf.subarray(start, end)).toString('latin1')); } catch (_) {}
+    i = end + 9;
+  }
   return [...out];
 }
+
+/* ── 브랜드 서체 게이트 ──────────────────────────────────────────────
+ * 정본 3종 = SUIT(한글) · Inter Tight(라틴·키릴) · DM Mono(계기판). DESIGN.md §3.
+ * 🔑 Inter Tight·DM Mono 는 **이 PC 에 설치돼 있지 않다** — 그래서 PDF 에 이 이름이 보이면
+ *   그건 임베드가 실제로 먹혔다는 뜻이다(설치 폰트로는 통과할 수 없는 검사다). */
+const 브랜드서체 = [
+  { 이름: 'SUIT', re: /SUIT/i },
+  { 이름: 'Inter Tight', re: /InterTight/i },
+  { 이름: 'DM Mono', re: /DMMono/i },
+];
+const 빠진서체 = (폰트) => 브랜드서체.filter((f) => !폰트.some((n) => f.re.test(n))).map((f) => f.이름);
 
 /** 헤드리스 크롬 경로 — 없으면 null */
 function 크롬() {
@@ -236,6 +269,83 @@ function 크롬() {
   return 후보.find((p) => { try { return fs.existsSync(p); } catch (_) { return false; } }) || null;
 }
 
+/** 🔴 SUIT 는 **700(Bold) 원본이 폰트 폴더에 없다**(`SUIT-Bold.otf` 미투입 — 유호님 몫으로 열려 있다).
+ *  지도 CSS 는 700 을 열 곳 넘게 쓰는데, 그 굵기가 없으면 크롬은 800 으로 낮춰 그리는 게 아니라
+ *  **굵은 한글을 통째로 Noto Sans KR 로 떨어뜨린다**(2026-08-06 실측 — 임베드했는데도 Noto 3종이 나왔다).
+ *  그래서 ExtraBold 면이 700 까지 맡게 한다. 원본이 들어오면 이 함수는 지운다. */
+const SUIT700 = (html) => html.replace(
+  "@font-face{font-family:'SUIT';font-style:normal;font-weight:800;",
+  "@font-face{font-family:'SUIT';font-style:normal;font-weight:700 800;");
+
+/** python + fontTools 를 찾는다(없으면 null) — `tools/발표물빌드.js` 와 같은 통로 */
+function 파이썬() {
+  for (const cmd of ['python', 'py', 'python3']) {
+    const r = spawnSync(cmd, ['-c', 'import fontTools, brotli'], { encoding: 'utf8' });
+    if (r.status === 0) return cmd;
+  }
+  return null;
+}
+
+/**
+ * 브랜드 폰트를 HTML 에 **실어 넣는다**(굽기 직전 · 이미 들어 있으면 건너뛴다).
+ *
+ * 왜: 지도 HTML 들은 폰트를 **이름으로만** 불렀다. 그러면 그 폰트가 깔린 기계에서만 맞고,
+ *   유호님 폰·인쇄소·다른 PC 에서는 조용히 맑은고딕/굴림으로 떨어진다(2026-08-06 실측).
+ *   화면은 늘 멀쩡해 보이므로 사람 눈으로는 영원히 안 잡힌다.
+ * 🔑 스택도 함께 고쳐야 한다 — 임베드되는 패밀리 이름은 `SUIT` 인데 소스는 `'SUIT Variable'`
+ *   (=**설치본 이름**)을 부르고 있었다. 이름이 어긋나면 임베드해도 설치본으로 돌아간다.
+ * 🔑 `'DM Mono'` 는 라틴 전용(381 글리프)이라 모노 자리의 한글은 `SUIT` 가 받는다.
+ */
+function 폰트심기(htmlPath) {
+  let html;
+  try { html = fs.readFileSync(htmlPath, 'utf8'); } catch (e) { return { ok: false, 이유: `HTML 을 못 읽었다: ${e.message}` }; }
+  if (/@font-face/.test(html)) {                 // 이미 심겨 있다 — 굵기 범위만 손봐 주고 나간다
+    const 고침 = SUIT700(html);
+    if (고침 !== html) { fs.writeFileSync(htmlPath, 고침); return { ok: true, 보수: true }; }
+    return { ok: true, 건너뜀: true };
+  }
+
+  const 전 = html;
+  html = html.replace(/(--sans|--synk-font)\s*:[^;]*;/g, "$1: 'Inter Tight','SUIT',sans-serif;");
+  html = html.replace(/(--mono|--synk-font-mono)\s*:[^;]*;/g, "$1: 'DM Mono','SUIT',monospace;");
+  html = html.replace(/font-family:\s*'Inter Tight'[^;]*;/g, "font-family:'Inter Tight','SUIT',sans-serif;");
+  html = html.replace(/font-family:\s*'DM Mono'[^;]*;/g, "font-family:'DM Mono','SUIT',monospace;");
+  if (html === 전) {
+    return { ok: false, 이유: `브랜드 폰트 스택을 못 찾았다 — 이 HTML 은 다른 방식으로 서체를 지정한다.\n  손으로 \`'Inter Tight','SUIT'\` / \`'DM Mono','SUIT'\` 로 고친 뒤 다시 --bake.` };
+  }
+  if (!html.includes('<style>')) return { ok: false, 이유: '<style> 이 없어 @font-face 를 넣을 자리가 없다' };
+
+  const py = 파이썬();
+  if (!py) return { ok: false, 이유: 'python + fontTools + brotli 를 못 찾았다 — `pip install fonttools brotli`' };
+  const EMBED = path.join(__dirname, '..', 'docs', 'tools', '브랜드폰트_임베드.py');
+  if (!fs.existsSync(EMBED)) return { ok: false, 이유: `임베드 스크립트가 없다: ${EMBED}` };
+
+  const 임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-font-'));
+  const src = path.join(임시, 'src.html');
+  const out = path.join(임시, 'out.html');
+  fs.writeFileSync(src, html.replace('<style>', '<style>\n/*@FONTS@*/'));
+
+  // ⚠ 지도는 ✅🔴⛔ 같은 이모지를 상태 언어로 쓴다 — 어느 텍스트 폰트에도 없고 OS 가 컬러로 그린다.
+  //   그걸 오류로 치면 지도는 영원히 임베드를 못 받는다. 대신 무엇이 폴백되는지 아래에 찍는다.
+  const r = spawnSync(py, [EMBED, src, out, '--폴백허용'], { encoding: 'utf8', timeout: 300000 });
+  const 폴백 = String(r.stdout || '').split('\n').filter((l) => l.startsWith('⚠'));
+  if (r.status !== 0 || !fs.existsSync(out)) {
+    return { ok: false, 이유: `폰트 임베드 실패: ${String(r.stderr || r.stdout || '').split('\n').slice(-3).join(' ').trim()}` };
+  }
+  let 결과 = fs.readFileSync(out, 'utf8');
+  if (!/@font-face/.test(결과) || 결과.includes('/*@FONTS@*/')) {
+    return { ok: false, 이유: '임베드 산출물에 @font-face 가 없다(마커가 그대로 남았다)' };
+  }
+
+  const 전범위 = 결과;
+  결과 = SUIT700(결과);
+  if (결과 === 전범위) return { ok: false, 이유: 'SUIT 800 면을 못 찾았다 — 700 굵기가 폴백으로 샌다(임베드 스크립트 FACES 확인)' };
+
+  fs.writeFileSync(htmlPath, 결과);           // 화면판·재인쇄용 HTML 도 같이 고쳐진다
+  try { fs.rmSync(임시, { recursive: true, force: true }); } catch (_) {}
+  return { ok: true, 심음: true, 폴백 };
+}
+
 /**
  * PDF 굽기 — 임시 폴더에 굽고 복사한다.
  * ⚠ 크롬에게 OneDrive 폴더로 **직접** 쓰게 하면 액세스 거부(0x5)가 난다(2026-08-04 실측).
@@ -245,13 +355,19 @@ function 굽기(htmlPath) {
   const bin = 크롬();
   if (!bin) return { ok: false, 이유: '크롬을 못 찾았다(CHROME_PATH 로 지정 가능)' };
 
+  const 심기 = 폰트심기(htmlPath);
+  if (!심기.ok) return 심기;
+
   const 이름 = path.basename(htmlPath, '.html');
   const 임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-map-'));
   const 임시pdf = path.join(임시, 'out.pdf');
   const url = 'file:///' + htmlPath.replace(/\\/g, '/').split('/').map(encodeURIComponent).join('/').replace(/^([A-Za-z])%3A/, '$1:');
 
   const r = spawnSync(bin, [
-    '--headless', '--disable-gpu', '--no-pdf-header-footer',
+    // ⚠ `--virtual-time-budget` 이 없으면 **임베드 폰트가 로드되기 전에** 인쇄가 끝난다 —
+    //   PDF 는 조용히 폴백(굴림체)으로 나가고 크기만 1/15 로 줄어든다(2026-08-06 실측).
+    //   설치된 폰트로 그릴 때는 티가 안 나서 여태 안 보였다.
+    '--headless', '--disable-gpu', '--no-pdf-header-footer', '--virtual-time-budget=8000',
     `--print-to-pdf=${임시pdf}`, url,
   ], { encoding: 'utf8', timeout: 120000 });
 
@@ -261,12 +377,13 @@ function 굽기(htmlPath) {
 
   // 폰트 게이트를 **복사 전에** 통과시킨다 — 깨진 판으로 멀쩡한 판을 덮지 않는다
   const 폰트 = 임베드폰트(임시pdf) || [];
-  if (!폰트.some((n) => /Consolas/i.test(n))) {
+  const 빠짐 = 빠진서체(폰트);
+  if (빠짐.length) {
     return {
       ok: false,
-      이유: `모노 폰트(Consolas)가 임베드되지 않아 굽기를 중단했다 — 기존 PDF는 그대로 뒀다.\n` +
+      이유: `브랜드 서체가 PDF에 안 들어가 굽기를 중단했다: ${빠짐.join('·')} — 기존 PDF는 그대로 뒀다.\n` +
             `  임베드된 것: ${폰트.join(', ') || '(없음)'}\n` +
-            `  CSS 의 --mono 스택 **맨 앞**이 Consolas 여야 한다(ui-monospace 를 앞세우면 아예 임베드되지 않는다).`,
+            `  HTML 의 폰트 스택이 임베드된 패밀리 이름('Inter Tight'·'SUIT'·'DM Mono')을 부르는지 본다.`,
     };
   }
 
@@ -419,4 +536,4 @@ if (require.main === module) {
   process.exit(has('--check') && r.문제수 ? 1 : 0);
 }
 
-module.exports = { 지도폴더, 훑기, 엣지읽기, 굽기, 도장찍기, 표만들기, 리드미갱신, 임베드폰트, 리포트 };
+module.exports = { 지도폴더, 훑기, 엣지읽기, 굽기, 도장찍기, 표만들기, 리드미갱신, 임베드폰트, 빠진서체, 폰트심기, 리포트 };
