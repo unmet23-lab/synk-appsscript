@@ -15,21 +15,28 @@ const LONG = '가'.repeat(260);
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'boardguard-'));
 const BOARD = path.join(TMP, '세션보드.md');
 const ARCHIVE = path.join(TMP, '세션보드_아카이브.md');
-const row = (i) => `| 2026-08-01 | 트랙${i} | Code.js | 완료 |`;
-const activeRow = (i) => `| 2026-08-01 | 트랙${i} | Code.js | 작업중 |`;
+/* 🔑 픽스처 줄은 **주인 지문을 달고 있다** — 새 줄에 지문·해시를 요구하는 검사 ③(F165)이
+ *   있고, 이 파일의 나머지 검사는 ①칸 길이·②줄 수를 재는 것이라 ③에 걸리면 무엇을 쟀는지
+ *   흐려진다. ③ 자체는 아래 전용 검사에서 픽스처로 조준한다. */
+const row = (i) => `| 2026-08-01 | 트랙${i} | Code.js \`local_deadbeef\` | 완료 |`;
+const activeRow = (i) => `| 2026-08-01 | 트랙${i} | Code.js \`local_deadbeef\` | 작업중 |`;
 const table = (n) => ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|', ...Array.from({ length: n }, (_, i) => row(i))].join('\n');
 const activeTable = (n) => ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|', ...Array.from({ length: n }, (_, i) => activeRow(i))].join('\n');
 fs.writeFileSync(BOARD, table(11), 'utf8');
 
-function decide(payload) {
-  const out = execFileSync(process.execPath, [HOOK], { input: JSON.stringify(payload), encoding: 'utf8' });
+/** env 를 **명시로** 받는다 — 검사 ③(F165)은 세션 id 가 있을 때만 도는데, 그러면 CI 에서
+ *  「통과」와 「미실행」이 같은 모양이 된다. 픽스처가 환경을 고정해 그 둘을 가른다. */
+const 환경 = (env) => (env ? { ...process.env, ...env } : process.env);
+
+function decide(payload, env) {
+  const out = execFileSync(process.execPath, [HOOK], { input: JSON.stringify(payload), encoding: 'utf8', env: 환경(env) });
   if (!out.trim()) return 'allow';
   return JSON.parse(out).hookSpecificOutput.permissionDecision;
 }
 
 /** 차단 사유까지 본다 — 「막았다」만으로는 **왜** 막았는지·안내가 맞는지 못 잰다. */
-function 판정(payload) {
-  const out = execFileSync(process.execPath, [HOOK], { input: JSON.stringify(payload), encoding: 'utf8' });
+function 판정(payload, env) {
+  const out = execFileSync(process.execPath, [HOOK], { input: JSON.stringify(payload), encoding: 'utf8', env: 환경(env) });
   if (!out.trim()) return { 결정: 'allow', 사유: '' };
   const h = JSON.parse(out).hookSpecificOutput;
   return { 결정: h.permissionDecision, 사유: String(h.permissionDecisionReason || '') };
@@ -44,7 +51,7 @@ test('칸 200자 초과는 차단', () => {
 
 test('정상 길이 1줄 추가는 통과', () => {
   assert.strictEqual(
-    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: 'x', new_string: '| 2026-08-01 | 새 트랙 | Code.js | 작업중 |' } }),
+    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: 'x', new_string: '| 2026-08-01 | 새 트랙 | Code.js | 작업중 (`local_deadbeef`) |' } }),
     'allow'
   );
 });
@@ -126,7 +133,7 @@ test('[회귀] replace_all 부분 교체도 검사한다', () => {
  * 그래서 완료 줄이 전부 '활성'으로 세어져 활성 상한이 전체 상한처럼 굳었다 — 실제로 새 세션이
  * 자기 줄을 못 넣고 막혔다. 위 테스트들이 못 잡은 이유가 핵심이다: **아무도 안 쓰는 표기(`완료`)로만
  * 검사했다.** 가드가 지켜야 하는 건 문법이 아니라 사람이 실제로 쓰는 표기다. */
-const boldRow = (i) => `| 2026-08-01 | 트랙${i} | Code.js | **완료** — 라이브 v9.1${i} |`;
+const boldRow = (i) => `| 2026-08-01 | 트랙${i} | Code.js \`local_deadbeef\` | **완료** — 라이브 v9.1${i} |`;
 const boldTable = (n) => ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|',
   ...Array.from({ length: n }, (_, i) => boldRow(i))].join('\n');
 
@@ -172,7 +179,7 @@ const 종결표기 = [
   '**완료·라이브 [v9.156]+원격 실행 종결**(5161bd7) — 닫기 9/9',
 ];
 const 표기표 = (문구, n) => ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|',
-  ...Array.from({ length: n }, (_, i) => `| 2026-08-04 | 트랙${i} | Code.js | ${문구} |`)].join('\n');
+  ...Array.from({ length: n }, (_, i) => `| 2026-08-04 | 트랙${i} | Code.js \`local_deadbeef\` | ${문구} |`)].join('\n');
 
 test('[회귀·F094] ✅ 접두가 붙은 종결 줄을 완료로 센다 — 실보드에서 실제로 쓰는 표기 전부', () => {
   for (const 문구 of 종결표기) {
@@ -213,6 +220,49 @@ test('🔴 [회귀·F094] 막을 때 **무엇을 활성으로 셌는지** 보여
   assert.match(r.사유, /지금 활성으로 센 줄/, '무엇을 활성으로 셌는지 안 보여준다 — 08-03·08-04 두 번 다 사람이 대조할 수가 없었다');
   assert.match(r.사유, /트랙0/, '활성 목록에 실제 줄이 안 실렸다');
   assert.match(r.사유, /완료로 세는 표기/, '무엇을 쓰면 되는지 안 알려준다 — 따를 수 없는 처방이 표기를 갈라놓는다');
+});
+
+/* ── ③ 주인 표식 (마찰 F165 · 2026-08-07 실사고) ────────────────────────────
+ * 지문도 해시도 없는 줄은 인계문이 「내 줄 없음」으로 읽어 다음 세션이 자기 트랙을 잃고,
+ * board-move 는 주인 생사를 못 봐 살아있는 세션의 줄을 아카이브로 옮긴다(F146).
+ * 환경변수는 **명시로 고정**한다 — 안 하면 CI(비어 있음)와 로컬(있음)의 결과가 갈린다. */
+const 나 = { CLAUDE_CODE_HOST_SESSION_ID: 'local_3fd8f6db-8bee-47b1-a3d1-b156f732f5e9' };
+const 이름없는줄 = '| 2026-08-07 | 이름없는 트랙 | a.js | 작업중 — 누가 하는지 안 적음 |';
+
+test('🔴 [F165] 지문도 해시도 없는 새 줄은 차단', () => {
+  const r = 판정({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: row(10), new_string: `${row(10)}\n${이름없는줄}` } }, 나);
+  assert.strictEqual(r.결정, 'deny', '🔴 주인 없는 줄이 그대로 들어갔다 — F165 가 그대로다');
+  assert.match(r.사유, /local_3fd8f6db/, '내 지문을 안 알려준다 — 따를 수 없는 처방은 우회를 정상 통로로 만든다(F103)');
+});
+
+test('🔴 [F165] 자기 처방 — 차단 사유가 시키는 그대로 쓰면 통과한다', () => {
+  const r = 판정({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: row(10), new_string: `${row(10)}\n${이름없는줄}` } }, 나);
+  const 지문 = (r.사유.match(/local_[0-9a-f]{8}/) || [])[0];
+  assert.ok(지문, `사유에서 지문을 못 뽑았다: ${r.사유.slice(0, 120)}`);
+  assert.strictEqual(
+    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: row(10), new_string: `${row(10)}\n| 2026-08-07 | 이름없는 트랙 | a.js | 작업중 (\`${지문}\`) |` } }, 나),
+    'allow', '시킨 대로 썼는데 막힌다'
+  );
+  // 커밋 해시가 이미 적힌 줄도 통과한다(옛 관행을 깨지 않는다)
+  assert.strictEqual(
+    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: row(10), new_string: `${row(10)}\n| 2026-08-07 | 해시 트랙 | a.js | ✅종결(5e5b03f) |` } }, 나),
+    'allow', '해시가 적힌 줄까지 막는다'
+  );
+});
+
+test('🔴 [F165] 상태 칸 갱신은 지문 없이도 통과 — 트랙 칸이 같으면 새 줄이 아니다', () => {
+  /* 보드 편집의 가장 흔한 모양이다. 여기서 막으면 가드가 일상 통로를 막는 거짓양성이 된다. */
+  assert.strictEqual(
+    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: row(0), new_string: '| 2026-08-01 | 트랙0 | Code.js | ✅종결 — 다음 없음 |' } }, 나),
+    'allow', '🔴 상태 갱신을 새 줄로 셌다 — 갱신마다 막힌다'
+  );
+});
+
+test('🔴 [F165] 세션 id 를 모르는 환경(클라우드·CI)에는 요구하지 않는다', () => {
+  assert.strictEqual(
+    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: row(10), new_string: `${row(10)}\n${이름없는줄}` } }, { CLAUDE_CODE_HOST_SESSION_ID: '' }),
+    'allow', '내 지문을 알 수 없는 세션에 지문을 요구했다 — 따를 수 없는 처방이다(F103)'
+  );
 });
 
 test('🔴 [회귀·F094] 안내와 판정이 갈라지지 않는다 — 안내에 적힌 어휘로 쓰면 반드시 통과한다', () => {

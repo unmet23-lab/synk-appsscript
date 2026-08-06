@@ -231,13 +231,17 @@ const store = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'han
 const 남의sid = 'local_f146fake-1111-2222-3333-444455556666';
 
 /** 트랙 커밋(Session-Id 트레일러) + 그 해시가 박힌 보드 줄 + 심장박동 파일. */
-function mk주인픽스처(sid, { 분전 = 0, 해시덮기 = null } = {}) {
+function mk주인픽스처(sid, { 분전 = 0, 해시덮기 = null, 지문줄 = false } = {}) {
   const fx = mkRepoFixture();
   fs.writeFileSync(path.join(fx.dir, 'a.js'), '// 트랙 산출물\n', 'utf8');
   git(fx.dir, 'add', '--', 'a.js');
   git(fx.dir, 'commit', '-q', '-m', `트랙 커밋\n\nSession-Id: ${sid}`);
   const 해시 = git(fx.dir, 'rev-parse', '--short', 'HEAD').stdout.trim();
-  const 줄 = `| 2026-08-07 | **살아있는 트랙 정** | a.js | ✅종결(${해시덮기 || 해시}) |`;
+  /* 지문줄 = **커밋 해시가 한 글자도 없는** 줄. 양보·조사·판정안 트랙의 실제 모양이고,
+   * F165 이전에는 이런 줄이 원칙 ⑥ 검사를 통째로 지나갔다(재료가 없으니 모른다 → 통과). */
+  const 줄 = 지문줄
+    ? `| 2026-08-07 | **살아있는 트랙 정** | a.js | 작업중 (\`local_${sid.replace(/^local_/, '').slice(0, 8)}\`) — 커밋 아직 없음 |`
+    : `| 2026-08-07 | **살아있는 트랙 정** | a.js | ✅종결(${해시덮기 || 해시}) |`;
   fs.writeFileSync(fx.board, read(fx.board).replace(ROW, 줄), 'utf8');
   git(fx.dir, 'commit', '-q', '-m', 'board', '--', '세션보드.md');
 
@@ -286,6 +290,43 @@ test('[F146] 심장박동이 멎은 세션의 줄은 옮긴다 (죽은 트랙까
   try {
     const r = run(fx, ['살아있는 트랙 정']);
     assert.equal(r.status, 0, '죽은 세션의 줄까지 막았다 — 보드가 영원히 안 줄어든다: ' + r.stderr);
+    assert.ok(read(fx.archive).includes(줄), '아카이브에 안 들어갔다');
+  } finally { 치우기(박동); }
+});
+
+/* ── 마찰 F165 — 원칙 ⑥이 **가장 잃기 쉬운 줄**을 못 보고 있었다 ────────────
+ * ⑥의 재료가 「줄에 적힌 커밋 해시」뿐이라, 아직 아무것도 커밋하지 않은 세션(=선언만 한
+ * 트랙)과 코드 커밋이 안 나가는 트랙(양보·조사·판정안)의 줄은 검사를 그냥 지나갔다.
+ * F146 을 막으라고 세운 가드가 정작 그 사고가 가장 나기 쉬운 자리에서 눈을 감고 있었다. */
+const 남의sid165 = 'local_f165beef-1111-2222-3333-444455556666';
+
+test('[F165] 해시가 없어도 **줄에 적힌 지문**으로 산 주인을 본다', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx, 줄, 박동 } = mk주인픽스처(남의sid165, { 지문줄: true });
+  try {
+    const before = { b: read(fx.board), a: read(fx.archive) };
+    const r = run(fx, ['살아있는 트랙 정']);
+    assert.notEqual(r.status, 0, '🔴 해시 없는 줄이 그냥 지나갔다 — 커밋 전 세션의 줄이 통째로 사각지대다');
+    assert.match(String(r.stderr), /f165beef/, '누구 것인지 안 나온다');
+    assert.equal(read(fx.board), before.b, '거부인데 보드가 변했다');
+    assert.equal(read(fx.archive), before.a, '거부인데 아카이브가 변했다');
+    assert.ok(read(fx.board).includes(줄), '거부인데 줄이 보드에서 사라졌다');
+  } finally { 치우기(박동); }
+});
+
+test('[F165] 지문 주인이 죽었으면 옮긴다 (지문을 잠금장치로 쓰지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx, 줄, 박동 } = mk주인픽스처(남의sid165, { 지문줄: true, 분전: 90 });
+  try {
+    const r = run(fx, ['살아있는 트랙 정']);
+    assert.equal(r.status, 0, '죽은 세션의 지문 줄까지 막았다 — 보드가 영원히 안 줄어든다: ' + r.stderr);
+    assert.ok(read(fx.archive).includes(줄), '아카이브에 안 들어갔다');
+  } finally { 치우기(박동); }
+});
+
+test('[F165] **내 지문**이 적힌 줄은 그대로 옮긴다 (/close 정상 경로)', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx, 줄, 박동 } = mk주인픽스처(남의sid165, { 지문줄: true });
+  try {
+    const r = run(fx, ['살아있는 트랙 정'], { CLAUDE_CODE_HOST_SESSION_ID: 남의sid165 });
+    assert.equal(r.status, 0, '내 줄인데 막혔다 — 이 가드가 /close 를 잠근다: ' + r.stderr);
     assert.ok(read(fx.archive).includes(줄), '아카이브에 안 들어갔다');
   } finally { 치우기(박동); }
 });

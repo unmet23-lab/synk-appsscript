@@ -151,6 +151,50 @@ test('boardTrack — 내 커밋 해시로 내 줄을 찾고, 못 찾으면 남�
   assert.equal(report.boardTrack(임시('synk-tb-noboard-'), ['5e5b03f x']), null, '보드가 없는데 죽거나 뭘 집었다');
 });
 
+/* F165 (2026-08-07 실사고) — 해시가 없는 줄이 통째로 사각지대였다.
+ * 「양보 종결」처럼 코드 커밋이 하나도 안 나간 트랙은 줄에 해시가 없다. 그래서 세션
+ * `a0b27c60` 의 인계문이 「내 줄을 못 찾았다, 정말 없으면 멈춰라」로 나갔고, 그 줄은
+ * 보드에 멀쩡히 있었다 — 다음 세션이 자기 트랙을 두고 멈출 뻔했다. */
+test('boardTrack — 해시 없는 줄도 내 세션 지문으로 찾는다 (F165)', () => {
+  const d = 임시('synk-tb-f165-');
+  fs.mkdirSync(path.join(d, 'docs'), { recursive: true });
+  fs.writeFileSync(path.join(d, 'docs', '세션보드.md'),
+    '| 날짜 | 트랙 | 파일 | 상태 |\n|---|---|---|---|\n'
+    + '| 2026-08-07 | 남의 트랙 | a.js | 작업중 (`local_11112222`) — 남이 하는 일 |\n'
+    + '| 2026-08-07 | 양보 종결 트랙 | b.js | **양보 종결**(`local_a0b27c60`) — 다음=옆 세션 구현이 정본 |\n');
+
+  const 나 = 'local_a0b27c60-a3f8-48f9-8444-02a9724a61b2';
+  const 찾음 = report.boardTrack(d, [], 나);
+  assert.ok(찾음 && /양보 종결 트랙/.test(찾음.track),
+    '🔴 지문이 줄에 적혀 있는데 못 찾았다 — F165 가 그대로다(다음 세션이 자기 트랙을 두고 멈춘다)');
+  assert.ok(/다음=/.test(찾음.state), '상태 칸(=다음 할 일)을 안 가져왔다');
+  assert.equal(찾음.근거, '지문', '무엇으로 찾았는지를 안 밝힌다');
+
+  // 🔑 지문은 **줄에 적혀 있어야** 참이다 — 남의 줄을 이어받는 쪽이 더 큰 사고다(F073).
+  assert.equal(report.boardTrack(d, [], 'local_99998888-0000-0000-0000-000000000000'), null,
+    '🔴 남의 줄을 집었다 — 모름을 통과로 번역했다');
+  assert.equal(report.boardTrack(d, [], ''), null, '커밋도 지문도 없는데 뭘 집었다');
+
+  // 해시 경로는 그대로 산다(지문을 붙이며 옛 재료를 잃으면 그게 회귀다)
+  fs.appendFileSync(path.join(d, 'docs', '세션보드.md'),
+    '| 2026-08-07 | 해시 트랙 | c.js | ✅종결(5e5b03f) — 다음=배포 |\n');
+  const 해시로 = report.boardTrack(d, ['5e5b03f docs: 뭔가'], '');
+  assert.ok(해시로 && /해시 트랙/.test(해시로.track) && 해시로.근거 === '해시', '🔴 해시 경로가 죽었다');
+});
+
+test('board-id — 지문 규칙이 작업본소유자.짧게 와 갈라지지 않는다 (F165)', () => {
+  const 보드id = require(path.join(HOOKS, 'lib', 'board-id.js'));
+  const owner = require(path.join(ROOT, 'tools', '작업본소유자.js'));
+  // 두 도구가 서로 다른 8자리를 쓰면 「내 줄」의 정의가 갈라지고, 갈라진 쪽 증상은 통과다.
+  for (const id of ['local_3fd8f6db-8bee-47b1-a3d1-b156f732f5e9', 'local_a0b27c60-a3f8-48f9-8444-02a9724a61b2']) {
+    assert.equal(보드id.지문(id), owner.짧게(id), `🔴 지문 규칙이 갈라졌다: ${id}`);
+  }
+  // 접두 없는 8자리는 커밋 해시와 생김새가 같다 — 지문으로 세면 남의 해시 줄이 내 줄이 된다.
+  assert.deepEqual(보드id.줄의지문('| x | y | z | ✅종결(5e5b03f·a0b27c60) |'), [],
+    '🔴 접두 없는 hex 를 지문으로 읽었다 — 남의 커밋 해시가 적힌 줄을 내 줄로 집는다');
+  assert.deepEqual(보드id.줄의지문('작업중 (`local_a0b27c60`) · `local_11112222`'), ['a0b27c60', '11112222']);
+});
+
 test('writeHandoffFile — 파일로 남고, 최신 3개를 펴 보이되 밀려난 것도 안 버린다', () => {
   const d = 임시('synk-tb-file-');
   const f1 = report.writeHandoffFile(d, '첫째 인계문', { sessionId: 'aaaaaaaa' });

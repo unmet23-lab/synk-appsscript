@@ -14,6 +14,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const wt = require(path.join(__dirname, 'worktrees.js'));
 const store = require(path.join(__dirname, 'handoff-store.js'));
+const 보드id = require(path.join(__dirname, 'board-id.js'));
 
 function git(cwd, args, timeout) {
   try {
@@ -89,21 +90,28 @@ function hostSessionId(fallback) {
  *   옛 인계문은 커밋 목록만 주고 「보드를 열어 네 줄을 찾아라」로 끝났다. 그래서 새 세션이
  *   매번 보드 전문을 읽고 어느 줄이 제 것인지 되짚어야 했다 — 인계가 **주소만 있고 내용이 없었다.**
  *
- * 🔑 식별은 **내 커밋 해시로만** 한다. 이 저장소는 보드 상태 칸에 커밋 해시를 적는 관행이 있어
- *   그게 가장 정확한 지문이다. `작업중` 같은 문구로 폴백하지 않는다 — 그 줄이 **남의 트랙**이면
- *   새 세션이 남의 작업을 제 것으로 알고 이어받는다(F073 과 같은 형태의 사고). 모름은 모름으로 둔다.
+ * 🔑 식별은 **줄이 스스로 말하는 것으로만** 한다 — ①내 커밋 해시 ②내 세션 지문(`local_3fd8f6db`).
+ *   `작업중` 같은 문구로 폴백하지 않는다. 그 줄이 **남의 트랙**이면 새 세션이 남의 작업을
+ *   제 것으로 알고 이어받는다(F073 과 같은 형태의 사고). 모름은 모름으로 둔다.
+ *
+ * 🔴 ②를 뒤늦게 붙인 이유 (F165 · 2026-08-07 실사고): ①만 볼 때는 **해시가 없는 줄이 통째로
+ *   사각지대**였다. 「양보 종결」처럼 코드 커밋이 하나도 안 나간 트랙이 그렇다 — 세션
+ *   `a0b27c60` 의 인계문이 「내 줄을 못 찾았다, 정말 없으면 멈춰라」로 나갔는데 그 줄은
+ *   보드 26번째 줄에 멀쩡히 있었다. 해시는 이 저장소의 *관행*이지 규칙이 아니고,
+ *   지문은 board-guard 가 새 줄에 **기계로 요구**하므로 이제 규칙이다.
  */
-function boardTrack(cwd, commits) {
+function boardTrack(cwd, commits, sid) {
   let txt;
   try { txt = fs.readFileSync(path.join(String(cwd || '.'), 'docs', '세션보드.md'), 'utf8'); } catch (_) { return null; }
   const hashes = (commits || []).map((c) => String(c).split(' ')[0]).filter((h) => /^[0-9a-f]{7,40}$/.test(h));
-  if (!hashes.length) return null;
+  if (!hashes.length && !보드id.지문(sid)) return null;
   for (const line of txt.split('\n')) {
     if (line[0] !== '|') continue;
-    if (!hashes.some((h) => line.indexOf(h) !== -1)) continue;
+    const 해시로 = hashes.some((h) => line.indexOf(h) !== -1);
+    if (!해시로 && !보드id.줄이말하나(line, sid)) continue;
     const c = line.split('|').map((s) => s.trim());
     if (c.length < 5) continue;
-    return { track: c[2] || '', state: c[4] || '' };
+    return { track: c[2] || '', state: c[4] || '', 근거: 해시로 ? '해시' : '지문' };
   }
   return null;
 }
@@ -115,9 +123,10 @@ function boardTrack(cwd, commits) {
  */
 function buildHandoff(cwd, fallbackId, opts) {
   const o = opts || {};
-  const commits = myCommits(cwd, hostSessionId(fallbackId));
+  const sid = hostSessionId(fallbackId);
+  const commits = myCommits(cwd, sid);
   const dirty = o.dirty === undefined ? dirtyCount(cwd) : o.dirty;
-  const track = boardTrack(cwd, commits);
+  const track = boardTrack(cwd, commits, sid);
 
   const did = commits.length
     ? commits.map((l) => `· ${l}`).join('\n')
@@ -148,10 +157,11 @@ function buildHandoff(cwd, fallbackId, opts) {
     track
       ? '위 「상태/다음」에 적힌 다음 할 일부터 이어라. 열기 직전 `git log --oneline -10` 으로 ' +
         '그 사이 남이 손댔는지 보고, 관련 메모리를 읽은 뒤 시작한다. 이어갈 일이 없으면 그렇게 말하고 멈춰라.'
-      : '⚠ 보드에서 **내 줄을 못 찾았다** — 내 커밋 해시가 `docs/세션보드.md` 어디에도 없다. ' +
-        '트랙 없이 끝난 세션이거나, 줄에 해시를 안 적었거나 둘 중 하나다. 보드를 열어 확인하고 ' +
-        '**정말 없으면 없다고 말하고 멈춰라**(남의 줄을 내 트랙으로 이어받지 않는다 · F073). ' +
-        '열기 직전 `git log --oneline -10`.',
+      : '⚠ 보드에서 **내 줄을 못 찾았다** — `docs/세션보드.md` 에 내 커밋 해시도, ' +
+        (보드id.지문(sid) ? `내 세션 지문(\`${보드id.지문(sid)}\`)도 ` : '내 세션 지문도 ') +
+        '없다. **트랙 없이 끝난 세션일 가능성이 높다**(둘 다 없는 줄은 board-guard 가 막으므로 ' +
+        '옛 줄에서만 남는다). 보드를 열어 확인하고 **정말 없으면 없다고 말하고 멈춰라** ' +
+        '(남의 줄을 내 트랙으로 이어받지 않는다 · F073 · F165). 열기 직전 `git log --oneline -10`.',
   ].filter(Boolean).join('\n');
 }
 

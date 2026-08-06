@@ -48,6 +48,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const 보드id = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'board-id.js'));
 
 const ROOT = path.resolve(__dirname, '..');
 const BOARD = process.env.SYNK_BOARD || path.join(ROOT, 'docs', '세션보드.md');
@@ -123,12 +124,18 @@ const commit = (p, subject, body) => git(['commit', '-m', `${subject}\n\n${body}
  * 「살아있음」 판정은 **작업본소유자에서 그대로 가져온다** — 여기 다시 적으면 두 도구가
  * 서로 다른 생사를 보게 되고, 갈라진 쪽의 증상은 언제나 「통과」다(F111 이 같은 이유로 그 함수를 쓴다).
  * `--dry` 도 여기를 지난다 — 계획만 볼 때야말로 「옮겨도 되나」의 답이 필요하다.
- * ⚠ 새는 방향: 해시가 안 적힌 줄은 이 검사를 그냥 지나간다. 재료가 없으면 모르는 것이고,
- *   없는 재료로 막으면 정상 이관까지 멈춘다. 좁게 막고 그 사실을 여기 적어 둔다. */
+ *
+ * 🔴 재료가 **둘**이다 (F165 · 2026-08-07). 처음엔 해시뿐이라 「해시가 안 적힌 줄은 그냥
+ *   지나간다」고 적어 뒀는데, 그 사각지대가 얼마나 넓은지가 그날 드러났다 — 코드 커밋이
+ *   하나도 안 나간 트랙(양보·조사·판정안)은 **원래 해시가 없다.** 즉 이 검사는 F146 을
+ *   막으라고 세웠으면서 정작 「아직 아무것도 안 커밋한 세션」, 곧 가장 잃기 쉬운 줄을
+ *   통째로 놓치고 있었다. 그래서 줄에 적힌 **세션 지문**(`local_302d8acd`)도 재료로 쓴다.
+ *   여기서 새는 방향은 언제나 「통과=남의 줄을 옮김」이므로, 인계문과 달리 **의심되면 멈춘다.** */
 const 산주인 = (() => {
   if (!inRepo) return [];                                    // 저장소 밖 픽스처엔 커밋도 세션도 없다
   const 해시들 = [...new Set(row.match(/\b[0-9a-f]{7,40}\b/g) || [])];
-  if (!해시들.length) return [];
+  const 지문들 = 보드id.줄의지문(row);
+  if (!해시들.length && !지문들.length) return [];
   let owner; let store;
   try {
     owner = require('./작업본소유자.js');
@@ -148,6 +155,13 @@ const 산주인 = (() => {
       .trim().split(/\r?\n/)[0] || '').trim();
     if (!sid || sid === 나) continue;                         // 내 줄은 내가 옮긴다(/close 의 정상 경로)
     if (산.has(sid) && !걸린것.has(sid)) 걸린것.set(sid, `${h} ← ${owner.짧게(sid)}·${산.get(sid).분}분 전`);
+  }
+  /* 줄이 스스로 말하는 지문 — 커밋이 아직 하나도 없는 세션의 유일한 재료다. */
+  const 산지문 = new Map([...산.values()].map((s) => [보드id.지문(s.sid), s]));
+  for (const f of 지문들) {
+    const s = 산지문.get(f);
+    if (!s || 보드id.지문(s.sid) === 보드id.지문(나) || 걸린것.has(s.sid)) continue;
+    걸린것.set(s.sid, `줄에 적힌 지문 \`${f}\` ← ${owner.짧게(s.sid)}·${s.분}분 전`);
   }
   return [...걸린것.values()];
 })();
