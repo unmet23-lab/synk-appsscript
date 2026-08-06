@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SYNK LAB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;800&family=DM+Mono:wght@400&display=swap">
+<style>
+@font-face{
+  font-family:'SUIT Variable'; font-style:normal; font-weight:100 900; font-display:swap;
+  src:url('https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.woff2') format('woff2-variations');
+}
+:root{ --heat:0 }
+body{
+  /* 라이트 = Paper 편집 모드 (킷 라이트 규칙: 신호 글자는 Coral 3) */
+  --bg:#FBF7EE; --ink:#171820; --sub:#5F657D; --line:#E7DDC7;
+  --sig:#E8543F; --selink:#171820;
+  --castc:rgba(15,23,48,.15); --haloc:rgba(255,107,92,.16);
+}
+body.dark{
+  /* 다크 = Navy 2 무대 (v3 통과 세트 그대로) */
+  --bg:#0F1730; --ink:#F6F1E8; --sub:#8A93AD; --line:#2A3358;
+  --sig:#FF6B5C; --selink:#0F1730;
+  --castc:rgba(255,107,92,.28); --haloc:rgba(255,107,92,.26);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  font-weight:500; line-height:1.6; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden; transition:background .45s ease,color .45s ease;
+}
+::selection{background:var(--sig);color:var(--selink)}
+.micro{font-size:10.5px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:var(--sub)}
+:root{--ease:cubic-bezier(.16,1,.3,1);--gut:clamp(22px,5.4vw,72px);--mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace}
+
+/* ── 헤더 ─────────────────────────────────────── */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px var(--gut);position:fixed;top:0;left:0;right:0;z-index:30;pointer-events:none;
+}
+header>*{pointer-events:auto}
+.logo{font-size:19px;font-weight:800;letter-spacing:-.04em;line-height:1;user-select:none}
+.logo b{color:var(--sig)}
+.hbtns{display:flex;gap:22px}
+.hbtns nav{display:flex;gap:14px}
+.hbtns button{
+  font:inherit;background:0;border:0;cursor:pointer;padding:4px 2px;
+  font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--sub);transition:color .18s;
+}
+.hbtns button[aria-current="true"],.hbtns button:hover{color:var(--ink)}
+
+/* ── 무대 ─────────────────────────────────────── */
+.stage{min-height:100svh;display:grid;grid-template-rows:1fr auto;padding:76px var(--gut) clamp(34px,6vh,64px)}
+.orb{display:grid;place-items:center;perspective:1200px;position:relative}
+.halo{
+  position:absolute;width:min(70vw,520px);aspect-ratio:1;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle, var(--haloc), rgba(255,107,92,0) 66%);
+  opacity:calc(.25 + var(--heat) * .75);transition:opacity .5s var(--ease);
+}
+.orb-float{animation:float 8s ease-in-out infinite}
+.orb-nod.nod{animation:nod .55s var(--ease)}
+.orb-tilt{transform-style:preserve-3d;transition:transform 1s var(--ease);animation:breathe 6s ease-in-out infinite}
+.orb-img{position:relative;width:min(56vw,420px)}
+.orb-img img{
+  width:100%;height:auto;display:block;user-select:none;-webkit-user-drag:none;
+  -webkit-mask-image:radial-gradient(circle closest-side, #000 76%, transparent 99%);
+          mask-image:radial-gradient(circle closest-side, #000 76%, transparent 99%);
+}
+.orb-img img.smile{position:absolute;inset:0;opacity:0;transition:opacity .18s ease}
+.orb-img.smiling img.smile{opacity:1}
+.eye{position:absolute;width:0;height:0;pointer-events:none}
+.cast{
+  position:absolute;bottom:clamp(6px,2vh,22px);width:min(34vw,230px);height:26px;pointer-events:none;
+  background:radial-gradient(ellipse at center, var(--castc), rgba(255,107,92,0) 70%);
+  animation:cast 8s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+@keyframes breathe{0%,100%{scale:1}50%{scale:1.013}}
+@keyframes cast{0%,100%{opacity:.95;transform:scaleX(1)}50%{opacity:.55;transform:scaleX(.88)}}
+@keyframes nod{0%{transform:none}35%{transform:translateY(9px) scale(.985)}100%{transform:none}}
+
+/* ── 빔: 다크 전용 ────────────────────────────── */
+.beam{
+  position:fixed;left:0;top:0;height:2px;z-index:10;transform-origin:0 50%;pointer-events:none;
+  opacity:0;transition:opacity .32s var(--ease);display:none;
+  background:linear-gradient(90deg,
+    rgba(246,241,232,.95) 0%, rgba(255,107,92,.85) 12%,
+    rgba(255,107,92,.42) 55%, rgba(255,107,92,0) 100%);
+  filter:drop-shadow(0 0 6px rgba(255,107,92,.9)) drop-shadow(0 0 18px rgba(255,107,92,.5));
+}
+body.dark .beam{display:block}
+.beam.on{opacity:calc(.35 + var(--heat) * .65)}
+
+/* ── 대화 ─────────────────────────────────────── */
+.talk{max-width:1180px;width:100%;margin:0 auto;text-align:center}
+.answer{
+  font-size:clamp(17px,2.1vw,23px);font-weight:500;letter-spacing:-.018em;
+  line-height:1.5;max-width:44ch;margin:0 auto;min-height:3em;color:var(--ink);
+}
+.answer.out{opacity:0;transform:translateY(-6px);transition:opacity .24s ease,transform .24s ease}
+.answer.in{animation:say .8s var(--ease) both}
+@keyframes say{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.asks{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:0 clamp(18px,2.8vw,34px);
+  margin-top:clamp(26px,4.4vh,46px);padding-top:22px;border-top:1px solid var(--line);
+}
+.ask{
+  font:inherit;font-size:13px;color:var(--sub);background:0;border:0;cursor:pointer;
+  padding:9px 0;min-height:40px;position:relative;transition:color .2s;
+}
+.ask::after{
+  content:'';position:absolute;left:0;right:100%;bottom:7px;height:1px;
+  background:var(--sig);transition:right .42s var(--ease);
+}
+.ask:hover,.ask:focus-visible{color:var(--ink);outline:0}
+.ask:hover::after,.ask:focus-visible::after,.ask[aria-current="true"]::after{right:0}
+.ask[aria-current="true"]{color:var(--ink)}
+.hint{margin-top:clamp(22px,4vh,40px);text-align:center}
+
+/* ── 아래 ─────────────────────────────────────── */
+.below{padding:clamp(80px,15vh,180px) var(--gut) clamp(56px,9vh,100px);max-width:1180px;margin:0 auto}
+h2{font-size:clamp(34px,7.6vw,80px);font-weight:800;letter-spacing:-.05em;line-height:.95;text-wrap:balance;margin-bottom:clamp(48px,8vh,88px)}
+h2 em{font-style:normal;color:var(--sub)}
+.pillar{display:grid;grid-template-columns:auto 1fr;gap:clamp(18px,4vw,64px);padding:clamp(28px,4.4vh,50px) 0;border-top:1px solid var(--line)}
+.pillar:last-of-type{border-bottom:1px solid var(--line)}
+.pillar .n{font-family:var(--mono);font-size:11px;color:var(--sub);letter-spacing:.1em;padding-top:.6em}
+.pillar h3{font-size:clamp(19px,3vw,28px);font-weight:800;letter-spacing:-.035em;line-height:1.2;margin-bottom:11px;text-wrap:balance}
+.pillar p{color:var(--sub);font-size:clamp(14px,1.6vw,16px);max-width:52ch;line-height:1.62}
+footer{padding:clamp(32px,5vh,52px) var(--gut) clamp(44px,7vh,72px);border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:14px 28px;justify-content:space-between;align-items:baseline}
+footer a{color:var(--sub);text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:2px;transition:color .2s,border-color .2s}
+footer a:hover{color:var(--ink);border-color:var(--sub)}
+
+.rise{opacity:0;transform:translateY(18px)}
+.lit .rise{opacity:1;transform:none;transition:opacity .95s var(--ease),transform .95s var(--ease)}
+.lit .rise:nth-of-type(2){transition-delay:.12s}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::after{animation:none!important;transition-duration:.01ms!important}
+  .rise{opacity:1;transform:none}
+  .beam{display:none!important}
+}
+@media (max-width:560px){.orb-img{width:min(70vw,420px)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">syn<b>&lt;</b></div>
+  <div class="hbtns">
+    <nav aria-label="배경 실험">
+      <button type="button" id="mLight" aria-current="true">Light</button>
+      <button type="button" id="mDark" aria-current="false">Dark</button>
+    </nav>
+    <nav aria-label="언어">
+      <button type="button" aria-current="true">KO</button>
+      <button type="button" aria-current="false">MN</button>
+    </nav>
+  </div>
+</header>
+
+<div class="beam" id="beamL"></div>
+<div class="beam" id="beamR"></div>
+
+<section class="stage">
+  <div class="orb">
+    <div class="halo"></div>
+    <div class="orb-float">
+      <div class="orb-nod" id="nod">
+        <div class="orb-tilt" id="tilt">
+          <div class="orb-img" id="orbImg">
+            <img src="__DOT__" alt="SYNK 마스코트">
+            <img src="__SMILE__" alt="" class="smile" aria-hidden="true">
+            <!-- 눈 좌표 = 픽셀 실측 (441,440)·(579,439) → 크롭(139,142·740²) 백분율 -->
+            <i class="eye" id="eyeL" style="left:40.8%;top:40.3%"></i>
+            <i class="eye" id="eyeR" style="left:59.5%;top:40.1%"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cast"></div>
+  </div>
+
+  <div class="talk">
+    <p class="answer rise" id="answer" aria-live="polite"></p>
+    <div class="asks rise" id="asks"></div>
+    <p class="micro hint">Scroll</p>
+  </div>
+</section>
+
+<section class="below">
+  <h2>점수를 넘어,<br><em>삶을 설계합니다.</em></h2>
+  <div class="pillar">
+    <span class="n">01</span>
+    <div>
+      <h3>부모님이 몽골어로 직접 확인합니다</h3>
+      <p>매주 몽골어로 자녀 진도 리포트가 갑니다. 오늘 무엇을 배웠고 무엇이 늘었는지.</p>
+    </div>
+  </div>
+  <div class="pillar">
+    <span class="n">02</span>
+    <div>
+      <h3>기간이 아니라 도달로 올라갑니다</h3>
+      <p>한 레벨은 한 시즌, 8주. 기간을 채웠다고 올라가지 않고 그 레벨의 목표에 실제로 도달했을 때 올라갑니다.</p>
+    </div>
+  </div>
+  <div class="pillar">
+    <span class="n">03</span>
+    <div>
+      <h3>한국인 원어민 회화가 정규 과정입니다</h3>
+      <p>따로 추가 비용을 내는 옵션이 아닙니다. 전 반 정원 16명 소그룹.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p class="micro">SYNK LAB · 697-65-00332</p>
+  <a class="micro" href="https://synk.im/privacy/">Privacy</a>
+</footer>
+
+<script>
+/* 답은 docs/자주묻는질문_정본.md 의 ✅ 확정분만. */
+const QA = [
+  ['언제 여나요',      '2027년 2월 11일 2주 무료 체험, 2월 25일 정식 개원합니다. 지금은 사전 상담과 사전 등록을 받습니다.'],
+  ['한 반에 몇 명',    '전 반 정원 16명. 소그룹으로 운영합니다.'],
+  ['처음이어도 되나요', '됩니다. 처음부터 시작하는 레벨이 있고, 16명 소그룹이라 선생님이 한 사람씩 봅니다.'],
+  ['한국인 선생님',    '한국인 원어민 강사의 회화가 정규 과정에 들어 있습니다. 추가 비용 옵션이 아닙니다.'],
+  ['앱이 있나요',      '학생 전용 앱이 실제로 돌아갑니다. 파트너 몬스터가 7단계로 진화하고 출석 기록이 쌓입니다. 계획이 아니라 지금 가동 중입니다.'],
+  ['재미있나요',       '수업 전 매일 무료 K컬처 워밍업이 있습니다. 몸을 움직이고 한국 문화를 접한 상태로 수업에 들어갑니다.'],
+];
+
+const answer = document.getElementById('answer');
+const asks   = document.getElementById('asks');
+const orbImg = document.getElementById('orbImg');
+const nodEl  = document.getElementById('nod');
+let current  = -1;
+
+QA.forEach(([q], i) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'ask'; b.textContent = q;
+  b.setAttribute('aria-current', 'false');
+  b.onclick = () => say(i);
+  asks.appendChild(b);
+});
+const buttons = [...asks.querySelectorAll('.ask')];
+
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fine  = matchMedia('(pointer: fine)').matches;
+
+/* 표정: 점눈 ↔ ^^ (같은 렌더의 눈만 다른 판 — 교차페이드) */
+let smileT = 0;
+function smileFor(ms){
+  if (still) return;
+  clearTimeout(smileT);
+  orbImg.classList.add('smiling');
+  smileT = setTimeout(() => orbImg.classList.remove('smiling'), ms);
+}
+/* 이따금 눈 깜빡임 = ^^ 판을 150ms만 */
+(function blinkLoop(){
+  setTimeout(() => { smileFor(150); blinkLoop(); }, 5200 + Math.random() * 3800);
+})();
+
+function say(i){
+  if (i === current) return;
+  current = i;
+  buttons.forEach((b,n) => b.setAttribute('aria-current', String(n === i)));
+  answer.classList.remove('in'); answer.classList.add('out');
+  smileFor(1300);                                  /* 답하는 동안 ^^ */
+  if (!still){ nodEl.classList.remove('nod'); void nodEl.offsetWidth; nodEl.classList.add('nod'); }
+  setTimeout(() => {
+    answer.textContent = QA[i][1];
+    answer.classList.remove('out'); void answer.offsetWidth; answer.classList.add('in');
+  }, 240);
+}
+
+/* 시선 + 열 + 빔(다크) */
+const tilt  = document.getElementById('tilt');
+const beams = [[document.getElementById('beamL'), document.getElementById('eyeL')],
+               [document.getElementById('beamR'), document.getElementById('eyeR')]];
+let mx = 0, my = 0, live = false, queued = false;
+
+function paint(){
+  queued = false;
+  const w = innerWidth, h = innerHeight;
+  const nx = mx / w - .5, ny = my / h - .5;
+  tilt.style.transform =
+    `rotateY(${nx * 12}deg) rotateX(${-ny * 9}deg) translate3d(${nx * 16}px, ${ny * 11}px, 0)`;
+
+  const o = tilt.getBoundingClientRect();
+  const dist = Math.hypot(mx - (o.left + o.width/2), my - (o.top + o.height/2));
+  const heat = Math.max(0, Math.min(1, 1 - (dist - 90) / (Math.min(w, h) * .55)));
+  document.documentElement.style.setProperty('--heat', heat.toFixed(3));
+
+  const dark = document.body.classList.contains('dark');
+  for (const [beam, eye] of beams){
+    if (!dark){ beam.classList.remove('on'); continue; }
+    const r  = eye.getBoundingClientRect();
+    const dx = mx - r.left, dy = my - r.top;
+    beam.style.width = Math.hypot(dx, dy) + 'px';
+    beam.style.height = (1.6 + heat * 2.6).toFixed(2) + 'px';
+    beam.style.transform =
+      `translate(${r.left}px, ${r.top - 1}px) rotate(${Math.atan2(dy, dx) * 180 / Math.PI}deg)`;
+    beam.classList.toggle('on', live);
+  }
+}
+if (!still && fine){
+  addEventListener('pointermove', e => {
+    mx = e.clientX; my = e.clientY; live = true;
+    if (!queued){ queued = true; requestAnimationFrame(paint); }
+  }, {passive:true});
+  addEventListener('pointerleave', () => { live = false; paint(); });
+  addEventListener('scroll', () => { if (live && !queued){ queued = true; requestAnimationFrame(paint); } }, {passive:true});
+}
+
+/* 배경 토글 (실험용) */
+const mL = document.getElementById('mLight'), mD = document.getElementById('mDark');
+function setMode(dark){
+  document.body.classList.toggle('dark', dark);
+  mL.setAttribute('aria-current', String(!dark));
+  mD.setAttribute('aria-current', String(dark));
+  paint();
+}
+mL.onclick = () => setMode(false);
+mD.onclick = () => setMode(true);
+
+requestAnimationFrame(() => {
+  document.body.classList.add('lit');
+  setTimeout(() => say(0), still ? 0 : 950);
+});
+</script>
+</body>
+</html>
