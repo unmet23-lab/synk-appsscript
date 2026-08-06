@@ -207,9 +207,11 @@ function 내부HTML(파싱결과, 제목맵, { 날짜, 도장 }) {
 <title>SYNK 시스템 대장 — 내부판</title>
 <style>
   :root {
+    /* 킷 19색만 — 회색 계열(#8A93AD·#5A6480)을 세 번째 글자 층으로 쓰던 것을 걷어냈다.
+     * DESIGN.md 3규칙 「위계는 색이 아니라 밀도」 — 어두운 면의 보조 잉크는 Cream 3 하나다. */
     --bg: #0F1730; --card: #1A2340; --line: #2A3358;
-    --tx: #F6F1E8; --dim: #E7DDC7; --mute: #8A93AD;
-    --sig: #FF6B5C; --wash: rgba(255,107,92,.12); --plan: #5A6480;
+    --tx: #F6F1E8; --dim: #E7DDC7;
+    --sig: #FF6B5C; --wash: rgba(255,107,92,.12);
     --sans: 'Inter Tight', 'SUIT Variable', -apple-system, 'Segoe UI',
             'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
     /* Consolas 맨 앞 — 지도대장 PDF 폰트 게이트(뒤로 밀면 인쇄본에서 계기판 성격이 죽는다) */
@@ -218,28 +220,29 @@ function 내부HTML(파싱결과, 제목맵, { 날짜, 도장 }) {
   ${공통CSS}
   .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .18em; color: var(--sig); }
   h1 { font-size: 32px; font-weight: 800; letter-spacing: -.02em; margin: 8px 0 4px; }
-  .sub { color: var(--mute); font-size: 13.5px; }
+  .sub { color: var(--dim); font-size: 13.5px; }
   .strip { display: flex; gap: 26px; margin: 22px 0 8px; padding: 14px 18px;
            background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
   .strip b { display: block; font-family: var(--mono); font-size: 24px; font-weight: 700; }
-  .strip span { font-size: 11.5px; color: var(--mute); }
+  .strip span { font-size: 11.5px; color: var(--dim); }
   .strip .sig b { color: var(--sig); }
   section { margin-top: 30px; }
   h2 { font-size: 13px; letter-spacing: .12em; color: var(--dim); text-transform: uppercase;
        border-bottom: 1px solid var(--line); padding-bottom: 7px; margin-bottom: 4px; }
-  h2 .scope { float: right; font-family: var(--mono); font-size: 10.5px; color: var(--mute); letter-spacing: .06em; }
+  h2 .scope { float: right; font-family: var(--mono); font-size: 10.5px; color: var(--dim); letter-spacing: .06em; }
   .row { display: grid; grid-template-columns: 108px 172px 1fr 122px; gap: 0 14px;
          align-items: baseline; padding: 9px 6px; border-bottom: 1px solid var(--line); }
   .row:last-child { border-bottom: 0; }
-  .st { font-size: 10.5px; color: var(--mute); display: flex; align-items: baseline; gap: 6px; }
+  .st { font-size: 10.5px; color: var(--dim); display: flex; align-items: baseline; gap: 6px; }
   .st em { font-style: normal; }
   .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; align-self: center; }
   .dot.on { background: var(--sig); } .dot.wait { background: none; border: 2px solid var(--sig); }
-  .dot.plan { background: var(--plan); }
+  /* 설계만 = 신호 없음. 코랄(신호)을 빼고 보조 잉크 테두리로 — 회색을 새로 들이지 않는다 */
+  .dot.plan { background: none; border: 2px solid var(--dim); width: 5px; height: 5px; }
   .nm { font-weight: 700; font-size: 14.5px; }
   .ln { font-size: 13px; color: var(--dim); }
-  .vr { font-family: var(--mono); font-size: 11px; color: var(--mute); text-align: right; }
-  .dt { grid-column: 2 / 5; font-size: 11.5px; color: var(--mute); margin-top: 2px; }
+  .vr { font-family: var(--mono); font-size: 11px; color: var(--dim); text-align: right; }
+  .dt { grid-column: 2 / 5; font-size: 11.5px; color: var(--dim); margin-top: 2px; }
   .dt summary { cursor: pointer; font-family: var(--mono); font-size: 10.5px; }
   .dt .vt { font-family: var(--mono); color: var(--dim); }
   @media print { .dt { display: none; } }
@@ -258,7 +261,7 @@ function 내부HTML(파싱결과, 제목맵, { 날짜, 도장 }) {
     <div><b>${파싱결과.구역들.length}</b><span>구역</span></div>
   </div>
   ${구역html}
-  <div class="legend">● 라이브 · ○ 반영 대기 · 회색 = 설계만. 새 줄은 손이 아니라 채번 게이트가 붙인다 —
+  <div class="legend">● 라이브 · ○ 반영 대기 · 흐린 테두리 = 설계만. 새 줄은 손이 아니라 채번 게이트가 붙인다 —
   <code>bump-version --종류 신설 --시스템 … --한줄 … --구역 …</code> 없이는 버전이 안 나간다.</div>
 </div>`;
 }
@@ -278,8 +281,9 @@ function 대외HTML(파싱결과, { 날짜, 도장 }) {
 <title>SYNK 시스템 한 장</title>
 <style>
   :root {
-    --bg: #FBF7EE; --tx: #171820; --nv: #1A2340; --nv3: #2A3358; --mute: #6B7186;
-    --line: #E3DCCB; --sig: #FF6B5C; --sig3: #E8543F; --wash: #FFE9E4;
+    /* 킷 19색만 — 보조 잉크는 Navy 3 하나다(DESIGN.md). 회색 #6B7186·괘선 #E3DCCB 를 걷어냈다. */
+    --bg: #FBF7EE; --tx: #171820; --nv: #1A2340; --nv3: #2A3358;
+    --line: #E7DDC7; --sig: #FF6B5C; --sig3: #E8543F; --wash: #FFE9E4;
     --sans: 'Inter Tight', 'SUIT Variable', -apple-system, 'Segoe UI',
             'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
     /* Consolas 맨 앞 — 지도대장 PDF 폰트 게이트 */
@@ -289,7 +293,7 @@ function 대외HTML(파싱결과, { 날짜, 도장 }) {
   .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .2em; color: var(--nv3); }
   h1 { font-size: 34px; font-weight: 800; letter-spacing: -.02em; color: var(--nv); margin: 8px 0 6px; }
   h1 .sig { color: var(--sig3); }
-  .sub { color: var(--mute); font-size: 14px; max-width: 58ch; }
+  .sub { color: var(--nv3); font-size: 14px; max-width: 58ch; }
   .count { display: inline-block; margin-top: 18px; padding: 8px 14px; background: var(--wash);
            border-radius: 8px; font-size: 13px; color: var(--nv); }
   .count b { font-family: var(--mono); font-size: 17px; }
@@ -305,9 +309,9 @@ function 대외HTML(파싱결과, { 날짜, 도장 }) {
                 width: 7px; height: 7px; background: var(--sig); border-radius: 2px; }
   .wait .nm::before { background: none; border: 2px solid var(--sig); width: 5px; height: 5px; }
   .ln { font-size: 13.5px; color: var(--nv3); }
-  .ln em { font-style: normal; color: var(--mute); font-size: 12px; }
+  .ln em { font-style: normal; color: var(--nv3); font-size: 12px; }
   .foot { margin-top: 36px; padding-top: 12px; border-top: 2px solid var(--nv);
-          font-size: 11.5px; color: var(--mute); display: flex; justify-content: space-between; }
+          font-size: 11.5px; color: var(--nv3); display: flex; justify-content: space-between; }
   /* 워드마크 글리프 재구성 금지(킷 §4 — SVG 정본만) + 라이트 바탕 소형 코랄 글자 금지(철칙 ②) → 텍스트 표기만 */
   .foot .mk { font-family: var(--mono); font-weight: 700; color: var(--nv); letter-spacing: .08em; }
 </style>

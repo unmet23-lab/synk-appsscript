@@ -168,6 +168,26 @@ test('그라디언트 배경은 대비 **판정을 포기**한다 (억지로 재
   assert.ok(r.그라디언트건너뜀 >= 1, '건너뛴 사실을 세지 않았다 — 안 잰 것을 「0건」으로 보고하면 안 된다');
 });
 
+/* 반투명 배경 — 알파를 무시하면 **양방향으로** 틀린다.
+ * 실측 2026-08-06: 시스템 대장 내부판의 legend(코랄 12% on 네이비)가 코랄 원색으로 잡혀
+ * 「대비 2.07」 오탐 2건을 냈다. 오탐은 사람이 가드를 끄게 만들고, 반대 방향은 조용히 샌다.
+ * 그래서 두 방향을 한 픽스처씩 못박는다 — 한쪽만 두면 다음 사람이 반대쪽을 지운다. */
+test('반투명 배경을 조상과 **합성**해서 잰다 — ① 옅은 틴트를 원색으로 읽지 않는다', { skip: 크롬없음 }, () => {
+  const p = 픽스처('alpha-tint', '<div style="background:#0F1730">'
+    + '<div style="background:rgba(255,107,92,.12)"><p style="color:#E7DDC7;font-size:11.5px">범례</p></div></div>');
+  const r = 측정(p, CHROME);
+  assert.equal(r.대비위반.length, 0,
+    `코랄 12% 를 원색으로 읽었다(실제 배경은 어둡다): ${JSON.stringify(r.대비위반)}`);
+});
+
+test('반투명 배경을 조상과 **합성**해서 잰다 — ② 밝은 반투명이 글자를 지우는 것은 잡는다', { skip: 크롬없음 }, () => {
+  const p = 픽스처('alpha-wash', '<div style="background:#0F1730">'
+    + '<div style="background:rgba(246,241,232,.92)"><p style="color:#F6F1E8;font-size:11.5px">지워진 글</p></div></div>');
+  const r = 측정(p, CHROME);
+  assert.ok(r.대비위반.length >= 1,
+    '크림 92% 위의 크림 글자를 놓쳤다 — 알파를 무시하면 배경을 네이비로 읽어 통과한다');
+});
+
 test('aria-hidden 장식은 대비만 면제하고 **색은 계속 검사**한다', { skip: 크롬없음 }, () => {
   const p = 픽스처('deco', '<span aria-hidden="true" style="color:#FF3E88;font-size:11px">✦</span>'
     + '<span aria-hidden="true" style="color:#123456;font-size:11px">✦</span>');

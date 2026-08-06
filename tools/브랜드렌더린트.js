@@ -166,15 +166,38 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freez
   };
   const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
 
+  /* ⚠ 배경은 **알파를 합성해야** 실제 색이 된다. hex() 는 알파 0 만 투명으로 보고 나머지는
+   *   불투명 원색으로 돌려주는데, 그러면 rgba(255,107,92,.12) 가 코랄 원색으로 잡힌다.
+   *   실측 2026-08-06: 시스템 대장 내부판의 legend(코랄 12% on 네이비)가 「대비 2.07」 오탐
+   *   2건으로 나왔다 — 눈으로 보면 크림 글자가 어두운 판 위에 또렷하다.
+   *   오탐은 사람이 가드를 끄게 만들고, 반대 방향(밝은 반투명이 글자를 지우는 경우)은
+   *   조용히 통과시킨다. 그래서 두 방향 다 여기서 합성으로 막는다. */
+  const rgba = (v) => {
+    const m = String(v).match(/-?[\\d.]+/g);
+    if (!m || m.length < 3) return null;
+    return { r: +m[0], g: +m[1], b: +m[2], a: m.length > 3 ? Number(m[3]) : 1 };
+  };
+  const over = (t, b) => {                       // t(자식) 를 b(조상) 위에 얹는다 — source-over
+    const a = t.a + b.a * (1 - t.a);
+    if (a === 0) return { r: 0, g: 0, b: 0, a: 0 };
+    const ch = (k) => (t[k] * t.a + b[k] * b.a * (1 - t.a)) / a;
+    return { r: ch('r'), g: ch('g'), b: ch('b'), a };
+  };
+  const 표기 = (c) => '#' + ['r', 'g', 'b']
+    .map((k) => Math.round(c[k]).toString(16).padStart(2, '0')).join('').toUpperCase();
+
   // 조상을 거슬러 실제 배경을 찾는다. 그라디언트를 만나면 **판정 포기**(오탐 방지).
   const 배경찾기 = (el) => {
+    let 쌓임 = { r: 0, g: 0, b: 0, a: 0 };
     for (let n = el; n && n.nodeType === 1; n = n.parentElement) {
       const cs = getComputedStyle(n);
       if (cs.backgroundImage && cs.backgroundImage !== 'none') return { hex: null, why: 'gradient' };
-      const h = hex(cs.backgroundColor);
-      if (h && h !== 'TRANSPARENT') return { hex: h, why: null };
+      const c = rgba(cs.backgroundColor);
+      if (c && c.a > 0) 쌓임 = over(쌓임, c);
+      if (쌓임.a >= 0.999) return { hex: 표기(쌓임), why: null };     // 불투명해졌다 = 여기서 끝
     }
-    return { hex: '#FFFFFF', why: 'root' };
+    // 조상을 다 올라가도 안 채워졌다 = 캔버스(흰색)가 마지막 층이다
+    return { hex: 표기(over(쌓임, { r: 255, g: 255, b: 255, a: 1 })), why: 쌓임.a > 0 ? null : 'root' };
   };
 
   const 셀렉터 = (el) => {
