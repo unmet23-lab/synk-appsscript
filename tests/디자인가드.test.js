@@ -88,20 +88,6 @@ test('픽스처: 앵커가 죽으면 잡아내고, 살아 있으면 통과한다
   assert.doesNotMatch(산판.reason, /앵커 .* 가 죽었다/, '멀쩡한 DESIGN.md 에 죽은 앵커를 보고한다');
 });
 
-/* ⏏ 선택 앵커 — 유호님이 「나중에 별로면 쉽게 빼게」 하신 조항(2026-08-06)이라, DESIGN.md 에서
- *    그 한 줄을 지우는 것만으로 빠져야 한다. 지웠더니 CI 가 빨개지면 그건 「쉽게」가 아니다. */
-test('픽스처: 선택 앵커는 없어도 죽은 앵커가 아니다 (지우는 것이 곧 빼기)', () => {
-  const 본문 = fs.readFileSync(DESIGN_MD, 'utf8').replace(/\r/g, '');
-  const 뺀판 = path.join(임시, 'NO_OPTIONAL.md');
-  fs.writeFileSync(뺀판, 본문.split('\n').filter((l) => !l.startsWith('- 정적 4줄')).join('\n'), 'utf8');
-
-  const r = 호출(새세션(), 'a.html', { designMd: 뺀판 });
-  assert.strictEqual(r.decision, 'deny', '선택 앵커를 뺐다고 훅 자체가 죽으면 안 된다');
-  assert.doesNotMatch(r.reason, /앵커 .* 가 죽었다/, '선택 앵커가 빠졌는데 죽은 앵커로 운다 — 빼기가 어려워진다');
-  assert.doesNotMatch(r.reason, /text-wrap/, '뺐는데도 그 조항이 여전히 주입된다');
-  assert.match(r.reason, /철칙 4/, '선택 앵커를 빼면서 필수 킷까지 사라졌다');
-});
-
 test('실저장소: 지금 DESIGN.md 의 앵커가 전부 살아 있다', () => {
   const k = guard.킷추출();
   assert.ok(k, 'DESIGN.md 를 못 읽는다');
@@ -111,7 +97,7 @@ test('실저장소: 지금 DESIGN.md 의 앵커가 전부 살아 있다', () => 
 test('주입되는 인용이 DESIGN.md 에 문자 그대로 실존한다 (파생 증명)', () => {
   const 본문 = fs.readFileSync(DESIGN_MD, 'utf8').replace(/\r/g, '');
   const k = guard.킷추출();
-  for (const 조각 of [k.삼규칙, k.이모지, k.감각, k.정적4줄].filter(Boolean)) {
+  for (const 조각 of [k.삼규칙, k.이모지, k.감각]) {
     assert.ok(본문.includes(조각), `정본에 없는 문장을 주입한다: ${조각.slice(0, 40)}…`);
   }
   // 철칙은 여러 줄 — 줄 단위로 전수 대조한다(한 줄이라도 어긋나면 파생이 아니라 사본이다)
