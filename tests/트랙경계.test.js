@@ -252,6 +252,53 @@ test('인계문 — 트랙 없음을 「멈춰라」가 아니라 「새 트랙�
   }
 });
 
+/* 🔴 F169 (2026-08-07) — 인계문이 **✅종결 줄의 ⚠잔여를 「다음 할 일」로** 배달했다.
+ * 보드에 「⚠라이브 미반영=다음 /deploy」라 적힌 종결 줄이 새 세션에 「그것부터 이어라」로 나갔는데,
+ * 그 배포는 나가면 안 되는 것이었다(clasp push 는 작업본을 올리는데 대상이 **남의 미커밋**을 물고
+ * 있었다). 실피해는 clasp-guard ③ 이 막아 0 이었지만 세션 하나가 통째로 그 판정에 쓰였다.
+ * F170 은 「트랙 없음」만 고쳤다 — 「트랙 종결」은 다음 수가 같은데도 옛 문구가 남아 있었다. */
+test('인계문 — ✅종결 줄의 ⚠잔여를 「이어라」로 번역하지 않는다 (F169)', () => {
+  const 머리 = '| 날짜 | 트랙/작업 | 파일 | 상태 |\n|---|---|---|---|\n';
+  const 보드 = (prefix, 줄) => {
+    const d = 임시(prefix);
+    fs.mkdirSync(path.join(d, 'docs'), { recursive: true });
+    fs.writeFileSync(path.join(d, 'docs', '세션보드.md'), 머리 + 줄);
+    return d;
+  };
+  const 원래 = process.env.CLAUDE_CODE_HOST_SESSION_ID;
+  process.env.CLAUDE_CODE_HOST_SESSION_ID = 'local_ba86eeb2-565d-438b-85c1-6d98aeb187a7';
+  try {
+    // ① 사고 그대로 재현 — 종결 줄 + ⚠잔여.
+    const 종결 = 보드('synk-tb-f169a-',
+      '| 2026-08-07 | 크루카드 띠 | 카드.html | ✅**종결·push**(`local_ba86eeb2`) — ⚠라이브 미반영=다음 /deploy |\n');
+    const a = report.buildHandoff(종결, null, { dirty: 0 });
+    assert.match(a, /라이브 미반영/, '종결이라고 줄 내용을 **감추면** 안 된다 — 배경으로 넘기는 것이지 지우는 게 아니다');
+    assert.doesNotMatch(a, /다음 할 일부터 이어라/,
+      `🔴 종결 줄의 ⚠잔여가 그대로 지시로 나갔다 — F169 가 그대로다:\n${a}`);
+    assert.match(a, /배경이지 지시가 아니다/, '잔여를 어떻게 읽어야 하는지 안 말했다');
+    assert.match(a, /새 트랙을 잡아라/, '종결 뒤 다음 수를 안 줬다(트랙 없음과 같은 자리다)');
+
+    // ② 거짓양성 — ⏸ 는 **이어가라고 적어 둔 줄**이다. 여기까지 종결로 읽으면 진짜 인계가 끊긴다.
+    //    (④ 의 `작업중` 과 다른 표기를 쓴다 — 사람이 실제로 쓰는 표기로 검사한다 · 가드 맹점 ①)
+    const 일시정지 = 보드('synk-tb-f169b-',
+      '| 2026-08-07 | 홈페이지 시안 | 시안/ | ⏸**내일 이어감**(`local_ba86eeb2`) — 다음=캐릭터 교체 |\n');
+    const b = report.buildHandoff(일시정지, null, { dirty: 0 });
+    assert.match(b, /다음 할 일부터 이어라/, `🔴 ⏸ 트랙을 종결로 읽어 인계를 끊었다:\n${b}`);
+    assert.doesNotMatch(b, /새 트랙을 잡아라/, '⏸ 인데 새 트랙을 잡으라고 했다');
+
+    // ③ 판정은 **첫 글자**로만 한다 — 본문에서 낱말을 찾으면 남의 종결을 인용한 줄까지 걸린다.
+    assert.equal(report.종결줄('✅**종결·push**(abc) — ⚠잔여'), true);
+    assert.equal(report.종결줄('✅**쓰기 절반 종결**'), true, '절반 종결도 「내가 이어갈 일」로 적힌 게 아니다');
+    assert.equal(report.종결줄('작업중 — 옆 세션이 ✅종결 했으니 그 뒤를 잇는다'), false,
+        '🔴 본문의 ✅ 로 종결을 판정했다 — 남의 종결을 인용한 살아있는 줄이 통째로 끊긴다');
+    assert.equal(report.종결줄('🔵착수(`local_b6cb681a`)'), false);
+    assert.equal(report.종결줄(''), false);
+  } finally {
+    if (원래 === undefined) delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
+    else process.env.CLAUDE_CODE_HOST_SESSION_ID = 원래;
+  }
+});
+
 /* 🔴 F172 (2026-08-07) — 인계문 목차가 **반쪽으로 커밋됐다**.
  * `writeFileSync` 는 자른 뒤에 쓰는데, 그 창에서 수거 도구가 `git commit` 으로 스냅샷을 떠
  * 1b2f681 에 마지막 줄이 중간에서 끊긴 목차가 들어갔다(부모보다 **짧아졌다**). 내용은 폴더
