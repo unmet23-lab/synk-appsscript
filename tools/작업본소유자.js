@@ -76,25 +76,8 @@ const 유물여유_분 = Number(process.env.SYNK_OWNER_STALE_MIN || 2);
  *     F134 되감기 가드가 talk 를 향한 명령을 appsscript 상태로 판정 · F137 남이 편집 중인 talk
  *     파일을 「비었다」고 읽고 내 트랙으로 선언 · 08-06 이 세션 시작에서 talk 미커밋 3건(그 중
  *     하나는 45초 전에 쓰인 살아있는 작업본)이 이 도구 출력에 **한 줄도 안 나왔다**.
- *   경로 규칙은 새로 만들지 않는다 — `tools/계약동기화.js` 가 이미 `<ROOT>/../SYNK-talk` 로 잡는다.
- *   ⚠ 형제의 **만진 기록은 대개 없다**(track-collision 은 ROOT 밖 경로를 버린다) → 대개 ❔모름으로
- *      떨어진다. 그게 이 확장의 목표다: 「안 보임」을 「모름」으로 올린다(모름은 침묵하지 않는다). */
-const 형제기본 = ['SYNK-talk'];
-function 형제들() {
-  const 지정 = String(process.env.SYNK_OWNER_SIBLINGS || '').trim();
-  const 후보 = 지정
-    ? 지정.split(/[;,]/).map((s) => s.trim()).filter(Boolean).map((p) => path.resolve(ROOT, p))
-    : 형제기본.map((n) => path.resolve(ROOT, '..', n));
-  const 본 = new Set([path.resolve(ROOT)]);
-  const 결과 = [];
-  for (const 뿌리 of 후보) {
-    if (본.has(뿌리)) continue;
-    본.add(뿌리);
-    if (!fs.existsSync(path.join(뿌리, '.git'))) continue;   // 이 기계에 없으면 조용히 건너뛴다
-    결과.push({ 뿌리, 저장소: path.basename(뿌리) });
-  }
-  return 결과;
-}
+ *   목록·좌표 규칙은 여기 적지 않는다 — `lib/handoff-store.js` 하나에서 파생시킨다(쓰는 쪽
+ *   track-collision 이 같은 함수를 쓴다 · 양쪽에 적으면 갈라지고 증상은 「전부 모름」이다). */
 
 function git(args, cwd = ROOT) {
   const r = spawnSync('git', ['-c', 'core.quotepath=false', ...args], {
@@ -158,6 +141,34 @@ function 세션들(뿌리 = ROOT) {
   return 결과.sort((a, b) => a.분 - b.분);
 }
 
+/** 형제 파일의 주인 후보. 기록이 **두 군데**에 남는다 — 한쪽만 보면 형제는 영원히 ❔모름이다.
+ *   ⓐ 그 저장소를 **프로젝트로 연** 세션 → 그 저장소 키 · 그 저장소 상대 경로
+ *   ⓑ 이 저장소를 연 세션이 `../SYNK-talk/…` 를 **편집** → **내 키** · 형제 접두 경로
+ *  라이브의 거의 전부가 ⓑ다(트랙은 appsscript 에서 열고 talk 파일을 만진다).
+ *  ⓑ 의 좌표에서 접두를 벗겨 ⓐ와 **같은 좌표**로 맞춘다 — 좌표가 다르면 대조가 전부 빗나가고,
+ *  빗나간 결과는 「0건」이 아니라 「모름」이라 **고장이 정상처럼 보인다.**
+ *
+ *  ponytail: 반대 방향(ROOT 가 형제일 때 appsscript 기록을 찾는 것)은 안 한다 — 그쪽은 못 찾아도
+ *  ❔모름으로 떨어져 **보여주면서 통과**하는 안전한 방향이고(git-scope-guard ⑧), 찾으려면
+ *  「형제의 형제」를 디렉터리에서 뒤져야 한다(🚫 자동 스캔 확장 · memory cross-repo-blindness). */
+function 형제세션들(뿌리, 저장소, 내세션들) {
+  const 접두 = store.siblingPrefix(저장소);
+  const 합 = new Map();
+  const 넣기 = (s, touched) => {
+    const 있 = 합.get(s.sid);
+    if (!있) { 합.set(s.sid, { ...s, touched }); return; }
+    // 같은 세션이 양쪽에 있으면 박동은 **더 최근** 것을 쓴다(살아있음 판정이 안전한 쪽으로 틀린다).
+    if (s.박동 > 있.박동) { 있.박동 = s.박동; 있.분 = s.분; }
+    있.touched = [...new Set([...있.touched, ...touched])];
+  };
+  for (const s of 세션들(뿌리)) 넣기(s, s.touched);
+  for (const s of 내세션들) {
+    const 옮긴 = s.touched.filter((f) => f.startsWith(접두)).map((f) => f.slice(접두.length));
+    if (옮긴.length) 넣기(s, 옮긴);
+  }
+  return [...합.values()].sort((a, b) => a.분 - b.분);
+}
+
 const 판정 = { 내것: '내것', 남의살아있는: '남의살아있는', 끝난세션: '끝난세션', 모름: '모름', 다른트리: '다른트리' };
 
 /** 한 저장소의 미커밋 목록에 판정을 매긴다. 저장소가 늘어도 **판정은 이 함수 하나**다 —
@@ -207,10 +218,10 @@ function 조사() {
   /* 형제 저장소도 **같은 판정**을 거친다. 못 읽으면 건너뛰지 않고 이름을 들고 나간다 —
    * 「형제를 못 봤다」와 「형제가 깨끗하다」가 같은 모양이면 이 확장이 있으나 마나다. */
   const 못본형제 = [];
-  for (const { 뿌리, 저장소 } of 형제들()) {
+  for (const { 뿌리, 저장소 } of store.siblings(ROOT)) {
     const 목록 = 미커밋들(뿌리);
     if (목록 === null) { 못본형제.push(저장소); continue; }
-    항목.push(...판정들(목록, 세션들(뿌리), 나, 뿌리, 저장소));
+    항목.push(...판정들(목록, 형제세션들(뿌리, 저장소, ss), 나, 뿌리, 저장소));
   }
   return { git못부름: false, 나, 항목, 세션수: ss.filter(살았나).length, 못본형제 };
 }
@@ -226,9 +237,10 @@ function 보고(r, { 훅 }) {
   const 유물 = r.항목.filter((i) => i.종류 === 판정.끝난세션);
   const 다른트리 = r.항목.filter((i) => i.종류 === 판정.다른트리);
 
-  /* 형제 저장소에서 **주인을 못 가른 것**만 따로 묶는다. 형제 파일엔 만진 기록이 거의 안 남아
-   * (track-collision 이 ROOT 밖 경로를 버린다) 대개 ❔로 떨어지는데, 그걸 내 저장소의 ❔ 목록에
-   * 섞으면 「내 파일인데 없네」로 읽힌다. 주인이 갈린 형제 파일은 그대로 🔴·⚪ 로 간다. */
+  /* 형제 저장소에서 **주인을 못 가른 것**만 따로 묶는다 — 내 저장소의 ❔ 목록에 섞으면
+   * 「내 파일인데 없네」로 읽힌다. 주인이 갈린 형제 파일은 그대로 🔴·⚪ 로 간다.
+   * (쓰는 쪽이 형제 좌표를 담기 시작한 뒤로 여기 남는 것은 **Edit·Write 를 안 거친 변경**뿐이다 —
+   *  옛날처럼 「원리상 못 가름」이 아니다. 이유가 바뀌었으므로 아래 처방 문구도 그걸 말한다.) */
   const 형제모름 = r.항목.filter((i) => i.저장소 && i.종류 === 판정.모름);
   const 모름 = r.항목.filter((i) => i.종류 === 판정.모름 && !i.저장소);
 
@@ -257,7 +269,8 @@ function 보고(r, { 훅 }) {
     for (const i of 형제모름) (저장소별[i.저장소] = 저장소별[i.저장소] || []).push(i.파일);
     줄.push('', `🔗 **형제 저장소**의 미커밋 ${형제모름.length}건 — 내 \`git status\` 엔 안 뜬다(F134·F137: 여기가 「0건」이던 자리)`);
     for (const [s, fs2] of Object.entries(저장소별)) 줄.push(`   · ${s}: ${fs2.join(', ')}`);
-    줄.push('   주인은 여기서 못 가른다(만진 기록은 저장소 안 경로만 남는다) — **그 저장소에서 직접 본다**:');
+    줄.push('   이건 주인 **모름**이다 — Edit·Write 를 안 거친 변경(Bash·외부 앱·git)이라 기록이 없다.');
+    줄.push('   **모름은 안전이 아니다** — 만지기 전에 그 저장소에서 직접 본다:');
     줄.push(`   git -C ../${Object.keys(저장소별)[0]} status  ·  git -C ../${Object.keys(저장소별)[0]} log --oneline -5`);
   }
   if (r.못본형제.length) {

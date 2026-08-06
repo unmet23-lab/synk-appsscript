@@ -522,9 +522,10 @@ function 만진기록(state, repo, sid, touched, 분전 = 1) {
   const t = new Date(Date.now() - 분전 * 60000);
   fs.utimesSync(p, t, t);
 }
-function 가드8({ repo, state, 나 = 'local_me', ownerRoot }, command) {
+function 가드8({ repo, state, 나 = 'local_me', ownerRoot, 형제 }, command) {
   const env = { ...process.env, SYNK_CTXBUDGET_DIR: state, CLAUDE_CODE_HOST_SESSION_ID: 나 };
   env.SYNK_OWNER_ROOT = ownerRoot === undefined ? repo : ownerRoot;
+  if (형제) env.SYNK_OWNER_SIBLINGS = 형제.join(';');
   const out = execFileSync(process.execPath, [HOOK], {
     input: JSON.stringify({ tool_input: { command } }), encoding: 'utf8', cwd: repo, env,
   });
@@ -684,6 +685,26 @@ test('⑧ 읽기 명령을 막지 않는다 — 서브커맨드를 토큰으로 
   }
   // 반대 방향도 함께 못박는다 — 진짜 커밋은 그 스테이징을 범위로 읽어 잡아야 한다(ⓒ 분기).
   assert.equal(가드8(f, 'git commit -m "x"').차단, true, '범위를 안 준 커밋이 스테이징을 안 본다');
+});
+
+test('🔴 ⑧ **형제 저장소**의 미커밋은 이 커밋 범위가 아니다 (F134 확장이 열어 둔 자리)', () => {
+  /* 작업본소유자가 형제 저장소 미커밋도 항목에 담기 시작했다(F134). 그런데 ⑧의 범위 대조는
+   * `gitCwd` 기준 경로로 하므로, 범위가 **디렉터리**면(위 검사대로 일상이다) 두 저장소에 같은
+   * 폴더 이름이 있는 순간 형제 파일이 이 커밋에 실릴 것처럼 걸린다. 그리고 펼치기는 `gitCwd`
+   * 에서 그 경로를 못 찾아 「내용을 못 읽었다」로 끝난다 — 사람이 고칠 수 없는 차단이고,
+   * 그런 거짓 경보가 쌓이면 ⑧ 자체가 꺼진다(맹점 ③ · F103). */
+  const f = 픽스처8();
+  const 형제 = 픽스처8();
+  fs.mkdirSync(path.join(f.repo, 'docs'));
+  fs.writeFileSync(path.join(f.repo, 'docs', '내것.md'), '내 줄\n');
+  만진기록(f.state, f.repo, 'local_me', ['docs/내것.md']);
+  fs.mkdirSync(path.join(형제.repo, 'docs'));                        // 같은 폴더 이름 — 흔한 모양
+  fs.writeFileSync(path.join(형제.repo, 'docs', '남의것.sql'), 'peer\n');
+
+  const r = 가드8({ ...f, 형제: [형제.repo] }, 'git commit -m "내 문서" -- docs');
+  assert.ok(!r.사유.includes('남의것.sql'),
+    `형제 저장소 파일을 이 커밋 범위로 셌다 — 펼칠 수도 없는 경로라 차단이 처방 없이 남는다:\n${r.사유}`);
+  assert.equal(r.차단, false, `증명된 내 것뿐인데 차단했다 — 노이즈 가드는 BYPASS 를 학습시킨다:\n${r.사유}`);
 });
 
 test('⑧ 범위가 **디렉터리**여도 그 안을 본다 (경로를 폴더로 주는 건 일상이다)', () => {

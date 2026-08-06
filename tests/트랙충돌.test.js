@@ -60,11 +60,17 @@ function 커밋(dir, 파일, 내용, 제목, sid) {
   return (gitIn(dir, ['rev-parse', 'HEAD']).stdout || '').trim();
 }
 
-/** 훅 호출. 세션마다 state 디렉터리를 갈라 서로 간섭하지 않게 한다. */
-function 훅(dir, { file, sid = 'sess-A', stateDir, tool = 'Edit', dirtyMs = 0 } = {}) {
+/** 훅 호출. 세션마다 state 디렉터리를 갈라 서로 간섭하지 않게 한다.
+ *  `절대파일` = 저장소 **밖** 경로를 그대로 건넬 때(형제 저장소·스크래치패드).
+ *  `형제` = 형제 목록 이음매. **읽는 쪽과 같은 이름**을 봐야 한다(갈라지면 계약 검사가 헛돈다). */
+function 훅(dir, { file, 절대파일, 형제, sid = 'sess-A', stateDir, tool = 'Edit', dirtyMs = 0, cwd } = {}) {
+  const 경로 = 절대파일 || (file ? path.join(dir, file) : undefined);
   const r = spawnSync(process.execPath, [HOOK], {
-    input: JSON.stringify({ tool_name: tool, tool_input: { file_path: file ? path.join(dir, file) : undefined } }),
+    input: JSON.stringify({ tool_name: tool, tool_input: { file_path: 경로 } }),
     encoding: 'utf8',
+    // 실행 위치는 기본값(테스트 러너 위치)이 아니라 **줄 수 있어야** 한다 — 경로 해석이
+    // process cwd 에 새는지는 cwd 가 ROOT 안일 때만 드러난다(라이브의 실제 모양이 그것이다).
+    ...(cwd ? { cwd } : {}),
     env: {
       ...process.env,
       SYNK_TRACK_ROOT: dir,
@@ -72,6 +78,7 @@ function 훅(dir, { file, sid = 'sess-A', stateDir, tool = 'Edit', dirtyMs = 0 }
       CLAUDE_CODE_HOST_SESSION_ID: sid,
       // 탐지력 검사는 **시계에 묶이면 안 된다** — 기본 0(매번 검사). 스로틀 자체는 아래 전용 검사가 본다.
       SYNK_TRACK_DIRTY_MS: String(dirtyMs),
+      ...(형제 ? { SYNK_OWNER_SIBLINGS: 형제.join(';') } : {}),
     },
   });
   const out = (r.stdout || '').trim();
@@ -443,6 +450,107 @@ test('🔑 내가 쓴 상태 파일을 작업본소유자가 읽는다 — 형�
   // 반대 방향도 본다 — 전부 🔴로 칠하는 것도 「잡았다」처럼 보인다.
   assert.ok(!/살아있는 남의 작업본/.test(조회('sess-B').stdout),
     '내가 만진 파일을 남의 것이라 했다 — 세션 id 대조가 어긋났다');
+});
+
+/* 🔗 같은 계약, **형제 저장소** (F134·F137 이 남겨 둔 사각 — 「주인 가르기」).
+ * F134 는 읽는 쪽이 형제 미커밋을 **세게** 했다. 그런데 이 훅이 ROOT 밖 경로를 버려서 만진
+ * 기록이 아예 없었고, 그래서 형제 파일은 세어져도 주인 칸이 **언제나 ❔모름**이었다 —
+ * 이 프로젝트 트랙 절반(talk 파일)에 대해 F073 보호가 통째로 없었다는 뜻이다.
+ *
+ * 🔴 여기서 새는 방향은 조용하다: 좌표(접두)를 한쪽만 바꾸면 ①이 파일의 다른 검사는 전부 초록
+ *   ②저쪽 회귀도 초록 ③라이브에서만 「❔모름」으로 되돌아간다. 그래서 픽스처가 아니라
+ *   **내 진짜 훅이 쓴 파일을 저쪽 진짜 도구로 읽힌다**(위 검사와 같은 이유·같은 방식). */
+test('🔗 형제 저장소 파일도 주인이 갈린다 — 좌표가 한쪽만 바뀌면 조용히 「모름」이 된다 (F134·F137)', (t) => {
+  if (!있나) return t.skip('git 없음 — 픽스처를 못 만든다');
+  const 도구 = path.resolve(__dirname, '..', 'tools', '작업본소유자.js');
+  if (!fs.existsSync(도구)) return t.skip('작업본소유자.js 가 없다 — 읽는 쪽이 아직 없다');
+
+  const dir = 픽스처저장소();          // 내 저장소 = 세션이 연 곳
+  const sib = 픽스처저장소();          // 형제 저장소 = SYNK-talk 자리
+  const 상태 = 상태폴더();
+  // ⚠ 내 저장소에 커밋이 하나는 있어야 한다 — 훅은 HEAD 가 없으면 **상태를 쓰기 전에** 끝난다.
+  커밋(dir, 'Code.js', 'a', 'init', 'sess-Z');
+  /* 하위 폴더 + 한글 — 위 검사와 같은 이유. 형제에서 실제로 만지는 모양이 그렇다
+   * (`supabase/migrations/…`·`docs/L0_스키마.sql`). */
+  const 형제파일 = 'supabase/migrations/007_인증.sql';
+  커밋(sib, 형제파일, 'a', 'seed');
+  fs.writeFileSync(path.join(sib, 형제파일), 'b');   // 형제에 미커밋으로 남긴다
+
+  // 남(B)이 **내 저장소에서 세션을 열고** 형제 파일을 편집했다 — 라이브의 거의 전부가 이 모양이다.
+  훅(dir, { 절대파일: path.join(sib, 형제파일), 형제: [sib], sid: 'sess-B', stateDir: 상태 });
+
+  const 조회 = (나) => spawnSync(process.execPath, [도구], {
+    encoding: 'utf8',
+    env: {
+      ...process.env, SYNK_OWNER_ROOT: dir, SYNK_CTXBUDGET_DIR: 상태,
+      SYNK_OWNER_SIBLINGS: sib, CLAUDE_CODE_HOST_SESSION_ID: 나,
+    },
+  });
+
+  const 남이볼때 = 조회('sess-A');
+  assert.strictEqual(남이볼때.status, 0, `작업본소유자가 죽었다:\n${남이볼때.stderr}`);
+  assert.match(남이볼때.stdout, /살아있는 남의 작업본[\s\S]*007_인증\.sql/,
+    `형제 파일의 주인을 못 갈랐다 — 좌표가 어긋나면 이 자리는 「❔모름」으로 조용히 되돌아간다:\n${남이볼때.stdout}`);
+  assert.ok(남이볼때.stdout.includes(path.basename(sib)),
+    `어느 저장소인지 안 밝혔다 — 경로만 보면 내 저장소에서 찾다가 「없네」로 끝난다:\n${남이볼때.stdout}`);
+  assert.ok(!/🔗[\s\S]*007_인증\.sql/.test(남이볼때.stdout),
+    `주인이 갈렸는데 「주인 모름」 묶음에 그대로 뒀다 — 처방이 「직접 가서 봐라」로 후퇴한다:\n${남이볼때.stdout}`);
+
+  // 반대 방향 — 전부 🔴로 칠하는 것도 「잡았다」처럼 보인다.
+  assert.ok(!/살아있는 남의 작업본/.test(조회('sess-B').stdout),
+    `내가 만진 형제 파일을 남의 것이라 했다 — 접두를 벗기는 자리에서 sid 대조가 어긋났다:\n${조회('sess-B').stdout}`);
+});
+
+test('🔑 형제 좌표는 내 저장소 경로와 **글자가 겹치지 않는다** — 겹치면 남의 파일이 내 것이 된다', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  const sib = 픽스처저장소();
+  const 상태 = 상태폴더();
+  const 같은상대경로 = 'docs/세션보드.md';       // 두 저장소에 **같은 상대 경로**가 있는 흔한 모양
+  커밋(dir, 'Code.js', 'a', 'init', 'sess-Z');   // HEAD 가 없으면 훅은 상태를 쓰기 전에 끝난다
+
+  훅(dir, { 절대파일: path.join(sib, 같은상대경로), 형제: [sib], sid: 'sess-B', stateDir: 상태 });
+
+  const 이름 = fs.readdirSync(상태).find((f) => f.startsWith('track-'));
+  assert.ok(이름, '훅이 상태 파일을 아예 안 썼다 — 계약의 재료가 없다');
+  const j = JSON.parse(fs.readFileSync(path.join(상태, 이름), 'utf8'));
+  assert.deepStrictEqual(j.touched, [`../${path.basename(sib)}/${같은상대경로}`],
+    `형제 파일을 저장소 상대 경로로 담았다 — 내 저장소의 같은 경로와 구별이 안 되고, `
+    + `그 오귀속은 「내것」 쪽으로 새서 남의 작업본을 편집해도 된다는 말이 된다(F073):\n${JSON.stringify(j.touched)}`);
+});
+
+test('🔴 file_path 가 없는 호출은 **실행 위치를 만진 것으로 삼지 않는다**', (t) => {
+  if (!있나) return t.skip('git 없음');
+  /* 좌표 해석을 lib 으로 옮기면서 빈 값을 `path.resolve('')` 에 넘긴 순간 그게 **cwd** 가 된다.
+   * cwd 가 ROOT 하위면(라이브에서 흔하다) 만지지도 않은 폴더가 만진 목록에 들어가고, 그 목록은
+   * 「내것」 판정의 근거라 ⑧이 남의 변경을 내 것으로 통과시키는 방향으로 샌다.
+   * 🔑 cwd 를 ROOT 하위로 주지 않으면 이 자리는 **영원히 초록**이다 — 변이 시험이 그걸 드러냈다. */
+  const dir = 픽스처저장소();
+  const 상태 = 상태폴더();
+  커밋(dir, 'Code.js', 'a', 'init', 'sess-Z');
+  const 하위 = path.join(dir, 'docs');                 // 픽스처저장소가 만들어 두는 폴더
+
+  훅(dir, { sid: 'sess-B', stateDir: 상태, cwd: 하위 });   // file_path 없음
+  const 이름 = fs.readdirSync(상태).find((f) => f.startsWith('track-'));
+  assert.ok(이름, '훅이 상태 파일을 아예 안 썼다 — 빈 목록과 미실행이 같은 모양이 된다');
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(path.join(상태, 이름), 'utf8')).touched, [],
+    '실행 위치를 만진 파일로 담았다 — 만지지도 않은 것이 「내것」의 근거가 된다');
+});
+
+test('저장소 어디에도 없는 경로(스크래치패드)는 여전히 안 담는다', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  const sib = 픽스처저장소();
+  const 상태 = 상태폴더();
+  const 밖 = path.join(os.tmpdir(), 'synk-scratch-밖.md');
+  커밋(dir, 'Code.js', 'a', 'init', 'sess-Z');
+
+  훅(dir, { 절대파일: 밖, 형제: [sib], sid: 'sess-B', stateDir: 상태 });
+  const 이름 = fs.readdirSync(상태).find((f) => f.startsWith('track-'));
+  assert.ok(이름, '훅이 상태 파일을 아예 안 썼다 — 빈 목록과 미실행이 같은 모양이 된다');
+  const j = JSON.parse(fs.readFileSync(path.join(상태, 이름), 'utf8'));
+  assert.deepStrictEqual(j.touched, [],
+    `저장소 밖 편집을 만진 목록에 담았다 — 형제를 담으려고 문을 너무 넓게 열었다:\n${JSON.stringify(j.touched)}`);
 });
 
 // ── 신호 ④ 다른 작업 트리의 살아있는 미커밋 (F079) ─────────────────────────
