@@ -1,7 +1,7 @@
 # SYNK 동기화 구조 — 상담시트 ↔ Google Sheets(앱) ↔ Notion
 
 > 목적: 동기화가 꼬였을 때 **어디를 봐야 하는지 즉시 알기 위한 지도**.
-> 기준 버전: v9.22b · 소스: `Code.js` (라인 번호는 해당 시점 기준, 이동 가능).
+> **2026-08-06 주소 재실측**(초판 기준 v9.22b · §8 궤적 레일은 v9.184 증분) — 코드가 `Code.js` + `엔진_*.js`로 분리돼 **파일 귀속부터** 갱신했다. 라인 번호는 판올림마다 이동하니 어긋나면 **함수명 검색**이 정본.
 > 이 문서는 `.md`라서 clasp가 Apps Script로 푸시하지 않음(안전).
 
 ---
@@ -17,7 +17,7 @@
      ▼
 [앱 스프레드시트]  탭: "profiles" (A~O 기본 + AY/AZ/BA 상담디테일 + 계산열 다수)
      │  syncProfiles 끝에서 calcAll() 호출 → P~BX 계산열(포인트·게이지·급수 등) 채움
-     ├──────────────▶  [Glide 앱]  profiles를 직접 읽어 화면 구성
+     ├──────────────▶  [Glide 앱]  profiles를 직접 읽어 화면 구성  ⛔폐기(08-05 · 파일럿 게이트까지 낙하산 존치)
      │  (매주 월 07:00  weeklyJobs → syncToNotion_)   ※ NOTION_TOKEN 없으면 자동 스킵
      ▼
 [Notion 크루 DB]  "🔒 크루 DB — 학생 통합 정보"   ← NOTION_DB_ID
@@ -36,13 +36,13 @@ Layer 1이 멈추면 profiles가 스테일 → Layer 2도 옛 데이터를 노�
 
 | 이름 | 값 / 위치 | 정의 위치 |
 |------|-----------|-----------|
-| `CONSULT_SHEET_ID` | `1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY` (외부 상담 스프레드시트) | `Code.js:459` |
-| `NOTION_DB_ID` | `393bd830-9852-80bf-9101-e7c0a62c3d80` (크루 DB) | `Code.js:6252` |
+| `CONSULT_SHEET_ID` | `1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY` (외부 상담 스프레드시트) | `Code.js:789` |
+| `NOTION_DB_ID` | `393bd830-9852-80bf-9101-e7c0a62c3d80` (크루 DB) | `엔진_콘텐츠AI.js:4158` |
 | Notion data source | `collection://bc0bd830-9852-83e8-bd09-8738470622a3` (라이브 확인) | — |
 | `NOTION_TOKEN` | **Script Properties**에 저장 (코드·깃 미포함, 없으면 노션 동기화 자동 스킵) | 설정: notion.so/my-integrations |
-| `NOTION_VER` | `2022-06-28` | `Code.js:6253` |
+| `NOTION_VER` | `2022-06-28` | `엔진_콘텐츠AI.js:4159` |
 | 앱 스프레드시트 | `getActiveSpreadsheet()` (스크립트가 바인딩된 컨테이너) | — |
-| `ADMIN_EMAIL` | `unmet23@gmail.com` (실패 알림 수신) | `Code.js:458` |
+| `ADMIN_EMAIL` | `unmet23@gmail.com` (실패 알림 수신) | `Code.js:788` |
 
 > ⚠️ `CONSULT_SHEET_ID`는 v9.19에서 교체됨(구 시트 `10Q-Yhqgy2…` 접근 불가). 상담 파이프라인이 통째로 안 되면 이 ID·공유 권한부터 확인.
 
@@ -50,8 +50,8 @@ Layer 1이 멈추면 profiles가 스테일 → Layer 2도 옛 데이터를 노�
 
 ## 2. Layer 1 — 상담시트 → profiles
 
-**함수:** `syncProfiles()` (`Code.js:1673`)
-**트리거:** `morningJobs()` 안에서 **매일 07:00** 실행 (`Code.js:6410`). 이후 `calcAll()` 자동 호출.
+**함수:** `syncProfiles()` (`엔진_운영배치.js:136`)
+**트리거:** `morningJobs()` 안에서 **매일 07:00** 실행 (`엔진_셋업확장.js:1015`). 이후 `calcAll()` 자동 호출.
 
 ### 소스 (읽기)
 | 탭 | 범위 | 용도 |
@@ -101,24 +101,24 @@ Layer 1이 멈추면 profiles가 스테일 → Layer 2도 옛 데이터를 노�
 > 레지스트리는 **옛 고정 열(105·106~108·119·124~128·129·130)을 지키는 용도로만** 남는다.
 
 ### 가드 (데이터 사고 방지) — 디버깅 시 필독
-1. **연결 실패 방어** (`try/catch`, `Code.js:1674`): 상담시트 못 열면 profiles를 **마지막 정상 상태로 유지**하고 원장에게 실패 메일. → profiles가 안 바뀌면 매일 아침 메일함 확인.
-2. **퇴소자 제외**: `payStatus === '퇴소'`면 앱에서 빼되 시트 이력은 보존 (`Code.js:1709`).
-3. **비학생 행 보존**: teacher/parent/admin 행은 매 동기화마다 지워지지 않고 재기록 (`Code.js:1724`).
-4. **학생 급감/0 가드** (`Code.js:1728`): 신규 학생 **0명** 이거나, 기존 5명+ 인데 **30% 넘게 급감**하면 → **profiles 덮어쓰기 보류** + 원장 알림.
+1. **연결 실패 방어** (`try/catch` — `엔진_운영배치.js` `syncProfiles` 도입부): 상담시트 못 열면 profiles를 **마지막 정상 상태로 유지**하고 원장에게 실패 메일. → profiles가 안 바뀌면 매일 아침 메일함 확인.
+2. **퇴소자 제외**: `payStatus === '퇴소'`면 앱에서 빼되 시트 이력은 보존 (`syncProfiles` 내부).
+3. **비학생 행 보존**: teacher/parent/admin 행은 매 동기화마다 지워지지 않고 재기록 (`syncProfiles` 내부).
+4. **학생 급감/0 가드** (`syncProfiles` 내부): 신규 학생 **0명** 이거나, 기존 5명+ 인데 **30% 넘게 급감**하면 → **profiles 덮어쓰기 보류** + 원장 알림.
    - **v9.22b dedup**: `app_state`의 `동기화보류_상태`(= `신규/기존` 시그니처)가 바뀔 때만 1회 알림. 빈 상담시트가 매일 경보 도배하는 것 방지. 정상 동기화 시 시그니처 초기화(재무장).
-5. **created_at 안정화** (v9.22, `Code.js:1710`): 예전엔 매일 `now`로 덮여 "가입 경과일" 기반 리텐션이 고장 → 등록일 우선 → 보존값 → now 순으로 확정.
+5. **created_at 안정화** (v9.22 — `syncProfiles` 내부): 예전엔 매일 `now`로 덮여 "가입 경과일" 기반 리텐션이 고장 → 등록일 우선 → 보존값 → now 순으로 확정.
 
 ---
 
 ## 3. Layer 2 — profiles → Notion 크루 DB
 
-**함수:** `syncToNotion_()` (`Code.js:6282`) · 수동 실행 `syncNotionNow()` (`Code.js:6330`)
-**트리거:** `weeklyJobs()` 안에서 **매주 월 07:00** (`Code.js:6439`).
+**함수:** `syncToNotion_()` (`엔진_콘텐츠AI.js:4241`) · 수동 실행 `syncNotionNow()` (`엔진_콘텐츠AI.js:4335`)
+**트리거:** `weeklyJobs()` 안에서 **매주 월 07:00** (`엔진_셋업확장.js:1084`).
 **전제:** `NOTION_TOKEN` 미설정이면 조용히 스킵. 통합(integration)이 크루 DB에 Connections로 연결돼 있어야 함.
 
 ### 업서트 로직
-1. `notionExistingMap_()`가 크루 DB를 페이지네이션 쿼리 → `학생ID → pageId` 맵 생성 (`Code.js:6262`).
-2. profiles 2행부터 최대 **67열(BO)**까지 읽음 (`Code.js:6289`).
+1. `notionExistingMap_()`가 크루 DB를 페이지네이션 쿼리 → `학생ID → pageId` 맵 생성 (`엔진_콘텐츠AI.js:4221`).
+2. profiles 2행부터 최대 **67열(BO)**까지 읽음 (`syncToNotion_` 내부).
 3. 행마다: `id` 없거나 `role !== 'student'`면 스킵.
 4. 맵에 있으면 `PATCH /pages/{id}`(갱신), 없으면 `POST /pages`(생성).
 5. 요청 사이 `Utilities.sleep(350)` — 노션 rate limit(~3/s) 회피.
@@ -138,7 +138,7 @@ Layer 1이 멈추면 profiles가 스테일 → Layer 2도 옛 데이터를 노�
 | (계산) 요약 문자열 | **나의여정요약** | rich_text | 최대 1900자. `단계·급수·P·왕관·최장연속` |
 | 실행일 today | **앱갱신일** | date | |
 
-> ⚠️ **P열 주의 (자주 헷갈림):** profiles P열(16)의 **시트 헤더 글자는 "누적잔액"**으로 표기돼 있지만, **v7.1부터 실제 값은 "획득 누계"**(양수+정정만 · 진화/랭킹/월간 기준)임. 스토어에서 쓰는 **잔액은 AQ열('잔액')로 분리**됨 (`Code.js:1086`, 설계노트 #61). 즉 Notion **총포인트 = 획득 누계**이지 잔액이 아님. 헤더 라벨만 낡은 것.
+> ⚠️ **P열 주의 (자주 헷갈림):** profiles P열(16)의 **시트 헤더 글자는 "누적잔액"**으로 표기돼 있지만, **v7.1부터 실제 값은 "획득 누계"**(양수+정정만 · 진화/랭킹/월간 기준)임. 스토어에서 쓰는 **잔액은 AQ열('잔액')로 분리**됨 (설계노트 #61). 즉 Notion **총포인트 = 획득 누계**이지 잔액이 아님. 헤더 라벨만 낡은 것.
 
 ---
 
@@ -168,7 +168,7 @@ data source: `collection://bc0bd830-9852-83e8-bd09-8738470622a3`
 
 ---
 
-## 5. 트리거 달력 (`resetAllTriggers`, `Code.js:6453`)
+## 5. 트리거 달력 (`resetAllTriggers`, `엔진_셋업확장.js:1195`)
 
 | 시각 | 함수 | 동기화 관련 |
 |------|------|------|
@@ -198,17 +198,18 @@ data source: `collection://bc0bd830-9852-83e8-bd09-8738470622a3`
 
 ## 7. 관련 함수 인덱스
 
-| 함수 | 라인 | 역할 |
+| 함수 | 위치 (2026-08-06 실측 — 파일 분리 반영) | 역할 |
 |------|------|------|
-| `syncProfiles` | `Code.js:1673` | 상담시트 → profiles (Layer 1) |
-| `importFormResponses` | `Code.js:3890` 근처 | 폼 응답 → 상담시트 62열 정렬·ID 채번 |
-| `createConsultForm` | `Code.js:3780` | 상담 폼 생성(문항=시트 헤더 19개 정합) |
-| `syncToNotion_` | `Code.js:6282` | profiles → Notion (Layer 2) |
-| `notionExistingMap_` | `Code.js:6262` | 노션 기존 페이지 학생ID→pageId 맵 |
-| `notionHeaders_` | `Code.js:6255` | 노션 API 헤더(토큰) |
-| `syncNotionNow` | `Code.js:6330` | 노션 동기화 수동 실행 |
-| `morningJobs` / `weeklyJobs` | `Code.js:6409` / `6432` | 트리거 진입점 |
-| `healthCheck` | `Code.js:5150` 근처 | 상담시트 접근·헤더 진단 |
+| `syncProfiles` | `엔진_운영배치.js:136` | 상담시트 → profiles (Layer 1) |
+| `importFormResponses` | `엔진_폼리포트.js:1520` | 폼 응답 → 상담시트 62열 정렬·ID 채번 |
+| `createConsultForm` | `엔진_폼리포트.js:11` | 상담 폼 생성(문항=시트 헤더 19개 정합) |
+| `syncToNotion_` | `엔진_콘텐츠AI.js:4241` | profiles → Notion (Layer 2) |
+| `notionExistingMap_` | `엔진_콘텐츠AI.js:4221` | 노션 기존 페이지 학생ID→pageId 맵 |
+| `notionHeaders_` | `엔진_콘텐츠AI.js:4161` | 노션 API 헤더(토큰) |
+| `syncNotionNow` | `엔진_콘텐츠AI.js:4335` | 노션 동기화 수동 실행 |
+| `morningJobs` / `weeklyJobs` | `엔진_셋업확장.js:1015` / `1084` | 트리거 진입점 |
+| `healthCheck` | `엔진_폼리포트.js:1749` | 상담시트 접근·헤더 진단 |
+| `NOTION_DB_ID` / `CONSULT_SHEET_ID` | `엔진_콘텐츠AI.js:4158` / `Code.js:789` | 상수(크루 DB · 상담 시트) |
 
 ---
 
