@@ -66,7 +66,31 @@ const re = (body, flags) => new RegExp(G + body, flags);
 /* `-C <경로>`가 붙으면 그 저장소가 대상이다 — 아래 ④⑤는 git 상태를 실제로 읽으므로
  * cwd 대신 그 경로에서 물어야 한다(안 그러면 남의 저장소 상태로 판정한다). */
 const cdir = /\bgit\s+(?:[^&|;]*?\s)?-C\s+(['"]?)([^'"\s]+)\1/.exec(exec);
-const gitCwd = cdir ? cdir[2] : process.cwd();
+
+/* …그리고 `-C` 없이 **셸이 옮겨간** 경우가 남아 있었다 (F134 · F137 과 같은 뿌리).
+ *   이 훅의 `process.cwd()` 는 셸의 현재 위치가 아니라 **세션 프로젝트 폴더**다. 그래서
+ *   `cd ../SYNK-talk && git merge …` 는 talk 를 향하는데 판정 재료는 appsscript 것이 된다.
+ *   실측 F134: talk 워크트리(깨끗)를 향한 merge 가 **appsscript 의 인계문 2건**을 근거로 막혔다.
+ *   그때는 거짓양성이라 안전했지만 **방향을 뒤집으면 통과다** — appsscript 가 깨끗하고 talk 에
+ *   남의 미커밋이 있으면 ⑤ 되감기가 조용히 지나간다(가드가 지키려던 바로 그 경우).
+ *   그래서 세그먼트를 왼쪽부터 훑어 git 을 만나기 직전의 위치를 쓴다. 못 읽는 경로면 안 옮긴다
+ *   (파싱 실패가 판정을 엉뚱한 저장소로 보내면, 새는 방향은 또 「통과」다). */
+function 셸이간곳() {
+  const path = require('path');
+  const 폴더인가 = (p) => { try { return fs.statSync(p).isDirectory(); } catch { return false; } };
+  let 곳 = process.cwd();
+  for (const seg of exec.split(/&&|\|\||[;\n]/)) {
+    const m = /^\s*(?:cd|Set-Location|sl)\s+(?:-Path\s+)?(?:"([^"]+)"|'([^']+)'|(\S+))\s*$/.exec(seg);
+    if (m) {
+      const 다음 = path.resolve(곳, m[1] || m[2] || m[3]);
+      if (폴더인가(다음)) 곳 = 다음;
+      continue;
+    }
+    if (/\bgit\b/.test(seg)) break;   // git 이 실제로 도는 자리 = 지금까지 따라온 위치
+  }
+  return 곳;
+}
+const gitCwd = cdir ? cdir[2] : 셸이간곳();
 
 const 대안 = '\n→ 대신: git commit -m "..." -- 경로A 경로B'
   + '\n   (경로를 주면 인덱스를 무시하고 그 파일만 커밋된다 — 남이 스테이징해둔 것이 있어도 안 딸려온다)'

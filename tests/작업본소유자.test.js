@@ -54,8 +54,12 @@ function 세션기록(state, repo, sid, touched, 분전) {
   const t = new Date(Date.now() - 분전 * 60000);
   fs.utimesSync(p, t, t);
 }
-function 돌린다({ repo, state, 나, 인자 = [] }) {
+function 돌린다({ repo, state, 나, 인자 = [], 형제 }) {
   const env = { ...process.env, SYNK_OWNER_ROOT: repo, SYNK_CTXBUDGET_DIR: state };
+  /* 형제를 안 준 검사는 **기본 경로**(`<ROOT>/../SYNK-talk`)를 그대로 쓴다 — 픽스처 ROOT 는
+   * 임시 폴더라 그 형제가 없고, 그래서 이 파일의 옛 검사들은 값이 하나도 안 바뀐다.
+   * ⚠ 여기에 실저장소 경로가 새어 들어가면 CI 와 로컬이 다른 세계를 보게 된다(repo 밖 의존). */
+  if (형제) env.SYNK_OWNER_SIBLINGS = 형제.join(';');
   if (나 === undefined) delete env.CLAUDE_CODE_HOST_SESSION_ID; else env.CLAUDE_CODE_HOST_SESSION_ID = 나;
   const r = spawnSync(process.execPath, [TOOL, ...인자], { encoding: 'utf8', env });
   assert.strictEqual(r.status, 0, `비정상 종료:\n${r.stderr}`);
@@ -253,6 +257,52 @@ test('--hook 은 다른 트리 미커밋만 있어도 말한다 (침묵이 안�
   if (!f) return t.skip('git worktree 를 못 만들었다');
   assert.match(돌린다({ repo: f.repo, state: f.state, 나: 'local_me00', 인자: ['--hook'] }), /🌿/,
     '다른 트리에 미커밋이 있는데 훅이 침묵했다');
+});
+
+/* ── 형제 저장소 (F134·F137 · 2026-08-06 세 번째 재현) ────────────────────────
+ * 워크트리(위)와 **같은 모양의 사각지대, 다른 원인**이다: 워크트리는 같은 저장소의 다른 체크아웃이고
+ * 형제(`../SYNK-talk`)는 아예 다른 저장소라 `git status` 가 애초에 못 본다. 이 프로젝트의 트랙은
+ * 두 저장소를 함께 만지므로(보드 줄 절반이 「SYNK-talk: …」) 그 사각은 매 세션 열려 있었다.
+ * 실측 3건 전부 새는 방향이 **「0건」**이다 — 08-06 이 세션 시작에서도 talk 미커밋 3건(하나는
+ * 45초 전에 쓰인 살아있는 작업본)이 이 도구 출력에 한 줄도 안 나왔다. */
+test('🔗 형제 저장소의 미커밋을 센다 — 내 git status 엔 안 뜬다 (F134·F137)', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  const 형제 = 픽스처();
+  더럽힌다(형제.repo, 'lib/학생계정.js', 'peer\n');
+  const out = 돌린다({ repo, state, 나: 'local_me00', 형제: [형제.repo] });
+  assert.match(out, /🔗/, `형제 저장소의 미커밋을 통째로 놓쳤다 — 「0건」과 「안전」이 같은 모양이 된다:\n${out}`);
+  assert.ok(out.includes('lib/학생계정.js'), `그 파일을 안 짚었다:\n${out}`);
+  assert.ok(out.includes(path.basename(형제.repo)),
+    `어느 저장소인지 안 밝혔다 — 경로만 보면 내 저장소에서 찾다가 「없네」로 끝난다:\n${out}`);
+});
+
+test('⚠ 형제를 못 읽으면 「0건」이 아니라 판정 불가라고 말한다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  // 깨진 gitfile(워크트리 링크가 끊긴 실제 모양) — .git 은 있는데 git 은 실패한다.
+  const 깨진 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-own-broken-'));
+  임시들.push(깨진);
+  fs.writeFileSync(path.join(깨진, '.git'), 'gitdir: /존재하지않는곳\n');
+  const out = 돌린다({ repo, state, 나: 'local_me00', 형제: [깨진] });
+  assert.match(out, /못 읽었다/, `못 읽은 형제를 조용히 건너뛰었다 — 침묵이 「깨끗함」으로 읽힌다:\n${out}`);
+  assert.match(out, /판정 불가/, '0건이 아니라는 말이 빠졌다');
+});
+
+test('--hook 은 형제 미커밋만 있어도 말하되, 내 저장소 ❔ 까지 쏟지는 않는다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  더럽힌다(repo, '내미상.js', 'x\n');                     // 주인 기록 없음 → ❔
+  const 형제 = 픽스처();
+  더럽힌다(형제.repo, 'supabase/migrations/003.sql', 'peer\n');
+  const out = 돌린다({ repo, state, 나: 'local_me00', 형제: [형제.repo], 인자: ['--hook'] });
+  assert.match(out, /🔗/, `형제에 미커밋이 있는데 훅이 침묵했다 — F137 이 난 자리가 바로 세션 시작이다:\n${out}`);
+  assert.ok(!out.includes('내미상.js'),
+    `형제 때문에 연 입으로 내 저장소 ❔ 까지 쏟았다 — 매 세션 그러면 아무도 안 읽는다:\n${out}`);
+});
+
+test('형제가 깨끗하면 훅은 침묵한다 — 상시 잔소리는 장치를 죽인다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  const 형제 = 픽스처();                                   // 씨앗만 커밋된 깨끗한 저장소
+  assert.strictEqual(돌린다({ repo, state, 나: 'local_me00', 형제: [형제.repo], 인자: ['--hook'] }).trim(), '',
+    '깨끗한 형제를 두고 입을 열었다');
 });
 
 test('🔴 SessionStart 에 등록돼 있고, 실행 불가가 조용한 통과가 아니다', () => {
