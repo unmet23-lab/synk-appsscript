@@ -644,6 +644,18 @@ function 심문프롬프트(대상경로, 템플릿경로, 금지경로) {
   return t;
 }
 
+/* 결과 경로 = 대상이름-지문-**모델**. 모델이 이름에 없으면 같은 문서를 두 모델로 돌릴 때
+ * 두 번째가 첫 번째를 **조용히 덮는다**(08-06 실제로 덮였다 — 심문기록 2행이 같은 파일을 가리킨다).
+ * 그런데 sol↔luna 대조의 조건은 「같은 문서·같은 효력·모델만 다름」이라, 덮이면 그 실측 자체가
+ * 불가능해진다. 조립을 함수로 가른 이유는 심문실행 안에 두면 실제 codex 호출로만 쓰여
+ * **어떤 검사도 못 닿기** 때문이다(검사할 수 없는 자리 = 조용히 새는 자리). */
+function 심문결과경로(절대, 픽이름) {
+  if (!픽이름) throw 확인불가('심문 결과 경로에 모델 이름이 없다 — 이름 없이 쓰면 다른 모델의 결과를 덮는다');
+  const 지문 = crypto.createHash('sha256').update(fs.readFileSync(절대)).digest('hex').slice(0, 12);
+  const 이름 = `${path.basename(절대, path.extname(절대))}-${지문}-${픽이름}.md`;
+  return { 지문, 경로: path.join(심문결과폴더, 이름) };
+}
+
 function 심문실행(argv, timeoutMs) {
   const 대상 = argv[argv.indexOf('--심문') + 1];
   if (!대상 || /^--/.test(대상)) {
@@ -657,9 +669,8 @@ function 심문실행(argv, timeoutMs) {
   모델플래그(모델설정.분석);
   const 절대 = path.resolve(대상);
   const 프롬프트 = 심문프롬프트(절대);
-  const 지문 = crypto.createHash('sha256').update(fs.readFileSync(절대)).digest('hex').slice(0, 12);
+  const { 지문, 경로: 결과 } = 심문결과경로(절대, 모델설정.분석.이름);
   fs.mkdirSync(심문결과폴더, { recursive: true });
-  const 결과 = path.join(심문결과폴더, `${path.basename(절대, path.extname(절대))}-${지문}.md`);
 
   console.log(`설계 심문 — ${대상} (지문 ${지문}) · ${모델설정.분석.model}/${모델설정.분석.effort}`);
   codex(['exec', ...잠금플래그, ...모델플래그(모델설정.분석), '--ephemeral', '-o', 결과, '-'], 프롬프트, timeoutMs, '설계 심문');
@@ -906,7 +917,7 @@ module.exports = {
   게이트판정, 유효지문, 키, 범위, 대상결정, 미커밋파일들, 차단급, 기록경로, 기각경로, 모델설정, 효력들, 모델플래그, 잠금플래그, 외부도구들,
   값플래그, 홑플래그, 아는플래그,
   제안경로, 제안키, 제안현황, 제안프롬프트, 선파악행들, 기능체크프롬프트, 기능체크지적들, 방향텍스트, 방향지문, 방향경로, 방향상한, 디프상한,
-  심문프롬프트, 금지목록, 심문템플릿, 심문경로,
+  심문프롬프트, 금지목록, 심문템플릿, 심문경로, 심문결과경로,
 };
 
 if (require.main === module) {
