@@ -79,6 +79,12 @@
 
 `.claude/skills/`에 설치(2026-08-05 · MIT · 전문 검수 후 반입). **순서: 킷으로 골격 → 스킬로 디테일 → 린트/검수.**
 
+> **스킬은 불러야 적용된다** — 항상 떠 있는 건 이름+설명 한 줄뿐이고 본문은 호출할 때만 들어온다.
+> 실측(2026-08-06 · 트랜스크립트 407개): 반입 후 `emil-design-eng` 0회 · `make-interfaces-feel-better` 0회.
+> 그래서 `.claude/hooks/design-guard.js`가 **시각 파일(html·css·svg·tsx·jsx·디자인_토큰.json)을
+> 세션에서 처음 만질 때 1회 막고 이 파일의 킷을 주입한다**(표시를 먼저 남기므로 재실행하면 통과).
+> 인용은 여기서 파생한다 — 회귀 `tests/디자인가드.test.js`가 앵커 사망·문구 이탈을 잡는다.
+
 | 스킬 | 언제 | 출처 |
 |---|---|---|
 | `make-interfaces-feel-better` | UI·HTML 디테일 제작+검수 — 동심원 모서리·광학 정렬·그림자·tabular-nums·히트 영역. **인쇄물엔 typography/surfaces만 해당** | jakubkrehel |
