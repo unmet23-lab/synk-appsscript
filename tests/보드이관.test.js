@@ -35,10 +35,10 @@ function mkFixture(boardEol = '\n', archiveEol = '\r\n') {
   return { dir, board, archive };
 }
 
-function run(fx, args) {
+function run(fx, args, 덧env = {}) {
   return spawnSync(process.execPath, [TOOL, ...args], {
     encoding: 'utf8',
-    env: { ...process.env, SYNK_BOARD: fx.board, SYNK_BOARD_ARCHIVE: fx.archive },
+    env: { ...process.env, SYNK_BOARD: fx.board, SYNK_BOARD_ARCHIVE: fx.archive, ...덧env },
   });
 }
 const read = (p) => fs.readFileSync(p, 'utf8');
@@ -213,4 +213,88 @@ test('[F102] 저장소 밖이면 「커밋 안 했다」를 **드러낸다** (�
   const r = run(fx, ['옮길 트랙 갑']);
   assert.equal(r.status, 0);
   assert.match(String(r.stdout), /커밋은 안 했다/, '커밋을 건너뛰고도 조용했다');
+});
+
+/* ───────────────────────────────────────────────────────────────
+ * 마찰 F146 — **「✅종결」은 그 세션이 끝났다는 뜻이 아니다.**
+ *
+ * 실사고 2026-08-07: 보드가 17/18줄이라 「✅전부 종결」로 적힌 줄을 아카이브로 옮겼는데,
+ * 그 트랙 파일 3건을 **0분 전에 편집 중인** 세션이 있었다(되돌림 revert 2건).
+ * 위 F046·F102 검사는 전부 「옮기는 행위가 줄을 잃는가」만 봤다 — **옮겨도 되는 줄인가**는
+ * 아무도 안 물었다. 줄을 잃은 세션은 다음 턴에 자기 트랙을 못 찾고 접힌다(F144):
+ * 인계문은 아카이브가 아니라 **보드**만 보므로, 옮겨진 줄은 그 세션에게 유실과 같다.
+ *
+ * 지키는 성질: **줄에 적힌 커밋의 세션이 아직 살아 있으면 아무것도 쓰지 않는다.**
+ * 탐지력은 여기 픽스처가 진다 — 실저장소는 살아있는 세션이 매번 달라 초록이 우연이 된다.
+ * ─────────────────────────────────────────────────────────────── */
+const store = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'handoff-store.js'));
+const 남의sid = 'local_f146fake-1111-2222-3333-444455556666';
+
+/** 트랙 커밋(Session-Id 트레일러) + 그 해시가 박힌 보드 줄 + 심장박동 파일. */
+function mk주인픽스처(sid, { 분전 = 0, 해시덮기 = null } = {}) {
+  const fx = mkRepoFixture();
+  fs.writeFileSync(path.join(fx.dir, 'a.js'), '// 트랙 산출물\n', 'utf8');
+  git(fx.dir, 'add', '--', 'a.js');
+  git(fx.dir, 'commit', '-q', '-m', `트랙 커밋\n\nSession-Id: ${sid}`);
+  const 해시 = git(fx.dir, 'rev-parse', '--short', 'HEAD').stdout.trim();
+  const 줄 = `| 2026-08-07 | **살아있는 트랙 정** | a.js | ✅종결(${해시덮기 || 해시}) |`;
+  fs.writeFileSync(fx.board, read(fx.board).replace(ROW, 줄), 'utf8');
+  git(fx.dir, 'commit', '-q', '-m', 'board', '--', '세션보드.md');
+
+  /* 심장박동 = track-collision 이 쌓는 상태 파일의 mtime. 좌표는 board-move 가 보는 것과
+   * **같은 방법으로** 만든다(git 이 말하는 최상위 경로 → projectKey) — 손으로 맞추면
+   * 키가 어긋나 세션이 0개가 되고, 그 0 은 「살아있는 세션 없음」과 구별되지 않는다(F079). */
+  const 최상위 = git(fx.dir, 'rev-parse', '--show-toplevel').stdout.trim();
+  const 박동 = path.join(store.stateDir(), `track-${store.projectKey(최상위)}-${store.safeId(sid)}.json`);
+  fs.mkdirSync(store.stateDir(), { recursive: true });
+  fs.writeFileSync(박동, JSON.stringify({ touched: [] }), 'utf8');
+  if (분전) { const t = (Date.now() - 분전 * 60000) / 1000; fs.utimesSync(박동, t, t); }
+  return { fx, 줄, 해시, 박동 };
+}
+const 치우기 = (박동) => { try { fs.unlinkSync(박동); } catch (_) { /* 이미 없으면 됐다 */ } };
+
+test('[F146] 줄 주인 세션이 살아 있으면 **아무것도 쓰지 않는다**', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx, 줄, 해시, 박동 } = mk주인픽스처(남의sid);
+  try {
+    const before = { b: read(fx.board), a: read(fx.archive) };
+    const r = run(fx, ['살아있는 트랙 정']);
+    assert.notEqual(r.status, 0, '살아있는 세션의 줄을 그냥 옮겼다 — F146 재현');
+    assert.match(String(r.stderr), /아직 살아 있다/, '왜 막혔는지 안 말한다');
+    assert.match(String(r.stderr), new RegExp(해시), '어느 커밋이 걸렸는지 안 나온다');
+    assert.match(String(r.stderr), /f146fake/, '누구 것인지 안 나온다');
+    assert.equal(read(fx.board), before.b, '거부인데 보드가 변했다');
+    assert.equal(read(fx.archive), before.a, '거부인데 아카이브가 변했다');
+    assert.ok(read(fx.board).includes(줄), '거부인데 줄이 보드에서 사라졌다');
+
+    // --dry 도 같은 답을 내야 한다 — 계획만 볼 때야말로 「옮겨도 되나」의 답이 필요하다.
+    assert.notEqual(run(fx, ['살아있는 트랙 정', '--dry']).status, 0, '--dry 는 막히지 않았다');
+  } finally { 치우기(박동); }
+});
+
+test('[F146] **내 세션**의 줄은 그대로 옮긴다 (/close 정상 경로를 막지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx, 줄, 박동 } = mk주인픽스처(남의sid);
+  try {
+    const r = run(fx, ['살아있는 트랙 정'], { CLAUDE_CODE_HOST_SESSION_ID: 남의sid });
+    assert.equal(r.status, 0, '내 줄인데 막혔다 — 이 가드가 /close 를 잠근다: ' + r.stderr);
+    assert.ok(!read(fx.board).includes(줄), '내 줄이 안 옮겨졌다');
+    assert.ok(read(fx.archive).includes(줄), '아카이브에 안 들어갔다');
+  } finally { 치우기(박동); }
+});
+
+test('[F146] 심장박동이 멎은 세션의 줄은 옮긴다 (죽은 트랙까지 잠그지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx, 줄, 박동 } = mk주인픽스처(남의sid, { 분전: 90 });
+  try {
+    const r = run(fx, ['살아있는 트랙 정']);
+    assert.equal(r.status, 0, '죽은 세션의 줄까지 막았다 — 보드가 영원히 안 줄어든다: ' + r.stderr);
+    assert.ok(read(fx.archive).includes(줄), '아카이브에 안 들어갔다');
+  } finally { 치우기(박동); }
+});
+
+test('[F146] 해시처럼 생긴 딴 것에는 안 걸린다 (없는 커밋으로 정상 이관을 막지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx, 줄, 박동 } = mk주인픽스처(남의sid, { 해시덮기: 'deadbee' });   // 7자 hex, 커밋 아님
+  try {
+    const r = run(fx, ['살아있는 트랙 정']);
+    assert.equal(r.status, 0, '커밋도 아닌 문자열로 막았다: ' + r.stderr);
+    assert.ok(read(fx.archive).includes(줄), '아카이브에 안 들어갔다');
+  } finally { 치우기(박동); }
 });

@@ -30,6 +30,13 @@
  *      (실측 08-05 01:04: 한 순간에 6개 세션) 자동 커밋이 곧 **남의 선언 수거**가 된다.
  *      안 해도 안전하다 — 아카이브가 이미 커밋됐으니 최악은 눈에 보이는 중복이다.
  *      아카이브가 더러우면 아예 **아무것도 쓰지 않고** 멈춘다(줄은 보드에 그대로).
+ *   ⑥ **줄 주인이 살아 있으면 옮기지 않는다**(마찰 F146, 2026-08-07 실사고).
+ *      ①~⑤는 전부 「옮기는 행위가 줄을 잃지 않는가」였다. ⑥은 앞의 질문이다 —
+ *      **지금 옮겨도 되는 줄인가.** 「✅종결」은 **그 세션이 끝났다는 뜻이 아니다**:
+ *      종결로 적힌 줄을 보드 정리로 옮겼는데 그 트랙 파일 3건을 **0분 전에 편집 중인**
+ *      세션이 있었다(되돌림 revert 2건). 줄을 잃은 세션은 다음 턴에 자기 트랙을 못 찾고
+ *      「트랙 없음」으로 접힌다(F144) — 아카이브에 멀쩡히 있어도 인계문은 보드만 본다.
+ *      판정 재료는 줄에 적힌 **커밋 해시**뿐이다 — 「만지는 파일」 칸은 산문이라 못 믿는다.
  *
  * 사용:
  *   node tools/board-move.js "friction.js 채번 락"     # 이관 + 커밋(아카이브 먼저)
@@ -96,7 +103,6 @@ if (problems.length) die('검증 실패 — 아무것도 쓰지 않았다:\n- ' 
 
 console.log(`  옮길 줄: ${row.slice(0, 90)}${row.length > 90 ? '…' : ''}`);
 console.log(`  보드 ${JSON.stringify(boardEol)} · 아카이브 ${JSON.stringify(archiveEol)} (실측)`);
-if (dry) { console.log('[board-move] --dry — 쓰지 않았다.'); process.exit(0); }
 
 /* ── git 자리를 **쓰기 전에** 잰다 ────────────────────────────────
  * 쓴 뒤에 재면 「내가 만든 더러움」과 「원래 있던 남의 미커밋」이 구분되지 않는다. */
@@ -112,6 +118,48 @@ const dirtyOf = (p) => (git(['status', '--porcelain', '--', rel(p)], root).stdou
 const headHas = (p, s) => { const r = git(['show', `HEAD:${rel(p)}`], root); return r.status === 0 && r.stdout.includes(s); };
 const track = (row.match(/\*\*(.+?)\*\*/) || [null, needle])[1];
 const commit = (p, subject, body) => git(['commit', '-m', `${subject}\n\n${body}`, '--', rel(p)], root);
+
+/* ── ⛔ 줄 주인이 살아 있으면 아무것도 하지 않는다 (원칙 ⑥ · F146) ──────
+ * 「살아있음」 판정은 **작업본소유자에서 그대로 가져온다** — 여기 다시 적으면 두 도구가
+ * 서로 다른 생사를 보게 되고, 갈라진 쪽의 증상은 언제나 「통과」다(F111 이 같은 이유로 그 함수를 쓴다).
+ * `--dry` 도 여기를 지난다 — 계획만 볼 때야말로 「옮겨도 되나」의 답이 필요하다.
+ * ⚠ 새는 방향: 해시가 안 적힌 줄은 이 검사를 그냥 지나간다. 재료가 없으면 모르는 것이고,
+ *   없는 재료로 막으면 정상 이관까지 멈춘다. 좁게 막고 그 사실을 여기 적어 둔다. */
+const 산주인 = (() => {
+  if (!inRepo) return [];                                    // 저장소 밖 픽스처엔 커밋도 세션도 없다
+  const 해시들 = [...new Set(row.match(/\b[0-9a-f]{7,40}\b/g) || [])];
+  if (!해시들.length) return [];
+  let owner; let store;
+  try {
+    owner = require('./작업본소유자.js');
+    store = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'handoff-store.js'));
+  } catch (e) {
+    /* 「검사를 못 했다」와 「통과했다」가 같은 모양이면 안 된다 — 조용히 넘기지 않고 말한다. */
+    console.error(`  ⚠ 주인 생사 검사를 **못 했다**(${e.code || e.message}) — 원칙 ⑥이 이번엔 안 돌았다.`);
+    return [];
+  }
+  const 나 = store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
+  const 산 = new Map(owner.세션들(root).filter(owner.살았나).map((s) => [s.sid, s]));
+  if (!산.size) return [];
+  const 걸린것 = new Map();
+  for (const h of 해시들) {
+    if (git(['rev-parse', '--verify', '--quiet', `${h}^{commit}`], root).status !== 0) continue;  // 해시처럼 생긴 딴 것
+    const sid = ((git(['log', '-1', '--format=%(trailers:key=Session-Id,valueonly)', h], root).stdout || '')
+      .trim().split(/\r?\n/)[0] || '').trim();
+    if (!sid || sid === 나) continue;                         // 내 줄은 내가 옮긴다(/close 의 정상 경로)
+    if (산.has(sid) && !걸린것.has(sid)) 걸린것.set(sid, `${h} ← ${owner.짧게(sid)}·${산.get(sid).분}분 전`);
+  }
+  return [...걸린것.values()];
+})();
+if (산주인.length) {
+  die('이 줄을 쓴 세션이 **아직 살아 있다**(원칙 ⑥ · F146) — 옮기면 그 세션이 다음 턴에 자기 트랙을 잃는다.\n' +
+    '  **아무것도 쓰지 않았다** — 줄은 보드에 그대로다.\n' +
+    산주인.map((t) => '  · ' + t).join('\n') + '\n' +
+    '  「✅종결」은 그 세션이 끝났다는 뜻이 아니다. 그 세션이 끝난 뒤 다시 돌려라.\n' +
+    '  내 줄인데 막혔다면 환경변수 CLAUDE_CODE_HOST_SESSION_ID 가 비었는지 본다(비면 내 커밋도 남의 것으로 보인다).');
+}
+
+if (dry) { console.log('[board-move] --dry — 쓰지 않았다.'); process.exit(0); }
 
 /* 이관 **전부터** 더러웠는지 잰다. 쓴 뒤에 재면 내가 만든 더러움과 구분되지 않는다. */
 const archiveDirty = inRepo ? dirtyOf(ARCHIVE) : '';
