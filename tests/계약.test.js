@@ -77,7 +77,7 @@ test('픽스처 최상위 필드도 계약대로 만든다', () => {
 });
 
 test('계약 파일 자체가 비지 않았다 (빈 계약은 모든 검사를 통과시킨다)', () => {
-  assert.equal(계약.오류태그.length, 23, `오류태그 수가 23이 아니다(${계약.오류태그.length}) — 줄었다면 왜 줄었는지부터`);
+  assert.equal(계약.오류태그.length, 24, `오류태그 수가 24가 아니다(${계약.오류태그.length}) — 줄었다면 왜 줄었는지부터`);
   assert.ok(계약.골든판정.length >= 3 && 계약.픽스처_항목필드.length >= 6,
     '계약이 얇아졌다 — 항목이 사라지면 그 이음매는 다시 프로즈로 돌아간다');
   assert.ok(new Set(계약.오류태그).size === 계약.오류태그.length, '오류태그에 중복이 있다 — 집계가 두 칸으로 갈린다');
@@ -139,13 +139,23 @@ test('learning_events 값목록이 닫혀 있고 비어 있지 않다 (빈 통�
   // 오류태그와 같은 이유로 크기를 못박는다. 줄었다면 왜 줄었는지가 먼저다.
   assert.equal(LE.값목록.task_type.length, 6, `task_type이 6종이 아니다(${LE.값목록.task_type.length})`);
   assert.equal(LE.값목록.source_kind.length, 4, `source_kind가 4종이 아니다(${LE.값목록.source_kind.length})`);
-  /* c4 = c3 6종 + 3종. 값 추가는 하위호환이지만 **삭제·개명은 과거 집계를 깨뜨린다**(값목록_규칙).
+  /* c4 = c3 6종 + 3종 · c5 = +1종. 값 추가는 하위호환이지만 **삭제·개명은 과거 집계를 깨뜨린다**(값목록_규칙).
    * 이름을 하나씩 못박는 이유: 개수만 세면 하나를 지우고 하나를 더해도 통과한다. */
   for (const v of ['intervention.delivered', 'correction.viewed', 'data_use.granted']) {
     assert.ok(LE.값목록.event_type.includes(v),
       `c4가 추가한 event_type 「${v}」가 없다 — 없으면 AI 개입·교정 조회·훈련 승격이 계약 밖 사건이 된다(L0 §3-2·§6-1·C0 §9)`);
   }
-  assert.equal(LE.값목록.event_type.length, 9, `event_type이 9종이 아니다(${LE.값목록.event_type.length})`);
+  /* 🔴 c5: 폐기(discarded)와 철회(revoked)는 다른 사건이다. 승격이 사건이면 철회도 사건이어야
+   * 대칭이 맞고, 한 축으로 두면 「지웠어야 할 것이 남는다」가 **증상 없이** 성립한다(L0 §9-3).
+   * 동의문(`docs/동의_문구_v1.md`)이 「보관 중인 녹음을 모두 삭제」를 약속한 자리다. */
+  assert.ok(LE.값목록.event_type.includes('data_use.revoked'),
+    'c5가 추가한 event_type 「data_use.revoked」가 없다 — 철회가 계약 밖 사건이 되면 동의문이 거짓말이 된다');
+  assert.equal(LE.값목록.event_type.length, 10, `event_type이 10종이 아니다(${LE.값목록.event_type.length})`);
+  /* task_format 은 task_type 과 **다른 축**이다(통로 vs 형식). 이름이 비슷해 실제로 한 번 섞였다 —
+   * 발주 §1이 task_type 에 낭독·자유발화를 넣었다. 섞이면 섀도잉과 자유발화를 나중에 못 가른다. */
+  assert.equal(LE.값목록.task_format.length, 6, `task_format이 6종이 아니다(${LE.값목록.task_format.length})`);
+  assert.equal(LE.값목록.task_format.filter((v) => LE.값목록.task_type.includes(v)).length, 0,
+    'task_format과 task_type에 같은 값이 있다 — 두 축이 한 어휘로 뭉개지는 중이다');
   // 값목록이 있는 필드는 실제 필드 목록에도 있어야 한다 — 어휘만 남고 필드가 사라지면 아무도 모른다
   for (const 이름 of Object.keys(LE.값목록)) {
     assert.ok(전필드.includes(이름), `값목록 「${이름}」에 해당하는 필드가 없다 — 필드를 지웠거나 이름이 갈렸다`);
