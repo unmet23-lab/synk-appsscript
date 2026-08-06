@@ -150,7 +150,16 @@ test('learning_events 값목록이 닫혀 있고 비어 있지 않다 (빈 통�
    * 동의문(`docs/동의_문구_v1.md`)이 「보관 중인 녹음을 모두 삭제」를 약속한 자리다. */
   assert.ok(LE.값목록.event_type.includes('data_use.revoked'),
     'c5가 추가한 event_type 「data_use.revoked」가 없다 — 철회가 계약 밖 사건이 되면 동의문이 거짓말이 된다');
-  assert.equal(LE.값목록.event_type.length, 10, `event_type이 10종이 아니다(${LE.값목록.event_type.length})`);
+  /* 🔴 c6: 둘 다 「없으면 나중에 못 만드는」 사건이다.
+   *  task.assigned = 부재의 **분모**. 접속 0인 날만 세면 「안 왔다」와 「낼 게 없던 날」이 같은 모양이라
+   *    이탈 신호를 영영 못 배운다 — 그날 낼 것이 있었는지는 그날만 안다.
+   *  exam.result  = TOPIK 실성적(**강사 입력** · 유호님 확정 2026-08-06). 게이트 3축의 ③이
+   *    「TOPIK 취득에 도움되는가」인데 c5까지 그 축을 재는 사건이 하나도 없었다. */
+  for (const v of ['task.assigned', 'exam.result']) {
+    assert.ok(LE.값목록.event_type.includes(v),
+      `c6가 추가한 event_type 「${v}」가 없다 — 부재의 분모와 TOPIK 성과가 계약 밖 사건이 된다`);
+  }
+  assert.equal(LE.값목록.event_type.length, 12, `event_type이 12종이 아니다(${LE.값목록.event_type.length})`);
   /* task_format 은 task_type 과 **다른 축**이다(통로 vs 형식). 이름이 비슷해 실제로 한 번 섞였다 —
    * 발주 §1이 task_type 에 낭독·자유발화를 넣었다. 섞이면 섀도잉과 자유발화를 나중에 못 가른다. */
   assert.equal(LE.값목록.task_format.length, 6, `task_format이 6종이 아니다(${LE.값목록.task_format.length})`);
