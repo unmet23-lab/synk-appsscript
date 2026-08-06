@@ -161,6 +161,70 @@ test('SYNK_AUTOCOMMIT_OFF=1 이면 완전 침묵', (t) => {
   assert.strictEqual(머리해시(root), 전);
 });
 
+/* ── 형제 저장소(SYNK-talk) ─────────────────────────────────────────────────
+ * 보드 18줄 중 5줄이 talk 를 만진다 — 여기가 첫 판에서 통째로 빠졌던 자리다.
+ * 트랙은 appsscript 를 열고 `../SYNK-talk/…` 를 편집하므로 만짐 기록은 **내 키에 형제 접두**로
+ * 남는다(touchKey ⓑ). 그 좌표를 형제 상대 경로로 되돌리는 것은 작업본소유자.형제세션들 몫이고,
+ * 이 검사는 그 통로가 실제로 커밋까지 닿는지를 잰다. */
+function 형제판(t) {
+  const sib = fs.mkdtempSync(path.join(os.tmpdir(), '자동커밋형제-'));
+  t.after(() => { try { fs.rmSync(sib, { recursive: true, force: true }); } catch (_) {} });
+  git(['init', '-q'], sib);
+  git(['config', 'user.email', 't@t'], sib);
+  git(['config', 'user.name', 't'], sib);
+  fs.writeFileSync(path.join(sib, 'seed.txt'), 's');
+  git(['add', '--', 'seed.txt'], sib);
+  git(['commit', '-qm', 'seed'], sib);
+  return { 뿌리: sib, 이름: path.basename(sib) };
+}
+
+test('형제 저장소(talk) 파일도 커밋한다 — 두 저장소가 각자 한 줄', (t) => {
+  const { root, state } = 판(t);
+  const 형제 = 형제판(t);
+  쓰기(root, 'here.md', '이쪽');
+  쓰기(형제.뿌리, 'src/제출API.ts', '저쪽');
+  만짐기록(state, root, 'me-9', ['here.md', `../${형제.이름}/src/제출API.ts`]);
+
+  const out = 훅실행(root, state, 'me-9', { SYNK_OWNER_SIBLINGS: 형제.뿌리 });
+  const msg = JSON.parse(out).systemMessage;
+  assert.match(msg, /\[자동커밋\] 1개/, msg);
+  assert.match(msg, new RegExp(`\\[자동커밋\\] ${형제.이름} 1개`), `형제 저장소 줄이 없다: ${msg}`);
+
+  assert.deepStrictEqual(git(['show', '--name-only', '--format=', 'HEAD'], root).trim().split(/\r?\n/), ['here.md']);
+  assert.deepStrictEqual(git(['show', '--name-only', '--format=', 'HEAD'], 형제.뿌리).trim().split(/\r?\n/), ['src/제출API.ts']);
+  assert.match(git(['log', '-1', '--format=%s'], 형제.뿌리).trim(), /^자동커밋: /, '형제 커밋 제목이 고정 접두가 아니다');
+});
+
+test('형제에서 남이 함께 만진 파일은 남긴다(F104) — 좌표가 달라도 판정은 같다', (t) => {
+  const { root, state } = 판(t);
+  const 형제 = 형제판(t);
+  쓰기(형제.뿌리, '내것.ts', 'a');
+  쓰기(형제.뿌리, '함께.ts', 'b');
+  만짐기록(state, root, 'me-10', [`../${형제.이름}/내것.ts`, `../${형제.이름}/함께.ts`]);
+  만짐기록(state, root, 'peer-2', [`../${형제.이름}/함께.ts`]);   // 살아있는 남도 ⓑ 좌표로 만졌다
+
+  const msg = JSON.parse(훅실행(root, state, 'me-10', { SYNK_OWNER_SIBLINGS: 형제.뿌리 })).systemMessage;
+  assert.match(msg, /함께\.ts/, '함께 남긴 파일을 말하지 않았다');
+  assert.deepStrictEqual(git(['show', '--name-only', '--format=', 'HEAD'], 형제.뿌리).trim().split(/\r?\n/), ['내것.ts']);
+  assert.match(git(['status', '--porcelain'], 형제.뿌리), /함께\.ts/, '함께 파일이 형제 커밋에 쓸려 들어갔다');
+});
+
+test('형제가 rebase 중이어도 이 저장소는 커밋한다 — 저장소마다 독립', (t) => {
+  const { root, state } = 판(t);
+  const 형제 = 형제판(t);
+  쓰기(root, '내쪽.md', '값');
+  쓰기(형제.뿌리, '저쪽.ts', '값');
+  만짐기록(state, root, 'me-11', ['내쪽.md', `../${형제.이름}/저쪽.ts`]);
+  fs.mkdirSync(path.join(형제.뿌리, '.git', 'rebase-merge'), { recursive: true });
+  const 형제전 = git(['rev-parse', 'HEAD'], 형제.뿌리).trim();
+
+  const msg = JSON.parse(훅실행(root, state, 'me-11', { SYNK_OWNER_SIBLINGS: 형제.뿌리 })).systemMessage;
+  assert.match(msg, /\[자동커밋\] 1개/, msg);
+  assert.ok(!new RegExp(형제.이름).test(msg), `형제가 rebase 중인데 건드렸다: ${msg}`);
+  assert.deepStrictEqual(git(['show', '--name-only', '--format=', 'HEAD'], root).trim().split(/\r?\n/), ['내쪽.md']);
+  assert.strictEqual(git(['rev-parse', 'HEAD'], 형제.뿌리).trim(), 형제전, 'rebase 중인 형제가 커밋됐다');
+});
+
 test('삭제는 만지지 않는다 — Edit·Write 는 지우지 않으므로 기록 밖의 손이다', (t) => {
   const { root, state } = 판(t);
   쓰기(root, 'del.txt', '지워질 것');
