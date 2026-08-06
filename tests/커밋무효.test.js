@@ -100,7 +100,38 @@ test('tool_response 가 객체가 아니라 문자열로 와도 잡는다', () =
   assert.ok(v.경고, 'payload 모양 하나에만 맞춰 두면 하네스가 바뀌는 날 조용히 눈이 먼다');
 });
 
+/* 🔑 F113 의 반대 방향 — 거짓양성을 없애다 탐지력까지 없애면 안 된다.
+ * 커밋이 둘인데 하나만 착지한 경우는 여전히 잡아야 한다(그게 원래 F071 이 노린 자리다). */
+test('🔑 커밋이 둘인데 하나만 착지하면 잡는다 (체인 판정이 탐지력을 안 깎았는지)', () => {
+  const v = run({
+    command: 'git commit -m "a" -- a.js && git commit -m "b" -- b.js',
+    stdout: '[master abc1234] a\n 1 file changed, 2 insertions(+)\nOn branch master\nnothing to commit, working tree clean',
+  });
+  assert.ok(v.경고, '둘 중 하나만 들어갔는데 조용했다 — 착지 수로 판정하면서 이 자리를 잃으면 F071 이 되살아난다');
+  assert.match(v.본문, /2개 중 \*\*1개만 착지\*\*/, '몇 개가 들어갔는지 안 알려주면 사람이 다시 세야 한다');
+});
+
 // ─────────────────── 거짓양성 (벌주면 안 된다) ───────────────────
+
+/* 🔑 F113 (2026-08-05 실사고) — 한 명령줄 안의 `git status` 출력을 커밋 결과로 읽었다.
+ *   `git status; git add -- x; git commit -F msg -- x` 에서 status 가 「no changes added to commit」 을
+ *   찍고, 커밋은 **실제로 착지했다**(SYNK-talk b74be75 · 1 file changed). 그런데 가드가 짖었다.
+ *   가드가 실작업을 벌주면 사람은 가드를 끈다 — 그게 F049·F103 이 남긴 교훈이다. */
+test('🔑 체인 앞의 `git status` 가 낸 문구를 커밋 결과로 읽지 않는다 (F113 실사고 재현)', () => {
+  const v = run({
+    command: 'git status; git add -- docs/L0_데이터계약.md; git commit -F msg.txt -- docs/L0_데이터계약.md',
+    stdout: [
+      'On branch master',
+      'Changes not staged for commit:',
+      '\tmodified:   docs/L0_데이터계약.md',
+      'no changes added to commit (use "git add" and/or "git commit -a")',
+      '[master b74be75] docs: L0 확장',
+      ' 1 file changed, 12 insertions(+)',
+    ].join('\n'),
+  });
+  assert.ok(!v.경고,
+    `커밋이 착지했는데 no-op 이라고 짖었다 — 앞단 status 의 출력을 커밋 것으로 읽은 F113 그대로다:\n${v.본문}`);
+});
 
 test('🔑 커밋 제목에 그 문구가 들어간 **성공한** 커밋을 벌주지 않는다', () => {
   // git 은 성공하면 제목을 되뱉는다. 이 저장소는 커밋 제목에 가드 이야기를 자주 쓴다 —
