@@ -124,6 +124,21 @@ function 목록보기() {
   }
 }
 
+/* 병합 이력만 남긴다 — 내용은 위에서 checkout 으로 가져왔거나, 가져올 게 애초에 없었다.
+ * 이게 없으면 그 브랜치가 영원히 「대기 중」으로 뜬다(작업본소유자).
+ * `-s ours` = master 의 트리를 그대로 둔다. 낡은 공유 파일 판을 **일부러** 버리는 것이고,
+ * 버려도 사라지지 않는다 — 브랜치가 이 병합의 부모로 남아 `git show` 로 영원히 읽힌다. */
+function 병합이력(브랜치, 사유, 꼬리 = '') {
+  const 임시 = path.join(os.tmpdir(), `synk-병합-${process.pid}.txt`);
+  fs.writeFileSync(임시, `폰 브랜치 병합 이력 기록 — ${사유}\n${꼬리}`, 'utf8');
+  git(['merge', '-s', 'ours', 브랜치, '-F', 임시]);
+  fs.unlinkSync(임시);
+  const 남았나 = 줄들(git(['for-each-ref', '--no-merged', 'master',
+    '--format=%(refname:short)', `refs/remotes/${브랜치}`]));
+  console.log(남았나.length ? '⚠ 아직 미병합으로 잡힌다 — 확인 필요' : '✅ 대기 목록에서 빠졌다');
+  console.log('\n다음: 원격에 올린다 — git push origin master');
+}
+
 function 받기(브랜치) {
   if (!브랜치.startsWith('origin/claude/')) {
     console.error(`❌ 클라우드 브랜치가 아니다: ${브랜치}`);
@@ -133,8 +148,33 @@ function 받기(브랜치) {
   if (git(['fetch', '--quiet', 'origin'], { 실패허용: true }) === null) {
     console.error('❌ fetch 실패 — 낡은 캐시로 반입하지 않는다.'); process.exit(1);
   }
+  /* 이미 master 의 조상이면 끝난 브랜치다. `-s ours` 로 이력만 남긴 브랜치는 내용이 여전히
+   * 달라 보이므로(트리를 일부러 안 가져왔다) 「가져올 것」 계산만으로는 재반입을 못 막는다. */
+  if (git(['merge-base', '--is-ancestor', 브랜치, 'master'], { 실패허용: true }) !== null) {
+    console.error(`❌ 이미 master 에 들어와 있다: ${브랜치}`);
+    console.error('   내용이 달라 보여도 그건 공유 파일을 일부러 안 가져온 자리다 — 다시 받지 않는다.');
+    process.exit(1);
+  }
   const p = 계획(브랜치);
-  if (!p.가져올것.length) { console.error('❌ 가져올 것이 0건이다 — 이미 들어왔거나 브랜치가 비었다.'); process.exit(1); }
+  /* 0건에는 성격이 다른 둘이 섞여 있다 — 갈라서 다루지 않으면 **받을 수 없는 브랜치**가 생긴다.
+   * ①정말 빈 브랜치(이미 반입됨) = 멈출 자리.
+   * ②변경이 전부 공유 파일이라 제외된 것 = 가져올 내용은 없지만 **이력은 남겨야 한다.**
+   *   멈추면 그 브랜치는 영원히 「대기 중」으로 떠서 매 세션 시작을 오염시킨다(방치 9시간과 같은 계열). */
+  if (!p.가져올것.length) {
+    if (!p.제외 || p.삭제.length) {
+      console.error('❌ 가져올 것이 0건이다 — 이미 들어왔거나 브랜치가 비었다.');
+      process.exit(1);
+    }
+    const 담긴것 = 줄들(git(['log', '--format=%h %s', `master..${브랜치}`])).map((s) => `  ${s}`).join('\n');
+    console.log(`가져올 것 0건 — 변경 ${p.상태.length}건이 전부 공유 파일이라 제외됐다.`);
+    console.log('   내용은 안 가져오되 이력은 남긴다(안 그러면 대기 목록에서 안 빠진다).');
+    병합이력(브랜치, '공유 파일뿐이라 내용은 안 가져왔다',
+      `\n변경 ${p.상태.length}건이 전부 공유 파일(세션보드 2종)이라 제외됐다 — 갈라진 시점 판이라\n`
+      + '이미 낡았고, 남의 살아있는 세션이 미커밋으로 들고 있어 덮으면 F073 사고가 된다.\n\n'
+      + '버린 게 아니라 이 병합의 부모로 남는다 — 내용은 `git show` 로 읽는다:\n'
+      + `${담긴것}\n`);
+    return;
+  }
   if (p.겹침.length) {
     console.error(`❌ 미커밋과 겹치는 파일 ${p.겹침.length}건 — 덮으면 남의 편집이 사라진다(F073):`);
     console.error(`   ${p.겹침.join('\n   ')}`);
@@ -178,14 +218,7 @@ function 받기(브랜치) {
   if (!방금.includes('반입')) { console.error(`❌ 커밋이 안 된 것 같다 — HEAD: ${방금}`); process.exit(1); }
   console.log(`✅ 커밋 ${방금}`);
 
-  /* 병합 이력만 남긴다 — 내용은 위에서 이미 가져왔으므로 `-s ours` 가 정확하다.
-   * 이게 없으면 그 브랜치가 영원히 「대기 중」으로 뜬다(작업본소유자). */
-  git(['merge', '-s', 'ours', 브랜치, '-m',
-    `폰 브랜치 병합 이력 기록 — 내용은 ${방금.split(' ')[0]} 로 이미 반입(공유 파일 제외)`]);
-  const 남았나 = 줄들(git(['for-each-ref', '--no-merged', 'master',
-    '--format=%(refname:short)', `refs/remotes/${브랜치}`]));
-  console.log(남았나.length ? '⚠ 아직 미병합으로 잡힌다 — 확인 필요' : '✅ 대기 목록에서 빠졌다');
-  console.log('\n다음: 원격에 올린다 — git push origin master');
+  병합이력(브랜치, `내용은 ${방금.split(' ')[0]} 로 이미 반입(공유 파일 제외)`);
 }
 
 if (require.main === module) {
