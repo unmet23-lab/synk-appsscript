@@ -59,7 +59,8 @@ function makeRepo() {
 }
 
 const 해시 = (buf) => crypto.createHash('sha256').update(buf).digest('hex').slice(0, 16);
-const 콘솔라스PDF = '%PDF-1.4\n/BaseFont /ABCDEF+Consolas\n%%EOF';
+// 「정상 PDF」 = 브랜드 3종이 다 실린 것. 게이트가 Consolas 1종에서 3종으로 넓어졌다(2026-08-06).
+const 콘솔라스PDF = '%PDF-1.4\n/BaseFont /ABCDEF+SUIT-Regular\n/BaseFont /BCDEFG+InterTight-Regular\n/BaseFont /CDEFGH+DMMono-Regular\n%%EOF';
 const 무폰트PDF = '%PDF-1.4\n/BaseFont /GHIJKL+SomeSans\n%%EOF';
 
 /** 지도 폴더 픽스처: html·pdf·상태 기록을 한 번에 깐다 */
@@ -168,7 +169,7 @@ test('굽기 기록이 없으면 신선도를 「확정할 수 없다」고 말�
   assert.match(r.out, /확정할 수 없다/);
 });
 
-test('PDF에 모노 폰트가 임베드되지 않으면 잡는다 (인쇄본에서만 죽는 실측 사고)', () => {
+test('PDF에 브랜드 서체가 없으면 잡는다 (인쇄본에서만 죽는 실측 사고)', () => {
   const repo = makeRepo();
   const html = `<!-- 파생: docs/정본.md@${repo.h2.slice(0, 7)} -->\n<html></html>`;
   const maps = makeMaps([{
@@ -179,7 +180,26 @@ test('PDF에 모노 폰트가 임베드되지 않으면 잡는다 (인쇄본에�
   }]);
   const r = run(['--check'], { SYNK_지도_DIR: maps, SYNK_지도_ROOT: repo.dir });
   assert.strictEqual(r.code, 1);
-  assert.match(r.out, /Consolas.*임베드되지 않았다/);
+  assert.match(r.out, /브랜드 서체가 없다: SUIT·Inter Tight·DM Mono/);
+});
+
+test('브랜드 서체가 압축 스트림 안에 있어도 찾아낸다 (평문 grep 은 못 본다 — 오판의 원인)', () => {
+  const M = require(TOOL);
+  const zlib = require('zlib');
+  // 폰트 이름을 **압축된 스트림 안**에만 넣는다. 평문 훑기는 여기서 0건을 돌려준다.
+  const 속 = zlib.deflateSync(Buffer.from('/BaseFont /AAAAAA+SUIT-Regular /BaseFont /BBBBBB+InterTight-Bold', 'latin1'));
+  const pdf = Buffer.concat([
+    Buffer.from('%PDF-1.4\n1 0 obj<</Length 1>>stream\n', 'latin1'), 속,
+    Buffer.from('\nendstream endobj\n/BaseFont /CCCCCC+DMMono-Regular\n%%EOF', 'latin1'),
+  ]);
+  const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'synk-pdffont-')), 'a.pdf');
+  fs.writeFileSync(f, pdf);
+  const 폰트 = M.임베드폰트(f);
+  assert.ok(폰트.includes('SUIT-Regular'), `압축 안의 SUIT 를 놓쳤다: ${폰트.join(',')}`);
+  assert.ok(폰트.includes('InterTight-Bold'), `압축 안의 Inter Tight 를 놓쳤다: ${폰트.join(',')}`);
+  assert.ok(폰트.includes('DMMono-Regular'), `평문의 DM Mono 를 놓쳤다: ${폰트.join(',')}`);
+  assert.deepStrictEqual(M.빠진서체(폰트), []);
+  assert.deepStrictEqual(M.빠진서체(['MalgunGothic', 'Consolas']), ['SUIT', 'Inter Tight', 'DM Mono']);
 });
 
 test('한글 정본 경로를 통째로 받는다 — ASCII 문자군 정규식이 세 번 당긴 자리', () => {
