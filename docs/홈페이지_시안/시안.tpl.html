@@ -153,7 +153,7 @@ footer a:hover{color:var(--ink);border-color:var(--sub)}
 <header>
   <div class="logo">syn<b>&lt;</b></div>
   <div class="hbtns">
-    <nav aria-label="배경 실험">
+    <nav aria-label="테마">
       <button type="button" id="mLight" aria-current="true">Light</button>
       <button type="button" id="mDark" aria-current="false">Dark</button>
     </nav>
@@ -317,7 +317,7 @@ if (!still && fine){
   addEventListener('scroll', () => { if (live && !queued){ queued = true; requestAnimationFrame(paint); } }, {passive:true});
 }
 
-/* 배경 토글 (실험용) */
+/* 테마 — 방문자 선택(초기값 = 시스템 선호) */
 const mL = document.getElementById('mLight'), mD = document.getElementById('mDark');
 function setMode(dark){
   document.body.classList.toggle('dark', dark);
@@ -327,6 +327,7 @@ function setMode(dark){
 }
 mL.onclick = () => setMode(false);
 mD.onclick = () => setMode(true);
+if (matchMedia('(prefers-color-scheme: dark)').matches) setMode(true);
 
 requestAnimationFrame(() => {
   document.body.classList.add('lit');
