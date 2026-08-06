@@ -81,6 +81,7 @@ function docSection() {
     stale: g.stale,
     canonUnknown: g.canonUnknown,
     unversioned: g.unversioned.length,
+    mapGaps: g.mapGaps,
   };
 }
 
@@ -226,6 +227,19 @@ function collect() {
     }
     for (const c of doc.value.canonUnknown) {
       warn.push({ kind: '정본 버전 미상', text: `${c.target}(${c.from}이 ${c.cited} 인용)` });
+    }
+    // 색인 밖 문서는 **한 줄로** 올린다 — 12건이 각자 한 줄을 먹으면 warn 렌더 상한(12)을
+    // 통째로 차지해 다른 신호를 밀어낸다. 전량은 도구가 갖고 있다.
+    const mg = doc.value.mapGaps;
+    if (mg.noMap) {
+      red.push({ kind: '지도 실종', text: 'docs/문서_지도.md 가 없다 — 색인이 통째로 사라졌다' });
+    } else if (mg.missing.length) {
+      const 앞 = mg.missing.slice(0, 3).map((m) => path.basename(m)).join('·');
+      warn.push({
+        kind: '지도 누락',
+        text: `${mg.missing.length}종이 문서_지도.md 색인 밖 — ${앞}${mg.missing.length > 3 ? ' 외' : ''}` +
+          ' · 색인이 갈라지면 정본 지목이 두 갈래가 된다(08-07 실측) · 전량: node tools/doc-graph.js',
+      });
     }
   }
 

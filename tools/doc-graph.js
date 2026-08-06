@@ -20,7 +20,7 @@
 // 버전이 없는 엣지는 '최신'이 아니라 **'모름'**으로 집계한다(모름을 정상으로 바꾸지 않는다).
 //
 // 사용법:
-//   node tools/doc-graph.js              리포트(정본별 파생·깨진 참조·낡은 인용·심을 후보)
+//   node tools/doc-graph.js              리포트(정본별 파생·깨진 참조·낡은 인용·지도 누락·심을 후보)
 //   node tools/doc-graph.js --of <파일>  그 정본을 따르는 파생 목록만(훅이 쓴다)
 //   node tools/doc-graph.js --add <파생> <정본[@v1.1]>...   엣지 심기
 //   node tools/doc-graph.js --stamp <파생>  그 파생의 엣지를 정본 현재 버전으로 = "지금 맞다" 선언
@@ -120,6 +120,30 @@ function canonVersion(text) {
 const sameVersion = (a, b) =>
   String(a).toLowerCase().replace(/^v/, '') === String(b).toLowerCase().replace(/^v/, '');
 
+/* [2026-08-07] 지도 누락 — 「낡은 인용」과 **축이 다르다.** 그건 *연결이 낡았다*, 이건 *연결이 아예 없다*.
+ * 왜 있나: 08-05에 신설된 `docs/제품방향.md`가 스스로 「제품 방향 공용 정본」을 선언하는데
+ * `docs/문서_지도.md`는 여전히 「제품 방향의 최신 정본 = SYNK_CONTEXT.md」라고 말하고 있었다.
+ * 정본 지목이 두 갈래로 갈라진 채 사흘을 갔고, 색인 밖 신설 문서가 12종이었다.
+ * **엣지 검사로는 영원히 안 잡힌다** — 색인에 없는 문서는 애초에 아무 선언도 안 하기 때문이다.
+ * 오탐 0 설계(파생이 선언한 것만 본다)의 그림자가 정확히 이 자리다.
+ *
+ * 최상위 `docs/*.md`만 본다 — 하위 폴더(`_ops/`·`정본/`·`tools/`)는 지도가 **폴더 단위**로 적는다.
+ * 판정은 파일명 문자열 포함 — 사람이 실제로 지도에 쓰는 표기다(표 칸의 `**제품방향.md**`).
+ * 천장: `대장.md` 같은 짧은 이름이 `시스템_대장.md` 안에 묻히면 미탐이 난다.
+ * 미탐 쪽으로 기울인 것은 의도다 — 오탐이 나면 이 알림 전체가 신뢰를 잃는다. */
+const DOC_MAP = 'docs/문서_지도.md';
+const TOP_LEVEL_MD = /^docs\/[^/]+\.md$/;
+
+function findMapGaps(docs) {
+  const map = docs.get(DOC_MAP);
+  // 지도가 없는 것과 「누락 0」을 같은 모양으로 두지 않는다 — 미실행이 통과처럼 보이면 안 된다.
+  if (!map) return { noMap: true, missing: [] };
+  const missing = [...docs.keys()]
+    .filter((r) => r !== DOC_MAP && TOP_LEVEL_MD.test(r) && !map.text.includes(path.basename(r)))
+    .sort();
+  return { noMap: false, missing };
+}
+
 function build() {
   const files = SCAN_DIRS.flatMap((d) => walk(path.join(ROOT, d)));
   const docs = new Map(); // relPath -> {rel, full, canon, follows:[], text}
@@ -172,7 +196,10 @@ function build() {
       if (d.text.includes(stem)) candidates.push({ doc: d.rel, canon: c.rel });
     }
   }
-  return { docs, derivedOf, broken, candidates, canons, stale, unversioned, canonUnknown };
+  return {
+    docs, derivedOf, broken, candidates, canons, stale, unversioned, canonUnknown,
+    mapGaps: findMapGaps(docs),
+  };
 }
 
 // 파생 선언을 문서에 심는다. 손으로 10곳에 같은 주석을 붙이면 형식이 흔들리고,
@@ -298,6 +325,7 @@ function main() {
       stale: g.stale,
       unversioned: g.unversioned,
       canonUnknown: g.canonUnknown,
+      mapGaps: g.mapGaps,
       candidates: g.candidates,
       canons: g.canons.map((c) => ({ rel: c.rel, version: c.version })),
     }, null, 2));
@@ -331,6 +359,14 @@ function main() {
     }
     console.log('    고친 뒤:  node tools/doc-graph.js --stamp <파생문서>');
   }
+  if (g.mapGaps.noMap) {
+    console.log(`\n  🔴 문서 지도가 없다 — ${DOC_MAP}(색인이 통째로 사라졌다)`);
+  } else if (g.mapGaps.missing.length) {
+    console.log(`\n  ⚠ 지도 누락 — ${g.mapGaps.missing.length}건(최상위 docs/*.md 인데 ${DOC_MAP} 색인에 없다)`);
+    for (const m of g.mapGaps.missing) console.log(`    ${m}`);
+    console.log('    → 지도에 한 줄 넣거나, 끝난 문서면 docs/_archive/ 로 옮긴다.');
+  }
+
   if (g.canonUnknown.length) {
     console.log(`\n  ⚠ 정본 버전 미상 — ${g.canonUnknown.length}건(정본 머리말에서 vN을 못 읽어 낡음 판정 불가)`);
     for (const c of g.canonUnknown) console.log(`    ${c.target}  ← ${c.from}(인용 ${c.cited})`);
@@ -364,5 +400,5 @@ function main() {
 if (require.main === module) main();
 module.exports = {
   build, parseEdges, parseEdgesFull, splitVersion, canonVersion, sameVersion,
-  isCanon, addEdge, rel, shouldSkip, ROOT,
+  isCanon, addEdge, rel, shouldSkip, ROOT, findMapGaps, DOC_MAP,
 };
