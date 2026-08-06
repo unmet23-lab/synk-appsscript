@@ -118,6 +118,32 @@ test('허용 바닥의 Slate·Slate 2 는 통과한다 (자기 처방을 막지 
   assert.deepEqual(r.키트밖색, [], 'Slate 2색이 킷 파생에 안 실렸다');
 });
 
+/* 조항 ⓖ(v1.10) — Emerald 도 킷 색이라 ②로는 안 걸린다. 유일한 오용은 **다크에 쓰는 것**이고
+ * (Navy 2 위 2.98 — 대형 기준 3.0 조차 못 넘는다) 그건 ①대비만 잡는다. Slate 2 와 달리
+ * 「대형이면 통과하는 틈」이 없어서, 여기만 초록이면 조항이 기계로 지켜진다. */
+test('Emerald(라이트 전용)를 다크 바닥에 쓰면 크기 불문 잡는다 — 조항 ⓖ의 유일한 오용 형태', { skip: 크롬없음 }, () => {
+  const p = 픽스처('emerald-on-dark',
+    '<div style="background:#0F1730"><p style="color:#13724A;font-size:12px">+120 P</p>'
+    + '<p style="color:#13724A;font-size:32px">LEVEL 3</p></div>');
+  const r = 측정(p, CHROME);
+  assert.equal(r.키트밖색.length, 0, 'Emerald 는 킷 색이다 — ②로 걸리면 이 테스트는 딴 것을 재는 것이다');
+  assert.equal(r.대비위반.length, 2, 'Navy 2 위 2.98 은 소형(4.5)도 대형(3.0)도 미달이라 둘 다 걸려야 한다');
+  assert.ok(r.대비위반.every((v) => v.fg === '#13724A' && v.대비 < 3),
+    `대비가 ${r.대비위반.map((v) => v.대비)} — 2.98 근처여야 한다(3.0 을 넘으면 대형이 새어 나간다)`);
+});
+
+test('허용 바닥의 Emerald 는 통과한다 — 라이트 4면 + 그 면 위 글자 (자기 처방 검사 · F103)', { skip: 크롬없음 }, () => {
+  const p = 픽스처('emerald-ok',
+    '<div style="background:#FBF7EE"><p style="color:#13724A;font-size:12px">Paper 5.56</p></div>'
+    + '<div style="background:#F6F1E8"><p style="color:#13724A;font-size:12px">Cream 5.28</p></div>'
+    + '<div style="background:#FFE9E4"><p style="color:#13724A;font-size:12px">Wash 5.10</p></div>'
+    + '<div style="background:#EFE7D7"><p style="color:#13724A;font-size:12px">Cream 2 4.83</p></div>'
+    + '<div style="background:#13724A"><p style="color:#F6F1E8;font-size:12px">면 위 글자는 Cream</p></div>');
+  const r = 측정(p, CHROME);
+  assert.deepEqual(r.대비위반, [], '조항이 시키는 대로 썼는데 빨간불이면 사람은 가드를 끈다');
+  assert.deepEqual(r.키트밖색, [], 'Emerald 가 킷 파생에 안 실렸다');
+});
+
 test('텍스트가 없는 컨테이너의 면도 잡는다 (자식에게 글을 넘긴 패널이 숨던 자리)', { skip: 크롬없음 }, () => {
   const p = 픽스처('panel', '<div style="background:#FFFFFF"><span style="color:#171820">글은 자식에</span></div>');
   const r = 측정(p, CHROME);

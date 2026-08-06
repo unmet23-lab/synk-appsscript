@@ -23,9 +23,9 @@
 (() => {
   'use strict';
 
-  // 정본 22색 — 19색의 hex 원천 = docs/_archive/브랜드_색상키트_원본_CrewDossier_2026-08-01.html
+  // 정본 23색 — 19색의 hex 원천 = docs/_archive/브랜드_색상키트_원본_CrewDossier_2026-08-01.html
   //             06 Slate 2색은 2026-08-07 유호님 확정 추가 (컨셉 정본 조항 ⓔ)
-  //             07 Lime Family 1색은 2026-08-07 유호님 확정 추가 (컨셉 정본 조항 ⓕ)
+  //             07 Lime Family = Lime 2(조항 ⓕ) + Emerald(조항 ⓖ) — 둘 다 2026-08-07 유호님 확정
   const KIT = {
     '#f6f1e8': 'Cream', '#ff6b5c': 'Coral', '#1a2340': 'Navy', '#c8ff3d': 'Lime', '#171820': 'Ink',
     '#fbf7ee': 'Paper', '#efe7d7': 'Cream 2', '#e7ddc7': 'Cream 3',
@@ -33,7 +33,7 @@
     '#2a3358': 'Navy 3', '#131a32': 'Navy Ink', '#0f1730': 'Navy 2',
     '#ff3e88': 'KC Hot Pink', '#ff6ba8': 'KC Pink 2', '#ffd447': 'KC Sun', '#4e7cff': 'KC Cool Blue',
     '#8a93ad': 'Slate', '#5f657d': 'Slate 2',
-    '#b8e836': 'Lime 2',
+    '#b8e836': 'Lime 2', '#13724a': 'Emerald',
   };
 
   // 팔레트 이름은 「오용 차단 장치」다 — 이름에 제한을 박아 두면 쓰는 사람이 규칙을 안 찾아봐도 걸린다.
@@ -44,7 +44,11 @@
     '04 Navy Family',
     '05 K-Culture (3색 Part 6 전용 · Sun=모드C 2도)', // v1.5 — Sun만 모드 C로 빠졌다
     '06 Slate (3층 잉크 · Slate=다크 / Slate 2=라이트)', // v1.8 — 바닥을 바꿔 쓰면 대비 미달
-    '07 Lime Family (Lime 2 · 라이트에선 면으로만)',      // v1.9 — Paper 위 1.34 라 글자로 쓰면 안 보인다
+    /* v1.10 — 팔레트 이름은 **안 바꾼다**(유호님이 등록해 둔 것을 그대로 둔다). 이 문구는 "Lime 2 는"
+     * 이라고 그 색을 지목하고 있어 Emerald 에 대해 거짓말을 하지 않는다. Emerald 의 제한은
+     * 아래 NAMED 의 **스와치 이름**이 진다 — 색마다 자기 규칙을 이름에 달고 있으면 팔레트 이름을
+     * 매번 고쳐 Canva 를 왕복할 필요가 없다. */
+    '07 Lime Family (Lime 2 · 라이트에선 면으로만)',
   ];
 
   // 시맨틱이 박힌 색 이름 — 지워지면 그 자리가 바로 오용된다(라임=v1.6, Sun=v1.5)
@@ -52,6 +56,7 @@
     '#c8ff3d': 'Lime (앱 성장·획득 전용)',
     '#ffd447': 'KC Sun (Part6·겹침 잉크)',
     '#b8e836': 'Lime 2 (라이트=면만)',
+    '#13724a': 'Emerald (라이트 전용)',
   };
 
   const leaves = [...document.querySelectorAll('*')]

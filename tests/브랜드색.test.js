@@ -35,7 +35,7 @@ const HEX_SOURCE = path.join(ROOT, 'docs', '_archive', '브랜드_색상키트_�
 const 토큰 = require('../docs/디자인_토큰.json');
 const KIT = Object.fromEntries(토큰.색.킷.map((c) => [c.hex.toUpperCase(), c.이름]));
 /* 19(v10 Crew Dossier · 08-01) + Slate 2색(08-07 유호님 확정) */
-const 킷개수 = 22;
+const 킷개수 = 23;
 
 /* hex 원천 HTML 밖의 색 — **08-01 원본 HTML 은 그날의 스냅샷이지 킷의 미래가 아니다.**
  * 그 문서를 소급 개서하면 「그때 무엇이었는지」가 사라지므로(_archive 성격), 나중에 더해진 색은
@@ -43,6 +43,7 @@ const 킷개수 = 22;
 const 원천밖 = {
   '#8A93AD': 'Slate — 2026-08-07 유호님 확정 추가(다크 3층 잉크). 원천 = 컨셉 정본 조항 ⓔ · memory kit-slate-gray-2026-08-07',
   '#5F657D': 'Slate 2 — 위와 같음(라이트 3층 잉크). #6B7186 을 그대로 못 올린 이유까지 조항 ⓔ에 있다',
+  '#13724A': 'Emerald — 2026-08-07 유호님 확정 추가(라이트 면의 성장·획득). 원천 = 컨셉 정본 조항 ⓖ · memory kit-slate-gray-2026-08-07',
 };
 
 /* 완전히 죽은 색 — 어느 층에서도 되살아나면 안 된다. 등장 자체를 막는다. */
