@@ -51,6 +51,77 @@ function findPython() {
   return null;
 }
 
+/* ── 폰트 스택 린트 ────────────────────────────────────────────────
+ * 임베드는 「폰트를 실어 보낸다」까지만 한다. **소스가 안 실린 폰트 이름을 부르면** 그 글자는
+ * 기계에 깔린 폰트가 그린다 — 이 PC 는 SUIT Variable 이 깔려 있어서 인쇄물 6종의 한글이 전부
+ * 그걸로 나가고 있었다(08-06 PDF 실측: BAAAAA+SUITVariable-ExtraBold). 안 깔린 기계에선 굵기가
+ * 통째로 내려앉는데, **양쪽 다 화면은 멀쩡해 보인다.**
+ * FACES 는 임베드 스크립트에서 **파생**한다 — 목록을 두 곳에 적으면 갈라진다.
+ */
+const GENERIC = new Set(['system-ui', 'sans-serif', 'serif', 'monospace', 'ui-monospace', 'cursive', 'fantasy', 'ui-sans-serif', 'ui-serif']);
+const SKIP_VALUE = /^(inherit|initial|unset|revert|var\()/i;
+
+function embeddedFaces() {
+  const block = fs.readFileSync(EMBED, 'utf8').match(/^FACES = \[([\s\S]*?)^\]/m);
+  if (!block) return null; // 스크립트 모양이 바뀌면 조용히 통과시키지 않는다
+  const faces = [...block[1].matchAll(/\(\s*"([^"]+)"\s*,\s*(\d+)/g)].map((m) => ({ fam: m[1], wt: Number(m[2]) }));
+  return faces.length ? faces : null;
+}
+
+/** 소스 1개를 검사한다 → 위반 문자열 배열. */
+function lintFonts(html, faces) {
+  const bad = [];
+  const fams = new Set(faces.map((f) => f.fam));
+
+  // ① 시스템 폴백에 닿기 전에 나오는 이름은 전부 임베드된 것이어야 한다.
+  //    (버그는 2번째 자리에 있었다 — 1번째만 보면 'Inter Tight' 라 통과한다)
+  // ⚠ 스택 **전체**를 떠야 한다. 초판은 따옴표에서 끊겨 첫 이름만 봤고 — 잡으라고 만든 그 버그를
+  //    그대로 통과시켰다(픽스처가 잡음). CSS 선언과 SVG 속성은 끝나는 문자가 달라 따로 뜬다.
+  const stacks = [
+    ...[...html.matchAll(/font-family\s*:\s*([^;{}<>]+)/g)].map((m) => m[1]),
+    ...[...html.matchAll(/font-family\s*=\s*"([^"]*)"/g)].map((m) => m[1]),
+    ...[...html.matchAll(/font-family\s*=\s*'([^']*)'/g)].map((m) => m[1]),
+  ];
+  for (const stack of stacks) {
+    const value = stack.trim();
+    if (SKIP_VALUE.test(value)) continue;
+    for (const raw of value.split(',')) {
+      const name = raw.trim().replace(/^['"]|['"]$/g, '');
+      if (!name) continue;
+      if (GENERIC.has(name)) break;                      // 여기서부터는 의도된 폴백
+      if (!fams.has(name)) { bad.push(`임베드 안 된 폰트를 폴백보다 앞에서 부른다: '${name}'`); break; }
+    }
+  }
+
+  // ② 쓰는 굵기가 임베드 범위 밖이면 브라우저가 **합성**한다(가짜 볼드) — 범위 안이면 대체만 된다.
+  //    한글을 지는 건 SUIT 뿐이라 SUIT 범위로 잰다.
+  const suit = faces.filter((f) => f.fam === 'SUIT').map((f) => f.wt);
+  const used = [...html.matchAll(/font-weight\s*[:=]\s*["']?(\d{3,4})\b/g)].map((m) => Number(m[1]));
+  if (suit.length && used.length) {
+    const lo = Math.min(...suit), hi = Math.max(...suit);
+    for (const w of new Set(used)) {
+      if (w < lo || w > hi) bad.push(`SUIT 임베드 범위(${lo}~${hi}) 밖의 굵기 ${w} — 가짜 볼드가 합성된다`);
+    }
+  }
+  return [...new Set(bad)];
+}
+
+function lintAll(srcs) {
+  const faces = embeddedFaces();
+  if (!faces) {
+    console.error(`🔴 ${path.relative(ROOT, EMBED)} 에서 FACES 를 못 읽었다 — 린트가 조용히 죽는다`);
+    return 1;
+  }
+  let bad = 0;
+  for (const s of srcs) {
+    for (const msg of lintFonts(fs.readFileSync(path.join(DIR, s), 'utf8'), faces)) {
+      console.error(`🔴 ${s} — ${msg}`);
+      bad++;
+    }
+  }
+  return bad ? 1 : 0;
+}
+
 function sources() {
   if (!fs.existsSync(DIR)) return [];
   return fs.readdirSync(DIR)
@@ -69,6 +140,9 @@ function main() {
     console.error('   (0건을 「할 일 없음」으로 넘기면 스캔이 조용히 죽은 것을 못 본다)');
     return 1;
   }
+
+  // 굽기 전에 소스부터 본다 — 안 실린 폰트를 부르는 소스도 「성공적으로」 구워져 나온다(rc 0).
+  if (lintAll(srcs)) return 1;
 
   // --check = 「산출물이 이 소스에서 나온 게 맞는가」를 **내용으로** 본다. 굽지 않으므로 파이썬이 없어도 답한다.
   //

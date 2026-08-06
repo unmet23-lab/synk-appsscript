@@ -48,6 +48,10 @@ FACES = [
     ("SUIT", 400, "SUIT/SUIT-Regular.otf"),
     ("SUIT", 500, "SUIT/SUIT-Medium.otf"),
     ("SUIT", 600, "SUIT/SUIT-SemiBold.otf"),
+    # 800·900 은 인쇄물 헤드·태그라인이 실제로 쓰는 굵기다. 없으면 브라우저가 600 으로 대신 그리거나
+    # 가짜 볼드를 합성한다 — 둘 다 화면에선 「굵어 보여서」 통과로 보인다.
+    ("SUIT", 800, "SUIT/SUIT-ExtraBold.otf"),
+    ("SUIT", 900, "SUIT/SUIT-Heavy.otf"),
     ("DM Mono", 300, "DM_Mono/DMMono-Light.ttf"),
     ("DM Mono", 400, "DM_Mono/DMMono-Regular.ttf"),
     ("DM Mono", 500, "DM_Mono/DMMono-Medium.ttf"),
