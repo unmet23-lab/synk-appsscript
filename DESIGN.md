@@ -17,7 +17,7 @@
 
 ## 2. 색 — v10 Crew Dossier 킷
 
-정본 = 컨셉 정본 §10~12 + §0 「킷의 서사」(코랄 5단·모드 A/B/C·대비표·왜 이 색들인가 — 대비표는 `tests/브랜드색.test.js`가 상시 재계산). 값의 기계 원천 = `docs/디자인_토큰.json`(21색 = v10 Crew Dossier 19 + Slate 2색).
+정본 = 컨셉 정본 §10~12 + §0 「킷의 서사」(코랄 5단·모드 A/B/C·대비표·왜 이 색들인가 — 대비표는 `tests/브랜드색.test.js`가 상시 재계산). 값의 기계 원천 = `docs/디자인_토큰.json`(**23색** = v10 Crew Dossier 19 + Slate 2 + Lime Family 2(Lime 2·Emerald)).
 
 | 층 | 이름 | HEX | 요점 |
 |---|---|---|---|
