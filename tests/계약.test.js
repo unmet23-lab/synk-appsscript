@@ -162,7 +162,13 @@ test('learning_events 값목록이 닫혀 있고 비어 있지 않다 (빈 통�
   assert.equal(LE.값목록.event_type.length, 12, `event_type이 12종이 아니다(${LE.값목록.event_type.length})`);
   /* task_format 은 task_type 과 **다른 축**이다(통로 vs 형식). 이름이 비슷해 실제로 한 번 섞였다 —
    * 발주 §1이 task_type 에 낭독·자유발화를 넣었다. 섞이면 섀도잉과 자유발화를 나중에 못 가른다. */
-  assert.equal(LE.값목록.task_format.length, 6, `task_format이 6종이 아니다(${LE.값목록.task_format.length})`);
+  /* 🔴 c7: 병렬 코퍼스(몽골어↔한국어)의 축. `번역`이 없으면 「몽골어 원문이 있는 답」과 「없는 답」이
+   *   한 칸에 섞이고, 섞인 뒤에는 못 가른다 — 제시문은 그 순간에만 남길 수 있다.
+   *   DB 는 여기서 한 발 더 나간다: `task_format='번역'`인데 `task_snapshot.mn`이 비면 행을 거절한다
+   *   (`submissions_translation_source_c7`) — 축만 있고 원문이 없으면 코퍼스가 아니라 그냥 한국어 문장이다. */
+  assert.ok(LE.값목록.task_format.includes('번역'),
+    'c7이 추가한 task_format 「번역」이 없다 — 병렬 코퍼스의 왼쪽(몽골어 제시문)을 담을 축이 사라진다');
+  assert.equal(LE.값목록.task_format.length, 7, `task_format이 7종이 아니다(${LE.값목록.task_format.length})`);
   assert.equal(LE.값목록.task_format.filter((v) => LE.값목록.task_type.includes(v)).length, 0,
     'task_format과 task_type에 같은 값이 있다 — 두 축이 한 어휘로 뭉개지는 중이다');
   // 값목록이 있는 필드는 실제 필드 목록에도 있어야 한다 — 어휘만 남고 필드가 사라지면 아무도 모른다
