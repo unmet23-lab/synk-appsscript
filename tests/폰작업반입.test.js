@@ -42,6 +42,14 @@ function 픽스처({ 브랜치 = 'claude/폰작업', 보드도바꾼다 = true }
   const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-반입-repo-'));
   임시들.push(repo);
   spawnSync('git', ['clone', '-q', 원본, repo], { encoding: 'utf8' });
+  /* 🔴 클론에도 같은 셋을 **로컬로** 박는다 — 위 `G` 의 `-c` 는 이 테스트가 부르는 git 에만 붙고,
+   * 정작 커밋하는 쪽은 `돌린다()` 가 띄우는 **도구 프로세스**다. 그 프로세스는 전역 설정을 읽는데
+   * CI(그리고 `tools/test-ci.js` 의 HOME=빈폴더)엔 전역 identity 가 없어 `Author identity unknown` 으로 죽는다.
+   * 🔑 개발 기계에선 `~/.gitconfig` 가 대신 채워 줘서 **로컬은 초록·CI만 적색**이 된다 — 주인이 볼 수 없는 형태다.
+   *   (실측 2026-08-07: HOME 하나만 빈 폴더로 바꾸자 4/4 → 3/4.) */
+  for (const [k, v] of [['user.name', 't'], ['user.email', 't@t'], ['commit.gpgsign', 'false']]) {
+    spawnSync('git', ['config', k, v], { cwd: repo, encoding: 'utf8' });
+  }
   return { repo, 원본, 브랜치: `origin/${브랜치}` };
 }
 
