@@ -18,6 +18,8 @@ const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
 
+const store = require('../.claude/hooks/lib/handoff-store.js');
+
 const ROOT = path.join(__dirname, '..');
 const HOOK_SRC = path.join(ROOT, 'tools', 'githooks', 'prepare-commit-msg');
 const SID = 'local_11111111-2222-3333-4444-555555555555';
@@ -104,4 +106,77 @@ test('이 저장소에 훅이 설치돼 있고 원본과 같다', (t) => {
       String(e.stdout || '').trim());
   }
   assert.match(out, /최신/, out);
+});
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 형제 저장소 사본이 갈라지지 않는가 (2026-08-07)
+ *
+ * 왜: 이 훅은 이제 **두 저장소에 각자 산다** — appsscript 는 `tools/githooks/` 원본을
+ *   `.git/hooks` 로 설치하고, SYNK-talk 은 `core.hooksPath=.githooks` 로 **자기 저장소 안에
+ *   추적되는 사본**을 둔다(talk `5ff575e`). 설치기로 한쪽에서 다른 쪽에 밀어넣지 않는다 —
+ *   그건 남의 저장소의 추적 파일을 덮는 짓이다.
+ *
+ *   그래서 남는 위험이 「사본 드리프트」다. 한쪽 훅만 고치면 **두 저장소의 주인 판정이 갈리고**,
+ *   증상은 조용하다(트레일러가 한쪽에만 안 박히거나 다르게 박힌다). 더 나쁜 것은 **양쪽 다
+ *   초록으로 보인다**는 점이다 — 각 저장소의 회귀는 자기 사본만 보기 때문이다.
+ *   CLAUDE.md 신뢰성: 같은 판정을 두 곳에 적으면 갈라진다 · 목록은 하나에서 파생시킨다.
+ *
+ * 무엇을 비교하나: **실행되는 줄만**. 두 사본의 머리말은 각자 다른 사연을 적으므로 다른 것이
+ *   정상이다(같기를 요구하면 거짓 경보가 되고, 거짓 경보를 내는 가드는 곧 꺼진다).
+ *   셔뱅은 주석처럼 생겼지만 **어느 인터프리터로 도느냐**라 실행부에 남긴다.
+ * ───────────────────────────────────────────────────────────────────────────── */
+
+/** 주석·빈 줄을 걷어낸 실행부(셔뱅은 남긴다). */
+function 실행부(원문) {
+  const 줄 = String(원문).replace(/\r\n/g, '\n').split('\n');
+  const 셔뱅 = 줄[0] && 줄[0].startsWith('#!') ? [줄[0].trim()] : [];
+  const 본문 = 줄.slice(셔뱅.length)
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith('#'));
+  return [...셔뱅, ...본문].join('\n');
+}
+
+/* 탐지력은 픽스처가 진다 — 실저장소는 지금 같으므로, 여기서 못박지 않으면 `실행부`가
+ * 전부를 지워 「언제나 같다」가 돼도 아래 검사는 초록이다(가드가 자기 눈을 감는 형태). */
+test('실행부 비교가 코드 차이는 잡고 주석 차이는 안 잡는다 (픽스처)', () => {
+  const 기준 = '#!/bin/sh\n# 사연 A\n[ -n "$X" ] || exit 0\nexit 0\n';
+  const 주석만다름 = '#!/bin/sh\n# 사연 B — 이 저장소의 다른 이력\n\n[ -n "$X" ] || exit 0\nexit 0\n';
+  const 코드다름 = '#!/bin/sh\n# 사연 A\n[ -n "$Y" ] || exit 0\nexit 0\n';
+  const 셔뱅다름 = '#!/bin/bash\n# 사연 A\n[ -n "$X" ] || exit 0\nexit 0\n';
+
+  assert.equal(실행부(기준), 실행부(주석만다름), '주석·빈 줄 차이를 드리프트로 오인한다(거짓 경보)');
+  assert.notEqual(실행부(기준), 실행부(코드다름), '실행되는 줄이 다른데 같다고 한다 — 이 검사가 눈이 멀었다');
+  assert.notEqual(실행부(기준), 실행부(셔뱅다름), '셔뱅 차이를 못 본다 — 도는 인터프리터가 다르면 다른 훅이다');
+  assert.ok(실행부(기준).includes('exit 0'), '실행부가 통째로 비었다 — 그러면 무엇이든 같아진다');
+});
+
+/** 그 저장소에서 **실제로 도는** 훅의 자리. 설정을 읽는다 — 추적 위치를 추측하지 않는다. */
+function 형제훅경로(뿌리) {
+  const run = (args) => execFileSync('git', args, { cwd: 뿌리, encoding: 'utf8', stdio: 'pipe' }).trim();
+  let dir = '';
+  try { dir = run(['config', '--get', 'core.hooksPath']); } catch (_) { /* 미설정 = 기본 자리 */ }
+  if (!dir) {
+    try { dir = path.join(run(['rev-parse', '--git-common-dir']), 'hooks'); } catch (_) { return null; }
+  }
+  const p = path.resolve(뿌리, dir, 'prepare-commit-msg');
+  return fs.existsSync(p) ? p : null;
+}
+
+/* 실저장소 쪽은 **거짓양성만** 검사한다(형제가 없는 CI 에서는 skip 으로 드러낸다 —
+ * 통과와 미실행이 같은 모양이면 안 된다). 형제 좌표는 handoff-store 하나에서만 온다. */
+test('형제 저장소의 prepare-commit-msg 사본이 실행부까지 같다', (t) => {
+  const 형제 = store.siblings(ROOT);
+  if (!형제.length) return t.skip('이 기계에 형제 저장소가 없다(CI) — 비교할 사본이 없다');
+
+  const 본 = [];
+  for (const { 뿌리, 저장소 } of 형제) {
+    const p = 형제훅경로(뿌리);
+    if (!p) { t.diagnostic(`${저장소}: prepare-commit-msg 없음 — 그 저장소 커밋엔 주인이 안 박힌다`); continue; }
+    본.push(저장소);
+    assert.equal(실행부(fs.readFileSync(p, 'utf8')), 실행부(fs.readFileSync(HOOK_SRC, 'utf8')),
+      `${저장소} 의 훅 사본이 정본(tools/githooks/prepare-commit-msg)과 실행부가 다르다.\n` +
+      `  → 두 저장소의 주인 판정이 갈린다. 사연(주석)은 각자 달라도 되지만 도는 줄은 같아야 한다.\n` +
+      `  → 사본: ${p}`);
+  }
+  if (!본.length) return t.skip('형제는 있는데 훅 사본이 하나도 없다 — 위 diagnostic 참고');
 });
