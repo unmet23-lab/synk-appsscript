@@ -203,6 +203,84 @@ test('취소선으로 통째 죽인 항목은 배달되지 않는다 — 단 조
   assert.match(items.버려진[0].text, /통째로 죽인/, '버려진 목록에 원문이 남아야 사람이 오판을 잡는다');
 });
 
+/* ── 주간 한 장 (2026-08-06 신설 · 유호님 채택) ────────────────────────────
+ * 큐는 배달로 안 준다 — 닫아야 준다. 주 1회 전량을 한 장으로 내고 유호님은 번호만 쓴다.
+ * 🔑 지켜야 할 성질은 **닫는 조준**이다: 메모리는 세션 여럿이 동시에 고쳐 한 주 안에
+ *    행 번호가 반드시 밀린다. 번호로 줄을 찾으면 **엉뚱한 결정이 닫힌다** — 그래서
+ *    닫기는 지문으로 다시 찾고, 하나로 안 떨어지면 **안 닫는다**.
+ */
+function 한장픽스처() {
+  const dir = fixture({
+    'MEMORY.md': '- [a](a.md)\n- [b](b.md)',
+    'a.md': '# A\n- ⏳ 첫째 결정\n- ⏳ 둘째 결정\n',
+    'b.md': '# B\n- ⏳ 셋째 결정\n',
+  });
+  const sheetPath = path.join(dir, '한장.md');
+  const r = q.build({ dir, date: DAY('2026-08-06') });
+  fs.writeFileSync(sheetPath, q.한장(r, DAY('2026-08-06')), 'utf8');
+  return { dir, sheetPath };
+}
+
+test('한 장 — 항목마다 번호와 지문이 붙는다', () => {
+  const { sheetPath } = 한장픽스처();
+  const s = q.시트읽기(sheetPath);
+  assert.equal(s.map.size, 3, '세 항목이 번호를 받아야 한다');
+  assert.match(s.발행, /^\d{4}-\d{2}-\d{2}$/, '발행일이 없으면 밀림 판정을 못 한다');
+  for (const [, v] of s.map) assert.match(v.지문, /^[0-9a-f]{10}$/);
+});
+
+test('🔴 닫기는 행 번호가 아니라 지문으로 찾는다 — 그 사이 줄이 밀려도 맞게 닫는다', () => {
+  const { dir, sheetPath } = 한장픽스처();
+  // 옆 세션이 a.md 맨 위에 줄을 끼워 넣는다 → 「첫째 결정」의 행 번호가 밀린다
+  const a = path.join(dir, 'a.md');
+  fs.writeFileSync(a, fs.readFileSync(a, 'utf8').replace('# A\n', '# A\n- 남의 세션이 끼워 넣은 줄\n- 또 한 줄\n'));
+
+  const 번호 = [...q.시트읽기(sheetPath).map].find(([, v]) => v.topic === 'a')[0];
+  const out = q.닫음([번호], { dir, sheet: sheetPath, date: DAY('2026-08-06') });
+  assert.equal(out.결과[0].ok, true, `밀린 줄을 못 찾았다: ${out.결과[0].사유}`);
+
+  const 본문 = fs.readFileSync(a, 'utf8');
+  assert.match(본문, /✅ 첫째 결정 — 유호님 확정 2026-08-06/, '⏳가 ✅로 바뀌고 확정일이 붙어야 한다');
+  assert.match(본문, /⏳ 둘째 결정/, '옆 항목까지 닫으면 안 된다');
+  assert.match(본문, /남의 세션이 끼워 넣은 줄/, '남의 줄을 지우면 안 된다');
+});
+
+test('🔴 줄이 그 사이 바뀌었으면 닫지 않는다 — 엉뚱한 결정을 닫는 것이 더 나쁘다', () => {
+  const { dir, sheetPath } = 한장픽스처();
+  const b = path.join(dir, 'b.md');
+  fs.writeFileSync(b, '# B\n- ⏳ 셋째 결정인데 내용이 통째로 바뀌었다\n');
+
+  const 번호 = [...q.시트읽기(sheetPath).map].find(([, v]) => v.topic === 'b')[0];
+  const out = q.닫음([번호], { dir, sheet: sheetPath, date: DAY('2026-08-06') });
+  assert.equal(out.결과[0].ok, false, '내용이 바뀐 줄을 그대로 닫았다 — 조준이 밀린 것이다');
+  assert.match(out.결과[0].사유, /바뀌었거나|다시 발행/);
+  assert.match(fs.readFileSync(b, 'utf8'), /⏳ 셋째 결정인데/, '못 닫았는데 파일을 건드렸다');
+});
+
+test('닫아도 원문은 지우지 않는다 — 되돌림이 ✅→⏳ 한 수여야 한다', () => {
+  const { dir, sheetPath } = 한장픽스처();
+  const 번호 = [...q.시트읽기(sheetPath).map].find(([, v]) => v.topic === 'b')[0];
+  q.닫음([번호], { dir, sheet: sheetPath, date: DAY('2026-08-06') });
+  const 줄 = fs.readFileSync(path.join(dir, 'b.md'), 'utf8').split('\n').find((l) => l.includes('셋째'));
+  assert.match(줄, /셋째 결정/, '원문이 사라졌다');
+  assert.equal(줄.replace('✅', '⏳').replace(/ — 유호님 확정 .*$/, ''), '- ⏳ 셋째 결정');
+});
+
+test('없는 번호·빈 한 장은 조용히 넘어가지 않는다', () => {
+  const { dir, sheetPath } = 한장픽스처();
+  const out = q.닫음([99], { dir, sheet: sheetPath, date: DAY('2026-08-06') });
+  assert.equal(out.결과[0].ok, false);
+  assert.match(out.결과[0].사유, /한 장에 없다/);
+  assert.match(q.닫음([1], { dir, sheet: path.join(dir, '없다.md') }).error, /한 장이 없다/);
+});
+
+test('밀림 판정 — 7일째부터 알린다 (경계값)', () => {
+  const { sheetPath } = 한장픽스처();   // 발행 2026-08-06
+  assert.equal(q.한장밀림(DAY('2026-08-12'), sheetPath).밀림, false, '6일째는 아직 아니다');
+  assert.equal(q.한장밀림(DAY('2026-08-13'), sheetPath).밀림, true, '7일째는 알려야 한다');
+  assert.equal(q.한장밀림(DAY('2026-08-13'), path.join(__dirname, '없다.md')).밀림, true, '한 장이 없으면 밀린 것이다');
+});
+
 /* ── 날짜 게이트 (2026-08-04 신설) ─────────────────────────────────────────
  * ⏳는 「몰라서 못 정함」과 **「알지만 아직 때가 아님」** 둘 다에 쓰인다.
  * 후자를 그냥 두면 매일 배달돼 큐 전체가 배경 소음이 된다 — 이 도구가 풀려는

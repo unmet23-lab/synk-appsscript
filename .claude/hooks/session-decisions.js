@@ -39,11 +39,11 @@ function shortTopic(topic) {
 }
 
 function main() {
-  let q;
+  let q; let dq;
   try {
     // decision-queue 는 날문자 센티널(CODE_MARK)을 담고 있어 손 편집이 위험한 파일이다.
     // 여기서는 **읽기만** 한다 — 배선이 그 파일을 고치지 않아도 되도록 export 를 쓴다.
-    const dq = require('../../tools/decision-queue.js');
+    dq = require('../../tools/decision-queue.js');
     q = dq.build({ count: COUNT });
   } catch (e) {
     // ③ 미실행을 침묵으로 위장하지 않는다. 단 세션 시작을 막지도 않는다(exit 0).
@@ -65,6 +65,19 @@ function main() {
     out.push(`     ${oneLine(it.text)}`);
   });
   out.push('  답은 그냥 여기 쓰시면 됩니다 — 제가 읽고 반영합니다.');
+
+  /* 주간 한 장 — **배달로는 큐가 안 준다. 닫아야 준다**(08-06 유호님 채택).
+   * 하루 3건 회전은 노출일 뿐이라 회전 한 바퀴보다 새 항목이 빨리 쌓인다.
+   * 여기서는 **알리기만** 한다 — 이 훅의 원칙 ①(읽기 전용)을 깨지 않는다. 발행은 도구가 한다. */
+  try {
+    const s = dq.한장밀림(new Date());
+    if (s.밀림) {
+      const 언제 = s.지난날 == null ? '아직 한 번도 안 나갔습니다' : `${s.지난날}일째 밀렸습니다`;
+      out.push(`  📄 주간 한 장이 ${언제} — 유호님께 전량 ${q.total}건을 한 장으로 보여드리려면:`);
+      out.push('     node tools/decision-queue.js --한장   (끝난 번호를 받으면 --닫음 3,7,12)');
+    }
+  } catch { /* 한 장을 못 재도 일일 큐는 나가야 한다 */ }
+
   process.stdout.write(out.join('\n') + '\n');
 }
 
