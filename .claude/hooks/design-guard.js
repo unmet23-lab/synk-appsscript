@@ -79,6 +79,7 @@ function 킷추출() {
     삼규칙: 줄(본문, '- 3규칙:'),
     이모지: 줄(본문, '이모지 과다 금지'),
     철칙: 블록(본문, '**철칙 4**'),
+    감각: 줄(본문, '- 감각 규칙:'),
   };
   // 앵커가 하나라도 죽으면 **조용히 빈 킷을 내보내지 않는다** — 빈 주입은 미실행과 같은 모양이다.
   조각.죽은앵커 = Object.entries(조각).filter(([k, v]) => k !== '죽은앵커' && !v).map(([k]) => k);
@@ -90,7 +91,7 @@ function 메시지(filePath) {
   if (!k) {
     return `[design-guard] DESIGN.md 를 못 읽었다 (${DESIGN}). 킷 없이 시각 산출물을 만들지 않는다 — 경로부터 확인해라.`;
   }
-  const 킷 = [k.삼규칙, k.이모지, '', k.철칙].filter((v) => v !== undefined).join('\n');
+  const 킷 = [k.삼규칙, k.이모지, '', k.철칙, '', k.감각].filter((v) => v !== undefined).join('\n');
   const 경고 = k.죽은앵커.length
     ? `\n⚠ DESIGN.md 앵커 ${k.죽은앵커.join('·')} 가 죽었다 — 아래 인용이 불완전하다. **DESIGN.md 전문을 읽어라.**\n`
     : '';

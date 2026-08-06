@@ -97,7 +97,7 @@ test('실저장소: 지금 DESIGN.md 의 앵커가 전부 살아 있다', () => 
 test('주입되는 인용이 DESIGN.md 에 문자 그대로 실존한다 (파생 증명)', () => {
   const 본문 = fs.readFileSync(DESIGN_MD, 'utf8').replace(/\r/g, '');
   const k = guard.킷추출();
-  for (const 조각 of [k.삼규칙, k.이모지]) {
+  for (const 조각 of [k.삼규칙, k.이모지, k.감각]) {
     assert.ok(본문.includes(조각), `정본에 없는 문장을 주입한다: ${조각.slice(0, 40)}…`);
   }
   // 철칙은 여러 줄 — 줄 단위로 전수 대조한다(한 줄이라도 어긋나면 파생이 아니라 사본이다)
