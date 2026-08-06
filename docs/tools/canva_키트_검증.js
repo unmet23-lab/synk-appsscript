@@ -82,7 +82,10 @@
   for (const hex of found) {
     if (!KIT[hex]) problems.push(`키트에 없는 색이 들어와 있다: ${hex}`);
   }
-  if (found.length !== 22) problems.push(`색이 ${found.length}개다 — 키트는 22색이다`);
+  // 개수는 **KIT 에서 파생한다.** 여기 숫자를 손으로 적으면 색이 느는 날 KIT 만 갱신되고
+  // 이 줄이 낡아, 올바른 키트를 보고 빨간불을 낸다(v1.10 에서 실제로 22 인 채 남았다).
+  const 킷개수 = Object.keys(KIT).length;
+  if (found.length !== 킷개수) problems.push(`색이 ${found.length}개다 — 키트는 ${킷개수}색이다`);
 
   for (const p of PALETTES) {
     if (!leaves.includes(p)) {
@@ -96,7 +99,8 @@
   }
 
   if (problems.length === 0) {
-    console.log('%c✅ 전부 일치 — 22색 · 팔레트 7개 이름 · 시맨틱 색 이름 3건', 'color:#027a48;font-weight:bold;font-size:14px');
+    console.log(`%c✅ 전부 일치 — ${킷개수}색 · 팔레트 ${PALETTES.length}개 이름 · 시맨틱 색 이름 ${Object.keys(NAMED).length}건`,
+      'color:#027a48;font-weight:bold;font-size:14px');
   } else {
     console.log('%c✘ 정본과 어긋난 곳 ' + problems.length + '건', 'color:#b91c1c;font-weight:bold;font-size:14px');
     problems.forEach((p) => console.log('   • ' + p));
