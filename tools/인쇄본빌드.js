@@ -13,9 +13,14 @@
  *  · 로고는 _브랜드킷.md §3 의 W5 SVG 도형 정본을 복사한다(좌표 재작도 금지).
  *  · 흐르는 다쪽 문서라 여백은 @page margin 으로 준다(고정판형 발표물의 margin 0 규격과
  *    다른 계열 — 본문이 페이지를 넘나들며 흐르므로 매 쪽 여백은 @page 가 담당한다).
- *  · 폰트는 시스템 설치본을 이름으로 부른다(SUIT·Inter Tight·DM Mono).
- *    크롬이 PDF 에 쓴 글리프를 서브셋 임베드하므로 산출 PDF 는 자립형이다.
- *    ⚠ SUIT 미설치 기계에서 구우면 한글이 폴백 폰트로 나간다 — 아래 폰트 검사가 경고한다.
+ *  · 폰트는 **시스템 설치본에 기대지 않는다** — `docs/tools/브랜드폰트_임베드.py` 를 지나
+ *    「쓰는 글자만」 서브셋해 HTML 에 심고 그걸 굽는다(2026-08-07 전환).
+ *    🔴 왜: 초판은 설치본을 이름으로 불렀는데, 유호님 PC 에는 **Inter Tight 도 DM Mono 도
+ *    설치돼 있지 않다**(`Inter`·`SUIT Variable` 뿐 · 실측). 그런데 초판의 폰트 검사는
+ *    `fc-list` 기반이라 윈도우에서 **통째로 침묵**한다 — 여기서 재빌드하면 조용히 더 나빠졌다.
+ *    임베드는 폰트 **파일**을 쓰므로 어느 기계에서 구워도 같고, 3종에 없는 글자는 빌드가 잡는다.
+ *  · 브랜드 3종에 없는 글자는 `인쇄_치환` 으로 종이에서만 바꾼다(원문 md 는 불변).
+ *    치환으로 뜻을 잃는 것(이모지 상태 언어·한자 어원 카드)만 폴백으로 남기고 목록을 찍는다.
  */
 'use strict';
 const fs = require('fs');
@@ -26,6 +31,7 @@ const { execFileSync } = require('child_process');
 const ROOT = path.join(__dirname, '..');
 const OUT_DIR = path.join(ROOT, 'docs', '인쇄본');
 const TOKENS = path.join(ROOT, 'docs', 'tools', 'synk-tokens.css');
+const EMBED = path.join(ROOT, 'docs', 'tools', '브랜드폰트_임베드.py');
 
 /* ── 매니페스트 — 「화면 밖에서 읽히거나 남에게 건네는 문서」만 ── */
 const MANIFEST = [
@@ -50,6 +56,42 @@ const MANIFEST = [
   { src: 'docs/가격_수업표_추천_v3.md',    title: '가격·수업표 현행안',         sub: '수강료·시간표·추천 구성',                group: '교육 설계' },
   { src: 'docs/홍보_트리오_정본_v1.md',    title: '홍보 트리오 정본',           sub: '대외 메시지 축 — 질문·스스로·마음',      group: '교육 설계' },
 ];
+
+/* ── 인쇄 치환표 — 화면(md)은 그대로, 종이에서만 바꾼다 ────────────────────
+ * 대상 = 브랜드 3종(Inter Tight·SUIT·DM Mono) 어디에도 없어 **폴백이 확정된** 글자 중
+ * 뜻을 잃지 않고 바꿀 수 있는 것. 목록은 추측이 아니라 전수 실측이다(폰트 cmap 합집합
+ * 13,773종 ∩ 매니페스트 16종 원문 → 고아 63종 = 이모지 47 + 그 밖 16).
+ * 🚫 여기 넣지 않은 것 — 이모지 47종(✅🔴⏳ 같은 상태 언어 · 바꾸면 문서가 뜻을 잃고,
+ *    어차피 어느 텍스트 폰트에도 없어 OS 가 컬러로 그린다) · 한자 5종(生活社會部 = 어원
+ *    묶음 카드라 그 글자 자체가 교육 내용이다 · ⏳유호님 판정).
+ * 순서가 중요하다 — 앞의 규칙이 만든 글자를 뒤가 다시 건드리지 않게 좁은 것부터 둔다. */
+const 인쇄_치환 = [
+  [/선\(先\)/g, '선'],           // 「선(先)확정 금지」 — 한글이 이미 뜻을 진다
+  [/重/g, '중'],                 // 「현대重 협력사」 = 현대중
+  [/[├└]─/g, '+- '],            // 조직계보 트리 — 구조는 들여쓰기가 지므로 ASCII 로 충분
+  [/─/g, '-'],
+  [/≡/g, '='],                   // 「≡(모든 시트) 버튼」 — 괄호 설명이 뜻을 이미 진다
+  [/ⓐ/g, '(a)'], [/ⓑ/g, '(b)'], [/ⓒ/g, '(c)'], [/ⓓ/g, '(d)'],
+  [/＿/g, '__'],                 // 전각 밑줄(서명란) → 반각 2배로 폭 보존
+  [/☐/g, '[  ]'],               // 동의 체크박스 — 브랜드 3종에 없어 폰트를 깔아도 폴백한다
+];
+function 치환(md) { return 인쇄_치환.reduce((s, [re, to]) => s.replace(re, to), md); }
+
+/* 폴백은 허용하되 **아는 폴백만** 허용한다 — 새 글자가 들어오면 그건 치환표가 놓친 것이고,
+ * 조용히 통과시키면 초판이 밟은 자리로 되돌아간다(폰트 경고를 아무도 안 봤다).
+ * 이모지는 어느 텍스트 폰트에도 없으니 유니코드 속성으로 판정하고(손 목록은 반드시 낡는다),
+ * 그 밖의 예외는 이유가 있는 것만 이름으로 둔다. */
+const 폴백_예외 = new Set([...'生活社會部', '️']);   // 어원 묶음 카드 ⏳유호 판정 · 이모지 변이 선택자
+function 폴백_점검(임베드출력) {
+  const 줄 = (임베드출력.match(/^⚠ .*$/m) || [])[0];
+  if (!줄) return [];
+  // 🔑 표시된 글자가 아니라 **코드포인트**로 복원한다 — `(\S)` 로 잡으면 이모지가 서로게이트
+  // 페어의 뒤 유닛만 물려 전부 「모르는 글자」가 된다(2026-08-07 실측: 16종 중 14종 오판).
+  // 콘솔 인코딩이 글자를 깨도 U+XXXX 는 안 깨진다 — 재는 층이 값을 깨뜨리면 안 된다.
+  const 글자 = [...new Set((줄.match(/U\+[0-9A-F]{4,6}/g) || [])
+    .map((m) => String.fromCodePoint(parseInt(m.slice(2), 16))))];
+  return 글자.filter((c) => !/\p{Extended_Pictographic}/u.test(c) && !폴백_예외.has(c));
+}
 
 /* ── 초소형 md 렌더러 (이 저장소 문서가 실제로 쓰는 문법만) ── */
 function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -132,6 +174,7 @@ function pageHtml(doc, bodyHtml, snapDate) {
   const tokens = fs.readFileSync(TOKENS, 'utf8');
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(doc.title)}</title>
 <style>
+/*@FONTS@*/
 ${tokens}
 @page { size: A4; margin: 17mm 15mm 19mm; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -199,14 +242,10 @@ function main() {
   const filter = process.argv[2];
   const targets = filter ? MANIFEST.filter((d) => d.src.includes(filter) || d.title.includes(filter)) : MANIFEST;
   if (!targets.length) { console.error('[인쇄본빌드] 매니페스트에 일치 항목이 없다: ' + filter); process.exit(1); }
-  const chrome = ['/opt/pw-browsers/chromium', '/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/google-chrome',
-    'C:/Program Files/Google/Chrome/Application/chrome.exe'].find((p) => fs.existsSync(p));
-  if (!chrome) { console.error('[인쇄본빌드] 크롬을 못 찾았다'); process.exit(1); }
-  // 폰트 검사(리눅스만) — SUIT 없으면 한글이 폴백으로 나간다
-  try {
-    const fl = execFileSync('fc-list', [], { encoding: 'utf8' });
-    if (!/SUIT/i.test(fl)) console.error('⚠ SUIT 미설치 — 한글이 브랜드 폰트가 아니라 폴백으로 나간다');
-  } catch (_) { /* fc-list 없는 OS — 통과 */ }
+  const py = ['python', 'python3'].find((p) => {
+    try { execFileSync(p, ['-c', 'import fontTools'], { stdio: 'pipe' }); return true; } catch (_) { return false; }
+  });
+  if (!py) { console.error('[인쇄본빌드] python + fontTools 가 없다 — 임베드 통로가 필수다(설치본에 기대지 않는다)'); process.exit(1); }
   fs.mkdirSync(OUT_DIR, { recursive: true });
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-print-'));
   const snapDate = new Date().toISOString().slice(0, 10);
@@ -215,19 +254,30 @@ function main() {
     const srcPath = path.join(ROOT, doc.src);
     if (!fs.existsSync(srcPath)) { console.error('✗ 원본 없음: ' + doc.src); fail++; continue; }
     const md = fs.readFileSync(srcPath, 'utf8');
-    const html = pageHtml(doc, renderMd(md), snapDate);
+    const html = pageHtml(doc, renderMd(치환(md)), snapDate);
     const base = path.basename(doc.src).replace(/\.md$/, '');
     const htmlPath = path.join(tmp, base + '.html');
     const pdfPath = path.join(OUT_DIR, base + '.pdf');
     fs.writeFileSync(htmlPath, html);
     try {
-      execFileSync(chrome, ['--headless=new', '--no-sandbox', '--disable-gpu', '--force-color-profile=srgb',
-        '--no-pdf-header-footer', '--print-to-pdf=' + pdfPath, 'file://' + htmlPath], { stdio: 'pipe', timeout: 60000 });
+      // 임베드 통로가 굽는다 — 3종에 없는 글자는 `--폴백허용` 이라 깨지 않고 **목록을 찍는다**
+      const r = execFileSync(py, [EMBED, htmlPath, path.join(tmp, base + '.embed.html'),
+        '--pdf', pdfPath, '--폴백허용'], { encoding: 'utf8', stdio: 'pipe', timeout: 180000 });
+      const 샌것 = 폴백_점검(r);
       const kb = Math.round(fs.statSync(pdfPath).size / 1024);
-      console.log(`✓ ${base}.pdf (${kb}KB)`);
-    } catch (e) { console.error('✗ 굽기 실패: ' + base + ' — ' + (e.message || e)); fail++; }
+      if (샌것.length) {
+        console.error(`✗ ${base}.pdf (${kb}KB) — 치환표가 못 걷은 글자: `
+          + 샌것.map((c) => `${c} U+${c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`).join(' '));
+        fail++;
+      } else console.log(`✓ ${base}.pdf (${kb}KB)`);
+    } catch (e) {
+      const 말 = (e.stdout || '') + (e.stderr || '') || e.message || String(e);
+      console.error('✗ 굽기 실패: ' + base + ' — ' + 말.trim().split('\n').slice(-3).join(' / '));
+      fail++;
+    }
   }
   console.log(fail ? `[인쇄본빌드] 실패 ${fail}건` : `[인쇄본빌드] 완료 — ${targets.length}건 → docs/인쇄본/`);
   process.exit(fail ? 1 : 0);
 }
-main();
+if (require.main === module) main();
+module.exports = { 치환, 폴백_점검, 인쇄_치환, MANIFEST };
