@@ -348,6 +348,19 @@ test('🔑 인계문은 형제 저장소(SYNK-talk)의 커밋·미커밋도 본�
     fs.writeFileSync(path.join(talk, 'c.txt'), 'z');
     assert.strictEqual(report.dirtyCount(repo), 전 + 1,
       '형제 저장소의 미커밋을 안 셌다 — 인계문이 「미커밋 0건」이라 말한다');
+
+    /* 🔴 **형제를 못 읽은 것도 「모름」이다** (반박 패스 실측 2026-08-07 · 옛 `|| 0` 이 여기서 샜다).
+     *   형제에 미커밋 3건이 있는데 그 저장소의 git 이 실패하면 총합이 조용히 `0` 이 됐다 —
+     *   인계문이 「미커밋 0건」이라 말하면 다음 세션은 **끊어도 된다**고 읽는다.
+     *   `.git` 존재 검사를 통과하고 git 만 실패하는 모양은 실재한다(아래가 그 실제 모양 —
+     *   끊긴 워크트리 링크 · `index.lock` 경합 · timeout 도 같은 자리로 떨어진다).
+     *   🔑 이 계열 전체가 「못 읽음 → 0건」으로 조용히 새던 것이라, 여기 한 곳만 그 번역을
+     *      남겨 두면 하필 **인계 통로**에서 되살아난다. */
+    fs.rmSync(path.join(talk, '.git'), { recursive: true, force: true });
+    fs.writeFileSync(path.join(talk, '.git'), 'gitdir: /존재하지않는곳\n');
+    assert.strictEqual(report.dirtyCount(repo), null,
+      '형제를 못 읽었는데 숫자를 냈다 — 「못 읽음」을 0 으로 접으면 침묵과 같아지고, '
+      + '미추적은 이력·stash·reflog 어디에도 없는 유일한 무보호 상태다(F025)');
   } finally {
     if (원래 === undefined) delete process.env.SYNK_OWNER_SIBLINGS;
     else process.env.SYNK_OWNER_SIBLINGS = 원래;
