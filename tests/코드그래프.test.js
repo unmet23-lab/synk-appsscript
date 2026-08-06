@@ -80,6 +80,12 @@ test('MCP 서버 등록도 같은 방어를 들고 있다', () => {
   assert.ok(server.cwd && 절대경로(server.cwd),
     'MCP 서버에 절대경로 cwd 가 없다 — repo 밖에서 뜨면 빈 그래프를 새로 만든다');
   assert.equal(절대경로('.code-review-graph'), false, '탐지력 — 상대경로를 절대경로로 오인한다');
+  /* 🔑 F117 이 실제로 깨진 모양을 못박는다 — 리눅스에서 `path.isAbsolute("C:\\…")` 는 false 다.
+   *   위 주석만 있으면 다음 사람이 판정기를 다시 path.isAbsolute 로 되돌려도 **로컬은 초록**이고
+   *   리눅스 CI 만 빨개진다(그때가 정확히 그랬다). 주석은 가드가 아니라서 이 줄을 같이 둔다. */
+  assert.equal(절대경로('C:\\Users\\q1212\\Documents\\SYNK-appsscript'), true,
+    'F117 — 윈도우 절대경로를 상대경로로 판정했다. 검사가 도는 OS 규약(path.isAbsolute)으로 재면 리눅스 CI 에서만 빨개진다');
+  assert.equal(절대경로('/home/runner/work/synk-appsscript'), true, 'POSIX 절대경로를 놓쳤다');
 });
 
 test('등록층 — settings.json 이 갱신 훅을 실제로 부른다', () => {
