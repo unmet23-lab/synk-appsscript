@@ -22,7 +22,7 @@ const G = (cwd) => (...a) => spawnSync('git',
   { cwd, encoding: 'utf8' });
 
 /** origin 역할 저장소에 `claude/*` 브랜치를 만들고, 그걸 클론해 작업본을 준다. */
-function 픽스처({ 브랜치 = 'claude/폰작업', 보드도바꾼다 = true } = {}) {
+function 픽스처({ 브랜치 = 'claude/폰작업', 보드도바꾼다 = true, 보드만 = false } = {}) {
   const 원본 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-반입-origin-'));
   임시들.push(원본);
   const go = G(원본);
@@ -33,9 +33,11 @@ function 픽스처({ 브랜치 = 'claude/폰작업', 보드도바꾼다 = true }
   go('add', '-A'); go('commit', '-qm', 'seed');
 
   go('checkout', '-qb', 브랜치);
-  fs.writeFileSync(path.join(원본, '폰산출물.md'), '폰이 만든 것\n');
-  fs.writeFileSync(path.join(원본, '폰빌더.js'), 'console.log(1);\n');
-  if (보드도바꾼다) fs.writeFileSync(path.join(원본, 'docs', '세션보드.md'), '| 폰이 본 낡은 보드 |\n');
+  if (!보드만) {
+    fs.writeFileSync(path.join(원본, '폰산출물.md'), '폰이 만든 것\n');
+    fs.writeFileSync(path.join(원본, '폰빌더.js'), 'console.log(1);\n');
+  }
+  if (보드도바꾼다 || 보드만) fs.writeFileSync(path.join(원본, 'docs', '세션보드.md'), '| 폰이 본 낡은 보드 |\n');
   go('add', '-A'); go('commit', '-qm', 'docs: 인쇄본 PDF 16종 (유호님 지시)');
   go('checkout', '-q', 'master');
 
@@ -99,6 +101,30 @@ test('🔴 미커밋과 겹치면 멈춘다 — 받으면 남의 편집이 사�
   assert.match(r.글, /미커밋과 겹치/, '왜 멈췄는지 말해야 다음 행동을 정한다');
   assert.strictEqual(읽기(repo, '폰산출물.md'), '남이 지금 쓰고 있는 내용\n',
     '멈췄다면서 파일은 이미 덮여 있다');
+});
+
+/* 실물에서 나온 자리(2026-08-07): 폰이 보드 줄 하나만 고치고 push 하면 변경 100% 가 공유 파일이라
+ * 「가져올 것 0건」이 된다. 옛 구현은 여기서 멈췄고, 멈추면 그 브랜치는 병합 표시를 못 받아
+ * **영원히 「대기 중」** 으로 매 세션 시작에 뜬다. 0건에 성격이 다른 둘이 섞여 있던 것. */
+test('🔴 변경이 전부 공유 파일이면 — 멈추지 말고 이력을 남긴다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, 브랜치 } = 픽스처({ 보드만: true });
+  const r = 돌린다(repo, ['--받기', 브랜치]);
+  assert.strictEqual(r.코드, 0,
+    '가져올 게 0건이라고 멈췄다 — 이 브랜치는 대기 목록에서 영원히 안 빠진다\n' + r.글);
+  assert.strictEqual(읽기(repo, 'docs/세션보드.md'), '| 원래 보드 |\n',
+    '이력만 남기랬더니 공유 파일을 폰 판(낡은 것)으로 덮었다');
+
+  const 머리 = G(repo)('log', '--format=%s%n%b', '-1').stdout;
+  assert.match(머리, /병합 이력/, '이력을 안 남기면 대기 목록에서 안 빠진다');
+  assert.match(머리, /git show/, '버린 내용을 어디서 읽는지 안 알려주면 그냥 사라진 것과 같다');
+
+  assert.doesNotMatch(돌린다(repo).글, /받으려면/, '이력을 남겼는데 아직 대기로 잡힌다');
+
+  // 같은 0건이라도 **이미 들어온 브랜치**는 멈춰야 한다 — 이게 없으면 위 통과는
+  // "무조건 진행"으로도 초록이 된다(구분을 안 재는 회귀는 회귀가 아니다).
+  const 두번째 = 돌린다(repo, ['--받기', 브랜치]);
+  assert.notStrictEqual(두번째.코드, 0, '이미 들어온 브랜치를 또 받아 병합 커밋을 겹쳐 쌓았다');
+  assert.match(두번째.글, /이미 master 에 들어와 있다/);
 });
 
 test('🔴 값마다 줄을 바꿔 읽는 자리 — 빈 제목이 뒤를 밀지 않는다', () => {
