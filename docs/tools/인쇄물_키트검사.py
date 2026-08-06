@@ -21,36 +21,43 @@ SYNK 인쇄물 검사 — 만들어진 PDF 를 직접 열어 브랜드 키트 �
 판정 3축:
   ① 쪽수  — 정해진 쪽수와 정확히 일치하는가
   ② 폰트  — 실제로 그린 서체가 브랜드 3종뿐인가 (Type3·Courier·Malgun = 폴백의 증거)
-  ③ 색    — 실제로 칠한 색이 전부 키트 19색(+백지) 안인가, 금지색이 없는가
+  ③ 색    — 실제로 칠한 색이 전부 킷(+백지) 안인가, 금지색이 없는가
+            (개수는 여기 적지 않는다 — 토큰이 안다. 「19색」을 박아 뒀더니 색이 늘자 거짓이 됐다)
 
 쓰는 법:
   python docs/tools/인쇄물_키트검사.py <file.pdf> [--pages 1] [--forbid lime,kc] [-v]
 """
 
 import argparse
+import json
 import re
 import sys
 from collections import Counter
+from pathlib import Path
 
 from pypdf import PdfReader
 from pypdf.generic import IndirectObject
 
-KIT = {
-    "#F6F1E8": "Cream",       "#FF6B5C": "Coral",      "#1A2340": "Navy",
-    "#C8FF3D": "Lime",        "#171820": "Ink",
-    "#FBF7EE": "Paper",       "#EFE7D7": "Cream 2",    "#E7DDC7": "Cream 3",
-    "#FFE9E4": "Coral Wash",  "#FFCFC6": "Coral Soft", "#FF8877": "Coral 2",
-    "#E8543F": "Coral 3",
-    "#2A3358": "Navy 3",      "#131A32": "Navy Ink",   "#0F1730": "Navy 2",
-    "#FF3E88": "KC Hot Pink", "#FF6BA8": "KC Pink 2",  "#FFD447": "KC Sun",
-    "#4E7CFF": "KC Cool Blue",
-}
+# 킷 색은 **여기 적지 않는다** — `docs/디자인_토큰.json` 에서 파생한다.
+# 2026-08-07 실증: 이 파일이 손으로 19색을 들고 있는 사이 킷이 23색이 됐고(Slate 2색·Lime 2·
+# Emerald), 새 회색으로 조판한 PDF 가 「키트 밖 색 2종」으로 **거짓 FAIL** 이 났다.
+# 같은 드리프트를 `tools/브랜드렌더린트.js` 가 먼저 밟아 파생으로 고쳤는데 이 파이썬 사본만
+# 남아 있었다 — 토큰의 `_규약` 소비자 목록에도 빠져 있다.
+_토큰 = json.loads((Path(__file__).resolve().parents[1] / "디자인_토큰.json").read_text(encoding="utf-8"))
+KIT = {c["hex"].upper(): c["이름"] for c in _토큰["색"]["킷"]}
 NEUTRAL = {"#FFFFFF": "백지"}          # 종이 자체 — 잉크가 아니다
 
+# 직책(전용 구역)은 파생하지 않는다 — 「어디에 쓰나」는 토큰의 `직책` 산문에만 있고,
+# Lime 2·Emerald 의 구역 경계는 아직 미결이다(F153: 구역 선택자가 없어 렌더린트도 Lime 을
+# 일부러 뺐다). 손 목록이되 킷 밖을 가리키면 아래 정합 검사가 죽인다.
 GROUPS = {
     "lime": ["#C8FF3D"],                                    # 앱 전용(성장·획득)
     "kc": ["#FF3E88", "#FF6BA8", "#FFD447", "#4E7CFF"],     # Part 6 · 모드 C 전용
 }
+_미아 = [h for g in GROUPS.values() for h in g if h not in KIT]
+if _미아:
+    raise SystemExit("[키트검사] GROUPS 가 킷에 없는 색을 가리킨다(이름이 바뀌었거나 킷에서 빠졌다): "
+                     + ", ".join(_미아))
 
 BRAND_FONTS = ("intertight", "suit", "dmmono")
 DELIMS = " \t\r\n\f\x00/[]<>(){}%"
@@ -139,6 +146,17 @@ def type3_is_vector(fdict):
     return True
 
 
+def _u16be(h):
+    """UTF-16BE 16진 문자열 → 파이썬 문자열.
+
+    코드유닛마다 chr() 하면 BMP 밖 글자(이모지)가 **lone surrogate 두 개**로 남는다. 그러면
+    판정은 나오는데 위반 사유를 print 하는 순간 UnicodeEncodeError 로 죽는다 — 2026-08-07
+    실측(인쇄본 16종 중 2종). 🔑 재는 층이 값을 깨뜨리면 「무엇이 위반인지」가 통째로 사라진다.
+    """
+    h = h[:len(h) - len(h) % 4]                       # 4자리 = 1 코드유닛 단위로만
+    return bytes.fromhex(h).decode("utf-16-be", "replace")
+
+
 def tounicode(fdict):
     """코드 → 유니코드 표. 이게 있어야 「그 폰트가 실제로 무슨 글자를 그렸나」를 읽을 수 있다."""
     m = {}
@@ -152,7 +170,7 @@ def tounicode(fdict):
     for blk in re.findall(r"beginbfchar(.*?)endbfchar", data, re.S):
         for a, b in re.findall(r"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>", blk):
             try:
-                m[int(a, 16)] = "".join(chr(int(b[i:i + 4], 16)) for i in range(0, len(b), 4))
+                m[int(a, 16)] = _u16be(b)
             except Exception:
                 pass
     for blk in re.findall(r"beginbfrange(.*?)endbfrange", data, re.S):
@@ -163,7 +181,7 @@ def tounicode(fdict):
     if not m:   # 블록 표기가 아닌 CMap 도 있다 — 못 읽으면 판정을 못 하므로 느슨하게 한 번 더
         for a, b in re.findall(r"<([0-9A-Fa-f]{2,4})>\s*<([0-9A-Fa-f]{4,})>", data):
             try:
-                m[int(a, 16)] = "".join(chr(int(b[i:i + 4], 16)) for i in range(0, len(b), 4))
+                m[int(a, 16)] = _u16be(b)
             except Exception:
                 pass
     return m
@@ -353,7 +371,13 @@ def selftest():
     assert "#333355" not in fills3, "면적 0 슬리버 채우기를 세고 있다: %r" % dict(fills3)
     assert strokes3.get("#FF0000") == 1, "퇴화 rect 스트로크(실제로 선이 찍힌다)를 놓쳤다"
     assert fills3.get("#0000FF") == 1, "퇴화+실경로 혼합 채우기를 놓쳤다"
-    print("selftest OK — 패턴 3건 + 검정 탐지력 1건 + 슬리버 3건")
+    # ToUnicode 의 서로게이트 페어 — 깨지면 「무엇이 위반인지」가 사라진다(판정은 FAIL 인 채로)
+    assert _u16be("D83DDE00") == "\U0001F600", "이모지가 lone surrogate 로 남는다: %r" % _u16be("D83DDE00")
+    assert _u16be("AC00") == "가"
+    assert _u16be("AC0") == "", "잘린 코드유닛을 버리지 않는다"
+    # 킷은 파생이라 손 목록과 갈라질 수 없다 — GROUPS 만 손이고 그건 로드 때 정합을 본다
+    assert KIT == {c["hex"].upper(): c["이름"] for c in _토큰["색"]["킷"]}, "KIT 파생이 끊겼다"
+    print("selftest OK — 패턴 3건 + 검정 탐지력 1건 + 슬리버 3건 + 서로게이트 3건 + 킷 파생 1건")
 
 
 def main():
