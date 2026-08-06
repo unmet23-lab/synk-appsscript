@@ -18,7 +18,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const 린트 = require('../tools/브랜드렌더린트');
-const { findChrome, 측정, 대상, 제외, KIT, 킷밖_유예, ROOT } = 린트;
+const { findChrome, 측정, 대상, 제외, KIT, 킷밖_유예, 구역밖_유예, KC_COLORS, KC_SCOPE, ROOT } = 린트;
 
 const CHROME = findChrome();
 const 크롬없음 = !CHROME && '크롬이 없다 — 렌더 검사를 **안 돌렸다**(통과 아님). CHROME_PATH 로 지정 가능';
@@ -64,6 +64,22 @@ test('킷밖 유예가 낡지 않았다 — 킷에 편입됐으면 유예를 지
 test('등록층과 제외가 겹치지 않는다', () => {
   const 제외집합 = new Set(제외.map(([r]) => r));
   for (const rel of 대상) assert.ok(!제외집합.has(rel), `${rel} 이 등록과 제외에 동시에 있다`);
+});
+
+/* 「구역밖 유예」도 같은 성격의 문이다 — 다만 여기서 「그 위반이 아직 있는가」를 검사하면
+ * **버그가 남아 있기를 요구하는 회귀**가 된다(유호님이 고치는 순간 빨개진다). 그래서
+ * 썩는 형태만 본다: 가리키는 파일이 없거나, 사유·주인이 없는 유예. */
+test('구역밖 유예가 낡지 않았다 — 죽은 경로·주인 없는 유예를 막는다', () => {
+  for (const [키, 사유] of Object.entries(구역밖_유예)) {
+    const i = 키.indexOf(':');
+    assert.ok(i > 0, `유예 키 형식이 아니다(파일:셀렉터): ${키}`);
+    const rel = 키.slice(0, i);
+    assert.ok(fs.existsSync(path.join(ROOT, rel)), `유예가 없는 파일을 가리킨다: ${rel}`);
+    assert.ok(사유 && 사유.length >= 15, `${키} 유예에 사유가 없다 — 이유 없는 통과는 두지 않는다`);
+  }
+  // 주인은 묶음 중 최소 하나엔 명시돼야 한다(사본 줄은 원본을 가리키는 것으로 충분하다).
+  assert.ok(Object.values(구역밖_유예).some((s) => /⏳/.test(s)),
+    '구역밖 유예 전체에 판정 주인(⏳)이 하나도 없다 — 주인 없는 유예는 안 닫힌다');
 });
 
 /* ── 1. 탐지력 — 픽스처 ───────────────────────────────────────────────────── */
@@ -149,6 +165,63 @@ test('텍스트가 없는 컨테이너의 면도 잡는다 (자식에게 글을 
   const r = 측정(p, CHROME);
   assert.ok(r.키트밖색.some((v) => v.hex === '#FFFFFF' && v.자리 === '면'),
     '직접 텍스트가 없는 요소의 배경을 안 봤다 — 부분 집계가 완전 집계처럼 보이는 부류다');
+});
+
+/* ── 의사요소 ────────────────────────────────────────────────────────────────
+ * 2026-08-07 실측: `getComputedStyle(el)` 은 요소 자신만 본다. 색이 오직 ::before 로만
+ * 그려진 페이지에서 이 린트가 **「키트 밖 색 0」** 을 냈다 — 새는 방향은 언제나 통과다.
+ * 크루카드의 점·띠가 정확히 그 형태라, 라이브의 그 색들은 여태 한 번도 검사되지 않았다. */
+test('::before 로만 칠한 면·글자도 잡는다 (요소 자신만 보던 구멍)', { skip: 크롬없음 }, () => {
+  const p = 픽스처('pseudo-bad', `
+    <style>
+      .dot::before{content:'';display:inline-block;width:12px;height:12px;background:#FF00FF}
+      .txt::after{content:' 꼬리';color:#00FF00}
+    </style>
+    <p class="dot" style="color:#171820">면을 의사요소로만</p>
+    <p class="txt" style="color:#171820">글자를 의사요소로만</p>`);
+  const r = 측정(p, CHROME);
+  assert.ok(r.키트밖색.some((v) => v.hex === '#FF00FF' && /::before/.test(v.sel)),
+    `::before 배경을 놓쳤다: ${JSON.stringify(r.키트밖색)}`);
+  assert.ok(r.키트밖색.some((v) => v.hex === '#00FF00' && /::after/.test(v.sel)),
+    `::after 글자색을 놓쳤다: ${JSON.stringify(r.키트밖색)}`);
+});
+
+test('그려지지 않는 의사요소는 세지 않는다 (전 요소가 유령 2개씩 내던 오탐)', { skip: 크롬없음 }, () => {
+  // content 가 없으면 ::before 는 렌더되지 않는다 — 그 background 는 화면에 없는 값이다.
+  const p = 픽스처('pseudo-ghost',
+    `<style>.g::before{background:#FF00FF}</style><p class="g" style="color:#171820">안 그려진다</p>`);
+  const r = 측정(p, CHROME);
+  assert.equal(r.키트밖색.length, 0, `렌더되지 않는 의사요소를 위반으로 잡았다: ${JSON.stringify(r.키트밖색)}`);
+});
+
+/* ── 직책(구역) ──────────────────────────────────────────────────────────────
+ * DESIGN.md 철칙 ④ — KC 4색은 Part 6 전용. 킷 멤버십만 보던 시절엔 어디에 써도 초록이었다. */
+test('KC 색을 Part 6 밖에 쓰면 잡는다 (킷 안이어도 직책 위반)', { skip: 크롬없음 }, () => {
+  const p = 픽스처('kc-out',
+    `<style>.bar::before{content:'';display:inline-block;width:3px;height:12px;background:#4E7CFF}</style>
+     <p class="bar" style="color:#171820">표지 띠</p>
+     <p style="color:#FF3E88;background:#1A2340;font-size:32px">Part 6 밖 핫핑크 글자</p>`);
+  const r = 측정(p, CHROME);
+  assert.ok(r.구역밖색.some((v) => v.hex === '#4E7CFF'), `::before 의 KC 색을 놓쳤다: ${JSON.stringify(r.구역밖색)}`);
+  assert.ok(r.구역밖색.some((v) => v.hex === '#FF3E88'), `글자의 KC 색을 놓쳤다: ${JSON.stringify(r.구역밖색)}`);
+  assert.deepEqual(r.키트밖색, [], 'KC 색은 킷 안이다 — 킷밖으로 이중 계상하면 안 된다');
+});
+
+test('KC 구역 안의 KC 색은 통과한다 (자기 처방을 막지 않는지 · F103)', { skip: 크롬없음 }, () => {
+  const p = 픽스처('kc-in',
+    `<section class="kc-page"><div class="kc-card">
+       <p style="color:#FF3E88;background:#1A2340;font-size:32px">Part 6 안</p>
+     </div></section>`);
+  const r = 측정(p, CHROME);
+  assert.deepEqual(r.구역밖색, [], `제 구역 안의 KC 색을 위반으로 잡았다 — 따를 수 없는 처방이 된다: ${JSON.stringify(r.구역밖색)}`);
+});
+
+test('KC 색 목록은 토큰의 05 K-Culture 팔레트에서 파생한다 (손 사본 금지 · F143)', () => {
+  const 팔레트 = require('../docs/디자인_토큰.json').색.킷
+    .filter((c) => c.팔레트 === '05 K-Culture').map((c) => c.hex.toUpperCase()).sort();
+  assert.deepEqual(Object.keys(KC_COLORS).sort(), 팔레트,
+    'KC_COLORS 가 토큰과 갈라졌다 — 사본을 두면 갈라지고, 갈라지는 방향은 언제나 통과다');
+  assert.ok(팔레트.length === 4, `05 K-Culture 가 ${팔레트.length}색이다 — 철칙 ④ 문구(「KC 4색」)와 어긋난다`);
 });
 
 test('정본 3종 밖 서체를 잡되, **폴백 스택은 통과**시킨다', { skip: 크롬없음 }, () => {

@@ -13,6 +13,11 @@
  *   ① 대비 — 조상을 거슬러 올라가 실제 배경을 찾고 WCAG 대비를 잰다.
  *   ② 키트 밖 색 — 렌더된 color/background-color 가 킷(디자인_토큰.json) 밖인가.
  *   ③ 키트 밖 서체 — 렌더에 **실제로 쓰인** 폰트가 정본 3종 밖인가.
+ *   ④ 구역 밖 색(직책) — 킷 안이어도 **제 구역 밖**이면 위반이다(DESIGN.md 철칙 ④).
+ *      ①~③ 은 「무엇을 썼나」를 보고, ④ 는 「어디에 썼나」를 본다 — 2026-08-07까지 ④ 가 없어서
+ *      KC 색이 Part 6 밖에 있어도 초록이었다(= 직책 위반은 아무도 안 잡았다).
+ *   ②④ 는 **의사요소(::before/::after)까지** 본다 — 요소 자신만 보던 시절엔 색을 ::before 로만
+ *      칠한 페이지가 「키트 밖 색 0」으로 통과했다(2026-08-07 실측 · 크루카드의 점·띠가 그 형태).
  *
  * 실측에서 나온 함정 3개(다시 밟지 말 것):
  *   ⚠ `background-image`(그라디언트)를 만나면 **판정을 포기**한다. 평균색을 못 재는데
@@ -80,6 +85,36 @@ const GENERIC_OK = [
 const KC_FONTS_OK = ['Fraunces', 'Gowun Batang', 'Cormorant'];
 const KC_SCOPE = '.kc-page, .kc-card';
 
+/* ── Part 06 K-Culture 예약 **색** — 서체와 같은 경계를 색에도 적용한다 ────────
+ * 정본 `DESIGN.md` 철칙 ④: 「Lime·KC 4색은 전용 구역(앱 성장층·Part 6) 밖 반입 금지」.
+ * 2026-08-07까지 이 린트는 **킷 멤버십만** 봐서, KC 색이 Part 6 밖에 있어도 초록이었다
+ * — 즉 직책 위반은 아무도 안 잡고 있었다. 경계는 이미 위 KC_SCOPE 에 있으므로 새로 정의하지 않는다.
+ * 목록은 토큰에서 파생한다(손 사본은 갈라진다 · F143).
+ *
+ * 🔴 **Lime 은 여기 넣지 않는다 — 일부러다.** Lime 의 전용 구역은 「앱 성장층」인데 그 경계를
+ *   가리키는 CSS 선택자가 없다(크루카드는 앱 목업을 그리므로 Lime 이 정당한 자리가 실재한다).
+ *   경계 없이 색만 금지하면 목업 전체가 오탐이 되고, 따를 수 없는 처방은 가드를 꺼지게 만든다(F094).
+ *   구역을 먼저 정하는 것이 선행 조건이고, 그때까지 Lime 직책은 사람이 본다. */
+const KC_COLORS = Object.fromEntries(
+  require(path.join(ROOT, 'docs', '디자인_토큰.json')).색.킷
+    .filter((c) => c.팔레트 === '05 K-Culture')
+    .map((c) => [c.hex.toUpperCase(), c.이름])
+);
+
+/* 구역 밖인데 **라이브가 이미 그리고 있는** 자리 — `킷밖_유예` 와 같은 성격이다.
+ * 고객 대면 화면을 내 판단으로 바꾸지 않고, 판정 전까지 빨간불이 되지 않게만 한다.
+ * 키 = `파일:셀렉터` · 값 = 사유. **이유 없는 통과는 두지 않는다.** */
+const 구역밖_유예 = {
+  'crewcard/카드_kr.html:div.del::before':
+    '⏳유호님 판정 대기 — 표지 4칸 띠가 KC Cool Blue(02 Roadmap)·KC Hot Pink(04 Class)를 Part 6 밖에서 쓴다. 색이 뜻을 안 진다(정작 K-컬처인 03 은 Lime 2). 고객 대면 라이브라 승인 사안. 2026-08-07 실측.',
+  'crewcard/카드_mn.html:div.del::before':
+    '⏳위 한국어판과 **같은 자리**(몽골어 라이브). 한쪽만 고치면 두 언어가 갈라지므로 판정도 함께 받는다.',
+  'docs/크루카드/크루카드_한국어.html:div.del::before':
+    '⏳위 라이브 파일의 docs 사본 — 크루카드사본.js 가 동일성을 강제하므로 라이브 판정 전에는 여기만 못 고친다.',
+  'docs/크루카드/크루카드_몽골어.html:div.del::before':
+    '⏳위 몽골어 라이브의 docs 사본 — 동일성 강제 대상이라 같은 판정을 기다린다.',
+};
+
 /* ── 등록층 ────────────────────────────────────────────────────────────────
  * 「가드는 로직보다 등록층에서 샌다」의 그 층이다. 2026-08-04 감사에서 소스 가드 3종이
  * 전부 초록이었는데, 맞아서가 아니라 **이 파일들이 목록에 없었기 때문**이었다.
@@ -125,12 +160,13 @@ function findChrome() {
 /* `freeze:false` 는 **회귀 전용 탈출구**다 — 시간정지를 끄면 픽스처가 실제로 물리는지 재려고
  * 둔다. 인자로 받는 이유: 페이지가 읽는 플래그(window.__…)로 두면 검사 대상 파일이 그 값을
  * 켜서 가드를 통째로 우회할 수 있다. 호출자만 줄 수 있어야 탈출구가 구멍이 되지 않는다. */
-function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freeze) {
+function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freeze, kcColors) {
   return `(() => {
   const KIT = new Set(${JSON.stringify(kitHexes)});
   const FONTS_OK = new Set(${JSON.stringify(fontsOk)});
   const GENERIC_OK = new Set(${JSON.stringify(genericOk)});
   const KC_FONTS_OK = new Set(${JSON.stringify(kcFontsOk)});
+  const KC_COLORS = new Set(${JSON.stringify(Object.keys(kcColors || {}))});
   const KC_SCOPE = ${JSON.stringify(kcScope)};
   // 예약 서체는 **그 구역 안에서만** 통과한다. 밖에서 같은 폰트가 나오면 그대로 위반이다.
   const KC구역 = (el) => el.closest(KC_SCOPE) !== null;
@@ -213,7 +249,13 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freez
     return el.tagName.toLowerCase() + id + cls;
   };
 
-  const 대비위반 = [], 키트밖색 = [], 키트밖서체 = [];
+  const 대비위반 = [], 키트밖색 = [], 키트밖서체 = [], 구역밖색 = [];
+  /* 직책 검사 — 킷 안이라도 **제 구역 밖이면** 위반이다(DESIGN.md 철칙 ④).
+   * 의사요소는 제 소유 요소의 구역을 그대로 쓴다(::before 는 el 안에 그려진다). */
+  const 구역검사 = (el, hexv, 자리, 접미 = '') => {
+    if (!KC_COLORS.has(hexv) || el.closest(KC_SCOPE)) return;
+    구역밖색.push({ sel: 셀렉터(el) + 접미, hex: hexv, 자리, 숨김: !el.getClientRects().length });
+  };
   const 색집계 = new Map(), 서체집계 = new Map();
   let 잰것 = 0, 그라디언트건너뜀 = 0;
 
@@ -237,11 +279,38 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freez
   // 6규칙 더 있었다(자식에게 텍스트를 넘긴 컨테이너라 루프에 안 걸렸다).
   // 가드가 「22곳」이라고 말하면 사람은 그게 전부인 줄 안다 — 부분 집계가 완전 집계처럼 보이는 게
   // 이 부류의 진짜 위험이다.
+  /* ⚠ **의사요소(::before / ::after)도 재야 한다.** getComputedStyle(el) 은 요소 자신만 본다 —
+   *   2026-08-07 실측: 색이 오직 ::before{background:#FF00FF} 로만 그려진 페이지에서 이 린트가
+   *   「✅ 키트 밖 색 0」을 냈다. 새는 방향은 언제나 통과다.
+   *   크루카드의 점·띠(.del:nth-child(n)::before · .kicker::before)가 정확히 이 형태라
+   *   **라이브의 그 색들은 여태 한 번도 검사되지 않았다.**
+   *   content:none 이면 안 그려지므로 건너뛴다(안 그러면 전 요소가 유령 2개씩 낸다).
+   *   ⚠ 이 구역은 통째로 템플릿 리터럴 안이다 — 주석에 백틱을 쓰면 문자열이 끊긴다(08-07 실족). */
+  const 의사 = ['::before', '::after'];
+  const 그려지는의사 = (cs) => cs.content && cs.content !== 'none' && cs.content !== 'normal';
+
   for (const el of document.querySelectorAll('*')) {
     if (안그려짐.has(el.tagName)) continue;
     const bgc = hex(getComputedStyle(el).backgroundColor);
     if (bgc && bgc !== 'TRANSPARENT' && !KIT.has(bgc)) {
       키트밖색.push({ sel: 셀렉터(el), hex: bgc, 자리: '면', 숨김: !el.getClientRects().length });
+    }
+    if (bgc && bgc !== 'TRANSPARENT') 구역검사(el, bgc, '면');
+    for (const p of 의사) {
+      const pcs = getComputedStyle(el, p);
+      if (!그려지는의사(pcs)) continue;
+      const pbg = hex(pcs.backgroundColor);
+      if (pbg && pbg !== 'TRANSPARENT' && !KIT.has(pbg)) {
+        키트밖색.push({ sel: 셀렉터(el) + p, hex: pbg, 자리: '면', 숨김: !el.getClientRects().length });
+      }
+      if (pbg && pbg !== 'TRANSPARENT') 구역검사(el, pbg, '면', p);
+      // 글자색은 **의사요소가 실제로 글자를 그릴 때만** 본다(빈 content 면 색이 보이지 않는다).
+      const 글있음 = /^["'].*[^"']["']$/.test(pcs.content.trim()) && pcs.content.trim().length > 2;
+      const pfg = hex(pcs.color);
+      if (글있음 && pfg && pfg !== 'TRANSPARENT' && !KIT.has(pfg)) {
+        키트밖색.push({ sel: 셀렉터(el) + p, hex: pfg, 자리: '글자', 숨김: !el.getClientRects().length });
+      }
+      if (글있음 && pfg && pfg !== 'TRANSPARENT') 구역검사(el, pfg, '글자', p);
     }
   }
 
@@ -264,6 +333,7 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freez
     // ① 색이 키트 안인가
     색집계.set(fg, (색집계.get(fg) || 0) + 1);
     if (!KIT.has(fg)) 키트밖색.push({ sel: 셀렉터(el), hex: fg, size, 숨김, 글: 직접텍스트.slice(0, 28) });
+    구역검사(el, fg, '글자');
 
     // ② 서체 — 쉼표로 갈라야 폴백이 보인다
     for (const raw of cs.fontFamily.split(',')) {
@@ -294,7 +364,7 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freez
   const 상위 = (m) => Array.from(m.entries()).sort((a, b) => b[1] - a[1]);
   return {
     잰것, 그라디언트건너뜀,
-    대비위반, 키트밖색, 키트밖서체,
+    대비위반, 키트밖색, 키트밖서체, 구역밖색,
     색분포: 상위(색집계), 서체분포: 상위(서체집계),
   };
 })()`;
@@ -303,7 +373,7 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freez
 function 측정(file, chrome, opts = {}) {
   const html = fs.readFileSync(file, 'utf8');
   const 주입 = `<script>window.addEventListener('load', () => {
-    let r; try { r = ${측정기소스(Object.keys(KIT), FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_SCOPE, opts.freeze)}; }
+    let r; try { r = ${측정기소스(Object.keys(KIT), FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_SCOPE, opts.freeze, opts.kcColors === undefined ? KC_COLORS : opts.kcColors)}; }
     catch (e) { r = { 오류: String(e && e.stack || e) }; }
     const pre = document.createElement('pre');
     pre.id = 'SYNK_LINT_OUT';
@@ -358,8 +428,18 @@ function main(argv) {
     let r;
     try { r = 측정(f, chrome); }
     catch (e) { console.error(`✗ ${f} — ${e.message}`); return 2; }
+    /* 유예를 **여기서** 뺀다 — 측정기는 페이지 안에서 돌아 자기 파일 경로를 모른다.
+     * 유예 키는 `repo 상대경로:셀렉터`. 임시 사본을 검사할 때도 걸리도록 경로 끝으로 맞춘다. */
+    const 상대 = path.relative(ROOT, f).replace(/\\/g, '/');
+    // ⚠ 첫 콜론에서 가른다 — 셀렉터가 `::before` 라 lastIndexOf 를 쓰면 의사요소 안에서 잘린다(08-07 실족).
+    //   repo 상대경로에는 콜론이 없으므로 첫 콜론이 곧 구분자다.
+    const 유예됨 = (v) => Object.keys(구역밖_유예)
+      .some((k) => { const i = k.indexOf(':'); return 상대.endsWith(k.slice(0, i)) && v.sel === k.slice(i + 1); });
+    r.구역밖_유예됨 = r.구역밖색.filter(유예됨);
+    r.구역밖색 = r.구역밖색.filter((v) => !유예됨(v));
+
     전체[f] = r;
-    const n = r.대비위반.length + r.키트밖색.length + r.키트밖서체.length;
+    const n = r.대비위반.length + r.키트밖색.length + r.키트밖서체.length + r.구역밖색.length;
     위반합 += n;
     if (json) continue;
 
@@ -377,10 +457,18 @@ function main(argv) {
     요약('대비 위반', r.대비위반, (v) => `${v.fg} on ${v.bg} = ${v.대비} (기준 ${v.기준}, ${v.size}px/${v.weight})`);
     요약('키트 밖 색', r.키트밖색, (v) => v.hex);
     요약('키트 밖 서체', r.키트밖서체, (v) => v.font);
+    요약('구역 밖 색(직책 위반)', r.구역밖색, (v) => `${v.hex} @ ${v.sel} (${v.자리})`);
+    // 유예는 **조용히 넘기지 않는다** — 안 보이는 유예는 곧 잊힌 위반이다.
+    if (r.구역밖_유예됨.length) {
+      console.log(`   ⏳ 구역 밖 색 유예 ${r.구역밖_유예됨.length}건 — 유호님 판정 대기(사유는 tools/브랜드렌더린트.js 의 \`구역밖_유예\`)`);
+    }
   }
   if (json) console.log(JSON.stringify(전체, null, 1));
   return 위반합 ? 1 : 0;
 }
 
 if (require.main === module) process.exit(main(process.argv.slice(2)));
-module.exports = { KIT, 킷밖_유예, FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_SCOPE, findChrome, 측정, 대상, 제외, ROOT };
+module.exports = {
+  KIT, 킷밖_유예, 구역밖_유예, FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_COLORS, KC_SCOPE,
+  findChrome, 측정, 대상, 제외, ROOT,
+};
