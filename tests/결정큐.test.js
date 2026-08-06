@@ -403,7 +403,8 @@ test('탐지: 걸러진 ⏳가 흔적 없이 사라지지 않는다 (픽스처)'
   assert.match(버려진[0].text, /삭제 후보 6묶음/);
   assert.equal(버려진[0].line, 2, '몇 번째 줄인지 없으면 찾아갈 수가 없다');
 
-  // 장치가 스스로 발화하는지 — 세션 시작 훅은 render() 출력만 보여준다
+  // 장치가 스스로 발화하는지. ⚠ 이 주석은 원래 「세션 시작 훅은 render() 출력만 보여준다」였는데
+  // **거짓이었다**(F173) — 훅은 자기 텍스트를 다시 조립한다. 훅 쪽 회귀는 tests/결정큐훅.test.js ⑤.
   const out = q.render(q.build({ dir, date: DAY('2026-08-05'), count: 3 }), DAY('2026-08-05'));
   assert.match(out, /걸러졌다/, '기본 출력에 경고가 없으면 --버려진 을 아무도 안 친다');
 });
@@ -417,4 +418,31 @@ test('걸러진 게 있는데 미결이 0이면 빈 출력이 아니라 경고�
   assert.equal(r.total, 0);
   assert.match(q.render(r, DAY('2026-08-05')), /걸러졌다/,
     '「없다」와 「안 보인다」가 같은 모양이면 안 된다 — CLAUDE.md 신뢰성');
+});
+
+/* [2026-08-07 · F173] `--all` 은 「전부 보여달라」다 — 걸러진 것만 빠지면 그 전량이 「이게 전부다」로
+ * 읽힌다(바로 위 예약 줄이 같은 이유로 이미 나가고 있었다). CLI 분기라 render() 로는 못 재고
+ * 실행층으로만 재진다. 옆 세션 b6cb681a 가 「그쪽에 --all 한 곳이 남았다」로 지목했다. */
+function cli(args, dir) {
+  return require('child_process').spawnSync(
+    process.execPath, [path.join(__dirname, '..', 'tools', 'decision-queue.js'), ...args],
+    { encoding: 'utf8', env: { ...process.env, SYNK_MEMORY_DIR: dir } },
+  );
+}
+
+test('--all 도 폐기함을 말한다 (전량 조회에서 빠지면 「이게 전부다」가 된다)', () => {
+  const dir = fixture({
+    'MEMORY.md': '- [f](f.md)',
+    'f.md': '# F\n- ⏳ 진짜 미결 하나\n- 어떤 판정(⏳ 미결 다수)일 가능성이 있다. 그렇다면 다시 본다\n',
+  });
+  const r = cli(['--all'], dir);
+  assert.equal(r.status, 0);
+  assert.match(r.stdout, /미결 1건/, '전제: 진짜 항목은 전량에 뜬다');
+  assert.match(r.stdout, /걸러졌다/, '--all 에서 폐기함이 빠지면 전량이 「이게 전부다」로 읽힌다');
+});
+
+test('--all 거짓양성: 걸러진 게 없으면 폐기함을 말하지 않는다', () => {
+  const dir = fixture({ 'MEMORY.md': '- [g](g.md)', 'g.md': '# G\n- ⏳ 진짜 미결 하나\n' });
+  const r = cli(['--all'], dir);
+  assert.doesNotMatch(r.stdout, /걸러졌다/, '0건인데 뜨면 그 줄이 배경 소음이 된다');
 });
