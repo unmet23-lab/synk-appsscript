@@ -457,6 +457,10 @@ function main() {
         console.log(`     ${d}부터 · [${it.topic}]\n     ${it.text}`);
       });
     }
+    // [2026-08-07 · F173] 폐기함도 여기 낸다 — `--all` 은 「전부 보여달라」인데 걸러진 것만 빠지면
+    // 그 전량이 「이게 전부다」로 읽힌다(바로 위 예약 줄과 같은 이유다). 옆 세션 b6cb681a 가 지목.
+    const 경고 = 버려진줄(r);
+    if (경고) console.log(`\n${경고}`);
     return console.log('');
   }
   if (args.includes('--한장')) {
