@@ -117,12 +117,12 @@ function setupBrain() {
   const 기존 = new Set();
   if (sh.getLastRow() > 1) {
     sh.getRange(2, 1, sh.getLastRow() - 1, 2).getValues()
-      .forEach(r => 기존.add(String(r[0]).trim() + ' ' + String(r[1]).trim()));
+      .forEach(r => 기존.add(String(r[0]).trim() + '\u0000' + String(r[1]).trim()));
   }
 
   const 신규 = [];
   const 담기 = (대상, b) => {
-    const 키 = 대상 + ' ' + String(b.주제).trim();
+    const 키 = 대상 + '\u0000' + String(b.주제).trim();
     if (기존.has(키)) return;
     기존.add(키);
     신규.push([대상, b.주제, b.확정 ? 'Y' : '', String(b.내용 || ''), String(b.출처 || ''), 오늘]);
