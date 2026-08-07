@@ -240,3 +240,48 @@ test('실저장소 메모리에서 --check 가 크래시 없이 돈다', (t) => 
     assert.ok(Array.isArray(남은), `${f} 판정이 배열이 아니다`);
   }
 });
+
+/* ── ⑨ 파일명 정책 (F181) ────────────────────────────────────────────────────
+ * 인덱스 링크의 `-YYYY-MM-DD` 11자가 매 세션 전량 로드에 곱해진다. 한 번 걷어내도
+ * 다음 세션이 습관대로 날짜를 붙이면 한 줄씩 되돌아온다 — 그래서 걷어낸 그 자리에 장치를 둔다. */
+
+test('새 메모리 파일명에 날짜 접미사를 달면 막고, 날짜 뗀 이름을 처방한다', () => {
+  const dir = 메모리({});
+  const r = 호출({ dir, tool: 'Write', input: { file_path: path.join(dir, 'foo-2026-08-08.md'), content: '# foo\n' } });
+  assert.strictEqual(r.decision, 'deny');
+  assert.match(r.reason, /`foo\.md`/, '처방에 쓸 이름이 그대로 있어야 따라할 수 있다');
+});
+
+test('이미 있는 날짜 파일을 고치는 것은 막지 않는다 — 옛 메모리가 인질이 되면 훅을 끈다', () => {
+  const dir = 메모리({ 'app-feature-audit-2026-07-27.md': '# 옛 메모\n' });
+  const r = 호출({
+    dir,
+    input: { file_path: path.join(dir, 'app-feature-audit-2026-07-27.md'), old_string: '# 옛 메모', new_string: '# 옛 메모 — 보강' },
+  });
+  assert.strictEqual(r.decision, 'allow');
+});
+
+test('처방대로 날짜 뗀 이름으로 쓰면 통과한다 — 처방이 자기 가드에 안 막힌다 (F103)', () => {
+  const dir = 메모리({});
+  const 막힘 = 호출({ dir, tool: 'Write', input: { file_path: path.join(dir, 'bar-2026-08-08.md'), content: '# bar\n' } });
+  const 시킨이름 = /`([^`]+\.md)`/.exec(막힘.reason);
+  assert.ok(시킨이름, '처방에 파일명이 있어야 한다');
+  const r = 호출({ dir, tool: 'Write', input: { file_path: path.join(dir, 시킨이름[1]), content: '# bar\n' } });
+  assert.strictEqual(r.decision, 'allow', '따를 수 없는 처방은 우회를 정상 통로로 만든다');
+});
+
+test('날짜가 아닌 이름·연월만·인덱스는 이 판정에 안 걸린다', () => {
+  assert.ok(guard.날짜파일명('/m/foo-2026-08-08.md'));
+  assert.ok(!guard.날짜파일명('/m/foo.md'));
+  assert.ok(!guard.날짜파일명('/m/foo-2026-07.md'), '연월만 붙은 옛 이름은 이번 정책 밖이다');
+  assert.ok(!guard.날짜파일명('/m/v2-plan.md'), '이름 안의 숫자를 날짜로 읽으면 안 된다');
+  assert.strictEqual(guard.날짜뗀이름('/m/foo-2026-08-08.md'), 'foo.md');
+});
+
+test('실저장소 인덱스에 날짜 링크가 없다 — 되돌아왔으면 여기서 드러난다', (t) => {
+  const { memoryDir } = require(path.join(ROOT, 'tools', 'memory-graph.js'));
+  const 인덱스 = path.join(memoryDir(), 'MEMORY.md');
+  if (!fs.existsSync(인덱스)) return t.skip('메모리 인덱스가 없다 — repo 밖이라 CI 에선 정상');
+  const 날짜링크 = (fs.readFileSync(인덱스, 'utf8').match(/\]\([^)\s]*-\d{4}-\d{2}-\d{2}\.md\)/g) || []);
+  assert.deepStrictEqual(날짜링크, [], `인덱스 링크에 날짜가 ${날짜링크.length}건 되돌아왔다 — 줄마다 11자가 매 세션 곱해진다(F181)`);
+});
