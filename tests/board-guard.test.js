@@ -303,3 +303,100 @@ test('🔴 [회귀·F094] 안내와 판정이 갈라지지 않는다 — 안내�
     );
   }
 });
+
+/* ── ④ 자리 겹침 — 남이 이미 선언한 트랙을 다시 잡는다 (2026-08-07 실측) ────────
+ * 여기서만 **진짜 git 저장소**를 만든다. 선점은 커밋이 아니라 `git diff HEAD` 로만 드러나서
+ * (F161), 저장소 없이 재면 훅이 조용히 통과하고 **「통과」와 「미실행」이 같은 모양**이 된다.
+ * 위쪽 검사들이 쓰는 BOARD 는 git 밖이라 이 규칙이 안 도는 것이 정상이고, 그래서 탐지 능력은
+ * 이 픽스처가 통째로 진다(실저장소는 아래 거짓양성 검사만 본다). */
+const GIT = fs.mkdtempSync(path.join(os.tmpdir(), 'boardguard-git-'));
+const GBOARD = path.join(GIT, '세션보드.md');
+const 머리 = ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|'].join('\n');
+const 기존 = '| 2026-08-07 | 기존 트랙 | tools/기존.js `local_11111111` | ✅종결 |';
+/* 남의 **미커밋** 선언 — 실측 그대로다(`82404266` 이 ②-20 을 잡고 3분 뒤 다른 세션이 겹쳤다). */
+const 남의줄 = '| 2026-08-07 | **②-20 `/tasks` 가 스냅샷을 통째로 돌려준다** | **SYNK-talk: supabase/functions/tasks/index.ts · tests** | 🔵**착수**(`local_82404266`) |';
+
+let git있음 = true;
+try {
+  const git = (...a) => execFileSync('git', ['-C', GIT, ...a], { encoding: 'utf8', stdio: 'pipe' });
+  fs.writeFileSync(GBOARD, `${머리}\n${기존}\n`, 'utf8');
+  git('init', '-q');
+  git('config', 'user.email', 'test@synk.local');
+  git('config', 'user.name', 'test');
+  git('add', '세션보드.md');
+  git('commit', '-qm', 'base', '--no-verify');
+  fs.writeFileSync(GBOARD, `${머리}\n${기존}\n${남의줄}\n`, 'utf8'); // 선언은 여기서 미커밋으로만 산다
+} catch (_) {
+  git있음 = false; // git 이 없는 환경 — skip 으로 **드러낸다**(조용한 통과 금지)
+}
+
+/** 남의 줄 아래에 내 줄을 한 줄 붙이는 편집. */
+const 붙임 = (내줄) => 판정({ tool_name: 'Edit', tool_input: { file_path: GBOARD, old_string: 남의줄, new_string: `${남의줄}\n${내줄}` } }, 나);
+const 내줄 = (트랙, 파일) => `| 2026-08-07 | ${트랙} | ${파일} | 🔵**착수**(\`local_3fd8f6db\`) |`;
+
+test('🔴 [④] 남이 잡은 **항목 표식**을 다시 잡으면 막는다', { skip: git있음 ? false : 'git 없음' }, () => {
+  const r = 붙임(내줄('**②-20 — 정답이 학생에게 간다**(같은 항목을 내가 또 판다)', '**SYNK-talk: lib/스냅샷.js**'));
+  assert.strictEqual(r.결정, 'deny', '🔴 같은 항목을 두 세션이 각자 파는 것을 통과시켰다 — 중복 구현은 되돌릴 수 없다');
+  assert.match(r.사유, /②-20/, '무엇이 겹쳤는지 안 말하면 비켜날 자리를 못 고른다');
+  assert.match(r.사유, /local_82404266/, '누가 잡았는지 안 말하면 생사를 확인할 수 없다');
+});
+
+test('🔴 [④] 항목 번호가 없어도 **같은 파일**을 선언하면 막는다', { skip: git있음 ? false : 'git 없음' }, () => {
+  const r = 붙임(내줄('**응답에서 정답 빼기**(표식 없는 트랙)', '**SYNK-talk: supabase/functions/tasks/index.ts**'));
+  assert.strictEqual(r.결정, 'deny', '🔴 같은 파일을 둘이 고치는 선언이 통과했다 — 커밋에서 부딪친다');
+  assert.match(r.사유, /tasks\/index\.ts/, '겹친 경로를 안 보여주면 무엇을 비켜야 할지 모른다');
+});
+
+test('🔴 [④·거짓양성] 본문에서 **언급만** 한 표식은 선점이 아니다', { skip: git있음 ? false : 'git 없음' }, () => {
+  /* 오늘 이 트랙의 보드 줄이 정확히 이 모양이다 — 남의 겹침을 근거로 적으면서 그 번호를 인용한다.
+   * 문장 어디서나 표식을 세면 **남을 언급만 해도 막혀서** 가드가 곧 우회 대상이 된다. */
+  const r = 붙임(내줄('**보드 선언 겹침을 아무도 안 막는다**(지금 `②-20` 을 두 세션이 각자 판다)', '**appsscript: .claude/hooks/board-guard.js**'));
+  assert.strictEqual(r.결정, 'allow', `🔴 인용을 선점으로 셌다 — 남을 언급만 해도 막힌다: ${r.사유.slice(0, 120)}`);
+});
+
+/** 남의 선언을 바꿔 끼우고 재 본다(원래 줄로 되돌린다). */
+function 남을바꿔(대신, 내것) {
+  fs.writeFileSync(GBOARD, `${머리}\n${기존}\n${대신}\n`, 'utf8');
+  try {
+    return 판정({ tool_name: 'Edit', tool_input: { file_path: GBOARD, old_string: 대신, new_string: `${대신}\n${내것}` } }, 나);
+  } finally {
+    fs.writeFileSync(GBOARD, `${머리}\n${기존}\n${남의줄}\n`, 'utf8');
+  }
+}
+
+test('🔴 [④·거짓양성] 홑 이름은 자리로 안 센다 — `Code.js` 는 규약상 병행 가능하다', { skip: git있음 ? false : 'git 없음' }, () => {
+  /* CLAUDE.md 가 「`Code.js` 는 함수·열 구역이 안 겹치면 병행 가능」이라고 못박았다. 경로 없는
+   * 홑 이름을 자리로 세면 그 병행이 통째로 막히고, `index.ts` 는 저장소에 7벌이라 더 나쁘다. */
+  const 남 = '| 2026-08-07 | **엔진 열 추가** | **Code.js** | 🔵**착수**(`local_82404266`) |';
+  const r = 남을바꿔(남, 내줄('**출석 함수 손보기**(다른 구역)', '**Code.js**'));
+  assert.strictEqual(r.결정, 'allow', `🔴 홑 이름을 자리로 셌다 — 규약이 허용한 병행을 막는다: ${r.사유.slice(0, 120)}`);
+});
+
+test('🔴 [④·거짓양성] 공용 장부는 자리가 아니다 — 모든 세션이 규약상 만진다', { skip: git있음 ? false : 'git 없음' }, () => {
+  const 남 = '| 2026-08-07 | **F196 채번** | **appsscript: docs/세션보드.md · docs/_ops/마찰신호.md** | 🔵**착수**(`local_82404266`) |';
+  const r = 남을바꿔(남, 내줄('**전혀 다른 트랙**', '**appsscript: docs/세션보드.md · docs/_ops/마찰신호.md**'));
+  assert.strictEqual(r.결정, 'allow', `🔴 보드·장부 겹침을 충돌로 셌다 — 매 세션 막혀서 가드가 곧 꺼진다: ${r.사유.slice(0, 120)}`);
+});
+
+test('🔴 [④] ✅종결한 남의 줄은 자리를 잡고 있는 게 아니다', { skip: git있음 ? false : 'git 없음' }, () => {
+  const 끝난줄 = 남의줄.replace('🔵**착수**', '✅**종결**');
+  fs.writeFileSync(GBOARD, `${머리}\n${기존}\n${끝난줄}\n`, 'utf8');
+  try {
+    const r = 판정({ tool_name: 'Edit', tool_input: { file_path: GBOARD, old_string: 끝난줄, new_string: `${끝난줄}\n${내줄('**②-20 이어받기**', '**SYNK-talk: supabase/functions/tasks/index.ts**')}` } }, 나);
+    assert.strictEqual(r.결정, 'allow', `🔴 치우기를 기다리는 완료 줄이 자리를 계속 잡았다: ${r.사유.slice(0, 120)}`);
+  } finally {
+    fs.writeFileSync(GBOARD, `${머리}\n${기존}\n${남의줄}\n`, 'utf8');
+  }
+});
+
+test('🔴 [④·F103] 차단 사유가 시키는 대로 비켜나면 통과한다', { skip: git있음 ? false : 'git 없음' }, () => {
+  assert.strictEqual(붙임(내줄('**②-20 다시 잡기**', '**SYNK-talk: supabase/functions/tasks/index.ts**')).결정, 'deny');
+  const r = 붙임(내줄('**F196 — 폰 세션 채번**(다른 트랙으로 비켜났다)', '**appsscript: tools/friction.js · tests/마찰신호.test.js**'));
+  assert.strictEqual(r.결정, 'allow', `🔴 비켜났는데도 막힌다 — 따를 수 없는 처방은 우회를 정상 통로로 만든다: ${r.사유.slice(0, 120)}`);
+});
+
+test('🔴 [④·거짓양성] 상태 칸 갱신은 남의 선언이 있어도 통과한다', { skip: git있음 ? false : 'git 없음' }, () => {
+  /* 보드 편집의 대부분이 이 모양이다. 여기서 막으면 가드가 일상 통로를 막는다. */
+  const r = 판정({ tool_name: 'Edit', tool_input: { file_path: GBOARD, old_string: 기존, new_string: 기존.replace('✅종결', '🔵작업중') } }, 나);
+  assert.strictEqual(r.결정, 'allow', `🔴 상태 갱신을 새 선언으로 셌다: ${r.사유.slice(0, 120)}`);
+});
