@@ -143,3 +143,96 @@ test('0분·0번은 아예 안 적는다 — 「0분 전 판인데 8커밋 뒤�
   assert.doesNotMatch(글, /0분 전 판/, '커밋 간격 중앙값 1분인 저장소라 0분은 흔하고, 그 표기는 신호를 흐린다');
   assert.doesNotMatch(글, /세션보드 \*\*0번\*\*/);
 });
+
+// ── ③ F208 — 진행 중 git 작업 · autostash 잔재 ─────────────────────────────
+// 실사고(2026-08-07): 남의 세션이 시작한 rebase 의 autostash 가 진행 중이던 세션의 미커밋
+// 3파일을 조용히 HEAD 판으로 되돌렸다. 잔재 stash 는 7파일을 문 채 어느 층에도 안 보였다.
+
+const { 훅띄우기 } = require('./lib/훅띄우기.js');
+const 훅파일 = path.join(ROOT, '.claude', 'hooks', 'repo-staleness.js');
+
+/** origin 없는 단독 저장소 — 진행중·스태시 검사는 origin 이 필요 없다. */
+function 혼자판() {
+  const 집 = fs.mkdtempSync(path.join(os.tmpdir(), 'staleness-op-'));
+  git(집, 'init', '-b', 'master');
+  fs.writeFileSync(path.join(집, 'a.txt'), 'x\n');
+  git(집, 'add', 'a.txt');
+  git(집, 'commit', '-m', 'a');
+  return 집;
+}
+
+test('진행중작업: 상태 파일 네 형태를 각자 이름으로 읽고, 깨끗하면 null', { skip: !있나 }, () => {
+  const 집 = 혼자판();
+  const 방 = git(집, 'rev-parse', '--absolute-git-dir');
+  assert.strictEqual(훅.진행중작업(집), null, '깨끗한 판에서 울리면 매 편집이 소음이 된다');
+  for (const [씨앗, 이름] of [
+    ['rebase-merge', 'rebase'], ['rebase-apply', 'rebase'],
+    ['MERGE_HEAD', 'merge'], ['CHERRY_PICK_HEAD', 'cherry-pick'], ['REVERT_HEAD', 'revert'],
+  ]) {
+    const p = path.join(방, 씨앗);
+    if (씨앗.startsWith('rebase')) fs.mkdirSync(p); else fs.writeFileSync(p, 'deadbeef\n');
+    assert.strictEqual(훅.진행중작업(집), 이름, `${씨앗} 를 못 읽으면 그 작업 중의 편집이 조용히 쓸린다(F208)`);
+    fs.rmSync(p, { recursive: true, force: true });
+  }
+});
+
+test('진행중작업: 워크트리는 자기 방만 본다 — 메인의 rebase 로 워크트리를 세우면 거짓 경보다', { skip: !있나 }, () => {
+  const 집 = 혼자판();
+  const 딴방 = path.join(집, 'wt-checkout');
+  git(집, 'worktree', 'add', '--quiet', '-b', 'wt', 딴방);
+  fs.mkdirSync(path.join(git(집, 'rev-parse', '--absolute-git-dir'), 'rebase-merge'));
+  assert.strictEqual(훅.진행중작업(집), 'rebase');
+  assert.strictEqual(훅.진행중작업(딴방), null, '메인의 rebase 는 워크트리 파일을 안 쓸어간다 — 방을 섞으면 늑대소년이 된다');
+});
+
+test('갇힌스태시: autostash 잔재만 세고 주인이 일부러 둔 stash 는 안 센다', { skip: !있나 }, () => {
+  const 집 = 혼자판();
+  assert.deepStrictEqual(훅.갇힌스태시(집), []);
+  fs.appendFileSync(path.join(집, 'a.txt'), 'dirty1\n');
+  git(집, 'stash', 'push', '-m', '내가 일부러 둔 것');
+  fs.appendFileSync(path.join(집, 'a.txt'), 'dirty2\n');
+  git(집, 'stash', 'store', '-m', 'On master: autostash', git(집, 'stash', 'create'));
+  const r = 훅.갇힌스태시(집);
+  assert.strictEqual(r.length, 1, '일반 stash 까지 세면 홍수(거짓 경보)고, 잔재를 못 세면 갇힌 작업이 영영 조용하다');
+  assert.match(r[0].ref, /^stash@\{\d+\}$/);
+  assert.strictEqual(r[0].해시.length, 40, '해시가 없으면 「세션당 1회」 dedupe 가 설 자리가 없다');
+});
+
+test('발화: 진행 중 rebase 는 스로틀 조용 창 **안**이어도, 뒤처짐 0 이어도 알린다', { skip: !있나 }, () => {
+  const { B } = 판만들기();
+  const 상태집 = fs.mkdtempSync(path.join(os.tmpdir(), 'staleness-state-'));
+  const env = { ...process.env, SYNK_CTXBUDGET_DIR: 상태집, CLAUDE_CODE_HOST_SESSION_ID: 'staleness-f208-op' };
+  const 입력 = { input: JSON.stringify({ cwd: B }), env };
+
+  // 1차: 깨끗+최신 → 침묵하며 스로틀 도장을 찍는다
+  assert.strictEqual(훅띄우기(훅파일, 입력).stdout.trim(), '', '깨끗한 판에서 울리면 소음이라 알림 자체가 죽는다');
+
+  // 2차: rebase 진행 중 — 도장이 5분 안이지만 **울려야 한다** (검사를 스로틀 뒤로 옮기면 여기가 빨개진다)
+  fs.mkdirSync(path.join(git(B, 'rev-parse', '--absolute-git-dir'), 'rebase-merge'));
+  const out = JSON.parse(훅띄우기(훅파일, 입력).stdout);
+  assert.match(out.systemMessage, /rebase 진행 중/);
+  assert.match(out.hookSpecificOutput.additionalContext, /F208/);
+  assert.match(out.hookSpecificOutput.additionalContext, /--quit/, '다음 한 수(abort 금지·--quit)가 없으면 알림이 아니라 소음이다');
+});
+
+test('발화: autostash 잔재는 측정 주기에 실려 알리고, 같은 잔재는 세션당 한 번이다', { skip: !있나 }, () => {
+  const { B } = 판만들기();
+  const 상태집 = fs.mkdtempSync(path.join(os.tmpdir(), 'staleness-state2-'));
+  const env = { ...process.env, SYNK_CTXBUDGET_DIR: 상태집, CLAUDE_CODE_HOST_SESSION_ID: 'staleness-f208-stash' };
+  const 입력 = { input: JSON.stringify({ cwd: B }), env };
+
+  fs.appendFileSync(path.join(B, 'seed.txt'), 'dirty\n');
+  git(B, 'stash', 'store', '-m', 'On master: autostash', git(B, 'stash', 'create'));
+
+  const out = JSON.parse(훅띄우기(훅파일, 입력).stdout);
+  assert.match(out.systemMessage, /autostash 잔재 1건/);
+  assert.match(out.hookSpecificOutput.additionalContext, /stash show -p stash@\{0\}/, '어느 stash 인지 못 짚으면 주인이 못 찾는다');
+
+  // 같은 잔재로 2차 — 도장의 시각만 과거로 물려 스로틀을 열어도(측정은 다시 한다) 조용해야 한다
+  const 도장 = fs.readdirSync(상태집).find((f) => f.startsWith('staleness-'));
+  assert.ok(도장, '도장 파일이 없으면 dedupe 를 검사한 것이 아니다');
+  const 도장길 = path.join(상태집, 도장);
+  const j = JSON.parse(fs.readFileSync(도장길, 'utf8'));
+  fs.writeFileSync(도장길, JSON.stringify({ ...j, at: Date.now() - 6 * 60 * 1000 }));
+  assert.strictEqual(훅띄우기(훅파일, 입력).stdout.trim(), '', '한 잔재가 5분마다 다시 울리면 홍수가 되어 아무도 안 읽는다');
+});

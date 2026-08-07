@@ -23,6 +23,14 @@
  *
  * ⚠ repo 밖 환경(네트워크·origin)에 기대므로 CI 에서는 잴 것이 없다 — 그때는 **조용히 통과**하고
  *   탐지력은 픽스처 회귀(`tests/저장소뒤처짐.test.js`)가 진다.
+ *
+ * 🔴 2026-08-07 두 번째 실측(F208)이 범위를 넓혔다 — 낡음만이 아니라 **진행 중인 git 작업**도
+ *   같은 사고 통로다: 남의 세션이 시작한 rebase 의 autostash 가 이 트리의 미커밋 편집 3파일을
+ *   걷어가 HEAD 판으로 되돌렸고, 발각 단서는 「diff --stat 이 비어 있음」 하나였다. 못 돌려준
+ *   잔재는 stash 에 갇히는데(19:13 실측: 7파일) 어느 층도 주인에게 알리지 않는다.
+ *   그래서 둘을 더 본다: ①진행 중 작업 — 스로틀 **앞**, 매 편집(분 단위로 끝나는 상태라 조용한
+ *   창 5분 뒤에 두면 정확히 위험한 그 순간에 침묵한다) ②autostash 잔재 — 측정 주기·세션당 1회
+ *   (몇 시간을 사는 상태라 매번 울리면 홍수고, 홍수는 「아무도 안 읽음」이다).
  */
 
 const path = require('path');
@@ -89,7 +97,48 @@ function 본문(r) {
     + '→ 클라우드(폰) 세션이면 `claude/*` 브랜치라 master 로 직접 못 민다 — 코드보다 **판정·읽기**에 쓴다.';
 }
 
-module.exports = { 재다, 본문, 조용한간격_MS, 기준, 보드 };
+/** 진행 중 git 작업 — F208 의 사고 통로. 상태 파일은 **per-worktree** git-dir 에 있다
+ *  (`--absolute-git-dir` 가 워크트리면 자기 방을 준다 — 메인의 rebase 는 워크트리 파일을 안 쓸므로
+ *  방을 섞으면 거짓 경보가 된다). 반환: 작업 이름 또는 null. */
+function 진행중작업(cwd) {
+  let 방;
+  try { 방 = g(['rev-parse', '--absolute-git-dir'], cwd); } catch (_) { return null; }
+  if (fs.existsSync(path.join(방, 'rebase-merge')) || fs.existsSync(path.join(방, 'rebase-apply'))) return 'rebase';
+  if (fs.existsSync(path.join(방, 'MERGE_HEAD'))) return 'merge';
+  if (fs.existsSync(path.join(방, 'CHERRY_PICK_HEAD'))) return 'cherry-pick';
+  if (fs.existsSync(path.join(방, 'REVERT_HEAD'))) return 'revert';
+  return null;
+}
+
+/** rebase --autostash 가 되돌려주지 못한 잔재 — 누군가의 미커밋이 갇혀 있다(F208 실측 19:13).
+ *  stash 는 저장소 전역이라 어느 워크트리에서 봐도 같다. 일반 stash(주인이 일부러 둔 것)는 안 센다. */
+function 갇힌스태시(cwd) {
+  let 줄들;
+  try { 줄들 = g(['stash', 'list', '--format=%H %gd %gs'], cwd); } catch (_) { return []; }
+  if (!줄들) return [];
+  return 줄들.split('\n').map((l) => {
+    const m = l.match(/^([0-9a-f]{40}) (stash@\{\d+\}) (.*)$/);
+    return m ? { 해시: m[1], ref: m[2], 제목: m[3] } : null;
+  }).filter((s) => s && /(^|: )autostash$/.test(s.제목));
+}
+
+function 진행중본문(작업) {
+  return `[repo-staleness] 이 작업 트리에 **${작업} 진행 중**이다 — 남의 세션이 시작한 것일 수 있다\n`
+    + '(F208 실측: 남의 rebase 의 autostash 가 진행 중이던 세션의 미커밋 3파일을 조용히 HEAD 판으로 되돌렸다).\n'
+    + '지금 편집하면 ①그 작업이 끝날 때 편집이 쓸리거나 ②자동커밋이 detached HEAD 위에 떠 master 밖에 남는다.\n\n'
+    + '→ `git status` 전문으로 어느 작업인지 본다 · 남의 것이면 끝날 때까지 이 트리의 편집을 멈춘다.\n'
+    + `→ 내가 끝내야 하면 abort 금지(남의 미커밋을 쓸어간다) — 필요한 것을 커밋한 뒤 \`git ${작업} --quit\`(상태만 접고 파일은 그대로).`;
+}
+
+function 잔재본문(잔재들) {
+  return `[repo-staleness] stash 에 **autostash 잔재 ${잔재들.length}건**(${잔재들.map((s) => s.ref).join(' · ')}) —\n`
+    + '누군가의 rebase 가 그 순간의 미커밋 편집을 걷어갔다가 되돌려주지 못한 것이다(F208). 그 세션의\n'
+    + '작업이 여기 갇혀 있는데 어느 층도 주인에게 알리지 않는다 — 이 알림이 그 층이다(세션당 1회).\n\n'
+    + `→ 내 미커밋이 사라진 적 있으면 여기부터 본다: \`git stash show -p ${잔재들[0].ref}\`\n`
+    + '→ `pop` 은 대조 전 금지 — 지금 작업본과 겹치면 그대로 덮는다. 내용을 보고 필요한 조각만 살린다.';
+}
+
+module.exports = { 재다, 본문, 진행중작업, 갇힌스태시, 진행중본문, 잔재본문, 조용한간격_MS, 기준, 보드 };
 
 if (require.main !== module) return;
 
@@ -101,32 +150,62 @@ process.stdin.on('end', () => {
   try { ev = JSON.parse(입력 || '{}'); } catch (_) { process.exit(0); }
   const cwd = ev?.cwd || ROOT;
 
+  /* F208 ① — 진행 중 작업은 스로틀 **앞**에서 본다. 순서가 내용이다: 조용한 창(5분) 뒤에 두면
+   * 분 단위로 끝나는 이 상태를 정확히 위험한 그 순간에 놓친다. 검사 비용은 로컬 fs 몇 번뿐이다. */
+  let 작업 = null;
+  try { 작업 = 진행중작업(cwd); } catch (_) { /* 판정 실패는 기존 침묵 방향 */ }
+  if (작업) {
+    process.stdout.write(JSON.stringify({
+      systemMessage: `⚠ 이 작업 트리에 ${작업} 진행 중 — 지금 편집은 쓸릴 수 있다 (F208)`,
+      hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: 진행중본문(작업) },
+    }));
+    process.exit(0);
+  }
+
   /* throttle — 못 쓰면 **매번 검사한다**(느릴 뿐 안전한 방향). 조용히 안 재는 쪽으로 새면
    * 통과와 미실행이 같은 모양이 된다(F193 이 정확히 그 자리에서 났다). */
   let 표 = null;
+  let 지난 = {};
   try {
     const store = require(path.join(__dirname, 'lib', 'handoff-store.js'));
     표 = path.join(store.stateDir(),
       `staleness-${store.projectKey(cwd)}-${store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || 'nosid')}.json`);
-    const 최근 = Number(JSON.parse(fs.readFileSync(표, 'utf8')).at);
+    try { 지난 = JSON.parse(fs.readFileSync(표, 'utf8')) || {}; } catch (_) { 지난 = {}; }
+    const 최근 = Number(지난.at);
     if (Number.isFinite(최근) && Date.now() - 최근 < 조용한간격_MS) process.exit(0);
-  } catch (_) { /* 없거나 못 읽으면 잰다 */ }
+  } catch (_) { /* store 를 못 불러도 잰다 */ }
 
   let r;
   try { r = 재다(cwd); } catch (_) { process.exit(0); }
 
+  /* F208 ② — autostash 잔재는 측정 주기에 실린다. 같은 잔재는 **세션당 1회**(stash 해시로 기억) —
+   * 몇 시간을 사는 상태라 5분마다 다시 울리면 홍수가 되고, 홍수는 「아무도 안 읽음」이다. */
+  const 알린잔재 = Array.isArray(지난.잔재) ? 지난.잔재 : [];
+  let 새잔재 = [];
+  try { 새잔재 = 갇힌스태시(cwd).filter((s) => !알린잔재.includes(s.해시)); } catch (_) { /* 부가 신호다 */ }
+
   if (표) {
     try {
       fs.mkdirSync(path.dirname(표), { recursive: true });
-      fs.writeFileSync(표, JSON.stringify({ at: Date.now() }));
+      fs.writeFileSync(표, JSON.stringify({
+        at: Date.now(),
+        잔재: [...new Set([...알린잔재, ...새잔재.map((s) => s.해시)])],
+      }));
     } catch (_) { /* 못 써도 판정은 이미 했다 */ }
   }
 
-  if (!r || !r.뒤) process.exit(0);   // 최신이거나 잴 수 없으면 조용히 — 소음은 알림을 죽인다
+  const 낡음글 = r && r.뒤 ? 본문(r) : null;
+  const 잔재글 = 새잔재.length ? 잔재본문(새잔재) : null;
+  if (!낡음글 && !잔재글) process.exit(0);   // 최신·잔재 없음·잴 수 없음이면 조용히 — 소음은 알림을 죽인다
 
   process.stdout.write(JSON.stringify({
-    systemMessage: `⚠ 내 판이 ${기준} 보다 ${r.뒤} 커밋 뒤다`,
-    hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: 본문(r) },
+    systemMessage: 낡음글
+      ? `⚠ 내 판이 ${기준} 보다 ${r.뒤} 커밋 뒤다`
+      : `⚠ stash 에 autostash 잔재 ${새잔재.length}건 — 누군가의 미커밋이 갇혀 있다 (F208)`,
+    hookSpecificOutput: {
+      hookEventName: 'PreToolUse',
+      additionalContext: [낡음글, 잔재글].filter(Boolean).join('\n\n'),
+    },
   }));
   process.exit(0);
 });
