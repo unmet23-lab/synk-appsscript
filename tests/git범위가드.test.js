@@ -707,6 +707,101 @@ test('🔴 ⑧ **형제 저장소**의 미커밋은 이 커밋 범위가 아니�
   assert.equal(r.차단, false, `증명된 내 것뿐인데 차단했다 — 노이즈 가드는 BYPASS 를 학습시킨다:\n${r.사유}`);
 });
 
+/* ⑨ **되돌림** — 남이 **이미 커밋한** 줄이 내 작업본에서 사라졌나 (F187 · 2026-08-07).
+ *
+ * ⑧과 축이 반대라 픽스처도 반대다: ⑧은 남의 **미커밋**을 심고, 여기는 남의 **커밋**을 심은 뒤
+ * 작업본에서 그 줄을 지운다 — 도구가 옛 내용 위에 통째로 덮어쓴 상태가 정확히 그 모양이다.
+ * 🔑 아래 검사들은 일부러 `local_peer` 의 **만진 기록을 비워 둔다.** 그래야 ⑧이 「내것 ∧ 함께 없음」
+ *   으로 조용히 비켜서고, 짖는 것이 ⑨ 하나뿐임이 증명된다(⑧의 diff 본문에도 그 줄이 나오므로
+ *   줄 내용만 대조하면 어느 규칙이 잡았는지 구별이 안 된다 — 그래서 커밋 해시로도 함께 못박는다). */
+function 남이커밋(f, 파일, 내용, sid = 'local_peer') {
+  fs.writeFileSync(path.join(f.repo, 파일), 내용);
+  f.g('add', 파일);
+  f.g('commit', '-qm', `남의 수리\n\nSession-Id: ${sid}`);
+  return f.g('rev-parse', 'HEAD').trim().slice(0, 7);
+}
+
+test('🔴 ⑨ 남이 방금 커밋한 줄이 내 작업본에서 사라졌으면 막는다 (F187 실사고 재현)', () => {
+  const f = 픽스처8();
+  const h = 남이커밋(f, '왕복시험.js', 'const 기존 = 1;\nconst 새학생모드 = true;\nconst 동의발급실행 = true;\n');
+  만진기록(f.state, f.repo, 'local_peer', [], 1);          // 아직 도는 세션 · 작업본은 안 만졌다
+  만진기록(f.state, f.repo, 'local_me', ['왕복시험.js'], 0);
+  // 내 도구가 그 커밋 **이전** 내용 위에 덮어썼다 — 남의 두 줄이 통째로 없다
+  fs.writeFileSync(path.join(f.repo, '왕복시험.js'), 'const 기존 = 1;\nconst 내수정 = 2;\n');
+  const r = 가드8(f, 'git commit -m "내 수정" -- 왕복시험.js');
+  assert.equal(r.차단, true, `되돌림이 그대로 커밋된다 — git 은 오류를 안 내고 증상은 「-」 줄뿐이다:\n${r.사유}`);
+  assert.match(r.사유, /되돌린다|되돌림/, '무슨 사고인지 이름을 안 붙였다 — ⑧의 「모름」과 구별이 안 된다');
+  assert.match(r.사유, /새학생모드/, '사라지는 줄을 안 짚었다 — 눈으로 세게 하면 F187 이 그대로 재발한다');
+  assert.ok(r.사유.includes(h), `되돌리는 커밋이 어느 것인지 안 알려줬다(${h}):\n${r.사유}`);
+});
+
+test('⑨ 자기 처방을 막지 않는다 — 지운 줄을 되살리면 같은 명령이 통과한다 (F103)', () => {
+  const f = 픽스처8();
+  남이커밋(f, '왕복시험.js', 'const 기존 = 1;\nconst 새학생모드 = true;\n');
+  만진기록(f.state, f.repo, 'local_peer', [], 1);
+  만진기록(f.state, f.repo, 'local_me', ['왕복시험.js'], 0);
+  fs.writeFileSync(path.join(f.repo, '왕복시험.js'), 'const 기존 = 1;\nconst 내수정 = 2;\n');
+  assert.equal(가드8(f, 'git commit -m "x" -- 왕복시험.js').차단, true, '처음엔 막아야 한다');
+  // 사유가 시키는 대로 남의 줄을 되살린다
+  fs.writeFileSync(path.join(f.repo, '왕복시험.js'), 'const 기존 = 1;\nconst 새학생모드 = true;\nconst 내수정 = 2;\n');
+  const r = 가드8(f, 'git commit -m "x" -- 왕복시험.js');
+  assert.equal(r.차단, false, `복원했는데도 막는다 — 따를 수 없는 처방은 BYPASS 를 정상 통로로 만든다:\n${r.사유}`);
+});
+
+test('🔴 ⑨ 같은 명령을 반복해도 안 뚫린다 — 통과 조건은 재실행이 아니라 **복원**이다', () => {
+  /* ⑧은 공유 파일의 무한 차단을 끝내려 「같은 범위 3번째면 통과」를 갖고 있다(F141). 되돌림이
+   * 그 문으로 새면 이 규칙은 있으나 마나다 — 재실행은 사라진 줄을 되살리지 않기 때문이다. */
+  const f = 픽스처8();
+  남이커밋(f, '왕복시험.js', 'const 기존 = 1;\nconst 새학생모드 = true;\n');
+  만진기록(f.state, f.repo, 'local_peer', [], 1);
+  만진기록(f.state, f.repo, 'local_me', ['왕복시험.js'], 0);
+  fs.writeFileSync(path.join(f.repo, '왕복시험.js'), 'const 기존 = 1;\n');
+  for (const 회 of [1, 2, 3, 4]) {
+    assert.equal(가드8(f, 'git commit -m "x" -- 왕복시험.js').차단, true,
+      `${회}번째 시도가 통과했다 — 반복만으로 되돌림이 세탁된다`);
+  }
+});
+
+test('🔴 ⑨ **형제 저장소**에서 커밋해도 잰다 — 세션 기록은 「연 저장소」 키에 쌓인다', () => {
+  /* 트랙 절반은 appsscript 를 열고 talk 파일을 만진다(F187 실사고가 그 모양이다). 산 세션 목록을
+   * 커밋 대상 저장소 키로만 뽑으면 형제에서는 목록이 통째로 비어 이 규칙이 **영영 안 짖는다** —
+   * 새는 방향은 언제나 「통과」다. 그래서 두 뿌리에서 모아 합집합으로 본다. */
+  const f = 픽스처8();
+  남이커밋(f, '왕복시험.js', 'const 기존 = 1;\nconst 새학생모드 = true;\n');
+  만진기록(f.state, ROOT, 'local_peer', [], 1);            // 남의 세션은 **이 저장소**를 열고 형제를 만졌다
+  만진기록(f.state, f.repo, 'local_me', ['왕복시험.js'], 0);
+  fs.writeFileSync(path.join(f.repo, '왕복시험.js'), 'const 기존 = 1;\n');
+  const r = 가드8(f, 'git commit -m "x" -- 왕복시험.js');
+  assert.equal(r.차단, true, `형제 저장소에서 커밋하면 산 세션 목록이 비어 영영 안 짖는다:\n${r.사유}`);
+});
+
+test('⑨ 끝난 세션의 옛 줄을 지우는 건 평범한 작업이다 — 안 짖는다 (거짓양성)', () => {
+  const f = 픽스처8();
+  남이커밋(f, '엔진.js', 'let a = 1;\nlet 옛기능 = true;\n');
+  만진기록(f.state, f.repo, 'local_peer', [], 99);         // 심장박동 멎음
+  만진기록(f.state, f.repo, 'local_me', ['엔진.js'], 0);
+  fs.writeFileSync(path.join(f.repo, '엔진.js'), 'let a = 1;\n');
+  const r = 가드8(f, 'git commit -m "옛 기능 제거" -- 엔진.js');
+  assert.equal(r.차단, false, `옛 코드 삭제까지 막으면 가드가 꺼진다(그리고 BYPASS 가 일상이 된다):\n${r.사유}`);
+});
+
+test('⑨ **내** 커밋의 줄을 지우는 건 안 짖는다 (거짓양성)', () => {
+  const f = 픽스처8();
+  남이커밋(f, '엔진.js', 'let a = 1;\nlet 내가쓴줄 = true;\n', 'local_me');
+  만진기록(f.state, f.repo, 'local_me', ['엔진.js'], 0);
+  fs.writeFileSync(path.join(f.repo, '엔진.js'), 'let a = 1;\n');
+  assert.equal(가드8(f, 'git commit -m "정리" -- 엔진.js').차단, false, '내 줄을 내가 지우는 것까지 막았다');
+});
+
+test('⑨ 남의 줄이 **그대로 있으면** 조용하다 — 삭제 자체가 아니라 되돌림만 잰다 (거짓양성)', () => {
+  const f = 픽스처8();
+  남이커밋(f, '엔진.js', 'let a = 1;\nlet 남의기능 = true;\n');
+  만진기록(f.state, f.repo, 'local_peer', [], 1);
+  만진기록(f.state, f.repo, 'local_me', ['엔진.js'], 0);
+  fs.writeFileSync(path.join(f.repo, '엔진.js'), 'let a = 1;\nlet 남의기능 = true;\nlet 내기능 = 2;\n');
+  assert.equal(가드8(f, 'git commit -m "내 기능" -- 엔진.js').차단, false, '남의 줄을 안 건드렸는데 막았다');
+});
+
 test('⑧ 범위가 **디렉터리**여도 그 안을 본다 (경로를 폴더로 주는 건 일상이다)', () => {
   const f = 픽스처8();
   fs.mkdirSync(path.join(f.repo, 'tests'));
