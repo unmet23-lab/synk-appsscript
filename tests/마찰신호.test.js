@@ -218,6 +218,30 @@ test('채번 락: 같은 base를 보는 두 작업본이 같은 번호를 받지
     'origin에 예약 태그 2개가 남아야 한다(예약이 원격에 보증된 증거) — 실제: ' + tags.join(','));
 });
 
+/* [2026-08-07] 클라우드(폰) 브랜치의 손번호를 못 보던 자리 — 폰은 채번 태그 push 가 막혀 손으로 번호를
+ * 매기는데(F196), 훑는 범위가 origin/master + 로컬뿐이라 **양쪽이 서로를 못 봤다.** 실물: 폰이 F195 를
+ * 손으로 달았고 PC 도 같은 번호를 다른 사건에 써서 반입 때 재번호(F198)가 필요했다.
+ * 🔑 락으로는 안 막힌다 — 락은 「아직 안 쓰인 순간」을 덮고, 이건 **이미 쓰인 번호를 안 본 것**이다. */
+test('다음 번호는 클라우드(폰) 브랜치가 손으로 쓴 번호도 넘어선다', (t) => {
+  let repos;
+  try { repos = mkFixtureRepos(); }
+  catch (e) { return t.skip('픽스처 저장소를 못 만들었다(git 없음?): ' + e.message); }
+
+  // 폰이 claude/* 브랜치에만 F009 를 손으로 달아 두고 push 했다(태그 예약은 못 한다).
+  git(repos.A, ['checkout', '-qb', 'claude/폰작업']);
+  const 장부 = path.join(repos.A, 'docs', '_ops', '마찰신호.md');
+  fs.writeFileSync(장부, fs.readFileSync(장부, 'utf8').trimEnd()
+    + '\n| F009 | 2026-08-07 | 마찰 | 폰이 손으로 매긴 번호 | |\n', 'utf8');
+  git(repos.A, ['commit', '-am', '폰 신호']);
+  git(repos.A, ['push', '-q', 'origin', 'claude/폰작업']);
+  git(repos.A, ['checkout', '-q', 'master']);
+
+  const outB = runIn(repos.B, ['add', '실수', 'PC 세션 신호']);
+  assert.doesNotMatch(outB, /F00[1-9]\b/,
+    '폰이 이미 쓴 번호대(F009 이하)를 다시 내줬다 — 반입 때 충돌한다: ' + outB.trim());
+  assert.match(outB, /F010/, 'F009 다음이어야 한다: ' + outB.trim());
+});
+
 test('채번 락은 실 저장소를 오염시키지 않는다 (격리 장부만 준 호출은 태그를 만들지 않는다)', () => {
   const real = require(TOOL);
   const before = execFileSync('git', ['tag', '-l', real.TAG_PREFIX + 'F*'],

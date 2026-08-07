@@ -115,9 +115,15 @@ function seenElsewhere(opts) {
 
   let max = 0;
   if (!opts || opts.fetch !== false) gitQuiet(['fetch', 'origin', '--tags', '--quiet']);
+  /* 훑는 범위에 **클라우드(폰) 브랜치**도 넣는다 — 폰은 채번 태그 push 가 막혀 손으로 번호를 매기는데(F196),
+   * 여기가 origin/master + 로컬만 보면 그 손번호를 못 봐서 **양쪽이 서로를 못 보는** 상태가 된다.
+   * 실측 08-07: 폰이 F195 를 손으로 달았고 PC 도 같은 번호를 다른 사건에 써서, 반입 때 재번호(F198)가 필요했다.
+   * 태그 락은 이 자리를 못 메운다 — 락은 「아직 안 쓰인 순간」을 덮는 것이고, 이건 이미 쓰인 번호를 못 본 것이다. */
   const refs = ['origin/master'];
-  (gitQuiet(['for-each-ref', '--format=%(refname:short)', 'refs/heads']) || '')
-    .split('\n').map((s) => s.trim()).filter(Boolean).forEach((b) => refs.push(b));
+  for (const 패턴 of ['refs/heads', 'refs/remotes/origin/claude']) {
+    (gitQuiet(['for-each-ref', '--format=%(refname:short)', 패턴]) || '')
+      .split('\n').map((s) => s.trim()).filter(Boolean).forEach((b) => refs.push(b));
+  }
   refs.forEach((ref) => {
     const text = gitQuiet(['show', ref + ':' + rel]);
     if (text !== null) max = Math.max(max, maxIn(text));   // null = 그 ref에 장부가 없다
