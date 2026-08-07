@@ -15,7 +15,10 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const 토큰 = require(path.join(ROOT, 'docs', '디자인_토큰.json'));
-const OUT = path.join(ROOT, 'docs', 'tools', 'synk-tokens.css');
+/** 산출 경로 — 환경변수가 이음매다(테스트가 실파일 안 건드리고 --check 탐지력을 잰다). */
+const OUT = process.env.SYNK_토큰_OUT
+  ? path.resolve(process.env.SYNK_토큰_OUT)
+  : path.join(ROOT, 'docs', 'tools', 'synk-tokens.css');
 
 const slug = (이름) => 이름.toLowerCase().replace(/\s+/g, '-');
 
@@ -50,7 +53,9 @@ if (require.main === module) {
   const css = build();
   if (process.argv.includes('--check')) {
     const 현재 = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : '';
-    if (현재 !== css) {
+    // ⚠ 줄끝은 내용이 아니다 — Windows 새 체크아웃(워크트리·CI 격리 사본)은 autocrlf 가 CRLF 로
+    //   내려놓아 바이트 비교가 전부 거짓 적색이 됐다(2026-08-07 실측 · git diff 는 0건이었다).
+    if (현재.replace(/\r\n/g, '\n') !== css) {
       console.error(`[토큰빌드] ${path.relative(ROOT, OUT)} 가 정본과 어긋난다 — node tools/토큰빌드.js 로 재생성하라.`);
       process.exit(1);
     }
