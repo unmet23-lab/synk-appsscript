@@ -171,20 +171,24 @@ test('--check 는 인덱스 줄만 본다 (제목·설명 문단은 대상이 �
   assert.strictEqual(r.code, 0, '인덱스 줄이 아닌 것을 셌다 — 훅과 대상이 갈렸다');
 });
 
-/* ── ② 총량 상한 (F181-b · 2026-08-07 신설) ───────────────────────────────────
+/* ── ② 총 줄 수 상한 (F181-b · 2026-08-07 신설) ─────────────────────────────────
  * 줄당 상한만 있던 시절, 250자 이내의 착한 줄이 무한히 쌓였고 유일한 제동은 사람의 손 압축
  * (머리말이 스스로 세는 횟수가 **12차**)이었다. 이 절이 지키려는 성질은 셋이다:
  *   ①늘리며 상한을 넘는 편집은 막는다  ②상한 아래는 건드리지 않는다
  *   ③**줄이는 편집은 상한 위에서도 통과한다** — ③이 깨지면 압축 자체가 불가능해지고,
- *     그러면 다음 사람은 규칙을 지키는 게 아니라 훅을 끈다(v6.11 · F103 자기 처방). */
+ *     그러면 다음 사람은 규칙을 지키는 게 아니라 훅을 끈다(v6.11 · F103 자기 처방).
+ *
+ * ⚠ 축이 **줄**인 이유: 상한을 집행하는 건 저장소가 아니라 하네스이고, 그쪽 문구가
+ *   "Compact it to under 140 lines." 다. 이 트랙의 첫 판은 자(char) 로 쟀고 그건 안 물렸다 —
+ *   실측 순간 인덱스가 140줄(초과)인데 19,522자(상한 안)라 훅이 조용했다(F089). */
 
-const MAX_TOTAL = 21000; // 훅과 같은 값. 갈라지면 아래 [단일 출처] 테스트가 잡는다.
+const MAX_LINES = 139; // 훅과 같은 값. 갈라지면 아래 [단일 출처] 테스트가 잡는다.
 
-/** 항목 줄 상한(250자)에 안 걸리면서 원하는 총 길이를 갖는 인덱스를 만든다. */
-function 인덱스(목표길이) {
-  let s = '# Project Memory\n\n> 인덱스는 지도다.\n\n';
-  for (let i = 0; s.length + 200 < 목표길이; i++) s += `- [t${i}](t${i}.md) — ${'가'.repeat(100)}\n`;
-  return s + '가'.repeat(목표길이 - s.length - 1) + '\n'; // 꼬리는 항목 줄이 아니다(길이 맞춤용)
+/** 줄당 상한(250자)에 안 걸리면서 정확히 N 줄인 인덱스를 만든다. */
+function 인덱스(줄수) {
+  const 줄 = ['# Project Memory', '> 인덱스는 지도다.'];
+  for (let i = 0; 줄.length < 줄수; i++) 줄.push(`- [t${i}](t${i}.md) — 짧다`);
+  return 줄.join('\n');
 }
 
 function 인덱스로결정(본문, payload) {
@@ -196,29 +200,40 @@ function 인덱스로결정(본문, payload) {
 
 const 앵커 = '> 인덱스는 지도다.';
 
+const 한줄더 = 앵커 + '\n- [새](새.md) — 한 줄 늘린다';
+
 test('[단일 출처] 훅이 쓰는 상한과 이 테스트의 상한이 같다', () => {
   // 값을 두 곳에 적으면 갈라진다 — 훅 소스에서 직접 읽어 대조한다.
   const src = fs.readFileSync(HOOK, 'utf8');
-  const m = src.match(/const MAX_TOTAL = (\d+)/);
-  assert.ok(m, '훅에 MAX_TOTAL 이 없다 — 총량 상한이 통째로 사라졌다');
-  assert.strictEqual(Number(m[1]), MAX_TOTAL);
+  const m = src.match(/const MAX_LINES = (\d+)/);
+  assert.ok(m, '훅에 MAX_LINES 가 없다 — 줄 수 상한이 통째로 사라졌다');
+  assert.strictEqual(Number(m[1]), MAX_LINES);
 });
 
-test('[탐지] 늘리면서 상한을 넘기는 편집은 차단', () => {
+test('[단일 출처] 상한의 근거인 하네스 원문이 훅에 인용돼 있다', () => {
+  // 이 숫자는 저장소가 정한 게 아니다. 근거 문구가 사라지면 다음 사람이 값을 발명하게 된다.
+  assert.match(fs.readFileSync(HOOK, 'utf8'), /Compact it to under 140 lines\./);
+});
+
+test('[탐지] 줄을 늘리면서 상한을 넘기는 편집은 차단', () => {
   assert.strictEqual(
-    인덱스로결정(인덱스(MAX_TOTAL - 100), {
-      tool_name: 'Edit',
-      tool_input: { old_string: 앵커, new_string: 앵커 + '가'.repeat(300) },
-    }),
+    인덱스로결정(인덱스(MAX_LINES), { tool_name: 'Edit', tool_input: { old_string: 앵커, new_string: 한줄더 } }),
     'deny'
   );
 });
 
-test('[거짓양성] 상한 안에서 늘리는 편집은 통과 — 상한은 동결이지 금지가 아니다', () => {
+test('[거짓양성] 상한 안에서 줄을 늘리는 편집은 통과 — 상한은 동결이지 금지가 아니다', () => {
   assert.strictEqual(
-    인덱스로결정(인덱스(MAX_TOTAL - 500), {
+    인덱스로결정(인덱스(MAX_LINES - 5), { tool_name: 'Edit', tool_input: { old_string: 앵커, new_string: 한줄더 } }),
+    'allow'
+  );
+});
+
+test('[거짓양성] 줄 수를 안 바꾸고 문장만 늘리는 편집은 상한 위에서도 통과 — 축은 자가 아니라 줄이다', () => {
+  assert.strictEqual(
+    인덱스로결정(인덱스(MAX_LINES + 5), {
       tool_name: 'Edit',
-      tool_input: { old_string: 앵커, new_string: 앵커 + '가'.repeat(100) },
+      tool_input: { old_string: 앵커, new_string: 앵커 + ' 가나다라마바사' },
     }),
     'allow'
   );
@@ -226,78 +241,109 @@ test('[거짓양성] 상한 안에서 늘리는 편집은 통과 — 상한은 �
 
 test('[핵심·자기 처방] 이미 상한을 넘은 파일이라도 **줄이는** 편집은 통과한다', () => {
   // 차단문이 시키는 게 바로 이 편집이다. 이게 막히면 처방이 따를 수 없는 처방이 된다(F103).
-  const 본문 = 인덱스(MAX_TOTAL + 500);
+  const 본문 = 인덱스(MAX_LINES + 5);
   const 뺄줄 = 본문.split('\n').find((l) => l.startsWith('- [t3]'));
   assert.ok(뺄줄, '픽스처 전제가 깨졌다');
   assert.strictEqual(
-    인덱스로결정(본문, { tool_name: 'Edit', tool_input: { old_string: 뺄줄 + '\n', new_string: '' } }),
+    인덱스로결정(본문, { tool_name: 'Edit', tool_input: { old_string: '\n' + 뺄줄, new_string: '' } }),
     'allow',
     '상한 위에서 줄이는 편집이 막혔다 — 압축이 영원히 불가능해진다'
   );
 });
 
 test('[핵심·자기 처방] 상한 위에서 Write 로 통째 압축하는 것도 통과 — 옆 트랙의 파일명 교체가 이 모양이다', () => {
-  const 결정 = 인덱스로결정(인덱스(MAX_TOTAL + 500), {
+  const 결정 = 인덱스로결정(인덱스(MAX_LINES + 5), {
     tool_name: 'Write',
-    tool_input: { content: 인덱스(MAX_TOTAL - 2000) },
+    tool_input: { content: 인덱스(MAX_LINES - 20) },
   });
   assert.strictEqual(결정, 'allow', '압축 Write 가 막혔다 — 12차 손 압축조차 못 하게 된다');
 });
 
-test('[탐지] 상한을 이미 넘은 파일에서 **더 키우면** 차단', () => {
+test('[탐지] 상한을 이미 넘은 파일에서 **줄을 더 늘리면** 차단', () => {
   assert.strictEqual(
-    인덱스로결정(인덱스(MAX_TOTAL + 500), {
-      tool_name: 'Edit',
-      tool_input: { old_string: 앵커, new_string: 앵커 + '가'.repeat(50) },
-    }),
+    인덱스로결정(인덱스(MAX_LINES + 5), { tool_name: 'Edit', tool_input: { old_string: 앵커, new_string: 한줄더 } }),
     'deny'
   );
 });
 
-test('경계값 — 결과가 정확히 상한이면 통과(넘을 때만 막는다)', () => {
-  const 본문 = 인덱스(MAX_TOTAL - 100);
+test('경계값 — 결과가 정확히 상한 줄이면 통과(넘을 때만 막는다)', () => {
   assert.strictEqual(
-    인덱스로결정(본문, {
-      tool_name: 'Edit',
-      tool_input: { old_string: 앵커, new_string: 앵커 + '가'.repeat(MAX_TOTAL - 본문.length) },
-    }),
+    인덱스로결정(인덱스(MAX_LINES - 1), { tool_name: 'Edit', tool_input: { old_string: 앵커, new_string: 한줄더 } }),
     'allow'
   );
 });
 
 test('old_string 이 파일에 없으면 판단을 보류한다 — Edit 자체가 실패할 것이라 추측으로 막지 않는다', () => {
   assert.strictEqual(
-    인덱스로결정(인덱스(MAX_TOTAL + 500), {
+    인덱스로결정(인덱스(MAX_LINES + 5), {
       tool_name: 'Edit',
-      tool_input: { old_string: '이 문자열은 파일에 없다', new_string: '가'.repeat(5000) },
+      tool_input: { old_string: '이 문자열은 파일에 없다', new_string: 한줄더 },
     }),
     'allow'
   );
 });
 
-test('총량 차단문이 처방을 담는다 — 무엇을 빼고 무엇을 깎지 말지, 그리고 줄이는 편집은 통과한다는 사실', () => {
+test('차단문이 처방을 담는다 — 축(줄)·근거(하네스 원문)·탈출구가 다 있어야 한다', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'memtotal-'));
   const f = path.join(dir, 'MEMORY.md');
-  fs.writeFileSync(f, 인덱스(MAX_TOTAL - 100), 'utf8');
+  fs.writeFileSync(f, 인덱스(MAX_LINES), 'utf8');
   const out = execFileSync(process.execPath, [HOOK], {
     input: JSON.stringify({
       tool_name: 'Edit',
-      tool_input: { file_path: f, old_string: 앵커, new_string: 앵커 + '가'.repeat(300) },
+      tool_input: { file_path: f, old_string: 앵커, new_string: 한줄더 },
     }),
     encoding: 'utf8',
   });
   const reason = JSON.parse(out).hookSpecificOutput.permissionDecisionReason;
   assert.match(reason, /🚫재제안 금지/, '플래그 보존 지시가 빠지면 사람은 제일 짧은 것부터 깎는다');
   assert.match(reason, /줄이는 편집은 이 검사를 언제나 통과한다/, '탈출구를 안 알려주면 훅을 끈다(F103)');
-  assert.match(reason, new RegExp(String(MAX_TOTAL)), '상한이 얼마인지가 없다');
+  assert.match(reason, /그대로 다시 실행하라/, '주입인데 차단처럼 읽히면 사람은 훅을 끈다');
+  assert.match(reason, /Compact it to under 140 lines\./, '근거가 없으면 다음 사람이 숫자를 발명한다');
+  assert.match(reason, /자\(KB\)가 아니라 줄이다/, '축을 안 말하면 문장만 짧게 줄이고 줄 수는 0줄 준다');
+  assert.match(reason, new RegExp(String(MAX_LINES)), '상한이 얼마인지가 없다');
 });
 
-test('--check 가 총량을 같은 판정기로 낸다 — 초과는 종료코드로 드러난다', () => {
-  const 아래 = check(인덱스(MAX_TOTAL - 500));
-  assert.strictEqual(아래.code, 0);
-  assert.match(아래.out, /총량 \d+자 \/ 상한 21000자/, '총량을 아예 안 보여주면 사람은 wc -c 로 재고 층이 갈린다');
+/* 주입 성격(세션당 1회) — 하드 차단이면 곧 상시 차단이 된다(하루 유입 19~21줄 · 상한 139줄).
+ * 따를 수 없는 처방은 우회를 정상 통로로 만든다(F103). */
+function 세션결정(sid, 자국dir, payload) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'memtotal-'));
+  const f = path.join(dir, 'MEMORY.md');
+  fs.writeFileSync(f, 인덱스(MAX_LINES), 'utf8');
+  const out = execFileSync(process.execPath, [HOOK], {
+    input: JSON.stringify({ session_id: sid, ...payload, tool_input: { ...payload.tool_input, file_path: f } }),
+    encoding: 'utf8',
+    env: { ...process.env, SYNK_INDEX_CAP_DIR: 자국dir },
+  });
+  return out.trim() ? JSON.parse(out).hookSpecificOutput.permissionDecision : 'allow';
+}
 
-  const 위 = check(인덱스(MAX_TOTAL + 500));
+const 키우기 = { tool_name: 'Edit', tool_input: { old_string: 앵커, new_string: 한줄더 } };
+
+test('[주입] 같은 세션의 두 번째 시도는 조용히 통과한다 — 판단은 사람이 하고 훅은 보여주기만 한다', () => {
+  const 자국 = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'memcap-')), '자국');
+  assert.strictEqual(세션결정('sess-A', 자국, 키우기), 'deny', '첫 시도가 안 막히면 늘어나는 게 안 보인다');
+  assert.strictEqual(세션결정('sess-A', 자국, 키우기), 'allow', '두 번째도 막으면 상시 차단 = 훅이 꺼진다');
+});
+
+test('[주입] 세션이 다르면 각자 한 번씩 본다 — 자국이 남의 세션까지 덮지 않는다', () => {
+  const 자국 = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'memcap-')), '자국');
+  assert.strictEqual(세션결정('sess-B', 자국, 키우기), 'deny');
+  assert.strictEqual(세션결정('sess-C', 자국, 키우기), 'deny', '한 세션이 본 것으로 전체가 조용해지면 안 된다');
+});
+
+test('세션 id 를 모르면 매번 경고한다 — 모름은 통과가 아니다', () => {
+  const 자국 = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'memcap-')), '자국');
+  assert.strictEqual(세션결정(undefined, 자국, 키우기), 'deny');
+  assert.strictEqual(세션결정(undefined, 자국, 키우기), 'deny', '식별자가 없을 때 조용해지면 새는 방향이 통과 쪽이다');
+});
+
+test('--check 가 줄 수를 같은 판정기로 낸다 — 초과는 종료코드로 드러난다', () => {
+  const 아래 = check(인덱스(MAX_LINES - 10));
+  assert.strictEqual(아래.code, 0);
+  assert.match(아래.out, /총 \d+줄 \/ 상한 139줄/, '줄 수를 안 보여주면 사람은 wc -l 로 재고 층이 갈린다');
+  assert.match(아래.out, /Compact it to under 140 lines\./, '근거 문구가 없으면 이 숫자가 어디서 왔는지 모른다');
+
+  const 위 = check(인덱스(MAX_LINES + 10));
   assert.strictEqual(위.code, 1, '초과인데 0으로 끝났다 — 통과와 미실행이 같은 모양이면 안 된다');
   assert.match(위.out, /초과/);
 });
