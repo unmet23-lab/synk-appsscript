@@ -100,6 +100,36 @@ test('MultiEdit의 어느 한 조각이라도 넘으면 차단', () => {
   );
 });
 
+/* ── F123: 재는 축은 「들어온 조각」이 아니라 편집 **결과**의 줄이다 ────────────────
+ * 08-06 실사고: 부분 치환으로 250자 초과 줄을 「고쳤는데」 결과 줄이 277자여도 통과했다
+ * (MEMORY.md 8차 압축 중 3줄 실측). 훅이 본 것은 들어온 조각이고 상한이 걸린 대상은
+ * 편집 뒤 파일의 줄이라 축이 어긋났다 — 새는 방향은 언제나 통과다. */
+test('[F123·탐지] 부분 치환 — 조각은 짧아도 결과 줄이 상한 위면 차단', () => {
+  // LONG(400자대) 줄의 이름 조각만 바꾼다 — 들어오는 조각은 몇 자뿐, 결과 줄은 그대로 길다.
+  assert.strictEqual(
+    decide({ tool_name: 'Edit', tool_input: { file_path: INDEX, old_string: '[긴-토픽]', new_string: '[긴-토픽2]' } }),
+    'deny',
+    '조각이 짧다고 통과시켰다 — 결과 줄은 여전히 상한 위다(F123 재발)'
+  );
+});
+
+test('[F123·거짓양성] 부분 치환으로 상한 아래로 **마무리한** 편집은 통과', () => {
+  assert.strictEqual(
+    decide({ tool_name: 'Edit', tool_input: { file_path: INDEX, old_string: '가'.repeat(400), new_string: '가'.repeat(100) } }),
+    'allow',
+    '긴 줄을 상한 아래로 줄였는데 막혔다 — 압축이 훅에 걸린다'
+  );
+});
+
+test('[F123·거짓양성] 기존 긴 줄을 Edit 로 그대로 옮겨 적는 재배치는 통과 — Write 재배치와 같은 결이다', () => {
+  // 짧은 줄 자리에 「짧은 줄 + 기존 긴 줄 사본」을 넣는다 — 결과에 긴 줄이 늘지만 전부 이미 있던 줄이다.
+  assert.strictEqual(
+    decide({ tool_name: 'Edit', tool_input: { file_path: INDEX, old_string: SHORT, new_string: SHORT + '\n' + LONG } }),
+    'allow',
+    '이미 있던 줄을 옮겨 적었는데 막혔다 — 아카이브 이동·재배치가 훅에 걸린다'
+  );
+});
+
 test('MEMORY.md가 아닌 파일에는 침묵한다', () => {
   const other = path.join(TMP, '토픽.md');
   fs.writeFileSync(other, '# 토픽\n', 'utf8');

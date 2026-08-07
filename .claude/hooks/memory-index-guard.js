@@ -17,9 +17,11 @@
 //   상한 250자 = 75분위 바로 위 = **이미 4분의 3이 지키고 있는 선**. 새 규칙을 발명한 게 아니라
 //   지금 잘 쓰인 줄들의 실측 상한을 그대로 못박은 것이다.
 //
-// ⚠ 검사 대상은 **이번 편집이 새로 넣는 줄뿐**이다. 파일 전체를 검사하면 기존 25줄이 인질이 되어
-//   인덱스를 아예 못 고치게 되고, 그러면 다음 사람은 규칙을 지키는 게 아니라 훅을 끈다
-//   (v6.11: "과잉 차단은 BYPASS 습관을 만든다").
+// ⚠ 검사 대상은 **이번 편집 뒤에 새로 존재하게 되는 줄뿐**이다(디스크에 그대로 있던 줄은 제외).
+//   파일 전체를 검사하면 기존 25줄이 인질이 되어 인덱스를 아예 못 고치게 되고, 그러면 다음 사람은
+//   규칙을 지키는 게 아니라 훅을 끈다(v6.11: "과잉 차단은 BYPASS 습관을 만든다").
+//   재는 축은 「들어온 조각」이 아니라 **편집 결과의 줄**이다 — 부분 치환은 조각이 짧아도
+//   결과 줄이 277자일 수 있고, 그게 그대로 통과하던 자리가 F123 이다(08-06 MEMORY.md 압축 실측 3줄).
 'use strict';
 const fs = require('fs');
 const os = require('os');
@@ -131,7 +133,7 @@ if (path.basename(filePath) !== TARGET) process.exit(0);
 // 인덱스 항목 줄만 본다. 머리말·구획 제목·인용문은 길어도 되고, 실제로 규칙을 설명하는 자리다.
 const isEntry = (line) => /^\s*-\s*\[/.test(line);
 
-/** 이번 편집이 새로 넣는 텍스트만 모은다(Write는 전문이 곧 새 텍스트다). */
+/** 이번 편집이 새로 넣는 텍스트(조각 축) — 결과 시뮬레이션이 불가능할 때의 폴백에만 쓴다. */
 const incoming = [];
 if (tool === 'Write') {
   incoming.push(String(ti.content || ''));
@@ -140,42 +142,12 @@ if (tool === 'Write') {
   for (const e of edits) incoming.push(String(e.new_string || ''));
 }
 
-/* Write는 전문 교체라 「새로 넣는 줄」이 곧 전체다 — 그대로 검사하면 기존 25줄 때문에
- * 압축 작업 자체가 막힌다. 그래서 Write일 때는 **디스크의 현재 내용에 없던 줄**만 새 줄로 센다.
- * (같은 줄을 그대로 옮겨 적는 재배치·아카이브 이동은 통과해야 한다.) */
 let 디스크 = null;
 try { 디스크 = fs.readFileSync(filePath, 'utf8'); } catch (_) { /* 새 파일이면 전부 새 줄이 맞다 */ }
 
-let known = new Set();
-if (tool === 'Write' && 디스크 !== null) {
-  known = new Set(디스크.split('\n').map((l) => l.trim()));
-}
-
-const offenders = [];
-for (const chunk of incoming) {
-  for (const line of chunk.split('\n')) {
-    if (!isEntry(line)) continue;
-    if (known.has(line.trim())) continue; // 이미 있던 줄 — 이번 편집이 만든 빚이 아니다
-    if (line.length > MAX_LINE) offenders.push(line);
-  }
-}
-
-if (offenders.length) {
-  const worst = offenders.sort((a, b) => b.length - a.length)[0];
-  const name = (worst.match(/^\s*-\s*\[([^\]]+)\]/) || [, '?'])[1];
-  deny(
-    `[memory-index-guard] 인덱스 줄이 ${MAX_LINE}자를 넘는다 — ${offenders.length}줄, ` +
-    `최장 ${worst.length}자(${name}).\n` +
-    '→ 인덱스는 지도다. 판정 본문·수치·경위는 **토픽 파일**에 쓰고, 여기엔 한 문장 + 플래그만 남겨라.\n' +
-    '→ 🚫재제안 금지·⏳·⚠ 플래그는 깎지 마라. 그게 인덱스의 존재 이유다 — 줄일 것은 설명이다.\n' +
-    `→ 이 상한(${MAX_LINE}자)은 발명한 값이 아니라 실측이다: 기존 인덱스의 75%가 이미 그 안에 있다.`
-  );
-}
-
-/* ── ② 총량 상한 ──────────────────────────────────────────────────────────────
- * ① 은 「이번에 새로 넣는 줄」만 보면 됐지만 총량은 **결과 전체**를 봐야 나온다.
- * 그래서 Edit 도구가 실제로 할 치환을 같은 순서로 흉내내 결과 본문을 만든다
- * (board-guard.js 의 applyEdits 와 같은 모양 — 그쪽은 표 줄 수를, 여기선 길이를 센다).
+/* Edit 도구가 실제로 할 치환을 같은 순서로 흉내내 결과 본문을 만든다(board-guard.js 의
+ * applyEdits 와 같은 모양). 원래 ② 총량 검사 전용이었는데 ① 줄당 검사도 이걸 쓴다 — F123:
+ * 상한이 걸린 대상은 「들어온 조각」이 아니라 「편집 뒤 파일의 줄」이다.
  * 매칭 실패는 Edit 자체가 실패할 신호라 **판단을 보류**한다(추측으로 막지 않는다). */
 function 편집결과() {
   if (tool === 'Write') return String(ti.content || '');
@@ -190,8 +162,36 @@ function 편집결과() {
   }
   return out;
 }
+const 결과 = 편집결과();
 
-/* 성격 = **차단이 아니라 주입**(memory-status-guard·design-guard 와 같은 판단).
+/* ── ① 줄당 상한 — 재는 축은 편집 **결과**의 줄이다(F123) ──────────────────────
+ * 디스크에 그대로 있던 줄은 안 센다(기존 긴 줄 인질 금지 — 압축·재배치·아카이브 이동은 통과).
+ * 단 긴 줄을 **건드렸는데** 상한 위로 남기면 그건 이번 편집의 결과 줄이라 막힌다 —
+ * 「부분 치환으로 고쳤더니 여전히 277자」가 조각 축에선 조용히 통과하던 자리가 F123 이다.
+ * 결과를 못 만들면(매칭 실패 = 그 Edit 은 어차피 실패한다) 조각 축으로 폴백한다 —
+ * 검사가 통째로 사라지는 모양(미실행=통과)은 만들지 않는다. */
+const known = new Set(디스크 === null ? [] : 디스크.split('\n').map((l) => l.trim()));
+const 검사줄 = 결과 !== null
+  ? 결과.split('\n').filter((l) => !known.has(l.trim()))
+  : incoming.flatMap((chunk) => chunk.split('\n'));
+const offenders = 검사줄.filter((l) => isEntry(l) && l.length > MAX_LINE);
+
+if (offenders.length) {
+  const worst = offenders.sort((a, b) => b.length - a.length)[0];
+  const name = (worst.match(/^\s*-\s*\[([^\]]+)\]/) || [, '?'])[1];
+  deny(
+    `[memory-index-guard] 인덱스 줄이 ${MAX_LINE}자를 넘는다 — ${offenders.length}줄, ` +
+    `최장 ${worst.length}자(${name}).\n` +
+    '→ 재는 것은 편집 **결과**의 줄이다 — 조각을 짧게 나눠 넣어도 결과 줄이 길면 막힌다(F123).\n' +
+    '→ 인덱스는 지도다. 판정 본문·수치·경위는 **토픽 파일**에 쓰고, 여기엔 한 문장 + 플래그만 남겨라.\n' +
+    '→ 🚫재제안 금지·⏳·⚠ 플래그는 깎지 마라. 그게 인덱스의 존재 이유다 — 줄일 것은 설명이다.\n' +
+    `→ 이 상한(${MAX_LINE}자)은 발명한 값이 아니라 실측이다: 기존 인덱스의 75%가 이미 그 안에 있다.`
+  );
+}
+
+/* ── ② 총량 상한 — 위 ① 과 같은 「편집 결과」로 줄 수를 잰다 ─────────────────────
+ *
+ * 성격 = **차단이 아니라 주입**(memory-status-guard·design-guard 와 같은 판단).
  *
  * 왜 하드 차단이 아닌가 — 옆 세션(a237f510)의 독립 실측이 내 첫 설계를 반박했다:
  *   인덱스 유입은 **하루 19~21줄**인데(08-07 절 실측) 상한은 139줄이고 낡은 절이 비워지는 속도가
@@ -215,7 +215,6 @@ function 이미말했나(sid) {
   return false;
 }
 
-const 결과 = 편집결과();
 const 지금줄 = 디스크 === null ? 0 : 줄수(디스크);
 
 // 보는 건 「지금보다 줄이 늘면서 상한을 넘는 것」 하나뿐이다. 줄이는 편집은 상한 위에서도 조용히 통과한다.
