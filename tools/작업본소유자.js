@@ -240,10 +240,25 @@ function 원격대기(뿌리 = ROOT) {
     '--format=%(refname:short)%1f%(committerdate:relative)%1f%(contents:subject)',
     'refs/remotes/origin/claude/'], 뿌리);
   if (out === null) return null;
-  return out.split(/\r?\n/).filter(Boolean).map((줄) => {
+  const 후보 = out.split(/\r?\n/).filter(Boolean).map((줄) => {
     const [이름, 언제, 제목] = 줄.split('\u001F');
     return { 이름: String(이름 || ''), 언제: String(언제 || ''), 제목: String(제목 || '') };
   });
+  /* F195: shallow 클론(클라우드 세션이 정확히 이 모양이다)에서는 `--no-merged` 가 잘린 이력
+   * 너머를 못 걸어, 이미 master 에 들어간 브랜치도 「대기」로 나온다 — 실측: 전부 반입된
+   * 브랜치를 「안 들어왔다」로 알렸고, 딸린 처방(삭제)은 프록시가 막아 따를 수도 없었다.
+   * 후보가 있을 때만 이력을 깊여 실측하고, 그래도 못 가르면 「모름」을 들고 나간다 —
+   * 반입됐다고도 안 됐다고도 단정하지 않는다(모름을 안전으로 바꾸지 않는다는 그 규칙). */
+  if (!후보.length) return 후보;
+  if (String(git(['rev-parse', '--is-shallow-repository'], 뿌리) || '').trim() !== 'true') return 후보;
+  git(['fetch', '--quiet', '--deepen=200', 'origin'], 뿌리); // 실패·타임아웃이면 아래가 「모름」으로 받는다
+  const 남는다 = [];
+  for (const b of 후보) {
+    if (git(['merge-base', '--is-ancestor', b.이름, 'origin/master'], 뿌리) !== null) continue; // 실측: 반입 완료
+    const 이었나 = git(['merge-base', b.이름, 'origin/master'], 뿌리) !== null;
+    남는다.push(이었나 ? { ...b, 얕음: true } : { ...b, 얕음: true, 병합모름: true });
+  }
+  return 남는다;
 }
 
 const 보드경로 = 'docs/세션보드.md';
@@ -516,11 +531,25 @@ function 보고(r, { 훅 }) {
     줄.push('', `⚠ 형제 저장소 ${r.못본형제.join(', ')} 를 **못 읽었다** — 0건이 아니라 판정 불가다.`);
   }
   if (원격들.length) {
-    줄.push('', `☁ **원격에 대기 중인 클라우드(폰) 브랜치 ${원격들.length}개** — master 에 아직 안 들어왔다`);
-    for (const b of 원격들) 줄.push(`   · ${b.이름}  (${b.언제})  ${b.제목}`);
-    줄.push('   로컬엔 없던 것이다 — track-collision 은 로컬 HEAD 만 봐서 이 자리가 통째로 사각이었다.');
-    줄.push(`   내용부터 본다: \`git log master..${원격들[0].이름} --oneline\` · \`git diff --stat master...${원격들[0].이름}\``);
-    줄.push('   ⚠ 오래 둘수록 master 와 벌어져 병합이 비싸진다 — 볼 게 없으면 브랜치를 지운다.');
+    /* F195: 「모름」과 「확실히 미반입」은 다른 문장이다 — 섞으면 모름이 단정으로 읽힌다.
+     * 얕은 클론(=클라우드 세션)에는 삭제를 처방하지 않는다: 프록시가 지정 브랜치 외
+     * push(삭제 포함)를 거부해 따를 수 없는 처방이 되고, 그건 방치를 정상으로 만든다(F103). */
+    const 확실들 = 원격들.filter((b) => !b.병합모름);
+    const 모름들 = 원격들.filter((b) => b.병합모름);
+    if (확실들.length) {
+      줄.push('', `☁ **원격에 대기 중인 클라우드(폰) 브랜치 ${확실들.length}개** — master 에 아직 안 들어왔다`);
+      for (const b of 확실들) 줄.push(`   · ${b.이름}  (${b.언제})  ${b.제목}`);
+      줄.push('   로컬엔 없던 것이다 — track-collision 은 로컬 HEAD 만 봐서 이 자리가 통째로 사각이었다.');
+      줄.push(`   내용부터 본다: \`git log master..${확실들[0].이름} --oneline\` · \`git diff --stat master...${확실들[0].이름}\``);
+      줄.push(확실들[0].얕음
+        ? '   ⚠ 얕은 클론(=클라우드)은 브랜치를 못 지운다 — 볼 게 없으면 보드에 「삭제 대기」 1줄로 남겨 로컬 세션 몫으로 넘긴다.'
+        : '   ⚠ 오래 둘수록 master 와 벌어져 병합이 비싸진다 — 볼 게 없으면 브랜치를 지운다.');
+    }
+    if (모름들.length) {
+      줄.push('', `☁ 원격 claude/* 브랜치 ${모름들.length}개 — master 반입 여부 **모름**(얕은 클론이라 이력을 깊여도 못 이었다 · F195)`);
+      for (const b of 모름들) 줄.push(`   · ${b.이름}  (${b.언제})  ${b.제목}`);
+      줄.push('   반입됐다고 넘기지도, 지우지도 말 것 — 전체 이력을 가진 로컬 세션이 가른다.');
+    }
   }
   if (원격못봄) {
     줄.push('', '⚠ 원격을 **못 읽었다**(fetch 실패) — 대기 중인 폰 브랜치가 0건이라는 뜻이 아니다.');
