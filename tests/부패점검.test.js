@@ -20,12 +20,17 @@ const R = require(TOOL);
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'rotcheck-'));
 const statePath = (name) => path.join(TMP, `${name}.json`);
 
+/* 회귀는 네트워크를 안 탄다 — 라이브 대조(≈15초 pull)는 자격증명이 있는 기계에서만 서고,
+ * 그걸 회귀에 태우면 CI 는 「자격증명이 없어서 초록」이 된다. 탐지력은 배포판점검 픽스처가 진다.
+ * 🔑 끄는 것과 발동 배선이 사라진 것은 다르다 — 배선 자체는 아래 「등록층」 검사가 따로 본다. */
+const 라이브끔 = { SYNK_ROT_LIVE: '0' };
+
 /** 훅 모드 실행. 반환은 stdout 문자열(빈 문자열 = 침묵). */
 function runHook(env = {}, extra = []) {
   return execFileSync(process.execPath, [TOOL, '--hook', ...extra], {
     input: '{"hook_event_name":"SessionStart","source":"startup"}',
     encoding: 'utf8',
-    env: { ...process.env, ...env },
+    env: { ...process.env, ...라이브끔, ...env },
   });
 }
 
@@ -110,7 +115,7 @@ test('--json은 형식을 지키고, 🔴이 있으면 종료코드 1로 알린�
   // 종료코드는 스크립트에서 `&&`로 이어 쓰기 위한 계약이다 — 0건일 때만 0.
   let out, code = 0;
   try {
-    out = execFileSync(process.execPath, [TOOL, '--json'], { encoding: 'utf8', env: process.env });
+    out = execFileSync(process.execPath, [TOOL, '--json'], { encoding: 'utf8', env: { ...process.env, ...라이브끔 } });
   } catch (e) {
     out = e.stdout; code = e.status;
   }
@@ -188,6 +193,36 @@ test('이식 폴더 — 정본과 같으면 조용하고, 아예 없으면 부�
     assert.strictEqual(v.present, false, '없는 폴더를 낡았다고 하면 「아직 안 씀」이 매주 경보가 된다');
     assert.ok(!R.collect().warn.some((w) => w.kind === '이식 폴더 낡음'));
   });
+});
+
+// ── 라이브 대조 배선 (2026-08-07) ────────────────────────────────────────────
+// 루트 Apps Script 는 @HEAD 를 서빙해 배포 설명에 지문을 심을 자리가 없다 → deploy-freshness 훅은
+// 루트에 원리상 침묵한다. 그 빈자리를 주간 점검이 진다. 여기선 **배선**만 본다(탐지력은 배포판점검 픽스처).
+
+test('라이브를 안 켜면 네트워크를 안 타고 「미측정」으로 낸다 — 초록으로 접지 않는다', () => {
+  const v = R.배포Section(false);
+  assert.strictEqual(v.측정, false, '안 잰 것과 잰 것이 같은 모양이면 이 배선의 의미가 없다');
+  assert.deepStrictEqual(v.결과, [], '안 재기로 했는데 결과가 있다 — 어딘가에서 실제로 쟀다는 뜻이다');
+});
+
+test('collect() 기본은 라이브를 안 잰다 — 회귀·CI 가 자격증명 없이 초록이 되면 안 된다', () => {
+  const r = R.collect();
+  assert.ok(r.dep && r.dep.ok, `배포판 검사기가 죽었다: ${r.dep && r.dep.error}`);
+  assert.strictEqual(r.dep.value.측정, false);
+  assert.ok(!r.red.some((x) => x.kind === '라이브 낡음'), '안 쟀는데 낡음 판정이 나왔다');
+});
+
+test('🔑 등록층 — 주간 실행이 실제로 라이브를 켠다 (스스로 발화하지 않는 장치는 안 돈다)', () => {
+  /* 위 두 검사는 「끄면 안 돈다」만 증명한다. 끄기가 **영구 상태**가 돼 버리면 둘 다 초록인 채
+   * 장치는 한 번도 안 도는데, 그 모양이 정확히 이 도구가 없애려는 침묵이다. 그래서 켜는 쪽을 본다.
+   * 구조 검사인 이유: 켜진 경로는 라이브 pull(≈15초·자격증명)이라 회귀가 실제로 밟을 수 없다. */
+  const src = fs.readFileSync(TOOL, 'utf8');
+  assert.match(src, /SYNK_ROT_LIVE\s*!==\s*'0'/, '기본이 꺼짐으로 뒤집혔다 — 그러면 아무도 안 켠다');
+  assert.match(src, /collect\(\{\s*라이브\s*\}\)/, 'main 이 collect 에 라이브를 안 넘긴다 — 플래그만 있고 배선이 없다');
+  const 훅 = (JSON.parse(fs.readFileSync(path.join(ROOT, '.claude', 'settings.json'), 'utf8'))
+    .hooks?.SessionStart || []).flatMap((g) => g.hooks || []).find((h) => /rot-check/.test(h.command));
+  assert.ok(훅, '주간 점검이 SessionStart 에 등록돼 있지 않다 — 발동 조건이 통째로 없다');
+  assert.doesNotMatch(훅.command, /SYNK_ROT_LIVE=0/, '등록층에서 꺼 두면 코드가 멀쩡해도 영원히 안 돈다');
 });
 
 test('harness-export는 require로 불러도 생성기가 돌지 않는다', () => {

@@ -22,9 +22,20 @@
  *   지문이 같다 = 「내가 마지막으로 심은 내용과 지금 파일이 같다」다. 설명에 지문이 **없는**
  *   옛 배포는 「낡음」이 아니라 **「모름」**으로 낸다. 모름을 통과로 접으면 그게 이 도구가
  *   없애려던 형태 그 자체다.
+ *
+ * ■ @HEAD 만 서빙하는 프로젝트는 이 층이 **원리상 아무것도 못 잰다** (2026-08-07)
+ *   지문은 **배포 설명**에 심는데 고정 배포가 없으면 심을 자리가 없다. 그래서 루트(유호님이
+ *   매일 쓰는 라이브 학원 시스템)에 대해 이 도구는 「@HEAD 라 push 가 곧 라이브다」를 낸다 —
+ *   그건 **기전 진술이지 측정이 아니다.** `clasp push` 를 빼먹으면 영원히 같은 문장이 나온다
+ *   (`deploy-freshness` 훅도 level==='ok' 면 침묵하므로 루트에는 원리상 발화하지 않는다).
+ *   `/deploy` 가 늘 push 로 끝나서 안 보였을 뿐이고, **스킬은 불러야 적용된다.**
+ *   → `라이브대조()` 가 라이브를 **작업본 아닌 임시 디렉터리**로 받아 바이트로 잰다.
+ *     지문이 아니라 내용을 직접 보므로 심어 둔 것이 없어도 선다.
+ *     (작업본에 `clasp pull` 하는 것은 F040 실사고다 — 처방 출처 = clasp-guard 규칙 0-A 안내문.)
  */
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const { execFileSync } = require('child_process');
@@ -93,14 +104,75 @@ function 배포목록(projRoot) {
   return out.split(/\r?\n/).map(parseDeploymentLine).filter(Boolean);
 }
 
+/* 라이브를 임시 디렉터리로 받아 배포집합과 **바이트로** 대조한다(네트워크).
+ * 지문 대조가 안 서는 @HEAD 프로젝트용 — 심어 둔 표식이 없어도 내용을 직접 보면 답이 나온다.
+ * ⚠ `cwd` 는 반드시 작업본 **밖**이다. 작업본에 pull 하면 옆 세션의 커밋이 라이브 판으로
+ *   되돌아간다(F040). 임시 디렉터리는 끝나면 지운다. */
+function 라이브대조(projRoot, root = ROOT, { timeout = 120000 } = {}) {
+  const cfg = JSON.parse(fs.readFileSync(path.join(projRoot, '.clasp.json'), 'utf8'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-live-'));
+  try {
+    fs.writeFileSync(path.join(tmp, '.clasp.json'), JSON.stringify({
+      scriptId: cfg.scriptId,
+      rootDir: '',
+      scriptExtensions: cfg.scriptExtensions,
+      htmlExtensions: cfg.htmlExtensions,
+      jsonExtensions: cfg.jsonExtensions,
+    }));
+    const isWin = process.platform === 'win32';
+    const bin = isWin ? path.join(process.env.APPDATA || '', 'npm', 'clasp.cmd') : 'clasp';
+    execFileSync(isWin ? (process.env.ComSpec || 'cmd.exe') : bin, isWin ? ['/c', bin, 'pull'] : ['pull'], {
+      cwd: tmp, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout,
+    });
+
+    const 집합 = 배포집합(projRoot, root);
+    const 다름 = [], 라이브없음 = [];
+    for (const rel of 집합) {
+      const 라이브 = path.join(tmp, rel);
+      if (!fs.existsSync(라이브)) { 라이브없음.push(rel); continue; }
+      if (!fs.readFileSync(path.join(root, rel)).equals(fs.readFileSync(라이브))) 다름.push(rel);
+    }
+    /* 반대 방향도 본다 — 저장소에서 지운 파일이 라이브에 남아 있으면 그 코드는 **계속 돈다.**
+     * 한 방향만 재면 「지웠다」가 「안 돈다」로 읽힌다. */
+    const 저장소없음 = fs.readdirSync(tmp, { recursive: true })
+      .map((p) => String(p).replace(/\\/g, '/'))
+      .filter((p) => p !== '.clasp.json' && !집합.includes(p) && !fs.existsSync(path.join(root, p)));
+    return { 다름, 라이브없음, 저장소없음, 총: 집합.length };
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
 /* ── 판정 (순수 함수) ────────────────────────────────────────────────────────
  * 네트워크·파일시스템을 안 탄다 — **탐지력은 여기서 픽스처로 못박는다.**
  * 실저장소·라이브를 요구하는 검사는 CI 에서 못 돌고, 그걸 탐지력의 근거로 삼으면
  * 「자격증명이 없어서 초록」이 된다. */
-function 판정({ 이름, 경로, fp, deployments }) {
+function 판정({ 이름, 경로, fp, deployments, 대조 }) {
   const 고정 = (deployments || []).filter((d) => d.ver !== 'HEAD' && !d.temp);
   if (!고정.length) {
-    return { level: 'ok', 이름, lines: [`${이름}: 고정 버전 배포 없음 — @HEAD 를 서빙하므로 push 가 곧 라이브다`] };
+    /* 🔴 `대조` 가 없으면 이 갈래는 **아무것도 안 잰 것**이다. 문장을 그렇게 쓴다 —
+     *   level 은 'ok' 로 둔다: 이 갈래를 밟는 유일한 상시 호출자가 `clasp push` **직후**에
+     *   도는 deploy-freshness 훅이고, 그 순간엔 라이브가 실제로 최신이라 경보가 거짓이 된다.
+     *   측정은 `라이브대조()` 를 들고 오는 호출자(rot-check 주간·`--라이브`)가 한다. */
+    if (!대조) {
+      return {
+        level: 'ok', 이름, 측정: false,
+        lines: [`${이름}: 고정 버전 배포 없음(@HEAD) — 지문을 심을 자리가 없어 **이 층은 안 쟀다**(재려면 --라이브)`],
+      };
+    }
+    const { 다름 = [], 라이브없음 = [], 저장소없음 = [], 총 = 0 } = 대조;
+    if (!다름.length && !라이브없음.length && !저장소없음.length) {
+      return { level: 'ok', 이름, 측정: true, lines: [`${이름}: 라이브 = 저장소 (@HEAD · 배포집합 ${총}개 바이트 동일)`] };
+    }
+    const lines = [`🔴 ${이름} 라이브가 저장소와 다르다 (@HEAD · 배포집합 ${총}개) — **push 가 빠졌다**`];
+    const 보고 = (제목, 목록) => { for (const r of 목록) lines.push(`   ${제목} ${r}`); };
+    보고('내용 다름:', 다름);
+    보고('라이브에 없음(push 된 적 없다):', 라이브없음);
+    보고('라이브에만 있음(지웠는데 계속 돈다):', 저장소없음);
+    /* 처방 줄에 금지된 명령을 **글자로도** 안 적는다 — 설명이어도 눈은 명령으로 읽고 복사한다
+     * (회귀가 이 줄을 잡았다: 처음엔 "손 clasp push 는 …가 막는다"라고 적어 뒀었다). */
+    lines.push(`   → cd ${경로 || '.'} && /deploy   (손으로 미는 통로는 clasp-guard 가 막는다)`);
+    return { level: 'stale', 이름, 측정: true, lines };
   }
 
   const 낡음 = [], 모름 = [], 최신 = [];
@@ -139,28 +211,48 @@ function 판정({ 이름, 경로, fp, deployments }) {
   return { level: 낡음.length ? 'stale' : 'unknown', 이름, lines };
 }
 
-/* 프로젝트 하나를 실제로 본다(네트워크 포함). 조회 실패는 확인 불가로 드러낸다. */
-function 점검(projRoot, root = ROOT) {
+/* 세 원인(오프라인·미로그인·clasp 없음)을 한 문장으로 접으면 어느 것인지 아무도 못 가른다 —
+ * 하나는 30초면 고쳐지고 하나는 그냥 기다리면 된다. 원문 끝 줄을 함께 낸다. */
+const 못읽음 = (이름, 무엇, e) => ({
+  level: 'unreachable',
+  이름,
+  lines: [
+    `⚠ ${이름}: ${무엇}(오프라인·미로그인·clasp 없음) — **확인 불가**지 통과가 아니다`,
+    `   ${String((e && (e.stderr || e.message)) || e).trim().split(/\r?\n/).filter(Boolean).slice(-1)[0] || '(원문 없음)'}`,
+  ],
+});
+
+/* 프로젝트 하나를 실제로 본다(네트워크 포함). 조회 실패는 확인 불가로 드러낸다.
+ * `라이브:true` = 고정 배포가 없는 프로젝트를 지문 대신 **바이트로** 잰다(느리다 — 주간·수동용). */
+function 점검(projRoot, root = ROOT, { 라이브 = false } = {}) {
   const 이름 = path.relative(root, projRoot).replace(/\\/g, '/') || '(루트)';
   const 경로 = path.relative(root, projRoot).replace(/\\/g, '/') || '.';
   let deployments;
   try {
     deployments = 배포목록(projRoot);
   } catch (e) {
-    return {
-      level: 'unreachable',
-      이름,
-      lines: [`⚠ ${이름}: 배포 목록을 못 읽었다(오프라인·미로그인·clasp 없음) — **확인 불가**지 통과가 아니다`],
-    };
+    return 못읽음(이름, '배포 목록을 못 읽었다', e);
   }
-  return 판정({ 이름, 경로, fp: 지문(projRoot, root), deployments });
+  let 대조;
+  if (라이브 && !deployments.some((d) => d.ver !== 'HEAD' && !d.temp)) {
+    try {
+      대조 = 라이브대조(projRoot, root);
+    } catch (e) {
+      return 못읽음(이름, '라이브를 임시 디렉터리로 못 받았다', e);
+    }
+  }
+  return 판정({ 이름, 경로, fp: 지문(projRoot, root), deployments, 대조 });
 }
 
-module.exports = { 배포집합, 지문, 배포목록, 판정, 점검, 지문표기, FP_RE, claspProjects };
+module.exports = { 배포집합, 지문, 배포목록, 라이브대조, 못읽음, 판정, 점검, 지문표기, FP_RE, claspProjects };
 
 if (require.main === module) {
-  const 결과 = claspProjects().map((p) => 점검(p));
+  const 라이브 = process.argv.includes('--라이브');
+  const 결과 = claspProjects().map((p) => 점검(p, ROOT, { 라이브 }));
   결과.forEach((r) => r.lines.forEach((l) => console.log(l)));
+  if (!라이브 && 결과.some((r) => r.측정 === false)) {
+    console.log('\n안 잰 프로젝트가 있다 — 라이브 바이트까지 보려면: node tools/배포판점검.js --라이브');
+  }
   const 나쁨 = 결과.filter((r) => r.level === 'stale');
   if (process.argv.includes('--check') && 나쁨.length) process.exit(1);
   process.exit(0);

@@ -39,10 +39,87 @@ test('🔑 지문이 **없으면** 통과가 아니라 「판정 불가」다 (�
   assert.strictEqual(r.level, 'unknown');
 });
 
-test('고정 배포가 없으면(@HEAD 만) 초록 — push 가 곧 라이브인 프로젝트다', () => {
+test('🔑 고정 배포가 없으면(@HEAD 만) level 은 ok 지만 그건 **아무것도 안 잰 것**이다', () => {
+  /* 2026-08-07: 여기가 루트(유호님이 매일 쓰는 라이브)의 자리다. 지문은 배포 설명에 심는데
+   * 고정 배포가 없으면 심을 자리가 없어 이 층은 원리상 못 잰다. level 을 'ok' 로 두는 이유는
+   * 이 갈래의 상시 호출자가 `clasp push` **직후**에 도는 deploy-freshness 훅이라서다 —
+   * 그 순간엔 라이브가 실제로 최신이므로 경보가 거짓이 된다. 대신 **문장이 안 쟀다고 말해야** 한다. */
   const r = 판정('aaaaaaaa', [배포('DEP0', 'HEAD', '')]);
+  assert.strictEqual(r.level, 'ok', '훅이 push 직후에 짖으면 거짓 경보다');
+  assert.strictEqual(r.측정, false, '안 쟀다는 사실이 기계 판독 가능해야 호출자가 재려는 결정을 할 수 있다');
+  assert.match(r.lines.join('\n'), /안 쟀다/, '「push 가 곧 라이브다」는 기전 진술이지 측정이 아니다');
+  assert.match(r.lines.join('\n'), /--라이브/, '재는 방법을 같은 줄에 줘야 사람이 다음 수를 안다');
+  assert.doesNotMatch(r.lines.join('\n'), /최신|동일/, '안 쟀는데 최신이라 말하면 이 도구가 없애려던 형태 그대로다');
+});
+
+// ── ②-b @HEAD 프로젝트: 지문 대신 **바이트**로 잰다 (2026-08-07) ─────────────
+// 탐지력은 전부 여기 픽스처가 진다 — 라이브를 요구하면 CI 는 자격증명이 없어 초록이 된다.
+
+const 헤드 = (대조) => 점검.판정({ 이름: '(루트)', 경로: '.', fp: 'aaaaaaaa', deployments: [배포('DEP0', 'HEAD', '')], 대조 });
+
+test('대조가 깨끗하면 초록 — 이번엔 「안 쟀다」가 아니라 **잰 초록**이다', () => {
+  const r = 헤드({ 다름: [], 라이브없음: [], 저장소없음: [], 총: 15 });
   assert.strictEqual(r.level, 'ok');
-  assert.match(r.lines.join('\n'), /@HEAD/);
+  assert.strictEqual(r.측정, true, '잰 초록과 안 잰 초록이 같은 모양이면 이 수리가 무의미하다');
+  assert.match(r.lines.join('\n'), /15개/);
+});
+
+test('내용이 다르면 잡는다 — 「커밋은 했는데 clasp push 를 안 했다」', () => {
+  const r = 헤드({ 다름: ['엔진_두뇌.js'], 라이브없음: [], 저장소없음: [], 총: 15 });
+  assert.strictEqual(r.level, 'stale');
+  assert.match(r.lines.join('\n'), /엔진_두뇌\.js/, '어느 파일인지 안 대면 사람이 확인할 수가 없다');
+  assert.match(r.lines.join('\n'), /push 가 빠졌다/);
+});
+
+test('라이브에 아예 없는 파일도 낡음이다 (한 번도 push 된 적 없는 새 파일)', () => {
+  const r = 헤드({ 다름: [], 라이브없음: ['contents_새것.js'], 저장소없음: [], 총: 16 });
+  assert.strictEqual(r.level, 'stale');
+  assert.match(r.lines.join('\n'), /contents_새것\.js/);
+});
+
+test('🔑 반대 방향도 잡는다 — 저장소에서 지웠는데 라이브에 남은 코드는 **계속 돈다**', () => {
+  /* 한 방향만 재면 「지웠다」가 「안 돈다」로 읽힌다. 그 오독은 삭제한 사람에게만 조용하다. */
+  const r = 헤드({ 다름: [], 라이브없음: [], 저장소없음: ['옛_상담AI.js'], 총: 15 });
+  assert.strictEqual(r.level, 'stale');
+  assert.match(r.lines.join('\n'), /옛_상담AI\.js/);
+  assert.match(r.lines.join('\n'), /계속 돈다/);
+});
+
+test('@HEAD 처방은 손 clasp push 가 아니라 /deploy 다 (자기 처방을 스스로 막지 않는지 · F103)', () => {
+  const r = 헤드({ 다름: ['Code.js'], 라이브없음: [], 저장소없음: [], 총: 15 });
+  const 처방 = r.lines.filter((l) => l.includes('→')).join(' ');
+  assert.match(처방, /\/deploy/, '처방이 없으면 사람은 손 push 를 시도하고 clasp-guard 에 막힌다');
+  assert.doesNotMatch(처방, /clasp\s+push/, 'clasp-guard 가 막는 명령을 처방하면 우회가 정상 통로가 된다');
+  assert.doesNotMatch(처방, /CLASP_GUARD_BYPASS/);
+});
+
+test('☠️ 라이브를 받는 곳은 반드시 작업본 **밖**이다 (작업본 pull 은 남의 커밋을 되돌린다 · F040)', () => {
+  /* 이 검사만 구조를 읽는다 — 실패하면 옆 세션의 커밋이 라이브 판으로 조용히 되돌아가고,
+   * git 은 오류를 안 낸다. 실행으로 재려면 실제로 사고를 내야 하므로 재현 대신 형태를 못박는다. */
+  const src = fs.readFileSync(path.join(ROOT, 'tools', '배포판점검.js'), 'utf8');
+  const 시작 = src.indexOf('function 라이브대조');
+  assert.notStrictEqual(시작, -1, '라이브대조 를 못 찾았다 — 앵커가 낡으면 이 검사는 무엇이든 통과시킨다');
+  const 몸통 = src.slice(시작, src.indexOf('\nfunction ', 시작 + 1));
+  assert.ok(몸통.length > 200, '몸통을 못 잘랐다 — 빈 문자열에는 어떤 doesNotMatch 도 통과한다');
+  assert.match(몸통, /mkdtempSync/, '임시 디렉터리를 안 만든다 — 어디로 받는지가 흐리면 언젠가 작업본이다');
+  assert.match(몸통, /cwd:\s*tmp\b/, 'pull 의 cwd 가 임시 디렉터리가 아니다');
+  assert.doesNotMatch(몸통, /cwd:\s*(projRoot|root|ROOT)\b/, '작업본에서 pull 하면 옆 세션 커밋이 라이브 판으로 덮인다');
+  assert.match(몸통, /rmSync/, '임시 디렉터리를 안 지우면 매주 라이브 사본이 디스크에 쌓인다');
+});
+
+test('조회 실패는 세 원인을 한 문장으로 접지 않는다 — 원문 끝 줄을 함께 낸다', () => {
+  /* 오프라인·미로그인·clasp 없음은 대처가 전부 다르다(기다린다 / 30초면 고친다 / 설치한다).
+   * 한 문장으로 접으면 읽는 사람이 매번 셋을 다 확인하거나 아무것도 안 한다.
+   * 🔑 진짜 clasp 을 호출해서 재지 않는다 — 그러면 이 검사가 20초 타임아웃에 매달리고,
+   *   기계마다(로그인 여부·네트워크) 결과가 갈린다. 실패 객체를 직접 준다. */
+  const e = Object.assign(new Error('spawn failed'), { stderr: 'Error: Could not read API credentials.\nRun clasp login.\n' });
+  const r = 점검.못읽음('(루트)', '배포 목록을 못 읽었다', e);
+  assert.strictEqual(r.level, 'unreachable');
+  assert.ok(r.lines.length >= 2, `원인 원문이 없다: ${r.lines.join(' / ')}`);
+  assert.match(r.lines[1], /clasp login/, '원문 끝 줄을 안 실었다 — 셋 중 어느 원인인지 못 가른다');
+  assert.match(r.lines[0], /확인 불가/, '통과와 미실행이 같은 모양이면 안 된다');
+  // 원문이 아예 없을 때도 조용히 빈 줄을 내면 안 된다(있으나 마나 한 줄)
+  assert.match(점검.못읽음('x', 'y', new Error('')).lines[1], /\S{3,}/);
 });
 
 test('임시 러너 배포는 이 검사 몫이 아니다 — deploy-security-check 가 따로 잡는다', () => {
