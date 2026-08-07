@@ -699,8 +699,9 @@ const 확인불가 = (m) => { const e = new Error(m); e.확인불가 = true; ret
  * 🔑 **repo 밖 파일이라 없을 수 있다.** 그때 빈 목록으로 접지 않고 **거절**한다: 닫힌 결정을 안 실은
  *   심문은 유호님이 이미 기각한 안을 그대로 다시 물어 오고, 그건 심문의 모양을 한 재제안이다. */
 function 금지목록(경로) {
-  const slug = ROOT.replace(/:/g, '-').replace(/[\\/]/g, '-');
-  const p = 경로 || process.env.SYNK_MEMORY_INDEX || path.join(os.homedir(), '.claude', 'projects', slug, 'memory', 'MEMORY.md');
+  // 슬러그 조립은 memory-graph 한 곳에서만 한다(F206) — 여기 판은 워크트리에서 어긋났다.
+  const p = 경로 || process.env.SYNK_MEMORY_INDEX
+    || path.join(require(path.join(ROOT, 'tools', 'memory-graph.js')).memoryDir(), 'MEMORY.md');
   if (!fs.existsSync(p)) {
     throw 확인불가(`memory 인덱스를 못 찾았다: ${p}\n  (SYNK_MEMORY_INDEX 로 경로를 줄 수 있다. 닫힌 결정 없이 도는 심문은 재제안을 물어 온다.)`);
   }

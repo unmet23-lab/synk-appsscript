@@ -26,8 +26,8 @@ const path = require('path');
 const os = require('os');
 
 const REPO = path.resolve(__dirname, '..');
-const MEM = path.join(os.homedir(), '.claude', 'projects',
-  'C--Users-q1212-Documents-SYNK-appsscript', 'memory');
+// 하네스 경로는 손으로 조립하지 않는다 — 이 자리엔 이 기계 이름이 박혀 있었다(F206).
+const MEM = require('./memory-graph.js').memoryDir();
 const DEFAULT_OUT = path.join(os.homedir(), 'OneDrive', 'Desktop', 'SYNK_노트북LM');
 
 // ── 담지 않을 폴더 (경로 단위) ──────────────────────────────────────────

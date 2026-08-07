@@ -104,8 +104,8 @@ function main() {
                      copyFile(path.join(REPO, '.claude', 'settings.json'), path.join(OUT, '02_훅', 'settings.json'));
   log('03_에이전트/'); copyDir(path.join(REPO, '.claude', 'agents'), path.join(OUT, '03_에이전트'));
   log('04_메모리_볼트/');
-  const MEM = path.join(os.homedir(), '.claude', 'projects',
-    'C--Users-q1212-Documents-SYNK-appsscript', 'memory');
+  // 하네스 경로는 손으로 조립하지 않는다 — 이 자리엔 이 기계 이름이 박혀 있었다(F206).
+  const MEM = require('./memory-graph.js').memoryDir();
   copyDir(MEM, path.join(OUT, '04_메모리_볼트'));
   log('05_도구/');   copyDir(path.join(REPO, 'tools'), path.join(OUT, '05_도구'));
 
