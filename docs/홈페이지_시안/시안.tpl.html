@@ -66,7 +66,9 @@ header>*{pointer-events:auto}
 .orb-float{animation:float 8s ease-in-out infinite}
 .orb-nod.nod{animation:nod .55s var(--ease)}
 .orb-tilt{transform-style:preserve-3d;transition:transform 1s var(--ease);animation:breathe 6s ease-in-out infinite}
-.orb-img{position:relative;width:min(56vw,420px)}
+/* isolation = K 볼마크의 곱하기를 이 안(마스코트 두 판)으로 가둔다. 없으면 페이지 배경까지 섞여
+   다크에서 그 자리가 깨진다. */
+.orb-img{position:relative;width:min(56vw,420px);isolation:isolate}
 .orb-img img{
   width:100%;height:auto;display:block;user-select:none;-webkit-user-drag:none;
   -webkit-mask-image:radial-gradient(circle closest-side, #000 76%, transparent 99%);
@@ -74,6 +76,19 @@ header>*{pointer-events:auto}
 }
 .orb-img img.smile{position:absolute;inset:0;opacity:0;transition:opacity .18s ease}
 .orb-img.smiling img.smile{opacity:1}
+/* K 볼마크 = 표정 두 판의 **공용** 레이어. 이미지에 굽지 않으므로 깜빡임(^^ 판을 150ms 얹는 방식)에도
+   명멸하지 않는다 — 한 판에만 마크가 있을 때 생기던 문제를 자리로 없앤 것이다.
+   좌표: 원본 1024² 의 K 각인(606,494 · 42×56 · 차분 임계 60 실측)을 96² 로 잘라
+   크롭(139,142 · 740²) 좌표계에 앉힌다 — 중심 (488,380) → 65.9% / 51.4%.
+   🔑 스프라이트는 「흰 바탕 + 어두운 K」(원판↔K판 차분의 반전)이고 곱하기로 얹는다.
+   각인의 본질은 색이 아니라 **어두워짐**이라, 알파로 덮으면 몸통색과 같아 사라지고
+   불투명 조각으로 얹으면 국소 밝기차 때문에 사각 패치가 뜬다. 흰색은 곱하기의 항등원이라
+   경계가 원리적으로 안 생긴다(마스크가 필요 없는 이유). */
+.orb-img img.mark{
+  position:absolute;left:65.9%;top:51.4%;width:12.97%;height:auto;
+  transform:translate(-50%,-50%);
+  mix-blend-mode:multiply;
+}
 .eye{position:absolute;width:0;height:0;pointer-events:none}
 .cast{
   position:absolute;bottom:clamp(6px,2vh,22px);width:min(34vw,230px);height:26px;pointer-events:none;
@@ -176,6 +191,7 @@ footer a:hover{color:var(--ink);border-color:var(--sub)}
           <div class="orb-img" id="orbImg">
             <img src="__DOT__" alt="SYNK 마스코트">
             <img src="__SMILE__" alt="" class="smile" aria-hidden="true">
+            <img src="__MARK__" alt="" class="mark" aria-hidden="true">
             <!-- 눈 좌표 = 픽셀 실측 (441,440)·(579,439) → 크롭(139,142·740²) 백분율 -->
             <i class="eye" id="eyeL" style="left:40.8%;top:40.3%"></i>
             <i class="eye" id="eyeR" style="left:59.5%;top:40.1%"></i>

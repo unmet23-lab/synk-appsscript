@@ -13,7 +13,11 @@ const path = require('path');
 
 const 여기 = __dirname;
 const 템플릿 = path.join(여기, '시안.tpl.html');
-const 그림 = { __DOT__: '마스코트_점눈.webp', __SMILE__: '마스코트_웃음.webp' };
+const 그림 = {
+  __DOT__: '마스코트_점눈.webp',
+  __SMILE__: '마스코트_웃음.webp',
+  __MARK__: '마스코트_K.webp',   // 볼 K 각인 — 표정 두 판 공용 레이어(굽지 않아 깜빡임에 안 명멸)
+};
 const 출력 = process.argv[2] || path.join(여기, '시안.html');
 
 let html = fs.readFileSync(템플릿, 'utf8');
