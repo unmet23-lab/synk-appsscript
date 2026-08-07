@@ -237,6 +237,81 @@ function 해소주장(signal) {
   return m ? m[0].trim() : null;
 }
 
+/* ── 통로의 마지막 칸 — 장부를 쓴 그 자리에서 커밋한다 ─────────────────────────
+ *
+ * 왜 있나 (2026-08-07 실측): **장부를 커밋하는 자리가 통로 어디에도 없었다.**
+ *   이 도구는 편집만 하고 · friction-close-guard 는 커밋 **뒤**에 짖고(차단 아님) ·
+ *   auto-commit 은 이 파일을 의도적으로 제외한다. 그래서 커밋은 사람 손으로 넘어갔는데,
+ *   손은 「남의 미커밋은 그대로 두고 보고한다」 규약에 막힌다 — 장부는 모든 세션이
+ *   규약상 만지는 공용 장부라(handoff-store.공용장부) 언제나 남의 행이 섞여 있다.
+ *   결과 = 죽은 세션의 장부 행이 **주인 없는 미커밋**으로 뜬 채 쌓인다. 하루 3회 손으로
+ *   수거됐고(4e647ad·8ecd37a·이 트랙) 한 번은 실제로 소실됐다(F123 → 4143996 이 되살림).
+ *   F025·F037·F073 은 셋 다 **미커밋으로 떠 있는 시간**에만 일어난다 — 그 시간을 0으로 만든다.
+ *
+ * 🔑 왜 auto-commit 금지가 여기엔 안 걸리나 — 그 금지 사유는 「F0NN 을 모르는 통로가
+ *   커밋하면 friction-close-guard 가 우회된다」였다. 이 통로는 번호를 **안다.** 메시지에
+ *   그 번호를 박으므로 close-guard 는 그대로 짖는다(신고 커밋 면제·해소 커밋 통과 전부 유지).
+ *
+ * ⚠ 같은 파일의 남의 행은 **함께 실린다** — git 은 파일 단위다. 장부는 행끼리 독립이라
+ *   손실은 없지만(선례 8ecd37a) 조용히 하지 않는다: 몇 행이 동승했는지 세어 밝힌다.
+ *   ⚠ 실패는 어느 층이든 조용히 물러난다 — 기록이 도구 사정으로 멈추면 안 된다(withLock 원칙).
+ */
+function 장부커밋(제목) {
+  // 격리 장부(tmp)를 준 테스트는 저장소 밖을 가리킨다 — git 이 모르는 파일은 건드리지 않는다.
+  const rel = path.relative(ROOT, LEDGER);
+  if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
+  const 경로 = rel.replace(/\\/g, '/');
+  if (gitQuiet(['rev-parse', '--is-inside-work-tree']) === null) return null;
+  // rebase·merge 중이면 그 상태를 만든 손이 끝낼 일이다 (F035·F038)
+  for (const 상태 of ['rebase-merge', 'rebase-apply', 'MERGE_HEAD', 'CHERRY_PICK_HEAD']) {
+    const p = gitQuiet(['rev-parse', '--git-path', 상태]);
+    if (p && fs.existsSync(path.resolve(ROOT, p.trim()))) return { 건너뜀: '병합·리베이스 진행 중' };
+  }
+  return { 경로, 제목 };
+}
+
+/** 위 판정을 실제 커밋으로 옮긴다. 내몫 = 이번 편집이 낸 `[추가, 삭제]` 행 수. */
+function 장부커밋실행(계획, 내몫) {
+  if (!계획 || !계획.경로) return 계획;
+  const { 경로, 제목 } = 계획;
+  const stat = gitQuiet(['diff', '--numstat', 'HEAD', '--', 경로]);
+  if (stat === null || !stat.trim()) return { 건너뜀: '커밋할 변경이 없다' };
+  const [추가, 삭제] = stat.trim().split('\n')[0].split('\t').map((n) => Number(n) || 0);
+  const 동승 = Math.max(0, 추가 - 내몫[0]) + Math.max(0, 삭제 - 내몫[1]);
+
+  /* ⚠ 제목이 `[배포]` 로 시작하면 deploy-live 가 라이브를 태운다 — 호출부의 `docs: ` 접두가 그 사고를 막는다.
+   * 경로를 못 박아 커밋한다(CLAUDE.md: add/commit 을 나누면 그 틈에 남의 스테이징이 얹힌다).
+   * 세션이 여럿 도는 저장소라 옆 세션의 훅과 index.lock 이 겹친다 — 짧게만 기다린다. */
+  let 커밋됨 = false;
+  for (let i = 0; i < 3 && !커밋됨; i++) {
+    커밋됨 = gitQuiet(['commit', '-m', 제목, '--', 경로]) !== null;
+    if (!커밋됨) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 300);
+  }
+
+  /* 커밋했다고 믿지 말고 결과를 본다(F071). **실패했다고도 믿지 않는다** — 옆 세션이 같은 순간에
+   * 같은 파일을 실으면 내 커밋은 「할 것 없음」으로 지는데, 그건 장부가 안 남은 게 아니라 **이미
+   * 남은 것**이다. 거기서 「손으로 커밋하라」고 지시하면 거짓 경보고, 늘 틀리는 경보는 꺼진다.
+   * 그래서 판정은 명령의 성패가 아니라 **지금 파일 상태 하나**로 한다(현재를 읽어 판정한다). */
+  const 남은 = gitQuiet(['status', '--porcelain', '--', 경로]);
+  if (남은 === null || 남은.trim()) return { 실패: true, 동승 };
+  return { 해시: (gitQuiet(['rev-parse', '--short', 'HEAD']) || '').trim(), 동승, 남이실음: !커밋됨 };
+}
+
+/** 커밋 결과를 한 줄로 보고한다 — 동승·실패는 조용히 넘기지 않는다. */
+function 커밋보고(r) {
+  if (!r) return;
+  if (r.건너뜀) { console.log(`  · 커밋 건너뜀 — ${r.건너뜀}(장부는 저장됐다)`); return; }
+  if (r.실패) { console.log('  ⚠ 장부가 미커밋으로 남았다 — 손으로 커밋한다(기록 자체는 안 잃었다)'); return; }
+  if (r.남이실음) { console.log('  ✔ 장부는 이미 커밋돼 있다 — 옆 세션이 같은 순간에 실었다'); return; }
+  console.log(`  ✔ 커밋 ${r.해시}${r.동승 ? ` (남의 행 ${r.동승}개 동승 — 장부는 공용이라 정상)` : ''}`);
+}
+
+/** 커밋 제목에 실을 요약 — 개행·과길이를 자른다(제목은 한 줄이어야 한다). */
+function 제목요약(s, n = 54) {
+  const t = String(s || '').replace(/\s+/g, ' ').trim();
+  return t.length > n ? `${t.slice(0, n)}…` : t;
+}
+
 function add(kind, signal, date, 해소) {
   if (!KINDS.includes(kind)) {
     console.error(`[friction] 종류는 ${KINDS.join('·')} 중 하나여야 한다 (받은 값: ${kind})`);
@@ -290,6 +365,8 @@ function add(kind, signal, date, 해소) {
   });
   console.log(`  + ${id}  ${kind}  ${safe}`);
   if (해소safe) console.log(`  ✔ ${id} 해소 → ${해소safe}   (신고와 동시에 닫았다 — 열린 채 남지 않는다)`);
+  /* 신고 커밋은 close-guard 가 면제한다(그 행을 만든 커밋) — 번호를 박아 두면 그 판정이 그대로 산다. */
+  커밋보고(장부커밋실행(장부커밋(`docs: 마찰 ${id} ${해소safe ? '신고·해소' : '신고'} — ${제목요약(safe)}`), [1, 0]));
 }
 
 function resolve(id, by) {
@@ -316,6 +393,8 @@ function resolve(id, by) {
     console.error(실패);
     process.exit(1);
   }
+  // 해소 칸을 채운 커밋이라 close-guard 가 고를 「열린 행」이 아니다 — 번호는 그대로 박는다.
+  커밋보고(장부커밋실행(장부커밋(`docs: 마찰 ${String(id).toUpperCase()} 해소 — ${제목요약(safe)}`), [1, 1]));
 }
 
 function report(openOnly) {
