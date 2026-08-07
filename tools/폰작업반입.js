@@ -38,6 +38,39 @@ const ROOT = process.env.SYNK_반입_ROOT || path.resolve(__dirname, '..');
  * ⚠ 이 목록은 「덜 중요해서」가 아니라 「낡아서」다 — 새로 넣을 땐 그 기준으로 판단한다. */
 const 공유파일 = ['docs/세션보드.md', 'docs/세션보드_아카이브.md'];
 
+/* 추가전용 — 행마다 번호가 붙은 장부. `checkout` 은 파일을 **통째로** 바꾸므로 갈라진 뒤
+ * master 에 붙은 행이 소리 없이 사라진다(F195 실측: 대기 브랜치 하나를 받으면 폰은 두 행의
+ * 문구만 고쳤는데 그 사이 master 에 붙은 4행이 삭제로 실린다 — git 은 오류 0, `--stat` 도
+ * 「1 파일 변경」으로만 보인다). 공유파일처럼 통째로 뺄 수도 없다: 폰이 적은 신호가 통째로
+ * 사라진다. → **행 단위로 합친다.** */
+const 추가전용 = ['docs/_ops/마찰신호.md'];
+
+const 행ID = (l) => (/^\|\s*(F\d+)\s*\|/.exec(String(l).trim()) || [])[1];
+
+/** 내 판에 폰에만 있는 행을 붙인다. **같은 번호인데 내용이 다르면 내 판을 남긴다** —
+ *  폰의 바탕은 갈라진 시점이라 낡았고(공유 파일과 같은 판정), 폰이 손으로 매긴 번호가 남의
+ *  번호와 겹치기도 한다(실측: 대기 브랜치가 master 의 F195 와 **다른 사건**을 같은 번호로 들고 있었다).
+ *  돌려주는 `버림` 은 버리는 게 아니라 **커밋 메시지에 전문으로 실어** 다시 올릴 자리를 남긴다. */
+function 행합치기(내판, 폰판) {
+  const 개행 = /\r\n/.test(내판) ? '\r\n' : '\n';
+  const 줄 = String(내판).split(/\r?\n/);
+  const 내행 = new Map();
+  for (const l of 줄) { const id = 행ID(l); if (id) 내행.set(id, l.trim()); }
+
+  const 붙임 = [], 버림 = [];
+  for (const l of String(폰판).split(/\r?\n/)) {
+    const id = 행ID(l);
+    if (!id) continue;
+    if (!내행.has(id)) 붙임.push(l.trim());
+    else if (내행.get(id) !== l.trim()) 버림.push(l.trim());
+  }
+  // 표의 마지막 행 뒤에 넣는다(파일 끝이 아니라) — friction.js add 와 같은 자리다.
+  let at = 줄.length;
+  for (let i = 줄.length - 1; i >= 0; i--) if (행ID(줄[i])) { at = i + 1; break; }
+  줄.splice(at, 0, ...붙임);
+  return { 내용: 줄.join(개행), 붙임, 버림 };
+}
+
 function git(args, { 실패허용 = false } = {}) {
   const r = spawnSync('git', ['-c', 'core.quotepath=false', ...args],
     { cwd: ROOT, encoding: 'utf8', timeout: 30000, windowsHide: true });
@@ -92,9 +125,10 @@ function 계획(브랜치) {
    * 갈라진 지점 이후 master 도 건드린 파일이 여기 뜬다(merge 라면 충돌이 났을 자리). */
   const 갈래 = (git(['merge-base', 'master', 브랜치]) || '').trim();
   const master바뀐것 = new Set(줄들(git(['diff', '--name-only', `${갈래}..master`])));
-  const 양쪽 = 가져올것.filter((f) => master바뀐것.has(f));
+  const 합칠것 = 가져올것.filter((f) => 추가전용.includes(f));
+  const 양쪽 = 가져올것.filter((f) => master바뀐것.has(f) && !추가전용.includes(f));
 
-  return { 상태, 삭제, 가져올것, 겹침, 양쪽, 제외: 상태.length - 삭제.length - 가져올것.length };
+  return { 상태, 삭제, 가져올것, 겹침, 양쪽, 합칠것, 제외: 상태.length - 삭제.length - 가져올것.length };
 }
 
 function 목록보기() {
@@ -110,6 +144,7 @@ function 목록보기() {
       + (p.제외 ? ` (공유 파일 ${p.제외}건 제외 — 갈라진 시점 판이라 낡았다)` : ''));
     if (p.삭제.length) console.log(`   ⚠ 파일 삭제 ${p.삭제.length}건 — 이 도구로는 못 지운다(손으로): ${p.삭제.join(', ')}`);
     if (p.양쪽.length) console.log(`   ⚠ master 에서도 바뀐 파일 ${p.양쪽.length}건 — **폰 판으로 덮는다**: ${p.양쪽.slice(0, 6).join(', ')}${p.양쪽.length > 6 ? ' …' : ''}`);
+    if (p.합칠것.length) console.log(`   ✚ 추가전용 ${p.합칠것.length}건은 덮지 않고 **행 단위로 합친다**: ${p.합칠것.join(', ')}`);
     console.log(p.겹침.length
       ? `   🔴 미커밋과 겹침 ${p.겹침.length}건 — 받으면 남의 편집이 사라진다: ${p.겹침.join(', ')}`
       : '   ✅ 미커밋 겹침 0건');
@@ -190,7 +225,17 @@ function 받기(브랜치) {
 
   console.log(`가져올 것 ${p.가져올것.length}건` + (p.제외 ? ` (공유 파일 ${p.제외}건 제외)` : ''));
   if (p.양쪽.length) console.log(`⚠ master 에서도 바뀐 ${p.양쪽.length}건을 폰 판으로 덮는다: ${p.양쪽.join(', ')}`);
-  git(['checkout', 브랜치, '--', ...p.가져올것]);
+
+  const 덮을것 = p.가져올것.filter((f) => !추가전용.includes(f));
+  if (덮을것.length) git(['checkout', 브랜치, '--', ...덮을것]);
+  const 합침 = p.합칠것.map((f) => {
+    const 절대 = path.join(ROOT, f);
+    const r = 행합치기(fs.readFileSync(절대, 'utf8'), git(['show', `${브랜치}:${f}`]));
+    fs.writeFileSync(절대, r.내용, 'utf8');
+    console.log(`✚ ${f} — 덮지 않고 합쳤다: 폰 행 ${r.붙임.length}건 붙임`
+      + (r.버림.length ? ` · ⚠ 같은 번호가 다른 행 ${r.버림.length}건은 내 판을 남겼다(커밋 메시지에 전문)` : ''));
+    return { f, ...r };
+  });
 
   // 들어온 js 는 여기서 구문검사한다 — 깨진 채로 커밋하면 남의 배포 게이트까지 막는다.
   const js = p.가져올것.filter((f) => f.endsWith('.js'));
@@ -207,6 +252,14 @@ function 받기(브랜치) {
     + `가져온 것 ${p.가져올것.length}건`
     + (p.제외 ? ` (공유 파일 ${p.제외}건 제외 — 갈라진 시점 판이라 낡았다)` : '') + '\n'
     + (p.양쪽.length ? `⚠ master 에서도 바뀐 ${p.양쪽.length}건을 폰 판으로 덮었다: ${p.양쪽.join(', ')}\n` : '')
+    + 합침.map(({ f, 붙임, 버림 }) =>
+      `\n✚ ${f} — 추가전용이라 덮지 않고 행 단위로 합쳤다(폰 행 ${붙임.length}건 붙임).\n`
+      + (버림.length
+        ? `⚠ 같은 번호를 다른 내용으로 쓴 행 ${버림.length}건은 **내 판을 남겼다** — 폰 판을 여기 그대로 싣는다.\n`
+          + '   같은 사건의 문구 수정이면 이대로 두고, 다른 사건이면 새 번호로 다시 올린다:\n'
+          + '   node tools/friction.js add <종류> "신고문"\n'
+          + 버림.map((l) => `   ${l}\n`).join('')
+        : '')).join('')
     + `\n브랜치가 담고 있던 커밋:\n${제목들}\n`;
   const 임시 = path.join(os.tmpdir(), `synk-반입-${process.pid}.txt`);
   fs.writeFileSync(임시, 메시지, 'utf8');
@@ -230,4 +283,4 @@ if (require.main === module) {
   } else 목록보기();
 }
 
-module.exports = { 계획, 브랜치들, 묶어읽기, 공유파일 };
+module.exports = { 계획, 브랜치들, 묶어읽기, 행합치기, 공유파일, 추가전용 };
