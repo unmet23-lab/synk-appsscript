@@ -85,12 +85,14 @@ const GENERIC_OK = [
 const KC_FONTS_OK = ['Fraunces', 'Gowun Batang', 'Cormorant'];
 const KC_SCOPE = '.kc-page, .kc-card';
 
-/* 색 전용 경계 — **서체 경계보다 한 칸 넓다**(유호님 확정 2026-08-07 「C안」).
- * 크루카드 표지 03 칸은 Part 6 을 예고하는 자리라 KC 핑크가 거기서는 뜻을 진다.
- * 🔴 **서체는 같이 넓히지 않는다** — 예고 1칸에 Fraunces 까지 들어오면 그 칸이 Part 6 행세를 한다.
+/* 색 전용 경계 — **서체 경계보다 넓다**(유호님 확정 2026-08-07 2차 「예전처럼 알록달록하게」).
+ * 크루카드 표지 4칸 띠(`.cov-deliverables`)는 카드 전체를 예고하는 자리라 네 칸이 네 색을 쓴다
+ * (01 Coral · 02 KC Cool · 03 Lime 2 · 04 KC Hot). 같은 날 오전의 「C안」(03 한 칸만 KC 핑크 ·
+ * 경계 `.kc-preview`)은 이 지시로 폐기됐다 — 유호님 확정이 일반 조항보다 우선한다.
+ * 🔴 **서체는 같이 넓히지 않는다** — 표지 띠에 Fraunces 까지 들어오면 그 칸이 Part 6 행세를 한다.
  *   상수를 둘로 나눈 이유가 그것이다. 하나로 뒀으면 다음 사람이 색을 넓히면서 서체를 조용히 같이 넓힌다
  *   (「경계를 함께 적어야 예외가 예외로 남는다」 — 위 서체 예약 주석과 같은 축). */
-const KC_COLOR_SCOPE = KC_SCOPE + ', .kc-preview';
+const KC_COLOR_SCOPE = KC_SCOPE + ', .cov-deliverables';
 
 /* ── Part 06 K-Culture 예약 **색** — 서체와 같은 경계를 색에도 적용한다 ────────
  * 정본 `DESIGN.md` 철칙 ④: 「Lime·KC 4색은 전용 구역(앱 성장층·Part 6) 밖 반입 금지」.

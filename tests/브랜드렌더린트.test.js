@@ -220,24 +220,29 @@ test('KC 구역 안의 KC 색은 통과한다 (자기 처방을 막지 않는지
   assert.deepEqual(r.구역밖색, [], `제 구역 안의 KC 색을 위반으로 잡았다 — 따를 수 없는 처방이 된다: ${JSON.stringify(r.구역밖색)}`);
 });
 
-/* ── 예고 1칸 — 유호님 확정 2026-08-07 「C안」 ────────────────────────────────
- * 색 경계(`KC_COLOR_SCOPE`)만 넓히고 서체 경계(`KC_SCOPE`)는 그대로 뒀다.
- * 아래 두 시험이 **그 분리 자체**를 못 박는다 — 하나라도 빠지면 다음 사람이 상수를 다시 합친다. */
-test('예고 1칸(.kc-preview) 안의 KC 색은 통과한다 (자기 처방 검사 · F103)', { skip: 크롬없음 }, () => {
-  const p = 픽스처('kc-preview-color',
-    `<style>.del::before{content:'';display:inline-block;width:3px;height:12px;background:#FF3E88}</style>
-     <div class="del kc-preview"><span style="color:#171820">03 · K-Track</span></div>`);
+/* ── 표지 4칸 띠 — 유호님 확정 2026-08-07 2차 「예전처럼 알록달록하게」 ──────────
+ * 색 경계(`KC_COLOR_SCOPE`)만 `.cov-deliverables` 로 넓히고 서체 경계(`KC_SCOPE`)는 그대로 뒀다.
+ * 아래 두 시험이 **그 분리 자체**를 못 박는다 — 하나라도 빠지면 다음 사람이 상수를 다시 합친다.
+ * (같은 날 오전의 「C안」은 경계가 `.kc-preview` 였고 이 지시로 폐기됐다.) */
+test('표지 띠(.cov-deliverables) 안의 KC 색은 통과한다 (자기 처방 검사 · F103)', { skip: 크롬없음 }, () => {
+  const p = 픽스처('cov-band-color',
+    `<style>.del::before{content:'';display:inline-block;width:3px;height:12px;background:#FF3E88}
+            .del2::before{content:'';display:inline-block;width:3px;height:12px;background:#4E7CFF}</style>
+     <div class="cov-deliverables">
+       <div class="del"><span style="color:#171820">03 · K-Track</span></div>
+       <div class="del del2"><span style="color:#171820">02 · Roadmap</span></div>
+     </div>`);
   const r = 측정(p, CHROME);
   assert.deepEqual(r.구역밖색, [],
-    `예고 1칸의 KC 색을 위반으로 잡았다 — 유호님이 확정한 화면이 영구 빨간불이 된다: ${JSON.stringify(r.구역밖색)}`);
+    `표지 띠의 KC 색을 위반으로 잡았다 — 유호님이 확정한 화면이 영구 빨간불이 된다: ${JSON.stringify(r.구역밖색)}`);
 });
 
-test('예고 1칸은 **서체까지** 넓히지 않는다 (색만 넓힌 경계가 서체로 새는지)', { skip: 크롬없음 }, () => {
-  const p = 픽스처('kc-preview-font',
-    '<div class="del kc-preview"><p style="font-family:Fraunces,serif;color:#171820">K</p></div>');
+test('표지 띠는 **서체까지** 넓히지 않는다 (색만 넓힌 경계가 서체로 새는지)', { skip: 크롬없음 }, () => {
+  const p = 픽스처('cov-band-font',
+    '<div class="cov-deliverables"><div class="del"><p style="font-family:Fraunces,serif;color:#171820">K</p></div></div>');
   const r = 측정(p, CHROME);
   assert.ok(r.키트밖서체.some((v) => v.font === 'Fraunces'),
-    '예고 1칸에서 Part 6 서체가 통과했다 — 예고가 Part 6 행세를 하게 되고, 두 상수를 나눈 이유가 사라진다');
+    '표지 띠에서 Part 6 서체가 통과했다 — 표지가 Part 6 행세를 하게 되고, 두 상수를 나눈 이유가 사라진다');
 });
 
 test('KC 색 목록은 토큰의 05 K-Culture 팔레트에서 파생한다 (손 사본 금지 · F143)', () => {
