@@ -95,10 +95,14 @@ function gh조회(브랜치, 창) {
 
 function main() {
   const 인자 = process.argv[2] || 'HEAD';
-  const 해석 = sh('git', ['rev-parse', 인자]);
-  /* ⚠ exit 0 을 「읽었다」로 읽지 않는다 — `git rev-parse --help` 는 **exit 0 + 빈 출력**이라
-   *   대상이 빈 문자열로 통과하고, 그 뒤 조상 대조가 전부 실패해 확신에 찬 「미검증」이 나온다.
-   *   헤드 쪽에서는 이 뭉개기를 막아 놓고(담는가만들기) 대상 쪽에 안 쓰면 자기모순이다. */
+  /* 🔴 `--verify --end-of-options` 는 장식이 아니다 — 없으면 인자가 **git 의 옵션으로 먹힌다**.
+   *   `--help` 하나로 두 가지가 터졌다: ①exit 0 + 빈 출력이라 대상이 빈 문자열로 통과해 확신에
+   *   찬 「미검증」이 나오고 ②Git for Windows 가 **기본 브라우저로 도움말 HTML 을 연다**.
+   *   회귀가 이 도구를 `--help` 로 돌리므로 테스트 1회 = 브라우저 탭 1개였다(F179).
+   *   git 문서가 주는 정석 처방이다("verifying a name from an untrusted source"). */
+  const 해석 = sh('git', ['rev-parse', '--verify', '--end-of-options', 인자]);
+  /* ⚠ 그래도 exit 0 을 「읽었다」로 읽지 않는다 — 헤드 쪽에서 이 뭉개기를 막아 놓고
+   *   (담는가만들기) 대상 쪽에 안 쓰면 자기모순이다. */
   const 대상 = 해석.ok ? 해석.out.trim() : '';
   if (!/^[0-9a-f]{40}$/i.test(대상)) {
     console.error(`[원격ci] ❔ 모름 — 커밋을 못 읽었다: ${해석.사유 || `"${인자}" 가 커밋이 아니다`}`);
