@@ -124,6 +124,23 @@ function touchKey(root, abs) {
   return null;
 }
 
+/** 공용 장부 — **모든 세션이 규약상 만지는** 파일. 여기서의 겹침은 충돌이 아니라 정상이다.
+ *
+ *  왜 lib 에 있나: 겹침을 보는 장치가 둘이고(`track-collision` 만진겹침 · `작업본소유자` 뒤늦은
+ *  남의 커밋), 목록을 각자 적으면 갈라진다 — 갈라진 쪽의 증상은 **경고 홍수**이고, 홍수는
+ *  「아무도 안 읽음」이라 없는 장치와 같아진다(track-collision 이 신설 당일 실측한 그 자리:
+ *  13건 중 11건이 세션보드라 진짜 신호 2건이 묻혔다).
+ *
+ *  ⚠ `.claude/settings.json` 은 여기 넣지 않는다 — 그건 공용 장부가 아니라 **공유 작업면**이고,
+ *    2026-08-04 진짜 충돌이 정확히 거기서 났다. 장부와 작업면을 섞으면 신호를 통째로 버린다. */
+const 공용장부 = Object.freeze([
+  'docs/세션보드.md',
+  'docs/세션보드_아카이브.md',
+  'docs/_ops/마찰신호.md',
+  'docs/버전_이력.md',
+  'docs/지침_이력.md',
+]);
+
 function stateDir() { return STATE_DIR; }
 
 /** 세션별 단계 카운터(발화 중복 억제용). 프로젝트 키를 붙여 저장소 간 간섭을 막는다. */
@@ -246,6 +263,6 @@ function take(cwd) {
  * 「조용히 안 지워짐」이라 눈에 안 띈다(이 파일이 존재하는 이유 ③과 같은 함정). */
 module.exports = {
   stateDir, projectKey, safeId, batonName, stagePath, readStage, writeStage, claimBlock, sweep, drop, take,
-  siblings, siblingPrefix, touchKey,
+  siblings, siblingPrefix, touchKey, 공용장부,
   BATON_TTL_MS, SWEEP_TTL_MS,
 };

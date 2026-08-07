@@ -47,10 +47,13 @@ function 나이먹인다(repo, rel, 분전) {
   const t = new Date(Date.now() - 분전 * 60000);
   fs.utimesSync(path.join(repo, rel), t, t);
 }
-/** track-collision 이 쌓는 것과 **같은 이름 규칙**으로 상태 파일을 놓는다(safeId 는 lib 것을 쓴다). */
-function 세션기록(state, repo, sid, touched, 분전) {
+/** track-collision 이 쌓는 것과 **같은 이름 규칙**으로 상태 파일을 놓는다(safeId 는 lib 것을 쓴다).
+ *  `검사시각` = 경로별 「마지막으로 만진 때」(track-collision 의 `dirtyChecked`) — F187·F188 검사의 시계다. */
+function 세션기록(state, repo, sid, touched, 분전, 검사시각) {
   const p = path.join(state, `track-${store.projectKey(repo)}-${store.safeId(sid)}.json`);
-  fs.writeFileSync(p, JSON.stringify({ baseline: 'x', lastHead: 'x', touched, warned: [] }));
+  fs.writeFileSync(p, JSON.stringify({
+    baseline: 'x', lastHead: 'x', touched, warned: [], ...(검사시각 ? { dirtyChecked: 검사시각 } : {}),
+  }));
   const t = new Date(Date.now() - 분전 * 60000);
   fs.utimesSync(p, t, t);
 }
@@ -486,4 +489,138 @@ test('🧭 --hook 은 보드 선점만 있어도 말한다 — 침묵이 안전�
   const { repo, state } = 보드픽스처('| 2026-08-07 | **남의 새 트랙** | b.js | 작업중 |');
   const out = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'] });
   assert.match(out, /커밋 안 된 보드 선언/, '훅이 침묵하면 세션 시작에 아무 데서도 안 보인다 — 그게 F161 이다');
+});
+
+/* ── 🔶 내가 만진 뒤에 남이 커밋했다 (F187·F188) ────────────────────────────────
+ * 두 실사고는 **같은 사건의 양쪽 좌석**이라 검사도 한 쌍으로 둔다:
+ *   더러움 → F187(내 커밋이 남의 줄을 삭제로 싣는다) · 깨끗함 → F188(내 수정이 이미 덮였다).
+ * 탐지력은 전부 이 픽스처가 진다 — 실저장소는 세션마다 달라 「초록인데 아무것도 안 잰」 검사가 된다.
+ * ⚠ `%ct` 는 **커밋 시각**이라 시계를 뒤로 미는 검사는 GIT_COMMITTER_DATE 를 함께 준다
+ *   (`--date` 는 author 만 바꿔서, 그것만 쓰면 「전」 검사가 통과의 이유를 잃는다). */
+function 커밋한다(f, rel, 내용, { sid, 초전 = 0 } = {}) {
+  더럽힌다(f.repo, rel, 내용);
+  const 때 = new Date(Date.now() - 초전 * 1000).toISOString();
+  f.g('add', '--', rel);
+  const r = spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', '-c', 'commit.gpgsign=false',
+    'commit', '-q', '-m', sid ? `수정\n\nSession-Id: ${sid}` : '수정'],
+  { cwd: f.repo, encoding: 'utf8', env: { ...process.env, GIT_COMMITTER_DATE: 때, GIT_AUTHOR_DATE: 때 } });
+  assert.strictEqual(r.status, 0, `픽스처 커밋 실패: ${r.stderr}`);
+}
+const 아까 = (초) => Date.now() - 초 * 1000;
+
+test('🔶 F187 — 내가 만진 뒤 남이 커밋했고 내 작업본은 **더럽다**', { skip: !git있나 && 'git 없음' }, () => {
+  const f = 픽스처();
+  커밋한다(f, 'lib/공유.js', '남이 방금 넣은 줄\n', { sid: 'local_peer' });
+  더럽힌다(f.repo, 'lib/공유.js', '내 옛 판\n');            // 남의 줄이 없는 스테일 작업본
+  세션기록(f.state, f.repo, 'local_me', ['lib/공유.js'], 0, { 'lib/공유.js': 아까(120) });
+  const out = 돌린다({ repo: f.repo, state: f.state, 나: 'local_me' });
+  assert.match(out, /뒤에\*\* 남이 커밋한 경로 1건/, '이 자리가 통째로 안 보이던 것이 F187 이다');
+  assert.match(out, /lib\/공유\.js/);
+  assert.match(out, /내 작업본 \*\*더러움\*\*/);
+  assert.match(out, /F187/, '더러운 쪽엔 「삭제로 실린다」 처방이 붙어야 한다');
+  assert.match(out, /peer/, '누가 커밋했는지가 없으면 대조를 못 한다');
+});
+
+test('🔶 F188 — 같은 사건, 내 작업본이 **깨끗하다**(내 수정이 이미 덮였다)', { skip: !git있나 && 'git 없음' }, () => {
+  const f = 픽스처();
+  커밋한다(f, 'lib/공유.js', '남의 판이 이겼다\n', { sid: 'local_peer' });   // 커밋 뒤 작업본은 clean
+  세션기록(f.state, f.repo, 'local_me', ['lib/공유.js'], 0, { 'lib/공유.js': 아까(120) });
+  const out = 돌린다({ repo: f.repo, state: f.state, 나: 'local_me' });
+  assert.match(out, /내 작업본 깨끗함/);
+  assert.match(out, /F188/, '깨끗한 쪽은 「이미 내 손을 떠났다」여야 한다 — 조용하면 그게 F188 이다');
+  /* 🔴 이 한 줄이 이 검사의 존재 이유다: 깨끗한 파일은 `git status` 에 안 떠서
+   *   기존 판정(🔴·🟡·⚪·❔)으로는 **원리적으로** 못 본다. */
+  assert.doesNotMatch(out, /🔴 살아있는 남의 작업본/, '깨끗한데 미커밋 칸에 뜨면 픽스처가 잘못된 것이다');
+});
+
+test('🔶 **내** 커밋은 안 센다 — 내가 커밋한 것을 위험이라 하면 매 커밋마다 짖는다', { skip: !git있나 && 'git 없음' }, () => {
+  const f = 픽스처();
+  커밋한다(f, 'lib/공유.js', '내가 커밋했다\n', { sid: 'local_me' });
+  세션기록(f.state, f.repo, 'local_me', ['lib/공유.js'], 0, { 'lib/공유.js': 아까(120) });
+  const out = 돌린다({ repo: f.repo, state: f.state, 나: 'local_me' });
+  assert.doesNotMatch(out, /뒤에\*\* 남이 커밋한 경로/, 'Session-Id 로 내 것을 못 가르면 거짓 경보로 장치가 꺼진다');
+});
+
+test('🔶 내가 만지기 **전** 커밋은 안 센다 — 시계가 없으면 저장소 이력 전체가 경보가 된다', { skip: !git있나 && 'git 없음' }, () => {
+  const f = 픽스처();
+  커밋한다(f, 'lib/공유.js', '한참 전 남의 커밋\n', { sid: 'local_peer', 초전: 600 });
+  더럽힌다(f.repo, 'lib/공유.js', '내 편집\n');
+  세션기록(f.state, f.repo, 'local_me', ['lib/공유.js'], 0, { 'lib/공유.js': 아까(60) });  // 내 스탬프가 더 최근
+  const out = 돌린다({ repo: f.repo, state: f.state, 나: 'local_me' });
+  assert.doesNotMatch(out, /뒤에\*\* 남이 커밋한 경로/, '「뒤」를 안 가리면 옛 커밋이 전부 뒤늦은 커밋이 된다');
+});
+
+/* 🔴 위 검사만 있으면 **`--since` 가 혼자 다 막아** 경로별 시각 대조가 통째로 안 시험된다
+ *   (변이 실측: 그 비교를 지워도 초록이었다). `--since` 는 저장소당 **가장 이른** 스탬프 하나로
+ *   창을 잡으므로, 경로마다 스탬프가 다르면 남의 경로 커밋이 그 창 안에 들어온다 —
+ *   경로별로 다시 안 거르면 **먼저 만진 파일 때문에 나중 파일이 거짓 경보**를 맞는다. */
+test('🔶 같은 저장소에서 **경로마다** 시계가 다르다 — 창 하나로 뭉뚱그리면 거짓 경보다', { skip: !git있나 && 'git 없음' }, () => {
+  const f = 픽스처();
+  커밋한다(f, 'lib/늦게.js', '남의 커밋 — 5분 전\n', { sid: 'local_peer', 초전: 300 });
+  더럽힌다(f.repo, 'lib/일찍.js', '내 편집\n');
+  세션기록(f.state, f.repo, 'local_me', ['lib/일찍.js', 'lib/늦게.js'], 0, {
+    'lib/일찍.js': 아까(600),   // 창(--since)은 여기서 열린다 → 남의 커밋이 창 안이다
+    'lib/늦게.js': 아까(10),    // 그런데 이 경로는 그 커밋 **뒤에** 만졌다
+  });
+  const out = 돌린다({ repo: f.repo, state: f.state, 나: 'local_me' });
+  assert.doesNotMatch(out, /뒤에\*\* 남이 커밋한 경로/,
+    '창 안이라는 이유로 세면, 오래 산 세션일수록 만진 파일 전부가 경보가 된다');
+});
+
+test('🔶 공용 장부는 뺀다 — 보드까지 세면 매 세션 울려서 아무도 안 읽는다', { skip: !git있나 && 'git 없음' }, () => {
+  const f = 픽스처();
+  커밋한다(f, 'docs/세션보드.md', '| 남의 줄 |\n', { sid: 'local_peer' });
+  세션기록(f.state, f.repo, 'local_me', ['docs/세션보드.md'], 0, { 'docs/세션보드.md': 아까(120) });
+  const out = 돌린다({ repo: f.repo, state: f.state, 나: 'local_me' });
+  assert.doesNotMatch(out, /뒤에\*\* 남이 커밋한 경로/, '보드 겹침은 규약상 정상이다 — 경보로 만들면 신호가 묻힌다');
+});
+
+test('🔶 주인 표시 없는 커밋은 **남이라고 단정하지 않는다**(F144: 형제엔 스탬퍼가 늦게 붙었다)', { skip: !git있나 && 'git 없음' }, () => {
+  const f = 픽스처();
+  커밋한다(f, 'lib/공유.js', '트레일러 없는 커밋\n', {});
+  세션기록(f.state, f.repo, 'local_me', ['lib/공유.js'], 0, { 'lib/공유.js': 아까(120) });
+  const out = 돌린다({ repo: f.repo, state: f.state, 나: 'local_me' });
+  assert.match(out, /뒤에\*\* 남이 커밋한 경로 1건/, '모름을 버리면 그게 「0건」이 되고 0 은 안전과 구별되지 않는다');
+  assert.match(out, /주인표시 없음/, '단정과 모름을 같은 모양으로 적으면 안 된다');
+});
+
+test('🔶 스탬프가 없는 경로는 **못 쟀다고 말한다** — 안 잰 것과 0건이 같은 모양이면 안 된다', { skip: !git있나 && 'git 없음' }, () => {
+  const f = 픽스처();
+  커밋한다(f, 'lib/공유.js', '남의 커밋\n', { sid: 'local_peer' });
+  세션기록(f.state, f.repo, 'local_me', ['lib/공유.js'], 0, {});   // touched 는 있는데 시계가 없다
+  const out = 돌린다({ repo: f.repo, state: f.state, 나: 'local_me' });
+  assert.match(out, /1건은 \*\*언제 만졌는지를 못 쟀다\*\*/);
+  assert.doesNotMatch(out, /뒤에\*\* 남이 커밋한 경로/, '시계 없이 「뒤」를 주장하면 그건 추측이다');
+});
+
+test('🔶 **형제 저장소**도 같은 판정을 거친다 — F187·F188 은 둘 다 talk 파일에서 났다', { skip: !git있나 && 'git 없음' }, () => {
+  const 나의 = 픽스처();
+  const 형제 = 픽스처();
+  const 이름 = path.basename(형제.repo);
+  커밋한다(형제, 'tools/왕복시험.js', '남이 방금 커밋\n', { sid: 'local_peer' });
+  const 좌표 = `${store.siblingPrefix(이름)}tools/왕복시험.js`;
+  세션기록(나의.state, 나의.repo, 'local_me', [좌표], 0, { [좌표]: 아까(120) });
+  const out = 돌린다({ repo: 나의.repo, state: 나의.state, 나: 'local_me', 형제: [형제.repo] });
+  assert.match(out, /뒤에\*\* 남이 커밋한 경로 1건/, '형제를 빼면 등재된 실사고 두 건을 다 놓친다');
+  assert.match(out, new RegExp(`${이름}/tools/왕복시험\\.js`), '어느 저장소인지 안 붙이면 내 저장소에서 찾으러 간다');
+});
+
+test('🔶 --hook 은 이것만 있어도 말한다 — 손으로 불러야만 보이면 두 실사고 그대로다', { skip: !git있나 && 'git 없음' }, () => {
+  const f = 픽스처();
+  커밋한다(f, 'lib/공유.js', '남의 커밋\n', { sid: 'local_peer' });
+  세션기록(f.state, f.repo, 'local_me', ['lib/공유.js'], 0, { 'lib/공유.js': 아까(120) });
+  const out = 돌린다({ repo: f.repo, state: f.state, 나: 'local_me', 인자: ['--hook'] });
+  assert.match(out, /뒤에\*\* 남이 커밋한 경로/, '침묵하면 F188 은 아무 데서도 안 보인다');
+});
+
+test('🔑 공용 장부 목록은 **한 곳**에서 파생시킨다 — track-collision 이 자기 사본을 들면 갈라진다', () => {
+  const src = fs.readFileSync(path.resolve(__dirname, '..', '.claude', 'hooks', 'track-collision.js'), 'utf8');
+  const m = src.match(/const\s+장부\s*=\s*new Set\(\[([\s\S]*?)\]\)/);
+  if (!m) {                                   // 사본이 없다 = 목표 상태. 대신 lib 을 쓰는지 확인한다.
+    assert.match(src, /store\.공용장부/, '장부 목록이 사라졌는데 lib 도 안 쓴다 — 어디서 오는지 알 수 없다');
+    return;
+  }
+  const 사본 = [...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1]);
+  assert.deepStrictEqual(사본, [...store.공용장부],
+    '두 장치가 같은 목록을 각자 적고 있다 — 갈라지면 한쪽은 경고 홍수, 다른 쪽은 침묵이다');
 });
