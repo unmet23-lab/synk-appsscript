@@ -310,7 +310,10 @@ function 폰트심기(htmlPath) {
   html = html.replace(/(--mono|--synk-font-mono)\s*:[^;]*;/g, "$1: 'DM Mono','SUIT',monospace;");
   html = html.replace(/font-family:\s*'Inter Tight'[^;]*;/g, "font-family:'Inter Tight','SUIT',sans-serif;");
   html = html.replace(/font-family:\s*'DM Mono'[^;]*;/g, "font-family:'DM Mono','SUIT',monospace;");
-  if (html === 전) {
+  // ⚠ no-op ≠ 부재 — 처음부터 정본 스택으로 쓴 HTML 은 위 치환이 전부 제자리라 `html === 전` 이 된다
+  //   (2026-08-07 실측: 새 지도 굽기가 여기서 죽어 소스를 'SUIT Variable' 표기로 우회했다).
+  //   게이트의 목적은 「이 HTML 이 브랜드 스택을 쓰는가」이므로 정본 문자열이 있으면 진행한다.
+  if (html === 전 && !html.includes("'Inter Tight','SUIT'")) {
     return { ok: false, 이유: `브랜드 폰트 스택을 못 찾았다 — 이 HTML 은 다른 방식으로 서체를 지정한다.\n  손으로 \`'Inter Tight','SUIT'\` / \`'DM Mono','SUIT'\` 로 고친 뒤 다시 --bake.` };
   }
   if (!html.includes('<style>')) return { ok: false, 이유: '<style> 이 없어 @font-face 를 넣을 자리가 없다' };
