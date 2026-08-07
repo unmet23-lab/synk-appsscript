@@ -198,6 +198,57 @@ test('갇힌스태시: autostash 잔재만 세고 주인이 일부러 둔 stash 
   assert.strictEqual(r[0].해시.length, 40, '해시가 없으면 「세션당 1회」 dedupe 가 설 자리가 없다');
 });
 
+// ── ④ F219 — 「갇힌 작업」과 「이미 쓰인 잔재」를 가른다 ─────────────────────
+// 실측(2026-08-07 stash@{0}): 7조각 중 고유 작업이 **0** 이었는데도 알림은 「작업이 갇혀 있다」를
+// 단정하고 `stash show -p` 를 시켰다 — 세션마다 같은 대조를 처음부터 다시 했다.
+
+test('🔑 잔재조각: 동일·삭제·모름 을 가른다 — 「모름」만이 사람을 부를 이유다', { skip: !있나 }, () => {
+  const 집 = 혼자판();
+  fs.writeFileSync(path.join(집, 'b.txt'), 'b\n');
+  fs.writeFileSync(path.join(집, 'c.txt'), 'c\n');
+  git(집, 'add', '--', 'b.txt', 'c.txt');
+  git(집, 'commit', '-m', 'bc');
+
+  fs.appendFileSync(path.join(집, 'a.txt'), '주인이 결국 커밋할 것\n');   // → 동일
+  fs.appendFileSync(path.join(집, 'b.txt'), '영영 안 커밋될 것\n');        // → 모름
+  fs.rmSync(path.join(집, 'c.txt'));                                       // → 삭제
+  git(집, 'stash', 'store', '-m', 'On master: autostash', git(집, 'stash', 'create'));
+
+  git(집, 'add', '--', 'a.txt');   // stash create 는 작업본을 안 건드린다 — 같은 내용이 그대로 커밋된다
+  git(집, 'commit', '-m', '주인이 결국 커밋했다');
+
+  const m = new Map(훅.잔재조각(집, 'stash@{0}').map((c) => [c.경로, c.상태]));
+  assert.strictEqual(m.get('a.txt'), '동일', 'HEAD 와 같은 조각을 「모름」으로 읽으면 F219 가 그대로 산다');
+  assert.strictEqual(m.get('b.txt'), '모름');
+  assert.strictEqual(m.get('c.txt'), '삭제', '삭제 조각엔 되살릴 내용이 없다');
+});
+
+test('🔑 발화: 조각이 전부 「동일·삭제」인 잔재로는 사람을 안 부른다 (F219)', { skip: !있나 }, () => {
+  const { B } = 판만들기();
+  const 상태집 = fs.mkdtempSync(path.join(os.tmpdir(), 'staleness-state3-'));
+  const env = { ...process.env, SYNK_CTXBUDGET_DIR: 상태집, CLAUDE_CODE_HOST_SESSION_ID: 'staleness-f219-spent' };
+  const 입력 = { input: JSON.stringify({ cwd: B }), env };
+
+  fs.appendFileSync(path.join(B, 'seed.txt'), 'dirty\n');
+  git(B, 'stash', 'store', '-m', 'On master: autostash', git(B, 'stash', 'create'));
+  git(B, 'add', '--', 'seed.txt');
+  git(B, 'commit', '-m', '주인이 결국 같은 내용을 커밋했다');
+
+  assert.strictEqual(훅띄우기(훅파일, 입력).stdout.trim(), '',
+    '잃은 것이 0인 잔재로 부르면 세션마다 같은 대조를 처음부터 다시 한다 — 실측이 정확히 그랬다');
+
+  /* 조용히 넘긴 잔재에도 도장을 찍었나 — HEAD 가 움직여 「동일」이던 조각이 「모름」이 되는 순간
+   * 같은 잔재가 **부활한다**. 도장을 알린 것에만 찍으면 여기가 빨개진다. */
+  fs.appendFileSync(path.join(B, 'seed.txt'), '그 뒤 남이 더 고쳤다\n');
+  git(B, 'add', '--', 'seed.txt');
+  git(B, 'commit', '-m', 'HEAD 가 더 움직인다');
+  const 도장길 = path.join(상태집, fs.readdirSync(상태집).find((f) => f.startsWith('staleness-')));
+  const j = JSON.parse(fs.readFileSync(도장길, 'utf8'));
+  fs.writeFileSync(도장길, JSON.stringify({ ...j, at: Date.now() - 6 * 60 * 1000 }));   // 스로틀만 연다
+  assert.strictEqual(훅띄우기(훅파일, 입력).stdout.trim(), '',
+    '한 번 「잃은 것 없음」으로 넘긴 잔재가 HEAD 가 움직였다고 되살아나면 늑대소년이 된다');
+});
+
 test('발화: 진행 중 rebase 는 스로틀 조용 창 **안**이어도, 뒤처짐 0 이어도 알린다', { skip: !있나 }, () => {
   const { B } = 판만들기();
   const 상태집 = fs.mkdtempSync(path.join(os.tmpdir(), 'staleness-state-'));
@@ -226,7 +277,8 @@ test('발화: autostash 잔재는 측정 주기에 실려 알리고, 같은 잔�
 
   const out = JSON.parse(훅띄우기(훅파일, 입력).stdout);
   assert.match(out.systemMessage, /autostash 잔재 1건/);
-  assert.match(out.hookSpecificOutput.additionalContext, /stash show -p stash@\{0\}/, '어느 stash 인지 못 짚으면 주인이 못 찾는다');
+  assert.match(out.hookSpecificOutput.additionalContext, /stash show --stat stash@\{0\}/, '어느 stash 인지 못 짚으면 주인이 못 찾는다');
+  assert.match(out.hookSpecificOutput.additionalContext, /seed\.txt/, '어느 조각을 대조해야 하는지 안 주면 전문을 다시 뜬다');
 
   // 같은 잔재로 2차 — 도장의 시각만 과거로 물려 스로틀을 열어도(측정은 다시 한다) 조용해야 한다
   const 도장 = fs.readdirSync(상태집).find((f) => f.startsWith('staleness-'));
@@ -235,4 +287,20 @@ test('발화: autostash 잔재는 측정 주기에 실려 알리고, 같은 잔�
   const j = JSON.parse(fs.readFileSync(도장길, 'utf8'));
   fs.writeFileSync(도장길, JSON.stringify({ ...j, at: Date.now() - 6 * 60 * 1000 }));
   assert.strictEqual(훅띄우기(훅파일, 입력).stdout.trim(), '', '한 잔재가 5분마다 다시 울리면 홍수가 되어 아무도 안 읽는다');
+});
+
+test('잔재 본문은 조각을 세어 보여주고 `-p` 대신 `--stat` 을 시킨다 (F219)', () => {
+  const 조각 = [{ 경로: '동일.js', 상태: '동일' }, { 경로: '삭제.js', 상태: '삭제' }];
+  for (let i = 0; i < 12; i++) 조각.push({ 경로: `모름${i}.js`, 상태: '모름' });
+  const 글 = 훅.잔재본문([{ ref: 'stash@{0}', 해시: 'a'.repeat(40), 조각 }]);
+
+  assert.match(글, /대조가 필요한 조각 \*\*12개\*\*/);
+  assert.match(글, /나머지 2개는 HEAD 와 같거나 삭제/, '안 잃은 조각까지 대조 대상으로 보이면 일이 그만큼 늘어난다');
+  assert.match(글, /모름0\.js/);
+  assert.doesNotMatch(글, /모름11\.js/, '목록이 길면 안 읽힌다 — 안 읽히는 알림은 없는 것과 같다');
+  assert.match(글, /…외 4개/, '자른 사실을 숨기면 「이게 전부」로 읽힌다');
+  assert.match(글, /stash show --stat stash@\{0\}/);
+  assert.doesNotMatch(글, /stash show -p/, '전문 -p 는 수천 줄이라 세션마다 같은 대조를 다시 시킨다(F219)');
+  assert.match(글, /stash drop/, '끝나는 수가 없으면 다음 세션이 같은 대조를 또 한다');
+  assert.doesNotMatch(글, /갇혀 있는데/, '단정은 실측에서 틀렸다 — 기계는 「모른다」까지만 안다');
 });
