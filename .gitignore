@@ -75,3 +75,6 @@ docs/_ops/마찰신호.md.lock
 .claude/assistant-daemon-state.json
 # Added by code-review-graph
 .code-review-graph/
+
+# 홈페이지 시안 빌드 산출물 — 템플릿+webp 에서 언제든 재생성된다(빌드.js 기본 출력)
+docs/홈페이지_시안/시안.html
