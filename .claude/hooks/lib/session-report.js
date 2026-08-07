@@ -15,6 +15,7 @@ const { spawnSync } = require('child_process');
 const wt = require(path.join(__dirname, 'worktrees.js'));
 const store = require(path.join(__dirname, 'handoff-store.js'));
 const 보드id = require(path.join(__dirname, 'board-id.js'));
+const 표 = require(path.join(__dirname, '..', '..', '..', 'tools', 'lib', '표.js'));
 
 function git(cwd, args, timeout) {
   try {
@@ -118,9 +119,13 @@ function boardTrack(cwd, commits, sid) {
    *   그래서 해시는 지문이 **한 줄도 없을 때만** 쓰는 폴백으로 내린다(F165 가 지킨 사각지대는
    *   그대로 남는다 — 해시 없는 줄은 지문으로, 지문 없는 줄은 해시로 여전히 잡힌다). */
   const 줄들 = txt.split('\n').filter((line) => line[0] === '|');
+  /* 공용 통로로 가른다 — 날 split 은 백틱 안 파이프까지 칸막이로 세서 상태 칸이 그 자리에서 잘린다.
+   * 실측 08-07: F193 줄의 `\|` 때문에 인계문의 「상태/다음」이 문장 중간에서 끊긴 채 다음 세션에 갔다
+   * (다음 세션이 받는 첫 화면이라 잘린 줄 모른다 · 사연 = tools/lib/표.js 머리말).
+   * 칸나누기는 양끝 `|` 를 버리므로 자리가 하나씩 당겨진다. */
   const 뽑기 = (line, 근거) => {
-    const c = line.split('|').map((s) => s.trim());
-    return c.length < 5 ? null : { track: c[2] || '', state: c[4] || '', 근거 };
+    const c = 표.칸나누기(line);
+    return c.length < 4 ? null : { track: c[1] || '', state: c[3] || '', 근거 };
   };
   for (const line of 줄들) {
     if (보드id.줄이말하나(line, sid)) { const r = 뽑기(line, '지문'); if (r) return r; }

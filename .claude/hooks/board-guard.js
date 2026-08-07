@@ -7,6 +7,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const 표 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '표.js'));
 
 const MAX_CELL = 200;
 const MAX_ACTIVE = 12; // 활성(완료 아닌) 줄 상한 — 병행 세션이 실제로 조율해야 하는 대상
@@ -134,7 +135,7 @@ function 어휘() {
 function isActiveRow(line) {
   const decor = /^[\s*_`~>✅🔴⚠️☑️✔️🟢🟡]+/u;
   const { 완료, 활성 } = 어휘();
-  const cells = line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|');
+  const cells = cellsOfRow(line);
   const status = (cells[cells.length - 1] || '').trim().replace(decor, '');
   // 첫 구절만 본다 — 뒤쪽 서술의 「…로 종결」·「라이브 실측」이 활성 줄을 완료로 뒤집지 않게.
   const 첫구절 = status.split(/[—(]/)[0];
@@ -156,7 +157,7 @@ function countActive(text) {
  * 훅은 활성이라 하고, 그 둘을 대조할 방법이 없었다. 목록을 내밀면 다음엔 즉시 보인다. */
 function 활성목록(text) {
   const 줄 = 활성줄들(text).map((l) => {
-    const c = l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|');
+    const c = cellsOfRow(l);
     const 트랙 = (c[1] || '').trim().replace(/\*/g, '').slice(0, 28);
     const 상태 = (c[c.length - 1] || '').trim().slice(0, 22);
     return `     · ${트랙} → ${상태}`;
@@ -173,8 +174,11 @@ function 표기안내() {
     + `\n   활성으로 세는 표기: ${활성.map((w) => `「${w}」`).join('·')} — 이쪽이 우선한다`;
 }
 
+/* 칸 가르기는 공용 통로에서 온다 — 날 split 은 백틱 안의 파이프까지 칸막이로 세서
+ * 그 뒤 칸이 한 칸씩 밀린다. 밀리면 상태 칸이 짧은 조각이 되어 **200자 검사가 짧게 재고**
+ * 완료 줄이 활성으로 세어진다(둘 다 조용하다 · 사연은 tools/lib/표.js 머리말). */
 function cellsOfRow(line) {
-  return line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|');
+  return 표.칸나누기(line);
 }
 
 // ① 칸 길이 검사 — 결과 파일이 있으면 그것만 본다(권위 있는 판정)
@@ -197,7 +201,7 @@ if (resulting !== null) {
           if (len > MAX_CELL) longCells.push(`${i + 1}번째 칸 ${len}자 — "${c.trim().slice(0, 40)}…"`);
         });
       } else if (line.includes('|')) {
-        line.split('|').forEach((c) => {
+        표.칸나누기(line).forEach((c) => {
           const len = c.trim().length;
           if (len > MAX_CELL) longCells.push(`칸 조각 ${len}자 — "${c.trim().slice(0, 40)}…"`);
         });
