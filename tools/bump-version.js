@@ -188,6 +188,11 @@ function gitQuiet(args) {
  * 조회를 인자로 받는 이유는 하나다: 이 판정을 **실제로 돌려서** 검사할 수 있게. 소스에 문장이 있다는
  * 것과 그렇게 동작한다는 것은 다르다(이 파일 검사의 오랜 천장 · tests/버전채번 '감사' 주석).
  * ⚠ tools/friction.js 에 같은 판정이 인라인으로 한 벌 더 있다. **세 번째가 생기면 공용 통로로 옮긴다.** */
+/** 예약 태그에 새길 주인 — 세션마다 달라야 SHA 가 갈린다(같으면 F201 이 그대로 돌아온다). */
+function 예약자() {
+  return (process.env.CLAUDE_CODE_HOST_SESSION_ID || 'unknown') + '/' + process.pid;
+}
+
 function 선점인가(태그, 조회) {
   const out = 조회(['ls-remote', '--tags', 'origin', 'refs/tags/' + 태그]);
   return out === null ? null : !!out.trim();
@@ -415,8 +420,17 @@ function main(argv) {
 
   for (let i = 0; i < MAX_TRIES; i++) {
     const tag = TAG_PREFIX + cand;
-    try { git(['tag', tag], { stdio: ['ignore', 'pipe', 'pipe'] }); }
-    catch (_) { cand = nextVer(cand); continue; }          // 로컬에 이미 있음 → 다음 후보
+    /* `-a` 가 F201 의 전부다 — 라이트웨이트 태그는 커밋을 가리키는 이름일 뿐이라, 같은 커밋 위의
+     * 두 세션이 만든 태그가 **같은 객체**가 되고 두 번째 push 가 no-op 으로 **성공한다**(= 락이
+     * 조용히 안 문다 · friction.js 에서 실측). 세션 고유 메시지로 SHA 를 갈라 정직하게 거절되게 한다. */
+    try { git(['tag', '-a', tag, '-m', '예약 ' + cand + ' · ' + 예약자()], { stdio: ['ignore', 'pipe', 'pipe'] }); }
+    catch (_) {
+      // 실패 사유를 가른다 — 「이미 있음」과 「태그를 못 만든다」를 합치면 25회 헛돌고 틀린 진단이 나온다(F196)
+      if (gitQuiet(['rev-parse', '--verify', '--quiet', 'refs/tags/' + tag]) === null) {
+        throw new Error('예약 태그를 만들지 못했다 — git 사용자 정보(user.name·user.email)가 없거나 태그 생성이 막혔다: ' + tag);
+      }
+      cand = nextVer(cand); continue;                      // 로컬에 이미 있음 → 다음 후보
+    }
 
     try {
       git(['push', 'origin', tag], { stdio: ['ignore', 'pipe', 'pipe'] });

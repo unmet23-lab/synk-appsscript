@@ -339,6 +339,62 @@ test('F196 수리가 진짜 선점을 「막힌 환경」으로 세탁하지 않
     '재시도한 번호를 원격에 예약하지 않았다 — 실제: ' + 원격태그.join(','));
 });
 
+/* [2026-08-07] F201 — 락이 **같은 커밋 위의 두 세션에게는 조용히 안 물었다.**
+ *
+ * 라이트웨이트 태그는 커밋을 가리키는 이름일 뿐이라, 두 작업본의 HEAD 가 같으면 두 태그가 같은
+ * 객체다. 두 번째 push 는 거절이 아니라 「Everything up-to-date」로 **exit 0** 이고 도구는 그걸
+ * 「원격이 보증했다 = 내 번호」로 읽는다. 실측(수리 전, 도구로): 둘 다 F003 · 경고 없음.
+ * 이 저장소는 세션 다수가 같은 master HEAD 에서 출발하니 드문 경우가 아니다 — F041 이 실제로
+ * 났던 그 모양이고, 락이 **유일하게 덮기로 한 자리**가 정확히 여기다.
+ *
+ * ⚠ 위 「채번 락」 검사가 이걸 못 본 이유: 거기선 B 가 fetch 로 A 의 태그를 보고 애초에 다음 번호로
+ * 건너뛴다 — 즉 그 초록은 **락이 아니라 훑기**가 낸 것이었다. 그래서 여기서는 훑기를 막고 락만 잰다. */
+test('F201 — 같은 커밋 위의 두 세션도 같은 번호를 못 받는다 (락이 훑기 없이 혼자 서는가)', (t) => {
+  let repos;
+  try { repos = mkFixtureRepos(); }
+  catch (e) { return t.skip('픽스처 저장소를 못 만들었다(git 없음?): ' + e.message); }
+
+  const outA = runIn(repos.A, ['add', '실수', 'A 세션 신호']);
+  assert.match(outA, /F003/, 'A 가 F003 을 못 받았다: ' + outA.trim());
+
+  // 전제 ①: 두 작업본이 **같은 커밋** 위에 있다(다르면 태그 객체가 갈려 이 결함이 재현되지 않는다)
+  assert.equal(git(repos.A, ['rev-parse', 'HEAD']).trim(), git(repos.B, ['rev-parse', 'HEAD']).trim(),
+    '픽스처가 두 작업본을 다른 커밋에 뒀다 — 그러면 이 검사는 아무것도 안 잰다');
+  // 전제 ②: 훑기를 막는다 — 안 막으면 B 가 태그를 보고 건너뛰어 락이 아니라 훑기를 재게 된다
+  git(repos.B, ['config', '--add', 'remote.origin.fetch', '^refs/tags/friction-F003']);
+  git(repos.B, ['fetch', 'origin', '--tags', '--quiet']);
+  if (git(repos.B, ['tag', '-l', 'friction-F003']).trim()) {
+    return t.skip('음수 refspec 이 안 먹어 훑기를 못 막았다 — 통과가 아니라 미실행이다');
+  }
+
+  const outB = runIn(repos.B, ['add', '실수', 'B 세션 신호']);
+  assert.doesNotMatch(outB, /F003\b/,
+    '같은 커밋 위라 두 태그가 같은 객체가 됐고 push 가 no-op 으로 성공했다 — A 와 같은 번호다: ' + outB.trim());
+  assert.match(outB, /F004/, 'F004 로 밀리지 않았다: ' + outB.trim());
+});
+
+/* 🔑 위 F201 검사는 **주인 문자열이 세션마다 다른지**는 못 잰다 — annotated tag 의 SHA 에는 tagger
+ * **시각**도 들어가서, 검사가 몇 초에 걸쳐 도는 동안엔 메시지가 같아도 SHA 가 갈려 버린다. 그런데
+ * 진짜 경쟁은 **같은 초 안**에서 난다(그게 락이 존재하는 이유다). 즉 시각에 기댄 유일성은 정확히
+ * 필요한 순간에 없다 — 실측으로 확인했다(주인을 상수로 바꾼 변이가 위 검사를 그냥 통과했다).
+ * 그래서 유일성 자체를 여기서 직접 잰다. */
+test('F201 — 예약 태그의 주인은 세션마다 다르다 (시각에 기대면 같은 초의 경쟁에서 SHA 가 겹친다)', () => {
+  const real = require(TOOL);
+  const 원래 = process.env.CLAUDE_CODE_HOST_SESSION_ID;
+  try {
+    process.env.CLAUDE_CODE_HOST_SESSION_ID = 'local_aaaa';
+    const a = real.예약자();
+    process.env.CLAUDE_CODE_HOST_SESSION_ID = 'local_bbbb';
+    const b = real.예약자();
+    assert.notEqual(a, b, '세션이 달라도 주인 문자열이 같다 — 같은 초에 부딪히면 SHA 가 겹쳐 락이 다시 눕는다');
+    assert.match(a, /local_aaaa/, '주인에 세션 id 가 안 들어간다: ' + a);
+    assert.match(a, /\/\d+$/, '주인에 pid 가 없다 — 세션 id 가 비는 환경(폰·CI)에서 전부 같은 값이 된다: ' + a);
+  } finally {
+    if (원래 === undefined) delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
+    else process.env.CLAUDE_CODE_HOST_SESSION_ID = 원래;
+  }
+});
+
 test('채번 락은 실 저장소를 오염시키지 않는다 (격리 장부만 준 호출은 태그를 만들지 않는다)', () => {
   const real = require(TOOL);
   const before = execFileSync('git', ['tag', '-l', real.TAG_PREFIX + 'F*'],

@@ -285,7 +285,10 @@ test('🔴 --desc 없이는 **채번 전에** 막는다 — 뒤에서 막으면 
     'desc 없이 통과시켰다 — 상수만 오르고 체인 항목이 안 붙어 CI 가 즉시 빨개진다');
   // 🔑 순서가 핵심이다. origin 에 태그를 push 한 뒤에 throw 하면 그 번호는 영영 못 쓴다.
   const g = src.indexOf('--desc "한 줄 요약" 이 필요합니다');
-  const t = src.indexOf("git(['tag', tag]");
+  /* 앵커를 정규식으로 둔다 — 옛 앵커는 `git(['tag', tag]` 문자열이라 태그 생성에 `-a` 를 붙인
+   * 순간 죽었다(F201 수리). 못 찾으면 통과가 아니라 실패로 떨어지는 방향은 그대로 지킨다. */
+  const m = /git\(\['tag',[^)]*tag[,\]]/.exec(src);
+  const t = m ? m.index : -1;
   assert.ok(g > 0 && t > 0 && g < t,
     `--desc 게이트가 채번(git tag)보다 뒤에 있다 — 번호를 태우고 나서 막는 꼴이다 (게이트 ${g}, 채번 ${t})`);
 });

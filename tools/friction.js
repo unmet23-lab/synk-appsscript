@@ -161,7 +161,20 @@ function nextId(rows, opts) {
  *   읽어 20회 헛돈 뒤 exit 1 한다 — 즉 **신고문이 버려진다.** 원칙(기록이 멈추면 안 된다)이 있는데
  *   그 갈래에 도달하지 못하는 것이 결함이다. 실물: F195 등재가 이렇게 죽어 손으로 번호를 매겼다.
  *   가르는 방법은 메시지 파싱이 아니라 **증거**다 — 거절 뒤 origin 에 그 태그가 실제로 생겼는가.
- *   생겼으면 선점(다음 후보로), 없으면 push 자체가 막힌 환경(예약 포기하고 진행). */
+ *   생겼으면 선점(다음 후보로), 없으면 push 자체가 막힌 환경(예약 포기하고 진행).
+ *
+ * 🔴 F201 (2026-08-07 실측) — **같은 커밋 위의 두 세션에게는 락이 조용히 안 물었다.**
+ *   라이트웨이트 태그는 커밋을 가리키는 이름일 뿐이라, 두 작업본의 HEAD 가 같으면 두 태그가 **같은
+ *   객체**다. 그러면 두 번째 push 는 거절이 아니라 「Everything up-to-date」로 **exit 0** 이고
+ *   도구는 그걸 「원격이 보증했다」로 읽는다. 실측: A·B 를 같은 커밋에 두니 **둘 다 F003** 을 받았다.
+ *   이 저장소는 세션 다수가 같은 master HEAD 에서 출발하므로 드문 경우가 아니다 — F041 이 실제로
+ *   났던 그 모양이다. 그래서 예약 태그를 **세션 고유 객체**(annotated tag)로 만든다: SHA 가 갈리면
+ *   두 번째 push 는 「already exists」로 정직하게 거절되고, 그때부터 위의 F196 판별식이 일한다. */
+
+/** 예약 태그에 새길 주인 — 세션마다 달라야 SHA 가 갈린다(같으면 F201 이 그대로 돌아온다). */
+function 예약자() {
+  return (process.env.CLAUDE_CODE_HOST_SESSION_ID || 'unknown') + '/' + process.pid;
+}
 function allocateId(rows) {
   if (ISOLATED) return nextId(rows);                       // 격리 장부 — git 접촉 금지
 
@@ -176,7 +189,12 @@ function allocateId(rows) {
   for (let i = 0; i < MAX_TRIES; i++, n++) {
     const id = 'F' + String(n).padStart(3, '0');
     const tag = TAG_PREFIX + id;
-    if (gitQuiet(['tag', tag]) === null) continue;          // 로컬에 이미 있다 → 다음 후보
+    /* `-a` 가 F201 의 전부다 — 라이트웨이트로 만들면 같은 커밋 위의 옆 세션과 **같은 객체**가 된다.
+     * 실패 사유도 가른다: 로컬에 이미 있으면 다음 후보, 아니면(신원 없음 등) 기록을 멈추지 않는다. */
+    if (gitQuiet(['tag', '-a', tag, '-m', '예약 ' + id + ' · ' + 예약자()]) === null) {
+      if (gitQuiet(['rev-parse', '--verify', '--quiet', 'refs/tags/' + tag]) !== null) continue;
+      return 미예약진행(id, '예약 태그를 만들지 못했다(git 사용자 정보 없음?).');
+    }
     if (gitQuiet(['push', 'origin', tag]) !== null) return id;   // 원격이 보증 = 내 번호
     gitQuiet(['tag', '-d', tag]);
     /* 거절 사유를 가른다(F196) — 증거는 메시지가 아니라 **origin 이 그 태그를 실제로 갖고 있느냐**다.
@@ -377,6 +395,6 @@ function main() {
 
 if (require.main === module) main();
 module.exports = {
-  read, nextId, allocateId, seenElsewhere, 해소주장, withLock,
+  read, nextId, allocateId, seenElsewhere, 해소주장, withLock, 예약자,
   LEDGER, KINDS, TAG_PREFIX, LOCK, LOCK_STALE_MS,
 };
