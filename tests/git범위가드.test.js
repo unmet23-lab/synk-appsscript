@@ -437,6 +437,25 @@ test('깨끗한 트리에서는 stash 도 조용하다 (과잉 차단은 BYPASS 
   });
 });
 
+/* 🔴 체인 (F216) — 규칙을 명령 **전체**에 걸면 양방향으로 틀린다. ④가 F103 에서 받은
+ *    「체인을 분해해서 본다」 처방을 ⑦만 안 받고 있었다. 두 방향을 함께 못박는다. */
+test('🔴 체인 뒤에 숨은 맨 stash 를 잡는다 — 첫 번째 하나만 보면 통과한다', () => {
+  더러운저장소((dir) => {
+    ['git stash list && git stash', 'git status; git stash', 'git stash show | cat; git stash -u'].forEach((c) => {
+      assert.equal(가드_at(c, dir).차단, true, `앞 조각이 조회라고 뒤엣 맨 stash 를 놓쳤다: ${c}`);
+    });
+  });
+});
+
+test('체인 안의 조회는 여전히 안 막는다 — 거짓양성이 곧 BYPASS 손버릇이다', () => {
+  더러운저장소((dir) => {
+    // 옛 판은 `(\S*)` 가 구분자까지 삼켜 서브커맨드를 「list;」로 읽고 이것들을 막았다
+    ['git stash list; git stash show', 'git stash list; git status', 'git stash show --stat x | tail -2'].forEach((c) => {
+      assert.strictEqual(가드_at(c, dir).사유, '', `읽기 전용 조회를 막았다: ${c}`);
+    });
+  });
+});
+
 test('stash 도 BYPASS 는 통한다', () => {
   더러운저장소((dir) => {
     assert.equal(가드_at('GIT_SCOPE_BYPASS=1 git stash', dir).차단, false, '의도적 예외 통로가 막혔다');

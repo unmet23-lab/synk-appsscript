@@ -238,17 +238,27 @@ if (re('(rebase|merge|cherry-pick|revert)\\s+--abort\\b').test(exec)
  *        경로 미지정 → 트리 전체를 쓸어 담는다. 남의 것이 반드시 함께 간다 → 차단
  *        경로 지정   → 의도가 좁다. 통과시키되 그 경로의 미커밋을 보여준다(내 것이 맞는지 확인용)
  *      깨끗한 트리에서는 조용히 통과한다(과잉 차단은 BYPASS 습관을 만든다). */
+/*   ⚠ **체인을 분해해서 본다**(F216 · ④가 F103 에서 받은 처방을 여기만 안 받고 있었다).
+ *      명령 전체를 한 덩어리로 보면 **양방향으로** 틀린다 — 실측 둘 다:
+ *        · `git stash list; git stash show` → `(\S*)` 가 구분자까지 삼켜 서브커맨드를 「list;」로
+ *          잡고 **읽기 전용 조회를 차단**한다. 하필 그게 repo-staleness 훅이 시키는 진단이라
+ *          통로가 BYPASS 밖에 없어진다(따를 수 없는 처방은 우회를 정상 통로로 만든다).
+ *        · `git stash list && git stash` → **첫 번째 하나만** 보므로 뒤엣 맨 stash 가 통과한다.
+ *          그게 트리를 통째로 쓸어담는 F066 사고 그 형태다. 새는 방향은 언제나 통과다. */
 {
-  const st = re('stash\\b\\s*(\\S*)').exec(exec);
-  const sub = st ? String(st[1] || '') : null;
-  if (st && !/^(list|show|pop|apply|drop|clear|branch|create|store)$/.test(sub)) {
+  const 읽기전용 = /^(list|show|pop|apply|drop|clear|branch|create|store)$/;
+  const 문제세그 = exec.split(/&&|\|\||[;|\n]/).find((seg) => {
+    const m = re('stash\\b\\s*(\\S*)').exec(seg);
+    return m && !읽기전용.test(String(m[1] || ''));
+  });
+  if (문제세그) {
     const { execFileSync } = require('child_process');
     let 더러운 = [];
     try {
       더러운 = execFileSync('git', ['-c', 'core.quotepath=false', 'status', '--porcelain', '--untracked-files=no'],
         { encoding: 'utf8', cwd: gitCwd }).split('\n').filter((l) => l.trim()).slice(0, 12);
     } catch { /* 저장소 밖 — 가드가 판단할 자리가 아니다 */ }
-    const 경로지정 = /stash\b[^&|;]*?\s--\s+\S/.test(exec);
+    const 경로지정 = /stash\b[^&|;]*?\s--\s+\S/.test(문제세그);
     if (더러운.length && !경로지정) {
       deny('[git-scope-guard] 경로 없는 `git stash` 차단 — 작업 트리를 **통째로** 쓸어 담는다.'
         + '\n이 트리는 세션 여럿이 공유하고, 지금 있는 미커밋은 대개 다른 세션이 작업 중인 것이다.'
