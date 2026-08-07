@@ -523,3 +523,67 @@ test('🔑 처방 문구에 셸을 깨는 글자가 없다 — 따옴표·백틱
     `유일 문구가 없는 줄이 앞에 있다고 처방이 비었다(${문구.length}개) — 뒤의 깨끗한 줄이 나와야 한다:\n${r.사유}`);
   for (const n of 문구) assert.ok(!/["`]/.test(n), `처방 문구에 셸을 깨는 글자가 남았다: ${n}`);
 });
+
+/* ── 🔴 F221 — ④ 가 **두 방향으로 다** 샜다 (2026-08-08 실측) ─────────────────
+ * 위 ④ 검사들은 전부 「겹치면 막는가」만 봤다. 실제로 새던 자리는 그 바깥 둘이었다:
+ *   ⓐ **거짓통과** — ①②(칸·줄수)가 먼저 `deny` 하고 끝내서, **만석이면 ④ 가 침묵**한다.
+ *      비대칭이 뿌리다: 만석은 되돌릴 수 있는 불편이고 겹침은 되돌릴 수 없는 손해인데
+ *      되돌릴 수 있는 쪽이 앞을 막았다. 만석은 이 저장소의 일상이라(F224) 창이 넓다.
+ *   ⓑ **거짓차단** — 「만지는 파일」 칸의 `🚫경로=남세션`(=안 만진다는 명시)을 선점으로 셌다.
+ *      비켜났다고 적을수록 막히니 사람이 그 표기를 지워서 통과시킨다 — 우회가 정상 통로가 된다(F103).
+ * 둘 다 오늘 내 선언에서 실측됐다: 만석에만 막혀 「0분 전 남이 같은 트랙」을 못 들었고,
+ * 다음 시도는 `🚫tools/board-move.js=local_0a3a2a04` 를 적었다는 이유로 막혔다.  */
+
+test('🔴 [F221·ⓐ] 만석이어도 **겹침을 먼저** 말한다 — 되돌릴 수 없는 쪽이 앞이다', { skip: git있음 ? false : 'git 없음' }, () => {
+  /* 완료 줄로 채워 전체 상한(18)만 넘긴다 — 활성 상한은 안 건드려야 무엇이 가렸는지가 한 갈래로 남는다. */
+  const 채움 = Array.from({ length: 17 }, (_, i) => `| 2026-08-01 | 채움${i} | tools/채움${i}.js \`local_99999999\` | ✅종결 |`).join('\n');
+  fs.writeFileSync(GBOARD, `${머리}\n${채움}\n${남의줄}\n`, 'utf8');
+  try {
+    const 겹치는내줄 = 내줄('**②-20 — 같은 항목을 내가 또 판다**', '**SYNK-talk: lib/스냅샷.js**');
+    const r = 판정({ tool_name: 'Edit', tool_input: { file_path: GBOARD, old_string: 남의줄, new_string: `${남의줄}\n${겹치는내줄}` } }, 나);
+    assert.strictEqual(r.결정, 'deny', '겹침도 만석도 있는데 통과했다');
+    assert.match(r.사유, /남이 이미 선언했다/,
+      `🔴 만석 사유가 겹침을 가렸다 — 줄을 옮기면 풀리는 불편이 중복 구현을 덮었다:\n${r.사유.slice(0, 200)}`);
+    assert.match(r.사유, /local_82404266/, '누가 잡았는지 안 말하면 생사를 확인할 수 없다');
+  } finally {
+    fs.writeFileSync(GBOARD, `${머리}\n${기존}\n${남의줄}\n`, 'utf8');
+  }
+});
+
+test('🔴 [F221·ⓐ] 겹침이 없으면 만석은 그대로 막는다 — 순서만 바꿨지 힘을 안 뺐다', { skip: git있음 ? false : 'git 없음' }, () => {
+  const 채움 = Array.from({ length: 17 }, (_, i) => `| 2026-08-01 | 채움${i} | tools/채움${i}.js \`local_99999999\` | ✅종결 |`).join('\n');
+  fs.writeFileSync(GBOARD, `${머리}\n${채움}\n${남의줄}\n`, 'utf8');
+  try {
+    const 안겹치는내줄 = 내줄('**전혀 다른 트랙**', '**appsscript: tools/전혀다른.js**');
+    const r = 판정({ tool_name: 'Edit', tool_input: { file_path: GBOARD, old_string: 남의줄, new_string: `${남의줄}\n${안겹치는내줄}` } }, 나);
+    assert.strictEqual(r.결정, 'deny', '🔴 보류로 미룬 만석 사유가 통째로 사라졌다 — 순서를 바꾸며 검사를 껐다');
+    assert.match(r.사유, /상한 18줄/, `만석 사유가 아니라 딴 것이 나왔다:\n${r.사유.slice(0, 200)}`);
+  } finally {
+    fs.writeFileSync(GBOARD, `${머리}\n${기존}\n${남의줄}\n`, 'utf8');
+  }
+});
+
+/* 🔴 보류는 **미룬 사유**라, 중간에 조용히 빠져나가는 문이 있으면 그 사유가 통째로 사라진다.
+ * 즉시 `deny` 였을 때는 없던 실패 모드고, 새는 방향은 언제나 「통과」다. 변이 시험이 이 자리를
+ * 회귀 공백으로 지목했다(다른 어떤 검사도 안 울었다) — 수리와 같은 커밋에 못 박는다. */
+test('🔴 [F221] 보드 파일을 못 읽어도 ①의 보류를 삼키지 않는다', () => {
+  const 없는보드 = path.join(TMP, '없는폴더', '세션보드.md');
+  const r = 판정({ tool_name: 'Edit', tool_input: { file_path: 없는보드, old_string: 'x', new_string: `| 2026-08-01 | 트랙 | Code.js | ${LONG} |` } });
+  assert.strictEqual(r.결정, 'deny',
+    '🔴 파일을 못 읽는다는 이유로 칸 초과가 통과했다 — 미룬 사유가 조용히 버려지는 문이다');
+});
+
+test('🔴 [F221·ⓑ] 「만지는 파일」 칸의 `🚫경로` 는 안 만진다는 명시지 선점이 아니다', { skip: git있음 ? false : 'git 없음' }, () => {
+  const r = 붙임(내줄('**다른 트랙 — 남의 자리는 비켜났다**',
+    '**appsscript: .claude/hooks/board-guard.js**(🚫supabase/functions/tasks/index.ts=`local_82404266` · 🚫보드 외 docs)'));
+  assert.strictEqual(r.결정, 'allow',
+    `🔴 비켜났다고 적었더니 막혔다 — 관습을 정직하게 쓸수록 벌받으면 사람은 표기를 지운다(F103):\n${r.사유.slice(0, 200)}`);
+});
+
+test('🔴 [F221·ⓑ] `🚫` 하나가 **같은 칸의 진짜 선언**까지 면제하지 않는다', { skip: git있음 ? false : 'git 없음' }, () => {
+  /* 전처리에 눈이 머는 자리 — 칸에 `🚫` 가 있다고 통째로 건너뛰면 `🚫` 만 적으면 무사통과가 된다. */
+  const r = 붙임(내줄('**진짜로 같은 파일을 판다**',
+    '**SYNK-talk: supabase/functions/tasks/index.ts** · 🚫보드 외 docs'));
+  assert.strictEqual(r.결정, 'deny', '🔴 `🚫` 한 조각이 칸 전체를 면제시켰다 — 우회 주문이 생겼다');
+  assert.match(r.사유, /tasks\/index\.ts/, '겹친 경로를 안 보여주면 무엇을 비켜야 할지 모른다');
+});
