@@ -42,12 +42,20 @@ if (!cmd) process.exit(0);
 const exec = stripNonExecutedText(cmd);
 
 /* `git … commit` — 사이에 `-c k=v`·`-C dir` 같은 전역 옵션이 낄 수 있다.
- * 파이프·세미콜론은 건너지 않는다(다른 명령의 commit 을 이 git 것으로 오인하지 않게). */
-const 커밋했나 = /\bgit\b[^|;&\n]*?\bcommit\b/.test(exec);
+ * 파이프·세미콜론은 건너지 않는다(다른 명령의 commit 을 이 git 것으로 오인하지 않게).
+ *
+ * 🔴 `commit` 은 **셸 토큰 하나**여야 한다 — `\b` 만 걸면 경로 속 글자가 걸린다(F230 · 08-08 실측).
+ *   `git diff --stat -- .claude/hooks/auto-commit.js` 가 「커밋했다」로 읽혔다: 앞이 하이픈,
+ *   뒤가 마침표라 양쪽 다 단어 경계다. 이 저장소엔 `auto-commit.js`·`commit-noop-guard.js` 가
+ *   있어 그 파일을 만지는 트랙마다 상시 오발이고, 같은 호출에 `git status` 가 끼면(흔하다)
+ *   그 출력이 조건을 채운다. 새는 방향이 나쁘다 — **가드가 실작업을 벌주면 사람이 가드를 끈다**
+ *   (위 인용 스트리퍼가 존재하는 사유와 같다). 앵커는 하나에서 파생시킨다 — 세 곳에 적으면 갈라진다. */
+const 커밋앵커 = String.raw`\bgit\b[^|;&\n]*?(?<![\w./\\-])commit(?![\w./\\-])`;
+const 커밋했나 = new RegExp(커밋앵커).test(exec);
 if (!커밋했나) process.exit(0);
 
 // --dry-run 은 「안 들어가는 게 정상」이다. 벌주면 안 된다.
-if (/\bgit\b[^|;&\n]*?\bcommit\b[^|;&\n]*?(--dry-run|--porcelain)/.test(exec)) process.exit(0);
+if (new RegExp(커밋앵커 + String.raw`[^|;&\n]*?(--dry-run|--porcelain)`).test(exec)) process.exit(0);
 
 const res = input.tool_response;
 const 원출력 = [
@@ -71,7 +79,7 @@ const 착지수 = 줄들.filter((l) => 착지줄.test(l)).length;
  *   `commit A && commit B` 에서 B 만 비는 경우(2:1)는 그대로 잡히고, 앞단 status 는 안 센다.
  *   ⚠ 천장: 커밋 수는 명령 문자열로 센다 — 반복문·함수 안에서 도는 커밋은 적게 세어
  *     착지가 많아 보일 수 있다(이 저장소는 「한 호출 안 커밋」 규약이라 그 형태를 안 쓴다). */
-const 커밋수 = (exec.match(/\bgit\b[^|;&\n]*?\bcommit\b/g) || []).length;
+const 커밋수 = (exec.match(new RegExp(커밋앵커, 'g')) || []).length;
 if (착지수 >= 커밋수) process.exit(0);
 
 /* 제목 줄을 걷어낸 뒤에 증상을 찾는다 — 이 저장소는 커밋 제목에 가드 이야기를 자주 써서
