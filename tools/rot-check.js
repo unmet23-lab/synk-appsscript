@@ -449,4 +449,9 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { collect, render, dueNow, stamp, stateFile, harnessSection, toilSection, mapSection, 배포Section, EVOLVE_THRESHOLD };
+/* `stamp` 는 **일부러 안 내보낸다.** 인프로세스로 부르면 `SYNK_ROT_STATE` 가 없는 한
+ * 실저장소 `.claude/state/rot-check.json` 에 `{findings:0}` 을 찍고, 그러면 이 저장소의
+ * 주간 부패 점검이 7일간 침묵한다 — 🔴 를 든 채로. 2026-08-07 실측: 회귀 한 줄이
+ * 하루에 세 번(10:04·10:11·10:13) 그 도장을 찍었고 테스트는 내내 초록이었다.
+ * 쓰기 실패 내성은 서브프로세스(`SYNK_ROT_STATE`=못 쓰는 경로)로 검사한다. */
+module.exports = { collect, render, dueNow, stateFile, harnessSection, toilSection, mapSection, 배포Section, EVOLVE_THRESHOLD };

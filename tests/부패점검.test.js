@@ -78,8 +78,18 @@ test('상태 파일을 못 써도 검사는 성공한다 — 쓰기 실패가 �
   // 디렉터리 자리에 파일이 있으면 mkdir이 실패한다
   const blocked = path.join(TMP, 'blocked-dir');
   fs.writeFileSync(blocked, 'not a dir', 'utf8');
-  assert.doesNotThrow(() => R.stamp(Date.now(), 0));
   assert.doesNotThrow(() => runHook({ SYNK_ROT_STATE: path.join(blocked, 'x.json') }, ['--force']));
+});
+
+/* 2026-08-07 실측 — 이 검사의 옛 판이 위 `blocked` 픽스처를 안 쓰고 `R.stamp(Date.now(), 0)` 를
+ * 맨손으로 불렀다. `SYNK_ROT_STATE` 가 없으니 도장은 **실저장소** `.claude/state/rot-check.json`
+ * 에 `{findings:0}` 으로 찍혔고, 스로틀이 7일이라 그날의 🔴 3건(라이브 낡음·깨진 링크·예약작업
+ * 실패)이 어느 세션에도 안 떴다. 세션 9개가 각자 스위트를 돌려 도장은 몇 분마다 갱신됐다 —
+ * 주간 점검은 사실상 영구 침묵이었다. 그 내내 이 스위트는 18/18 초록이었다.
+ * 그래서 고친 곳은 호출부가 아니라 **통로**다: 인프로세스로 실경로에 찍을 방법을 없앤다. */
+test('상태 쓰기 함수는 export 되지 않는다 — 인프로세스 호출은 실저장소 도장을 찍는다', () => {
+  assert.strictEqual(R.stamp, undefined,
+    'stamp 를 내보내면 회귀가 SYNK_ROT_STATE 없이 부를 수 있고, 그 한 줄이 주간 점검을 7일 침묵시킨다');
 });
 
 /* 이 도구의 존재 이유 그 자체 — 「고장」이 「깨끗함」과 같은 모양이면 아무도 모른다.
