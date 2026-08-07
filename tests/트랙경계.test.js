@@ -428,6 +428,34 @@ test('writeHandoffFile — 파일로 남고, 최신 3개를 펴 보이되 밀려
   assert.equal(시, String(new Date().getHours()).padStart(2, '0'), '🔴 인계문 시각이 로컬 시각이 아니다(UTC 로 찍혔다)');
 });
 
+/* 🔴 id 를 **모르는** 세션끼리 서로를 지웠다 (2026-08-07 실측: 폰 브랜치가 `_.md` 를 커밋했다 `ff2b2d3`).
+ *   훅 셋은 payload 의 `session_id` 를 폴백으로 넘기지만 `/close`(tools/인계문.js)는 payload 가 없어
+ *   `CLAUDE_CODE_HOST_SESSION_ID` 하나에 걸리는데, 폰 클라우드엔 그 변수가 없다. 그러면 파일명이
+ *   `_` 하나로 접혀 **마지막에 끊은 세션만 남는다** — writeHandoffFile 이 없애려던 그 축출인데,
+ *   하필 **인계가 유일한 통로인** 계정(대화 맥락이 안 넘어간다)에서만 산다. 증상은 언제나 「조용함」이다. */
+test('writeHandoffFile — id 를 모르는 세션이 둘이어도 서로를 안 지운다 (폰 클라우드)', () => {
+  const d = 임시('synk-tb-anon-');
+  const 목차 = report.writeHandoffFile(d, '폰 첫 세션 인계문', { sessionId: '' });
+  report.writeHandoffFile(d, '폰 둘째 세션 인계문', { sessionId: undefined });
+
+  const 폴더 = path.join(path.dirname(목차), '인계문');
+  const 본문 = fs.readFileSync(목차, 'utf8');
+  assert.match(본문, /폰 첫 세션 인계문/,
+    '🔴 앞 세션의 인계문이 사라졌다 — id 없는 세션들이 한 파일(`_.md`)을 나눠 쓴다');
+  assert.match(본문, /폰 둘째 세션 인계문/, '뒤 세션의 인계문이 안 실렸다');
+  assert.equal(fs.readdirSync(폴더).filter((f) => f.endsWith('.md')).length, 2,
+    '🔴 세션별 파일이 하나로 접혔다 — 이름 층에 축출 경로가 그대로 있다');
+
+  // 🔑 반대 방향도 같이 잠근다 — id 를 **아는** 세션은 여전히 자기 파일 하나만 갈아 끼운다.
+  //    안 잠그면 「쓰기마다 새 파일」로 고쳐 놓고 목차가 무한히 자라도 이 검사는 초록이다.
+  report.writeHandoffFile(d, '첫 판', { sessionId: 'local_aaaa1111' });
+  report.writeHandoffFile(d, '둘째 판', { sessionId: 'local_aaaa1111' });
+  assert.deepEqual(fs.readdirSync(폴더).filter((f) => f.startsWith('aaaa1111')), ['aaaa1111.md'],
+    '🔴 id 가 있는데도 쓰기마다 파일이 늘었다');
+  assert.match(fs.readFileSync(path.join(폴더, 'aaaa1111.md'), 'utf8'), /둘째 판/,
+    '자기 파일이 안 갱신됐다');
+});
+
 /* 저장 정본을 git 밖에 두면 목차의 링크가 **다른 계정·폰에서 전부 깨진다** — 그 통로가 이 파일의
  * 존재 이유라, 「안 펴진 것도 안 버린다」는 약속이 조용히 거짓이 된다. CLAUDE.md: 저장소 안에
  * 있는데 무시되는 파일이 가장 위험하고, **근본 해법은 git 눈에 들이는 것 · 자격증명만 예외**다.
