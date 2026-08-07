@@ -12,6 +12,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
@@ -64,6 +65,21 @@ test('③-2 폰트 스택이 브랜드_폰트_정본.md 와 문자 그대로 일
 test('④-1 synk-tokens.css 가 정본보다 낡지 않았다(빌드 --check)', () => {
   const r = spawnSync('node', [path.join(ROOT, 'tools', '토큰빌드.js'), '--check'], { encoding: 'utf8' });
   assert.equal(r.status, 0, `토큰빌드 --check 실패:\n${r.stderr || r.stdout}`);
+});
+
+test('④-1a --check 는 줄끝(CRLF)을 어긋남으로 읽지 않는다 — Windows 체크아웃 전부가 거짓 적색이던 자리 (2026-08-07 실측)', () => {
+  // autocrlf 체크아웃 모사: 내용은 같고 줄끝만 CRLF 인 사본. 본 트리는 도구가 직접 쓴 LF 라 초록,
+  // 새 체크아웃(워크트리·CI 격리 사본)만 빨개져 「환경」이 「어긋남」의 모양으로 나왔다.
+  const { build } = require('../tools/토큰빌드.js');
+  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tokens-')), 'tokens.css');
+  const check = () => spawnSync('node', [path.join(ROOT, 'tools', '토큰빌드.js'), '--check'],
+    { encoding: 'utf8', env: { ...process.env, SYNK_토큰_OUT: out } });
+  fs.writeFileSync(out, build().replace(/\n/g, '\r\n'), 'utf8');
+  const ok = check();
+  assert.equal(ok.status, 0, `CRLF 사본을 「어긋남」으로 읽었다:\n${ok.stderr || ok.stdout}`);
+  // 탐지력은 살아 있어야 한다 — 내용이 진짜 다르면 여전히 적색
+  fs.writeFileSync(out, build().replace(/\n/g, '\r\n') + '/* drift */', 'utf8');
+  assert.equal(check().status, 1, '진짜 어긋남을 통과시켰다 — 게이트가 죽었다');
 });
 
 test('④-2 브랜드색.test.js 의 KIT 는 토큰에서 파생한다(인라인 사본 원복 방지)', () => {
