@@ -353,11 +353,28 @@ function 지문(raw) {
   return crypto.createHash('sha1').update(String(raw == null ? '' : raw).trim()).digest('hex').slice(0, 10);
 }
 
-/** 한 장 본문 — 번호로 닫을 수 있는 것은 **실제 메모리 줄**뿐이다(차단자는 그래프 파생이라 줄이 없다) */
-function 한장(r, date) {
+/** 한 장 본문 — 번호로 닫을 수 있는 것은 **실제 메모리 줄**뿐이다(차단자는 그래프 파생이라 줄이 없다)
+ *
+ * 🔑 **번호는 다시 발행해도 안 바뀐다.** 유호님 답은 텔레그램 수거를 30분마다 타고 늦게 오는데,
+ *    그 사이 아무 세션이나 `--한장`을 다시 내면(훅이 7일마다 시킨다) 옛 번호가 **다른 결정**을
+ *    가리킨다. 지문은 시트↔메모리만 검사하지 **유호님이 든 사본**은 검사하지 못해 새 시트 기준으로
+ *    그대로 맞는다 — 실측: 새 토픽 하나가 알파벳 앞에 들어오자 「2번 완료」가 [c] 대신 [b]를 닫고
+ *    `ok=true`로 지나갔다(회귀 「재발행해도 번호는 그 결정을 계속 가리킨다」).
+ *    그래서 번호를 지문에 고정하고 **닫힌 번호는 다시 쓰지 않는다**(재사용이 이 버그를 되살린다).
+ *    번호가 띄엄띄엄해지므로 줄머리를 `N.`(ol) 이 아니라 **불릿+`**N.**`** 로 낸다 —
+ *    ol 은 렌더러가 1부터 다시 매겨 **틈이 안 보이고 번호가 또 밀린다**(GitHub·폰 미리보기).
+ * @param {{이전?: string}} opts  이전 한 장 경로. **생략하면 정본(SHEET)** 을 읽는다 —
+ *   `null`·`''` 도 정본으로 떨어지므로(시트읽기의 `파일 || SHEET`) 「없음」을 뜻하려면
+ *   없는 경로를 준다. 테스트는 자기 픽스처 경로를 줘야 실저장소에 안 매달린다.
+ */
+function 한장(r, date, opts = {}) {
   const d = date || new Date();
   const 닫을수있는것 = r.ranked.filter((it) => it.raw && it.line > 0);
   const 차단자 = r.ranked.filter((it) => !it.raw || it.line <= 0);
+  const 이전 = 시트읽기(opts.이전 === undefined ? SHEET : opts.이전);
+  const 예약 = new Map();   // "topic|지문" → 이미 나간 번호
+  let 최대 = 0;
+  if (이전) for (const [n, v] of 이전.map) { 예약.set(`${v.topic}|${v.지문}`, n); if (n > 최대) 최대 = n; }
   const lines = [
     '# 결정 큐 — 주간 한 장',
     '',
@@ -366,6 +383,7 @@ function 한장(r, date) {
     '>',
     '> **끝난 번호만 쓰시면 됩니다.** 예) `3,7,12 완료`  → 클로드가 그 줄들을 닫습니다.',
     '> 답이 필요한 것은 번호 옆에 그냥 쓰셔도 됩니다. 아무것도 안 쓰셔도 큐는 그대로 남습니다.',
+    '> **번호는 다시 발행해도 그대로입니다** — 며칠 뒤에 답하셔도 그 번호가 그 결정을 가리킵니다(닫힌 번호는 빠져서 중간이 비어 보입니다).',
     '',
     '<!-- 이 파일은 `node tools/decision-queue.js --한장` 이 다시 만든다. 손으로 고치지 않는다. -->',
     '',
@@ -373,10 +391,15 @@ function 한장(r, date) {
   닫을수있는것
     .slice()
     .sort((a, b) => a.topic.localeCompare(b.topic) || a.line - b.line)
-    .forEach((it, i) => {
+    .map((it) => {
+      const fp = 지문(it.raw);
+      return { it, fp, n: 예약.get(`${it.topic}|${fp}`) || ++최대 };   // 처음 보는 줄만 새 번호를 받는다
+    })
+    .sort((a, b) => a.n - b.n)
+    .forEach(({ it, fp, n }) => {
       const 몸통 = it.text.replace(/^⏳\s*/, '');
       const 접힘 = 몸통.length > SHEET_LEN ? 몸통.slice(0, SHEET_LEN - 1) + '…' : 몸통;
-      lines.push(`${i + 1}. **[${it.topic}]** ${접힘} <!--q:${it.topic}|${지문(it.raw)}-->`);
+      lines.push(`- **${n}.** **[${it.topic}]** ${접힘} <!--q:${it.topic}|${fp}-->`);
     });
   if (차단자.length) {
     lines.push('', '## ⛔ 먼저 풀면 여러 개가 함께 풀리는 것 (번호 없음 — 말로 답해 주세요)', '');
@@ -392,7 +415,9 @@ function 시트읽기(파일) {
   if (!fs.existsSync(p)) return null;
   const text = fs.readFileSync(p, 'utf8');
   const map = new Map();
-  for (const m of text.matchAll(/^\s*(\d+)\.\s[\s\S]*?<!--q:(.+?)\|([0-9a-f]+)-->/gm)) {
+  // 불릿+굵은 번호가 지금 판, 맨 `N.` 은 옛 판(ol). 옛 판도 읽어야 **이미 나간 한 장의 번호가
+  // 이어진다** — 못 읽으면 예약이 비어 전 항목이 1부터 다시 매겨지고, 그게 이 함수가 막는 사고다.
+  for (const m of text.matchAll(/^\s*(?:[-*]\s+\*\*)?(\d+)\.(?:\*\*)?\s[\s\S]*?<!--q:(.+?)\|([0-9a-f]+)-->/gm)) {
     map.set(Number(m[1]), { topic: m[2], 지문: m[3] });
   }
   const 발행 = (text.match(/\*\*발행 (\d{4}-\d{2}-\d{2})\*\*/) || [])[1] || null;
