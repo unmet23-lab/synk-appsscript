@@ -312,7 +312,15 @@ if (resulting !== null && 내id) {
  *   (track-collision 이 자기 머리말에 적어둔 실패를 보드 축에서 그대로 반복했다).
  *   사람이 알아채고 물러났는데 **둘 다 물러나 교착**이 났다 — 늦게 안 만큼 값이 비쌌다.
  *
- * 🔑 선점은 커밋이 아니라 **미커밋 보드 줄**로만 드러난다(F161). 그래서 재료는 `git diff HEAD`다.
+ * 🔴 [F203] 첫 판은 재료를 **`git diff HEAD` 로 좁혔다** — 「선점은 미커밋 보드 줄로만 드러난다」
+ *   (F161)를 규칙으로 굳혔는데, 그건 그 사건의 *모양*이지 선점의 정의가 아니었다. 이 저장소는
+ *   보드를 상시 커밋하고(중앙값 3분 · 지나가는 세션이 남의 줄까지 동승시킨다), 커밋되는 순간
+ *   그 착수 선언은 ④ 에게서 **사라진다.** 조건 하나만 바꾼 대조(파일·표식 동일):
+ *     남의 선언 미커밋 → 막음 · **커밋됨 → 통과**
+ *   그래서 08-07 에 `d2453563` 의 F123 선언이 `ceab9d3` 로 커밋된 뒤 `41ae1a64` 가 같은 F123 을
+ *   선언했고 ④ 는 조용했다. 보호 창이 「보드가 다음에 커밋될 때까지」였던 것이다.
+ * 🔑 재료는 **편집 전 파일의 활성 줄 전부**다 — 미커밋 줄은 이미 그 파일 안에 있으니 `git` 은
+ *   더 볼 것이 없고(중복 재료), 커밋된 줄까지 같이 보인다. 즉 수리는 넓히기가 아니라 **덜어내기**다.
  * ⚠ 자리는 둘로 센다. **트랙 머리의 표식**(`②-20`·`F196`)과 **만지는 파일의 경로**다 —
  *   파일이 안 겹쳐도 같은 항목을 파면 중복이고(오늘이 그 경우), 항목 번호가 없어도 같은 파일을
  *   고치면 커밋에서 부딪친다. 표식은 **머리**에서만 뽑는다: 본문에서의 인용(「지금 ②-20 을
@@ -337,22 +345,15 @@ function 자리들(line) {
   return 자리;
 }
 
-/** 아직 커밋 안 된 보드 줄. **못 재면 null** — 0건과 섞으면 미실행이 통과처럼 보인다. */
-function 미커밋보드줄() {
-  const { spawnSync } = require('child_process');
-  const r = spawnSync('git', ['-C', path.dirname(filePath) || '.', 'diff', 'HEAD', '--', filePath],
-    { encoding: 'utf8', windowsHide: true });
-  if (r.error || r.status !== 0 || typeof r.stdout !== 'string') return null;
-  return r.stdout.split(/\r?\n/).filter((l) => l.startsWith('+|')).map((l) => l.slice(1)).filter(isDataRow);
-}
-
 if (resulting !== null && 이전 !== null) {
-  const 옛트랙 = new Set(이전.split('\n').filter(isDataRow).map(트랙칸));
+  const 옛줄 = 이전.split('\n').filter(isDataRow);
+  const 옛트랙 = new Set(옛줄.map(트랙칸));
   const 새줄 = resulting.split('\n').filter(isDataRow)
     .filter((l) => !옛트랙.has(트랙칸(l)))
     .filter(isActiveRow);
-  // 새 활성 줄이 없으면 git 을 안 부른다 — 보드 편집의 대부분은 상태 칸 갱신이다.
-  const 남의선언 = 새줄.length ? 미커밋보드줄() : null;
+  /* 남의 착수 선언 = **편집 전 판의 활성 줄.** 커밋 여부를 안 가른다(F203) — 미커밋 줄도
+   * 이 파일 안에 있고, 커밋됐다고 그 세션이 자리를 놓은 것은 아니다. */
+  const 남의선언 = 새줄.length ? 옛줄.filter(isActiveRow) : null;
   if (남의선언) {
     const 내지문 = 내id ? 보드id.지문(내id) : '';
     const 겹침 = [];
@@ -360,7 +361,7 @@ if (resulting !== null && 이전 !== null) {
       const 내자리 = 자리들(새);
       if (!내자리.size) continue;
       for (const 남 of 남의선언) {
-        if (!isActiveRow(남) || 트랙칸(남) === 트랙칸(새)) continue;
+        if (트랙칸(남) === 트랙칸(새)) continue;
         const 지문들 = 보드id.줄의지문(남);
         if (내지문 && 지문들.includes(내지문)) continue; // 이번 세션이 아까 적은 줄
         const 같은 = [...자리들(남)].filter((k) => 내자리.has(k));
@@ -369,11 +370,13 @@ if (resulting !== null && 이전 !== null) {
     }
     if (겹침.length) {
       deny(
-        '[board-guard] 이 자리는 **남이 이미 선언했다** — 아직 커밋 안 된 보드 줄이라 `git log` 엔 안 보인다(F161):\n- ' +
+        '[board-guard] 이 자리는 **남이 이미 선언했다** — 보드의 활성 줄이다(커밋 여부는 안 가른다 · F161·F203):\n- ' +
           [...new Set(겹침)].join('\n- ') +
           '\n→ **겹치면 내가 비켜난다**(중복 구현은 되돌릴 수 없다).' +
-          '\n   · 다른 트랙을 잡는다 — 장부 미해소(`node tools/friction.js list`) · 보드 ⏳ · 결정 큐' +
+          '\n   · 다른 트랙을 잡는다 — 장부 미해소(`node tools/friction.js --open`) · 보드 ⏳ · 결정 큐' +
           '\n   · 그 세션이 이미 끝났다고 보이면 `node tools/작업본소유자.js` 로 생사를 먼저 확인한다' +
+          '\n   · **죽은 세션의 줄이면** 그 줄부터 치운다: `node tools/board-move.js "그 트랙 문구"`' +
+          '\n     (활성에서 빠지면 이 문이 열린다 — 남은 채로 우회하면 다음 세션이 같은 자리를 또 판다)' +
           '\n   왜: 겹침을 보는 곳이 세션 시작 출력 하나뿐이라 **뒤에 선언한 쪽은 상대를 원리적으로 못 본다.**'
       );
     }
