@@ -39,6 +39,15 @@ function 가드(tool_name, tool_input, dir, session_id = 'sess-1') {
     encoding: 'utf8',
     env: { ...process.env, SYNK_CRED_DIR: dir },
   });
+  /* 🔴 **훅이 안 돈 것과 훅이 통과시킨 것이 같은 모양이었다.** 아래 `조용:true` 는 「훅이 보고
+   *   그냥 뒀다」는 뜻인데, 프로세스를 아예 못 띄웠을 때도 stdout 이 비어 같은 값이 나왔다.
+   *   그래서 부하가 걸린 전량 실행에서 spawn 이 밀리면 「비밀이 페이지로 나갔다」로 빨개졌다
+   *   (파일 하나만 돌리면 초록 — 그 초록이 이 구멍을 덮고 있었다). 미실행은 결과가 아니다. */
+  if (r.error || r.status !== 0) {
+    throw new Error('훅을 못 돌렸다 — 미실행을 「통과」로 읽으면 안 된다: '
+      + `error=${r.error && r.error.code} status=${r.status} signal=${r.signal} `
+      + `stderr=${String(r.stderr || '').slice(0, 200)}`);
+  }
   const out = (r.stdout || '').trim();
   if (!out) return { 차단: false, 조용: true, 사유: '' };
   const h = JSON.parse(out).hookSpecificOutput || {};
