@@ -354,12 +354,16 @@ test('F201 — 같은 커밋 위의 두 세션도 같은 번호를 못 받는다
   try { repos = mkFixtureRepos(); }
   catch (e) { return t.skip('픽스처 저장소를 못 만들었다(git 없음?): ' + e.message); }
 
-  const outA = runIn(repos.A, ['add', '실수', 'A 세션 신호']);
-  assert.match(outA, /F003/, 'A 가 F003 을 못 받았다: ' + outA.trim());
-
-  // 전제 ①: 두 작업본이 **같은 커밋** 위에 있다(다르면 태그 객체가 갈려 이 결함이 재현되지 않는다)
+  /* 전제 ①: 두 작업본이 **같은 커밋** 위에 있다(다르면 태그 객체가 갈려 이 결함이 재현되지 않는다).
+   * ⚠ 재는 자리는 **add 전**이다 — 태그는 add 안에서 allocateId 가 달고, 그건 장부 쓰기·커밋보다
+   *   먼저 돈다. add 뒤의 HEAD 를 재면 「장부를 쓴 그 자리에서 커밋한다」(통로 마지막 칸) 때문에
+   *   A 만 앞서 있어, 결함은 그대로 재현되는데 전제가 거짓으로 실패한다(측정 자리가 틀린 것이지
+   *   조건이 깨진 게 아니다). 태그가 달릴 때 같은 커밋이었는지가 이 검사가 물어야 할 것이다. */
   assert.equal(git(repos.A, ['rev-parse', 'HEAD']).trim(), git(repos.B, ['rev-parse', 'HEAD']).trim(),
     '픽스처가 두 작업본을 다른 커밋에 뒀다 — 그러면 이 검사는 아무것도 안 잰다');
+
+  const outA = runIn(repos.A, ['add', '실수', 'A 세션 신호']);
+  assert.match(outA, /F003/, 'A 가 F003 을 못 받았다: ' + outA.trim());
   // 전제 ②: 훑기를 막는다 — 안 막으면 B 가 태그를 보고 건너뛰어 락이 아니라 훑기를 재게 된다
   git(repos.B, ['config', '--add', 'remote.origin.fetch', '^refs/tags/friction-F003']);
   git(repos.B, ['fetch', 'origin', '--tags', '--quiet']);
@@ -590,4 +594,83 @@ test('해소주장 판별식 — 실장부에서 거짓양성 0 (탐지력은 �
     .filter((r) => r.id !== 'F107'); // F107 은 이 판별식이 겨냥한 실물 사례다
   assert.deepEqual(오지목.map((r) => r.id), [],
     '정상 신고 행을 「스스로 해소를 지목했다」로 읽었다 — 거짓양성이면 다음 사람이 게이트를 끈다');
+});
+
+/* ── 통로의 마지막 칸 (2026-08-07) ─────────────────────────────────────────────
+ * 장부를 **커밋하는 자리가 통로 어디에도 없었다** — 도구는 편집만 하고, close-guard 는 커밋
+ * 뒤에 짖고, auto-commit 은 이 파일을 의도적으로 제외한다. 그래서 커밋이 사람 손으로 넘어갔는데
+ * 손은 「남의 미커밋은 그대로 둔다」에 막혀, 죽은 세션의 장부 행이 주인 없이 떠 있었다.
+ * 실물: cb56e86 은 「메모리 인덱스 압축」 커밋인데 남의 장부 5행이 동승해 나갔다(주인 흐리기).
+ * F025·F037·F073 은 셋 다 미커밋으로 떠 있는 **시간**에만 일어난다 — 아래가 그 시간을 잰다. */
+const 장부경로 = path.join('docs', '_ops', '마찰신호.md');
+const 장부상태 = (repo) => git(repo, ['status', '--porcelain', '--', 장부경로]).trim();
+
+test('통로 마지막 칸 — add 가 장부를 그 자리에서 커밋한다(미커밋으로 안 남는다)', (t) => {
+  let repos;
+  try { repos = mkFixtureRepos(); }
+  catch (e) { return t.skip('픽스처 저장소를 못 만들었다(git 없음?): ' + e.message); }
+
+  const out = runIn(repos.A, ['add', '실수', '신고 하나']);
+  assert.match(out, /F003/, 'add 자체가 실패했다: ' + out.trim());
+  assert.equal(장부상태(repos.A), '',
+    '장부를 쓰고 커밋하지 않았다 — 미커밋으로 뜬 채 남으면 죽은 세션의 유물이 된다: ' + out.trim());
+
+  /* 깨끗한 장부에 혼자 한 줄 넣었으니 동승은 0 이다 — 여기서 「동승」이라 말하면 **거짓 경보**고,
+   * 늘 뜨는 경보는 아무도 안 읽어 진짜 동승을 못 보게 만든다(F049 형태). 실측으로도 확인했다:
+   * 이 수리의 첫 실사용(F211 신고 · 51eefe0)에서 동승 경보가 안 떴다. */
+  assert.doesNotMatch(out, /동승/,
+    '동승이 0 인데 동승했다고 말한다 — 거짓 경보가 상시화되면 진짜 동승이 그 소음에 묻힌다: ' + out.trim());
+
+  const 제목 = git(repos.A, ['log', '-1', '--format=%s']).trim();
+  /* 번호가 제목에 있어야 friction-close-guard 가 그대로 짖는다 — 「F0NN 을 모르는 통로가
+   * 커밋하면 close-guard 를 우회한다」가 auto-commit 에 장부를 안 넣은 이유였다. */
+  assert.match(제목, /F003/, 'F0NN 이 없는 커밋 제목 — close-guard 가 이 커밋을 못 읽는다: ' + 제목);
+  assert.ok(!/^\[배포\]/.test(제목), '제목이 [배포] 로 시작하면 deploy-live 가 라이브를 태운다: ' + 제목);
+});
+
+test('통로 마지막 칸 — resolve 도 그 자리에서 커밋한다', (t) => {
+  let repos;
+  try { repos = mkFixtureRepos(); }
+  catch (e) { return t.skip('픽스처 저장소를 못 만들었다(git 없음?): ' + e.message); }
+
+  runIn(repos.A, ['add', '실수', '닫을 신호']);
+  const out = runIn(repos.A, ['resolve', 'F003', '훅이 막았다']);
+  assert.match(out, /F003/, 'resolve 자체가 실패했다: ' + out.trim());
+  assert.equal(장부상태(repos.A), '',
+    'resolve 가 해소 칸만 채우고 커밋하지 않았다 — add 만 고치면 통로가 반쪽이다: ' + out.trim());
+  assert.match(git(repos.A, ['log', '-1', '--format=%s']).trim(), /F003/, '해소 커밋에 번호가 없다');
+});
+
+test('통로 마지막 칸 — 남의 미커밋 행이 섞여 있으면 함께 싣되 그 수를 밝힌다', (t) => {
+  let repos;
+  try { repos = mkFixtureRepos(); }
+  catch (e) { return t.skip('픽스처 저장소를 못 만들었다(git 없음?): ' + e.message); }
+
+  /* 죽은 세션이 남긴 유물의 모양 — 손으로 쓰인 행이 미커밋으로 떠 있다.
+   * git 은 파일 단위라 이걸 뗄 수 없다. 장부는 행끼리 독립이라 손실은 없지만, 조용히 실으면
+   * 그 행의 주인이 내 커밋으로 바뀐다(cb56e86 이 실제로 그렇게 나갔다). 그래서 센다. */
+  const 장부 = path.join(repos.A, 장부경로);
+  const 원본 = fs.readFileSync(장부, 'utf8');
+  fs.writeFileSync(장부, 원본.replace(/\n$/, '') + '\n| F009 | 2026-08-07 | 마찰 | 남의 행 | |\n', 'utf8');
+
+  const out = runIn(repos.A, ['add', '실수', '내 신고']);
+  assert.match(out, /동승/,
+    '남의 행을 조용히 실었다 — 조용한 동승은 주인 흐리기고, 흐려진 주인은 되돌릴 수 없다: ' + out.trim());
+  assert.equal(장부상태(repos.A), '', '동승 행이 있으면 커밋을 통째로 포기했다 — 그러면 유물이 그대로 남는다');
+});
+
+test('통로 마지막 칸 — 격리 장부(저장소 밖)는 커밋 층에 들어가지도 않는다', () => {
+  const ROOT = path.join(__dirname, '..');
+  const 전 = git(ROOT, ['rev-parse', 'HEAD']).trim();
+  const out = run(mkLedger(), ['add', '실수', '격리 신고']);
+
+  /* ⚠ 결과(HEAD 불변)만 재면 이 검사는 **아무것도 안 잰다** — 실측(변이): 저장소 밖 판정을 통째로
+   *   지워도 git 이 저장소 밖 pathspec 을 거부해 HEAD 는 그대로였다. 즉 초록이 판정층이 아니라
+   *   git 의 우연한 두 번째 방어선에서 나온다. 그래서 **판정층을 직접 겨냥한다**: 저장소 밖이면
+   *   커밋 층에 발도 들이지 않으므로 커밋에 대해 아무 말도 하지 않는다(들어가면 「건너뜀」을 말한다).
+   *   CLAUDE.md 「실패 안전을 외부 명령에 기대지 않는다」가 이 자리의 조항이다. */
+  assert.doesNotMatch(String(out), /커밋/,
+    '저장소 밖 장부인데 커밋 층까지 들어갔다 — 지금은 git 이 막아 무해하지만 그건 우연이다: ' + String(out).trim());
+  assert.equal(git(ROOT, ['rev-parse', 'HEAD']).trim(), 전,
+    '회귀가 실저장소를 커밋했다 — 기록을 오염시킨 회귀는 그 기록을 증거로 못 쓰게 만든다');
 });
