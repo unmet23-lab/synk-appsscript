@@ -3,7 +3,7 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { execFileSync } = require('child_process');
+const { execFileSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -463,4 +463,59 @@ test('🔴 [④·거짓양성] 상태 칸 갱신은 남의 선언이 있어도 �
   /* 보드 편집의 대부분이 이 모양이다. 여기서 막으면 가드가 일상 통로를 막는다. */
   const r = 판정({ tool_name: 'Edit', tool_input: { file_path: GBOARD, old_string: 기존, new_string: 기존.replace('✅종결', '🔵작업중') } }, 나);
   assert.strictEqual(r.결정, 'allow', `🔴 상태 갱신을 새 선언으로 셌다: ${r.사유.slice(0, 120)}`);
+});
+
+/* ── ② 만석 처방은 **그대로 실행되는가** (F103 맹점 ③ · 2026-08-07 실측) ─────────────
+ * ②는 오래 「오래된 완료 줄부터 옮겨라」만 냈다 — 어느 줄인지도, board-move 에 줄 문구도
+ * 없이. 문구 고르기는 손일이고(부분문자열 유일 매칭 · 굵게·백틱·「」가 섞여 셸에서도 깨진다)
+ * 그래서 아무도 안 치우고 만석이 유지돼 **다음 세션이 선언을 못 한다.** 실측: 그 자리에서
+ * 선언이 막혔고, 손으로 고른 문구 2개 중 1개가 빗나갔다. ①(활성 상한)은 이미 목록을 냈다.
+ *
+ * 🔑 매칭을 여기서 **재현하지 않는다** — 처방을 board-move 에 그대로 되먹인다. 같은 판정을
+ *   두 곳에 적으면 갈라지고, 갈라진 쪽의 증상은 「처방대로 했는데 못 찾는다」다. */
+const MOVE = path.join(__dirname, '..', 'tools', 'board-move.js');
+
+/* ⚠ 추출은 **줄 단위**다. 처음엔 `board-move\.js "([^"]+)"` 로 뽑았는데, 문구 안에 `"` 가
+ *   남으면 정규식이 거기서 끊겨 **위반을 스스로 지운다** — 아래 따옴표 변이가 그래서 초록이었다.
+ *   가드는 자기 전처리에도 눈이 먼다(CLAUDE.md 가드 맹점). 양끝 인용만 벗기고 안쪽은 그대로 본다. */
+const 처방문구 = (사유) => 사유.split('\n')
+  .filter((l) => l.includes('board-move.js '))
+  .map((l) => l.slice(l.indexOf('board-move.js ') + 'board-move.js '.length).trim().replace(/^"|"$/g, ''));
+
+test('🔴 만석 처방을 board-move 가 실제로 집는다 — 따를 수 없는 처방은 처방이 아니다 (F103)', () => {
+  const 판 = table(20);
+  const r = 판정({ tool_name: 'Write', tool_input: { file_path: BOARD, content: 판 } });
+  assert.strictEqual(r.결정, 'deny');
+  const 문구 = 처방문구(r.사유);
+  assert.ok(문구.length >= 3,
+    `처방에 실행할 명령이 ${문구.length}개뿐이다 — 「옮겨라」만 남으면 아무도 안 옮긴다:\n${r.사유}`);
+
+  const 픽 = fs.mkdtempSync(path.join(os.tmpdir(), 'boardmove-'));
+  fs.writeFileSync(path.join(픽, 'b.md'), 판, 'utf8');
+  fs.writeFileSync(path.join(픽, 'a.md'), '# 아카이브\n\n---\n', 'utf8');
+  for (const needle of 문구) {
+    const res = spawnSync(process.execPath, [MOVE, '--dry', needle], {
+      encoding: 'utf8',
+      env: { ...process.env, SYNK_BOARD: path.join(픽, 'b.md'), SYNK_BOARD_ARCHIVE: path.join(픽, 'a.md') },
+    });
+    assert.strictEqual(res.status, 0,
+      `처방이 준 문구를 board-move 가 못 쓴다: "${needle}"\n${res.stderr || res.stdout}`);
+  }
+  fs.rmSync(픽, { recursive: true, force: true });
+});
+
+/* 🔑 픽스처는 **더러운 줄을 앞에** 둔다 — 트랙 칸이 공통 머리말로 시작해 따옴표·백틱 뒤에서야
+ *   갈리는 판이다. 자르지 않으면 그 글자가 needle 에 들어가고, 자르면 그 줄은 유일 문구가 없어
+ *   처방에서 빠진다(뒤의 깨끗한 줄이 대신 나온다). 깨끗한 줄만 있는 판으로는 두 동작이 같은
+ *   모양이라 **변이가 안 잡힌다** — 실제로 첫 판이 그래서 초록이었다. */
+test('🔑 처방 문구에 셸을 깨는 글자가 없다 — 따옴표·백틱 앞에서 자른다', () => {
+  const 꾸민 = ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|',
+    ...Array.from({ length: 5 }, (_, i) => `| 2026-08-01 | 공통 머리말 "${i}" 꼬리 | Code.js | 완료 |`),
+    ...Array.from({ length: 5 }, (_, i) => `| 2026-08-01 | 공통 머리말 \`b${i}\` 꼬리 | Code.js | 완료 |`),
+    ...Array.from({ length: 10 }, (_, i) => `| 2026-08-01 | **깨끗한 트랙 ${i} 이름** | Code.js | 완료 |`)].join('\n');
+  const r = 판정({ tool_name: 'Write', tool_input: { file_path: BOARD, content: 꾸민 } });
+  const 문구 = 처방문구(r.사유);
+  assert.ok(문구.length >= 3,
+    `유일 문구가 없는 줄이 앞에 있다고 처방이 비었다(${문구.length}개) — 뒤의 깨끗한 줄이 나와야 한다:\n${r.사유}`);
+  for (const n of 문구) assert.ok(!/["`]/.test(n), `처방 문구에 셸을 깨는 글자가 남았다: ${n}`);
 });
