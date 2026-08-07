@@ -111,6 +111,22 @@ test('인덱스 불일치 — 유령과 누락을 양방향으로 잡는다', ()
   assert.deepStrictEqual(d.missingFromIndex, ['b']);
 });
 
+/* 2026-08-07 쪼개기(F184): 상한이 「줄」이라 옛 절을 `지도.md` 로 내보냈다.
+ * 인덱스를 MEMORY.md 하나로만 세면 **옮긴 98건이 「누락」으로 뜬다** — 옮긴 것과 잃은 것이
+ * 같은 모양이 되는 자리다. 양방향으로 못박는다: 지도에만 있어도 등재된 것이고,
+ * 지도의 유령도 유령이며, 지도 자신은 토픽 파일이 아니다(자기가 누락으로 뜨면 안 된다). */
+test('인덱스는 두 파일 — 지도.md 에만 있는 줄도 등재로 센다', () => {
+  const dir = mkMemory({
+    'MEMORY.md': '- [a](a.md)\n',
+    '지도.md': '- [b](b.md)\n- [없는것](없는것.md)\n',
+    'a.md': '내용\n',
+    'b.md': '내용\n', // MEMORY.md 엔 없지만 지도에 있다 — 누락이 아니다
+  });
+  const d = G.diagnose(G.load(dir));
+  assert.deepStrictEqual(d.missingFromIndex, [], 'b 가 누락으로 떴다 — 지도를 인덱스로 안 셌다');
+  assert.deepStrictEqual(d.ghostInIndex, ['없는것'], '지도 쪽 유령을 못 잡는다');
+});
+
 test('결정 큐 — 연쇄 해소를 세고 직접 건수와 구분한다', () => {
   // D를 풀면 a가 풀리고, a를 기다리던 b·c도 연쇄로 풀린다 → D의 값은 3
   const dir = mkMemory({
