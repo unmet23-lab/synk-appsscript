@@ -105,13 +105,28 @@ function boardTrack(cwd, commits, sid) {
   try { txt = fs.readFileSync(path.join(String(cwd || '.'), 'docs', '세션보드.md'), 'utf8'); } catch (_) { return null; }
   const hashes = (commits || []).map((c) => String(c).split(' ')[0]).filter((h) => /^[0-9a-f]{7,40}$/.test(h));
   if (!hashes.length && !보드id.지문(sid)) return null;
-  for (const line of txt.split('\n')) {
-    if (line[0] !== '|') continue;
-    const 해시로 = hashes.some((h) => line.indexOf(h) !== -1);
-    if (!해시로 && !보드id.줄이말하나(line, sid)) continue;
+
+  /* 🔴 **지문이 해시를 이긴다** (2026-08-07 실사고 F202 · 이 순서가 원래는 뒤였다).
+   *   ①과 ②는 증거의 무게가 다르다 — 지문은 그 줄이 **스스로 「내 것」이라 말한 것**이고,
+   *   해시는 「그 커밋을 언급했다」는 정황일 뿐이다. 남의 줄이 내 커밋을 근거로 인용하는 것은
+   *   이 저장소에서 **흔한 일**이고(같은 파일을 만진 트랙끼리 서로를 짚는다), 옛 순서는 줄을
+   *   위에서부터 훑다 그런 줄을 먼저 만나면 거기서 멈췄다.
+   *   실측: 내 `82da5aa` 를 인용한 옆 세션의 배포대조 줄이 내 ②-20 줄보다 **위**에 있어,
+   *   인계문의 「▶ 내 보드 줄」이 통째로 **남의 트랙**으로 나갔다 — 오류 0·경고 0·모양은 정상.
+   *   그대로 새 창에 들어가면 다음 세션이 남의 트랙을 제 것으로 이어받는다. F073·F165·F170 이
+   *   금지한 바로 그것을 **장치가 시키는** 꼴이고, 새는 방향은 여기서도 「통과」다.
+   *   그래서 해시는 지문이 **한 줄도 없을 때만** 쓰는 폴백으로 내린다(F165 가 지킨 사각지대는
+   *   그대로 남는다 — 해시 없는 줄은 지문으로, 지문 없는 줄은 해시로 여전히 잡힌다). */
+  const 줄들 = txt.split('\n').filter((line) => line[0] === '|');
+  const 뽑기 = (line, 근거) => {
     const c = line.split('|').map((s) => s.trim());
-    if (c.length < 5) continue;
-    return { track: c[2] || '', state: c[4] || '', 근거: 해시로 ? '해시' : '지문' };
+    return c.length < 5 ? null : { track: c[2] || '', state: c[4] || '', 근거 };
+  };
+  for (const line of 줄들) {
+    if (보드id.줄이말하나(line, sid)) { const r = 뽑기(line, '지문'); if (r) return r; }
+  }
+  for (const line of 줄들) {
+    if (hashes.some((h) => line.indexOf(h) !== -1)) { const r = 뽑기(line, '해시'); if (r) return r; }
   }
   return null;
 }
