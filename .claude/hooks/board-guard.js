@@ -257,9 +257,14 @@ if (total > MAX_ROWS) {
  * ⚠ 내 지문을 **모르는 세션에는 요구하지 않는다** — 환경변수가 빈 환경(클라우드·폰)에서
  *   요구하면 따를 수 없는 처방이 되고, 그건 우회를 정상 통로로 만든다(F103). */
 const 내id = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
+const 보드id = require(path.join(__dirname, 'lib', 'board-id.js'));
+const 트랙칸 = (line) => (cellsOfRow(line)[1] || '').trim();
+const 파일칸 = (line) => (cellsOfRow(line)[2] || '').trim();
+/* 편집 **전**의 판. ③(주인 표식)과 ④(자리 겹침)가 둘 다 「이 줄이 새 줄인가」를 여기서 가른다. */
+let 이전 = null;
+try { 이전 = fs.readFileSync(filePath, 'utf8'); } catch (_) { 이전 = null; }
+
 if (resulting !== null && 내id) {
-  const 보드id = require(path.join(__dirname, 'lib', 'board-id.js'));
-  const 트랙칸 = (line) => (cellsOfRow(line)[1] || '').trim();
   const 내지문 = 보드id.지문(내id);
   /* 🔴 [2026-08-07] **접두를 빠뜨린 지문**이 「해시」로 통과하던 자리 — F165 가 다른 문으로 재발했다.
    *   실측: 상태 칸에 `` `b6cb681a` `` 라고(접두 없이) 적었더니 이 가드는 hex 8자리를 커밋 해시로
@@ -274,8 +279,6 @@ if (resulting !== null && 내id) {
     return (String(line).match(/\b[0-9a-f]{7,40}\b/g) || [])
       .some((h) => h.toLowerCase() !== 내지문);
   };
-  let 이전 = null;
-  try { 이전 = fs.readFileSync(filePath, 'utf8'); } catch (_) { 이전 = null; }
   if (이전 !== null) {
     const 옛트랙 = new Set(이전.split('\n').filter(isDataRow).map(트랙칸));
     const 무명 = resulting.split('\n').filter(isDataRow)
@@ -290,6 +293,84 @@ if (resulting !== null && 내id) {
           `\n   상태 칸이 흔한 자리다: \`작업중 (\`local_${내지문}\`) — …\`` +
           '\n   왜: 지문도 해시도 없는 줄은 **인계문이 「내 줄 없음」으로 읽어** 다음 세션이 자기 트랙을 잃고,' +
           '\n   board-move 는 주인이 살아있는지 못 봐 그 줄을 아카이브로 옮긴다(F146·F165).'
+      );
+    }
+  }
+}
+
+/* ── ④ 새 트랙은 **남이 이미 잡은 자리**를 다시 잡지 않는다 (2026-08-07 실측) ────
+ * ①②는 보드가 부푸는 것을, ③은 줄의 주인을 봤다. ④는 **줄과 줄 사이**다.
+ *
+ * 🔴 실측(2026-08-07): 세션 `82404266` 이 절단문서 `②-20`(`functions/tasks/index.ts`)을 선언한
+ *   3분 뒤 `b170e8dc` 가 **같은 항목·같은 파일**을 선언했다. 둘 다 규약을 지켰다 — 시작할 때
+ *   보드를 읽었고, 그때는 상대 줄이 아직 없었다. 겹침을 보는 곳이 `작업본소유자` 의
+ *   **SessionStart 출력 하나뿐**이라 그건 스냅샷이고, 그 뒤에 선언한 쪽은 원리적으로 못 본다
+ *   (track-collision 이 자기 머리말에 적어둔 실패를 보드 축에서 그대로 반복했다).
+ *   사람이 알아채고 물러났는데 **둘 다 물러나 교착**이 났다 — 늦게 안 만큼 값이 비쌌다.
+ *
+ * 🔑 선점은 커밋이 아니라 **미커밋 보드 줄**로만 드러난다(F161). 그래서 재료는 `git diff HEAD`다.
+ * ⚠ 자리는 둘로 센다. **트랙 머리의 표식**(`②-20`·`F196`)과 **만지는 파일의 경로**다 —
+ *   파일이 안 겹쳐도 같은 항목을 파면 중복이고(오늘이 그 경우), 항목 번호가 없어도 같은 파일을
+ *   고치면 커밋에서 부딪친다. 표식은 **머리**에서만 뽑는다: 본문에서의 인용(「지금 ②-20 을
+ *   두 세션이 판다」)은 선점이 아니라 참조라, 문장 어디서나 세면 남을 언급만 해도 막힌다.
+ * ⚠ 홑 이름(`index.ts`)은 안 센다 — 저장소에 7벌이 있어 전부와 겹친다(거짓 차단이 곧 우회다).
+ * ⚠ 활성 줄끼리만 본다. ✅종결 줄은 자리를 잡고 있는 게 아니라 치우기를 기다리는 것이다.
+ *
+ * ponytail: **동시 선언**(둘 다 이 훅을 통과한 뒤 각자 쓰기)은 여전히 못 막는다 — 막으려면 락이
+ *   필요하고 그건 이 사고 빈도에 안 맞는다. 그 창은 초 단위고, 지금 실측된 사고는 3분 차다. */
+const 장부RE = /(세션보드|마찰신호|버전_이력|지침_이력)/;
+const 표식RE = /^(?:F0\d{2}|[①②③④⑤]-\d+|\[v\d+\.\d+\])/;
+
+function 자리들(line) {
+  const 자리 = new Set();
+  const 머리 = 트랙칸(line).replace(/^[\s*_`~>🔵🟢🟡🔴⚠️✅⏸]+/u, '').match(표식RE);
+  if (머리) 자리.add(머리[0]);
+  for (const m of 파일칸(line).matchAll(/[\w가-힣./_-]+\.(?:ts|tsx|js|jsx|mjs|cjs|gs|json|html|md|sql|ya?ml)\b/g)) {
+    const p = m[0].replace(/^(?:\.\.?\/)+/, '').toLowerCase();
+    if (p.split('/').length < 2 || 장부RE.test(p)) continue;
+    자리.add(p);
+  }
+  return 자리;
+}
+
+/** 아직 커밋 안 된 보드 줄. **못 재면 null** — 0건과 섞으면 미실행이 통과처럼 보인다. */
+function 미커밋보드줄() {
+  const { spawnSync } = require('child_process');
+  const r = spawnSync('git', ['-C', path.dirname(filePath) || '.', 'diff', 'HEAD', '--', filePath],
+    { encoding: 'utf8', windowsHide: true });
+  if (r.error || r.status !== 0 || typeof r.stdout !== 'string') return null;
+  return r.stdout.split(/\r?\n/).filter((l) => l.startsWith('+|')).map((l) => l.slice(1)).filter(isDataRow);
+}
+
+if (resulting !== null && 이전 !== null) {
+  const 옛트랙 = new Set(이전.split('\n').filter(isDataRow).map(트랙칸));
+  const 새줄 = resulting.split('\n').filter(isDataRow)
+    .filter((l) => !옛트랙.has(트랙칸(l)))
+    .filter(isActiveRow);
+  // 새 활성 줄이 없으면 git 을 안 부른다 — 보드 편집의 대부분은 상태 칸 갱신이다.
+  const 남의선언 = 새줄.length ? 미커밋보드줄() : null;
+  if (남의선언) {
+    const 내지문 = 내id ? 보드id.지문(내id) : '';
+    const 겹침 = [];
+    for (const 새 of 새줄) {
+      const 내자리 = 자리들(새);
+      if (!내자리.size) continue;
+      for (const 남 of 남의선언) {
+        if (!isActiveRow(남) || 트랙칸(남) === 트랙칸(새)) continue;
+        const 지문들 = 보드id.줄의지문(남);
+        if (내지문 && 지문들.includes(내지문)) continue; // 이번 세션이 아까 적은 줄
+        const 같은 = [...자리들(남)].filter((k) => 내자리.has(k));
+        if (같은.length) 겹침.push(`${같은.join('·')} ← \`local_${지문들[0] || '????????'}\` 「${트랙칸(남).replace(/\*/g, '').slice(0, 44)}…」`);
+      }
+    }
+    if (겹침.length) {
+      deny(
+        '[board-guard] 이 자리는 **남이 이미 선언했다** — 아직 커밋 안 된 보드 줄이라 `git log` 엔 안 보인다(F161):\n- ' +
+          [...new Set(겹침)].join('\n- ') +
+          '\n→ **겹치면 내가 비켜난다**(중복 구현은 되돌릴 수 없다).' +
+          '\n   · 다른 트랙을 잡는다 — 장부 미해소(`node tools/friction.js list`) · 보드 ⏳ · 결정 큐' +
+          '\n   · 그 세션이 이미 끝났다고 보이면 `node tools/작업본소유자.js` 로 생사를 먼저 확인한다' +
+          '\n   왜: 겹침을 보는 곳이 세션 시작 출력 하나뿐이라 **뒤에 선언한 쪽은 상대를 원리적으로 못 본다.**'
       );
     }
   }
