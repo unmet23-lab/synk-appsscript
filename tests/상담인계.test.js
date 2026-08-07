@@ -208,3 +208,92 @@ test('팔로우 게이트는 「모름=null」을 보존한다 — 모름을 아
   assert.ok(fn.includes('is_user_follow_business'), '팔로우 조회 필드가 없다');
   assert.ok((fn.match(/return null/g) || []).length >= 3, '실패 경로가 null 이 아니다 — 조회 실패가 「팔로우 안 함」으로 접힌다');
 });
+
+/* ── ⑤ 채널 칸 — 소급이 안 되는 자리 (유호 확정 08-07 「데이터 쌓는 구조로」) ──
+ * 페북=학부모 / 인스타=학생이라 이 라벨이 없으면 두 말뭉치가 한 덩어리가 되고, **지나간 행은 되살릴 수 없다**
+ * (세션은 양쪽 다 숫자열이라 나중에 못 가른다). 빠졌을 때의 증상이 「빈 칸」이라 조용해서 회귀로 못박는다. */
+
+// 시트 없이 상담_기록_ 만 떼어 돌린다 — ensureSheet·SpreadsheetApp 를 인자로 주입한다(상담AI.js 톱레벨은 GAS 무호출).
+function 기록기(초기폭) {
+  const 기록 = { 행: [], 머리글: null, 폭: 초기폭 };
+  const sh = {
+    getLastColumn: () => 기록.폭,
+    getRange: (_r, _c, _nr, nc) => ({ setValues: (v) => { 기록.머리글 = v[0]; 기록.폭 = nc; } }),
+    appendRow: (row) => 기록.행.push(row),
+  };
+  const 만들기 = new Function('SpreadsheetApp', 'ensureSheet', 엔진 + '\n;return 상담_기록_;');
+  return { 쓰기: 만들기({ getActiveSpreadsheet: () => ({}) }, () => sh), 기록 };
+}
+
+test('대화 행이 채널(fb/ig)을 들고 쌓인다 — 마지막 칸', () => {
+  const { 쓰기, 기록 } = 기록기(10);
+  쓰기('IG123', 'user', 'Сайн уу', false, null, '', 'ig');
+  쓰기('PS1', 'bot', '안녕하세요', false, null, '', 'fb');
+  assert.equal(기록.행[0].length, 10, '칸 수가 머리글과 다르다');
+  assert.equal(기록.행[0][9], 'ig', '인스타 대화에 채널이 안 실렸다 — 학생 말뭉치를 나중에 못 가른다');
+  assert.equal(기록.행[1][9], 'fb');
+});
+
+test('모르는 채널은 지어내지 않고 비운다 — 「fb 로 접기」가 학부모 말뭉치를 오염시킨다', () => {
+  const { 쓰기, 기록 } = 기록기(10);
+  쓰기('-', 'system', '오류', true, null);
+  assert.equal(기록.행[0][9], '', '채널을 모르는 행이 특정 채널로 접혔다');
+});
+
+test('이미 서 있는 옛 시트(9칸)는 머리글을 스스로 넓힌다 — 새 칸이 이름 없이 쌓이면 안 된다', () => {
+  const { 쓰기, 기록 } = 기록기(9);
+  쓰기('PS1', 'user', '안녕', false, null, '', 'fb');
+  assert.deepEqual(기록.머리글, ['시각', '세션', '발신', '내용', '인계', '입력토큰', '캐시읽기', '출력토큰', '비고', '채널']);
+  assert.equal(기록.폭, 10);
+});
+
+test('채널 칸은 **끝에만** 있다 — 중간에 끼우면 발송 표식(9번 칸)이 엉뚱한 칸에 찍힌다', () => {
+  const 머리글 = /상담AI_로그헤더 = (\[[^\]]*\])/.exec(엔진);
+  assert.ok(머리글, '로그 머리글 상수를 못 찾았다');
+  const 칸 = JSON.parse(머리글[1].replace(/'/g, '"'));
+  assert.equal(칸.indexOf('비고'), 8, '비고가 9번째 칸이 아니다 — 발송 표식 setValue(_, 9) 가 어긋난다');
+  assert.equal(칸[칸.length - 1], '채널', '채널이 마지막 칸이 아니다');
+});
+
+/* 호출 하나의 인자를 깊이 세어 가른다 — 꼬리 정규식으로는 못 센다.
+ * `JSON.stringify({...})`·`'인계 초안(미발송) '` 처럼 인자 안에 괄호·중괄호가 들어오고,
+ * 마지막 인자가 `플랫폼 || 'fb'` 면 「플랫폼으로 끝나는가」류 검사는 **거짓양성**을 낸다(실측으로 잡았다). */
+function 인자들(원문, 여는괄호) {
+  let 깊이 = 0, 따옴표 = '', 현재 = '', out = [];
+  for (let i = 여는괄호; i < 원문.length; i += 1) {
+    const c = 원문[i];
+    if (따옴표) { 현재 += c; if (c === 따옴표 && 원문[i - 1] !== '\\') 따옴표 = ''; continue; }
+    if (c === "'" || c === '"' || c === '`') { 따옴표 = c; 현재 += c; continue; }
+    if ('([{'.includes(c)) { 깊이 += 1; if (깊이 === 1) continue; }
+    if (')]}'.includes(c)) { 깊이 -= 1; if (깊이 === 0) { out.push(현재.trim()); return out; } }
+    if (c === ',' && 깊이 === 1) { out.push(현재.trim()); 현재 = ''; continue; }
+    현재 += c;
+  }
+  return null;                                   // 닫히지 않았다 = 검사 불가(호출부가 아니다)
+}
+
+test('플랫폼을 아는 기록 호출은 하나도 빠짐없이 채널을 넘긴다 (호출부가 늘 때 빠지는 그 자리)', () => {
+  // 같은 방어를 손으로 N번 얹는 구조라 N+1 번째가 빠진다(v9.153 계열 재발 7건) — 소스에서 전수로 센다.
+  const 빠진 = [];
+  let 검사한수 = 0;
+  for (const m of 엔진.matchAll(/상담_기록_\(/g)) {
+    const 앞 = 엔진.slice(0, m.index);
+    if (/function\s*$/.test(앞)) continue;        // 정의부는 호출이 아니다
+    // ⚠ +1 — 줄바꿈을 포함해 자르면 split('\n')[0] 이 **빈 문자열**이라 시그니처를 영영 못 본다
+    //   (그러면 「아는 자리」가 0건이 되어 이 검사가 통째로 헛돈다 — 변이로 잡았다).
+    const 본문 = 엔진.slice(앞.lastIndexOf('\nfunction ') + 1, m.index);
+    assert.ok(본문.startsWith('function '), '함수 경계를 못 찾았다 — 이 검사가 헛돈다');
+    // 이 함수 안에서 채널을 알 수 있는가(인자 플랫폼 · opts.플랫폼 · draft JSON 의 d.플랫폼)
+    // ⚠ `\b` 를 쓰지 않는다 — JS 의 단어 경계는 ASCII 라 **한글 앞뒤에선 영영 안 걸린다**(변이로 잡았다).
+    if (!(본문.split('\n')[0].includes('플랫폼') || /opts\.플랫폼|d\.플랫폼/.test(본문))) continue;
+    검사한수 += 1;
+    const args = 인자들(엔진, m.index + '상담_기록_'.length);
+    assert.ok(args, '인자를 못 갈랐다 — 검사 불가를 통과로 읽으면 안 된다');
+    if (args.length < 7 || !args[6].includes('플랫폼')) {
+      빠진.push(엔진.slice(m.index, m.index + 80).replace(/\s+/g, ' '));
+    }
+  }
+  // 0건과 미실행을 가른다 — 「아는 자리」가 하나도 안 잡히면 위 필터가 죽은 것이다.
+  assert.ok(검사한수 >= 8, `채널을 아는 기록 호출이 ${검사한수}건뿐 — 필터가 헛돈다`);
+  assert.deepEqual(빠진, [], '플랫폼을 아는 자리인데 채널 없이 기록한다 — 그 행은 영영 채널 미상이다');
+});

@@ -34,7 +34,9 @@
 function 상담AI_모델_() { return typeof AI_FEEDBACK_MODEL === 'undefined' ? 'claude-sonnet-5' : AI_FEEDBACK_MODEL; } // Code.js 정본을 따른다
 const 상담AI_사고 = false;               // 메신저는 응답속도가 전환을 좌우 — 사고 OFF. 답변 품질이 아쉬우면 true
 const 상담AI_기본상한 = 300;             // 하루 호출 상한 기본값
-const 상담AI_로그헤더 = ['시각', '세션', '발신', '내용', '인계', '입력토큰', '캐시읽기', '출력토큰', '비고'];
+/* ⚠ 칸은 **끝에만** 늘린다 — 읽는 쪽이 전부 열 번호로 집는다(`r[8]`·`setValue(draftRow, 9)`).
+ *   중간에 끼우면 발송 표식이 엉뚱한 칸에 찍히고, 그 증상은 「조용함」이다. */
+const 상담AI_로그헤더 = ['시각', '세션', '발신', '내용', '인계', '입력토큰', '캐시읽기', '출력토큰', '비고', '채널'];
 const 상담AI_리드헤더 = ['날짜', '이름', '연락처', '유입경로', '추천인', '체험참석', '등록', '등록권종', '등록일', '미등록사유', '메모', '캠페인'];
 
 /* ── 웹훅 입구 ─────────────────────────────────────────────
@@ -150,14 +152,14 @@ function 상담응답_(세션, 사용자말, 플랫폼) {
    * 「어떤 경로로 답하든 첫 마디에 밝힌다」가 정책 요건이다(일부 경로만 붙이면 그 턴이 곧 위반이다). */
   const 공개 = (상담_이력_(세션).length === 0) ? (상담_봇공개 + '\n\n') : '';
   if (props.getProperty('상담AI_OFF') === '1' || !key) {
-    상담_기록_(세션, 'user', 사용자말, true, null);
-    상담_기록_(세션, 'bot', 상담_인계문, true, null, key ? '정지(상담AI_OFF)' : 'API키 없음');
+    상담_기록_(세션, 'user', 사용자말, true, null, '', 플랫폼);
+    상담_기록_(세션, 'bot', 상담_인계문, true, null, key ? '정지(상담AI_OFF)' : 'API키 없음', 플랫폼);
     상담_인계알림_(세션, 사용자말, key ? '봇 정지 상태' : 'API 키 미설정', 플랫폼);
     return { reply: 공개 + 상담_인계문, handoff: true };
   }
   if (!상담_상한통과_(props)) {
-    상담_기록_(세션, 'user', 사용자말, true, null);
-    상담_기록_(세션, 'bot', 상담_인계문, true, null, '일일 상한 초과');
+    상담_기록_(세션, 'user', 사용자말, true, null, '', 플랫폼);
+    상담_기록_(세션, 'bot', 상담_인계문, true, null, '일일 상한 초과', 플랫폼);
     상담_인계알림_(세션, 사용자말, '일일 호출 상한 초과 — 오늘은 사람이 받아야 합니다', 플랫폼);
     return { reply: 공개 + 상담_인계문, handoff: true };
   }
@@ -167,16 +169,16 @@ function 상담응답_(세션, 사용자말, 플랫폼) {
   try {
     out = 상담_호출_(key, 세션, 사용자말);
   } catch (err) {
-    상담_기록_(세션, 'user', 사용자말, false, null);
-    상담_기록_(세션, 'bot', 상담_인계문, true, null, 'API 오류: ' + String(err && err.message || err).slice(0, 160));
+    상담_기록_(세션, 'user', 사용자말, false, null, '', 플랫폼);
+    상담_기록_(세션, 'bot', 상담_인계문, true, null, 'API 오류: ' + String(err && err.message || err).slice(0, 160), 플랫폼);
     상담_인계알림_(세션, 사용자말, 'API 오류 — ' + String(err && err.message || err).slice(0, 160), 플랫폼);
     return { reply: 공개 + 상담_인계문, handoff: true };
   }
 
   const 답 = String(out.data.reply || '').trim() || 상담_인계문;
   const 인계 = !!out.data.handoff || !out.data.reply;
-  상담_기록_(세션, 'user', 사용자말, false, null);
-  상담_기록_(세션, 'bot', 답, 인계, out.usage, 인계 ? ('인계: ' + (out.data.handoff_reason || '')) : '');
+  상담_기록_(세션, 'user', 사용자말, false, null, '', 플랫폼);
+  상담_기록_(세션, 'bot', 답, 인계, out.usage, 인계 ? ('인계: ' + (out.data.handoff_reason || '')) : '', 플랫폼);
   if (out.data.lead_name || out.data.lead_contact) 상담_리드적재_(세션, out.data);
   if (인계) 상담_인계알림_(세션, 사용자말, out.data.handoff_reason || '봇이 답할 수 없는 질문', 플랫폼);
   return { reply: 공개 + (인계 ? (답 === 상담_인계문 ? 답 : 답 + '\n\n' + 상담_인계문) : 답), handoff: 인계 };
@@ -283,12 +285,20 @@ function 셀안전_(v) {
   return /^[=+\-@\t\r]/.test(s) ? ("'" + s) : s;
 }
 
-function 상담_기록_(세션, 발신, 내용, 인계, usage, 비고) {
+/* 채널(fb=페북 학부모 / ig=인스타 학생)은 **소급이 안 된다** — 지나간 행에는 그 대화가 어디서 왔는지가
+ * 어디에도 없고(세션은 양쪽 다 숫자열), 08-03 유호님 교정이 가른 축이 바로 이것이다(묻는 사람이 둘이다).
+ * 엔진에서 쓰는 자리: 학부모/학생 말뭉치를 나누는 라벨 — 섞이면 톤·질문 분포가 한 덩어리가 된다. */
+function 상담_기록_(세션, 발신, 내용, 인계, usage, 비고, 채널) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ensureSheet(ss, '상담로그', 상담AI_로그헤더);
+  // ensureSheet 는 **만들 때만** 머리글을 쓴다 — 이미 서 있는 시트는 옛 폭 그대로라 새 칸이 이름 없이 쌓인다.
+  if (sh.getLastColumn() < 상담AI_로그헤더.length) {
+    sh.getRange(1, 1, 1, 상담AI_로그헤더.length).setValues([상담AI_로그헤더]);
+  }
   const u = usage || {};
   sh.appendRow([new Date(), 셀안전_(세션), 발신, 셀안전_(String(내용).slice(0, 2000)), 인계 ? 'Y' : '',
-    u.input_tokens || '', u.cache_read_input_tokens || '', u.output_tokens || '', 셀안전_(비고 || '')]);
+    u.input_tokens || '', u.cache_read_input_tokens || '', u.output_tokens || '', 셀안전_(비고 || ''),
+    채널 === 'ig' ? 'ig' : (채널 === 'fb' ? 'fb' : '')]);
 }
 
 // 이름 또는 연락처가 잡히면 leads에 적재. 같은 세션은 한 번만(중복 리드 방지)
@@ -341,7 +351,7 @@ function 상담_전송_(psid, text, opts) {
   opts = opts || {};
   const props = PropertiesService.getScriptProperties();
   const tok = (opts.플랫폼 === 'ig' ? props.getProperty('상담AI_IG토큰') : '') || props.getProperty('상담AI_페이지토큰');
-  if (!tok) { 상담_기록_(psid, 'system', '전송 불가 — 상담AI_페이지토큰 미설정', true, null); return false; }
+  if (!tok) { 상담_기록_(psid, 'system', '전송 불가 — 상담AI_페이지토큰 미설정', true, null, '', opts.플랫폼); return false; }
   if (!psid || (!text && !(opts.카드들 && opts.카드들.length))) return false;
   try {
     const res = UrlFetchApp.fetch('https://graph.facebook.com/v21.0/me/messages?access_token=' + encodeURIComponent(tok), {
@@ -354,13 +364,13 @@ function 상담_전송_(psid, text, opts) {
     });
     if (res.getResponseCode() !== 200) {
       const 오류 = 'Meta 전송 ' + res.getResponseCode() + ': ' + res.getContentText().slice(0, 200);
-      상담_기록_(psid, 'system', 오류, true, null);
+      상담_기록_(psid, 'system', 오류, true, null, '', opts.플랫폼);
       adminMail('[SYNK] ⚠ 상담AI 전송 실패', 오류 + '\n\n학부모에게 답장이 안 갔습니다. 메신저에서 직접 답변해 주세요.\n페이지 액세스 토큰 만료가 가장 흔한 원인입니다.');
       return false;
     }
     return true;
   } catch (e) {
-    상담_기록_(psid, 'system', '전송 예외: ' + String(e && e.message || e).slice(0, 200), true, null);
+    상담_기록_(psid, 'system', '전송 예외: ' + String(e && e.message || e).slice(0, 200), true, null, '', opts.플랫폼);
     return false;
   }
 }
@@ -432,7 +442,7 @@ function 상담_인계알림본_(세션, 사용자말, 사유, 플랫폼) {
    *   유호님이 읽은 것과 발송되는 것이 어긋난다(다이제스트로 여러 건이 한 통에 묶이면 실제로 그렇게 된다). */
   const 초안id = Utilities.getUuid().slice(0, 8);
   const 몽골어들 = 확장.초안.slice(0, 3).map(x => String(x.몽골어 || '').slice(0, 500));
-  상담_기록_(세션, 'draft', JSON.stringify({ id: 초안id, 초안: 몽골어들, 플랫폼: 플랫폼 || 'fb' }), false, null, '인계 초안(미발송) ' + 초안id);
+  상담_기록_(세션, 'draft', JSON.stringify({ id: 초안id, 초안: 몽골어들, 플랫폼: 플랫폼 || 'fb' }), false, null, '인계 초안(미발송) ' + 초안id, 플랫폼 || 'fb');
 
   /* 🔴 링크에 웹훅 마스터 키(상담AI_URL키)를 싣지 않는다 — 그 키는 doPost 의 유일한 인증이라,
    *   메일함에 남는 순간 위조 웹훅으로 우리 페이지가 아무에게나 메시지를 보내게 만들 수 있다.
@@ -634,7 +644,7 @@ function 상담_초안발송_(p) {
     }
     const tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
     sh.getRange(draftRow, 9).setValue('발송됨 ' + n + ' · ' + Utilities.formatDate(new Date(), tz, 'MM-dd HH:mm') + ' · ' + 초안id);
-    상담_기록_(세션, 'bot', 텍스트, false, null, '인계 초안 ' + n + ' 발송 — 유호님 선택');
+    상담_기록_(세션, 'bot', 텍스트, false, null, '인계 초안 ' + n + ' 발송 — 유호님 선택', d.플랫폼);
     return out('✅ 발송 완료 (초안 ' + n + ')\n\n' + 텍스트);
   } finally {
     lock.releaseLock();
