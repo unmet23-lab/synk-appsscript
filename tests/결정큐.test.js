@@ -240,7 +240,9 @@ function 한장픽스처() {
   });
   const sheetPath = path.join(dir, '한장.md');
   const r = q.build({ dir, date: DAY('2026-08-06') });
-  fs.writeFileSync(sheetPath, q.한장(r, DAY('2026-08-06')), 'utf8');
+  // ⚠ `이전`을 안 주면 **저장소의 진짜 한 장**(docs/_ops/결정큐_한장.md)에서 번호를 물려받는다 —
+  //   픽스처가 실저장소 상태에 매달려 CI에서 갈린다. 자기 경로를 준다(없으면 1부터).
+  fs.writeFileSync(sheetPath, q.한장(r, DAY('2026-08-06'), { 이전: sheetPath }), 'utf8');
   return { dir, sheetPath };
 }
 
@@ -250,6 +252,12 @@ test('한 장 — 항목마다 번호와 지문이 붙는다', () => {
   assert.equal(s.map.size, 3, '세 항목이 번호를 받아야 한다');
   assert.match(s.발행, /^\d{4}-\d{2}-\d{2}$/, '발행일이 없으면 밀림 판정을 못 한다');
   for (const [, v] of s.map) assert.match(v.지문, /^[0-9a-f]{10}$/);
+
+  // 옛 판(ol 줄머리)도 읽어야 **이미 유호님 손에 있는 한 장의 번호가 이어진다** — 못 읽으면
+  // 예약이 비어 전 항목이 1부터 다시 매겨지고, 그 한 번이 정확히 이 파일이 막는 사고다.
+  const 옛판 = path.join(path.dirname(sheetPath), '옛판.md');
+  fs.writeFileSync(옛판, '> **발행 2026-08-06**\n\n7. **[b]** 비 결정 <!--q:b|0123456789-->\n');
+  assert.deepEqual(q.시트읽기(옛판).map.get(7), { topic: 'b', 지문: '0123456789' }, '옛 판을 못 읽는다');
 });
 
 test('🔴 닫기는 행 번호가 아니라 지문으로 찾는다 — 그 사이 줄이 밀려도 맞게 닫는다', () => {
@@ -278,6 +286,60 @@ test('🔴 줄이 그 사이 바뀌었으면 닫지 않는다 — 엉뚱한 결�
   assert.equal(out.결과[0].ok, false, '내용이 바뀐 줄을 그대로 닫았다 — 조준이 밀린 것이다');
   assert.match(out.결과[0].사유, /바뀌었거나|다시 발행/);
   assert.match(fs.readFileSync(b, 'utf8'), /⏳ 셋째 결정인데/, '못 닫았는데 파일을 건드렸다');
+});
+
+test('🔴 재발행해도 번호는 그 결정을 계속 가리킨다 — 유호님 답은 늦게 온다', () => {
+  /* 실측(2026-08-07): 유호님이 한 장 #1 을 보고 「2번 완료」라 답하는 사이 옆 세션이 새 토픽을
+   * 만들고 아무 세션이나 `--한장`을 다시 냈다. 번호가 알파벳순으로 다시 매겨져 2번이 [c]에서
+   * [b]로 옮겨갔고, 지문은 **새 시트 기준**이라 그대로 맞아 [b]가 `ok=true`로 닫혔다.
+   * 지문은 시트↔메모리만 검사한다 — 유호님이 든 사본은 어느 층도 검사하지 못한다. */
+  const dir = fixture({
+    'MEMORY.md': '- [b](b.md)\n- [c](c.md)',
+    'b.md': '# B\n- ⏳ 비 결정\n',
+    'c.md': '# C\n- ⏳ 씨 결정\n',
+  });
+  const sheet = path.join(dir, '한장.md');
+  // ⚠ 번호는 **찍힌 줄**로 센다 — 시트읽기의 Map 은 같은 번호가 둘이면 하나를 덮어 가린다.
+  //   가려진 중복은 「유호님이 1번이라 답하면 두 결정 중 하나가 닫힌다」와 같은 말이다.
+  const 찍힌번호 = () => fs.readFileSync(sheet, 'utf8').split('\n')
+    .filter((l) => l.includes('<!--q:')).map((l) => Number((l.match(/\*\*(\d+)\.\*\*/) || [])[1]));
+  const 발행 = (날짜) => {
+    fs.writeFileSync(sheet, q.한장(q.build({ dir, date: 날짜 }), 날짜, { 이전: sheet }), 'utf8');
+    const ns = 찍힌번호();
+    assert.equal(new Set(ns).size, ns.length, `한 장에 같은 번호가 둘이다: ${ns.join(',')}`);
+  };
+
+  발행(DAY('2026-08-06'));
+  const 유호님이_든_사본 = q.시트읽기(sheet);
+  const 번호 = [...유호님이_든_사본.map].find(([, v]) => v.topic === 'c')[0];
+
+  // 옆 세션이 알파벳 앞에 오는 토픽을 새로 만든다 → 옛 판이었다면 전 번호가 한 칸씩 밀린다
+  fs.appendFileSync(path.join(dir, 'MEMORY.md'), '\n- [a](a.md)');
+  fs.writeFileSync(path.join(dir, 'a.md'), '# A\n- ⏳ 에이 결정\n');
+  발행(DAY('2026-08-07'));
+
+  assert.equal(q.시트읽기(sheet).map.get(번호).topic, 'c', '재발행이 번호를 다른 결정으로 옮겼다');
+  const out = q.닫음([번호], { dir, sheet, date: DAY('2026-08-07') });
+  assert.equal(out.결과[0].ok, true, `늦게 온 답을 못 닫았다: ${out.결과[0].사유}`);
+  assert.match(fs.readFileSync(path.join(dir, 'c.md'), 'utf8'), /✅ 씨 결정/, '유호님이 뜻한 줄이 안 닫혔다');
+  assert.match(fs.readFileSync(path.join(dir, 'b.md'), 'utf8'), /⏳ 비 결정/, '엉뚱한 결정에 「유호님 확정」이 박혔다');
+
+  // 닫힌 번호는 다시 쓰지 않는다 — 재사용하면 옛 답장이 남의 결정을 닫는 이 버그가 되살아난다
+  발행(DAY('2026-08-08'));
+  const 남은 = q.시트읽기(sheet);
+  assert.equal(남은.map.has(번호), false, '닫힌 번호가 한 장에 그대로 남았다');
+  assert.equal([...남은.map.values()].some((v) => v.topic === 'c'), false, '닫힌 결정이 다시 올라왔다');
+  for (const [n, v] of 남은.map) {
+    assert.equal(유호님이_든_사본.map.get(n)?.topic ?? v.topic, v.topic, `${n}번이 다른 결정으로 재사용됐다`);
+  }
+});
+
+test('한 장은 ol 이 아니라 불릿으로 번호를 낸다 — ol 은 렌더러가 1부터 다시 매긴다', () => {
+  // 번호에 틈이 생기는 순간 `N.` 은 거짓말이 된다(GitHub·폰 미리보기가 1,2,3으로 다시 그린다).
+  const { sheetPath } = 한장픽스처();
+  const 항목줄 = fs.readFileSync(sheetPath, 'utf8').split('\n').filter((l) => l.includes('<!--q:'));
+  assert.ok(항목줄.length >= 3, '항목이 없으면 이 검사가 아무것도 안 본다');
+  for (const l of 항목줄) assert.match(l, /^- \*\*\d+\.\*\* /, `ol 줄머리로 되돌아갔다: ${l.slice(0, 40)}`);
 });
 
 test('닫아도 원문은 지우지 않는다 — 되돌림이 ✅→⏳ 한 수여야 한다', () => {
