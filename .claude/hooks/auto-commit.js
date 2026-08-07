@@ -25,7 +25,12 @@
  *   · 구문 깨진 .js / 깨진 .json — 반쪽 문장을 스냅샷으로 남기면 push 순간 CI 가 빨개지고,
  *     깨진 settings.json 은 다음 세션의 훅을 통째로 죽인다. 고쳐지면 다음 턴에 자동으로 실린다.
  *   · 삭제 — Edit·Write 는 지우지 않으므로 삭제는 내 기록 밖의 손이다.
- *   · Bash·외부 앱이 만든 변경 — 기록이 없어 원리적으로 못 가른다(모름은 커밋하지 않는다).
+ *   · **내가 쓴 뒤 밖에서 바뀐 파일** — `edit-stamp` 훅이 편집 직후 남긴 바이트 지문과 다르면
+ *     안 싣는다(F225). 만진 기록은 PreToolUse 라 「편집하려 했다」까지만 알아서, 변이 시험이
+ *     놓아 둔 **일부러 깨뜨린 판**이 여기까지 똑같은 모양으로 온다 — 실물 `c3c8d98` 은 변이
+ *     2개가 얹힌 `repo-staleness.js` 를 「자동커밋: 미커밋 노출 차단」이라는 얼굴로 실었다.
+ *   · **편집 지문이 없는 파일** — 거절된 편집(PreToolUse 는 거절돼도 만진 기록을 남긴다)이거나
+ *     그 훅이 안 돈 경우다. Bash·외부 앱이 만든 변경도 여기로 떨어진다(모름은 커밋하지 않는다).
  *   · push 는 하지 않는다 — 되돌리기 어렵고 CI 를 태운다. push 는 `/close` 의 몫이다(그 4단계가
  *     원격 run 까지 확인한다). Apps Script 코드의 라이브 반영도 그대로 `/deploy` 가 통로다.
  *
@@ -69,6 +74,16 @@ try {
 } catch (_) { process.exit(0); }
 const 나 = store.safeId(원본sid);
 
+/* 내가 **직접 쓴 내용**의 지문 — `{좌표: 해시}`. 좌표는 만진 기록과 같은 공간(형제는 `../이름/`).
+ * 한저장소() 는 저장소 상대 경로로 보므로 접두를 떼서 넘긴다(정규화를 저쪽에 또 적지 않는다). */
+const 지문전체 = store.편집지문읽기(ROOT, 원본sid);
+function 지문떼기(접두) {
+  if (!접두) return 지문전체;
+  const m = Object.create(null);
+  for (const [k, v] of Object.entries(지문전체)) if (k.startsWith(접두)) m[k.slice(접두.length)] = v;
+  return m;
+}
+
 function git(args, cwd) {
   return spawnSync('git', ['-c', 'core.quotepath=false', ...args], {
     cwd, encoding: 'utf8', timeout: 15000, windowsHide: true,
@@ -86,7 +101,7 @@ const 제외 = new Set([
 
 /** 한 저장소를 처리한다. 저장소가 늘어도 **로직은 이 함수 하나**다 —
  *  형제용을 따로 적으면 그 순간 갈라지고, 갈라진 쪽의 증상은 언제나 「통과」다. */
-function 한저장소(뿌리, 이름, 내touched, 남touched) {
+function 한저장소(뿌리, 이름, 내touched, 남touched, 지문) {
   if (!내touched.length) return null;
   if (gitOk(['rev-parse', '--is-inside-work-tree'], 뿌리) === null) return null;
   for (const 상태 of ['rebase-merge', 'rebase-apply', 'MERGE_HEAD', 'CHERRY_PICK_HEAD']) {
@@ -105,13 +120,19 @@ function 한저장소(뿌리, 이름, 내touched, 남touched) {
     if (/[RC]/.test(토큰[i].slice(0, 2))) i++; // 이름바뀜: 다음 토큰은 옛 경로 — 새 경로가 지금 자리다
   }
 
-  const 후보 = []; const 함께남김 = []; const 깨짐 = [];
+  const 후보 = []; const 함께남김 = []; const 깨짐 = []; const 무기록 = []; const 밖에서바뀜 = [];
   for (const f0 of 내touched) {
     const f = 슬래시(f0);
     if (f.startsWith('../') || 제외.has(f) || !더러움.has(f)) continue;
     const 절대 = path.join(뿌리, f);
     if (!fs.existsSync(절대)) continue;                    // 삭제는 내 기록 밖의 손이다
     if (남touched.has(f)) { 함께남김.push(f); continue; }   // 내것 ∧ 함께 없음 만 (F104)
+    /* 🔑 「내것」의 마지막 칸 — 지금 디스크에 있는 것이 **내가 쓴 그 바이트**인가 (F225).
+     * 만진 기록은 PreToolUse 라 편집 의도까지고, 그 뒤 변이 시험·스크립트가 덮어써도
+     * 여기까지 모양이 같다. 구문검사는 못 잡는다 — 변이는 문법이 멀쩡한 채로 의미만 죽인다. */
+    const 기대 = 지문[f];
+    if (!기대) { 무기록.push(f); continue; }
+    if (store.편집지문계산(절대) !== 기대) { 밖에서바뀜.push(f); continue; }
     if (/\.(js|mjs|cjs)$/.test(f)) {
       const c = spawnSync(process.execPath, ['--check', 절대], { encoding: 'utf8', timeout: 15000, windowsHide: true });
       if (c.error || c.status !== 0) { 깨짐.push(f); continue; }
@@ -121,7 +142,7 @@ function 한저장소(뿌리, 이름, 내touched, 남touched) {
     }
     후보.push(f);
   }
-  if (!후보.length) return (함께남김.length || 깨짐.length) ? { 이름, 후보: [], 함께남김, 깨짐 } : null;
+  if (!후보.length) return (함께남김.length || 깨짐.length || 무기록.length || 밖에서바뀜.length) ? { 이름, 후보: [], 함께남김, 깨짐, 무기록, 밖에서바뀜 } : null;
 
   const 이름들 = 후보.map((f) => path.basename(f));
   const 머리 = 이름들.slice(0, 3).join('·') + (이름들.length > 3 ? ` +${이름들.length - 3}` : '');
@@ -129,7 +150,7 @@ function 한저장소(뿌리, 이름, 내touched, 남touched) {
   const 메시지 = `자동커밋: ${머리} — 미커밋 노출 차단(Stop 훅)`;
 
   const add = git(['add', '--', ...후보], 뿌리);
-  if (add.error || add.status !== 0) return { 이름, 후보: [], 함께남김, 깨짐, 실패: String(add.stderr || add.error || '').trim().slice(0, 160) };
+  if (add.error || add.status !== 0) return { 이름, 후보: [], 함께남김, 깨짐, 무기록, 밖에서바뀜, 실패: String(add.stderr || add.error || '').trim().slice(0, 160) };
 
   let cm;
   for (let 시도 = 0; 시도 < 3; 시도++) {
@@ -138,12 +159,12 @@ function 한저장소(뿌리, 이름, 내touched, 남touched) {
     if (!/index\.lock/.test(String(cm.stderr || ''))) break;
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 300); // 옆 세션 훅과의 락 경합만 기다린다
   }
-  if (cm.error || cm.status !== 0) return { 이름, 후보: [], 함께남김, 깨짐, 실패: String(cm.stderr || cm.error || '').trim().slice(0, 160) };
+  if (cm.error || cm.status !== 0) return { 이름, 후보: [], 함께남김, 깨짐, 무기록, 밖에서바뀜, 실패: String(cm.stderr || cm.error || '').trim().slice(0, 160) };
 
   /* 커밋했다고 믿지 말고 결과를 본다(F071) — 겹침·경로 어긋남이면 git 은 성공처럼 조용히 지나간다. */
   const 남은 = gitOk(['status', '--porcelain', '-z', '--', ...후보], 뿌리);
   const 미완 = (남은 === null || 남은.trim() !== '');
-  return { 이름, 후보, 함께남김, 깨짐, 해시: (gitOk(['rev-parse', '--short', 'HEAD'], 뿌리) || '').trim(), 미완, 머리 };
+  return { 이름, 후보, 함께남김, 깨짐, 무기록, 밖에서바뀜, 해시: (gitOk(['rev-parse', '--short', 'HEAD'], 뿌리) || '').trim(), 미완, 머리 };
 }
 
 let ss;
@@ -157,7 +178,7 @@ const 결과들 = [];
   if (내기록) {
     const 남 = new Set();
     for (const s of 산것들) if (s.sid !== 나) for (const f of s.touched) 남.add(슬래시(f));
-    const r = 한저장소(ROOT, null, 내기록.touched, 남);
+    const r = 한저장소(ROOT, null, 내기록.touched, 남, 지문떼기(''));
     if (r) 결과들.push(r);
   }
 }
@@ -171,7 +192,7 @@ try {
     if (!내기록) continue;
     const 남 = new Set();
     for (const s of 형제ss) if (s.sid !== 나 && owner.살았나(s)) for (const f of s.touched) 남.add(슬래시(f));
-    const r = 한저장소(뿌리, 저장소, 내기록.touched, 남);
+    const r = 한저장소(뿌리, 저장소, 내기록.touched, 남, 지문떼기(store.siblingPrefix(저장소)));
     if (r) 결과들.push(r);
   }
 } catch (_) { /* 형제 조회 실패가 이 저장소의 커밋을 되돌리지는 않는다 */ }
@@ -188,6 +209,8 @@ for (const r of 결과들) {
   }
   if (r.함께남김.length) 줄.push(`   ⚠ ${딱지}남이 함께 만진 ${r.함께남김.length}건은 남겼다(F104): ${r.함께남김.join(', ')} — git diff 로 가른 뒤 손 커밋`);
   if (r.깨짐.length) 줄.push(`   ⚠ ${딱지}구문 깨짐 ${r.깨짐.length}건 대기: ${r.깨짐.join(', ')} — 고쳐지면 다음 턴에 자동으로 실린다`);
+  if (r.밖에서바뀜.length) 줄.push(`   ⚠ ${딱지}내가 쓴 뒤 **밖에서 바뀐** ${r.밖에서바뀜.length}건은 안 실었다(F225 — 변이 시험·스크립트가 놓아 둔 판일 수 있다): ${r.밖에서바뀜.join(', ')} — 내 판이 맞으면 다시 저장하면 다음 턴에 실린다`);
+  if (r.무기록.length) 줄.push(`   ⚠ ${딱지}편집 지문이 없는 ${r.무기록.length}건은 안 실었다(편집이 거절됐거나 edit-stamp 훅이 안 돌았다): ${r.무기록.join(', ')} — 모름은 커밋하지 않는다`);
 }
 if (!줄.length) process.exit(0);
 process.stdout.write(JSON.stringify({ systemMessage: 줄.join('\n') }));
