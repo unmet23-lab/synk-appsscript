@@ -97,16 +97,26 @@ const 대안 = '\n→ 대신: git commit -m "..." -- 경로A 경로B'
   + '\n   묶어 쓰려면 한 호출 안에서: git add 경로A 경로B && git commit -m "..."'
   + '\n   의도적 예외라면 명령 앞에 GIT_SCOPE_BYPASS=1 을 붙인다.';
 
+/* 🔑 발동한 **조각**을 돌려준다 — 발동 조건과 예외 조건을 **같은 조각**에서 본다 (F216·F218).
+ *   둘을 각각 명령 **전체**에서 찾으면, 다른 조각의 예외가 통과권이 된다. 실측 3형이 전부
+ *   「통과」로 샜다(가드가 존재하는 이유 그 자체를 뚫는 방향이다):
+ *     · `git clean -n && git clean -fd`                  → ③ 미추적 삭제(복구 경로 0 · F025)
+ *     · `git commit -- a.md && git commit -a -m x`       → ② 남의 스테이징 동승(F013·F014)
+ *     · `git rebase --abort && git reset --hard origin/master` → ⑤ 남의 미커밋 소멸(F037)
+ *   4번째라 호출부마다 고치지 않고 통로를 하나 둔다 — 새 규칙도 이걸 통해야 같은 구멍이 안 생긴다. */
+const 걸린조각 = (발동, 예외) => exec.split(/&&|\|\||[;|\n]/).find((s) => 발동(s) && !(예외 && 예외(s)));
+
 /* ① git add -A / --all / . — untracked까지 담는다(F015: 유호님 git 밖 정본·자격증명 폴더가 같은 트리에 있다) */
-if (re('add\\b[^&|;]*?(\\s-A\\b|\\s--all\\b|\\s\\.(\\s|$))').test(exec)) {
+if (걸린조각((s) => re('add\\b[^&|;]*?(\\s-A\\b|\\s--all\\b|\\s\\.(\\s|$))').test(s))) {
   deny('[git-scope-guard] `git add -A` · `git add .` 차단 — 내가 지정하지 않은 파일까지 담는다.'
     + '\n이 저장소는 세션 여럿이 같은 작업 트리를 공유하고, 유호님의 git 밖 정본과 자격증명 폴더가 그 안에 있다.'
     + '\n2026-08-03 실사고(F015): 이 명령이 사업문서 2종을 커밋해 push까지 갔다.' + 대안);
 }
 
 /* ② git commit -a / --all — untracked는 안 담지만 **남의 tracked 수정**을 담는다(F013·F014 계열) */
-if (re('commit\\b[^&|;]*?(\\s-a\\b|\\s--all\\b|\\s-[a-zA-Z]*a[a-zA-Z]*\\b)').test(exec)
-    && !re('commit\\b[^&|;]*?\\s--\\s').test(exec)) {
+if (걸린조각(
+  (s) => re('commit\\b[^&|;]*?(\\s-a\\b|\\s--all\\b|\\s-[a-zA-Z]*a[a-zA-Z]*\\b)').test(s),
+  (s) => re('commit\\b[^&|;]*?\\s--\\s').test(s))) {
   deny('[git-scope-guard] `git commit -a` 차단 — 추적 중인 **남의 미커밋 수정**까지 함께 커밋된다.'
     + '\n같은 작업 트리를 세션 5~6개가 공유한다(F013·F014 실사고).' + 대안);
 }
@@ -115,8 +125,9 @@ if (re('commit\\b[^&|;]*?(\\s-a\\b|\\s--all\\b|\\s-[a-zA-Z]*a[a-zA-Z]*\\b)').tes
  * 이 트리의 미추적 파일은 대개 **다른 세션이 방금 만든 작업물**이다(F025 실사고: 옆 세션의
  * 미커밋 테스트 파일과 codex/ 디렉터리가 정리 한 번에 소멸). dry-run(-n)만 통과 —
  * 커밋과 달리 범위를 좁혀도(경로 지정) 남의 신작을 지우는 성질이 그대로라 경로 예외를 두지 않는다. */
-if (re('clean\\b').test(exec)
-    && !re('clean\\b[^&|;]*?(\\s-n\\b|\\s--dry-run\\b)').test(exec)) {
+if (걸린조각(
+  (s) => re('clean\\b').test(s),
+  (s) => re('clean\\b[^&|;]*?(\\s-n\\b|\\s--dry-run\\b)').test(s))) {
   deny('[git-scope-guard] `git clean` 차단 — 미추적 파일은 git의 어떤 안전망에도 없어 복구가 불가능하고,'
     + '\n이 공유 트리의 미추적 파일은 대개 다른 세션이 방금 만든 작업물이다(F025 실사고).'
     + '\n→ 확인만 하려면: git clean -n (dry-run — 지우지 않고 목록만)'
@@ -145,11 +156,13 @@ if (re('clean\\b').test(exec)
  *     · 그 밖의 커밋 생성(F038 원형: 남의 rebase 중 `git commit -- 경로`) → 그대로 차단.
  *   그리고 **체인을 분해해서 본다** — `git add <해소한 파일> && git merge --continue` 가
  *   commit 계열 단어 하나 때문에 통째로 막히던 것이 F103 의 나머지 절반이다.
- *   (①②③은 이미 `[^&|;]` 로 구분자를 안 넘는데 ④만 명령 전체를 한 덩어리로 봤다.) */
+ *   ⚠ 이 자리에 「①②③은 `[^&|;]` 라 안전하고 ④만 그랬다」고 적혀 있었는데 **틀렸다**(F216·F218):
+ *     발동 정규식이 구분자를 안 넘어도, **예외** 정규식을 명령 전체에서 찾으면 다른 조각의 예외가
+ *     통과권이 된다. ②③⑤⑦이 전부 그 형태였다 — 지금은 넷 다 `걸린조각` 을 통한다. */
 const 마침꼴 = '(merge|rebase|cherry-pick|revert)\\b[^&|;]*?\\s--(continue|abort|skip|quit)\\b';
-const 커밋생성 = exec
-  .split(/&&|\|\||[;|\n]/)
-  .some((seg) => re('(commit|cherry-pick|revert|merge)\\b').test(seg) && !re(마침꼴).test(seg));
+const 커밋생성 = !!걸린조각(
+  (s) => re('(commit|cherry-pick|revert|merge)\\b').test(s),
+  (s) => re(마침꼴).test(s));
 if (커밋생성) {
   const { execFileSync } = require('child_process');
   let gitDir = null;
@@ -185,9 +198,15 @@ if (커밋생성) {
  * 🔑되감기 자체는 금지하지 않는다(정당한 필요가 있다 — 오늘 나도 abort가 필요했다).
  * 막는 것은 **트리에 미커밋 수정이 있는데 확인 없이 되감는 것**이고,
  * 깨끗한 트리에서는 조용히 통과한다(과잉 차단은 BYPASS 습관을 만든다 — ①~③과 같은 원칙). */
-if (re('(rebase|merge|cherry-pick|revert)\\s+--abort\\b').test(exec)
-    || re('reset\\b[^&|;]*?\\s--hard\\b').test(exec)
-    || re('(checkout|restore)\\b[^&|;]*?\\s--\\s+\\.').test(exec)) {
+/* ⚠ ⑤의 `--abort` 는 **예외가 아니라 완화**다(아래 F103 주석). 그래서 조각을 고르는 순서가
+ *   판정을 바꾼다 — 위험한 조각(abort 아닌 되감기)을 **먼저** 집고, 없을 때만 abort 조각을 쓴다.
+ *   그냥 첫 조각을 쓰면 `git rebase --abort && git reset --hard` 가 abort 의 완화를 물려받는다. */
+const 되감기꼴 = (s) => re('(rebase|merge|cherry-pick|revert)\\s+--abort\\b').test(s)
+  || re('reset\\b[^&|;]*?\\s--hard\\b').test(s)
+  || re('(checkout|restore)\\b[^&|;]*?\\s--\\s+\\.').test(s);
+const 탈출구꼴 = (s) => re('(rebase|merge|cherry-pick|revert)\\s+--abort\\b').test(s);
+const 되감기조각 = 걸린조각(되감기꼴, 탈출구꼴) || 걸린조각(되감기꼴);
+if (되감기조각) {
   const { execFileSync } = require('child_process');
   let 더러운 = [];
   try {
@@ -205,7 +224,7 @@ if (re('(rebase|merge|cherry-pick|revert)\\s+--abort\\b').test(exec)
    *   ⚠ 빼는 것은 **그 작업의 정식 탈출구(--abort)일 때만**이다 — reset --hard·checkout -- . 는
    *      그 작업과 무관한 뭉툭한 도구라 전부 그대로 센다(F037 보호는 거기서 온전하다).
    *   남의 tracked 수정(M·A·D…)은 여전히 센다 — 그게 F037 이 지키려던 바로 그것이다. */
-  const 탈출구 = re('(rebase|merge|cherry-pick|revert)\\s+--abort\\b').test(exec);
+  const 탈출구 = 탈출구꼴(되감기조각);   // 명령 전체가 아니라 **걸린 그 조각**을 본다(F218)
   const unmerged = (l) => /^(DD|AU|UD|UA|DU|AA|UU)\s/.test(l);
   const 충돌수 = 더러운.filter(unmerged).length;
   if (탈출구) 더러운 = 더러운.filter((l) => !unmerged(l));
@@ -247,9 +266,9 @@ if (re('(rebase|merge|cherry-pick|revert)\\s+--abort\\b').test(exec)
  *          그게 트리를 통째로 쓸어담는 F066 사고 그 형태다. 새는 방향은 언제나 통과다. */
 {
   const 읽기전용 = /^(list|show|pop|apply|drop|clear|branch|create|store)$/;
-  const 문제세그 = exec.split(/&&|\|\||[;|\n]/).find((seg) => {
-    const m = re('stash\\b\\s*(\\S*)').exec(seg);
-    return m && !읽기전용.test(String(m[1] || ''));
+  const 문제세그 = 걸린조각((s) => {
+    const m = re('stash\\b\\s*(\\S*)').exec(s);
+    return !!m && !읽기전용.test(String(m[1] || ''));
   });
   if (문제세그) {
     const { execFileSync } = require('child_process');

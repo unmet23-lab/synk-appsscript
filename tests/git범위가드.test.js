@@ -456,6 +456,47 @@ test('체인 안의 조회는 여전히 안 막는다 — 거짓양성이 곧 BY
   });
 });
 
+/* 🔴 F218 — ⑦과 **같은 원인**이 ②③⑤에도 있었다. 발동은 조각을 안 넘는데 **예외**를 명령
+ *    전체에서 찾아, 앞 조각의 무해한 형태가 뒤 조각의 위험한 명령에 통과권을 줬다.
+ *    셋 다 이 가드가 존재하는 이유 그 자체를 뚫는 방향이다(F013·F025·F037). */
+test('🔴 앞 조각의 안전한 형태가 뒤 조각에 통과권을 주지 않는다 (F218 — ②③⑤)', () => {
+  더러운저장소((dir) => {
+    [
+      ['git commit -- a.md && git commit -a -m x', /commit -a/],          // ② 남의 스테이징 동승
+      ['git clean -n && git clean -fd', /git clean/],                     // ③ 미추적 삭제(복구 0)
+      ['git rebase --abort && git reset --hard origin/master', /되감/],   // ⑤ 남의 미커밋 소멸
+    ].forEach(([c, 지문]) => {
+      const r = 가드_at(c, dir);
+      assert.equal(r.차단, true, `앞 조각이 안전하다고 뒤엣 위험을 놓쳤다: ${c}`);
+      assert.match(r.사유, 지문, `막긴 했는데 다른 규칙이 잡았다(원인이 안 고쳐진 것): ${c}`);
+    });
+  });
+});
+
+test('그 셋의 안전한 형태는 여전히 통과한다 — 과잉 차단은 BYPASS 를 가르친다 (F218)', () => {
+  더러운저장소((dir) => {
+    /* ⚠ 「막혔나」로 재면 안 되는 자리가 둘이다 — 더러운 트리에서 `git commit -- a.md` 는 ⑧(커밋
+     *   범위 소유자)이, `git rebase --abort` 는 ⑤ 자신이 정상적으로 잡는다(237·247행이 이미 못박음).
+     *   여기서 물을 것은 **그 규칙이 발동했는지**지 명령이 통과했는지가 아니다. */
+    assert.doesNotMatch(가드_at('git commit -- a.md', dir).사유, /commit -a/,
+      '경로를 준 커밋을 ② 가 잡았다 — 예외가 자기 조각에서 안 걸린다');
+    const r = 가드_at('git clean -n', dir);
+    assert.equal(r.차단, false, `dry-run 을 막았다\n   사유: ${r.사유}`);
+  });
+});
+
+/* ⑤의 「abort 는 unmerged 를 위험에서 뺀다」 완화(F103)는 **충돌뿐인 트리**에서만 걸린다.
+ * 일반 더러운 트리로는 이 자리를 못 잰다 — 다른 이유로 막혀 초록이 난다(변이 시험이 드러냈다:
+ * 조각 고르는 순서를 지워도 아무 검사가 안 빨개졌다). 픽스처는 아래 `충돌저장소` 를 그대로 쓴다. */
+test('🔴 충돌뿐인 트리 — abort 의 완화가 뒤따르는 reset --hard 를 세탁하지 않는다 (F218 ⑤)', () => {
+  충돌저장소({}, (dir) => {
+    assert.equal(가드_at('git merge --abort', dir).차단, false,
+      '충돌뿐인 트리의 정당한 abort 를 막았다 — 그 작업의 유일한 탈출구다(F103)');
+    assert.equal(가드_at('git merge --abort && git reset --hard origin/master', dir).차단, true,
+      'abort 의 완화가 뒤엣 reset --hard 까지 세탁했다 — 남의 미커밋이 그대로 날아간다(F037)');
+  });
+});
+
 test('stash 도 BYPASS 는 통한다', () => {
   더러운저장소((dir) => {
     assert.equal(가드_at('GIT_SCOPE_BYPASS=1 git stash', dir).차단, false, '의도적 예외 통로가 막혔다');
