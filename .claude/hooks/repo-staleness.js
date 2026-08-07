@@ -129,7 +129,7 @@ function 잔재조각(cwd, ref) {
     try { 내것 = g(['rev-parse', `${ref}:${경로}`], cwd); } catch (_) { return { 경로, 상태: '삭제' }; }
     let 지금 = null;
     try { 지금 = g(['rev-parse', `HEAD:${경로}`], cwd); } catch (_) { /* HEAD 에 없는 조각 */ }
-    return { 경로, 상태: '모름' };
+    return { 경로, 상태: 지금 === 내것 ? '동일' : '모름' };
   });
 }
 
