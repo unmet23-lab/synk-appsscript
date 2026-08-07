@@ -3,7 +3,7 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { execFileSync, spawnSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -493,13 +493,17 @@ test('🔴 만석 처방을 board-move 가 실제로 집는다 — 따를 수 �
   const 픽 = fs.mkdtempSync(path.join(os.tmpdir(), 'boardmove-'));
   fs.writeFileSync(path.join(픽, 'b.md'), 판, 'utf8');
   fs.writeFileSync(path.join(픽, 'a.md'), '# 아카이브\n\n---\n', 'utf8');
+  /* 던지는 형태로 띄운다 — 반환형(`spawnSync(process.execPath …)`)은 미실행을 「통과」로
+   * 읽는 옛 통로라 이 저장소가 파일 단위로 금지한다(tests/훅통로.test.js). */
   for (const needle of 문구) {
-    const res = spawnSync(process.execPath, [MOVE, '--dry', needle], {
-      encoding: 'utf8',
-      env: { ...process.env, SYNK_BOARD: path.join(픽, 'b.md'), SYNK_BOARD_ARCHIVE: path.join(픽, 'a.md') },
-    });
-    assert.strictEqual(res.status, 0,
-      `처방이 준 문구를 board-move 가 못 쓴다: "${needle}"\n${res.stderr || res.stdout}`);
+    try {
+      execFileSync(process.execPath, [MOVE, '--dry', needle], {
+        encoding: 'utf8', stdio: 'pipe',
+        env: { ...process.env, SYNK_BOARD: path.join(픽, 'b.md'), SYNK_BOARD_ARCHIVE: path.join(픽, 'a.md') },
+      });
+    } catch (e) {
+      assert.fail(`처방이 준 문구를 board-move 가 못 쓴다: "${needle}"\n${e.stderr || e.message}`);
+    }
   }
   fs.rmSync(픽, { recursive: true, force: true });
 });
