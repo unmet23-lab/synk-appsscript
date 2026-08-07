@@ -92,8 +92,12 @@ function 줄판정(line) {
    * 실측: 하루치 3칸 중 2칸이 「⏳ 남은 것」·「⏳ 유호님 대기」 같은 헤더로 채워졌다 —
    * 배달은 됐는데 읽고 나면 무엇을 답해야 하는지 모른다. 빈 배달이 큐의 신뢰를 깎는다.
    * (기존 「글자 수 2 미만」 필터는 「## ⏳」만 걸러서 뒤에 말이 붙은 헤더를 못 잡았다.)
-   * 항목은 불릿·문단으로 쓴다. 헤더 아래 실제 항목이 있으면 그게 배달된다. */
-  if (/^\s{0,3}#{1,6}\s/.test(line)) return null;
+   * 항목은 불릿·문단으로 쓴다. 헤더 아래 실제 항목이 있으면 그게 배달된다.
+   * [2026-08-07] 🔴 **여기서 `null` 을 돌려준 것이 결함이었다** — null 은 「⏳ 아님」이라
+   * 이 줄은 배달도 폐기함도 아닌 **무기록**으로 사라졌다. 「헤더 아래 실제 항목이 있으면」이
+   * 성립 안 하는 파일이 34개였고(불릿에 ⏳ 를 안 단다), 그중 하나가 소급불가 ①-2·①-12 를
+   * 여는 유호님 결정이었다. 판정은 그대로 「항목 아님」이되 **기록은 남긴다**. */
+  if (/^\s{0,3}#{1,6}\s/.test(line)) return { 사유: '절 제목으로 판정', 절제목: true };
   const masked = markerClause(stripMd(maskCodeSpans(line)));
   if (masked === null) return { 사유: '문장 속 지시어로 판정' };
   const clean = unmaskCodeSpans(masked);
@@ -186,17 +190,26 @@ function extract(dir) {
     topic: f.replace(/\.md$/, ''), line: i + 1, 사유,
     text: line.trim().slice(0, MAX_LEN),
   });
+  /* [2026-08-07] 절 제목은 폐기함에 **섞지 않는다** — 76줄짜리 폐기함은 이미 아무도 안 읽는
+   * 크기라(「걸러진 전수 확인」이 5일간 0회였다) 거기 넣으면 무기록에서 무독으로 옮기는 것뿐이다.
+   * 대신 「절 제목을 걸어 놓고 그 파일이 아무것도 못 낸다」는 **깨진 약속**만 따로 센다 —
+   * 파일 단위라 목록이 짧고, 하나 고칠 때마다 줄어든다. */
+  const 절뿐 = [];
   for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.md') && !인덱스다(n))) {
     const full = path.join(dir, f);
     const text = fs.readFileSync(full, 'utf8');
     // 자동 생성된 역링크 구간은 큐가 아니다
     const body = text.split('<!-- memory-graph:역링크 시작')[0];
     const mtime = fs.statSync(full).mtimeMs;
+    const 절제목 = [];
+    let 배달 = 0;
     body.split('\n').forEach((line, i) => {
       const 판정 = 줄판정(line);
       if (!판정) return;
+      if (판정.절제목) { 절제목.push({ line: i + 1, text: line.trim().slice(0, MAX_LEN) }); return; }
       if (판정.사유) return 버린다(f, i, line, 판정.사유);
       const clean = 판정.clean;
+      배달 += 1;
       items.push({
         topic: f.replace(/\.md$/, ''),
         line: i + 1,
@@ -208,10 +221,12 @@ function extract(dir) {
         notBefore: gateDate(clean),   // null이면 지금 배달 대상
       });
     });
+    if (절제목.length && !배달) 절뿐.push({ topic: f.replace(/\.md$/, ''), 제목: 절제목 });
   }
   /* 열거 불가로 얹는다 — 그냥 대입하면 `deepStrictEqual(extract(d), [])` 하는 기존 검사가
    * 배열의 own 열거 속성을 함께 세서 깨진다(결정큐_코드스팬 실측). 반환 형태 불변이 조건이었다. */
   Object.defineProperty(items, '버려진', { value: 버려진 });
+  Object.defineProperty(items, '절뿐', { value: 절뿐 });
   return items;
 }
 
@@ -299,7 +314,7 @@ function build(opts = {}) {
     .filter((it) => it.notBefore !== null && it.notBefore > now)
     .sort((a, b) => a.notBefore - b.notBefore);
   const ranked = rank(due, blockers);
-  return { total: ranked.length, ranked, today: pick(ranked, count, date), blockers, scheduled, 버려진: items.버려진 || [] };
+  return { total: ranked.length, ranked, today: pick(ranked, count, date), blockers, scheduled, 버려진: items.버려진 || [], 절뿐: items.절뿐 || [] };
 }
 
 /* 걸러진 ⏳ 한 줄 — 목록은 --버려진 에 있다.
@@ -308,8 +323,14 @@ function build(opts = {}) {
  * 그래서 매 세션 유일하게 읽히는 화면에는 폐기함이 **한 번도** 안 떴다(보안 제안 1건이 이틀간 안 보였다).
  * 판정을 두 곳에 적으면 갈라진다(신뢰성 ④) — 훅은 이 함수를 require 해 같은 문구를 쓴다. export 필수. */
 function 버려진줄(r) {
+  const 줄 = [];
   const n = (r.버려진 || []).length;
-  return n ? `⚠ ⏳ ${n}줄이 항목이 아닌 것으로 걸러졌다 — 진짜 미결이 섞였는지 확인: node tools/decision-queue.js --버려진` : '';
+  if (n) 줄.push(`⚠ ⏳ ${n}줄이 항목이 아닌 것으로 걸러졌다 — 진짜 미결이 섞였는지 확인: node tools/decision-queue.js --버려진`);
+  /* 폐기함과 **다른 칸**이다: 저건 「걸렀다」고 기록은 남은 줄이고, 이건 「그 파일이 결정을
+   * 내걸어 놓고 아무것도 못 낸다」는 파일 단위 신호다. 한 줄로 합치면 34가 76에 묻힌다. */
+  const s = (r.절뿐 || []).length;
+  if (s) 줄.push(`⚠ ⏳ 절 제목만 걸고 **배달 0건**인 파일 ${s}개 — 그 결정은 유호님께 안 간다: node tools/decision-queue.js --절`);
+  return 줄.join('\n  ');
 }
 
 function render(r, date) {
@@ -478,6 +499,12 @@ function main() {
     if (!r.버려진.length) return console.log('\n[걸러진 ⏳] 0건\n');
     console.log(`\n[걸러진 ⏳] ${r.버려진.length}건 — 큐에 없다. 진짜 미결이면 ⏳를 줄머리나 구분자(·:) 뒤로 옮긴다\n`);
     r.버려진.forEach((it) => console.log(`     [${it.topic}:${it.line}] ${it.사유}\n     ${it.text}`));
+    return;
+  }
+  if (args.includes('--절')) {
+    if (!r.절뿐.length) return console.log('\n[⏳ 절 제목만 · 배달 0건] 0파일\n');
+    console.log(`\n[⏳ 절 제목만 · 배달 0건] ${r.절뿐.length}파일 — 살아있으면 ⏳를 절 아래 항목 줄로 내리고, 끝났으면 제목의 ⏳를 ✅로 닫는다\n`);
+    r.절뿐.forEach((it) => it.제목.forEach((h) => console.log(`     [${it.topic}:${h.line}]\n     ${h.text}`)));
     return;
   }
   if (args.includes('--all')) {
