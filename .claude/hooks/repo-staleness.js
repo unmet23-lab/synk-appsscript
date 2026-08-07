@@ -129,7 +129,7 @@ function 잔재조각(cwd, ref) {
     try { 내것 = g(['rev-parse', `${ref}:${경로}`], cwd); } catch (_) { return { 경로, 상태: '삭제' }; }
     let 지금 = null;
     try { 지금 = g(['rev-parse', `HEAD:${경로}`], cwd); } catch (_) { /* HEAD 에 없는 조각 */ }
-    return { 경로, 상태: 지금 === 내것 ? '동일' : '모름' };
+    return { 경로, 상태: '모름' };
   });
 }
 
@@ -239,7 +239,7 @@ process.stdin.on('end', () => {
        * 조각이 「모름」으로 바뀌는 순간 같은 잔재가 부활해 다시 운다. */
       fs.writeFileSync(표, JSON.stringify({
         at: Date.now(),
-        잔재: [...new Set([...알린잔재, ...새잔재.map((s) => s.해시)])],
+        잔재: [...new Set([...알린잔재, ...본잔재.map((s) => s.해시)])],
       }));
     } catch (_) { /* 못 써도 판정은 이미 했다 */ }
   }
