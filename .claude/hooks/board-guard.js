@@ -165,6 +165,44 @@ function 활성목록(text) {
   return 줄.length ? '\n   지금 활성으로 센 줄:\n' + 줄.join('\n') : '';
 }
 
+/* ②의 처방은 **그대로 실행할 수 있어야 한다** (F103 축 · 2026-08-07 실측)
+ * 전체 상한에 걸리면 ②는 「오래된 완료 줄부터 옮겨라」만 냈다 — 어느 줄인지도, 그 줄을
+ * board-move 에 **어떤 문구로** 줘야 하는지도 없다. board-move 는 부분문자열 유일 매칭이라
+ * 문구 고르기가 손일이고(굵게·백틱·「」가 섞여 셸에서도 깨진다), 그래서 아무도 안 치우고
+ * 만석이 유지돼 다음 세션이 선언을 못 한다 — 실측: 내가 이 자리에서 막혔고, 손으로 고른
+ * 문구 2개 중 1개가 빗나갔다. ①(활성 상한)은 이미 목록을 내밀고 있었다. 같은 것을 ②에도.
+ *
+ * ⚠ 생사 판정은 **여기서 하지 않는다** — board-move 가 그 자리(주인·미커밋)를 이미 본다.
+ *   훅이 그것까지 재현하면 판정이 두 곳으로 갈라지고, 갈라진 쪽은 조용히 틀린다. */
+function 완료줄들(text) {
+  return text.split('\n').filter(isDataRow).filter((l) => !isActiveRow(l));
+}
+
+/* board-move 와 **같은 판정**(부분문자열·유일)으로 문구를 고른다.
+ * 따옴표·백틱 앞에서 자른다 — 큰따옴표로 감싼 인자 안에서 그 둘만 셸을 깬다(백틱은 명령치환).
+ * `*` 는 자르지 않는다: 큰따옴표 안에서 확장되지 않고, 자르면 유일해질 여지만 좁아진다. */
+function 이관문구(line, 전체) {
+  const 안전 = (cellsOfRow(line)[1] || '').trim().replace(/^\*+/, '').split(/["`]/)[0].trim();
+  if (!안전) return null;
+  for (let n = 4; n <= 안전.length + 3; n += 3) {
+    const needle = 안전.slice(0, Math.min(n, 안전.length));
+    if (전체.filter((l) => l.includes(needle)).length === 1) return needle;
+  }
+  return null;
+}
+
+function 이관처방(text) {
+  const 전체 = text.split('\n').filter(isDataRow);
+  /* 자르기는 **문구를 뽑은 뒤**다 — 앞쪽 줄에서 유일 문구를 못 찾았다고 처방이 비면
+   * 「완료 줄이 있는데 옮길 명령이 없다」는 모순이 나온다(그 자리가 곧 우회다). */
+  const 명령 = 완료줄들(text).map((l) => 이관문구(l, 전체)).filter(Boolean).slice(0, 5);
+  /* 명령이 0개인 자리는 **도달할 수 없다** — 완료 줄이 없으면 전체 상한보다 활성 상한(①)이
+   * 먼저 잡는다. 남는 것은 파일을 못 읽은 폴백뿐이라 거기선 조용히 원래 문구만 낸다. */
+  if (!명령.length) return '';
+  return '\n   아카이브로 옮길 **완료** 줄 — 그대로 실행하면 된다(주인 생사·남의 미커밋은 board-move 가 본다):\n'
+    + 명령.map((n) => `     node tools/board-move.js "${n}"`).join('\n');
+}
+
 /* 안내도 위 목록에서 파생한다 — 판정과 안내가 갈라지면 「시킨 대로 썼는데 막힌다」가 되고,
  * 그게 F094 의 재발 원인(처방을 따를 수 없어 표기가 갈라진다)이다. */
 function 표기안내() {
@@ -243,7 +281,8 @@ if (active > MAX_ACTIVE) {
 if (total > MAX_ROWS) {
   deny(
     `[board-guard] 세션보드 표가 ${total}줄이 된다(상한 ${MAX_ROWS}줄).\n` +
-      '→ 오래된 **완료** 줄부터 docs/세션보드_아카이브.md 맨 위로 옮긴 뒤 다시 시도할 것. 활성(작업중·진행중·대기) 줄은 남긴다.'
+      '→ 오래된 **완료** 줄부터 docs/세션보드_아카이브.md 맨 위로 옮긴 뒤 다시 시도할 것. 활성(작업중·진행중·대기) 줄은 남긴다.' +
+      이관처방(resulting !== null ? resulting : (() => { try { return fs.readFileSync(filePath, 'utf8'); } catch (_) { return ''; } })())
   );
 }
 
