@@ -540,6 +540,50 @@ test('F148 — resolve 도 락 안에서 읽는다 (행 번호는 그 사이 밀
   assert.match(행.find((l) => /F002/.test(l)), /무엇이 막았나/, 'F002 가 해소돼야 한다');
 });
 
+/* 🔴 장부는 add() 만 쓰는 통로가 아니다 — 손편집·폰작업반입 병합으로도 행이 늘어난다.
+ * 그래서 쓰는 쪽의 소독에 기대면 안 되고 읽는 쪽이 버텨야 한다.
+ * 실측 08-07: 손으로 들어온 F193 행의 `2>&1|docs/세션보드.md` 가 칸을 하나 밀어
+ * 살아있는 신호가 「해소됨」으로 읽혔다 — --open 에서 통째로 사라지고 집계는 해소로 셌다. */
+const 백틱행 = '| F003 | 2026-08-07 | 마찰 | 회차 키가 `2>&1|docs/보드.md` 를 먹는다 — 뒷문장까지 신고문이다 | |';
+
+test('🔴 read — 백틱 안 파이프는 칸막이가 아니다 (살아있는 신호가 해소로 숨던 자리)', () => {
+  const L = mkLedger();
+  fs.appendFileSync(L, `${백틱행}\n`, 'utf8');
+  const 열린것 = run(L, ['--open']);
+  assert.ok(열린것.includes('F003'), '백틱 안 파이프 하나로 살아있는 신호가 --open 에서 통째로 사라졌다');
+  assert.ok(열린것.includes('뒷문장까지 신고문이다'), '신고문이 파이프 자리에서 잘렸다');
+  assert.ok(run(L, []).includes('살아있음 2'), '집계가 그 행을 해소로 셌다 — 무엇이 작동했나가 거짓말이 된다');
+});
+
+test('🔴 resolve — 백틱 파이프가 든 행을 닫아도 신고문이 안 잘린다', () => {
+  const L = mkLedger();
+  fs.appendFileSync(L, `${백틱행}\n`, 'utf8');
+  run(L, ['resolve', 'F003', '무엇이 막았나']);
+  const 행 = rowsOf(L).find((l) => /F003/.test(l));
+  assert.ok(행.includes('`2>&1|docs/보드.md`'), '되쓸 때 신고문의 코드 조각이 사라졌다');
+  assert.ok(행.includes('뒷문장까지 신고문이다'), '되쓸 때 신고문 뒷부분이 조용히 잘렸다 — append-only 장부의 유실이다');
+  assert.match(행.trim(), /\| 무엇이 막았나 \|$/, '해소 칸이 안 채워졌다');
+});
+
+test('add — 날 파이프만 치환하고 백틱 안은 남긴다', () => {
+  const L = mkLedger();
+  run(L, ['add', '마찰', '표가 a | b 로 깨진다 — 원인은 `x|y` 표기']);
+  const 행 = rowsOf(L)[2];
+  assert.ok(!행.includes('a | b'), '날 파이프가 그대로 들어가면 장부가 파싱 불가가 된다');
+  assert.ok(행.includes('`x|y`'), '백틱 안까지 삼키면 파이프를 설명하는 신고문 자체를 못 쓴다');
+});
+
+test('실장부 — 칸이 밀린 행 0 (탐지력은 위 픽스처가 진다)', () => {
+  const real = require(TOOL);
+  const 밀림 = fs.readFileSync(path.join(__dirname, '..', 'docs', '_ops', '마찰신호.md'), 'utf8')
+    .split('\n')
+    .map((l) => /^\|\s*(F\d+)\s*\|(.*)\|\s*$/.exec(l.trim()))
+    .filter(Boolean)
+    .filter((m) => real.splitCells(m[2]).length > 4)
+    .map((m) => m[1]);
+  assert.deepEqual(밀림, [], '실장부에 칸이 밀린 행이 있다 — 그 행의 신호는 해소로 읽혀 아무도 못 본다');
+});
+
 test('해소주장 판별식 — 실장부에서 거짓양성 0 (탐지력은 위 픽스처가 진다)', () => {
   const real = require(TOOL);
   const 오지목 = real.read().rows.filter((r) => r.resolved && real.해소주장(r.signal))
