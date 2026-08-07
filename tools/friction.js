@@ -89,38 +89,11 @@ function today() {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
-/* 코드 범위(백틱)를 **길이를 보존한 채** 공백으로 덮는다 — 덮은 판의 자리 번호로 원문을 자른다.
- * 자를 때 UTF-16 자리로만 세는 이유: 장부엔 이모지가 흔한데 코드포인트로 세면 자리가 어긋난다. */
-const maskCode = (t) => String(t).replace(/```[\s\S]*?```|`[^`\n]*`/g, (m) => ' '.repeat(m.length));
-
-/* 표 한 줄을 칸으로 나눈다. **백틱 안의 파이프는 칸막이가 아니다.**
- * 장부는 add() 만 쓰는 통로가 아니다 — 손편집·폰작업반입 병합으로도 행이 늘어나므로
- * 쓰는 쪽의 소독에 기대면 안 되고 읽는 쪽이 버텨야 한다.
- * 실측 08-07: 손편집으로 들어온 F193 행(`4e647ad`)의 `2>&1|docs/세션보드.md` 가 칸을 하나 밀어
- * **살아있는 신호가 「해소됨」으로 읽혔다** — --open 목록에서 통째로 사라지고, 집계의 해소 수단에는
- * 경로 조각이 올라간다. 더 나쁜 건 resolve: 잘린 signal 을 그대로 되써서 신고문 뒷부분이 조용히 사라진다. */
-function splitCells(raw) {
-  const masked = maskCode(raw);
-  const out = [];
-  let cur = 0;
-  for (let i = 0; i < masked.length; i++) {
-    if (masked[i] !== '|') continue;
-    out.push(raw.slice(cur, i));
-    cur = i + 1;
-  }
-  out.push(raw.slice(cur));
-  return out.map((c) => c.trim());
-}
-
-/* 칸에 넣기 전 소독. 깨뜨리는 것은 **날 파이프뿐**이라 백틱 안은 그대로 둔다
- * (전에는 전부 삼켜서, 파이프를 설명하는 해소문이 `/` 로 바뀐 채 장부에 남았다). */
-function 칸안전(s) {
-  const t = String(s).replace(/\n/g, ' ');
-  const masked = maskCode(t);
-  let out = '';
-  for (let i = 0; i < t.length; i++) out += masked[i] === '|' ? '/' : t[i];
-  return out.trim();
-}
+/* 표 가르기는 **공용 통로 하나**에서 온다 — 같은 한 줄짜리 결함이 이 저장소의 표 읽는 곳
+ * 네 군데에서 동시에 터졌다(사연은 tools/lib/표.js 머리말). 장부는 add() 만 쓰는 통로가
+ * 아니라서(손편집·폰작업반입 병합) 쓰는 쪽의 소독에 기대면 안 되고 읽는 쪽이 버텨야 한다. */
+const { 칸나누기, 칸안전 } = require(path.join(__dirname, 'lib', '표.js'));
+const splitCells = (raw) => 칸나누기(`|${raw}|`);
 
 function read() {
   const text = fs.readFileSync(LEDGER, 'utf8');

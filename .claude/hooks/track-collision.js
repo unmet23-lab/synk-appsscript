@@ -35,6 +35,7 @@ const { spawnSync } = require('child_process');
 // (실저장소에 커밋을 만들지 않고 탐지력을 재려면 이 자리가 필요하다 · SYNK_FRICTION_ROOT 와 같은 패턴).
 const ROOT = process.env.SYNK_TRACK_ROOT || path.resolve(__dirname, '..', '..');
 const 보드 = path.join(ROOT, 'docs', '세션보드.md');
+const 표 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '표.js'));
 const store = require(path.join(__dirname, 'lib', 'handoff-store.js'));
 const wt = require(path.join(__dirname, 'lib', 'worktrees.js'));
 
@@ -294,11 +295,14 @@ function 내보드줄() {
   let 최고 = null, 동점 = false;
   for (const 줄 of 본문.split(/\r?\n/)) {
     if (!줄.startsWith('|')) continue;
-    const 칸 = 줄.split('|').map((c) => c.trim());
-    if (칸.length < 5) continue;
+    /* 공용 통로로 가른다 — 날 split 은 백틱 안 파이프까지 칸막이로 세고, 밀린 줄에서는
+     * **파일 칸 자리에 상태 칸 조각이 들어온다**(겹침을 재는 가드가 엉뚱한 칸을 잰다).
+     * 칸나누기는 양끝 `|` 를 버리므로 자리가 하나씩 당겨진다(사연 = tools/lib/표.js). */
+    const 칸 = 표.칸나누기(줄);
+    if (칸.length < 4) continue;
     const 점수 = new Set(기저.filter((b) => 줄.includes(b))).size;
     if (점수 === 0) continue;
-    if (!최고 || 점수 > 최고.점수) { 최고 = { 점수, 트랙: 칸[2], 파일칸: 칸[3] }; 동점 = false; }
+    if (!최고 || 점수 > 최고.점수) { 최고 = { 점수, 트랙: 칸[1], 파일칸: 칸[2] }; 동점 = false; }
     else if (점수 === 최고.점수) 동점 = true;
   }
   return 동점 ? null : 최고;
