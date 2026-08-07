@@ -23,6 +23,8 @@
 //   node tools/rot-check.js --hook     SessionStart 훅 모드(스로틀 + additionalContext)
 //   node tools/rot-check.js --hook --force   스로틀 무시(테스트·수동 확인용)
 //   SYNK_ROT_INTERVAL_DAYS=7  주기(기본 7일) · SYNK_ROT_STATE=<경로>  상태 파일 위치
+//   SYNK_ROT_LIVE=0           라이브 대조를 끈다(≈15초 pull). 끄면 「초록」이 아니라 **미측정**으로 낸다.
+//                             `collect()` 를 직접 부르면 기본이 꺼짐이다 — 회귀·CI 가 네트워크를 안 타야 하므로.
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -103,6 +105,19 @@ function harnessSection() {
   const m = fs.readFileSync(readme, 'utf8').match(/지침 \*\*(v[\d.]+)/);
   const stamp = m ? m[1] : null;
   return { present: true, canonical: H.VER, stamp, stale: !stamp || stamp !== H.VER };
+}
+
+function 배포Section(라이브) {
+  /* 「커밋은 했는데 `clasp push` 를 안 했다」 — 루트(유호님이 매일 쓰는 라이브 학원 시스템)는
+   * @HEAD 를 서빙해서 배포 설명에 심는 **지문이 원리상 안 선다**(배포판점검 머리말). 그래서
+   * `deploy-freshness` 훅은 루트에 영원히 침묵하고, `/deploy` 를 안 부른 커밋의 드리프트는
+   * 아무 층에서도 안 보인다 — **스킬은 불러야 적용된다.** 여기서 라이브를 받아 바이트로 잰다.
+   * 왜 주간인가: 드리프트는 느리게 생기고 재는 값이 비싸다(라이브 pull ~15초).
+   * 왜 `/deploy` 안이 아닌가: /deploy 는 끝에 push 를 하므로 재는 순간 답이 늘 「같음」이다.
+   * 🔴 라이브를 안 재는 호출(테스트·CI·`SYNK_ROT_LIVE=0`)은 **초록이 아니라 미측정**으로 낸다. */
+  const D = require('./배포판점검.js');
+  if (!라이브) return { 측정: false, 결과: [] };
+  return { 측정: true, 결과: D.claspProjects().map((p) => D.점검(p, ROOT, { 라이브: true })) };
 }
 
 function notebooklmSection() {
@@ -193,7 +208,7 @@ function toilSection() {
 // ⚠  = 아직 거짓은 아니지만 방치하면 🔴이 된다
 const EVOLVE_THRESHOLD = 2; // 지침: 마찰 신호 2건이면 /evolve 실행을 **제안**한다
 
-function collect() {
+function collect({ 라이브 = false } = {}) {
   const mem = attempt('memory', memorySection);
   const doc = attempt('doc', docSection);
   const fri = attempt('friction', frictionSection);
@@ -202,13 +217,24 @@ function collect() {
   const nbd = attempt('notebooklm-drive', nblmDriveSection);
   const toi = attempt('toil', toilSection);
   const map = attempt('지도', mapSection);
+  const dep = attempt('배포판', () => 배포Section(라이브));
 
   const red = [];
   const warn = [];
   const notes = [];
 
-  for (const s of [mem, doc, fri, har, nbl, nbd, toi, map]) {
+  for (const s of [mem, doc, fri, har, nbl, nbd, toi, map, dep]) {
     if (!s.ok) red.push({ kind: '검사기 고장', text: `${s.name} 검사가 실패했다 — ${s.error}` });
+  }
+
+  if (dep.ok && dep.value.측정) {
+    for (const r of dep.value.결과) {
+      if (r.level === 'stale') red.push({ kind: '라이브 낡음', text: r.lines.join('\n      ') });
+      else if (r.level === 'unknown') warn.push({ kind: '배포 판정 불가', text: r.lines[0] });
+      // 확인 불가는 **경고가 아니라 메모**다 — 폰·CI엔 자격증명이 없고, 그건 부패가 아니다.
+      // 단 침묵시키지도 않는다: 통과와 미실행이 같은 모양이면 이 도구의 존재 이유가 사라진다.
+      else if (r.level === 'unreachable') notes.push({ kind: '라이브 미측정', text: r.lines.join(' / ') });
+    }
   }
 
   if (mem.ok) {
@@ -306,7 +332,7 @@ function collect() {
     });
   }
 
-  return { mem, doc, fri, har, red, warn, notes, findings: red.length + warn.length + notes.length };
+  return { mem, doc, fri, har, dep, red, warn, notes, findings: red.length + warn.length + notes.length };
 }
 
 /* ── 출력 ────────────────────────────────────────────────────────────────── */
@@ -364,6 +390,9 @@ function stamp(now, findings) {
 function main() {
   const args = process.argv.slice(2);
   const isHook = args.includes('--hook');
+  /* 라이브 대조는 **사람이 부른 실행에서만** 돈다 — `collect()` 기본값이 꺼짐인 이유와 같다.
+   * 여기서 켜는 것이 이 장치의 발동 조건이다(장치와 발동 조건은 같은 커밋 · CLAUDE.md 신뢰성). */
+  const 라이브 = process.env.SYNK_ROT_LIVE !== '0';
 
   if (isHook) {
     // 훅은 무슨 일이 있어도 세션을 방해하지 않는다: 항상 exit 0, 예외는 통째로 삼킨다.
@@ -372,7 +401,7 @@ function main() {
     try {
       const now = Date.now();
       if (!args.includes('--force') && !dueNow(now)) return;
-      const r = collect();
+      const r = collect({ 라이브 });
       stamp(now, r.findings);
       if (!r.findings) return; // 정지 조건 — 깨끗하면 한 글자도 넣지 않는다
       const body =
@@ -394,7 +423,7 @@ function main() {
     return;
   }
 
-  const r = collect();
+  const r = collect({ 라이브 });
 
   if (args.includes('--json')) {
     console.log(JSON.stringify({
@@ -420,4 +449,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { collect, render, dueNow, stamp, stateFile, harnessSection, toilSection, mapSection, EVOLVE_THRESHOLD };
+module.exports = { collect, render, dueNow, stamp, stateFile, harnessSection, toilSection, mapSection, 배포Section, EVOLVE_THRESHOLD };
