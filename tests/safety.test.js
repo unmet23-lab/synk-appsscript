@@ -1668,7 +1668,8 @@ test('[v9.90] 동의 마이그레이션(v18.6) — 멱등·명시 동의·거부
     .filter(l => !/^\s*(\/\/|\*|\/\*)/.test(l))          // 주석 줄 제외(경위 서술은 남겨둬야 한다)
     .filter(l => /'상담동의'/.test(l) && /'v18\.\d/.test(l));
   assert.equal(판리터럴.length, 0, '동의 판 번호가 실행 코드에 하드코딩돼 있다(CONSENT_VERSION을 써야 한다): ' + 판리터럴.join(' ⏎ '));
-  assert.ok(/const CONSENT_VERSION = 'v18\.\d/.test(code), 'CONSENT_VERSION 단일 소스 정의가 없다');
+  // [v19.0] 대역을 v18 로 못 박아 뒀더니 판을 올리는 순간 빨개졌다 — 검사할 것은 대역이 아니라 **단일 소스**다
+  assert.ok(/const CONSENT_VERSION = 'v\d+\.\d/.test(code), 'CONSENT_VERSION 단일 소스 정의가 없다');
   // 구 함수명 잔재 검사 — 역사 기록(설계노트 204·버전 문자열)은 허용하되, 정의와 '▶ 실행 지시'는 남아 있으면 안 된다(없는 함수를 유호님이 누른다)
   assert.ok(!code.includes('function migrateConsentV185'), '구 함수 정의(V185)가 남아 있다');
   assert.ok(!code.includes('migrateConsentV185 ▶'), '구 함수 ▶ 실행 안내가 남아 있다 — 유호님이 없는 함수를 실행하게 된다');
