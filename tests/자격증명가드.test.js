@@ -18,7 +18,7 @@ const assert = require('node:assert');
 const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
-const { spawnSync } = require('node:child_process');
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const HOOK = process.env.SYNK_TEST_CRED_HOOK
   || path.resolve(__dirname, '..', '.claude', 'hooks', 'credential-guard.js');
@@ -34,20 +34,16 @@ function 새상태() {
 test.after(() => { for (const d of 상태들) { try { fs.rmSync(d, { recursive: true, force: true }); } catch (_) { /* 청소 실패는 결과가 아니다 */ } } });
 
 function 가드(tool_name, tool_input, dir, session_id = 'sess-1') {
-  const r = spawnSync(process.execPath, [HOOK], {
+  /* 🔴 **훅이 안 돈 것과 훅이 통과시킨 것이 같은 모양이었다.** 아래 `조용:true` 는 「훅이 보고
+   *   그냥 뒀다」는 뜻인데, 프로세스를 아예 못 띄웠을 때도 stdout 이 비어 같은 값이 나왔다.
+   *   그래서 부하가 걸린 전량 실행에서 spawn 이 밀리면 「비밀이 페이지로 나갔다」로 빨개졌다
+   *   (파일 하나만 돌리면 초록 — 그 초록이 이 구멍을 덮고 있었다). 미실행은 결과가 아니다.
+   *   같은 형태가 훅 회귀 전반에 복제돼 있어 판정을 `tests/lib/훅띄우기.js` 로 뗐다. */
+  const r = 훅띄우기(HOOK, {
     input: JSON.stringify({ tool_name, tool_input, session_id }),
     encoding: 'utf8',
     env: { ...process.env, SYNK_CRED_DIR: dir },
   });
-  /* 🔴 **훅이 안 돈 것과 훅이 통과시킨 것이 같은 모양이었다.** 아래 `조용:true` 는 「훅이 보고
-   *   그냥 뒀다」는 뜻인데, 프로세스를 아예 못 띄웠을 때도 stdout 이 비어 같은 값이 나왔다.
-   *   그래서 부하가 걸린 전량 실행에서 spawn 이 밀리면 「비밀이 페이지로 나갔다」로 빨개졌다
-   *   (파일 하나만 돌리면 초록 — 그 초록이 이 구멍을 덮고 있었다). 미실행은 결과가 아니다. */
-  if (r.error || r.status !== 0) {
-    throw new Error('훅을 못 돌렸다 — 미실행을 「통과」로 읽으면 안 된다: '
-      + `error=${r.error && r.error.code} status=${r.status} signal=${r.signal} `
-      + `stderr=${String(r.stderr || '').slice(0, 200)}`);
-  }
   const out = (r.stdout || '').trim();
   if (!out) return { 차단: false, 조용: true, 사유: '' };
   const h = JSON.parse(out).hookSpecificOutput || {};
@@ -179,10 +175,9 @@ test('예외는 한 번만 통한다 — 상시 해제 스위치가 아니다', 
   이동('https://console.anthropic.com/settings/keys', d);
   assert.equal(가드('mcp__claude-in-chrome__form_input', { ref: 'r', value: 'x' }, d).차단, true, '기준선이 차단이 아니다');
 
-  const r = spawnSync(process.execPath, [HOOK, '--allow-next'], {
+  훅띄우기([HOOK, '--allow-next'], {   // 0 아닌 코드 = 예외를 못 적었다 → 통로가 던진다
     encoding: 'utf8', env: { ...process.env, SYNK_CRED_DIR: d },
   });
-  assert.equal(r.status, 0, '예외를 못 적었다');
 
   assert.equal(가드('mcp__claude-in-chrome__form_input', { ref: 'r', value: 'x' }, d).조용, true, '예외가 안 통했다');
   assert.equal(가드('mcp__claude-in-chrome__form_input', { ref: 'r', value: 'x' }, d).차단, true,

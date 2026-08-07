@@ -11,7 +11,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { spawnSync } = require('child_process');
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const ROOT = path.resolve(__dirname, '..');
 const 점검 = require(path.join(ROOT, 'tools', '배포판점검.js'));
@@ -244,7 +244,7 @@ test('알림 훅은 **차단하지 않는다** — push 뒤에 뜨는 알림이 
   const 훅 = path.join(ROOT, '.claude', 'hooks', 'deploy-freshness.js');
   const 빈곳 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-noclasp-'));
   try {
-    const r = spawnSync(process.execPath, [훅], {
+    const r = 훅띄우기(훅, {
       input: JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'cd crewcard && clasp push --force' }, cwd: ROOT }),
       encoding: 'utf8',
       /* APPDATA·PATH 를 비워 clasp 조회를 실패시킨다 → 확인 불가 → **반드시 알린다**
@@ -272,10 +272,9 @@ test('알림 훅은 **차단하지 않는다** — push 뒤에 뜨는 알림이 
 });
 
 test('무관한 명령에는 조용하다 (거짓양성 0 — 짖는 알림은 곧 무시된다)', () => {
-  const r = spawnSync(process.execPath, [path.join(ROOT, '.claude', 'hooks', 'deploy-freshness.js')], {
+  const r = 훅띄우기(path.join(ROOT, '.claude', 'hooks', 'deploy-freshness.js'), {
     input: JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'git status' }, cwd: ROOT }),
     encoding: 'utf8', env: { ...process.env, CLAUDE_PROJECT_DIR: ROOT }, timeout: 30000,
   });
-  assert.strictEqual(r.status, 0);
   assert.strictEqual((r.stdout || '').trim(), '');
 });

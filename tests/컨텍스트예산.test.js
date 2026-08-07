@@ -16,7 +16,8 @@ const assert = require('node:assert');
 const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
-const { spawnSync } = require('node:child_process');
+const { spawnSync } = require('node:child_process'); // git 재현용 — 훅은 아래 통로로 띄운다
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const ROOT = path.resolve(__dirname, '..');
 const HOOKS = path.join(ROOT, '.claude', 'hooks');
@@ -49,7 +50,7 @@ test.after(() => { try { fs.rmSync(tmpRoot, { recursive: true, force: true }); }
 function newDir(tag) { return fs.mkdtempSync(path.join(tmpRoot, `${tag}-`)); }
 
 function run(hook, payload, stateDir, env) {
-  const r = spawnSync(process.execPath, [hook], {
+  const r = 훅띄우기(hook, {
     input: JSON.stringify(payload), encoding: 'utf8', timeout: 20000,
     env: { ...process.env, SYNK_CTXBUDGET_DIR: stateDir, CLAUDE_CODE_HOST_SESSION_ID: '', ...(env || {}) },
   });

@@ -10,7 +10,8 @@ const assert = require('node:assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { spawnSync } = require('child_process');
+const { spawnSync } = require('child_process'); // git 재현용 — 훅은 아래 통로로 띄운다
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const REPO = path.resolve(__dirname, '..');
 const HOOK = path.join(REPO, '.claude', 'hooks', 'auto-commit.js');
@@ -48,7 +49,7 @@ function 만짐기록(state, root, sid, touched, { 분전 = 0 } = {}) {
 }
 
 function 훅실행(root, state, sid, extraEnv = {}) {
-  const r = spawnSync(process.execPath, [HOOK], {
+  const r = 훅띄우기(HOOK, {
     cwd: root, encoding: 'utf8', timeout: 30000, windowsHide: true,
     input: JSON.stringify({ session_id: sid, cwd: root }),
     env: {
@@ -58,7 +59,7 @@ function 훅실행(root, state, sid, extraEnv = {}) {
       ...extraEnv,
     },
   });
-  assert.strictEqual(r.status, 0, `훅이 0 아닌 코드로 죽었다(편의 장치는 절대 막지 않는다): ${r.stderr}`);
+  // 0 아닌 종료(편의 장치가 작업을 막는 것)도, 안 뜬 것도 통로가 드러낸다.
   return String(r.stdout || '');
 }
 

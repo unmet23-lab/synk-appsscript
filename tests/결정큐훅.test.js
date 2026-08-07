@@ -28,7 +28,7 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const ROOT = path.resolve(__dirname, '..');
 const SETTINGS = process.env.SYNK_TEST_SETTINGS || path.join(ROOT, '.claude', 'settings.json');
@@ -41,7 +41,7 @@ function sessionStartCommands() {
 }
 
 function runHook(env) {
-  return spawnSync(process.execPath, [HOOK], {
+  return 훅띄우기(HOOK, {
     encoding: 'utf8',
     env: { ...process.env, ...env },
     input: '',

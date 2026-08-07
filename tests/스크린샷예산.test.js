@@ -15,7 +15,7 @@ const assert = require('node:assert');
 const path = require('node:path');
 const os = require('node:os');
 const fs = require('node:fs');
-const { spawnSync } = require('node:child_process');
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 // SYNK_TEST_HOOK = 변이 실험용 이음매. 평소엔 실훅을 본다(실저장소를 흔들지 않고 탐지력만 잰다).
 const HOOK = process.env.SYNK_TEST_HOOK || path.resolve(__dirname, '..', '.claude', 'hooks', 'screenshot-budget.js');
@@ -42,7 +42,7 @@ function freshSession() {
 // day 기본값 = 세션 id. 테스트마다 **하루 예산도 따로** 쓰게 만들어, 앞 테스트의 소비가
 // 뒤 테스트의 조용함을 깨지 않게 한다. 일일 예산 자체를 보는 검사는 day를 명시해 공유한다.
 function call(sessionId, { tool = 'mcp__claude-in-chrome__computer', action = 'screenshot', input, day } = {}) {
-  const r = spawnSync(process.execPath, [HOOK], {
+  const r = 훅띄우기(HOOK, {
     input: JSON.stringify({
       session_id: sessionId,
       tool_name: tool,
@@ -59,7 +59,7 @@ function call(sessionId, { tool = 'mcp__claude-in-chrome__computer', action = 's
 
 function reset(sessionId, { day, all = false } = {}) {
   const args = all ? [HOOK, '--reset'] : [HOOK, '--reset', '--session', sessionId];
-  spawnSync(process.execPath, args, {
+  훅띄우기(args, {
     encoding: 'utf8',
     env: { ...process.env, SYNK_BUDGET_DIR: BUDGET_DIR, SYNK_BUDGET_DAY: day || sessionId },
   });
@@ -430,7 +430,6 @@ test(`액션 ${BLOCK_FREE}개까지는 조용하다 (평범한 배치를 벌주�
 });
 
 test('망가진 입력에도 작업을 막지 않는다 (예산 관리는 안전장치가 아니다)', () => {
-  const r = spawnSync(process.execPath, [HOOK], { input: '이건 JSON이 아니다', encoding: 'utf8' });
-  assert.strictEqual(r.status, 0);
+  const r = 훅띄우기(HOOK, { input: '이건 JSON이 아니다', encoding: 'utf8' });
   assert.strictEqual((r.stdout || '').trim(), '', '입력을 못 읽었는데 차단했다');
 });

@@ -38,7 +38,8 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+const { spawnSync } = require('node:child_process'); // bash·셸 재현용 — 훅은 아래 통로로 띄운다
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const ROOT = path.resolve(__dirname, '..');
 // SYNK_TEST_SETTINGS = 변이 실험용 이음매. 평소엔 실저장소 설정을 본다.
@@ -143,10 +144,13 @@ test('정보성 훅은 반대로 **차단하면 안 된다** — 그 예외를 �
 
     // 행동 확인 — 상태 폴더만 격리한다(저장소는 진짜를 봐야 판정 경로가 실제로 돈다).
     const 격리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-hookkind-'));
-    const r = spawnSync(process.execPath, [path.join(ROOT, '.claude', 'hooks', `${이름}.js`)], {
+    // 통과코드를 넓게 둔다 — 「0 아닌 코드」는 **이 검사가 직접 말해야 할 결과**라 아래에서 잰다.
+    //   통로는 그보다 앞의 「아예 안 떴다」만 걷어낸다(둘이 같은 모양이면 미실행이 초록이 된다).
+    const r = 훅띄우기(path.join(ROOT, '.claude', 'hooks', `${이름}.js`), {
       input: JSON.stringify({ tool_name: 'Edit', tool_input: { file_path: path.join(ROOT, 'Code.js') } }),
       encoding: 'utf8',
       env: { ...process.env, SYNK_CTXBUDGET_DIR: 격리, CLAUDE_CODE_HOST_SESSION_ID: `hookkind-${process.pid}` },
+      통과코드: [0, 1, 2],
     });
     try { fs.rmSync(격리, { recursive: true, force: true }); } catch (_) { /* 진행 */ }
 

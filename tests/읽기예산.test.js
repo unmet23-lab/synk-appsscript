@@ -20,7 +20,7 @@ const assert = require('node:assert');
 const path = require('node:path');
 const os = require('node:os');
 const fs = require('node:fs');
-const { spawnSync } = require('node:child_process');
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 // 변이 실험용 이음매. 평소엔 실훅·실등록을 본다.
 const HOOK = process.env.SYNK_TEST_HOOK || path.resolve(__dirname, '..', '.claude', 'hooks', 'read-budget.js');
@@ -65,7 +65,7 @@ function smallFile() {
 }
 
 function call(sessionId, tool_input, { tool = 'Read', day } = {}) {
-  const r = spawnSync(process.execPath, [HOOK], {
+  const r = 훅띄우기(HOOK, {
     input: JSON.stringify({ session_id: sessionId, tool_name: tool, tool_input }),
     encoding: 'utf8',
     env: { ...process.env, SYNK_BUDGET_DIR: BUDGET_DIR, SYNK_BUDGET_DAY: day || sessionId },
@@ -78,7 +78,7 @@ function call(sessionId, tool_input, { tool = 'Read', day } = {}) {
 
 function reset(sessionId, { all = false } = {}) {
   const args = all ? [HOOK, '--reset'] : [HOOK, '--reset', '--session', sessionId];
-  spawnSync(process.execPath, args, {
+  훅띄우기(args, {
     encoding: 'utf8',
     env: { ...process.env, SYNK_BUDGET_DIR: BUDGET_DIR },
   });

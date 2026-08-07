@@ -21,7 +21,8 @@ const test = require('node:test');
 const assert = require('node:assert');
 const path = require('node:path');
 const fs = require('node:fs');
-const { spawnSync } = require('node:child_process');
+const { spawnSync } = require('node:child_process'); // bash 필터 재현용 — 훅은 아래 통로로 띄운다
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const ROOT = path.resolve(__dirname, '..');
 // SYNK_TEST_SETTINGS = 변이 실험용 이음매. 평소엔 실등록을 본다(실저장소를 흔들지 않고 탐지력만 잰다).
@@ -64,7 +65,7 @@ function caseGatePasses(command, input) {
 }
 
 function askHook(hook, input) {
-  const r = spawnSync(process.execPath, [path.join(HOOKS, `${hook}.js`)], { input, encoding: 'utf8' });
+  const r = 훅띄우기(path.join(HOOKS, `${hook}.js`), { input, encoding: 'utf8' });
   const out = (r.stdout || '').trim();
   if (!out) return { blocks: false, decision: 'silent' };
   let d;

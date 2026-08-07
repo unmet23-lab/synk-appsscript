@@ -14,7 +14,8 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+const { spawnSync } = require('node:child_process'); // git 재현용 — node 자식은 아래 통로로 띄운다
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const TOOL = path.join(__dirname, '..', 'tools', 'board-move.js');
 const ROW = '| 2026-08-04 | **옮길 트랙 갑** | a.js | 완료 |';
@@ -36,8 +37,10 @@ function mkFixture(boardEol = '\n', archiveEol = '\r\n') {
 }
 
 function run(fx, args, 덧env = {}) {
-  return spawnSync(process.execPath, [TOOL, ...args], {
+  // 통과코드 0·1 = 이 도구의 계약(0 옮겼다 / 1 못 옮겼다). 그 밖은 결과가 아니다.
+  return 훅띄우기([TOOL, ...args], {
     encoding: 'utf8',
+    통과코드: [0, 1],
     env: { ...process.env, SYNK_BOARD: fx.board, SYNK_BOARD_ARCHIVE: fx.archive, ...덧env },
   });
 }

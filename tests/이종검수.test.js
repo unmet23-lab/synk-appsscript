@@ -10,7 +10,8 @@
  */
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { spawnSync } = require('node:child_process');
+const { spawnSync } = require('node:child_process'); // 도구(codex 등) 재현용 — 훅은 아래 통로로 띄운다
+const { 훅띄우기 } = require('./lib/훅띄우기');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -153,18 +154,19 @@ test('🔑 차단 사유가 시키는 명령이 실제로 차단을 푼다 — �
   const 처방 = before.lines.join('\n').match(/--기각 (\S+) --사유/);
   assert.ok(처방, '차단 메시지가 기각 명령을 알려주지 않았다');
 
-  const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'codex-review.js'), '--기각', 처방[1], '--사유', '회귀 시험'], {
+  // 처방 명령이 실패하면(0 아님) 통로가 던진다 — 안 뜬 것과 같은 모양이 되면 안 된다.
+  훅띄우기([path.join(ROOT, 'tools', 'codex-review.js'), '--기각', 처방[1], '--사유', '회귀 시험'], {
     encoding: 'utf8',
     env: { ...process.env, SYNK_REVIEW_LEDGER: fx.기록경로, SYNK_REVIEW_REJECTS: fx.기각경로 },
   });
-  assert.strictEqual(r.status, 0, `처방 명령이 실패했다: ${r.stderr}`);
   assert.strictEqual(검수.게이트판정(루트프로젝트, ROOT, fx).level, 'ok', '처방을 따랐는데 여전히 막힌다');
 });
 
 test('사유 없는 기각은 거부된다 — 왜 무시하는지 못 적으면 다음 회차에 설명할 수 없다', () => {
   const fx = 장부([], []);
-  const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'codex-review.js'), '--기각', 'k1'], {
+  const r = 훅띄우기([path.join(ROOT, 'tools', 'codex-review.js'), '--기각', 'k1'], {
     encoding: 'utf8',
+    통과코드: [0, 1, 2],   // 거절 코드 자체가 이 검사의 대상이라 통로는 「안 떴다」만 걷어낸다
     env: { ...process.env, SYNK_REVIEW_LEDGER: fx.기록경로, SYNK_REVIEW_REJECTS: fx.기각경로 },
   });
   assert.notStrictEqual(r.status, 0, '사유 없는 기각이 통과했다');
@@ -174,13 +176,12 @@ test('사유 없는 기각은 거부된다 — 왜 무시하는지 못 적으면
 
 test('🔑 clasp-guard 가 block 판정을 **실제 deny 로** 옮긴다 (등록층 — 가드는 로직보다 여기서 샌다)', () => {
   const fx = 장부([기록({ 지적: [지적('P0', 'k1')] })], []);
-  const r = spawnSync(process.execPath, [path.join(ROOT, '.claude', 'hooks', 'clasp-guard.js')], {
+  const r = 훅띄우기(path.join(ROOT, '.claude', 'hooks', 'clasp-guard.js'), {
     input: JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'clasp push --force' }, cwd: ROOT }),
     encoding: 'utf8',
     env: { ...process.env, SYNK_REVIEW_LEDGER: fx.기록경로, SYNK_REVIEW_REJECTS: fx.기각경로 },
     timeout: 180000,
   });
-  assert.strictEqual(r.status, 0);
   const out = (r.stdout || '').trim();
   assert.ok(out, '가드가 아무 말도 하지 않았다');
   const j = JSON.parse(out);
@@ -190,7 +191,7 @@ test('🔑 clasp-guard 가 block 판정을 **실제 deny 로** 옮긴다 (등록
 
 test('🔑 알림(none)은 배포를 **막지 않는다** — 폰 클라우드 세션엔 codex 가 없어 따를 수 없는 처방이 된다', () => {
   const fx = 장부([], []); // 기록 0건 = none
-  const r = spawnSync(process.execPath, [path.join(ROOT, '.claude', 'hooks', 'clasp-guard.js')], {
+  const r = 훅띄우기(path.join(ROOT, '.claude', 'hooks', 'clasp-guard.js'), {
     input: JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'clasp push --force' }, cwd: ROOT }),
     encoding: 'utf8',
     env: { ...process.env, SYNK_REVIEW_LEDGER: fx.기록경로, SYNK_REVIEW_REJECTS: fx.기각경로 },
@@ -208,7 +209,7 @@ test('🔑 알림(none)은 배포를 **막지 않는다** — 폰 클라우드 �
 
 test('가드 출력은 **JSON 객체 하나**다 — 두 번 쓰면 통째로 파싱에 실패해 알림이 둘 다 사라진다', () => {
   const fx = 장부([], []);
-  const r = spawnSync(process.execPath, [path.join(ROOT, '.claude', 'hooks', 'clasp-guard.js')], {
+  const r = 훅띄우기(path.join(ROOT, '.claude', 'hooks', 'clasp-guard.js'), {
     input: JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'clasp push --force' }, cwd: ROOT }),
     encoding: 'utf8',
     env: { ...process.env, SYNK_REVIEW_LEDGER: fx.기록경로, SYNK_REVIEW_REJECTS: fx.기각경로 },
@@ -314,15 +315,14 @@ test('외부도구 이름이 이 기계의 codex 가 아는 이름이다 (없으
 /* 🔴 F135(2026-08-06 실사고): `--help` 가 거절이 아니라 **기본 동작**으로 떨어져 14분짜리 런이
  *   조용히 시작됐다. 느슨한 층이 실질 정책이 되는 자리다. */
 test('🔒 모르는 인자는 기본 동작으로 접히지 않는다 — 거절 + 사용법 (F135)', () => {
-  const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'codex-review.js'), '--없는플래그'], { encoding: 'utf8' });
+  const r = 훅띄우기([path.join(ROOT, 'tools', 'codex-review.js'), '--없는플래그'], { encoding: 'utf8', 통과코드: [0, 1, 2] });
   assert.strictEqual(r.status, 2, '모르는 인자가 검수를 시작시켰다(F135 재발)');
   assert.match(r.stderr, /사용:/, '거절만 하고 따라갈 사용법을 안 준다(F103: 따를 수 없는 처방)');
   assert.doesNotMatch(r.stdout, /codex 검수 중/, '거절해 놓고 codex 를 불렀다');
 });
 
 test('--help 는 사용법을 내고 끝난다 (0) — 이게 F135 의 실제 입력이었다', () => {
-  const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'codex-review.js'), '--help'], { encoding: 'utf8' });
-  assert.strictEqual(r.status, 0, `--help 가 0 이 아니다: ${r.stderr}`);
+  const r = 훅띄우기([path.join(ROOT, 'tools', 'codex-review.js'), '--help'], { encoding: 'utf8' });
   assert.match(r.stdout, /--심문/, '사용법에 심문 통로가 없다');
 });
 
@@ -396,10 +396,8 @@ test('🔴 판정 행이 **대상과 방향**을 싣는다 — 키만 있으면 
     제목: '픽스처 제안', 무엇을: 'ㄱ', 왜: 'ㄴ', 구현방향: 'ㄷ', 크기: '중', 관련기능: 'ㄹ',
   }) + '\n');
 
-  const r = spawnSync(process.execPath,
-    [path.join(ROOT, 'tools', 'codex-review.js'), '--제안판정', 'k9', '--채택', '--사유', '회귀 시험'],
+  훅띄우기([path.join(ROOT, 'tools', 'codex-review.js'), '--제안판정', 'k9', '--채택', '--사유', '회귀 시험'],
     { encoding: 'utf8', env: { ...process.env, SYNK_REVIEW_PROPOSALS: 제안장부 } });
-  assert.strictEqual(r.status, 0, `판정이 실패했다: ${r.stderr}`);
 
   const 행들 = fs.readFileSync(제안장부, 'utf8').trim().split('\n').map((l) => JSON.parse(l));
   const 판정 = 행들.find((x) => x.종류 === '판정');
