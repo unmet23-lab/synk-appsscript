@@ -323,12 +323,12 @@ if (resulting !== null && 내id) {
  * ponytail: **동시 선언**(둘 다 이 훅을 통과한 뒤 각자 쓰기)은 여전히 못 막는다 — 막으려면 락이
  *   필요하고 그건 이 사고 빈도에 안 맞는다. 그 창은 초 단위고, 지금 실측된 사고는 3분 차다. */
 const 장부RE = /(세션보드|마찰신호|버전_이력|지침_이력)/;
-const 표식RE = /^(?:F0\d{2}|[①②③④⑤]-\d+|\[v\d+\.\d+\])/;
+const 표식 = require(path.join(__dirname, 'lib', '표식.js')); // 번호 규칙은 한 곳에서만 산다(F203)
 
 function 자리들(line) {
   const 자리 = new Set();
-  const 머리 = 트랙칸(line).replace(/^[\s*_`~>🔵🟢🟡🔴⚠️✅⏸]+/u, '').match(표식RE);
-  if (머리) 자리.add(머리[0]);
+  const 머리 = 표식.머리(트랙칸(line));
+  if (머리) 자리.add(머리);
   for (const m of 파일칸(line).matchAll(/[\w가-힣./_-]+\.(?:ts|tsx|js|jsx|mjs|cjs|gs|json|html|md|sql|ya?ml)\b/g)) {
     const p = m[0].replace(/^(?:\.\.?\/)+/, '').toLowerCase();
     if (p.split('/').length < 2 || 장부RE.test(p)) continue;

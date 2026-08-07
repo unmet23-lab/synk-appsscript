@@ -317,18 +317,20 @@ if (내줄) {
   }
 }
 /* 표식 토큰 — F0NN 과 [v9.NNN]. 파일이 안 겹쳐도 트랙은 겹칠 수 있다(오늘이 그 경우다:
- * 상대는 shell-inline-guard 를, 나는 새 훅을 만졌는데 커밋 제목의 F 번호가 같았다). */
-const 표식RE = /\bF0\d{2}\b|\[v\d+\.\d+\]/g;
+ * 상대는 shell-inline-guard 를, 나는 새 훅을 만졌는데 커밋 제목의 F 번호가 같았다).
+ * ⚠ 번호 규칙은 여기 적지 않는다 — board-guard 와 각자 적었더니 둘 다 `F0\d{2}` 에 멈춰
+ *   장부 F100~F203 을 통째로 못 봤다(F203). 정본 = `lib/표식.js`. */
+const 표식 = require(path.join(__dirname, 'lib', '표식.js'));
 const 내표식 = new Set();
 if (내줄) {
-  for (const m of `${내줄.트랙} ${내줄.파일칸}`.matchAll(표식RE)) 내표식.add(m[0]);
+  for (const t of 표식.훑기(`${내줄.트랙} ${내줄.파일칸}`)) 내표식.add(t);
 }
 /* 🔑 **내 커밋 제목**에서도 뽑는다 — 보드 줄과 달리 이건 Session-Id 로 확실히 내 것이다.
  *   보드 줄 판별이 동점이라 포기했을 때(위) 표식 신호까지 같이 죽지 않게 하는 자리고,
  *   보드에 아직 안 적은 표식(작업 중 새로 생긴 F 번호)도 여기서 잡힌다. */
 for (const c of 새커밋) {
   if (!c.sid || !내세션 || c.sid !== 내세션) continue;
-  for (const m of c.subject.matchAll(표식RE)) 내표식.add(m[0]);
+  for (const t of 표식.훑기(c.subject)) 내표식.add(t);
 }
 
 /* 공용 장부 — **모든 세션이 규약상 만지는** 파일이다. 여기서의 겹침은 충돌이 아니라 정상이다.
