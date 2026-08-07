@@ -43,7 +43,11 @@ function stripMd(s) {
   return s
     .replace(/^#{1,6}\s+/, '')          // 헤더
     .replace(/^[-*]\s+/, '')            // 불릿
-    .replace(/\[\[[^\]|>]*>?([^\]]*)\]\]/g, '$1') // [[막힘>x]] → x
+    /* [2026-08-07] 앞 판은 `[^\]|>]*>?` 가 별칭 없는 위키링크를 **통째로 먹었다** —
+     * `[[x]]` 는 앞부분이 x 를 다 먹고 캡처가 비어 `이 한 번이 [[x]] 의` → `이 한 번이  의`.
+     * 실측 08-07: 배달 111건 중 8건이 이 모양이었고 「— 가 요구한 2건 중」처럼 주어가 지워졌다.
+     * 별칭 구분자(`|`·`>`)가 **있을 때만** 앞을 버린다(F222 ①). */
+    .replace(/\[\[(?:[^\]|>]*[|>])?([^\]]*)\]\]/g, '$1') // [[x]]→x · [[막힘>x]]→x · [[a|b]]→b
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')      // [텍스트](링크)
     .replace(/\*\*(.*?)\*\*/g, '$1')
     .replace(/`([^`]*)`/g, '$1')
@@ -166,6 +170,30 @@ function dayStart(date) {
   return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 }
 
+/* ── 소프트랩 꼬리 (2026-08-07 · F222 ②) ───────────────────────────────────
+ * 마크다운은 **빈 줄까지가 한 문단**인데 판정은 줄 단위라, ⏳ 항목이 md 에서 줄바꿈되면
+ * 뒤가 통째로 안 실렸다. 실측: s1a-delivery-batch:91 의 도전안이 「…20~30개 순환으로」에서
+ * 끊겨 유호님 화면에 동사 없이 나갔다. 앞 세션의 처방은 「그 줄을 한 줄로 붙여 둔다」는
+ * **프로즈**였고 그 파일 하나만 고쳤다(CLAUDE.md: 프로즈로 막을 것은 기계로 옮긴다).
+ *
+ * 🔑 이 함수는 **더하기만 한다** — 판정(줄판정)은 손대지 않으므로 지금 배달되는 항목이
+ * 사라질 길이 없다. 잘라먹는 방향으로는 틀릴 수 없고, 못 이으면 지금과 같아진다.
+ * 멈추는 자리 셋: ①빈 줄·새 블록(헤더·불릿·번호·표·인용·펜스) ②그림문자 —
+ * 이 메모리는 ⚠🔴🔑🔎 를 사실상 불릿으로 쓴다(실측: referral-prereg:123 은 빈 줄 없이
+ * `⚠` 로 다른 항목이 시작한다). ⏳ 도 그림문자라 **다음 항목을 삼키지 않는다**. */
+const 새블록 = /^\s{0,3}(#{1,6}\s|[-*+]\s|\d+[.)]\s|[>|]|```|---)/;
+function 꼬리(lines, i) {
+  const 조각 = [];
+  for (let k = i + 1; k < lines.length; k++) {
+    const l = lines[k];
+    if (!l.trim() || 새블록.test(l)) break;
+    const 글자 = l.search(/\p{Extended_Pictographic}/u);
+    조각.push((글자 === -1 ? l : l.slice(0, 글자)).trim());
+    if (글자 !== -1) break;
+  }
+  return 조각.join(' ').trim();
+}
+
 /* [2026-08-04] 메모리 폴더가 없으면 **크게 실패한다 — 빈 배열로 떨어지지 않는다.**
  * 이 도구의 「미결 0건이면 침묵」 규칙과 결합하면 빈 배열은 **정상과 구별되지 않는다**:
  * 클라우드 cron이 매일 아침 아무 말도 안 하는데 아무도 이유를 모르는 상태가 된다
@@ -203,12 +231,14 @@ function extract(dir) {
     const mtime = fs.statSync(full).mtimeMs;
     const 절제목 = [];
     let 배달 = 0;
-    body.split('\n').forEach((line, i) => {
+    const 줄들 = body.split('\n');
+    줄들.forEach((line, i) => {
       const 판정 = 줄판정(line);
       if (!판정) return;
       if (판정.절제목) { 절제목.push({ line: i + 1, text: line.trim().slice(0, MAX_LEN) }); return; }
       if (판정.사유) return 버린다(f, i, line, 판정.사유);
-      const clean = 판정.clean;
+      const 이어짐 = 꼬리(줄들, i);
+      const clean = 이어짐 ? `${판정.clean} ${stripMd(이어짐)}`.trim() : 판정.clean;
       배달 += 1;
       items.push({
         topic: f.replace(/\.md$/, ''),
