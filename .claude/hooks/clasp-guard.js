@@ -138,9 +138,12 @@ function gitAt(dir, args) {
   return execFileSync('git', args, { cwd: dir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 }
 
-// 0) 워크트리에서의 배포 차단 — 아래 4개 검사보다 앞. 이 훅은 settings.json에 절대경로로 등록돼
-//    ROOT가 항상 메인 저장소를 가리키므로, 워크트리에서 부르면 "내 워크트리는 깨끗한데 메인의
-//    타 세션 미커밋 때문에 막힌다"는 엉뚱한 진단이 나온다(08-01 실측 3회 차단).
+// 0) 워크트리에서의 배포 차단 — 아래 4개 검사보다 앞. 워크트리에서 부르면 "내 워크트리는
+//    깨끗한데 메인의 타 세션 미커밋 때문에 막힌다"는 엉뚱한 진단이 나온다(08-01 실측 3회 차단).
+//    ⚠ ROOT를 "메인 저장소"라고 부르지 않는다 — 등록층이 ${CLAUDE_PROJECT_DIR:-$PWD} 라서
+//    워크트리 세션에서는 워크트리의 훅 사본이 돌고 ROOT도 워크트리다(08-07 실측). 메인 경로는
+//    아래 commonDir에서 파생한다. 예전 주석은 "절대경로 등록"을 전제했는데 그 전제가 죽어 있었고,
+//    그 바람에 차단 사유가 "메인 저장소(<워크트리 자신>)에서 /deploy"라는 따를 수 없는 처방을 냈다.
 //    그렇다고 워크트리 기준으로 검사하게 바꾸면 더 위험하다 — 라이브 타깃은 하나뿐이라
 //    미병합 브랜치를 밀면 master에 이미 들어간 남의 최신 코드가 라이브에서 사라진다
 //    (08-01 실측: 어떤 워크트리는 v9.89인데 master는 v9.95였다). 그래서 허용이 아니라 정확한 차단.
@@ -151,12 +154,15 @@ if (callerCwd) {
     if (gitDir !== commonDir) {
       let br = '';
       try { br = gitAt(callerCwd, ['rev-parse', '--abbrev-ref', 'HEAD']); } catch (_) {}
+      // 메인 저장소 = commonDir(<메인>/.git)의 부모. ROOT를 쓰면 워크트리 세션에서 자기 자신을
+      // 가리켜 "차단된 그 자리에서 /deploy 하라"는 따를 수 없는 처방이 된다(08-07 실측).
+      const 메인 = path.dirname(commonDir);
       deny(
         '[clasp-guard] 배포 게이트 차단:\n' +
           `- 워크트리에서는 clasp push/deploy를 하지 않는다 (${path.basename(callerCwd)}${br ? ' · ' + br : ''})\n` +
           '  라이브 Apps Script는 하나뿐이라, 워크트리 파일을 밀면 그 사이 master에 들어간\n' +
           '  다른 세션의 최신 코드가 라이브에서 조용히 사라진다.\n' +
-          `→ ①브랜치를 master에 반영(병합/rebase) ②메인 저장소(${ROOT})에서 /deploy\n` +
+          `→ ①브랜치를 master에 반영(병합/rebase) ②메인 저장소(${메인})에서 /deploy\n` +
           '   메인이 타 세션 미커밋으로 지저분하면, 먼저 git push origin <내브랜치>:master 로\n' +
           '   백업만 해두고 라이브 반영은 메인이 깨끗해진 뒤 한 번에 한다.'
       );
