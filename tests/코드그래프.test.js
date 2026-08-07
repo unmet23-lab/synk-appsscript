@@ -115,6 +115,14 @@ test('그래프 커버리지 — 한글 파일명이 실제로 담겨 있다', (
   const db = new sqlite.DatabaseSync(DB, { readOnly: true });
   const rows = db.prepare('SELECT DISTINCT file_path AS f FROM nodes WHERE file_path IS NOT NULL').all();
   db.close();
+  /* F197: 「DB 있음 = 전량 빌드」가 아니다 — 클라우드 세션은 graph-update 훅의 **증분 빌드**가
+   * 편집한 파일 몇 개짜리 DB 를 만들어, 한글 파일을 하나라도 고치면 skip 이 적색으로 뒤집힌다
+   * (실측: 파일 3개·한글 2개짜리 DB). 부분 빌드는 skip 으로 드러내고, 전체는 큰데 한글만
+   * 적은 것 — quotepath 가 깨진 전량 빌드의 유일한 모양 — 만 적색으로 남긴다. */
+  if (rows.length < 50) {
+    t.skip(`부분 그래프(파일 ${rows.length}개 — 훅 증분 빌드) — 전량 빌드(uvx code-review-graph build) 후 검사된다`);
+    return;
+  }
   const 한글담김 = rows.filter((r) => /[가-힣]/.test(String(r.f))).length;
   assert.ok(한글담김 > 50,
     `그래프에 한글 파일명이 ${한글담김}개뿐이다 — quotepath 방어가 풀린 채 빌드됐다(정상: 100+)`);
