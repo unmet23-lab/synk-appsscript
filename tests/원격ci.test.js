@@ -16,7 +16,7 @@ const { spawnSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const 도구경로 = path.join(ROOT, 'tools', '원격ci.js');
-const { 판정, 상태결정, 브랜치정하기, 담는가만들기 } = require(도구경로);
+const { 판정, 상태결정, 브랜치정하기, 담는가만들기, 미기동인가 } = require(도구경로);
 
 const run = (o) => ({
   headSha: 'a'.repeat(40), status: 'completed', conclusion: 'success',
@@ -122,6 +122,31 @@ test('🔴 gh 조회에 --branch 를 실제로 넘긴다 (남의 브랜치 초�
     .split('\n').filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join('\n');
   assert.match(소스, /'run',\s*'list'[\s\S]{0,120}'--branch'/,
     'gh run list 가 브랜치 필터 없이 돈다 — 폰 작업 claude/* run 이 같은 목록에 섞인다');
+});
+
+// ── 적색의 두 종류 — 미기동(0스텝)은 코드 판정이 아니다 (F210 · 08-07 실측) ──────────
+
+test('🔴 전 job 0스텝이면 미기동이다 — 빌링 차단 run 을 코드 적색으로 읽지 않는다', () => {
+  /* F210 실물: 결제 실패로 job 이 시작조차 안 됐는데 run 은 3초 만에 failure 로 «완료»된다.
+   * 같은 ❌ 로 내면 처방(--log-failed)이 빈 로그를 가리킨다 — 세션 4개가 이 판별을 손으로 재도출했다. */
+  assert.equal(미기동인가([{ steps: [] }]), true);
+  assert.equal(미기동인가([]), true, 'job 자체가 없는 run 도 실행이 아니다');
+  assert.equal(미기동인가(undefined), true);
+  assert.equal(미기동인가([{ steps: undefined }, {}]), true, 'steps 필드 부재도 0스텝이다');
+});
+
+test('🔴 스텝이 하나라도 돌았으면 미기동이 아니다 — 진짜 적색을 미기동으로 뭉개면 깨진 코드가 숨는다', () => {
+  assert.equal(미기동인가([{ steps: [{ name: 'checkout' }] }]), false);
+  assert.equal(미기동인가([{ steps: [] }, { steps: [{ name: 'test' }] }]), false,
+    '한 job 만 돌았어도 실행은 실행이다 — 그 실패는 코드 쪽을 봐야 한다');
+});
+
+test('적색 분기가 jobs 를 실제로 읽고 미기동을 가른다 — 판별 함수만 있고 배선이 없으면 그대로 샌다', () => {
+  /* ⚠ 주석을 지우고 본다 — 설명 주석의 문구로 검사가 산문을 보고 통과하면 안 된다(F087). */
+  const 소스 = require('node:fs').readFileSync(도구경로, 'utf8')
+    .split('\n').filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join('\n');
+  assert.match(소스, /'--json',\s*'jobs'/, 'run 의 jobs 를 안 읽는다 — 미기동 판별의 재료가 없다');
+  assert.match(소스, /미기동인가\(jobs\)/, '판별 함수가 적색 분기에 배선돼 있지 않다');
 });
 
 // ── 거짓양성 (실저장소) ────────────────────────────────────────────────────
