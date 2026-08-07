@@ -53,11 +53,32 @@ const INDEX_SLUGS = new Set(INDEX_FILES.map((f) => f.replace(/\.md$/, '')));
 /* ── 대상 디렉터리 ───────────────────────────────────────────────────────── */
 // Claude Code의 프로젝트 메모리는 repo 밖(~/.claude/projects/<슬러그>/memory)에 산다.
 // 슬러그는 프로젝트 절대경로에서 ':'와 경로 구분자를 '-'로 바꾼 것.
+//
+// ⚠ 기준은 **메인 작업 트리**다 (장부 F206 · 2026-08-07 실측).
+//   `__dirname/..` 을 그대로 쓰면 워크트리 세션에서 슬러그가
+//   `…-SYNK-appsscript-.claude-worktrees-<이름>` 으로 파생돼 **없는 폴더**를 가리킨다.
+//   증상이 오류가 아니라 「메모리 0건」이라 결정 큐·상태가드·rot-check 가 조용히 비고,
+//   그건 「깨끗함」과 정확히 같은 모양이다 — 새는 방향은 언제나 통과다.
+//   F079 가 상태 폴더 키에 이미 낸 처방(메인 트리 하나로 통일)이 이 파생에만 미적용이었다.
+//   ⚠ 메인에서 부르면 값이 지금까지와 **완전히 같다**(worktrees.mainWorktree 계약) —
+//     넓히기만 하고 되돌리지 않는 변경이라 이미 굴러가는 메모리 경로가 안 깨진다.
+let wt = null;
+try { wt = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'worktrees.js')); } catch (_) { wt = null; }
+
+/** 이 프로젝트의 하네스 폴더(`~/.claude/projects/<슬러그>`). 전사·메모리가 그 아래 산다.
+ *  ⚠ **이 조립은 여기 한 곳에서만 한다.** 실측 F206: 다섯 곳이 각자 조립하고 있었고
+ *    ⓐ 둘은 이 기계 이름을 **하드코딩**했고(다른 기계에선 통째로 죽는다)
+ *    ⓑ 하나는 `process.cwd()` 라 하위 폴더에서 부르면 어긋나고
+ *    ⓒ 나머지는 워크트리에서 어긋난다. 셋 다 증상이 **「0건」**이라 서로 구별도 안 된다.
+ *    호출부마다 고치는 대신 통로를 하나로 만들고 옛 통로는 회귀가 금지한다. */
+function projectDir() {
+  let root = path.resolve(__dirname, '..');
+  if (wt) { try { root = wt.mainWorktree(root) || root; } catch (_) { /* 모름 — 옛 동작 그대로 */ } }
+  return path.join(os.homedir(), '.claude', 'projects', root.replace(/:/g, '-').replace(/[\\/]/g, '-'));
+}
+
 function memoryDir() {
-  if (process.env.SYNK_MEMORY_DIR) return process.env.SYNK_MEMORY_DIR;
-  const root = path.resolve(__dirname, '..');
-  const slug = root.replace(/:/g, '-').replace(/[\\/]/g, '-');
-  return path.join(os.homedir(), '.claude', 'projects', slug, 'memory');
+  return process.env.SYNK_MEMORY_DIR || path.join(projectDir(), 'memory');
 }
 
 /* ── 읽기 ────────────────────────────────────────────────────────────────── */
@@ -330,4 +351,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { parseLinks, stripBacklinks, load, diagnose, decisions, writeBacklinks, memoryDir, TYPES, MARK_START, MARK_END, INDEX_FILES };
+module.exports = { parseLinks, stripBacklinks, load, diagnose, decisions, writeBacklinks, projectDir, memoryDir, TYPES, MARK_START, MARK_END, INDEX_FILES };

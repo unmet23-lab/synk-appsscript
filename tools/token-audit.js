@@ -41,9 +41,9 @@ function parseArgs(argv) {
 }
 
 function defaultDir() {
-  // 프로젝트 경로 → 전사 폴더 이름(구분자를 -로 바꾼 형태)
-  const slug = process.cwd().replace(/[\\/:]/g, '-');
-  return path.join(os.homedir(), '.claude', 'projects', slug);
+  // 슬러그 조립은 memory-graph 한 곳에서만 한다(F206). 여기 있던 `process.cwd()` 판은
+  // 저장소 **하위 폴더**에서 부르면 없는 폴더를 가리켰고 증상은 「전사 0건」이었다.
+  return require('./memory-graph.js').projectDir();
 }
 
 const n = (x) => Number(x || 0);

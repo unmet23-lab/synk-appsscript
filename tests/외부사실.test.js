@@ -92,13 +92,10 @@ function md파일들(dir, base = dir, out = []) {
   return out;
 }
 
-/* memory 정본은 repo 밖(~/.claude/projects/<슬러그>/memory)에 산다 — tools/memory-graph.js 와
- * 같은 규칙으로 찾는다. CI 엔 홈이 없어 **통과가 아니라 skip 으로 드러낸다**(F095). */
-function memoryDir() {
-  if (process.env.SYNK_MEMORY_DIR) return process.env.SYNK_MEMORY_DIR;
-  const slug = ROOT.replace(/:/g, '-').replace(/[\\/]/g, '-');
-  return path.join(os.homedir(), '.claude', 'projects', slug, 'memory');
-}
+/* memory 정본은 repo 밖(~/.claude/projects/<슬러그>/memory)에 산다. CI 엔 홈이 없어
+ * **통과가 아니라 skip 으로 드러낸다**(F095).
+ * ⚠ 같은 규칙을 여기 베껴 적었더니 워크트리에서 갈라졌다(F206) — 정본에서 가져온다. */
+const { memoryDir } = require(path.join(ROOT, 'tools', 'memory-graph.js'));
 
 function 위반목록(files, base) {
   const 위반 = [];
