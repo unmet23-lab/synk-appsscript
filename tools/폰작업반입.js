@@ -116,9 +116,14 @@ function 계획(브랜치) {
   const 삭제 = 상태.filter((x) => x.s.startsWith('D')).map((x) => x.f);
   const 가져올것 = 상태.filter((x) => !x.s.startsWith('D')).map((x) => x.f).filter((f) => !공유파일.includes(f));
 
-  // 미커밋과 겹치면 남의 편집을 덮는다 — 이건 경고가 아니라 정지 사유다.
-  const 미커밋 = new Set(줄들(git(['status', '--porcelain', '-uall']))
-    .map((l) => l.slice(3).split(' -> ').pop().replace(/^"(.*)"$/, '$1')));
+  /* 미커밋과 겹치면 남의 편집을 덮는다 — 이건 경고가 아니라 정지 사유다.
+   * 🔑 판정은 `status` 가 아니라 **내용**이다: 도구가 파일을 같은 내용으로 다시 쓰면 stat 만 달라져
+   *   `status` 는 `M` 을 내는데(실측: 워크트리 블롭 해시가 인덱스와 **동일**한데도 M) 그건 편집이 아니다.
+   *   그 거짓 겹침 하나로 반입이 통째로 막힌다. 미추적 파일은 내용 비교 대상이 아니라 따로 더한다. */
+  const 미커밋 = new Set([
+    ...줄들(git(['diff', '--name-only', 'HEAD'])),
+    ...줄들(git(['ls-files', '--others', '--exclude-standard'])),
+  ]);
   const 겹침 = 가져올것.filter((f) => 미커밋.has(f));
 
   /* 양쪽에서 바뀐 파일 — 덮어쓰는 건 맞지만 **무엇을 덮는지는 알고 덮어야 한다.**
