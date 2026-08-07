@@ -143,7 +143,7 @@ function 목록보기() {
     console.log(`   변경 ${p.상태.length}건 → 가져올 것 ${p.가져올것.length}건`
       + (p.제외 ? ` (공유 파일 ${p.제외}건 제외 — 갈라진 시점 판이라 낡았다)` : ''));
     if (p.삭제.length) console.log(`   ⚠ 파일 삭제 ${p.삭제.length}건 — 이 도구로는 못 지운다(손으로): ${p.삭제.join(', ')}`);
-    if (p.양쪽.length) console.log(`   ⚠ master 에서도 바뀐 파일 ${p.양쪽.length}건 — **폰 판으로 덮는다**: ${p.양쪽.slice(0, 6).join(', ')}${p.양쪽.length > 6 ? ' …' : ''}`);
+    if (p.양쪽.length) console.log(`   ⏭ master 가 갈라진 뒤 고친 파일 ${p.양쪽.length}건 — **건너뛴다**(덮으면 그 편집이 삭제로 실린다): ${p.양쪽.slice(0, 6).join(', ')}${p.양쪽.length > 6 ? ' …' : ''}`);
     if (p.합칠것.length) console.log(`   ✚ 추가전용 ${p.합칠것.length}건은 덮지 않고 **행 단위로 합친다**: ${p.합칠것.join(', ')}`);
     console.log(p.겹침.length
       ? `   🔴 미커밋과 겹침 ${p.겹침.length}건 — 받으면 남의 편집이 사라진다: ${p.겹침.join(', ')}`
@@ -195,17 +195,26 @@ function 받기(브랜치) {
    * ①정말 빈 브랜치(이미 반입됨) = 멈출 자리.
    * ②변경이 전부 공유 파일이라 제외된 것 = 가져올 내용은 없지만 **이력은 남겨야 한다.**
    *   멈추면 그 브랜치는 영원히 「대기 중」으로 떠서 매 세션 시작을 오염시킨다(방치 9시간과 같은 계열). */
-  if (!p.가져올것.length) {
-    if (!p.제외 || p.삭제.length) {
+  /* 갈라진 뒤 master 도 건드린 파일은 **덮지 않고 건너뛴다** — 폰의 바탕은 그보다 옛 판이라
+   * 덮으면 master 의 뒤 편집이 삭제로 실린다(F195 의 일반형 · 커밋에서라면 git-scope-guard ⑨ 가 막는 그 모양).
+   * 실측: `bw80kq` 의 설계 문서는 이미 다른 경로로 들어와 있었고, 덮었으면 master 가 붙인 계보 각주가 사라졌다.
+   * 버리는 게 아니라 커밋 메시지에 적고 브랜치가 부모로 남는다 — 폰 판이 맞으면 그 명령을 손으로 친다. */
+  const 건너뜀 = p.양쪽;
+  const 덮을것 = p.가져올것.filter((f) => !추가전용.includes(f) && !건너뜀.includes(f));
+
+  if (!덮을것.length && !p.합칠것.length) {
+    if ((!p.제외 && !건너뜀.length) || p.삭제.length) {
       console.error('❌ 가져올 것이 0건이다 — 이미 들어왔거나 브랜치가 비었다.');
       process.exit(1);
     }
     const 담긴것 = 줄들(git(['log', '--format=%h %s', `master..${브랜치}`])).map((s) => `  ${s}`).join('\n');
-    console.log(`가져올 것 0건 — 변경 ${p.상태.length}건이 전부 공유 파일이라 제외됐다.`);
+    console.log(`가져올 것 0건 — 변경 ${p.상태.length}건이 전부 공유 파일이거나 master 가 뒤에 고친 파일이다.`);
     console.log('   내용은 안 가져오되 이력은 남긴다(안 그러면 대기 목록에서 안 빠진다).');
-    병합이력(브랜치, '공유 파일뿐이라 내용은 안 가져왔다',
-      `\n변경 ${p.상태.length}건이 전부 공유 파일(세션보드 2종)이라 제외됐다 — 갈라진 시점 판이라\n`
-      + '이미 낡았고, 남의 살아있는 세션이 미커밋으로 들고 있어 덮으면 F073 사고가 된다.\n\n'
+    병합이력(브랜치, 건너뜀.length ? '내용이 master 에 이미 있거나 공유 파일뿐이었다' : '공유 파일뿐이라 내용은 안 가져왔다',
+      `\n변경 ${p.상태.length}건이 전부 공유 파일(세션보드 2종)이거나 갈라진 뒤 master 가 고친 파일이다 —\n`
+      + '갈라진 시점 판이라 이미 낡았고, 덮으면 남의 뒤 편집이 삭제로 실린다(F073·F195).\n'
+      + (건너뜀.length ? `건너뛴 파일: ${건너뜀.join(', ')}\n` : '')
+      + '\n'
       + '버린 게 아니라 이 병합의 부모로 남는다 — 내용은 `git show` 로 읽는다:\n'
       + `${담긴것}\n`);
     return;
@@ -224,9 +233,8 @@ function 받기(브랜치) {
   }
 
   console.log(`가져올 것 ${p.가져올것.length}건` + (p.제외 ? ` (공유 파일 ${p.제외}건 제외)` : ''));
-  if (p.양쪽.length) console.log(`⚠ master 에서도 바뀐 ${p.양쪽.length}건을 폰 판으로 덮는다: ${p.양쪽.join(', ')}`);
+  if (건너뜀.length) console.log(`⏭ master 가 갈라진 뒤 고친 ${건너뜀.length}건은 **건너뛴다**(덮으면 그 편집이 삭제로 실린다): ${건너뜀.join(', ')}`);
 
-  const 덮을것 = p.가져올것.filter((f) => !추가전용.includes(f));
   if (덮을것.length) git(['checkout', 브랜치, '--', ...덮을것]);
   const 합침 = p.합칠것.map((f) => {
     const 절대 = path.join(ROOT, f);
@@ -238,7 +246,7 @@ function 받기(브랜치) {
   });
 
   // 들어온 js 는 여기서 구문검사한다 — 깨진 채로 커밋하면 남의 배포 게이트까지 막는다.
-  const js = p.가져올것.filter((f) => f.endsWith('.js'));
+  const js = 덮을것.filter((f) => f.endsWith('.js'));
   for (const f of js) {
     const r = spawnSync(process.execPath, ['--check', path.join(ROOT, f)], { encoding: 'utf8' });
     if (r.status !== 0) { console.error(`❌ 구문 오류 ${f}:\n${r.stderr}`); process.exit(1); }
@@ -249,9 +257,13 @@ function 받기(브랜치) {
   const 메시지 = `폰(클라우드) 세션 작업 반입 — ${브랜치.replace('origin/claude/', '')}\n\n`
     + '폰 작업은 「제출」이지 「반영」이 아니다 — 브랜치에 놓인 것을 master 로 가져온다.\n'
     + 'merge 를 쓰지 않는 이유는 tools/폰작업반입.js 머리말에 있다(공유 파일 충돌 = F073).\n\n'
-    + `가져온 것 ${p.가져올것.length}건`
+    + `가져온 것 ${덮을것.length + p.합칠것.length}건`
     + (p.제외 ? ` (공유 파일 ${p.제외}건 제외 — 갈라진 시점 판이라 낡았다)` : '') + '\n'
-    + (p.양쪽.length ? `⚠ master 에서도 바뀐 ${p.양쪽.length}건을 폰 판으로 덮었다: ${p.양쪽.join(', ')}\n` : '')
+    + (건너뜀.length
+      ? `\n⏭ 갈라진 뒤 master 도 고친 ${건너뜀.length}건은 **건너뛰었다** — 폰의 바탕이 더 옛 판이라\n`
+        + '   덮으면 master 의 뒤 편집이 삭제로 실린다(F195 의 일반형). 폰 판이 맞다고 판단되면 손으로:\n'
+        + 건너뜀.map((f) => `   git checkout ${브랜치} -- "${f}"\n`).join('')
+      : '')
     + 합침.map(({ f, 붙임, 버림 }) =>
       `\n✚ ${f} — 추가전용이라 덮지 않고 행 단위로 합쳤다(폰 행 ${붙임.length}건 붙임).\n`
       + (버림.length
@@ -263,7 +275,7 @@ function 받기(브랜치) {
     + `\n브랜치가 담고 있던 커밋:\n${제목들}\n`;
   const 임시 = path.join(os.tmpdir(), `synk-반입-${process.pid}.txt`);
   fs.writeFileSync(임시, 메시지, 'utf8');
-  git(['commit', '-F', 임시, '--', ...p.가져올것]);
+  git(['commit', '-F', 임시, '--', ...덮을것, ...p.합칠것]);
   fs.unlinkSync(임시);
 
   // 커밋했다고 믿지 않는다 — 결과를 본다(F071: no-op 은 성공처럼 조용하다).

@@ -181,6 +181,28 @@ test('🔴 추가전용 장부는 덮지 않고 합친다 — 갈라진 뒤 mast
   assert.match(본문, /friction\.js add/, '다시 올릴 방법을 안 주면 따를 수 없는 처방이다(F103)');
 });
 
+/* 실측 `bw80kq`: 폰의 설계 문서가 이미 다른 경로로 master 에 들어와 있었고, master 는 거기에
+ * 계보 각주를 덧붙여 뒀다. 그대로 덮었으면 그 각주가 **삭제로** 실린다 — 커밋이었다면
+ * git-scope-guard ⑨ 가 막는 그 모양이다. 폰의 바탕은 언제나 갈라진 시점이라 더 옛 판이다. */
+test('🔴 갈라진 뒤 master 가 고친 파일은 덮지 않고 건너뛴다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, 원본, 브랜치 } = 픽스처();
+  // master 가 폰산출물.md 를 갈라진 뒤에 고친다(폰은 그 사실을 모른다).
+  fs.writeFileSync(path.join(원본, '폰산출물.md'), '폰이 만든 것\nmaster 가 뒤에 붙인 줄\n');
+  G(원본)('add', '-A'); G(원본)('commit', '-qm', 'master 가 뒤에 고침');
+  G(repo)('pull', '-q', 'origin', 'master');
+
+  const r = 돌린다(repo, ['--받기', 브랜치]);
+  assert.strictEqual(r.코드, 0, r.글);
+  assert.match(읽기(repo, '폰산출물.md'), /master 가 뒤에 붙인 줄/,
+    '폰 판으로 덮어 master 의 뒤 편집이 사라졌다 — 커밋이었다면 가드 ⑨ 가 막는 모양이다');
+  assert.match(r.글, /건너뛴다/, '왜 안 가져왔는지 말해야 한다');
+  assert.ok(fs.existsSync(path.join(repo, '폰빌더.js')), '건너뛸 파일 때문에 나머지까지 안 가져왔다');
+
+  const 본문 = G(repo)('log', '--format=%B', '-2').stdout;
+  assert.match(본문, /git checkout \S+ -- "?폰산출물\.md/,
+    '폰 판을 쓰려면 어떻게 하는지 안 주면 따를 수 없는 처방이다(F103)');
+});
+
 test('행합치기 — 같은 번호는 내 판, 없는 번호만 붙인다 (개행은 내 판을 따른다)', () => {
   const 내판 = '| ID |\n|---|\n| F001 | 내 판 |\r\n| F002 | 나만 있다 |\r\n';
   const 폰판 = '| ID |\n|---|\n| F001 | 폰 판 |\n| F003 | 폰만 있다 |\n';
