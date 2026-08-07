@@ -411,6 +411,79 @@ test('리모트가 없으면 침묵한다 — 대기가 원리적으로 없는 �
   assert.doesNotMatch(out, /못 읽었다|대기 중인 클라우드/, 'origin 이 없는 저장소에서 경고를 내면 거짓양성이다');
 });
 
+/* ── F195: 얕은 클론(=클라우드 세션의 모양)에서의 원격 대기 판정 ─────────────────
+ * `--no-merged` 는 잘린 이력 너머를 못 걸어, 이미 master 에 들어간 브랜치도 「대기」로 나온다.
+ * 실사고: 전부 반입된 브랜치를 매 세션 「안 들어왔다」로 알렸고, 처방(삭제)은 프록시가 막아
+ * 따를 수 없었다. 로컬 경로 클론은 depth 를 무시하므로 얕은 클론은 file:// 로 만든다. */
+function 원본G(원본) {
+  return (...a) => spawnSync('git',
+    ['-c', 'user.name=t', '-c', 'user.email=t@t', '-c', 'commit.gpgsign=false', ...a], { cwd: 원본, encoding: 'utf8' });
+}
+function 새원본() {
+  const 원본 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-own-o192-'));
+  임시들.push(원본);
+  const go = 원본G(원본);
+  go('init', '-q', '-b', 'master');
+  fs.writeFileSync(path.join(원본, 'seed.txt'), 'seed\n');
+  go('add', '-A'); go('commit', '-qm', 'seed');
+  return { 원본, go };
+}
+function 얕은클론(원본) {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-own-shallow-'));
+  const state = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-own-state-'));
+  임시들.push(repo, state);
+  const r = spawnSync('git', ['clone', '--quiet', '--depth', '1', '--no-single-branch',
+    'file://' + 원본, repo], { encoding: 'utf8' });
+  assert.strictEqual(r.status, 0, `얕은 클론 실패:\n${r.stderr}`);
+  const 얕나 = spawnSync('git', ['rev-parse', '--is-shallow-repository'], { cwd: repo, encoding: 'utf8' });
+  assert.strictEqual(String(얕나.stdout).trim(), 'true', '픽스처가 얕지 않으면 이 검사들은 아무것도 안 잰다');
+  return { repo, state };
+}
+
+test('🔴 F195: 이미 master 에 들어간 브랜치는 얕은 클론에서도 말하지 않는다 — 깊여서 실측한다', { skip: !git있나 && 'git 없음' }, () => {
+  const { 원본, go } = 새원본();
+  go('checkout', '-qb', 'claude/전부반입됨');
+  fs.writeFileSync(path.join(원본, '폰작업.md'), '폰에서 고친 것\n');
+  go('add', '-A'); go('commit', '-qm', 'docs: 폰 작업');
+  go('checkout', '-q', 'master');
+  go('merge', '-q', '--no-ff', '-m', 'merge', 'claude/전부반입됨');
+  fs.writeFileSync(path.join(원본, '뒤.txt'), '병합 뒤 커밋\n');
+  go('add', '-A'); go('commit', '-qm', '뒤'); // 브랜치 팁을 얕은 창 밖으로 민다
+  const { repo, state } = 얕은클론(원본);
+  const out = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'] });
+  assert.doesNotMatch(out, /전부반입됨/,
+    '반입 완료 브랜치를 「대기」로 알렸다 — 실사고 그대로: 매 세션 헛조사를 시키고 처방(삭제)은 따를 수도 없다');
+});
+
+test('F195: 이력을 깊여도 못 이으면 「모름」이지 「안 들어왔다」가 아니다', { skip: !git있나 && 'git 없음' }, () => {
+  const { 원본, go } = 새원본();
+  go('checkout', '-q', '--orphan', 'claude/딴뿌리');
+  fs.writeFileSync(path.join(원본, '딴뿌리.md'), '이력이 안 이어지는 브랜치\n');
+  go('add', '-A'); go('commit', '-qm', '딴뿌리');
+  go('checkout', '-q', 'master');
+  const { repo, state } = 얕은클론(원본);
+  const out = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'] });
+  assert.match(out, /딴뿌리/, '모름을 침묵으로 접으면 「깨끗함」과 같은 모양이 된다');
+  assert.match(out, /모름/, '못 가른 것을 단정 문장으로 내면 오진단이 실측의 모습을 하고 나온다');
+  assert.doesNotMatch(out, /아직 안 들어왔다|브랜치를 지운다/, '모름에 단정·삭제 처방을 붙이면 안 된다');
+});
+
+test('F195: 진짜 미병합은 얕은 클론에서도 알리되, 삭제는 처방하지 않는다(따를 수 없는 처방 · F103)', { skip: !git있나 && 'git 없음' }, () => {
+  const { 원본, go } = 새원본();
+  fs.writeFileSync(path.join(원본, '둘.txt'), '둘\n');
+  go('add', '-A'); go('commit', '-qm', '둘');
+  go('checkout', '-qb', 'claude/진짜대기중');
+  fs.writeFileSync(path.join(원본, '폰작업.md'), '아직 안 들어간 폰 작업\n');
+  go('add', '-A'); go('commit', '-qm', 'docs: 아직 대기');
+  go('checkout', '-q', 'master');
+  const { repo, state } = 얕은클론(원본);
+  const out = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'] });
+  assert.match(out, /진짜대기중/, '진짜 대기를 걸러 버리면 이 장치가 생긴 이유(폰 작업 사각)가 되살아난다');
+  assert.match(out, /아직 안 들어왔다/, '진짜 미병합은 실측으로 갈랐으니 단정 문장이 맞다');
+  assert.doesNotMatch(out, /볼 게 없으면 브랜치를 지운다/, '얕은 클론(=클라우드)에서 삭제 처방은 따를 수 없다 — 로컬 몫으로 넘겨야 한다');
+  assert.match(out, /로컬 세션 몫|삭제 대기/, '삭제를 못 하는 환경엔 대체 통로(로컬 몫)를 줘야 방치가 정상이 되지 않는다');
+});
+
 /* ── 🟡 내것인데 남도 함께 (F164) ──────────────────────────────────────
  * 판정이 `내것` 이면 목록에서 통째로 빠진다 — 그런데 만진 기록은 **과거**라, 지금 작업본에
  * 들어 있는 내용이 내 것이라는 보장이 아니다. 실측: 한 세션이 이 도구를 커밋한 뒤 다른 세션이
