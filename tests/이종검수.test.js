@@ -26,6 +26,24 @@ const 이름 = '(루트)';
 /* 실제 지문을 쓴다 — 가짜 지문으로 시험하면 「지문이 맞을 때」 경로를 한 번도 안 밟는다. */
 const 실지문 = 점검.지문(루트프로젝트, ROOT);
 
+/* 아래 등록층 검사가 훅에 주는 cwd — **워크트리가 아님이 보장된 픽스처 저장소**다(F217).
+ * ROOT 를 주면 호스트가 워크트리일 때 clasp-guard 규칙 0(워크트리 배포 차단)이 이종검수보다
+ * 먼저 발화해, 검사가 **다른 사유의 deny 를 결함으로** 읽는다 — 환경과 결함을 못 가른 것이다.
+ * 08-07 실측: 워크트리 test-ci 2회 연속 같은 적색 / 본 트리·새 클론은 초록. 라이브 재현도
+ * 같은 답이었다("워크트리에서는 clasp push/deploy를 하지 않는다 (angry-raman-d891af …)").
+ * 판정 대상은 안 바뀐다 — resolveProject 는 .clasp.json 을 못 찾으면 root(=ROOT)로 떨어진다. */
+const 훅CWD = (() => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-훅cwd-'));
+  spawnSync('git', ['-C', d, 'init', '-q']);
+  return d;
+})();
+
+/* 세 등록층 검사가 **같은 입력 하나**를 쓴다 — cwd 를 되돌리려면 여기 한 곳뿐이고,
+ * 바로 아래 회귀가 그 한 곳을 잰다(호출부마다 흩어두면 회귀가 못 따라간다). */
+const 배포입력 = () => JSON.stringify({
+  tool_name: 'Bash', tool_input: { command: 'clasp push --force' }, cwd: 훅CWD,
+});
+
 function 장부(기록들, 기각들) {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-review-fx-'));
   const 기록경로 = path.join(d, '기록.jsonl');
@@ -174,10 +192,26 @@ test('사유 없는 기각은 거부된다 — 왜 무시하는지 못 적으면
 
 // ───────────────────────────────── 등록층 (가드가 실제로 이걸 부르는가)
 
+test('🔑 등록층은 **워크트리 아닌 cwd** 로 훅을 띄운다 — 호스트가 워크트리면 규칙 0 이 먼저 답한다 (F217)', () => {
+  const { execFileSync } = require('node:child_process');
+  /* 상수가 아니라 **아래 검사가 실제로 보내는 입력**을 재야 한다 — 픽스처만 잠그면
+   * 스폰 쪽을 ROOT 로 되돌려도 회귀가 초록인 채로 남는다(그러면 잠근 게 아니다). */
+  const cwd = JSON.parse(배포입력()).cwd;
+  const g = (...a) => execFileSync('git', ['-C', cwd, ...a], { encoding: 'utf8' }).trim();
+  assert.notStrictEqual(cwd, ROOT,
+    '훅에 호스트 저장소를 주면 워크트리 세션에서 이종검수가 아닌 사유로 막히고, 아래 검사가 그걸 결함으로 읽는다');
+  /* 「그냥 다른 경로」로는 부족하다 — 그 경로가 또 워크트리면 같은 자리에서 같은 병이 난다.
+   * 규칙 0 의 판정식(git-dir vs git-common-dir)을 그대로 재서 못박는다. */
+  assert.strictEqual(
+    path.resolve(cwd, g('rev-parse', '--absolute-git-dir')),
+    path.resolve(cwd, g('rev-parse', '--git-common-dir')),
+    'cwd 가 워크트리다 — clasp-guard 규칙 0 이 발화해 아래 등록층 검사가 통째로 무의미해진다');
+});
+
 test('🔑 clasp-guard 가 block 판정을 **실제 deny 로** 옮긴다 (등록층 — 가드는 로직보다 여기서 샌다)', () => {
   const fx = 장부([기록({ 지적: [지적('P0', 'k1')] })], []);
   const r = 훅띄우기(path.join(ROOT, '.claude', 'hooks', 'clasp-guard.js'), {
-    input: JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'clasp push --force' }, cwd: ROOT }),
+    input: 배포입력(),
     encoding: 'utf8',
     env: { ...process.env, SYNK_REVIEW_LEDGER: fx.기록경로, SYNK_REVIEW_REJECTS: fx.기각경로 },
     timeout: 180000,
@@ -192,7 +226,7 @@ test('🔑 clasp-guard 가 block 판정을 **실제 deny 로** 옮긴다 (등록
 test('🔑 알림(none)은 배포를 **막지 않는다** — 폰 클라우드 세션엔 codex 가 없어 따를 수 없는 처방이 된다', () => {
   const fx = 장부([], []); // 기록 0건 = none
   const r = 훅띄우기(path.join(ROOT, '.claude', 'hooks', 'clasp-guard.js'), {
-    input: JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'clasp push --force' }, cwd: ROOT }),
+    input: 배포입력(),
     encoding: 'utf8',
     env: { ...process.env, SYNK_REVIEW_LEDGER: fx.기록경로, SYNK_REVIEW_REJECTS: fx.기각경로 },
     timeout: 180000,
@@ -210,7 +244,7 @@ test('🔑 알림(none)은 배포를 **막지 않는다** — 폰 클라우드 �
 test('가드 출력은 **JSON 객체 하나**다 — 두 번 쓰면 통째로 파싱에 실패해 알림이 둘 다 사라진다', () => {
   const fx = 장부([], []);
   const r = 훅띄우기(path.join(ROOT, '.claude', 'hooks', 'clasp-guard.js'), {
-    input: JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'clasp push --force' }, cwd: ROOT }),
+    input: 배포입력(),
     encoding: 'utf8',
     env: { ...process.env, SYNK_REVIEW_LEDGER: fx.기록경로, SYNK_REVIEW_REJECTS: fx.기각경로 },
     timeout: 180000,
