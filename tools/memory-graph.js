@@ -41,7 +41,14 @@ const isDecision = (t) => t.startsWith(DECISION_PREFIX);
 
 const MARK_START = '<!-- memory-graph:역링크 시작 · 이 구간은 자동 생성이다. 손으로 고치지 말 것 -->';
 const MARK_END = '<!-- memory-graph:역링크 끝 -->';
-const INDEX_FILE = 'MEMORY.md';
+/* 인덱스는 **두 파일**이다(2026-08-07 쪼개기 · 장부 F184).
+ * 상한이 「줄」이라 지도(어느 토픽 파일을 열까)를 상주분 밖으로 내보냈다 — MEMORY.md 에는
+ * 🚫·⏳ 조각만 남고 원문 줄은 지도.md 에 있다. 한 파일만 인덱스로 세면 옮긴 98건이
+ * 「인덱스 누락」으로 뜬다 — 옮긴 것과 잃은 것이 같은 모양이 되는 자리다.
+ * ⚠ 목록은 여기 하나에서만 파생시킨다(두 곳에 적으면 갈라진다). */
+const INDEX_FILES = ['MEMORY.md', '지도.md'];
+const INDEX_FILE = INDEX_FILES[0];   // 보고 문구의 대표 이름
+const INDEX_SLUGS = new Set(INDEX_FILES.map((f) => f.replace(/\.md$/, '')));
 
 /* ── 대상 디렉터리 ───────────────────────────────────────────────────────── */
 // Claude Code의 프로젝트 메모리는 repo 밖(~/.claude/projects/<슬러그>/memory)에 산다.
@@ -114,7 +121,7 @@ function load(dir) {
       slug,
       file,
       full,
-      isIndex: file === INDEX_FILE,
+      isIndex: INDEX_FILES.includes(file),
       links: parseLinks(stripCode(stripBacklinks(text))),
       incoming: [],
     });
@@ -147,14 +154,15 @@ function diagnose(nodes) {
     }
     // 인덱스에서 오는 링크는 '연결'로 세지 않는다 — 인덱스는 모두를 가리키므로
     // 그걸 세면 고아가 영원히 0이 되어 검사가 무의미해진다.
-    const realIn = n.incoming.filter((i) => i.from !== INDEX_FILE.replace(/\.md$/, ''));
+    const realIn = n.incoming.filter((i) => !INDEX_SLUGS.has(i.from));
     if (n.links.length === 0 && realIn.length === 0) orphans.push(n.slug);
   }
 
   // 인덱스 대조 — MEMORY.md의 `](파일.md)` 목록 vs 실제 파일
-  const idx = nodes.get(INDEX_FILE.replace(/\.md$/, ''));
   const listed = new Set();
-  if (idx) {
+  for (const slug of INDEX_SLUGS) {
+    const idx = nodes.get(slug);
+    if (!idx) continue;
     const text = stripCode(fs.readFileSync(idx.full, 'utf8')); // 인덱스 머리말의 서식 설명 예시를 실제 줄로 오인하지 않게
     const re = /\]\(([^)]+?\.md)\)/g;
     let m;
