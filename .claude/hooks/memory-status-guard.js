@@ -37,9 +37,11 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const { 줄판정 } = require(path.join(ROOT, 'tools', 'decision-queue.js'));
-const { memoryDir } = require(path.join(ROOT, 'tools', 'memory-graph.js'));
+const { memoryDir, INDEX_FILES } = require(path.join(ROOT, 'tools', 'memory-graph.js'));
 
-const INDEX = 'MEMORY.md';
+/* 인덱스는 **한 파일이 아니다**(F184 쪼개기: MEMORY.md + 지도.md). 여기 이름을 다시 적으면
+ * 갈라진다 — 목록은 memory-graph 의 INDEX_FILES 하나에서만 파생시킨다(CLAUDE.md 신뢰성 ④). */
+const INDEX = INDEX_FILES;
 const 해소표기 = /✅|종결|완료|해소|닫음/;
 const 보여줄최대 = 8;   // 그 이상은 세션이 안 읽는다 — 나머지는 --check 로 본다
 
@@ -66,7 +68,7 @@ function 대상인가(filePath, dir) {
   const d = String(dir || memoryDir()).replace(/\\/g, '/').replace(/\/$/, '');
   if (!p.toLowerCase().startsWith(d.toLowerCase() + '/')) return false;
   if (!/\.md$/i.test(p)) return false;
-  return path.basename(p) !== INDEX;
+  return !INDEX.includes(path.basename(p));
 }
 
 /** 살아 있는 ⏳ 항목 — 큐가 실제로 배달하는 줄만. [{n, text}] */

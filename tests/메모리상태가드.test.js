@@ -73,6 +73,17 @@ test('메모리 토픽 .md 는 대상이고, 인덱스·repo 파일·비 md 는 
   assert.ok(!guard.대상인가(`${dir}sibling/x.md`, dir), '접두어만 같은 옆 폴더를 삼키면 안 된다');
 });
 
+/* 인덱스는 **두 파일**이다(F184 쪼개기) — 이름을 여기 다시 적지 않고 등록층을 그대로 돈다.
+ * 한 이름만 알면 지도.md 가 토픽으로 읽혀, 압축 편집마다 「남은 ⏳ 를 닫아라」가 헛 발화한다. */
+test('인덱스 목록은 memory-graph 하나에서 파생한다 — 지도.md 도 대상이 아니다', () => {
+  const dir = 'C:/x/.claude/projects/slug/memory';
+  const { INDEX_FILES } = require('../tools/memory-graph.js');
+  assert.ok(INDEX_FILES.length >= 2, '인덱스가 한 파일로 되돌아가면 이 검사가 무의미해진다');
+  for (const n of INDEX_FILES) {
+    assert.ok(!guard.대상인가(`${dir}/${n}`, dir), `${n} 은 인덱스다 — 토픽으로 읽으면 안 된다`);
+  }
+});
+
 // ── ② 발동 — 조건 넷이 각각 혼자서 막는가 ───────────────────────────────────
 
 test('해소를 적는데 ⏳ 가 남아 있으면 막고 남은 줄을 보여준다', () => {
