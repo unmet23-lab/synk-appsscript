@@ -799,3 +799,77 @@ test('검사 시각을 저장한다 — 안 쓰면 스로틀이 조용히 죽어
   assert.ok(j.dirtyChecked && Number(j.dirtyChecked[시험파일]) > 0,
     '검사 시각이 상태에 안 남았다 — 경고가 안 나온 경우에도 남겨야 스로틀이 산다');
 });
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 형제 저장소의 **커밋** 축 (F187·F188 이 조용했던 자리)
+ *
+ * 쓰는 쪽은 `../SYNK-talk/…` 를 담는데(위 검사들) 읽는 쪽(`git show --name-only`)은 ROOT 에서만
+ * 돌아 저장소 상대 경로를 준다 — 교집합이 **원리적으로 0**이라 이 훅은 형제 작업에 대해
+ * 한 번도 운 적이 없었다. 실측 2026-08-07: 만진 파일 127개 중 91개(72%)가 형제다.
+ * ⚠ 탐지력은 픽스처가 진다 — 실저장소·git 이력에 기대면 CI 에서 깨진다.
+ * ───────────────────────────────────────────────────────────────────────────── */
+
+test('🔴 형제 저장소에 남이 내 파일을 커밋하면 운다 — **내 저장소 HEAD 는 안 움직인다**(F187·F188)', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  const sib = 픽스처저장소();
+  const 상태 = 상태폴더();
+  const 형제파일 = 'tools/왕복시험.js';            // 사고가 실제로 난 파일 모양(하위 폴더 + 한글)
+  커밋(dir, 'Code.js', 'a', 'init', 'sess-Z');     // HEAD 가 없으면 훅은 상태를 쓰기 전에 끝난다
+  커밋(sib, 형제파일, 'a', 'seed', 'sess-Z');
+
+  // ① 내가 형제 파일을 만진다 — 첫 호출은 기준점만 잡고 조용하다.
+  const 첫 = 훅(dir, { 절대파일: path.join(sib, 형제파일), 형제: [sib], sid: 'sess-A', stateDir: 상태 });
+  assert.ok(첫.조용, `첫 호출은 기준점만 잡아야 한다:\n${첫.본문}`);
+
+  // ② 남이 **형제에서** 그 파일을 커밋한다. 내 저장소 HEAD 는 그대로다.
+  const 남sha = 커밋(sib, 형제파일, 'b', '같은 파일을 남이 고쳤다', 'sess-B');
+  const 내HEAD전 = (gitIn(dir, ['rev-parse', 'HEAD']).stdout || '').trim();
+
+  const r = 훅(dir, { 절대파일: path.join(sib, 형제파일), 형제: [sib], sid: 'sess-A', stateDir: 상태 });
+  const 내HEAD후 = (gitIn(dir, ['rev-parse', 'HEAD']).stdout || '').trim();
+  assert.strictEqual(내HEAD전, 내HEAD후,
+    '검사 전제가 깨졌다 — 내 저장소 HEAD 가 움직이면 이 자리를 안 재는 것이다');
+
+  assert.ok(!r.조용,
+    '형제 커밋이 내 자리에 착지했는데 조용했다 — 이게 F187·F188 이 난 모양이다. '
+    + '내 저장소 HEAD 가 그대로라, `lastHead === HEAD` 빠른길이 형제 조회보다 먼저 나가면 여기는 영원히 조용하다.');
+  assert.ok(r.본문.includes(`../${path.basename(sib)}/${형제파일}`),
+    `겹친 파일을 형제 좌표로 안 보여줬다 — 좌표가 어긋나면 대조가 전부 빗나가고 결과는 「0건」이다:\n${r.본문}`);
+  assert.ok(r.본문.includes(`[${path.basename(sib)}]`),
+    `어느 저장소의 커밋인지 안 밝혔다 — \`git show <sha>\` 를 내 저장소에서 돌리고 「없는 커밋」으로 끝난다:\n${r.본문}`);
+  assert.ok(r.본문.includes(남sha.slice(0, 7)), `그 커밋 sha 가 없다:\n${r.본문}`);
+});
+
+test('🟢 형제 커밋이 **내 것**이면 안 운다 — 내 커밋마다 나를 경고하면 그 순간부터 안 읽힌다', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  const sib = 픽스처저장소();
+  const 상태 = 상태폴더();
+  const 형제파일 = 'lib/이벤트검증.js';
+  커밋(dir, 'Code.js', 'a', 'init', 'sess-Z');
+  커밋(sib, 형제파일, 'a', 'seed', 'sess-Z');
+
+  훅(dir, { 절대파일: path.join(sib, 형제파일), 형제: [sib], sid: 'sess-A', stateDir: 상태 });
+  커밋(sib, 형제파일, 'b', '내가 고쳤다', 'sess-A');            // 트레일러가 **나**다
+
+  const r = 훅(dir, { 절대파일: path.join(sib, 형제파일), 형제: [sib], sid: 'sess-A', stateDir: 상태 });
+  assert.ok(r.조용 || !r.본문.includes(형제파일),
+    `내 형제 커밋을 남의 것이라 했다 — 트레일러 대조가 형제 쪽에서만 빠지면 이렇게 샌다:\n${r.본문}`);
+});
+
+test('🟢 형제를 **안 만진** 세션은 형제 커밋으로 울지 않는다 — 겹칠 수 없는 자리다', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  const sib = 픽스처저장소();
+  const 상태 = 상태폴더();
+  커밋(dir, 'Code.js', 'a', 'init', 'sess-Z');
+  커밋(sib, 'tools/남의것.js', 'a', 'seed', 'sess-Z');
+
+  훅(dir, { file: 'Code.js', 형제: [sib], sid: 'sess-A', stateDir: 상태 });   // 내 저장소 파일만 만진다
+  커밋(sib, 'tools/남의것.js', 'b', '형제에서 남이 커밋', 'sess-B');
+
+  const r = 훅(dir, { file: 'Code.js', 형제: [sib], sid: 'sess-A', stateDir: 상태 });
+  assert.ok(r.조용 || !r.본문.includes('남의것.js'),
+    `안 만진 형제 파일로 울었다 — 겹침 판정이 만진목록을 안 거쳤다는 뜻이다:\n${r.본문}`);
+});

@@ -80,7 +80,9 @@ function 상태읽기() {
 function 상태쓰기(s) {
   try {
     fs.mkdirSync(store.stateDir(), { recursive: true });
-    fs.writeFileSync(상태경로, JSON.stringify({ ...s, at: Date.now() }));
+    // 형제 기준점은 상태를 쓰는 **모든** 경로에 실린다 — 한 경로만 빠뜨리면 그 다음 호출이
+    // 기준을 다시 재고, 다시 잰 기준은 그 사이 남의 커밋을 창 밖으로 밀어낸다(조용한 미탐).
+    fs.writeFileSync(상태경로, JSON.stringify({ siblingBase: 형제기준, ...s, at: Date.now() }));
   } catch (_) { /* 못 써도 작업은 진행한다 */ }
 }
 
@@ -101,6 +103,17 @@ const 준경로 = String((input.tool_input && input.tool_input.file_path) || '')
 const 이번파일 = 준경로 ? store.touchKey(ROOT, path.resolve(준경로)) : null;
 
 const 이전 = 상태읽기();
+/* 형제 저장소의 기준점 — 저장소마다 **그 저장소의 HEAD**. 아래 `기준` 과 같은 방식이다.
+ *
+ * 🔴 처음엔 시각 한 칸(`--since=@epoch`)으로 뒀다가 **내 회귀가 그걸 반증했다**: git 의 시각은
+ *    초 단위이고 `--since` 는 경계를 포함해서, 세션 시작과 **같은 초**에 난 커밋이 끌려 들어온다.
+ *    시드 커밋이 그렇게 잡혀 「내 커밋이면 안 운다」 검사가 붙었다 떨어졌다 했다 — 시계로 잰
+ *    창은 재는 층이 값을 뭉갠다(F062 계열). 커밋 그래프는 그 granularity 가 없다.
+ * ⚠ 첫 호출에서만 잰다(세션당 형제 1개 = spawn 1회). 이후엔 상태에서 읽고, 상태에 없던 옛
+ *   세션은 그 자리에서 채워진다 — 못 재면 그 형제는 조용히 빠진다(아는 척하지 않는다). */
+const 형제기준 = (이전 && 이전.siblingBase) || Object.fromEntries(
+  store.siblings(ROOT).map(({ 뿌리, 저장소 }) => [저장소, (git(['-C', 뿌리, 'rev-parse', 'HEAD']) || '').trim()]),
+);
 const 만진목록 = new Set((이전 && 이전.touched) || []);
 if (이번파일) 만진목록.add(이번파일);
 
@@ -181,8 +194,16 @@ if (!이전 || !이전.baseline) {
 const 기준 = String(이전.baseline);
 const 알린것 = new Set(이전.warned || []);
 
-// HEAD 가 그대로면 새 커밋이 없다 — 가장 흔한 경우를 rev-parse 한 번으로 끝낸다.
-if (이전.lastHead === HEAD) {
+/* HEAD 가 그대로면 새 커밋이 없다 — 가장 흔한 경우를 rev-parse 한 번으로 끝낸다.
+ *
+ * 🔴 **단 「HEAD」는 이 저장소 것뿐이다.** 형제(`../SYNK-talk`)에 남이 커밋해도 여기 HEAD 는
+ *    안 움직이므로, 이 빠른길이 형제 조회보다 **앞에** 있으면 아래 형제 판정은 영원히 안 닿는다 —
+ *    그리고 그게 F187·F188 이 난 바로 그 모양이다(내 저장소는 조용한데 형제만 움직인다).
+ *    가드가 새는 방향은 언제나 「통과」이고, 여기서는 **빠른길이 그 구멍이었다.**
+ *    ⇒ 형제를 만진 세션은 빠른길을 안 탄다. 대가는 Edit 당 `git log` 2회(둘 다 대개 빈 결과)이고,
+ *      형제를 안 만진 세션(실측 20 중 7)은 지금까지와 완전히 같다. */
+const 형제만짐 = [...만진목록].some((f) => f.startsWith('../'));
+if (이전.lastHead === HEAD && !형제만짐) {
   if ((이번파일 && !((이전.touched || []).includes(이번파일))) || 이번에검사함) {
     상태쓰기({ ...이전, touched: [...만진목록], warnedDirty: [...알린더러움], dirtyChecked: 검사시각 });
   }
@@ -210,6 +231,42 @@ const 새커밋 = 로그.split('\n').filter(Boolean).map((줄) => {
   const [sha, ct, subject, sid] = 줄.split(SEP);
   return { sha, ct: Number(ct) || 0, subject: String(subject || ''), sid: String(sid || '').trim() };
 });
+
+/* 🔑 **형제 저장소(`../SYNK-talk/…`)의 커밋도 같은 판정을 거친다.**
+ *
+ * 🔴 쓰는 쪽은 형제를 담는데(위 만진목록 · `ddfae7a` 가 열어 줬다) **읽는 쪽이 안 따라왔다.**
+ *    `git log 기준..HEAD` 도 `git show --name-only` 도 ROOT 에서만 돌고, 후자는 저장소 상대
+ *    경로를 준다 — `tools/왕복시험.js` vs 만진목록의 `../SYNK-talk/tools/왕복시험.js` 라
+ *    교집합이 **원리적으로 0**이다. 즉 이 훅은 형제 작업에 대해 **한 번도 운 적이 없다**.
+ *    실측(2026-08-07 · 최근 3시간 20세션): 만진 파일 127개 중 **91개(72%)가 형제**,
+ *    20세션 중 **13**이 형제를 만진다. F187·F188 이 조용했던 자리가 정확히 여기다(둘 다 talk 파일).
+ *    [[cross-repo-blindness]] 의 📏 인구조사가 이 훅을 「형제와 무관」으로 분류한 이유 =
+ *    그 조사는 `status --porcelain` 을 읽는 장치 9개만 셌고, 이 훅은 **커밋 축**이라 밖이었다.
+ *    ⇒ 「상태를 읽는 9개가 전부 덮였다」는 참이었지만 축이 하나 더 있었다.
+ *
+ * ⚠ 형제를 안 만졌으면 부르지 않는다 — 겹칠 수가 없는데 Edit 마다 spawn 을 더할 이유가 없다
+ *   (작업본소유자의 `anyOthers` 선거르기와 같은 규칙 · 실측 20세션 중 7이 여기서 걸러진다).
+ * 🚫 저장소 목록은 넓히지 않는다 — `store.siblings` 고정 후보 그대로다(🚫 디렉터리 전수 탐색). */
+function 형제커밋들() {
+  if (!형제만짐) return [];
+  const 목록 = [];
+  for (const { 뿌리, 저장소 } of store.siblings(ROOT)) {
+    const 밑 = 형제기준[저장소];
+    if (!밑) continue;   // 기준을 못 잡은 형제는 건너뛴다 — 창이 없으면 「전부 새 커밋」이 된다
+    const out = git(['-C', 뿌리, 'log', `${밑}..HEAD`, '--no-merges',
+      `--format=%H${SEP}%ct${SEP}%s${SEP}%(trailers:key=Session-Id,valueonly)`]);
+    // rebase 로 기준이 도달 불가가 되면 git 이 실패한다 — 아는 척하지 않고 빠진다(본 저장소와 같은 계약).
+    if (out === null) continue;
+    for (const 줄 of out.split('\n').filter(Boolean)) {
+      const [sha, ct, subject, sid] = 줄.split(SEP);
+      목록.push({
+        sha, ct: Number(ct) || 0, subject: String(subject || ''), sid: String(sid || '').trim(), 뿌리, 저장소,
+      });
+    }
+  }
+  return 목록;
+}
+새커밋.push(...형제커밋들());
 
 /* 내 보드 줄 찾기 — 「내가 만진 파일이 만지는 파일 칸에 적힌 줄」이 내 줄이다.
  * 보드 줄엔 세션 id 가 없어서 다른 식별자가 없다. 이 파생은 자기 교정적이다:
@@ -294,8 +351,12 @@ for (const c of 새커밋) {
   if (알린것.has(c.sha)) continue;
   if (c.sid && 내세션 && c.sid === 내세션) continue; // 내 커밋
 
-  const 파일들 = (git(['show', '--name-only', '--format=', c.sha]) || '')
-    .split('\n').map((s) => s.trim()).filter(Boolean);
+  const 파일들 = (git([...(c.뿌리 ? ['-C', c.뿌리] : []), 'show', '--name-only', '--format=', c.sha]) || '')
+    .split('\n').map((s) => s.trim()).filter(Boolean)
+    /* 형제 파일은 만진목록과 **같은 좌표**로 옮긴다 — 좌표를 안 맞추면 대조가 전부 빗나가고,
+     * 빗나간 결과는 「겹침 없음 = 조용」이라 고장이 정상처럼 보인다(작업본소유자 `형제세션들`과 같은 규칙).
+     * 접두는 여기서 적지 않고 lib 에서 파생시킨다 — 양쪽에 적으면 갈라진다. */
+    .map((f) => (c.저장소 ? store.siblingPrefix(c.저장소) + f : f));
 
   const 만진겹침 = 파일들.filter((f) => 만진목록.has(f) && 장부아님(f));
   const 선언겹침 = 파일들.filter((f) => 선언파일.has(path.posix.basename(f)) && !만진목록.has(f) && 장부아님(f));
@@ -335,7 +396,8 @@ const 줄들 = 표시.map((c) => {
     c.표식겹침.length ? `같은 표식 ${c.표식겹침.join('·')}` : '',
   ].filter(Boolean).join(' · ');
   const 주인 = c.sid ? c.sid.slice(0, 20) : '주인 미상(트레일러 없음)';
-  return `  · ${c.sha.slice(0, 7)} (${나이(c.ct)}, ${주인})\n      ${c.subject}\n      ↳ ${왜}`;
+  // 저장소를 앞에 밝힌다 — 안 밝히면 `git show <sha>` 를 이 저장소에서 돌리고 「없는 커밋」으로 끝난다.
+  return `  · ${c.저장소 ? `[${c.저장소}] ` : ''}${c.sha.slice(0, 7)} (${나이(c.ct)}, ${주인})\n      ${c.subject}\n      ↳ ${왜}`;
 });
 
 const 본문 =
@@ -347,6 +409,8 @@ const 본문 =
   + '같은 트랙이 두 세션에서 병렬로 돌아 같은 가드를 따로 구현했다(하루 두 번째).\n\n'
   + '→ 계속하기 전에:\n'
   + '   1) `git show <sha>` 로 **그 커밋을 먼저 읽는다** — 같은 트랙이면 새로 짓지 말고 물린다.\n'
+  + '      `[SYNK-talk]` 표시가 붙은 것은 그 저장소에서 읽는다: `git -C ../SYNK-talk show <sha>`.\n'
+  + '      내 작업본이 그 커밋을 안 담은 채면 그대로 커밋할 때 남의 줄이 **삭제로** 실린다(F187·F188).\n'
   + '   2) 내 작업과 겹치면 조율은 실행 조율만(편집권·순서·인계). 방향·비가역 승인은 유호님 몫이다.\n'
   + '   3) 조율한 사실을 **커밋 메시지나 보드 줄에 1줄** 남긴다(메시지는 전달이 보장되지 않는다).';
 
