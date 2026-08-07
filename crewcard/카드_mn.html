@@ -436,12 +436,14 @@ section.page{
     content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
     background:var(--coral);
   }
-  /* 유호님 확정 2026-08-07 「C안」(3안 렌더 비교 후 선택) — 띠는 신호색 하나로 가고
-     **한 칸만** KC 핑크다. 그 한 칸이 실제로 K-컬처(Part 6)라 **색이 뜻을 진다.**
-     전엔 02·04 가 KC 색이고 정작 03 이 Lime 2 라, 색과 뜻이 어긋나 있었다.
-     🔴 경계는 `.kc-preview` 이고 **색에만** 넓혔다 — 서체 경계(브랜드렌더린트 `KC_SCOPE`)는 그대로다.
-        예고 1칸에 Part 6 서체까지 딸려 들어가면 예외가 예외로 안 남는다. */
-  .cov-deliverables .del.kc-preview::before{background:var(--kc-hot)}
+  /* 유호님 확정 2026-08-07(2차) — **네 칸 네 색으로 되돌린다.** 「예전처럼 알록달록하게, 원래 각
+     색이 다 달랐잖아. 그 느낌의 줄이 더 좋다」. 같은 날 오전의 「C안」(띠를 코랄 하나로 모으고 03 만
+     KC 핑크)은 이 지시로 **폐기**한다 — 뜻보다 인상을 고르신 것이라 되묻지 않는다.
+     🔴 경계는 `.cov-deliverables` 이고 **색에만** 넓혔다 — 서체 경계(브랜드렌더린트 `KC_SCOPE`)는
+        그대로다. 표지 띠에 Part 6 서체까지 딸려 들어가면 그 칸이 Part 6 행세를 한다. */
+  .cov-deliverables .del:nth-child(2)::before{background:var(--kc-cool)}
+  .cov-deliverables .del:nth-child(3)::before{background:var(--lime-2)}
+  .cov-deliverables .del:nth-child(4)::before{background:var(--kc-hot)}
   .cov-deliverables .idx{
     font-family:var(--mono);font-size:9px;letter-spacing:.14em;
     color:var(--muted);font-weight:600;
@@ -1520,8 +1522,7 @@ section.page{
           <h5>Хувьчилсан <em>замнал.</em></h5>
           <div class="desc">TOPIK · их сургууль · ажилд орох хүртэлх таны цэг бүрийн төлөвлөгөө</div>
         </div>
-        <!-- 예고 1칸 — KC 색이 Part 6 밖에 정당하게 서는 유일한 자리(유호님 확정 C안) -->
-        <div class="del kc-preview">
+        <div class="del">
           <div class="idx">03 · K-Track</div>
           <h5>K-соёлын <em>тохирцоо.</em></h5>
           <div class="desc">Дуулал · бүжиг · гоо-сайхан · медиа дотроос таны трэкийг сонгоно</div>
