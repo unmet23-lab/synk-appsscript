@@ -80,6 +80,38 @@ test('대기 중인 새 run 이 있어도 완료본이 있으면 그 결론을 �
   assert.equal(판정({ runs, 담는가: 전부담김 }).상태, '적색');
 });
 
+/* ── 취소 = 증거 아님 (cancel-in-progress c0f035a 상시화의 귀결) ──────────────
+ * 08-07 실측: 낡은 판 run 31173804076 이 취소로 «완료»되자 이 도구가 적색+빈 로그 처방을
+ * 냈다 — 상위 run 이 4분 뒤 초록을 줬는데 그 창 동안 거짓 적색이었다. 취소는 「새 판이
+ * 검사를 이어받았다」이지 판정이 아니다 — 적색으로도 초록으로도 읽으면 안 된다. */
+
+test('🔴 취소된 낡은 판 + 도는 새 판 = 「대기」 — 적색으로 읽으면 그 창마다 거짓 적색이다', () => {
+  const runs = [
+    run({ databaseId: 31, status: 'in_progress', conclusion: null, createdAt: '2026-08-06T10:06:00Z' }),
+    run({ databaseId: 30, conclusion: 'cancelled', createdAt: '2026-08-06T10:05:00Z' }),
+  ];
+  const r = 판정({ runs, 담는가: 전부담김 });
+  assert.equal(r.상태, '대기', '취소 완료본을 증거로 쓰면 상위 run 이 도는 몇 분 동안 거짓 적색이 나간다');
+  assert.equal(r.run.databaseId, 31, '기다릴 대상은 취소본이 아니라 도는 run 이다');
+});
+
+test('담은 run 이 취소뿐이고 도는 것도 없으면 「취소뿐」 — 초록도 대기도 아니다', () => {
+  const r = 판정({ runs: [run({ conclusion: 'cancelled' })], 담는가: 전부담김 });
+  assert.equal(r.상태, '취소뿐', '취소만 남은 커밋은 미검증이다 — 어느 쪽으로도 단정하면 샌다');
+  assert.equal(r.담긴, 1);
+});
+
+test('취소본이 최신이어도 완주본이 증거다 — 초록/적색은 완주한 판의 결론', () => {
+  /* 손 취소가 완주 뒤에 일어난 모양 — 필터 없는 구현은 최신 완료본(=취소)을 적색으로 읽는다. */
+  const runs = [
+    run({ databaseId: 41, conclusion: 'cancelled', createdAt: '2026-08-06T10:09:00Z' }),
+    run({ databaseId: 40, createdAt: '2026-08-06T10:05:00Z' }),
+  ];
+  const r = 판정({ runs, 담는가: 전부담김 });
+  assert.equal(r.상태, '초록', '취소를 증거 풀에 남기면 최신 취소본이 완주본을 가린다');
+  assert.equal(r.run.databaseId, 40);
+});
+
 test('담은 것과 안 담은 것이 섞이면 담은 것만 본다', () => {
   const runs = [
     run({ headSha: 'b'.repeat(40), conclusion: 'failure', createdAt: '2026-08-06T12:00:00Z' }),

@@ -72,9 +72,17 @@ function 판정({ runs, 담는가 }) {
   }
   담긴.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
   if (!담긴.length) return { 상태: '미검증', 판정불가, 담긴: 0 };
-  const 완료 = 담긴.filter((r) => r.status === 'completed');
-  // 아직 도는 중이면 초록도 적색도 아니다 — 「곧 초록이겠지」는 판정이 아니다.
-  if (!완료.length) return { 상태: '대기', run: 담긴[0], 판정불가, 담긴: 담긴.length };
+  /* 🔴 취소는 증거가 아니다 — cancel-in-progress(c0f035a)로 「같은 ref 에 새 push 가 오면 낡은 판
+   * run 취소」가 일상이 됐다. 취소된 완료본을 적색으로 읽으면 상위 run 이 도는 몇 분 동안 거짓
+   * 적색+빈 로그 처방이 나간다(08-07 실측 run 31173804076). 초록으로 읽는 것도 금지다 —
+   * 아무것도 검사하지 않았다. 그래서 증거 풀에서 통째로 뺀다. */
+  const 완료 = 담긴.filter((r) => r.status === 'completed' && r.conclusion !== 'cancelled');
+  const 도는중 = 담긴.filter((r) => r.status !== 'completed');
+  if (!완료.length) {
+    // 아직 도는 중이면 초록도 적색도 아니다 — 「곧 초록이겠지」는 판정이 아니다.
+    if (도는중.length) return { 상태: '대기', run: 도는중[0], 판정불가, 담긴: 담긴.length };
+    return { 상태: '취소뿐', run: 담긴[0], 판정불가, 담긴: 담긴.length };
+  }
   return { 상태: 완료[0].conclusion === 'success' ? '초록' : '적색', run: 완료[0], 판정불가, 담긴: 담긴.length };
 }
 
@@ -156,6 +164,10 @@ function main() {
     }
   } else if (r.상태 === '대기') {
     console.log(`[원격ci] ⏳ 대기 — ${짧게} 를 담은 ${run쪽} 이 아직 ${r.run.status}. 초록이 아니다.`);
+  } else if (r.상태 === '취소뿐') {
+    console.log(`[원격ci] 🔴 원격 미검증 — ${짧게} 를 담은 run 은 취소본뿐이고(${run쪽}) 대신 도는 run 도 없다.`);
+    console.log('   취소는 검사가 아니다 — 낡은 판을 접은 새 판이 완주하기 전에 그 판마저 사라진 모양이다.');
+    console.log(`   → gh workflow run ${CI_워크플로} --ref ${브랜치}`);
   } else if (r.상태 === '미push') {
     console.log(`[원격ci] 🔴 원격 미검증 — ${짧게} 는 아직 origin/${브랜치} 에 없다(push 전).`);
     console.log('   원격은 없는 커밋을 검사할 수 없다 — 웹훅 문제가 아니라 내 손이 안 간 것이다.');
