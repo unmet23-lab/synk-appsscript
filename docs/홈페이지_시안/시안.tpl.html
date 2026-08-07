@@ -88,6 +88,17 @@ header>*{pointer-events:auto}
   position:absolute;left:65.9%;top:51.4%;width:12.97%;height:auto;
   transform:translate(-50%,-50%);
   mix-blend-mode:multiply;
+  /* 마우스가 가까울수록 각인이 미세하게 깊어진다 — 빔 두께·후광을 굴리는 --heat 를 그대로 태운다
+     (실제 레진도 조명이 세지면 각인 그림자가 깊어진다).
+     🔑 곱하기 레이어에서 「흰 바탕은 그대로, 어두운 K 만 더 내리는」 축은 opacity 하나뿐이다.
+     · contrast 는 반대로 간다 — 0.5 **위**의 값을 밀어 올리는데 K 픽셀이 마침 그 위라 각인이 연해진다(실측).
+     · brightness 는 흰 바탕까지 내려 사각 패치를 부활시킨다.
+     그래서 스프라이트를 진하게 구워 두고(gamma 1.05) opacity 로 그 안에서 움직인다 — 여유를 만들어
+     두지 않으면(=확정 진하기를 최대로 두면) 폭이 YAVG 2 밖에 안 나와 눈에 안 보인다(실측).
+     범위는 유호님 확정 진하기(K 영역 YAVG 158.0)를 **중간**에 둔다:
+     heat 0 → 161.6 · 0.5 → 157.5 · 1 → 153.2 (폭 3.3%). */
+  opacity:calc(.25 + var(--heat) * .30);
+  transition:opacity .4s var(--ease);
 }
 .eye{position:absolute;width:0;height:0;pointer-events:none}
 .cast{
