@@ -17,7 +17,8 @@ const assert = require('node:assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { execFileSync, spawnSync } = require('child_process');
+const { execFileSync } = require('child_process');
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const ROOT = path.resolve(__dirname, '..');
 const HOOK = path.join(ROOT, '.claude', 'hooks', 'friction-close-guard.js');
@@ -54,7 +55,7 @@ function 돌려(f, 메시지, opts = {}) {
     tool_response: { stdout: opts.출력 !== undefined ? opts.출력 : out, stderr: '' },
     cwd: f.dir,
   };
-  const r = spawnSync(process.execPath, [HOOK], {
+  const r = 훅띄우기(HOOK, {
     input: JSON.stringify(입력),
     encoding: 'utf8',
     env: {
@@ -96,7 +97,7 @@ test('🔴 신고 커밋(그 행을 만든 커밋)은 조용하다 — 정상 �
   fs.appendFileSync(f.장부, '| F902 | 2026-08-05 | 마찰 | 방금 신고한 신호 | |\n');
   f.git('add', '-A');
   const out = f.git('commit', '-m', 'docs: 마찰 F902 — 방금 신고했다');
-  const r = spawnSync(process.execPath, [HOOK], {
+  const r = 훅띄우기(HOOK, {
     input: JSON.stringify({
       tool_name: 'Bash',
       tool_input: { command: 'git commit -F msg.txt -- docs/_ops/마찰신호.md' },
@@ -106,7 +107,7 @@ test('🔴 신고 커밋(그 행을 만든 커밋)은 조용하다 — 정상 �
     encoding: 'utf8',
     env: { ...process.env, SYNK_FRICTION_LEDGER: f.장부, SYNK_FRICTION_GUARD_DIR: f.상태, CLAUDE_CODE_HOST_SESSION_ID: 'fixture-session' },
   });
-  assert.equal(spawnSync ? r.stdout.trim() : '', '',
+  assert.equal(r.stdout.trim(), '',
     '신고 커밋에 짖었다 — 신호를 기록할 때마다 경고가 뜨면 사람이 훅을 끈다(F049 실측)');
 });
 
@@ -136,7 +137,7 @@ test('🔴 git commit 이 아닌 명령엔 발화하지 않는다 — 명령 판
   const 착지출력 = f.git('commit', '-m', 'fix: 실재하는 커밋이고 열린 행을 단다 (F900)');
   assert.match(착지출력, /\[[^\]]*[0-9a-f]{7}\]/, '픽스처가 착지 줄을 안 냈다 — 이 검사의 전제가 깨졌다');
 
-  const r = spawnSync(process.execPath, [HOOK], {
+  const r = 훅띄우기(HOOK, {
     input: JSON.stringify({
       tool_name: 'Bash',
       tool_input: { command: 'git log --oneline -5' },   // 커밋이 아니다
@@ -166,7 +167,7 @@ test('실저장소 — 거짓양성만 본다: 이미 닫힌 번호를 단 커�
   if (!닫힌.length) { assert.ok(true, '(실장부에 닫힌 행이 없어 건너뛴다 — 통과와 미실행이 같은 모양이면 안 된다)'); return; }
   const id = 닫힌[닫힌.length - 1].id;
   const 상태 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-fcg-real-'));
-  const r = spawnSync(process.execPath, [HOOK], {
+  const r = 훅띄우기(HOOK, {
     input: JSON.stringify({
       tool_name: 'Bash',
       tool_input: { command: 'git commit -m "..." -- .' },
@@ -200,7 +201,7 @@ function 신고커밋(f, 행, 제목, 동반 = {}) {
   }
   f.git('add', '-A');
   const out = f.git('commit', '-m', 제목);
-  const r = spawnSync(process.execPath, [HOOK], {
+  const r = 훅띄우기(HOOK, {
     input: JSON.stringify({
       tool_name: 'Bash',
       tool_input: { command: 'git commit -F msg.txt -- docs/_ops/마찰신호.md' },
@@ -250,7 +251,7 @@ test('🔴 행 **갱신**(-/+ 둘 다)은 해소 문구가 있어도 면제 — 
     '| F900 | 2026-08-05 | 실수 | 픽스처 — 조사해 보니 해소=아직 검증 중인 후보 | |'));
   f.git('add', '-A');
   const out = f.git('commit', '-m', 'docs: 마찰 F900 — 신호문에 조사 결과를 덧붙인다');
-  const r = spawnSync(process.execPath, [HOOK], {
+  const r = 훅띄우기(HOOK, {
     input: JSON.stringify({
       tool_name: 'Bash',
       tool_input: { command: 'git commit -F msg.txt -- docs/_ops/마찰신호.md' },

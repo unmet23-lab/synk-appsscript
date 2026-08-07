@@ -16,13 +16,13 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const ROOT = path.resolve(__dirname, '..');
 const GUARD = path.join(ROOT, '.claude', 'hooks', 'clasp-guard.js');
 
 function runGuard(command) {
-  const r = spawnSync(process.execPath, [GUARD], {
+  const r = 훅띄우기(GUARD, {
     input: JSON.stringify({ tool_name: 'Bash', tool_input: { command }, cwd: ROOT }),
     encoding: 'utf8',
   });

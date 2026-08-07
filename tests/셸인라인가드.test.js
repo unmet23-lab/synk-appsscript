@@ -15,14 +15,15 @@ const test = require('node:test');
 const assert = require('node:assert');
 const path = require('node:path');
 const fs = require('node:fs');
-const { spawnSync } = require('node:child_process');
+const { spawnSync } = require('node:child_process'); // bash 재현용 — 훅은 아래 통로로 띄운다
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 // SYNK_TEST_INLINE_HOOK = 변이 실험용 이음매. 평소엔 실훅을 본다.
 const HOOK = process.env.SYNK_TEST_INLINE_HOOK
   || path.resolve(__dirname, '..', '.claude', 'hooks', 'shell-inline-guard.js');
 
 function 가드(command, tool = 'Bash') {
-  const r = spawnSync(process.execPath, [HOOK], {
+  const r = 훅띄우기(HOOK, {
     input: JSON.stringify({ tool_name: tool, tool_input: { command } }),
     encoding: 'utf8',
   });
@@ -189,7 +190,6 @@ test('settings.json 매처·필터가 이 훅이 막는 입력을 전부 넘긴�
 });
 
 test('망가진 입력에도 작업을 막지 않는다 (문법 도우미지 안전장치가 아니다)', () => {
-  const r = spawnSync(process.execPath, [HOOK], { input: '이건 JSON이 아니다', encoding: 'utf8' });
-  assert.strictEqual(r.status, 0);
+  const r = 훅띄우기(HOOK, { input: '이건 JSON이 아니다', encoding: 'utf8' });
   assert.strictEqual((r.stdout || '').trim(), '', '입력을 못 읽었는데 차단했다');
 });

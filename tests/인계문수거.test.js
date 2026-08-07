@@ -16,7 +16,8 @@ const assert = require('node:assert');
 const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
-const { spawnSync } = require('node:child_process');
+const { spawnSync } = require('node:child_process'); // git 재현용 — node 자식은 아래 통로로 띄운다
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const TOOL = path.resolve(__dirname, '..', 'tools', '인계문수거.js');
 const store = require(path.resolve(__dirname, '..', '.claude', 'hooks', 'lib', 'handoff-store.js'));
@@ -56,7 +57,8 @@ function 심장박동(state, repo, sid, 분전) {
 function 돌린다({ repo, state, 나, 인자 = [], env추가 = {} }) {
   const env = { ...process.env, SYNK_OWNER_ROOT: repo, SYNK_CTXBUDGET_DIR: state, ...env추가 };
   if (나 === undefined) delete env.CLAUDE_CODE_HOST_SESSION_ID; else env.CLAUDE_CODE_HOST_SESSION_ID = 나;
-  return spawnSync(process.execPath, [TOOL, ...인자], { encoding: 'utf8', env });
+  // 통과코드 0·2 = 이 도구의 계약(0 정상 / 2 인자 오류). 그 밖은 안 떴거나 터진 것이라 결과가 아니다.
+  return 훅띄우기([TOOL, ...인자], { encoding: 'utf8', env, 통과코드: [0, 2] });
 }
 function 커밋수(g) { const r = g('rev-list', '--count', 'HEAD'); return Number(String(r.stdout).trim()); }
 function 마지막커밋파일들(g) {

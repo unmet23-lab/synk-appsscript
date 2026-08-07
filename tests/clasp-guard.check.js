@@ -2,15 +2,15 @@
 // (파일명이 *.test.js가 아닌 이유: node --test tests/ 가 이 파일을 실행하면
 //  가드가 다시 node --test tests/ 를 부르는 재귀가 생긴다. 이 점검은 수동/훅 수정 시 실행.)
 'use strict';
-const { spawnSync } = require('child_process');
 const path = require('path');
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const GUARD = path.join(__dirname, '..', '.claude', 'hooks', 'clasp-guard.js');
 
 function feed(command, cwd) {
   const payload = { tool_name: 'Bash', tool_input: { command } };
   if (cwd) payload.cwd = cwd; // 훅 입력의 cwd = 명령이 실제로 실행될 위치
-  const r = spawnSync(process.execPath, [GUARD], {
+  const r = 훅띄우기(GUARD, {
     input: JSON.stringify(payload),
     encoding: 'utf8',
     timeout: 120000,

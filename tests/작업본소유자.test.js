@@ -17,7 +17,8 @@ const assert = require('node:assert');
 const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
-const { spawnSync } = require('node:child_process');
+const { spawnSync } = require('node:child_process'); // git 재현용 — node 자식은 아래 통로로 띄운다
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const TOOL = path.resolve(__dirname, '..', 'tools', '작업본소유자.js');
 const store = require(path.resolve(__dirname, '..', '.claude', 'hooks', 'lib', 'handoff-store.js'));
@@ -64,8 +65,8 @@ function 돌린다({ repo, state, 나, 인자 = [], 형제 }) {
    * ⚠ 여기에 실저장소 경로가 새어 들어가면 CI 와 로컬이 다른 세계를 보게 된다(repo 밖 의존). */
   if (형제) env.SYNK_OWNER_SIBLINGS = 형제.join(';');
   if (나 === undefined) delete env.CLAUDE_CODE_HOST_SESSION_ID; else env.CLAUDE_CODE_HOST_SESSION_ID = 나;
-  const r = spawnSync(process.execPath, [TOOL, ...인자], { encoding: 'utf8', env });
-  assert.strictEqual(r.status, 0, `비정상 종료:\n${r.stderr}`);
+  // 비정상 종료도, 안 뜬 것도 통로가 드러낸다 — 둘이 「빈 출력」으로 같아지면 안 된다.
+  const r = 훅띄우기([TOOL, ...인자], { encoding: 'utf8', env });
   return String(r.stdout || '');
 }
 

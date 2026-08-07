@@ -19,7 +19,8 @@ const assert = require('node:assert');
 const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
-const { spawnSync } = require('node:child_process');
+const { spawnSync } = require('node:child_process'); // git·도구 재현용 — 훅은 아래 통로로 띄운다
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const HOOK = process.env.SYNK_TEST_TRACK_HOOK
   || path.resolve(__dirname, '..', '.claude', 'hooks', 'track-collision.js');
@@ -65,7 +66,7 @@ function 커밋(dir, 파일, 내용, 제목, sid) {
  *  `형제` = 형제 목록 이음매. **읽는 쪽과 같은 이름**을 봐야 한다(갈라지면 계약 검사가 헛돈다). */
 function 훅(dir, { file, 절대파일, 형제, sid = 'sess-A', stateDir, tool = 'Edit', dirtyMs = 0, cwd } = {}) {
   const 경로 = 절대파일 || (file ? path.join(dir, file) : undefined);
-  const r = spawnSync(process.execPath, [HOOK], {
+  const r = 훅띄우기(HOOK, {
     input: JSON.stringify({ tool_name: tool, tool_input: { file_path: 경로 } }),
     encoding: 'utf8',
     // 실행 위치는 기본값(테스트 러너 위치)이 아니라 **줄 수 있어야** 한다 — 경로 해석이
@@ -383,8 +384,7 @@ test('git 이 없는 곳·망가진 입력에서도 작업을 막지 않는다',
   assert.equal(r1.조용, true, 'git 저장소가 아닌데 무언가를 냈다');
   assert.strictEqual(r1.exit, 0);
 
-  const r2 = spawnSync(process.execPath, [HOOK], { input: '이건 JSON이 아니다', encoding: 'utf8' });
-  assert.strictEqual(r2.status, 0);
+  const r2 = 훅띄우기(HOOK, { input: '이건 JSON이 아니다', encoding: 'utf8' });
   assert.strictEqual((r2.stdout || '').trim(), '', '입력을 못 읽었는데 무언가를 냈다');
 });
 
@@ -437,7 +437,7 @@ test('🔑 내가 쓴 상태 파일을 작업본소유자가 읽는다 — 형�
   훅(dir, { file: 시험파일, sid: 'sess-B', stateDir: 상태 }); // 남(B)이 만졌다고 기록시킨다
   fs.writeFileSync(path.join(dir, 시험파일), 'b');            // 미커밋으로 남긴다
 
-  const 조회 = (나) => spawnSync(process.execPath, [도구], {
+  const 조회 = (나) => 훅띄우기(도구, {
     encoding: 'utf8',
     env: { ...process.env, SYNK_OWNER_ROOT: dir, SYNK_CTXBUDGET_DIR: 상태, CLAUDE_CODE_HOST_SESSION_ID: 나 },
   });
@@ -479,7 +479,7 @@ test('🔗 형제 저장소 파일도 주인이 갈린다 — 좌표가 한쪽�
   // 남(B)이 **내 저장소에서 세션을 열고** 형제 파일을 편집했다 — 라이브의 거의 전부가 이 모양이다.
   훅(dir, { 절대파일: path.join(sib, 형제파일), 형제: [sib], sid: 'sess-B', stateDir: 상태 });
 
-  const 조회 = (나) => spawnSync(process.execPath, [도구], {
+  const 조회 = (나) => 훅띄우기(도구, {
     encoding: 'utf8',
     env: {
       ...process.env, SYNK_OWNER_ROOT: dir, SYNK_CTXBUDGET_DIR: 상태,
@@ -694,10 +694,9 @@ test('🔑 공통 `.git` 을 **git 없이** 푼다 — 매 편집마다 도는 �
    * 실측: git 한 번이 68ms 였고 fs 로는 0.01ms 다 — 편집 100번이면 7초 대 1ms. */
   const 코드 = `const wt=require(${JSON.stringify(path.join(path.dirname(HOOK), 'lib', 'worktrees.js').replace(/\\/g, '/'))});`
     + `process.stdout.write(JSON.stringify([wt.gitCommonDir(process.argv[1]),wt.gitCommonDir(process.argv[2]),wt.anyOthers(process.argv[2])]));`;
-  const r = spawnSync(process.execPath, ['-e', 코드, dir, wtDir], {
+  const r = 훅띄우기(['-e', 코드, dir, wtDir], {   // 자식이 죽으면 통로가 던진다
     encoding: 'utf8', env: { PATH: '', SystemRoot: process.env.SystemRoot || '' },
   });
-  assert.strictEqual(r.status, 0, `자식이 죽었다: ${r.stderr}`);
   const [메인공통, 워크공통, 있나others] = JSON.parse(r.stdout);
   assert.ok(메인공통, 'git 없이 메인의 공통 .git 을 못 풀었다');
   assert.strictEqual(워크공통, 메인공통,

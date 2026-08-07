@@ -12,6 +12,7 @@ const { execFileSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const HOOK = path.join(__dirname, '..', '.claude', 'hooks', 'memory-index-guard.js');
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'memidx-'));
@@ -143,7 +144,8 @@ const HOOKJS = path.join(__dirname, '..', '.claude', 'hooks', 'memory-index-guar
 function check(본문) {
   const f = path.join(fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'midx-')), 'MEMORY.md');
   fs.writeFileSync(f, 본문);
-  const r = require('node:child_process').spawnSync(process.execPath, [HOOKJS, '--check', f], { encoding: 'utf8' });
+  // 통과코드 0·1 = `--check` 의 계약(0 깨끗 / 1 위반). 그 밖은 못 띄웠거나 터진 것이라 결과가 아니다.
+  const r = 훅띄우기([HOOKJS, '--check', f], { encoding: 'utf8', 통과코드: [0, 1] });
   return { code: r.status, out: String(r.stdout || '') };
 }
 

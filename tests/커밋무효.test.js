@@ -17,7 +17,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const HOOK = process.env.SYNK_TEST_NOOP_HOOK
   || path.resolve(__dirname, '..', '.claude', 'hooks', 'commit-noop-guard.js');
@@ -30,8 +30,8 @@ function run({ tool = 'Bash', command, stdout = '', stderr = '', response }) {
     tool_input: { command },
     tool_response: response !== undefined ? response : { stdout, stderr },
   };
-  const r = spawnSync(process.execPath, [HOOK], { input: JSON.stringify(payload), encoding: 'utf8' });
-  assert.strictEqual(r.status, 0, `훅이 비정상 종료했다 — 결과 검사 훅이 작업을 세우면 안 된다\n${r.stderr}`);
+  // 결과 검사 훅이 작업을 세우면 안 된다 — 0 아닌 종료도, 안 뜬 것도 통로가 드러낸다.
+  const r = 훅띄우기(HOOK, { input: JSON.stringify(payload), encoding: 'utf8' });
   const out = String(r.stdout || '').trim();
   if (!out) return { 경고: false, 본문: '', raw: '' };
   const j = JSON.parse(out);

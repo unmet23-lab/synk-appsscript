@@ -16,7 +16,7 @@ const assert = require('node:assert');
 const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
-const { spawnSync } = require('node:child_process');
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 // SYNK_TEST_CODEEDIT_HOOK = 변이 실험용 이음매. 평소엔 실훅을 본다.
 const HOOK = process.env.SYNK_TEST_CODEEDIT_HOOK
@@ -27,7 +27,7 @@ const 저장소 = path.resolve(__dirname, '..');
 /* cwd 를 **명시로 넘긴다.** 훅은 상대 경로를 cwd 기준으로 푸는데, 러너의 cwd 에 기대면
  * 「어디서 돌리느냐」에 따라 초록이 갈린다 — repo 밖 환경에 기댄 검사는 CI 에서 깨진다. */
 function 가드(command, tool = 'Bash', cwd = 저장소, env = null) {
-  const r = spawnSync(process.execPath, [HOOK], {
+  const r = 훅띄우기(HOOK, {
     input: JSON.stringify({ tool_name: tool, tool_input: { command }, cwd }),
     encoding: 'utf8',
     // env = 홈 표기(`~`·`$HOME`) 검사용. 실제 홈에 기대면 기계마다 초록이 갈린다.
@@ -427,8 +427,7 @@ test('Bash·PowerShell 이 아닌 도구에는 반응하지 않는다', () => {
 });
 
 test('망가진 입력에도 작업을 막지 않는다', () => {
-  const r = spawnSync(process.execPath, [HOOK], { input: '이건 JSON이 아니다', encoding: 'utf8' });
-  assert.strictEqual(r.status, 0);
+  const r = 훅띄우기(HOOK, { input: '이건 JSON이 아니다', encoding: 'utf8' });
   assert.strictEqual((r.stdout || '').trim(), '', '입력을 못 읽었는데 차단했다');
 });
 

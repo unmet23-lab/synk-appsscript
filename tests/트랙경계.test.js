@@ -19,7 +19,8 @@ const assert = require('node:assert');
 const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
-const { spawnSync } = require('node:child_process');
+const { spawnSync } = require('node:child_process'); // git 재현용 — node 자식은 아래 통로로 띄운다
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const ROOT = path.resolve(__dirname, '..');
 const HOOKS = path.join(ROOT, '.claude', 'hooks');
@@ -44,7 +45,7 @@ function 임시(prefix) {
  *  진짜 인계가 증발했고, 유호님이 "복사해 붙이라"고 안내받은 파일이 오염돼 있었다). */
 function 돌려(입력, stateDir) {
   const cwd = 입력.cwd || 임시('synk-tb-cwd-');
-  const r = spawnSync(process.execPath, [HOOK], {
+  const r = 훅띄우기(HOOK, {
     input: JSON.stringify({ ...입력, cwd }),
     encoding: 'utf8',
     // 🔴 호스트 세션 id 를 **비운다** — 안 비우면 시험을 돌린 실세션의 id 가 훅에 새서
@@ -551,11 +552,10 @@ test('tools/인계문.js — stdout 전문이 그대로 「새 세션 첫 메시
   const TOOL = path.join(ROOT, 'tools', '인계문.js');
   assert.ok(fs.existsSync(TOOL), '🔴 tools/인계문.js 가 없다 — wake·/close 가 가리키는 실행층이 비었다(F053 형태)');
   const d = 임시('synk-tb-tool-');
-  const r = spawnSync(process.execPath, [TOOL], {
+  const r = 훅띄우기(TOOL, {   // 실패 종료도, 안 뜬 것도 통로가 드러낸다
     cwd: d, encoding: 'utf8', timeout: 20000,
     env: { ...process.env, CLAUDE_CODE_HOST_SESSION_ID: 'tool-test-sess' },
   });
-  assert.equal(r.status, 0, `도구가 실패 종료했다: ${r.stderr}`);
   assert.match(r.stdout, /^SYNK 이어서 작업한다/, 'stdout 머리가 인계문이 아니다 — 복붙하면 지시문이 아닌 것이 들어간다');
   assert.ok(!/── 다음 세션 인계문 ──/.test(r.stdout), 'stdout 에 장식 테두리가 섞였다 — 복붙 지시문이 오염된다');
   assert.ok(fs.existsSync(path.join(d, 'docs', '_ops', '인계문.md')), '파일 사본을 안 남겼다 — 파일 통로(다른 계정·폰)가 빈다');
@@ -580,11 +580,10 @@ test('tools/인계문.js --no-save — 남의 블록을 밀어내지 않는다(�
       .join('\n');
   fs.writeFileSync(사본, 원본);
 
-  const r = spawnSync(process.execPath, [TOOL, '--no-save'], {
+  const r = 훅띄우기([TOOL, '--no-save'], {   // 실패 종료도, 안 뜬 것도 통로가 드러낸다
     cwd: d, encoding: 'utf8', timeout: 20000,
     env: { ...process.env, CLAUDE_CODE_HOST_SESSION_ID: 'nosave-test-sess' },
   });
-  assert.equal(r.status, 0, `도구가 실패 종료했다: ${r.stderr}`);
   // 복붙 통로는 살아 있어야 한다 — 안 쓰는 대신 화면 출력까지 죽으면 처방이 통째로 빈다.
   assert.match(r.stdout, /^SYNK 이어서 작업한다/, '--no-save 가 stdout 까지 죽였다 — 복붙할 실물이 사라진다(F096 그 증상)');
   assert.equal(fs.readFileSync(사본, 'utf8'), 원본,
@@ -625,7 +624,7 @@ test('🔴 F122 — 두 훅이 같은 세션에서 울어도 인계문 블록은
   const 커밋 = { tool_name: 'Bash', tool_input: { command: 'git commit -m "x" -- a.md' }, tool_response: 성공 };
 
   const 예산 = (cwd, sid, st) => {
-    const r = spawnSync(process.execPath, [CB], {
+    const r = 훅띄우기(CB, {
       input: JSON.stringify({ session_id: sid, hook_event_name: 'Stop', transcript_path: 트랜스크립트(400_000), cwd }),
       encoding: 'utf8', cwd, timeout: 20000,
       env: { ...process.env, SYNK_CTXBUDGET_DIR: st, CLAUDE_CODE_HOST_SESSION_ID: '' },
@@ -666,7 +665,7 @@ test('🔴 F122 — 깨우지 않는 발화는 블록 표식을 태우지 않는
   const st = 임시('synk-f122-warn-'); const cwd = 임시('synk-f122-warncwd-');
   const sid = '2f9a7c31-0d55-4a1e-9f2c-6b8e4d0a7c11';
   const 돌림 = (ctx) => {
-    const r = spawnSync(process.execPath, [CB], {
+    const r = 훅띄우기(CB, {
       input: JSON.stringify({ session_id: sid, hook_event_name: 'Stop', transcript_path: 트랜스크립트(ctx), cwd }),
       encoding: 'utf8', cwd, timeout: 20000,
       env: { ...process.env, SYNK_CTXBUDGET_DIR: st, CLAUDE_CODE_HOST_SESSION_ID: '' },
