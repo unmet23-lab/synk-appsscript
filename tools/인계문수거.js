@@ -88,16 +88,32 @@ function 조사() {
 
 /** 거둘 것을 커밋한다. 성공 시 짧은 해시, 거둘 게 없으면 null. 실패는 {실패:사유}. */
 function 실행(r) {
-  const 파일들 = [...r.수거, ...r.내것].map((x) => x.경로);
-  if (!파일들.length) return null;
+  if (!r.수거.length && !r.내것.length) return null;
   const 이유 = 커밋못하는이유();
   if (이유) return { 실패: 이유 };
 
-  const 경로들 = r.목차더러움 ? [...파일들, 목차] : 파일들;
   // add 는 미추적을 알리는 절차일 뿐, 범위는 commit 의 pathspec 이 못박는다 —
   // 다른 세션이 스테이징에 무엇을 올려 뒀든 그건 이 커밋에 안 실린다.
-  const add = git(['add', '--', ...경로들]);
-  if (!add.ok) return { 실패: `git add 실패: ${add.err.trim() || '알 수 없음'}` };
+  // add 는 전량 한 번이 아니라 경로별로 — 조사() 스냅샷과 add 사이에 딴 세션의 수거가 같은
+  // 경로를 먼저 커밋하면(동시 기동 · F071) 그 경로는 작업본에도 index 에도 없어 pathspec
+  // fatal 인데, 전량 원자 add 는 그 하나로 아직 거둘 수 있는 나머지까지 0건으로 접는다
+  // (08-07 실측: 87d2dfa 가 선점한 ba86eeb2 하나에 시작 훅 수거가 통째로 죽었다).
+  // 사라진 경로는 이미 남의 커밋에 실려 있어 건너뛰어도 잃는 내용이 없다 — 그 밖의
+  // add 실패(index.lock 등)는 사라짐이 아니므로 전과 같이 전체를 접는다.
+  const 사라짐 = new Set();
+  for (const p of [...r.수거, ...r.내것].map((x) => x.경로).concat(r.목차더러움 ? [목차] : [])) {
+    const a = git(['add', '--', p]);
+    if (a.ok) continue;
+    if (/did not match any files/.test(a.err)) { 사라짐.add(p); continue; }
+    return { 실패: `git add 실패: ${a.err.trim() || '알 수 없음'}` };
+  }
+  r.수거 = r.수거.filter((x) => !사라짐.has(x.경로));
+  r.내것 = r.내것.filter((x) => !사라짐.has(x.경로));
+  r.사라짐 = 사라짐.size;
+  const 파일들 = [...r.수거, ...r.내것].map((x) => x.경로);
+  if (!파일들.length) return null; // 전부 딴 세션이 먼저 거뒀다 — 빈손과 같다(내용은 다 이력에 있다)
+
+  const 경로들 = r.목차더러움 && !사라짐.has(목차) ? [...파일들, 목차] : 파일들;
 
   const sids = r.수거.map((x) => x.경로.split('/').pop().replace(/\.md$/, ''));
   const 제목 = `docs: 인계문 수거 — 죽은 세션 ${r.수거.length}건${r.내것.length ? ` + 내 세션 파일` : ''} (F111 통로)`;
@@ -150,14 +166,16 @@ if (require.main === module) {
   }
   const 결과 = 실행(r);
   if (결과 === null) {
-    if (모드 === '실행') process.stdout.write('[인계문수거] 거둘 것이 없다 — 커밋 안 함\n');
+    if (모드 === '실행') process.stdout.write(r.사라짐
+      ? `[인계문수거] ${r.사라짐}건 전부 딴 세션이 먼저 거뒀다 — 커밋 안 함(잃은 내용 없음)\n`
+      : '[인계문수거] 거둘 것이 없다 — 커밋 안 함\n');
     process.exit(0); // hook 모드 빈손은 침묵 — 잔소리하는 장치는 읽히지 않게 된다
   }
   if (결과.실패) {
     process.stdout.write(`[인계문수거] 거두지 못했다(${결과.실패}) — 미커밋 그대로, 다음 실행이 다시 시도한다\n`);
     process.exit(모드 === '실행' ? 2 : 0); // 명시 실행의 실패는 소리 내고, 훅은 다음 기회에 맡긴다
   }
-  process.stdout.write(`[인계문수거] 죽은 세션 인계문 ${r.수거.length}건${r.내것.length ? ' + 내 세션 파일' : ''}을 커밋했다(${결과}) — F111 통로${r.보류.length ? ` · 보류 ${r.보류.length}건은 살아있는 세션 것이라 남겼다` : ''}\n`);
+  process.stdout.write(`[인계문수거] 죽은 세션 인계문 ${r.수거.length}건${r.내것.length ? ' + 내 세션 파일' : ''}을 커밋했다(${결과}) — F111 통로${r.보류.length ? ` · 보류 ${r.보류.length}건은 살아있는 세션 것이라 남겼다` : ''}${r.사라짐 ? ` · ${r.사라짐}건은 딴 세션이 먼저 거둬 건너뜀` : ''}\n`);
   process.exit(0);
 }
 
