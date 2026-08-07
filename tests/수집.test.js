@@ -727,6 +727,36 @@ test('[v9.175] 메뉴에 등록돼 있다 — 만들어도 안 불리면 없는 
     'onOpen 메뉴에 항목이 없다 — 함수는 있는데 누를 자리가 없다(등록층 누락)');
 });
 
+/* [2026-08-07] 같은 사고 3번째라 개별 수정을 접고 규칙으로 올렸다.
+ *   ①08-03 `migrateConsentV186` — 유호님 "어디 있냐" → 그때 그것 하나만 메뉴에 올렸다.
+ *   ②08-07 `createInterviewLogForm` — 유호님 "아무리 찾아도 없더라고".
+ *   ③같은 날 실측 `createTeacherMemoForm` — 아무도 안 물었을 뿐 같은 상태였다.
+ *   원인은 함수가 아니라 **표기와 실행 경로가 따로 논 것**이다: Code.js 는 `(▶…)` 로
+ *   "사람이 누른다"고 적는데, 누를 자리(onOpen 메뉴)는 손으로 따로 올려야 했다.
+ *   ⚠ 검사 축이 「정의가 살아 있는 것」인 이유 — 대체된 구판(`migrateConsentV185`)은 주석에만
+ *   남고 정의가 지워진다. 주석만 보고 요구하면 **버그가 아직 있을 것을 요구하는 회귀**가 된다. */
+test('[2026-08-07] ▶ 표기는 메뉴가 실행 경로다 — 편집기 드롭다운은 비개발자에게 경로가 아니다', () => {
+  const 셋업 = fs.readFileSync(path.join(ROOT, '엔진_셋업확장.js'), 'utf8').replace(/\r\n/g, '\n');
+  const code = fs.readFileSync(path.join(ROOT, 'Code.js'), 'utf8').replace(/\r\n/g, '\n');
+  const 손실행 = [...new Set([...code.matchAll(/([a-zA-Z_][a-zA-Z0-9_]*)\(▶/g)].map((m) => m[1]))];
+  assert.ok(손실행.length >= 3, `Code.js 의 (▶ 표기를 못 찾았다 — 표기가 바뀌었으면 이 검사부터 고친다(현재 ${손실행.length}건)`);
+
+  const 살아있음 = 손실행.filter((fn) => {
+    const re = new RegExp(`^function ${fn}\\s*\\(`, 'm');
+    return fs.readdirSync(ROOT).filter((n) => n.endsWith('.js'))
+      .some((n) => re.test(fs.readFileSync(path.join(ROOT, n), 'utf8')));
+  });
+  assert.ok(살아있음.length >= 3, `정의가 살아 있는 ▶ 함수가 ${살아있음.length}건뿐이다 — 검사가 헛돈다`);
+
+  for (const fn of 살아있음) {
+    assert.ok(new RegExp(`menuRun_\\(${fn}\\)`).test(셋업),
+      `${fn} 은 Code.js 가 (▶ 로 "사람이 누른다"고 적었는데 메뉴 래퍼가 없다 — 실행 경로가 편집기뿐이다`);
+    const 래퍼 = (셋업.match(new RegExp(`function (menu[A-Za-z0-9_]*)\\(\\)\\s*\\{\\s*menuRun_\\(${fn}\\)`)) || [])[1];
+    assert.ok(래퍼 && new RegExp(`addItem\\('[^']*', '${래퍼}'\\)`).test(셋업),
+      `${fn} 은 래퍼(${래퍼})만 있고 onOpen 메뉴에 항목이 없다 — 누를 자리가 없으면 없는 것이다(등록층 누락)`);
+  }
+});
+
 test('[v9.175] 두 출구가 같은 문서 생성부를 쓴다 — 비식별 규칙이 한쪽에서만 갱신되면 조용히 샌다', () => {
   for (const fn of ['function exportGoldenFixture_()', 'function pushGoldenFixture_()']) {
     const 본문 = section(fn, '\n}\n');

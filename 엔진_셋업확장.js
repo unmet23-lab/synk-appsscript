@@ -2811,6 +2811,14 @@ function menuTalkLogCheck() { menuRun_(talkLogCheck); }
 // [2026-08-03] 동의 문항 갱신 — 정의는 엔진_폼리포트.js. 멱등이라 문구를 고칠 때마다 다시 눌러도 안전하고,
 //   몽골어 검수 후(CONSENT_MN_APPROVED=true) 한 번 더 눌러야 병기가 라이브 폼에 반영된다.
 function menuMigrateConsent() { menuRun_(migrateConsentV186); }
+/* [2026-08-07] 면접 기록 회수 폼 — **같은 사고의 2번째다.** 위 동의 갱신 주석이 이미
+ *   "편집기 드롭다운에서만 돌 수 있어 유호님이 어디 있냐고 물으신 함수"라고 적어 뒀는데,
+ *   이 함수는 그때 같이 안 올려서 08-07 유호님이 다시 "아무리 찾아도 없더라고" 하셨다.
+ *   ▶1회짜리라도 **비개발자가 눌러야 하는 함수면 메뉴가 실행 경로다**(편집기는 경로가 아니다). */
+function menuCreateInterviewLogForm() { menuRun_(createInterviewLogForm); }
+/* 같은 자리 3번째라 개별로 안 고치고 회귀로 못박았다(`tests/수집.test.js` 「▶ 표기는 메뉴가 실행 경로다」):
+ *   Code.js 가 `(▶…)` 로 적은 함수는 **정의가 살아 있는 한 전부** 여기 있어야 한다. */
+function menuCreateTeacherMemoForm() { menuRun_(createTeacherMemoForm); }
 
 /* [v9.131] 🗓 시즌 시작일 — **인자가 필요한 유일한 개원 준비 함수**라 ▶ 버튼으로 실행할 수 없었다.
  *   `setSeasonStart`는 인자 없이 부르면 「▶로는 설정되지 않습니다」라고 거부한다(오늘 날짜가 실수로 박히면
@@ -3289,6 +3297,8 @@ function onOpen() {
        *   다시 눌러야 한다(몽골어 검수 후 1회 더). 편집기 드롭다운에서만 돌 수 있어 유호님이
        *   "어디 있냐"고 물으신 함수다 — 두 번 쓸 것을 메뉴에 올린다. */
       .addItem('🔏 동의 문항 갱신(수집 0단계·문구 바뀔 때마다)', 'menuMigrateConsent')
+      .addItem('🎤 면접 기록 회수 폼 만들기(VR 0단계·1회)', 'menuCreateInterviewLogForm')
+      .addItem('🗒 강사 메모 폼 만들기(1회)', 'menuCreateTeacherMemoForm')
       .addItem('🧠 퀴즈 응답 폼 만들기(수집 1단계)', 'menuCreateQuizForm')
       .addItem('📝 숙제 폼에 수집 문항 넣기(수집 2단계)', 'menuMigrateHwForm')
       .addItem('🗣 한국어 대화 폼 만들기(수집 3단계)', 'menuCreateTalkForm')
