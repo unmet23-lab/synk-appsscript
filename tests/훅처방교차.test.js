@@ -22,6 +22,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { 훅띄우기 } = require('./lib/훅띄우기');   // 훅은 이 통로로만 띄운다 — 미실행이 「통과」가 되는 자리
 
 const ROOT = path.resolve(__dirname, '..');
 const 훅방 = path.join(ROOT, '.claude', 'hooks');
@@ -64,9 +65,10 @@ function 가드목록() {
     });
 }
 
-/** deny 면 그 출력을, 아니면 null. gitCwd 는 payload 가 아니라 **프로세스 cwd** 에서 나온다. */
+/** deny 면 그 출력을, 아니면 null. gitCwd 는 payload 가 아니라 **프로세스 cwd** 에서 나온다.
+ *  훅이 안 뜨면 `훅띄우기` 가 던진다 — 여기서 조용히 null 이 되면 이 검사 전체가 「막힌 것 없음」이 된다. */
 function 판정(가드, cmd, cwd) {
-  const r = spawnSync(process.execPath, [path.join(훅방, 가드)], {
+  const r = 훅띄우기(path.join(훅방, 가드), {
     input: JSON.stringify({ tool_name: 'Bash', tool_input: { command: cmd }, cwd }),
     encoding: 'utf8', cwd, timeout: 30000,
   });
@@ -88,8 +90,10 @@ function 더러운픽스처() {
 test('🔑 미측정 방어 — 처방이 실제로 수확된다 (0건이면 아래 검사가 통째로 공회전한다)', () => {
   const 처방 = 처방수확();
   assert.ok(처방.length >= 4, `처방 ${처방.length}건만 수확됐다 — 표기가 바뀌었으면 명령뽑기를 넓혀라:\n  ${처방.join('\n  ')}`);
-  assert.ok(처방.some((c) => /^git stash show -p stash@\{0\}$/.test(c)),
-    `F212 그 명령이 수확 목록에 없다 — 이 검사가 지키기로 한 대상이 사라졌다:\n  ${처방.join('\n  ')}`);
+  /* 글자가 아니라 **갈래**로 못 박는다 — F212 가 난 자리는 stash 계열이고, 그 문구는 남의 훅 소유라
+   * 바뀐다(실측: `show -p` → `show --stat` + `drop` 추가). 글자로 박으면 남의 정당한 개정이 내 적색이 된다. */
+  assert.ok(처방.some((c) => /^git stash\b/.test(c)),
+    `stash 계열 처방이 하나도 없다 — F212 가 난 갈래가 통째로 빠졌다:\n  ${처방.join('\n  ')}`);
 });
 
 test('🔑 미측정 방어 — Bash 를 보는 가드가 실제로 잡힌다', () => {
