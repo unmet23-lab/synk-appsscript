@@ -202,6 +202,27 @@ test('브랜드 서체가 압축 스트림 안에 있어도 찾아낸다 (평문
   assert.deepStrictEqual(M.빠진서체(['MalgunGothic', 'Consolas']), ['SUIT', 'Inter Tight', 'DM Mono']);
 });
 
+test('이미 정본 스택인 HTML(@font-face 없음)도 심기로 진행한다 — no-op 을 「스택 부재」로 오판하던 자리 (2026-08-07 실측)', () => {
+  const M = require(TOOL);
+  const dir = tmp('font');
+  // 픽스처는 정규화 치환의 **출력형 그대로** 쓴다 — 그래야 치환이 전부 제자리(no-op)가 되어
+  // 옛 `html === 전` 게이트를 정확히 때린다. <style> 은 일부러 뺀다: 스택 게이트 바로 다음
+  // 검사(<style> 부재)에서 서는 것이 「게이트를 지났다」의 환경 무관 증명이다(python·폰트 없는 CI 포함).
+  const f = path.join(dir, '정본스택.html');
+  fs.writeFileSync(f, "<html><head></head><body><div style=\"font-family:'Inter Tight','SUIT',sans-serif;\">지도</div></body></html>", 'utf8');
+  const r = M.폰트심기(f);
+  assert.strictEqual(r.ok, false);
+  assert.doesNotMatch(r.이유, /브랜드 폰트 스택을 못 찾았다/, '이미 정본 스택인 HTML 을 「스택 부재」로 오판했다');
+  assert.match(r.이유, /<style>/, '스택 게이트를 지나 다음 검사(<style> 부재)에 닿아야 한다');
+
+  // 탐지력은 살아 있어야 한다 — 브랜드 스택이 정말 없으면 여전히 여기서 막는다
+  const g = path.join(dir, '무스택.html');
+  fs.writeFileSync(g, '<html><head><style>body{font-family:Arial,sans-serif;}</style></head><body>지도</body></html>', 'utf8');
+  const r2 = M.폰트심기(g);
+  assert.strictEqual(r2.ok, false);
+  assert.match(r2.이유, /브랜드 폰트 스택을 못 찾았다/, '스택 부재 탐지가 죽었다 — 게이트를 너무 열었다');
+});
+
 test('한글 정본 경로를 통째로 받는다 — ASCII 문자군 정규식이 세 번 당긴 자리', () => {
   const M = require(TOOL);
   const 엣지들 = M.엣지읽기('<!-- 파생: docs/수업표_정본.md@abc1234, docs/반편성_정본_v2.md -->');
