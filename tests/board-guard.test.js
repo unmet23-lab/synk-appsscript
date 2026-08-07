@@ -34,9 +34,10 @@ function decide(payload, env) {
   return JSON.parse(out).hookSpecificOutput.permissionDecision;
 }
 
-/** 차단 사유까지 본다 — 「막았다」만으로는 **왜** 막았는지·안내가 맞는지 못 잰다. */
-function 판정(payload, env) {
-  const out = execFileSync(process.execPath, [HOOK], { input: JSON.stringify(payload), encoding: 'utf8', env: 환경(env) });
+/** 차단 사유까지 본다 — 「막았다」만으로는 **왜** 막았는지·안내가 맞는지 못 잰다.
+ *  `cwd` 는 **상대경로 입력**을 재기 위한 자리다(F204) — 상대경로는 실행 위치에서 풀린다. */
+function 판정(payload, env, cwd) {
+  const out = execFileSync(process.execPath, [HOOK], { input: JSON.stringify(payload), encoding: 'utf8', env: 환경(env), ...(cwd ? { cwd } : {}) });
   if (!out.trim()) return { 결정: 'allow', 사유: '' };
   const h = JSON.parse(out).hookSpecificOutput;
   return { 결정: h.permissionDecision, 사유: String(h.permissionDecisionReason || '') };
@@ -407,6 +408,55 @@ test('🔴 [④·F103] 차단 사유가 시키는 대로 비켜나면 통과한�
   assert.strictEqual(붙임(내줄('**②-20 다시 잡기**', '**SYNK-talk: supabase/functions/tasks/index.ts**')).결정, 'deny');
   const r = 붙임(내줄('**F196 — 폰 세션 채번**(다른 트랙으로 비켜났다)', '**appsscript: tools/friction.js · tests/마찰신호.test.js**'));
   assert.strictEqual(r.결정, 'allow', `🔴 비켜났는데도 막힌다 — 따를 수 없는 처방은 우회를 정상 통로로 만든다: ${r.사유.slice(0, 120)}`);
+});
+
+/* ── ④ 커밋 여부는 자리를 안 바꾼다 (F203 의 진짜 원인) ──────────────────────
+ * 첫 판은 재료가 `git diff HEAD` 뿐이라 **커밋된 착수 선언이 안 보였다.** 이 저장소는 보드를
+ * 상시 커밋하므로(지나가는 세션이 남의 줄까지 동승시킨다) 보호 창이 「다음 커밋까지」였다.
+ * 실측 08-07: `d2453563` 의 F123 선언이 `ceab9d3` 로 커밋된 **뒤에** `41ae1a64` 가 같은 F123 을
+ * 선언했고 ④ 는 조용했다. 그래서 여기서만 남의 줄을 **커밋해 두고** 잰다. */
+function 커밋된판(남의줄들, 편집, { 상대로 = false } = {}) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'boardguard-committed-'));
+  fs.mkdirSync(path.join(dir, 'docs'));
+  const b = path.join(dir, 'docs', '세션보드.md');
+  const g = (...a) => execFileSync('git', ['-C', dir, ...a], { encoding: 'utf8', stdio: 'pipe' });
+  fs.writeFileSync(b, `${머리}\n${기존}\n${남의줄들.join('\n')}\n`, 'utf8');
+  g('init', '-q'); g('config', 'user.email', 'test@synk.local'); g('config', 'user.name', 'test');
+  g('add', '.'); g('commit', '-qm', '보드: 착수 선언들', '--no-verify');
+  const 경로 = 상대로 ? 'docs/세션보드.md' : b;
+  try {
+    return 판정({ tool_name: 'Edit', tool_input: { file_path: 경로, ...편집 } }, 나, 상대로 ? dir : undefined);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+test('🔴 [④·F203] **커밋된** 착수 선언도 자리다 — 보드는 상시 커밋된다', { skip: git있음 ? false : 'git 없음' }, () => {
+  const r = 커밋된판([남의줄], { old_string: 남의줄, new_string: `${남의줄}\n${내줄('**②-20 — 내가 또 판다**', '**SYNK-talk: lib/스냅샷.js**')}` });
+  assert.strictEqual(r.결정, 'deny', '🔴 남의 선언이 커밋되는 순간 자리가 풀렸다 — 보호 창이 「보드가 다음에 커밋될 때까지」다');
+  assert.match(r.사유, /local_82404266/, '누가 잡았는지 안 말하면 생사를 확인할 수 없다');
+});
+
+test('🔴 [④·거짓양성] 내가 커밋해 둔 **내 줄**은 나를 막지 않는다', { skip: git있음 ? false : 'git 없음' }, () => {
+  const 내옛줄 = 내줄('**②-20 어제 잡아둔 내 트랙**', '**SYNK-talk: supabase/functions/tasks/index.ts**');
+  const r = 커밋된판([내옛줄], { old_string: 내옛줄, new_string: `${내옛줄}\n${내줄('**②-20 이어서 다른 각도**', '**SYNK-talk: lib/스냅샷.js**')}` });
+  assert.strictEqual(r.결정, 'allow', `🔴 내 줄이 나를 막았다 — 따를 수 없는 처방은 우회를 정상 통로로 만든다: ${r.사유.slice(0, 120)}`);
+});
+
+/* 🔴 [④·F204 · 옆 세션 `27ada329` 실측 인계] `file_path` 가 **상대경로**로 들어오면 ④ 가 통째로
+ *   꺼져 있었다 — 첫 판의 `git -C <dirname> diff HEAD -- <상대경로>` 가 경로를 두 번 풀어
+ *   `docs/docs/세션보드.md` 를 찾았고, git 은 오류가 아니라 **빈 결과(status 0)** 를 냈다.
+ *   「남의 선언 0건」과 「못 쟀다」가 같은 모양이 된 자리다. 지금은 git 을 안 부르니 원인이 없다. */
+for (const 상대로 of [false, true]) {
+  test(`🔴 [④·F204] 보드 경로가 ${상대로 ? '**상대**' : '절대'}경로여도 자리를 본다`, { skip: git있음 ? false : 'git 없음' }, () => {
+    const r = 커밋된판([남의줄], { old_string: 남의줄, new_string: `${남의줄}\n${내줄('**②-20 — 내가 또 판다**', '**SYNK-talk: lib/스냅샷.js**')}` }, { 상대로 });
+    assert.strictEqual(r.결정, 'deny', `🔴 ${상대로 ? '상대' : '절대'}경로에서 ④ 가 꺼졌다 — 꺼진 가드와 「겹침 없음」은 같은 모양이다`);
+  });
+}
+
+test('🔴 [④·F103] 죽은 세션의 줄이면 **치우는 법**을 알려준다 (막기만 하면 우회한다)', { skip: git있음 ? false : 'git 없음' }, () => {
+  const r = 커밋된판([남의줄], { old_string: 남의줄, new_string: `${남의줄}\n${내줄('**②-20 — 내가 또 판다**', '**SYNK-talk: lib/스냅샷.js**')}` });
+  assert.match(r.사유, /board-move/, '치우는 명령을 안 주면 죽은 세션의 줄이 그 자리를 영영 잠근다');
 });
 
 test('🔴 [④·거짓양성] 상태 칸 갱신은 남의 선언이 있어도 통과한다', { skip: git있음 ? false : 'git 없음' }, () => {
