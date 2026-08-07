@@ -157,6 +157,52 @@ test('🔑 문서를 검색하다 그 문구를 본 것을 커밋으로 오인�
   assert.ok(!v.경고, '인용된 산문을 실행으로 읽었다 — 문서화·검색을 벌하는 가드가 된다');
 });
 
+/* F230 (08-08 실측) — 경로 인자 속 `commit` 이 커밋으로 읽혔다. `\b` 는 하이픈·마침표를
+ * 단어 경계로 보므로 `auto-commit.js` 가 통째로 걸린다. 이 저장소는 그 이름을 실제로 쓰고,
+ * 같은 호출에 `git status` 가 끼면 증상 문구까지 채워져 **커밋을 안 한 턴이 벌을 받았다.**
+ * 짝으로 잰다 — 거짓양성만 고치고 탐지력은 그대로여야 한다(고친 김에 무디게 만들면 못 알아챈다). */
+test('🔑 경로 속 commit 을 커밋으로 읽지 않는다 (F230 실사고 재현)', () => {
+  const v = run({
+    command: 'git status && git diff --stat -- .claude/hooks/auto-commit.js',
+    stdout: 'Changes not staged for commit:\n\tmodified:   .claude/hooks/auto-commit.js\n\n'
+      + 'no changes added to commit (use "git add" and/or "git commit -a")',
+  });
+  assert.ok(!v.경고, `커밋을 안 한 명령을 벌줬다 — 실작업을 벌주면 사람이 가드를 끈다: ${v.본문}`);
+
+  // 앞뒤 두 방향을 다 잰다 — 훅 디렉터리에서 부르면 경로가 맨 이름으로 온다(앞이 공백).
+  const 맨이름 = run({
+    command: 'git status && git add -- commit-noop-guard.js',
+    stdout: 'no changes added to commit (use "git add" and/or "git commit -a")',
+  });
+  assert.ok(!맨이름.경고, `앞이 공백인 경로도 커밋으로 읽었다: ${맨이름.본문}`);
+
+  // 토큰 **끝**이 commit 인 경로 — 뒤쪽 lookahead 는 통과하고 앞쪽만 걸러낸다(git 자체 훅 이름).
+  const 끝이commit = run({
+    command: 'git add -- .git/hooks/pre-commit',
+    stdout: 'no changes added to commit (use "git add" and/or "git commit -a")',
+  });
+  assert.ok(!끝이commit.경고, `토큰 끝이 commit 인 경로를 커밋으로 읽었다: ${끝이commit.본문}`);
+});
+
+test('🔑 착지한 커밋 뒤에 경로로 commit 을 든 조회가 붙어도 벌주지 않는다 (커밋 수를 부풀리던 자리)', () => {
+  const v = run({
+    // F113 의 그 형태(앞단 status)에 경로 인자가 붙은 것 — 08-08 에 실제로 돌린 명령의 모양이다.
+    command: 'git status && git commit -m "고침" -- a.js && git diff --stat -- .claude/hooks/auto-commit.js',
+    stdout: 'Changes not staged for commit:\n\tmodified:   b.js\n\n'
+      + 'no changes added to commit (use "git add" and/or "git commit -a")\n'
+      + '[master abc1234] 고침\n 1 file changed, 2 insertions(+)',
+  });
+  assert.ok(!v.경고, `착지 1건에 커밋 1건인데 벌줬다 — 뒤따르는 조회가 커밋 수로 세어졌다: ${v.본문}`);
+});
+
+test('🔴 그 경로를 **진짜 커밋**할 때는 그대로 잡는다 (위 수리가 탐지력을 깎지 않았나)', () => {
+  const v = run({
+    command: 'git commit -m "고침" -- .claude/hooks/auto-commit.js',
+    stdout: 'On branch master\nnothing to commit, working tree clean',
+  });
+  assert.ok(v.경고, '같은 경로를 든 진짜 커밋의 no-op 을 놓쳤다 — 거짓양성을 고치며 탐지력을 깎았다');
+});
+
 test('커밋이 아예 없는 명령은 건드리지 않는다', () => {
   const v = run({ command: 'git status --short', stdout: ' M docs/세션보드.md' });
   assert.ok(!v.경고, 'commit 이 없는데 발화했다');
