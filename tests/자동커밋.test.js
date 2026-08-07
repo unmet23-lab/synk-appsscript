@@ -10,6 +10,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const vm = require('vm');                       // 구문 유효성만 본다(자식 없이 — 훅통로 규약)
 const { spawnSync } = require('child_process'); // git 재현용 — 훅은 아래 통로로 띄운다
 const { 훅띄우기 } = require('./lib/훅띄우기');
 
@@ -48,6 +49,28 @@ function 만짐기록(state, root, sid, touched, { 분전 = 0 } = {}) {
   if (분전) { const at = new Date(Date.now() - 분전 * 60000); fs.utimesSync(f, at, at); }
 }
 
+const STAMP = path.join(REPO, '.claude', 'hooks', 'edit-stamp.js');
+
+/** 편집 지문을 남긴다 — **edit-stamp 훅을 그대로 띄워서**(F225).
+ * 형식을 여기 다시 적으면 쓰는 쪽과 읽는 쪽이 갈라지고, 갈라진 쪽의 증상은 「무기록=안 실림」이다.
+ * 좌표는 만짐 기록과 같은 것을 준다 — 형제 좌표(`../이름/…`)도 root 기준으로 풀린다. */
+function 지문기록(state, root, sid, touched, extraEnv = {}) {
+  for (const 좌표 of touched) {
+    훅띄우기(STAMP, {
+      cwd: root, encoding: 'utf8', timeout: 15000, windowsHide: true,
+      input: JSON.stringify({
+        session_id: sid, cwd: root, tool_name: 'Edit',
+        tool_input: { file_path: path.resolve(root, 좌표) },
+      }),
+      env: {
+        ...process.env,
+        CLAUDE_PROJECT_DIR: root, CLAUDE_CODE_HOST_SESSION_ID: sid,
+        SYNK_CTXBUDGET_DIR: state, SYNK_OWNER_ROOT: '', ...extraEnv,
+      },
+    });
+  }
+}
+
 function 훅실행(root, state, sid, extraEnv = {}) {
   const r = 훅띄우기(HOOK, {
     cwd: root, encoding: 'utf8', timeout: 30000, windowsHide: true,
@@ -79,6 +102,7 @@ test('내것만 커밋한다 — 함께 만진 파일은 남기고 알린다(F10
   쓰기(root, 'shared.md', '둘이 만짐');
   만짐기록(state, root, 'me-1', ['a.txt', 'sub/b.txt', 'shared.md']);
   만짐기록(state, root, 'peer-1', ['shared.md']);   // 살아있는 남
+  지문기록(state, root, 'me-1', ['a.txt', 'sub/b.txt', 'shared.md']);
 
   const out = 훅실행(root, state, 'me-1');
   const msg = JSON.parse(out).systemMessage;
@@ -97,6 +121,7 @@ test('보드는 절대 자동커밋하지 않는다(F102) — 침묵', (t) => {
   const { root, state } = 판(t);
   쓰기(root, 'docs/세션보드.md', '| 줄 |');
   만짐기록(state, root, 'me-2', ['docs/세션보드.md']);
+  지문기록(state, root, 'me-2', ['docs/세션보드.md']);   // 지문이 있어도 보드는 안 실린다
   const 전 = 머리해시(root);
   const out = 훅실행(root, state, 'me-2');
   assert.strictEqual(out, '', '후보 0건인데 입을 열었다');
@@ -109,6 +134,7 @@ test('구문 깨진 js·json 은 대기, 나머지는 실린다', (t) => {
   쓰기(root, 'bad.js', 'function ( {');   // 구문 오류
   쓰기(root, 'bad.json', '{ "반쪽": ');   // 깨진 JSON — settings.json 이 이 꼴로 실리면 훅 전체가 죽는다
   만짐기록(state, root, 'me-3', ['ok.md', 'bad.js', 'bad.json']);
+  지문기록(state, root, 'me-3', ['ok.md', 'bad.js', 'bad.json']);   // 내가 쓴 판이 맞다 — 막는 건 구문이다
   const out = 훅실행(root, state, 'me-3');
   const msg = JSON.parse(out).systemMessage;
   assert.match(msg, /구문 깨짐 2건 대기: bad\.js, bad\.json/);
@@ -122,6 +148,7 @@ test('rebase 진행 중엔 아무것도 하지 않는다(F035·F038)', (t) => {
   const { root, state } = 판(t);
   쓰기(root, 'x.txt', '값');
   만짐기록(state, root, 'me-4', ['x.txt']);
+  지문기록(state, root, 'me-4', ['x.txt']);
   fs.mkdirSync(path.join(root, '.git', 'rebase-merge'), { recursive: true });
   const 전 = 머리해시(root);
   const out = 훅실행(root, state, 'me-4');
@@ -135,6 +162,7 @@ test('남의 스테이징은 쓸리지 않는다 — 경로 못 박은 커밋(�
   git(['add', '--', 'other.txt'], root);   // 남이 스테이지만 해 둔 상태(만짐 기록 없음)
   쓰기(root, 'mine.txt', '내 것');
   만짐기록(state, root, 'me-5', ['mine.txt']);
+  지문기록(state, root, 'me-5', ['mine.txt']);
   훅실행(root, state, 'me-5');
   const 실린것 = git(['show', '--name-only', '--format=', 'HEAD'], root).trim().split(/\r?\n/);
   assert.deepStrictEqual(실린것, ['mine.txt'], '남의 스테이징이 커밋에 실렸다');
@@ -146,6 +174,7 @@ test('죽은 세션의 만짐 기록은 「함께」가 아니다 — 유물 위
   쓰기(root, 'y.txt', '이어받아 고침');
   만짐기록(state, root, 'me-6', ['y.txt']);
   만짐기록(state, root, 'dead-1', ['y.txt'], { 분전: 40 });   // 심장박동 멎음(기본 30분)
+  지문기록(state, root, 'me-6', ['y.txt']);
   const out = 훅실행(root, state, 'me-6');
   assert.match(JSON.parse(out).systemMessage, /\[자동커밋\] 1개/);
   const 실린것 = git(['show', '--name-only', '--format=', 'HEAD'], root).trim().split(/\r?\n/);
@@ -156,6 +185,7 @@ test('SYNK_AUTOCOMMIT_OFF=1 이면 완전 침묵', (t) => {
   const { root, state } = 판(t);
   쓰기(root, 'z.txt', '값');
   만짐기록(state, root, 'me-7', ['z.txt']);
+  지문기록(state, root, 'me-7', ['z.txt']);
   const 전 = 머리해시(root);
   const out = 훅실행(root, state, 'me-7', { SYNK_AUTOCOMMIT_OFF: '1' });
   assert.strictEqual(out, '');
@@ -185,6 +215,7 @@ test('형제 저장소(talk) 파일도 커밋한다 — 두 저장소가 각자 
   쓰기(root, 'here.md', '이쪽');
   쓰기(형제.뿌리, 'src/제출API.ts', '저쪽');
   만짐기록(state, root, 'me-9', ['here.md', `../${형제.이름}/src/제출API.ts`]);
+  지문기록(state, root, 'me-9', ['here.md', `../${형제.이름}/src/제출API.ts`], { SYNK_OWNER_SIBLINGS: 형제.뿌리 });
 
   const out = 훅실행(root, state, 'me-9', { SYNK_OWNER_SIBLINGS: 형제.뿌리 });
   const msg = JSON.parse(out).systemMessage;
@@ -203,6 +234,7 @@ test('형제에서 남이 함께 만진 파일은 남긴다(F104) — 좌표가 
   쓰기(형제.뿌리, '함께.ts', 'b');
   만짐기록(state, root, 'me-10', [`../${형제.이름}/내것.ts`, `../${형제.이름}/함께.ts`]);
   만짐기록(state, root, 'peer-2', [`../${형제.이름}/함께.ts`]);   // 살아있는 남도 ⓑ 좌표로 만졌다
+  지문기록(state, root, 'me-10', [`../${형제.이름}/내것.ts`, `../${형제.이름}/함께.ts`], { SYNK_OWNER_SIBLINGS: 형제.뿌리 });
 
   const msg = JSON.parse(훅실행(root, state, 'me-10', { SYNK_OWNER_SIBLINGS: 형제.뿌리 })).systemMessage;
   assert.match(msg, /함께\.ts/, '함께 남긴 파일을 말하지 않았다');
@@ -216,6 +248,7 @@ test('형제가 rebase 중이어도 이 저장소는 커밋한다 — 저장소�
   쓰기(root, '내쪽.md', '값');
   쓰기(형제.뿌리, '저쪽.ts', '값');
   만짐기록(state, root, 'me-11', ['내쪽.md', `../${형제.이름}/저쪽.ts`]);
+  지문기록(state, root, 'me-11', ['내쪽.md', `../${형제.이름}/저쪽.ts`], { SYNK_OWNER_SIBLINGS: 형제.뿌리 });
   fs.mkdirSync(path.join(형제.뿌리, '.git', 'rebase-merge'), { recursive: true });
   const 형제전 = git(['rev-parse', 'HEAD'], 형제.뿌리).trim();
 
@@ -226,10 +259,69 @@ test('형제가 rebase 중이어도 이 저장소는 커밋한다 — 저장소�
   assert.strictEqual(git(['rev-parse', 'HEAD'], 형제.뿌리).trim(), 형제전, 'rebase 중인 형제가 커밋됐다');
 });
 
+/* ── 편집 지문 (F225) ───────────────────────────────────────────────────────
+ * 실사고: 변이 시험이 놓아 둔 깨진 판을 이 훅이 「자동커밋: 미커밋 노출 차단」이라는 얼굴로
+ * master 에 실었다(c3c8d98). 만진 기록은 PreToolUse 라 편집 의도까지고, 구문검사는 못 잡는다 —
+ * 변이는 문법이 멀쩡한 채로 의미만 죽인다. 그래서 「내가 쓴 그 바이트인가」를 따로 잰다. */
+test('내가 쓴 뒤 밖에서 바뀐 판은 안 싣는다 — 다시 저장하면 실린다(F225)', (t) => {
+  const { root, state } = 판(t);
+  const 판정 = path.join(root, '가드.js');
+  쓰기(root, '가드.js', "module.exports = (a, b) => (a === b ? '동일' : '모름');\n");
+  만짐기록(state, root, 'me-12', ['가드.js']);
+  지문기록(state, root, 'me-12', ['가드.js']);
+
+  // 변이 ① — 판정을 '모름' 고정으로 죽인다. **문법은 멀쩡하다**(옛 층인 구문검사로는 못 잡는다).
+  쓰기(root, '가드.js', "module.exports = () => '모름';\n");
+  // 파서는 `node --check` 와 같은 것을 **자식 없이** 쓴다 — 훅 회귀에서 node 를 직접 띄우면
+  // 그 자리부터 미실행이 「통과」로 번역된다(tests/훅통로.test.js 가 저장소를 훑어 금지한다).
+  assert.doesNotThrow(
+    () => new vm.Script(fs.readFileSync(판정, 'utf8')),
+    '변이가 구문 오류라 이 검사가 옛 층(구문검사)으로도 통과한다 — 탐지력이 없다',
+  );
+
+  const 전 = 머리해시(root);
+  const msg = JSON.parse(훅실행(root, state, 'me-12')).systemMessage;
+  assert.match(msg, /밖에서 바뀐\*\* 1건/, msg);
+  assert.match(msg, /가드\.js/, msg);
+  assert.strictEqual(머리해시(root), 전, '변이가 얹힌 판이 커밋됐다 — c3c8d98 재현');
+  assert.match(git(['status', '--porcelain'], root), /가드\.js/, '깨진 판이 커밋에 실려 사라졌다');
+
+  // 처방이 실제로 통하는가 — 「내 판이 맞으면 다시 저장하면 다음 턴에 실린다」(F103 축)
+  지문기록(state, root, 'me-12', ['가드.js']);
+  assert.match(JSON.parse(훅실행(root, state, 'me-12')).systemMessage, /\[자동커밋\] 1개/);
+  assert.deepStrictEqual(git(['show', '--name-only', '--format=', 'HEAD'], root).trim().split(/\r?\n/), ['가드.js']);
+});
+
+test('편집 지문이 없으면 안 싣는다 — 거절된 편집도 만진 기록은 남는다', (t) => {
+  const { root, state } = 판(t);
+  쓰기(root, '내가안쓴것.txt', '남의 손이 놓은 내용');
+  만짐기록(state, root, 'me-13', ['내가안쓴것.txt']);   // PreToolUse 는 거절돼도 기록을 남긴다
+  const 전 = 머리해시(root);
+  const msg = JSON.parse(훅실행(root, state, 'me-13')).systemMessage;
+  assert.match(msg, /편집 지문이 없는 1건/, msg);
+  assert.strictEqual(머리해시(root), 전, '지문 없는 파일이 커밋됐다 — 모름을 커밋한 것이다');
+});
+
+test('지문 훅 라우팅이 만진 기록보다 좁지 않다 — 좁으면 그 파일은 영영 안 실린다', () => {
+  const s = JSON.parse(fs.readFileSync(path.join(REPO, '.claude', 'settings.json'), 'utf8'));
+  const 도구들 = (이름) => {
+    const 묶음 = [...(s.hooks.PreToolUse || []), ...(s.hooks.PostToolUse || [])]
+      .filter((g) => (g.hooks || []).some((h) => String(h.command || '').includes(`${이름}.js`)));
+    assert.ok(묶음.length, `${이름} 등록이 없다 — 미실행은 통과와 같은 모양이다(F044)`);
+    return new Set(묶음.flatMap((g) => String(g.matcher || '').split('|')).map((x) => x.trim()).filter(Boolean));
+  };
+  const 만짐 = 도구들('track-collision');   // 후보를 만드는 쪽
+  const 지문 = 도구들('edit-stamp');        // 그 후보를 통과시키는 쪽
+  for (const 도구 of 만짐) {
+    assert.ok(지문.has(도구), `만진 기록은 ${도구} 를 담는데 지문은 안 담는다 — 그 도구로 고친 파일은 무기록이라 영영 안 실린다(맹점 ③)`);
+  }
+});
+
 test('삭제는 만지지 않는다 — Edit·Write 는 지우지 않으므로 기록 밖의 손이다', (t) => {
   const { root, state } = 판(t);
   쓰기(root, 'del.txt', '지워질 것');
   git(['add', '--', 'del.txt'], root); git(['commit', '-qm', 'del 씨앗'], root);
+  지문기록(state, root, 'me-8', ['del.txt']);   // 내가 쓴 뒤 밖의 손이 지웠다
   fs.rmSync(path.join(root, 'del.txt'));
   만짐기록(state, root, 'me-8', ['del.txt']);
   const 전 = 머리해시(root);

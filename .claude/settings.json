@@ -254,6 +254,18 @@
             "type": "command"
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/edit-stamp.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { echo \"SYNK edit-stamp 미실행: $H (node 또는 훅 파일 없음 — F044)\" >&2; exit 1; }; printf %s \"$IN\" | node \"$H\"",
+            "shell": "bash",
+            "timeout": 15,
+            "statusMessage": "편집 지문 기록"
+          }
+        ]
       }
     ],
     "Stop": [

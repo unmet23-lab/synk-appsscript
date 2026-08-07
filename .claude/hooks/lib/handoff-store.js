@@ -164,6 +164,47 @@ function writeStage(cwd, sessionId, stage) {
   } catch (_) { return false; }
 }
 
+/* ── 편집 지문 — **모델이 직접 쓴 내용**의 바이트 해시 ─────────────────────
+ * 쓰는 곳은 `edit-stamp` 훅 하나(PostToolUse), 읽는 곳은 `auto-commit` 하나(Stop).
+ *
+ * 왜 여기 있나 (마찰 F225 · 2026-08-07 실사고): 자동커밋은 「내가 만진 파일」을 커밋하는데
+ *   만진 기록(track-collision)은 **PreToolUse** 라 「편집하려 했다」까지만 안다. 그 뒤 디스크에
+ *   무엇이 놓였는지는 아무도 안 봤고, 그래서 변이 시험이 놓아 둔 **일부러 깨뜨린 판**이 그대로
+ *   커밋됐다(c3c8d98 — 커밋 제목은 「미커밋 노출 차단」이라 정상 보호처럼 보였다).
+ *   자동커밋 머리말은 이미 「Bash·외부 앱이 만든 변경은 원리적으로 못 가른다」고 적어 뒀다 —
+ *   없던 것은 판정이 아니라 **기록**이다.
+ *
+ * ⚠ 해시·경로·형식을 훅 두 곳에 적으면 그 순간 갈라지고, 갈라진 쪽의 증상은 「무기록」,
+ *   곧 **조용히 아무것도 안 실림**이다(맹점 ④). 그래서 넷 다 여기 하나에서만 나온다. */
+function 편집지문계산(abs) {
+  try { return crypto.createHash('sha1').update(fs.readFileSync(abs)).digest('hex'); } catch (_) { return null; }
+}
+
+function 편집지문경로(cwd, sessionId) {
+  return path.join(STATE_DIR, `editstamp-${projectKey(cwd)}-${safeId(sessionId)}.json`);
+}
+
+/** `{좌표: 해시}` — 좌표는 `touchKey` 와 **같은 공간**(형제는 `../이름/` 접두).
+ *  없거나 낡았으면 빈 객체다. 읽는 쪽은 무기록을 「모름」으로 다뤄야 한다 — 모름은 커밋하지 않는다. */
+function 편집지문읽기(cwd, sessionId) {
+  try {
+    const j = JSON.parse(fs.readFileSync(편집지문경로(cwd, sessionId), 'utf8'));
+    if (!j || !j.at || Date.now() - Number(j.at) > SWEEP_TTL_MS) return {};
+    return (j.지문 && typeof j.지문 === 'object') ? j.지문 : {};
+  } catch (_) { return {}; }
+}
+
+/** 한 좌표만 얹는다(나머지 좌표는 보존). 못 써도 조용히 false — 편집은 이미 끝났고,
+ *  읽는 쪽이 「무기록=안 싣는다」로 떨어져 안전한 방향으로 실패한다. */
+function 편집지문쓰기(cwd, sessionId, 좌표, 해시) {
+  try {
+    fs.mkdirSync(STATE_DIR, { recursive: true });
+    const 지문 = { ...편집지문읽기(cwd, sessionId), [좌표]: 해시 };
+    fs.writeFileSync(편집지문경로(cwd, sessionId), JSON.stringify({ at: Date.now(), 지문 }));
+    return true;
+  } catch (_) { return false; }
+}
+
 /** 인계문 블록을 이 세션에서 **이미 지시했는지**. 처음 부른 쪽만 true (F122).
  *
  * 블록을 지시하는 훅이 둘이다 — context-budget(Stop, 300k 도달) · track-boundary(커밋 착지, 300k 이상).
@@ -264,5 +305,6 @@ function take(cwd) {
 module.exports = {
   stateDir, projectKey, safeId, batonName, stagePath, readStage, writeStage, claimBlock, sweep, drop, take,
   siblings, siblingPrefix, touchKey, 공용장부,
+  편집지문계산, 편집지문경로, 편집지문읽기, 편집지문쓰기,
   BATON_TTL_MS, SWEEP_TTL_MS,
 };
