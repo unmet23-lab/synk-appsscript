@@ -22,12 +22,16 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { memoryDir, load, decisions } = require('./memory-graph.js');
+const { memoryDir, load, decisions, INDEX_FILES } = require('./memory-graph.js');
 
 const p2 = (n) => String(n).padStart(2, '0');
 const ymd = (d) => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
 
-const INDEX = 'MEMORY.md'; // 인덱스는 지도라 본문이 중복된다 — 큐에서 제외한다
+/* 인덱스는 지도라 본문이 중복된다 — 큐에서 제외한다.
+ * ⚠ 인덱스는 **한 파일이 아니다**(F184 쪼개기: MEMORY.md + 지도.md). 목록을 여기 다시 적으면
+ * 갈라진다 — memory-graph 의 INDEX_FILES 하나에서만 파생시킨다(CLAUDE.md 신뢰성 ④).
+ * 실측 2026-08-07: 지도.md 를 토픽으로 읽어 조각 12건(메타 문장·중복)이 유호님께 배달됐다. */
+const 인덱스다 = (name) => INDEX_FILES.includes(name);
 const MAX_LEN = 300;       // 텔레그램 한 줄로 읽히는 길이
 
 /* ── 추출 ──────────────────────────────────────────────────────────────────
@@ -182,7 +186,7 @@ function extract(dir) {
     topic: f.replace(/\.md$/, ''), line: i + 1, 사유,
     text: line.trim().slice(0, MAX_LEN),
   });
-  for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.md') && n !== INDEX)) {
+  for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.md') && !인덱스다(n))) {
     const full = path.join(dir, f);
     const text = fs.readFileSync(full, 'utf8');
     // 자동 생성된 역링크 구간은 큐가 아니다

@@ -330,4 +330,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { parseLinks, stripBacklinks, load, diagnose, decisions, writeBacklinks, memoryDir, TYPES, MARK_START, MARK_END };
+module.exports = { parseLinks, stripBacklinks, load, diagnose, decisions, writeBacklinks, memoryDir, TYPES, MARK_START, MARK_END, INDEX_FILES };

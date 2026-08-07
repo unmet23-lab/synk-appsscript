@@ -44,6 +44,22 @@ test('⏳ 줄을 토픽별로 뽑고, 인덱스와 역링크 구간은 제외한
   assert.match(items.find((i) => i.topic === 'a').text, /에이 결정 하나/);
 });
 
+/* 인덱스는 **두 파일**이다(F184 쪼개기 2026-08-07). 상한이 「줄」이라 지도(어느 토픽을 열까)를
+ * 상주분 밖 `지도.md` 로 내보냈는데, 큐의 제외 목록은 `MEMORY.md` 한 이름 그대로였다 —
+ * 실측: 지도가 토픽으로 읽혀 조각 12건(메타 문장·다른 토픽과 중복)이 유호님께 매일 배달됐다.
+ * 목록을 여기 다시 적지 않는다 — memory-graph 의 INDEX_FILES 를 그대로 돌려 **등록층**을 검사한다. */
+test('인덱스는 두 파일이다 — 지도.md 도 큐가 아니다 (F184 쪼개기)', () => {
+  const { INDEX_FILES } = require('../tools/memory-graph.js');
+  assert.ok(INDEX_FILES.length >= 2, '인덱스가 한 파일로 되돌아가면 이 검사 자체가 무의미해진다');
+
+  const files = { 't.md': '# T\n- ⏳ 토픽의 진짜 결정' };
+  for (const n of INDEX_FILES) files[n] = `- [t](t.md)\n- ⏳ 인덱스 조각이라 큐가 아니다 (${n})`;
+
+  const items = require('../tools/decision-queue.js').extract(fixture(files));
+  assert.deepEqual(items.map((i) => i.topic), ['t'],
+    `인덱스 파일이 토픽으로 읽혔다 — 나온 것: ${items.map((i) => i.topic).join(',')}`);
+});
+
 test('차단자는 자기 줄을 갖고, 기다리는 토픽에는 해소 건수를 붙이지 않는다', () => {
   const dir = fixture({
     'MEMORY.md': '- [w1](w1.md)\n- [w2](w2.md)',
