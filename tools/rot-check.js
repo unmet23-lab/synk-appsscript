@@ -28,6 +28,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_INTERVAL_DAYS = 7;
@@ -92,6 +93,61 @@ function frictionSection() {
   if (!fs.existsSync(F.LEDGER)) throw new Error(`장부가 없다: ${F.LEDGER}`);
   const { rows } = F.read();
   return { open: rows.filter((r) => !r.resolved), total: rows.length };
+}
+
+/* 절단문서(소급불가 정본)는 **다른 저장소의 커밋으로 닫힌다.** 항목을 실제로 끝내는 코드는
+ * 거의 전부 형제(SYNK-talk)에 있고, 닫은 세션은 보드·메모리를 갱신하면서 이 문서는 자주 빠뜨린다.
+ * 실측 2026-08-08: 문서 마지막 갱신 `be34610`(08-07 15:57) 뒤 `58eaf68`(21:25)이 ①-2·①-12 를
+ * 닫았는데 진행표는 5시간 반 동안 둘 다 「남음」으로 들고 있었다. 그 문서는 「지금 안 모으면 영원히
+ * 잃는 것」의 정본이라, 낡으면 없는 지도보다 나쁘다 — 여는 사람에게 **확신에 찬 오답**을 준다.
+ *
+ * 🔑 표와 본문이 **함께** 낡아서 문서 안을 아무리 대조해도 안 잡힌다 — 재료가 문서 밖에 있다.
+ *   (그래서 「진행표 ↔ 본문」 일관성 검사는 짓지 않았다. 오늘의 낡음에 안 울리는 장치다.)
+ * 왜 CI 가 아니라 주간 점검인가: 재료가 **git 이력 + 형제 저장소**라 CI 에는 원리상 없다
+ *   (CLAUDE.md 「repo 밖 환경에 기대는 검사는 CI 에서 깨진다」). 탐지력은 픽스처가 진다
+ *   (`tests/절단문서.test.js`). 못 재면 **미측정**으로 낸다 — 통과와 미실행이 같은 모양이면
+ *   이 도구가 고치려는 바로 그 병이다. */
+// git pathspec 과 fs 경로에 같은 문자열을 쓴다. (`path.join` 으로 바꿔 역슬래시로 만들어도 이 기계의
+// git 은 그대로 받는다 — 변이로 확인했다. 그러니 「역슬래시면 깨진다」고 적지 않는다.)
+const 절단문서 = 'docs/_ops/심문_P0_소급불가_절단.md';
+const 항목표기 = /[①②]-\d+|절단문서/;
+
+function git(뿌리, args) {
+  const r = spawnSync('git', ['-c', 'core.quotepath=false', ...args],
+    { cwd: 뿌리, encoding: 'utf8', timeout: 10000, windowsHide: true });
+  return (r.error || r.status !== 0) ? null : String(r.stdout || '');
+}
+
+/** 그 시각 **뒤에** 난 커밋만. `--since` 는 경계를 포함하고 git 시각은 초 단위라, 1초 밀지 않으면
+ *  문서를 담은 그 커밋과 **같은 초**의 형제 커밋이 「뒤」로 딸려 들어온다(F062 계열 · 회귀가 잠근다).
+ *  ⚠ 아래 구분자는 제어문자 0x1F 다 — 커밋 제목엔 한글·`|`·`·` 가 흔해 보이는 문자를 못 쓴다. */
+function 뒤커밋들(뿌리, 시각) {
+  const o = git(뿌리, ['log', `--since=@${시각 + 1}`, '--format=%h%x1f%s']);
+  if (o === null) return [];
+  return o.split('\n').filter(Boolean).map((l) => {
+    const [해시, 제목] = l.split('\u001f');
+    return { 해시, 제목: 제목 || '' };
+  });
+}
+
+function 절단문서Section(뿌리 = ROOT) {
+  if (!fs.existsSync(path.join(뿌리, 절단문서))) return { present: false }; // 없는 것은 부패가 아니다
+  const o = git(뿌리, ['log', '-1', '--format=%ct', '--', 절단문서]);
+  const 갱신 = o === null ? NaN : Number(String(o).trim());
+  if (!Number.isFinite(갱신) || 갱신 <= 0) {
+    return { present: true, 측정: false, 사유: '문서의 마지막 커밋 시각을 못 읽었다(아직 미커밋이거나 git 이 없다)' };
+  }
+
+  // 형제 좌표는 여기서 다시 적지 않는다 — 갈라지면 「형제 없음 = 조용」 쪽으로 샌다(맹점 ④).
+  const store = require(path.join(ROOT, '.claude', 'hooks', 'lib', 'handoff-store.js'));
+  const 형제들 = store.siblings(뿌리);
+  if (!형제들.length) return { present: true, 측정: false, 사유: '형제 저장소가 없다 — 이 문서를 닫는 커밋은 거기서 난다' };
+
+  const 뒤 = [];
+  for (const { 뿌리: 형제, 저장소 } of 형제들) {
+    for (const c of 뒤커밋들(형제, 갱신)) if (항목표기.test(c.제목)) 뒤.push({ 저장소, ...c });
+  }
+  return { present: true, 측정: true, 갱신, 뒤 };
 }
 
 function harnessSection() {
@@ -217,14 +273,31 @@ function collect({ 라이브 = false } = {}) {
   const nbd = attempt('notebooklm-drive', nblmDriveSection);
   const toi = attempt('toil', toilSection);
   const map = attempt('지도', mapSection);
+  const 절단 = attempt('절단문서', () => 절단문서Section());
   const dep = attempt('배포판', () => 배포Section(라이브));
 
   const red = [];
   const warn = [];
   const notes = [];
 
-  for (const s of [mem, doc, fri, har, nbl, nbd, toi, map, dep]) {
+  for (const s of [mem, doc, fri, har, nbl, nbd, toi, map, 절단, dep]) {
     if (!s.ok) red.push({ kind: '검사기 고장', text: `${s.name} 검사가 실패했다 — ${s.error}` });
+  }
+
+  if (절단.ok && 절단.value.present) {
+    const v = 절단.value;
+    // 못 잰 것은 「부패 없음」이 아니다 — 침묵시키지 않고 메모로 드러낸다(라이브 미측정과 같은 원칙).
+    if (!v.측정) notes.push({ kind: '소급불가 정본 미측정', text: `${절단문서} — ${v.사유}` });
+    else if (v.뒤.length) {
+      const 보임 = v.뒤.slice(0, 4).map((c) => `${c.저장소} ${c.해시} ${c.제목.slice(0, 44)}`);
+      // 자른 것은 숫자로 밝힌다 — 조용한 절단은 「이게 전부」로 읽힌다.
+      if (v.뒤.length > 보임.length) 보임.push(`외 ${v.뒤.length - 보임.length}건`);
+      warn.push({
+        kind: '소급불가 정본 낡음 의심',
+        text: `${절단문서} 가 마지막으로 담긴 뒤 형제에서 ①②항목을 말한 커밋 ${v.뒤.length}건 — `
+          + `${보임.join(' / ')} · 진행표(§진행)를 그 커밋들과 대조한다`,
+      });
+    }
   }
 
   if (dep.ok && dep.value.측정) {
@@ -454,4 +527,4 @@ if (require.main === module) main();
  * 주간 부패 점검이 7일간 침묵한다 — 🔴 를 든 채로. 2026-08-07 실측: 회귀 한 줄이
  * 하루에 세 번(10:04·10:11·10:13) 그 도장을 찍었고 테스트는 내내 초록이었다.
  * 쓰기 실패 내성은 서브프로세스(`SYNK_ROT_STATE`=못 쓰는 경로)로 검사한다. */
-module.exports = { collect, render, dueNow, stateFile, harnessSection, toilSection, mapSection, 배포Section, EVOLVE_THRESHOLD };
+module.exports = { collect, render, dueNow, stateFile, harnessSection, toilSection, mapSection, 절단문서Section, 배포Section, EVOLVE_THRESHOLD };
