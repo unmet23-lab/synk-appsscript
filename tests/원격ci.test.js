@@ -152,6 +152,19 @@ test('🔴 행동: 커밋이 아닌 인자는 「모름」이다 — exit 0 을 
       '「모름」이 아니라 다른 판정을 냈다 — 못 잰 것을 잰 것처럼 말한다');
   });
 
+test('🔴 사용자 인자를 rev-parse 에 넘기는 도구는 옵션 종료 표식을 쓴다 (F179)', () => {
+  const fs = require('node:fs');
+  /* 바로 위 테스트가 사고 현장이었다 — 도구를 `--help` 로 돌리는데 그 인자가 git 옵션으로 먹히면
+   * Git for Windows 가 **도움말 HTML 을 기본 브라우저로 연다**. 테스트 1회 = 탭 1개이고,
+   * 세션마다 test-ci 를 돌리므로 유호님 화면에 계속 떴다. 부작용이 프로세스 밖이라 행동으로는
+   * 못 잡는다 — 소스에서 못박는 것이 유일하게 값싼 검사다. */
+  for (const 상대 of ['tools/원격ci.js', 'tools/승인.js']) {
+    assert.match(fs.readFileSync(path.join(ROOT, 상대), 'utf8'),
+      /rev-parse',\s*'--verify',\s*'--end-of-options'/,
+      `${상대}: 사용자 인자를 옵션 종료 표식 없이 rev-parse 에 넘긴다 — 돌릴 때마다 브라우저가 열린다`);
+  }
+});
+
 test('🔴 지침·안내가 가리키는 경로가 실재한다 (죽은 명령을 상주 지침이 가리키면 안 된다)', () => {
   const fs = require('node:fs');
   const 상대 = 'tools/원격ci.js';

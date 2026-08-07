@@ -98,7 +98,9 @@ function add(종류, sha, 사유) {
     console.error(`[승인] 종류는 ${종류들.join('·')} 중 하나여야 한다 (받은 값: ${종류})`);
     process.exit(1);
   }
-  const full = git('rev-parse', sha);              // 짧은 sha·태그·HEAD~2 전부 여기서 확정된다
+  // 짧은 sha·태그·HEAD~2 전부 여기서 확정된다. `--verify --end-of-options` 가 없으면 `--help`
+  // 같은 인자가 git 옵션으로 먹혀 Windows 에서 브라우저가 열린다(F179 · 같은 구멍의 다른 입구).
+  const full = git('rev-parse', '--verify', '--end-of-options', sha);
   console.log(`Approves-${종류}: ${full} ${사유 || ''}`.trim());
   console.error('\n(위 한 줄을 커밋 메시지 끝에 붙인다 — 커밋이 곧 승인 기록이다)');
 }
