@@ -153,23 +153,40 @@ function nextId(rows, opts) {
  *    실제로 충돌하자 복구는 「둘 중 누가 물러날지」를 사람이 정하는 일이 됐다. 유호님 결정으로 락 추가.)
  *
  * ⚠ 원칙은 그대로 지킨다 — **기록이 도구 사정으로 멈추면 안 된다.** 오프라인이면 예약을 건너뛰고
- *   훑은 번호로 진행하되 그 사실을 경고로 드러낸다(조용히 넘어가면 예약된 줄 알고 또 충돌한다). */
+ *   훑은 번호로 진행하되 그 사실을 경고로 드러낸다(조용히 넘어가면 예약된 줄 알고 또 충돌한다).
+ *
+ * 🔴 F196 (2026-08-07 실측) — **거절을 한 가지로 단정하면 폰에서 통째로 죽는다.**
+ *   클라우드(폰) 세션의 git 프록시는 지정 `claude/*` 밖 push 를 거부한다(태그 포함). 그런데 fetch 는
+ *   성공하므로 위의 오프라인 갈래에 안 걸리고, 아래 루프는 거절을 **전부** 「누가 방금 가져갔다」로
+ *   읽어 20회 헛돈 뒤 exit 1 한다 — 즉 **신고문이 버려진다.** 원칙(기록이 멈추면 안 된다)이 있는데
+ *   그 갈래에 도달하지 못하는 것이 결함이다. 실물: F195 등재가 이렇게 죽어 손으로 번호를 매겼다.
+ *   가르는 방법은 메시지 파싱이 아니라 **증거**다 — 거절 뒤 origin 에 그 태그가 실제로 생겼는가.
+ *   생겼으면 선점(다음 후보로), 없으면 push 자체가 막힌 환경(예약 포기하고 진행). */
 function allocateId(rows) {
   if (ISOLATED) return nextId(rows);                       // 격리 장부 — git 접촉 금지
 
   const online = gitQuiet(['fetch', 'origin', '--tags', '--quiet']) !== null;
   let n = parseInt(nextId(rows, { fetch: false }).slice(1), 10);
-  if (!online) {
-    console.error('⚠ origin fetch 실패 — 번호를 예약하지 못했다. 오프라인 동안 다른 세션이 같은 번호를 쓸 수 있다(그때는 재번호).');
-    return 'F' + String(n).padStart(3, '0');
-  }
+  const 미예약진행 = (id, 사유) => {
+    console.error('⚠ ' + 사유 + ' 번호를 예약하지 못했다 — ' + id + ' 로 진행한다. 다른 세션이 같은 번호를 쓸 수 있다(그때는 재번호).');
+    return id;
+  };
+  if (!online) return 미예약진행('F' + String(n).padStart(3, '0'), 'origin fetch 실패.');
 
   for (let i = 0; i < MAX_TRIES; i++, n++) {
     const id = 'F' + String(n).padStart(3, '0');
     const tag = TAG_PREFIX + id;
     if (gitQuiet(['tag', tag]) === null) continue;          // 로컬에 이미 있다 → 다음 후보
     if (gitQuiet(['push', 'origin', tag]) !== null) return id;   // 원격이 보증 = 내 번호
-    gitQuiet(['tag', '-d', tag]);                           // 원격이 거절 = 누가 방금 가져갔다
+    gitQuiet(['tag', '-d', tag]);
+    /* 거절 사유를 가른다(F196) — 증거는 메시지가 아니라 **origin 이 그 태그를 실제로 갖고 있느냐**다.
+     * 갖고 있으면 진짜 선점(다음 후보로). 아니면 예약을 접고 진행한다 — 못 갈랐을 때(ls-remote 실패)도
+     * 진행 쪽이다: 번호 중복은 재번호로 복구되지만 **버려진 신고문은 복구 경로가 없다**(F196 실물). */
+    const 원격 = gitQuiet(['ls-remote', '--tags', 'origin', 'refs/tags/' + tag]);
+    if (원격 !== null && 원격.trim()) continue;                   // 원격이 갖고 있다 = 누가 방금 가져갔다
+    return 미예약진행(id, 원격 === null
+      ? 'origin 조회가 실패해 거절 사유를 못 갈랐다.'
+      : '태그 push 가 막힌 환경이다(선점이 아니다 — 클라우드/폰 프록시는 claude/* 밖 push 를 거절한다 · F196).');
   }
   console.error(`[friction] ${MAX_TRIES}회 시도에도 번호를 예약하지 못했다. 잠시 뒤 다시 시도한다.`);
   process.exit(1);

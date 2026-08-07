@@ -181,6 +181,18 @@ function gitQuiet(args) {
   try { return git(args, { stdio: ['ignore', 'pipe', 'ignore'] }); } catch (_) { return null; }
 }
 
+/* 태그 push 가 거절됐을 때 그 사유를 가른다 — **증거는 메시지가 아니라 origin 의 상태**다(F196).
+ *   true  = origin 이 그 태그를 갖고 있다 → 진짜 선점(다음 후보로)
+ *   false = 없다 → 선점이 아니라 태그 push 자체가 막힌 환경(클라우드/폰 프록시)
+ *   null  = 조회도 실패 → 못 쟀다. 단정하지 않는다.
+ * 조회를 인자로 받는 이유는 하나다: 이 판정을 **실제로 돌려서** 검사할 수 있게. 소스에 문장이 있다는
+ * 것과 그렇게 동작한다는 것은 다르다(이 파일 검사의 오랜 천장 · tests/버전채번 '감사' 주석).
+ * ⚠ tools/friction.js 에 같은 판정이 인라인으로 한 벌 더 있다. **세 번째가 생기면 공용 통로로 옮긴다.** */
+function 선점인가(태그, 조회) {
+  const out = 조회(['ls-remote', '--tags', 'origin', 'refs/tags/' + 태그]);
+  return out === null ? null : !!out.trim();
+}
+
 // 번호를 이미 쓴 곳을 전부 훑는다 — 하나라도 빠지면 그 경로로 충돌이 다시 샌다.
 function collectUsedVersions() {
   const found = [];
@@ -409,8 +421,17 @@ function main(argv) {
     try {
       git(['push', 'origin', tag], { stdio: ['ignore', 'pipe', 'pipe'] });
     } catch (e) {
-      gitQuiet(['tag', '-d', tag]);                        // 원격이 거절 = 누가 방금 가져갔다
-      cand = nextVer(cand);
+      gitQuiet(['tag', '-d', tag]);
+      /* 거절을 「선점」으로 단정하지 않는다(F196) — friction 과 갈래가 **반대**인 이유는 대가가 반대라서다:
+       * 신고문은 유실이 더 나쁘니 미예약으로 진행하지만, 버전은 예약 없이 확정하면 남의 배포까지 막는다(F078).
+       * 그래서 여기서는 **빨리, 맞는 사유로** 멈춘다 — 25회 헛돌며 「origin 접근을 확인하세요」라는 틀린
+       * 진단을 내는 것이 옛 동작이었다. 못 쟀을 때(null)는 단정하지 않고 옛 갈래(재시도)에 맡긴다. */
+      if (선점인가(tag, gitQuiet) === false) {
+        throw new Error('태그 push 가 거절됐는데 origin 에 ' + tag + ' 가 없다 — 선점이 아니라 **태그 push 자체가 막힌 환경**이다'
+          + '(클라우드/폰 세션의 git 프록시는 지정 claude/* 밖 push 를 거부한다 · F196).\n'
+          + '   → 여기서 번호를 확정하지 않는다. 헤더를 [vNEXT] 로 둔 채 커밋하면 PC 세션이 반입 때 채번한다.');
+      }
+      cand = nextVer(cand);                                // 원격이 갖고 있다 = 누가 방금 가져갔다
       continue;
     }
 
@@ -470,7 +491,7 @@ function main(argv) {
 }
 
 module.exports = {
-  parseVer, cmpVer, maxVer, nextVer, versionOf, replaceVersionLine, collectUsedVersions, main,
+  parseVer, cmpVer, maxVer, nextVer, versionOf, replaceVersionLine, collectUsedVersions, main, 선점인가,
   chainEntries, mergeChain, entryVer,
   engineFiles, maxTagInEngines, pendingPlaceholders, stampPlaceholders, check,
   historyDocPath, maxTagInHistoryDoc, hardcodedHeadVersion,

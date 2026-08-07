@@ -242,6 +242,103 @@ test('다음 번호는 클라우드(폰) 브랜치가 손으로 쓴 번호도 �
   assert.match(outB, /F010/, 'F009 다음이어야 한다: ' + outB.trim());
 });
 
+/* [2026-08-07] F196 — **거절을 한 가지로 단정하면 폰에서 채번이 통째로 죽는다.**
+ *
+ * 클라우드(폰) 세션의 git 프록시는 지정 `claude/*` 밖 push 를 거부한다(태그 포함). fetch 는 성공하니
+ * 「오프라인」 갈래에 안 걸리고, 루프는 거절을 전부 「누가 방금 가져갔다」로 읽어 20회 헛돈 뒤 exit 1 —
+ * **신고문이 통째로 버려진다.** 실물: F195 등재가 이렇게 죽어 손으로 번호를 매겼고, 그 손번호는 예고대로
+ * PC 번호와 충돌해 F198 로 재등재해야 했다.
+ *
+ * ⚠ 이 검사의 전부는 **프록시를 진짜로 재현했는지**다 — 서버 훅이 안 돌면 push 가 성공해 버려
+ * 검사가 「거절을 안 만들고 통과」하는 거짓 초록이 된다. 그래서 전제(태그 push 가 실제로 거절되는가)를
+ * 먼저 실측하고, 재현 못 하면 통과가 아니라 **skip 으로 드러낸다.** */
+
+/** origin 이 태그 push 만 거부하게 만든다 — 클라우드 프록시와 같은 모양(브랜치는 되고 태그는 안 된다). */
+function 태그push를거부하게(origin) {
+  const hook = path.join(origin, 'hooks', 'pre-receive');
+  fs.mkdirSync(path.dirname(hook), { recursive: true });
+  fs.writeFileSync(hook,
+    '#!/bin/sh\n'
+    + 'while read old new ref; do\n'
+    + '  case "$ref" in refs/tags/*) echo "remote: refusing tag push (claude/* only)" >&2; exit 1;; esac\n'
+    + 'done\n'
+    + 'exit 0\n', 'utf8');
+  try { fs.chmodSync(hook, 0o755); } catch (_) { /* Windows */ }
+}
+
+/** 그 origin 이 정말 태그를 거부하는가 — 재현 실패를 통과로 읽지 않기 위한 전제 실측. */
+function 태그거부가실제로도나(repo) {
+  try { git(repo, ['tag', 'premise-check']); } catch (_) { return false; }
+  let 거부됨 = false;
+  try { git(repo, ['push', 'origin', 'premise-check']); } catch (_) { 거부됨 = true; }
+  try { git(repo, ['tag', '-d', 'premise-check']); } catch (_) {}
+  return 거부됨;
+}
+
+test('F196 — 태그 push 가 막힌 환경(폰)에서도 신고문은 장부에 실린다', (t) => {
+  let repos;
+  try { repos = mkFixtureRepos(); }
+  catch (e) { return t.skip('픽스처 저장소를 못 만들었다(git 없음?): ' + e.message); }
+
+  태그push를거부하게(repos.origin);
+  if (!태그거부가실제로도나(repos.A)) {
+    return t.skip('서버 훅이 안 돌아 프록시를 재현하지 못했다 — 통과가 아니라 미실행이다');
+  }
+
+  /* 옛 코드는 여기서 20회 헛돌고 process.exit(1) → execFileSync 가 throw 한다.
+   * 즉 이 한 줄이 「신고문이 버려진다」를 그대로 잰다. */
+  const out = runIn(repos.A, ['add', '마찰', '폰 세션 신호']);
+  assert.match(out, /F003/, '번호를 못 내줬다: ' + out.trim());
+
+  const 장부 = fs.readFileSync(path.join(repos.A, 'docs', '_ops', '마찰신호.md'), 'utf8');
+  assert.match(장부, /^\|\s*F003\s*\|.*폰 세션 신호/m,
+    '신고문이 장부에 안 실렸다 — 이게 F196 의 실제 피해다(번호를 못 딴 것이 아니라 기록이 사라진 것)');
+
+  // 예약 못 했다고 말했으면 예약 흔적도 없어야 한다 — 남으면 다음 세션이 「예약된 번호」로 읽는다.
+  assert.equal(git(repos.A, ['tag', '-l', 'friction-F*']).trim(), '',
+    '예약에 실패했는데 로컬 태그가 남았다');
+});
+
+/* 거짓양성 축 — 진짜 선점을 「막힌 환경」으로 세탁하면 두 세션이 같은 번호를 쓴다(락이 없는 것과 같다).
+ *
+ * 🔑 재현이 이 검사의 전부다. **옆 세션이 먼저 채번하게 두는 것만으로는 안 된다** — 도구가 시작할 때
+ * `fetch --tags` 를 하므로 그 태그를 보고 애초에 다음 번호로 건너뛰어 **거절 자체가 안 난다**(첫 판이
+ * 그래서 변이를 놓쳤다). 그래서 「fetch 는 끝났는데 push 직전에 옆이 가져갔다」 상태를 직접 만든다:
+ *   ① A 가 원격에 태그를 올린다  ② B 는 음수 refspec 으로 그 태그를 **못 가져오게** 막는다
+ *   ③ B 에만 커밋 하나 — 안 하면 두 태그가 **같은 객체**라 push 가 no-op 으로 성공해 거절이 안 난다.
+ * (③은 실측으로 알아냈다. origin 훅으로 만들려던 첫 판은 quarantine 이 ref 갱신을 금지해 죽었다.) */
+function 선점당한상태로만들기(repos, 태그) {
+  git(repos.A, ['tag', 태그]);
+  git(repos.A, ['push', '-q', 'origin', 태그]);
+  git(repos.B, ['config', '--add', 'remote.origin.fetch', '^refs/tags/' + 태그]);
+  fs.writeFileSync(path.join(repos.B, 'b.txt'), 'B 만의 파일');
+  git(repos.B, ['add', '-A']);
+  git(repos.B, ['commit', '-qm', 'B 만의 커밋']);
+}
+
+test('F196 수리가 진짜 선점을 「막힌 환경」으로 세탁하지 않는다 (거짓양성)', (t) => {
+  let repos;
+  try { repos = mkFixtureRepos(); }
+  catch (e) { return t.skip('픽스처 저장소를 못 만들었다(git 없음?): ' + e.message); }
+
+  선점당한상태로만들기(repos, 'friction-F003');
+
+  // 전제 실측: 음수 refspec 이 실제로 먹는가(안 먹으면 B 가 태그를 보고 건너뛰어 거절이 안 난다)
+  git(repos.B, ['fetch', 'origin', '--tags', '--quiet']);
+  if (git(repos.B, ['tag', '-l', 'friction-F003']).trim()) {
+    return t.skip('음수 refspec 이 안 먹어 선점 창을 재현하지 못했다 — 통과가 아니라 미실행이다');
+  }
+
+  const outB = runIn(repos.B, ['add', '실수', 'B 세션 신호']);
+  assert.match(outB, /F004/, '선점을 「막힌 환경」으로 읽고 옆 세션과 같은 번호로 진행했다: ' + outB.trim());
+  assert.doesNotMatch(outB, /예약하지 못했다/,
+    '정상 예약인데 미예약 경고를 냈다 — 경고가 늘 뜨면 아무도 안 읽는다: ' + outB.trim());
+
+  const 원격태그 = git(repos.origin, ['tag', '-l', 'friction-F*']).split('\n').map((s) => s.trim()).filter(Boolean);
+  assert.ok(원격태그.includes('friction-F004'),
+    '재시도한 번호를 원격에 예약하지 않았다 — 실제: ' + 원격태그.join(','));
+});
+
 test('채번 락은 실 저장소를 오염시키지 않는다 (격리 장부만 준 호출은 태그를 만들지 않는다)', () => {
   const real = require(TOOL);
   const before = execFileSync('git', ['tag', '-l', real.TAG_PREFIX + 'F*'],
