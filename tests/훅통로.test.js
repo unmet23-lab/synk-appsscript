@@ -9,8 +9,8 @@
  *   「가드가 산다」를 증명한 적 없이 초록을 낸다 — 통과와 미실행이 같은 모양이면 안 된다.
  *
  * 그래서 판정을 `tests/lib/훅띄우기.js` 한 곳으로 모으고, 여기서 **옛 통로를 금지**한다.
- *   규칙은 파일 단위다 — 훅 경로를 푸는 회귀 파일은 `spawnSync(process.execPath …)` 를 직접
- *   쓰지 않는다. 자리 단위로 좁히면 훅을 **인자로 받는** 도우미가 통째로 사각이 된다(실측:
+ *   규칙은 파일 단위다 — 훅 경로를 푸는 회귀 파일은 반환형 스폰(`spawnSync(process.execPath …)`
+ *   과 그 'node' 표기)을 직접 쓰지 않는다. 자리 단위로 좁히면 훅을 **인자로 받는** 도우미가 통째로 사각이 된다(실측:
  *   컨텍스트예산.test.js 의 `run(hook, …)` 가 그 모양이라 첫 판 스캐너가 못 봤다).
  *
  * 검사 구조 — 탐지력은 **픽스처**로 못박고, 실저장소에는 **거짓양성만** 묻는다(CLAUDE.md 맹점②).
@@ -36,22 +36,43 @@ function 임시() {
 test.after(() => { for (const d of 임시들) { try { fs.rmSync(d, { recursive: true, force: true }); } catch (_) { /* 청소 실패는 결과가 아니다 */ } } });
 
 /* 실행되지 않는 텍스트를 지운다 — **줄 수는 보존**한다(행 번호로 짚어야 사람이 찾아간다).
- * 템플릿 리터럴까지 지우는 이유: 이 회귀의 픽스처가 옛 형태를 문자열로 들고 있어서, 안 지우면
- * 검사가 **자기 자신을 위반으로** 신고한다(가드는 자기 전처리에도 눈이 먼다 · F103 계열). */
+ *
+ * 왜 토크나이저 하나인가(2026-08-07 재실측): 첫 판은 백틱만 지웠고, 이 파일이 자기 픽스처
+ * (따옴표 문자열 속 옛 형태)를 안 물었던 건 문자열 속 **홑 백틱**끼리 엉뚱하게 짝지어 픽스처와
+ * 'hooks' 단어가 통째로 소거된 **우연**이었다 — 같은 원리로 홑 백틱 사이의 실제 위반도
+ * 지워진다. 문자열형을 종류별 순서로 지워도 같은 함정이 남는다(따옴표 안 백틱·백틱 안 따옴표가
+ * 서로를 오짝 지운다 — 고치다 실측). 그래서 세 문자열형을 **한 정규식의 대안**으로 왼쪽부터
+ * 한 번에 걷는다 — 먼저 열린 놈이 닫힐 때까지 다른 형을 내용으로 삼키므로 오짝이 원리상 없다.
+ *   · 코드판 = 문자열 전부 소거 — 코드형 위반(process.execPath)을 찾는 판. 픽스처·설명
+ *     문자열은 위반이 아니다.
+ *   · 표기판 = 템플릿만 소거 — 'node' 표기형을 찾는 판(따옴표를 지우면 표기가 사라진다).
+ *     그래서 이 파일의 표기형 픽스처는 전부 템플릿 리터럴이다(표기판의 사각에 둔다).
+ *   · 게이트(/hooks/i)는 문자열을 살린 판(주석만 소거)에서 본다 — 훅 경로는 문자열에 산다.
+ * 토크나이저 자신의 특수문자는 String.raw 템플릿 안에 둔다 — 스트리퍼가 자기 정규식 리터럴의
+ * 홑 따옴표·홑 백틱에 걸려 넘어지는 것을 실측했다(F103 계열: 가드는 자기 전처리에 눈이 먼다).
+ * 따옴표 짝짓기는 줄 안에서만이다(JS 문자열은 개행을 못 넘는다) — 반쪽 따옴표는 그대로 둔다. */
 const 줄보존 = (m) => m.replace(/[^\n]/g, ' ');
-function 코드만(src) {
-  return String(src)
-    .replace(/\/\*[\s\S]*?\*\//g, 줄보존)
-    .replace(/(^|[^:])\/\/[^\n]*/g, (m, 앞) => 앞 + 줄보존(m.slice(앞.length)))
-    .replace(/`(?:\\[\s\S]|[^\\`])*`/g, 줄보존);
-}
+const 주석소거 = (src) => String(src)
+  .replace(/\/\*[\s\S]*?\*\//g, 줄보존)
+  .replace(/(^|[^:])\/\/[^\n]*/g, (m, 앞) => 앞 + 줄보존(m.slice(앞.length)));
+const 문자열토큰 = new RegExp(String.raw`'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|\`(?:\\[\s\S]|[^\\\`])*\``, 'g');
+const 문자열소거 = (src) => src.replace(문자열토큰, 줄보존);
+const 템플릿만소거 = (src) => src.replace(문자열토큰, (m) => (m.startsWith(String.fromCharCode(96)) ? 줄보존(m) : m));
+const 행번호 = (src, i) => src.slice(0, i).split('\n').length;
 
-/** 한 파일의 위반 행 번호들. 훅 경로를 푸는 파일에서 node 자식을 직접 띄운 자리. */
+/** 한 파일의 위반 행 번호들. 훅 경로를 푸는 파일에서 **반환형** node 자식을 직접 띄운 자리.
+ *  (execFileSync 는 금지하지 않는다 — 던지는 형태라 미실행이 저절로 빨갛다. 결함은 반환형이
+ *   미실행을 결과처럼 돌려주는 데서 났고, 실측된 반환형 표기는 아래 둘이다.) */
 function 위반들(원문) {
-  const src = 코드만(원문);
-  if (!/hooks/i.test(src)) return [];          // 훅과 무관한 회귀는 이 규칙의 대상이 아니다
-  return [...src.matchAll(/spawnSync\s*\(\s*process\.execPath/g)]
-    .map((m) => src.slice(0, m.index).split('\n').length);
+  const 주석뺀 = 주석소거(원문);
+  if (!/hooks/i.test(주석뺀)) return [];       // 훅과 무관한 회귀는 이 규칙의 대상이 아니다
+  const 코드판 = 문자열소거(주석뺀);
+  const 표기판 = 템플릿만소거(주석뺀);
+  const 줄들 = new Set([
+    ...[...코드판.matchAll(/spawnSync\s*\(\s*process\.execPath/g)].map((m) => 행번호(코드판, m.index)),
+    ...[...표기판.matchAll(/spawnSync\s*\(\s*['"]node['"]/g)].map((m) => 행번호(표기판, m.index)),
+  ]);
+  return [...줄들].sort((a, b) => a - b);
 }
 
 function 스캔(dir) {
@@ -106,8 +127,29 @@ test('🔑 주석·문자열 속 옛 형태는 위반이 아니다 — 검사가
     "const HOOK = path.join(ROOT, '.claude', 'hooks', 'x.js');\n"
     + '// 옛 통로: spawnSync(process.execPath, [HOOK], …) 는 미실행을 통과로 읽는다\n'
     + '/* spawnSync(process.execPath, [HOOK]) */\n'
-    + 'const 픽스처 = `const r = spawnSync(process.execPath, [HOOK], {});`;\n');
+    + 'const 픽스처 = `const r = spawnSync(process.execPath, [HOOK], {});`;\n'
+    + "const 그림 = 'spawnSync(process.execPath 를 직접 쓰면 미실행이 결과가 된다';\n");
   assert.deepStrictEqual(스캔(d), [], '문서화·픽스처를 벌했다 — 그런 가드는 BYPASS 를 가르친다');
+});
+
+test('🔴 홑 백틱이 낀 문자열이 위반을 지우지 못한다 — 옛 스트리퍼의 소거 구멍', () => {
+  const d = 임시();
+  fs.writeFileSync(path.join(d, '홑백틱.test.js'), `const 말 = '값은 \` 로 감싼다';
+const HOOK = path.join(ROOT, '.claude', 'hooks', 'x.js');
+const r = spawnSync(process.execPath, [HOOK], { encoding: 'utf8' });
+const 끝 = '여기도 \` 하나 — 백틱만 지우면 첫 백틱과 짝지어 위 두 줄이 통째로 사라진다';
+`);
+  assert.deepStrictEqual(스캔(d), ['홑백틱.test.js:3'],
+    '홑 백틱 사이의 실제 위반이 소거됐다 — 문자열을 백틱보다 먼저 지워야 한다');
+});
+
+test('🔴 node 를 따옴표로 부르는 반환형도 잡는다 — 형제 저장소의 옛 형태가 그 표기였다', () => {
+  const d = 임시();
+  fs.writeFileSync(path.join(d, '표기형.test.js'), `const HOOK = path.join(ROOT, '.claude', 'hooks', 'y.js');
+const r = spawnSync('node', [HOOK], { encoding: 'utf8' });
+`);
+  assert.deepStrictEqual(스캔(d), ['표기형.test.js:2'],
+    '표기만 바꾼 반환형 스폰을 놓쳤다 — 같은 결함이 다른 철자로 재발한다');
 });
 
 // ── ② 통로가 실제로 미실행을 드러내는가 (통로가 조용하면 위 규칙이 장식이 된다) ──
