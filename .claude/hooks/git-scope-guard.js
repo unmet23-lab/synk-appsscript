@@ -264,19 +264,94 @@ if (되감기조각) {
  *          통로가 BYPASS 밖에 없어진다(따를 수 없는 처방은 우회를 정상 통로로 만든다).
  *        · `git stash list && git stash` → **첫 번째 하나만** 보므로 뒤엣 맨 stash 가 통과한다.
  *          그게 트리를 통째로 쓸어담는 F066 사고 그 형태다. 새는 방향은 언제나 통과다. */
+/*   🔴 2026-08-07 F212 잔여 — 「읽기전용」이라 이름 붙은 칸에 **파괴 하위명령이 5개** 있었다.
+ *      list·show 옆에 pop·apply·drop·clear·branch 가 같이 앉아 전부 무사통과였고, 새는 방향은 통과다.
+ *        · pop·apply  = 이 규칙이 막는 것의 **역방향**이다. 담는 대신 **쏟는다** — 공유 트리의
+ *          남의 미커밋 위로 merge 가 돌고, 충돌하면 **남의 파일에 충돌 표시가 박힌다**.
+ *          repo-staleness(F208)가 autostash 잔재를 알리며 「pop 은 대조 전 금지」라고 말하는데
+ *          그 금지를 세는 층이 없었다 — 같은 판정이 두 곳에 적혀 갈라진 자리(CLAUDE.md 훅 맹점④).
+ *        · drop·clear = ③ `git clean` 과 같은 자리다. autostash 잔재는 **어느 브랜치에도 없는
+ *          유일본**이라(F208 실물: 남의 7파일) 지우면 복구 경로가 0이다. clear 는 그걸 전부 한다.
+ *        · branch    = 조회처럼 생겼지만 성공하면 stash 를 **drop 한다**. 없애기 쪽에 둔다.
+ *      가르는 기준은 ⑦의 원칙 그대로 **범위**다 — 잃을 것이 없으면(깨끗한 트리·빈 stash) 조용하다. */
 {
-  const 읽기전용 = /^(list|show|pop|apply|drop|clear|branch|create|store)$/;
-  const 문제세그 = 걸린조각((s) => {
-    const m = re('stash\\b\\s*(\\S*)').exec(s);
-    return !!m && !읽기전용.test(String(m[1] || ''));
-  });
-  if (문제세그) {
-    const { execFileSync } = require('child_process');
-    let 더러운 = [];
+  const { execFileSync } = require('child_process');
+  const 하위 = (s) => { const m = re('stash\\b\\s*(\\S*)').exec(s); return m ? String(m[1] || '') : null; };
+  const 조회 = /^(list|show|create|store)$/;   // 트리도 stash 목록도 안 줄인다
+  const 쏟기 = /^(pop|apply)$/;
+  const 없애기 = /^(drop|clear|branch)$/;
+  const 조각 = (판정) => 걸린조각((s) => { const v = 하위(s); return v !== null && 판정(v); });
+  const 미커밋 = () => {
     try {
-      더러운 = execFileSync('git', ['-c', 'core.quotepath=false', 'status', '--porcelain', '--untracked-files=no'],
-        { encoding: 'utf8', cwd: gitCwd }).split('\n').filter((l) => l.trim()).slice(0, 12);
+      return execFileSync('git', ['-c', 'core.quotepath=false', 'status', '--porcelain', '--untracked-files=no'],
+        { encoding: 'utf8', cwd: gitCwd }).split('\n').filter((l) => l.trim());
+    } catch { return []; /* 저장소 밖 — 가드가 판단할 자리가 아니다 */ }
+  };
+
+  /* ⑦-c 없애기 — 트리 상태와 무관하다. 잴 것은 **지우면 되돌릴 데가 남는가** 하나다.
+   *   🔑 통과 조건을 **보존**으로 뒀다(⑨와 같은 통로 · F103). 태그·브랜치가 그 stash 커밋을
+   *   가리키면 조각을 지워도 내용은 이력에 남으니 조용히 통과한다 — 그래서 차단문이 시키는
+   *   두 걸음(못 박고 → 지운다)이 **실제로 통한다**. 「어차피 못 지운다」로 두면 남은 출구가
+   *   BYPASS(전 규칙 off) 뿐이고, 그게 F212 가 났던 자리다. 잔재를 영영 못 치우게 하지도 않는다.
+   *   ⚠ repo-staleness 는 지금 잔재 정리를 `stash drop` 한 줄로 처방한다 — 그 줄은 여기서 막히므로
+   *     그쪽 문구에 「못 박고 나서」가 붙어야 두 층이 다시 한 말을 한다(그 파일은 남이 편집 중이라
+   *     안 건드렸다 · 조율은 커밋 메시지로 · `local_2909a862` 의 교차 회귀가 이 자리를 감시한다). */
+  const 없애는조각 = 조각((v) => 없애기.test(v));
+  if (없애는조각) {
+    let 잔 = [];
+    try {
+      잔 = execFileSync('git', ['stash', 'list', '--format=%H %gd %gs'], { encoding: 'utf8', cwd: gitCwd })
+        .split('\n').map((l) => /^([0-9a-f]{40}) (stash@\{\d+\}) (.*)$/.exec(l)).filter(Boolean)
+        .map((m) => ({ sha: m[1], ref: m[2], 제목: m[3] }));
     } catch { /* 저장소 밖 — 가드가 판단할 자리가 아니다 */ }
+    /* clear 는 전부, drop·branch 는 지목한 하나(생략하면 stash@{0}) */
+    const 겨눈 = re('stash\\b[^&|;]*?(stash@\\{\\d+\\})').exec(없애는조각);
+    const 겨냥 = /\bclear\b/.test(없애는조각) ? 잔 : 잔.filter((s) => s.ref === (겨눈 ? 겨눈[1] : 'stash@{0}'));
+    /* 🔴 stash **바깥** ref 만 센다 — `refs/stash` 는 정의상 stash@{0} 을 가리키므로 그걸 세면
+     *   맨 위 조각이 **언제나 못 박힌 것**으로 읽혀 규칙이 통째로 안 돈다(실 저장소 탐침이 잡았다:
+     *   픽스처는 초록인데 라이브는 무음 통과 — 새는 방향은 여기서도 통과였다).
+     *   못 재면 「못 박혔다」가 아니라 「모른다」다 — 모름은 차단 쪽에 둔다. */
+    const 못박힘 = (sha) => {
+      try {
+        return execFileSync('git', ['for-each-ref', '--points-at', sha, '--format=%(refname)',
+          'refs/tags', 'refs/heads', 'refs/remotes'], { encoding: 'utf8', cwd: gitCwd }).trim().length > 0;
+      } catch { return false; }
+    };
+    const 잃을것 = 겨냥.filter((s) => !못박힘(s.sha)).slice(0, 12);
+    if (잃을것.length) {
+      const 첫 = 잃을것[0].ref;
+      deny('[git-scope-guard] stash 를 **지우는** 명령 차단 — 이 조각을 가리키는 ref 가 하나도 없다(지우면 복구 경로 0).'
+        + '\n이 트리는 세션 여럿이 공유하고, 여기 쌓인 것은 대개 **남의 rebase 가 걷어간 autostash 잔재**다'
+        + '\n(F208 실물: 7파일이 갇힌 채 주인은 그게 어디 있는지도 모른다). ③ `git clean` 과 같은 자리다.'
+        + '\n\n지울 뻔한 것:\n  ' + 잃을것.map((s) => `${s.ref}  ${s.제목}`).join('\n  ')
+        + `\n\n→ 무엇이 들었나:  git stash show --stat ${첫}`
+        + `\n   내 것만 꺼낸다: git checkout ${첫} -- 경로A 경로B   (지우지 않고 그 파일만 가져온다)`
+        + `\n→ **정리가 맞다면 못 박고 나서 지운다** — 그러면 같은 명령이 그대로 통과한다:`
+        + `\n     git tag 보관/autostash-0 ${첫}   그 뒤 원래 명령을 다시`
+        + '\n   (태그가 그 커밋을 가리키면 stash 를 비워도 내용은 이력에 남는다)'
+        + '\n   의도적 예외라면 명령 앞에 GIT_SCOPE_BYPASS=1 을 붙인다.');
+    }
+  }
+
+  /* ⑦-b 쏟기 — pop·apply 는 공유 트리에 **쓴다**. 깨끗하면 정당한 복구라 조용히 지나간다. */
+  if (조각((v) => 쏟기.test(v))) {
+    const 더러운 = 미커밋().slice(0, 12);
+    if (더러운.length) {
+      deny('[git-scope-guard] `git stash pop`·`apply` 차단 — 지금 트리에 **미커밋 수정**이 있다.'
+        + '\n이건 ⑦이 막는 것의 역방향이다: 담는 대신 쏟는다. 겹치면 merge 가 돌고, 충돌하면'
+        + '\n**남의 파일에 충돌 표시가 박힌다**(pop 은 그 상태로 stash 를 남기고 멈춘다).'
+        + '\nrepo-staleness 훅도 같은 말을 한다 — 「pop 은 대조 전 금지」. 이 층이 그걸 센다.'
+        + '\n\n지금 트리의 미커밋 수정:\n  ' + 더러운.join('\n  ')
+        + '\n\n→ 먼저 대조한다:    git stash show -p stash@{0}'
+        + '\n   내 조각만 살린다: git checkout stash@{0} -- 경로A 경로B  (트리 전체에 쏟지 않는다)'
+        + '\n   의도적 예외라면 명령 앞에 GIT_SCOPE_BYPASS=1 을 붙인다.');
+    }
+  }
+
+  /* ⑦-a 쓸어담기 (원래 규칙) — bare `git stash` · `-u` · `push` · `save` */
+  const 문제세그 = 조각((v) => !조회.test(v) && !쏟기.test(v) && !없애기.test(v));
+  if (문제세그) {
+    const 더러운 = 미커밋().slice(0, 12);
     const 경로지정 = /stash\b[^&|;]*?\s--\s+\S/.test(문제세그);
     if (더러운.length && !경로지정) {
       deny('[git-scope-guard] 경로 없는 `git stash` 차단 — 작업 트리를 **통째로** 쓸어 담는다.'
@@ -506,7 +581,14 @@ for (let m; (m = 메시지인용.exec(cmd)) !== null;) {
           if (!더한줄.length) continue;
           let 지금 = '';
           try { 지금 = fs.readFileSync(p.join(gitCwd, f), 'utf8'); } catch { continue; }
-          const 사라진 = [...new Set(더한줄)].filter((l) => !지금.includes(l));
+          /* 🔴 재는 단위가 판정 단위와 달랐다 — `지금.includes(줄)` 은 **줄 조각**도 참으로 읽는다.
+           *   실측 08-07: 6536fd5 가 지운 이어쓰기 조각 `.split(/&&|…/)` 가 그 커밋이 새로 더한
+           *   `걸린조각` 한 줄 **안에** 그대로 들어 있어, 옛 판이 살아 있는 것으로 읽혔다 →
+           *   정당한 리팩터가 「되돌림」으로 차단됐고 처방(그 줄을 되살려라)은 이미 있는 줄을 가리켰다
+           *   = 따를 수 없는 처방(F103·F212). 반대 방향도 같은 뿌리라 더 나쁘다 — 남이 커밋한 줄이
+           *   다른 줄 **안에** 우연히 들어 있으면 「안 사라졌다」로 **통과**한다. 줄 집합으로 잰다. */
+          const 지금줄 = new Set(지금.split('\n').map((l) => l.replace(/\r$/, '').trim()));
+          const 사라진 = [...new Set(더한줄)].filter((l) => !지금줄.has(l));
           /* F189 — 「지웠다」와 **「그 줄을 제자리에서 고쳤다」**를 가른다.
            *   줄이 없다는 것만으로는 못 가른다: 수정하면 원문 문자열도 똑같이 사라진다.
            *   🔑 되돌림의 정의는 「없다」가 아니라 **「내 판이 그 커밋의 부모다」**이므로 부모를 잰다 —
@@ -519,7 +601,7 @@ for (let m; (m = 메시지인용.exec(cmd)) !== null;) {
            *   ⓐ 그 커밋 안에서 **자리만 옮긴 줄**(지웠다 다시 더함)은 부모의 증거가 아니다 — 뺀다. */
           const 더한집합 = new Set(더한줄);
           const 옛판줄 = 지운줄.filter((l) => !더한집합.has(l));
-          if (사라진.length && (!옛판줄.length || 옛판줄.some((l) => 지금.includes(l)))) {
+          if (사라진.length && (!옛판줄.length || 옛판줄.some((l) => 지금줄.has(l)))) {
             되돌림.push({ 파일: f, 해시: 해시.slice(0, 7), sid, 사라진 });
           }
         }

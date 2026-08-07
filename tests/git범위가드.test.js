@@ -423,10 +423,108 @@ test('경로를 준 stash 는 통과하되 확인을 요구한다 (자기 대피
   });
 });
 
-test('복구·조회 계열은 건드리지 않는다 (pop 은 오히려 되살리는 쪽이다)', () => {
+test('조회 계열은 건드리지 않는다 — 읽기를 막으면 통로가 BYPASS 밖에 없어진다 (F212)', () => {
   더러운저장소((dir) => {
-    ['git stash pop', 'git stash list', 'git stash apply', 'git stash show', 'git stash drop'].forEach((c) => {
-      assert.strictEqual(가드_at(c, dir).사유, '', `조회·복구를 막거나 잔소리했다: ${c}`);
+    ['git stash list', 'git stash show', 'git stash show -p stash@{0}', 'git stash create'].forEach((c) => {
+      assert.strictEqual(가드_at(c, dir).사유, '', `읽기 전용 조회를 막거나 잔소리했다: ${c}`);
+    });
+  });
+});
+
+/* 🔴 F212 잔여 — 위 목록의 이름은 「읽기전용」이었는데 그 안에 pop·apply·drop·clear·branch 가 있었다.
+ *    ⑦은 **담는 방향**만 세고 있었고, 쏟는 방향과 지우는 방향은 통째로 무사통과였다.
+ *    실물 08-07: repo-staleness(F208)가 autostash 잔재 7파일을 알리며 「pop 은 대조 전 금지」라고
+ *    말하는데 그 금지를 세는 층이 없었다 — 같은 판정이 두 곳에 적혀 갈라진 자리다. */
+function 스태시있는저장소(더럽게, fn) {
+  return 임시저장소(null, (dir) => {
+    const g = (...a) => execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...a], { cwd: dir });
+    fs.writeFileSync(path.join(dir, 'a.md'), '처음\n');
+    g('add', 'a.md');
+    g('commit', '-qm', 'init');
+    fs.writeFileSync(path.join(dir, 'a.md'), '갇힌 편집\n');
+    g('stash', 'push', '-q', '-m', '남의 autostash 잔재');
+    if (더럽게) fs.writeFileSync(path.join(dir, 'a.md'), '남이 지금 편집 중\n');
+    return fn(dir);
+  });
+}
+
+test('🔴 pop·apply 를 더러운 트리에서 막는다 — ⑦의 역방향(담는 대신 쏟는다)', () => {
+  스태시있는저장소(true, (dir) => {
+    ['git stash pop', 'git stash apply', 'git stash apply stash@{0}',
+     'git -C . stash pop'].forEach((c) => {
+      const r = 가드_at(c, dir);
+      assert.equal(r.차단, true, `남의 미커밋 위로 쏟는데 막지 않았다: ${c}`);
+      assert.match(r.사유, /a\.md/, `무엇이 위험한지 안 보여준다: ${c}`);
+    });
+  });
+});
+
+test('깨끗한 트리에서는 pop 이 조용하다 — 잃을 것이 없으면 그건 정당한 복구다', () => {
+  스태시있는저장소(false, (dir) => {
+    assert.strictEqual(가드_at('git stash pop', dir).사유, '', '되살릴 자리에서 막았다');
+  });
+});
+
+test('🔴 drop·clear·branch 를 막는다 — 아무 ref 도 안 가리키면 지우는 순간 복구 경로가 0이다', () => {
+  스태시있는저장소(false, (dir) => {
+    ['git stash drop', 'git stash clear', 'git stash drop stash@{0}',
+     'git stash branch 살리기 stash@{0}'].forEach((c) => {
+      const r = 가드_at(c, dir);
+      assert.equal(r.차단, true, `유일본을 지우는데 막지 않았다: ${c}`);
+      assert.match(r.사유, /autostash 잔재/, `무엇을 잃는지 안 보여준다: ${c}`);
+    });
+  });
+});
+
+/* 🔑 통과 조건은 **보존**이다(⑨의 「복원」과 같은 통로 · F103). 「어차피 못 지운다」로 두면
+ *    잔재를 영영 못 치우게 되고 남은 출구가 BYPASS(전 규칙 off)뿐이라 F212 가 그대로 재발한다.
+ *    ⚠ 이 검사는 repo-staleness 의 잔재 정리 처방(`stash drop`)이 다시 통하게 되는 자리이기도 하다. */
+test('🔑 처방 되먹임 ② — 태그로 못 박으면 같은 drop 이 그대로 통과한다', () => {
+  스태시있는저장소(false, (dir) => {
+    assert.equal(가드_at('git stash drop stash@{0}', dir).차단, true, '전제가 안 섰다');
+    execFileSync('git', ['tag', '보관/autostash-0', 'stash@{0}'], { cwd: dir });
+    const r = 가드_at('git stash drop stash@{0}', dir);
+    assert.equal(r.차단, false, `못 박았는데도 막는다 — 따를 수 없는 처방이라 출구가 BYPASS 뿐이다:\n${r.사유}`);
+  });
+});
+
+test('⑦-c 는 **겨냥한 조각만** 본다 — 못 박힌 것 말고 다른 게 남아 있어도 그 drop 은 통과한다', () => {
+  스태시있는저장소(false, (dir) => {
+    // 두 번째 잔재를 하나 더 만든다(못 박히지 않은 채로)
+    fs.writeFileSync(path.join(dir, 'a.md'), '두 번째 갇힌 편집\n');
+    execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', 'stash', 'push', '-q', '-m', '또 다른 잔재'],
+      { cwd: dir });
+    execFileSync('git', ['tag', '보관/autostash-0', 'stash@{0}'], { cwd: dir });
+    assert.equal(가드_at('git stash drop stash@{0}', dir).차단, false, '못 박은 조각을 남의 조각 때문에 막았다');
+    assert.equal(가드_at('git stash drop stash@{1}', dir).차단, true, '안 박힌 조각을 남의 태그 덕에 통과시켰다');
+    assert.equal(가드_at('git stash clear', dir).차단, true, 'clear 는 전부를 지우는데 하나만 보고 통과시켰다');
+  });
+});
+
+test('빈 stash 에서는 drop·clear 가 조용하다 (과잉 차단은 BYPASS 를 가르친다)', () => {
+  더러운저장소((dir) => {
+    ['git stash drop', 'git stash clear'].forEach((c) => {
+      assert.strictEqual(가드_at(c, dir).사유, '', `잃을 것이 없는데 막았다: ${c}`);
+    });
+  });
+});
+
+test('🔴 체인 뒤에 숨은 pop·drop 도 잡는다 (F218 — 앞 조각의 조회가 통과권이 아니다)', () => {
+  스태시있는저장소(true, (dir) => {
+    ['git stash list && git stash pop', 'git stash show; git stash drop'].forEach((c) => {
+      assert.equal(가드_at(c, dir).차단, true, `앞 조각이 조회라고 뒤엣 것을 놓쳤다: ${c}`);
+    });
+  });
+});
+
+/* CLAUDE.md 가드 맹점③ — 차단 사유가 시키는 명령을 그 가드에 되먹여 통과하는지 본다.
+ * 따를 수 없는 처방은 우회를 정상 통로로 만든다(F103·F212 가 정확히 그 자리였다). */
+test('🔑 처방 되먹임 — 차단 사유가 주는 명령이 이 가드를 통과한다', () => {
+  스태시있는저장소(true, (dir) => {
+    ['git stash show -p stash@{0}',
+     'git stash show -p stash@{0} > 어딘가.patch',
+     'git checkout stash@{0} -- 경로A 경로B'].forEach((c) => {
+      assert.equal(가드_at(c, dir).차단, false, `자기 처방을 자기가 막는다: ${c}`);
     });
   });
 });
@@ -919,6 +1017,53 @@ test('⑨ 같은 커밋 안에서 **자리만 옮긴 줄**은 부모의 증거�
     '| 첫째 칸 |\n| 둘째 칸 |\n| 셋째 칸 |\n| 옮겨 다니는 줄 하나 |\n| 남이 쓴 상태 칸 갱신 2 |\n');
   const r = 가드8(f, 'git commit -m "상태 갱신" -- 보드.md');
   assert.equal(r.차단, false, `자리만 옮긴 줄을 부모의 흔적으로 셌다 — F189 오탐이 그대로 돌아온다:\n${r.사유}`);
+});
+
+/* 🔴 재는 단위가 판정 단위와 달랐다 — 판정은 **줄**인데 `지금.includes(줄)` 은 문자열 조각도 참으로 읽는다.
+ *    실측 08-07(이 검사가 태어난 이유): 6536fd5 가 지운 이어쓰기 조각 `.split(/&&|…/)` 가 그 커밋이
+ *    새로 더한 한 줄 **안에** 그대로 들어 있어, 옛 판이 살아 있는 것으로 읽혀 정당한 리팩터가 막혔다.
+ *    처방은 「그 줄을 되살려라」인데 그 줄은 이미 있다 = 따를 수 없는 처방 → 남은 출구가 BYPASS 뿐(F103·F212).
+ *    두 방향을 함께 못박는다 — 반대쪽(조각이라서 「안 사라졌다」로 통과)이 더 나쁘다. */
+test('🔴 ⑨ 옛 줄이 **다른 줄 안에 조각으로** 들어 있는 것은 부모의 증거가 아니다 (거짓양성)', () => {
+  /* 이 검사를 낳은 실물: 6536fd5 가 지운 이어쓰기 조각이 같은 커밋이 더한 한 줄 **안에** 들어 있었다. */
+  const f = 픽스처8();
+  남이수정(f, '가드.js',
+    'function 고르기(원본, 조건) {\n  const 목록 = 원본\n    .split(/,/)\n    .filter(Boolean);\n  return 목록;\n}\n',
+    'function 고르기(원본, 조건) {\n  const 뽑기 = 원본.split(/,/).find(조건);\n  return 뽑기;\n}\n');
+  // 내가 그 지역변수 이름만 바꾼다 — 옛 줄 `.split(/,/)` 은 **조각으로만** 산다(부모 판이 아니다)
+  fs.writeFileSync(path.join(f.repo, '가드.js'),
+    'function 고르기(원본, 조건) {\n  const 골라낸것 = 원본.split(/,/).find(조건);\n  return 골라낸것;\n}\n');
+  const r = 가드8(f, 'git commit -m "이름 바꿈" -- 가드.js');
+  assert.equal(r.차단, false, `줄 조각을 부모의 흔적으로 셌다 — 정당한 리팩터가 영구 차단되고 출구가 BYPASS 뿐이다:\n${r.사유}`);
+});
+
+test('⑨ **들여쓰기된** 남의 줄이 그대로 있으면 사라진 것이 아니다 (거짓양성)', () => {
+  /* 재는 쪽은 diff 줄을 trim 해서 모으므로 작업본도 같은 눈금으로 읽어야 한다. 안 그러면 들여쓰기가
+   * 있는 줄은 **전부** 「사라졌다」가 되어, 함수 안을 만지는 모든 커밋이 막힌다(코드에선 그게 기본형이다). */
+  const f = 픽스처8();
+  남이커밋(f, '가드.js', 'function 검사(값) {\n  const 남의판정 = 값 > 1234 && 값 < 5678;\n  return 남의판정;\n}\n');
+  만진기록(f.state, f.repo, 'local_peer', [], 1);
+  만진기록(f.state, f.repo, 'local_me', ['가드.js'], 0);
+  // 남의 줄은 그대로 두고 내 줄만 덧붙인다
+  fs.writeFileSync(path.join(f.repo, '가드.js'),
+    'function 검사(값) {\n  const 남의판정 = 값 > 1234 && 값 < 5678;\n  return 남의판정;\n}\nconst 내가붙인상수 = 42;\n');
+  const r = 가드8(f, 'git commit -m "상수 추가" -- 가드.js');
+  assert.equal(r.차단, false, `들여쓰기된 줄을 「사라졌다」로 읽었다 — 함수 안을 만지는 커밋이 전부 막힌다:\n${r.사유}`);
+});
+
+test('🔴 ⑨ 사라짐도 **줄 단위**로 잰다 — 조각으로 흩어진 것은 「그대로 있다」가 아니다', () => {
+  /* 반대 방향(새는 쪽). 남이 커밋한 줄들이 내 한 줄 **안에** 조각으로 다 들어 있으면 문자열 포함은
+   * 「하나도 안 사라졌다」로 읽고 통과시킨다 — 남의 3줄 판이 조용히 내 1줄로 되돌아간다.
+   * ⚠ 순수 추가 커밋이라 부모의 흔적이 없다 = 못 가르는 자리이고, ⑨는 거기서 막는 쪽에 선다(F189). */
+  const f = 픽스처8();
+  남이수정(f, '가드.js',
+    "const 남의상수 = '건드리지 않는 줄';\n",
+    "const 남의상수 = '건드리지 않는 줄';\nconst 목록 = 원본\n  .split(/,/)\n  .find(조건);\n");
+  // 내 도구가 남의 3줄 체인을 한 줄로 눌러 담았다 — 조각은 전부 남지만 그 줄들은 없다
+  fs.writeFileSync(path.join(f.repo, '가드.js'),
+    "const 남의상수 = '건드리지 않는 줄';\nconst 목록 = 원본.split(/,/).find(조건);\n");
+  const r = 가드8(f, 'git commit -m "한 줄로" -- 가드.js');
+  assert.equal(r.차단, true, `조각이 남았다고 통과시켰다 — 남의 커밋이 조용히 되돌아간다:\n${r.사유}`);
 });
 
 test('🔴 ⑧ 은 **gitCwd 저장소**를 본다 — 형제 저장소 커밋에서 통째로 헛돌지 않는다 (F193)', () => {
