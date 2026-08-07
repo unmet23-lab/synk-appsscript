@@ -59,7 +59,7 @@ const 훅이름 = (h) => (String(h.command).match(/hooks\/([a-z-]+)\.js/) || [])
  * ⚠ 이 예외는 **선언만으로는 못 얻는다.** 바로 아래 검사가 「그 훅이 정말 판정을 안 내는지」를
  *   행동으로 확인한다 — 진짜 가드를 이 목록에 적어 넣으면 그 자리에서 빨간불이 난다.
  *   경고 경로까지 포함한 전체 증명은 tests/트랙충돌.test.js 가 진다. */
-const 정보성 = new Set(['track-collision']);
+const 정보성 = new Set(['track-collision', 'repo-staleness']);
 
 // ── bash 탐색: 없으면 행동 검사를 skip으로 드러낸다 ─────────────────
 // ⚠ 절대경로를 먼저 시도한다 — PATH를 비운 채 돌리는 검사가 있어서
