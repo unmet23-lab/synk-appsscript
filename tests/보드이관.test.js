@@ -334,6 +334,59 @@ test('[F165] **내 지문**이 적힌 줄은 그대로 옮긴다 (/close 정상 
   } finally { 치우기(박동); }
 });
 
+/* ───────────────────────────────────────────────────────────────
+ * 마찰 F226 — **이 도구가 자기 실패의 잔재에 스스로 영구 차단된다**(F103 축).
+ *
+ * 실사고 2026-08-07 21:35: 보드 만석(18/18)이라 board-move 를 돌렸는데 ②(아카이브 단독 커밋)가
+ * 남의 `.git/index.lock` 에 막혀 죽었다. 그 시점 파일 상태 = **아카이브에 내 줄이 미커밋**.
+ * 그런데 「아카이브가 더러우면 아무것도 쓰지 않는다」(F102)가 그 잔재를 **남의 미커밋으로 읽어**
+ * 이후 재실행이 5회 전패했다 — 만석 처방(board-guard 가 내주는 바로 이 명령)이 첫 실패 한 번에
+ * 통째로 죽는다. 죽는 조건도 흔하다: 세션 9~15개가 동시에 도는 저장소라 lock 경합은 일상이다.
+ * 곁들여, 실패문 처방대로 손으로 커밋하고 재실행하면 「행 수 +1」 검증이 **중복도 통과시켰다.**
+ *
+ * 지키는 성질 둘:
+ *   ① 내 잔재 위에서는 **이어서 끝까지 간다**(사람이 되돌려 주지 않아도 만석이 풀린다).
+ *   ② 그래도 같은 줄이 **두 번 실리지 않는다**.
+ * ─────────────────────────────────────────────────────────────── */
+
+/** F226 상태를 그대로 만든다 — ②커밋만 막아 「아카이브에 삽입 + 미커밋 + 보드에 줄 그대로」를 남긴다. */
+function mk잔재픽스처() {
+  const fx = mkRepoFixture();
+  const hook = path.join(fx.dir, '.git', 'hooks', 'pre-commit');
+  fs.writeFileSync(hook, '#!/bin/sh\nexit 1\n', 'utf8');
+  fs.chmodSync(hook, 0o755);
+  const first = run(fx, ['옮길 트랙 갑']);
+  assert.notEqual(first.status, 0, '커밋이 막혔는데 성공했다 — 잔재 조건이 안 만들어진다');
+  fs.unlinkSync(hook);                        // lock 이 풀린 뒤 = 재실행 조건
+  return fx;
+}
+
+test('[F226] 내 잔재 위에서 재실행이 **끝까지 간다** (만석 처방이 첫 실패로 죽지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mk잔재픽스처();
+  assert.ok(read(fx.archive).includes(ROW), '잔재 조건 미성립 — 아카이브에 삽입이 없다');
+  assert.ok(read(fx.board).includes(ROW), '잔재 조건 미성립 — 보드에서 이미 지워졌다');
+
+  const r = run(fx, ['옮길 트랙 갑']);
+  assert.equal(r.status, 0, '🔴 내가 남긴 잔재를 남의 미커밋으로 읽고 거부했다 — F226 재현: ' + r.stderr);
+  assertNeverLost(fx, 'F226 재실행');
+  assert.ok(atHead(fx, '세션보드_아카이브.md').includes(ROW), '재실행인데 아카이브가 커밋 안 됐다');
+  assert.ok(!atHead(fx, '세션보드.md').includes(ROW), '재실행인데 보드 삭제가 커밋 안 됐다');
+  // ② 「행 수 +1」 검증은 중복을 통과시킨다 — 실제로 몇 번 실렸는지를 센다.
+  assert.equal(read(fx.archive).split(ROW).length - 1, 1, '같은 줄이 아카이브에 두 번 실렸다');
+});
+
+test('[F226] 잔재에 **남의 삽입**이 섞이면 여전히 멈춘다 (예외가 F102 를 열지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mk잔재픽스처();
+  fs.writeFileSync(fx.archive, read(fx.archive) + '| 2026-08-05 | **남의 이관 병** | z.js | 완료 |\n', 'utf8');
+  const before = { b: read(fx.board), a: read(fx.archive) };
+
+  const r = run(fx, ['옮길 트랙 갑']);
+  assert.notEqual(r.status, 0, '남의 미커밋 위에 그냥 커밋했다 — F226 예외가 F102 를 열었다');
+  assert.equal(read(fx.board), before.b, '거부인데 보드가 변했다');
+  assert.equal(read(fx.archive), before.a, '거부인데 아카이브가 변했다');
+  assertNeverLost(fx, 'F226 + 남의 삽입');
+});
+
 test('[F146] 해시처럼 생긴 딴 것에는 안 걸린다 (없는 커밋으로 정상 이관을 막지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
   const { fx, 줄, 박동 } = mk주인픽스처(남의sid, { 해시덮기: 'deadbee' });   // 7자 hex, 커밋 아님
   try {
