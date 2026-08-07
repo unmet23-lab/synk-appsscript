@@ -36,8 +36,10 @@ const { spawnSync } = require('child_process');
 const 소유자 = require(path.join(__dirname, '작업본소유자.js'));
 const ROOT = process.env.SYNK_OWNER_ROOT || path.resolve(__dirname, '..');
 
-const 폴더 = 'docs/_ops/인계문';   // git 경로 표기(슬래시) — status/pathspec 과 같은 꼴
-const 목차 = 'docs/_ops/인계문.md';
+// 자리(폴더·목차)와 「이름→세션 지문」 변환도 그쪽 것 하나를 쓴다 — 여기 한 벌 더 적었더니
+// 작업본소유자 쪽에는 그 변환이 아예 없었고, 그래서 산 세션의 인계문이 전부 ❔모름으로 떴다.
+const 폴더 = 소유자.인계문폴더;
+const 목차 = 소유자.인계문목차;
 
 function git(args) {
   const r = spawnSync('git', ['-c', 'core.quotepath=false', ...args], {
@@ -75,9 +77,8 @@ function 조사() {
   const r = { 수거: [], 내것: [], 보류: [], 잡파일: [], 목차더러움: false, 내sid8 };
   for (const it of 항목) {
     if (it.경로 === 목차) { r.목차더러움 = true; continue; }
-    const m = /^([A-Za-z0-9_-]+)\.md$/.exec(it.경로.split('/').pop());
-    if (!m) { r.잡파일.push(it); continue; }   // 세션 파일 꼴이 아니다 — 주인을 특정 못 하면 안 거둔다
-    const sid8 = m[1];
+    const sid8 = 소유자.인계문지문(it.경로);
+    if (!sid8) { r.잡파일.push(it); continue; }   // 세션 파일 꼴이 아니다 — 주인을 특정 못 하면 안 거둔다
     if (내sid8 && sid8 === 내sid8) r.내것.push(it);
     else if (산.has(sid8)) r.보류.push({ ...it, 분: 박동분.get(sid8) });
     else r.수거.push(it);
