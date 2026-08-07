@@ -378,16 +378,27 @@ for (let m; (m = 메시지인용.exec(cmd)) !== null;) {
 
     /* 범위 = ⓐ `commit … -- 경로들` ⓑ 같은 호출의 `git add 경로들` ⓒ 둘 다 없으면 스테이징된 것.
      * ⓒ 를 빠뜨리면 `git add` 를 앞선 호출에서 한 형태가 통째로 검사 밖이 된다(새는 방향은 통과). */
+    /* 🔑 셸 꼬리는 경로가 아니다 (F193 · 2026-08-07). `… -- 보드.md 2>&1` 의 `2>&1`,
+     *   `… -- 보드.md > out.txt` 의 `>`·`out.txt` 가 그대로 범위로 들어갔다(실측 범위키
+     *   `2>&1|docs/…`·`>|docs/…|out.txt`). 파이프·`&&` 는 세그가 이미 갈랐지만 리다이렉션은
+     *   같은 세그에 남는다. 해는 두 겹 — ⓐ 회차 카운터의 키가 **명령 표기마다 달라져** F141 이
+     *   세운 「3번째면 통과」 탈출구가 안 열린다(=BYPASS 가 정상 통로가 된다 · F103)
+     *   ⓑ 리다이렉션 대상이 저장소 안 경로면 안 담길 파일이 범위로 셰인다.
+     *   목록은 **한 곳에서만** 판정한다 — ⓐ·ⓑ 두 갈래에 따로 적으면 갈라진다. */
+    const 꼬리부터버림 = (ts) => {
+      const j = ts.findIndex((t) => /^\d*[<>]/.test(t));
+      return j >= 0 ? ts.slice(0, j) : ts;
+    };
     let 범위 = [];
     for (const seg of 커밋세그) {
       const ts = 토큰(seg);
       const i = ts.indexOf('--');
-      if (i >= 0) 범위.push(...ts.slice(i + 1));
+      if (i >= 0) 범위.push(...꼬리부터버림(ts.slice(i + 1)));
     }
     if (!범위.length) {
       for (const seg of 세그들) {
         const s = 서브커맨드(seg);
-        if (s && s.이름 === 'add') 범위.push(...s.뒤.filter((t) => !t.startsWith('-')));
+        if (s && s.이름 === 'add') 범위.push(...꼬리부터버림(s.뒤).filter((t) => !t.startsWith('-')));
       }
     }
     let 스테이징만 = false;
@@ -399,6 +410,16 @@ for (let m; (m = 메시지인용.exec(cmd)) !== null;) {
       } catch { /* 저장소 밖 — 가드가 판단할 자리가 아니다 */ }
     }
     범위 = 범위.map(씻기).filter(Boolean);
+
+    /* 🔴 소유 판정이 볼 저장소를 **첫 require 보다 먼저** 못 박는다 (F193 · 2026-08-07).
+     *   `작업본소유자.js` 의 ROOT 는 **모듈 최상단 const** 라 require 하는 순간 굳는다. 이 줄이
+     *   아래 ⑨ 의 require 뒤에 있었을 때, gitCwd 가 형제 저장소(SYNK-talk)여도 조사()는 늘
+     *   appsscript 를 봤다 — 그리고 ⑧ 은 형제 태그가 붙은 항목을 `!i.저장소` 로 걸러내므로
+     *   **talk 커밋에서는 잴 것이 하나도 안 남았다.** 실측: 픽스처의 진짜 미커밋=조용히 통과,
+     *   픽스처에 없는 appsscript 경로=차단(두 방향 다 틀렸고 흔한 쪽이 통과다).
+     *   ⚠ 이 자리는 순서가 곧 정답이다 — 여기보다 위에서 저 모듈을 require 하면 그대로 재발한다.
+     *   회귀 tests/git범위가드.test.js 「형제 저장소 커밋」이 그 순서를 못박는다. */
+    if (!process.env.SYNK_OWNER_ROOT) process.env.SYNK_OWNER_ROOT = gitCwd;
 
     /* ⑨ **되돌림** — 범위 안의 파일이 남이 **이미 커밋한 판**보다 뒤로 가 있나 (F187 · F189 · 2026-08-07).
      *   판정은 「그 줄이 없나」가 아니라 「**내 판이 그 커밋의 부모인가**」다 — 아래 F189 주석이 그 이유다.
@@ -493,8 +514,8 @@ for (let m; (m = 메시지인용.exec(cmd)) !== null;) {
       }
 
       /* 판정층은 하나 — 작업본소유자를 **읽기만** 한다. 그게 못 돌면 「전부 모름」으로 내려간다:
-       * 판정 불가를 통과로 번역하면 이 규칙은 있는 것보다 나쁘다(있는데 안심시킨다). */
-      if (!process.env.SYNK_OWNER_ROOT) process.env.SYNK_OWNER_ROOT = gitCwd;
+       * 판정 불가를 통과로 번역하면 이 규칙은 있는 것보다 나쁘다(있는데 안심시킨다).
+       * (뿌리 고정은 위로 올렸다 — F193. 여기서 하면 ⑨ 가 먼저 require 해 이미 늦다.) */
       let 항목 = null;
       try {
         const r = require(p.join(__dirname, '..', '..', 'tools', '작업본소유자.js')).조사();

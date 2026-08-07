@@ -524,7 +524,10 @@ function 만진기록(state, repo, sid, touched, 분전 = 1) {
 }
 function 가드8({ repo, state, 나 = 'local_me', ownerRoot, 형제 }, command) {
   const env = { ...process.env, SYNK_CTXBUDGET_DIR: state, CLAUDE_CODE_HOST_SESSION_ID: 나 };
-  env.SYNK_OWNER_ROOT = ownerRoot === undefined ? repo : ownerRoot;
+  /* `ownerRoot: null` = 이음매를 **비운다**. 그래야 훅이 스스로 잡는 뿌리를 잴 수 있다 —
+   * 이 값을 늘 채워 주면 배선이 어긋나도 검사는 초록이다(F193 이 그렇게 살아남았다). */
+  if (ownerRoot === null) delete env.SYNK_OWNER_ROOT;
+  else env.SYNK_OWNER_ROOT = ownerRoot === undefined ? repo : ownerRoot;
   if (형제) env.SYNK_OWNER_SIBLINGS = 형제.join(';');
   const out = execFileSync(process.execPath, [HOOK], {
     input: JSON.stringify({ tool_input: { command } }), encoding: 'utf8', cwd: repo, env,
@@ -856,6 +859,31 @@ test('⑨ 같은 커밋 안에서 **자리만 옮긴 줄**은 부모의 증거�
     '| 첫째 칸 |\n| 둘째 칸 |\n| 셋째 칸 |\n| 옮겨 다니는 줄 하나 |\n| 남이 쓴 상태 칸 갱신 2 |\n');
   const r = 가드8(f, 'git commit -m "상태 갱신" -- 보드.md');
   assert.equal(r.차단, false, `자리만 옮긴 줄을 부모의 흔적으로 셌다 — F189 오탐이 그대로 돌아온다:\n${r.사유}`);
+});
+
+test('🔴 ⑧ 은 **gitCwd 저장소**를 본다 — 형제 저장소 커밋에서 통째로 헛돌지 않는다 (F193)', () => {
+  /* 위 ⑧ 검사들은 전부 `SYNK_OWNER_ROOT` 를 채워 준다 — 그래서 훅이 **스스로** 어느 뿌리를
+   * 잡는지는 이 묶음 어디서도 안 쟀고, 그 사각에서 F193 이 살았다. 실사고 모양은
+   * `cd SYNK-talk && git commit -- …`: 조사()가 appsscript 를 보게 되고, talk 파일은 「형제」로
+   * 태그돼 `!i.저장소` 에 걸러지므로 **잴 것이 하나도 안 남는다**(=조용한 통과).
+   * 실측(2026-08-07): 픽스처의 진짜 미커밋=통과 · 픽스처에 없는 appsscript 경로=차단. */
+  const f = 픽스처8();
+  fs.writeFileSync(path.join(f.repo, '보드.md'), '| 내 줄 |\n| 남의 줄 · 남이 고침 |\n');
+  만진기록(f.state, f.repo, 'local_peer', ['보드.md']);
+  const r = 가드8({ ...f, ownerRoot: null }, `cd ${f.repo} && git commit -m "x" -- 보드.md`);
+  assert.equal(r.차단, true, `뿌리를 안 넘겨주면 ⑧ 이 남의 저장소를 재고 이 커밋은 조용히 나간다:\n${r.사유}`);
+  assert.match(r.사유, /보드\.md/, '이 저장소의 위험을 안 짚었다');
+});
+
+test('⑧ 리다이렉션 대상은 커밋 범위가 아니다 — `> out.txt` (F193)', () => {
+  /* `… -- 엔진.js > out.txt` 의 `>`·`out.txt` 가 그대로 범위로 들어갔다(실측 범위키 `>|엔진.js|out.txt`).
+   * 해는 두 겹 — 안 담길 파일이 범위로 세이고, 회차 카운터 키가 **명령 표기마다 달라져**
+   * F141 이 세운 「3번째면 통과」 탈출구가 안 열린다(=BYPASS 가 정상 통로가 된다 · F103). */
+  const f = 픽스처8();
+  fs.writeFileSync(path.join(f.repo, 'out.txt'), '남이 흘려둔 파일\n');
+  만진기록(f.state, f.repo, 'local_peer', ['out.txt']);
+  const r = 가드8(f, 'git commit -m "x" -- 엔진.js > out.txt');
+  assert.equal(r.차단, false, `셸 꼬리를 경로로 읽어 커밋에 없는 파일을 범위로 셌다:\n${r.사유}`);
 });
 
 test('⑧ 범위가 **디렉터리**여도 그 안을 본다 (경로를 폴더로 주는 건 일상이다)', () => {
