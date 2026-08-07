@@ -212,6 +212,66 @@ test('🔑 생존 판정은 작업본소유자와 같은 손잡이 하나다 —
   assert.match(String(r.stdout), /보류[\s\S]*dead0009/);
 });
 
+/* ── 경쟁 — 조사() 스냅샷과 add 사이에 딴 세션의 수거가 같은 경로를 먼저 커밋한다 ──────────
+ * 08-07 실측: 15세션 동시 기동에서 87d2dfa 가 ba86eeb2 를 선점하자, 뒤진 세션의 수거는
+ * pathspec fatal 하나로 「아직 거둘 수 있던 나머지」까지 통째로 0건이 됐다.
+ * 그 창은 프로세스 안이라 CLI 로는 재현이 안 된다 — 낡은 스냅샷 r 을 직접 만들어
+ * 실행() 에 넣는다(존재한 적 없는 경로 = 남이 먼저 거둬 사라진 경로와 같은 모양). */
+
+function 실행만로드(repo) {
+  const 이전 = process.env.SYNK_OWNER_ROOT;
+  process.env.SYNK_OWNER_ROOT = repo; // 모듈이 로드 시점에 ROOT 를 굳히므로 캐시를 비우고 다시 든다
+  for (const k of Object.keys(require.cache)) if (/(인계문수거|작업본소유자)\.js$/.test(k)) delete require.cache[k];
+  const m = require(TOOL);
+  return { 실행: m.실행, 복원() { if (이전 === undefined) delete process.env.SYNK_OWNER_ROOT; else process.env.SYNK_OWNER_ROOT = 이전; } };
+}
+function 낡은스냅샷(수거경로들) {
+  return { 수거: 수거경로들.map((p) => ({ xy: '??', 경로: p })), 내것: [], 보류: [], 잡파일: [], 목차더러움: false };
+}
+
+test('🔴 경쟁: 먼저 거둬진 경로는 건너뛰고 나머지는 거둔다 — 한 경로가 전체 수거를 접지 않는다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, g } = 픽스처();
+  인계문두기(repo, 'dead0010', '<!-- at:1 -->\n아직 안 거둬진 죽은 세션 본문\n');
+  const { 실행, 복원 } = 실행만로드(repo);
+  try {
+    const r = 낡은스냅샷([`${폴더}/gone0001.md`, `${폴더}/dead0010.md`]);
+    const 전 = 커밋수(g);
+    const 결과 = 실행(r);
+    assert.strictEqual(typeof 결과, 'string', `수거가 실패로 접혔다: ${JSON.stringify(결과)}`);
+    assert.strictEqual(커밋수(g), 전 + 1, '수거 커밋이 안 생겼다');
+    const 실림 = 마지막커밋파일들(g);
+    assert.ok(실림.includes(`${폴더}/dead0010.md`), '거둘 수 있던 파일을 못 거뒀다 — 그게 오늘의 사고다');
+    assert.ok(!실림.includes(`${폴더}/gone0001.md`), '사라진 경로가 커밋에 실렸다(있을 수 없는 상태)');
+    assert.strictEqual(r.사라짐, 1, '건너뛴 수를 보고에 안 넘긴다 — 경쟁이 있었다는 사실이 숨는다');
+  } finally { 복원(); }
+});
+
+test('경쟁: 전부 먼저 거둬졌으면 빈손과 같다 — 실패가 아니라 조용한 null(잃은 내용 0)', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, g } = 픽스처();
+  const { 실행, 복원 } = 실행만로드(repo);
+  try {
+    const 전 = 커밋수(g);
+    assert.strictEqual(실행(낡은스냅샷([`${폴더}/gone0002.md`])), null,
+      '전량 선점을 실패로 번역했다 — 세션 시작마다 「거두지 못했다」 헛경고가 뜬다');
+    assert.strictEqual(커밋수(g), 전, '거둘 게 없는데 커밋이 생겼다');
+  } finally { 복원(); }
+});
+
+test('경쟁 아님: 사라짐 밖의 add 실패(index.lock 등)는 전과 같이 전체를 접는다 — lock 을 「먼저 거둬짐」으로 안 읽는다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, g } = 픽스처();
+  인계문두기(repo, 'dead0011');
+  const gitdir = path.join(repo, String(g('rev-parse', '--git-dir').stdout).trim());
+  fs.writeFileSync(path.join(gitdir, 'index.lock'), '');
+  const { 실행, 복원 } = 실행만로드(repo);
+  try {
+    const 전 = 커밋수(g);
+    const 결과 = 실행(낡은스냅샷([`${폴더}/dead0011.md`]));
+    assert.ok(결과 && 결과.실패 && /git add 실패/.test(결과.실패),
+      `lock 실패를 삼키거나 「사라짐」으로 접었다: ${JSON.stringify(결과)} — 파일이 있는데 안 거두고 지나가면 F025 유실로 간다`);
+    assert.strictEqual(커밋수(g), 전);
+  } finally { 복원(); fs.rmSync(path.join(gitdir, 'index.lock'), { force: true }); }
+});
+
 /* ── 등록층 — 가드·수거는 로직보다 등록층에서 샌다(CLAUDE.md 맹점 목록) ────────────────── */
 
 test('등록: SessionStart 훅이 인계문수거 --hook 을 이식 가능한 꼴로 부른다', () => {
