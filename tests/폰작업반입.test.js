@@ -24,7 +24,8 @@ const G = (cwd) => (...a) => spawnSync('git',
   { cwd, encoding: 'utf8' });
 
 /** origin 역할 저장소에 `claude/*` 브랜치를 만들고, 그걸 클론해 작업본을 준다. */
-function 픽스처({ 브랜치 = 'claude/폰작업', 보드도바꾼다 = true, 보드만 = false, 장부도 = false } = {}) {
+function 픽스처({ 브랜치 = 'claude/폰작업', 보드도바꾼다 = true, 보드만 = false, 장부도 = false, 장부만 = false } = {}) {
+  if (장부만) { 보드만 = false; 보드도바꾼다 = false; 장부도 = true; }
   const 원본 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-반입-origin-'));
   임시들.push(원본);
   const go = G(원본);
@@ -41,14 +42,17 @@ function 픽스처({ 브랜치 = 'claude/폰작업', 보드도바꾼다 = true, 
   go('add', '-A'); go('commit', '-qm', 'seed');
 
   go('checkout', '-qb', 브랜치);
-  if (!보드만) {
+  if (!보드만 && !장부만) {
     fs.writeFileSync(path.join(원본, '폰산출물.md'), '폰이 만든 것\n');
     fs.writeFileSync(path.join(원본, '폰빌더.js'), 'console.log(1);\n');
   }
   if (보드도바꾼다 || 보드만) fs.writeFileSync(path.join(원본, 'docs', '세션보드.md'), '| 폰이 본 낡은 보드 |\n');
   if (장부도) {
     // 폰: 있던 행의 문구를 고치고(F002), 자기 신호를 손번호로 붙인다(F003 은 master 와 충돌·F004 는 새것).
-    fs.writeFileSync(path.join(원본, 장부), 장부글([
+    fs.writeFileSync(path.join(원본, 장부), 장부글(장부만 ? [
+      '| F001 | 2026-08-01 | 실수 | 첫 신호 | |',
+      '| F002 | 2026-08-02 | 마찰 | 둘째 신호 (폰이 문구를 고쳤다) | |',
+    ] : [
       '| F001 | 2026-08-01 | 실수 | 첫 신호 | |',
       '| F002 | 2026-08-02 | 마찰 | 둘째 신호 (폰이 문구를 고쳤다) | |',
       '| F003 | 2026-08-07 | 마찰 | 폰이 손으로 매긴 번호 — master 의 F003 과 다른 사건 | |',
@@ -201,6 +205,21 @@ test('🔴 갈라진 뒤 master 가 고친 파일은 덮지 않고 건너뛴다'
   const 본문 = G(repo)('log', '--format=%B', '-2').stdout;
   assert.match(본문, /git checkout \S+ -- "?폰산출물\.md/,
     '폰 판을 쓰려면 어떻게 하는지 안 주면 따를 수 없는 처방이다(F103)');
+});
+
+/* 실측 `hftriw`: 폰이 장부의 세 행 **문구만** 고쳤다. 전부 내 판을 남기니 파일이 안 바뀌고,
+ * `git commit` 은 커밋할 게 없어 exit 1 로 죽었다 — 그럼 브랜치는 영원히 대기로 뜨고
+ * 안 실은 폰 행은 **어디에도 안 남는다**. 0건과 같은 자리다: 이력과 버린 것은 남긴다. */
+test('🔴 합쳐도 바뀌는 게 없으면 — 멈추지 말고 이력에 남긴다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, 브랜치 } = 픽스처({ 장부만: true });
+  const r = 돌린다(repo, ['--받기', 브랜치]);
+  assert.strictEqual(r.코드, 0, '커밋할 게 없다고 죽었다 — 이 브랜치는 대기 목록에서 안 빠진다\n' + r.글);
+  assert.doesNotMatch(읽기(repo, 장부), /폰이 문구를 고쳤다/, '폰 판으로 덮었다');
+
+  const 본문 = G(repo)('log', '--format=%B', '-1').stdout;
+  assert.match(본문, /병합 이력/, '이력을 안 남기면 대기 목록에서 안 빠진다');
+  assert.match(본문, /폰이 문구를 고쳤다/, '안 실은 폰 행이 어디에도 안 남았다 — 조용한 유실이다');
+  assert.doesNotMatch(돌린다(repo).글, /받으려면/, '이력을 남겼는데 아직 대기로 잡힌다');
 });
 
 test('행합치기 — 같은 번호는 내 판, 없는 번호만 붙인다 (개행은 내 판을 따른다)', () => {
