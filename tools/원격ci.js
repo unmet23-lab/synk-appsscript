@@ -78,6 +78,23 @@ function 판정({ runs, 담는가 }) {
   return { 상태: 완료[0].conclusion === 'success' ? '초록' : '적색', run: 완료[0], 판정불가, 담긴: 담긴.length };
 }
 
+/* 🔴 적색에도 두 종류가 있다 — 「코드가 깨졌다」와 「한 스텝도 안 돌았다」. 후자(F210: 결제
+ * 실패·지출 한도로 job 미기동 · run 은 3초 만에 failure 로 «완료»된다)를 같은 ❌ 로 내면
+ * 처방(--log-failed)이 빈 로그를 가리키고, 세션마다 ANNOTATIONS 를 손으로 열어 판별을
+ * 재도출한다(08-07 실측: 보드 줄 4개가 각자 재도출). 판별은 jobs 의 steps 로 간다 —
+ * 미기동 job 은 스텝이 아예 없다(annotation·로그는 표시층이라 기계 판별이 불안정하다). */
+function 미기동인가(jobs) {
+  return (jobs || []).every((j) => !(j.steps || []).length);
+}
+
+/* 적색일 때만 한 번 더 — 그 run 의 jobs 를 읽는다. 못 읽으면 null 로 물러나
+ * 평소 적색 문구를 낸다(이 보강이 기본 판정을 죽이면 안 된다). */
+function jobs조회(runId) {
+  const g = sh('gh', ['run', 'view', String(runId), '--json', 'jobs']);
+  if (!g.ok) return null;
+  try { return JSON.parse(g.out).jobs || []; } catch (_) { return null; }
+}
+
 /* gh 를 못 돌리면 「모름」으로 끝낸다 — 빈 목록을 돌려주면 그게 「미검증」으로 둔갑한다. */
 function gh조회(브랜치, 창) {
   const gh = sh('gh', ['run', 'list', `--workflow=${CI_워크플로}`, '--branch', 브랜치,
@@ -128,8 +145,15 @@ function main() {
 
   if (r.상태 === '초록') console.log(`[원격ci] ✅ 초록 — ${짧게} 를 담은 ${run쪽} 통과`);
   else if (r.상태 === '적색') {
-    console.log(`[원격ci] ❌ 적색 — ${짧게} 를 담은 ${run쪽} 이 ${r.run.conclusion}`);
-    console.log(`   → gh run view ${r.run.databaseId} --log-failed`);
+    const jobs = jobs조회(r.run.databaseId);
+    if (jobs && 미기동인가(jobs)) {
+      console.log(`[원격ci] ⛔ 미기동 — ${짧게} 를 담은 ${run쪽} 이 ${r.run.conclusion} 인데 **한 스텝도 안 돌았다**(job 미기동).`);
+      console.log('   코드 적색이 아니다 — 시작 전에 막혔다(결제 실패·지출 한도·취소 · F210 계열). 코드는 여전히 미검증이다.');
+      console.log(`   → 사유는 gh run view ${r.run.databaseId} 의 ANNOTATIONS 에 있다(로그는 비어 있다)`);
+    } else {
+      console.log(`[원격ci] ❌ 적색 — ${짧게} 를 담은 ${run쪽} 이 ${r.run.conclusion}`);
+      console.log(`   → gh run view ${r.run.databaseId} --log-failed`);
+    }
   } else if (r.상태 === '대기') {
     console.log(`[원격ci] ⏳ 대기 — ${짧게} 를 담은 ${run쪽} 이 아직 ${r.run.status}. 초록이 아니다.`);
   } else if (r.상태 === '미push') {
@@ -149,4 +173,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { 판정, 상태결정, 브랜치정하기, 담는가만들기, CI_워크플로 };
+module.exports = { 판정, 상태결정, 브랜치정하기, 담는가만들기, 미기동인가, CI_워크플로 };
