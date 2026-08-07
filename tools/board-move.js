@@ -90,19 +90,26 @@ const archiveLines = archiveText.split(/\r?\n/);
 const sep = archiveLines.findIndex((l) => /^\s*---\s*$/.test(l));
 if (sep === -1) die('아카이브에서 `---` 구분선을 못 찾았다 — 구조가 바뀌었으면 이 도구를 먼저 고쳐라.');
 const insertAt = archiveLines[sep + 1] === '' ? sep + 2 : sep + 1;
+/* 🔴 F226 — **앞선 실행이 남긴 잔재를 다시 삽입하지 않는다.**
+ * ①이 아카이브를 쓴 뒤 ②(단독 커밋)가 남의 `.git/index.lock` 에 막혀 죽으면 삽입만 된 채 남는다.
+ * 그 상태로 재실행하면 아래 「행 수 +1」 검증은 **중복도 통과시킨다**(같은 줄이 두 번 실린다). */
+const 이미있음 = archiveLines.some((l) => l.trim() === row.trim());
 const newArchiveLines = archiveLines.slice();
-newArchiveLines.splice(insertAt, 0, row);
+if (!이미있음) newArchiveLines.splice(insertAt, 0, row);
 const newArchive = newArchiveLines.join(archiveEol);
 
 // ── 쓰기 전 검증 — 하나라도 어긋나면 아무것도 쓰지 않는다 ──────────
 const problems = [];
 if (!newArchive.includes(row)) problems.push('새 아카이브에 그 줄이 없다(삽입 실패 — F046이 바로 이것)');
 if (newBoard.includes(row)) problems.push('새 보드에 그 줄이 남아 있다(삭제 실패)');
-if (rowsIn(newArchive).length !== rowsIn(archiveText).length + 1) problems.push('아카이브 행 수가 +1이 아니다');
+if (rowsIn(newArchive).length !== rowsIn(archiveText).length + (이미있음 ? 0 : 1)) {
+  problems.push(`아카이브 행 수가 ${이미있음 ? '그대로가' : '+1이'} 아니다`);
+}
 if (rowsIn(newBoard).length !== rowsIn(boardText).length - 1) problems.push('보드 행 수가 -1이 아니다');
 if (problems.length) die('검증 실패 — 아무것도 쓰지 않았다:\n- ' + problems.join('\n- '));
 
 console.log(`  옮길 줄: ${row.slice(0, 90)}${row.length > 90 ? '…' : ''}`);
+if (이미있음) console.log('  ↻ 아카이브에 그 줄이 **이미 있다**(앞선 실행의 잔재) — 다시 삽입하지 않는다(F226).');
 console.log(`  보드 ${JSON.stringify(boardEol)} · 아카이브 ${JSON.stringify(archiveEol)} (실측)`);
 
 /* ── git 자리를 **쓰기 전에** 잰다 ────────────────────────────────
@@ -180,12 +187,32 @@ const archiveDirty = inRepo ? dirtyOf(ARCHIVE) : '';
 const boardDirty = inRepo ? dirtyOf(BOARD) : '';
 
 /* ⛔ 아카이브에 남의 미커밋이 있으면 **아무것도 쓰지 않고** 멈춘다.
- * 여기서 커밋하면 남의 삽입을 함께 실어간다(F073 역방향). 안 쓰고 멈추면 줄은 보드에 그대로라 안전하다. */
-if (archiveDirty) {
-  die('아카이브에 이관 전부터 미커밋이 있다 — 내 커밋이 남의 것을 실어가므로 **아무것도 쓰지 않았다**:\n' +
+ * 여기서 커밋하면 남의 삽입을 함께 실어간다(F073 역방향). 안 쓰고 멈추면 줄은 보드에 그대로라 안전하다.
+ *
+ * 🔴 단 **내 앞선 실행의 잔재는 예외다**(F226 · F103 축). ①이 쓴 뒤 ②(단독 커밋)가 남의
+ * `.git/index.lock` 에 막혀 죽으면 삽입만 된 채 미커밋으로 남는데, 이 검사가 그것을 「남의 것」으로
+ * 읽어 **이후 모든 재실행이 거부**됐다 — 즉 만석 처방(board-guard 가 내주는 이 명령)이 첫 실패 한 번에
+ * 통째로 죽는다. 이 저장소는 세션 9~15개가 동시에 도는 게 일상이라 lock 경합은 예외가 아니다.
+ * 가르는 재료는 HEAD 대비 차분이다 — **추가가 옮기려던 그 줄 하나, 삭제 0**(남의 삽입이면 딴 줄이 뜬다). */
+const 내잔재뿐 = () => {
+  const r = git(['show', `HEAD:${rel(ARCHIVE)}`], root);
+  if (r.status !== 0) return false;
+  const 빼기 = (a, b) => {
+    const m = new Map();
+    for (const l of b) m.set(l, (m.get(l) || 0) + 1);
+    return a.filter((l) => { const n = m.get(l) || 0; return n ? (m.set(l, n - 1), false) : true; });
+  };
+  const 있던것 = r.stdout.split(/\r?\n/).map((l) => l.trim());
+  const 지금것 = archiveText.split(/\r?\n/).map((l) => l.trim());
+  const 더해진것 = 빼기(지금것, 있던것);
+  return 빼기(있던것, 지금것).length === 0 && 더해진것.length === 1 && 더해진것[0] === row.trim();
+};
+if (archiveDirty && !내잔재뿐()) {
+  die('아카이브에 이관 전부터 **남의** 미커밋이 있다 — 내 커밋이 그것을 실어가므로 **아무것도 쓰지 않았다**:\n' +
     '  ' + archiveDirty.split(/\r?\n/).join('\n  ') + '\n' +
     '  그 세션이 커밋한 뒤 다시 돌려라(줄은 보드에 그대로 있어 잃을 게 없다).');
 }
+if (archiveDirty) console.log('  ↻ 그 미커밋은 **내 앞선 실행의 잔재**다(추가 1줄·삭제 0) — 이어서 커밋한다(F226).');
 
 /* ── ① 아카이브를 쓰고 **아카이브만 단독 커밋**한다 ────────────────
  * 순서가 곧 durability 다. 이 저장소의 보장 경계는 파일시스템이 아니라 **git 커밋**이고,
