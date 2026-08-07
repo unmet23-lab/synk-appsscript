@@ -24,6 +24,17 @@ function deny(reason) {
   process.exit(0);
 }
 
+/* ── 순서: **되돌릴 수 없는 것을 먼저 말한다** (마찰 F221 · 2026-08-08 실측) ──────
+ * ①②③은 `deny` 로 즉시 끝내고 ④(자리 겹침)는 파일 맨 뒤에 있었다. 그래서 **만석이면 ④ 가
+ * 구조적으로 침묵한다** — 그리고 만석은 이 저장소의 일상이다(F224 가 방금 그 처방을 세웠다).
+ * 실물: 내 F226 선언이 「표가 19줄이 된다」에만 막혀, 0분 전 남이 **같은 트랙·같은 파일**을
+ * 선언한 것을 한 마디도 못 들었다. 알아챈 통로는 가드가 아니라 board-move 부산물이었다.
+ * 비대칭이 뿌리다 — 칸 초과·만석은 **되돌릴 수 있는 불편**(문장을 줄이거나 줄을 옮기면 끝)이고,
+ * 겹침은 **되돌릴 수 없는 손해**(중복 구현·조사 낭비)다. 되돌릴 수 있는 쪽이 앞을 막고 있었다.
+ * 그래서 ①②③은 사유를 **보류**만 하고, ④를 지난 뒤에 낸다(막는 힘은 그대로다 — 순서만 바뀐다). */
+let 보류 = null;
+const 미룬deny = (reason) => { if (보류 === null) 보류 = reason; };
+
 let input;
 try {
   input = JSON.parse(fs.readFileSync(0, 'utf8'));
@@ -248,7 +259,7 @@ if (resulting !== null) {
   }
 }
 if (longCells.length) {
-  deny(
+  미룬deny(
     '[board-guard] 세션보드 칸 길이 초과(칸당 ' + MAX_CELL + '자):\n- ' +
       longCells.join('\n- ') +
       '\n→ 보드 줄은 **선언만**이다. 보고·판정 본문은 memory/ 토픽 파일이나 docs/ 정본에 쓰고, 상태 칸에는 한 줄 요약 + 그 링크만 남길 것.'
@@ -265,13 +276,16 @@ if (resulting !== null) {
   try {
     cur = fs.readFileSync(filePath, 'utf8');
   } catch (_) {
-    process.exit(0); // 파일을 못 읽으면 판단 불가 — 통과
+    /* 파일을 못 읽으면 ②는 판단 불가다. 다만 **①의 보류까지 함께 삼키면 안 된다** —
+     * 보류는 F221 수리로 생긴 상태고, 여기서 조용히 나가면 칸 초과가 통과가 된다(새는 방향). */
+    if (보류 !== null) deny(보류);
+    process.exit(0);
   }
   total = countRows(cur) + delta;
   active = countActive(cur) + activeDelta;
 }
 if (active > MAX_ACTIVE) {
-  deny(
+  미룬deny(
     `[board-guard] 세션보드 활성 줄이 ${active}줄이 된다(상한 ${MAX_ACTIVE}줄).\n` +
       '→ 활성 줄이 이만큼이면 조율이 아니라 소음이다. 끝난 트랙의 상태를 먼저 완료 표기로 갱신하거나, 남의 줄이 아니라 내 줄을 합쳐라.' +
       표기안내() +
@@ -279,7 +293,7 @@ if (active > MAX_ACTIVE) {
   );
 }
 if (total > MAX_ROWS) {
-  deny(
+  미룬deny(
     `[board-guard] 세션보드 표가 ${total}줄이 된다(상한 ${MAX_ROWS}줄).\n` +
       '→ 오래된 **완료** 줄부터 docs/세션보드_아카이브.md 맨 위로 옮긴 뒤 다시 시도할 것. 활성(작업중·진행중·대기) 줄은 남긴다.' +
       이관처방(resulting !== null ? resulting : (() => { try { return fs.readFileSync(filePath, 'utf8'); } catch (_) { return ''; } })())
@@ -328,7 +342,7 @@ if (resulting !== null && 내id) {
       .filter((l) => !옛트랙.has(트랙칸(l)))
       .filter((l) => !주인말함(l));
     if (무명.length) {
-      deny(
+      미룬deny(
         '[board-guard] 새 보드 줄에 **주인 표식이 없다**(F165):\n- ' +
           무명.map((l) => 트랙칸(l).replace(/\*/g, '').slice(0, 50) + '…').join('\n- ') +
           `\n→ 줄 어딘가에 **내 세션 지문 \`local_${내지문}\`** 를 적어라 — **\`local_\` 접두까지 그대로**` +
@@ -372,11 +386,20 @@ if (resulting !== null && 내id) {
 const 장부RE = /(세션보드|마찰신호|버전_이력|지침_이력)/;
 const 표식 = require(path.join(__dirname, 'lib', '표식.js')); // 번호 규칙은 한 곳에서만 산다(F203)
 
+/* 🚫 로 시작하는 항목은 **안 만진다는 명시**지 선점이 아니다 (마찰 F221 · 2026-08-08 실측).
+ * 이 보드의 관습은 「만지는 파일」 칸에 비켜난 자리까지 함께 적는 것이다 —
+ * `(🚫tools/board-move.js=local_0a3a2a04 · 🚫보드 외 docs · talk 편집 0)`.
+ * 그것을 자리로 세면 **비켜났다고 적을수록 막힌다.** 실물: 내 F221 선언이 「board-move.js 는
+ * 남의 것이라 안 만진다」고 적었다는 이유로 차단됐고, 나는 그 표기를 지워서 통과시켰다 —
+ * 거짓 차단이 곧 우회다(F103). 관습을 정직하게 쓸수록 벌받는 가드는 관습을 죽인다.
+ * 스팬 경계는 사람이 실제로 쓰는 구분자 ` · ` 다(항목 안에 붙은 `·` 는 같은 금지 항목이다). */
+const 금지스팬빼기 = (칸) => 칸.split(/\s·\s/).filter((조각) => !조각.includes('🚫')).join(' · ');
+
 function 자리들(line) {
   const 자리 = new Set();
   const 머리 = 표식.머리(트랙칸(line));
   if (머리) 자리.add(머리);
-  for (const m of 파일칸(line).matchAll(/[\w가-힣./_-]+\.(?:ts|tsx|js|jsx|mjs|cjs|gs|json|html|md|sql|ya?ml)\b/g)) {
+  for (const m of 금지스팬빼기(파일칸(line)).matchAll(/[\w가-힣./_-]+\.(?:ts|tsx|js|jsx|mjs|cjs|gs|json|html|md|sql|ya?ml)\b/g)) {
     const p = m[0].replace(/^(?:\.\.?\/)+/, '').toLowerCase();
     if (p.split('/').length < 2 || 장부RE.test(p)) continue;
     자리.add(p);
@@ -421,4 +444,7 @@ if (resulting !== null && 이전 !== null) {
     }
   }
 }
+
+/* ④ 를 지났으니 이제 ①②③ 의 보류 사유를 낸다(F221 · 막는 힘은 그대로, 순서만 뒤다). */
+if (보류 !== null) deny(보류);
 process.exit(0);
