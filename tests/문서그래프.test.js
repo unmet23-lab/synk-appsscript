@@ -321,3 +321,50 @@ test('실저장소: 지도에 실렸다고 판정한 문서는 진짜로 실려 
     assert.ok(지도.includes(path.basename(r)), `${r} 을 「실렸다」로 판정했는데 지도 본문에 없다`);
   }
 });
+
+/* [2026-08-08 · F243] 정본을 **구현하는 코드**가 그래프 밖에 있었다.
+ * 실측: 급여 정본 v1.6 이 재등록 배점을 30점으로 올렸을 때 문서 파생 5종은 전부 @v1.6 으로 최신이었고,
+ * 낡은 것은 엣지가 없던 `엔진_운영배치.js` 하나였다 — 그래서 doc-propagation 도 rot-check 도 안 울렸다.
+ * 탐지 능력은 아래 픽스처가 진다(실저장소 엣지 개수에 기대면 그것을 고치는 날 테스트가 깨진다). */
+const 루트코드픽스처 = (stem, 본문) => {
+  const f = path.join(ROOT, `${stem}.js`);
+  fs.writeFileSync(f, 본문, 'utf8');
+  return f;
+};
+
+test('코드 파일도 파생이다 — 루트 .js 의 엣지를 읽고 낡으면 잡는다(픽스처)', () => {
+  const stem = `docgraph-code-${process.pid}`;
+  const canon = path.join(ROOT, 'docs', `${stem}_정본.md`);
+  fs.writeFileSync(canon, '# 임시 정본 v3.1 — 시험용\n', 'utf8');
+  // 진짜 코드처럼 `//` 주석 안에 둔다 — 실제 심는 자리가 그 모양이다.
+  const code = 루트코드픽스처(stem, `// 임시 코드\n// <!-- 파생: docs/${stem}_정본.md@v1.0 -->\nfunction a_() { return 1; }\n`);
+  try {
+    const g = G.build();
+    assert.ok(g.docs.has(`${stem}.js`), '루트 .js 가 그래프에 아예 안 들어왔다');
+    const hit = g.stale.find((s) => s.from === `${stem}.js`);
+    assert.ok(hit, '정본이 v3.1 인데 v1.0 을 인용하는 **코드**를 못 잡았다');
+    assert.strictEqual(hit.cited, 'v1.0');
+    assert.strictEqual(hit.now, 'v3.1');
+    // 정본을 편집하는 세션에게 이 코드가 파생으로 보여야 한다(doc-propagation 이 쓰는 바로 그 목록).
+    assert.ok((g.derivedOf.get(`docs/${stem}_정본.md`) || []).includes(`${stem}.js`),
+      'derivedOf 에 안 실리면 정본을 고치는 세션에게 코드가 안 보인다');
+  } finally {
+    fs.unlinkSync(canon);
+    fs.unlinkSync(code);
+  }
+});
+
+test('코드 스캔은 루트에서 멈춘다 — 하위 폴더로 내려가면 node_modules 를 훑는다', () => {
+  const g = G.build();
+  const 하위 = [...g.docs.keys()].filter((r) => /\.js$/i.test(r) && r.includes('/'));
+  assert.deepStrictEqual(하위, [], '루트 밖 .js 가 들어왔다 — 재귀로 새면 node_modules·.git 까지 읽는다');
+  assert.ok([...g.docs.keys()].some((r) => /^[^/]+\.js$/i.test(r)), '루트 .js 를 하나도 못 읽었다');
+});
+
+test('실저장소: 코드 파생에서 거짓양성이 안 난다(깨진 링크·이미 맞춘 인용)', () => {
+  const g = G.build();
+  const isJs = (r) => /\.js$/i.test(r);
+  assert.deepStrictEqual(g.broken.filter((b) => isJs(b.from)), [], '코드가 없는 정본을 가리킨다');
+  assert.deepStrictEqual(g.stale.filter((s) => isJs(s.from) && s.cited === s.now), [],
+    '인용한 값 = 지금 값인데 낡음으로 올렸다');
+});
