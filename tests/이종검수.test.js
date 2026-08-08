@@ -190,6 +190,76 @@ test('사유 없는 기각은 거부된다 — 왜 무시하는지 못 적으면
   assert.notStrictEqual(r.status, 0, '사유 없는 기각이 통과했다');
 });
 
+// ───────────────────────────────── 실패 판별 (F249 — 「확인 불가」가 원인을 가리면 안 된다)
+
+/* 픽스처는 **실측한 그 바이트**다(2026-08-08 · codex-cli 0.146.0 을 실제로 실패시켜 받아 적었다).
+ * 지어낸 모양으로 검사하면 배너 문구가 조금만 달라도 통과하면서 현장에선 그대로 샌다(맹점 ①). */
+const 배너 = [
+  'OpenAI Codex v0.146.0', '--------',
+  'workdir: C:\\Users\\q1212\\Documents\\SYNK-appsscript',
+  'model: gpt-5.6-sol', 'provider: openai', 'approval: never', 'sandbox: read-only',
+  'reasoning effort: xhigh', 'reasoning summaries: none',
+  'session id: 019fe050-2b93-7ea0-9142-60194347ca81', '--------',
+];
+const 타임아웃err = { signal: 'SIGTERM', status: null, stderr: [...배너, 'user', '1+1?', ''].join('\n') };
+const 실행중err = {
+  signal: null, status: 1,
+  stderr: [...배너, 'user', 'hi', '',
+    'warning: Model metadata for `no-such-model-xyz` not found. Defaulting to fallback metadata; this can degrade performance and cause issues.',
+    'ERROR: {"type":"error","status":400,"error":{"type":"invalid_request_error","message":"The \'no-such-model-xyz\' model is not supported when using Codex with a ChatGPT account."}}',
+  ].join('\n'),
+};
+const 인자err = {
+  signal: null, status: 2,
+  stderr: ["error: invalid value 'bogus-value' for '--sandbox <SANDBOX_MODE>'",
+    '  [possible values: read-only, workspace-write, danger-full-access]', '',
+    "For more information, try '--help'."].join('\n'),
+};
+
+test('🔑 타임아웃과 실행 중 실패가 **다른 문장**으로 나온다 — 같은 모양이면 원인 판별이 원리상 불가능하다', () => {
+  const a = 검수.실패요점(타임아웃err, 900000, 'codex 검수');
+  const b = 검수.실패요점(실행중err, 900000, 'codex 검수');
+  assert.notStrictEqual(a, b, '두 실패가 같은 문장으로 나왔다 — F249 가 그대로 재발한다');
+});
+
+test('🔑 타임아웃은 signal 로 가른다 — 실측에서 e.killed 는 undefined 였다(그걸 봤으면 조용히 샌다)', () => {
+  assert.strictEqual(타임아웃err.killed, undefined, '픽스처 전제가 깨졌다 — killed 를 봐도 되는 상황이면 이 검사는 무의미하다');
+  const 문장 = 검수.실패요점(타임아웃err, 900000, 'codex 검수');
+  assert.match(문장, /타임아웃/, '타임아웃을 타임아웃이라 부르지 않았다');
+  assert.match(문장, /900/, '소진한 초를 안 밝혔다 — 얼마를 기다렸는지 모르면 얼마로 늘릴지도 모른다');
+});
+
+test('🔑 타임아웃 처방이 **실행 가능한 명령**이다 — 그 플래그를 도구가 실제로 안다 (F103 자기 처방)', () => {
+  const 문장 = 검수.실패요점(타임아웃err, 900000, 'codex 검수');
+  const m = 문장.match(/--timeout (\d+)/);
+  assert.ok(m, '늘릴 명령을 안 줬다 — 따를 수 없는 처방은 우회를 정상 통로로 만든다');
+  assert.ok(검수.값플래그.includes('--timeout'), '처방이 시키는 --timeout 을 인자 파서가 모른다');
+  assert.ok(Number(m[1]) > 900, '소진한 값보다 크게 늘리라고 하지 않았다');
+});
+
+test('🔑 실행 중 실패는 stderr **맨 뒤**를 보인다 — 배너가 앞 11줄이라 앞을 자르면 영영 배너만 보인다', () => {
+  const 문장 = 검수.실패요점(실행중err, 900000, 'codex 검수');
+  assert.match(문장, /invalid_request_error/, '진짜 오류 줄이 안 실렸다');
+  assert.doesNotMatch(문장, /OpenAI Codex|workdir:|session id:/, '배너가 그대로 실렸다 — F249 그 자체다');
+});
+
+test('배너가 없는 인자 오류는 그대로 보인다 — 필터가 멀쩡한 오류까지 먹으면 안 된다', () => {
+  const 문장 = 검수.실패요점(인자err, 900000, 'codex 검수');
+  assert.match(문장, /invalid value 'bogus-value'/, '배너 필터가 진짜 오류를 먹었다');
+});
+
+test('stderr 가 배너뿐이면 **그 사실을 말한다** — 빈 문장이 「원인 없음」으로 읽히면 안 된다', () => {
+  const 문장 = 검수.실패요점({ signal: null, stderr: 배너.join('\n') }, 900000, 'codex 검수');
+  assert.match(문장, /배너뿐/, '걸러낸 결과가 비었는데 조용했다');
+});
+
+test('검수 기본 타임아웃이 심문보다 짧지 않다 — 더 무거운 쪽이 더 짧으면 「확인 불가」만 쌓인다 (F249 ③)', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'tools', 'codex-review.js'), 'utf8');
+  const 기본값들 = [...src.matchAll(/argv\.indexOf\('--timeout'\) \+ 1\]\) : (\d+);/g)].map((m) => Number(m[1]));
+  assert.strictEqual(기본값들.length, 2, '타임아웃 기본값 자리가 2곳이 아니다 — 검사가 실제 코드를 못 짚고 있다');
+  assert.ok(Math.min(...기본값들) >= 1800, `기본 타임아웃이 실측(15분+)보다 짧다: ${기본값들.join(', ')}`);
+});
+
 // ───────────────────────────────── 등록층 (가드가 실제로 이걸 부르는가)
 
 test('🔑 등록층은 **워크트리 아닌 cwd** 로 훅을 띄운다 — 호스트가 워크트리면 규칙 0 이 먼저 답한다 (F217)', () => {

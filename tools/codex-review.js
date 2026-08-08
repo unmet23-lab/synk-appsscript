@@ -516,6 +516,26 @@ const 모델설정 = {
   구조화: { ...정책.구조화설정 },
 };
 
+/* 실패를 사람이 읽을 한 줄로 — **원인이 갈리게**. 실측 2026-08-08(F249 · 세 모양이 전부 다르다):
+ *   ①타임아웃   signal='SIGTERM' · status=null · stderr = 배너 + 프롬프트 echo (오류 줄 없음)
+ *   ②실행 중 실패 signal=null · status=1 · 오류는 stderr **맨 뒤**(앞 11줄은 배너)
+ *   ③인자 오류   signal=null · status=2 · 오류는 stderr 맨 앞(배너 자체가 없다)
+ * 앞 3줄을 자르면 ①②가 **배너 3줄로 완전히 같은 모양**이 되어 원인 판별이 원리상 불가능했다
+ * — 그래서 타임아웃을 로그인 만료로 오진하고 15분씩 태웠다(오늘 3연속).
+ * ⚠`e.killed` 는 쓰지 않는다 — 실측에서 타임아웃인데도 `undefined` 였다(가르는 건 `signal` 뿐).
+ * 뒤에서 자르는 이유는 ②다: 배너를 걷어내도 그 다음 줄은 프롬프트 echo 라 앞은 영영 쓸모없다. */
+const 배너줄 = /^(OpenAI Codex\b|-{5,}$|(workdir|model|provider|approval|sandbox|reasoning \w+|session id):)/i;
+
+function 실패요점(e, timeoutMs, 라벨) {
+  const 초 = Math.round((timeoutMs || 0) / 1000);
+  /* 타임아웃은 「안 돈다」가 아니라 「못 기다렸다」다 — 처방이 정반대라 먼저 가른다.
+   * 늘릴 값을 같이 준다: 처방이 그대로 실행 가능해야 우회가 정상 통로가 되지 않는다(F103). */
+  if (e && e.signal) return `${라벨} 타임아웃(${초}초 소진 · 죽은 게 아니라 못 기다린 것이다) — \`--timeout ${초 * 2}\` 로 늘려 다시 돌린다.`;
+  const 남은 = String((e && e.stderr) || (e && e.message) || e)
+    .split('\n').map((s) => s.trim()).filter((s) => s && !배너줄.test(s));
+  return `${라벨} 실패: ` + (남은.slice(-3).join(' / ') || '(stderr 에 배너뿐 — 원인 줄이 없다)');
+}
+
 function codex(args, 입력, timeoutMs, 라벨) {
   const isWin = process.platform === 'win32';
   const bin = isWin ? path.join(process.env.APPDATA || '', 'npm', 'codex.cmd') : 'codex';
@@ -530,8 +550,9 @@ function codex(args, 입력, timeoutMs, 라벨) {
     );
   } catch (e) {
     /* 실행 자체가 실패했다 = **확인 불가**다. 여기서 「지적 0건」으로 접으면 거짓 초록이 된다. */
-    const err = new Error(`${라벨} 실패: ` + String((e && e.stderr) || (e && e.message) || e).split('\n').slice(0, 3).join(' / '));
+    const err = new Error(실패요점(e, timeoutMs, 라벨));
     err.확인불가 = true;
+    err.타임아웃 = !!(e && e.signal);
     throw err;
   }
 }
@@ -916,7 +937,10 @@ function main(argv) {
     return 2;
   }
 
-  const 초 = argv.includes('--timeout') ? Number(argv[argv.indexOf('--timeout') + 1]) : 900;
+  /* 900 이 아닌 이유(F249 · 2026-08-08 실측): max 추론 검수가 900 초를 넘겼고, 타임아웃 없이
+   * 직접 돌리니 15분을 넘겨 **완주해 P1 1건·P2 2건을 냈다** — 안 도는 게 아니라 못 기다린 것이었다.
+   * 심문(위)이 1800 인데 더 무거운 검수가 900 이던 역전을 없앤다. */
+  const 초 = argv.includes('--timeout') ? Number(argv[argv.indexOf('--timeout') + 1]) : 1800;
 
   // ① 설계 선파악 모드 — 버그 검수 대신 기능지도+업그레이드 제안만 내고 끝낸다
   if (argv.includes('--제안')) {
@@ -945,7 +969,8 @@ function main(argv) {
   } catch (e) {
     if (e.확인불가) {
       console.error('🔴 확인 불가 — 검수가 **안 돌았다**(통과가 아니다): ' + e.message);
-      console.error('   codex 로그인 상태는 `codex login status` 로 본다.');
+      // 타임아웃엔 로그인을 의심시키지 않는다 — F249 1회차가 이 힌트를 따라가 시간을 버렸다.
+      if (!e.타임아웃) console.error('   codex 로그인 상태는 `codex login status` 로 본다.');
       return 2;
     }
     throw e;
@@ -1042,6 +1067,7 @@ function main(argv) {
 
 module.exports = {
   게이트판정, 유효지문, 키, 범위, 대상결정, 미커밋파일들, 차단급, 기록경로, 기각경로, 모델설정, 효력들, 모델플래그, 잠금플래그, 외부도구들,
+  실패요점,
   값플래그, 홑플래그, 아는플래그,
   제안경로, 제안키, 제안현황, 제안프롬프트, 선파악행들, 기능체크프롬프트, 기능체크지적들, 채택제안줄들, 방향텍스트, 방향지문, 방향경로, 방향상한, 디프상한,
   변경지문, 선파악지도, 미확인기능들, 학습데이터줄들,
