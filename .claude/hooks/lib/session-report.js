@@ -16,6 +16,9 @@ const wt = require(path.join(__dirname, 'worktrees.js'));
 const store = require(path.join(__dirname, 'handoff-store.js'));
 const 보드id = require(path.join(__dirname, 'board-id.js'));
 const 표 = require(path.join(__dirname, '..', '..', '..', 'tools', 'lib', '표.js'));
+/* 보드 정본은 `docs/_ops/보드/` 의 세션별 파일이다(F250). 표는 읽을 때 조립되고 디스크에
+ * 없으므로 여기서 파일을 열지 않는다 — 모양은 옛 세션보드.md 와 같아서 아래 파싱은 그대로다. */
+const 보드 = require(path.join(__dirname, '..', '..', '..', 'tools', 'lib', '보드.js'));
 
 function git(cwd, args, timeout) {
   try {
@@ -103,7 +106,8 @@ function hostSessionId(fallback) {
  */
 function boardTrack(cwd, commits, sid) {
   let txt;
-  try { txt = fs.readFileSync(path.join(String(cwd || '.'), 'docs', '세션보드.md'), 'utf8'); } catch (_) { return null; }
+  txt = 보드.텍스트(String(cwd || '.'));
+  if (txt === null) return null;   // 폴더를 못 읽었다 ≠ 줄이 없다 (아래 문구가 그 차이에 기댄다)
   const hashes = (commits || []).map((c) => String(c).split(' ')[0]).filter((h) => /^[0-9a-f]{7,40}$/.test(h));
   if (!hashes.length && !보드id.지문(sid)) return null;
 
@@ -159,7 +163,8 @@ function boardTrack(cwd, commits, sid) {
  */
 function 무주줄(cwd) {
   let txt;
-  try { txt = fs.readFileSync(path.join(String(cwd || '.'), 'docs', '세션보드.md'), 'utf8'); } catch (_) { return null; }
+  txt = 보드.텍스트(String(cwd || '.'));
+  if (txt === null) return null;   // 폴더를 못 읽었다 ≠ 줄이 없다 (아래 문구가 그 차이에 기댄다)
   return txt.split('\n').filter((line) => {
     if (line[0] !== '|' || !/\b20\d\d-\d\d-\d\d\b/.test(line)) return false;
     if (보드id.줄의지문(line).length) return false;   // ← 지문 줄은 여기서 끝. 아래 해시 검사에 안 닿는다.
