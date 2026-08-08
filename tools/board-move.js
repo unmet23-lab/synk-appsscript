@@ -155,13 +155,25 @@ const 산주인 = (() => {
   const 나 = store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
   const 산 = new Map(owner.세션들(root).filter(owner.살았나).map((s) => [s.sid, s]));
   if (!산.size) return [];
+  /* 🔴 해시는 **형제 저장소에서도** 찾는다 (F242 · 2026-08-08). 이 저장소에서만 `rev-parse` 하면
+   *   talk 커밋 해시가 「해시처럼 생긴 딴 것」과 **같은 모양**(status!==0)이라 조용히 버려진다.
+   *   이 프로젝트는 트랙 절반이 talk 작업이라 그 사각은 예외가 아니라 상시다 — 실측 2026-08-08:
+   *   보드 「게임 4모듈」 줄은 지문 0 + 해시 전부 talk 이라 산주인 0 이었는데 주인은 25분 전 박동.
+   *   F165 가 메운 사각(해시가 아예 없는 줄)의 옆 칸이고, 새는 방향은 여기서도 「통과」다.
+   *   목록은 handoff-store 하나에서 파생시킨다(여기 좌표를 다시 적으면 갈라진다). */
+  const 저장소들 = [{ 뿌리: root, 저장소: null }, ...store.siblings(root)];
   const 걸린것 = new Map();
   for (const h of 해시들) {
-    if (git(['rev-parse', '--verify', '--quiet', `${h}^{commit}`], root).status !== 0) continue;  // 해시처럼 생긴 딴 것
-    const sid = ((git(['log', '-1', '--format=%(trailers:key=Session-Id,valueonly)', h], root).stdout || '')
-      .trim().split(/\r?\n/)[0] || '').trim();
-    if (!sid || sid === 나) continue;                         // 내 줄은 내가 옮긴다(/close 의 정상 경로)
-    if (산.has(sid) && !걸린것.has(sid)) 걸린것.set(sid, `${h} ← ${owner.짧게(sid)}·${산.get(sid).분}분 전`);
+    for (const { 뿌리, 저장소 } of 저장소들) {
+      if (git(['rev-parse', '--verify', '--quiet', `${h}^{commit}`], 뿌리).status !== 0) continue;  // 여기 것이 아니다
+      const sid = ((git(['log', '-1', '--format=%(trailers:key=Session-Id,valueonly)', h], 뿌리).stdout || '')
+        .trim().split(/\r?\n/)[0] || '').trim();
+      /* 내 줄은 내가 옮긴다(/close 의 정상 경로) · 트레일러가 없으면 남이라고 단정하지 않는다. */
+      if (sid && sid !== 나 && 산.has(sid) && !걸린것.has(sid)) {
+        걸린것.set(sid, `${h}${저장소 ? `(${저장소})` : ''} ← ${owner.짧게(sid)}·${산.get(sid).분}분 전`);
+      }
+      break;                                                  // 이 저장소가 그 해시를 안다 — 더 뒤질 필요 없다
+    }
   }
   /* 줄이 스스로 말하는 지문 — 커밋이 아직 하나도 없는 세션의 유일한 재료다. */
   const 산지문 = new Map([...산.values()].map((s) => [보드id.지문(s.sid), s]));
