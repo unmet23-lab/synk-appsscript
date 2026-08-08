@@ -559,12 +559,49 @@ for (let m; (m = 메시지인용.exec(cmd)) !== null;) {
       try {
         소유 = require(p.join(__dirname, '..', '..', 'tools', '작업본소유자.js'));
         const 나 = process.env.CLAUDE_CODE_HOST_SESSION_ID || '';
-        const 뿌리들 = [...new Set([gitCwd, p.join(__dirname, '..', '..')])];
-        const 산세션 = new Set(뿌리들.flatMap((r) => 소유.세션들(r)).filter(소유.살았나).map((s) => s.sid));
+        const 메인 = p.join(__dirname, '..', '..');
+        const 뿌리들 = [...new Set([gitCwd, 메인])];
+        /* sid → {좌표: 그 세션이 마지막으로 만진 ms}. 두 뿌리의 기록을 **합친다** — 좌표계가 달라
+         * (한쪽은 `docs/x`, 다른쪽은 `../SYNK-talk/docs/x`) 서로 덮지 않는다. 살았나 판정은 그대로. */
+        const 산세션 = new Map();
+        for (const r of 뿌리들) {
+          for (const s of 소유.세션들(r)) {
+            if (!소유.살았나(s)) continue;
+            산세션.set(s.sid, { ...(산세션.get(s.sid) || {}), ...s.검사시각 });
+          }
+        }
+        /* 🔑 F241 — 「남이 자기 줄을 **커밋한 뒤 제자리에서 고쳤다**」를 되돌림에서 뺀다 (2026-08-08).
+         *   아래 F189 는 부모를 **그 커밋이 지운 줄**로 재는데, 순수 추가 커밋(지운 줄 0)엔 그 흔적이
+         *   없어 「못 가르는 자리」로 막는 쪽에 남겼다. 그런데 **보드 선언 줄 추가가 정확히 그 형태다** —
+         *   세션이 자기 줄 한 개를 더하고, 진행에 따라 그 줄을 고친다. 실측 08-08: `local_c8e8aa51` 이
+         *   F239 선언 줄을 `7dd319a` 로 커밋한 뒤 같은 줄의 칸을 고쳤고, 그 다음 세션의 보드 커밋이
+         *   2회 연속 차단됐다. 처방(「그 줄을 되살려라」)은 **남의 더 새로운 편집을 내 손으로 되돌리는 것**
+         *   이라 F073 이 금지한 바로 그 행위다 = 따를 수 없는 처방, 남는 출구가 BYPASS 뿐(F103 축).
+         *
+         * 🔑 가르는 재료는 **줄 내용이 아니라 시계**다. 트리는 하나라, 그 세션이 커밋 뒤 그 파일을
+         *   만졌으면 그 편집 결과가 지금 내 작업본에 그대로 있다 — 즉 내 판은 그 커밋의 부모가 아니라
+         *   **후손**이고, 되돌림의 정의가 거짓이다. 재료는 `작업본소유자.세션들().검사시각`(track-collision
+         *   이 경로별로 찍는다) 하나를 **읽기만** 한다 — 여기서 새로 만들면 두 곳이 갈라진다.
+         *   ⚠ 반대 방향(`뒤늦은남의커밋`: 내가 만진 뒤 남이 커밋했나)과 같은 두 재료를 쓰지만 부등호가
+         *     반대다. 별개 판정이라 통로를 합치지 않는다.
+         *
+         * 남는 맹점 하나: 그 세션이 고친 **뒤에** 내 도구가 다시 옛 판으로 덮으면 여기서 통과한다.
+         *   그 경우 그 파일엔 그 세션의 미커밋이 반드시 있으므로 ⑧이 「함께 만졌다」로 받아 펼친다
+         *   (회귀가 그 사각 없음을 못박는다). 못 재면(기록 없음·같은 초) 모름이라 그대로 막는다. */
+        const 형제접두 = p.resolve(gitCwd) === p.resolve(메인) ? null : `../${p.basename(gitCwd)}/`;
+        const 커밋뒤만졌나 = (who, 파일, 커밋초) => {
+          const 기록 = 산세션.get(who);
+          if (!기록) return false;
+          const 때 = Math.max(0, ...[파일, 형제접두 && 형제접두 + 파일]
+            .filter(Boolean).map((k) => Number(기록[k]) || 0));
+          /* `%ct` 는 **초 절삭**이라 그 커밋의 실제 시각은 [ct, ct+1) 안 어디든이다. 같은 초는 「뒤」라고
+           * 단정할 수 없으니 모름으로 두고 막는 쪽에 남긴다 — 새는 방향이 통과다. */
+          return 때 > 0 && 때 >= (커밋초 + 1) * 1000;
+        };
         const g = (a) => execFileSync('git', ['-c', 'core.quotepath=false', ...a],
           { encoding: 'utf8', cwd: gitCwd, maxBuffer: 8 << 20 });
         for (const f of g(['diff', 'HEAD', '--name-only', '--', ...범위]).split('\n').filter(Boolean).slice(0, 20)) {
-          const [해시, ...본문] = g(['log', '-1', '--format=%H%n%B', '--', f]).split('\n');
+          const [해시, ct, ...본문] = g(['log', '-1', '--format=%H%n%ct%n%B', '--', f]).split('\n');
           const sid = (본문.join('\n').match(/^Session-Id:\s*(\S+)/m) || [])[1];
           if (!해시 || !sid || sid === 나 || !산세션.has(sid)) continue;
           let 더한줄; let 지운줄;
@@ -602,6 +639,9 @@ for (let m; (m = 메시지인용.exec(cmd)) !== null;) {
           const 더한집합 = new Set(더한줄);
           const 옛판줄 = 지운줄.filter((l) => !더한집합.has(l));
           if (사라진.length && (!옛판줄.length || 옛판줄.some((l) => 지금줄.has(l)))) {
+            /* ⓑ 그 세션이 **커밋 뒤** 그 파일을 만졌으면 사라진 줄은 그 세션의 후속 편집이다 — F241.
+             *   위 ⓐ(자리 이동)와 달리 이건 커밋 **밖**의 증거라 diff 로는 원리상 못 본다. */
+            if (커밋뒤만졌나(sid, f, Number(ct))) continue;
             되돌림.push({ 파일: f, 해시: 해시.slice(0, 7), sid, 사라진 });
           }
         }
