@@ -235,6 +235,82 @@ test('🔑 등록층 — 주간 실행이 실제로 라이브를 켠다 (스스�
   assert.doesNotMatch(훅.command, /SYNK_ROT_LIVE=0/, '등록층에서 꺼 두면 코드가 멀쩡해도 영원히 안 돈다');
 });
 
+// ── 하루 스로틀 (F244 · 2026-08-08) ─────────────────────────────────────────
+// 라이브 드리프트를 재는 유일한 재료(clasp pull)가 주간 스로틀에 묶여 있어 최대 7일 침묵했다.
+// 네트워크 0 층(`안나간변경`)은 이 형태를 원리상 못 잰다 — 기준선으로 쓰는 마지막 `[vN]` 커밋
+// **자신**이 push 안 된 판이면 기준선이 통째로 거짓이고, 새는 방향은 언제나 침묵이다.
+// 🔑 네트워크는 안 탄다: `PATH` 를 비워 clasp 를 못 찾게 하면 조회가 즉시 실패해 「확인 불가」로 온다.
+const clasp없음 = { PATH: '', APPDATA: path.join(TMP, '없는-앱데이터') };
+
+test('하루 스로틀 — 주간이 안 지나도 라이브 배포 대조는 다시 돈다', () => {
+  const f = statePath('배포하루');
+  const now = Date.now();
+  fs.writeFileSync(f, JSON.stringify({ last: now, 배포: now - 2 * 24 * 3600 * 1000 }), 'utf8');
+  const out = runHook({ SYNK_ROT_STATE: f, SYNK_ROT_LIVE: '1', ...clasp없음 });
+  assert.ok(out, '주간은 안 지났고 배포만 하루가 지났는데 침묵했다 — 하루 스로틀이 안 열린다');
+  const ctx = JSON.parse(out).hookSpecificOutput.additionalContext;
+  assert.match(ctx, /라이브 미측정|라이브 낡음|배포 판정 불가/, '배포 절이 리포트에 없다 — 열렸는데 재지 않았다');
+  assert.doesNotMatch(ctx, /결정 큐/, '하루짜리 알림에 주간 리포트가 딸려 왔다 — 소음은 읽히지 않아 침묵과 같은 값이다');
+});
+
+test('남이 고치는 중인 배포 파일은 「push 가 빠졌다」가 아니다 — 하루 알림이 매일 거짓말하면 무시당한다', () => {
+  /* 라이브대조는 **작업본**을 잰다(clasp 가 미는 것이 작업본이라서다). 주간일 땐 드물어 안 보였고
+   * 하루로 당기는 순간 흔해진다 — 실측 2026-08-08: 남이 12:44 에 고친 두 파일이 12:51 대조에서
+   * 그대로 🔴 로 나왔다. 전부 미커밋일 때만 보류고, 하나라도 깨끗하면 진짜 안 나간 것이다. */
+  // 🔑 `appsscript.json` 은 **접두어 붙은 형태로만** 넣는다 — 맨이름도 같이 넣으면 접두어를 안 붙여도
+  //    통과해서, 「하위 프로젝트 경로를 안 붙인다」는 결함을 이 검사가 못 잡는다(첫 판이 그랬다).
+  const 미커밋 = new Set(['Code.js', '엔진_운영배치.js', 'crewcard/appsscript.json']);
+  assert.strictEqual(R.편집중인가(['Code.js', '엔진_운영배치.js'], ROOT, 미커밋), true);
+  assert.strictEqual(R.편집중인가(['Code.js', 'contents_1.js'], ROOT, 미커밋), false,
+    '하나라도 커밋돼 있으면 그건 진짜 안 나간 것이다 — 보류로 접으면 소급 불가 손실을 숨긴다');
+  assert.strictEqual(R.편집중인가(['appsscript.json'], path.join(ROOT, 'crewcard'), 미커밋), true,
+    '하위 프로젝트 경로를 안 붙이면 형제 저장소 파일이 영영 안 걸린다');
+  assert.strictEqual(R.편집중인가(['appsscript.json'], ROOT, 미커밋), false,
+    '루트 파일을 하위 프로젝트 것으로 읽었다 — 접두어가 양방향으로 서야 한다');
+  assert.strictEqual(R.편집중인가(['Code.js'], ROOT, null), false,
+    'git 을 못 읽은 것은 「편집 중」이 아니다 — 모름을 보류로 접으면 진짜 낡음이 조용해진다');
+  assert.strictEqual(R.편집중인가([], ROOT, 미커밋), false, '파일이 0개면 보류할 것도 없다');
+});
+
+test('라이브 대조 상한 × 프로젝트 수가 훅 예산 안에서 끝난다', () => {
+  /* 기본 120초는 훅 예산(60초)보다 길다 — 네트워크가 멎으면 훅이 통째로 죽고 **아무것도 안 찍힌다.**
+   * 프로젝트가 늘면 이 검사가 먼저 빨개진다(상한을 내리든 훅 timeout 을 올리든 사람이 정한다). */
+  const 훅 = (JSON.parse(fs.readFileSync(path.join(ROOT, '.claude', 'settings.json'), 'utf8'))
+    .hooks?.SessionStart || []).flatMap((g) => g.hooks || []).find((h) => /rot-check/.test(h.command));
+  const m = fs.readFileSync(TOOL, 'utf8').match(/배포_대조_한도\s*=\s*(\d+)/);
+  assert.ok(m, '대조 상한 상수가 사라졌다 — 기본값으로 돌아가면 훅 예산을 넘는다');
+  const 프로젝트수 = require(path.join(ROOT, 'tools', '배포판점검.js')).claspProjects().length;
+  assert.ok(프로젝트수 >= 1, 'clasp 프로젝트가 0개로 읽혔다 — 그러면 이 검사는 무엇이든 통과시킨다');
+  assert.ok((Number(m[1]) * 프로젝트수) / 1000 < 훅.timeout,
+    `최악 ${(Number(m[1]) * 프로젝트수) / 1000}초 > 훅 예산 ${훅.timeout}초 — 멎으면 리포트가 통째로 사라진다`);
+  /* 상수가 있는 것과 그게 네트워크 호출까지 **닿는** 것은 다르다 — 끊기면 상수만 남고 기본 120초로
+   * 돈다(초록인 채). 실행으로는 못 밟는 구간(clasp pull)이라 배선을 글자로 못박는다. */
+  const 점검src = fs.readFileSync(path.join(ROOT, 'tools', '배포판점검.js'), 'utf8');
+  const 시작 = 점검src.indexOf('function 점검(');
+  assert.notStrictEqual(시작, -1, '`점검` 을 못 찾았다 — 앵커가 낡으면 이 검사는 무엇이든 통과시킨다');
+  assert.match(점검src.slice(시작, 점검src.indexOf('\n}', 시작)), /라이브대조\([^)]*timeout:\s*시간제한/,
+    '`점검` 이 시간제한을 라이브대조에 안 넘긴다 — 상한이 있는데 안 닿으면 없는 것과 같다');
+});
+
+test('두 도장은 서로를 안 지운다 — 통째로 덮으면 스로틀 둘이 다 무의미해진다', () => {
+  const f = statePath('도장합침');
+  const 옛배포 = Date.now() - 3 * 3600 * 1000;
+  fs.writeFileSync(f, JSON.stringify({ last: 0, 배포: 옛배포 }), 'utf8');
+  runHook({ SYNK_ROT_STATE: f }, ['--force']);   // 주간 도장은 찍히고, 라이브는 꺼져 있어 배포는 미측정
+  const s = JSON.parse(fs.readFileSync(f, 'utf8'));
+  assert.ok(s.last > 0, '주간 도장이 안 찍혔다');
+  assert.strictEqual(s.배포, 옛배포, '주간 도장이 배포 도장을 지웠다 — 그러면 라이브 대조가 매 세션 다시 돈다');
+});
+
+test('못 잰 날엔 배포 도장을 안 찍는다 — 찍으면 안 잰 하루가 조용히 사라진다', () => {
+  const f = statePath('미측정도장');
+  const 옛배포 = Date.now() - 2 * 24 * 3600 * 1000;
+  fs.writeFileSync(f, JSON.stringify({ last: Date.now(), 배포: 옛배포 }), 'utf8');
+  runHook({ SYNK_ROT_STATE: f });                // 라이브끔 → 측정 자체를 안 했다
+  assert.strictEqual(JSON.parse(fs.readFileSync(f, 'utf8')).배포, 옛배포,
+    '안 쟀는데 도장을 찍었다 — 미측정이 통과와 같은 모양이 되는 그 자리다');
+});
+
 test('harness-export는 require로 불러도 생성기가 돌지 않는다', () => {
   // rot-check가 주간마다 require하는데 그때마다 바탕화면 폴더를 지우고 다시 만들면
   // 점검기가 곧 부작용 기계가 된다 — require 무해성을 실행으로 못박는다.
