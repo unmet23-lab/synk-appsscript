@@ -322,6 +322,9 @@ if (problems.length) {
   deny(
     `[clasp-guard] 배포 게이트 차단 — 프로젝트 ${프로젝트명}:\n- ` +
       problems.join('\n- ') +
+      // 다른 사유로 막을 때도 「스위트를 안 돌렸다」는 사실은 같이 나가야 한다 —
+      // 여기서 빠지면 통과와 「안 잰 것」이 사용자 눈에 같은 모양이 된다.
+      (게이트알림 ? `\n\n${게이트알림}` : '') +
       '\n→ /deploy 스킬 순서(구문검사→테스트→커밋→git push→clasp push)로 진행할 것. 검증된 예외 절차만 CLASP_GUARD_BYPASS=1 로 우회.'
   );
 }
