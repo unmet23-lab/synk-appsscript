@@ -244,7 +244,62 @@ function 점검(projRoot, root = ROOT, { 라이브 = false } = {}) {
   return 판정({ 이름, 경로, fp: 지문(projRoot, root), deployments, 대조 });
 }
 
-module.exports = { 배포집합, 지문, 배포목록, 라이브대조, 못읽음, 판정, 점검, 지문표기, FP_RE, claspProjects };
+/* ── 네트워크 0 재료 ─────────────────────────────────────────────────────────
+ * 「저장소가 마지막 배포 커밋보다 앞서 있다」를 git 만으로 잰다.
+ *
+ * 🔴 왜 있나 (F240): 위 `판정()` 은 @HEAD 프로젝트(=이 저장소 메인)에서 `대조` 없이는
+ *   `측정:false` 로 답하고, 그 대조를 들고 오는 유일한 상시 호출자가 rot-check 주간(7일
+ *   스로틀)이다. 즉 라이브가 뒤처져도 **최대 7일간 아무 화면에도 안 뜬다.**
+ *   실측 2026-08-08: 상담AI 채널 칸(`56e7d20` · 소급 불가)이 24시간째 라이브에 없었는데,
+ *   그 커밋 본문이 스스로 「다음 배포에 나간다」고 적고도 그 약속을 든 장치가 없었다.
+ *
+ * 재료 = **마지막 배포 커밋**(제목이 `[vN]` 으로 시작). 태그는 못 쓴다 — bump-version 이
+ *   origin 에 원자 채번하느라 태그가 배포와 무관한 커밋에 붙는다(실측 2026-08-08:
+ *   `synk-v9.192` 는 배포 커밋 `1c683fd` 가 아니라 그 뒤 보드 문서 커밋 `6f6ac43` 에 붙어
+ *   있었다 — 태그로 재면 마지막 배포가 늘 「안 나간 것」으로 잡혀 상시 거짓양성이 된다).
+ *
+ * ⚠ 이건 **간접 증거다.** 라이브를 읽어서 「뒤처졌다」를 아는 게 아니라, 저장소가 배포
+ *   커밋보다 앞섰다는 것만 안다 — 호출부는 그 문장 그대로 써야 한다(F030 축).
+ *   못 잡는 자리도 하나 있다: 배포 커밋은 났는데 `clasp push` 가 실패한 경우.
+ *   그건 push **직후**에 도는 deploy-freshness 가 보는 자리라 여기서 겹쳐 재지 않는다.
+ *
+ * 돌려주는 값: `null` = git 을 못 불렀다(모름) · `{배포커밋:null}` = 잴 기준이 없다
+ *   · `{배포커밋, 제목, 커밋수, 프로젝트들:[{이름,경로,파일들}]}` — 프로젝트들이 비면 깨끗하다.
+ */
+function 안나간변경(root = ROOT, 프로젝트들목록 = null) {
+  /* 프로젝트 목록을 인자로 열어 둔 이유는 **픽스처 하나** 때문이다 — `claspProjects()` 는
+   * 자기 ROOT 고정이라, 이걸 안 열면 탐지력을 실저장소로만 잴 수 있고 그건 곧 CI 에서
+   * 「자격증명이 없어서 초록」이 되는 그 자리다. 기본값은 그대로라 호출부는 안 바뀐다. */
+  const git = (args) => {
+    try {
+      return execFileSync('git', ['-c', 'core.quotepath=false', ...args],
+        { cwd: root, encoding: 'utf8', timeout: 15000, windowsHide: true })
+        .split(/\r?\n/).filter(Boolean);
+    } catch (_) { return null; }   // 실패는 「변경 0」이 아니라 모름이다
+  };
+  /* 구분자를 안 쓴다 — 커밋 제목엔 한글·가운뎃점·괄호가 흔해 보이는 구분자를 못 쓰고,
+   * 안 보이는 제어문자를 소스에 적으면 어느 편집이 지워도 티가 안 난다(F091).
+   * sha 는 공백을 못 담으므로 **첫 공백**이 언제나 옳은 경계다. */
+  const 마지막 = git(['log', '-E', '--grep', '^\\[v', '-n', '1', '--format=%H %s']);
+  if (마지막 === null) return null;
+  if (!마지막.length) return { 배포커밋: null };
+  const 줄 = String(마지막[0]);
+  const 빈칸 = 줄.indexOf(' ');
+  const sha = 빈칸 < 0 ? 줄 : 줄.slice(0, 빈칸);
+  const 제목 = 빈칸 < 0 ? '' : 줄.slice(빈칸 + 1);
+  const 바뀜 = git(['diff', '--name-only', sha, 'HEAD']);
+  const 센것 = git(['rev-list', '--count', `${sha}..HEAD`]);
+  if (바뀜 === null || 센것 === null) return null;
+  const 프로젝트들 = [];
+  for (const p of 프로젝트들목록 || claspProjects()) {
+    const 이름 = path.relative(root, p).replace(/\\/g, '/');
+    const 파일들 = 바뀜.filter((f) => 프로젝트.isDeployFile(f, p, root));
+    if (파일들.length) 프로젝트들.push({ 이름: 이름 || '(루트)', 경로: 이름 || '.', 파일들 });
+  }
+  return { 배포커밋: sha.slice(0, 7), 제목, 커밋수: Number(센것[0]) || 0, 프로젝트들 };
+}
+
+module.exports = { 배포집합, 지문, 배포목록, 라이브대조, 못읽음, 판정, 점검, 지문표기, FP_RE, claspProjects, 안나간변경 };
 
 if (require.main === module) {
   const 라이브 = process.argv.includes('--라이브');
