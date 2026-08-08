@@ -1669,30 +1669,91 @@ function hwQuestionMap_(ss) {
   return map;
 }
 
+/* [v9.198] 강의 한줄요약 → 첨삭 대기줄. 엔진도달 전수감사 §4 ㉡ — `lecture_views` F열은 **쌓기만 하고
+ *   읽는 코드가 0**이었다(「수집만 있고 도달 0」의 교과서 형태). 새 통로를 파지 않고 숙제와 같은 줄에 세운다:
+ *   둘 다 「학생이 쓴 짧은 한국어 문장」이고, 이 저장소에서 엔진까지 실제로 닿는 선은
+ *   hw_feedback → 골든셋 표본(goldenSampleWeekly_) → 평가 픽스처(골든픽스처_) **하나뿐**이며
+ *   그 재료가 정확히 원문↔교정 병렬쌍이다. 그 줄에 안 실리면 이 텍스트는 영원히 시트에만 남는다.
+ *
+ * 🔑 **포인터가 아니라 hw_feedback 실적재분으로 중복을 막는다.** 이름 매칭에 실패한 행은 student_id가
+ *   빈 채로 쌓이고 나중에 사람이 채우는데(sweepLectureForm_ 통보 메일), 포인터 방식이면 배치가 이미 그 행을
+ *   지나쳐 **영영 안 걸린다** — 미매칭이 곧 영구 유실이 된다. 재적재 방지는 실제로 적재된 것을 보고 판정한다.
+ * ⚠ 중복 키 = student_id + 제출일 + 강의ID. 제출일은 dstr 기본이라 **날짜 단위**다 — 같은 날 같은 강의의
+ *   재제출은 1건으로 본다(같은 것을 고쳐 낸 것으로 보는 쪽이 카드 2장보다 낫다). 다른 날이면 각각 걸린다. */
+function 강의요약대기_(ss, tz) {
+  const vw = ss.getSheetByName('lecture_views');
+  if (!vw || vw.getLastRow() < 2) return [];
+  const cand = [];
+  vw.getRange(2, 1, vw.getLastRow() - 1, LECTURE_VIEW_HEADERS.length).getValues().forEach(function (r) {
+    const sid = String(r[1] || '').trim(), lid = String(r[4] || '').trim(), text = String(r[5] || '').trim();
+    if (sid && lid && text) cand.push({ sid: sid, lid: lid, text: text.slice(0, 2000), d: dstr(r[0], tz) });
+  });
+  if (!cand.length) return []; // 후보가 없는 밤에는 hw_feedback·lectures 읽기 0
+  const done = {};
+  const fb = ss.getSheetByName('hw_feedback');
+  /* ⚠ 폭을 물리 열수로 클램프한다 — 이 대기줄은 `hwFeedbackEnsureCols_`(15열 증분) **앞**에서 돌아서,
+   *   구 11열 시트를 만나면 12열 요구가 그 자리에서 예외를 던져 **첨삭 배치 전체가 죽는다**.
+   *   L열이 없으면 '강의:' 행도 있을 수 없으므로 빈 대조표가 정답이다. */
+  const fbW = fb ? Math.min(12, fb.getLastColumn()) : 0;
+  if (fb && fb.getLastRow() >= 2 && fbW >= 12) fb.getRange(2, 1, fb.getLastRow() - 1, fbW).getValues().forEach(function (r) {
+    const 출처 = String(r[11] || '');
+    if (출처.indexOf(LECTURE_SRC_PREFIX) === 0) done[String(r[1] || '').trim() + '\t' + dstr(r[2], tz) + '\t' + 출처] = 1;
+  });
+  const 제목 = {}; // 강의ID → 제목. lectures는 개정되므로 **그날의 제목**을 행에 박는다(ID만 남으면 해석 불능)
+  const lec = ss.getSheetByName('lectures');
+  if (lec && lec.getLastRow() >= 2) lec.getRange(2, 1, lec.getLastRow() - 1, LECTURE_HEADERS.length).getValues()
+    .forEach(function (r) { if (r[0]) 제목[String(r[0]).trim()] = String(r[4] || ''); });
+  const out = [];
+  cand.forEach(function (c) {
+    const hwId = LECTURE_SRC_PREFIX + c.lid;
+    if (done[c.sid + '\t' + c.d + '\t' + hwId]) return;
+    done[c.sid + '\t' + c.d + '\t' + hwId] = 1; // 같은 배치 안의 동일 행 중복(시트 내 중복 제출)도 1건으로
+    out.push({ ts: c.d, sid: c.sid, text: c.text, hwId: hwId, reDo: '', 문항: 제목[c.lid] || '', ptr: 0 });
+  });
+  return out;
+}
+
 // [v9.49] 야간 AI 첨삭 배치 — 숙제폼 제출분을 Claude API로 4칸 카드(고친문장·오늘의포인트MN·칭찬·다음미션)로.
 //   비동기 설계 확정(2026-07-21 유호): 실시간 챗은 update 예산·지연으로 불성립, "다음날 아침 도착"형만 성립.
 //   실패 시 그 행부터 포인터 유지 → 다음 밤 재시도. 상한·시간예산 가드로 6분 강제종료 안전.
+//   [v9.198] 입력이 2원이다(숙제폼 + 강의 한줄요약). 카드 생성·품질 게이트·적재·오류 분류를 두 벌 적으면
+//   갈라지므로 **통로는 하나**고, 소스는 대기줄을 만들 때만 갈린다. 숙제가 앞이라 상한(AI_FEEDBACK_MAX_PER_RUN)을
+//   강의요약이 먼저 먹는 일이 없다 — 굶는 쪽은 항상 뒤에 붙은 요약이다.
 function aiFeedbackBatch_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const props = PropertiesService.getScriptProperties();
   const apiKey = props.getProperty('CLAUDE_API_KEY');
   if (!apiKey) return; // 키 미설정 = 기능 OFF (NOTION_TOKEN 패턴)
-  const src = ss.getSheetByName('숙제폼_응답');
-  if (!src || src.getLastRow() < 2) return;
-  const last = src.getLastRow();
-  const from = Number(props.getProperty('숙제폼_포인터')) || 1;
-  if (from > last) { props.setProperty('숙제폼_포인터', String(last)); return; }
-  if (from >= last) return;
   const tz = ss.getSpreadsheetTimeZone();
-  /* [v9.138] 3열 → 5열. 뒤 2칸(숙제ID·재작성원본)은 migrateHwFormV9138 이전 폼에는 없어 빈칸으로 온다 —
-   *   getRange는 시트 폭까지만 요구하면 되지만, 폼이 아직 4·5열을 안 만들었을 수 있으므로 물리 폭으로 클램프한다
-   *   (없는 열을 요구하면 배치 전체가 예외로 죽는다). 빈칸은 그대로 빈칸으로 적재된다 — 구 제출분은 문항 연결이 없는 게 사실이다. */
-  const wSrc = Math.min(5, src.getLastColumn());
-  const rows = src.getRange(from + 1, 1, last - from, wSrc).getValues(); // 타임스탬프·학생ID·숙제 문장·[숙제ID]·[재작성원본]
+  /* 대기줄 한 줄의 모양 = { ts, sid, text, hwId, reDo, 문항, ptr }.
+   *   ptr = 처리 성공 시 전진시킬 **숙제폼 포인터 값**이고, 강의요약은 0(포인터를 안 쓴다 — 위 주석).
+   *   문항 = 강의요약은 제목 스냅샷을 이미 들고 오고, 숙제는 null이라 루프가 숙제ID로 지연 로드한다. */
+  const q = [];
+  const src = ss.getSheetByName('숙제폼_응답');
+  if (src && src.getLastRow() >= 2) {
+    const last = src.getLastRow();
+    const from = Number(props.getProperty('숙제폼_포인터')) || 1;
+    if (from > last) props.setProperty('숙제폼_포인터', String(last)); // 시트가 줄었다(수동 정리) — 클램프만 하고 계속
+    else if (from < last) {
+      /* [v9.138] 3열 → 5열. 뒤 2칸(숙제ID·재작성원본)은 migrateHwFormV9138 이전 폼에는 없어 빈칸으로 온다 —
+       *   getRange는 시트 폭까지만 요구하면 되지만, 폼이 아직 4·5열을 안 만들었을 수 있으므로 물리 폭으로 클램프한다
+       *   (없는 열을 요구하면 배치 전체가 예외로 죽는다). 빈칸은 그대로 빈칸으로 적재된다 — 구 제출분은 문항 연결이 없는 게 사실이다. */
+      const wSrc = Math.min(5, src.getLastColumn());
+      src.getRange(from + 1, 1, last - from, wSrc).getValues().forEach(function (r, i) { // 타임스탬프·학생ID·숙제 문장·[숙제ID]·[재작성원본]
+        q.push({ ts: r[0] instanceof Date ? r[0] : new Date(), sid: String(r[1] || '').trim(),
+          text: String(r[2] || '').trim().slice(0, 2000), // 폭주 입력 상한
+          hwId: String(r[3] || '').trim().slice(0, 20),   // [v9.138] 어느 과제에 대한 답인지(구 제출분은 빈칸)
+          reDo: String(r[4] || '').trim().slice(0, 40),   // [v9.138] 재작성이면 원본 첨삭 id(FB…) — 3단 데이터의 연결 고리
+          문항: null, ptr: from + i + 1 });
+      });
+    }
+  }
+  Array.prototype.push.apply(q, 강의요약대기_(ss, tz)); // [v9.198] ㉡ 읽기 배선 — 숙제 뒤에 붙인다(상한 우선순위)
+  if (!q.length) return;
   // [v9.125] 리허설은 배치 입구에서 통째로 차단 — 구 방식(callClaudeFeedback_ throw)은 첫 행에서 break라
   //   "차단 1건"만 남아 대기량이 안 보였고, permanent로 올리면 반대로 hw_feedback에 '오류' 행이 실적재되고
   //   포인터가 실전진해 진짜 첨삭이 영영 안 되는 함정이 있다. 입구 차단 = 시트·포인터 불변 + 대기량 보고.
-  if (isRehearsal_()) { rehearsalNote_('AI 첨삭 배치: 대기 ' + rows.length + '건 전량 차단(비용 0·포인터·시트 불변)'); return; }
+  if (isRehearsal_()) { rehearsalNote_('AI 첨삭 배치: 대기 ' + q.length + '건 전량 차단(비용 0·포인터·시트 불변)'); return; }
   const info = {}; // sid → { name, lv(급수 BO67 — 설명 난도 조절) }
   const pf = ss.getSheetByName('profiles');
   if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 67).getValues().forEach(r => {
@@ -1707,22 +1768,25 @@ function aiFeedbackBatch_() {
   let hwQ = null; // 숙제ID → 문항 본문 — 숙제ID 있는 행을 처음 만날 때 1회 로드(없는 밤엔 읽기 0)
   const t0 = Date.now();
   const AI_BUDGET_MS = 120000; // [리뷰 H1] nightJobs 뒤쪽에서 돌므로 자체 예산 2분 — 완주 마커·후속 잡을 굶기지 않는다
-  let made = 0, held = 0, permFails = 0, processed = 0, lastErr = ''; // [v9.63] held=품질 게이트 격리 수
+  let made = 0, held = 0, permFails = 0, lastErr = ''; // [v9.63] held=품질 게이트 격리 수
   let rwPrep = null, rwPaid = 0; // [v9.147] 재작성 보상 — 재작성 제출이 하나도 없는 밤에는 준비조차 하지 않는다(읽기 0)
-  const badSid = []; // [v9.67] profiles에 없는 sid 수집 — 무통보 드롭 결함 수리(하루 1회 dedup 통보)
-  for (let i = 0; i < rows.length; i++) {
+  const badSid = [], badLec = []; // [v9.67] profiles에 없는 sid 수집 — 무통보 드롭 결함 수리(하루 1회 dedup 통보) · [v9.198] 소스별로 나눈다(메일이 「어느 응답 탭을 보라」를 말한다)
+  /* [v9.198] 포인터 전진은 **그 줄이 숙제폼에서 왔을 때만**. 강의요약(ptr=0)이 숙제폼 포인터를 밀면
+   *   그 사이 도착한 숙제 제출이 통째로 건너뛰어진다 — 복구 불가능한 조용한 유실이다. */
+  const 전진_ = function (it) { if (it.ptr) props.setProperty('숙제폼_포인터', String(it.ptr)); };
+  for (let i = 0; i < q.length; i++) {
     if (made >= AI_FEEDBACK_MAX_PER_RUN || Date.now() - t0 > AI_BUDGET_MS) break;
-    const sid = String(rows[i][1] || '').trim();
-    const text = String(rows[i][2] || '').trim().slice(0, 2000); // 폭주 입력 상한
-    const hwId = String(rows[i][3] || '').trim().slice(0, 20);   // [v9.138] 어느 과제에 대한 답인지(구 제출분은 빈칸)
-    const reDo = String(rows[i][4] || '').trim().slice(0, 40);   // [v9.138] 재작성이면 원본 첨삭 id(FB…) — 3단 데이터의 연결 고리
-    const ts = rows[i][0] instanceof Date ? rows[i][0] : new Date();
+    const it = q[i];
+    const sid = it.sid, text = it.text, hwId = it.hwId, reDo = it.reDo, ts = it.ts;
     const stu = info[sid];
-    if (!sid || !stu || !text) { if (sid && !stu) badSid.push(sid); processed = i + 1; continue; } // 무효 행은 건너뛰고 전진 — [v9.67] 미등록 sid만 통보 수집(빈 ID·빈 문장은 폼 필수문항이라 실질 없음)
+    if (!sid || !stu || !text) { if (sid && !stu) (it.ptr ? badSid : badLec).push(sid); 전진_(it); continue; } // 무효 행은 건너뛰고 전진 — [v9.67] 미등록 sid만 통보 수집(빈 ID·빈 문장은 폼 필수문항이라 실질 없음)
     // [v9.187] 문항 텍스트 스냅샷 — contents는 개정되므로 ID만으로는 2년 뒤 "무엇을 시켰는지"가 안 남는다.
     //   실패 행에도 실어야 하므로 try 밖에서 준비한다(재작성 행은 숙제ID가 비어 빈칸 — 원본 첨삭에서 조인).
-    if (hwId && !hwQ) hwQ = hwQuestionMap_(ss);
-    const 문항 = hwId && hwQ ? (hwQ[hwId] || '') : '';
+    let 문항 = it.문항; // [v9.198] 강의요약은 강의 제목을 이미 들고 온다 — null 일 때만 숙제 문항을 지연 로드
+    if (문항 === null) {
+      if (hwId && !hwQ) hwQ = hwQuestionMap_(ss);
+      문항 = hwId && hwQ ? (hwQ[hwId] || '') : '';
+    }
     try {
       const card = callClaudeFeedback_(apiKey, stu, text);
       const gate = fbQualityGate_(card, text); // [v9.63] 무인 발행 안전판 — 미달 카드는 학생에게 안 나간다
@@ -1738,7 +1802,7 @@ function aiFeedbackBatch_() {
         셀안전_(hwId), hwTagsClean_(card.error_tags), 셀안전_(reDo), hwRedoUrlOf_(hwTpl, sid, fbId),
         // [v9.187] 감사 4칸 — 문항 스냅샷·급수(제출 시점)·출처 2열(문항은 contents 소유 콘텐츠라 소독 불요 — quiz 스냅샷과 동일)
         문항, Number(stu.lv) || 0, model, pver]);
-      made++; processed = i + 1;
+      made++;
       /* [v9.147] 재작성 보상 — **적재에 성공한 뒤에만** 판정한다(수집이 보상보다 앞선다).
        *   준비(hw_feedback·point_logs 각 1회 읽기)는 첫 재작성에서만 일어난다.
        *   ⚠ 여기서 참조하는 교정문은 **원본 첨삭(reDo)의 것**이지 방금 만든 카드의 것이 아니다 —
@@ -1748,7 +1812,7 @@ function aiFeedbackBatch_() {
         if (재작성판정_(rwPrep, sid, text, reDo) === '지급') rwPaid++;
       }
       // [리뷰 H1] 성공분 즉시 포인터 전진 — 6분 하드킬(throw 없는 강제 종료)에도 중복 생성·중복 과금 0
-      props.setProperty('숙제폼_포인터', String(from + processed));
+      전진_(it);
       Utilities.sleep(300); // rate-limit 여유(syncToNotion_ 패턴)
     } catch (e) {
       if (e && e.permanent) {
@@ -1759,17 +1823,16 @@ function aiFeedbackBatch_() {
           dstr(ts, tz), 셀안전_(text), '', '', '', '', '오류:' + String(e.message || e).slice(0, 80), '', '',
           셀안전_(hwId), '', 셀안전_(reDo), '',
           문항, Number(stu.lv) || 0, model, pver]); // [v9.187] 실패 행에도 감사 4칸 — 「어느 버전에서 실패가 몰렸나」의 단서
-        processed = i + 1;
-        props.setProperty('숙제폼_포인터', String(from + processed));
+        전진_(it);
         continue;
       }
       lastErr = String(e && e.message ? e.message : e).slice(0, 200);
       break; // 실패 행부터 포인터 유지 → 다음 밤 재시도 (일시 오류: 429·5xx·네트워크·키 무효)
     }
   }
-  if (processed > 0) props.setProperty('숙제폼_포인터', String(from + processed));
   재작성지급_(ss, rwPrep); // [v9.147] 지급은 배치 끝에 1회(appendPoints 락 경합·채번 부담 최소화)
   notifyDroppedSids_('숙제폼', badSid); // [v9.67]
+  notifyDroppedSids_('강의폼', badLec); // [v9.198] 같은 결함 계급 — 라벨이 「어느 응답 탭에 원본이 있나」를 말한다
   if (rwPrep && (rwPaid || rwPrep.echo)) Logger.log('재작성 ' + rwPaid + '건 보상 · 에코 ' + rwPrep.echo + '건 무지급'); // [v9.147]
   if (made || permFails || lastErr) adminMail('[SYNK] 🤖 AI 첨삭 ' + made + '건 생성' + (held ? '(노출 ' + (made - held) + ' · 격리 ' + held + ')' : '') + (permFails ? ' · 오류 ' + permFails + '건' : '') + (lastErr ? ' · 중단됨' : ''), // [v9.65 리뷰 L2] 격리 있을 때 합산 오독 방지
     (made ? (AI_FEEDBACK_AUTOPUBLISH ? (made - held > 0 ? '게이트 통과 ' + (made - held) + '건은 앱에 바로 노출되었습니다.\n' : '') : "hw_feedback 시트에서 내용 확인 후 '상태'를 '노출'로 바꾸면 학생에게 공개됩니다(AI_FEEDBACK_AUTOPUBLISH=true면 이 단계 생략).\n") : '') +

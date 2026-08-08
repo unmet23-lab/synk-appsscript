@@ -168,6 +168,11 @@ test('[v9.138] 커버리지 리포트는 총량이 아니라 빈 유형을 먼�
   const fn = section('function dataCoverageReport(', '\n}\n'); // 인자 목록은 앵커에 넣지 않는다(v9.166에서 opts가 붙어 한 번 죽었다)
   assert.ok(fn.includes('아직 한 건도 못 잡은 오류 유형'), '빈 유형 표기가 없다 — 총량만 보면 "많이 모았다"는 착시가 생긴다');
   assert.ok(/HW_ERROR_TAGS\.filter\(t => t !== '오류없음' && !태그수\[t\]\)/.test(fn), '빈칸 계산에서 「오류없음」을 빼지 않는다(영원히 안 채워지는 칸이 섞인다)');
+  // [v9.198] 강의 한줄요약은 같은 칸(L 숙제ID)에 '강의:' 접두로 실린다 — 함께 세면 「문항 연결」이 부풀고
+  //   ㉡ 배선이 실제로 도는지도 못 읽는다(한 숫자가 두 가지를 뜻하면 둘 다 못 읽는 것과 같다)
+  assert.ok(/LECTURE_SRC_PREFIX\) === 0\) 강의요약\+\+;[\s\S]{0,140}else if \(출처\) 문항연결\+\+;/.test(fn),
+    '강의 한줄요약을 숙제 문항연결과 같이 센다');
+  assert.ok(fn.includes("'  강의 한줄요약 편입 '"), '편입 실측이 리포트에 안 뜬다 — 「배선했다」가 선언으로만 남는다');
   // 읽기 전용이어야 아무 때나 눌러도 안전하다(6개월마다 열어보는 용도)
   ['setValue', 'appendRow', 'setValues', 'insertColumns'].forEach(w =>
     assert.ok(!fn.includes(w), `커버리지 리포트가 ${w}로 시트를 쓴다 — 읽기 전용이어야 한다`));

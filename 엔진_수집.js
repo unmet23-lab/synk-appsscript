@@ -554,12 +554,14 @@ function dataCoverageReport(opts) {
 
   // ① 숙제 첨삭 — 오류 태그 분포 + 3단 데이터(원문→교정→재작성) 완성 수
   const fb = ss.getSheetByName('hw_feedback');
-  let 첨삭 = 0, 태그있음 = 0, 재작성 = 0, 문항연결 = 0;
+  let 첨삭 = 0, 태그있음 = 0, 재작성 = 0, 문항연결 = 0, 강의요약 = 0;
   if (fb && fb.getLastRow() >= 2) {
     const w = Math.min(HW_FEEDBACK_HEADERS.length, fb.getLastColumn());
     fb.getRange(2, 1, fb.getLastRow() - 1, w).getValues().forEach(r => {
       첨삭++;
-      if (String(r[11] || '').trim()) 문항연결++;              // L 숙제ID
+      const 출처 = String(r[11] || '').trim();                  // L 숙제ID(강의 한줄요약은 '강의:' 접두)
+      if (출처.indexOf(LECTURE_SRC_PREFIX) === 0) 강의요약++;   // [v9.198] ㉡ 읽기 배선이 실제로 도는지 — 숙제 문항 연결과 섞으면 둘 다 못 읽는다
+      else if (출처) 문항연결++;
       const tg = String(r[12] || '').trim();                    // M 오류태그
       if (tg) { 태그있음++; tg.split(',').forEach(t => { const k = t.trim(); if (k in 태그수) 태그수[k]++; }); }
       if (String(r[13] || '').trim()) 재작성++;                 // N 재작성원본
@@ -570,6 +572,15 @@ function dataCoverageReport(opts) {
 
   L.push('■ 숙제 첨삭 (원문↔교정 병렬쌍 — 가장 값나가는 자산)');
   L.push('  전체 ' + 첨삭 + '건 · 오류 태그 있음 ' + 태그있음 + '건 · 문항 연결 ' + 문항연결 + '건 · 재작성(3단) ' + 재작성 + '건');
+  // [v9.198] 강의 한줄요약 편입분 — 분자만 보면 「도는지」를 알 수 없어 lecture_views 총량(분모)과 함께 낸다
+  const vwSh = ss.getSheetByName('lecture_views');
+  //   분모 = **편입 자격이 있는 행**(student_id·요약 둘 다 있는 것)이다. 이름 미매칭 행까지 세면 사람이 sid를
+  //   채워 주기 전까지 영원히 미달로 보여, 진짜 고장(배치 정지)과 구분이 안 된다.
+  const 요약총 = vwSh && vwSh.getLastRow() >= 2
+    ? vwSh.getRange(2, 2, vwSh.getLastRow() - 1, 5).getValues()
+      .filter(r => String(r[0] || '').trim() && String(r[4] || '').trim()).length : 0;
+  if (요약총 || 강의요약) L.push('  강의 한줄요약 편입 ' + 강의요약 + '/' + 요약총 + '건' +
+    (요약총 && !강의요약 ? ' — ⚠️ 한 건도 안 실렸습니다(야간 배치 미실행이거나 CLAUDE_API_KEY 휴면)' : ''));
   if (첨삭 && !태그있음) L.push('  ⚠️ 태그가 한 건도 없습니다 — v9.138 이전 제출분이거나 배치가 아직 안 돌았습니다(원문이 남아 있어 소급 재처리는 가능).');
   if (상위.length) L.push('  많이 틀리는 순: ' + 상위.map(t => t + ' ' + 태그수[t]).join(' · '));
   L.push('  🕳 아직 한 건도 못 잡은 오류 유형 ' + 빈칸.length + '/' + (HW_ERROR_TAGS.length - 1) + (빈칸.length ? ': ' + 빈칸.join(', ') : ' — 전 유형 확보'));
