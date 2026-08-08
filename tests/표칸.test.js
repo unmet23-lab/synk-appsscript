@@ -53,7 +53,8 @@ test('칸안전 — 날 파이프만 치환하고 백틱 안은 남긴다', () =
 // ── ② 읽는이 셋 (행동) ─────────────────────────────────────────────
 test('🔴 board-guard — 밀린 칸 때문에 200자 초과 상태 칸을 놓치지 않는다', () => {
   const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'pyocan-'));
-  const BOARD = path.join(TMP, '세션보드.md');
+  const BOARD = path.join(TMP, 'docs', '_ops', '보드', 'sess.md');   // 보드 정본은 세션별 파일(F250)
+  fs.mkdirSync(path.dirname(BOARD), { recursive: true });
   fs.writeFileSync(BOARD, ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|'].join('\n'), 'utf8');
 
   /* 상태 칸 하나가 200자를 넘는데, 그 안에 백틱 파이프가 있다. 날 split 으로 가르면
@@ -73,9 +74,9 @@ test('🔴 board-guard — 밀린 칸 때문에 200자 초과 상태 칸을 놓�
 
 test('🔴 session-report.boardTrack — 상태 칸이 파이프 자리에서 안 잘린다', () => {
   const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'pyocan-'));
-  fs.mkdirSync(path.join(TMP, 'docs'), { recursive: true });
+  fs.mkdirSync(path.join(TMP, 'docs', '_ops', '보드'), { recursive: true });
   const 꼬리 = '를 칸으로 세 해소 칸을 못 채웠다';
-  fs.writeFileSync(path.join(TMP, 'docs', '세션보드.md'), [
+  fs.writeFileSync(path.join(TMP, 'docs', '_ops', '보드', 'sess.md'), [
     '| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |',
     '|---|---|---|---|',
     `| 2026-08-07 | 내 트랙 | tools/friction.js | ✅종결(**5b4cfd3**) — 장부가 ${파이프} ${꼬리} |`,

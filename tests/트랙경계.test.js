@@ -135,8 +135,8 @@ test('track-boundary — 차단하지 않는다 (커밋은 이미 끝났고 끊�
 
 test('boardTrack — 내 커밋 해시로 내 줄을 찾고, 못 찾으면 남의 줄로 폴백하지 않는다', () => {
   const d = 임시('synk-tb-board-');
-  fs.mkdirSync(path.join(d, 'docs'), { recursive: true });
-  fs.writeFileSync(path.join(d, 'docs', '세션보드.md'),
+  fs.mkdirSync(path.join(d, 'docs', '_ops', '보드'), { recursive: true });
+  fs.writeFileSync(path.join(d, 'docs', '_ops', '보드', 'sess.md'),
     '| 날짜 | 트랙 | 파일 | 상태 |\n|---|---|---|---|\n'
     + '| 2026-08-04 | 남의 트랙 | a.js | **작업중** — 남이 하는 일 |\n'
     + '| 2026-08-04 | 내 트랙 | b.js | ✅종결(5e5b03f) — 다음=후속 |\n');
@@ -158,8 +158,8 @@ test('boardTrack — 내 커밋 해시로 내 줄을 찾고, 못 찾으면 남�
  * 보드에 멀쩡히 있었다 — 다음 세션이 자기 트랙을 두고 멈출 뻔했다. */
 test('boardTrack — 해시 없는 줄도 내 세션 지문으로 찾는다 (F165)', () => {
   const d = 임시('synk-tb-f165-');
-  fs.mkdirSync(path.join(d, 'docs'), { recursive: true });
-  fs.writeFileSync(path.join(d, 'docs', '세션보드.md'),
+  fs.mkdirSync(path.join(d, 'docs', '_ops', '보드'), { recursive: true });
+  fs.writeFileSync(path.join(d, 'docs', '_ops', '보드', 'sess.md'),
     '| 날짜 | 트랙 | 파일 | 상태 |\n|---|---|---|---|\n'
     + '| 2026-08-07 | 남의 트랙 | a.js | 작업중 (`local_11112222`) — 남이 하는 일 |\n'
     + '| 2026-08-07 | 양보 종결 트랙 | b.js | **양보 종결**(`local_a0b27c60`) — 다음=옆 세션 구현이 정본 |\n');
@@ -177,7 +177,7 @@ test('boardTrack — 해시 없는 줄도 내 세션 지문으로 찾는다 (F16
   assert.equal(report.boardTrack(d, [], ''), null, '커밋도 지문도 없는데 뭘 집었다');
 
   // 해시 경로는 그대로 산다(지문을 붙이며 옛 재료를 잃으면 그게 회귀다)
-  fs.appendFileSync(path.join(d, 'docs', '세션보드.md'),
+  fs.appendFileSync(path.join(d, 'docs', '_ops', '보드', 'sess.md'),
     '| 2026-08-07 | 해시 트랙 | c.js | ✅종결(5e5b03f) — 다음=배포 |\n');
   const 해시로 = report.boardTrack(d, ['5e5b03f docs: 뭔가'], '');
   assert.ok(해시로 && /해시 트랙/.test(해시로.track) && 해시로.근거 === '해시', '🔴 해시 경로가 죽었다');
@@ -190,8 +190,8 @@ test('boardTrack — 해시 없는 줄도 내 세션 지문으로 찾는다 (F16
  *   증거의 무게가 다르다: 지문은 그 줄이 **스스로 내 것이라 말한 것**이고 해시는 정황이다. */
 test('boardTrack — 남의 줄이 내 해시를 인용해도 내 지문 줄을 집는다 (F202)', () => {
   const d = 임시('synk-tb-f202-');
-  fs.mkdirSync(path.join(d, 'docs'), { recursive: true });
-  fs.writeFileSync(path.join(d, 'docs', '세션보드.md'),
+  fs.mkdirSync(path.join(d, 'docs', '_ops', '보드'), { recursive: true });
+  fs.writeFileSync(path.join(d, 'docs', '_ops', '보드', 'sess.md'),
     '| 날짜 | 트랙 | 파일 | 상태 |\n|---|---|---|---|\n'
     // 남의 줄이 **먼저** 오고, 근거로 내 커밋을 인용한다 — 실측이 정확히 이 배치였다.
     + '| 2026-08-07 | 남의 트랙 | a.js | ✅종결(`local_b170e8dc`) — 격차는 전부 방금 5e5b03f 하나 |\n'
@@ -219,8 +219,8 @@ test('인계문 — 트랙 없음을 「멈춰라」가 아니라 「새 트랙�
   const 머리 = '| 날짜 | 트랙/작업 | 파일 | 상태 |\n|---|---|---|---|\n';
   const 보드 = (prefix, 줄들) => {
     const d = 임시(prefix);
-    fs.mkdirSync(path.join(d, 'docs'), { recursive: true });
-    fs.writeFileSync(path.join(d, 'docs', '세션보드.md'), 머리 + 줄들.join(''));
+    fs.mkdirSync(path.join(d, 'docs', '_ops', '보드'), { recursive: true });
+    fs.writeFileSync(path.join(d, 'docs', '_ops', '보드', 'sess.md'), 머리 + 줄들.join(''));
     return d;
   };
   const 원래 = process.env.CLAUDE_CODE_HOST_SESSION_ID;
@@ -288,8 +288,8 @@ test('인계문 — ✅종결 줄의 ⚠잔여를 「이어라」로 번역하�
   const 머리 = '| 날짜 | 트랙/작업 | 파일 | 상태 |\n|---|---|---|---|\n';
   const 보드 = (prefix, 줄) => {
     const d = 임시(prefix);
-    fs.mkdirSync(path.join(d, 'docs'), { recursive: true });
-    fs.writeFileSync(path.join(d, 'docs', '세션보드.md'), 머리 + 줄);
+    fs.mkdirSync(path.join(d, 'docs', '_ops', '보드'), { recursive: true });
+    fs.writeFileSync(path.join(d, 'docs', '_ops', '보드', 'sess.md'), 머리 + 줄);
     return d;
   };
   const 원래 = process.env.CLAUDE_CODE_HOST_SESSION_ID;
