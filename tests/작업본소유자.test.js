@@ -20,7 +20,10 @@ const os = require('node:os');
 const { spawnSync } = require('node:child_process'); // git 재현용 — node 자식은 아래 통로로 띄운다
 const { 훅띄우기 } = require('./lib/훅띄우기');
 
-const TOOL = path.resolve(__dirname, '..', 'tools', '작업본소유자.js');
+/* 변이 이음매 — 탐지력을 재려면 **격리 사본**을 물려야 한다(tests/트랙충돌.test.js 의
+ * `SYNK_TEST_TRACK_HOOK` 과 같은 형태). 실저장소 도구를 잠깐 망가뜨리는 방식은 금지다:
+ * 그 창에 edit-stamp 가 지문을 쓰고 auto-commit 이 **변이 판을 master 로 싣는다**(F225 실물). */
+const TOOL = process.env.SYNK_TEST_OWNER_TOOL || path.resolve(__dirname, '..', 'tools', '작업본소유자.js');
 const store = require(path.resolve(__dirname, '..', '.claude', 'hooks', 'lib', 'handoff-store.js'));
 
 const git있나 = (() => { const r = spawnSync('git', ['--version'], { encoding: 'utf8' }); return !r.error && r.status === 0; })();
@@ -935,4 +938,69 @@ test('🔴 배선: 뒤처지면 **훅이 입을 연다** — 판정만 서고 �
     '간접 증거를 단정으로 냈다 — 이 재료는 git 이지 라이브가 아니다(F030)');
 
   assert.match(보고(null), /못 쟀다/, '판정 도구를 못 불렀는데 조용했다 — 모름이 안전으로 접혔다');
+});
+
+/* ── F247 · 유물을 **이어받기 전에 칠 명령** (2026-08-08 실측) ────────────────────
+ * ⚪ 는 「이어받아도 된다」까지만 말하고 **초록인지 빨강인지는 안 쟀다.** 실물: 죽은 세션 둘이
+ * 남긴 305줄에 회귀 2건이 적색인 채 1시간 넘게 있었다. 미커밋이라 CI 는 원리상 못 보고,
+ * auto-commit 의 구문검사도 못 본다(둘 다 **구문은 멀쩡했다**). 발견 경로는 장치가 아니라
+ * 이어받은 세션이 우연히 그 테스트를 돌린 것이었다.
+ * 🔑 여기서 **돌리지는 않는다** — 그 회귀 3개가 74초다. 대신 그 세션이 실제로 칠 명령을 준다. */
+test('🔴 [F247] 유물에 테스트가 섞였으면 그 파일을 넣은 실행 명령을 준다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  for (const f of ['tests/트랙충돌.test.js', '.claude/hooks/track-collision.js']) {
+    더럽힌다(repo, f, 'x\n');
+    나이먹인다(repo, f, 401);
+  }
+  세션기록(state, repo, 'local_dead0001', ['tests/트랙충돌.test.js', '.claude/hooks/track-collision.js'], 400);
+
+  const out = 돌린다({ repo, state, 나: 'local_me00' });
+  assert.match(out, /이어받기 전에 초록인지 먼저 잰다/,
+    `유물을 「이어받아도 된다」로만 넘겼다 — 빨간 판이 그대로 실린다:\n${out}`);
+  /* 🔑 명령은 **그 파일을 담아야** 한다. 「테스트를 돌려라」는 프로즈고, 프로즈는 실행되지 않는다
+   *   (F235 가 같은 자리에서 채택한 형태: 알림은 실행할 명령과 함께 나간다). */
+  assert.match(out, /node --test [^\n]*"tests\/트랙충돌\.test\.js"/,
+    `돌릴 테스트를 명령으로 안 줬다 — 다음 세션이 어느 파일인지 다시 찾아야 한다:\n${out}`);
+  assert.match(out, /node --check [^\n]*"\.claude\/hooks\/track-collision\.js"/,
+    `테스트가 아닌 코드의 구문검사를 안 줬다:\n${out}`);
+  assert.match(out, /커밋하지 않는다/, '빨강일 때 무엇을 하지 말아야 하는지가 없다');
+});
+
+test('🔑 [F247] 테스트가 없으면 `node --test` 를 지어내지 않는다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  더럽힌다(repo, 'tools/도구.js', 'x\n');
+  나이먹인다(repo, 'tools/도구.js', 401);
+  세션기록(state, repo, 'local_dead0002', ['tools/도구.js'], 400);
+
+  const out = 돌린다({ repo, state, 나: 'local_me00' });
+  assert.match(out, /node --check [^\n]*"tools\/도구\.js"/, `구문검사를 안 줬다:\n${out}`);
+  // 빈 `node --test` 는 **저장소 전체**를 돌린다 — 74초를 세우고, 그 값은 유물과 무관하다.
+  assert.ok(!/node --test/.test(out), `돌릴 테스트가 없는데 명령을 냈다 — 빈 --test 는 전량 실행이다:\n${out}`);
+});
+
+test('🔗 [F247] 형제 저장소 유물은 **그 저장소에서** 재라고 말한다', { skip: !git있나 && 'git 없음' }, () => {
+  /* 한 줄에 섞으면 그 명령이 **여기서 안 돈다**(형제는 `-C` 가 필요하다). 오늘 실물 유물의
+   * 절반이 SYNK-talk 것이었으므로 이 갈래를 안 내면 처방이 실측의 절반을 덮는다. */
+  const { repo, state } = 픽스처();
+  const 형제 = 픽스처();
+  const 이름 = path.basename(형제.repo);
+  더럽힌다(형제.repo, 'lib/이벤트검증.js', 'peer\n');
+  나이먹인다(형제.repo, 'lib/이벤트검증.js', 401);
+  세션기록(state, repo, 'local_dead0003', [`../${이름}/lib/이벤트검증.js`], 400);
+
+  const out = 돌린다({ repo, state, 나: 'local_me00', 형제: [형제.repo] });
+  assert.match(out, /⚪[\s\S]*이벤트검증\.js/, `형제 유물을 ⚪ 로 안 냈다 — 전제가 깨졌다:\n${out}`);
+  assert.ok(out.includes(`형제 ${이름} 의 유물은`),
+    `어느 저장소에서 재야 하는지 안 밝혔다 — 여기서 돌리면 그 파일을 못 찾는다:\n${out}`);
+});
+
+test('🟢 [F247] 유물이 없으면 한 줄도 안 낸다 — 거짓양성이 곧 무시다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  더럽힌다(repo, '산것.js', 'x\n');
+  세션기록(state, repo, 'local_alive001', ['산것.js'], 1);   // 살아있음 → 🔴 이지 ⚪ 가 아니다
+
+  const out = 돌린다({ repo, state, 나: 'local_me00' });
+  assert.match(out, /🔴/, '전제가 깨졌다 — 살아있는 남의 작업본이 안 잡혔다');
+  assert.ok(!/이어받기 전에 초록인지/.test(out),
+    `유물이 0건인데 검증 처방이 나왔다 — 매번 뜨는 줄은 그 순간부터 안 읽힌다:\n${out}`);
 });
