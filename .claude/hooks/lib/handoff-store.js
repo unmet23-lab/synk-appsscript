@@ -180,6 +180,30 @@ function 편집지문계산(abs) {
   try { return crypto.createHash('sha1').update(fs.readFileSync(abs)).digest('hex'); } catch (_) { return null; }
 }
 
+/** 이 파일이 **실행조차 안 되는가** — `.js` 계열은 구문검사, `.json` 은 파싱. 그 밖은 판정 대상이 아니다.
+ *
+ * 왜 여기 있나 (마찰 F239 · 2026-08-08 실측):
+ *   원래 자동커밋 안에만 있었다 — 「깨진 판을 master 로 안 보낸다」. 그런데 같은 물음이
+ *   **편집 직후**에도 필요하다. 훅 파일이 깨지면 등록층의 F044 방어(`command -v node` ·
+ *   `[ -f "$H" ]`)를 **그대로 통과**한다 — 파일은 멀쩡히 있으니까. 그 다음 `node "$H"` 가
+ *   exit 1 + 빈 stdout 으로 죽고, 하네스는 빈 출력을 **통과**로 읽는다. 즉 그 순간부터
+ *   그 가드가 조용히 열린다(실측: board-guard.js 에 `let 이전` 이 두 번 선언된 3분).
+ *   F044 는 「실행 불가는 deny 로 드러낸다」였는데, 등록층은 그것을 **파일 존재**로 근사했다.
+ * ⚠ 대상 목록을 두 곳에 적으면 갈라지고, 갈라진 쪽의 증상은 「깨진 걸 못 본다」 = 통과다(맹점 ④).
+ * ⚠ 구문이 멀쩡한 것과 **옳은** 것은 다르다 — 변이는 문법을 지킨 채 의미만 죽인다.
+ *   이 함수는 「실행조차 안 된다」만 재고, 그 이상은 지문(F225)과 테스트가 진다. */
+function 구문깨졌나(abs) {
+  if (/\.(js|mjs|cjs)$/i.test(abs)) {
+    const c = require('child_process').spawnSync(process.execPath, ['--check', abs], { encoding: 'utf8', timeout: 15000, windowsHide: true });
+    return !!(c.error || c.status !== 0);
+  }
+  // 깨진 settings.json 이 실리면 **다음 세션의 훅 전체**가 죽는다 — 같은 무게로 본다.
+  if (/\.json$/i.test(abs)) {
+    try { JSON.parse(fs.readFileSync(abs, 'utf8')); return false; } catch (_) { return true; }
+  }
+  return false;
+}
+
 function 편집지문경로(cwd, sessionId) {
   return path.join(STATE_DIR, `editstamp-${projectKey(cwd)}-${safeId(sessionId)}.json`);
 }
@@ -305,6 +329,6 @@ function take(cwd) {
 module.exports = {
   stateDir, projectKey, safeId, batonName, stagePath, readStage, writeStage, claimBlock, sweep, drop, take,
   siblings, siblingPrefix, touchKey, 공용장부,
-  편집지문계산, 편집지문경로, 편집지문읽기, 편집지문쓰기,
+  편집지문계산, 편집지문경로, 편집지문읽기, 편집지문쓰기, 구문깨졌나,
   BATON_TTL_MS, SWEEP_TTL_MS,
 };
