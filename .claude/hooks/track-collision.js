@@ -83,7 +83,7 @@ const 내세션 = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || input.sessio
  *   메인 세션과 **서로의 존재를 아예 못 본다** — 감지기를 아무리 고쳐도 재료가 갈라져 있다.
  *   메인에서 부르면 값이 지금까지와 완전히 같으므로, 작업본소유자가 이 파일을 읽는 계약도
  *   그대로다(넓히기만 하고 되돌리지 않는 변경). */
-const 상태경로 = path.join(store.stateDir(), `track-${store.projectKey(wt.mainWorktree(ROOT))}-${store.safeId(내세션)}.json`);
+const 상태경로 = store.trackPath(ROOT, 내세션);   // 이름 조립은 store 하나에서 (F206 · 도장을 찍는 session-end 도 같은 통로)
 function 상태읽기() {
   try {
     const j = JSON.parse(fs.readFileSync(상태경로, 'utf8'));
@@ -101,7 +101,10 @@ function 상태쓰기(s) {
     // ⚠ `...s` **뒤**에 둔다. 앞에 두면 `상태쓰기({ ...이전, … })` 경로(HEAD 그대로일 때)가
     //   옛 warnedPeer 로 덮어써 방금 추가한 항목이 사라진다 — 증상은 「같은 파일을 20초마다 다시
     //   운다」이고, 잔소리하는 장치는 안 읽히게 되니 결국 없는 것과 같다(이 훅 머리말).
-    fs.writeFileSync(상태경로, JSON.stringify({ siblingBase: 형제기준, ...s, warnedPeer: [...알린동승], at: Date.now() }));
+    // `끝남`(F252 의 죽음 도장)은 **여기서 반드시 지운다** — 도구를 부른 세션은 살아 있다.
+    // `상태쓰기({ ...이전, … })` 경로가 옛 도장을 그대로 실어 나르면, 되살아난 세션의 미커밋이
+    // ⚪「이어받아도 된다」로 남아 F252 가 그대로 재현된다(`/clear` 뒤 같은 창이 그 조합이다).
+    fs.writeFileSync(상태경로, JSON.stringify({ siblingBase: 형제기준, ...s, warnedPeer: [...알린동승], 끝남: undefined, at: Date.now() }));
   } catch (_) { /* 못 써도 작업은 진행한다 */ }
 }
 

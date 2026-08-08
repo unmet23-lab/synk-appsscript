@@ -562,6 +562,51 @@ test('두 겹이 서로 덮는다 — 같은 세션의 Stop 바통과 SessionEnd
   assert.strictEqual(batons(st).length, 1, `같은 세션인데 바통이 ${batons(st).length}개 — 세션별 1개여야 한다`);
 });
 
+/* ── 죽음 도장 (F252 · 2026-08-08 실사고) ─────────────────────────────────────
+ * 살았나/죽었나를 심장박동 하나로 재던 탓에, 유호님 답을 기다리며 **쉬는 세션**이 죽은 세션과
+ * 같은 모양이 됐고 그 세션의 미커밋 11파일이 ⚪유물로 커밋됐다. 침묵으로 죽음을 추정하는 대신
+ * SessionEnd 가 도장을 찍는다 — 읽는 쪽(`tools/작업본소유자.js`)이 ⚪를 낼 유일한 근거다. */
+const store = require(path.join(HOOKS, 'lib', 'handoff-store.js'));
+function 만진기록(st, cwd, sid, 내용) {
+  // 이름 규칙은 track-collision 이 쓰는 것과 같다 — 도장은 **기존 파일에만** 찍히므로 먼저 놓는다.
+  const p = path.join(st, `track-${store.projectKey(cwd)}-${store.safeId(sid)}.json`);
+  fs.writeFileSync(p, JSON.stringify({ baseline: 'x', touched: ['a.js'], at: Date.now(), ...(내용 || {}) }));
+  return p;
+}
+
+test('🔴 SessionEnd 는 죽음에 도장을 찍는다 — 침묵을 죽음으로 추정하지 않게 (F252)', () => {
+  const st = newDir('stamp'); const cwd = newDir('p-stamp');
+  const p = 만진기록(st, cwd, 'STAMP-1');
+  fs.writeFileSync(path.join(cwd, 'x.txt'), 'x');
+  endHook(st, cwd, 'STAMP-1');
+  assert.ok(Number(JSON.parse(fs.readFileSync(p, 'utf8')).끝남) > 0,
+    '정상 종료했는데 도장이 없다 — 그 세션의 유물은 영영 ❔에 갇히고 F025(미추적=무보호)로 돌아간다');
+});
+
+test('🔑 도장은 「일한 세션」 게이트 위에 있다 — 조용히 안 찍히는 세션이 생기면 안 된다', () => {
+  const st = newDir('stamp2'); const cwd = newDir('p-stamp2');
+  const p = 만진기록(st, cwd, 'STAMP-2');
+  // 커밋도 미커밋도 없는 세션 = 바통은 안 남긴다. 그래도 **도장은 찍힌다**(목적이 다르다).
+  assert.strictEqual(endHook(st, cwd, 'STAMP-2').json, null, '전제가 깨졌다 — 이 세션은 바통을 남기면 안 된다');
+  assert.ok(Number(JSON.parse(fs.readFileSync(p, 'utf8')).끝남) > 0,
+    '바통 게이트 안에 도장이 들어갔다 — 일 안 한 세션의 만진 기록이 영영 「끝났는지 모름」으로 남는다');
+});
+
+test('🔴 resume·compact 는 세션이 이어지는 것이라 도장을 안 찍는다', () => {
+  const st = newDir('stamp3'); const cwd = newDir('p-stamp3');
+  for (const r of ['resume', 'compact']) {
+    const p = 만진기록(st, cwd, `STAMP-${r}`);
+    endHook(st, cwd, `STAMP-${r}`, r);
+    assert.strictEqual(JSON.parse(fs.readFileSync(p, 'utf8')).끝남, undefined,
+      `${r} 에서 도장을 찍었다 — 살아서 이어지는 세션의 작업본이 ⚪ 유물로 떨어진다(F252 재현)`);
+  }
+});
+
+/* 「만진 기록이 없으면 빈 파일을 만들지 않는다」는 여기서 **안 잰다** — 변이로 실측하니
+ * 바로 뒤 `store.sweep()` 이 `at` 없는 파일을 그 자리에서 지워, 만들어도 초록이 나온다.
+ * 못 잡는 검사를 두면 그건 탐지가 아니라 거짓 초록이다(맹점 ②). 그 성질은 markEnded 가
+ * 기존 파일만 읽어 쓰는 구현으로 지고 있고, 깨지면 증상은 sweep 잡파일 하나뿐이다. */
+
 // ── 등록층 ──────────────────────────────────────────────────────────────────
 
 test('등록층 — 세 훅이 각자의 이벤트에 등록돼 있고, 앞단에서 좁히는 필터가 없다', () => {

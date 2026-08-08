@@ -52,11 +52,15 @@ function 나이먹인다(repo, rel, 분전) {
   fs.utimesSync(path.join(repo, rel), t, t);
 }
 /** track-collision 이 쌓는 것과 **같은 이름 규칙**으로 상태 파일을 놓는다(safeId 는 lib 것을 쓴다).
- *  `검사시각` = 경로별 「마지막으로 만진 때」(track-collision 의 `dirtyChecked`) — F187·F188 검사의 시계다. */
-function 세션기록(state, repo, sid, touched, 분전, 검사시각) {
+ *  `검사시각` = 경로별 「마지막으로 만진 때」(track-collision 의 `dirtyChecked`) — F187·F188 검사의 시계다.
+ *  `끝남` = SessionEnd 가 찍은 죽음 도장(F252). **기본은 안 찍힌 상태다** — 실세계의 침묵은
+ *  「쉬는 중」과 구별되지 않고, 그 기본값이 곧 이 검사들의 전제다. ⚪를 기대하는 픽스처는
+ *  도장을 명시적으로 찍는다(안 찍고 ⚪를 기대하면 F252 가 그대로 재현된다). */
+function 세션기록(state, repo, sid, touched, 분전, 검사시각, 끝남 = false) {
   const p = path.join(state, `track-${store.projectKey(repo)}-${store.safeId(sid)}.json`);
   fs.writeFileSync(p, JSON.stringify({
     baseline: 'x', lastHead: 'x', touched, warned: [], ...(검사시각 ? { dirtyChecked: 검사시각 } : {}),
+    ...(끝남 ? { 끝남: Date.now() - 분전 * 60000 } : {}),
   }));
   const t = new Date(Date.now() - 분전 * 60000);
   fs.utimesSync(p, t, t);
@@ -80,7 +84,7 @@ test('🔴 살아있는 남의 작업본을 유물과 갈라 낸다 (F073 실사
   더럽힌다(repo, '엔진_궤적.js', 'live\n');
   더럽힌다(repo, '유물.js', 'orphan\n');
   세션기록(state, repo, 'local_aaaa1111', ['엔진_궤적.js'], 1);    // 살아있음
-  세션기록(state, repo, 'local_bbbb2222', ['유물.js'], 400);       // 끝난 지 오래
+  세션기록(state, repo, 'local_bbbb2222', ['유물.js'], 400, undefined, true);  // 끝난 지 오래 + 종료 도장
   나이먹인다(repo, '유물.js', 401);                                 // 그 세션이 살아 있을 때 쓴 것 (F090)
 
   const out = 돌린다({ repo, state, 나: 'local_cccc3333' });
@@ -148,7 +152,7 @@ test('🔴 git 을 못 부르면 「0건」이 아니라 「판정 불가」다'
 test('--hook 은 🔴가 없으면 침묵한다 (잔소리는 안 읽힌다)', { skip: !git있나 && 'git 없음' }, () => {
   const { repo, state } = 픽스처();
   더럽힌다(repo, '유물.js', 'orphan\n');
-  세션기록(state, repo, 'local_old0', ['유물.js'], 400);
+  세션기록(state, repo, 'local_old0', ['유물.js'], 400, undefined, true);
   나이먹인다(repo, '유물.js', 401);
   assert.strictEqual(돌린다({ repo, state, 나: 'local_me00', 인자: ['--hook'] }).trim(), '',
     '위험이 없는데 훅이 말했다 — 매 세션 울리면 읽히지 않게 된다');
@@ -164,7 +168,7 @@ test('--hook 은 🔴가 없으면 침묵한다 (잔소리는 안 읽힌다)', {
 test('🔴 끝난 세션의 기록이 있어도 **그 뒤에 바뀐** 파일은 ⚪가 아니다 (F090 실오판 재현)', { skip: !git있나 && 'git 없음' }, () => {
   const { repo, state } = 픽스처();
   더럽힌다(repo, 'Code.js', 'bumped by a live session via Bash\n');   // 지금 바뀌었다
-  세션기록(state, repo, 'local_dead01', ['Code.js'], 40);             // 40분 전 끝난 세션의 옛 기록
+  세션기록(state, repo, 'local_dead01', ['Code.js'], 40, undefined, true);   // 40분 전 정상 종료한 세션의 옛 기록
   const out = 돌린다({ repo, state, 나: 'local_me00' });
   assert.ok(!/⚪[\s\S]*Code\.js/.test(out),
     `죽은 세션의 옛 기록만 보고 「이어받아도 된다」고 했다 — 그대로 커밋하면 F073 재현이다:\n${out}`);
@@ -176,7 +180,7 @@ test('🔴 끝난 세션의 기록이 있어도 **그 뒤에 바뀐** 파일은 
 test('⚪ 진짜 유물은 그대로 ⚪다 — 반증이 거짓양성을 만들지 않는다', { skip: !git있나 && 'git 없음' }, () => {
   const { repo, state } = 픽스처();
   더럽힌다(repo, '진짜유물.js', 'orphan\n');
-  세션기록(state, repo, 'local_dead02', ['진짜유물.js'], 400);
+  세션기록(state, repo, 'local_dead02', ['진짜유물.js'], 400, undefined, true);
   나이먹인다(repo, '진짜유물.js', 401);                               // 그 세션이 살아 있을 때 쓴 것
   assert.match(돌린다({ repo, state, 나: 'local_me00' }), /⚪[\s\S]*진짜유물\.js/,
     '반증이 과해 진짜 유물까지 모름으로 밀었다 — 이어받을 것이 매번 「확인하라」가 되면 안 읽힌다');
@@ -185,7 +189,7 @@ test('⚪ 진짜 유물은 그대로 ⚪다 — 반증이 거짓양성을 만들
 test('🔑 여유는 훅 순서를 견딘다 — track-collision 은 PreToolUse 라 상태가 파일보다 먼저 쓰인다', { skip: !git있나 && 'git 없음' }, () => {
   const { repo, state } = 픽스처();
   더럽힌다(repo, '직후.js', 'x\n');
-  세션기록(state, repo, 'local_dead03', ['직후.js'], 400);
+  세션기록(state, repo, 'local_dead03', ['직후.js'], 400, undefined, true);
   나이먹인다(repo, '직후.js', 399);        // 심장박동보다 1분 **뒤** — 편집이 훅 다음에 일어난 정상 순서
   assert.match(돌린다({ repo, state, 나: 'local_me00' }), /⚪[\s\S]*직후\.js/,
     '정상 훅 순서를 반증으로 읽었다 — 모든 유물이 모름이 되어 구분이 사라진다');
@@ -196,7 +200,7 @@ test('🔴 바뀐 때를 못 재면 ⚪라고 우기지 않는다 (삭제된 파
   더럽힌다(repo, '지워진.js', 'x\n');
   g('add', '-A'); g('commit', '-qm', 'add');
   fs.rmSync(path.join(repo, '지워진.js'));                            // 삭제 → statSync 불가
-  세션기록(state, repo, 'local_dead04', ['지워진.js'], 400);
+  세션기록(state, repo, 'local_dead04', ['지워진.js'], 400, undefined, true);
   const out = 돌린다({ repo, state, 나: 'local_me00' });
   assert.ok(!/⚪[\s\S]*지워진\.js/.test(out), `못 잰 것을 유물로 단정했다:\n${out}`);
   assert.match(out, /지워진\.js[^\n]*못 쟀다/, `못 쟀다는 사실을 숨겼다 — 통과와 미실행이 같은 모양이면 안 된다:\n${out}`);
@@ -217,6 +221,38 @@ test('🔑 심장박동 경계는 안전한 쪽으로 틀린다 — 애매하면
   assert.match(돌린다({ repo, state, 나: 'local_me00' }), /🔴/,
     '경계 안쪽을 죽었다고 판정했다 — 이 방향으로 틀리면 남의 작업본을 편집하게 된다');
 });
+
+/* ── ⚪ 는 죽음을 **증명한** 세션의 것만이다 (F252 · 2026-08-08 실사고) ─────────
+ * 실사고: 유호님 답을 기다리며 75분 쉬던 세션 local_15ab8497 의 미커밋 11파일이 ⚪로 떨어졌고,
+ *   옆 세션이 그대로 커밋했다(talk 87e7061 · appsscript 1daa329). 심장박동 = 도구 활동량이라
+ *   **쉬는 세션과 죽은 세션이 같은 모양**이었다.
+ * 🔑 임계값(SYNK_OWNER_ALIVE_MIN)을 늘리는 처방은 반대 방향으로만 틀린다 — 그래서 검사도
+ *   시간이 아니라 **도장의 유무**로 가른다. 아래 두 검사는 다른 재료는 전부 같고 도장만 다르다. */
+
+test('🔴 도장 없이 조용하기만 한 세션의 파일은 ⚪가 아니다 (F252 실사고 재현)', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  더럽힌다(repo, '쉬는중.js', 'orphan\n');
+  세션기록(state, repo, 'local_rest01', ['쉬는중.js'], 400);   // 400분 침묵 · **종료 도장 없음**
+  나이먹인다(repo, '쉬는중.js', 401);                          // 시각 반증(F090)은 통과한다
+  const out = 돌린다({ repo, state, 나: 'local_me00' });
+  assert.ok(!/⚪[\s\S]*쉬는중\.js/.test(out),
+    `침묵만으로 「이어받아도 된다」고 했다 — 유호님 답을 기다리는 세션이 여기로 떨어진다:\n${out}`);
+  assert.match(out, /❔[\s\S]*쉬는중\.js/, `⚪가 아니면 ❔여야 한다 — 목록에서 사라지면 그게 더 나쁘다:\n${out}`);
+  assert.match(out, /쉬는중\.js[^\n]*끝났다는 도장이 없다/,
+    `칸만 바꾸고 이유를 안 적었다 — 「그 뒤에 바뀌었다」와 다음 손이 다르다(여긴 그 세션에 물어본다):\n${out}`);
+});
+
+test('⚪ 도장이 찍혔으면 그대로 ⚪다 — 증명 요구가 F111 수거를 멈추지 않는다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  더럽힌다(repo, '증명된유물.js', 'orphan\n');
+  세션기록(state, repo, 'local_end01', ['증명된유물.js'], 400, undefined, true);   // 위와 재료 동일 + 도장
+  나이먹인다(repo, '증명된유물.js', 401);
+  assert.match(돌린다({ repo, state, 나: 'local_me00' }), /⚪[\s\S]*증명된유물\.js/,
+    '증명 요구가 과해 진짜 유물까지 ❔로 밀었다 — 미추적은 무보호 상태다(F025)');
+});
+
+/* 되살아남(도장 찍힌 뒤 다시 일한 세션)의 회귀는 도장을 **지우는 쪽**에 있다 —
+ * `tests/트랙충돌.test.js` 의 「상태쓰기가 옛 도장을 지운다」. 여기서 또 재면 두 곳이 갈라진다. */
 
 /* ── 워크트리 (F079 · 옆 세션 local_dee95eb9 이 실사고로 잡아 넘겼다) ──────────
  * 두 겹의 사각지대였고 **둘 다 「0건」으로 조용히 새는** 방향이다:
@@ -725,7 +761,7 @@ test('🔴 살아있는 세션의 인계문은 **이름만으로** 주인이 잡
 test('⚪ 죽은 세션의 인계문은 그대로 유물이다 — 이름이 수거(F111)를 막지 않는다', { skip: !git있나 && 'git 없음' }, () => {
   const { repo, state } = 픽스처();
   더럽힌다(repo, 인계문('dead0001'), '# 인계문\n');
-  세션기록(state, repo, 'local_dead0001-1111-2222-3333-444455556666', [], 400);
+  세션기록(state, repo, 'local_dead0001-1111-2222-3333-444455556666', [], 400, undefined, true);
   나이먹인다(repo, 인계문('dead0001'), 401);
   const out = 돌린다({ repo, state, 나: 'local_me00' });
   assert.match(out, /⚪[\s\S]*인계문\/dead0001\.md/,
@@ -952,7 +988,7 @@ test('🔴 [F247] 유물에 테스트가 섞였으면 그 파일을 넣은 실�
     더럽힌다(repo, f, 'x\n');
     나이먹인다(repo, f, 401);
   }
-  세션기록(state, repo, 'local_dead0001', ['tests/트랙충돌.test.js', '.claude/hooks/track-collision.js'], 400);
+  세션기록(state, repo, 'local_dead0001', ['tests/트랙충돌.test.js', '.claude/hooks/track-collision.js'], 400, undefined, true);
 
   const out = 돌린다({ repo, state, 나: 'local_me00' });
   assert.match(out, /이어받기 전에 초록인지 먼저 잰다/,
@@ -970,7 +1006,7 @@ test('🔑 [F247] 테스트가 없으면 `node --test` 를 지어내지 않는�
   const { repo, state } = 픽스처();
   더럽힌다(repo, 'tools/도구.js', 'x\n');
   나이먹인다(repo, 'tools/도구.js', 401);
-  세션기록(state, repo, 'local_dead0002', ['tools/도구.js'], 400);
+  세션기록(state, repo, 'local_dead0002', ['tools/도구.js'], 400, undefined, true);
 
   const out = 돌린다({ repo, state, 나: 'local_me00' });
   assert.match(out, /node --check [^\n]*"tools\/도구\.js"/, `구문검사를 안 줬다:\n${out}`);
@@ -986,7 +1022,7 @@ test('🔗 [F247] 형제 저장소 유물은 **그 저장소에서** 재라고 �
   const 이름 = path.basename(형제.repo);
   더럽힌다(형제.repo, 'lib/이벤트검증.js', 'peer\n');
   나이먹인다(형제.repo, 'lib/이벤트검증.js', 401);
-  세션기록(state, repo, 'local_dead0003', [`../${이름}/lib/이벤트검증.js`], 400);
+  세션기록(state, repo, 'local_dead0003', [`../${이름}/lib/이벤트검증.js`], 400, undefined, true);
 
   const out = 돌린다({ repo, state, 나: 'local_me00', 형제: [형제.repo] });
   assert.match(out, /⚪[\s\S]*이벤트검증\.js/, `형제 유물을 ⚪ 로 안 냈다 — 전제가 깨졌다:\n${out}`);

@@ -31,6 +31,12 @@ const reason = String(input.reason || input.matcher || '');
 // `resume`·`compact` 는 세션이 **끝난 게 아니라 이어지는** 것이다 — 인계문을 남기면 중복이 된다.
 if (reason === 'resume' || reason === 'compact') process.exit(0);
 
+/* 죽음에 도장을 찍는다 (F252). 여기가 「일한 세션」 판정보다 **위**인 이유: 도장은 인계문과
+ * 목적이 다르다 — 인계문은 다음 세션이 읽을 것이라 일한 세션만 남기지만, 도장은 「이 세션의
+ * 미커밋을 이어받아도 되는가」의 근거라 **끝난 모든 세션**이 찍어야 한다. 아래 worked 게이트
+ * 안에 두면 조용히 안 찍히는 세션이 생기고, 그 세션의 유물은 영영 ❔에 갇힌다. */
+store.markEnded(cwd, report.hostSessionId(sid));
+
 store.sweep(); // 종료 시점은 청소하기 좋은 자리다(다음 세션 읽기가 빨라진다)
 
 const dirty = report.dirtyCount(cwd);

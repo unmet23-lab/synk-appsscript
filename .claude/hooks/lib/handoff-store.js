@@ -155,6 +155,34 @@ function 공용장부인가(f) {
 
 function stateDir() { return STATE_DIR; }
 
+/* ── 세션 상태 파일과 「끝났다」 도장 ─────────────────────────────────────
+ * 🔴 왜 도장이 필요한가 (마찰 F252 · 2026-08-08 실사고): 살았나/죽었나를 **심장박동 하나**로
+ *   재고 있었다. 그런데 박동 = 도구 호출이라, 유호님 답을 75분 기다리며 **쉬는 세션**은
+ *   죽은 세션과 글자 하나 다르지 않다. 그래서 산 세션 `local_15ab8497` 의 미커밋 11파일이
+ *   ⚪유물로 떨어졌고 옆 세션이 그대로 커밋했다(talk 87e7061 · appsscript 1daa329).
+ *   임계값(SYNK_OWNER_ALIVE_MIN)을 늘리는 것은 **반대 방향으로만 틀린다** — 쉬는 시간은
+ *   위로 열려 있고, 늘릴수록 진짜 유물이 영영 무보호로 남는다(F025).
+ * 🔑 그래서 침묵으로 죽음을 **추정**하지 않고, SessionEnd 가 죽음에 **도장**을 찍는다.
+ *   도장 없는 침묵은 ⚪(이어받아도 된다)가 아니라 ❔(확인하고 만져라)로 내려간다.
+ * ⚠ 강제 종료엔 SessionEnd 가 안 돈다 — 그건 ❔로 남는다. 새는 방향이 「사람이 한 번 본다」라 맞다. */
+
+/** 세션별 만진기록 파일. 쓰는 쪽(track-collision)·도장(session-end)·읽는 쪽이 **여기 하나**를 쓴다
+ *  — 이름을 두 곳에 적으면 갈라지고, 갈라진 쪽의 증상은 「도장이 안 보임」 곧 조용한 오판정이다(F206). */
+function trackPath(cwd, sessionId) {
+  return path.join(STATE_DIR, `track-${projectKey(cwd)}-${safeId(sessionId)}.json`);
+}
+
+/** 이 세션이 정상 종료했다고 도장을 찍는다. 파일이 없으면 만들지 않는다 —
+ *  만진 기록이 없는 세션은 유물을 남길 수도 없어서, 빈 파일을 만들면 sweep 대상만 늘어난다. */
+function markEnded(cwd, sessionId) {
+  try {
+    const p = trackPath(cwd, sessionId);
+    const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+    fs.writeFileSync(p, JSON.stringify({ ...j, 끝남: Date.now() }));
+    return true;
+  } catch (_) { return false; }
+}
+
 /** 세션별 단계 카운터(발화 중복 억제용). 프로젝트 키를 붙여 저장소 간 간섭을 막는다. */
 function stagePath(cwd, sessionId) {
   return path.join(STATE_DIR, `stage-${projectKey(cwd)}-${safeId(sessionId)}.json`);
@@ -339,7 +367,7 @@ function take(cwd) {
  * 파일명 규칙을 그쪽에서 다시 적으면 sweep() 이 못 알아보는 이름이 생기고, 증상은
  * 「조용히 안 지워짐」이라 눈에 안 띈다(이 파일이 존재하는 이유 ③과 같은 함정). */
 module.exports = {
-  stateDir, projectKey, safeId, batonName, stagePath, readStage, writeStage, claimBlock, sweep, drop, take,
+  stateDir, projectKey, safeId, batonName, trackPath, markEnded, stagePath, readStage, writeStage, claimBlock, sweep, drop, take,
   siblings, siblingPrefix, touchKey, 공용장부, 공용장부폴더, 공용장부인가,
   편집지문계산, 편집지문경로, 편집지문읽기, 편집지문쓰기, 구문깨졌나,
   BATON_TTL_MS, SWEEP_TTL_MS,
