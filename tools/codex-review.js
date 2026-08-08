@@ -235,9 +235,11 @@ function 디프수집(대상) {
  * 매번 실린다. 파일이 없으면 **없다고 크게 말한다**(조용히 방향 없이 돌면 그게 미탐이다). */
 const 방향경로 = path.join(ROOT, 'docs', '제품방향.md');
 const 방향상한 = 6000;
-function 방향텍스트() {
+function 방향텍스트(경로 = 방향경로) { // 경로 인자 = 회귀 픽스처용(방향지문과 같은 축)
   try {
-    const t = fs.readFileSync(방향경로, 'utf8').trim();
+    const t = fs.readFileSync(경로, 'utf8').trim();
+    // 절단 경고는 stderr 에도 낸다 — 프롬프트 본문의 경고는 검수자만 보고 운영자는 못 본다(뒤 = 최신 불변식이 첫 희생).
+    if (t.length > 방향상한) console.error(`⚠ docs/제품방향.md ${t.length.toLocaleString()}자 — 상한 ${방향상한.toLocaleString()}자 초과로 뒤에서부터 잘린다(압축하라).`);
     return t.length > 방향상한 ? t.slice(0, 방향상한) + '\n…(상한 초과로 잘림 — docs/제품방향.md 를 압축하라)' : t;
   } catch (_) {
     console.error('⚠ docs/제품방향.md 가 없다 — 검수자가 앱의 방향을 모른 채 제안한다(만들어라).');
