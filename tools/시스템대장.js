@@ -25,6 +25,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { 칸나누기 } = require('./lib/표.js');   // 날 split 은 백틱 안 파이프에서 칸을 민다(F119·F253)
 
 const ROOT = path.resolve(process.env.SYNK_대장_ROOT || path.join(__dirname, '..'));
 const 상태허용 = ['🟢', '🟡', '⚪'];
@@ -48,7 +49,7 @@ function 파싱(md) {
     if (h) { 현재 = { 이름: h[1], 노출: h[2], 행들: [], 머리줄: i }; 구역들.push(현재); continue; }
     if (/^##\s/.test(line)) { 문제.push(`${i + 1}행: 구역 머리에 (대외)/(내부) 표기가 없다 — 「${line}」`); 현재 = null; continue; }
     if (!/^\|/.test(line)) continue;
-    const cells = line.split('|').slice(1, -1).map((c) => c.trim());
+    const cells = 칸나누기(line);   // 양끝 파이프는 이 통로가 뗀다
     if (cells.length !== 5) { 문제.push(`${i + 1}행: 칸이 5개가 아니다(${cells.length}개)`); continue; }
     if (/^-+$/.test(cells[0].replace(/\s/g, '')) || cells[0] === '상태') continue; // 헤더·구분선
     if (!현재) { 문제.push(`${i + 1}행: 구역 밖의 행 — 어느 판에 실릴지 모른다`); continue; }

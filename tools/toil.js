@@ -23,6 +23,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { 칸나누기 } = require('./lib/표.js');   // 날 split 은 백틱 안 파이프에서 칸을 민다(F119·F253)
 
 /* 테스트는 실제 장부를 건드리면 안 된다 — 회귀가 기록을 오염시키면 그 기록은 증거가 못 된다.
  * ⚠ 상수가 아니라 **함수**다. 모듈 로드 시점에 고정하면 같은 프로세스 안에서 env를 갈아끼워도
@@ -47,7 +48,7 @@ function read() {
   lines.forEach((line, i) => {
     const m = /^\|\s*(v\d+\.\d+)\s*\|(.*)\|\s*$/.exec(line.trim());
     if (!m) return;
-    const cells = m[2].split('|').map((c) => c.trim());
+    const cells = 칸나누기(line).slice(1);   // [0]=ver 는 m[1] 로 이미 검증했다
     rows.push({ ver: m[1], date: cells[0], toil: cells[1], cadence: cells[2], device: cells[3] || '', line: i });
   });
   return { text, lines, rows };

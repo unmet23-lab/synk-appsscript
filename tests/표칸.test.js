@@ -100,14 +100,28 @@ test('🔴 track-collision — 파일 칸 자리에 상태 칸 조각이 오지 
 });
 
 // ── ③ 옛 통로 금지 ─────────────────────────────────────────────────
-test('옛 통로 금지 — 표를 읽는 곳이 날 split 으로 되돌아가지 않는다', () => {
-  const 대상 = [
-    'tools/friction.js',
-    'tools/board-move.js',            // 원칙⑥이 상태 칸만 재기 시작하면서 표를 읽는 곳이 됐다(F246)
-    '.claude/hooks/board-guard.js',
-    '.claude/hooks/track-collision.js',
-    '.claude/hooks/lib/session-report.js',
-  ];
+/* 🔑 대상을 **손으로 적지 않는다**(F253 축②). 손 목록이던 시절 `tools/작업본소유자.js` 가
+ *   그 목록에 없어서 F119 의 동시 수리 넷에서 통째로 빠졌고, 1년 뒤가 아니라 **다음 날**
+ *   보드 선점 탐지가 조용히 오독하는 것으로 드러났다. 새 읽는이가 늘어도 목록은 안 늘어난다 —
+ *   즉 새는 방향이 「대상 아님」이고, 그건 가드가 아니라 가드의 모양이다.
+ *   그래서 이 절은 tools/ · .claude/hooks/ 의 **모든** .js 를 훑는다: 표를 읽든 안 읽든
+ *   이 두 폴더에서 `.split('|')` 은 쓰지 않는다(문자열 alternation 이 필요하면 정규식으로 적는다).
+ *   Apps Script 엔진(저장소 루트 `Code.js`·`엔진_*.js`)은 대상이 아니다 — 거기 파이프는
+ *   마크다운 표가 아니라 시트 셀 값의 구분자다. */
+const 훑는곳 = ['tools', path.join('.claude', 'hooks')];
+function js파일들(rel) {
+  const abs = path.join(ROOT, rel);
+  if (!fs.existsSync(abs)) return [];
+  return fs.readdirSync(abs, { withFileTypes: true }).flatMap((d) => (
+    d.isDirectory() ? js파일들(path.join(rel, d.name))
+      : (d.name.endsWith('.js') ? [path.join(rel, d.name)] : [])));
+}
+
+test('옛 통로 금지 — tools·hooks 어디에도 날 split 으로 되돌아간 자리가 없다', () => {
+  const 대상 = 훑는곳.flatMap(js파일들);
+  /* 🔴 분모부터 말한다 — 경로가 어긋나 0개를 훑어도 아래 deepEqual 은 초록이다(미실행=통과). */
+  assert.ok(대상.length > 40, `훑은 파일이 ${대상.length}개다 — 경로가 어긋나 검사가 안 돌았다`);
+
   /* 주석·머리말의 인용만 빼고 본다 — 「/ 나 * 가 앞에 없는 줄」로 걸렀더니 옛 통로가
    * `.replace(/^\|/, '')` 의 정규식 슬래시 때문에 주석으로 분류돼 그냥 빠져나갔다(변이 실측). */
   const 코드줄 = (src) => src.split('\n').filter((l) => !/^\s*(\/\/|\/?\*)/.test(l));

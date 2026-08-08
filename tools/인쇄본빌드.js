@@ -27,6 +27,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { execFileSync } = require('child_process');
+const { 칸나누기 } = require('./lib/표.js');   // 날 split 은 백틱 안 파이프에서 칸을 민다(F119·F253)
 
 const ROOT = path.join(__dirname, '..');
 const OUT_DIR = path.join(ROOT, 'docs', '인쇄본');
@@ -131,7 +132,7 @@ function renderMd(md) {
     if (/^\s*\|/.test(line)) {                          // 표
       closeLists(0); const rows = [];
       while (i < lines.length && /^\s*\|/.test(lines[i])) rows.push(lines[i++]);
-      const cells = (r) => r.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map((c) => inline(c.trim()));
+      const cells = (r) => 칸나누기(r).map(inline);
       let html = '<table>'; let headDone = false;
       for (const r of rows) {
         if (/^\s*\|[\s:|-]+\|\s*$/.test(r)) { headDone = true; continue; }
