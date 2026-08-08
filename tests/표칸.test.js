@@ -103,6 +103,7 @@ test('🔴 track-collision — 파일 칸 자리에 상태 칸 조각이 오지 
 test('옛 통로 금지 — 표를 읽는 곳이 날 split 으로 되돌아가지 않는다', () => {
   const 대상 = [
     'tools/friction.js',
+    'tools/board-move.js',            // 원칙⑥이 상태 칸만 재기 시작하면서 표를 읽는 곳이 됐다(F246)
     '.claude/hooks/board-guard.js',
     '.claude/hooks/track-collision.js',
     '.claude/hooks/lib/session-report.js',
