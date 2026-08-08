@@ -1863,12 +1863,29 @@ const mkSheet_ = (g) => ({
   })
 });
 
-function runTeacherStats_({ profileRows, logs = [], oldStats = [] }) {
+/* [vNEXT] 시즌 창의 날짜 목록 — 코드가 보는 창(어제부터 ABSENCE_SEASON_DAYS일)과 **같은 규칙**으로 픽스처를 짠다.
+ *   8주 = 정확히 40 평일 + 8 토요일이라 오늘이 무슨 요일이든 기대값이 흔들리지 않는다. */
+const SEASON_DAYS_T = 56;
+const 시즌날_T = () => {
+  const out = [];
+  for (let i = 1; i <= SEASON_DAYS_T; i++) {
+    const d = new Date(Date.now() - i * 86400000);
+    out.push({ d, dow: d.getDay() });
+  }
+  return out;
+};
+const ymd_T = (d) => d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+
+function runTeacherStats_({ profileRows, logs = [], oldStats = [], hwRows = null, checkins = null, sched = null }) {
   const classNumOf = loadFunction('function classNumOf(', 'function hhmmOf_', 'classNumOf', {});
   const pfSheet = mkSheet_([new Array(STU_COLS).fill('헤더')].concat(profileRows));
   const tsSheet = mkSheet_([['강사', '담당학생수', '1인당출석', '1인당포인트', '1인당칭찬', '케어지수', '지난달왕관', '왕관편중%']].concat(oldStats));
+  const extra = {
+    hw_feedback: hwRows && mkSheet_([['id', 'student_id', '제출일']].concat(hwRows)),
+    teacher_checkins: checkins && mkSheet_([['이름', '구분', '시각']].concat(checkins))
+  };
   const ss = {
-    getSheetByName: (n) => (n === 'profiles' ? pfSheet : null),
+    getSheetByName: (n) => (n === 'profiles' ? pfSheet : (extra[n] || null)),
     getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar'
   };
   const teacherEmailMap_ = loadFunction('function teacherEmailMap_(ss)', 'function classPrepMail_', 'teacherEmailMap_', { classNumOf });
@@ -1876,8 +1893,25 @@ function runTeacherStats_({ profileRows, logs = [], oldStats = [] }) {
     'const TEACHER_STATS_HEADERS', 'function monthlyReport()', 'calcTeacherStats',
     {
       SpreadsheetApp: { getActiveSpreadsheet: () => ss },
-      // [v9.107] 3지표가 'yyyy-MM-dd' 창을 만들므로 포맷별로 답해야 한다(왕관은 'yyyy-MM' 그대로)
-      Utilities: { formatDate: (d, tz, fmt) => (fmt === 'yyyy-MM' ? '2026-07' : '2026-08-01') },
+      /* [v9.107] 3지표가 'yyyy-MM-dd' 창을 만들므로 포맷별로 답해야 한다(왕관은 'yyyy-MM' 그대로)
+       * [vNEXT] 숙제·근태는 **날짜와 시각이 판정 재료**라 고정 문자열로는 못 잰다(전 행이 같은 날이 된다).
+       *   그래서 진짜로 포맷한다 — 시간대는 하네스 밖(스크립트 시계)이고, 창 계산이 그 축을 쓴다. */
+      Utilities: {
+        formatDate: (d, tz, fmt) => {
+          const x = d instanceof Date ? d : new Date(d);
+          const p = (n) => ('0' + n).slice(-2);
+          if (fmt === 'yyyy-MM') return x.getFullYear() + '-' + p(x.getMonth() + 1);
+          if (fmt === 'HH:mm') return p(x.getHours()) + ':' + p(x.getMinutes());
+          return ymd_T(x);
+        }
+      },
+      // [vNEXT] 숙제·근태가 시간표에서 분모를 유도한다 — scheduleMap 은 스텁(그 파싱은 반편성 회귀 몫),
+      //   schedOf·classDowOk_ 는 **진짜**를 불러 조회·요일 규칙이 갈라지지 않게 못박는다.
+      scheduleMap: () => (sched || {}),
+      schedOf: loadFunction('function schedOf(', 'function classDowOk_', 'schedOf', { classNumOf }),
+      classDowOk_: loadFunction('function classDowOk_(', 'function hasClassToday(', 'classDowOk_', {}),
+      asDate_: (d) => (d instanceof Date ? d : new Date(d)),
+      TC_NAME_COL: 1, TC_TYPE_COL: 2, TC_TIME_COL: 3,
       ymShift_: () => '2026-06',               // 전월 필터 기준 고정(시계 비의존)
       readPointLogs_: () => logs,
       teacherEmailMap_, classNumOf,
@@ -2257,11 +2291,13 @@ test('[vNEXT] teacher_stats 22열 — 정본 §7 앱자동 5지표가 축 위에
    *   재등록 항목 자체가 빠지고, 남은 넷도 미측정이라 정본의 「미측정 30점 이상 = 심사 스킵」에 걸린다. */
   assert.match(r[20], /심사 스킵/, `잴 것이 하나도 없는데 등급이 나왔다 — 그건 심사가 아니라 추측이다: ${r[20]}`);
   assert.match(r[20], /첫 시즌/, '첫 시즌(재등록 판정 0건)인데 그 사실이 판정문에 없다');
-  assert.equal(r[21], '승급 0 · 복귀 0 · 재등록 0 · 첫 시즌(재등록 항목 없음)', '지표모수 표기가 계약과 다르다');
+  assert.equal(r[21], '승급 0 · 복귀 0 · 재등록 0 · 숙제 0/0 · 근태 미측정 · 첫 시즌(재등록 항목 없음)',
+    '지표모수 표기가 계약과 다르다');
   const body = section('function calcTeacherStats()', 'function monthlyReport()');
   assert.ok(body.includes("'승급 ' + pm.tot"), '분모(지표모수) 노출이 없다 — 80%가 5명 중 4명인지 알 수 없다');
   // 지표별 격리: 한 시트가 없어도 나머지 계산이 죽으면 안 된다
-  assert.equal((body.match(/catch \(e(Pr|Ab|Re)\)/g) || []).length, 3, '지표 3종이 각각 try/catch로 격리돼 있지 않다');
+  // [vNEXT] 숙제·근태가 얹히며 5종이 됐다 — 한 시트의 부재가 케어지수까지 죽이면 안 된다는 규칙은 그대로다
+  assert.equal((body.match(/catch \(e(Pr|Ab|Re|Hw|Pu)\)/g) || []).length, 5, '지표 5종이 각각 try/catch로 격리돼 있지 않다');
   // 결석 복귀율은 정본 재사용(규칙 중복 금지) + 공동 담당 분해
   assert.ok(body.includes('absenceReturnStats_('), '결석 복귀율이 정본 함수를 안 쓰고 규칙을 복제했다');
   assert.ok(body.includes("String(key).split('·')"), '담당강사 복수 표기가 각 강사에게 귀속되지 않는다');
@@ -2461,6 +2497,93 @@ test('[vNEXT] 등급 판정 — 재정규화·미측정 스킵·필수 관문 3�
   const 총점만 = (n) => grade([{ 이름: 'x', 점수: n, 만점: 100 }], { 재등록률: 95, 근태위반: 0 });
   [[92, '골드'], [91, '실버'], [82, '실버'], [81, '브론즈'], [70, '브론즈'], [69, '미달']]
     .forEach(([n, g]) => assert.equal(총점만(n).등급, g, `${n}점 → ${g} 여야 한다`));
+});
+
+/* ── [vNEXT] 숙제·근태 집계 — 유호 확정 2026-08-08 「릴스·자격 외 전부 자동화」의 마지막 20점 ────────
+ * v9.194 는 채점 함수·구간표·열까지 세우고 `const hwRate = null, 근태위반 = null` 로 뒀다. 즉 화면은
+ * 완성돼 있었고 **재료만 안 흘렀다** — 그 상태의 출력은 「아직 개원 전이라 데이터가 없다」와 구별이 안 된다.
+ * 그래서 아래는 전부 **양수 값**을 단언한다(빈칸/미측정만 보면 미실행과 같은 모양이다 · F207). */
+const 평일반_T = { '정규반1': { type: '평일', time: '09:00', name: '정규반1' } };
+
+test('[vNEXT] 숙제 제출률 — 분모는 반 시간표에서 유도하고 분자는 (학생·날짜) 중복을 접는다', () => {
+  const 날 = 시즌날_T().filter((x) => x.dow >= 1 && x.dow <= 5);
+  assert.equal(날.length, 40, '8주 창의 평일이 40일이 아니다 — 아래 기대값의 전제가 깨졌다');
+  const [d1, d2] = [ymd_T(날[0].d), ymd_T(날[1].d)];
+  const { byLabel } = runTeacherStats_({
+    profileRows: [mkTeacher('T1', '바트', '정규반1', 'bat@synk.im'),
+      mkStu('S1', '정규반1', 10, 100, 2), mkStu('S2', '정규반1', 20, 200, 4)],
+    sched: 평일반_T,
+    hwRows: [['F1', 'S1', d1], ['F2', 'S1', d1], ['F3', 'S1', d2],   // 같은 날 두 번 = 하루로 접힌다
+      ['F4', 'S9', d1],                                             // 담당 밖 학생 = 남의 강사 몫
+      ['F5', 'S2', ymd_T(new Date(Date.now() - 400 * 86400000))]]  // 창 밖 = 안 센다
+  });
+  const bat = byLabel('바트');
+  // 분자 2(S1 의 서로 다른 제출일) / 분모 80(학생 2 × 평일 40) → 3%
+  assert.equal(bat[21], '승급 0 · 복귀 0 · 재등록 0 · 숙제 2/80 · 근태 미측정 · 첫 시즌(재등록 항목 없음)',
+    `지표모수가 숙제 원수치를 안 낸다 — "3%"가 몇 분의 몇인지 원장이 판별할 수 없다: ${bat[21]}`);
+  assert.equal(bat[15], 3, `숙제 제출률이 2/80 에서 나오지 않았다: ${bat[15]}`);
+  assert.equal(bat[16], 0, '3% 인데 숙제 배점이 0이 아니다(구간 60% 미만 = 0점)');
+});
+
+test('[vNEXT] 근태 — 근무표를 담당 반 시간표에서 유도한다(지각·결근 각 1건)', () => {
+  const 날 = 시즌날_T().filter((x) => x.dow >= 1 && x.dow <= 5);
+  const 찍기 = (d, hh) => { const x = new Date(d); x.setHours(hh, 0, 0, 0); return ['바트', '출근', x]; };
+  const rows = 날.map((x, i) => (i === 0 ? 찍기(x.d, 10)      // 첫 수업 09:00 뒤 출근 = 지각
+    : i === 1 ? null                                          // 기록 없음 = 결근
+      : i === 2 ? 찍기(x.d, 9)                                // 정각 = 지각이 아니다(경계는 「늦으면」)
+        : 찍기(x.d, 8))).filter(Boolean);
+  const { byLabel } = runTeacherStats_({
+    profileRows: [mkTeacher('T1', '바트', '정규반1', 'bat@synk.im'), mkStu('S1', '정규반1', 10, 100, 2)],
+    sched: 평일반_T, checkins: rows
+  });
+  const bat = byLabel('바트');
+  assert.equal(bat[17], 2, `지각 1 + 결근 1 = 2건이어야 한다: ${bat[17]}`);
+  assert.equal(bat[18], 4, '첫 시즌 근태 2회 = 4점(정본 §7 첫 시즌표)');
+  assert.match(String(bat[21]), /근태 40일/, '근무일(분모)이 지표모수에 안 보인다');
+  // 토요일에만 찍으면 근무일이 아니라 위반이 아니다 — 요일 판정이 classDowOk_ 하나에서 나오는지
+  const 토 = 시즌날_T().filter((x) => x.dow === 6);
+  const 주말 = runTeacherStats_({
+    profileRows: [mkTeacher('T1', '바트', '주말반1', 'bat@synk.im'), mkStu('S1', '주말반1', 10, 100, 2)],
+    sched: { '주말반1': { type: '주말', time: '11:00', name: '주말반1' } },
+    checkins: 토.map((x) => 찍기(x.d, 10))
+  }).byLabel('바트');
+  assert.equal(주말[17], 0, `주말반은 토요일만 근무일인데 위반이 났다: ${주말[21]}`);
+  assert.match(String(주말[21]), /근태 8일/, '주말반 근무일이 8일(8주 × 토 1회)이 아니다');
+});
+
+test('[vNEXT] 🔴 출근 기록이 하나도 없는 강사는 미측정이다 — 전원 결근으로 읽으면 앱 결함이 급여 삭감이 된다', () => {
+  const 없음 = runTeacherStats_({
+    profileRows: [mkTeacher('T1', '바트', '정규반1', 'bat@synk.im'), mkStu('S1', '정규반1', 10, 100, 2)],
+    sched: 평일반_T, checkins: []
+  }).byLabel('바트');
+  assert.strictEqual(없음[17], '', `근태 미측정이 숫자로 찍혔다 — 이름 표기 하나만 어긋나도 위반 40건이 된다: ${없음[17]}`);
+  assert.strictEqual(없음[18], '', '근태 배점이 0점으로 환산됐다 — 관문 ②③ 이 함께 터져 등급이 두 칸 내려간다');
+  assert.doesNotMatch(String(없음[20]), /관문/, `미측정인데 관문이 발동했다: ${없음[20]}`);
+  // 시간표에 없는 반도 같다 — 기대 제출 수를 못 세면 0%가 아니라 빈칸이다
+  const 무시간표 = runTeacherStats_({
+    profileRows: [mkTeacher('T1', '바트', '정규반1', 'bat@synk.im'), mkStu('S1', '정규반1', 10, 100, 2)],
+    sched: {}, hwRows: [['F1', 'S1', ymd_T(new Date(Date.now() - 86400000))]]
+  }).byLabel('바트');
+  assert.strictEqual(무시간표[15], '', '시간표가 없어 분모를 못 세는데 제출률이 숫자로 나왔다');
+  assert.strictEqual(무시간표[16], '', '분모를 못 셌는데 숙제 배점이 0점으로 찍혔다 — 0%(냈어야 했는데 안 냈다)와 다르다');
+});
+
+test('[vNEXT] 집계가 실제로 배선돼 있다 — 상수 null 로 되돌아가면 화면은 개원 전과 구별이 안 된다', () => {
+  const body = section('function calcTeacherStats()', 'function monthlyReport()');
+  assert.equal(/const hwRate = null, 근태위반 = null/.test(body), false,
+    'v9.194 의 미측정 고정판이 되살아났다 — 채점 함수는 그대로라 회귀 대부분이 초록인 채 20점이 죽는다');
+  assert.ok(body.includes('hwBy[k]') && body.includes('puBy[k]'), '행 조립이 집계 결과를 안 읽는다');
+  /* 🔴 창은 **어제부터**다(i = 1). 오늘을 넣으면 아직 안 끝난 날이 결근으로 잡혀 매일 오전마다 전 강사가
+   *   위반 +1 이 된다 — 그런데 8주 창의 평일 수는 시작을 하루 당겨도 40 그대로라 **개수로는 안 걸린다.**
+   *   기대값이 못 잡는 자리라 여기서 의도를 못박는다(변이 실측에서 조용히 빠져나간 자리). */
+  assert.ok(/for \(let i = 1; i <= ABSENCE_SEASON_DAYS; i\+\+\)/.test(body),
+    '시즌 창이 오늘을 포함한다 — 근태가 매일 오전 「결근」을 만든다');
+  // 요일 규칙은 단일 소스여야 한다 — 여기 요일 숫자를 다시 적으면 주말반 규칙이 갈라진다(v9.46)
+  assert.equal(/dow\s*[><=]=?\s*[0-6]/.test(body), false, 'calcTeacherStats 가 요일 규칙을 자기 안에 다시 적었다 — classDowOk_ 를 써야 한다');
+  // teacher_checkins 열 순서는 TC_* 상수 하나에서 나온다(하네스가 ['이름','구분','시각']로 픽스처를 짠다)
+  assert.ok(/TC_NAME_COL - 1/.test(body) && /TC_TIME_COL - 1/.test(body), '체크인 열을 상수 대신 숫자로 박았다');
+  assert.ok(code.includes("['teacher_checkins', ['이름','구분','시각']]"),
+    '체크인 시트 골격이 하네스 픽스처와 갈라졌다 — 열 순서가 바뀌면 이 회귀가 낡은 판을 지킨다');
 });
 
 test('[v9.120] 배치 리허설 — 밖으로 나가는 것만 막고, 켜둔 채 잊어도 안전하다', () => {
