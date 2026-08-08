@@ -87,7 +87,10 @@ function 훅(dir, { file, 절대파일, 형제, sid = 'sess-A', stateDir, tool =
   const j = JSON.parse(out);
   return {
     조용: false,
-    본문: String(j.hookSpecificOutput?.additionalContext || ''),
+    /* 🔑 본문은 **두 통로 중 실린 쪽**을 읽는다 — ⑤ 가 막을 때는 additionalContext 가 아니라
+     *   permissionDecisionReason 으로 나간다(거절된 도구의 additionalContext 는 안 읽힐 수 있다).
+     *   한쪽만 읽으면 차단 검사가 「본문 없음」으로 조용히 통과한다(F239 · 새는 방향은 통과). */
+    본문: String(j.hookSpecificOutput?.additionalContext || j.hookSpecificOutput?.permissionDecisionReason || ''),
     요약: String(j.systemMessage || ''),
     판정: j.hookSpecificOutput?.permissionDecision,
     exit: r.status,
@@ -134,7 +137,11 @@ test('🔴 내가 만진 파일에 남의 커밋이 착지하면 알린다 (F070
   assert.match(r.본문, /git show/, '다음 행동(그 커밋을 먼저 읽는다)을 안 알려준다');
 });
 
-test('🔴 어떤 경우에도 permissionDecision 을 내지 않는다 (같은 매처의 다른 가드를 덮으면 안 된다)', (t) => {
+/* ⚠ 2026-08-08(F239) 이후 이 검사는 **①②③④ 에 한정**된다 — ⑤(남의 미커밋)만 deny 를 낸다.
+ *   넷은 여전히 차단 근거가 아니다: 남의 커밋이 내 편집을 금지할 이유가 없고, ④ 는 다른 트리라
+ *   되돌림이 저쪽 몫이다. 그리고 **allow 는 어떤 축에서도 안 낸다** — 그건 같은 매처의
+ *   board-guard·memory-index-guard 판정을 실제로 덮는다(deny 는 안 덮는다: 편집이 아예 안 난다). */
+test('🔴 커밋 축(①②③)은 permissionDecision 을 내지 않는다 (같은 매처의 다른 가드를 덮으면 안 된다)', (t) => {
   if (!있나) return t.skip('git 없음');
   const dir = 픽스처저장소();
   const st = 상태폴더();
@@ -146,6 +153,22 @@ test('🔴 어떤 경우에도 permissionDecision 을 내지 않는다 (같은 �
   assert.strictEqual(r.판정, undefined,
     'permissionDecision 을 냈다 — board-guard·memory-index-guard 의 판정을 덮을 수 있다');
   assert.strictEqual(r.exit, 0, '0이 아닌 종료코드는 작업을 세운다');
+});
+
+test('🔴 allow 는 **어떤 축에서도** 안 낸다 — 그것만이 남의 가드를 덮는다', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  const 공유 = 상태폴더();
+  커밋(dir, '가드.js', 'let a = 1;\n', 'seed', 'sess-Z');
+  const 본 = [];
+  // 조용한 판·커밋 축·⑤ 차단 판을 한 번씩 지난다 — 한 경로만 보면 나머지에서 샌다.
+  본.push(훅(dir, { file: '가드.js', sid: 'sess-A', stateDir: 공유 }));
+  커밋(dir, '가드.js', 'let a = 2;\n', 'fix: 남의 커밋', 'sess-B');
+  본.push(훅(dir, { file: '가드.js', sid: 'sess-A', stateDir: 공유 }));
+  훅(dir, { file: '가드.js', sid: 'sess-B', stateDir: 공유 });
+  fs.writeFileSync(path.join(dir, '가드.js'), 'let a = 3;\n');
+  본.push(훅(dir, { file: '가드.js', sid: 'sess-A', stateDir: 공유 }));
+  for (const r of 본) assert.notStrictEqual(r.판정, 'allow', `allow 를 냈다 — 같은 매처의 다른 가드 판정을 덮는다:\n${r.본문}`);
 });
 
 test('내 커밋은 알리지 않는다 (Session-Id 가 나와 같다)', (t) => {
@@ -410,10 +433,11 @@ test('settings.json 라우팅이 이 훅보다 넓다', () => {
     String(h.command || '').includes('track-collision.js')).command);
   assert.ok(!/case "\$IN" in/.test(cmd),
     '앞단 case 필터가 있다 — 이 훅은 파일 경로가 아니라 저장소 상태를 보므로 어떤 필터도 훅보다 좁다');
-  /* ⚠ 이 훅은 **가드가 아니다** — 못 돌면 exit 1(경고)이지 deny 가 아니어야 한다.
-   *   편의 장치가 작업을 세우면 그게 더 큰 사고다(context-budget·session-handoff 와 같은 급). */
-  assert.ok(!/permissionDecision..:..deny/.test(cmd),
-    '미실행 시 deny 를 낸다 — 정보성 훅이 작업을 세우면 안 된다');
+  /* 🔴 「미실행 = deny」는 여기서 안 잰다 — 2026-08-08(F239) 로 이 훅도 ⑤ 에서 실제로 막게 됐고,
+   *   그 불변식은 tests/훅이식성.test.js 가 **전 PreToolUse 가드에 대해** 한 곳에서 진다
+   *   (정보성 면제 목록에서 이 훅을 뺀 것이 그 편입이다). 여기 같은 단언을 또 적었더니
+   *   실제 등록 표기(`"permissionDecision":"deny"`)가 아니라 이스케이프된 모양을 가정한
+   *   정규식이 들어가 **빨간 채로 죽은 세션에 갇혔다** — 같은 판정을 두 곳에 적으면 갈라진다. */
 });
 
 // ── 상태 파일 계약 (내가 쓰고 **남이 읽는다** · 2026-08-04 세션 조율) ─────────
@@ -902,7 +926,67 @@ test('🔴 ⑤ 같은 트리의 남이 지금 들고 있는 파일을 만지면 
     '남이 방금 잡은 파일을 만지는데 조용하다 — 커밋 축 셋과 워크트리 축 하나가 모두 비켜가는 자리다(F221)');
   assert.match(r.본문, /같은 트리의 다른 세션이 지금 들고 있다/);
   assert.match(r.본문, /sess-B/, '누가 들고 있는지를 안 주면 보드에서 그 트랙 줄을 찾을 수 없다');
-  assert.equal(r.판정, undefined, '이 훅은 어떤 신호에서도 차단하지 않는다');
+  /* 🔑 이 픽스처의 파일은 **커밋된 그대로**다(디스크에 남의 바이트가 없다) — 그래서 알리기만 한다.
+   *   F239 이후 차단 근거는 「누가 만졌나」가 아니라 「지금 미커밋인가」다(바로 아래 검사). */
+  assert.equal(r.판정, undefined, '만지기만 하고 커밋을 마친 자리를 막았다 — 오차단이다');
+});
+
+/* ── F239 (2026-08-08 실사고): 신호는 정확했는데 **알림이라 편집을 못 세웠다** ────────
+ * additionalContext 는 Edit **결과와 함께** 도착한다. 읽는 시점엔 내 바이트가 이미 남의 작업본에
+ * 앉아 있었고, 그 파일은 `let` 이중 선언 SyntaxError 상태가 됐다 — 그 창에서 auto-commit 이
+ * 돌았으면 훅이 죽은 판이 master 로 나간다. edit-stamp 도 못 막는다(그 지문은 진짜 내 것이다).
+ * 그래서 고칠 자리는 탐지가 아니라 **출력**이었다. */
+test('🔴 ⑤ 남의 미커밋이 디스크에 올라와 있으면 **막는다** — 알림은 편집을 못 세운다 (F239)', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  const 공유 = 상태폴더();
+  커밋(dir, '가드.js', 'let a = 1;\n', 'seed', 'sess-Z');
+
+  훅(dir, { file: '가드.js', sid: 'sess-B', stateDir: 공유 });        // 남이 잡고
+  fs.writeFileSync(path.join(dir, '가드.js'), 'let a = 1;\nlet a = 2;\n'); // 커밋 없이 디스크에 남겼다
+  const r = 훅(dir, { file: '가드.js', sid: 'sess-A', stateDir: 공유 });
+
+  assert.strictEqual(r.판정, 'deny',
+    '알리기만 했다 — 알림은 Edit **결과와 함께** 도착해 그때는 이미 내 바이트가 남의 작업본에 앉아 있다(F239)');
+  assert.match(r.본문, /막았다/, '막았다는 사실을 본문이 안 말한다');
+  assert.match(r.본문, /sess-B/, '누가 들고 있는지를 안 주면 보드에서 그 트랙 줄을 찾을 수 없다');
+  /* 🔑 거절된 도구의 additionalContext 는 읽히지 않을 수 있다 — 사유 통로로 나가야 한다. */
+  assert.match(r.요약, /막았다/, 'systemMessage 가 차단을 안 말한다 — 유호님 눈에는 이것만 보인다');
+  assert.strictEqual(r.exit, 0, 'deny 는 종료코드가 아니라 JSON 으로 낸다');
+});
+
+/* 🔴 이 저장소에서 「만졌다」는 커밋을 마친 자리도 포함한다 — 라이브가 이 수정을 하는 편집에서
+ *   바로 증명했다(방금 닫힌 앞 세션이 같은 파일을 커밋까지 끝냈는데 「지금 들고 있다」로 떴다).
+ *   막는 축으로 바꾸면서 이 구분을 안 넣었으면 **모든 세션이 서로를 영구히 막았을 것**이다. */
+test('🟢 ⑤ 만졌지만 커밋을 마친 자리는 **안 막는다** — 이 구분이 없으면 통째로 오차단이다', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  const 공유 = 상태폴더();
+  커밋(dir, '가드.js', 'let a = 1;\n', 'seed', 'sess-Z');
+
+  훅(dir, { file: '가드.js', sid: 'sess-B', stateDir: 공유 });
+  커밋(dir, '가드.js', 'let a = 2;\n', 'fix: 저쪽이 마쳤다', 'sess-B');   // 디스크가 깨끗해진다
+  const r = 훅(dir, { file: '가드.js', sid: 'sess-A', stateDir: 공유 });
+
+  assert.notStrictEqual(r.판정, 'deny',
+    `커밋을 마친 남의 자리를 막았다 — 되돌림 비용이 없는 자리다:\n${r.본문}`);
+});
+
+/* ⚠ 처방은 **따를 수 있어야** 한다(F103). 영구 차단이면 남는 탈출구가 BYPASS 뿐이고,
+ *   그 손버릇은 진짜 사고도 통과시킨다. 그래서 파일당 1회만 막는다 — 다시 요청하는 것이
+ *   「보드를 읽었고 다른 트랙임을 확인했다」는 의식적 확인이다. */
+test('🔑 ⑤ 차단은 **파일당 1회** — 다시 요청하면 지나간다 (못 따를 처방은 우회를 가르친다)', (t) => {
+  if (!있나) return t.skip('git 없음');
+  const dir = 픽스처저장소();
+  const 공유 = 상태폴더();
+  커밋(dir, '가드.js', 'let a = 1;\n', 'seed', 'sess-Z');
+
+  훅(dir, { file: '가드.js', sid: 'sess-B', stateDir: 공유 });
+  fs.writeFileSync(path.join(dir, '가드.js'), 'let a = 1;\nlet a = 2;\n');
+
+  assert.strictEqual(훅(dir, { file: '가드.js', sid: 'sess-A', stateDir: 공유 }).판정, 'deny', '전제가 깨졌다 — 첫 요청이 안 막혔다');
+  assert.notStrictEqual(훅(dir, { file: '가드.js', sid: 'sess-A', stateDir: 공유 }).판정, 'deny',
+    '두 번째도 막았다 — 출구가 없으면 남는 건 BYPASS 뿐이고 그 손버릇이 진짜 사고를 통과시킨다(F103)');
 });
 
 test('⑤ 나 혼자면 조용하고, 알림은 파일당 1회다 (잔소리하는 장치는 안 읽힌다)', (t) => {

@@ -317,6 +317,49 @@ test('지문 훅 라우팅이 만진 기록보다 좁지 않다 — 좁으면 �
   }
 });
 
+/* ── F239 · 훅 파일이 깨지면 그 가드가 **조용히 열린다** (2026-08-08 실측) ──────────
+ * 등록층(settings.json)의 F044 방어는 `command -v node` 와 `[ -f "$H" ]` 둘뿐이라, 파일이
+ * **있는데** 깨진 경우를 그대로 통과시킨다. 이어지는 `node "$H"` 는 exit 1 + **빈 stdout** 으로
+ * 죽고, 하네스는 빈 출력을 「통과」로 읽는다 — 즉 그 훅이 막던 것이 그동안 전부 통과한다.
+ * 실물: 남과 같은 자리를 고치다 board-guard.js 에 `let 이전` 이 두 번 선언된 3분이 있었다.
+ * 이 자리의 몫은 차단이 아니라 **드러내기**다 — 깨진 훅을 되돌리는 통로가 Edit 이라
+ * 여기서 막으면 자기 처방을 막는다(F103). 안 싣는 쪽은 자동커밋이 이미 진다. */
+function 지문훅출력(state, root, sid, 좌표) {
+  const r = 훅띄우기(STAMP, {
+    cwd: root, encoding: 'utf8', timeout: 15000, windowsHide: true,
+    input: JSON.stringify({ session_id: sid, cwd: root, tool_name: 'Edit', tool_input: { file_path: path.resolve(root, 좌표) } }),
+    env: {
+      ...process.env,
+      CLAUDE_PROJECT_DIR: root, CLAUDE_CODE_HOST_SESSION_ID: sid,
+      SYNK_CTXBUDGET_DIR: state, SYNK_OWNER_ROOT: '',
+    },
+  });
+  return String(r.stdout || '');
+}
+
+test('[F239] 훅 파일을 실행 불가로 만들면 그 자리에서 말한다', (t) => {
+  const { root, state } = 판(t);
+  쓰기(root, '.claude/hooks/깨진훅.js', 'let 이전 = null;\nlet 이전 = null;\n');
+  const out = 지문훅출력(state, root, 'me-f239', '.claude/hooks/깨진훅.js');
+  assert.match(out, /실행 불가/, `깨진 훅을 조용히 넘겼다 — 그동안 그 가드는 열려 있다: ${out}`);
+  assert.match(out, /깨진훅\.js/, '어느 파일인지 말하지 않으면 처방을 실행할 수 없다');
+  /* 알림이 **인덱스를 대신하지 않는다** — 지문을 못 쓰면 자동커밋이 「무기록=모름」으로
+   * 떨어져 그 파일은 고친 뒤에도 영영 안 실린다(조용한 쪽으로 새는 것이 더 나쁘다). */
+  assert.ok(fs.readdirSync(state).some((f) => f.startsWith('editstamp-')), '알림을 내느라 편집 지문을 못 썼다');
+});
+
+test('[F239] 멀쩡한 훅 파일은 조용하다 — 거짓양성이 곧 무시다', (t) => {
+  const { root, state } = 판(t);
+  쓰기(root, '.claude/hooks/성한훅.js', 'process.exit(0);\n');
+  assert.strictEqual(지문훅출력(state, root, 'me-f239b', '.claude/hooks/성한훅.js'), '');
+});
+
+test('[F239] 훅 밖의 깨진 js 는 이 알림 대상이 아니다 — 안 싣는 쪽은 자동커밋이 진다', (t) => {
+  const { root, state } = 판(t);
+  쓰기(root, 'tools/깨진도구.js', 'function ( {');
+  assert.strictEqual(지문훅출력(state, root, 'me-f239c', 'tools/깨진도구.js'), '');
+});
+
 test('삭제는 만지지 않는다 — Edit·Write 는 지우지 않으므로 기록 밖의 손이다', (t) => {
   const { root, state } = 판(t);
   쓰기(root, 'del.txt', '지워질 것');

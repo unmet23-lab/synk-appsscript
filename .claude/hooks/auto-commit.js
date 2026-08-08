@@ -133,13 +133,9 @@ function 한저장소(뿌리, 이름, 내touched, 남touched, 지문) {
     const 기대 = 지문[f];
     if (!기대) { 무기록.push(f); continue; }
     if (store.편집지문계산(절대) !== 기대) { 밖에서바뀜.push(f); continue; }
-    if (/\.(js|mjs|cjs)$/.test(f)) {
-      const c = spawnSync(process.execPath, ['--check', 절대], { encoding: 'utf8', timeout: 15000, windowsHide: true });
-      if (c.error || c.status !== 0) { 깨짐.push(f); continue; }
-    }
-    if (/\.json$/.test(f)) { // 깨진 settings.json 이 실리면 다음 세션의 훅 전체가 죽는다
-      try { JSON.parse(fs.readFileSync(절대, 'utf8')); } catch (_) { 깨짐.push(f); continue; }
-    }
+    /* 실행조차 안 되는 판은 안 싣는다. 대상 목록(`.js` 계열 · `.json`)은 **정본 하나**에서 온다 —
+     * 같은 물음을 편집 직후에도 묻게 되면서 두 곳이 됐고, 갈라지면 「깨진 걸 못 본다」로 샌다(F239). */
+    if (store.구문깨졌나(절대)) { 깨짐.push(f); continue; }
     후보.push(f);
   }
   if (!후보.length) return (함께남김.length || 깨짐.length || 무기록.length || 밖에서바뀜.length) ? { 이름, 후보: [], 함께남김, 깨짐, 무기록, 밖에서바뀜 } : null;
