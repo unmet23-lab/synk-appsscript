@@ -264,6 +264,7 @@ const longCells = [];
 const 남의긴칸 = [];
 if (resulting !== null) {
   const 옛행 = new Set((이전 || '').split('\n').filter(isDataRow).map((l) => l.trim()));
+  const 전체행 = resulting.split('\n').filter(isDataRow);
   for (const line of resulting.split('\n')) {
     if (!isDataRow(line)) continue;
     const 내가바꿨다 = !옛행.has(line.trim());
@@ -271,9 +272,13 @@ if (resulting !== null) {
       const len = c.trim().length;
       if (len <= MAX_CELL) return;
       const 적기 = `${i + 1}번째 칸 ${len}자 — "${c.trim().slice(0, 40)}…"`;
-      if (내가바꿨다) longCells.push(적기);
-      // 주인을 함께 낸다 — 조율할 상대를 모르면 알림은 치울 수 없는 잔소리가 된다(F237 처방②).
-      else 남의긴칸.push(`${적기}\n     주인: ${(보드id.줄의지문(line)[0] || '????????')} · 트랙 「${(cellsOfRow(line)[1] || '').replace(/\*/g, '').trim().slice(0, 40)}…」`);
+      if (내가바꿨다) return longCells.push(적기);
+      /* 주인과 **그대로 실행할 명령**을 함께 낸다 — 조율할 상대를 모르면 알림은 치울 수 없는
+       * 잔소리가 되고, 트랙 이름을 손으로 옮겨 적게 하면 따옴표·백틱이 셸을 깬다.
+       * 문구는 ②의 이관처방과 **같은 통로**에서 뽑는다(두 곳에 적으면 갈라진다). */
+      const 문구 = 이관문구(line, 전체행);
+      남의긴칸.push(`${적기}\n     주인: ${보드id.줄의지문(line)[0] || '????????'}`
+        + (문구 ? ` · 죽었으면 그대로: node tools/board-move.js "${문구}"` : ' · 유일 문구를 못 뽑았다(따옴표·백틱)'));
     });
   }
 } else {
@@ -504,8 +509,8 @@ if (남의긴칸.length || 물려받은.length) {
   const 글 = `⚠ [board-guard] 물려받은 보드 위반 ${남의긴칸.length + 물려받은.length}건 — **내 편집은 막지 않았다**(F234·F235):\n- `
     + [...남의긴칸, ...물려받은].join('\n- ')
     + '\n→ 내가 줄이지 않는다 — 남의 줄 편집은 F073 이 금지한다(내 바이트가 남의 커밋에 실려 나간다).'
-    + '\n   그 세션이 살아있으면 그쪽 몫이고, **죽었으면** 줄을 치우면 이 칸도 함께 사라진다:'
-    + '\n   생사 `node tools/작업본소유자.js` → 이관 `node tools/board-move.js "그 트랙 문구"`';
+    + '\n   그 세션이 살아있으면 그쪽 몫이다 — 생사부터 본다: node tools/작업본소유자.js'
+    + '\n   (죽었으면 위에 딸린 board-move 명령을 그대로 실행하면 그 줄과 함께 이 칸도 사라진다)';
   process.stdout.write(JSON.stringify({
     systemMessage: 글,
     hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: 글 },
