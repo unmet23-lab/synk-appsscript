@@ -559,7 +559,13 @@ test('[v9.49] AI 첨삭 배치는 API 키가 없으면 전체 스킵하고, 성�
     '포이즌 필 차단',                                              // 영구 오류 행은 기록 후 건너뜀(리뷰 M1)
     'break; // 실패 행부터 포인터 유지'                              // 일시 오류만 중단→재시도
   ]);
-  assert.ok(body.includes("props.setProperty('숙제폼_포인터', String(from + processed))"));
+  assert.ok(body.includes("props.setProperty('숙제폼_포인터', String(it.ptr))"), '포인터 전진이 대기줄 항목의 값이 아니다');
+  // [v9.198] 입력이 2원(숙제폼 + 강의 한줄요약)이 된 뒤의 급소 — 강의요약(ptr=0)이 포인터를 밀면
+  //   그 사이 도착한 숙제 제출이 통째로 건너뛰어진다(조용한 유실). 전진은 숙제폼에서 온 줄에만 걸린다.
+  assert.ok(/const 전진_ = function \(it\) \{ if \(it\.ptr\)/.test(body),
+    '전진_ 가 ptr 유무를 안 본다 — 강의요약이 숙제폼 포인터를 밀 수 있다');
+  assert.equal((body.match(/props\.setProperty\('숙제폼_포인터'/g) || []).length, 2,
+    '포인터를 쓰는 곳은 전진_ 와 클램프 둘뿐이어야 한다 — 세 번째가 생기면 소스 판정을 우회한다');
   // 오류 분류기: 영구(재시도 무의미) 플래그가 없으면 불량 행 하나가 큐 전체를 영구 차단한다
   const api = section('function callClaudeFeedback_(', 'function parentSweep()');
   assert.ok(api.includes('e.permanent = (rc === 400'));
@@ -1093,7 +1099,10 @@ test('[v9.67] 출석·숙제·목소리폼의 무효 sid 드롭은 무통보가 
   assert.ok(att.includes("notifyDroppedSids_('출석폼', badSid)"), '출석폼 드롭 통보 누락');
   const fbk = section('function aiFeedbackBatch_()', 'function callClaudeFeedback_(');
   assert.ok(fbk.includes("notifyDroppedSids_('숙제폼', badSid)"), '숙제폼 드롭 통보 누락');
-  assert.ok(fbk.includes('if (sid && !stu) badSid.push(sid)'), '미등록 sid만 수집해야 한다(빈 ID·빈 문장은 폼 필수문항이라 제외)');
+  // [v9.198] 강의 한줄요약이 같은 배치를 타므로 통보도 소스별 — 라벨이 「원본 행은 <라벨>_응답 탭」을 말한다.
+  //   한 통에 합치면 강의폼에서 온 드롭을 「숙제폼_응답을 보세요」로 안내해 복구 경로가 어긋난다.
+  assert.ok(fbk.includes("notifyDroppedSids_('강의폼', badLec)"), '강의 한줄요약 드롭 통보 누락');
+  assert.ok(fbk.includes('if (sid && !stu) (it.ptr ? badSid : badLec).push(sid)'), '미등록 sid만 수집해야 한다(빈 ID·빈 문장은 폼 필수문항이라 제외)');
   const tb = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
   assert.ok(tb.includes("notifyDroppedSids_('목소리폼', badSid)"), '목소리폼 드롭 통보 누락(같은 결함 계급의 선제 수리)');
   const helper = section('function notifyDroppedSids_(', 'function sweepAttendanceForm_(');

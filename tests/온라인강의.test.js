@@ -353,3 +353,87 @@ test('[v9.124] 조인 진단은 읽기 전용이고, 안 붙을 때 원인을 �
   assert.ok(/orphan/.test(body), '학생 레벨에 배정된 필수 강의가 0개인 경우를 지목하지 않는다(조인 실패의 실제 모양)');
   assert.ok(/조인 성립/.test(body) && /원인 = /.test(body), '판정과 원인을 문장으로 내지 않는다');
 });
+
+/* ── ⑩ [v9.198] 한줄요약 읽기 배선 (엔진도달 전수감사 §4 ㉡) ────────────────────
+ * 이 칸은 **쌓기만 하고 읽는 코드가 0**이었다 — 수집이 도는데 도달이 0인 형태.
+ * 첨삭 통로에 실려야 hw_feedback → 골든셋 표본 → 평가 픽스처로 나간다(저장소의 유일한 도달선).
+ * 정적 검사가 아니라 **실행**해서 무엇이 대기줄에 오르는지 본다(⑧과 같은 이유). */
+
+const 대기줄 = (viewRows, fbRows, lecRows, fbW) => {
+  const mk = (rows, width) => ({
+    getLastRow: () => rows.length + 1,
+    getLastColumn: () => width,
+    // 실물 Range 계약 — 시트 폭을 넘는 요구는 **예외**다(관대한 스텁은 폭 클램프 누락을 초록으로 덮는다)
+    getRange: (r, c, n, w) => {
+      assert.ok(c - 1 + w <= width, `시트 폭(${width})을 넘는 범위를 요구했다: c=${c} w=${w}`);
+      return { getValues: () => rows.slice(r - 2, r - 2 + n).map((row) => row.slice(c - 1, c - 1 + w)) };
+    },
+  });
+  const sheets = { lecture_views: mk(viewRows, 8) };
+  if (fbRows) sheets.hw_feedback = mk(fbRows, fbW || 19);
+  if (lecRows) sheets.lectures = mk(lecRows, 7);
+  const scope = {
+    LECTURE_VIEW_HEADERS: ['날짜', 'student_id', '이름', '반', '강의ID', '한줄요약', 'created_at', '비고'],
+    LECTURE_HEADERS: ['강의ID', '레벨', '시즌', '주차', '제목', 'URL', '필수'],
+    LECTURE_SRC_PREFIX: '강의:',
+  };
+  // dstr은 실물을 그대로 쓴다 — 테스트가 날짜 문자열화를 자기 식으로 베끼면 중복 키가 갈라진 채 초록이 된다
+  const src = section('function dstr(v, tz, fmt)', '\nfunction ') +
+    section('function 강의요약대기_(ss, tz)', 'function aiFeedbackBatch_()');
+  const fn = new Function(...Object.keys(scope), `${src}\nreturn 강의요약대기_;`)(...Object.values(scope));
+  return fn({ getSheetByName: (n) => sheets[n] || null }, 'Asia/Ulaanbaatar');
+};
+const 뷰 = (sid, lid, 요약, d) => [d || '2026-08-08', sid, '이름', 'A반', lid, 요약, d || '2026-08-08', ''];
+const 첨삭행 = (sid, d, 숙제ID) => ['FB1', sid, d, '원문', '교정', '', '', '', '노출', '', '', 숙제ID];
+
+test('[v9.198] ㉡ 한줄요약이 첨삭 대기줄에 오른다 — 접두·제목 스냅샷·포인터 없음', () => {
+  const q = 대기줄([뷰('S1', 'L1-S1-W01-1', '오늘은 조사를 배웠어요')], null, [['L1-S1-W01-1', '기초', 1, 1, '조사 1강', '', 'Y']]);
+  assert.equal(q.length, 1);
+  assert.equal(q[0].hwId, '강의:L1-S1-W01-1', '출처 접두가 없으면 2년 뒤 이 행이 과제 답으로 읽힌다');
+  assert.equal(q[0].문항, '조사 1강', '강의 제목 스냅샷이 없다 — lectures가 개정되면 해석 불능(원칙 2)');
+  assert.equal(q[0].text, '오늘은 조사를 배웠어요');
+  assert.equal(q[0].ptr, 0, '강의요약이 숙제폼 포인터를 밀면 그 사이 도착한 숙제 제출이 통째로 유실된다');
+});
+
+test('[v9.198] 이미 첨삭된 요약은 다시 안 올린다 — 중복 과금·중복 카드 차단(같은 날 단위)', () => {
+  const v = 뷰('S1', 'L1', '요약', '2026-08-08');
+  assert.equal(대기줄([v], [첨삭행('S1', '2026-08-08', '강의:L1')]).length, 0, '같은 학생·같은 날·같은 강의가 다시 올랐다');
+  assert.equal(대기줄([v], [첨삭행('S1', '2026-08-07', '강의:L1')]).length, 1, '다른 날 제출까지 막았다');
+  assert.equal(대기줄([v], [첨삭행('S2', '2026-08-08', '강의:L1')]).length, 1, '다른 학생의 적재가 이 학생을 막았다');
+  assert.equal(대기줄([v], [첨삭행('S1', '2026-08-08', 'HW7')]).length, 1, '같은 날 숙제 첨삭이 강의요약을 막았다');
+});
+
+/* 🔑 이 설계를 포인터가 아니라 「적재된 것 대조」로 만든 이유가 이 한 건이다.
+ *   이름 매칭 실패 행은 student_id가 빈 채로 쌓이고 사람이 나중에 채운다(sweepLectureForm_ 통보 메일).
+ *   포인터였다면 배치가 이미 그 행을 지나쳐 **영영** 안 걸린다 — 미매칭이 곧 영구 유실이 된다. */
+test('[v9.198] 미매칭 행은 건너뛰되, student_id가 나중에 채워지면 그때 걸린다', () => {
+  assert.equal(대기줄([뷰('', 'L1', '요약')]).length, 0, 'student_id 없는 행을 올렸다 — 누구 것인지 모르는 첨삭이 나간다');
+  assert.equal(대기줄([뷰('S1', 'L1', '요약')]).length, 1, '나중에 채워진 sid를 못 집는다(포인터 방식의 사각)');
+  assert.equal(대기줄([뷰('S1', 'L1', '   ')]).length, 0, '빈 요약으로 API를 호출한다');
+  assert.equal(대기줄([뷰('S1', '', '요약')]).length, 0, '강의ID 없는 행은 중복 키가 성립하지 않는다');
+});
+
+test('[v9.198] 시트 안 중복 제출은 1건 · 카탈로그에 없는 강의ID도 버리지 않는다(수집이 채점보다 우선)', () => {
+  assert.equal(대기줄([뷰('S1', 'L1', '요약'), 뷰('S1', 'L1', '요약')]).length, 1, '같은 배치에서 같은 행을 두 번 올렸다');
+  const q = 대기줄([뷰('S1', '없는강의', '요약')], null, [['L1', '기초', 1, 1, '조사 1강', '', 'Y']]);
+  assert.equal(q.length, 1, '카탈로그에 없다고 학생이 쓴 문장을 버렸다');
+  assert.equal(q[0].문항, '', '없는 제목을 지어냈다');
+});
+
+/* 🔴 이 대기줄은 `hwFeedbackEnsureCols_`(15열 증분) **앞**에서 돈다 — 구 11열 시트를 만나면
+ *   12열 요구가 그 자리에서 예외를 던져 첨삭 배치 전체가 죽는다(요약 하나 때문에 숙제 첨삭이 멎는 것). */
+test('[v9.198] 구 11열 hw_feedback 을 만나도 배치가 죽지 않는다 — 폭은 물리 열수로 클램프', () => {
+  const 좁은 = [['FB1', 'S1', '2026-08-08', '원문', '교정', '', '', '', '노출', '', '']]; // 11열(v9.138 이전)
+  const q = 대기줄([뷰('S1', 'L1', '요약')], 좁은, null, 11);
+  assert.equal(q.length, 1, 'L열이 없으면 「강의:」 행도 없으니 빈 대조표가 정답이다');
+});
+
+test('[v9.198] 배치가 실제로 이 대기줄을 먹고, 숙제 뒤에 붙는다(상한을 요약이 먼저 먹지 않게)', () => {
+  const body = section('function aiFeedbackBatch_()', 'function callClaudeFeedback_(');
+  assert.ok(body.includes('강의요약대기_(ss, tz)'), '만들어만 두고 아무도 안 부른다(v9.90 ROLE_TALK 사고 계열)');
+  // 뒤에 「붙는」 것이 계약이다 — unshift로 바뀌면 소스 순서는 그대로인데 굶는 쪽만 뒤집힌다
+  assert.ok(body.includes('Array.prototype.push.apply(q, 강의요약대기_(ss, tz))'),
+    '강의요약이 대기줄 앞에 붙으면 AI_FEEDBACK_MAX_PER_RUN을 요약이 먼저 먹어 숙제 첨삭이 굶는다');
+  assert.ok(body.indexOf("ss.getSheetByName('숙제폼_응답')") < body.indexOf('강의요약대기_(ss, tz)'),
+    '숙제 대기줄을 강의요약보다 나중에 만든다 — 순서가 뒤집힌 자리');
+});
