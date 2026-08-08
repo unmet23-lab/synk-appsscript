@@ -352,7 +352,7 @@ function selfDeclareLogNightly_() {
   /* ⚠ 줄어듦 감시는 **잠금 밖**에서 돈다 — 그 안의 `adminMail` 이 DIGEST_MODE 에서 같은 스크립트
    *   잠금을 다시 잡는데 GAS 스크립트 잠금은 **비재진입**이라, 안에서 부르면 30초 대기 후 실패하고
    *   경고도 HWM 갱신도 매일 밤 같은 자리에서 죽는다(①배포 검수 P1). 이 감시는 읽기뿐이라 잠금이 필요 없다. */
-  const 기준 = selfDeclareShrinkGuard_(log); // 탭이 지워졌다 되살아난 것을 여기서 잡는다(워치독은 주간이라 매일 밤 되살아나면 영영 못 본다)
+  selfDeclareShrinkGuard_(log); // 탭이 지워졌다 되살아난 것을 여기서 잡는다(워치독은 주간이라 매일 밤 되살아나면 영영 못 본다)
   /* 읽기→차이→쓰기 전 구간을 잠근다 — 야간 배치와 손 실행이 겹치면 둘이 같은 `getLastRow()+1` 을 잡아
    * 뒤엣것이 앞엣것을 덮는다. 덮이는 대상이 「다시 물어볼 수 없는 선언」이라 여기만은 append 를 직렬화한다. */
   const lock = LockService.getScriptLock();
@@ -376,8 +376,10 @@ function selfDeclareLogNightly_() {
     const add = selfDeclareDiff_(rows, last, Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd'));
     // 학생이 직접 친 글이라 소독 통로(writeIfChanged→행소독_)로 append 한다 — `=` 시작 문자열이 라이브 수식이 되는 것을 채널에서 차단.
     if (add.length) writeIfChanged(log, log.getLastRow() + 1, 1, add);
-    // 기준선은 «건수»로 올린다 — 감시가 재는 단위와 같아야 한다(행 인덱스로 올리면 다음 밤이 늘 헐겁다).
-    if (add.length) PropertiesService.getScriptProperties().setProperty(SELF_DECLARE_HWM_, String(기준 + add.length));
+    /* 기준선은 **쓴 뒤 시트를 다시 세어** 올린다 — 감시가 재는 단위와 같아야 하고(행 인덱스로 올리면
+     * 다음 밤이 늘 헐겁다), 잠금 밖에서 읽어 둔 수에 더하면 그 사이 남이 적은 줄만큼 **모자라게** 박혀
+     * 그만큼의 삭제가 다음 밤에 안 보인다(①배포 검수 3차 P2). 세는 곳이 둘이면 갈라지므로 함수 하나로 판다. */
+    if (add.length) PropertiesService.getScriptProperties().setProperty(SELF_DECLARE_HWM_, String(selfDeclareCount_(log)));
     return add.length;
   } finally { lock.releaseLock(); }
 }
@@ -387,12 +389,16 @@ function selfDeclareLogNightly_() {
  *   그래서 「탭이 있나」가 아니라 «몇 줄이 남았나»를 잰다(지워짐·이름 바뀜·잘림이 전부 같은 증상이다).
  * ⚠ 세는 것은 `getLastRow()` 가 **아니라 실제 기록 수**다 — 마지막 행은 «중간»을 지워도 그대로라
  *   행 인덱스로 재면 가운데를 파낸 삭제가 통째로 안 보인다(①배포 검수 P2). 잠금 밖에서 도는 읽기다. */
-const SELF_DECLARE_HWM_ = '자기선언이력_최고행';
+const SELF_DECLARE_HWM_ = '자기선언이력_최고건수';
+/** 남은 기록 수 — 감시와 기준선 갱신이 **같은 자를 쓰도록** 세는 곳을 하나로 둔다. */
+function selfDeclareCount_(log) {
+  const 끝 = log.getLastRow();
+  return 끝 < 2 ? 0 : log.getRange(2, 1, 끝 - 1, 1).getValues().filter(r => String(r[0] || '').trim()).length;
+}
 function selfDeclareShrinkGuard_(log) {
   const props = PropertiesService.getScriptProperties();
   const hwm = Number(props.getProperty(SELF_DECLARE_HWM_) || 0);
-  const 끝 = log.getLastRow();
-  const now = 끝 < 2 ? 0 : log.getRange(2, 1, 끝 - 1, 1).getValues().filter(r => String(r[0] || '').trim()).length;
+  const now = selfDeclareCount_(log);
   if (!hwm || now >= hwm) { if (now > hwm) props.setProperty(SELF_DECLARE_HWM_, String(now)); return now; }
   adminMail('[SYNK] 🌱 자기선언 이력이 줄었다 — ' + hwm + '건 → ' + now + '건',
     '학생이 스스로 쓴 선언(드림한줄·최애·몬스터이름)의 이력 탭 `' + SELF_DECLARE_TAB_ + '` 이 줄었습니다.\n'

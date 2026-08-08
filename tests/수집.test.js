@@ -889,7 +889,7 @@ test('[v9.197] 자기선언 — 읽는 열이 라이브 헤더 자리와 같은�
 /* 줄어듦 감시 — append-only 장부의 자기검사. 워치독의 「누락 시트」는 이 사고를 못 본다(야간 배치가
  * 매일 ensureSheet 로 되살리니 주간 워치독이 볼 땐 탭이 있다). ①배포 검수 P1 이 지적한 자리. */
 function loadShrinkGuard(props, mails) {
-  const s = code.indexOf('const SELF_DECLARE_HWM_ =');
+  const s = code.indexOf("const SELF_DECLARE_HWM_ = '");
   assert.notEqual(s, -1, 'SELF_DECLARE_HWM_ 을 찾지 못함');
   const e = code.indexOf('function aiFeedbackHealth_(', s);
   assert.notEqual(e, -1, 'selfDeclareShrinkGuard_ 끝 표식을 찾지 못함');
@@ -957,6 +957,10 @@ test('[v9.197] 자기선언 — 읽기→차이→쓰기가 직렬화된다', ()
   // ② 줄어듦 감시는 잠금 «밖»이어야 한다 — 그 안의 adminMail 이 같은 스크립트 잠금을 다시 잡는다(비재진입).
   assert.ok(fn.indexOf('selfDeclareShrinkGuard_(log)') < i잠금,
     '줄어듦 감시가 잠금 안에 있다 — adminMail 이 같은 잠금을 재획득해 매일 밤 같은 자리에서 죽는다');
+  /* ③ 기준선은 «쓴 뒤 시트를 다시 세어» 올린다. 잠금 밖에서 읽어 둔 수에 더하면 그 사이 남이 적은
+   *    줄만큼 모자라게 박히고, 그만큼의 삭제가 다음 밤에 안 보인다(감시가 헐거워지는 방향으로 샌다). */
+  assert.match(fn, /SELF_DECLARE_HWM_,\s*String\(selfDeclareCount_\(log\)\)\)/,
+    '기준선을 실측이 아니라 더하기로 올린다 — 감시가 조용히 헐거워진다');
 });
 
 test('[v9.197] 자기선언 — 배선 4자리(안 걸리면 영원히 안 돈다)', () => {
