@@ -2930,7 +2930,7 @@ function calcTeacherStats() {
     if (!r[0] || r[3] !== 'student' || !r[4]) return;
     const rawCls = String(r[4]).trim();
     const cls = rawCls.split('(')[0].trim() || rawCls;
-    clsOfT[r[0]] = cls;
+    clsOfT[String(r[0]).trim()] = cls; // [v9.196] 키를 sids와 같은 규칙으로 — 갈라지면 숙제 분모가 조용히 0이 된다
     if (!memo[rawCls]) memo[rawCls] = teachersOfClass_(emap, rawCls);
     const names = memo[rawCls].length ? memo[rawCls] : [TEACHER_UNASSIGNED + ' ' + cls];
     names.forEach(nm => {
@@ -3010,6 +3010,113 @@ function calcTeacherStats() {
     }
   } catch (eRe) { Logger.log('재등록률 스킵: ' + eRe); }
 
+  /* [v9.196] 시즌 창의 날짜·요일 — 아래 두 지표가 같은 창을 본다. **오늘은 뺀다**: 근태는 하루 단위 판정이라
+   *   아직 안 끝난 날을 세면 매일 오전마다 전 강사가 결근이 된다(숙제는 오늘을 넣어도 분모만 늘어 손해라 같이 뺀다).
+   *   요일 판정은 `classDowOk_` 하나만 쓴다 — 여기 요일을 다시 적으면 주말반 규칙이 갈라진다.
+   * ponytail: 요일은 스크립트 시계(`getDay`)로, 날짜 문자열은 시트 시간대로 낸다 — 이 파일이 이미 쓰는 짝이고
+   *   둘이 다르면 하루 밀린다. 갈라지면 시트 시간대를 스크립트에도 맞춘다(프로젝트 설정 1칸). */
+  const 시즌날 = [];
+  for (let i = 1; i <= ABSENCE_SEASON_DAYS; i++) {
+    const d = new Date(Date.now() - i * 86400000);
+    시즌날.push({ day: Utilities.formatDate(d, tz8, 'yyyy-MM-dd'), dow: d.getDay() });
+  }
+  /* 분자도 이 창을 쓴다 — 위쪽 3지표의 fromS·todayS 는 **오늘을 포함**하는 다른 축이라, 그걸 분자에
+   *   쓰면 오늘치 제출은 세면서 오늘은 분모에 없어 비율이 부푼다(구간 임계를 넘길 수 있다). */
+  const 창시작 = 시즌날[시즌날.length - 1].day, 창끝 = 시즌날[0].day;
+  const 수업일캐시 = {};
+  const 시즌수업일_ = tp => (수업일캐시[tp] != null ? 수업일캐시[tp]
+    : (수업일캐시[tp] = 시즌날.filter(x => classDowOk_(tp, x.dow)).length));
+  /* 시간표는 두 지표가 함께 쓰는 재료라 한 번만 읽고, 실패도 여기서 격리한다 —
+   *   지표 하나의 사고가 케어지수까지 죽이면 안 된다는 것이 이 구역의 관통 원칙이다. */
+  let smap = {};
+  try { smap = scheduleMap(ss); } catch (eSc) { Logger.log('시간표 읽기 스킵: ' + eSc); }
+
+  /* [v9.196] ④ 숙제 제출률 — 유호 확정 2026-08-08 「릴스·자격 외 전부 자동화」의 남은 두 칸 중 하나.
+   *   분자 = hw_feedback 의 **서로 다른 (학생, 제출일) 쌍**(첨삭 행 = 제출의 증거 · 엔진_수집 최근카운트와 같은 읽기).
+   *   분모 = 담당 학생 각각의 **그 반 시즌 수업일 수**(schedule 요일유형에서 유도 — 새 입력 0).
+   *   ⚠ 이 분모 정의는 **정본 §7 에 없다**. §7 은 「가능(학생 제출 기준)」까지만 적었고 v9.194 가 그래서
+   *     미측정으로 뒀다. v9.113 이 배점을 그렇게 뒀던 자리와 같은 처지라, 정본이 채울 때까지 이 파일이 정본이다.
+   * ponytail: 수업일 밖 제출(주말 보충)도 분자에 세므로 비율이 100 을 넘을 수 있다 — 자르지 않는다.
+   *   자르면 「많이 냈다」와 「딱 맞췄다」가 같아지고, 원수치는 지표모수 칸이 그대로 말한다. */
+  const hwBy = {};
+  try {
+    const fb = ss.getSheetByName('hw_feedback');
+    const 제출 = {};
+    let 원천 = 0;                                  // 창 안의 쓸 만한 행 수 — 0이면 **잰 적이 없다**
+    if (fb && fb.getLastRow() >= 2) {
+      const seen = {};
+      fb.getRange(2, 1, fb.getLastRow() - 1, 3).getValues().forEach(r => {
+        const sid = String(r[1] || '').trim(), d = dstr(r[2], tz8);
+        if (!sid || !d || d < 창시작 || d > 창끝 || seen[sid + '|' + d]) return;
+        seen[sid + '|' + d] = 1;
+        원천++;
+        제출[sid] = (제출[sid] || 0) + 1;
+      });
+    }
+    /* 🔑 원천이 통째로 비면 **미측정**이다 — 근태의 「출근 기록 0 = 미측정」과 같은 규칙이다.
+     *   여기서 안 막으면 `0 / 80` = 0% 가 나오고 `homeworkScore_(0)` 은 그걸 **잰 0점**으로 읽는다.
+     *   개원 전이 정확히 그 상태라(hw_feedback 빈 시트) 전 강사가 즉시 0점 + 관문 ③(0점 항목) 발동이다.
+     *   「내 학생만 0건」은 반대로 진짜 0% 다(시트에 남의 행이 있다) — 그래서 판정 단위가 원천이다. */
+    if (원천) Object.keys(t).forEach(nm => {
+      let sub = 0, exp = 0;
+      Object.keys(t[nm].sids).forEach(sid => {
+        const s = schedOf(smap, clsOfT[sid]);
+        if (!s) return;  // 시간표에 없는 반 = 기대 제출 수를 못 센다 → 그 학생만 분모에서 빠진다(전체는 계속 잰다)
+        exp += 시즌수업일_(s.type);
+        sub += 제출[sid] || 0;
+      });
+      hwBy[nm] = { sub: sub, exp: exp, rate: exp ? Math.round(sub * 100 / exp) : null };
+    });
+  } catch (eHw) { Logger.log('숙제 제출률 스킵: ' + eHw); }
+
+  /* [v9.196] ⑤ 근태 위반 건수 — 강사 **근무표를 담당 반 시간표에서 유도한다**(별도 근무표 입력 0).
+   *   그날 담당 반의 첫 수업 시작 시각보다 늦은 출근 = 지각 · 수업 있는 날 출근 기록 0 = 결근. 둘 다 1건.
+   *   원천 = teacher_checkins(이름·구분·시각 · 열 순서는 TC_* 상수).
+   *   ⚠ 이 정의도 정본 §7 에 없다(정본은 「무위반/1회/2회/3회 이상」 구간만 준다).
+   * 🔑 **출근 기록이 창 안에 하나도 없는 강사는 미측정(null)이다 — 전원 결근으로 읽지 않는다.**
+   *   이름 표기가 profiles 와 어긋나기만 해도 위반 40건이 되고, 그 순간 관문 ②(3회↑ 강등)와 ③(0점 항목)이
+   *   함께 터져 앱 결함이 그대로 급여 삭감이 된다. 「못 잰 것을 0으로 환산하지 않는다」(v9.89 원칙)의 최대 위험처. */
+  const puBy = {};
+  try {
+    const tc = ss.getSheetByName('teacher_checkins');
+    const 출근 = {};
+    if (tc && tc.getLastRow() >= 2) {
+      tc.getRange(2, 1, tc.getLastRow() - 1, 3).getValues().forEach(r => {
+        const nm = String(r[TC_NAME_COL - 1] || '').trim(), v = r[TC_TIME_COL - 1];
+        if (!nm || !v || String(r[TC_TYPE_COL - 1] || '').indexOf('출근') === -1) return;
+        const d = asDate_(v);
+        if (isNaN(d.getTime())) return;   // 깨진 시각 **한 행**이 formatDate 예외 → catch → 전 강사 미측정이 된다
+        const day = Utilities.formatDate(d, tz8, 'yyyy-MM-dd');
+        if (day < 창시작 || day > 창끝) return;
+        const hm = Utilities.formatDate(d, tz8, 'HH:mm');
+        const m = 출근[nm] || (출근[nm] = {});
+        if (!m[day] || hm < m[day]) m[day] = hm;  // 하루 여러 번 찍으면 가장 이른 것 — 연타 정정(v9.127)과 같은 규칙
+      });
+    }
+    Object.keys(t).forEach(nm => {
+      const rec = 출근[nm];
+      if (!rec) return;                         // 미측정 — 위 🔑
+      const 첫수업 = {};                            // 요일 → 그날 담당 반 중 가장 이른 수업 'HH:mm'
+      Object.keys(t[nm].cls).forEach(cn => {
+        const s = schedOf(smap, cn);
+        if (!s || !s.time) return;
+        for (let dw = 0; dw < 7; dw++) {
+          if (!classDowOk_(s.type, dw)) continue;
+          if (!첫수업[dw] || s.time < 첫수업[dw]) 첫수업[dw] = s.time;
+        }
+      });
+      let 위반 = 0, 근무일 = 0;
+      시즌날.forEach(x => {
+        const 시작 = 첫수업[x.dow];
+        if (!시작) return;                          // 담당 수업이 없는 날 = 근무일이 아니다
+        근무일++;
+        const 찍은 = rec[x.day];
+        if (!찍은 || 찍은 > 시작) 위반++;
+      });
+      if (근무일) puBy[nm] = { 위반: 위반, 근무일: 근무일 };
+    });
+  } catch (ePu) { Logger.log('근태 스킵: ' + ePu); }
+
   /* [v9.194] 개원 첫 시즌인가 — **설정값이 아니라 데이터에서 유도한다.** 정본이 첫 시즌 표를 따로 둔
    *   이유가 「재등록할 이전 시즌이 없다」 하나이므로, 재등록을 판정할 수 있는 강사가 한 명도 없으면
    *   그것이 곧 첫 시즌이다. 스위치를 두면 시즌이 바뀔 때 아무도 안 내려서 표가 조용히 낡는다.
@@ -3029,13 +3136,11 @@ function calcTeacherStats() {
     const abScore = abFn(abRate); // 급여 정본 §7 배점 — 셋 중 유일하게 처음부터 문서 근거가 있던 것
     const re = reBy[k] || { tot: 0, rate: null };
     const pmScore = pmFn(pm.rate), reScore = 첫시즌 ? null : reenrollScore_(re.rate);
-    /* [v9.194] 숙제 제출률·근태 — 정본은 「앱 자동」으로 잡았지만 **분모의 정의가 정본에 없다.**
-     *   숙제 = 기대 제출 수를 무엇으로 세는지(수업일? 게시 횟수?)가 §7 에 없고, 근태 = 강사별
-     *   개인 시간표가 이 저장소에 없어 「지각·결근」의 기준 시각·기준 요일이 없다(Code.js 3671행
-     *   주석이 그 부재를 이미 적어 뒀다). 규칙이 정해지기 전에 숫자를 만들면 그게 급여가 된다 —
-     *   그래서 **미측정(null)으로 정직하게 낸다.** 아래 등급 판정이 이 둘을 분모에서 빼고,
-     *   빠진 배점을 '등급판정' 칸에 그대로 적어 무엇이 안 재졌는지 화면에서 보이게 한다. */
-    const hwRate = null, 근태위반 = null;
+    /* [v9.196] 숙제·근태 — v9.194 는 분모 정의가 정본에 없어 미측정으로 뒀는데, 유호 확정 08-08
+     *   「릴스·자격 외 전부 자동화」가 그 판단을 뒤집었다: 정의를 이 파일이 지고 근거를 위 두 블록 주석에
+     *   남긴다. 못 잰 경우(시간표 없는 반뿐 / 출근 기록 0)는 여전히 null 로 떨어져 등급 판정이 분모에서 뺀다. */
+    const hw = hwBy[k] || null, pu = puBy[k] || null;
+    const hwRate = hw ? hw.rate : null, 근태위반 = pu ? pu.위반 : null;
     const hwScore = hwFn(hwRate), puScore = puFn(근태위반);
     // [v9.87] 왕관 총계 = 담당 반 합산 / 편중% = 반 단위 최댓값(가장 쏠린 반). 여러 반 학생을 한 통에 섞으면
     //   한 반의 100% 쏠림이 반 수만큼 희석돼 60% 경보가 죽는다 — 왕관은 반당 1명([v7.9])이라 공정성 단위도 반이다.
@@ -3071,7 +3176,10 @@ function calcTeacherStats() {
                              { 이름: '근태', 점수: puScore, 만점: puFn(0) }]
               .concat(첫시즌 ? [] : [{ 이름: '재등록', 점수: reScore, 만점: reenrollScore_(100) }]),
             { 첫시즌: 첫시즌, 재등록률: re.rate, 승급률: pm.rate, 근태위반: 근태위반 }).표기,
+            // [v9.196] 숙제·근태 모수도 같이 편다 — "80%"가 몇 분의 몇인지 원장이 바로 판별하는 칸이고,
+            //   두 지표는 분모 정의가 정본 밖이라 더더욱 원수치가 보여야 한다(근태는 분모가 근무일 수).
             '승급 ' + pm.tot + ' · 복귀 ' + ab.judged + ' · 재등록 ' + re.tot
+              + ' · 숙제 ' + (hw ? hw.sub + '/' + hw.exp : '미측정') + ' · 근태 ' + (pu ? pu.근무일 + '일' : '미측정')
               + (첫시즌 ? ' · 첫 시즌(재등록 항목 없음)' : '')];
   }).sort((a, b) => b[5] - a[5]);
 
