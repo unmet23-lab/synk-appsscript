@@ -33,6 +33,13 @@ const ROOT = path.resolve(__dirname, '..');
 const SCAN_DIRS = ['docs'];
 const SKIP = [/[\\/]_archive[\\/]/, /[\\/]worktrees[\\/]/, /세션보드_아카이브/, /[\\/]_구본[\\/]/, /[\\/]pixelart_draft[\\/]/];
 const TEXT_EXT = /\.(md|txt)$/i;
+/* [2026-08-08] 정본을 **구현하는 코드**도 파생이다. F243 실측: 급여 정본 v1.6(08-04)이 재등록 배점을
+ * 30점으로 올렸는데 `엔진_운영배치.js`는 20점 고정인 채 4일을 갔다. 그때 문서 파생 5종은 전부 @v1.6으로
+ * 최신이었다 — 낡은 것은 **엣지가 없어 그래프 밖에 있던 코드 하나**뿐이었고, 그래서 아무도 안 울렸다.
+ * 새는 방향이 나쁘다: 비율은 옳고 점수만 낮은 형태라 화면으로는 안 보이고 급여가 조용히 깎인다.
+ * 저장소 **루트의 .js만** 본다 — 엔진·콘텐츠가 전부 거기 있고, 재귀로 넓히면 node_modules·.git을
+ * 걷어내는 규칙을 새로 져야 한다(SKIP은 그 둘을 아직 모른다). 읽기 비용 실측 +12ms(87→99ms). */
+const CODE_EXT = /\.js$/i;
 const EDGE_RE = /<!--\s*파생\s*:\s*([^>]+?)\s*-->/g;
 
 const rel = (p) => path.relative(ROOT, p).replace(/\\/g, '/');
@@ -55,6 +62,15 @@ function walk(dir, out = []) {
     else if (TEXT_EXT.test(e.name)) out.push(full);
   }
   return out;
+}
+
+/** 저장소 루트의 코드 파일만 **얕게**. 하위 폴더로 안 내려간다(위 CODE_EXT 주석의 이유). */
+function rootCode() {
+  let entries;
+  try { entries = fs.readdirSync(ROOT, { withFileTypes: true }); } catch (_) { return []; }
+  return entries
+    .filter((e) => e.isFile() && CODE_EXT.test(e.name) && !shouldSkip(e.name))
+    .map((e) => path.join(ROOT, e.name));
 }
 
 // 정본 판별 — 파일명에 '정본'이 있거나 docs/정본/ 아래에 있으면 정본.
@@ -145,7 +161,7 @@ function findMapGaps(docs) {
 }
 
 function build() {
-  const files = SCAN_DIRS.flatMap((d) => walk(path.join(ROOT, d)));
+  const files = [...SCAN_DIRS.flatMap((d) => walk(path.join(ROOT, d))), ...rootCode()];
   const docs = new Map(); // relPath -> {rel, full, canon, follows:[], text}
   for (const full of files) {
     const r = rel(full);
