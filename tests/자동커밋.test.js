@@ -121,9 +121,13 @@ test('내것만 커밋한다 — 함께 만진 파일은 남기고 알린다(F10
 
 test('보드는 절대 자동커밋하지 않는다(F102) — 침묵', (t) => {
   const { root, state } = 판(t);
-  쓰기(root, 'docs/세션보드.md', '| 줄 |');
-  만짐기록(state, root, 'me-2', ['docs/세션보드.md']);
-  지문기록(state, root, 'me-2', ['docs/세션보드.md']);   // 지문이 있어도 보드는 안 실린다
+  /* 옛 좌표와 **새 정본**(F250 이주 · `docs/_ops/보드/<지문>.md`)을 함께 건다.
+   * 이 회귀가 옛 이름만 들고 있어서 이주가 초록인 채로 통과했고, 그 뒤 08-08 17:06 에
+   * 자동커밋이 `docs/_ops/보드/6da8da21.md` 를 실제로 실었다 — 회귀는 정본을 따라가야 한다. */
+  const 보드들 = ['docs/세션보드.md', 'docs/_ops/보드/33b4bf84.md'];
+  for (const f of 보드들) 쓰기(root, f, '| 줄 |');
+  만짐기록(state, root, 'me-2', 보드들);
+  지문기록(state, root, 'me-2', 보드들);   // 지문이 있어도 보드는 안 실린다
   const 전 = 머리해시(root);
   const out = 훅실행(root, state, 'me-2');
   assert.strictEqual(out, '', '후보 0건인데 입을 열었다');
