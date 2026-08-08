@@ -66,15 +66,21 @@ if (base === '세션보드.md') {
     + '   지문 = `$CLAUDE_CODE_HOST_SESSION_ID` 에서 접두를 뺀 앞 8자리.\n'
     + '   전체 표를 보려면 `node tools/board.js`, 완료 줄 이관은 `node tools/board-move.js "문구"`.');
 }
-if (!/\/docs\/_ops\/보드\/[^/]+\.md$/.test(norm)) process.exit(0); // 아카이브·다른 문서는 통과
+/* ⚠ 앞의 `/` 를 **요구하지 않는다** — 도구는 상대경로(`docs/_ops/보드/x.md`)로도 들어온다(F204).
+ *   옛 판정은 basename 이라 이 차이가 없었고, 여기서 `/` 를 박으면 상대경로가 통째로 빠진다. */
+if (!/(^|\/)docs\/_ops\/보드\/[^/]+\.md$/.test(norm)) process.exit(0); // 아카이브·다른 문서는 통과
 
 /* 상한(활성 12·전체 18)은 표 **전체**를 재는 규칙인데 내 파일엔 내 줄만 있다.
  * 그래서 남의 세션 파일 줄을 편집 전·후 **양쪽에** 똑같이 붙인다 — 차집합(=내가 바꾼 줄)은
- * 그대로라 칸 길이 검사의 「내가 나쁘게 만든 것만」(F233·F234·F235)이 깨지지 않는다. */
+ * 그대로라 칸 길이 검사의 「내가 나쁘게 만든 것만」(F233·F234·F235)이 깨지지 않는다.
+ *
+ * ⚠ 코드는 **훅 옆**에서, 데이터는 **편집 대상 옆**에서 온다. 둘을 같은 뿌리로 조립하면
+ *   편집 대상이 다른 저장소(테스트 픽스처·워크트리)일 때 require 가 조용히 실패해
+ *   남의 줄이 통째로 0 이 되고, 그 방향은 「통과」다. */
 const 보드ROOT = path.resolve(path.dirname(norm), '..', '..', '..');
 const 남의줄 = (() => {
   try {
-    const 보드 = require(path.join(보드ROOT, 'tools', 'lib', '보드.js'));
+    const 보드 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '보드.js'));
     return (보드.줄들(보드ROOT) || []).filter((r) => r.파일 !== base).map((r) => r.줄);
   } catch (_) { return []; }
 })();

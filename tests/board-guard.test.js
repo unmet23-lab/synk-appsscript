@@ -11,9 +11,18 @@ const path = require('path');
 const HOOK = path.join(__dirname, '..', '.claude', 'hooks', 'board-guard.js');
 const LONG = '가'.repeat(260);
 
+/** 보드 정본은 `docs/_ops/보드/<지문>.md` 의 세션별 파일이다(F250) — 픽스처도 그 자리에 만든다.
+ *  훅은 이 경로 모양(`/docs/_ops/보드/*.md`)으로 대상을 가리고, 그 위 세 단계를 저장소 루트로 삼아
+ *  **남의 세션 파일**을 읽는다. 한 파일에 다 넣던 옛 픽스처는 그 두 가지를 다 못 시험한다. */
+function 보드파일(root, 이름) {
+  const p = path.join(root, 'docs', '_ops', '보드', `${이름 || 'aaaa1111'}.md`);
+  fs.mkdirSync(path.dirname(p), { recursive: true });
+  return p;
+}
+
 // 임시 보드(11줄) — 줄 수 검사가 실제 저장소 상태에 흔들리지 않게 한다
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'boardguard-'));
-const BOARD = path.join(TMP, '세션보드.md');
+const BOARD = 보드파일(TMP);
 const ARCHIVE = path.join(TMP, '세션보드_아카이브.md');
 /* 🔑 픽스처 줄은 **주인 지문을 달고 있다** — 새 줄에 지문·해시를 요구하는 검사 ③(F165)이
  *   있고, 이 파일의 나머지 검사는 ①칸 길이·②줄 수를 재는 것이라 ③에 걸리면 무엇을 쟀는지
@@ -315,7 +324,8 @@ test('🔴 [회귀·F094] 안내와 판정이 갈라지지 않는다 — 안내�
  * 위쪽 검사들이 쓰는 BOARD 는 git 밖이라 이 규칙이 안 도는 것이 정상이고, 그래서 탐지 능력은
  * 이 픽스처가 통째로 진다(실저장소는 아래 거짓양성 검사만 본다). */
 const GIT = fs.mkdtempSync(path.join(os.tmpdir(), 'boardguard-git-'));
-const GBOARD = path.join(GIT, '세션보드.md');
+const GBOARD = 보드파일(GIT, 'bbbb2222');
+const GBOARD상대 = 'docs/_ops/보드/bbbb2222.md';
 const 머리 = ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|'].join('\n');
 const 기존 = '| 2026-08-07 | 기존 트랙 | tools/기존.js `local_11111111` | ✅종결 |';
 /* 남의 **미커밋** 선언 — 실측 그대로다(`82404266` 이 ②-20 을 잡고 3분 뒤 다른 세션이 겹쳤다). */
@@ -328,7 +338,7 @@ try {
   git('init', '-q');
   git('config', 'user.email', 'test@synk.local');
   git('config', 'user.name', 'test');
-  git('add', '세션보드.md');
+  git('add', GBOARD상대);
   git('commit', '-qm', 'base', '--no-verify');
   fs.writeFileSync(GBOARD, `${머리}\n${기존}\n${남의줄}\n`, 'utf8'); // 선언은 여기서 미커밋으로만 산다
 } catch (_) {
@@ -421,13 +431,12 @@ test('🔴 [④·F103] 차단 사유가 시키는 대로 비켜나면 통과한�
  * 선언했고 ④ 는 조용했다. 그래서 여기서만 남의 줄을 **커밋해 두고** 잰다. */
 function 커밋된판(남의줄들, 편집, { 상대로 = false } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'boardguard-committed-'));
-  fs.mkdirSync(path.join(dir, 'docs'));
-  const b = path.join(dir, 'docs', '세션보드.md');
+  const b = 보드파일(dir, 'cccc3333');
   const g = (...a) => execFileSync('git', ['-C', dir, ...a], { encoding: 'utf8', stdio: 'pipe' });
   fs.writeFileSync(b, `${머리}\n${기존}\n${남의줄들.join('\n')}\n`, 'utf8');
   g('init', '-q'); g('config', 'user.email', 'test@synk.local'); g('config', 'user.name', 'test');
   g('add', '.'); g('commit', '-qm', '보드: 착수 선언들', '--no-verify');
-  const 경로 = 상대로 ? 'docs/세션보드.md' : b;
+  const 경로 = 상대로 ? 'docs/_ops/보드/cccc3333.md' : b;
   try {
     return 판정({ tool_name: 'Edit', tool_input: { file_path: 경로, ...편집 } }, 나, 상대로 ? dir : undefined);
   } finally {
@@ -571,7 +580,7 @@ test('🔴 [F221·ⓐ] 겹침이 없으면 만석은 그대로 막는다 — 순
  * 즉시 `deny` 였을 때는 없던 실패 모드고, 새는 방향은 언제나 「통과」다. 변이 시험이 이 자리를
  * 회귀 공백으로 지목했다(다른 어떤 검사도 안 울었다) — 수리와 같은 커밋에 못 박는다. */
 test('🔴 [F221] 보드 파일을 못 읽어도 ①의 보류를 삼키지 않는다', () => {
-  const 없는보드 = path.join(TMP, '없는폴더', '세션보드.md');
+  const 없는보드 = path.join(TMP, '없는폴더', 'docs', '_ops', '보드', 'aaaa1111.md');
   const r = 판정({ tool_name: 'Edit', tool_input: { file_path: 없는보드, old_string: 'x', new_string: `| 2026-08-01 | 트랙 | Code.js | ${LONG} |` } });
   assert.strictEqual(r.결정, 'deny',
     '🔴 파일을 못 읽는다는 이유로 칸 초과가 통과했다 — 미룬 사유가 조용히 버려지는 문이다');
@@ -607,7 +616,7 @@ const 내줄F235 = (상태) => `| 2026-08-08 | **내 트랙 되듣기** | SYNK-t
 
 /** 남의 과길이 줄 + 내 짧은 줄이 함께 있는 보드. 매번 새 임시 파일이라 검사끼리 안 섞인다. */
 function 섞인보드(남의줄 = 남의과길이줄, 상태 = '🔵착수') {
-  const p = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'boardf235-')), '세션보드.md');
+  const p = 보드파일(fs.mkdtempSync(path.join(os.tmpdir(), 'boardf235-')), 'dddd4444');
   fs.writeFileSync(p, ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|', 남의줄, 내줄F235(상태), ''].join('\n'), 'utf8');
   return p;
 }
@@ -650,7 +659,7 @@ test('🔴 [F235] 이미 있던 과길이 칸을 **조용히 넘기지 않는다
  * 주인이 전부 살아 있으면 board-move 가 원칙⑥으로 거부한다 — 따를 수 있는 처방이 0이 된다.
  * 아래 둘은 조건 하나만 다르다(늘리지 않는 편집 · 늘리는 편집). 탐지력은 둘째가 진다. */
 const 만석보드 = (n = 20) => {
-  const p = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'boardf234-')), '세션보드.md');
+  const p = 보드파일(fs.mkdtempSync(path.join(os.tmpdir(), 'boardf234-')), 'eeee5555');
   fs.writeFileSync(p, `${table(n)}\n`, 'utf8');
   return p;
 };
@@ -670,7 +679,7 @@ test('🔴 [F234] 만석에서 **줄을 늘리면** 그대로 막는다 (탐지�
 });
 
 test('🔴 [F235] 편집 전 판을 못 읽으면 **전량 차단으로 돌아간다** (폴백이 느슨해지지 않는다)', () => {
-  const 없는보드 = path.join(TMP, '없는폴더F235', '세션보드.md');
+  const 없는보드 = path.join(TMP, '없는폴더F235', 'docs', '_ops', '보드', 'aaaa1111.md');
   const r = 판정({ tool_name: 'Write', tool_input: { file_path: 없는보드, content: ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|', 남의과길이줄, ''].join('\n') } });
   assert.strictEqual(r.결정, 'deny',
     '🔴 이전 판을 못 읽자 전부 「남의 것」으로 세어 과길이가 통과했다 — 폴백이 느슨해지는 쪽이면 그게 곧 구멍이다');

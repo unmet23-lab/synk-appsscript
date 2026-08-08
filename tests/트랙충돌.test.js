@@ -36,7 +36,8 @@ function 픽스처저장소() {
   임시들.push(dir);
   // ⚠ user.name/email 을 명령마다 준다 — CI 는 HOME 이 비어 전역 설정이 없다(F: repo 밖 환경 의존).
   gitIn(dir, ['init', '-q']);
-  fs.mkdirSync(path.join(dir, 'docs'), { recursive: true });
+  // 보드 정본은 `docs/_ops/보드/<지문>.md` 의 세션별 파일이다(F250) — 픽스처도 그 자리에 만든다.
+  fs.mkdirSync(path.join(dir, 'docs', '_ops', '보드'), { recursive: true });
   return dir;
 }
 function gitIn(dir, args) {
@@ -229,7 +230,7 @@ test('보드에 선언만 하고 아직 안 만진 파일도 내 자리다', (t)
   if (!있나) return t.skip('git 없음');
   const dir = 픽스처저장소();
   const st = 상태폴더();
-  fs.writeFileSync(path.join(dir, 'docs', '세션보드.md'),
+  fs.writeFileSync(path.join(dir, 'docs', '_ops', '보드', 'sess.md'),
     '| 날짜 | 트랙 | 만지는 파일 | 상태 |\n|---|---|---|---|\n'
     + '| 2026-08-04 | 내 트랙 | **Code.js·엔진_수집.js** | 진행중 |\n');
   커밋(dir, 'Code.js', 'a', 'init', 'sess-B');
@@ -266,7 +267,7 @@ test('🔴 보드 줄이 동점이면 **아무 줄도 안 집는다** — 어느
   for (const [먼저, 나중] of [['남의', '내'], ['내', '남의']]) {
     const dir = 픽스처저장소();
     const st = 상태폴더();
-    fs.writeFileSync(path.join(dir, 'docs', '세션보드.md'),
+    fs.writeFileSync(path.join(dir, 'docs', '_ops', '보드', 'sess.md'),
       '| 날짜 | 트랙 | 만지는 파일 | 상태 |\n|---|---|---|---|\n'
       + `| 2026-08-04 | ${먼저} 트랙 | **Code.js·${먼저}전용.js** | 진행중 |\n`
       + `| 2026-08-04 | ${나중} 트랙 | **Code.js·${나중}전용.js** | 진행중 |\n`);
@@ -286,7 +287,7 @@ test('🔑 보드가 애매해도 **내 커밋 제목**의 표식은 산다 (Ses
    * 내 커밋 제목은 Session-Id 로 확실히 내 것이라 보드와 무관하게 쓸 수 있다. */
   const dir = 픽스처저장소();
   const st = 상태폴더();
-  fs.writeFileSync(path.join(dir, 'docs', '세션보드.md'),
+  fs.writeFileSync(path.join(dir, 'docs', '_ops', '보드', 'sess.md'),
     '| 날짜 | 트랙 | 만지는 파일 | 상태 |\n|---|---|---|---|\n'
     + '| 2026-08-04 | 남의 트랙 | **Code.js·A.js** | 진행중 |\n'
     + '| 2026-08-04 | 다른 트랙 | **Code.js·B.js** | 진행중 |\n');   // 동점 → 보드 줄 없음
@@ -310,7 +311,7 @@ for (const 번호 of ['F067', 'F123', 'F203']) {
     if (!있나) return t.skip('git 없음');
     const dir = 픽스처저장소();
     const st = 상태폴더();
-    fs.writeFileSync(path.join(dir, 'docs', '세션보드.md'),
+    fs.writeFileSync(path.join(dir, 'docs', '_ops', '보드', 'sess.md'),
       '| 날짜 | 트랙 | 만지는 파일 | 상태 |\n|---|---|---|---|\n'
       + `| 2026-08-04 | 코드편집 통로 차단 ${번호} | **Code.js** | 진행중 |\n`);
     커밋(dir, 'Code.js', 'a', 'init', 'sess-B');
@@ -333,10 +334,10 @@ test('🔴 공용 장부(세션보드 등) 겹침은 충돌이 아니다 — 모
    * 장부를 신호로 세면 이 훅은 하루 만에 안 읽히는 장치가 된다. */
   const dir = 픽스처저장소();
   const st = 상태폴더();
-  커밋(dir, 'docs/세션보드.md', 'a', 'init', 'sess-B');
-  훅(dir, { file: 'docs/세션보드.md', stateDir: st });   // 나도 보드를 만졌다(모두가 만진다)
-  커밋(dir, 'docs/세션보드.md', 'b', 'docs: 보드 — 남의 트랙 종결', 'sess-B');
-  const r = 훅(dir, { file: 'docs/세션보드.md', stateDir: st });
+  커밋(dir, 'docs/_ops/보드/sess.md', 'a', 'init', 'sess-B');
+  훅(dir, { file: 'docs/_ops/보드/sess.md', stateDir: st });   // 나도 보드를 만졌다(모두가 만진다)
+  커밋(dir, 'docs/_ops/보드/sess.md', 'b', 'docs: 보드 — 남의 트랙 종결', 'sess-B');
+  const r = 훅(dir, { file: 'docs/_ops/보드/sess.md', stateDir: st });
   assert.equal(r.조용, true,
     `보드 갱신을 충돌로 셌다 — 매 세션 종료마다 울려 진짜 신호를 묻는다: ${r.요약}`);
 });
@@ -348,7 +349,7 @@ test('장부라도 표식이 겹치면 알린다 — 파일 신호만 죽이지 
   const dir = 픽스처저장소();
   const st = 상태폴더();
   fs.mkdirSync(path.join(dir, 'docs', '_ops'), { recursive: true });
-  fs.writeFileSync(path.join(dir, 'docs', '세션보드.md'),
+  fs.writeFileSync(path.join(dir, 'docs', '_ops', '보드', 'sess.md'),
     '| 날짜 | 트랙 | 만지는 파일 | 상태 |\n|---|---|---|---|\n'
     + '| 2026-08-04 | 내 트랙 F070 | **Code.js·마찰신호.md** | 진행중 |\n');
   커밋(dir, 'Code.js', 'a', 'init', 'sess-B');
@@ -537,7 +538,7 @@ test('🔑 형제 좌표는 내 저장소 경로와 **글자가 겹치지 않는
   const dir = 픽스처저장소();
   const sib = 픽스처저장소();
   const 상태 = 상태폴더();
-  const 같은상대경로 = 'docs/세션보드.md';       // 두 저장소에 **같은 상대 경로**가 있는 흔한 모양
+  const 같은상대경로 = 'docs/_ops/보드/sess.md';       // 두 저장소에 **같은 상대 경로**가 있는 흔한 모양
   커밋(dir, 'Code.js', 'a', 'init', 'sess-Z');   // HEAD 가 없으면 훅은 상태를 쓰기 전에 끝난다
 
   훅(dir, { 절대파일: path.join(sib, 같은상대경로), 형제: [sib], sid: 'sess-B', stateDir: 상태 });
@@ -1018,10 +1019,10 @@ test('🔴 ⑤ 공용 장부(보드)는 안 운다 — 모든 세션이 규약�
   if (!있나) return t.skip('git 없음');
   const dir = 픽스처저장소();
   const 공유 = 상태폴더();
-  커밋(dir, 'docs/세션보드.md', '| 줄 |\n', 'seed', 'sess-Z');
+  커밋(dir, 'docs/_ops/보드/sess.md', '| 줄 |\n', 'seed', 'sess-Z');
 
-  훅(dir, { file: 'docs/세션보드.md', sid: 'sess-B', stateDir: 공유 });
-  const r = 훅(dir, { file: 'docs/세션보드.md', sid: 'sess-A', stateDir: 공유 });
+  훅(dir, { file: 'docs/_ops/보드/sess.md', sid: 'sess-B', stateDir: 공유 });
+  const r = 훅(dir, { file: 'docs/_ops/보드/sess.md', sid: 'sess-A', stateDir: 공유 });
 
   assert.ok(r.조용 || !r.본문.includes('같은 트리의 다른 세션이 지금 들고 있다'),
     `보드 겹침으로 울었다 — 모든 세션이 종료 선언을 여기 쓰므로 산 세션 수만큼 울고, 그 순간 이 훅은 안 읽히게 된다:\n${r.본문}`);
