@@ -2372,9 +2372,11 @@ function absenceReturnStats_(rows, fromStr, toStr) {
 
 // [v9.89] 급여 인센티브 정본 §7 배점표 그대로 — 90%+ 20 / 85~89 16 / 80~84 12 / 75~79 6 / 미만 0.
 //   판정 데이터가 없으면 null(미측정) — 무데이터를 0점으로 환산하면 강사가 앱 결함으로 돈을 잃는다.
-function absenceReturnScore_(rate) {
+function absenceReturnScore_(rate, 첫) {
+  // [v9.194] 첫 = 개원 첫 시즌 — 재등록률 30점이 없어져 이 항목이 20 → 30 으로 커진다(정본 §7 첫 시즌 표).
   if (rate == null || isNaN(rate)) return null;
-  return rate >= 90 ? 20 : rate >= 85 ? 16 : rate >= 80 ? 12 : rate >= 75 ? 6 : 0;
+  return 첫 ? (rate >= 90 ? 30 : rate >= 85 ? 24 : rate >= 80 ? 18 : rate >= 75 ? 10 : 0)
+            : (rate >= 90 ? 20 : rate >= 85 ? 16 : rate >= 80 ? 12 : rate >= 75 ? 6 : 0);
 }
 
 function checkNoShow() {
@@ -2680,8 +2682,11 @@ function checkEvolution() {
 //   "80%"가 5명 중 4명인지 100명 중 80명인지 원장이 바로 판별하게 한다.
 //   [v9.113] 지표별 (비율, 배점) 쌍을 나란히 둔다 — 흩어져 있으면 원장이 "이 점수가 어느 비율에서 나왔나"를
 //   눈으로 잇지 못한다. 인센티브점수는 '획득 / 가능' 문자열(미측정 지표는 분모에서도 빠진다).
+//   [v9.194] 숙제·근태 2지표 + 등급판정 편입 — 정본 §7 이 「앱 자동 90점 5항목」이라 잡은 표를 열로 다 편다.
+//   등급판정은 총점이 아니라 **판정 문장**이다('88점 · 실버 ×1.15 · 미측정 20점 제외' / '심사 스킵(…)').
 const TEACHER_STATS_HEADERS = ['강사', '담당학생수', '1인당출석', '1인당포인트', '1인당칭찬', '케어지수', '지난달왕관', '왕관편중%', '담당반',
-                               '승급통과율%', '승급배점', '결석복귀율%', '복귀배점', '재등록률%', '재등록배점', '인센티브점수', '지표모수'];
+                               '승급통과율%', '승급배점', '결석복귀율%', '복귀배점', '재등록률%', '재등록배점',
+                               '숙제제출률%', '숙제배점', '근태위반', '근태배점', '인센티브점수', '등급판정', '지표모수'];
 
 /* [v9.193] 승급·재등록 배점 — **정본이 회수했다**. v9.113 은 급여 정본 §7 에 구간표가 없어
  * 「임의 기준」으로 두고 「문서가 확정되면 임계값만 갈아끼우라」고 적어 뒀는데, 정본 v1.6(2026-08-04)이
@@ -2691,17 +2696,36 @@ const TEACHER_STATS_HEADERS = ['강사', '담당학생수', '1인당출석', '1�
  *   · 재등록 90/85/80/75 → **30/24/18/10/0** — v9.113 은 20/16/12/6 이었다(만점 자체가 20 vs 30)
  * 재등록만 만점이 다른 이유는 정본이 배점을 그렇게 정했기 때문이다(등급 심사 100점 중 재등록 30).
  * 「셋 다 만점 20 동률」은 근거가 없던 시절의 잠정값이었고 이 판으로 폐기한다. */
-function promotionScore_(rate) {
+/* [v9.194] `첫`(개원 첫 시즌) 인자 — 정본 §7 「개원 첫 시즌 전용 배점표」. 첫 시즌엔 재등록률이
+ *   **존재하지 않아**(재등록할 이전 시즌이 없다) 그 30점을 복귀·승급·숙제·근태에 옮겨 담는다.
+ *   ⚠ 임계는 그대로고 **점수만** 커진다 — 승급의 임계(60/50/40/30)가 복귀(90/85/80/75)와 다른 것도 그대로다. */
+function promotionScore_(rate, 첫) {
   // 도달제 승급(급수 6단계를 여러 시즌에 걸쳐 오른다) — 한 시즌에 전원이 오르는 것은 비현실적이라
   // 복귀·재등록보다 임계를 낮게 잡는다. 절반이 오르면 우수.
   if (rate == null || isNaN(rate)) return null;
-  return rate >= 60 ? 20 : rate >= 50 ? 16 : rate >= 40 ? 12 : rate >= 30 ? 6 : 0;
+  return 첫 ? (rate >= 60 ? 30 : rate >= 50 ? 24 : rate >= 40 ? 18 : rate >= 30 ? 10 : 0)
+            : (rate >= 60 ? 20 : rate >= 50 ? 16 : rate >= 40 ? 12 : rate >= 30 ? 6 : 0);
 }
 function reenrollScore_(rate) {
   // 이탈은 곧 매출 손실 — '지켜내는' 지표라 복귀율과 같은 높은 임계를 쓰되, 배점은 정본이 가장 무겁게
   // 잡은 항목이다(30점 — 등급 심사 7항목 중 최고). 구간은 정본 §7 그대로.
+  // (첫 시즌 인자가 없는 유일한 지표다 — 첫 시즌엔 이 항목 자체가 사라진다.)
   if (rate == null || isNaN(rate)) return null;
   return rate >= 90 ? 30 : rate >= 85 ? 24 : rate >= 80 ? 18 : rate >= 75 ? 10 : 0;
+}
+function homeworkScore_(rate, 첫) {
+  // 학생이 낸 것을 강사 점수로 읽는다 — 분모(기대 제출 수)의 정의는 정본에 없다(§7 「가능(학생 제출 기준)」뿐).
+  // 그래서 아래 집계는 아직 붙이지 않았고 이 함수는 **구간만** 정본대로 확정해 둔다.
+  if (rate == null || isNaN(rate)) return null;
+  return 첫 ? (rate >= 80 ? 15 : rate >= 70 ? 10 : rate >= 60 ? 6 : 0)
+            : (rate >= 80 ? 10 : rate >= 70 ? 7  : rate >= 60 ? 4 : 0);
+}
+function punctualityScore_(위반, 첫) {
+  // ⚠ 이 지표만 입력이 **비율이 아니라 위반 건수**다(정본 「무위반 / 1회 / 2회 / 3회 이상」).
+  //   0 과 미측정을 절대 섞지 않는다 — 0 은 「무위반」이고 null 은 「잴 기준이 없다」다.
+  if (위반 == null || isNaN(위반)) return null;
+  return 첫 ? (위반 === 0 ? 15 : 위반 === 1 ? 9 : 위반 === 2 ? 4 : 0)
+            : (위반 === 0 ? 10 : 위반 === 1 ? 6 : 위반 === 2 ? 3 : 0);
 }
 /* 측정된 지표만 합산해 '획득 / 가능'으로 낸다. 미측정을 0점으로 더하면 앱 결함이 급여 삭감이 된다.
  * 🔑 분모는 **채점 함수에게 되묻는다**(100%를 넣으면 그 지표의 만점이 나온다). 상수로 따로 적으면
@@ -2712,6 +2736,55 @@ function incentiveTotal_(pairs) {
   return got.length
     ? (got.reduce((a, p) => a + p[0], 0) + ' / ' + got.reduce((a, p) => a + p[1](100), 0))
     : '';
+}
+
+/* [v9.194] 등급 판정 — 급여 정본 §7 의 **재정규화·미측정 스킵·필수 관문·등급 배수**를 앱으로 옮긴다.
+ *   여태 앱은 「획득 / 가능」 문자열만 내고 그 다음을 사람이 머리로 계산했다. 정본은 규칙을 전부
+ *   명세해 뒀는데 구현이 0이었다 — 그래서 규칙이 있어도 매 시즌 손계산이었고, 손계산은 소리 없이 틀린다.
+ *
+ * 입력 `항목` = [{이름, 점수(null=미측정), 만점}] · 앱 자동 채점 5항목(90점)만 넣는다.
+ *   릴스 5 · 자격 5 는 수동 항목이라 여기 안 들어온다 — 그 둘은 **미측정으로도 안 센다**(0 도 아니다).
+ *   ⚠ 그래서 분모의 기준은 100 이 아니라 **넣은 항목의 만점 합**이다. 100 을 박으면 수동 10점이
+ *     영원히 미측정으로 잡혀 전 강사가 상시 스킵된다(정본이 말하는 미측정과 다른 것이 섞인다).
+ *
+ * 정본 규칙 그대로:
+ *   · 미측정은 분자에서도 분모에서도 뺀다 — 총점 = 획득 ÷ (만점합 − 미측정 배점) × 100
+ *   · 미측정 배점 합 ≥ 30 이면 그 시즌 등급 심사를 건너뛰고 직전 등급 유지(첫 시즌은 브론즈 ×1.0)
+ *   · 관문 ① 재등록률 80% 미만 → 골드 불가(첫 시즌엔 승급 통과율 80% 미만으로 대체)
+ *   · 관문 ② 근태 3회 이상 위반 → 등급 1단계 강등(총점 무관)
+ *   · 관문 ③ 어느 항목이든 0점 → 골드 불가 (미측정은 0점으로 안 센다)
+ * ponytail: 직전 등급을 앱이 모른다 — 스킵일 때 등급을 **지어내지 않고** '심사 스킵'으로 낸다. */
+const INCENTIVE_SKIP_AT = 30;              // 정본이 「이 판에서 정한 값」이라 밝힌 경계 — 첫 시즌 실측 뒤 조정
+const INCENTIVE_GRADES = [                 // 위에서부터 내려오며 처음 걸리는 칸(경계는 이상)
+  { 점: 92, 등급: '골드', 배수: 1.3 }, { 점: 82, 등급: '실버', 배수: 1.15 },
+  { 점: 70, 등급: '브론즈', 배수: 1.0 }, { 점: 0, 등급: '미달', 배수: 0.5 }];
+function incentiveGrade_(항목, 옵션) {
+  const o = 옵션 || {};
+  const list = (항목 || []).filter(x => x && x.만점 > 0);
+  if (!list.length) return { 총점: null, 등급: '', 표기: '' };
+  const 미측정 = list.filter(x => x.점수 == null).reduce((a, x) => a + x.만점, 0);
+  const 만점합 = list.reduce((a, x) => a + x.만점, 0);
+  if (미측정 >= INCENTIVE_SKIP_AT) {
+    return { 총점: null, 등급: '', 스킵: true,
+      표기: '심사 스킵(미측정 ' + 미측정 + '점' + (o.첫시즌 ? ' · 첫 시즌 = 브론즈 ×1.0' : ' · 직전 등급 유지') + ')' };
+  }
+  const 획득 = list.filter(x => x.점수 != null).reduce((a, x) => a + x.점수, 0);
+  const 총점 = Math.round(획득 * 100 / (만점합 - 미측정));
+  let i = INCENTIVE_GRADES.findIndex(g => 총점 >= g.점);
+  if (i < 0) i = INCENTIVE_GRADES.length - 1;
+  const 막힘 = [];
+  /* 관문 ①·③ 은 「골드 불가」라 실버까지 끌어내린다. 미측정은 관문을 발동시키지 않는다 —
+   *   0점(재봤는데 못 했다)과 미측정(재지 못했다)은 다르다는 것이 이 표의 관통 원칙이다. */
+  const 관문1 = o.첫시즌 ? o.승급률 : o.재등록률;
+  if (관문1 != null && 관문1 < 80) 막힘.push(o.첫시즌 ? '승급<80' : '재등록<80');
+  if (list.some(x => x.점수 === 0)) 막힘.push('0점 항목');
+  if (막힘.length && i === 0) i = 1;
+  // 관문 ② 는 총점과 무관한 **강등**이라 위 두 관문 뒤에 따로 적용한다(겹치면 두 칸 내려간다).
+  if (o.근태위반 != null && o.근태위반 >= 3) { 막힘.push('근태 3회↑'); i = Math.min(i + 1, INCENTIVE_GRADES.length - 1); }
+  const g = INCENTIVE_GRADES[i];
+  return { 총점: 총점, 등급: g.등급, 배수: g.배수, 막힘: 막힘,
+    표기: 총점 + '점 · ' + g.등급 + ' ×' + g.배수 + (막힘.length ? ' (관문: ' + 막힘.join('·') + ')' : '')
+      + (미측정 ? ' · 미측정 ' + 미측정 + '점 제외' : '') };
 }
 const TEACHER_UNASSIGNED = '(미지정)'; // 담당 강사 매핑이 없는 반의 라벨 접두 — 학생이 조용히 증발하지 않게
 
@@ -2931,6 +3004,15 @@ function calcTeacherStats() {
     }
   } catch (eRe) { Logger.log('재등록률 스킵: ' + eRe); }
 
+  /* [v9.194] 개원 첫 시즌인가 — **설정값이 아니라 데이터에서 유도한다.** 정본이 첫 시즌 표를 따로 둔
+   *   이유가 「재등록할 이전 시즌이 없다」 하나이므로, 재등록을 판정할 수 있는 강사가 한 명도 없으면
+   *   그것이 곧 첫 시즌이다. 스위치를 두면 시즌이 바뀔 때 아무도 안 내려서 표가 조용히 낡는다.
+   * ponytail: enrollments 가 비어 있을 뿐인 경우도 첫 시즌으로 읽는다 — 그래도 결론은 같다
+   *   (재등록 미측정 30점 ≥ 경계라 어차피 심사 스킵으로 떨어진다). 갈릴 때 손해가 안 나는 쪽이다. */
+  const 첫시즌 = !Object.keys(reBy).some(x => reBy[x] && reBy[x].rate != null);
+  const pmFn = r => promotionScore_(r, 첫시즌), abFn = r => absenceReturnScore_(r, 첫시즌);
+  const hwFn = r => homeworkScore_(r, 첫시즌), puFn = n => punctualityScore_(n, 첫시즌);
+
   const rows = Object.keys(t).map(k => {
     const v = t[k];
     const perAtt = v.att / v.n, perPts = v.pts / v.n, perPraise = v.praise / v.n;
@@ -2938,9 +3020,17 @@ function calcTeacherStats() {
     const pm = promoBy[k] || { tot: 0, rate: null };
     const ab = absBy[k] || { judged: 0, ret: 0 };
     const abRate = ab.judged ? Math.round(ab.ret * 100 / ab.judged) : null;
-    const abScore = absenceReturnScore_(abRate); // 급여 정본 §7 배점(20/16/12/6/0) — 셋 중 유일하게 문서 근거가 있는 것
+    const abScore = abFn(abRate); // 급여 정본 §7 배점 — 셋 중 유일하게 처음부터 문서 근거가 있던 것
     const re = reBy[k] || { tot: 0, rate: null };
-    const pmScore = promotionScore_(pm.rate), reScore = reenrollScore_(re.rate); // [v9.113] ⚠ 임의 기준(위 함수 주석)
+    const pmScore = pmFn(pm.rate), reScore = 첫시즌 ? null : reenrollScore_(re.rate);
+    /* [v9.194] 숙제 제출률·근태 — 정본은 「앱 자동」으로 잡았지만 **분모의 정의가 정본에 없다.**
+     *   숙제 = 기대 제출 수를 무엇으로 세는지(수업일? 게시 횟수?)가 §7 에 없고, 근태 = 강사별
+     *   개인 시간표가 이 저장소에 없어 「지각·결근」의 기준 시각·기준 요일이 없다(Code.js 3671행
+     *   주석이 그 부재를 이미 적어 뒀다). 규칙이 정해지기 전에 숫자를 만들면 그게 급여가 된다 —
+     *   그래서 **미측정(null)으로 정직하게 낸다.** 아래 등급 판정이 이 둘을 분모에서 빼고,
+     *   빠진 배점을 '등급판정' 칸에 그대로 적어 무엇이 안 재졌는지 화면에서 보이게 한다. */
+    const hwRate = null, 근태위반 = null;
+    const hwScore = hwFn(hwRate), puScore = puFn(근태위반);
     // [v9.87] 왕관 총계 = 담당 반 합산 / 편중% = 반 단위 최댓값(가장 쏠린 반). 여러 반 학생을 한 통에 섞으면
     //   한 반의 100% 쏠림이 반 수만큼 희석돼 60% 경보가 죽는다 — 왕관은 반당 1명([v7.9])이라 공정성 단위도 반이다.
     let tot = 0, worst = 0;
@@ -2957,14 +3047,26 @@ function calcTeacherStats() {
             Number(perPraise.toFixed(1)),
             Math.round(perAtt * 12 + perPts * 1), // [v7.9] 시냅스(반당 1명) 체제에서 praise 변별력 소멸 — 출석 중심 재조정
             tot, worst, clsList.join(', '),
-            // [v9.108] 인센티브 3지표 — 미측정은 빈칸(0%가 아니다). 분모는 '지표모수'에 그대로 노출한다.
+            // [v9.108] 인센티브 지표 — 미측정은 빈칸(0%가 아니다). 분모는 '지표모수'에 그대로 노출한다.
             pm.rate == null ? '' : pm.rate, pmScore == null ? '' : pmScore,
             abRate == null ? '' : abRate,   abScore == null ? '' : abScore,
             re.rate == null ? '' : re.rate, reScore == null ? '' : reScore,
+            hwRate == null ? '' : hwRate,   hwScore == null ? '' : hwScore,
+            근태위반 == null ? '' : 근태위반, puScore == null ? '' : puScore,
             // [v9.193] 점수와 **그 점수를 낸 함수**를 짝으로 넘긴다 — 분모(만점)를 여기서 따로 적으면
             //   배점표가 바뀔 때 이 줄만 낡는다(정본 v1.6 재등록 30점이 정확히 그렇게 새던 자리다).
-            incentiveTotal_([[pmScore, promotionScore_], [abScore, absenceReturnScore_], [reScore, reenrollScore_]]),
-            '승급 ' + pm.tot + ' · 복귀 ' + ab.judged + ' · 재등록 ' + re.tot];
+            //   [v9.194] 첫 시즌엔 재등록 항목이 **사라진다**(0점이 아니라 없다) — 짝에서 통째로 뺀다.
+            incentiveTotal_([[pmScore, pmFn], [abScore, abFn], [hwScore, hwFn], [puScore, puFn]]
+              .concat(첫시즌 ? [] : [[reScore, reenrollScore_]])),
+            // [v9.194] 등급 판정 — 재정규화·미측정 스킵·필수 관문을 정본 §7 그대로 앱이 낸다.
+            incentiveGrade_([{ 이름: '승급', 점수: pmScore, 만점: pmFn(100) },
+                             { 이름: '복귀', 점수: abScore, 만점: abFn(100) },
+                             { 이름: '숙제', 점수: hwScore, 만점: hwFn(100) },
+                             { 이름: '근태', 점수: puScore, 만점: puFn(0) }]
+              .concat(첫시즌 ? [] : [{ 이름: '재등록', 점수: reScore, 만점: reenrollScore_(100) }]),
+            { 첫시즌: 첫시즌, 재등록률: re.rate, 승급률: pm.rate, 근태위반: 근태위반 }).표기,
+            '승급 ' + pm.tot + ' · 복귀 ' + ab.judged + ' · 재등록 ' + re.tot
+              + (첫시즌 ? ' · 첫 시즌(재등록 항목 없음)' : '')];
   }).sort((a, b) => b[5] - a[5]);
 
   const ts = ensureSheet(ss, 'teacher_stats', TEACHER_STATS_HEADERS);
