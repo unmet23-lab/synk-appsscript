@@ -307,6 +307,60 @@ function profilesIntegrityNightly_() {
   props.setProperty(KEY, sig);
 }
 
+/* [v9.197] 자기선언 이력 — 학생이 «스스로» 쓰는 3칸은 셀이라 바뀌면 이전 값이 영구 소멸한다.
+ *   드림한줄(CB80)·최애(DA105)·몬스터이름(AO41). 셋 다 앱이 Set Column 으로 직기입하는 자리라
+ *   onEdit 이 안 뜬다(시트 API 쓰기는 트리거를 발화시키지 않는다) — 그래서 밤에 「직전 기록과 다른가」로 잰다.
+ *   엔진도달 전수감사 ㉠ = *「셀 덮어쓰기라 이력이 0 — 도달 이전에 보존조차 안 된다. 수집의 최악 형태」*.
+ *   처방(append 교체)이 문서에만 있고 미실행이던 자리다.
+ *   🔴 이 수리가 여는 것은 «보존»뿐이고 **엔진 도달은 그대로 0**이다 — 소비자는 성향 축이 서는 판에서 정한다
+ *     (계약 `preference.stated` · SYNK-talk `lib/이벤트검증.js` 생산자 장부에서 지금 생산자 0).
+ *   ponytail: 하루 1회 표본이라 같은 날 두 번 바꾸면 마지막 값만 남는다. 분 단위가 필요해지면
+ *     셀 감시로는 못 잰다 — 앱이 사건을 내는 쪽(`preference.stated`)으로 올린다. */
+const SELF_DECLARE_TAB_ = 'self_declare_log';
+const SELF_DECLARE_HEADERS = ['student_id', '필드', '값', '기록일'];
+const SELF_DECLARE_COLS_ = [['드림한줄', 80], ['최애', 105], ['몬스터이름', 41]];
+
+/* 순수 판정 — 「무엇을 새로 적을 것인가」(profilesIntegrityCore_ 와 같은 무늬: 코어=순수·래퍼=시트).
+ *   rows = [{sid, 필드, 값}] · last = {'sid|필드': 마지막 기록값} — last 는 제자리에서 갱신된다.
+ *   ⚠ 첫 관측이 빈칸이면 안 적는다(안 그러면 전 학생 × 3줄이 의미 없이 깔린다).
+ *      값이 있던 칸을 «비운 것»은 되돌림이 아니라 선언이라 빈 값 한 줄로 남긴다. */
+function selfDeclareDiff_(rows, last, today) {
+  const out = [];
+  rows.forEach(r => {
+    const sid = String(r.sid == null ? '' : r.sid).trim();
+    if (!sid) return;
+    const cur = String(r.값 == null ? '' : r.값).trim();
+    const key = sid + '|' + r.필드;
+    const prev = last[key];
+    if (prev === undefined ? cur === '' : prev === cur) return;
+    last[key] = cur;
+    out.push([sid, r.필드, cur, today]);
+  });
+  return out;
+}
+
+function selfDeclareLogNightly_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return 0;
+  const n = pf.getLastRow() - 1;
+  const maxCol = pf.getMaxColumns();
+  const ids = pf.getRange(2, 1, n, 1).getValues();
+  const log = ensureSheet(ss, SELF_DECLARE_TAB_, SELF_DECLARE_HEADERS);
+  const last = {};
+  if (log.getLastRow() >= 2) log.getRange(2, 1, log.getLastRow() - 1, 3).getValues()
+    .forEach(r => { if (r[0]) last[String(r[0]).trim() + '|' + r[1]] = String(r[2] == null ? '' : r[2]).trim(); });
+  const rows = [];
+  SELF_DECLARE_COLS_.forEach(fc => {
+    if (maxCol < fc[1]) return; // 아직 그 열이 없는 구판 시트 — 조용히 건너뛴다(열은 calcAll 이 보장한다)
+    pf.getRange(2, fc[1], n, 1).getValues().forEach((v, i) => rows.push({ sid: ids[i][0], 필드: fc[0], 값: v[0] }));
+  });
+  const add = selfDeclareDiff_(rows, last, Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd'));
+  // 학생이 직접 친 글이라 소독 통로(writeIfChanged→행소독_)로 append 한다 — `=` 시작 문자열이 라이브 수식이 되는 것을 채널에서 차단.
+  if (add.length) writeIfChanged(log, log.getLastRow() + 1, 1, add);
+  return add.length;
+}
+
 function aiFeedbackHealth_(ss) {
   const props = PropertiesService.getScriptProperties();
   const hasKey = !!props.getProperty('CLAUDE_API_KEY');
@@ -505,7 +559,11 @@ function systemWatchdog(asText) {
      * 🔴 왜 이 둘이 특히 필요한가: outcome_log 의 절반은 **원장이 손으로 적는다.** 탭을 실수로
      *   지우거나 이름을 바꾸면 ensureSheet 가 빈 시트를 새로 만들고, 배치 로그는 그대로 정상을
      *   보고한다 — 손으로 적은 졸업생 소식이 사라졌다는 신호가 어디에도 안 뜬다(소급 불가). */
-    OUTCOME_TAB_, TRAJECTORY_TAB_];
+    OUTCOME_TAB_, TRAJECTORY_TAB_,
+    /* [v9.197] 자기선언 이력. 여기 있어야 하는 이유는 outcome_log 와 같다 — 탭이 사라져도
+     * ensureSheet 가 빈 시트를 새로 만들고 배치는 정상을 보고한다. 다만 이쪽은 «학생이 스스로 쓴 것»이라
+     * 잃으면 다시 물어볼 수도 없다(소급 불가). */
+    SELF_DECLARE_TAB_];
   const missSheet = reqSheets.filter(n => !ss.getSheetByName(n));
   add(missSheet.length === 0, missSheet.length ? '누락 시트: ' + missSheet.join(', ') : '시트 구조 정상 (' + reqSheets.length + '종)');
   const plRows = pl ? pl.getLastRow() - 1 : 0; // pl = point_logs (섹션 4에서 조회)
