@@ -230,14 +230,50 @@ function cellsOfRow(line) {
   return 표.칸나누기(line);
 }
 
-// ① 칸 길이 검사 — 결과 파일이 있으면 그것만 본다(권위 있는 판정)
+/* 편집 **전**의 판. ①(칸 길이)·③(주인 표식)·④(자리 겹침)가 전부 「이 줄이 편집 전에 있었나」를
+ * 묻는다 — 그래서 **여기 한 곳에서만** 읽는다(같은 판정을 두 곳에 적으면 갈라진다).
+ * ⚠ 아래에서 다시 `let 이전` 을 선언하면 같은 이름 재선언으로 파일이 통째로 죽는다.
+ *   2026-08-08 에 실제로 그렇게 죽었고(F239), **죽은 훅은 조용히 통과로 읽힌다** — 즉 이 한 줄이
+ *   없으면 가드가 있는 게 아니라 꺼진 것이다. 회귀가 「훅이 실제로 돈다」를 따로 못박는다. */
+let 이전 = null;
+try { 이전 = fs.readFileSync(filePath, 'utf8'); } catch (_) { 이전 = null; }
+const 보드id = require(path.join(__dirname, 'lib', 'board-id.js'));
+
+/* ── ① 칸 길이 검사 — **내가 바꾼 줄만 막는다** (마찰 F233·F234·F235·F237 · 2026-08-08) ────
+ * 하루에 네 번 신고된 자리다(F237 은 F235 의 중복 신고). 원래는 결과 파일의 **모든** 행을 쟀다.
+ * 그래서 남의 활성 줄 하나가 200자를 넘으면 **그 순간부터 아무 세션도 자기 줄을 못 고쳤다** —
+ * 내 칸이 통과해도 막힌다. 처방문은 「문장을 줄이거나 아카이브로 옮겨라」인데 줄일 대상이
+ * 남의 미커밋 줄이라 F073(남의 작업본 편집 금지)과 정면으로 충돌한다. 즉 **따를 수 있는 처방이
+ * 하나도 없었고**(F103 축), 남는 탈출구는 BYPASS 아니면 갱신 포기였다. 실제로 포기가 났다:
+ * 소급불가 ①-2 는 종결됐는데 보드 줄은 4회 연속 차단돼 「🔵착수」로 커밋됐고, 다음 세션이
+ * 끝난 트랙을 이어받으려 했다 — 인계 3통로 중 보드 줄이 끊긴 것이다.
+ *
+ * 🔑 새는 방향을 실측으로 갈랐다(조건 하나씩 · 2026-08-08):
+ *     남의 기존 위반 O + 내 칸 짧다 → 막힘  ← 이것이 사고
+ *     남의 기존 위반 X + 내 칸 길다 → 막힘  ← **탐지력은 여기 있다. 그대로 둔다.**
+ *   그래서 수리는 탐지력을 깎지 않는다. 재는 대상만 「내가 건드린 줄」로 좁힌다.
+ *
+ * ⚠ 「내 줄」은 지문으로 가르지 않는다 — **편집 전 판에 그 행이 글자 그대로 있었나**로 가른다.
+ *   지문으로 가르면 지문 없는 줄(클라우드·폰)에서 판정이 무너지고, 무엇보다 내가 *남의 줄을*
+ *   길게 고친 경우를 놓친다(그건 막아야 한다). 손 안 댄 줄은 바이트가 같아 저절로 빠진다.
+ * ⚠ 이전 판을 못 읽으면 옛행이 비어 **전부 내 것으로 센다** — 즉 옛 동작(전량 차단)으로 돌아간다.
+ *   폴백이 느슨해지는 쪽이면 그게 곧 구멍이다(새는 방향은 언제나 통과다).
+ * ⚠ 이미 있던 위반은 **조용히 넘기지 않는다** — 차단 대신 알림으로 낸다(아래 맨 끝). 차단이
+ *   사라진 자리에 침묵을 두면 200자 규칙이 있다는 믿음만 남고 아무도 안 치운다. */
 const longCells = [];
+const 남의긴칸 = [];
 if (resulting !== null) {
+  const 옛행 = new Set((이전 || '').split('\n').filter(isDataRow).map((l) => l.trim()));
   for (const line of resulting.split('\n')) {
     if (!isDataRow(line)) continue;
+    const 내가바꿨다 = !옛행.has(line.trim());
     cellsOfRow(line).forEach((c, i) => {
       const len = c.trim().length;
-      if (len > MAX_CELL) longCells.push(`${i + 1}번째 칸 ${len}자 — "${c.trim().slice(0, 40)}…"`);
+      if (len <= MAX_CELL) return;
+      const 적기 = `${i + 1}번째 칸 ${len}자 — "${c.trim().slice(0, 40)}…"`;
+      if (내가바꿨다) longCells.push(적기);
+      // 주인을 함께 낸다 — 조율할 상대를 모르면 알림은 치울 수 없는 잔소리가 된다(F237 처방②).
+      else 남의긴칸.push(`${적기}\n     주인: ${(보드id.줄의지문(line)[0] || '????????')} · 트랙 「${(cellsOfRow(line)[1] || '').replace(/\*/g, '').trim().slice(0, 40)}…」`);
     });
   }
 } else {
@@ -260,44 +296,58 @@ if (resulting !== null) {
 }
 if (longCells.length) {
   미룬deny(
-    '[board-guard] 세션보드 칸 길이 초과(칸당 ' + MAX_CELL + '자):\n- ' +
+    '[board-guard] 세션보드 칸 길이 초과(칸당 ' + MAX_CELL + '자) — **내가 이 편집으로 바꾼 줄**이다:\n- ' +
       longCells.join('\n- ') +
-      '\n→ 보드 줄은 **선언만**이다. 보고·판정 본문은 memory/ 토픽 파일이나 docs/ 정본에 쓰고, 상태 칸에는 한 줄 요약 + 그 링크만 남길 것.'
+      '\n→ 보드 줄은 **선언만**이다. 보고·판정 본문은 memory/ 토픽 파일이나 docs/ 정본에 쓰고, 상태 칸에는 한 줄 요약 + 그 링크만 남길 것.' +
+      '\n   (남이 이미 넣어둔 과길이 칸은 이제 이 문으로 막지 않는다 — 알림으로만 나온다 · F235)'
   );
 }
 
-// ② 표 줄 수 검사 — 활성 상한과 전체 상한을 따로 본다
+/* ── ② 표 줄 수 검사 — 활성 상한과 전체 상한을 따로 본다.
+ * ①과 **같은 규칙**을 여기에도 건다(마찰 F234 · 2026-08-08): 상한을 이미 넘긴 판을 물려받았을
+ * 뿐 내 편집이 더 늘리지 않으면 막지 않는다. 이유도 ①과 같다 — 처방이 「완료 줄을 아카이브로
+ * 옮겨라」인데 옮길 완료 줄의 주인이 전부 살아 있으면 board-move 가 원칙⑥으로 거부한다.
+ * 그러면 따를 수 있는 처방이 하나도 없고(F103 축) 남는 것은 BYPASS 아니면 **갱신 포기**다.
+ * ⚠ 늘리는 편집(줄 추가)은 그대로 막는다 — 판이 커지는 것을 막는 게 이 검사의 몫이고,
+ *   그 힘을 빼면 상한이 있으나 마나가 된다. 푸는 것은 **유지보수 편집**뿐이다. */
 let total, active;
 if (resulting !== null) {
   total = countRows(resulting);
   active = countActive(resulting);
 } else {
-  let cur;
-  try {
-    cur = fs.readFileSync(filePath, 'utf8');
-  } catch (_) {
+  if (이전 === null) {
     /* 파일을 못 읽으면 ②는 판단 불가다. 다만 **①의 보류까지 함께 삼키면 안 된다** —
      * 보류는 F221 수리로 생긴 상태고, 여기서 조용히 나가면 칸 초과가 통과가 된다(새는 방향). */
     if (보류 !== null) deny(보류);
     process.exit(0);
   }
-  total = countRows(cur) + delta;
-  active = countActive(cur) + activeDelta;
+  total = countRows(이전) + delta;
+  active = countActive(이전) + activeDelta;
 }
-if (active > MAX_ACTIVE) {
+/* 편집 **전**의 줄 수. 이전 판을 못 읽으면 0 이라 「전부 내가 늘렸다」가 되어 옛 동작(전량 차단)으로
+ * 돌아간다 — ①의 폴백과 같은 방향이다(못 재면 느슨해지는 쪽이면 그게 곧 구멍이다). */
+const 이전total = 이전 === null ? 0 : countRows(이전);
+const 이전active = 이전 === null ? 0 : countActive(이전);
+const 물려받은 = [];
+const 판 = resulting !== null ? resulting : (이전 || '');
+if (active > MAX_ACTIVE && active > 이전active) {
   미룬deny(
     `[board-guard] 세션보드 활성 줄이 ${active}줄이 된다(상한 ${MAX_ACTIVE}줄).\n` +
       '→ 활성 줄이 이만큼이면 조율이 아니라 소음이다. 끝난 트랙의 상태를 먼저 완료 표기로 갱신하거나, 남의 줄이 아니라 내 줄을 합쳐라.' +
       표기안내() +
-      활성목록(resulting !== null ? resulting : (() => { try { return fs.readFileSync(filePath, 'utf8'); } catch (_) { return ''; } })())
+      활성목록(판)
   );
+} else if (active > MAX_ACTIVE) {
+  물려받은.push(`활성 ${active}줄(상한 ${MAX_ACTIVE}) — 내 편집은 안 늘렸다`);
 }
-if (total > MAX_ROWS) {
+if (total > MAX_ROWS && total > 이전total) {
   미룬deny(
     `[board-guard] 세션보드 표가 ${total}줄이 된다(상한 ${MAX_ROWS}줄).\n` +
       '→ 오래된 **완료** 줄부터 docs/세션보드_아카이브.md 맨 위로 옮긴 뒤 다시 시도할 것. 활성(작업중·진행중·대기) 줄은 남긴다.' +
-      이관처방(resulting !== null ? resulting : (() => { try { return fs.readFileSync(filePath, 'utf8'); } catch (_) { return ''; } })())
+      이관처방(판)
   );
+} else if (total > MAX_ROWS) {
+  물려받은.push(`전체 ${total}줄(상한 ${MAX_ROWS}) — 내 편집은 안 늘렸다`);
 }
 
 /* ── ③ 새 줄은 **주인을 말해야 한다** (마찰 F165 · 2026-08-07) ────────────
@@ -314,12 +364,10 @@ if (total > MAX_ROWS) {
  * ⚠ 내 지문을 **모르는 세션에는 요구하지 않는다** — 환경변수가 빈 환경(클라우드·폰)에서
  *   요구하면 따를 수 없는 처방이 되고, 그건 우회를 정상 통로로 만든다(F103). */
 const 내id = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
-const 보드id = require(path.join(__dirname, 'lib', 'board-id.js'));
 const 트랙칸 = (line) => (cellsOfRow(line)[1] || '').trim();
 const 파일칸 = (line) => (cellsOfRow(line)[2] || '').trim();
-/* 편집 **전**의 판. ③(주인 표식)과 ④(자리 겹침)가 둘 다 「이 줄이 새 줄인가」를 여기서 가른다. */
-let 이전 = null;
-try { 이전 = fs.readFileSync(filePath, 'utf8'); } catch (_) { 이전 = null; }
+/* `보드id`·`이전` 은 ① 위에서 이미 만들었다 — 여기서 다시 읽으면 같은 판정이 두 곳에서
+ * 갈라진다(CLAUDE.md 신뢰성 ④: 「훅 안에서도 같은 판정을 두 곳에 적으면 갈라진다」). */
 
 if (resulting !== null && 내id) {
   const 내지문 = 보드id.지문(내id);
@@ -447,4 +495,20 @@ if (resulting !== null && 이전 !== null) {
 
 /* ④ 를 지났으니 이제 ①②③ 의 보류 사유를 낸다(F221 · 막는 힘은 그대로, 순서만 뒤다). */
 if (보류 !== null) deny(보류);
+
+/* 통과시킨다 — 그런데 이미 있던 과길이 칸은 **말은 한다**(F235 수리의 나머지 절반).
+ * 차단을 뺀 자리에 침묵을 두면 200자 규칙이 있다는 믿음만 남고 아무도 안 치운다.
+ * 통로는 clasp-guard:332 와 같다 — `permissionDecision` 을 안 실으므로 편집을 막지 않는다.
+ * deny 는 위에서 프로세스를 끝내므로 이 자리는 **통과할 때만** 도달한다(출력이 겹치지 않는다). */
+if (남의긴칸.length || 물려받은.length) {
+  const 글 = `⚠ [board-guard] 물려받은 보드 위반 ${남의긴칸.length + 물려받은.length}건 — **내 편집은 막지 않았다**(F234·F235):\n- `
+    + [...남의긴칸, ...물려받은].join('\n- ')
+    + '\n→ 내가 줄이지 않는다 — 남의 줄 편집은 F073 이 금지한다(내 바이트가 남의 커밋에 실려 나간다).'
+    + '\n   그 세션이 살아있으면 그쪽 몫이고, **죽었으면** 줄을 치우면 이 칸도 함께 사라진다:'
+    + '\n   생사 `node tools/작업본소유자.js` → 이관 `node tools/board-move.js "그 트랙 문구"`';
+  process.stdout.write(JSON.stringify({
+    systemMessage: 글,
+    hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: 글 },
+  }));
+}
 process.exit(0);

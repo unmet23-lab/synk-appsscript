@@ -28,19 +28,23 @@ fs.writeFileSync(BOARD, table(11), 'utf8');
  *  「통과」와 「미실행」이 같은 모양이 된다. 픽스처가 환경을 고정해 그 둘을 가른다. */
 const 환경 = (env) => (env ? { ...process.env, ...env } : process.env);
 
+/** 판정을 **한 곳에서만** 만든다 — 두 도우미가 각자 출력을 읽으면 갈라지고, 갈라진 쪽은
+ *  조용히 틀린다(CLAUDE.md 신뢰성 ④). decide 는 판정의 얇은 껍데기다. */
 function decide(payload, env) {
-  const out = execFileSync(process.execPath, [HOOK], { input: JSON.stringify(payload), encoding: 'utf8', env: 환경(env) });
-  if (!out.trim()) return 'allow';
-  return JSON.parse(out).hookSpecificOutput.permissionDecision;
+  return 판정(payload, env).결정;
 }
 
 /** 차단 사유까지 본다 — 「막았다」만으로는 **왜** 막았는지·안내가 맞는지 못 잰다.
  *  `cwd` 는 **상대경로 입력**을 재기 위한 자리다(F204) — 상대경로는 실행 위치에서 풀린다. */
 function 판정(payload, env, cwd) {
   const out = execFileSync(process.execPath, [HOOK], { input: JSON.stringify(payload), encoding: 'utf8', env: 환경(env), ...(cwd ? { cwd } : {}) });
-  if (!out.trim()) return { 결정: 'allow', 사유: '' };
-  const h = JSON.parse(out).hookSpecificOutput;
-  return { 결정: h.permissionDecision, 사유: String(h.permissionDecisionReason || '') };
+  if (!out.trim()) return { 결정: 'allow', 사유: '', 알림: '' };
+  const j = JSON.parse(out);
+  const h = j.hookSpecificOutput || {};
+  /* 🔑 `permissionDecision` 이 없는 출력은 **알림만** 낸 것이다(F235 수리) — 결정이 없으면 통과다.
+   *   그대로 `undefined` 를 돌려주면 「통과」가 두 모양(빈 출력 · 알림 출력)이 되고, 검사가
+   *   그 중 하나만 알면 새는 방향으로 조용히 틀린다. 여기서 한 모양으로 모은다. */
+  return { 결정: h.permissionDecision || 'allow', 사유: String(h.permissionDecisionReason || ''), 알림: String(j.systemMessage || '') };
 }
 
 test('칸 200자 초과는 차단', () => {
@@ -586,4 +590,83 @@ test('🔴 [F221·ⓑ] `🚫` 하나가 **같은 칸의 진짜 선언**까지 �
     '**SYNK-talk: supabase/functions/tasks/index.ts** · 🚫보드 외 docs'));
   assert.strictEqual(r.결정, 'deny', '🔴 `🚫` 한 조각이 칸 전체를 면제시켰다 — 우회 주문이 생겼다');
   assert.match(r.사유, /tasks\/index\.ts/, '겹친 경로를 안 보여주면 무엇을 비켜야 할지 모른다');
+});
+
+/* ── F233·F234·F235·F237 — ① 은 **내가 바꾼 줄만** 막는다 ────────────────────────
+ * 하루에 네 번 신고된 자리다(F237 은 F235 의 중복 신고). 남의 활성 줄 하나가 200자를 넘으면
+ * 그 순간부터 **아무 세션도 자기 줄을 못 고쳤다** — 내 칸이 통과해도 막힌다. 처방문은
+ * 「문장을 줄이거나 아카이브로 옮겨라」인데 줄일 대상이 남의 미커밋 줄이라 F073 이 금지한다.
+ * 따를 수 있는 처방이 하나도 없어서(F103 축) 실제로 **갱신 포기**가 났다: 소급불가 ①-2 는
+ * 종결됐는데 보드 줄은 4회 연속 차단돼 「🔵착수」로 커밋됐고, 다음 세션이 끝난 트랙을
+ * 이어받으려 했다 — 인계 3통로 중 보드 줄이 끊긴 것이다.
+ *
+ * 🔑 아래 다섯 검사는 **조건을 하나씩만** 바꾼다(사고 · 탐지력 · 우회문 · 알림 · 폴백 방향).
+ *   특히 둘째와 셋째가 짝이다 — 재는 범위를 좁히는 수리는 탐지력을 깎거나 우회문을 열기 쉽다. */
+const 남의과길이줄 = `| 2026-08-08 | **남의 트랙 XYZ** | docs/기타.md \`local_03d66152\` | ✅${'정본 박음 — '.repeat(30)} |`;
+const 내줄F235 = (상태) => `| 2026-08-08 | **내 트랙 되듣기** | SYNK-talk: src/말하기화면.js \`local_deadbeef\` | ${상태} |`;
+
+/** 남의 과길이 줄 + 내 짧은 줄이 함께 있는 보드. 매번 새 임시 파일이라 검사끼리 안 섞인다. */
+function 섞인보드(남의줄 = 남의과길이줄, 상태 = '🔵착수') {
+  const p = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'boardf235-')), '세션보드.md');
+  fs.writeFileSync(p, ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|', 남의줄, 내줄F235(상태), ''].join('\n'), 'utf8');
+  return p;
+}
+
+test('🔴 [F235] 남이 넣어둔 200자 초과 칸이 **내 줄 갱신을 막지 않는다**', () => {
+  const r = 판정({ tool_name: 'Edit', tool_input: { file_path: 섞인보드(), old_string: '🔵착수', new_string: '✅종결 (`local_deadbeef`)' } });
+  assert.strictEqual(r.결정, 'allow',
+    `🔴 F235 재발 — 남의 칸 때문에 내 종결 줄이 막혔다. 처방은 남의 줄을 줄이라는 것이고 F073 이 그걸 금지한다(따를 수 있는 처방이 0):\n${r.사유.slice(0, 300)}`);
+});
+
+test('🔴 [F235] 그래도 **내가** 만든 200자 초과는 그대로 막는다 (탐지력)', () => {
+  const r = 판정({ tool_name: 'Edit', tool_input: { file_path: 섞인보드(), old_string: '🔵착수', new_string: LONG } });
+  assert.strictEqual(r.결정, 'deny', '🔴 재는 범위를 좁히다가 탐지력을 통째로 껐다 — 200자 규칙이 사라졌다');
+  assert.match(r.사유, /칸 길이 초과/, `칸 길이가 아니라 딴 사유로 막혔다:\n${r.사유.slice(0, 200)}`);
+});
+
+test('🔴 [F235] 남의 줄이라도 **이 편집이** 길게 만들면 막는다 (면제가 우회문이 되지 않는다)', () => {
+  const 남짧은 = '| 2026-08-08 | **남의 트랙 XYZ** | docs/기타.md `local_03d66152` | ✅종결 |';
+  const r = 판정({ tool_name: 'Edit', tool_input: { file_path: 섞인보드(남짧은), old_string: '✅종결 |', new_string: `${LONG} |` } });
+  assert.strictEqual(r.결정, 'deny',
+    '🔴 「남의 줄이면 면제」로 새게 만들었다 — 남의 줄에 본문을 쏟으면 통과하는 우회가 열렸다');
+});
+
+test('🔴 [F235] 이미 있던 과길이 칸을 **조용히 넘기지 않는다** — 주인과 함께 알린다', () => {
+  const r = 판정({ tool_name: 'Edit', tool_input: { file_path: 섞인보드(), old_string: '🔵착수', new_string: '✅종결 (`local_deadbeef`)' } });
+  assert.strictEqual(r.결정, 'allow', '이 검사는 통과하는 자리에서 알림을 재는 것이다');
+  assert.match(r.알림, /03d66152/,
+    `🔴 알림에 주인이 없다 — 조율할 상대를 모르면 아무도 못 치우고, 차단을 뺀 자리에 침묵만 남는다(F237 처방②):\n${r.알림.slice(0, 200)}`);
+  assert.match(r.알림, /막지 않았다/, '차단이 아니라는 것을 말해야 한다 — 안 그러면 알림이 차단으로 읽힌다');
+});
+
+/* ── F234 — ② 도 **내가 늘린 것만** 막는다 ────────────────────────────────────
+ * ①과 같은 병이 줄 수 검사에도 있었다: 만석 판을 물려받으면 **줄을 안 늘리는 유지보수 편집**
+ * (내 종결 줄 상태 갱신)까지 막혔다. 처방은 「완료 줄을 아카이브로 옮겨라」인데 옮길 완료 줄의
+ * 주인이 전부 살아 있으면 board-move 가 원칙⑥으로 거부한다 — 따를 수 있는 처방이 0이 된다.
+ * 아래 둘은 조건 하나만 다르다(늘리지 않는 편집 · 늘리는 편집). 탐지력은 둘째가 진다. */
+const 만석보드 = (n = 20) => {
+  const p = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'boardf234-')), '세션보드.md');
+  fs.writeFileSync(p, `${table(n)}\n`, 'utf8');
+  return p;
+};
+
+test('🔴 [F234] 이미 만석인 판에서 **줄을 안 늘리는 갱신**은 통과한다', () => {
+  const r = 판정({ tool_name: 'Edit', tool_input: { file_path: 만석보드(), old_string: '| 트랙3 |', new_string: '| 트랙3 종결 |' } });
+  assert.strictEqual(r.결정, 'allow',
+    `🔴 F234 재발 — 남이 넘겨 놓은 만석 때문에 내 종결 줄 갱신이 막혔다(옮길 완료 줄의 주인이 살아 있으면 처방이 0개다):\n${r.사유.slice(0, 300)}`);
+  assert.match(r.알림, /전체 20줄/, '차단을 뺐으면 물려받은 위반을 말은 해야 한다 — 침묵은 상한을 없앤 것과 같다');
+});
+
+test('🔴 [F234] 만석에서 **줄을 늘리면** 그대로 막는다 (탐지력)', () => {
+  const 판 = 만석보드();
+  const r = 판정({ tool_name: 'Edit', tool_input: { file_path: 판, old_string: row(3), new_string: `${row(3)}\n${row(99)}` } });
+  assert.strictEqual(r.결정, 'deny', '🔴 만석 면제가 우회문이 됐다 — 판이 계속 커지는 것을 아무도 안 막는다');
+  assert.match(r.사유, /줄이 된다/, `줄 수가 아니라 딴 사유로 막혔다:\n${r.사유.slice(0, 200)}`);
+});
+
+test('🔴 [F235] 편집 전 판을 못 읽으면 **전량 차단으로 돌아간다** (폴백이 느슨해지지 않는다)', () => {
+  const 없는보드 = path.join(TMP, '없는폴더F235', '세션보드.md');
+  const r = 판정({ tool_name: 'Write', tool_input: { file_path: 없는보드, content: ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|', 남의과길이줄, ''].join('\n') } });
+  assert.strictEqual(r.결정, 'deny',
+    '🔴 이전 판을 못 읽자 전부 「남의 것」으로 세어 과길이가 통과했다 — 폴백이 느슨해지는 쪽이면 그게 곧 구멍이다');
 });
