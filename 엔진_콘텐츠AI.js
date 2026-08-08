@@ -345,20 +345,50 @@ function selfDeclareLogNightly_() {
   if (!pf || pf.getLastRow() < 2) return 0;
   const n = pf.getLastRow() - 1;
   const maxCol = pf.getMaxColumns();
-  const ids = pf.getRange(2, 1, n, 1).getValues();
-  const log = ensureSheet(ss, SELF_DECLARE_TAB_, SELF_DECLARE_HEADERS);
-  const last = {};
-  if (log.getLastRow() >= 2) log.getRange(2, 1, log.getLastRow() - 1, 3).getValues()
-    .forEach(r => { if (r[0]) last[String(r[0]).trim() + '|' + r[1]] = String(r[2] == null ? '' : r[2]).trim(); });
-  const rows = [];
-  SELF_DECLARE_COLS_.forEach(fc => {
-    if (maxCol < fc[1]) return; // 아직 그 열이 없는 구판 시트 — 조용히 건너뛴다(열은 calcAll 이 보장한다)
-    pf.getRange(2, fc[1], n, 1).getValues().forEach((v, i) => rows.push({ sid: ids[i][0], 필드: fc[0], 값: v[0] }));
-  });
-  const add = selfDeclareDiff_(rows, last, Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd'));
-  // 학생이 직접 친 글이라 소독 통로(writeIfChanged→행소독_)로 append 한다 — `=` 시작 문자열이 라이브 수식이 되는 것을 채널에서 차단.
-  if (add.length) writeIfChanged(log, log.getLastRow() + 1, 1, add);
-  return add.length;
+  /* A~D 만 읽는다 — id 와 **role**(D열). profiles 에는 학부모·강사·원장 행과 `DEMO-` 시연 행이 함께 산다
+   * (syncProfiles 가 일부러 보존한다). 그 값까지 학습자 선언으로 적으면 나중에 원료가 조용히 오염된다. */
+  const meta = pf.getRange(2, 1, n, 4).getValues();
+  /* 읽기→차이→쓰기 전 구간을 잠근다 — 야간 배치와 손 실행이 겹치면 둘이 같은 `getLastRow()+1` 을 잡아
+   * 뒤엣것이 앞엣것을 덮는다. 덮이는 대상이 「다시 물어볼 수 없는 선언」이라 여기만은 append 를 직렬화한다. */
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) return 0; // 이미 도는 중이면 오늘은 그쪽이 적는다(둘 다 적는 것보다 낫다)
+  try {
+    const log = ensureSheet(ss, SELF_DECLARE_TAB_, SELF_DECLARE_HEADERS);
+    selfDeclareShrinkGuard_(log); // 탭이 지워졌다 되살아난 것을 여기서 잡는다(워치독은 주간이라 매일 밤 되살아나면 영영 못 본다)
+    const last = {};
+    if (log.getLastRow() >= 2) log.getRange(2, 1, log.getLastRow() - 1, 3).getValues()
+      .forEach(r => { if (r[0]) last[String(r[0]).trim() + '|' + r[1]] = String(r[2] == null ? '' : r[2]).trim(); });
+    const rows = [];
+    SELF_DECLARE_COLS_.forEach(fc => {
+      if (maxCol < fc[1]) return; // 아직 그 열이 없는 구판 시트 — 조용히 건너뛴다(열은 calcAll 이 보장한다)
+      pf.getRange(2, fc[1], n, 1).getValues().forEach((v, i) => {
+        const sid = String(meta[i][0] || '').trim();
+        if (String(meta[i][3] || '').trim() !== 'student' || sid.indexOf('DEMO-') === 0) return;
+        rows.push({ sid: sid, 필드: fc[0], 값: v[0] });
+      });
+    });
+    const add = selfDeclareDiff_(rows, last, Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd'));
+    // 학생이 직접 친 글이라 소독 통로(writeIfChanged→행소독_)로 append 한다 — `=` 시작 문자열이 라이브 수식이 되는 것을 채널에서 차단.
+    if (add.length) writeIfChanged(log, log.getLastRow() + 1, 1, add);
+    if (add.length) PropertiesService.getScriptProperties().setProperty(SELF_DECLARE_HWM_, String(log.getLastRow()));
+    return add.length;
+  } finally { lock.releaseLock(); }
+}
+
+/* 줄어들면 외친다 — append-only 장부의 유일한 자기검사. 워치독의 「누락 시트」로는 이 사고를 못 본다:
+ *   야간 배치가 매일 ensureSheet 로 빈 시트를 되살리므로, 주간 워치독이 볼 때는 «탭이 있다».
+ *   그래서 「탭이 있나」가 아니라 «행 수가 줄었나»를 잰다(지워짐·이름 바뀜·잘림이 전부 같은 증상이다). */
+const SELF_DECLARE_HWM_ = '자기선언이력_최고행';
+function selfDeclareShrinkGuard_(log) {
+  const props = PropertiesService.getScriptProperties();
+  const hwm = Number(props.getProperty(SELF_DECLARE_HWM_) || 0);
+  const now = log.getLastRow();
+  if (!hwm || now >= hwm) { if (now > hwm) props.setProperty(SELF_DECLARE_HWM_, String(now)); return; }
+  adminMail('[SYNK] 🌱 자기선언 이력이 줄었다 — ' + hwm + '행 → ' + now + '행',
+    '학생이 스스로 쓴 선언(드림한줄·최애·몬스터이름)의 이력 탭 `' + SELF_DECLARE_TAB_ + '` 이 줄었습니다.\n'
+    + '이 데이터는 소급이 안 됩니다 — 탭을 지우셨거나 이름을 바꾸셨다면 되돌려 주세요.\n'
+    + '의도한 정리였다면 스크립트 속성 `' + SELF_DECLARE_HWM_ + '` 를 지우면 이 알림이 새 기준으로 재설정됩니다.');
+  props.setProperty(SELF_DECLARE_HWM_, String(now)); // 매일 같은 메일을 보내지 않는다 — 한 번 알리고 새 기준으로 간다
 }
 
 function aiFeedbackHealth_(ss) {
