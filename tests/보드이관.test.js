@@ -395,3 +395,75 @@ test('[F146] 해시처럼 생긴 딴 것에는 안 걸린다 (없는 커밋으�
     assert.ok(read(fx.archive).includes(줄), '아카이브에 안 들어갔다');
   } finally { 치우기(박동); }
 });
+
+/* ── 마찰 F242 — 해시가 **형제 저장소** 것이면 원칙 ⑥이 통째로 꺼진다 ────────────
+ * 위 F146 검사가 `rev-parse` 를 이 저장소에서만 돌려서, talk 커밋 해시는 「해시처럼 생긴
+ * 딴 것」(바로 위 테스트)과 **같은 모양**(status!==0)으로 버려졌다. 지문마저 없으면 재료가
+ * 둘 다 비어 산주인 0 → 통과다. 이 프로젝트는 트랙 절반이 talk 작업이라(보드 줄 절반이
+ * 「SYNK-talk: …」로 시작한다) 그 사각은 예외가 아니라 상시였다 — 실측 2026-08-08:
+ * 보드 「게임 4모듈」 줄이 정확히 그 모양이었고 주인은 25분 전 박동으로 살아 있었다.
+ * 형제는 이 기계에만 있으므로 탐지력은 **여기 픽스처가 진다**(`SYNK_OWNER_SIBLINGS` 격리). */
+const 남의sid242 = 'local_f242cafe-1111-2222-3333-444455556666';
+
+/** 트랙 커밋이 **형제 저장소에만** 있고 줄엔 지문이 없는, F242 그대로의 모양. */
+function mk형제픽스처(sid, { 분전 = 0 } = {}) {
+  const fx = mkRepoFixture();
+  const 형제 = path.join(fx.dir, 'talk');
+  fs.mkdirSync(형제);
+  git(형제, 'init', '-q');
+  git(형제, 'config', 'user.email', 'test@synk.local');
+  git(형제, 'config', 'user.name', 'boardmove-test');
+  git(형제, 'config', 'commit.gpgsign', 'false');
+  fs.writeFileSync(path.join(형제, 'b.js'), '// talk 산출물\n', 'utf8');
+  git(형제, 'add', '--', 'b.js');
+  git(형제, 'commit', '-q', '-m', `talk 트랙 커밋\n\nSession-Id: ${sid}`);
+  const 해시 = git(형제, 'rev-parse', '--short', 'HEAD').stdout.trim();
+  /* 지문 0 + 해시는 형제 것 — 두 재료가 **동시에** 비는 그 조합이다(F202 가 예고한 자리). */
+  const 줄 = `| 2026-08-08 | **살아있는 talk 트랙 무** | SYNK-talk: b.js | ✅종결(talk ${해시}) |`;
+  fs.writeFileSync(fx.board, read(fx.board).replace(ROW, 줄), 'utf8');
+  git(fx.dir, 'commit', '-q', '-m', 'board', '--', '세션보드.md');
+
+  const 최상위 = git(fx.dir, 'rev-parse', '--show-toplevel').stdout.trim();
+  const 박동경로 = (s) => path.join(store.stateDir(), `track-${store.projectKey(최상위)}-${store.safeId(s)}.json`);
+  const 박동들 = [박동경로(sid)];
+  fs.mkdirSync(store.stateDir(), { recursive: true });
+  fs.writeFileSync(박동들[0], JSON.stringify({ touched: [] }), 'utf8');
+  if (분전) {
+    const t = (Date.now() - 분전 * 60000) / 1000;
+    fs.utimesSync(박동들[0], t, t);
+    /* 🔴 산 세션이 **하나도 없으면** 검사가 `!산.size` 에서 조기 반환해 `산.has(sid)` 갈래에
+     *   도달조차 못 한다 — 그 초록은 「통과」가 아니라 **미측정**이다(변이 ③이 그것을 드러냈다:
+     *   `산.has` 를 통째로 지워도 회귀가 안 빨개졌다). 그래서 주인이 **아닌** 산 세션을 하나
+     *   세워 분모를 만든다. 이 갈래는 공용이라 여기서 재면 해시·지문 두 통로 다 덮인다. */
+    박동들.push(박동경로('local_f242a11e-9999-8888-7777-666655554444'));
+    fs.writeFileSync(박동들[1], JSON.stringify({ touched: [] }), 'utf8');
+  }
+  return { fx, 줄, 해시, 박동들, env: { SYNK_OWNER_SIBLINGS: './talk' } };
+}
+
+test('[F242] 해시가 **형제 저장소** 것이어도 산 주인을 본다', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx, 줄, 해시, 박동들, env } = mk형제픽스처(남의sid242);
+  try {
+    const before = { b: read(fx.board), a: read(fx.archive) };
+    const r = run(fx, ['살아있는 talk 트랙 무'], env);
+    assert.notEqual(r.status, 0, '형제 저장소 커밋이라 원칙 ⑥이 통째로 꺼졌다 — F242 재현');
+    assert.match(String(r.stderr), /아직 살아 있다/, '왜 막혔는지 안 말한다');
+    assert.match(String(r.stderr), new RegExp(해시), '어느 커밋이 걸렸는지 안 나온다');
+    assert.match(String(r.stderr), /talk/, '**어느 저장소** 것인지 안 나온다 — 그 해시를 찾을 곳을 못 준다');
+    assert.equal(read(fx.board), before.b, '거부인데 보드가 변했다');
+    assert.equal(read(fx.archive), before.a, '거부인데 아카이브가 변했다');
+    assert.ok(read(fx.board).includes(줄), '거부인데 줄이 보드에서 사라졌다');
+    assert.notEqual(run(fx, ['살아있는 talk 트랙 무', '--dry'], env).status, 0, '--dry 는 막히지 않았다');
+  } finally { 박동들.forEach(치우기); }
+});
+
+test('[F242] 형제 해시라도 주인이 죽었으면 옮긴다 (만석을 새로 만들지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx, 줄, 박동들, env } = mk형제픽스처(남의sid242, { 분전: 90 });
+  try {
+    /* 주인은 죽었지만 **딴 산 세션이 있다** — 그래야 `산.has` 갈래를 실제로 지난다(위 주석). */
+    assert.equal(박동들.length, 2, '분모(산 세션)를 안 세웠다 — 이 검사는 미측정이 된다');
+    const r = run(fx, ['살아있는 talk 트랙 무'], env);
+    assert.equal(r.status, 0, '죽은 세션의 talk 줄까지 막았다 — 보드가 영원히 안 줄어든다: ' + r.stderr);
+    assert.ok(read(fx.archive).includes(줄), '아카이브에 안 들어갔다');
+  } finally { 박동들.forEach(치우기); }
+});
