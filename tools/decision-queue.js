@@ -17,6 +17,9 @@
 //   node tools/decision-queue.js --all        전체 큐를 순위대로
 //   node tools/decision-queue.js --json       기계 판독용
 //   node tools/decision-queue.js --count 5    건수 지정
+//   node tools/decision-queue.js --버려진            걸러진 ⏳ 중 **아직 안 본 것만**
+//   node tools/decision-queue.js --버려진 --전체     걸러진 전량
+//   node tools/decision-queue.js --버려진 --확인     지금 뜬 것을 「봤다」로 표시(다음부터 안 뜬다)
 //   SYNK_MEMORY_DIR=... 로 대상 디렉터리 덮어쓰기(테스트용)
 'use strict';
 const fs = require('fs');
@@ -260,6 +263,30 @@ function extract(dir) {
   return items;
 }
 
+/* ── 검토 끝난 폐기함 줄 (2026-08-08 · F255) ───────────────────────────────
+ * 폐기함 경고의 처방은 「걸러진 89줄에 진짜 미결이 섞였는지 확인」이었다. cleanup:128 이
+ * 이미 그 전수 확인을 **실행 불가**로 판정하고(「실행 불가능한 분량의 확인 요구는 확인 0회와
+ * 같은 모양이다」) 「다음 세션은 새로 늘어난 줄만 본다」로 바꿨는데 — **무엇이 새 줄인지 세는
+ * 상태가 없어** 5일간 같은 전량이 다시 떴다. 따를 수 없는 처방은 우회를 정상 통로로 만든다(F103).
+ *
+ * 🔑 지문은 줄 번호가 아니라 **토픽+본문**이다: 메모리는 세션 여럿이 동시에 고쳐 행 번호가
+ *    반드시 밀리고(--한장 이 같은 이유로 내용 지문을 쓴다), 본문이 바뀌면 다시 떠야 한다
+ *    — 바뀐 줄은 다시 볼 값이 있다. 파일이 없으면 전부 새 줄 = **더 보이는 쪽으로 떨어진다.**
+ * ⚠ append 전용 한 파일이라 동시 편집이 나도 양쪽 줄을 다 남기면 끝난다(순서 무의미). */
+const 검토완료파일 = path.join(__dirname, '..', 'docs', '_ops', '결정큐_검토완료.txt');
+const 폐기지문 = (it) => 지문(`${it.topic}|${it.text}`);
+// 도장이 **명시적으로** 찍힌 것만 옛것이다 — 플래그를 안 단 호출부는 보이는 쪽으로 떨어진다
+const 새것인가 = (it) => it.새것 !== false;
+function 검토완료읽기(파일) {
+  try {
+    return new Set(
+      fs.readFileSync(파일 || 검토완료파일, 'utf8')
+        .split('\n').map((l) => l.trim().split(/\s/)[0])
+        .filter((s) => /^[0-9a-f]{10}$/.test(s))
+    );
+  } catch { return new Set(); }
+}
+
 /* ── 차단자를 큐 항목으로 ───────────────────────────────────────────────────
  * '막힘>' 그래프에서 답해야 할 것은 **차단자**(결정-동의문구-몽골어병기 같은 것)이지
  * 그걸 기다리는 토픽이 아니다. 기다리는 토픽의 ⏳ 줄에 「이걸 풀면 3건 풀림」을 붙이면
@@ -344,7 +371,10 @@ function build(opts = {}) {
     .filter((it) => it.notBefore !== null && it.notBefore > now)
     .sort((a, b) => a.notBefore - b.notBefore);
   const ranked = rank(due, blockers);
-  return { total: ranked.length, ranked, today: pick(ranked, count, date), blockers, scheduled, 버려진: items.버려진 || [], 절뿐: items.절뿐 || [] };
+  // 폐기함은 「검토했다」 도장을 달고 나간다 — 전량은 안 줄고, 봐야 할 것만 새것으로 뜬다
+  const 완료 = 검토완료읽기(opts.검토완료);
+  const 버려진 = (items.버려진 || []).map((it) => ({ ...it, 새것: !완료.has(폐기지문(it)) }));
+  return { total: ranked.length, ranked, today: pick(ranked, count, date), blockers, scheduled, 버려진, 절뿐: items.절뿐 || [] };
 }
 
 /* 걸러진 ⏳ 한 줄 — 목록은 --버려진 에 있다.
@@ -355,7 +385,9 @@ function build(opts = {}) {
 function 버려진줄(r) {
   const 줄 = [];
   const n = (r.버려진 || []).length;
-  if (n) 줄.push(`⚠ ⏳ ${n}줄이 항목이 아닌 것으로 걸러졌다 — 진짜 미결이 섞였는지 확인: node tools/decision-queue.js --버려진`);
+  // 분모를 같이 낸다 — 「0줄 새로」와 「폐기함이 안 돌았다」가 같은 모양이면 안 된다(F207)
+  const 새 = (r.버려진 || []).filter(새것인가).length;
+  if (새) 줄.push(`⚠ ⏳ ${새}줄이 **새로** 걸러졌다(전체 ${n} · 검토완료 ${n - 새}) — 진짜 미결이 섞였는지 확인: node tools/decision-queue.js --버려진`);
   /* 폐기함과 **다른 칸**이다: 저건 「걸렀다」고 기록은 남은 줄이고, 이건 「그 파일이 결정을
    * 내걸어 놓고 아무것도 못 낸다」는 파일 단위 신호다. 한 줄로 합치면 34가 76에 묻힌다. */
   const s = (r.절뿐 || []).length;
@@ -526,9 +558,21 @@ function main() {
   const r = build({ count });
   if (args.includes('--json')) return console.log(JSON.stringify(r, null, 2));
   if (args.includes('--버려진')) {
-    if (!r.버려진.length) return console.log('\n[걸러진 ⏳] 0건\n');
-    console.log(`\n[걸러진 ⏳] ${r.버려진.length}건 — 큐에 없다. 진짜 미결이면 ⏳를 줄머리나 구분자(·:) 뒤로 옮긴다\n`);
-    r.버려진.forEach((it) => console.log(`     [${it.topic}:${it.line}] ${it.사유}\n     ${it.text}`));
+    const 새것 = r.버려진.filter(새것인가);
+    if (args.includes('--확인')) {
+      if (!새것.length) return console.log('\n[걸러진 ⏳] 새로 걸러진 줄이 없다 — 표시할 것이 없다\n');
+      const 머리 = fs.existsSync(검토완료파일) ? '' :
+        '# 폐기함에서 「진짜 미결이 아니다」로 확인한 줄의 지문(토픽|본문 sha1 앞 10자).\n' +
+        '# `node tools/decision-queue.js --버려진 --확인` 이 덧붙인다. 본문이 바뀌면 지문이 달라져 다시 뜬다.\n';
+      fs.appendFileSync(검토완료파일, 머리 + 새것.map((it) => `${폐기지문(it)}  ${it.topic}:${it.line}`).join('\n') + '\n');
+      return console.log(`\n[걸러진 ⏳] ${새것.length}줄을 검토 완료로 표시했다 → ${path.relative(path.join(__dirname, '..'), 검토완료파일)}\n`);
+    }
+    const 전체 = args.includes('--전체');
+    const 대상 = 전체 ? r.버려진 : 새것;
+    if (!대상.length) return console.log(`\n[걸러진 ⏳] 새로 걸러진 줄 0건 (검토완료 ${r.버려진.length} · 전량은 --전체)\n`);
+    console.log(`\n[걸러진 ⏳] ${대상.length}건${전체 ? '' : ` 새로 (전체 ${r.버려진.length} · 검토완료 ${r.버려진.length - 새것.length})`} — 큐에 없다.`
+      + '\n  진짜 미결이면 ⏳를 줄머리나 구분자(·:) 뒤로 옮긴다. 다 보고 나서 --확인 을 붙이면 다음부터 안 뜬다.\n');
+    대상.forEach((it) => console.log(`     [${it.topic}:${it.line}] ${it.사유}\n     ${it.text}`));
     return;
   }
   if (args.includes('--절')) {
@@ -588,5 +632,6 @@ function main() {
 if (require.main === module) main();
 module.exports = {
   extract, rank, pick, build, render, stripMd, todayIndex, markerClause, gateDate, 줄판정, 버려진줄,
+  폐기지문, 검토완료읽기,
   한장, 시트읽기, 닫음, 지문, 한장밀림, SHEET, 주기일,
 };
