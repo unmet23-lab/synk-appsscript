@@ -28,6 +28,7 @@ const os = require('node:os');
 const path = require('node:path');
 
 const 장부 = 'docs/_ops/마찰신호.md';
+const 조각폴더 = 'docs/_ops/장부';   // 행은 이제 여기 F0NN.md 조각으로 산다(F250 후반) — .md 는 동결 아카이브
 const REPO = path.resolve(__dirname, '..');
 
 const git = (cwd, ...a) => execFileSync('git', ['-C', cwd, '-c', 'core.quotepath=false', ...a],
@@ -36,23 +37,34 @@ const git = (cwd, ...a) => execFileSync('git', ['-C', cwd, '-c', 'core.quotepath
 /* 이력에 한 번이라도 올라왔던 번호 — diff 의 추가줄에서 모은다.
  * 커밋마다 `git show` 를 돌리는 방식은 실 저장소에서 5분을 넘겼다(08-07 실측). */
 const 이력번호 = (cwd) =>
-  new Set([...git(cwd, 'log', '--all', '-p', '--format=', '--', 장부).matchAll(/^\+\|\s*(F\d{3})\s*\|/gm)].map((m) => m[1]));
+  new Set([...git(cwd, 'log', '--all', '-p', '--format=', '--', 장부, 조각폴더).matchAll(/^\+\|\s*(F\d{3})\s*\|/gm)].map((m) => m[1]));
 
 /* 현재 = **작업본 파일**이지 HEAD 가 아니다. HEAD 를 보면 처방("그 줄을 되돌려 넣어라")을
  * 따라도 커밋 전까지 계속 빨간 채라, 따를 수 없는 처방이 된다(F103). 08-07 실측으로 잡았다. */
 const 번호 = (본문) => new Set([...본문.matchAll(/^\|\s*(F\d{3})\s*\|/gm)].map((m) => m[1]));
 
-const 현재번호 = (cwd) => 번호(fs.readFileSync(path.join(cwd, 장부), 'utf8'));
+const 현재번호 = (cwd) => {
+  const s = 번호(fs.readFileSync(path.join(cwd, 장부), 'utf8'));
+  let 이름들 = [];
+  try { 이름들 = fs.readdirSync(path.join(cwd, 조각폴더)); } catch { /* 조각 0 */ }
+  for (const n of 이름들) { const m = /^(F\d{3})\.md$/.exec(n); if (m) s.add(m[1]); }
+  return s;
+};
 
 /* **상류의 지금 장부** — 「사라졌다」와 「아직 안 왔다」를 가르는 유일한 재료(F215).
  * 모든 ref 가 아니라 상류 하나다: 갈라진 가지(폰 브랜치)에만 남은 것은 뒤처짐이 아니라
  * 진짜 유실이었다(F123·08-07). 상류가 없거나 그 판이 없으면 빈 판 = 전부 유실로 남긴다.
  * 후보가 있을 때만 부른다 — 평시 비용 0. */
 function 상류번호(cwd) {
-  try {
-    const up = git(cwd, 'rev-parse', '--abbrev-ref', '@{upstream}').trim();
-    return 번호(git(cwd, 'show', `${up}:${장부}`));
-  } catch { return new Set(); }
+  let up;
+  try { up = git(cwd, 'rev-parse', '--abbrev-ref', '@{upstream}').trim(); } catch { return new Set(); }
+  let s = new Set();
+  try { s = 번호(git(cwd, 'show', `${up}:${장부}`)); } catch { /* 상류에 그 판이 없다 */ }
+  try {   // 조각의 번호는 파일 이름이 든다 — 상류 트리의 이름만 훑는다
+    for (const m of git(cwd, 'ls-tree', '-r', '--name-only', up, '--', 조각폴더)
+      .matchAll(/(?:^|\/)(F\d{3})\.md$/gm)) s.add(m[1]);
+  } catch { /* 조각 폴더가 아직 없다 */ }
+  return s;
 }
 
 /* 유실 = 상류에도 없다(진짜 사라짐) · 뒤처짐 = 상류엔 있는데 내 작업본에만 없다 */
@@ -90,6 +102,31 @@ test('🔑 탐지 — 이력에 있던 행이 사라지면 잡는다 (F195 가 �
 test('🔑 탐지 — 통째로 덮어써도 잡는다 (반입이 낸 실제 모양: 여러 행이 한 번에 증발)', () => {
   const d = 픽스처([판([1, 2, 3, 4]), 판([1])]);
   assert.deepStrictEqual(유실(d), { 유실: ['F002', 'F003', 'F004'], 뒤처짐: [] });
+  fs.rmSync(d, { recursive: true, force: true });
+});
+
+/* 행이 .md 밖(조각 폴더)으로 이사한 뒤의 유실 통로 — 아카이브만 재면 F251+ 는 영원히 미측정이다 */
+test('🔑 탐지 — 조각 폴더의 행이 사라져도 잡는다 (조각 시대의 반입·삭제 사고)', () => {
+  const d = 픽스처([판([1, 2])]);
+  const ci = (m) => git(d, '-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-q', '-m', m);
+  const dir = path.join(d, 조각폴더);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'F003.md'), 행(3) + '\n');
+  git(d, 'add', '--', 조각폴더); ci('조각 F003');
+  fs.rmSync(path.join(dir, 'F003.md'));
+  git(d, 'add', '--', 조각폴더); ci('조각 삭제');
+  assert.deepStrictEqual(유실(d), { 유실: ['F003'], 뒤처짐: [] });
+  fs.rmSync(d, { recursive: true, force: true });
+});
+
+test('거짓양성 — 조각으로 산 행은 유실이 아니다 (아카이브에 없는 것이 정상이다)', () => {
+  const d = 픽스처([판([1, 2])]);
+  const dir = path.join(d, 조각폴더);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'F003.md'), 행(3) + '\n');
+  git(d, 'add', '--', 조각폴더);
+  git(d, '-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-q', '-m', '조각 F003');
+  assert.deepStrictEqual(유실(d), { 유실: [], 뒤처짐: [] });
   fs.rmSync(d, { recursive: true, force: true });
 });
 

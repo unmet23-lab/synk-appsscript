@@ -98,6 +98,9 @@ const 제외 = new Set([
   'docs/세션보드.md', 'docs/세션보드_아카이브.md', // F102 — 🚫보드 자동커밋
   'docs/_ops/마찰신호.md',                          // friction-close-guard 통로 보존
 ]);
+/* 장부 조각(F250 후반)도 같은 사유로 제외 — friction.js 가 번호를 알고 그 자리에서 커밋한다.
+ * F0NN 을 모르는 이 통로가 조각을 실으면 close-guard 가 그 커밋을 원리상 못 읽는다. */
+const 제외폴더 = ['docs/_ops/장부/'];
 
 /** 한 저장소를 처리한다. 저장소가 늘어도 **로직은 이 함수 하나**다 —
  *  형제용을 따로 적으면 그 순간 갈라지고, 갈라진 쪽의 증상은 언제나 「통과」다. */
@@ -123,7 +126,7 @@ function 한저장소(뿌리, 이름, 내touched, 남touched, 지문) {
   const 후보 = []; const 함께남김 = []; const 깨짐 = []; const 무기록 = []; const 밖에서바뀜 = [];
   for (const f0 of 내touched) {
     const f = 슬래시(f0);
-    if (f.startsWith('../') || 제외.has(f) || !더러움.has(f)) continue;
+    if (f.startsWith('../') || 제외.has(f) || 제외폴더.some((d) => f.startsWith(d)) || !더러움.has(f)) continue;
     const 절대 = path.join(뿌리, f);
     if (!fs.existsSync(절대)) continue;                    // 삭제는 내 기록 밖의 손이다
     if (남touched.has(f)) { 함께남김.push(f); continue; }   // 내것 ∧ 함께 없음 만 (F104)

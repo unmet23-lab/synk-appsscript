@@ -101,7 +101,11 @@ const 행 = new Map(rows.map((r) => [r.id, r]));
  * 격리 픽스처에서 저장소 밖을 가리켜 git 이 거절하고, 그럼 「행을 안 건드렸다」로 읽혀
  * 신고 커밋까지 짖는다. 가드가 자기 시험 환경에서만 다르게 도는 형태를 만들지 않는다. */
 const 장부경로 = path.relative(cwd, 장부.LEDGER).replace(/\\/g, '/');
-const 장부diff = git(['show', '--format=', '--unified=0', sha, '--', 장부경로]) || '';
+/* 행은 조각 파일(장부/F0NN.md)로도 산다(F250 후반) — 조각 커밋을 못 보면 평범한 신고 커밋마다 짖는다.
+ * FOLDER 가 없는 옛 판이 섞여도 훅이 죽지 않게 한다(가드는 자기 사정으로 크래시하지 않는다). */
+const 조각폴더 = 장부.FOLDER ? path.relative(cwd, 장부.FOLDER).replace(/\\/g, '/') : null;
+const 장부diff = git(['show', '--format=', '--unified=0', sha, '--',
+  장부경로, ...(조각폴더 ? [조각폴더] : [])]) || '';
 const 더한행 = new Set([...장부diff.matchAll(/^\+\|\s*(F\d+)\s*\|/gm)].map((m) => m[1]));
 const 지운행 = new Set([...장부diff.matchAll(/^-\|\s*(F\d+)\s*\|/gm)].map((m) => m[1]));
 const 이번에건드림 = new Set([...더한행, ...지운행]);
@@ -117,7 +121,10 @@ const 신설행 = new Set([...더한행].filter((id) => !지운행.has(id)));
  * ⚠ `-z` 로 받는 이유: repo quotepath 가 켜져 있어 한글 경로가 `"docs/_ops/\353\247..."` 로 나온다.
  *   그대로 비교하면 장부·보드가 **전부 「장부 밖」으로 읽혀** 평범한 신고 커밋마다 짖는다
  *   (재는 층이 값을 깨뜨리는 형태 · CLAUDE.md 원인 판정 전제 ②). */
-const 기록물 = (p) => p === 장부경로 || /^docs\/(세션보드|_ops\/인계문)/.test(p);
+/* 보드 정본(docs/_ops/보드/)·장부 조각(docs/_ops/장부/)도 기록물이다 — 보드가 폴더로 갈린 F250 때
+ * 여기가 안 따라와, 신고하며 자기 보드 줄을 같이 고치는 정상 커밋(78bd7c8 형)이 「수리 동반」으로 읽혔다. */
+const 기록물 = (p) => p === 장부경로 || (조각폴더 && p.startsWith(조각폴더 + '/'))
+  || /^docs\/(세션보드|_ops\/(인계문|보드))/.test(p);
 let _수리동반;
 const 수리동반 = () => {
   if (_수리동반 === undefined) {

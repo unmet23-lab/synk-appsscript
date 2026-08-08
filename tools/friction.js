@@ -18,6 +18,11 @@ const path = require('path');
 
 // 테스트는 실제 장부를 건드리면 안 된다 — 회귀 테스트가 기록을 오염시키면 그 기록은 증거가 못 된다
 const LEDGER = process.env.SYNK_FRICTION_LEDGER || path.resolve(__dirname, '..', 'docs', '_ops', '마찰신호.md');
+/* 조각 폴더 — 새 행은 여기 `F0NN.md` 한 파일씩으로 산다(F250 후반 · 2026-08-08 유호님 지시 「공유 파일 쪼개기」).
+ * 옛 한 파일(마찰신호.md)은 **동결 아카이브**다: 열린 행을 닫을 때도 아카이브는 고치지 않고
+ * 같은 번호의 조각을 써서 읽기 조립이 조각을 이기게 한다(그림자). 병은 도구가 아니라
+ * 「모든 세션이 한 파일에 줄을 끼우는 것」이었다 — 새 행이 새 파일이면 부딪칠 자리 자체가 없다. */
+const FOLDER = path.join(path.dirname(LEDGER), '장부');
 /* 채번 락 회귀는 **진짜 저장소 위에서** 돌려야 탐지력이 있다(태그 push가 실제로 거절되는지를 본다).
  * 그래서 장부와 별도로 저장소 루트도 갈아끼울 수 있게 둔다 — 격리 저장소를 준 테스트만 git을 만진다. */
 const ROOT = process.env.SYNK_FRICTION_ROOT || path.resolve(__dirname, '..');
@@ -95,16 +100,42 @@ function today() {
 const { 칸나누기, 칸안전 } = require(path.join(__dirname, 'lib', '표.js'));
 const splitCells = (raw) => 칸나누기(`|${raw}|`);
 
+/* 조각 폴더의 행들 — 파일 하나 = 행 하나(F0NN.md). **못 읽음 ≠ 없다**:
+ * 없다로 번역하면 close-guard 가 침묵한다(새는 방향이 통과다 · 보드 쪼개기 회귀가 못박은 그 자리).
+ * 그래서 못 읽은 조각은 열린 행 모양으로 세워 소리가 나게 한다. */
+function 조각행들() {
+  let 이름들 = [];
+  try { 이름들 = fs.readdirSync(FOLDER); } catch (_) { return []; }   // 폴더 없음 = 조각 0 (첫 add 전)
+  const out = [];
+  for (const 이름 of 이름들) {
+    const m = /^(F\d+)\.md$/.exec(이름);
+    if (!m) continue;
+    let 줄 = null;
+    try {
+      줄 = fs.readFileSync(path.join(FOLDER, 이름), 'utf8').split('\n')
+        .map((l) => l.trim()).find((l) => /^\|\s*F\d+\s*\|/.test(l));
+    } catch (_) { /* 아래 폴백 행으로 */ }
+    out.push({ 파일: path.join(FOLDER, 이름), 줄: 줄 || `| ${m[1]} | | 마찰 | (조각을 읽지 못했다: ${이름} — 열어 확인한다) | |` });
+  }
+  return out;
+}
+
 function read() {
   const text = fs.readFileSync(LEDGER, 'utf8');
   const lines = text.split('\n');
   const rows = [];
-  lines.forEach((line, i) => {
+  const 넣기 = (line, i, 파일) => {
     const m = /^\|\s*(F\d+)\s*\|(.*)\|\s*$/.exec(line.trim());
     if (!m) return;
     const cells = splitCells(m[2]);
-    rows.push({ id: m[1], date: cells[0], kind: cells[1], signal: cells[2], resolved: cells[3] || '', line: i });
-  });
+    const r = { id: m[1], date: cells[0], kind: cells[1], signal: cells[2], resolved: cells[3] || '', line: i, 파일 };
+    const 자리 = 파일 ? rows.findIndex((x) => x.id === r.id) : -1;
+    if (자리 >= 0) rows[자리] = r;   // 같은 번호는 조각이 이긴다 — 아카이브는 동결이라 이후의 진실은 조각 쪽
+    else rows.push(r);
+  };
+  lines.forEach((line, i) => 넣기(line, i, null));
+  for (const c of 조각행들()) 넣기(c.줄, -1, c.파일);
+  rows.sort((a, b) => parseInt(a.id.slice(1), 10) - parseInt(b.id.slice(1), 10));
   return { text, lines, rows };
 }
 
@@ -130,9 +161,16 @@ function seenElsewhere(opts) {
     (gitQuiet(['for-each-ref', '--format=%(refname:short)', 패턴]) || '')
       .split('\n').map((s) => s.trim()).filter(Boolean).forEach((b) => refs.push(b));
   }
+  const relDir = path.relative(ROOT, FOLDER).replace(/\\/g, '/');
   refs.forEach((ref) => {
     const text = gitQuiet(['show', ref + ':' + rel]);
     if (text !== null) max = Math.max(max, maxIn(text));   // null = 그 ref에 장부가 없다
+    /* 조각 폴더의 번호는 **파일 이름**이 든다 — 내용을 읽을 필요 없이 이름만 훑는다.
+     * (quotepath 가 한글 폴더명을 8진수로 이스케이프해도 `F0NN.md` 는 ASCII 라 그대로 남는다.) */
+    const 조각 = gitQuiet(['ls-tree', '-r', '--name-only', ref, '--', relDir]);
+    if (조각 !== null) {
+      for (const m of 조각.matchAll(/(?:^|\/)F(\d+)\.md/gm)) max = Math.max(max, Number(m[1]) || 0);
+    }
   });
   // 예약 태그 — 아직 **장부에 쓰이지도 않은** '방금 가져간' 번호까지 포함한다(bump-version과 같은 이유)
   (gitQuiet(['tag', '-l', TAG_PREFIX + 'F*']) || '').split('\n').forEach((t) => {
@@ -256,9 +294,9 @@ function 해소주장(signal) {
  *   손실은 없지만(선례 8ecd37a) 조용히 하지 않는다: 몇 행이 동승했는지 세어 밝힌다.
  *   ⚠ 실패는 어느 층이든 조용히 물러난다 — 기록이 도구 사정으로 멈추면 안 된다(withLock 원칙).
  */
-function 장부커밋(제목) {
+function 장부커밋(제목, 대상) {
   // 격리 장부(tmp)를 준 테스트는 저장소 밖을 가리킨다 — git 이 모르는 파일은 건드리지 않는다.
-  const rel = path.relative(ROOT, LEDGER);
+  const rel = path.relative(ROOT, 대상 || LEDGER);
   if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
   const 경로 = rel.replace(/\\/g, '/');
   if (gitQuiet(['rev-parse', '--is-inside-work-tree']) === null) return null;
@@ -274,6 +312,10 @@ function 장부커밋(제목) {
 function 장부커밋실행(계획, 내몫) {
   if (!계획 || !계획.경로) return 계획;
   const { 경로, 제목 } = 계획;
+  /* 갓 태어난 조각은 미추적이라 diff HEAD 에 안 보인다 — 경로를 못 박아 스테이지부터 한다.
+   * (F025: 미추적은 이력·stash·reflog 어디에도 없는 유일한 무보호 상태 — 그 시간을 0으로 만든다.) */
+  const 추적전 = gitQuiet(['status', '--porcelain', '--', 경로]);
+  if (추적전 !== null && /^\?\?/m.test(추적전)) gitQuiet(['add', '--', 경로]);
   const stat = gitQuiet(['diff', '--numstat', 'HEAD', '--', 경로]);
   if (stat === null || !stat.trim()) return { 건너뜀: '커밋할 변경이 없다' };
   const [추가, 삭제] = stat.trim().split('\n')[0].split('\t').map((n) => Number(n) || 0);
@@ -348,25 +390,29 @@ function add(kind, signal, date, 해소) {
   const id = allocateId(read().rows);
   /* 빈 해소 칸은 예전 그대로 `| |` 한 칸으로 둔다 — 템플릿에 빈 문자열을 끼우면 `|  |` 가 되고,
    * 장부 형식을 그대로 읽는 검사·도구가 조용히 갈라진다(회귀가 실제로 잡았다). */
-  const row = 해소safe
-    ? `| ${id} | ${date || today()} | ${kind} | ${safe} | ${해소safe} |`
-    : `| ${id} | ${date || today()} | ${kind} | ${safe} | |`;
-  /* 🔴 낡은 버퍼가 아니라 **락 안에서 다시 읽은** 내용에 끼운다 — 이 재읽기가 F148 의 수리다.
-   * 위에서 read() 한 lines 를 재사용하면 채번이 네트워크를 다녀온 사이의 남의 행이 사라진다. */
-  withLock(() => {
-    const { lines } = read();
-    // 표의 마지막 행 뒤에 넣는다(파일 끝이 아니라) — 아래에 다른 서술이 붙어도 안전하게
-    let at = lines.length;
-    for (let i = lines.length - 1; i >= 0; i--) {
-      if (/^\|\s*F\d+\s*\|/.test(lines[i].trim())) { at = i + 1; break; }
+  const 행문 = (rid) => 해소safe
+    ? `| ${rid} | ${date || today()} | ${kind} | ${safe} | ${해소safe} |`
+    : `| ${rid} | ${date || today()} | ${kind} | ${safe} | |`;
+  /* 행은 조각 파일 하나로 태어난다 — 한 파일에 줄을 끼우던 시절의 「낡은 버퍼가 남의 행을 덮는」
+   * 자리(F148)가 통째로 없다. `wx` 는 「없을 때만 만든다」를 커널이 원자적으로 판정하므로,
+   * 태그 예약이 못 덮는 마지막 창(오프라인 폴백 둘이 같은 번호를 고른 경우)도 여기서 다음 번호로
+   * 비킨다 — 신고문을 버리는 갈래는 없다(기록이 도구 사정으로 멈추면 안 된다).
+   * 채번이 전역 최대+1 에서 시작하므로 비켜간 번호가 아카이브의 번호와 겹칠 일도 없다. */
+  const 실은id = withLock(() => {
+    fs.mkdirSync(FOLDER, { recursive: true });
+    for (let n = parseInt(id.slice(1), 10); ; n++) {
+      const rid = 'F' + String(n).padStart(3, '0');
+      try {
+        fs.writeFileSync(path.join(FOLDER, rid + '.md'), 행문(rid) + '\n', { flag: 'wx' });
+        return rid;
+      } catch (e) { if (e.code !== 'EEXIST') throw e; }
     }
-    lines.splice(at, 0, row);
-    fs.writeFileSync(LEDGER, lines.join('\n'), 'utf8');
   });
-  console.log(`  + ${id}  ${kind}  ${safe}`);
-  if (해소safe) console.log(`  ✔ ${id} 해소 → ${해소safe}   (신고와 동시에 닫았다 — 열린 채 남지 않는다)`);
+  if (실은id !== id) console.error(`  ⚠ ${id} 는 그 사이 딴 세션이 가져갔다 — ${실은id} 로 실었다.`);
+  console.log(`  + ${실은id}  ${kind}  ${safe}`);
+  if (해소safe) console.log(`  ✔ ${실은id} 해소 → ${해소safe}   (신고와 동시에 닫았다 — 열린 채 남지 않는다)`);
   /* 신고 커밋은 close-guard 가 면제한다(그 행을 만든 커밋) — 번호를 박아 두면 그 판정이 그대로 산다. */
-  커밋보고(장부커밋실행(장부커밋(`docs: 마찰 ${id} ${해소safe ? '신고·해소' : '신고'} — ${제목요약(safe)}`), [1, 0]));
+  커밋보고(장부커밋실행(장부커밋(`docs: 마찰 ${실은id} ${해소safe ? '신고·해소' : '신고'} — ${제목요약(safe)}`, path.join(FOLDER, 실은id + '.md')), [1, 0]));
 }
 
 function resolve(id, by) {
@@ -375,26 +421,29 @@ function resolve(id, by) {
     console.error('[friction] 무엇이 이 신호를 막았는지 적는다(조항·훅·커밋). 빈 해소는 기록하지 않는다.');
     process.exit(1);
   }
-  /* 찾기·검사·쓰기를 **한 락 안에서** 한다(F148) — 밖에서 읽고 안에서 쓰면 그 사이 남의 행이 덮인다.
-   * resolve 는 행 번호(r.line)로 쓰기 때문에 add 보다 더 위험하다: 그 사이 누가 행을 끼우면
-   * 낡은 번호가 **엉뚱한 행**을 가리켜 남의 신호를 내 해소문으로 덮어쓴다.
+  /* 찾기·검사·쓰기를 **한 락 안에서** 한다(F148) — 같은 조각을 두 세션이 같은 순간에 닫는
+   * 창을 직렬화한다(「이미 해소」 검사가 그 창 안에서 유효해야 한다).
    * ⚠ 락 안에서는 process.exit 를 부르지 않는다 — finally 가 안 돌아 락 파일이 남는다. */
-  const 실패 = withLock(() => {
-    const { lines, rows } = read();
+  const 결과 = withLock(() => {
+    const { rows } = read();
     const r = rows.find((x) => x.id.toUpperCase() === String(id).toUpperCase());
     if (!r) return `[friction] ${id} 를 못 찾았다.`;
     if (r.resolved) return `[friction] ${r.id} 는 이미 해소로 기록돼 있다: ${r.resolved}`;
-    lines[r.line] = `| ${r.id} | ${r.date} | ${r.kind} | ${r.signal} | ${safe} |`;
-    fs.writeFileSync(LEDGER, lines.join('\n'), 'utf8');
+    /* 조각이면 그 파일을 다시 쓰고, 동결 아카이브의 열린 행이면 **아카이브를 고치지 않는다** —
+     * 같은 번호의 조각을 새로 써서 읽기 조립이 그쪽을 이기게 한다(그림자). 여기가 한 줄이라도
+     * 아카이브를 고치면 「모든 세션이 한 파일을 고친다」로 되돌아간다 — 이 설계의 급소다. */
+    const 경로 = r.파일 || path.join(FOLDER, r.id + '.md');
+    fs.mkdirSync(FOLDER, { recursive: true });
+    fs.writeFileSync(경로, `| ${r.id} | ${r.date} | ${r.kind} | ${r.signal} | ${safe} |\n`, 'utf8');
     console.log(`  ✔ ${r.id} 해소 → ${safe}`);
-    return null;
+    return { 경로 };
   });
-  if (실패) {
-    console.error(실패);
+  if (typeof 결과 === 'string') {
+    console.error(결과);
     process.exit(1);
   }
   // 해소 칸을 채운 커밋이라 close-guard 가 고를 「열린 행」이 아니다 — 번호는 그대로 박는다.
-  커밋보고(장부커밋실행(장부커밋(`docs: 마찰 ${String(id).toUpperCase()} 해소 — ${제목요약(safe)}`), [1, 1]));
+  커밋보고(장부커밋실행(장부커밋(`docs: 마찰 ${String(id).toUpperCase()} 해소 — ${제목요약(safe)}`, 결과.경로), [1, 1]));
 }
 
 function report(openOnly) {
@@ -481,5 +530,5 @@ function main() {
 if (require.main === module) main();
 module.exports = {
   read, splitCells, nextId, allocateId, seenElsewhere, 해소주장, withLock, 예약자,
-  LEDGER, KINDS, TAG_PREFIX, LOCK, LOCK_STALE_MS,
+  LEDGER, FOLDER, KINDS, TAG_PREFIX, LOCK, LOCK_STALE_MS,
 };
