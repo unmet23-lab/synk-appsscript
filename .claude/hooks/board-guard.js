@@ -47,8 +47,38 @@ if (!/^(Edit|Write|MultiEdit)$/.test(tool)) process.exit(0);
 
 const ti = input.tool_input || {};
 const filePath = String(ti.file_path || '');
-const base = path.basename(filePath.replace(/\\/g, '/'));
-if (base !== '세션보드.md') process.exit(0); // 아카이브·다른 문서는 통과
+const norm = filePath.replace(/\\/g, '/');
+const base = path.basename(norm);
+
+/* 보드 정본은 `docs/_ops/보드/<지문>.md` 의 세션별 파일이다(F250 — 한 파일이 낳은 마찰 14건).
+ * 옛 `세션보드.md` 는 더 이상 정본이 아니라 조립된 표다 — 거기 쓰면 아무도 안 읽으므로
+ * **막아서 드러낸다**(조용히 통과시키면 선언이 통째로 증발하고, 새는 방향은 늘 「통과」다). */
+if (base === '세션보드.md') {
+  /* ⚠ 막는 것은 **표 행을 거기 쓰는 것**뿐이다. 스텁으로 바꾸거나 지우는 편집까지 막으면
+   *   이 가드가 시키는 일을 이 가드가 막는다(F103 — 따를 수 없는 처방은 우회를 정상 통로로 만든다).
+   *   `incoming` 은 아래에서야 만들어지므로 여기서는 입력에서 직접 새 내용을 뽑는다. */
+  const 새내용 = tool === 'Write'
+    ? String(ti.content || '')
+    : (Array.isArray(ti.edits) ? ti.edits : [ti]).map((e) => String(e.new_string || '')).join('\n');
+  if (!/^\s*\|.*\b20\d\d-\d\d-\d\d\b/m.test(새내용)) process.exit(0);
+  deny('[board-guard] `docs/세션보드.md` 는 더 이상 정본이 아니다 — 표는 세션별 파일에서 조립된다(F250).\n'
+    + '→ 내 줄은 **내 파일에만** 쓴다: `docs/_ops/보드/<내 지문 8자리>.md`\n'
+    + '   지문 = `$CLAUDE_CODE_HOST_SESSION_ID` 에서 접두를 뺀 앞 8자리.\n'
+    + '   전체 표를 보려면 `node tools/board.js`, 완료 줄 이관은 `node tools/board-move.js "문구"`.');
+}
+if (!/\/docs\/_ops\/보드\/[^/]+\.md$/.test(norm)) process.exit(0); // 아카이브·다른 문서는 통과
+
+/* 상한(활성 12·전체 18)은 표 **전체**를 재는 규칙인데 내 파일엔 내 줄만 있다.
+ * 그래서 남의 세션 파일 줄을 편집 전·후 **양쪽에** 똑같이 붙인다 — 차집합(=내가 바꾼 줄)은
+ * 그대로라 칸 길이 검사의 「내가 나쁘게 만든 것만」(F233·F234·F235)이 깨지지 않는다. */
+const 보드ROOT = path.resolve(path.dirname(norm), '..', '..', '..');
+const 남의줄 = (() => {
+  try {
+    const 보드 = require(path.join(보드ROOT, 'tools', 'lib', '보드.js'));
+    return (보드.줄들(보드ROOT) || []).filter((r) => r.파일 !== base).map((r) => r.줄);
+  } catch (_) { return []; }
+})();
+const 합치기 = (t) => (t === null || t === undefined ? t : 남의줄.concat(String(t)).join('\n'));
 
 // 편집 종류별로 "새로 들어가는 텍스트"와 "줄 수 증감"을 모은다
 const edits = tool === 'MultiEdit' && Array.isArray(ti.edits) ? ti.edits : [ti];
@@ -89,10 +119,10 @@ function applyEdits(content) {
   return out;
 }
 
-let resulting = fullContent;
+let resulting = 합치기(fullContent);
 if (resulting === null) {
   try {
-    resulting = applyEdits(fs.readFileSync(filePath, 'utf8'));
+    resulting = 합치기(applyEdits(fs.readFileSync(filePath, 'utf8')));
   } catch (_) {
     resulting = null; // 파일을 못 읽으면 아래 폴백으로
   }
@@ -236,7 +266,11 @@ function cellsOfRow(line) {
  *   2026-08-08 에 실제로 그렇게 죽었고(F239), **죽은 훅은 조용히 통과로 읽힌다** — 즉 이 한 줄이
  *   없으면 가드가 있는 게 아니라 꺼진 것이다. 회귀가 「훅이 실제로 돈다」를 따로 못박는다. */
 let 이전 = null;
-try { 이전 = fs.readFileSync(filePath, 'utf8'); } catch (_) { 이전 = null; }
+/* 🔑 내 파일이 **아직 없어도**(첫 선언) 남의 줄은 「이전」에 있어야 한다. 없으면 상한 검사가
+ *   남의 활성 줄까지 「내가 늘렸다」로 세어 남의 위반으로 나를 막는다 — F233·F234·F235 가
+ *   고친 그 자리가 폴더 구조에서 되살아나는 모양이다. */
+try { 이전 = 합치기(fs.readFileSync(filePath, 'utf8')); }
+catch (_) { 이전 = 남의줄.length ? 남의줄.join('\n') : null; }
 const 보드id = require(path.join(__dirname, 'lib', 'board-id.js'));
 
 /* ── ① 칸 길이 검사 — **내가 바꾼 줄만 막는다** (마찰 F233·F234·F235·F237 · 2026-08-08) ────

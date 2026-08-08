@@ -46,7 +46,8 @@ const { spawnSync } = require('child_process');
 // SYNK_TRACK_ROOT = 테스트 격리 전용 이음매. 로직을 끄지 않고 **보는 저장소만** 바꾼다
 // (실저장소에 커밋을 만들지 않고 탐지력을 재려면 이 자리가 필요하다 · SYNK_FRICTION_ROOT 와 같은 패턴).
 const ROOT = process.env.SYNK_TRACK_ROOT || path.resolve(__dirname, '..', '..');
-const 보드 = path.join(ROOT, 'docs', '세션보드.md');
+/* 보드 정본은 `docs/_ops/보드/` 의 세션별 파일이다(F250) — 표는 읽을 때 조립되고 디스크에 없다. */
+const 보드 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '보드.js'));
 const 표 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '표.js'));
 const store = require(path.join(__dirname, 'lib', 'handoff-store.js'));
 const wt = require(path.join(__dirname, 'lib', 'worktrees.js'));
@@ -167,15 +168,12 @@ const 검사시각 = { ...((이전 && 이전.dirtyChecked) || {}) };
  * 🔑 선언이 여기 있는 이유(F221): 아래 ⑤ 도 같은 면제를 탄다. 원래는 커밋 축 바로 위에
  *   있었는데 그건 ⑤ 보다 아래라 `const` 의 TDZ 에 걸린다 — 그 자리에 두면 ⑤ 는 목록을
  *   **못 읽고**, 못 읽는 방향은 「보드를 만질 때마다 산 세션 수만큼 운다」다. 라이브가 그걸
- *   즉시 드러냈다(첫 판이 보드 한 번에 6줄). 목록을 두 벌로 만들지 않는다 — 맹점 ④. */
-const 장부 = new Set([
-  'docs/세션보드.md',
-  'docs/세션보드_아카이브.md',
-  'docs/_ops/마찰신호.md',
-  'docs/버전_이력.md',
-  'docs/지침_이력.md',
-]);
-const 장부아님 = (f) => !장부.has(f);
+ *   즉시 드러냈다(첫 판이 보드 한 번에 6줄). 목록을 두 벌로 만들지 않는다 — 맹점 ④.
+ *
+ * 🔴 목록은 **handoff-store 하나**에서 온다. 이 자리는 그동안 자기 Set 을 따로 들고 있었다 —
+ *   위 문장이 「두 벌로 만들지 않는다」고 적어둔 채로 실제로 두 벌이었다(F250 에서 실측).
+ *   보드가 폴더로 갈리면서 정확 일치로는 못 재게 됐고, 한 곳만 고치면 갈라짐이 실현된다. */
+const 장부아님 = (f) => !store.공용장부인가(f);
 
 /** 이 파일이 **지금 미커밋인가** — ⑤ 가 차단해도 되는 유일한 근거다 (F239).
  *
@@ -420,7 +418,8 @@ function 형제커밋들() {
  * ⚠ 여러 줄이 같은 파일을 적을 수 있어(예: settings.json) **가장 많이 겹치는 줄**을 고른다. */
 function 내보드줄() {
   let 본문;
-  try { 본문 = fs.readFileSync(보드, 'utf8'); } catch (_) { return null; }
+  본문 = 보드.텍스트(ROOT);
+  if (본문 === null) return null;
   const 기저 = [...만진목록].map((f) => path.posix.basename(f)).filter(Boolean);
   if (!기저.length) return null;
 

@@ -51,8 +51,8 @@ const { spawnSync } = require('child_process');
 const 보드id = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'board-id.js'));
 
 const ROOT = path.resolve(__dirname, '..');
-const BOARD = process.env.SYNK_BOARD || path.join(ROOT, 'docs', '세션보드.md');
 const ARCHIVE = process.env.SYNK_BOARD_ARCHIVE || path.join(ROOT, 'docs', '세션보드_아카이브.md');
+const 보드lib = require(path.join(__dirname, 'lib', '보드.js'));
 
 /** 줄끝을 실측한다 — 섞여 있으면 많은 쪽을 따른다(앵커를 손으로 쓰지 않는 이유). */
 function eolOf(text) {
@@ -68,6 +68,20 @@ const args = process.argv.slice(2);
 const dry = args.includes('--dry');
 const needle = args.filter((a) => a !== '--dry').join(' ').trim();
 if (!needle) die('옮길 줄을 식별할 문구를 달라. 예: node tools/board-move.js "채번 락"');
+
+/* 보드 정본은 `docs/_ops/보드/<지문>.md` 의 세션별 파일이다(F250) — 옮길 줄이 **어느 파일**에
+ * 있는지부터 가른다. 아래 원칙 ①~⑥(줄끝 실측·아카이브 먼저·산주인 검사·깨끗할 때만 커밋)은
+ * 그 파일 하나를 대상으로 그대로 돈다 — 파일이 좁아진 만큼 남의 줄을 건드릴 길이 사라졌다.
+ * `SYNK_BOARD` 는 테스트 격리 이음매라 그대로 둔다(주면 그 파일 하나만 본다). */
+const BOARD = process.env.SYNK_BOARD || (() => {
+  const 후보 = (보드lib.줄들(ROOT) || []).filter((r) => r.줄.includes(needle));
+  if (!후보.length) die(`보드에서 "${needle}" 가 든 줄을 못 찾았다.`);
+  const 파일들 = [...new Set(후보.map((r) => r.파일))];
+  if (파일들.length > 1) {
+    die(`"${needle}" 가 세션 파일 ${파일들.length}개에 걸린다 — 더 구체적인 문구를 달라:\n  ` + 파일들.join('\n  '));
+  }
+  return path.join(보드lib.폴더(ROOT), 파일들[0]);
+})();
 
 const boardText = fs.readFileSync(BOARD, 'utf8');
 const archiveText = fs.readFileSync(ARCHIVE, 'utf8');

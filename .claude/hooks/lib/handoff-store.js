@@ -141,6 +141,17 @@ const 공용장부 = Object.freeze([
   'docs/지침_이력.md',
 ]);
 
+/** 폴더째 공용인 자리 — 보드 정본은 세션별 파일이라 이름을 다 적을 수 없다(F250). */
+const 공용장부폴더 = Object.freeze(['docs/_ops/보드/']);
+
+/** 🔑 판정은 **여기 하나**다. 위 목록은 track-collision 이 자기 Set 을 따로 들고 있어서
+ *  실제로 두 벌이었다 — 이 머리말이 「두 벌로 만들지 않는다」고 적어둔 채로. 보드가 폴더로
+ *  갈리면서 정확 일치로는 못 재게 됐고, 그때 한 곳만 고치면 갈라짐이 그대로 실현된다. */
+function 공용장부인가(f) {
+  const p = String(f || '').replace(/\\/g, '/');
+  return 공용장부.includes(p) || 공용장부폴더.some((d) => p.startsWith(d));
+}
+
 function stateDir() { return STATE_DIR; }
 
 /** 세션별 단계 카운터(발화 중복 억제용). 프로젝트 키를 붙여 저장소 간 간섭을 막는다. */
@@ -328,7 +339,7 @@ function take(cwd) {
  * 「조용히 안 지워짐」이라 눈에 안 띈다(이 파일이 존재하는 이유 ③과 같은 함정). */
 module.exports = {
   stateDir, projectKey, safeId, batonName, stagePath, readStage, writeStage, claimBlock, sweep, drop, take,
-  siblings, siblingPrefix, touchKey, 공용장부,
+  siblings, siblingPrefix, touchKey, 공용장부, 공용장부폴더, 공용장부인가,
   편집지문계산, 편집지문경로, 편집지문읽기, 편집지문쓰기, 구문깨졌나,
   BATON_TTL_MS, SWEEP_TTL_MS,
 };
