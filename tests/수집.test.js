@@ -886,6 +886,55 @@ test('[v9.197] 자기선언 — 읽는 열이 라이브 헤더 자리와 같은�
   });
 });
 
+/* 줄어듦 감시 — append-only 장부의 자기검사. 워치독의 「누락 시트」는 이 사고를 못 본다(야간 배치가
+ * 매일 ensureSheet 로 되살리니 주간 워치독이 볼 땐 탭이 있다). ①배포 검수 P1 이 지적한 자리. */
+function loadShrinkGuard(props, mails) {
+  const s = code.indexOf('const SELF_DECLARE_HWM_ =');
+  assert.notEqual(s, -1, 'SELF_DECLARE_HWM_ 을 찾지 못함');
+  const e = code.indexOf('function aiFeedbackHealth_(', s);
+  assert.notEqual(e, -1, 'selfDeclareShrinkGuard_ 끝 표식을 찾지 못함');
+  const PropertiesService = { getScriptProperties: () => ({
+    getProperty: (k) => (k in props ? props[k] : null),
+    setProperty: (k, v) => { props[k] = String(v); } }) };
+  return new Function('adminMail', 'PropertiesService', 'SELF_DECLARE_TAB_',
+    code.slice(s, e) + '\nreturn selfDeclareShrinkGuard_;')(
+    (subject) => mails.push(subject), PropertiesService, 'self_declare_log');
+}
+
+test('[v9.197] 자기선언 — 이력이 줄면 외친다(탭 삭제·이름 변경·잘림이 같은 증상)', () => {
+  const props = {}, mails = [];
+  const guard = loadShrinkGuard(props, mails);
+  const 시트 = (행) => ({ getLastRow: () => 행 });
+  guard(시트(40));  // ① 첫 관측 — 기준선만 잡고 조용하다
+  assert.deepEqual(mails, []);
+  guard(시트(57));  // ② 늘어난 것은 정상
+  assert.deepEqual(mails, []);
+  guard(시트(12));  // ③ 줄었다 = 소급 불가 데이터가 사라진 것
+  assert.equal(mails.length, 1, '이력이 줄었는데 아무도 안 외쳤다 — 지워진 선언은 다시 못 받는다');
+  assert.match(mails[0], /줄었다/);
+  guard(시트(12));  // ④ 같은 상태로 매일 같은 메일을 보내지 않는다(새 기준으로 간다)
+  assert.equal(mails.length, 1, '같은 이상을 매일 재통보한다 — 알림이 소음이 되면 안 읽힌다');
+});
+
+test('[v9.197] 자기선언 — 학생 행만 적는다(학부모·강사·DEMO 제외)', () => {
+  // profiles 에는 role 이 parent/teacher/director 인 행과 DEMO- 시연 행이 함께 산다(syncProfiles 가 보존한다).
+  // 그 값까지 학습자 선언으로 적으면 나중에 원료가 «조용히» 오염된다 — 걸러진 뒤라 어디서도 안 빨개진다.
+  const fn = section('function selfDeclareLogNightly_()', '\n/* 줄어들면 외친다');
+  assert.match(fn, /!==\s*'student'/, 'role 이 student 인 행만 적는다는 판정이 없다');
+  assert.match(fn, /indexOf\('DEMO-'\) === 0/, 'DEMO- 시연 행을 안 걸러낸다');
+  assert.match(fn, /getRange\(2,\s*1,\s*n,\s*4\)/, 'role(D열)까지 안 읽는다 — 읽지도 않고 거를 수는 없다');
+});
+
+test('[v9.197] 자기선언 — 읽기→차이→쓰기가 직렬화된다', () => {
+  // 야간 배치와 손 실행이 겹치면 둘이 같은 getLastRow()+1 을 잡아 뒤엣것이 앞엣것을 덮는다.
+  // 덮이는 것이 「다시 물어볼 수 없는 선언」이라 여기만은 append 를 잠근다(저장소의 다른 8곳과 같은 통로).
+  const fn = section('function selfDeclareLogNightly_()', '\n/* 줄어들면 외친다');
+  assert.ok(fn.includes('LockService.getScriptLock()'), '잠금 없이 append 한다');
+  const i잠금 = fn.indexOf('tryLock'), i읽기 = fn.indexOf('getLastRow() >= 2'), i쓰기 = fn.indexOf('writeIfChanged(');
+  assert.ok(i잠금 > -1 && i잠금 < i읽기 && i읽기 < i쓰기, '잠금이 읽기보다 뒤에 있다 — 그럼 읽은 값이 이미 낡았다');
+  assert.ok(/finally\s*\{\s*lock\.releaseLock\(\)/.test(fn), 'finally 로 안 풀면 예외 한 번에 다음 밤들이 통째로 막힌다');
+});
+
 test('[v9.197] 자기선언 — 배선 4자리(안 걸리면 영원히 안 돈다)', () => {
   const nj = section('function nightJobs()', 'function dailyBackupJob(');
   // ⚠ 「문자열이 있나」로는 부족하다 — 주석 처리한 줄도 그대로 통과한다(변이가 실측했다).
