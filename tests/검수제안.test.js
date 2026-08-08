@@ -76,6 +76,25 @@ test('방향 정본 파일이 저장소에 실재하고 상한 안이다 — 없
   assert.ok(검수.방향텍스트().includes('데이터'), '방향텍스트()가 파일 내용을 안 돌려준다');
 });
 
+test('방향 정본이 상한을 넘으면 stderr 경고에 실측 문자수가 실린다 — 조용한 뒤잘림 금지 (상한 안이면 침묵)', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-방향-fx-'));
+  const 초과경로 = path.join(d, '초과.md');
+  const 경계경로 = path.join(d, '경계.md');
+  fs.writeFileSync(초과경로, '가'.repeat(검수.방향상한 + 1));
+  fs.writeFileSync(경계경로, '가'.repeat(검수.방향상한));
+  const 잡힌 = [];
+  const 원본 = console.error;
+  console.error = (...a) => 잡힌.push(a.join(' '));
+  try {
+    const 잘린 = 검수.방향텍스트(초과경로);
+    assert.ok(잘린.startsWith('가'.repeat(검수.방향상한)) && 잘린.includes('잘림'), '잘린 본문·프롬프트 내 경고는 기존 그대로여야 한다');
+    assert.strictEqual(잡힌.length, 1, 'stderr 경고가 정확히 1건이어야 한다');
+    assert.ok(잡힌[0].includes((검수.방향상한 + 1).toLocaleString()), `실측 문자수가 경고에 없다: ${잡힌[0]}`);
+    assert.strictEqual(검수.방향텍스트(경계경로), '가'.repeat(검수.방향상한), '상한 정확히면 절단 없이 원문 그대로');
+    assert.strictEqual(잡힌.length, 1, '상한 안인데 경고를 냈다 — 거짓양성');
+  } finally { console.error = 원본; }
+});
+
 test('기능체크 프롬프트에 채택된 업그레이드가 「구현됐는지 체크」로 실린다', () => {
   const p = 검수.기능체크프롬프트('d', ['채택된 업그레이드 X'], '');
   assert.ok(p.includes('채택된 업그레이드 X'));
