@@ -165,3 +165,55 @@ test('실저장소: 프로젝트 열거가 둘 다 찾는다', (t) => {
   assert.ok(projs.includes('(루트)'), '루트 프로젝트를 못 찾았다');
   assert.ok(projs.length >= 2, `프로젝트를 ${projs.length}개만 찾았다 — 하나만 보고 통과라 하면 미탐이다`);
 });
+
+/* ─── 원격초록 — 「배포 게이트가 무엇을 재는가」 (F240 축 B) ────────────────────────────
+ * 새는 방향이 비대칭이다: 못 쟀는데 초록이라 하면 **미검증 배포**고, 초록인데 못 쟀다 하면
+ * 오늘까지의 동작(작업본 전체 실행)이다. 그래서 「모름」은 전부 false 쪽으로 떨어져야 한다. */
+
+const 가짜실행 = (r) => () => r;
+
+test('원격 CI 가 이 HEAD 를 통과시켰으면 초록 — 판정은 첫 줄에서 읽는다', () => {
+  const r = lib.원격초록(REPO, 가짜실행({ status: 0, stdout: '[원격ci] ✅ 초록 — abc1234 를 담은 run 1 통과\n' }));
+  assert.strictEqual(r.초록, true);
+  assert.match(r.출력, /초록/);
+});
+
+test('원격이 적색이면 초록이 아니고, 사유(첫 줄)를 남긴다 — 처방 줄을 집으면 사유가 사라진다', () => {
+  const r = lib.원격초록(REPO, 가짜실행({
+    status: 1,
+    stdout: '[원격ci] 적색 — abc1234 를 담은 run 9 가 failure\n   -> gh run view 9 --log-failed\n',
+  }));
+  assert.strictEqual(r.초록, false);
+  assert.match(r.출력, /적색/);
+  assert.doesNotMatch(r.출력, /gh run view/, '마지막 줄(처방)을 집으면 무엇이 틀렸는지가 사라진다');
+});
+
+test('🔴 미검증도 초록이 아니다 — run 0건은 「아직 안 돎」이지 통과가 아니다', () => {
+  const r = lib.원격초록(REPO, 가짜실행({ status: 1, stdout: '[원격ci] 원격 미검증 — run 이 0건이다\n' }));
+  assert.strictEqual(r.초록, false);
+});
+
+test('🔴 gh 를 못 돌리면(폰 클라우드·인증 만료) 초록이 아니라 「모름」 — 던져도 통과가 아니다', () => {
+  const r = lib.원격초록(REPO, () => { throw new Error('spawn gh ENOENT'); });
+  assert.strictEqual(r.초록, false);
+  assert.match(r.출력, /ENOENT/);
+});
+
+test('🔴 타임아웃(status null·SIGTERM)도 초록이 아니다 — 네트워크가 멎으면 게이트가 통째로 샌다', () => {
+  const r = lib.원격초록(REPO, 가짜실행({ status: null, signal: 'SIGTERM', stdout: '' }));
+  assert.strictEqual(r.초록, false);
+});
+
+test('🔴 실행 결과가 통째로 없어도 초록이 아니다', () => {
+  assert.strictEqual(lib.원격초록(REPO, () => null).초록, false);
+  assert.strictEqual(lib.원격초록(REPO, () => undefined).초록, false);
+});
+
+test('실저장소: 부르는 대상이 실재하는 tools/원격ci.js 다 — 경로가 어긋나면 영원히 false 로 조용히 옛 동작', () => {
+  let 받은 = null;
+  lib.원격초록(REPO, (bin, args) => { 받은 = { bin, args }; return { status: 1, stdout: '' }; });
+  assert.strictEqual(받은.bin, process.execPath);
+  assert.strictEqual(받은.args.length, 1, '인자를 더 넘기면 원격ci 가 그걸 대상 커밋으로 읽는다');
+  assert.ok(fs.existsSync(받은.args[0]), `부르는 파일이 없다: ${받은.args[0]}`);
+  assert.match(받은.args[0].replace(/\\/g, '/'), /tools\/원격ci\.js$/);
+});

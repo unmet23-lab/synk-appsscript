@@ -173,6 +173,7 @@ if (callerCwd) {
 }
 
 const problems = [];
+let 게이트알림 = ''; // 재는 층이 평소와 달라졌을 때만 채운다 — 「안 돌린 것」이 조용히 통과와 같은 모양이면 안 된다
 
 // 1) 배포되는 프로젝트의 *.js 전부 구문검사 (/deploy 2단계와 동일)
 for (const f of fs.readdirSync(PROJ)) {
@@ -206,13 +207,31 @@ if (problems.length === 0) {
     );
   }
   if (testFiles.length) {
-    try {
-      run(process.execPath, ['--test', ...testFiles.map((f) => path.join(ROOT, 'tests', f))]);
-    } catch (_) {
-      problems.push(
-        `안전 테스트 실패(${프로젝트명} 관련 ${testFiles.length}개): ` +
-        `node --test ${testFiles.map((f) => 'tests/' + f).join(' ')} 를 통과해야 배포 가능`
-      );
+    /* 🔑 재는 대상은 **작업본이 아니라 HEAD** 다 — 아래 3·4번이 배포집합 미커밋과 미push 를 막으므로
+     *   나갈 바이트는 HEAD 의 것이고, 원격 CI 가 그 HEAD 를 통과시켰으면 이미 검증된 바이트다.
+     *   작업본 전체를 재던 옛 판은 남의 진행 중 편집(배포집합 밖)이 무관한 배포를 상시로 막았다
+     *   — F240 축 B. 판별의 재료·기각된 대안은 lib/clasp-project.js 의 `원격초록` 주석에 있다. */
+    const 원격 = 프로젝트.원격초록(ROOT);
+    if (원격.초록) {
+      게이트알림 =
+        `[배포게이트] 로컬 스위트를 **안 돌렸다** — 원격 CI 가 이 HEAD 를 초록으로 통과시켰다.\n` +
+        `  ${원격.출력}\n` +
+        `  나갈 바이트는 HEAD 다(배포집합 미커밋 0 · origin push 완료 — 아래 3·4번이 강제). 작업본의\n` +
+        `  적색이 남아 있다면 그건 **커밋 안 된 작업**이라 라이브와 무관하다(F240 축 B). 주인은\n` +
+        `  \`node tools/작업본소유자.js\`, 저장소 초록 여부는 \`node tools/test-ci.js\` 로 따로 본다.`;
+    } else {
+      // 못 쟀거나 원격이 적색이면 오늘까지의 동작 그대로 — 로컬 작업본 전체를 돈다.
+      try {
+        run(process.execPath, ['--test', ...testFiles.map((f) => path.join(ROOT, 'tests', f))]);
+      } catch (_) {
+        problems.push(
+          `안전 테스트 실패(${프로젝트명} 관련 ${testFiles.length}개): ` +
+          `node --test ${testFiles.map((f) => 'tests/' + f).join(' ')} 를 통과해야 배포 가능\n` +
+          `  ⚠ 원격 CI 로는 못 갈랐다(${원격.출력 || 'gh 조회 실패'}) — 그래서 작업본 전체를 쟀다.\n` +
+          `  이 적색이 **내 배포집합 밖**이고 남의 미커밋 탓이면, HEAD 를 원격에 태워 초록을 받는 것이\n` +
+          `  정상 통로다(BYPASS 아님): git push origin master → node tools/원격ci.js`
+        );
+      }
     }
   }
 }
@@ -307,6 +326,7 @@ if (problems.length) {
 /* ⚠ 알림은 **한 번만** 쓴다 — stdout 에 JSON 객체를 두 번 쓰면 통째로 파싱에 실패해
  *   두 알림이 **둘 다** 사라진다(실패 방향은 여기서도 「조용함」이다). 그래서 모아서 한 번. */
 const 알림들 = [];
+if (게이트알림) 알림들.push(게이트알림);
 if (검수알림) 알림들.push(검수알림);
 
 try {
