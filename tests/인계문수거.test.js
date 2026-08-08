@@ -153,6 +153,59 @@ test('추적-수정·추적-삭제(TTL 청소 자국)도 주인이 죽었으면 
   assert.strictEqual(st, '', `수거 뒤에도 인계문 자리가 더럽다: ${st}`);
 });
 
+/* ── F257 — 「수거 N건」이 삭제를 그 수에 포함했다 ──────────────────────────
+ * 실물: 40f763e 제목 「3건」 = 실제 보호 1 + 만료 2 · 64d6b9b 「6건」 = 1 + 5.
+ * 손해는 이력 오독이다 — 커밋 목록만 보면 「N건을 보호했다」로 읽히는데, 그 중 일부는
+ * 보호가 아니라 TTL 이 이미 지운 것의 정리다(반대 사건이 한 수에 합쳐져 있었다).
+ * 🔑 **동작은 안 바꾼다** — 삭제도 그대로 커밋에 실어야 인계문 자리가 안 더럽다(위 회귀).
+ *   가르는 것은 세는 이름뿐이라, 아래 두 단언은 **같은 커밋**을 두 각도로 잰다. */
+test('🔴 [F257] 제목이 「보호」와 「만료 정리」를 따로 센다 — 합치면 삭제가 보호로 읽힌다',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const { repo, state, g } = 픽스처();
+    const 만료 = 인계문두기(repo, 'dead0007', '## 만료될 세션\n오래된 인계 블록\n');
+    g('add', '-A'); g('commit', '-qm', '만료될 파일이 이미 추적됨');
+    fs.unlinkSync(만료);              // TTL 12h 가 지운 자국 — 보호가 아니라 정리 대상이다
+    /* 🔴 내용을 **일부러 다르게** 준다 — 기본 템플릿을 두 번 쓰면 두 파일이 거의 같아서
+     *   git 이 삭제+추가를 `{dead0007.md => dead0008.md}` **이름 변경**으로 합친다.
+     *   그러면 `--name-only` 에 새 이름만 나와, 도구가 삭제를 제대로 실었는데도 안 실은 것처럼
+     *   보인다(실측 1회 — 재는 층이 값을 바꾼 자리다). 실물 인계문은 세션마다 내용이 달라 안 걸린다. */
+    인계문두기(repo, 'dead0008', '## 살아 있던 세션의 인계\n전혀 다른 본문 · 유실되면 안 된다\n');
+
+    const r = 돌린다({ repo, state, 나: 'local_me000000', 인자: ['--실행'] });
+    assert.strictEqual(r.status, 0, r.stderr);
+
+    const 제목 = String(g('log', '-1', '--format=%s').stdout).trim();
+    assert.match(제목, /죽은 세션 1건/, `보호 건수가 틀렸다 — 삭제가 섞였다: ${제목}`);
+    assert.match(제목, /만료 정리 1건/, `만료를 제목에서 안 밝혔다: ${제목}`);
+    assert.doesNotMatch(제목, /죽은 세션 2건/, `삭제를 보호로 셌다 — F257 그대로다: ${제목}`);
+
+    const 본문 = String(g('log', '-1', '--format=%b').stdout);
+    assert.match(본문, /만료 정리[\s\S]*dead0007/, `만료가 어느 파일인지 본문에 없다:\n${본문}`);
+    assert.match(본문, /수거: [^\n]*dead0008/, `수거 목록에 만료가 섞였거나 진짜 수거가 빠졌다:\n${본문}`);
+
+    /* 동작 불변 — 둘 다 실려야 하고, 실린 뒤 그 자리는 깨끗해야 한다. */
+    const 실림 = 마지막커밋파일들(g);
+    assert.ok(실림.includes(`${폴더}/dead0007.md`) && 실림.includes(`${폴더}/dead0008.md`),
+      `이름만 가르려다 커밋 범위가 좁아졌다: [${실림.join(', ')}]\n도구 출력:\n${r.stdout}`);
+    assert.strictEqual(String(g('status', '--porcelain', '-uall', '--', 폴더).stdout).trim(), '');
+  });
+
+test('🔑 [F257] 만료만 있어도 거둔다 — 「거둘 것이 없다」로 접으면 그 자리가 영영 더럽다',
+  { skip: !git있나 && 'git 없음' }, () => {
+    /* 만료를 수거에서 뺀 순간 생기는 사각이다: 삭제 자국만 남은 판에서 도구가 빈손으로
+     * 접으면 `git status` 가 계속 더럽고, 다음 세션마다 남의 것으로 보인다. */
+    const { repo, state, g } = 픽스처();
+    const 만료 = 인계문두기(repo, 'dead0009');
+    g('add', '-A'); g('commit', '-qm', '추적됨');
+    fs.unlinkSync(만료);
+
+    const r = 돌린다({ repo, state, 나: 'local_me000000', 인자: ['--실행'] });
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.match(String(g('log', '-1', '--format=%s').stdout), /만료 정리 1건/);
+    assert.strictEqual(String(g('status', '--porcelain', '-uall', '--', 폴더).stdout).trim(), '',
+      '만료만 있는 판을 안 거둬 자리가 더럽게 남았다');
+  });
+
 test('파생 목차는 세션 파일을 거둘 때만 동반 커밋한다 — 목차 홀로는 안 거둔다(소음 방지)', { skip: !git있나 && 'git 없음' }, () => {
   const { repo, state, g } = 픽스처();
   fs.appendFileSync(path.join(repo, 목차), '목차 재생성 자국\n');
