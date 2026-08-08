@@ -114,6 +114,25 @@ test('훅 파일이 있고, 무관한 도구에는 반응하지 않는다', () =
   assert.equal(훅(dir, { tool: 'Bash', stateDir: 상태폴더() }).조용, true, 'Edit 계열이 아닌 도구에 반응했다');
 });
 
+/* 🔴 F252: `끝남`(SessionEnd 가 찍는 죽음 도장)은 **도구를 부르는 순간 지워져야** 한다.
+ *   안 지우면 `/clear` 뒤 같은 창처럼 도장이 남은 채 되살아난 세션이 생기고, 그 세션의 미커밋은
+ *   작업본소유자에서 ⚪「이어받아도 된다」로 떨어진다 — F252 가 도장 쪽에서 그대로 재현된다.
+ *   상태쓰기 경로가 넷이라(`{...이전, …}` 포함) 한 곳만 새도 조용히 통과한다. */
+test('🔴 상태쓰기는 옛 죽음 도장을 지운다 — 도구를 부른 세션은 살아 있다 (F252)', (t) => {
+  if (!있나) return t.skip('git 없음 — 픽스처를 못 만든다');
+  const dir = 픽스처저장소();
+  const st = 상태폴더();
+  커밋(dir, 'Code.js', 'a', 'init', 'sess-B');
+  훅(dir, { file: 'Code.js', sid: 'sess-A', stateDir: st });        // 상태 파일이 생긴다
+  const [파일] = fs.readdirSync(st).filter((f) => f.startsWith('track-'));
+  assert.ok(파일, '상태 파일이 안 생겼다 — 이 검사의 전제가 깨졌다');
+  const p = path.join(st, 파일);
+  fs.writeFileSync(p, JSON.stringify({ ...JSON.parse(fs.readFileSync(p, 'utf8')), 끝남: Date.now() }));
+  훅(dir, { file: 'Code.js', sid: 'sess-A', stateDir: st });        // 되살아났다
+  assert.equal(JSON.parse(fs.readFileSync(p, 'utf8')).끝남, undefined,
+    '도구를 불렀는데 죽음 도장이 남았다 — 산 세션의 작업본이 ⚪ 유물로 떨어진다(F252)');
+});
+
 test('첫 호출은 조용하다 — 기준점을 잡을 뿐 비교 대상이 없다', (t) => {
   if (!있나) return t.skip('git 없음 — 픽스처를 못 만든다');
   const dir = 픽스처저장소();
