@@ -348,13 +348,19 @@ function selfDeclareLogNightly_() {
   /* A~D 만 읽는다 — id 와 **role**(D열). profiles 에는 학부모·강사·원장 행과 `DEMO-` 시연 행이 함께 산다
    * (syncProfiles 가 일부러 보존한다). 그 값까지 학습자 선언으로 적으면 나중에 원료가 조용히 오염된다. */
   const meta = pf.getRange(2, 1, n, 4).getValues();
+  const log = ensureSheet(ss, SELF_DECLARE_TAB_, SELF_DECLARE_HEADERS);
+  /* ⚠ 줄어듦 감시는 **잠금 밖**에서 돈다 — 그 안의 `adminMail` 이 DIGEST_MODE 에서 같은 스크립트
+   *   잠금을 다시 잡는데 GAS 스크립트 잠금은 **비재진입**이라, 안에서 부르면 30초 대기 후 실패하고
+   *   경고도 HWM 갱신도 매일 밤 같은 자리에서 죽는다(①배포 검수 P1). 이 감시는 읽기뿐이라 잠금이 필요 없다. */
+  const 기준 = selfDeclareShrinkGuard_(log); // 탭이 지워졌다 되살아난 것을 여기서 잡는다(워치독은 주간이라 매일 밤 되살아나면 영영 못 본다)
   /* 읽기→차이→쓰기 전 구간을 잠근다 — 야간 배치와 손 실행이 겹치면 둘이 같은 `getLastRow()+1` 을 잡아
    * 뒤엣것이 앞엣것을 덮는다. 덮이는 대상이 「다시 물어볼 수 없는 선언」이라 여기만은 append 를 직렬화한다. */
   const lock = LockService.getScriptLock();
-  if (!lock.tryLock(30000)) return 0; // 이미 도는 중이면 오늘은 그쪽이 적는다(둘 다 적는 것보다 낫다)
+  /* 못 잡으면 **조용히 0 을 돌려주지 않는다** — 잠금 보유자가 이 함수라는 보장이 없어(같은 밤의 다른
+   * 작업일 수 있다) 그 밤의 관측이 아무 기록 없이 사라진다. 던져서 safeRun 의 실패 통로(로그+관리자
+   * 메일·하루 1통 dedup)로 드러낸다: 「안 돌았다」와 「바뀐 게 없었다」가 같은 모양이면 안 된다. */
+  if (!lock.tryLock(30000)) throw new Error('자기선언 이력 — 스크립트 잠금 획득 실패(이 밤의 관측을 건너뛴다)');
   try {
-    const log = ensureSheet(ss, SELF_DECLARE_TAB_, SELF_DECLARE_HEADERS);
-    selfDeclareShrinkGuard_(log); // 탭이 지워졌다 되살아난 것을 여기서 잡는다(워치독은 주간이라 매일 밤 되살아나면 영영 못 본다)
     const last = {};
     if (log.getLastRow() >= 2) log.getRange(2, 1, log.getLastRow() - 1, 3).getValues()
       .forEach(r => { if (r[0]) last[String(r[0]).trim() + '|' + r[1]] = String(r[2] == null ? '' : r[2]).trim(); });
@@ -370,25 +376,30 @@ function selfDeclareLogNightly_() {
     const add = selfDeclareDiff_(rows, last, Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd'));
     // 학생이 직접 친 글이라 소독 통로(writeIfChanged→행소독_)로 append 한다 — `=` 시작 문자열이 라이브 수식이 되는 것을 채널에서 차단.
     if (add.length) writeIfChanged(log, log.getLastRow() + 1, 1, add);
-    if (add.length) PropertiesService.getScriptProperties().setProperty(SELF_DECLARE_HWM_, String(log.getLastRow()));
+    // 기준선은 «건수»로 올린다 — 감시가 재는 단위와 같아야 한다(행 인덱스로 올리면 다음 밤이 늘 헐겁다).
+    if (add.length) PropertiesService.getScriptProperties().setProperty(SELF_DECLARE_HWM_, String(기준 + add.length));
     return add.length;
   } finally { lock.releaseLock(); }
 }
 
 /* 줄어들면 외친다 — append-only 장부의 유일한 자기검사. 워치독의 「누락 시트」로는 이 사고를 못 본다:
  *   야간 배치가 매일 ensureSheet 로 빈 시트를 되살리므로, 주간 워치독이 볼 때는 «탭이 있다».
- *   그래서 「탭이 있나」가 아니라 «행 수가 줄었나»를 잰다(지워짐·이름 바뀜·잘림이 전부 같은 증상이다). */
+ *   그래서 「탭이 있나」가 아니라 «몇 줄이 남았나»를 잰다(지워짐·이름 바뀜·잘림이 전부 같은 증상이다).
+ * ⚠ 세는 것은 `getLastRow()` 가 **아니라 실제 기록 수**다 — 마지막 행은 «중간»을 지워도 그대로라
+ *   행 인덱스로 재면 가운데를 파낸 삭제가 통째로 안 보인다(①배포 검수 P2). 잠금 밖에서 도는 읽기다. */
 const SELF_DECLARE_HWM_ = '자기선언이력_최고행';
 function selfDeclareShrinkGuard_(log) {
   const props = PropertiesService.getScriptProperties();
   const hwm = Number(props.getProperty(SELF_DECLARE_HWM_) || 0);
-  const now = log.getLastRow();
-  if (!hwm || now >= hwm) { if (now > hwm) props.setProperty(SELF_DECLARE_HWM_, String(now)); return; }
-  adminMail('[SYNK] 🌱 자기선언 이력이 줄었다 — ' + hwm + '행 → ' + now + '행',
+  const 끝 = log.getLastRow();
+  const now = 끝 < 2 ? 0 : log.getRange(2, 1, 끝 - 1, 1).getValues().filter(r => String(r[0] || '').trim()).length;
+  if (!hwm || now >= hwm) { if (now > hwm) props.setProperty(SELF_DECLARE_HWM_, String(now)); return now; }
+  adminMail('[SYNK] 🌱 자기선언 이력이 줄었다 — ' + hwm + '건 → ' + now + '건',
     '학생이 스스로 쓴 선언(드림한줄·최애·몬스터이름)의 이력 탭 `' + SELF_DECLARE_TAB_ + '` 이 줄었습니다.\n'
     + '이 데이터는 소급이 안 됩니다 — 탭을 지우셨거나 이름을 바꾸셨다면 되돌려 주세요.\n'
     + '의도한 정리였다면 스크립트 속성 `' + SELF_DECLARE_HWM_ + '` 를 지우면 이 알림이 새 기준으로 재설정됩니다.');
   props.setProperty(SELF_DECLARE_HWM_, String(now)); // 매일 같은 메일을 보내지 않는다 — 한 번 알리고 새 기준으로 간다
+  return now;
 }
 
 function aiFeedbackHealth_(ss) {

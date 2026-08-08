@@ -901,19 +901,38 @@ function loadShrinkGuard(props, mails) {
     (subject) => mails.push(subject), PropertiesService, 'self_declare_log');
 }
 
+/* 기록 n건짜리 시트 — 마지막 «행 인덱스»와 «남은 기록 수»를 따로 준다(가운데를 파낸 삭제를 흉내낸다). */
+function 이력시트(ids) {
+  return { getLastRow: () => ids.length + 1,
+    getRange: (r, c, nRows) => ({ getValues: () => ids.slice(0, nRows).map(v => [v]) }) };
+}
+
 test('[v9.197] 자기선언 — 이력이 줄면 외친다(탭 삭제·이름 변경·잘림이 같은 증상)', () => {
   const props = {}, mails = [];
   const guard = loadShrinkGuard(props, mails);
-  const 시트 = (행) => ({ getLastRow: () => 행 });
-  guard(시트(40));  // ① 첫 관측 — 기준선만 잡고 조용하다
+  const 채움 = (n) => 이력시트(Array.from({ length: n }, (_, i) => 'S' + i));
+  assert.equal(guard(채움(40)), 40, '기준선 건수를 안 돌려준다 — 부르는 쪽이 같은 단위로 못 올린다');
+  assert.deepEqual(mails, [], '① 첫 관측은 기준선만 잡고 조용해야 한다');
+  guard(채움(57));  // ② 늘어난 것은 정상
   assert.deepEqual(mails, []);
-  guard(시트(57));  // ② 늘어난 것은 정상
-  assert.deepEqual(mails, []);
-  guard(시트(12));  // ③ 줄었다 = 소급 불가 데이터가 사라진 것
+  guard(채움(12));  // ③ 줄었다 = 소급 불가 데이터가 사라진 것
   assert.equal(mails.length, 1, '이력이 줄었는데 아무도 안 외쳤다 — 지워진 선언은 다시 못 받는다');
   assert.match(mails[0], /줄었다/);
-  guard(시트(12));  // ④ 같은 상태로 매일 같은 메일을 보내지 않는다(새 기준으로 간다)
+  guard(채움(12));  // ④ 같은 상태로 매일 같은 메일을 보내지 않는다(새 기준으로 간다)
   assert.equal(mails.length, 1, '같은 이상을 매일 재통보한다 — 알림이 소음이 되면 안 읽힌다');
+});
+
+test('[v9.197] 자기선언 — 가운데를 파낸 삭제도 잡는다(마지막 행은 그대로다)', () => {
+  /* ①배포 검수 P2: `getLastRow()` 는 «마지막» 비지 않은 행만 말한다. 중간 기록을 지우면
+   * 그 값이 그대로라 행 인덱스로 재는 감시는 통째로 눈이 먼다 — 그래서 실제 기록 수를 센다. */
+  const props = {}, mails = [];
+  const guard = loadShrinkGuard(props, mails);
+  const 온전 = { getLastRow: () => 6, getRange: () => ({ getValues: () => [['S1'], ['S2'], ['S3'], ['S4'], ['S5']] }) };
+  const 파냄 = { getLastRow: () => 6, getRange: () => ({ getValues: () => [['S1'], [''], [''], [''], ['S5']] }) };
+  guard(온전);
+  assert.deepEqual(mails, []);
+  guard(파냄); // 마지막 행 인덱스는 6 그대로인데 기록은 5 → 2 로 줄었다
+  assert.equal(mails.length, 1, '중간을 파낸 삭제를 못 본다 — 행 인덱스만 재면 이 형태가 영원히 조용하다');
 });
 
 test('[v9.197] 자기선언 — 학생 행만 적는다(학부모·강사·DEMO 제외)', () => {
@@ -933,6 +952,11 @@ test('[v9.197] 자기선언 — 읽기→차이→쓰기가 직렬화된다', ()
   const i잠금 = fn.indexOf('tryLock'), i읽기 = fn.indexOf('getLastRow() >= 2'), i쓰기 = fn.indexOf('writeIfChanged(');
   assert.ok(i잠금 > -1 && i잠금 < i읽기 && i읽기 < i쓰기, '잠금이 읽기보다 뒤에 있다 — 그럼 읽은 값이 이미 낡았다');
   assert.ok(/finally\s*\{\s*lock\.releaseLock\(\)/.test(fn), 'finally 로 안 풀면 예외 한 번에 다음 밤들이 통째로 막힌다');
+  // ① 잠금을 못 잡았을 때 «조용히» 끝내면 「안 돌았다」와 「바뀐 게 없었다」가 같은 모양이 된다.
+  assert.match(fn, /tryLock\(30000\)\)\s*throw new Error/, '잠금 실패를 조용한 0 으로 삼킨다 — 그 밤의 관측이 기록 없이 사라진다');
+  // ② 줄어듦 감시는 잠금 «밖»이어야 한다 — 그 안의 adminMail 이 같은 스크립트 잠금을 다시 잡는다(비재진입).
+  assert.ok(fn.indexOf('selfDeclareShrinkGuard_(log)') < i잠금,
+    '줄어듦 감시가 잠금 안에 있다 — adminMail 이 같은 잠금을 재획득해 매일 밤 같은 자리에서 죽는다');
 });
 
 test('[v9.197] 자기선언 — 배선 4자리(안 걸리면 영원히 안 돈다)', () => {
