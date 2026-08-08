@@ -749,6 +749,99 @@ test('🔴[거짓양성] 어느 세션과도 안 맞는 지문은 **주인을 �
     `이름을 근거로 없는 주인을 만들어 붙였다 — 모름은 모름으로 남아야 한다:\n${out}`);
 });
 
+/* ── F192 — 대기 중인 폰 브랜치가 「반입하면 붙는가」 (2026-08-08) ────────────────────────
+ *
+ * 실사고: `hftriw` 가 갈래점에서 317 커밋 뒤처진 채 공유 선언판(보드·인계문·장부)을 고쳐 두고
+ *   16시간 대기했는데, 도구는 존재만 알리고 「내용부터 봐라」로 끝났다. 결정을 가르는 값은
+ *   내용이 아니라 **붙는가**다 — 충돌을 손으로 푸는 자리가 곧 남의 줄이 되돌아가는 자리다(F187).
+ *
+ * 판정은 git 의 3-way 병합 그 자체다(손 근사 금지). 그래서 여기서 잠그는 것은 셋:
+ *   ① 충돌을 **답으로** 읽는가 — `merge-tree` 는 충돌을 status 1 로 알린다. 실패로 접으면 모름이 된다.
+ *   ② 깨끗한 병합을 충돌로 만들지 않는가(거짓양성이 쌓이면 이 줄이 배경 소음이 된다).
+ *   ③ **못 잰 것을 0건으로 바꾸지 않는가** — 이 파일의 최우선 불변식.
+ */
+const 소유자 = require(TOOL);          // `require.main` 가드가 있어 require 만으로는 안 돈다
+const { 반입충돌 } = 소유자;
+
+/** master 와 브랜치가 같은 파일의 같은 줄을 서로 다르게 고친 픽스처(=반드시 충돌). */
+function 갈라진픽스처(공유파일) {
+  const { repo, g } = 픽스처();
+  fs.mkdirSync(path.join(repo, path.dirname(공유파일)), { recursive: true });
+  fs.writeFileSync(path.join(repo, 공유파일), '한 줄\n');
+  g('add', '-A'); g('commit', '-qm', '갈래점');
+  g('branch', '-q', '폰');
+  fs.writeFileSync(path.join(repo, 공유파일), 'master 가 고친 줄\n');   // master 쪽
+  g('add', '-A'); g('commit', '-qm', 'master');
+  g('checkout', '-q', '폰');
+  fs.writeFileSync(path.join(repo, 공유파일), '폰이 고친 줄\n');        // 브랜치 쪽 — 같은 줄
+  g('add', '-A'); g('commit', '-qm', '폰');
+  g('checkout', '-q', 'master');
+  return { repo, g };
+}
+
+test('🔴 폰 브랜치가 공유 선언판에서 부딪히면 **그 파일을 이름으로** 집는다 (F192)',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const { repo } = 갈라진픽스처('docs/세션보드.md');
+    const 충돌 = 반입충돌('폰', repo);
+    assert.ok(Array.isArray(충돌), `충돌을 실패로 접었다(모름이 됐다): ${충돌}`);
+    assert.deepEqual(충돌, ['docs/세션보드.md'],
+      `merge-tree 의 답을 못 읽었다 — 충돌 목록이 어긋난다: ${JSON.stringify(충돌)}`);
+  });
+
+test('[거짓양성] 서로 다른 파일만 고친 브랜치는 **충돌 0** 이다 — 뒤처짐 자체는 충돌이 아니다',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const { repo, g } = 갈라진픽스처('docs/세션보드.md');
+    g('checkout', '-q', '-b', '딴데', 'HEAD~1');           // 갈래점에서 새로 뻗어
+    fs.writeFileSync(path.join(repo, '딴파일.txt'), '안 겹친다\n');
+    g('add', '-A'); g('commit', '-qm', '딴 파일만');
+    g('checkout', '-q', 'master');
+    assert.deepEqual(반입충돌('딴데', repo), [],
+      '안 겹치는 브랜치를 충돌로 읽었다 — 거짓양성이 쌓이면 이 줄이 배경 소음이 된다');
+  });
+
+test('🔴 못 잰 것을 **0건으로 바꾸지 않는다** — 없는 브랜치는 `null`(모름)이다',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const { repo } = 픽스처();
+    assert.equal(반입충돌('그런브랜치없음', repo), null,
+      '못 잰 것을 빈 배열로 돌려줬다 — 그러면 화면에 「깨끗이 붙는다」로 나간다(모름≠안전)');
+  });
+
+/* 🔑 배선 — 판정(반입충돌)과 표시(보고)를 따로 잠가도 **둘을 잇는 자리**는 아무도 안 잰다.
+ *   변이 실측: 주석 붙이는 한 줄을 지우자 위 검사 넷이 전부 초록이었다(`충돌`이 undefined 가 되고
+ *   화면에서는 그 줄이 통째로 사라지거나 죽는다 — 새는 방향이 「조용함」이다). 그래서 원격까지
+ *   갖춘 픽스처로 도구를 실제로 띄운다. */
+test('🔴 배선: 원격 브랜치가 실제로 화면까지 「충돌」을 들고 나온다 (F192)',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const { repo, g } = 갈라진픽스처('docs/세션보드.md');
+    const state = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-own-state-'));
+    임시들.push(state);
+    const bare = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-own-origin-'));
+    임시들.push(bare);
+    spawnSync('git', ['init', '-q', '--bare', bare], { encoding: 'utf8' });
+    g('remote', 'add', 'origin', bare);
+    g('branch', '-M', 'master');                       // 도구·git 둘 다 `master` 를 본다
+    g('push', '-q', 'origin', 'master');
+    g('push', '-q', 'origin', '폰:refs/heads/claude/continue-work-폰');
+
+    const out = 돌린다({ repo, state, 나: 'local_me00' });
+    assert.match(out, /claude\/continue-work-폰/, `대기 브랜치를 아예 안 알렸다:\n${out}`);
+    assert.match(out, /충돌/, `브랜치는 알리면서 **붙는지**는 안 알렸다 — 그게 F192 의 원문이다:\n${out}`);
+    assert.match(out, /공유 선언판/, '보드에서 부딪히는데 되돌림 위험(F187)을 안 짚었다');
+  });
+
+test('표시층: 충돌·깨끗·모름이 **서로 다른 문장**으로 나간다 (F192)', () => {
+  const 뼈대 = { git못부름: false, 나: 'local_me00', 항목: [], 세션수: 1, 못본형제: [], 보드: [], 뒤늦음: { 항목: [], 못잼: 0 } };
+  const 한줄 = (충돌) => 소유자.보고({ ...뼈대, 원격: [{ 이름: 'origin/claude/x', 언제: '1 hour ago', 제목: 't', 충돌 }] }, { 훅: false });
+
+  const 충돌판 = 한줄(['docs/세션보드.md', 'tools/a.js']);
+  assert.match(충돌판, /2개 파일이 충돌/, `충돌을 안 알렸다:\n${충돌판}`);
+  assert.match(충돌판, /공유 선언판[\s\S]*F187/, '공유 선언판이 섞였는데 되돌림 위험을 안 짚었다');
+
+  assert.match(한줄([]), /충돌 \*\*0\*\*/, '깨끗이 붙는 브랜치를 안 알렸다 — 지울지 판단할 재료가 없다');
+  assert.match(한줄(null), /못 쟀다/, '못 잰 것이 「깨끗하다」와 같은 문장으로 나갔다');
+  assert.ok(!/충돌 \*\*0\*\*/.test(한줄(null)), '모름을 0건으로 표시했다 — 이 파일의 최우선 불변식 위반');
+});
+
 test('🔑 「이름→지문」 변환은 **한 곳**이다 — 인계문수거가 자기 사본을 들면 갈라진다', () => {
   /* 갈라졌을 때의 증상이 조용하다: 한쪽만 고치면 수거는 산 세션의 인계문을 거둬 가고,
    * 소유자 도구는 그걸 ❔로 두어 아무도 안 짖는다. 그래서 사본 자체를 금지한다. */
