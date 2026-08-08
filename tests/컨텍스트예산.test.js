@@ -336,8 +336,8 @@ test('🔑 인계문은 형제 저장소(SYNK-talk)의 커밋·미커밋도 본�
     // 🔑 표식은 해시 **뒤**에 붙어야 한다. 앞에 붙이면 boardTrack 의 해시 추출이 죽고
     //   보드 줄 인계가 통째로 사라진다(보드는 talk 해시도 적는다).
     const talk해시 = String(g(['rev-parse', '--short', 'HEAD'], talk).stdout || '').trim();
-    fs.mkdirSync(path.join(repo, 'docs'), { recursive: true });
-    fs.writeFileSync(path.join(repo, 'docs', '세션보드.md'),
+    fs.mkdirSync(path.join(repo, 'docs', '_ops', '보드'), { recursive: true });
+    fs.writeFileSync(path.join(repo, 'docs', '_ops', '보드', 'sess.md'),
       `| 날짜 | 트랙/작업 | 파일 | 상태 |\n|---|---|---|---|\n| 2026-08-07 | 형제 트랙 | talk | ✅종결(${talk해시}) · 다음=X |\n`);
     const track = report.boardTrack(repo, commits);
     assert.ok(track && /형제 트랙/.test(track.track),
@@ -383,7 +383,7 @@ test('🔑 보드 줄이 없으면 「찾아라」도 「멈춰라」도 아니�
   const 해시 = String(g(['rev-parse', '--short', 'HEAD'], repo).stdout || '').trim();
 
   const report = require(path.join(HOOKS, 'lib', 'session-report.js'));
-  const 보드 = path.join(repo, 'docs', '세션보드.md');
+  const 보드 = path.join(repo, 'docs', '_ops', '보드', 'sess.md');
   fs.mkdirSync(path.dirname(보드), { recursive: true });
   const 머리 = '| 날짜 | 트랙/작업 | 파일 | 상태 |\n|---|---|---|---|\n';
 
