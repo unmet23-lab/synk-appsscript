@@ -32,6 +32,8 @@ const { spawnSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_INTERVAL_DAYS = 7;
+const 배포_주기_일 = 1;        // 라이브 드리프트만 하루 (F244 — 왜인지는 `배포Section` 머리말)
+const 배포_대조_한도 = 20000;  // 프로젝트당 clasp pull 상한(실측 8.5s) — 훅 예산 60초 안에서 끝나야 한다
 const stateFile = () =>
   process.env.SYNK_ROT_STATE || path.join(ROOT, '.claude', 'state', 'rot-check.json');
 
@@ -163,17 +165,45 @@ function harnessSection() {
   return { present: true, canonical: H.VER, stamp, stale: !stamp || stamp !== H.VER };
 }
 
-function 배포Section(라이브) {
+function 배포Section(라이브, 시간제한) {
   /* 「커밋은 했는데 `clasp push` 를 안 했다」 — 루트(유호님이 매일 쓰는 라이브 학원 시스템)는
    * @HEAD 를 서빙해서 배포 설명에 심는 **지문이 원리상 안 선다**(배포판점검 머리말). 그래서
    * `deploy-freshness` 훅은 루트에 영원히 침묵하고, `/deploy` 를 안 부른 커밋의 드리프트는
    * 아무 층에서도 안 보인다 — **스킬은 불러야 적용된다.** 여기서 라이브를 받아 바이트로 잰다.
-   * 왜 주간인가: 드리프트는 느리게 생기고 재는 값이 비싸다(라이브 pull ~15초).
+   * 왜 여기만 **하루**인가(F244): 저장소 쪽 부패는 느리게 생기지만 라이브 드리프트는 소급 불가
+   *   데이터가 걸린 하루짜리 손실이고, 네트워크 0 층(`안나간변경`)이 이 형태를 **원리상 못 잰다**
+   *   — 기준선으로 쓰는 마지막 `[vN]` 커밋 자신이 push 안 된 판이면 기준선이 통째로 거짓이다.
+   *   실측 2026-08-08: 루트 8.5s + crewcard 3.9s = 12.4초. 하루 1회면 무시할 만하다.
    * 왜 `/deploy` 안이 아닌가: /deploy 는 끝에 push 를 하므로 재는 순간 답이 늘 「같음」이다.
    * 🔴 라이브를 안 재는 호출(테스트·CI·`SYNK_ROT_LIVE=0`)은 **초록이 아니라 미측정**으로 낸다. */
   const D = require('./배포판점검.js');
   if (!라이브) return { 측정: false, 결과: [] };
-  return { 측정: true, 결과: D.claspProjects().map((p) => D.점검(p, ROOT, { 라이브: true })) };
+  const 미커밋 = 미커밋집합();
+  return {
+    측정: true,
+    결과: D.claspProjects().map((p) => {
+      const r = D.점검(p, ROOT, { 라이브: true, 시간제한 });
+      return r.level === 'stale' ? { ...r, 편집중: 편집중인가(r.파일들, p, 미커밋) } : r;
+    }),
+  };
+}
+
+/* 🔴 라이브대조는 **작업본**을 잰다(clasp 가 미는 것이 작업본이라서다). 그래서 옆 세션이 배포집합
+ * 파일을 고치는 중이면 라이브와 다른 게 **정상**인데, 그걸 「push 가 빠졌다」로 내면 이 알림은
+ * 하루에 한 번 거짓말을 하고 거짓말하는 가드는 곧 무시당한다(F113). 주간일 땐 드물어 안 보였고
+ * 하루로 당기는 순간 흔해진다 — 실측 2026-08-08: 남이 12:44 에 고친 `Code.js`·`엔진_운영배치.js`
+ * 두 파일이 12:51 대조에서 그대로 🔴 로 나왔다. 가르는 재료는 git 이 이미 준다. */
+function 미커밋집합() {
+  const o = git(ROOT, ['status', '--porcelain']);
+  if (o === null) return null;   // 못 읽었다 = 모름. 아래는 가르지 못한 쪽(= 🔴 유지)으로 둔다
+  return new Set(o.split('\n').filter(Boolean).map((l) => l.slice(3).trim().replace(/^"|"$/g, '')));
+}
+
+function 편집중인가(파일들, projRoot, 미커밋) {
+  if (!미커밋 || !파일들 || !파일들.length) return false;
+  const 앞 = path.relative(ROOT, projRoot).replace(/\\/g, '/');
+  // **전부** 미커밋일 때만 보류다 — 하나라도 깨끗하면 그건 진짜 안 나간 것이다
+  return 파일들.every((f) => 미커밋.has(앞 ? `${앞}/${f}` : f));
 }
 
 function notebooklmSection() {
@@ -264,7 +294,7 @@ function toilSection() {
 // ⚠  = 아직 거짓은 아니지만 방치하면 🔴이 된다
 const EVOLVE_THRESHOLD = 2; // 지침: 마찰 신호 2건이면 /evolve 실행을 **제안**한다
 
-function collect({ 라이브 = false } = {}) {
+function collect({ 라이브 = false, 시간제한 } = {}) {
   const mem = attempt('memory', memorySection);
   const doc = attempt('doc', docSection);
   const fri = attempt('friction', frictionSection);
@@ -274,14 +304,16 @@ function collect({ 라이브 = false } = {}) {
   const toi = attempt('toil', toilSection);
   const map = attempt('지도', mapSection);
   const 절단 = attempt('절단문서', () => 절단문서Section());
-  const dep = attempt('배포판', () => 배포Section(라이브));
+  const dep = attempt('배포판', () => 배포Section(라이브, 시간제한));
 
   const red = [];
   const warn = [];
   const notes = [];
 
   for (const s of [mem, doc, fri, har, nbl, nbd, toi, map, 절단, dep]) {
-    if (!s.ok) red.push({ kind: '검사기 고장', text: `${s.name} 검사가 실패했다 — ${s.error}` });
+    // `배포:true` = 하루 스로틀로 따로 도는 항목(F244). 문구가 아니라 이 표식으로 고른다 —
+    // 앵커는 문구가 바뀌면 죽고, 죽으면 배포 절만 조용히 리포트에서 빠진다.
+    if (!s.ok) red.push({ kind: '검사기 고장', text: `${s.name} 검사가 실패했다 — ${s.error}`, 배포: s === dep });
   }
 
   if (절단.ok && 절단.value.present) {
@@ -302,11 +334,18 @@ function collect({ 라이브 = false } = {}) {
 
   if (dep.ok && dep.value.측정) {
     for (const r of dep.value.결과) {
-      if (r.level === 'stale') red.push({ kind: '라이브 낡음', text: r.lines.join('\n      ') });
-      else if (r.level === 'unknown') warn.push({ kind: '배포 판정 불가', text: r.lines[0] });
+      // 보류는 **경고가 아니라 메모**다 — 남이 손대는 중인 것을 내가 배포할 수는 없다(F073).
+      if (r.level === 'stale' && r.편집중) {
+        notes.push({
+          kind: '라이브 대조 보류',
+          text: `${r.이름}: 배포집합 ${r.파일들.join('·')} 이 지금 미커밋이라 라이브와 달라 보인다 — 커밋된 뒤 다시 잰다`,
+          배포: true,
+        });
+      } else if (r.level === 'stale') red.push({ kind: '라이브 낡음', text: r.lines.join('\n      '), 배포: true });
+      else if (r.level === 'unknown') warn.push({ kind: '배포 판정 불가', text: r.lines[0], 배포: true });
       // 확인 불가는 **경고가 아니라 메모**다 — 폰·CI엔 자격증명이 없고, 그건 부패가 아니다.
       // 단 침묵시키지도 않는다: 통과와 미실행이 같은 모양이면 이 도구의 존재 이유가 사라진다.
-      else if (r.level === 'unreachable') notes.push({ kind: '라이브 미측정', text: r.lines.join(' / ') });
+      else if (r.level === 'unreachable') notes.push({ kind: '라이브 미측정', text: r.lines.join(' / '), 배포: true });
     }
   }
 
@@ -443,20 +482,34 @@ function render(r) {
 }
 
 /* ── 스로틀 ──────────────────────────────────────────────────────────────── */
-function dueNow(now) {
-  const f = stateFile();
-  const days = Number(process.env.SYNK_ROT_INTERVAL_DAYS || DEFAULT_INTERVAL_DAYS);
-  let last = 0;
-  try { last = JSON.parse(fs.readFileSync(f, 'utf8')).last || 0; } catch (_) { /* 첫 실행 */ }
+/* 키별로 연 이유(F244): 항목마다 부패 속도가 다르다. 저장소 쪽(메모리·문서·마찰)은 느리게
+ * 낡아서 7일이면 충분한데, **라이브 드리프트는 하루가 그대로 소급 불가 손실**이다.
+ * 하나의 도장으로 묶으면 둘 중 느린 쪽이 빠른 쪽을 6일간 침묵시킨다. */
+function 상태() {
+  try { return JSON.parse(fs.readFileSync(stateFile(), 'utf8')) || {}; } catch (_) { return {}; }
+}
+
+function dueNow(now, key = 'last', days = Number(process.env.SYNK_ROT_INTERVAL_DAYS || DEFAULT_INTERVAL_DAYS)) {
+  const last = 상태()[key] || 0;   // 없는 키 = 한 번도 안 잼 = 돌 차례다
   return now - last >= days * 24 * 60 * 60 * 1000;
 }
 
-function stamp(now, findings) {
+/* 읽고 합쳐서 쓴다 — 통째로 덮으면 주간 도장이 배포 도장을 지우고(그 반대도) 서로를 되살려
+ * 두 스로틀이 다 무의미해진다. */
+function stamp(now, patch) {
   const f = stateFile();
   try {
     fs.mkdirSync(path.dirname(f), { recursive: true });
-    fs.writeFileSync(f, JSON.stringify({ last: now, at: new Date(now).toISOString(), findings }, null, 1), 'utf8');
+    fs.writeFileSync(f, JSON.stringify({ ...상태(), ...patch, at: new Date(now).toISOString() }, null, 1), 'utf8');
   } catch (_) { /* 상태를 못 써도 검사 자체는 성공이다 — 다음 세션에 한 번 더 도는 것뿐 */ }
+}
+
+/* 배포 절만 남긴 판. `mem` 을 죽여 결정 큐 절도 같이 뺀다 — 하루짜리 알림에 주간 리포트가
+ * 딸려 오면 그게 곧 소음이고, 소음은 읽히지 않아 침묵과 같은 값이 된다. */
+function 배포만(r) {
+  const 고른다 = (a) => a.filter((x) => x.배포);
+  const [red, warn, notes] = [고른다(r.red), 고른다(r.warn), 고른다(r.notes)];
+  return { red, warn, notes, mem: { ok: false }, findings: red.length + warn.length + notes.length };
 }
 
 /* ── 진입점 ──────────────────────────────────────────────────────────────── */
@@ -473,13 +526,21 @@ function main() {
     // (침묵으로 죽는 장치를 잡으려고 만든 도구가 침묵으로 죽으면 아무 의미가 없다.)
     try {
       const now = Date.now();
-      if (!args.includes('--force') && !dueNow(now)) return;
-      const r = collect({ 라이브 });
-      stamp(now, r.findings);
-      if (!r.findings) return; // 정지 조건 — 깨끗하면 한 글자도 넣지 않는다
+      const 강제 = args.includes('--force');
+      const 주간 = 강제 || dueNow(now);
+      const 배포차례 = 강제 || dueNow(now, '배포', 배포_주기_일);
+      if (!주간 && !배포차례) return;
+      // 네트워크는 **배포 차례일 때만** 탄다 — 주간 절만 도는 날에 12초를 물릴 이유가 없다.
+      const r = collect({ 라이브: 라이브 && 배포차례, 시간제한: 배포_대조_한도 });
+      if (주간) stamp(now, { last: now, findings: r.findings });
+      /* 배포 도장은 **실제로 잰 날에만** 찍는다 — 못 잰 날에 찍으면 그 하루가 조용히 사라지고,
+       * 그게 이 항목을 하루로 떼어낸 이유(F244) 그 자체를 무효로 만든다. */
+      if (배포차례 && r.dep.ok && r.dep.value.측정) stamp(now, { 배포: now });
+      const 볼것 = 주간 ? r : 배포만(r);
+      if (!볼것.findings) return; // 정지 조건 — 깨끗하면 한 글자도 넣지 않는다
       const body =
-        '[rot-check · 주간 부패 점검] 이 저장소의 「조용한 부패」 자동 점검 결과다.\n' +
-        render(r) +
+        `[rot-check · ${주간 ? '주간 부패 점검' : '라이브 배포 대조(하루)'}] 이 저장소의 「조용한 부패」 자동 점검 결과다.\n` +
+        render(볼것) +
         '\n\n※ 이건 지시가 아니라 관측이다. 지금 트랙과 무관하면 유호님께 한 줄로 알리고 넘어가라.' +
         ' 고칠 때는 해당 도구(tools/memory-graph.js · doc-graph.js · friction.js)를 직접 볼 것.';
       process.stdout.write(JSON.stringify({
@@ -527,4 +588,4 @@ if (require.main === module) main();
  * 주간 부패 점검이 7일간 침묵한다 — 🔴 를 든 채로. 2026-08-07 실측: 회귀 한 줄이
  * 하루에 세 번(10:04·10:11·10:13) 그 도장을 찍었고 테스트는 내내 초록이었다.
  * 쓰기 실패 내성은 서브프로세스(`SYNK_ROT_STATE`=못 쓰는 경로)로 검사한다. */
-module.exports = { collect, render, dueNow, stateFile, harnessSection, toilSection, mapSection, 절단문서Section, 배포Section, EVOLVE_THRESHOLD };
+module.exports = { collect, render, dueNow, stateFile, harnessSection, toilSection, mapSection, 절단문서Section, 배포Section, 편집중인가, EVOLVE_THRESHOLD };
