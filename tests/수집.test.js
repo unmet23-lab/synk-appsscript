@@ -834,3 +834,69 @@ test('[v9.166] 커버리지 월간 발화 — 배선·침묵 조건이 발송보
   assert.ok(i재원 < i메일 && i경고 < i메일, '침묵 조건이 발송 뒤에 있다 — 조용해야 할 때 메일이 나간다');
   assert.ok(fn.indexOf('quotaOk(1)') > -1 && fn.indexOf('quotaOk(1)') < i메일, '메일 쿼터 가드 없이 발송한다');
 });
+
+/* ────────── [v9.197] 자기선언 이력 — 셀 덮어쓰기로 사라지던 3칸 ──────────
+ * 지키는 것 = 「그날 학생이 무엇을 선언했는지」. 드림한줄·최애·몬스터이름은 앱이 Set Column 으로
+ * 덮어쓰는 «셀»이라 바뀌는 순간 이전 값이 영영 없다(엔진도달 전수감사 ㉠ = 수집의 최악 형태).
+ * 판정 코어는 순수 함수라 시트 없이 실값으로 돌린다 — 문자열 검사보다 강한 증거. */
+function loadSelfDeclare() {
+  const s = code.indexOf('function selfDeclareDiff_(');
+  assert.notEqual(s, -1, 'selfDeclareDiff_ 정의를 찾지 못함');
+  const e = code.indexOf('function selfDeclareLogNightly_(', s);
+  assert.notEqual(e, -1, 'selfDeclareDiff_ 끝 표식을 찾지 못함');
+  return new Function(code.slice(s, e) + '\nreturn selfDeclareDiff_;')();
+}
+
+test('[v9.197] 자기선언 — 바뀐 것만 적고, 안 바뀌면 한 줄도 안 적는다', () => {
+  const diff = loadSelfDeclare();
+  const last = {};
+  // ① 첫 관측: 값이 있는 칸만 적힌다(빈칸까지 적으면 전 학생 × 3줄이 의미 없이 깔린다)
+  const 첫날 = diff([{ sid: 'S1', 필드: '드림한줄', 값: '한국 대학 가기' },
+                     { sid: 'S1', 필드: '최애', 값: '' },
+                     { sid: 'S2', 필드: '드림한줄', 값: '  ' }], last, '2026-08-08');
+  assert.deepEqual(첫날, [['S1', '드림한줄', '한국 대학 가기', '2026-08-08']]);
+  // ② 같은 값으로 다시 돌면 쓰기 0 — 매일 도는 배치라 여기가 새면 이력이 중복으로 폭발한다
+  assert.equal(diff([{ sid: 'S1', 필드: '드림한줄', 값: '한국 대학 가기' }], last, '2026-08-09').length, 0);
+  // ③ 바뀌면 «옛 값을 지우지 않고» 새 줄이 는다 — 이 한 줄이 ㉠ 수리의 전부다
+  assert.deepEqual(diff([{ sid: 'S1', 필드: '드림한줄', 값: '서울대 가기' }], last, '2026-08-10'),
+    [['S1', '드림한줄', '서울대 가기', '2026-08-10']]);
+  // ④ 값이 있던 칸을 «비운 것»도 선언이다(마음이 바뀐 시점 자체가 재료다)
+  assert.deepEqual(diff([{ sid: 'S1', 필드: '드림한줄', 값: '' }], last, '2026-08-11'),
+    [['S1', '드림한줄', '', '2026-08-11']]);
+  // ⑤ 그 뒤로 계속 비어 있으면 다시 안 적는다
+  assert.equal(diff([{ sid: 'S1', 필드: '드림한줄', 값: '' }], last, '2026-08-12').length, 0);
+  // ⑥ 같은 값이라도 필드가 다르면 다른 이력이다(키가 sid 하나면 서로를 덮는다)
+  assert.equal(diff([{ sid: 'S1', 필드: '최애', 값: '서울대 가기' }], last, '2026-08-12').length, 1);
+  // ⑦ student_id 공란 행(유령 행 — profilesIntegrity가 따로 잡는다)은 이력에 안 들어간다
+  assert.equal(diff([{ sid: '', 필드: '최애', 값: 'BTS' }], last, '2026-08-12').length, 0);
+});
+
+test('[v9.197] 자기선언 — 읽는 열이 라이브 헤더 자리와 같은가', () => {
+  // 열 번호가 두 곳에 손으로 적혀 있다(헤더 보장부 A1 표기 ↔ 이 장부의 숫자).
+  // 어긋나면 «엉뚱한 칸»이 이력에 쌓이는데, 값이 채워지긴 하므로 아무 데서도 안 빨개진다.
+  const a1col = (s) => s.split('').reduce((n, c) => n * 26 + (c.charCodeAt(0) - 64), 0);
+  const m = code.match(/const SELF_DECLARE_COLS_ = \[([\s\S]*?)\];/);
+  assert.ok(m, 'SELF_DECLARE_COLS_ 장부를 찾지 못함');
+  const 장부 = {};
+  m[1].replace(/\['([^']+)',\s*(\d+)\]/g, (_, 명, n) => { 장부[명] = Number(n); return ''; });
+  assert.deepEqual(Object.keys(장부).sort(), ['드림한줄', '몬스터이름', '최애'], '읽는 칸 3종이 아니다');
+  [['드림한줄', 'CB'], ['최애', 'DA'], ['몬스터이름', 'AO']].forEach(([명, a1]) => {
+    assert.ok(new RegExp(`getRange\\('${a1}1'\\)`).test(code), `${명} 헤더 보장부(${a1}1)가 사라졌다`);
+    assert.equal(장부[명], a1col(a1), `${명} 열 번호가 헤더 자리(${a1})와 어긋난다 — 엉뚱한 칸이 이력에 쌓인다`);
+  });
+});
+
+test('[v9.197] 자기선언 — 배선 4자리(안 걸리면 영원히 안 돈다)', () => {
+  const nj = section('function nightJobs()', 'function dailyBackupJob(');
+  // ⚠ 「문자열이 있나」로는 부족하다 — 주석 처리한 줄도 그대로 통과한다(변이가 실측했다).
+  //    줄머리 앵커로 «살아 있는 호출»만 센다. 새는 방향은 언제나 「통과」다.
+  assert.ok(/^\s*safeRun\('selfDeclareLog', selfDeclareLogNightly_\)/m.test(nj),
+    '야간 배치에 «살아 있는» 호출이 없다 — 코드는 있는데 아무도 안 부르는 상태가 된다(골든셋과 같은 형태)');
+  assert.ok(code.includes('[SELF_DECLARE_TAB_, SELF_DECLARE_HEADERS]'),
+    'SHEET_SKELETON에 없다 — 원버튼 재건 뒤 이력 탭이 사라진다');
+  assert.ok(/const reqSheets = \[[\s\S]*?SELF_DECLARE_TAB_\]/.test(code),
+    '워치독 reqSheets에 없다 — 탭이 지워져도 배치는 정상을 보고한다(소급 불가)');
+  const fn = section('function selfDeclareLogNightly_()', '\nfunction aiFeedbackHealth_');
+  assert.ok(fn.includes('writeIfChanged('), '소독 통로를 안 쓴다 — 학생이 친 `=`가 라이브 수식이 된다');
+  assert.equal(/appendRow\(/.test(fn), false, 'appendRow 직기입은 소독 우회다(v9.157)');
+});

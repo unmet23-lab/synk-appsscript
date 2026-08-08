@@ -497,14 +497,17 @@ test('🔴 워치독이 궤적 2시트를 본다 — 탭이 사라져도 배치 
   const TRJ = 문자열상수(궤적, 'TRAJECTORY_TAB_');
   const DECL = 'const reqSheets = ';
 
-  const 실목록 = 배열리터럴(콘텐츠AI, DECL, { OUTCOME_TAB_: OUT, TRAJECTORY_TAB_: TRJ });
+  /* [v9.197] reqSheets 에 상수로 들어온 다른 탭도 함께 묶어 준다 — 배열리터럴은 리터럴을 «실행»하므로
+   *   미결 식별자가 하나라도 있으면 ReferenceError 로 이 검사 전체가 죽는다(궤적과 무관한 이유로). */
+  const SELF = 문자열상수(콘텐츠AI, 'SELF_DECLARE_TAB_');
+  const 실목록 = 배열리터럴(콘텐츠AI, DECL, { OUTCOME_TAB_: OUT, TRAJECTORY_TAB_: TRJ, SELF_DECLARE_TAB_: SELF });
   assert.ok(실목록.includes(OUT), `워치독 필수 시트 목록에 ${OUT} 이 없다 — 탭이 사라져도 아무도 안 외친다`);
   assert.ok(실목록.includes(TRJ), `워치독 필수 시트 목록에 ${TRJ} 가 없다`);
 
   /* 🔑 이름을 두 곳에 적지 않았는지 **결과로** 가른다. 상수를 갈아 끼워 목록이 따라 갈리면
    *   참조고, 안 갈리면 문자열을 또 적은 것이다(그때 탭 이름을 바꾸면 워치독만 옛 이름을 찾아
    *   매주 「누락 시트」를 외친다 — 가드가 늑대소년이 되는 자리다). */
-  const 변이 = 배열리터럴(콘텐츠AI, DECL, { OUTCOME_TAB_: 'ZZ_결과', TRAJECTORY_TAB_: 'ZZ_궤적' });
+  const 변이 = 배열리터럴(콘텐츠AI, DECL, { OUTCOME_TAB_: 'ZZ_결과', TRAJECTORY_TAB_: 'ZZ_궤적', SELF_DECLARE_TAB_: SELF });
   assert.ok(변이.includes('ZZ_결과') && 변이.includes('ZZ_궤적'),
     '워치독이 탭 이름을 문자열로 또 적었다 — 엔진_궤적.js 의 OUTCOME_TAB_·TRAJECTORY_TAB_ 를 참조해야 한다');
   assert.ok(!변이.includes(OUT) && !변이.includes(TRJ),

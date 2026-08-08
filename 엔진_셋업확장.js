@@ -39,6 +39,7 @@ function sheetSkeleton_() {
     ['payments', ['student_id','이름','금액(만₮)','납부일','방법','비고','created_at']], // [v9.28] 매출 원장(수동 기입)
     ['crew_projects', ['시즌','반','프로젝트명','한줄소개','결과물링크','사진URL','공개일','참여크루','비고']], // [v9.29] 시즌 프로젝트 포트폴리오 — 수동 기입 전용(hall_of_fame 패턴 · 트리거·배치 연동 없음)
     ['mastery_log', ['student_id','grammar_id','상태','첫기록일','도달일','출처','updated_at']], // [v9.36] 문법 도달 로그 — expandMasteryLog_ upsert, 진화 게이트 재료(Glide 비바인딩)
+    [SELF_DECLARE_TAB_, SELF_DECLARE_HEADERS], // [v9.197] 자기선언 이력 — 학생이 덮어쓰는 3칸(드림한줄·최애·몬스터이름)의 변경만 append(selfDeclareLogNightly_)
     ['attendance_batch', ['날짜','class_name','출석자목록','입력자','created_at','처리상태']], // [v9.36] 수업 시작 출석 1탭(B안) → expandAttendanceBatch_가 attendance로 전개
     ['groups', GROUPS_HEADERS], // [v9.80] 조 편성(시즌×반 1벌) — assignGroupsAll이 채운다. 역할·짝·발표자는 여기서 계산만 하고 저장하지 않는다(매 차시 쓰기 0)
     ['lectures', LECTURE_HEADERS],           // [v9.106] 온라인 강의 카탈로그(유호님이 채운다)
@@ -1052,6 +1053,7 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   safeRun('checkUnknownReasonsNightly', checkUnknownReasonsNightly_); // [v9.28] 미인식 reason 발각 지연 7일→1일
   safeRun('sheetSelfHeal', sheetSelfHeal_); // [v9.69] 스토리북 구형 분권 병합·고아 변형 선택자 청소·world_raid 월 중복 정리 — 멱등·변경 없으면 쓰기 0
   safeRun('profilesIntegrityNightly', profilesIntegrityNightly_); // [v9.77] 유령 행·user_id 중복·무효 role 매일 감시 — 이상 시에만 메일(동일 내용 dedup), 3열 읽기라 비용 0
+  safeRun('selfDeclareLog', selfDeclareLogNightly_); // [v9.197] 학생 자기선언 3칸(드림한줄·최애·몬스터이름)의 «바뀐 것만» 이력에 append — calcAll 뒤라 그날 열 보장이 끝난 상태다. 안 바뀌면 쓰기 0
   safeRun('translateContentsNightly', translateContents); // [v9.41·자동화] 빈 몽골어·영어 번역을 매일 밤 60행씩 자동 소진 — "translateContents 수동 반복 실행" 절차 제거(빈칸 없으면 API 호출 0)
   safeRun('aiFeedbackBatch', aiFeedbackBatch_); // [v9.49] 숙제폼 제출분 AI 첨삭 생성 — CLAUDE_API_KEY 없으면 0초 스킵
   safeRun('talkBatch', talkBatch_); // [v9.138] 한국어 대화 답장 — 회화 앱 1세대이자 「다회차 대화」 데이터의 유일한 원천(키 없으면 0초 스킵)
