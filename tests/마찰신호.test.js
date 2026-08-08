@@ -39,8 +39,25 @@ function run(ledger, args, expectFail = false) {
   }
 }
 
-const rowsOf = (ledger) =>
-  fs.readFileSync(ledger, 'utf8').split('\n').filter((l) => /^\|\s*F\d+\s*\|/.test(l.trim()));
+/* 행은 이제 두 곳에 산다 — 동결 아카이브(.md)와 조각 폴더(장부/F0NN.md · F250 후반).
+ * 같은 번호는 조각이 이긴다(도구의 read() 와 같은 규칙 — 규칙이 갈리면 여기가 먼저 빨개져야 한다). */
+const rowsOf = (ledger) => {
+  const rows = new Map();
+  for (const l of fs.readFileSync(ledger, 'utf8').split('\n')) {
+    const m = /^\|\s*(F\d+)\s*\|/.exec(l.trim());
+    if (m) rows.set(m[1], l.trim());
+  }
+  const dir = path.join(path.dirname(ledger), '장부');
+  let names = [];
+  try { names = fs.readdirSync(dir); } catch (_) { /* 조각 0 — 첫 add 전 */ }
+  for (const n of names) {
+    const m = /^(F\d+)\.md$/.exec(n);
+    if (m) rows.set(m[1], fs.readFileSync(path.join(dir, n), 'utf8').trim());
+  }
+  return [...rows.entries()]
+    .sort((a, b) => parseInt(a[0].slice(1), 10) - parseInt(b[0].slice(1), 10))
+    .map((e) => e[1]);
+};
 
 test('add — ID가 이어지고 표 안에 들어간다', () => {
   const L = mkLedger();
@@ -290,8 +307,8 @@ test('F196 — 태그 push 가 막힌 환경(폰)에서도 신고문은 장부�
   const out = runIn(repos.A, ['add', '마찰', '폰 세션 신호']);
   assert.match(out, /F003/, '번호를 못 내줬다: ' + out.trim());
 
-  const 장부 = fs.readFileSync(path.join(repos.A, 'docs', '_ops', '마찰신호.md'), 'utf8');
-  assert.match(장부, /^\|\s*F003\s*\|.*폰 세션 신호/m,
+  const 실린행 = rowsOf(path.join(repos.A, 'docs', '_ops', '마찰신호.md')).find((l) => /^\|\s*F003\s*\|/.test(l));
+  assert.ok(실린행 && /폰 세션 신호/.test(실린행),
     '신고문이 장부에 안 실렸다 — 이게 F196 의 실제 피해다(번호를 못 딴 것이 아니라 기록이 사라진 것)');
 
   // 예약 못 했다고 말했으면 예약 흔적도 없어야 한다 — 남으면 다음 세션이 「예약된 번호」로 읽는다.
@@ -603,7 +620,8 @@ test('해소주장 판별식 — 실장부에서 거짓양성 0 (탐지력은 �
  * 실물: cb56e86 은 「메모리 인덱스 압축」 커밋인데 남의 장부 5행이 동승해 나갔다(주인 흐리기).
  * F025·F037·F073 은 셋 다 미커밋으로 떠 있는 **시간**에만 일어난다 — 아래가 그 시간을 잰다. */
 const 장부경로 = path.join('docs', '_ops', '마찰신호.md');
-const 장부상태 = (repo) => git(repo, ['status', '--porcelain', '--', 장부경로]).trim();
+/* 미커밋 잔재는 아카이브·조각 폴더 어느 쪽에 남아도 유물이다 — 둘 다 잰다 */
+const 장부상태 = (repo) => git(repo, ['status', '--porcelain', '--', 장부경로, path.join('docs', '_ops', '장부')]).trim();
 
 test('통로 마지막 칸 — add 가 장부를 그 자리에서 커밋한다(미커밋으로 안 남는다)', (t) => {
   let repos;
@@ -641,22 +659,25 @@ test('통로 마지막 칸 — resolve 도 그 자리에서 커밋한다', (t) =
   assert.match(git(repos.A, ['log', '-1', '--format=%s']).trim(), /F003/, '해소 커밋에 번호가 없다');
 });
 
-test('통로 마지막 칸 — 남의 미커밋 행이 섞여 있으면 함께 싣되 그 수를 밝힌다', (t) => {
+test('통로 마지막 칸 — 남의 미커밋 행(옛 한-파일 잔재)은 싣지 않는다: 조각 커밋은 내 파일 하나다', (t) => {
   let repos;
   try { repos = mkFixtureRepos(); }
   catch (e) { return t.skip('픽스처 저장소를 못 만들었다(git 없음?): ' + e.message); }
 
-  /* 죽은 세션이 남긴 유물의 모양 — 손으로 쓰인 행이 미커밋으로 떠 있다.
-   * git 은 파일 단위라 이걸 뗄 수 없다. 장부는 행끼리 독립이라 손실은 없지만, 조용히 실으면
-   * 그 행의 주인이 내 커밋으로 바뀐다(cb56e86 이 실제로 그렇게 나갔다). 그래서 센다. */
+  /* 옛 설계는 파일이 하나라 남의 행이 **강제로 동승**했고, 그 수를 세어 밝히는 것이 최선이었다
+   * (cb56e86 실물). 조각 설계에선 내 커밋 = 내 조각 파일 하나 — 동승이라는 사건 자체가 없어야 한다.
+   * 남의 미커밋은 그대로 남고(F073: 남의 작업본을 커밋하면 사고다), 내 조각만 깨끗이 커밋된다. */
   const 장부 = path.join(repos.A, 장부경로);
   const 원본 = fs.readFileSync(장부, 'utf8');
   fs.writeFileSync(장부, 원본.replace(/\n$/, '') + '\n| F009 | 2026-08-07 | 마찰 | 남의 행 | |\n', 'utf8');
 
   const out = runIn(repos.A, ['add', '실수', '내 신고']);
-  assert.match(out, /동승/,
-    '남의 행을 조용히 실었다 — 조용한 동승은 주인 흐리기고, 흐려진 주인은 되돌릴 수 없다: ' + out.trim());
-  assert.equal(장부상태(repos.A), '', '동승 행이 있으면 커밋을 통째로 포기했다 — 그러면 유물이 그대로 남는다');
+  assert.doesNotMatch(out, /동승/, '조각 커밋에 동승이 떴다 — 커밋 범위가 조각 밖으로 샜다: ' + out.trim());
+  const 실린 = git(repos.A, ['show', '--name-only', '--format=', 'HEAD']).trim();
+  assert.doesNotMatch(실린, /마찰신호/, '내 신고 커밋이 남의 미커밋 .md 편집을 쓸어 담았다: ' + 실린);
+  assert.notEqual(git(repos.A, ['status', '--porcelain', '--', 장부경로]).trim(), '',
+    '남의 .md 미커밋이 사라졌다 — 커밋됐으면 주인이 내 커밋으로 바뀐 것이다(F073)');
+  assert.match(fs.readFileSync(장부, 'utf8'), /남의 행/, '남의 미커밋 행 내용이 사라졌다');
 });
 
 test('통로 마지막 칸 — 격리 장부(저장소 밖)는 커밋 층에 들어가지도 않는다', () => {
@@ -673,4 +694,66 @@ test('통로 마지막 칸 — 격리 장부(저장소 밖)는 커밋 층에 들
     '저장소 밖 장부인데 커밋 층까지 들어갔다 — 지금은 git 이 막아 무해하지만 그건 우연이다: ' + String(out).trim());
   assert.equal(git(ROOT, ['rev-parse', 'HEAD']).trim(), 전,
     '회귀가 실저장소를 커밋했다 — 기록을 오염시킨 회귀는 그 기록을 증거로 못 쓰게 만든다');
+});
+
+/* ── 조각 설계 (F250 후반 · 2026-08-08) ─────────────────────────────────────────
+ * 행은 조각 파일(장부/F0NN.md) 하나로 살고, 옛 한 파일(.md)은 동결 아카이브다.
+ * 아래 회귀의 공통 급소: **아카이브 쓰기 0** — 여기가 한 줄이라도 깨지면
+ * 「모든 세션이 한 파일을 고친다」(마찰 18건의 뿌리)로 되돌아간다. */
+
+test('🔑 동결 — add 는 아카이브(.md)를 한 바이트도 안 고친다 (행은 조각 파일로 태어난다)', () => {
+  const L = mkLedger();
+  const 전 = fs.readFileSync(L, 'utf8');
+  run(L, ['add', '실수', '조각 신호']);
+  assert.strictEqual(fs.readFileSync(L, 'utf8'), 전,
+    '아카이브가 바뀌었다 — 「모든 세션이 한 파일을 고친다」로 되돌아간 것이다');
+  assert.ok(fs.existsSync(path.join(path.dirname(L), '장부', 'F003.md')),
+    '조각 파일이 없다 — 행이 어디에도 안 실렸다(신고문 유실)');
+});
+
+test('🔑 그림자 — 아카이브의 열린 행을 닫아도 아카이브는 불변, 같은 번호의 조각이 이긴다', () => {
+  const L = mkLedger();
+  const 전 = fs.readFileSync(L, 'utf8');
+  run(L, ['resolve', 'F002', '훅이 막았다']);
+  assert.strictEqual(fs.readFileSync(L, 'utf8'), 전, '동결 아카이브를 고쳤다 — 그림자가 아니라 제자리 수정을 했다');
+  assert.match(fs.readFileSync(path.join(path.dirname(L), '장부', 'F002.md'), 'utf8'), /훅이 막았다/,
+    '그림자 조각이 안 생겼다');
+  const out = run(L, []);
+  assert.ok(out.includes('해소 2'), '조각이 아카이브를 못 이겼다 — F002 가 여전히 열린 것으로 집계된다: ' + out);
+  assert.ok(out.includes('전체 2건'), '같은 번호가 두 행으로 늘었다(겹침 해소 실패): ' + out);
+});
+
+test('선점된 번호는 건너뛴다 — 조각 폴더의 번호도 채번이 본다 (신고문은 버리지 않는다)', () => {
+  const L = mkLedger();
+  const dir = path.join(path.dirname(L), '장부');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'F003.md'), '| F003 | 2026-08-08 | 마찰 | 선점 조각 | |\n');
+  const out = run(L, ['add', '실수', '비켜 실릴 신호']);
+  assert.match(out, /F004/, '다음 번호로 안 비켰다: ' + out.trim());
+  assert.match(fs.readFileSync(path.join(dir, 'F004.md'), 'utf8'), /비켜 실릴 신호/, '신고문이 버려졌다');
+  assert.match(fs.readFileSync(path.join(dir, 'F003.md'), 'utf8'), /선점 조각/, '선점 조각을 덮어썼다');
+});
+
+test('못 읽음 ≠ 없다 — 행 없는 조각 파일은 열린 신호로 서서 소리가 난다', () => {
+  const L = mkLedger();
+  const dir = path.join(path.dirname(L), '장부');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'F050.md'), '깨진 내용\n');
+  const out = run(L, ['--open']);
+  assert.ok(out.includes('F050'),
+    '깨진 조각이 조용히 사라졌다 — 「없다」로 번역하면 close-guard 가 그 번호에 영원히 침묵한다: ' + out);
+});
+
+test('다음 번호는 다른 ref 의 조각 폴더가 쓴 번호도 넘어선다 (아카이브만 훑으면 조각 번호끼리 충돌한다)', (t) => {
+  let repos;
+  try { repos = mkFixtureRepos(); }
+  catch (e) { return t.skip('픽스처 저장소를 못 만들었다(git 없음?): ' + e.message); }
+  const dir = path.join(repos.A, 'docs', '_ops', '장부');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'F077.md'), '| F077 | 2026-08-08 | 마찰 | 조각으로만 있는 번호 | |\n');
+  git(repos.A, ['add', '--', dir]);
+  git(repos.A, ['commit', '-m', '조각 F077']);
+  git(repos.A, ['push', '-q', 'origin', 'master']);
+  const out = runIn(repos.B, ['add', '실수', 'B 의 신호']);   // B 는 fetch 로 origin/master 의 조각을 본다
+  assert.match(out, /F078/, 'origin 의 조각 번호를 못 봤다 — 채번이 아카이브(F250에서 멈춘 판)만 훑고 있다: ' + out.trim());
 });

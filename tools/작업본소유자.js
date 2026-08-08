@@ -325,6 +325,8 @@ const 보드경로 = 'docs/세션보드.md';
 
 /** 공유 선언판 — 여기서 충돌하면 **손으로 푸는 자리가 곧 남의 줄이 되돌아가는 자리**다(F187). */
 const 공유선언판 = [보드경로, 'docs/_ops/인계문.md', 'docs/_ops/마찰신호.md'];
+/* 장부 조각(docs/_ops/장부/F0NN.md · F250 후반)은 번호별 파일이라 이름을 다 적을 수 없다 */
+const 공유선언판인가 = (f) => 공유선언판.includes(f) || String(f).startsWith('docs/_ops/장부/');
 
 /** 아직 커밋 안 된 **보드 줄**의 내용 (F161).
  *
@@ -669,7 +671,7 @@ function 보고(r, { 훅 }) {
         } else if (!b.충돌.length) {
           줄.push('     ↳ 반입 충돌 **0** — 기계적으론 깨끗이 붙는다(내용이 옳은지는 사람이 본다).');
         } else {
-          const 선언판 = b.충돌.filter((f) => 공유선언판.includes(f));
+          const 선언판 = b.충돌.filter(공유선언판인가);
           줄.push(`     ↳ 🔴 반입하면 **${b.충돌.length}개 파일이 충돌**한다: ${b.충돌.slice(0, 4).join(' · ')}`
             + `${b.충돌.length > 4 ? ` … 외 ${b.충돌.length - 4}` : ''}`);
           if (선언판.length) {

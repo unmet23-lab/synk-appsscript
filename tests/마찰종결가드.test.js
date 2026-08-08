@@ -308,3 +308,62 @@ test('🔴 판별식은 friction.js 하나에서 온다 — 훅이 자기 사본
   const 장부 = require(path.join(ROOT, 'tools', 'friction.js'));
   assert.equal(typeof 장부.해소주장, 'function', 'friction.js 가 해소주장을 export 하지 않는다');
 });
+
+/* ── 조각 시대 (F250 후반) — 행이 docs/_ops/장부/F0NN.md 조각 파일로 사는 자리 ───────── */
+
+/** 지정 경로만 커밋하고 그 결과로 훅을 돌린다 — friction.js 장부커밋의 실제 모양(경로 못박기). */
+function 커밋하고돌려(f, 메시지, 경로들) {
+  f.git('add', '--', ...경로들);
+  const out = f.git('commit', '-m', 메시지);
+  const r = 훅띄우기(HOOK, {
+    input: JSON.stringify({
+      tool_name: 'Bash',
+      tool_input: { command: `git commit -m x -- ${경로들.join(' ')}` },
+      tool_response: { stdout: out, stderr: '' },
+      cwd: f.dir,
+    }),
+    encoding: 'utf8',
+    env: {
+      ...process.env, SYNK_FRICTION_LEDGER: f.장부,
+      SYNK_FRICTION_GUARD_DIR: f.상태, CLAUDE_CODE_HOST_SESSION_ID: 'fixture-session',
+    },
+  });
+  let json = null;
+  try { json = JSON.parse(r.stdout); } catch (_) { /* 침묵 */ }
+  assert.notEqual(r.status, null, '훅 스폰이 실패했다 — 침묵과 미실행이 같은 모양이면 안 된다');
+  return { json, status: r.status, 짖었나: !!(json && json.hookSpecificOutput) };
+}
+
+test('🔑 조각 신고 커밋(장부/F0NN.md 신설)은 조용하다 — friction.js add 직후의 실제 모양', () => {
+  const f = 픽스처();
+  const dir = path.join(f.dir, 'docs', '_ops', '장부');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'F903.md'), '| F903 | 2026-08-08 | 마찰 | 조각으로 신고한 신호 | |\n');
+  const r = 커밋하고돌려(f, 'docs: 마찰 F903 신고 — 조각', ['docs/_ops/장부/F903.md']);
+  assert.equal(r.짖었나, false, '조각 신고 커밋에 짖었다 — 매 신고가 벌받으면 사람이 가드를 끈다(F049)');
+});
+
+test('🔑 조각으로 살아있는 열린 행을 단 커밋이면 짖는다 — 조립이 조각을 못 보면 여기가 침묵으로 샌다', () => {
+  const f = 픽스처();
+  const dir = path.join(f.dir, 'docs', '_ops', '장부');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'F904.md'), '| F904 | 2026-08-08 | 마찰 | 조각 열린 신호 | |\n');
+  f.git('add', '--', 'docs/_ops/장부/F904.md');
+  f.git('commit', '-q', '-m', 'docs: 마찰 F904 신고');   // 바탕에 미리 깔아 둔다(신설 면제 밖으로)
+  const r = 돌려(f, 'fix: 무언가를 고쳤다 (F904)');
+  assert.ok(r.짖었나, '조각의 열린 행 F904 를 단 커밋인데 조용했다 — read 조립이 조각을 못 보고 있다');
+});
+
+test('신고 커밋이 자기 보드 줄(docs/_ops/보드/)을 같이 실어도 조용하다 — 기록물이다 (F250 잔여 구멍)', () => {
+  const f = 픽스처();
+  const 조각 = path.join(f.dir, 'docs', '_ops', '장부');
+  const 보드 = path.join(f.dir, 'docs', '_ops', '보드');
+  fs.mkdirSync(조각, { recursive: true });
+  fs.mkdirSync(보드, { recursive: true });
+  fs.writeFileSync(path.join(조각, 'F905.md'), '| F905 | 2026-08-08 | 마찰 | 신고하며 보드도 갱신 | |\n');
+  fs.writeFileSync(path.join(보드, 'abcd1234.md'), '| 2026-08-08 | 트랙 | 파일 | 상태 |\n');
+  const r = 커밋하고돌려(f, 'docs: 마찰 F905 신고 — 보드 줄 동반',
+    ['docs/_ops/장부/F905.md', 'docs/_ops/보드/abcd1234.md']);
+  assert.equal(r.짖었나, false,
+    '보드 폴더를 기록물로 안 본다 — 정상 신고(78bd7c8 형)가 「고치고 신고」로 벌받는다');
+});
