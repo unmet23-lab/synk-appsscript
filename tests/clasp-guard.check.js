@@ -4,8 +4,31 @@
 'use strict';
 const path = require('path');
 const { 훅띄우기 } = require('./lib/훅띄우기');
+const { mainWorktree, 같은곳 } = require('../.claude/hooks/lib/worktrees.js');
 
 const GUARD = path.join(__dirname, '..', '.claude', 'hooks', 'clasp-guard.js');
+
+/* 「메인 저장소」를 `__dirname` 에서 파생하지 않는다 — F223 이 훅에서 고친 것과 **같은 병**이고
+ * 여기가 그 둘째 자리다(F217). 등록층이 `${CLAUDE_PROJECT_DIR:-$PWD}` 라서 워크트리 세션에서는
+ * 워크트리의 사본이 돌고 `path.resolve(__dirname,'..')` 도 워크트리다. 그걸 메인이라 부르면:
+ *   · 검사 6 이 규칙 0(워크트리 배포 차단)에 걸려 **거짓 적색**
+ *   · 검사 7 은 규칙 0 이 앞서 발동해 「미커밋 배포 파일」 사유에 영영 못 닿아 전건 탈락
+ * 실측 2026-08-08 — 옛 기준: 「워크트리에서는 clasp push」 · 새 기준: 그 사유 없음.
+ * 🔑 파생은 정본 하나에서만 한다(`worktrees.mainWorktree`). 손으로 조립하면 F206 의 다섯 갈래가 다시 난다.
+ *    비교도 `같은곳` 으로 — 윈도의 대소문자·구분자 차이로 메인이 「남」이 되면 판정이 뒤집힌다. */
+const 이체크아웃 = path.resolve(__dirname, '..');
+const 메인 = mainWorktree(이체크아웃);
+const 워크트리인가 = !같은곳(메인, 이체크아웃);
+
+/* 「지금 무엇을 메인으로 잡았나」를 묻는 문. 회귀는 이 문으로 잰다 — 전체 점검은 가드가
+ * 테스트 106개를 인라인으로 돌려 **분 단위**라 회귀에 실을 수 없다(실측 358초/회). */
+if (process.argv.includes('--기준')) {
+  console.log('이 체크아웃: ' + 이체크아웃);
+  console.log('메인 저장소: ' + 메인);
+  // 검사 7 의 skip 여부가 이 값에 달렸다 — 문에 안 실으면 회귀가 그 갈래를 못 잰다(변이 M3 가 잡아냈다).
+  console.log('워크트리인가: ' + 워크트리인가);
+  process.exit(0);
+}
 
 function feed(command, cwd) {
   const payload = { tool_name: 'Bash', tool_input: { command } };
@@ -13,7 +36,13 @@ function feed(command, cwd) {
   const r = 훅띄우기(GUARD, {
     input: JSON.stringify(payload),
     encoding: 'utf8',
-    timeout: 120000,
+    /* 🔴 120000 이면 이 파일은 **검사 4 에서 죽는다**(실측 08-08: ETIMEDOUT 120066ms).
+     * 배포 게이트는 앞선 문제가 하나도 없으면 `node --test` 로 테스트 106개를 **인라인으로** 돌린다
+     * — 메인 cwd 1회 실측 **358초**. 즉 상한이 실비용보다 낮아 훅이 매번 SIGTERM 으로 끝났고,
+     * 훅띄우기가 그걸 「미실행」으로 소리내 준 덕에 조용한 초록은 아니었지만 파일은 죽어 있었다.
+     * 낮추려면 게이트의 실비용부터 다시 재라 — 숫자를 안 재고 줄이면 그대로 재발한다.
+     * (문제가 이미 있는 호출은 게이트가 테스트 앞에서 끊어 초 단위다 — 느린 건 깨끗할 때뿐이다.) */
+    timeout: 600000,
   });
   return { code: r.status, out: (r.stdout || '').trim() };
 }
@@ -67,7 +96,9 @@ if (r.out === '') {
 //    라이브 타깃이 하나라 미병합 브랜치를 밀면 master의 최신 코드가 라이브에서 사라진다 → 허용이 아니라 정확한 차단.
 {
   const fs = require('fs');
-  const wtDir = path.join(__dirname, '..', '.claude', 'worktrees');
+  // 워크트리는 **메인** 아래에만 생긴다 — 이 체크아웃에서 찾으면 워크트리 세션에서 늘 0건이고,
+  // 그 skip 문구가 「정상: 전부 정리된 상태」라 **미실행이 통과처럼** 보인다(F207 축).
+  const wtDir = path.join(메인, '.claude', 'worktrees');
   let wt = '';
   try {
     wt = (fs.readdirSync(wtDir, { withFileTypes: true }).find((d) => d.isDirectory() &&
@@ -84,7 +115,7 @@ if (r.out === '') {
 
 // 6) 메인 저장소 cwd는 종전과 동일하게 동작한다(워크트리 차단이 정상 배포를 막지 않는다)
 {
-  const main = path.resolve(__dirname, '..');
+  const main = 메인;                     // ← 이 한 줄이 F217 둘째 자리다(옛 판: path.resolve(__dirname,'..'))
   const r = feed(PUSH, main);
   const reason = denyReason(r);
   check('메인 cwd는 워크트리로 오판하지 않음', !/워크트리에서는 clasp push/.test(reason));
@@ -96,9 +127,16 @@ if (r.out === '') {
  *    실제로 배포되는 상담AI.js·교재연동.js·만족도팩.js 3종이 감시 밖이었다
  *    — 미커밋인 채로 clasp push가 통과했고, 그건 이 훅의 존재 이유가 절반에서 죽어 있었다는 뜻이다.
  *    목록을 다시 베끼지 않는다: .claspignore(배포 집합의 정본)에서 읽어 하나씩 실제로 더럽혀 본다. */
-{
+/* ⚠ 워크트리에서는 **돌리지 않고 skip 으로 드러낸다**(CLAUDE.md: 실저장소 검사는 skip으로 드러낸다).
+ *   규칙 0 이 이 검사보다 앞서 발동하므로 「미커밋 배포 파일」 사유에 원리상 못 닿아 전건이 거짓 적색이 된다.
+ *   🔑 ROOT 를 메인으로 돌려 통과시키는 길은 **일부러 안 골랐다** — 그러면 워크트리에서 돌린 점검이
+ *      여러 세션이 공유하는 메인 체크아웃의 배포 파일을 더럽히게 된다(복구는 finally 지만 창이 열린다). */
+if (워크트리인가) {
+  console.log('skip 배포집합 미커밋 검사 — 이 체크아웃은 워크트리다(규칙 0 이 먼저 발동해 이 사유에 못 닿는다).');
+  console.log('  메인에서 한 번 더 돌려라: node ' + path.join(메인, 'tests', 'clasp-guard.check.js'));
+} else {
   const fs = require('fs');
-  const ROOT = path.resolve(__dirname, '..');
+  const ROOT = 메인;
   const pats = fs
     .readFileSync(path.join(ROOT, '.claspignore'), 'utf8')
     .split(/\r?\n/)
