@@ -467,3 +467,130 @@ test('[F242] 형제 해시라도 주인이 죽었으면 옮긴다 (만석을 새
     assert.ok(read(fx.archive).includes(줄), '아카이브에 안 들어갔다');
   } finally { 박동들.forEach(치우기); }
 });
+
+/* ── 마찰 F246 — ⑥이 「내 작업 커밋」과 「배경으로 인용한 남의 커밋」을 안 가른다 ────────
+ * F242 는 재료가 **없어서** 틀렸고, 이건 재료가 **너무 많아서** 틀린다. 줄 전체에서 해시를
+ * 긁으면 원인 설명에 배경으로 적은 남의 커밋("`46897fe` 로 고쳤지만…")까지 주인이 되어,
+ * 내 종결 줄이 영원히 안 옮겨진다. 처방이 「그 세션이 끝난 뒤 다시 돌려라」라 내 세션에선
+ * 실행할 수 없고(F103 축), 못 옮긴 줄은 보드 상한을 먹어 다음 세션의 선언을 막는다.
+ * 새는 방향은 F242 와 반대(시끄러운 미이관)지만, 막히는 쪽도 결국 공유판을 잠근다.
+ *
+ * 좁히기는 **미탐 방향**이라 그 자리를 ① 파일 이름이 진다 — 보드 정본이 세션별 파일이 된
+ * 뒤로(F250) 줄의 주인은 추론 대상이 아니라 좌표다. 두 성질을 따로 못박는다. */
+const 남의sid246 = 'local_f246aabb-1111-2222-3333-444455556666';
+const 내sid246 = 'local_a1b2c3d4-9999-8888-7777-666655554444';
+const 지문of = (sid) => sid.replace(/^local_/, '').slice(0, 8);
+
+/** 두 세션의 커밋을 만들고, 부르는 쪽이 조립한 줄을 보드에 심는다.
+ *  `파일이름` 을 주면 보드 파일을 그 이름으로 옮긴다(F250 의 세션별 파일 모양). */
+function mk인용픽스처(줄만들기, { 파일이름 = null, 죽은 = [] } = {}) {
+  const fx = mkRepoFixture();
+  const 해시 = {};
+  for (const sid of [남의sid246, 내sid246]) {
+    const 이름 = `${지문of(sid)}.js`;
+    fs.writeFileSync(path.join(fx.dir, 이름), '// 트랙 산출물\n', 'utf8');
+    git(fx.dir, 'add', '--', 이름);
+    git(fx.dir, 'commit', '-q', '-m', `트랙 커밋\n\nSession-Id: ${sid}`);
+    해시[sid] = git(fx.dir, 'rev-parse', '--short', 'HEAD').stdout.trim();
+  }
+  const 줄 = 줄만들기(해시);
+  fs.writeFileSync(fx.board, read(fx.board).replace(ROW, 줄), 'utf8');
+  let 보드이름 = '세션보드.md';
+  if (파일이름) {
+    fs.renameSync(fx.board, path.join(fx.dir, 파일이름));
+    fx.board = path.join(fx.dir, 파일이름);
+    보드이름 = 파일이름;
+    git(fx.dir, 'add', '--', '세션보드.md', 파일이름);
+  }
+  git(fx.dir, 'commit', '-q', '-m', 'board', '--', 보드이름, '세션보드.md');
+
+  /* 두 세션 다 살려 둔다 — 주인이 아닌 산 세션이 있어야 `!산.size` 조기반환에 가려지지 않는다
+   * (F242 주석의 그 자리 · 변이 ③이 드러낸 미측정). `죽은` 에 넣은 것만 박동을 뒤로 민다. */
+  const 최상위 = git(fx.dir, 'rev-parse', '--show-toplevel').stdout.trim();
+  fs.mkdirSync(store.stateDir(), { recursive: true });
+  const 박동들 = [남의sid246, 내sid246].map((sid) => {
+    const p = path.join(store.stateDir(), `track-${store.projectKey(최상위)}-${store.safeId(sid)}.json`);
+    fs.writeFileSync(p, JSON.stringify({ touched: [] }), 'utf8');
+    if (죽은.includes(sid)) { const t = (Date.now() - 90 * 60000) / 1000; fs.utimesSync(p, t, t); }
+    return p;
+  });
+  return { fx, 줄, 해시, 박동들 };
+}
+
+test('[F246] 트랙 칸의 **배경 인용** 해시로는 안 막는다 (내 종결 줄이 옮겨진다)', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx, 줄, 해시, 박동들 } = mk인용픽스처((h) =>
+    `| 2026-08-08 | **F246 종결 트랙 기**(원인은 \`${h[남의sid246]}\` 가 고쳤다 — 배경) | a.js | ✅종결(${h[내sid246]}) |`);
+  try {
+    const r = run(fx, ['F246 종결 트랙 기'], { CLAUDE_CODE_HOST_SESSION_ID: 내sid246 });
+    assert.equal(r.status, 0,
+      '배경으로 인용한 남의 커밋에 막혔다 — F246 재현(처방 「그 세션이 끝난 뒤」는 내 세션에서 실행 불가): ' + r.stderr);
+    assert.ok(!read(fx.board).includes(줄), '내 종결 줄이 보드에 그대로다');
+    assert.ok(read(fx.archive).includes(줄), '아카이브에 안 들어갔다');
+    assert.ok(해시[남의sid246] !== 해시[내sid246], '픽스처가 두 커밋을 안 갈랐다 — 이 검사는 미측정이다');
+  } finally { 박동들.forEach(치우기); }
+});
+
+test('[F246] **상태 칸**의 남의 해시는 여전히 막는다 (좁히기가 F146 을 안 연다)', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx, 줄, 해시, 박동들 } = mk인용픽스처((h) =>
+    `| 2026-08-08 | **F246 남의 트랙 경** | a.js | ✅종결(${h[남의sid246]}) |`);
+  try {
+    const before = { b: read(fx.board), a: read(fx.archive) };
+    const r = run(fx, ['F246 남의 트랙 경'], { CLAUDE_CODE_HOST_SESSION_ID: 내sid246 });
+    assert.notEqual(r.status, 0, '상태 칸의 남의 커밋까지 통과시켰다 — 좁히기가 F146 을 되열었다');
+    assert.match(String(r.stderr), new RegExp(해시[남의sid246]), '어느 커밋이 걸렸는지 안 나온다');
+    assert.equal(read(fx.board), before.b, '거부인데 보드가 변했다');
+    assert.equal(read(fx.archive), before.a, '거부인데 아카이브가 변했다');
+    assert.ok(read(fx.board).includes(줄), '거부인데 줄이 보드에서 사라졌다');
+  } finally { 박동들.forEach(치우기); }
+});
+
+test('[F246] 칸을 못 가르는 줄이면 **줄 전체**로 떨어진다 (좁히기가 침묵으로 안 끝난다)', { skip: !hasGit && 'git 없음' }, () => {
+  /* 폴백은 언제나 더 많이 보는 쪽이다 — 형식이 바뀌어 상태 칸을 못 집으면 해시가 0건이 되고,
+   * 그 0 은 「주인 없음」과 같은 모양이라 살아있는 세션의 줄이 조용히 옮겨진다. */
+  const { fx, 줄, 해시, 박동들 } = mk인용픽스처((h) => `| **F246 칸 없는 줄 무** ✅종결(${h[남의sid246]}) |`);
+  try {
+    const r = run(fx, ['F246 칸 없는 줄 무'], { CLAUDE_CODE_HOST_SESSION_ID: 내sid246 });
+    assert.notEqual(r.status, 0, '칸을 못 갈랐다고 재료를 통째로 버렸다 — 산 주인의 줄이 옮겨진다');
+    assert.match(String(r.stderr), new RegExp(해시[남의sid246]), '어느 커밋이 걸렸는지 안 나온다');
+    assert.ok(read(fx.board).includes(줄), '거부인데 줄이 보드에서 사라졌다');
+  } finally { 박동들.forEach(치우기); }
+});
+
+test('[F246] 해시도 지문도 없어도 **파일 이름**이 산 주인을 말한다', { skip: !hasGit && 'git 없음' }, () => {
+  /* 좁히기가 만드는 미탐 자리 — 옛 단일 파일 시절엔 작업 해시를 「만지는 파일」 칸에 적은
+   * 행이 실제로 있었다(실측 4행). 세션별 파일에서는 이름이 그 자리를 대신한다. */
+  const { fx, 줄, 박동들 } = mk인용픽스처(() =>
+    '| 2026-08-08 | **F246 선언만 한 트랙 신** | a.js | 🔵착수 — 커밋 아직 없음 |',
+  { 파일이름: `${지문of(남의sid246)}.md` });
+  try {
+    const before = { b: read(fx.board), a: read(fx.archive) };
+    const r = run(fx, ['F246 선언만 한 트랙 신'], { CLAUDE_CODE_HOST_SESSION_ID: 내sid246 });
+    assert.notEqual(r.status, 0, '재료가 셋 다 비어 통과했다 — 살아있는 세션의 선언 줄을 옮긴다(F146 그 사고)');
+    assert.match(String(r.stderr), /아직 살아 있다/, '왜 막혔는지 안 말한다');
+    assert.match(String(r.stderr), new RegExp(지문of(남의sid246)), '누구 것인지 안 나온다');
+    assert.equal(read(fx.board), before.b, '거부인데 보드가 변했다');
+    assert.ok(read(fx.board).includes(줄), '거부인데 줄이 보드에서 사라졌다');
+  } finally { 박동들.forEach(치우기); }
+});
+
+test('[F246] 파일 이름이 **내 지문**이면 그대로 옮긴다 (/close 정상 경로)', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx, 줄, 박동들 } = mk인용픽스처(() =>
+    '| 2026-08-08 | **F246 내 트랙 임** | a.js | ✅종결 — 커밋 없음 |',
+  { 파일이름: `${지문of(내sid246)}.md` });
+  try {
+    const r = run(fx, ['F246 내 트랙 임'], { CLAUDE_CODE_HOST_SESSION_ID: 내sid246 });
+    assert.equal(r.status, 0, '내 파일의 내 줄인데 막혔다 — 이 재료가 /close 를 잠근다: ' + r.stderr);
+    assert.ok(read(fx.archive).includes(줄), '아카이브에 안 들어갔다');
+  } finally { 박동들.forEach(치우기); }
+});
+
+test('[F246] 파일 이름 주인이 죽었으면 옮긴다 (이름을 잠금장치로 쓰지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx, 줄, 박동들 } = mk인용픽스처(() =>
+    '| 2026-08-08 | **F246 죽은 트랙 계** | a.js | ✅종결 — 커밋 없음 |',
+  { 파일이름: `${지문of(남의sid246)}.md`, 죽은: [남의sid246] });
+  try {
+    const r = run(fx, ['F246 죽은 트랙 계'], { CLAUDE_CODE_HOST_SESSION_ID: 내sid246 });
+    assert.equal(r.status, 0, '죽은 세션의 파일까지 막았다 — 보드가 영원히 안 줄어든다: ' + r.stderr);
+    assert.ok(read(fx.archive).includes(줄), '아카이브에 안 들어갔다');
+  } finally { 박동들.forEach(치우기); }
+});
