@@ -641,3 +641,50 @@ test('--all 거짓양성: 걸러진 게 없으면 폐기함을 말하지 않는�
   const r = cli(['--all'], dir);
   assert.doesNotMatch(r.stdout, /걸러졌다/, '0건인데 뜨면 그 줄이 배경 소음이 된다');
 });
+
+/* ── 검토 도장 (2026-08-08 · F255) ─────────────────────────────────────────
+ * 경고가 매 세션 전량(89)을 들고 「전수 확인」을 시켰다 — 실행 불가라 5일간 확인 0회.
+ * 지키려는 성질 셋: ①도장 찍힌 줄은 경고에서 빠지되 **분모는 남는다** ②본문이 바뀌면
+ * 다시 뜬다(바뀐 줄은 다시 볼 값이 있다) ③도장 파일이 없으면 전부 새것 — 못 읽은 것이
+ * 침묵으로 떨어지면 그게 이 경고가 막으려던 사고다. */
+function 도장(dir, hashes) {
+  const p = path.join(dir, '검토완료.txt');
+  fs.writeFileSync(p, hashes.map((h) => `${h}  메모`).join('\n') + '\n', 'utf8');
+  return p;
+}
+const 폐기픽스처 = { 'MEMORY.md': '- [h](h.md)', 'h.md': '# H\n- 어떤 판정(⏳ 미결 다수)일 가능성이 있다. 그렇다면 다시 본다\n' };
+
+test('검토 도장을 찍은 폐기함 줄은 경고에서 빠지고, 분모는 남는다', () => {
+  const dir = fixture(폐기픽스처);
+  const 전 = q.build({ dir, date: DAY('2026-08-08') });
+  assert.equal(전.버려진.length, 1, '전제: 이 줄은 걸러진다');
+  assert.equal(전.버려진[0].새것, true, '도장 없으면 새것이다');
+
+  const 후 = q.build({ dir, date: DAY('2026-08-08'), 검토완료: 도장(dir, [q.폐기지문(전.버려진[0])]) });
+  assert.equal(후.버려진.length, 1, '도장은 폐기함에서 줄을 지우지 않는다 — 분모가 사라지면 미실행과 같은 모양이 된다');
+  assert.equal(후.버려진[0].새것, false);
+  assert.equal(q.버려진줄(후), '', '새것이 0이면 경고를 안 낸다 — 그게 이 도장의 목적이다');
+  assert.match(q.버려진줄(전), /전체 1 · 검토완료 0/, '경고는 분모를 같이 낸다(F207)');
+});
+
+test('본문이 바뀌면 도장이 안 듣는다 — 줄 번호가 아니라 내용이 지문이다', () => {
+  const dir = fixture(폐기픽스처);
+  const 도장파일 = 도장(dir, [q.폐기지문(q.build({ dir, date: DAY('2026-08-08') }).버려진[0])]);
+  // 줄 번호만 밀린 경우: 도장은 그대로 들어야 한다(메모리는 매일 행이 밀린다)
+  fs.writeFileSync(path.join(dir, 'h.md'),
+    '# H\n- 위에 낀 새 줄\n- 어떤 판정(⏳ 미결 다수)일 가능성이 있다. 그렇다면 다시 본다\n', 'utf8');
+  assert.equal(q.build({ dir, date: DAY('2026-08-08'), 검토완료: 도장파일 }).버려진[0].새것, false,
+    '행이 밀렸다고 다시 뜨면 도장이 하루도 못 간다');
+  // 문장이 바뀐 경우: 다시 봐야 한다
+  fs.writeFileSync(path.join(dir, 'h.md'),
+    '# H\n- 어떤 판정(⏳ 유호님 답 대기)일 가능성이 있다. 그렇다면 다시 본다\n', 'utf8');
+  assert.equal(q.build({ dir, date: DAY('2026-08-08'), 검토완료: 도장파일 }).버려진[0].새것, true,
+    '본문이 바뀌었는데 안 뜨면 새 미결이 도장 뒤에 숨는다');
+});
+
+test('도장 파일을 못 읽으면 전부 새것이다 — 침묵으로 떨어지지 않는다', () => {
+  const dir = fixture(폐기픽스처);
+  const r = q.build({ dir, date: DAY('2026-08-08'), 검토완료: path.join(dir, '없는파일.txt') });
+  assert.equal(r.버려진[0].새것, true);
+  assert.match(q.버려진줄(r), /새로.*걸러졌다/);
+});
