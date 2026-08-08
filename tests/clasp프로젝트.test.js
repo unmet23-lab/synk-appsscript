@@ -199,14 +199,29 @@ test('🔴 gh 를 못 돌리면(폰 클라우드·인증 만료) 초록이 아�
   assert.match(r.출력, /ENOENT/);
 });
 
-test('🔴 타임아웃(status null·SIGTERM)도 초록이 아니다 — 네트워크가 멎으면 게이트가 통째로 샌다', () => {
+/* 🔴 「못 잰 이유」 세 종류가 같은 문구로 나가면 처방이 엉뚱한 데를 가리킨다.
+ * 08-08 첫 실측이 정확히 이 자리에서 걸렸다 — 실제 원인은 타임아웃이었는데 「gh 조회 실패」로
+ * 나가서 gh 인증을 보러 갈 뻔했다. 그래서 셋이 서로 다른 말을 하는지 못박는다. */
+test('🔴 타임아웃(status null·SIGTERM)도 초록이 아니고, 타임아웃이라고 말한다', () => {
   const r = lib.원격초록(REPO, 가짜실행({ status: null, signal: 'SIGTERM', stdout: '' }));
   assert.strictEqual(r.초록, false);
+  assert.match(r.출력, /안 끝났다/);
+  assert.match(r.출력, /SIGTERM/);
 });
 
-test('🔴 실행 결과가 통째로 없어도 초록이 아니다', () => {
-  assert.strictEqual(lib.원격초록(REPO, () => null).초록, false);
-  assert.strictEqual(lib.원격초록(REPO, () => undefined).초록, false);
+test('🔴 출력 없이 종료한 것과 타임아웃은 다른 말을 한다', () => {
+  const r = lib.원격초록(REPO, 가짜실행({ status: 3, stdout: '   \n' }));
+  assert.strictEqual(r.초록, false);
+  assert.match(r.출력, /출력 없이 종료/);
+  assert.doesNotMatch(r.출력, /안 끝났다/, '타임아웃과 같은 문구면 처방이 갈리지 않는다');
+});
+
+test('🔴 실행 결과가 통째로 없어도 초록이 아니고, 그 사실을 말한다', () => {
+  for (const 없음 of [() => null, () => undefined]) {
+    const r = lib.원격초록(REPO, 없음);
+    assert.strictEqual(r.초록, false);
+    assert.match(r.출력, /결과가 통째로 없다/);
+  }
 });
 
 test('실저장소: 부르는 대상이 실재하는 tools/원격ci.js 다 — 경로가 어긋나면 영원히 false 로 조용히 옛 동작', () => {

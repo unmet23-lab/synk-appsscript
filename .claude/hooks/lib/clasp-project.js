@@ -124,15 +124,26 @@ function testsFor(projRoot, root) {
  *   그래도 옛 판은 「남의 편집이 끝날 때까지 무한정」이었고 지금은 「몇 분 뒤 열린다」다.
  *   창을 넓히려고 「배포집합 바이트가 같은 옛 초록 run 을 인정」하는 안까지 가지는 않았다:
  *   그 run 이 검사한 **테스트 판**은 지금 것이 아니라, 「같은 바이트」의 뜻이 조용히 달라진다. */
+const 원격초록_제한ms = 60000; // 네트워크가 멎어도 훅 예산(120초)을 다 먹지 않게
+
 function 원격초록(root, 실행) {
   const go = 실행 || ((bin, args) => require('child_process').spawnSync(bin, args, {
-    cwd: root, encoding: 'utf8', timeout: 60000, // 네트워크가 멎어도 훅 예산(120초)을 다 먹지 않게
+    cwd: root, encoding: 'utf8', timeout: 원격초록_제한ms,
   }));
   let r;
   try { r = go(process.execPath, [path.join(root, 'tools', '원격ci.js')]); }
   catch (e) { return { 초록: false, 출력: String((e && e.message) || e).split('\n')[0] }; }
   // 판정은 **첫 줄**에 있다 — 뒤따르는 줄은 처방(`→ gh …`)이라 그걸 집으면 사유가 사라진다.
-  const 출력 = String((r && r.stdout) || '').trim().split('\n').filter(Boolean)[0] || '';
+  const 첫줄 = String((r && r.stdout) || '').trim().split('\n').filter(Boolean)[0] || '';
+  /* 🔴 「못 잰 이유」를 뭉개지 않는다. 첫 실측(08-08)에서 이 자리가 타임아웃·빈 출력·spawn 실패를
+   *   전부 한 문구로 내보내, 실제 원인(원격ci 가 60초 안에 안 끝남 — git fetch 가 남의 세션과
+   *   경합한 것으로 보인다)을 가리키지 못했다. 미실행 두 종류가 같은 모양이면 처방이 엉뚱한
+   *   데를 가리킨다 — 이 저장소가 F210·F215 에서 이미 두 번 밟은 자리다. */
+  const 출력 = 첫줄 || (!r
+    ? '원격ci 실행 결과가 통째로 없다'
+    : (r.status === null || r.signal)
+      ? `원격ci 가 ${Math.round(원격초록_제한ms / 1000)}초 안에 안 끝났다(${r.signal || 'timeout'} — git fetch 가 남의 세션과 경합했을 수 있다)`
+      : `원격ci 가 출력 없이 종료(exit ${r.status})`);
   return { 초록: !!r && r.status === 0, 출력 };
 }
 
