@@ -1899,6 +1899,10 @@ function runTeacherStats_({ profileRows, logs = [], oldStats = [], hwRows = null
       Utilities: {
         formatDate: (d, tz, fmt) => {
           const x = d instanceof Date ? d : new Date(d);
+          /* 🔑 GAS 는 Invalid Date 에 **예외를 던진다.** 스텁이 조용히 'NaN-NaN-NaN' 을 돌려주면
+           *   「깨진 행 하나가 전체를 죽인다」는 결함이 하네스 안에서 재현되지 않아 회귀가 거짓 초록이 된다
+           *   (변이 실측에서 실제로 빠져나갔다 — 가드를 지워도 초록이었다). */
+          if (isNaN(x.getTime())) throw new Error('Exception: 잘못된 날짜 (GAS Utilities.formatDate 모사)');
           const p = (n) => ('0' + n).slice(-2);
           if (fmt === 'yyyy-MM') return x.getFullYear() + '-' + p(x.getMonth() + 1);
           if (fmt === 'HH:mm') return p(x.getHours()) + ':' + p(x.getMinutes());
@@ -2291,8 +2295,8 @@ test('[vNEXT] teacher_stats 22열 — 정본 §7 앱자동 5지표가 축 위에
    *   재등록 항목 자체가 빠지고, 남은 넷도 미측정이라 정본의 「미측정 30점 이상 = 심사 스킵」에 걸린다. */
   assert.match(r[20], /심사 스킵/, `잴 것이 하나도 없는데 등급이 나왔다 — 그건 심사가 아니라 추측이다: ${r[20]}`);
   assert.match(r[20], /첫 시즌/, '첫 시즌(재등록 판정 0건)인데 그 사실이 판정문에 없다');
-  assert.equal(r[21], '승급 0 · 복귀 0 · 재등록 0 · 숙제 0/0 · 근태 미측정 · 첫 시즌(재등록 항목 없음)',
-    '지표모수 표기가 계약과 다르다');
+  assert.equal(r[21], '승급 0 · 복귀 0 · 재등록 0 · 숙제 미측정 · 근태 미측정 · 첫 시즌(재등록 항목 없음)',
+    '지표모수 표기가 계약과 다르다 — 잰 적 없는 지표는 「0/0」이 아니라 미측정이라고 말해야 한다');
   const body = section('function calcTeacherStats()', 'function monthlyReport()');
   assert.ok(body.includes("'승급 ' + pm.tot"), '분모(지표모수) 노출이 없다 — 80%가 5명 중 4명인지 알 수 없다');
   // 지표별 격리: 한 시트가 없어도 나머지 계산이 죽으면 안 된다
@@ -2549,6 +2553,58 @@ test('[vNEXT] 근태 — 근무표를 담당 반 시간표에서 유도한다(�
   }).byLabel('바트');
   assert.equal(주말[17], 0, `주말반은 토요일만 근무일인데 위반이 났다: ${주말[21]}`);
   assert.match(String(주말[21]), /근태 8일/, '주말반 근무일이 8일(8주 × 토 1회)이 아니다');
+});
+
+/* ── [vNEXT] ①배포 검수(codex/luna·max)가 잡은 급여 경로 3건 — 전부 「못 잰 것이 점수가 된다」 축이다.
+ *   내 자기검증(회귀 4 · 변이 9/9)을 통과한 뒤에 나온 지적이라, 같은 벤더끼리는 사각도 같이 움직인다는
+ *   증거로 남긴다. 아래 셋은 고친 자리마다 하나씩 못박는다. */
+test('[vNEXT] 🔴 hw_feedback 원천이 비면 미측정이다 — `0 / 80` 은 잰 0점으로 읽혀 관문 ③ 까지 터진다', () => {
+  const 반 = { '정규반1': { type: '평일', time: '09:00', name: '정규반1' } };
+  const 준 = (hwRows) => runTeacherStats_({
+    profileRows: [mkTeacher('T1', '바트', '정규반1', 'bat@synk.im'), mkStu('S1', '정규반1', 10, 100, 2)],
+    sched: 반, hwRows
+  }).byLabel('바트');
+
+  // ① 시트 자체가 없다 → 미측정. 개원 전이 정확히 이 상태다(전 강사가 즉시 0점이 되면 안 된다)
+  const 없음 = 준(null);
+  assert.strictEqual(없음[15], '', `hw_feedback 이 없는데 제출률 0% 가 찍혔다: ${없음[15]}`);
+  assert.strictEqual(없음[16], '', '숙제 배점이 0점 — 앱이 못 잰 것이 급여 삭감이 됐다');
+  assert.match(String(없음[21]), /숙제 미측정/, '지표모수가 「0/80」 처럼 잰 척한다');
+  assert.doesNotMatch(String(없음[20]), /관문/, `미측정인데 0점 관문이 발동했다: ${없음[20]}`);
+
+  // ② 헤더뿐(행 0)도 같다 — getLastRow() >= 2 를 지나도 창 안 유효 행이 0이면 잰 적이 없다
+  assert.strictEqual(준([])[15], '', '헤더만 있는 시트가 「0% 측정됨」으로 읽혔다');
+  // ③ 창 밖 행만 있는 경우도 같다(8주 전 파이프라인이 끊긴 것과 「0% 성실도」가 구별이 안 된다)
+  assert.strictEqual(준([['F1', 'S1', ymd_T(new Date(Date.now() - 400 * 86400000))]])[15], '',
+    '창 밖 행만 있는데 0% 로 측정됐다');
+  // ④ 🔑 반대 방향 — 원천이 있으면 「내 학생만 0건」은 **진짜 0%** 다(남의 행이 그 사실을 증명한다)
+  const 남의행만 = 준([['F1', 'S9', ymd_T(new Date(Date.now() - 86400000))]]);
+  assert.strictEqual(남의행만[15], 0, `원천이 있는데 0% 가 미측정으로 접혔다 — 성실도 결손이 숨는다: ${남의행만[15]}`);
+});
+
+test('[vNEXT] 분자와 분모가 같은 창을 본다 — 오늘치 제출이 분모 없이 분자에만 들어가면 비율이 부푼다', () => {
+  const 반 = { '정규반1': { type: '평일', time: '09:00', name: '정규반1' } };
+  const 어제 = ymd_T(시즌날_T()[0].d), 오늘 = ymd_T(new Date());
+  const r = runTeacherStats_({
+    profileRows: [mkTeacher('T1', '바트', '정규반1', 'bat@synk.im'), mkStu('S1', '정규반1', 10, 100, 2)],
+    sched: 반, hwRows: [['F1', 'S1', 어제], ['F2', 'S1', 오늘]]
+  }).byLabel('바트');
+  // 분모는 어제까지 40 평일. 오늘치까지 세면 2/40 = 5%, 창을 맞추면 1/40 = 3%.
+  assert.match(String(r[21]), /숙제 1\/40/, `오늘치가 분자에 섞였다(분모엔 오늘이 없다): ${r[21]}`);
+});
+
+test('[vNEXT] 깨진 출근 시각 한 행이 전 강사의 근태를 날리지 않는다', () => {
+  const 반 = { '정규반1': { type: '평일', time: '09:00', name: '정규반1' } };
+  const 날 = 시즌날_T().filter((x) => x.dow >= 1 && x.dow <= 5);
+  const 찍기 = (d, hh) => { const x = new Date(d); x.setHours(hh, 0, 0, 0); return ['바트', '출근', x]; };
+  const rows = 날.map((x) => 찍기(x.d, 8));
+  rows.unshift(['바트', '출근', '어제쯤']);      // 파싱 불가 — asDate_ → Invalid Date → formatDate 예외
+  const r = runTeacherStats_({
+    profileRows: [mkTeacher('T1', '바트', '정규반1', 'bat@synk.im'), mkStu('S1', '정규반1', 10, 100, 2)],
+    sched: 반, checkins: rows
+  }).byLabel('바트');
+  assert.strictEqual(r[17], 0, `깨진 행 하나에 근태 전체가 죽었다(빈칸) — 나머지 40일은 멀쩡했다: ${r[21]}`);
+  assert.match(String(r[21]), /근태 40일/, '근무일 집계가 예외로 끊겼다');
 });
 
 test('[vNEXT] 🔴 출근 기록이 하나도 없는 강사는 미측정이다 — 전원 결근으로 읽으면 앱 결함이 급여 삭감이 된다', () => {
