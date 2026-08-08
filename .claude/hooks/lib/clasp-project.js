@@ -97,4 +97,36 @@ function testsFor(projRoot, root) {
   });
 }
 
-module.exports = { resolveProject, deployTargets, globToRe, isDeployFile, testsFor };
+/* 원격 CI 가 **지금 HEAD** 를 초록으로 통과시켰는가.
+ *
+ * 왜 있나 (F240 축 B · 2026-08-08): 배포 게이트가 저장소 **작업본 전체**를 재는 바람에, 세션이
+ *   10개 넘게 도는 시간대엔 남의 진행 중 편집이 무관한 배포를 상시로 막았다. 실측 2회 — 남이
+ *   편집 중이던 `board-guard.js` 의 ReferenceError, 두 저장소 사이에서 갈라진 계약 JSON. 둘 다
+ *   배포집합 15개 밖이고 둘 다 남의 살아있는 작업본이라 F073 으로 손댈 수 없다. 처방이 「고쳐라」
+ *   인데 고칠 권한이 없는 형태(F103 축)라, 규칙을 지키는 쪽이 밀리고 라이브가 조용히 뒤처졌다.
+ *
+ * 🔑 **배포되는 바이트는 작업본이 아니라 HEAD 다.** 검사 3 이 배포집합 미커밋을 막고 검사 4 가
+ *   미push 를 막으므로, 그 둘을 통과한 시점의 배포집합 = HEAD 의 배포집합 = origin 의 그것이다.
+ *   그러니 원격 CI 가 그 HEAD 를 초록으로 통과시켰다면 나갈 바이트는 **이미 검증됐고**, 작업본의
+ *   적색은 정의상 커밋 안 된 작업이라 라이브와 무관하다. 우회가 아니라 재는 대상을 바로잡는 것이다.
+ *   (syntax-check.yml 은 `node --test tests/*.test.js` 로 스위트 전량을 돈다 — 구문만 보는 게 아니다.)
+ *
+ * ⚠ 정적 이름 매칭으로 「배포집합을 검사하는 테스트」를 고르는 안은 **실측이 기각했다**: 배포 파일
+ *   이름으로 테스트 소스를 훑으면 107개 중 45개가 걸리는데 그 안에 `board-guard.test.js` 가 있다
+ *   (`Code.js` 가 보드 표 **픽스처 문자열**로 들어 있다). F240 실측 ① 을 그대로 놓치는 판별자다.
+ *
+ * ⚠ 못 재면 초록이라 하지 않는다 — gh 가 없거나(폰 클라우드) run 이 0건이면 false 로 떨어져
+ *   호출부가 로컬 스위트를 그대로 돈다. 새는 방향이 「오늘과 같음」이라 F103 을 안 만든다. */
+function 원격초록(root, 실행) {
+  const go = 실행 || ((bin, args) => require('child_process').spawnSync(bin, args, {
+    cwd: root, encoding: 'utf8', timeout: 60000, // 네트워크가 멎어도 훅 예산(120초)을 다 먹지 않게
+  }));
+  let r;
+  try { r = go(process.execPath, [path.join(root, 'tools', '원격ci.js')]); }
+  catch (e) { return { 초록: false, 출력: String((e && e.message) || e).split('\n')[0] }; }
+  // 판정은 **첫 줄**에 있다 — 뒤따르는 줄은 처방(`→ gh …`)이라 그걸 집으면 사유가 사라진다.
+  const 출력 = String((r && r.stdout) || '').trim().split('\n').filter(Boolean)[0] || '';
+  return { 초록: !!r && r.status === 0, 출력 };
+}
+
+module.exports = { resolveProject, deployTargets, globToRe, isDeployFile, testsFor, 원격초록 };
