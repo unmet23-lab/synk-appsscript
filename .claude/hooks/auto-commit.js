@@ -141,7 +141,56 @@ function 한저장소(뿌리, 이름, 내touched, 남touched, 지문) {
     if (store.구문깨졌나(절대)) { 깨짐.push(f); continue; }
     후보.push(f);
   }
-  if (!후보.length) return (함께남김.length || 깨짐.length || 무기록.length || 밖에서바뀜.length) ? { 이름, 후보: [], 함께남김, 깨짐, 무기록, 밖에서바뀜 } : null;
+
+  /* ── 🔴 **이 커밋 하나로 판이 서는가** (마찰 F248 · 2026-08-08 실사고) ───────────────
+   * 구문검사는 「깨졌나」까지만 본다. 실물 `fb0bbce`: 이 훅이 `tests/safety.test.js` 의 새
+   * `[vNEXT]` 케이스 129줄만 실었는데 그 테스트가 부르는 구현은 **아직 어디에도 없었다** —
+   * HEAD 에 함수 0건이라 원격 run 31239587806 이 4건 실패했고 master 가 **60분간** 적색이었다
+   * (짝은 같은 세션의 다음 자동커밋 `4e47bfb` 이 실었다 — 그 세션은 내내 몰랐다).
+   * 바이트는 지켰는데 공유 브랜치가 깨진 자리다. 새는 방향이 침묵이 아니라 **남에게 전가된
+   * 적색**이라 F225·F247 보다 나쁘다 — 그 상태는 남의 `/deploy` 게이트를 그대로 막는다.
+   *
+   * 🔑 「테스트를 돌리기엔 Stop 이 비싸다」는 원래 설계 이유는 **전 스위트**를 가정한 것이다.
+   *   실을 파일만 돌리면 실측 `safety.test.js` = **1.7초**(144건)고 전 스위트는 313초다.
+   *   즉 접었던 이유가 이 좁은 범위에는 적용되지 않는다.
+   * 🔑 판정은 **떨어뜨리기**지 보류가 아니다 — 적색을 만드는 건 그 테스트 파일이므로 나머지는
+   *   그대로 싣는다(F025 보호를 통째로 끄지 않는다). 위 네 버킷과 같은 모양이다.
+   * ⚠ 미실행은 통과가 아니다(F207) — 스폰 실패·타임아웃도 **안 싣고 말한다**. 이 훅의
+   *   「모름은 커밋하지 않는다」와 같은 방향이고, 처방(경로 지정 손 커밋)은 실행 가능하다.
+   * ponytail: 천장 = **느린 스위트**(실측 `트랙충돌.test.js` 143초)는 매번 미측정으로 떨어져
+   *   손 커밋이 된다. 올릴 길은 파일 분할이거나 이 예산 상향이지, 미측정을 통과로 바꾸는 게 아니다. */
+  const 적색 = []; const 미측정 = [];
+  const 실을테스트 = 후보.filter((f) => /(^|\/)tests\/[^/]*\.test\.js$/.test(f));
+  if (실을테스트.length) {
+    /* 예산은 이음매로 연다 — 안 열면 「미측정」 갈래를 45초 기다리지 않고는 못 재고,
+     * 못 재는 갈래는 결국 안 재게 된다(F207 이 말하는 그 자리). 기본값은 그대로 45초다. */
+    const 예산 = Number(process.env.SYNK_AUTOCOMMIT_TEST_MS || 45000);
+    /* 🔴 `NODE_TEST_CONTEXT` 를 물려주면 자식이 **자기를 러너가 아니라 「러너의 자식 파일」로** 안다 —
+     *   실측: 적색 테스트인데 status **0**·stdout **빈 문자열**. 이 훅을 회귀에서 부르면 부모가
+     *   `node --test` 라 항상 그 상태가 되고, 그러면 이 검사는 **영원히 초록**이다(F207 의 정확한 모양:
+     *   미실행이 통과와 같은 얼굴로 온다). 자식 환경에서 지운다. */
+    const 자식env = { ...process.env };
+    delete 자식env.NODE_TEST_CONTEXT;
+    const tr = spawnSync(process.execPath, ['--test', ...실을테스트], {
+      cwd: 뿌리, env: 자식env, encoding: 'utf8', timeout: 예산, windowsHide: true,
+    });
+    /* 🔑 **분모를 본다**(CLAUDE.md 「초록은 분모와 함께만 읽는다」). status 0 만 믿으면 위와 같은
+     *   미실행이 그대로 통과가 된다 — 요약 줄(`ℹ fail N` · TAP 이면 `# fail N`)이 없으면 못 잰 것이다.
+     * ⚠ **변이 시험이 이 줄을 못 잡는다(6/7)** — 바로 위 `delete` 가 지금 아는 유일한 산출 경로를
+     *   막아서 이 조건이 도달 불가이기 때문이다. 지우지 않는 이유: 오늘 실측된 사고가 정확히
+     *   「status 0 + 빈 출력」이었고, 그 얼굴을 만드는 원인이 그 env 하나뿐이라는 보장이 없다.
+     *   즉 이건 죽은 코드가 아니라 **두 번째 자물쇠**고, 새는 방향(조용한 초록)이 나쁜 자리다. */
+    const 요약있나 = /^[#ℹ]\s*fail\s+\d+/m.test(String(tr.stdout || ''));
+    // 타임아웃은 status=null·signal 로 온다 — 실패(status≠0)와 갈라야 처방이 갈린다.
+    const 못쟀다 = !!tr.error || tr.status === null || !요약있나;
+    if (못쟀다 || tr.status !== 0) {
+      (못쟀다 ? 미측정 : 적색).push(...실을테스트);
+      for (const f of 실을테스트) { const i = 후보.indexOf(f); if (i >= 0) 후보.splice(i, 1); }
+    }
+  }
+
+  const 뺀것있나 = 함께남김.length || 깨짐.length || 무기록.length || 밖에서바뀜.length || 적색.length || 미측정.length;
+  if (!후보.length) return 뺀것있나 ? { 이름, 후보: [], 함께남김, 깨짐, 무기록, 밖에서바뀜, 적색, 미측정 } : null;
 
   const 이름들 = 후보.map((f) => path.basename(f));
   const 머리 = 이름들.slice(0, 3).join('·') + (이름들.length > 3 ? ` +${이름들.length - 3}` : '');
@@ -149,7 +198,7 @@ function 한저장소(뿌리, 이름, 내touched, 남touched, 지문) {
   const 메시지 = `자동커밋: ${머리} — 미커밋 노출 차단(Stop 훅)`;
 
   const add = git(['add', '--', ...후보], 뿌리);
-  if (add.error || add.status !== 0) return { 이름, 후보: [], 함께남김, 깨짐, 무기록, 밖에서바뀜, 실패: String(add.stderr || add.error || '').trim().slice(0, 160) };
+  if (add.error || add.status !== 0) return { 이름, 후보: [], 함께남김, 깨짐, 무기록, 밖에서바뀜, 적색, 미측정, 실패: String(add.stderr || add.error || '').trim().slice(0, 160) };
 
   let cm;
   for (let 시도 = 0; 시도 < 3; 시도++) {
@@ -158,12 +207,12 @@ function 한저장소(뿌리, 이름, 내touched, 남touched, 지문) {
     if (!/index\.lock/.test(String(cm.stderr || ''))) break;
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 300); // 옆 세션 훅과의 락 경합만 기다린다
   }
-  if (cm.error || cm.status !== 0) return { 이름, 후보: [], 함께남김, 깨짐, 무기록, 밖에서바뀜, 실패: String(cm.stderr || cm.error || '').trim().slice(0, 160) };
+  if (cm.error || cm.status !== 0) return { 이름, 후보: [], 함께남김, 깨짐, 무기록, 밖에서바뀜, 적색, 미측정, 실패: String(cm.stderr || cm.error || '').trim().slice(0, 160) };
 
   /* 커밋했다고 믿지 말고 결과를 본다(F071) — 겹침·경로 어긋남이면 git 은 성공처럼 조용히 지나간다. */
   const 남은 = gitOk(['status', '--porcelain', '-z', '--', ...후보], 뿌리);
   const 미완 = (남은 === null || 남은.trim() !== '');
-  return { 이름, 후보, 함께남김, 깨짐, 무기록, 밖에서바뀜, 해시: (gitOk(['rev-parse', '--short', 'HEAD'], 뿌리) || '').trim(), 미완, 머리 };
+  return { 이름, 후보, 함께남김, 깨짐, 무기록, 밖에서바뀜, 적색, 미측정, 해시: (gitOk(['rev-parse', '--short', 'HEAD'], 뿌리) || '').trim(), 미완, 머리 };
 }
 
 let ss;
@@ -210,6 +259,9 @@ for (const r of 결과들) {
   if (r.깨짐.length) 줄.push(`   ⚠ ${딱지}구문 깨짐 ${r.깨짐.length}건 대기: ${r.깨짐.join(', ')} — 고쳐지면 다음 턴에 자동으로 실린다`);
   if (r.밖에서바뀜.length) 줄.push(`   ⚠ ${딱지}내가 쓴 뒤 **밖에서 바뀐** ${r.밖에서바뀜.length}건은 안 실었다(F225 — 변이 시험·스크립트가 놓아 둔 판일 수 있다): ${r.밖에서바뀜.join(', ')} — 내 판이 맞으면 다시 저장하면 다음 턴에 실린다`);
   if (r.무기록.length) 줄.push(`   ⚠ ${딱지}편집 지문이 없는 ${r.무기록.length}건은 안 실었다(편집이 거절됐거나 edit-stamp 훅이 안 돌았다): ${r.무기록.join(', ')} — 모름은 커밋하지 않는다`);
+  /* F248: 처방은 **실행 가능해야** 한다 — 「짝을 같이 커밋해라」로 끝내면 무엇을·어떻게가 빈다. */
+  if (r.적색 && r.적색.length) 줄.push(`   🔴 ${딱지}지금 **적색인** 테스트 ${r.적색.length}건은 안 실었다(F248 — 반쪽만 착지하면 master 가 빨개지고 남의 /deploy 가 막힌다): ${r.적색.join(', ')} — 짝(구현)까지 되면 다음 턴에 자동으로 실린다`);
+  if (r.미측정 && r.미측정.length) 줄.push(`   ⚠ ${딱지}테스트 ${r.미측정.length}건은 **못 쟀다**(예산 초과·스폰 실패·요약 줄 없음)라 안 실었다 — 미실행은 통과가 아니다(F207). 직접 돌려 보고: git commit -m "..." -- ${r.미측정.join(' ')}`);
 }
 if (!줄.length) process.exit(0);
 process.stdout.write(JSON.stringify({ systemMessage: 줄.join('\n') }));

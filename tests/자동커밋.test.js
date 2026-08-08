@@ -15,7 +15,9 @@ const { spawnSync } = require('child_process'); // git 재현용 — 훅은 아�
 const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const REPO = path.resolve(__dirname, '..');
-const HOOK = path.join(REPO, '.claude', 'hooks', 'auto-commit.js');
+/* 이음매는 **변이 시험 전용**이다 — 실저장소 훅을 직접 변이하면 그 창에서 옆 세션의 Stop 훅이
+ * 깨진 판으로 돌고, 그게 F225 가 난 모양이다. 격리 사본을 물린다(트랙충돌의 SYNK_TEST_TRACK_HOOK 과 같은 패턴). */
+const HOOK = process.env.SYNK_TEST_AUTOCOMMIT_HOOK || path.join(REPO, '.claude', 'hooks', 'auto-commit.js');
 const store = require(path.join(REPO, '.claude', 'hooks', 'lib', 'handoff-store.js'));
 const wt = require(path.join(REPO, '.claude', 'hooks', 'lib', 'worktrees.js'));
 
@@ -372,4 +374,60 @@ test('삭제는 만지지 않는다 — Edit·Write 는 지우지 않으므로 �
   assert.strictEqual(out, '');
   assert.strictEqual(머리해시(root), 전, '삭제가 커밋됐다');
   assert.match(git(['status', '--porcelain'], root), /del\.txt/);
+});
+
+/* ── 반쪽 착지 (마찰 F248 · 2026-08-08 실사고) ───────────────────────────────
+ * 구문검사는 「깨졌나」까지고 「이 커밋 하나로 판이 서는가」는 안 봤다. 실물 `fb0bbce` 가
+ * `tests/safety.test.js` 의 새 `[vNEXT]` 케이스 129줄만 실었고 구현은 어디에도 없었다 —
+ * run 31239587806 이 4건 실패하며 master 가 **60분간** 적색이었고, 그 상태는 남의 `/deploy`
+ * 게이트를 그대로 막는다. 새는 방향이 침묵이 아니라 **남에게 전가된 적색**이다.
+ * 🔑 여기서 재는 것은 양방향이다 — 적색을 떨어뜨리는가(탐지력) **그리고** 초록은 그대로
+ *   싣는가(거짓양성). 뒤쪽이 무너지면 이 훅이 테스트를 영영 안 실어 F025 보호가 꺼진다. */
+const 초록테스트 = "const t=require('node:test');const a=require('node:assert');\nt('초록',()=>{a.ok(true)});\n";
+const 적색테스트 = "const t=require('node:test');const a=require('node:assert');\nt('적색',()=>{a.ok(false,'짝(구현)이 아직 없다')});\n";
+
+test('🔴 지금 적색인 테스트는 안 싣는다 — 반쪽 착지가 master 를 빨갛게 만든다 (F248)', (t) => {
+  const { root, state } = 판(t);
+  쓰기(root, 'tests/맛보기.test.js', 적색테스트);
+  쓰기(root, '구현.js', 'module.exports = 1;\n');
+  만짐기록(state, root, 'me-248a', ['tests/맛보기.test.js', '구현.js']);
+  지문기록(state, root, 'me-248a', ['tests/맛보기.test.js', '구현.js']);
+
+  const msg = 훅실행(root, state, 'me-248a');
+  assert.match(msg, /적색인\*{0,2} 테스트 1건/, `적색을 말하지 않았다 — 조용한 배제는 배제 안 한 것과 같다:\n${msg}`);
+  const 실린것 = git(['show', '--name-only', '--format=', 'HEAD'], root);
+  assert.ok(!/맛보기\.test\.js/.test(실린것),
+    `적색 테스트가 실렸다 — 이 커밋이 그대로 master 를 빨갛게 만들고 남의 배포를 막는다:\n${실린것}`);
+  /* 🔑 **떨어뜨리기지 보류가 아니다.** 적색을 만드는 건 그 테스트 파일 하나이므로 나머지는 싣는다 —
+   *   통째로 보류하면 F025(미커밋 무보호) 쪽으로 사고가 옮겨갈 뿐이다. */
+  assert.match(실린것, /구현\.js/,
+    '적색 하나 때문에 나머지까지 보류했다 — 보호를 통째로 끄는 방향이다');
+});
+
+test('🟢 초록 테스트는 그대로 싣는다 — 여기서 거짓양성이 나면 테스트가 영영 안 실린다', (t) => {
+  const { root, state } = 판(t);
+  쓰기(root, 'tests/맛보기.test.js', 초록테스트);
+  만짐기록(state, root, 'me-248b', ['tests/맛보기.test.js']);
+  지문기록(state, root, 'me-248b', ['tests/맛보기.test.js']);
+
+  const 전 = 머리해시(root);
+  const msg = 훅실행(root, state, 'me-248b');
+  assert.notStrictEqual(머리해시(root), 전,
+    `초록 테스트를 안 실었다 — 이 훅의 존재 이유(F025 미커밋 노출 차단)가 통째로 꺼진다:\n${msg}`);
+  assert.match(git(['show', '--name-only', '--format=', 'HEAD'], root), /맛보기\.test\.js/);
+});
+
+test('🔑 못 잰 테스트는 **통과가 아니다** — 예산을 넘기면 안 싣고 말한다 (F207)', (t) => {
+  const { root, state } = 판(t);
+  쓰기(root, 'tests/느림.test.js',
+    "const t=require('node:test');\nt('느림',async()=>{await new Promise((r)=>setTimeout(r,10000))});\n");
+  만짐기록(state, root, 'me-248c', ['tests/느림.test.js']);
+  지문기록(state, root, 'me-248c', ['tests/느림.test.js']);
+
+  const 전 = 머리해시(root);
+  // 이음매로 예산을 줄인다 — 45초를 실제로 기다려야만 재는 갈래는 결국 안 재게 된다.
+  const msg = 훅실행(root, state, 'me-248c', { SYNK_AUTOCOMMIT_TEST_MS: '1500' });
+  assert.match(msg, /못 쟀다/, `미측정을 말하지 않았다 — 조용한 미측정은 통과와 같은 모양이다:\n${msg}`);
+  assert.strictEqual(머리해시(root), 전,
+    '못 잰 판을 실었다 — 미실행을 통과로 읽은 것이다(F207 · 이 훅의 「모름은 커밋하지 않는다」와도 어긋난다)');
 });
