@@ -74,11 +74,18 @@ function 조사() {
   // 파일명 sid8 은 session-report 가 쓰는 표기와 같은 변환(local_ 접두 제거 + 8자)이다.
   const 내sid8 = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || '').replace(/^local_/, '').slice(0, 8);
 
-  const r = { 수거: [], 내것: [], 보류: [], 잡파일: [], 목차더러움: false, 내sid8 };
+  const r = { 수거: [], 만료: [], 내것: [], 보류: [], 잡파일: [], 목차더러움: false, 내sid8 };
   for (const it of 항목) {
     if (it.경로 === 목차) { r.목차더러움 = true; continue; }
     const sid8 = 소유자.인계문지문(it.경로);
     if (!sid8) { r.잡파일.push(it); continue; }   // 세션 파일 꼴이 아니다 — 주인을 특정 못 하면 안 거둔다
+    /* 🔴 **삭제는 수거가 아니다**(F257). session-report 의 12h TTL 이 디스크에서 지운 자국이
+     *   여기 `D` 로 올라오는데, 옛 판은 xy 를 안 보고 파일명만으로 갈라 그것까지 「수거」로 셌다.
+     *   실물: 40f763e 제목 「3건」 = 실제 보호 1 + 만료 2 · 64d6b9b 「6건」 = 1 + 5.
+     *   커밋 범위에는 그대로 넣는다 — 안 실으면 인계문 자리가 영영 더럽다(회귀가 못박는다).
+     *   가르는 것은 **세는 이름**뿐이다: 「거뒀다」와 「지워진 것을 정리했다」는 반대 사건이고,
+     *   합쳐 세면 커밋 목록이 「N건을 보호했다」로 읽힌다. */
+    if (it.xy.includes('D')) { r.만료.push(it); continue; }
     if (내sid8 && sid8 === 내sid8) r.내것.push(it);
     else if (산.has(sid8)) r.보류.push({ ...it, 분: 박동분.get(sid8) });
     else r.수거.push(it);
@@ -88,7 +95,8 @@ function 조사() {
 
 /** 거둘 것을 커밋한다. 성공 시 짧은 해시, 거둘 게 없으면 null. 실패는 {실패:사유}. */
 function 실행(r) {
-  if (!r.수거.length && !r.내것.length) return null;
+  r.만료 = r.만료 || [];   // 조사() 밖에서 만든 r 도 받는다(테스트 헬퍼·옛 호출부)
+  if (!r.수거.length && !r.만료.length && !r.내것.length) return null;
   const 이유 = 커밋못하는이유();
   if (이유) return { 실패: 이유 };
 
@@ -101,24 +109,30 @@ function 실행(r) {
   // 사라진 경로는 이미 남의 커밋에 실려 있어 건너뛰어도 잃는 내용이 없다 — 그 밖의
   // add 실패(index.lock 등)는 사라짐이 아니므로 전과 같이 전체를 접는다.
   const 사라짐 = new Set();
-  for (const p of [...r.수거, ...r.내것].map((x) => x.경로).concat(r.목차더러움 ? [목차] : [])) {
+  for (const p of [...r.수거, ...r.만료, ...r.내것].map((x) => x.경로).concat(r.목차더러움 ? [목차] : [])) {
     const a = git(['add', '--', p]);
     if (a.ok) continue;
     if (/did not match any files/.test(a.err)) { 사라짐.add(p); continue; }
     return { 실패: `git add 실패: ${a.err.trim() || '알 수 없음'}` };
   }
   r.수거 = r.수거.filter((x) => !사라짐.has(x.경로));
+  r.만료 = r.만료.filter((x) => !사라짐.has(x.경로));
   r.내것 = r.내것.filter((x) => !사라짐.has(x.경로));
   r.사라짐 = 사라짐.size;
-  const 파일들 = [...r.수거, ...r.내것].map((x) => x.경로);
+  const 파일들 = [...r.수거, ...r.만료, ...r.내것].map((x) => x.경로);
   if (!파일들.length) return null; // 전부 딴 세션이 먼저 거뒀다 — 빈손과 같다(내용은 다 이력에 있다)
 
   const 경로들 = r.목차더러움 && !사라짐.has(목차) ? [...파일들, 목차] : 파일들;
 
-  const sids = r.수거.map((x) => x.경로.split('/').pop().replace(/\.md$/, ''));
-  const 제목 = `docs: 인계문 수거 — 죽은 세션 ${r.수거.length}건${r.내것.length ? ` + 내 세션 파일` : ''} (F111 통로)`;
+  const 이름들 = (xs) => xs.map((x) => x.경로.split('/').pop().replace(/\.md$/, ''));
+  const sids = 이름들(r.수거);
+  const 만료sids = 이름들(r.만료);
+  /* 제목은 **두 수를 따로** 든다(F257). 합쳐 세면 「N건을 보호했다」로 읽히는데 그 중 일부는
+   * 보호가 아니라 TTL 이 지운 것의 정리다 — 이력을 되짚는 사람이 반대로 읽는다. */
+  const 제목 = `docs: 인계문 수거 — 죽은 세션 ${r.수거.length}건${r.만료.length ? ` · 만료 정리 ${r.만료.length}건` : ''}${r.내것.length ? ` + 내 세션 파일` : ''} (F111 통로)`;
   const 본문 = [
     sids.length ? `수거: ${sids.join(' ')}` : '',
+    만료sids.length ? `만료 정리(TTL 12h 가 이미 지운 자국 — 내용은 삭제 이전 이력에 있다): ${만료sids.join(' ')}` : '',
     '근거: 심장박동 무소식 = 끝난 세션(작업본소유자와 같은 판정 하나). 미추적 인계문은',
     '목차 재생성 TTL 12h 가 지우면 이력·stash·reflog 어디에도 없어 영영 유실이다(F025·F111).',
   ].filter(Boolean).join('\n');
@@ -140,8 +154,9 @@ function 실행(r) {
 function 보고(r, 모드) {
   const 줄 = [];
   if (모드 !== 'hook') {
-    줄.push(`[인계문수거] ${폴더} — 수거 대상 ${r.수거.length}건 · 내 것 ${r.내것.length}건 · 보류(살아있는 세션) ${r.보류.length}건${r.잡파일.length ? ` · 잡파일 ${r.잡파일.length}건(안 거둠)` : ''}`);
+    줄.push(`[인계문수거] ${폴더} — 수거 대상 ${r.수거.length}건${r.만료.length ? ` · 만료 정리 ${r.만료.length}건` : ''} · 내 것 ${r.내것.length}건 · 보류(살아있는 세션) ${r.보류.length}건${r.잡파일.length ? ` · 잡파일 ${r.잡파일.length}건(안 거둠)` : ''}`);
     for (const x of r.수거) 줄.push(`   거둠 ${x.xy.trim() || '??'} ${x.경로}`);
+    for (const x of r.만료) 줄.push(`   만료 ${x.xy.trim()} ${x.경로} — TTL 이 이미 지웠다(보호가 아니라 정리다)`);
     for (const x of r.보류) 줄.push(`   보류 ${x.경로} ← 심장박동 ${x.분}분 전(살아있다 — 안 거둔다)`);
     for (const x of r.잡파일) 줄.push(`   스킵 ${x.경로} — 세션 파일 꼴이 아니라 주인을 특정 못 한다`);
   }
@@ -161,7 +176,7 @@ if (require.main === module) {
   if (머리) process.stdout.write(머리 + '\n');
 
   if (모드 === '보고') {
-    if (r.수거.length || r.내것.length) process.stdout.write(`   커밋하려면: node tools/인계문수거.js --실행\n`);
+    if (r.수거.length || r.만료.length || r.내것.length) process.stdout.write(`   커밋하려면: node tools/인계문수거.js --실행\n`);
     process.exit(0);
   }
   const 결과 = 실행(r);
@@ -175,7 +190,7 @@ if (require.main === module) {
     process.stdout.write(`[인계문수거] 거두지 못했다(${결과.실패}) — 미커밋 그대로, 다음 실행이 다시 시도한다\n`);
     process.exit(모드 === '실행' ? 2 : 0); // 명시 실행의 실패는 소리 내고, 훅은 다음 기회에 맡긴다
   }
-  process.stdout.write(`[인계문수거] 죽은 세션 인계문 ${r.수거.length}건${r.내것.length ? ' + 내 세션 파일' : ''}을 커밋했다(${결과}) — F111 통로${r.보류.length ? ` · 보류 ${r.보류.length}건은 살아있는 세션 것이라 남겼다` : ''}${r.사라짐 ? ` · ${r.사라짐}건은 딴 세션이 먼저 거둬 건너뜀` : ''}\n`);
+  process.stdout.write(`[인계문수거] 죽은 세션 인계문 ${r.수거.length}건${r.만료.length ? ` + 만료 정리 ${r.만료.length}건(TTL 이 이미 지운 것 — 보호 아님)` : ''}${r.내것.length ? ' + 내 세션 파일' : ''}을 커밋했다(${결과}) — F111 통로${r.보류.length ? ` · 보류 ${r.보류.length}건은 살아있는 세션 것이라 남겼다` : ''}${r.사라짐 ? ` · ${r.사라짐}건은 딴 세션이 먼저 거둬 건너뜀` : ''}\n`);
   process.exit(0);
 }
 
