@@ -93,21 +93,29 @@ function mdToHtml(md){
   return out.join('\n');
 }
 
-fs.mkdirSync(OUT, { recursive: true });
-const built = [];
-for (const [rel, name] of DOCS){
-  const src = path.join(ROOT, rel);
-  if (!fs.existsSync(src)) { console.error('없음: ' + rel); continue; }
-  const md = fs.readFileSync(src, 'utf8');
-  const title = (md.match(/^#\s+(.*)$/m) || [,name])[1].replace(/\*/g,'');
-  const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+function 빌드(){
+  fs.mkdirSync(OUT, { recursive: true });
+  const built = [];
+  for (const [rel, name] of DOCS){
+    const src = path.join(ROOT, rel);
+    if (!fs.existsSync(src)) { console.error('없음: ' + rel); continue; }
+    const md = fs.readFileSync(src, 'utf8');
+    const title = (md.match(/^#\s+(.*)$/m) || [,name])[1].replace(/\*/g,'');
+    const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>${CSS}</style></head>
 <body><header class="band"><h1>${esc(title)}</h1><div class="cap">SYNK · 열람용 ${new Date().toISOString().slice(0,10)} — 원본: ${rel}</div></header>
 ${mdToHtml(md)}
 <footer>이 파일은 열람용 사본입니다. 정본은 저장소 ${rel} — 고친 뒤 node tools/철학열람빌드.js 로 다시 내보냅니다.</footer></body></html>`;
-  const dest = path.join(OUT, name + '.html');
-  fs.writeFileSync(dest, html, 'utf8');
-  built.push(dest);
+    const dest = path.join(OUT, name + '.html');
+    fs.writeFileSync(dest, html, 'utf8');
+    built.push(dest);
+  }
+  console.log('내보냄 ' + built.length + '건 → ' + OUT);
+  built.forEach(f => console.log('  · ' + path.basename(f)));
+  return built;
 }
-console.log('내보냄 ' + built.length + '건 → ' + OUT);
-built.forEach(f => console.log('  · ' + path.basename(f)));
+
+// require 하는 순간 바탕화면에 파일이 나가면 회귀에서 이 모듈을 부를 수 없다(47093f7d 지적 08-09).
+// 실행은 CLI 로 직접 부를 때만 — require 는 부작용 0.
+if (require.main === module) 빌드();
+module.exports = { mdToHtml, 빌드 };
