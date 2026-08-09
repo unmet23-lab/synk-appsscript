@@ -136,9 +136,21 @@ test('[단일 출처] 옛글자 클래스가 파일 층(문서문자.test.js)과
     assert.ok(m, `${이름} 에서 옛글자 클래스를 못 찾았다 — 정의가 사라졌거나 모양이 바뀌었다`);
     return m[1];
   };
-  const 훅클래스 = 뽑기(fs.readFileSync(HOOK, 'utf8'), '훅');
+  /* 정의는 이제 훅 안이 아니라 `.claude/hooks/lib/옛글자.js` 에 산다 — 소비자가 셋이 되면서
+   * 사본을 접었다(F298: 채팅층·파일층 사후에 더해 board-guard 의 **쓰는 순간** 층이 붙었다).
+   * 그래서 대조는 lib ↔ 문서문자.test.js 다. 훅들이 그 lib 을 실제로 쓰는지는 아래에서 따로 본다. */
+  const LIB = path.join(__dirname, '..', '.claude', 'hooks', 'lib', '옛글자.js');
+  const lib클래스 = 뽑기(fs.readFileSync(LIB, 'utf8'), 'lib/옛글자.js');
   const 파일층클래스 = 뽑기(fs.readFileSync(path.join(__dirname, '문서문자.test.js'), 'utf8'), '문서문자.test.js');
-  assert.strictEqual(훅클래스, 파일층클래스, '두 층의 옛글자 정의가 갈라졌다 — 한쪽만 넓히면 다른 층이 사각이 된다');
+  assert.strictEqual(lib클래스, 파일층클래스, '두 층의 옛글자 정의가 갈라졌다 — 한쪽만 넓히면 다른 층이 사각이 된다');
+
+  // 사본이 되살아나면 갈라짐이 다시 조용해진다 — 훅은 lib 을 **가져다 써야** 한다.
+  for (const [f, 이름] of [[HOOK, 'chat-glyph-guard'],
+                           [path.join(__dirname, '..', '.claude', 'hooks', 'board-guard.js'), 'board-guard']]) {
+    const src = fs.readFileSync(f, 'utf8');
+    assert.match(src, /require\([^)]*옛글자\.js['"]\s*\)\)?/, `${이름} 가 lib/옛글자.js 를 안 쓴다 — 사본이 부활했나`);
+    assert.ok(!/new RegExp\('\[\\\\u30/.test(src), `${이름} 안에 옛글자 클래스 사본이 남아 있다`);
+  }
 });
 
 test('차단문이 따를 수 있는 처방을 담는다 — 표기만 바꾸면 통과한다는 출구 포함(F103)', () => {
