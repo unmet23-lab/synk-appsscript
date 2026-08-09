@@ -745,7 +745,7 @@ function F278픽스처({ 내줄 = null, 죽은완료 = false, 활성수 = 11 } =
   fs.writeFileSync(스텁, [
     "'use strict';",
     "const fs = require('fs');",
-    'const 문구 = process.argv[2] || 0;',
+    "const 문구 = process.argv[2] || '';",
     'fs.appendFileSync(process.env.SYNK_STUB_LOG, String(문구) + String.fromCharCode(10));',
     "process.exit(String(문구).includes('죽은주인') ? 0 : 6);",
   ].join('\n'), 'utf8');
