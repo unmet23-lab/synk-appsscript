@@ -733,43 +733,86 @@ function F278픽스처({ 내줄 = null, 죽은완료 = false, 활성수 = 11 } =
   const 내파일 = 보드파일(dir, 지문278(내세션278));
   if (내줄) fs.writeFileSync(내파일, `${내줄}\n`, 'utf8');
 
+  /* 🔴 **board-move 스텁**(F296) — 이 다섯이 재는 것은 board-move 의 *속도*가 아니라
+   *   훅이 그 종료 코드를 어떻게 읽는가다. 실물은 후보당 git·보드 조립을 지나 ~2초가 들어,
+   *   부하가 높은 CI 에서 훅의 8초 제한을 넘기면 훅이 **다른 사유**를 내고 다섯이 통째로
+   *   거짓 적색이 됐다(실측 15,046ms · 주인 없는 적색은 남의 배포 게이트를 막는다).
+   *   스텁은 종료 계약만 흉내낸다 — 그 계약이 진짜인지는 아래 [F296] 계약 시험이 실물로 진다.
+   * 🔑 부른 문구를 로그에 남긴다 — 이음매 이름이 어긋나 훅이 **실물을 부르면** 로그가 비고,
+   *   그러면 이 다섯은 다시 느려진 채 조용히 초록이 된다(미측정을 통과로 세지 않는다). */
+  const 스텁 = path.join(dir, 'board-move-stub.js');
+  const 스텁로그 = path.join(dir, 'stub.log');
+  fs.writeFileSync(스텁, [
+    "'use strict';",
+    "const fs = require('fs');",
+    'const 문구 = process.argv[2] || 0;',
+    'fs.appendFileSync(process.env.SYNK_STUB_LOG, String(문구) + String.fromCharCode(10));',
+    "process.exit(String(문구).includes('죽은주인') ? 0 : 6);",
+  ].join('\n'), 'utf8');
+
   const 최상위 = g('rev-parse', '--show-toplevel').stdout.trim();
   const 박동 = path.join(store.stateDir(), `track-${store.projectKey(최상위)}-${store.safeId(남세션278)}.json`);
   fs.mkdirSync(store.stateDir(), { recursive: true });
   fs.writeFileSync(박동, JSON.stringify({ touched: [] }), 'utf8');
-  return { dir, 내파일, 박동 };
+  return { dir, 내파일, 박동, 스텁환경: { SYNK_BOARD_MOVE_BIN: 스텁, SYNK_STUB_LOG: 스텁로그 }, 스텁로그 };
 }
 const 박동치우기 = (p) => { try { fs.unlinkSync(p); } catch (_) { /* 이미 없으면 됐다 */ } };
 const 내환경278 = { CLAUDE_CODE_HOST_SESSION_ID: 내세션278 };
 
-test('🔴 [F278] 옮길 수 있는 완료 줄이 0이면 **첫 선언 1줄은 통과한다**', { skip: !hasGit && 'git 없음' }, () => {
-  const { 내파일, 박동 } = F278픽스처();
+/** 스텁이 **실제로 불렸나** — 0건이면 훅이 실물을 불렀다는 뜻이라 이 검사는 공회전이다. */
+function 스텁호출수(로그) {
+  try { return fs.readFileSync(로그, 'utf8').split('\n').filter(Boolean).length; } catch (_) { return 0; }
+}
+const 스텁이돌았다 = (로그) => assert.ok(스텁호출수(로그) > 0,
+  '🔴 스텁이 한 번도 안 불렸다 — 이음매(SYNK_BOARD_MOVE_BIN)가 끊겼고 훅은 실물을 돌렸다. 이 검사는 다시 부하에 흔들린다(F296)');
+
+/** 🔑 검증이 **답을 못 받은** 판은 초록도 적색도 아니다 — skip 으로 드러낸다(F296 안전판 ①).
+ *  본선은 위 스텁이다. 둘 다 있어야 「부하가 판정을 바꾸는」 자리가 남지 않는다.
+ *
+ *  ⚠ **이 검사가 `스텁이돌았다` 보다 먼저다.** 답을 못 받았다는 것은 스폰이 죽었다는 뜻이라
+ *    스텁이 로그를 적기 전에 끊긴다 — 순서를 뒤집으면 「이음매가 끊겼다」는 **엉뚱한 적색**이
+ *    뜬다(실측: 제한 1ms 대조에서 여섯이 그 모양으로 깨졌다). 대가는 하나 — 이음매가 끊긴
+ *    채로 실물마저 늦은 판은 적색 대신 skip 이 된다. 그건 옳다: 그 판은 아무것도 못 잰다. */
+function 미실행이면건너뛴다(t, r) {
+  if (!/답을 못 했다/.test(`${r.사유}\n${r.알림}`)) return false;
+  t.skip('board-move 검증이 제한 안에 답을 못 했다 — 이 판정은 부하 층이라 못 낸다(F296)');
+  return true;
+}
+
+test('🔴 [F278] 옮길 수 있는 완료 줄이 0이면 **첫 선언 1줄은 통과한다**', { skip: !hasGit && 'git 없음' }, (t) => {
+  const { 내파일, 박동, 스텁환경, 스텁로그 } = F278픽스처();
   try {
-    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${새줄278}\n` } }, 내환경278);
+    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${새줄278}\n` } }, { ...내환경278, ...스텁환경 });
+    if (미실행이면건너뛴다(t, r)) return;   // 🔑 **순서가 뜻이다** — 아래 주석
+    스텁이돌았다(스텁로그);
     assert.strictEqual(r.결정, 'allow',
       `🔴 F278 재발 — 새 세션이 자기 트랙을 **선언조차** 못 한다. 처방(board-move)은 주인이 살아 있어 전부 거절되므로 따를 수 있는 문이 0이다:\n${r.사유.slice(0, 400)}`);
     assert.match(r.알림, /첫 선언/, '면제를 조용히 열었다 — 침묵은 상한이 없는 것과 같다');
   } finally { 박동치우기(박동); }
 });
 
-test('🔴 [F278] 그래도 **내 줄이 이미 있으면** 새 줄 추가는 막는다 (면제가 우회문이 되지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+test('🔴 [F278] 그래도 **내 줄이 이미 있으면** 새 줄 추가는 막는다 (면제가 우회문이 되지 않는다)', { skip: !hasGit && 'git 없음' }, (t) => {
   const 기존 = `| 2026-08-09 | **내 첫 트랙** | z.js | 완료 (\`local_${지문278(내세션278)}\`) |`;
-  const { 내파일, 박동 } = F278픽스처({ 내줄: 기존 });
+  const { 내파일, 박동, 스텁환경, 스텁로그 } = F278픽스처({ 내줄: 기존 });
   try {
-    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${기존}\n${새줄278}\n` } }, 내환경278);
+    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${기존}\n${새줄278}\n` } }, { ...내환경278, ...스텁환경 });
+    if (미실행이면건너뛴다(t, r)) return;   // 🔑 **순서가 뜻이다** — 아래 주석
+    스텁이돌았다(스텁로그);
     assert.strictEqual(r.결정, 'deny', '🔴 첫 선언 면제가 「줄을 계속 늘려도 된다」로 번졌다');
     assert.match(r.사유, /첫 선언 1줄/, `막은 이유가 F278 면제 경계라고 말하지 않는다:\n${r.사유.slice(0, 300)}`);
   } finally { 박동치우기(박동); }
 });
 
-test('🔴 [F278] 첫 선언이라도 **한 번에 2줄**이면 막는다 (면제는 1줄이다)', { skip: !hasGit && 'git 없음' }, () => {
+test('🔴 [F278] 첫 선언이라도 **한 번에 2줄**이면 막는다 (면제는 1줄이다)', { skip: !hasGit && 'git 없음' }, (t) => {
   /* 남의 활성을 10으로 줄인다 — 내 줄 2개를 더해도 활성이 12(상한)라 ①이 먼저 막지 않는다.
    * 조건은 **하나만** 바뀐다(내 줄 1→2). 둘째를 완료로 두면 그 줄 자체가 처방 후보가 되어
    * 「명령이 있어서 막혔다」와 「면제 경계라 막혔다」가 섞인다 — 그래서 둘 다 활성으로 둔다. */
-  const { 내파일, 박동 } = F278픽스처({ 활성수: 10 });
+  const { 내파일, 박동, 스텁환경, 스텁로그 } = F278픽스처({ 활성수: 10 });
   try {
     const 둘째 = `| 2026-08-09 | **내 둘째 트랙** | y.js | 작업중 (\`local_${지문278(내세션278)}\`) |`;
-    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${새줄278}\n${둘째}\n` } }, 내환경278);
+    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${새줄278}\n${둘째}\n` } }, { ...내환경278, ...스텁환경 });
+    if (미실행이면건너뛴다(t, r)) return;   // 🔑 **순서가 뜻이다** — 아래 주석
+    스텁이돌았다(스텁로그);
     assert.strictEqual(r.결정, 'deny', '🔴 면제가 「첫 편집이면 몇 줄이든」으로 번졌다 — 판이 계속 커진다');
     assert.match(r.사유, /첫 선언 1줄/, `막은 이유가 F278 면제 경계라고 말하지 않는다:\n${r.사유.slice(0, 300)}`);
   } finally { 박동치우기(박동); }
@@ -779,22 +822,28 @@ test('🔴 [F278] 첫 선언이라도 **한 번에 2줄**이면 막는다 (면�
  * 전체 상한만 열어 두면 판이 활성으로 찰 때 F278 이 그대로 되산다. 활성 상한의 처방 둘은
  * 새 세션에겐 원리상 둘 다 막혀 있다: 「끝난 트랙 상태를 완료로 갱신」=남의 줄(F073 금지),
  * 「내 줄을 합쳐라」=합칠 줄이 없다. 조건 하나만 바꿔 두 갈래를 가른다. */
-test('🔴 [F278] 활성이 이미 상한이어도 **첫 선언 1줄은 통과한다**', { skip: !hasGit && 'git 없음' }, () => {
-  const { 내파일, 박동 } = F278픽스처({ 활성수: 12 });
+test('🔴 [F278] 활성이 이미 상한이어도 **첫 선언 1줄은 통과한다**', { skip: !hasGit && 'git 없음' }, (t) => {
+  const { 내파일, 박동, 스텁환경, 스텁로그 } = F278픽스처({ 활성수: 12 });
   try {
-    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${새줄278}\n` } }, 내환경278);
+    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${새줄278}\n` } }, { ...내환경278, ...스텁환경 });
+    if (미실행이면건너뛴다(t, r)) return;   // 🔑 **순서가 뜻이다** — 아래 주석
+    스텁이돌았다(스텁로그);
     assert.strictEqual(r.결정, 'allow',
       `🔴 활성 축으로 F278 이 되살았다 — 새 세션이 선언조차 못 한다:\n${r.사유.slice(0, 300)}`);
     assert.match(r.알림, /활성 13줄/, '면제를 조용히 열었다 — 침묵은 상한이 없는 것과 같다');
   } finally { 박동치우기(박동); }
 });
 
-test('🔴 [F278] 활성 상한에서 **내 줄이 이미 있으면** 새 활성 줄은 막는다 (탐지력)', { skip: !hasGit && 'git 없음' }, () => {
+test('🔴 [F278] 활성 상한에서 **내 줄이 이미 있으면** 새 활성 줄은 막는다 (탐지력)', { skip: !hasGit && 'git 없음' }, (t) => {
   const 기존 = `| 2026-08-09 | **내 첫 트랙** | z.js | 작업중 (\`local_${지문278(내세션278)}\`) |`;
-  const { 내파일, 박동 } = F278픽스처({ 내줄: 기존, 활성수: 11 });
+  const { 내파일, 박동, 스텁환경, 스텁로그 } = F278픽스처({ 내줄: 기존, 활성수: 11 });
   try {
     const 둘째 = `| 2026-08-09 | **내 둘째 트랙** | y.js | 작업중 (\`local_${지문278(내세션278)}\`) |`;
-    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${기존}\n${둘째}\n` } }, 내환경278);
+    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${기존}\n${둘째}\n` } }, { ...내환경278, ...스텁환경 });
+    if (미실행이면건너뛴다(t, r)) return;
+    /* 🔑 여기엔 `스텁이돌았다` 를 안 건다 — 이 검사의 판정은 **활성 상한**이고 그 길은 board-move 를
+     *   아예 안 지난다(스텁은 속도 때문에 끼운 것뿐이다). 이음매가 끊겼는지는 board-move 의 답으로
+     *   판정하는 다섯이 진다 — 안 재는 자리에 단언을 걸면 그 적색은 무엇을 뜻하는지 알 수 없다. */
     assert.strictEqual(r.결정, 'deny', '🔴 활성 면제가 「계속 늘려도 된다」로 번졌다');
     assert.match(r.사유, /활성 줄이 13줄/, `활성 상한이 아니라 딴 사유로 막혔다:\n${r.사유.slice(0, 300)}`);
   } finally { 박동치우기(박동); }
@@ -813,6 +862,74 @@ test('🔴 [F278] 검증이 **답을 못 받으면** 차단을 유지한다 (타
   } finally { 박동치우기(박동); }
 });
 
+/* ── 🔴 F296 — 거짓 적색 둘을 각각 못박는다 (2026-08-09 실측) ──────────────────
+ * 신고: F278 회귀 다섯이 **부하에 따라** 빨개졌다. 급소는 코드가 아니라 **자식이 제 시간에 못 돈
+ * 것**이고, 훅은 그때 「판정 불가 → 차단 유지」로 *다른 사유*를 내므로 사유를 보는 단언이 깨진다.
+ * 실측 재현: `SYNK_BOARD_MOVE_TIMEOUT_MS=1` 이면 같은 다섯이 전부 같은 모양으로 깨진다.
+ *
+ * 처방 둘을 나눠 잰다 — 하나로 뭉치면 무엇이 고친 것인지 못 가른다:
+ *   ②본선 = 그 다섯이 **실물 대신 스텁**을 돌린다(위 `F278픽스처`). 재는 대상은 board-move 의
+ *           속도가 아니라 훅이 종료 코드를 읽는 방식이다. → 아래 「계약 시험」이 그 대가를 낸다:
+ *           스텁이 흉내내는 **6** 이 실물의 진짜 계약인지 실물로 한 번 못박는다.
+ *   ①안전판 = 답을 못 받은 것을 **사유가 밝힌다**. 안 밝히면 처방 목록이 「돌려 보고 낸 것」이라는
+ *           약속과 어긋난 채 조용히 섞이고, 회귀는 「적색」과 「판정 불가」를 못 가른다.
+ * 🚫 제한 올리기는 처방이 아니다 — 부하에는 상한이 없다(F249 에서 이미 죽은 길). */
+test('🔴 [F296] 계약 시험 — **실물** board-move 는 살아있는 주인의 줄에 종료 6 을 낸다 (스텁이 흉내내는 그 값)', { skip: !hasGit && 'git 없음' }, () => {
+  const { dir, 박동 } = F278픽스처();
+  try {
+    const r = 실행(process.execPath, [path.join(__dirname, '..', 'tools', 'board-move.js'), '완료트랙갑', '--dry'], {
+      encoding: 'utf8',
+      cwd: dir,
+      env: {
+        ...process.env,
+        SYNK_BOARD: 보드파일(dir, 지문278(남세션278)),
+        SYNK_BOARD_ARCHIVE: path.join(dir, 'docs', '세션보드_아카이브.md'),
+        CLAUDE_CODE_HOST_SESSION_ID: 내세션278,
+      },
+    });
+    assert.strictEqual(r.status, 6,
+      `🔴 종료 계약이 갈라졌다 — 훅은 **6 만** 「거절」로 세는데 실물이 다른 값을 냈다. 스텁을 쓰는 F278 회귀 다섯은 이 갈라짐을 못 본다:\n${r.stdout}\n${r.stderr}`);
+  } finally { 박동치우기(박동); }
+});
+
+test('🔴 [F296] 답을 못 받은 검증을 **사유가 밝힌다** (미실행이 처방에 조용히 섞이지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const { 내파일, 박동 } = F278픽스처({ 죽은완료: true });
+  try {
+    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${새줄278}\n` } },
+      { ...내환경278, SYNK_BOARD_MOVE_TIMEOUT_MS: '1' });
+    assert.strictEqual(r.결정, 'deny', '판정 불가인데 통과시켰다');
+    assert.match(r.사유, /답을 못 했다/,
+      `🔴 답을 못 받은 후보를 처방에 넣고도 그 사실을 안 밝혔다 — 사람은 「돌려 본 명령」으로 읽고 실행했다가 거절당한다(F278 이 만든 그 자리):\n${r.사유.slice(0, 400)}`);
+  } finally { 박동치우기(박동); }
+});
+
+/* 🔑 **거짓양성 방향도 막는다** — 답을 다 받은 판에서 이 문구가 뜨면 그 경고는 곧 소음이 되고,
+ *   소음이 된 경고는 진짜일 때도 안 읽힌다. 종료 코드 1(=「돌았고 못 옮긴다」)이 못받음으로
+ *   세어지지 않는지가 이 검사의 조준점이다(그 자리가 가장 헷갈린다).
+ * 🔴 이 검사도 **스텁으로 조준한다** — 실물을 돌리면 이 검사 자체가 F296 의 다음 희생자다
+ *   (부하로 실물이 늦으면 「경고가 안 뜬다」가 빨개진다). 재는 것은 1 을 어떻게 세는가지
+ *   실물이 얼마나 빠른가가 아니다. */
+const 스텁1 = path.join(TMP, 'board-move-stub-1.js');
+const 스텁1로그 = path.join(TMP, 'stub1.log');
+fs.writeFileSync(스텁1, [
+  "'use strict';",
+  "require('fs').appendFileSync(process.env.SYNK_STUB_LOG, String(process.argv[2] || '') + String.fromCharCode(10));",
+  'process.exit(1);   // 「돌았고 못 옮긴다」 — 답이지 미실행이 아니다',
+].join('\n'), 'utf8');
+
+test('🔴 [F296] 답을 받은 판에서는 그 경고가 **안 뜬다** (종료 1 은 「못 받음」이 아니다)', () => {
+  const 판 = 만석보드();
+  /* 제한을 **이 검사가 정한다** — 조준점이 「1 을 어떻게 세는가」라 답을 받는 것이 전제다.
+   * 밖에서 제한을 1ms 로 눌러 놓으면(대조 실험이 그렇게 한다) 스텁조차 답을 못 하고,
+   * 그러면 이 검사는 재려던 것 대신 타임아웃을 재게 된다. 실물이 아니라 스텁이라 무해하다. */
+  const r = 판정({ tool_name: 'Edit', tool_input: { file_path: 판, old_string: row(3), new_string: `${row(3)}\n${row(99)}` } },
+    { SYNK_BOARD_MOVE_BIN: 스텁1, SYNK_STUB_LOG: 스텁1로그, SYNK_BOARD_MOVE_TIMEOUT_MS: '30000' });
+  스텁이돌았다(스텁1로그);
+  assert.strictEqual(r.결정, 'deny', '판정 불가인데 통과시켰다');
+  assert.ok(!/답을 못 했다/.test(r.사유),
+    `🔴 board-move 가 **답한** 것(종료 1)을 「답을 못 했다」로 셌다 — 경고가 늘 켜지면 아무도 안 읽는다:\n${r.사유.slice(0, 300)}`);
+});
+
 /* 🔑 **「board-move 가 거절했다」와 「board-move 가 못 돌았다」를 가르는가.**
  * 이 둘을 뭉치면(=0 이외 전부를 실행 불가로 세면) 환경 고장이 「옮길 게 없다」로 읽혀 상한이
  * 조용히 풀린다 — 새는 방향이다. 아래 픽스처엔 아카이브 파일도 git 저장소도 없어 board-move 가
@@ -825,10 +942,12 @@ test('🔴 [F278] board-move 가 아예 못 도는 자리에서는 **처방이 �
     `🔴 board-move 가 못 돈 것을 「옮길 완료 줄이 없다」로 읽었다 — 종료 코드 6(거절)만 실행 불가로 세야 한다:\n${r.사유.slice(0, 300)}`);
 });
 
-test('🔴 [F278] 옮길 수 있는 완료 줄이 **하나라도 있으면** 막고, 처방엔 그것만 낸다', { skip: !hasGit && 'git 없음' }, () => {
-  const { 내파일, 박동 } = F278픽스처({ 죽은완료: true });
+test('🔴 [F278] 옮길 수 있는 완료 줄이 **하나라도 있으면** 막고, 처방엔 그것만 낸다', { skip: !hasGit && 'git 없음' }, (t) => {
+  const { 내파일, 박동, 스텁환경, 스텁로그 } = F278픽스처({ 죽은완료: true });
   try {
-    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${새줄278}\n` } }, 내환경278);
+    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${새줄278}\n` } }, { ...내환경278, ...스텁환경 });
+    if (미실행이면건너뛴다(t, r)) return;   // 🔑 **순서가 뜻이다** — 아래 주석
+    스텁이돌았다(스텁로그);
     assert.strictEqual(r.결정, 'deny', '🔴 치울 수 있는 줄이 있는데 면제가 열렸다 — 상한이 사라진다');
     const 명령 = (r.사유.match(/board-move\.js "([^"]*)"/g) || []);
     assert.ok(명령.some((c) => c.includes('죽은주인')), `처방에 **실제로 도는** 명령이 없다:\n${r.사유.slice(0, 400)}`);
