@@ -48,6 +48,7 @@ const MANIFEST = [
   { src: 'docs/자주묻는질문_정본.md',      title: '자주 묻는 질문 (FAQ)',       sub: '챗봇·상담 데스크 공용 단일 원천',        group: '전달용' },
   // C. 경영 정본
   { src: 'docs/제품방향.md',               title: 'SYNK 제품 방향',             sub: '4개년 로드맵·핵심 등식·설계 불변식',     group: '경영 정본' },
+  { src: 'docs/SYNK_철학.md',              title: 'SYNK 철학 — 내부·운영 / 교육 / 대외', sub: '철학 3벌 — 유호님 확정 화법 · 새 슬로건', group: '경영 정본' },
   { src: 'docs/기업철학_홈페이지_v1.md',   title: 'SYNK 기업 철학',             sub: '대외 철학 문서(홈페이지본)',             group: '경영 정본' },
   { src: 'docs/조직계보_정본_v1.md',       title: 'SYNK 조직 계보',             sub: '브랜드 4 + 전사 레이어 2 — 로드맵 표기', group: '경영 정본' },
   { src: 'docs/개원재무_2027_재산정_v1.md', title: '개원 재무 재산정 (2027)',   sub: '고정비·BEP·좌석 — 내부용',               group: '경영 정본' },
