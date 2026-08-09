@@ -94,6 +94,47 @@ test('amend해도 트레일러가 중복되지 않는다', (t) => {
   assert.equal(hits, 1, `Session-Id가 ${hits}번 박혔다 — amend마다 쌓이면 트레일러가 쓰레기가 된다`);
 });
 
+/* ── 손으로 적어 둔 트레일러 (마찰 F300) ─────────────────────────────────
+ * `--if-exists doNothing` 은 **틀린 값도 그대로 뒀다.** 실측 2026-08-09: 커밋 메시지 파일 끝에
+ * `Session-Id: local_c23ccb25`(보드 지문 8자리 — 트레일러와 **다른 식별자**다)를 손으로 적었더니
+ * 훅이 비켜서 그게 박혔고, `track-collision` 이 즉시 「남의 커밋이 내 자리에 착지했다」고 알렸다.
+ * 소유 판별은 전부 이 값을 문자열 그대로 비교하므로 축약형은 어떤 세션과도 안 맞는다.
+ * 🔑 **양쪽을 같이 잰다** — 「축약형은 고친다」만 검사하면 `--if-exists replace` 로 통째로
+ *    덮는 구현이 초록으로 지나가고, 그건 cherry-pick 에서 원저자 트레일러를 삼킨다. */
+
+test('F300 손으로 적은 축약형 Session-Id 는 전체 id 로 교정된다', (t) => {
+  let dir;
+  try { dir = mkRepo(); } catch (e) { return t.skip('픽스처 생성 실패: ' + e.message); }
+
+  const 축약 = 'local_11111111';                 // 보드 지문 = 트레일러의 진짜 접두사
+  const got = commit(dir, 'e.txt', `작업 넷\n\nSession-Id: ${축약}`, { CLAUDE_CODE_HOST_SESSION_ID: SID });
+  assert.equal(got, SID, `축약형이 그대로 남았다(${JSON.stringify(got)}) — 이 커밋은 모든 소유 판별에서 남의 것이 된다`);
+
+  const hits = (git(dir, ['log', '-1', '--format=%B']).match(/^Session-Id:/gm) || []).length;
+  assert.equal(hits, 1, `교체가 아니라 덧붙었다 — Session-Id 가 ${hits}줄이면 읽는 쪽이 어느 것을 믿을지 갈린다`);
+});
+
+test('F300 남의 완전한 Session-Id 는 덮지 않는다 (cherry-pick 이 이 훅을 부른다)', (t) => {
+  let dir;
+  try { dir = mkRepo(); } catch (e) { return t.skip('픽스처 생성 실패: ' + e.message); }
+
+  const 남의것 = 'local_99999999-8888-7777-6666-555555555555';
+  const got = commit(dir, 'f.txt', `남이 만든 커밋\n\nSession-Id: ${남의것}`, { CLAUDE_CODE_HOST_SESSION_ID: SID });
+  assert.equal(got, 남의것, '원저자 트레일러를 내 것으로 덮어썼다 — cherry-pick 한 커밋의 주인이 통째로 뒤바뀐다');
+});
+
+test('F300 같은 접두라도 어긋난 꼬리는 덮지 않는다 — 접두사일 때만 교체한다', (t) => {
+  let dir;
+  try { dir = mkRepo(); } catch (e) { return t.skip('픽스처 생성 실패: ' + e.message); }
+
+  /* 앞 8자리는 같은데 뒤가 다르다 = 내 id 의 접두사가 **아니다**. 지문 충돌한 남의 세션이
+   * 이 모양이라, 앞자리만 보고 교체하면 그 커밋을 내 것으로 만든다. */
+  const 비슷한남 = 'local_11111111-0000-0000-0000-000000000000';
+  const got = commit(dir, 'g.txt', `앞자리만 같은 남의 커밋\n\nSession-Id: ${비슷한남}`,
+    { CLAUDE_CODE_HOST_SESSION_ID: SID });
+  assert.equal(got, 비슷한남, '앞자리만 보고 덮었다 — 지문이 겹친 남의 커밋을 내 것으로 만든다');
+});
+
 /* 배선 검사 — 훅은 버전 관리 밖(.git/hooks)에 살아서, 원본만 고치고 설치를 잊으면 조용히 안 돈다.
  * CI에는 애초에 설치돼 있지 않으므로 **실패가 아니라 skip**으로 드러낸다(통과와 미실행을 가른다). */
 test('이 저장소에 훅이 설치돼 있고 원본과 같다', (t) => {
