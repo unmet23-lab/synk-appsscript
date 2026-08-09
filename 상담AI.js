@@ -31,7 +31,7 @@
 //   Code.gs보다 먼저 돈다(07-24 실사고: 모든 ▶실행·트리거가 여기 ReferenceError로 즉사, 유호님 실행에서 발각).
 //   타파일 전역은 반드시 함수 안(호출 시점)에서 읽는다 — tests/safety.test.js가 전 파일 기계 차단 + .clasp.json
 //   filePushOrder가 Code.js 선두를 이중 보증.
-function 상담AI_모델_() { return typeof AI_FEEDBACK_MODEL === 'undefined' ? 'claude-sonnet-5' : AI_FEEDBACK_MODEL; } // Code.js 정본을 따른다
+function 상담AI_모델_() { return typeof AI_FEEDBACK_MODEL === 'undefined' ? 'claude-opus-5' : AI_FEEDBACK_MODEL; } // Code.js 정본을 따른다 — 폴백 리터럴도 함께 옮긴다(갈라지면 조용히 옛 모델로 돈다)
 const 상담AI_사고 = false;               // 메신저는 응답속도가 전환을 좌우 — 사고 OFF. 답변 품질이 아쉬우면 true
 const 상담AI_기본상한 = 300;             // 하루 호출 상한 기본값
 /* ⚠ 칸은 **끝에만** 늘린다 — 읽는 쪽이 전부 열 번호로 집는다(`r[8]`·`setValue(draftRow, 9)`).
