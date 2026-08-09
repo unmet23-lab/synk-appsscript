@@ -7,6 +7,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const 표 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '표.js'));
 
 const MAX_CELL = 200;
@@ -78,10 +79,16 @@ if (!/(^|\/)docs\/_ops\/보드\/[^/]+\.md$/.test(norm)) process.exit(0); // 아�
  *   편집 대상이 다른 저장소(테스트 픽스처·워크트리)일 때 require 가 조용히 실패해
  *   남의 줄이 통째로 0 이 되고, 그 방향은 「통과」다. */
 const 보드ROOT = path.resolve(path.dirname(norm), '..', '..', '..');
+/* 어느 줄이 **어느 세션 파일**에 사는지 — ②의 처방 검증(아래 `이관가능한가`)이 board-move 에게
+ * 「이 파일에서 찾아라」를 넘겨야 한다. 안 넘기면 board-move 는 자기 옆(진짜 저장소) 보드를 보고,
+ * 픽스처·워크트리에서는 그 줄을 못 찾아 **전부 실행 불가**로 읽힌다(느슨해지는 방향). */
+const 줄의파일 = new Map();
 const 남의줄 = (() => {
   try {
     const 보드 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '보드.js'));
-    return (보드.줄들(보드ROOT) || []).filter((r) => r.파일 !== base).map((r) => r.줄);
+    const 전부 = 보드.줄들(보드ROOT) || [];
+    for (const r of 전부) 줄의파일.set(r.줄.trim(), r.파일);
+    return 전부.filter((r) => r.파일 !== base).map((r) => r.줄);
   } catch (_) { return []; }
 })();
 const 합치기 = (t) => (t === null || t === undefined ? t : 남의줄.concat(String(t)).join('\n'));
@@ -219,8 +226,9 @@ function 활성목록(text) {
  * 만석이 유지돼 다음 세션이 선언을 못 한다 — 실측: 내가 이 자리에서 막혔고, 손으로 고른
  * 문구 2개 중 1개가 빗나갔다. ①(활성 상한)은 이미 목록을 내밀고 있었다. 같은 것을 ②에도.
  *
- * ⚠ 생사 판정은 **여기서 하지 않는다** — board-move 가 그 자리(주인·미커밋)를 이미 본다.
- *   훅이 그것까지 재현하면 판정이 두 곳으로 갈라지고, 갈라진 쪽은 조용히 틀린다. */
+ * ⚠ 생사 판정은 **여기서 다시 적지 않는다** — board-move 가 그 자리(주인·미커밋)를 이미 본다.
+ *   훅이 그것까지 재현하면 판정이 두 곳으로 갈라지고, 갈라진 쪽은 조용히 틀린다.
+ *   대신 **그 명령을 그대로 돌려 본다**(`--dry` · 아래 `이관가능한가`) — 판정은 여전히 한 곳이다. */
 function 완료줄들(text) {
   return text.split('\n').filter(isDataRow).filter((l) => !isActiveRow(l));
 }
@@ -238,16 +246,67 @@ function 이관문구(line, 전체) {
   return null;
 }
 
+/* 🔑 처방을 내기 전에 **그 처방을 실제로 돌려 본다** (마찰 F278 · 2026-08-09 실측)
+ *
+ * 위 문단은 「어느 줄을 어떤 문구로」까지 냈다. 그래도 뚫렸다 — 실측 2026-08-09 11:03:
+ * 새 세션의 첫 선언이 「19줄이 된다」로 막혔고, 딸려 나온 명령 5개 중 하나는 board-move
+ * 원칙⑥(줄 주인이 아직 살아 있다)에 걸려 **애초에 실행이 안 된다.** F278 이 신고한 날은
+ * 5개 **전부** 그랬다. 처방이 하나도 안 도는 자리에 남는 문은 BYPASS 아니면 「선언 포기」뿐이고,
+ * 선언 포기는 track-collision 의 첫 처방(보드에서 상대 줄을 읽는다)을 상대편에서 원리상
+ * 불가능하게 만든다 — 내 트랙이 보드에 없기 때문이다. F103→F141→F229→F266 과 같은 축이다:
+ * **따를 수 없는 처방은 우회를 정상 통로로 만든다.**
+ *
+ * ⚠ 새는 방향을 못박는다 — **「실행 불가」로 세는 것은 종료 코드 6(원칙⑥) 하나뿐**이다.
+ *   나머지(1·스폰 실패·타임아웃)는 board-move 가 **거절한 게 아니라 못 돈 것**이라 판정 불가로
+ *   보고 그대로 처방에 남긴다(=막는 쪽). 실측으로 갈렸다: 픽스처엔 아카이브 파일이 없어
+ *   board-move 가 1 로 죽는데, 그걸 「옮길 게 없다」로 읽으면 상한이 통째로 풀린다(F207 축 —
+ *   미실행은 통과와 같은 모양으로 온다). 그래서 board-move 쪽에 6 을 팠다.
+ * ⚠ `--dry` 는 아무것도 쓰지 않는다(board-move 는 산주인 검사 **뒤** 즉시 종료한다).
+ *   비용은 후보 1개당 실측 ~0.2초, 그리고 이 자리는 **막을 때만** 지난다(훅 상한 30초). */
+const BOARD_MOVE = path.join(__dirname, '..', '..', 'tools', 'board-move.js');
+const 원칙6 = 6;   // board-move 의 종료 계약(0 옮겼다 · 1 못 옮겼다 · 6 주인 생존) — 그쪽 머리말
+/* 테스트 이음매 — 스폰이 **답을 못 주는** 자리(타임아웃)를 픽스처에서 만들 손잡이가 없으면
+ * 「판정 불가는 막는 쪽으로 센다」는 성질이 회귀로 안 잡힌다(변이가 도달 불가라 조용히 산다). */
+const 검증제한 = Number(process.env.SYNK_BOARD_MOVE_TIMEOUT_MS) || 8000;
+const 보드폴더 = path.resolve(path.dirname(norm));
+const 보드아카이브 = path.join(보드ROOT, 'docs', '세션보드_아카이브.md');
+
+function 이관가능한가(needle, 줄) {
+  const 파일 = 줄의파일.get(줄.trim());
+  const env = { ...process.env, SYNK_BOARD_ARCHIVE: 보드아카이브 };
+  /* 어느 파일인지 알면 넘긴다 — board-move 의 파일 찾기는 `이관문구` 가 유일성으로 이미
+   * 보장했고, 안 넘기면 board-move 가 **자기 옆 저장소**의 보드를 본다(픽스처·워크트리에서
+   * 통째로 빗나가고, 그 방향은 「전부 실행 불가」=느슨해지는 쪽이다). */
+  if (파일) env.SYNK_BOARD = path.join(보드폴더, 파일);
+  let r;
+  try {
+    r = spawnSync(process.execPath, [BOARD_MOVE, needle, '--dry'], { encoding: 'utf8', timeout: 검증제한, env });
+  } catch (_) { return true; }
+  if (!r || r.error || r.signal || typeof r.status !== 'number') return true;
+  return r.status !== 원칙6;   // 6 만 「거절」이다 — 그 밖의 실패는 판정 불가라 막는 쪽으로 센다
+}
+
 function 이관처방(text) {
   const 전체 = text.split('\n').filter(isDataRow);
   /* 자르기는 **문구를 뽑은 뒤**다 — 앞쪽 줄에서 유일 문구를 못 찾았다고 처방이 비면
    * 「완료 줄이 있는데 옮길 명령이 없다」는 모순이 나온다(그 자리가 곧 우회다). */
-  const 명령 = 완료줄들(text).map((l) => 이관문구(l, 전체)).filter(Boolean).slice(0, 5);
-  /* 명령이 0개인 자리는 **도달할 수 없다** — 완료 줄이 없으면 전체 상한보다 활성 상한(①)이
-   * 먼저 잡는다. 남는 것은 파일을 못 읽은 폴백뿐이라 거기선 조용히 원래 문구만 낸다. */
-  if (!명령.length) return '';
-  return '\n   아카이브로 옮길 **완료** 줄 — 그대로 실행하면 된다(주인 생사·남의 미커밋은 board-move 가 본다):\n'
-    + 명령.map((n) => `     node tools/board-move.js "${n}"`).join('\n');
+  const 후보 = 완료줄들(text).map((l) => ({ 줄: l, 문구: 이관문구(l, 전체) })).filter((c) => c.문구);
+  const 명령 = [];
+  const 막힌것 = [];
+  for (const c of 후보) {
+    if (이관가능한가(c.문구, c.줄)) { 명령.push(c.문구); if (명령.length >= 5) break; }
+    else 막힌것.push(c.문구);
+  }
+  return { 명령, 막힌것, 후보수: 후보.length };
+}
+
+function 이관처방글(처방) {
+  if (!처방.명령.length) return '';
+  return '\n   아카이브로 옮길 **완료** 줄 — `--dry` 로 미리 돌려 본 것만 낸다(그대로 실행하면 된다):\n'
+    + 처방.명령.map((n) => `     node tools/board-move.js "${n}"`).join('\n')
+    + (처방.막힌것.length
+      ? `\n   (완료 줄 ${처방.막힌것.length}개는 주인이 아직 살아 있어 뺐다 — board-move 원칙⑥)`
+      : '');
 }
 
 /* 안내도 위 목록에서 파생한다 — 판정과 안내가 갈라지면 「시킨 대로 썼는데 막힌다」가 되고,
@@ -375,22 +434,57 @@ const 이전total = 이전 === null ? 0 : countRows(이전);
 const 이전active = 이전 === null ? 0 : countActive(이전);
 const 물려받은 = [];
 const 판 = resulting !== null ? resulting : (이전 || '');
-if (active > MAX_ACTIVE && active > 이전active) {
+/* 면제는 **세션의 첫 선언 1줄**로 좁힌다 (F278). 그 편집만이 「내가 만든 만석이 아닌데
+ * 막히는」 자리고, 그것마저 막으면 보드가 존재하는 이유(선언)가 통째로 사라진다.
+ * ⚠ 활성 상한(12)은 면제하지 않는다 — 그쪽은 진짜로 「지금 도는 트랙이 너무 많다」는 신호다.
+ * ⚠ 내 줄 수는 **내 파일 몫만** 센다: 합친 판에서 남의 행수를 뺀다(합치기가 남의 줄을 앞에 붙인다). */
+const 남의행수 = 남의줄.filter(isDataRow).length;
+const 내이전 = 이전 === null ? 0 : Math.max(0, countRows(이전) - 남의행수);
+const 내결과 = resulting === null ? 내이전 + delta : Math.max(0, countRows(resulting) - 남의행수);
+const 첫선언 = 내이전 === 0 && 내결과 === 1;
+/* 🔑 활성 상한도 **첫 선언 1줄은 비켜 준다** (F278 · 2026-08-09).
+ * 처방 두 개가 새 세션에겐 원리상 둘 다 막혀 있다: 「끝난 트랙의 상태를 완료로 갱신」은 남의
+ * 줄이라 F073 이 금지하고, 「내 줄을 합쳐라」는 합칠 내 줄이 없다. ②(전체 상한)에서 실측으로
+ * 확인한 것과 **같은 모양**이라, 여기만 열어 두면 판이 활성으로 찰 때 F278 이 그대로 되산다.
+ * ⚠ 여는 것은 첫 1줄뿐이다 — 그 뒤의 증가는 그대로 막는다(그게 이 상한의 본래 몫이다). */
+if (active > MAX_ACTIVE && active > 이전active && !첫선언) {
   미룬deny(
     `[board-guard] 세션보드 활성 줄이 ${active}줄이 된다(상한 ${MAX_ACTIVE}줄).\n` +
       '→ 활성 줄이 이만큼이면 조율이 아니라 소음이다. 끝난 트랙의 상태를 먼저 완료 표기로 갱신하거나, 남의 줄이 아니라 내 줄을 합쳐라.' +
+      '\n   (비켜 주는 것은 **세션의 첫 선언 1줄**뿐이다 · F278 — 지금 편집은 내 줄이 이미 있거나 2줄 이상이다)' +
       표기안내() +
       활성목록(판)
+  );
+} else if (active > MAX_ACTIVE && active > 이전active) {
+  물려받은.push(
+    `활성 ${active}줄(상한 ${MAX_ACTIVE}) — **첫 선언 1줄은 통과시켰다**(F278). ` +
+    '새 세션이 따를 수 있는 처방이 없다(남의 활성 줄 편집은 F073 이 금지한다).'
   );
 } else if (active > MAX_ACTIVE) {
   물려받은.push(`활성 ${active}줄(상한 ${MAX_ACTIVE}) — 내 편집은 안 늘렸다`);
 }
 if (total > MAX_ROWS && total > 이전total) {
-  미룬deny(
-    `[board-guard] 세션보드 표가 ${total}줄이 된다(상한 ${MAX_ROWS}줄).\n` +
-      '→ 오래된 **완료** 줄부터 docs/세션보드_아카이브.md 맨 위로 옮긴 뒤 다시 시도할 것. 활성(작업중·진행중·대기) 줄은 남긴다.' +
-      이관처방(판)
-  );
+  const 처방 = 이관처방(판);
+  if (처방.명령.length) {
+    미룬deny(
+      `[board-guard] 세션보드 표가 ${total}줄이 된다(상한 ${MAX_ROWS}줄).\n` +
+        '→ 오래된 **완료** 줄부터 docs/세션보드_아카이브.md 맨 위로 옮긴 뒤 다시 시도할 것. 활성(작업중·진행중·대기) 줄은 남긴다.' +
+        이관처방글(처방)
+    );
+  } else if (첫선언) {
+    /* 여기가 F278 이 갇혔던 자리다 — 막지 않고 **드러낸다**(침묵은 상한이 없는 것과 같다). */
+    물려받은.push(
+      `전체 ${total}줄(상한 ${MAX_ROWS}) — **치울 수 있는 완료 줄이 0이라 첫 선언 1줄은 통과시켰다**(F278). ` +
+      `완료 줄 ${처방.후보수}개는 board-move 가 전부 거절한다(원칙⑥ — 주인이 아직 살아 있다).`
+    );
+  } else {
+    미룬deny(
+      `[board-guard] 세션보드 표가 ${total}줄이 된다(상한 ${MAX_ROWS}줄).\n` +
+        `→ 지금 옮길 수 있는 완료 줄이 **0개**다(완료 ${처방.후보수}개 전부 주인이 살아 있다 · board-move 원칙⑥).\n` +
+        '   면제는 **세션의 첫 선언 1줄**뿐이다(F278) — 내 줄이 이미 있으면 새 줄을 늘리지 말고 그 줄에 합쳐라.\n' +
+        '   남의 완료 줄은 그 세션이 끝난 뒤에 옮긴다 — 생사부터 본다: node tools/작업본소유자.js'
+    );
+  }
 } else if (total > MAX_ROWS) {
   물려받은.push(`전체 ${total}줄(상한 ${MAX_ROWS}) — 내 편집은 안 늘렸다`);
 }
