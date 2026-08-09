@@ -590,4 +590,10 @@ if (require.main === module) main();
  * 주간 부패 점검이 7일간 침묵한다 — 🔴 를 든 채로. 2026-08-07 실측: 회귀 한 줄이
  * 하루에 세 번(10:04·10:11·10:13) 그 도장을 찍었고 테스트는 내내 초록이었다.
  * 쓰기 실패 내성은 서브프로세스(`SYNK_ROT_STATE`=못 쓰는 경로)로 검사한다. */
-module.exports = { collect, render, dueNow, stateFile, harnessSection, toilSection, mapSection, 절단문서Section, 배포Section, 편집중인가, EVOLVE_THRESHOLD };
+/* `뒤커밋들` 을 내보내는 이유 (2026-08-09 · F289): 같은 계산이 `tools/대기열.js` 에도 필요해져
+ * **두 번째**가 됐다. 특히 저 안의 **1초 밀기**는 실측으로만 아는 규칙이라(F062 계열) 두 곳에
+ * 적으면 한쪽이 조용히 옛 규칙으로 남고, 증상은 「갱신했는데 계속 운다」 아니면 「아직인데
+ * 조용하다」 — 둘 다 침묵을 닮았다. 그래서 베끼지 않고 **이 한 벌을 빌려 쓴다**(회귀는
+ * tests/절단문서.test.js ③ 이 그대로 진다). ⚠ 시각은 안 돌려준다 — 부르는 쪽은 `--since` 로
+ * 이미 걸러진 목록을 받으므로 필요 없다. */
+module.exports = { collect, render, dueNow, stateFile, harnessSection, toilSection, mapSection, 절단문서Section, 뒤커밋들, 배포Section, 편집중인가, EVOLVE_THRESHOLD };
