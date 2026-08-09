@@ -321,6 +321,52 @@ for (const [anchor, bg, fg, where] of DOC_CLAIMS) {
   });
 }
 
+/* ─── 5b. 파생 색표(발표물/_브랜드킷.md)의 대비 수치 자기검증 ──────────────── */
+/* [2026-08-09] ③ 색표 정리 — 킷 표의 대비 칸 중 세 값(14.46·11.47·13.13)은 정본 측정표에
+ * 없는 킷 고유 쌍이라 **어느 검사도 안 지키는 고아**였다(문서압축 ② 반박 잔여 부채).
+ * 값을 정본으로 옮겨 사본을 늘리는 대신, 같은 방식(문서에서 숫자를 꺼내 재계산과 대조)으로
+ * 파생 표의 전 칸을 건다 — hex 를 바꾸면 여기 수치가 깨지고, 수치만 고치면 hex 와 어긋난다. */
+const KIT_DOC = path.join(ROOT, 'docs', '발표물', '_브랜드킷.md');
+const KIT_SRC = fs.readFileSync(KIT_DOC, 'utf8');
+
+const KIT_CLAIMS = [
+  ['| 잉크 | Navy |', '#FBF7EE', '#1A2340', '킷 §1 색표 — Navy/Paper (고아였던 14.46)'],
+  ['| 보조 잉크·괘선 | Navy 3 |', '#FBF7EE', '#2A3358', '킷 §1 색표 — Navy 3/Paper (고아였던 11.47)'],
+  ['| 반전면 잉크 | Cream |', '#0F1730', '#F6F1E8', '킷 §1 색표 — Cream/Navy 2'],
+  ['| 반전면 보조 | Cream 3 |', '#0F1730', '#E7DDC7', '킷 §1 색표 — Cream 3/Navy 2 (고아였던 13.13)'],
+  ['| **신호** | **Coral** |', '#0F1730', '#FF6B5C', '킷 §1 색표 — Coral 다크'],
+  ['| **신호** | **Coral** |', '#FBF7EE', '#FF6B5C', '킷 §1 색표 — Coral 라이트(면만 근거)'],
+  ['| 신호 — 라이트 글자 | Coral 3 |', '#FBF7EE', '#E8543F', '킷 §1 색표 — Coral 3 라이트'],
+  ['| Cream `#F6F1E8` |', '#0F1730', '#F6F1E8', '킷 §3 실측표 — Cream 다크'],
+  ['| Cream `#F6F1E8` |', '#FBF7EE', '#F6F1E8', '킷 §3 실측표 — Cream 라이트(사라짐 근거)'],
+  ['| Coral `#FF6B5C` |', '#0F1730', '#FF6B5C', '킷 §3 실측표 — Coral 다크'],
+  ['| Coral `#FF6B5C` |', '#FBF7EE', '#FF6B5C', '킷 §3 실측표 — Coral 라이트'],
+  ['| Coral 3 `#E8543F` |', '#0F1730', '#E8543F', '킷 §3 실측표 — Coral 3 다크'],
+  ['| Coral 3 `#E8543F` |', '#FBF7EE', '#E8543F', '킷 §3 실측표 — Coral 3 라이트'],
+  ['| Navy `#1A2340` |', '#0F1730', '#1A2340', '킷 §3 실측표 — Navy 다크(묻힘 근거)'],
+  ['| Navy `#1A2340` |', '#FBF7EE', '#1A2340', '킷 §3 실측표 — Navy 라이트'],
+  ['| Navy 3 `#2A3358` |', '#0F1730', '#2A3358', '킷 §3 실측표 — Navy 3 다크(묻힘 근거)'],
+  ['| Navy 3 `#2A3358` |', '#FBF7EE', '#2A3358', '킷 §3 실측표 — Navy 3 라이트'],
+];
+
+const kitLineWith = (anchor) => KIT_SRC.split(/\r?\n/).find((l) => l.includes(anchor));
+
+for (const [anchor, bg, fg, where] of KIT_CLAIMS) {
+  test(`킷 색표가 적은 대비가 실제 계산과 맞다 — ${where}`, () => {
+    const line = kitLineWith(anchor);
+    assert.ok(line, `_브랜드킷.md에서 앵커 「${anchor}」를 못 찾았다 (${where}) — 표가 개편됐으면 앵커를 갱신하라`);
+    const actual = contrast(bg, fg);
+    const found = numbersIn(line).filter((n) => Math.abs(n - actual) <= 0.05);
+    assert.ok(
+      found.length > 0,
+      `${where}: ${bg}/${fg}의 실제 대비는 ${actual.toFixed(2)}인데 킷 표 줄에 그 숫자가 없다.\n` +
+        `  줄에 적힌 숫자: [${numbersIn(line).join(', ')}]\n` +
+        `  줄: ${line.trim().slice(0, 160)}\n` +
+        `  색을 바꿨다면(원천 = 디자인_토큰.json) 이 표의 수치를, 수치를 고쳤다면 색을 함께 맞춰라.`
+    );
+  });
+}
+
 /* 낡은 수치의 부활 차단 — 정본이 같은 값을 네 곳에 적으므로, 한 곳만 고치고 나머지를 놓치는 것이
  * 이 문서의 고질적 실패 방식이다(08-03에 실제로 그 상태였다). 폐기된 수치의 등장 횟수를 동결한다.
  * 현재 허용분 = v1.6.1 정정 서술과 개정 이력에서 「예전엔 이렇게 적혀 있었다」로 인용하는 것뿐. */
