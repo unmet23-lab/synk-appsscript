@@ -687,11 +687,31 @@ function 게이트판정(projRoot, root = ROOT, 장부 = {}) {
   const fp = 점검.지문(projRoot, root);
   const 기각키 = new Set(jsonl(기각p).map((r) => r.키));
 
+  /* 🔑 처방은 **과녁을 댄다.** 인자 없이 부르면 미커밋이 있을 때 그것을 검수하는데(`대상결정`),
+   *   이 저장소는 세션이 동시에 돌아 작업본에 **늘 남의 미커밋이 있다**. 그 diff 엔 배포 파일이
+   *   없으니 `범위` 밖으로 기록되고, 그러면 아래 두 갈래는 영원히 안 닫힌다 — 게이트가 시키는
+   *   명령이 그 게이트를 못 여는 형태다(가드 맹점 ③ · F103 과 같은 축).
+   *   2026-08-09 실측: 그 기본 호출로 50분을 태웠고 기록은 범위 밖이라 게이트가 그대로였다.
+   * 🔑 과녁은 **프로젝트별**이다 — 「가장 최근 [v..] 커밋」으로 뽑으면 crewcard 에 루트 커밋을
+   *   처방하게 되고, 그 diff 엔 crewcard 배포 파일이 없어 처방을 따라도 게이트가 그대로다.
+   *   그래서 **이 프로젝트의 배포집합을 건드린 마지막 커밋**을 집는다.
+   * ⚠ 못 뽑으면 과녁 없이 낸다 — 틀린 과녁을 지어내는 것보다 낫다(그건 남의 판을 검수하게 한다). */
+  const 과녁 = (() => {
+    try {
+      const 집합 = 점검.배포집합(projRoot, root);
+      if (!집합.length) return '';
+      const sha = git(['-c', 'core.quotepath=false', 'log', '-n', '1', '--format=%H', '--', ...집합]);
+      return sha ? ` --commit ${sha.slice(0, 8)}` : '';
+    } catch (_) { return ''; }
+  })();
+  const 처방 = `   → node tools/codex-review.js${과녁}   (약 5분 · 읽기 전용)`;
+  const 왜 = '     ⚠ 과녁 없이 부르면 **작업본 미커밋**을 검수한다 — 그 diff 에 배포 파일이 없으면 범위 밖으로 기록돼 이 게이트는 안 채워진다.';
+
   const 해당 = jsonl(기록p).filter((r) => r.지문 && r.지문[이름] === fp);
   if (!해당.length) {
     return { level: 'none', 이름, fp, lines: [
       `⚠ ${이름}: 이 배포 내용(#fp:${fp})에 **이종 검수 기록이 없다**`,
-      `   → node tools/codex-review.js   (약 5분 · 읽기 전용)`,
+      처방, 왜,
     ] };
   }
 
@@ -700,7 +720,7 @@ function 게이트판정(projRoot, root = ROOT, 장부 = {}) {
     return { level: 'scope', 이름, fp, lines: [
       `⚠ ${이름}: 검수 기록은 있으나 **이 프로젝트는 검수 범위 밖**이었다(#fp:${fp})`,
       `   내용이 안 바뀌었다면 그대로 나가도 되지만, 「검수됨」은 아니다.`,
-      `   → node tools/codex-review.js --base master`,
+      처방, 왜,
     ] };
   }
 
