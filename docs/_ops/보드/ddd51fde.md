@@ -1,0 +1,1 @@
+| 2026-08-09 | **리허설 배포가 소스보다 뒤처져 왕복시험이 통째로 막혔다 — 7종 재배포**(대기열 P3 · `d73330a1` 가 넘긴 자리) | **SYNK-talk 리허설 배포만: correct·corrections·events·progress·tasks·transcribe·uploads**(코드 편집 0 · 운영 0 · 마이그레이션 0) · appsscript: 대기열 · 이 줄 | 🔵**착수** (`local_ddd51fde`) — 실측 `배포대조` 다름 7·미측정 1(review 404) · 전부 동봉 `.mjs` 누락 형태 · ▶다음=`events` 선행(request_hash 열) 확인 후 순서대로 재배포→`배달왕복시험` 재개 |
