@@ -363,6 +363,15 @@ function 인자값(인자, 이름) {
   return i >= 0 ? 인자[i + 1] : null;
 }
 
+/** 같은 이름을 여러 번 받는다 — `--대안 A --대안 B`.
+ *  ⚠ 한 인자를 파이프로 갈라 받지 않는다: `tools/` 안의 `.split('|')` 은 `tests/표칸.test.js`
+ *  가 금지한다(표 칸이 백틱 안 파이프에서 밀리던 사고 · 목록을 안 두고 폴더 전체를 훑는 설계). */
+function 인자값들(인자, 이름) {
+  const out = [];
+  for (let i = 0; i < 인자.length; i += 1) if (인자[i] === 이름 && 인자[i + 1]) out.push(인자[i + 1].trim());
+  return out.filter(Boolean);
+}
+
 function add(인자) {
   const 파일 = 인자값(인자, '--파일');
   let 입력;
@@ -377,8 +386,8 @@ function add(인자) {
       const v = 인자값(인자, `--${k}`);
       if (v) 입력[k] = v;
     }
-    const a = 인자값(인자, '--대안');
-    if (a) 입력.대안 = a.split('|').map((s) => s.trim()).filter(Boolean);
+    const a = 인자값들(인자, '--대안');
+    if (a.length) 입력.대안 = a;
     if (!Object.keys(입력).length) {
       console.error('🔴 줄 내용이 없다. 긴 본문은 셸에 맡기지 말고 `--파일 결정.json` 으로 준다(F296).');
       return 1;
@@ -457,6 +466,6 @@ function main(argv) {
   return 1;
 }
 
-module.exports = { 파싱, 다음번호, 검증, 접기, HTML, esc, 결과값, 필수, 정본경로: 정본, 파생경로: 파생 };
+module.exports = { 파싱, 다음번호, 검증, 접기, HTML, esc, 인자값들, 결과값, 필수, 정본경로: 정본, 파생경로: 파생 };
 
 if (require.main === module) process.exit(main(process.argv));

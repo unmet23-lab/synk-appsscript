@@ -13,7 +13,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 
-const { 파싱, 다음번호, 검증, 접기, HTML, esc, 결과값, 필수 } = require('../tools/자율기록.js');
+const { 파싱, 다음번호, 검증, 접기, HTML, esc, 인자값들, 결과값, 필수 } = require('../tools/자율기록.js');
 
 const 온전한결정 = {
   종류: '결정',
@@ -213,4 +213,17 @@ test('HTML: script 여는 태그와 닫는 태그 수가 맞는다(F047 지문)'
 
 test('결과값: 네 가지뿐 — 늘리면 필터·배지 CSS 도 같이 늘려야 한다', () => {
   assert.deepStrictEqual(결과값, ['대기', '유지', '바꿈', '보류']);
+});
+
+/* ── 인자 (파이프 구분자로 되돌아가지 않게) ────────────────────── */
+
+test('인자값들: 같은 이름을 여러 번 받는다 — 한 인자를 파이프로 가르지 않는다', () => {
+  /* `tools/` 안의 `.split('|')` 은 tests/표칸.test.js 가 금지한다(표 칸 밀림 사고).
+   * 첫 판이 `--대안 "A|B"` 였다가 그 가드에 걸렸고, 처방은 가드 완화가 아니라 통로 교체였다. */
+  assert.deepStrictEqual(인자값들(['--대안', 'A', '--대안', 'B'], '--대안'), ['A', 'B']);
+});
+
+test('인자값들: 없으면 빈 배열 · 값 없는 꼬리 플래그는 세지 않는다', () => {
+  assert.deepStrictEqual(인자값들(['--제목', 'ㄱ'], '--대안'), []);
+  assert.deepStrictEqual(인자값들(['--대안'], '--대안'), []);
 });
