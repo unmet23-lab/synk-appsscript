@@ -806,3 +806,51 @@ test('🔴 [F296] `--파일` 을 못 읽으면 **빈 행을 만들지 않는다*
   assert.ok(r.failed, '🔴 못 읽었는데 계속 갔다 — 빈 신고문 행이 장부에 남는다');
   assert.strictEqual(rowsOf(ledger).length, 2, '못 읽었는데 행이 태어났다');
 });
+
+/* ── 🔴 F301 — 위 수리가 `add` 만 고쳐서 **옆자리에서 그대로 재발했다** (2026-08-09 실측) ────
+ * `resolve` 는 `args.slice(2).join(' ')` 이라 모르는 플래그도 해소문으로 접었다. 실제로
+ * `resolve F300 --파일 <경로>` 를 줬더니 해소 칸이 통째로 「--파일 C:/…/해소.txt」가 되어
+ * 커밋까지 갔다(5fd6800a). 같은 도구·같은 파서 결함·다른 서브명령 — 세 번째를 막으려면
+ * 호출부마다 고치는 게 아니라 **한 곳에서 파생시킨다**(CLAUDE.md 신뢰성: 3번째 = 원인을
+ * 쓸 수 없게 만든다). 그래서 아래 넷은 `add` 쪽 넷과 **짝**이다: 한쪽만 초록이면 갈라진 것이다. */
+function 해소용장부() {
+  const ledger = mkLedger();
+  run(ledger, ['add', '마찰', '닫을 신호']);
+  const id = (rowsOf(ledger).at(-1).match(/F\d{3}/) || [])[0];
+  return { ledger, id };
+}
+const 해소칸 = (ledger, id) => (rowsOf(ledger).find((r) => r.includes(id)) || '').split('|').at(-2) || '';
+
+test('🔴 [F301] resolve: 모르는 옵션은 **해소문으로 접히지 않는다** — 막고 말한다', () => {
+  const { ledger, id } = 해소용장부();
+  const r = run(ledger, ['resolve', id, '--없는옵션', '값', '진짜 해소문'], true);
+  assert.ok(r.failed, '🔴 모르는 옵션을 삼켰다 — 그 토큰이 그대로 해소 칸이 된다(F301 그 사고)');
+  assert.match(r.stderr, /--없는옵션/, '무엇이 모르는 옵션인지 안 말하면 고칠 자리를 못 찾는다');
+  assert.ok(!/없는옵션/.test(해소칸(ledger, id)), '🔴 막았다면서 해소 칸이 오염됐다');
+});
+
+test('🔴 [F301] resolve: `--파일` 로 준 해소문이 그대로 칸이 된다 (백틱·따옴표가 들어도)', () => {
+  const { ledger, id } = 해소용장부();
+  const 본문 = '`--if-exists "$MODE"` 로 바꿨다 — "따옴표"와 백틱이 든 글이다';
+  const p = path.join(path.dirname(ledger), '해소문.txt');
+  fs.writeFileSync(p, `${본문}\n`, 'utf8');
+  run(ledger, ['resolve', id, '--파일', p]);
+  const 칸 = 해소칸(ledger, id);
+  assert.match(칸, /if-exists/, `🔴 파일 내용이 해소 칸에 안 실렸다:\n${칸}`);
+  assert.ok(!/--파일/.test(칸), '🔴 옵션 이름이 해소문에 남았다 — F301 그대로다');
+});
+
+test('🔴 [F301] resolve: 인자와 `--파일` 을 둘 다 주면 막는다', () => {
+  const { ledger, id } = 해소용장부();
+  const p = path.join(path.dirname(ledger), '해소문2.txt');
+  fs.writeFileSync(p, '파일 쪽 해소문\n', 'utf8');
+  const r = run(ledger, ['resolve', id, '인자 쪽 해소문', '--파일', p], true);
+  assert.ok(r.failed, '🔴 둘 다 받고 하나를 조용히 버렸다 — 버린 쪽은 아무도 못 본다');
+});
+
+test('🔴 [F301] resolve: `--파일` 을 못 읽으면 **행을 닫지 않는다**', () => {
+  const { ledger, id } = 해소용장부();
+  const r = run(ledger, ['resolve', id, '--파일', path.join(path.dirname(ledger), '없는파일.txt')], true);
+  assert.ok(r.failed, '🔴 못 읽었는데 계속 갔다 — 빈 해소문으로 행이 닫힌다(안 고쳤는데 닫음 = F092)');
+  assert.strictEqual(해소칸(ledger, id).trim(), '', '못 읽었는데 행이 닫혔다');
+});

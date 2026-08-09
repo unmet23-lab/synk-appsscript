@@ -10,8 +10,9 @@
 //   node tools/friction.js add 실수 "설명"           신호 추가(오늘 날짜, ID 자동)
 //   node tools/friction.js add 교정 "설명" --date 2026-08-01
 //   node tools/friction.js add 실수 "설명" --해소 "무엇이 막았나"   이미 고치고 신고할 때(F107)
-//   node tools/friction.js add 마찰 --파일 경로.txt   신고문을 파일로(백틱·따옴표가 든 긴 글 · F296)
+//   node tools/friction.js add 마찰 --파일 경로.txt   신고문을 파일로(백틱·따옴표가 든 긴 글 · F297)
 //   node tools/friction.js resolve F006 "무엇이 막았나"
+//   node tools/friction.js resolve F006 --파일 경로.txt   해소문도 같은 통로다(F301)
 //   node tools/friction.js --open                   살아있는 신호만
 'use strict';
 const fs = require('fs');
@@ -505,6 +506,34 @@ function main() {
     process.exit(1);
   }
   const cmd = args[0];
+  /* ── 텍스트 인자 통로 — add·resolve 가 **같은 함수**를 쓴다 (마찰 F301) ────────────
+   * F297 이 `add` 에만 `--파일` 과 「모르는 플래그 거절」을 넣었고 `resolve` 는 그대로 뒀다.
+   * 그래서 **바로 옆자리에서 같은 사고가 재발했다**: `resolve F300 --파일 <경로>` 가
+   * `args.slice(2).join(' ')` 에 걸려 그 토큰과 절대경로가 통째로 해소문이 됐다(커밋 5fd6800a).
+   * 같은 판정을 두 곳에 적으면 갈라진다 — 세 번째를 막으려면 **한 곳에서 파생시킨다.** */
+  const 모르는플래그 = (토큰, 허용) => {
+    console.error(`[friction] 모르는 옵션이다: ${토큰}\n`
+      + `  쓸 수 있는 것: ${허용.join(' · ')}\n`
+      + '  (막지 않으면 이 토큰이 본문으로 접혀 장부에 그대로 실린다 — 그게 F297·F301 이다)');
+    process.exit(1);
+  };
+  /** 인자 본문과 `--파일` 중 **하나만** 받아 텍스트 한 덩이를 낸다.
+   *  🔑 긴 글은 파일로 준다 — 백틱은 POSIX 셸에서 명령 치환으로 실행되고 따옴표는 말을 자른다.
+   *  따를 수 없는 처방은 우회를 정상 통로로 만든다(F103). 줄바꿈·`|` 는 `칸안전` 이 받는다. */
+  const 본문또는파일 = (조각들, 파일, 무엇) => {
+    const 글 = 조각들.join(' ');
+    if (!파일) return 글;
+    if (글.trim()) {
+      console.error(`[friction] ${무엇}을 인자와 --파일 둘 다로 줬다 — 어느 쪽이 정본인지 갈린다. 하나만 준다.`);
+      process.exit(1);
+    }
+    try { return fs.readFileSync(파일, 'utf8'); } catch (e) {
+      console.error(`[friction] --파일 을 못 읽었다: ${파일}\n  ${String(e && e.message)}`);
+      process.exit(1);
+    }
+    return '';
+  };
+
   if (cmd === 'add') {
     /* `--date` 는 토큰 1개, `--해소` 는 다음 플래그 전까지 전부 — 신고문과 같은 규칙이라
      * 따옴표를 빠뜨려도 말이 잘리지 않는다(셸이 둘인 저장소다 · CLAUDE.md 실행). */
@@ -519,38 +548,24 @@ function main() {
         해소 = 조각.join(' ');
         continue;
       }
-      /* 🔴 모르는 플래그를 **신고문으로 접지 않는다** (F296 · 2026-08-09 실측).
+      /* 🔴 모르는 플래그를 **신고문으로 접지 않는다** (F297 · 2026-08-09 실측).
        *   여기 없던 `--파일` 을 줬더니 그 토큰과 경로가 **그대로 장부 본문**이 되어 커밋까지 갔다.
        *   증상이 없다 — 도구는 성공을 찍고 행은 태어나며, 쓰레기가 들어간 줄은 사람만 안다.
        *   새는 방향은 언제나 「통과」다. 모르면 막는다. */
-      if (/^--/.test(남은[i])) {
-        console.error(`[friction] 모르는 옵션이다: ${남은[i]}\n`
-          + '  쓸 수 있는 것: --date · --해소 · --파일\n'
-          + '  (막지 않으면 이 토큰이 신고문으로 접혀 장부에 그대로 실린다 — 그게 F296 이다)');
-        process.exit(1);
-      }
+      if (/^--/.test(남은[i])) 모르는플래그(남은[i], ['--date', '--해소', '--파일']);
       본문.push(남은[i]);
     }
-    let 신고 = 본문.slice(1).join(' ');
-    /* 🔑 **긴 신고문은 파일로 준다** — 지침이 「여러 줄이거나 코드·정규식을 인용하는 문자열은
-     *   셸에 맡기지 말고 파일로 준다」고 정했는데 이 도구엔 그 통로가 **없었다.** 백틱이 든
-     *   신고문은 POSIX 셸에서 명령 치환으로 실행되고 따옴표는 말을 자른다. 따를 수 없는
-     *   처방은 우회를 정상 통로로 만든다(F103) — 실제로 그 우회가 F296 을 낳았다.
-     *   줄바꿈·`|` 는 아래 `칸안전` 이 이미 받아 주므로 여기서 따로 손대지 않는다. */
-    if (파일) {
-      if (신고.trim()) {
-        console.error('[friction] 신고문을 인자와 --파일 둘 다로 줬다 — 어느 쪽이 정본인지 갈린다. 하나만 준다.');
-        process.exit(1);
-      }
-      try { 신고 = fs.readFileSync(파일, 'utf8'); }
-      catch (e) {
-        console.error(`[friction] --파일 을 못 읽었다: ${파일}\n  ${String(e && e.message)}`);
-        process.exit(1);
-      }
-    }
-    add(본문[0], 신고, date, 해소);
+    add(본문[0], 본문또는파일(본문.slice(1), 파일, '신고문'), date, 해소);
   } else if (cmd === 'resolve') {
-    resolve(args[1], args.slice(2).join(' '));
+    /* add 와 **같은 두 함수**를 쓴다 — 옆자리만 안 고쳐서 F301 이 났다. */
+    const 남은 = args.slice(2);
+    let 파일 = null; const 조각 = [];
+    for (let i = 0; i < 남은.length; i++) {
+      if (남은[i] === '--파일') { 파일 = 남은[++i] || null; continue; }
+      if (/^--/.test(남은[i])) 모르는플래그(남은[i], ['--파일']);
+      조각.push(남은[i]);
+    }
+    resolve(args[1], 본문또는파일(조각, 파일, '해소문'));
   } else {
     report(args.includes('--open'));
   }
