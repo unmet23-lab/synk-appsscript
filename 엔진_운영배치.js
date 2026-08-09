@@ -3045,7 +3045,17 @@ function calcTeacherStats() {
     let 원천 = 0;                                  // 창 안의 쓸 만한 행 수 — 0이면 **잰 적이 없다**
     if (fb && fb.getLastRow() >= 2) {
       const seen = {};
-      fb.getRange(2, 1, fb.getLastRow() - 1, 3).getValues().forEach(r => {
+      /* [v9.199] 🔴 강의 한줄요약 행은 **숙제 제출이 아니다.** v9.198 이 그 요약을 같은 `hw_feedback` 에
+       *   `숙제ID` = `강의:<강의ID>` 로 적는데(새 시트를 안 파는 것이 그 판정이었다), 이 집계는 A:C 만
+       *   읽어 그 접두를 **못 본다**. 그러면 숙제만 안 낸 날의 요약 한 건이 제출로 세어져 제출률 →
+       *   인센티브 점수 → **급여**까지 부풀린다(이종 검수 2회차가 독립으로 같은 자리를 짚었다).
+       * ⚠ 폭은 **물리 열수로 클램프**한다 — 구 시트(11열)에서 12열을 무조건 요구하면 이 집계가 통째로
+       *   죽는다. v9.198 이 자기 대기줄에서 겪은 형태 그대로라, 같은 실수를 반대편에서 반복하지 않는다.
+       *   좁은 시트에선 접두 칸이 없어 `''` 이 되고 아무 행도 안 걸린다 — 그 시트엔 강의 행 자체가 없다. */
+      const 강의열 = HW_FEEDBACK_HEADERS.indexOf('숙제ID');
+      const 폭 = Math.min(강의열 + 1, fb.getLastColumn());
+      fb.getRange(2, 1, fb.getLastRow() - 1, 폭).getValues().forEach(r => {
+        if (String(r[강의열] == null ? '' : r[강의열]).indexOf(LECTURE_SRC_PREFIX) === 0) return;
         const sid = String(r[1] || '').trim(), d = dstr(r[2], tz8);
         if (!sid || !d || d < 창시작 || d > 창끝 || seen[sid + '|' + d]) return;
         seen[sid + '|' + d] = 1;
