@@ -757,6 +757,12 @@ for (let m; (m = 메시지인용.exec(cmd)) !== null;) {
           try {
             fs.mkdirSync(p.dirname(기억), { recursive: true });
             fs.writeFileSync(기억, JSON.stringify({
+              /* 🔴 F266 — `at` 은 장식이 아니라 **생존 조건**이다. `sweep()` 은 `at` 없는 파일을
+               *   나이와 무관하게 지우고(handoff-store 309행), 그 sweep 은 세션이 하나 열리거나
+               *   닫힐 때마다 돈다. 이 한 칸이 없어서 이 기억은 실사용에서 **한 번도 살아남지 못했고**,
+               *   그 결과 아래 처방(「같은 명령을 그대로 다시 실행한다」)이 영영 안 열려
+               *   남는 문이 BYPASS 하나뿐이었다 — F103 이 말한 「우회가 정상 통로가 되는」 자리다. */
+              at: Date.now(),
               seen: [...새것.map((c) => c.해시), ...상태.seen].slice(0, 60),
               /* 회차는 **범위별**로 센다 — 다른 명령의 회차를 물려받아 조용히 통과하면 그게 구멍이다.
                * ⚠ 옛 항목을 먼저 지우고 새 값을 넣는다. `fromEntries` 는 **뒤에 온 것이 이겨서**,

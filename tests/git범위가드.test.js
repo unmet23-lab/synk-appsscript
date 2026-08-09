@@ -678,8 +678,10 @@ function 만진기록(state, repo, sid, touched, 분전 = 1, 검사시각) {
   const p = path.join(state, `track-${store8.projectKey(repo)}-${store8.safeId(sid)}.json`);
   /* `dirtyChecked` = **경로별** 「그 세션이 마지막으로 만진 때」(ms). 안 주면 넣지 않는다 —
    * 라이브에도 없을 수 있는 필드이고, 없을 때 ⑨가 「모름=막는 쪽」으로 떨어지는 것이 기본값이다(F241). */
+  /* `at` 은 실물(track-collision 107행)이 늘 찍는 칸이다 — 픽스처가 빠뜨리면 `sweep()` 이 이 기록을
+   * 지워 버려서, 청소를 끼운 검사가 **엉뚱한 이유로** 초록이 된다(남을 못 보니 통과 · F266). */
   fs.writeFileSync(p, JSON.stringify({
-    baseline: 'x', lastHead: 'x', touched, warned: [], ...(검사시각 ? { dirtyChecked: 검사시각 } : {}),
+    at: Date.now(), baseline: 'x', lastHead: 'x', touched, warned: [], ...(검사시각 ? { dirtyChecked: 검사시각 } : {}),
   }));
   const t = new Date(Date.now() - 분전 * 60000);
   fs.utimesSync(p, t, t);
@@ -775,6 +777,48 @@ test('🔴 ⑧ 매 시도마다 내용이 바뀌어도 끝난다 — 3번째는 
     '무한 차단이다 — 처방(같은 명령 재실행)에 영영 못 닿으면 BYPASS 가 정상 통로가 된다(F103 재현)');
   assert.match(r3.사유, /3차/,
     '통과시키면서 그 사이 바뀐 것을 안 보여줬다 — 그건 보호가 아니라 그냥 조용한 통과다');
+});
+
+/** 세션이 하나 열리거나 닫히면 도는 **그 청소**를 실물로 부른다(`take()` · session-end-handoff 40행).
+ *  `store8` 은 진짜 상태 폴더에 묶여 있으므로(STATE_DIR 은 로드 때 굳는다) 픽스처 폴더로 묶은 사본을
+ *  새로 들인다 — 청소를 여기서 흉내 내면 그 흉내가 실물과 갈라지는 순간 검사가 눈이 먼다. */
+function 청소(state) {
+  const 경로 = require.resolve(path.join(ROOT, '.claude', 'hooks', 'lib', 'handoff-store.js'));
+  const 전 = process.env.SYNK_CTXBUDGET_DIR;
+  process.env.SYNK_CTXBUDGET_DIR = state;
+  delete require.cache[경로];
+  try {
+    return require(경로).sweep();
+  } finally {
+    if (전 === undefined) delete process.env.SYNK_CTXBUDGET_DIR;
+    else process.env.SYNK_CTXBUDGET_DIR = 전;
+    delete require.cache[경로];   // 실물 폴더에 묶인 사본이 캐시에 남지 않게
+  }
+}
+
+test('🔴 ⑧ 처방(「같은 명령을 그대로 다시 실행한다」)이 옆 세션 하나로 무효가 된다 (F266)', () => {
+  /* 신고 원문: 같은 명령으로 2회 커밋을 시도했는데 둘 다 「지금 이 명령이 실어 갈 내용」(=첫 창)이 떴다.
+   * 원인은 회차 로직이 아니라 **기억이 사라지는 것**이었다 — 이 기억엔 `at` 이 없었고, `sweep()` 은
+   * `at` 없는 파일을 나이와 무관하게 지운다. 그 sweep 은 세션이 열리거나 닫힐 때마다 돌고 이 저장소는
+   * 늘 세션 여럿이 굴러간다. 그래서 deny 문이 시키는 그 명령이 **영영 안 통하고** 남는 문은 BYPASS 뿐이다
+   * (F103 → F141 → F229 → F264 에 이은 4번째 · 「차단 사유가 시키는 명령을 그 가드에 되먹여 본다」).
+   * 조건은 하나만 바꾼다 — 그 사이에 청소가 도느냐. */
+  const 재실행이통하나 = (사이에청소) => {
+    const f = 픽스처8();
+    fs.writeFileSync(path.join(f.repo, '보드.md'), '| 남이 쓴 줄 |\n');
+    만진기록(f.state, f.repo, 'local_peer', ['보드.md']);
+    const 명령 = 'git commit -m "x" -- 보드.md';
+    assert.equal(가드8(f, 명령).차단, true, '첫 창은 펼치고 막아야 한다');
+    if (사이에청소) {
+      assert.equal(청소(f.state), 0,
+        '청소가 픽스처를 지웠다 — 그러면 이 검사는 「남이 안 보여서」 초록이 된다(엉뚱한 이유)');
+    }
+    return 가드8(f, 명령).차단 === false;
+  };
+  assert.equal(재실행이통하나(false), true,
+    '기준선이 깨졌다 — 내용이 그대로면 재실행은 통과해야 한다(처방 자체가 거짓말이 된다)');
+  assert.equal(재실행이통하나(true), true,
+    '세션 하나가 열렸다 닫히는 것만으로 ⑧의 기억이 증발한다 — 처방이 실행 불가능해지고 BYPASS 가 정상 통로가 된다');
 });
 
 test('⑧ 두 번째 창은 **바뀐 것만** 싣는다 (같은 diff 를 다시 훑게 하지 않는다)', () => {
