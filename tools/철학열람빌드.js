@@ -4,6 +4,7 @@
 // ⚠열람 편의용이다 — 대외 발행 조판(킷 정식·몽골어 검수)은 확정 후 별도 게이트를 거친다.
 const fs = require('fs');
 const path = require('path');
+const { 칸나누기 } = require('./lib/표.js');   // 표를 칸으로 가르는 **단 하나의 통로**(날 split 금지)
 
 const ROOT = path.join(__dirname, '..');
 
@@ -76,7 +77,10 @@ function mdToHtml(md){
     if (h) { flush(); const n = h[1].length; out.push(`<h${n}>${inline(h[2])}</h${n}>`); i++; continue; }
     if (/^>\s?/.test(L)) { flush(); const q = []; while (i < lines.length && /^>\s?/.test(lines[i])) { q.push(inline(lines[i].replace(/^>\s?/,''))); i++; } out.push('<blockquote>'+q.join('<br>')+'</blockquote>'); continue; }
     if (/^\|/.test(L)) { flush(); const rows = []; while (i < lines.length && /^\|/.test(lines[i])) { rows.push(lines[i]); i++; }
-      const cells = r => r.replace(/^\||\|$/g,'').split('|').map(c=>inline(c.trim()));
+      /* 🔴 날 split 으로 가르지 않는다 — 이 저장소의 표는 백틱 인용이 빽빽해서(`local_xxx`·`git commit -a`)
+       *   백틱 **안**의 파이프를 칸막이로 세면 그 뒤 칸이 통째로 밀린다. 밀려도 오류는 안 나고
+       *   모양은 정상이라, 새는 방향은 언제나 「통과」다(tools/lib/표.js 머리말 · 실측 4곳). */
+      const cells = r => 칸나누기(r).map(c=>inline(c));
       let html = '<table>'; rows.forEach((r, ri) => { if (/^\|[\s:-]+\|/.test(r) && /^[\s|:-]+$/.test(r)) return;
         const tag = ri === 0 ? 'th' : 'td'; html += '<tr>'+cells(r).map(c=>`<${tag}>${c}</${tag}>`).join('')+'</tr>'; });
       out.push(html+'</table>'); continue; }
