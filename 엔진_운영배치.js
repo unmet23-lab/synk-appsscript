@@ -1520,7 +1520,9 @@ function todayBoard_(ss) {
         (stageTxt ? '<div style="font-size:14px;opacity:.9;padding-top:4px;">🎪 ' + stageTxt + '</div>' : '') +
         '<div style="background:rgba(255,255,255,.12);border-radius:14px;padding:10px 14px;margin-top:12px;font-size:17px;font-weight:700;">🕐 ' + nextTxt + ' · 오늘 등원 ' + Object.keys(arr).length + '명</div>' +
         raidB + lgB +
-        '<div style="font-size:12px;opacity:.6;padding-top:12px;">SYNK LAB · 점수를 넘어, 삶을 설계합니다</div></div>';
+        // [v9.200] 교실 스크린 = 대외 집행면 — 구 슬로건 은퇴(철학_리라이팅_장부 §1). 「17」은 부연 없이 내보내지 않는다(문서_지도 §113 조건).
+        '<div style="font-size:12px;opacity:.6;padding-top:12px;">SYNK LAB · 정원은 16명, 선생님은 17명입니다</div>' +
+        '<div style="font-size:11px;opacity:.45;padding-top:2px;">한 명 한 명에게 나만의 선생님, 교실엔 진짜 선생님</div></div>';
       setAppState_(ss, '교실스크린HTML', scrHtml);
     }
   } catch (eScr) { Logger.log('교실스크린 생략: ' + eScr.message); } // 스크린 실패가 출결 보드를 깨지 않게
