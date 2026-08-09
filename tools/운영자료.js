@@ -17,6 +17,12 @@
  *   node tools/운영자료.js <파일...>                 파일을 폴더에 넣는다(repo 안=바로가기 · 밖=복사)
  *   node tools/운영자료.js <파일> --이름 "표시 이름"  번호 뒤에 붙일 이름을 직접 준다
  *   node tools/운영자료.js --목록                     지금 폴더에 뭐가 있는지 본다
+ *   node tools/운영자료.js --갱신                     이미 들어간 **사본**을 정본 내용으로 다시 굽는다
+ *
+ * ②의 뒷문 — `--사본`으로 들어간 것은 바로가기가 아니라서 정본을 고쳐도 안 따라간다.
+ * 2026-08-09 에 실제로 벌어졌다(정본의 주말가를 고쳤는데 유호님 화면은 옛값 그대로).
+ * `--갱신`이 그 자리를 기계로 닫는다. 짝은 **번호를 뗀 파일명으로만** 찾고,
+ * 후보가 0개거나 2개 이상이면 **덮지 않고 「출처 모름」으로 보고한다** — 짐작해서 덮는 것은 비가역이다.
  */
 'use strict';
 const fs = require('node:fs');
@@ -132,7 +138,61 @@ function 바로가기만들기(링크경로, 대상) {
   );
 }
 
+/** 사본 이름(`01_운영_한눈에.html`)의 정본을 후보 중에서 고른다.
+ *  **정확히 1개일 때만** 고른다 — 0개·2개 이상이면 null 이고, 부르는 쪽은 덮지 않는다. */
+function 짝찾기(사본이름, 후보절대경로들) {
+  const base = 사본이름.replace(/^\d{2}_/, '').toLowerCase();
+  const 맞는것 = 후보절대경로들.filter((p) => path.basename(p).toLowerCase() === base);
+  return 맞는것.length === 1 ? 맞는것[0] : null;
+}
+
+/** 사본의 정본이 될 수 있는 파일들. `_archive`(구판)·`_ops`(운영 장부)는 후보가 아니다. */
+function 정본후보(루트 = path.join(ROOT, 'docs')) {
+  const 결과 = [];
+  const 건너뛸 = new Set(['_archive', '_ops', 'node_modules', '.git']);
+  const 걷기 = (d) => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      if (건너뛸.has(e.name)) continue;
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) 걷기(p);
+      else 결과.push(p);
+    }
+  };
+  if (fs.existsSync(루트)) 걷기(루트);
+  return 결과;
+}
+
 /* ── 본체 ─────────────────────────────────────────────────────── */
+
+/** 이미 들어간 사본을 정본 내용으로 다시 굽는다. 바로가기는 원래 항상 최신이라 건드리지 않는다. */
+function 갱신(폴더) {
+  const 사본들 = 목록읽기(폴더).filter((it) => !it.이름.toLowerCase().endsWith('.lnk'));
+  if (!사본들.length) {
+    console.log(`■ ${폴더}\n  사본 0건 — 전부 바로가기라 갱신할 것이 없다`);
+    return 0;
+  }
+  const 후보 = 정본후보();
+  let 갱신함= 0, 이미최신= 0, 모름 = 0;
+  for (const it of 사본들) {
+    const 정본 = 짝찾기(it.이름, 후보);
+    if (!정본) {
+      console.log(`· 출처 모름 — 안 건드린다: ${it.이름}`);
+      모름 += 1;
+      continue;
+    }
+    const 놓을곳 = path.join(폴더, it.이름);
+    if (fs.readFileSync(정본).equals(fs.readFileSync(놓을곳))) {
+      console.log(`· 이미 최신: ${it.이름}`);
+      이미최신 += 1;
+      continue;
+    }
+    fs.copyFileSync(정본, 놓을곳);
+    console.log(`✅ 갱신  ${it.이름}\n         ← ${path.relative(ROOT, 정본)}`);
+    갱신함 += 1;
+  }
+  console.log(`\n■ ${폴더}\n  사본 ${사본들.length}건 — 갱신 ${갱신함} · 이미 최신 ${이미최신} · 출처 모름 ${모름}`);
+  return 0;
+}
 
 function main(argv) {
   const 인자 = argv.slice(2);
@@ -142,6 +202,8 @@ function main(argv) {
     console.error('⚠ 바탕화면 실경로 확장에 실패해 폴백을 썼다 — 여기가 유호님 화면이 맞는지 눈으로 확인할 것');
     console.error(`  폴백 경로: ${폴더}`);
   }
+
+  if (인자.includes('--갱신')) return 갱신(폴더);
 
   if (인자.includes('--목록') || 인자.length === 0) {
     const 항목 = 목록읽기(폴더);
@@ -203,6 +265,6 @@ function main(argv) {
   return 0;
 }
 
-module.exports = { 다음번호, 바로가기냐, 안전한이름, 이미있나, 폴더명 };
+module.exports = { 다음번호, 바로가기냐, 안전한이름, 이미있나, 짝찾기, 정본후보, 폴더명 };
 
 if (require.main === module) process.exit(main(process.argv));
