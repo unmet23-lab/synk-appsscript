@@ -77,7 +77,7 @@ function 두뇌_AI_anthropic_(req) {
   const key = 두뇌_AI키_();
   if (!key) throw new Error('CLAUDE_API_KEY 없음');
   const body = {
-    model: (typeof AI_FEEDBACK_MODEL === 'undefined' ? 'claude-sonnet-5' : AI_FEEDBACK_MODEL),
+    model: (typeof AI_FEEDBACK_MODEL === 'undefined' ? 'claude-opus-5' : AI_FEEDBACK_MODEL), // 폴백도 Code.js 정본과 같은 값이어야 한다 — 갈라지면 조용히 옛 모델로 돈다
     max_tokens: req.maxTokens || 2048,
     messages: req.messages
   };
