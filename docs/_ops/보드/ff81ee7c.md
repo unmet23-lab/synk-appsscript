@@ -1,0 +1,1 @@
+| 2026-08-09 | **F277 — 주인 없는 적색 1건이 talk 배포 게이트를 막는다**(`tests/검수큐.test.js` 가 `deliver` 를 「직원 통로」로 오분류 · 원 주인 `0482f24b` 는 죽었다) | **SYNK-talk: tests/검수큐.test.js**(🚫뷰·정책·deliver 본체 편집 0 · appsscript=이 보드 줄 + 장부 F277) | 🔵착수 (`local_ff81ee7c`) — 실측: 지목된 6열 중 5가 **insert·주석·TS타입**이고 select 는 1(배달 경로 · 원장 미도달) |
