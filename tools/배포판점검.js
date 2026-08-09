@@ -104,6 +104,34 @@ function 배포목록(projRoot) {
   return out.split(/\r?\n/).map(parseDeploymentLine).filter(Boolean);
 }
 
+/* 라이브 내용이 이 저장소의 **어느 판**인가 — 바이트가 다르다는 것만으로는 ①저장소가 앞선다
+ * ②라이브에 편집기 손편집이 있다 를 못 가른다. 둘은 대조에서 같은 모양인데 처방은 정반대다
+ * (앞은 「밀어라」, 뒤는 밀면 그 편집이 **사라진다**). 그래서 라이브 판을 이력에서 되찾는다.
+ * ⚠ **git 이력에 기대는 검사다** — 얕은 클론(CI)에선 못 찾는다. 그래서 못 찾음은 「라이브 전용」이
+ *   아니라 **모름**으로 낸다: 모름을 단정으로 접으면 거짓양성이 쏟아지고 그런 가드는 곧 꺼진다.
+ * 🔑 창은 **경로로 거른 이력**이다 — 전체 이력에서 N 개를 보면 문서 커밋이 창을 다 먹어,
+ *   실제로는 뒤처짐일 뿐인데 「모름」이 나온다(이 함수를 손으로 짜 본 첫 판이 정확히 그랬다). */
+function 라이브판찾기(rel, 라이브내용, root = ROOT, 창 = 40) {
+  const n = (s) => s.replace(/\r\n/g, '\n');
+  const 라이브 = n(라이브내용);
+  let 줄들;
+  try {
+    줄들 = execFileSync('git', ['log', `-${창}`, '--format=%H %s', '--', rel], {
+      cwd: root, encoding: 'utf8', maxBuffer: 8 << 20,
+    }).trim().split(/\r?\n/).filter(Boolean);
+  } catch (_) { return { 종류: '모름', 사유: 'git 이력을 못 읽었다' }; }
+
+  for (const l of 줄들) {
+    const sha = l.slice(0, 40);
+    let 옛;
+    try {
+      옛 = execFileSync('git', ['show', `${sha}:${rel}`], { cwd: root, maxBuffer: 64 << 20 }).toString('utf8');
+    } catch (_) { continue; }               // 그 판엔 그 경로가 없었다 — 다음 판으로
+    if (n(옛) === 라이브) return { 종류: '뒤처짐', sha: sha.slice(0, 8), 제목: l.slice(41) };
+  }
+  return { 종류: '모름', 사유: `이 경로의 최근 ${창}판 중 같은 것이 없다` };
+}
+
 /* 라이브를 임시 디렉터리로 받아 배포집합과 **바이트로** 대조한다(네트워크).
  * 지문 대조가 안 서는 @HEAD 프로젝트용 — 심어 둔 표식이 없어도 내용을 직접 보면 답이 나온다.
  * ⚠ `cwd` 는 반드시 작업본 **밖**이다. 작업본에 pull 하면 옆 세션의 커밋이 라이브 판으로
@@ -137,7 +165,10 @@ function 라이브대조(projRoot, root = ROOT, { timeout = 120000 } = {}) {
     const 저장소없음 = fs.readdirSync(tmp, { recursive: true })
       .map((p) => String(p).replace(/\\/g, '/'))
       .filter((p) => p !== '.clasp.json' && !집합.includes(p) && !fs.existsSync(path.join(root, p)));
-    return { 다름, 라이브없음, 저장소없음, 총: 집합.length };
+    /* 내용이 다른 것만 방향을 잰다 — 라이브없음·저장소없음 은 존재 자체가 이미 방향이다. */
+    const 방향 = {};
+    for (const rel of 다름) 방향[rel] = 라이브판찾기(rel, fs.readFileSync(path.join(tmp, rel), 'utf8'), root);
+    return { 다름, 라이브없음, 저장소없음, 방향, 총: 집합.length };
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -164,17 +195,40 @@ function 판정({ 이름, 경로, fp, deployments, 대조 }) {
     if (!다름.length && !라이브없음.length && !저장소없음.length) {
       return { level: 'ok', 이름, 측정: true, lines: [`${이름}: 라이브 = 저장소 (@HEAD · 배포집합 ${총}개 바이트 동일)`] };
     }
-    const lines = [`🔴 ${이름} 라이브가 저장소와 다르다 (@HEAD · 배포집합 ${총}개) — **push 가 빠졌다**`];
+    /* 🔑 「다르다」는 방향이 아니다 — 저장소가 앞선 것과 라이브에 손편집이 있는 것이 같은 모양이다.
+     *   방향을 못 재고 「push 가 빠졌다」로 단정하면, 처방(=밀어라)이 남의 편집을 지우라는 말이 된다.
+     *   그래서 셋으로 나눠 적는다: 실측 뒤처짐 · 방향 미측정(옛 호출자) · 못 가름. */
+    const 방향 = 대조.방향 || null;
+    const 못가름 = 방향 ? 다름.filter((r) => 방향[r] && 방향[r].종류 !== '뒤처짐') : [];
+    const 꼬리 = !다름.length ? ''
+      : !방향 ? ' — **push 가 빠졌다**(방향 미측정)'
+        : 못가름.length ? ' — 🔴 **방향을 못 갈랐다**'
+          : ' — **push 가 빠졌다**(방향 실측 · 라이브에만 있는 편집 0)';
+    const lines = [`🔴 ${이름} 라이브가 저장소와 다르다 (@HEAD · 배포집합 ${총}개)${꼬리}`];
     const 보고 = (제목, 목록) => { for (const r of 목록) lines.push(`   ${제목} ${r}`); };
-    보고('내용 다름:', 다름);
+    for (const r of 다름) {
+      const d = 방향 && 방향[r];
+      lines.push(`   내용 다름: ${r}`
+        + (!d ? ''
+          : d.종류 === '뒤처짐' ? `  ← 라이브 = ${d.sha} ${d.제목}`
+            : `  ← 🔴 라이브 판을 못 찾았다(${d.사유})`));
+    }
     보고('라이브에 없음(push 된 적 없다):', 라이브없음);
     보고('라이브에만 있음(지웠는데 계속 돈다):', 저장소없음);
+    /* 못 가른 파일이 있으면 처방을 **밀기 전 확인**으로 한 칸 앞당긴다 — 그냥 /deploy 를 주면
+     * 이 경고는 읽히지 않고 넘어간다(경고가 처방과 어긋나면 사람은 처방만 따른다). */
+    if (못가름.length) {
+      lines.push('   ⚠ 밀기 전에 확인한다 — 위 🔴 파일의 라이브 내용이 이 저장소 이력 어디에도 없다.');
+      lines.push('     ①이력이 얕거나(CI·얕은 클론) ②라이브에 편집기 손편집이 있다 — ②면 미는 순간 그것이 사라진다.');
+      lines.push('     편집기에서 그 파일을 열어 눈으로 본 뒤에 민다(작업본으로 되받는 길은 clasp-guard 가 막는다 · F040).');
+    }
     /* 처방 줄에 금지된 명령을 **글자로도** 안 적는다 — 설명이어도 눈은 명령으로 읽고 복사한다
      * (회귀가 이 줄을 잡았다: 처음엔 "손 clasp push 는 …가 막는다"라고 적어 뒀었다). */
     lines.push(`   → cd ${경로 || '.'} && /deploy   (손으로 미는 통로는 clasp-guard 가 막는다)`);
     /* 파일 목록을 **구조로도** 낸다 — 호출부가 「push 가 빠졌다」와 「지금 누가 고치는 중이다」를
-     * 가르려면 이 목록이 필요한데, 문장에서 되뽑으면 문구가 바뀌는 날 조용히 안 갈린다. */
-    return { level: 'stale', 이름, 측정: true, lines, 파일들: [...다름, ...라이브없음, ...저장소없음] };
+     * 가르려면 이 목록이 필요한데, 문장에서 되뽑으면 문구가 바뀌는 날 조용히 안 갈린다.
+     * `못가름` 도 같은 이유로 구조다 — 문장에서 🔴 를 세는 호출부는 문구가 바뀌는 날 조용해진다. */
+    return { level: 'stale', 이름, 측정: true, lines, 못가름, 파일들: [...다름, ...라이브없음, ...저장소없음] };
   }
 
   const 낡음 = [], 모름 = [], 최신 = [];
@@ -314,7 +368,7 @@ function 안나간변경(root = ROOT, 프로젝트들목록 = null) {
   return { 배포커밋: sha.slice(0, 7), 제목, 커밋수: Number(센것[0]) || 0, 프로젝트들 };
 }
 
-module.exports = { 배포집합, 지문, 배포목록, 라이브대조, 못읽음, 판정, 점검, 지문표기, FP_RE, claspProjects, 안나간변경 };
+module.exports = { 배포집합, 지문, 배포목록, 라이브대조, 라이브판찾기, 못읽음, 판정, 점검, 지문표기, FP_RE, claspProjects, 안나간변경 };
 
 if (require.main === module) {
   const 라이브 = process.argv.includes('--라이브');
