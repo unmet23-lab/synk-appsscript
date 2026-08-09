@@ -993,3 +993,47 @@ test('🔴 [F291·섞임] 내 옛 줄과 **남의 줄이 같이** 겹치면 어�
   assert.strictEqual((r.사유.match(표시) || []).length, 1,
     `🔴 내 옛 줄에만 붙어야 할 표시가 ${(r.사유.match(표시) || []).length}개다 — 0이면 가릴 수 없고, 2면 남의 줄까지 내 것으로 읽힌다:\n${r.사유.slice(0, 300)}`);
 });
+
+/* ── ⑦ 옛 글자 — 쓰는 순간 (F298 · 2026-08-09) ─────────────────────────────
+ * 실사고: 보드 상태 칸이 좁아 낱말 대신 한자 한 자를 썼고, 그게 커밋돼 저장소가 적색이 됐다.
+ * Actions 결제 정지로 원격 CI 가 죽어 있는 동안 clasp-guard 는 지름길 없이 작업본 전체를 도니
+ * 그 한 글자가 **모든 세션의 clasp push** 를 막았다. 있던 두 층은 이 자리를 못 막는다 —
+ * 채팅 가드는 발화만 보고, 문서문자 테스트는 **커밋 뒤**에 잡는다.
+ * 더 고약한 축: 그 위반을 **신고하면서 글자를 그대로 인용해** 같은 적색이 한 벌 더 났다. */
+const 옛한자 = String.fromCodePoint(0x5C3A);
+const 새보드 = (이름) => {
+  const p = 보드파일(fs.mkdtempSync(path.join(os.tmpdir(), 'boardglyph-')), 이름);
+  fs.writeFileSync(p, '', 'utf8');
+  return p;
+};
+
+test('🔴 [F298] 옛 글자가 든 보드 편집은 쓰는 순간 막는다', () => {
+  const r = 판정({ tool_name: 'Write', tool_input: { file_path: 새보드('bbbb2222'),
+    content: `| 2026-08-09 | 트랙 | tools/x.js \`local_deadbeef\` | 내 ${옛한자}대가 틀렸다 |\n` } });
+  assert.strictEqual(r.결정, 'deny', '옛 글자가 든 보드 줄을 통과시켰다 — 커밋되면 전원의 배포가 막힌다');
+  assert.match(r.사유, /U\+5C3A/, '어느 글자인지 U+ 표기로 안 짚으면 고칠 자리를 못 찾는다');
+});
+
+test('🔴 [F298] 차단 사유문 자체가 그 글자를 담지 않는다 — 신고가 새 위반이 되는 자리', () => {
+  const r = 판정({ tool_name: 'Write', tool_input: { file_path: 새보드('cccc3333'),
+    content: `| 2026-08-09 | 트랙 | tools/x.js \`local_deadbeef\` | ${옛한자} |\n` } });
+  assert.ok(!r.사유.includes(옛한자) && !r.알림.includes(옛한자),
+    '가드가 낸 글에 그 글자가 들어 있다 — 그걸 복사해 신고하면 같은 적색이 번진다(실측 2벌)');
+});
+
+test('[F103] U+ 표기로 고쳐 쓴 줄은 통과한다 — 처방을 따를 수 있어야 가드다', () => {
+  const r = 판정({ tool_name: 'Write', tool_input: { file_path: 새보드('dddd4444'),
+    content: '| 2026-08-09 | 트랙 | tools/x.js `local_deadbeef` | 내 잣대가 틀렸다(U+5C3A 제거) |\n' } });
+  assert.notStrictEqual(r.결정, 'deny', `가드가 시킨 표기까지 막았다: ${r.사유.slice(0, 200)}`);
+});
+
+test('[F298·범위] 남이 이미 넣어 둔 글자는 내 무관한 편집을 막지 않는다', () => {
+  /* 결과 파일 전체를 재면 남의 옛 글자가 내 편집을 영원히 막는다 — 내 파일에만 쓰는 규약상
+   * 나는 그 줄을 고칠 수도 없으니, 그건 따를 수 없는 처방이다. 재는 것은 내가 새로 넣는 글뿐이다. */
+  const p = 새보드('eeee5555');
+  fs.writeFileSync(p, `| 2026-08-09 | 옛 트랙 | a.js \`local_deadbeef\` | ${옛한자} 남아있음 |\n`, 'utf8');
+  const r = 판정({ tool_name: 'Edit', tool_input: { file_path: p,
+    old_string: '옛 트랙', new_string: '새 트랙' } });
+  assert.notStrictEqual(r.결정, 'deny',
+    `남의 글자 때문에 내 무관한 편집이 막혔다 — 새는 방향이 아니라 **얼어붙는** 방향이다: ${r.사유.slice(0, 200)}`);
+});
