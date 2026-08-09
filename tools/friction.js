@@ -10,6 +10,7 @@
 //   node tools/friction.js add 실수 "설명"           신호 추가(오늘 날짜, ID 자동)
 //   node tools/friction.js add 교정 "설명" --date 2026-08-01
 //   node tools/friction.js add 실수 "설명" --해소 "무엇이 막았나"   이미 고치고 신고할 때(F107)
+//   node tools/friction.js add 마찰 --파일 경로.txt   신고문을 파일로(백틱·따옴표가 든 긴 글 · F296)
 //   node tools/friction.js resolve F006 "무엇이 막았나"
 //   node tools/friction.js --open                   살아있는 신호만
 'use strict';
@@ -508,18 +509,46 @@ function main() {
     /* `--date` 는 토큰 1개, `--해소` 는 다음 플래그 전까지 전부 — 신고문과 같은 규칙이라
      * 따옴표를 빠뜨려도 말이 잘리지 않는다(셸이 둘인 저장소다 · CLAUDE.md 실행). */
     const 남은 = args.slice(1);
-    let date = null; let 해소 = null; const 본문 = [];
+    let date = null; let 해소 = null; let 파일 = null; const 본문 = [];
     for (let i = 0; i < 남은.length; i++) {
       if (남은[i] === '--date') { date = 남은[++i] || null; continue; }
+      if (남은[i] === '--파일') { 파일 = 남은[++i] || null; continue; }
       if (남은[i] === '--해소') {
         const 조각 = [];
         while (i + 1 < 남은.length && !/^--/.test(남은[i + 1])) 조각.push(남은[++i]);
         해소 = 조각.join(' ');
         continue;
       }
+      /* 🔴 모르는 플래그를 **신고문으로 접지 않는다** (F296 · 2026-08-09 실측).
+       *   여기 없던 `--파일` 을 줬더니 그 토큰과 경로가 **그대로 장부 본문**이 되어 커밋까지 갔다.
+       *   증상이 없다 — 도구는 성공을 찍고 행은 태어나며, 쓰레기가 들어간 줄은 사람만 안다.
+       *   새는 방향은 언제나 「통과」다. 모르면 막는다. */
+      if (/^--/.test(남은[i])) {
+        console.error(`[friction] 모르는 옵션이다: ${남은[i]}\n`
+          + '  쓸 수 있는 것: --date · --해소 · --파일\n'
+          + '  (막지 않으면 이 토큰이 신고문으로 접혀 장부에 그대로 실린다 — 그게 F296 이다)');
+        process.exit(1);
+      }
       본문.push(남은[i]);
     }
-    add(본문[0], 본문.slice(1).join(' '), date, 해소);
+    let 신고 = 본문.slice(1).join(' ');
+    /* 🔑 **긴 신고문은 파일로 준다** — 지침이 「여러 줄이거나 코드·정규식을 인용하는 문자열은
+     *   셸에 맡기지 말고 파일로 준다」고 정했는데 이 도구엔 그 통로가 **없었다.** 백틱이 든
+     *   신고문은 POSIX 셸에서 명령 치환으로 실행되고 따옴표는 말을 자른다. 따를 수 없는
+     *   처방은 우회를 정상 통로로 만든다(F103) — 실제로 그 우회가 F296 을 낳았다.
+     *   줄바꿈·`|` 는 아래 `칸안전` 이 이미 받아 주므로 여기서 따로 손대지 않는다. */
+    if (파일) {
+      if (신고.trim()) {
+        console.error('[friction] 신고문을 인자와 --파일 둘 다로 줬다 — 어느 쪽이 정본인지 갈린다. 하나만 준다.');
+        process.exit(1);
+      }
+      try { 신고 = fs.readFileSync(파일, 'utf8'); }
+      catch (e) {
+        console.error(`[friction] --파일 을 못 읽었다: ${파일}\n  ${String(e && e.message)}`);
+        process.exit(1);
+      }
+    }
+    add(본문[0], 신고, date, 해소);
   } else if (cmd === 'resolve') {
     resolve(args[1], args.slice(2).join(' '));
   } else {

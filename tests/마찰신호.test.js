@@ -765,3 +765,44 @@ test('다음 번호는 다른 ref 의 조각 폴더가 쓴 번호도 넘어선�
   const out = runIn(repos.B, ['add', '실수', 'B 의 신호']);   // B 는 fetch 로 origin/master 의 조각을 본다
   assert.match(out, /F078/, 'origin 의 조각 번호를 못 봤다 — 채번이 아카이브(F250에서 멈춘 판)만 훑고 있다: ' + out.trim());
 });
+
+/* ── 🔴 F296 — 신고문을 **셸에 맡길 수 없는데** 파일 통로가 없었다 (2026-08-09 실측) ────────
+ * 지침은 「여러 줄이거나 코드·정규식을 인용하는 문자열은 셸에 맡기지 말고 파일로 준다」인데
+ * 이 도구엔 그 통로가 없었다. 그래서 `--파일` 을 넘겨 봤고, 파서는 **모르는 토큰을 신고문으로
+ * 접어** 옵션 이름과 경로를 그대로 장부에 실은 뒤 커밋까지 했다. 증상이 없다 — 도구는 성공을
+ * 찍고 행은 태어난다. 두 구멍이 한 사건이다: ①따를 수 없는 처방(F103) ②모르면 통과. */
+test('🔴 [F296] 모르는 옵션은 **신고문으로 접히지 않는다** — 막고 말한다', () => {
+  const ledger = mkLedger();
+  const r = run(ledger, ['add', '마찰', '--없는옵션', '값', '진짜 신고문'], true);
+  assert.ok(r.failed, '🔴 모르는 옵션을 삼켰다 — 그 토큰이 그대로 장부 본문이 된다(F296 그 사고)');
+  assert.match(r.stderr, /--없는옵션/, '무엇이 모르는 옵션인지 안 말하면 고칠 자리를 못 찾는다');
+  assert.strictEqual(rowsOf(ledger).length, 2, '🔴 막았다면서 행은 태어났다 — 쓰레기 행이 남는다');
+});
+
+test('🔴 [F296] `--파일` 로 준 신고문이 그대로 행이 된다 (백틱·따옴표가 들어도)', () => {
+  const ledger = mkLedger();
+  const 본문 = '훅이 `assert.match(사유, /첫 선언 1줄/)` 에서 깨진다 — "따옴표"와 백틱이 든 글이다';
+  const p = path.join(path.dirname(ledger), '신고문.txt');
+  fs.writeFileSync(p, `${본문}\n`, 'utf8');
+  run(ledger, ['add', '마찰', '--파일', p]);
+  const 새행 = rowsOf(ledger).at(-1);
+  assert.match(새행, /assert\.match/, `🔴 파일 내용이 행에 안 실렸다:\n${새행}`);
+  assert.match(새행, /따옴표/, '따옴표가 든 조각이 잘렸다 — 셸을 피하려고 만든 통로가 같은 손실을 낸다');
+  assert.ok(!/--파일/.test(새행), '🔴 옵션 이름이 본문에 남았다 — F296 그대로다');
+});
+
+test('🔴 [F296] 인자와 `--파일` 을 **둘 다** 주면 막는다 — 어느 쪽이 정본인지 갈린다', () => {
+  const ledger = mkLedger();
+  const p = path.join(path.dirname(ledger), '신고문2.txt');
+  fs.writeFileSync(p, '파일 쪽 본문\n', 'utf8');
+  const r = run(ledger, ['add', '마찰', '인자 쪽 본문', '--파일', p], true);
+  assert.ok(r.failed, '🔴 둘 다 받고 하나를 조용히 버렸다 — 버린 쪽은 아무도 못 본다');
+  assert.strictEqual(rowsOf(ledger).length, 2, '막았다면서 행은 태어났다');
+});
+
+test('🔴 [F296] `--파일` 을 못 읽으면 **빈 행을 만들지 않는다**', () => {
+  const ledger = mkLedger();
+  const r = run(ledger, ['add', '마찰', '--파일', path.join(path.dirname(ledger), '없는파일.txt')], true);
+  assert.ok(r.failed, '🔴 못 읽었는데 계속 갔다 — 빈 신고문 행이 장부에 남는다');
+  assert.strictEqual(rowsOf(ledger).length, 2, '못 읽었는데 행이 태어났다');
+});
