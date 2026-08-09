@@ -1842,12 +1842,19 @@ const mkTeacher = (id, name, classes, email) => {
   r[0] = id; r[1] = name; r[3] = 'teacher'; r[4] = classes; r[6] = email;
   return r;
 };
-const mkSheet_ = (g) => ({
+/* [vNEXT] `maxCols` — 좁은 시트를 모사하는 자리. 안 주면 30(넉넉)이라 기존 호출부는 그대로다.
+ *   🔑 폭 초과 읽기에 **예외를 던진다** — 실제 GAS 가 그렇고(구 11열 시트에서 12열을 요구해 배치가
+ *   즉사한 실사고가 있다), 스텁이 조용히 빈칸으로 채우면 「좁은 시트에서 안 죽는다」 검사가 **공허**해진다.
+ *   실측: 이 관대함 때문에 폭 클램프를 지우는 변이가 통과했다(회귀가 아무것도 안 지키고 있었다). */
+const mkSheet_ = (g, maxCols) => ({
   g,
-  getMaxColumns: () => 30,
+  getMaxColumns: () => maxCols || 30,
   insertColumnsAfter: () => {},
   getLastRow: () => g.length,
-  getRange: (row, col, nR, nC) => ({
+  getLastColumn: () => g.reduce((m, r) => Math.max(m, (r || []).length), 0),
+  getRange: (row, col, nR, nC) => (col + (nC || 1) - 1 > (maxCols || 30)
+    ? (() => { throw new Error('Exception: 범위의 열 수가 시트 폭을 넘었다 (GAS getRange 모사)'); })()
+    : {
     getValues: () => {
       const out = [];
       for (let i = 0; i < (nR || 1); i++) {
@@ -1890,7 +1897,13 @@ function runTeacherStats_({ profileRows, logs = [], oldStats = [], hwRows = null
   const pfSheet = mkSheet_([new Array(STU_COLS).fill('헤더')].concat(profileRows));
   const tsSheet = mkSheet_([['강사', '담당학생수', '1인당출석', '1인당포인트', '1인당칭찬', '케어지수', '지난달왕관', '왕관편중%']].concat(oldStats));
   const extra = {
-    hw_feedback: hwRows && mkSheet_([['id', 'student_id', '제출일']].concat(hwRows)),
+    /* 헤더 폭은 **주어진 행에서 유도하고, 그 폭이 곧 시트 폭이다**(maxCols) — 3열로 고정하면
+     * `숙제ID`(12번째) 를 보는 검사를 못 짜고, 폭을 넉넉히 주면 「구 시트에서 넓게 읽어 죽는다」가
+     * 재현되지 않는다. 좁은 픽스처는 **좁은 시트 그대로** 남아 폭 클램프를 계속 지킨다. */
+    hw_feedback: hwRows && (() => {
+      const w = hwRows.reduce((m, r) => Math.max(m, r.length), 3);
+      return mkSheet_([['id', 'student_id', '제출일'].concat(new Array(w - 3).fill('h'))].concat(hwRows), w);
+    })(),
     teacher_checkins: checkins && mkSheet_([['이름', '구분', '시각']].concat(checkins))
   };
   const ss = {
@@ -1936,6 +1949,10 @@ function runTeacherStats_({ profileRows, logs = [], oldStats = [], hwRows = null
       absenceReturnStats_: () => ({}),
       absenceReturnScore_: loadFunction('function absenceReturnState_', 'function checkNoShow()', 'absenceReturnScore_', {}),
       dstr: (v) => String(v == null ? '' : v).slice(0, 10),
+      /* [vNEXT] 강의 요약 걷어내기가 읽는 둘 — **소스에서 뽑는다.** 손으로 베끼면 정본이 바뀐 날
+       *   하네스만 옛 값을 들고 초록이 되고, 그 초록이 급여 경로를 지킨다고 말하게 된다. */
+      HW_FEEDBACK_HEADERS: JSON.parse(code.match(/const HW_FEEDBACK_HEADERS = (\[[\s\S]*?\]);/)[1].replace(/'/g, '"')),
+      LECTURE_SRC_PREFIX: code.match(/const LECTURE_SRC_PREFIX = '([^']*)'/)[1],
       Logger: { log: () => {} },
       writeIfChanged: (sh, row, col, vals) => { sh.getRange(row, col, vals.length, vals[0].length).setValues(vals); }
     }
@@ -2567,6 +2584,36 @@ test('[vNEXT] 근태 — 근무표를 담당 반 시간표에서 유도한다(�
 /* ── [vNEXT] ①배포 검수(codex/luna·max)가 잡은 급여 경로 3건 — 전부 「못 잰 것이 점수가 된다」 축이다.
  *   내 자기검증(회귀 4 · 변이 9/9)을 통과한 뒤에 나온 지적이라, 같은 벤더끼리는 사각도 같이 움직인다는
  *   증거로 남긴다. 아래 셋은 고친 자리마다 하나씩 못박는다. */
+test('[vNEXT] ☠️ 강의 한줄요약 행이 숙제 제출로 세어지면 안 된다 — 제출률 → 인센티브 → **급여**로 번진다', () => {
+  /* v9.198 이 강의 요약을 같은 `hw_feedback` 에 `숙제ID` = `강의:<id>` 로 적는데, 이 집계는 A:C 만
+   * 읽어 그 접두를 못 봤다. 숙제를 안 낸 날의 요약 한 건이 제출로 세어진다 — ①배포 검수 2회차가
+   * 독립으로 같은 자리를 짚었고, 그때 이 판은 **라이브 직전**이었다. */
+  const 반 = { '정규반1': { type: '평일', time: '09:00', name: '정규반1' } };
+  const 요약행 = (sid, d) => { const r = new Array(12).fill(''); r[0] = 'x'; r[1] = sid; r[2] = d; r[11] = '강의:LEC1'; return r; };
+  const 숙제행 = (sid, d) => { const r = new Array(12).fill(''); r[0] = 'x'; r[1] = sid; r[2] = d; r[11] = 'HW7'; return r; };
+  const 준 = (hwRows) => runTeacherStats_({
+    profileRows: [mkTeacher('T1', '바트', '정규반1', 'bat@synk.im'), mkStu('S1', '정규반1', 10, 100, 2)],
+    sched: 반, hwRows
+  }).byLabel('바트');
+
+  const 어제 = ymd_T(시즌날_T()[0].d);
+  // ① 강의 요약**만** 있는 날 → 그 날은 제출이 아니다. 원천이 0이라 **미측정**으로 떨어져야 한다.
+  const 요약만 = 준([요약행('S1', 어제)]);
+  assert.strictEqual(요약만[15], '', `강의 요약이 숙제 제출률로 세어졌다: ${요약만[15]}`);
+  assert.strictEqual(요약만[16], '', '강의 요약이 숙제 배점을 만들었다 — 급여가 부풀려진다');
+
+  // ② 같은 날 숙제도 있으면 숙제 쪽은 그대로 세어진다 — 걷어내기가 진짜 제출까지 먹으면 반대 방향 사고다
+  const 둘다 = 준([요약행('S1', 어제), 숙제행('S1', 어제)]);
+  assert.notStrictEqual(둘다[15], '', '숙제 행이 있는데 미측정이 됐다 — 걷어내기가 너무 넓다');
+
+  /* ③ 구 시트(3열)에서도 안 죽는다 — 12열을 무조건 요구하면 이 집계가 통째로 멎는다.
+   * 🔑 실패 모양은 **예외가 아니라 조용한 미측정**이다(이 구역이 try 로 감싸여 있다) — 그래서
+   *   doesNotThrow 로 재면 영원히 초록이다. 실제로 그렇게 짰다가 변이가 빠져나갔다. */
+  const 구시트 = 준([['x', 'S1', 어제]]);
+  assert.notStrictEqual(구시트[15], '',
+    '좁은 구 시트(3열)에서 숙제 집계가 통째로 죽었다 — 폭을 물리 열수로 클램프해야 한다');
+});
+
 test('[vNEXT] 🔴 hw_feedback 원천이 비면 미측정이다 — `0 / 80` 은 잰 0점으로 읽혀 관문 ③ 까지 터진다', () => {
   const 반 = { '정규반1': { type: '평일', time: '09:00', name: '정규반1' } };
   const 준 = (hwRows) => runTeacherStats_({
