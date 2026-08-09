@@ -163,7 +163,7 @@ test('사유가 가리키는 파일·도구·스킬이 전부 실존한다', () 
   assert.match(r.reason, /tools\/브랜드렌더린트\.js/, '검사 통로를 안 가리킨다');
   assert.ok(fs.existsSync(path.join(ROOT, 'tools', '브랜드렌더린트.js')), '린트 파일이 없다');
 
-  for (const 스킬 of ['make-interfaces-feel-better', 'emil-design-eng', 'review-animations']) {
+  for (const 스킬 of ['make-interfaces-feel-better', 'emil-design-eng']) {
     assert.match(r.reason, new RegExp(스킬), `스킬을 안 가리킨다: ${스킬}`);
     assert.ok(fs.existsSync(path.join(ROOT, '.claude', 'skills', 스킬, 'SKILL.md')),
       `가리키는 스킬이 없다: ${스킬}`);
@@ -215,7 +215,7 @@ test('settings.json 라우팅이 훅이 잡는 것보다 넓다', () => {
 test('DESIGN.md §6 이 가리키는 스킬과 훅이 가리키는 스킬이 갈라지지 않는다', () => {
   const 본문 = fs.readFileSync(DESIGN_MD, 'utf8');
   const r = 호출(새세션(), 'a.html');
-  for (const 스킬 of ['make-interfaces-feel-better', 'emil-design-eng', 'review-animations']) {
+  for (const 스킬 of ['make-interfaces-feel-better', 'emil-design-eng']) {
     assert.ok(본문.includes(스킬), `DESIGN.md §6 에 없는 스킬을 훅이 권한다: ${스킬}`);
     assert.match(r.reason, new RegExp(스킬));
   }

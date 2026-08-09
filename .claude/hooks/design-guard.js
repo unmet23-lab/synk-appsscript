@@ -9,7 +9,7 @@
 //   트랜스크립트 407개 실측(2026-08-06):
 //     · make-interfaces-feel-better  0회  ← 08-05 반입 후 한 번도 적용된 적이 없다
 //     · emil-design-eng              0회
-//     · review-animations            호출 불가(disable-model-invocation: true — 유호님만 부른다)
+//     · review-animations            호출 불가(disable-model-invocation) → **2026-08-09 유호 판정으로 삭제**
 //     · synk-design                  4회
 //   그 사이 발표물 HTML 6종·크루카드가 그 원칙 없이 만들어졌다.
 //
@@ -107,7 +107,6 @@ function 메시지(filePath) {
     '  ② 디테일 스킬 — 값이 아니라 감각을 채운다(회귀 테스트가 원리상 못 잡는 층):',
     '     · make-interfaces-feel-better : 모서리·광학 정렬·그림자·히트 영역·tabular-nums·아이콘 획',
     '     · emil-design-eng             : 모션·이징·인터랙션 판단 (모션이 있을 때만)',
-    '     · /review-animations          : 모션 적대 검수 — 유호님이 직접 불러야 뜬다',
     '  ③ 검사 — node tools/브랜드렌더린트.js <파일>   (0=위반없음 1=위반 2=크롬없음·미실행)',
     '',
     '값이 더 필요하면 DESIGN.md 전문(≈4.5KB — read-budget 무료 구간): 색 19·폰트 스택·로고·산출물별 통로.',

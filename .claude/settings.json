@@ -244,18 +244,6 @@
         ]
       },
       {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/graph-update.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { echo \"SYNK graph-update 미실행: $H (node 또는 훅 파일 없음 — F044)\" >&2; exit 1; }; printf %s \"$IN\" | node \"$H\"",
-            "shell": "bash",
-            "timeout": 30,
-            "statusMessage": "코드 그래프 갱신",
-            "type": "command"
-          }
-        ]
-      },
-      {
         "matcher": "Edit|Write|MultiEdit|NotebookEdit",
         "hooks": [
           {
