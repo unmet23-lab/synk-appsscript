@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>자율주행 결정 기록 — SYNK</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;800&family=DM+Mono:wght@400;500&display=swap">
+<style>
+@font-face{
+  font-family:'SUIT Variable'; font-style:normal; font-weight:100 900; font-display:swap;
+  src:url('https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.woff2') format('woff2-variations');
+}
+:root{
+  --paper:#FBF7EE; --ink:#171820; --navy:#1A2340; --navy2:#0F1730; --navy3:#2A3358;
+  --slate:#8A93AD; --slate2:#5F657D; --cream:#F6F1E8; --cream2:#EFE7D7; --cream3:#E7DDC7;
+  --coral:#FF6B5C; --wash:#FFE9E4;
+  --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
+  --gut:clamp(20px,4.5vw,56px);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:940px;margin:0 auto;padding:0 var(--gut) 96px}
+
+header{background:var(--navy2);color:var(--cream);padding:44px var(--gut) 34px}
+header .inner{max-width:940px;margin:0 auto}
+header .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--slate);text-transform:uppercase}
+header h1{font-size:clamp(26px,4vw,38px);font-weight:800;letter-spacing:-.02em;margin:.35em 0 .3em;line-height:1.18}
+header .sub{color:var(--slate);font-size:13.5px;max-width:70ch}
+header .counts{display:flex;flex-wrap:wrap;gap:26px;margin-top:22px;padding-top:16px;border-top:1px solid var(--navy3)}
+header .counts div{font-size:12px;font-weight:500;color:var(--slate)}
+header .counts b{display:block;font-size:24px;color:var(--cream);font-weight:500;letter-spacing:-.01em}
+header .counts .hot b{color:var(--coral)}
+
+.bar{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--cream3);padding:12px var(--gut);margin-bottom:6px}
+.bar .inner{max-width:940px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.bar .lbl{font-size:11.5px;font-weight:500;color:var(--slate2);margin-right:2px}
+button.f{font:inherit;font-size:12.5px;cursor:pointer;border:1px solid var(--cream3);background:var(--cream);
+  color:var(--navy);border-radius:2px;padding:5px 12px;letter-spacing:-.01em}
+button.f:hover{border-color:var(--navy3)}
+button.f[aria-pressed="true"]{background:var(--navy2);border-color:var(--navy2);color:var(--cream)}
+.bar .sep{width:1px;height:20px;background:var(--cream3);margin:0 6px}
+
+.warn{margin:22px 0 0;border-left:3px solid var(--coral);background:var(--wash);padding:13px 16px;font-size:13px;color:var(--navy)}
+.warn ul{margin:0;padding-left:18px}
+.warn code{font-family:var(--mono);font-size:12px}
+
+.card{border:1px solid var(--cream3);border-radius:4px;background:var(--cream);padding:18px 20px 16px;margin-top:14px}
+.card .head{display:flex;align-items:baseline;gap:12px}
+.card .num{font-family:var(--mono);font-size:15px;color:var(--slate2);font-weight:500;flex:0 0 auto}
+.card h3{margin:0;font-size:16px;font-weight:800;letter-spacing:-.01em;line-height:1.35;flex:1 1 auto}
+.card .meta{font-family:var(--mono);font-size:11px;color:var(--slate2);margin:6px 0 13px;padding-left:38px}
+.card .meta code{font-size:11px}
+
+.badge{flex:0 0 auto;font-size:11.5px;font-weight:500;padding:3px 11px;border-radius:2px;white-space:nowrap}
+.b-대기{background:var(--coral);color:var(--ink)}
+.b-유지{background:var(--cream3);color:var(--navy)}
+.b-바꿈{background:var(--navy2);color:var(--cream)}
+.b-보류{background:var(--cream2);color:var(--slate2)}
+
+.row,.undo{display:flex;gap:12px;padding:6px 0 6px 38px;font-size:13.5px}
+/* ⚠ 라벨은 mono 로 쓰지 않는다 — DM Mono 에 한글 자형이 없어 폴백되고, 거기에 letter-spacing
+   을 얹으면 「바 꾸 려 면」으로 벌어진다(첫 판 실측). 자간은 라틴 라벨에만 준다. */
+.row .k,.undo .k{flex:0 0 76px;font-size:11.5px;font-weight:500;color:var(--slate2);padding-top:3px;line-height:1.5}
+.row .v,.undo .v{flex:1 1 auto}
+.row .v.pick{font-weight:500}
+.row .v.alt{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12.5px;color:var(--slate2);background:var(--paper);border:1px solid var(--cream3);border-radius:2px;padding:2px 9px;text-decoration:line-through}
+.undo{margin-top:9px;padding-top:11px;border-top:1px solid var(--cream3)}
+.undo .v{color:var(--navy)}
+.verdict{margin:11px 0 0 38px;background:var(--paper);border:1px solid var(--cream3);border-radius:2px;padding:9px 12px;font-size:13px}
+.verdict b{font-weight:500;font-size:11.5px;color:var(--slate2);margin-right:8px}
+.tag{font-family:var(--mono);font-size:10.5px;color:var(--slate2)}
+.card code{font-family:var(--mono);font-size:12px;background:var(--paper);padding:1.5px 6px;border-radius:2px}
+
+.empty{margin-top:40px;color:var(--slate2);font-size:13.5px}
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--cream3);font-size:12px;color:var(--slate2);line-height:1.9}
+footer b{color:var(--navy);font-weight:500}
+footer code{font-family:var(--mono);font-size:11.5px}
+</style>
+</head>
+<body>
+<header><div class="inner">
+  <div class="eyebrow">SYNK · Autonomous Build Log</div>
+  <h1>자율주행 결정 기록</h1>
+  <p class="sub">앱을 짓는 동안 <b>유호님께 묻지 않고 제가 혼자 정한 굵직한 갈림길</b>입니다.
+     다 만든 뒤 번호를 부르시면 그 자리에서 바꿉니다 — 「바꾸려면」 칸이 그 비용입니다.</p>
+  <div class="counts">
+    <div class="hot">대기<b>10</b></div>
+    <div>유지<b>0</b></div>
+    <div>바꿈<b>0</b></div>
+    <div>보류<b>0</b></div>
+    <div>전체<b>10</b></div>
+  </div>
+</div></header>
+
+<nav class="bar"><div class="inner">
+  <span class="lbl">판정</span>
+  <button class="f" data-k="r" data-v="" aria-pressed="true">전체</button>
+  <button class="f" data-k="r" data-v="대기" aria-pressed="false">대기</button>
+  <button class="f" data-k="r" data-v="유지" aria-pressed="false">유지</button>
+  <button class="f" data-k="r" data-v="바꿈" aria-pressed="false">바꿈</button>
+  <button class="f" data-k="r" data-v="보류" aria-pressed="false">보류</button>
+  <span class="sep"></span><span class="lbl">영역</span>
+  <button class="f" data-k="a" data-v="" aria-pressed="true">전체</button>
+  <button class="f" data-k="a" data-v="비용·운영" aria-pressed="false">비용·운영</button>
+  <button class="f" data-k="a" data-v="수집 계약" aria-pressed="false">수집 계약</button>
+  <button class="f" data-k="a" data-v="앱 화면" aria-pressed="false">앱 화면</button>
+  <button class="f" data-k="a" data-v="엔진·데이터" aria-pressed="false">엔진·데이터</button>
+</div></nav>
+
+<div class="wrap">
+
+<article class="card" data-r="대기" data-a="수집 계약">
+  <div class="head">
+    <span class="num">#01</span>
+    <h3>가입 첫 화면에서 3가지(고향 아이막·성별·목적)를 반드시 물어본다 — 건너뛰기 없음</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-09 &nbsp;·&nbsp; 수집 계약 &nbsp;·&nbsp; talk · <code>a1b1e24</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">세 칸 모두 필수. 다 고르기 전에는 가입 버튼이 안 열린다. 답은 미리 정해둔 목록에서만 고른다(직접 타이핑 불가).</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">선택 문항으로 두고 건너뛰게 하기</span><span class="chip">나중에 설정 화면에서 물어보기</span><span class="chip">자유 입력(직접 타이핑)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">이 세 값은 '가입할 때 한 번'만 물을 수 있다. 나중에 물으면 그때의 목적이 아니라 오늘의 목적이 나와서 데이터가 못 쓰게 된다. 자유 입력을 허용하면 같은 아이막을 열 가지로 적어서 '지역별 억양 차이'를 볼 수 있는 유일한 축이 죽는다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">🔴 되돌리기가 가장 비싼 결정이다. 필수를 선택으로 낮추는 것 자체는 코드 한 줄이지만, 이미 가입한 학생의 빈 칸은 영영 못 채운다(다시 물으면 답이 달라지는 종류라서). 개원 전에 바꾸면 공짜, 개원 후에는 불가.</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="엔진·데이터">
+  <div class="head">
+    <span class="num">#02</span>
+    <h3>학생의 성향·습관 점수를 따로 저장하지 않고, 과제를 내보내는 순간 계산해서 그 기록에 찍는다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-09 &nbsp;·&nbsp; 엔진·데이터 &nbsp;·&nbsp; talk · <code>7616d26</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">'학생 상태' 전용 테이블을 만들지 않는다. 과제를 배달할 때마다 원래 기록들을 훑어 그 자리에서 계산하고, 배달 기록에 도장처럼 찍어 남긴다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">learner_state 전용 테이블 신설</span><span class="chip">조회용 뷰(view)로 우회해서 만들기</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">점수를 저장해 버리면 잘못 매긴 낙인이 그대로 굳는다. 원래 기록이 남아 있으니 점수는 언제든 다시 계산할 수 있고, 오히려 저장하는 쪽이 잃는 게 많다. 유호님이 확정한 '파생 테이블은 지금 만들지 않는다'도 우회 없이 지켜진다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">나중에 저장 방식으로 바꾸는 건 가능하다(계산 함수가 이미 있으니 결과를 테이블에 붓기만 하면 된다). 반대로 지금 저장해 두고 나중에 지우는 건, 그 사이 잘못 매긴 점수로 학생을 대한 이력이 남아서 못 되돌린다.</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="엔진·데이터">
+  <div class="head">
+    <span class="num">#03</span>
+    <h3>과제 효과를 볼 때 '이전'과 '이후'를 나란히만 보여주고, 둘을 뺀 증감 숫자는 아예 안 만든다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-09 &nbsp;·&nbsp; 엔진·데이터 &nbsp;·&nbsp; talk · <code>51c5d92</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">증감·점수 같은 계산된 칸을 하나도 두지 않는다. 이전 값과 이후 값을 그냥 나란히 낸다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">증감 칸(이후 - 이전)을 같이 내기</span><span class="chip">종합 점수 하나로 요약하기</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">비교하는 두 기간의 길이가 다르다(30일 추세 vs 7일). 길이가 다른 걸 빼면 산수로는 되지만 뜻이 없다. 그런데 증감 칸이 화면에 하나라도 있으면 읽는 사람은 반드시 그 숫자를 믿는다. 그래서 '없는 칸'이 설계다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">칸을 더하는 것 자체는 반나절이다. 다만 더하는 순간 위 문제가 그대로 살아나므로, 바꾸려면 '두 기간을 어떻게 맞출지'를 먼저 정해야 한다.</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="엔진·데이터">
+  <div class="head">
+    <span class="num">#04</span>
+    <h3>과제를 고르는 규칙에 판 번호를 붙이고, 규칙을 고치고 번호를 안 올리면 테스트가 빨개지게 했다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-09 &nbsp;·&nbsp; 엔진·데이터 &nbsp;·&nbsp; talk · <code>af750e7</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">규칙을 실제로 91가지 상황에 돌려본 결과를 지문처럼 찍어 둔다. 규칙이 바뀌면 지문이 달라져서 자동으로 걸린다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">'바뀌면 번호 올리기'를 문서로만 약속</span><span class="chip">소스 코드 글자를 해시로 떠서 비교</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">문서 약속은 원래 상태였고 안 지켜졌다. 소스 글자 해시는 주석만 고쳐도 빨개져서, 거짓 경보가 잦으면 결국 아무도 안 본다. 결과만 해시하면 '행동이 실제로 바뀐 날'에만 걸린다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">지문 검사를 떼는 건 30분. 다만 떼면 '규칙 고치고 번호 안 올리는' 일이 다시 조용히 벌어진다. 이 장치가 못 막는 것 하나는 정직하게 밝혀둔다 — 누군가 지문 줄 자체를 손으로 덮어쓰면 못 막는다.</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="앱 화면">
+  <div class="head">
+    <span class="num">#05</span>
+    <h3>선생님 답장 화면은 최신 1건만 보여주고, 버튼은 '알겠어요'와 '다시 말해 볼래요' 둘뿐</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-09 &nbsp;·&nbsp; 앱 화면 &nbsp;·&nbsp; talk · <code>d71e75d</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">지난 답장 목록을 안 보여준다. 가장 최근 것 하나만. '무시' 버튼도 안 만든다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">전체 답장 목록 보여주기</span><span class="chip">'무시' 버튼 추가하기</span><span class="chip">'답장이 왔어요!' 알림 문구 쓰기</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">학생이 매일 여는 화면이라 고를 게 많으면 아예 안 연다. '무시'는 버튼이 없어도 이미 관측된다 — 열어보고 안 누른 것 자체가 기록으로 남는다. '답장이 왔어요' 문구는 조회가 늘 최신 1건이라 이미 읽은 답장에도 뜨게 되어 첫날 빼고 매일 거짓말이 된다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">화면 파일 한 곳(app 답장 화면). 목록으로 바꾸는 데 반나절 정도. 데이터는 이미 다 쌓이고 있어서 화면만 고치면 된다.</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="앱 화면">
+  <div class="head">
+    <span class="num">#06</span>
+    <h3>몽골어가 나오는 자리는 브랜드 폰트를 지정하지 않고 휴대폰 기본 폰트에 맡긴다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-09 &nbsp;·&nbsp; 앱 화면 &nbsp;·&nbsp; talk · <code>1420b93</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">테마 파일에 '몽골어' 전용 설정을 하나 두고, 그 자리에서는 폰트 지정을 비운다. 몽골어 화면은 전부 그 한 줄만 쓴다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">다른 화면처럼 SUIT 폰트 지정하기</span><span class="chip">몽골어 화면을 지금은 안 만들기</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">앱에 실린 브랜드 폰트(SUIT)에 키릴 문자 모양이 없다. 지정하면 글자가 전부 □□□ 네모로 뜨는데, 그 화면은 '글자가 안 왔다'와 눈으로 구별이 안 된다. 자리를 테마 한 곳에 모은 이유는 몽골어 화면이 앞으로 여럿(동의문·안내문)이라 화면마다 정하면 한 곳이 실수해서 그 화면만 깨지기 때문이다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">키릴을 지원하는 폰트를 앱에 싣는 날 그 상수에 한 줄만 더하면 전 화면이 같이 바뀐다. 아주 쌈.</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="수집 계약">
+  <div class="head">
+    <span class="num">#07</span>
+    <h3>답장을 열어본 기록은 발화 제출 기록과 다른 파일에 따로 쌓는다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-09 &nbsp;·&nbsp; 수집 계약 &nbsp;·&nbsp; talk · <code>d71e75d</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">correction_log.jsonl 이라는 별도 파일. 다만 재전송·오프라인 대기 같은 기능은 기존 제출 로그의 함수를 그대로 가져다 쓴다(새로 안 짓는다).</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">기존 제출 로그 파일에 같이 쌓기</span><span class="chip">답장 전용 큐를 새로 짓기</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">같은 파일에 섞으면 '오늘 몇 번 말했나'를 세는 코드가 답장 열어본 것까지 발화로 세어 숫자가 부풀려진다. 반대로 큐를 새로 지으면 오프라인 재전송 로직이 두 벌이 되어 갈라진다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">파일 하나와 그 파일을 읽는 자리 몇 곳. 반나절 안쪽. 다만 이미 쌓인 기록은 옮기는 작업이 따로 필요하다.</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="엔진·데이터">
+  <div class="head">
+    <span class="num">#08</span>
+    <h3>발화 길이를 못 쟀을 때 0초가 아니라 '빈 칸'으로 남긴다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-09 &nbsp;·&nbsp; 엔진·데이터 &nbsp;·&nbsp; talk · <code>5d8c8bb</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">측정 실패는 빈 칸(null). 숫자 범위를 넘는 이상한 값도 담지 않고 비운다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">못 잰 것을 0으로 채우기</span><span class="chip">범위를 넘으면 최대값으로 잘라 담기</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">0으로 적으면 '측정 실패'가 '0.0초 발화'라는 거짓 기록이 되어 평균 발화 길이를 영영 끌어내린다. 범위를 넘는 값을 억지로 담으려다 오류가 나면 그 발화 기록 자체가 통째로 사라지는데, 원본 밀리초는 다른 칸에 남아 있으니 열 하나 때문에 발화를 잃을 이유가 없다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">판정이 순수 함수 한 곳에 모여 있어서 바꾸기 쉽다(1~2시간). 이미 빈 칸으로 쌓인 기록은 원본이 남아 있어 나중에 채울 수 있다.</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="비용·운영">
+  <div class="head">
+    <span class="num">#09</span>
+    <h3>AI 교정을 부를 때 기본을 '배치'(모아서 한꺼번에)로 바꾸고, 진행 상태를 우리 DB에 안 적는다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-09 &nbsp;·&nbsp; 비용·운영 &nbsp;·&nbsp; talk · <code>5c49787</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">기본 통로 = 배치 API(비용 절반). 즉시 처리는 ?즉시=1 로만. 배치가 도는 중인지는 우리가 기록하지 않고 벤더에게 물어본다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">기존처럼 매번 즉시 호출</span><span class="chip">배치 진행 상태용 열·표를 우리 DB에 신설</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">비용이 1건 10원 → 5원으로 떨어진다(16명 기준 월 4,800 → 2,400원). 상태 열을 새로 파는 건 데이터 계약 개정이라 무거운데, 제출 기록 번호를 벤더에게 같이 넘겨두면 그걸로 되찾을 수 있어서 우리 쪽 상태가 필요 없다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">즉시 호출로 되돌리는 건 설정 한 줄(?즉시=1이 이미 있다). 🔴 다만 아직 실제로 API 키를 넣고 돌려본 적이 없어서, 캐싱이 진짜 걸리는지는 키 넣는 첫날 확인해야 한다(안 걸려도 오류는 안 나고 요금으로만 보인다).</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="앱 화면">
+  <div class="head">
+    <span class="num">#10</span>
+    <h3>초급 학생에게 '보기 중에 골라 말하기'를 주되, 과제 형식을 급수가 아니라 보기 유무에서 자동으로 정하게 했다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-09 &nbsp;·&nbsp; 앱 화면 &nbsp;·&nbsp; talk · <code>edb92b4</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">보기가 있으면 '골라 답하기', 없으면 '자유 발화' — 형식이 따로 정해질 수 없게 하나에서 파생시킨다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">급수를 보고 형식을 직접 정하기(if 급수 &lt;= 2)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">급수와 형식을 따로 정하면 언젠가 둘이 어긋난다(보기는 주는데 자유발화로 표시되는 식). 실제로 이 작업 중에 급수 표기가 'Lv3' 문자열이라 숫자로 바꾸면 3급이 초급으로 접히는 함정을 발견했고, 회귀 테스트가 그걸 잡았다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">판정이 한 함수에 모여 있어 바꾸기 쉽다. 🔴 다만 지금 보기 문구는 고정된 2벌이다 — AI가 상황에 맞게 만들어 주는 건 아직 미구현이라, 그건 별도 작업이 필요하다.</span></div>
+  
+</article>
+<footer>
+  정본은 <code>docs/_ops/자율주행_결정록.jsonl</code> — 이 화면은 그걸 읽어 그린 것이라 <b>정본이 바뀌면 여기도 바뀝니다</b>.<br>
+  판정 반영 = <code>node tools/자율기록.js 판정 --번호 N --결과 유지|바꿈|보류</code> · 굽기 = <code>node tools/자율기록.js --굽기</code><br>
+  마지막 굽기 <b>2026-08-09</b>
+</footer>
+</div>
+
+<script>
+(function(){
+  var 상태={r:'',a:''};
+  function 적용(){
+    document.querySelectorAll('.card').forEach(function(c){
+      var ok=(!상태.r||c.dataset.r===상태.r)&&(!상태.a||c.dataset.a===상태.a);
+      c.style.display=ok?'':'none';
+    });
+  }
+  document.querySelectorAll('button.f').forEach(function(b){
+    b.addEventListener('click',function(){
+      var k=b.dataset.k;
+      상태[k]=b.dataset.v;
+      document.querySelectorAll('button.f[data-k="'+k+'"]').forEach(function(o){
+        o.setAttribute('aria-pressed',String(o===b));
+      });
+      적용();
+    });
+  });
+})();
+</script>
+</body>
+</html>
