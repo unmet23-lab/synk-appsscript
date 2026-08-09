@@ -112,9 +112,9 @@ Slate↔Slate 2 를 바꿔 쓰는 것이 이 색의 유일한 오용 형태다(`
 |---|---|---|
 | `make-interfaces-feel-better` | UI·HTML 디테일 제작+검수 — 동심원 모서리·광학 정렬·그림자·tabular-nums·히트 영역. **인쇄물엔 typography/surfaces만 해당** | jakubkrehel |
 | `emil-design-eng` | 애니메이션·인터랙션 설계 판단 — 빈도→목적→이징→시간 결정 틀, 이징 커브 값 | emilkowalski |
-| `/review-animations` | 모션 코드 **적대 검수**(수동 호출 전용) — 기본이 「막기」, 통과는 획득 | emilkowalski |
 
 - 미설치 판정(재제안 금지): apple-design(킷과 충돌)·pick-ui-library(라이브러리 없음)·prototype(/forge 중복)·improve-animations·find-animation-opportunities(자체앱 단계에 재고).
+- **삭제 판정(재제안 금지 · 유호 판정 2026-08-09)**: `review-animations` — 반입 후 407세션 0회 호출(`disable-model-invocation`이라 유호님만 부를 수 있었고 그 자리가 오지 않았다). 모션 **설계** 판단은 `emil-design-eng`가 그대로 지고, 검수는 그 원칙으로 한다. 자체앱 모션이 실물로 서면 재반입 검토 — 그때까지 다시 제안하지 않는다.
 
 ## 7. 레퍼런스 — 필요할 때 브라우저로 연다 (상시 MCP 연결 금지 — 이미지 토큰)
 

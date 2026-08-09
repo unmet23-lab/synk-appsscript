@@ -90,12 +90,14 @@ test('③ DESIGN.md 가 링크·인용한 경로 전수가 실존한다(목록�
   assert.deepEqual(gone, [], `DESIGN.md 가 가리키는데 없는 경로: ${gone.join(', ')}`);
 });
 
-test('④ 반입 스킬 3종 + synk-design 이 SKILL.md 를, 외부 3종은 LICENSE(MIT)까지 갖춘다', () => {
+test('④ 반입 스킬 2종 + synk-design 이 SKILL.md 를, 외부 2종은 LICENSE(MIT)까지 갖춘다', () => {
+  /* review-animations 는 2026-08-09 유호 판정으로 삭제됐다(407세션 0회 호출 · 삭제 사유 정본 = DESIGN.md §6).
+   * 여기 이름을 다시 넣으려면 스킬 실물부터 되돌린다 — 목록만 늘리면 그 자리에서 빨간불이다. */
   const SKILLS = path.join(ROOT, '.claude', 'skills');
-  for (const name of ['synk-design', 'make-interfaces-feel-better', 'emil-design-eng', 'review-animations']) {
+  for (const name of ['synk-design', 'make-interfaces-feel-better', 'emil-design-eng']) {
     assert.ok(fs.existsSync(path.join(SKILLS, name, 'SKILL.md')), `${name}/SKILL.md 가 없다`);
   }
-  for (const name of ['make-interfaces-feel-better', 'emil-design-eng', 'review-animations']) {
+  for (const name of ['make-interfaces-feel-better', 'emil-design-eng']) {
     const lic = path.join(SKILLS, name, 'LICENSE');
     assert.ok(fs.existsSync(lic), `${name}/LICENSE 가 없다 — MIT 고지 보존 의무`);
     assert.match(read(lic), /MIT License/, `${name}/LICENSE 가 MIT 고지가 아니다`);
