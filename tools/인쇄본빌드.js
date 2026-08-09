@@ -55,7 +55,6 @@ const MANIFEST = [
   // D. 교육 설계
   { src: 'docs/커리큘럼_정본_v1.md',       title: 'SYNK 커리큘럼 정본',         sub: '6레벨 학습설계·실라버스·평가 루브릭',    group: '교육 설계' },
   { src: 'docs/반편성_정본_v2.md',         title: '반편성 정본',                sub: '4실 24반·정원 16·384석·BEP 119명',      group: '교육 설계' },
-  { src: 'docs/가격_수업표_추천_v3.md',    title: '가격·수업표 현행안',         sub: '수강료·시간표·추천 구성',                group: '교육 설계' },
   { src: 'docs/홍보_트리오_정본_v1.md',    title: '홍보 트리오 정본',           sub: '대외 메시지 축 — 질문·스스로·마음',      group: '교육 설계' },
 ];
 
