@@ -32,7 +32,16 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const SCAN_DIRS = ['docs'];
 const SKIP = [/[\\/]_archive[\\/]/, /[\\/]worktrees[\\/]/, /세션보드_아카이브/, /[\\/]_구본[\\/]/, /[\\/]pixelart_draft[\\/]/];
-const TEXT_EXT = /\.(md|txt)$/i;
+/* [2026-08-09] `.html`이 빠져 있었다. 새는 방향이 **「통과」가 아니라 「0」**이라 더 나빴다:
+ * `docs/홈페이지_시안/시안.html`·`시안.tpl.html`은 `<!-- 파생: docs/SYNK_철학.md@v1.0 -->`를
+ * **이미 선언해 놓았는데** 스캔 확장자 밖이라 파서가 그 파일을 아예 열지 않았다. 결과 —
+ * 철학 정본의 파생 엣지가 **0종**(전체 33종 중)이고, 정본 머리는 그 엣지 수를 두고
+ * 「전 문서 리라이팅의 진행을 세는 유일한 자리」라고 적어 두었다. 계기판이 0을 가리키는데
+ * 「전파 안 됨」과 「계기판이 안 봄」이 같은 모양이라 아무도 못 갈랐다(유호님 질문 08-09에서 실측).
+ * 엣지 표기 `<!-- … -->`는 원래 HTML 주석이라 형식은 그대로 쓰고, 확장자만 넓힌다.
+ * ⚠ **타깃은 존재만 확인하고 소스는 스캔돼야 한다** — 이 비대칭이 함정의 정체다:
+ * `crewcard/카드_kr.html`은 남이 **가리켜서** 그래프에 있었고, 그래서 「html 도 보인다」로 오독됐다. */
+const TEXT_EXT = /\.(md|txt|html)$/i;
 /* [2026-08-08] 정본을 **구현하는 코드**도 파생이다. F243 실측: 급여 정본 v1.6(08-04)이 재등록 배점을
  * 30점으로 올렸는데 `엔진_운영배치.js`는 20점 고정인 채 4일을 갔다. 그때 문서 파생 5종은 전부 @v1.6으로
  * 최신이었다 — 낡은 것은 **엣지가 없어 그래프 밖에 있던 코드 하나**뿐이었고, 그래서 아무도 안 울렸다.
@@ -41,6 +50,8 @@ const TEXT_EXT = /\.(md|txt)$/i;
  * 걷어내는 규칙을 새로 져야 한다(SKIP은 그 둘을 아직 모른다). 읽기 비용 실측 +12ms(87→99ms). */
 const CODE_EXT = /\.js$/i;
 const EDGE_RE = /<!--\s*파생\s*:\s*([^>]+?)\s*-->/g;
+/** `.txt` 는 주석 문법이 없어 엣지 줄이 사람 눈에 그대로 보인다 — 그래서 무엇인지 한 줄로 밝힌다. */
+const TXT_EDGE_NOTE = '※ 위 한 줄은 doc-graph 가 읽는 기계 표기다 — 이 문서가 따르는 정본과 그 판번호. 정본이 개정되면 이 문서가 「낡음」으로 떠서 갱신 대상이 된다.';
 
 const rel = (p) => path.relative(ROOT, p).replace(/\\/g, '/');
 
@@ -287,10 +298,24 @@ function addEdge(docRel, canons) {
     });
     next = out + text.slice(cur);
   } else {
+    /* [2026-08-09] 자리는 **형식마다 다르다.** 원래 규칙은 「첫 `# ` 다음」 하나뿐이라 마크다운만 맞았고,
+     * `.txt`·`.html`은 `# `이 없어 전부 `at=0`으로 떨어져 **파일 맨 첫 줄**에 박혔다.
+     * `.txt`에서 그건 유호님이 읽는 정본의 첫 줄이 기계 표기가 된다는 뜻이다(눈높이 상시 지시 위반).
+     * 쓰기 경로의 사고는 조용하지 않고 **문서에 남는다** — 그래서 형식별로 가른다. */
     const lines = text.split('\n');
-    let at = lines.findIndex((l) => /^#\s/.test(l));
-    at = at === -1 ? 0 : at + 1;
-    lines.splice(at, 0, '', line);
+    const ext = path.extname(docRel).toLowerCase();
+    if (ext === '.txt') {
+      // .txt 엔 주석 문법이 없다 — 어디에 둬도 사람 눈에 보인다. 그래서 꼬리에 각주로 둔다.
+      while (lines.length && lines[lines.length - 1].trim() === '') lines.pop();
+      lines.push('', line, TXT_EDGE_NOTE, '');
+    } else if (ext === '.html') {
+      // 진짜 HTML 주석이라 렌더되지 않는다 — doctype 이 있으면 그 다음, 없으면 맨 위.
+      lines.splice(/^\s*<!doctype/i.test(lines[0] || '') ? 1 : 0, 0, line);
+    } else {
+      let at = lines.findIndex((l) => /^#\s/.test(l));
+      at = at === -1 ? 0 : at + 1;
+      lines.splice(at, 0, '', line);
+    }
     next = lines.join('\n');
   }
   if (next === text) return false;

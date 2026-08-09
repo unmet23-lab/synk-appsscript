@@ -432,3 +432,141 @@ test('자기선언 정본 — 선언한 버전이 머리말의 다른 vN 을 이
     fs.unlinkSync(canon);
   }
 });
+
+/* [2026-08-09] **선언은 있는데 파서가 그 파일을 안 열었다** — 같은 결함의 2번째다.
+ * 1번째(F243)는 루트 `.js` 가 스캔 밖이라 급여 정본 v1.6 개정이 코드에 4일간 안 닿았고,
+ * 2번째는 `docs/홈페이지_시안/시안.html`·`시안.tpl.html` 이 `<!-- 파생: docs/SYNK_철학.md@v1.0 -->`
+ * 를 **이미 선언해 놓았는데** `TEXT_EXT` 가 `md|txt` 뿐이라 열리지 않았다. 결과 = 철학 정본의
+ * 파생 엣지 0종, 그런데 그 정본 머리는 그 엣지 수를 「전 문서 리라이팅 진행을 세는 유일한 자리」로
+ * 적어 두었다. 새는 방향이 「통과」도 아니고 **「0」**이라 「전파 안 됨」과 구별되지 않았다.
+ * 그래서 확장자를 하나 더 붙이는 데서 멈추지 않는다 — 아래 가드가 **계열 전체**를 막는다:
+ * 앞으로 `.svg`·`.json`·`.ts` 어디에 선언해도, 열리지 않으면 여기서 빨개진다. */
+test('[회귀] .html 파생 선언을 읽는다 — 확장자가 빠지면 엣지가 조용히 0이 된다(픽스처)', () => {
+  const stem = `docgraph-html-${process.pid}`;
+  const canon = path.join(ROOT, 'docs', `${stem}_정본.md`);
+  const derived = path.join(ROOT, 'docs', `${stem}_파생.html`);
+  fs.writeFileSync(canon, '# 임시 정본 v4.2 — 시험용\n', 'utf8');
+  // 엣지 표기는 원래 HTML 주석이라 `.html` 안에서는 이게 **자연스러운 자리**다(주석으로 감쌀 필요 없음).
+  fs.writeFileSync(derived, `<!-- 파생: docs/${stem}_정본.md@v1.0 -->\n<p>임시</p>\n`, 'utf8');
+  try {
+    const g = G.build();
+    assert.ok(g.docs.has(`docs/${stem}_파생.html`), '.html 이 그래프에 아예 안 들어왔다');
+    const hit = g.stale.find((s) => s.from === `docs/${stem}_파생.html`);
+    assert.ok(hit, '정본이 v4.2 인데 v1.0 을 인용하는 .html 을 못 잡았다');
+    assert.strictEqual(hit.cited, 'v1.0');
+    assert.strictEqual(hit.now, 'v4.2');
+    // 정본을 편집하는 세션에게 이 .html 이 파생으로 보여야 한다(doc-propagation 이 읽는 목록).
+    assert.ok((g.derivedOf.get(`docs/${stem}_정본.md`) || []).includes(`docs/${stem}_파생.html`),
+      'derivedOf 에 안 실리면 정본을 고치는 세션에게 렌더물이 안 보인다');
+  } finally {
+    fs.unlinkSync(canon);
+    fs.unlinkSync(derived);
+  }
+});
+
+/* [2026-08-09] --add 의 **자리**는 형식마다 다르다. 원래 규칙은 「첫 `# ` 다음」 하나뿐이어서
+ * `# ` 이 없는 `.txt`·`.html` 은 전부 `at=0` 으로 떨어져 **파일 맨 첫 줄**에 박혔다.
+ * `.txt` 에서 그건 유호님이 읽는 정본의 첫 줄이 기계 표기가 된다는 뜻이다(눈높이 상시 지시).
+ * 다른 가드와 달리 이 사고는 조용하지 않고 **문서에 남는다** — 그래서 자리를 못박는다. */
+test('[회귀] --add 자리 — .txt 는 꼬리 각주로 간다(첫 줄에 기계 표기가 박히지 않는다)', () => {
+  const stem = `docgraph-place-txt-${process.pid}`;
+  const canon = path.join(ROOT, 'docs', `${stem}_정본.md`);
+  const derived = path.join(ROOT, 'docs', `${stem}_파생.txt`);
+  const 첫줄 = 'SYNK 임시 소개서';
+  fs.writeFileSync(canon, '# 임시 정본 v1.0 — 시험용\n', 'utf8');
+  fs.writeFileSync(derived, `${첫줄}\n부제 한 줄\n\n본문.\n`, 'utf8');
+  try {
+    assert.ok(G.addEdge(`docs/${stem}_파생.txt`, [`docs/${stem}_정본.md@v1.0`]), 'addEdge 가 아무것도 안 썼다');
+    const lines = fs.readFileSync(derived, 'utf8').split('\n');
+    assert.strictEqual(lines[0], 첫줄, '.txt 첫 줄이 기계 표기로 밀렸다 — 사람이 읽는 자리다');
+    assert.ok(!lines.slice(0, 4).some((l) => l.includes('<!-- 파생')), '머리 4줄 안에 엣지가 들어왔다');
+    assert.ok(lines.some((l) => l.trim() === `<!-- 파생: docs/${stem}_정본.md@v1.0 -->`), '엣지 줄을 아예 못 찾았다');
+    assert.ok(lines.some((l) => l.startsWith('※')), '.txt 엔 주석 문법이 없다 — 무엇인지 밝히는 줄이 함께 있어야 한다');
+    // 심은 뒤 진짜로 그래프에 서는지 — 자리를 옮겨 파서가 놓치면 「예쁘지만 안 도는」 상태가 된다.
+    assert.ok((G.build().derivedOf.get(`docs/${stem}_정본.md`) || []).includes(`docs/${stem}_파생.txt`));
+  } finally {
+    fs.unlinkSync(canon);
+    fs.unlinkSync(derived);
+  }
+});
+
+test('[회귀] --add 자리 — .html 은 doctype 뒤로 간다(doctype 을 밀어내면 렌더가 깨진다)', () => {
+  const stem = `docgraph-place-html-${process.pid}`;
+  const canon = path.join(ROOT, 'docs', `${stem}_정본.md`);
+  const derived = path.join(ROOT, 'docs', `${stem}_파생.html`);
+  fs.writeFileSync(canon, '# 임시 정본 v1.0 — 시험용\n', 'utf8');
+  fs.writeFileSync(derived, '<!doctype html>\n<html><body>임시</body></html>\n', 'utf8');
+  try {
+    assert.ok(G.addEdge(`docs/${stem}_파생.html`, [`docs/${stem}_정본.md@v1.0`]));
+    const lines = fs.readFileSync(derived, 'utf8').split('\n');
+    assert.match(lines[0], /^<!doctype html>$/i, 'doctype 이 첫 줄에서 밀렸다 — 브라우저가 quirks 모드로 떨어진다');
+    assert.strictEqual(lines[1].trim(), `<!-- 파생: docs/${stem}_정본.md@v1.0 -->`);
+    assert.ok((G.build().derivedOf.get(`docs/${stem}_정본.md`) || []).includes(`docs/${stem}_파생.html`));
+  } finally {
+    fs.unlinkSync(canon);
+    fs.unlinkSync(derived);
+  }
+});
+
+test('[회귀] --add 자리 — .md 는 첫 제목 다음(기존 규칙이 안 바뀌었다)', () => {
+  const stem = `docgraph-place-md-${process.pid}`;
+  const canon = path.join(ROOT, 'docs', `${stem}_정본.md`);
+  const derived = path.join(ROOT, 'docs', `${stem}_파생.md`);
+  fs.writeFileSync(canon, '# 임시 정본 v1.0 — 시험용\n', 'utf8');
+  fs.writeFileSync(derived, '# 임시 파생\n\n본문.\n', 'utf8');
+  try {
+    assert.ok(G.addEdge(`docs/${stem}_파생.md`, [`docs/${stem}_정본.md@v1.0`]));
+    const lines = fs.readFileSync(derived, 'utf8').split('\n');
+    assert.strictEqual(lines[0], '# 임시 파생');
+    assert.strictEqual(lines[2].trim(), `<!-- 파생: docs/${stem}_정본.md@v1.0 -->`);
+  } finally {
+    fs.unlinkSync(canon);
+    fs.unlinkSync(derived);
+  }
+});
+
+/* 계열 차단 — **doc-graph 의 walk 를 쓰지 않고** 직접 훑는다. 재려는 것이 바로 그 walk 의 사각이라,
+ * 같은 walk 로 재면 사각을 사각으로 검사하는 셈이 된다(가드가 자기 전처리에 눈이 먼 형태).
+ * 범위 = doc-graph 가 **덮으려는** 자리만: `docs/**`(의도적 제외인 SKIP 은 그대로 상속) + 저장소 루트 얕게.
+ *   → `tools/`·`tests/` 는 애초에 스캔 범위 밖이다(그 파일들이 표기법을 **설명**하며 예시를 문자열로 들고 있다).
+ *   → `docs/_archive/` 는 G.shouldSkip 이 거른다 — 하드코딩하지 않고 도구의 판정을 그대로 쓴다.
+ * 분모를 밝힌다 — 0건이면 「위반 없음」이 아니라 **스캐너가 안 돈 것**이고, 둘은 같은 초록으로 보인다(F207). */
+test('[회귀·계열] 파생을 선언한 docs·루트 파일은 전부 그래프 안에 있다 — 확장자 누락의 전 계열을 막는다', () => {
+  const BIN = /\.(pdf|png|jpe?g|gif|webp|ico|otf|ttf|woff2?|zip|mp4|mp3|wav|m4a|xlsx?|docx?|pptx?|glb|psd|ai)$/i;
+  const 선언한것 = [];
+
+  const 읽어보기 = (abs) => {
+    const r = G.rel(abs);
+    if (G.shouldSkip(r) || BIN.test(abs)) return;
+    let text;
+    try {
+      if (fs.statSync(abs).size > 2e6) return;
+      text = fs.readFileSync(abs, 'utf8');
+    } catch (_) { return; }
+    if (!text.includes('파생')) return;
+    // G.parseEdges 를 쓴다 — 코드 펜스 마스킹까지 **본체와 같은 판정**이어야 거짓양성이 안 난다.
+    if (G.parseEdges(text).length) 선언한것.push(r);
+  };
+
+  (function 훑기(dir) {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const abs = path.join(dir, e.name);
+      if (G.shouldSkip(G.rel(abs))) continue;
+      if (e.isDirectory()) 훑기(abs); else 읽어보기(abs);
+    }
+  })(path.join(ROOT, 'docs'));
+
+  for (const e of fs.readdirSync(ROOT, { withFileTypes: true })) {
+    if (e.isFile()) 읽어보기(path.join(ROOT, e.name));
+  }
+
+  // 픽스처가 아니라 실저장소 검사다 — 그래서 분모를 먼저 못박는다.
+  assert.ok(선언한것.length >= 15,
+    `파생을 선언한 파일을 ${선언한것.length}건밖에 못 찾았다 — 스캐너가 안 돈 것이지 위반이 없는 것이 아니다`);
+
+  const g = G.build();
+  const 밖 = 선언한것.filter((r) => !g.docs.has(r));
+  assert.deepStrictEqual(밖, [],
+    `파생을 선언했는데 그래프가 그 파일을 열지 않았다(분모 ${선언한것.length}건) — `
+    + '선언이 장식이 된다. 고치는 자리는 선언 쪽이 아니라 tools/doc-graph.js 의 TEXT_EXT·SCAN_DIRS 다.');
+});
