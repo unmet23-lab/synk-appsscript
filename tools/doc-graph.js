@@ -133,6 +133,28 @@ function canonVersion(text) {
   return m ? m[0].toLowerCase() : null;
 }
 
+/* [2026-08-09] 정본 지위를 **정본 자신이 선언**하는 통로.
+ * 왜 있나: 이 저장소에서 가장 넓게 전파되는 정본 — `docs/SYNK_철학.md`(유호님 확정 08-09 ·
+ * 「이 문서가 전 정본 문서 리라이팅의 기준이다」) — 가 그래프에 **통째로 없었다.**
+ * isCanon 이 파일명의 '정본' 글자와 `docs/정본/` 경로만 봤기 때문이다.
+ * 실측 08-09: 정본 42·파생 엣지 33 인데 **철학 몫은 0종**. 그래서 철학이 하루에 15번 개정되는
+ * 동안 「무엇이 낡았는지」를 아는 자리가 아무 데도 없었다 — F243 과 같은 병이고 층만 위다.
+ *
+ * 개명은 처방에서 뺐다. 그 파일명은 인쇄본 매니페스트·바탕화면 PDF·철학열람빌드가 이미
+ * 물고 있어서, 그래프를 고치자고 **유호님 눈에 보이는 산출물 이름**을 흔드는 꼴이 된다.
+ * 파일명 규칙을 넓히는 것(예: 머리말에 '정본' 글자가 있으면 정본)도 뺐다 — 그건 옵트인이
+ * 아니라 **수확**이고, 이 도구의 오탐 0 설계를 깬다.
+ *
+ * 그래서 파생이 `<!-- 파생: … -->` 로 선언하듯 정본은 `<!-- 정본: v1.0 -->` 로 선언한다.
+ * ⚠ maskCode 를 반드시 거친다 — 이 표기법을 **설명하는** 문서가 자기 예시 때문에 정본이
+ * 되는 함정은 doc-graph 가 엣지 쪽에서 이미 한 번 밟았다(위 maskCode 주석). */
+const SELF_CANON_RE = /<!--\s*정본:\s*(v\d+(?:\.\d+)*)\s*-->/i;
+function selfDeclaredCanon(text) {
+  const head = maskCode(String(text)).split('\n').slice(0, VERSION_SCAN_LINES).join('\n');
+  const m = head.match(SELF_CANON_RE);
+  return m ? m[1].toLowerCase() : null;
+}
+
 const sameVersion = (a, b) =>
   String(a).toLowerCase().replace(/^v/, '') === String(b).toLowerCase().replace(/^v/, '');
 
@@ -167,11 +189,15 @@ function build() {
     const r = rel(full);
     let text = '';
     try { text = fs.readFileSync(full, 'utf8'); } catch (_) { continue; }
+    // 정본 지위는 경로 규칙 **또는** 자기 선언. 선언이 있으면 버전도 그쪽이 이긴다 —
+    // 명시한 값이 머리말에서 주워 온 값보다 정확하다.
+    const 선언 = selfDeclaredCanon(text);
+    const canon = isCanon(r) || !!선언;
     docs.set(r, {
-      rel: r, full, canon: isCanon(r),
+      rel: r, full, canon,
       edges: parseEdgesFull(text),
       follows: parseEdges(text),
-      version: isCanon(r) ? canonVersion(text) : null,
+      version: canon ? (선언 || canonVersion(text)) : null,
       text,
     });
   }
@@ -415,6 +441,6 @@ function main() {
 
 if (require.main === module) main();
 module.exports = {
-  build, parseEdges, parseEdgesFull, splitVersion, canonVersion, sameVersion,
+  build, parseEdges, parseEdgesFull, splitVersion, canonVersion, selfDeclaredCanon, sameVersion,
   isCanon, addEdge, rel, shouldSkip, ROOT, findMapGaps, DOC_MAP,
 };

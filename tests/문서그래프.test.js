@@ -368,3 +368,67 @@ test('실저장소: 코드 파생에서 거짓양성이 안 난다(깨진 링크
   assert.deepStrictEqual(g.stale.filter((s) => isJs(s.from) && s.cited === s.now), [],
     '인용한 값 = 지금 값인데 낡음으로 올렸다');
 });
+
+/* [2026-08-09] 자기선언 정본 — `<!-- 정본: v1.0 -->`.
+ * 왜 생겼나: isCanon 이 **파일명의 '정본' 글자와 `docs/정본/` 경로**만 봤다. 그래서 이 저장소에서
+ * 가장 넓게 전파되는 정본(`docs/SYNK_철학.md` · 유호님 확정 08-09 「전 문서 리라이팅의 기준」)이
+ * 그래프 밖에 있었고, 하루 15회 개정되는 동안 무엇이 낡았는지 아는 자리가 없었다(실측: 철학 몫 엣지 0).
+ * 지키려는 성질: ①선언한 문서만 정본이 된다(옵트인 = 오탐 0) ②코드 펜스 속 예시는 안 센다
+ * ③머리말 밖은 안 본다 ④선언한 버전이 머리말에서 주워 온 vN 을 **이긴다**. */
+test('자기선언 정본 — 선언한 것만 읽고, 나머지는 null(오탐 0)', () => {
+  assert.strictEqual(G.selfDeclaredCanon('# 제목\n<!-- 정본: v1.0 -->\n'), 'v1.0');
+  assert.strictEqual(G.selfDeclaredCanon('# 제목\n<!--정본:v2.3-->\n'), 'v2.3', '공백 없는 표기도 같은 선언이다');
+  assert.strictEqual(G.selfDeclaredCanon('# 제목\n> 이 문서가 정본이다 v1.0\n'), null,
+    '산문에 "정본"과 vN 이 같이 있다고 정본이 되면 그건 옵트인이 아니라 수확이다');
+  assert.strictEqual(G.selfDeclaredCanon('# 제목만 있다\n'), null);
+});
+
+test('자기선언 정본 — 코드 펜스 속 예시는 정본으로 세지 않는다', () => {
+  // doc-graph 는 이 함정을 엣지 쪽에서 이미 한 번 밟았다(maskCode 주석). 같은 함정을 두 번 밟지 않는다.
+  const 설명문서 = ['# 표기법 설명', '', '```', '<!-- 정본: v1.0 -->', '```', ''].join('\n');
+  assert.strictEqual(G.selfDeclaredCanon(설명문서), null,
+    '표기법을 설명하는 문서가 자기 예시 때문에 정본이 되면 도구가 자기 자신을 못 믿는다');
+});
+
+test('자기선언 정본 — 머리말 밖의 선언은 안 읽는다', () => {
+  const 늦은선언 = ['# 제목', '', '', '', '', '', '', '', '', '', '', '', '<!-- 정본: v1.0 -->'].join('\n');
+  assert.strictEqual(G.selfDeclaredCanon(늦은선언), null, 'canonVersion 과 같은 창(머리말)만 본다');
+});
+
+test('자기선언 정본 — 낡은 인용을 실제로 잡는다(픽스처 · 파일명에 "정본" 없음)', () => {
+  // 탐지력을 픽스처로 못박는다. 파일명에 '정본'을 넣지 않는 것이 이 시험의 급소다 —
+  // 넣으면 옛 isCanon 만으로도 통과해서, 자기선언이 죽어도 초록이 된다.
+  const stem = `docgraph-self-${process.pid}`;
+  const canon = path.join(ROOT, 'docs', `${stem}_철학.md`);
+  const derived = path.join(ROOT, 'docs', `${stem}_파생.md`);
+  fs.writeFileSync(canon, '# 임시 철학\n<!-- 정본: v2.0 -->\n', 'utf8');
+  fs.writeFileSync(derived, `# 임시 파생\n\n<!-- 파생: docs/${stem}_철학.md@v1.0 -->\n`, 'utf8');
+  try {
+    const g = G.build();
+    const rel = `docs/${stem}_철학.md`;
+    assert.ok(g.docs.get(rel).canon, '선언했는데 정본으로 안 섰다');
+    assert.strictEqual(g.docs.get(rel).version, 'v2.0');
+    const hit = g.stale.find((s) => s.from === `docs/${stem}_파생.md`);
+    assert.ok(hit, '정본 v2.0 을 v1.0 으로 인용한 파생을 못 잡았다');
+    assert.strictEqual(hit.cited, 'v1.0');
+    assert.strictEqual(hit.now, 'v2.0');
+    // 정본을 고치는 세션에게 보여야 한다 — doc-propagation 훅이 읽는 바로 그 목록.
+    assert.ok((g.derivedOf.get(rel) || []).includes(`docs/${stem}_파생.md`),
+      'derivedOf 에 안 실리면 철학을 고쳐도 아무에게도 안 보인다');
+  } finally {
+    fs.unlinkSync(canon);
+    fs.unlinkSync(derived);
+  }
+});
+
+test('자기선언 정본 — 선언한 버전이 머리말의 다른 vN 을 이긴다', () => {
+  const stem = `docgraph-selfwin-${process.pid}`;
+  const canon = path.join(ROOT, 'docs', `${stem}_철학.md`);
+  // 머리말에 v9.9 가 먼저 나온다. 주워 온 값이 이기면 선언은 장식이 된다.
+  fs.writeFileSync(canon, '# 임시 철학 — 앱 v9.9 기준\n<!-- 정본: v1.0 -->\n', 'utf8');
+  try {
+    assert.strictEqual(G.build().docs.get(`docs/${stem}_철학.md`).version, 'v1.0');
+  } finally {
+    fs.unlinkSync(canon);
+  }
+});
