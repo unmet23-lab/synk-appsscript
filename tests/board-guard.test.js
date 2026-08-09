@@ -684,3 +684,155 @@ test('🔴 [F235] 편집 전 판을 못 읽으면 **전량 차단으로 돌아�
   assert.strictEqual(r.결정, 'deny',
     '🔴 이전 판을 못 읽자 전부 「남의 것」으로 세어 과길이가 통과했다 — 폴백이 느슨해지는 쪽이면 그게 곧 구멍이다');
 });
+
+/* ── F278 — ②의 처방을 **내기 전에 돌려 본다.** 하나도 안 돌면 첫 선언은 막지 않는다 ────
+ * 실사고 2026-08-09 11:03: 새 세션(이 세션)의 첫 선언이 「19줄이 된다」로 막혔고, 딸려 나온
+ * 명령 5개 중 하나는 board-move 원칙⑥(주인이 아직 살아 있다)에 걸려 **애초에 실행이 안 됐다.**
+ * F278 신고일엔 5개 전부가 그랬다. 그러면 남는 문은 BYPASS 아니면 「선언 포기」뿐이고,
+ * 포기는 track-collision 의 첫 처방(보드에서 상대 줄을 읽는다)을 상대편에서 원리상 불가능하게
+ * 만든다 — 내 트랙이 보드에 없기 때문이다(F103→F141→F229→F266 과 같은 축).
+ *
+ * 탐지력은 **여기 픽스처가 진다** — 실저장소는 살아있는 세션이 매 실행마다 달라 초록이 우연이 된다.
+ * 세 갈래를 조건 하나씩 바꿔 가른다: ①전부 막힘+첫 선언 ②전부 막힘+내 줄 이미 있음 ③일부만 막힘. */
+const { spawnSync: 실행 } = require('child_process');
+const store = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'handoff-store.js'));
+const hasGit = 실행('git', ['--version'], { encoding: 'utf8' }).status === 0;
+const 남세션278 = 'local_f278aaaa-1111-2222-3333-444455556666';
+const 내세션278 = 'local_f278bbbb-1111-2222-3333-444455556666';
+const 지문278 = (sid) => sid.replace(/^local_/, '').slice(0, 8);
+const 새줄278 = `| 2026-08-09 | **내 첫 트랙** | z.js | 작업중 (\`local_${지문278(내세션278)}\`) |`;
+
+/** 만석(18줄) 판 + 완료 줄 주인이 **살아 있는** 세션 파일.
+ *  원칙⑥의 재료 중 가장 정확한 것이 **파일 이름**(F246)이라 커밋 없이도 판정이 선다.
+ *  줄 구성은 활성 11 + 완료 7 = 18 — 내 줄 1개를 더해도 활성 상한(12)에 안 걸려야
+ *  **전체 상한(②)만** 재는 실험이 된다(둘을 같이 건드리면 무엇이 막았는지 못 가른다). */
+function F278픽스처({ 내줄 = null, 죽은완료 = false, 활성수 = 11 } = {}) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'boardf278-'));
+  const g = (...a) => 실행('git', a, { cwd: dir, encoding: 'utf8' });
+  g('init', '-q'); g('config', 'user.email', 't@t'); g('config', 'user.name', 't');
+  fs.writeFileSync(path.join(dir, 'a.js'), '// x\n', 'utf8');
+  g('add', '--', 'a.js'); g('commit', '-q', '-m', '초기');
+
+  fs.mkdirSync(path.join(dir, 'docs'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'docs', '세션보드_아카이브.md'),
+    ['# 아카이브', '', '---', '', '| 2026-08-01 | **옛 트랙** | c.js | 완료 |', ''].join('\n'), 'utf8');
+
+  const 완료줄 = ['갑', '을', '병', '정', '무', '기', '경'].map(
+    (n) => `| 2026-08-01 | **완료트랙${n}** | a.js | 완료 (\`local_${지문278(남세션278)}\`) |`);
+  const 활성줄 = Array.from({ length: 활성수 },
+    (_, i) => `| 2026-08-01 | **활성트랙${i}가** | b${i}.js | 작업중 (\`local_${지문278(남세션278)}\`) |`);
+  fs.writeFileSync(보드파일(dir, 지문278(남세션278)), `${[...완료줄, ...활성줄].join('\n')}\n`, 'utf8');
+
+  /* 주인이 **죽은** 완료 줄 하나 — 이게 있으면 처방이 비지 않으므로 면제가 열려선 안 된다.
+   * 파일 이름이 곧 주인이라, 박동을 안 만드는 것만으로 「죽었다」가 된다. */
+  if (죽은완료) {
+    fs.writeFileSync(보드파일(dir, 'f278dead'),
+      '| 2026-08-01 | **죽은주인트랙** | d.js | 완료 (`local_f278dead`) |\n', 'utf8');
+  }
+
+  const 내파일 = 보드파일(dir, 지문278(내세션278));
+  if (내줄) fs.writeFileSync(내파일, `${내줄}\n`, 'utf8');
+
+  const 최상위 = g('rev-parse', '--show-toplevel').stdout.trim();
+  const 박동 = path.join(store.stateDir(), `track-${store.projectKey(최상위)}-${store.safeId(남세션278)}.json`);
+  fs.mkdirSync(store.stateDir(), { recursive: true });
+  fs.writeFileSync(박동, JSON.stringify({ touched: [] }), 'utf8');
+  return { dir, 내파일, 박동 };
+}
+const 박동치우기 = (p) => { try { fs.unlinkSync(p); } catch (_) { /* 이미 없으면 됐다 */ } };
+const 내환경278 = { CLAUDE_CODE_HOST_SESSION_ID: 내세션278 };
+
+test('🔴 [F278] 옮길 수 있는 완료 줄이 0이면 **첫 선언 1줄은 통과한다**', { skip: !hasGit && 'git 없음' }, () => {
+  const { 내파일, 박동 } = F278픽스처();
+  try {
+    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${새줄278}\n` } }, 내환경278);
+    assert.strictEqual(r.결정, 'allow',
+      `🔴 F278 재발 — 새 세션이 자기 트랙을 **선언조차** 못 한다. 처방(board-move)은 주인이 살아 있어 전부 거절되므로 따를 수 있는 문이 0이다:\n${r.사유.slice(0, 400)}`);
+    assert.match(r.알림, /첫 선언/, '면제를 조용히 열었다 — 침묵은 상한이 없는 것과 같다');
+  } finally { 박동치우기(박동); }
+});
+
+test('🔴 [F278] 그래도 **내 줄이 이미 있으면** 새 줄 추가는 막는다 (면제가 우회문이 되지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const 기존 = `| 2026-08-09 | **내 첫 트랙** | z.js | 완료 (\`local_${지문278(내세션278)}\`) |`;
+  const { 내파일, 박동 } = F278픽스처({ 내줄: 기존 });
+  try {
+    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${기존}\n${새줄278}\n` } }, 내환경278);
+    assert.strictEqual(r.결정, 'deny', '🔴 첫 선언 면제가 「줄을 계속 늘려도 된다」로 번졌다');
+    assert.match(r.사유, /첫 선언 1줄/, `막은 이유가 F278 면제 경계라고 말하지 않는다:\n${r.사유.slice(0, 300)}`);
+  } finally { 박동치우기(박동); }
+});
+
+test('🔴 [F278] 첫 선언이라도 **한 번에 2줄**이면 막는다 (면제는 1줄이다)', { skip: !hasGit && 'git 없음' }, () => {
+  /* 남의 활성을 10으로 줄인다 — 내 줄 2개를 더해도 활성이 12(상한)라 ①이 먼저 막지 않는다.
+   * 조건은 **하나만** 바뀐다(내 줄 1→2). 둘째를 완료로 두면 그 줄 자체가 처방 후보가 되어
+   * 「명령이 있어서 막혔다」와 「면제 경계라 막혔다」가 섞인다 — 그래서 둘 다 활성으로 둔다. */
+  const { 내파일, 박동 } = F278픽스처({ 활성수: 10 });
+  try {
+    const 둘째 = `| 2026-08-09 | **내 둘째 트랙** | y.js | 작업중 (\`local_${지문278(내세션278)}\`) |`;
+    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${새줄278}\n${둘째}\n` } }, 내환경278);
+    assert.strictEqual(r.결정, 'deny', '🔴 면제가 「첫 편집이면 몇 줄이든」으로 번졌다 — 판이 계속 커진다');
+    assert.match(r.사유, /첫 선언 1줄/, `막은 이유가 F278 면제 경계라고 말하지 않는다:\n${r.사유.slice(0, 300)}`);
+  } finally { 박동치우기(박동); }
+});
+
+/* ── F278-b — **활성 상한에서도** 같은 구멍이 난다 ────────────────────────────
+ * 전체 상한만 열어 두면 판이 활성으로 찰 때 F278 이 그대로 되산다. 활성 상한의 처방 둘은
+ * 새 세션에겐 원리상 둘 다 막혀 있다: 「끝난 트랙 상태를 완료로 갱신」=남의 줄(F073 금지),
+ * 「내 줄을 합쳐라」=합칠 줄이 없다. 조건 하나만 바꿔 두 갈래를 가른다. */
+test('🔴 [F278] 활성이 이미 상한이어도 **첫 선언 1줄은 통과한다**', { skip: !hasGit && 'git 없음' }, () => {
+  const { 내파일, 박동 } = F278픽스처({ 활성수: 12 });
+  try {
+    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${새줄278}\n` } }, 내환경278);
+    assert.strictEqual(r.결정, 'allow',
+      `🔴 활성 축으로 F278 이 되살았다 — 새 세션이 선언조차 못 한다:\n${r.사유.slice(0, 300)}`);
+    assert.match(r.알림, /활성 13줄/, '면제를 조용히 열었다 — 침묵은 상한이 없는 것과 같다');
+  } finally { 박동치우기(박동); }
+});
+
+test('🔴 [F278] 활성 상한에서 **내 줄이 이미 있으면** 새 활성 줄은 막는다 (탐지력)', { skip: !hasGit && 'git 없음' }, () => {
+  const 기존 = `| 2026-08-09 | **내 첫 트랙** | z.js | 작업중 (\`local_${지문278(내세션278)}\`) |`;
+  const { 내파일, 박동 } = F278픽스처({ 내줄: 기존, 활성수: 11 });
+  try {
+    const 둘째 = `| 2026-08-09 | **내 둘째 트랙** | y.js | 작업중 (\`local_${지문278(내세션278)}\`) |`;
+    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${기존}\n${둘째}\n` } }, 내환경278);
+    assert.strictEqual(r.결정, 'deny', '🔴 활성 면제가 「계속 늘려도 된다」로 번졌다');
+    assert.match(r.사유, /활성 줄이 13줄/, `활성 상한이 아니라 딴 사유로 막혔다:\n${r.사유.slice(0, 300)}`);
+  } finally { 박동치우기(박동); }
+});
+
+/* 🔑 **답을 못 받은 것**과 **거절당한 것**은 다르다. 스폰이 답을 못 주는 자리(타임아웃)는
+ * 픽스처로 만들 손잡이가 없어 그 성질이 회귀 밖에 있었다 — 그래서 board-guard 에 제한 시간
+ * 이음매를 뒀다(`SYNK_BOARD_MOVE_TIMEOUT_MS`). 1ms 면 모든 검증이 답 없이 끝난다. */
+test('🔴 [F278] 검증이 **답을 못 받으면** 차단을 유지한다 (타임아웃을 「옮길 게 없다」로 읽지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const { 내파일, 박동 } = F278픽스처();
+  try {
+    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${새줄278}\n` } },
+      { ...내환경278, SYNK_BOARD_MOVE_TIMEOUT_MS: '1' });
+    assert.strictEqual(r.결정, 'deny',
+      '🔴 검증이 답을 못 받았는데 「치울 게 없다」로 읽고 면제를 열었다 — 미실행이 통과와 같은 모양이 됐다(F207 축)');
+  } finally { 박동치우기(박동); }
+});
+
+/* 🔑 **「board-move 가 거절했다」와 「board-move 가 못 돌았다」를 가르는가.**
+ * 이 둘을 뭉치면(=0 이외 전부를 실행 불가로 세면) 환경 고장이 「옮길 게 없다」로 읽혀 상한이
+ * 조용히 풀린다 — 새는 방향이다. 아래 픽스처엔 아카이브 파일도 git 저장소도 없어 board-move 가
+ * **1** 로 죽는다. 그때 처방은 비면 안 되고 차단도 그대로여야 한다. */
+test('🔴 [F278] board-move 가 아예 못 도는 자리에서는 **처방이 비지 않는다** (미측정을 「없다」로 세지 않는다)', () => {
+  const 판 = 만석보드();
+  const r = 판정({ tool_name: 'Edit', tool_input: { file_path: 판, old_string: row(3), new_string: `${row(3)}\n${row(99)}` } });
+  assert.strictEqual(r.결정, 'deny', '판정 불가인데 통과시켰다');
+  assert.match(r.사유, /board-move\.js "/,
+    `🔴 board-move 가 못 돈 것을 「옮길 완료 줄이 없다」로 읽었다 — 종료 코드 6(거절)만 실행 불가로 세야 한다:\n${r.사유.slice(0, 300)}`);
+});
+
+test('🔴 [F278] 옮길 수 있는 완료 줄이 **하나라도 있으면** 막고, 처방엔 그것만 낸다', { skip: !hasGit && 'git 없음' }, () => {
+  const { 내파일, 박동 } = F278픽스처({ 죽은완료: true });
+  try {
+    const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: `${새줄278}\n` } }, 내환경278);
+    assert.strictEqual(r.결정, 'deny', '🔴 치울 수 있는 줄이 있는데 면제가 열렸다 — 상한이 사라진다');
+    const 명령 = (r.사유.match(/board-move\.js "([^"]*)"/g) || []);
+    assert.ok(명령.some((c) => c.includes('죽은주인')), `처방에 **실제로 도는** 명령이 없다:\n${r.사유.slice(0, 400)}`);
+    assert.ok(!명령.some((c) => c.includes('완료트랙')),
+      `🔴 주인이 살아 있어 board-move 가 거절할 명령을 그대로 냈다 — 이것이 F278 의 본체다:\n${명령.join(' / ')}`);
+  } finally { 박동치우기(박동); }
+});

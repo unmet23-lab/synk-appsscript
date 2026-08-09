@@ -37,10 +37,12 @@ function mkFixture(boardEol = '\n', archiveEol = '\r\n') {
 }
 
 function run(fx, args, 덧env = {}) {
-  // 통과코드 0·1 = 이 도구의 계약(0 옮겼다 / 1 못 옮겼다). 그 밖은 결과가 아니다.
+  /* 통과코드 = 이 도구의 계약(0 옮겼다 / 1 못 옮겼다 / **6 원칙⑥ — 주인이 살아 있다**).
+   * 6 은 F278 에서 팠다: board-guard 가 `--dry` 로 「이 처방이 실제로 도는가」를 묻는데,
+   * 1 하나로는 거절과 「아예 못 돌았다」가 안 갈린다. 그 밖의 코드는 결과가 아니다. */
   return 훅띄우기([TOOL, ...args], {
     encoding: 'utf8',
-    통과코드: [0, 1],
+    통과코드: [0, 1, 6],
     env: { ...process.env, SYNK_BOARD: fx.board, SYNK_BOARD_ARCHIVE: fx.archive, ...덧env },
   });
 }
@@ -266,6 +268,10 @@ test('[F146] 줄 주인 세션이 살아 있으면 **아무것도 쓰지 않는�
     const before = { b: read(fx.board), a: read(fx.archive) };
     const r = run(fx, ['살아있는 트랙 정']);
     assert.notEqual(r.status, 0, '살아있는 세션의 줄을 그냥 옮겼다 — F146 재현');
+    /* 🔑 F278 — 거절은 **6** 으로 말한다. board-guard 가 `--dry` 로 처방 실행 가능성을 묻는데,
+     *   1(못 돌았다)과 같은 코드면 환경 고장이 「옮길 게 없다」로 읽혀 상한이 조용히 풀린다.
+     *   글자 대신 코드로 못박는 이유: 문구를 다듬는 순간 판정이 두 곳으로 갈라진다. */
+    assert.equal(r.status, 6, '원칙⑥ 거절이 전용 종료 코드로 안 나온다 — board-guard 가 못 가른다');
     assert.match(String(r.stderr), /아직 살아 있다/, '왜 막혔는지 안 말한다');
     assert.match(String(r.stderr), new RegExp(해시), '어느 커밋이 걸렸는지 안 나온다');
     assert.match(String(r.stderr), /f146fake/, '누구 것인지 안 나온다');
@@ -273,8 +279,9 @@ test('[F146] 줄 주인 세션이 살아 있으면 **아무것도 쓰지 않는�
     assert.equal(read(fx.archive), before.a, '거부인데 아카이브가 변했다');
     assert.ok(read(fx.board).includes(줄), '거부인데 줄이 보드에서 사라졌다');
 
-    // --dry 도 같은 답을 내야 한다 — 계획만 볼 때야말로 「옮겨도 되나」의 답이 필요하다.
-    assert.notEqual(run(fx, ['살아있는 트랙 정', '--dry']).status, 0, '--dry 는 막히지 않았다');
+    /* --dry 도 같은 답을 내야 한다 — 계획만 볼 때야말로 「옮겨도 되나」의 답이 필요하다.
+     * board-guard 가 처방을 거르는 통로가 **바로 이것**이라(F278) 코드까지 같아야 한다. */
+    assert.equal(run(fx, ['살아있는 트랙 정', '--dry']).status, 6, '--dry 가 원칙⑥을 6 으로 안 말한다');
   } finally { 치우기(박동); }
 });
 

@@ -64,7 +64,13 @@ function eolOf(text) {
 }
 const isRow = (line) => /^\s*\|/.test(line) && !/^\s*\|\s*-+/.test(line) && !/^\s*\|\s*날짜\s*\|/.test(line);
 const rowsIn = (text) => text.split(/\r?\n/).filter(isRow);
-const die = (msg) => { console.error('[board-move] ' + msg); process.exit(1); };
+/* 종료 코드는 **계약**이다: 0 옮겼다 · 1 못 옮겼다 · 6 원칙⑥(줄 주인이 아직 살아 있다).
+ * 6 을 따로 판 이유(F278 · 2026-08-09): board-guard 가 「이 처방이 실제로 도는가」를 `--dry` 로
+ * 물어보는데, 1 하나로는 **「board-move 가 거절했다」와 「board-move 가 아예 못 돌았다」**(아카이브
+ * 없음·저장소 아님·경로 어긋남)를 못 가른다. 못 가르면 환경 고장이 「옮길 게 없다」로 읽혀
+ * 상한이 조용히 풀린다 — 새는 방향이다. 글자(stderr 문구)로 가르지 않는 이유는 그게 곧
+ * 두 번째 정의라서다(문구를 다듬는 순간 판정이 갈라진다). */
+const die = (msg, code) => { console.error('[board-move] ' + msg); process.exit(code || 1); };
 
 const args = process.argv.slice(2);
 const dry = args.includes('--dry');
@@ -225,7 +231,8 @@ if (산주인.length) {
     '  **아무것도 쓰지 않았다** — 줄은 보드에 그대로다.\n' +
     산주인.map((t) => '  · ' + t).join('\n') + '\n' +
     '  「✅종결」은 그 세션이 끝났다는 뜻이 아니다. 그 세션이 끝난 뒤 다시 돌려라.\n' +
-    '  내 줄인데 막혔다면 환경변수 CLAUDE_CODE_HOST_SESSION_ID 가 비었는지 본다(비면 내 커밋도 남의 것으로 보인다).');
+    '  내 줄인데 막혔다면 환경변수 CLAUDE_CODE_HOST_SESSION_ID 가 비었는지 본다(비면 내 커밋도 남의 것으로 보인다).',
+    6);
 }
 
 if (dry) { console.log('[board-move] --dry — 쓰지 않았다.'); process.exit(0); }
