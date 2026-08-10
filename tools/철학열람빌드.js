@@ -5,27 +5,11 @@
 const fs = require('fs');
 const path = require('path');
 const { 칸나누기 } = require('./lib/표.js');   // 표를 칸으로 가르는 **단 하나의 통로**(날 split 금지)
+// 🔴 바탕화면 경로는 추정하지 않고 「실제로 화면에 보이는 곳」을 찾는다 — 그 판정은 아래 통로 **한 곳**에만 산다.
+// 여기 사본을 되살리면 `tests/바탕화면통로.test.js` 가 문다(같은 탐지가 세 벌로 갈렸던 자리 · 2026-08-10).
+const { 경로: 바탕화면 } = require('./lib/바탕화면.js');
 
 const ROOT = path.join(__dirname, '..');
-
-// 🔴 바탕화면 경로는 추정하지 않고 「실제로 화면에 보이는 곳」을 찾는다.
-// OneDrive 백업이 켜져 있으면 진짜 바탕화면은 OneDrive\Desktop 이고,
-// USERPROFILE\Desktop 은 화면에 안 뜨는 껍데기로 남는다(2026-08-09 실측 — 여기로 내보내 「없다」가 됐다).
-function 바탕화면() {
-  const 후보 = [];
-  try { // 정본: 레지스트리(Explorer 가 실제로 읽는 값)
-    const { execFileSync } = require('child_process');
-    const out = execFileSync('reg', ['query',
-      'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders', '/v', 'Desktop'],
-      { encoding: 'utf8' });
-    const m = out.match(/Desktop\s+REG_(?:EXPAND_)?SZ\s+(.+)/);
-    if (m) 후보.push(m[1].trim().replace(/%([^%]+)%/g, (_, v) => process.env[v] || ''));
-  } catch { /* reg 없으면 폴백 */ }
-  if (process.env.OneDrive) 후보.push(path.join(process.env.OneDrive, 'Desktop'));
-  if (process.env.USERPROFILE) 후보.push(path.join(process.env.USERPROFILE, 'Desktop'));
-  for (const c of 후보) if (c && fs.existsSync(c)) return c;
-  throw new Error('바탕화면을 못 찾았다: ' + 후보.join(' | '));
-}
 
 const DOCS = [
   ['docs/SYNK_철학.md', '01_SYNK_철학_3벌'],
