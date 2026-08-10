@@ -23,7 +23,38 @@ const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..', '..
  * `clasp deployments` 는 조회라 안 걸린다(`deploy` 뒤 낱말 경계로 갈린다).
  * push 뿐 아니라 deploy 도 본다 — 갱신 직후에 **초록을 확인**해 주는 쪽이 고리를 닫는다. */
 const 배포명령 = /\bclasp\b[^\n]*?\s(push|deploy)\b/;
-module.exports = { 배포명령 };
+
+/* 판정 → 사람에게 낼 알림(머리·본문). **순수 함수** — 탐지력을 픽스처로 재기 위해 뽑아 뒀다
+ * (실행으로 재려면 라이브 상태를 연출해야 해서 기계마다 결과가 갈린다 · 이 파일 아래 e2e 는
+ * 「확인 불가」 한 갈래만 진다). */
+function 알림꾸미기(r) {
+  const 머리 = r.level === 'stale'
+    ? `🔴 ${r.이름}: push 는 됐지만 **라이브는 옛 코드다**`
+    : r.level === 'warn'
+      ? `🔴 ${r.이름}: 방금 push 가 **미커밋 ${(r.미커밋 || []).length}건**을 실었을 수 있다(F310)`
+      : r.level === 'unreachable'
+        ? `⚠ ${r.이름}: 배포판 확인 불가`
+        : `⚠ ${r.이름}: 배포판 판정 불가(지문 없음)`;
+
+  /* warn = 배포집합 미커밋(F310) — 이 갈래만 병이 다르다: 라이브가 안 바뀐 게 아니라
+   * **작업본(미확정 포함)이 그대로 라이브가 된** 쪽이다. 같은 훈계를 접붙이면 처방이 어긋난다. */
+  const 본문 = r.level === 'warn'
+    ? '[deploy-freshness] **`clasp push` 는 HEAD 가 아니라 작업본을 민다**(F310 · 08-10 실측 2회:\n'
+      + '`[vNEXT]` 자리표와 남의 트랙 중간 상태가 그렇게 라이브에 나갔다 — 「커밋 안 했으니 안 나갔다」는 거짓이다).\n\n'
+      + r.lines.join('\n') + '\n\n'
+      + '→ **보고하기 전에** `node tools/배포판점검.js --라이브` 로 실렸는지 바이트로 재고,\n'
+      + '   실렸으면 주인을 갈라(`node tools/작업본소유자.js`) 내 것은 즉시 커밋해 「라이브 = HEAD」를 복구한다.'
+    : '[deploy-freshness] **`clasp push` 는 라이브를 바꾸지 않는다.**\n'
+      + '웹앱은 프로젝트 파일이 아니라 **고정 버전 배포 스냅샷**을 서빙한다 — push 로 파일만\n'
+      + '갱신하면 접수 URL 은 옛 코드를 그대로 계속 준다(2026-08-05 실사고: @16 이 v9.186 시점\n'
+      + '카드를 서빙하는 동안 브랜드 키트 수리는 저장소에만 있었다).\n\n'
+      + r.lines.join('\n') + '\n\n'
+      + '→ **보고하기 전에** 위 명령으로 갱신하고, `clasp deployments` 로 **배포 개수가 그대로**인지 본다.\n'
+      + '   개수가 늘었으면 접수 주소가 둘로 갈린 것이다 — 그건 되돌리기가 훨씬 비싸다.';
+  return { 머리, 본문 };
+}
+
+module.exports = { 배포명령, 알림꾸미기 };
 
 if (require.main !== module) return;
 
@@ -51,20 +82,7 @@ process.stdin.on('end', () => {
 
   if (r.level === 'ok') process.exit(0); // 초록이면 조용히 — 소음은 알림을 죽인다
 
-  const 머리 = r.level === 'stale'
-    ? `🔴 ${r.이름}: push 는 됐지만 **라이브는 옛 코드다**`
-    : r.level === 'unreachable'
-      ? `⚠ ${r.이름}: 배포판 확인 불가`
-      : `⚠ ${r.이름}: 배포판 판정 불가(지문 없음)`;
-
-  const 본문 =
-    '[deploy-freshness] **`clasp push` 는 라이브를 바꾸지 않는다.**\n'
-    + '웹앱은 프로젝트 파일이 아니라 **고정 버전 배포 스냅샷**을 서빙한다 — push 로 파일만\n'
-    + '갱신하면 접수 URL 은 옛 코드를 그대로 계속 준다(2026-08-05 실사고: @16 이 v9.186 시점\n'
-    + '카드를 서빙하는 동안 브랜드 키트 수리는 저장소에만 있었다).\n\n'
-    + r.lines.join('\n') + '\n\n'
-    + '→ **보고하기 전에** 위 명령으로 갱신하고, `clasp deployments` 로 **배포 개수가 그대로**인지 본다.\n'
-    + '   개수가 늘었으면 접수 주소가 둘로 갈린 것이다 — 그건 되돌리기가 훨씬 비싸다.';
+  const { 머리, 본문 } = 알림꾸미기(r);
 
   process.stdout.write(JSON.stringify({
     systemMessage: 머리,

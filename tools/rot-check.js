@@ -179,7 +179,7 @@ function 배포Section(라이브, 시간제한) {
    * 🔴 라이브를 안 재는 호출(테스트·CI·`SYNK_ROT_LIVE=0`)은 **초록이 아니라 미측정**으로 낸다. */
   const D = require('./배포판점검.js');
   if (!라이브) return { 측정: false, 결과: [] };
-  const 미커밋 = 미커밋집합();
+  const 미커밋 = D.미커밋집합();
   return {
     측정: true,
     결과: D.claspProjects().map((p) => {
@@ -198,13 +198,8 @@ function 배포Section(라이브, 시간제한) {
  * 파일을 고치는 중이면 라이브와 다른 게 **정상**인데, 그걸 「push 가 빠졌다」로 내면 이 알림은
  * 하루에 한 번 거짓말을 하고 거짓말하는 가드는 곧 무시당한다(F113). 주간일 땐 드물어 안 보였고
  * 하루로 당기는 순간 흔해진다 — 실측 2026-08-08: 남이 12:44 에 고친 `Code.js`·`엔진_운영배치.js`
- * 두 파일이 12:51 대조에서 그대로 🔴 로 나왔다. 가르는 재료는 git 이 이미 준다. */
-function 미커밋집합() {
-  const o = git(ROOT, ['status', '--porcelain']);
-  if (o === null) return null;   // 못 읽었다 = 모름. 아래는 가르지 못한 쪽(= 🔴 유지)으로 둔다
-  return new Set(o.split('\n').filter(Boolean).map((l) => l.slice(3).trim().replace(/^"|"$/g, '')));
-}
-
+ * 두 파일이 12:51 대조에서 그대로 🔴 로 나왔다. 가르는 재료는 git 이 이미 준다.
+ * (미커밋을 재는 통로는 배포판점검.미커밋집합 하나다 — 여기 사본이 있었는데 F310 트랙이 합쳤다.) */
 function 편집중인가(파일들, projRoot, 미커밋) {
   if (!미커밋 || !파일들 || !파일들.length) return false;
   const 앞 = path.relative(ROOT, projRoot).replace(/\\/g, '/');

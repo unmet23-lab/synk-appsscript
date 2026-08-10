@@ -137,6 +137,121 @@ test('방향을 안 재고 온 대조는 **안 쟀다고** 적는다 (미측정�
   assert.deepStrictEqual(r.못가름, [], '안 잰 것을 「못 가름」으로 세면 옛 호출자마다 거짓 🔴 가 뜬다');
 });
 
+/* ── ②-c 미커밋 유출 (F309·F310) — 「바이트 동일」 초록이 미커밋을 덮던 자리 ──
+ * clasp 는 HEAD 가 아니라 **작업본**을 민다. 08-10 실측 2회: `[vNEXT]` 자리표와 남의 트랙
+ * 중간 상태가 push 에 실려 라이브로 나갔는데, push 직후 바이트 대조는 「동일」 초록이었다 —
+ * 유출이 초록과 같은 모양이었다(F309: push 직후 배포집합 미커밋 0 을 확인해야 「라이브=작업본」이
+ * 비로소 「라이브=HEAD」를 뜻한다). 탐지력은 전부 여기 픽스처가 진다. */
+
+const 헤드미커밋 = (대조, 미커밋) => 점검.판정({
+  이름: '(루트)', 경로: '.', fp: 'aaaaaaaa', deployments: [배포('DEP0', 'HEAD', '')], 대조, 미커밋,
+});
+
+test('🔑 바이트 동일 + 배포집합 미커밋 → 초록이 아니라 유출이다 (F310)', () => {
+  const r = 헤드미커밋({ 다름: [], 라이브없음: [], 저장소없음: [], 총: 15 }, ['contents_상담AI.js']);
+  assert.strictEqual(r.level, 'stale', '유출을 초록으로 접으면 F309 가 약속한 그 한 줄이 없는 것이다');
+  const 글 = r.lines.join('\n');
+  assert.match(글, /contents_상담AI\.js/, '어느 파일이 샜는지 안 대면 주인을 가를 수가 없다');
+  assert.match(글, /≠ HEAD/, '「라이브=작업본」과 「라이브=HEAD」가 같은 문장이면 F309 그대로다');
+  assert.match(글, /작업본소유자/, '주인 가르기 없는 처방은 남의 것을 커밋하라는 말이 된다(F073)');
+});
+
+test('미커밋 0 이 실측되면 초록이 「라이브 = HEAD」까지 말한다 (F309 의 그 한 줄)', () => {
+  const r = 헤드미커밋({ 다름: [], 라이브없음: [], 저장소없음: [], 총: 15 }, []);
+  assert.strictEqual(r.level, 'ok');
+  assert.match(r.lines.join('\n'), /라이브 = HEAD/);
+});
+
+test('미커밋을 못 쟀으면(모름) 초록을 HEAD 로 부풀리지 않는다', () => {
+  const r = 헤드({ 다름: [], 라이브없음: [], 저장소없음: [], 총: 15 });   // 미커밋 미전달 = 모름
+  assert.strictEqual(r.level, 'ok');
+  assert.doesNotMatch(r.lines.join('\n'), /라이브 = HEAD/, '모름을 「HEAD 다」로 접으면 F310 이 초록의 모습으로 돌아온다');
+  assert.match(r.lines.join('\n'), /까지만/, '초록의 뜻이 어디까지인지를 문장이 스스로 말해야 한다');
+});
+
+test('다름 + 그 파일이 미커밋 → 「주인 가르기」 경고가 처방보다 먼저 선다', () => {
+  const r = 헤드미커밋({ 다름: ['Code.js'], 라이브없음: [], 저장소없음: [], 총: 15 }, ['Code.js']);
+  const 경고자리 = r.lines.findIndex((l) => /작업본소유자/.test(l));
+  const 처방자리 = r.lines.findIndex((l) => /\/deploy/.test(l));
+  assert.ok(경고자리 >= 0, '남의 반쪽 작업을 밀라는 처방이 경고 없이 나간다');
+  assert.ok(처방자리 >= 0 && 경고자리 < 처방자리, '경고가 처방 뒤면 사람은 처방만 따른다');
+});
+
+test('다름 목록 밖의 미커밋(=라이브와 바이트 동일) → 「이미 실려 나갔다」로 짚는다', () => {
+  const r = 헤드미커밋({ 다름: ['Code.js'], 라이브없음: [], 저장소없음: [], 총: 15 }, ['contents_상담AI.js']);
+  const 글 = r.lines.join('\n');
+  assert.match(글, /이미 실려 나갔다/, '낡음에 가려 유출이 조용히 지나간다 — 두 병이 같이 올 수 있다');
+  assert.match(글, /contents_상담AI\.js/);
+});
+
+test('@HEAD·대조 없음 + 미커밋 → ok 로 접지 않는다(warn) — push 직후 훅이 이 갈래로 짖는다', () => {
+  const r = 점검.판정({ 이름: '(루트)', 경로: '.', fp: 'a', deployments: [배포('DEP0', 'HEAD', '')], 미커밋: ['Code.js'] });
+  assert.strictEqual(r.level, 'warn',
+    'ok 면 훅이 침묵해 F310 이 그대로고, stale 이면 --check 게이트가 남의 정상 작업본에도 빨개진다(F113)');
+  assert.strictEqual(r.측정, false, '라이브를 안 읽은 갈래다 — 단정은 --라이브 몫');
+  assert.match(r.lines.join('\n'), /--라이브/, '실렸는지 재는 길을 같이 줘야 사람이 다음 수를 안다');
+});
+
+test('고정 배포 지문 일치 + 미커밋 → 그 스냅샷은 HEAD 가 아니다 (F310 의 고정 배포판)', () => {
+  const r = 점검.판정({ 이름: 'crewcard', 경로: 'crewcard', fp: 'aaaaaaaa',
+    deployments: [배포('DEP1', '18', '브랜드 키트 #fp:aaaaaaaa')], 미커밋: ['crewcard/카드_kr.html'] });
+  assert.strictEqual(r.level, 'stale', '지문은 작업본 바이트에서 나온다 — 일치 = 스냅샷도 그 미커밋을 싣고 있다');
+  assert.match(r.lines.join('\n'), /HEAD 가 아니다/);
+});
+
+test('낡은 고정 배포 + 미커밋 → 갱신 처방 옆에 「그 미커밋까지 실린다」가 선다', () => {
+  const r = 점검.판정({ 이름: 'crewcard', 경로: 'crewcard', fp: 'aaaaaaaa',
+    deployments: [배포('DEP1', '16', '옛것 #fp:bbbbbbbb')], 미커밋: ['crewcard/카드_kr.html'] });
+  assert.strictEqual(r.level, 'stale');
+  assert.match(r.lines.join('\n'), /그 미커밋까지 실린다/, '처방(clasp deploy)이 작업본을 스냅샷한다는 것을 처방 옆에서 말해야 한다');
+});
+
+test('거짓양성 쪽: 미커밋 0 인 고정 배포 초록은 문장 그대로다 (소음은 알림을 죽인다)', () => {
+  const r = 점검.판정({ 이름: 'crewcard', 경로: 'crewcard', fp: 'aaaaaaaa',
+    deployments: [배포('DEP1', '18', 'x #fp:aaaaaaaa')], 미커밋: [] });
+  assert.strictEqual(r.level, 'ok');
+  assert.match(r.lines.join('\n'), /라이브 최신/);
+});
+
+test('미커밋집합: 한글 경로가 깨지지 않고, 미추적 디렉터리 속 파일까지 낱개로 보인다', () => {
+  /* 사람이 실제로 쓰는 표기로 검사한다(가드 맹점 ①) — 이 저장소의 배포 파일명은 한글이다.
+   * quotepath 를 안 끄면 `엔진_*.js` 가 8진수로 깨져 모든 대조가 조용히 빗나가고(F281 계열),
+   * -uall 이 없으면 미추적 디렉터리가 한 줄로 접혀 그 안의 새 배포 파일이 안 보인다. */
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-uncommit-'));
+  const g = (...args) => require('child_process').execFileSync('git', args, { cwd: d, encoding: 'utf8' });
+  try {
+    g('init', '-q');
+    fs.writeFileSync(path.join(d, '엔진_수집.js'), 'a');
+    g('add', '-A');
+    g('-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', '판');
+    fs.writeFileSync(path.join(d, '엔진_수집.js'), 'b');            // 수정(미커밋)
+    fs.mkdirSync(path.join(d, '새폴더'));
+    fs.writeFileSync(path.join(d, '새폴더', '새파일.js'), 'c');     // 미추적 디렉터리 속
+    const s = 점검.미커밋집합(d);
+    assert.ok(s && s.has('엔진_수집.js'), `한글 경로가 깨졌다: ${s && [...s].join(', ')}`);
+    assert.ok(s.has('새폴더/새파일.js'), '미추적 디렉터리가 접혀 그 안의 새 배포 파일이 안 보인다(-uall)');
+  } finally { fs.rmSync(d, { recursive: true, force: true }); }
+});
+
+test('실저장소: 배포집합미커밋은 배포집합의 부분집합이다 (거짓양성만 — 탐지력은 위 픽스처)', () => {
+  const m = 점검.배포집합미커밋(ROOT);
+  if (m === null) return;                        // git 을 못 읽는 환경 — 모름을 fail 로 접지 않는다
+  const 집합 = new Set(점검.배포집합(ROOT));
+  for (const f of m) assert.ok(집합.has(f), `배포집합 밖 파일이 섞였다: ${f}`);
+});
+
+test('훅 알림: warn(미커밋) 갈래는 제 병명을 말한다 — 「라이브 안 바뀜」 훈계를 접붙이지 않는다', () => {
+  const { 알림꾸미기 } = require(path.join(ROOT, '.claude', 'hooks', 'deploy-freshness.js'));
+  const { 머리, 본문 } = 알림꾸미기({ level: 'warn', 이름: '(루트)', 미커밋: ['contents_상담AI.js'], lines: ['x'] });
+  assert.match(머리, /F310/);
+  assert.match(머리, /1건/, '몇 건인지 없는 경보는 크기를 못 가늠하게 한다');
+  assert.match(본문, /--라이브/, '실렸는지 재는 길이 처방에 있어야 한다');
+  assert.match(본문, /작업본소유자/);
+  assert.doesNotMatch(본문, /라이브를 바꾸지 않는다/, '병이 다르다 — 이 갈래는 작업본이 그대로 라이브가 된 쪽이다');
+  const 옛 = 알림꾸미기({ level: 'stale', 이름: 'x', lines: ['y'] });
+  assert.match(옛.본문, /라이브를 바꾸지 않는다/, 'stale 갈래의 기존 훈계가 사라지면 2026-08-05 사고 안내가 없어진다');
+});
+
 /* 실저장소 검사 — git 이력에 기댄다. 얕은 클론(CI)에선 못 도니 **skip 으로 드러낸다**
  * (통과와 미실행이 같은 모양이면 「자격증명이 없어서 초록」이 된다). */
 const 얕음 = (() => {
