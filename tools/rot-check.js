@@ -84,6 +84,7 @@ function docSection() {
     docs: g.docs.size,
     broken: g.broken,
     stale: g.stale,
+    staleHeld: g.staleHeld,
     canonUnknown: g.canonUnknown,
     unversioned: g.unversioned.length,
     mapGaps: g.mapGaps,
@@ -467,6 +468,14 @@ function render(r) {
     if (r.warn.length > 12) push(`   … 외 ${r.warn.length - 12}건`);
   }
   for (const n of r.notes) push(`▶ ${n.kind} — ${n.text}`);
+
+  // 전파 보류 — 적색도 경고도 아니다. **세어서 보이기는 한다**: 숨기면 「없는 것」이 되고,
+  // 적색에 두면 고치지 말라고 정해 둔 것이 매 세션 27건 중 25건을 차지한다(08-10 실측).
+  if (r.doc.ok && r.doc.value.staleHeld && r.doc.value.staleHeld.length) {
+    const h = r.doc.value.staleHeld;
+    const 정본별 = [...new Set(h.map((s) => `${path.basename(s.target)}@${s.now}`))].join(' · ');
+    push(`   ⏸ 전파 보류 ${h.length}건 — 유호님이 그 판에서 세워 둔 것이다(${정본별}). 손댈 일이 생기면 그때 같이 반영한다.`);
+  }
 
   // 결정 큐 — 부패가 아니라 **순서**다. 이 도구가 존재하는 이유의 절반이 여기에 있다.
   if (r.mem.ok) {

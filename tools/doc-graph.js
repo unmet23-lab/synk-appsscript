@@ -169,6 +169,32 @@ function selfDeclaredCanon(text) {
 const sameVersion = (a, b) =>
   String(a).toLowerCase().replace(/^v/, '') === String(b).toLowerCase().replace(/^v/, '');
 
+/* [2026-08-10] 전파 보류 — `<!-- 전파보류: v1.3 -->`. 「낡았다」와 **축이 다르다.**
+ * 그건 *아직 안 고쳤다*, 이건 *유호님이 지금 고치지 말라고 세워 뒀다*.
+ *
+ * 왜 있나 (실측 08-10): `docs/SYNK_철학.md` 가 v1.0→v1.3 으로 오르면서 파생 25종이 stale 로
+ * 떨어졌는데, 그 전파는 **유호님이 보류시킨 것**이다(정본 머리 명문 「파생 25종 전파는 유호
+ * 지시로 보류」 · memory smart-definition 「범위가 너무 커 토큰 낭비 … 일괄 리라이팅을 지시
+ * 없이 착수하지 않는다」). 그런데 rot-check 는 stale 을 전부 🔴 로 올려서, 매 세션 시작마다
+ * **적색 27건 중 25건이 「고치지 말라고 정해 둔 것」**이었다. 두 사고가 같이 난다:
+ *   ① 진짜 적색 2건(라이브 낡음·노트북LM)이 25건의 소음에 묻힌다 — 적색이 신호를 잃는다.
+ *   ② 세션이 그 25건을 「놓친 일감」으로 읽고 집었다가 정본을 읽고서야 되돌린다(이번 세션이
+ *      실제로 그랬다). 유호님 확정을 지시 없이 뒤집을 뻔한 자리이기도 하다.
+ *
+ * 🔑 **만료가 이 설계의 급소다.** 도장에 버전을 박아, 보류는 **그 판에 대해서만** 유효하다.
+ *   정본이 v1.4 로 더 오르면 도장(v1.3)은 낡고 파생은 **다시 적색**이 된다. 버전 없는
+ *   「보류」 도장이었으면 이 통로는 영구 은폐 장치가 된다 — 한 번 찍으면 그 정본의 낡음이
+ *   영원히 안 보인다. 보류는 유호님이 본 그 판에 대한 판단이지 문서에 대한 면제가 아니다.
+ *
+ * 🚫 보류를 **파생 쪽**에 적지 않는다. 25곳에 같은 도장을 찍으면 형식이 흔들리고, 흔들린
+ *   형식은 파서가 조용히 놓친다(addEdge 주석과 같은 이유). 판단의 주인은 정본 하나다. */
+const SELF_HOLD_RE = /<!--\s*전파보류:\s*(v\d+(?:\.\d+)*)\s*-->/i;
+function selfDeclaredHold(text) {
+  const head = maskCode(String(text)).split('\n').slice(0, VERSION_SCAN_LINES).join('\n');
+  const m = head.match(SELF_HOLD_RE);
+  return m ? m[1].toLowerCase() : null;
+}
+
 /* [2026-08-07] 지도 누락 — 「낡은 인용」과 **축이 다르다.** 그건 *연결이 낡았다*, 이건 *연결이 아예 없다*.
  * 왜 있나: 08-05에 신설된 `docs/제품방향.md`가 스스로 「제품 방향 공용 정본」을 선언하는데
  * `docs/문서_지도.md`는 여전히 「제품 방향의 최신 정본 = SYNK_CONTEXT.md」라고 말하고 있었다.
@@ -209,6 +235,7 @@ function build() {
       edges: parseEdgesFull(text),
       follows: parseEdges(text),
       version: canon ? (선언 || canonVersion(text)) : null,
+      hold: canon ? selfDeclaredHold(text) : null,
       text,
     });
   }
@@ -216,6 +243,7 @@ function build() {
   const derivedOf = new Map(); // 정본 relPath -> [파생 relPath...]
   const broken = [];
   const stale = [];        // 정본이 그 뒤로 올라갔다 — 파생이 낡은 판을 인용 중
+  const staleHeld = [];    // 낡았지만 그 판의 전파를 유호님이 보류시켰다(SELF_HOLD_RE) — 적색 아님
   const unversioned = [];  // 버전 미기입 = 맞는지 **모른다**(최신이 아니다)
   const canonUnknown = []; // 정본에서 버전을 못 읽었다 — 판정 자체가 불가
   for (const d of docs.values()) {
@@ -233,7 +261,11 @@ function build() {
       const now = canonDoc ? canonDoc.version : null;
       if (!e.version) unversioned.push({ from: d.rel, target, now });
       else if (!now) canonUnknown.push({ from: d.rel, target, cited: e.version });
-      else if (!sameVersion(e.version, now)) stale.push({ from: d.rel, target, cited: e.version, now });
+      else if (!sameVersion(e.version, now)) {
+        // 보류 도장은 **찍힌 그 판에서만** 산다 — 정본이 더 오르면 도장이 낡아 다시 적색이 된다.
+        const held = canonDoc.hold && sameVersion(canonDoc.hold, now);
+        (held ? staleHeld : stale).push({ from: d.rel, target, cited: e.version, now, ...(held ? { hold: canonDoc.hold } : {}) });
+      }
     }
   }
 
@@ -250,7 +282,7 @@ function build() {
     }
   }
   return {
-    docs, derivedOf, broken, candidates, canons, stale, unversioned, canonUnknown,
+    docs, derivedOf, broken, candidates, canons, stale, staleHeld, unversioned, canonUnknown,
     mapGaps: findMapGaps(docs),
   };
 }
@@ -390,6 +422,7 @@ function main() {
       derivedOf: Object.fromEntries(g.derivedOf),
       broken: g.broken,
       stale: g.stale,
+      staleHeld: g.staleHeld,
       unversioned: g.unversioned,
       canonUnknown: g.canonUnknown,
       mapGaps: g.mapGaps,
@@ -425,6 +458,13 @@ function main() {
       console.log(`        ${s.target}  인용 ${s.cited} → 현재 ${s.now}`);
     }
     console.log('    고친 뒤:  node tools/doc-graph.js --stamp <파생문서>');
+  }
+
+  if (g.staleHeld.length) {
+    const 정본별 = [...new Set(g.staleHeld.map((s) => `${s.target}@${s.now}`))].join(' · ');
+    console.log(`\n  ⏸ 전파 보류 — ${g.staleHeld.length}건(낡았지만 유호님이 그 판에서 세워 뒀다: ${정본별})`);
+    console.log('    적색이 아니다. 그 파생을 손댈 일이 생기면 그때 밀린 몫을 같이 반영한다.');
+    console.log('    보류를 풀려면 정본 머리의 `<!-- 전파보류: vN -->` 를 지운다(정본이 더 오르면 자동으로 풀린다).');
   }
   if (g.mapGaps.noMap) {
     console.log(`\n  🔴 문서 지도가 없다 — ${DOC_MAP}(색인이 통째로 사라졌다)`);
@@ -466,6 +506,6 @@ function main() {
 
 if (require.main === module) main();
 module.exports = {
-  build, parseEdges, parseEdgesFull, splitVersion, canonVersion, selfDeclaredCanon, sameVersion,
+  build, parseEdges, parseEdgesFull, splitVersion, canonVersion, selfDeclaredCanon, selfDeclaredHold, sameVersion,
   isCanon, addEdge, rel, shouldSkip, ROOT, findMapGaps, DOC_MAP,
 };
