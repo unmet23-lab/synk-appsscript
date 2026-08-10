@@ -94,7 +94,16 @@ function main() {
   const log = (s) => console.log(s);
 
   log(`노트북LM 드라이브 묶음 — 만든 날 ${만든날}`);
-  log(`대상: ${OUT}${DRY ? '  [DRY RUN]' : ''}\n`);
+  log(`대상: ${OUT}${DRY ? '  [DRY RUN]' : ''}`);
+  /* 마운트를 못 찾았으면 위 경로는 **찾은 자리가 아니라 안내용 기본값**이다(DEFAULT_OUT).
+   * 드라이런은 상위 폴더 검사에 닿기 전에 return 하므로(아래 DRY 분기), 이 한 줄이 없으면
+   * 드라이브가 꺼져 있어도 `--dry` 는 멀쩡한 대상 경로만 찍고 정상 종료한다.
+   * 08-10 실측: 그 출력을 「마운트가 살아있다」는 증거로 읽고 실사 실행에 들어갔다가 그제야
+   * 막혔다. 드라이런이 실사와 다른 판정을 내면 그건 예행연습이 아니라 오도 장치다. */
+  if (!DRIVE_ROOT && i < 0) {
+    log('⚠ 드라이브 마운트 미검출 — 위 경로는 안내용 기본값이다(찾은 자리가 아니다). 실사 실행은 여기서 멈춘다.');
+  }
+  log('');
 
   if (!CHROME) {
     console.error('⛔ 크롬을 못 찾았다 — PDF를 구울 수 없다. 경로를 확인하라.');
@@ -186,4 +195,6 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { toHtml, DEFAULT_OUT, CHUNK_CHARS };
+// findDriveRoot 를 내보내는 이유: rot-check 가 「지금 마운트가 있나」를 **호출 시점에** 재야
+// 하는데, 그 판정을 저쪽에 베끼면 드라이브 문자 목록이 두 곳으로 갈라진다(한쪽만 고쳐진다).
+module.exports = { toHtml, DEFAULT_OUT, CHUNK_CHARS, findDriveRoot };

@@ -255,7 +255,14 @@ function nblmDriveSection() {
   const 날짜 = (s) => (s && s.match(/(\d{4}-\d{2}-\d{2})/) || [])[1] || null;
   const 성공일 = 날짜(마지막성공);
   const 지난날 = 성공일 ? Math.floor((Date.now() - new Date(성공일 + 'T00:00:00').getTime()) / 86400000) : null;
-  return { present: true, failed, last, 성공일, 지난날 };
+  /* 「왜 실패했나」와 **「지금 고칠 수 있나」는 다른 질문이다.** 로그만 읽으면 앞의 것만 안다.
+   * F318 실측: 처방(`node tools/notebooklm-drive.js`)을 그대로 따라 돌렸다가 같은 자리에서
+   * 막혔다 — 마운트가 없으면 그 도구는 정지하도록 설계돼 있고, 마운트를 켜는 건 유호님
+   * 몫이라 세션이 몇 번을 돌려도 안 된다. 그래서 지금 상태를 같이 재서 처방을 가른다.
+   * 판정은 생성기의 것을 그대로 부른다(사본을 만들면 드라이브 문자 목록이 갈라진다). */
+  let 마운트 = null;
+  try { 마운트 = !!require('./notebooklm-drive.js').findDriveRoot(); } catch (_) { 마운트 = null; }
+  return { present: true, failed, last, 성공일, 지난날, 마운트 };
 }
 
 function mapSection() {
@@ -412,7 +419,14 @@ function collect({ 라이브 = false, 시간제한 } = {}) {
         kind: '노트북LM 자동 갱신 실패',
         text: `예약 작업 SYNK_NotebookLM 마지막 실행이 실패했다 — ${nbd.value.last.trim()}\n` +
           '     드라이브 데스크톱이 꺼졌거나 크롬 실패. 노트북LM 소스는 그 시점에서 멈춰 있다' +
-          '(화면상으론 「있는 것」처럼 보이므로 조용한 낡음이다). 수리: node tools/notebooklm-drive.js',
+          '(화면상으론 「있는 것」처럼 보이므로 조용한 낡음이다).\n' +
+          (nbd.value.마운트 === false
+            // 처방을 갈라 준다 — 마운트가 없는데 도구를 돌리라고 하면 세션은 같은 자리에서
+            // 막히고, 따를 수 없는 처방은 우회를 정상 통로로 만든다(F103·F318).
+            ? '     🔴 지금도 드라이브 마운트가 없다(G:~K: 전부 훑음) — **도구를 돌려도 같은 자리에서 멈춘다.**\n' +
+              '     유호님만 풀 수 있다: 구글 드라이브 데스크톱을 켜고 「내 드라이브」가 보이면 그때 재실행된다' +
+              '(예약 작업이 매일 돌므로 켜 두기만 하면 손은 안 간다).'
+            : '     수리: node tools/notebooklm-drive.js  (마운트는 지금 잡힌다)'),
       });
     } else if (nbd.value.지난날 !== null && nbd.value.지난날 >= 3) {
       warn.push({
@@ -471,7 +485,8 @@ function render(r) {
 
   // 전파 보류 — 적색도 경고도 아니다. **세어서 보이기는 한다**: 숨기면 「없는 것」이 되고,
   // 적색에 두면 고치지 말라고 정해 둔 것이 매 세션 27건 중 25건을 차지한다(08-10 실측).
-  if (r.doc.ok && r.doc.value.staleHeld && r.doc.value.staleHeld.length) {
+  // 절 하나가 없거나 안 쟀다고 리포트 전체가 죽으면 안 된다 — 그 침묵이 이 도구가 고치려는 병이다.
+  if (r.doc && r.doc.ok && r.doc.value && r.doc.value.staleHeld && r.doc.value.staleHeld.length) {
     const h = r.doc.value.staleHeld;
     const 정본별 = [...new Set(h.map((s) => `${path.basename(s.target)}@${s.now}`))].join(' · ');
     push(`   ⏸ 전파 보류 ${h.length}건 — 유호님이 그 판에서 세워 둔 것이다(${정본별}). 손댈 일이 생기면 그때 같이 반영한다.`);
@@ -534,12 +549,21 @@ function 배포도장(now, dep) {
   return Object.keys(프로젝트들).length ? { [키]: { at: now, 프로젝트들 } } : {};
 }
 
-/* 배포 절만 남긴 판. `mem` 을 죽여 결정 큐 절도 같이 뺀다 — 하루짜리 알림에 주간 리포트가
- * 딸려 오면 그게 곧 소음이고, 소음은 읽히지 않아 침묵과 같은 값이 된다. */
+/* 배포 절만 남긴 판. `mem`·`doc` 을 죽여 결정 큐 절과 보류 절도 같이 뺀다 — 하루짜리 알림에
+ * 주간 리포트가 딸려 오면 그게 곧 소음이고, 소음은 읽히지 않아 침묵과 같은 값이 된다.
+ *
+ * ⚠ 이 축약 판은 `render()` 가 읽는 **모든** 절 키를 갖고 있어야 한다. 없는 키를 render 가
+ *   `r.X.ok` 로 만지면 리포트 전체가 예외로 죽고, 출력은 「부패 점검기 자체가 실패했다」
+ *   한 줄이 된다 — 배포 알림 자리에서 그건 침묵과 같다. `{ ok: false }` 는 「이 절은 안
+ *   쟀다」는 뜻이고, 절을 늘리는 사람이 여기를 같이 안 늘리면 그 자리에서 터진다(08-10 실측). */
 function 배포만(r) {
   const 고른다 = (a) => a.filter((x) => x.배포);
   const [red, warn, notes] = [고른다(r.red), 고른다(r.warn), 고른다(r.notes)];
-  return { red, warn, notes, mem: { ok: false }, findings: red.length + warn.length + notes.length };
+  return {
+    red, warn, notes,
+    mem: { ok: false }, doc: { ok: false },
+    findings: red.length + warn.length + notes.length,
+  };
 }
 
 /* ── 진입점 ──────────────────────────────────────────────────────────────── */
