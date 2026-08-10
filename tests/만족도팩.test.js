@@ -322,7 +322,7 @@ test('[v9.73] 설문 집계 — 이번 달만 세고 평균·저점(≤2)·자�
 
 test('[v9.73] 배선 — 주간 리포트 3섹션(클로저)·하이라이트 메일 설문 링크가 걸려 있다', () => {
   const wj = section('function weeklyJobs()', 'function monthlyJobs()');
-  assert.ok(wj.includes("['📨 메신저 연결(학부모)', function (t) { return MJ_msgSection_(t); }]"), '메신저 섹션이 없거나 클로저가 아니다');
+  assert.ok(wj.includes("['📨 메신저 연결(학부모)', function (t) { return MJ_msgSection_(t); }, true]"), '메신저 섹션이 없거나 클로저가 아니다(셋째 칸 true = AI 집계 화이트리스트 · v9.206)');
   assert.ok(wj.includes("['📅 수강 만료 임박', function (t) { return MJ_expirySection_(t); }]"), '만료 섹션이 없거나 클로저가 아니다');
   assert.ok(wj.includes("['📋 월간 만족도 설문', function (t) { return MJ_surveySection_(t); }]"), '설문 섹션이 없거나 클로저가 아니다');
   const hl = section('function parentHighlightsMail_()', 'function snsDrafts_');

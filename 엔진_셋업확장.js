@@ -1108,43 +1108,51 @@ function weeklyJobs() {    // 매주 월 07시
     const prevW = kpiReadRow_(prevYmW) || computeKpiMetrics(prevYmW); // 전월 확정 우선·없으면 잠정
     kpiInjection = { cur: curW, prev: prevW, curYm: curYmW, prevYm: prevYmW };
   } catch (e) { Logger.log('weeklyJobs KPI 단일 계산 실패(각 섹션 자체 계산 폴백): ' + e); }
+  // [v9.206] 셋째 칸 true = AI 해설(H7) 입력에 실어도 되는 「집계·숫자만」 섹션(방향 불변식 4 — 이름·학생ID·연락처·
+  //   자유서술이 벤더로 안 나간다 · docs/제품방향.md:62). 이름이 실리는 섹션(주간순위·미납·재등록·문의·만료임박·이수율)과
+  //   조건부 누출(워치독 유령행 이름·설문 자유서술·교안 Doc URL)은 플래그 없음 = 기본 제외 — 새 섹션도 기본이 제외라
+  //   새는 방향이 기본 닫혀 있다. 원장 이메일 본문(body)은 내부 수신이라 전문 유지. 결석 복귀율은 강사명만 실린다(학생 식별자 0).
   const sections = [
     ['🛡️ 시스템 워치독', systemWatchdog],
     ['📊 주간 리포트', weeklyReport],
-    ['📈 KPI(이탈·전환)', kpiSection_],    // [v9.26] 당월 잠정 + 전월 확정 비교
-    ['📟 경영계기판', updateBizDashboard],  // [v9.26] 6지표 신호등 — KPI 재사용 + leads·현금 지표 + 적색경보
+    ['📈 KPI(이탈·전환)', kpiSection_, true],    // [v9.26] 당월 잠정 + 전월 확정 비교
+    ['📟 경영계기판', updateBizDashboard, true],  // [v9.26] 6지표 신호등 — KPI 재사용 + leads·현금 지표 + 적색경보
     ['💰 미납 현황', checkTuition],        // 미납은 주 1회 (알림 다이어트)
     ['🔄 재등록 시점', checkReenrollment],
     ['💬 학부모 문의', checkNewInquiries_],  // [v9.28] 결석 사전신고와 짝을 이루는 인바운드 채널
-    ['📨 메신저 연결(학부모)', function (t) { return MJ_msgSection_(t); }],  // [v9.71] 이중화 현황 — 클로저(만족도팩 누락 시 이 섹션만 실패, 리포트는 발송)
-    ['🔁 결석 복귀율(강사별)', function (t) { return absenceSection_(t); }],  // [v9.89] 등급 심사 20점 항목 — 8주 시즌 창
+    ['📨 메신저 연결(학부모)', function (t) { return MJ_msgSection_(t); }, true],  // [v9.71] 이중화 현황 — 클로저(만족도팩 누락 시 이 섹션만 실패, 리포트는 발송)
+    ['🔁 결석 복귀율(강사별)', function (t) { return absenceSection_(t); }, true],  // [v9.89] 등급 심사 20점 항목 — 8주 시즌 창
     ['📅 수강 만료 임박', function (t) { return MJ_expirySection_(t); }],    // [v9.72]
     ['📋 월간 만족도 설문', function (t) { return MJ_surveySection_(t); }],   // [v9.73] 첫 만족도 기준선
     ['📋 주간 교안 초안', function () { return lpText || '(생성 없음)'; }],    // [v9.86·D] 반별 Doc 링크 — 유호 근무 46%(콘텐츠 편집)의 백지 제거
     // ⚠ [v9.107] 위 줄의 쉼표는 지우지 말 것 — 빠지면 JS가 `[…][…]`를 배열 인덱싱으로 읽어 이 자리가
     //   undefined가 되고, 아래 forEach의 sec[0]에서 TypeError로 죽는다. 그러면 주간 통합 리포트가
     //   통째로 발송되지 않는다(섹션 try/catch보다 바깥이라 안전망이 안 걸린다). 08-01 실측으로 발각.
-    ['📋 마감 제출률', function () { const ssR = SpreadsheetApp.getActiveSpreadsheet(); return lessonCloseRate_(ssR, tz); }],  // [v9.92] 필수 루틴 준수 계측 — 값 없으면(시즌 미설정·수업 0) 섹션 생략
-    ['🔇 4주차 침묵 학생', function () { return silText; }],
+    ['📋 마감 제출률', function () { const ssR = SpreadsheetApp.getActiveSpreadsheet(); return lessonCloseRate_(ssR, tz); }, true],  // [v9.92] 필수 루틴 준수 계측 — 값 없으면(시즌 미설정·수업 0) 섹션 생략
+    ['🔇 4주차 침묵 학생', function () { return silText; }, true],  // 반환값은 인원수뿐 — 실명 명단은 adminMail 전용(silentRosterAlert_)
     // [v9.119] `ss`는 weeklyJobs 스코프에 없다 — 08-01 실행 로그에서 `ReferenceError: ss is not defined`로
     //   이 섹션만 매주 실패하고 있었다(섹션 try/catch가 잡아 리포트는 살지만 이수율은 영구 공백).
     //   다른 섹션과 같은 패턴으로 자체 조회한다.
     ['🎬 온라인 강의 이수율(주말반)', function () { const ssL = SpreadsheetApp.getActiveSpreadsheet(); return lectureWeeklyText_(ssL); }] // [v9.125] 주석 정정: 섹션 제목은 항상 찍히고 빈 값은 '(내용 없음)'으로 남는다 — 무데이터가 보여야 「원래 그런 주」와 구별된다
   ];
   let body = '📬 SYNK 주간 통합 리포트 · ' + Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd') + '\n';
+  let aiBody = ''; // [v9.206] AI 해설 입력 — 집계 화이트리스트 섹션만 담는다(위 sections 셋째 칸 주석 참조)
   sections.forEach(function (sec) {
-    const title = sec[0], fn = sec[1];
+    const title = sec[0], fn = sec[1], 집계만 = sec[2] === true;
     body += '\n──────── ' + title + ' ────────\n';
     try {
       const txt = fn(true, kpiInjection); // 텍스트 반환 모드 — 각 섹션은 자체 발송하지 않음(KPI 두 섹션만 주입치 사용, 나머지는 잉여인자 무시)
-      body += (txt && String(txt).trim() ? String(txt) : '(내용 없음)') + '\n';
+      const t = (txt && String(txt).trim() ? String(txt) : '(내용 없음)') + '\n';
+      body += t;
+      if (집계만) aiBody += '\n──────── ' + title + ' ────────\n' + t;
     } catch (e) {
       body += '⚠ 섹션 생성 실패: ' + title + '\n';
       Logger.log('주간 통합 리포트 섹션 실패 [' + title + ']: ' + e);
     }
   });
   try { // [v9.50·H7] 주간 지표 AI 해설 — 숫자 위 판단 층(계산은 코드가, AI는 해설만·실패해도 리포트는 그대로 발송)
-    const cmtH7 = aiText_('SYNK 학원(몽골 울란바토르, 게임화 한국어 학원)의 주간 운영 리포트다. 아래 본문 지표에서 ①핵심 신호 2가지 ②이상 징후(없으면 "없음") ③이번 주 원장이 할 행동 딱 1가지를 한국어 6줄 이내로 써라. 숫자를 새로 계산하지 말고 본문의 숫자만 인용한다.\n\n' + body.slice(0, 6000), 900);
+    // [v9.206] 입력은 body(전문·이름 포함)가 아니라 aiBody(집계 섹션만) — 방향 불변식 4. 절단은 방어가 아니었다(이름 섹션이 앞쪽이라 먼저 나감).
+    const cmtH7 = aiText_('SYNK 학원(몽골 울란바토르, 게임화 한국어 학원)의 주간 운영 리포트다. 명단 섹션은 제외된 집계 요약본이다. 아래 본문 지표에서 ①핵심 신호 2가지 ②이상 징후(없으면 "없음") ③이번 주 원장이 할 행동 딱 1가지를 한국어 6줄 이내로 써라. 숫자를 새로 계산하지 말고 본문의 숫자만 인용한다.\n\n' + aiBody.slice(0, 6000), 900);
     if (cmtH7) body += '\n──────── 🤖 AI 해설 ────────\n' + cmtH7 + '\n';
   } catch (eH7) { Logger.log('H7 해설 스킵: ' + eH7); }
   if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 주간 통합 리포트', body);
