@@ -1077,15 +1077,19 @@ test('[v9.67] resetAllTriggers는 교재연동Nightly(23시)를 개통 시스템
  *     거짓경보 = buildSystemManifest 기대 10 vs 실제 11 → 정상 상태에서 영구 ⚠(사람이 점검을 끈다)
  *     거짓 초록 = preflight·워치독이 onConsultEdit 실종을 못 봄(onEdit은 「조용히 안 도는 것」으로만 드러난다)
  *   ⚠ 이 테스트는 「버그가 아직 있을 것」을 요구하지 않는다 — 정상 상태에서 초록이고, **갈라질 때만** 빨개진다. */
-test('[vNEXT] 트리거 매니페스트가 정본이다 — 재설치 목록과 소비자 셋이 전부 거기서 파생한다', () => {
+test('[vNEXT] 트리거 매니페스트가 정본이다 — 재설치 목록과 소비자 셋이 거기서 갈라지지 않는다', () => {
   const 코드만 = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
-  const mfBody = 코드만(section('function triggerManifest_(', '\nfunction resetAllTriggers('));
-  const 매니 = [];
-  mfBody.slice(mfBody.indexOf('['), mfBody.indexOf(']')).replace(/'([^']+)'/g, (m, n) => { 매니.push(n); return m; });
-  mfBody.replace(/목록\.push\('([^']+)'\)/g, (m, n) => { 매니.push(n); return m; });
+  // [vNEXT·검수 31584c315c30] 매니페스트는 **실제로 실행해서** 반환값을 받는다 — 소스를 정규식으로 훑던
+  //   첫 판은 파서가 곧 정본이 돼서, 배열 문법이 바뀌면(concat·전개) 무엇을 재는지 알 수 없었다.
+  //   순수 함수(GAS API 0)라 node 에서 그대로 돈다. ⚠ resetAllTriggers 는 ScriptApp 을 부르므로
+  //   런타임으로 못 돌린다 — 그쪽만 소스 대조이고, 그 비대칭은 여기 적어 둔다(가릴 것이 아니라 경계다).
+  const mfSrc = section('function triggerManifest_(', '\nfunction resetAllTriggers(');
+  const 매니페스트 = new Function(mfSrc + '\nreturn triggerManifest_;')();
+  const 매니 = 매니페스트(true);
+  assert.ok(Array.isArray(매니) && 매니.length >= 11, '매니페스트가 배열을 안 낸다(또는 목록이 줄었다)');
   assert.ok(매니.includes('onConsultEdit'), '매니페스트에 onConsultEdit이 없다 — v9.164 결함의 재발');
-  assert.ok(/if \(tbOn\) 목록\.push\('교재연동Nightly'\)/.test(mfBody),
-    '교재연동Nightly가 무조건 항목이 됐다 — 미개통 시스템에 오경보가 상시로 뜬다(v9.67이 닫은 자리)');
+  assert.deepEqual(매니페스트(false), 매니.filter((h) => h !== '교재연동Nightly'),
+    '교재연동 개통 여부로 갈리는 항목이 교재연동Nightly 하나가 아니다 — 미개통 시스템 오경보(v9.67이 닫은 자리)');
 
   // ① 실물 설치 목록과 집합이 같아야 한다. 한쪽만 늘면 그 순간부터 감시망이 갈라진다.
   const setup = 코드만(section('triggers.forEach(t => ScriptApp.deleteTrigger(t));', '트리거 통합 재설치 완료'));
@@ -1102,6 +1106,14 @@ test('[vNEXT] 트리거 매니페스트가 정본이다 — 재설치 목록과 
   const wd = 코드만(section('function systemWatchdog(', 'function buildSystemManifest()'));
   assert.ok(/recommended = triggerManifest_\(textbookLinkOn_\(ss\)\)/.test(wd),
     '워치독 권장 목록이 매니페스트 파생이 아니다 — 주간 메일 감시망이 다시 갈라진다');
+  // [vNEXT·검수 20a30d304f4c] 「필수 3」은 심각도 판정이라 매니페스트에서 파생할 수 없다(어느 것이 필수인지는
+  //   별개 결정이다). 대신 **부분집합인지는 잴 수 있다** — 이름이 어긋나면 그 셋이 권장 목록에서 안 빠져
+  //   중복 검사가 되고, 매니페스트 쪽 이름이 바뀌면 필수 검사가 영영 다른 것을 본다.
+  const 필수 = [];
+  (wd.match(/const 필수 = \[[^\]]*\]/) || [''])[0].replace(/'([^']+)'/g, (m, n) => { 필수.push(n); return m; });
+  assert.ok(필수.length === 3, `워치독 필수 목록을 못 읽었다(읽은 것 ${필수.length}개) — 형태가 바뀌었으면 이 검사도 같이 고칠 것`);
+  필수.forEach((f) => assert.ok(매니.includes(f),
+    `워치독 필수 '${f}' 가 매니페스트에 없다 — 둘 중 하나의 이름이 바뀌었고, 그러면 필수 검사가 다른 것을 본다`));
   const mf = 코드만(section('function buildSystemManifest()', 'function checkConsultSync()'));
   assert.ok(/EXPECT_TRIGGERS = 기대핸들러\.length/.test(mf) && /기대핸들러 = triggerManifest_\(tbOnM\)/.test(mf),
     '매니페스트 기대치가 파생이 아니다');
