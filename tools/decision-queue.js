@@ -20,6 +20,7 @@
 //   node tools/decision-queue.js --버려진            걸러진 ⏳ 중 **아직 안 본 것만**
 //   node tools/decision-queue.js --버려진 --전체     걸러진 전량
 //   node tools/decision-queue.js --버려진 --확인     지금 뜬 것을 「봤다」로 표시(다음부터 안 뜬다)
+//   node tools/decision-queue.js --조각              배달은 되는데 껍데기인 줄(재료가 ⏳ 앞에서 잘림)
 //   SYNK_MEMORY_DIR=... 로 대상 디렉터리 덮어쓰기(테스트용)
 'use strict';
 const fs = require('fs');
@@ -105,9 +106,13 @@ function 줄판정(line) {
    * 성립 안 하는 파일이 34개였고(불릿에 ⏳ 를 안 단다), 그중 하나가 소급불가 ①-2·①-12 를
    * 여는 유호님 결정이었다. 판정은 그대로 「항목 아님」이되 **기록은 남긴다**. */
   if (/^\s{0,3}#{1,6}\s/.test(line)) return { 사유: '절 제목으로 판정', 절제목: true };
-  const masked = markerClause(stripMd(maskCodeSpans(line)));
-  if (masked === null) return { 사유: '문장 속 지시어로 판정' };
-  const clean = unmaskCodeSpans(masked);
+  const stripped = stripMd(maskCodeSpans(line));
+  const mi = markerIndex(stripped);
+  if (mi === -1) return { 사유: '문장 속 지시어로 판정' };
+  const clean = unmaskCodeSpans(stripped.slice(mi).trim());
+  // ⏳ 앞에서 버려지는 재료의 크기 — 「항목이면 앞은 배경」 판정 자체는 옳지만(위 주석),
+  // 앞이 두툼한데 뒤가 껍데기면 그 줄은 **답할 수 없는 모양으로 배달**된다. extract 가 이 값으로 조각을 센다.
+  const 앞글자 = 글자수(unmaskCodeSpans(stripped.slice(0, mi)));
   // 범례("💡새 / 🔍검토 / ⏳판단대기 / ✅채택")는 항목이 아니다. 단 판별은 **⏳ 바로 옆 모양**으로만 한다 —
   // 첫 판은 「줄 어딘가에 🔍가 있고 '/'가 있으면 범례」로 봤는데, 긴 메모리 줄은 경로·날짜에 '/'가
   // 흔하고 🔍도 본문에 쓰여서 **진짜 미결이 조용히 사라졌다**(실측 2건). 넓은 가드가 큐를 줄이면
@@ -116,9 +121,24 @@ function 줄판정(line) {
   // 장식뿐인 줄(「## ⏳」 같은 헤더)만 거른다. **길이가 아니라 글자 수로 센다** —
   // 길이로 재면 `##` 같은 기호가 통과하고, 하한을 올리면 「⏳ 티원」 같은
   // 짧은 한국어 항목이 통째로 사라진다(한글은 2글자로도 완결된 항목이다).
-  if (clean.replace(/⏳/g, '').replace(/[^\p{L}\p{N}]/gu, '').length < 2) return { 사유: '장식뿐인 줄로 판정' };
-  return { clean };
+  if (글자수(clean.replace(/⏳/g, '')) < 2) return { 사유: '장식뿐인 줄로 판정' };
+  return { clean, 앞글자 };
 }
+const 글자수 = (s) => s.replace(/[^\p{L}\p{N}]/gu, '').length;
+
+/* ── 꼬리 조각 (2026-08-11 · a831951c) — **네 번째 배달 실패 모양** ─────────────
+ * 앞의 셋(절 제목·지시어 오분류·소프트랩 절단)과 달리 판정이 전부 옳은데도 깨진다:
+ * 재료를 ⏳ **앞에** 쓰고 표식만 꼬리에 달면, 「앞은 배경」 규칙대로 재료가 버려지고
+ * 껍데기만 나간다. 실측: mvp-eta-measured:50 「…왕복시험이 전부 막힌다(F313…). ⏳유호님
+ * 승인 자리.」 → 배달 = 「⏳유호님 승인 자리.」 7글자. 리허설 재배포 승인(전 세션의
+ * 왕복시험을 여는 유일한 결정)이 답할 수 없는 모양으로 나갔고, 어떤 경고도 안 울렸다.
+ * 🔑 배달을 막지 않는다 — 껍데기도 침묵보다 낫다(거짓양성보다 조용한 누락이 나쁘다는
+ *    이 파일의 기존 판정). 세서 **경고**만 한다. 처방 = 그 줄을 「설명 줄 + ⏳질문 전문 줄」로 가른다.
+ * 🔑 두 문턱의 AND 다 — 앞이 얇으면(「⏳ 티원」) 완결이고, 뒤가 두꺼우면 재료가 뒤에 있다.
+ *    뒤 문턱을 길이가 아니라 글자 수로 재는 이유는 장식뿐인 줄 필터와 같다(한글은 짧아도 완결된다).
+ *    판정은 꼬리(소프트랩 이어붙임) **뒤**에 한다 — 다음 줄이 재료를 이어주면 조각이 아니다. */
+const 조각_앞문턱 = 20;   // 이만큼의 재료가 표식 앞에서 버려지고
+const 조각_뒤문턱 = 12;   // 배달되는 글자가 이보다 적으면 껍데기다 (실측 표본 7글자)
 
 // 괄호 안의 ⏳는 양쪽 다 실재한다 — 여는 괄호만 보고는 못 가른다:
 //   "(⏳유호 승인 대기·미검증 출처 명기)."  ← 괄호 자체가 항목이다
@@ -138,15 +158,21 @@ function parenIsItem(clean, i) {
   return 뒤.trim().length <= 2 || !/^[\p{L}\p{N}]/u.test(뒤);
 }
 
-function markerClause(clean) {
+/* 항목 판정과 「⏳가 어디서 시작하나」는 한 지식이다 — index 를 따로 구현하면 갈라진다(신뢰성 ④).
+ * markerClause 는 이 인덱스의 얇은 포장으로 남는다(기존 호출부·테스트 형태 불변). */
+function markerIndex(clean) {
   for (let i = 0; i < clean.length; i++) {
     if (clean[i] !== '⏳') continue;
     let j = i - 1;
     while (j >= 0 && /\s/.test(clean[j])) j--;
-    if (j < 0 || MARKER_PREV.has(clean[j])) return clean.slice(i).trim();
-    if (clean[j] === '(' && parenIsItem(clean, i)) return clean.slice(i).trim();
+    if (j < 0 || MARKER_PREV.has(clean[j])) return i;
+    if (clean[j] === '(' && parenIsItem(clean, i)) return i;
   }
-  return null;
+  return -1;
+}
+function markerClause(clean) {
+  const i = markerIndex(clean);
+  return i === -1 ? null : clean.slice(i).trim();
 }
 
 /* ── 날짜 게이트 ────────────────────────────────────────────────────────────
@@ -226,6 +252,7 @@ function extract(dir) {
    * 대신 「절 제목을 걸어 놓고 그 파일이 아무것도 못 낸다」는 **깨진 약속**만 따로 센다 —
    * 파일 단위라 목록이 짧고, 하나 고칠 때마다 줄어든다. */
   const 절뿐 = [];
+  const 조각들 = [];   // 꼬리 조각 — 배달은 되지만 답할 수 없는 껍데기 (사유는 조각_앞문턱 주석)
   for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.md') && !인덱스다(n))) {
     const full = path.join(dir, f);
     const text = fs.readFileSync(full, 'utf8');
@@ -242,6 +269,9 @@ function extract(dir) {
       if (판정.사유) return 버린다(f, i, line, 판정.사유);
       const 이어짐 = 꼬리(줄들, i);
       const clean = 이어짐 ? `${판정.clean} ${stripMd(이어짐)}`.trim() : 판정.clean;
+      if (판정.앞글자 >= 조각_앞문턱 && 글자수(clean.replace(/⏳/g, '')) < 조각_뒤문턱) {
+        조각들.push({ topic: f.replace(/\.md$/, ''), line: i + 1, 배달: clean, 원문: line.trim().slice(0, MAX_LEN) });
+      }
       배달 += 1;
       items.push({
         topic: f.replace(/\.md$/, ''),
@@ -260,6 +290,7 @@ function extract(dir) {
    * 배열의 own 열거 속성을 함께 세서 깨진다(결정큐_코드스팬 실측). 반환 형태 불변이 조건이었다. */
   Object.defineProperty(items, '버려진', { value: 버려진 });
   Object.defineProperty(items, '절뿐', { value: 절뿐 });
+  Object.defineProperty(items, '조각', { value: 조각들 });
   return items;
 }
 
@@ -374,7 +405,7 @@ function build(opts = {}) {
   // 폐기함은 「검토했다」 도장을 달고 나간다 — 전량은 안 줄고, 봐야 할 것만 새것으로 뜬다
   const 완료 = 검토완료읽기(opts.검토완료);
   const 버려진 = (items.버려진 || []).map((it) => ({ ...it, 새것: !완료.has(폐기지문(it)) }));
-  return { total: ranked.length, ranked, today: pick(ranked, count, date), blockers, scheduled, 버려진, 절뿐: items.절뿐 || [] };
+  return { total: ranked.length, ranked, today: pick(ranked, count, date), blockers, scheduled, 버려진, 절뿐: items.절뿐 || [], 조각: items.조각 || [] };
 }
 
 /* 걸러진 ⏳ 한 줄 — 목록은 --버려진 에 있다.
@@ -392,6 +423,10 @@ function 버려진줄(r) {
    * 내걸어 놓고 아무것도 못 낸다」는 파일 단위 신호다. 한 줄로 합치면 34가 76에 묻힌다. */
   const s = (r.절뿐 || []).length;
   if (s) 줄.push(`⚠ ⏳ 절 제목만 걸고 **배달 0건**인 파일 ${s}개 — 그 결정은 유호님께 안 간다: node tools/decision-queue.js --절`);
+  /* 셋째 칸 — 배달은 되는데 **답할 수 없는 껍데기**인 줄(재료가 표식 앞에서 잘렸다).
+   * 위 둘과 다른 축이라 합치지 않는다: 저건 「안 나간다」, 이건 「나가는데 빈손이다」. */
+  const f = (r.조각 || []).length;
+  if (f) 줄.push(`⚠ ⏳ 항목 ${f}건이 **재료를 표식 앞에 두고 꼬리만** 배달된다 — 받아도 답할 수 없다. 그 줄을 「설명 줄 + ⏳질문 전문 줄」로 가른다: node tools/decision-queue.js --조각`);
   return 줄.join('\n  ');
 }
 
@@ -579,6 +614,12 @@ function main() {
     if (!r.절뿐.length) return console.log('\n[⏳ 절 제목만 · 배달 0건] 0파일\n');
     console.log(`\n[⏳ 절 제목만 · 배달 0건] ${r.절뿐.length}파일 — 살아있으면 ⏳를 절 아래 항목 줄로 내리고, 끝났으면 제목의 ⏳를 ✅로 닫는다\n`);
     r.절뿐.forEach((it) => it.제목.forEach((h) => console.log(`     [${it.topic}:${h.line}]\n     ${h.text}`)));
+    return;
+  }
+  if (args.includes('--조각')) {
+    if (!r.조각.length) return console.log('\n[⏳ 꼬리 조각] 0건\n');
+    console.log(`\n[⏳ 꼬리 조각] ${r.조각.length}건 — 재료가 표식 앞에서 잘려 껍데기만 배달된다. 그 줄을 「설명 줄 + ⏳질문 전문 줄」로 가른다\n`);
+    r.조각.forEach((it) => console.log(`     [${it.topic}:${it.line}] 배달되는 것: ${it.배달}\n     원문: ${it.원문}`));
     return;
   }
   if (args.includes('--all')) {
