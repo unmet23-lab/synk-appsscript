@@ -985,6 +985,81 @@ test('🔑 git 을 못 부르면 null(=모름) — 실패를 「변경 0」으�
   assert.strictEqual(배포점검.안나간변경(빈곳, [빈곳]), null);
 });
 
+/* ── 라이브 실측 도장이 이 층의 거짓양성을 재운다 (2026-08-10 · F244 후속) ──────────
+ *
+ * 실측이 낳은 검사다: 같은 시각에 `안나간변경()` 은 「엔진_셋업확장.js 가 안 나갔다」를,
+ * `라이브대조()` 는 「배포집합 15개 바이트 동일」을 냈다. 이 층은 **매 SessionStart** 발화라
+ * 거짓 🔴 도 매번이고, 매번 틀리는 경고는 진짜 드리프트가 왔을 때 이미 무시당하고 있다.
+ *
+ * 🔑 재우는 방향보다 **깨우는 방향**이 급소다 — 도장이 낡았는데도 계속 재우면 거짓양성을 지운
+ *   대가로 **거짓음성**이 되고, 그건 이 도구가 존재하는 이유(소급 불가 데이터의 하루 손실)를
+ *   정면으로 깬다. 그래서 「지문이 달라졌다」와 「초록이 아니었다」를 각각 못박는다.
+ */
+const 부패 = require(path.resolve(__dirname, '..', 'tools', 'rot-check.js'));
+
+/** 도장을 **쓰는 쪽(rot-check)** 을 통해 만들고, 읽는 쪽이 실제로 쓰는 키로 조회시킨다.
+ *  도장 모양을 이 파일이 손으로 적으면 두 모듈이 갈려도 이 검사는 계속 초록이다 — 가드가
+ *  자기 전처리에 눈머는 것과 같은 형태라, 왕복으로 재야 키 규칙의 어긋남이 드러난다. */
+function 도장왕복(repo, { 초록 = true, 지문바꿔 = false } = {}) {
+  const 이름 = 배포점검.안나간변경(repo, [repo], { 도장: false }).프로젝트들[0].이름;
+  const 조각 = 부패.배포도장(1786334722806, {
+    결과: [{ 이름, 실측: { 지문: 지문바꿔 ? 'deadbeef' : 배포점검.지문(repo, repo), 초록 } }],
+  });
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-stamp-'));
+  임시들.push(d);
+  const f = path.join(d, 'rot-check.json');
+  fs.writeFileSync(f, JSON.stringify(조각));
+  const 옛 = process.env.SYNK_ROT_STATE;
+  process.env.SYNK_ROT_STATE = f;
+  try { return 배포점검.안나간변경(repo, [repo]); } finally {
+    if (옛 === undefined) delete process.env.SYNK_ROT_STATE; else process.env.SYNK_ROT_STATE = 옛;
+  }
+}
+
+test('🔑 라이브 실측이 초록이었고 그 뒤 배포집합이 안 바뀌었으면 재운다 — 이 층은 매 세션 발화라 거짓 🔴 도 매번이다',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const r = 도장왕복(배포픽스처('Code.js'));
+    assert.deepEqual(r.프로젝트들, [], `재우지 못했다 — 도장 키가 갈렸거나 배선이 안 돈다: ${JSON.stringify(r)}`);
+    assert.deepEqual(r.가라앉힘.map((p) => p.파일들), [['Code.js']],
+      '뺀 것을 구조로 안 돌려준다 — 호출부가 「이게 전부」로 읽는다(조용한 절단)');
+  });
+
+test('🔴 도장의 지문이 지금과 다르면 **다시 깨운다** — 재우기만 하면 거짓양성 대신 거짓음성이 된다',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const r = 도장왕복(배포픽스처('Code.js'), { 지문바꿔: true });
+    assert.deepEqual(r.프로젝트들.flatMap((p) => p.파일들), ['Code.js'],
+      '실측 뒤에 배포 파일이 바뀌었는데 침묵한다 — 시각만 보고 지문을 안 보는 배선이다');
+    assert.deepEqual(r.가라앉힘, []);
+  });
+
+test('🔴 마지막 실측이 초록이 아니었으면 재우지 않는다 — 🔴 였던 판을 침묵으로 덮으면 안 된다',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const r = 도장왕복(배포픽스처('Code.js'), { 초록: false });
+    assert.deepEqual(r.프로젝트들.flatMap((p) => p.파일들), ['Code.js']);
+  });
+
+test('🔑 도장이 없으면 옛 동작 그대로 — 이 배선이 깨져도 퇴화 방향은 「말한다」다',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const repo = 배포픽스처('Code.js');
+    const 옛 = process.env.SYNK_ROT_STATE;
+    process.env.SYNK_ROT_STATE = path.join(os.tmpdir(), 'synk-없는도장-XXXX.json');
+    try {
+      assert.deepEqual(배포점검.안나간변경(repo, [repo]).프로젝트들.flatMap((p) => p.파일들), ['Code.js']);
+    } finally {
+      if (옛 === undefined) delete process.env.SYNK_ROT_STATE; else process.env.SYNK_ROT_STATE = 옛;
+    }
+  });
+
+test('🔑 도장은 **잰 것만** 담는다 — 지문을 못 잰 프로젝트가 초록으로 새면 그 자리는 영원히 침묵한다', () => {
+  const 조각 = 부패.배포도장(1, { 결과: [
+    { 이름: '(루트)', 실측: { 지문: null, 초록: true } },      // 지문을 못 쟀다
+    { 이름: 'crewcard', 실측: { 지문: 'aaaaaaaa', 초록: true } },
+  ] });
+  const 키 = 배포점검.도장키;
+  assert.deepEqual(Object.keys(조각[키].프로젝트들), ['crewcard']);
+  assert.deepEqual(부패.배포도장(1, { 결과: [] }), {}, '담을 게 없으면 키 자체를 안 만든다 — 빈 도장이 남으면 다음 판정이 그것을 읽는다');
+});
+
 test('🔴 배선: 뒤처지면 **훅이 입을 연다** — 판정만 서고 화면엔 영영 안 나오는 자리를 막는다 (F240)', () => {
   const 뼈대 = { git못부름: false, 나: 'local_me00', 항목: [], 세션수: 1, 못본형제: [],
     원격: [], 보드: [], 뒤늦음: { 항목: [], 못잼: 0 } };

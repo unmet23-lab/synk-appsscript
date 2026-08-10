@@ -183,7 +183,12 @@ function 배포Section(라이브, 시간제한) {
     측정: true,
     결과: D.claspProjects().map((p) => {
       const r = D.점검(p, ROOT, { 라이브: true, 시간제한 });
-      return r.level === 'stale' ? { ...r, 편집중: 편집중인가(r.파일들, p, 미커밋) } : r;
+      /* 잰 값을 **아래 층에 물려준다**(F244 후속 · 2026-08-10): 네트워크 0 층 `안나간변경()` 은
+       * `[vN]` 기준선이 양방향으로 틀려 매 SessionStart 마다 거짓 🔴 를 낼 수 있는데, 여기서
+       * 실제로 잰 「초록 + 그때의 배포집합 지문」을 남겨 두면 그 층이 자기 거짓양성을 재운다.
+       * 지문을 같이 남기는 이유는 배포판점검 `라이브도장` 머리말 — 시각만으로는 거짓음성이 된다. */
+      const 실측 = { 지문: (() => { try { return D.지문(p, ROOT); } catch (_) { return null; } })(), 초록: r.level === 'ok' && r.측정 === true };
+      return r.level === 'stale' ? { ...r, 실측, 편집중: 편집중인가(r.파일들, p, 미커밋) } : { ...r, 실측 };
     }),
   };
 }
@@ -504,6 +509,22 @@ function stamp(now, patch) {
   } catch (_) { /* 상태를 못 써도 검사 자체는 성공이다 — 다음 세션에 한 번 더 도는 것뿐 */ }
 }
 
+/* 아래 층(`배포판점검.안나간변경`)이 자기 거짓양성을 재우는 데 쓰는 도장 조각.
+ * 여기서만 만든다 — **실제로 잰 실행**만 남길 값을 갖기 때문이다(위 stamp 주석과 같은 축:
+ * 안 잰 날에 찍으면 그 하루가 조용히 사라진다). 키 이름은 배포판점검에서 파생시킨다:
+ * 쓰는 쪽과 읽는 쪽에 글자를 따로 적으면 갈라지고, 갈라진 쪽은 「도장 없음」으로 조용히 죽는다. */
+function 배포도장(now, dep) {
+  let 키;
+  try { 키 = require('./배포판점검.js').도장키; } catch (_) { return {}; }
+  if (!키) return {};
+  const 프로젝트들 = {};
+  for (const r of (dep && dep.결과) || []) {
+    if (!r || !r.이름 || !r.실측 || !r.실측.지문) continue;   // 지문을 못 잰 것은 안 남긴다
+    프로젝트들[r.이름] = { 지문: r.실측.지문, 초록: !!r.실측.초록 };
+  }
+  return Object.keys(프로젝트들).length ? { [키]: { at: now, 프로젝트들 } } : {};
+}
+
 /* 배포 절만 남긴 판. `mem` 을 죽여 결정 큐 절도 같이 뺀다 — 하루짜리 알림에 주간 리포트가
  * 딸려 오면 그게 곧 소음이고, 소음은 읽히지 않아 침묵과 같은 값이 된다. */
 function 배포만(r) {
@@ -537,7 +558,7 @@ function main() {
       if (주간) stamp(now, { last: now, findings: r.findings });
       /* 배포 도장은 **실제로 잰 날에만** 찍는다(차례였는지가 아니라 쟀는지가 재료다) — 못 잰 날에
        * 찍으면 그 하루가 조용히 사라지고, 그게 이 항목을 하루로 떼어낸 이유(F244)를 무효로 만든다. */
-      if (r.dep.ok && r.dep.value.측정) stamp(now, { 배포: now });
+      if (r.dep.ok && r.dep.value.측정) stamp(now, { 배포: now, ...배포도장(now, r.dep.value) });
       const 볼것 = 주간 ? r : 배포만(r);
       if (!볼것.findings) return; // 정지 조건 — 깨끗하면 한 글자도 넣지 않는다
       const body =
@@ -596,4 +617,4 @@ if (require.main === module) main();
  * 조용하다」 — 둘 다 침묵을 닮았다. 그래서 베끼지 않고 **이 한 벌을 빌려 쓴다**(회귀는
  * tests/절단문서.test.js ③ 이 그대로 진다). ⚠ 시각은 안 돌려준다 — 부르는 쪽은 `--since` 로
  * 이미 걸러진 목록을 받으므로 필요 없다. */
-module.exports = { collect, render, dueNow, stateFile, harnessSection, toilSection, mapSection, 절단문서Section, 뒤커밋들, 배포Section, 편집중인가, EVOLVE_THRESHOLD };
+module.exports = { collect, render, dueNow, stateFile, harnessSection, toilSection, mapSection, 절단문서Section, 뒤커밋들, 배포Section, 배포도장, 편집중인가, EVOLVE_THRESHOLD };
