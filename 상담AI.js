@@ -36,7 +36,18 @@ const 상담AI_사고 = false;               // 메신저는 응답속도가 전
 const 상담AI_기본상한 = 300;             // 하루 호출 상한 기본값
 /* ⚠ 칸은 **끝에만** 늘린다 — 읽는 쪽이 전부 열 번호로 집는다(`r[8]`·`setValue(draftRow, 9)`).
  *   중간에 끼우면 발송 표식이 엉뚱한 칸에 찍히고, 그 증상은 「조용함」이다. */
-const 상담AI_로그헤더 = ['시각', '세션', '발신', '내용', '인계', '입력토큰', '캐시읽기', '출력토큰', '비고', '채널'];
+const 상담AI_로그헤더 = ['시각', '세션', '발신', '내용', '인계', '입력토큰', '캐시읽기', '출력토큰', '비고', '채널', '모델'];
+/* '모델' 칸은 [v9.201] 신설 — 모델을 Sonnet→Opus 로 올리면서 **행마다 어느 모델이었는지**를 남긴다.
+ * 왜 필요한가: 비용 집계가 단가를 하나로 고정하고 있었는데, 한 달 안에 옛 모델 행과 새 모델 행이
+ * 섞이면 그 달의 지출은 **영영 못 가른다**(토큰 수만 남고 단가를 되짚을 근거가 없다 — 소급 불가).
+ * 빈 칸 = 이 칸이 생기기 전의 행이라 옛 단가로 읽는다(아래 상담AI_단가 의 `''` 항목). */
+const 상담AI_단가 = {                     // USD per MTok — **문서값이지 실측이 아니다.** 실청구는 console.anthropic.com Usage.
+  'claude-opus-5':   { 입력: 5, 출력: 25 },
+  'claude-sonnet-5': { 입력: 2, 출력: 10 },
+  '': { 입력: 2, 출력: 10 },              // 모델 칸이 없던 시절의 행 = 당시 라우팅이 Sonnet 이었다
+};
+const 상담AI_캐시배수 = 0.1;              // 캐시 읽기는 입력가의 0.1배
+const 상담AI_환율 = 3500;                 // ₮/$1
 const 상담AI_리드헤더 = ['날짜', '이름', '연락처', '유입경로', '추천인', '체험참석', '등록', '등록권종', '등록일', '미등록사유', '메모', '캠페인'];
 
 /* ── 웹훅 입구 ─────────────────────────────────────────────
@@ -298,7 +309,9 @@ function 상담_기록_(세션, 발신, 내용, 인계, usage, 비고, 채널) {
   const u = usage || {};
   sh.appendRow([new Date(), 셀안전_(세션), 발신, 셀안전_(String(내용).slice(0, 2000)), 인계 ? 'Y' : '',
     u.input_tokens || '', u.cache_read_input_tokens || '', u.output_tokens || '', 셀안전_(비고 || ''),
-    채널 === 'ig' ? 'ig' : (채널 === 'fb' ? 'fb' : '')]);
+    채널 === 'ig' ? 'ig' : (채널 === 'fb' ? 'fb' : ''),
+    // 토큰이 실린 행에만 모델을 적는다 — 학생 발화 행에 적으면 「그 모델이 답한 행」과 구분이 사라진다.
+    (u.input_tokens || u.output_tokens) ? 상담AI_모델_() : '']);
 }
 
 // 이름 또는 연락처가 잡히면 leads에 적재. 같은 세션은 한 번만(중복 리드 방지)
@@ -711,17 +724,40 @@ function 상담AI_비용() {
   if (!sh || sh.getLastRow() < 2) { Logger.log('상담로그가 비어 있습니다.'); return; }
   const tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
   const 이번달 = Utilities.formatDate(new Date(), tz, 'yyyy-MM');
-  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, 8).getValues();
-  let 입력 = 0, 캐시 = 0, 출력 = 0, 건 = 0;
+  /* [v9.201] 모델별로 나눠 센다 — 한 달에 두 모델이 섞이면 단가 하나로는 실지출을 못 맞춘다.
+   * 폭은 헤더 길이로 잡되 **실제 시트 폭을 넘지 않게** 한다(옛 시트는 '모델' 칸이 아직 없다). */
+  const 폭 = Math.min(상담AI_로그헤더.length, sh.getLastColumn());
+  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, 폭).getValues();
+  const 모델별 = {};
+  let 건 = 0;
   rows.forEach(r => {
     if (!(r[0] instanceof Date) || Utilities.formatDate(r[0], tz, 'yyyy-MM') !== 이번달) return;
     if (!r[5] && !r[7]) return;
-    입력 += Number(r[5]) || 0; 캐시 += Number(r[6]) || 0; 출력 += Number(r[7]) || 0; 건++;
+    const m = String(r[10] || '');
+    const b = 모델별[m] || (모델별[m] = { 입력: 0, 캐시: 0, 출력: 0, 건: 0 });
+    b.입력 += Number(r[5]) || 0; b.캐시 += Number(r[6]) || 0; b.출력 += Number(r[7]) || 0; b.건++; 건++;
   });
-  // Sonnet 5 도입가 기준 $2/$10 per MTok · 캐시 읽기는 입력가의 0.1배. 환율 ₮3,500/$1
-  const usd = (입력 / 1e6) * 2 + (캐시 / 1e6) * 0.2 + (출력 / 1e6) * 10;
-  Logger.log('■ ' + 이번달 + ' 상담AI 실측\n  응답 ' + 건 + '건\n  입력 ' + 입력 + ' · 캐시읽기 ' + 캐시 + ' · 출력 ' + 출력 + ' 토큰' +
-    '\n  비용 ≈ $' + usd.toFixed(3) + ' (약 ₮' + Math.round(usd * 3500).toLocaleString() + ')' +
-    (건 ? '\n  응답 1건당 ≈ ₮' + Math.round(usd * 3500 / 건).toLocaleString() : '') +
-    '\n※ 단가는 코드 주석 기준 — 실제 청구는 console.anthropic.com Usage에서 확인하세요.');
+  let usd = 0;
+  let 미상 = 0;              // 단가표에 없는 모델 — 0으로 세면 지출이 조용히 작아 보인다
+  const 줄들 = [];
+  Object.keys(모델별).sort().forEach(m => {
+    const b = 모델별[m];
+    const p = 상담AI_단가[m];
+    const 이름 = m || '(모델칸 이전 행)';
+    if (!p) {
+      미상 += b.건;
+      줄들.push('  ⚠ ' + 이름 + ' — ' + b.건 + '건: **단가표에 없어 합계에서 뺐다**(상담AI_단가 에 추가할 것)');
+      return;
+    }
+    const 몫 = (b.입력 / 1e6) * p.입력 + (b.캐시 / 1e6) * p.입력 * 상담AI_캐시배수 + (b.출력 / 1e6) * p.출력;
+    usd += 몫;
+    줄들.push('  ' + 이름 + ' — ' + b.건 + '건 · 입력 ' + b.입력 + ' · 캐시읽기 ' + b.캐시 + ' · 출력 ' + b.출력 +
+      ' · ≈ $' + 몫.toFixed(3));
+  });
+  const 셈한건 = 건 - 미상;
+  Logger.log('■ ' + 이번달 + ' 상담AI 실측\n  응답 ' + 건 + '건' + (미상 ? ' (단가 미상 ' + 미상 + '건 제외)' : '') +
+    (줄들.length ? '\n' + 줄들.join('\n') : '') +
+    '\n  합계 ≈ $' + usd.toFixed(3) + ' (약 ₮' + Math.round(usd * 상담AI_환율).toLocaleString() + ')' +
+    (셈한건 ? '\n  응답 1건당 ≈ ₮' + Math.round(usd * 상담AI_환율 / 셈한건).toLocaleString() : '') +
+    '\n※ 단가는 코드 상수(문서값) 기준 — 실제 청구는 console.anthropic.com Usage에서 확인하세요.');
 }
