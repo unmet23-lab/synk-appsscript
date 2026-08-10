@@ -29,7 +29,9 @@ const SRC_PREFIX = '_src_';
 /** 소스 → 산출물 이름. 접두만 뗀다 — 산출물 파일명은 절대 안 바꾼다(대외 링크·유호님 즐겨찾기가 걸려 있다). */
 const outNameOf = (srcName) => srcName.slice(SRC_PREFIX.length);
 
-const MARKER = '/*@FONTS@*/';
+// 마커·주입 판정은 여기 베끼지 않는다 — 뿌리는 쪽과 확인하는 쪽이 갈리면 조용히 통과한다.
+const 활자주입 = require('./lib/활자주입.js');
+const MARKER = 활자주입.마커;
 
 /** 줄끝만 통일한다 — 파이썬 write_text·git autocrlf 를 거치며 CRLF 가 섞여도 내용 대조가 안 흔들리게. */
 const normalize = (s) => s.replace(/\r\n/g, '\n');
@@ -200,7 +202,7 @@ function main() {
 
     // 「돌았다」가 아니라 **결과**를 본다 — 치환이 안 돼도 rc 0 으로 끝날 수 있다.
     const html = fs.readFileSync(out, 'utf8');
-    if (!/@font-face/.test(html) || html.includes('/*@FONTS@*/')) {
+    if (!활자주입.주입됐나(html)) {
       fail++;
       console.error('   🔴 산출물에 임베드가 안 들어갔다(마커 잔존 또는 @font-face 없음)');
     }

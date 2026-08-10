@@ -176,6 +176,136 @@ test('교재를 언급하면 진행 상태를 함께 밝히게 한다 (과장 �
   assert.strictEqual(okPage.code, 0, `진행 상태를 밝혔는데도 잡았다:\n${okPage.out}`);
 });
 
+/* ══ 넘침 검사(--넘침) ═══════════════════════════════════════════════════════
+ * 왜 있나(2026-08-10 실측): 학부모 안내문 앞면에 블록 하나를 더했더니 46px 이 `overflow:hidden`
+ * 에 잘렸는데 **린트도 빌드도 전부 초록**이었다. 글자는 파일에 다 있으니 텍스트 검사는
+ * 「있다」고 말하고, 사라지는 곳은 종이뿐이다.
+ * 크롬이 없으면 **skip 이지 통과가 아니다**(미실행을 초록으로 읽지 않는다 · F207).
+ */
+function 크롬있나() {
+  try { return !!require(path.join(ROOT, 'tools', '브랜드렌더린트.js')).findChrome(); }
+  catch (_) { return false; }
+}
+
+/** 쪽 상자(고정 크기 + overflow:hidden)를 가진 최소 산출물. */
+function 쪽페이지(o) {
+  return page({
+    extraCss: `.sheet{ width:100mm; height:60mm; overflow:hidden; display:flex; flex-direction:column;
+      ${o.justify ? `justify-content:${o.justify};` : ''} padding:${o.pad || '5mm'}; }`,
+    // ⚠ flex 자식은 기본이 shrink 1 이다 — 높이를 줘도 상자에 맞춰 **줄어들어** 안 넘친다.
+    //   실제 산출물의 본문 블록은 안 줄어드는 자리라 픽스처도 flex:0 0 auto 로 못박는다.
+    extra: `<div class="sheet"><h2>제목</h2><div style="height:${o.내용 || 20}mm;flex:0 0 auto">내용</div></div>`,
+  });
+}
+
+/** --넘침 으로 돌린다. 크롬 호출이 있어 넉넉히 기다리고, **타임아웃은 fail 이 아니라 null** 이다(F296). */
+function 넘침실행(html) {
+  const f = path.join(dir, `o${n++}.html`);
+  fs.writeFileSync(f, html);
+  const r = spawnSync(process.execPath, [LINT, '--넘침', f], { encoding: 'utf8', timeout: 120000 });
+  if (r.signal) return null;   // 부하로 잘렸다 — 판정하지 않는다
+  return { code: r.status, out: (r.stdout || '') + (r.stderr || '') };
+}
+
+test('🔑 쪽이 넘쳐 잘리면 잡는다 — 텍스트 검사가 원리상 못 보는 층', (t) => {
+  if (!크롬있나()) return t.skip('크롬 없음 — 넘침 검사를 안 돌렸다(통과 아님)');
+  const v = 넘침실행(쪽페이지({ 내용: 90 }));
+  if (!v) return t.skip('넘침 검사가 시간 안에 안 끝났다 — 판정 보류(F296)');
+  assert.strictEqual(v.code, 1, `쪽이 넘쳤는데 통과시켰다:\n${v.out}`);
+  assert.match(v.out, /넘쳐 잘린다/);
+  assert.match(v.out, /밖으로 나간 것/, '무엇이 잘렸는지 안 알려주면 고칠 자리를 못 찾는다');
+});
+
+test('🔑 가운데 정렬 쪽은 **위로도** 잘린다 — 아래만 보면 절반을 놓친다', (t) => {
+  if (!크롬있나()) return t.skip('크롬 없음 — 넘침 검사를 안 돌렸다(통과 아님)');
+  const v = 넘침실행(쪽페이지({ 내용: 90, justify: 'center' }));
+  if (!v) return t.skip('넘침 검사가 시간 안에 안 끝났다 — 판정 보류(F296)');
+  assert.strictEqual(v.code, 1, `가운데 정렬 쪽의 넘침을 놓쳤다(위쪽으로 잘린다):\n${v.out}`);
+});
+
+test('🔑 거짓양성 — 아래 padding 이 scrollHeight 에 얹힌 것을 「넘쳤다」로 읽지 않는다', (t) => {
+  if (!크롬있나()) return t.skip('크롬 없음 — 넘침 검사를 안 돌렸다(통과 아님)');
+  // 실측: 02 안내문 hero 가 자식이 전부 상자 안에 있는데 scrollHeight 로는 22px 초과였다.
+  // 거짓양성이 곧 「검사를 끄는 손버릇」이라 이 함정을 양방향으로 못박는다.
+  const v = 넘침실행(page({
+    extraCss: '.sheet{ width:100mm; height:60mm; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; padding:5mm 5mm 12mm; }',
+    extra: '<div class="sheet"><h2>제목</h2><div style="height:20mm;flex:0 0 auto">내용</div></div>',
+  }));
+  if (!v) return t.skip('넘침 검사가 시간 안에 안 끝났다 — 판정 보류(F296)');
+  assert.strictEqual(v.code, 0, `안 잘린 쪽을 넘쳤다고 잡았다(거짓양성):\n${v.out}`);
+  assert.match(v.out, /쪽 1개 실측/, '분모를 안 밝히면 0건과 「아무것도 안 봤다」가 같은 모양이다');
+});
+
+test('🔑 쪽 상자가 없는 문서는 「못 쟀다」가 아니라 「대상 아님」이다 (번역 작업본)', (t) => {
+  if (!크롬있나()) return t.skip('크롬 없음 — 넘침 검사를 안 돌렸다(통과 아님)');
+  const v = 넘침실행(page());   // overflow:hidden 상자가 하나도 없다
+  if (!v) return t.skip('넘침 검사가 시간 안에 안 끝났다 — 판정 보류(F296)');
+  assert.strictEqual(v.code, 0, `쪽 상자 없는 문서를 실패로 읽었다:\n${v.out}`);
+  assert.match(v.out, /넘침 검사 대상 아님/);
+  assert.match(v.out, /요소 \d+개는 떴다/, '빈 문서(로드 실패)와 가르는 근거를 안 내면 둘이 같은 모양이 된다');
+});
+
+test('🔑 활자가 앉은 뒤에 잰다 — `load` 시점은 폴백 활자라 같은 파일이 회차마다 갈렸다', (t) => {
+  if (!크롬있나()) return t.skip('크롬 없음 — 넘침 검사를 안 돌렸다(통과 아님)');
+  // 실측 2026-08-10: 02 안내문 kr 이 잰쪽 2·몸통 157 로 DOM 은 매 회차 같은데 넘침만
+  // 0px ↔ 18px(=한 줄) 로 튀었다. 죽은 세션 둘이 정반대 결론을 적은 원인이 이것이다.
+  // 그래서 측정기가 **활자 상태를 함께 낸다** — 안 앉았으면 결과를 아예 안 낸다(조용한 초록 금지).
+  const { 넘침 } = require(LINT);
+  const { findChrome } = require(path.join(ROOT, 'tools', '브랜드렌더린트.js'));
+  const f = path.join(dir, `font${n++}.html`);
+  fs.writeFileSync(f, 쪽페이지({ 내용: 20 }));
+  let r;
+  try { r = 넘침(f, findChrome()); } catch (e) { return t.skip(`측정기를 못 돌렸다: ${e.message}`); }
+  assert.ok('폰트' in r, '활자 상태를 안 내면 「폴백으로 쟀다」와 「제대로 쟀다」가 같은 모양이 된다');
+  assert.strictEqual(r.폰트, 'loaded', `활자가 안 앉은 채 판정이 나왔다(status=${r.폰트})`);
+});
+
+test('🔑 아직 안 구운 원본은 「대상 아님」이다 — 폴백 활자로 재면 거짓양성이 나온다', (t) => {
+  if (!크롬있나()) return t.skip('크롬 없음 — 넘침 검사를 안 돌렸다(통과 아님)');
+  const 활자주입 = require(path.join(ROOT, 'tools', 'lib', '활자주입.js'));
+  // 넘치는 픽스처에 **마커만** 얹는다 — 조건 하나만 바뀐다.
+  const 넘치는것 = 쪽페이지({ 내용: 90 });
+  const v = 넘침실행(넘치는것.replace('<style>', `<style>\n${활자주입.마커}`));
+  if (!v) return t.skip('넘침 검사가 시간 안에 안 끝났다 — 판정 보류(F296)');
+  assert.strictEqual(v.code, 0, `안 구운 원본을 위반으로 잡았다(거짓양성):\n${v.out}`);
+  assert.match(v.out, /활자 미주입 원본/, '무엇을 안 쟀는지 안 밝히면 통과와 같은 모양이다(F207)');
+  // 🔑 그리고 마커만 없으면 **같은 픽스처를 다시 잡아야 한다** — 안 그러면 이 갈래가
+  //    「넘침 검사를 끄는 스위치」가 된다(면제가 넓어지는 방향으로만 샌다).
+  const w = 넘침실행(넘치는것);
+  if (!w) return t.skip('대조 회차가 시간 안에 안 끝났다 — 판정 보류(F296)');
+  assert.strictEqual(w.code, 1, `마커만 뗐는데도 넘침을 놓쳤다 — 면제가 검사를 통째로 껐다:\n${w.out}`);
+});
+
+test('🔑 활자 판정 두 갈래는 합치면 안 된다 — 합치는 순간 탐지가 꺼진다', () => {
+  const { 주입됐나, 원본인가, 마커 } = require(path.join(ROOT, 'tools', 'lib', '활자주입.js'));
+  const 구운것 = '<style>@font-face{font-family:X;src:url(data:font/woff2;base64,AA)}</style>';
+  const 원본 = `<style>${마커}</style>`;
+  const 반만 = `<style>${마커}@font-face{font-family:X;src:url(data:font/woff2;base64,AA)}</style>`;
+  const 활자없음 = '<style>body{font-family:system-ui}</style>';   // 회귀 픽스처가 이 모양이다
+
+  assert.strictEqual(주입됐나(구운것), true);
+  assert.strictEqual(주입됐나(반만), false, '마커가 남았으면 치환이 반만 된 것이다');
+  assert.strictEqual(주입됐나(활자없음), false);
+
+  assert.strictEqual(원본인가(원본), true);
+  assert.strictEqual(원본인가(구운것), false);
+  // 급소: `주입됐나` 의 부정을 측정 게이트로 쓰면 이 줄이 true 가 되고 넘침 탐지가 통째로 꺼진다.
+  assert.strictEqual(원본인가(활자없음), false,
+    '활자를 아예 안 쓰는 문서는 원본이 아니다 — 여기가 true 가 되면 넘침 검사가 스스로 꺼진다');
+});
+
+test('실저장소의 발표물 전량이 넘침 없이 조판된다 (거짓양성 0)', (t) => {
+  if (!크롬있나()) return t.skip('크롬 없음 — 넘침 검사를 안 돌렸다(통과 아님)');
+  const dirPath = path.join(ROOT, 'docs', '발표물');
+  if (!fs.existsSync(dirPath)) return t.skip('docs/발표물 없음');
+  const files = fs.readdirSync(dirPath).filter((f) => f.endsWith('.html') && !f.startsWith('_'))
+    .map((f) => path.join(dirPath, f));
+  if (!files.length) return t.skip('발표물 HTML 0건');
+  const r = spawnSync(process.execPath, [LINT, '--넘침', ...files], { encoding: 'utf8', timeout: 300000 });
+  if (r.signal) return t.skip('넘침 검사가 시간 안에 안 끝났다 — 판정 보류(F296)');
+  assert.strictEqual(r.status, 0, `실산출물이 잘린 채 나가고 있다(${files.length}종 검사):\n${r.stdout}${r.stderr}`);
+});
+
 test('실저장소의 발표물 전량이 통과한다 (거짓양성 0)', (t) => {
   const dirPath = path.join(ROOT, 'docs', '발표물');
   if (!fs.existsSync(dirPath)) return t.skip('docs/발표물 없음 — 아직 산출물이 없다');
