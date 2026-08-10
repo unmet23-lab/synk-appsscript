@@ -306,6 +306,39 @@ test('실저장소의 발표물 전량이 넘침 없이 조판된다 (거짓양�
   assert.strictEqual(r.status, 0, `실산출물이 잘린 채 나가고 있다(${files.length}종 검사):\n${r.stdout}${r.stderr}`);
 });
 
+test('🔴 발표물 **산출물만** -diff — 소스(_src_)는 그대로 읽혀야 한다 (F316)', (t) => {
+  /* 산출물은 `발표물빌드.js` 가 브랜드 폰트를 base64 로 임베드해 굽기 때문에 `@font-face` 한 줄이
+   * 최장 54,293자다. git 이 이것을 텍스트로 펼치면 커밋 한 번에 60만 토큰이 되어 세션이 죽는다
+   * (실측 9개 연쇄 · `.gitattributes` 의 `-diff` 로 630,041B → 195B).
+   *
+   * 이 검사의 무게는 **뒤쪽**에 있다: 패턴을 `docs/발표물/*.html` 로 넓히면 `_src_` 까지 가려져
+   * **리뷰의 옳은 자리가 통째로 안 보이게 된다** — 그 실패는 조용하다(diff 가 비면 「변경 없음」처럼 보인다). */
+  const dir = path.join(ROOT, 'docs', '발표물');
+  if (!fs.existsSync(dir)) return t.skip('docs/발표물 없음');
+  const all = fs.readdirSync(dir);
+  const 산출 = all.filter((f) => /^[0-9].*\.(html|pdf)$/.test(f));
+  const 소스 = all.filter((f) => f.startsWith('_src_') && f.endsWith('.html'));
+  // 분모 0 을 통과로 읽지 않는다 — 미실행은 초록과 같은 모양으로 온다.
+  if (!산출.length || !소스.length) return t.skip(`분모 0 — 산출 ${산출.length}종 · 소스 ${소스.length}종`);
+
+  const attr = (f) => {
+    const r = spawnSync('git', ['check-attr', 'diff', '--', `docs/발표물/${f}`],
+      { cwd: ROOT, encoding: 'utf8', timeout: 30000 });
+    return r.signal ? null : String(r.stdout || '');
+  };
+  for (const f of 산출) {
+    const a = attr(f);
+    if (a === null) return t.skip('check-attr 가 시간 안에 안 끝났다 — 판정 보류(F296)');
+    assert.match(a, /diff: unset/, `산출물에 -diff 가 안 걸렸다 — 커밋 한 번이 세션을 죽인다: ${f}`);
+  }
+  for (const f of 소스) {
+    const a = attr(f);
+    if (a === null) return t.skip('check-attr 가 시간 안에 안 끝났다 — 판정 보류(F296)');
+    assert.doesNotMatch(a, /diff: unset/, `소스까지 -diff 가 걸렸다 — 리뷰할 자리가 사라진다: ${f}`);
+  }
+  console.log(`  (산출 ${산출.length}종 · 소스 ${소스.length}종 검사)`);
+});
+
 test('실저장소의 발표물 전량이 통과한다 (거짓양성 0)', (t) => {
   const dirPath = path.join(ROOT, 'docs', '발표물');
   if (!fs.existsSync(dirPath)) return t.skip('docs/발표물 없음 — 아직 산출물이 없다');
