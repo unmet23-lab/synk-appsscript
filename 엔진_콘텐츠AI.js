@@ -1880,7 +1880,7 @@ function callClaudeFeedback_(apiKey, stu, text) {
   };
   const body = {
     model: AI_FEEDBACK_MODEL,
-    max_tokens: 4096, // Sonnet 5는 적응형 사고가 기본 ON이고 사고 토큰이 max_tokens에 포함 — 1024면 JSON이 잘릴 수 있다
+    max_tokens: 4096, // 이 모델군은 적응형 사고가 기본 ON이고 사고 토큰이 max_tokens에 포함 — 1024면 JSON이 잘릴 수 있다
     system: FB_SYSTEM_PROMPT, // [v9.187] 상수 참조 — 인라인으로 되돌리면 prompt_ver(fbPromptVer_)가 변경을 못 본다
     messages: [{ role: 'user', content: '학생: ' + stu.name + ' (급수: ' + (stu.lv || '미정') + ')\n제출 문장:\n' + text }],
     output_config: { format: { type: 'json_schema', schema: schema } }
@@ -1953,10 +1953,15 @@ function aiText_(prompt, maxTok) {
     const res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
       method: 'post', contentType: 'application/json',
       headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-      // [v9.54] thinking OFF — Sonnet 5는 thinking 생략 시 적응형 사고가 기본 ON이고 사고 토큰이 max_tokens를
+      // [v9.54] thinking OFF — 이 모델군은 thinking 생략 시 적응형 사고가 기본 ON이고 사고 토큰이 max_tokens를
       //   잠식한다. 짧은 예산(900~1536)의 자유텍스트에서 본문이 잘리거나 비어 폴백률이 오르던 것을,
       //   사고를 꺼 예산 전액을 본문에 쓰게 교정(구조화 호출 aiCall_·첨삭은 품질 우선으로 사고 유지).
-      payload: JSON.stringify({ model: AI_FEEDBACK_MODEL, max_tokens: maxTok || 1024, thinking: { type: 'disabled' }, messages: [{ role: 'user', content: prompt }] }),
+      // [v9.204] ⚠ 사고를 끈 대가 — Opus 5는 그 상태에서 내부 XML 태그를 본문에 흘릴 수 있다(벤더 정본 실측 조항).
+      //   이 반환값은 정제 없이 웰컴 스토리·「미래의 나」 편지·몽골어 진단 리포트·주간 운영 리포트로 **그대로** 나간다.
+      //   🚫 태그 이름을 적지 않는다 — 정본이 「이름을 대면 덜 듣는다」로 못박았다. 🚫 「생각하지 마라」류 금지(누출을 늘린다).
+      payload: JSON.stringify({ model: AI_FEEDBACK_MODEL, max_tokens: maxTok || 1024, thinking: { type: 'disabled' },
+        system: '응답에는 최종 결과물만 쓴다. 내부 태그나 시스템 태그를 포함하지 않는다.',
+        messages: [{ role: 'user', content: prompt }] }),
       muteHttpExceptions: true
     });
     if (res.getResponseCode() !== 200) return null;
