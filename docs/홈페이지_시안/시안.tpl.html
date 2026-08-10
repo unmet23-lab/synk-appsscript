@@ -7,7 +7,8 @@
 <!-- 파생: docs/SYNK_철학.md@v1.0 -->
 <meta name="description" content="SYNK LAB — 정원은 16명, 선생님은 17명입니다. 몽골 학생을 위한 한국어 학원.">
 <!-- 구조화 데이터(JSON-LD) — 대화층 소유 원칙(유호 확정 08-10): 읽히는 층은 열고 대화층은 우리 챗봇이 받는다.
-     ⛔ 확정 대기라 비운 칸 = 상세 주소·전화·수강료·SNS(sameAs) — 확정되는 날 여기만 채운다. -->
+     4칸 확정 = 유호님 08-10(주소·전화·수강료·인스타). 주소 = 사업자 등록지(서울 · synk.im/privacy 와 동일 층).
+     ⛔ 남은 칸 하나 = 몽골 캠퍼스 실주소 — 확정되면 location(지점)으로 추가한다(지도·GBP 는 그 주소 몫). -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -17,7 +18,17 @@
   "description": "SYNK LAB — 정원은 16명, 선생님은 17명입니다. 몽골 학생을 위한 한국어 학원.",
   "slogan": "정원은 16명, 선생님은 17명입니다",
   "knowsLanguage": ["ko", "mn"],
-  "address": { "@type": "PostalAddress", "addressCountry": "MN" }
+  "telephone": "+82-10-6683-5577",
+  "priceRange": "월 420,000~690,000₮ (스탠다드·올액세스 · 기간권 선납)",
+  "sameAs": ["https://www.instagram.com/synk.mn"],
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "우사단로2가길 23-2, 2층",
+    "addressLocality": "용산구",
+    "addressRegion": "서울특별시",
+    "addressCountry": "KR"
+  },
+  "areaServed": { "@type": "Country", "name": "Mongolia" }
 }
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
