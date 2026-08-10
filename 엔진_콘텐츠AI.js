@@ -1658,13 +1658,17 @@ const FB_SYSTEM_PROMPT = 'SYNK LAB(몽골 울란바토르, 뇌과학 기반 게�
   '④사과·자기 언급(AI)·메타 발언 금지, 4칸 내용만 채운다 ⑤제출문이 한국어 문장이 아니면(무의미 문자·다른 언어만) ' +
   'corrected에는 원문을 그대로 두고, praise는 제출한 행동 자체를 격려하고, mission은 한국어 한 문장 도전을 유도한다.';
 
+// [v9.206] 첨삭 사용자 메시지 틀 — 이름을 싣지 않는다(방향 불변식 4 · docs/제품방향.md:62 — 식별자는 벤더로 안 나간다).
+//   산출 4칸(corrected·point_mn·praise·mission)에 이름 자리가 없어 품질 축이 없고, 틀도 답을 바꾸므로 지문(fbPromptVer_)에 든다.
+const FB_USER_TEMPLATE = '급수: {급수}\n제출 문장:\n{제출문}';
+
 /* [v9.187] 첨삭 prompt_ver — talkPromptVer_와 같은 규약(손 번호 금지 · 지문 8자리).
  * 교정문은 모델 출력물이라, 프롬프트·모델이 바뀌면 「학생이 어려워한 것」과 「그때 우리 교정이 나빴던 것」이
  * 한 덩어리로 섞인다 — 지문이 있어야 2년치 병렬쌍을 층으로 가른다. 무엇이 답을 바꾸는가 = 시스템 프롬프트 + 모델.
  * (구조화 schema 서술도 답에 영향을 주지만 talk와 같은 한계로 지문 밖이다 — 지문의 뜻은 「언제 갈렸는가」다.)
  * ⚠ 톱레벨 계산 금지 — AI_FEEDBACK_MODEL은 Code.js에 있고 라이브 파일 로드 순서가 보장되지 않는다. */
 function fbPromptVer_() {
-  const raw = FB_SYSTEM_PROMPT + '|model=' + (typeof AI_FEEDBACK_MODEL === 'undefined' ? '?' : AI_FEEDBACK_MODEL);
+  const raw = FB_SYSTEM_PROMPT + '|user=' + FB_USER_TEMPLATE + '|model=' + (typeof AI_FEEDBACK_MODEL === 'undefined' ? '?' : AI_FEEDBACK_MODEL);
   const d = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, raw, Utilities.Charset.UTF_8);
   return d.map(b => ((b & 0xFF) + 0x100).toString(16).slice(1)).join('').slice(0, 8);
 }
@@ -1882,7 +1886,7 @@ function callClaudeFeedback_(apiKey, stu, text) {
     model: AI_FEEDBACK_MODEL,
     max_tokens: 4096, // 이 모델군은 적응형 사고가 기본 ON이고 사고 토큰이 max_tokens에 포함 — 1024면 JSON이 잘릴 수 있다
     system: FB_SYSTEM_PROMPT, // [v9.187] 상수 참조 — 인라인으로 되돌리면 prompt_ver(fbPromptVer_)가 변경을 못 본다
-    messages: [{ role: 'user', content: '학생: ' + stu.name + ' (급수: ' + (stu.lv || '미정') + ')\n제출 문장:\n' + text }],
+    messages: [{ role: 'user', content: FB_USER_TEMPLATE.replace('{급수}', String(stu.lv || '미정')).replace('{제출문}', () => text) }], // 함수 치환 — 제출문의 $ 패턴이 replace 특수문자로 새는 것 방지
     output_config: { format: { type: 'json_schema', schema: schema } }
   };
   const res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
@@ -2105,7 +2109,8 @@ function aiStudioBatch_() {
       const userMsg = chunk.map((s, i) => {
         const fv = s.fav || s.taste, gl = s.dream || s.cGoal || s.vision;
         const wk = (weak[s.id] || []).slice(-2).join(' / ') || (s.pain ? '입학 자기보고: ' + s.pain.slice(0, 40) : '기록 없음');
-        return i + '. ' + s.n + ' | 급수 ' + (s.lv || '미정') +
+        // [v9.206] 이름은 싣지 않는다(방향 불변식 4) — 매칭은 인덱스 i가 지고, 산출 칸(s·q·a)에 이름 자리가 없다
+        return i + '. 급수 ' + (s.lv || '미정') +
           ' | 약점: ' + wk +
           (fv ? ' | 최애: ' + fv.slice(0, 40) : '') + (gl ? ' | 목표: ' + gl.slice(0, 30) : '');
       }).join('\n');
@@ -2190,13 +2195,14 @@ function aiStudioBatch_() {
     if (!list.length) setState(st, '리텐션멘트', '{}');
     else if (can()) {
       const rSchema = { type: 'object', additionalProperties: false, required: ['items'], properties: { items: { type: 'array', items: {
-        type: 'object', additionalProperties: false, required: ['n', 'line'], properties: {
-          n: { type: 'string' }, line: { type: 'string', description: '원장·강사가 그 학생(또는 학부모)에게 건넬 개입 멘트 1문장(한국어, 80자 이내, 다그침 금지·구체적 다리 놓기)' } } } } } };
+        type: 'object', additionalProperties: false, required: ['i', 'line'], properties: {
+          i: { type: 'integer', description: '입력 목록의 인덱스' }, line: { type: 'string', description: '원장·강사가 그 학생(또는 학부모)에게 건넬 개입 멘트 1문장(한국어, 80자 이내, 다그침 금지·구체적 다리 놓기)' } } } } } };
       calls++;
+      // [v9.206] 이름은 싣지 않는다(방향 불변식 4) — 6자리 중 유일하게 이름이 응답 키였던 자리: 매칭은 인덱스, 이름 키는 되돌릴 때 붙인다(소비자 '리텐션멘트' 모양 불변)
       const out = aiCall_(apiKey, 'SYNK LAB 리텐션 조수. 관심이 필요한 학생별로 부담 없는 개입 멘트 1문장씩. 원인(사유)에 맞춰서.',
-        list.map(x => x.n + ' (' + x.c + ') — ' + x.w).join('\n'), rSchema, 3072);
+        list.map((x, i) => i + '. (' + x.c + ') — ' + x.w).join('\n'), rSchema, 3072);
       const map = {};
-      (out.items || []).forEach(it => { if (it.n && it.line) map[String(it.n)] = String(it.line).slice(0, 120); });
+      (out.items || []).forEach(it => { const x = list[it.i]; if (x && x.n && it.line) map[String(x.n)] = String(it.line).slice(0, 120); });
       setState(st, '리텐션멘트', JSON.stringify(map));
     }
   } catch (e) { errs.push('리텐션멘트: ' + String(e.message || e).slice(0, 80)); }
@@ -2278,7 +2284,8 @@ function aiMonthlyTitles_() {
         chunk.map((s, i) => {
           const a = act[s.id];
           const top = Object.keys(a.rs).sort((x, y) => a.rs[y] - a.rs[x]).slice(0, 2).join('·');
-          return i + '. ' + s.n + ' | 월 ' + a.p + 'P | 주활동: ' + (top || '출석') + ' | 몬스터: ' + (s.stage || '-');
+          // [v9.206] 이름은 싣지 않는다(방향 불변식 4) — 매칭은 인덱스 i(it.i → chunk[it.i])가 이미 지고 있다
+          return i + '. 월 ' + a.p + 'P | 주활동: ' + (top || '출석') + ' | 몬스터: ' + (s.stage || '-');
         }).join('\n'), tSchema, 4096);
       (out.items || []).forEach(it => {
         const s = chunk[it.i];
@@ -2545,8 +2552,10 @@ function sweepLevelTest_() {
     const lvl = score <= 4 ? { n: '입문', d: '한글·기초 표현부터 탄탄하게' } : score <= 7 ? { n: '초급 1', d: '기초 문장 만들기 단계' }
       : score <= 10 ? { n: '초급 2', d: '일상 대화 확장 단계' } : score <= 12 ? { n: '중급 1', d: '이유·대조 등 연결 표현 단계' }
       : { n: '중급 2+', d: '심화 문형·유창성 단계' };
+    // [v9.206] 이름은 싣지 않는다(방향 불변식 4) — 갈래②: AI는 이름 없이 쓰고 템플릿이 머리에 끼운다(아래 폴백이 원래 그 꼴)
     let report = aiText_('몽골 학생의 한국어 레벨 테스트 결과로 몽골어 진단 리포트를 써라. 형식: 몽골어 8~10줄(인사→점수와 의미→강점 1개→보완할 것 1개→추천 반→마무리 응원). ' +
-      '마지막 줄에 한국어 1줄 요약. 과장 금지.\n이름: ' + nm + '\n점수: ' + score + '/15\n판정 레벨: ' + lvl.n + ' (' + lvl.d + ')', 1536);
+      '마지막 줄에 한국어 1줄 요약. 과장 금지. 수신자 이름은 주어지지 않는다 — 이름 없이 써라.\n점수: ' + score + '/15\n판정 레벨: ' + lvl.n + ' (' + lvl.d + ')', 1536);
+    if (report) report = nm + ' —\n' + report;
     if (!report) report = nm + ' — Таны оноо: ' + score + '/15\nТүвшин: ' + lvl.n + '\n' +
       'SYNK LAB-д тохирох анги: ' + lvl.n + ' анги.\nДэлгэрэнгүй зөвлөгөөг зөвлөх багштай холбогдоорой!\n\n(한국어 요약) ' + nm + '님의 레벨은 ' + lvl.n + ' — ' + lvl.d + '.';
     if (email && quotaOk(1)) MailApp.sendEmail(email, '[SYNK LAB] 📊 ' + nm + ' — Түвшин тогтоох тестийн үр дүн (레벨 진단 리포트)',

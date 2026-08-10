@@ -2451,7 +2451,8 @@ test('[v9.107] 주간 통합 리포트 sections — 배열 요소 쉼표 누락 
   // 실제로 배열을 평가해 undefined 요소가 생기지 않는지 본다.
   // 문자열로 "줄 끝에 쉼표가 있나"를 세는 방식은 요소가 여러 줄에 걸치거나 주석이 붙으면 오탐이 난다
   // (첫 구현이 실제로 그랬다) — 쉼표 누락의 결과는 "요소가 undefined가 되는 것"이므로 그걸 직접 본다.
-  const stub = block.replace(/function\s*\([^)]*\)\s*\{[\s\S]*?\}(?=\s*\])/g, 'null')
+  // [v9.206] 요소 꼴이 `[제목, fn]` 또는 `[제목, fn, true]` 둘이다 — 셋째 칸 = AI 해설 집계 화이트리스트(이름유출.test.js가 목록을 못박는다)
+  const stub = block.replace(/function\s*\([^)]*\)\s*\{[\s\S]*?\}(?=\s*(?:,\s*true)?\s*\])/g, 'null')
                     .replace(/\b(systemWatchdog|weeklyReport|kpiSection_|updateBizDashboard|checkTuition|checkReenrollment|checkNewInquiries_)\b/g, 'null');
   let evaluated;
   // 닫는 `]` 앞의 개행은 필수다. sections 마지막 요소 뒤에는 `// [v9.106] …` 줄 주석이 붙어 있고,
@@ -2467,7 +2468,7 @@ test('[v9.107] 주간 통합 리포트 sections — 배열 요소 쉼표 누락 
   // (`lectureWeeklyText_(ss)` → ReferenceError: ss is not defined). 이쪽은 섹션 try/catch가 잡아 리포트는
   // 살지만 그 섹션만 매주 조용히 빈다 — 즉 "리포트가 오니까 괜찮다"로는 절대 안 드러난다.
   // 규칙: 섹션 클로저는 스프레드시트를 자체 조회한다(다른 섹션들이 쓰는 ssR·ssL 패턴).
-  const fnBodies = block.match(/function\s*\([^)]*\)\s*\{[\s\S]*?\}(?=\s*\])/g) || [];
+  const fnBodies = block.match(/function\s*\([^)]*\)\s*\{[\s\S]*?\}(?=\s*(?:,\s*true)?\s*\])/g) || [];
   assert.ok(fnBodies.length >= 5, `섹션 클로저를 ${fnBodies.length}개만 찾았다 — 추출 로직이 깨졌다`);
   fnBodies.forEach((body) => {
     const usesSheet = /\bss[A-Z]?\w*\b/.test(body);
