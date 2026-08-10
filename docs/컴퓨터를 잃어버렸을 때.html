@@ -85,7 +85,7 @@ footer b{color:var(--navy);font-weight:500}
     <h1>컴퓨터를 잃어버렸을 때</h1>
     <p class="sub">노트북이 고장 나거나 도난당해도 SYNK의 일은 사라지지 않습니다. 어디에 무엇이 있고, 새 컴퓨터에서 무엇부터 하면 되는지를 순서대로 적었습니다.</p>
     <div class="stamp">
-      <b>실측</b> 2026-08-09 &nbsp;·&nbsp; <b>이 파일의 자리</b> 바탕화면 → SYNK 운영자료<br>
+      <b>실측</b> 2026-08-10 &nbsp;·&nbsp; <b>이 파일의 자리</b> 바탕화면 → SYNK 운영자료<br>
       <b>왜 여기 있나</b> &nbsp;복구 절차서가 복구 대상 안에만 있으면 정작 필요할 때 못 엽니다. 그래서 이 파일은 <b>바탕화면(OneDrive)</b>에 실물로 둡니다.
     </div>
   </div>
@@ -95,29 +95,51 @@ footer b{color:var(--navy);font-weight:500}
 
 <!-- 01 -->
 <section>
-  <h2><span class="n">01</span> 결론 — 거의 다 살아 있습니다</h2>
-  <p class="lede">SYNK의 코드·문서·판단 기록은 <b>인터넷에 자동으로 복사되고 있습니다.</b> 컴퓨터가 없어져도 계정 로그인만 되면 전부 되찾습니다.</p>
+  <h2><span class="n">01</span> 결론 — 대부분 살아 있고, 매일 한 줄이면 나머지도 삽니다</h2>
+  <p class="lede">SYNK의 코드·문서·판단 기록은 <b>인터넷에 복사되고 있습니다.</b> 다만 <b>「GitHub에 올린 것까지만」</b>입니다 — 컴퓨터에서 만들고 아직 안 올린 작업은 컴퓨터와 함께 사라집니다. 그 자리를 메우는 게 아래 <b>02번의 한 줄</b>입니다.</p>
   <div class="scroll">
   <table>
     <thead><tr><th>무엇</th><th>어디에 복사되나</th><th class="c">상태</th></tr></thead>
     <tbody>
-      <tr><td>사업 문서 · 학원 자료 · 도구 <span class="tag">SYNK-appsscript</span></td><td>GitHub · <code>unmet23-lab/synk-appsscript</code></td><td class="c">안전</td></tr>
-      <tr><td>앱 · 서버 코드 <span class="tag">SYNK-talk</span></td><td>GitHub · <code>unmet23-lab/SYNK-talk</code></td><td class="c">안전</td></tr>
+      <tr><td>사업 문서 · 학원 자료 · 도구 <span class="tag">SYNK-appsscript</span></td><td>GitHub · <code>unmet23-lab/synk-appsscript</code></td><td class="c">올린 것까지</td></tr>
+      <tr><td>앱 · 서버 코드 <span class="tag">SYNK-talk</span></td><td>GitHub · <code>unmet23-lab/SYNK-talk</code></td><td class="c">올린 것까지</td></tr>
       <tr><td>AI가 기억하는 판정·확정 이력 <span class="tag">메모리</span></td><td>GitHub · <code>unmet23-lab/synk-memory</code> <span class="tag">1시간마다 자동</span></td><td class="c">안전</td></tr>
       <tr><td>바탕화면 전부 (이 폴더 포함)</td><td>OneDrive <span class="tag">Microsoft 계정</span></td><td class="c">안전</td></tr>
       <tr><td>OneDrive「문서」폴더</td><td>OneDrive</td><td class="c">안전</td></tr>
-      <tr class="bad"><td><b>내 PC「문서」폴더의 낱개 파일 4개</b><br><span class="tag">투자자 요약덱 · 사업진단 리포트 · 시간표 · profiles 백업</span></td><td>어디에도 안 감</td><td class="c">사라짐</td></tr>
-      <tr class="bad"><td><b>다운로드 폴더</b> <span class="tag">6.2GB · 1,465개 — 로고 시안 등</span></td><td>어디에도 안 감</td><td class="c">사라짐</td></tr>
+      <tr><td><b>아직 GitHub에 안 올린 작업</b><br><span class="tag">2026-08-10 실측: 13개나 쌓여 있었습니다</span></td><td>백업 한 줄을 돌리면 그때 올라갑니다</td><td class="c">돌리면 안전</td></tr>
+      <tr><td><b>저장은 했는데 아직 정리 안 한 파일</b><br><span class="tag">2026-08-10 실측 29건</span></td><td>백업 한 줄이 OneDrive로 통째 복사</td><td class="c">돌리면 안전</td></tr>
+      <tr><td><b>내 PC「문서」폴더의 낱개 파일 4개</b><br><span class="tag">투자자 요약덱 · 사업진단 리포트 · 시간표 · profiles 백업</span></td><td>백업 한 줄이 OneDrive로 복사</td><td class="c">돌리면 안전</td></tr>
+      <tr class="bad"><td><b>다운로드 폴더</b> <span class="tag">6.1GB · 1,464개 — 로고 시안 등</span></td><td>어디에도 안 감</td><td class="c">사라짐</td></tr>
+      <tr class="bad"><td><b>계정 열쇠</b> <span class="tag">GitHub·Microsoft 2단계 인증 백업코드</span></td><td>컴퓨터 안에만 있으면 같이 사라짐</td><td class="c">사라짐</td></tr>
       <tr class="bad"><td><b>아직 저장 안 한 작업</b> <span class="tag">그 순간 편집 중이던 것</span></td><td>—</td><td class="c">사라짐</td></tr>
     </tbody>
   </table>
   </div>
-  <p class="note">「사라짐」 세 줄은 05번에서 다룹니다. 아래 회색 칸이 그것입니다 — <b>지금 손을 대면 없앨 수 있는 위험</b>입니다.</p>
+  <p class="note"><b>2026-08-10에 큰 구멍 하나를 막았습니다.</b> 작업 폴더(<code>내 PC\문서\SYNK-*</code>)가 <b>OneDrive 바깥</b>이라 클라우드 복사를 전혀 못 받고 있었습니다. 바탕화면·사진은 OneDrive 안인데 거기만 밖이었습니다. 지금은 02번 도구가 그 자리를 매번 메웁니다.<br>
+  아래 회색 세 줄이 남은 위험이고, 06번에서 다룹니다.</p>
 </section>
 
 <!-- 02 -->
 <section>
-  <h2><span class="n">02</span> 새 컴퓨터에서 할 일</h2>
+  <h2><span class="n">02</span> 평소에 — 하루 한 줄</h2>
+  <p class="lede">이 한 줄이 위 표의 「돌리면 안전」 세 줄을 <b>실제로</b> 안전하게 만듭니다. 하루 일을 끝낼 때 한 번이면 충분합니다.</p>
+  <div class="panel">
+    <h3>AI에게 이렇게 말씀하시면 됩니다</h3>
+    <p><b>「백업 돌려줘」</b> — 이 한마디로 아래가 전부 실행됩니다.</p>
+    <ul>
+      <li>컴퓨터에만 있던 작업을 <b>GitHub에 올립니다</b></li>
+      <li>아직 정리 안 한 파일을 <b>OneDrive에 그대로 복사</b>합니다</li>
+      <li>작업 폴더 밖 낱개 파일(시간표·투자자덱 등)도 같이 담습니다</li>
+      <li>못 담은 게 있으면 <b>소리 내서 알려줍니다</b> — 조용히 넘어가지 않습니다</li>
+    </ul>
+    <p class="note">직접 하실 때: <code>node tools/백업.js</code> &nbsp;·&nbsp; 재보기만 할 땐 <code>node tools/백업.js --진단</code>(아무것도 바꾸지 않습니다).</p>
+  </div>
+  <p class="note">담기는 곳은 <code>OneDrive\SYNK_안전백업\날짜</code>입니다. 날짜별로 쌓이니 <b>「그저께 판으로 돌아가기」</b>도 됩니다. 이 도구가 못 지키는 층은 딱 둘 — <b>계정 열쇠</b>와 <b>비밀번호·API 키</b>입니다. 그건 06번에서 다룹니다.</p>
+</section>
+
+<!-- 03 -->
+<section>
+  <h2><span class="n">03</span> 새 컴퓨터에서 할 일</h2>
   <p class="lede">순서대로만 하면 됩니다. 1·2번은 유호님이 직접, 3번부터는 AI에게 이 파일을 보여주시면 됩니다.</p>
 
   <div class="step">
@@ -156,9 +178,9 @@ footer b{color:var(--navy);font-weight:500}
   </div>
 </section>
 
-<!-- 03 -->
+<!-- 04 -->
 <section>
-  <h2><span class="n">03</span> 복구가 아니라 재발급인 것</h2>
+  <h2><span class="n">04</span> 복구가 아니라 재발급인 것</h2>
   <p class="lede">이건 잃어버린 게 아니라 <b>새로 만드는</b> 것입니다. 컴퓨터를 도난당했다면 오히려 <b>즉시 폐기하고 새로 발급해야</b> 합니다.</p>
   <div class="panel signal">
     <h3>새 컴퓨터에서 다시 만들 것</h3>
@@ -171,9 +193,9 @@ footer b{color:var(--navy);font-weight:500}
   </div>
 </section>
 
-<!-- 04 -->
+<!-- 05 -->
 <section>
-  <h2><span class="n">04</span> 지금 미리 해두실 일</h2>
+  <h2><span class="n">05</span> 지금 미리 해두실 일</h2>
   <p class="lede">여기가 진짜 급소입니다. <b>모든 백업이 계정 두 개에 걸려 있습니다</b> — 그 로그인을 못 하면 백업이 멀쩡해도 못 꺼냅니다.</p>
   <div class="panel signal">
     <h3>계정 복구 수단을 컴퓨터 밖에 두기</h3>
@@ -187,26 +209,27 @@ footer b{color:var(--navy);font-weight:500}
   <p class="note"><b>왜 이게 급소인가</b> — GitHub 3곳과 OneDrive는 서로 다른 백업처럼 보이지만, 실제로는 <b>온라인 계정 두 개</b>에 매달려 있습니다. 계정을 못 열면 네 곳이 동시에 닫힙니다. 실제로 2026-08-09에 GitHub 무료 사용량이 소진돼 자동 검사가 계정 층에서 통째로 멈춘 적이 있습니다 — 계정 하나가 여러 곳을 동시에 끊는다는 것이 이미 한 번 증명됐습니다.</p>
 </section>
 
-<!-- 05 -->
+<!-- 06 -->
 <section>
-  <h2><span class="n">05</span> 아직 아무도 안 지키는 것</h2>
-  <p class="lede">01번 표의 회색 세 줄입니다. 이건 유호님이 배치하신 파일이라 제가 마음대로 옮기지 않았습니다 — <b>결정만 주시면 처리합니다.</b></p>
+  <h2><span class="n">06</span> 아직 아무도 안 지키는 것</h2>
+  <p class="lede">01번 표의 회색 세 줄입니다. <b>02번 백업으로도 안 메워지는 자리</b>라 유호님 결정이 필요합니다.</p>
   <div class="panel">
     <h3>결정이 필요한 셋</h3>
     <ul>
-      <li><b>내 PC「문서」폴더의 낱개 파일 4개</b> — 투자자 요약덱(0.98MB) · 사업진단 풀리포트 · 시간표 · profiles 백업.
-        <br><span class="tag">권고</span> OneDrive「문서」로 옮기면 자동으로 지켜집니다. 용량 부담 없음(합계 1.1MB).</li>
-      <li><b>다운로드 폴더 6.2GB</b> — 대부분 로고·이니셜 시안 이미지입니다.
-        <br><span class="tag">권고</span> 전부 옮기지 말고 <b>쓸 것만 골라</b> repo나 OneDrive로. 6.2GB를 통째로 올리면 OneDrive 무료 용량(5GB)을 넘깁니다.</li>
-      <li><b>편집 중이던 작업</b> — 자동 저장 장치가 이미 돌고 있지만, 컴퓨터가 갑자기 죽으면 마지막 몇 분은 사라집니다. 이건 구조상 없앨 수 없는 위험입니다.</li>
+      <li><b>계정 열쇠 — 가장 급합니다.</b> GitHub·Microsoft의 2단계 인증 백업코드가 이 컴퓨터 안에만 있으면, 컴퓨터를 잃는 순간 <b>백업이 다 살아 있어도 못 꺼냅니다.</b> 백업의 문제가 아니라 열쇠의 문제라 제가 대신할 수 없습니다.
+        <br><span class="tag">권고</span> 두 계정의 백업코드를 <b>종이에 적어 집 밖 다른 곳</b>(또는 휴대폰 인증 앱)에 두십시오. 5분이면 됩니다.</li>
+      <li><b>다운로드 폴더 6.1GB · 1,464개</b> — 대부분 로고·이니셜 시안 이미지입니다.
+        <br><span class="tag">권고</span> 전부 옮기지 말고 <b>쓸 것만 골라</b> repo나 OneDrive로. 통째로 올리면 OneDrive 무료 용량(5GB)을 넘깁니다.</li>
+      <li><b>편집 중이던 작업</b> — 컴퓨터가 갑자기 죽으면 마지막 몇 분은 사라집니다. 구조상 없앨 수 없는 위험이고, 02번 백업을 자주 돌릴수록 그 「몇 분」이 짧아집니다.</li>
     </ul>
   </div>
+  <p class="note"><b>낱개 파일 4개는 이제 02번 백업이 담습니다</b>(2026-08-10). 다만 백업은 <b>돌릴 때만</b> 담고 OneDrive는 <b>실시간</b>이라, 원본을 <code>OneDrive\문서</code>로 옮기시면 더 촘촘해집니다. 합계 1.1MB라 용량 부담은 없습니다 — 유호님이 배치하신 파일이라 옮기지 않고 기다립니다.</p>
   <p class="note"><b>한 가지 더 — 온라인만으로는 축이 하나입니다.</b> GitHub도 OneDrive도 인터넷 계정입니다. 계정 정지·해킹·서비스 장애면 네 곳이 같이 막힙니다. 값싼 USB 하나에 <b>분기마다 한 번</b> 저장소 3개를 통째로 복사해 두면, 인터넷과 무관한 독립 축이 하나 생깁니다. 필요하시면 그것도 명령 한 줄로 되게 만들어 두겠습니다.</p>
 </section>
 
 <footer>
   <b>계정 2개</b> · Microsoft(OneDrive) · GitHub(unmet23-lab) &nbsp;|&nbsp; <b>저장소 3개</b> · synk-appsscript · SYNK-talk · synk-memory<br>
-  <b>실측</b> 2026-08-09 — OneDrive 동기화 작동 확인 · 메모리 자동 백업 1시간 주기 작동 확인<br>
+  <b>실측</b> 2026-08-10 — 작업 폴더가 OneDrive 밖인 것을 발견해 <code>node tools/백업.js</code> 를 세웠습니다. 그날 무보호였던 13커밋은 원격으로 옮겼고, 미커밋 29건·낱개 4건이 스냅샷에 담겼습니다.<br>
   이 파일은 새 컴퓨터에서 <b>OneDrive 로그인 직후</b> 바탕화면에 다시 나타납니다. 그때 02번부터 읽으시면 됩니다.
 </footer>
 
