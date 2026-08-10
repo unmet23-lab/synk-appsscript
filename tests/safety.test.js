@@ -1072,14 +1072,41 @@ test('[v9.67] resetAllTriggers는 교재연동Nightly(23시)를 개통 시스템
     '교재연동.js setupTextbookLink의 23시 설치 정본이 변형됨 — resetAllTriggers 재설치와 함께 바꿔야 한다');
 });
 
-test('[v9.67] preflight·워치독·매니페스트가 교재연동Nightly 생존을 개통 조건부로 감시한다(미개통 오경보 0)', () => {
-  const pre = section('function preflightGlide()', 'function safeRun(name, fn)');
-  assert.ok(pre.includes("need['교재연동Nightly'] = 1"), 'preflight need 목록 편입 누락 — 실종을 조립 점검이 영영 모른다');
+/* [vNEXT] 트리거 매니페스트 단일화 — 위 [v9.67] 수리가 「숫자·목록을 네 곳에 손으로 적는」 모양이라
+ *   v9.164(onConsultEdit)에서 그대로 재발했다. 재발 형태가 두 방향이라 둘 다 회귀로 못박는다:
+ *     거짓경보 = buildSystemManifest 기대 10 vs 실제 11 → 정상 상태에서 영구 ⚠(사람이 점검을 끈다)
+ *     거짓 초록 = preflight·워치독이 onConsultEdit 실종을 못 봄(onEdit은 「조용히 안 도는 것」으로만 드러난다)
+ *   ⚠ 이 테스트는 「버그가 아직 있을 것」을 요구하지 않는다 — 정상 상태에서 초록이고, **갈라질 때만** 빨개진다. */
+test('[vNEXT] 트리거 매니페스트가 정본이다 — 재설치 목록과 소비자 셋이 전부 거기서 파생한다', () => {
+  const 코드만 = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  const mfBody = 코드만(section('function triggerManifest_(', '\nfunction resetAllTriggers('));
+  const 매니 = [];
+  mfBody.slice(mfBody.indexOf('['), mfBody.indexOf(']')).replace(/'([^']+)'/g, (m, n) => { 매니.push(n); return m; });
+  mfBody.replace(/목록\.push\('([^']+)'\)/g, (m, n) => { 매니.push(n); return m; });
+  assert.ok(매니.includes('onConsultEdit'), '매니페스트에 onConsultEdit이 없다 — v9.164 결함의 재발');
+  assert.ok(/if \(tbOn\) 목록\.push\('교재연동Nightly'\)/.test(mfBody),
+    '교재연동Nightly가 무조건 항목이 됐다 — 미개통 시스템에 오경보가 상시로 뜬다(v9.67이 닫은 자리)');
+
+  // ① 실물 설치 목록과 집합이 같아야 한다. 한쪽만 늘면 그 순간부터 감시망이 갈라진다.
+  const setup = 코드만(section('triggers.forEach(t => ScriptApp.deleteTrigger(t));', '트리거 통합 재설치 완료'));
+  const 설치 = [];
+  setup.replace(/newTrigger\('([^']+)'\)/g, (m, n) => { 설치.push(n); return m; });
+  assert.deepEqual(매니.slice().sort(), 설치.slice().sort(),
+    '트리거 매니페스트와 resetAllTriggers 재설치 목록이 갈라졌다 — 트리거를 늘리면 둘을 같은 커밋에서 고칠 것');
+
+  // ② 소비자 셋이 손으로 적은 목록·숫자로 되돌아가지 않았는가
+  const pre = 코드만(section('function preflightGlide()', 'function safeRun(name, fn)'));
+  assert.ok(/const need = triggerManifest_\(tbOnP\)/.test(pre),
+    'preflight 트리거 점검이 매니페스트 파생이 아니다 — 손 목록은 새 트리거의 실종을 영영 못 본다');
   assert.ok(pre.includes('textbookLinkOn_'), 'preflight 개통 발자국 조건 누락 — setupTextbookLink 미실행 시스템에 오경보');
-  const wd = section('function systemWatchdog(', 'function buildSystemManifest()');
-  assert.ok(wd.includes("recommended.push('교재연동Nightly')"), '워치독 권장 트리거 편입 누락 — 주간 메일 감시망 밖');
-  const mf = section('function buildSystemManifest()', 'function checkConsultSync()');
-  assert.ok(mf.includes('10 + (tbOnM ? 1 : 0)'), '매니페스트 기대치가 고정 10이면 정상 설치된 11개 상태를 ⚠로 오판한다');
+  const wd = 코드만(section('function systemWatchdog(', 'function buildSystemManifest()'));
+  assert.ok(/recommended = triggerManifest_\(textbookLinkOn_\(ss\)\)/.test(wd),
+    '워치독 권장 목록이 매니페스트 파생이 아니다 — 주간 메일 감시망이 다시 갈라진다');
+  const mf = 코드만(section('function buildSystemManifest()', 'function checkConsultSync()'));
+  assert.ok(/EXPECT_TRIGGERS = 기대핸들러\.length/.test(mf) && /기대핸들러 = triggerManifest_\(tbOnM\)/.test(mf),
+    '매니페스트 기대치가 파생이 아니다');
+  assert.ok(!/EXPECT_TRIGGERS = \d/.test(mf),
+    '기대치에 숫자 리터럴이 다시 박혔다 — 트리거가 하나 늘 때마다 정상 상태가 ⚠로 뒤집힌다');
 });
 
 test('[v9.67] CLAUDE_API_KEY 휴면·첨삭 적체가 워치독·preflight·매니페스트에 뜬다(키 값은 절대 미노출)', () => {
