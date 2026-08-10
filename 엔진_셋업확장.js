@@ -948,15 +948,15 @@ function preflightGlide() {
     }
   }
 
-  // 7) 트리거 — 통합 10개 + 교재연동 개통 시 교재연동Nightly(23시) 생존 확인
-  const need = { parentSweep: 1, dailyBackupJob: 1, morningJobs: 1, sendMorningDigestJob: 1, calcAllJob: 1, nightJobs: 1, weeklyJobs: 1, monthlyJobs: 1, monthlyReportCardsJob: 1, monthlyReportJob: 1 };
+  // 7) 트리거 생존 확인. [v9.202] 목록을 여기 다시 적지 않는다 — triggerManifest_(정본)에서 파생한다.
+  //   (고정 10개를 손으로 적어 두던 시절엔 v9.164가 추가한 onConsultEdit 실종을 이 점검이 영영 못 봤다)
   const tbOnP = textbookLinkOn_(ss); // [v9.67] 개통 발자국(profiles 목소리폼URL 헤더) 있을 때만 요구 — 미개통 오경보 차단
-  if (tbOnP) need['교재연동Nightly'] = 1;
+  const need = triggerManifest_(tbOnP);
   const have = {};
   try { ScriptApp.getProjectTriggers().forEach(t => { have[t.getHandlerFunction()] = 1; }); } catch (e) {}
-  const missT = Object.keys(need).filter(k => !have[k]);
+  const missT = need.filter(k => !have[k]);
   if (missT.length) warn('트리거 누락: ' + missT.join(', ') + ' → resetAllTriggers() 1회 실행(⚠ 매월 1일 오전엔 실행 금지 · 교재연동Nightly는 setupTextbookLink ▶로도 복구)');
-  else ok('트리거 ' + Object.keys(need).length + '개 전부 살아있음(통합 10' + (tbOnP ? ' + 교재연동Nightly' : ' · 교재연동 미개통') + ')');
+  else ok('트리거 ' + need.length + '개 전부 살아있음(통합 ' + triggerManifest_(false).length + (tbOnP ? ' + 교재연동Nightly' : ' · 교재연동 미개통') + ')');
 
   // 7.2) [v9.67] AI 첨삭 키·적체 — 키 휴면이 완전 침묵이던 결함 해소(키 값은 절대 미출력, 존재 여부만)
   {
@@ -1193,6 +1193,25 @@ function runTravelMapNow() { updateTravelMap_(); }
 //   expandLessonLog_/expandMasteryLog_는 멱등(K·L 처리상태 마킹 + 당일 지급분 재조회 dedup)이라 낮 실행 무해.
 //   메일·정산·가드는 안 건드린다(그건 nightJobs 전용 순서 유지).
 function runLessonExpandNow() { expandLessonLog_(); expandMasteryLog_(); calcAll(); return '마감폼 전개+재계산 완료 — mastery_log·point_logs·여정 카드 확인'; }
+
+/* [v9.202] 트리거 매니페스트 **정본** — 「같은 판정을 두 곳에 적으면 갈라진다」의 수리.
+ *   병의 실물: v9.164가 onConsultEdit을 아래 재설치 목록에만 넣고 소비자 셋을 안 고쳤다. 결과가 두 방향으로 샜다 —
+ *     ①preflight need(10개)·②워치독 recommended 가 onConsultEdit 실종을 **못 본다**(거짓 초록 · onEdit은 시간 기반이
+ *       아니라 「조용히 안 도는 것」으로만 드러나서 증상이 없다)
+ *     ③buildSystemManifest 기대치 10이 정상 설치된 11개를 ⚠로 오판한다(**거짓경보** — 상시 WARN은 사람이 가드를 끄게 만든다)
+ *   숫자만 11로 올리면 ③만 닫히고 ①②는 그대로 남는다. 그래서 셋 다 이 함수에서 파생시킨다.
+ *   트리거를 늘릴 땐 **여기 한 줄 + 아래 설치 한 줄**이고, 둘이 갈라지면 tests/safety.test.js 의 대조가 CI에서 잡는다.
+ * ⚠ 이름은 **실제 등록되는 핸들러명**이다(safeRun 보호 래퍼는 …Job) — 워치독 alive()가 bare/Job 두 표기를 흡수한다.
+ * ⚠ 톱레벨 const 로 빼지 말 것 — 파일 초기화 순서에 따라 전 트리거가 죽는다(tests/로드시뮬). */
+function triggerManifest_(tbOn) {
+  const 목록 = [
+    'parentSweep', 'dailyBackupJob', 'morningJobs', 'sendMorningDigestJob', 'calcAllJob',
+    'nightJobs', 'weeklyJobs', 'monthlyJobs', 'monthlyReportCardsJob', 'monthlyReportJob',
+    'onConsultEdit'                       // [v9.164] 상담시트 학생ID 즉시 발급
+  ];
+  if (tbOn) 목록.push('교재연동Nightly'); // [v9.67] 개통 발자국 있을 때만 — 미개통 시스템에 오경보 0
+  return 목록;
+}
 
 function resetAllTriggers(force) {
   // [v9.25] 리포트카드 이어하기 보호 — 월 1일 배치가 예약한 reportCardsContinue 4분-뒤 트리거를

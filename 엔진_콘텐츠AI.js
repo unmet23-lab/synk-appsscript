@@ -447,13 +447,17 @@ function systemWatchdog(asText) {
   //   monthlyReportCardsJob·monthlyReportJob)로 재등록됐다. 점검 목록은 원 함수명 그대로 두되,
   //   bare/‘…Job’ 두 이름 중 하나라도 살아 있으면 정상으로 취급해 개명에도 오탐(실종! 허위경보)이
   //   안 나게 한다 — 앞으로 다른 핸들러가 Job 래퍼로 바뀌어도 이 매칭이 자동으로 흡수한다.
-  const alive = f => !!(have[f] || have[f + 'Job']);
-  ['calcAll', 'parentSweep', 'sendMorningDigest'].forEach(f => {
-    add(alive(f), '필수 트리거 ' + f + (alive(f) ? ' 정상' : ' 실종! — resetAllTriggers()/트리거 화면 확인'));
+  // [v9.202] 흡수를 양방향으로 넓혔다 — 매니페스트가 **등록명**(…Job)을 주므로 접미를 떼고도 본다.
+  const bare = f => String(f).replace(/Job$/, '');
+  const alive = f => !!(have[bare(f)] || have[bare(f) + 'Job']);
+  // [v9.202] 목록은 triggerManifest_(정본)에서 파생한다. 손으로 적어 두던 시절엔 v9.164가 더한
+  //   onConsultEdit 이 이 감시망 **밖**이었다 — 실종해도 주간 메일이 「전부 등록됨」이라고 답했다.
+  const 필수 = ['calcAllJob', 'parentSweep', 'sendMorningDigestJob']; // 이름은 매니페스트 표기로 — 아래 filter가 대조한다
+  필수.forEach(f => {
+    add(alive(f), '필수 트리거 ' + bare(f) + (alive(f) ? ' 정상' : ' 실종! — resetAllTriggers()/트리거 화면 확인'));
   });
-  const recommended = ['dailyBackup', 'morningJobs', 'nightJobs', 'weeklyJobs',
-    'monthlyJobs', 'monthlyReportCards', 'monthlyReport']; // [v7.0] v6.3 통합 트리거 기준
-  if (textbookLinkOn_(ss)) recommended.push('교재연동Nightly'); // [v9.67] 개통 후에만 요구 — 전체 삭제 재설치 사고로 실종되면 여기서 발각(미개통 오경보 0)
+  // [v9.67] 교재연동Nightly는 개통 후에만 요구(미개통 오경보 0) — 그 조건도 매니페스트가 들고 있다
+  const recommended = triggerManifest_(textbookLinkOn_(ss)).filter(f => 필수.indexOf(f) < 0);
   const missing = recommended.filter(f => !alive(f));
   add(missing.length === 0, '권장 트리거: ' + (missing.length ? missing.join(', ') + ' 미등록 (의도적이면 무시)' : '전부 등록됨'));
 
@@ -780,15 +784,23 @@ function buildSystemManifest() {
     ? bad.map(function (kk) { return kk + ' ' + (cnt[kk] || 0) + '/' + CONTENT_EXPECT[kk]; }).join(', ') + ' — 해당 setup 재실행'
     : '전부 일치', bad.length ? WARN : OK);
 
-  // 5) 트리거 — 실측 수·핸들러 vs 기대치. [v9.67] 기대 = 통합 10 + 교재연동 개통 시 교재연동Nightly 1
-  //   (고정 10이던 시절엔 정상 설치된 11개 상태를 ⚠로 오판 — 2026-07-26 진단 결함 ①의 매니페스트 축)
+  // 5) 트리거 — 실측 수·핸들러 vs 기대치. [v9.202] 기대치를 triggerManifest_(정본)에서 파생한다.
+  //   (고정 10이던 시절엔 정상 설치된 11개를 ⚠로 오판했다 — 2026-07-26 진단 결함 ①의 매니페스트 축.
+  //    v9.67이 교재연동 1을 조건부로 더해 닫았지만, v9.164가 onConsultEdit을 더할 때 이 숫자를 안 올려
+  //    **정상 상태에서 영구 WARN**으로 되살아났다. 여기서 숫자를 또 손으로 올리면 같은 자리가 세 번째로
+  //    갈라진다 — 상시 거짓경보는 사람이 이 점검을 통째로 무시하게 만든다.)
   const tbOnM = textbookLinkOn_(ss);
-  const EXPECT_TRIGGERS = 10 + (tbOnM ? 1 : 0);
+  const 기대핸들러 = triggerManifest_(tbOnM);
+  const EXPECT_TRIGGERS = 기대핸들러.length;
   let handlers = [];
   try { handlers = ScriptApp.getProjectTriggers().map(function (t) { return t.getHandlerFunction(); }); } catch (e) { handlers = []; }
   const uniqH = handlers.filter(function (h, i) { return handlers.indexOf(h) === i; }).sort();
-  push('트리거 수(실측)', handlers.length + '개 / 기대 ' + EXPECT_TRIGGERS + (tbOnM ? ' (통합 10+교재연동 1)' : ' (통합 10 · 교재연동 미개통)'), handlers.length === EXPECT_TRIGGERS ? OK : WARN);
+  push('트리거 수(실측)', handlers.length + '개 / 기대 ' + EXPECT_TRIGGERS + (tbOnM ? ' (통합 ' + triggerManifest_(false).length + '+교재연동 1)' : ' (통합 ' + EXPECT_TRIGGERS + ' · 교재연동 미개통)'), handlers.length === EXPECT_TRIGGERS ? OK : WARN);
   push('트리거 핸들러', uniqH.length ? uniqH.join(', ') : '(없음)', uniqH.length ? OK : WARN);
+  // [v9.202] 개수만 대조하면 「하나 죽고 하나 생긴」 상태가 통과한다. 매니페스트가 이름을 들고 있으니 실종을 **지목**한다 —
+  //   수만 어긋나던 시절엔 무엇이 빠졌는지 사람이 트리거 화면을 직접 세어 봐야 했다.
+  const 실종T = 기대핸들러.filter(function (h) { return uniqH.indexOf(h) < 0; });
+  if (실종T.length) push('트리거 실종(매니페스트 대조)', 실종T.join(', ') + ' → resetAllTriggers() 1회', WARN);
 
   // 6) 외부 의존성
   const props = PropertiesService.getScriptProperties();
