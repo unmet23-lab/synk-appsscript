@@ -27,10 +27,13 @@ function 바탕화면() {
   throw new Error('바탕화면을 못 찾았다: ' + 후보.join(' | '));
 }
 
-const OUT = path.join(바탕화면(), 'SYNK 철학');
 const DOCS = [
   ['docs/SYNK_철학.md', '01_SYNK_철학_3벌'],
-  ['docs/LAB철학.md', '02_유호님_구술_원문과_판정기록'],
+  /* 02(구술 원문·판정기록)는 뺐다(유호 판정 기준 08-10 · ②안) — LAB철학.md 는 docs/_archive/ 로
+   * 이관됐고, §0 구술 원문은 SYNK_철학 부록 C 충실 복원으로 01 안에 실려 나간다(7항 전문 동일 실측).
+   * 나머지 층(§1~7 v1 초안·§6 판정 9건)은 철학 3벌 확정 + 유호 「다 유지」(08-09)로 역할이 끝나,
+   * 아카이브 경로로 되살리면 [제안]·판정 대기 라벨이 붙은 구판이 정본 옆에서 현행의 얼굴을 한다.
+   * ⚠항목을 뺄 땐 바탕화면 사본도 같이 걷는다 — 빌드는 그 폴더에서 아무것도 지우지 않는다(02는 08-10 수거). */
   ['docs/기업철학_홈페이지_v1.md', '03_기업철학_현행(홈페이지본)'],
 ];
 
@@ -93,12 +96,16 @@ function mdToHtml(md){
   return out.join('\n');
 }
 
-function 빌드(){
+function 빌드(opts = {}){
+  // 바탕화면 탐지는 out 미지정일 때만 — require 는 부작용 0 이고, 회귀는 out·docs 를 넘겨 repo 밖(레지스트리·진짜 바탕화면)을 안 만진다
+  const docs = opts.docs || DOCS;
+  const OUT = opts.out || path.join(바탕화면(), 'SYNK 철학');
   fs.mkdirSync(OUT, { recursive: true });
   const built = [];
-  for (const [rel, name] of DOCS){
+  const 없음 = [];
+  for (const [rel, name] of docs){
     const src = path.join(ROOT, rel);
-    if (!fs.existsSync(src)) { console.error('없음: ' + rel); continue; }
+    if (!fs.existsSync(src)) { console.error('없음: ' + rel); 없음.push(rel); continue; }
     const md = fs.readFileSync(src, 'utf8');
     const title = (md.match(/^#\s+(.*)$/m) || [,name])[1].replace(/\*/g,'');
     const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
@@ -112,10 +119,19 @@ ${mdToHtml(md)}
   }
   console.log('내보냄 ' + built.length + '건 → ' + OUT);
   built.forEach(f => console.log('  · ' + path.basename(f)));
+  /* 원본 없는 항목을 조용히 건너뛰지 않는다 — 그 항목의 옛 사본이 바탕화면에 「갱신된 척」 남는다
+   * (2026-08-10 실측: LAB철학.md 이관 후 02 가 하루 넘게 낡은 채 남아 유호님이 발견).
+   * exitCode 가 아니라 throw — exitCode 는 프로세스 전역이라 회귀가 빌드()를 부르는 날 fail 0 스위트를 적색으로 만든다. */
+  if (없음.length) {
+    throw new Error('원본 없는 항목 ' + 없음.length + '건(' + 없음.join(' · ') + ') — 매니페스트를 고치기 전까지 이 빌드는 실패다.');
+  }
   return built;
 }
 
 // require 하는 순간 바탕화면에 파일이 나가면 회귀에서 이 모듈을 부를 수 없다(47093f7d 지적 08-09).
-// 실행은 CLI 로 직접 부를 때만 — require 는 부작용 0.
-if (require.main === module) 빌드();
-module.exports = { mdToHtml, 빌드 };
+// 실행은 CLI 로 직접 부를 때만 — require 는 부작용 0(바탕화면 탐지 포함).
+module.exports = { DOCS, mdToHtml, 빌드 }; // export 는 이 한 곳뿐 — 늘릴 땐 여기에 더한다(export 문이 둘이면 뒤가 앞을 조용히 덮는다)
+if (require.main === module) {
+  try { 빌드(); }
+  catch (e) { console.error(String((e && e.message) || e)); process.exit(1); }
+}
