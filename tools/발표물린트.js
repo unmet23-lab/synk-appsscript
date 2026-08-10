@@ -9,10 +9,16 @@
 // 사용법:
 //   node tools/발표물린트.js docs/발표물/05_커리큘럼_로드맵_A3.html
 //   node tools/발표물린트.js docs/발표물/*.html
+//   node tools/발표물린트.js --넘침 docs/발표물/*.html   # 쪽이 넘쳐 잘리는지까지 (헤드리스 크롬)
 //
-// 종료 코드: 위반이 있으면 1. CI·/deploy 에서 그대로 쓸 수 있다.
+// 종료 코드: 위반이 있으면 1. 크롬이 없어 --넘침 을 **안 돌렸으면 2**(통과 아님).
+// CI·/deploy 에서 그대로 쓸 수 있다.
 'use strict';
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { execFileSync } = require('child_process');
+const 활자주입 = require('./lib/활자주입.js');
 
 // 정본 = docs/정본/SYNK/SYNK 집필 규범.txt §7(금칙어 — 구 발표물 제작 프롬프트 [공통 블록] ■2)
 //
@@ -154,20 +160,169 @@ function lint(file) {
   return { bad, info };
 }
 
-const files = process.argv.slice(2);
-if (!files.length) {
-  console.error('사용법: node tools/발표물린트.js <html...>');
-  process.exit(2);
-}
-let fail = 0;
-for (const f of files) {
-  const { bad, info } = lint(f);
-  if (bad.length) {
-    fail++;
-    console.log(`🔴 ${f}  (${info.join(' · ')})`);
-    bad.forEach((b) => console.log(`   - ${b}`));
-  } else {
-    console.log(`✅ ${f}  (${info.join(' · ')})`);
+/* ══ 넘침 검사 (--넘침) ══════════════════════════════════════════════════════
+ * 왜 텍스트 검사로는 못 잡나 — 쪽 상자는 전부 `overflow:hidden` 이다. 내용이 한 줄만
+ * 넘쳐도 **잘린 채로 조용히 초록**이 된다. 위 검사들은 파일의 글자를 읽으니 「글자는 다 있다」고
+ * 말하고, 종이에서만 사라진다. 이 파일 머리말이 말하는 실패 모드 그 자체인데 정작 안 보고 있었다.
+ * 실측(2026-08-10): 설명회 덱에 슬로건 부연 한 줄을 넣자 01·09·16장이 각각 9·19·3px 넘쳐
+ * 잘렸다 — 린트도 빌드도 전부 초록이었다.
+ *
+ * 무엇을 「쪽 상자」로 보나: **클래스 이름을 손으로 적지 않는다**(새 산출물이 다른 이름을 쓰면
+ * 그 자리가 통째로 사각이 된다). 대신 렌더된 성질로 고른다 —
+ *   ① 잘림이 일어나는 상자여야 한다: computed overflow-x/y 중 하나가 hidden
+ *   ② 쪽 크기여야 한다: clientHeight 가 그 문서에서 가장 큰 상자의 절반 이상
+ * ⚠ 0건과 「아무것도 안 봤다」를 가른다 — 잰 상자 수(분모)를 항상 함께 낸다(F207).
+ */
+const 넘침측정기 = `(() => {
+  const all = [...document.querySelectorAll('body *')];
+  // ⚠ 「잰 쪽 0」에는 뜻이 둘이다 — ①문서가 안 떴다(사고) ②이 문서엔 쪽 상자가 없다(정상).
+  //   둘을 같은 모양으로 내면 로드 실패가 통과로 읽힌다. 그래서 몸통 요소 수를 함께 낸다.
+  const 몸통 = all.length;
+  const 상자 = all.filter((el) => {
+    const cs = getComputedStyle(el);
+    return cs.overflowX === 'hidden' || cs.overflowY === 'hidden';
+  }).filter((el) => el.clientHeight > 0);
+  if (!상자.length) return { 잰것: 0, 몸통, 넘친것: [] };
+  const 최대 = Math.max(...상자.map((el) => el.clientHeight));
+  const 쪽 = 상자.filter((el) => el.clientHeight >= 최대 / 2);
+  const 넘친것 = [];
+  /* ⚠ scrollHeight-clientHeight 로 재지 **않는다.** flex 상자에서는 아래쪽 padding 이
+   *   scrollHeight 에 얹혀 아무것도 안 잘렸는데 「넘쳤다」가 나온다(실측: 02 안내문 hero
+   *   — 모든 자식이 상자 안에 있는데 22px 초과로 잡혔다). 거짓양성이 곧 「검사를 끄는 손버릇」이다.
+   *   그래서 **실제로 상자 밖으로 나간 자손이 있는가**를 직접 본다 — 그것만이 잘림이다. */
+  쪽.forEach((el, i) => {
+    const box = el.getBoundingClientRect();
+    let dy = 0, dx = 0, 범인 = '';
+    for (const c of el.querySelectorAll('*')) {
+      const cs = getComputedStyle(c);
+      if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+      const r = c.getBoundingClientRect();
+      if (!r.width && !r.height) continue;
+      /* 위·왼쪽도 본다 — 쪽 상자가 가운데 정렬(justify-content center)이면 넘친 내용이
+       * **양끝으로** 잘린다. 아래만 보면 그런 슬라이드에서 절반을 놓친다(설명회 덱이 그 모양이다). */
+      const oy = Math.round(Math.max(r.bottom - box.bottom, box.top - r.top));
+      const ox = Math.round(Math.max(r.right - box.right, box.left - r.left));
+      if (oy > dy || ox > dx) {
+        if (oy > dy) dy = oy;
+        if (ox > dx) dx = ox;
+        범인 = (c.className || c.tagName).toString().slice(0, 24) + ' “' + c.textContent.trim().replace(/\\s+/g, ' ').slice(0, 24) + '”';
+      }
+    }
+    if (dy > 1 || dx > 1) {
+      const h = el.querySelector('h1,h2,h3');
+      넘친것.push({
+        i: i + 1,
+        표: (el.className || el.tagName).toString().slice(0, 40),
+        제목: h ? h.textContent.trim().replace(/\\s+/g, ' ').slice(0, 30) : '',
+        세로: dy > 1 ? dy : 0, 가로: dx > 1 ? dx : 0, 범인,
+      });
+    }
+  });
+  return { 잰것: 쪽.length, 몸통, 넘친것 };
+})()`;
+
+/** 헤드리스 크롬으로 한 파일을 재서 넘친 쪽을 낸다. 통로는 브랜드렌더린트와 **같은 모양**이다. */
+function 넘침(file, chrome) {
+  const html = fs.readFileSync(file, 'utf8');
+  /* ⚠ 활자가 안 박힌 원본(`_src_*`)은 **잴 수 있는 대상이 아니다** — 폴백 활자로 조판돼
+   *   글자 폭이 달라진다(실측: `_src_02` 6/6 적색 ↔ 같은 내용 산출물 0/8). 「못 쟀다」가 아니라
+   *   「대상 아님」이라 쪽 상자 0 과 같은 갈래로 낸다. 판정은 활자주입 한 곳에서만 온다. */
+  if (활자주입.원본인가(html)) return { 활자미주입: true, 잰것: 0, 몸통: 0, 넘친것: [] };
+  /* ⚠ `load` 는 **활자가 앉기 전**이다 — 여기서 재면 같은 파일이 회차마다 갈린다.
+   *   실측(2026-08-10 · 02 안내문 kr): 잰 쪽 2·몸통 157 로 DOM 은 매 회차 똑같은데
+   *   넘침만 0px ↔ 18px 로 튀었다(6회 중 1~3회 적색). 18px = 한 줄 높이 — 폴백 활자로
+   *   재면 한 줄이 덜 접혀 통과하고, 본 활자가 앉은 뒤엔 접혀 넘친다. 죽은 세션 둘이
+   *   서로 반대 실측을 보고한 원인이 이것이다(`286c22f7` 20/20 초록 ↔ `f12f3c7d` 🔴18px).
+   *   ⚠ 새는 방향은 여기서도 「통과」다 — 폰트가 늦으면 조용히 초록이 된다.
+   *   그래서 `document.fonts.ready` 를 기다리고, 그 뒤 한 턴을 더 넘겨 재배치를 앉힌다.
+   *   ⚠ 프레임(`requestAnimationFrame`)으로 넘기지 **않는다** — `--virtual-time-budget` 아래선
+   *   rAF 가 안 돌아 8회 중 6회가 「결과를 못 냈다」로 죽었다(실측). 가상 시간이 굴려 주는
+   *   `setTimeout` 만 쓴다. 못 기다리면 결과를 아예 안 내보낸다 — 호출부가
+   *   「측정기가 결과를 못 냈다」로 죽는다(통과 아님). */
+  const 주입 = `<script>window.addEventListener('load', () => {
+    const 재기 = () => {
+      let r; try { r = ${넘침측정기}; } catch (e) { r = { 오류: String(e && e.stack || e) }; }
+      try { r.폰트 = document.fonts ? document.fonts.status : '없음'; } catch (e) { r.폰트 = '못읽음'; }
+      /* 기다렸는데도 안 앉았으면 **결과를 내지 않는다.** 여기서 그냥 재면 그 판정은
+       * 폴백 활자의 것이고, 새는 방향은 언제나 「넘침 0 = 통과」다. 조용한 초록보다 시끄러운 실패. */
+      if (r.폰트 !== 'loaded' && r.폰트 !== '없음') r.오류 = '활자가 안 앉은 채 쟀다 (status=' + r.폰트 + ')';
+      const pre = document.createElement('pre');
+      pre.id = 'SYNK_OVERFLOW_OUT';
+      pre.textContent = JSON.stringify(r);
+      document.documentElement.appendChild(pre);
+    };
+    const 활자 = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+    활자.then(() => setTimeout(재기, 0));
+  });</script>`;
+  const 주입본 = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, `${주입}</body>`) : html + 주입;
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-넘침-'));
+  const tmp = path.join(dir, 'page.html');
+  try {
+    fs.writeFileSync(tmp, 주입본, 'utf8');
+    // ⚠ 한글 경로 → encodeURI. 안 하면 빈 문서가 뜨고 넘침 0건으로 「통과」한다.
+    const url = 'file:///' + encodeURI(tmp.replace(/\\/g, '/'));
+    const out = execFileSync(chrome, [
+      '--headless=new', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
+      '--allow-file-access-from-files', '--virtual-time-budget=8000', '--dump-dom', url,
+    ], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] });
+    const m = out.match(/<pre id="SYNK_OVERFLOW_OUT">([\s\S]*?)<\/pre>/);
+    if (!m) throw new Error('측정기가 결과를 못 냈다 — 페이지 스크립트 오류이거나 로드 실패');
+    const r = JSON.parse(m[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"'));
+    if (r.오류) throw new Error('측정기 예외: ' + r.오류);
+    // 빈 문서를 「통과」로 읽지 않는다 — 단 「쪽 상자가 없는 문서」와는 가른다(번역 작업본이 그렇다).
+    if (!r.몸통) throw new Error('문서가 비어 있다 — 로드 실패를 통과로 읽을 뻔했다');
+    return r;
+  } finally {
+    try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* 정리 실패는 검사 결과를 안 바꾼다 */ }
   }
 }
-process.exit(fail ? 1 : 0);
+
+function main(argv) {
+  const 넘침검사 = argv.includes('--넘침');
+  const files = argv.filter((a) => !a.startsWith('--'));
+  if (!files.length) {
+    console.error('사용법: node tools/발표물린트.js [--넘침] <html...>');
+    return 2;
+  }
+
+  let chrome = null;
+  if (넘침검사) {
+    // 크롬 경로 목록을 여기 베끼지 않는다 — 같은 판정을 두 곳에 적으면 갈라진다.
+    ({ findChrome: chrome } = require('./브랜드렌더린트.js'));
+    chrome = chrome();
+    if (!chrome) {
+      console.error('SKIP: 크롬을 못 찾았다 — 넘침 검사를 **안 돌렸다**(통과 아님). CHROME_PATH 로 지정할 수 있다.');
+      return 2;
+    }
+  }
+
+  let fail = 0;
+  for (const f of files) {
+    const { bad, info } = lint(f);
+    if (넘침검사) {
+      let r;
+      try { r = 넘침(f, chrome); }
+      catch (e) { console.error(`✗ ${f} — 넘침 검사 실패: ${e.message}`); return 2; }
+      info.push(r.활자미주입
+        ? '활자 미주입 원본 — 넘침 검사 대상 아님(폴백 활자라 폭이 다르다)'
+        : r.잰것
+          ? `쪽 ${r.잰것}개 실측`
+          : `쪽 상자 0 — 넘침 검사 대상 아님(요소 ${r.몸통}개는 떴다)`);
+      for (const v of r.넘친것) {
+        const 방향 = [v.세로 ? `세로 ${v.세로}px` : '', v.가로 ? `가로 ${v.가로}px` : ''].filter(Boolean).join(' · ');
+        bad.push(`쪽 ${v.i}(${v.표}${v.제목 ? ` · “${v.제목}”` : ''})이 ${방향} 넘쳐 잘린다 — overflow:hidden 이라 화면에선 안 보인다. 밖으로 나간 것: ${v.범인}`);
+      }
+    }
+    if (bad.length) {
+      fail++;
+      console.log(`🔴 ${f}  (${info.join(' · ')})`);
+      bad.forEach((b) => console.log(`   - ${b}`));
+    } else {
+      console.log(`✅ ${f}  (${info.join(' · ')})`);
+    }
+  }
+  return fail ? 1 : 0;
+}
+
+if (require.main === module) process.exit(main(process.argv.slice(2)));
+module.exports = { lint, 넘침, main };

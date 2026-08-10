@@ -39,6 +39,7 @@ const path = require('path');
 const zlib = require('zlib');
 const crypto = require('crypto');
 const { execFileSync, spawnSync } = require('child_process');
+const 활자주입 = require('./lib/활자주입.js');   // 마커·주입 판정은 한 곳에서만 온다
 
 /** repo 루트 — 환경변수가 이음매다(테스트가 픽스처 git 저장소로 「낡음」 탐지력을 CI에서 잰다.
  *  실저장소 이력은 CI에서 shallow 라 조상 판정이 조용히 어긋날 수 있다 — 그래서 픽스처가 진다). */
@@ -326,7 +327,7 @@ function 폰트심기(htmlPath) {
   const 임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-font-'));
   const src = path.join(임시, 'src.html');
   const out = path.join(임시, 'out.html');
-  fs.writeFileSync(src, html.replace('<style>', '<style>\n/*@FONTS@*/'));
+  fs.writeFileSync(src, html.replace('<style>', `<style>\n${활자주입.마커}`));
 
   // ⚠ 지도는 ✅🔴⛔ 같은 이모지를 상태 언어로 쓴다 — 어느 텍스트 폰트에도 없고 OS 가 컬러로 그린다.
   //   그걸 오류로 치면 지도는 영원히 임베드를 못 받는다. 대신 무엇이 폴백되는지 아래에 찍는다.
@@ -336,7 +337,7 @@ function 폰트심기(htmlPath) {
     return { ok: false, 이유: `폰트 임베드 실패: ${String(r.stderr || r.stdout || '').split('\n').slice(-3).join(' ').trim()}` };
   }
   let 결과 = fs.readFileSync(out, 'utf8');
-  if (!/@font-face/.test(결과) || 결과.includes('/*@FONTS@*/')) {
+  if (!활자주입.주입됐나(결과)) {
     return { ok: false, 이유: '임베드 산출물에 @font-face 가 없다(마커가 그대로 남았다)' };
   }
 

@@ -28,6 +28,7 @@ const path = require('path');
 const os = require('os');
 const { execFileSync } = require('child_process');
 const { 칸나누기 } = require('./lib/표.js');   // 날 split 은 백틱 안 파이프에서 칸을 민다(F119·F253)
+const 활자주입 = require('./lib/활자주입.js');   // 마커를 뿌리는 쪽과 확인하는 쪽이 같은 글자를 쓴다
 
 const ROOT = path.join(__dirname, '..');
 const OUT_DIR = path.join(ROOT, 'docs', '인쇄본');
@@ -178,7 +179,7 @@ function pageHtml(doc, bodyHtml, snapDate) {
   const tokens = fs.readFileSync(TOKENS, 'utf8');
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(doc.title)}</title>
 <style>
-/*@FONTS@*/
+${활자주입.마커}
 ${tokens}
 @page { size: A4; margin: 17mm 15mm 19mm; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
