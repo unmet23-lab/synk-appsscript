@@ -1944,6 +1944,20 @@ function aiCall_(apiKey, system, user, schema, maxTok) {
   if (!tb || !tb.text) throw new Error('text 블록 없음');
   return JSON.parse(tb.text);
 }
+/* [v9.205] 사고 OFF 대가의 **결정적** 경계 — v9.204 의 가드 문구는 모델 지시라 확률적이다.
+ *   불이행이 한 번만 나도 그 응답은 정제 없이 학부모 메일 4자리로 간다(웰컴·편지·레벨 진단·주간 리포트).
+ *   ①배포 검수 P1 (`e7b219ae80da`·`495292f9cc92`): "프롬프트가 아닌 결정적 출력 검증".
+ * 🔑 왜 정제가 아니라 **거부**인가 — 태그만 지우면 그 안에 있던 내부 사고가 **본문인 척** 남는다.
+ *   태그가 보이는 실패는 눈에 띄지만 그 실패는 아무도 못 알아챈다. 폴백은 4자리 전부 서 있고
+ *   (품질 검증된 템플릿) 손실이 눈에 보여 되돌릴 수 있다. 실제 누출 «형태»를 잰 재료가 아직
+ *   없으니(STORY_AI_ON=false 라 두 자리는 호출조차 안 한다) 안전한 쪽을 고른다.
+ * 🔑 일반형이다 — 태그 «이름»을 목록으로 적지 않는다. 못 적은 이름이 새고, 목록은 늘 낡는다.
+ * ⚠ 이 4자리는 전부 평문 메일이라(MailApp 3인자) 마크업이 정당할 자리가 없다 — 거짓양성 재료가 없다. */
+function 태그누출_(s) {
+  const t = String(s == null ? '' : s);
+  return /<\/?[A-Za-z][A-Za-z0-9_:.-]*(\s[^>]*)?>/.test(t) // 여닫는 완성 태그
+      || /<\/?[A-Za-z][A-Za-z0-9_:.-]*[^>]*$/.test(t);     // 예산 소진으로 «>» 없이 잘린 꼬리
+}
 // 자유 텍스트 헬퍼 — 키 없음·실패 전부 null(호출부는 null이면 조용히 생략)
 function aiText_(prompt, maxTok) {
   if (isRehearsal_()) { rehearsalNote_('AI 호출 aiText_ (차단·비용 0)'); return null; } // [v9.120]
@@ -1967,7 +1981,11 @@ function aiText_(prompt, maxTok) {
     if (res.getResponseCode() !== 200) return null;
     const j = JSON.parse(res.getContentText());
     const tb = (j.content || []).filter(b => b.type === 'text')[0];
-    return tb && tb.text ? String(tb.text).trim() : null;
+    const out = tb && tb.text ? String(tb.text).trim() : null;
+    // [v9.205] 가드 문구를 안 지킨 응답은 통째로 못 믿는다 — 폐기하고 호출부 폴백으로 보낸다.
+    //   Logger 는 빈도를 «나중에 잴 수 있게» 남기는 재료다(지금은 0회일 것으로 보이나 안 쟀다).
+    if (out && 태그누출_(out)) { Logger.log('aiText_ 태그 누출 감지 — 응답 폐기(호출부 폴백으로 간다)'); return null; }
+    return out;
   } catch (e) { return null; }
 }
 
