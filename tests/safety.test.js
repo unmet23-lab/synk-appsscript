@@ -664,6 +664,32 @@ test('[v9.204] aiText_는 사고를 끈 대가(내부 태그 누출)를 가드 �
     '「생각하지 마라」류는 태그 누출을 되레 늘린다');
 });
 
+/* [v9.205] v9.204 는 «문구»만 넣었다 — 그건 또 하나의 모델 지시이지 경계가 아니다(①배포 검수 P1).
+ * 이 회귀는 앞의 것과 재는 층이 다르다: 위는 문구의 실존을, 여기는 **실제 동작**을 잰다.
+ * 탐지력은 픽스처가 진다(실저장소가 아니라) — 「버그가 아직 있을 것」을 요구하지 않는다. */
+test('[v9.205] aiText_는 태그가 보이면 응답을 버린다 — 결정적 경계(문구는 확률적이다)', () => {
+  const 누출 = loadFunction('function 태그누출_(', 'function aiText_(', '태그누출_', {});
+
+  // 탐지력 — 이 넷이 실제 누출의 모양이다
+  assert.equal(누출('<' + 'reasoning>내부 사고<' + '/reasoning>본문입니다'), true, '감싼 블록');
+  assert.equal(누출('본문입니다 <' + 'tool_use name="x">'), true, '속성 달린 여는 태그');
+  assert.equal(누출('본문 도중 예산이 끊겨 <' + 'reason'), true, '«>» 없이 잘린 꼬리도 누출이다');
+  assert.equal(누출('<' + '/output>'), true, '닫는 태그 홀로');
+
+  // 거짓양성 — 실제 산출물의 모양(웰컴 스토리·몽골어 진단 리포트·주간 해설)
+  assert.equal(누출('민수 크루의 여정이 시작됩니다. 매일의 기록이 이야기가 됩니다.'), false);
+  assert.equal(누출('Таны оноо: 12/15\nТүвшин: 초급 2 анги.'), false);
+  assert.equal(누출('출석률이 지난주 5 < 10 에서 올랐습니다.'), false, '비교 기호는 태그가 아니다');
+  assert.equal(누출(null), false);
+  assert.equal(누출(''), false);
+
+  // 라우팅 — 헬퍼가 있어도 aiText_ 가 안 부르면 경계가 아니다(가드는 로직보다 등록층에서 샌다)
+  const body = section('function aiText_(', 'function aiStudents_(');
+  assert.ok(/태그누출_\(/.test(body), 'aiText_ 가 반환 전에 태그누출_ 을 지나야 한다');
+  assert.ok(body.indexOf('태그누출_(') < body.lastIndexOf('return out;'),
+    '검사는 반환 «전»에 있어야 한다');
+});
+
 test('[v9.54] 상담 임포트·정리의 600행 창은 시트 물리 행수로 클램프된다', () => {
   const imp = section('function importFormResponses()', 'function setupStore()');
   assert.ok(imp.includes('consult.getMaxRows()'), '고정 600행 읽기는 행<602 시트에서 10분마다 크래시');
