@@ -733,6 +733,44 @@ test('⑧ 증명된 내 것뿐이면 **조용히 통과한다** (노이즈 가�
   assert.equal(가드8(f, 'git commit -m "엔진 수정" -- 엔진.js').차단, false, '내 것만 있는데 막았다');
 });
 
+test('🔴 ⑧ 펼침은 줄 수만이 아니라 **바이트로도** 자른다 (F316 — 가드가 제 세션을 죽인 자리)', () => {
+  /* 2026-08-10 실측: 발표물 HTML 은 minify 되어 한 줄이 54,293 바이트다. 자르기가 「40줄」만
+   * 세던 동안 커밋 한 번이 254만 바이트(≈60만 토큰)를 뿜어 컨텍스트 창(200k)을 4배로 넘겼고,
+   * 같은 트랙을 이어받은 세션 9개가 연쇄로 같은 자리에서 죽었다.
+   * 무엇을 막는 가드였든 세션을 끝내 버리면 그 자리에서 일이 멈춘다 — 막는 힘이 아니라 크기의 결함이다. */
+  const f = 픽스처8();
+  fs.writeFileSync(path.join(f.repo, '덱.html'), '<div>seed</div>\n');
+  f.g('add', '덱.html'); f.g('commit', '-qm', 'seed 덱');
+  fs.writeFileSync(path.join(f.repo, '덱.html'), `<div>${'x'.repeat(54293)}</div>\n`);
+  만진기록(f.state, f.repo, 'local_peer', ['덱.html']);
+  const r = 가드8(f, 'git commit -m "덱" -- 덱.html');
+  assert.equal(r.차단, true, '남이 만진 파일인데 안 막았다 — 이 검사의 전제가 깨졌다');
+  assert.ok(r.사유.length < 15000, `펼침이 ${r.사유.length}바이트다 — 바이트 상한이 안 걸렸다(F316 재현)`);
+  assert.match(r.사유, /덱\.html/, '잘라 놓고 무엇이 걸렸는지도 안 말한다');
+  /* F103 — 잘랐으면 **실행 가능한** 대안을 줘야 한다. 여기서 `git diff` 전량을 시키면
+   * 그게 바로 컨텍스트를 터뜨린 그 명령이라, 처방을 따르는 순간 세션이 또 죽는다. */
+  assert.match(r.사유, /--stat|cut -c/, '잘라 놓고 안전하게 보는 법을 안 줬다');
+});
+
+test('🔴 ⑧ 긴 줄 **안쪽**이 바뀌면 다시 펼친다 (자르기가 스스로 낸 구멍)', () => {
+  /* 해시 재료를 「잘린 글」로 잡으면 잘려 나간 구역의 변경이 해시를 못 흔들어
+   * 「아까 봤다」로 조용히 통과한다 — 크기를 고치다 탐지에 사각을 뚫는 자리다.
+   *
+   * 🔑 픽스처는 **미추적 신규 파일**이어야 이 사각이 실제로 열린다(2026-08-10 변이로 실측).
+   *   추적 파일로 쓰면 `git diff` 머리의 `index <blob>..<blob>` 줄이 앞 300바이트 안에 들어와
+   *   내용이 바뀔 때마다 해시를 대신 흔들어 준다 — 잘린 글로 잡아도 초록이라, 탐지력 없는
+   *   회귀가 「지킨다」는 얼굴로 남는다. 미추적 경로는 diff 가 아니라 파일 본문을 직접 읽어
+   *   그 머리가 없으므로, 잘려 나간 구역의 변경이 곧바로 사각이 된다. */
+  const f = 픽스처8();
+  const 앞 = 'x'.repeat(50000);
+  fs.writeFileSync(path.join(f.repo, '덱.html'), `<div>${앞}AAAA</div>\n`);   // 미추적 신규
+  만진기록(f.state, f.repo, 'local_peer', ['덱.html']);
+  assert.equal(가드8(f, 'git commit -m "x" -- 덱.html').차단, true, '첫 창은 펼치고 막아야 한다');
+  fs.writeFileSync(path.join(f.repo, '덱.html'), `<div>${앞}BBBB</div>\n`);   // 잘려 나간 구역만 바뀐다
+  assert.equal(가드8(f, 'git commit -m "x" -- 덱.html').차단, true,
+    '잘린 구역의 변경을 못 봤다 — 해시를 원본이 아니라 잘린 글로 잡으면 이 자리가 통째로 사각이 된다');
+});
+
 test('⑧ 자기 처방을 막지 않는다 — 같은 명령을 그대로 다시 실행하면 통과한다 (맹점 ③ · F103)', () => {
   const f = 픽스처8();
   fs.writeFileSync(path.join(f.repo, '보드.md'), '| 바뀐 줄 |\n');
