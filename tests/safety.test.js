@@ -643,7 +643,25 @@ test('[v9.54] 진화 배너 내레이터는 실제 단계명(mon.stage)을 쓴�
 test('[v9.54] aiText_는 사고 OFF로 짧은 예산 전액을 본문에 쓴다(폴백률 급증 방지)', () => {
   const body = section('function aiText_(', 'function aiStudents_(');
   assert.ok(body.includes("thinking: { type: 'disabled' }"),
-    'Sonnet 5는 thinking 생략 시 적응형 사고가 기본 ON — 사고 토큰이 900~1536 예산을 잠식한다');
+    '이 모델군은 thinking 생략 시 적응형 사고가 기본 ON — 사고 토큰이 900~1536 예산을 잠식한다');
+});
+
+/* [v9.204] 사고를 끈 대가를 같은 자리에서 막는다.
+ * Opus 5는 thinking 비활성 상태에서 내부 XML 태그를 본문에 흘릴 수 있다(벤더 정본 실측 조항).
+ * aiText_ 의 반환값은 정제 없이 학생 스토리·「미래의 나」 편지·몽골어 진단 리포트·주간 운영
+ * 리포트로 그대로 나가므로, 누출은 학부모 접점에서 처음 보인다 — 코드 어디도 안 빨갛다.
+ * ⚠ 이 회귀는 「버그가 아직 있을 것」을 요구하지 않는다 — 가드 문구의 실존만 본다. */
+test('[v9.204] aiText_는 사고를 끈 대가(내부 태그 누출)를 가드 문구로 막는다', () => {
+  const body = section('function aiText_(', 'function aiStudents_(');
+  const m = body.match(/system:\s*'([^']*)'/);
+  assert.ok(m && m[1].includes('태그'),
+    '사고 OFF + Opus 5 = 내부 태그가 본문에 샌다. 반환값은 학부모·학생에게 그대로 나간다');
+  // 정본이 못박은 두 반례. ⚠ 주석이 아니라 **가드 문구 자체만** 잰다 —
+  //   본문 전체로 넓히면 이 반례를 설명하는 주석이 자기 가드를 빨갛게 만든다(자기 처방 차단).
+  assert.equal(/thinking|<[a-z_]+>/i.test(m[1]), false,
+    '가드에 태그 이름을 적지 않는다(일반형이 더 잘 듣는다)');
+  assert.equal(/생각하지\s*마|사고하지\s*마|추론하지\s*마/.test(m[1]), false,
+    '「생각하지 마라」류는 태그 누출을 되레 늘린다');
 });
 
 test('[v9.54] 상담 임포트·정리의 600행 창은 시트 물리 행수로 클램프된다', () => {
