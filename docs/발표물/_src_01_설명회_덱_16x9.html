@@ -7,7 +7,8 @@
   SYNK LAB 발표물 1번 — 학부모 설명회 슬라이드 덱 (16:9 · 16장)
   브랜드 키트 = docs/발표물/_브랜드킷.md   로고 = W5(주입: tools/로고주입.js)
   산출물 사양 = docs/정본/SYNK/SYNK 발표물 제작 프롬프트 v1.txt v1.4 §1 + [공통 블록]
-  대본(정본)  = docs/정본/SYNK LAB/About Synk lab/SYNK_리라이팅_v2/08_설명회_원장_스피치.txt v5
+  대본(정본)  = docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/08_설명회_원장_스피치.txt v6
+  철학(정본)  = docs/SYNK_철학.md v1.0 — 슬로건·화법·실물 게이트가 여기서 온다
 
   ▶ 이 덱의 설계를 지배하는 것은 디자인이 아니라 **순차통역**이다.
      원고의 ▷ 가 통역이 끊기는 지점이고, 통역이 들어가면 청중의 시선이 화면에 오래 머문다.
@@ -64,6 +65,10 @@ h1 em{ font-style:normal; color:var(--coral-3); }
 h1.sm{ font-size:24mm; }
 .one{ font-size:11.5mm; color:var(--navy-3); margin-top:9mm; line-height:1.45; font-weight:500; }
 .one b{ color:var(--navy); font-weight:800; }
+/* 슬로건 부연 전용 — 헤드라인과 **한 벌**이라 간격을 좁혀 한 덩어리로 읽히게 한다.
+   기본 .one(9mm)은 「헤드라인 + 딸린 한 문장」의 간격이고, 이건 두 줄이 한 문장인 자리다.
+   ⚠ 넘침 때문이 아니다 — 01·16장은 9mm 로 둬도 안 잘린다(`--넘침` 실측 0px). 조판 판단이다. */
+.one.pair{ margin-top:5mm; }
 
 /* 몽골어 자리 — 한국어 아래, **같은 크기**, 60~70% 밝기(정본 §1).
    ⚠ 「같은 크기」를 지키는 게 핵심이다. 처음엔 14mm(≈40pt)로 잡았다가 3열 슬라이드에서
@@ -164,8 +169,12 @@ h1.sm + .mn{ font-size:18mm; }
           </svg>
     </div>
     <div class="rule"></div>
-    <h1>점수를 넘어,<br><em>삶을 설계합니다</em></h1>
+    <!-- 슬로건은 정본(docs/SYNK_철학.md)에서 온다. ⚠ 「17」을 대외 집행면에 낼 때는
+         정체 부연 1줄이 **필수**다(문서_지도 조건) — 부연 없이 숫자만 나가면
+         「선생님이 학생보다 많다」는 말로만 읽힌다. 부연에 「AI」 낱말은 넣지 않는다. -->
+    <h1 class="sm">정원은 16명,<br><em>선생님은 17명입니다</em></h1>
     <div class="mn">____________</div>
+    <div class="one pair">한 명 한 명에게 나만의 선생님, 교실엔 진짜 선생님.</div>
   </div>
   <div class="pn mono">01</div>
 </section>
@@ -254,7 +263,9 @@ h1.sm + .mn{ font-size:18mm; }
   <div class="tag mono">SYNK DOES · 01</div>
   <h1 class="sm">몸이 깨어날 때<br><em>뇌는 깊이 배웁니다</em></h1>
   <div class="mn">____________</div>
-  <div class="one">매 수업, 100% 한국어 K컬처 워밍업으로 시작합니다.</div>
+  <!-- ⚠ 과학 문장은 **귀속형**으로만 나간다(철학 파생 게이트 · 신체활동 축에만).
+       헤드라인만 두면 단정이 되므로 이 한 줄이 헤드라인과 한 벌이다 — 떼지 않는다. -->
+  <div class="one"><b>여러 나라의 연구가 보고해 온 원리</b>를, 매 수업 100% 한국어 K컬처 워밍업으로 만들었습니다.</div>
   <div class="photo">
     <svg width="7mm" height="7mm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1mm">
       <path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.5"/>
@@ -348,8 +359,9 @@ h1.sm + .mn{ font-size:18mm; }
 <!-- ════════ 16 · 마무리 + 상담 안내 ════════ -->
 <section class="sl dark">
   <div class="tag mono">THANK YOU</div>
-  <h1 class="sm">점수를 넘어,<br><em>삶을 설계합니다</em></h1>
+  <h1 class="sm">정원은 16명,<br><em>선생님은 17명입니다</em></h1>
   <div class="mn">____________</div>
+  <div class="one pair">한 명 한 명에게 나만의 선생님, 교실엔 진짜 선생님.</div>
   <div class="cts">
     <div class="c"><div class="k mono">FACEBOOK</div><div class="v">_______</div></div>
     <div class="c"><div class="k mono">PHONE</div><div class="v">_______</div></div>
@@ -363,8 +375,8 @@ h1.sm + .mn{ font-size:18mm; }
 <section class="sl reh">
   <h2>원장 리허설표 — 어느 ▷ 구간에 어느 장을 띄우는가</h2>
   <div class="sub">
-    대본 = <b>08_설명회_원장_스피치.txt</b> v5 · ▷ = 통역이 끊기는 지점(본문 43개) ·
-    <b>이 장은 투사하지 않습니다</b>(인쇄해 손에 들거나 발표자 화면에만) · 낭독 약 6분 · 통역 포함 실소요 12분 안팎.
+    대본 = <b>08_설명회_원장_스피치.txt</b> v6 · ▷ = 통역이 끊기는 지점(본문 50개) ·
+    <b>이 장은 투사하지 않습니다</b>(인쇄해 손에 들거나 발표자 화면에만) · 낭독 약 6분 30초 · 통역 포함 실소요 13분 안팎.
   </div>
   <table>
     <tr><th style="width:14mm">장</th><th style="width:48mm">화면</th><th style="width:34mm">대본 구간</th><th>넘기는 신호 — 이 말을 하기 직전에 넘긴다</th></tr>
@@ -372,24 +384,26 @@ h1.sm + .mn{ font-size:18mm; }
     <tr><td class="n mono">02</td><td>약속 하나, 질문 하나</td><td class="c">▷ 1</td><td>“약속 하나와 질문 하나를 들고 이 자리에 섰습니다”</td></tr>
     <tr><td class="n mono">03</td><td>TOPIK은 확실하게</td><td class="c">▷ 2</td><td>“먼저 약속입니다”</td></tr>
     <tr><td class="n mono">04</td><td>그 다음에 우리 아이는?</td><td class="c">▷ 3</td><td>“그리고 질문입니다”</td></tr>
-    <tr><td class="n mono">05</td><td>손안에 박사급 AI</td><td class="c">▷ 4–6</td><td>“지금 우리는 어떤 시대에 살고 있습니까”</td></tr>
-    <tr><td class="n mono">06</td><td>점수는 이제 기본</td><td class="c">▷ 7–8</td><td>“그래서 여쭙고 싶습니다”</td></tr>
-    <tr><td class="n mono">07</td><td>“나 이제 뭐 하지?”</td><td class="c">▷ 9–15</td><td>“한 장면을 상상해 보겠습니다”</td></tr>
-    <tr class="mark"><td class="n mono">08</td><td>세 가지 힘 (3열)</td><td class="c">▷ 16–24</td><td>“저는 세 가지라고 확신합니다” — <b>이 장은 오래 머문다(9구간)</b></td></tr>
-    <tr><td class="n mono">09</td><td>몸이 깨어날 때</td><td class="c">▷ 25–26</td><td>“하나. 뇌과학 학습법입니다”</td></tr>
-    <tr><td class="n mono">10</td><td>팀으로 만든 진짜 경험</td><td class="c">▷ 27–28</td><td>“둘. 「싱크 크루」 프로젝트입니다”</td></tr>
-    <tr><td class="n mono">11</td><td>“왜 배우는가”를 묻습니다</td><td class="c">▷ 29–30</td><td>“셋. 「나침반」 세션입니다”</td></tr>
-    <tr><td class="n mono">12</td><td>한국어에 영어까지</td><td class="c">▷ 31</td><td>“넷. 한국어에 영어까지 더합니다”</td></tr>
-    <tr><td class="n mono">13</td><td>졸업할 때 세 가지 (3열)</td><td class="c">▷ 32–34</td><td>“자격증 하나만 가지고 나가지 않습니다”</td></tr>
-    <tr class="mark"><td class="n mono">14</td><td>저희는 새 학원입니다</td><td class="c">▷ 35–39</td><td>“정직하게 말씀드릴 것이 하나 있습니다” — <b>화면이 말을 멈추는 자리. 시선을 사람에게.</b></td></tr>
-    <tr><td class="n mono">15</td><td>오늘 저녁, 물어봐 주세요</td><td class="c">▷ 40–42</td><td>“오늘 집에 돌아가시면”</td></tr>
-    <tr><td class="n mono">16</td><td>슬로건 + 상담 안내</td><td class="c">▷ 43 ~ 끝</td><td>“그 길을 SYNK LAB이…” — 질의응답 내내 띄워 둔다</td></tr>
+    <tr><td class="n mono">05</td><td>손안에 박사급 AI</td><td class="c">▷ 5–8</td><td>“지금 우리는 어떤 시대에 살고 있습니까”</td></tr>
+    <tr><td class="n mono">06</td><td>점수는 이제 기본</td><td class="c">▷ 9–10</td><td>“그래서 여쭙고 싶습니다”</td></tr>
+    <tr><td class="n mono">07</td><td>“나 이제 뭐 하지?”</td><td class="c">▷ 11–18</td><td>“한 장면을 상상해 보겠습니다”</td></tr>
+    <tr class="mark"><td class="n mono">08</td><td>세 가지 힘 (3열)</td><td class="c">▷ 19–28</td><td>“저는 세 가지라고 확신합니다” — <b>이 장은 오래 머문다(10구간)</b></td></tr>
+    <tr><td class="n mono">09</td><td>몸이 깨어날 때</td><td class="c">▷ 29–30</td><td>“하나. 뇌과학 학습법입니다”</td></tr>
+    <tr><td class="n mono">10</td><td>팀으로 만든 진짜 경험</td><td class="c">▷ 31–32</td><td>“둘. 「싱크 크루」 프로젝트입니다”</td></tr>
+    <tr><td class="n mono">11</td><td>“왜 배우는가”를 묻습니다</td><td class="c">▷ 33–34</td><td>“셋. 「나침반」 세션입니다”</td></tr>
+    <tr><td class="n mono">12</td><td>한국어에 영어까지</td><td class="c">▷ 35</td><td>“넷. 한국어에 영어까지 더합니다”</td></tr>
+    <tr><td class="n mono">13</td><td>졸업할 때 세 가지 (3열)</td><td class="c">▷ 36–40</td><td>“자격증 하나만 가지고 나가지 않습니다”</td></tr>
+    <tr class="mark"><td class="n mono">14</td><td>저희는 새 학원입니다</td><td class="c">▷ 41–44</td><td>“정직하게 말씀드릴 것이 하나 있습니다” — <b>화면이 말을 멈추는 자리. 시선을 사람에게.</b></td></tr>
+    <tr><td class="n mono">15</td><td>오늘 저녁, 물어봐 주세요</td><td class="c">▷ 45–47</td><td>“오늘 집에 돌아가시면”</td></tr>
+    <tr class="mark"><td class="n mono">16</td><td>슬로건 + 상담 안내</td><td class="c">▷ 48 ~ 끝</td><td>“합격은 기본으로 챙기겠습니다” — <b>슬로건을 읽는 동안 화면에 그 문장이 떠 있어야 한다.</b> 질의응답 내내 띄워 둔다</td></tr>
   </table>
   <div class="note">
     <b>정본 §1 목록과 다른 점 2가지</b> — ① <b>14장(정직 고지) 신설.</b> 정본 목록엔 대본 §5
-    (“아직 졸업생도, 벽에 걸린 합격 사진도 없습니다”)에 대응하는 화면이 없어 ▷ 35–39 다섯 구간이 비었습니다.
+    (“아직 졸업생도, 벽에 걸린 합격 사진도 없습니다”)에 대응하는 화면이 없어 ▷ 41–44 네 구간이 비었습니다.
     가장 개인적인 대목이라 <b>한 줄만 남겨 시선을 사람에게 돌리는</b> 장으로 만들었습니다.
     ② <b>상담 안내를 마무리 장에 합침</b> — 16장 상한을 지키면서, 질의응답 동안 슬로건과 연락처가 함께 떠 있는 편이 쓸모 있습니다.<br>
+    <b>슬로건 아래 한 줄은 장식이 아닙니다</b>(01·16장) — 「17」은 부연 없이 나가면 숫자로만 읽힙니다.
+    지우지 마시고, 몽골어 번역에도 <b>두 줄을 한 벌로</b> 넘기세요.<br>
     <b>몽골어는 전부 비어 있습니다</b>(에리카쌤 검수 전 확정 금지). 자리는 한국어와 <b>같은 크기</b>로 잡아 뒀습니다 —
     작게 잡아 두면 번역이 온 뒤에 번역을 줄이게 됩니다. 항목은 대본 부록 A(통역사 사전 대조표)와 같습니다.
   </div>
