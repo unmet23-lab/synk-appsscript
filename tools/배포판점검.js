@@ -335,7 +335,45 @@ function 점검(projRoot, root = ROOT, { 라이브 = false, 시간제한 } = {})
  * 돌려주는 값: `null` = git 을 못 불렀다(모름) · `{배포커밋:null}` = 잴 기준이 없다
  *   · `{배포커밋, 제목, 커밋수, 프로젝트들:[{이름,경로,파일들}]}` — 프로젝트들이 비면 깨끗하다.
  */
-function 안나간변경(root = ROOT, 프로젝트들목록 = null) {
+/* ── 라이브 실측 도장 ────────────────────────────────────────────────────────
+ * 위 ②(채번 없이 나간 배포 뒤의 커밋이 계속 「안 나갔다」로 잡히는 거짓양성)만은 재울 재료가
+ * 있다 — rot-check 이 하루 1회 `라이브대조()` 로 **실제로 잰** 결과다. ①(거짓음성)은 여전히
+ * 이 층의 재료로 못 잰다: 재우는 방향으로만 쓰고 깨우는 방향으로는 쓰지 않는다.
+ *
+ * 왜 필요한가 (2026-08-10 실측 · `local_a621f018`): 같은 시각에 두 재료가 정반대를 냈다 —
+ *   `안나간변경()` = 「엔진_셋업확장.js 안 나갔다」 / `라이브대조()` = 「배포집합 15개 바이트
+ *   동일」. 이 층은 **매 SessionStart** 마다 발화하므로 거짓 🔴 도 매번이고, 그러면 진짜
+ *   드리프트가 왔을 때 같은 문장이 이미 무시당하고 있다(rot-check 배포 절 머리말 · F113).
+ *
+ * 🔑 도장에 **그때의 배포집합 지문**을 같이 남기는 것이 급소다. 시각만 남기면 실측 뒤에 배포
+ *   파일이 바뀌어도 계속 침묵해서, 거짓양성을 지우는 대신 **거짓음성**을 만든다(더 나쁜 쪽).
+ *   지문이 같다 = 그 실측 이후 clasp 가 밀 내용이 한 바이트도 안 바뀌었다.
+ * ⚠ 못 덮는 자리: 실측 뒤 **라이브 쪽**이 바뀐 경우(남이 옛 판을 밀거나 편집기 손편집).
+ *   그건 이 층의 재료로는 원리상 못 본다 — 하루 1회 rot-check 이 다시 재서 잡는다.
+ * 🚫 새 상태 파일을 만들지 않는다(그 재제안은 이미 죽었다) — rot-check 이 이미 쓰는 파일에 키
+ *   하나로 얹고, **경로도 거기서 파생시킨다.** 두 곳에 경로를 적으면 갈라지고 갈라진 쪽은
+ *   조용히 「도장 없음」= 안 재움이 된다(새는 방향이 소음이라 침묵보다는 낫지만 여전히 결함). */
+const 도장키 = '배포실측';
+
+/** 마지막 라이브 실측 도장. `null` = 없거나 못 읽음(= 모름 → 아무것도 안 재운다). */
+function 라이브도장(root = ROOT) {
+  let f;
+  /* lazy require — rot-check 은 `배포Section` **안에서** 이 모듈을 부르므로 최상위 순환이 없다.
+   * 못 부르면 도장 없음으로 떨어진다: 이 함수가 깨져도 옛 동작(=늘 발화)으로 퇴화할 뿐이다. */
+  try { f = require(path.join(__dirname, 'rot-check.js')).stateFile(); } catch (_) { return null; }
+  try {
+    const j = JSON.parse(fs.readFileSync(f, 'utf8'));
+    const d = j && j[도장키];
+    return d && d.프로젝트들 && typeof d.프로젝트들 === 'object' ? d : null;
+  } catch (_) { return null; }
+}
+
+/** 지문은 배포집합 전체를 읽는다 — 그 사이 남이 파일을 지우면 던진다. 못 재면 **안 재운다**. */
+function 지문못하면널(projRoot, root) {
+  try { return 지문(projRoot, root); } catch (_) { return null; }
+}
+
+function 안나간변경(root = ROOT, 프로젝트들목록 = null, { 도장 = true } = {}) {
   /* 프로젝트 목록을 인자로 열어 둔 이유는 **픽스처 하나** 때문이다 — `claspProjects()` 는
    * 자기 ROOT 고정이라, 이걸 안 열면 탐지력을 실저장소로만 잴 수 있고 그건 곧 CI 에서
    * 「자격증명이 없어서 초록」이 되는 그 자리다. 기본값은 그대로라 호출부는 안 바뀐다. */
@@ -359,16 +397,27 @@ function 안나간변경(root = ROOT, 프로젝트들목록 = null) {
   const 바뀜 = git(['diff', '--name-only', sha, 'HEAD']);
   const 센것 = git(['rev-list', '--count', `${sha}..HEAD`]);
   if (바뀜 === null || 센것 === null) return null;
+  const 찍힘 = 도장 ? 라이브도장(root) : null;
   const 프로젝트들 = [];
+  const 가라앉힘 = [];
   for (const p of 프로젝트들목록 || claspProjects()) {
-    const 이름 = path.relative(root, p).replace(/\\/g, '/');
+    const 상대 = path.relative(root, p).replace(/\\/g, '/');
     const 파일들 = 바뀜.filter((f) => 프로젝트.isDeployFile(f, p, root));
-    if (파일들.length) 프로젝트들.push({ 이름: 이름 || '(루트)', 경로: 이름 || '.', 파일들 });
+    if (!파일들.length) continue;
+    const 항 = { 이름: 상대 || '(루트)', 경로: 상대 || '.', 파일들 };
+    /* 도장 이름은 `점검()` 이 쓰는 것과 **같은 규칙**으로 만들어진다(`path.relative || '(루트)'`).
+     * 규칙이 갈리면 조회가 늘 빗나가 이 배선이 통째로 죽는데, 죽는 모양이 「옛 동작」이라 안 보인다. */
+    const 실측 = 찍힘 && 찍힘.프로젝트들[항.이름];
+    const fp = 실측 && 실측.초록 ? 지문못하면널(p, root) : null;
+    if (fp && 실측.지문 === fp) { 가라앉힘.push({ ...항, 잰때: 찍힘.at || null, 지문: fp }); continue; }
+    프로젝트들.push(항);
   }
-  return { 배포커밋: sha.slice(0, 7), 제목, 커밋수: Number(센것[0]) || 0, 프로젝트들 };
+  /* 가라앉힌 것을 **구조로** 돌려준다 — 조용히 지우면 호출부가 「이게 전부」로 읽고, 그건 이
+   * 도구가 고치려는 병(침묵과 통과가 같은 모양)을 자리만 옮긴 것이다. */
+  return { 배포커밋: sha.slice(0, 7), 제목, 커밋수: Number(센것[0]) || 0, 프로젝트들, 가라앉힘 };
 }
 
-module.exports = { 배포집합, 지문, 배포목록, 라이브대조, 라이브판찾기, 못읽음, 판정, 점검, 지문표기, FP_RE, claspProjects, 안나간변경 };
+module.exports = { 배포집합, 지문, 배포목록, 라이브대조, 라이브판찾기, 못읽음, 판정, 점검, 지문표기, FP_RE, claspProjects, 안나간변경, 라이브도장, 도장키 };
 
 if (require.main === module) {
   const 라이브 = process.argv.includes('--라이브');
