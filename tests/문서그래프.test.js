@@ -570,3 +570,83 @@ test('[회귀·계열] 파생을 선언한 docs·루트 파일은 전부 그래�
     `파생을 선언했는데 그래프가 그 파일을 열지 않았다(분모 ${선언한것.length}건) — `
     + '선언이 장식이 된다. 고치는 자리는 선언 쪽이 아니라 tools/doc-graph.js 의 TEXT_EXT·SCAN_DIRS 다.');
 });
+
+/* [2026-08-10] 전파 보류 — `<!-- 전파보류: vN -->`.
+ * 왜 있나: 철학 정본 v1.0→v1.3 의 파생 25종 전파를 유호님이 보류시켰는데, rot-check 는
+ * 그 25건을 🔴 로 올렸다. 매 세션 적색 27건 중 25건이 「고치지 말라고 정해 둔 것」이라
+ * ①진짜 적색 2건이 묻히고 ②세션이 그걸 놓친 일감으로 읽고 집었다(실측 08-10).
+ *
+ * 🔑 이 묶음의 급소는 **만료**다. 보류가 영구 면제가 되면 이 통로 자체가 은폐 장치가 된다. */
+test('전파 보류 — 도장이 있으면 적색이 아니라 보류로 간다(픽스처)', () => {
+  const stem = `docgraph-hold-${process.pid}`;
+  const canon = path.join(ROOT, 'docs', `${stem}_철학.md`);
+  const derived = path.join(ROOT, 'docs', `${stem}_파생.md`);
+  fs.writeFileSync(canon, '# 임시 철학\n<!-- 정본: v1.3 -->\n<!-- 전파보류: v1.3 -->\n', 'utf8');
+  fs.writeFileSync(derived, `# 임시 파생\n\n<!-- 파생: docs/${stem}_철학.md@v1.0 -->\n`, 'utf8');
+  try {
+    const g = G.build();
+    const from = `docs/${stem}_파생.md`;
+    assert.ok(!g.stale.some((s) => s.from === from), '보류시킨 판인데 적색으로 올렸다');
+    const held = g.staleHeld.find((s) => s.from === from);
+    assert.ok(held, '보류 목록에도 없다 — 숨기면 「없는 것」이 된다(세어서 보이기는 해야 한다)');
+    assert.strictEqual(held.cited, 'v1.0');
+    assert.strictEqual(held.now, 'v1.3');
+  } finally {
+    fs.unlinkSync(canon);
+    fs.unlinkSync(derived);
+  }
+});
+
+test('전파 보류 — 정본이 도장보다 더 오르면 보류가 만료돼 다시 적색이다(픽스처)', () => {
+  // 이 시험이 이 묶음의 급소다. 이게 없으면 도장 한 번에 그 정본의 낡음이 영원히 안 보인다.
+  const stem = `docgraph-holdexp-${process.pid}`;
+  const canon = path.join(ROOT, 'docs', `${stem}_철학.md`);
+  const derived = path.join(ROOT, 'docs', `${stem}_파생.md`);
+  fs.writeFileSync(canon, '# 임시 철학\n<!-- 정본: v1.4 -->\n<!-- 전파보류: v1.3 -->\n', 'utf8');
+  fs.writeFileSync(derived, `# 임시 파생\n\n<!-- 파생: docs/${stem}_철학.md@v1.0 -->\n`, 'utf8');
+  try {
+    const g = G.build();
+    const from = `docs/${stem}_파생.md`;
+    assert.ok(!g.staleHeld.some((s) => s.from === from),
+      'v1.3 보류 도장이 v1.4 개정까지 덮었다 — 보류가 영구 면제가 되면 은폐 장치다');
+    const hit = g.stale.find((s) => s.from === from);
+    assert.ok(hit, '보류가 만료됐는데 적색으로 안 돌아왔다');
+    assert.strictEqual(hit.now, 'v1.4');
+  } finally {
+    fs.unlinkSync(canon);
+    fs.unlinkSync(derived);
+  }
+});
+
+test('전파 보류 — 도장이 없으면 그대로 적색이다(도장이 새지 않는지)', () => {
+  const stem = `docgraph-nohold-${process.pid}`;
+  const canon = path.join(ROOT, 'docs', `${stem}_철학.md`);
+  const derived = path.join(ROOT, 'docs', `${stem}_파생.md`);
+  fs.writeFileSync(canon, '# 임시 철학\n<!-- 정본: v1.3 -->\n', 'utf8');
+  fs.writeFileSync(derived, `# 임시 파생\n\n<!-- 파생: docs/${stem}_철학.md@v1.0 -->\n`, 'utf8');
+  try {
+    const g = G.build();
+    const from = `docs/${stem}_파생.md`;
+    assert.ok(g.stale.some((s) => s.from === from), '도장이 없는데 적색이 아니다');
+    assert.ok(!g.staleHeld.some((s) => s.from === from), '도장 없이 보류로 샜다');
+  } finally {
+    fs.unlinkSync(canon);
+    fs.unlinkSync(derived);
+  }
+});
+
+test('전파 보류 파서 — 표기법을 설명하는 문서가 스스로 보류되지 않는다(maskCode)', () => {
+  assert.strictEqual(G.selfDeclaredHold('# 제목\n<!-- 전파보류: v1.3 -->\n'), 'v1.3');
+  assert.strictEqual(G.selfDeclaredHold('# 제목\n<!--전파보류:v2 -->\n'), 'v2', '공백 없는 표기도 같은 선언이다');
+  const 설명문서 = ['# 표기법 설명', '', '```', '<!-- 전파보류: v1.3 -->', '```', ''].join('\n');
+  assert.strictEqual(G.selfDeclaredHold(설명문서), null, '코드블록 안 예시가 진짜 도장이 됐다');
+  assert.strictEqual(G.selfDeclaredHold('# 제목\n'), null);
+});
+
+test('실저장소: 적색과 보류는 겹치지 않는다 — 같은 건이 두 층에 있으면 분모가 두 번 세어진다', () => {
+  const g = G.build();
+  const key = (s) => `${s.from}→${s.target}`;
+  const 적색 = new Set(g.stale.map(key));
+  const 겹침 = g.staleHeld.filter((s) => 적색.has(key(s))).map(key);
+  assert.deepStrictEqual(겹침, [], '한 건이 적색이면서 동시에 보류다');
+});
