@@ -25,6 +25,8 @@
 const fs = require('fs');
 const path = require('path');
 const { esc, 렌더 } = require('./lib/마크다운.js');
+// 바탕화면을 찾는 **단 하나의 통로**(파일 안 사본 금지 — `tests/바탕화면통로.test.js` 가 문다).
+const { 경로: 바탕화면 } = require('./lib/바탕화면.js');
 
 const ROOT = path.join(__dirname, '..');
 const 본편 = path.join(ROOT, 'docs', '교재_시냅스코어_권1_원고_v2.md');
@@ -302,23 +304,6 @@ ${body}
     낸것.push(path.join(d, '시냅스코어_권1_원고.html'));
   }
   return { 낸것, 합친줄수, 과수: 목차.length, 바이트: Buffer.byteLength(html) };
-}
-
-/** 바탕화면 — OneDrive 백업이 켜져 있으면 진짜 바탕화면은 OneDrive\\Desktop 이다(철학열람빌드와 같은 실측). */
-function 바탕화면() {
-  const 후보 = [];
-  try {
-    const { execFileSync } = require('child_process');
-    const out = execFileSync('reg', ['query',
-      'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders', '/v', 'Desktop'],
-      { encoding: 'utf8' });
-    const m = out.match(/Desktop\s+REG_(?:EXPAND_)?SZ\s+(.+)/);
-    if (m) 후보.push(m[1].trim().replace(/%([^%]+)%/g, (_, v) => process.env[v] || ''));
-  } catch { /* reg 없으면 폴백 */ }
-  if (process.env.OneDrive) 후보.push(path.join(process.env.OneDrive, 'Desktop'));
-  if (process.env.USERPROFILE) 후보.push(path.join(process.env.USERPROFILE, 'Desktop'));
-  for (const c of 후보) if (c && fs.existsSync(c)) return c;
-  throw new Error('바탕화면을 못 찾았다: ' + 후보.join(' | '));
 }
 
 if (require.main === module) {

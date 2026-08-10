@@ -8,7 +8,7 @@
  *   ① **바탕화면 경로 함정** — 실경로는 `OneDrive\Desktop` 인데 `USERPROFILE\Desktop` 도
  *      **존재하고 Test-Path 가 True** 라 「맞게 썼다」로 읽힌다. 2026-08-09 에 그 자리에
  *      폴더를 만들고 유호님께 「바탕화면에 넣었습니다」라고 보고했다(유호님이 "안 보이는데?"로 잡음).
- *      → 경로를 상수로 쓰지 않고 GetFolderPath('Desktop') 로 확장한다.
+ *      → 경로를 상수로 쓰지 않고 셸에 묻는다 — 그 판정은 `tools/lib/바탕화면.js` 한 곳에만 산다(2026-08-10 단일화).
  *      → 확장에 실패해 폴백을 쓰면 **조용히 넘어가지 않고 경고한다**(F044: 실제로 일하는 건 폴백이다).
  *   ② **사본이 낡는 것** — repo 안 문서는 복사하지 않고 `.lnk` 바로가기로 넣는다.
  *      복사본은 정본이 바뀌어도 안 바뀐다(docs/인쇄본/개원재무_*.pdf 가 그 사례 — 수치는 이미 대체됐다).
@@ -28,6 +28,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
+// 바탕화면을 찾는 **단 하나의 통로**(파일 안 사본 금지 — `tests/바탕화면통로.test.js` 가 문다).
+const { 찾기: 바탕화면 } = require('./lib/바탕화면.js');
 
 const 폴더명 = 'SYNK 운영자료';
 const ROOT = path.resolve(__dirname, '..');
@@ -98,17 +100,10 @@ function ps(스크립트) {
   }).trim();
 }
 
-/** 바탕화면 실경로. 확장 실패는 조용히 넘기지 않는다. */
-function 바탕화면() {
-  try {
-    const p = ps("[Environment]::GetFolderPath('Desktop')");
-    if (p && fs.existsSync(p)) return { 경로: p, 폴백: false };
-  } catch { /* 아래 폴백 */ }
-  const 후보 = process.env.OneDrive
-    ? path.join(process.env.OneDrive, 'Desktop')
-    : path.join(process.env.USERPROFILE || require('node:os').homedir(), 'Desktop');
-  return { 경로: 후보, 폴백: true };
-}
+/* 바탕화면 실경로는 위 `./lib/바탕화면.js` 가 준다 — 여기 사본을 되살리면 회귀가 문다
+ * (문자열만 적어도 문다. 옛 방식 이름을 주석에 남기는 것도 다음 사본의 씨앗이라 같이 막는다).
+ * 이 파일이 쓰던 PowerShell 셸 확장은 레지스트리와 **같은 값**이었다(2026-08-10 실측 · 판정 근거는 통로 머리에).
+ * 확장 실패를 조용히 넘기지 않는 몫(`폴백` → 아래 main 의 경고)은 그대로 승계한다. */
 
 function 목록읽기(폴더) {
   if (!fs.existsSync(폴더)) return [];
