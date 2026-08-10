@@ -7,10 +7,15 @@
   SYNK LAB 발표물 2번 — 학부모 안내문 리플렛 (A4 양면 · 한국어판)
   브랜드 키트 = docs/발표물/_브랜드킷.md
   산출물 사양 = docs/정본/SYNK/SYNK 발표물 제작 프롬프트 v1.txt v1.4 §2
-  원고(불변) = docs/정본/SYNK LAB/About Synk lab/SYNK_리라이팅_v2/09_학부모_안내문.txt v5
+  원고(불변) = docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/09_학부모_안내문.txt v6
+  철학(정본) = docs/SYNK_철학.md v1.0 — 슬로건·화법·실물 게이트가 여기서 온다
 
   ▶ 정본 §2의 핵심 제약: **글을 새로 쓰지 않는다.** 원고 문장을 바꾸지 않고
-     줄바꿈·강조·배치만 설계한다. 아래 본문은 원고 v5와 문장 단위로 같다.
+     줄바꿈·강조·배치만 설계한다. 아래 본문은 원고 v6과 문장 단위로 같다.
+
+  ▶ v6 정합(2026-08-10) — 원고가 늘어난 만큼 **뒷면이 아니라 앞면에** 실었다.
+     뒷면은 이미 조판을 조여 놓은 면이라(아래 「뒷면 밀도 조정」 주석) 한 블록만 더해도 넘친다.
+     앞면 = 슬로건 설명 + 그 이해가 눈에 보이는 실물 3개 → TOPIK → 합격 너머.
 
   ▶ 몽골어판 = 02_학부모_안내문_A4_mn.html (같은 레이아웃 · 번역 대기 칸 + 글자 수 한도)
 
@@ -79,26 +84,29 @@ html,body{
 .lockup .tag{ font-size:2.2mm; font-weight:700; color:var(--cream); }
 
 /* ══ 본문 블록 ═══════════════════════════════════════════════ */
-.blk{ margin-top:7mm; }
-.blk:first-child{ margin-top:5mm; }
+/* ⚠ 앞면 쪽1 은 A4 한 장에 정확히 맞춰져 있다 — 여백을 늘리면 마지막 블록이 잘린다
+     (2026-08-10 실측: 문장이 길어져 18px 넘쳤고, overflow:hidden 이라 화면에선 안 보였다).
+     문구를 늘릴 땐 `node tools/발표물린트.js --넘침` 을 같이 돌린다. */
+.blk{ margin-top:6.2mm; }
+.blk:first-child{ margin-top:4.4mm; }
 h2{
   font-size:5.4mm; font-weight:800; letter-spacing:-.02em; line-height:1.3;
   padding-bottom:2.4mm; border-bottom:.7mm solid var(--navy-3); display:inline-block;
 }
-.blk p{ font-size:3.5mm; margin-top:3.4mm; }
-.blk p.tight{ margin-top:1.8mm; }
+.blk p{ font-size:3.5mm; margin-top:3.1mm; }
+.blk p.tight{ margin-top:1.6mm; }
 strong{ font-weight:800; }
 .hl{ font-weight:800; box-shadow:inset 0 -2.2mm 0 rgba(255,107,92,.20); }
 
 /* 세 가지 힘 — 아이콘 3개 가로 배치 (정본 §2 앞면 블록 2) */
-.powers{ display:flex; gap:4mm; margin-top:5mm; }
-.pw{ flex:1 1 0; border:.35mm solid var(--hair); border-radius:2.4mm; padding:4mm 3.6mm; background:#fff; }
+.powers{ display:flex; gap:4mm; margin-top:4.2mm; }
+.pw{ flex:1 1 0; border:.35mm solid var(--hair); border-radius:2.4mm; padding:3.4mm 3.6mm; background:#fff; }
 .pw .ic{ display:block; margin-bottom:2.8mm; }
 .pw .n{ font-size:2.6mm; font-weight:700; color:var(--navy-3); letter-spacing:.1em; }
 .pw .t{ font-size:4.2mm; font-weight:800; margin-top:1.4mm; line-height:1.25; letter-spacing:-.015em; }
 .pw .d{ font-size:2.9mm; color:var(--navy-3); margin-top:2mm; line-height:1.5; }
 
-.after{ font-size:3.3mm; margin-top:4.4mm; color:var(--navy-3); }
+.after{ font-size:3.3mm; margin-top:3.6mm; color:var(--navy-3); }
 
 /* ══ 뒷면 ════════════════════════════════════════════════════ */
 .four{ display:flex; flex-direction:column; gap:3.4mm; margin-top:4.4mm; }
@@ -155,9 +163,33 @@ strong{ font-weight:800; }
   display:flex; justify-content:space-between; align-items:flex-end;
 }
 .slogan .s{ font-size:4.6mm; font-weight:800; letter-spacing:-.02em; }
-.slogan .v{ font-size:2.4mm; color:var(--navy-3); }
+/* 슬로건 부연 — 「17」은 부연 없이 나가지 않는다(문서_지도 조건). 두 줄이 한 벌이다. */
+.slogan .sub{ font-size:2.7mm; font-weight:500; color:var(--navy-3); margin-top:1.2mm; line-height:1.45; max-width:150mm; }
+.slogan .v{ font-size:2.4mm; color:var(--navy-3); flex:0 0 auto; }
 
 .fn{ font-size:2.6mm; color:var(--navy-3); margin-top:2.2mm; line-height:1.45; }
+
+/* 실물 띠 — 「말」이 아니라 학부모가 손에 받는 물건 셋을 한 줄로 세운다(철학 부록 A).
+   ⚠ 카드(.three)로 만들었다가 되돌렸다: 앞면이 46px 넘쳐 잘렸다(실측). 카드 104px → 띠 44px.
+   신호 예산 밖이라 색은 안 쓴다 — 위계는 웨이트와 헤어라인이 진다(DESIGN.md 3규칙). */
+.proof{
+  display:flex; gap:5mm; margin-top:4mm; padding:2.8mm 0;
+  border-top:.35mm solid var(--hair); border-bottom:.35mm solid var(--hair);
+}
+.proof > div{ flex:1 1 0; font-size:2.9mm; color:var(--navy-3); line-height:1.42; }
+.proof b{ display:block; font-size:3.3mm; font-weight:800; color:var(--navy); letter-spacing:-.015em; }
+
+/* ── 앞면 밀도 조정 ─────────────────────────────────────────
+   뒷면과 같은 처방을 앞면에도 쓴다(아래 「뒷면 밀도 조정」 주석 참조) — v6 정합으로
+   앞면 블록이 2개에서 3개로 늘었다. **문장을 자르는 대신 조판을 조인다.**
+   ⚠ 이 값들은 취향이 아니라 실측이다: 조이기 전 앞면은 46px 넘쳐 `overflow:hidden` 에
+   조용히 잘렸다(`node tools/발표물린트.js --넘침` 이 그 자리를 잡는다). */
+.sheet:not(.back) .blk{ margin-top:5mm; }
+.sheet:not(.back) h2{ font-size:5mm; padding-bottom:1.9mm; }
+.sheet:not(.back) .blk p{ margin-top:2.6mm; }
+.sheet:not(.back) .powers{ margin-top:4mm; gap:3.4mm; }
+.sheet:not(.back) .pw{ padding:3.4mm 3.2mm; }
+.sheet:not(.back) .after{ margin-top:3.4mm; }
 
 /* ── 뒷면 밀도 조정 ─────────────────────────────────────────
    정본 §2는 "글을 새로 쓰지 않는다 — 줄바꿈·강조·배치만 설계한다"라고 못박는다.
@@ -209,8 +241,10 @@ strong{ font-weight:800; }
 
   <header class="hero">
     <div>
-      <h1>학부모님의 아이가,<br><em>점수를 넘어섭니다</em></h1>
-      <div class="lead">TOPIK 준비는 끝까지. 그리고 그 이상을.</div>
+      <!-- ⚠ 「17」은 부연 없이 나가지 않는다(문서_지도 조건) — 아래 lead 가 그 부연이고,
+           두 줄은 한 벌이다. 번역에도 함께 넘긴다. 부연에 「AI」 낱말은 넣지 않는다. -->
+      <h1>정원은 16명,<br><em>선생님은 17명입니다</em></h1>
+      <div class="lead">아이 열여섯 명 각자를 이해하는 「나만의 선생님」 열여섯, 그리고 교실에서 마음을 만나는 진짜 선생님 한 명.</div>
     </div>
     <div class="foot">
       <div class="note">SYNK LAB은 2027년 2월 개원을 준비하고 있습니다.<br>이 안내문은 개원 전에 미리 보내드리는 소개입니다.</div>
@@ -223,7 +257,7 @@ strong{ font-weight:800; }
           </svg>
         </div>
         <div>
-          <div class="tag">점수를 넘어, 삶을 설계합니다</div>
+          <div class="tag">정원은 16명, 선생님은 17명입니다</div>
         </div>
       </div>
     </div>
@@ -232,19 +266,37 @@ strong{ font-weight:800; }
   <div class="pad">
 
     <div class="blk">
-      <h2>TOPIK 준비, 끝까지 함께합니다</h2>
-      <p>가장 궁금하신 것부터 말씀드립니다.
-        SYNK LAB의 승급은 <span class="hl">기간이 아니라 도달로</span> 정합니다. “몇 개월이면 몇 급” 같은 약속은 하지 않습니다 —
-        대신 아이가 목표한 급수에 도달할 때까지 준비 과정을 끝까지 책임지고, 지금 어디까지 왔는지를 매달 리포트카드로 보여드립니다.</p>
-      <p class="tight">TOPIK이 있어야 한국 유학과 취업의 길이 열립니다. 이것은 저희가 드리는 약속이고, 동시에 시작일 뿐입니다.</p>
-      <p class="tight">그리고 저희는 여기서 멈추지 않습니다. <strong>점수를 딴 다음, 아이가 그 점수로 무엇을 할지까지 함께 설계합니다.</strong></p>
+      <h2>정원은 16명인데, 선생님이 왜 17명일까요?</h2>
+      <p>한 반의 모든 아이를 똑같이 아는 것은, 사람에게는 애초에 불가능한 일이었습니다.
+        그래서 교실은 언제나 평균에 맞춰 가르칠 수밖에 없었습니다.</p>
+      <p class="tight">저희는 이 문제를 시스템으로 풀어 갑니다. 아이가 앱에서 한 숙제와 말하기는 전부 그 아이를 이해하는 기록으로 쌓입니다.
+        그 이해를 바탕으로, <span class="hl">우리 아이에게 가장 능률이 오르는 학습</span>을 만들도록 설계했습니다.
+        아이마다, 그 아이를 정말 잘 이해하는 「나만의 선생님」이 하나씩 생기는 구조입니다.</p>
+
+      <!-- 실물 3개 — 「말」이 아니라 학부모가 손에 받는 물건으로 받친다(철학 부록 A 실물 대장).
+           ⚠ 아래 fn 의 시제 고지를 지우지 않는다: 개원 전이라 「돌아갑니다」로 쓰면 사실이 아니다. -->
+      <div class="proof">
+        <div><b>주간 리포트</b>이번 주 무엇을 얼마나 했는지, 몽골어로 매주</div>
+        <div><b>월간 리포트카드</b>어느 지점에서 자랐는지를 숫자가 아니라 서술로</div>
+        <div><b>앱 속 캐릭터</b>꾸준함을 따라 7단계로 진화</div>
+      </div>
+      <div class="fn">이 장치들은 이미 만들어 두었고, 개원과 동시에 작동합니다.
+        비교 대상은 옆자리 친구가 아니라, <strong>어제의 우리 아이 하나뿐입니다.</strong></div>
     </div>
 
     <div class="blk">
-      <h2>왜 ‘그 이상’이 필요할까요</h2>
-      <p>지금은 AI 시대입니다. AI가 번역을 하고, 글을 쓰고, 시험 문제도 풉니다. 시험 점수만 높은 것의 가치는 빠르게 낮아지고 있습니다.</p>
-      <p class="tight">그래서 <strong>점수는 이제 출발 조건일 뿐입니다.</strong> 그 위에 아이만의 목적과 경험이 있어야 진짜 경쟁력이 됩니다.</p>
-      <p class="tight">AI가 대신하기 어려운 세 가지 힘이 있습니다.</p>
+      <h2>TOPIK 준비, 끝까지 함께합니다</h2>
+      <p>가장 궁금하신 것부터 말씀드립니다. <strong>자격증 합격은 저희에게 자랑이 아니라 기본입니다.</strong>
+        커리큘럼 여섯 레벨이 TOPIK 급수에 맞춰 짜여 있고, 매일의 숙제가 급수를 향해 쌓입니다.
+        TOPIK이 있어야 한국 유학과 취업의 길이 열립니다.</p>
+      <p class="tight">승급은 <span class="hl">기간이 아니라 도달로</span> 정합니다. “몇 개월이면 몇 급” 같은 숫자 약속은 하지 않습니다 —
+        대신 아이가 목표한 급수에 도달할 때까지 준비 과정을 끝까지 책임지고, 지금 어디까지 왔는지를 매주와 매달, 기록으로 보여드립니다.</p>
+    </div>
+
+    <div class="blk">
+      <h2>그리고, 합격 너머까지 봅니다</h2>
+      <p>지금은 AI 시대입니다. AI는 답을 줍니다 — 그러나 무엇을 물을지는 정해 주지 않습니다.</p>
+      <p class="tight">그래서 자격증 위에, AI가 대신하기 어려운 세 가지 힘이 필요합니다.</p>
 
       <div class="powers">
         <div class="pw">
@@ -286,13 +338,16 @@ strong{ font-weight:800; }
   <div class="pad">
 
     <div class="blk" style="margin-top:0">
-      <h2>SYNK LAB이 실제로 하는 4가지</h2>
+      <!-- ⚠ 「실제로 하는」이 아니라 「준비한」이다 — 개원 전이라 현재형 단정은 사실이 아니다(원고 v6). -->
+      <h2>SYNK LAB이 준비한 4가지</h2>
       <div class="four">
         <div class="card">
           <div class="num mono">1</div>
           <div class="bd">
-            <div class="t">K컬처 워밍업 — 뇌를 깨우고 시작합니다.</div>
-            <div class="d">매 수업, 100% 한국어로 진행하는 K컬처 신체활동으로 시작합니다. 몸이 깨어날 때, 뇌는 가장 깊이 배웁니다. 그래서 더 오래 기억합니다.</div>
+            <div class="t">K컬처 워밍업 — 몸으로 수업을 엽니다.</div>
+            <!-- ⚠ 과학 문장은 **귀속형**으로만 나간다(철학 파생 게이트 · 신체활동 축에만).
+                 「뇌는 가장 깊이 배웁니다」로 단정하지 않는다 — 원고 v6 문장 그대로 쓴다. -->
+            <div class="d">매 수업, 100% 한국어로 진행하는 K컬처 신체활동으로 시작합니다. 몸이 깨어날 때 뇌가 가장 깊이 배운다고 여러 나라의 연구가 보고해 왔습니다. 저희는 그 원리를 매일의 수업으로 만들었습니다.</div>
           </div>
         </div>
         <div class="card">
@@ -351,8 +406,9 @@ strong{ font-weight:800; }
 
     <div class="promise">
       <div class="k mono">SYNK PROMISE</div>
-      <p>아이가 목표한 TOPIK에 도달할 때까지 함께하고, 그것을 어디에 쓸지 알고,
-        자기 삶을 스스로 설계하는 사람으로 자라도록 끝까지 함께하겠습니다. 자세한 내용은 상담에서 안내해 드립니다.</p>
+      <p><strong>합격은 기본으로 챙깁니다.</strong> 그리고 그 위에, 아이가 꿈꾸는 삶을 AI 시대에 어떻게 이룰 수 있을지
+        함께 고민하고, 연구하고, 길을 보여드립니다. 그것이 저희가 궁극적으로 추구하는 가치입니다.
+        자세한 내용은 상담에서 안내해 드립니다.</p>
     </div>
 
     <div class="contact">
@@ -367,8 +423,11 @@ strong{ font-weight:800; }
     </div>
 
     <div class="slogan">
-      <div class="s">점수를 넘어, 삶을 설계합니다.</div>
-      <div class="v mono">02 · KR · v1.0</div>
+      <div>
+        <div class="s">정원은 16명, 선생님은 17명입니다.</div>
+        <div class="sub">— 아이 열여섯 명 각자를 이해하는 「나만의 선생님」 열여섯, 그리고 교실에서 마음을 만나는 진짜 선생님 한 명.</div>
+      </div>
+      <div class="v mono">02 · KR · v2.0</div>
     </div>
 
   </div>
