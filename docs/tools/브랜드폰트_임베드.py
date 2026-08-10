@@ -36,8 +36,12 @@ from fontTools import subset
 from fontTools.ttLib import TTFont
 
 # ── 폰트 원본 위치 ────────────────────────────────────────────────
-# 유호님 폴더가 정본이다. 바탕화면 실체는 OneDrive\Desktop 이다(로컬 Desktop 은 비어 있다).
-FONT_ROOT = os.path.join(os.environ.get("USERPROFILE", ""), "OneDrive", "Desktop", "SYNK_브랜드폰트")
+# 2026-08-10 이전에는 여기가 `%USERPROFILE%\OneDrive\Desktop\SYNK_브랜드폰트` 였다.
+# 즉 **PDF 빌드가 유호님 PC 의 바탕화면 폴더에 의존**했다 — 그 폴더를 옮기거나 지우면
+# 발표물·인쇄본·지도가 조용히 폴백 서체로 떨어지고, 다른 기계·클라우드 세션에서는 애초에 안 돌았다.
+# 폰트 3종은 전부 OFL(각 폴더에 원문 동봉)이라 저장소에 들일 수 있다 → 저장소가 정본이 됐다(유호 승인 08-10).
+# 폴백 경로를 두지 않는다 — 없으면 조용히 옛 자리를 쓰는 게 아니라 `build_faces` 가 누락을 소리내야 한다.
+FONT_ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "브랜드_폰트"))
 
 # (css family, weight, 파일 상대경로)
 FACES = [
