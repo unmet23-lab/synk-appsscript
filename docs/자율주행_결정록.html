@@ -89,11 +89,11 @@ footer code{font-family:var(--mono);font-size:11.5px}
   <p class="sub">앱을 짓는 동안 <b>유호님께 묻지 않고 제가 혼자 정한 굵직한 갈림길</b>입니다.
      다 만든 뒤 번호를 부르시면 그 자리에서 바꿉니다 — 「바꾸려면」 칸이 그 비용입니다.</p>
   <div class="counts">
-    <div class="hot">대기<b>13</b></div>
+    <div class="hot">대기<b>22</b></div>
     <div>유지<b>0</b></div>
     <div>바꿈<b>0</b></div>
     <div>보류<b>0</b></div>
-    <div>전체<b>13</b></div>
+    <div>전체<b>22</b></div>
   </div>
 </div></header>
 
@@ -106,11 +106,19 @@ footer code{font-family:var(--mono);font-size:11.5px}
   <button class="f" data-k="r" data-v="보류" aria-pressed="false">보류</button>
   <span class="sep"></span><span class="lbl">영역</span>
   <button class="f" data-k="a" data-v="" aria-pressed="true">전체</button>
+  <button class="f" data-k="a" data-v="강사 화면(라벨 회로)" aria-pressed="false">강사 화면(라벨 회로)</button>
+  <button class="f" data-k="a" data-v="도구·검수" aria-pressed="false">도구·검수</button>
+  <button class="f" data-k="a" data-v="미니게임 설계(데이터·수집층)" aria-pressed="false">미니게임 설계(데이터·수집층)</button>
+  <button class="f" data-k="a" data-v="발표물(학부모 안내문 kr)" aria-pressed="false">발표물(학부모 안내문 kr)</button>
   <button class="f" data-k="a" data-v="비용·운영" aria-pressed="false">비용·운영</button>
+  <button class="f" data-k="a" data-v="설계" aria-pressed="false">설계</button>
   <button class="f" data-k="a" data-v="수집 계약" aria-pressed="false">수집 계약</button>
   <button class="f" data-k="a" data-v="앱 화면" aria-pressed="false">앱 화면</button>
   <button class="f" data-k="a" data-v="엔진·데이터" aria-pressed="false">엔진·데이터</button>
+  <button class="f" data-k="a" data-v="운영 자동화" aria-pressed="false">운영 자동화</button>
   <button class="f" data-k="a" data-v="운영·인프라" aria-pressed="false">운영·인프라</button>
+  <button class="f" data-k="a" data-v="학생 개인정보(AI 외부 전송)" aria-pressed="false">학생 개인정보(AI 외부 전송)</button>
+  <button class="f" data-k="a" data-v="학생 화면(답장)" aria-pressed="false">학생 화면(답장)</button>
   <button class="f" data-k="a" data-v="학습 데이터" aria-pressed="false">학습 데이터</button>
   <button class="f" data-k="a" data-v="학습 데이터 계약" aria-pressed="false">학습 데이터 계약</button>
 </div></nav>
@@ -286,10 +294,127 @@ footer code{font-family:var(--mono);font-size:11.5px}
   <div class="undo"><span class="k">바꾸려면</span><span class="v">SYNK-talk tests/계약역방향.test.js 의 `대상표` 에서 'corrections' 를 빼면 검사가 08-09 이전으로 돌아간다(한 줄). 계약 등재 여섯을 물리칸으로 옮기려면 계약/수집_교정_계약.json 의 내용·라벨 배열에서 이름을 빼고(정본은 SYNK-appsscript · tools/계약동기화.js 로 형제에 내려보낸다) 같은 이름을 lib/이벤트검증.js 의 물리칸에 사유와 함께 넣은 뒤 선택필드·미구현·미구현_주의에서 지운다 — 검사가 xor 를 강제하므로 반쪽만 고치면 그 자리에서 빨개진다. reviewer·promotion_intent 를 계약으로 올리려면 그 부재 검사(같은 파일 마지막 test)를 먼저 지워야 하고, 그 test 가 지우는 이유를 그 자리에 적어 뒀다.</span></div>
   
 </article>
+<article class="card" data-r="대기" data-a="운영 자동화">
+  <div class="head">
+    <span class="num">#14</span>
+    <h3>자동 작업(트리거) 목록을 한 곳에만 적게 바꿨다 — 다만 '설치하는 코드'는 손대지 않았다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-10 &nbsp;·&nbsp; 운영 자동화 &nbsp;·&nbsp; appsscript · <code>b8365ea7</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">매일 밤 도는 자동 작업들의 이름표를 한 곳에 모아 두고, 점검 화면 세 곳이 그 한 곳을 보게 했다. 실제로 작업을 설치하는 코드는 그대로 뒀다(작업마다 도는 시각이 달라서). 대신 이름표와 설치 코드가 서로 어긋나면 테스트가 자동으로 빨개진다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">설치 코드까지 통째로 다시 짜서 이름표 한 곳이 전부를 몰게 하기</span><span class="chip">어긋난 숫자만 10에서 11로 고치기</span><span class="chip">그냥 두고 경고를 무시하기</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">숫자만 고치면 눈에 보이는 경고 하나는 사라지지만, 점검 화면 두 곳이 '작업이 사라진 것을 못 보는' 상태는 그대로 남는다. 실제로 이 병은 같은 자리에서 두 번째다. 반대로 설치 코드까지 전부 다시 짜는 것은 매일 밤 도는 자동 작업 전체를 건드리는 일이라, 하나만 잘못돼도 학원 운영이 조용히 멈춘다. 지금은 앱을 완성하는 중이라 그런 큰 수술을 할 때가 아니라고 봤다(유호님이 08-10에 확정하신 '구조 문제는 앱 완성 뒤에' 규칙의 첫 적용이다).</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">설치까지 통째로 단일화하는 큰 수술로 올리려면 하루쯤 걸리고, 실제 자동 작업이 잘 도는지 확인하는 시간이 따로 필요하다(라이브에서 한 번 재설치를 돌려봐야 한다). 반대로 지금 한 것을 되돌리는 건 30분이면 되지만, 되돌리면 옛 병이 그대로 돌아온다. 이번 변경으로 학원 운영 동작이 바뀐 것은 없다 — 바뀐 것은 점검 화면에 뜨는 글자뿐이다.</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="발표물(학부모 안내문 kr)">
+  <div class="head">
+    <span class="num">#15</span>
+    <h3>A4 앞면이 4.8mm 넘쳐 마지막 문단이 잘리던 것 — 문구가 아니라 조판으로 흡수했다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-10 &nbsp;·&nbsp; 발표물(학부모 안내문 kr) &nbsp;·&nbsp; appsscript</div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">문장은 한 글자도 안 건드리고 여백 4곳만 조였다(.blk 7→6.2mm · 문단 3.4→3.1mm · powers 5→4.2mm · pw 패딩 4→3.4mm). 대안이던 「문장 줄이기」는 안 골랐다.</span></div>
+  
+  <div class="row"><span class="k">왜</span><span class="v">잘린 것은 학부모가 읽을 대외 문구다 — 문장을 줄이면 무엇을 뺄지가 유호님 판정 사안이 되고, 내가 임의로 정하면 되돌리기 어렵다. 여백은 가역이고 인쇄 좌우 여백 15mm(정본 §2)와 하단 여백은 손대지 않았다. 조인 뒤 실측 여유는 1.7mm.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">docs/발표물/_src_02_학부모_안내문_A4_kr.html 의 style 에서 .blk margin-top 을 6.2mm→7mm 등 네 값을 원래대로 돌리고 `node tools/발표물빌드.js --pdf` 재실행. 단 그러면 마지막 문단이 다시 잘리므로 문장을 4.8mm 만큼 줄이는 쪽을 함께 정해야 한다.</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="학생 개인정보(AI 외부 전송)">
+  <div class="head">
+    <span class="num">#16</span>
+    <h3>주간 리포트 AI 해설에 보내던 본문을 「집계 숫자 섹션만」으로 줄였다 — 이름 섹션 6개·애매한 섹션 3개는 안 보낸다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-10 &nbsp;·&nbsp; 학생 개인정보(AI 외부 전송) &nbsp;·&nbsp; SYNK-appsscript · <code>(이 기록과 같은 커밋)</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">매주 원장 메일로 오는 통합 리포트는 그대로 전문이 오고, 그 끝에 붙는 AI 해설을 만들 때만 입력을 가른다. 15개 섹션 중 학생·학부모 이름이 실리는 6개(주간 순위·미납·재등록·학부모 문의·만료 임박·강의 이수율)와 조건부로 새는 3개(워치독 이상행·설문 자유서술·교안 문서주소)는 AI에 안 보내고, 숫자·비율만 있는 6개(KPI·경영계기판·메신저 연결·결석 복귀율·마감 제출률·침묵 학생 인원수)만 보낸다. 새 섹션을 만들면 기본이 「안 보냄」이라 깜빡해도 새는 쪽이 아니라 막히는 쪽으로 틀린다. 결석 복귀율에는 강사 이름이 실리는데 이건 유지했다 — 정본(제품방향.md)이 막는 것은 학생 식별자다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">리포트 전문에서 이름만 골라 지우고 보내기(명단 방식 — 못 적은 이름이 새서 기각)</span><span class="chip">AI 해설 기능 자체를 끄기(주간 판단 보조가 사라져 기각)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">대기열 P0 「학생 이름 외부 유출」(커밋 108bbefa) — 리포트 6000자에 침묵 학생 실명 섹션이 통째로 실려 매주 외부 AI사로 나가고 있었다. 실측 결과 앞쪽 절단(6000자)은 방어가 아니었다 — 이름 섹션(미납·문의)이 본문 앞쪽이라 먼저 나간다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">엔진_셋업확장.js 의 weeklyJobs 에서 aiText_ 호출의 aiBody 를 body 로 한 글자 되돌리고, sections 배열의 `, true` 표시 6개를 지우면 예전처럼 전문이 나간다(5분). 단 tests/이름유출.test.js 가 그 되돌림을 빨갛게 잡도록 되어 있어, 정말 되돌리려면 그 검사의 「주간리포트-H7」 항목도 함께 지워야 한다. 강사 이름까지 빼려면 sections 의 「결석 복귀율」 줄에서 `, true` 만 지우면 된다(1분).</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="미니게임 설계(데이터·수집층)">
+  <div class="head">
+    <span class="num">#17</span>
+    <h3>G2 「고칠 곳 없음」의 사건을 quiz.answered 로 확정 — submission·options_shown 동봉 4문안까지 한 벌</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-10 &nbsp;·&nbsp; 미니게임 설계(데이터·수집층) &nbsp;·&nbsp; talk · <code>0baca5c</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">발주서 §6-6 ①이 「첫 제출 전 결정 사항」으로 비워 둔 자리를 quiz.answered 로 닫았다. 동봉 4문안(submission{task_ref, task_format:'쓰기첨삭', task_snapshot} · options_shown · task_type='퀴즈응답' · G4 빈칸 행과의 구분 축)까지가 판정이다 — 적대 반박이 「동봉 없이는 조인 자체가 불가능해 이름만 바뀐 결함」임을 실측해서다. 같은 커밋에 §6-8 task_snapshot 정본 표(4모듈 키 통일 · G4 보기 금지 · mn 행) · §6-9 G2 지시문 전 회차 중립형 통일 · §6-10 쓰기 검수 실측 절차(선행 차단자 3 명시)를 실었다. 대안이던 choice.selected 는 안 골랐다(§6-3 기각 유효 + position 필수 구멍이 계약 판정 대기라 전제로 못 쓴다).</span></div>
+  
+  <div class="row"><span class="k">왜</span><span class="v">lib/이벤트검증.js 실측(quiz.answered 필수=task_type 하나 · 생산자 자리가 미니게임 몫으로 예약) · events Fn 실측(task_snapshot 은 submission 동봉일 때만 착지) · 컨텍스트 독립 적대 반박 1패스 17건 반영</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">talk 저장소 docs/발주_게임모듈.md 의 §6-6 ① 「✅ 판정(08-10)」 블록과 §6-8~6-10 절을 지우면 판정 전(빈 자리)으로 돌아간다(git revert 0baca5c — 단 그 커밋에 ee0d0ed6 세션의 유호 확정 도장 2건이 동승해 있어 통째 revert 는 그 도장까지 지운다. 블록만 손으로 지우는 쪽이 안전). 아직 구현 코드 0줄이라 문서 원복이 전부다.</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="강사 화면(라벨 회로)">
+  <div class="head">
+    <span class="num">#18</span>
+    <h3>새로 설계할 자리로 「강사 라벨 회로(M2)」를 골라 설계문을 먼저 세웠다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-10 &nbsp;·&nbsp; 강사 화면(라벨 회로) &nbsp;·&nbsp; talk · <code>d4654ca</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">강사가 매주 무작위 5건의 AI 첨삭을 폰에서 판정하는 회로(골든셋 입구·표본 큐·모델 성적표)의 설계문을 썼다 — 코드보다 설계가 먼저라는 지시대로, 화면·데이터·엔진 도달까지 한 벌로.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">미니게임 4모듈 착수(그때는 유호님 판정 대기로 막혀 있었다)</span><span class="chip">숙제·다시쓰기 화면 먼저(순서를 정할 실측 계수가 아직 없다)</span><span class="chip">설계 없이 바로 코드부터(품질 기준 위반)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">제품 계약이 「파일럿 전 필수 · 강사는 개원 전에도 돌릴 수 있는 유일한 회로」로 못박은 자리인데 설계문이 0이었다. 구식 도구(Glide)가 없어지면 강사가 AI 첨삭을 채점할 유일한 입구가 사라진다 — 채점표(라벨)는 나중에 소급으로 못 모은다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">아직 코드 0줄이라 문서 1개를 고치거나 지우면 끝난다(talk 저장소 docs/M2_라벨회로_설계.md · 커밋 d4654ca). 구현이 시작된 뒤라면 강사 문(서버 함수 1개)과 화면 1장을 지우는 규모다.</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="강사 화면(라벨 회로)">
+  <div class="head">
+    <span class="num">#19</span>
+    <h3>강사의 판정 기록을 「누가 남긴 것인지」 감사 장부로 구분하기로 했다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-10 &nbsp;·&nbsp; 강사 화면(라벨 회로) &nbsp;·&nbsp; talk · <code>d4654ca</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">강사의 채점 기록과 검수자의 확정 기록이 데이터베이스에서 같은 모양이라, 「강사 채점」 도장은 감사 장부(누가 언제 무엇을 했나 자동 기록되는 장부)에 남겨 그걸로 구분한다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">직원의 역할(강사/검수자)로 구분(원장님이 두 역할을 다 하셔서 못 가른다)</span><span class="chip">표에 구분 칸을 새로 추가(계약 개정이 필요해 유호님 판정 자리가 하나 늘어난다)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">2027-02 검수자 채용 전까지는 원장님 혼자 두 화면을 다 쓰므로 역할로는 못 가른다. 감사 장부는 이미 있고 고칠 수 없게 잠겨 있어(추가만 가능) 새 칸 없이 정확히 가른다 — 검수 콘솔의 「들었다」 증거도 같은 장부를 쓰는 선례가 있다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">나중에 전용 구분 칸을 계약에 추가하면 그쪽으로 갈아탈 수 있다(과거 기록은 감사 장부에서 한 번에 옮겨 적을 수 있어 유실 없음). 설계문 §10-②에 그 출구를 적어 뒀다.</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="학생 화면(답장)">
+  <div class="head">
+    <span class="num">#20</span>
+    <h3>강사가 「맞다」고만 확인한 기록은 학생 화면에 안 보이게 했다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-10 &nbsp;·&nbsp; 학생 화면(답장) &nbsp;·&nbsp; talk · <code>d4654ca</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">강사 채점 중 「AI 교정이 맞다」「원문이 이미 맞다」는 학생에게 카드로 안 보낸다. 강사가 실제로 더 좋은 교정을 써 준 경우만 학생의 답장 화면에 선다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">확인 카드도 전부 학생에게 보여주기(「선생님이 봐 주셨어요」 경험)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">답장 화면은 최신 1건만 보여주는 구조라, 지난주 문장의 확인 카드가 이번 주 진짜 답장을 밀어낸다. 게다가 안 고친 카드에 「선생님이 고쳐 줬어요」 문구가 찍혀 거짓말이 된다. 「선생님이 확인했어요」 배지를 제대로 만들려면 학생 앱 계약 개정이 필요해서 별도 판정 자리로 남겼다(설계문 §10-⑤).</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">배지를 원하시면 학생 앱 응답에 판정 값을 싣는 계약 개정 1건 + 화면 문구 1곳 — 반나절 규모. 이미 쌓인 기록은 그대로 다시 쓸 수 있어 소급 손실 없음.</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="설계">
+  <div class="head">
+    <span class="num">#21</span>
+    <h3>「설계부분 진행」 범위 해석 — 미니게임 게임층(재미·연출·NPC) 설계로 특정</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-10 &nbsp;·&nbsp; 설계 &nbsp;·&nbsp; appsscript</div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">게임층 설계 정본 신설(docs/미니게임_게임층_설계.md) — 재미 구조 검사 4문항 · 연출 규격(소리·모션) · NPC 계열 규격 5. 유호님 판정 대기는 선행이 아니라 갈래로 병기해 답이 오는 날 재설계 없이 착수되게 함</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">코어엔진 E1 뼈대 설계(기각 — 유호 확정 「앱 우선」과 어긋남)</span><span class="chip">범위를 되묻기(기각 — 자율 모드이고, 대기열·이관 기록·결정큐 #43이 전부 이 자리를 지목)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">대기열·메모리 전수 대조에서 비어 있는 설계 자리가 이것 하나 · ee0d0ed6 보드가 「재미·NPC 상세=21f0c571 이관」 명시 · 결정큐 #43이 「어차피 지을 것 · 창=c10 붓는 날 전」으로 지목 · 유호 확정 4건(talk eb35ab0)이 같은 날 지반을 확정</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">문서 1개 삭제로 끝(git revert 한 번 — 코드 0 · 배포 0 · 계약 0 · 파생물 없음). 대기열 줄은 P2로 되내리면 원상</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="도구·검수">
+  <div class="head">
+    <span class="num">#22</span>
+    <h3>검수가 3번 타임아웃했을 때 — 기준을 낮추는 대신 기다리는 시간을 늘렸다(P0 배포를 하루 미룰 수도 있었다)</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-10 &nbsp;·&nbsp; 도구·검수 &nbsp;·&nbsp; appsscript · <code>82318707</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">검수 도구 안에 숨어 있던 900초 상한을 제거하고(그게 진짜 원인이었다) 타임아웃을 3600초로 늘려 4회차를 완주시켰다. 배포는 검수가 초록으로 열린 뒤에만 했다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">검수 없이 그냥 배포(가능했다 — 규칙상 「검수 기록 없음」은 차단이 아니라 알림이다. 기각: 그 자리가 바로 「규칙 지키는 쪽이 밀려 라이브가 조용히 뒤처진다」던 그 함정이고, 이번 변경은 학생 이름이 걸린 자리다)</span><span class="chip">검수 횟수를 2→1로 줄이기(기각 — 유호님이 「편성 그대로」로 확정하며 이미 막아 둔 손잡이다)</span><span class="chip">검수 모델의 추론 수준을 낮추기(기각 — 같은 이유로 유호님이 막아 둔 축이고, 지금 등급을 재는 도구가 없어 「낮춰도 같다」를 증명할 수 없다)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">3번 실패했지만 원인이 매번 달랐다 — 앞의 둘은 도구 안 상한이 처방을 무력화한 것(고쳤다), 셋째가 처음으로 정직하게 1800초를 다 쓴 실패였다. 그리고 이 검수 대상이 73,000자로, 통과한 이력들(28,000~38,000자)의 2배였다. 즉 「도구가 고장났다」가 아니라 「일이 2배라 시간이 더 필요하다」가 실측된 답이라, 기준을 낮출 이유가 없었다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">쌈. 앞으로 급할 때는 명령에 --버그만 이나 --회차 1 을 붙이면 몇 분에 끝난다(둘 다 유호님 「빠르게」 모드용으로 이미 있는 손잡이). 도구 수리 자체를 물리려면 커밋 82318707 하나를 되돌리면 되지만, 그러면 「--timeout 을 늘려라」는 안내가 다시 거짓말이 된다. 이번에 미룬 시간은 약 3시간이고 그 사이 라이브는 옛 코드로 돌았다 — 그날 22시 배치 전에는 반영됐다.</span></div>
+  
+</article>
 <footer>
   정본은 <code>docs/_ops/자율주행_결정록.jsonl</code> — 이 화면은 그걸 읽어 그린 것이라 <b>정본이 바뀌면 여기도 바뀝니다</b>.<br>
   판정 반영 = <code>node tools/자율기록.js 판정 --번호 N --결과 유지|바꿈|보류</code> · 굽기 = <code>node tools/자율기록.js --굽기</code><br>
-  마지막 굽기 <b>2026-08-09</b>
+  마지막 굽기 <b>2026-08-10</b>
 </footer>
 </div>
 
