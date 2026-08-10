@@ -47,7 +47,7 @@ const MANIFEST = [
   { src: 'docs/몽골어_검수_발주서.md',     title: '몽골어 검수 발주서',         sub: '검수 범위·기준·납품 형식',               group: '전달용' },
   { src: 'docs/자주묻는질문_정본.md',      title: '자주 묻는 질문 (FAQ)',       sub: '챗봇·상담 데스크 공용 단일 원천',        group: '전달용' },
   // C. 경영 정본
-  { src: 'docs/제품방향.md',               title: 'SYNK 제품 방향',             sub: '4개년 로드맵·핵심 등식·설계 불변식',     group: '경영 정본' },
+  { src: 'docs/제품방향.md',               title: 'SYNK 제품 방향',             sub: '로드맵·「출시」의 정의·핵심 등식·설계 불변식', group: '경영 정본' },
   { src: 'docs/SYNK_철학.md',              title: 'SYNK 철학 — 내부·운영 / 교육 / 대외', sub: '철학 3벌 — 유호님 확정 화법 · 새 슬로건', group: '경영 정본' },
   { src: 'docs/기업철학_홈페이지_v1.md',   title: 'SYNK 기업 철학',             sub: '대외 철학 문서(홈페이지본)',             group: '경영 정본' },
   { src: 'docs/조직계보_정본_v1.md',       title: 'SYNK 조직 계보',             sub: '브랜드 4 + 전사 레이어 2 — 로드맵 표기', group: '경영 정본' },
