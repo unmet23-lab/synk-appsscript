@@ -141,8 +141,32 @@ function 유효지문(대상) {
 
 // ─────────────────────────────────────────────────────────────── 대상
 
+/* maxBuffer 를 **명시**한다 — 기본값은 1MB 고, 이 저장소에서 그 상한은 상시 조건에서 넘는다.
+ * 2026-08-10 실측(F308): 옆 세션이 발표물 PDF 7벌을 미커밋으로 들고 있어 `diff HEAD` 가
+ * 3.2MB 가 됐고 `spawnSync git ENOBUFS` 로 죽었다. 새는 방향이 나쁘다 — 예외가 파이프 뒤에서
+ * 「통과」와 같은 모양이 됐다. 세션이 10개 도는 시간대엔 「누군가는 바이너리를 들고 있다」가
+ * 우연이 아니라 상수라, 이 한 줄이 없으면 검수는 그 시간대에 원리상 못 돈다.
+ * 넘치면 **죽지 말고** 확인 불가(2)로 내려간다 — 사유 없는 죽음이 통과로 읽히지 않게. */
+const git버퍼 = 64 * 1024 * 1024;
+
+/* 버퍼 초과인가 — node 판·플랫폼에 따라 `code` 가 안 붙고 문구로만 오는 경우가 있어 **둘 다** 본다.
+ * 하나만 보면 못 알아본 초과가 그대로 위로 터져 사유 없는 죽음이 된다(그게 F308 의 모양이었다). */
+function 버퍼초과(e) {
+  return !!(e && (e.code === 'ENOBUFS' || /ENOBUFS|maxBuffer/i.test(String(e.message || ''))));
+}
+
 function git(args) {
-  return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  try {
+    return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: git버퍼 }).trim();
+  } catch (e) {
+    if (버퍼초과(e)) {
+      const err = new Error(`git 출력이 상한(${Math.round(git버퍼 / 1024 / 1024)}MB)을 넘었다 — 대상이 너무 넓다. `
+        + '`--commit <sha>` 로 과녁을 좁혀 다시 돌린다(미커밋 전체가 대상이면 남의 바이너리까지 들어온다).');
+      err.확인불가 = true;
+      throw err;
+    }
+    throw e;
+  }
 }
 
 /* 미커밋(스테이지·비스테이지·미추적) 파일 목록.
@@ -176,6 +200,19 @@ function 대상결정(argv) {
   if (d.length) return { 종류: 'uncommitted', 값: '(미커밋)', flags: ['--uncommitted'], 파일들: d };
   const sha = git(['rev-parse', 'HEAD']);
   return { 종류: 'commit', 값: sha, flags: ['--commit', sha], 파일들: git(['-c', 'core.quotepath=false', 'show', '--name-only', '--format=', sha]).split('\n').filter(Boolean) };
+}
+
+/* 처방의 **과녁** — 이 프로젝트의 배포집합을 마지막으로 건드린 커밋(8자리).
+ * 게이트판정(알림문)과 실행 전 정지(아래 `범위밖정지`)가 **같은 한 곳**에서 뽑는다 —
+ * 같은 판정을 두 곳에 적으면 갈라지고, 갈라진 쪽은 「따라도 안 열리는 처방」이 된다.
+ * ⚠ 못 뽑으면 빈 문자열을 낸다 — 틀린 과녁을 지어내면 남의 판을 검수하게 된다. */
+function 과녁커밋(projRoot, root = ROOT) {
+  try {
+    const 집합 = 점검.배포집합(projRoot, root);
+    if (!집합.length) return '';
+    const sha = git(['-c', 'core.quotepath=false', 'log', '-n', '1', '--format=%H', '--', ...집합]);
+    return sha ? sha.slice(0, 8) : '';
+  } catch (_) { return ''; }
 }
 
 /* 검수 범위에 든 clasp 프로젝트 — 대상 diff 가 그 프로젝트의 **배포 파일**을 건드렸는가. */
@@ -715,14 +752,8 @@ function 게이트판정(projRoot, root = ROOT, 장부 = {}) {
    *   처방하게 되고, 그 diff 엔 crewcard 배포 파일이 없어 처방을 따라도 게이트가 그대로다.
    *   그래서 **이 프로젝트의 배포집합을 건드린 마지막 커밋**을 집는다.
    * ⚠ 못 뽑으면 과녁 없이 낸다 — 틀린 과녁을 지어내는 것보다 낫다(그건 남의 판을 검수하게 한다). */
-  const 과녁 = (() => {
-    try {
-      const 집합 = 점검.배포집합(projRoot, root);
-      if (!집합.length) return '';
-      const sha = git(['-c', 'core.quotepath=false', 'log', '-n', '1', '--format=%H', '--', ...집합]);
-      return sha ? ` --commit ${sha.slice(0, 8)}` : '';
-    } catch (_) { return ''; }
-  })();
+  const sha = 과녁커밋(projRoot, root);
+  const 과녁 = sha ? ` --commit ${sha}` : '';
   const 처방 = `   → node tools/codex-review.js${과녁}   (약 5분 · 읽기 전용)`;
   const 왜 = '     ⚠ 과녁 없이 부르면 **작업본 미커밋**을 검수한다 — 그 diff 에 배포 파일이 없으면 범위 밖으로 기록돼 이 게이트는 안 채워진다.';
 
@@ -757,6 +788,39 @@ function 게이트판정(projRoot, root = ROOT, 장부 = {}) {
     ] };
   }
   return { level: 'ok', 이름, fp, lines: [`${이름}: 이종 검수 통과 (#fp:${fp} · ${(최신.지적 || []).length}건 지적, 차단급 미해결 0)`] };
+}
+
+/* 🔑 F314 — **돌리기 전에** 판정한다(2026-08-10 유호님이 22분째 도는 것을 보고 세션째 지웠다).
+ *
+ * 병: 과녁 없이 부르면 작업본 미커밋 전체가 대상이 되는데(그 자체는 옳은 기본값이다), 이 저장소는
+ *   세션이 10개 도는 시간대가 상시라 그 diff 는 거의 언제나 **남의 docs·PDF** 다. 배포 파일이
+ *   0건이면 기록이 `범위 밖`으로 남아 **끝나도 배포 게이트가 안 열린다** — 즉 30분을 태우고
+ *   얻는 것이 0이다. 게이트판정(:709~)은 이 함정을 이미 알고 있었지만 **주석과 알림문으로만**
+ *   경고했다. 프로즈로 막을 수 있는 규칙은 기계로 옮긴다(CLAUDE.md 신뢰성).
+ *
+ * ⚠ 왜 종류를 안 가리나: `--commit` 을 명시해도 그 커밋에 배포 파일이 없으면 결과는 같다.
+ *   가르는 축은 「어떻게 불렀나」가 아니라 「이 대상이 게이트를 채울 수 있나」다.
+ *
+ * ⚠ 탈출구(`--범위밖`)가 **반드시** 있어야 한다 — 도구·훅·테스트 코드 검수는 배포 파일 0건이
+ *   정상이고, 그걸 막으면 따를 수 없는 처방이 되어 우회가 정상 통로가 된다(F103). */
+const 범위밖탈출 = '--범위밖';
+function 범위밖정지(대상, 범위들, root = ROOT) {
+  if (범위들.length) return null;
+  const 과녁줄 = [];
+  for (const p of 점검.claspProjects()) {
+    const 이름 = path.relative(root, p).replace(/\\/g, '/') || '(루트)';
+    const sha = 과녁커밋(p, root);
+    if (sha) 과녁줄.push(`   → node tools/codex-review.js --commit ${sha}   (${이름} · 약 5분 · 읽기 전용)`);
+  }
+  return [
+    '🔴 확인 불가 — 검수를 **안 돌렸다**(통과가 아니다): 대상 diff 에 **배포 파일이 0건**이다.',
+    `   대상: ${대상.종류} ${대상.값} · 파일 ${대상.파일들.length}개`,
+    '   이대로 돌리면 5~30분을 태우고도 배포 게이트는 그대로다 — 기록이 「범위 밖」으로 남기 때문이다(F314 · 08-10 실측 22분).',
+    ...(과녁줄.length
+      ? ['   과녁을 대고 다시 부른다 — 그 프로젝트의 배포집합을 마지막으로 건드린 커밋이다:', ...과녁줄]
+      : ['   ⚠ 과녁을 못 뽑았다(배포집합이 비었거나 git 이력을 못 읽었다) — 커밋 해시를 직접 대라: --commit <sha>']),
+    `   배포 게이트와 **무관한** 검수(도구·훅·테스트 코드)라면 그대로 돌린다: ${범위밖탈출} 을 붙인다.`,
+  ];
 }
 
 // ─────────────────────────────────────────────────────────────── CLI
@@ -959,11 +1023,13 @@ function 심문실행(argv, timeoutMs) {
  *   엄격도가 다르면 **느슨한 층이 실질 정책**이 된다.
  *   값을 받는 플래그는 뒤 토큰을 건너뛴다(`--사유 "--x"` 같은 값을 인자로 오인하지 않는다). */
 const 값플래그 = ['--심문', '--제안판정', '--기각', '--사유', '--timeout', '--commit', '--base', '--모델', '--검수', '--효력', '--회차'];
-const 홑플래그 = ['--채택', '--확인', '--제안', '--버그만', '--uncommitted'];
+const 홑플래그 = ['--채택', '--확인', '--제안', '--버그만', '--uncommitted', 범위밖탈출];
 const 아는플래그 = new Set([...값플래그, ...홑플래그]);
 const 사용법 = [
   '사용:',
   '  node tools/codex-review.js [--commit <sha> | --base <브랜치> | --uncommitted] [--버그만] [--검수 sol|luna] [--효력 high] [--회차 1] [--timeout 초]',
+  '      ⚠ 대상 diff 에 배포 파일이 0건이면 **돌리기 전에 멈춘다**(F314 — 태워도 배포 게이트가 안 열린다).',
+  '        배포와 무관한 코드 검수면 --범위밖 을 붙인다.',
   '  node tools/codex-review.js --제안                      선파악(기능지도+업그레이드 제안)',
   '  node tools/codex-review.js --제안판정 <키> --채택|--기각 --사유 "왜"',
   '  node tools/codex-review.js --기각 <키> --사유 "왜"      틀린 지적 등록',
@@ -1093,6 +1159,12 @@ function main(argv) {
 
   console.log(`대상: ${대상.종류} ${대상.값} · 파일 ${대상.파일들.length}개`);
   console.log(`검수 범위(clasp 프로젝트): ${범위들.length ? 범위들.join(', ') : '없음 — 배포 파일이 아닌 변경'}`);
+
+  /* 실행 전 정지 — 태우고 나서 「범위 밖이었다」를 알게 되는 자리를 없앤다(F314 · 위 설계 주석). */
+  if (!argv.includes(범위밖탈출)) {
+    const 정지 = 범위밖정지(대상, 범위들);
+    if (정지) { console.error('\n' + 정지.join('\n')); return 2; }
+  }
   if (기각들.length) console.log(`기각 이력 ${기각들.length}건으로 재발 지적을 걸러낸다.`);
   console.log(`모델: 분석=${모델설정.분석.model}/${모델설정.분석.effort}(${모델설정.분석.이름}) · 구조화=${모델설정.구조화.model}/${모델설정.구조화.effort} · 판단 패스 ${회차}회`);
   console.log(`codex 검수 중… (읽기 전용 샌드박스 · 2단계 · ${모델설정.분석.effort} 추론 — xhigh 실측이 5~8분이었다` +
@@ -1215,7 +1287,7 @@ function main(argv) {
 
 module.exports = {
   게이트판정, 유효지문, 배포변경있나, 키, 범위, 대상결정, 미커밋파일들, 차단급, 기록경로, 기각경로, 모델설정, 효력들, 모델플래그, 잠금플래그, 외부도구들,
-  실패요점,
+  실패요점, 범위밖정지, 범위밖탈출, 과녁커밋, git버퍼, 버퍼초과,
   값플래그, 홑플래그, 아는플래그,
   제안경로, 제안키, 제안현황, 제안프롬프트, 선파악행들, 기능체크프롬프트, 기능체크지적들, 채택제안줄들, 방향텍스트, 방향지문, 방향경로, 방향상한, 디프상한,
   변경지문, 선파악지도, 미확인기능들, 학습데이터줄들, 기능체크병합, 회차병합,
@@ -1226,7 +1298,10 @@ if (require.main === module) {
   try {
     process.exit(main(process.argv.slice(2)));
   } catch (e) {
-    console.error('🔴 ' + String((e && e.message) || e));
+    /* 확인 불가는 **통과가 아니다** — 그 말을 여기서도 붙인다. 종료코드 2 는 파이프를 한 번
+     * 끼우면 사라지므로(F308 ①), 본문 문구가 마지막 방어선이다. */
+    const 앞 = e && e.확인불가 ? '🔴 확인 불가 — 검수가 **안 돌았다**(통과가 아니다): ' : '🔴 ';
+    console.error(앞 + String((e && e.message) || e));
     process.exit(2);
   }
 }
