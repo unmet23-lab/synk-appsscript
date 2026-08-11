@@ -921,3 +921,92 @@ test('실저장소: 지금 작업본에서 정지 판정이 터지지 않는다 
   const 대상 = 검수.대상결정([]);
   assert.doesNotThrow(() => 검수.범위밖정지(대상, 검수.범위(대상.파일들)), '실저장소에서 정지 판정이 예외를 낸다');
 });
+
+/* ── F333: 진행 표식 ── ③최종검수가 「헤더만 찍고 기록 0」으로 4수 죽었고, 그 모양이 도구 결함으로
+ *   읽혔다. 실제 원인은 산술이다 — 정상 완주 20~40분 vs 호출자 포그라운드 셸 상한 10분.
+ *   밖에서 죽으면 catch 도 종료코드도 없으니, **남는 표식**만이 죽음의 유일한 증거다. */
+const 진행픽스처 = () => path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'synk-진행-')), 'inflight.json');
+
+test('🔑 표식은 시작에 생기고 정상 종료에 지워진다 — 남아 있는 것 자체가 죽음의 증거다 (F333)', () => {
+  const p = 진행픽스처();
+  const 옛 = process.env.SYNK_REVIEW_INFLIGHT;
+  process.env.SYNK_REVIEW_INFLIGHT = p;
+  try {
+    assert.equal(검수.낡은진행(), null, '표식이 없는데 뭔가를 읽었다 — 거짓 경고는 사람이 경고를 무시하게 만든다');
+    검수.진행시작({ 대상: { 종류: 'commit', 값: 'deadbeef' }, 회차: 2, 인자: ['--commit', 'deadbeef'] });
+    const 읽음 = 검수.낡은진행();
+    assert.ok(읽음 && 읽음.시작, '표식을 남겼는데 못 읽는다 — 그러면 죽음이 영영 침묵이다');
+    assert.equal(읽음.대상.값, 'deadbeef', '무엇을 검수하다 죽었는지가 안 남으면 다음 사람이 대상을 다시 추측한다');
+    assert.ok(읽음.pid, 'pid 가 없으면 「아직 도는 중」과 「죽었다」를 못 가른다');
+    검수.진행종료();
+    assert.equal(검수.낡은진행(), null, '완주했는데 표식이 남는다 — 거짓 경고가 상시로 뜬다');
+  } finally {
+    if (옛 === undefined) delete process.env.SYNK_REVIEW_INFLIGHT; else process.env.SYNK_REVIEW_INFLIGHT = 옛;
+  }
+});
+
+test('🔑 경고가 **그대로 실행 가능한** 처방을 준다 — 「늘려라」는 이 자리에선 따를 수 없다 (F103·F333)', () => {
+  const 문 = 검수.진행경고줄({ 시각: 'x', 시작: '2026-08-11T11:00:00Z', pid: 42, 대상: { 종류: 'commit', 값: 'abc1234' } },
+    ['--commit', 'abc1234']).join('\n');
+  assert.match(문, /통과가 아니다/, '완주 못 한 실행을 「통과가 아니다」라고 말하지 않는다 — 그게 이 도구의 불변식이다');
+  assert.match(문, /node tools\/codex-review\.js --commit abc1234/, '받은 인자 그대로 다시 돌릴 명령을 안 준다 — 사람이 인자를 다시 조립하게 된다');
+  assert.match(문, /2>&1/, '로그를 파일로 받는 형태가 아니다 — 파이프를 끼우면 종료코드가 사라진다(F308)');
+  assert.ok(!/--timeout/.test(문), '`--timeout` 을 늘리라고 처방한다 — 도구가 더 버틸 뿐 호출자 상한은 그대로다(따를 수 없는 처방 = 우회가 정상 통로가 된다)');
+});
+
+test('☠️ 소요 안내는 **어느 조합에서도** 뜬다 — 가장 빠른 조합도 포그라운드 기본 2분을 넘는다 (F333)', () => {
+  const 조합들 = [[[], 2], [['--버그만'], 1], [['--버그만'], 2], [[], 1], [['--commit', 'abc'], 3]];
+  for (const [argv, 회차] of 조합들) {
+    const 문 = 검수.소요안내(argv, 회차);
+    assert.match(문, /포그라운드 셸에서는 죽는다/, `조합 ${JSON.stringify(argv)}/${회차}회 에서 경고가 빠졌다 — 빠진 자리가 다음 F333 이 된다`);
+    const 하한 = Number((문.match(/정상 완주 (\d+)~/) || [])[1]);
+    assert.ok(하한 >= 5, `예상 하한이 ${하한}분 — 실측(패스당 5~8분)보다 낮게 말하면 호출자가 포그라운드를 고른다`);
+  }
+  // 회차·패스가 늘면 예상도 늘어야 한다 — 고정 문구면 「2회나 3회나 같다」로 읽힌다.
+  assert.notEqual(검수.소요안내([], 1), 검수.소요안내([], 2), '회차를 올려도 같은 시간을 말한다 — 곱을 사람이 암산하게 두는 자리다');
+  assert.notEqual(검수.소요안내([], 2), 검수.소요안내(['--버그만'], 2), '`--버그만` 으로 패스가 절반인데 같은 시간을 말한다');
+});
+
+/* 등록층 — 이 저장소가 가장 여러 번 데인 자리다(CLAUDE.md 맹점 ③: 라우팅은 훅보다 넓어야 한다).
+ * 표식 로직이 아무리 옳아도 **긴 경로 하나가 안 걸려 있으면** 그 문이 다음 F333 이 된다. */
+test('☠️ 등록층 — 긴 codex 경로 **셋 전부**가 진행걸기를 탄다 (한 문만 빠져도 그 문이 다음 F333 이다)', () => {
+  const 소스 = fs.readFileSync(path.join(ROOT, 'tools', 'codex-review.js'), 'utf8');
+  assert.match(소스, /function 진행걸기[\s\S]{0,600}process\.on\('exit', 진행종료\)/,
+    '진행걸기가 exit 리스너를 안 건다 — 표식이 영영 안 지워져 거짓 경고가 상시가 된다');
+  for (const 단계 of ['③최종검수', '①선파악', '②심문']) {
+    assert.ok(new RegExp(`진행걸기\\(argv, \\{ 단계: '${단계}'`).test(소스),
+      `${단계} 가 진행걸기를 안 탄다 — 그 문으로 들어가 죽으면 여전히 침묵이다`);
+  }
+  /* 호출부가 표식을 **직접** 걸면 통로가 둘로 갈린다(같은 판정을 두 곳에 적으면 갈라진다).
+   * 정당한 호출은 진행걸기 안의 **한 번**뿐 — 그 하나가 어디 있는지까지 못박는다. */
+  const 호출들 = (소스.match(/^[ \t]*진행시작\(/gm) || []).length;
+  assert.equal(호출들, 1, `진행시작 호출부가 ${호출들}곳 — 진행걸기 안 한 곳이어야 한다(갈리면 한쪽만 고쳐진다)`);
+  const 걸기본문 = (소스.match(/function 진행걸기[\s\S]*?\n\}/) || [''])[0];
+  assert.match(걸기본문, /진행시작\(정보\)/, '그 하나가 진행걸기 안이 아니다 — 공용 통로가 표식을 안 건다');
+});
+
+/* 이 판별자(정상 종료엔 리스너가 돌고, 밖에서 죽으면 안 돈다)가 무너지면 위 장치가 통째로 무의미해진다.
+ * 그래서 node 의 semantics 자체를 픽스처로 못박는다 — 우리 코드가 아니라 **기대는 전제**를 검사한다. */
+test('☠️ 정상 종료엔 리스너가 돌고, 밖에서 죽이면 안 돈다 — 전제가 깨지면 F333 이 그대로 돌아온다', async (t) => {
+  const { spawn } = require('node:child_process');
+  const 잠깐 = (ms) => new Promise((r) => setTimeout(r, ms));
+  const 생길때까지 = async (p) => {
+    for (let i = 0; i < 100; i++) { if (fs.existsSync(p)) return true; await 잠깐(50); }
+    return false;
+  };
+  const 스크립트 = (p) => `const fs=require('fs');const p=${JSON.stringify(p)};` +
+    `process.on('exit',()=>{try{fs.unlinkSync(p)}catch(_){}});fs.writeFileSync(p,'{}');`;
+
+  // ① 정상 종료 — 리스너가 돌아 표식이 지워진다
+  const a = 진행픽스처();
+  await new Promise((res) => spawn(process.execPath, ['-e', 스크립트(a)], { stdio: 'ignore' }).on('close', res));
+  assert.ok(!fs.existsSync(a), '정상 종료인데 표식이 남았다 — 완주한 실행이 매번 거짓 경고를 낸다');
+
+  // ② 밖에서 죽임 — 리스너가 안 돌아 표식이 남는다
+  const b = 진행픽스처();
+  const child = spawn(process.execPath, ['-e', 스크립트(b) + 'setInterval(()=>{},1000);'], { stdio: 'ignore' });
+  if (!(await 생길때까지(b))) { child.kill(); t.skip('자식이 표식을 못 남겼다 — 탐지력이 아니라 환경 문제라 skip 으로 드러낸다'); return; }
+  child.kill();
+  await new Promise((res) => child.on('close', res));
+  assert.ok(fs.existsSync(b), '밖에서 죽였는데 표식이 지워졌다 — 조용한 죽음을 볼 방법이 사라진다(F333 재발)');
+});
