@@ -1099,6 +1099,53 @@ test('[v9.64] 반복 자동 감지 — 브리핑·수업 전 메일 ×N, AI 로�
   assert.ok(ai.includes('반복') && ai.includes('sort'), 'AI 로더 반복 우선("유형: 메모 (반복 n회)") 누락');
 });
 
+/* [vNEXT] 오류태그 → 약점맵 합류(철학정합 §3-B) — 「23유형 기록」이 학생에게 되돌아가는 첫 배선.
+ *   행동으로 잰다(소스 정규식은 집계 방식 변이를 못 잡은 전례가 있다 — learner-state 변이 실측 축).
+ *   지키는 것: ①태그 빈도 상위 2가 첨삭 항목의 **꼬리**에 실린다 ②「오류없음」은 약점으로 안 센다
+ *   ③격리 행은 태그 집계에서도 빠진다 ④항목 수 불변 — 소비처 slice(-2)에서 강사 손메모가 안 밀린다
+ *   ⑤14일 창 밖 태그 미집계 ⑥포인트 빈 행의 태그도 버리지 않는다. */
+test('[vNEXT] aiWeakMap_ 오류태그 빈도 합류 — 보조 신호는 첨삭 꼬리로만, 손메모 자리 불변', () => {
+  const aiWeakMap_ = loadFunction('function aiWeakMap_(', 'function aiStudioBatch_()', 'aiWeakMap_', {
+    toDate_: (v) => (v instanceof Date ? v : (v ? new Date(v) : null))
+  });
+  const d0 = new Date(Date.now() - 86400000);          // 어제(14일 창 안)
+  const dOld = new Date(Date.now() - 20 * 86400000);   // 창 밖
+  const hw = (sid, point, tags, status, d) => {
+    const r = new Array(13).fill('');
+    r[1] = sid; r[2] = d || d0; r[5] = point; r[8] = status || '노출'; r[12] = tags || '';
+    return r;
+  };
+  const se = (sid, type, memo) => { const r = new Array(8).fill(''); r[0] = d0; r[1] = sid; r[3] = type; r[4] = memo; return r; };
+  const ss = {
+    getSheetByName: (n) => (n === 'student_errors'
+      ? mkSheet_([new Array(8).fill('h'), se('S1', '문법', '은/는 헷갈림')])
+      : (n === 'hw_feedback' ? mkSheet_([new Array(13).fill('h'),
+        hw('S1', '포인트A', '조사:목적격(을/를), 어미:시제'),
+        hw('S1', '포인트B', '조사:목적격(을/를), 오류없음'),
+        hw('S1', '격리분', '높임:주체', '격리:품질'),
+        hw('S1', '', '어휘:없는말', '노출', dOld),
+        hw('S2', '', '맞춤법:받침')
+      ]) : null))
+  };
+  const weak = aiWeakMap_(ss);
+  const tail = weak['S1'][weak['S1'].length - 1];
+  assert.ok(tail.indexOf('포인트B') === 0, '첨삭 최근 1건이 항목의 머리여야 한다(태그는 꼬리 접미)');
+  assert.ok(tail.includes('조사:목적격(을/를) ×2'), '태그 빈도 상위(×2)가 꼬리에 안 실렸다');
+  assert.equal(tail.includes('오류없음'), false, '「오류없음」이 약점으로 둔갑했다');
+  assert.equal(tail.includes('높임:주체'), false, '격리 행의 태그가 약점 재료로 샜다');
+  assert.equal(tail.includes('어휘:없는말'), false, '14일 창 밖 태그가 「최근 약점」으로 샜다');
+  assert.equal(weak['S1'].length, 2, '태그 합류가 항목 수를 늘렸다 — slice(-2) 소비처에서 강사 손메모가 밀린다');
+  assert.ok(weak['S1'][0].includes('은/는'), '강사 손메모가 사라졌다');
+  assert.ok(weak['S2'] && weak['S2'][0].includes('맞춤법:받침'), '포인트 빈 행의 태그가 통째로 버려졌다');
+  // 구 11열 시트(태그 열 미증분)에서 죽지 않는다 — 폭 클램프(1710 교훈과 같은 축)
+  const old = aiWeakMap_({
+    getSheetByName: (n) => (n === 'hw_feedback'
+      ? mkSheet_([new Array(11).fill('h'), (() => { const r = new Array(11).fill(''); r[1] = 'S3'; r[5] = '옛포인트'; r[8] = '노출'; return r; })()], 11)
+      : null)
+  });
+  assert.ok(old['S3'] && old['S3'][0] === '옛포인트', '구 11열 시트에서 약점맵이 죽거나 첨삭을 잃었다');
+});
+
 /* ── [v9.67] 감시 사각 3종 수리(2026-07-26 손타는 기능 진단 · 유호 승인) ─────────────── */
 
 test('[v9.67] resetAllTriggers는 교재연동Nightly(23시)를 개통 시스템에 재설치한다(전체 삭제 실종 결함)', () => {

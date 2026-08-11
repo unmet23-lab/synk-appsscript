@@ -1879,7 +1879,7 @@ function callClaudeFeedback_(apiKey, stu, text) {
       mission: { type: 'string', description: '다음 미션 1문장(한국어) — 오늘의 포인트를 써서 새 문장 하나를 만들게 유도' },
       error_tags: {
         type: 'array', maxItems: 4, items: { type: 'string', enum: HW_ERROR_TAGS },
-        description: '이 제출문에서 실제로 발견한 오류 유형(최대 4개, 많이 틀렸어도 중요한 것부터). 틀린 곳이 없으면 ["오류없음"]. 학생에게 보이지 않는 집계용이므로 정확도만 본다'
+        description: '이 제출문에서 실제로 발견한 오류 유형(최대 4개, 많이 틀렸어도 중요한 것부터). 틀린 곳이 없으면 ["오류없음"]. 집계용이므로 정확도만 본다(완곡화 금지) — 학생에게는 낱개가 아니라 최근 빈도 요약 한 줄로만 닿는다'
       }
     }
   };
@@ -2017,7 +2017,9 @@ function aiStudents_(ss) {
   });
   return list;
 }
-// 최근 약점 로더 — student_errors(14일·미해결) + 첨삭 '오늘의포인트' 최근 1건
+// 최근 약점 로더 — student_errors(14일·미해결) + 첨삭 '오늘의포인트' 최근 1건 + 오류태그 빈도(14일·보조)
+// ⚠ 이 약점맵은 개원용 시트층이다 — 앱 이관 때 은퇴 예정(불변식 5 격리). 약점 계산을 앱 사슬에 세울 때
+//   이 로직을 복사하지 않는다(⛔짓는 동안 복제 금지) — 그쪽 정본은 엔진 교정 이력에서 새로 선다(철학정합 §3-A·B).
 function aiWeakMap_(ss) {
   const weak = {};
   const se = ss.getSheetByName('student_errors');
@@ -2039,12 +2041,38 @@ function aiWeakMap_(ss) {
       .map(eW => (eW.type ? eW.type + ': ' : '') + eW.memo.slice(0, 30) + (eW.cnt > 1 ? ' (반복 ' + eW.cnt + '회)' : ''));
   });
   const fb = ss.getSheetByName('hw_feedback');
-  if (fb && fb.getLastRow() >= 2) fb.getRange(2, 1, fb.getLastRow() - 1, 9).getValues().forEach(r => {
-    if (!r[1] || !String(r[5] || '') || /^(오류|격리)/.test(String(r[8] || ''))) return; // [v9.63] 격리 카드는 약점 재료에서 제외(품질 게이트 미달분이 AI 퀴즈로 새는 것 차단)
+  /* [vNEXT] 오류태그(13열) 빈도 합류 — 철학 Ⅰ-1 「23유형 기록」이 처음으로 학생에게 되돌아가는 배선(철학정합 §3-B).
+   *   강사 손메모가 우선이고 태그는 보조 신호라, 별도 항목을 늘리지 않고 첨삭 항목의 꼬리로만 싣는다 —
+   *   소비처 3곳(퀴즈 프롬프트 slice(-2)·반브리핑/필살기노트 slice(-1))의 항목 수가 안 변해 손메모 자리가 안 밀린다.
+   *   태그 폭은 시트 물리 폭으로 클램프(구 시트에서 13열 요구가 예외를 던지면 약점맵 전체가 죽는다 — 1710 교훈). */
+  const tagW = {}; // 학생 → 태그 → {cnt, t}
+  const fbW = fb ? Math.min(13, fb.getLastColumn()) : 0;
+  if (fb && fb.getLastRow() >= 2) fb.getRange(2, 1, fb.getLastRow() - 1, fbW).getValues().forEach(r => {
+    if (!r[1] || /^(오류|격리)/.test(String(r[8] || ''))) return; // [v9.63] 격리 카드는 약점 재료에서 제외(품질 게이트 미달분이 AI 퀴즈로 새는 것 차단) — 태그 집계도 같은 문 안
     const k = String(r[1]).trim();
-    (weak[k] = weak[k] || [])._fb = String(r[5]).slice(0, 60); // 마지막 것이 최근(행 순서)
+    if (String(r[5] || '')) (weak[k] = weak[k] || [])._fb = String(r[5]).slice(0, 60); // 마지막 것이 최근(행 순서)
+    if (fbW < 13) return;
+    const d = toDate_(r[2]);
+    if (!d || d.getTime() < cut) return; // 태그 「최근」 = 손메모와 같은 14일 창(한 함수에 창 하나)
+    String(r[12] || '').split(',').forEach(t => {
+      const tag = t.trim();
+      if (!tag || tag === '오류없음') return; // 「오류없음」은 약점이 아니다 — 세면 무오류가 약점으로 둔갑
+      const gT = (tagW[k] = tagW[k] || {});
+      const eT = gT[tag] = gT[tag] || { cnt: 0, t: 0 };
+      eT.cnt++;
+      if (d.getTime() > eT.t) eT.t = d.getTime();
+    });
   });
-  Object.keys(weak).forEach(k => { if (weak[k]._fb) { weak[k].push(weak[k]._fb); delete weak[k]._fb; } });
+  Object.keys(tagW).forEach(k => { weak[k] = weak[k] || []; }); // 태그만 있는 학생도 항목을 받는다
+  Object.keys(weak).forEach(k => {
+    const gT = tagW[k];
+    const top = gT ? Object.keys(gT).sort((a, b) => (gT[b].cnt - gT[a].cnt) || (gT[b].t - gT[a].t)).slice(0, 2)
+      .map(t => t + (gT[t].cnt > 1 ? ' ×' + gT[t].cnt : '')).join(' · ') : '';
+    const line = weak[k]._fb ? weak[k]._fb + (top ? ' | 자주 틀리는 곳: ' + top : '')
+      : (top ? '자주 틀리는 곳: ' + top : '');
+    if (line) weak[k].push(line);
+    delete weak[k]._fb;
+  });
   return weak;
 }
 
