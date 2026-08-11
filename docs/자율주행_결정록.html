@@ -89,11 +89,11 @@ footer code{font-family:var(--mono);font-size:11.5px}
   <p class="sub">앱을 짓는 동안 <b>유호님께 묻지 않고 제가 혼자 정한 굵직한 갈림길</b>입니다.
      다 만든 뒤 번호를 부르시면 그 자리에서 바꿉니다 — 「바꾸려면」 칸이 그 비용입니다.</p>
   <div class="counts">
-    <div class="hot">대기<b>22</b></div>
+    <div class="hot">대기<b>23</b></div>
     <div>유지<b>2</b></div>
     <div>바꿈<b>0</b></div>
     <div>보류<b>0</b></div>
-    <div>전체<b>24</b></div>
+    <div>전체<b>25</b></div>
   </div>
 </div></header>
 
@@ -110,6 +110,7 @@ footer code{font-family:var(--mono);font-size:11.5px}
   <button class="f" data-k="a" data-v="도구·검수" aria-pressed="false">도구·검수</button>
   <button class="f" data-k="a" data-v="미니게임 NPC" aria-pressed="false">미니게임 NPC</button>
   <button class="f" data-k="a" data-v="미니게임 설계(데이터·수집층)" aria-pressed="false">미니게임 설계(데이터·수집층)</button>
+  <button class="f" data-k="a" data-v="미니게임 소리층" aria-pressed="false">미니게임 소리층</button>
   <button class="f" data-k="a" data-v="발표물(학부모 안내문 kr)" aria-pressed="false">발표물(학부모 안내문 kr)</button>
   <button class="f" data-k="a" data-v="비용·운영" aria-pressed="false">비용·운영</button>
   <button class="f" data-k="a" data-v="설계" aria-pressed="false">설계</button>
@@ -437,6 +438,19 @@ footer code{font-family:var(--mono);font-size:11.5px}
   <div class="row"><span class="k">왜</span><span class="v">철학 게이트 대조 — ①기본: 네 성격 전부 「마음을 얻는 조건 = 학습 요건」이라 재미가 학습을 대체하지 않는다(Ⅱ-2 · G1 패턴의 성격판) / ②엔진: 팀장님 성격이 G2 측정(과잉 교정 성향)을 오염시키지 않도록 명시 — 성격이 측정 정직성(검사 ③)을 지킨다 / 심사관 「거의 없다」→「진폭 절제」 정밀화는 §4 규격 3(3단 공통)과의 문면 충돌 제거. 전부 반응 규칙 서술이라 §4 규격 2(개인 서사 금지) 통과</span></div>
   <div class="undo"><span class="k">바꾸려면</span><span class="v">성격은 대사 템플릿(prompt_seed) 집필 전까지 문서·그림뿐이라 바꾸는 비용 = 게임층 설계·시안 캡션 수정뿐. 템플릿 집필 뒤면 해당 캐릭터 대사 재작성 + 몽골어 재검수</span></div>
   <div class="verdict"><b>유호님 판정</b> 유호 08-11 「좋아 v2 이대로 확정」 — 성격 4벌이 실린 v2 실물이 그대로 채택됐다 <span class="tag">2026-08-11</span></div>
+</article>
+<article class="card" data-r="대기" data-a="미니게임 소리층">
+  <div class="head">
+    <span class="num">#25</span>
+    <h3>사운드킷 「규칙 4」의 BGM 적용 범위 — 기본안 승인(유호 08-11) 안의 위임 판정</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-11 &nbsp;·&nbsp; 미니게임 소리층 &nbsp;·&nbsp; talk · <code>2461d9b</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">①「한 소리 400ms 이하」= 효과음 전용이라 BGM 비적용 — 그 자리는 「공통 1곡·측정 템포 고정(측정템포BPM 상수 1곳)」이 대신 진다 ②「실패음 없음」= 승계(하강 버저·불협 없음 — 진행도 하강 종지 없이 짰다) ③「사인·트라이앵글만」= 「사인 부분음의 가산 합성까지」로 승계(모든 음색이 사인의 합 · 톱니·사각·노이즈 원파형 0 · 타악 0) ④「C 펜타토닉 안」= 승계 그대로(전 성부 {C,D,E,G,A}). 곁들여 BGM 피크는 −6dBFS(효과음 −3 아래 — 말소리가 주인공)</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">규칙 4 전부 문면 그대로 적용(→ 400ms 상한 때문에 BGM 자체가 불가 — 기본안 승인과 모순)</span><span class="chip">규칙 4 전부 비적용(→ 킷 조성·실패음 금지까지 풀려 브랜드 소리가 갈라진다)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">게임층 설계 §3-2 가 「규칙 4 적용 범위 판정」을 기본안의 비용으로 명시했고 유호님이 기본안을 승인했다(08-11 「기본안으로 이어서 하되 효과음+햅틱 기능도 넣어줘. 양질의 퀄리티로」). ①은 효과음의 물리(짧은 신호)를 지키는 규칙이라 곡에 문면 적용하면 기본안 자체가 성립 불가 — 규칙의 «뜻»(측정 오염 방지·절제)은 템포 고정·피크 −6dB 가 승계한다. ③을 가산 합성까지로 읽은 근거 = 규칙의 뜻이 「거친 원파형 금지」이고 모든 주기 파형은 사인의 합(푸리에)이라 문면·뜻이 양립한다. 실물 = talk tools/BGM빌드.js 머리말·tests/소리.test.js 가 상수 1곳·재렌더 일치를 기계로 문다</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">규칙 해석을 바꾸려면 BGM빌드.js 머리말 한 곳 + 이 결정 판정만 고치면 된다(값의 정본이 도구 한 곳). 곡 자체가 마음에 안 들면 후보 폐기·재렌더 — 통로는 그대로 산다. BGM 전체를 물리려면(도전안 복귀) talk 2461d9b 의 bgm 부분 되돌림 + 설계 §3-2·§6 ⑤ 원복 — 효과음·햅틱 반입은 독립이라 살아남는다</span></div>
+  
 </article>
 <footer>
   정본은 <code>docs/_ops/자율주행_결정록.jsonl</code> — 이 화면은 그걸 읽어 그린 것이라 <b>정본이 바뀌면 여기도 바뀝니다</b>.<br>
