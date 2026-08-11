@@ -23,7 +23,7 @@
  *
  * profiles 신규 열(헤더는 setupTextbookLink가 세팅):
  *   DB 목소리폼URL(학생별 미리채움) · DC 목소리성장카드 · DD 필살기노트
- * 신규 시트: voice_log — 열 정본은 VOICE_LOG_HEADERS(v9.107 전사 3열 · [v9.187] 급수 증분 · [vNEXT] schema_ver)
+ * 신규 시트: voice_log — 열 정본은 VOICE_LOG_HEADERS(v9.107 전사 3열 · [v9.187] 급수 증분 · [v9.208] schema_ver)
  * ============================================================ */
 
 // ── 자체 상수(리터럴만 — 톱레벨 타파일 참조 금지 규칙 준수) ──────────────
@@ -220,7 +220,7 @@ function voiceSweep_(ss) {
     // [v9.190] 미션ID는 프리필 링크로만 들어온다 — 학생이 손으로 채우는 칸이 아니라 비어도 정상이다
     vOut.push([sid, ts, mission, fileUrl, fid, new Date(), '', '', '', lvOf[sid] || 0,
       cMissionId >= 0 ? String(r[cMissionId] || '').trim() : '',
-      SCHEMA_VER]); // [vNEXT] 행이 자기 규격을 들고 있게(A-8) — 정의는 엔진_수집.js 하나(사본 금지 · 함수 안 참조라 파일 로드 순서 무관)
+      SCHEMA_VER]); // [v9.208] 행이 자기 규격을 들고 있게(A-8) — 정의는 엔진_수집.js 하나(사본 금지 · 함수 안 참조라 파일 로드 순서 무관)
     const key = dstr(ts, tz) + '|' + sid;
     if (!givenKey[key]) { // 하루 1회만 지급(여러 번 제출해도 기록은 전부, 포인트는 1회)
       givenKey[key] = 1;
@@ -392,7 +392,7 @@ const STT_OK_MIME = ['audio/flac', 'audio/x-flac', 'audio/wav', 'audio/x-wav', '
  * [v9.190] '미션ID'(맨 끝) — 과업 축(유호님 승인 08-06 · 스키마 감사 잔여 1건).
  *   '미션'은 자유 문자열이라 같은 과제가 다섯 표기로 쌓인다 — "무엇을 읽었을 때의 발음인가"로 묶을 수가 없다.
  *   맨 끝 증분이라 앞을 읽는 소비처(전사 7~9열·삭제 6열·점검 8열)는 전부 그대로다. */
-const VOICE_LOG_HEADERS = ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at', '전사', '전사상태', '전사일시', '급수', '미션ID', 'schema_ver']; // [vNEXT] schema_ver — A-8 2단계(수집 4시트 중 마지막) · 끝에만 붙인다
+const VOICE_LOG_HEADERS = ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at', '전사', '전사상태', '전사일시', '급수', '미션ID', 'schema_ver']; // [v9.208] schema_ver — A-8 2단계(수집 4시트 중 마지막) · 끝에만 붙인다
 
 /* GCP 액세스 토큰 — ①서비스 계정(GCP_SA_JSON) ②없으면 스크립트 자체 토큰(매니페스트에 스코프를 넣은 경우).
  * 토큰은 1시간짜리라 캐시에 50분 보관한다(매 파일마다 토큰 발급하면 그 자체가 쿼터·지연이다). */
