@@ -105,7 +105,7 @@ test('[v9.207] ⑥ schema_ver — 3시트가 열을 갖고, 적재 5자리가 �
   assert.ok(!/_HEADERS\.length\)\.getValues\(\)/.test(리포트),
     'dataCoverageReport 가 헤더 상수 폭을 시트에 그대로 요구한다 — 치유를 안 지난 라이브 시트에서 getRange 가 던져 ' +
     '리포트가 통째로 죽는다. hw(`Math.min(HW_FEEDBACK_HEADERS.length, fb.getLastColumn())`)와 같은 모양으로 자를 것');
-  /* ⑤ [vNEXT] voice_log — 수집 4시트의 마지막(파일이 달라 위 3시트 축에 못 실렸던 자리 · A-8 2단계).
+  /* ⑤ [v9.208] voice_log — 수집 4시트의 마지막(파일이 달라 위 3시트 축에 못 실렸던 자리 · A-8 2단계).
    *    열·적재는 여기서 같은 잣대로 재고, 치유(`헤더보정_(vl, VOICE_LOG_HEADERS)`)는 수집.test.js 가
    *    이미 못박고 있어 다시 적지 않는다(같은 판정이 두 곳에 살면 갈라진다).
    *    ⚠ 적재 값 `SCHEMA_VER` 는 엔진_수집.js 의 전역 상수를 교재연동.js 가 함수 안에서 참조한다 —
