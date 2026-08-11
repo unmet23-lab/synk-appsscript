@@ -62,6 +62,29 @@ test('[v9.151] ④ talk_log audio_ref — 고정 위치(11번째)에 있고, 무
   assert.ok(near.includes('무제한'), '음성 원본 무제한 보존(유호 확정 08-04) 선언이 헤더 주석에 없다');
 });
 
+test('[v9.207] ⑥ schema_ver — 3시트가 열을 갖고, 적재 5자리가 값을 싣고, 라이브 시트 치유를 지난다', () => {
+  // ① 열 정의. **「끝 칸」으로 재지 않는다** — 다음 열이 규약대로 끝에 붙는 날 이 검사가 거짓 적색이 된다.
+  //    지키려는 불변식은 위치가 아니라 존재와 적재다(위치를 지는 것은 ④ audio_ref 하나뿐이고 사유가 다르다).
+  ['HW_FEEDBACK_HEADERS', 'QUIZ_LOG_HEADERS', 'TALK_LOG_HEADERS'].forEach((name) => {
+    const m = code.match(new RegExp(`const ${name} = (\\[[\\s\\S]*?\\]);`));
+    assert.ok(m, `${name} 정의를 찾지 못함(이름을 바꿨다면 이 검사도 함께 옮겨라)`);
+    assert.ok(new Function('return ' + m[1])().includes('schema_ver'),
+      `${name}에 schema_ver가 없다 — 그 시트 행은 어느 계약 규격으로 쓰였는지 영영 말하지 못한다(A-8 · 소급 불가)`);
+  });
+  // ② 적재. 헤더만 늘리면 **열은 서고 값은 영원히 빈칸**이다 — talk_log의 model·prompt_ver가 v9.145에서
+  //    정확히 그 상태였고(「v9.145 이전 행은 두 칸이 비어 있습니다」), 그 구간은 소급이 없다.
+  const 적재 = (code.match(/SCHEMA_VER\]/g) || []).length;
+  assert.ok(적재 >= 5,
+    `적재 자리가 ${적재}곳뿐이다 — hw 성공·hw 실패·talk 성공·talk 실패·quiz 다섯 곳이 **전부** 값을 실어야 한다. ` +
+    '실패 행을 빼면 「어느 판에서 실패가 몰렸나」가 그 판만 빈칸으로 남는다');
+  // ③ 치유. ensureSheet는 시트가 **없을 때만** 헤더를 쓴다 — 이미 라이브에 서 있는 시트는 헤더보정_을
+  //    지나지 않으면 append가 폭을 넘는 새 칸을 **조용히 버린다**(적재되는 척하며 사라지는 그 형태).
+  ['hwFeedbackEnsureCols_(fb)', '헤더보정_(ql, QUIZ_LOG_HEADERS)', 'talkHeaderHeal_(tl)'].forEach((호출) => {
+    assert.ok(code.includes(호출),
+      `치유 호출이 없다: ${호출} — 라이브 시트에 이미 서 있는 폭 때문에 새 칸이 조용히 버려진다`);
+  });
+});
+
 test('[v9.151] ⑤ hall_of_fame — student_id 헤더가 정의에 있고, 기존 시트에도 세우는 증분이 있다', () => {
   assert.ok(code.includes("'hall_of_fame', ['연도','이름','반','업적','한마디','사진URL','student_id']"),
     'hall_of_fame 정의에 student_id가 없다 — 졸업 후 이력 조인이 영영 불가');
