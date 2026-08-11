@@ -603,7 +603,12 @@ function dataCoverageReport(opts) {
   const ql = ss.getSheetByName('quiz_log');
   let 응답 = 0, 정답 = 0, 보류 = 0, 문항종 = {}, 찍음 = 0;
   if (ql && ql.getLastRow() >= 2) {
-    ql.getRange(2, 1, ql.getLastRow() - 1, QUIZ_LOG_HEADERS.length).getValues().forEach(r => {
+    /* [v9.207] 폭을 실제 시트에 맞춰 자른다 — 바로 아래 voice(`Math.min(9, …)`)·위 첨삭(`Math.min(HW…, …)`)과 같은 모양.
+     *   이 리포트는 **읽기 전용이라 치유를 안 부른다.** 헤더 상수만 늘어난 뒤(schema_ver) 아직 배치가 안 돈
+     *   라이브 시트를 읽으면 상수 폭이 시트 폭을 넘어 getRange 가 던진다 — 리포트가 통째로 죽는다.
+     *   읽는 칸은 r[2]·r[7]·r[8] 뿐이라 폭을 줄여도 세는 값은 하나도 안 변한다. */
+    const qw = Math.min(QUIZ_LOG_HEADERS.length, ql.getLastColumn());
+    ql.getRange(2, 1, ql.getLastRow() - 1, qw).getValues().forEach(r => {
       응답++;
       문항종[String(r[2] || '')] = 1;
       const v = String(r[7] || '');
@@ -634,7 +639,8 @@ function dataCoverageReport(opts) {
   const tl = ss.getSheetByName('talk_log');
   let 턴 = 0, 최장 = 0, 참여 = {};
   if (tl && tl.getLastRow() >= 2) {
-    tl.getRange(2, 1, tl.getLastRow() - 1, TALK_LOG_HEADERS.length).getValues().forEach(r => {
+    const tw = Math.min(TALK_LOG_HEADERS.length, tl.getLastColumn()); // [v9.207] 위 퀴즈와 같은 사유 — 읽는 칸은 r[1]·r[2] 뿐이다
+    tl.getRange(2, 1, tl.getLastRow() - 1, tw).getValues().forEach(r => {
       턴++;
       const s = String(r[1] || '').trim();
       if (s) 참여[s] = Math.max(참여[s] || 0, Number(r[2]) || 0);
@@ -683,7 +689,10 @@ function dataCoverageReport(opts) {
   // ⑥ [v9.147] 골든셋 — 학생이 아니라 **정답**을 쌓는 칸. 이게 비면 2년 뒤 모델 선택을 감으로 한다
   const gd = ss.getSheetByName('teacher_gold');
   let 표본 = 0, 응답G = 0, 수정 = 0;
-  if (gd && gd.getLastRow() >= 2) gd.getRange(2, 1, gd.getLastRow() - 1, GOLD_HEADERS.length).getValues().forEach(r => {
+  // [v9.207] 이 리포트의 나머지 다섯 읽기와 같은 모양으로 — 여기만 상수 폭을 그대로 요구해 비대칭이었다.
+  //   GOLD_HEADERS 는 이번에 안 늘렸으니 오늘 새는 것은 없지만, 늘리는 날 정확히 quiz·talk 가 겪은 사고가 난다.
+  const gw = gd ? Math.min(GOLD_HEADERS.length, gd.getLastColumn()) : 0; // 읽는 칸은 r[6]·r[7]
+  if (gd && gd.getLastRow() >= 2) gd.getRange(2, 1, gd.getLastRow() - 1, gw).getValues().forEach(r => {
     표본++;
     const v = String(r[6] || '').trim(); // G 강사판정
     if (v) 응답G++;

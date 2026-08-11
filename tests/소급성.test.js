@@ -71,18 +71,40 @@ test('[v9.207] ⑥ schema_ver — 3시트가 열을 갖고, 적재 5자리가 �
     assert.ok(new Function('return ' + m[1])().includes('schema_ver'),
       `${name}에 schema_ver가 없다 — 그 시트 행은 어느 계약 규격으로 쓰였는지 영영 말하지 못한다(A-8 · 소급 불가)`);
   });
-  // ② 적재. 헤더만 늘리면 **열은 서고 값은 영원히 빈칸**이다 — talk_log의 model·prompt_ver가 v9.145에서
-  //    정확히 그 상태였고(「v9.145 이전 행은 두 칸이 비어 있습니다」), 그 구간은 소급이 없다.
-  const 적재 = (code.match(/SCHEMA_VER\]/g) || []).length;
-  assert.ok(적재 >= 5,
-    `적재 자리가 ${적재}곳뿐이다 — hw 성공·hw 실패·talk 성공·talk 실패·quiz 다섯 곳이 **전부** 값을 실어야 한다. ` +
-    '실패 행을 빼면 「어느 판에서 실패가 몰렸나」가 그 판만 빈칸으로 남는다');
+  /* ② 적재. 헤더만 늘리면 **열은 서고 값은 영원히 빈칸**이다 — talk_log의 model·prompt_ver가 v9.145에서
+   *    정확히 그 상태였고(「v9.145 이전 행은 두 칸이 비어 있습니다」), 그 구간은 소급이 없다.
+   *    **경로별로 잰다** — 총 개수만 세면 한 경로가 빠지고 다른 경로에 두 번 실려도 통과한다(①배포 검수 P3 지적 `a937affd`).
+   *    앵커는 실패 쪽을 `e.permanent`(코드)로 잡는다 — 그냥 'permanent'는 위쪽 주석의 같은 낱말에 먼저 걸려
+   *    성공 행을 실패 행으로 오인하고 자기일관 초록이 된다(수집.test.js가 변이 시험으로 실측한 구멍). */
+  const 실린다 = (구간, re, 이름) => {
+    const m = 구간.match(re);
+    assert.ok(m, `${이름}: 적재 리터럴을 찾지 못함(구조를 바꿨다면 이 검사도 함께 옮겨라)`);
+    assert.ok(/SCHEMA_VER/.test(m[0]),
+      `${이름}에 schema_ver가 안 실린다 — 그 경로로 들어온 행만 자기 규격을 영영 말하지 못한다(다른 경로가 실어도 못 메운다)`);
+  };
+  const quizFn = section('function quizSweep_(ss)', '\n}\n');
+  실린다(quizFn, /out\.push\(\[[\s\S]*?\]\);/, 'quiz 응답 행');
+  const talkFn = section('function talkBatch_()', '\n}\n');
+  실린다(talkFn, /const row = \[[\s\S]*?\];/, 'talk 성공 행');
+  실린다(talkFn, /e\.permanent[\s\S]*?tl\.appendRow\(\[[\s\S]*?\]\);/, 'talk 영구실패 행');
+  const hwFn = section('function aiFeedbackBatch_()', 'function callClaudeFeedback_(');
+  실린다(hwFn, /fb\.appendRow\(\[fbId,[\s\S]*?\]\);/, 'hw 성공 행');
+  실린다(hwFn, /e\.permanent[\s\S]*?fb\.appendRow\(\[[\s\S]*?\]\);/, 'hw 영구실패 행');
   // ③ 치유. ensureSheet는 시트가 **없을 때만** 헤더를 쓴다 — 이미 라이브에 서 있는 시트는 헤더보정_을
   //    지나지 않으면 append가 폭을 넘는 새 칸을 **조용히 버린다**(적재되는 척하며 사라지는 그 형태).
   ['hwFeedbackEnsureCols_(fb)', '헤더보정_(ql, QUIZ_LOG_HEADERS)', 'talkHeaderHeal_(tl)'].forEach((호출) => {
     assert.ok(code.includes(호출),
       `치유 호출이 없다: ${호출} — 라이브 시트에 이미 서 있는 폭 때문에 새 칸이 조용히 버려진다`);
   });
+  /* ④ 읽기 폭. `dataCoverageReport` 는 **읽기 전용이라 치유를 안 부른다**(언제 눌러도 안전한 것이 그 함수의 계약).
+   *    그래서 헤더 상수만 늘어난 구간에 상수 폭을 시트에 그대로 요구하면, 아직 안 넓혀진 라이브 시트에서
+   *    getRange 가 던져 **리포트가 통째로 죽는다**. hw·voice 는 원래 `Math.min` 으로 잘랐고 quiz·talk 만
+   *    안 잘라 넷이 갈라져 있었다(①배포 검수 P3 `2d09296c` 가 짚었다 — schema_ver 가 그 비대칭을 발화시켰다).
+   *    새 시트를 이 리포트에 추가하면서 같은 실수를 하면 여기서 빨개진다(새는 방향이 닫힌다). */
+  const 리포트 = section('function dataCoverageReport(opts)', '\n}\n');
+  assert.ok(!/_HEADERS\.length\)\.getValues\(\)/.test(리포트),
+    'dataCoverageReport 가 헤더 상수 폭을 시트에 그대로 요구한다 — 치유를 안 지난 라이브 시트에서 getRange 가 던져 ' +
+    '리포트가 통째로 죽는다. hw(`Math.min(HW_FEEDBACK_HEADERS.length, fb.getLastColumn())`)와 같은 모양으로 자를 것');
 });
 
 test('[v9.151] ⑤ hall_of_fame — student_id 헤더가 정의에 있고, 기존 시트에도 세우는 증분이 있다', () => {
