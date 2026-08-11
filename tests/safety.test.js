@@ -546,7 +546,7 @@ test('[v9.49] 첨삭 확인 정산은 지급(appendPoints) 성공 뒤에만 지�
     "appendPoints(ss, [[sid, AI_FEEDBACK_ACK_POINTS, '첨삭확인', '시스템']])", // 행 단위 지급 먼저(리뷰 M2)
     "fb.getRange(i + 2, 11).setValue('지급완료')" // 마킹은 그 뒤
   ]);
-  assert.ok(body.includes("String(r[8]) !== '노출'")); // 검수 게이트: 노출 상태만 지급
+  assert.ok(body.includes('!노출카드_(r[8])')); // 검수 게이트: 노출 상태만 지급 ([v9.210] 판정 정본)
 });
 
 test('[v9.49] AI 첨삭 배치는 API 키가 없으면 전체 스킵하고, 성공분 즉시 포인터를 전진한다(하드킬 중복 차단)', () => {
@@ -1067,10 +1067,14 @@ test('[v9.63] 무인 발행은 게이트 통과분만 노출하고 미달분은 
 
 test('[v9.63] 격리·오류 카드는 학생 표면(포인트 정산·성장카드 짝·오류사전·약점퀴즈 재료)에 새어들지 않는다', () => {
   const ack = section('function sweepFeedbackAck_(ss)', 'function matchStudentsByNameClass_');
-  assert.ok(ack.includes("!== '노출'"), '첨삭 포인트 정산은 노출 행만 처리해야 한다');
-  assert.ok(code.includes("/^(오류|격리)/.test(String(rG[8] || ''))"), '성장카드 짝 로더에 격리 제외 필터가 없다');
-  assert.ok(code.includes('격리 카드는 오류사전 재료에서 제외'), '오류사전 로더에 격리 제외 필터가 없다');
-  assert.ok(code.includes('격리 카드는 약점 재료에서 제외'), 'AI 약점 로더(aiWeakMap_)에 격리 제외 필터가 없다'); // v9.64 세션이 위탁 반영한 1줄의 회귀 고정
+  /* [vNEXT] 검사 대상을 **표기에서 통로로** 옮긴다. 옛 판은 소비처 3곳에 거부목록 표기가
+   * 그대로 있는지를 봤는데, 그 표기 자체가 구멍이었다(`대기` 를 통과시킨다 · 이종검수 P1
+   * #9136f31e61a9). 표기를 못박은 회귀가 **구멍을 못박고 있었던** 셈이라, 이제 넷 다
+   * 판정 정본(노출카드_)을 타는지로 검사한다 — 격리·오류에 더해 `대기` 까지 함께 막힌다. */
+  assert.ok(ack.includes('!노출카드_(r[8])'), '첨삭 포인트 정산이 판정 정본을 안 탄다');
+  assert.ok(code.includes('!노출카드_(rG[8])'), '성장카드 짝 로더가 판정 정본을 안 탄다');
+  assert.ok(code.includes('.filter(r => 노출카드_(r[8]))'), '오류사전 로더가 판정 정본을 안 탄다');
+  assert.ok(code.includes('!r[1] || !노출카드_(r[8])'), 'AI 약점 로더(aiWeakMap_)가 판정 정본을 안 탄다'); // v9.64 세션이 위탁 반영한 1줄의 회귀 고정
 });
 
 test('[v9.64] 연습 포인트 폼 — 재실행=제자리 업그레이드(복제·URL 교체 차단) + 아침 자동 동기화', () => {
@@ -1106,7 +1110,9 @@ test('[v9.64] 반복 자동 감지 — 브리핑·수업 전 메일 ×N, AI 로�
  *   ⑤14일 창 밖 태그 미집계 ⑥포인트 빈 행의 태그도 버리지 않는다. */
 test('[vNEXT] aiWeakMap_ 오류태그 빈도 합류 — 보조 신호는 첨삭 꼬리로만, 손메모 자리 불변', () => {
   const aiWeakMap_ = loadFunction('function aiWeakMap_(', 'function aiStudioBatch_()', 'aiWeakMap_', {
-    toDate_: (v) => (v instanceof Date ? v : (v ? new Date(v) : null))
+    toDate_: (v) => (v instanceof Date ? v : (v ? new Date(v) : null)),
+    // 정본을 그대로 주입한다 — 여기서 손으로 흉내내면 그게 판정의 두 번째 벌이 된다(이 픽스처만 안 새는 상태)
+    노출카드_: 노출카드정본()
   });
   const d0 = new Date(Date.now() - 86400000);          // 어제(14일 창 안)
   const dOld = new Date(Date.now() - 20 * 86400000);   // 창 밖
@@ -2862,4 +2868,35 @@ test('[v9.120] 배치 리허설 — 밖으로 나가는 것만 막고, 켜둔 �
   // ⑤ 차단된 것을 기록해야 리허설이 의미를 갖는다("무엇이 나갈 뻔했나")
   assert.ok(q.includes('rehearsalNote_('), '차단 기록이 없다 — 아무것도 안 한 것과 구별되지 않는다');
   assert.ok(infra.includes('REHEARSAL_LOG_MAX'), '기록 폭주 상한이 없다(Properties 용량)');
+});
+
+/* ── [vNEXT] hw_feedback I열(상태) 판정 ── 이종 검수 P1(#9136f31e61a9) 이 잡은 자리.
+ *   소비처가 허용목록·거부목록 **두 방언**으로 갈려 있었고, 거부목록 쪽 3곳이 `대기`(검토자 미승인)를
+ *   통과시켰다. `AI_FEEDBACK_AUTOPUBLISH=false`(구 검수 모드 폴백)로 가는 순간 승인 안 된 카드가
+ *   약점맵→AI 퀴즈·오류사전·성장카드로 흘러든다 — 사람이 눌러 넘기는 칸(검수 확정)의 우회로다. */
+const 노출카드정본 = () => {
+  const m = engineSource().match(/function 노출카드_\([\s\S]*?\n\}/);
+  assert.ok(m, '노출카드_ 정본이 엔진에 없다 — 판정이 다시 호출부로 흩어졌다');
+  return new Function(`${m[0]}; return 노출카드_;`)();
+};
+
+test('🔑 노출카드_ 는 `노출` 하나만 통과시킨다 — 빈칸·대기·격리는 전부 미노출로 친다', () => {
+  const 노출카드_ = 노출카드정본();
+  assert.equal(노출카드_('노출'), true, '정상 카드를 막는다 — 재료가 통째로 사라진다');
+  for (const v of ['대기', '격리:품질미달', '오류:API', '', null, undefined, '노출 ', ' 노출', '노출대기', '미노출'])
+    assert.equal(노출카드_(v), false, `"${v}" 를 통과시킨다 — 승인 안 된 카드가 학생 출력으로 나간다`);
+});
+
+test('☠️ hw_feedback 상태 판정에 날 거부목록이 없다 — 그 표기가 `대기` 를 통과시키던 자리다', () => {
+  const 남은 = (engineSource().match(/\/\^\(오류\|격리\)\/[^\n]*/g) || []);
+  assert.equal(남은.length, 0,
+    `거부목록 표기 ${남은.length}건 — 그 자리는 검토자 미승인 카드를 학생 출력으로 통과시킨다:\n  ` + 남은.join('\n  '));
+});
+
+test('☠️ 상태를 읽는 소비처가 **전부** 노출카드_ 를 탄다 — 판정이 갈리면 새는 방향은 언제나 「통과」다', () => {
+  /* 정본 함수 본문 자체는 제외하고(거기가 유일하게 리터럴을 쓰는 자리), 소비처가 상태 칸을
+   * 직접 문자열 비교하는 자리가 남았는지 본다. 남으면 방언이 둘로 돌아간 것이다. */
+  const 소비처 = engineSource().replace(/function 노출카드_\([\s\S]*?\n\}/, '');
+  const 직접 = (소비처.match(/\[8\][^\n]{0,40}['"]노출['"]/g) || []);
+  assert.equal(직접.length, 0, `상태 칸을 직접 비교하는 자리 ${직접.length}건:\n  ` + 직접.join('\n  '));
 });
