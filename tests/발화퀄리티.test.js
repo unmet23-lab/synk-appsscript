@@ -401,9 +401,11 @@ test('미션ID 증분은 멱등이고, 이미 뿌려진 학생별 링크를 죽�
   assert.ok(nightly.indexOf('migrateVoiceFormMissionId') < nightly.indexOf('voiceSweep_'),
     '증분이 스위프보다 뒤다 — 그날 응답은 미션ID 열 없이 적재된다');
 
-  // 맨 끝 증분이어야 앞을 읽는 소비처(전사 7~9열·삭제 6열·점검 8열)가 안 밀린다
+  // [vNEXT] 「맨 끝」→「고정 11번째」 — 지키려는 불변식은 처음부터 「앞에 끼우지 않는다」다(앞을 읽는 소비처:
+  //   전사 7~9열·삭제 6열·점검 8열). schema_ver 가 규약(새 열은 끝에만)대로 붙자 「끝」은 위치의 증거가 아니게 됐다
+  //   — 소급성 ④ audio_ref·수집 quiz/hw 와 같은 처방(구간을 닫는다).
   const hdr = tb.match(/const VOICE_LOG_HEADERS = \[([^\]]+)\]/)[1].split(',').map(x => x.trim().replace(/'/g, ''));
-  assert.equal(hdr[hdr.length - 1], '미션ID', '미션ID가 맨 끝이 아니다 — 앞을 고정 인덱스로 읽는 소비처가 통째로 밀린다');
+  assert.equal(hdr[10], '미션ID', '미션ID가 11번째(고정 위치)가 아니다 — 앞을 고정 인덱스로 읽는 소비처가 통째로 밀린다');
   assert.equal(hdr.indexOf('전사'), 6, '전사 열 위치가 밀렸다 — voiceTranscribe_의 getRange(row, 7, 1, 3)이 엉뚱한 칸을 쓴다');
 });
 
