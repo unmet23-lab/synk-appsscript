@@ -20,6 +20,20 @@
  *      월 500 update 제약이 출시 최대 리스크라, 수집 때문에 운영이 죽으면 본말전도다.
  * ═══════════════════════════════════════════════════════════════════ */
 
+/* [v9.207] 행 단위 스키마 판 — 수집 3시트(hw_feedback·quiz_log·talk_log) 공용.
+ * 근거 = 코어엔진 부록 A-8, **2026-08-05 유호님 확정 「넣어」**(🚫제거 재제안 금지 · 소급 불가).
+ *
+ * 왜 행에 박나: 3·4년차에 한 시트 안에 c8·c10·c12 행이 섞이면 **어느 규격인지 행이 스스로 말하지 못한다.**
+ *   변환기를 쓰려 해도 대상을 못 고른다 — 불변식 1(「4년 호환」)을 지키는 유일한 기계 장치가 이 한 칸이다.
+ *   계약 파일에는 판이 있었지만 **데이터 행에는 없었다**(2026-08-11 실측: 이 저장소 코드층 `schema_ver` 매치 0).
+ *   과거 행은 영원히 빈칸이라 지금 박는 것 말고 방법이 없다(학생 0명인 지금이 손실 0의 마지막 창).
+ *
+ * ⚠ 정본은 이 상수가 아니라 `계약/수집_교정_계약.json` 의 `버전` 이다. GAS는 JSON을 import 못 해
+ *   여기 있는 것은 **손사본**이고, 사본은 언젠가 갈라진다 — `tests/계약.test.js` 가 둘을 대조해 기계로 막는다.
+ *   그 검사의 일은 값을 옹호하는 게 아니라 **계약 판을 올리는 손이 이 줄을 같이 고치게** 하는 것이다.
+ * ⚠ 옛 행에 소급 기입하지 않는다 — 그때 무슨 규격이었는지 지금 알 길이 없고, 지어 넣으면 복원이 아니라 날조다. */
+const SCHEMA_VER = 'c10';
+
 /* ──────────────── ⓪ 숙제 첨삭 — 3단 데이터 + 오류 태그 어휘 ──────────────── */
 
 /* [v9.138] hw_feedback 헤더 단일 정본 — 구 구조는 시트 골격(sheetSkeleton_)과 배치(aiFeedbackBatch_의
@@ -42,7 +56,7 @@
  *               「그때 우리 답이 나빴던 것」이 섞인다)가 원문↔교정 병렬쌍인 여기에 더 강하게 적용된다. */
 const HW_FEEDBACK_HEADERS = ['id', 'student_id', '제출일', '제출문', '고친문장', '오늘의포인트', '칭찬', '다음미션',
   '상태', '학생확인', '포인트지급', '숙제ID', '오류태그', '재작성원본', '다시쓰기URL',
-  '숙제문항', '급수', 'model', 'prompt_ver'];
+  '숙제문항', '급수', 'model', 'prompt_ver', 'schema_ver']; // [v9.207] schema_ver — A-8(유호 확정) · 끝에만 붙인다
 
 /* 오류 태그 통제 어휘 — **자유 문자열이면 같은 오류가 열 가지 이름으로 쌓여 태그를 넣은 의미가 사라진다.**
  * JSON schema의 enum으로 모델에 강제하고, 집계도 이 상수를 읽는다(어휘와 집계가 갈라지지 않게).
@@ -153,7 +167,7 @@ function migrateHwFormV9138() {
  *   여기 주석으로 못박는다(2년 뒤 조인할 사람이 헤더 이름만 믿지 않게).
  * [v9.187] '급수'(맨 끝) — 응답 시점의 학생 급수 스냅샷(제품방향 §불변식 2 「학생·레벨·시점」의 레벨 축).
  *   profiles는 현재값이라 승급하면 과거 응답의 난이도 맥락이 지워진다 — 행에 박아야 남는다. */
-const QUIZ_LOG_HEADERS = ['id', 'student_id', '퀴즈ID', '유형', '문제', '고른답', '정답', '정답여부', '확신도', '제출일', 'created_at', '급수'];
+const QUIZ_LOG_HEADERS = ['id', 'student_id', '퀴즈ID', '유형', '문제', '고른답', '정답', '정답여부', '확신도', '제출일', 'created_at', '급수', 'schema_ver'];
 const QUIZ_CONFIDENCE = ['확실해요', '아마도', '찍었어요'];
 
 /* 채점 정규화 — 원문자·공백·문장부호를 걷어낸다. 학생이 '①'로 쓰든 '1'로 쓰든 '1 번'으로 쓰든 같은 답이다. */
@@ -270,7 +284,7 @@ function hwFormUrlOf_(tmpl, sid, hwId) {
  * ⚠ 새 열은 **반드시 끝에** 붙인다 — 이 시트는 r[1]·r[2]·r[3]·r[4]·r[6] 위치 접근을 쓴다(앞에 끼우면 전부 밀린다).
  * [v9.187] `급수`(맨 끝) — 대화 시점의 학생 급수. 답장이 급수에 맞춰 조절되므로(아래 시스템 프롬프트)
  *   「몇 급 학생의 문장인가」가 없으면 2년 뒤 이 대화들을 난이도 층으로 가를 수 없다(소급 불가 계열). */
-const TALK_LOG_HEADERS = ['id', 'student_id', '턴', '학생문', 'AI답', '오류태그', '제출일', 'created_at', 'model', 'prompt_ver', 'audio_ref', '급수'];
+const TALK_LOG_HEADERS = ['id', 'student_id', '턴', '학생문', 'AI답', '오류태그', '제출일', 'created_at', 'model', 'prompt_ver', 'audio_ref', '급수', 'schema_ver'];
 const TALK_MAX_PER_RUN = 25;   // 야간 1회 상한 — 초과분은 포인터가 남아 다음 밤 이어진다(첨삭 배치와 같은 규약)
 const TALK_CONTEXT_TURNS = 6;  // 문맥으로 되돌려 보내는 직전 턴 수 — 「대화」가 되려면 앞말을 기억해야 한다
 
@@ -442,7 +456,7 @@ function talkBatch_() {
       const row = ['TK' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + sid + '-' + turn, sid, turn,
         셀안전_(text), 셀안전_(String(card.reply || '')), hwTagsClean_(card.error_tags), dstr(ts, tz), new Date(),
         // [v9.151] audio_ref — 텍스트 폼 경로는 빈칸(녹음이 붙는 날 원본 참조가 들어온다) · [v9.187] 급수 스냅샷
-        model, pver, '', Number(stu.lv) || 0];
+        model, pver, '', Number(stu.lv) || 0, SCHEMA_VER]; // [v9.207] schema_ver — 행이 자기 규격을 들고 있게(A-8)
       tl.appendRow(row);
       logRows.push(row); // 같은 실행 안에서 같은 학생이 여러 번 나와도 문맥이 이어지게(하루 1턴 가드가 있어 드물지만 공짜다)
       turns[sid] = turn; todayDone[sid] = 1;
@@ -455,7 +469,7 @@ function talkBatch_() {
         permFails++;
         // 실패 행에도 model·prompt_ver·급수를 남긴다 — 「어느 버전에서 실패가 몰렸나」가 나중에 유일한 단서다
         tl.appendRow(['TK' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + sid + '-오류', sid, (turns[sid] || 0) + 1,
-          셀안전_(text), '', '', dstr(ts, tz), new Date(), model, pver, '', Number(stu.lv) || 0]);
+          셀안전_(text), '', '', dstr(ts, tz), new Date(), model, pver, '', Number(stu.lv) || 0, SCHEMA_VER]);
         processed = i + 1;
         props.setProperty('대화폼_포인터', String(from + processed));
         continue;
@@ -832,7 +846,7 @@ function quizSweep_(ss) {
     out.push(['QL' + Utilities.formatDate(ts, tz, 'yyyyMMdd') + '-' + sid + '-' + qid, sid, 셀안전_(qid),
       셀안전_(meta.cat), 셀안전_(meta.q), 셀안전_(ans), 셀안전_(meta.a),
       g.ok === null ? '판정보류' : (g.ok ? '정답' : '오답'), // 원칙: 판정 못 해도 행은 남는다
-      셀안전_(conf), dstr(ts, tz), new Date(), lvOf[sid] || 0]); // [v9.187] 급수 스냅샷(0=미정)
+      셀안전_(conf), dstr(ts, tz), new Date(), lvOf[sid] || 0, SCHEMA_VER]); // [v9.187] 급수 스냅샷(0=미정) · [v9.207] schema_ver
   });
   if (out.length) ql.getRange(ql.getLastRow() + 1, 1, out.length, QUIZ_LOG_HEADERS.length).setValues(out);
   props.setProperty('퀴즈폼_포인터', String(last));

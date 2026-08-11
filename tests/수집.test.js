@@ -245,7 +245,12 @@ test('[v9.145] talk_log는 model·prompt_ver를 남기고, 새 열은 반드시 
   // 앞에 끼우면 r[1]·r[2]·r[3]·r[4]·r[6] 위치 접근이 통째로 밀린다(이 저장소는 열 밀림으로 여러 번 당했다)
   assert.deepEqual(H.slice(0, 8), ['id', 'student_id', '턴', '학생문', 'AI답', '오류태그', '제출일', 'created_at'],
     '기존 8열의 순서가 바뀌었다 — 위치로 읽는 코드가 전부 어긋난다');
-  assert.deepEqual(H.slice(8), ['model', 'prompt_ver', 'audio_ref', '급수'], '새 열이 끝에 있지 않다'); // [v9.151] audio_ref = 음성 원본 참조(무제한 보존 · 유호 확정 08-04) · [v9.187] 급수 = 레벨 스냅샷
+  /* [v9.207] 구간을 **닫는다**(`slice(8)` → `slice(8, 12)`). 열린 slice 는 「오늘의 끝」을 못박아,
+   *   규약(새 열은 끝에만)대로 붙이는 **정상 변경마다** 빨개진다 — 가드가 자기 처방을 막는 그 형태다.
+   *   v9.190이 voice_log에서 같은 병을 이미 한 번 고쳤는데(그때 앵커를 push 배열 안으로 옮겼다) 이 자리엔
+   *   안 옮겼고, schema_ver 추가가 세 번째다. 닫힌 구간은 이 넷의 **존재와 서로의 순서**를 그대로 지키면서
+   *   뒤에 붙는 열만 허용한다 — 삭제·중간삽입·순서변경은 여전히 빨갛다(잃는 탐지력이 없다). */
+  assert.deepEqual(H.slice(8, 12), ['model', 'prompt_ver', 'audio_ref', '급수'], '증분 4열의 순서가 바뀌었거나 하나가 사라졌다'); // [v9.151] audio_ref = 음성 원본 참조(무제한 보존 · 유호 확정 08-04) · [v9.187] 급수 = 레벨 스냅샷
 });
 
 test('[v9.145] 성공 행과 실패 행이 **둘 다** 헤더 길이만큼 쓴다 — 하나만 고치면 열이 어긋난다', () => {
@@ -320,11 +325,11 @@ test('[v9.187] 수집 4시트 — 기존 열 순서 불변, 새 열은 맨 끝�
   const QH = JSON.parse(code.match(/const QUIZ_LOG_HEADERS = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
   assert.deepEqual(QH.slice(0, 11), ['id', 'student_id', '퀴즈ID', '유형', '문제', '고른답', '정답', '정답여부', '확신도', '제출일', 'created_at'],
     'quiz_log 기존 11열 순서가 바뀌었다 — 위치로 읽는 코드가 전부 어긋난다');
-  assert.deepEqual(QH.slice(11), ['급수'], 'quiz_log 급수가 맨 끝이 아니다');
+  assert.deepEqual(QH.slice(11, 12), ['급수'], 'quiz_log 급수가 12번째 자리에서 사라졌거나 밀렸다'); // [v9.207] 구간을 닫는다 — 사유는 위 [v9.145] 검사 주석
   const HH = JSON.parse(code.match(/const HW_FEEDBACK_HEADERS = (\[[\s\S]*?\]);/)[1].replace(/'/g, '"'));
   assert.deepEqual(HH.slice(0, 15), ['id', 'student_id', '제출일', '제출문', '고친문장', '오늘의포인트', '칭찬', '다음미션',
     '상태', '학생확인', '포인트지급', '숙제ID', '오류태그', '재작성원본', '다시쓰기URL'], 'hw_feedback 기존 15열 순서가 바뀌었다');
-  assert.deepEqual(HH.slice(15), ['숙제문항', '급수', 'model', 'prompt_ver'], 'hw_feedback 감사 4열이 끝에 없다');
+  assert.deepEqual(HH.slice(15, 19), ['숙제문항', '급수', 'model', 'prompt_ver'], 'hw_feedback 감사 4열의 순서가 바뀌었거나 하나가 사라졌다'); // [v9.207] 구간을 닫는다
   const VH = JSON.parse(교재소스().match(/const VOICE_LOG_HEADERS = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
   assert.deepEqual(VH.slice(0, 9), ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at', '전사', '전사상태', '전사일시'],
     'voice_log 기존 9열 순서가 바뀌었다');
@@ -335,9 +340,13 @@ test('[v9.187] 수집 4시트 — 기존 열 순서 불변, 새 열은 맨 끝�
 test('[v9.187] 급수가 행에 실제로 실린다 — 열만 만들면 이름표 붙은 빈 칸이다', () => {
   const quiz = section('function quizSweep_(ss)', '\n}\n');
   assert.ok(/lvOf\[k\] = Number\(r\[66\]\) \|\| 0/.test(quiz), 'quiz가 profiles BO67(급수)을 읽지 않는다');
-  assert.ok(/lvOf\[sid\] \|\| 0\]\)/.test(quiz), 'quiz 적재 행에 급수가 없다');
+  /* [v9.207] 앵커에서 닫는 `])`를 뗀다 — v9.190이 voice에 적용한 처방을 quiz·talk에도 옮긴다.
+   *   구 앵커는 "급수가 **마지막 칸**이다"를 요구해서, 뒤에 열이 붙으면 정상 적재가 ❌로 보였다.
+   *   이 검사의 뜻은 "급수가 행에 실린다"이고, push 배열을 잘라 보므로 범위는 오히려 좁다. */
+  const qPush = (quiz.match(/out\.push\(\[[\s\S]*?\]\);/) || [''])[0];
+  assert.ok(/lvOf\[sid\] \|\| 0/.test(qPush), 'quiz 적재 행에 급수가 없다');
   const talk = section('function talkBatch_()', '\n}\n');
-  assert.equal((talk.match(/Number\(stu\.lv\) \|\| 0\]/g) || []).length, 2,
+  assert.equal((talk.match(/Number\(stu\.lv\) \|\| 0/g) || []).length, 2,
     'talk 성공·실패 행 중 한쪽에 급수가 빠졌다(실패 행도 학생 문장 절반을 담는 데이터다)');
   const vs = (() => { const t = 교재소스(); return t.slice(t.indexOf('function voiceSweep_(ss)'), t.indexOf('function writeVoiceLinks_')); })();
   assert.ok(/lvOf\[k\] = Number\(r\[66\]\) \|\| 0/.test(vs), 'voice가 profiles BO67(급수)을 읽지 않는다');

@@ -1817,7 +1817,8 @@ function aiFeedbackBatch_() {
         // [v9.138] 수집 4칸 — 다시쓰기URL은 **이 카드의 id**를 프리필해, 학생이 누르면 그 첨삭에 대한 2차 시도로 들어온다
         셀안전_(hwId), hwTagsClean_(card.error_tags), 셀안전_(reDo), hwRedoUrlOf_(hwTpl, sid, fbId),
         // [v9.187] 감사 4칸 — 문항 스냅샷·급수(제출 시점)·출처 2열(문항은 contents 소유 콘텐츠라 소독 불요 — quiz 스냅샷과 동일)
-        문항, Number(stu.lv) || 0, model, pver]);
+        // [v9.207] schema_ver — 이 행이 어느 계약 규격으로 쓰였는지 행 스스로 들고 있게(A-8 · 소급 불가)
+        문항, Number(stu.lv) || 0, model, pver, SCHEMA_VER]);
       made++;
       /* [v9.147] 재작성 보상 — **적재에 성공한 뒤에만** 판정한다(수집이 보상보다 앞선다).
        *   준비(hw_feedback·point_logs 각 1회 읽기)는 첫 재작성에서만 일어난다.
@@ -1838,7 +1839,7 @@ function aiFeedbackBatch_() {
         fb.appendRow(['FB' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + fb.getLastRow(), sid,
           dstr(ts, tz), 셀안전_(text), '', '', '', '', '오류:' + String(e.message || e).slice(0, 80), '', '',
           셀안전_(hwId), '', 셀안전_(reDo), '',
-          문항, Number(stu.lv) || 0, model, pver]); // [v9.187] 실패 행에도 감사 4칸 — 「어느 버전에서 실패가 몰렸나」의 단서
+          문항, Number(stu.lv) || 0, model, pver, SCHEMA_VER]); // [v9.187] 실패 행에도 감사 4칸 — 「어느 버전에서 실패가 몰렸나」의 단서 · [v9.207] schema_ver
         전진_(it);
         continue;
       }
