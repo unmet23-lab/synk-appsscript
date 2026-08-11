@@ -146,7 +146,7 @@ test('learning_events 값목록이 닫혀 있고 비어 있지 않다 (빈 통�
     assert.equal(new Set(값들).size, 값들.length, `값목록 「${이름}」에 중복이 있다 — 집계가 두 칸으로 갈린다`);
   }
   // 오류태그와 같은 이유로 크기를 못박는다. 줄었다면 왜 줄었는지가 먼저다.
-  assert.equal(LE.값목록.task_type.length, 6, `task_type이 6종이 아니다(${LE.값목록.task_type.length})`);
+  assert.equal(LE.값목록.task_type.length, 9, `task_type이 9종이 아니다(${LE.값목록.task_type.length})`);
   assert.equal(LE.값목록.source_kind.length, 4, `source_kind가 4종이 아니다(${LE.값목록.source_kind.length})`);
   /* c4 = c3 6종 + 3종 · c5 = +1종. 값 추가는 하위호환이지만 **삭제·개명은 과거 집계를 깨뜨린다**(값목록_규칙).
    * 이름을 하나씩 못박는 이유: 개수만 세면 하나를 지우고 하나를 더해도 통과한다. */
@@ -174,7 +174,15 @@ test('learning_events 값목록이 닫혀 있고 비어 있지 않다 (빈 통�
    *   관측 짝이 없으면 네트워크 실패가 「전달 완료」로 학습된다). 「그날 열었는가」는 그날에만 안다. */
   assert.ok(LE.값목록.event_type.includes('content.viewed'),
     'c9가 추가한 event_type 「content.viewed」가 없다 — 관측 짝이 없으면 추정이 관측 행세를 한다');
-  assert.equal(LE.값목록.event_type.length, 13, `event_type이 13종이 아니다(${LE.값목록.event_type.length})`);
+  /* 🔴 c11(라디오 Lane B 소개정 · 계약 정본 1e08a981): 라디오 제출 3통로와 정서 신호.
+   *   개수 핀만 올리면 하나 지우고 하나 더해도 통과한다 — 추가분은 이름으로 못박는다(c4~c9와 같은 이유). */
+  for (const v of ['라디오퀴즈', '목표선언', '자습체크인']) {
+    assert.ok(LE.값목록.task_type.includes(v),
+      `c11이 추가한 task_type 「${v}」가 없다 — 라디오 Lane B 제출이 계약 밖 사건이 된다(라디오24 설계 §4-3)`);
+  }
+  assert.ok(LE.값목록.event_type.includes('affect.reported'),
+    'c11이 추가한 event_type 「affect.reported」가 없다 — 학생이 밝힌 정서가 계약 밖 사건이 된다');
+  assert.equal(LE.값목록.event_type.length, 14, `event_type이 14종이 아니다(${LE.값목록.event_type.length})`);
   /* task_format 은 task_type 과 **다른 축**이다(통로 vs 형식). 이름이 비슷해 실제로 한 번 섞였다 —
    * 발주 §1이 task_type 에 낭독·자유발화를 넣었다. 섞이면 섀도잉과 자유발화를 나중에 못 가른다. */
   /* 🔴 c7: 병렬 코퍼스(몽골어↔한국어)의 축. `번역`이 없으면 「몽골어 원문이 있는 답」과 「없는 답」이
