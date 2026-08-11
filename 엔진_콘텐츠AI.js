@@ -1424,7 +1424,7 @@ function sweepFeedbackAck_(ss) {
   rows.forEach((r, i) => {
     const sid = String(r[1] || '').trim();
     if (!sid || !valid.has(sid)) return;
-    if (String(r[8]) !== '노출') return;   // I 상태: 검수 통과분만
+    if (!노출카드_(r[8])) return;   // I 상태: 검수 통과분만 · 판정 정본=노출카드_
     if (!String(r[9] || '')) return;       // J 학생확인: 아직 안 눌렀으면 대기
     if (String(r[10] || '')) return;       // K 포인트지급: 이미 지급
     // [리뷰 M2] 행 단위 지급→즉시 마킹 — 지급과 마킹 사이 크래시 창을 행 하나로 좁혀 날짜 경계를 넘는
@@ -2048,7 +2048,7 @@ function aiWeakMap_(ss) {
   const tagW = {}; // 학생 → 태그 → {cnt, t}
   const fbW = fb ? Math.min(13, fb.getLastColumn()) : 0;
   if (fb && fb.getLastRow() >= 2) fb.getRange(2, 1, fb.getLastRow() - 1, fbW).getValues().forEach(r => {
-    if (!r[1] || /^(오류|격리)/.test(String(r[8] || ''))) return; // [v9.63] 격리 카드는 약점 재료에서 제외(품질 게이트 미달분이 AI 퀴즈로 새는 것 차단) — 태그 집계도 같은 문 안
+    if (!r[1] || !노출카드_(r[8])) return; // [v9.63→v9.210] 게이트 미달분이 AI 퀴즈로 새는 것 차단(태그 집계도 같은 문 안) · 판정 정본=노출카드_ (구 거부목록은 '대기'를 통과시켰다)
     const k = String(r[1]).trim();
     if (String(r[5] || '')) (weak[k] = weak[k] || [])._fb = String(r[5]).slice(0, 60); // 마지막 것이 최근(행 순서)
     if (fbW < 13) return;
@@ -2169,7 +2169,7 @@ function aiStudioBatch_() {
       const last = fb.getLastRow();
       if (from < last) {
         const rowsF = fb.getRange(from + 1, 1, Math.min(last - from, 40), 9).getValues()
-          .filter(r => !/^(오류|격리)/.test(String(r[8] || ''))) // [v9.63] 격리 카드는 오류사전 재료에서 제외
+          .filter(r => 노출카드_(r[8])) // [v9.63→v9.210] 게이트 미달분은 오류사전 재료에서 제외 · 판정 정본=노출카드_
           .map(r => ({ sub: String(r[3] || '').slice(0, 120), fix: String(r[4] || '').slice(0, 120), pt: String(r[5] || '').slice(0, 80) }))
           .filter(x => x.sub && x.fix);
         const takeN = Math.min(last - from, 40);

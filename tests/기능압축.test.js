@@ -151,7 +151,8 @@ test('[v9.147] 골든셋은 무작위 표본이고 주간 배치에 걸려 있�
   assert.ok(g.includes('Math.random()'), '표본이 무작위가 아니다 — 강사 선택/시간순 표본은 반쪽 채점표를 만든다');
   assert.ok(g.includes('for (let i = pool.length - 1; i > 0; i--)'), 'Fisher-Yates 셔플이 없다');
   // ② 학생에게 실제로 나간 카드만 평가 대상('노출')
-  assert.ok(g.includes("!== '노출'"), '격리·오류 카드까지 표본에 든다 — 학생이 안 본 교정을 평가하게 된다');
+  //   [vNEXT] 표기 대신 판정 정본(노출카드_)을 타는지로 본다 — 옛 표기 검사는 방언이 갈린 것을 못 봤다(P1 #9136f31e61a9).
+  assert.ok(g.includes('!노출카드_(r[8])'), '격리·오류·대기 카드까지 표본에 든다 — 학생이 안 본 교정을 평가하게 된다');
   // ③ 멱등 — 같은 fb_id를 다시 뽑지 않는다
   assert.ok(g.includes('already.has(id)'), '멱등 가드가 없다 — 매주 같은 카드가 다시 쌓인다');
   // ④ 쓰기 대상은 teacher_gold뿐 — hw_feedback을 건드리면 발행된 첨삭을 소급 정정하게 된다
