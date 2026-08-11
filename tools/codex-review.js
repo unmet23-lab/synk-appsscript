@@ -80,17 +80,23 @@ const 차단급 = new Set(['P0', 'P1']);
  *
  * ⚠ 표식은 **게이트가 아니다.** 검수기록과 섞지 않는다(섞으면 배포를 막는 장부에 「돌다 죽음」이
  *   행으로 들어가 판정이 갈린다). 세션별·프로젝트별로 갈라 남의 실행을 내 것으로 읽지 않는다.
- * 자리는 `handoff-store.stateDir()` — 실측하면 저장소가 아니라 **OS 임시 폴더**다
- *   (`%TEMP%/synk-context-budget/`). 저장소 밖이라 미커밋 노이즈로 남의 작업본에 섞일 일이
- *   원천적으로 없다(F073). 경로·세션 키 규칙을 여기서 다시 정의하지 않고 그 모듈 것을 그대로
- *   쓴다 — 같은 판정을 두 곳에 적으면 갈라지고, 갈라지는 방향은 언제나 「통과」다. */
+ * 자리는 저장소 밖 임시 폴더의 **전용 디렉터리**다 — 미커밋 노이즈로 남의 작업본에 섞일 일이
+ *   원천적으로 없다(F073).
+ * ☠️ **`handoff-store.stateDir()` 안에 두면 안 된다**(2026-08-11 실측으로 잡았다 · 첫 판이 그랬다):
+ *   그 폴더는 `handoff-store.sweep()` 이 청소하는데, 규칙이 `if (!j.at || 나이>TTL) unlink` 라
+ *   **`at` 필드가 없는 내 표식은 나이와 무관하게 즉시 지워진다.** 세션이 여럿 도는 시간대엔
+ *   남의 훅이 sweep 을 부르는 순간 사라져서, 실측에서 검수 시작 몇 초 뒤에 이미 없었다.
+ *   증상은 「표식이 없다」 = 「완주했다」 — **증거를 지키려고 만든 장치가 정확히 반대로 샜다.**
+ *   sweep 이 틀린 게 아니다(모르는 파일을 치우는 게 그 일이다) — **남의 청소 구역에 내 증거를
+ *   둔 것이 틀렸다.** 그래서 폴더를 가른다. 이름 규칙만 그 모듈 것을 쓴다(같은 판정 두 벌 금지).
+ * 회귀가 「stateDir 안이 아니다」를 못박는다 — 되돌리면 조용히 다시 샌다. */
 function 진행파일() {
   if (process.env.SYNK_REVIEW_INFLIGHT) return process.env.SYNK_REVIEW_INFLIGHT;
   /* 지연 require — 이 모듈은 clasp-guard 훅도 부른다. 위(모델설정) 주석과 같은 축으로,
    * 훅 로드 경로에 새 require 사슬을 얹지 않는다(등록층에서 새면 방향은 언제나 「통과」다). */
   const store = require(path.join(ROOT, '.claude', 'hooks', 'lib', 'handoff-store.js'));
   const 세션 = store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
-  return path.join(store.stateDir(), `검수진행-${store.projectKey(ROOT)}-${세션}.json`);
+  return path.join(os.tmpdir(), 'synk-검수진행', `${store.projectKey(ROOT)}-${세션}.json`);
 }
 
 function 진행시작(정보) {

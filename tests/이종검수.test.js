@@ -945,6 +945,26 @@ test('🔑 표식은 시작에 생기고 정상 종료에 지워진다 — 남�
   }
 });
 
+/* ☠️ 첫 판이 표식을 `handoff-store.stateDir()` 에 뒀다가 **남의 청소에 즉시 지워졌다**(08-11 실측):
+ *   sweep 규칙이 `!j.at` 이면 나이와 무관하게 unlink 라, `at` 없는 내 표식은 세션이 여럿 도는
+ *   시간대에 몇 초 만에 사라진다. 증상은 「표식 없음」 = 「완주함」 — 증거 장치가 반대로 샜다. */
+test('☠️ 표식은 남이 청소하는 폴더에 두지 않는다 — 거기 두면 증거가 조용히 사라진다 (F333 재발 경로)', () => {
+  const 옛 = process.env.SYNK_REVIEW_INFLIGHT;
+  delete process.env.SYNK_REVIEW_INFLIGHT;   // 기본 경로를 봐야 한다(env 를 두면 검사가 공허해진다)
+  try {
+    const store = require(path.join(ROOT, '.claude', 'hooks', 'lib', 'handoff-store.js'));
+    const 표식 = 검수.진행파일();
+    const 청소구역 = path.resolve(store.stateDir());
+    assert.notEqual(path.resolve(path.dirname(표식)), 청소구역,
+      `표식이 handoff-store 청소 구역 안이다(${표식}) — sweep 이 \`at\` 없는 파일을 즉시 지운다`);
+    // 이름 규칙은 그 모듈에서 파생돼야 한다 — 규칙을 손으로 베끼면 세션 구분이 갈라진다.
+    assert.ok(표식.includes(store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || '')),
+      '표식 이름이 세션 키를 안 쓴다 — 남의 실행을 내 것으로 읽는다');
+  } finally {
+    if (옛 !== undefined) process.env.SYNK_REVIEW_INFLIGHT = 옛;
+  }
+});
+
 test('🔑 경고가 **그대로 실행 가능한** 처방을 준다 — 「늘려라」는 이 자리에선 따를 수 없다 (F103·F333)', () => {
   const 문 = 검수.진행경고줄({ 시각: 'x', 시작: '2026-08-11T11:00:00Z', pid: 42, 대상: { 종류: 'commit', 값: 'abc1234' } },
     ['--commit', 'abc1234']).join('\n');
