@@ -92,7 +92,7 @@ function 닫힌카드_(상태, 제출일, 기준시각) {
   if (s.indexOf('오류') === 0) return true;
   if (s.indexOf('격리') === 0) {
     const d = 제출일 instanceof Date ? 제출일 : (제출일 ? toDate_(제출일) : null);
-    if (!d) return true; // 날짜를 못 읽는 격리는 기다릴 기준이 없다 — 커서 영구 정체(전량 굶김)가 한 행 유실보다 나쁘다
+    if (!d || isNaN(d.getTime())) return true; // [v9.213] 날짜를 못 읽는 격리(빈칸·Invalid Date)는 기다릴 기준이 없다 — NaN 비교로 흘리면 커서가 영구 정지한다(재검수 P2 0d609066a254). 정체(전량 굶김)가 한 행 유실보다 나쁘다
     return (Number(기준시각) - d.getTime()) >= 격리복구창_MS;
   }
   return false;
