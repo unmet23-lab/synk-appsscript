@@ -333,7 +333,7 @@ test('[v9.187] 수집 4시트 — 기존 열 순서 불변, 새 열은 맨 끝�
   const VH = JSON.parse(교재소스().match(/const VOICE_LOG_HEADERS = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
   assert.deepEqual(VH.slice(0, 9), ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at', '전사', '전사상태', '전사일시'],
     'voice_log 기존 9열 순서가 바뀌었다');
-  assert.deepEqual(VH.slice(9), ['급수', '미션ID'], 'voice_log 증분 2열(급수·미션ID)이 이 순서로 끝에 있지 않다 — 라이브 시트가 이 순서로 서 있어 바꾸면 이름표와 값이 어긋난다');
+  assert.deepEqual(VH.slice(9, 11), ['급수', '미션ID'], 'voice_log 증분 2열(급수·미션ID)이 이 자리에 이 순서로 있지 않다 — 라이브 시트가 이 순서로 서 있어 바꾸면 이름표와 값이 어긋난다'); // [vNEXT] 구간을 닫는다 — 열린 slice(9)는 규약대로 끝에 붙는 새 열(schema_ver)마다 거짓 적색(quiz·hw 가 v9.207 에서 닫은 같은 병)
   // talk_log는 [v9.145] 검사(H.slice(8))가 급수까지 함께 못박는다 — 여기 다시 적으면 정본이 두 벌이 된다
 });
 
