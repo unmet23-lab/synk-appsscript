@@ -2076,6 +2076,23 @@ function aiWeakMap_(ss) {
   return weak;
 }
 
+/* [v9.211] 오류뱅크 커서 걸음 — 슬라이스의 상태열(I)만 보고 「집을 행」과 「전진 폭」을 가른다.
+ * 노출은 집고 지나간다 · 닫힘(격리·오류)은 안 집고 지나간다 · 판정 전(대기·빈칸·낯선 값)은 **멈춘다** —
+ * 지나가면 검토자가 나중에 승인해도 커서 뒤라 error_bank 에서 영구 누락이다(재검수 P1 #9c7967e921d4:
+ * 옛 코드는 필터 전 행 수 takeN 으로 전진해 수동 검수 모드의 대기 카드를 전부 건너뛰었다).
+ * 멈춤의 대가는 유실이 아니라 지연이다 — 검수 확정이 눌리면 다음 밤 같은 자리부터 다시 걷는다.
+ * (대기 뒤의 노출 행까지 먼저 집으면 커서가 못 넘어가 다음 밤 같은 행을 두 번 집는다 — 그래서 접두까지만.) */
+function 오류뱅크전진_(상태들) {
+  const 집을행 = [];
+  let 전진 = 0;
+  for (let i = 0; i < 상태들.length; i++) {
+    if (노출카드_(상태들[i])) { 집을행.push(i); 전진 = i + 1; continue; }
+    if (닫힌카드_(상태들[i])) { 전진 = i + 1; continue; }
+    break;
+  }
+  return { 집을행, 전진 };
+}
+
 // ── 야간 오케스트레이터: H1 한 문장 + A1/A2/A4 개인 퀴즈 + G 오류사전 + H5 반 브리핑 + E5 리텐션 멘트 ──
 function aiStudioBatch_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -2168,11 +2185,15 @@ function aiStudioBatch_() {
       const from = Number(props.getProperty('오류뱅크_포인터')) || 1;
       const last = fb.getLastRow();
       if (from < last) {
-        const rowsF = fb.getRange(from + 1, 1, Math.min(last - from, 40), 9).getValues()
-          .filter(r => 노출카드_(r[8])) // [v9.63→v9.210] 게이트 미달분은 오류사전 재료에서 제외 · 판정 정본=노출카드_
+        const 슬라이스 = fb.getRange(from + 1, 1, Math.min(last - from, 40), 9).getValues();
+        /* [v9.63→v9.211] 게이트 미달분은 오류사전 재료에서 제외(판정 정본=노출카드_, 오류뱅크전진_ 안).
+         * 커서는 판정 전(대기·빈) 행 앞에서 멈춘다 — 필터 전 행 수로 전진하면 수동 검수 모드
+         * (AI_FEEDBACK_AUTOPUBLISH=false)의 대기 카드가 승인 뒤에도 커서 뒤라 영구 누락된다(재검수 P1). */
+        const 커서 = 오류뱅크전진_(슬라이스.map(r => r[8]));
+        const rowsF = 커서.집을행
+          .map(i => 슬라이스[i])
           .map(r => ({ sub: String(r[3] || '').slice(0, 120), fix: String(r[4] || '').slice(0, 120), pt: String(r[5] || '').slice(0, 80) }))
           .filter(x => x.sub && x.fix);
-        const takeN = Math.min(last - from, 40);
         if (rowsF.length) {
           const ebSchema = { type: 'object', additionalProperties: false, required: ['items'], properties: { items: { type: 'array', items: {
             type: 'object', additionalProperties: false, required: ['type', 'pattern'], properties: {
@@ -2187,7 +2208,8 @@ function aiStudioBatch_() {
           const rowsE = (out.items || []).slice(0, 20).map(it => [ym, String(it.type || '').slice(0, 20), String(it.pattern || '').slice(0, 160), today]);
           if (rowsE.length) eb.getRange(eb.getLastRow() + 1, 1, rowsE.length, 4).setValues(rowsE);
         }
-        props.setProperty('오류뱅크_포인터', String(from + takeN)); // 성공 시에만 전진(실패는 throw로 위 catch)
+        if (커서.전진) props.setProperty('오류뱅크_포인터', String(from + 커서.전진)); // 성공 시에만 전진(실패는 throw로 위 catch)
+        if (커서.전진 < 슬라이스.length) Logger.log('오류사전 커서 보류: 판정 전(대기) 행 앞에서 멈춤 — 검수 확정 뒤 다음 밤에 같은 자리부터 집는다');
       }
     }
   } catch (e) { errs.push('오류사전: ' + String(e.message || e).slice(0, 80)); }
