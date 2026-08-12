@@ -190,12 +190,25 @@ test('🔑 AI 는 🔴 첫 도달에만 깨운다 — 정리는 자동으로, �
   assert.match(inj, /코드 블록/, '지시문구를 「코드 블록으로」 내라는 지정이 없다 — 프로즈에 묻히면 복사할 실물이 아니다');
   assert.ok(hard.json.systemMessage, '유호님 화면용 systemMessage 가 없다');
 
+  // 🔑 인계문 전문은 **한 화면에 한 벌만** (유호님 08-12 "인계문이 계속 2개가 나가고 있거든?").
+  //   깨울 때는 AI 의 코드 블록이 복사되는 실물이므로 systemMessage 는 전문을 **양보**한다.
+  //   ⚠ F122 와 다른 축이다 — 그건 훅이 «둘»이라 겹친 것이고 blockOrder 표식이 닫았다.
+  //     이건 한 훅 «안»에서 두 통로가 같은 글을 내는 것이라 그 표식에 안 걸렸다.
+  assert.ok(!hard.msg.includes('다음 세션 인계문'),
+    '깨우는 발화의 systemMessage 가 인계문 전문을 또 실었다 — AI 블록과 합쳐 화면에 두 벌이 나간다');
+  assert.match(hard.msg, /코드 블록/, '전문을 양보했으면 어디서 받는지를 가리켜야 한다');
+  assert.match(hard.msg, /인계문\.md/, '보조 사본 경로가 없다 — AI 가 블록을 안 내면 전문이 통째로 사라진다');
+
   // 여기가 루프 방지의 핵심 — 단계가 올라가도 **두 번은 안 깨운다**
   for (const c of [410_000, 520_000, 910_000]) {
     const v = at(c);
     assert.ok(v.json, `${c} 에서 단계가 올랐는데 화면 문구도 없다`);
     assert.strictEqual(v.json.hookSpecificOutput, undefined,
       `${c} 에서 AI 를 또 깨웠다 — [훅→AI턴→Stop→훅] 무한 루프의 입구다`);
+    // 🔑 안 깨울 땐 AI 블록이 아예 없다 — 여기가 **유일한** 화면 사본이라 전문을 실어야 한다.
+    //   위 「한 벌만」 규칙을 양쪽으로 못박는다(한쪽만 검사하면 전문이 영영 안 나오는 판도 통과한다).
+    assert.ok(v.msg.includes('다음 세션 인계문'),
+      `${c} 는 AI 를 안 깨우는 발화인데 systemMessage 에 인계문 전문이 없다 — 화면에 사본이 0벌이 된다`);
   }
 });
 
@@ -294,12 +307,16 @@ test('🔑 인계문은 Session-Id 트레일러로 이 세션 커밋만 집는�
 
   // 🔑 훅 입력의 session_id 는 **내부 에이전트 id** — 트레일러에 박히는 건 호스트 id 다.
   //   전자로 찾으면 자기 커밋을 하나도 못 찾는다(08-04 실측).
+  // ⚠ 인계문 **내용**을 재는 검사라 «어느 통로로 나갔는지»에 매이면 안 된다 — 깨우는 발화에서는
+  //   전문이 systemMessage 가 아니라 additionalContext 에 산다(전문 한 벌 규칙 · 08-12). 둘을 합쳐 본다.
+  const 전문 = (r) => `${r.msg}\n${String(r.json?.hookSpecificOutput?.additionalContext || '')}`;
+
   const mine = stop(310_000, { cwd: repo, sid: 'agent-내부id', env: { CLAUDE_CODE_HOST_SESSION_ID: 'sid-MINE' } });
-  assert.match(mine.msg, /내 커밋이다/, `호스트 id 로도 자기 커밋을 못 찾았다: ${mine.msg}`);
-  assert.doesNotMatch(mine.msg, /남의 커밋이다/, '남의 세션 커밋을 인계문에 넣었다');
+  assert.match(전문(mine), /내 커밋이다/, `호스트 id 로도 자기 커밋을 못 찾았다: ${전문(mine)}`);
+  assert.doesNotMatch(전문(mine), /남의 커밋이다/, '남의 세션 커밋을 인계문에 넣었다');
 
   const none = stop(310_000, { cwd: repo, sid: 'agent-내부id' });
-  assert.match(none.msg, /커밋 없음/, '못 찾았으면 못 찾았다고 해야 한다(빈칸·거짓 금지)');
+  assert.match(전문(none), /커밋 없음/, '못 찾았으면 못 찾았다고 해야 한다(빈칸·거짓 금지)');
 });
 
 test('🔑 인계문은 형제 저장소(SYNK-talk)의 커밋·미커밋도 본다 — F142', (t) => {
