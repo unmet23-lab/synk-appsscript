@@ -504,16 +504,86 @@ test('인계문 — 글쓴이 지문을 「내 것」으로 배달하지 않는�
     assert.match(c, /다음 할 일부터 이어라/, '이어받기 갈래가 아니다 — 아래 검사가 무의미해진다');
     assert.match(c, /`docs\/_ops\/보드\/<네 지문>\.md`/,
       `🔴 이어받으라고만 하고 **어디에 선언할지**를 안 줬다 — 받은 세션이 죽은 세션의 보드 파일을 고친다:\n${c}`);
-    assert.match(c, /끝난 세션의 보드 파일/, '그 줄이 남의(죽은) 파일에 있다는 사실 자체를 안 말했다');
+    /* ⚠ 옛 검사는 `/끝난 세션의 보드 파일/` 이었다 — 지켜야 할 것은 **「남의 파일이다」**이지
+     *   생사 단언이 아니다(F343: 그 세션은 살아서 계속 커밋한다). 축만 옮기고 사실은 그대로 붙든다. */
+    assert.match(c, /그 세션의 보드 파일.*남의 파일이다/, '그 줄이 남의 파일에 있다는 사실 자체를 안 말했다');
+    assert.doesNotMatch(c, /끝난 세션의 보드 파일/,
+      `🔴 이어받기 갈래가 다시 「끝난 세션」이라 단언한다 — 같은 단언이 두 자리에 살면 한 곳만 고쳐도 새다(F343):\n${c}`);
 
     /* ④ 거짓양성 방향 — 지문이 없는 세션(폰 클라우드 등)에서도 문장이 서야 한다.
      *   백틱만 남거나 「그 세션()」이 나가면 이음매가 오히려 혼란을 만든다. */
     process.env.CLAUDE_CODE_HOST_SESSION_ID = '';
     const d = report.buildHandoff(없음, null, { dirty: 0 });
     const d첫줄 = d.split('\n')[0];
-    assert.match(d첫줄, /끝난 세션/, '지문이 없다고 이음매가 통째로 사라졌다');
+    /* ⚠ 옛 검사는 `/끝난 세션/` 이었다 — 그 단언 자체가 F343 의 원인이라 문구가 바뀌었다.
+     *   지키려던 것(「지문이 없다고 이음매가 통째로 사라지지 않는다」)은 그대로 두고 축만 옮긴다. */
+    assert.match(d첫줄, /마감하며/, '지문이 없다고 이음매가 통째로 사라졌다');
+    assert.doesNotMatch(d첫줄, /끝난 세션/,
+      `🔴 이음매가 다시 「끝난 세션」이라 단언한다 — 그 세션은 살아서 계속 커밋한다(F343):\n${d첫줄}`);
     assert.match(d첫줄, /너는 다른 세션이다/, '지문 없는 갈래에서 이음매의 핵심 문장이 빠졌다');
     assert.doesNotMatch(d, /``|\(\)/, `🔴 지문 없는 갈래가 빈 백틱·빈 괄호를 냈다:\n${d첫줄}`);
+  } finally {
+    if (원래 === undefined) delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
+    else process.env.CLAUDE_CODE_HOST_SESSION_ID = 원래;
+  }
+});
+
+/* 🔴 F343 의 **원인** 쪽 (2026-08-12 실측 · 결과 쪽은 board-guard ④ 가 이미 막았다).
+ *
+ * 인계문이 「끝난 세션 `52a7abc6`」이라 단언하고 🎫 로 「`--commit 52eac5b2` 재검수」를 넘겼는데,
+ * 그 세션은 인계문을 쓴 뒤에도 살아서 자기 🎫 를 직접 처리하고 보드 줄을 **새 과녁**으로 갱신했다.
+ * 이어받은 세션이 치른 값 = 낡은 과녁으로 이종 검수 11분(codex 실비) · 보드 선언→철회 · board-move 2건.
+ *
+ * 🔑 고칠 것은 세션 수명이 아니라 **①단언**과 **②사본을 대조할 좌표**다. 그리고 낡음은 쓰는
+ *   시점엔 원리상 모르고 **읽는 시점엔 잴 수 있다** — 그래서 `낡음()` 은 읽는 자리의 함수다.
+ * 🔑 검사는 문구가 아니라 **왕복**으로 건다(build → 낡음). producer·parser 가 같은 파일에 있어도
+ *   문구를 다듬으면 갈라질 수 있고, 갈라진 쪽 증상은 「경고가 안 뜬다」= **통과와 같은 모양**이다. */
+test('인계문 — 보드 줄 «사본»의 낡음을 읽는 자리에서 잰다 (F343 원인 쪽)', () => {
+  const 머리 = '| 날짜 | 트랙/작업 | 파일 | 상태 |\n|---|---|---|---|\n';
+  const 짓기 = (줄) => {
+    const d = 임시('synk-tb-f343-');
+    fs.mkdirSync(path.join(d, 'docs', '_ops', '보드'), { recursive: true });
+    fs.writeFileSync(path.join(d, 'docs', '_ops', '보드', 'sess.md'), 머리 + 줄);
+    return d;
+  };
+  const 원 = '| 2026-08-12 | 내 트랙 | a.js | ▶작업중 (`local_ba86eeb2`) — 🎫 다음=`--commit 52eac5b2` 재검수 |\n';
+  const 원래 = process.env.CLAUDE_CODE_HOST_SESSION_ID;
+  process.env.CLAUDE_CODE_HOST_SESSION_ID = 'local_ba86eeb2-565d-438b-85c1-6d98aeb187a7';
+  try {
+    const d = 짓기(원);
+    const h = report.buildHandoff(d, null, { dirty: 0 });
+
+    /* ① 사본에 **원본 주소**가 붙어야 한다 — 없으면 받은 세션에게 사본이 유일한 현실이고,
+     *   「지금 다시 읽어라」는 따를 수 없는 처방이 된다(F103). 좌표는 실제 그 파일이어야 한다. */
+    assert.match(h, /원본 `docs\/_ops\/보드\/sess\.md`/,
+      `🔴 사본만 싣고 원본 주소를 안 줬다 — 다시 볼 이유가 안 보인다:\n${h}`);
+
+    /* ② 왕복 — 안 바뀌었으면 「그대로」. 여기가 거짓양성 방향이다(늘 짖는 경고는 곧 배경이 된다). */
+    const v0 = report.낡음(d, h);
+    assert.ok(v0, '인계문에서 대조 좌표를 못 되읽었다 — producer 와 parser 가 갈라졌다');
+    assert.strictEqual(v0.판정, '그대로', `🔴 원본이 그대로인데 「${v0.판정}」이라 짖는다 — 거짓양성이 이 경고의 사망 원인이다`);
+    assert.strictEqual(report.낡음경고(v0), null, '「그대로」인데 경고를 냈다 — 매번 뜨는 줄은 아무도 안 읽는다');
+
+    /* ③ 실사고 재현 — 그 세션이 마감 뒤에도 일해 🎫 과녁을 옮겼다. 이게 잡혀야 한다. */
+    fs.writeFileSync(path.join(d, 'docs', '_ops', '보드', 'sess.md'),
+      머리 + 원.replace('52eac5b2', 'c0f148aa'));
+    const v1 = report.낡음(d, h);
+    assert.strictEqual(v1.판정, '바뀜', `🔴 🎫 과녁이 옮겨졌는데 못 잡았다 — 낡은 과녁으로 값비싼 조작이 나간다:\n${JSON.stringify(v1)}`);
+    const 경고 = report.낡음경고(v1);
+    assert.match(경고, /낡았다/, '판정만 내고 다음 세션이 읽을 말이 없다');
+    assert.match(경고, /sess\.md/, '어디를 다시 열어야 하는지를 경고가 안 준다(F103)');
+
+    /* ④ 줄이 통째로 치워진 갈래 — 아카이브 이관·파일 삭제. 침묵하면 그게 새는 방향이다. */
+    fs.writeFileSync(path.join(d, 'docs', '_ops', '보드', 'sess.md'), 머리);
+    assert.strictEqual(report.낡음(d, h).판정, '사라짐', '줄이 사라졌는데 「그대로」로 셌다');
+    fs.rmSync(path.join(d, 'docs', '_ops', '보드', 'sess.md'));
+    assert.strictEqual(report.낡음(d, h).판정, '사라짐', '보드 파일이 없어졌는데 조용히 통과시켰다');
+
+    /* ⑤ 대조할 사본이 애초에 없는 인계문(트랙 없이 끝난 세션·옛 바통)은 **null** —
+     *   「못 쟀다」를 「바뀜」으로 번역하면 트랙 없는 세션마다 붉은 줄이 나간다. */
+    const 없음 = 짓기('| 2026-08-12 | 남의 트랙 | z.js | ▶작업중 (`local_11112222`) — 남 |\n');
+    assert.strictEqual(report.낡음(없음, report.buildHandoff(없음, null, { dirty: 0 })), null,
+      '트랙 줄이 안 실린 인계문에 대조 판정을 냈다');
   } finally {
     if (원래 === undefined) delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
     else process.env.CLAUDE_CODE_HOST_SESSION_ID = 원래;
