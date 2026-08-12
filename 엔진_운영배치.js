@@ -418,6 +418,12 @@ function syncProfiles() {
  *   🔴 서명은 **개수가 아니라 이름**이다 — 「3건」으로 접으면 A 가 고쳐지고 B 가 깨진 날 서명이 그대로라
  *   B 는 영영 안 울린다. 개수 서명은 그 자체가 유실 지점이다.
  */
+/** 긴 서명을 **자르지 않고** 12자리로 접는다 — 자르면 뒤쪽 변화가 안 보인다(talkPromptVer_ 와 같은 관용구). */
+function 접기_(원문) {
+  const d = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, String(원문), Utilities.Charset.UTF_8);
+  return d.map(b => ((b & 0xFF) + 0x100).toString(16).slice(1)).join('').slice(0, 12);
+}
+
 function 명부스윕_() {
   const props = PropertiesService.getScriptProperties();
   const url = String(props.getProperty('ROSTER_INGEST_URL') || '').trim();
@@ -432,7 +438,11 @@ function 명부스윕_() {
     const pf = ss.getSheetByName('profiles');
     const 몸 = [];
     let 머리 = null;
-    if (pf && pf.getLastRow() >= 2) {
+    /* 🔴 **시트 부재는 「보낼 게 없다」가 아니라 고장이다.** 조용히 지나가면 명부가 몇 달째 안 서
+     *   있어도 아무 데도 안 남는다 — 미실행과 통과가 같은 모양이면 안 된다(F207 · ①배포 검수 P1).
+     *   ⚠ 학생 0행(머리글만)은 고장이 **아니다** — 개원 전 정상이고, 급감·0 은 syncProfiles 가 이미 본다. */
+    if (!pf) throw new Error('profiles 시트를 찾지 못했다');
+    if (pf.getLastRow() >= 2) {
       const 표 = pf.getRange(1, 1, pf.getLastRow(), 8).getDisplayValues();   // A:H — user_id·이름·이름_몽골·role·class_name·생일·email·연락처
       머리 = 표[0];
       표.slice(1).forEach(r => {
@@ -458,34 +468,54 @@ function 명부스윕_() {
         본문 = '명부 스윕이 거절됐습니다(HTTP ' + code + ').\n' + txt.slice(0, 500) +
           '\n\n※ 401=시크릿 어긋남 · 503=서버에 ROSTER_INGEST_SECRET 미설정 · 400=머리글/행수 문제.';
       } else {
-        const j = (function () { try { return JSON.parse(txt) || {}; } catch (eP) { return {}; } })();
-        const 문제들 = j.문제들 || [];
-        const 막힘 = j.막힘 || [];
-        const 역할오류들 = j.역할오류들 || [];
-        const 무동의 = j.무동의 || [];
-        Logger.log('명부스윕: 읽은행 ' + (j.읽은행 || 0) + ' · 넣음 ' + (j.넣음 || 0) + ' · 건너뜀 ' + (j.건너뜀 || 0) +
-          ' · 경쟁흡수 ' + (j.경쟁흡수 || 0) + ' · 문제 ' + 문제들.length + ' · 막힘 ' + 막힘.length + ' · 무동의 ' + 무동의.length);
-        if (문제들.length || 막힘.length || 역할오류들.length || 무동의.length) {
-          서명 = ['p:' + 문제들.map(p => p.번호 || p.줄).join(','),
-            'b:' + 막힘.map(p => p.번호).join(','),
-            'r:' + 역할오류들.join(','),
-            'c:' + 무동의.join(',')].join('|').slice(0, 900);   // 이름 기반 서명 · app_state 칸 보호
-          const 줄 = [];
-          if (문제들.length) 줄.push('■ 명부에 못 실린 행 — 시트를 고치면 다음 아침 자동 반영됩니다\n' +
-            문제들.map(p => '· ' + (p.줄 || '?') + '행 ' + (p.번호 || '') + ': ' + (p.사유 || '')).join('\n'));
-          if (막힘.length) 줄.push('■ 연락처가 기존 등록과 다릅니다 — 사람만 판단할 수 있어 덮지 않았습니다\n' +
-            막힘.map(p => '· ' + (p.번호 || '') + ': ' + (p.사유 || '')).join('\n'));
-          if (역할오류들.length) 줄.push('■ role 열 문제\n' + 역할오류들.map(s => '· ' + s).join('\n'));
-          if (무동의.length) 줄.push('■ 오늘 명부에 새로 선 학생 중 동의가 0건입니다 — 다음 걸음은 동의 발급입니다\n' +
-            무동의.map(c => '· ' + c).join('\n') +
-            '\n(오늘 새로 선 학생만 셉니다 — 내일은 이 목록에 다시 안 뜹니다)');
-          본문 = 줄.join('\n\n');
+        /* 🔴 **200 을 성공으로 읽지 않는다 — 봉투를 본다**(①배포 검수 P1 3키 · fail closed).
+         *   프록시가 HTML 504 를 200 으로 주거나, 빈 몸통·`{ok:false}` 가 오면 옛 코드는 `{}` 로 접어
+         *   모든 오류 배열이 비고 → 상태가 **경고 없이 초기화**됐다. 명부는 안 섰는데 배치는 성공한
+         *   얼굴을 한다 — 「미실행」이 「통과」와 같은 모양이 되는 자리(F207 · 방향 불변식 3). */
+        let j = null;
+        try { j = JSON.parse(txt); } catch (eP) { j = null; }
+        const 봉투아님 = !j || typeof j !== 'object' || j.ok !== true
+          || !Array.isArray(j.문제들) || !Array.isArray(j.막힘);
+        if (봉투아님) {
+          서명 = 'http200_봉투아님|' + txt.slice(0, 120);
+          본문 = '명부 스윕이 200 을 받았지만 **우리 응답이 아닙니다** — 붓기가 실제로 돌았는지 알 수 없어\n' +
+            '실패로 답니다(성공으로 읽으면 명부가 안 선 채로 매일 조용히 지나갑니다).\n\n받은 것: ' + txt.slice(0, 500) +
+            '\n\n※ 프록시 HTML·빈 응답·{ok:false} 가 이 모양입니다 — Edge Function 배포 상태와 URL 을 확인하세요.';
+        } else {
+          const 문제들 = j.문제들;
+          const 막힘 = j.막힘;
+          const 역할오류들 = j.역할오류들 || [];
+          const 무동의 = j.무동의 || [];
+          Logger.log('명부스윕: 읽은행 ' + (j.읽은행 || 0) + ' · 넣음 ' + (j.넣음 || 0) + ' · 건너뜀 ' + (j.건너뜀 || 0) +
+            ' · 경쟁흡수 ' + (j.경쟁흡수 || 0) + ' · 문제 ' + 문제들.length + ' · 막힘 ' + 막힘.length + ' · 무동의 ' + 무동의.length);
+          if (문제들.length || 막힘.length || 역할오류들.length || 무동의.length) {
+            /* 🔴 **자르지 말고 접는다**(①배포 검수 P2). `slice(0, 900)` 은 앞 900자가 같은 두 판을
+             *   같다고 읽어, 뒤쪽에서 새로 깨진 학생이 영영 안 울렸다 — 개수 서명과 같은 병이 길이
+             *   축으로 재발한 것이다. 세는 눈(개수)은 사람이 읽게 남기고, 가르는 눈은 전문 해시가 진다. */
+            const 원서명 = ['p:' + 문제들.map(p => p.번호 || p.줄).join(','),
+              'b:' + 막힘.map(p => p.번호).join(','),
+              'r:' + 역할오류들.join(','),
+              'c:' + 무동의.join(',')].join('|');
+            서명 = 'p' + 문제들.length + '/b' + 막힘.length + '/r' + 역할오류들.length + '/c' + 무동의.length
+              + '#' + 접기_(원서명);
+            const 줄 = [];
+            if (문제들.length) 줄.push('■ 명부에 못 실린 행 — 시트를 고치면 다음 아침 자동 반영됩니다\n' +
+              문제들.map(p => '· ' + (p.줄 || '?') + '행 ' + (p.번호 || '') + ': ' + (p.사유 || '')).join('\n'));
+            if (막힘.length) 줄.push('■ 연락처가 기존 등록과 다릅니다 — 사람만 판단할 수 있어 덮지 않았습니다\n' +
+              막힘.map(p => '· ' + (p.번호 || '') + ': ' + (p.사유 || '')).join('\n'));
+            if (역할오류들.length) 줄.push('■ role 열 문제\n' + 역할오류들.map(s => '· ' + s).join('\n'));
+            if (무동의.length) 줄.push('■ 오늘 명부에 새로 선 학생 중 동의가 0건입니다 — 다음 걸음은 동의 발급입니다\n' +
+              무동의.map(c => '· ' + c).join('\n') +
+              '\n(오늘 새로 선 학생만 셉니다 — 내일은 이 목록에 다시 안 뜹니다)');
+            본문 = 줄.join('\n\n');
+          }
         }
       }
     }
   } catch (e) {
     서명 = '왕복실패|' + String(e).slice(0, 120);
-    본문 = '명부 스윕이 서버에 닿지 못했습니다: ' + e + '\nROSTER_INGEST_URL·네트워크·Edge Function 배포 상태를 확인하세요.';
+    본문 = '명부 스윕이 돌지 못했습니다: ' + e +
+      '\nprofiles 시트·ROSTER_INGEST_URL·네트워크·Edge Function 배포 상태를 확인하세요.';
   }
 
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
