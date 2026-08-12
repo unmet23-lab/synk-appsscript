@@ -206,6 +206,32 @@ function grammarGradeCounts_() {
   return c;
 }
 
+/* 그 레벨이 실제로 **출제할 수 있는** 문형 풀 — 진화 게이트 뱅크(72) + 스토리 골격(96)을 합친다.
+ *
+ * 🔑 **게이트 판정에는 쓰지 않는다** — 그건 `grammarsForLevel_` 이고 뱅크만 본다. 여기 스토리
+ *   문형이 섞이면 「각 단계 12개 중 9개」(몬스터_진화_임계값 §2-2 확정)가 통째로 무너진다.
+ *   이 함수의 자리는 **문항·미니게임 출제**다 — 두 축을 한 함수로 합치지 않는 것이 요점이다.
+ * 🔑 겹치는 20문형은 **뱅크가 이긴다**(먼저 담는다) — 뱅크가 급수 정본이고, 두 값의 일치는
+ *   회귀 ⑨가 이미 보증한다. 여기서 또 판정하면 같은 판정이 세 곳이 된다.
+ * ⚠ `STORY_GRAMMAR` 는 다른 파일(엔진_폼리포트.js)의 전역이라 **함수 안에서** 참조한다
+ *   (교재연동.js 와 같은 규칙 — 파일 로드 순서에 기대지 않는다). 없으면 뱅크만으로 돈다. */
+function 급수문형풀_(lv) {
+  const band = LEVEL_TOPIK_BAND[Number(lv)] || [];
+  const inBand = (급) => band.indexOf(급) >= 0;
+  const out = [], 본 = {};
+  const 담기 = (문형, 의미, 급, 출처) => {
+    const key = String(문형).replace(/\s+/g, '');
+    if (본[key]) return;
+    본[key] = 1;
+    out.push({ 문형: 문형, 의미: 의미, 급: 급, 출처: 출처 });
+  };
+  GRAMMAR_BANK.forEach(g => { if (inBand(g[3])) 담기(g[1], g[2], g[3], 'bank:' + g[0]); });
+  if (typeof STORY_GRAMMAR !== 'undefined') {
+    STORY_GRAMMAR.forEach((월, mi) => 월.forEach(g => { if (inBand(g[2])) 담기(g[0], g[1], g[2], 'story:' + (mi + 1) + '월'); }));
+  }
+  return out;
+}
+
 function setupGrammarBank() { // contents type='grammar' 재건 — replaceContentType이 E/G/H(이미지·번역) 보존 병합
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   replaceContentType(ss, 'grammar', GRAMMAR_BANK.map(g =>

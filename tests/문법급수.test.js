@@ -150,6 +150,94 @@ test('[급수⑥] setupGrammarBank 시트 재건이 칸 추가에 안 깨진다'
     '시트 재건 행 조립이 바뀌었다 — 급수 칸이 E열(이미지)로 새는지 확인하라');
 });
 
+/* ── STORY_GRAMMAR(스토리북 월 로테이션 96문형) 급수 태그 ──────────────────
+ * 이 배열은 GRAMMAR_BANK 와 «다른 축»이다 — 진화 게이트가 아니라 챕터 문장의 골격이고,
+ * 그래서 4~5급을 담을 수 있다(뱅크는 「단계 12개 중 9개」가 문서화된 확정이라 못 늘린다).
+ * 겹치는 문형이 20개나 되므로 **두 곳이 갈라지지 않는지**가 여기서 지킬 급소다. */
+function 스토리상수() {
+  const s = code.indexOf('const STORY_GRAMMAR = [');
+  assert.notStrictEqual(s, -1, 'STORY_GRAMMAR 선언을 못 찾았다');
+  const e = code.indexOf('\n];', s);
+  assert.notStrictEqual(e, -1, 'STORY_GRAMMAR 블록 끝(\\n];)을 못 찾았다');
+  const mn = code.indexOf('const MN_STORY_GRAMMAR = [');
+  const mnE = code.indexOf('\n];', mn);
+  assert.ok(mn > 0 && mnE > mn, 'MN_STORY_GRAMMAR 를 못 찾았다');
+  return new Function(`${code.slice(s, e + 3)}\n${code.slice(mn, mnE + 3)}\n return { STORY_GRAMMAR, MN_STORY_GRAMMAR };`)();
+}
+
+test('[급수⑧] STORY_GRAMMAR 96문형이 전부 급수 칸을 갖는다 (1~5)', () => {
+  const { STORY_GRAMMAR } = 스토리상수();
+  const 문형들 = STORY_GRAMMAR.reduce((a, r) => a.concat(r), []);
+  assert.strictEqual(문형들.length, 96, `스토리 문형이 96개가 아니다(${문형들.length}) — 월 24행×4`);
+  const 나쁜 = 문형들.filter((g) => g.length !== 3 || !Number.isInteger(g[2]) || g[2] < 1 || g[2] > 5);
+  assert.deepStrictEqual(나쁜.map((g) => g[0]), [], '급수 칸이 없거나 1~5 밖이다');
+});
+
+test('[급수⑨] 두 뱅크에 겹치는 문형은 «같은» 급수를 갖는다', () => {
+  /* 🔑 이 검사가 없으면 같은 문형이 한쪽에선 3급, 다른 쪽에선 4급이 되고 — 둘 다 초록이다.
+   *   GRAMMAR_BANK 가 급수 정본이므로 어긋나면 스토리 쪽을 뱅크에 맞춘다. */
+  const { GRAMMAR_BANK } = 뱅크상수();
+  const { STORY_GRAMMAR } = 스토리상수();
+  const 뱅크급 = {};
+  GRAMMAR_BANK.forEach((g) => { 뱅크급[정규화(g[1])] = { 급: g[3], id: g[0] }; });
+  const 어긋남 = [];
+  let 겹침 = 0;
+  STORY_GRAMMAR.forEach((월) => 월.forEach((g) => {
+    const 짝 = 뱅크급[정규화(g[0])];
+    if (!짝) return;
+    겹침++;
+    if (짝.급 !== g[2]) 어긋남.push(`${g[0]}: 스토리 ${g[2]}급 vs 뱅크 ${짝.id} ${짝.급}급`);
+  }));
+  assert.deepStrictEqual(어긋남, [], '같은 문형의 급수가 두 곳에서 갈렸다 — GRAMMAR_BANK 가 정본이다');
+  /* 겹침이 0이면 이 검사는 아무것도 안 본 채 초록이 된다 — 분모를 함께 못박는다(F207). */
+  assert.ok(겹침 >= 15, `겹치는 문형이 ${겹침}개뿐이다 — 대조가 사실상 안 돌고 있다(정규화가 깨졌는지 본다)`);
+});
+
+test('[급수⑩] 몽골어판이 한국어판과 1:1로 유지된다 (칸 추가가 대응을 안 깬다)', () => {
+  const { STORY_GRAMMAR, MN_STORY_GRAMMAR } = 스토리상수();
+  assert.strictEqual(MN_STORY_GRAMMAR.length, STORY_GRAMMAR.length, '월 행 수가 어긋났다');
+  STORY_GRAMMAR.forEach((월, i) => {
+    assert.strictEqual(MN_STORY_GRAMMAR[i].length, 월.length, `${i + 1}월 문형 수가 어긋났다`);
+  });
+});
+
+test('[급수⑪] 스토리 문형에 4~5급이 실재한다 (뱅크가 못 담는 구간)', () => {
+  const { STORY_GRAMMAR } = 스토리상수();
+  const 분포 = {};
+  STORY_GRAMMAR.forEach((월) => 월.forEach((g) => { 분포[g[2]] = (분포[g[2]] || 0) + 1; }));
+  assert.ok((분포[4] || 0) > 0 && (분포[5] || 0) > 0,
+    `4·5급이 비었다 — 이 배열의 존재 이유가 사라진다(분포: ${JSON.stringify(분포)})`);
+});
+
+test('[급수⑫] 스토리북 소비자가 급수 칸에 안 걸린다', () => {
+  /* 배지 조립이 G[i][0]·G[i][1] 만 쓰는지 — [2]를 실으면 학부모 리포트에 급수 숫자가 새어 나간다.
+   * (레벨 노출은 별개 설계 판정이고, 지금 계약은 「문형 — 의미」 두 칸이다.) */
+  const 배지 = code.split('\n').filter((l) => l.indexOf("const gB = i =>") >= 0)[0];
+  assert.ok(배지, '스토리북 문법 배지 조립부(gB)를 못 찾았다');
+  assert.ok(!/G\[i\]\[2\]/.test(배지), '배지가 급수 칸을 싣는다 — 학부모 리포트에 급수가 노출된다');
+});
+
+test('[급수⑬] 출제 풀이 두 배열을 잇는다 — 겹침은 한 번만·게이트와는 갈린다', () => {
+  /* 실제 함수를 «그대로» 평가한다 — 여기서 로직을 다시 적으면 검사만 낡는다. */
+  const bs = code.indexOf('const GRAMMAR_BANK = ['), be = code.indexOf('function grammarStageOf_', bs);
+  const ss = code.indexOf('const STORY_GRAMMAR = ['), se = code.indexOf('\n];', ss);
+  const fs_ = code.indexOf('function 급수문형풀_'), fe = code.indexOf('function setupGrammarBank', fs_);
+  assert.ok(fs_ > 0 && fe > fs_, '급수문형풀_ 구간을 못 찾았다');
+  const { 풀, GRAMMAR_BANK } = new Function(
+    `${code.slice(bs, be)}\n${code.slice(ss, se + 3)}\n${code.slice(fs_, fe)}\n return { 풀: 급수문형풀_, GRAMMAR_BANK };`)();
+
+  const lv6 = 풀(6); // Lv6 = TOPIK 4~5급 — 유호님이 겨냥한 구간
+  const 뱅크만 = GRAMMAR_BANK.filter((g) => g[3] === 4 || g[3] === 5).length;
+  assert.ok(lv6.length > 뱅크만, `출제 풀(${lv6.length})이 뱅크 4~5급(${뱅크만})보다 크지 않다 — 스토리 문형이 안 합쳐졌다`);
+  /* 겹침이 두 번 담기면 출제 확률이 그 문형만 두 배가 된다 — 화면엔 안 보이는 편향이다. */
+  const 키 = lv6.map((x) => String(x.문형).replace(/\s+/g, ''));
+  assert.strictEqual(new Set(키).size, 키.length, '같은 문형이 두 번 담겼다 — 출제 편향이 된다');
+  const 출처 = new Set(lv6.map((x) => String(x.출처).split(':')[0]));
+  assert.ok(출처.has('bank') && 출처.has('story'), `출처가 한쪽뿐이다(${[...출처].join(',')}) — 잇는 것이 이 함수의 일이다`);
+  /* 모르는 레벨은 빈 배열 — 배정이 통째로 죽지 않게(예외 아님). */
+  assert.deepStrictEqual(풀(99), [], '모르는 레벨이 빈 배열을 안 낸다');
+});
+
 test('[급수⑦] 급수 분포가 세어진다 — 4~5급 빈 곳이 숫자로 드러난다', () => {
   const { GRAMMAR_BANK } = 뱅크상수();
   const 분포 = {};
