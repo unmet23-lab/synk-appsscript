@@ -1156,3 +1156,72 @@ test('[F298·범위] 남이 이미 넣어 둔 글자는 내 무관한 편집을 
   assert.notStrictEqual(r.결정, 'deny',
     `남의 글자 때문에 내 무관한 편집이 막혔다 — 새는 방향이 아니라 **얼어붙는** 방향이다: ${r.사유.slice(0, 200)}`);
 });
+
+/* ── ⑧ 트랙 제목 충돌 — 선언하는 «순간» 막는가 (F340 · 2026-08-12 실측) ────────────────────
+ *
+ * 탐지력은 **여기 픽스처가 진다** — 실저장소는 살아있는 세션이 매 실행마다 달라 초록이 우연이 된다.
+ * 제목은 그날 실제로 충돌한 두 줄을 «그대로» 쓴다(사람이 쓰는 표기로 검사한다 — 가드의 첫 맹점).
+ * 가르는 조건은 **하나뿐**이다: 겹친 줄의 주인이 살았나. 그래서 박동 하나만 켜고 끄며 대조한다. */
+const 남세션340 = 'local_f340aaaa-1111-2222-3333-444455556666';
+const 내세션340 = 'local_f340bbbb-1111-2222-3333-444455556666';
+const 지문340 = (sid) => sid.replace(/^local_/, '').slice(0, 8);
+const 남제목340 = '**⓪de6b34d5 재검수→배포(210~214)→as 명부스윕**(9a710cd8 🎫 인계 · 새 선언 · 남의 줄 무변경)';
+const 내제목340 = '**⓪de6b34d5 재검수→라이브 배포(v9.210~214)→as 명부스윕**(`9a710cd8` 🎫 인계 · 새 선언)';
+const 딴제목340 = '**미니게임 ⓑ 실왕복 실행 — ⑫⑬확장→리허설 deliver 재배포→게임 갈래 실측**(대기열 P0)';
+
+function F340픽스처(제목) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'boardf340-'));
+  const g = (...a) => 실행('git', a, { cwd: dir, encoding: 'utf8' });
+  g('init', '-q'); g('config', 'user.email', 't@t'); g('config', 'user.name', 't');
+  fs.writeFileSync(path.join(dir, 'a.js'), '// x\n', 'utf8');
+  g('add', '--', 'a.js'); g('commit', '-q', '-m', '초기');
+  fs.writeFileSync(보드파일(dir, 지문340(남세션340)),
+    `| 2026-08-12 | ${남제목340} | 검수 장부 | 작업중 (\`local_${지문340(남세션340)}\`) |\n`, 'utf8');
+  const 최상위 = g('rev-parse', '--show-toplevel').stdout.trim();
+  const 박동 = path.join(store.stateDir(), `track-${store.projectKey(최상위)}-${store.safeId(남세션340)}.json`);
+  const 내줄 = `| 2026-08-12 | ${제목} | 검수 장부 | 작업중 (\`local_${지문340(내세션340)}\`) |`;
+  return {
+    박동,
+    켜기: () => {
+      fs.mkdirSync(store.stateDir(), { recursive: true });
+      fs.writeFileSync(박동, JSON.stringify({ touched: [] }), 'utf8');
+    },
+    쓰기: () => 판정(
+      { tool_name: 'Write', tool_input: { file_path: 보드파일(dir, 지문340(내세션340)), content: `${내줄}\n` } },
+      { CLAUDE_CODE_HOST_SESSION_ID: 내세션340 }
+    ),
+  };
+}
+
+test('[F340] 살아있는 세션이 이미 선언한 트랙을 다시 선언하면 차단된다', { skip: !hasGit && 'git 없음' }, () => {
+  const f = F340픽스처(내제목340);
+  f.켜기();
+  try {
+    const r = f.쓰기();
+    assert.strictEqual(r.결정, 'deny',
+      `막았어야 한다 — 이게 안 막히면 20~32분짜리 이종 검수가 두 번 탄다: ${r.사유.slice(0, 200)}`);
+    assert.match(r.사유, /f340aaaa/, '겹친 세션 지문을 보여줘야 어디로 비켜날지 안다');
+  } finally { 박동치우기(f.박동); }
+});
+
+/* 🔑 처방을 그 가드에 되먹여 본다(F103) — 「다른 것을 골라 선언한다」가 실제로 통과해야
+ *   처방이 따를 수 있는 것이다. 안 그러면 우회가 정상 통로가 된다. */
+test('[F340] 처방대로 «다른 트랙»을 선언하면 통과한다 (거짓양성이 곧 우회 손버릇이 된다)', { skip: !hasGit && 'git 없음' }, () => {
+  const f = F340픽스처(딴제목340);
+  f.켜기();
+  try {
+    const r = f.쓰기();
+    assert.notStrictEqual(r.결정, 'deny',
+      `겹치지 않는 트랙이 막혔다 — 처방을 따를 수 없게 된다: ${r.사유.slice(0, 200)}`);
+  } finally { 박동치우기(f.박동); }
+});
+
+/* 죽은 세션의 줄을 이어받는 것은 🎫 의 **정상 통로**다 — 여기서 막으면 인계가 통째로 죽는다.
+ * 표식(🎫)으로는 못 가른다: 08-12 충돌에선 두 줄 다 「🎫 인계」라고 적혀 있었다. */
+test('[F340] 같은 제목이어도 그 세션이 죽었으면 막지 않는다 (인계는 정상 통로)', { skip: !hasGit && 'git 없음' }, () => {
+  const f = F340픽스처(내제목340);
+  박동치우기(f.박동);
+  const r = f.쓰기();
+  assert.notStrictEqual(r.결정, 'deny',
+    `죽은 줄 인계가 막혔다 — 🎫 통로가 통째로 죽는다: ${r.사유.slice(0, 200)}`);
+});

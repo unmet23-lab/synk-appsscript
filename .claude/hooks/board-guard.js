@@ -405,6 +405,77 @@ try { 이전 = 합치기(fs.readFileSync(filePath, 'utf8')); }
 catch (_) { 이전 = 남의줄.length ? 남의줄.join('\n') : null; }
 const 보드id = require(path.join(__dirname, 'lib', 'board-id.js'));
 
+/* ── ⑧ 같은 트랙을 두 세션이 나란히 — **선언하는 순간** 막는다 (F340 · 2026-08-12 실측) ────
+ * 죽은 세션이 🎫 를 놓으면 다음 세션들이 그것을 읽고 각자 선언한다. 대기열이 시키는 대조
+ * (`node tools/board.js`)는 읽기와 쓰기 사이에 잠금이 없어서, 몇 분 차이면 서로를 못 본다 —
+ * 보드 파일은 선언 시점엔 대개 미커밋이라 `git log` 로도 안 보인다. 실측 08-12: a0d3c91a 와
+ * 52a7abc6 이 같은 🎫 를 집어 **20~32분짜리 이종 검수를 각자 완주**하고 같은 답(2벌 0건)을
+ * 두 번 샀다. 뒤늦게 안 것은 배포 직전 `bump-version --check` 가 남의 [vNEXT] 에 걸렸을 때다.
+ * 이미 있던 `track-collision` 훅은 **남의 커밋이 착지한 뒤**에야 운다 — 그땐 이미 다 태운 뒤다.
+ *
+ * 🔑 생사로 가른다(표식으로 가르지 않는다): 충돌한 두 줄 다 「🎫 인계 · 새 선언」이라 적혀
+ *   있었다 — 표식은 둘을 못 가른다. 상대가 **살아 있으면** 차단(나중에 온 쪽이 비켜난다 · F073
+ *   과 같은 방향), **죽었으면** 알림만 낸다 — 죽은 줄을 이어받는 것은 🎫 의 정상 통로라
+ *   막으면 따를 수 없는 처방이 된다(F103).
+ * ⚠ 생사 판정을 여기 다시 적지 않는다 — `작업본소유자.살았나` 를 그대로 부른다(②의 board-move
+ *   `--dry` 와 같은 원칙: 판정은 한 곳). 못 부르면 **막지 않고 그 사실을 낸다** — 여기서 막으면
+ *   생사를 못 재는 기계에서 선언 자체가 통째로 죽는다. */
+const 제목열쇠 = (s) => String(s)
+  .replace(/`[^`]*`/g, ' ')          // 백틱 안(파일·해시)은 뺀다 — 같은 트랙도 그 안은 갈린다
+  .replace(/\([^)]*\)/g, ' ')        // 괄호 주석(「🎫 인계 · 새 선언 · 남의 줄 무변경」)도 뺀다
+  .replace(/[0-9a-f]{7,40}/gi, ' ')  // 커밋 해시·세션 지문 — 같은 트랙이어도 회차마다 다르다
+  .toLowerCase()
+  .split(/[^0-9a-z가-힣ㄱ-ㅎㅏ-ㅣ]+/u)
+  .filter((w) => w.length >= 2);
+function 겹침률(a, b) {
+  if (!a.length || !b.length) return 0;
+  const A = new Set(a); const B = new Set(b);
+  let n = 0;
+  for (const w of A) if (B.has(w)) n += 1;
+  return n / Math.min(A.size, B.size);   // 포함률 — 「같은 트랙 + 말 몇 개 더」를 잡는다
+}
+const 겹침문턱 = 0.75;
+const 최소낱말 = 3;   // 짧은 제목끼리 우연히 붙는 것을 막는다(거짓양성이 곧 우회 손버릇이 된다)
+const 산지문 = (() => {
+  try {
+    const 소유 = require(path.join(__dirname, '..', '..', 'tools', '작업본소유자.js'));
+    return new Set(소유.세션들(보드ROOT).filter(소유.살았나).map((s) => 소유.짧게(s.sid)));
+  } catch (_) { return null; }   // 못 쟀다 — 0건으로 접지 않는다
+})();
+/* ⚠ 판정 본체는 `물려받은` 선언 **뒤**에 산다(아래 「⑧ 판정」) — 여기서 부르면 TDZ 로 훅이
+ *   통째로 죽고, **죽은 훅은 조용히 통과로 읽힌다**(F239 가 같은 자리에서 실제로 그랬다). */
+function 트랙충돌(물려받은, 미룬deny) {
+  if (resulting === null || 이전 === null) return;
+  const 있던것 = new Set(String(이전).split('\n').filter(isDataRow).map((l) => l.trim()));
+  const 새줄 = String(resulting).split('\n').filter(isDataRow).filter((l) => !있던것.has(l.trim()));
+  const 남의활성 = 남의줄.filter(isDataRow).filter(isActiveRow);
+  for (const 내줄 of 새줄) {
+    const 내열쇠 = 제목열쇠((cellsOfRow(내줄)[1] || ''));
+    if (내열쇠.length < 최소낱말) continue;
+    for (const 남 of 남의활성) {
+      const 남열쇠 = 제목열쇠((cellsOfRow(남)[1] || ''));
+      if (남열쇠.length < 최소낱말) continue;
+      if (겹침률(내열쇠, 남열쇠) < 겹침문턱) continue;
+      const 파일 = 줄의파일.get(남.trim()) || '';
+      const 지문 = path.basename(String(파일), '.md');
+      const 제목 = (cellsOfRow(남)[1] || '').replace(/\*/g, '').trim().slice(0, 60);
+      if (산지문 === null) {
+        물려받은.push(`트랙 제목이 남의 활성 줄과 겹친다(${지문}) — **생사를 못 재 막지 않았다**: ${제목}`);
+      } else if (산지문.has(지문)) {
+        미룬deny(`[board-guard] 이 트랙은 **살아있는 다른 세션(${지문})이 이미 선언**했다 — 나란히 지으면 둘 다 끝까지 간다(F340).\n`
+          + `   겹친 줄: ${제목}\n`
+          + '   → 비켜난다 — 대기열·보드 ⏳·결정 큐에서 **다른 것**을 골라 내 파일에 선언한다.\n'
+          + '     (🎫 표식으로는 못 가른다 — 충돌한 두 줄 다 「🎫 인계」라고 적혀 있었다. 가르는 것은 그 세션의 생사다.)\n'
+          + `     그쪽 상태부터 본다: node tools/board.js  ·  생사: node tools/작업본소유자.js\n`
+          + '     정말 나눠 맡는 것이면 **제목을 갈라 적는다**(같은 제목이면 보드가 둘을 구분 못 한다).');
+      } else {
+        물려받은.push(`트랙 제목이 겹치지만 그 세션(${지문})은 **죽었다** — 인계로 본다(🎫 인지 확인): ${제목}`);
+      }
+      break;   // 한 줄에 하나만 — 같은 판정을 여러 번 쌓으면 처방이 묻힌다
+    }
+  }
+}
+
 /* ── ① 칸 길이 검사 — **내가 바꾼 줄만 막는다** (마찰 F233·F234·F235·F237 · 2026-08-08) ────
  * 하루에 네 번 신고된 자리다(F237 은 F235 의 중복 신고). 원래는 결과 파일의 **모든** 행을 쟀다.
  * 그래서 남의 활성 줄 하나가 200자를 넘으면 **그 순간부터 아무 세션도 자기 줄을 못 고쳤다** —
@@ -500,6 +571,8 @@ if (resulting !== null) {
 const 이전total = 이전 === null ? 0 : countRows(이전);
 const 이전active = 이전 === null ? 0 : countActive(이전);
 const 물려받은 = [];
+/* ⑧ 판정 — 선언이 실제로 막히는 자리. 함수로 뺀 이유는 위 머리말에 있다(TDZ). */
+트랙충돌(물려받은, 미룬deny);
 const 판 = resulting !== null ? resulting : (이전 || '');
 /* 면제는 **세션의 첫 선언 1줄**로 좁힌다 (F278). 그 편집만이 「내가 만든 만석이 아닌데
  * 막히는」 자리고, 그것마저 막으면 보드가 존재하는 이유(선언)가 통째로 사라진다.
