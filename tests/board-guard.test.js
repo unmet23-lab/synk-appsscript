@@ -1225,3 +1225,61 @@ test('[F340] 같은 제목이어도 그 세션이 죽었으면 막지 않는다 
   assert.notStrictEqual(r.결정, 'deny',
     `죽은 줄 인계가 막혔다 — 🎫 통로가 통째로 죽는다: ${r.사유.slice(0, 200)}`);
 });
+
+/* ── F343 — repo **밖** 공유 자원도 자리다: `clasp push` = 라이브 Apps Script ────────────
+ * ④ 는 자리를 ①표식 머리 ②파일 **경로** 둘로만 셌다. 둘 다 repo **안**을 가리킨다. 그런데
+ * 이 저장소에서 가장 비싼 공유 자원인 라이브 Apps Script 에는 경로가 없다 — `clasp push` 는
+ * HEAD 가 아니라 작업본을 통째로 민다(F310·F273).
+ * 🔴 실측 2026-08-12: 활성 줄에 `clasp push` 를 선언한 배포 트랙이 **동시에 3개**였는데 ④ 는
+ *   한 번도 안 울었다. 먼저 민 세션이 남의 검수 과녁을 낡게 만든다(F342 가 인접 축에서 신고).
+ *   CLAUDE.md 세션 규약은 「조율 단위는 repo 밖 공유 자원(…배포키…)도 포함」이라 이미 못박혀
+ *   있었다 — 규약이 아니라 **가드가 그 축을 안 본 것**이고, 새는 방향은 언제나 「통과」다.
+ * 🔑 탐지력은 이 픽스처가 진다. 실저장소에서 재면 안 되는 이유는 아래 거짓양성 검사들이다 —
+ *   비켜남 표기(`배포 0`)와 🚫 스팬이 실제 보드에 흔해서, 좁게 틀리면 관습이 죽는다(F221). */
+const 배포남의줄 = '| 2026-08-12 | **①v9.215 명부스윕 라이브 완주** | 검수 장부(도구)·clasp push(v9.215)·메모리 | 🔵**착수**(`local_52a7abc6`) |';
+
+function 배포보드(남의줄들 = [배포남의줄], 지문 = 'eeee5555') {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'boardguard-f343-'));
+  const p = 보드파일(root, 지문);
+  const g = (...a) => execFileSync('git', ['-C', root, ...a], { encoding: 'utf8', stdio: 'pipe' });
+  fs.writeFileSync(p, `${머리}\n${기존}\n`, 'utf8');
+  g('init', '-q'); g('config', 'user.email', 'test@synk.local'); g('config', 'user.name', 'test');
+  g('add', `docs/_ops/보드/${지문}.md`); g('commit', '-qm', 'base', '--no-verify');
+  fs.writeFileSync(p, `${머리}\n${기존}\n${남의줄들.join('\n')}\n`, 'utf8');
+  return { 파일: p, 끝줄: 남의줄들[남의줄들.length - 1] };
+}
+/** 남의 배포 선언 아래에 내 줄을 붙인다 — 내 지문은 그 보드 파일명과 달라 「내 파일」 면제를 안 탄다. */
+const 배포붙임 = (내줄, 보드 = 배포보드()) => 판정(
+  { tool_name: 'Edit', tool_input: { file_path: 보드.파일, old_string: 보드.끝줄, new_string: `${보드.끝줄}\n${내줄}` } },
+  { CLAUDE_CODE_HOST_SESSION_ID: 'local_3fd8f6db' });
+
+test('🔴 [F343·탐지력] 남이 잡은 **라이브 배포**(clasp push)를 또 잡으면 막는다 — 경로가 없는 자원이다', { skip: git있음 ? false : 'git 없음' }, () => {
+  const r = 배포붙임('| 2026-08-12 | **⓪재검수 → 배포** | 검수 장부(도구가 씀)·clasp push(215+216) | 🔵**착수**(`local_3fd8f6db`) |');
+  assert.strictEqual(r.결정, 'deny',
+    `🔴 같은 라이브를 두 세션이 나란히 미는 선언이 통과했다 — 먼저 미는 쪽이 남의 검수 과녁을 낡게 만든다:\n${r.사유.slice(0, 200)}`);
+  assert.match(r.사유, /clasp/, '무엇이 겹쳤는지 안 말하면 비켜날 자리를 못 고른다');
+  assert.match(r.사유, /local_52a7abc6/, '누가 잡았는지 안 말하면 생사를 확인할 수 없다');
+});
+
+test('🔴 [F343·거짓양성] `배포 0` 은 **안 민다는 선언**이다 — 자리가 아니다', { skip: git있음 ? false : 'git 없음' }, () => {
+  /* 이 표기는 실제 보드에 흔하다(실측: `배포 0`·`라이브 배포 0` 두 모양). 비켜났다고 적을수록
+   * 막히면 사람은 그 표기를 지우고, 그 순간 조율 재료가 통째로 사라진다(F221 과 같은 축). */
+  const r = 배포붙임('| 2026-08-12 | **문서만 고치는 트랙** | `docs/설계.md` (엔진 0 · talk 0 · 라이브 배포 0 · 운영 0) | 🔵**착수**(`local_3fd8f6db`) |');
+  assert.strictEqual(r.결정, 'allow',
+    `🔴 「안 민다」고 적었더니 막혔다 — 정직하게 쓸수록 벌받으면 관습이 죽는다(F103):\n${r.사유.slice(0, 200)}`);
+});
+
+test('🔴 [F343·거짓양성] 🚫 스팬 안의 `clasp push` 는 비켜남 명시다', { skip: git있음 ? false : 'git 없음' }, () => {
+  const r = 배포붙임('| 2026-08-12 | **다른 트랙 — 배포는 비켜났다** | `tools/board.js` · 🚫clasp push=`local_52a7abc6` 점유 | 🔵**착수**(`local_3fd8f6db`) |');
+  assert.strictEqual(r.결정, 'allow',
+    `🔴 🚫 로 비켜난 자리를 선점으로 셌다 — F221 을 공유자원 축에서 그대로 재현했다:\n${r.사유.slice(0, 200)}`);
+});
+
+test('🔴 [F343·🎫] 남이 **놓은**(🎫) 배포 자리는 이어받기가 통과한다', { skip: git있음 ? false : 'git 없음' }, () => {
+  /* 🎫 는 「나는 이걸 안 한다」고 스스로 놓은 것이다(F285). 공유자원 축을 새로 넣으면서 그 통로를
+   * 막으면, 이어받으라고 내건 것이 이어받기를 막는 자리가 된다 — 뜻이 정확히 뒤집힌다. */
+  const 놓은줄 = '| 2026-08-12 | **①v9.215 명부스윕** | 검수 장부·clasp push(v9.215) | ✅수리 완료 · 🎫**다음=재검수 후 clasp push** |';
+  const r = 배포붙임('| 2026-08-12 | **⓪재검수 → 배포** | clasp push(215+216) | 🔵**착수**(`local_3fd8f6db`) |', 배포보드([놓은줄]));
+  assert.notStrictEqual(r.결정, 'deny',
+    `🔴 🎫 로 내건 배포 자리를 이어받는 것이 막혔다 — 새 축이 인계 통로를 죽였다:\n${r.사유.slice(0, 200)}`);
+});
