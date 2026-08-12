@@ -89,11 +89,11 @@ footer code{font-family:var(--mono);font-size:11.5px}
   <p class="sub">앱을 짓는 동안 <b>유호님께 묻지 않고 제가 혼자 정한 굵직한 갈림길</b>입니다.
      다 만든 뒤 번호를 부르시면 그 자리에서 바꿉니다 — 「바꾸려면」 칸이 그 비용입니다.</p>
   <div class="counts">
-    <div class="hot">대기<b>24</b></div>
+    <div class="hot">대기<b>25</b></div>
     <div>유지<b>2</b></div>
     <div>바꿈<b>0</b></div>
     <div>보류<b>0</b></div>
-    <div>전체<b>26</b></div>
+    <div>전체<b>27</b></div>
   </div>
 </div></header>
 
@@ -106,6 +106,7 @@ footer code{font-family:var(--mono);font-size:11.5px}
   <button class="f" data-k="r" data-v="보류" aria-pressed="false">보류</button>
   <span class="sep"></span><span class="lbl">영역</span>
   <button class="f" data-k="a" data-v="" aria-pressed="true">전체</button>
+  <button class="f" data-k="a" data-v="강사 화면 · 원본 스키마" aria-pressed="false">강사 화면 · 원본 스키마</button>
   <button class="f" data-k="a" data-v="강사 화면(라벨 회로)" aria-pressed="false">강사 화면(라벨 회로)</button>
   <button class="f" data-k="a" data-v="도구·검수" aria-pressed="false">도구·검수</button>
   <button class="f" data-k="a" data-v="라디오24" aria-pressed="false">라디오24</button>
@@ -464,6 +465,19 @@ footer code{font-family:var(--mono);font-size:11.5px}
   <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">실시간 밀어주기(streamList)를 기본으로 두고 60초 읽기를 예비로 두기 (설계 v1.2 원안)</span></span></div>
   <div class="row"><span class="k">왜</span><span class="v">실시간 방식은 라이브 방송이 실제로 켜져 있어야만 시험할 수 있어서, 지금은 맞는지 틀린지 확인할 방법이 없습니다. 확인 못 한 길을 기본으로 두면 잘못된 곳이 송출 첫날 새벽에야 드러납니다. 60초 읽기는 유튜브 사용량 한도 계산(하루 7,200 ≤ 10,000)으로 안전이 이미 증명돼 있고, 60초 늦게 도착해도 기록 시각은 유튜브가 준 원래 시각을 쓰므로 데이터는 하나도 안 깨집니다. 느려지는 것은 화면 연출(오버레이 반응 속도)뿐입니다.</span></div>
   <div class="undo"><span class="k">바꾸려면</span><span class="v">설계서 §5 쿼터 문단 하나를 되돌리고 봇에 실시간 수신 코드를 더하면 됩니다(반나절). 지금 코드는 원래 60초 읽기만 있어서 지울 것은 없습니다 — 시운전 실측에서 좋게 나오면 그때 더하는 순서입니다.</span></div>
+  
+</article>
+<article class="card" data-r="대기" data-a="강사 화면 · 원본 스키마">
+  <div class="head">
+    <span class="num">#27</span>
+    <h3>강사가 남긴 「한 마디」를 어디에 저장할지 — 설계는 유호님께 올리라고 했는데 내가 정했다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-12 &nbsp;·&nbsp; 강사 화면 · 원본 스키마 &nbsp;·&nbsp; talk · <code>5557df7</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">새 표 engine.teacher_notes 를 만들어 거기 담는다 (계약판은 c11 그대로 · 올리지 않음)</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">기존 learning_events 사건에 얹는다 — 새 표가 안 늘지만, 그것을 읽어 학생에게 보여주는 배선이 아직 없어 「쌓기만 하고 아무 데도 안 닿는」 상태가 된다</span><span class="chip">유호님 답을 기다린다 — 그러면 §8-3 통로 셋 중 저장하는 문 하나가 통째로 못 선다</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">설계문은 「계약 변경이라 혼자 안 정한다」고 적었는데, 그 전제가 틀렸다. 바로 앞 조각(반 물리)이 이미 같은 오해를 한 번 바로잡았다 — 계약판을 올려야 하는지는 셋으로 잰다(새 사건 종류 0 · 새 값목록 0 · 학습사건 표 손댐 0). 셋 다 0이라 계약은 안 바뀐다. 그리고 새 표 쪽은 만들자마자 쓰는 자리가 있다(강사 큐가 「이미 한 마디 준 것」을 빼는 데 쓴다)는 점에서 다른 안과 갈린다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">쉽다 — 지금 이 표에 든 줄이 0개다(라이브에 아직 안 부었다). 유호님이 「사건 쪽으로 해라」 하시면 마이그레이션 파일 하나를 되돌리고 저장하는 문 하나만 다시 짓는다. 조회하는 문 둘과 화면은 그대로다. 라이브에 부은 뒤에 뒤집으면 그때는 쌓인 줄을 옮겨야 한다.</span></div>
   
 </article>
 <footer>
