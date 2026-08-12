@@ -2241,8 +2241,14 @@ function aiStudioBatch_() {
       properties: { items: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['i', 's', 'q', 'a'], properties: {
         i: { type: 'integer', description: '입력 목록의 인덱스' },
         s: { type: 'string', description: '오늘의 한 문장 — 그 학생의 약점·관심사를 반영한 짧은 한국어 응원+미니미션 1문장(60자 이내, 몽골어 병기 금지)' },
-        q: { type: 'string', description: '오늘의 퀴즈 문제 1개 — 약점 문법 기반 빈칸/선택 문제, 한국어(80자 이내)' },
-        a: { type: 'string', description: '정답 — 왜 그런지 해설 1문장(몽골어)을 덧붙인다. 형식: "정답: X — 해설(몽골어)"' } } } } }
+        /* [v9.221] 보기 마커를 프롬프트가 못박는다 — 채점기가 아는 마커는 ①②③④⑤(원문자)와 맨숫자뿐이다
+         *   (quizNorm_ 의 원문자→숫자 치환 · quizAnswerKeys_ 의 '① 에' 분해). 모델이 「(나) 이에요」·「가. 이에요」로
+         *   내면 정답 키가 '나이에요' 한 덩이로 굳어, 보기 본문만 쓴 학생이 **판정보류가 아니라 오답**으로 적힌다 —
+         *   보류를 오답으로 뭉개지 않으려고 채점기를 세 갈래로 만든 그 원칙(엔진_수집.js:240)이 생산자 쪽에서 뚫린다.
+         *   라이브 개인퀴즈 27행이 이미 전부 ①② 2지선다라, 이 줄은 새 규약이 아니라 **이미 도는 모양의 못박기**다.
+         *   ⚠ 채점기를 넓혀 푸는 쪽이 아니다 — 마커가 열마다 갈리면 그때부터 소급 파싱이 불가능해진다(L0 §3-3). */
+        q: { type: 'string', description: '오늘의 퀴즈 문제 1개 — 약점 문법 기반 빈칸/선택 문제, 한국어(80자 이내). 선택 문제면 보기를 문제 안에 ①②③④ 마커로 적는다(1) · (1) · 가. 같은 다른 마커 금지)' },
+        a: { type: 'string', description: '정답 — 왜 그런지 해설 1문장(몽골어)을 덧붙인다. 형식: "정답: X — 해설(몽골어)". 선택 문제면 X 는 「② 이에요」처럼 마커와 보기 본문을 함께 적는다' } } } } }
     };
     for (let off = 0; off < stus.length && can(); off += AI_DAILY_BATCH_SIZE) {
       const chunk = stus.slice(off, off + AI_DAILY_BATCH_SIZE);
