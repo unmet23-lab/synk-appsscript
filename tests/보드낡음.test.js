@@ -183,7 +183,59 @@ test('🔑 장부를 못 읽으면 `null` — 「검수된 적 없다」가 아�
   assert.equal(낡음.검수된커밋들(as), null);
 });
 
-/* ── ④ 실저장소 — 거짓양성만 (탐지력은 위 픽스처가 진다) ─────────── */
+/* ── ④ 발동 조건 — 인계문에서 실제로 뜨는가 ────────────────────
+ * 장치와 발동 조건은 같은 커밋에서 정한다(CLAUDE.md 신뢰성). `node tools/board.js` 에만 두면
+ * **인계문을 그대로 따르는 세션은 이 증거를 영영 못 본다** — 그 인계문이 「🎫 하나만은
+ * 이어받아도 된다」고 말하는 바로 그 자리라, 낡음 대조도 거기 있어야 한다. */
+
+const report = require(path.join(REPO, '.claude', 'hooks', 'lib', 'session-report.js'));
+
+/** 인계문 픽스처 — `티켓증거` 는 **cwd 의** 모듈을 부르므로(훅의 통로 규약) 그 자리를 세워 준다.
+ *  여기서 재는 것은 모듈의 판정이 아니라 **배선**이다(판정은 위 픽스처들이 이미 졌다). */
+function 인계문픽스처(상태칸, opts = {}) {
+  const { as } = 임시작업공간();
+  fs.mkdirSync(path.join(as, 'tools', 'lib'), { recursive: true });
+  if (opts.모듈 !== false) {
+    fs.writeFileSync(path.join(as, 'tools', 'lib', '보드낡음.js'),
+      `module.exports = require(${JSON.stringify(path.join(REPO, 'tools', 'lib', '보드낡음.js'))});\n`, 'utf8');
+  }
+  fs.writeFileSync(path.join(as, 'tools', '있는것.js'), '//\n');
+  fs.mkdirSync(path.join(as, 'docs', '_ops', '보드'), { recursive: true });
+  fs.writeFileSync(path.join(as, 'docs', '_ops', '보드', '0badc0de.md'),
+    '| 날짜 | 트랙/작업 | 파일 | 상태 |\n|---|---|---|---|\n'
+    + `| 2026-08-12 | **내 트랙** | x.js | ${상태칸} |\n`, 'utf8');
+  const 원래 = process.env.CLAUDE_CODE_HOST_SESSION_ID;
+  process.env.CLAUDE_CODE_HOST_SESSION_ID = 'local_0badc0de-1111-2222-3333-444444444444';
+  try { return report.buildHandoff(as, null, { dirty: 0 }); } finally {
+    if (원래 === undefined) delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
+    else process.env.CLAUDE_CODE_HOST_SESSION_ID = 원래;
+  }
+}
+
+test('☠️ 인계문이 🎫 를 넘길 때 **낡음 증거를 같이** 싣는다 (안 실으면 이 장치는 안 돈다)', () => {
+  const 글 = 인계문픽스처('✅종결 · 🎫**다음=`tools/있는것.js` 신설**');
+  assert.match(글, /🎫 대조\(기계 · F374\)/, '인계문만 읽는 세션은 board.js 를 안 부른다');
+  assert.match(글, /이미 실재/);
+  assert.match(글, /tools\/있는것\.js/);
+});
+
+test('☠️ 🎫 가 없으면 그 줄은 **아예 안 뜬다** — 매번 뜨는 줄은 곧 배경이 된다', () => {
+  /* ⚠ 증거가 «나올 수 있는» 문구를 일부러 쓴다 — 재료 없는 줄로 재면 게이트를 없애도
+   *   똑같이 조용해서 검사가 통과한다(변이 ⑨ 가 그렇게 살아남았다). 게이트를 재려면
+   *   게이트만 다른 두 경우가 **갈라져야** 한다. */
+  /* ⚠ 문구에 🎫 **글자를 쓰지 않는다** — 「🎫 는 안 붙였다」라고 적으면 그 글자 때문에 게이트가
+   *   열리고, 잘린 일감 조각이 비어 양쪽 다 조용해진다(첫 판이 그렇게 헛돌았다). */
+  const 글 = 인계문픽스처('▶다음=`tools/있는것.js` 신설 (이어받기 표식은 안 붙였다)');
+  assert.doesNotMatch(글, /🎫 대조/, '이어받으라고 내놓지 않은 줄까지 대조하면 마감 훅이 매번 git 을 부른다');
+});
+
+test('🔑 모듈이 없어도 인계문은 나간다 — 대조 하나 때문에 인계가 끊기는 쪽이 더 나쁘다', () => {
+  const 글 = 인계문픽스처('✅종결 · 🎫**다음=`tools/있는것.js` 신설**', { 모듈: false });
+  assert.doesNotMatch(글, /🎫 대조/);
+  assert.match(글, /내 트랙/, '인계문 본문 자체가 사라지면 안 된다');
+});
+
+/* ── ⑤ 실저장소 — 거짓양성만 (탐지력은 위 픽스처가 진다) ─────────── */
 
 test('🔑 실저장소: 「이미 실재」라고 말한 경로는 **정말로** 있다', () => {
   const rows = 보드.주인없는줄들(REPO);
