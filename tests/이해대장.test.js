@@ -20,7 +20,8 @@ const ROOT = path.resolve(__dirname, '..');
 const TOOL = path.join(ROOT, 'tools', '이해대장.js');
 const 정본 = path.join(ROOT, 'docs', 'SYNK_철학.md');
 const 산출 = path.join(ROOT, 'docs', '이해대장.html');
-const { 표뽑기, 비었나, 도달색, 도달실측, 킷 } = require(TOOL);
+const os = require('node:os');
+const { 표뽑기, 비었나, 도달색, 도달실측, 엔진점수, 킷 } = require(TOOL);
 
 /* ── ① 탐지력 = 픽스처 ─────────────────────────────────────────── */
 
@@ -87,6 +88,55 @@ test('도달 실측 — 있으면 래칫 두 개를 «숫자로» 준다', (t) =
   assert.ok(Number.isInteger(r.도달0), '`도달0상한` 을 못 읽었다 — 상수 이름이 바뀌었을 수 있다');
   assert.ok(Number.isInteger(r.생산자만), '`생산자섰는데도달0상한` 을 못 읽었다');
   assert.ok(r.도달0 >= 0 && r.생산자만 >= 0);
+});
+
+/* ── ①-b 엔진 점수 = «성능» 축 (v1.6 신설) ──────────────────────────────
+ * 위 도달 실측이 «범위»(그 학생의 어떤 면을 볼 수 있나)를 잰다면 이건 «성능»(본 것을 얼마나
+ * 정확히 처리하나)이다. 두 축을 섞으면 「넓어졌는데 못해졌다」가 어느 화면에도 안 보인다.
+ * 가장 비싼 실패 둘을 픽스처가 문다 — ①안 쟀는데 0 으로 적기 ②판이 다른 회차를 대조군으로 집기. */
+
+function 점수픽스처(내용) {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-엔진점수-'));
+  if (내용 !== null) {
+    fs.mkdirSync(path.join(d, 'docs', '_ops'), { recursive: true });
+    fs.writeFileSync(path.join(d, 'docs', '_ops', '엔진점수.jsonl'), 내용, 'utf8');
+  }
+  return d;
+}
+
+test('엔진 점수 — 파일이 없거나 비었으면 «0» 이 아니라 null(「0점」과 「안 재봤다」는 다르다)', () => {
+  assert.strictEqual(엔진점수(점수픽스처(null)), null, '파일이 없는데 숫자를 지어냈다(F207)');
+  assert.strictEqual(엔진점수(점수픽스처('')), null, '빈 파일을 0 점으로 읽었다');
+  assert.strictEqual(엔진점수(점수픽스처('깨진 줄\n{또깨짐\n')), null, '깨진 줄만 있는데 결과를 냈다');
+});
+
+test('엔진 점수 — 판이 다르면 대조하지 않는다(조건을 둘 바꾸면 그건 대조가 아니다 · F045)', () => {
+  const r = 엔진점수(점수픽스처(
+    '{"날짜":"2026-08-01","판":"v1","전체":70,"분모":102}\n'
+    + '{"날짜":"2026-08-12","판":"v2","전체":79,"분모":102}\n'));
+  assert.strictEqual(r.현재.판, 'v2');
+  assert.strictEqual(r.직전, null,
+    '판이 다른 회차를 직전으로 집었다 — 그 ▲▼ 는 「나아졌다」가 아니라 「다른 실험」이다');
+  assert.strictEqual(r.변화, null);
+});
+
+test('엔진 점수 — 같은 판의 직전과만 대조한다(바로 앞 줄이 아니라)', () => {
+  const r = 엔진점수(점수픽스처(
+    '{"날짜":"2026-08-01","판":"v1","전체":70,"분모":102}\n'
+    + '{"날짜":"2026-08-05","판":"v2","전체":60,"분모":102}\n'
+    + '{"날짜":"2026-08-12","판":"v1","전체":80,"분모":102}\n'));
+  assert.strictEqual(r.직전.날짜, '2026-08-01', '같은 판을 건너뛰고 바로 앞 줄을 집었다');
+  assert.strictEqual(r.변화, 10);
+  assert.strictEqual(r.회차수, 3);
+});
+
+test('실저장소 — 엔진 점수가 색 화면에 «범위와 갈라서» 실린다', (t) => {
+  const r = 엔진점수(ROOT);
+  if (!r) return t.skip('docs/_ops/엔진점수.jsonl 없음 — 아직 한 회차도 안 쟀다');
+  assert.ok(r.현재.분모 > 0, '분모 없는 점수는 읽을 수 없는 수다');
+  assert.ok(r.현재.판, '판 이름이 없으면 다음 회차와 대조할 수 없다');
+  assert.ok(fs.readFileSync(산출, 'utf8').includes('엔진 점수'),
+    '색 화면에 성능 축이 없다 — 범위만 보고 「다 됐다」로 읽게 된다');
 });
 
 /* 🔴 이 열은 이름이 「엔진에 «닿는가»」라 **부정 판정도 「닿는다」를 품는다.** 긍정을 먼저 물으면
