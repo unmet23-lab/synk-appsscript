@@ -1722,6 +1722,12 @@ function fbQualityGate_(card, srcText) {
   if (!/[가-힣]/.test(f.praise)) return { ok: false, reason: '한글없음:칭찬' };
   if (!/[가-힣]/.test(f.mission)) return { ok: false, reason: '한글없음:다음미션' };
   if (!/[가-힣]/.test(f.corrected) && f.corrected !== src) return { ok: false, reason: '한글없음:고친문장' };
+  /* [v9.223] 옛 글자(한자·가나) — 위 세 줄과 **같은 축**이다(어느 문자로 쓰였나). 4칸 전부 학생이 읽는다.
+   *   🔑 여기서 막으면 처분이 «격리»다 — 행은 그대로 적재되니 수집(엔진 재료)은 안 잃고 학생에게만 안 나간다.
+   *      형제 talk 은 같은 자리에서 «행 버림»을 골랐는데, 거긴 격리 칸이 없어 그것이 유일한 선택이었다.
+   *   ⚠ 사유에 그 글자를 싣지 않는다(`U+XXXX` 뿐) — 시트 칸이 곧 다음 사람이 읽는 글이다(F298). */
+  const 옛 = 옛글자걸림_(f);
+  if (옛) return { ok: false, reason: '옛글자:' + 옛.칸 + ':' + 옛.짚음 };
   // 길이 상한 — "최소 수정·1~2문장" 규격의 수 배를 넘으면 폭주(설명문 유입)로 본다. 하한은 두지 않는다(한 단어 교정도 정당).
   if (f.corrected.length > Math.max(300, src.length * 2)) return { ok: false, reason: '길이초과:고친문장' };
   if (f.point_mn.length > 500) return { ok: false, reason: '길이초과:오늘의포인트' };
@@ -2042,7 +2048,13 @@ function aiCall_(apiKey, system, user, schema, maxTok) {
   if (j.stop_reason === 'refusal' || j.stop_reason === 'max_tokens') throw new Error('응답 불가(' + j.stop_reason + ')');
   const tb = (j.content || []).filter(b => b.type === 'text')[0];
   if (!tb || !tb.text) throw new Error('text 블록 없음');
-  return JSON.parse(tb.text);
+  const 값 = JSON.parse(tb.text);
+  /* [v9.223] 옛 글자 — 이 반환값은 월보·학부모 편지·마스터리 등 14 호출부로 흩어져 «학생·학부모가 읽는 글»이 된다.
+   *   호출부마다 검사하면 하나가 빠지고 빠진 방향은 언제나 「통과」다. throw 로 올리는 것은 위 오류 경로와
+   *   같은 규약이라(호출부는 전부 폴백·스킵을 이미 들고 있다) 새 갈래를 만들지 않는다. */
+  const 옛 = 옛글자걸림_(값);
+  if (옛) throw new Error('옛 글자 감지(' + 옛.칸 + ':' + 옛.짚음 + ') — 응답 폐기(호출부 폴백으로 간다)');
+  return 값;
 }
 /* [v9.205] 사고 OFF 대가의 **결정적** 경계 — v9.204 의 가드 문구는 모델 지시라 확률적이다.
  *   불이행이 한 번만 나도 그 응답은 정제 없이 학부모 메일 4자리로 간다(웰컴·편지·레벨 진단·주간 리포트).
@@ -2057,6 +2069,65 @@ function 태그누출_(s) {
   const t = String(s == null ? '' : s);
   return /<\/?[A-Za-z][A-Za-z0-9_:.-]*(\s[^>]*)?>/.test(t) // 여닫는 완성 태그
       || /<\/?[A-Za-z][A-Za-z0-9_:.-]*[^>]*$/.test(t);     // 예산 소진으로 «>» 없이 잘린 꼬리
+}
+
+/* [v9.223] 옛 글자(한자·가나) — 유호님 확정(2026-08-07) 「쓰는 문자는 한글·몽골어(키릴)·영어 셋뿐」을
+ *   **모델이 내는 글**에 세우는 자리. 그날까지 이 확정을 지키던 장치는 셋 다 «우리가 쓴 글»만 겨눴다 —
+ *   저장소 파일 스캔(F351)·커밋 층(F379)·채팅 층. 형제 SYNK-talk 은 08-12 에 런타임 게이트를 세웠으나
+ *   (`lib/옛글자.js` + `교정엔진.교정값()`), **이 저장소의 모델 출력은 어느 층에도 안 걸렸다.**
+ *
+ * 📏 프롬프트로는 안 막힌다 — 실측이 근거다. 형제 eval 출력을 같은 채점기로 재니, 그 글자를 금지하는
+ *   규칙을 프롬프트에 실은 뒤에도 v3 2건 · v4 1건 · v5 0건 · v6 1건으로 **네 판 연속 샜다**(분모 ~102).
+ *   프로즈는 확률을 낮출 뿐 0으로 못 만든다. 그래서 재는 자리를 프롬프트가 아니라 «내보내기 직전»으로 옮긴다.
+ *
+ * 🔑 판정은 **한 벌**, 처분은 **깔때기마다 다르다.** 처분을 여기서 정하면(가령 전부 throw) 상담 챗봇이
+ *   말을 멈추고 첨삭 배치가 중단된다 — 각 자리엔 이미 검증된 폴백이 서 있다(격리·템플릿·인계).
+ *   깔때기가 일곱인 것은 세어 봐야 아는 수라 `tests/옛글자런타임.test.js` 가 **개수로** 못박는다:
+ *   새 깔때기가 검사 없이 생기면 그 회귀가 빨개진다. v9.125 가 같은 자리에서 이미 한 번 겪었다
+ *   (리허설 게이트를 둘에만 두었더니 `aiCall_` 직호출 7곳이 리허설 중 그대로 과금됐다).
+ *
+ * 🔴 **이 파일에도 그 글자를 적지 않는다** — 적으면 저장소 문자 스캔이 이 소스에 걸린다. 짚는 것도
+ *   언제나 `U+XXXX` 표기뿐이다: 위반을 신고하는 글에 그 글자를 인용하면 그 자리가 새 위반이 된다(F298).
+ * 🔑 클래스 문자열은 `.claude/hooks/lib/옛글자.js`·형제 `lib/옛글자.js` 와 **글자로 같아야 한다** —
+ *   갈리면 위 회귀의 「단일 출처」가 빨개진다(SQL 도 include 도 없는 자리라 사본은 기계에 문다). */
+function 옛글자짚기_(글) {
+  // 전역 플래그 정규식을 상수로 들고 다니면 lastIndex 때문에 같은 입력에 번갈아 참·거짓이 난다
+  //   — 새는 방향은 거기서도 「통과」다(형제가 회귀 첫 실행에서 실제로 밟았다). 매번 새로 만든다.
+  const 걸린 = String(글 == null ? '' : 글).match(new RegExp('[\\u3040-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF]', 'gu'));
+  if (!걸린) return '';
+  const 코드 = [];
+  걸린.forEach(function (m) { const c = m.codePointAt(0); if (코드.indexOf(c) === -1) 코드.push(c); });
+  return 코드.map(function (c) { return 'U+' + c.toString(16).toUpperCase(); }).join(' · ');
+}
+
+/* 값 안의 **모든 문자열**을 훑어 처음 걸린 자리 하나 — `{칸, 짚음}` · 깨끗하면 null.
+ * 🔑 구조화 출력(`aiCall_`)은 칸이 중첩·배열이라 평면 검사로는 안 닿는다. 「어느 칸이 학생에게
+ *   보이나」를 여기서 가리려 들면 그 목록이 낡는 순간 조용히 새므로, **전부** 잰다 —
+ *   이 시스템의 어느 칸에도 그 글자가 정당할 자리가 없어 거짓양성의 재료 자체가 없다.
+ * 🔑 처음 하나만 돌려주는 이유: 부르는 쪽은 버릴지 말지만 정하면 되고, 사유는 한 줄이라야 읽힌다. */
+function 옛글자걸림_(값, 경로) {
+  const 자리 = 경로 || '';
+  if (값 === null || 값 === undefined) return null;
+  if (typeof 값 === 'string') {
+    const 짚음 = 옛글자짚기_(값);
+    return 짚음 ? { 칸: 자리 || '값', 짚음: 짚음 } : null;
+  }
+  if (Array.isArray(값)) {
+    for (let i = 0; i < 값.length; i++) {
+      const r = 옛글자걸림_(값[i], 자리 + '[' + i + ']');
+      if (r) return r;
+    }
+    return null;
+  }
+  if (typeof 값 === 'object') {
+    const keys = Object.keys(값);
+    for (let i = 0; i < keys.length; i++) {
+      const r = 옛글자걸림_(값[keys[i]], 자리 ? 자리 + '.' + keys[i] : keys[i]);
+      if (r) return r;
+    }
+    return null;
+  }
+  return null; // 숫자·불리언 — 글자가 들어갈 자리가 없다
 }
 // 자유 텍스트 헬퍼 — 키 없음·실패 전부 null(호출부는 null이면 조용히 생략)
 function aiText_(prompt, maxTok) {
@@ -2085,6 +2156,11 @@ function aiText_(prompt, maxTok) {
     // [v9.205] 가드 문구를 안 지킨 응답은 통째로 못 믿는다 — 폐기하고 호출부 폴백으로 보낸다.
     //   Logger 는 빈도를 «나중에 잴 수 있게» 남기는 재료다(지금은 0회일 것으로 보이나 안 쟀다).
     if (out && 태그누출_(out)) { Logger.log('aiText_ 태그 누출 감지 — 응답 폐기(호출부 폴백으로 간다)'); return null; }
+    // [v9.223] 옛 글자 — 바로 윗줄과 **같은 판단**이다(가드 문구를 안 지킨 응답은 통째로 못 믿는다).
+    //   이 반환값은 정제 없이 웰컴 스토리·「미래의 나」 편지·몽골어 진단 리포트·주간 운영 리포트로 그대로 나간다.
+    //   🔑 정제(그 글자만 지우기)가 아니라 폐기인 이유도 같다 — 글자만 빼면 뜻이 조용히 어긋난 문장이 남는다.
+    const 옛 = out ? 옛글자짚기_(out) : '';
+    if (옛) { Logger.log('aiText_ 옛 글자 감지(' + 옛 + ') — 응답 폐기(호출부 폴백으로 간다)'); return null; }
     return out;
   } catch (e) { return null; }
 }

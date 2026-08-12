@@ -1034,7 +1034,12 @@ test('[v9.61] preflight는 학생 입력 폼 3종 미생성을 경고한다(버�
 /* ── [v9.63] 첨삭 무인 발행 + 품질 게이트 (유호 07-25 확정) ─────────────── */
 
 test('[v9.63] 품질 게이트가 정상 카드는 통과시키고 불량 카드는 사유와 함께 거른다', () => {
-  const gate = loadFunction('function fbQualityGate_(card, srcText)', 'function aiFeedbackBatch_()', 'fbQualityGate_', {});
+  /* [v9.223] 게이트가 옛글자 판정을 쓰게 되면서 의존이 생겼다. **스텁을 지어 넣지 않는다** — 스텁은
+   *   사본이라 실물이 바뀌어도 이 시험은 계속 초록이고, 그 침묵이 정확히 이 게이트가 막으려는 실패 모양이다.
+   *   같은 소스에서 진짜 함수를 잘라 넣는다(탐지력은 `tests/옛글자런타임.test.js` 가 따로 진다). */
+  const 옛글자짚기_ = loadFunction('function 옛글자짚기_(글)', 'function 옛글자걸림_(', '옛글자짚기_', {});
+  const 옛글자걸림_ = loadFunction('function 옛글자걸림_(값, 경로)', 'function aiText_(', '옛글자걸림_', { 옛글자짚기_ });
+  const gate = loadFunction('function fbQualityGate_(card, srcText)', 'function aiFeedbackBatch_()', 'fbQualityGate_', { 옛글자걸림_ });
   const good = {
     corrected: '저는 어제 학교에 갔어요.',
     point_mn: 'Өнгөрсөн цагийг -았/었 гэж бичнэ (과거형).',
