@@ -882,9 +882,19 @@ test('tools/인계문.js --no-save — 남의 블록을 밀어내지 않는다(�
     '🔴 --no-save 인데 공유 사본을 건드렸다 — 점검 한 번이 살아있는 남의 인계문을 지운다(store 바통이 비면 그 파일이 마지막 사본이다)');
 });
 
-/* 장치와 발동 조건은 같은 커밋에서 — 플래그만 만들고 처방이 안 가리키면 아무도 안 쓴다. */
+/* 장치와 발동 조건은 같은 커밋에서 — 플래그만 만들고 처방이 안 가리키면 아무도 안 쓴다.
+ *
+ * ⚠ **재는 파일이 옮겨졌다: `context-budget.js` → `/close` 스킬** (F353 · 2026-08-12).
+ *   F349 수리(`f7e89e3c`)가 컨텍스트 경고 화면을 «3줄 · 빈 줄 0»으로 기계 고정하면서 거기 살던
+ *   인계 목차 4줄을 지웠고, 이 처방도 그 안에 있어 함께 사라졌다. 되돌리면 안 된다 —
+ *   `tests/컨텍스트예산.test.js` 가 그 화면에 `--no-save` 가 «있으면» 빨개진다(그쪽 금지 목록에
+ *   그 글자가 박혀 있다). 두 회귀가 한 파일을 반대 방향으로 잡고 있었던 것이 F353 이다.
+ *   🔑 그래서 처방은 «화면»이 아니라 **사람이 끊을 때 실제로 읽는 문서**에 산다. 화면 쪽 통로가
+ *     비지 않는 것은 그쪽 회귀가 따로 잰다(`/close`·`인계문.js` 중 하나를 가리키는지).
+ *   🚫 이 검사를 `context-budget.js` 로 되돌리는 것 · 🚫 코드 «주석»으로 통과시키는 것
+ *     (주석은 유호님이 읽는 자리가 아니라, 그러면 이 검사가 영구히 무의미해진다). */
 test('🔴 처방-실행층 결속 — 「수동 재출력」 안내는 --no-save 를 준다', () => {
-  const 본문 = fs.readFileSync(path.join(HOOKS, 'context-budget.js'), 'utf8');
+  const 본문 = fs.readFileSync(path.join(ROOT, '.claude', 'skills', 'close', 'SKILL.md'), 'utf8');
   const m = 본문.match(/수동 재출력 `([^`]+)`/);
   assert.ok(m, '「수동 재출력」 안내가 사라졌다 — 유호님이 다시 뽑을 통로가 빈다');
   assert.match(m[1], /--no-save/,
@@ -895,8 +905,12 @@ test('🔴 처방-실행층 결속 — wake·/close·블록 지시가 가리키�
   assert.ok(fs.existsSync(path.join(ROOT, 'tools', '인계문.js')), '도구 실물이 없다');
   // ⚠ 두 훅의 블록 지시문은 **lib/session-report.js(blockOrder)** 하나에서 파생된다(F122).
   //   훅 파일 본문을 뒤지면 파생 뒤에는 영영 못 찾는다 — 출처를 따라간다.
+  /* ⚠ `context-budget.js` 는 **일부러 빠졌다**(F353 · 2026-08-12). F349 가 그 화면을 3줄로
+   *   고정하며 인계 목차를 지웠고, `tests/컨텍스트예산.test.js` 가 그 부재를 «기계로» 요구한다 —
+   *   여기 되살리면 두 회귀가 서로를 깨고 어느 쪽도 초록이 될 수 없다. 화면이 통로를 아예
+   *   안 가리키는 것은 그쪽 회귀가 막는다(`/close`·`인계문.js` 중 하나를 요구).
+   *   🚫 이 목록에 훅 파일을 다시 넣기 — 지울 이유가 목차 부재 요구와 정면으로 부딪친다. */
   for (const [파일, 이름] of [
-    [path.join(HOOKS, 'context-budget.js'), 'context-budget(수동 재출력 안내)'],
     [path.join(HOOKS, 'lib', 'session-report.js'), 'blockOrder(두 훅의 블록 지시 원천)'],
     [path.join(ROOT, '.claude', 'skills', 'close', 'SKILL.md'), '/close 스킬'],
   ]) {
