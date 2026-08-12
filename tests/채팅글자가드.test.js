@@ -130,27 +130,35 @@ test('대화록이 없으면 조용히 통과 — 이 훅은 소통 가드지 �
 
 // ── ④ 정의 단일 출처 · 처방 · 등록층 ────────────────────────────────────────
 
-test('[단일 출처] 옛글자 클래스가 파일 층(문서문자.test.js)과 같은 값이다', () => {
-  const 뽑기 = (src, 이름) => {
-    const m = src.match(/new RegExp\('(\[[^']+\])'/);
-    assert.ok(m, `${이름} 에서 옛글자 클래스를 못 찾았다 — 정의가 사라졌거나 모양이 바뀌었다`);
-    return m[1];
-  };
-  /* 정의는 이제 훅 안이 아니라 `.claude/hooks/lib/옛글자.js` 에 산다 — 소비자가 셋이 되면서
-   * 사본을 접었다(F298: 채팅층·파일층 사후에 더해 board-guard 의 **쓰는 순간** 층이 붙었다).
-   * 그래서 대조는 lib ↔ 문서문자.test.js 다. 훅들이 그 lib 을 실제로 쓰는지는 아래에서 따로 본다. */
+test('[단일 출처] 옛글자 클래스를 쓰는 층이 전부 같은 정의에서 읽는다', () => {
+  /* 정의는 `.claude/hooks/lib/옛글자.js` 하나에 산다 — 소비자가 늘 때마다 사본을 만들지 않고
+   * 통로를 판다(CLAUDE.md 「3번째」). 지금 소비자는 넷이다:
+   *   · 채팅 층(사전)     chat-glyph-guard      — 유호님께 나갈 발화를 막는다 (F298)
+   *   · 쓰는 순간(사전)   board-guard           — 파일에 박히기 전을 막는다 (F298)
+   *   · 커밋 층(사전)     tools/lib/옛글자.js    — 커밋에 담기기 전을 막는다 (F351·F379)
+   *   · 저장소 전량(사후) tests/문서문자.test.js — 그 커밋 층 모듈을 그대로 가져다 쓴다
+   * 2026-08-12 이전엔 파일 층 정의가 `문서문자.test.js` 안에 살아서, 커밋 층을 세우려면
+   * 사본을 만들 수밖에 없었다 — 그 구조가 F351·F379 를 낳았다. */
   const LIB = path.join(__dirname, '..', '.claude', 'hooks', 'lib', '옛글자.js');
-  const lib클래스 = 뽑기(fs.readFileSync(LIB, 'utf8'), 'lib/옛글자.js');
-  const 파일층클래스 = 뽑기(fs.readFileSync(path.join(__dirname, '문서문자.test.js'), 'utf8'), '문서문자.test.js');
-  assert.strictEqual(lib클래스, 파일층클래스, '두 층의 옛글자 정의가 갈라졌다 — 한쪽만 넓히면 다른 층이 사각이 된다');
+  const libSrc = fs.readFileSync(LIB, 'utf8');
+  assert.match(libSrc, /new RegExp\('(\[[^']+\])'/, 'lib/옛글자.js 에서 옛글자 클래스를 못 찾았다 — 정의가 사라졌거나 모양이 바뀌었다');
 
-  // 사본이 되살아나면 갈라짐이 다시 조용해진다 — 훅은 lib 을 **가져다 써야** 한다.
+  // 사본이 되살아나면 갈라짐이 다시 조용해진다 — 소비자는 lib 을 **가져다 써야** 한다.
   for (const [f, 이름] of [[HOOK, 'chat-glyph-guard'],
-                           [path.join(__dirname, '..', '.claude', 'hooks', 'board-guard.js'), 'board-guard']]) {
+                           [path.join(__dirname, '..', '.claude', 'hooks', 'board-guard.js'), 'board-guard'],
+                           [path.join(__dirname, '..', 'tools', 'lib', '옛글자.js'), 'tools/lib/옛글자.js']]) {
     const src = fs.readFileSync(f, 'utf8');
     assert.match(src, /require\([^)]*옛글자\.js['"]\s*\)\)?/, `${이름} 가 lib/옛글자.js 를 안 쓴다 — 사본이 부활했나`);
     assert.ok(!/new RegExp\('\[\\\\u30/.test(src), `${이름} 안에 옛글자 클래스 사본이 남아 있다`);
   }
+
+  /* 🔴 커밋 층은 `.test()` 를 쓰므로 **전역 플래그를 떼서** 물려받아야 한다 — 전역 정규식의
+   *   `.test()` 는 lastIndex 를 들고 다녀 같은 입력에 번갈아 참·거짓을 낸다(글자를 하나 걸러
+   *   하나씩 놓친다). 여기가 그 파생을 못박는다. */
+  const 커밋층 = require('../tools/lib/옛글자.js').옛글자;
+  assert.ok(!커밋층.global, '커밋 층 정규식에 g 플래그가 붙었다 — .test() 가 호출마다 답을 뒤집는다');
+  const 한자 = String.fromCodePoint(0x6703);
+  for (let i = 0; i < 3; i++) assert.ok(커밋층.test(한자), `${i + 1}번째 호출에서 답이 뒤집혔다`);
 });
 
 test('차단문이 따를 수 있는 처방을 담는다 — 표기만 바꾸면 통과한다는 출구 포함(F103)', () => {
