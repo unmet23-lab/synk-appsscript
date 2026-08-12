@@ -19,7 +19,7 @@
 
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { execFileSync, spawnSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -29,6 +29,10 @@ const 수거 = require(path.join(REPO, 'tools', '보드수거.js'));
 const 보드 = require(path.join(REPO, 'tools', 'lib', '보드.js'));
 const 소유자 = require(path.join(REPO, 'tools', '작업본소유자.js'));
 const 보드id = require(path.join(REPO, '.claude', 'hooks', 'lib', 'board-id.js'));
+/* 자식은 **공용 통로**로 띄운다 — 직접 spawnSync 하면 「안 떴다」가 stdout 빈 문자열이 되어
+ * 통과를 기대하는 검사(여기선 「아무 말도 안 한다」 묶음)가 **조용히 초록**이 된다.
+ * `tests/훅통로.test.js` 가 저장소를 훑어 옛 형태를 금지한다 — 내가 그 적색을 냈다. */
+const { 훅띄우기 } = require(path.join(REPO, 'tests', 'lib', '훅띄우기.js'));
 const BOARDJS = path.join(REPO, 'tools', 'board.js');
 const 수거JS = path.join(REPO, 'tools', '보드수거.js');
 
@@ -116,7 +120,7 @@ test('🔑 생사를 못 재면 `null` — 「거둘 것 0건」이 아니다(F2
 
 test('☠️ 못 쟀을 때 CLI 는 **한 줄도 안 거두고 그 사실을 말한다** — 침묵하면 미실행이 통과가 된다', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'board-sweep-none2-'));
-  const r = spawnSync(process.execPath, [수거JS, '--hook'], {
+  const r = 훅띄우기([수거JS, '--hook'], {
     encoding: 'utf8', env: { ...process.env, SYNK_BOARD_ROOT: dir },
   });
   assert.match(String(r.stdout), /못 쟀다/);
@@ -205,7 +209,7 @@ const 아카이브머리 = '# 아카이브\n\n---\n\n';
 test('☠️ 보드에 내 줄이 없고 아카이브에 있으면 `board.js` 가 알린다 (F146 의 되찾기)', () => {
   const 내줄 = '| 2026-08-12 | **거둬진 트랙** | x.js | ✅종결 (`local_0badc0de`) |';
   const root = 저장소({ 'feedfeed': 머리 + 활성줄 + '\n' }, 아카이브머리 + 내줄 + '\n');
-  const r = spawnSync(process.execPath, [BOARDJS], {
+  const r = 훅띄우기(BOARDJS, {
     encoding: 'utf8',
     env: { ...process.env, SYNK_BOARD_ROOT: root, SYNK_BOARD_ARCHIVE: path.join(root, 'docs', '세션보드_아카이브.md'),
       CLAUDE_CODE_HOST_SESSION_ID: 'local_0badc0de-1111-2222-3333-444444444444' },
@@ -219,7 +223,7 @@ test('☠️ 보드에 내 줄이 없고 아카이브에 있으면 `board.js` �
 test('☠️ 보드에 내 줄이 **있으면** 아무 말도 안 한다 — 매번 옛 트랙을 들이밀면 소음이 된다', () => {
   const 내줄 = '| 2026-08-12 | **거둬진 트랙** | x.js | ✅종결 (`local_0badc0de`) |';
   const root = 저장소({ '0badc0de': 머리 + 활성줄 + '\n' }, 아카이브머리 + 내줄 + '\n');
-  const r = spawnSync(process.execPath, [BOARDJS], {
+  const r = 훅띄우기(BOARDJS, {
     encoding: 'utf8',
     env: { ...process.env, SYNK_BOARD_ROOT: root, SYNK_BOARD_ARCHIVE: path.join(root, 'docs', '세션보드_아카이브.md'),
       CLAUDE_CODE_HOST_SESSION_ID: 'local_0badc0de-1111-2222-3333-444444444444' },
@@ -231,7 +235,7 @@ test('☠️ **유령**도 내 줄로 센다 — 규격 밖이라 표에 안 뜰
   const 내줄 = '| 2026-08-12 | **거둬진 트랙** | x.js | ✅종결 (`local_0badc0de`) |';
   const 유령 = '| 08-12 | **내 유령 선언** | x.js | ▶작업중 |';
   const root = 저장소({ '0badc0de': 머리 + 유령 + '\n' }, 아카이브머리 + 내줄 + '\n');
-  const r = spawnSync(process.execPath, [BOARDJS], {
+  const r = 훅띄우기(BOARDJS, {
     encoding: 'utf8',
     env: { ...process.env, SYNK_BOARD_ROOT: root, SYNK_BOARD_ARCHIVE: path.join(root, 'docs', '세션보드_아카이브.md'),
       CLAUDE_CODE_HOST_SESSION_ID: 'local_0badc0de-1111-2222-3333-444444444444' },
@@ -242,7 +246,7 @@ test('☠️ **유령**도 내 줄로 센다 — 규격 밖이라 표에 안 뜰
 test('🔑 아카이브를 못 읽으면 「없다」가 아니라 「판정 못 했다」다 (F207)', () => {
   const root = 저장소({ 'feedfeed': 머리 + 활성줄 + '\n' });
   fs.rmSync(path.join(root, 'docs', '세션보드_아카이브.md'));
-  const r = spawnSync(process.execPath, [BOARDJS], {
+  const r = 훅띄우기(BOARDJS, {
     encoding: 'utf8',
     env: { ...process.env, SYNK_BOARD_ROOT: root, SYNK_BOARD_ARCHIVE: path.join(root, 'docs', '세션보드_아카이브.md'),
       CLAUDE_CODE_HOST_SESSION_ID: 'local_0badc0de-1111-2222-3333-444444444444' },
