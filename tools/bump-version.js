@@ -234,7 +234,21 @@ function collectUsedVersions() {
  *   ⓑ 짜는 동안에는 `[vNEXT]` 라고 적는다 — 이 자리표는 `\[v9\.\d+` 에 안 걸려 **애초에 안 빨개진다.**
  *      채번이 상수를 쓰는 **같은 실행에서** 모든 엔진 파일의 `[vNEXT]` 를 `[v9.N]` 으로 바꾼다.
  *   🔑 순서를 바꾸라고 사람에게 시키는 대신, 순서가 하나뿐인 통로를 만든 것이다. */
-const PLACEHOLDER = /\[vNEXT\]/g;
+/* [2026-08-12] F339 — 라벨을 붙인 자리표(`[vNEXT·E²]`)를 **통째로 놓쳤다.** 정확히 `[vNEXT]` 만 봤으니
+ *   치환도 `--check` 도 조용히 지나갔고, 실측 08-12 에 `엔진_운영배치.js` 의 `[vNEXT·E²]` 하나가
+ *   `--check` 초록 아래 살아남았다 — 잡은 것은 기계가 아니라 사람 눈이다. 가드가 로직이 아니라
+ *   **표기층**에서 샜고, 새는 방향은 여기서도 「통과」다.
+ * 🔑 라벨은 지우지 않고 **번호만** 갈아 끼운다 — 라벨은 뜻을 진다(`[vNEXT·검수 31584c…]` = 어느 검수가
+ *   잡았나 · `[vNEXT·E²]` = 어느 절의 몫인가). 사람이 손으로 확정할 때도 그렇게 했다: `[vNEXT·E²]` 는
+ *   `[v9.215·E²]` 가 됐지 `[v9.215]` 가 아니었다(엔진_운영배치.js:383).
+ * ⚠ 확정된 `[v9.N·라벨]` 은 버전 태그 패턴(`\[v9\.(\d+)\]`)에 **안 걸린다** — 그래서 `maxTagInEngines`
+ *   가 그 줄을 최고 태그로 세지 않는다. 새는 방향이 「상수보다 높은 태그를 못 본다」가 아니라
+ *   「안 센다」라 거짓 적색을 안 만든다. 태그 패턴을 넓히는 것은 이 트랙 밖(별건).
+ * 🔑 `/g` 정규식을 **상수로 두지 않는다** — `lastIndex` 가 호출 사이에 남아 두 번째 `test()` 가 거짓을
+ *   낸다(옛 코드가 그 자리에서 `lastIndex = 0` 을 손으로 껐다 · 끄는 것을 한 번 잊으면 자리표가
+ *   「없다」로 읽힌다). 매번 새로 만들어 그 자리 자체를 없앤다. 판정은 이 함수 **하나**다 —
+ *   옛 코드는 같은 패턴을 네 곳에 손으로 적어 두었고, 그러면 넓힐 때 갈라진다. */
+function 자리표() { return /\[vNEXT(?:([·\s][^\]\n]*))?\]/g; }
 
 /* SYNK_BUMP_ROOT = **보는 저장소만** 바꾸는 이음매(로직은 안 끈다 · SYNK_TRACK_ROOT·SYNK_OWNER_ROOT 와 같은 패턴).
  * 탐지력은 픽스처가 져야 한다 — 실저장소에 `[vNEXT]` 를 심어 놓고 재는 순간 그게 사고다. */
@@ -296,10 +310,10 @@ function hardcodedHeadVersion() {
   return m ? m[0] : null;
 }
 
-/** `[vNEXT]` 가 남아 있는 파일들. */
+/** `[vNEXT]`·`[vNEXT·라벨]` 이 남아 있는 파일들. */
 function pendingPlaceholders() {
   return engineFiles().filter((f) => {
-    try { return PLACEHOLDER.test(fs.readFileSync(path.join(rootDir(), f), 'utf8')) && (PLACEHOLDER.lastIndex = 0, true); }
+    try { return 자리표().test(fs.readFileSync(path.join(rootDir(), f), 'utf8')); }
     catch (_) { return false; }
   });
 }
@@ -312,9 +326,10 @@ function stampPlaceholders(ver, codeSrcAfter) {
     const p = path.join(rootDir(), f);
     let src = f === 'Code.js' && codeSrcAfter !== undefined ? codeSrcAfter : null;
     if (src === null) { try { src = fs.readFileSync(p, 'utf8'); } catch (_) { continue; } }
-    if (!/\[vNEXT\]/.test(src)) { if (f === 'Code.js' && codeSrcAfter !== undefined) 쓸것.push([p, src]); continue; }
-    const n = (src.match(/\[vNEXT\]/g) || []).length;
-    쓸것.push([p, src.replace(PLACEHOLDER, '[' + ver + ']')]);
+    const n = (src.match(자리표()) || []).length;
+    if (!n) { if (f === 'Code.js' && codeSrcAfter !== undefined) 쓸것.push([p, src]); continue; }
+    // 라벨(`·E²`)은 그대로 두고 번호만 갈아 끼운다 — 자리표가 없으면 라벨 그룹은 undefined 다.
+    쓸것.push([p, src.replace(자리표(), (_, 라벨) => '[' + ver + (라벨 || '') + ']')]);
     바뀐것.push(f + '×' + n);
   }
   // 전부 계산한 뒤에 쓴다 — 중간에 실패하면 절반만 바뀐 상태가 남는다
@@ -327,7 +342,7 @@ function check() {
   const 문제 = [];
   const cur = versionOf(fs.readFileSync(codePath(), 'utf8'));
   const 남은 = pendingPlaceholders();
-  if (남은.length) 문제.push('[vNEXT] 자리표가 남아 있다: ' + 남은.join(', ') + ' → 커밋 전에 `--desc` 로 채번하면 함께 확정된다');
+  if (남은.length) 문제.push('[vNEXT] 자리표가 남아 있다(`[vNEXT·라벨]` 포함): ' + 남은.join(', ') + ' → 커밋 전에 `--desc` 로 채번하면 함께 확정된다');
   const curN = cur ? Number(String(cur).replace(/^v9\./, '')) : null;
   const max = maxTagInEngines();
   if (curN !== null && max !== null && curN !== max) {
