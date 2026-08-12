@@ -1,0 +1,257 @@
+'use strict';
+/* 검수·심문 런 — **오래 걸리는 판단 패스를 세션 수명에서 떼어낸다.**
+ *
+ * 왜 있나 (2026-08-12 · 유호님 「검수·심문이 너무 오래 걸려서 중간에 끊긴다」):
+ *   실측한 끊김의 층은 셋인데 도구는 그중 하나만 막고 있었다.
+ *     ① 포그라운드 셸 10분 상한 — 이미 막았다(F333 · `소요안내`·`진행경고줄`).
+ *     ② **세션이 끝나면 자식도 죽는다** — 백그라운드로 던져도 세션 수명 = 검수 수명이다(F334).
+ *        보드 두 줄에 같은 문장이 찍혔다: 「재검수 2차 = 세션 종료로 중단·무효」.
+ *     ③ **죽으면 이미 돈 회차까지 통째로 잃는다** — `codex실행` 이 회차 결과를 메모리 배열에
+ *        쌓고 마지막에야 기록했고, 임시 폴더가 `mkdtempSync` 라 매번 새로 생겼다.
+ *        그래서 8분짜리 1회차를 끝내고 2회차에서 죽으면 **처음부터** 다시였다.
+ *   ③ 이 급소다 — 「오래 걸린다」가 아니라 「죽으면 0에서 다시」가 반복을 만들었다.
+ *
+ * 🔑 이 모듈은 **셋을 한 벌로** 진다. 갈라 두면 ②만 고치고 ③을 잊는 판이 나오는데,
+ *   그 판은 「세션 밖에서 죽어 아무것도 안 남은」 최악이 된다.
+ *
+ * ☠️ 상태를 `handoff-store.stateDir()` 안에 두지 않는다 — 그 폴더는 `sweep()` 이 청소하고,
+ *   규칙이 `if (!j.at || 나이>TTL) unlink` 라 `at` 없는 파일은 나이와 무관하게 즉시 사라진다
+ *   (`codex-review.js:85` 진행표식이 정확히 그렇게 샜다 — 증거를 지키려던 장치가 반대로 샜다).
+ *   그래서 폴더를 가른다. 이름 규칙(`projectKey`·`safeId`)만 그 모듈 것을 쓴다.
+ *
+ * ⚠ 체크포인트·런 상태는 **repo 밖**이다(tmpdir). 미커밋 노이즈로 남의 작업본에 섞이지
+ *   않게 하려는 것이고(F073), 재부팅이면 같이 사라지는 건 의도다 — 그때는 그 프로세스도
+ *   이미 죽었다. **결과 자체**(심문 결과 md · 검수 장부 jsonl)는 repo 안에 남는다.
+ */
+
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const crypto = require('crypto');
+
+const ROOT = path.resolve(__dirname, '..', '..');
+
+/* 지연 require — 이 모듈은 SessionStart 훅도 부른다. 훅 로드 경로에 무거운 사슬을 얹지
+ * 않는다(등록층에서 새면 새는 방향은 언제나 「통과」다 · CLAUDE.md 가드 조항). */
+function store() {
+  return require(path.join(ROOT, '.claude', 'hooks', 'lib', 'handoff-store.js'));
+}
+
+function 키(cwd) {
+  return store().projectKey(cwd || ROOT);
+}
+
+// ────────────────────────────────────────────────── 체크포인트 (③ 손실 방지)
+
+/** 체크포인트가 사는 폴더의 부모. */
+function 체크포인트뿌리() {
+  return process.env.SYNK_REVIEW_CKPT || path.join(os.tmpdir(), 'synk-검수체크포인트');
+}
+
+/* 방 이름 = **무엇을 검수하는가의 전부**를 담은 지문.
+ * 🔑 대상 diff 만으로 만들면 안 된다 — 같은 diff 라도 모델·효력·「버그만」이 다르면 **다른 검수**고,
+ *   그걸 이어받으면 luna 로 시작한 판을 sol 결과로 채워 넣는다. 조용히 섞이고, 섞인 쪽은
+ *   언제나 「이미 돌았다」= 통과 방향이다. 그래서 갈리는 축을 전부 키에 넣는다. */
+function 방지문(정보) {
+  const 축 = {
+    종류: (정보 && 정보.종류) || '',
+    값: (정보 && 정보.값) || '',
+    모델: (정보 && 정보.모델) || '',
+    효력: (정보 && 정보.효력) || '',
+    버그만: !!(정보 && 정보.버그만),
+    총회차: Number((정보 && 정보.총회차) || 1),
+  };
+  return crypto.createHash('sha256').update(JSON.stringify(축)).digest('hex').slice(0, 12);
+}
+
+/** 이 검수/심문이 중간 결과를 적을 방. 없으면 만든다. */
+function 방(정보) {
+  const p = path.join(체크포인트뿌리(), `${키()}-${방지문(정보)}`);
+  fs.mkdirSync(p, { recursive: true });
+  return p;
+}
+
+/* 회차 산출물의 이름 — 단계까지 가른다.
+ * 1단계(분석)가 5~8분이고 2단계(구조화)가 그보다 짧다. 둘을 한 파일로 묶으면 2단계에서
+ * 죽었을 때 **이미 끝난 1단계까지 다시** 돌게 된다. 가장 비싼 것을 가장 먼저 못박는다. */
+function 조각경로(방경로, 종류, i) {
+  return path.join(방경로, `${종류}-${i}`);
+}
+
+/** 조각이 이미 있으면 그 내용. 없거나 비었으면 null — **빈 파일을 「돌았다」로 읽지 않는다.** */
+function 조각읽기(방경로, 종류, i) {
+  try {
+    const s = fs.readFileSync(조각경로(방경로, 종류, i), 'utf8');
+    return s.trim() ? s : null;
+  } catch (_) { return null; }
+}
+
+function 조각쓰기(방경로, 종류, i, 내용) {
+  fs.mkdirSync(방경로, { recursive: true });
+  fs.writeFileSync(조각경로(방경로, 종류, i), String(내용 == null ? '' : 내용), 'utf8');
+}
+
+/** JSON 조각 — 파싱 실패는 **없는 것으로** 본다(깨진 조각을 이어받으면 그게 더 나쁘다). */
+function json읽기(방경로, 종류, i) {
+  const s = 조각읽기(방경로, 종류, i);
+  if (!s) return null;
+  try { return JSON.parse(s); } catch (_) { return null; }
+}
+
+function json쓰기(방경로, 종류, i, 값) {
+  조각쓰기(방경로, 종류, i, JSON.stringify(값));
+}
+
+/** 방을 비운다 — 완주해서 장부에 들어간 뒤에만 부른다. */
+function 방비우기(방경로) {
+  try { fs.rmSync(방경로, { recursive: true, force: true }); } catch (_) { /* 못 지워도 다음 판이 덮는다 */ }
+}
+
+// ────────────────────────────────────────────────── 런 상태 (② 세션 분리 + 도전안)
+
+function 런뿌리() {
+  return process.env.SYNK_REVIEW_RUNS || path.join(os.tmpdir(), 'synk-검수런', 키());
+}
+
+/* 파일명 안전화 — **허용 목록이 아니라 금지 목록**이다.
+ * 🔴 첫 판은 `[^\w.-]` 였다. `\w` 는 ASCII 만이라 「검수」도 「심문」도 **둘 다 `__`** 가 됐다
+ *   (실측 08-12: 런ID `검수-2026-…` 의 로그가 `__-2026-….log` 로 떨어졌다). 종류만 다르고
+ *   같은 초에 던진 두 런이 **같은 파일명이 되어 하나가 조용히 덮인다** — 새는 방향이
+ *   「한 건이 소리 없이 사라짐」이다. 그리고 사람이 훅이 준 런ID 로 로그를 찾을 수 없다.
+ *   가드는 **사람이 실제로 쓰는 표기로** 검사한다(CLAUDE.md 가드 맹점 ①). */
+function 파일명(s) {
+  /* ⚠ 하이픈·점은 **건드리지 않는다** — 런ID 가 `종류-시각-난수` 라 하이픈까지 치환하면
+   *   파일명과 런ID 가 또 갈리고, 그게 방금 고친 바로 그 병이다.
+   * 🔑 제어문자를 정규식 **리터럴로 넣지 않는다** — 소스에 raw 제어 바이트가 박히면 도구가
+   *   그 파일을 바이너리로 읽어 편집이 막힌다(실측 08-12: grep 이 "Binary file" 로 답했다).
+   *   코드포인트로 판정하면 그 함정이 원천적으로 없다. */
+  const 금지 = '\\/:*?"<>|';
+  const 안전 = [...String(s)]
+    .map((c) => (c.codePointAt(0) < 32 || c === ' ' || 금지.includes(c) ? '_' : c))
+    .join('');
+  return 안전.replace(/^[.]+|[.]+$/g, '') || '런';
+}
+
+function 런경로(런ID) {
+  return path.join(런뿌리(), `${파일명(런ID)}.json`);
+}
+
+/** 로그는 런과 같은 이름 — 죽은 런의 마지막 출력을 사람이 바로 찾을 수 있어야 한다. */
+function 로그경로(런ID) {
+  return path.join(런뿌리(), `${파일명(런ID)}.log`);
+}
+
+function 런ID발급(종류) {
+  return `${종류}-${new Date().toISOString().replace(/[:.]/g, '').slice(0, 15)}-${crypto.randomBytes(3).toString('hex')}`;
+}
+
+function 런쓰기(런) {
+  fs.mkdirSync(런뿌리(), { recursive: true });
+  fs.writeFileSync(런경로(런.런ID), JSON.stringify(런, null, 2), 'utf8');
+  return 런;
+}
+
+function 런읽기(런ID) {
+  try { return JSON.parse(fs.readFileSync(런경로(런ID), 'utf8')); } catch (_) { return null; }
+}
+
+/** 상태 갱신 — 없는 런은 만들지 않는다(허공에 「완주」를 적으면 그건 거짓 초록이다). */
+function 런갱신(런ID, 덧) {
+  const r = 런읽기(런ID);
+  if (r) return 런쓰기({ ...r, ...덧 });
+
+  /* 🔴 파일명 규칙이 바뀐 유물도 잃지 않는다 — 이름이 아니라 **내용의 런ID** 로 찾는다.
+   *   실측 08-12: `파일명()` 버그를 고친 직후, 그 전에 던진 런은 파일명(`__-…`)과 런ID(`검수-…`)가
+   *   어긋나 **처분 도장을 못 받았다.** 훅은 내용을 읽어 계속 알리는데 도장은 이름으로 찾으니
+   *   영영 안 닫힌다 — 「따를 수 없는 처방」이라 사람이 훅 자체를 무시하게 되는 자리다(F103). */
+  const 옛 = 런목록().find((x) => x.런ID === 런ID);
+  if (!옛) return null;
+  const 새 = { ...옛, ...덧 };
+  const 경로 = 새._경로;
+  delete 새._경로;
+  try { fs.writeFileSync(경로, JSON.stringify(새, null, 2), 'utf8'); } catch (_) { return null; }
+  return 새;
+}
+
+function 런목록() {
+  let 이름들 = [];
+  try { 이름들 = fs.readdirSync(런뿌리()).filter((f) => f.endsWith('.json')); } catch (_) { return []; }
+  return 이름들
+    /* `_경로` 를 달아 둔다 — 파일명 규칙이 바뀌어도 `런갱신` 이 그 런을 되찾을 수 있는 유일한 끈이다.
+     * 밖으로 나가는 값이 아니라 내부 손잡이라 밑줄로 표시한다(훅 출력은 이 필드를 안 읽는다). */
+    .map((f) => {
+      const p = path.join(런뿌리(), f);
+      try { return { ...JSON.parse(fs.readFileSync(p, 'utf8')), _경로: p }; } catch (_) { return null; }
+    })
+    .filter(Boolean)
+    .sort((a, b) => String(a.시작 || '').localeCompare(String(b.시작 || '')));
+}
+
+/* 살아 있나 — 신호 0 은 「보내지 않고 존재만 확인」이다(POSIX·Windows 둘 다 동작).
+ * ⚠ pid 는 재사용된다. 재사용된 pid 를 「살아 있다」로 읽으면 **죽은 런이 영원히 진행 중**이 되고,
+ *   그건 조용한 누락이다 — 그래서 아래 `판정()` 이 시간 상한을 함께 본다. */
+function 살아있나(pid) {
+  if (!pid) return false;
+  try { process.kill(pid, 0); return true; } catch (e) { return e && e.code === 'EPERM'; }
+}
+
+/* 멈춤으로 보는 경과(분). 정상 최대는 심문 3회차 = 20분×3 = 60분이라 그 두 배를 준다.
+ * 🔑 새는 방향을 고른 값이다 — 짧으면 도는 판을 「죽었다」고 알리고(사람이 이어받아도
+ *   체크포인트가 있어 손해가 작다), 길면 죽은 판을 영영 안 알린다(조용한 누락). 과잉 알림 쪽으로 기운다. */
+const 멈춤분 = Number(process.env.SYNK_REVIEW_STALL_MIN || 120);
+
+function 경과분(런, now) {
+  const t = Date.parse((런 && 런.시작) || '');
+  if (!Number.isFinite(t)) return null;
+  return Math.max(0, Math.round(((now || Date.now()) - t) / 60000));
+}
+
+/**
+ * 런 하나의 현재 상태. **네 갈래로만 답한다** — 「모름」을 통과로 접지 않는다.
+ *   진행 · 멈춤(죽었거나 매달림) · 완주미처분(주울 것) · 처분됨
+ */
+function 판정(런, now) {
+  if (!런) return null;
+  const 분 = 경과분(런, now);
+  if (런.상태 === '완주' || 런.상태 === '실패') {
+    return 런.처분 ? { 갈래: '처분됨', 분 } : { 갈래: '완주미처분', 분 };
+  }
+  // 상태가 '진행' 인데 프로세스가 없다 = 밖에서 죽었다(정상 종료면 자식이 상태를 적었다).
+  if (!살아있나(런.pid)) return { 갈래: '멈춤', 분, 사유: '프로세스 없음' };
+  if (분 != null && 분 > 멈춤분) return { 갈래: '멈춤', 분, 사유: `${분}분 경과(상한 ${멈춤분})` };
+  return { 갈래: '진행', 분 };
+}
+
+/** 훅·조회가 함께 쓰는 한 줄 요약. 판정 어휘를 두 곳에 적지 않는다. */
+function 요약() {
+  const now = Date.now();
+  const 목록 = 런목록().map((r) => ({ 런: r, 판: 판정(r, now) })).filter((x) => x.판);
+  return {
+    진행: 목록.filter((x) => x.판.갈래 === '진행'),
+    멈춤: 목록.filter((x) => x.판.갈래 === '멈춤'),
+    완주미처분: 목록.filter((x) => x.판.갈래 === '완주미처분'),
+  };
+}
+
+/* 던져 놓고 **까먹는 것**이 이 설계의 유일한 새 위험이다(유호님이 정확히 그걸 우려했다).
+ * 그래서 처분은 손으로 적는 도장이고, 도장이 없는 완주는 세션을 열 때마다 훅이 계속 알린다. */
+function 처분(런ID, 사유) {
+  return 런갱신(런ID, { 처분: { 시각: new Date().toISOString(), 사유: String(사유 || '') } });
+}
+
+/* 던질 때 자식에게 줄 인자 — **`--던지기` 를 반드시 뺀다.**
+ * 안 빼면 자식이 또 던지고 그 손자가 또 던진다. 무한 재귀는 프로세스 폭발이라 되돌리기도 어렵다.
+ * 회귀가 이걸 못박는다(이 함수가 있는 이유의 전부다). */
+const 던지기플래그 = '--던지기';
+function 자식인자(argv) {
+  return (argv || []).filter((a) => a !== 던지기플래그);
+}
+
+module.exports = {
+  ROOT,
+  // 체크포인트
+  체크포인트뿌리, 방지문, 방, 조각경로, 조각읽기, 조각쓰기, json읽기, json쓰기, 방비우기,
+  // 런
+  런뿌리, 런경로, 로그경로, 런ID발급, 런쓰기, 런읽기, 런갱신, 런목록, 파일명,
+  살아있나, 경과분, 판정, 요약, 처분, 자식인자, 던지기플래그, 멈춤분,
+};

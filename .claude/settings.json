@@ -84,6 +84,18 @@
             "statusMessage": "판단 정본(철학) 게이트 적재"
           }
         ]
+      },
+      {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' _IGNORE || true; V=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/review-runs.js\"; { command -v node >/dev/null && [ -f \"$V\" ]; } || { echo \"SYNK review-runs 미실행: $V (node 또는 훅 파일 없음 — F044)\" >&2; exit 1; }; node \"$V\"",
+            "shell": "bash",
+            "timeout": 20,
+            "statusMessage": "던진 검수·심문 회수"
+          }
+        ]
       }
     ],
     "PreToolUse": [

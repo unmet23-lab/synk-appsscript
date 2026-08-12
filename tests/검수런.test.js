@@ -1,0 +1,248 @@
+// 검수런 회귀 — 「30분짜리 판단 패스가 세션과 함께 죽고, 죽으면 0에서 다시」를 막은 장치를 지킨다.
+//
+// 왜 이 자리인가 (2026-08-12 · 유호님 「너무 오래 걸려서 중간에 끊긴다」):
+//   실측한 끊김의 층이 셋이었고(① 셸 10분 상한 ② 세션 종료 ③ 중간 결과 전량 손실),
+//   ②③ 이 안 막혀 있었다. 처방은 전부 **실패가 통과와 같은 모양**이 되는 자리에 있다:
+//     · 이어받기가 느슨하면 빈 파일·거부 응답을 「이미 돌았다」로 읽는다 → 검수를 건너뛴 채 초록
+//     · 방 지문이 좁으면 luna 로 시작한 판을 sol 결과로 채운다 → 섞였는데 조용하다
+//     · 던지기가 자기 플래그를 안 빼면 자식이 또 던지고 손자가 또 던진다 → 프로세스 폭발
+//     · 훅이 안 울리면 던진 런을 영영 안 줍는다 → 유호님이 정확히 우려한 그것
+//   전부 「통과 방향」으로 새므로 프로즈로는 못 막는다.
+//
+// 탐지력은 **픽스처가 진다** — 실저장소엔 대개 던진 런이 0건이라, 거기서의 초록은
+// 「던진 게 없다」와 「장치가 죽었다」를 못 가른다(초록은 분모와 함께 읽는다).
+'use strict';
+const { test } = require('node:test');
+const assert = require('node:assert');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { execFileSync } = require('child_process');
+
+const ROOT = path.resolve(__dirname, '..');
+
+/* 픽스처 방 — env 로 갈아끼워 실저장소 tmpdir 을 안 건드린다. 모듈이 경로를 **부를 때마다**
+ * env 를 읽으므로(상수로 굳히지 않았다) 테스트마다 다른 방을 줄 수 있다. */
+function 새방() {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-검수런-test-'));
+  process.env.SYNK_REVIEW_CKPT = path.join(d, 'ckpt');
+  process.env.SYNK_REVIEW_RUNS = path.join(d, 'runs');
+  return d;
+}
+
+function 런모듈() {
+  delete require.cache[require.resolve('../tools/lib/검수런.js')];
+  return require('../tools/lib/검수런.js');
+}
+
+// ───────────────────────────────────────────────── ① 무한 재귀 차단 (급소)
+
+test('던지기 인자에서 --던지기 가 빠진다 — 안 빼면 자식이 또 던지고 손자가 또 던진다', () => {
+  const 런 = 런모듈();
+  const 나온 = 런.자식인자(['--commit', 'abc', 런.던지기플래그, '--회차', '2']);
+  assert.ok(!나온.includes(런.던지기플래그), '자식 인자에 던지기 플래그가 남았다 — 프로세스 폭발이다');
+  assert.deepStrictEqual(나온, ['--commit', 'abc', '--회차', '2'], '나머지 인자는 그대로 넘어가야 한다');
+});
+
+test('던지기 플래그가 여러 번 실려도 전부 빠진다', () => {
+  const 런 = 런모듈();
+  assert.deepStrictEqual(런.자식인자([런.던지기플래그, '--제안', 런.던지기플래그]), ['--제안']);
+});
+
+// ───────────────────────────────────────────────── ①-b 런ID ↔ 파일명 (실측으로 잡은 버그)
+
+test('런ID 의 한글 종류가 파일명에서 안 뭉개진다 — 「검수」·「심문」이 둘 다 __ 면 서로 덮는다', () => {
+  새방();
+  const 런 = 런모듈();
+  const a = 런.런경로('검수-2026-08-12T0214-abc123');
+  const b = 런.런경로('심문-2026-08-12T0214-abc123');
+  assert.notStrictEqual(a, b, '종류만 다른 두 런이 같은 파일을 쓴다 — 같은 초에 던지면 하나가 조용히 사라진다');
+  assert.strictEqual(path.basename(a), '검수-2026-08-12T0214-abc123.json',
+    '런ID 와 파일명이 갈렸다 — 훅이 준 런ID 로 사람이 로그를 못 찾는다');
+  assert.strictEqual(런.파일명('a/b\\c:d*e?f"g<h>i|j'), 'a_b_c_d_e_f_g_h_i_j', '경로 위험 문자는 막아야 한다');
+  assert.strictEqual(런.파일명('..'), '런', '전부 걸러지면 빈 이름 대신 폴백을 쓴다');
+});
+
+test('소스에 raw 제어 바이트가 없다 — 있으면 도구가 바이너리로 읽어 편집 자체가 막힌다', () => {
+  for (const f of ['tools/lib/검수런.js', 'tools/codex-review.js', '.claude/hooks/review-runs.js']) {
+    const s = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    const 나쁜 = [...s].filter((c) => { const n = c.codePointAt(0); return n < 32 && n !== 10 && n !== 13 && n !== 9; });
+    assert.strictEqual(나쁜.length, 0, `${f} 에 raw 제어 바이트 ${나쁜.length}개 — 정규식에 제어문자를 리터럴로 넣지 않는다`);
+  }
+});
+
+// ───────────────────────────────────────────────── ② 방 지문이 갈리는 축
+
+test('방 지문은 대상·모델·효력·버그만·회차가 하나라도 다르면 갈린다 — 섞이면 조용히 통과한다', () => {
+  const 런 = 런모듈();
+  const 바탕 = { 종류: 'commit', 값: 'abc123', 모델: 'gpt-5.6-luna', 효력: 'max', 버그만: false, 총회차: 2 };
+  const 기준 = 런.방지문(바탕);
+  assert.strictEqual(런.방지문({ ...바탕 }), 기준, '같은 축이면 같은 방이어야 이어받기가 된다');
+  for (const [k, v] of [['값', 'def456'], ['모델', 'gpt-5.6-sol'], ['효력', 'high'], ['버그만', true], ['총회차', 3], ['종류', 'base']]) {
+    assert.notStrictEqual(런.방지문({ ...바탕, [k]: v }), 기준, `${k} 가 달라졌는데 같은 방을 쓴다 — 다른 검수의 결과를 이어받는다`);
+  }
+});
+
+// ───────────────────────────────────────────────── ③ 이어받기 — 빈 것을 「돌았다」로 안 읽는다
+
+test('빈 조각은 null 이다 — 빈 파일을 「이미 돌았다」로 읽으면 검수를 통째로 건너뛴다', () => {
+  새방();
+  const 런 = 런모듈();
+  const 방 = 런.방({ 종류: 'commit', 값: 'x', 모델: 'm', 효력: 'max', 버그만: false, 총회차: 1 });
+  런.조각쓰기(방, '산문', 1, '   \n  ');
+  assert.strictEqual(런.조각읽기(방, '산문', 1), null, '공백뿐인 조각이 「내용 있음」으로 읽혔다');
+  런.조각쓰기(방, '산문', 1, '실제 분석 결과');
+  assert.strictEqual(런.조각읽기(방, '산문', 1), '실제 분석 결과');
+});
+
+test('깨진 JSON 조각은 없는 것으로 본다 — 깨진 걸 이어받으면 그게 더 나쁘다', () => {
+  새방();
+  const 런 = 런모듈();
+  const 방 = 런.방({ 종류: 'commit', 값: 'y', 모델: 'm', 효력: 'max', 버그만: false, 총회차: 1 });
+  런.조각쓰기(방, '구조', 1, '{"지적": [ 깨짐');
+  assert.strictEqual(런.json읽기(방, '구조', 1), null);
+  런.json쓰기(방, '구조', 1, { 지적: [] });
+  assert.deepStrictEqual(런.json읽기(방, '구조', 1), { 지적: [] });
+});
+
+test('방비우기 뒤에는 이어받을 것이 없다 — 장부에 든 결과를 다음 판이 재활용하면 안 된다', () => {
+  새방();
+  const 런 = 런모듈();
+  const 방 = 런.방({ 종류: 'commit', 값: 'z', 모델: 'm', 효력: 'max', 버그만: false, 총회차: 1 });
+  런.json쓰기(방, '구조', 1, { 지적: [1] });
+  런.방비우기(방);
+  assert.strictEqual(런.json읽기(방, '구조', 1), null);
+});
+
+// ───────────────────────────────────────────────── ④ 런 판정 네 갈래
+
+test('상태가 진행인데 프로세스가 없으면 멈춤이다 — 「모름」을 통과로 접지 않는다', () => {
+  새방();
+  const 런 = 런모듈();
+  // 존재할 수 없는 pid. 0 은 특수값이라 쓰지 않는다(플랫폼마다 뜻이 다르다).
+  const r = { 런ID: 'a', 종류: '검수', 상태: '진행', pid: 2147483646, 시작: new Date().toISOString() };
+  assert.strictEqual(런.판정(r).갈래, '멈춤');
+});
+
+test('살아 있어도 상한을 넘으면 멈춤이다 — pid 재사용을 「살아 있다」로 읽으면 영원히 안 알린다', () => {
+  새방();
+  const 런 = 런모듈();
+  const 오래전 = new Date(Date.now() - (런.멈춤분 + 10) * 60000).toISOString();
+  const r = { 런ID: 'b', 종류: '검수', 상태: '진행', pid: process.pid, 시작: 오래전 };
+  const 판 = 런.판정(r);
+  assert.strictEqual(판.갈래, '멈춤', '상한을 넘겼는데 진행으로 읽었다');
+  assert.match(String(판.사유 || ''), /경과/);
+});
+
+test('완주는 도장을 찍기 전까지 「완주미처분」이다 — 찍은 뒤에만 조용해진다', () => {
+  새방();
+  const 런 = 런모듈();
+  런.런쓰기({ 런ID: 'c', 종류: '검수', 상태: '완주', pid: 1, 시작: new Date().toISOString(), 대상: 't', 인자: [] });
+  assert.strictEqual(런.판정(런.런읽기('c')).갈래, '완주미처분');
+  assert.ok(런.처분('c', '읽고 반영함'));
+  assert.strictEqual(런.판정(런.런읽기('c')).갈래, '처분됨');
+});
+
+test('실패로 끝난 런도 주울 대상이다 — 실패를 조용히 삼키면 「안 돌았다」가 「통과」가 된다', () => {
+  새방();
+  const 런 = 런모듈();
+  런.런쓰기({ 런ID: 'd', 종류: '심문', 상태: '실패', pid: 1, 시작: new Date().toISOString(), 대상: 't', 인자: [] });
+  assert.strictEqual(런.판정(런.런읽기('d')).갈래, '완주미처분');
+});
+
+test('파일명 규칙이 바뀐 유물 런도 도장을 받는다 — 못 받으면 세션마다 영영 뜬다 (F103)', () => {
+  const d = 새방();
+  const 런 = 런모듈();
+  // 옛 규칙(한글이 __ 로 뭉개진 판)으로 저장된 파일을 손으로 만든다.
+  const 뿌리 = path.join(d, 'runs');
+  fs.mkdirSync(뿌리, { recursive: true });
+  fs.writeFileSync(path.join(뿌리, '__-2026-08-12T0214-old.json'), JSON.stringify({
+    런ID: '검수-2026-08-12T0214-old', 종류: '검수', 상태: '완주', pid: 1,
+    시작: new Date().toISOString(), 대상: 't', 인자: [],
+  }), 'utf8');
+  assert.strictEqual(런.판정(런.런목록()[0]).갈래, '완주미처분', '유물이 목록에 안 잡혔다');
+  assert.ok(런.처분('검수-2026-08-12T0214-old', '읽음'), '이름으로 못 찾는 런에 도장을 못 찍었다');
+  assert.strictEqual(런.판정(런.런목록()[0]).갈래, '처분됨', '도장이 안 박혔다');
+});
+
+test('없는 런에 도장을 찍으면 실패한다 — 오타로 허공에 찍으면 진짜 런이 미처분으로 남는다', () => {
+  새방();
+  const 런 = 런모듈();
+  assert.strictEqual(런.처분('없는런', '아무거나'), null);
+});
+
+// ───────────────────────────────────────────────── ⑤ 심문 형식 = 거부 탐지
+
+test('등급도 「지적 0건」도 없는 응답은 통과가 아니다 — 08-06 의 241바이트 거부가 그 모양이었다', () => {
+  const cr = require('../tools/codex-review.js');
+  assert.ok(!cr.심문형식통과(''), '빈 응답');
+  assert.ok(!cr.심문형식통과('죄송하지만 이 요청은 수행할 수 없습니다.'), '거부 응답이 통과로 읽혔다');
+  assert.ok(cr.심문형식통과('[P0] 소급 불가 구멍…'), '정상 등급 응답이 막혔다');
+  assert.ok(cr.심문형식통과('검토 결과 지적 0건.'), '명시적 0건이 막혔다');
+});
+
+// ───────────────────────────────────────────────── ⑥ 플래그 등록 (F135 — 등록층이 실질 정책이다)
+
+test('새 플래그가 아는플래그에 등록돼 있다 — 빠지면 「모르는 인자」로 즉시 거절된다', () => {
+  const cr = require('../tools/codex-review.js');
+  for (const f of [cr.던지기플래그, cr.직렬플래그, '--런목록']) {
+    assert.ok(cr.아는플래그.has(f), `${f} 가 아는플래그에 없다`);
+  }
+  assert.ok(cr.값플래그.includes('--런처분'), '--런처분 이 값플래그가 아니면 뒤의 런ID 를 인자로 오인한다');
+});
+
+test('모르는 단계는 자식 진입점이 거절한다 — 조용히 기본값으로 접으면 딴 단계를 돈다', () => {
+  const cr = require('../tools/codex-review.js');
+  assert.ok(cr.아는단계.has('검수') && cr.아는단계.has('기능') && cr.아는단계.has('심문'));
+  assert.ok(!cr.아는단계.has('없는단계'));
+});
+
+// ───────────────────────────────────────────────── ⑦ 훅 — 침묵과 발화
+
+function 훅돌리기(env) {
+  try {
+    return {
+      코드: 0,
+      out: execFileSync(process.execPath, [path.join(ROOT, '.claude', 'hooks', 'review-runs.js')],
+        { encoding: 'utf8', env: { ...process.env, ...env } }),
+    };
+  } catch (e) {
+    return { 코드: e.status, out: String(e.stdout || '') + String(e.stderr || '') };
+  }
+}
+
+test('던진 런이 0건이면 훅은 한 글자도 안 쓴다 — 상시 소음은 알림을 죽인다', () => {
+  const d = 새방();
+  const r = 훅돌리기({ SYNK_REVIEW_RUNS: path.join(d, 'runs-없음') });
+  assert.strictEqual(r.코드, 0);
+  assert.strictEqual(r.out.trim(), '', `0건인데 출력이 있다: ${r.out}`);
+});
+
+test('완주 미처분이 있으면 훅이 런ID 와 **실행 가능한 처분 명령**을 낸다 (F103)', () => {
+  const d = 새방();
+  const 런 = 런모듈();
+  런.런쓰기({ 런ID: '검수-테스트-1', 종류: '검수', 상태: '완주', 종료코드: 0, pid: 1, 시작: new Date().toISOString(), 대상: '--commit abc', 인자: ['--commit', 'abc'], 로그: 'C:/tmp/x.log' });
+  const r = 훅돌리기({ SYNK_REVIEW_RUNS: path.join(d, 'runs') });
+  assert.strictEqual(r.코드, 0);
+  assert.match(r.out, /검수-테스트-1/, '런ID 가 안 나왔다');
+  assert.match(r.out, /--런처분/, '처분 명령이 안 나왔다 — 따를 수 없는 처방은 우회를 정상 통로로 만든다');
+});
+
+test('멈춘 런에는 **이어받기 명령 그 자체**가 나온다 — 「다시 돌려라」만으로는 처방이 아니다', () => {
+  const d = 새방();
+  const 런 = 런모듈();
+  런.런쓰기({ 런ID: '심문-테스트-2', 종류: '심문', 상태: '진행', pid: 2147483646, 시작: new Date().toISOString(), 대상: '--심문 docs/x.md', 인자: ['--심문', 'docs/x.md'], 로그: 'C:/tmp/y.log' });
+  const r = 훅돌리기({ SYNK_REVIEW_RUNS: path.join(d, 'runs') });
+  assert.match(r.out, /멈춘 것 1건/);
+  assert.match(r.out, /codex-review\.js --심문 docs\/x\.md/, '이어받기 명령이 그대로 안 나왔다');
+  assert.match(r.out, /처음부터 다시가 아니다/, '이어받기가 싸다는 사실이 안 적혔다 — 사람이 겁먹고 안 돌린다');
+});
+
+test('처분 도장이 찍힌 런은 훅에서 사라진다 — 찍었는데 계속 뜨면 사람이 훅을 무시하게 된다', () => {
+  const d = 새방();
+  const 런 = 런모듈();
+  런.런쓰기({ 런ID: '검수-테스트-3', 종류: '검수', 상태: '완주', pid: 1, 시작: new Date().toISOString(), 대상: 't', 인자: [] });
+  런.처분('검수-테스트-3', '반영 완료');
+  const r = 훅돌리기({ SYNK_REVIEW_RUNS: path.join(d, 'runs') });
+  assert.strictEqual(r.out.trim(), '', `처분한 런이 아직 뜬다: ${r.out}`);
+});
