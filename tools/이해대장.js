@@ -1,20 +1,26 @@
 #!/usr/bin/env node
 /**
- * 이해대장 — 철학 정본 부록 A 를 **한 장의 색 화면**으로 그린다.
+ * 이해대장 — 철학 정본 부록 A 를 **가리킬 수 있는 한 장**으로 그린다.
  *
  * 왜 있나 (2026-08-12 · 유호님 아이디어 「옵시디언 화면처럼 색상을 지정해 한눈에 파악」):
  *   부록 A 는 표 두 개라 「무엇이 있다」는 읽히는데 **「어디가 비었다」가 안 읽힌다.**
- *   특히 A-1 의 ㉡(사람 이해) 「돈다」 칸이 비어 있는 것 — 그게 우리 회사가 존재하는 이유인데
- *   마크다운 표에서는 다른 칸과 똑같은 무게로 지나간다. 색은 장식이 아니라 **진단**이다.
+ *   특히 A-1 의 ㉡(사람 이해) 「돈다」 칸이 빈 것 — 우리 회사가 존재하는 이유인데 다른 칸과
+ *   똑같은 무게로 지나간다. 색은 장식이 아니라 **진단**이다.
  *
- * 설계 세 가지:
- *   ① **정본에서 «파싱»한다 — 사본을 두지 않는다.** 여기 데이터를 베끼면 정본이 개정될 때
- *      화면만 낡아, 「비었다」가 실제로는 채워졌는데도 빨간 채로 남는다(philosophy-card 와 같은 규칙).
- *   ② **색은 브랜드 킷에서만.** 유호님 확정 — 색/폰트는 킷만. 임의 색을 쓰면 이 화면이
- *      「우리 것이 아닌 화면」이 되고, 그 순간 대외에 못 쓴다. 대비 규칙도 DESIGN.md 를 따른다
- *      (KC Sun 은 글자 금지 → 면으로만 · Emerald 는 라이트 전용, 면으로 깔면 글자는 Cream·Paper).
- *   ③ **못 읽으면 조용히 넘어가지 않는다.** 표를 못 찾았는데 빈 화면을 내면 「비어 있음」과
- *      「못 읽음」이 같은 모양이 된다(F207). 무엇이 왜 안 됐는지 말하고 비정상 종료한다.
+ * 🔑 v2 (같은 날 2차 지시) — 유호님: 「이 대장을 보고 검토·발전 지시를 자주 내릴 거다.
+ *   내가 특정 칸을 말하면 그 부분만 철학 정본에 비추어 다시 검토할 수 있게 해달라.」
+ *   → 읽는 화면에서 **가리키는 화면**으로 바꾼다. 칸마다 **주소**(㉡2 · 앱1)를 박고,
+ *     누르면 지시문이 통째로 복사된다. 그 지시문이 그대로 `/대장검토` 스킬의 입력이 된다.
+ *     주소가 없으면 유호님이 매번 「사람 이해의 짓고 있다 칸」을 말로 풀어야 하고,
+ *     그 순간 세션마다 다른 칸을 짚는다 — 주소는 편의가 아니라 **정확도 장치**다.
+ *
+ * 설계 넷:
+ *   ① **정본에서 «파싱»한다 — 사본을 두지 않는다.** 데이터를 베끼면 정본 개정 때 화면만 낡아,
+ *      이미 채운 칸을 계속 「비었다」고 하거나(가짜 빨강) 아직 빈 칸을 「찼다」고 한다(가짜 초록).
+ *   ② **색은 브랜드 킷에서만**(유호 확정) · DESIGN.md 대비 규칙 준수(KC Sun 은 면으로만).
+ *   ③ **못 읽으면 조용히 넘어가지 않는다** — 「비었다」와 「못 읽었다」가 같은 모양이면 안 된다(F207).
+ *   ④ **주소는 «내용»이 아니라 «자리»에 붙는다** — 층 이름·열 이름이 바뀌어도 주소가 흔들리면
+ *      유호님이 어제 적어 둔 「㉡2 보류」가 오늘 딴 칸을 가리킨다. 그래서 주소는 층 기호 + 열 순번이다.
  *
  * 쓰기: node tools/이해대장.js            → docs/이해대장.html 생성
  *      node tools/이해대장.js --바로가기  → 생성 + 바탕화면 「SYNK 운영자료」에 .lnk
@@ -44,10 +50,13 @@ const 상태색 = {
   '개원과 함께 연다': { 면: 킷.slate2, 글자: 킷.cream },
 };
 
-/** 조직 층 → 왼쪽 띠 색. 유호님 요청 = 「학습·앱 / 데이터·엔진 / 운영 / 브랜드」를 색으로 가른다. */
-const 층색 = {
-  '학습·앱': 킷.coral3, '데이터·엔진': 킷.emerald, 운영: 킷.navy3,
-  브랜드: 킷.sun, '수업·현장': 킷.slate2,
+/** 조직 층 → 왼쪽 띠 색 + A-2 주소 접두. 유호님 요청 = 조직 층을 색으로 가른다. */
+const 층정보 = {
+  '학습·앱': { 색: 킷.coral3, 주소: '앱' },
+  '데이터·엔진': { 색: 킷.emerald, 주소: '엔진' },
+  운영: { 색: 킷.navy3, 주소: '운영' },
+  브랜드: { 색: 킷.sun, 주소: '브랜드' },
+  '수업·현장': { 색: 킷.slate2, 주소: '수업' },
 };
 
 /** 마크다운 표식만 걷는다 — 뜻은 안 건드린다(평문화). */
@@ -85,8 +94,20 @@ function 비었나(칸) {
   return !s || s === '—' || s === '-' || /^없다/.test(s);
 }
 
+/** 층 이름에서 기호만 — 「㉠ 실력 — 무엇을 틀리는가」 → 「㉠」. 주소의 앞자리다. */
+function 층기호(이름) {
+  const m = String(이름).match(/[㉠㉡㉢]/);
+  return m ? m[0] : null;
+}
+
+/** 층 이름의 짧은 이름 — 「㉠ 실력 — 무엇을 틀리는가」 → 「㉠ 실력」 */
+function 짧은이름(이름) {
+  return String(이름).split('—')[0].trim();
+}
+
 function esc(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 /**
@@ -111,39 +132,101 @@ function 도달실측(root) {
   return (도달0 === null && 생산자만 === null) ? null : { 도달0, 생산자만, 어디: p };
 }
 
-/** 「엔진에 닿는가」 열만 «내용»으로 색을 정한다 — 이 열은 상태 이름이 아니라 판정이 값이다.
- *  🔑 이 열이 표의 결론이다: 「돈다」가 초록인데 여기가 빨간 칸 = 다 된 것처럼 보이는 미완성. */
+/** 「엔진에 닿는가」 열만 «내용»으로 색을 정한다 — 이 열은 상태 이름이 아니라 판정이 값이다. */
 function 도달색(내용) {
-  if (/닿는다/.test(내용)) return { 면: 킷.emerald, 글자: 킷.cream };
-  if (/끊겼다|미뤄|못 닿/.test(내용)) return { 면: 킷.coral, 글자: 킷.navy2 };
-  return { 면: 킷.cream3, 글자: 킷.navy };   // 「물을 수조차 없다」 — 재료가 0이라 판정 자체가 없다
+  if (/닿는다/.test(내용)) return { 면: 킷.emerald, 글자: 킷.cream, 표: '닿는다' };
+  if (/끊겼다|미뤄|못 닿/.test(내용)) return { 면: 킷.coral, 글자: 킷.navy2, 표: '끊겼다' };
+  return { 면: 킷.cream3, 글자: 킷.navy, 표: '물을 수 없다' };
 }
 
-function 칸그리기(내용, 상태) {
-  const c = /엔진에 닿는가/.test(상태 || '') ? 도달색(내용)
-    : (상태색[상태] || { 면: 킷.slate2, 글자: 킷.cream });
-  const 빔 = 비었나(내용);
-  // 빈 칸은 «면을 비우고 테두리만» 남긴다 — 채워진 칸 옆에서 구멍처럼 보이는 것이 이 화면의 전부다.
-  const 배경 = 빔 ? 'transparent' : c.면;
-  const 글자색 = 빔 ? 킷.coral3 : c.글자;
-  const 테두리 = 빔 ? `2px dashed ${킷.coral3}` : '1px solid rgba(0,0,0,.08)';
-  return `<td style="background:${배경};color:${글자색};border:${테두리}">`
-    + (빔 ? '<span class="빔">비었다</span>' : `<span>${esc(내용)}</span>`)
-    + '</td>';
+/** 긴 한 줄을 「·」 기준으로 끊어 목록으로 — 셀 안에서 눈이 미끄러지지 않게. */
+function 조각들(내용) {
+  return 내용.split(/\s+·\s+/).map((s) => s.trim()).filter(Boolean);
 }
 
-function 표그리기(행들, 층별색인가) {
+/** 지시문 — 누르면 이게 복사된다. 그대로 `/대장검토` 의 입력이 된다. */
+function 지시문(주소, 층, 열) {
+  return `${주소} 다시 검토해줘 — 「${층}」의 「${열}」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘.`;
+}
+
+function 복사버튼(주소, 층, 열) {
+  return `<button class="복사" data-말="${esc(지시문(주소, 층, 열))}" title="지시문 복사">${esc(주소)}</button>`;
+}
+
+/* ── A-1: 층별 카드 ───────────────────────────────────────────────
+ * 표가 아니라 카드로 그린다 — 표는 열이 넷이 되는 순간 폰에서 깨지고, 무엇보다
+ * **한 층을 통째로 보는 눈**을 못 준다. 유호님이 판단하는 단위는 칸이 아니라 «층»이다. */
+function 카드들(행들) {
   const [머리, ...몸] = 행들;
-  const th = 머리.map((h) => `<th>${esc(h)}</th>`).join('');
-  const tr = 몸.map((행) => {
-    const [이름, ...칸들] = 행;
-    const 띠 = 층별색인가
-      ? (Object.entries(층색).find(([k]) => 이름.includes(k)) || [, 킷.slate2])[1]
-      : 킷.navy3;
-    const tds = 칸들.map((칸, i) => 칸그리기(칸, 머리[i + 1])).join('');
-    return `<tr><th class="행이름" style="border-left:8px solid ${띠}">${esc(이름)}</th>${tds}</tr>`;
+  const 열이름 = 머리.slice(1);
+  return 몸.map((행) => {
+    const 층 = 짧은이름(행[0]);
+    const 기호 = 층기호(행[0]) || '?';
+    const 설명 = (행[0].split('—')[1] || '').trim();
+    const 도달 = 도달색(행[행.length - 1]);
+    const 블록 = 행.slice(1).map((칸, i) => {
+      const 열 = 열이름[i];
+      const 주소 = `${기호}${i + 1}`;
+      const 빔 = 비었나(칸);
+      const 마지막 = i === 행.length - 2;
+      const c = 마지막 ? 도달 : (상태색[열] || { 면: 킷.slate2, 글자: 킷.cream });
+      const 배경 = 빔 ? 'transparent' : c.면;
+      const 글자 = 빔 ? 킷.coral3 : c.글자;
+      const 테 = 빔 ? `2px dashed ${킷.coral3}` : '1px solid rgba(0,0,0,.07)';
+      const 본문 = 빔
+        ? '<div class="빔">비었다</div>'
+        : `<ul>${조각들(칸).map((s) => `<li>${esc(s)}</li>`).join('')}</ul>`;
+      return `<div class="블록${마지막 ? ' 결론' : ''}" style="background:${배경};color:${글자};border:${테}">
+        <div class="블록머리"><span class="열이름">${esc(열)}</span>${복사버튼(주소, 층, 열)}</div>
+        ${본문}</div>`;
+    }).join('');
+    return `<section class="카드" id="층-${esc(기호)}">
+      <header class="카드머리">
+        <h3>${esc(층)}</h3><p>${esc(설명)}</p>
+        <span class="도달칩" style="background:${도달.면};color:${도달.글자}">엔진 ${esc(도달.표)}</span>
+      </header>
+      <div class="블록들">${블록}</div>
+    </section>`;
   }).join('');
-  return `<table><thead><tr><th></th>${th.replace(/^<th><\/th>/, '')}</tr></thead><tbody>${tr}</tbody></table>`;
+}
+
+/* ── A-2: 표(층 × 시제) — 여기는 열이 셋이라 표가 맞다 ────────────── */
+function 실물표(행들) {
+  const [머리, ...몸] = 행들;
+  const th = 머리.slice(1).map((h) => `<th>${esc(h)}</th>`).join('');
+  const tr = 몸.map((행) => {
+    const 이름 = 짧은이름(행[0]);
+    const 키 = Object.keys(층정보).find((k) => 이름.includes(k));
+    const { 색, 주소: 접두 } = 층정보[키] || { 색: 킷.slate2, 주소: '기타' };
+    const tds = 행.slice(1).map((칸, i) => {
+      const 열 = 머리[i + 1];
+      const 주소 = `${접두}${i + 1}`;
+      const 빔 = 비었나(칸);
+      const c = 상태색[열] || { 면: 킷.slate2, 글자: 킷.cream };
+      const 본문 = 빔 ? '<span class="빔">비었다</span>'
+        : `<ul>${조각들(칸).map((s) => `<li>${esc(s)}</li>`).join('')}</ul>`;
+      return `<td style="background:${빔 ? 'transparent' : c.면};color:${빔 ? 킷.coral3 : c.글자};`
+        + `border:${빔 ? `2px dashed ${킷.coral3}` : '1px solid rgba(0,0,0,.07)'}">`
+        + `<div class="칸머리">${복사버튼(주소, 이름, 열)}</div>${본문}</td>`;
+    }).join('');
+    return `<tr><th class="행이름" style="border-left:8px solid ${색}">${esc(이름)}</th>${tds}</tr>`;
+  }).join('');
+  return `<table><thead><tr><th></th>${th}</tr></thead><tbody>${tr}</tbody></table>`;
+}
+
+/** 「먼저 볼 곳」 — 화면이 유호님께 **다음 질문을 제안한다.** 빈 칸과 끊긴 도달을 급한 순서로. */
+function 먼저볼곳(이해) {
+  const [머리, ...몸] = 이해;
+  const 후보 = [];
+  for (const 행 of 몸) {
+    const 기호 = 층기호(행[0]) || '?';
+    const 층 = 짧은이름(행[0]);
+    if (!/닿는다/.test(행[행.length - 1]) && !/물을/.test(행[행.length - 1])) {
+      후보.push({ 주소: `${기호}${행.length - 1}`, 층, 열: 머리[행.length - 1], 왜: '엔진에 안 닿는다 — 모으고 안 쓰면 미완성이다', 급: 0 });
+    }
+    if (비었나(행[1])) 후보.push({ 주소: `${기호}1`, 층, 열: 머리[1], 왜: '「돈다」가 0이다 — 이 층은 아직 아무것도 모으지 않는다', 급: 1 });
+  }
+  return 후보.sort((a, b) => a.급 - b.급).slice(0, 3);
 }
 
 function main() {
@@ -165,71 +248,162 @@ function main() {
     process.exit(1);
   }
 
-  // 「비었다」 몇 칸인가 — 화면 맨 위에 숫자로 박는다. 분모 없는 초록을 만들지 않는다(F207).
-  const 빈칸 = 이해.slice(1).flatMap((r) => r.slice(1)).filter(비었나).length;
-  const 전체칸 = 이해.slice(1).flatMap((r) => r.slice(1)).length;
-
+  const 칸전체 = 이해.slice(1).flatMap((r) => r.slice(1));
+  const 빈칸 = 칸전체.filter(비었나).length;
+  const 닿는층 = 이해.slice(1).filter((r) => /닿는다/.test(r[r.length - 1])).length;
+  const 층수 = 이해.length - 1;
   const 실측 = 도달실측(ROOT);
   const 도달줄 = 실측
     ? `<b>도달이 0인 사건 ${실측.도달0}종</b> · 생산자는 섰는데 도달이 0인 사건 <b>${실측.생산자만}종</b>`
-      + `<span class="잔글"> — 래칫이라 내려가면 통과, 올라가면 빨개진다 · 실값 정본 = SYNK-talk/lib/이벤트검증.js</span>`
+      + '<span class="잔글"> — 래칫이라 내려가면 통과, 올라가면 빨개진다 · 실값 정본 = SYNK-talk/lib/이벤트검증.js</span>'
     : '<b>⚠ 못 쟀다</b><span class="잔글"> — 형제 저장소(SYNK-talk)를 못 읽었다. '
       + '「빚이 0」이 아니라 「안 재봤다」이다 — 이 둘을 같은 모양으로 두지 않는다.</span>';
 
+  const 제안 = 먼저볼곳(이해).map((c) =>
+    `<li><button class="복사 큰" data-말="${esc(지시문(c.주소, c.층, c.열))}">${esc(c.주소)}</button>`
+    + `<span class="제안글"><b>${esc(c.층)}</b>의 「${esc(c.열)}」 — ${esc(c.왜)}</span></li>`).join('');
+
   const html = `<!doctype html><html lang="ko"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SYNK 이해 대장 — 어디가 비었나 (${ver})</title>
 <style>
-  :root{color-scheme:light}
-  body{margin:0;padding:32px;background:${킷.paper};color:${킷.ink};
-       font-family:"SUIT","Pretendard",system-ui,sans-serif;font-size:15px;line-height:1.6}
-  h1{font-size:26px;margin:0 0 4px;color:${킷.navy}}
-  .부제{color:${킷.slate2};margin:0 0 24px;font-size:14px}
-  .요약{display:inline-block;background:${킷.coralWash};color:${킷.coral3};
-        border-radius:999px;padding:6px 16px;font-weight:700;margin-bottom:24px}
-  h2{font-size:19px;margin:34px 0 6px;color:${킷.navy}}
-  .설명{color:${킷.slate2};font-size:13.5px;margin:0 0 12px}
-  table{width:100%;border-collapse:separate;border-spacing:4px;table-layout:fixed}
-  th{font-size:13px;font-weight:700;text-align:left;padding:8px 10px;color:${킷.navy}}
-  thead th{background:${킷.cream3};border-radius:6px}
-  .행이름{background:${킷.cream};border-radius:6px;vertical-align:top;width:19%}
-  td{padding:10px 12px;border-radius:6px;vertical-align:top;font-size:13px}
-  .빔{font-weight:700;letter-spacing:.04em}
-  .범례{margin-top:34px;padding-top:16px;border-top:1px solid ${킷.cream3};
-        color:${킷.slate2};font-size:12.5px}
-  .칩{display:inline-block;border-radius:999px;padding:2px 12px;margin-right:8px;font-weight:700;font-size:12px}
-  .실측{margin-top:12px;padding:12px 16px;background:${킷.cream};border-left:6px solid ${킷.emerald};
-        border-radius:6px;font-size:13px}
-  .잔글{color:${킷.slate2};font-size:12px}
-  footer{margin-top:28px;color:${킷.slate2};font-size:12px}
-</style>
-<h1>이해 대장</h1>
-<p class="부제">SYNK 철학 정본 ${ver} · 부록 A 에서 자동으로 그린다 — 이 화면은 손으로 고치지 않는다.</p>
-<div class="요약">이해 ${전체칸}칸 중 <b>${빈칸}칸이 비었다</b></div>
+  :root{color-scheme:light;
+    --paper:${킷.paper};--ink:${킷.ink};--navy:${킷.navy};--navy2:${킷.navy2};--navy3:${킷.navy3};
+    --cream:${킷.cream};--cream3:${킷.cream3};--slate2:${킷.slate2};
+    --coral:${킷.coral};--coral3:${킷.coral3};--wash:${킷.coralWash};--sun:${킷.sun};--emerald:${킷.emerald}}
+  *{box-sizing:border-box}
+  body{margin:0;padding:clamp(20px,4vw,44px);background:var(--paper);color:var(--ink);
+       font-family:"SUIT","Pretendard",system-ui,-apple-system,sans-serif;
+       font-size:15px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  .판{max-width:1180px;margin:0 auto}
+  h1{font-size:clamp(24px,3.4vw,32px);margin:0 0 6px;color:var(--navy);letter-spacing:-.01em}
+  .부제{color:var(--slate2);margin:0 0 22px;font-size:13.5px}
+  .요약{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:26px}
+  .수치{background:var(--cream);border:1px solid var(--cream3);border-radius:10px;
+        padding:10px 16px;font-size:13px;color:var(--navy)}
+  .수치 b{font-size:19px;display:block;line-height:1.25;letter-spacing:-.01em}
+  .수치.경고{background:var(--wash);border-color:var(--coral);color:var(--coral3)}
 
-<h2>A-1. 이해 대장 — 그 학생을 얼마나 알게 됐나</h2>
+  .먼저{background:var(--cream);border:1px solid var(--cream3);border-left:6px solid var(--coral);
+        border-radius:10px;padding:16px 20px;margin-bottom:30px}
+  .먼저 h2{margin:0 0 4px;font-size:15px;color:var(--navy)}
+  .먼저 p{margin:0 0 10px;font-size:12.5px;color:var(--slate2)}
+  .먼저 ol{margin:0;padding-left:0;list-style:none;display:grid;gap:8px}
+  .먼저 li{display:flex;align-items:flex-start;gap:10px;font-size:13.5px}
+  .제안글{padding-top:2px}
+
+  h2.절{font-size:19px;margin:34px 0 4px;color:var(--navy);letter-spacing:-.01em}
+  .설명{color:var(--slate2);font-size:13px;margin:0 0 16px;max-width:80ch}
+  .설명 b{color:var(--navy)}
+
+  .카드들{display:grid;gap:14px}
+  .카드{background:#fff;border:1px solid var(--cream3);border-radius:14px;overflow:hidden;
+        box-shadow:0 1px 2px rgba(23,24,32,.04)}
+  .카드머리{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+            padding:14px 18px;background:var(--cream);border-bottom:1px solid var(--cream3)}
+  .카드머리 h3{margin:0;font-size:17px;color:var(--navy);letter-spacing:-.01em}
+  .카드머리 p{margin:0;font-size:12.5px;color:var(--slate2);flex:1}
+  .도달칩{border-radius:999px;padding:3px 12px;font-size:11.5px;font-weight:700;white-space:nowrap}
+  .블록들{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;padding:12px}
+  .블록{border-radius:10px;padding:10px 12px;min-height:104px;font-size:12.5px}
+  .블록.결론{outline:2px solid var(--navy3);outline-offset:1px}
+  .블록머리{display:flex;align-items:center;justify-content:space-between;gap:8px;
+            margin-bottom:6px;opacity:.92}
+  .열이름{font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:none}
+  .블록 ul,td ul{margin:0;padding-left:14px}
+  .블록 li,td li{margin:2px 0}
+  .빔{font-weight:700;letter-spacing:.05em;padding:12px 0;text-align:center;font-size:13px}
+
+  table{width:100%;border-collapse:separate;border-spacing:6px;table-layout:fixed;margin-top:4px}
+  th{font-size:12.5px;font-weight:700;text-align:left;padding:8px 10px;color:var(--navy)}
+  thead th{background:var(--cream3);border-radius:8px}
+  .행이름{background:var(--cream);border-radius:8px;vertical-align:top;width:16%;font-size:13px}
+  td{padding:10px 12px;border-radius:8px;vertical-align:top;font-size:12.5px}
+  .칸머리{margin-bottom:6px}
+
+  .복사{font-family:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+        font-size:11px;font-weight:700;letter-spacing:.02em;
+        background:rgba(255,255,255,.82);color:var(--navy);border:1px solid rgba(23,24,32,.14);
+        border-radius:6px;padding:2px 8px;cursor:pointer;transition:transform .08s ease,background .12s ease}
+  .복사:hover{background:#fff;transform:translateY(-1px)}
+  .복사:active{transform:translateY(0)}
+  .복사.큰{font-size:12.5px;padding:4px 11px;background:#fff}
+  .복사.됨{background:var(--emerald);color:var(--cream);border-color:var(--emerald)}
+
+  .실측{margin-top:12px;padding:12px 16px;background:var(--cream);border-left:6px solid var(--emerald);
+        border-radius:8px;font-size:12.5px}
+  .잔글{color:var(--slate2);font-size:11.5px}
+  .범례{margin-top:36px;padding-top:16px;border-top:1px solid var(--cream3);color:var(--slate2);font-size:12px}
+  .칩{display:inline-block;border-radius:999px;padding:2px 12px;margin:0 8px 6px 0;font-weight:700;font-size:11.5px}
+  footer{margin-top:24px;color:var(--slate2);font-size:11.5px;line-height:1.7}
+  @media print{.복사{display:none}.카드{break-inside:avoid}}
+</style>
+<div class="판">
+<h1>이해 대장</h1>
+<p class="부제">SYNK 철학 정본 ${ver} · 부록 A 에서 자동으로 그린다 — <b>이 화면은 손으로 고치지 않는다.</b> 고칠 것이 있으면 아래 코드를 눌러 복사해 말하면 된다.</p>
+
+<div class="요약">
+  <div class="수치${빈칸 ? ' 경고' : ''}"><b>${빈칸} / ${칸전체.length}</b>칸이 비었다</div>
+  <div class="수치${닿는층 < 층수 ? ' 경고' : ''}"><b>${닿는층} / ${층수}</b>층만 엔진에 닿는다</div>
+  <div class="수치"><b>${층수}</b>개 이해 층</div>
+</div>
+
+<div class="먼저">
+  <h2>🔎 먼저 볼 곳</h2>
+  <p>코드를 누르면 <b>검토 지시문이 통째로 복사된다</b> — 그대로 붙여 넣으면 그 칸만 정본에 비추어 다시 본다.</p>
+  <ol>${제안 || '<li>지금 급한 칸이 없다 — 전부 채워졌다.</li>'}</ol>
+</div>
+
+<h2 class="절">A-1. 이해 대장 — 그 학생을 얼마나 알게 됐나</h2>
 <p class="설명">㉠은 어느 학원이든 오답노트로 흉내 낸다. <b>㉡이 우리만 가질 수 있는 자리</b>이고, 새 기능은 여기서 가장 비어 있는 칸부터 채운다.<br>
-🔗 <b>맨 오른쪽 열이 이 표의 결론이다</b> — 모으는 것만으로는 아무것도 안 자란다. <b>「돈다」가 초록인데 그 열이 빨간 칸이 가장 위험하다</b>(다 된 것처럼 보이는 미완성). 도달의 정의는 <b>「읽힌 것」</b>이지 「보이는 것」이 아니다.</p>
-${표그리기(이해, false)}
+🔗 <b>테두리 쳐진 마지막 블록이 이 표의 결론이다</b> — 모으는 것만으로는 아무것도 안 자란다. <b>「돈다」가 초록인데 그 블록이 빨간 층이 가장 위험하다</b>(다 된 것처럼 보이는 미완성). 도달의 정의는 <b>「읽힌 것」</b>이지 「보이는 것」이 아니다.</p>
+<div class="카드들">${카드들(이해)}</div>
 <div class="실측">📏 엔진 도달 실측 — ${도달줄}</div>
 
-<h2>A-2. 실물 대장 — 무엇을 만들었나 <span style="font-weight:400;color:${킷.slate2};font-size:14px">(왼쪽 띠 = 조직 층)</span></h2>
+<h2 class="절">A-2. 실물 대장 — 무엇을 만들었나 <span style="font-weight:400;color:${킷.slate2};font-size:14px">(왼쪽 띠 = 조직 층)</span></h2>
 <p class="설명">시제는 이 표가 정한다 — <b>「이미 돌아간다」 칸에 없는 것을 현재형으로 쓰지 않는다</b>(정본 §0).</p>
-${표그리기(실물, true)}
+${실물표(실물)}
 
 <div class="범례">
-  <span class="칩" style="background:${킷.emerald};color:${킷.cream}">돈다</span>
+  <span class="칩" style="background:${킷.emerald};color:${킷.cream}">돈다 · 닿는다</span>
   <span class="칩" style="background:${킷.sun};color:${킷.ink}">짓고 있다</span>
   <span class="칩" style="background:${킷.slate2};color:${킷.cream}">개원과 함께</span>
+  <span class="칩" style="background:${킷.coral};color:${킷.navy2}">아직 없다 · 끊겼다</span>
   <span class="칩" style="background:transparent;color:${킷.coral3};border:2px dashed ${킷.coral3}">비었다</span>
   <div style="margin-top:10px">색은 브랜드 킷 23색에서만 뽑는다(유호님 확정) · KC Sun 은 면으로만 쓰고 글자로 쓰지 않는다.</div>
 </div>
-<footer>생성: node tools/이해대장.js — 정본이 바뀌면 다시 돌린다(사본을 두지 않는다).</footer>
+<footer>
+  생성: <code>node tools/이해대장.js</code> — 정본이 바뀌면 다시 돌린다(사본을 두지 않는다).<br>
+  검토를 부르는 말: <b>「㉡2 다시 검토해줘」</b> 처럼 코드만 말해도 된다 — 그 칸만 철학 정본에 비추어 다시 본다.
+</footer>
+</div>
+<script>
+document.addEventListener('click', function (e) {
+  var b = e.target.closest('.복사');
+  if (!b) return;
+  var 말 = b.getAttribute('data-말');
+  var 끝 = function () {
+    var 옛 = b.textContent; b.classList.add('됨'); b.textContent = '복사됨';
+    setTimeout(function () { b.classList.remove('됨'); b.textContent = 옛; }, 1100);
+  };
+  // file:// 에서는 clipboard API 가 막히는 브라우저가 있다 — 폴백을 «조용히» 두지 않고 둘 다 시도한다.
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(말).then(끝, function () { 폴백(말, 끝); });
+  } else { 폴백(말, 끝); }
+});
+function 폴백(말, 끝) {
+  var t = document.createElement('textarea');
+  t.value = 말; t.style.position = 'fixed'; t.style.opacity = '0';
+  document.body.appendChild(t); t.select();
+  try { document.execCommand('copy'); 끝(); } catch (_) { window.prompt('아래를 복사하세요', 말); }
+  document.body.removeChild(t);
+}
+</script>
 </html>`;
 
   fs.writeFileSync(산출경로, html, 'utf8');
-  const 닿는층 = 이해.slice(1).filter((r) => /닿는다/.test(r[r.length - 1])).length;
-  console.log(`[이해대장] ${path.relative(ROOT, 산출경로)} — 정본 ${ver} · 이해 ${전체칸}칸 중 ${빈칸}칸이 비었다`
-    + ` · 엔진에 닿는 층 ${닿는층}/${이해.length - 1}`
+  console.log(`[이해대장] ${path.relative(ROOT, 산출경로)} — 정본 ${ver} · 이해 ${칸전체.length}칸 중 ${빈칸}칸이 비었다`
+    + ` · 엔진에 닿는 층 ${닿는층}/${층수}`
     + (실측 ? ` · 도달 0인 사건 ${실측.도달0}종(생산자만 선 것 ${실측.생산자만}종)` : ' · 도달 실측 못 함(형제 저장소 없음)'));
 
   if (바로가기) {
@@ -241,4 +415,4 @@ ${표그리기(실물, true)}
 }
 
 if (require.main === module) main();
-module.exports = { 표뽑기, 비었나, 평문, 도달실측, 킷 };
+module.exports = { 표뽑기, 비었나, 평문, 도달실측, 층기호, 지시문, 먼저볼곳, 킷 };
