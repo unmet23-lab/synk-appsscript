@@ -287,6 +287,20 @@ function build() {
   };
 }
 
+/** 코드 파일의 머리 주석 블록이 끝나는 줄 번호. 셔뱅·`'use strict'`·`//` 줄이 이어지는 동안 내려가고
+ *  **빈 줄에서 멈춘다** — 빈 줄까지 삼키면 엣지가 머리에서 떨어져 나와 딴 문단처럼 보인다.
+ *  `/*` 블록 주석 앞에서도 멈춘다: 뒤로 밀어 넣으려면 블록의 끝을 세어야 하고, 그 셈이 한 번 틀리면
+ *  엣지를 주석 **안**에 심어 파서가 영원히 못 읽는다(조용한 0 — F307 이 새던 그 방향). */
+function 코드머리끝(lines) {
+  let i = /^#!/.test(lines[0] || '') ? 1 : 0;
+  while (i < lines.length) {
+    const t = (lines[i] || '').trim();
+    if (t.startsWith('//') || /^['"]use strict['"];?$/.test(t)) i += 1;
+    else break;
+  }
+  return i;
+}
+
 // 파생 선언을 문서에 심는다. 손으로 10곳에 같은 주석을 붙이면 형식이 흔들리고,
 // 흔들린 형식은 파서가 조용히 놓친다 — 그러면 "엣지가 없다"와 "엣지를 못 읽는다"를 구분할 수 없다.
 // 제목(첫 # 줄) 바로 다음에 넣어 사람 눈에도 먼저 보이게 한다. 이미 있으면 병합·정렬만 한다.
@@ -312,29 +326,50 @@ function addEdge(docRel, canons) {
   if (before.length === merged.length && before.every((e, i) => e === merged[i])) return false;
 
   const line = `<!-- 파생: ${merged.join(', ')} -->`;
-  let next;
-  if (existing.length) {
+  const next = 엣지본문(text, line, docRel);
+  if (next === text) return false;
+  fs.writeFileSync(full, next, 'utf8');
+  return true;
+}
+
+/**
+ * 엣지 줄을 본문에 넣은 결과를 돌려준다. **순수 함수** — 파일을 안 읽고 안 쓴다.
+ *
+ * 왜 갈랐나(2026-08-12): 자리·주석 문법 판정이 `addEdge` 안에 있으면 회귀가 이 판정을 재려고
+ * **실저장소 파일을 실제로 고쳐야** 하고, 그러면 「버그가 아직 있을 것을 요구하는 회귀」로 굳는다
+ * (CLAUDE.md 가드 3맹점 ②). 탐지력은 픽스처 문자열이 지고, 실저장소 검사는 거짓양성만 본다.
+ */
+function 엣지본문(text, line, docRel) {
+  const masked = maskCode(text);
+  const spans = [];
+  EDGE_RE.lastIndex = 0;
+  let mm;
+  while ((mm = EDGE_RE.exec(masked)) !== null) spans.push([mm.index, mm.index + mm[0].length]);
+
+  if (spans.length) {
     // 원문에 그냥 replace를 걸면 **코드 펜스 안의 예시**까지 진짜 선언으로 알고 덮어쓴다
     // (표기법을 설명하는 문서를 이 도구로 건드리는 순간 그 문서가 망가진다).
     // 마스킹한 사본에서 자리를 찾고, 그 인덱스로 원문을 자른다 — 길이를 보존했으니 자리가 같다.
-    const masked = maskCode(text);
-    const spans = [];
-    EDGE_RE.lastIndex = 0;
-    let mm;
-    while ((mm = EDGE_RE.exec(masked)) !== null) spans.push([mm.index, mm.index + mm[0].length]);
+    // 🔑 자리만 갈아 끼우므로 `.js` 의 `// ` 감싸개도 그대로 산다(--stamp 가 이 갈래로 온다).
     let out = '';
     let cur = 0;
     spans.forEach(([s, e], i) => {
       out += text.slice(cur, s) + (i === 0 ? line : ''); // 첫 자리만 남기고 나머지는 접는다
       cur = e;
     });
-    next = out + text.slice(cur);
-  } else {
+    return out + text.slice(cur);
+  }
+
+  {
     /* [2026-08-09] 자리는 **형식마다 다르다.** 원래 규칙은 「첫 `# ` 다음」 하나뿐이라 마크다운만 맞았고,
      * `.txt`·`.html`은 `# `이 없어 전부 `at=0`으로 떨어져 **파일 맨 첫 줄**에 박혔다.
      * `.txt`에서 그건 유호님이 읽는 정본의 첫 줄이 기계 표기가 된다는 뜻이다(눈높이 상시 지시 위반).
      * 쓰기 경로의 사고는 조용하지 않고 **문서에 남는다** — 그래서 형식별로 가른다. */
-    const lines = text.split('\n');
+    /* [2026-08-12] 개행을 파일에서 파생시킨다 — `\n` 으로 자르고 붙이면 CRLF 파일에선 **끼워 넣은 줄만**
+     * LF 가 되어 한 파일에 두 개행이 섞인다(`엔진_운영배치.js` 가 CRLF 다). 조용한 오염이라
+     * 증상은 다음 사람의 diff 에서야 나온다. */
+    const 개행 = /\r\n/.test(text) ? '\r\n' : '\n';
+    const lines = text.split(개행);
     const ext = path.extname(docRel).toLowerCase();
     if (ext === '.txt') {
       // .txt 엔 주석 문법이 없다 — 어디에 둬도 사람 눈에 보인다. 그래서 꼬리에 각주로 둔다.
@@ -343,16 +378,26 @@ function addEdge(docRel, canons) {
     } else if (ext === '.html') {
       // 진짜 HTML 주석이라 렌더되지 않는다 — doctype 이 있으면 그 다음, 없으면 맨 위.
       lines.splice(/^\s*<!doctype/i.test(lines[0] || '') ? 1 : 0, 0, line);
+    } else if (CODE_EXT.test(docRel)) {
+      /* [2026-08-12] F307 — `.js` 는 위 두 갈래 어디에도 안 걸려 **마크다운 자리**로 떨어졌고,
+       * `# ` 이 없으니 `at = 0` → 파일 맨 앞에 **날 HTML 주석**이 박혔다(실측 `contents_상담AI.js`).
+       * 🔴 급소는 「가드가 이걸 통과시킨다」다: `<!--` 는 sloppy 스크립트의 Annex B 한 줄 주석이라
+       *   `node --check` 가 exit 0 을 내고, Apps Script 는 모듈이 아니라 스크립트로 돌아 라이브에서도
+       *   안 터진다. 배포 전 구문검사(`/deploy` 1단계)가 이 자리에 **눈이 멀어 있고** 증상은 「조용함」뿐 —
+       *   대외 카피 원천 파일 맨 앞에 HTML 주석이 박힌 채 배포본에 실려 나간다. CI 모사도 전부 초록이었고
+       *   잡은 것은 커밋 직전 사람 눈이었다.
+       * 표기 정본 = `엔진_운영배치.js:3` 의 `// <!-- 파생: … -->` — 형식은 그대로 두고 주석으로 감싼다
+       *   (EDGE_RE 는 `<!-- 파생: … -->` 만 보므로 파서는 손댈 것이 없다).
+       * 자리 = 머리 주석 블록 **바로 다음** — 맨 앞은 그 파일이 무엇인지 말하는 줄의 자리다(`.txt` 를
+       *   꼬리로 보낸 것과 같은 축). */
+      lines.splice(코드머리끝(lines), 0, `// ${line}`);
     } else {
       let at = lines.findIndex((l) => /^#\s/.test(l));
       at = at === -1 ? 0 : at + 1;
       lines.splice(at, 0, '', line);
     }
-    next = lines.join('\n');
+    return lines.join(개행);
   }
-  if (next === text) return false;
-  fs.writeFileSync(full, next, 'utf8');
-  return true;
 }
 
 function main() {
@@ -507,5 +552,5 @@ function main() {
 if (require.main === module) main();
 module.exports = {
   build, parseEdges, parseEdgesFull, splitVersion, canonVersion, selfDeclaredCanon, selfDeclaredHold, sameVersion,
-  isCanon, addEdge, rel, shouldSkip, ROOT, findMapGaps, DOC_MAP,
+  isCanon, addEdge, 엣지본문, 코드머리끝, rel, shouldSkip, ROOT, findMapGaps, DOC_MAP,
 };

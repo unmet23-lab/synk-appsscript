@@ -525,6 +525,80 @@ test('[회귀] --add 자리 — .md 는 첫 제목 다음(기존 규칙이 안 �
   }
 });
 
+/* [2026-08-12 · F307] --add 자리 — `.js`.
+ * `.js` 는 `.txt`·`.html` 갈래 어디에도 안 걸려 **마크다운 자리**로 떨어졌고, `# ` 이 없으니 `at=0` →
+ * 파일 맨 앞에 **날 HTML 주석**이 박혔다(실측 `contents_상담AI.js`).
+ * 🔴 급소는 「기계가 이걸 통과시킨다」다: `<!--` 는 sloppy 스크립트의 Annex B 한 줄 주석이라
+ *   `node --check` 가 exit 0 을 내고 Apps Script 라이브에서도 안 터진다. 배포 전 구문검사가 눈이 멀어
+ *   있어 증상은 「조용함」뿐 — 그래서 **구문검사로는 이 회귀를 못 짠다.** 표기를 직접 못박는다.
+ * 🔑 탐지력은 **픽스처 문자열**이 진다(`엣지본문` 은 순수 함수라 파일을 안 만든다) — 실저장소는
+ *   아래 「거짓양성만」 검사가 따로 본다. 실저장소에 위반을 심어 놓고 재면 그 순간이 사고다. */
+test('[회귀·F307] --add 자리 — .js 는 `// ` 로 감싸고 머리 주석 다음에 온다(날 HTML 주석 금지)', () => {
+  const 줄 = '<!-- 파생: docs/SYNK_철학.md@v1.0 -->';
+  const 심은 = G.엣지본문('// SYNK 엔진 분할부\n// 로드 순서 정본 = .clasp.json\n\nfunction a_() {}\n', 줄, '엔진_x.js');
+  const lines = 심은.split('\n');
+  assert.strictEqual(lines[2], `// ${줄}`,
+    `머리 주석 블록 바로 다음이 아니다 — 실제 표기 정본은 엔진_운영배치.js:3 이다:\n${심은}`);
+  assert.strictEqual(lines[0], '// SYNK 엔진 분할부', '그 파일이 무엇인지 말하는 첫 줄을 기계 표기가 밀어냈다');
+  assert.ok(!lines.some((l) => /^\s*<!--/.test(l)),
+    `감싸지 않은 HTML 주석 줄이 남았다 — node --check 는 이걸 통과시킨다(Annex B):\n${심은}`);
+  // 심은 뒤 파서가 그대로 읽어야 한다 — 예쁘게 감싸고 그래프에서 사라지면 「0」이 「없음」으로 읽힌다.
+  assert.deepStrictEqual(G.parseEdges(심은), ['docs/SYNK_철학.md']);
+});
+
+test('[회귀·F307] --add 자리 — .js 머리가 셔뱅·use strict 여도, 아예 없어도 감싸개는 안 빠진다', () => {
+  const 줄 = '<!-- 파생: docs/a.md@v1.0 -->';
+  const 셔뱅 = G.엣지본문("#!/usr/bin/env node\n// doc-graph\n'use strict';\nconst fs = require('fs');\n", 줄, 'tools/x.js');
+  assert.strictEqual(셔뱅.split('\n')[3], `// ${줄}`, `셔뱅·use strict 다음이 아니다:\n${셔뱅}`);
+  // 머리가 없는 파일 — 맨 위여도 **감싸개는 남는다**(자리보다 감싸개가 급소다).
+  const 민파일 = G.엣지본문('function a_() {}\n', 줄, 'x.js');
+  assert.strictEqual(민파일.split('\n')[0], `// ${줄}`, `머리 없는 .js 에서 감싸개가 빠졌다:\n${민파일}`);
+  // 블록 주석 앞에서 멈춘다 — 안으로 밀어 넣으면 엣지가 주석 «안»에 갇혀 파서가 영원히 0을 낸다.
+  const 블록 = G.엣지본문('/* 여러 줄\n   머리 */\nfunction a_() {}\n', 줄, 'x.js');
+  assert.strictEqual(블록.split('\n')[0], `// ${줄}`, `블록 주석 안으로 들어갔다:\n${블록}`);
+  assert.deepStrictEqual(G.parseEdges(블록), ['docs/a.md']);
+});
+
+test('[회귀] --add 는 파일의 개행을 따른다 — CRLF 파일에 LF 한 줄을 섞지 않는다', () => {
+  const 줄 = '<!-- 파생: docs/a.md@v1.0 -->';
+  const 심은 = G.엣지본문('// 머리\r\n\r\nfunction a_() {}\r\n', 줄, 'x.js');
+  assert.ok(!/[^\r]\n/.test(심은), `개행이 섞였다(끼워 넣은 줄만 LF) — 다음 사람의 diff 에서야 드러난다:\n${JSON.stringify(심은)}`);
+  assert.strictEqual(심은.split('\r\n')[1], `// ${줄}`);
+});
+
+test('[회귀] --stamp 갈래(이미 있는 엣지 갱신)는 .js 의 `// ` 감싸개를 산 채로 둔다', () => {
+  const 심은 = G.엣지본문('// 머리\n// <!-- 파생: docs/a.md -->\nfunction a_() {}\n',
+    '<!-- 파생: docs/a.md@v1.3 -->', 'x.js');
+  assert.strictEqual(심은.split('\n')[1], '// <!-- 파생: docs/a.md@v1.3 -->',
+    `자리 갱신이 감싸개를 벗겼다 — --stamp 를 한 번 돌 때마다 날 주석이 된다:\n${심은}`);
+});
+
+/* 거짓양성만 검사한다 — 탐지력은 위 픽스처가 이미 졌다(가드 3맹점 ②).
+ * 분모를 밝힌다: 0건이면 「위반 없음」이 아니라 **스캐너가 안 돈 것**이고 둘은 같은 초록이다(F207). */
+test('[회귀·F307] 실저장소: 추적되는 .js 에 감싸지 않은 HTML 주석이 없다(거짓양성만)', () => {
+  const 목록 = execFileSync('git', ['-c', 'core.quotepath=false', 'ls-files', '-z', '--', '*.js'],
+    { cwd: ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 })
+    .split('\0').filter(Boolean);
+  assert.ok(목록.length > 50, `.js 를 ${목록.length}개만 봤다 — 분모가 이렇게 작으면 초록이 미실행이다`);
+
+  const 위반 = [];
+  for (const f of 목록) {
+    let src;
+    try { src = fs.readFileSync(path.join(ROOT, f), 'utf8'); } catch (_) { continue; }
+    if (!src.includes('<!--')) continue;
+    src.split(/\r?\n/).forEach((l, i) => {
+      // 줄 어디에 있든 상관없다 — 재는 것은 「그 앞에 무엇이 있는가」다.
+      // 문자열 리터럴 안의 예시(도구·테스트가 표기법을 설명하며 든다)는 `'`·`"`·백틱이 앞에 오고,
+      // 블록 주석 본문은 `*` 가 앞에 온다. 앞이 **비어 있을 때만** 날 주석이다.
+      const at = l.indexOf('<!--');
+      if (at < 0) return;                                   // 없는 줄에 -1 을 slice 하면 전 줄이 「앞」이 된다
+      if (/^\s*$/.test(l.slice(0, at))) 위반.push(`${f}:${i + 1}  ${l.trim().slice(0, 80)}`);
+    });
+  }
+  assert.deepStrictEqual(위반, [],
+    `줄 첫머리에 날 HTML 주석이 있는 .js — node --check 는 Annex B 로 통과시킨다(F307).\n감싸개 \`// \` 를 붙여라:\n${위반.join('\n')}`);
+});
+
 /* 계열 차단 — **doc-graph 의 walk 를 쓰지 않고** 직접 훑는다. 재려는 것이 바로 그 walk 의 사각이라,
  * 같은 walk 로 재면 사각을 사각으로 검사하는 셈이 된다(가드가 자기 전처리에 눈이 먼 형태).
  * 범위 = doc-graph 가 **덮으려는** 자리만: `docs/**`(의도적 제외인 SKIP 은 그대로 상속) + 저장소 루트 얕게.

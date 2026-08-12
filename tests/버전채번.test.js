@@ -308,6 +308,56 @@ test('🔑 자리표를 엔진 전체에서 **한 번에** 확정한다', () => 
     '자리표가 없는 파일을 건드렸다');
 });
 
+/* [2026-08-12 · F339] 라벨을 붙인 자리표(`[vNEXT·E²]`)를 통째로 놓쳤다 — 정확히 `[vNEXT]` 만 봤다.
+ * 치환도 `--check` 도 조용히 지나갔고, 실측 08-12 에 `엔진_운영배치.js` 의 `[vNEXT·E²]` 하나가
+ * `--check` 초록 아래 살아남았다(잡은 것은 사람 눈). 가드가 로직이 아니라 **표기층**에서 샜고,
+ * 새는 방향은 여기서도 「통과」다 — 자리표가 그대로 라이브로 나간다.
+ * 🔑 라벨은 지우지 않는다: 사람이 손으로 확정할 때 `[vNEXT·E²]` → `[v9.215·E²]` 로 했다. */
+test('🔴 [vNEXT·라벨] 도 자리표다 — 번호만 갈아 끼우고 라벨은 산다 (F339)', () => {
+  const d = 픽스처({
+    'Code.js': "const SYNK_VERSION = 'v9.5'; // 안내 · 최신 [v9.5] 다섯\n",
+    '엔진_궤적.js': '/* [vNEXT·E²] 라벨 · [vNEXT] 민자리 · [vNEXT·검수 31584c315c30] 해시 */\n',
+  });
+  const 바뀐 = 그루트에서(d, () => bump.stampPlaceholders('v9.6'));
+  const 궤적 = fs.readFileSync(path.join(d, '엔진_궤적.js'), 'utf8');
+  assert.ok(!/\[vNEXT/.test(궤적), `라벨 붙은 자리표가 살아남았다 — 이게 F339 그 모양이다:\n${궤적}`);
+  assert.match(궤적, /\[v9\.6·E²\]/, '라벨을 지웠다 — 라벨은 뜻을 진다(어느 절·어느 검수의 몫인가)');
+  assert.match(궤적, /\[v9\.6·검수 31584c315c30\]/, '공백이 든 라벨을 못 살렸다');
+  assert.deepStrictEqual(바뀐, ['엔진_궤적.js×3'], `자리표 3개를 다 세지 않았다: ${JSON.stringify(바뀐)}`);
+});
+
+test('🔑 자리표 판정은 남의 낱말·확정 태그를 안 건드린다(거짓양성 0)', () => {
+  const d = 픽스처({
+    'Code.js': "const SYNK_VERSION = 'v9.5'; // [v9.5]\n",
+    '엔진_궤적.js': '/* [vNEXTGEN] 남의 낱말 · [v9.5] 확정 태그 · [vNEXT9] 붙은 숫자 */\n',
+  });
+  assert.deepStrictEqual(그루트에서(d, () => bump.pendingPlaceholders()), [],
+    '자리표가 아닌 것을 자리표로 셌다 — 넓힌 패턴이 멀쩡한 코드를 빨갛게 만든다(F287 축)');
+  assert.deepStrictEqual(그루트에서(d, () => bump.stampPlaceholders('v9.6')), [], '안 건드려야 할 파일을 고쳤다');
+});
+
+/* `/g` 정규식을 상수로 들고 있으면 `lastIndex` 가 호출 사이에 남아 **두 번째 호출이 거짓을 낸다.**
+ * 옛 코드는 그 자리에서 `lastIndex = 0` 을 손으로 껐다 — 끄는 것을 한 번 잊으면 자리표가 「없다」로
+ * 읽히고, 새는 방향은 또 「통과」다. 매번 새 정규식을 만들어 그 자리를 없앴는지 여기서 잰다. */
+test('🔑 자리표 검사를 두 번 연달아 불러도 같은 답이다(lastIndex 잔존 없음)', () => {
+  const d = 픽스처({
+    'Code.js': "const SYNK_VERSION = 'v9.5'; // [v9.5]\n",
+    '엔진_궤적.js': '/* [vNEXT·E²] */\n',
+  });
+  assert.deepStrictEqual(그루트에서(d, () => bump.pendingPlaceholders()), ['엔진_궤적.js']);
+  assert.deepStrictEqual(그루트에서(d, () => bump.pendingPlaceholders()), ['엔진_궤적.js'],
+    '두 번째 호출이 빈 배열을 냈다 — 정규식 lastIndex 가 호출 사이에 남았다');
+});
+
+test('🔴 --check 가 라벨 붙은 자리표를 잡는다 — 초록 아래로 라이브에 나가던 자리 (F339)', () => {
+  const 라벨자리표 = 픽스처({
+    'Code.js': "const SYNK_VERSION = 'v9.5'; // 안내 · 최신 [v9.5] 다섯\n",
+    '엔진_궤적.js': '/* [vNEXT·E²] 아직 채번 안 한 자리표 */\n',
+  });
+  assert.equal(그루트에서(라벨자리표, () => bump.check()), 1,
+    '`--check` 가 초록을 냈다 — 08-12 실측이 정확히 이 모양이었고 잡은 것은 사람 눈이었다');
+});
+
 test('🔴 --check 가 **양쪽 방향** 다 잡는다 — 태그가 앞서도, 상수가 앞서도', () => {
   // ⓑ 태그를 먼저 박은 경우(엔진 파일 헤더에 손으로 씀) — v9.180 때 이 모양이었다
   const 앞선태그 = 픽스처({
