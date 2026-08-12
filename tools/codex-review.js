@@ -943,8 +943,11 @@ function 병렬실행(방, 계획, timeoutMs) {
     try {
       /* stdio 는 **파일 fd** 다(파이프 금지 · 위 `동기대기` 주석). 부모는 곧 이벤트 루프를
        * 멈추고 자므로 파이프였다면 버퍼가 차는 순간 자식이 그대로 매달린다. */
+      /* env 는 **`런.자식환경()` 으로만** 준다 — `...process.env` 를 직접 펼치면 던진 런의
+       * `SYNK_REVIEW_RUN_ID` 가 손자에게 새고, 손자가 부모보다 먼저 「완주」 도장을 찍는다
+       * (F352 실사고 · 그 판은 장부 0줄인데 게이트만 열린 모양이 됐다). 회귀가 이 표기를 막는다. */
       자식들.push(spawn(process.execPath, [__filename, 회차실행플래그, 방, String(i), 단계],
-        { cwd: ROOT, stdio: ['ignore', fd, fd], env: { ...process.env, SYNK_REVIEW_CHILD: '1' } }));
+        { cwd: ROOT, stdio: ['ignore', fd, fd], env: 런.자식환경() }));
     } catch (e) {
       console.error(`   ⚠ ${단계} 회차 ${i} 자식 기동 실패(${e.message}) — 부모가 순차로 돈다.`);
     } finally { fs.closeSync(fd); }
@@ -1953,6 +1956,11 @@ if (require.main === module) {
   const 런ID = process.env.SYNK_REVIEW_RUN_ID;
   const 마감 = (코드) => {
     if (!런ID) return;
+    /* 두 번째 벽 — 회차 자식은 **자기 끝을 부모 런에 적지 않는다**(F352).
+     * `자식환경()` 이 런ID 를 지우므로 정상 경로에선 여기 안 걸린다. 그런데 등록층은 언제나
+     * 「통과」 방향으로 새므로(새 spawn 자리가 `...process.env` 를 펼치는 날) 벽을 두 개 세운다.
+     * 실측 08-12: 손자 하나가 부모 런을 「진행」→「실패」로 덮는 것을 격리 픽스처로 재현했다. */
+    if (런.자식인가()) return;
     try { 런.런갱신(런ID, { 상태: 코드 === 0 ? '완주' : '실패', 끝: new Date().toISOString(), 종료코드: 코드 }); }
     catch (_) { /* 상태를 못 적어도 결과는 장부에 있다 — 여기서 더 죽이지 않는다 */ }
   };
