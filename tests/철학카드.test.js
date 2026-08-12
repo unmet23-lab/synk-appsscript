@@ -203,6 +203,16 @@ test('실저장소 — 카드에 시제 규약이 실린다(미개원을 현재�
     '카드가 「아직 문을 열지 않았다」를 말하지 않는다 — 세션이 다시 수업 현장을 현재형으로 쓴다');
 });
 
+test('실저장소 — 카드가 «어느 이해가 비었는지»를 숫자로 싣는다(색 화면은 세션이 안 연다)', (t) => {
+  if (!fs.existsSync(정본)) return t.skip('docs/SYNK_철학.md 없음');
+  const r = 훅띄우기(HOOK, { encoding: 'utf8' });
+  assert.match(r.stdout, /【대장】/, '대장 줄이 아예 없다 — 세션은 어디가 비었는지 모른 채 돈다');
+  assert.ok(!/못 읽었다/.test(r.stdout),
+    '부록 A 를 못 읽고 있다 — 정본 절 구조가 바뀌었거나 tools/이해대장.js 가 없다');
+  assert.match(r.stdout, /이해 \d+칸 중 \d+칸이 비었다/,
+    '분모 없이 말한다 — 몇 칸 중 몇 칸인지가 없으면 「0칸 비었음」과 「못 셌음」이 같은 모양이다(F207)');
+});
+
 test('실저장소 — 카드는 정본에서 뽑은 것이지 훅에 베낀 사본이 아니다', (t) => {
   if (!fs.existsSync(정본)) return t.skip('docs/SYNK_철학.md 없음');
   const 훅소스 = fs.readFileSync(HOOK, 'utf8');
