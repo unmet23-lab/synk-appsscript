@@ -137,16 +137,46 @@ test('편집을 적용한 **뒤**로 판정한다 — 편집 전 본문으로 �
 
 // ── ③ 판정 단일원천 — 큐가 안 배달하는 줄은 「남은 것」이 아니다 ─────────────
 
-test('취소선으로 닫힌 ⏳ 와 헤더 ⏳ 는 남은 것으로 세지 않는다 (큐와 같은 판정 하나)', () => {
-  const 본문 = [
-    '## ⏳ 남은 것',
-    '',
-    '- ~~⏳유호 승인 대기 = clasp push~~ → ✅ 해소.',
-    '',
-  ].join('\n');
-  assert.deepStrictEqual(guard.살아있는(본문), [], '헤더는 구획 이름, 취소선은 철회 — 둘 다 배달되지 않는다');
+test('취소선으로 닫힌 ⏳ 는 남은 것으로 세지 않는다 (큐와 같은 판정 하나)', () => {
+  const 본문 = ['## 남은 것', '', '- ~~⏳유호 승인 대기 = clasp push~~ → ✅ 해소.', ''].join('\n');
+  assert.deepStrictEqual(guard.살아있는(본문), [], '취소선은 철회다 — 배달되지 않는다');
+  assert.deepStrictEqual(guard.절제목표식(본문), [], '제목엔 표식이 없다');
+  const dir = 메모리({ 't.md': 본문 });
+  const r = 호출({ dir, input: { file_path: path.join(dir, 't.md'), old_string: '## 남은 것', new_string: '## 남은 것\n\n- ✅ 완료' } });
+  assert.strictEqual(r.decision, 'allow');
+});
+
+/* [2026-08-12 · 05e7d021] 🔴 **여기 못박혀 있던 판정이 뒤집혔다.** 원래는 「헤더 ⏳ 도 남은 것으로
+ * 세지 않는다 → allow」였고 근거는 「큐가 배달하지 않으니 남은 것이 아니다」였다. 실측이 그
+ * 추론의 결론을 반대로 돌렸다 — **배달이 «안 되는» 것이야말로 아무도 못 닫는다.**
+ *   2026-08-12 실측: `decision-queue --절` 이 든 5파일이 **전부 이미 닫힌 절**이었다(수집엔진의무·
+ *   인계문익명충돌·M2라벨·검수콘솔UX·상태기반과제선택). 닫은 세션들은 같은 파일에 ✅ 를 적었는데
+ *   이 훅은 한 번도 안 떴고, `--check` 로 재니 파일에 ⏳ 가 2줄인데 출력이 **「0건」**이었다.
+ *   즉 그 대기는 양쪽으로 사라진다 — 유호님께 배달도 안 되고, 끝나도 닫는 자가 없다.
+ * 🔑 `살아있는()`(=배달 판정)은 **그대로 두고 발동 조건만** 넓혔다. 배달 판정을 흔들면 큐가
+ *    헤더를 유호님께 빈 배달로 내보내던 옛 결함(decision-queue 줄판정 머리말)이 되살아난다. */
+test('절 «제목»에만 달린 ⏳ 는 배달은 안 되지만 「남은 것」이다 — 막고, 다른 처방을 준다', () => {
+  const 본문 = ['## ⏳ 남은 것', '', '- ~~⏳유호 승인 대기 = clasp push~~ → ✅ 해소.', ''].join('\n');
+  assert.deepStrictEqual(guard.살아있는(본문), [], '배달 판정은 안 바뀐다 — 헤더는 여전히 «항목»이 아니다');
+  assert.strictEqual(guard.절제목표식(본문).length, 1, '그런데 「남은 것」으로는 세야 한다');
   const dir = 메모리({ 't.md': 본문 });
   const r = 호출({ dir, input: { file_path: path.join(dir, 't.md'), old_string: '## ⏳ 남은 것', new_string: '## ⏳ 남은 것\n\n- ✅ 완료' } });
+  assert.strictEqual(r.decision, 'deny', '해소를 적는데 제목이 아직 ⏳ 를 달고 있으면 그 자리에서 보여줘야 한다');
+  assert.match(r.reason, /달린 ⏳ 1줄/, '몇 줄인지 세어 줘야 판정이 된다');
+  assert.match(r.reason, /항목 줄로 내려라/, '살아 있는 쪽 처방(배달 자리로 내리기)이 빠지면 산 결정을 조용히 닫는다');
+});
+
+test('기호를 «말하기만» 한 제목은 안 센다 — 백틱 처방이 실제로 꺼 준다 (F103)', () => {
+  const 본문 = ['## ✅ 종결 (위 `⏳` 는 실행됐다)', '', '- ✅ 다 끝났다.', ''].join('\n');
+  assert.deepStrictEqual(guard.절제목표식(본문), [], '처방을 따라도 안 꺼지면 우회가 정상 통로가 된다');
+  const dir = 메모리({ 't.md': 본문 });
+  const r = 호출({ dir, input: { file_path: path.join(dir, 't.md'), old_string: '- ✅ 다 끝났다.', new_string: '- ✅ 다 끝났다 — 종결.' } });
+  assert.strictEqual(r.decision, 'allow');
+});
+
+test('제목의 ⏳ 를 닫는 편집은 통과한다 — 처방을 따르면 안 막힌다 (조건④·F103)', () => {
+  const dir = 메모리({ 't.md': ['## ⏳ 남은 것', '', '- ✅ 다 끝났다.', ''].join('\n') });
+  const r = 호출({ dir, input: { file_path: path.join(dir, 't.md'), old_string: '## ⏳ 남은 것', new_string: '## ✅ 남은 것 — 종결' } });
   assert.strictEqual(r.decision, 'allow');
 });
 
@@ -220,7 +250,9 @@ test('메시지가 시키는 --check 명령이 실제로 돈다', () => {
   try { out = execFileSync(process.execPath, [path.join(ROOT, m[1]), '--check', m[2]], { encoding: 'utf8' }); }
   catch (e) { out = String(e.stdout || ''); code = e.status; }
   assert.strictEqual(code, 1, '살아 있는 ⏳ 가 있으면 1 로 끝난다(0=없음)');
-  assert.match(out, /살아 있는 ⏳ 2건/, '훅이 센 숫자와 --check 가 센 숫자가 같아야 한다 — 잴 통로는 하나다(F052)');
+  assert.match(out, /① 배달되는 ⏳ 항목 2건/, '훅이 센 숫자와 --check 가 센 숫자가 같아야 한다 — 잴 통로는 하나다(F052)');
+  // 0건이어도 ② 줄이 나와야 한다 — 안 나오면 ①만 보고 「이 파일은 깨끗하다」로 읽는다(그게 이 갈래가 여태 안 보이던 이유다)
+  assert.match(out, /② 절 제목에만 달린 ⏳ 0건/, '헤더 갈래를 안 찍으면 「안 센다」는 사실이 출력에서 사라진다');
 });
 
 test('처방대로 그 줄을 제자리에서 ⏳→✅ 로 고치면 통과한다 — 처방이 자기 가드에 안 막힌다', () => {
@@ -247,8 +279,9 @@ test('실저장소 메모리에서 --check 가 크래시 없이 돈다', (t) => 
   if (!fs.existsSync(dir)) return t.skip('메모리 폴더가 없다 — repo 밖 상태라 CI 에선 정상(통과와 미실행을 가른다)');
   const 파일 = fs.readdirSync(dir).filter((n) => n.endsWith('.md') && n !== 'MEMORY.md').slice(0, 5);
   for (const f of 파일) {
-    const 남은 = guard.살아있는(fs.readFileSync(path.join(dir, f), 'utf8'));
-    assert.ok(Array.isArray(남은), `${f} 판정이 배열이 아니다`);
+    const 본문 = fs.readFileSync(path.join(dir, f), 'utf8');
+    assert.ok(Array.isArray(guard.살아있는(본문)), `${f} 항목 판정이 배열이 아니다`);
+    assert.ok(Array.isArray(guard.절제목표식(본문)), `${f} 제목 판정이 배열이 아니다`);
   }
 });
 
