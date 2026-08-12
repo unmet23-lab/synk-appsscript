@@ -18,6 +18,8 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
+const 확정 = require(path.join(__dirname, 'lib', '확정대조.js'));
+
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
 const 대기열경로 = path.join(ROOT, 'docs', '_ops', '작업대기열.md');
 const 대기열좌표 = 'docs/_ops/작업대기열.md';   // git pathspec — fs 경로와 따로 둔다
@@ -200,6 +202,61 @@ function 씨앗(본문) {
   return s.slice(0, 12);
 }
 
+/* 확정 대조 재료 모으기 — 판정 규칙 자체는 `lib/확정대조.js` 가 지고, 여기선 **누구를 대상으로
+ * 삼나**만 정한다. 메모리 좌표는 `memory-graph` 가 이미 아는 것을 그대로 쓴다 — 경로를 두 번 적으면
+ * 그날 갈라진다. 늦게(호출 시점에) 부른다: 세션 시작 훅이 이 파일을 여는 값이라 위에서 부르면
+ * 아무도 안 쓰는 날에도 메모리 모듈까지 딸려 열린다. */
+function 확정재료(줄들) {
+  const 대상 = (줄들 || [])
+    .filter((it) => 확정.유호대기(차단(it.본문)))
+    .map((it) => ({ 층: it.층, 씨앗: 씨앗(it.본문), 본문: it.본문 }));
+  if (!대상.length) return { 측정: true, 대상수: 0, 걸림: [], 링크없음: [], 못잼: [] };
+  let 뿌리 = null;
+  try { 뿌리 = require(path.join(ROOT, 'tools', 'memory-graph.js')).memoryDir(); } catch { 뿌리 = null; }
+  return 확정.대조({ 대상, 메모리뿌리: 뿌리 });
+}
+
+/** `--확정대조` — 조각을 **그대로 인용해** 낸다. 「N건」만 내면 결국 파일을 열어야 하고 그러면 아무도 안 연다. */
+function 확정보고() {
+  const 전체 = 항목들();
+  if (전체 === null) {
+    console.log(`■ 확정 대조 — 대기열 파일이 없다: ${path.relative(ROOT, 대기열경로)}`);
+    return 1;
+  }
+  /* 여기선 **남이 잡은 줄도 센다** — 세션 시작 한 줄은 「내가 집을 것」을 묻지만, 이 보고가 답하는
+   * 물음은 「유호님께 여쭐 것」이고 그 자리는 누가 잡았든 하나다. */
+  const r = 확정재료(전체);
+  console.log('■ 확정 대조 — 「이 ⏳ 는 그 판정이 «이미» 난 것 아닌가」 (F376)');
+  console.log(`  대상 = 대기열의 〖⏳유호〗 ${r.대상수}건 (남이 잡은 것도 센다)`);
+  if (!r.측정) {
+    console.log(`  ⚠ **미실행** — ${r.사유}. 0건이 아니라 «못 쟀다»(F296·F207).`);
+    return 0;
+  }
+  if (r.걸림.length) {
+    console.log(`\n  🔴 근거 토픽이 「재질의 금지」를 적고 있는 줄 ${r.걸림.length}건`
+      + ' — **낡았다는 판정이 아니다.** 토픽 하나에 확정과 미결이 같이 사니 여쭙기 전에 그 토픽을 연다:');
+    for (const g of r.걸림) {
+      console.log(`\n    · [${String(g.층 || '').split(' ')[0]}] ${g.씨앗}…  →  ${g.토픽}`);
+      for (const 조각 of g.조각) {
+        console.log(`        ${조각.날짜 ? `(${조각.날짜}) ` : ''}${조각.글.slice(0, 150)}`);
+      }
+    }
+  } else {
+    console.log('  ✅ 「재질의 금지」가 걸린 줄 0 — 단 아래 «못 잰 것»과 함께 읽는다.');
+  }
+  if (r.링크없음.length) {
+    console.log(`\n  ❔ 근거 토픽 링크가 **없어 못 잰 것** ${r.링크없음.length}건 — 「깨끗하다」가 아니다.`
+      + ' 줄 끝에 `근거=[[토픽]]` 을 달면 다음 세션부터 재진다:');
+    for (const it of r.링크없음) console.log(`    · [${String(it.층 || '').split(' ')[0]}] ${it.씨앗}…`);
+  }
+  if (r.못잼.length) {
+    console.log(`\n  ❔ 링크가 가리키는 토픽 파일이 **없는 것** ${r.못잼.length}건 (아직 안 쓴 메모리일 수 있다):`);
+    for (const it of r.못잼) console.log(`    · ${it.씨앗}… → ${it.토픽}`);
+  }
+  console.log('\n  판정은 여는 사람이 한다 — 이 도구는 재료만 낸다(`낡음 후보`와 같은 규약).');
+  return 0;
+}
+
 function 출력() {
   const 전체 = 항목들();
   if (전체 === null) {
@@ -242,6 +299,21 @@ function 출력() {
     for (const it of 미표기.slice(0, 보일줄수)) console.log(`    · [${it.층.split(' ')[0]}] ${씨앗(it.본문)}…`);
   }
 
+  /* 「무엇이 막나」 옆에 **「그 판정이 이미 났나」**를 한 줄 놓는다 — 그 자리가 없어서 낡은 ⏳ 를
+   * 그대로 믿고 유호님께 두 번 여쭀다(F376 · 한 세션 2건). 여기선 세기만 한다: 세션 시작은 이미
+   * 훅 다섯이 말하고 있어 조각까지 펼치면 전부가 소음이 된다(조각은 `--확정대조`). */
+  let 확정줄;
+  try { 확정줄 = 확정재료(남은); } catch (e) {
+    확정줄 = { 측정: false, 사유: `대조기 고장 — ${(e && e.message) || e}`, 대상수: (남은 || []).length, 걸림: [], 링크없음: [], 못잼: [] };
+  }
+  if (확정줄.대상수 && !확정줄.측정) {
+    console.log(`  ⚠ 확정 대조 미실행 — ${확정줄.사유} (⏳유호 ${확정줄.대상수}건은 **안 재졌다**)`);
+  } else if (확정줄.걸림.length) {
+    const 못잰것 = 확정줄.링크없음.length + 확정줄.못잼.length;
+    console.log(`  ⏳ **여쭙기 전 대조** — ⏳유호 ${확정줄.대상수}건 중 ${확정줄.걸림.length}건은 근거 토픽이 「재질의 금지」를 적고 있다`
+      + `${못잰것 ? ` (근거 링크가 없어 못 잰 것 ${못잰것})` : ''} · 조각: node tools/대기열.js --확정대조`);
+  }
+
   if (글자 === null) console.log('  ⚠ 보드를 못 읽어 **남이 잡은 것을 못 걸렀다** — 고르기 전에 node tools/board.js 로 대조한다.');
   else if (!남은.length) console.log('  (전부 누군가 잡았다 — 보드에서 확인하고, 정말 없으면 새 일감을 추가한다)');
 
@@ -272,6 +344,8 @@ function 출력() {
   return 0;
 }
 
-module.exports = { 항목들, 씨앗, 낡음후보, 층별시각, 차단, 차단표식, 집을수있음 };
+module.exports = { 항목들, 씨앗, 낡음후보, 층별시각, 차단, 차단표식, 집을수있음, 확정재료 };
 
-if (require.main === module) process.exit(출력());
+if (require.main === module) {
+  process.exit(process.argv.slice(2).includes('--확정대조') ? 확정보고() : 출력());
+}
