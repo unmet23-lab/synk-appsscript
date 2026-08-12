@@ -109,7 +109,7 @@ test('🔴 반대 방향 — 소스가 조용히 사라지지 않는다 (무시�
     'docs/세션보드.md',
     'docs/정본/SYNK LAB/자료/등록서.html',   // 공백·한글이 든 실제 모양
     'tools/friction.js',
-    '.github/workflows/deploy-live.yml',
+    '.github/workflows/syntax-check.yml',
     'crewcard/크루카드.js',
   ];
 

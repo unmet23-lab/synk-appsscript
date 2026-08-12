@@ -323,8 +323,7 @@ function 장부커밋실행(계획, 내몫) {
   const [추가, 삭제] = stat.trim().split('\n')[0].split('\t').map((n) => Number(n) || 0);
   const 동승 = Math.max(0, 추가 - 내몫[0]) + Math.max(0, 삭제 - 내몫[1]);
 
-  /* ⚠ 제목이 `[배포]` 로 시작하면 deploy-live 가 라이브를 태운다 — 호출부의 `docs: ` 접두가 그 사고를 막는다.
-   * 경로를 못 박아 커밋한다(CLAUDE.md: add/commit 을 나누면 그 틈에 남의 스테이징이 얹힌다).
+  /* 경로를 못 박아 커밋한다(CLAUDE.md: add/commit 을 나누면 그 틈에 남의 스테이징이 얹힌다).
    * 세션이 여럿 도는 저장소라 옆 세션의 훅과 index.lock 이 겹친다 — 짧게만 기다린다. */
   let 커밋됨 = false;
   for (let i = 0; i < 3 && !커밋됨; i++) {
