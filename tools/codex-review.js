@@ -268,9 +268,58 @@ function 버퍼초과(e) {
   return !!(e && (e.code === 'ENOBUFS' || /ENOBUFS|maxBuffer/i.test(String(e.message || ''))));
 }
 
+/* 자식 프로세스 옵션은 **여기 한 자리**에서 낸다(F361).
+ *
+ * 왜 통로인가: Windows 에서 자식 콘솔 창이 뜨는 조건은 「부모에게 콘솔이 없다」이고, 던지기(:1504)가
+ * `detached` 로 뜨는 순간 그 아래 사슬 전체가 그 상태가 된다 — 즉 창을 만드는 것은 던지기가 아니라
+ * **그 손자들**(회차 spawn · codex CLI · git)이다. 던지기에만 `windowsHide` 를 적어 둔 동안 유호님
+ * 화면에는 회차마다 검은 창이 떴고, stdio 는 파이프·파일 fd 라 **한 글자도 안 찍힌다** — 진행 신호도
+ * 아닌 순수한 방해이고 「멈춘 것 같다」로 읽힌다. 도구가 스스로를 고장난 것처럼 보이게 한 자리다.
+ *
+ * 왜 호출부마다 적지 않는가: 같은 판정을 두 곳에 적으면 갈린다(CLAUDE.md 등록층 맹점 ④). 실제로
+ * 갈렸고, 새는 방향은 언제나 「창이 뜬다」였다. 새 호출부가 이 통로를 안 지나면 `창숨김누락()` 이
+ * 그 줄 번호를 내고 회귀가 빨개진다. */
+function 자식옵션(opts) {
+  return Object.assign({ windowsHide: true }, opts);
+}
+
+/* 위 통로를 안 지나는 자식 호출부를 소스에서 센다 — 회귀가 쓰는 검사기다.
+ * 반환 = 빠진 호출부의 줄 번호 배열. 호출부를 **하나도 못 찾으면 `null`** — 빈 배열을 내면
+ * 「검사할 것이 없었다」가 「전부 통과」와 같은 모양이 된다(분모 없는 초록 · F207). */
+function 창숨김누락(소스) {
+  const src = String(소스 == null ? '' : 소스);
+  const 호출 = /\b(?:spawnSync|spawn|execFileSync|execSync)\s*\(/g;
+  const 빠진줄 = [];
+  let 본것 = 0, m;
+  while ((m = 호출.exec(src))) {
+    const 여는 = m.index + m[0].length - 1;
+    const 닫는 = 짝괄호(src, 여는);
+    if (닫는 < 0) continue;          // 괄호가 안 닫히면 호출부로 세지 않는다(분모에서 뺀다)
+    본것++;
+    if (!src.slice(여는, 닫는 + 1).includes(`${자식옵션.name}(`)) {
+      빠진줄.push(src.slice(0, m.index).split('\n').length);
+    }
+  }
+  return 본것 ? 빠진줄 : null;
+}
+
+/* 여는 괄호의 짝을 찾는다. 문자열 안의 괄호는 세지 않는다 — 안 걸러내면 `')'` 하나가 슬라이스를
+ * 통째로 어긋내고, 어긋난 슬라이스는 「통로를 지났다」로도 읽혀 조용히 통과한다. */
+function 짝괄호(s, i) {
+  let 깊이 = 0, 인용 = '';
+  for (let k = i; k < s.length; k++) {
+    const c = s[k];
+    if (인용) { if (c === '\\') k++; else if (c === 인용) 인용 = ''; continue; }
+    if (c === '"' || c === "'" || c === '`') { 인용 = c; continue; }
+    if (c === '(') 깊이++;
+    else if (c === ')') { 깊이--; if (!깊이) return k; }
+  }
+  return -1;
+}
+
 function git(args) {
   try {
-    return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: git버퍼 }).trim();
+    return execFileSync('git', args, 자식옵션({ cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: git버퍼 })).trim();
   } catch (e) {
     if (버퍼초과(e)) {
       const err = new Error(`git 출력이 상한(${Math.round(git버퍼 / 1024 / 1024)}MB)을 넘었다 — 대상이 너무 넓다. `
@@ -835,7 +884,7 @@ function codex(args, 입력, timeoutMs, 라벨) {
     execFileSync(
       isWin ? (process.env.ComSpec || 'cmd.exe') : bin,
       isWin ? ['/c', bin, ...args] : args,
-      { cwd: ROOT, input: 입력, encoding: 'utf8', timeout: timeoutMs, stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 }
+      자식옵션({ cwd: ROOT, input: 입력, encoding: 'utf8', timeout: timeoutMs, stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 })
     );
   } catch (e) {
     /* 실행 자체가 실패했다 = **확인 불가**다. 여기서 「지적 0건」으로 접으면 거짓 초록이 된다. */
@@ -947,7 +996,7 @@ function 병렬실행(방, 계획, timeoutMs) {
        * `SYNK_REVIEW_RUN_ID` 가 손자에게 새고, 손자가 부모보다 먼저 「완주」 도장을 찍는다
        * (F352 실사고 · 그 판은 장부 0줄인데 게이트만 열린 모양이 됐다). 회귀가 이 표기를 막는다. */
       자식들.push(spawn(process.execPath, [__filename, 회차실행플래그, 방, String(i), 단계],
-        { cwd: ROOT, stdio: ['ignore', fd, fd], env: 런.자식환경() }));
+        자식옵션({ cwd: ROOT, stdio: ['ignore', fd, fd], env: 런.자식환경() })));
     } catch (e) {
       console.error(`   ⚠ ${단계} 회차 ${i} 자식 기동 실패(${e.message}) — 부모가 순차로 돈다.`);
     } finally { fs.closeSync(fd); }
@@ -1501,11 +1550,11 @@ function 던지기(argv) {
   let child;
   const fd = fs.openSync(로그, 'a');
   try {
-    child = spawn(process.execPath, [__filename, ...인자], {
-      cwd: ROOT, detached: true, windowsHide: true,
+    child = spawn(process.execPath, [__filename, ...인자], 자식옵션({
+      cwd: ROOT, detached: true,
       stdio: ['ignore', fd, fd],
       env: { ...process.env, SYNK_REVIEW_RUN_ID: 런ID },
-    });
+    }));
     child.unref();
   } catch (e) {
     console.error(`🔴 던지기 실패(${e.message}) — 세션 안에서 그냥 돌리려면 ${던지기플래그} 를 빼고 다시 부른다.`);
@@ -1946,6 +1995,7 @@ module.exports = {
   심문형식통과, 심문결과읽기,
   검수방, 단계끝났나, 아는단계, 완료칸, 회차실행플래그, 직렬플래그, 던지기플래그, 런현황,
   병렬계획, 입력쓰기, 회차별줄,
+  자식옵션, 창숨김누락,
 };
 
 if (require.main === module) {

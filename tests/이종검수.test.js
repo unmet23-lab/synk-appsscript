@@ -1161,3 +1161,47 @@ test('☠️ 정상 종료엔 리스너가 돌고, 밖에서 죽이면 안 돈�
   await new Promise((res) => child.on('close', res));
   assert.ok(fs.existsSync(b), '밖에서 죽였는데 표식이 지워졌다 — 조용한 죽음을 볼 방법이 사라진다(F333 재발)');
 });
+
+/* ───────────────────────── 자식 창 숨김 — 호출부 전량이 통로를 지나는가 (F361)
+ *
+ * 왜 「전량」인가: 창이 뜨는 조건은 부모에게 콘솔이 없는 것이고, 던지기가 `detached` 로 뜨는 순간
+ * 그 아래 사슬 전체가 그 상태가 된다. 그래서 한 자리만 빠져도 유호님 화면에는 그대로 검은 창이
+ * 뜨고, stdio 가 파이프·파일 fd 라 **한 글자도 안 찍힌다** — 증상은 「도구가 멈춘 것 같다」뿐이다.
+ * 탐지력은 픽스처가 지고(실저장소는 지금 마침 통과라 거짓양성만 검사한다), 분모를 함께 읽는다. */
+const 창검사 = 검수.창숨김누락;
+
+test('🔑 codex-review.js 의 자식 호출부 **전량**이 창숨김 통로를 지난다 — 한 자리만 빠져도 창이 뜬다', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'tools', 'codex-review.js'), 'utf8');
+  const 빠진줄 = 창검사(src);
+  assert.notStrictEqual(빠진줄, null, '자식 호출부를 하나도 못 찾았다 — 검사가 0건을 돌고 초록을 냈다(분모 없는 초록 · F207)');
+  assert.deepStrictEqual(빠진줄, [], `창숨김 통로를 안 지나는 자식 호출부: ${빠진줄 && 빠진줄.join(', ')} 줄 — 그 자리가 유호님 화면에 검은 창을 띄운다`);
+});
+
+test('🔑 탐지력(픽스처) — 통로를 안 지나는 호출부를 잡는다. 실저장소가 통과라고 검사가 산 것은 아니다', () => {
+  const 가짜 = [
+    'const x = 1;',
+    "execFileSync('git', args, 자식옵션({ cwd: ROOT }));",
+    "spawn(node, [f], { cwd: ROOT, stdio: 'ignore' });",
+  ].join('\n');
+  assert.deepStrictEqual(창검사(가짜), [3], '통로를 뺀 호출부를 못 잡았다 — 이 검사는 아무것도 지키지 못한다');
+});
+
+test('🔑 호출부가 0이면 null — 「검사할 게 없었다」가 「전부 통과」와 같은 모양이면 안 된다', () => {
+  assert.strictEqual(창검사('const a = 1;\nconst b = a + 2;'), null);
+  assert.strictEqual(창검사(''), null);
+  assert.strictEqual(창검사(null), null, '함수가 사라져 undefined 를 받아도 빈 문자열을 검사하고 초록을 보면 안 된다');
+});
+
+test('🔑 문자열 안의 괄호가 슬라이스를 어긋내지 않는다 — 어긋난 슬라이스는 「지났다」로도 읽힌다', () => {
+  const 가짜 = "spawn(bin, ['-c', 'f(x)'], { cwd: ROOT });\nexecFileSync('git', a, 자식옵션({}));";
+  assert.deepStrictEqual(창검사(가짜), [1], "문자열 속 ')' 하나에 검사가 어긋났다");
+});
+
+test('🔑 통로가 창을 숨기고, 호출자가 준 옵션은 살린다 — 덮어쓰면 detached·env 가 조용히 사라진다', () => {
+  const o = 검수.자식옵션({ cwd: 'X', detached: true, stdio: 'ignore' });
+  assert.strictEqual(o.windowsHide, true);
+  assert.strictEqual(o.cwd, 'X');
+  assert.strictEqual(o.detached, true);
+  assert.strictEqual(o.stdio, 'ignore');
+  assert.deepStrictEqual(Object.keys(검수.자식옵션()), ['windowsHide'], '인자 없이도 창은 숨긴다');
+});
