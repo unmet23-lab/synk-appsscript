@@ -24,6 +24,7 @@ const fs = require('fs');
 const path = require('path');
 
 const 보드id = require(path.join(__dirname, '..', '..', '.claude', 'hooks', 'lib', 'board-id.js'));
+const 표 = require(path.join(__dirname, '표.js'));
 
 const 머리말 = [
   '# 세션보드 — Claude Code 멀티 세션 선언판',
@@ -50,9 +51,64 @@ function 내파일(root, sid) {
   return path.join(폴더(root), `${지문}.md`);
 }
 
-/** 데이터 행인가 — 머리글·구분선도 `|` 로 시작하므로 날짜 칸으로 가른다(보드 1열 = 날짜). */
+/* ── 「보드 줄」의 정의는 **여기 하나뿐이다** (마찰 F322·F330·F331 · 2026-08-12) ─────────
+ * 위 머리말은 「파싱을 네 번 고치면 네 번 갈라진다」고 적어 두고도 **판정 자체가 세 벌**로
+ * 갈렸다: 여기(엄격 — 날짜 필요) · `.claude/hooks/board-guard.js`(느슨) · `tools/board-move.js`
+ * (느슨). 칸 가르기만 한 통로로 모으고 「이게 표 줄인가」는 각자 적은 것이다.
+ *
+ * 🔑 갈라진 쪽의 증상은 **「없는 줄」**이다 — 새는 방향이 조용하다.
+ *   가드는 세고(상한을 먹는다) 조립기는 안 보여준다. 그래서 그 줄은 보드에도, `board-move`
+ *   후보에도, 인계문에도 안 뜨는 **유령**이 되고, 쓴 세션은 「선언했다」고 믿는다.
+ *   실측 2026-08-12: `fe43f4b4.md:5` 는 ✅종결 줄인데 보드·`board-move`·인계문 어디에도
+ *   없었고, 주인이 죽어 치울 길조차 없었다(`board-move` 가 후보를 `줄들` 로 찾는다 · F103).
+ *   ⚠ 상한은 **주인 자신에게만** 흔들린다 — `board-guard` 는 남의 줄을 `줄들`(엄격)로
+ *   받고 제 파일만 raw 로 세므로, 그 +1 은 fe43f4b4 가 제 파일을 편집할 때만 보인다(20 vs 19).
+ *   같은 자리 3번째다(F322 c9eb0956 · F331 fe43f4b4→82e5d71d · F330 d3139ff6) —
+ *   CLAUDE.md 신뢰성 조항의 **「3번째 = 원인을 쓸 수 없게 만든다」** 자리라 정의를 하나로 모으고
+ *   `board-guard` ⑨ 가 **쓰는 순간** 막는다.
+ *
+ * 두 이름을 나눠 두는 이유: 넓은 쪽(`표줄`)은 **상한·주인 검사**가 쓰고 — 규격 밖 줄도 자리를
+ * 먹으니 세야 한다 — 좁은 쪽(`데이터행`)은 **조립기가 실제로 렌더하는 줄**이다. 둘의 차집합이
+ * 곧 유령이라, 이름을 나누되 `데이터행` 을 `표줄` 에서 **파생**시켜 다시는 갈라지지 않게 한다. */
+
+/** 표 1열(날짜) 규격 — `08-11` 같은 짧은 날짜는 정렬 키가 없어 조립에서 통째로 빠진다. */
+const ISO날짜 = /^20\d\d-\d\d-\d\d$/;
+/** 표 칸 수 — 머리말이 정하는 4칸(날짜·트랙·파일·상태). 5칸이면 상태 칸이 한 칸 밀려
+ *  board-guard 의 완료 판정·200자 검사와 track-collision 의 파일 칸이 **엉뚱한 칸**을 잰다. */
+const 칸수 = 표.칸나누기(머리말.find((l) => /^\|\s*날짜\s*\|/.test(l))).length;
+
+/** 표에 실린 줄인가 — 머리글·구분선만 뺀 **넓은** 쪽. 상한·주인 검사가 쓴다. */
+function 표줄(line) {
+  const t = String(line).trim();
+  if (!t.startsWith('|')) return false;
+  if (/^\|[\s:|-]+\|$/.test(t)) return false;        // 구분선 |---|---|
+  if (/^\|\s*날짜\s*\|/.test(t)) return false;        // 머리글
+  return true;
+}
+
+/** 표줄인데 조립기가 못 읽는 이유들. 빈 배열 = 규격 통과. 표줄이 아니면 빈 배열(대상 아님). */
+function 유령사유(line) {
+  const l = String(line);
+  if (!표줄(l)) return [];
+  const out = [];
+  if (l[0] !== '|') out.push('줄이 `|` 로 시작하지 않는다(앞에 공백·들여쓰기)');
+  const 칸 = 표.칸나누기(l);
+  const 날짜칸 = (칸[0] || '').trim();
+  if (!ISO날짜.test(날짜칸)) {
+    out.push(`날짜 칸이 네 자리 연도까지 있는 \`YYYY-MM-DD\` 가 아니다: "${날짜칸.slice(0, 24)}"`);
+  }
+  if (칸.length !== 칸수) out.push(`칸이 ${칸.length}개다(${칸수}개여야 한다: 날짜·트랙/작업·만지는 파일·상태)`);
+  return out;
+}
+
+/** 표줄인데 규격 밖 — 가드는 세고 조립기는 못 보는 **유령**. */
+function 유령(line) {
+  return 표줄(line) && 유령사유(line).length > 0;
+}
+
+/** 조립기가 렌더하는 데이터 행인가 — `표줄` 에서 **파생**한다(두 곳에 적으면 또 갈라진다). */
 function 데이터행(line) {
-  return line[0] === '|' && /\b20\d\d-\d\d-\d\d\b/.test(line);
+  return 표줄(line) && 유령사유(line).length === 0;
 }
 
 /**
@@ -66,7 +122,9 @@ function 데이터행(line) {
  *   그 차이로 「내 줄이 정말 없다」와 「보드를 못 봤다」를 가르고, 전자일 때만 다음 세션에게
  *   「보드를 다시 열 필요 없다」고 말한다. 둘을 같은 `[]` 로 뭉개면 못 본 것을 없다고 단정한다.
  */
-function 줄들(root) {
+/** 폴더의 **모든 표줄**을 한 번만 훑는다 — `줄들`(렌더 대상)과 `유령들`(규격 밖)이 여기서 갈린다.
+ *  두 번 훑으면 두 스캐너가 갈라지고, 그게 지금 고치는 결함 그 자체다. */
+function 훑기(root) {
   const dir = 폴더(root);
   let names;
   try { names = fs.readdirSync(dir).filter((n) => n.endsWith('.md')).sort(); } catch (_) { return null; }
@@ -75,13 +133,33 @@ function 줄들(root) {
   for (const name of names) {
     let txt;
     try { txt = fs.readFileSync(path.join(dir, name), 'utf8'); } catch (_) { continue; }
-    txt.split(/\r?\n/).forEach((line) => {
+    txt.split(/\r?\n/).forEach((line, i) => {
       const l = line.replace(/\s+$/, '');
-      if (데이터행(l)) 모음.push({ 줄: l, 파일: name, 날짜: (l.match(/\b20\d\d-\d\d-\d\d\b/) || [''])[0] });
+      if (!표줄(l)) return;
+      const 사유 = 유령사유(l);
+      모음.push({
+        줄: l, 파일: name, 줄번호: i + 1, 사유,
+        날짜: 사유.length ? '' : 표.칸나누기(l)[0].trim(),
+      });
     });
   }
+  return 모음;
+}
+
+function 줄들(root) {
+  const 전부 = 훑기(root);
+  if (전부 === null) return null;
+  const 모음 = 전부.filter((r) => !r.사유.length);
   모음.sort((a, b) => (a.날짜 < b.날짜 ? -1 : a.날짜 > b.날짜 ? 1 : a.파일 < b.파일 ? -1 : a.파일 > b.파일 ? 1 : 0));
   return 모음;
+}
+
+/** 조립기가 못 읽는 줄들 — 가드는 세는데 표에는 없는 것. 폴더를 못 읽으면 `null`(「비었다」와 다르다). */
+function 유령들(root) {
+  const 전부 = 훑기(root);
+  if (전부 === null) return null;
+  return 전부.filter((r) => r.사유.length)
+    .sort((a, b) => (a.파일 < b.파일 ? -1 : a.파일 > b.파일 ? 1 : a.줄번호 - b.줄번호));
 }
 
 /** 옛 `세션보드.md` 와 **같은 모양**의 전문. 디스크에 쓰지 않는다(위 머리말 🔑).
@@ -92,4 +170,11 @@ function 텍스트(root) {
   return 머리말.concat(rows.map((r) => r.줄)).join('\n') + '\n';
 }
 
-module.exports = { 폴더, 내파일, 줄들, 텍스트, 데이터행, 머리말 };
+/* ⚠ `텍스트()` 는 **일부러 안 건드린다** — 이 문자열을 파싱하는 곳이 넷이다(session-report·
+ *   track-collision·board-move·board-guard). 유령 경고를 표 아래 붙이면 그 넷이 새 줄을
+ *   만나게 되고, 새는 방향을 예측할 수 없다. 유령은 **사람이 보는 자리**(`tools/board.js` 의
+ *   stderr)와 **쓰는 순간**(board-guard ⑨)에서만 드러낸다. */
+module.exports = {
+  폴더, 내파일, 줄들, 유령들, 텍스트, 머리말,
+  표줄, 데이터행, 유령, 유령사유, ISO날짜, 칸수,
+};

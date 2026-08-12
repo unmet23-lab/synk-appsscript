@@ -9,6 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const 표 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '표.js'));
+const 보드lib = require(path.join(__dirname, '..', '..', 'tools', 'lib', '보드.js'));
 
 const MAX_CELL = 200;
 const MAX_ACTIVE = 12; // 활성(완료 아닌) 줄 상한 — 병행 세션이 실제로 조율해야 하는 대상
@@ -167,13 +168,18 @@ if (resulting === null) {
   }
 }
 
-function isDataRow(line) {
-  const t = line.trim();
-  if (!t.startsWith('|')) return false;
-  if (/^\|[\s:|-]+\|$/.test(t)) return false;        // 구분선 |---|---|
-  if (/^\|\s*날짜\s*\|/.test(t)) return false;        // 헤더
-  return true;
-}
+/* 「표 줄인가」의 정의는 **tools/lib/보드.js 하나**에서 온다 (F322·F330·F331 · 2026-08-12).
+ * 여기 다시 적었던 판은 조립기(`데이터행`)보다 **넓었고**, 그 차집합이 유령이었다 —
+ * 이 가드는 세는데 표에는 안 뜨는 줄. 넓은 쪽을 그대로 쓰는 건 맞다(자리를 먹는 줄은
+ * 세야 한다) — 대신 **같은 파일에서** 가져와 다시는 갈라지지 않게 하고, 차집합은 ⑨ 가
+ * 쓰는 순간 막는다. 곁들여 칸 가르기(`표.칸나누기`)도 이미 그 통로다.
+ *
+ * ⚠ **`function` 선언으로 둔다** — `const isDataRow = 보드lib.표줄` 로 적었다가 즉시 밟았다:
+ *   이 파일은 톱레벨에서 `countRows` 를 부르는데 그 시점엔 const 가 아직 TDZ 라
+ *   **훅이 통째로 죽고, 죽은 훅은 조용히 통과로 읽힌다**(F239 가 같은 자리에서 그랬고
+ *   아래 `countActive` 머리말이 이미 같은 경고를 적고 있다). 함수 선언은 끌어올려지므로
+ *   그 창이 없다. `node --check` 는 이 부류를 못 잡는다 — 잡은 것은 회귀다. */
+function isDataRow(line) { return 보드lib.표줄(line); }
 
 function countRows(text) {
   return text.split('\n').filter(isDataRow).length;
@@ -405,6 +411,46 @@ try { 이전 = 합치기(fs.readFileSync(filePath, 'utf8')); }
 catch (_) { 이전 = 남의줄.length ? 남의줄.join('\n') : null; }
 const 보드id = require(path.join(__dirname, 'lib', 'board-id.js'));
 
+/* ── ⑨ 유령 줄 금지 — 조립기가 «못 읽는» 표 줄을 **쓰는 순간** 막는다 (F322·F330·F331) ────
+ * 같은 자리 3번째다: 08-11 c9eb0956(짧은 날짜) · fe43f4b4→82e5d71d(짧은 날짜를 베낌) ·
+ * d3139ff6(5칸). 앞의 두 처방은 「형식 검사를 기계로 옮길 자리」라는 **말**로 남았고,
+ * 그동안 이 가드는 규격 밖 줄을 통과시켰다 — 통과시킨 이유는 여기 판정이 조립기보다
+ * 넓었기 때문이다(위 `isDataRow` 머리말). 정의를 합쳤으니 차집합을 여기서 막는다.
+ *
+ * 🔑 **새는 방향이 「없는 줄」이라 증상이 0이다.** 쓴 세션은 선언했다고 믿고, 보드·`board-move`·
+ *   인계문·track-collision 넷 다 그 줄을 못 본다. 실측 2026-08-12: `fe43f4b4.md:5` 는
+ *   ✅종결 줄인데 어느 화면에도 없고, 주인이 죽어 `board-move` 로도 못 치운다(F103) —
+ *   `줄들`(엄격)로 후보를 찾기 때문이다. 게다가 그 +1 은 **주인 자신의 상한 분모에만**
+ *   조용히 얹힌다(그 세션이 자기 파일을 편집할 때 19 대신 20 을 본다 · 실측).
+ *
+ * ⚠ ① 과 같은 규칙이다 — **이 편집이 만든/바꾼 줄만** 막고, 내 파일에 이미 있던 유령은
+ *   알림으로 낸다(F233·F234·F235). 여기는 내 파일이라 처방이 따를 수 있다(고치면 통과다).
+ * ⚠ 남의 파일 유령은 여기 아예 안 온다 — `남의줄` 이 `줄들`(엄격)에서 오기 때문이다.
+ *   그쪽은 `node tools/board.js` 가 stderr 로 드러낸다(사람이 보는 자리). */
+const 유령물려받은 = [];
+if (resulting !== null) {
+  const 옛줄 = new Set(String(이전 || '').split('\n').filter(isDataRow).map((l) => l.trim()));
+  const 내유령 = [];
+  for (const line of resulting.split('\n')) {
+    if (!isDataRow(line)) continue;
+    const 사유 = 보드lib.유령사유(line);
+    if (!사유.length) continue;
+    const 적기 = `"${line.trim().slice(0, 60)}…"\n     ↳ ${사유.join('\n     ↳ ')}`;
+    if (옛줄.has(line.trim())) 유령물려받은.push(`유령 줄 1개(내 파일에 이미 있던 것) — ${사유.join(' · ')}`);
+    else 내유령.push(적기);
+  }
+  if (내유령.length) {
+    미룬deny(
+      `[board-guard] 이 줄은 보드에 **안 뜬다** — 조립기가 못 읽는 규격이다(유령 줄 ${내유령.length}개):\n- `
+      + 내유령.join('\n- ')
+      + '\n→ 규격: `| YYYY-MM-DD | 트랙/작업 | 만지는 파일 | 상태 |` — **네 칸**, 날짜는 **연도까지**.'
+      + '\n   (칸 안에 날 `|` 를 쓰면 칸이 늘어난다 — 백틱으로 감싸면 칸막이로 안 센다: `2>&1|tee`)'
+      + '\n⚠ 막지 않으면 증상이 **0**이다: 파일엔 있는데 `node tools/board.js`·`board-move`·인계문'
+      + ' 어디에도 안 뜬다. 그대로 두면 다음 세션은 이 트랙을 **아무도 안 잡은 것**으로 읽는다(F322·F331·F330).'
+    );
+  }
+}
+
 /* ── ⑧ 같은 트랙을 두 세션이 나란히 — **선언하는 순간** 막는다 (F340 · 2026-08-12 실측) ────
  * 죽은 세션이 🎫 를 놓으면 다음 세션들이 그것을 읽고 각자 선언한다. 대기열이 시키는 대조
  * (`node tools/board.js`)는 읽기와 쓰기 사이에 잠금이 없어서, 몇 분 차이면 서로를 못 본다 —
@@ -571,6 +617,7 @@ if (resulting !== null) {
 const 이전total = 이전 === null ? 0 : countRows(이전);
 const 이전active = 이전 === null ? 0 : countActive(이전);
 const 물려받은 = [];
+물려받은.push(...유령물려받은);   // ⑨ — 내 파일에 이미 있던 유령(막지 않고 드러낸다)
 /* ⑧ 판정 — 선언이 실제로 막히는 자리. 함수로 뺀 이유는 위 머리말에 있다(TDZ). */
 트랙충돌(물려받은, 미룬deny);
 const 판 = resulting !== null ? resulting : (이전 || '');
