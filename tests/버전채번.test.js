@@ -349,6 +349,95 @@ test('🔑 자리표 검사를 두 번 연달아 불러도 같은 답이다(last
     '두 번째 호출이 빈 배열을 냈다 — 정규식 lastIndex 가 호출 사이에 남았다');
 });
 
+/* ═══ [2026-08-12 · F390] 자리표 범위는 「엔진 파일」이 아니라 「배포 집합」이다 ═══
+ *
+ * 치환도 검사도 `ENGINE_FILES`(7개)를 범위로 썼다. 그 목록은 「테스트가 엔진을 한 문자열로 본다」는
+ * 다른 계약의 것인데, 채번기가 치환 범위로 재사용하면서 「엔진 파일 = 배포 파일」 전제가 조용히
+ * 들어왔다. 실측 2026-08-12: 배포 집합 15 ∖ ENGINE_FILES 7 = **8개**(`상담AI.js`·`엔진_두뇌.js`
+ * ·`교재연동.js`·`만족도팩.js`·`contents_*.js` 3·`appsscript.json`). v9.223 배선 중 `상담AI.js`×3 과
+ * `엔진_두뇌.js`×2 가 실제로 자리표를 안은 채 남았다.
+ *
+ * 🔴 그물이 있다고 믿었는데 없었다 — 실저장소를 재는 자리표 검사는 아래 「실저장소에 [vNEXT] …」
+ *   하나뿐이고 그것이 부르는 것이 `pendingPlaceholders()` 다. 검사 층도 같은 7파일만 봤다.
+ *   이 계열은 이미 라이브까지 갔다(F309·F310). 새는 방향은 여기서도 「통과」다.
+ * 🔑 탐지력은 픽스처가 진다 — 실저장소에 자리표를 심어 재는 순간 그게 사고다. */
+const 클래스프무시 =
+  '# 픽스처 — 실저장소 .claspignore 와 같은 허용목록 방식(전부 제외 후 !로 되살린다)\n'
+  + ['**/*', '!appsscript.json', '!Code.js', '!엔진_*.js', '!contents_*.js', '!상담AI.js'].join('\n') + '\n';
+
+test('🔴 배포 파일인데 엔진 목록 밖이면 자리표를 통째로 놓친다 (F390)', () => {
+  const d = 픽스처({
+    '.claspignore': 클래스프무시,
+    'Code.js': "const SYNK_VERSION = 'v9.5'; // 안내 · 최신 [v9.5] 다섯\n",
+    '상담AI.js': '/* [vNEXT] 상담 엔진 — clasp 가 미는데 ENGINE_FILES 엔 없다 */\n',
+    '엔진_두뇌.js': '/* [vNEXT·E²] 라벨 자리표 */\n',
+  });
+  assert.deepStrictEqual(그루트에서(d, () => bump.pendingPlaceholders()).sort(), ['상담AI.js', '엔진_두뇌.js'],
+    '배포 파일의 자리표가 검사 밖이다 — 치환도 검사도 없이 clasp push 에 실린다(F309·F310 실사고)');
+
+  const 바뀐 = 그루트에서(d, () => bump.stampPlaceholders('v9.6'));
+  assert.deepStrictEqual(바뀐.sort(), ['상담AI.js×1', '엔진_두뇌.js×1'], `치환 범위가 안 넓어졌다: ${JSON.stringify(바뀐)}`);
+  assert.match(fs.readFileSync(path.join(d, '상담AI.js'), 'utf8'), /\[v9\.6\]/, '배포 파일의 자리표가 안 확정됐다');
+  assert.match(fs.readFileSync(path.join(d, '엔진_두뇌.js'), 'utf8'), /\[v9\.6·E²\]/,
+    '라벨을 지웠거나 확정을 안 했다 — 라벨은 뜻을 진다(F339)');
+  assert.deepStrictEqual(그루트에서(d, () => bump.pendingPlaceholders()), [], '확정 뒤에도 자리표가 남았다');
+});
+
+test('🔑 배포 집합 밖 파일은 안 건드린다 — .claspignore 가 유일 정본 (F390 거짓양성 0)', () => {
+  const d = 픽스처({
+    '.claspignore': 클래스프무시,
+    'Code.js': "const SYNK_VERSION = 'v9.5'; // [v9.5]\n",
+    '_보류_실험.js': '/* [vNEXT] 허용목록에 없다 = 라이브에 안 올라간다 */\n',
+    'tools/도구.js': '/* [vNEXT] 하위 디렉터리도 배포 대상이 아니다 */\n',
+  });
+  assert.deepStrictEqual(그루트에서(d, () => bump.pendingPlaceholders()), [],
+    '배포 안 되는 파일을 자리표 검사에 넣었다 — 넓힌 범위가 멀쩡한 작업 파일을 빨갛게 만든다');
+  assert.deepStrictEqual(그루트에서(d, () => bump.stampPlaceholders('v9.6')), [], '배포 대상이 아닌 파일을 고쳤다');
+  assert.match(fs.readFileSync(path.join(d, '_보류_실험.js'), 'utf8'), /\[vNEXT\]/, '보류 파일의 자리표를 갈아 끼웠다');
+});
+
+test('🔒 배포 집합은 엔진 목록을 반드시 품는다 — 바닥이 무너지면 엔진이 검사 밖으로 나간다 (F390)', () => {
+  const 배포 = bump.배포파일들();
+  for (const f of bump.engineFiles()) {
+    assert.ok(배포.includes(f), `${f} 가 배포 집합에서 빠졌다 — .claspignore 를 못 읽어도 엔진은 반드시 봐야 한다`);
+  }
+  assert.ok(배포.length > bump.engineFiles().length,
+    `실저장소 배포 집합(${배포.length})이 엔진 목록(${bump.engineFiles().length})을 안 넘는다`
+    + ' — 「엔진 파일 = 배포 파일」 전제가 되돌아왔다(F390)');
+});
+
+test('🔴 정본 통로를 못 읽는 날에도 엔진은 본다 — 빈 목록은 「자리표 0건」과 같은 모양이다 (F390 · F207)', () => {
+  const d = 픽스처({
+    '.claspignore': 클래스프무시,
+    'Code.js': "const SYNK_VERSION = 'v9.5'; // [v9.5]\n",
+    '엔진_궤적.js': '/* [vNEXT] 엔진 파일 */\n',
+    '상담AI.js': '/* [vNEXT] 배포 파일 */\n',
+  });
+  const 원래 = process.env.SYNK_CLASP_LIB;
+  process.env.SYNK_CLASP_LIB = path.join(d, '없는-통로.js');
+  let 남은;
+  try { 남은 = 그루트에서(d, () => bump.pendingPlaceholders()); }
+  finally { if (원래 === undefined) delete process.env.SYNK_CLASP_LIB; else process.env.SYNK_CLASP_LIB = 원래; }
+  assert.deepStrictEqual(남은, ['엔진_궤적.js'],
+    '정본을 못 읽자 목록이 통째로 비었다 — 그러면 「훑을 게 없었다」가 「자리표가 없다」로 읽힌다(F207)');
+});
+
+test('🔑 --check 초록이 분모를 밝힌다 — 분모 없는 초록은 미실행과 같은 모양이다 (F390 ② · F207)', () => {
+  const d = 픽스처({
+    '.claspignore': 클래스프무시,
+    'Code.js': "const SYNK_VERSION = 'v9.5'; // 안내 · 최신 [v9.5] 다섯\n",
+    '상담AI.js': '/* 자리표 없음 */\n',
+  });
+  const 말한것 = [];
+  const 원래 = console.log;
+  console.log = (s) => 말한것.push(String(s));
+  let r;
+  try { r = 그루트에서(d, () => bump.check()); } finally { console.log = 원래; }
+  assert.equal(r, 0, `깨끗한 픽스처가 빨갛다: ${말한것.join('\n')}`);
+  assert.match(말한것.join('\n'), /배포 집합 2개/,
+    '「[vNEXT] 잔존 0」만 말하고 몇 개를 봤는지는 안 말한다 — 0개를 본 것과 구별되지 않는다');
+});
+
 test('🔴 --check 가 라벨 붙은 자리표를 잡는다 — 초록 아래로 라이브에 나가던 자리 (F339)', () => {
   const 라벨자리표 = 픽스처({
     'Code.js': "const SYNK_VERSION = 'v9.5'; // 안내 · 최신 [v9.5] 다섯\n",
