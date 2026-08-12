@@ -32,18 +32,49 @@ function 평문(s) {
   return s.replace(/\*\*/g, '').replace(/`/g, '').trim();
 }
 
+/** 다음 절이 여는 줄 — 빈 줄 없이 절이 바뀌어도 그 자리를 넘어가지 않는다. */
+const 절머리 = /^(#{1,6}\s|\*\*\d+\.\s|>\s|\||-{3,}\s*$)/;
+
 /**
- * 정본에서 한 자리를 뽑는다.
+ * 정본에서 한 자리를 뽑는다 — 시작 줄부터 **빈 줄(=절의 끝) 전까지** 모은다.
+ *
+ * 🔴 **한 줄만 집으면 안 된다** (2026-08-12 실측 · 유호님 「잘 작성돼 있는지」 검토에서 나왔다):
+ *   `lines[i + 1]` 하나만 읽던 판은 정본의 그 절이 **두 줄로 갈리는 순간 뒷줄을 조용히 버렸다.**
+ *   앵커는 찾았으니 아래 실패 처리(exit 1)도 **안 걸린다** — 세션은 반쪽 기준으로 판정하면서
+ *   초록을 본다. 이 훅이 막으려고 만들어진 상태가 정확히 그것이다(F207 — 미실행과 통과가
+ *   같은 모양이면 안 된다). 「지금은 한 줄이라 맞다」는 근거가 못 된다: 이 정본은 하루에
+ *   세 번 개정되는 문서이고(v1.1→v1.3), 절이 길어지는 방향으로만 자란다.
+ *
  * @param {string} md   정본 전문
  * @param {RegExp} 앵커  그 자리를 여는 줄
- * @param {boolean} 다음줄  true = 앵커 다음 줄이 본문(소제목-본문 두 줄 구조)
+ * @param {boolean} 다음줄  true = 앵커 다음 줄부터 본문(소제목-본문 두 줄 구조)
  */
 function 뽑기(md, 앵커, 다음줄) {
   const lines = md.split(/\r?\n/);
   const i = lines.findIndex((l) => 앵커.test(l));
   if (i < 0) return null;
-  const body = 다음줄 ? lines[i + 1] : lines[i];
-  return body && body.trim() ? 평문(body) : null;
+  const 시작 = 다음줄 ? i + 1 : i;
+  const 모음 = [];
+  for (let j = 시작; j < lines.length; j++) {
+    const l = lines[j];
+    if (!l.trim()) break;                     // 빈 줄 = 절의 끝
+    if (j > 시작 && 절머리.test(l)) break;     // 빈 줄 없이 다음 절이 붙어도 넘어가지 않는다
+    모음.push(l.trim());
+  }
+  const body = 모음.join(' ');
+  return body ? 평문(body) : null;
+}
+
+/** 카드 한 자리의 길이 상한.
+ *  절이 자라도 **매 세션 상주 비용**은 정본 전문(13,459자)으로 돌아가면 안 된다(설계 ①).
+ *  그렇다고 조용히 자르면 위에서 고친 그 병이 길이 축으로 되살아나므로,
+ *  **자르되 잘린 사실을 카드 본문에 박는다** — stderr 는 세션 화면에서 안 보일 수 있다. */
+const 자리상한 = Number(process.env.SYNK_PHILOSOPHY_CARD_MAX || 1800);
+
+function 상한적용(s, 이름) {
+  if (s.length <= 자리상한) return s;
+  return `${s.slice(0, 자리상한)} …\n⚠ [철학카드] ${이름}이 ${s.length}자로 늘어 **여기서 잘렸다**`
+    + ' — 카드가 반쪽이다. 정본을 직접 열어라: docs/SYNK_철학.md';
 }
 
 function main() {
@@ -67,11 +98,11 @@ function main() {
   }
 
   console.log(`📐 판단 정본 — docs/SYNK_철학.md ${ver} · **모든 기능·콘텐츠·마케팅 판정이 이 두 자리를 지난다**`);
-  console.log(`\n【궁극 가치】 ${가치}`);
-  console.log(`\n【「똑똑하게」 3층 = 산출물 게이트】 ${게이트}`);
+  console.log(`\n【궁극 가치】 ${상한적용(가치, '궁극 가치')}`);
+  console.log(`\n【「똑똑하게」 3층 = 산출물 게이트】 ${상한적용(게이트, '게이트')}`);
   console.log('\n▶ 여기 실린 것은 게이트 둘뿐이다 — Ⅱ 교육·Ⅲ 대외 철학과 부록 A(실물 대장)는 안 실렸다.'
     + ' 굵직한 기획·외부 공개물·새 기능은 정본을 직접 열고 판정한다(전문 13,459자는 매 턴 상주시키지 않는다).');
 }
 
 if (require.main === module) main();
-module.exports = { 뽑기, 평문 };
+module.exports = { 뽑기, 평문, 상한적용, 자리상한 };

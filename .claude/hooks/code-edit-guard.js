@@ -37,6 +37,7 @@
 const fs = require('fs');
 const path = require('path');
 const { stripNonExecutedText } = require(path.join(__dirname, 'lib', 'shell-text.js'));
+const store = require(path.join(__dirname, 'lib', 'handoff-store.js'));   // 심장박동 — 아래 입력 파싱 직후
 
 /* 코드 파일 = 「깨지면 실행이 멈추거나 배포가 나가는 것」.
  * 목록을 하나에서 파생시킨다 — 훅 안에서도 같은 판정을 두 곳에 적으면 갈라진다(F063). */
@@ -143,6 +144,20 @@ try {
 } catch (_) {
   process.exit(0); // 입력을 못 읽으면 검사할 명령도 없다
 }
+
+/* ── 심장박동 (2026-08-12) — 이 훅의 본업이 아니다. 여기 있는 이유가 곧 그 수리다. ──────────
+ * 박동은 `track-collision`(Edit|Write|MultiEdit) 에서만 뛰었고, 그래서 **셸만 돌리는 세션은
+ * 남들에게 죽은 것으로 보였다**(사연·좌표 규칙 전부 `handoff-store.박동찍기`).
+ * 셸 쪽에 새 훅을 세우지 않고 여기 얹는 이유는 **이 훅이 모든 셸 호출에 실제로 도는 유일한
+ * 훅**이기 때문이다 — PostToolUse 는 전부 좁다(commit-noop·friction-close 는 settings 가
+ * `*git*` 으로 거르고, track-boundary 는 매처만 넓고 본체가 「성공한 git commit」에서만 통과한다).
+ * 새 훅을 세우면 셸 호출마다 node 프로세스가 하나 더 뜨는데, 이 훅은 이미 떠 있다.
+ *
+ * 🔑 **어떤 조기 종료보다 먼저** 찍는다. 아래 `exit(0)` 중 하나라도 앞서면 그 갈래에서 박동이
+ *   조용히 멎고, 그건 지금 고치는 병 그대로다 — 회귀가 갈래마다(비-Bash·빈 명령·BYPASS) 못박는다.
+ * 🔑 실패해도 **가드를 죽이지 않는다**. 부수효과가 차단 판정을 못 건드리게 한다(CLAUDE.md
+ *   가드 맹점 ②: 실패 안전을 자기 로직 밖에 기대지 않는다). */
+try { store.박동찍기(input); } catch (_) { /* 박동은 부수효과다 — 여기서 죽으면 가드가 안 돈다 */ }
 
 const tool = String(input.tool_name || '');
 if (!/^(Bash|PowerShell)$/i.test(tool)) process.exit(0);
