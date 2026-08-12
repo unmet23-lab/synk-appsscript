@@ -425,9 +425,12 @@ test('인계문 — 「이어받지 않는다」 옆에 🎫 예외가 같이 �
       // ③ 근거 마찰번호를 남긴다 — 「왜 금지인가」가 사라지면 다음 압축이 금지째 지운다.
       assert.match(h, /F073/, `${이름}: 금지의 근거(F073)가 빠졌다`);
 
-      // ④ 짝 — 집는 방법이 「내 파일에 내 줄」이어야 한다. 이게 빠지면 이어받기가 남의 보드 편집이 된다.
-      assert.match(h, /내 파일에 내 줄/,
+      // ④ 짝 — 집는 방법이 「**네** 지문 파일에 네 줄」이어야 한다. 빠지면 이어받기가 남의 보드 편집이 된다.
+      //    ⚠ 옛 문구는 「내 파일에 내 줄」이었다 — 읽는 이에게 「내」는 **글쓴이**라 정확히 반대로 읽혔다(F332).
+      assert.match(h, /`docs\/_ops\/보드\/<네 지문>\.md` 에 네 줄/,
         `🔴 ${이름}: 「집어도 된다」만 남고 집는 방법이 빠졌다 — 이어받는 세션이 남의 보드 줄을 고쳐 F073 이 예외라는 이름으로 되살아난다:\n${h}`);
+      assert.doesNotMatch(h, /내 파일에 내 줄/,
+        `🔴 ${이름}: 「내 파일에 내 줄」이 돌아왔다 — 이 글의 「내」는 글쓴이(죽은 세션)라 F332 가 그대로 재발한다:\n${h}`);
     }
 
     /* ⑤ 거짓양성 방향 — ⏸ 는 **내가 이어갈 줄**이라 애초에 「새 트랙」이 안 나간다.
@@ -437,6 +440,80 @@ test('인계문 — 「이어받지 않는다」 옆에 🎫 예외가 같이 �
     const c = report.buildHandoff(일시정지, null, { dirty: 0 });
     assert.doesNotMatch(c, /🎫/,
       `🔴 이어가기로 적어 둔 내 트랙에 🎫 가 나갔다 — 남이 집어가면 병렬 중복 구현이다:\n${c}`);
+  } finally {
+    if (원래 === undefined) delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
+    else process.env.CLAUDE_CODE_HOST_SESSION_ID = 원래;
+  }
+});
+
+/* 🔴 F332 (2026-08-12 실사고) — 인계문의 「나」와 **읽는 이의 「나」가 다른 세션**인데 안 갈렸다.
+ *
+ * 이 글은 세션 A 가 쓰고 세션 B 가 자기 **첫 메시지**로 받는다. 옛 문구는 트랙 없음 갈래에서
+ * 「그중 **내 것(`647ee2cb`)**은 없다」로 나갔고, B 는 그 8자리를 제 지문으로 읽어
+ * `docs/_ops/보드/647ee2cb.md`(죽은 A 의 파일)에 자기 줄을 썼다 — F250 위반을 **인계문이 시켰다**.
+ * 실제로 막은 것은 git-scope-guard 였다(장치가 시키고 다른 장치가 막은 꼴).
+ *
+ * 🔑 새는 방향이 「그럴듯한 통과」다 — 오류도 경고도 안 나고 모양이 정상이라, 이 검사가 없으면
+ *   다음 압축이 이음매 한 줄을 「군더더기」로 지우고 증상은 다시 침묵으로 돌아온다.
+ * 탐지는 픽스처가 진다 — 실저장소 인계문은 안 본다(CLAUDE.md 가드 맹점 ②). */
+test('인계문 — 글쓴이 지문을 「내 것」으로 배달하지 않는다 · 읽는 이의 지문 출처를 준다 (F332)', () => {
+  const 머리 = '| 날짜 | 트랙/작업 | 파일 | 상태 |\n|---|---|---|---|\n';
+  const 보드 = (prefix, 줄들) => {
+    const d = 임시(prefix);
+    fs.mkdirSync(path.join(d, 'docs', '_ops', '보드'), { recursive: true });
+    fs.writeFileSync(path.join(d, 'docs', '_ops', '보드', 'sess.md'), 머리 + 줄들.join(''));
+    return d;
+  };
+  const 원래 = process.env.CLAUDE_CODE_HOST_SESSION_ID;
+  process.env.CLAUDE_CODE_HOST_SESSION_ID = 'local_ba86eeb2-565d-438b-85c1-6d98aeb187a7';
+  const 지문 = 'ba86eeb2';
+  try {
+    /* ① 사고 그대로 — 줄이 전부 남의 것이라 「트랙 없음」이 확정되고, 그 문장이 지문을 글자로 싣는다. */
+    const 없음 = 보드('synk-tb-f332a-', [
+      '| 2026-08-12 | 남의 트랙 | a.js | ▶작업중 (`local_11112222`) — 남이 하는 일 |\n',
+    ]);
+    const a = report.buildHandoff(없음, null, { dirty: 0 });
+    assert.match(a, new RegExp(지문), '지문을 통째로 지웠다 — 「그 세션이 누구였나」는 커밋·보드를 되짚는 비용을 줄이는 재료다');
+    assert.doesNotMatch(a, new RegExp('내 것\\(`' + 지문 + '`\\)'),
+      `🔴 글쓴이 지문이 「내 것」으로 나갔다 — 받은 세션이 죽은 세션의 보드 파일에 자기 줄을 쓴다(F250·F332):\n${a}`);
+    assert.match(a, new RegExp('그 세션\\(`' + 지문 + '`\\)'),
+      '지문의 주인을 3인칭으로 안 밝혔다 — 「내/그」가 안 갈리면 8자리는 다시 읽는 이의 것으로 읽힌다');
+
+    /* ② **모든** 갈래가 이음매를 진다. 한 갈래만 지면 나머지에서 같은 사고가 그대로 난다. */
+    const 종결 = 보드('synk-tb-f332b-', ['| 2026-08-12 | 내 트랙 | b.js | ✅**종결**(`local_ba86eeb2`) — 끝 |\n']);
+    const 이어감 = 보드('synk-tb-f332c-', ['| 2026-08-12 | 내 트랙 | c.js | ⏸**내일 이어감**(`local_ba86eeb2`) — 다음=회귀 |\n']);
+    for (const [이름, h] of [
+      ['트랙 없음', a],
+      ['트랙 종결', report.buildHandoff(종결, null, { dirty: 0 })],
+      ['이어받기', report.buildHandoff(이어감, null, { dirty: 0 })],
+    ]) {
+      const 첫줄 = h.split('\n')[0];
+      assert.match(첫줄, /너는 다른 세션이다/,
+        `🔴 ${이름}: 이음매가 **첫 줄**에 없다 — 뒤따르는 「나·내」를 가르는 문장은 그것들보다 먼저 읽혀야 한다:\n${h}`);
+      assert.match(첫줄, /CLAUDE_CODE_HOST_SESSION_ID/,
+        `🔴 ${이름}: 읽는 이의 지문이 **어디서 오는지**를 안 줬다 — 출처가 없으면 화면에 있는 유일한 8자리(글쓴이 것)를 쓴다`);
+      assert.match(첫줄, /네 지문 파일에만/, `🔴 ${이름}: 보드 줄을 어디에 쓰는지가 이음매에서 빠졌다`);
+      assert.equal(첫줄.includes('undefined'), false, `🔴 ${이름}: 이음매에 undefined 가 샜다`);
+      // 매 세션 컨텍스트에 실리는 글이다 — 이음매는 한 줄을 넘기지 않는다(주석의 약속을 기계로 붙든다).
+      assert.ok(첫줄.length <= 260, `🔴 ${이름}: 이음매가 ${첫줄.length}자다 — 매 세션 곱해지는 자리라 한 줄로 유지한다`);
+    }
+
+    /* ③ 이어받기 갈래는 **어디에 선언하는지**까지 말해야 한다. 방금 보여 준 줄은 끝난 세션의
+     *   파일 안에 있어서, 말이 없으면 받은 세션은 자연히 그 줄을 고치러 간다(사고의 실제 경로). */
+    const c = report.buildHandoff(이어감, null, { dirty: 0 });
+    assert.match(c, /다음 할 일부터 이어라/, '이어받기 갈래가 아니다 — 아래 검사가 무의미해진다');
+    assert.match(c, /`docs\/_ops\/보드\/<네 지문>\.md`/,
+      `🔴 이어받으라고만 하고 **어디에 선언할지**를 안 줬다 — 받은 세션이 죽은 세션의 보드 파일을 고친다:\n${c}`);
+    assert.match(c, /끝난 세션의 보드 파일/, '그 줄이 남의(죽은) 파일에 있다는 사실 자체를 안 말했다');
+
+    /* ④ 거짓양성 방향 — 지문이 없는 세션(폰 클라우드 등)에서도 문장이 서야 한다.
+     *   백틱만 남거나 「그 세션()」이 나가면 이음매가 오히려 혼란을 만든다. */
+    process.env.CLAUDE_CODE_HOST_SESSION_ID = '';
+    const d = report.buildHandoff(없음, null, { dirty: 0 });
+    const d첫줄 = d.split('\n')[0];
+    assert.match(d첫줄, /끝난 세션/, '지문이 없다고 이음매가 통째로 사라졌다');
+    assert.match(d첫줄, /너는 다른 세션이다/, '지문 없는 갈래에서 이음매의 핵심 문장이 빠졌다');
+    assert.doesNotMatch(d, /``|\(\)/, `🔴 지문 없는 갈래가 빈 백틱·빈 괄호를 냈다:\n${d첫줄}`);
   } finally {
     if (원래 === undefined) delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
     else process.env.CLAUDE_CODE_HOST_SESSION_ID = 원래;
