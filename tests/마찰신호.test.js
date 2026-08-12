@@ -854,3 +854,44 @@ test('🔴 [F301] resolve: `--파일` 을 못 읽으면 **행을 닫지 않는�
   assert.ok(r.failed, '🔴 못 읽었는데 계속 갔다 — 빈 해소문으로 행이 닫힌다(안 고쳤는데 닫음 = F092)');
   assert.strictEqual(해소칸(ledger, id).trim(), '', '못 읽었는데 행이 닫혔다');
 });
+
+/* ── [F371] 셸이 «말을 바꿔치기한» 흔적 — F297·F301 과 같은 계열의 세 번째 (2026-08-12 실측)
+ * Git Bash(MSYS)는 `/close` 처럼 슬래시로 시작하는 토큰을 경로로 자동 변환한다. 따옴표로도
+ * 안 막히고, 도구는 **성공을 찍는다** — 스킬 이름이 `C:/Program Files/Git/close` 로 앉은 줄은
+ * 사람만 안다. 앞의 둘과 새는 방향이 같다: 「통과」. 실제로 F371 해소문이 그렇게 저장됐다. */
+
+test('☠️ [F371] 셸이 바꾼 경로가 든 **해소문**을 거부한다 — 통과시키면 스킬 이름이 경로로 앉고 증상이 없다', () => {
+  const L = mkLedger();
+  const r = run(L, ['add', '마찰', '신고문', '--해소', 'C:/Program Files/Git/close 3-b 신설'], true);
+  assert.ok(r.failed, '🔴 셸이 바꾼 말을 그대로 실었다 — 이게 F371 이 난 경로다');
+  assert.match(r.stderr, /바꿔치기|셸이/, '왜 막혔는지 안 알려주면 다음 사람이 같은 자리에서 막힌다');
+  assert.match(r.stderr, /해소파일|PowerShell/, '처방이 없다 — 따를 수 없는 처방은 우회를 정상 통로로 만든다(F103)');
+  assert.strictEqual(rowsOf(L).length, 2, '거부했는데 행이 태어났다 — 막기 전에 이미 쓴 것이다');
+});
+
+test('☠️ [F371] **신고문** 쪽도 같이 막는다 — 한쪽만 고치는 것이 정확히 F301 이었다', () => {
+  const L = mkLedger();
+  const r = run(L, ['add', '실수', 'C:/Program Files/Git/deploy 를 돌렸더니'], true);
+  assert.ok(r.failed, '🔴 해소문만 막고 신고문은 뚫려 있다 — 옆자리를 안 고친 그 실패다');
+  assert.strictEqual(rowsOf(L).length, 2, '거부했는데 행이 태어났다');
+});
+
+test('🔑 [F371] 거짓양성 0 — 진짜 경로 인용과 스킬 이름 원문은 «그대로» 지난다', () => {
+  const L = mkLedger();
+  /* 이 셋이 막히면 가드가 장부를 못 쓰게 만든다 — 탐지력보다 이쪽이 먼저 저장소를 죽인다. */
+  run(L, ['add', '마찰', '`/close` 3-b 신설 · tests/종결배포결속.test.js 5건']);
+  run(L, ['add', '실수', 'C:/Users/q1212/Documents/SYNK-talk 에서 돌렸다']);
+  run(L, ['add', '교정', 'C:/Program Files/nodejs/node.exe 로 실행된다']);
+  assert.strictEqual(rowsOf(L).length, 5, '정상문 3건이 다 들어가야 한다(거짓양성이면 여기서 죽는다)');
+});
+
+test('🔑 [F371] `--해소파일` 통로가 실제로 «닿는다» — 막기만 하고 길을 안 내면 처방이 거짓이 된다', () => {
+  const L = mkLedger();
+  const p = path.join(path.dirname(L), '해소문F371.txt');
+  fs.writeFileSync(p, '`/close` 3-b 신설 = 배포대조의 발동\n', 'utf8');
+  run(L, ['add', '마찰', '신고문', '--해소파일', p]);
+  const rows = rowsOf(L);
+  assert.strictEqual(rows.length, 3, '파일 통로로 준 해소문이 행을 못 만들었다');
+  assert.ok(rows[2].includes('/close') && rows[2].includes('배포대조의 발동'),
+    '해소문이 안 실렸다 — 에러 메시지가 가리킨 처방이 실제로는 안 되는 상태다(F103)');
+});
