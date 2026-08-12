@@ -49,7 +49,9 @@ const 두뇌_인계문 = '이건 제가 확실히 아는 범위가 아니라 원
 
 /* ══════════════════════════════════════════════════════════
  * 3층 — 벤더 중립 AI 어댑터
- * 지금 이 저장소에서 api.anthropic.com을 직접 부르는 곳은 4군데(상담_호출_·callClaudeFeedback_·aiCall_·aiText_)다.
+ * [v9.223] 이 저장소에서 api.anthropic.com을 직접 부르는 곳은 **7군데**다 — 위 넷(상담_호출_·callClaudeFeedback_·
+ * aiCall_·aiText_)에 상담_역번역_·callClaudeTalk_·이 함수가 더 있다(「4군데」는 낡은 셈이라 고쳤다).
+ * 그 일곱이 곧 옛글자 게이트를 거는 자리이고, 개수는 `tests/옛글자런타임.test.js` 가 기계로 못박는다.
  * 두뇌는 그 길을 늘리지 않고 여기 하나만 쓴다 — 나중에 GPT·음성 API를 붙일 때 고칠 곳이 한 곳이 되도록.
  * ══════════════════════════════════════════════════════════ */
 
@@ -100,7 +102,13 @@ function 두뇌_AI_anthropic_(req) {
   if (j.stop_reason === 'max_tokens') throw new Error('출력 잘림(max_tokens)');
   const tb = (j.content || []).filter(b => b.type === 'text')[0];
   if (!tb || !tb.text) throw new Error('text 블록 없음');
-  return { data: req.schema ? JSON.parse(tb.text) : tb.text, usage: j.usage || null };
+  const data = req.schema ? JSON.parse(tb.text) : tb.text;
+  /* [v9.223] 옛 글자(한자·가나) — 유호님 확정 「쓰는 문자 셋뿐」. 두뇌는 비출시 내부 엔진이라 **지금은** 학생이
+   *   안 읽지만, 이 어댑터는 「나중에 붙일 길」로 지어진 자리다. 검사를 여기 안 걸면 그 날 새 소비자가 사각으로
+   *   태어나고, 사각은 만들 때가 아니라 쓸 때 드러난다. 위 오류들과 같은 규약(throw)이라 새 갈래가 아니다. */
+  const 옛 = 옛글자걸림_(data);
+  if (옛) throw new Error('옛 글자 감지(' + 옛.칸 + ':' + 옛.짚음 + ') — 응답 폐기');
+  return { data: data, usage: j.usage || null };
 }
 
 /* ══════════════════════════════════════════════════════════

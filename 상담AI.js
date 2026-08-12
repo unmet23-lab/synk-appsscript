@@ -230,7 +230,16 @@ function 상담_호출_(apiKey, 세션, 사용자말) {
   if (j.stop_reason === 'max_tokens') throw new Error('출력 잘림(max_tokens)');
   const tb = (j.content || []).filter(b => b.type === 'text')[0];
   if (!tb || !tb.text) throw new Error('text 블록 없음');
-  return { data: JSON.parse(tb.text), usage: j.usage || null };
+  const data = JSON.parse(tb.text);
+  /* [v9.223] 옛 글자(한자·가나) — 유호님 확정 「쓰는 문자 셋뿐」. 이 답은 **학부모·예비 학생이 그대로 읽는** 첫 인상이다.
+   *   🔑 판정을 «깔때기 안»에 두는 이유: 소비자(상담응답_)에 두면 그 소비자가 하나 더 생기는 날 조용히 샌다.
+   *      처분은 여기서 안 정한다 — throw 는 상담응답_ 의 **이미 서 있는 인계 경로**로 그대로 흐른다
+   *      (기록 + 인계알림 + 인계문 응답). 손으로 그 셋을 다시 적으면 한 갈래가 빠지고 그 턴이 장부에서 사라진다.
+   *   🔑 정제(그 글자만 지우기)가 아니라 폐기인 이유는 태그 누출(v9.205)과 같다 — 글자만 빼면 뜻이 조용히
+   *      어긋난 문장이 남고, 그 실패는 아무도 못 알아챈다. 인계는 손실이 눈에 보이고 사람이 이어받는다. */
+  const 옛 = 옛글자걸림_(data);
+  if (옛) throw new Error('옛 글자 감지(' + 옛.칸 + ':' + 옛.짚음 + ') — 응답 폐기, 사람에게 인계');
+  return { data: data, usage: j.usage || null };
 }
 
 // 시스템 프롬프트 조립 — 확정된 지식만 넣고, 미확정 주제는 "모르는 것" 목록으로 넘긴다
@@ -553,6 +562,12 @@ function 상담_인계초안_(apiKey, 세션, 사용자말) {
   const tb = (j.content || []).filter(b => b.type === 'text')[0];
   if (!tb || !tb.text) return null;
   const 결과 = JSON.parse(tb.text);
+  /* [v9.223] 옛 글자(한자·가나) — 유호님 확정 「쓰는 문자 셋뿐」. 이 초안의 `몽골어` 칸은 **실제로 학부모에게
+   *   발송될 문장**이라 이 저장소에서 가장 되돌리기 어려운 자리다(비가역 외부 실행). null 은 이 함수가
+   *   이미 쓰는 실패 모양이고 호출부가 「초안 없음」으로 정직하게 멈춘다 — 새 갈래를 만들지 않는다.
+   *   ⚠ 역번역 «전»에 막는다: 걸린 초안을 되번역해 봐야 그 값이 쓰일 자리가 없고 호출만 한 번 더 든다. */
+  const 옛 = 옛글자걸림_(결과);
+  if (옛) { Logger.log('상담 인계초안 옛 글자 감지(' + 옛.칸 + ':' + 옛.짚음 + ') — 초안 폐기'); return null; }
   // 역번역은 **실제 발송될 몽골어 문자열**을 되돌려 읽는다 — 위 한국어와 짝이 안 맞으면 그 자리에서 드러난다.
   결과.역번역 = 상담_역번역_(apiKey, (결과.초안 || []).map(x => String(x.몽골어 || '')));
   return 결과;
@@ -587,7 +602,11 @@ function 상담_역번역_(apiKey, 문장들) {
     const tb = (JSON.parse(res.getContentText()).content || []).filter(b => b.type === 'text')[0];
     if (!tb || !tb.text) return null;
     const arr = JSON.parse(tb.text).한국어들;
-    return Array.isArray(arr) ? arr : null;
+    if (!Array.isArray(arr)) return null;
+    // [v9.223] 옛 글자 — 번역기라 원문에 그 글자가 있으면 그대로 옮겨 온다. 이 결과는 인계 메일로 사람이 읽는다.
+    //   null 은 이 함수가 이미 쓰는 실패 모양이라(호출부가 「번역 없음」으로 조용히 넘어간다) 새 갈래를 안 만든다.
+    if (옛글자걸림_(arr)) return null;
+    return arr;
   } catch (_) { return null; }
 }
 

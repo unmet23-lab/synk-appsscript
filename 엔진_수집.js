@@ -436,7 +436,17 @@ function callClaudeTalk_(apiKey, stu, history, text) {
   if (j.stop_reason === 'max_tokens') throw permErr('출력 잘림(max_tokens)');
   const tb = (j.content || []).filter(b => b.type === 'text')[0];
   if (!tb || !tb.text) throw permErr('응답에 text 블록 없음(stop_reason=' + j.stop_reason + ')');
-  try { return JSON.parse(tb.text); } catch (e) { throw permErr('대화 JSON 파싱 실패: ' + String(tb.text).slice(0, 80)); }
+  let 값;
+  try { 값 = JSON.parse(tb.text); } catch (e) { throw permErr('대화 JSON 파싱 실패: ' + String(tb.text).slice(0, 80)); }
+  /* [v9.223] 옛 글자(한자·가나) — 유호님 확정 「쓰는 문자 셋뿐」. 이 반환값은 talk_log 를 거쳐 학생이 읽는 AI 답이다.
+   *   🔑 **`permErr`(영구)로 올린다** — 이 배치에서 「영구」는 유실이 아니라 **격리**다: 호출부가 학생 문장을 그대로
+   *      적재하고 답장 칸만 비우며(대화 데이터의 절반은 보존) 관리자 메일이 그 건수를 센다. 일시로 올리면 `break` 라
+   *      그 행이 배치 머리에 걸려 **그날 이후 모든 학생의 답장이 조용히 멈춘다** — 새는 방향이 훨씬 나쁘다.
+   *   ⚠ 대가는 그 한 턴의 답장이 다시 안 만들어지는 것이다(재시도 없음). 비결정적 결함이라 재시도가 대개 통과하지만
+   *      (형제 실측: 같은 판 8벌 중 6벌 깨끗) 재시도를 사려면 배치 정지를 사야 해서 이쪽을 골랐다. */
+  const 옛 = 옛글자걸림_(값);
+  if (옛) throw permErr('옛 글자 감지(' + 옛.칸 + ':' + 옛.짚음 + ') — 답장 폐기(학생 문장은 남는다)');
+  return 값;
 }
 
 /* 야간 배치 — 대화폼_응답 → talk_log(학생문 + AI답).
