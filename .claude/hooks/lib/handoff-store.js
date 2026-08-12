@@ -183,6 +183,52 @@ function markEnded(cwd, sessionId) {
   } catch (_) { return false; }
 }
 
+/* ── 심장박동 (2026-08-12) ──────────────────────────────────────────────────
+ * 🔴 무엇이 고장나 있었나 (유호님 「잘 작성돼 있는지」 검토에서 실측):
+ *   박동을 쓰는 곳이 `track-collision`(PreToolUse **Edit|Write|MultiEdit**) **하나뿐**이라,
+ *   **셸만 돌리는 세션은 박동이 멎었다.** `작업본소유자.살았나` 는 30분을 넘기면 「끝난 세션」으로
+ *   보고, 그 세션의 보드 줄은 `죽은착수` 로 잡혀 **다음 세션에게 「이어받아라」로 그려진다**(F073 입구).
+ *   검수·심문 한 패스가 실측 20~32분인데(보드 `f9ec8e9d`) 그건 임시 디렉터리에서 돌아
+ *   저장소 파일 mtime 반증에도 안 걸린다 — **살아있는 세션이 조용히 죽은 것으로 보인다.**
+ *   F264 가 이 병의 「나 자신」 쪽만 고쳤고(자기 증명), 「남이 나를 보는 쪽」은 그대로 남아 있었다.
+ *
+ * 🔑 읽는 쪽이 보는 박동은 `at` 필드가 아니라 **파일 mtime** 이다(`작업본소유자.세션들`).
+ *   그래서 쓰기 자체가 박동이고, `at` 은 같이 맞춰 둔다(두 값이 어긋나면 다음 사람이 헷갈린다).
+ * 🔑 좌표(뿌리·세션 id)를 여기 모은다 — `track-collision` 과 규칙이 갈리면 **다른 파일**이 생겨
+ *   박동이 둘로 쪼개지고, 증상은 「찍었는데 아무도 못 봄」이다. 회귀가 두 통로의 경로를 대조한다. */
+
+/** 만진기록의 저장소 좌표 — `track-collision:48` 과 같은 규칙. */
+function trackRoot() {
+  return process.env.SYNK_TRACK_ROOT || path.resolve(__dirname, '..', '..', '..');
+}
+
+/** 이 세션의 id — `track-collision:79` 와 같은 우선순위(호스트 id 가 먼저). */
+function trackSessionId(input) {
+  return String(process.env.CLAUDE_CODE_HOST_SESSION_ID || (input && input.session_id) || '').trim();
+}
+
+/** 심장박동만 갱신한다.
+ *
+ * ⚠ **통째로 덮어쓰지 않는다.** 이 파일에는 `track-collision` 이 쌓은 **만진 기록**이 들어 있고,
+ *   그게 날아가면 그 세션은 자기 파일조차 자기 것으로 증명하지 못한다(F264 와 같은 증상·원인만 반대).
+ * ⚠ `markEnded` 와 달리 **파일이 없으면 만든다.** 거기는 「유물을 못 남기는 세션에 빈 파일을
+ *   만들지 않는다」가 맞지만 여기 목적은 정반대다 — 만진 게 없어도 **살아있다는 사실 자체**를
+ *   남이 읽어야 한다. 도장(`끝남`)은 손대지 않는다: 죽음을 되돌리는 건 이 함수의 일이 아니다.
+ * @returns {boolean} 찍었나 — 못 찍어도 부르는 쪽(가드)을 죽이지 않는다.
+ */
+function 박동찍기(input) {
+  try {
+    const sid = trackSessionId(input);
+    if (!sid) return false;                       // id 를 모르면 남의 파일을 만들 위험이 있다
+    const p = trackPath(trackRoot(), sid);
+    let j = {};
+    try { j = JSON.parse(fs.readFileSync(p, 'utf8')) || {}; } catch (_) { j = {}; }
+    fs.mkdirSync(STATE_DIR, { recursive: true });
+    fs.writeFileSync(p, JSON.stringify({ ...j, at: Date.now() }));
+    return true;
+  } catch (_) { return false; }
+}
+
 /** 세션별 단계 카운터(발화 중복 억제용). 프로젝트 키를 붙여 저장소 간 간섭을 막는다. */
 function stagePath(cwd, sessionId) {
   return path.join(STATE_DIR, `stage-${projectKey(cwd)}-${safeId(sessionId)}.json`);
@@ -368,6 +414,7 @@ function take(cwd) {
  * 「조용히 안 지워짐」이라 눈에 안 띈다(이 파일이 존재하는 이유 ③과 같은 함정). */
 module.exports = {
   stateDir, projectKey, safeId, batonName, trackPath, markEnded, stagePath, readStage, writeStage, claimBlock, sweep, drop, take,
+  박동찍기, trackRoot, trackSessionId,
   siblings, siblingPrefix, touchKey, 공용장부, 공용장부폴더, 공용장부인가,
   편집지문계산, 편집지문경로, 편집지문읽기, 편집지문쓰기, 구문깨졌나,
   BATON_TTL_MS, SWEEP_TTL_MS,
