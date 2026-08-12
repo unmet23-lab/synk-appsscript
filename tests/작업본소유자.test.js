@@ -1251,3 +1251,53 @@ test('🔑 [F253] 내 파일은 선점이 아니다 — 안 빼면 내가 나를
     assert.ok(!죽음절.includes('도장 없는 주인의 착수'),
       `도장 없는 주인을 ⏹(죽음)으로 단정했다 — 이게 F315 그 자체다(이어받기가 열린다):\n${out}`);
   });
+
+/* ── F304 — 「승계 자리에서 원리상 잠긴 문」: 선언 주인 판정은 도장까지 본다 ──────────────
+ *
+ * 🔴 실사고 2026-08-12: board-guard 가 겹침을 막으며 내주는 처방은 「죽은 세션의 줄이면
+ *   `board-move` 로 치운다」인데, board-move 원칙⑥ 은 `살았나`(심장박동 30분 창)를 썼다.
+ *   인계는 앞 세션이 끊긴 «직후»에 일어나므로 승계 세션이 그 문을 두드리는 시각은
+ *   **원리상 늘 창 안**이다 — 처방이 가리키는 문이 30분간 항상 잠겨 있었다(F103 축:
+ *   따를 수 없는 처방은 우회를 정상 통로로 만든다).
+ *   그날 실측: 도장이 찍혔는데 「살았다」로 세는 세션 **4건** · 그 줄들이 안 치워져 보드가
+ *   상한 18 을 넘겨 20줄이 되었고 **새 세션의 선언 자체가 막혔다.**
+ *
+ * 여기서 재는 축은 하나다 — **죽음 쪽으로만 움직이는가.** 도장이 없으면 옛 판정 그대로여야
+ * 한다. 그 방향이 뒤집히면 새는 곳이 「남의 «산» 줄을 아카이브로 옮김」이 되고, 그게 F146
+ * 실사고다(여기서 새면 조용하다 — 옮겨진 세션은 다음 턴에 자기 트랙을 잃는다). */
+
+test('🔴 방금 끊긴 세션은 심장박동이 뛰어도 **선언 주인이 아니다** (F304 — 승계 자리의 잠긴 문)', () => {
+  const owner = require('../tools/작업본소유자.js');
+  const 방금끊김 = { sid: 'local_f304aaaa', 분: 3, 끝남: Date.now() - 3 * 60000 };
+  assert.ok(owner.살았나(방금끊김),
+    '전제가 깨졌다 — 심장박동이 「살았다」로 나와야 이 회귀에 뜻이 있다(30분 창이 사라졌으면 이 테스트를 다시 짜라)');
+  assert.ok(owner.마감했나(방금끊김), 'SessionEnd 죽음 도장(`끝남`)을 못 읽는다');
+  assert.ok(!owner.선언살았나(방금끊김),
+    '도장이 찍혔는데 선언 주인으로 센다 — board-move 가 30분간 그 줄을 거절하고 보드가 상한을 넘어 부푼다(F304)');
+});
+
+test('🔑 도장이 없으면 옛 판정 그대로다 — 「조용한 세션」을 죽음으로 올리지 않는다 (F252 방향 보존)', () => {
+  const owner = require('../tools/작업본소유자.js');
+  assert.ok(owner.선언살았나({ sid: 'local_f304bbbb', 분: 3, 끝남: null }),
+    '도장 없는 세션을 죽었다고 했다 — 새는 방향이 「남의 산 줄을 옮김」으로 뒤집힌다(F146 실사고)');
+  assert.ok(!owner.선언살았나({ sid: 'local_f304bbbb', 분: 999, 끝남: null }),
+    '30분 창이 안 돈다 — 이 판정은 `살았나` 위에 얹히는 것이지 그것을 대체하지 않는다');
+});
+
+test('🔑 나 자신은 옛 도장이 남아 있어도 선언 주인이다 — 이 코드가 도는 것이 증거다 (F264 축)', () => {
+  const 경로 = require.resolve('../tools/작업본소유자.js');
+  const 옛 = process.env.CLAUDE_CODE_HOST_SESSION_ID;
+  process.env.CLAUDE_CODE_HOST_SESSION_ID = 'local_f304cccc-1111-2222-3333-444455556666';
+  delete require.cache[경로];
+  try {
+    const owner = require(경로);
+    const store = require('../.claude/hooks/lib/handoff-store.js');
+    const 나 = { sid: store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID), 분: 999, 끝남: Date.now() };
+    assert.ok(owner.선언살았나(나),
+      '내가 도는 중인데 내 줄을 남이 옮길 수 있게 열었다 — 옛 도장은 지금 이 프로세스보다 약한 증거다');
+  } finally {
+    if (옛 === undefined) delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
+    else process.env.CLAUDE_CODE_HOST_SESSION_ID = 옛;
+    delete require.cache[경로];   // 다음 테스트가 내 env 조작을 물려받지 않게 되돌린다
+  }
+});

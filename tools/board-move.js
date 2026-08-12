@@ -211,7 +211,10 @@ const 산주인 = (() => {
     return [];
   }
   const 나 = store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
-  const 산 = new Map(owner.세션들(root).filter(owner.살았나).map((s) => [s.sid, s]));
+  /* `선언살았나` 지 `살았나` 가 아니다 (F304) — 심장박동만 보면 **승계 자리에서 언제나 참**이라
+   * board-guard 가 처방하는 「죽은 세션의 줄이면 치운다」가 30분간 원리상 잠긴다. SessionEnd
+   * 도장이 찍힌 세션은 여기서 산 주인이 아니다(도장이 없으면 지금까지와 똑같이 보수적이다). */
+  const 산 = new Map(owner.세션들(root).filter(owner.선언살았나).map((s) => [s.sid, s]));
   if (!산.size) return [];
   /* 🔑 **좌표가 추론을 이긴다** (F288 · 2026-08-09). 보드 정본이 세션별 파일인 이상
    *   `보드/<내 지문>.md` 안의 줄은 **정의상 내 줄이다** — 남의 트랙은 거기 살 수 없다
