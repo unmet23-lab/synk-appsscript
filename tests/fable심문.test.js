@@ -114,3 +114,59 @@ test('스킬 문서가 렌즈 본문을 사본하지 않는다', () => {
   assert.ok(!전문.includes(본문조각),
     `스킬에 렌즈 본문이 사본돼 있다("${본문조각}…") — 정본은 tools/fable심문.js 하나여야 한다`);
 });
+
+/* ── 심문 «대상» 목록 (2026-08-12) ────────────────────────────────────────────
+ * 🔴 실측: 이 도구가 7판 돌았는데 그 세션들의 `Skill` 호출 0 · SKILL.md Read 0 이었다.
+ *   목록이 스킬 문서에만 있었으니 그 7판의 대상은 매번 손으로 정해졌다 — 회차마다 대상이
+ *   갈리면 판끼리 대조가 원리상 무효고(F281), 그 대조가 이 통로 전체의 존재 이유다.
+ *   렌즈는 도구에 있었는데 «무엇을 심문할지»라는 더 큰 조립이 밖에 남아 있던 자리. */
+
+test('스킬 문서가 대상 목록을 사본하지 않는다(렌즈와 같은 규칙)', () => {
+  const 스킬 = path.join(__dirname, '..', '.claude', 'skills', 'fable심문', 'SKILL.md');
+  if (!fs.existsSync(스킬)) { console.log('  ⏭ skip — 스킬 문서 없음'); return; }
+  const 전문 = fs.readFileSync(스킬, 'utf8');
+  const 샌것 = [...F.핵심4, ...F.설계전량].filter((p) => 전문.includes(p));
+  assert.deepStrictEqual(샌것, [],
+    `스킬에 대상 경로가 사본돼 있다 — 정본은 tools/fable심문.js 하나여야 한다: ${샌것.join(' · ')}`);
+  assert.ok(전문.includes('--대상목록'),
+    '스킬이 대상 목록 통로를 안 가리킨다 — 목록을 뺐는데 갈 곳을 안 알려주면 손으로 고르게 된다(F103)');
+});
+
+test('범위 — ① 은 핵심 4종, ②③④ 는 같은 문서 집합(렌즈만 두꺼워진다)', () => {
+  const r1 = F.대상목록(1);
+  assert.deepStrictEqual(r1.표, F.핵심4, '범위 1 이 핵심 4종이 아니다');
+  assert.deepStrictEqual(r1.보강, [], '범위 1 은 「핵심 4종」이 정의라 넓히면 안 된다');
+  const [r2, r3, r4] = [2, 3, 4].map(F.대상목록);
+  assert.deepStrictEqual(r3.대상, r2.대상, '범위 3 의 문서 집합이 2 와 다르다(③ 은 렌즈만 추가다)');
+  assert.deepStrictEqual(r4.대상, r2.대상, '범위 4 의 문서 집합이 2 와 다르다(④ 는 렌즈만 추가다)');
+  for (const p of F.핵심4) assert.ok(r2.표.includes(p), `범위 2 가 핵심 4종을 안 담았다: ${p}`);
+});
+
+test('보강 — 표와 겹치지 않고, 뺀 것은 반드시 사유를 갖는다', () => {
+  const r = F.대상목록(2);
+  const 표 = new Set(r.표);
+  const 겹침 = r.보강.filter((p) => 표.has(p));
+  assert.deepStrictEqual(겹침, [], `보강이 표와 겹친다 — 같은 문서를 두 판 돌게 된다: ${겹침.join(' · ')}`);
+  for (const x of r.제외) {
+    assert.ok(x.사유 && x.사유.length > 5, `제외에 사유가 없다: ${x.경로} — 사유 없는 제외는 다음 회차에 다시 판단하게 된다`);
+    assert.ok(!r.대상.includes(x.경로), `제외했는데 대상에 남아 있다: ${x.경로}`);
+  }
+});
+
+test('없는 파일을 조용히 빼지 않는다 — 표의 항목은 실재하거나 「없음」에 뜬다(F207)', () => {
+  const r = F.대상목록(2);
+  const 없음 = new Set(r.없음);
+  for (const p of r.표) {
+    const 실재 = fs.existsSync(path.resolve(__dirname, '..', p));
+    assert.ok(실재 || 없음.has(p),
+      `표에 있고 디스크에 없는데 「없음」에도 안 뜬다: ${p} — 26판 돌 것을 24판 돌고 「전부 돌았다」가 된다`);
+    if (실재) assert.ok(r.대상.includes(p), `실재하는 표 항목이 대상에서 빠졌다: ${p}`);
+  }
+});
+
+test('--범위 는 기본값을 안 준다 — 안 주면 «확인불가» 로 멈춘다(조용히 2 로 떨어지지 않는다)', () => {
+  assert.throws(() => F.범위값([]), (e) => e && e.확인불가 && /--범위/.test(e.message),
+    '범위 없이도 돌아간다 — 세션은 ④를 시켰다고 믿고 장부엔 ②가 적히는 모양이 가능해진다');
+  assert.throws(() => F.범위값(['--범위', '9']) && F.대상목록(9), /범위는 1~4/);
+  assert.strictEqual(F.범위값(['--범위', '3']), 3, '정상 값을 못 읽는다');
+});
