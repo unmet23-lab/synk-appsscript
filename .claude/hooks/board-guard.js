@@ -786,15 +786,40 @@ const 상태칸 = (line) => { const c = cellsOfRow(line); return (c[c.length - 1
 const 놓은줄 = (line) => 상태칸(line).includes('🎫');
 const 놓은자리겹침 = [];
 
+/* ── repo **밖** 공유 자원은 «경로»가 아니라서 자리로 안 잡혔다 (마찰 F343 · 2026-08-12) ────
+ * 위 두 축(표식 머리 · 파일 경로)은 전부 **repo 안**을 가리킨다. 그런데 이 저장소에서 가장
+ * 비싼 공유 자원 — **라이브 Apps Script** — 은 경로가 없다. `clasp push` 는 HEAD 가 아니라
+ * 작업본을 통째로 민다(F310·F273). 그래서 두 배포 트랙이 나란히 서면 먼저 미는 쪽이 남의
+ * 검수 과녁을 낡게 만들고, 그 손해는 되돌릴 수 없다(F342 가 인접 축에서 이미 신고했다).
+ *
+ * 🔴 실측 2026-08-12: 활성 줄에 `clasp push` 를 선언한 배포 트랙이 **동시에 3개**였는데
+ *   ④ 는 한 번도 안 울었다(내 철회분까지 세면 4개). CLAUDE.md 세션 규약은 「조율 단위는
+ *   repo 밖 공유 자원(시트 탭·Supabase·GitHub Secret·**배포키**·다른 저장소)도 포함」이라고
+ *   이미 못박아 두었다 — 규약이 있는데 **가드가 그 축을 안 본 것**이고, 새는 방향은 통과다.
+ *
+ * ⚠ 거짓 차단은 실측으로 배제했다(F221 함정 — 비켜났다고 적을수록 막히면 관습이 죽는다):
+ *   보드의 비켜남 표기는 `배포 0`·`라이브 배포 0` 두 모양뿐이고 `clasp push` 와 글자가 안
+ *   겹친다. 🚫 스팬은 `금지스팬빼기` 가 먼저 떼고, 🎫 놓은 줄은 아래에서 알림으로 갈린다(F285).
+ * ⚠ **파일 칸에서만** 본다 — 상태 칸의 「🎫 다음=clasp push」는 놓은 자리지 선점이 아니다
+ *   (실측: 상태 칸에만 적은 줄 0건 · 관습은 만지는 파일 칸에 적는다). 좁게 틀리면 막히고,
+ *   막히는 것은 보인다.
+ * ⚠ 자리 이름을 **표기가 아니라 자원**으로 짓는다 — `clasp push`·`clasp   push` 가 다른
+ *   자리가 되면 같은 라이브를 다투는 둘이 안 만난다. */
+const 공유자원 = [
+  { 자리: '공유:clasp-라이브', re: /clasp\s*push/i },
+];
+
 function 자리들(line) {
   const 자리 = new Set();
   const 머리 = 표식.머리(트랙칸(line));
   if (머리) 자리.add(머리);
-  for (const m of 금지스팬빼기(파일칸(line)).matchAll(/[\w가-힣./_-]+\.(?:ts|tsx|js|jsx|mjs|cjs|gs|json|html|md|sql|ya?ml)\b/g)) {
+  const 파일 = 금지스팬빼기(파일칸(line));
+  for (const m of 파일.matchAll(/[\w가-힣./_-]+\.(?:ts|tsx|js|jsx|mjs|cjs|gs|json|html|md|sql|ya?ml)\b/g)) {
     const p = m[0].replace(/^(?:\.\.?\/)+/, '').toLowerCase();
     if (p.split('/').length < 2 || 장부RE.test(p)) continue;
     자리.add(p);
   }
+  for (const { 자리: 이름, re } of 공유자원) if (re.test(파일)) 자리.add(이름);
   return 자리;
 }
 
