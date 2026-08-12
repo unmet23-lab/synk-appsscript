@@ -211,24 +211,15 @@ function countRows(text) {
 // ⚠ **함수로 둔다.** 톱레벨 const 로 빼면 이 파일이 57행에서 countActive 를 먼저 부르므로
 //   TDZ 로 죽는다 — 위 08-03 주석이 정확히 그 경고를 남겼는데 08-04 수리에서 **또 밟았다**.
 //   `node --check` 는 구문만 보므로 이 부류를 못 잡는다. 잡은 건 이번에도 테스트였다.
-function 어휘() {
-  return {
-    완료: ['완료', '종결', '라이브'],
-    활성: ['작업중', '진행중', '중단', '대기', '미확정', '보류', '보고만', '검증 중', '예정', '준비 중'],
-  };
-}
+//
+// [2026-08-12 이주] 본체는 `tools/lib/보드.js` 로 옮기고 여기서는 **파생**한다 — 소비자가
+//   셋이 됐다(이 상한 · 이 파일의 이관 처방 · `tools/보드수거.js` 의 수거 대상). 위 08-03·08-04
+//   주석이 말하는 재발의 뿌리가 「판정이 사는 곳이 하나가 아니다」라, 수거 도구가 제 판정을
+//   적었으면 그게 **3번째**였다. `isDataRow` 가 이미 같은 이유로 같은 파일에서 온다(F322·F330·F331).
+//   ⚠ `const 어휘 = 보드lib.활성어휘` 로 적지 않는다 — 위 두 ⚠ 가 경고한 TDZ 창이 그대로 살아난다.
+function 어휘() { return 보드lib.활성어휘(); }
 
-function isActiveRow(line) {
-  const decor = /^[\s*_`~>✅🔴⚠️☑️✔️🟢🟡]+/u;
-  const { 완료, 활성 } = 어휘();
-  const cells = cellsOfRow(line);
-  const status = (cells[cells.length - 1] || '').trim().replace(decor, '');
-  // 첫 구절만 본다 — 뒤쪽 서술의 「…로 종결」·「라이브 실측」이 활성 줄을 완료로 뒤집지 않게.
-  const 첫구절 = status.split(/[—(]/)[0];
-  if (활성.some((w) => 첫구절.includes(w))) return true;
-  // 「미완료」·「안 끝남」을 완료로 읽지 않는다 — 부정 접두가 붙은 것은 완료가 아니다.
-  return !new RegExp(`(?<![미안못])(${완료.join('|')})`).test(첫구절);
-}
+function isActiveRow(line) { return 보드lib.활성행(line); }
 
 function 활성줄들(text) {
   return text.split('\n').filter(isDataRow).filter(isActiveRow);
@@ -278,18 +269,10 @@ function 완료줄들(text) {
  *   실측: 그날 보드의 완료 줄 10개 중 1개가 그 상태였고, 주인이 죽은 줄이었다.
  * ⚠ 뒤 조각을 쓰면 **백틱 안쪽(=코드)**이 후보가 된다 — 그래서 자르는 글자에 `$`·`\` 를 같이
  *   넣었다. 안 넣으면 `` `$CLAUDE_PROJECT_DIR` `` 같은 칸에서 변수가 명령으로 새어 나간다.
- *   즉 이 수리는 **넓히기 하나 + 좁히기 하나**다(뽑을 조각은 늘고, 안전 글자 집합은 준다). */
-function 이관문구(line, 전체) {
-  const 조각들 = (cellsOfRow(line)[1] || '').split(/["`$\\]/)
-    .map((s) => s.trim().replace(/^\*+/, '').trim()).filter(Boolean);
-  for (const 안전 of 조각들) {
-    for (let n = 4; n <= 안전.length + 3; n += 3) {
-      const needle = 안전.slice(0, Math.min(n, 안전.length));
-      if (전체.filter((l) => l.includes(needle)).length === 1) return needle;
-    }
-  }
-  return null;
-}
+ *   즉 이 수리는 **넓히기 하나 + 좁히기 하나**다(뽑을 조각은 늘고, 안전 글자 집합은 준다).
+ * [2026-08-12 이주] 본체는 `tools/lib/보드.js` — `tools/보드수거.js` 가 같은 문구로 board-move 를
+ *   직접 부른다. 두 벌이면 「가드가 내민 명령이 수거에선 안 맞는」 자리가 생긴다(그쪽 머리말). */
+function 이관문구(line, 전체) { return 보드lib.이관문구(line, 전체); }
 
 /* 🔑 처방을 내기 전에 **그 처방을 실제로 돌려 본다** (마찰 F278 · 2026-08-09 실측)
  *
