@@ -125,3 +125,17 @@ c93359d6a6  philosophy-canon-sharpening-0812:41
 582fd234cd  season-review-vessel:209
 4fa41b4a36  task-selection-by-state:91
 04759931fa  trademark-first-filing:229
+d872d63699  korea-mongolia-tax-structure:47
+bf7df0e5de  korea-mongolia-tax-structure:165
+c6a6413066  korea-mongolia-tax-structure:168
+d12a161c0a  memory-index-compression-arithmetic:231
+ac041fa371  memory-index-compression-arithmetic:233
+2e1efcd234  minigame-spec-4modules:169
+0f53101a82  minigame-spec-4modules:197
+13e1d3138e  philosophy-alignment-audit-0811:65
+2498eb7f16  reviewer-console-ux:448
+0729e13450  reviewer-console-ux:459
+c20826b5e3  season-review-vessel:114
+7d420a1a33  task-selection-by-state:217
+0c701439fd  task-selection-by-state:224
+2c01133e23  task-selection-by-state:258
