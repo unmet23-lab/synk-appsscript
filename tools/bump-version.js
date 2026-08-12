@@ -265,7 +265,54 @@ function engineFiles() {
   return 목록.filter((f) => fs.existsSync(path.join(r, f)));
 }
 
-/** 엔진 전체에서 최고 `[v9.N]` 태그. 없으면 null. */
+/* ═══ 배포 집합 — 「엔진 파일」과 「배포 파일」은 같지 않다 (F390 · 2026-08-12) ═══
+ *
+ * 무슨 일이 있었나: 자리표 치환·검사가 `ENGINE_FILES`(7개)를 범위로 쓰고 있었다. 그 목록은 원래
+ *   「테스트가 엔진을 한 문자열로 본다」는 **다른 계약**의 것인데, 채번기가 그걸 치환 범위로
+ *   재사용하면서 「엔진 파일 = 배포 파일」이라는 전제가 조용히 들어왔다. 두 집합은 실제로 다르다 —
+ *   실측 2026-08-12: 배포 집합 14 ∖ ENGINE_FILES 7 = **7개**(`상담AI.js`·`엔진_두뇌.js`·`교재연동.js`
+ *   ·`만족도팩.js`·`contents_*.js` 3). 그 7개에 `[vNEXT]` 를 적으면 **치환도 검사도 안 받고 그대로
+ *   clasp push 에 실린다** — v9.223 배선 중 `상담AI.js`×3·`엔진_두뇌.js`×2 가 실제로 그렇게 남았다.
+ *
+ * 🔴 그물이 있다고 믿었는데 없었다: 실저장소를 재는 자리표 검사는 `tests/버전채번.test.js` 의
+ *   「실저장소에 [vNEXT] 자리표가 남아 있지 않다」 하나뿐이고, 그것이 부르는 것이 바로 이 함수다.
+ *   즉 검사 층도 같은 7파일만 봤다 — 새는 방향은 여기서도 「통과」다. 이미 라이브까지 간 적이
+ *   있다(F309·F310: 미커밋 `contents_상담AI.js` 의 자리표가 clasp push 에 실려 라이브에 박혔다).
+ *   그때 진단은 TOCTOU 였는데, 원인은 둘이었고 한쪽만 처방됐다.
+ *
+ * 🔑 정본은 `.claspignore` 다 — clasp 가 **실제로 미는 것**이 거기 적혀 있다. 목록을 여기 베끼지
+ *   않고 `clasp-guard` 가 쓰는 공용 통로(`.claude/hooks/lib/clasp-project.js`)를 그대로 부른다.
+ *   두 곳에 적으면 갈라지고, 갈라진 쪽은 언제나 「통과」로 샌다.
+ * 🚫 `ENGINE_FILES` 에 배포 파일을 더 넣는 것으로 때우지 않는다 — 그 목록은 테스트 195건의
+ *   구간 자르기가 매달린 다른 계약이라, 얹으면 그쪽이 같이 흔들린다. 두 목록은 갈라 둔 채
+ *   채번기가 배포 집합을 **따로** 읽는다.
+ * ⚠ 바닥은 언제나 `engineFiles()` 다 — 정본을 못 읽는 환경(픽스처·다른 저장소)에서도 엔진은
+ *   반드시 본다. 못 읽었을 때 새는 방향이 「오늘과 같음」이라 F103 을 안 만든다. */
+function 배포파일들() {
+  const r = rootDir();
+  let 글롭 = [];
+  try {
+    /* SYNK_CLASP_LIB = **정본 통로만** 바꾸는 이음매(로직은 안 끈다 · SYNK_BUMP_ROOT 와 같은 패턴).
+     * 이게 없으면 「정본을 못 읽는 날」을 잴 방법이 없고, 그날의 폴백이 `[]` 인지 엔진 목록인지가
+     * 검사 밖으로 나간다 — 빈 목록은 「자리표 0건」과 **같은 모양**이라 그게 F207 그 자체다. */
+    const cp = require(process.env.SYNK_CLASP_LIB
+      || path.join(ROOT, '.claude', 'hooks', 'lib', 'clasp-project.js'));
+    const res = cp.deployTargets(r).map(cp.globToRe);
+    글롭 = fs.readdirSync(r, { withFileTypes: true })
+      .filter((d) => d.isFile() && res.some((re) => re.test(d.name)))
+      .map((d) => d.name);
+  } catch (_) { /* 정본을 못 읽으면 바닥만 — 「엔진은 반드시」가 남는다 */ }
+  return [...new Set([...engineFiles(), ...글롭])];
+}
+
+/** 엔진 전체에서 최고 `[v9.N]` 태그. 없으면 null.
+ *
+ *  ⚠ 여기는 **일부러 엔진 범위 그대로다** — 배포 집합으로 넓히지 마라. 이 판정의 짝은
+ *  `tests/safety.test.js [v9.55]` 이고 그쪽이 **엔진 7파일을 이어붙인 문자열**을 본다.
+ *  CI 를 빨갛게 만드는 것은 그쪽이라, 여기만 넓히면 `--check` 가 CI 보다 엄해져서
+ *  「preflight 는 빨간데 CI 는 초록」이 된다 — 아래 「safety 가 보는 것을 --check 도 본다」
+ *  결합 검사가 지키려는 바로 그 축이 반대 방향으로 깨진다. 자리표(위)는 CI 짝이 아예
+ *  없어서 넓히는 것이고, 태그(여기)는 짝이 있어서 안 넓히는 것이다. */
 function maxTagInEngines() {
   let max = null;
   for (const f of engineFiles()) {
@@ -310,9 +357,9 @@ function hardcodedHeadVersion() {
   return m ? m[0] : null;
 }
 
-/** `[vNEXT]`·`[vNEXT·라벨]` 이 남아 있는 파일들. */
+/** `[vNEXT]`·`[vNEXT·라벨]` 이 남아 있는 파일들. 범위 = **배포 집합**(F390). */
 function pendingPlaceholders() {
-  return engineFiles().filter((f) => {
+  return 배포파일들().filter((f) => {
     try { return 자리표().test(fs.readFileSync(path.join(rootDir(), f), 'utf8')); }
     catch (_) { return false; }
   });
@@ -322,7 +369,7 @@ function pendingPlaceholders() {
 function stampPlaceholders(ver, codeSrcAfter) {
   const 바뀐것 = [];
   const 쓸것 = [];
-  for (const f of engineFiles()) {
+  for (const f of 배포파일들()) {
     const p = path.join(rootDir(), f);
     let src = f === 'Code.js' && codeSrcAfter !== undefined ? codeSrcAfter : null;
     if (src === null) { try { src = fs.readFileSync(p, 'utf8'); } catch (_) { continue; } }
@@ -367,7 +414,8 @@ function check() {
   if (문제.length) { 문제.forEach((m) => console.error('✗ ' + m)); return 1; }
   /* ⚠ 검사한 것만 검사했다고 말한다 — 「통과」와 「미실행」이 같은 문장이면 초록이 거짓말을 한다.
    *   픽스처 루트에는 이력 문서가 없으므로 그 경우를 침묵으로 덮지 않는다. */
-  console.log('✅ 버전 표기 일치 — SYNK_VERSION ' + cur + ' = 엔진 최고 태그 · [vNEXT] 잔존 0'
+  console.log('✅ 버전 표기 일치 — SYNK_VERSION ' + cur + ' = 엔진 최고 태그 · 배포 집합 '
+    + 배포파일들().length + '개에서 [vNEXT] 잔존 0'
     + (docMax === null ? ' · ⚠docs/버전_이력.md 없음 — 이력 다리는 검사하지 않았다'
                        : ' · 이력 문서 v9.' + docMax + ' 일치'));
   return 0;
@@ -476,6 +524,21 @@ function main(argv) {
     console.log('   Code.js SYNK_VERSION 기입됨'
       + (찍은것.length ? ' · [vNEXT] → [' + cand + '] 확정: ' + 찍은것.join(', ') : '')
       + '. 커밋 제목과 docs/버전_이력.md에 [' + cand + ']를 쓰세요.');
+    /* [F390 ②③] **분모를 밝히고** 남은 자리표는 여기서 말한다.
+     * 옛 판은 「확정: (두 파일)」이라고만 말하고 「나머지는 안 봤다」고는 말하지 않았다 —
+     * 미실행이 완료와 같은 모양이면 초록이 거짓말을 한다(F207). 그래서 자리표가 남은 것은
+     * 몇 분 뒤 CI 적색으로만 드러났고, 그 적색은 그 사이 **남의 배포 게이트까지** 막았다(F078).
+     * 처방을 아는 도구가 처방을 안 하고 남에게 적색을 전가하는 모양이었다.
+     * ⚠ 종료코드는 건드리지 않는다 — 번호는 이미 origin 이 보증했다. 여기서 실패로 끝내면
+     *   다음 세션이 번호를 또 태운다(손일 장부 기입과 같은 원칙). 말은 하되 되돌리지 않는다. */
+    const 남은자리표 = pendingPlaceholders();
+    const 확정자리 = 찍은것.reduce((a, s) => a + (Number(String(s).split('×')[1]) || 0), 0);
+    console.log('   배포 집합 ' + 배포파일들().length + '개 파일 훑음 · ' + 확정자리 + '자리 확정 · 남은 자리표 '
+      + (남은자리표.length ? 남은자리표.length + '건 → ' + 남은자리표.join(', ') : '0'));
+    if (남은자리표.length) {
+      console.error('   🔴 자리표가 남은 채다 — 이대로 커밋하면 자리표가 라이브로 나간다(F309·F310 실사고).');
+      console.error('      그 파일들의 자리표를 [' + cand + '] 로 갈아 끼우고 `node tools/bump-version.js --check` 로 확인하라.');
+    }
     /* 🔑 지시만 하지 말고 **지금 상태를 재서** 말한다(F082). 위 한 줄은 v9.116 부터 있었는데도
      *   이력 줄 누락으로 CI 가 빨개진 적이 있다 — 「쓰세요」는 안 썼는지를 보지 않기 때문이다.
      *   여기가 유일하게 확실한 발화 지점이다: 채번한 사람이 지금 이 화면을 보고 있다. */
@@ -522,7 +585,7 @@ function main(argv) {
 module.exports = {
   parseVer, cmpVer, maxVer, nextVer, versionOf, replaceVersionLine, collectUsedVersions, main, 선점인가,
   chainEntries, mergeChain, entryVer,
-  engineFiles, maxTagInEngines, pendingPlaceholders, stampPlaceholders, check,
+  engineFiles, 배포파일들, maxTagInEngines, pendingPlaceholders, stampPlaceholders, check,
   historyDocPath, maxTagInHistoryDoc, hardcodedHeadVersion,
 };
 
