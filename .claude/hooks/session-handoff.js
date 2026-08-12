@@ -18,6 +18,7 @@
 const fs = require('fs');
 const path = require('path');
 const store = require(path.join(__dirname, 'lib', 'handoff-store.js'));
+const report = require(path.join(__dirname, 'lib', 'session-report.js'));
 
 let input = {};
 try { input = JSON.parse(fs.readFileSync(0, 'utf8')); } catch (_) { /* 입력 없이도 진행 */ }
@@ -35,11 +36,26 @@ const extra = baton.remaining > 0
   ? ` (다른 트랙 인계문 ${baton.remaining}건이 **아직 대기 중** — 창을 하나 더 열면 그게 이어받는다)`
   : '';
 
+/* 🔴 **인계문에 실린 보드 줄은 «사본»이고, 여기가 원본을 볼 수 있는 유일한 자리다** (F343 원인 쪽).
+ *   인계문은 마감 시점에 렌더돼 저장되므로 그 안의 「상태/다음」은 그때 얼어붙는다. 그런데 `/close`
+ *   는 세션을 죽이지 않아 그 뒤로도 그 세션이 자기 🎫 를 옮길 수 있다 — 실측에서 이어받은 세션이
+ *   낡은 과녁으로 이종 검수 11분을 태웠다. 쓰는 쪽은 못 재지만 **읽는 쪽은 잰다**(잴 수 있는 건 잰다).
+ * ⚠ 대조가 실패해도 인계 자체는 나간다 — 이 훅의 본업은 바통 전달이고, 대조는 그 위에 얹은 경고다.
+ *   여기서 throw 하면 인계문이 통째로 사라지고 그 손해가 낡은 사본보다 크다. */
+let 메시지 = String(baton.message);
+let 대조 = '';
+try {
+  const v = report.낡음(cwd, 메시지);
+  const 경고 = report.낡음경고(v);
+  if (경고) { 메시지 += '\n' + 경고; 대조 = ` · 🔴 보드 원 줄 **${v.판정}**(경고를 첫 메시지에 붙였다)`; }
+  else if (v) 대조 = ' · 보드 원 줄 그대로';   // 「쟀는데 같다」와 「안 쟀다」를 가른다(분모 · F207)
+} catch (_) { 대조 = ' · ⚠ 보드 원 줄 대조 실패'; }
+
 process.stdout.write(JSON.stringify({
   hookSpecificOutput: {
     hookEventName: 'SessionStart',
-    initialUserMessage: String(baton.message),
+    initialUserMessage: 메시지,
   },
-  systemMessage: `↩ 직전 세션의 인계문을 첫 메시지로 넣었다${extra}.`,
+  systemMessage: `↩ 직전 세션의 인계문을 첫 메시지로 넣었다${extra}${대조}.`,
 }));
 process.exit(0);
