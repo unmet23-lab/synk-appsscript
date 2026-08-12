@@ -8,6 +8,8 @@
 
 const path = require('path');
 const 보드 = require(path.join(__dirname, 'lib', '보드.js'));
+// 낡음 «증거»는 별도 모듈 — 판정(완료·주인·🎫)은 보드.js 한 곳에 두고 여기선 파생만 쓴다.
+const 낡음 = require(path.join(__dirname, 'lib', '보드낡음.js'));
 // 지문 규칙은 한 곳에서만 산다 — 파일명과 줄 안의 지문이 갈라지지 않는 이유(board-id 머리말).
 const 보드id = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'board-id.js'));
 
@@ -50,13 +52,24 @@ if (주인없음 === null) {
    * 도장 찍은 세션도 도구를 다시 부르면 되살아난다(track-collision 이 도장을 지운다).
    * 그래도 경고는 유효하다: 마감을 선언한 순간부터 그 줄은 아무도 갱신하지 않는다. */
   console.error(`\n⚠ 주인이 **마감을 선언한** 줄 ${주인없음.length}건 — 그 시점에서 갱신이 멈췄다:`);
-  for (const r of 주인없음) {
+  /* 낡음 대조는 **기계가 한다**(F374). 여기 있던 자리는 「집기 전에 실물을 직접 연다」는 프로즈였고,
+   * 그 처방이 세션 수만큼 곱해졌다 — 실측 7건 중 2건이 이미 나간 일감인데 표에서는 같은 모양이었다.
+   * 판정은 여전히 사람 몫이다: 아래는 「낡았다」가 아니라 **증거**다(보드낡음.js 머리말 ⚠②). */
+  const 증거들 = 낡음.줄별증거(주인없음.map((r) => r.줄), ROOT);
+  let 재료없음 = 0;
+  주인없음.forEach((r, i) => {
     console.error(`  · ${r.지문 || r.파일}  ${r.줄.replace(/\s+/g, ' ').slice(0, 72)}…`);
+    const 말 = 낡음.말들(증거들[i].증거);
+    if (!말.length) { 재료없음 += 1; return; }
+    for (const s of 말) console.error(`      ↳ ${s}`);
+  });
+  if (재료없음) {
+    console.error(`\n  ⚠ 그중 ${재료없음}건은 문구에 **대조할 재료가 없다**(경로도 커밋도 안 적혀 있다) — 「깨끗하다」가 아니라 «기계가 못 가른다»다. 그 줄은 직접 연다.`);
   }
   if (티켓.length) {
-    console.error(`\n  🎫 그중 ${티켓.length}건이 이어받기 일감을 남겼다 — **집기 전에 실물을 직접 연다.**`);
-    console.error('     「남이 이미 해버린 일」과 「내가 더 할 일」은 이 표에서 같은 모양이다:');
-    console.error('       파일을 신설하라는 일감이면 그 파일이 이미 있는지 · 배포·검수면 그 커밋이 이미 나갔는지.');
+    console.error(`\n  🎫 그중 ${티켓.length}건이 이어받기 일감을 남겼다 — 위 ↳ 증거를 **먼저** 읽고 집는다.`);
+    console.error('     「남이 이미 해버린 일」과 「내가 더 할 일」은 이 표에서 같은 모양이다 —');
+    console.error('       갈라 주는 것은 표가 아니라 그 증거다(경로가 이미 있나 · 그 커밋이 이미 검수·합류했나).');
   }
   console.error('  → 완료 줄이면: node tools/board-move.js "<그 줄의 유일 문구>" (산 주인의 줄은 그 도구가 거절한다)');
 }
