@@ -145,9 +145,32 @@ test('learning_events 값목록이 닫혀 있고 비어 있지 않다 (빈 통�
     assert.ok(값들.length >= 3, `값목록 「${이름}」이 ${값들.length}개뿐이다 — 축이 되려면 구분이 있어야 한다`);
     assert.equal(new Set(값들).size, 값들.length, `값목록 「${이름}」에 중복이 있다 — 집계가 두 칸으로 갈린다`);
   }
-  // 오류태그와 같은 이유로 크기를 못박는다. 줄었다면 왜 줄었는지가 먼저다.
-  assert.equal(LE.값목록.task_type.length, 9, `task_type이 9종이 아니다(${LE.값목록.task_type.length})`);
-  assert.equal(LE.값목록.source_kind.length, 4, `source_kind가 4종이 아니다(${LE.값목록.source_kind.length})`);
+  /* 🔴 값목록은 «전량을 이름으로» 못박는다 — 개수 핀은 「하나 지우고 하나 더하기」를 못 막는다.
+   *   de6b34d5 재검수가 그 자리를 짚었다(P3 b2825b924c63·379cedd6284d · 2026-08-12): task_type·
+   *   event_type 은 개수와 «추가분» 이름만 박혀 있어 기존 값 하나를 개명해도 초록이었고,
+   *   source_kind·task_format 은 이름이 아예/거의 안 박혀 같은 구멍이 세 번째로 열려 있었다.
+   *   계약 정본이 「이름 변경·삭제는 과거 집계를 깨뜨린다」(값목록_규칙)고 적은 것을 기계로 옮긴다.
+   *   축마다 따로 세던 «개수» 핀은 이 표가 삼킨다 — 같은 판정을 두 곳에 적으면 갈라지고,
+   *   갈라지는 방향은 언제나 「통과」다. 값을 늘리는 c12 는 여기 한 줄을 의식적으로 고친다.
+   *   아래 판(c4~c11)별 이름 검사는 남긴다 — «왜» 그 값이 있는지의 근거이자, 표만 무심코
+   *   고치는 손을 한 번 더 세우는 자리다. */
+  const 값목록핀 = {
+    task_type: ['숙제제출', '다시쓰기', '퀴즈응답', '대화턴', '발화녹음', '출석발화', '라디오퀴즈', '목표선언', '자습체크인'],
+    task_format: ['낭독', '응답', '자유발화', '모의면접', '높임전환', '쓰기첨삭', '번역'],
+    event_type: ['submission.created', 'quiz.answered', 'choice.selected', 'correction.responded',
+      'correction.viewed', 'preference.stated', 'session.abandoned', 'intervention.delivered',
+      'data_use.granted', 'data_use.revoked', 'task.assigned', 'exam.result', 'content.viewed', 'affect.reported'],
+    source_kind: ['explicit', 'teacher', 'observed', 'inferred'],
+    learner_response: ['채택', '무시', '수정'],
+  };
+  /* 축 자체가 늘거나 줄면 새 축이 이름 검사 «밖»에 선다 — 그러면 아래 루프는 0건을 돌고도
+   * 초록이다(미실행과 통과가 같은 모양 · F207). 그래서 분모부터 못박는다. */
+  assert.deepEqual(Object.keys(LE.값목록).sort(), Object.keys(값목록핀).sort(),
+    '값목록의 «축»이 늘거나 줄었다 — 핀 표(값목록핀)도 같이 고쳐라');
+  for (const [이름, 기대] of Object.entries(값목록핀)) {
+    assert.deepEqual([...LE.값목록[이름]].sort(), [...기대].sort(),
+      `값목록 「${이름}」의 이름 집합이 핀과 다르다 — 값 «추가»는 이 표를 같이 고치고, 「삭제·개명」은 과거 집계를 깨뜨린다(계약 값목록_규칙)`);
+  }
   /* c4 = c3 6종 + 3종 · c5 = +1종. 값 추가는 하위호환이지만 **삭제·개명은 과거 집계를 깨뜨린다**(값목록_규칙).
    * 이름을 하나씩 못박는 이유: 개수만 세면 하나를 지우고 하나를 더해도 통과한다. */
   for (const v of ['intervention.delivered', 'correction.viewed', 'data_use.granted']) {
@@ -182,7 +205,6 @@ test('learning_events 값목록이 닫혀 있고 비어 있지 않다 (빈 통�
   }
   assert.ok(LE.값목록.event_type.includes('affect.reported'),
     'c11이 추가한 event_type 「affect.reported」가 없다 — 학생이 밝힌 정서가 계약 밖 사건이 된다');
-  assert.equal(LE.값목록.event_type.length, 14, `event_type이 14종이 아니다(${LE.값목록.event_type.length})`);
   /* task_format 은 task_type 과 **다른 축**이다(통로 vs 형식). 이름이 비슷해 실제로 한 번 섞였다 —
    * 발주 §1이 task_type 에 낭독·자유발화를 넣었다. 섞이면 섀도잉과 자유발화를 나중에 못 가른다. */
   /* 🔴 c7: 병렬 코퍼스(몽골어↔한국어)의 축. `번역`이 없으면 「몽골어 원문이 있는 답」과 「없는 답」이
@@ -191,7 +213,6 @@ test('learning_events 값목록이 닫혀 있고 비어 있지 않다 (빈 통�
    *   (`submissions_translation_source_c7`) — 축만 있고 원문이 없으면 코퍼스가 아니라 그냥 한국어 문장이다. */
   assert.ok(LE.값목록.task_format.includes('번역'),
     'c7이 추가한 task_format 「번역」이 없다 — 병렬 코퍼스의 왼쪽(몽골어 제시문)을 담을 축이 사라진다');
-  assert.equal(LE.값목록.task_format.length, 7, `task_format이 7종이 아니다(${LE.값목록.task_format.length})`);
   assert.equal(LE.값목록.task_format.filter((v) => LE.값목록.task_type.includes(v)).length, 0,
     'task_format과 task_type에 같은 값이 있다 — 두 축이 한 어휘로 뭉개지는 중이다');
   // 값목록이 있는 필드는 실제 필드 목록에도 있어야 한다 — 어휘만 남고 필드가 사라지면 아무도 모른다
