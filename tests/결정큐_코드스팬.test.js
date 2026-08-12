@@ -84,6 +84,73 @@ test('실저장소: 이 도구의 회고 문단이 큐에 없다(거짓양성만
   assert.deepStrictEqual(ghost, [], '자기 결함 회고가 다시 결정으로 올라왔다');
 });
 
+/* [2026-08-12 · 31b26852] 🔴 **이 파일이 있는데도 헤더 경로로 샜다.**
+ * 위 검사 넷은 전부 «불릿»(항목 경로)만 태웠는데, 줄판정의 헤더 분기가 maskCodeSpans 보다
+ * «앞»에 있어 원문을 봤다 → `## ✅ 종결 (위 `⏳` 는 실행됐다)` 가 「절 제목」으로 세어졌고
+ * --절 이 그 파일을 「배달 0건」으로 계속 불렀다. **백틱을 씌워도 안 꺼진다** — 즉 도구가
+ * 내미는 처방을 따를 수 없었다(F103).
+ * 🔑 교훈 = 탐지 축이 「코드 스팬」이면 검사도 «코드 스팬이 나타나는 경로별»로 태워야 한다.
+ *    픽스처를 불릿으로만 짜면 규칙이 안 걸리는 경로가 조용히 남는다(가드 맹점③). */
+test('헤더도 같은 규칙을 지난다 — 기호를 «말하기만» 한 제목은 절 제목이 아니다', () => {
+  const 판정 = Q.줄판정('## ✅ 종결 (2026-08-11 — 위 `⏳` 는 실행됐다)');
+  assert.strictEqual(판정, null, `말하는 자리인 헤더를 「${판정 && 판정.사유}」로 셌다`);
+});
+
+test('헤더 판별이 죽지는 않았다 — 진짜 표식을 단 제목은 여전히 절 제목이다', () => {
+  const 판정 = Q.줄판정('## ⏳ 유호 대기');
+  assert.ok(판정 && 판정.절제목 === true, `진짜 절 제목을 놓쳤다: ${JSON.stringify(판정)}`);
+});
+
+test('extract 층까지 관통 — 말하기만 한 제목뿐인 파일은 「배달 0건」으로 안 불린다', () => {
+  const 절뿐 = withVault({
+    'e.md': '## ✅ 종결 (위 `⏳` 는 실행됐다)\n\n본문이 있다.\n',
+  }, (d) => Q.extract(d).절뿐);
+  assert.deepStrictEqual(절뿐, [], `따를 수 없는 처방이 다시 났다: ${JSON.stringify(절뿐)}`);
+});
+
+test('extract 층 — 진짜 절 제목만 걸고 항목이 없는 파일은 그대로 잡힌다', () => {
+  const 절뿐 = withVault({
+    'f.md': '## ⏳ 유호 대기\n\n- 신고 접수처 2칸을 정한다.\n',
+  }, (d) => Q.extract(d).절뿐);
+  assert.strictEqual(절뿐.length, 1, '절 제목만 걸린 파일을 놓쳤다 — 가드가 죽었다');
+});
+
+/* [2026-08-12 · 31b26852] **다섯 번째 배달 실패 모양 — frontmatter.**
+ * `description:` 은 파일 전체 요약이라 ✅와 ⏳가 구조적으로 한 줄에 온다. 실측(design-docs-sweep-0811):
+ * 그 줄이 항목으로 배달되며 아래 metadata 블록을 꼬리로 끌고 갔고, 「끝난 일이 미결로 안 간다」
+ * 회귀(결정큐.test.js)를 상시 빨갛게 만들었다 — 주인 없는 적색은 남의 배포 게이트를 막는다. */
+test('frontmatter 의 ⏳ 는 항목이 아니다 — description 은 파일 «에 대한» 메타다', () => {
+  const items = withVault({
+    'g.md': '---\nname: g\ndescription: 점검 — 기각 5 봉인·⏳유호 6(살아 있음)·✅반영 종결\nmetadata:\n  type: project\n---\n\n## 본문\n내용.\n',
+  }, (d) => Q.extract(d));
+  assert.deepStrictEqual([...items], [], `frontmatter 를 항목으로 셌다: ${JSON.stringify(items)}`);
+});
+
+test('frontmatter 는 조용히 사라지지 않는다 — 폐기함에 기록된다(F108)', () => {
+  const 버려진 = withVault({
+    'h.md': '---\ndescription: ⏳유호 6(살아 있음)\n---\n\n본문.\n',
+  }, (d) => Q.extract(d).버려진);
+  const 몫 = 버려진.filter((b) => b.사유 === '프론트매터로 판정');
+  assert.strictEqual(몫.length, 1, `무기록으로 사라졌다: ${JSON.stringify(버려진)}`);
+  assert.strictEqual(몫[0].line, 2, '줄 번호가 밀렸다 — 큐는 이 좌표로 다시 찾는다');
+});
+
+test('frontmatter 아래 본문의 ⏳ 는 그대로 산다 — 가드가 파일을 통째로 삼키지 않았다', () => {
+  const items = withVault({
+    'i.md': '---\ndescription: 요약 ⏳ 있음\n---\n\n- ⏳ 유호님 몫: 개원일 확정\n',
+  }, (d) => Q.extract(d));
+  assert.strictEqual(items.length, 1, '본문 항목까지 함께 버렸다');
+  assert.ok(items[0].text.includes('개원일 확정'));
+});
+
+test('닫히지 않은 `---` 는 frontmatter 가 아니다 — 본문 수평선이 큐를 0건으로 만들면 안 된다', () => {
+  const items = withVault({
+    'j.md': '---\n\n- ⏳ 유호님 몫: 개원일 확정\n',
+  }, (d) => Q.extract(d));
+  assert.strictEqual(items.length, 1,
+    '닫히지 않은 구분선을 frontmatter 로 읽어 파일 전체를 삼켰다 — 미실행과 통과가 같은 모양이 된다');
+});
+
 /* 위 검사를 skip으로 낮춘 대신, **그 상황 자체**를 픽스처로 못박는다 —
  * 「폴더가 없으면 조용히 0건」이 되면 클라우드 cron이 영영 침묵해도 아무도 모른다. */
 test('메모리 폴더가 없으면 크게 실패한다 — 빈 큐로 위장하지 않는다', () => {
