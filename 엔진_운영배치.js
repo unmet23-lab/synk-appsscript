@@ -442,8 +442,14 @@ function 명부스윕_() {
      *   있어도 아무 데도 안 남는다 — 미실행과 통과가 같은 모양이면 안 된다(F207 · ①배포 검수 P1).
      *   ⚠ 학생 0행(머리글만)은 고장이 **아니다** — 개원 전 정상이고, 급감·0 은 syncProfiles 가 이미 본다. */
     if (!pf) throw new Error('profiles 시트를 찾지 못했다');
-    if (pf.getLastRow() >= 2) {
-      const 표 = pf.getRange(1, 1, pf.getLastRow(), 8).getDisplayValues();   // A:H — user_id·이름·이름_몽골·role·class_name·생일·email·연락처
+    /* 🔴 「머리글만 있는 시트」와 「통째로 빈 탭」은 다르다(①배포 검수 P1 `03006c6e68a0`).
+     *   앞은 개원 전 정상이고, 뒤는 시트가 지워졌거나 새로 만들어진 **고장**이다 — 같은 분기를 타면
+     *   명부가 통째로 사라진 아침에도 옛 오류만 조용히 지워진다. 머리글 유무로 가른다. */
+    const 마지막행 = pf.getLastRow();
+    if (마지막행 < 1) throw new Error('profiles 시트가 통째로 비었다(머리글조차 없다)');
+    const 표 = pf.getRange(1, 1, 마지막행, 8).getDisplayValues();   // A:H — user_id·이름·이름_몽골·role·class_name·생일·email·연락처
+    if (!표[0].some(c => String(c == null ? '' : c).trim() !== '')) throw new Error('profiles 머리글 행이 비었다');
+    if (마지막행 >= 2) {
       머리 = 표[0];
       표.slice(1).forEach(r => {
         if (!r.some(c => String(c == null ? '' : c).trim() !== '')) return;   // 그리드 여백 — 명부 행이 아니다
@@ -464,7 +470,10 @@ function 명부스윕_() {
       const code = res.getResponseCode();
       const txt = String(res.getContentText() || '');
       if (code !== 200) {
-        서명 = 'http' + code + '|' + txt.slice(0, 120);
+        /* 🔴 서명에 **응답 본문을 섞지 않는다**(①배포 검수 P2 `6fc6c72a930e`). 프록시 오류 페이지에는
+         *   요청ID·시각이 박혀 있어, 섞으면 서명이 매 아침 달라져 「1회 알림」이 통째로 무너진다(매일 운다).
+         *   서명이 지는 것은 **분류**고, 무엇이 왔는지는 본문이 진다. */
+        서명 = 'http' + code;
         본문 = '명부 스윕이 거절됐습니다(HTTP ' + code + ').\n' + txt.slice(0, 500) +
           '\n\n※ 401=시크릿 어긋남 · 503=서버에 ROSTER_INGEST_SECRET 미설정 · 400=머리글/행수 문제.';
       } else {
@@ -477,7 +486,7 @@ function 명부스윕_() {
         const 봉투아님 = !j || typeof j !== 'object' || j.ok !== true
           || !Array.isArray(j.문제들) || !Array.isArray(j.막힘);
         if (봉투아님) {
-          서명 = 'http200_봉투아님|' + txt.slice(0, 120);
+          서명 = 'http200_봉투아님';   // 분류만 — 본문을 섞으면 요청ID·시각 때문에 매일 운다(P2)
           본문 = '명부 스윕이 200 을 받았지만 **우리 응답이 아닙니다** — 붓기가 실제로 돌았는지 알 수 없어\n' +
             '실패로 답니다(성공으로 읽으면 명부가 안 선 채로 매일 조용히 지나갑니다).\n\n받은 것: ' + txt.slice(0, 500) +
             '\n\n※ 프록시 HTML·빈 응답·{ok:false} 가 이 모양입니다 — Edge Function 배포 상태와 URL 을 확인하세요.';
@@ -513,7 +522,7 @@ function 명부스윕_() {
       }
     }
   } catch (e) {
-    서명 = '왕복실패|' + String(e).slice(0, 120);
+    서명 = '왕복실패';   // 분류만(P2) — 예외 메시지에도 시각·URL 이 박힌다
     본문 = '명부 스윕이 돌지 못했습니다: ' + e +
       '\nprofiles 시트·ROSTER_INGEST_URL·네트워크·Edge Function 배포 상태를 확인하세요.';
   }
