@@ -24,19 +24,15 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
 const { ROOT, engineSource } = require('./_engine-source');
+const { 뱅크읽기 } = require('../tools/lib/문법뱅크.js');
 
 const code = engineSource();
 const 커리큘럼 = fs.readFileSync(path.join(ROOT, 'docs', '커리큘럼_정본_v1.md'), 'utf8');
 
 /* 상수 실값 로드 — 테스트가 값을 하드코딩하면 정본이 바뀔 때 검사만 조용히 낡는다(safety.test.js groupConsts와 같은 축).
- * 끝 표식은 주석 문구가 아니라 **코드 심볼**로 잡는다 — 문구 앵커는 그 문구를 다듬는 순간 가드가 죽는다. */
-function 뱅크상수() {
-  const s = code.indexOf('const GRAMMAR_BANK = [');
-  assert.notStrictEqual(s, -1, 'GRAMMAR_BANK 선언을 못 찾았다 — 상수명이 바뀌었으면 이 앵커부터 고쳐라');
-  const e = code.indexOf('function grammarStageOf_', s);
-  assert.notStrictEqual(e, -1, 'GRAMMAR_BANK 블록 끝 표식(grammarStageOf_)을 못 찾았다');
-  return new Function(`${code.slice(s, e)}\n return { GRAMMAR_BANK, LEVEL_TOPIK_BAND };`)();
-}
+ * 🔑 자르는 규칙은 **여기 안 적는다** — 계약 생성기(`tools/문법급수계약.js`)가 같은 구간을 자르므로
+ *   둘이 각자 앵커를 들면 한쪽만 낡고, 낡은 쪽은 「엉뚱한 구간을 조용히 통과」로 샌다(2026-08-12 통로 1벌). */
+const 뱅크상수 = () => 뱅크읽기(code);
 
 /* 뱅크 한 벌을 값 계약으로 검사한다 — 실저장소와 픽스처가 **같은 함수**를 지난다.
  * 두 벌로 적으면 픽스처만 통과하는 검사가 생기고, 그건 탐지력 실증이 아니라 알리바이다.
