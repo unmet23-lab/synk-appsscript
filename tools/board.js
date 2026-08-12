@@ -19,3 +19,18 @@ if (표 === null) {
 }
 
 process.stdout.write(표);
+
+/* 유령 줄 — 표에는 안 뜨는데 **자리는 먹는** 줄(F322·F330·F331 · 사연 = tools/lib/보드.js).
+ * 표만 내면 이 줄은 영원히 안 보인다: 쓴 세션은 「선언했다」고 믿고, 다음 세션은 상한이
+ * 왜 넘쳤는지 모른 채 물려받은 위반을 안고 시작한다. **stdout 이 아니라 stderr** 로 낸다 —
+ * 이 명령의 표를 파싱하는 자리가 있어서, 표 아래 글자를 붙이면 그쪽이 새 줄을 만난다. */
+const 유령 = 보드.유령들(ROOT) || [];
+if (유령.length) {
+  console.error(`\n⚠ 유령 줄 ${유령.length}건 — 위 표에 **없는데** board-guard 는 세는 줄이다(상한을 먹는다):`);
+  for (const g of 유령) {
+    console.error(`  · ${g.파일}:${g.줄번호}  ${g.줄.replace(/\s+/g, ' ').slice(0, 60)}…`);
+    g.사유.forEach((s) => console.error(`      ↳ ${s}`));
+  }
+  console.error('  → 주인이 살아 있으면 **그 세션이** 자기 파일에서 규격대로 고친다(남의 파일 편집은 F073).');
+  console.error('    죽었고 완료 줄이면: node tools/board-move.js "<그 줄의 유일 문구>"');
+}

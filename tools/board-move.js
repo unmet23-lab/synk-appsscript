@@ -50,7 +50,10 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const 보드id = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'board-id.js'));
 
-const ROOT = path.resolve(__dirname, '..');
+/* `SYNK_BOARD_ROOT` 는 `tools/board.js` 와 **같은 이름의 이음매**다 — 후보 찾기(아래 BOARD)를
+ * 픽스처에서 재려면 이게 필요하다. `SYNK_BOARD` 는 파일을 곧장 주므로 후보 찾기를 건너뛴다:
+ * 그 손잡이로만 시험하면 정작 「유령을 후보로 보는가」가 회귀에서 도달 불가가 된다. */
+const ROOT = process.env.SYNK_BOARD_ROOT || path.resolve(__dirname, '..');
 const ARCHIVE = process.env.SYNK_BOARD_ARCHIVE || path.join(ROOT, 'docs', '세션보드_아카이브.md');
 const 보드lib = require(path.join(__dirname, 'lib', '보드.js'));
 // 표 칸 가르기는 이 한 통로만 쓴다 — 날 `split('|')` 은 백틱 안 파이프에서 칸을 밀어낸다(F119).
@@ -62,7 +65,9 @@ function eolOf(text) {
   const lf = (text.match(/(^|[^\r])\n/g) || []).length;
   return crlf >= lf && crlf > 0 ? '\r\n' : '\n';
 }
-const isRow = (line) => /^\s*\|/.test(line) && !/^\s*\|\s*-+/.test(line) && !/^\s*\|\s*날짜\s*\|/.test(line);
+/* 「표 줄인가」는 `tools/lib/보드.js` 하나에서 온다 — 여기 다시 적었던 판이 조립기와 갈려
+ * 유령 줄(규격 밖이라 표에 안 뜨는 줄)을 낳았다(F322·F330·F331 · 사연은 그 파일 머리말). */
+const isRow = 보드lib.표줄;
 const rowsIn = (text) => text.split(/\r?\n/).filter(isRow);
 /* 종료 코드는 **계약**이다: 0 옮겼다 · 1 못 옮겼다 · 6 원칙⑥(줄 주인이 아직 살아 있다).
  * 6 을 따로 판 이유(F278 · 2026-08-09): board-guard 가 「이 처방이 실제로 도는가」를 `--dry` 로
@@ -82,7 +87,13 @@ if (!needle) die('옮길 줄을 식별할 문구를 달라. 예: node tools/boar
  * 그 파일 하나를 대상으로 그대로 돈다 — 파일이 좁아진 만큼 남의 줄을 건드릴 길이 사라졌다.
  * `SYNK_BOARD` 는 테스트 격리 이음매라 그대로 둔다(주면 그 파일 하나만 본다). */
 const BOARD = process.env.SYNK_BOARD || (() => {
-  const 후보 = (보드lib.줄들(ROOT) || []).filter((r) => r.줄.includes(needle));
+  /* 🔑 **유령 줄도 후보에 넣는다** (F322·F330·F331 · 2026-08-12). 옛 판은 `줄들`(엄격)만 봤고,
+   * 그래서 규격 밖 줄은 이 도구가 **원리상 못 치웠다** — 그런데 그 줄이야말로 치워야 하는 것이다:
+   * 표에 안 뜨니 주인 말고는 아무도 모르고, 주인이 죽으면 영원히 남는다. board-guard 가 만석일 때
+   * 내미는 처방이 이 명령이라, 여기서 못 찾으면 처방이 못 따를 처방이 된다(F103).
+   * 실측: `fe43f4b4.md:5`(✅종결·주인 사망)이 그 상태로 남아 있었다. */
+  const 후보 = [...(보드lib.줄들(ROOT) || []), ...(보드lib.유령들(ROOT) || [])]
+    .filter((r) => r.줄.includes(needle));
   if (!후보.length) die(`보드에서 "${needle}" 가 든 줄을 못 찾았다.`);
   const 파일들 = [...new Set(후보.map((r) => r.파일))];
   if (파일들.length > 1) {
@@ -131,6 +142,15 @@ if (rowsIn(newBoard).length !== rowsIn(boardText).length - 1) problems.push('보
 if (problems.length) die('검증 실패 — 아무것도 쓰지 않았다:\n- ' + problems.join('\n- '));
 
 console.log(`  옮길 줄: ${row.slice(0, 90)}${row.length > 90 ? '…' : ''}`);
+/* 유령을 치울 때는 **유령이었다고 말한다** — 조용히 옮기면 「보드에 있던 줄을 옮겼다」로 읽히고,
+ * 규격 밖이었다는 사실(=다음 세션이 같은 모양을 베낄 위험)이 아무 데도 안 남는다.
+ * 원문 그대로 옮긴다 — 아카이브는 역사라, 여기서 모양을 고치면 옛 기록을 개서하는 것이다. */
+const 옮길유령사유 = 보드lib.유령사유(row);
+if (옮길유령사유.length) {
+  console.log('  ⚠ 이 줄은 **유령**이었다 — 표에는 안 뜨는데 파일엔 있던 줄이다(F322·F330·F331):');
+  옮길유령사유.forEach((s) => console.log(`      ↳ ${s}`));
+  console.log('    아카이브에는 **원문 그대로** 넣는다(역사를 개서하지 않는다).');
+}
 if (이미있음) console.log('  ↻ 아카이브에 그 줄이 **이미 있다**(앞선 실행의 잔재) — 다시 삽입하지 않는다(F226).');
 console.log(`  보드 ${JSON.stringify(boardEol)} · 아카이브 ${JSON.stringify(archiveEol)} (실측)`);
 
