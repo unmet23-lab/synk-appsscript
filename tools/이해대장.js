@@ -29,6 +29,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { 칸나누기 } = require('./lib/표.js');
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
 const 정본경로 = path.join(ROOT, 'docs', 'SYNK_철학.md');
@@ -80,7 +81,9 @@ function 표뽑기(md, 제목정규식) {
     if (!l.startsWith('|')) { if (봤나) break; continue; }   // 표 시작 전 설명문은 건너뛴다
     봤나 = true;
     if (/^\|[\s:|-]+\|$/.test(l)) continue;                  // 구분선
-    행.push(l.slice(1, -1).split('|').map(평문));
+    /* 날 split 금지 — 백틱 안 파이프까지 칸막이로 세면 뒤 칸이 통째로 밀리고,
+     * 밀린 뒤에도 오류는 안 나 「비었나()」가 엉뚱한 칸을 읽는다(tools/lib/표.js 머리 · 회귀 tests/표칸.test.js). */
+    행.push(칸나누기(l).map(평문));
   }
   return 행.length >= 2 ? 행 : null;                          // 머리 + 최소 1행
 }
