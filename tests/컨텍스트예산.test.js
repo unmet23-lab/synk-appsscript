@@ -71,6 +71,15 @@ function stop(ctx, o) {
   }, opt.stateDir || newDir('state'), opt.env);
 }
 
+/* 사다리 값은 **여기 하나에서** 나온다 — 테스트마다 숫자를 박아 두면 임계를 옮길 때마다
+ * 그 자리 전부가 같이 빨개진다(2026-08-12 실측: 유호님이 임계를 올리자 9건이 깨졌다).
+ *   큰 창(1M): 🟡 은퇴(WARN=HARD=300k) · 🔴 300k · 다음 400k · ⚫ 500k
+ *   🟡 는 **작은 창에서만** 산다(win×0.60) — 그 검사는 haiku 테스트가 진다. */
+const 침묵 = 210_000;    // 임계 아래 — 옛 🟡 자리(지금은 조용해야 한다)
+const 첫울음 = 310_000;  // 🔴 첫 도달
+const 작은창 = 'claude-haiku-4-5-20251001';
+const 작은창_노랑 = 130_000; // haiku 200k 창의 65% → 🟡(win×0.60=120k)
+
 function endHook(stateDir, cwd, sid, reason, env) {
   return run(END_HOOK, { session_id: sid || 'S1', hook_event_name: 'SessionEnd', cwd, reason: reason || 'prompt_input_exit' }, stateDir, env);
 }
@@ -97,22 +106,24 @@ function stamp(stateDir, cwd, sid, rel) {
 // ── 측정 ────────────────────────────────────────────────────────────────────
 
 test('임계 아래에서는 조용하다 — 평소 작업을 방해하지 않는다', () => {
-  // 131세션 시뮬레이션으로 정한 무릎: 🟡200k·🔴300k·⚫500k. 150k 아래 세션 32개를 다
+  // 131세션 시뮬레이션으로 정한 무릎: 🔴300k·⚫500k. 150k 아래 세션 32개를 다
   // 합쳐도 전체 비용의 1.1% 라, 그 자리에서 울리는 건 비용과 무관한 소음이다.
-  for (const c of [40_000, 150_000, 199_000]) {
-    assert.strictEqual(stop(c).json, null, `${c} 토큰에서 말을 걸었다 — 200k 아래는 조용해야 한다`);
+  // 🔑 210k·285k 가 여기 있는 이유 — 유호님 확정 08-12 로 🟡(200k)이 큰 창에서 은퇴했다.
+  //   옛 🟡 대역이 **실제로 조용한지**를 못박지 않으면 되돌아와도 아무도 모른다.
+  for (const c of [40_000, 150_000, 199_000, 침묵, 285_000, 299_000]) {
+    assert.strictEqual(stop(c).json, null, `${c} 토큰에서 말을 걸었다 — 300k 아래는 조용해야 한다`);
   }
 });
 
-test('색 3종 — 🟡 200k · 🔴 300k · ⚫ 500k', () => {
-  assert.match(stop(210_000).msg, /🟡/);
+test('색 3종 — 🔴 300k · ⚫ 500k (🟡 는 작은 창 전용)', () => {
   // 🔑 유호님이 실제로 밟은 자리(285k 스크린샷) — 🟡 은 AI 를 안 깨우는데도 전문을 쏟고 있었다.
-  //   첫 수리가 `wake` 만 껐던 탓이다. 단계별로 검사하지 않으면 그 절반이 또 산다.
-  for (const c of [210_000, 285_000]) {
-    assert.ok(!stop(c).msg.includes('다음 세션 인계문'),
-      `🟡(${c}) 이 인계문 전문을 화면에 쏟는다 — 복사 가능한 실물은 AI 블록 한 벌뿐이어야 한다`);
-  }
-  assert.match(stop(310_000).msg, /🔴/);
+  //   큰 창에선 그 대역이 통째로 조용해졌지만(위 테스트), 🟡 자체는 **작은 창에 그대로 산다**.
+  //   그래서 「🟡 이 전문을 안 쏟는가」는 없어진 검사가 아니라 **자리를 옮긴** 검사다.
+  const 노랑 = stop(작은창_노랑, { model: 작은창 });
+  assert.match(노랑.msg, /🟡/, '작은 창의 🟡 까지 사라졌다 — 비율 축이 죽었다');
+  assert.ok(!노랑.msg.includes('다음 세션 인계문'),
+    '🟡 이 인계문 전문을 화면에 쏟는다 — 복사 가능한 실물은 AI 블록 한 벌뿐이어야 한다');
+  assert.match(stop(첫울음).msg, /🔴/);
   assert.match(stop(410_000).msg, /🔴/, '400k 가 아직 ⚫ 이면 마지막 색을 너무 일찍 쓴다');
   assert.match(stop(410_000).msg, /한참 지났다/, '3단계 문구가 앞 단계와 구별되지 않는다');
   // ⚫ 가 없으면 🔴 뒤로는 900k 를 넘겨도 무소식이었다(08-04 결함 ⑤)
@@ -131,8 +142,9 @@ test('색 3종 — 🟡 200k · 🔴 300k · ⚫ 500k', () => {
 const 줄상한 = 3;
 
 test(`🔴 화면 줄 수 — 줄마다 \`Stop says:\` 가 붙는다 (빈 줄 0 · 상한 ${줄상한}줄 · 전 단계)`, () => {
-  for (const c of [210_000, 285_000, 310_000, 410_000, 520_000]) {
-    const 줄 = stop(c).msg.split('\n');
+  // 🟡 은 큰 창에서 은퇴했으므로 그 자리는 **작은 창**으로 잰다 — 단계를 하나도 빼지 않는다.
+  for (const [c, model] of [[첫울음], [410_000], [520_000], [작은창_노랑, 작은창]]) {
+    const 줄 = stop(c, model ? { model } : undefined).msg.split('\n');
     assert.ok(줄.length <= 줄상한,
       `${c}: systemMessage 가 ${줄.length}줄이다(상한 ${줄상한}) — 줄마다 \`Stop says:\` 가 찍혀 화면이 접힌다.\n`
       + `  줄을 늘리는 대신 \`steps\` 문장 안으로 넣어라(안내 «목차»는 08-12 에 통째로 뺐다).`);
@@ -142,8 +154,8 @@ test(`🔴 화면 줄 수 — 줄마다 \`Stop says:\` 가 붙는다 (빈 줄 0 
 });
 
 test('🔴 인계 통로 «목차»를 화면에 안 낸다 — 통로는 `/close` 한 줄이 진다 (유호 08-12)', () => {
-  for (const c of [210_000, 285_000, 310_000, 520_000]) {
-    const m = stop(c).msg;
+  for (const [c, model] of [[첫울음], [410_000], [520_000], [작은창_노랑, 작은창]]) {
+    const m = stop(c, model ? { model } : undefined).msg;
     for (const 조각 of ['docs/_ops/인계문.md', '--no-save', '자동 입력', '인계문은']) {
       assert.ok(!m.includes(조각),
         `${c}: 화면에 인계 통로 안내(「${조각}」)가 돌아왔다 — 지운 건 실물이 아니라 그 목차다.\n`
@@ -177,9 +189,9 @@ test('🔑 창이 작은 모델도 울린다 — 절대값만 쓰면 haiku 는 �
 });
 
 test('컨텍스트는 세 항목의 합이다 — 한 항목만으로는 못 넘는다', () => {
-  const v = stop(0, { lines: [line(100_000, 100_000, 15_000)] });
-  assert.ok(v.json, '100k+100k+15k = 215k 인데 조용하다 — 합산이 아니라 한 항목만 보고 있다');
-  assert.match(v.msg, /215k/, `합산값이 안 보인다: ${v.msg}`);
+  const v = stop(0, { lines: [line(150_000, 150_000, 15_000)] });
+  assert.ok(v.json, '150k+150k+15k = 315k 인데 조용하다 — 합산이 아니라 한 항목만 보고 있다');
+  assert.match(v.msg, /315k/, `합산값이 안 보인다: ${v.msg}`);
 });
 
 test('🔑 마지막 usage 를 읽는다 — 컴팩트로 컨텍스트가 내려가면 신호도 꺼진다', () => {
@@ -189,7 +201,7 @@ test('🔑 마지막 usage 를 읽는다 — 컴팩트로 컨텍스트가 내려
 
 test('usage 없는 줄·깨진 줄이 섞여도 마지막 usage 를 찾아낸다', () => {
   const v = stop(0, {
-    lines: [JSON.stringify({ type: 'user' }), line(230_000, 2_000, 500), JSON.stringify({ type: 'user' }), '', '{망가진'],
+    lines: [JSON.stringify({ type: 'user' }), line(330_000, 2_000, 500), JSON.stringify({ type: 'user' }), '', '{망가진'],
   });
   assert.ok(v.json, '뒤에 잡음이 붙자 못 찾았다 — 역방향 탐색이 첫 실패에서 멈춘다');
 });
@@ -226,10 +238,10 @@ test('🔑 AI 는 🔴 첫 도달에만 깨운다 — 정리는 자동으로, �
   const st = newDir('wake'); const cwd = newDir('p-wake');
   const at = (c) => stop(c, { stateDir: st, cwd, sid: 'W' });
 
-  const warn = at(210_000);
-  assert.strictEqual(warn.json.hookSpecificOutput, undefined, '🟡 에서 AI 를 깨웠다 — 아직 정리할 때가 아니다');
+  // 큰 창에선 🟡 이 은퇴해 임계 아래가 통째로 침묵이다 — 깨우기는커녕 말도 걸지 않아야 한다.
+  assert.strictEqual(at(침묵).json, null, '임계 아래에서 말을 걸었다 — 깨우기 전에 소음부터 났다');
 
-  const hard = at(310_000);
+  const hard = at(첫울음);
   assert.ok(hard.json.hookSpecificOutput, '🔴 인데 AI 를 안 깨웠다 — 유호님이 직접 정리해야 한다');
   assert.strictEqual(hard.json.hookSpecificOutput.hookEventName, 'Stop');
   const inj = hard.json.hookSpecificOutput.additionalContext;
@@ -297,10 +309,10 @@ test('🔑 컴팩트로 내려가면 단계도 내려간다 — 안 내리면 �
 test('🔑 단계당 1회 · 상승은 놓치지 않는다', () => {
   const st = newDir('dedup'); const cwd = newDir('proj');
   const at = (c) => stop(c, { stateDir: st, cwd, sid: 'SAME' });
-  assert.ok(at(210_000).json, '첫 🟡 이 없다');
-  for (let i = 0; i < 3; i++) assert.strictEqual(at(215_000 + i * 1000).json, null, `🟡 에서 ${i + 2}번째로 또 떴다`);
-  assert.match(at(305_000).msg, /🔴/, '🔴 로 올라갔는데 조용하다');
-  assert.strictEqual(at(320_000).json, null, '같은 단계(300~400k)에서 두 번 떴다');
+  assert.strictEqual(at(침묵).json, null, '임계 아래에서 떴다');
+  assert.match(at(305_000).msg, /🔴/, '첫 🔴 이 없다');
+  for (let i = 0; i < 3; i++) assert.strictEqual(at(320_000 + i * 1000).json, null, `같은 단계(300~400k)에서 ${i + 2}번째로 또 떴다`);
+  assert.match(at(410_000).msg, /한참 지났다/, '다음 단계(400k)로 올라갔는데 조용하다');
   assert.match(at(520_000).msg, /⚫/, '⚫ 로 올라갔는데 조용하다');
   assert.strictEqual(at(560_000).json, null, '같은 단계(500~600k)에서 두 번 떴다');
 });
@@ -314,10 +326,11 @@ test('🔑 🔴 위로 100k 마다 다시 운다 — 침묵 구간이 가장 비
   const fired = [];
   for (let c = 210_000; c <= 950_000; c += 10_000) if (at(c).json) fired.push(c);
 
-  // 200·300·400·…·900k = 8회. 실측에서 무신호였던 600~900k 구간이 여기 들어와야 한다.
+  // 300·400·…·900k = 7회(🟡 은퇴로 옛 첫 발화 210k 가 빠졌다 · 유호 확정 08-12).
+  // 실측에서 무신호였던 600~900k 구간이 여기 들어와야 한다 — 그 축은 손대지 않았다.
   assert.deepStrictEqual(
     fired.map((c) => Math.round(c / 1000)),
-    [210, 300, 400, 500, 600, 700, 800, 900],
+    [300, 400, 500, 600, 700, 800, 900],
     `발화 지점이 100k 격자와 다르다: ${fired.map((c) => Math.round(c / 1000) + 'k')}`
   );
   assert.ok(batons(st).length >= 1, '재발화 구간에서 바통을 안 떨궜다 — 창을 그냥 닫으면 인계가 끊긴다');
@@ -336,8 +349,9 @@ test('창이 작은 모델도 창 안에서 여러 번 운다 (haiku 200k)', () 
 test('🔑 절차 나열이 아니라 한 줄 실행을 준다 — 경고 8번에도 786k 까지 갔다', () => {
   // 부족한 건 알림이 아니라 **끊는 비용**이었다(유호님 확정 08-04). 커밋·보드·메모리 셋을
   // 손으로 하려니 매번 「나중에」가 됐다. 그래서 경고는 실행 한 줄을 준다.
-  for (const c of [210_000, 310_000, 520_000]) {
-    assert.match(stop(c).msg, /\/close/, `${c} 경고에 끊기를 실행할 한 줄이 없다`);
+  for (const [c, model] of [[첫울음], [520_000], [작은창_노랑, 작은창]]) {
+    assert.match(stop(c, model ? { model } : undefined).msg, /\/close/,
+      `${c} 경고에 끊기를 실행할 한 줄이 없다`);
   }
 });
 
