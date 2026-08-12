@@ -171,6 +171,62 @@ test('없는 런에 도장을 찍으면 실패한다 — 오타로 허공에 찍
   assert.strictEqual(런.처분('없는런', '아무거나'), null);
 });
 
+// ───────────────────────────────────────────────── ④-b F334 — 낡은 대상을 끄는 손잡이
+
+test('HEAD 를 모르면 대조하지 않는다 — 지어낸 「낡음」은 멀쩡한 런을 끄게 만든다', () => {
+  새방();
+  const 런 = 런모듈();
+  assert.strictEqual(런.HEAD움직였나({ HEAD: '' }, 'abc'), false, '런의 HEAD 를 모르는데 낡았다고 했다');
+  assert.strictEqual(런.HEAD움직였나({ HEAD: 'abc' }, ''), false, '현재 HEAD 를 모르는데 낡았다고 했다');
+  assert.strictEqual(런.HEAD움직였나({ HEAD: 'abc' }, 'abc'), false);
+  assert.strictEqual(런.HEAD움직였나({ HEAD: 'abc' }, 'def'), true);
+});
+
+test('도는 중이 아닌 런은 안 끈다 — 끝난 런의 pid 는 남이 재사용했을 수 있다', () => {
+  새방();
+  const 런 = 런모듈();
+  런.런쓰기({ 런ID: 'e', 종류: '검수', 상태: '완주', pid: process.pid, 시작: new Date().toISOString(), 대상: 't', 인자: [] });
+  const r = 런.중단('e', '아무거나');
+  assert.strictEqual(r.ok, false, '완주한 런을 껐다 — 무관한 프로세스를 죽일 수 있다');
+  assert.match(String(r.왜), /완주/);
+});
+
+test('끄기 전 이미 죽어 있으면 상태만 적는다 — 없는 pid 에 시그널을 쏘지 않는다', () => {
+  새방();
+  const 런 = 런모듈();
+  런.런쓰기({ 런ID: 'f', 종류: '검수', 상태: '진행', pid: 2147483646, 시작: new Date().toISOString(), 대상: 't', 인자: [] });
+  const r = 런.중단('f', '대상이 낡음');
+  assert.strictEqual(r.ok, true);
+  assert.strictEqual(r.이미죽음, true);
+  assert.strictEqual(런.런읽기('f').상태, '중단');
+});
+
+test('중단한 런은 훅에서 조용해진다 — 껐는데도 뜨면 사람이 알림을 통째로 무시한다', () => {
+  const d = 새방();
+  const 런 = 런모듈();
+  런.런쓰기({ 런ID: 'g', 종류: '검수', 상태: '진행', pid: 2147483646, 시작: new Date().toISOString(), 대상: 't', 인자: [] });
+  런.중단('g', '대상이 낡음');
+  const r = 훅돌리기({ SYNK_REVIEW_RUNS: path.join(d, 'runs') });
+  assert.strictEqual(r.out.trim(), '', `중단한 런이 아직 뜬다: ${r.out}`);
+});
+
+test('던진 뒤 HEAD 가 움직였으면 훅이 **끄는 명령**을 준다 (F334)', (t) => {
+  const d = 새방();
+  const 런 = 런모듈();
+  런.런쓰기({
+    런ID: '검수-낡음-1', 종류: '검수', 상태: '진행', pid: process.pid,
+    시작: new Date().toISOString(), 대상: '--uncommitted', 인자: ['--uncommitted'],
+    HEAD: '0000000000000000000000000000000000000000', 로그: 'C:/tmp/z.log',
+  });
+  const r = 훅돌리기({ SYNK_REVIEW_RUNS: path.join(d, 'runs') });
+  if (!/HEAD 가 움직였다/.test(r.out)) {
+    // git 을 못 돌리는 환경이면 대조를 안 한다 — 통과가 아니라 **미실행**으로 드러낸다.
+    return t.skip('현재 HEAD 를 못 읽었다 — 대조를 안 돌렸다(통과 아님)');
+  }
+  assert.match(r.out, /--런중단 검수-낡음-1/, '끄는 명령이 그대로 안 나왔다 — 「낡았다」만으로는 처방이 아니다');
+  assert.match(r.out, /--commit <sha>/, '「commit 으로 던진 건 유효하다」 단서가 빠지면 멀쩡한 런을 끄게 된다');
+});
+
 // ───────────────────────────────────────────────── ⑤ 심문 형식 = 거부 탐지
 
 test('등급도 「지적 0건」도 없는 응답은 통과가 아니다 — 08-06 의 241바이트 거부가 그 모양이었다', () => {

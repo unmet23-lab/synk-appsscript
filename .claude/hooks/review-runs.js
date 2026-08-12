@@ -29,6 +29,16 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 
+/* ⚠ repo 밖 환경(git)에 기대는 조회다 — 못 돌면 **대조를 안 할 뿐** 알림 자체는 낸다.
+ * 여기서 죽으면 던진 런이 통째로 안 보이게 되고, 그건 이 훅이 막으려던 바로 그것이다. */
+function 현재HEAD() {
+  try {
+    return require('child_process')
+      .execFileSync('git', ['-C', ROOT, 'rev-parse', 'HEAD'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+      .trim();
+  } catch (_) { return ''; }
+}
+
 function main() {
   let 런;
   try {
@@ -75,9 +85,20 @@ function main() {
   }
 
   if (s.진행.length) {
+    const head = 현재HEAD();
     줄.push('');
     줄.push(`⏳ 도는 중 ${s.진행.length}건 — 기다리지 말고 다른 일을 해라:`);
-    for (const x of s.진행) 줄.push(`   · ${x.런.런ID} (${x.런.종류} · ${x.판.분}분째) ${x.런.대상}`);
+    for (const x of s.진행) {
+      줄.push(`   · ${x.런.런ID} (${x.런.종류} · ${x.판.분}분째) ${x.런.대상}`);
+      /* F334 의 정면 — 「도는 사이 커밋이 나서 대상이 낡았는데 아무도 안 알려 계속 기다렸다」.
+       * 낡음을 **판정하지 않는다**(대상 종류마다 조건이 다르다). 사실만 전하고 끄는 명령을 준다. */
+      if (런.HEAD움직였나(x.런, head)) {
+        줄.push(`     ⚠ **던진 뒤 HEAD 가 움직였다**(${String(x.런.HEAD).slice(0, 8)} → ${head.slice(0, 8)}) — 이 런의 대상이 낡았을 수 있다.`);
+        줄.push('        ⚠ `--commit <sha>` 로 던진 것은 sha 가 고정이라 그 검수 자체는 유효하다 — 끄기 전에 대상을 본다.');
+        줄.push(`        낡았으면 **그 자리에서 끈다**(안 끄면 쿼터를 계속 태운다):`);
+        줄.push(`          node tools/codex-review.js --런중단 ${x.런.런ID} --사유 "왜"`);
+      }
+    }
   }
 
   줄.push('');
