@@ -897,3 +897,68 @@ test('🔑 [F371] `--해소파일` 통로가 실제로 «닿는다» — 막기�
   assert.ok(rows[2].includes('/close') && rows[2].includes('배포대조의 발동'),
     '해소문이 안 실렸다 — 에러 메시지가 가리킨 처방이 실제로는 안 되는 상태다(F103)');
 });
+
+/* ── [F386] 세 번째 상태 「보류」 ────────────────────────────────────────────
+ * 장부는 두 상태뿐이었다(해소 / 열림). 그런데 가장 흔한 제3의 결론은 **「판정했다.
+ * 지금은 안 닫는다」** 다 — `/evolve` v8.7 이 12건을 그렇게 판정하고 이유까지 적었는데
+ * 장부엔 그걸 적을 칸이 없어 판정이 장부 밖에만 남았고, 08-12 하루에 두 세션이 같은
+ * 12건을 「미측정」으로 다시 쟀다. 지키려는 성질 넷:
+ *   ①보류는 열림에서 빠지되 **살아있음에는 남는다**(결함은 서 있다 — 해소로 새면 F092 다)
+ *   ②보류 → 해소 전이가 «된다»(영구 봉인이면 고친 세션이 닫을 통로를 잃는다)
+ *   ③해소 → 보류 역행은 «안 된다»(닫힌 판정을 되무르는 통로를 열지 않는다)
+ *   ④새 통로도 옛 관문(빈 값·중복·모르는 플래그·파일 통로)을 그대로 지난다 — 통로를 옆에
+ *     내면서 관문을 안 태우는 것이 정확히 F297→F301 의 형태다(옆자리를 안 고쳤다). */
+
+test('🔑 [F386] defer — 보류는 열림에서 빠지고 살아있음에는 남는다', () => {
+  const L = mkLedger();
+  run(L, ['defer', 'F002', '/evolve v8.7 판정=안 닫음 · 근거 docs/지침_이력.md:492']);
+  const out = run(L, []);
+  assert.ok(out.includes('살아있음 1'), '보류가 살아있음에서 빠졌다 — 결함은 아직 서 있는데 해소로 샌 것이다(F092)');
+  assert.ok(out.includes('열림 0'), `보류가 열림으로 세어졌다 — /evolve 알림 포화가 그대로다:\n${out}`);
+  assert.ok(out.includes('보류 1'), '보류 칸이 안 보인다');
+  const open = run(L, ['--open']);
+  assert.ok(!open.includes('둘째 신호'), '--open 이 보류를 낸다 — 다음 세션이 판정된 것을 다시 잰다');
+  assert.ok(run(L, ['--보류']).includes('지침_이력'), '--보류 가 판정 사유(어디서 판정했나)를 안 낸다');
+});
+
+test('🔑 [F386] 보류 → 해소 전이는 되고, 해소 → 보류 역행은 막힌다', () => {
+  const L = mkLedger();
+  run(L, ['defer', 'F002', '아직 기계가 없다 · v8.7 판정']);
+  const r = run(L, ['resolve', 'F002', 'tools/새가드.js + 회귀 3건']);
+  assert.ok(r.includes('보류였다'), '보류→해소 전이인데 그 사실을 안 알렸다');
+  assert.ok(rowsOf(L)[1].includes('tools/새가드.js'), '보류가 영구 봉인이 됐다 — 고친 세션이 닫을 통로를 잃는다');
+  assert.ok(!rowsOf(L)[1].includes('⏸'), '해소로 올렸는데 보류 표식이 남았다 — 집계가 갈린다');
+  assert.ok(run(L, ['defer', 'F001', '되무르기'], true).failed, '이미 해소된 행을 보류로 되돌렸다');
+  assert.ok(rowsOf(L)[0].includes('memory/x'), '기존 해소 기록이 보존돼야 한다');
+});
+
+test('🔑 [F386] defer 도 옛 관문을 그대로 지난다 — 빈 사유·중복·모르는 플래그', () => {
+  const L = mkLedger();
+  assert.ok(run(L, ['defer', 'F002', ''], true).failed, '빈 보류 사유가 들어가면 「어디서 판정했나」가 사라진다');
+  assert.ok(run(L, ['defer', 'F999', '사유'], true).failed, '없는 ID를 보류했다');
+  assert.ok(run(L, ['defer', 'F002', '--모르는것', '사유'], true).failed,
+    '모르는 플래그를 사유로 접었다 — F297 이 새 통로에서 그대로 재발한다');
+  run(L, ['defer', 'F002', '첫 판정']);
+  assert.ok(run(L, ['defer', 'F002', '둘째 판정'], true).failed, '이미 보류인 행을 덮어썼다 — 앞 판정이 소리 없이 사라진다');
+  assert.ok(rowsOf(L)[1].includes('첫 판정'), '앞 판정이 보존돼야 한다');
+});
+
+test('🔑 [F386] defer --파일 통로가 실제로 «닿는다» (처방이 거짓이면 우회가 정상 통로가 된다 · F103)', () => {
+  const L = mkLedger();
+  const p = path.join(path.dirname(L), '보류사유.txt');
+  fs.writeFileSync(p, '/evolve v8.7 판정 — `docs/지침_이력.md:492` 에 이유가 있다\n', 'utf8');
+  run(L, ['defer', 'F002', '--파일', p]);
+  assert.ok(rowsOf(L)[1].includes('지침_이력.md:492'), '파일 통로로 준 보류 사유가 안 실렸다');
+});
+
+test('🔑 [F386] 실제 장부 — 세 상태가 겹치지 않고 합이 전체다 (거짓양성만 검사)', () => {
+  const real = require(TOOL);
+  const { rows } = real.read();
+  const 열림 = rows.filter(real.열렸나).length;
+  const 보류 = rows.filter(real.보류인가).length;
+  const 해소 = rows.filter(real.해소됐나).length;
+  assert.strictEqual(열림 + 보류 + 해소, rows.length,
+    `상태 판정이 겹치거나 빠졌다 — 열림 ${열림} + 보류 ${보류} + 해소 ${해소} ≠ 전체 ${rows.length}`);
+  assert.strictEqual(rows.filter(real.살아있나).length, 열림 + 보류,
+    '살아있음이 열림+보류와 갈렸다 — 두 곳에서 세면 갈라진다');
+});

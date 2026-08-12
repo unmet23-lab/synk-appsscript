@@ -13,7 +13,9 @@
 //   node tools/friction.js add 마찰 --파일 경로.txt   신고문을 파일로(백틱·따옴표가 든 긴 글 · F297)
 //   node tools/friction.js resolve F006 "무엇이 막았나"
 //   node tools/friction.js resolve F006 --파일 경로.txt   해소문도 같은 통로다(F301)
-//   node tools/friction.js --open                   살아있는 신호만
+//   node tools/friction.js defer F006 "왜 지금 안 닫나 · 어디서 판정했나"   보류(F386)
+//   node tools/friction.js --open                   열림만(아직 아무도 판정 안 함)
+//   node tools/friction.js --보류                    보류만(판정하고 열어둔 것)
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -29,6 +31,40 @@ const FOLDER = path.join(path.dirname(LEDGER), '장부');
  * 그래서 장부와 별도로 저장소 루트도 갈아끼울 수 있게 둔다 — 격리 저장소를 준 테스트만 git을 만진다. */
 const ROOT = process.env.SYNK_FRICTION_ROOT || path.resolve(__dirname, '..');
 const KINDS = ['교정', '거절', '실수', '마찰'];
+
+/* ── 세 번째 상태 「보류」 ──────────────────────────────────────────────────
+ * 왜 있나 (F386 처방 · 2026-08-12 실측):
+ *   장부는 두 상태뿐이었다 — 「해소」(고쳤다) 아니면 「열림」. 그런데 실제로 가장 흔한 제3의
+ *   결론은 **「판정했다. 지금은 안 닫는다」** 다. `/evolve` v8.7(2026-08-09)이 12건을 그렇게
+ *   판정하고 이유까지 `docs/지침_이력.md:492` 에 적었는데, 장부엔 그걸 적을 칸이 없어서
+ *   그 판정이 **장부 밖에만** 남았다. 결과: 08-12 하루에 두 세션이 같은 12건을 「미측정」으로
+ *   다시 쟀다(`e594c36e` 전수 대조 → `ea5ea5a8` 재대조). 2회차 = 실수가 아니라 시스템 결함.
+ *   🔑 병은 낡음 탐지가 아니다(F386 이 탐지기 3가설을 실측으로 죽였다) — **판정을 적을 자리가
+ *      없는 것**이다. 자리가 없으면 판정은 매번 사라지고, 사라진 판정은 매번 다시 든다.
+ *
+ * 왜 새 열이 아니라 해소 칸의 표식인가:
+ *   장부 행은 `| id | 날짜 | 종류 | 신고문 | 해소 |` 5칸이고 이 형식을 그대로 읽는 소비자가
+ *   넷이다(rot-check · friction-close-guard · 증거패킷 · 표.js). 열을 늘리면 그 넷이 조용히
+ *   갈라진다. 표식은 형식을 안 바꾸므로 **못 읽는 소비자가 생기지 않는다** — 표식을 모르는
+ *   쪽은 「해소됨」으로 읽는데, 그쪽(증거패킷의 배포 잔여 경고)에겐 그게 오히려 틀린 답이라
+ *   아래 `살아있음` 집계는 보류를 계속 포함한다(결함은 여전히 서 있다).
+ *
+ * ⚠ 보류 ≠ 해소다. 결함은 그대로 서 있고, 바뀐 것은 **「누가 이미 판정했다」** 하나뿐이다.
+ *   그래서 보류는 `/evolve` 발동 분모에서만 빠지고(이미 그 판을 지났다) 살아있음에는 남는다. */
+const DEFER = '⏸';
+
+/** 행의 상태 — 열림·보류·해소 셋 중 하나. **판정은 여기 하나뿐이다**(같은 판정을 두 곳에
+ *  적으면 갈라진다 · CLAUDE.md 가드 맹점 ④). 소비자는 전부 이 술어를 import 해서 쓴다. */
+function 상태(r) {
+  const c = String((r && r.resolved) || '').trim();
+  if (!c) return '열림';
+  return c.startsWith(DEFER) ? '보류' : '해소';
+}
+const 열렸나 = (r) => 상태(r) === '열림';
+const 보류인가 = (r) => 상태(r) === '보류';
+const 해소됐나 = (r) => 상태(r) === '해소';
+/** 살아있음 = 결함이 아직 서 있다 = 열림 + 보류. 「판정됐나」와 「고쳐졌나」는 다른 축이다. */
+const 살아있나 = (r) => !해소됐나(r);
 const TAG_PREFIX = 'friction-';   // 예약 태그: friction-F041 (릴리스 태그 synk-v9.NNN과 구분)
 const MAX_TRIES = 20;
 const LOCK = LEDGER + '.lock';
@@ -429,7 +465,10 @@ function resolve(id, by) {
     const { rows } = read();
     const r = rows.find((x) => x.id.toUpperCase() === String(id).toUpperCase());
     if (!r) return `[friction] ${id} 를 못 찾았다.`;
-    if (r.resolved) return `[friction] ${r.id} 는 이미 해소로 기록돼 있다: ${r.resolved}`;
+    /* 보류 → 해소는 **정상 전이**다(판정해서 열어뒀던 것을 실제로 고쳤다). 여기서 `r.resolved`
+     * 진리값으로 막으면 보류가 영구 봉인이 되어, 고친 세션이 닫을 통로를 잃는다. */
+    if (해소됐나(r)) return `[friction] ${r.id} 는 이미 해소로 기록돼 있다: ${r.resolved}`;
+    if (보류인가(r)) console.log(`  ⏸→✔ ${r.id} 는 보류였다 — 그 판정을 해소로 올린다 (이전: ${r.resolved})`);
     /* 조각이면 그 파일을 다시 쓰고, 동결 아카이브의 열린 행이면 **아카이브를 고치지 않는다** —
      * 같은 번호의 조각을 새로 써서 읽기 조립이 그쪽을 이기게 한다(그림자). 여기가 한 줄이라도
      * 아카이브를 고치면 「모든 세션이 한 파일을 고친다」로 되돌아간다 — 이 설계의 급소다. */
@@ -447,25 +486,58 @@ function resolve(id, by) {
   커밋보고(장부커밋실행(장부커밋(`docs: 마찰 ${String(id).toUpperCase()} 해소 — ${제목요약(safe)}`, 결과.경로), [1, 1]));
 }
 
-function report(openOnly) {
-  const { rows } = read();
-  const open = rows.filter((r) => !r.resolved);
-  const closed = rows.filter((r) => r.resolved);
+/** 「지금은 안 닫는다」를 장부에 적는다 — 고친 것이 아니라 **판정한 것**을 기록하는 통로.
+ *  사유엔 «어디서 판정했나»(개정 판·보드 줄·커밋)를 함께 적는다. 그게 없으면 다음 세션이
+ *  판정의 출처를 못 찾아 결국 다시 재게 되고, 그러면 이 상태를 만든 이유가 사라진다. */
+function defer(id, why) {
+  const safe = 칸안전(why || '');
+  if (!safe) {
+    console.error('[friction] 왜 지금 안 닫는지와 **어디서 판정했는지**를 적는다(개정 판·보드 줄·커밋). 빈 보류는 기록하지 않는다.');
+    process.exit(1);
+  }
+  const 결과 = withLock(() => {
+    const { rows } = read();
+    const r = rows.find((x) => x.id.toUpperCase() === String(id).toUpperCase());
+    if (!r) return `[friction] ${id} 를 못 찾았다.`;
+    if (해소됐나(r)) return `[friction] ${r.id} 는 이미 해소다 — 보류로 되돌리지 않는다: ${r.resolved}`;
+    if (보류인가(r)) return `[friction] ${r.id} 는 이미 보류다: ${r.resolved}\n   바꾸려면 그 판정을 뒤집는 근거부터 적는다(resolve 로 닫거나, 조각 파일을 직접 고친다).`;
+    /* 아카이브(동결)의 열린 행이면 조각을 새로 써서 그림자로 덮는다 — resolve 와 같은 통로다.
+     * 여기서 아카이브를 한 줄이라도 고치면 「모든 세션이 한 파일을 고친다」로 되돌아간다. */
+    const 경로 = r.파일 || path.join(FOLDER, r.id + '.md');
+    fs.mkdirSync(FOLDER, { recursive: true });
+    fs.writeFileSync(경로, `| ${r.id} | ${r.date} | ${r.kind} | ${r.signal} | ${DEFER} ${safe} |\n`, 'utf8');
+    console.log(`  ⏸ ${r.id} 보류 → ${safe}`);
+    return { 경로 };
+  });
+  if (typeof 결과 === 'string') {
+    console.error(결과);
+    process.exit(1);
+  }
+  커밋보고(장부커밋실행(장부커밋(`docs: 마찰 ${String(id).toUpperCase()} 보류 — ${제목요약(safe)}`, 결과.경로), [1, 1]));
+}
 
-  if (openOnly) {
-    console.log(`\n[마찰 신호] 살아있는 신호 ${open.length}건\n`);
-    for (const r of open) console.log(`  ${r.id}  ${r.date}  [${r.kind}]  ${r.signal}`);
+function report(mode) {
+  const { rows } = read();
+  const open = rows.filter(열렸나);
+  const 보류 = rows.filter(보류인가);
+  const closed = rows.filter(해소됐나);
+  const 살아있음 = open.length + 보류.length;
+
+  if (mode === 'open' || mode === '보류') {
+    const 낼것 = mode === 'open' ? open : 보류;
+    console.log(`\n[마찰 신호] ${mode === 'open' ? '열림(아직 아무도 판정 안 함)' : '보류(판정하고 열어둔 것)'} ${낼것.length}건\n`);
+    for (const r of 낼것) console.log(`  ${r.id}  ${r.date}  [${r.kind}]  ${mode === 'open' ? r.signal : r.resolved}`);
     console.log('');
     return;
   }
 
-  console.log(`\n[마찰 신호] 전체 ${rows.length}건 · 해소 ${closed.length} · 살아있음 ${open.length}\n`);
+  console.log(`\n[마찰 신호] 전체 ${rows.length}건 · 해소 ${closed.length} · 살아있음 ${살아있음} (열림 ${open.length} · 보류 ${보류.length})\n`);
 
   console.log('  종류별 (살아있음/전체):');
   for (const k of KINDS) {
     const all = rows.filter((r) => r.kind === k);
     if (!all.length) continue;
-    const o = all.filter((r) => !r.resolved).length;
+    const o = all.filter(살아있나).length;
     const bar = '█'.repeat(all.length);
     console.log(`    ${k}  ${String(o).padStart(2)}/${String(all.length).padStart(2)}  ${bar}`);
   }
@@ -482,8 +554,15 @@ function report(openOnly) {
   }
 
   if (open.length) {
-    console.log('\n  ⚠ 살아있는 신호 — /evolve 의 개정 재료:');
+    console.log('\n  ⚠ 열림 — 아직 아무도 판정하지 않았다 (/evolve 의 개정 재료):');
     for (const r of open) console.log(`    ${r.id}  ${r.date}  [${r.kind}]  ${r.signal}`);
+  }
+
+  /* 보류를 열림과 **갈라서** 낸다. 붙여 놓으면 「2건 더 났다」와 「12건이 안 닫혔다」가
+   * 한 문장에서 같은 모양이 되고, 그게 정확히 F386 이 신고한 포화다. */
+  if (보류.length) {
+    console.log('\n  ⏸ 보류 — 판정하고 열어둔 것 (결함은 서 있다 · 다시 재지 않는다):');
+    for (const r of 보류) console.log(`    ${r.id}  ${r.date}  [${r.kind}]  ${r.resolved.replace(DEFER, '').trim()}`);
   }
 
   // 월별 추이 — 신호가 줄고 있는지가 하네스가 나아지는지의 신호
@@ -591,8 +670,19 @@ function main() {
       조각.push(남은[i]);
     }
     resolve(args[1], 셸이바꾼말(본문또는파일(조각, 파일, '해소문'), '해소문'));
+  } else if (cmd === 'defer' || cmd === '보류') {
+    /* resolve 와 **같은 두 함수**를 쓴다 — 새 통로를 옆에 내면서 관문을 안 태우는 것이
+     * F297→F301 의 형태다(같은 사고가 바로 옆자리에서 재발했다). 세 번째 통로부터 지킨다. */
+    const 남은 = args.slice(2);
+    let 파일 = null; const 조각 = [];
+    for (let i = 0; i < 남은.length; i++) {
+      if (남은[i] === '--파일') { 파일 = 남은[++i] || null; continue; }
+      if (/^--/.test(남은[i])) 모르는플래그(남은[i], ['--파일']);
+      조각.push(남은[i]);
+    }
+    defer(args[1], 셸이바꾼말(본문또는파일(조각, 파일, '보류 사유'), '보류 사유'));
   } else {
-    report(args.includes('--open'));
+    report(args.includes('--open') ? 'open' : (args.includes('--보류') ? '보류' : null));
   }
 }
 
@@ -600,4 +690,6 @@ if (require.main === module) main();
 module.exports = {
   read, splitCells, nextId, allocateId, seenElsewhere, 해소주장, withLock, 예약자,
   LEDGER, FOLDER, KINDS, TAG_PREFIX, LOCK, LOCK_STALE_MS,
+  // 상태 판정 — 소비자(rot-check · friction-close-guard)는 자기 정규식을 쓰지 않고 이것을 쓴다.
+  DEFER, 상태, 열렸나, 보류인가, 해소됐나, 살아있나,
 };
