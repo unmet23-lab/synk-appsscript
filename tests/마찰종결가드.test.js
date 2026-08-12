@@ -151,19 +151,57 @@ test('🔴 git commit 이 아닌 명령엔 발화하지 않는다 — 명령 판
   assert.equal(r.status, 0, '조용한 게 아니라 죽었다');
 });
 
-test('🔴 처방-실행층 결속 — 훅이 시키는 `friction.js resolve` 가 실재한다', () => {
+test('🔴 처방-실행층 결속 — 훅이 시키는 `friction.js resolve`·`defer` 가 실재한다', () => {
   const 본문 = fs.readFileSync(HOOK, 'utf8');
-  const m = /friction\.js\s+resolve/.exec(본문);
-  assert.ok(m, '훅이 resolve 명령을 안 가리킨다 — 처방이 없으면 알림은 잔소리로 끝난다');
   const friction = fs.readFileSync(path.join(ROOT, 'tools', 'friction.js'), 'utf8');
+  assert.ok(/friction\.js\s+resolve/.test(본문), '훅이 resolve 명령을 안 가리킨다 — 처방이 없으면 알림은 잔소리로 끝난다');
   assert.match(friction, /cmd === 'resolve'/,
     "훅은 `friction.js resolve` 를 시키는데 도구에 그 명령이 없다 — 지시한 자리가 비어 있다(F096 그 형태)");
+  /* F386 이 갈래 2(보류)를 처방에 추가했다 — 새 처방도 같은 결속을 받아야 한다.
+   * 따를 수 없는 처방은 우회를 정상 통로로 만든다(F103). */
+  assert.ok(/friction\.js\s+defer/.test(본문), '훅이 보류 갈래를 처방하는데 그 명령을 안 가리킨다');
+  assert.match(friction, /cmd === 'defer'/, '훅은 `friction.js defer` 를 시키는데 도구에 그 명령이 없다');
+});
+
+/* ── [F386] 보류 — 「판정하고 열어둔 것」에 재판정을 요구하지 않는다 ─────────────
+ * 보류를 목록에서 «빼면» 그 행을 실제로 고친 커밋을 못 잡고(F092: 고침과 닫음은 별개),
+ * 그냥 «두면» 이미 판정된 12건이 커밋마다 울려 포화가 그대로다(F386 본문).
+ * 답은 빼기도 두기도 아닌 **갈라 라벨**이다 — 이 검사가 그 갈라짐을 못박는다. */
+test('🔑 [F386] 보류 행은 짖되 «재판정»을 요구하지 않는다', () => {
+  const f = 픽스처();
+  fs.writeFileSync(f.장부, 장부머리 + 열린행 + 닫힌행
+    + '| F902 | 2026-08-05 | 실수 | 픽스처 — 판정하고 열어둔 신호 | ⏸ /evolve v8.7 판정=안 닫음 · 근거 지침_이력 |\n');
+  f.git('add', '-A'); f.git('commit', '-q', '-m', '보류 행 추가');
+  const r = 돌려(f, 'docs: 무언가를 적었다 (F902)');
+  assert.ok(r.짖었나, '보류 행을 단 커밋에 완전히 침묵했다 — 그 행을 실제로 고친 커밋을 영영 못 잡는다(F092)');
+  const 본문 = r.json.hookSpecificOutput.additionalContext;
+  assert.match(본문, /이미 판정된 보류/, '보류인데 「아직 열려 있다」로 말했다 — 다음 세션이 또 판정하러 든다');
+  assert.ok(!/지금 판정한다/.test(본문), `보류에 재판정을 요구했다 — 그 재판정 낭비가 F386 그 자체다:\n${본문}`);
+  assert.ok(!/장부 미종결/.test(r.json.systemMessage),
+    `보류를 「미종결」로 알렸다 — 열림과 같은 모양이면 갈라 놓은 뜻이 사라진다: ${r.json.systemMessage}`);
+  assert.match(본문, /resolve F902/, '고쳤을 때 닫을 통로를 안 알려줬다');
+});
+
+test('🔑 [F386] 열림과 보류를 함께 달면 «둘 다» 나오고 요구는 열림 쪽으로 간다', () => {
+  const f = 픽스처();
+  fs.writeFileSync(f.장부, 장부머리 + 열린행 + 닫힌행
+    + '| F902 | 2026-08-05 | 실수 | 픽스처 — 판정하고 열어둔 신호 | ⏸ v8.7 판정 |\n');
+  f.git('add', '-A'); f.git('commit', '-q', '-m', '보류 행 추가');
+  const r = 돌려(f, 'fix: 둘을 함께 인용했다 (F900 · F902)');
+  const 본문 = r.json.hookSpecificOutput.additionalContext;
+  assert.match(본문, /F900/); assert.match(본문, /F902/);
+  assert.match(본문, /지금 판정한다/, '열림이 섞였는데 재판정 요구가 사라졌다 — 보류가 열림을 삼켰다');
+  assert.match(r.json.systemMessage, /장부 미종결 1건/,
+    `미종결 수에 보류가 섞였다: ${r.json.systemMessage}`);
 });
 
 test('실저장소 — 거짓양성만 본다: 이미 닫힌 번호를 단 커밋에 짖지 않는다', () => {
   // 탐지력은 위 픽스처가 졌다. 여기서는 실장부·실훅 조합이 **정상 커밋을 벌주지 않는지**만 본다.
   const 장부 = require(path.join(ROOT, 'tools', 'friction.js'));
-  const 닫힌 = 장부.read().rows.filter((r) => r.resolved);
+  /* 판정은 friction.js 술어에서 온다 — 여기서 `r.resolved` 를 쓰면 **보류가 「닫힌」으로 섞인다**
+   * (F386). 보류에 대해 훅은 조용한 게 아니라 「재판정 불필요」로 짖으므로, 섞이면 이 검사가
+   * 거짓 적색을 낸다. 같은 판정을 두 곳에 적으면 갈라진다 — 그 갈라짐이 여기서 먼저 보인다. */
+  const 닫힌 = 장부.read().rows.filter(장부.해소됐나);
   if (!닫힌.length) { assert.ok(true, '(실장부에 닫힌 행이 없어 건너뛴다 — 통과와 미실행이 같은 모양이면 안 된다)'); return; }
   const id = 닫힌[닫힌.length - 1].id;
   const 상태 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-fcg-real-'));

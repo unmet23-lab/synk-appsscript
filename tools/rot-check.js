@@ -91,11 +91,39 @@ function docSection() {
   };
 }
 
+/* 지침의 마지막 개정 날짜 — `/evolve` 가 말하는 「마찰 신호 2건」의 **기준점**이다.
+ * 지침은 「굵직한 마찰 신호 2건이면 개정을 제안한다」고 하는데, 그 2건은 **새로 난** 둘이지
+ * 누적 열림 둘이 아니다. 기준점 없이 누적을 세면 40건이 쌓인 지금 알림이 영구히 켜지고,
+ * 켜져 있는 알림은 안 읽힌다(F386 · F370 과 같은 병). 날짜는 기계가 정확히 안다. */
+function 마지막개정(파일) {
+  const p = 파일 || path.join(ROOT, 'docs', '지침_이력.md');
+  let text;
+  try { text = fs.readFileSync(p, 'utf8'); } catch (_) { return null; }   // 없으면 기준점 없음 = 옛 동작
+  let 최대 = null;
+  for (const m of text.matchAll(/^##\s+v[\d.]+[^\n]*?(\d{4}-\d{2}-\d{2})/gm)) {
+    if (!최대 || m[1] > 최대) 최대 = m[1];
+  }
+  return 최대;
+}
+
 function frictionSection() {
   const F = require('./friction.js');
   if (!fs.existsSync(F.LEDGER)) throw new Error(`장부가 없다: ${F.LEDGER}`);
   const { rows } = F.read();
-  return { open: rows.filter((r) => !r.resolved), total: rows.length };
+  /* 판정 술어는 friction.js 하나에서 온다 — 여기서 `!r.resolved` 를 다시 적으면 보류가
+   * 「열림」으로 새고, 새는 방향은 언제나 「통과」가 아니라 여기선 «영구 알림»이다. */
+  const open = rows.filter(F.열렸나);
+  const 기준 = 마지막개정();
+  return {
+    open,
+    보류: rows.filter(F.보류인가),
+    total: rows.length,
+    기준,
+    /* 새로 난 것 = 마지막 개정 뒤에 신고된 열림 행. 기준점을 못 읽으면 전량으로 되돌린다
+     * (모름을 「0건」으로 접지 않는다 — 그건 미실행을 통과로 세는 것이다 · F207). */
+    새로: 기준 ? open.filter((r) => (r.date || '') > 기준) : open,
+    묵은: 기준 ? open.filter((r) => (r.date || '') <= 기준) : [],
+  };
 }
 
 /* 절단문서(소급불가 정본)는 **다른 저장소의 커밋으로 닫힌다.** 항목을 실제로 끝내는 코드는
@@ -451,11 +479,25 @@ function collect({ 라이브 = false, 시간제한 } = {}) {
     });
   }
 
-  if (fri.ok && fri.value.open.length >= EVOLVE_THRESHOLD) {
+  if (fri.ok && fri.value.새로.length >= EVOLVE_THRESHOLD) {
     notes.push({
       kind: '/evolve 발동 조건 도달',
-      text: `살아있는 마찰 신호 ${fri.value.open.length}건(기준 ${EVOLVE_THRESHOLD}건) — ` +
-        fri.value.open.map((r) => r.id).join(', '),
+      text: `마지막 개정(${fri.value.기준 || '기준점 못 읽음 — 전량으로 센다'}) 뒤에 난 마찰 신호 ` +
+        `${fri.value.새로.length}건(기준 ${EVOLVE_THRESHOLD}건) — ${fri.value.새로.map((r) => r.id).join(', ')}`,
+    });
+  }
+
+  /* F386 ㉡ — 「지난 개정을 넘겼는데 아직 아무도 판정 안 붙인 행」. 위 알림과 **갈라서** 낸다:
+   * 붙여 놓으면 「2건 더 났다」와 「N건이 안 닫혔다」가 한 문장에서 같은 모양이 되고, 그게
+   * 정확히 F386 이 신고한 포화다. 처방이 둘로 갈리는데(개정하라 / 대조하라) 문장이 하나면
+   * 읽는 쪽은 둘 다 안 한다. 나이는 기계가 정확히 아는 축이라 거짓양성이 0이다. */
+  if (fri.ok && fri.value.기준 && fri.value.묵은.length) {
+    warn.push({
+      kind: '장부 판정 미부착',
+      text: `마지막 개정(${fri.value.기준}) 전에 난 마찰 신호 ${fri.value.묵은.length}건이 «판정 없이» 열려 있다 — ` +
+        `${fri.value.묵은.map((r) => r.id).join(', ')}. ` +
+        '고쳤으면 resolve, 「지금은 안 닫는다」면 defer 로 그 판정을 장부에 적는다(적을 자리가 없어서 ' +
+        '같은 대조를 세션마다 다시 하던 자리다 · F386). 처방: node tools/friction.js defer F0NN "왜 · 어디서 판정했나"',
     });
   }
 
@@ -645,4 +687,4 @@ if (require.main === module) main();
  * 조용하다」 — 둘 다 침묵을 닮았다. 그래서 베끼지 않고 **이 한 벌을 빌려 쓴다**(회귀는
  * tests/절단문서.test.js ③ 이 그대로 진다). ⚠ 시각은 안 돌려준다 — 부르는 쪽은 `--since` 로
  * 이미 걸러진 목록을 받으므로 필요 없다. */
-module.exports = { collect, render, dueNow, stateFile, harnessSection, toilSection, mapSection, 절단문서Section, 뒤커밋들, 배포Section, 배포도장, 편집중인가, EVOLVE_THRESHOLD };
+module.exports = { collect, render, dueNow, stateFile, harnessSection, toilSection, mapSection, 절단문서Section, 뒤커밋들, 배포Section, 배포도장, 편집중인가, EVOLVE_THRESHOLD, 마지막개정, frictionSection };
