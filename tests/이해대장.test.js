@@ -82,12 +82,36 @@ test('도달 실측 — 형제 저장소가 없으면 «0» 이 아니라 null �
     '못 읽었는데 숫자를 지어냈다 — 미실행이 통과와 같은 모양이 된다(F207)');
 });
 
-test('도달 실측 — 있으면 래칫 두 개를 «숫자로» 준다', (t) => {
+test('도달 실측 — 있으면 래칫을 «숫자로» 준다(셋째 칸은 있거나, 없으면 null 로 «있다»)', (t) => {
   const r = 도달실측(ROOT);
   if (!r) return t.skip('형제 저장소(SYNK-talk) 없음 — 이 환경에선 못 잰다');
   assert.ok(Number.isInteger(r.도달0), '`도달0상한` 을 못 읽었다 — 상수 이름이 바뀌었을 수 있다');
   assert.ok(Number.isInteger(r.생산자만), '`생산자섰는데도달0상한` 을 못 읽었다');
   assert.ok(r.도달0 >= 0 && r.생산자만 >= 0);
+  assert.ok(r.행동안바뀜 === null || (Number.isInteger(r.행동안바뀜) && r.행동안바뀜 >= 0),
+    '`행동안바뀜상한` 칸이 결과에서 빠졌다(undefined) — 셋째 래칫이 실측에서 사라지면 ⑤층(도는데 행동 안 바뀜)이 다시 안 보인다');
+});
+
+/* 셋째 래칫의 탐지력은 픽스처가 못박는다 — 실저장소는 위에서 거짓양성만 잰다.
+ * ⚠ 셋째 상수가 «없는» 옛 판을 0 으로 읽으면 「빚 0」과 「못 읽음」이 같은 모양이 된다(F207). */
+test('도달 실측 — 셋째 래칫(행동안바뀜상한)을 읽고, 없으면 0 이 아니라 null 로 가른다', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-도달실측-'));
+  fs.mkdirSync(path.join(d, 'SYNK-talk', 'lib'), { recursive: true });
+  const 루트 = path.join(d, '저장소');                 // 도달실측은 root/../SYNK-talk 를 본다
+  fs.mkdirSync(루트, { recursive: true });
+  const 쓰기 = (본문) => fs.writeFileSync(path.join(d, 'SYNK-talk', 'lib', '이벤트검증.js'), 본문, 'utf8');
+
+  쓰기('const 도달0상한 = 3;\nconst 생산자섰는데도달0상한 = 0;\nconst 행동안바뀜상한 = 2;\n');
+  let r = 도달실측(루트);
+  assert.deepStrictEqual(
+    { 도달0: r.도달0, 생산자만: r.생산자만, 행동안바뀜: r.행동안바뀜 },
+    { 도달0: 3, 생산자만: 0, 행동안바뀜: 2 }, '래칫 셋을 숫자로 못 읽었다');
+
+  쓰기('const 도달0상한 = 3;\nconst 생산자섰는데도달0상한 = 0;\n'); // 셋째 상수가 없는 옛 판
+  r = 도달실측(루트);
+  assert.strictEqual(r.행동안바뀜, null,
+    '없는 상수를 지어냈다 — 「빚 0」과 「못 읽음」이 같은 모양이 된다(F207)');
+  assert.strictEqual(r.도달0, 3, '옛 판에서도 앞 두 래칫은 그대로 읽어야 한다');
 });
 
 /* ── ①-b 엔진 점수 = «성능» 축 (v1.6 신설) ──────────────────────────────
@@ -191,8 +215,13 @@ test('실저장소 — A-1 에 「엔진에 닿는가」 열이 있고, 화면�
   }
   const html = fs.readFileSync(산출, 'utf8');
   assert.ok(/엔진 도달 실측/.test(html), '화면에 실측 줄이 없다');
-  if (도달실측(ROOT)) {
+  const 실측 = 도달실측(ROOT);
+  if (실측) {
     assert.ok(!/못 쟀다/.test(html), '형제 저장소가 있는데 화면은 「못 쟀다」라고 한다 — 재생성이 안 됐다');
+    if (실측.행동안바뀜 !== null) {
+      assert.ok(/안 바꾸는 부품/.test(html),
+        '셋째 래칫(행동안바뀜)이 화면 실측 줄에 안 실렸다 — ⑤층(도는데 행동 안 바뀜)이 화면에서 다시 사라졌다');
+    }
   }
 });
 
