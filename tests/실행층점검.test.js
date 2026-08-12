@@ -257,7 +257,12 @@ test('🔴 배포 통로 **둘 다** 이 점검을 부른다 — 한쪽만 달�
   assert.match(guard, /describe[\s\S]{0,80}--match[\s\S]{0,20}synk-v/, '기준점(직전 버전 태그)을 안 잡는다 — 범위가 없으면 마지막 커밋만 본다');
   assert.ok(!/deny\([^)]*실행층/.test(guard), '실행층점검으로 배포를 차단한다 — 막으면 「배포 뒤 실행」이 불가능해진다');
 
-  const wf = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'deploy-live.yml'), 'utf8');
-  const 실행줄 = wf.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n'); // YAML 주석도 산문이다
-  assert.match(실행줄, /node tools\/실행층점검\.js/, '폰 배포(deploy-live)가 이 점검을 안 부른다 — clasp-guard 는 로컬 훅이라 거기엔 없다');
+  /* 옛 둘째 발화 자리(`deploy-live` 워크플로)는 2026-08-12 에 폐지됐다 — 배포 통로가 하나로
+   * 줄었으니 발화 자리도 하나다. ⚠ 통로가 다시 늘면 **그 통로에도 이 점검을 붙여야 한다**:
+   * 발화 자리를 안 붙인 통로는 「배포는 됐는데 실행층은 아무도 안 본」 상태로 조용히 지나간다. */
+  const 통로 = fs.existsSync(path.join(ROOT, '.github', 'workflows'))
+    ? fs.readdirSync(path.join(ROOT, '.github', 'workflows'))
+    : [];
+  assert.ok(!통로.includes('deploy-live.yml'),
+    '폰 배포 통로가 되살아났다 — 되살릴 거면 그 워크플로에도 `node tools/실행층점검.js` 를 붙여라');
 });

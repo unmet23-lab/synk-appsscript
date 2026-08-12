@@ -112,7 +112,7 @@ test('내것만 커밋한다 — 함께 만진 파일은 남기고 알린다(F10
   assert.match(msg, /shared\.md/, '함께 남긴 파일을 말하지 않았다');
 
   const 제목 = git(['log', '-1', '--format=%s'], root).trim();
-  assert.ok(제목.startsWith('자동커밋: '), `제목이 고정 접두가 아니다(=[배포] 오발 방지 실패 가능): ${제목}`);
+  assert.ok(제목.startsWith('자동커밋: '), `제목이 고정 접두가 아니다 — 이 훅이 낸 커밋을 나중에 골라낼 수 없다: ${제목}`);
   const 실린것 = git(['show', '--name-only', '--format=', 'HEAD'], root).trim().split(/\r?\n/);
   assert.deepStrictEqual(실린것.sort(), ['a.txt', 'sub/b.txt'], '커밋 범위가 내것 2개가 아니다');
   const 남은 = git(['status', '--porcelain'], root);
