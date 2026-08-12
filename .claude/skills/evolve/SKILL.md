@@ -40,7 +40,7 @@ description: 지침 진화 스킬 — 공용 작업 지침(CLAUDE.md)과 그 사
    - 이번 개정이 막은 신호를 **장부에 닫는다**: `node tools/friction.js resolve F0NN "무엇이 막았나"`. 닫지 않으면 다음 사이클이 같은 신호를 또 재료로 집어 든다.
    - 이번 사이클에서 새로 발견한 마찰은 `node tools/friction.js add <교정|거절|실수|마찰> "설명"` 으로 남긴다.
    - 새로 확정된 결정·마찰 신호를 메모리에 갱신한다(다음 진화의 연료 — CLAUDE.md '마찰 신호' 조항과 짝).
-   - 멀티세션 중이면 `docs/세션보드.md`를 갱신한다.
+   - 멀티세션 중이면 내 보드 줄(`docs/_ops/보드/<내 지문 8자리>.md`)을 갱신한다.
    - 문서 변경이므로 `git add`(지침 관련 파일만 명시 지정) → 커밋 → `git push origin master`로 백업한다. **`/deploy`·`clasp push`는 쓰지 않는다** — 지침은 라이브 Apps Script 코드가 아니다.
 
 ## 적용 판단 (트리거)
