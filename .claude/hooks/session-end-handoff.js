@@ -7,7 +7,7 @@
 //   그 전환마다 다음 세션이 직전 작업을 알고 시작해야 한다.
 //
 // 아무 세션에서나 떨구지는 않는다 — **일한 세션만**:
-//   ① 이 세션 이름으로 된 커밋이 있거나 ② 미커밋이 남았거나 ③ 임계(🟡)를 넘겼거나.
+//   ① 이 세션 이름으로 된 커밋이 있거나 ② **내가** 편집한 파일이 있거나 ③ 임계(🟡)를 넘겼거나.
 //   질문 한 번 하고 끝난 세션까지 바통을 남기면, 다음 세션이 「이어서 작업한다」를 물고
 //   시작해 엉뚱한 일을 한다. 인계문은 **다음 세션의 컨텍스트에 실리는 비용**이기도 하다.
 //
@@ -43,8 +43,37 @@ const dirty = report.dirtyCount(cwd);
 const commits = report.myCommits(cwd, report.hostSessionId(sid));
 const stage = store.readStage(cwd, sid); // 🟡 이상을 넘겼으면 1 이상
 
+/* ② 는 「미커밋이 있다」가 아니라 «내» 미커밋이 있다 (2026-08-12 유호님 신고 · 실측).
+ *   `dirtyCount` 는 저장소 **전체**를 센다. 이 저장소는 세션이 동시에 여덟씩 돌아 미커밋이
+ *   0 이 된 적이 없다 — 그래서 위 머리말이 막겠다고 적어 둔 「질문 한 번 하고 끝난 세션」을
+ *   ②가 **원리상 한 번도 못 걸렀다**(늘 참). 실측: 인계문 55건 중 10건이 커밋 0·트랙 0이고,
+ *   그 10건은 다음 창에 「이어서 작업한다」로 박혀 없는 트랙을 이어받게 했다(예 `8a384d90`
+ *   — 제가 한 일은 없고 **남의** 미커밋 12건 때문에 「일한 세션」이 됐다).
+ * 🔑 재는 층을 옮긴다: 저장소의 더러움(남의 것 포함) → **이 세션이 남긴 편집 도장**
+ *   (`edit-stamp` PostToolUse · Edit|Write|MultiEdit|NotebookEdit). id 는 반드시
+ *   `hostSessionId` 다 — 도장을 찍는 쪽이 그 id 이고(F074), 어긋나면 늘 `{}` 라 **모든
+ *   세션이 조용히 바통을 잃는다**(새는 방향이 「무기록」이라 화면에 아무 표도 안 난다).
+ * ⚠ 새는 방향은 「남긴다」로 둔다 — 못 남기는 손해가 하나 더 남기는 손해보다 크다.
+ *   도장이 **빈 것**과 통로가 **죽은 것**은 둘 다 `{}` 라 안 갈린다(편집지문읽기 주석). 그래서
+ *   통로의 생사를 **따로** 잰다: 이 저장소 이름으로 찍힌 도장이 하나라도 있으면 살아 있다.
+ *   ⚠ `STATE_DIR 이 있나` 로 근사하면 안 된다 — `edit-stamp` 가 등록에서 빠지거나 죽으면
+ *   폴더는 멀쩡한 채 도장만 0 이 되고, 그러면 **모든 세션이 조용히 바통을 잃는다**(가드가
+ *   등록층에서 새는 그 형태 · 여기서 새는 방향은 「통과」가 아니라 「무기록」이라 더 안 보인다).
+ *   통로가 안 보이면 옛 판정(저장소 전체)으로 폴백한다 — 바통 하나 더 남는 쪽이 안전하다.
+ * ⚠ Bash·외부 앱이 만든 변경엔 도장이 없다 — 그건 ①(커밋)·③(임계)이 받는다. 코드 파일의
+ *   셸 편집은 `code-edit-guard` 가 이미 막으므로 여기 남는 구멍은 문서뿐이다. */
+let 내미커밋;
+try {
+  const 도장들 = fs.readdirSync(store.stateDir())
+    .filter((f) => f.startsWith(`editstamp-${store.projectKey(cwd)}-`));
+  if (!도장들.length) throw new Error('통로 불명');           // 아무도 안 찍었다 → 폴백
+  내미커밋 = Object.keys(store.편집지문읽기(cwd, report.hostSessionId(sid))).length > 0;
+} catch (_) {
+  내미커밋 = dirty !== null && dirty > 0;                     // 옛 판정 폴백
+}
+
 // 「일한 세션」 판정. 셋 다 아니면 조용히 나간다.
-const worked = commits.length > 0 || (dirty !== null && dirty > 0) || stage > 0;
+const worked = commits.length > 0 || 내미커밋 || stage > 0;
 if (!worked) process.exit(0);
 
 const msg = report.buildHandoff(cwd, sid, { dirty, reason: reason || undefined });

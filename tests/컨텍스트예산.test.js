@@ -24,6 +24,7 @@ const HOOKS = path.join(ROOT, '.claude', 'hooks');
 const STOP_HOOK = path.join(HOOKS, 'context-budget.js');
 const END_HOOK = path.join(HOOKS, 'session-end-handoff.js');
 const START_HOOK = path.join(HOOKS, 'session-handoff.js');
+const STAMP_HOOK = path.join(HOOKS, 'edit-stamp.js');
 const SETTINGS = process.env.SYNK_TEST_SETTINGS || path.join(ROOT, '.claude', 'settings.json');
 
 /** usage 레코드 한 줄. 세 항목의 **합**이 컨텍스트다(하나만 크면 안 걸려야 한다). */
@@ -80,6 +81,17 @@ function startHook(stateDir, cwd, source) {
 
 function batons(stateDir) {
   try { return fs.readdirSync(stateDir).filter((f) => f.startsWith('handoff-')); } catch (_) { return []; }
+}
+
+/** 편집 도장을 찍는다 — **진짜 생산자**(edit-stamp)를 띄운다.
+ *  파일명 규칙을 테스트가 다시 적으면 그 순간 갈라지고, 갈라진 쪽 증상은 「무기록」이라
+ *  **양쪽 회귀가 다 초록**으로 보인다(맹점 ④). 그래서 형식을 아는 자리는 여기도 0개다.
+ *  ⚠ `CLAUDE_PROJECT_DIR` 을 반드시 덮는다 — 안 덮으면 edit-stamp 의 ROOT 가 **실저장소**가 된다. */
+function stamp(stateDir, cwd, sid, rel) {
+  return run(STAMP_HOOK, {
+    session_id: sid, hook_event_name: 'PostToolUse', cwd,
+    tool_name: 'Write', tool_input: { file_path: path.join(cwd, rel) },
+  }, stateDir, { CLAUDE_PROJECT_DIR: cwd });
 }
 
 // ── 측정 ────────────────────────────────────────────────────────────────────
@@ -592,10 +604,11 @@ test('🔑 임계에 안 닿고 끝나도 인계된다 — 자동화의 핵심 (
   if (g(['init'], repo).status !== 0) return t.skip('git init 실패');
   const st = newDir('end-state');
 
-  // 미커밋이 있는 세션 = 일한 세션 → 바통을 남긴다(Stop 훅은 한 번도 안 돌았다)
+  // 내가 편집한 파일이 미커밋으로 남은 세션 = 일한 세션 → 바통을 남긴다(Stop 훅은 한 번도 안 돌았다)
   fs.writeFileSync(path.join(repo, '작업중.txt'), 'x');
+  stamp(st, repo, 'END-1', '작업중.txt');   // 실제로 Write 를 쓴 세션이면 도장이 찍혀 있다
   const v = endHook(st, repo, 'END-1');
-  assert.ok(v.json, '미커밋이 있는데 인계를 안 남겼다 — 평상시 세션이 통째로 안 이어진다');
+  assert.ok(v.json, '내 편집이 미커밋인데 인계를 안 남겼다 — 평상시 세션이 통째로 안 이어진다');
   assert.strictEqual(batons(st).length, 1, '바통이 없다');
   assert.match(startHook(st, repo).json.hookSpecificOutput.initialUserMessage, /이어서 작업한다/,
     '새 세션이 그 바통을 첫 메시지로 물지 않았다');
@@ -609,6 +622,43 @@ test('일 안 한 세션은 바통을 남기지 않는다 (다음 세션이 엉�
   const st = newDir('clean-state');
   assert.strictEqual(endHook(st, repo, 'END-2').json, null, '커밋도 미커밋도 임계도 없는데 바통을 남겼다');
   assert.strictEqual(batons(st).length, 0, '바통 파일이 생겼다');
+});
+
+test('🔑 «남의» 미커밋으로는 일한 세션이 되지 않는다 (2026-08-12 유호님 신고 · 실측 10/55건)', (t) => {
+  /* 옛 판정은 `git status` 전체를 셌다. 이 저장소는 세션이 동시에 여덟씩 돌아 미커밋이 0 이 된
+   * 적이 없어, 위 「일 안 한 세션」 게이트가 **원리상 한 번도 안 닫혔다** — 실측 인계문 55건 중
+   * 10건이 커밋 0·트랙 0이었고(예 `8a384d90`: 남의 미커밋 12건), 그게 다음 창에 「이어서
+   * 작업한다」로 박혀 없는 트랙을 이어받게 했다. 위 두 테스트는 이 자리를 못 본다 —
+   * 하나는 「내 편집」, 하나는 「깨끗한 저장소」라 **남의 미커밋만 있는 판**이 둘 사이에 있었다. */
+  const g = (a, c) => spawnSync('git', a, { cwd: c, encoding: 'utf8', timeout: 10000 });
+  if (g(['--version']).error) return t.skip('git 없음');
+  const repo = newDir('other-repo');
+  if (g(['init'], repo).status !== 0) return t.skip('git init 실패');
+  const st = newDir('other-state');
+
+  fs.writeFileSync(path.join(repo, '남의작업.txt'), 'x');   // 저장소는 더럽다 — 하지만 남의 것이다
+  stamp(st, repo, 'OTHER-SESSION', '남의작업.txt');          // 도장 통로는 살아 있다(남이 찍었다)
+
+  assert.strictEqual(endHook(st, repo, 'ME').json, null,
+    '남의 미커밋 때문에 「일한 세션」이 됐다 — 다음 창이 없는 트랙을 물게 된다');
+  assert.strictEqual(batons(st).length, 0, '바통 파일이 생겼다');
+});
+
+test('🔑 도장 통로가 죽으면 옛 판정으로 폴백한다 — 새는 방향은 「남긴다」여야 한다', (t) => {
+  /* 이 게이트의 파국 모드는 「통과」가 아니라 **「무기록」**이다. edit-stamp 가 등록에서 빠지거나
+   * 죽으면 도장이 0 이 되고, 그때 「도장 없음 = 일 안 했다」로 읽으면 **모든 세션이 조용히
+   * 바통을 잃는다** — 화면엔 아무 표도 안 난다. 그래서 통로 생사를 따로 재고, 안 보이면
+   * 저장소 전체 판정으로 되돌아간다. 바통 하나 더 남는 쪽이 인계를 통째로 잃는 쪽보다 싸다. */
+  const g = (a, c) => spawnSync('git', a, { cwd: c, encoding: 'utf8', timeout: 10000 });
+  if (g(['--version']).error) return t.skip('git 없음');
+  const repo = newDir('nostamp-repo');
+  if (g(['init'], repo).status !== 0) return t.skip('git init 실패');
+  const st = newDir('nostamp-state');
+
+  fs.writeFileSync(path.join(repo, '작업중.txt'), 'x');       // 미커밋은 있는데 도장은 **하나도** 없다
+  assert.ok(endHook(st, repo, 'NOSTAMP').json,
+    '도장 통로가 죽었는데 바통까지 잃었다 — 인계가 통째로 조용히 멈춘다');
+  assert.strictEqual(batons(st).length, 1, '폴백이 바통을 안 남겼다');
 });
 
 test('SessionEnd — resume·compact 는 세션이 이어지는 것이라 바통을 남기지 않는다', () => {
