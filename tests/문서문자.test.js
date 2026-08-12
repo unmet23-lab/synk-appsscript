@@ -36,8 +36,19 @@ const 대상확장자 = new Set(['.js', '.mjs', '.cjs', '.ts', '.tsx', '.jsx',
 
 /* 저장소 **밖**의 것은 우리 규칙이 아니다 — 외부 클론과 남의 작업 트리는 뺀다.
  * git 추적 목록을 쓰므로 워크트리(.claude/worktrees)는 애초에 안 들어온다.
- * 인계문·마찰장부는 **옛 사고를 인용하는 자리**라 뺀다(신호문에 그 글자가 들어온다). */
-const 제외 = [/^ARC-AGI-3-Agents\//, /(^|\/)node_modules\//, /^docs\/_ops\/인계문/, /^docs\/_ops\/마찰신호\.md$/];
+ * 인계문·마찰장부는 **옛 사고를 인용하는 자리**라 뺀다(신호문에 그 글자가 들어온다).
+ *
+ * 🔴 `evals/출력_*.json` 도 같은 계열이다 — **우리가 쓴 글이 아니라 «모델이 낸 것의 기록»**이다.
+ *   2026-08-12 실측: 형제의 `evals/출력_v2재시도.json:33` 에 한자 1자(U+683C)가 박혀 이 검사가
+ *   상시 빨갰다. 그런데 그 파일을 고치는 것은 **실측 조작**이라(모델이 실제로 낸 것의 기록) 금지고,
+ *   진짜 고칠 자리는 교정 프롬프트다 — 즉 이 검사는 **따를 수 없는 처방**을 내밀고 있었다(F103).
+ *   증상은 「남의 미커밋 탓」으로 오독되기 좋은 로컬 상시 적색이었다.
+ * ⚠ 빼는 것이 정당한 이유는 **다른 층이 이미 재고 있어서**다 — 형제 `tools/eval-score.js` 의
+ *   ④문자 축이 판마다 「옛글자 혼입 n/분모」를 낸다. 그 축이 사라지면 이 예외는 근거를 잃으므로
+ *   아래 검사가 «축이 살아 있는지»를 함께 못박는다(장치와 발동 조건은 한 커밋에).
+ * ⚠ 좁게 뺀다 — 기록이 아닌 `evals/픽스처.json`(우리가 쓴다)·`evals/결과.md`(우리가 쓴다)는 그대로 대상이다. */
+const 제외 = [/^ARC-AGI-3-Agents\//, /(^|\/)node_modules\//, /^docs\/_ops\/인계문/, /^docs\/_ops\/마찰신호\.md$/,
+  /^evals\/출력_[^/]*\.json$/];
 
 function 추적파일(뿌리) {
   const out = execFileSync('git', ['ls-files', '-z'], { cwd: 뿌리, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
@@ -91,6 +102,47 @@ test('형제 저장소 SYNK-talk 텍스트에도 옛 글자가 없다', (t) => {
   }
   훑은수(형제);
   assert.deepStrictEqual(걸린곳(형제), [], 처방);
+});
+
+/* 🔴 **면제는 「다른 층이 재고 있을 때만」 정당하다** — 안 그러면 이 예외는 그냥 눈을 감은 것이다.
+ *   그래서 예외의 근거(형제 채점기의 ④문자 축)가 살아 있는지를 기계로 못박는다. 축을 지우면
+ *   여기가 빨개져 「출력 파일을 이제 아무도 안 본다」가 드러난다. */
+test('eval 출력 면제의 근거 — 형제 채점기가 그 축을 실제로 재고 있다', (t) => {
+  const 채점기 = path.join(형제, 'tools', 'eval-score.js');
+  if (!fs.existsSync(채점기)) {
+    return t.skip('형제 저장소 SYNK-talk 가 이 기계에 없다 — 근거 대조는 로컬에서만');
+  }
+  const src = fs.readFileSync(채점기, 'utf8');
+  assert.match(src, /function 문자판정\(/,
+    '형제 채점기에 문자 축이 없다 — 그러면 위 `evals/출력_*` 면제는 근거를 잃는다(아무도 안 보게 된다)');
+  assert.match(src, /문자혼입: \(\(\) =>/,
+    '채점 요약이 문자 축을 안 낸다 — 재기만 하고 보고를 안 하면 판마다 아무도 못 본다');
+  assert.match(src, /문자혼입\.건수 === 0/,
+    '채점 종료코드가 문자 축을 안 본다 — 한자가 나가도 초록으로 끝난다');
+});
+
+test('탐지력 — 면제는 «기록»에만 걸리고 우리가 쓴 글에는 안 걸린다', () => {
+  const 사본 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-문서문자면제-'));
+  try {
+    execFileSync('git', ['init', '-q'], { cwd: 사본 });
+    const 글자 = String.fromCodePoint(0x683C);           // 실제로 나온 그 자리(U+683C)
+    fs.mkdirSync(path.join(사본, 'evals'));
+    fs.mkdirSync(path.join(사본, 'src'));
+    const 쓰기 = (p, s) => fs.writeFileSync(path.join(사본, p), s, 'utf8');
+    쓰기('evals/출력_v9.json', `{"항목":[{"오늘의포인트":"${글자}"}]}\n`);   // 모델이 낸 기록 — 면제
+    쓰기('evals/픽스처.json', `{"항목":[{"입력":"${글자}"}]}\n`);            // 우리가 쓴다 — 대상
+    쓰기('evals/결과.md', `측정 결과 ${글자}\n`);                            // 우리가 쓴다 — 대상
+    쓰기('src/출력_화면.json', `{"라벨":"${글자}"}\n`);                      // 이름만 닮았다 — 대상
+    execFileSync('git', ['add', 'evals/출력_v9.json', 'evals/픽스처.json', 'evals/결과.md', 'src/출력_화면.json'], { cwd: 사본 });
+
+    assert.deepStrictEqual(
+      걸린곳(사본).sort(),
+      ['evals/결과.md:1  U+683C', 'evals/픽스처.json:1  U+683C', 'src/출력_화면.json:1  U+683C'],
+      '면제가 넓거나 좁다 — 기록(evals/출력_*.json)만 빠지고 나머지 셋은 그대로 걸려야 한다'
+    );
+  } finally {
+    fs.rmSync(사본, { recursive: true, force: true, maxRetries: 3 });
+  }
 });
 
 test('탐지력 — 픽스처의 옛 글자는 잡고, 세 문자는 통과시킨다', () => {
