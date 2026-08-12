@@ -200,7 +200,7 @@ test('스킬 — /대장검토 가 등록돼 있고 주소 규칙을 싣는다',
   assert.ok(fs.existsSync(p), '스킬 파일이 없다 — 유호님이 코드를 말해도 받을 통로가 없다');
   const s = fs.readFileSync(p, 'utf8');
   assert.match(s, /^---[\s\S]*?name:\s*대장검토[\s\S]*?description:[\s\S]*?---/, '프론트매터가 깨졌다');
-  for (const 조각 of ['㉡2', '엔진 도달', '읽힌 것', '하지 않는 것 넷', 'node tools/이해대장.js']) {
+  for (const 조각 of ['㉡2', '엔진 도달', '읽힌 것', '하지 않는 것 셋', 'node tools/이해대장.js']) {
     assert.ok(s.includes(조각), `스킬에 "${조각}" 이 없다 — 검토가 그 게이트를 건너뛴다`);
   }
 });
