@@ -89,8 +89,39 @@ function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/**
+ * 엔진 도달 실측 — **손으로 적지 않는다.** 실값 정본은 형제 저장소의 래칫 두 개다.
+ *   `도달0상한`             = 도달이 0인 사건 수
+ *   `생산자섰는데도달0상한` = 생산자는 섰는데 도달이 0인 사건 수 (이쪽이 더 아프다 — 모으고 안 쓴다는 뜻)
+ * 래칫이라 **내려가는 것은 언제나 통과하고 올라가면 빨개진다** — 그래서 이 숫자는 «지금의 빚»이다.
+ *
+ * ⚠ 형제 저장소는 **repo 밖 환경**이다(CI·워크트리엔 없다). 없을 때 0 으로 적으면
+ *   「빚이 0」과 「못 쟀다」가 같은 모양이 된다(F207) — 그래서 null 을 돌려주고 화면이 그렇게 말한다.
+ */
+function 도달실측(root) {
+  const p = path.resolve(root, '..', 'SYNK-talk', 'lib', '이벤트검증.js');
+  if (!fs.existsSync(p)) return null;
+  const src = fs.readFileSync(p, 'utf8');
+  const 집기 = (이름) => {
+    const m = src.match(new RegExp(`^const\\s+${이름}\\s*=\\s*(\\d+)`, 'm'));
+    return m ? Number(m[1]) : null;
+  };
+  const 도달0 = 집기('도달0상한');
+  const 생산자만 = 집기('생산자섰는데도달0상한');
+  return (도달0 === null && 생산자만 === null) ? null : { 도달0, 생산자만, 어디: p };
+}
+
+/** 「엔진에 닿는가」 열만 «내용»으로 색을 정한다 — 이 열은 상태 이름이 아니라 판정이 값이다.
+ *  🔑 이 열이 표의 결론이다: 「돈다」가 초록인데 여기가 빨간 칸 = 다 된 것처럼 보이는 미완성. */
+function 도달색(내용) {
+  if (/닿는다/.test(내용)) return { 면: 킷.emerald, 글자: 킷.cream };
+  if (/끊겼다|미뤄|못 닿/.test(내용)) return { 면: 킷.coral, 글자: 킷.navy2 };
+  return { 면: 킷.cream3, 글자: 킷.navy };   // 「물을 수조차 없다」 — 재료가 0이라 판정 자체가 없다
+}
+
 function 칸그리기(내용, 상태) {
-  const c = 상태색[상태] || { 면: 킷.slate2, 글자: 킷.cream };
+  const c = /엔진에 닿는가/.test(상태 || '') ? 도달색(내용)
+    : (상태색[상태] || { 면: 킷.slate2, 글자: 킷.cream });
   const 빔 = 비었나(내용);
   // 빈 칸은 «면을 비우고 테두리만» 남긴다 — 채워진 칸 옆에서 구멍처럼 보이는 것이 이 화면의 전부다.
   const 배경 = 빔 ? 'transparent' : c.면;
@@ -138,6 +169,13 @@ function main() {
   const 빈칸 = 이해.slice(1).flatMap((r) => r.slice(1)).filter(비었나).length;
   const 전체칸 = 이해.slice(1).flatMap((r) => r.slice(1)).length;
 
+  const 실측 = 도달실측(ROOT);
+  const 도달줄 = 실측
+    ? `<b>도달이 0인 사건 ${실측.도달0}종</b> · 생산자는 섰는데 도달이 0인 사건 <b>${실측.생산자만}종</b>`
+      + `<span class="잔글"> — 래칫이라 내려가면 통과, 올라가면 빨개진다 · 실값 정본 = SYNK-talk/lib/이벤트검증.js</span>`
+    : '<b>⚠ 못 쟀다</b><span class="잔글"> — 형제 저장소(SYNK-talk)를 못 읽었다. '
+      + '「빚이 0」이 아니라 「안 재봤다」이다 — 이 둘을 같은 모양으로 두지 않는다.</span>';
+
   const html = `<!doctype html><html lang="ko"><meta charset="utf-8">
 <title>SYNK 이해 대장 — 어디가 비었나 (${ver})</title>
 <style>
@@ -159,6 +197,9 @@ function main() {
   .범례{margin-top:34px;padding-top:16px;border-top:1px solid ${킷.cream3};
         color:${킷.slate2};font-size:12.5px}
   .칩{display:inline-block;border-radius:999px;padding:2px 12px;margin-right:8px;font-weight:700;font-size:12px}
+  .실측{margin-top:12px;padding:12px 16px;background:${킷.cream};border-left:6px solid ${킷.emerald};
+        border-radius:6px;font-size:13px}
+  .잔글{color:${킷.slate2};font-size:12px}
   footer{margin-top:28px;color:${킷.slate2};font-size:12px}
 </style>
 <h1>이해 대장</h1>
@@ -166,8 +207,10 @@ function main() {
 <div class="요약">이해 ${전체칸}칸 중 <b>${빈칸}칸이 비었다</b></div>
 
 <h2>A-1. 이해 대장 — 그 학생을 얼마나 알게 됐나</h2>
-<p class="설명">㉠은 어느 학원이든 오답노트로 흉내 낸다. <b>㉡이 우리만 가질 수 있는 자리</b>이고, 새 기능은 여기서 가장 비어 있는 칸부터 채운다.</p>
+<p class="설명">㉠은 어느 학원이든 오답노트로 흉내 낸다. <b>㉡이 우리만 가질 수 있는 자리</b>이고, 새 기능은 여기서 가장 비어 있는 칸부터 채운다.<br>
+🔗 <b>맨 오른쪽 열이 이 표의 결론이다</b> — 모으는 것만으로는 아무것도 안 자란다. <b>「돈다」가 초록인데 그 열이 빨간 칸이 가장 위험하다</b>(다 된 것처럼 보이는 미완성). 도달의 정의는 <b>「읽힌 것」</b>이지 「보이는 것」이 아니다.</p>
 ${표그리기(이해, false)}
+<div class="실측">📏 엔진 도달 실측 — ${도달줄}</div>
 
 <h2>A-2. 실물 대장 — 무엇을 만들었나 <span style="font-weight:400;color:${킷.slate2};font-size:14px">(왼쪽 띠 = 조직 층)</span></h2>
 <p class="설명">시제는 이 표가 정한다 — <b>「이미 돌아간다」 칸에 없는 것을 현재형으로 쓰지 않는다</b>(정본 §0).</p>
@@ -184,7 +227,10 @@ ${표그리기(실물, true)}
 </html>`;
 
   fs.writeFileSync(산출경로, html, 'utf8');
-  console.log(`[이해대장] ${path.relative(ROOT, 산출경로)} — 정본 ${ver} · 이해 ${전체칸}칸 중 ${빈칸}칸이 비었다`);
+  const 닿는층 = 이해.slice(1).filter((r) => /닿는다/.test(r[r.length - 1])).length;
+  console.log(`[이해대장] ${path.relative(ROOT, 산출경로)} — 정본 ${ver} · 이해 ${전체칸}칸 중 ${빈칸}칸이 비었다`
+    + ` · 엔진에 닿는 층 ${닿는층}/${이해.length - 1}`
+    + (실측 ? ` · 도달 0인 사건 ${실측.도달0}종(생산자만 선 것 ${실측.생산자만}종)` : ' · 도달 실측 못 함(형제 저장소 없음)'));
 
   if (바로가기) {
     const { execFileSync } = require('node:child_process');
@@ -195,4 +241,4 @@ ${표그리기(실물, true)}
 }
 
 if (require.main === module) main();
-module.exports = { 표뽑기, 비었나, 평문, 킷 };
+module.exports = { 표뽑기, 비었나, 평문, 도달실측, 킷 };

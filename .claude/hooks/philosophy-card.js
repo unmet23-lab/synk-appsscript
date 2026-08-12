@@ -155,14 +155,22 @@ function main() {
   // 같은 진단을 세션에 주는 형태는 그림이 아니라 **숫자**다. 판정은 tools/이해대장.js 한 벌에서
   // 가져온다(여기 다시 적으면 갈라진다). 못 읽으면 «조용히 생략하지 않고» 못 읽었다고 말한다.
   try {
-    const { 표뽑기, 비었나 } = require(path.join(ROOT, 'tools', '이해대장.js'));
+    const { 표뽑기, 비었나, 도달실측 } = require(path.join(ROOT, 'tools', '이해대장.js'));
     const t = 표뽑기(md, /^###\s*A-1\./);
     if (!t) throw new Error('부록 A-1 을 못 찾음');
-    const 칸 = t.slice(1).flatMap((r) => r.slice(1));
-    const 빈 = t.slice(1).filter((r) => 비었나(r[1])).map((r) => r[0].split('—')[0].trim());
+    const 몸 = t.slice(1);
+    const 칸 = 몸.flatMap((r) => r.slice(1));
+    const 이름 = (r) => r[0].split('—')[0].trim();
+    const 빈 = 몸.filter((r) => 비었나(r[1])).map(이름);
+    // 🔑 「모았는가」보다 「엔진에 닿았는가」가 결론이다 — 모으고 안 쓰면 그 설계는 미완성이다(유호 상시).
+    const 안닿음 = 몸.filter((r) => !/닿는다/.test(r[r.length - 1])).map(이름);
+    const 실측 = 도달실측(ROOT);
     console.log(`\n【대장】 이해 ${칸.length}칸 중 ${칸.filter(비었나).length}칸이 비었다`
-      + (빈.length ? ` · **아직 «돈다» 가 0인 층: ${빈.join(' · ')}** — 새 기능은 여기부터 채운다` : '')
-      + ' (색 화면: docs/이해대장.html · 바탕화면 운영자료 30번)');
+      + (빈.length ? ` · «돈다» 가 0인 층: ${빈.join(' · ')}` : '')
+      + (안닿음.length ? `\n   🔗 **엔진에 안 닿는 층: ${안닿음.join(' · ')}** — 모으기만 하면 아무것도 안 자란다(수집은 «도달까지»가 한 벌)` : '\n   🔗 세 층 모두 엔진에 닿는다')
+      + (실측 ? `\n   📏 도달 0인 사건 ${실측.도달0}종 · 생산자는 섰는데 도달 0인 사건 ${실측.생산자만}종(래칫 — 올라가면 빨개진다)`
+              : '\n   📏 도달 실측 못 함(형제 저장소 없음) — 「빚 0」이 아니라 「안 재봤다」다')
+      + '\n   (색 화면: docs/이해대장.html · 바탕화면 운영자료 30번)');
   } catch (e) {
     console.log(`\n【대장】 ⚠ 부록 A 를 못 읽었다(${e.message}) — 어느 이해가 비었는지 모르는 채로 도는 중이다.`);
   }
