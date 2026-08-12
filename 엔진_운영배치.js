@@ -380,10 +380,118 @@ function syncProfiles() {
    *   typeof 가드 = 엔진_궤적.js가 라이브에 안 올라간 배포에서도 동기화 본체는 살아남는다. */
   if (typeof 궤적갱신_ === 'function') 궤적갱신_(src);
   Logger.log(out.length + '명 동기화 완료');
+  /* [v9.215·E²] 명부 스윕 — profiles 가 방금 최신이 된 **이 자리**에서 engine.learners 로 붓는다.
+   * 🔴 try 가 이 자리의 전부다 — 이 함수는 네트워크를 탄다. 감싸지 않으면 Supabase 가 느린 아침
+   *   한 번에 아래 calcAll 이 통째로 건너뛰어지고(게이지·랭킹·진화 정지), 증상은 「오늘 앱이 이상하다」
+   *   뿐이라 원인이 명부에 있는 줄 아무도 모른다. 웰컴 대기열 블록과 같은 계보. */
+  try { 명부스윕_(); } catch (eR) { Logger.log('명부스윕 스킵: ' + eR); }
   calcAll();
   } catch (e) { // [v9.19] 조용한 실패 방지 — 연결 끊기면 매일 아침 알림 (profiles 스테일 조기 감지)
     Logger.log('syncProfiles 스킵(상담시트 연결 확인): ' + e);
     adminMail('[SYNK] ⚠️ 상담 동기화 실패', 'syncProfiles가 상담시트를 읽지 못했습니다: ' + e + '\nCONSULT_SHEET_ID·권한·탭명(상담데이터입력)을 확인하세요. profiles는 마지막 정상 상태로 유지됩니다.');
+  }
+}
+
+/* ===================== 명부 스윕 — profiles → engine.learners (E²) ===================== */
+
+/* [v9.215] 「수집은 엔진 도달까지가 한 벌이다」의 마지막 손 — 사람이 `tools/명부등록.js` 를 돌리던
+ *   그 한 칸을 아침 배치로 옮긴다. 사람 게이트(크루카드 접수 → 반배정 확인 → 학생ID 발급)는 그대로다.
+ *
+ * ■ 판정은 여기 없다 — 표를 그대로 싣는다
+ *   학생인지·번호가 맞는지·연락처가 어긋났는지는 전부 `roster-ingest` 동봉 `명부규칙` 한 벌이 진다
+ *   (F269 — 문이 둘이어도 규칙은 한 벌. 여기서 한 줄이라도 더 거르면 그게 곧 두 번째 규칙이다).
+ *   그래서 profiles **A:H 를 머리글째** 보낸다. 표시값(getDisplayValues)인 이유: 연락처는 시트에서
+ *   문자열이지만 getValues 는 숫자로 접어 앞자리 0 을 날린다 — 증상은 「명부엔 있는데 로그인이 안 된다」뿐이다.
+ *
+ * ■ 원천 제외는 둘뿐, 둘 다 판정이 아니다
+ *   ① `DEMO-` 행(상담시트 밖 시연용 · 웰컴대기 계보) ② A:H 가 통째로 빈 행(그리드 여백 — 명부 행이
+ *   아니다). 번호만 빈 행은 **거르지 않는다** — 그건 사람이 고쳐야 할 진짜 문제고, 규칙 lib 이 이름과
+ *   사유로 되돌려 준다. 여기서 조용히 빼면 그 학생은 영원히 안 보인다.
+ *
+ * ■ 배선 전에는 0초 스킵 (CLAUDE_API_KEY 계보)
+ *   속성 3칸이 비면 조용히 돌아선다 — 운영 Edge Fn 배포와 한 묶음으로 채운다. 리허설에는 상시
+ *   배선하지 않는다(왕복 15/15 가 이미 증명했고, 도달이 필요한 것은 운영뿐).
+ *
+ * ■ 소리는 상태가 바뀔 때 1회 (동기화보류_상태 계보)
+ *   매일 도는 배치라 같은 문제로 매일 울리면 그 메일함이 곧 필터가 된다. 문제 **서명**이 바뀔 때만
+ *   보내고, 깨끗해지면 상태를 비워 다음 문제에 다시 울리도록 재무장한다.
+ *   🔴 서명은 **개수가 아니라 이름**이다 — 「3건」으로 접으면 A 가 고쳐지고 B 가 깨진 날 서명이 그대로라
+ *   B 는 영영 안 울린다. 개수 서명은 그 자체가 유실 지점이다.
+ */
+function 명부스윕_() {
+  const props = PropertiesService.getScriptProperties();
+  const url = String(props.getProperty('ROSTER_INGEST_URL') || '').trim();
+  const key = String(props.getProperty('ROSTER_INGEST_KEY') || '').trim();
+  const anon = String(props.getProperty('ROSTER_INGEST_ANON') || '').trim();
+  if (!url || !key || !anon) return;   // 미배선 = 0초 스킵(알림도 없다 — 아직 안 켠 것이지 고장이 아니다)
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let 서명 = '';   // 빈 문자열 = 문제 없음 → 상태 비움 = 알림 재무장
+  let 본문 = '';
+  try {
+    const pf = ss.getSheetByName('profiles');
+    const 몸 = [];
+    let 머리 = null;
+    if (pf && pf.getLastRow() >= 2) {
+      const 표 = pf.getRange(1, 1, pf.getLastRow(), 8).getDisplayValues();   // A:H — user_id·이름·이름_몽골·role·class_name·생일·email·연락처
+      머리 = 표[0];
+      표.slice(1).forEach(r => {
+        if (!r.some(c => String(c == null ? '' : c).trim() !== '')) return;   // 그리드 여백 — 명부 행이 아니다
+        if (String(r[0] || '').indexOf('DEMO-') === 0) return;                // 시연 행
+        몸.push(r);
+      });
+    }
+    /* 보낼 행이 없으면 왕복도 하지 않는다 — 단 **돌아서지는 않는다.** 아래 상태 블록까지 흘려보내
+     * 어제의 문제 서명을 비운다(여기서 return 하면 낡은 서명이 남아 다음 문제가 조용해진다). */
+    if (머리 && 몸.length) {
+      const res = UrlFetchApp.fetch(url, {
+        method: 'post',
+        contentType: 'application/json',
+        headers: { apikey: anon, Authorization: 'Bearer ' + anon, 'x-roster-ingest-key': key },
+        payload: JSON.stringify({ 표: [머리].concat(몸) }),
+        muteHttpExceptions: true,
+      });
+      const code = res.getResponseCode();
+      const txt = String(res.getContentText() || '');
+      if (code !== 200) {
+        서명 = 'http' + code + '|' + txt.slice(0, 120);
+        본문 = '명부 스윕이 거절됐습니다(HTTP ' + code + ').\n' + txt.slice(0, 500) +
+          '\n\n※ 401=시크릿 어긋남 · 503=서버에 ROSTER_INGEST_SECRET 미설정 · 400=머리글/행수 문제.';
+      } else {
+        const j = (function () { try { return JSON.parse(txt) || {}; } catch (eP) { return {}; } })();
+        const 문제들 = j.문제들 || [];
+        const 막힘 = j.막힘 || [];
+        const 역할오류들 = j.역할오류들 || [];
+        const 무동의 = j.무동의 || [];
+        Logger.log('명부스윕: 읽은행 ' + (j.읽은행 || 0) + ' · 넣음 ' + (j.넣음 || 0) + ' · 건너뜀 ' + (j.건너뜀 || 0) +
+          ' · 경쟁흡수 ' + (j.경쟁흡수 || 0) + ' · 문제 ' + 문제들.length + ' · 막힘 ' + 막힘.length + ' · 무동의 ' + 무동의.length);
+        if (문제들.length || 막힘.length || 역할오류들.length || 무동의.length) {
+          서명 = ['p:' + 문제들.map(p => p.번호 || p.줄).join(','),
+            'b:' + 막힘.map(p => p.번호).join(','),
+            'r:' + 역할오류들.join(','),
+            'c:' + 무동의.join(',')].join('|').slice(0, 900);   // 이름 기반 서명 · app_state 칸 보호
+          const 줄 = [];
+          if (문제들.length) 줄.push('■ 명부에 못 실린 행 — 시트를 고치면 다음 아침 자동 반영됩니다\n' +
+            문제들.map(p => '· ' + (p.줄 || '?') + '행 ' + (p.번호 || '') + ': ' + (p.사유 || '')).join('\n'));
+          if (막힘.length) 줄.push('■ 연락처가 기존 등록과 다릅니다 — 사람만 판단할 수 있어 덮지 않았습니다\n' +
+            막힘.map(p => '· ' + (p.번호 || '') + ': ' + (p.사유 || '')).join('\n'));
+          if (역할오류들.length) 줄.push('■ role 열 문제\n' + 역할오류들.map(s => '· ' + s).join('\n'));
+          if (무동의.length) 줄.push('■ 오늘 명부에 새로 선 학생 중 동의가 0건입니다 — 다음 걸음은 동의 발급입니다\n' +
+            무동의.map(c => '· ' + c).join('\n') +
+            '\n(오늘 새로 선 학생만 셉니다 — 내일은 이 목록에 다시 안 뜹니다)');
+          본문 = 줄.join('\n\n');
+        }
+      }
+    }
+  } catch (e) {
+    서명 = '왕복실패|' + String(e).slice(0, 120);
+    본문 = '명부 스윕이 서버에 닿지 못했습니다: ' + e + '\nROSTER_INGEST_URL·네트워크·Edge Function 배포 상태를 확인하세요.';
+  }
+
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  if (String(getState(st, '명부스윕_상태').val || '') !== 서명) {
+    if (서명) adminMail('[SYNK] ⚠️ 명부 스윕 — 확인이 필요합니다', 본문 + '\n\n※ 상태가 바뀌기 전까지 이 알림은 다시 오지 않습니다.');
+    setState(st, '명부스윕_상태', 서명);
   }
 }
 
