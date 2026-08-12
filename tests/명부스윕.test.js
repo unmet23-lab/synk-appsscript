@@ -13,6 +13,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const crypto = require('node:crypto');
 
 // SYNK_TEST_SRC_ROOT = 변이 실험용 이음매. 평소엔 실소스를 본다(실파일은 절대 안 건드린다 · F065·F067).
 const ROOT = process.env.SYNK_TEST_SRC_ROOT || path.resolve(__dirname, '..');
@@ -60,7 +61,7 @@ function 판(옵션) {
       fetch: (url, opt) => {
         요청.push({ url, opt });
         if (o.던짐) throw new Error(o.던짐);
-        return { getResponseCode: () => (o.코드 === undefined ? 200 : o.코드), getContentText: () => (o.응답 === undefined ? '{"ok":true}' : o.응답) };
+        return { getResponseCode: () => (o.코드 === undefined ? 200 : o.코드), getContentText: () => (o.응답 === undefined ? '{"ok":true,"문제들":[],"막힘":[]}' : o.응답) };
       },
     },
     Logger: { log: (m) => 로그.push(String(m)) },
@@ -69,8 +70,16 @@ function 판(옵션) {
     setState: (_st, k, v) => { 상태[k] = v; 쓴상태.push([k, v]); },
     adminMail: (제목, 본문) => 메일.push({ 제목, 본문 }),
   };
+  // 서명 접기는 **실물**을 태운다 — 스텁으로 대신하면 「해시로 갈랐다」를 검사가 증명하지 못한다.
+  스텁.Utilities = {
+    DigestAlgorithm: { MD5: 'MD5' },
+    Charset: { UTF_8: 'UTF_8' },
+    computeDigest: (_alg, s) => Array.from(crypto.createHash('md5').update(String(s), 'utf8').digest())
+      .map((b) => (b > 127 ? b - 256 : b)),   // Apps Script 는 **부호 있는** 바이트를 준다
+  };
   const 이름들 = Object.keys(스텁);
-  const fn = new Function(...이름들, 함수본문(배치, '명부스윕_') + '\nreturn 명부스윕_;')(...이름들.map((k) => 스텁[k]));
+  const 소스 = 함수본문(배치, '접기_') + '\n' + 함수본문(배치, '명부스윕_') + '\nreturn 명부스윕_;';
+  const fn = new Function(...이름들, 소스)(...이름들.map((k) => 스텁[k]));
   return { fn, 상태, 메일, 로그, 요청, 쓴상태 };
 }
 
@@ -117,7 +126,7 @@ test('명부스윕 ② DEMO·빈 행만 빼고 표를 원형 그대로 싣는다
 /* ③ 알림은 상태가 바뀔 때 1회. 급소는 **서명이 개수가 아니라 이름**이라는 것 —
  *   개수 서명이면 A 가 고쳐지고 B 가 깨진 날 서명이 그대로라 B 는 영영 안 울린다. */
 test('명부스윕 ③ 같은 문제는 1회만 울고, 해소되면 재무장하고, 이름이 바뀌면 다시 운다', () => {
-  const 응답 = (번호들) => JSON.stringify({ ok: true, 문제들: 번호들.map((n, i) => ({ 줄: i + 2, 번호: n, 사유: '전화 형식' })) });
+  const 응답 = (번호들) => JSON.stringify({ ok: true, 막힘: [], 문제들: 번호들.map((n, i) => ({ 줄: i + 2, 번호: n, 사유: '전화 형식' })) });
 
   const a = 판({ 응답: 응답(['SYNK-001']) });
   a.fn();
@@ -130,10 +139,12 @@ test('명부스윕 ③ 같은 문제는 1회만 울고, 해소되면 재무장�
   const b = 판({ 응답: 응답(['SYNK-002']), 기존서명: 서명1 });
   b.fn();
   assert.equal(b.메일.length, 1, '개수만 같으면 침묵한다 — 서명이 이름이 아니라 개수다(B 는 영영 안 보인다)');
-  assert.ok(b.상태.명부스윕_상태.includes('SYNK-002'), '서명에 사람이 안 담겼다');
+  // 개수 부분은 **같고** 접힌 부분만 다르다 = 개수 서명이었다면 정확히 여기서 침묵했을 판이다
+  assert.equal(b.상태.명부스윕_상태.split('#')[0], 서명1.split('#')[0], '픽스처가 개수를 바꿔버려 이 검사가 무의미해졌다');
+  assert.notEqual(b.상태.명부스윕_상태, 서명1, '사람이 바뀌었는데 서명이 같다');
 
   // 다 고쳐진 아침 — 상태를 비워 다음 문제에 다시 울도록 재무장한다
-  const c = 판({ 응답: '{"ok":true}', 기존서명: 서명1 });
+  const c = 판({ 응답: '{"ok":true,"문제들":[],"막힘":[]}', 기존서명: 서명1 });
   c.fn();
   assert.equal(c.메일.length, 0, '문제가 없는데 울었다');
   assert.equal(c.상태.명부스윕_상태, '', '해소됐는데 낡은 서명이 남았다 — 다음 문제가 조용해진다');
@@ -143,6 +154,27 @@ test('명부스윕 ③ 같은 문제는 1회만 울고, 해소되면 재무장�
   d.fn();
   assert.equal(d.요청.length, 0, '보낼 행이 없는데 왕복이 나갔다');
   assert.equal(d.상태.명부스윕_상태, '', '행 0 인 아침에 낡은 서명이 굳었다');
+});
+
+/* ③-b 🔴 서명은 **자르면 안 된다**(①배포 검수 P2). 앞이 길게 같고 뒤만 다른 두 판은
+ *   `slice(0, 900)` 아래서 같은 서명이 됐다 — 뒤쪽에서 새로 깨진 학생은 영영 안 울린다.
+ *   개수 서명과 **같은 병**이 길이 축으로 재발한 것이라, 회귀도 같은 모양으로 못박는다. */
+test('명부스윕 ③-b 긴 목록의 «뒤쪽» 변화도 서명을 가른다 — 잘림이 아니라 접힘이다', () => {
+  const 많이 = (끝) => JSON.stringify({
+    ok: true, 막힘: [],
+    문제들: Array.from({ length: 120 }, (_, i) => ({ 줄: i + 2, 번호: 'SYNK-' + String(i).padStart(3, '0'), 사유: '전화 형식' }))
+      .concat([{ 줄: 999, 번호: 끝, 사유: '전화 형식' }]),
+  });
+  const a = 판({ 응답: 많이('SYNK-AAA') }); a.fn();
+  const b = 판({ 응답: 많이('SYNK-BBB'), 기존서명: a.상태.명부스윕_상태 }); b.fn();
+
+  assert.ok(a.상태.명부스윕_상태.length < 200, '서명이 app_state 칸을 위협할 만큼 길다');
+  assert.notEqual(b.상태.명부스윕_상태, a.상태.명부스윕_상태,
+    '앞 900자가 같으면 뒤가 달라도 같은 서명이다 — 뒤쪽에서 새로 깨진 학생이 영영 안 울린다');
+  assert.equal(b.메일.length, 1, '뒤쪽만 바뀐 판에 재알림이 안 갔다');
+  // 같은 판을 다시 보내면 같은 서명 — 접기가 안정적이어야 1회 알림이 성립한다
+  const c = 판({ 응답: 많이('SYNK-AAA'), 기존서명: a.상태.명부스윕_상태 }); c.fn();
+  assert.equal(c.메일.length, 0, '같은 판인데 서명이 흔들려 매일 운다');
 });
 
 /* ④ 비200·왕복실패는 **소리를 내되 던지지 않는다.** 조용히 지나가면 「명부가 안 선다」가 무증상이 된다. */
@@ -161,10 +193,49 @@ test('명부스윕 ④ 401·503·네트워크 실패를 사유와 함께 알리�
   assert.doesNotThrow(() => c.fn(), '왕복 실패가 예외로 새어 나갔다 — syncProfiles 가 통째로 죽는다');
   assert.equal(c.메일.length, 1, '왕복 실패가 조용히 지나갔다');
   assert.ok(c.상태.명부스윕_상태.startsWith('왕복실패'), '서명이 왕복실패를 구분하지 않는다');
+});
 
-  // 200 인데 본문이 JSON 이 아닌 경우 — 파싱 실패를 「문제 없음」으로 읽어도 던지지는 않는다
-  const d = 판({ 응답: '<html>504 gateway</html>' });
-  assert.doesNotThrow(() => d.fn(), '본문 파싱 실패가 예외로 새어 나갔다');
+/* ④-b 🔴 **200 은 성공이 아니다 — 봉투를 봐야 성공이다**(①배포 검수 P1 3키 · fail closed).
+ *   앞선 판은 파싱 실패를 `{}` 로 접어 오류 배열이 전부 비었고, 그 결과 **어제의 문제 서명이
+ *   경고 없이 지워졌다.** 명부는 안 섰는데 배치는 성공한 얼굴을 한다.
+ *   ⚠ 이 회귀가 처음에 `doesNotThrow` 만 봤다 — 「안 죽는다」는 「일했다」가 아니다. */
+test('명부스윕 ④-b 200 인데 우리 봉투가 아니면 실패로 달고, 옛 서명을 지우지 않는다', () => {
+  const 옛서명 = 'p1/b0/r0/c0#deadbeefcafe';
+  for (const [이름, 응답] of [
+    ['프록시 HTML', '<html>504 gateway timeout</html>'],
+    ['빈 몸통', ''],
+    ['ok:false', '{"ok":false,"error":"db_down"}'],
+    ['ok 는 true 인데 배열이 없다', '{"ok":true}'],
+    ['배열 자리에 딴것', '{"ok":true,"문제들":"없음","막힘":[]}'],
+  ]) {
+    const p = 판({ 응답, 기존서명: 옛서명 });
+    assert.doesNotThrow(() => p.fn(), 이름 + ': 예외가 새어 나갔다');
+    assert.ok(p.상태.명부스윕_상태.startsWith('http200_봉투아님'),
+      이름 + ': 200 을 성공으로 읽었다 — 붓기가 돌았는지 모르는데 「문제 없음」이 됐다');
+    assert.notEqual(p.상태.명부스윕_상태, '', 이름 + ': 옛 문제 서명이 조용히 지워졌다');
+    assert.equal(p.메일.length, 1, 이름 + ': 아무도 모른다');
+  }
+  // 정상 봉투는 그대로 통과해야 한다 — 거짓양성이면 매일 아침 헛경보가 온다
+  const ok = 판({ 응답: '{"ok":true,"문제들":[],"막힘":[],"읽은행":3,"넣음":2}', 기존서명: 옛서명 });
+  ok.fn();
+  assert.equal(ok.상태.명부스윕_상태, '', '정상 봉투인데 실패로 읽었다(거짓양성)');
+  assert.equal(ok.메일.length, 0, '정상인데 알림이 갔다');
+});
+
+/* ④-c profiles 시트 부재는 「보낼 게 없다」가 아니라 **고장**이다.
+ *   조용히 지나가면 명부가 몇 달째 안 서 있어도 아무 데도 안 남는다(F207). */
+test('명부스윕 ④-c profiles 시트가 없으면 실패로 달고 알린다 — 「행 0」과 구분한다', () => {
+  const 없음 = 판({ 표: null, 기존서명: '' });
+  assert.doesNotThrow(() => 없음.fn(), '시트 부재가 예외로 새어 나가 syncProfiles 를 죽인다');
+  assert.equal(없음.요청.length, 0);
+  assert.ok(없음.상태.명부스윕_상태.startsWith('왕복실패'), '시트 부재가 「문제 없음」이 됐다');
+  assert.equal(없음.메일.length, 1, '명부가 통째로 안 읽혔는데 아무도 모른다');
+
+  // 시트는 있고 학생만 0행(머리글만) — 개원 전 정상 상태다. 여기서 울리면 매일 헛경보다.
+  const 빈판 = 판({ 표: [기본표()[0]] });
+  빈판.fn();
+  assert.equal(빈판.메일.length, 0, '학생 0행(개원 전 정상)에 경보가 울렸다');
+  assert.equal(빈판.상태.명부스윕_상태, '', '학생 0행이 고장으로 기록됐다');
 });
 
 /* ⑤ 꼬리 순서 — 호출이 궤적갱신_ 뒤·calcAll 앞이고 **try 로 감싸져** 있다.
