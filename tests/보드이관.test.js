@@ -673,3 +673,118 @@ test('[F288] 빈 세션 id 는 「전부 내 파일」이 아니다 (폴백이 h
     assert.ok(read(fx.board).includes(줄), '거부인데 줄이 보드에서 사라졌다');
   } finally { 박동들.forEach(치우기); }
 });
+
+/* ───────────────────────────────────────────────────────────────
+ * 조율값 — 이관이 **커밋 2개**를 쓰고 **빈 파일을 남겼다** (2026-08-12).
+ *
+ * 실측 08-12: 하루 커밋 449건 중 보드·인계문 장부가 290건(65%)이고, 세션당 장부 커밋이
+ * 08-07 의 2.2 에서 4.7 로 두 배가 됐다. 그중 이관 하나가 **커밋 2개**(선기록+제거)를 쓴다.
+ * 그리고 줄을 뺀 파일이 그대로 남아 보드 폴더 262개 중 244개가 껍데기가 됐다(0바이트 189·
+ * 머리글뿐 55). 껍데기는 조용하지 않다 — `board-guard` 는 PreToolUse 라 **파일을 쓸 때마다**
+ * 그 폴더를 통째로 훑는다.
+ *
+ * 지키는 성질 둘. 위 F102·F083 이 지키는 「어떤 실패로도 줄이 유실되지 않는다」를 **깎지 않은
+ * 채로**여야 한다는 게 전제다 — 그래서 이 절은 그 회귀들 다음에 온다.
+ *   ① 정상 경로의 커밋은 **1개**고, 그 하나에 두 파일이 다 들어 있다(원자).
+ *   ② 줄이 다 빠지면 파일을 지운다 — 단 **유령·사람이 쓴 글이 남아 있으면 안 지운다.**
+ * ─────────────────────────────────────────────────────────────── */
+
+const 커밋수 = (fx) => Number(git(fx.dir, 'rev-list', '--count', 'HEAD').stdout.trim());
+/** 그 커밋이 만진 파일 — 한글 경로가 8진 이스케이프로 나오면 대조가 통째로 어긋난다(F045 계열). */
+const 커밋한파일 = (fx, ref = 'HEAD') =>
+  git(fx.dir, '-c', 'core.quotePath=false', 'show', '--name-only', '--format=', ref)
+    .stdout.trim().split(/\r?\n/).filter(Boolean).sort();
+
+/** 보드에 데이터행이 **ROW 하나뿐**인 판 — 옮기면 껍데기만 남는 자리다. */
+function mk막줄Fixture(꼬리 = []) {
+  const fx = mkRepoFixture();
+  fs.writeFileSync(fx.board, [
+    '# 세션보드', '', '| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|',
+    ROW, ...꼬리, '',
+  ].join('\n'), 'utf8');
+  git(fx.dir, 'commit', '-q', '-m', '한 줄만', '--', '세션보드.md');
+  return fx;
+}
+
+test('[조율값] 이관이 **커밋 1개**로 끝난다 (선기록+제거 2벌이 아니다)', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mkRepoFixture();
+  const before = 커밋수(fx);
+  const r = run(fx, ['옮길 트랙 갑']);
+  assert.equal(r.status, 0, '이관 실패: ' + r.stderr);
+  assert.equal(커밋수(fx) - before, 1,
+    `이관에 커밋이 ${커밋수(fx) - before}개 나갔다 — 세션당 장부 값이 그만큼 곱해진다`);
+  assert.deepEqual(커밋한파일(fx), ['세션보드.md', '세션보드_아카이브.md'],
+    '한 커밋에 두 파일이 함께 들어 있어야 원자다(하나만 들어 있으면 F102 창이 다시 열린다)');
+  assertNeverLost(fx, '원자 커밋');
+});
+
+test('[조율값] 마지막 줄이면 **빈 껍데기를 남기지 않는다** (파일째 지운다)', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mk막줄Fixture();
+  const r = run(fx, ['옮길 트랙 갑']);
+  assert.equal(r.status, 0, '이관 실패: ' + r.stderr);
+  assert.ok(read(fx.archive).includes(ROW), '줄이 아카이브에 없다 — 지우기 전에 유실됐다');
+  assert.ok(!fs.existsSync(fx.board), '줄이 다 빠졌는데 껍데기 파일이 남았다(244개가 이렇게 쌓였다)');
+  assert.notEqual(git(fx.dir, 'show', 'HEAD:세션보드.md').status, 0,
+    '파일 삭제가 커밋에 안 담겼다 — 작업본만 지우면 다음 체크아웃에서 되살아난다');
+  assert.match(String(r.stdout), /빈 보드 파일을 남기지 않고 지운다/, '지웠다는 사실을 안 알렸다');
+});
+
+test('[조율값] 줄이 **남아 있으면** 파일을 지우지 않는다', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mkRepoFixture();                      // 데이터행 2개 — 하나 빼도 하나 남는다
+  assert.equal(run(fx, ['옮길 트랙 갑']).status, 0);
+  assert.ok(fs.existsSync(fx.board), '아직 줄이 남았는데 파일을 지웠다');
+  assert.ok(read(fx.board).includes('남을 트랙 을'), '남아야 할 줄이 사라졌다');
+});
+
+/* 🔑 `표줄` 은 **넓은** 판정이라 유령까지 센다(F322·F330·F331). 유령을 「데이터행이 아니니 빈
+ * 파일」로 읽어 조용히 지우면 그건 유령보다 나쁘다 — 유령은 적어도 파일에 남아 있었다. */
+test('[조율값] **유령**이 남아 있으면 안 지운다 (규격 밖 줄을 조용히 버리지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const 유령줄 = '| 08-04 | **유령 트랙** | x.js | 완료 |';   // 날짜가 두 자리 = 조립기가 못 읽는다
+  const fx = mk막줄Fixture([유령줄]);
+  assert.equal(run(fx, ['옮길 트랙 갑']).status, 0);
+  assert.ok(fs.existsSync(fx.board), '유령만 남았는데 파일째 지웠다 — 그 줄은 어디에도 안 남는다');
+  assert.ok(read(fx.board).includes(유령줄), '유령 줄이 사라졌다');
+});
+
+test('[조율값] **사람이 쓴 글**이 남아 있으면 안 지운다', { skip: !hasGit && 'git 없음' }, () => {
+  const 메모 = '메모: 이 트랙은 개원 뒤 다시 본다';
+  const fx = mk막줄Fixture([메모]);
+  assert.equal(run(fx, ['옮길 트랙 갑']).status, 0);
+  assert.ok(fs.existsSync(fx.board), '내 것이 아닌 글이 있는데 파일째 지웠다');
+  assert.ok(read(fx.board).includes(메모), '남의 메모가 사라졌다');
+});
+
+/* 옛 판은 실패 자리에 「아카이브만 커밋된 중복」을 남겼고 재실행은 F226 잔재 경로로만 살았다.
+ * 원자 판은 되돌려서 **정상 경로**로 재실행되게 한다 — 되돌리지 않으면 보드에 줄이 없어
+ * 다음 실행이 「못 찾았다」로 죽고, 처방이 못 따를 처방이 된다(F103). */
+test('[조율값] 커밋이 실패하면 보드를 **원문으로 되돌린다** (재실행이 정상 경로로 간다)', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mkRepoFixture();
+  const before = read(fx.board);
+  const hook = path.join(fx.dir, '.git', 'hooks', 'pre-commit');
+  fs.writeFileSync(hook, '#!/bin/sh\nexit 1\n', 'utf8');
+  fs.chmodSync(hook, 0o755);
+
+  const r = run(fx, ['옮길 트랙 갑']);
+  assert.notEqual(r.status, 0, '커밋이 막혔는데 성공으로 끝났다');
+  assert.equal(read(fx.board), before, '보드를 안 되돌렸다 — 재실행이 「못 찾았다」로 죽는다');
+  assertNeverLost(fx, '원자 실패');
+
+  fs.unlinkSync(hook);                                   // 막던 것을 치우고 그대로 다시 돌린다
+  const r2 = run(fx, ['옮길 트랙 갑']);
+  assert.equal(r2.status, 0, '되돌린 뒤 재실행이 안 된다(F103 — 못 따를 처방): ' + r2.stderr);
+  assert.ok(atHead(fx, '세션보드_아카이브.md').includes(ROW), '재실행이 아카이브를 커밋 안 했다');
+  assert.ok(!atHead(fx, '세션보드.md').includes(ROW), '재실행이 보드 제거를 커밋 안 했다');
+});
+
+test('[조율값] 되돌리기는 **지운 파일도 되살린다** (껍데기 갈래가 롤백에서 새지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mk막줄Fixture();
+  const before = read(fx.board);
+  const hook = path.join(fx.dir, '.git', 'hooks', 'pre-commit');
+  fs.writeFileSync(hook, '#!/bin/sh\nexit 1\n', 'utf8');
+  fs.chmodSync(hook, 0o755);
+
+  const r = run(fx, ['옮길 트랙 갑']);
+  assert.notEqual(r.status, 0, '커밋이 막혔는데 성공으로 끝났다');
+  assert.ok(fs.existsSync(fx.board), '커밋이 실패했는데 지운 보드를 안 되살렸다 — 줄이 작업본에서 사라진다');
+  assert.equal(read(fx.board), before, '되살렸는데 내용이 원문이 아니다');
+});
