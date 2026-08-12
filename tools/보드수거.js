@@ -1,0 +1,164 @@
+#!/usr/bin/env node
+/* 보드수거 — 주인이 마감을 선언한 **완료** 줄을 아카이브로 거둔다 (F368 의 남은 절반)
+ *
+ * 왜 있나 (2026-08-12 · F368 앞 절반이 탐지를 세운 뒤 남은 자리):
+ *   `tools/board.js` 는 이제 「이 줄의 주인이 아직 있나」를 말한다. 그런데 **치우는 손은 여전히
+ *   사람**이었다 — 실측 그날 표 18줄 중 15줄이 마감한 주인의 것이었고, 새 세션이 자기 줄을
+ *   선언하려면 남의 완료 줄부터 손으로 옮겨야 했다(`board-guard` 가 처방을 주긴 한다).
+ *   철학 정본 ㉡ 「사람 손을 늘리는 해법을 쓰지 않는다 — 사람이 누르는 칸은 **판단이 필요한
+ *   자리 하나만** 남긴다」의 정면이다. 판단이 필요 없는 자리를 기계가 가져간다.
+ *
+ * ■ 무엇을 거두나 — 세 조건이 **동시에** 참인 줄만
+ *   ① `완료행` (상태 칸이 끝났다고 적혔다 · 판정 정본 = `tools/lib/보드.js`)
+ *   ② 주인 없음 (`주인없는줄들` — 마감 도장이 찍혔거나 심장박동이 끊겼다)
+ *   ③ **🎫 가 없다**
+ *
+ *   ③ 이 이 도구의 급소다. 완료 줄에도 🎫(이어받기 일감)가 붙는다 — 「내 트랙은 끝났고, 여기
+ *   다음 사람이 집을 것이 있다」. 그 줄을 자동으로 아카이브에 넣으면 일감이 **조용히** 사라진다.
+ *   이 저장소가 반복해 쓰는 원칙 그대로다: 조용한 누수가 시끄러운 비용보다 나쁘다.
+ *   그래서 🎫 줄은 남기고 `board.js` 가 계속 「주인 없음 · 🎫」로 드러낸다 — 집을지 말지는
+ *   실물을 열어 봐야 아는 **판단**이고, 판단은 사람 몫으로 남기는 그 한 칸이다.
+ *   🚫 `--🎫포함` 같은 손잡이는 두지 않는다 — 탈출구가 곧 우회다.
+ *
+ * ■ 어떻게 거두나 — **직접 안 쓴다. `tools/board-move.js` 에 위임한다.**
+ *   그쪽이 원칙 ①~⑥(줄끝 실측 · 메모리 검증 · 아카이브 먼저 · 한 커밋 원자 · 깨끗할 때만 ·
+ *   산 주인 거절)을 이미 지고 있다. 여기서 파일을 쓰면 그 보장이 두 벌이 되고, 갈라진 쪽의
+ *   증상은 **「줄이 통째로 사라졌다」**다 — F046 이 정확히 그 사고다.
+ *   덤으로 산 주인 검사가 **한 번 더** 걸린다: 조사 시점과 실행 시점 사이에 되살아난 세션은
+ *   board-move 가 종료 코드 6 으로 거절하고, 그건 실패가 아니라 정상 판정이다.
+ *
+ * ■ 못 재면 아무것도 안 한다
+ *   `주인없는줄들` 이 `null`(폴더를 못 읽거나 생사를 못 잼)이면 **한 줄도 거두지 않는다.**
+ *   여기서 「0건」으로 접으면 미실행이 통과와 같은 모양이 된다(F207). 그 방향은 이 도구에선
+ *   특히 나쁘다 — 「아무도 안 살아 있다」로 읽히면 **산 세션의 줄을 통째로 쓸어낸다.**
+ *
+ * 쓰는 법
+ *   node tools/보드수거.js           보고만 — 무엇을 거둘지 / 무엇을 왜 안 거두는지
+ *   node tools/보드수거.js --실행     실제로 거둔다(board-move 가 줄마다 한 커밋)
+ *   node tools/보드수거.js --hook    SessionStart 용 — 거둔 게 있을 때만 말한다(빈손이면 침묵)
+ */
+'use strict';
+const path = require('path');
+const { spawnSync } = require('child_process');
+
+const 보드lib = require(path.join(__dirname, 'lib', '보드.js'));
+/* 커밋 가능 상태 판정은 `인계문수거` 것을 그대로 쓴다 — rebase·merge·분리 HEAD 를 여기 다시
+ * 적으면 두 수거 도구가 서로 다른 「지금 커밋해도 되나」를 보게 된다(그쪽 머리말과 같은 축). */
+const { 커밋못하는이유 } = require(path.join(__dirname, '인계문수거.js'));
+
+/* `SYNK_BOARD_ROOT` 는 `tools/board.js`·`tools/board-move.js` 와 **같은 이름의 이음매**다.
+ * 이름이 갈리면 조사와 실행이 서로 다른 저장소를 보고, 그 방향은 「거둘 게 없다」(=침묵)다. */
+const ROOT = process.env.SYNK_BOARD_ROOT || path.resolve(__dirname, '..');
+/* ⚠ 이음매는 **부를 때** 읽는다 — 톱레벨 const 로 굳히면 이 모듈을 `require` 하는 회귀가
+ * 나중에 세운 스텁을 못 물리고 **진짜 board-move 가 돌아 버린다**(실측: 종료 코드 시험 3개가
+ * 전부 「옮김」으로 초록이 됐다 — 스텁이 안 물린 것이 통과와 같은 모양이었다 · F207 축).
+ * 훅처럼 한 번 돌고 죽는 파일이면 차이가 없지만, 이 파일은 모듈로도 산다. */
+const 이관도구 = () => process.env.SYNK_BOARD_MOVE_BIN || path.join(__dirname, 'board-move.js');
+/* board-move 는 git 커밋까지 하므로 훅의 `--dry` 검증(8초)보다 넉넉해야 한다.
+ * ⚠ 넘긴 것을 **성공으로 세지 않는다** — 타임아웃은 `못받음` 이고, 못받음은 다음 실행이 다시 본다. */
+const 실행제한 = () => Number(process.env.SYNK_BOARD_SWEEP_TIMEOUT_MS) || 60000;
+const 원칙6 = 6;   // board-move 종료 계약(0 옮겼다 · 1 못 옮겼다 · 6 주인 생존) — 그쪽 머리말
+
+/**
+ * 무엇을 거둘 수 있나. `null` = 판정 불가(생사를 못 쟀다 — 「0건」이 아니다).
+ * 반환: { 대상[], 티켓[], 문구없음[], 전체수, 완료수 }
+ */
+function 조사(root) {
+  const R = root || ROOT;
+  const 주인없음 = 보드lib.주인없는줄들(R);
+  if (주인없음 === null) return null;
+  const 전체 = (보드lib.줄들(R) || []).map((r) => r.줄);
+
+  const 대상 = []; const 티켓 = []; const 문구없음 = [];
+  for (const r of 주인없음) {
+    if (!보드lib.완료행(r.줄)) continue;          // ① 아직 도는 트랙 — 안 건드린다
+    if (r.이어받기) { 티켓.push(r); continue; }    // ③ 🎫 — 일감이 산다(위 머리말)
+    const 문구 = 보드lib.이관문구(r.줄, 전체);
+    if (!문구) { 문구없음.push(r); continue; }     // 유일 문구를 못 고르면 board-move 가 못 찾는다
+    대상.push({ ...r, 문구 });
+  }
+  return { 대상, 티켓, 문구없음, 전체수: 전체.length, 완료수: 전체.filter(보드lib.완료행).length };
+}
+
+/** 한 줄을 board-move 에 넘긴다 — `'옮김' | '거절' | '실패' | '못받음'`. */
+function 옮기기(c, root) {
+  const R = root || ROOT;
+  const env = {
+    ...process.env,
+    SYNK_BOARD_ROOT: R,
+    SYNK_BOARD_ARCHIVE: 보드lib.아카이브경로(R),
+    /* 어느 파일인지 알면 넘긴다 — 안 넘기면 board-move 가 **자기 옆 저장소**의 보드를 본다
+     * (픽스처·워크트리에서 통째로 빗나간다 · board-guard 이관판정과 같은 이유). */
+    SYNK_BOARD: path.join(보드lib.폴더(R), c.파일),
+  };
+  let r;
+  try {
+    r = spawnSync(process.execPath, [이관도구(), c.문구], {
+      encoding: 'utf8', timeout: 실행제한(), env, windowsHide: true,
+    });
+  } catch (_) { return '못받음'; }
+  if (!r || r.error || r.signal || typeof r.status !== 'number') return '못받음';
+  if (r.status === 0) return '옮김';
+  return r.status === 원칙6 ? '거절' : '실패';
+}
+
+function 실행(조사결과, root) {
+  const 결과 = { 옮김: [], 거절: [], 실패: [], 못받음: [] };
+  for (const c of 조사결과.대상) 결과[옮기기(c, root)].push(c);
+  return 결과;
+}
+
+const 짧게 = (줄) => String(줄).replace(/\s+/g, ' ').slice(0, 64);
+
+if (require.main === module) {
+  const argv = process.argv.slice(2);
+  const 모드 = argv.includes('--hook') ? 'hook' : argv.includes('--실행') ? '실행' : '보고';
+  const r = 조사();
+
+  if (r === null) {
+    /* 못 잼을 0건으로 접지 않는다 — 훅에서도 한 줄은 낸다(미실행과 통과가 같은 모양이면 안 된다). */
+    process.stdout.write('[보드수거] 줄 주인의 생사를 **못 쟀다** — 한 줄도 안 거뒀다(「거둘 것 0건」이 아니다)\n');
+    process.exit(0);
+  }
+
+  if (모드 !== 'hook') {
+    process.stdout.write(
+      `[보드수거] 표 ${r.전체수}줄 · 완료 ${r.완료수}줄 → 거둘 수 있는 것 ${r.대상.length}건` +
+      `${r.티켓.length ? ` · 🎫 라 남기는 것 ${r.티켓.length}건` : ''}` +
+      `${r.문구없음.length ? ` · 문구를 못 고른 것 ${r.문구없음.length}건` : ''}\n`);
+    for (const c of r.대상) process.stdout.write(`   거둠 ${c.지문 || c.파일}  ${짧게(c.줄)}…\n`);
+    for (const c of r.티켓) process.stdout.write(`   남김 ${c.지문 || c.파일}  🎫 이어받기 일감이 산다 — 집을지는 판단이라 사람 몫\n`);
+    for (const c of r.문구없음) process.stdout.write(`   스킵 ${c.지문 || c.파일}  유일 문구를 못 골랐다 — board-move 가 그 줄을 특정 못 한다\n`);
+  }
+
+  if (모드 === '보고') {
+    if (r.대상.length) process.stdout.write('   거두려면: node tools/보드수거.js --실행\n');
+    process.exit(0);
+  }
+  if (!r.대상.length) process.exit(0);   // hook 빈손은 침묵 — 잔소리하는 장치는 읽히지 않게 된다
+
+  const 막힘 = 커밋못하는이유();
+  if (막힘) {
+    process.stdout.write(`[보드수거] 지금은 커밋할 수 없다(${막힘}) — 한 줄도 안 거뒀다, 다음 실행이 다시 본다\n`);
+    process.exit(0);
+  }
+
+  const 결과 = 실행(r);
+  const 꼬리 = [
+    결과.거절.length ? `되살아나 거절 ${결과.거절.length}건(원칙⑥ — 정상 판정이다)` : '',
+    결과.실패.length ? `실패 ${결과.실패.length}건` : '',
+    결과.못받음.length ? `답 못 받음 ${결과.못받음.length}건(미실행이지 통과가 아니다)` : '',
+    r.티켓.length ? `🎫 ${r.티켓.length}건은 남겼다` : '',
+  ].filter(Boolean).join(' · ');
+
+  if (!결과.옮김.length) {
+    process.stdout.write(`[보드수거] 거두지 못했다${꼬리 ? ` — ${꼬리}` : ''}\n`);
+    process.exit(모드 === '실행' ? 2 : 0);   // 명시 실행의 실패는 소리 내고, 훅은 다음 기회에 맡긴다
+  }
+  process.stdout.write(
+    `[보드수거] 마감한 주인의 완료 줄 ${결과.옮김.length}건을 아카이브로 거뒀다(F368)${꼬리 ? ` · ${꼬리}` : ''}\n` +
+    `   되찾기 — 그 세션이 되살아나면 \`node tools/board.js\` 가 아카이브에 있다고 알린다\n`);
+  process.exit(0);
+}
+
+module.exports = { 조사, 실행, 옮기기 };

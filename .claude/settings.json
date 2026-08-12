@@ -42,6 +42,18 @@
         "hooks": [
           {
             "type": "command",
+            "command": "IFS= read -r -d '' _IGNORE || true; B=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/보드수거.js\"; { command -v node >/dev/null && [ -f \"$B\" ]; } || { echo \"SYNK 보드수거 미실행: $B (node 또는 파일 없음 — F044)\" >&2; exit 1; }; node \"$B\" --hook",
+            "shell": "bash",
+            "timeout": 45,
+            "statusMessage": "마감한 주인의 완료 줄 수거"
+          }
+        ]
+      },
+      {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
             "command": "IFS= read -r -d '' _IGNORE || true; O=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/작업본소유자.js\"; { command -v node >/dev/null && [ -f \"$O\" ]; } || { echo \"SYNK 작업본소유자 미실행: $O (node 또는 파일 없음 — F044)\" >&2; exit 1; }; node \"$O\" --hook",
             "shell": "bash",
             "timeout": 20,
