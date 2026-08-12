@@ -23,17 +23,29 @@ set MEMDIR=C:\Users\q1212\.claude\projects\C--Users-q1212-Documents-SYNK-appsscr
 set LOG=%MEMDIR%\sync-fail.log
 cd /d "%MEMDIR%"
 if errorlevel 1 exit /b 1
+rem WHY --autostash: ~19 sessions write into this memory dir continuously, so new
+rem edits land in the worktree during the seconds between `add` and `pull` - and a
+rem dirty worktree makes rebase REFUSE to start. That is the real cause of the 12
+rem logged failures since 08-08 (verified 08-12: auth/network fine, no stuck
+rem rebase, local was exactly 1 commit ahead - nothing to conflict over).
+rem
+rem WHY capture stderr: the old handler wrote only its own sentence, so git's
+rem actual error never survived - "possible conflict" was a GUESS, and it was the
+rem wrong one for 4 days. Failures must say which cause they were (CLAUDE.md).
+set ERR=%TEMP%\synk-memsync.err
 git add -A
 git diff --cached --quiet || git commit -m "auto: memory sync"
-git pull --rebase origin master
+git pull --rebase --autostash origin master 2> "%ERR%"
 if errorlevel 1 (
   git rebase --abort 2>nul
-  echo %date% %time% pull --rebase FAILED - possible conflict, check manually >> "%LOG%"
+  echo %date% %time% pull --rebase FAILED: >> "%LOG%"
+  type "%ERR%" >> "%LOG%"
   exit /b 1
 )
-git push origin master
+git push origin master 2> "%ERR%"
 if errorlevel 1 (
-  echo %date% %time% push FAILED - check network or credentials >> "%LOG%"
+  echo %date% %time% push FAILED: >> "%LOG%"
+  type "%ERR%" >> "%LOG%"
   exit /b 1
 )
 endlocal
