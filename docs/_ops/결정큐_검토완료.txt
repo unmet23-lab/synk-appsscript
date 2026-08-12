@@ -102,3 +102,12 @@ aca531f70f  reviewer-console-ux:227
 7a855600a7  mvp-eta-measured:40
 9d9efda3ce  design-docs-sweep-0811:15
 71a3196f94  minigame-spec-4modules:85
+7cd045e9f1  ai-correction-producer:43
+82c6da126b  data-accumulation-2year:54
+3f05134048  design-docs-sweep-0811:3
+9f653df73f  minigame-spec-4modules:42
+fe56ae5666  minigame-spec-4modules:61
+cf2413f122  minigame-spec-4modules:69
+d7ef71c812  minigame-spec-4modules:139
+4510e1323b  mongolia-trademark-clearance:86
+836e5a31ba  trademark-first-filing:201

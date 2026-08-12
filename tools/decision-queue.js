@@ -105,8 +105,19 @@ function 줄판정(line) {
    * 이 줄은 배달도 폐기함도 아닌 **무기록**으로 사라졌다. 「헤더 아래 실제 항목이 있으면」이
    * 성립 안 하는 파일이 34개였고(불릿에 ⏳ 를 안 단다), 그중 하나가 소급불가 ①-2·①-12 를
    * 여는 유호님 결정이었다. 판정은 그대로 「항목 아님」이되 **기록은 남긴다**. */
+  /* [2026-08-12 · 31b26852] 🔴 **코드 스팬 판별이 헤더 판별보다 «뒤»에 있어 갈라졌다.**
+   * 아래 maskCodeSpans 는 항목 경로에만 걸렸고, 바로 위 헤더 검사는 «원문»을 봐서
+   * `## ✅ 종결 (위 `⏳` 는 실행됐다)` 처럼 **기호를 말하기만 한** 제목을 「절 제목」으로 셌다.
+   * 증상은 --절 이 그 파일을 「배달 0건」으로 계속 부르는 것뿐인데, **처방을 따라도 안 꺼진다** —
+   * 백틱을 씌워도 헤더 경로는 그걸 안 읽기 때문이다(따를 수 없는 처방 = 우회를 정상 통로로 · F103).
+   * 실측: 이 수리 직전 --절 2파일이 전부 이 모양이었다(data-accumulation-2year:76 · retry-of:50).
+   * 🔑 처방 = 「쓰는 것 vs 말하는 것」 판별을 **모든 경로보다 앞**으로 올려 한 곳에서만 판정한다.
+   *    파생을 하나로 두는 것이 규칙이다(CLAUDE.md 신뢰성 ④ · 가드 맹점④) — 위 :91 주석이
+   *    「이 저장소에서 ⏳가 항목인가를 정하는 «유일한» 자리」라고 적어 놓고 그 안에서 갈라져 있었다. */
+  const masked = maskCodeSpans(line);
+  if (!masked.includes('⏳')) return null;   // 코드 스팬 «안에만» 있다 = 기호를 말한 줄이지 표식이 아니다
   if (/^\s{0,3}#{1,6}\s/.test(line)) return { 사유: '절 제목으로 판정', 절제목: true };
-  const stripped = stripMd(maskCodeSpans(line));
+  const stripped = stripMd(masked);
   const mi = markerIndex(stripped);
   if (mi === -1) return { 사유: '문장 속 지시어로 판정' };
   const clean = unmaskCodeSpans(stripped.slice(mi).trim());
@@ -125,6 +136,22 @@ function 줄판정(line) {
   return { clean, 앞글자 };
 }
 const 글자수 = (s) => s.replace(/[^\p{L}\p{N}]/gu, '').length;
+
+/* ── frontmatter (2026-08-12 · 31b26852) — **다섯 번째 배달 실패 모양** ──────────────
+ * `description:` 은 파일 «전체» 요약이라 ✅(끝난 것)와 ⏳(남은 것)가 **구조적으로 한 줄에 온다.**
+ * 실측: design-docs-sweep-0811 의 description 이 항목으로 배달되며 아래 metadata 블록까지 꼬리로
+ * 끌고 갔다 — 「⏳유호 6…✅반영 종결(416088f) metadata: node_type: memory type: project」.
+ * 받아도 답할 수 없고, 「끝난 일이 미결로 안 간다」 회귀(결정큐.test.js:566)를 **상시 빨갛게** 만든다.
+ * 그 적색은 주인이 없어 아무도 안 고치고, 남의 배포 게이트만 막는다.
+ * 🔑 판정은 「항목 아님」이되 **폐기함에 기록한다** — 조용히 지우면 그게 유일한 기록인 날 잃는다(F108
+ *    이 파일 :104 이 헤더에서 배운 것과 같은 교훈이다).
+ * 반환 = frontmatter 마지막 줄 index(없으면 -1). **닫히지 않은 `---` 는 frontmatter 가 아니다** —
+ * 본문 첫 줄이 수평선이면 파일 전체를 삼켜 큐가 통째로 0건이 된다(미실행과 통과가 같은 모양). */
+function frontmatter끝(줄들) {
+  if (줄들[0] === undefined || 줄들[0].trim() !== '---') return -1;
+  for (let i = 1; i < 줄들.length; i++) if (줄들[i].trim() === '---') return i;
+  return -1;
+}
 
 /* ── 꼬리 조각 (2026-08-11 · a831951c) — **네 번째 배달 실패 모양** ─────────────
  * 앞의 셋(절 제목·지시어 오분류·소프트랩 절단)과 달리 판정이 전부 옳은데도 깨진다:
@@ -262,9 +289,12 @@ function extract(dir) {
     const 절제목 = [];
     let 배달 = 0;
     const 줄들 = body.split('\n');
+    const fm끝 = frontmatter끝(줄들);
     줄들.forEach((line, i) => {
       const 판정 = 줄판정(line);
       if (!판정) return;
+      // frontmatter 는 파일 «에 대한» 메타지 항목이 아니다 — 다만 기록은 남긴다(위 §frontmatter · F108)
+      if (i <= fm끝) return 버린다(f, i, line, '프론트매터로 판정');
       if (판정.절제목) { 절제목.push({ line: i + 1, text: line.trim().slice(0, MAX_LEN) }); return; }
       if (판정.사유) return 버린다(f, i, line, 판정.사유);
       const 이어짐 = 꼬리(줄들, i);
@@ -612,7 +642,7 @@ function main() {
   }
   if (args.includes('--절')) {
     if (!r.절뿐.length) return console.log('\n[⏳ 절 제목만 · 배달 0건] 0파일\n');
-    console.log(`\n[⏳ 절 제목만 · 배달 0건] ${r.절뿐.length}파일 — 살아있으면 ⏳를 절 아래 항목 줄로 내리고, 끝났으면 제목의 ⏳를 ✅로 닫는다\n`);
+    console.log(`\n[⏳ 절 제목만 · 배달 0건] ${r.절뿐.length}파일 — 살아있으면 ⏳를 절 아래 «항목 줄»로 내리고, 끝났으면 제목의 ⏳를 ✅로 닫는다\n  (제목이 기호를 «말하기만» 하는 경우 — 「위 ⏳ 는 실행됐다」 — 는 백틱을 씌운다: \`⏳\`)\n`);
     r.절뿐.forEach((it) => it.제목.forEach((h) => console.log(`     [${it.topic}:${h.line}]\n     ${h.text}`)));
     return;
   }
