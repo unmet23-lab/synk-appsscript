@@ -302,3 +302,61 @@ test('처분 도장이 찍힌 런은 훅에서 사라진다 — 찍었는데 계
   const r = 훅돌리기({ SYNK_REVIEW_RUNS: path.join(d, 'runs') });
   assert.strictEqual(r.out.trim(), '', `처분한 런이 아직 뜬다: ${r.out}`);
 });
+
+// ───────────────────────────────────────────────── ⑧ 단계 병렬 (2026-08-12 · 벽시계의 나머지 절반)
+//
+// 회차는 병렬인데 **단계가 순차**였다 — 검수가 통째로 끝나야 기능체크가 시작해서 벽시계가
+// `검수 + 기능` 이었다. 여기서 새는 방향은 조용하다: 계획이 비어도 부모가 순차로 완주하므로
+// **결과는 똑같고 시간만 두 배**다. 그래서 「돌았다」로는 절대 안 잡히고, 계획을 직접 재야 한다.
+
+test('기본 조합은 검수와 기능체크를 한꺼번에 띄운다 — 순차면 벽시계가 두 배인데 결과가 같아 조용하다', () => {
+  const cr = require('../tools/codex-review.js');
+  assert.deepStrictEqual(cr.병렬계획([], 2), [{ 단계: '검수', 회차: 2 }, { 단계: '기능', 회차: 2 }]);
+});
+
+test('--회차 1 도 두 단계를 띄운다 — 옛 잣대(회차>1)가 통째로 놓치던 자리다', () => {
+  const cr = require('../tools/codex-review.js');
+  assert.deepStrictEqual(cr.병렬계획([], 1), [{ 단계: '검수', 회차: 1 }, { 단계: '기능', 회차: 1 }],
+    '자식이 2개라 벽시계가 절반이 되는데 옛 판은 회차만 보고 안 띄웠다');
+});
+
+test('--버그만 은 기능 자식을 안 띄우고, 자식 총합이 1이면 아예 안 띄운다', () => {
+  const cr = require('../tools/codex-review.js');
+  assert.deepStrictEqual(cr.병렬계획(['--버그만'], 2), [{ 단계: '검수', 회차: 2 }],
+    '기능체크를 생략한 모드인데 기능 자식을 띄우면 시키지도 않은 패스를 태운다');
+  assert.deepStrictEqual(cr.병렬계획(['--버그만'], 1), [],
+    '자식 1개는 프로세스 값만 치르고 이득이 0 이다');
+});
+
+test('--직렬 은 계획을 통째로 비운다 — rate limit 에 걸렸을 때 끄는 유일한 손잡이다', () => {
+  const cr = require('../tools/codex-review.js');
+  assert.deepStrictEqual(cr.병렬계획(['--직렬'], 2), []);
+  assert.deepStrictEqual(cr.병렬계획(['--직렬', '--버그만'], 3), []);
+});
+
+test('입력 조각은 겹쳐 쓴다 — 덮으면 먼저 적힌 기능프롬프트가 사라져 기능 자식이 통째로 죽는다', () => {
+  새방();
+  const cr = require('../tools/codex-review.js');
+  const 런 = 런모듈();
+  const 방 = 런.방({ 종류: '커밋', 값: 'abc', 모델: 'm', 효력: 'x', 버그만: false, 총회차: 2 });
+  cr.입력쓰기(방, { 기능프롬프트: '기능 질문' });
+  cr.입력쓰기(방, { 대상: { 종류: '커밋', 값: 'abc' }, 회차: 2 });
+  const 입력 = 런.json읽기(방, '입력', 0);
+  assert.strictEqual(입력.기능프롬프트, '기능 질문', '뒤 쓰기가 앞 칸을 덮었다 — 기능 자식이 「프롬프트가 방에 없다」로 죽는다');
+  assert.strictEqual(입력.회차, 2, '뒤 쓰기가 안 들어갔다');
+});
+
+test('입력이 덜 적힌 방으로 검수 자식을 띄우면 **이름 붙은 실패**로 남는다 — 조용히 죽으면 「가끔 안 빨라짐」이 전부다', () => {
+  const d = 새방();
+  const 런 = 런모듈();
+  const 방 = 런.방({ 종류: '커밋', 값: 'zzz', 모델: 'm', 효력: 'x', 버그만: false, 총회차: 1 });
+  런.json쓰기(방, '입력', 0, { 회차: 1, timeoutMs: 1000 });   // 대상 없음 = 띄우는 순서가 틀린 판
+  let 코드 = 0; let out = '';
+  try {
+    out = execFileSync(process.execPath, [path.join(ROOT, 'tools', 'codex-review.js'), '--회차실행', 방, '1', '검수'],
+      { encoding: 'utf8', env: { ...process.env, SYNK_REVIEW_CKPT: path.join(d, 'ckpt') } });
+  } catch (e) { 코드 = e.status; out = String(e.stdout || '') + String(e.stderr || ''); }
+  assert.strictEqual(코드, 2, '대상 없는 방인데 자식이 성공으로 끝났다');
+  assert.match(out, /검수 대상이 방에 없다/, '실패 이유가 이름 없이 죽었다 — codex 안쪽 TypeError 로 묻힌다');
+  assert.ok(런.조각읽기(방, '실패-검수', 1), '실패 마커가 안 남았다 — 부모 폴링이 상한까지 헛돌고 그 시간은 사람이 기다린 시간이다');
+});
