@@ -838,7 +838,6 @@ if (resulting !== null && 내id) {
  *
  * ponytail: **동시 선언**(둘 다 이 훅을 통과한 뒤 각자 쓰기)은 여전히 못 막는다 — 막으려면 락이
  *   필요하고 그건 이 사고 빈도에 안 맞는다. 그 창은 초 단위고, 지금 실측된 사고는 3분 차다. */
-const 장부RE = /(세션보드|마찰신호|버전_이력|지침_이력)/;
 const 표식 = require(path.join(__dirname, 'lib', '표식.js')); // 번호 규칙은 한 곳에서만 산다(F203)
 
 /* 🚫 로 시작하는 항목은 **안 만진다는 명시**지 선점이 아니다 (마찰 F221 · 2026-08-08 실측).
@@ -901,11 +900,10 @@ function 자리들(line) {
   const 머리 = 표식.머리(트랙칸(line));
   if (머리) 자리.add(머리);
   const 파일 = 금지스팬빼기(파일칸(line));
-  for (const m of 파일.matchAll(/[\w가-힣./_-]+\.(?:ts|tsx|js|jsx|mjs|cjs|gs|json|html|md|sql|ya?ml)\b/g)) {
-    const p = m[0].replace(/^(?:\.\.?\/)+/, '').toLowerCase();
-    if (p.split('/').length < 2 || 장부RE.test(p)) continue;
-    자리.add(p);
-  }
+  /* 경로 뽑기는 `보드lib.파일자리` 하나에서만 산다 — 대기열의 점유 판정이 같은 규칙을 두 번째로
+   * 필요로 한 날 그리로 모았다(F406). 판 꼬리(`_v6`)는 **안 뗀다**: 여기서 떼면 v5 를 인용한 줄이
+   * v6 를 선언한 줄을 막아 정당한 새 판이 차단된다(거짓 차단은 관습을 죽인다 · 그 이유는 그 함수 머리말). */
+  for (const p of 보드lib.파일자리(파일)) 자리.add(p);
   for (const { 자리: 이름, re } of 공유자원) if (re.test(파일)) 자리.add(이름);
   return 자리;
 }
