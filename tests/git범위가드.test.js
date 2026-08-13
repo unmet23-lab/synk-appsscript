@@ -781,6 +781,31 @@ test('⑧ 자기 처방을 막지 않는다 — 같은 명령을 그대로 다�
   assert.equal(가드8(f, 'git commit -m "x" -- 보드.md').차단, false, '처방대로 재실행했는데 또 막혔다(F103 재현)');
 });
 
+test('⑧ 미추적 신규 파일이 섞이면 처방이 「add 부터」를 같이 말한다 (F383)', () => {
+  /* 신고 원문: 「같은 명령을 그대로 다시 실행한다」가 미추적 파일에선 따를 수 없다 —
+   * 차단은 실행 전에 걸려 한 호출에 묶인 앞선 add 도 함께 무효가 되므로, add 없이 커밋만
+   * 다시 치면 git 이 pathspec 오류로 죽는다(08-12 한 세션 2회). 처방이 그 갈래를 말해야
+   * 우회(add -A)가 정상 통로가 되지 않는다(F103 계열). */
+  const f = 픽스처8();
+  fs.writeFileSync(path.join(f.repo, '새표.md'), '| 새 파일 |\n');   // 미추적 신규 — 주인 모름
+  const r = 가드8(f, 'git commit -m "x" -- 새표.md');
+  assert.equal(r.차단, true, '미추적 신규 파일(주인 모름)인데 안 막았다 — 전제가 깨졌다');
+  assert.match(r.사유, /미추적 신규 파일.*있다/, '미추적 갈래를 처방이 안 말한다 — 재실행이 pathspec 오류로 죽는다(F383)');
+  assert.match(r.사유, /git add/, 'add 를 앞세우라는 실행 가능한 처방이 없다');
+  assert.match(r.사유, /F383/, '근거 번호가 없다 — 다음 사람이 왜인지 못 찾는다');
+});
+
+test('⑧ 추적 파일뿐이면 미추적 갈래 문구를 붙이지 않는다 (F383 음성 — 노이즈가 되면 안 읽는다)', () => {
+  const f = 픽스처8();
+  fs.writeFileSync(path.join(f.repo, '표.md'), '| 1판 |\n');
+  f.g('add', '표.md'); f.g('commit', '-qm', '표 최초');
+  fs.writeFileSync(path.join(f.repo, '표.md'), '| 2판 |\n');
+  만진기록(f.state, f.repo, 'local_peer', ['표.md']);
+  const r = 가드8(f, 'git commit -m "x" -- 표.md');
+  assert.equal(r.차단, true, '남이 만진 추적 파일인데 안 막았다');
+  assert.doesNotMatch(r.사유, /F383|미추적 신규 파일\*\*이 있다/, '추적 파일뿐인데 미추적 처방이 붙었다 — 매번 붙는 경고는 곧 아무도 안 읽는다');
+});
+
 test('⑧ 그 사이 내용이 바뀌면 **다시** 펼친다 (한 번 본 것으로 영구 면제되지 않는다)', () => {
   const f = 픽스처8();
   fs.writeFileSync(path.join(f.repo, '보드.md'), '| 1차 |\n');
