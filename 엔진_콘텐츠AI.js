@@ -2098,7 +2098,7 @@ function 태그누출_(s) {
 function 옛글자짚기_(글) {
   // 전역 플래그 정규식을 상수로 들고 다니면 lastIndex 때문에 같은 입력에 번갈아 참·거짓이 난다
   //   — 새는 방향은 거기서도 「통과」다(형제가 회귀 첫 실행에서 실제로 밟았다). 매번 새로 만든다.
-  const 걸린 = String(글 == null ? '' : 글).match(new RegExp('[\\u3040-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF]', 'gu'));
+  const 걸린 = String(글 == null ? '' : 글).match(new RegExp('[\\u3040-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uFF66-\\uFF9F\\u{1AFF0}-\\u{1B16F}\\u{20000}-\\u{3FFFF}]', 'gu'));
   if (!걸린) return '';
   const 코드 = [];
   걸린.forEach(function (m) { const c = m.codePointAt(0); if (코드.indexOf(c) === -1) 코드.push(c); });
@@ -2270,6 +2270,20 @@ function 오류뱅크전진_(상태들, 제출일들, 기준시각) {
   return { 집을행, 전진 };
 }
 
+/* [v9.226] 오류사전 포이즌 필 판정 — 「성공 시에만 전진」의 그림자를 닫는다(리뷰 P2-④).
+ * aiCall_ 이 같은 슬라이스에서 밤마다 던지면(영구 오류·재료 유도형 옛글자) 커서가 영원히 서고
+ * error_bank 만 조용히 성장을 멈춘다 — 관리자 메일엔 같은 오류가 매밤 쌓이지만 「커서가 섰다」는
+ * 어디에도 없다. 연속 3밤 실패면 그 슬라이스의 확정 접두를 재료에서 포기하고 전진한다:
+ * 원본 hw_feedback 행은 그대로라 잃는 것은 파생 집계 재료 ≤40행, 얻는 것은 그 뒤 전체의 생존이다
+ * (aiFeedbackBatch_ 리뷰 M1 포이즌 필과 같은 축 — 그쪽은 행 단위, 이쪽은 호출이 슬라이스 단위라 슬라이스 단위).
+ * ⚠ 전진 폭은 커서.전진(확정 접두)까지만 — 판정 전(대기·격리 복구 창) 행을 넘으면 v9.212 불변식
+ *   (승인·복구 뒤 재수집)이 깨진다. 전진 폭 0이면 집을 행도 없어 애초에 호출이 없다. */
+function 오류뱅크포이즌_(연속실패, 전진폭) {
+  const n = (Number(연속실패) || 0) + 1;
+  if (n >= 3 && 전진폭 > 0) return { 전진: true, 카운터: 0 };
+  return { 전진: false, 카운터: n };
+}
+
 // ── 야간 오케스트레이터: H1 한 문장 + A1/A2/A4 개인 퀴즈 + G 오류사전 + H5 반 브리핑 + E5 리텐션 멘트 ──
 function aiStudioBatch_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -2388,9 +2402,25 @@ function aiStudioBatch_() {
               type: { type: 'string', description: '오류 유형(조사/어순/시제/어휘/철자/높임 등 짧은 분류)' },
               pattern: { type: 'string', description: '몽골어 화자 특유 패턴 일반화 1문장 — 학생 이름·개인정보 금지' } } } } } };
           calls++;
-          const out = aiCall_(apiKey,
-            '몽골어 화자의 한국어 오류를 분류·일반화하는 언어학 조수. 개별 문장에서 개인 정보를 제거하고 오류 유형과 패턴만 추출한다.',
-            '오류 사례(제출→교정):\n' + rowsF.map(x => x.sub + ' → ' + x.fix + (x.pt ? ' (' + x.pt + ')' : '')).join('\n'), ebSchema, 4096);
+          let out;
+          try {
+            out = aiCall_(apiKey,
+              '몽골어 화자의 한국어 오류를 분류·일반화하는 언어학 조수. 개별 문장에서 개인 정보를 제거하고 오류 유형과 패턴만 추출한다.',
+              '오류 사례(제출→교정):\n' + rowsF.map(x => x.sub + ' → ' + x.fix + (x.pt ? ' (' + x.pt + ')' : '')).join('\n'), ebSchema, 4096);
+          } catch (eAi) {
+            /* [v9.226] 포이즌 필(리뷰 P2-④) — 판정은 오류뱅크포이즌_ 이 진다. rethrow 하는 이유:
+             *   처분(errs 기록·이 갈래 중단)은 바깥 catch 가 이미 지고 있고 손으로 겹쳐 적으면 갈라진다. */
+            const 판 = 오류뱅크포이즌_(props.getProperty('오류뱅크_연속실패'), 커서.전진);
+            if (판.전진) {
+              props.setProperty('오류뱅크_포인터', String(from + 커서.전진));
+              props.deleteProperty('오류뱅크_연속실패');
+              Logger.log('오류사전 포이즌 필: 연속 3회 실패 — 행 ' + (from + 1) + '~' + (from + 커서.전진) + ' 을 재료에서 제외하고 전진(원본 hw_feedback 행은 그대로다)');
+            } else {
+              props.setProperty('오류뱅크_연속실패', String(판.카운터));
+            }
+            throw eAi;
+          }
+          props.deleteProperty('오류뱅크_연속실패'); // 성공 — 연속 실패 흐름이 끊겼다
           const eb = ensureSheet(ss, 'error_bank', ['월', '오류유형', '패턴', 'created_at']);
           const ym = today.slice(0, 7);
           const rowsE = (out.items || []).slice(0, 20).map(it => [ym, String(it.type || '').slice(0, 20), String(it.pattern || '').slice(0, 160), today]);

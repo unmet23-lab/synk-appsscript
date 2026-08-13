@@ -123,7 +123,12 @@ test('탐지력 — 픽스처의 옛 글자는 잡고, 세 문자는 통과시�
   const 한자 = String.fromCodePoint(0x6703);      // 한자 한 자
   const 가나 = String.fromCodePoint(0x3042);      // 히라가나 한 자
   const 확장A = String.fromCodePoint(0x3400);     // 한자 확장A
-  for (const c of [한자, 가나, 확장A]) {
+  // [vNEXT] 리뷰 P2-① 확장분 — 구판 클래스가 «통과»로 흘리던 네 구역(근거=hooks/lib/옛글자.js 머리말)
+  const 호환한자 = String.fromCodePoint(0xf914);  // 한국어 독음 호환한자(KS 왕복 구역)
+  const 반각가나 = String.fromCodePoint(0xff71);  // 반각 가타카나
+  const 확장B = String.fromCodePoint(0x20000);    // astral 한자(2면 머리 — 서러게이트 쌍)
+  const 가나보충 = String.fromCodePoint(0x1b000); // astral 가나 보충
+  for (const c of [한자, 가나, 확장A, 호환한자, 반각가나, 확장B, 가나보충]) {
     assert.ok(옛글자.test(`앞 ${c} 뒤`), `못 잡는다: U+${c.codePointAt(0).toString(16)}`);
   }
   // 거짓양성 — 실제로 쓰는 세 문자와 기호는 건드리지 않는다
