@@ -17,10 +17,10 @@
     --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
 
     /* 앱 실값 — talk src/테마.js 원문 그대로(다크) · 라이트는 계산으로 번역(계측 블록 참조) */
-    --d-bg:#0F1730; --d-card:#131A32; --d-ink:#F6F1E8;
+    --d-bg:#0F1730; --d-card:#1A2340; --d-ink:#F6F1E8;   /* 카드 = Navy (08-14 ㉡ 집행 · 옛 Navy Ink #131A32) */
     --d-tag:rgba(246,241,232,.75); --d-sub:rgba(246,241,232,.72);
     --d-meta:rgba(246,241,232,.62); --d-hair:rgba(246,241,232,.28); --d-aux:#8A93AD;
-    --l-bg:#FBF7EE; --l-card:#F6F1E8; --l-ink:#171820;
+    --l-bg:#FBF7EE; --l-card:#EFE7D7; --l-ink:#171820;   /* 라이트 카드 = 계산이 고른 Cream 2 */
     --l-tag:rgba(23,24,32,.75); --l-sub:rgba(23,24,32,.72);
     --l-meta:rgba(23,24,32,.62); --l-hair:rgba(23,24,32,.28); --l-aux:#5F657D;
   }
@@ -179,6 +179,21 @@
   .box p{margin:0 0 10px;font-size:14.5px;color:var(--slate2)}
   .box p:last-child{margin:0}
   .box.chal{background:none;border:1px solid var(--cream3)}
+  .box.done{background:var(--coralwash)}
+
+  /* 카드 들림 전/후 — 같은 바탕(Navy 2) 위에 두 단을 나란히 놓아야 차이가 보인다 */
+  .lift{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0 6px;max-width:560px}
+  @media(max-width:640px){.lift{grid-template-columns:1fr}}
+  .lift .plate{background:var(--navy2);border-radius:16px;padding:16px}
+  .lift .mini{border-radius:12px;padding:14px 15px}
+  .lift .mini.old{background:var(--navyink)}
+  .lift .mini.new{background:var(--navy)}
+  .lift .mini b{display:block;font-size:14.5px;color:var(--cream);font-weight:800;letter-spacing:-.01em}
+  .lift .mini span{display:block;font-size:12.5px;color:var(--slate);margin-top:5px}
+  /* 🔴 Slate«2»가 아니라 Slate 다 — 이 캡션의 바닥은 Navy 2(다크)라, 라이트용 Slate 2 를 쓰면 3.07 로
+     미달이다(렌더 린트가 픽셀에서 잡았다 · DESIGN.md 가 「이 색의 유일한 오용 형태」로 적어 둔 그 자리). */
+  .lift figcaption{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--slate);
+                   font-weight:700;margin-top:9px;text-align:center;font-variant-numeric:tabular-nums}
 
   .picks{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}
   @media(max-width:820px){.picks{grid-template-columns:1fr}}
@@ -237,7 +252,8 @@
 <h2><span class="n">2</span>실화면 세 벌 × 두 모드</h2>
 <p class="lead">문구·색·크기·간격 전부 앱 소스에서 그대로 가져왔습니다(지어낸 화면이 아닙니다).
    라이트판은 토큰 <code>시맨틱.라이트</code> 로 번역했고, 카드 면은 손으로 고르지 않고
-   <b>다크의 카드 들림(ΔL* 1.48)에 가장 가까운 킷 면</b>을 계산해 골랐습니다 → Cream.</p>
+   <b>다크의 카드 들림(ΔL* 5.98)에 가장 가까운 킷 면</b>을 계산해 골랐습니다 → Cream 2.
+   <b>다크 카드는 ㉡ 집행분(Navy)입니다</b> — 계측기가 앱 테마를 읽으므로 라이트 짝도 따라 옮겨졌습니다.</p>
 
 <h3>① 숙제 — 오늘의 말하기 (③답하기 · 녹음 중)</h3>
 <div class="pair">
@@ -320,7 +336,7 @@
       </div>
     </div></div>
     <p class="cap">오류 태그가 <b>코랄 글자</b>입니다 — 이 화면의 신호 1점(<code>테마.신호자리.답장</code>).
-       카드 위 대비 6.15. 「학생이 찾아야 하는 자리」가 색 하나로 즉시 읽힙니다.</p>
+       카드 위 대비 5.53. 「학생이 찾아야 하는 자리」가 색 하나로 즉시 읽힙니다.</p>
   </div>
   <div class="col">
     <span class="tag">라이트 — 번역판</span>
@@ -396,8 +412,8 @@
         </div>
       </div>
     </div></div>
-    <p class="cap">라이트도 성립합니다. 다만 세 번째 글자 층(<code>내일, 오늘…</code>)이 6.64 → <b>4.82</b> 로 내려앉아
-       기준선(4.5)에 0.32 만 남습니다 — 한 단만 흐려도 미달입니다.</p>
+    <p class="cap">라이트도 성립합니다. 다만 이 줄들은 <b>카드 위</b>라, 세 번째 글자 층(<code>내일, 오늘…</code>)이
+       6.14 → <b>4.58</b> 로 내려앉아 기준선(4.5)에 <b>0.08</b> 만 남습니다 — 한 단만 흐려도 미달입니다.</p>
   </div>
 </div>
 
@@ -408,7 +424,7 @@
   <li class="hard">
     <h4>오류 태그에 놓을 킷 값이 없다 — 신호 1점의 소멸</h4>
     <p>답장 화면의 코랄 태그는 13px 입니다. 라이트에서 코랄 글자는 철칙 ②가 <b>크기 불문</b> 금지하고(대비 2.62),
-       허용된 대체값 Coral 3 은 24px↑ 또는 18.7px↑ bold 한정이라 이 자리에 못 씁니다(3.23).
+       허용된 대체값 Coral 3 은 24px↑ 또는 18.7px↑ bold 한정이라 이 자리에 못 씁니다(카드 위 2.96).
        태그를 24px 로 키우는 것은 화면 설계를 바꾸는 일이지 색을 고르는 일이 아닙니다.
        <b>결과: 라이트판 답장 화면은 「학생이 찾아야 하는 자리」를 색으로 못 가리킵니다.</b></p>
   </li>
@@ -419,8 +435,8 @@
   </li>
   <li>
     <h4>글자 층 전체가 기준선 쪽으로 내려앉는다</h4>
-    <p>라이트 번역은 <b>모든 층에서 다크보다 대비가 낮습니다</b>(잉크만 예외). 3번째 층인 메타는 6.64 → 4.82,
-       카드 위에서는 <b>4.77</b> 로 기준 4.5 에 0.27 만 남습니다. 지금 통과라는 뜻이지 여유가 있다는 뜻이 아닙니다.
+    <p>라이트 번역은 <b>모든 층에서 다크보다 대비가 낮습니다</b>(잉크만 예외). 3번째 층인 메타는 바탕에서 6.64 → 4.82,
+       카드 위에서는 6.14 → <b>4.58</b> 로 기준 4.5 에 <b>0.08</b> 만 남습니다. 지금 통과라는 뜻이지 여유가 있다는 뜻이 아닙니다.
        괘선(<code>잉크_희미</code>)은 <b>두 모드 다</b> 비텍스트 기준 3.0 미달인데(2.36 / 1.83), 라이트에서 22% 더 나빠집니다.</p>
   </li>
 </ol>
@@ -432,33 +448,54 @@
 <!-- 계측:시작 — node tools/모드대비계측.js --쓰기 가 이 블록을 갱신한다. 손으로 고치지 않는다. -->
 <table class="meas">
 <thead><tr><th>면</th><th>층</th><th>다크</th><th>라이트</th><th>기준</th></tr></thead>
-<tbody><tr><td>바탕</td><td>잉크</td><td class="num ok">15.74</td><td class="num ok">16.53</td><td class="th">4.5</td></tr><tr><td>바탕</td><td>태그</td><td class="num ok">9.24</td><td class="num ok">7.51</td><td class="th">4.5</td></tr><tr><td>바탕</td><td>서브</td><td class="num ok">8.56</td><td class="num ok">6.81</td><td class="th">4.5</td></tr><tr><td>바탕</td><td>메타</td><td class="num ok">6.64</td><td class="num ok">4.82</td><td class="th">4.5</td></tr><tr><td>바탕</td><td>희미</td><td class="num no">2.36</td><td class="num no">1.83</td><td class="th">3.0</td></tr><tr><td>바탕</td><td>보조잉크2</td><td class="num ok">5.78</td><td class="num ok">5.39</td><td class="th">4.5</td></tr><tr><td>카드</td><td>잉크</td><td class="num ok">15.28</td><td class="num ok">15.71</td><td class="th">4.5</td></tr><tr><td>카드</td><td>태그</td><td class="num ok">9.00</td><td class="num ok">7.34</td><td class="th">4.5</td></tr><tr><td>카드</td><td>서브</td><td class="num ok">8.40</td><td class="num ok">6.60</td><td class="th">4.5</td></tr><tr><td>카드</td><td>메타</td><td class="num ok">6.54</td><td class="num ok">4.77</td><td class="th">4.5</td></tr><tr><td>카드</td><td>희미</td><td class="num no">2.36</td><td class="num no">1.83</td><td class="th">3.0</td></tr><tr><td>카드</td><td>보조잉크2</td><td class="num ok">5.61</td><td class="num ok">5.12</td><td class="th">4.5</td></tr></tbody>
+<tbody><tr><td>바탕</td><td>잉크</td><td class="num ok">15.74</td><td class="num ok">16.53</td><td class="th">4.5</td></tr><tr><td>바탕</td><td>태그</td><td class="num ok">9.24</td><td class="num ok">7.51</td><td class="th">4.5</td></tr><tr><td>바탕</td><td>서브</td><td class="num ok">8.56</td><td class="num ok">6.81</td><td class="th">4.5</td></tr><tr><td>바탕</td><td>메타</td><td class="num ok">6.64</td><td class="num ok">4.82</td><td class="th">4.5</td></tr><tr><td>바탕</td><td>희미</td><td class="num no">2.36</td><td class="num no">1.83</td><td class="th">3.0</td></tr><tr><td>바탕</td><td>보조잉크2</td><td class="num ok">5.78</td><td class="num ok">5.39</td><td class="th">4.5</td></tr><tr><td>카드</td><td>잉크</td><td class="num ok">13.74</td><td class="num ok">14.38</td><td class="th">4.5</td></tr><tr><td>카드</td><td>태그</td><td class="num ok">8.27</td><td class="num ok">6.95</td><td class="th">4.5</td></tr><tr><td>카드</td><td>서브</td><td class="num ok">7.74</td><td class="num ok">6.33</td><td class="th">4.5</td></tr><tr><td>카드</td><td>메타</td><td class="num ok">6.14</td><td class="num ok">4.58</td><td class="th">4.5</td></tr><tr><td>카드</td><td>희미</td><td class="num no">2.36</td><td class="num no">1.81</td><td class="th">3.0</td></tr><tr><td>카드</td><td>보조잉크2</td><td class="num ok">5.05</td><td class="num ok">4.69</td><td class="th">4.5</td></tr></tbody>
 </table>
 <dl class="meas-notes">
-<dt>신호(코랄) 글자 — 오류 태그 13px</dt><dd>다크 <b>6.15</b> ✓ · 라이트 코랄 <b>2.49</b> ✗(철칙② 금지) · 라이트 Coral 3 <b>3.23</b>(24px↑ 한정이라 13px 에 못 씀)</dd>
+<dt>신호(코랄) 글자 — 오류 태그 13px</dt><dd>다크 <b>5.53</b> ✓ · 라이트 코랄 <b>2.27</b> ✗(철칙② 금지) · 라이트 Coral 3 <b>2.96</b>(24px↑ 한정이라 13px 에 못 씀)</dd>
 <dt>코랄 면 위 점 — 철칙③</dt><dd>다크 Navy 2 <b>6.33</b> ✓ · 라이트 Ink <b>6.32</b> ✓ · 라이트 Paper <b>2.62</b> ✗</dd>
 <dt>맥박링(코랄 35%)</dt><dd>다크 <b>1.77</b> · 라이트 <b>1.41</b></dd>
-<dt>마스코트 바닥 ΔE (임계 12)</dt><dd>다크 바탕 <b>26.7 <span class="dim">(Cherry Rim)</span></b> · 다크 카드 <b>26.3 <span class="dim">(Cherry Rim)</span></b> · 라이트 바탕 <b>24.6 <span class="dim">(Cherry Highlight)</span></b> · 라이트 카드 <b>23.5 <span class="dim">(Cherry Highlight)</span></b></dd>
+<dt>마스코트 바닥 ΔE (임계 12)</dt><dd>다크 바탕 <b>26.7 <span class="dim">(Cherry Rim)</span></b> · 다크 카드 <b>27.1 <span class="dim">(Cherry Rim)</span></b> · 라이트 바탕 <b>24.6 <span class="dim">(Cherry Highlight)</span></b> · 라이트 카드 <b>23.6 <span class="dim">(Cherry Highlight)</span></b></dd>
 <dt>구조 비용</dt><dd><code>색.</code> 참조 <b>377</b>곳 / 파일 <b>18</b>개 · <code>StyleSheet.create</code> 블록 <b>17</b>개 · 테마 밖 색 <b>1</b>곳<br><span class="dim">src/말하기화면.js:1324 — <code>rgba(246,241,232,0.85)</code></span></dd>
-<dt>라이트 카드 면</dt><dd>계산으로 고름 — 다크 카드 들림 ΔL* 1.48 → <b>Cream</b> (#F6F1E8 · 들림 2.01)</dd>
+<dt>라이트 카드 면</dt><dd>계산으로 고름 — 다크 카드 들림 ΔL* 5.98 → <b>Cream 2</b> (#EFE7D7 · 들림 5.44)</dd>
 </dl>
 <!-- 계측:끝 -->
 
-<h2><span class="n">5</span>도전안 — 통념을 깬 쪽</h2>
+<h2><span class="n">5</span>도전안 → ✅ 채택·집행 (유호님 2026-08-14)</h2>
 <div class="box chal">
   <h4>「접근성 때문에 라이트가 있어야 한다」를 뒤집는다</h4>
   <p>보통 다크 전용은 접근성 후퇴로 읽힙니다. 그런데 이 앱에서는 <b>반대가 실측됐습니다</b> —
      라이트 번역이 모든 글자 층에서 대비가 더 낮고, 신호 하나는 아예 표현 불가입니다.
      밝은 곳에서 쓰는 학생에게 필요한 것은 라이트 모드가 아니라 <b>화면 밝기</b>이고, 그건 폰이 이미 줍니다.</p>
-  <h4>그래서 진짜 후보는 「라이트」가 아니라 「다크 2단」이다</h4>
-  <p>정말로 부족한 것은 밝기가 아니라 <b>면의 층</b>입니다 — 지금 다크는 바탕(Navy 2)과 카드(Navy Ink)가
-     ΔL* 1.48 밖에 안 벌어져 카드가 거의 안 떠 있습니다. Navy 4단(Navy 2 · Navy Ink · Navy · Navy 3)을
-     제대로 쓰면 라이트를 짓지 않고도 화면에 깊이가 생깁니다. <b>이건 킷 안에서 이미 가능하고, 새 색이 0개입니다.</b></p>
+  <h4>그래서 진짜 후보는 「라이트」가 아니라 「다크 2단」이었다</h4>
+  <p>부족한 것은 밝기가 아니라 <b>면의 층</b>이었습니다 — 바탕(Navy 2)과 카드(Navy Ink)가 ΔL* <b>1.48</b>
+     밖에 안 벌어져 카드가 사실상 안 떠 있었습니다(면대면 대비 1.03). 유호님이 이 도전안을 채택하셔서
+     <b>그날 집행했습니다</b>.</p>
+</div>
+
+<div class="box done">
+  <h4>집행분 — 카드 면 Navy Ink → <b>Navy</b> (talk <code>656484d</code>)</h4>
+  <div class="lift">
+    <figure class="plate" style="margin:0">
+      <div class="mini old"><b>오늘의 문장이에요</b><span>카드가 바탕에 잠겨 있다</span></div>
+      <figcaption>옛 · NAVY INK · ΔL* 1.48</figcaption>
+    </figure>
+    <figure class="plate" style="margin:0">
+      <div class="mini new"><b>오늘의 문장이에요</b><span>카드가 실제로 떠 있다</span></div>
+      <figcaption>지금 · NAVY · ΔL* 5.98</figcaption>
+    </figure>
+  </div>
+  <p><b>새 색 0개 · 바꾼 값 1개</b>(<code>색.바탕띄움</code>) <b>· 화면 코드 0곳</b> — 카드를 쓰는 24곳이
+     전부 이 토큰 하나를 지나서, 값을 바꾸자 앱 전체가 함께 올라갔습니다.</p>
+  <p>🔴 <b>더 띄우려고 Navy 3 으로 가면 안 됩니다</b> — ΔL* 13.8 로 더 뜨지만 그 면에서 두 색이 죽습니다:
+     3번째 글자 층 <code>Slate</code> 가 <b>4.00</b>, 화면의 신호인 코랄이 <b>4.38</b> 로 둘 다 본문 기준 4.5 미달입니다.
+     Navy 위에서는 둘 다 삽니다(5.05 · 5.53). 마스코트도 26.3 → <b>27.1</b> 로 좋아집니다.
+     「카드를 더 띄우자」는 다음에 집기 가장 쉬운 수라, 이 함정은 글이 아니라
+     회귀 검사로 막아 뒀습니다 — talk <code>tests/테마면.test.js</code>(픽스처가 Navy 3 을 실제로 잡는지까지 겁니다).</p>
 </div>
 
 <h2><span class="n">6</span>유호님이 고르신 것</h2>
-<p class="lead">셋을 놓고 <b>㉠ 다크 단일</b>을 고르셨습니다(2026-08-14). 그 자리에서 정본에 등재했습니다 —
-   <code>DESIGN.md §2-c</code>. 아래는 무엇을 고르고 무엇을 안 골랐는지의 기록입니다.</p>
+<p class="lead">셋을 놓고 <b>㉠ 다크 단일</b>을 고르시고, 이어서 <b>㉡ 면 2단 보강</b>까지 채택하셨습니다(2026-08-14).
+   둘 다 그날 집행했습니다 — 정본 <code>DESIGN.md §2-c</code> · 앱 <code>656484d</code>.</p>
 <div class="picks">
   <div class="pick rec">
     <div class="k">✅ 유호님 확정</div>
@@ -467,12 +504,12 @@
        필요하다」는 재제안을 그 조항이 막습니다.</p>
     <div class="cost">집행 완료 — 코드 0곳 · 문서 1줄</div>
   </div>
-  <div class="pick">
-    <div class="k">미채택 — 재제안 안 함</div>
+  <div class="pick rec">
+    <div class="k">✅ 유호님 확정 — 함께 집행</div>
     <h4>㉡ 다크 + 면 2단 보강</h4>
-    <p>도전안으로 냈고 안 고르셨습니다. 지금 바탕↔카드가 ΔL* 1.48 뿐이라 카드가 거의 안 떠 있다는 실측은
-       그대로 남습니다 — 필요해지시면 말씀만 주시면 됩니다(제가 다시 꺼내지 않습니다).</p>
-    <div class="cost">테마 1줄 · 화면 0곳 · 새 색 0개</div>
+    <p>㉠ 직후에 이어서 고르셨습니다. 카드 면을 Navy Ink → Navy 로 올려 ΔL* 1.48 → <b>5.98</b>.
+       함정(Navy 3)은 회귀 검사로 막았습니다 — 위 §5.</p>
+    <div class="cost">집행 완료 — 테마 1줄 · 화면 0곳 · 새 색 0개</div>
   </div>
   <div class="pick">
     <div class="k">🚫 닫힘</div>
