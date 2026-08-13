@@ -176,9 +176,22 @@ test('🔑 board-move 가 유령을 **후보로 본다** — 못 보면 주인 �
   const dir = 저장소({ dead1234: `${바른줄('보이는 트랙')}\n${짧은날짜('숨은 트랙')}\n` });
   const archive = path.join(dir, '세션보드_아카이브.md');
   fs.writeFileSync(archive, '# 아카이브\n\n---\n\n', 'utf8');
+  /* 🔑 지문을 **고정한다** — 안 고정하면 이 검사의 판정이 「돌린 사람이 누구인가」로 갈린다.
+   *   원칙 ⑦(F397)은 «남의» 죽은 미완 줄만 막는데, 남인지 아닌지를 주변 환경의
+   *   `CLAUDE_CODE_HOST_SESSION_ID` 로 가른다. 그래서 이 줄이 비어 있는 CI 에서는 초록이고
+   *   지문이 실린 로컬 세션에서만 빨갰다 — **아무도 안 보는 적색이 모든 세션의 배포 전
+   *   게이트를 막는다**(F296 의 거울상 · 실측 2026-08-13 `local_deb526ff`).
+   *   픽스처 주인과 같은 지문을 주어 「내 줄」로 만든다: 여기서 재는 것은 원칙 ⑦ 이 아니라
+   *   **유령이 board-move 후보에 드는가**뿐이다(원칙 ⑦ 자체는 `tests/보드이관.test.js` 가 진다 —
+   *   같은 판정을 두 곳에 적지 않는다). */
   const r = execFileSync('node', [MOVE, '--dry', '숨은 트랙'], {
     encoding: 'utf8', stdio: 'pipe',
-    env: { ...process.env, SYNK_BOARD_ROOT: dir, SYNK_BOARD_ARCHIVE: archive },
+    env: {
+      ...process.env,
+      SYNK_BOARD_ROOT: dir,
+      SYNK_BOARD_ARCHIVE: archive,
+      CLAUDE_CODE_HOST_SESSION_ID: 'local_dead1234-0000-0000-0000-000000000000',
+    },
   });
   assert.match(r, /숨은 트랙/, '유령이 board-move 후보에 안 들었다');
   assert.match(r, /유령/, '유령을 조용히 옮기려 했다 — 규격 밖이었다는 사실이 아무 데도 안 남는다');
