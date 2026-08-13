@@ -89,11 +89,11 @@ footer code{font-family:var(--mono);font-size:11.5px}
   <p class="sub">앱을 짓는 동안 <b>유호님께 묻지 않고 제가 혼자 정한 굵직한 갈림길</b>입니다.
      다 만든 뒤 번호를 부르시면 그 자리에서 바꿉니다 — 「바꾸려면」 칸이 그 비용입니다.</p>
   <div class="counts">
-    <div class="hot">대기<b>25</b></div>
+    <div class="hot">대기<b>26</b></div>
     <div>유지<b>2</b></div>
     <div>바꿈<b>0</b></div>
     <div>보류<b>0</b></div>
-    <div>전체<b>27</b></div>
+    <div>전체<b>28</b></div>
   </div>
 </div></header>
 
@@ -106,6 +106,7 @@ footer code{font-family:var(--mono);font-size:11.5px}
   <button class="f" data-k="r" data-v="보류" aria-pressed="false">보류</button>
   <span class="sep"></span><span class="lbl">영역</span>
   <button class="f" data-k="a" data-v="" aria-pressed="true">전체</button>
+  <button class="f" data-k="a" data-v="③A 교정엔진 평가" aria-pressed="false">③A 교정엔진 평가</button>
   <button class="f" data-k="a" data-v="강사 화면 · 원본 스키마" aria-pressed="false">강사 화면 · 원본 스키마</button>
   <button class="f" data-k="a" data-v="강사 화면(라벨 회로)" aria-pressed="false">강사 화면(라벨 회로)</button>
   <button class="f" data-k="a" data-v="도구·검수" aria-pressed="false">도구·검수</button>
@@ -480,10 +481,23 @@ footer code{font-family:var(--mono);font-size:11.5px}
   <div class="undo"><span class="k">바꾸려면</span><span class="v">쉽다 — 지금 이 표에 든 줄이 0개다(라이브에 아직 안 부었다). 유호님이 「사건 쪽으로 해라」 하시면 마이그레이션 파일 하나를 되돌리고 저장하는 문 하나만 다시 짓는다. 조회하는 문 둘과 화면은 그대로다. 라이브에 부은 뒤에 뒤집으면 그때는 쌓인 줄을 옮겨야 한다.</span></div>
   
 </article>
+<article class="card" data-r="대기" data-a="③A 교정엔진 평가">
+  <div class="head">
+    <span class="num">#28</span>
+    <h3>유호 승인 「이거 진행해」의 두 일감이 낡음 — 같은 트랙의 남은 몫(독립 채점)으로 대체 착수</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-13 &nbsp;·&nbsp; ③A 교정엔진 평가 &nbsp;·&nbsp; talk</div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">승인 문구가 지목한 ③A 프롬프트 v2·G2 ②화면은 실증거로 이미 완료(v2~v7 회차 기록 · talk eaa9976)라, 재구현 대신 ③A 트랙이 명시로 남긴 다음 후보 「독립 채점」(evals/결과.md 「다음에 할 것」 3번 · 픽스처 정답 안 본 채점자 1회)을 집었다</span></div>
+  
+  <div class="row"><span class="k">왜</span><span class="v">죽은 보드 줄의 🎫는 낡을 수 있고 갈라 주는 것은 증거뿐(보드 규약) — talk 커밋 이력·메모리 ③A절 ⑤~⑩이 두 일감의 완료를 실증. 중복 구현은 되돌릴 수 없어 비켜났고, 승인의 뜻(새 세션이 무주공산 굵직한 구현을 잡는다)은 같은 트랙의 남은 몫으로 잇는 것이 충실</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">독립 채점이 원치 않는 방향이면 talk 저장소에서 독립채점 커밋(tools/독립채점.js·tests/독립채점.test.js·evals/독립채점*.json·결과.md 절)을 revert 하면 끝 — 운영 DB·배포·모델 재실행 0이라 밖으로 나간 것이 없다</span></div>
+  
+</article>
 <footer>
   정본은 <code>docs/_ops/자율주행_결정록.jsonl</code> — 이 화면은 그걸 읽어 그린 것이라 <b>정본이 바뀌면 여기도 바뀝니다</b>.<br>
   판정 반영 = <code>node tools/자율기록.js 판정 --번호 N --결과 유지|바꿈|보류</code> · 굽기 = <code>node tools/자율기록.js --굽기</code><br>
-  마지막 굽기 <b>2026-08-12</b>
+  마지막 굽기 <b>2026-08-13</b>
 </footer>
 </div>
 
