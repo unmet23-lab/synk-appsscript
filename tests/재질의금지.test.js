@@ -21,43 +21,10 @@ const path = require('node:path');
 
 const REPO = path.join(__dirname, '..');
 
-/**
- * 유호님이 답을 확정해 **다시 묻지 않기로** 한 주제.
- * 새로 추가할 때는 반드시 「언제·무엇으로 확정됐나」를 적는다 —
- * 사유 없는 금지는 다음 사람이 지울 수 없다.
- */
-const 재질의금지 = [
-  {
-    주제: '동의문',
-    // 「동의 문구」·「동의문」·「동의 6항목」 — 띄어쓰기 변형 포함
-    패턴: /동의\s*(문구|문|6\s*항목)/,
-    확정: '2026-08-06 유호님이 직접 준비 완료 (F126). AI 초안 몫도 대기 항목도 아니다.',
-  },
-];
-
-/** 유호님께 배달되는 대기 표식 */
-const 대기표식 = /⏳|⛔|\[\[막힘>/;
-/** 같은 줄에 이게 있으면 「해소를 적은 줄」이라 통과시킨다 */
-const 해소표식 = /✅|🚫재질의|🚫재제안|준비\s*완료|~~/;
-
-/** 한 줄이 위반인가 — 대기 표식 + 금지 주제 + 해소 표기 없음 */
-function 위반인가(줄, 항목) {
-  if (!대기표식.test(줄)) return false;
-  if (!항목.패턴.test(줄)) return false;
-  return !해소표식.test(줄);
-}
-
-/** 파일을 줄 단위로 검사해 위반 목록을 낸다 */
-function 파일검사(경로, 표시경로) {
-  const 위반 = [];
-  const 줄들 = fs.readFileSync(경로, 'utf8').split(/\r?\n/);
-  줄들.forEach((줄, i) => {
-    for (const 항목 of 재질의금지) {
-      if (위반인가(줄, 항목)) 위반.push(`${표시경로}:${i + 1} [${항목.주제}]`);
-    }
-  });
-  return 위반;
-}
+/* 판정은 tools/lib/재질의금지.js **한 벌**에서 온다 (F389) — rot-check(메모리 실물 warn)와
+ * 이 스위트(픽스처 + repo 실물)가 같은 것을 요구한다. 여기 사본을 되살리면 갈라진 쪽이
+ * 조용히 통과한다. 아래 픽스처 전부가 그 lib 의 탐지력을 못박는 회귀다. */
+const { 재질의금지, 위반인가, 파일검사, 폴더검사 } = require(path.join(REPO, 'tools', 'lib', '재질의금지.js'));
 
 // ── 1. 목록이 살아 있는가 ────────────────────────────────────
 test('재질의 금지 목록이 비어 있지 않고 사유가 붙어 있다', () => {
@@ -133,12 +100,36 @@ test('메모리 토픽·인덱스에 금지 주제가 대기로 되살아나지 
     t.skip(`메모리 폴더 없음(${메모리}) — repo 밖이라 CI 에는 없다. 탐지력은 위 픽스처가 진다`);
     return;
   }
-  const 위반 = [];
-  for (const f of fs.readdirSync(메모리)) {
-    if (!f.endsWith('.md')) continue;
-    위반.push(...파일검사(path.join(메모리, f), `memory/${f}`));
-  }
+  // rot-check 재질의 절이 쓰는 것과 같은 통로(폴더검사)로 훑는다 — 두 소비자가 같은 눈으로 본다.
+  const 위반 = 폴더검사(메모리, 'memory');
   assert.deepStrictEqual(위반, [], `메모리에 대기가 되살아났다 — 결정 큐가 이걸 읽어 유호님께 배달한다:\n  ${위반.join('\n  ')}`);
+});
+
+// ── 6. 폴더검사 탐지력 + 발동 자리 배선 (F389) ───────────────────
+test('픽스처: 폴더검사 — md 만 읽고, 위반을 접두 달아 짚는다', () => {
+  const os = require('node:os');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'requery-'));
+  try {
+    fs.writeFileSync(path.join(dir, '걸림.md'), '⏳ 남은 것은 동의 문구 몽골어\n', 'utf8');
+    fs.writeFileSync(path.join(dir, '깨끗.md'), '✅ 동의 문구 = 준비 완료\n', 'utf8');
+    fs.writeFileSync(path.join(dir, '무시.txt'), '⏳ 동의 문구\n', 'utf8'); // md 아님 — 안 읽는다
+    const 위반 = 폴더검사(dir, 'memory');
+    assert.deepStrictEqual(위반, ['memory/걸림.md:1 [동의문]'],
+      'md 하나의 위반 하나를 접두와 함께 짚어야 rot-check 경보가 읽힌다');
+  } finally {
+    try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* 윈도우 잠금 */ }
+  }
+});
+
+test('발동 자리: rot-check 가 이 한 벌로 메모리를 훑는다 (F389 — 게이트에서 뗀 자리를 잇는 배선)', () => {
+  /* F389 처방이 배포 게이트(clasp-guard)를 CI 모사 눈금으로 옮기며 이 검사의 메모리 실물은
+   * 게이트에서 skip 이 됐다 — 그 발동 자리를 rot-check 가 잇지 않으면 「유입 차단」(F126)이
+   * 기계 없이 프로즈만 남는다. 등록층이 새는 방향은 언제나 「통과」라 소스로 못박는다. */
+  const src = fs.readFileSync(path.join(REPO, 'tools', 'rot-check.js'), 'utf8');
+  assert.ok(/function 재질의Section/.test(src), 'rot-check 에 재질의 절이 없다 — 메모리 위생의 발동 자리가 사라졌다');
+  assert.ok(/attempt\('재질의금지', 재질의Section\)/.test(src), '절이 있어도 collect 에 등록되지 않으면 안 돈다(스스로 발화하지 않는 장치는 안 도는 장치다)');
+  assert.ok(/lib\/재질의금지(\.js)?/.test(src), 'rot-check 가 lib 한 벌이 아니라 사본을 들고 있다 — 갈라지는 방향은 통과다');
+  assert.ok(/폴더검사\(/.test(src), 'rot-check 가 폴더검사 통로를 안 쓴다 — 스위트와 다른 눈으로 보게 된다');
 });
 
 /* ── 5. 실물 검사 — 형제 저장소 SYNK-talk (repo 밖 · 없으면 skip) ─────────────

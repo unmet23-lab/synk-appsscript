@@ -126,6 +126,24 @@ function frictionSection() {
   };
 }
 
+/* 재질의 금지 — 유호님이 이미 답한 주제가 **메모리**에 대기로 되살아나지 않았나 (F126 · F389).
+ * 왜 여기인가: 이 검사의 실물(메모리 폴더)은 repo 밖이라 CI 에도, CI 를 모사하는 배포 게이트에도
+ * 없다. F389 실측 — 게이트가 실 HOME 으로 스위트를 돌던 시절 이 검사가 **게이트에서만** 켜져
+ * 남의 배포를 막았고, 정작 그 줄을 적은 세션은 자기 test-ci 가 초록(skip)이라 볼 통로가 없었다.
+ * 그래서 발동 자리를 옮겼다: 실물이 있는 기계에서 · 고칠 수 있는 사람(이 기계의 세션)에게 ·
+ * 배포를 막지 않는 층(warn)으로. repo 안(보드·docs)·형제 실물은 스위트가 계속 지고,
+ * 탐지력은 픽스처가 진다 — 판정은 lib/재질의금지.js **한 벌**이다(사본 금지). */
+function 재질의Section() {
+  const 금지 = require('./lib/재질의금지.js');
+  const M = require('./memory-graph.js');
+  const dir = M.memoryDir();
+  if (!dir || !fs.existsSync(dir)) {
+    // 메모리 없는 기계(CI·폰·새 기계)는 실물이 없다 — 위반도 없고, 탐지력은 픽스처 몫이다.
+    return { 측정: false, 사유: '메모리 폴더 없음: ' + (dir || '(경로 미해석)') };
+  }
+  return { 측정: true, 위반: 금지.폴더검사(dir, 'memory') };
+}
+
 /* 절단문서(소급불가 정본)는 **다른 저장소의 커밋으로 닫힌다.** 항목을 실제로 끝내는 코드는
  * 거의 전부 형제(SYNK-talk)에 있고, 닫은 세션은 보드·메모리를 갱신하면서 이 문서는 자주 빠뜨린다.
  * 실측 2026-08-08: 문서 마지막 갱신 `be34610`(08-07 15:57) 뒤 `58eaf68`(21:25)이 ①-2·①-12 를
@@ -341,12 +359,13 @@ function collect({ 라이브 = false, 시간제한 } = {}) {
   const map = attempt('지도', mapSection);
   const 절단 = attempt('절단문서', () => 절단문서Section());
   const dep = attempt('배포판', () => 배포Section(라이브, 시간제한));
+  const 재질 = attempt('재질의금지', 재질의Section);
 
   const red = [];
   const warn = [];
   const notes = [];
 
-  for (const s of [mem, doc, fri, har, nbl, nbd, toi, map, 절단, dep]) {
+  for (const s of [mem, doc, fri, har, nbl, nbd, toi, map, 절단, dep, 재질]) {
     // `배포:true` = 하루 스로틀로 따로 도는 항목(F244). 문구가 아니라 이 표식으로 고른다 —
     // 앵커는 문구가 바뀌면 죽고, 죽으면 배포 절만 조용히 리포트에서 빠진다.
     if (!s.ok) red.push({ kind: '검사기 고장', text: `${s.name} 검사가 실패했다 — ${s.error}`, 배포: s === dep });
@@ -367,6 +386,17 @@ function collect({ 라이브 = false, 시간제한 } = {}) {
       });
     }
   }
+
+  if (재질.ok && 재질.value.측정) {
+    for (const v of 재질.value.위반) {
+      warn.push({
+        kind: '재질의 위반(메모리)',
+        text: `${v} — 유호님이 이미 답한 주제가 대기 표식을 달고 있다(F126). 그 줄에 ✅/🚫재질의 를 붙이거나 낡은 대기를 지운다`,
+      });
+    }
+  }
+  // 재질.측정=false 는 메모조차 아니다 — 메모리 없는 기계(CI·폰)가 정상인 자리라(절단문서 present:false 와 같은 축),
+  // 거기서 소음을 내면 진짜 위반 경보까지 같이 꺼진다. 탐지력은 픽스처가 진다.
 
   if (dep.ok && dep.value.측정) {
     for (const r of dep.value.결과) {
