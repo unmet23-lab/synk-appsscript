@@ -30,6 +30,9 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const 표 = require(path.join(__dirname, '표.js'));
+/* 대기 표식(`⏳`·`⏸`)의 정본은 `보드.js` 하나다 — 여기 두 줄을 다시 적으면 board-guard 의
+ * 활성 상한(그쪽이 같은 기호로 분모를 가른다)과 이 알림이 갈라지고, 갈라진 쪽은 조용히 틀린다. */
+const 보드 = require(path.join(__dirname, '보드.js'));
 
 /** 상태 칸에서 **남긴 일감**만 잘라낸다 — `🎫` 나 `▶` 뒤.
  *
@@ -69,8 +72,7 @@ function 일감자르기(상태칸) {
  *   `⏳`·`⏸` 는 결정 큐·보드·메모리가 공유하는 기호다. */
 function 대기표식(일감) {
   const t = String(일감 || '');
-  if (t.includes('⏳')) return '유호님 답 대기(⏳)';
-  if (t.includes('⏸')) return '시점 대기(⏸)';
+  for (const [기호, 뜻] of Object.entries(보드.대기기호())) if (t.includes(기호)) return 뜻;
   return null;
 }
 

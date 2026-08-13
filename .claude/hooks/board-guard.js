@@ -12,7 +12,10 @@ const 표 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '표.js'));
 const 보드lib = require(path.join(__dirname, '..', '..', 'tools', 'lib', '보드.js'));
 
 const MAX_CELL = 200;
-const MAX_ACTIVE = 12; // 활성(완료 아닌) 줄 상한 — 병행 세션이 실제로 조율해야 하는 대상
+/* 상한 ① — **도는 트랙**(활성 − 유호·시점 대기) 수. 「병행 세션이 실제로 조율해야 하는 대상」이
+ * 처음부터 이 상한의 뜻이었는데, 분모에 `⏳`·`⏸` 줄(어느 세션도 못 닫는다)이 섞여 상한이
+ * 영구 초과였다 — 그래서 새 세션에게 따를 수 있는 처방이 0이었다(F395 · 2026-08-13). */
+const MAX_ACTIVE = 12;
 const MAX_ROWS = 18;   // 전체 상한 — 완료 줄이 쌓이는 것도 결국 막는다(6줄 여유)
 
 function deny(reason) {
@@ -99,6 +102,7 @@ const edits = tool === 'MultiEdit' && Array.isArray(ti.edits) ? ti.edits : [ti];
 const incoming = [];
 let delta = 0;
 let activeDelta = 0;
+let runningDelta = 0;   // 도는 트랙(활성 − 대기)의 증감 — 상한 ①이 재는 수 (F395)
 let fullContent = null;
 
 if (tool === 'Write') {
@@ -111,6 +115,7 @@ if (tool === 'Write') {
     incoming.push(ns);
     delta += countRows(ns) - countRows(os);
     activeDelta += countActive(ns) - countActive(os);
+    runningDelta += countRunning(ns) - countRunning(os);
   }
 }
 
@@ -227,6 +232,24 @@ function 활성줄들(text) {
 
 function countActive(text) {
   return 활성줄들(text).length;
+}
+
+/* 🔑 상한이 재는 것은 **도는 트랙**이다 (2026-08-13 · F395 · 판정 정본 = 보드lib.대기행)
+ * 활성 줄 중 `⏳`(유호님 답)·`⏸`(시점) 줄은 **어느 세션도 못 닫는다** — 그걸 분모에 두면
+ * 상한이 「트랙이 너무 많다」가 아니라 「유호님 답이 밀렸다」에 대고 발화하고, 새 세션에게
+ * 남는 처방이 0이 된다(남의 활성 줄 편집은 F073 금지 · 아래 ②가 스스로 그렇게 적어 뒀다).
+ * ⚠ 빼는 것은 **이 상한의 분모뿐**이다 — 전체 상한(MAX_ROWS)은 대기 줄도 그대로 센다.
+ *   그래야 보드가 대기 줄로만 무한히 부푸는 자리가 여전히 막힌다.
+ * ⚠ 완료 판정은 안 건드린다 — 대기를 완료로 접으면 `보드수거` 가 아카이브로 가져간다(조용한 방향). */
+function 대기줄들(text) {
+  return text.split('\n').filter(isDataRow).filter((l) => 보드lib.대기행(l));
+}
+function countWaiting(text) {
+  return 대기줄들(text).length;
+}
+/** 도는 트랙 = 활성 − 대기. 상한 ①이 재는 유일한 수. */
+function countRunning(text) {
+  return countActive(text) - countWaiting(text);
 }
 
 /* 막을 때 **무엇을 활성으로 셌는지** 보여준다.
@@ -638,10 +661,12 @@ if (longCells.length) {
  * 그러면 따를 수 있는 처방이 하나도 없고(F103 축) 남는 것은 BYPASS 아니면 **갱신 포기**다.
  * ⚠ 늘리는 편집(줄 추가)은 그대로 막는다 — 판이 커지는 것을 막는 게 이 검사의 몫이고,
  *   그 힘을 빼면 상한이 있으나 마나가 된다. 푸는 것은 **유지보수 편집**뿐이다. */
-let total, active;
+let total, active, running, waiting;
 if (resulting !== null) {
   total = countRows(resulting);
   active = countActive(resulting);
+  running = countRunning(resulting);
+  waiting = countWaiting(resulting);
 } else {
   if (이전 === null) {
     /* 파일을 못 읽으면 ②는 판단 불가다. 다만 **①의 보류까지 함께 삼키면 안 된다** —
@@ -651,11 +676,13 @@ if (resulting !== null) {
   }
   total = countRows(이전) + delta;
   active = countActive(이전) + activeDelta;
+  running = countRunning(이전) + runningDelta;
+  waiting = active - running;
 }
 /* 편집 **전**의 줄 수. 이전 판을 못 읽으면 0 이라 「전부 내가 늘렸다」가 되어 옛 동작(전량 차단)으로
  * 돌아간다 — ①의 폴백과 같은 방향이다(못 재면 느슨해지는 쪽이면 그게 곧 구멍이다). */
 const 이전total = 이전 === null ? 0 : countRows(이전);
-const 이전active = 이전 === null ? 0 : countActive(이전);
+const 이전running = 이전 === null ? 0 : countRunning(이전);
 const 물려받은 = [];
 물려받은.push(...유령물려받은);   // ⑨ — 내 파일에 이미 있던 유령(막지 않고 드러낸다)
 /* ⑧ 판정 — 선언이 실제로 막히는 자리. 함수로 뺀 이유는 위 머리말에 있다(TDZ). */
@@ -664,7 +691,9 @@ const 물려받은 = [];
 const 판 = resulting !== null ? resulting : (이전 || '');
 /* 면제는 **세션의 첫 선언 1줄**로 좁힌다 (F278). 그 편집만이 「내가 만든 만석이 아닌데
  * 막히는」 자리고, 그것마저 막으면 보드가 존재하는 이유(선언)가 통째로 사라진다.
- * ⚠ 활성 상한(12)은 면제하지 않는다 — 그쪽은 진짜로 「지금 도는 트랙이 너무 많다」는 신호다.
+ * ⚠ 이 주석은 「활성 상한은 면제하지 않는다」였는데 **바로 아래 코드와 반대였다** — F278-b 가
+ *   활성 축에도 첫 선언 1줄을 열어 둔 뒤로 어긋난 채였다(2026-08-13 정정). 실제 규칙은 하나다:
+ *   **두 상한 다 첫 선언 1줄만 비켜 준다.**
  * ⚠ 내 줄 수는 **내 파일 몫만** 센다: 합친 판에서 남의 행수를 뺀다(합치기가 남의 줄을 앞에 붙인다). */
 const 남의행수 = 남의줄.filter(isDataRow).length;
 const 내이전 = 이전 === null ? 0 : Math.max(0, countRows(이전) - 남의행수);
@@ -675,21 +704,32 @@ const 첫선언 = 내이전 === 0 && 내결과 === 1;
  * 줄이라 F073 이 금지하고, 「내 줄을 합쳐라」는 합칠 내 줄이 없다. ②(전체 상한)에서 실측으로
  * 확인한 것과 **같은 모양**이라, 여기만 열어 두면 판이 활성으로 찰 때 F278 이 그대로 되산다.
  * ⚠ 여는 것은 첫 1줄뿐이다 — 그 뒤의 증가는 그대로 막는다(그게 이 상한의 본래 몫이다). */
-if (active > MAX_ACTIVE && active > 이전active && !첫선언) {
+/* 대기 줄은 **셈에서 빠지되 말에서는 안 빠진다** — 침묵하면 「상한이 헐거워졌다」로 읽히고,
+ * 그 다음은 아무도 대기 줄을 안 치운다(전체 상한이 그 자리를 지지만 그건 뒤늦다). */
+const 대기꼬리 = waiting ? ` · 유호·시점 대기 ${waiting}줄은 **분모에서 뺐다**(F395 — 어느 세션도 못 닫는 줄)` : '';
+/* 뺀 것이 **판정을 바꾼 자리**에서만 말한다 — 늘 말하면 잔소리가 되어 안 읽히고, 안 말하면
+ * 상한이 헐거워진 것으로 읽힌다. 여기 걸린 세션은 「내가 통과한 이유」를 정확히 본다. */
+if (active > MAX_ACTIVE && running <= MAX_ACTIVE) {
+  물려받은.push(
+    `활성 ${active}줄(상한 ${MAX_ACTIVE})이지만 **도는 트랙은 ${running}줄**이다 — 유호·시점 대기 ${waiting}줄을 분모에서 뺐다(F395). ` +
+    `그 줄들은 전체 상한(${MAX_ROWS})에는 그대로 센다.`
+  );
+}
+if (running > MAX_ACTIVE && running > 이전running && !첫선언) {
   미룬deny(
-    `[board-guard] 세션보드 활성 줄이 ${active}줄이 된다(상한 ${MAX_ACTIVE}줄).\n` +
-      '→ 활성 줄이 이만큼이면 조율이 아니라 소음이다. 끝난 트랙의 상태를 먼저 완료 표기로 갱신하거나, 남의 줄이 아니라 내 줄을 합쳐라.' +
+    `[board-guard] 세션보드에서 **도는 트랙**이 ${running}줄이 된다(상한 ${MAX_ACTIVE}줄${대기꼬리}).\n` +
+      '→ 이만큼이면 조율이 아니라 소음이다. 끝난 트랙의 상태를 먼저 완료 표기로 갱신하거나, 남의 줄이 아니라 내 줄을 합쳐라.' +
       '\n   (비켜 주는 것은 **세션의 첫 선언 1줄**뿐이다 · F278 — 지금 편집은 내 줄이 이미 있거나 2줄 이상이다)' +
       표기안내() +
       활성목록(판)
   );
-} else if (active > MAX_ACTIVE && active > 이전active) {
+} else if (running > MAX_ACTIVE && running > 이전running) {
   물려받은.push(
-    `활성 ${active}줄(상한 ${MAX_ACTIVE}) — **첫 선언 1줄은 통과시켰다**(F278). ` +
-    '새 세션이 따를 수 있는 처방이 없다(남의 활성 줄 편집은 F073 이 금지한다).'
+    `도는 트랙 ${running}줄(상한 ${MAX_ACTIVE}${대기꼬리}) — **첫 선언 1줄은 통과시켰다**(F278). ` +
+    '남의 활성 줄 편집은 F073 이 금지하니, 줄일 수 있는 것은 내 줄뿐이다.'
   );
-} else if (active > MAX_ACTIVE) {
-  물려받은.push(`활성 ${active}줄(상한 ${MAX_ACTIVE}) — 내 편집은 안 늘렸다`);
+} else if (running > MAX_ACTIVE) {
+  물려받은.push(`도는 트랙 ${running}줄(상한 ${MAX_ACTIVE}${대기꼬리}) — 내 편집은 안 늘렸다`);
 }
 if (total > MAX_ROWS && total > 이전total) {
   const 처방 = 이관처방(판);
