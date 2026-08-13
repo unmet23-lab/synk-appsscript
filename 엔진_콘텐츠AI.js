@@ -4182,6 +4182,10 @@ function setupQuiz() {
  *    학생이 그 문장을 그대로 읽는다. 학생·강사 둘 다 읽어도 서는 문장으로만 쓴다.
  * ⚠️ D·E를 고치면 MN_CONTENTS_G·MN_HOMEWORK_CHECKPOINT 의 같은 ID 값을 **같은 커밋**에서 갱신한다(안 하면
  *    초급 병기가 딴말이 된다). [v9.225] 품질 패스 24문항(D 13·E 17) — 몽골어는 AI 번역, 원어민 검수 대상.
+ * ⚠️ 재실행 순서 = setupHomework → injectMongolianContents(큐레이션 복원) → translateContents(빈칸만).
+ *    inject 를 빼면 210행 큐레이션 몽골어가 기계 번역으로 덮인다 — replaceContentType 이 G·H 를 밀고,
+ *    translateContents 는 복원기가 아니다(정본 순서 = MN_CONTENTS_G 머리 주석·엔진_셋업확장.js).
+ *    clasp push 와 setupHomework 는 같은 작업 창에서(코드 MN 새 판 + 시트 KO 옛 판 = 한·몽 딴말 카드).
  * ⚠️ 재실행 시 contents 행 +174 → 일회성 싱크 ~210 업데이트 (한가한 날 실행 권장) */
 
 function setupHomework() {
