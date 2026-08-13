@@ -9,7 +9,8 @@ const { 칸나누기 } = require('./lib/표.js');   // 표를 칸으로 가르�
 // 여기 사본을 되살리면 `tests/바탕화면통로.test.js` 가 문다(같은 탐지가 세 벌로 갈렸던 자리 · 2026-08-10).
 const { 경로: 바탕화면 } = require('./lib/바탕화면.js');
 // 폴더 이름은 **운영자료가 정본**이다 — 여기 글자로 베끼면 한쪽만 바뀌는 날 두 자리로 갈린다(아래 08-13 사고).
-const { 폴더명: 운영자료폴더 } = require('./운영자료.js');   // ⚠require 부작용 0(main 은 require.main 일 때만 돈다)
+// 폴더 자리는 운영자료가 정본이다 — 갈래 이름을 글자로 베끼면 한쪽만 바뀌는 날 두 자리로 갈린다.
+const { 폴더명: 운영자료폴더, 갈래폴더 } = require('./운영자료.js');   // ⚠require 부작용 0(main 은 require.main 일 때만 돈다)
 
 const ROOT = path.join(__dirname, '..');
 
@@ -90,7 +91,7 @@ function 빌드(opts = {}){
    * 최상위만 새로 만들고 **두 자리가 조용히 갈렸다**(00·01 내용 상이 · 04 는 한쪽에 아예 없음).
    * 유호님이 "폴더가 2개인데 일부러 그런 거냐"로 발견. 「만든 자료는 전부 SYNK 운영자료로」(유호 상시 08-09)와도
    * 어긋나 있었다 — 자리를 하나로 못 박아 다음 빌드가 다시 갈라질 수 없게 한다. */
-  const OUT = opts.out || path.join(바탕화면(), 운영자료폴더, 'SYNK 철학');
+  const OUT = opts.out || 갈래폴더(path.join(바탕화면(), 운영자료폴더), '철학');
   fs.mkdirSync(OUT, { recursive: true });
   const built = [];
   const 없음 = [];

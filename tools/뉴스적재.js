@@ -28,7 +28,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { 찾기: 바탕화면 } = require('./lib/바탕화면.js');
-const { 다음번호, 폴더명 } = require('./운영자료.js');
+const { 다음번호, 폴더명, 갈래폴더 } = require('./운영자료.js');
 
 /** 로그 파일의 이름 — 번호(`NN_`)는 운영자료 폴더가 붙인다. 이 문자열은 여기 한 번만 적힌다. */
 const 로그이름 = '시장뉴스_수집로그.md';
@@ -102,7 +102,8 @@ function 로그찾기(이름들) {
 function 대상찾기({ 만들기 = true } = {}) {
   const { 경로: 바탕, 폴백 } = 바탕화면();
   if (!바탕) throw new Error('바탕화면을 못 찾았다');
-  const 폴더 = path.join(바탕, 폴더명);
+  // 뉴스 로그는 「그날 보는 것」이라 운영 갈래에 쌓인다(갈래 자리는 운영자료가 정본 · 2026-08-13).
+  const 폴더 = 갈래폴더(path.join(바탕, 폴더명), '운영');
   if (만들기) fs.mkdirSync(폴더, { recursive: true });
   const 있는것 = fs.existsSync(폴더) ? fs.readdirSync(폴더) : [];
   const 이름 = 로그찾기(있는것) || `${다음번호(있는것)}_${로그이름}`;
