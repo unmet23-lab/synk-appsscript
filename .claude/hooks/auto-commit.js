@@ -181,11 +181,24 @@ function 한저장소(뿌리, 이름, 내touched, 남touched, 지문) {
      *   실측: 적색 테스트인데 status **0**·stdout **빈 문자열**. 이 훅을 회귀에서 부르면 부모가
      *   `node --test` 라 항상 그 상태가 되고, 그러면 이 검사는 **영원히 초록**이다(F207 의 정확한 모양:
      *   미실행이 통과와 같은 얼굴로 온다). 자식 환경에서 지운다. */
-    const 자식env = { ...process.env };
+    /* 🔑 그 위에 **CI 모사 한 벌**(tools/lib/ci모사환경 — TZ=UTC·빈 HOME)을 얹는다 (F389).
+     *   이 검사가 지키는 것은 「원격 CI(UTC·홈 없음)가 빨개질 파일을 안 싣는 것」이라, 재는 눈금도
+     *   그 층이라야 한다. 실 HOME 으로 재면 repo 밖(메모리층) 검사가 여기서만 켜져 — CI 에선
+     *   초록일 테스트 파일이 남의 메모리 상태 탓에 손커밋으로 강등된다(같은 스위트의 세 러너
+     *   중 마지막 남았던 실 HOME 갈래다: test-ci·clasp-guard 는 이미 한 벌). */
+    let 모사 = null;
+    try { 모사 = require(path.join(__dirname, '..', '..', 'tools', 'lib', 'ci모사환경.js')).만들기(); } catch (_) { /* 아래에서 미측정으로 */ }
+    if (!모사) {
+      // 환경을 못 조립하면 재지 못한 것이다 — 미실행을 통과로 접지 않는다(F207). 훅 전체를 죽이지도 않는다.
+      미측정.push(...실을테스트);
+      for (const f of 실을테스트) { const i = 후보.indexOf(f); if (i >= 0) 후보.splice(i, 1); }
+    } else {
+    const 자식env = 모사.env;
     delete 자식env.NODE_TEST_CONTEXT;
     const tr = spawnSync(process.execPath, ['--test', ...실을테스트], {
       cwd: 뿌리, env: 자식env, encoding: 'utf8', timeout: 예산, windowsHide: true,
     });
+    모사.치우기();
     /* 🔑 **분모를 본다**(CLAUDE.md 「초록은 분모와 함께만 읽는다」). status 0 만 믿으면 위와 같은
      *   미실행이 그대로 통과가 된다 — 요약 줄(`ℹ fail N` · TAP 이면 `# fail N`)이 없으면 못 잰 것이다.
      * ⚠ **변이 시험이 이 줄을 못 잡는다(6/7)** — 바로 위 `delete` 가 지금 아는 유일한 산출 경로를
@@ -199,6 +212,7 @@ function 한저장소(뿌리, 이름, 내touched, 남touched, 지문) {
       (못쟀다 ? 미측정 : 적색).push(...실을테스트);
       for (const f of 실을테스트) { const i = 후보.indexOf(f); if (i >= 0) 후보.splice(i, 1); }
     }
+    } // ← 모사 조립 성공 갈래 끝
   }
 
   const 뺀것있나 = 함께남김.length || 깨짐.length || 무기록.length || 밖에서바뀜.length || 적색.length || 미측정.length;
