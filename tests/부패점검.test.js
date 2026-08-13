@@ -135,12 +135,59 @@ test('--json은 형식을 지키고, 🔴이 있으면 종료코드 1로 알린�
   assert.strictEqual(code, j.red.length ? 1 : 0, '종료코드가 🔴 유무와 어긋난다');
 });
 
-test('마찰 신호가 기준치 이상이면 /evolve 발동 조건을 알린다', () => {
+/* 🔴 이 검사는 **낡아서 빨갰다**(2026-08-13 실측 · F403 트랙에서 잡음). `open`(전체 열림)으로
+ *   단언했는데 도구는 `새로`(지난 개정 뒤 신규)로 발동한다 — 같은 판정을 두 곳에 적어 갈라진
+ *   자리다(가드 맹점 ④). 갈린 뒤로 「open 4 · 새로 0」이 되어 **아무도 못 고치는 적색**이었다:
+ *   지침을 오늘 개정하면 오늘 난 신호는 전부 `묵은` 으로 떨어지므로, 이 단언을 만족시키는
+ *   유일한 길이 「열린 행을 전부 닫기」가 된다. 따를 수 없는 처방은 방치를 정상으로 만든다(F103).
+ *
+ * 🔑 도구가 옳다 — `tools/rot-check.js:95` 가 그 판정을 직접 적어 두었다: 지침의 「마찰 신호
+ *   2건」은 **새로 난** 둘이지 열린 전량이 아니다. 묵은 것은 갈래가 다른 warn 이 따로 낸다(F386).
+ *   그래서 검사를 도구의 축으로 맞춘다. 대신 **탐지력은 픽스처가 진다** — 실저장소만 보면
+ *   `새로` 가 0인 날엔 이 검사가 통째로 미실행이고, 미실행은 통과와 같은 모양이다(F207). */
+/** 픽스처 장부를 물려 rot-check 를 **자식으로** 띄운다. 이음매는 friction.js 가 이미 가진
+ *  `SYNK_FRICTION_LEDGER` 다 — 도구를 고치지 않는다(회귀를 위해 통로를 새로 뚫으면 그 통로가
+ *  본선과 갈라진다). 날짜를 미래·과거로 잡아 실저장소의 「마지막 개정」 기준점 하나만 빌린다. */
+function 장부물려(이름, 행들) {
+  const 장부 = path.join(TMP, `${이름}.md`);
+  fs.writeFileSync(장부, '| ID | 날짜 | 종류 | 신호 | 해소 |\n|---|---|---|---|---|\n'
+    + 행들.map(([id, 날짜]) => `| ${id} | ${날짜} | 마찰 | 신고 ${id} | |`).join('\n') + '\n');
+  /* 🔴 이 도구는 **적색이 있으면 종료코드 1**로 끝난다(위 `--json` 검사가 그 계약이다).
+   * 실저장소엔 늘 적색이 있으므로 던진 것을 안 받으면 이 검사들은 「도구가 죽었다」로 빨개진다 —
+   * 실제로 그렇게 3건이 빨갰다. stdout 은 그 갈래에서도 온전하다. */
+  let out;
+  try {
+    out = execFileSync(process.execPath, [TOOL, '--json'], {
+      encoding: 'utf8', env: { ...process.env, ...라이브끔, SYNK_FRICTION_LEDGER: 장부 },
+    });
+  } catch (e) { out = e.stdout; }
+  return JSON.parse(out);
+}
+const evolve알림 = (j) => j.notes.some((n) => /evolve/.test(n.kind));
+
+test('🔑 탐지 — 지난 개정 뒤 신호가 기준치를 넘으면 /evolve 발동을 알린다 (픽스처)', () => {
+  const j = 장부물려('발동', [['F901', '2099-01-02'], ['F902', '2099-01-03']]);
+  assert.ok(evolve알림(j),
+    '세는 것과 발동하는 것 사이가 다시 끊겼다 — 트리거 층이 0이 되는 그 병이다(F019)');
+});
+
+test('거짓양성 — 기준 이전(묵은) 신호만으로는 /evolve 를 발동하지 않는다', () => {
+  const j = 장부물려('묵은', [['F903', '1999-01-01'], ['F904', '1999-01-02']]);
+  assert.ok(!evolve알림(j),
+    '이미 그 판을 지난 신호로 개정을 또 제안한다 — 매번 뜨는 제안은 그 순간부터 안 읽힌다');
+});
+
+test('거짓양성 — 기준을 넘긴 신호가 하나뿐이면 발동하지 않는다 (문턱이 실제로 문턱인가)', () => {
+  const j = 장부물려('하나', [['F905', '2099-01-02'], ['F906', '1999-01-02']]);
+  assert.ok(!evolve알림(j), `기준 ${R.EVOLVE_THRESHOLD}건인데 1건으로 발동했다`);
+});
+
+test('실저장소 — 도구가 실제로 쓰는 축(새로)과 어긋나지 않는다', () => {
   const r = R.collect();
-  if (r.fri.ok && r.fri.value.open.length >= R.EVOLVE_THRESHOLD) {
-    assert.ok(r.notes.some((n) => /evolve/.test(n.kind)),
-      `살아있는 신호 ${r.fri.value.open.length}건인데 알림이 없다 — 세는 것과 발동하는 것 사이가 다시 끊겼다`);
-  }
+  if (!r.fri.ok) return;                       // 못 읽음은 위 「검사기 고장」 검사의 몫이다
+  const 알림 = r.notes.some((n) => /evolve/.test(n.kind));
+  assert.strictEqual(알림, r.fri.value.새로.length >= R.EVOLVE_THRESHOLD,
+    `알림(${알림})이 새로 난 신호 ${r.fri.value.새로.length}건(기준 ${R.EVOLVE_THRESHOLD})과 어긋난다`);
 });
 
 test('SessionStart 훅이 settings.json에 실제로 등록돼 있다', () => {
