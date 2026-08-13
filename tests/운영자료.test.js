@@ -190,8 +190,11 @@ test('읽는 층이 값을 깨뜨리지 않는다 — 한글 경로 오보를 �
     '출력 인코딩을 UTF8 로 고정하지 않으면 한글 경로가 깨져 「대상 없음」 오보가 난다');
   assert.match(소스, /ProgressPreference='SilentlyContinue'/,
     '진행률이 CLIXML 로 새어 출력을 덮는다');
-  assert.match(소스, /stdio:\s*\['ignore',\s*'pipe',\s*'ignore'\]/,
-    'stderr 를 stdout 과 섞으면 CLIXML 이 결과에 낀다');
+  assert.match(소스, /stdio:\s*\['ignore',\s*'pipe',\s*'pipe'\]/,
+    'stderr 는 **받아야 한다** — execFileSync 는 stdout 과 따로 담으므로 섞이지 않는다. ' +
+    '버리면 실패가 「stderr 없이 exit 1」로 보인다(2026-08-13 유호 신고 그 모양).');
+  assert.match(소스, /PS오류읽기\(e\.stderr\)/,
+    'CLIXML 을 사람이 읽는 문장으로 풀어 던져야 원인이 보인다');
 });
 
 /* ── 옛 판 자동 걷기 (유호 지시 2026-08-13) ──────────────────────
@@ -284,4 +287,242 @@ test('🔴 소스에 날 제어문자가 없다 — git 이 binary 로 보면 di
   // eslint-disable-next-line no-control-regex
   const 날문자 = 소스.match(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g);
   assert.equal(날문자, null, '제어문자가 들어가면 diff·검색·가드가 전부 눈이 먼다');
+});
+
+/* ── 바로가기 통로: ANSI(CP949) 코드페이지 층 — 유호 신고 2026-08-13 ──────────
+ * 신고: `--이름 "캐릭터 시안 v5 — 살아있음 반응 시연"` 이 **stderr 없이 exit 1**.
+ * 층을 하나씩만 바꿔 대조하니(F045) 인코딩(UTF-16LE base64 왕복)도 파일시스템(fs 로 같은
+ * 이름 생성)도 멀쩡했고 **CreateShortcut 만** 죽었다 — 그 층이 경로를 시스템 ANSI 코드페이지
+ * (이 기계 949)로 깎는다. 오류문이 스스로 자백한다: `Unable to save shortcut "…\x ? y.lnk"`.
+ *
+ * 실패는 **세 얼굴이고 둘은 조용하다** — 그래서 「긴 줄표가 죽는다」만 막으면 나머지 둘이 샌다:
+ *   ㉠ 죽는다        — — – “ ✅ ⚠ 🔴   (→ `?` → 파일명 금지문자)
+ *   ㉡ 딴 이름으로 만든다 — é → e (exit 0 · 요청한 경로엔 파일이 없다)
+ *   ㉢ 빈 값을 준다   — 그 이름 lnk 의 TargetPath 가 `''` → 「대상 없음」 오보의 씨앗
+ *
+ * 🔑 **처방이 「특수문자를 지운다」가 아닌 이유**: 코드페이지 안의 표기는 전부 멀쩡했다
+ * (― · → 「 ㉠ … ’ ① Ⅰ √ 한글 ß). 넓게 잡아 지우면 유호님이 읽는 이름을 훼손한다 —
+ * 가드 맹점 ①은 「사람이 실제로 쓰는 표기로 검사한다」이지 「그 표기를 없앤다」가 아니다.
+ * 통로가 그 문자를 **만날 일 자체를** 없앤다(COM 에 ASCII 임시 이름만 → fs.rename 으로 확정).
+ *
+ * 탐지력은 아래 **CP949 모사 셸**이 진다 — 실측한 세 얼굴을 그대로 흉내내므로 PowerShell 이
+ * 없는 CI 리눅스에서도 돈다(repo 밖 환경에 기대는 검사는 CI 에서 깨진다 · F296).
+ * 실기계 검사는 맨 아래 한 건뿐이고, win32 가 아니면 fail 이 아니라 **skip 으로 드러낸다**.
+ */
+const fs = require('node:fs');
+const os = require('node:os');
+const {
+  임시링크이름, PS오류읽기, 바로가기만들기, 바로가기대상읽기,
+} = require('../tools/운영자료.js');
+
+/* 실측한 경계 **그대로**. 넓히지 않는다 — 넓히는 순간 이 회귀는 「이름을 훼손하라」는 요구가 된다. */
+const 죽는문자 = ['—', '–', '“', '✅', '⚠', '🔴'];
+const 뭉개지는문자 = { é: 'e' };
+const 멀쩡한문자 = ['―', '·', '→', '「', '㉠', '…', '’', '①', 'Ⅰ', '√', '가', 'ß'];
+
+function 밭에서(fn) {
+  const 밭 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-lnk-'));
+  const 대상 = path.join(밭, 'target.html');
+  fs.writeFileSync(대상, '<html>정본</html>');
+  try {
+    fn(밭, 대상);
+  } finally {
+    try { fs.rmSync(밭, { recursive: true, force: true }); } catch { /* 청소 실패는 삼킨다 */ }
+  }
+}
+
+/** CP949 모사 셸 — 실측한 세 얼굴을 그대로. 이게 이 회귀의 탐지력 전부다. */
+function CP949모사셸() {
+  const 링크경로 = (s) => {
+    const m = /CreateShortcut\((".*?")\)/.exec(s);
+    return m ? JSON.parse(m[1]) : null;
+  };
+  return (스크립트) => {
+    const 요청 = 링크경로(스크립트);
+    if (요청 == null) throw new Error('모사셸: CreateShortcut 인자를 못 읽었다');
+    const 쓰기냐 = /\$l\.Save\(\)$/.test(스크립트);
+    if ([...요청].some((c) => 죽는문자.includes(c))) {
+      if (!쓰기냐) return ''; // ㉢ 읽기는 **안 죽고** 빈 문자열을 준다
+      const 깎임 = [...요청].map((c) => (죽는문자.includes(c) ? '?' : c)).join('');
+      throw new Error(`Unable to save shortcut "${깎임}".`); // ㉠
+    }
+    const 실제 = [...요청].map((c) => 뭉개지는문자[c] || c).join(''); // ㉡ 조용히 딴 이름
+    if (쓰기냐) {
+      const t = /TargetPath=(".*?");/.exec(스크립트);
+      fs.writeFileSync(실제, `LNK>${t ? JSON.parse(t[1]) : ''}`);
+      return '';
+    }
+    if (!fs.existsSync(실제)) return '';
+    const 내용 = fs.readFileSync(실제, 'utf8');
+    return 내용.startsWith('LNK>') ? 내용.slice(4) : '';
+  };
+}
+
+test('임시링크이름: 무엇을 줘도 ASCII 만 남는다 — COM 이 보는 유일한 이름이다', () => {
+  assert.match(임시링크이름('w-1234-1'), /^[\x20-\x7E]+\.lnk$/);
+  assert.match(임시링크이름('읽기-— ✅-7'), /^[\x20-\x7E]+\.lnk$/,
+    '한글·긴 줄표·이모지가 임시 이름으로 새면 우회 자체가 무효다');
+  assert.match(임시링크이름(''), /^[\x20-\x7E]+\.lnk$/, '빈 꼬리도 이름이 되어야 한다');
+  assert.ok(임시링크이름('x').endsWith('.lnk'),
+    'WScript.Shell 은 .lnk/.url 이 아니면 CreateShortcut 자체를 거부한다(08-13 실측)');
+});
+
+test('바로가기만들기: 긴 줄표(—) 이름도 **정확히 그 이름으로** 만들어진다 — 유호 신고 08-13 그 호출', () => {
+  밭에서((밭, 대상) => {
+    const 최종 = path.join(밭, '01_캐릭터 시안 v5 — 살아있음 반응 시연.lnk');
+    바로가기만들기(최종, 대상, { 셸: CP949모사셸() });
+    assert.ok(fs.existsSync(최종), '유호님이 부른 그 이름 그대로 파일이 있어야 한다');
+  });
+});
+
+test('바로가기만들기: 실측한 「죽는 문자」가 하나라도 이름에 있으면 죽던 자리 — 전부 만들어진다', () => {
+  밭에서((밭, 대상) => {
+    const 셸 = CP949모사셸();
+    for (const c of 죽는문자) {
+      const 최종 = path.join(밭, `${c} 정본.lnk`);
+      바로가기만들기(최종, 대상, { 셸 });
+      assert.ok(fs.existsSync(최종), `${c} 가 든 이름에서 죽었다`);
+    }
+  });
+});
+
+test('바로가기만들기: **조용히 딴 이름으로 가던** 문자(é→e)도 요청한 이름에 만들어진다', () => {
+  // exit 0 이라 「됐다」로 보이던 자리 — 새는 방향은 언제나 「통과」다.
+  밭에서((밭, 대상) => {
+    바로가기만들기(path.join(밭, 'café 정본.lnk'), 대상, { 셸: CP949모사셸() });
+    assert.ok(fs.existsSync(path.join(밭, 'café 정본.lnk')));
+    assert.ok(!fs.existsSync(path.join(밭, 'cafe 정본.lnk')), '깎인 이름으로 새면 안 된다');
+  });
+});
+
+test('바로가기만들기: 코드페이지 안의 표기(― · → 「 ㉠ 한글)는 원래도 멀쩡했고 계속 멀쩡하다', () => {
+  밭에서((밭, 대상) => {
+    const 셸 = CP949모사셸();
+    for (const c of 멀쩡한문자) {
+      const 최종 = path.join(밭, `${c}_정본.lnk`);
+      바로가기만들기(최종, 대상, { 셸 });
+      assert.ok(fs.existsSync(최종), `${c} 를 깎으면 유호님이 읽는 이름이 훼손된다`);
+    }
+  });
+});
+
+test('바로가기만들기: 성공해도 실패해도 `__mk-` 임시 파일이 안 남는다', () => {
+  밭에서((밭, 대상) => {
+    바로가기만들기(path.join(밭, '가 — 나.lnk'), 대상, { 셸: CP949모사셸() });
+    /* ⚠셸이 **파일을 만든 뒤** 죽는 모양으로 문다 — 만들기 전에 죽는 셸로는 치울 것이 없어
+     * 「안 치운다」로 바꿔도 이 회귀가 통과했다(2026-08-13 변이 시험 M4 가 잡은 구멍). */
+    assert.throws(() => 바로가기만들기(path.join(밭, '다.lnk'), 대상, {
+      셸: (스크립트) => {
+        const m = /CreateShortcut\((".*?")\)/.exec(스크립트);
+        fs.writeFileSync(JSON.parse(m[1]), 'LNK>중간까지 쓰고 죽었다');
+        throw new Error('셸이 파일을 만든 뒤 죽었다');
+      },
+    }));
+    assert.deepEqual(fs.readdirSync(밭).filter((n) => n.startsWith('__mk-')), [],
+      '임시가 남으면 유호님 폴더에 정체불명 파일이 쌓인다');
+  });
+});
+
+test('못 만들면 **이름과 대상을 말하고** 죽는다 — 「stderr 없이 exit 1」이던 자리', () => {
+  밭에서((밭, 대상) => {
+    const 최종 = path.join(밭, '01_캐릭터 시안 v5 — 살아있음 반응 시연.lnk');
+    assert.throws(
+      () => 바로가기만들기(최종, 대상, {
+        셸: () => { throw new Error('Unable to save shortcut "…\\x ? y.lnk".'); },
+      }),
+      (e) => {
+        assert.match(e.message, /링크:/, '어느 링크에서 죽었는지');
+        assert.match(e.message, /대상:/, '무엇을 가리키려다 죽었는지');
+        assert.match(e.message, /코드페이지/, '어느 층에서 죽었는지 — 다음 사람이 층을 다시 안 가르게');
+        assert.ok(e.message.includes('캐릭터 시안 v5'), '이름을 말해야 유호님이 무엇을 바꿀지 안다');
+        assert.ok(e.message.includes('Unable to save shortcut'), '셸이 한 말을 삼키지 않는다');
+        return true;
+      }
+    );
+  });
+});
+
+test('셸이 성공을 알려도 그 자리에 파일이 없으면 성공이라 하지 않는다 (㉡의 안전망)', () => {
+  밭에서((밭, 대상) => {
+    assert.throws(
+      () => 바로가기만들기(path.join(밭, '가.lnk'), 대상, { 셸: () => '' }),
+      /파일이 없다/
+    );
+  });
+});
+
+test('바로가기대상읽기: 긴 줄표 이름의 링크도 대상을 읽는다 — 빈 값을 「대상 없음」으로 번역하지 않는다', () => {
+  밭에서((밭, 대상) => {
+    const 셸 = CP949모사셸();
+    const 최종 = path.join(밭, '01_캐릭터 시안 v5 — 살아있음 반응 시연.lnk');
+    바로가기만들기(최종, 대상, { 셸 });
+    assert.strictEqual(바로가기대상읽기(최종, { 셸 }), path.resolve(대상));
+    assert.deepEqual(fs.readdirSync(밭).filter((n) => n.startsWith('__mk-')), [],
+      '읽기용 임시 사본도 안 남는다');
+  });
+});
+
+test('바로가기대상읽기: 진짜 못 읽으면 null — 빈 문자열로 눙치지 않는다', () => {
+  밭에서((밭) => {
+    assert.strictEqual(바로가기대상읽기(path.join(밭, '없는것.lnk'), { 셸: () => '' }), null);
+  });
+});
+
+test('PS오류읽기: 실측 CLIXML 에서 원인 문장을 뽑는다 — 그 문장이 범인을 자백했다', () => {
+  const 실측 =
+    '#< CLIXML\n<Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04">' +
+    '<S S="Error">Unable to save shortcut "C:\\Temp\\x ? y.lnk"._x000D__x000A_</S>' +
+    '<S S="Error"> + FullyQualifiedErrorId : System.IO.FileNotFoundException_x000D__x000A_</S></Objs>';
+  const 말 = PS오류읽기(실측);
+  assert.match(말, /Unable to save shortcut/);
+  assert.match(말, /x \? y\.lnk/, '깎인 `?` 가 보여야 원인이 한눈에 잡힌다');
+  assert.match(말, /FileNotFoundException/, '뒷줄도 버리지 않는다');
+  assert.ok(!말.includes('_x000D_'), '이스케이프를 안 풀면 사람이 못 읽는다');
+  assert.ok(!말.includes('<S S='), 'CLIXML 태그가 남으면 그냥 원문 덤프다');
+});
+
+test('PS오류읽기: stderr 가 비면 빈 문자열 — 없는 원인을 지어내지 않는다', () => {
+  assert.strictEqual(PS오류읽기(''), '');
+  assert.strictEqual(PS오류읽기(null), '');
+});
+
+test('🔴 COM 에 가는 경로는 통로가 쥔 이름뿐이다 — 옛 통로(부르는 쪽 이름 직행)를 금지한다', () => {
+  /* 호출부마다 고치는 대신 **잘못 쓸 수 없는 통로**를 두고 옛 통로를 회귀로 막는다.
+   * `링크경로`·`놓을곳`·`최종` 같은 바깥 이름이 CreateShortcut 에 직접 들어가는 순간
+   * 그 자리는 다시 코드페이지에 깎인다 — 그때 실패는 또 조용하다. */
+  const 소스 = require('node:fs').readFileSync(
+    path.join(__dirname, '..', 'tools', '운영자료.js'), 'utf8');
+  // ⚠`\w` 로 잡으면 **한글 변수명이 안 걸려** 자리 0건 → 검사가 조용히 공회전한다
+  //   (2026-08-13 이 검사를 쓰다 그대로 밟았다 — 가드 맹점 ①: 사람이 실제로 쓰는 표기로 검사한다).
+  const 자리 = [...소스.matchAll(/CreateShortcut\(\$\{JSON\.stringify\(([^)]+)\)\}/g)].map((m) => m[1]);
+  assert.ok(자리.length >= 2, 'CreateShortcut 호출 자리를 못 찾았다 — 이 검사가 공회전한다');
+  assert.deepEqual(
+    [...new Set(자리)].sort(),
+    ['p', '임시'],
+    'COM 에는 통로가 만든 ASCII 임시 이름(만들기=임시 · 읽기=p)만 준다'
+  );
+});
+
+test('안전한이름: 긴 줄표·중점을 **안 깎는다** — 고친 것은 통로지 유호님 이름이 아니다', () => {
+  assert.strictEqual(
+    안전한이름('캐릭터 시안 v5 — 살아있음 반응 시연'),
+    '캐릭터 시안 v5 — 살아있음 반응 시연',
+    '이름을 깎아 문제를 피하면 유호님이 화면에서 읽는 표기가 훼손된다'
+  );
+});
+
+/* ── repo 밖 환경: 진짜 PowerShell·COM — 못 재면 skip 으로 드러낸다 ────────── */
+
+test('실기계: 진짜 WScript.Shell 로 긴 줄표 이름 바로가기를 만들고 읽는다 (유호 신고 재현)', (t) => {
+  if (process.platform !== 'win32') {
+    t.skip('win32 아님(CI) — WScript.Shell 은 Windows COM 이다. 탐지력은 위 CP949 모사 셸이 진다');
+    return;
+  }
+  밭에서((밭, 대상) => {
+    const 최종 = path.join(밭, '01_캐릭터 시안 v5 — 살아있음 반응 시연.lnk');
+    바로가기만들기(최종, 대상);
+    assert.ok(fs.existsSync(최종), '유호 신고 그 호출 — 실기계에서도 그 이름 그대로 만들어져야 한다');
+    assert.strictEqual(바로가기대상읽기(최종), path.resolve(대상), '만든 것을 다시 읽지도 못하면 목록이 오보한다');
+    assert.deepEqual(fs.readdirSync(밭).filter((n) => n.startsWith('__mk-')), []);
+  });
 });

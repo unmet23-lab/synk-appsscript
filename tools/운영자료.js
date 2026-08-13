@@ -117,13 +117,38 @@ const PS_프리앰블 =
   '[Console]::OutputEncoding=[Text.Encoding]::UTF8;' +
   '$OutputEncoding=[Text.Encoding]::UTF8;';
 
+/** PowerShell 이 stderr 로 뱉는 CLIXML 을 **사람이 읽는 한 줄로** 푼다. 순수 함수.
+ *
+ * 🔴 이걸 안 하면 실패가 「stderr 없이 exit 1」로 보인다(2026-08-13 유호 신고 그 모양).
+ * 원래 이 자리는 stderr 를 통째로 버렸다 — 이유는 「CLIXML 이 결과에 낀다」였는데,
+ * execFileSync 는 stdout·stderr 를 **따로** 담으므로 섞일 일이 없다. 버릴 이유가 없었고,
+ * 버린 대가로 원인을 말하는 문장(`Unable to save shortcut "…\x ? y.lnk"`)이 통째로 사라졌다. */
+function PS오류읽기(원문) {
+  const s = String(원문 || '');
+  const 조각 = [...s.matchAll(/<S\s+S="Error">([\s\S]*?)<\/S>/g)].map((m) => m[1]);
+  return (조각.length ? 조각.join('') : s.replace(/^#<\s*CLIXML[^>]*>/, ''))
+    .replace(/_x([0-9A-Fa-f]{4})_/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'").replace(/&amp;/g, '&')
+    .split(/\r?\n/).map((l) => l.trim()).filter(Boolean).join(' · ')
+    .slice(0, 500);
+}
+
 function ps(스크립트) {
   const enc = Buffer.from(PS_프리앰블 + 스크립트, 'utf16le').toString('base64');
-  return execFileSync('powershell', ['-NoProfile', '-NonInteractive', '-EncodedCommand', enc], {
-    encoding: 'utf8',
-    windowsHide: true,
-    stdio: ['ignore', 'pipe', 'ignore'], // stderr 로 새는 CLIXML 을 stdout 과 섞지 않는다
-  }).trim();
+  try {
+    return execFileSync('powershell', ['-NoProfile', '-NonInteractive', '-EncodedCommand', enc], {
+      encoding: 'utf8',
+      windowsHide: true,
+      // stdout·stderr 는 **다른 파이프**라 섞이지 않는다 — stderr 를 버리면 원인만 사라진다.
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
+  } catch (e) {
+    const 말 = PS오류읽기(e.stderr);
+    const err = new Error(말 || `PowerShell 이 exit ${e.status} 로 죽었고 stderr 도 비었다`);
+    err.status = e.status;
+    throw err;
+  }
 }
 
 /* 바탕화면 실경로는 위 `./lib/바탕화면.js` 가 준다 — 여기 사본을 되살리면 회귀가 문다
@@ -131,32 +156,110 @@ function ps(스크립트) {
  * 이 파일이 쓰던 PowerShell 셸 확장은 레지스트리와 **같은 값**이었다(2026-08-10 실측 · 판정 근거는 통로 머리에).
  * 확장 실패를 조용히 넘기지 않는 몫(`폴백` → 아래 main 의 경고)은 그대로 승계한다. */
 
+/* ── 바로가기 통로 ────────────────────────────────────────────────
+ *
+ * 🔴 **WScript.Shell 은 경로를 시스템 ANSI 코드페이지로 깎는다**(2026-08-13 유호 신고 → 실측).
+ *   유호님이 `--이름 "캐릭터 시안 v5 — 살아있음 반응 시연"` 로 부르자 stderr 없이 exit 1.
+ *   층을 하나씩만 바꿔 대조하니 인코딩(UTF-16LE base64 왕복)도 파일시스템(fs 로 같은 이름 생성)도
+ *   멀쩡했고 **CreateShortcut 만** 죽었다. 오류문이 스스로 자백한다 —
+ *   `Unable to save shortcut "…\x ? y.lnk"` : 긴 줄표가 `?` 로 깎였고, `?` 는 파일명 금지문자다.
+ *
+ *   실패는 **세 얼굴이고 둘은 조용하다**(이 기계 ANSI=949 기준 실측):
+ *     ㉠ 죽는다        — `—`(U+2014) `–` `“` `✅` `⚠` `🔴`  → `?` → FileNotFoundException
+ *     ㉡ 딴 이름으로 만든다 — `é` → `e` (exit 0 인데 요청한 경로엔 파일이 없다)
+ *     ㉢ 빈 값을 준다   — 그 이름 lnk 의 TargetPath 가 `''` → 「대상 없음」 오보의 씨앗
+ *   코드페이지 **안**의 것은 전부 멀쩡했다(`―` `·` `→` `「` `㉠` `…` `’` `①` `Ⅰ` `√` 한글 `ß`).
+ *
+ * 그래서 처방을 「이름에서 특수문자를 지운다」로 잡지 않는다 — 멀쩡한 표기까지 깎아
+ * 유호님이 읽는 이름을 훼손하고, 코드페이지 표를 JS 안에 베껴 두면 그 표가 갈라진다.
+ * **COM 에는 ASCII 임시 이름만 주고 fs.rename 으로 확정한다** — 그 층이 그 문자를 만날 일을 없앤다.
+ * 읽기도 같은 이유로 한 통로에 모은다(`바로가기대상읽기`). 탐지력 = `tests/운영자료.test.js` 의 CP949 모사 셸.
+ */
+
+/** COM 에 넘길 **임시 링크 이름** — 무엇을 주든 ASCII 로만 남긴다. 순수 함수.
+ *  ⚠확장자는 반드시 `.lnk`(WScript.Shell 은 .lnk/.url 이 아니면 CreateShortcut 자체를 거부한다). */
+function 임시링크이름(꼬리) {
+  const 안전 = String(꼬리).replace(/[^A-Za-z0-9._-]/g, '') || '0';
+  return `__mk-${안전}.lnk`;
+}
+
+let 임시번호 = 0;
+const 다음임시 = (앞) => 임시링크이름(`${앞}-${process.pid}-${(임시번호 += 1)}`);
+
+/** 바로가기를 만든다. 링크 이름이 무엇이든(긴 줄표·이모지) 만들어져야 한다.
+ *  `셸` 은 테스트가 CP949 를 모사해 갈아끼우는 자리다 — 실환경 없이도 탐지력이 선다. */
+function 바로가기만들기(링크경로, 대상, { 셸 = ps } = {}) {
+  const 최종 = path.resolve(링크경로);
+  const 대상절대 = path.resolve(대상);
+  const 임시 = path.join(path.dirname(최종), 다음임시('w'));
+  const 치우기 = () => { try { fs.rmSync(임시, { force: true }); } catch { /* 임시 정리 실패는 삼킨다 */ } };
+  try {
+    셸(
+      '$s=New-Object -ComObject WScript.Shell;' +
+        `$l=$s.CreateShortcut(${JSON.stringify(임시)});` +
+        `$l.TargetPath=${JSON.stringify(대상절대)};` +
+        '$l.Description="SYNK 정본 바로가기 — 원본이 바뀌면 자동으로 최신이 열립니다";' +
+        '$l.Save()'
+    );
+  } catch (e) {
+    치우기();
+    throw new Error(못만든이유(최종, 대상절대, e.message));
+  }
+  // 「성공했다」를 안 믿는다 — ㉡(조용히 딴 이름)이 정확히 exit 0 으로 온다.
+  if (!fs.existsSync(임시)) {
+    throw new Error(못만든이유(최종, 대상절대, '셸이 성공을 알렸는데 그 자리에 파일이 없다 — 이름이 조용히 깎여 딴 곳에 만들어졌다'));
+  }
+  fs.renameSync(임시, 최종); // fs 는 유니코드를 그대로 쓴다(실측) — 이름 확정은 여기서
+  return 최종;
+}
+
+/** 실패를 **이름과 함께** 말한다. 남는 위험은 하나뿐 — 폴더 경로(바탕화면 쪽)에 못 담는 문자가 있는 경우.
+ *  그건 도구가 못 피하니, 적어도 조용히 죽지는 않게 한다. */
+function 못만든이유(링크경로, 대상, 셸말) {
+  return [
+    '바로가기를 못 만들었다 — 이 층(WScript.Shell)은 경로를 Windows ANSI 코드페이지로 깎는다.',
+    `  링크: ${링크경로}`,
+    `  대상: ${대상}`,
+    '  이름 쪽은 도구가 ASCII 임시이름으로 우회한다 — 그래도 죽었다면 **폴더 경로**에 그 코드페이지가 못 담는 문자가 있다.',
+    `  셸: ${셸말}`,
+  ].join('\n');
+}
+
+/** 바로가기가 가리키는 곳. 못 읽으면 `null`(빈 문자열을 「대상 없음」으로 번역하지 않는다).
+ *
+ * ㉢ 실측: 이름에 못 담는 문자가 있으면 COM 은 **안 죽고 빈 문자열**을 준다. 그래서 빈 값이 오면
+ * 「대상이 없다」로 단정하지 말고 ASCII 임시 이름으로 **복사해서 한 번 더 읽는다**(읽기는 비파괴다). */
+function 바로가기대상읽기(링크경로, { 셸 = ps } = {}) {
+  const 절대 = path.resolve(링크경로);
+  const 읽기 = (p) => {
+    try {
+      return 셸('$s=New-Object -ComObject WScript.Shell;' + `$l=$s.CreateShortcut(${JSON.stringify(p)});$l.TargetPath`);
+    } catch { return ''; }
+  };
+  const 직접 = 읽기(절대);
+  if (직접) return 직접;
+  if (!fs.existsSync(절대)) return null;
+  const 임시 = path.join(path.dirname(절대), 다음임시('r'));
+  try {
+    fs.copyFileSync(절대, 임시);
+    return 읽기(임시) || null;
+  } catch {
+    return null;
+  } finally {
+    try { fs.rmSync(임시, { force: true }); } catch { /* 임시 정리 실패는 삼킨다 */ }
+  }
+}
+
 function 목록읽기(폴더) {
   if (!fs.existsSync(폴더)) return [];
   const sh = [];
   for (const n of fs.readdirSync(폴더)) {
-    let 대상 = null;
-    if (n.toLowerCase().endsWith('.lnk')) {
-      try {
-        대상 = ps(
-          '$s=New-Object -ComObject WScript.Shell;' +
-            `$l=$s.CreateShortcut(${JSON.stringify(path.join(폴더, n))});$l.TargetPath`
-        );
-      } catch { /* 못 읽으면 대상 미상 */ }
-    }
+    // 만드는 중이던 임시 링크는 목록에도 번호에도 끼지 않는다(중간에 죽으면 남는다).
+    if (n.startsWith('__mk-')) continue;
+    const 대상 = n.toLowerCase().endsWith('.lnk') ? 바로가기대상읽기(path.join(폴더, n)) : null;
     sh.push({ 이름: n, 대상 });
   }
   return sh;
-}
-
-function 바로가기만들기(링크경로, 대상) {
-  ps(
-    '$s=New-Object -ComObject WScript.Shell;' +
-      `$l=$s.CreateShortcut(${JSON.stringify(링크경로)});` +
-      `$l.TargetPath=${JSON.stringify(path.resolve(대상))};` +
-      '$l.Description="SYNK 정본 바로가기 — 원본이 바뀌면 자동으로 최신이 열립니다";' +
-      '$l.Save()'
-  );
 }
 
 /** 사본 이름(`01_운영_한눈에.html`)의 정본을 후보 중에서 고른다.
@@ -323,9 +426,9 @@ function 링크화(폴더, { 사본경로 = null, 정본경로 = null } = {}) {
     const 임시 = 뿌리 + '.만드는중.lnk';
     바로가기만들기(임시, 정본);
     // 만들었다고 믿지 않고 **대상이 실제로 읽히는지** 확인한 뒤에야 사본을 지운다.
-    const 읽힌대상 = ps(
-      '$s=New-Object -ComObject WScript.Shell;' + `$l=$s.CreateShortcut(${JSON.stringify(임시)});$l.TargetPath`
-    );
+    // ⚠읽기는 공용 통로로 — 직접 ps 로 읽으면 이름에 `—` 가 든 사본에서 빈 값이 와서
+    //   멀쩡한 링크를 「엉뚱한 곳을 가리킨다」로 오보하고 사본을 영영 못 바꾼다(㉢ 실측).
+    const 읽힌대상 = 바로가기대상읽기(임시);
     if (path.resolve(읽힌대상 || '') !== path.resolve(정본)) {
       try { fs.unlinkSync(임시); } catch { /* 임시 정리 실패는 삼킨다 */ }
       console.error(`❌ 바로가기가 엉뚱한 곳을 가리킨다 — 사본을 지키고 멈춘다: ${이름}`);
@@ -495,6 +598,10 @@ function main(argv) {
   return 0;
 }
 
-module.exports = { 다음번호, 바로가기냐, 안전한이름, 이미있나, 짝찾기, 정본후보, 폴더명, 갈래들, 갈래폴더, 계열키, 옛판고르기, 파일인자 };
+module.exports = {
+  다음번호, 바로가기냐, 안전한이름, 이미있나, 짝찾기, 정본후보, 폴더명, 갈래들, 갈래폴더,
+  계열키, 옛판고르기, 파일인자,
+  임시링크이름, PS오류읽기, 바로가기만들기, 바로가기대상읽기,
+};
 
 if (require.main === module) process.exit(main(process.argv));
