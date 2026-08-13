@@ -847,7 +847,7 @@ const LEAGUE_DAILY_CAST = false;     // [v9.47·A1] 리그 일일 중계석(월~
 //   → fbQualityGate_ 통과 시 즉시 '노출'(무인 발행) · 미달 시 '격리:사유'(학생 미노출, 관리자 메일 통보)
 //   → 학생이 앱에서 '확인했어요'(J열) → sweepFeedbackAck_가 +5P.
 // 열람을 포인트 루프에 묶는 것까지가 한 세트 — 확인 버튼이 빠지면 "생성만 되고 안 읽히는" 반쪽 기능이 된다.
-const AI_FEEDBACK_MODEL = 'claude-opus-5'; // 유호님 확정값 2026-08-10 「올려」(옛 「콘텐츠=Sonnet급」 조항은 v8.8 폐기 · 모델 선택은 유호님만 — 08-13 클로드 라우팅 삭제). ⚠ 폴백을 하드코딩한 소비자가 둘 더 있다(엔진_두뇌.js·상담AI.js) — 여기만 고치면 그쪽이 조용히 옛 값으로 남는다. API 키는 Script Properties 'CLAUDE_API_KEY' — 없으면 배치 전체 스킵(NOTION_TOKEN 패턴, 배포만으로는 아무 일도 안 일어남)
+const AI_FEEDBACK_MODEL = 'claude-opus-5'; // 라우팅 정본 = tools/모델정책.js(유호 확정 2026-08-10 「올려」 — 옛 「콘텐츠=Sonnet급」 조항은 v8.8 에서 폐기). ⚠ 폴백을 하드코딩한 소비자가 둘 더 있다(엔진_두뇌.js·상담AI.js) — 여기만 고치면 그쪽이 조용히 옛 값으로 남는다. API 키는 Script Properties 'CLAUDE_API_KEY' — 없으면 배치 전체 스킵(NOTION_TOKEN 패턴, 배포만으로는 아무 일도 안 일어남)
 const AI_FEEDBACK_AUTOPUBLISH = true;        // [v9.63] 무인 발행(유호 07-25 확정: 검수함 잔여 조립 중단·즉시 무인 전환) — 게이트 통과분 즉시 '노출'. 문제가 반복되면 false로 되돌리면 구 검수 모드('대기'→수동 승인)로 복귀
 const AI_FEEDBACK_MAX_PER_RUN = 30;          // 야간 1회 첨삭 상한 — 시간예산·비용 가드(초과분은 포인터가 남아 다음 밤 자동 이어짐)
 const RAID_DAILY_STORY = false;  // [v9.50] 일일 전투 리포트 — 매일 발행물 읽힘율 급락 처방(유호 07-21). 금·일 결산(raidFriday·leagueSettle)은 유지. 되살리려면 true
