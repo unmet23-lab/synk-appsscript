@@ -175,7 +175,10 @@ function 런갱신(런ID, 덧) {
 
 function 런목록() {
   let 이름들 = [];
-  try { 이름들 = fs.readdirSync(런뿌리()).filter((f) => f.endsWith('.json')); } catch (_) { return []; }
+  /* 한도 마커는 런이 아니다 — 같은 방에 살지만 목록에 들이면 「런ID undefined · 멈춤」 유령이
+   * 세션마다 알림에 뜬다(첫 실런이 잡음). 이름은 한도경로() 에서 파생한다 — 두 곳에 안 적는다. */
+  const 마커 = path.basename(한도경로());
+  try { 이름들 = fs.readdirSync(런뿌리()).filter((f) => f.endsWith('.json') && f !== 마커); } catch (_) { return []; }
   return 이름들
     /* `_경로` 를 달아 둔다 — 파일명 규칙이 바뀌어도 `런갱신` 이 그 런을 되찾을 수 있는 유일한 끈이다.
      * 밖으로 나가는 값이 아니라 내부 손잡이라 밑줄로 표시한다(훅 출력은 이 필드를 안 읽는다). */
@@ -312,6 +315,76 @@ function 자식인가(env) {
   return !!(env || process.env)[자식표식키];
 }
 
+/* ────────────────────────────────── 벤더 한도 마커 (GPT/codex usage limit)
+ *
+ * 실측 2026-08-13 (런 `심문-2026-08-13T0104-87f15a`): 한도 소진 상태에서 던진 심문 3회차가
+ * 15초 만에 전멸했고("You've hit your usage limit … try again at Aug 18th, 2026 12:39 PM"),
+ * 그 판정이 이 tmp 방의 런 JSON 에만 남아 **던진 세션·처분 세션·다음 세션이 각자 다시
+ * 발견했다** — 같은 절차 3번째라 기계로 옮긴다(CLAUDE.md 신뢰성). 마커는 런과 같은 방에
+ * 산다: 세션 무관·이 기계 전역이고, 이 방을 쓰는 도구들만 이 판정을 소비한다.
+ *
+ * ⚠ 새는 방향 점검(가드 맹점):
+ *   ① 리셋 시각을 **못 읽었으면 막지 않는다** — 열리는 시각을 모르는 차단은 따를 수 없는
+ *      처방이고, 그 순간 우회가 정상 통로가 된다(F103). 그 경우 훅 알림만 낸다.
+ *   ② 우회는 `--한도무시`(env `SYNK_REVIEW_QUOTA_PROBE`) 하나 — **성공 1회가 마커를 지우므로**
+ *      오탐(요금제 변경 등으로 이미 풀린 마커)은 확인 강행 한 번으로 스스로 낫는다.
+ *   ③ 시각은 **로컬로 읽는다** — codex CLI 가 로컬 시각으로 찍고, 마커도 이 기계 전용이다. */
+const 한도패턴 = /You.?ve hit your usage limit/i;
+const 한도무시키 = 'SYNK_REVIEW_QUOTA_PROBE';
+
+function 한도경로() { return path.join(런뿌리(), '한도.json'); }
+
+/** "… try again at Aug 18th, 2026 12:39 PM." → ISO(로컬 해석). 못 읽으면 null — 차단 대신 알림만.
+ * ⚠ 줄끝 앵커($)로 자르지 않는다 — 실제 로그는 오류 조각들이 「 / 」로 한 줄에 이어 붙어
+ *   (실측 87f15a: 「확인 불가 … / ERROR: … / ERROR: …」), 앵커 매칭이 첫 「try again at」부터
+ *   줄끝까지 통째로 삼켜 Date 가 죽는다. **날짜 모양 자체**를 잡는다 — 모양이 바뀌면 null 로
+ *   접혀 차단 없는 알림만 남는다(새는 방향이 「멀쩡한 통로를 막음」이 아니라 「알림」이다). */
+function 한도리셋파싱(줄) {
+  const m = /try again at ([A-Za-z]{3,9} \d{1,2}(?:st|nd|rd|th)?,? \d{4},? \d{1,2}:\d{2}\s?[AP]M)/i.exec(String(줄 || ''));
+  if (!m) return null;
+  const d = new Date(m[1].replace(/(\d{1,2})(st|nd|rd|th)\b/i, '$1'));
+  return Number.isFinite(d.getTime()) ? d.toISOString() : null;
+}
+
+/** 출력에서 한도 오류를 발견하면 마커를 적는다. 패턴이 없으면 null — 아무것도 안 쓴다. */
+function 한도기록(텍스트, 지금) {
+  const s = String(텍스트 || '');
+  if (!한도패턴.test(s)) return null;
+  const 줄 = (s.split('\n').find((l) => 한도패턴.test(l)) || '').trim();
+  const 기록 = {
+    감지시각: new Date(지금 || Date.now()).toISOString(),
+    리셋시각: 한도리셋파싱(줄),
+    원문: 줄.slice(0, 500),
+    출처런: process.env[런ID키] || '',
+  };
+  /* 마커 쓰기 실패는 기능 실패가 아니다 — 원래 오류(한도)가 그대로 보고되므로 조용해지지 않는다. */
+  try {
+    fs.mkdirSync(런뿌리(), { recursive: true });
+    fs.writeFileSync(한도경로(), JSON.stringify(기록, null, 2), 'utf8');
+  } catch (_) { /* 위 참조 */ }
+  return 기록;
+}
+
+/** 마커 현재 상태. 없거나 못 읽으면 null. `지남` 은 리셋 시각을 아는 마커에서만 참이 될 수 있다. */
+function 한도상태(지금) {
+  let r;
+  try { r = JSON.parse(fs.readFileSync(한도경로(), 'utf8')); } catch (_) { return null; }
+  const t = Date.parse((r && r.리셋시각) || '');
+  return { ...r, 지남: Number.isFinite(t) ? (지금 || Date.now()) >= t : false };
+}
+
+/** 성공 1회 = 「한도가 풀렸다」의 유일한 실측 — 마커를 지운다. */
+function 한도해제() {
+  try { fs.rmSync(한도경로(), { force: true }); return true; } catch (_) { return false; }
+}
+
+/** 막나 — 판정은 이 한 곳이다(호출부가 각자 판정하면 갈리고, 새는 방향은 「태운다」다).
+ *  리셋 시각이 있는 살아있는 마커만 막는다(①). 우회 env(②)는 여기서 본다. */
+function 한도막나(상태, env) {
+  if ((env || process.env)[한도무시키]) return false;
+  return !!(상태 && !상태.지남 && 상태.리셋시각);
+}
+
 module.exports = {
   ROOT,
   // 체크포인트
@@ -321,4 +394,6 @@ module.exports = {
   살아있나, 경과분, 판정, 요약, 처분, 자식인자, 던지기플래그, 멈춤분,
   HEAD움직였나, 중단,
   자식환경, 자식인가, 런ID키, 자식표식키,
+  // 벤더 한도
+  한도패턴, 한도무시키, 한도경로, 한도리셋파싱, 한도기록, 한도상태, 한도해제, 한도막나,
 };
