@@ -15,6 +15,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const { ROOT, engineSource } = require('./_engine-source');
+/* 주석 제거 통로는 공용 하나다 — `tests/lib/소스검사.js` (F401 계열 · 대기열 P3 줄73). */
+const { 코드만 } = require('./lib/소스검사.js');
 /* 줄바꿈 정규화 — git이 체크아웃 시 CRLF로 바꾸는 환경(Windows)에서 '\n}\n' 같은 표식이 통째로 안 잡힌다.
  * 08-03 실측: 리베이스 직후 이 파일의 9건이 「섹션 끝 표식을 찾지 못함」으로 한꺼번에 죽었다 —
  * 코드는 멀쩡한데 테스트만 죽는 형태라, 원인을 모르면 진짜 결함을 찾아 헤매게 된다. */
@@ -461,7 +463,7 @@ test('[v9.187] 첨삭도 출처(model·prompt_ver)와 문항 텍스트를 남긴
   const HH = JSON.parse(code.match(/const HW_FEEDBACK_HEADERS = (\[[\s\S]*?\]);/)[1].replace(/'/g, '"'));
   const countTop = (s) => {
     let d = 0, n = 1;
-    for (const ch of s.replace(/\/\/[^\n]*/g, '')) {
+    for (const ch of 코드만(s)) {   // 주석 제거는 공용 통로 하나다(F401 계열)
       if ('([{'.includes(ch)) d++;
       else if (')]}'.includes(ch)) d--;
       else if (ch === ',' && d === 0) n++;

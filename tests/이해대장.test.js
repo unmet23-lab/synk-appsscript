@@ -16,6 +16,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 
+/* 주석 제거 통로는 공용 하나다 — `tests/lib/소스검사.js` (F401 계열 · 대기열 P3 줄73).
+ * 이 파일이 재는 것이 「사본 0」이라 자기가 사본을 들고 있으면 앞뒤가 안 맞았다. */
+const { 코드만 } = require('./lib/소스검사.js');
+
 const ROOT = path.resolve(__dirname, '..');
 const TOOL = path.join(ROOT, 'tools', '이해대장.js');
 const 정본 = path.join(ROOT, 'docs', 'SYNK_철학.md');
@@ -180,15 +184,14 @@ test('도달색 — 부정 판정이 초록으로 뒤집히지 않는다 (탐지
  *   부정을 먼저 묻도록 색만 고쳤더니 나머지 둘이 옛 판정을 들고 갈라졌다 — 화면이 한 층을
  *   빨갛게 칠하면서 같은 화면 머리에서 「닿는다」로 셌다(실측 08-12). 사본 0 을 소스로 잰다. */
 test('도달 판정 사본이 0 — 「닿는다」를 소스에서 직접 묻는 자리는 도달색 하나뿐', () => {
-  const 소스 = fs.readFileSync(TOOL, 'utf8')
-    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, ''); // 사유를 적은 주석은 대상 아님
+  const 소스 = 코드만(fs.readFileSync(TOOL, 'utf8')); // 사유를 적은 주석은 대상 아님
   const 자리 = 소스.split('\n').filter((l) => /\/닿는다\//.test(l));
   assert.equal(자리.length, 1, `「닿는다」 정규식이 ${자리.length} 곳에 있다 — 갈라지는 순간 증상이 없다:\n${자리.join('\n')}`);
   assert.match(자리[0], /return \{ 면: 킷\.emerald/, '유일한 그 자리가 도달색이 아니다');
 
   /* 매 세션 실리는 카드도 같은 판정을 쓴다 — 넷째 사본이 거기 있었다. */
   const 훅 = path.join(ROOT, '.claude', 'hooks', 'philosophy-card.js');
-  const 훅소스 = fs.readFileSync(훅, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  const 훅소스 = 코드만(fs.readFileSync(훅, 'utf8'));
   assert.equal(/\/닿는다\//.test(훅소스), false, '철학카드가 도달 판정을 자기 손으로 다시 적는다 — 화면과 카드가 다른 말을 하게 된다');
   assert.match(훅소스, /도달판정\(r\) !== '닿는다'/, '카드가 도달판정을 안 쓴다');
 });
