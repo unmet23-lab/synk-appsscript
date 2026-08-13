@@ -67,13 +67,22 @@ function 조사(root) {
   const R = root || ROOT;
   const 주인없음 = 보드lib.주인없는줄들(R);
   if (주인없음 === null) return null;
-  const 전체 = (보드lib.줄들(R) || []).map((r) => r.줄);
+  /* 유일성의 분모는 board-move 가 후보를 찾는 범위와 **같아야** 한다 — 그쪽은 `줄들 ∪ 유령들`
+   * 을 본다(규격 밖 줄도 치울 수 있어야 하니까 · F322). 여기서 유령을 빼면 유령과 겹치는
+   * needle 이 「유일」로 뽑히고, board-move 는 「세션 파일 2개에 걸린다」로 죽는다. */
+  const 전부 = [...(보드lib.줄들(R) || []), ...(보드lib.유령들(R) || [])];
+  const 전체 = 전부.map((r) => r.줄);
 
   const 대상 = []; const 티켓 = []; const 문구없음 = [];
   for (const r of 주인없음) {
     if (!보드lib.완료행(r.줄)) continue;          // ① 아직 도는 트랙 — 안 건드린다
     if (r.이어받기) { 티켓.push(r); continue; }    // ③ 🎫 — 일감이 산다(위 머리말)
-    const 문구 = 보드lib.이관문구(r.줄, 전체);
+    /* 🔑 [F405] 이 통로는 `옮기기()` 에서 **SYNK_BOARD 로 파일을 못박고** board-move 를 부른다 —
+     *   그래서 「그 파일 안에서만 유일한」 문구도 안전하다. 안 넘기면 보드 승계 규약(board-guard ④
+     *   — 죽은 세션 트랙은 트랙 칸을 **바이트 그대로** 옮겨 적어라)이 만든 쌍둥이 줄은 어떤 needle
+     *   도 전역 유일이 아니라 영영 `null` 이 되고, **규약을 지킬수록 안 치워지는 줄이 늘었다.** */
+    const 파일줄 = 전부.filter((x) => x.파일 === r.파일).map((x) => x.줄);
+    const 문구 = 보드lib.이관문구(r.줄, 전체, 파일줄);
     if (!문구) { 문구없음.push(r); continue; }     // 유일 문구를 못 고르면 board-move 가 못 찾는다
     대상.push({ ...r, 문구 });
   }

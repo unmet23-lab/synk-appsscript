@@ -245,16 +245,27 @@ function 만지는텍스트(파일칸) {
  *
  * 🔑 [F283] 첫 조각이 아니라 **비어 있지 않은 첫 조각**을 쓴다 — 트랙 칸이 백틱으로 시작하면
  *   첫 조각에 장식만 남아 비고, 그러면 그 줄은 처방 목록에서 **영구히 사라진다**(F103 축). */
-function 이관문구(line, 전체) {
+function 이관문구(line, 전체, 파일줄들) {
   const 조각들 = (표.칸나누기(line)[1] || '').split(/["`$\\]/)
     .map((s) => s.trim().replace(/^\*+/, '').trim()).filter(Boolean);
-  for (const 안전 of 조각들) {
-    for (let n = 4; n <= 안전.length + 3; n += 3) {
-      const needle = 안전.slice(0, Math.min(n, 안전.length));
-      if (전체.filter((l) => l.includes(needle)).length === 1) return needle;
+  const 고르기 = (후보들) => {
+    for (const 안전 of 조각들) {
+      for (let n = 4; n <= 안전.length + 3; n += 3) {
+        const needle = 안전.slice(0, Math.min(n, 안전.length));
+        if (후보들.filter((l) => l.includes(needle)).length === 1) return needle;
+      }
     }
-  }
-  return null;
+    return null;
+  };
+  /* ① 표 **전체**에서 유일한 문구가 먼저다 — 파일을 안 넘기는 통로도 그대로 쓸 수 있는 needle 이다.
+   *   (전체에서 유일하면 그 부분집합인 한 파일 안에서도 유일하니, 이 순서는 좁히는 쪽으로 안 샌다.) */
+  const 전역 = 고르기(전체);
+  if (전역) return 전역;
+  /* ② 그래도 없으면 **그 파일 안에서만** 유일한 문구 — 단 파일을 넘긴 통로에게만 준다.
+   *   ⚠ 이 줄이 정말 그 파일에 있을 때만이다. 아니면 needle 이 «다른 줄» 하나에 걸려
+   *   유일해 보이고, 그건 엉뚱한 줄을 옮기는 길이다(F405 ⚠ 가 경고한 방향). */
+  if (!Array.isArray(파일줄들) || !파일줄들.includes(line)) return null;
+  return 고르기(파일줄들);
 }
 
 /** 파일에 **남은 게 상투구뿐인가** — 그러면 그 세션 파일은 지워도 되는 껍데기다 (2026-08-12).
