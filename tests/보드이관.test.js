@@ -788,3 +788,74 @@ test('[조율값] 되돌리기는 **지운 파일도 되살린다** (껍데기 �
   assert.ok(fs.existsSync(fx.board), '커밋이 실패했는데 지운 보드를 안 되살렸다 — 줄이 작업본에서 사라진다');
   assert.equal(read(fx.board), before, '되살렸는데 내용이 원문이 아니다');
 });
+
+/* ═══ 원칙 ⑦ — 「주인이 죽었다」를 「일이 끝났다」로 번역하지 않는다 (F397 · 2026-08-13) ═══
+ * 실사고: `18537b29` 가 죽은 세션 `0ba9d4da` 의 줄을 아카이브로 옮겼는데 그 줄의 상태 칸은
+ * `▶작업중 — /deploy 진입` 이었고, 그 트랙이 밀던 v9.228 은 라이브에 한 바이트도 안 나갔다.
+ * 아카이브로 들어간 미완 트랙은 보드에도 인계문에도 안 뜨니 다음 세션이 원리상 못 줍는다.
+ *
+ * 🔑 탐지력은 **여기 픽스처가** 진다 — 실저장소는 살아있는 세션이 매번 달라 초록이 우연이 된다.
+ *   그리고 거짓양성 세 갈래(내 줄·완료 줄·이름 없는 보드)를 각각 못박는다: 이 가드가 새는 방향은
+ *   「통과」지만, **틀린 방향으로 조이면 board-guard 의 만석 처방이 통째로 죽는다**(F103·F278). */
+const 남의sid397 = 'local_f397dead-9999-8888-7777-666655554444';
+const 지문397 = 'f397dead';
+const 딴세션397 = 'local_11112222-aaaa-bbbb-cccc-dddddddddddd';
+
+/** 보드 파일 이름이 **지문 꼴**인 픽스처 — 원칙 ⑦ 의 주인 판정은 파일 이름이 좌표다(F246). */
+function mk지문보드픽스처(상태 = '▶작업중 — /deploy 진입') {
+  const fx = mkFixture();
+  const board = path.join(fx.dir, `${지문397}.md`);
+  const 줄 = `| 2026-08-13 | **미완 트랙 무** | a.js | ${상태} |`;
+  fs.writeFileSync(board, [
+    '| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|', 줄, '',
+  ].join('\n'), 'utf8');
+  return { fx: { ...fx, board }, 줄 };
+}
+
+test('[F397] 남의 죽은 세션의 **작업중** 줄은 아카이브로 안 옮긴다', () => {
+  const { fx, 줄 } = mk지문보드픽스처();
+  const before = { b: read(fx.board), a: read(fx.archive) };
+  const r = run(fx, ['미완 트랙 무'], { CLAUDE_CODE_HOST_SESSION_ID: 딴세션397 });
+  assert.notEqual(r.status, 0, '미완인 남의 줄을 그냥 옮겼다 — F397 재현(미완이 완료의 얼굴로 굳는다)');
+  assert.match(String(r.stderr), /원칙 ⑦|F397/, '왜 막혔는지 안 말한다');
+  assert.match(String(r.stderr), new RegExp(지문397), '누구 줄인지 안 나온다');
+  assert.match(String(r.stderr), /--미완확인/, '탈출구를 안 내민다 — 못 따를 처방이 된다(F103)');
+  assert.equal(read(fx.board), before.b, '거부인데 보드가 변했다');
+  assert.equal(read(fx.archive), before.a, '거부인데 아카이브가 변했다');
+  assert.ok(read(fx.board).includes(줄), '거부인데 줄이 보드에서 사라졌다');
+});
+
+test('[F397] `--dry` 도 같은 답을 낸다 (계획만 볼 때야말로 답이 필요하다)', () => {
+  const { fx } = mk지문보드픽스처();
+  const r = run(fx, ['미완 트랙 무', '--dry'], { CLAUDE_CODE_HOST_SESSION_ID: 딴세션397 });
+  assert.notEqual(r.status, 0, '--dry 가 원칙 ⑦ 을 안 말한다 — 계획이 실행과 갈린다');
+});
+
+test('[F397·거짓양성] **내 줄**이면 작업중이어도 옮긴다 (/close 를 잠그지 않는다)', () => {
+  const { fx, 줄 } = mk지문보드픽스처();
+  const r = run(fx, ['미완 트랙 무'], { CLAUDE_CODE_HOST_SESSION_ID: 남의sid397 });
+  assert.equal(r.status, 0, '내 줄인데 막혔다 — 이 가드가 /close 를 잠근다: ' + r.stderr);
+  assert.ok(read(fx.archive).includes(줄), '내 줄이 아카이브에 안 들어갔다');
+});
+
+test('[F397·거짓양성] 남의 줄이어도 **완료**면 그대로 옮긴다 (board-guard 처방을 안 죽인다)', () => {
+  const { fx, 줄 } = mk지문보드픽스처('✅종결 — 라이브 반영까지 끝');
+  const r = run(fx, ['미완 트랙 무'], { CLAUDE_CODE_HOST_SESSION_ID: 딴세션397 });
+  assert.equal(r.status, 0, '완료 줄을 막았다 — board-guard 의 만석 처방이 통째로 죽는다(F278): ' + r.stderr);
+  assert.ok(read(fx.archive).includes(줄), '완료 줄이 아카이브에 안 들어갔다');
+});
+
+test('[F397·거짓양성] 보드 이름이 지문 꼴이 아니면 이 검사는 **안 돈다**', () => {
+  const fx = mkFixture();
+  fs.writeFileSync(fx.board, read(fx.board).replace(ROW,
+    '| 2026-08-04 | **옮길 트랙 갑** | a.js | ▶작업중 |'), 'utf8');
+  const r = run(fx, ['옮길 트랙 갑'], { CLAUDE_CODE_HOST_SESSION_ID: 딴세션397 });
+  assert.equal(r.status, 0, '주인을 못 가르는 보드까지 막았다 — 오탐은 이 도구를 안 쓰게 만든다: ' + r.stderr);
+});
+
+test('[F397·자기처방] `--미완확인` 을 붙이면 **실제로 지나간다** (F103 — 처방이 도는지 본다)', () => {
+  const { fx, 줄 } = mk지문보드픽스처();
+  const r = run(fx, ['미완 트랙 무', '--미완확인'], { CLAUDE_CODE_HOST_SESSION_ID: 딴세션397 });
+  assert.equal(r.status, 0, '거절이 시킨 그 명령이 안 돈다 — 우회가 정상 통로가 된다: ' + r.stderr);
+  assert.ok(read(fx.archive).includes(줄), '--미완확인 인데 아카이브에 안 들어갔다');
+});
