@@ -2,4 +2,4 @@
 
 | 날짜 | 트랙/작업 | 만지는 파일 | 상태 |
 |---|---|---|---|
-| 2026-08-13 | **G2 재제출 소트랙 — deliver H3 재제출 조인 G1 한정 넓히기 + Fn 재배포 동봉**(메모리 minigame §3단계② 말미 별개 소트랙 · P0 G3G4 는 `6ab853ff` 선점 `043a096d` 확인 후 비켜남 · 새 선언 · 남의 줄 무변경) | **talk**: `functions/deliver`·`lib/게임배정.js`(⚠6ab853ff 와 겹침 가능 — 커밋 직전 재확인)·`tools/배달왕복시험.js`+회귀 · **as**: 메모리 minigame·이 줄 (운영 DB 0 · 실학생 행 0) | ▶착수 (`local_7b6cbbef`) — 실측 선행: H3 조인이 원시드를 `task_snapshot->>'prompt_seed'` 에서 읽는 전제는 G2 3단계 ①이 이미 세움 |
+| 2026-08-13 | **G2 재제출 소트랙 — deliver H3 재제출 조인 G1 한정 넓히기 + Fn 재배포 동봉**(메모리 minigame §3단계② 말미 별개 소트랙 · P0 G3G4 는 `6ab853ff` 선점 `043a096d` 확인 후 비켜남 · 새 선언 · 남의 줄 무변경) | **talk**: `functions/deliver`·`lib/게임배정.js`·`tests/게임배정.test.js`(C1 픽스처 7줄=6ab853ff 몫 동승 — 귀속은 커밋 메시지)·`tools/배달왕복시험.js` · **as**: 메모리 minigame·이 줄 (운영 DB 0 · 실학생 행 0) | ✅구현·회귀 talk `2ebf585`(1839/1839 · 상세=메모리 minigame G2재제출 절) (`local_7b6cbbef`) · 🔴재배포 대기=**6ab853ff G3 커밋 뒤**(F302·조율 발신) · 🎫**다음=원격배포 deliver→배달왕복시험→대기열 갱신** |
