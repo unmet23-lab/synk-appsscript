@@ -70,6 +70,10 @@ test('[탐지] 옛글자짚기_ — 한자·가나를 잡고, 짚음은 U+XXXX �
   assert.equal(ctx.옛글자짚기_('тусах' + 한자 + 'ийн'), 'U+683C',
     '키릴 낱말 한복판의 한자를 못 잡았다 — 형제 eval E17 이 실제로 이 모양이었다');
   assert.equal(ctx.옛글자짚기_(가나 + 'test'), 'U+3042', '가나를 못 잡았다');
+  // [vNEXT] 리뷰 P2-① 확장분 — 호환한자·반각 가나·astral 이 구판 클래스에서 «통과»로 샜다
+  assert.equal(ctx.옛글자짚기_('앞' + String.fromCodePoint(0xf914) + '뒤'), 'U+F914', '호환한자(한국어 독음 구역)를 못 잡았다');
+  assert.equal(ctx.옛글자짚기_('앞' + String.fromCodePoint(0xff71) + '뒤'), 'U+FF71', '반각 가나를 못 잡았다');
+  assert.equal(ctx.옛글자짚기_('앞' + String.fromCodePoint(0x20000) + '뒤'), 'U+20000', 'astral 한자(확장B)를 못 잡았다 — u 플래그 없이는 서러게이트 반쪽으로 읽히는 자리');
   // 같은 글자가 여러 번 나와도 코드포인트 집합이라 한 번만 — 사유 한 줄이 읽혀야 한다
   assert.equal(ctx.옛글자짚기_(한자 + 'x' + 한자), 'U+683C');
 });
