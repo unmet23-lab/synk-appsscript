@@ -16,7 +16,6 @@
  */
 const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
-const os = require('node:os');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -27,13 +26,11 @@ if (!fs.existsSync(TESTS)) {
   process.exit(1);
 }
 
-/* CI 러너에 없는 홈을 만든다 — 비어 있는 진짜 디렉터리라야 한다.
- * 존재하지 않는 경로를 HOME으로 주면 도구가 「경로 오류」로 죽어 CI와 다른 실패가 난다. */
-const fakeHome = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-ci-home-'));
-
-const env = { ...process.env, TZ: 'UTC', HOME: fakeHome, USERPROFILE: fakeHome };
-// 명시 지정이 남아 있으면 홈을 비운 의미가 사라진다(모사가 조용히 무력화된다)
-delete env.SYNK_MEMORY_DIR;
+/* CI 모사 환경은 lib/ci모사환경.js **한 벌**에서 온다 (F389) — clasp-guard 안전테스트와 여기가
+ * 각자 조립하다 갈라져, 「여기 초록」이 배포 게이트 통과를 예측하지 못했다. 조리법은 그 파일에. */
+const 모사 = require('./lib/ci모사환경.js').만들기();
+const fakeHome = 모사.fakeHome;
+const env = 모사.env;
 
 const files = fs.readdirSync(TESTS)
   .filter((f) => f.endsWith('.test.js'))
@@ -76,7 +73,7 @@ const before = snapshot();
 const r = spawnSync(process.execPath, ['--test', ...files], { cwd: ROOT, env, stdio: 'inherit' });
 const after = snapshot();
 
-fs.rmSync(fakeHome, { recursive: true, force: true });
+모사.치우기();
 
 if (r.error) {
   console.error('[test-ci] 실행 실패: ' + r.error.message);

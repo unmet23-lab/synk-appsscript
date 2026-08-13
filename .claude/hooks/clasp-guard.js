@@ -234,11 +234,19 @@ function 안전테스트검사() {
         `  \`node tools/작업본소유자.js\`, 저장소 초록 여부는 \`node tools/test-ci.js\` 로 따로 본다.`;
     } else {
       // 못 쟀거나 원격이 적색이면 오늘까지의 동작 그대로 — 로컬 작업본 전체를 돈다.
+      /* 🔑 단 재는 **환경은 CI 모사 한 벌**(tools/lib/ci모사환경 — TZ=UTC·빈 HOME)이다 (F389).
+       *   실 HOME 으로 돌리면 test-ci 가 skip 으로 드러내는 repo 밖 검사(메모리층)가 여기서만
+       *   켜져서, 「CI 모사 초록 2895/0」인데 게이트가 **남의 메모리 상태**로 빨개진다 — 그 적색은
+       *   배포자 트랙 밖이고, 그 줄을 적은 세션은 자기 test-ci 가 초록이라 볼 통로가 없다.
+       *   게이트·모사·CI 가 같은 눈금이라야 「초록이면 나간다」가 성립한다. 게이트가 놓은
+       *   메모리 위생의 발동 자리는 rot-check 재질의 절이 잇는다(배포를 막지 않는 warn 층). */
+      const 모사 = require(path.join(ROOT, 'tools', 'lib', 'ci모사환경.js')).만들기();
       try {
-        run(process.execPath, ['--test', ...testFiles.map((f) => path.join(ROOT, 'tests', f))]);
+        execFileSync(process.execPath, ['--test', ...testFiles.map((f) => path.join(ROOT, 'tests', f))],
+          { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: 모사.env });
       } catch (_) {
         problems.push(
-          `안전 테스트 실패(${프로젝트명} 관련 ${testFiles.length}개): ` +
+          `안전 테스트 실패(${프로젝트명} 관련 ${testFiles.length}개 · CI 모사 눈금 TZ=UTC·빈 HOME — test-ci 와 같다): ` +
           `node --test ${testFiles.map((f) => 'tests/' + f).join(' ')} 를 통과해야 배포 가능\n` +
           `  ⚠ 원격 CI 로는 못 갈랐다(${원격.초록 && 뒤처짐 !== '0'
             ? `원격은 초록인데 HEAD 가 upstream 보다 ${뒤처짐 === null ? '얼마나인지 모르게' : 뒤처짐 + '건'} 뒤처졌다 — 그 초록은 내 나무가 아니다`
@@ -246,7 +254,7 @@ function 안전테스트검사() {
           `  이 적색이 **내 배포집합 밖**이고 남의 미커밋 탓이면, HEAD 를 원격에 태워 초록을 받는 것이\n` +
           `  정상 통로다(BYPASS 아님): git push origin master → node tools/원격ci.js`
         );
-      }
+      } finally { 모사.치우기(); }
     }
   }
 }
