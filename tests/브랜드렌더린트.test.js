@@ -380,6 +380,77 @@ test('로드 실패를 「위반 0」으로 읽지 않는다', { skip: 크롬없
     '텍스트 0개인 문서가 조용히 통과했다 — 빈 문서의 위반은 언제나 0이다');
 });
 
+/* ── 1-b. 마스코트 바닥 (유호님 확정 08-13 실행 규칙 ②) ────────────────────────
+ * 체리 마스코트를 코랄 짙은 면 위에 올리면 캐릭터 하이라이트가 바닥에 먹혀 윤곽이 뭉갠다.
+ * 🔑 첫 구현은 **허용 바닥을 손 목록**으로 뒀다가 캐러셀의 Cream 바닥을 위반으로 잡았다 —
+ *   재보니 23.5 로 충분했고, 틀린 것은 파일이 아니라 목록이었다. 그래서 판정을 색차 계산으로
+ *   옮겼고, 아래 「막지 않는다」 쪽 테스트들이 그 회귀를 지킨다(손 목록으로 되돌리면 빨개진다). */
+const 마스코트픽스처 = (이름, 바닥, 속성 = 'src="마스코트_누끼/본체.png"') =>
+  픽스처(이름, `<div style="background:${바닥}"><img ${속성} alt="마스코트">`
+    + '<p style="color:#171820">본문</p></div>');
+
+test('마스코트 — 코랄 짙은 면 위는 **잡는다**(하이라이트가 먹힌다)', { skip: 크롬없음 }, () => {
+  for (const [이름, 바닥] of [['soft', '#FFCFC6'], ['coral2', '#FF8877'], ['coral3', '#E8543F']]) {
+    const r = 측정(마스코트픽스처(`mascot-${이름}`, 바닥), CHROME);
+    assert.equal(r.마스코트잰것, 1, `${바닥}: 마스코트를 못 셌다 — 식별자(src 경로)가 안 물었다`);
+    assert.equal(r.마스코트바닥위반.length, 1,
+      `${바닥} 위 마스코트를 놓쳤다 — 새는 방향은 언제나 「통과」다`);
+  }
+});
+
+test('마스코트 — 밝은 크림 계열은 **안 막는다**(손 목록이 Cream 을 금지했던 자리)', { skip: 크롬없음 }, () => {
+  for (const [이름, 바닥] of [['paper', '#FBF7EE'], ['cream', '#F6F1E8'], ['cream2', '#EFE7D7'],
+    ['cream3', '#E7DDC7'], ['wash', '#FFE9E4']]) {
+    const r = 측정(마스코트픽스처(`mascot-ok-${이름}`, 바닥), CHROME);
+    assert.equal(r.마스코트바닥위반.length, 0,
+      `${바닥} 을 막았다 — 거짓양성은 사람이 가드를 끄게 만든다(실측 ΔE 16.2~24.6)`);
+  }
+});
+
+test('마스코트 — 다크는 **안 막는다**(림 최암부가 최소인데도 26.7)', { skip: 크롬없음 }, () => {
+  for (const [이름, 바닥] of [['navy2', '#0F1730'], ['navy', '#1A2340'], ['navy3', '#2A3358']]) {
+    const r = 측정(마스코트픽스처(`mascot-dark-${이름}`, 바닥), CHROME);
+    assert.equal(r.마스코트바닥위반.length, 0,
+      `${바닥} 을 막았다 — 다크는 마스코트가 가장 잘 뜨는 자리다(램프 최암부만 보고 막으면 안 된다)`);
+  }
+});
+
+test('마스코트 — data URI 로 인라인해도 `data-synk-mascot` 이면 문다', { skip: 크롬없음 }, () => {
+  // 1×1 투명 PNG — 경로가 사라진 자리를 속성이 대신 식별한다.
+  const 인라인 = 'src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" data-synk-mascot';
+  const r = 측정(마스코트픽스처('mascot-inline', '#FFCFC6', 인라인), CHROME);
+  assert.equal(r.마스코트잰것, 1, '속성으로 단 마스코트를 못 셌다 — 인라인 산출물이 통째로 안 보인다');
+  assert.equal(r.마스코트바닥위반.length, 1, '속성 경로로 들어온 마스코트의 바닥을 안 쟀다');
+});
+
+test('마스코트 — 없는 파일에서 「0건」은 **깨끗함이 아니라 해당 없음**이다(분모)', { skip: 크롬없음 }, () => {
+  const r = 측정(픽스처('mascot-none', '<p style="color:#171820">마스코트가 없는 문서</p>'), CHROME);
+  assert.equal(r.마스코트잰것, 0, '없는 마스코트를 셌다');
+  assert.equal(r.마스코트바닥위반.length, 0);
+});
+
+/* ── 1-c. 체리 램프는 **파일 단위**로 갈린다 (실행 규칙 ①) ──────────────────── */
+test('체리 램프 — 마스코트 콘텐츠가 **아닌** 파일에서는 키트 밖 색으로 잡는다', { skip: 크롬없음 }, () => {
+  const p = 픽스처('cherry-in-ui', '<button style="background:#FB7A87;color:#171820">이어서 풀기</button>');
+  const r = 측정(p, CHROME);   // 픽스처는 마스코트콘텐츠 목록에 없다
+  assert.ok(r.키트밖색.some((v) => v.hex === '#FB7A87'),
+    '앱 UI 에 체리가 들어갔는데 통과시켰다 — 유호님 확정(B안)은 체리를 킷 색으로 올리지 않는 것이다');
+});
+
+test('체리 램프 — 마스코트 콘텐츠에서는 통과한다', { skip: 크롬없음 }, () => {
+  const p = 픽스처('cherry-in-content', '<span style="color:#171820;background:#FB7A87">배지</span>');
+  const r = 측정(p, CHROME, { 마스코트콘텐츠: true });
+  assert.equal(r.키트밖색.filter((v) => v.hex === '#FB7A87').length, 0,
+    '마스코트가 주인공인 콘텐츠에서까지 체리를 막으면 캐러셀이 영구 적색이 된다');
+});
+
+test('마스코트콘텐츠 목록은 전부 실존하고 이유를 달고 있다', () => {
+  for (const [rel, 이유] of Object.entries(린트.마스코트콘텐츠)) {
+    assert.ok(fs.existsSync(path.join(ROOT, rel)), `마스코트콘텐츠에 없는 파일이 남아 있다: ${rel}`);
+    assert.ok(이유 && 이유.length >= 20, `이유 없는 통과는 두지 않는다: ${rel}`);
+  }
+});
+
 /* ── 2. 실저장소 — 거짓양성만 본다 ────────────────────────────────────────── */
 for (const rel of 대상) {
   test(`[등록층] ${rel} — 렌더 위반 0`, { skip: 크롬없음 }, () => {
@@ -402,8 +473,22 @@ test('라이브 카드와 docs 사본이 바이트 단위로 같다', () => {
 /* ── 4. 정본 값이 두 곳에 적히지 않았는지 ─────────────────────────────────── */
 test('킷이 DESIGN.md 와 어긋나지 않는다', () => {
   const design = fs.readFileSync(path.join(ROOT, 'DESIGN.md'), 'utf8');
-  // DESIGN.md §2 표에 적힌 색은 전부 이 도구의 KIT 안에 있어야 한다.
+  /* DESIGN.md 가 인용하는 색은 전부 정본에 실존해야 한다 — 킷이거나 마스코트 램프이거나.
+   * §2-b(마스코트 색)가 생기면서 인용 범위가 둘로 늘었다. */
   const 표색 = new Set((design.match(/`#[0-9A-Fa-f]{6}`/g) || []).map((s) => s.slice(1, -1).toUpperCase()));
-  const 빠짐 = [...표색].filter((h) => !KIT[h]);
-  assert.deepEqual(빠짐, [], `DESIGN.md 에 있는데 린트의 KIT 에 없는 색: ${빠짐.join(', ')}`);
+  const 빠짐 = [...표색].filter((h) => !KIT[h] && !린트.MASCOT[h]);
+  assert.deepEqual(빠짐, [], `DESIGN.md 에 있는데 정본(킷·마스코트) 어디에도 없는 색: ${빠짐.join(', ')}`);
+});
+
+/* 유호님 확정(2026-08-13 B안)의 기계 잠금 — 체리는 **킷이 아니다.**
+ * 킷에 편입되는 순간 앱 UI 어디에나 쓸 수 있는 색이 되고, 그것이 확정을 뒤집는 형태다.
+ * 「쓰지 말자」는 프로즈로는 안 지켜지므로 여기서 기계가 잡는다. */
+test('체리 램프는 킷에 **없다** (B안 확정 — 킷 편입은 유호님 확정을 뒤집는 일이다)', () => {
+  assert.ok(Object.keys(린트.MASCOT).length >= 3, '마스코트 램프가 토큰에서 안 실렸다 — 검사가 헛돈다');
+  const 섞임 = Object.keys(린트.MASCOT).filter((h) => KIT[h]);
+  assert.deepEqual(섞임, [],
+    `체리 램프가 킷에 들어가 있다: ${섞임.join(', ')} — 유호님 확정은 「킷 밖 마스코트 고유색」이다`);
+  const 토큰 = require(path.join(ROOT, 'docs', '디자인_토큰.json'));
+  assert.ok(토큰.색.마스코트, '토큰에 마스코트 절이 없다');
+  assert.equal(토큰.색.킷.length, 23, '킷 개수가 바뀌었다 — 마스코트 색이 킷 배열로 넘어갔는지 본다');
 });

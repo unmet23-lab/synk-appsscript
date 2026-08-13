@@ -59,6 +59,38 @@ const KIT = Object.fromEntries(
  * 비어 있는 것이 정상 상태다 — 여기 무언가 있으면 그건 아직 안 끝난 판정이다. */
 const 킷밖_유예 = {};
 for (const [hex, v] of Object.entries(킷밖_유예)) KIT[hex] = `⏳${v.이름}(킷 밖·유예)`;
+
+/* ── 마스코트 IP 색 ─────────────────────────────────────────────────────────
+ * 유호님 확정 2026-08-13(B안): 체리 젤리는 **킷 색이 아니다** — 마스코트 고유색이다.
+ * 그래서 KIT 에 합치지 않는다. 합치는 순간 앱 UI 어디에나 쓸 수 있는 색이 되고,
+ * 그건 확정을 뒤집는 일이다(ΔE 9.1 이라 「코랄의 6번째 단」으로 흡수된다 — 토큰 `_왜_UI에_안_쓰나`).
+ *
+ * 그래서 이 색들의 통과 여부는 **파일 단위**로 갈린다:
+ *   · `마스코트콘텐츠` 목록 안 → 통과(마스코트가 주인공인 자리다)
+ *   · 그 밖(=앱 UI·대외 문서) → 「키트 밖 색」으로 그대로 잡힌다  ← 실행 규칙 ①이 여기서 강제된다
+ * 값은 토큰 정본에서 파생한다(손으로 적은 사본이 갈라진 F143 을 반복하지 않는다). */
+const 토큰 = require(path.join(ROOT, 'docs', '디자인_토큰.json'));
+const MASCOT = Object.fromEntries(
+  (토큰.색.마스코트?.램프 || []).map((c) => [c.hex.toUpperCase(), c.이름])
+);
+/* ── 마스코트를 올릴 수 있는 바닥 = **목록이 아니라 계산** ───────────────────
+ * 처음엔 허용 바닥 넷(Paper·Cream 2·Coral Wash·Navy 2)을 목록으로 뒀는데,
+ * 첫 실행에서 캐러셀의 Cream 바닥이 위반으로 잡혔다 — 재보니 Cream 23.5 로 «충분»했다.
+ * 목록이 틀렸던 것이지 파일이 틀린 게 아니었다. 손 목록은 안 잰 색을 조용히 금지한다.
+ * 그래서 판정을 계산으로 옮긴다: 킷에 색이 늘어도 목록을 고칠 일이 없다.
+ *
+ * 재는 값 = 마스코트 램프 중 **바닥에 가장 먼저 먹히는 단**과 바닥의 CIEDE2000 색차.
+ * 임계 12 의 근거(실측): 막아야 하는 자리의 최댓값 9.1(Coral 2) 과
+ * 통과해야 하는 자리의 최솟값 16.2(Coral Wash) 사이다. 그 사이에 Coral 면 10.1 하나가
+ * 걸치는데, 신호 면 위에 캐릭터를 얹는 자리는 설계에 없어 막는 쪽에 둔다. */
+const 마스코트바닥_임계 = 12;
+
+/* 체리 램프가 통과하는 파일 — **이유 없는 통과는 두지 않는다**(등록층 조항과 같은 문법).
+ * ⚠ 이 목록에 앱 화면을 넣는 것은 실행 규칙 ①을 무르는 일이다. 넣기 전에 유호님 확정을 받는다. */
+const 마스코트콘텐츠 = {
+  'docs/캐릭터/캐러셀_괜찮아요_다섯뜻.html':
+    'SNS 캐러셀 — 마스코트가 주인공인 콘텐츠다. 체리를 배지·밑줄로 쓰는 것은 08-13 처방(「강렬함의 원인은 면적」 · 바탕에 체리 «면»은 여전히 금지).',
+};
 /* 정본 = docs/브랜드_폰트_정본.md §3 — 「모든 산출물은 이 3종만」.
  * 폴백 낱말(system-ui·sans-serif…)은 CDN 이 죽었을 때 레이아웃을 지키는 안전망이라
  * 금지 대상이 아니다(정본 §7). 실제로 **그려진** 폰트만 본다. */
@@ -147,6 +179,15 @@ const 제외 = [
    * 함께 돌아온다(제외의 근거는 파일이지 이 목록이 아니다). */
   ['docs/정본/SYNK LAB/자료/_src_오프라인_신규_등록서.html',
     '⏳제외가 아니라 **인계**다 — 흰 면 35곳이 살아 있다. _src_→빌드 통로는 발표물 빌드 트랙(세션 5d53cc35)이 들고 있어 손대면 충돌한다.'],
+  /* 2026-08-13 — 마스코트 바닥 검사를 세우며 등록을 시도했다가 **재는 층이 틀린 것**을 확인하고 물렸다.
+   * 이 파일은 카드 7장을 나란히 보는 «미리보기 시트»이고, 발행물은 카드 한 장(1080px 정사각)이다.
+   * 카드가 `container-type:inline-size` 라 미리보기에서는 579px 로 렌더되고, 그러면 `3.3cqw` 글자가
+   * 7.2px 로 잡혀 대비 기준이 4.5(본문)로 붙는다 — 발행 크기에서는 35.6px 라 기준 3.0 이고 통과한다.
+   * 즉 **거짓 적색 7건**이다. 등록하면 주인 없는 적색이 남의 배포를 막는다.
+   * 🔑 마스코트 바닥·체리 색 검사는 이 파일에서도 이미 **손으로 돌면 문다**(실측: 마스코트 7장 전부 통과).
+   *    막힌 것은 자동 등록뿐이고, 풀 조건은 「컨테이너 쿼리 산출물을 발행 폭으로 재는 통로」다. */
+  ['docs/캐릭터/캐러셀_괜찮아요_다섯뜻.html',
+    '⏳미리보기 시트라 카드가 발행 폭(1080px)이 아닌 579px 로 렌더된다 — 대비 7건이 거짓 적색이다(실측 08-13). 발행 폭으로 재는 통로가 서면 등록한다.'],
 ];
 
 const CHROME_CANDIDATES = [
@@ -257,7 +298,7 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freez
     return el.tagName.toLowerCase() + id + cls;
   };
 
-  const 대비위반 = [], 키트밖색 = [], 키트밖서체 = [], 구역밖색 = [];
+  const 대비위반 = [], 키트밖색 = [], 키트밖서체 = [], 구역밖색 = [], 마스코트바닥 = [];
   /* 직책 검사 — 킷 안이라도 **제 구역 밖이면** 위반이다(DESIGN.md 철칙 ④).
    * 의사요소는 제 소유 요소의 구역을 그대로 쓴다(::before 는 el 안에 그려진다). */
   const 구역검사 = (el, hexv, 자리, 접미 = '') => {
@@ -322,6 +363,31 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freez
     }
   }
 
+  /* ── 마스코트가 어느 바닥 위에 있는가 (수집만) ─────────────────────────────
+   * 유호님 확정 08-13 실행 규칙 ②. **판정은 여기서 안 한다** — 바닥 hex 만 모아 올리고
+   * 색차 계산은 도구(Node) 쪽이 한다. 처음엔 허용 목록을 여기 박았는데, 손 목록이
+   * 안 잰 색(Cream 23.5)을 조용히 금지했다. 계산으로 옮기면 그 실패 형태가 사라진다.
+   *
+   * ⚠ **못 잡는 자리를 정직하게 적어 둔다**: 마스코트를 data URI 로 인라인하고
+   *   data-synk-mascot 도 안 달면 이 검사는 그 그림을 못 본다. 경로가 사라지면 식별자가 없다.
+   *   그래서 인라인하는 산출물은 그 속성을 달아야 하고, 그 규약을 DESIGN.md 가 적는다.
+   *   조용히 통과시키느니 한계를 적는 쪽이 낫다 — 안 적으면 「0건」이 「깨끗함」으로 읽힌다. */
+  const 마스코트다 = (el) =>
+    el.hasAttribute('data-synk-mascot') ||
+    /마스코트_(누끼|렌더)\\//.test(el.getAttribute('src') || '');
+
+  let 마스코트잰것 = 0;
+  for (const el of document.querySelectorAll('img')) {
+    if (!마스코트다(el)) continue;
+    마스코트잰것++;                       // ⚠ 분모다 — 0 장이면 「깨끗함」이 아니라 「해당 없음」이다
+    const bg = 배경찾기(el);
+    if (!bg.hex) { 그라디언트건너뜀++; continue; }
+    마스코트바닥.push({
+      sel: 셀렉터(el), bg: bg.hex, src: (el.getAttribute('src') || '').slice(-40),
+      숨김: !el.getClientRects().length,
+    });
+  }
+
   for (const el of document.querySelectorAll('*')) {
     if (안그려짐.has(el.tagName)) continue;
     // 직접 자식으로 텍스트를 가진 요소만 — 안 그러면 래퍼가 상속색으로 중복 계산된다.
@@ -372,16 +438,80 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freez
   const 상위 = (m) => Array.from(m.entries()).sort((a, b) => b[1] - a[1]);
   return {
     잰것, 그라디언트건너뜀,
-    대비위반, 키트밖색, 키트밖서체, 구역밖색,
+    대비위반, 키트밖색, 키트밖서체, 구역밖색, 마스코트바닥, 마스코트잰것,
     색분포: 상위(색집계), 서체분포: 상위(서체집계),
   };
 })()`;
 }
 
+/* ── CIEDE2000 ──────────────────────────────────────────────────────────────
+ * 마스코트 바닥 판정에만 쓴다. **측정기(페이지 안)가 아니라 여기서** 계산하는 이유:
+ * 측정기는 문자열로 주입되는 층이라 무거워질수록 실패 지점이 늘고, 색차는 hex 두 개만
+ * 있으면 나오므로 페이지 안에서 잴 이유가 없다. 측정기는 「바닥이 무슨 색인지」만 본다. */
+function hex2lab(h) {
+  const v = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255)
+    .map((c) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)));
+  const X = v[0] * 0.4124564 + v[1] * 0.3575761 + v[2] * 0.1804375;
+  const Y = v[0] * 0.2126729 + v[1] * 0.7151522 + v[2] * 0.0721750;
+  const Z = v[0] * 0.0193339 + v[1] * 0.1191920 + v[2] * 0.9503041;
+  const f = (t) => (t > (6 / 29) ** 3 ? Math.cbrt(t) : t / (3 * (6 / 29) ** 2) + 4 / 29);
+  const [fx, fy, fz] = [f(X / 0.95047), f(Y / 1), f(Z / 1.08883)];
+  return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+}
+function deltaE2000(h1, h2) {
+  const [L1, a1, b1] = hex2lab(h1), [L2, a2, b2] = hex2lab(h2);
+  const C1 = Math.hypot(a1, b1), C2 = Math.hypot(a2, b2), Cb = (C1 + C2) / 2;
+  const G = 0.5 * (1 - Math.sqrt(Cb ** 7 / (Cb ** 7 + 25 ** 7)));
+  const a1p = (1 + G) * a1, a2p = (1 + G) * a2;
+  const C1p = Math.hypot(a1p, b1), C2p = Math.hypot(a2p, b2);
+  const h1p = (Math.atan2(b1, a1p) * 180 / Math.PI + 360) % 360;
+  const h2p = (Math.atan2(b2, a2p) * 180 / Math.PI + 360) % 360;
+  const dLp = L2 - L1, dCp = C2p - C1p;
+  let dhp = 0;
+  if (C1p * C2p !== 0) { dhp = h2p - h1p; if (dhp > 180) dhp -= 360; else if (dhp < -180) dhp += 360; }
+  const dHp = 2 * Math.sqrt(C1p * C2p) * Math.sin(dhp * Math.PI / 360);
+  const Lbp = (L1 + L2) / 2, Cbp = (C1p + C2p) / 2;
+  let hbp;
+  if (C1p * C2p === 0) hbp = h1p + h2p;
+  else if (Math.abs(h1p - h2p) <= 180) hbp = (h1p + h2p) / 2;
+  else hbp = (h1p + h2p < 360) ? (h1p + h2p + 360) / 2 : (h1p + h2p - 360) / 2;
+  const T = 1 - 0.17 * Math.cos((hbp - 30) * Math.PI / 180) + 0.24 * Math.cos(2 * hbp * Math.PI / 180)
+    + 0.32 * Math.cos((3 * hbp + 6) * Math.PI / 180) - 0.20 * Math.cos((4 * hbp - 63) * Math.PI / 180);
+  const Rc = 2 * Math.sqrt(Cbp ** 7 / (Cbp ** 7 + 25 ** 7));
+  const Sl = 1 + (0.015 * (Lbp - 50) ** 2) / Math.sqrt(20 + (Lbp - 50) ** 2);
+  const Sc = 1 + 0.045 * Cbp, Sh = 1 + 0.015 * Cbp * T;
+  const Rt = -Math.sin(2 * (30 * Math.exp(-(((hbp - 275) / 25) ** 2))) * Math.PI / 180) * Rc;
+  return Math.sqrt((dLp / Sl) ** 2 + (dCp / Sc) ** 2 + (dHp / Sh) ** 2 + Rt * (dCp / Sc) * (dHp / Sh));
+}
+
+/* 바닥 하나에 대한 판정 — 램프 전 단 중 **가장 먼저 먹히는 단**이 기준이다.
+ * 최솟값을 쓰는 이유: 코어가 또렷해도 하이라이트가 먹히면 윤곽이 뭉갠다(그게 실제 증상이다). */
+function 마스코트가바닥에서는가(bgHex) {
+  const 단 = Object.keys(MASCOT);
+  if (!단.length) return { ok: true, 최소: null, 단: null };
+  let 최소 = Infinity, 이름 = null;
+  for (const h of 단) {
+    const d = deltaE2000(h, bgHex);
+    if (d < 최소) { 최소 = d; 이름 = MASCOT[h]; }
+  }
+  return { ok: 최소 >= 마스코트바닥_임계, 최소: Math.round(최소 * 10) / 10, 단: 이름 };
+}
+
+/* 체리 램프가 이 파일에서 통과하는가 — **파일 단위**로 갈린다(마스코트 IP 색 주석 참조).
+ * 측정기는 페이지 안에서 돌아 제 경로를 모르므로 판정이 여기 있다(유예 처리와 같은 이유). */
+function 마스코트콘텐츠인가(file) {
+  const 상대 = path.relative(ROOT, file).replace(/\\/g, '/');
+  return Object.keys(마스코트콘텐츠).some((k) => 상대.endsWith(k));
+}
+
 function 측정(file, chrome, opts = {}) {
   const html = fs.readFileSync(file, 'utf8');
+  /* 마스코트 콘텐츠에서만 램프를 KIT 에 얹는다 — 그 밖에서는 얹지 않으므로
+   * 체리가 앱 UI 에 들어가면 「키트 밖 색」으로 그대로 잡힌다(실행 규칙 ① 강제). */
+  const 램프허용 = opts.마스코트콘텐츠 === undefined ? 마스코트콘텐츠인가(file) : opts.마스코트콘텐츠;
+  const kitHexes = 램프허용 ? [...Object.keys(KIT), ...Object.keys(MASCOT)] : Object.keys(KIT);
   const 주입 = `<script>window.addEventListener('load', () => {
-    let r; try { r = ${측정기소스(Object.keys(KIT), FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_SCOPE, opts.freeze, opts.kcColors === undefined ? KC_COLORS : opts.kcColors, opts.kcColorScope || KC_COLOR_SCOPE)}; }
+    let r; try { r = ${측정기소스(kitHexes, FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_SCOPE, opts.freeze, opts.kcColors === undefined ? KC_COLORS : opts.kcColors, opts.kcColorScope || KC_COLOR_SCOPE)}; }
     catch (e) { r = { 오류: String(e && e.stack || e) }; }
     const pre = document.createElement('pre');
     pre.id = 'SYNK_LINT_OUT';
@@ -409,6 +539,11 @@ function 측정(file, chrome, opts = {}) {
     if (결과.오류) throw new Error('측정기 예외: ' + 결과.오류);
     // 빈 문서를 「통과」로 읽지 않는다.
     if (!결과.잰것) throw new Error('텍스트 요소를 하나도 못 쟀다 — 로드 실패를 통과로 읽을 뻔했다');
+    /* 마스코트 바닥 판정 — 측정기는 바닥 hex 만 모았고, 무는지는 여기서 색차로 가른다.
+     * `마스코트바닥`(수집) → `마스코트바닥위반`(판정)으로 이름이 갈리는 것이 의도다. */
+    결과.마스코트바닥위반 = (결과.마스코트바닥 || [])
+      .map((v) => ({ ...v, ...마스코트가바닥에서는가(v.bg) }))
+      .filter((v) => !v.ok);
     return 결과;
   } finally {
     try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* 정리 실패는 검사 결과를 바꾸지 않는다 */ }
@@ -447,7 +582,8 @@ function main(argv) {
     r.구역밖색 = r.구역밖색.filter((v) => !유예됨(v));
 
     전체[f] = r;
-    const n = r.대비위반.length + r.키트밖색.length + r.키트밖서체.length + r.구역밖색.length;
+    const n = r.대비위반.length + r.키트밖색.length + r.키트밖서체.length + r.구역밖색.length
+      + (r.마스코트바닥위반 || []).length;
     위반합 += n;
     if (json) continue;
 
@@ -466,6 +602,14 @@ function main(argv) {
     요약('키트 밖 색', r.키트밖색, (v) => v.hex);
     요약('키트 밖 서체', r.키트밖서체, (v) => v.font);
     요약('구역 밖 색(직책 위반)', r.구역밖색, (v) => `${v.hex} @ ${v.sel} (${v.자리})`);
+    /* 마스코트가 아예 없는 파일에서 「✅ 0」은 **깨끗함이 아니라 해당 없음**이다 —
+     * 0 을 통과로 읽게 두면 등록층이 새는 그 형태가 된다. 그래서 분모(잰 장수)와 함께 낸다. */
+    if (r.마스코트바닥위반 && r.마스코트바닥위반.length) {
+      요약(`마스코트가 먹히는 바닥 (마스코트 ${r.마스코트잰것}장 중)`, r.마스코트바닥위반,
+        (v) => `${v.bg} 위 — ${v.단} 이 색차 ${v.최소} (임계 ${마스코트바닥_임계}) · ${v.src}`);
+    } else if (r.마스코트잰것) {
+      console.log(`   ✅ 마스코트 바닥 0 — ${r.마스코트잰것}장 전부 뜬다(임계 ${마스코트바닥_임계})`);
+    }
     // 유예는 **조용히 넘기지 않는다** — 안 보이는 유예는 곧 잊힌 위반이다.
     if (r.구역밖_유예됨.length) {
       console.log(`   ⏳ 구역 밖 색 유예 ${r.구역밖_유예됨.length}건 — 유호님 판정 대기(사유는 tools/브랜드렌더린트.js 의 \`구역밖_유예\`)`);
@@ -478,5 +622,7 @@ function main(argv) {
 if (require.main === module) process.exit(main(process.argv.slice(2)));
 module.exports = {
   KIT, 킷밖_유예, 구역밖_유예, FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_COLORS, KC_SCOPE, KC_COLOR_SCOPE,
+  MASCOT, 마스코트바닥_임계, 마스코트가바닥에서는가, deltaE2000,
+  마스코트콘텐츠, 마스코트콘텐츠인가,
   findChrome, 측정, 대상, 제외, ROOT,
 };

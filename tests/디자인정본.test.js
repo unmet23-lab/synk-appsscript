@@ -27,11 +27,16 @@ const read = (p) => fs.readFileSync(p, 'utf8');
 /** 6자리 HEX 인용을 뽑는다(대문자 정규화·중복 제거). */
 const extractHexes = (src) => [...new Set((src.match(/#[0-9A-Fa-f]{6}\b/g) || []).map((h) => h.toUpperCase()))];
 
-/** 본문이 링크·인용한 repo 상대 경로 — 마크다운 링크의 docs/*.md 와 백틱 인용의 tools/*.js·tests/*.js. */
+/** 본문이 링크·인용한 repo 상대 경로 — 마크다운 링크의 docs/*.md, 백틱 인용의 tools/*.js·tests/*.js,
+ *  그리고 백틱 인용의 docs/*.json.
+ *  🔑 JSON 을 2026-08-13 에 더했다: DESIGN.md §2-b(마스코트 색)의 값 원천이 `docs/디자인_토큰.json`
+ *  «뿐»인데 추출기가 .md 만 봐서, 본문이 정본을 제대로 가리키고 있는데도 ①이 「정본 어디에도 없는
+ *  HEX」로 잡았다. 링크는 있는데 추출기가 못 보는 형태라, 고칠 자리는 DESIGN.md 가 아니라 여기였다. */
 const extractPaths = (src) => {
   const md = [...src.matchAll(/\((docs\/[^)]+?\.md)\)/g)].map((m) => m[1]);
   const code = [...src.matchAll(/`((?:tools|tests)\/[^`\s]+?\.js)`/g)].map((m) => m[1]);
-  return [...new Set([...md, ...code])];
+  const data = [...src.matchAll(/`(docs\/[^`\s]+?\.json)`/g)].map((m) => m[1]);
+  return [...new Set([...md, ...code, ...data])];
 };
 
 /** --synk-font* 스택 선언을 뽑아 공백을 접는다(정렬 스페이스 차이는 동일로 본다). */
@@ -69,7 +74,7 @@ test('DESIGN.md 가 존재하고 정본 링크를 가진다', () => {
 test('① DESIGN.md 인용 HEX 전수가 링크된 정본 중 하나에 실존한다', () => {
   const design = read(DESIGN);
   const canonUnion = extractPaths(design)
-    .filter((p) => p.endsWith('.md') && fs.existsSync(path.join(ROOT, p)))
+    .filter((p) => (p.endsWith('.md') || p.endsWith('.json')) && fs.existsSync(path.join(ROOT, p)))
     .map((p) => read(path.join(ROOT, p)))
     .join('\n');
   const missing = missingHexes(design, canonUnion);
