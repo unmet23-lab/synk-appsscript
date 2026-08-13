@@ -1955,6 +1955,7 @@ function aiFeedbackBatch_() {
   if (made || permFails || lastErr) adminMail('[SYNK] 🤖 AI 첨삭 ' + made + '건 생성' + (held ? '(노출 ' + (made - held) + ' · 격리 ' + held + ')' : '') + (permFails ? ' · 오류 ' + permFails + '건' : '') + (lastErr ? ' · 중단됨' : ''), // [v9.65 리뷰 L2] 격리 있을 때 합산 오독 방지
     (made ? (AI_FEEDBACK_AUTOPUBLISH ? (made - held > 0 ? '게이트 통과 ' + (made - held) + '건은 앱에 바로 노출되었습니다.\n' : '') : "hw_feedback 시트에서 내용 확인 후 '상태'를 '노출'로 바꾸면 학생에게 공개됩니다(AI_FEEDBACK_AUTOPUBLISH=true면 이 단계 생략).\n") : '') +
     (held ? "🚧 품질 게이트 격리 " + held + "건 — 시트 '상태' 열의 '격리:사유'를 확인하고, 내용이 멀쩡하면 '노출'로 바꿔 공개하세요(같은 사유가 반복되면 알려주세요 · 오류사전 집계에는 " + (격리복구창_MS / 86400000) + "일 안의 복구만 실립니다 — 공개 자체는 언제든 됩니다).\n" : '') + // [v9.63] 무인 발행의 사람 백스톱 — 격리만 사람 눈 · [v9.212] 복구 창을 상수에서 파생(문구·판정 갈라짐 방지)
+    (held ? "⚠ 단, 사유가 '옛글자:'로 시작하는 행은 예외입니다 — 눈에는 멀쩡한 문장으로 보여도 쓰면 안 되는 문자가 섞인 것이니 '노출'로 바꾸지 말고 알려주세요.\n" : '') + // [v9.224] 옛글자 격리는 육안 판별이 안 돼 「멀쩡하면 공개」 지시가 게이트를 되돌린다(리뷰 P1-2 · 가드 맹점 ③)
     ((held || (made && !AI_FEEDBACK_AUTOPUBLISH)) ? '📎 시트 바로가기: ' + ss.getUrl() + '#gid=' + (ss.getSheetByName('hw_feedback') ? ss.getSheetByName('hw_feedback').getSheetId() : 0) + '\n' : '') + // [v9.56] 메일 1클릭으로 I열 처리 · [v9.63] 격리 복구 공용
     (permFails ? "\n'오류:' 상태 행 " + permFails + '건은 같은 입력 재시도가 무의미해 건너뛰었습니다(hw_feedback에서 확인).' : '') +
     (lastErr ? '\n마지막 오류: ' + lastErr + '\n실패 지점부터 내일 밤 자동 재시도합니다.' : ''));
@@ -2049,11 +2050,15 @@ function aiCall_(apiKey, system, user, schema, maxTok) {
   const tb = (j.content || []).filter(b => b.type === 'text')[0];
   if (!tb || !tb.text) throw new Error('text 블록 없음');
   const 값 = JSON.parse(tb.text);
-  /* [v9.223] 옛 글자 — 이 반환값은 월보·학부모 편지·마스터리 등 14 호출부로 흩어져 «학생·학부모가 읽는 글»이 된다.
+  /* [v9.223] 옛 글자 — 이 반환값은 개인 한문장·칭호·강사 브리핑·FB 콘텐츠 등 «사람이 읽는 글»이 된다
+   *   (직호출 실측 7곳 — [v9.224] 리뷰 P2 정정: 「14 호출부」는 낡은 셈이었고 「학부모 편지」는 aiText_ 소비자다).
    *   호출부마다 검사하면 하나가 빠지고 빠진 방향은 언제나 「통과」다. throw 로 올리는 것은 위 오류 경로와
-   *   같은 규약이라(호출부는 전부 폴백·스킵을 이미 들고 있다) 새 갈래를 만들지 않는다. */
+   *   같은 규약이라(호출부는 전부 폴백·스킵을 이미 들고 있다) 새 갈래를 만들지 않는다.
+   *   [v9.224] permanent 표시(리뷰 P1-1): 이 throw 는 429·5xx 같은 일시 장애가 아니다 — 청크 배치의 catch 가
+   *   이 표시로 「일시=break(백오프) / 옛글자=이 청크만 버리고 진행」을 가른다. 안 가르면 한 청크의 옛 글자가
+   *   그날 밤 뒤쪽 학생 전원의 산출물을 지운다(엔진_수집.js callClaudeTalk_ 의 permErr 와 같은 축). */
   const 옛 = 옛글자걸림_(값);
-  if (옛) throw new Error('옛 글자 감지(' + 옛.칸 + ':' + 옛.짚음 + ') — 응답 폐기(호출부 폴백으로 간다)');
+  if (옛) { const e옛 = new Error('옛 글자 감지(' + 옛.칸 + ':' + 옛.짚음 + ') — 응답 폐기(호출부 폴백으로 간다)'); e옛.permanent = true; throw e옛; }
   return 값;
 }
 /* [v9.205] 사고 OFF 대가의 **결정적** 경계 — v9.204 의 가드 문구는 모델 지시라 확률적이다.
@@ -2356,7 +2361,7 @@ function aiStudioBatch_() {
         });
         if (rowsN.length) { ad.getRange(ad.getLastRow() + 1, 1, rowsN.length, 5).setValues(rowsN); made += rowsN.length; }
         Utilities.sleep(300);
-      } catch (e1) { errs.push('한문장 배치: ' + String(e1.message || e1).slice(0, 80)); break; }
+      } catch (e1) { errs.push('한문장 배치: ' + String(e1.message || e1).slice(0, 80)); if (!(e1 && e1.permanent)) break; } // [v9.224] 영구(옛글자)는 이 청크만 버리고 다음 청크 진행 — break 는 일시 장애 백오프 몫(리뷰 P1-1)
     }
   } catch (e) { errs.push('한문장 준비: ' + String(e.message || e).slice(0, 80)); }
 
@@ -2526,7 +2531,7 @@ function aiMonthlyTitles_() {
         if (s && it.t) rows.push(['칭호', s.id, ym, String(it.t).slice(0, 16), today]);
       });
       Utilities.sleep(300);
-    } catch (e) { Logger.log('AI 칭호 배치 실패: ' + e); break; }
+    } catch (e) { Logger.log('AI 칭호 배치 실패: ' + e); if (!(e && e.permanent)) break; } // [v9.224] 동형 — 영구(옛글자)는 다음 청크 진행(리뷰 P1-1)
   }
   if (rows.length) {
     ledger.getRange(ledger.getLastRow() + 1, 1, rows.length, 5).setValues(rows);
