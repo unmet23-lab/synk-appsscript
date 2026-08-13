@@ -187,3 +187,41 @@ test('[라우팅] 깔때기가 든 파일 목록이 실측과 같다 — 새 파
   assert.deepEqual(파일들, ['상담AI.js', '엔진_두뇌.js', '엔진_수집.js', '엔진_콘텐츠AI.js'],
     '모델을 부르는 파일 구성이 바뀌었다 — 새 파일이면 게이트를, 사라진 파일이면 이 목록을 갱신한다');
 });
+
+/* ── ⑤ 처분의 두 함정 — 컨텍스트 독립 리뷰(08-13)가 잡은 자리 ──────────────
+ * P1-1: aiCall_ 의 옛글자 throw 가 배치 호출부 둘(한문장·칭호)의 catch 에서 무조건 break 를 탔다 —
+ *   한 청크의 옛 글자가 그날 밤 뒤쪽 학생 전원의 산출물을 지운다(게이트가 새로 만든 실패 모드).
+ *   엔진_수집.js 가 스스로 서술한 「일시로 올리면 break 라 …」 함정과 같은 축인데 이쪽엔 적용이 빠졌었다.
+ * P1-2: 격리 안내 메일의 「멀쩡하면 '노출'」 지시 — 옛글자 격리는 육안으로 멀쩡해 보여서 사람 손
+ *   한 번이 게이트를 되돌린다(CLAUDE.md 가드 맹점 ③ «자기 처방을 막지 않는지»). */
+const 콘텐츠소스 = () => fs.readFileSync(path.join(ROOT, '엔진_콘텐츠AI.js'), 'utf8');
+
+test('[처분] aiCall_ 옛글자 throw 는 permanent 를 단다 — 배치가 백오프와 청크 스킵을 가른다 (P1-1)', () => {
+  const 덩이 = 콘텐츠소스().split(/\nfunction /).find((c) => c.startsWith('aiCall_'));
+  assert.ok(덩이, 'aiCall_ 이 사라졌다 — 표식이 낡았으면 이 검사는 공회전이다(F207)');
+  const 줄 = 덩이.split('\n').filter((l) => l.indexOf('옛 글자 감지') !== -1 && l.indexOf('throw') !== -1);
+  assert.ok(줄.length >= 1, 'aiCall_ 의 옛글자 throw 를 못 찾았다 — 문구를 바꿨으면 이 표식도 같이 옮긴다');
+  줄.forEach((l) => assert.ok(/permanent\s*=\s*true/.test(l),
+    'aiCall_ 옛글자 throw 가 permanent 표시를 잃었다 — 배치 catch 는 이 표시로 break/진행을 가른다'));
+});
+
+test('[처분] 청크 배치 catch 의 break 는 permanent 를 가른다 — 한 청크가 그날 밤 전원을 죽이지 않는다 (P1-1)', () => {
+  const src = 콘텐츠소스();
+  for (const 표식 of ['한문장 배치:', 'AI 칭호 배치 실패:']) {
+    const i = src.indexOf(표식);
+    assert.ok(i !== -1, `${표식} catch 를 못 찾았다 — 표식이 낡았으면 이 검사는 공회전이다(F207)`);
+    const 끝 = src.indexOf('\n', i);
+    const 줄 = src.slice(src.lastIndexOf('\n', i) + 1, 끝 === -1 ? undefined : 끝);
+    assert.ok(줄.indexOf('break') !== -1 && 줄.indexOf('permanent') !== -1,
+      `${표식} catch 의 break 가 permanent 를 안 가른다 — 옛글자 한 청크가 뒤쪽 청크 전부를 중단시킨다`);
+  }
+});
+
+test('[백스톱] 격리 안내 메일이 옛글자 예외를 말한다 — 「멀쩡하면 공개」가 게이트를 되돌리지 않게 (P1-2)', () => {
+  const src = 콘텐츠소스();
+  const i = src.indexOf('🚧 품질 게이트 격리 '); // 🚧 까지가 표식이다 — 민 문구는 1888 줄 주석(held= 설명)에 먼저 걸린다
+  assert.ok(i !== -1, '격리 안내 문구를 못 찾았다 — 표식이 낡았으면 이 검사는 공회전이다(F207)');
+  const 근처 = src.slice(i, i + 1500);
+  assert.ok(근처.indexOf('옛글자') !== -1 && 근처.indexOf("'노출'로 바꾸지 말고") !== -1,
+    '격리 메일에 옛글자 예외 안내가 없다 — 옛글자 격리는 육안으로 멀쩡해 보여 「멀쩡하면 공개」 지시가 막은 글자를 학생에게 보낸다');
+});
