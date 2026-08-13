@@ -12,6 +12,8 @@ const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 const { engineSource } = require('./_engine-source');
+/* 주석 제거 통로는 공용 하나다 — `tests/lib/소스검사.js` (F401 계열 · 대기열 P3 줄73). */
+const { 코드만 } = require('./lib/소스검사.js');
 const code = engineSource();
 
 // 조 편성 섹션(상수 ~ 편성 코어)만 잘라 로드한다. 시트·SpreadsheetApp 의존 함수는 정의만 되고 호출하지 않는다.
@@ -273,9 +275,15 @@ test('시트 골격은 지연 평가 함수다 — 톱레벨 const로 되돌리�
   assert.notEqual(skeletonAt, -1, 'sheetSkeleton_()을 찾지 못함');
   // 선언 이후 본문만 보고, 주석(// …)과 문자열('…')을 걷어낸 뒤 남은 식별자만 검사한다.
   // 그러지 않으면 헤더 문자열의 '카드HTML' 같은 대문자나 자기 이름까지 참조로 오인한다.
-  const body = code.slice(skeletonAt + DECL.length, code.indexOf('\n  ];', skeletonAt))
-    .replace(/\/\/[^\n]*/g, '').replace(/'[^']*'/g, "''");
-  const refs = new Set(body.match(/\b[A-Z][A-Z0-9_]{2,}\b/g) || []);
+  /* 🔑 [2026-08-13] 주석 제거를 공용 통로로(F401 계열). 문자열 비우기는 여기 몫으로 남는다 —
+   *   렉서가 문자열 «안»을 안 건드리므로 순서 의존(`'//'` 오인)이 사라진다.
+   * ⚠ **이름을 `body` 에서 갈랐다** — 이 파일엔 `body` 선언이 넷인데 나머지 셋은 `code.slice(…)`
+   *   그대로다(정제 안 함). 계수기는 파일 하나를 한 스코프로 근사하고 «첫 선언이 이긴다» —
+   *   그래서 여기 정제된 `body` 가 **그 셋까지 「안전」으로 물들이고 있었다**(실측: 안전 15 중 3이
+   *   그 거짓 신용이었다). 못 합치면 이름을 가른다 — 새는 방향은 언제나 통과다. */
+  const 골격코드 = 코드만(code.slice(skeletonAt + DECL.length, code.indexOf('\n  ];', skeletonAt)));
+  const 골격본문 = 골격코드.replace(/'[^']*'/g, "''");
+  const refs = new Set(골격본문.match(/\b[A-Z][A-Z0-9_]{2,}\b/g) || []);
   assert.ok(refs.has('GROUPS_HEADERS'), '검사 대상에 GROUPS_HEADERS가 안 잡힘 — 테스트가 무력화됨');
   refs.forEach((name) => {
     assert.notEqual(code.indexOf(`const ${name} `), -1,

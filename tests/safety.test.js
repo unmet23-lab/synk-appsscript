@@ -6,6 +6,8 @@ const { execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const { ENGINE_FILES, engineSource, sharedBlocks } = require('./_engine-source');
+/* 주석 제거 통로는 공용 하나다 — `tests/lib/소스검사.js` (F401 계열 · 대기열 P3 줄73). */
+const { 코드만 } = require('./lib/소스검사.js');
 const MANIFEST_PATH = path.join(ROOT, 'appsscript.json');
 const code = engineSource(); // 엔진 전체를 한 문자열로 — 파일이 쪼개져도 아래 표식 검사가 그대로 산다
 
@@ -525,8 +527,11 @@ test('syncProfiles의 직접 setValues(exit_log·exit_snapshot)는 소독 채널
   // raw 쓰기 검출기 — 문자열 리터럴을 먼저 지운다(안 지우면 'http://x' 뒤를 주석으로 오인해 같은 줄의 진짜 쓰기를 숨긴다 — 리뷰 실측 우회 사례).
   //   리터럴 인자 setValue(상수 헤더)와 DT_HEADS 루프의 setValue(h)만 예외 — 리터럴은 남의 글일 수 없다.
   const rawWrites = (src) => {
-    const stripped = src.replace(/'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`|\/\*[\s\S]*?\*\/|\/\/[^\n]*/g,
-      (m) => (/^['"`]/.test(m) ? "''" : ''));
+    /* 🔑 [2026-08-13] 주석 제거를 공용 통로로 갈랐다(F401 계열). 옛 판은 문자열과 주석을 «한 정규식»
+     *   으로 같이 처리했는데, 그 순서 의존이 바로 위 주석이 걱정하던 것이다(`'http://x'` 오인).
+     *   이제 렉서가 그 판정을 지고(문자열 «안»은 주석이 아니다), 여기는 문자열 비우기만 남는다. */
+    const stripped = 코드만(src)
+      .replace(/'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\[\s\S]|[^`\\])*`/g, "''");
     return (stripped.match(/\.(?:setValues?|appendRow|setFormulas?)\([^)\n]*/g) || [])
       .filter((c) => c !== ".setValue(''" && c !== '.setValue(h');
   };
@@ -1180,7 +1185,8 @@ test('[v9.67] resetAllTriggers는 교재연동Nightly(23시)를 개통 시스템
  *     거짓 초록 = preflight·워치독이 onConsultEdit 실종을 못 봄(onEdit은 「조용히 안 도는 것」으로만 드러난다)
  *   ⚠ 이 테스트는 「버그가 아직 있을 것」을 요구하지 않는다 — 정상 상태에서 초록이고, **갈라질 때만** 빨개진다. */
 test('[v9.211] 트리거 매니페스트가 정본이다 — 재설치 목록과 소비자 셋이 거기서 갈라지지 않는다', () => {
-  const 코드만 = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  /* 🔑 [2026-08-13] 지역 사본 → 파일 머리의 공용 통로(F401 계열). 옛 판은 문자열 속 `//`
+   *   까지 먹어서 `'https://…'` 가 든 줄이 통째로 잘렸다 — 공용 판은 렉서라 그 자리를 살린다. */
   // [vNEXT·검수 31584c315c30] 매니페스트는 **실제로 실행해서** 반환값을 받는다 — 소스를 정규식으로 훑던
   //   첫 판은 파서가 곧 정본이 돼서, 배열 문법이 바뀌면(concat·전개) 무엇을 재는지 알 수 없었다.
   //   순수 함수(GAS API 0)라 node 에서 그대로 돈다. ⚠ resetAllTriggers 는 ScriptApp 을 부르므로
@@ -1854,7 +1860,7 @@ test('[v9.90] 🛂 면접 기록 폼 — 재실행 안전·익명 회수·활용
 function constObj_(startMarker) { // Code.js의 `const X = { 키: 숫자 }` 블록을 주석 무시하고 파싱
   const raw = section(startMarker, '\n};');
   const o = {};
-  raw.replace(/\/\/[^\n]*/g, '').replace(/([가-힣A-Za-z_]+)\s*:\s*(\d+)/g, (m, k, v) => { o[k] = Number(v); return m; });
+  코드만(raw).replace(/([가-힣A-Za-z_]+)\s*:\s*(\d+)/g, (m, k, v) => { o[k] = Number(v); return m; });
   return o;
 }
 

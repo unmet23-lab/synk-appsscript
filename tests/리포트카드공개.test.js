@@ -17,6 +17,11 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const { ROOT, ENGINE_FILES, engineSource } = require('./_engine-source');
+/* 🔑 [2026-08-13] 주석 제거 지역 사본 5벌 → 공용 통로 하나(F401 계열 · 대기열 P3 줄73).
+ *   다섯이 같은 정규식을 저마다 적고 있었다 — 한쪽만 고쳐지는 날 그 검사가 조용히 눈먼다.
+ *   옛 판의 `(^|[^:])\/\/` 는 `://` 만 지키는 어림법이라 `'// 로 시작하는 문자열'` 은 못 지켰다.
+ *   공용 판은 렉서라 문자열·정규식 리터럴 «안»을 원리적으로 안 건드린다. */
+const { 코드만 } = require('./lib/소스검사.js');
 
 /** 소스 읽기 — 줄끝을 LF로 통일한다. 이 저장소 작업본은 CRLF라 '\n}\n' 같은 표식이 안 걸린다. */
 const readSrc = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/\r\n/g, '\n');
@@ -390,7 +395,7 @@ test('[v9.156] 🔴 배치가 카드를 공개로 열지 않는다 — 이게 �
   const src = readSrc('엔진_폼리포트.js');
   const s = src.indexOf('function runReportCards_(');
   const raw = src.slice(s, src.indexOf('\n}\n', s));
-  const body = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  const body = 코드만(raw);
   assert.ok(body.includes('createFile('), '주석 제거가 코드까지 지웠다');
   assert.ok(!/setSharing/.test(body), 'runReportCards_가 아직 공개 공유를 한다 — 매달 카드가 다시 열린다');
   assert.ok(body.includes('SEND_REPORT_EMAIL'), '메일 발송 경로가 사라졌다 — 카드가 학부모에게 닿을 길이 없다');
@@ -400,13 +405,12 @@ test('[v9.156] 🔴 음성 스위프가 녹음을 공개로 열지 않고, 성�
   const src = readSrc('교재연동.js');
   const s = src.indexOf('function voiceSweep_(');
   const raw = src.slice(s, src.indexOf('\n}\n', s));
-  const body = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  const body = 코드만(raw);
   assert.ok(!/setSharing/.test(body), 'voiceSweep_가 아직 미성년 녹음을 공개로 연다');
 
   const g = src.indexOf('function buildVoiceGrowthCards_(');
   // ⚠ 주석을 먼저 지운다 — 「왜 링크를 뺐는가」를 적은 주석에 [듣기](url)가 들어 있어, 안 지우면 주석이 코드로 잡힌다
-  const gbody = src.slice(g, src.indexOf('\n}\n', g))
-    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  const gbody = 코드만(src.slice(g, src.indexOf('\n}\n', g)));
   assert.ok(gbody.includes('목소리 타임랩스'), '주석 제거가 코드까지 지웠다');
   assert.ok(!/\[듣기\]\(/.test(gbody), '성장 카드가 아직 공개 URL을 [듣기] 링크로 싣는다');
   assert.ok(/처음의 나/.test(gbody) && /오늘의 나/.test(gbody), '대비 구조가 사라졌다 — 링크만 빼고 값은 남겨야 한다');
@@ -418,8 +422,7 @@ test('[v9.156] 미발송 감시로 교체됐다 — 「공유 실패」가 아�
   const src = readSrc('엔진_폼리포트.js');
   const s = src.indexOf('function runReportCards_(');
   // ⚠ 주석 제거 후 검사 — 「무엇을 왜 제거했는가」를 적은 주석에 옛 변수명이 나온다(주석≠코드)
-  const body = src.slice(s, src.indexOf('\n}\n', s))
-    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  const body = 코드만(src.slice(s, src.indexOf('\n}\n', s)));
   assert.ok(body.includes('createFile('), '주석 제거가 코드까지 지웠다');
   assert.ok(/noMail/.test(body), '미발송 감시가 없다 — 카드가 아무에게도 안 가도 배치는 "성공"이라 말한다');
   assert.ok(/adminMail\(/.test(body), '미발송을 알리지 않는다');
@@ -462,7 +465,7 @@ test('[v9.138] previewOneReportCard 본문에는 공유·공개URL이 한 글자
   assert.ok(raw.includes('previewOneReportCard'), '엉뚱한 구간을 잘랐다');
   // 주석을 걷어내고 **코드만** 본다 — "setSharing 없음" 같은 설명 문장에 걸려 거짓 실패하지 않도록.
   // (`://`는 URL이라 줄주석으로 오인하지 않는다.)
-  const body = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  const body = 코드만(raw);
   assert.ok(body.includes('createFile('), '주석 제거가 코드까지 지웠다 — 이 검사가 빈 문자열을 통과시킨다');
   assert.ok(!body.includes('setSharing'), 'previewOneReportCard 본문에 setSharing이 돌아왔다');
   assert.ok(!body.includes('lh3.googleusercontent.com'), '본문이 공개 lh3 URL을 다시 만든다');

@@ -13,6 +13,8 @@ const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 const { engineSource } = require('./_engine-source');
+/* 주석 제거 통로는 공용 하나다 — `tests/lib/소스검사.js` (F401 계열 · 대기열 P3 줄73). */
+const { 코드만 } = require('./lib/소스검사.js');
 const code = engineSource();
 
 function section(startMarker, endMarker) {
@@ -172,7 +174,9 @@ test('발화 지수는 편성이 없으면 조용히 빈 배열(개원 전 무�
 
 test('선언만 하고 아무도 안 쓰는 상수가 없다 — v9.80 ROLE_TALK 미배선의 회귀 장치', () => {
   // 주석을 걷어낸 코드에서만 센다(ROLE_TALK는 주석에 여러 번 등장해 그대로 세면 미배선을 못 잡는다)
-  const bare = code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '').replace(/\/\/[^\n'"]*$/gm, '');
+  /* 🔑 [2026-08-13] 지역 사본 → 공용 통로. 옛 판은 인라인 주석을 «따옴표가 없는 줄»에서만
+   *   지웠다(`[^\n'"]`) — 따옴표가 든 줄의 주석은 그대로 남아 ROLE_TALK 를 덧세던 자리다. */
+  const bare = 코드만(code);
   ['ROLE_TALK', 'ROLE_DUTY', 'TALK_ROUNDS', 'TALK_PLAN_MIN', 'FOCUS_START_WEEK', 'PAIR_PATTERNS', 'ROLE_ICONS']
     .forEach((n) => {
       const uses = bare.split(new RegExp(`\\b${n}\\b`)).length - 1;
@@ -341,7 +345,7 @@ test('음성 동의 게이트 — 동의 확인 없이는 녹음이 적재되지
   /* [v9.156] 구 검사는 `setSharing(`도 순서 목록에 넣었다(공유 전환이 게이트 뒤인지). 이제 그 호출이
    * **아예 없어야 한다** — 유호님 08-04 「B로 가자」 결정으로 미성년 녹음의 공개 전환을 폐지했다.
    * 순서 검사를 부재 검사로 바꾼다: 순서만 보면 「게이트 뒤에서 다시 공개로 여는」 코드를 통과시킨다. */
-  const sweepCode = sweep.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  const sweepCode = 코드만(sweep);
   assert.ok(!/setSharing/.test(sweepCode),
     'voiceSweep_가 녹음을 공개로 전환한다 — 미성년 목소리가 링크만으로 열린다(v9.156에서 폐지한 경로)');
   assert.ok(sweep.includes('held.length') && sweep.includes('adminMail'),
