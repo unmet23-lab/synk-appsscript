@@ -1378,3 +1378,79 @@ test('🔑 나 자신은 옛 도장이 남아 있어도 선언 주인이다 — 
     delete require.cache[경로];   // 다음 테스트가 내 env 조작을 물려받지 않게 되돌린다
   }
 });
+
+/* ── 워크트리에 갇힌 커밋 (F403 · 2026-08-13 실사고) ─────────────────────────
+ * 세션 `d546c7d7` 이 워크트리에서 유호님 신고 결함을 고치고 ✅완료 보드 줄까지 쓴 뒤,
+ * 그 커밋을 master 에 못 올린 채 죽었다. 수리 163줄·회귀 245줄이 가지에만 남았다.
+ * 🔑 미커밋 0 · 회귀 초록 · 보드는 완료 — **미완으로 보이는 자리가 한 곳도 없었다.**
+ * 위 ☁ 절은 **원격** claude/* 만 봐서("로컬엔 없던 것이다") 여기가 그 사각의 반대편이었다.
+ *
+ * 탐지력은 아래 픽스처가 진다 — 실저장소는 세션마다 달라져 불안정 검사가 된다.
+ */
+/* ⚠ 이름을 `워크트리픽스처` 로 짓지 않는다 — 위 352줄에 이미 그 이름이 있고, 함수 선언은
+ * 호이스팅돼 **뒤엣것이 이긴다.** 처음에 그렇게 지었다가 기존 검사 3건이 조용히 깨졌다:
+ * 저쪽은 「미커밋이 있는 옆 트리」를 만들고 이쪽은 「커밋만 있는 옆 트리」를 만들어, 저쪽
+ * 검사들이 내 픽스처를 받아 🌿 를 영영 못 봤다. 깨진 이유가 이름이라 진단이 오래 걸린다. */
+function 갇힘픽스처({ 나이분 = 600, 반입 = false } = {}) {
+  const { repo, state, g } = 픽스처();
+  const 트리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-own-wt-'));
+  임시들.push(트리);
+  fs.rmSync(트리, { recursive: true, force: true });      // worktree add 는 빈 경로를 요구한다
+  g('worktree', 'add', '-q', '--detach', 트리, 'HEAD');
+  fs.writeFileSync(path.join(트리, '수리.js'), '// 유호님 신고 결함 수리\n');
+  /* 커밋 **시각**으로 나이를 심는다 — 도구도 같은 것을 잰다(폴더 mtime 은 체크아웃·청소로도
+   * 움직여 「언제 멈췄나」를 안 말한다). 안 심으면 「방금 커밋」이라 갇힘여유에 그대로 걸러진다. */
+  const 때 = new Date(Date.now() - 나이분 * 60000).toISOString();
+  const wg = (...a) => spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t',
+    '-c', 'commit.gpgsign=false', ...a],
+  { cwd: 트리, encoding: 'utf8', env: { ...process.env, GIT_COMMITTER_DATE: 때, GIT_AUTHOR_DATE: 때 } });
+  wg('add', '-A');
+  wg('commit', '-qm', '수리 — 워크트리에서 완주');
+  if (반입) {                                              // master 가 그 커밋을 이미 담은 상태
+    g('merge', '-q', '--ff-only', String(wg('rev-parse', 'HEAD').stdout || '').trim());
+  }
+  return { repo, state, 트리 };
+}
+
+test('🔑 탐지 — 워크트리에 master 미포함 커밋이 갇히면 잡는다 (F403 실사고 그 모양)',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const { repo, state } = 갇힘픽스처();
+    const out = 돌린다({ repo, state, 나: 'local_f399aaaa' });
+    assert.match(out, /🧊[\s\S]*워크트리에 갇힌 커밋 1건/,
+      '갇힌 커밋을 못 잡았다 — 이걸 놓치면 완주한 트랙이 통째로 사라진다');
+    assert.match(out, /수리 — 워크트리에서 완주/,
+      '무엇이 갇혔는지(커밋 제목)를 안 보여줬다 — 개수만으로는 아무도 안 움직인다');
+    assert.match(out, /worktree remove/,
+      '닫는 길을 안 줬다 — 따를 수 없는 처방은 방치를 정상으로 만든다(F103)');
+    assert.match(out, /커밋 수는 판정이 아니다/,
+      '「미포함 = 유실」로 단정했다 — 같은 날 실측 3건 중 2건은 낡은 사본이었다(master 가 오히려 앞섰다)');
+  });
+
+test('거짓양성 — master 가 이미 담은 워크트리는 안 잡는다 (반입하면 스스로 조용해져야 한다)',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const { repo, state } = 갇힘픽스처({ 반입: true });
+    assert.doesNotMatch(돌린다({ repo, state, 나: 'local_f399bbbb' }), /🧊/,
+      '반입이 끝났는데도 계속 짚는다 — 무시해야만 사라지는 경고는 그 순간부터 아무도 안 읽는다');
+  });
+
+test('🔑 거짓양성 — 방금 커밋한 워크트리는 안 잡는다 (살아있는 에이전트를 매번 짚으면 배경 소음이 된다)',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const { repo, state } = 갇힘픽스처({ 나이분: 1 });
+    assert.doesNotMatch(돌린다({ repo, state, 나: 'local_f399cccc' }), /🧊/,
+      '일하는 중인 워크트리를 갇혔다고 했다 — 에이전트가 돌 때마다 뜨면 진짜가 섞여도 안 읽힌다');
+  });
+
+test('🔴 모름을 0건으로 바꾸지 않는다 — master 가 없으면 「못 쟀다」라고 말한다',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const { repo, state, g } = 픽스처();
+    g('branch', '-m', 'master', '옛가지');                 // master 라는 이름이 없는 저장소
+    assert.match(돌린다({ repo, state, 나: 'local_f399dddd' }), /갇힌 커밋을 \*\*못 쟀다\*\*/,
+      '못 잰 것을 0건으로 접었다 — 이 도구의 최우선 불변식은 「모름을 안전으로 바꾸지 않는다」다');
+  });
+
+test('🔑 침묵 계약 — 갇힘 0이면 --hook 은 이 절을 한 줄도 안 낸다',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const { repo, state } = 갇힘픽스처({ 반입: true });
+    assert.doesNotMatch(돌린다({ repo, state, 나: 'local_f399eeee', 인자: ['--hook'] }), /🧊|갇힌 커밋/,
+      '깨끗한데 세션 시작에 줄을 얹었다 — 경량 원칙(유호 08-13)과 정면으로 어긋난다');
+  });
