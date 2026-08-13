@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // 철학 문서를 바탕화면 열람용 HTML로 내보낸다 (유호님 요청 2026-08-09).
-// 사용: node tools/철학열람빌드.js   → C:\Users\q1212\Desktop\SYNK 철학\*.html
+// 사용: node tools/철학열람빌드.js   → 바탕화면 「SYNK 운영자료\SYNK 철학\*.html」(자리 이동 08-13 · 아래 빌드() 주석)
 // ⚠열람 편의용이다 — 대외 발행 조판(킷 정식·몽골어 검수)은 확정 후 별도 게이트를 거친다.
 const fs = require('fs');
 const path = require('path');
@@ -8,6 +8,8 @@ const { 칸나누기 } = require('./lib/표.js');   // 표를 칸으로 가르�
 // 🔴 바탕화면 경로는 추정하지 않고 「실제로 화면에 보이는 곳」을 찾는다 — 그 판정은 아래 통로 **한 곳**에만 산다.
 // 여기 사본을 되살리면 `tests/바탕화면통로.test.js` 가 문다(같은 탐지가 세 벌로 갈렸던 자리 · 2026-08-10).
 const { 경로: 바탕화면 } = require('./lib/바탕화면.js');
+// 폴더 이름은 **운영자료가 정본**이다 — 여기 글자로 베끼면 한쪽만 바뀌는 날 두 자리로 갈린다(아래 08-13 사고).
+const { 폴더명: 운영자료폴더 } = require('./운영자료.js');   // ⚠require 부작용 0(main 은 require.main 일 때만 돈다)
 
 const ROOT = path.join(__dirname, '..');
 
@@ -83,7 +85,12 @@ function mdToHtml(md){
 function 빌드(opts = {}){
   // 바탕화면 탐지는 out 미지정일 때만 — require 는 부작용 0 이고, 회귀는 out·docs 를 넘겨 repo 밖(레지스트리·진짜 바탕화면)을 안 만진다
   const docs = opts.docs || DOCS;
-  const OUT = opts.out || path.join(바탕화면(), 'SYNK 철학');
+  /* 🔴 굽는 자리는 바탕화면 최상위가 아니라 **운영자료 폴더 안**이다(유호 승인 2026-08-13).
+   * 08-10 실사고: 최상위에만 굽는데 오전 판이 운영자료 쪽에도 복사돼 있어, 같은 날 오후 재빌드가
+   * 최상위만 새로 만들고 **두 자리가 조용히 갈렸다**(00·01 내용 상이 · 04 는 한쪽에 아예 없음).
+   * 유호님이 "폴더가 2개인데 일부러 그런 거냐"로 발견. 「만든 자료는 전부 SYNK 운영자료로」(유호 상시 08-09)와도
+   * 어긋나 있었다 — 자리를 하나로 못 박아 다음 빌드가 다시 갈라질 수 없게 한다. */
+  const OUT = opts.out || path.join(바탕화면(), 운영자료폴더, 'SYNK 철학');
   fs.mkdirSync(OUT, { recursive: true });
   const built = [];
   const 없음 = [];
