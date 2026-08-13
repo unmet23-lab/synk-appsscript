@@ -66,12 +66,13 @@ function main() {
   }
 
   const out = [`🗳 유호님 답 대기 ${q.total}건 — 오늘 ${q.today.length}건 (전체: node tools/decision-queue.js --all)`];
+  /* [경량 2차 · 유호 지시 08-13] 항목당 2줄 → 1줄 — 머리(토픽·⛔)와 본문을 한 줄에 붙인다.
+   * 본문이 보여야 하는 계약(tests/결정큐훅.test.js)은 그대로다 — 줄 수만 줄었다. */
   q.today.forEach((it, i) => {
     const head = it.unblocks > 0
-      ? `⛔ 이거 하나면 ${it.unblocks}건이 함께 풀립니다`
+      ? `⛔ 이거 하나로 ${it.unblocks}건이 풀립니다 —`
       : `[${shortTopic(it.topic)}]`;
-    out.push(`  ${i + 1}. ${head}`);
-    out.push(`     ${oneLine(it.text)}`);
+    out.push(`  ${i + 1}. ${head} ${oneLine(it.text)}`);
   });
   out.push('  답은 그냥 여기 쓰시면 됩니다 — 제가 읽고 반영합니다.');
 
