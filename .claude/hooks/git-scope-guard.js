@@ -135,6 +135,31 @@ if (걸린조각(
     + '\n   의도적 예외라면 명령 앞에 GIT_SCOPE_BYPASS=1 을 붙인다.');
 }
 
+/* ⑨ synk-memory 원격으로의 push — **세션은 커밋까지, push 는 스케줄러·Actions 몫** (F392).
+ *   (번호는 추가순 — 자리는 성질순이라 exec 층 규칙들 옆에 둔다.)
+ *   2026-08-13 실사고: 세션이 메모리 백업 저장소에서 push 를 직접 날렸다(e8909eb). fast-forward 라
+ *   피해 0이었지만, 자동화(`auto: memory sync`)가 같은 원격에 동시에 쓰면 non-ff 거절이 나고 —
+ *   그때 사람이 배우는 다음 수가 `--force` 다. 그 문이 열리기 전에 통로를 하나로 좁힌다.
+ *   🔑 판정 재료는 **그 저장소의 원격 목록**이다(경로 무늬가 아니라) — 클론 위치가 바뀌어도 따라간다.
+ *   원격 조회 실패는 「대상 아님」으로 접는다: 이 규칙의 새는 방향은 「통과」지만, 대상 아닌 저장소를
+ *   막는 쪽으로 새면 BYPASS 습관을 가르친다(v6.11) — ③의 「경로 예외 없음」과 반대 성질의 자리다. */
+{
+  const 푸시조각 = 걸린조각((s) => re('push\\b').test(s));
+  if (푸시조각) {
+    let 원격들 = '';
+    try {
+      원격들 = require('child_process').execFileSync('git', ['-C', gitCwd, 'remote', '-v'],
+        { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    } catch (_) { /* 저장소 아님·git 없음 — 이 규칙의 대상이 아니다 */ }
+    if (/synk-memory/i.test(원격들) || /synk-memory/i.test(푸시조각)) {
+      deny('[git-scope-guard] synk-memory 로의 `git push` 차단 — 그 원격은 스케줄러·Actions 가 쓴다(세션은 읽기·커밋까지 · F392).'
+        + '\n커밋까지는 세션 몫이 맞다 — 남긴 커밋은 다음 `auto: memory sync` 가 실어 나른다.'
+        + '\n같은 원격에 둘이 쓰면 non-ff 거절이 나고, 그 다음에 사람이 배우는 수가 --force 다.'
+        + '\n→ 커밋에서 멈춘다. 자동화가 죽은 것을 **확인한** 경우에만 GIT_SCOPE_BYPASS=1 을 붙인다.');
+    }
+  }
+}
+
 /* ④ rebase·merge 진행 중의 commit — 2026-08-04 실사고(F038).
  * 옆 세션이 리베이스를 도는 동안 다른 세션이 `git commit -- 경로`를 했고, 그 커밋이
  * **detached HEAD 위에 얹혀** 리베이스 순서 안으로 들어갔다(HEAD가 리베이스 도중 전진해 인덱스가 꼬임).

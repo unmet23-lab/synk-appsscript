@@ -1377,3 +1377,56 @@ test('⑧ 범위가 **디렉터리**여도 그 안을 본다 (경로를 폴더�
   assert.equal(r.차단, true, '디렉터리로 주면 그 안이 통째로 검사 밖이 된다 — 새는 방향은 언제나 통과다');
   assert.match(r.사유, /남의검사/, '무엇이 실릴지 안 보여줬다');
 });
+
+/* ── ⑨ synk-memory push 차단 (F392) ──────────────────────────────
+ * 규약 「세션은 읽기·커밋까지 — push 는 스케줄러·Actions 몫」의 기계 강제.
+ * 판정 재료는 그 저장소의 `git remote -v` 라, 픽스처마다 원격을 실제로 단다. */
+function 원격저장소(url) {
+  const dir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'scope-guard-remote-'));
+  execFileSync('git', ['init', '-q'], { cwd: dir });
+  if (url) execFileSync('git', ['remote', 'add', 'origin', url], { cwd: dir });
+  return dir;
+}
+
+test('⑨ synk-memory 원격이 달린 저장소의 push 를 막는다 — 커밋은 통과 (F392: 세션은 커밋까지)', () => {
+  const dir = 원격저장소('https://github.com/unmet23-lab/synk-memory.git');
+  try {
+    ['git push', 'git push origin master', 'git push -u origin master'].forEach((c) => {
+      const r = 가드_at(c, dir);
+      assert.ok(r.차단, '메모리 백업 저장소의 push 를 막지 못했다: ' + c);
+      assert.ok(/스케줄러|Actions/.test(r.사유), '차단 사유가 「누구 몫인지」를 말하지 않는다');
+      assert.ok(/커밋/.test(r.사유), '「커밋까지는 세션 몫」이 빠졌다 — 처방 없는 차단은 우회를 가르친다(F103)');
+    });
+    // 처방문 되먹임(가드 3맹점 ③): 차단 사유가 시키는 「커밋에서 멈춘다」는 이 가드를 통과해야 한다
+    assert.equal(가드_at('git commit -m "메모 갱신" -- topic.md', dir).차단, false,
+      '커밋까지 막으면 처방을 따를 수 없다 — 그 순간 BYPASS 가 정상 통로가 된다');
+    assert.equal(가드_at('git log --oneline -3', dir).차단, false, '읽기는 규약 그대로 자유다');
+    assert.equal(가드_at('GIT_SCOPE_BYPASS=1 git push origin master', dir).차단, false,
+      '의식적 우회(자동화 사망을 확인한 경우)는 존중한다');
+  } finally { try { fs.rmSync(dir, { recursive: true, force: true }); } catch {} }
+});
+
+test('⑨ 보통 저장소의 push 는 안 막는다 — 배포 통로(origin master)가 일상이다', () => {
+  const dir = 원격저장소('https://github.com/unmet23-lab/SYNK-appsscript.git');
+  try {
+    assert.equal(가드_at('git push origin master', dir).차단, false, '무관한 저장소의 push 를 막았다 — 과잉 차단은 BYPASS 습관을 만든다');
+  } finally { try { fs.rmSync(dir, { recursive: true, force: true }); } catch {} }
+});
+
+test('⑨ 원격 없는 저장소·URL 직지정도 새지 않는다', () => {
+  const 무원격 = 원격저장소(null);
+  try {
+    assert.equal(가드_at('git push origin master', 무원격).차단, false, '원격 조회가 비면 대상 아님으로 접는다(막는 쪽으로 새면 안 된다)');
+    // 저장소 밖에서 URL 을 직접 찍는 형태 — 원격 목록엔 없지만 명령 조각에 있다
+    const r = 가드_at('git push https://github.com/unmet23-lab/synk-memory.git master', 무원격);
+    assert.ok(r.차단, 'URL 직지정 push 가 원격 목록 판정을 우회했다 — 새는 방향은 통과다');
+  } finally { try { fs.rmSync(무원격, { recursive: true, force: true }); } catch {} }
+});
+
+test('⑨ `-C` 로 밖에서 조준한 push 도 그 저장소 기준으로 판정한다 (G 접두 규약)', () => {
+  const dir = 원격저장소('https://github.com/unmet23-lab/synk-memory.git');
+  try {
+    const r = 가드(`git -C ${dir.replace(/\\/g, '/')} push origin master`);
+    assert.ok(r.차단, '-C 형태를 못 잡았다 — 2026-08-04 「규칙 5개가 하나도 못 잡던」 그 구멍이다');
+  } finally { try { fs.rmSync(dir, { recursive: true, force: true }); } catch {} }
+});
