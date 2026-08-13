@@ -1,0 +1,129 @@
+#!/usr/bin/env node
+/* 마스코트 배경 제거 — 확정 렌더의 밝은 회색 배경을 지워 투명 PNG 사본을 만든다.
+ *
+ * 왜 필요한가 (실측 2026-08-13): `docs/캐릭터/마스코트_렌더/*.png` 는 README 표기가 「RGBA PNG」지만
+ * 알파가 전부 255 — **투명 픽셀 0.0%** 다. 배경은 rgb~230 의 밝은 회색이라, 카드·화면에 그대로 얹으면
+ * 마스코트마다 회색 사각형이 딸려 나온다(드롭섀도까지 사각형에 걸린다).
+ *
+ * 원본은 유호님이 배치한 자산이라 **건드리지 않는다** — 사본을 `docs/캐릭터/마스코트_누끼/` 에 쓴다.
+ *
+ * 가르는 기준은 «채도»다. 배경은 무채색(sat≈0.02)이고 마스코트는 체리(코어 sat 0.51)라 안전하게 갈린다.
+ * 밝기만으로 가르면 마스코트의 하이라이트가 같이 지워진다.
+ *
+ * 이미지 라이브러리가 없는 저장소라 크롬 canvas 를 계산기로 쓴다(브랜드렌더린트가 쓰는 그 크롬).
+ *
+ * 쓰기:
+ *   node tools/마스코트누끼.js                 # 마스코트_렌더 전체
+ *   node tools/마스코트누끼.js 본체.png 본체놀람.png
+ * 나가는 값: 0=전부 성공 · 1=일부 실패 · 2=크롬 없음(안 돌렸다 — 통과 아님)
+ */
+const { execFileSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+
+const REPO = path.resolve(__dirname, '..');
+const SRC_DIR = path.join(REPO, 'docs', '캐릭터', '마스코트_렌더');
+const OUT_DIR = path.join(REPO, 'docs', '캐릭터', '마스코트_누끼');
+const SIZE = 1024;              // 캐러셀 최대 사용폭 ~540px → 2배수로 충분(원본 2048 은 과하다)
+const SAT_배경 = 0.055;         // 이 아래 + 밝으면 배경
+const SAT_경계 = 0.13;          // 이 사이는 가장자리 → 알파를 비례로 (계단 방지)
+const 밝기_배경 = 195;
+
+const CHROME_CANDIDATES = [
+  process.env.CHROME_PATH,
+  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+  '/usr/bin/google-chrome', '/usr/bin/chromium-browser', '/usr/bin/chromium',
+  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+].filter(Boolean);
+const findChrome = () =>
+  CHROME_CANDIDATES.find((p) => { try { return fs.existsSync(p); } catch { return false; } }) || null;
+
+const fileUrl = (abs) =>
+  'file:///' + abs.replace(/\\/g, '/').split('/').map((s, i) => (i === 0 ? s : encodeURIComponent(s))).join('/');
+
+function 누끼(chrome, 이름, tmpDir) {
+  // ⚠ textarea.value 는 --dump-dom 에 안 찍힌다(프로퍼티라 DOM 텍스트가 아니다) — div.textContent 로 낸다.
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>대기</title></head><body>
+<div id="o"></div><script>
+const img=new Image();
+img.onload=()=>{
+  const S=${SIZE};
+  const c=document.createElement('canvas'); c.width=S; c.height=S;
+  const x=c.getContext('2d',{willReadFrequently:true});
+  x.imageSmoothingQuality='high';
+  x.drawImage(img,0,0,S,S);
+  const im=x.getImageData(0,0,S,S), d=im.data;
+  for(let i=0;i<d.length;i+=4){
+    const r=d[i],g=d[i+1],b=d[i+2];
+    const mx=Math.max(r,g,b), mn=Math.min(r,g,b);
+    const sat = mx===0 ? 0 : (mx-mn)/mx;
+    if (sat < ${SAT_배경} && mx > ${밝기_배경}) { d[i+3]=0; }
+    else if (sat < ${SAT_경계} && mx > ${밝기_배경 - 10}) {
+      d[i+3] = Math.round(255 * ((sat-${SAT_배경})/(${SAT_경계}-${SAT_배경})));
+    }
+  }
+  x.putImageData(im,0,0);
+  document.getElementById('o').textContent = c.toDataURL('image/png');
+  document.title='완료';
+};
+img.onerror=()=>{ document.getElementById('o').textContent='ERR'; document.title='완료'; };
+img.src=${JSON.stringify(fileUrl(path.join(SRC_DIR, 이름)))};
+</scr` + `ipt></body></html>`;
+
+  const htmlPath = path.join(tmpDir, '_누끼작업.html');
+  fs.writeFileSync(htmlPath, html, 'utf8');
+
+  let dom;
+  try {
+    dom = execFileSync(chrome, ['--headless=new', '--disable-gpu', '--no-sandbox',
+      '--allow-file-access-from-files', '--virtual-time-budget=25000', '--dump-dom', fileUrl(htmlPath)],
+      { encoding: 'utf8', maxBuffer: 200 * 1024 * 1024, timeout: 120000 });
+  } catch (e) {
+    console.log(`  ❌ ${이름} — 크롬 실패: ${String(e.message).slice(0, 80)}`);
+    return false;
+  }
+
+  const m = dom.match(/<div id="o">([^<]*)<\/div>/);
+  const PREFIX = 'data:image/png;base64,';
+  if (!m || !m[1].startsWith(PREFIX)) { console.log(`  ❌ ${이름} — 산출 없음`); return false; }
+
+  const buf = Buffer.from(m[1].slice(PREFIX.length), 'base64');
+  fs.writeFileSync(path.join(OUT_DIR, 이름), buf);
+  const 원본 = fs.statSync(path.join(SRC_DIR, 이름)).size;
+  console.log(`  ✅ ${이름} — ${(원본 / 1024 / 1024).toFixed(1)}MB → ${(buf.length / 1024).toFixed(0)}KB`);
+  return true;
+}
+
+function main() {
+  const chrome = findChrome();
+  if (!chrome) {
+    console.error('SKIP: 크롬을 못 찾았다 — 배경 제거를 **안 돌렸다**(통과 아님). CHROME_PATH 로 지정할 수 있다.');
+    process.exit(2);
+  }
+  if (!fs.existsSync(SRC_DIR)) { console.error(`원본 폴더가 없다: ${SRC_DIR}`); process.exit(2); }
+
+  const 컷 = process.argv.slice(2).length
+    ? process.argv.slice(2)
+    : fs.readdirSync(SRC_DIR).filter((f) => f.toLowerCase().endsWith('.png'));
+  if (!컷.length) { console.error('처리할 PNG 가 없다'); process.exit(2); }
+
+  fs.mkdirSync(OUT_DIR, { recursive: true });
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-누끼-'));
+
+  console.log(`배경 제거 ${컷.length}컷 → docs/캐릭터/마스코트_누끼/  (원본 무변경 · ${SIZE}px)`);
+  let ok = 0;
+  try {
+    for (const c of 컷) {
+      if (!fs.existsSync(path.join(SRC_DIR, c))) { console.log(`  ❌ ${c} — 원본 없음`); continue; }
+      if (누끼(chrome, c, tmpDir)) ok++;
+    }
+  } finally {
+    try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch {}
+  }
+  console.log(`\n완료 ${ok}/${컷.length}`);
+  process.exit(ok === 컷.length ? 0 : 1);
+}
+
+main();
