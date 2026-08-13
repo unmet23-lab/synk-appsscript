@@ -2843,6 +2843,10 @@ function parentSweep() {
   //   함께 중단되고 구글 기본 실패 요약(최대 하루 지연)에만 의존하게 된다.
   safeRun('sweepAttendanceForm', function () { sweepAttendanceForm_(ss); }); // [v9.49] 출석 폼 → attendance 전개 (등원알림·보드·미등원판정 앞 — 앱 출석의 update-0 대체)
   safeRun('expandAttendanceBatch', function () { expandAttendanceBatch_(ss); }); // [v9.36] 수업 시작 출석 1탭(attendance_batch) → attendance 전개 (등원알림·보드·미등원판정 앞)
+  // [v9.230] 숙제 서클 종이 — 위 두 전개가 끝난 «바로 다음» 자리다. 설계 §3 이 「종이는 QR 출석
+  //   확정 뒤 인쇄된다」로 못박아 시각 트리거를 못 쓴다(확정 전에 구우면 결석자 칸이 실려 나가고
+  //   그 종이는 다시 못 걷는다). 반·날짜당 1회 · 확정 없는 반은 조용히 넘어가 다음 틱에 다시 본다.
+  safeRun('circleSheetsAuto', function () { circleSheetsAuto_(ss); });
   if (PARENT_MAIL_ARRIVAL) safeRun('attendanceNotify', function () { attendanceNotify_(ss); }); // [v7.9] 등원 즉시 알림은 기본 OFF
   safeRun('translateNotices', function () { translateNotices_(ss); });
   safeRun('translateTopics', function () { translateTopics_(ss); }); // [v5.7] 이번 주 우리 반 배운 것 → 몽골어

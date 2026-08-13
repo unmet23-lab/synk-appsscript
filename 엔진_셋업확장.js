@@ -2177,9 +2177,11 @@ function circleLevelVocab_(ss) {
  * 저장 0 · 차시 번호의 순수 함수라 매 차시 쓰기가 0이다(조 편성 절의 규약 그대로). */
 function circleWarmupOf_(lessonNo, band) {
   const n = Math.max(1, Number(lessonNo) || 1);
-  const b = (band >= 0 && band <= 2) ? band : 0;
   const tone = CIRCLE_TONE_ORDER[(n - 1) % CIRCLE_TONE_ORDER.length];
-  const pool = (CIRCLE_QUESTION_CARDS[tone] || [])[b] || [];
+  // 밴드를 모르면(-1) 카드를 **안 낸다**. 조용히 0(Lv1~2)으로 접으면 상급반 조 머리에 초급 질문이
+  // 인쇄되고 어디서도 안 빨개진다 — 설계 §10 「추측하지 않는다」가 정확히 금지한 모양이다.
+  if (!(band >= 0 && band <= 2)) return { tone: tone, text: '' };
+  const pool = (CIRCLE_QUESTION_CARDS[tone] || [])[band] || [];
   if (!pool.length) return { tone: tone, text: '' };
   return { tone: tone, text: pool[Math.floor((n - 1) / CIRCLE_TONE_ORDER.length) % pool.length] };
 }
@@ -2298,7 +2300,10 @@ function circleMemberCard_(m, rows, band, todayStr) {
   const frame = CIRCLE_FRAMES[band] || null;
   const card = { display_name: m.name, role: m.role, kept: null, shaky: null, next_one: null };
   if (!rs.length) {                                       // 이력 0 — 첫날·신규(§6 1차시)
-    card.next_one = { label: CIRCLE_CATCHUP_LEAD, text: CIRCLE_START_LINES[band] || CIRCLE_START_LINES[0], check: true };
+    // 밴드를 모르면 시작 문장도 **안 낸다**(문장 틀 `CIRCLE_FRAMES[-1]`=null 은 이미 그렇다 —
+    // 셋 중 하나만 맞아 있었다). `|| [0]` 로 접으면 상급반 첫날 종이가 초급 문장으로 나간다.
+    const 시작 = (band >= 0 && band <= 2) ? CIRCLE_START_LINES[band] : null;
+    if (시작) card.next_one = { label: CIRCLE_CATCHUP_LEAD, text: 시작, check: true };
     card.frame = frame;
     return card;
   }
@@ -2352,12 +2357,13 @@ function circleSheetOf_(ss, cls, when, tz) {
     });
   }
   const hw = circleHwBySid_(ss, tz);
-  const out = [], 미확정레벨 = [];
+  const out = [], 미확정레벨 = [], 질문없는조 = [];
   b.groups.forEach((arr, g) => {
     const 자리 = arr.filter(m => !출석확정 || present[m.sid]);   // 결석 = 칸이 아예 없다(§3)
     if (!자리.length) return;
     const band0 = circleBandOf_(lvBy[자리[0].sid], vocab);
     자리.forEach(m => { if (circleBandOf_(lvBy[m.sid], vocab) < 0) 미확정레벨.push(m.name); });
+    if (band0 < 0) 질문없는조.push(g + 1);   // 밴드를 모르면 질문 카드를 안 낸다 — 조 머리가 비는 사실을 보고가 진다
     out.push({
       group_no: g + 1,
       warmup_question: circleWarmupOf_(b.lessonNo, band0),
@@ -2369,7 +2375,7 @@ function circleSheetOf_(ss, cls, when, tz) {
     class_id: cls, session_no: b.lessonNo, week: b.week, season: b.season,
     focus_group: b.focus, groups: out,
     // 조립 보고 — 종이에 안 나가는 칸. 「조용히 반쪽으로 나갔다」를 막는 자리다.
-    보고: { 출석확정: 출석확정, 레벨미확정: 미확정레벨, 어휘표: !!vocab }
+    보고: { 출석확정: 출석확정, 레벨미확정: 미확정레벨, 어휘표: !!vocab, 질문없는조: 질문없는조 }
   };
 }
 
@@ -2436,6 +2442,133 @@ function circleSheetCss_() {
 function circleEsc_(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+/* ── 굽기 «전»에 칸을 잰다 ────────────────────────────────────────────────────
+ * `.z` 는 overflow:hidden 이라, 학생 줄(`.keep`)만으로 칸을 넘기면 그 문장이 종이 위에서
+ * «없는 줄»과 똑같이 보인다 — §3 「학생 원문 그대로」가 로그 어디에도 안 남고 깨진다.
+ * CSS 가 못박은 잘림 순서(틀 먼저)는 keep 합계가 칸을 안 넘을 때만 사는 보장이었다.
+ *
+ * Apps Script 안엔 브라우저가 없다. 그래서 자수·줄높이는 **실측에서 가져온다** — 지어 박지 않는다:
+ *   출처 = `node tools/서클조판.js --자수` (실물 CSS 아래 헤드리스 측정)
+ *   회귀 = `tests/숙제서클.test.js` 가 크롬이 있는 자리에서 다시 재어 어긋나면 빨개진다.
+ * 공백·라틴 비율을 따로 재는 이유: 전부 한글 폭으로 세면 실제 문장을 과대예측하고,
+ * 그 과대예측은 「안 들어간다」는 **거짓 경고**가 되어 진짜 경고까지 같이 죽인다. */
+const CIRCLE_FIT = { 자수: 56, 굵은자수: 56, 공백비: 0.336, 라틴비: 0.953, 키릴비: 0.544, 이름자수: 44, 역할자수: 56, 줄mm: 5.11, 여백mm: 0.8, 체크줄mm: 5.17, 체크비: 2.041, 이름줄mm: 5.82, 이름여백mm: 1.2, 칸여백mm: 9.06 };
+// 줄 이름표는 여기 한 벌뿐 — 재는 쪽과 그리는 쪽에 따로 적으면 문구가 갈리는 날 예측만 틀어진다.
+const CIRCLE_LABELS = { kept: '잘 된 문장', shaky: '한 번 더 볼 자리' };
+
+/* 글자 폭 — 한글 1자를 1로 두고 공백·라틴(키릴 포함)은 잰 비율로 환산한다. */
+function circleWidthOf_(s) {
+  let w = 0;
+  String(s == null ? '' : s).split('').forEach(function (ch) {
+    const c = ch.charCodeAt(0);
+    if (ch === ' ' || ch === '\t') w += CIRCLE_FIT.공백비;
+    // 키릴은 «몽골 학생 이름의 기본 문자»다. 라틴 비율로 갈음하면 실측(0.544 vs 0.481)보다
+    // 좁게 세어 이름줄을 낮게 보고, 낮게 본 예측은 곧 조용한 잘림이다(검수 P3 a6af8cae).
+    else if (c >= 0x0400 && c <= 0x04FF) w += CIRCLE_FIT.키릴비;
+    else if (c < 0x1100) w += CIRCLE_FIT.라틴비;                   // ASCII·라틴·문장부호
+    else w += 1;                                                  // 한글·전각
+  });
+  return w;
+}
+
+/* 한 줄이 «몇 줄로 접히는가» — 자수는 칸마다 다르다(굵은 라벨·이름·역할이 서로 다른 크기다). */
+function circleLineCount_(라벨, 본문, 덧폭) {
+  const 폭비 = (라벨 ? circleWidthOf_(라벨) / CIRCLE_FIT.굵은자수 + CIRCLE_FIT.공백비 / CIRCLE_FIT.자수 : 0) +
+    (circleWidthOf_(본문) + (덧폭 || 0)) / CIRCLE_FIT.자수;   // 덧폭 = 글자가 아닌 것(동그라미)의 폭
+  return Math.max(1, Math.ceil(폭비 - 0.001));   // 딱 떨어지는 줄을 반올림으로 한 줄 더 세지 않는다
+}
+
+/* 학생 줄(`.keep`) 한 벌의 높이(mm). 강사 틀은 «안 센다» — 그건 잘려도 되는 보조물이고,
+ * 그렇게 못박은 것이 §10-2 다. 여기서 재는 것은 「잘리면 안 되는 것」의 크기다. */
+function circleKeepMm_(m) {
+  // 이름줄도 «잰다» — 고정 1줄로 두면 긴 몽골 이름이 접히는 날 예측이 실물보다 낮아지고,
+  // 낮게 본 예측은 곧 조용한 잘림이다(검수 P3 e2c3037f).
+  const 이름줄수 = Math.max(1, Math.ceil(circleWidthOf_(m.display_name) / CIRCLE_FIT.이름자수 +
+    circleWidthOf_(m.role) / CIRCLE_FIT.역할자수 - 0.001));
+  // 문단 여백은 «문단마다 한 번»이다 — 접힌 줄마다 곱하면 긴 카드를 과대예측해, 실제로는
+  // 들어가는 학생 줄까지 걷어낸다(검수 P2 382f53fa). 그래서 줄높이와 여백을 따로 센다.
+  let h = 이름줄수 * CIRCLE_FIT.이름줄mm + CIRCLE_FIT.이름여백mm;   // 여백은 이름줄에도 «한 번»(P2 f9a9f133)
+  if (m.kept) h += circleLineCount_(CIRCLE_LABELS.kept, m.kept.text) * CIRCLE_FIT.줄mm + CIRCLE_FIT.여백mm;
+  if (m.shaky) {
+    h += circleLineCount_(CIRCLE_LABELS.shaky, m.shaky.text) * CIRCLE_FIT.줄mm + CIRCLE_FIT.여백mm;
+    if (m.shaky.trend_line) h += circleLineCount_('', m.shaky.trend_line) * CIRCLE_FIT.줄mm + CIRCLE_FIT.여백mm;
+  }
+  if (m.next_one) {
+    // 동그라미는 높이만이 아니라 «폭»도 먹는다 — 안 세면 그 줄이 한 줄 더 접히는 날을 못 본다(검수 P2 cee4b75f)
+    const 줄 = circleLineCount_(m.next_one.label, m.next_one.text, m.next_one.check ? CIRCLE_FIT.체크비 : 0);
+    h += (줄 - 1) * CIRCLE_FIT.줄mm +
+      (m.next_one.check ? CIRCLE_FIT.체크줄mm : CIRCLE_FIT.줄mm) + CIRCLE_FIT.여백mm;
+  }
+  return h;
+}
+
+/* 칸 높이 배분 — 남는 자리는 위 칸들이 나눠 갖는다(§3). 다만 균등이 아니라 «필요한 만큼» 나눈다:
+ * 균등 배분은 긴 제출문이 온 칸에서만 넘치는데, 옆 칸은 여백을 남긴 채 그 사실을 모른다.
+ * 주는 쪽은 자기 필요분 아래로는 절대 안 준다(그래서 옮겨도 새 잘림이 안 생긴다). */
+function circleZoneHeights_(members) {
+  const N = Math.max(1, (members || []).length);
+  const 균등 = (59.4 * 4) / N;                       // 머리 칸 1개를 뺀 나머지를 나눈다(A4 5구역)
+  const 필요 = members.map(circleKeepMm_).map(function (x) { return x + CIRCLE_FIT.칸여백mm; });
+  if (필요.every(function (x) { return x <= 균등; })) return members.map(function () { return 균등; });
+  let 여유 = 0, 모자람 = 0;
+  필요.forEach(function (x) { if (x < 균등) 여유 += 균등 - x; else 모자람 += x - 균등; });
+  const 옮길것 = Math.min(여유, 모자람);
+  return 필요.map(function (x) {
+    if (x > 균등) return 균등 + (x - 균등) * (옮길것 / 모자람);
+    return 여유 > 0 ? 균등 - (균등 - x) * (옮길것 / 여유) : 균등;
+  });
+}
+
+/* 안 들어가면 «걷는다» — 재기만 하고 경고를 붙이는 것은 잘림을 막는 게 아니라 설명하는 것이다.
+ * 걷는 순서를 여기서 못박는다. 걷히는 것은 **엔진이 붙인 보조물**이고, 학생이 쓴 문장은
+ * 한 글자도 안 다듬는다(§3 「학생 원문 그대로」) — 마지막 수단조차 «줄 통째로» 빼는 것이지
+ * 문장을 자르는 것이 아니다. CSS 잘림은 문장 중간을 삼켜 «없는 줄»처럼 보이게 하지만,
+ * 줄을 통째로 안 내는 것은 §3 이 이미 정한 규약이고(「없으면 인쇄하지 않는다」) 보고가 진다. */
+function circleFitCard_(m, 담기는mm) {
+  const 걷음 = [];
+  let c = m;
+  const 복사 = function (o) { const r = {}; Object.keys(o).forEach(function (k) { r[k] = o[k]; }); return r; };
+  if (circleKeepMm_(c) <= 담기는mm) return { card: c, 걷음: 걷음 };
+  if (c.shaky && c.shaky.trend_line) {          // ① 지난주 대조 — 없어도 서클이 돈다
+    c = 복사(c);
+    c.shaky = { tag: c.shaky.tag, text: c.shaky.text, trend_line: '' };
+    걷음.push('지난주 대조');
+    if (circleKeepMm_(c) <= 담기는mm) return { card: c, 걷음: 걷음 };
+  }
+  if (c.next_one) {                             // ② 「오늘 볼 것」 — 엔진이 고른 다음 연습
+    c = 복사(c); c.next_one = null; 걷음.push(CIRCLE_CATCHUP_LEAD);
+    if (circleKeepMm_(c) <= 담기는mm) return { card: c, 걷음: 걷음 };
+  }
+  if (c.shaky) {                                // ③ 줄을 통째로 뺀다(문장을 자르지 않는다)
+    c = 복사(c); c.shaky = null; 걷음.push(CIRCLE_LABELS.shaky);
+    if (circleKeepMm_(c) <= 담기는mm) return { card: c, 걷음: 걷음 };
+  }
+  if (c.kept) {                                 // ④ 마지막 칸까지 — 여기서 멈추면 CSS 가 문장 중간을 삼킨다
+    c = 복사(c); c.kept = null; 걷음.push(CIRCLE_LABELS.kept);
+  }
+  // 이제 남은 것은 이름줄뿐이라 `.keep` 은 **넘칠 수 없다** — 잘린 종이가 구조적으로 안 나온다.
+  // 「경고만 하고 잘린 파일을 굽는다」가 아니라 「줄을 통째로 빼고 무엇을 뺐는지 말한다」다.
+  return { card: c, 걷음: 걷음 };
+}
+
+/* 굽기 전 대조 — 줄인 칸과, 줄이고도 «안 들어가는» 칸을 이름으로 낸다. */
+function circleTightOf_(sheet) {
+  const out = [];
+  (sheet.groups || []).forEach(function (g) {
+    const 높이 = circleZoneHeights_(g.members);
+    g.members.forEach(function (m, i) {
+      const 담기는 = 높이[i] - CIRCLE_FIT.칸여백mm;
+      const r = circleFitCard_(m, 담기는);
+      const 남는 = 담기는 - circleKeepMm_(r.card);
+      if (r.걷음.length || 남는 < 0) out.push({
+        group_no: g.group_no, name: m.display_name, 걷음: r.걷음,
+        모자란mm: 남는 < 0 ? Math.round(-남는 * 10) / 10 : 0
+      });
+    });
+  });
+  return out;
+}
+
 /* 한 조 = 한 쪽. 학생 칸이 4개보다 적으면(3인 조·결석) **빈 칸을 그리지 않는다** —
  * 종이 위의 빈 칸은 낙인이다(§3). 남은 자리는 위 칸들이 나눠 갖는다. */
 function circleGroupPage_(sheet, grp) {
@@ -2448,18 +2581,22 @@ function circleGroupPage_(sheet, grp) {
     '<p class="hd1">' + circleEsc_(grp.group_no) + '조 · ' + circleEsc_(sheet.session_no) + '차시</p>' +
     '<p class="hd2"><span class="lb">역할</span> ' + circleEsc_(역할) + '</p>' +
     '<p class="hd2"><span class="lb">말하는 순서</span> ' + circleEsc_(순서) + '</p>' +
-    '<div class="qcard">' + circleEsc_((grp.warmup_question || {}).text || '') + '</div>' +
+    // 물음이 없으면 **빈 상자를 그리지 않는다** — 테두리만 남은 칸은 「오늘은 질문이 없다」로 읽힌다(§3).
+    (((grp.warmup_question || {}).text || '')
+      ? '<div class="qcard">' + circleEsc_(grp.warmup_question.text) + '</div>' : '') +
     '<div class="blank">오늘 조에서 나온 질문 한 개 (기록)</div>' +
     '</div>');
-  const h = (59.4 * (5 - grp.members.length - 1)) / Math.max(1, grp.members.length); // 빈 자리를 나눠 갖는다
-  grp.members.forEach(m => {
-    const L = ['<div class="z" style="height:' + (59.4 + h).toFixed(2) + 'mm">',
+  const 칸높이 = circleZoneHeights_(grp.members);   // 빈 자리·긴 제출문을 «필요한 만큼» 나눠 갖는다
+  grp.members.forEach((m0, mi) => {
+    // 굽기 «전»에 걷는다 — 여기서 안 걷으면 CSS 가 문장 중간을 삼키고, 종이에선 그게 «없는 줄»과 같다
+    const m = circleFitCard_(m0, 칸높이[mi] - CIRCLE_FIT.칸여백mm).card;
+    const L = ['<div class="z" style="height:' + 칸높이[mi].toFixed(2) + 'mm">',
       '<div class="corner">' + circleEsc_(꼬리) + '</div>',
       '<div class="keep">',
       '<p class="nm">' + circleEsc_(m.display_name) + '<span>' + circleEsc_(m.role) + '</span></p>'];
-    if (m.kept) L.push('<p class="ln"><span class="lb">잘 된 문장</span> ' + circleEsc_(m.kept.text) + '</p>');
+    if (m.kept) L.push('<p class="ln"><span class="lb">' + CIRCLE_LABELS.kept + '</span> ' + circleEsc_(m.kept.text) + '</p>');
     if (m.shaky) {
-      L.push('<p class="ln"><span class="lb">한 번 더 볼 자리</span> ' + circleEsc_(m.shaky.text) + '</p>');
+      L.push('<p class="ln"><span class="lb">' + CIRCLE_LABELS.shaky + '</span> ' + circleEsc_(m.shaky.text) + '</p>');
       if (m.shaky.trend_line) L.push('<p class="ln">' + circleEsc_(m.shaky.trend_line) + '</p>');
     }
     if (m.next_one) L.push('<p class="ln"><span class="lb">' + circleEsc_(m.next_one.label) + '</span> ' +
@@ -2522,7 +2659,7 @@ function circleSheetPreview() {
 
 /* 🖨 오늘 수업 반의 서클 인쇄물을 Drive 에 굽는다 — 기존 SYNK_인쇄 통로(printMonthlyCards)와 같은 폴더.
  * ▶ 수동 실행. 반 이름을 주면 그 반만, 안 주면 오늘 수업하는 반 전부. */
-function printCircleSheets(className) {
+function printCircleSheets(className, 구운반) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const sc = ss.getSheetByName('schedule');
@@ -2534,19 +2671,49 @@ function printCircleSheets(className) {
   const it = DriveApp.getFoldersByName('SYNK_인쇄');
   const folder = it.hasNext() ? it.next() : DriveApp.createFolder('SYNK_인쇄');
   const day = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const 강사 = teacherEmailMap_(ss);   // 반별 열람 권한의 정본(profiles role=teacher) — 반마다 다시 읽지 않는다
   const L = [];
   list.forEach(c => {
     const sheet = circleSheetOf_(ss, c, new Date(), tz);
     if (!sheet) { L.push('⚠ ' + c + ': 조 편성이 없습니다 — assignGroups("' + c + '") 실행'); return; }
     if (!sheet.session_no) { L.push('⚠ ' + c + ': 시즌 기간 밖입니다(setSeasonStart 확인)'); return; }
     if (!sheet.groups.length) { L.push('⚠ ' + c + ': 오늘 출석 확정된 학생이 0명이라 인쇄할 칸이 없습니다'); return; }
-    const blob = Utilities.newBlob(circleSheetHtml_(sheet), 'text/html',
-      'SYNK_서클_' + c + '_' + day + '.html');
-    const f = folder.createFile(blob);
+    // 🔑 굽기 «전»에 잰다 — `createFile` 뒤에 재면 그건 막는 것이 아니라 이미 나간 종이를 설명하는 것이다
+    const 빠듯 = circleTightOf_(sheet);
     const 경고 = [];
     if (!sheet.보고.출석확정) 경고.push('출석 확정 행이 0 — 편성 전원을 인쇄했습니다');
     if (!sheet.보고.어휘표) 경고.push("레벨 어휘표가 없습니다 — app_state 에 key='레벨어휘' · value='기초=1,초급=2,중급=4,고급=6' 한 행");
-    if (sheet.보고.레벨미확정.length) 경고.push('레벨을 못 읽은 학생 ' + sheet.보고.레벨미확정.length + '명 — 그 칸은 문장 틀 없이 나갑니다(' + sheet.보고.레벨미확정.join('·') + ')');
+    if (sheet.보고.레벨미확정.length) 경고.push('레벨을 못 읽은 학생 ' + sheet.보고.레벨미확정.length + '명 — 그 칸은 문장 틀·시작 문장 없이 나갑니다(' + sheet.보고.레벨미확정.join('·') + ')');
+    if ((sheet.보고.질문없는조 || []).length) 경고.push('질문 카드가 빠진 조 ' + sheet.보고.질문없는조.join('·') + '조 — 조 대표의 레벨을 못 읽었습니다(카드를 추측해 내지 않습니다)');
+    const 줄인것 = 빠듯.filter(t => t.걷음.length);
+    const 넘친것 = 빠듯.filter(t => t.모자란mm > 0);
+    if (줄인것.length) 경고.push('제출문이 길어 보조 줄을 걷고 인쇄한 칸 ' + 줄인것.length + '개 — 학생 문장은 그대로입니다(' +
+      줄인것.map(t => t.name + ' ' + t.group_no + '조: ' + t.걷음.join('·') + ' 뺌').join(' · ') + ')');
+    // 걷기 사다리(④ kept 까지)가 잔여 넘침을 구조적으로 0 으로 만들었으니 여기는 «도달할 수 없는» 자리다.
+    // 그래도 굽지 않고 멈춘다 — 도달했다면 그건 예측 모델이 실물보다 낮게 본 것이고, 그때 파일을 만들면
+    // 「잘릴 것을 알면서 저장한」 종이가 된다. 안 굽고 남겨 두면 다음 틱·손 통로에서 다시 시도할 수 있다.
+    if (넘친것.length) {
+      L.push('⛔ ' + c + ': 보조 줄을 다 걷고도 학생 문장이 칸을 넘겨 **굽지 않았습니다** — 예측 모델이 실물보다 낮게 본 자리입니다(' +
+        넘친것.map(t => t.name + ' ' + t.group_no + '조 ' + t.모자란mm + 'mm').join(' · ') +
+        ') · `node tools/서클조판.js --자수` 로 상수를 다시 재십시오');
+      return;
+    }
+    const blob = Utilities.newBlob(circleSheetHtml_(sheet), 'text/html',
+      'SYNK_서클_' + c + '_' + day + '.html');
+    const f = folder.createFile(blob);
+    // 🔑 «파일이 실제로 생겼다»를 문자열이 아니라 이 배열로 알린다 — 자동 통로가 반환 문자열만 보고
+    //   도장을 찍으면, 안 구운 반(⛔·⚠)도 완료로 남아 그날 재시도가 통째로 막힌다(검수 P1 ee142cdd).
+    if (구운반) 구운반.push(c);
+    // 링크를 받는 사람이 «열 수» 있어야 한다 — Drive 파일은 만든 계정 것이라, 담당 강사 계정이 다르면
+    // 메일은 도착하는데 링크를 열면 「액세스 요청」이 뜨고 그 자리에서 자동 인쇄가 끝난다(검수 P1 657feff6).
+    // 실패를 «삼키지» 않는다 — 조용히 넘어가면 강사는 열리지 않는 링크를 받고 아무도 이유를 모른다
+    // (검수 P1 2ce886d2). 인쇄 자체는 막지 않되(링크는 이미 있다) 누가 못 여는지 보고에 이름으로 싣는다.
+    const 권한실패 = [];
+    (강사.byClass[c] || []).forEach(t => {
+      try { f.addViewer(t.email); } catch (e) { 권한실패.push(t.email); }
+    });
+    if (권한실패.length) 경고.push('강사 열람 권한을 못 준 주소 ' + 권한실패.length + '개 — 그 분은 링크를 열면 「액세스 요청」이 뜹니다(' +
+      권한실패.join(' · ') + ') · profiles 의 메일 주소를 확인하십시오');
     L.push('✅ ' + c + ' ' + sheet.session_no + '차시 · ' + sheet.groups.length + '조 ' +
       sheet.groups.reduce((n, g) => n + g.members.length, 0) + '명 — ' + f.getUrl() +
       (경고.length ? '\n   ⚠ ' + 경고.join('\n   ⚠ ') : ''));
@@ -2555,6 +2722,166 @@ function printCircleSheets(className) {
   Logger.log(msg);
   return msg;
 }
+
+/* 🖨 자동 인쇄 — 설계 §0 전제 「앱이 매 차시 자동 인쇄」·③ 운영 게이트 「강사 준비 0」.
+ * 발화 자리가 cron 이 아닌 이유: §3 이 「종이는 QR 출석 «확정 뒤» 인쇄된다」로 못박았다.
+ * 시각으로 쏘면 확정 전에 구워져 결석자 칸이 실린 종이가 나가고, 그 종이는 다시 못 걷는다.
+ * 그래서 attendance 를 전개하는 그 자리(parentSweep · 10분)에 얹어 «확정을 보고» 굽는다.
+ * 반·날짜당 한 번(프로퍼티 도장) — 10분마다 같은 종이가 쌓이면 강사가 오늘 것을 못 고른다.
+ * 링크를 메일로 보내는 것까지가 한 벌이다: Drive 에만 두면 강사가 파일을 찾는 손이 남는다. */
+function circleSheetsAuto_(ss) {
+  // 리허설 중엔 **굽지 않는다** — 실물 Drive 파일과 도장이 남으면 리허설이 끝난 뒤 정상 스윕이
+  // 「이미 구웠다」로 건너뛰어 그날 진짜 종이가 안 나온다(검수 P2 0fc810dc · adminMail v9.125 와 같은 격리).
+  if (isRehearsal_()) { rehearsalNote_('숙제 서클 자동 인쇄: 리허설 중이라 굽지 않았다'); return; }
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const day = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
+  const sc = ss.getSheetByName('schedule');
+  if (!sc || sc.getLastRow() < 2) return;
+  const dow = now.getDay();
+  const 반 = sc.getRange(2, 1, sc.getLastRow() - 1, 2).getValues()
+    .filter(r => r[0] && classDowOk_(r[1], dow)).map(r => String(r[0]));
+  if (!반.length) return;                                   // 오늘 수업이 없다 — 정상
+  const props = PropertiesService.getScriptProperties();
+  // 락 — parentSweep 은 10분마다 돌고 앞 실행이 아직 굽는 중일 수 있다. 겹치면 같은 반 종이가
+  // 두 벌 생기고, 강사는 어느 것이 오늘 것인지 못 고른다. 못 잡으면 다음 틱에 다시 온다.
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) return;
+  let 도장, 막힌반 = [];
+  try {
+    도장 = circleStampOf_(props, day);
+    반.filter(c => !도장.구움[c]).forEach(c => {
+      if (!circleBatchDone_(ss, c, day, tz)) return;         // 반 전체가 확정되기 전엔 안 굽는다
+      const sheet = circleSheetOf_(ss, c, now, tz);
+      // `보고.출석확정` 을 **함께** 본다 — 배치가 「전개완료」여도 목록의 ID 가 전부 무효면 attendance 행이
+      // 0 이라 조립이 편성 전원으로 되돌아가고, 결석자가 실린 종이가 자동으로 나간다(검수 P1 b2e79b22).
+      // 그리고 그 상태는 «고착»된다: 배치는 이미 전개완료라 다시 안 돌고, 여기선 영원히 return 한다.
+      // 종이가 조용히 안 나오는 것은 이 트랙이 막으려던 바로 그 모양이라, 하루 한 번 이름으로 알린다(P1 a63e6120).
+      // 이 반이 종이를 못 받는 «모든» 갈래를 한 자리에서 연다 — 조 편성 없음(sheet=null)·시즌 밖
+      // (session_no=0)·출석 0·조 0. 어느 하나라도 조용히 return 하면 그날 그 반의 종이가 이유 없이
+      // 안 나온다(검수 P1 cda019ad·575e6b7e). 확정 신호는 이미 왔는데 결과가 없는 상태가 급소다.
+      const 못굽는이유 = !sheet ? '조 편성이 없습니다 — assignGroups("' + c + '") 실행'
+        : !sheet.session_no ? '시즌 기간 밖입니다(setSeasonStart 확인)'
+          : !sheet.보고.출석확정 ? '출석 1탭은 전개완료인데 그날 attendance 행이 0 입니다'
+            : !sheet.groups.length ? '출석 확정된 이 반 학생이 0명입니다(다른 반 ID 가 섞였을 수 있습니다)' : '';
+      if (못굽는이유 && 도장.막힘.indexOf(c) < 0) 막힌반.push({ 반: c, 이유: 못굽는이유 });
+      if (못굽는이유) return;
+      const 구운반 = [];
+      const 결과 = printCircleSheets(c, 구운반);               // 굽는 통로는 하나뿐(경고 문구가 갈리지 않는다)
+      if (!구운반.length) return;                             // 파일이 안 생겼다 — 도장 없이 두고 다음 틱에 다시 본다
+      도장.구움[c] = 결과;
+      circleStampTrim_(도장);   // 반당·전체 길이를 못박는다 — 안 하면 저장이 «파일을 만든 뒤» 실패한다
+      // 도장은 **반마다** 찍는다 — 마지막에 한 번 찍으면 뒤의 반에서 예외가 났을 때
+      // 앞서 구운 반이 도장 없이 남아 다음 틱에 같은 종이를 또 굽는다.
+      props.setProperty('서클인쇄_도장', JSON.stringify(도장));
+    });
+  } finally {
+    lock.releaseLock();
+  }
+  /* 🔑 알림은 락 «밖»에서, 그리고 «즉시» 보낸다 — 둘 다 실측이 강제한 자리다(검수 P1):
+   *   ① 스크립트 락은 재진입이 안 된다. `adminMail` 은 DIGEST_MODE 에서 같은 락을 30초 기다리므로
+   *      락을 쥔 채 부르면 거기서 죽고, 종이는 구워졌는데 아무도 못 받는다(28db800d).
+   *   ② 그 다이제스트는 아침 8시 1통이다. 수업 첫 20분에 쓸 종이의 링크가 다음 날 아침에 오면
+   *      그건 안 온 것과 같다(df8b0be6 · DIGEST_MODE=true 실측). 그래서 이 건은 즉시 발송이다. */
+  const 알릴반 = Object.keys(도장.구움).filter(c => 도장.알림.indexOf(c) < 0);
+  // 링크는 **그 반 담당 강사**에게 간다 — 운영자 받은편지함에만 두면 정작 종이를 쓸 사람이 못 받는다
+  // (검수 P1 e4c00b45). 반별 메일 정본은 `teacherEmailMap_`(profiles role=teacher)이고, 운영자는 늘 함께 받는다.
+  const 강사 = teacherEmailMap_(ss);
+  const 받는이별 = {};
+  알릴반.forEach(c => {
+    받는이별[c] = [ADMIN_EMAIL].concat((강사.byClass[c] || []).map(t => t.email))
+      .filter((e, i, a) => e && a.indexOf(e) === i);
+  });
+  if (!알릴반.length && !막힌반.length) return;
+  if (막힌반.length && quotaOk(1)) {                         // 종이가 «조용히» 안 나오는 상태를 이름으로 알린다
+    try {
+      MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] ⚠ 숙제 서클 — 출석은 확정됐는데 종이가 안 나온 반 ' + 막힌반.length + '개',
+        '아래 반은 출석 1탭이 「전개완료」인데 인쇄할 자리가 없었습니다. 배치가 이미 전개완료라\n' +
+        '자동으로 다시 돌지 않으므로, 그대로 두면 오늘 그 반의 서클 종이가 안 나옵니다.\n' +
+        '고치는 법: attendance_batch 의 그 행에서 출석자목록을 바로잡고 처리상태를 비운 뒤 10분 기다리십시오.\n' +
+        '(조 편성·시즌 문제라면 괄호 안 명령을 먼저 실행하십시오.)\n\n· ' +
+        막힌반.map(x => x.반 + ' — ' + x.이유).join('\n· '));
+      막힌반.forEach(x => { if (도장.막힘.indexOf(x.반) < 0) 도장.막힘.push(x.반); });
+      props.setProperty('서클인쇄_도장', JSON.stringify(도장));
+    } catch (e) { 막힌반 = []; }                             // 못 보냈으면 도장을 안 찍어 다음 틱에 다시 시도한다
+  }
+  const 보낸것 = [];
+  알릴반.forEach(c => {
+    // 쿼터는 «수신자» 수로 센다 — 반 수로 세면 반마다 강사가 붙는 만큼 모자라, 마지막 반이 조용히 못
+    // 받는다(검수 P2 32ae5420). 발송 바로 앞에서 세는 편이 정확하고, 관문 밖 발송도 원리상 안 생긴다.
+    if (!quotaOk(받는이별[c].length)) return;                // 못 보낸 반은 도장이 안 옮겨져 다음 틱에 다시 온다
+    try {
+      MailApp.sendEmail(받는이별[c].join(','), '[SYNK] 🖨 숙제 서클 인쇄물 — ' + c,
+        '오늘 출석이 확정돼 서클 종이를 구웠습니다. 링크를 열어 인쇄 버튼을 누르시면 됩니다.\n\n' + 도장.구움[c]);
+      보낸것.push(c);
+    } catch (e) { /* 한 반이 실패해도 나머지는 나간다 — 실패분은 도장이 안 옮겨져 다음 틱에 다시 시도한다 */ }
+  });
+  // 보낸 «뒤»에만 알림 도장을 옮긴다 — 먼저 옮기면 발송 실패가 곧 영구 미전달이다(검수 P2 b74e8ee4).
+  if (!보낸것.length || !lock.tryLock(5000)) return;          // 못 잡으면 다음 틱에 한 번 더 보낸다(종이는 안 는다)
+  try {
+    const 최신 = circleStampOf_(props, day);
+    보낸것.forEach(c => { if (최신.알림.indexOf(c) < 0) 최신.알림.push(c); });
+    props.setProperty('서클인쇄_도장', JSON.stringify(최신));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/* 반 단위 출석 «확정» 신호 — attendance_batch 의 오늘 그 반 행이 `전개완료` 인가.
+ * 개별 attendance 행은 확정이 **아니다**: QR·폼 출석은 학생당 한 행씩 10분 스윕으로 들어오는 중이라
+ * (`sweepAttendanceForm_` 이 행을 한 장씩 append 한다), 첫 한 명만 보고 구우면 나머지가 빠진 명단이
+ * 인쇄되고 도장까지 찍혀 그날 다시 안 나온다 — 검수 P1 f5f43034 가 잡은 자리다.
+ * 강사가 수업 시작에 내는 출석 1탭이 곧 「반 전체 확정」이고, 그것이 여기서 보는 신호다. */
+function circleBatchDone_(ss, cls, day, tz) {
+  const ab = ss.getSheetByName('attendance_batch');
+  if (!ab || ab.getLastRow() < 2) return false;
+  return ab.getRange(2, 1, ab.getLastRow() - 1, 6).getValues().some(function (r) {
+    // 출석자목록이 «비어 있는» 행도 전개완료로 찍힐 수 있다 — 그걸 확정으로 읽으면 attendance 행이
+    // 0 이라 circleSheetOf_ 가 편성 전원으로 되돌아가고, 결석자가 실린 종이가 자동으로 나간다(검수 P1 3338367d).
+    return r[0] && dstr(r[0], tz) === day && String(r[1]).trim() === String(cls) &&
+      String(r[5]) === '전개완료' && String(r[2] == null ? '' : r[2]).trim() !== '';
+  });
+}
+
+/* 도장 줄이기 — Script Property 한 칸은 9KB 다. 반이 늘고 경고가 길면 저장이 «파일을 만든 뒤»
+ * 실패하고, 그러면 그 반이 기록도 알림도 없이 남아 다음 틱이 같은 종이를 또 굽는다(검수 P2 c92783fe).
+ * 반당 상한만으로는 못 막으니 **전체**를 재서 줄인다 — 줄일 때는 링크가 있는 첫 줄부터 남긴다
+ * (재시도 메일에 필요한 것은 링크이고, 경고 전문은 실행 로그에 그대로 있다). */
+function circleStampTrim_(도장) {
+  const 한도 = 8000;
+  Object.keys(도장.구움).forEach(function (c) {
+    if (도장.구움[c].length > 600) 도장.구움[c] = 도장.구움[c].slice(0, 600) + ' …(전체는 실행 로그)';
+  });
+  if (JSON.stringify(도장).length <= 한도) return;
+  Object.keys(도장.구움).forEach(function (c) {          // 그래도 넘치면 첫 줄(링크)만 남긴다
+    도장.구움[c] = String(도장.구움[c]).split('\n')[0];
+  });
+  // 🔑 더 줄일 때는 **이미 알린 반만** 건드린다 — 아직 안 알린 반의 링크를 지우면 그 자리에 ✅ 가
+  //   메일 본문으로 나가고, 그러고도 「알렸다」로 도장이 찍힌다(검수 P1 39819a34 · 링크가 영영 사라진다).
+  while (JSON.stringify(도장).length > 한도) {
+    const 지울것 = Object.keys(도장.구움).filter(function (c) {
+      return 도장.알림.indexOf(c) >= 0 && 도장.구움[c] !== '✅';
+    });
+    if (!지울것.length) break;                           // 안 알린 링크는 안 건드린다 — 여기서 멈춘다
+    도장.구움[지울것[0]] = '✅';
+  }
+}
+
+/* 오늘 도장 — 날짜가 넘어가면 스스로 비워진다(어제 도장으로 오늘을 건너뛰지 않는다).
+ * `구움` = 반 → printCircleSheets 결과 문자열(링크·경고) · `알림` = 그 링크를 실제로 보낸 반. */
+function circleStampOf_(props, day) {
+  let s = null;
+  try { s = JSON.parse(props.getProperty('서클인쇄_도장') || '{}'); } catch (e) { s = null; }
+  if (!s || s.day !== day || !s.구움) return { day: day, 구움: {}, 알림: [], 막힘: [] };
+  return {
+    day: day, 구움: s.구움,
+    알림: Array.isArray(s.알림) ? s.알림 : [],
+    막힘: Array.isArray(s.막힘) ? s.막힘 : []      // 「전개완료인데 출석 0」을 하루 한 번만 알리기 위한 칸
+  };
+}
+
+/* 손 재인쇄 — 지각·정정으로 다시 뽑아야 하는 날의 통로(자동은 반·날짜당 1회라 안 다시 굽는다). */
+function menuPrintCircleSheets() { menuRun_(printCircleSheets); }
 /* ═════════════ [v9.86·D] 📋 주간 교안 초안 — "수업준비를 만드는 사람"의 백지를 없앤다 ═════════════
  * 유호 07-31 채택(도전안 4번): 수업준비의 최대 병목은 강사의 5분이 아니라 콘텐츠·교안 편집(원장 근무 46% 실측).
  * 매주 월 07시(weeklyJobs 편승) 반별 Google Doc 초안 생성 — 앱이 아는 칸(기간·인원·담당·지난주 이월·오류
@@ -3766,6 +4093,9 @@ function onOpen() {
       //   setSeasonStart는 인자가 필요해 ▶ 버튼으로 실행할 수 없다 → 날짜를 물어보는 프롬프트로 감싼다.
       .addItem('🗓 시즌 시작일 설정(개원 준비 1)', 'seasonStartPrompt')
       .addItem('🧩 전 반 조 편성(개원 준비 2)', 'menuAssignGroups')
+      /* 평소엔 누를 일이 없다 — 출석이 확정되면 parentSweep 이 자동으로 굽고 링크를 메일로 보낸다.
+       *   이 항목은 지각·정정으로 «다시» 뽑아야 하는 날의 손잡이다(자동은 반·날짜당 1회). */
+      .addItem('🖨 숙제 서클 종이 다시 인쇄(오늘 수업 반)', 'menuPrintCircleSheets')
       .addSeparator()
       /* [v9.138] 📊 학습 데이터 수집 — 「2년 축적 → AI 회화 앱」의 입구.
        *   개원 전에 눌러야 하는 이유: 학생이 그날 무엇을 골랐는지는 **소급이 안 된다.**
