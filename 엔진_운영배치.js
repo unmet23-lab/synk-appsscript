@@ -2076,7 +2076,7 @@ function parentWeeklyDigestCore_(holdRaw) {
       lines.push('💬 크루의 눈: ' + uniq.join(' · ') + ' / ' + uniq.map(t => TAG_MN[t] || t).join(' · '));
     }
     if (raidSt) lines.push('⚔️ 반 레이드: ' + (raidSt.indexOf('달성') > -1 ? '보스 격파! 반 전원 +' + PT.레이드 + 'P 🏆'
-      : raidSt.indexOf('아쉬움') > -1 ? '아깝게 놓쳤어요 — 다음 주 복수전!' : '다음 주, 반격을 준비 중이에요!'));
+      : raidSt.indexOf('아쉬움') > -1 ? '목표까지 조금 남았어요 — 다음 주에 다시 도전해요!' : '다음 주에 다시 도전해요!'));
     if (topicBy[k.cls]) lines.push('📖 이번 주 배운 것: ' + topicBy[k.cls]);
     const body = k.n + ' 학생의 한 주 소식입니다.\n\n' + lines.join('\n') +
       '\n\n자세한 내용은 SYNK 앱에서 확인하실 수 있어요 😊\n\n' +
@@ -2364,7 +2364,7 @@ function raidStoryDaily() {
   const boss = bossOfMonth(ss, Number(Utilities.formatDate(now, tz, 'M')));
   const bN = boss ? boss.name : '이달의 보스';
   const PARTS = ['왼쪽 눈', '오른쪽 뿔', '꼬리', '왼팔', '코어', '등딱지', '오른발'];
-  const VERB = { '숙제': '숙제 완검으로', 'MVP': '오늘의 MVP 필살기로', '시냅스': '반짝이는 시냅스 스파크로', '칭찬': '빛나는 태도 광선으로',
+  const VERB = { '숙제': '숙제 완검으로', 'MVP': '오늘의 MVP 왕관의 힘으로', '시냅스': '반짝이는 시냅스 스파크로', '칭찬': '빛나는 태도 광선으로',
                  '생일': '생일 축포로', '출석': '출석 러시로', '레이드': '승리의 기세로' };
   function verbOf(rs) { for (var k in VERB) { if (rs.indexOf(k) > -1) return VERB[k]; } return '기습 공격으로'; }
   function pick(arr, seed) {
@@ -2400,7 +2400,7 @@ function raidStoryDaily() {
     const hp = hpOf[cls] || 0;
     if (hp > 0) {
       const remain = Math.max(hp - (weekD[cls] || 0), 0);
-      if (remain === 0) lines.push('💥 ' + bN + '이(가) 이미 빈사 상태다… 정산일의 확인 사살만 남았다!');
+      if (remain === 0) lines.push('💥 ' + bN + '이(가) 힘이 거의 다 빠졌다 — 마지막 한 번만 치면 쓰러진다!');
       else lines.push('🩸 ' + bN + ' 남은 HP: ' + remain + ' / ' + hp);
     }
     const crowns = []; // [v7.7] 👑 오늘의 왕관 코너

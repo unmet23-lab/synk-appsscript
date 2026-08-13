@@ -422,7 +422,7 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
     'SHARED*_COL_START 개수와 파생된 블록 수가 다르다 — 헤더 상수를 못 찾은 블록이 검사 밖에 있다');
   const reserved = {
     105: '최애(v9.50·A4, 학생 Set Column)', 106: '목소리폼URL(교재연동)', 107: '목소리성장카드(교재연동)',
-    108: '필살기노트(교재연동)', 119: '랭킹보드HTML(v9.81, calcAll 리그 카드)', 129: '오늘의만남(v9.99, calcAll 소그룹 3라운드 짝)',
+    108: '연습노트(교재연동)', 119: '랭킹보드HTML(v9.81, calcAll 리그 카드)', 129: '오늘의만남(v9.99, calcAll 소그룹 3라운드 짝)',
     /* 🔴 아래 둘은 **코드가 만든 열이 아니다** — `langColOf_`가 이름으로 여는 열이라 자리는 라이브에서만 정해진다.
      *   08-04 라이브 실측에서 131·132에 앉아 있었고, 진로 4열을 131로 박았다가 그 위를 덮을 뻔했다(F080).
      *   레지스트리에 없으면 「비었다」로 읽히므로, 실측한 자리를 여기 적어 다음 블록이 못 밟게 한다. */
@@ -1161,7 +1161,7 @@ test('[v9.211] aiWeakMap_ 오류태그 빈도 합류 — 보조 신호는 첨삭
 
 test('[v9.67] resetAllTriggers는 교재연동Nightly(23시)를 개통 시스템에 재설치한다(전체 삭제 실종 결함)', () => {
   const body = section('function resetAllTriggers(', 'const BIZ_BURN_DEFAULT');
-  // 전체 삭제 루프 → 통합 10개 → 교재연동 조건 재설치 순서. 재설치가 빠지면 AI 문법판정·목소리·필살기 노트가 조용히 죽는다.
+  // 전체 삭제 루프 → 통합 10개 → 교재연동 조건 재설치 순서. 재설치가 빠지면 AI 문법판정·목소리·연습 노트가 조용히 죽는다.
   assertOrder(body, [
     'triggers.forEach(t => ScriptApp.deleteTrigger(t))',
     "newTrigger('monthlyReportJob')",

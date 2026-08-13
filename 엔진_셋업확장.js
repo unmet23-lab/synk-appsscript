@@ -1254,7 +1254,7 @@ function resetAllTriggers(force) {
   ScriptApp.newTrigger('monthlyJobs').timeBased().onMonthDay(1).atHour(5).create();
   ScriptApp.newTrigger('monthlyReportCardsJob').timeBased().onMonthDay(1).atHour(6).create(); // [v9.25] safeRun 보호 래퍼
   ScriptApp.newTrigger('monthlyReportJob').timeBased().onMonthDay(1).atHour(7).create();       // [v9.25] safeRun 보호 래퍼
-  // [v9.67] 교재연동Nightly(23시 — AI 문법판정·목소리 수거·필살기 노트) 재설치 — 위 전체 삭제 루프가
+  // [v9.67] 교재연동Nightly(23시 — AI 문법판정·목소리 수거·연습 노트) 재설치 — 위 전체 삭제 루프가
   //   setupTextbookLink(교재연동.js)가 설치한 이 트리거까지 지우고 재설치 목록엔 없어 조용히 실종되던 결함.
   //   개통 발자국(profiles '목소리폼URL' 헤더) 있을 때만 — 미개통 시스템에 유령 트리거를 만들지 않는다.
   //   시각·주기는 setupTextbookLink와 동일(매일 23시) · 전체 삭제 직후라 중복 설치 불가.
@@ -1744,7 +1744,7 @@ function todayPairsBySid_(ss, tz, when) {
         const names = pairRoundsOf_(m.seat, arr.length)
           .map(s => { const x = arr.filter(y => y.seat === s)[0]; return x ? x.name : ''; }).filter(Boolean);
         out[m.sid] = names.length
-          ? '🤝 오늘 세 번 만나요 — ' + names.map((n, i) => (i + 1) + 'R ' + n).join(' · ')
+          ? '🤝 오늘 세 번 만나요 — ' + names.map((n, i) => (i + 1) + '번째 ' + n).join(' · ')
           : '🤝 오늘은 조 전체가 함께 이야기해요';
       });
     });
@@ -2470,7 +2470,7 @@ function circleGroupPage_(sheet, grp) {
       L.push('<div class="frames">');
       L.push('<p class="fr"><span class="lb">말할 때</span> ' + circleEsc_(f.kept) + ' / ' + circleEsc_(f.shaky) + '</p>');
       L.push('<p class="fr"><span class="lb">물어볼 때</span> ' + f.asks.map(circleEsc_).join(' / ') + '</p>');
-      L.push('<p class="fr"><span class="lb">오늘 목표</span> ' + circleEsc_(f.goal) + '  <span class="lb">되받기</span> ' + circleEsc_(f.echo) + '</p>');
+      L.push('<p class="fr"><span class="lb">오늘 목표</span> ' + circleEsc_(f.goal) + '  <span class="lb">옆 사람이 바꿔 말하기</span> ' + circleEsc_(f.echo) + '</p>');
       L.push('</div>');
     }
     L.push('</div>');

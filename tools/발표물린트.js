@@ -32,7 +32,9 @@ const BANNED_STANDALONE = ['졌다', '늦었다'];
 // 폐기 표기 — 되살아나면 그 산출물은 폐기다(정본 ■3·■5·■7·■9)
 const DEAD = [
   'Define', 'Build', 'Execute',          // 구 사이클 (현행 = Learn→Plan→Experience→Record)
-  '다음 필살기',                          // 확정 표기는 「내일의 필살기」
+  '다음 필살기', '내일의 필살기',           // 둘 다 퇴역(08-13) — 확정 표기는 「다음에 맞힐 문제」
+                                          //   한국인도 첫 독해에 못 읽는 은유였다(F394 · 기업마스터 제6조 구판 표현)
+                                          //   선행 실측: 동결 `_src` 6종 포함 docs/발표물 전량에 이 문구 0건 — 거짓양성 없음
   '감응력', '협응력', '공감능력',           // 구 역량 표현 — 대외물 금지
   'Pretendard', 'Noto Sans KR', 'KoPubWorld', // 구 서체 (현행 = SUIT·Inter Tight·DM Mono)
   '원어민급 지향',                        // TOPIK 6급 전제 표현 — 상한 5급 확정으로 폐기
