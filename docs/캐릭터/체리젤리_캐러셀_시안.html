@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SYNK · 체리 젤리 캐러셀 시안 — 맛 표현 3개 (5장)</title>
 <style>
-  /* ⚠ 체리 램프 3점 = 가안(렌더 눈 추정 · 원본 픽셀 실측 전 확정 금지) — 킷 hex 치환 아님, 시안 전용.
-     킷 값 = docs/디자인_토큰.json (Paper·Ink·Navy 2·Cream·Coral — 로고 < 는 언제나 Coral) */
+  /* 체리 램프 = 확정 본체 렌더 픽셀 실측(docs/캐릭터/마스코트_렌더/본체.png · 08-13 · 유채색 98,564표본).
+     Wash 만 파생 틴트 가안. 킷 hex 치환 아님, 시안 전용 — 킷 값 = docs/디자인_토큰.json (로고 < 는 언제나 Coral) */
   :root{
     --paper:#FBF7EE; --cream:#F6F1E8; --cream3:#E7DDC7;
     --ink:#171820; --navy:#1A2340; --navy2:#0F1730; --navy3:#2A3358;
     --slate2:#5F657D; --slate:#8A93AD;
     --coral:#FF6B5C;
-    --ch-light:#FF98A2; --ch:#F5697A; --ch-deep:#C22B3B; --ch-wash:#FFE6E9; /* wash도 가안 */
+    --ch-light:#F2B0B1; --ch:#FB7A87; --ch-deep:#DB3037; --ch-wash:#FEE7E9; /* wash=파생 가안 */
     --line:rgba(23,24,32,.12);
   }
   *{ margin:0; padding:0; box-sizing:border-box; }
@@ -93,8 +93,8 @@
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
  <defs>
   <radialGradient id="glassCH" cx="35%" cy="24%" r="88%">
-    <stop offset="0%"  stop-color="#FF98A2"/><stop offset="38%" stop-color="#F5697A"/>
-    <stop offset="74%" stop-color="#C22B3B"/><stop offset="100%" stop-color="#C22B3B"/>
+    <stop offset="0%"  stop-color="#F2B0B1"/><stop offset="38%" stop-color="#FB7A87"/>
+    <stop offset="74%" stop-color="#DB3037"/><stop offset="100%" stop-color="#DB3037"/>
   </radialGradient>
   <radialGradient id="gedge" cx="40%" cy="28%" r="80%">
     <stop offset="0%" stop-color="#0F1730" stop-opacity="0"/><stop offset="66%" stop-color="#0F1730" stop-opacity="0"/>
@@ -168,8 +168,8 @@
 
 <div class="kick"><span class="tick"></span><span class="mono">SYNK · CHERRY CAROUSEL · DRAFT · 2026-08-13</span></div>
 <h1>체리 젤리 유령 × 맛 표현 3개 — 캐러셀 5장 시안</h1>
-<p class="lead">「바뀐 색상 체리버전」의 <b>실전 산출물 1벌</b>입니다 — 체리 램프 3점(가안)이 강조·CTA 자리를 맡고,
-마스코트가 표정·몸으로 단어를 직접 시연합니다(쫀득 = 몸이 실제로 늘어남).
+<p class="lead">「바뀐 색상 체리버전」의 <b>실전 산출물 1벌</b>입니다 — 체리 램프 3점(<b>확정 본체 렌더 픽셀 실측</b>)이
+강조·CTA 자리를 맡고, 마스코트가 표정·몸으로 단어를 직접 시연합니다(쫀득 = 몸이 실제로 늘어남).
 문구 정본 = <span class="mono" style="font-size:11px">synk-content/references/캐러셀/캐러셀_체리젤리_맛표현.md</span> (voice-guard 통과).</p>
 
 <div class="grid">
@@ -247,9 +247,10 @@
 <div class="note">
   <b>이 시안이 재는 것</b> — ① 체리가 강조·CTA 주연을 맡은 실전 카드(=A안의 얼굴). ② 마지막 장에서
   <b>코랄 로고 &lt; 와 체리 CTA가 한 지면에 공존</b>하는 모습 — A/B 대조파일 01-A 포스터와 같은 질문이며,
-  여기서 눈으로 판정하실 재료입니다. ③ 체리 3점+Wash = <b>전부 가안</b>(렌더 눈 추정) — 원본 3장 파일이 오면
-  픽셀 실측으로 확정합니다. <b>킷 hex는 이 시안에서 하나도 바꾸지 않았습니다</b>(A/B 유호님 확정 전 치환 금지 그대로).
-  카드 대비 실측: Cherry Deep 글자/Paper 5.3 · Cherry 면 위 Navy 2 글자 6.1 · Cream/Navy 2 15.7 — 본문 기준(4.5) 통과.
+  여기서 눈으로 판정하실 재료입니다. ③ 체리 3점 = <b>확정 본체 렌더 픽셀 실측</b>(본체.png · 08-13 · 초판의 눈 추정
+  가안을 대체 — Wash 만 파생 틴트 가안). <b>킷 hex는 이 시안에서 하나도 바꾸지 않았습니다</b>(A/B 유호님 확정 전 치환 금지 그대로).
+  카드 대비 실측: Cherry 면 위 Navy 2 글자 6.8 · Cream/Navy 2 15.7 통과 · ⚠Cherry Deep 글자/Paper ≈4.4 — 본문 기준(4.5) 경계라
+  이 시안은 라이트 글자에 체리를 안 썼습니다(글자용 딥은 킷 편입 때 반 톤 어둡게 파생 필요).
 </div>
 
 </body>
