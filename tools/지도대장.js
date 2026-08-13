@@ -40,6 +40,8 @@ const zlib = require('zlib');
 const crypto = require('crypto');
 const { execFileSync, spawnSync } = require('child_process');
 const 활자주입 = require('./lib/활자주입.js');   // 마커·주입 판정은 한 곳에서만 온다
+const { 경로: 바탕화면 } = require('./lib/바탕화면.js');   // 바탕화면 실경로는 이 통로 하나뿐
+const { 폴더명: 운영자료폴더 } = require('./운영자료.js');   // 폴더 이름 정본(글자 사본 금지 · require 부작용 0)
 
 /** repo 루트 — 환경변수가 이음매다(테스트가 픽스처 git 저장소로 「낡음」 탐지력을 CI에서 잰다.
  *  실저장소 이력은 CI에서 shallow 라 조상 판정이 조용히 어긋날 수 있다 — 그래서 픽스처가 진다). */
@@ -50,8 +52,14 @@ const 상태파일 = '.지도대장.json';
 function 지도폴더() {
   const 덮어쓰기 = process.env.SYNK_지도_DIR;
   if (덮어쓰기) return path.resolve(덮어쓰기);
-  // ⚠ 바탕화면은 `~/Desktop` 이 아니라 `~/OneDrive/Desktop` 이다(리디렉션 · ~/Desktop 은 빈 껍데기)
-  return path.join(os.homedir(), 'OneDrive', 'Desktop', 'SYNK_지도');
+  /* 🔴 자리는 실물을 따라간다 — 유호님이 2026-08-13 에 이 폴더를 `SYNK 운영자료\_자료\` 아래로 옮겼다.
+   * 옛 기본값(바탕화면 최상위)을 그대로 두면 도구가 「폴더가 없다」로 skip 해 대장·읽어보세요가
+   * 영영 안 갱신되고, 새 지도를 굽는 날 **최상위에 두 번째 폴더가 생겨 갈라진다** —
+   * 같은 날 철학 폴더에서 실제로 벌어진 사고다(00·01 이 두 자리에서 서로 다른 내용으로 남았다).
+   * ⚠ 바탕화면은 `~/Desktop` 이 아니라 `~/OneDrive/Desktop` 이다(리디렉션 · ~/Desktop 은 빈 껍데기)
+   *   — 그 판정은 위 통로가 지고, 통로가 못 찾은 날만 옛 조립으로 내려간다. */
+  const 바탕 = 바탕화면() || path.join(os.homedir(), 'OneDrive', 'Desktop');
+  return path.join(바탕, 운영자료폴더, '_자료', 'SYNK_지도');
 }
 
 /* 엣지 정규식 — doc-graph 와 같은 표기.

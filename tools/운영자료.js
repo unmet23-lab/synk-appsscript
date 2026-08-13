@@ -18,6 +18,8 @@
  *   node tools/운영자료.js <파일> --이름 "표시 이름"  번호 뒤에 붙일 이름을 직접 준다
  *   node tools/운영자료.js --목록                     지금 폴더에 뭐가 있는지 본다
  *   node tools/운영자료.js --갱신                     이미 들어간 **사본**을 정본 내용으로 다시 굽는다
+ *   node tools/운영자료.js --링크화                   사본을 같은 번호의 바로가기로 바꾼다(낡을 것을 0으로)
+ *   node tools/운영자료.js --링크화 <사본> --정본 <경로>  이름이 갈려 자동으로 못 잡는 한 건을 짝을 대고 바꾼다
  *
  * ②의 뒷문 — `--사본`으로 들어간 것은 바로가기가 아니라서 정본을 고쳐도 안 따라간다.
  * 2026-08-09 에 실제로 벌어졌다(정본의 주말가를 고쳤는데 유호님 화면은 옛값 그대로).
@@ -189,6 +191,97 @@ function 갱신(폴더) {
   return 0;
 }
 
+/** 사본을 **같은 번호의 바로가기로** 바꾼다 — 갱신해 줘야 하는 파일을 아예 0으로 만든다.
+ *
+ * 왜 `--갱신` 이 있는데 또 필요한가 (2026-08-13 유호 승인):
+ *   `--갱신` 은 사람이 불러야 도는 손잡이라, 안 부르면 사본은 계속 낡는다. 실제로 낡았다 —
+ *   `_자료\SYNK_홈페이지_시안_2026-08-09.html` 이 08-10 판 정본보다 옛것인 채 유호님 화면에 있었다.
+ *   바로가기는 **원본을 가리키므로 낡을 수가 없다** — 손잡이를 없애는 쪽이 근본 처방이다(철학 ㉡).
+ *
+ * 안전 둘:
+ *   ① 짝을 **정확히 1개** 찾고 **내용까지 같을 때만** 자동으로 바꾼다. 이름이 갈리거나 내용이 다르면
+ *      짐작하지 않고 남긴다 — 그 경우는 호출자가 `--정본` 으로 짝을 대 준다(그때는 내용 대조 없이 바꾸되
+ *      다르면 경고한다: 사본이 구판이라 바로가기로 바꾸는 것이 **정확히 그 상황의 처방**이기 때문).
+ *   ② 사본을 먼저 지우지 않는다 — 임시 이름으로 링크를 만들어 **대상이 읽히는지 확인한 뒤**
+ *      사본을 지우고 이름을 확정한다. 중간에 죽어도 사본은 살아 있다.
+ */
+function 링크화(폴더, { 사본경로 = null, 정본경로 = null } = {}) {
+  const 한건 = (파일, 정본, 강제) => {
+    const 이름 = path.basename(파일);
+    if (이름.toLowerCase().endsWith('.lnk')) {
+      console.log(`· 이미 바로가기 — 건너뜀: ${이름}`);
+      return 'skip';
+    }
+    if (!fs.existsSync(정본)) {
+      console.error(`❌ 정본이 없다 — 안 건드린다: ${이름}\n   ${정본}`);
+      return 'fail';
+    }
+    const 같나 = fs.readFileSync(정본).equals(fs.readFileSync(파일));
+    if (!같나 && !강제) {
+      console.log(`· 내용이 다르다 — 안 건드린다(--정본 으로 짝을 대면 바꾼다): ${이름}`);
+      return 'skip';
+    }
+    const 뿌리 = path.join(path.dirname(파일), path.basename(이름, path.extname(이름)));
+    const 최종 = 뿌리 + '.lnk';
+    // ⚠임시 이름도 `.lnk` 로 끝나야 한다 — WScript.Shell 은 확장자가 .lnk/.url 이 아니면
+    //   CreateShortcut 자체를 거부한다(2026-08-13 실측: `.lnk.tmp` 로 만들었더니 통째로 실패).
+    const 임시 = 뿌리 + '.만드는중.lnk';
+    바로가기만들기(임시, 정본);
+    // 만들었다고 믿지 않고 **대상이 실제로 읽히는지** 확인한 뒤에야 사본을 지운다.
+    const 읽힌대상 = ps(
+      '$s=New-Object -ComObject WScript.Shell;' + `$l=$s.CreateShortcut(${JSON.stringify(임시)});$l.TargetPath`
+    );
+    if (path.resolve(읽힌대상 || '') !== path.resolve(정본)) {
+      try { fs.unlinkSync(임시); } catch { /* 임시 정리 실패는 삼킨다 */ }
+      console.error(`❌ 바로가기가 엉뚱한 곳을 가리킨다 — 사본을 지키고 멈춘다: ${이름}`);
+      return 'fail';
+    }
+    fs.unlinkSync(파일);
+    fs.renameSync(임시, 최종);
+    console.log(
+      `✅ 바로가기  ${path.basename(최종)}${같나 ? '' : '  ⚠사본이 정본과 달랐다(구판이었다는 뜻)'}\n` +
+        `              → ${path.relative(ROOT, 정본)}`
+    );
+    return 'ok';
+  };
+
+  /* 짝을 직접 댄 한 건만 — 이름이 갈려 자동으로는 못 잡는 자리를 여는 통로. */
+  if (사본경로) {
+    const 파일 = path.isAbsolute(사본경로) ? 사본경로 : path.join(폴더, 사본경로);
+    if (!fs.existsSync(파일)) {
+      console.error(`❌ 그 사본이 없다: ${파일}`);
+      return 1;
+    }
+    const 정본 = 정본경로
+      ? path.resolve(path.isAbsolute(정본경로) ? 정본경로 : path.join(ROOT, 정본경로))
+      : 짝찾기(path.basename(파일), 정본후보());
+    if (!정본) {
+      console.error(`❌ 짝을 못 찾았다 — \`--정본 <저장소 안 경로>\` 로 대 준다: ${path.basename(파일)}`);
+      return 1;
+    }
+    return 한건(파일, 정본, Boolean(정본경로)) === 'fail' ? 1 : 0;
+  }
+
+  /* 자동 — 최상위 사본 중 짝이 확실하고 내용까지 같은 것만. */
+  const 사본들 = 목록읽기(폴더).filter(
+    (it) => !it.이름.toLowerCase().endsWith('.lnk') && fs.statSync(path.join(폴더, it.이름)).isFile()
+  );
+  const 후보 = 정본후보();
+  let 바꿈 = 0, 남김 = 0;
+  for (const it of 사본들) {
+    const 정본 = 짝찾기(it.이름, 후보);
+    if (!정본) {
+      console.log(`· 출처 모름 — 안 건드린다: ${it.이름}`);
+      남김 += 1;
+      continue;
+    }
+    if (한건(path.join(폴더, it.이름), 정본, false) === 'ok') 바꿈 += 1;
+    else 남김 += 1;
+  }
+  console.log(`\n■ ${폴더}\n  사본 ${사본들.length}건 — 바로가기로 ${바꿈} · 남김 ${남김}`);
+  return 0;
+}
+
 function main(argv) {
   const 인자 = argv.slice(2);
   const { 경로: 바탕, 폴백 } = 바탕화면();
@@ -199,6 +292,14 @@ function main(argv) {
   }
 
   if (인자.includes('--갱신')) return 갱신(폴더);
+
+  if (인자.includes('--링크화')) {
+    const 값 = (k) => {
+      const i = 인자.indexOf(k);
+      return i >= 0 && 인자[i + 1] && !인자[i + 1].startsWith('--') ? 인자[i + 1] : null;
+    };
+    return 링크화(폴더, { 사본경로: 값('--링크화'), 정본경로: 값('--정본') });
+  }
 
   if (인자.includes('--목록') || 인자.length === 0) {
     const 항목 = 목록읽기(폴더);
