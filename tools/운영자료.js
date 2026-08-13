@@ -17,16 +17,18 @@
  *   node tools/운영자료.js <파일...>                 파일을 폴더에 넣는다(repo 안=바로가기 · 밖=복사)
  *   node tools/운영자료.js <파일> --이름 "표시 이름"  번호 뒤에 붙일 이름을 직접 준다
  *   node tools/운영자료.js --목록                     지금 폴더에 뭐가 있는지 본다
- *   node tools/운영자료.js --갱신                     이미 들어간 **사본**을 정본 내용으로 다시 굽는다
+ *   node tools/운영자료.js --지금상태                 `_지금상태.html` 을 굽는다(무엇이 낡았는지 한 장으로)
  *   node tools/운영자료.js --링크화                   사본을 같은 번호의 바로가기로 바꾼다(낡을 것을 0으로)
  *   node tools/운영자료.js --링크화 <사본> --정본 <경로>  이름이 갈려 자동으로 못 잡는 한 건을 짝을 대고 바꾼다
  *   node tools/운영자료.js --옛판 [--집행]            같은 계열의 옛 판을 걷는다(기본 드라이런)
- *   위 전부에 `--갈래 철학|정본|운영` 을 붙일 수 있다(기본 = 운영). 안 붙이면 `--목록` 은 셋을 다 본다.
+ *   위 전부에 `--갈래 철학|정본|운영` 을 붙일 수 있다(기본 = 운영 · `--지금상태` 는 늘 셋을 다 본다).
  *
  * ②의 뒷문 — `--사본`으로 들어간 것은 바로가기가 아니라서 정본을 고쳐도 안 따라간다.
  * 2026-08-09 에 실제로 벌어졌다(정본의 주말가를 고쳤는데 유호님 화면은 옛값 그대로).
- * `--갱신`이 그 자리를 기계로 닫는다. 짝은 **번호를 뗀 파일명으로만** 찾고,
- * 후보가 0개거나 2개 이상이면 **덮지 않고 「출처 모름」으로 보고한다** — 짐작해서 덮는 것은 비가역이다.
+ * 처방은 **`--링크화`** 다 — 바로가기는 원본을 가리키므로 낡을 수가 없다. 옛 처방이던 `--갱신`
+ * (사본을 정본 내용으로 다시 굽는 손잡이)은 2026-08-14 에 닫았다: 사람이 불러야 도는 손잡이는
+ * 안 부르면 낡고(철학 ㉡), 실측에서 살아 있는 대상이 **0** 이었다(사본 15건 전부 git 밖 산출물).
+ * 그 자리를 대신하는 것이 `--지금상태` 다 — 고쳐 주지는 않지만, **낡았다는 사실을 숨기지 않는다.**
  */
 'use strict';
 const fs = require('node:fs');
@@ -448,33 +450,133 @@ function 옛판정리(폴더, { 집행 = false, 조용히 = false, 방금 = null
   return 0;
 }
 
-/** 이미 들어간 사본을 정본 내용으로 다시 굽는다. 바로가기는 원래 항상 최신이라 건드리지 않는다. */
-function 갱신(폴더) {
-  const 사본들 = 목록읽기(폴더).filter((it) => !it.이름.toLowerCase().endsWith('.lnk'));
-  if (!사본들.length) {
-    console.log(`■ ${폴더}\n  사본 0건 — 전부 바로가기라 갱신할 것이 없다`);
-    return 0;
-  }
+/* ── 지금상태 — 폴더가 스스로 「나 낡았다」고 말한다 ─────────────────────────
+ *
+ * 왜 (2026-08-14 유호 채택): 이 폴더의 진짜 병은 개수도 갈래도 아니라 **열기 전에는 낡았는지
+ * 알 수 없다**는 것이었다. `04_SYNK_철학.pdf` 라는 이름은 그것이 v1.5 라는 걸 한 글자도 말하지
+ * 않았고, 그래서 정본이 하루에 두 번 올라도(v1.7 15:56 · v1.8 23:36) 아무도 못 알아챘다.
+ * `03_개원 재무 (달력만 유효)` 처럼 사람이 손으로 적어 넣은 표시는 **다음 낡음엔 안 붙는다**.
+ *
+ * 대가(새 장치엔 같이 적는다 — 지침 v9.2 맹점 ④):
+ *  · 틀릴 때의 모습 = 「초록이면 최신」으로 읽히는 자리가 하나 더 생긴다. 그래서 정본을 못 찾은
+ *    항목은 초록이 아니라 **❔모름**으로 적는다 — 모르는 것과 최신인 것은 다른 상태다.
+ *  · 닫은 것 = `--갱신`. 실측 2026-08-14: 사본 15건이 **전부** 「출처 모름」(git 밖 산출물)이라
+ *    살아 있는 대상이 0이었고, 이 파일 머리말이 이미 「손잡이를 없애는 쪽이 근본 처방」이라
+ *    적고 있었다(사람이 불러야 도는 손잡이는 안 부르면 낡는다 · 철학 ㉡).
+ */
+
+const 판정문 = Object.freeze({
+  원본:       ['✅', '원본을 가리킨다 — 낡을 수 없다'],
+  스냅샷최신: ['✅', '구운 것이 정본만큼 새것이다'],
+  스냅샷낡음: ['🔴', '구운 것이 정본보다 옛것 — 다시 구워야 한다'],
+  사본최신:   ['✅', '사본이 정본과 같다'],
+  사본낡음:   ['🔴', '사본이 정본보다 옛것이다'],
+  외부:       ['🔗', '바깥 링크 — 이 표가 판정할 대상이 아니다'],
+  모름:       ['❔', '정본을 못 찾았다 — 낡았는지 «알 수 없다»'],
+  끊김:       ['🔴', '가리키는 대상이 없다'],
+});
+
+/** 한 항목의 지금 상태. **순수** — 파일 사실만 받아 판정을 낸다(회귀가 이 함수를 붙든다). */
+function 상태판정({ 바로가기 = false, 대상없음 = false, 외부 = false, 정본시각 = null, 실체시각 = null }) {
+  if (외부) return '외부';
+  if (대상없음) return '끊김';
+  if (정본시각 == null || 실체시각 == null) return 바로가기 ? '원본' : '모름';
+  if (실체시각 < 정본시각) return 바로가기 ? '스냅샷낡음' : '사본낡음';
+  return 바로가기 ? '스냅샷최신' : '사본최신';
+}
+
+/** `docs/인쇄본/X.pdf` 처럼 **구운 것**의 원본 md 를 찾는다. 못 찾으면 null(모름으로 떨어진다). */
+function 스냅샷원본(실체, 후보) {
+  if (!/\.pdf$/i.test(실체)) return null;
+  return 짝찾기(path.basename(실체).replace(/\.pdf$/i, '.md'), 후보);
+}
+
+/** 문서 머리의 정본 선언(`<!-- 정본: v1.8 -->`)을 읽는다. 없으면 null — 지어내지 않는다. */
+function 정본판(파일) {
+  try {
+    const m = fs.readFileSync(파일, 'utf8').slice(0, 400).match(/정본:\s*(v[\d.]+)/);
+    return m ? m[1] : null;
+  } catch { return null; }
+}
+
+const 때 = (p) => { try { return fs.statSync(p).mtime; } catch { return null; } };
+
+/** 갈래 하나의 상태 줄들. */
+function 상태줄들(폴더, 후보) {
+  return 목록읽기(폴더).map((it) => {
+    const 놓인곳 = path.join(폴더, it.이름);
+    const 바로가기 = it.이름.toLowerCase().endsWith('.lnk');
+    const 외부 = it.이름.toLowerCase().endsWith('.url');
+    const 실체 = 바로가기 ? it.대상 : 놓인곳;
+    const 대상없음 = 바로가기 && (!실체 || !fs.existsSync(실체));
+    const 정본 = 대상없음 || 외부 ? null
+      : (바로가기 ? 스냅샷원본(실체, 후보) : 짝찾기(it.이름, 후보));
+    const 판정 = 상태판정({
+      바로가기, 대상없음, 외부,
+      정본시각: 정본 ? 때(정본) : null,
+      실체시각: 실체 ? 때(실체) : null,
+    });
+    return {
+      이름: it.이름,
+      가리키는곳: 바로가기 && 실체 ? path.relative(ROOT, 실체).replace(/\\/g, '/') : null,
+      정본: 정본 ? path.relative(ROOT, 정본).replace(/\\/g, '/') : null,
+      판: 정본 ? 정본판(정본) : (실체 && /\.(md|html)$/i.test(실체) ? 정본판(실체) : null),
+      갱신: 때(실체 || 놓인곳),
+      판정,
+    };
+  });
+}
+
+const 날짜글 = (d) => (d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : '—');
+const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/** `_지금상태.html` 을 뿌리에 굽는다 — 갈래 폴더보다 먼저 눈에 들어오게 밑줄로 시작한다. */
+function 지금상태빌드(뿌리) {
   const 후보 = 정본후보();
-  let 갱신함= 0, 이미최신= 0, 모름 = 0;
-  for (const it of 사본들) {
-    const 정본 = 짝찾기(it.이름, 후보);
-    if (!정본) {
-      console.log(`· 출처 모름 — 안 건드린다: ${it.이름}`);
-      모름 += 1;
-      continue;
-    }
-    const 놓을곳 = path.join(폴더, it.이름);
-    if (fs.readFileSync(정본).equals(fs.readFileSync(놓을곳))) {
-      console.log(`· 이미 최신: ${it.이름}`);
-      이미최신 += 1;
-      continue;
-    }
-    fs.copyFileSync(정본, 놓을곳);
-    console.log(`✅ 갱신  ${it.이름}\n         ← ${path.relative(ROOT, 정본)}`);
-    갱신함 += 1;
-  }
-  console.log(`\n■ ${폴더}\n  사본 ${사본들.length}건 — 갱신 ${갱신함} · 이미 최신 ${이미최신} · 출처 모름 ${모름}`);
+  const 갈래줄 = Object.entries(갈래들).map(([갈래, 폴더]) => ({
+    갈래, 폴더, 줄: 상태줄들(path.join(뿌리, 폴더), 후보),
+  }));
+  const 전부 = 갈래줄.flatMap((g) => g.줄);
+  const 셈 = (k) => 전부.filter((r) => 판정문[r.판정][0] === k).length;
+
+  const 표 = (줄) => `<table><thead><tr><th>상태</th><th>이름</th><th>판</th><th>마지막 갱신</th><th>가리키는 곳</th></tr></thead><tbody>${
+    줄.map((r) => {
+      const [기호, 말] = 판정문[r.판정];
+      return `<tr><td class="s" title="${esc(말)}">${기호} ${esc(말)}</td><td>${esc(r.이름)}</td>`
+        + `<td>${r.판 ? esc(r.판) : '<span class=q>—</span>'}</td><td>${날짜글(r.갱신)}</td>`
+        + `<td class="p">${r.가리키는곳 ? esc(r.가리키는곳) : '<span class=q>이 폴더가 원본</span>'}</td></tr>`;
+    }).join('')}</tbody></table>`;
+
+  const html = `<!doctype html><html lang="ko"><meta charset="utf-8">
+<title>SYNK 운영자료 — 지금 상태</title><style>
+body{background:#FBF7EE;color:#171820;font-family:'SUIT','Inter Tight','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+     line-height:1.7;max-width:1040px;margin:0 auto;padding:44px 26px;word-break:keep-all;}
+header{background:#0F1730;color:#F6F1E8;margin:-44px -26px 32px;padding:32px 26px 24px;}
+header h1{margin:0;font-size:1.45em;color:#F6F1E8;}
+header .cap{color:#8A93AD;font-size:.86em;margin-top:6px;}
+h2{font-size:1.1em;margin:2em 0 .5em;padding-bottom:.25em;border-bottom:3px solid #FF6B5C;}
+table{border-collapse:collapse;width:100%;font-size:.87em;}
+th,td{border:1px solid #2A3358;padding:.4em .55em;text-align:left;vertical-align:top;}
+th{background:#0F1730;color:#F6F1E8;font-weight:600;}
+td.s{white-space:nowrap;}td.p{font-size:.92em;color:#5F657D;}
+/* 🔴 흐린 회색은 #5F657D 다 — #8A93AD 는 종이(#FBF7EE) 위에서 대비 2.86 이라 린트가 문다.
+ *    #8A93AD 는 남색 띠(#0F1730) 위에서만 쓴다(header .cap). */
+.q{color:#5F657D;}
+.tally{background:#FFE9E4;border-left:4px solid #FF6B5C;padding:.7em 1em;margin:1.2em 0;font-size:.93em;}
+footer{margin-top:2.6em;color:#5F657D;font-size:.8em;}
+</style>
+<header><h1>SYNK 운영자료 — 지금 상태</h1>
+<div class="cap">이 표는 열기 전에 「낡았는지」를 말해 준다. 굽는 명령 = <code>node tools/운영자료.js --지금상태</code></div></header>
+<div class="tally">🔴 낡음·끊김 <b>${셈('🔴')}</b> · ❔ 모름 <b>${셈('❔')}</b> · ✅ 최신 <b>${셈('✅')}</b> · 🔗 바깥 링크 <b>${셈('🔗')}</b>
+<br><span class="q">❔모름은 «최신이 아니다»가 아니라 «알 수 없다»다 — 저장소에 짝이 없는 산출물(BGM·이미지·영상)이 여기 든다. 초록으로 접지 않는다.</span></div>
+${갈래줄.map((g) => `<h2>${esc(g.폴더)} — ${g.줄.length}건</h2>${표(g.줄)}`).join('\n')}
+<footer>구운 때 ${날짜글(new Date())} · 이 파일은 파생이다 — 고칠 것은 여기가 아니라 저장소의 정본이다.</footer>
+</html>`;
+
+  const 놓을곳 = path.join(뿌리, '_지금상태.html');
+  fs.writeFileSync(놓을곳, html);
+  console.log(`✅ ${놓을곳}\n   🔴 ${셈('🔴')} · ❔ ${셈('❔')} · ✅ ${셈('✅')} · 🔗 ${셈('🔗')}  (전체 ${전부.length}건)`);
+  for (const r of 전부) if (판정문[r.판정][0] === '🔴') console.log(`   🔴 ${r.이름} — ${판정문[r.판정][1]}`);
   return 0;
 }
 
@@ -605,7 +707,15 @@ function main(argv) {
     return 1;
   }
 
-  if (인자.includes('--갱신')) return 갱신(갈래폴더경로);
+  // 🔑 `--지금상태` 는 **갈래를 안 받는다** — 셋을 한 장에 담는 것이 이 표의 요점이다.
+  //    갈래별로 갈라 굽게 두면 유호님이 세 장을 열어야 하고, 안 연 한 장이 낡음의 자리가 된다.
+  if (인자.includes('--지금상태')) return 지금상태빌드(폴더);
+
+  if (인자.includes('--갱신')) {
+    console.error('🔴 `--갱신` 은 닫혔다(2026-08-14) — 사본을 다시 굽는 대신 `--링크화` 로 바로가기로 바꾼다.'
+      + '\n   바로가기는 원본을 가리키므로 낡을 수가 없다. 무엇이 낡았는지는 `--지금상태`.');
+    return 1;
+  }
 
   if (인자.includes('--링크화')) {
     return 링크화(갈래폴더경로, { 사본경로: 값('--링크화'), 정본경로: 값('--정본') });
@@ -689,7 +799,7 @@ function main(argv) {
 
 module.exports = {
   다음번호, 바로가기냐, 안전한이름, 이미있나, 짝찾기, 정본후보, 폴더명, 갈래들, 갈래폴더,
-  계열키, 기저키, 짝의심, 옛판고르기, 파일인자,
+  계열키, 기저키, 짝의심, 옛판고르기, 파일인자, 상태판정, 스냅샷원본, 정본판,
   임시링크이름, PS오류읽기, 바로가기만들기, 바로가기대상읽기,
 };
 
