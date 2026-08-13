@@ -2113,6 +2113,436 @@ function groupBoardNow(className) {
   return out;
 }
 
+/* ═════════════ 🟨 숙제 서클 — 조 단위 인쇄물 조립 ═════════════════════════════════════════════
+ * 정본 = docs/숙제서클_설계.md (v1.0) · 인수 조건 §10 · 계약 초안 §3 `circle_sheet`.
+ *
+ * 왜 새 계층인가: 배달 배치(deliver)는 **학생 1명당**으로 돈다. 조별 A4 1장은 4명을 한 장에
+ *   묶는 일이라 「새 배치 0」이 성립하지 않는다(설계 §3 말미가 게이트에서 그렇게 판정됐다).
+ *   그래서 여기가 그 조 단위 조립 계층이다 — 읽기 전용 조회로만 조립한다:
+ *   **새 event_type 0 · 새 시트 0 · 새 폼 0 · 쓰기 0**(§7 「새 수집 채널 금지」).
+ *
+ * ⚠ 인쇄 페이로드에 학습자 식별자 0 — 이름만 실린다(§3). sid 는 조립 «안»에서만 산다.
+ * ⚠ 인쇄 금지 계약(§3): 점수·정답률·정답 개수·등수·난도 라벨 0 · 조 안 항목을 난도순·개수순
+ *   정렬 금지(순서는 좌석 회전만) · 오류 태그 «코드» 문자열 0 · 한자 0 · 교사 기입 칸 0.
+ * ⚠ 조 안 순서는 **좌석 순번**이다. 어떤 축으로도 다시 정렬하지 않는다 —
+ *   정렬하는 순간 종이가 등수를 말한다(철학 ㉢).
+ *
+ * 문자열은 전부 contents_서클.js 가 정본이다(로직 0줄 · 카드 풀은 줄만 더하면 늘어난다).
+ * 이 절의 순수 함수는 tools/서클조판.js 가 그대로 떼어다 실물 A4 를 굽는다 —
+ * 미리보기와 실물이 **같은 함수**를 타야 한다(groupBoardRender_ 가 세운 규약 그대로). */
+
+/* 레벨 밴드 — 0=Lv1~2 · 1=Lv3~4 · 2=Lv5~6 · -1=모름.
+ * 🔴 추측하지 않는다: profiles 「한국어수준」은 '기초·초급·중급…' 어휘이고 커리큘럼 Lv1~6 과
+ *   **다른 축**이다(Code.js PROFILE_LEVEL_HEADER 주석 — 매핑은 유호님 확정 사항).
+ *   그래서 이 함수는 숫자·`LvN` 만 읽고, 어휘 해석은 app_state 의 매핑표에만 맡긴다.
+ *   못 읽으면 -1 을 낸다 — 조용히 Lv1~2 로 접으면 상급반 종이 전체가 초급 문장 틀로 나가고,
+ *   그건 화면 어디에도 빨갛게 안 뜬다. */
+function circleBandOf_(lv, vocab) {
+  const s = String(lv == null ? '' : lv).trim();
+  if (!s) return -1;
+  if (vocab && vocab[s] != null) return circleBandOf_(vocab[s], null);
+  const m = s.match(/^(?:Lv)?\s*([1-6])$/i);
+  if (!m) return -1;
+  return Math.floor((Number(m[1]) - 1) / 2);
+}
+/* 어휘 매핑표 — app_state 한 칸(key='레벨어휘', value='기초=1,초급=2,중급=4,고급=6').
+ * 시트 한 칸이라 유호님이 코드를 안 거치고 정한다. 없으면 null → 밴드는 -1 로 남고,
+ * 조립 보고가 그 사실을 말한다(빈 종이를 조용히 내보내지 않는다). */
+function circleLevelVocab_(ss) {
+  const st = ss.getSheetByName('app_state');
+  if (!st) return null;
+  const raw = String((getState(st, '레벨어휘') || {}).val || '').trim();
+  if (!raw) return null;
+  const out = {};
+  raw.split(',').forEach(p => {
+    const kv = String(p).split('=');
+    if (kv.length === 2 && String(kv[0]).trim()) out[String(kv[0]).trim()] = String(kv[1]).trim();
+  });
+  return Object.keys(out).length ? out : null;
+}
+
+/* 오늘의 질문 카드 — 결은 차시로 돌고, 같은 결의 카드는 4차시마다 한 장 넘어간다(설계 §5 ①).
+ * 저장 0 · 차시 번호의 순수 함수라 매 차시 쓰기가 0이다(조 편성 절의 규약 그대로). */
+function circleWarmupOf_(lessonNo, band) {
+  const n = Math.max(1, Number(lessonNo) || 1);
+  const b = (band >= 0 && band <= 2) ? band : 0;
+  const tone = CIRCLE_TONE_ORDER[(n - 1) % CIRCLE_TONE_ORDER.length];
+  const pool = (CIRCLE_QUESTION_CARDS[tone] || [])[b] || [];
+  if (!pool.length) return { tone: tone, text: '' };
+  return { tone: tone, text: pool[Math.floor((n - 1) / CIRCLE_TONE_ORDER.length) % pool.length] };
+}
+
+/* 오류 태그 → 학생이 읽는 말. 어휘 밖 태그는 **빈 문자열**을 낸다 —
+ * 모르는 코드를 그대로 종이에 흘리면 그게 곧 §3 이 금지한 「태그 코드 노출」이다. */
+function circleTagSay_(tag) { return CIRCLE_TAG_SAY[String(tag || '').trim()] || ''; }
+// 태그의 «영역» — 접두(조사·어미·높임·어휘·맞춤법…). 반복 영역 대조의 축.
+function circleTagArea_(tag) { const s = String(tag || '').trim(); const i = s.indexOf(':'); return i > 0 ? s.slice(0, i) : s; }
+
+/* ── 한 학생 칸 — 순수 함수(시트를 모른다) ────────────────────────────────────
+ * rows = 그 학생의 검수 «확정»분만, 최신순. 각 행:
+ *   { day:'yyyy-MM-dd', 제출문, 태그:[...], 숙제ID, 재작성:true|false }
+ * 확정 게이트는 호출부가 이미 통과시킨다(노출카드_ 단일 정본 — 여기서 다시 판정하면 두 벌이 된다). */
+
+// kept — 설계 §3 선정 규칙 ①~④, 위에서 먼저 맞는 것 하나.
+function circleKeptPick_(rows) {
+  const rs = rows || [];
+  if (!rs.length) return null;
+  const 오늘 = rs[0].day;
+  const 이번 = rs.filter(r => r.day === 오늘);
+  const 이전 = rs.filter(r => r.day !== 오늘);
+  const 깨끗 = (r) => !r.태그.filter(t => t && t !== '오류없음').length;
+  const 맞은것 = 이번.filter(깨끗);
+  // ① 지난번에 틀렸다가 이번에 맞은 자리 — 재작성 행이 그 «증거»다(추정이 아니라 열이 말한다)
+  const a = 맞은것.filter(r => r.재작성)[0];
+  if (a) return { text: a.제출문 };
+  // ② 최근 반복 오류 영역과 같은 영역에서 맞은 것 — 같은 숙제ID 의 과거 행이 그 영역을 틀렸던 것
+  const 빈도 = {};
+  이전.forEach(r => r.태그.forEach(t => { if (t && t !== '오류없음') { const k = circleTagArea_(t); 빈도[k] = (빈도[k] || 0) + 1; } }));
+  const 반복영역 = Object.keys(빈도).sort((x, y) => 빈도[y] - 빈도[x])[0];
+  if (반복영역) {
+    const b = 맞은것.filter(r => 이전.filter(p => p.숙제ID && p.숙제ID === r.숙제ID &&
+      p.태그.filter(t => circleTagArea_(t) === 반복영역).length).length)[0];
+    if (b) return { text: b.제출문 };
+  }
+  // ③ 이번에 맞은 것 아무거나
+  if (맞은것[0]) return { text: 맞은것[0].제출문 };
+  // ④ 끝까지 제출한 것 자체 — 「얻는 쪽에서 센다」(설계 §3)
+  if (이번[0]) return { text: 이번[0].제출문 };
+  return null;
+}
+
+// shaky — ①이번 최다 ②동률=최근 반복 많은 쪽 ③동률=발음 축 우선.
+// 🔴 ④「오류 0건 = 다음 단계 자리」는 여기서 못 낸다 — 다음 단계 문법 배정이 이 저장소에 없다.
+//    지어내는 대신 null 을 내고(줄을 인쇄하지 않는다), 조립 보고가 그 사실을 센다.
+const CIRCLE_SOUND_TAGS = ['맞춤법:받침'];   // 발음 축 — 어휘에 있는 것만(경음·유음화 태그는 아직 어휘에 없다)
+function circleShakyPick_(rows) {
+  const rs = rows || [];
+  if (!rs.length) return null;
+  const 오늘 = rs[0].day;
+  const 세기 = (list) => {
+    const c = {};
+    list.forEach(r => r.태그.forEach(t => { if (t && t !== '오류없음') c[t] = (c[t] || 0) + 1; }));
+    return c;
+  };
+  const 이번 = 세기(rs.filter(r => r.day === 오늘));
+  let 후보 = Object.keys(이번);
+  if (!후보.length) {                                    // 없을 때 = 최근 3회로 넓힘(§3 오른쪽 칸)
+    const days = [];
+    rs.forEach(r => { if (days.indexOf(r.day) < 0 && days.length < 3) days.push(r.day); });
+    const 넓힘 = 세기(rs.filter(r => days.indexOf(r.day) >= 0));
+    후보 = Object.keys(넓힘);
+    if (!후보.length) return null;
+    return circlePickTop_(후보, 넓힘, rs, 오늘);
+  }
+  return circlePickTop_(후보, 이번, rs, 오늘);
+}
+function circlePickTop_(후보, 표, rs, 오늘) {
+  const 최다 = Math.max.apply(null, 후보.map(t => 표[t]));
+  let tie = 후보.filter(t => 표[t] === 최다);
+  if (tie.length > 1) {                                   // ② 최근 반복 많은 쪽
+    const 과거 = {};
+    rs.filter(r => r.day !== 오늘).forEach(r => r.태그.forEach(t => { 과거[t] = (과거[t] || 0) + 1; }));
+    const mx = Math.max.apply(null, tie.map(t => 과거[t] || 0));
+    tie = tie.filter(t => (과거[t] || 0) === mx);
+  }
+  if (tie.length > 1) {                                   // ③ 발음 축 우선
+    const snd = tie.filter(t => CIRCLE_SOUND_TAGS.indexOf(t) >= 0);
+    if (snd.length) tie = snd;
+  }
+  const tag = tie.slice().sort()[0];                      // 남은 동률은 어휘 순 — 회차마다 흔들리지 않게
+  const say = circleTagSay_(tag);
+  return say ? { tag: tag, text: say } : null;
+}
+
+/* trend_line — 두 갈래 고정 문형만(자유 생성 금지 · 숫자 노출 금지 · 이력 1주 미만은 줄 생략).
+ * 🔑 설계의 ⓑ「아니면」을 그대로 쓰지 않는다: 그 태그가 지난주에 **없었으면** ⓑ 문장은
+ *    종이 위에서 거짓말이 된다(늘어난 자리인데 「지난주에도 나왔어요」로 읽힌다).
+ *    그래서 ⓑ 는 «지난주에 실제로 있었을 때»만 낸다 — 없으면 줄을 안 쓴다. */
+function circleTrendOf_(rows, tag, todayStr) {
+  if (!tag || !rows || !rows.length) return '';
+  const day0 = todayStr || rows[0].day;
+  const t0 = Date.parse(day0 + 'T00:00:00Z');
+  if (isNaN(t0)) return '';
+  const 창 = (a, b) => rows.filter(r => {
+    const t = Date.parse(r.day + 'T00:00:00Z');
+    return !isNaN(t) && t <= t0 - a * 86400000 && t > t0 - b * 86400000;
+  });
+  const 이력폭 = rows.filter(r => {
+    const t = Date.parse(r.day + 'T00:00:00Z');
+    return !isNaN(t) && t <= t0 - 7 * 86400000;
+  });
+  if (!이력폭.length) return '';                          // 이력 1주 미만 = 줄 생략
+  const 센다 = (list) => list.reduce((n, r) => n + r.태그.filter(t => t === tag).length, 0);
+  const 이번주 = 센다(창(0, 7)), 지난주 = 센다(창(7, 14));
+  if (지난주 > 0 && 이번주 < 지난주) return CIRCLE_TREND_LINES.줄었음;
+  if (지난주 > 0) return CIRCLE_TREND_LINES.남아있음;
+  return '';
+}
+
+/* 한 학생 칸 한 벌. 제출 여부를 «칸의 모양»으로 드러내지 않는다(§3 예외 조항) —
+ * 드러나는 것은 줄의 이름표뿐이고, 그 이름표는 이력이 얕은 제출자에게도 똑같이 붙는다. */
+function circleMemberCard_(m, rows, band, todayStr) {
+  const rs = (rows || []).slice();
+  const frame = CIRCLE_FRAMES[band] || null;
+  const card = { display_name: m.name, role: m.role, kept: null, shaky: null, next_one: null };
+  if (!rs.length) {                                       // 이력 0 — 첫날·신규(§6 1차시)
+    card.next_one = { label: CIRCLE_CATCHUP_LEAD, text: CIRCLE_START_LINES[band] || CIRCLE_START_LINES[0], check: true };
+    card.frame = frame;
+    return card;
+  }
+  const 오늘것 = rs.filter(r => r.day === todayStr);
+  if (오늘것.length) {
+    card.kept = circleKeptPick_(rs);
+    const sh = circleShakyPick_(rs);
+    if (sh) card.shaky = { tag: sh.tag, text: sh.text, trend_line: circleTrendOf_(rs, sh.tag, todayStr) };
+    card.next_one = {
+      label: '다음에 맞힐 문제',
+      text: (sh && sh.text) ? (sh.text + ' — ' + CIRCLE_NEXT_FALLBACK) : CIRCLE_NEXT_FALLBACK,
+      check: true
+    };
+  } else {                                                // 어젯밤 것이 없다 — 최근 이력에서 「오늘 볼 것」 한 줄
+    const sh = circleShakyPick_(rs);
+    card.next_one = {
+      label: CIRCLE_CATCHUP_LEAD,
+      text: (sh && sh.text) ? (sh.text + ' — ' + CIRCLE_NEXT_FALLBACK) : CIRCLE_NEXT_FALLBACK,
+      check: true
+    };
+  }
+  card.frame = frame;
+  return card;
+}
+
+/* ── 시트 → circle_sheet ──────────────────────────────────────────────────────
+ * 조·좌석·역할은 groupBoardOf_ 를 그대로 탄다(두 벌로 계산하면 종이와 강사 화면이 갈라진다).
+ * 반환은 조 배열 — 조당 A4 1장이다. */
+function circleSheetOf_(ss, cls, when, tz) {
+  const b = groupBoardOf_(ss, cls, when, tz);
+  if (!b) return null;
+  const day = Utilities.formatDate(when || new Date(), tz, 'yyyy-MM-dd');
+  const vocab = circleLevelVocab_(ss);
+  // 레벨 — profiles 「한국어수준」 열은 이름으로 찾는다(위치 상수 금지 · Code.js v9.119)
+  const lvBy = {};
+  const pf = ss.getSheetByName('profiles');
+  if (pf && pf.getLastRow() >= 2) {
+    const lvCol = profileLevelCol_(pf);
+    if (lvCol >= 0) {
+      pf.getRange(2, 1, pf.getLastRow() - 1, lvCol + 1).getValues()
+        .forEach(r => { if (r[0]) lvBy[String(r[0]).trim()] = r[lvCol]; });
+    }
+  }
+  // 출석 확정 — 종이는 확정 뒤 인쇄된다(§3). 확정 행이 0이면 전원 인쇄하고 그 사실을 보고에 담는다.
+  const present = {};
+  let 출석확정 = false;
+  const at = ss.getSheetByName('attendance');
+  if (at && at.getLastRow() >= 2) {
+    at.getRange(2, 1, at.getLastRow() - 1, 3).getValues().forEach(r => {
+      if (r[1] && r[2] && dstr(r[2], tz) === day) { present[String(r[1]).trim()] = true; 출석확정 = true; }
+    });
+  }
+  const hw = circleHwBySid_(ss, tz);
+  const out = [], 미확정레벨 = [];
+  b.groups.forEach((arr, g) => {
+    const 자리 = arr.filter(m => !출석확정 || present[m.sid]);   // 결석 = 칸이 아예 없다(§3)
+    if (!자리.length) return;
+    const band0 = circleBandOf_(lvBy[자리[0].sid], vocab);
+    자리.forEach(m => { if (circleBandOf_(lvBy[m.sid], vocab) < 0) 미확정레벨.push(m.name); });
+    out.push({
+      group_no: g + 1,
+      warmup_question: circleWarmupOf_(b.lessonNo, band0),
+      // 좌석 회전 그대로 — 이 배열을 다시 정렬하지 않는다(§3)
+      members: 자리.map(m => circleMemberCard_(m, hw[m.sid] || [], circleBandOf_(lvBy[m.sid], vocab), day))
+    });
+  });
+  return {
+    class_id: cls, session_no: b.lessonNo, week: b.week, season: b.season,
+    focus_group: b.focus, groups: out,
+    // 조립 보고 — 종이에 안 나가는 칸. 「조용히 반쪽으로 나갔다」를 막는 자리다.
+    보고: { 출석확정: 출석확정, 레벨미확정: 미확정레벨, 어휘표: !!vocab }
+  };
+}
+
+/* hw_feedback → student_id 별 검수 «확정»분(최신순). 확정 판정은 노출카드_ 단일 정본을 탄다.
+ * 창은 28일 — 서클이 쓰는 것은 「어젯밤」과 「지난주 대조」뿐이라 그 너머는 종이에 못 오른다. */
+function circleHwBySid_(ss, tz) {
+  const out = {};
+  const fb = ss.getSheetByName('hw_feedback');
+  if (!fb || fb.getLastRow() < 2) return out;
+  const w = Math.min(15, fb.getLastColumn());              // A~O(재작성원본까지) — 그 뒤 감사 열은 안 읽는다
+  const cut = Date.now() - 28 * 86400000;
+  fb.getRange(2, 1, fb.getLastRow() - 1, w).getValues().forEach(r => {
+    if (!r[1] || !노출카드_(r[8])) return;                 // 검수 확정분만 — 대기·격리·오류는 종이에 안 오른다
+    const d = asDate_(r[2]);
+    if (!d || isNaN(d.getTime()) || d.getTime() < cut) return;
+    const sid = String(r[1]).trim();
+    (out[sid] = out[sid] || []).push({
+      day: Utilities.formatDate(d, tz, 'yyyy-MM-dd'),
+      제출문: String(r[3] || '').trim(),
+      태그: String(r[12] || '').split(',').map(s => s.trim()).filter(Boolean),
+      숙제ID: String(r[11] || '').trim(),
+      재작성: !!String(r[13] || '').trim()
+    });
+  });
+  Object.keys(out).forEach(k => out[k].sort((a, b) => (a.day < b.day ? 1 : a.day > b.day ? -1 : 0)));
+  return out;
+}
+
+/* ── A4 조판 — 조당 1장 · 5구역(머리 1 + 학생 칸 4) ───────────────────────────
+ * 규격 정본 = 설계 §3. 가로 굵은 파선이 손으로 찢는 자리다 — 뜯어도 각 칸에
+ * 「N조 M차시」가 남게 귀퉁이에 반복 인쇄한다.
+ * 색: 검정·회색만 쓴다 — 설계가 「흑백 가능」을 규격으로 못박았고, 학원 프린터가
+ *     흑백일 때 색으로 뜻을 실으면 그 뜻이 종이에서 통째로 사라진다.
+ * 이모지 0 — 인쇄면 이모지는 정본 금칙(발표물린트 ■9)이고, 흑백에서 그림문자로 뭉갠다. */
+function circleSheetCss_() {
+  // 서체는 CARD_FONT 한 벌을 그대로 탄다 — 브랜드 3종 정본(§9)이고, 스택을 여기 다시 적으면
+  // 그 순간 두 벌이 되어 정본이 바뀌어도 종이만 옛 서체로 남는다(브랜드폰트 회귀가 그걸 문다).
+  return '@page{size:A4 portrait;margin:0}' +
+    'html,body{margin:0;padding:0;background:#fff;color:#000;' + CARD_FONT +
+    '-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+    '.pg{width:210mm;height:297mm;box-sizing:border-box;page-break-after:always;display:flex;flex-direction:column}' +
+    '.pg:last-child{page-break-after:auto}' +
+    '.z{height:59.4mm;box-sizing:border-box;padding:4mm 8mm;position:relative;overflow:hidden;' +
+    'border-bottom:1.2mm dashed #999;display:flex;flex-direction:column}' +
+    /* 🔑 잘림의 «순서»를 못박는다: 학생의 문장은 절대 안 잘리고, 잘리는 것은 언제나 강사 틀이다.
+     *   긴 제출문이 두 줄로 접히는 날 칸이 빠듯해지는데, 그때 학생 원문이 조용히 잘리면
+     *   「다듬지 않는다」는 §3 규약이 종이 위에서 깨진다 — 잘려도 눈에 안 보이는 방식으로.
+     *   틀은 다시 읽을 수 있는 보조물이라 한 줄 사라져도 서클이 돈다. */
+    '.keep{flex:0 0 auto}' +
+    '.frames{flex:1 1 auto;min-height:0;overflow:hidden}' +
+    '.pg .z:last-child{border-bottom:0}' +
+    '.corner{position:absolute;top:3mm;right:7mm;font-size:8pt;color:#666;letter-spacing:.2mm}' +
+    '.hd1{font-size:15pt;font-weight:700;margin:0 0 2mm}' +
+    '.hd2{font-size:10pt;line-height:1.5;margin:0 0 1.5mm}' +
+    '.qcard{font-size:13pt;font-weight:700;line-height:1.35;margin:1.5mm 0 2mm;padding:2.5mm 3mm;border:.4mm solid #000}' +
+    '.blank{font-size:9.5pt;color:#333;border-bottom:.3mm solid #000;padding-bottom:1mm;margin-top:1.5mm}' +
+    '.nm{font-size:12.5pt;font-weight:700;margin:0 0 1.2mm}' +
+    '.nm span{font-size:9.5pt;font-weight:400;color:#333;margin-left:2mm}' +
+    '.ln{font-size:10pt;line-height:1.45;margin:0 0 .8mm}' +
+    '.lb{font-weight:700}' +
+    '.fr{font-size:9pt;line-height:1.4;color:#333;margin:0 0 .6mm}' +
+    '.ck{border:.35mm solid #000;border-radius:50%;display:inline-block;width:4.5mm;height:4.5mm;vertical-align:-1mm;margin-left:2mm}';
+}
+function circleEsc_(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+/* 한 조 = 한 쪽. 학생 칸이 4개보다 적으면(3인 조·결석) **빈 칸을 그리지 않는다** —
+ * 종이 위의 빈 칸은 낙인이다(§3). 남은 자리는 위 칸들이 나눠 갖는다. */
+function circleGroupPage_(sheet, grp) {
+  const 꼬리 = grp.group_no + '조 · ' + sheet.session_no + '차시';
+  const 순서 = grp.members.map(m => m.display_name).join(' → ');
+  const 역할 = grp.members.map(m => m.display_name + '(' + m.role + ')').join(' · ');
+  const H = ['<div class="pg">'];
+  H.push('<div class="z">' +
+    '<div class="corner">' + circleEsc_(꼬리) + '</div>' +
+    '<p class="hd1">' + circleEsc_(grp.group_no) + '조 · ' + circleEsc_(sheet.session_no) + '차시</p>' +
+    '<p class="hd2"><span class="lb">역할</span> ' + circleEsc_(역할) + '</p>' +
+    '<p class="hd2"><span class="lb">말하는 순서</span> ' + circleEsc_(순서) + '</p>' +
+    '<div class="qcard">' + circleEsc_((grp.warmup_question || {}).text || '') + '</div>' +
+    '<div class="blank">오늘 조에서 나온 질문 한 개 (기록)</div>' +
+    '</div>');
+  const h = (59.4 * (5 - grp.members.length - 1)) / Math.max(1, grp.members.length); // 빈 자리를 나눠 갖는다
+  grp.members.forEach(m => {
+    const L = ['<div class="z" style="height:' + (59.4 + h).toFixed(2) + 'mm">',
+      '<div class="corner">' + circleEsc_(꼬리) + '</div>',
+      '<div class="keep">',
+      '<p class="nm">' + circleEsc_(m.display_name) + '<span>' + circleEsc_(m.role) + '</span></p>'];
+    if (m.kept) L.push('<p class="ln"><span class="lb">잘 된 문장</span> ' + circleEsc_(m.kept.text) + '</p>');
+    if (m.shaky) {
+      L.push('<p class="ln"><span class="lb">한 번 더 볼 자리</span> ' + circleEsc_(m.shaky.text) + '</p>');
+      if (m.shaky.trend_line) L.push('<p class="ln">' + circleEsc_(m.shaky.trend_line) + '</p>');
+    }
+    if (m.next_one) L.push('<p class="ln"><span class="lb">' + circleEsc_(m.next_one.label) + '</span> ' +
+      circleEsc_(m.next_one.text) + (m.next_one.check ? '<span class="ck"></span>' : '') + '</p>');
+    L.push('</div>');
+    const f = m.frame;
+    if (f) {
+      L.push('<div class="frames">');
+      L.push('<p class="fr"><span class="lb">말할 때</span> ' + circleEsc_(f.kept) + ' / ' + circleEsc_(f.shaky) + '</p>');
+      L.push('<p class="fr"><span class="lb">물어볼 때</span> ' + f.asks.map(circleEsc_).join(' / ') + '</p>');
+      L.push('<p class="fr"><span class="lb">오늘 목표</span> ' + circleEsc_(f.goal) + '  <span class="lb">되받기</span> ' + circleEsc_(f.echo) + '</p>');
+      L.push('</div>');
+    }
+    L.push('</div>');
+    H.push(L.join(''));
+  });
+  H.push('</div>');
+  return H.join('');
+}
+function circleSheetHtml_(sheet) {
+  const pages = (sheet.groups || []).map(g => circleGroupPage_(sheet, g)).join('');
+  return '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">' +
+    '<title>숙제 서클 ' + circleEsc_(sheet.class_id) + ' ' + circleEsc_(sheet.session_no) + '차시</title>' +
+    // 웹폰트 동반 — 스택 이름만 바꾸면 아무 일도 안 일어난다(브랜드 폰트 정본 §9).
+    // 학원 PC 에 SUIT·Inter Tight 가 깔려 있을 리 없고, 없으면 조용히 시스템 서체로 떨어진다.
+    CARD_WEBFONT +
+    '<style>' + circleSheetCss_() + '</style></head><body>' + pages + '</body></html>';
+}
+
+/* 📺 미리보기 — 시트를 전혀 읽지 않는다(개원 전에도 강사·유호님이 실물 모양을 본다).
+ * 실물과 **같은 circleSheetHtml_** 를 타므로 여기서 본 모양이 개원 후와 다를 수 없다
+ * (groupBoardPreview 가 세운 규약 · 08-01 유호님 실측에서 나온 규칙). */
+function circleSheetFixture_(lessonNo) {
+  const n = Number(lessonNo) || 12;
+  const 이름 = ['바트', '사란', '뭉흐', '오윤'];
+  const 태그 = ['조사:주격(이/가·은/는)', '어미:연결어미', '맞춤법:받침', '오류없음'];
+  const 문장 = ['저는 어제 도서관에서 책을 읽었어요.', '주말에 친구하고 시장에 갔어요.',
+    '아침에 눈이 와서 길이 미끄러웠어요.', '어머니께서 만들어 주신 음식이 맛있었어요.'];
+  const 어제 = '2026-03-10', 지난주 = '2026-03-03';
+  return {
+    class_id: '평일 A', session_no: n, week: Math.ceil(n / 5), season: '2026-02-25', focus_group: 1,
+    groups: [{
+      group_no: 1,
+      warmup_question: circleWarmupOf_(n, 1),
+      members: 이름.map((nm, i) => circleMemberCard_(
+        { name: nm, role: roleOfSeat_(i, n, 4) },
+        [{ day: 어제, 제출문: 문장[i], 태그: [태그[i]], 숙제ID: 'HW' + i, 재작성: i === 0 },
+         { day: 어제, 제출문: 문장[(i + 1) % 4], 태그: ['오류없음'], 숙제ID: 'HW' + i, 재작성: i === 0 },
+         { day: 지난주, 제출문: 문장[(i + 2) % 4], 태그: [태그[i], 태그[i]], 숙제ID: 'HW' + i, 재작성: false }],
+        1, 어제))
+    }],
+    보고: { 출석확정: true, 레벨미확정: [], 어휘표: true }
+  };
+}
+function circleSheetPreview() {
+  const html = circleSheetHtml_(circleSheetFixture_(12));
+  Logger.log('숙제 서클 미리보기 — ' + html.length + '자. HtmlService 로 열어 Ctrl+P 하세요.');
+  return HtmlService.createHtmlOutput(html).setTitle('숙제 서클 미리보기');
+}
+
+/* 🖨 오늘 수업 반의 서클 인쇄물을 Drive 에 굽는다 — 기존 SYNK_인쇄 통로(printMonthlyCards)와 같은 폴더.
+ * ▶ 수동 실행. 반 이름을 주면 그 반만, 안 주면 오늘 수업하는 반 전부. */
+function printCircleSheets(className) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const sc = ss.getSheetByName('schedule');
+  const dow = new Date().getDay();
+  const list = className ? [String(className)]
+    : (sc && sc.getLastRow() >= 2 ? sc.getRange(2, 1, sc.getLastRow() - 1, 2).getValues()
+      .filter(r => r[0] && classDowOk_(r[1], dow)).map(r => String(r[0])) : []);
+  if (!list.length) return 'ℹ 오늘 수업하는 반이 없습니다(일요일이거나 schedule 미설정).';
+  const it = DriveApp.getFoldersByName('SYNK_인쇄');
+  const folder = it.hasNext() ? it.next() : DriveApp.createFolder('SYNK_인쇄');
+  const day = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const L = [];
+  list.forEach(c => {
+    const sheet = circleSheetOf_(ss, c, new Date(), tz);
+    if (!sheet) { L.push('⚠ ' + c + ': 조 편성이 없습니다 — assignGroups("' + c + '") 실행'); return; }
+    if (!sheet.session_no) { L.push('⚠ ' + c + ': 시즌 기간 밖입니다(setSeasonStart 확인)'); return; }
+    if (!sheet.groups.length) { L.push('⚠ ' + c + ': 오늘 출석 확정된 학생이 0명이라 인쇄할 칸이 없습니다'); return; }
+    const blob = Utilities.newBlob(circleSheetHtml_(sheet), 'text/html',
+      'SYNK_서클_' + c + '_' + day + '.html');
+    const f = folder.createFile(blob);
+    const 경고 = [];
+    if (!sheet.보고.출석확정) 경고.push('출석 확정 행이 0 — 편성 전원을 인쇄했습니다');
+    if (!sheet.보고.어휘표) 경고.push("레벨 어휘표가 없습니다 — app_state 에 key='레벨어휘' · value='기초=1,초급=2,중급=4,고급=6' 한 행");
+    if (sheet.보고.레벨미확정.length) 경고.push('레벨을 못 읽은 학생 ' + sheet.보고.레벨미확정.length + '명 — 그 칸은 문장 틀 없이 나갑니다(' + sheet.보고.레벨미확정.join('·') + ')');
+    L.push('✅ ' + c + ' ' + sheet.session_no + '차시 · ' + sheet.groups.length + '조 ' +
+      sheet.groups.reduce((n, g) => n + g.members.length, 0) + '명 — ' + f.getUrl() +
+      (경고.length ? '\n   ⚠ ' + 경고.join('\n   ⚠ ') : ''));
+  });
+  const msg = L.join('\n');
+  Logger.log(msg);
+  return msg;
+}
 /* ═════════════ [v9.86·D] 📋 주간 교안 초안 — "수업준비를 만드는 사람"의 백지를 없앤다 ═════════════
  * 유호 07-31 채택(도전안 4번): 수업준비의 최대 병목은 강사의 5분이 아니라 콘텐츠·교안 편집(원장 근무 46% 실측).
  * 매주 월 07시(weeklyJobs 편승) 반별 Google Doc 초안 생성 — 앱이 아는 칸(기간·인원·담당·지난주 이월·오류
