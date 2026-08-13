@@ -240,7 +240,13 @@ function 안전테스트검사() {
        *   배포자 트랙 밖이고, 그 줄을 적은 세션은 자기 test-ci 가 초록이라 볼 통로가 없다.
        *   게이트·모사·CI 가 같은 눈금이라야 「초록이면 나간다」가 성립한다. 게이트가 놓은
        *   메모리 위생의 발동 자리는 rot-check 재질의 절이 잇는다(배포를 막지 않는 warn 층). */
-      const 모사 = require(path.join(ROOT, 'tools', 'lib', 'ci모사환경.js')).만들기();
+      let 모사;
+      try { 모사 = require(path.join(ROOT, 'tools', 'lib', 'ci모사환경.js')).만들기(); } catch (e) {
+        // 환경을 못 조립하면 재지 못한 것이다 — 폴백은 언제나 '더 많이 검사하는' 쪽 = 차단(F044 「실행 불가는 deny로」).
+        problems.push('안전 테스트의 CI 모사 환경 조립 실패(tools/lib/ci모사환경.js): '
+          + String((e && e.message) || e).split('\n')[0] + ' — 통과가 아니라 미실행이라 차단한다');
+        return;
+      }
       try {
         execFileSync(process.execPath, ['--test', ...testFiles.map((f) => path.join(ROOT, 'tests', f))],
           { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: 모사.env });

@@ -55,3 +55,13 @@ test('clasp-guard 안전테스트 폴백이 한 벌의 env 로 스위트를 돈�
   );
   assert.ok(/치우기\(\)/.test(src), '게이트가 임시 홈을 안 치운다');
 });
+
+test('auto-commit 의 「실을 테스트」 러너도 같은 한 벌로 돈다 — 같은 스위트의 셋째(마지막) 러너 (F389)', () => {
+  /* 이 러너가 지키는 것은 「원격 CI(UTC·홈 없음)가 빨개질 테스트 파일을 안 싣는 것」이라 재는
+   * 눈금도 그 층이라야 한다 — 실 HOME 이면 CI 에선 초록일 파일이 남의 메모리 상태로 손커밋 강등된다. */
+  const src = fs.readFileSync(path.join(REPO, '.claude', 'hooks', 'auto-commit.js'), 'utf8');
+  assert.ok(/ci모사환경/.test(src), 'auto-commit 이 lib/ci모사환경 을 안 쓴다 — 실 HOME 갈래가 되살아났다');
+  assert.ok(/const 자식env = 모사\.env/.test(src), '모사 env 가 자식 러너에 실제로 물리지 않았다(require 만으론 안 재진다)');
+  assert.ok(/delete 자식env\.NODE_TEST_CONTEXT/.test(src),
+    'NODE_TEST_CONTEXT 삭제가 사라졌다 — 「status 0·빈 stdout」의 영구 초록(F207 얼굴)이 되살아난다');
+});
