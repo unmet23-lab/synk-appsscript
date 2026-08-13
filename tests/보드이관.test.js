@@ -853,9 +853,102 @@ test('[F397·거짓양성] 보드 이름이 지문 꼴이 아니면 이 검사�
   assert.equal(r.status, 0, '주인을 못 가르는 보드까지 막았다 — 오탐은 이 도구를 안 쓰게 만든다: ' + r.stderr);
 });
 
-test('[F397·자기처방] `--미완확인` 을 붙이면 **실제로 지나간다** (F103 — 처방이 도는지 본다)', () => {
+test('[F397·자기처방] `--미완확인 "사유"` 를 붙이면 **실제로 지나간다** (F103 — 처방이 도는지 본다)', () => {
   const { fx, 줄 } = mk지문보드픽스처();
-  const r = run(fx, ['미완 트랙 무', '--미완확인'], { CLAUDE_CODE_HOST_SESSION_ID: 딴세션397 });
+  const r = run(fx, ['미완 트랙 무', '--미완확인', '커밋 abc1234 열어 잔여 0 확인'],
+    { CLAUDE_CODE_HOST_SESSION_ID: 딴세션397 });
   assert.equal(r.status, 0, '거절이 시킨 그 명령이 안 돈다 — 우회가 정상 통로가 된다: ' + r.stderr);
   assert.ok(read(fx.archive).includes(줄), '--미완확인 인데 아카이브에 안 들어갔다');
+});
+
+/* ── F407 — 「근거를 달아 다시 돌려라」가 **근거를 달면 튕기던** 자리 (2026-08-14) ─────────
+ * 옛 판은 needle 을 「`--dry`·`--미완확인` 을 뺀 나머지 전부」로 조립했다. 그래서 거절문을 그대로
+ * 따라 근거를 붙이면 그 근거까지 검색 문구가 되어 **「줄을 못 찾았다」**로 죽었다 — 성공하는
+ * 유일한 통로가 근거를 버리는 쪽이었고, 그래서 근거는 어디에도 안 남았다(정확히 F103).
+ * 🔑 탐지력은 아래 ①이 진다 — 옛 판에서 이 시험은 status 1 로 **적색**이다. */
+
+test('[F407·탐지] 사유를 붙여도 **문구 검색이 오염되지 않는다** (옛 판은 「못 찾았다」로 튕겼다)', () => {
+  const { fx, 줄 } = mk지문보드픽스처();
+  const r = run(fx, ['미완 트랙 무', '--미완확인', '커밋 abc1234 열어 잔여 0 확인'],
+    { CLAUDE_CODE_HOST_SESSION_ID: 딴세션397 });
+  assert.doesNotMatch(String(r.stderr), /못 찾았다/,
+    '사유가 needle 로 새어 들어갔다 — F407 재현(처방을 따르면 실패한다)');
+  assert.equal(r.status, 0, '사유를 붙였더니 죽었다: ' + r.stderr);
+  assert.ok(read(fx.archive).includes(줄), '사유를 붙였더니 아카이브에 안 들어갔다');
+});
+
+test('[F407] `--미완확인=사유` 꼴도 같은 답을 낸다', () => {
+  const { fx, 줄 } = mk지문보드픽스처();
+  const r = run(fx, ['미완 트랙 무', '--미완확인=커밋 abc1234 열어 잔여 0 확인'],
+    { CLAUDE_CODE_HOST_SESSION_ID: 딴세션397 });
+  assert.equal(r.status, 0, '= 꼴이 안 돈다: ' + r.stderr);
+  assert.ok(read(fx.archive).includes(줄), '= 꼴인데 아카이브에 안 들어갔다');
+});
+
+test('[F407] **사유 없는** `--미완확인` 은 거절하고 아무것도 안 쓴다', () => {
+  const { fx, 줄 } = mk지문보드픽스처();
+  const before = { b: read(fx.board), a: read(fx.archive) };
+  const r = run(fx, ['미완 트랙 무', '--미완확인'], { CLAUDE_CODE_HOST_SESSION_ID: 딴세션397 });
+  assert.notEqual(r.status, 0,
+    '사유 없이 지나갔다 — 「주인이 죽었으니 옮긴다」와 같아지고 원칙 ⑦ 이 무력해진다(F397)');
+  assert.match(String(r.stderr), /F407/, '왜 막혔는지 안 말한다');
+  assert.equal(read(fx.board), before.b, '거부인데 보드가 변했다');
+  assert.equal(read(fx.archive), before.a, '거부인데 아카이브가 변했다');
+  assert.ok(read(fx.board).includes(줄), '거부인데 줄이 보드에서 사라졌다');
+});
+
+/** 원칙 ⑦ 이 걸리는 조건(파일 이름 = **남의** 지문)을 **커밋된 저장소** 안에 세운다 —
+ *  「사유가 실제로 남았나」는 저장소 안에서만 잴 수 있다(픽스처 밖에선 커밋 자체가 없다). */
+function mk지문repo픽스처(상태 = '▶작업중 — /deploy 진입') {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'boardmove-'));
+  const board = path.join(dir, `${지문397}.md`);
+  const archive = path.join(dir, '세션보드_아카이브.md');
+  const 줄 = `| 2026-08-13 | **미완 트랙 무** | a.js | ${상태} |`;
+  fs.writeFileSync(board, [
+    '| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|', 줄, '',
+  ].join('\n'), 'utf8');
+  fs.writeFileSync(archive, [
+    '# 세션보드 아카이브', '', '> 읽지 않는 파일.', '', '---', '',
+    '| 2026-08-03 | **옛 트랙** | c.js | 완료 |', '',
+  ].join('\r\n'), 'utf8');
+  git(dir, 'init', '-q');
+  git(dir, 'config', 'user.email', 'test@synk.local');
+  git(dir, 'config', 'user.name', 'boardmove-test');
+  git(dir, 'config', 'commit.gpgsign', 'false');
+  git(dir, 'add', '--', `${지문397}.md`, '세션보드_아카이브.md');
+  git(dir, 'commit', '-q', '-m', 'fixture');
+  return { fx: { dir, board, archive }, 줄 };
+}
+
+/* F407 의 **본론**. 위 시험들은 「사유가 받아들여지나」까지고, 신고문이 아픈 자리는 그 다음이다 —
+ * 「성공하는 통로가 근거를 버리는 쪽이라 **근거가 어디에도 안 남는다**」. 안 재면 이 기록은
+ * 조용히 끊길 수 있고, 끊긴 증상은 적색이 아니라 **초록**이다(CLAUDE.md 맹점 ④). */
+test('[F407·기록] 사유가 **이관 커밋 메시지에** 남는다', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx } = mk지문repo픽스처();
+  const 사유 = '커밋 abc1234 열어 잔여 0 확인';
+  const r = run(fx, ['미완 트랙 무', '--미완확인', 사유], { CLAUDE_CODE_HOST_SESSION_ID: 딴세션397 });
+  assert.equal(r.status, 0, '이관 실패: ' + r.stderr);
+  const msg = git(fx.dir, 'log', '-1', '--format=%B').stdout;
+  assert.ok(msg.includes(사유), '사유가 커밋 메시지에 안 남았다 — 근거가 어디에도 없다(F407):\n' + msg);
+  assert.match(msg, /F407|미완확인 사유/, '어느 통로로 남은 근거인지 안 적힌다');
+});
+
+test('[F407·거짓양성] **평범한 이관**의 커밋엔 사유 줄이 안 붙는다', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mkRepoFixture();
+  const r = run(fx, ['옮길 트랙 갑']);
+  assert.equal(r.status, 0, '이관 실패: ' + r.stderr);
+  assert.doesNotMatch(git(fx.dir, 'log', '-1', '--format=%B').stdout, /미완확인 사유/,
+    '미완확인을 안 썼는데 사유 줄이 붙었다 — 커밋 메시지가 거짓을 말한다');
+});
+
+/* 자기 처방 되먹임 — CLAUDE.md 가드 맹점 ③. 차단 사유가 **시키는 명령을 그대로 뽑아**
+ * 그 가드에 되먹여 통과하는지 본다. 손으로 옮겨 적으면 그건 처방이 아니라 내 해석이다. */
+test('[F407·자기처방] 사유 없음 거절문이 **내미는 명령을 그대로** 돌리면 지나간다', () => {
+  const { fx, 줄 } = mk지문보드픽스처();
+  const r = run(fx, ['미완 트랙 무', '--미완확인'], { CLAUDE_CODE_HOST_SESSION_ID: 딴세션397 });
+  const m = String(r.stderr).match(/node tools\/board-move\.js\s+"([^"]+)"\s+--미완확인\s+"([^"]+)"/);
+  assert.ok(m, '거절문이 그대로 돌릴 명령을 안 내민다 — 못 따를 처방이다(F103): ' + r.stderr);
+  const r2 = run(fx, [m[1], '--미완확인', m[2]], { CLAUDE_CODE_HOST_SESSION_ID: 딴세션397 });
+  assert.equal(r2.status, 0, '거절문이 내민 그 명령이 안 돈다 — 우회가 정상 통로가 된다: ' + r2.stderr);
+  assert.ok(read(fx.archive).includes(줄), '처방대로 했는데 아카이브에 안 들어갔다');
 });
