@@ -1,14 +1,16 @@
 /* ============================================================
- * SYNK 교재연동 엔진 [v9.59] — 목소리 타임랩스(A) + 필살기 노트(B) + AI 문법 판정(C)
+ * SYNK 교재연동 엔진 [v9.59] — 목소리 타임랩스(A) + 연습 노트(B) + AI 문법 판정(C)
+ *   ⚠ B 는 v9.229 에서 「필살기 노트」→「내 연습 노트」로 개명됐다(유호 확정 08-13 · 카피 전수감사
+ *     갈래2-② ⓑ). 시트 열 이름도 `필살기노트`→`연습노트` — 마이그레이션은 setupTextbookLink 안 한 줄.
  *
  * 무엇(2026-07-24 유호님 채택 2건 — 기능 동결의 명시 예외):
  *   A. 목소리 타임랩스 — 교재 권1 1·4·8과 과업의 음성 녹음을 폼으로 제출받아
  *      "처음 목소리 vs 오늘 목소리" 성장 카드를 만든다(시즌1 「첫 목소리」 서사의 물증).
- *   B. 필살기 노트 — mastery_log(미도달 문법)·student_errors(강사 약점 메모)·
+ *   B. 연습 노트 — mastery_log(미도달 문법)·student_errors(강사 약점 메모)·
  *      hw_feedback(AI 첨삭)을 모아 "너의 약점 → 교재 몇 과를 다시 펴라"를 학생별 생성.
  *   C. AI 문법 판정 [v9.59, 유호님 지시 "교사 손 0"] — 학생이 숙제폼으로 낸 문장을
  *      AI가 판정해 mastery_log를 자동 축적. 강사 마감폼 문법태그 없이도 진화 게이트·
- *      필살기 노트가 완전 작동한다(마감폼·약점메모폼은 선택 보강으로 강등).
+ *      연습 노트가 완전 작동한다(마감폼·약점메모폼은 선택 보강으로 강등).
  *      열의 있는 학생일수록 제출↑ → 도달↑ → 진화↑ — 학생 주도 완결 루프.
  *
  * 설계 원칙
@@ -22,7 +24,7 @@
  *   voiceFormFinishSetup ▶ → setupTextbookLink ▶ → Glide 열 배치)
  *
  * profiles 신규 열(헤더는 setupTextbookLink가 세팅):
- *   DB 목소리폼URL(학생별 미리채움) · DC 목소리성장카드 · DD 필살기노트
+ *   DB 목소리폼URL(학생별 미리채움) · DC 목소리성장카드 · DD 연습노트
  * 신규 시트: voice_log — 열 정본은 VOICE_LOG_HEADERS(v9.107 전사 3열 · [v9.187] 급수 증분 · [v9.208] schema_ver)
  * ============================================================ */
 
@@ -37,7 +39,7 @@ const TB_GRAMMAR_LESSON = {
 };
 const TB_VOICE_POINTS = 10;              // 목소리 제출 포인트(하루 1회 자체 가드)
 const TB_VOICE_REASON = '목소리제출';     // point_logs 사유(멱등 키)
-const TB_NOTE_MAX = 3;                   // 필살기 노트 최대 항목 수(인지 부하 상한)
+const TB_NOTE_MAX = 3;                   // 연습 노트 최대 항목 수(인지 부하 상한)
 const TB_GROWTH_MIN_DAYS = 21;           // 성장 카드 최소 간격(처음↔최신)
 const TB_JUDGE_MAX_PER_RUN = 20;         // C. 문법 판정 — 밤당 최대 학생 수(비용·시간 가드)
 const TB_JUDGE_TEXT_CAP = 600;           // 학생당 판정 입력 문장 길이 상한(자)
@@ -124,14 +126,18 @@ function setupTextbookLink() {
   if (pf) {
     if (String(pf.getRange('DB1').getValue()) !== '목소리폼URL') pf.getRange('DB1').setValue('목소리폼URL');
     if (String(pf.getRange('DC1').getValue()) !== '목소리성장카드') pf.getRange('DC1').setValue('목소리성장카드');
-    if (String(pf.getRange('DD1').getValue()) !== '필살기노트') pf.getRange('DD1').setValue('필살기노트');
+    /* [v9.229] 개명 — 「필살기노트」 → 「연습노트」(유호 확정 08-13 갈래2-② ⓑ · 카피 전수감사).
+     * 구 표기 「내일의 필살기」 계열이 퇴역했고 이 열 이름이 그 계열의 마지막 라이브 자리였다.
+     * 🔑 이 한 줄이 마이그레이션이다 — 옛 이름이든 빈 칸이든 새 이름으로 덮는다. 열의 «값»은
+     *   건드리지 않는다(다음 일요일 밤 buildFocusNotes_ 가 새 제목으로 다시 쓴다). */
+    if (String(pf.getRange('DD1').getValue()) !== '연습노트') pf.getRange('DD1').setValue('연습노트');
   }
   // 야간 트리거(23:00) — 같은 함수의 기존 트리거는 제거 후 재설치(멱등)
   ScriptApp.getProjectTriggers().forEach(t => {
     if (t.getHandlerFunction() === '교재연동Nightly') ScriptApp.deleteTrigger(t);
   });
   ScriptApp.newTrigger('교재연동Nightly').timeBased().everyDays(1).atHour(23).create();
-  Logger.log('✅ 교재연동 설치 완료 — 매일 23시: 목소리 스윕+링크, 일요일 밤: 필살기 노트 생성.');
+  Logger.log('✅ 교재연동 설치 완료 — 매일 23시: 목소리 스윕+링크, 일요일 밤: 연습 노트 생성.');
   교재연동Nightly(); // 설치 직후 1회 즉시(링크 열을 바로 채워 Glide 조립을 기다리게 하지 않는다)
 }
 
@@ -145,7 +151,7 @@ function 교재연동Nightly() {
   try { voiceTranscribe_(ss); } catch (e) { Logger.log('voiceTranscribe_ 오류: ' + e); } // [v9.107] 적재 직후 전사 — 성장 카드가 전사문을 실을 수 있게 카드 생성보다 앞
   try { writeVoiceLinks_(ss); } catch (e) { Logger.log('writeVoiceLinks_ 오류: ' + e); }
   try { buildVoiceGrowthCards_(ss); } catch (e) { Logger.log('buildVoiceGrowthCards_ 오류: ' + e); }
-  // 필살기 노트는 주 1회(일요일 밤)면 충분 — 매일 바뀌면 "노트"가 아니라 소음이 된다
+  // 연습 노트는 주 1회(일요일 밤)면 충분 — 매일 바뀌면 "노트"가 아니라 소음이 된다
   if (new Date().getDay() === 0) {
     try { buildFocusNotes_(ss); } catch (e) { Logger.log('buildFocusNotes_ 오류: ' + e); }
   }
@@ -618,7 +624,7 @@ function buildVoiceGrowthCards_(ss) {
   if (col) writeIfChanged(pf, 2, col, out);
 }
 
-// ── B. 필살기 노트(주 1회) → profiles '필살기노트' 열 ────────────────────
+// ── B. 연습 노트(주 1회) → profiles '연습노트' 열 ─────────────────────────
 //   재료: mastery_log '연습'(미도달 문법) + aiWeakMap_(강사 메모 14일 + 최근 첨삭 포인트)
 //   AI 호출 0 — 전부 기존 데이터의 재조립. 문법→교재 과 매핑 = TB_GRAMMAR_LESSON.
 function buildFocusNotes_(ss) {
@@ -655,7 +661,7 @@ function buildFocusNotes_(ss) {
     const gids = (practicing[sid] || []).slice(0, TB_NOTE_MAX);
     const memos = (weak[sid] || []).slice(-1); // 가장 최근 코치 문구 1건만(소음 방지)
     if (!gids.length && !memos.length) return [''];
-    let md = '## 📖 나의 필살기 노트\n\n';
+    let md = '## 📖 내 연습 노트 — 이번 주\n\n';
     if (gids.length) {
       md += gids.map((g, i) => (i + 1) + '. **' + (gName[g] || g) + '**' +
         (TB_GRAMMAR_LESSON[g] ? ' — ' + TB_GRAMMAR_LESSON[g] + ' 다시 펴기' : '')).join('\n') + '\n\n';
@@ -664,7 +670,15 @@ function buildFocusNotes_(ss) {
     md += '이것만 잡으면 다음 진화가 가까워져요 ⚡';
     return [md];
   });
-  const col = tbProfileCol_(pf, '필살기노트');
+  /* 🔴 배포 순서에 안 기댄다 — 코드가 먼저 나가고 setupTextbookLink 가 아직 안 돌면
+   *   새 이름 열이 없어 col=0 이 되고, 노트가 **조용히 멈춘다**(에러도 안 난다).
+   *   그래서 여기서 옛 이름을 찾아 그 자리에서 헤더만 갈아 끼운다 — 값·열 위치는 그대로다.
+   *   설치를 다시 돌리든 안 돌리든 같은 결과가 되는 자리(v9.229 개명). */
+  let col = tbProfileCol_(pf, '연습노트');
+  if (!col) {
+    const 옛 = tbProfileCol_(pf, '필살기노트');
+    if (옛) { pf.getRange(1, 옛).setValue('연습노트'); col = 옛; }
+  }
   if (col) writeIfChanged(pf, 2, col, out);
 }
 
