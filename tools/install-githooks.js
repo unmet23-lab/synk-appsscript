@@ -26,9 +26,12 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 
-const ROOT = path.resolve(__dirname, '..');
+/* SYNK_GITHOOKS_ROOT — 회귀 픽스처 전용 이음매(tests/훅설치.test.js). 기본은 이 저장소다.
+ * 라이브러리(handoff-store)는 ROOT 가 아니라 **스크립트 곁**에서 읽는다 — 대상 저장소를 바꿔도
+ * 도구의 부품이 바뀌는 것은 아니다. */
+const ROOT = path.resolve(process.env.SYNK_GITHOOKS_ROOT || path.resolve(__dirname, '..'));
 const SRC_DIR = path.join(ROOT, 'tools', 'githooks');
-const store = require(path.join(ROOT, '.claude', 'hooks', 'lib', 'handoff-store.js'));
+const store = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'handoff-store.js'));
 const check = process.argv.includes('--check');
 
 /** 그 저장소에서 **실제로 도는** 훅 폴더. 설정을 읽는다 — 자리를 추측하지 않는다
@@ -48,7 +51,19 @@ if (!names.length) {
   process.exit(1);
 }
 
+/* ── F391 — 설치본에만 있는 줄 ─────────────────────────────────────
+ * 지금까지는 원본→설치본 **한 방향**만 봤다. 그래서 게이트를 설치본에 먼저 놓은 세션의 줄을
+ * 다음 설치 실행이 **조용히** 덮었고, 증상은 「가드가 없다」가 아니라 「있었는데 사라졌다」라
+ * 어디에도 안 남는다(실측 08-12 local_91cd3a7c). `.git/hooks` 는 git 밖이라 덮인 내용은
+ * 복구 경로가 0이다 — 그래서 write 모드는 보고가 아니라 **거부**다(덮고 나서 말하면 늦다). */
+function 설치본단독줄(원본, 설치본) {
+  const 줄들 = (s) => String(s).replace(/\r\n/g, '\n').split('\n').map((l) => l.trim()).filter(Boolean);
+  const 원본집합 = new Set(줄들(원본));
+  return [...new Set(줄들(설치본))].filter((l) => !원본집합.has(l));
+}
+
 let need = 0;
+let 보류 = 0;
 for (const name of names) {
   const src = path.join(SRC_DIR, name);
   const dst = path.join(dest, name);
@@ -56,7 +71,21 @@ for (const name of names) {
   const have = fs.existsSync(dst) ? fs.readFileSync(dst, 'utf8') : null;
   if (have === want) { console.log(`  = ${name} (최신)`); continue; }
   need++;
-  if (check) { console.log(`  ! ${name} ${have === null ? '미설치' : '원본과 다름(드리프트)'}`); continue; }
+  const 단독 = have === null ? [] : 설치본단독줄(want, have);
+  if (check) {
+    console.log(`  ! ${name} ${have === null ? '미설치' : '원본과 다름(드리프트)'}`);
+    for (const l of 단독.slice(0, 6)) console.log(`      ↳ 설치본에만 있는 줄: ${l.slice(0, 120)}`);
+    if (단독.length > 6) console.log(`      ↳ … ${단독.length - 6}줄 더`);
+    continue;
+  }
+  if (단독.length) {
+    보류++;
+    console.log(`  🔴 ${name} — 설치본에만 있는 줄 ${단독.length}개를 덮게 된다 · **안 덮고 보류한다** (F391)`);
+    for (const l of 단독.slice(0, 6)) console.log(`      ↳ ${l.slice(0, 120)}`);
+    if (단독.length > 6) console.log(`      ↳ … ${단독.length - 6}줄 더`);
+    console.log('      → 필요한 줄이면 원본(tools/githooks/)에 먼저 옮기고, 일부러 빼는 것이면 설치본에서 그 줄을 지운 뒤 재실행한다.');
+    continue;
+  }
   fs.mkdirSync(dest, { recursive: true });
   fs.writeFileSync(dst, want, 'utf8');
   try { fs.chmodSync(dst, 0o755); } catch (_) { /* Windows는 실행비트가 없다 */ }
@@ -103,6 +132,10 @@ if (갈라짐) {
 
 if (check && need) {
   console.error(`[install-githooks] ${need}건 설치 필요 — node tools/install-githooks.js`);
+  process.exit(1);
+}
+if (보류) {
+  console.error(`[install-githooks] ${보류}건 보류 — 설치본에만 있는 줄이 있어 덮지 않았다(F391 · 위 처방대로 정리 후 재실행)`);
   process.exit(1);
 }
 console.log(check ? '[install-githooks] 설치 상태 최신' : '[install-githooks] 완료');
