@@ -158,6 +158,18 @@ if (걸린조각(
         + '\n→ 커밋에서 멈춘다. 자동화가 죽은 것을 **확인한** 경우에만 GIT_SCOPE_BYPASS=1 을 붙인다.');
     }
   }
+  /* ⑨-b 처방문 되먹임 구멍(가드 맹점 ③): 위 사유의 「push 는 자동화 몫」을 읽은 세션이 그
+   * 자동화 스크립트(tools/memory-push.cmd — Task Scheduler 가 매시 돌린다)를 **손으로 당기면**
+   * 같은 push 가 이 가드 시야 밖에서 재현된다(.cmd 안의 git 은 훅을 안 지난다). 호출만 막고
+   * 읽기는 자유다 — 조각의 **첫 낱말**이 그 스크립트일 때만 호출이다(cat·type 등 읽개가 첫
+   * 낱말이면 언급일 뿐이다). 스케줄러 자신은 세션 훅 밖에서 돌므로 이 규칙에 안 닿는다. */
+  const 메모리푸시호출 = 걸린조각((s) =>
+    /^\s*(?:(?:call|start|cmd(?:\.exe)?\s+\/[ck]|&|\.)\s+)?["']?(?:[A-Za-z]:)?[\w.\/\\~-]*memory-push(?:\.cmd)?["']?(?:\s|$)/i.test(s));
+  if (메모리푸시호출) {
+    deny('[git-scope-guard] 스케줄러의 push 스크립트(tools/memory-push.cmd)를 세션이 직접 호출 — synk-memory push 와 같은 통로 위반이다(F392).'
+      + '\n그 스크립트는 Task Scheduler(SYNK_MemoryPush)가 매시 돌린다 — 남긴 커밋은 다음 정시가 싣는다.'
+      + '\n→ 커밋에서 멈춘다. 자동화가 죽은 것을 **확인한** 경우에만 GIT_SCOPE_BYPASS=1 을 붙인다.');
+  }
 }
 
 /* ④ rebase·merge 진행 중의 commit — 2026-08-04 실사고(F038).
