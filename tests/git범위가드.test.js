@@ -1430,3 +1430,30 @@ test('⑨ `-C` 로 밖에서 조준한 push 도 그 저장소 기준으로 판�
     assert.ok(r.차단, '-C 형태를 못 잡았다 — 2026-08-04 「규칙 5개가 하나도 못 잡던」 그 구멍이다');
   } finally { try { fs.rmSync(dir, { recursive: true, force: true }); } catch {} }
 });
+
+test('⑨-b 스케줄러 push 스크립트의 손 호출을 막는다 — 처방문 되먹임 구멍 (가드 맹점 ③)', () => {
+  /* ⑨의 사유(「push 는 자동화 몫」)를 읽은 세션이 그 자동화(tools/memory-push.cmd)를 손으로
+   * 당기면 같은 push 가 가드 시야 밖(.cmd 안의 git)에서 재현된다 — 처방이 우회 경로가 되면 안 된다. */
+  [
+    'tools/memory-push.cmd',
+    'cmd /c tools\\memory-push.cmd',
+    'node tools/board.js && tools/memory-push.cmd',
+    "& 'C:/Users/q1212/Documents/SYNK-appsscript/tools/memory-push.cmd'",
+  ].forEach((c) => {
+    const r = 가드(c);
+    assert.ok(r.차단, '자동화 스크립트 손 호출을 막지 못했다: ' + c);
+    assert.ok(/정시/.test(r.사유), '「다음 정시가 싣는다」 처방이 빠졌다 — 처방 없는 차단은 우회를 가르친다(F103)');
+  });
+});
+
+test('⑨-b 읽기·언급은 자유다 — 문서화를 벌하는 가드는 BYPASS 를 가르친다', () => {
+  [
+    'cat tools/memory-push.cmd',
+    'type tools\\memory-push.cmd',
+    'rg -n "autostash" tools/memory-push.cmd',
+    'git log --oneline -3 -- tools/memory-push.cmd',
+    'git commit -m "memory-push.cmd 머리말 갱신" -- docs/x.md',
+  ].forEach((c) => {
+    assert.equal(가드(c).차단, false, '읽기·언급을 막았다: ' + c);
+  });
+});
