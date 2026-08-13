@@ -225,3 +225,38 @@ test('[백스톱] 격리 안내 메일이 옛글자 예외를 말한다 — 「�
   assert.ok(근처.indexOf('옛글자') !== -1 && 근처.indexOf("'노출'로 바꾸지 말고") !== -1,
     '격리 메일에 옛글자 예외 안내가 없다 — 옛글자 격리는 육안으로 멀쩡해 보여 「멀쩡하면 공개」 지시가 막은 글자를 학생에게 보낸다');
 });
+
+/* ── ⑥ 상담 층 처분 — 역번역 «검증 폐기»와 일시 오류를 가른다 (컨텍스트 독립 리뷰 P2-②③ · 08-13) ──
+ * v9.223 은 옛 글자 걸림도 null 로 접어 확인 화면에 「역번역 실패」(일시 오류의 얼굴)로 떴다 —
+ * 번역기는 원문의 그 글자를 그대로 옮겨 오므로 이 걸림은 «나갈 초안» 쪽 신호인데, 그 신호가
+ * 네트워크 오류로 위장되던 자리. 갈래는 값의 모양이 진다: 배열=성공 · null=일시 · {사유:'옛글자'}=폐기.
+ * ⚠ 상담AI.js 는 ENGINE_FILES 밖이라(상담지식.test.js 머리말) 별도 컨텍스트에 엔진과 «함께» 싣는다 —
+ *   상담_역번역처분_ 이 부르는 옛글자걸림_ 은 엔진_콘텐츠AI.js 소유라 따로 실으면 ReferenceError 다. */
+const 상담ctx = {
+  SpreadsheetApp: stub, PropertiesService: stub, Utilities: stub, Session: stub,
+  MailApp: stub, GmailApp: stub, UrlFetchApp: stub, DriveApp: stub, FormApp: stub,
+  DocumentApp: stub, ScriptApp: stub, CacheService: stub, LockService: stub,
+  HtmlService: stub, Logger: { log: () => {} }, console,
+};
+vm.createContext(상담ctx);
+vm.runInContext(engineSource() + '\n' +
+  fs.readFileSync(path.join(ROOT, 'contents_상담AI.js'), 'utf8') + '\n' +
+  fs.readFileSync(path.join(ROOT, '상담AI.js'), 'utf8'), 상담ctx);
+
+test('[상담] 상담_역번역처분_ — 깨끗한 배열은 그대로, 걸리면 {사유, 짚음} 마커 (P2-②)', () => {
+  const 깨끗 = ['어머님, 확인 후 연락드리겠습니다.'];
+  assert.equal(상담ctx.상담_역번역처분_(깨끗), 깨끗, '깨끗한 역번역이 마커로 바뀌었다 — 거짓양성');
+  const 마커 = 상담ctx.상담_역번역처분_(['앞' + 한자 + '뒤']);
+  assert.ok(마커 && !Array.isArray(마커), '옛 글자 걸림이 배열·null 로 접혔다 — 사유가 다시 위장된다');
+  assert.equal(마커.사유, '옛글자');
+  assert.equal(마커.짚음, 'U+683C', '짚음이 U+XXXX 표기가 아니다(F298)');
+  // 갈래를 모르는 호출부의 안전 — [0]·[i] 접근이 undefined 라 「없음」으로 접힌다(새는 방향이 통과가 아니다)
+  assert.equal(마커[0], undefined);
+});
+
+test('[상담] 시스템 프롬프트가 문자 규칙을 싣는다 — 이력 오염(매 턴 throw→인계초안 2차 호출)의 뿌리를 낮춘다 (P2-③)', () => {
+  const sys = 상담ctx.상담_시스템_();
+  assert.ok(sys.indexOf('한글·몽골어(키릴)·영어만 쓴다') !== -1,
+    '상담 프롬프트에서 문자 규칙 줄이 사라졌다 — 프로즈는 확률을 낮추는 층일 뿐이지만(막는 것은 게이트), ' +
+    '이 줄이 없으면 한자·가나 이력의 세션마다 매 턴 게이트 throw 와 인계초안 2차 호출이 반복된다');
+});
