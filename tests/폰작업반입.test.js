@@ -240,3 +240,77 @@ test('🔴 값마다 줄을 바꿔 읽는 자리 — 빈 제목이 뒤를 밀지
   assert.deepStrictEqual(묶음[1], ['origin/claude/b', '2분 전', ''], '빈 제목 자리가 사라졌다');
   assert.deepStrictEqual(묶음[2], ['origin/claude/c', '3분 전', '셋째'], '뒤가 한 칸 밀렸다');
 });
+
+/* ── F357 — 선언판 조각(보드·장부·인계문)은 반입이 못 건드린다 ─────────────────────────
+ * 옛 목록은 「세션보드 2종」뿐이라 F250 이주 뒤의 조각 폴더가 전부 새는 자리였다:
+ * 브랜치 판 보드 조각이 죽은 줄을 되살리고, 장부 조각의 낡은 판이 남의 해소 칸을 되돌린다.
+ * 목록 정본은 tools/lib/선언판.js 한 벌 — 아래 둘은 그 판정이 반입에 실제로 배선됐는지와
+ * 예외(장부 새 조각 A)가 브랜치의 신호를 잃지 않는지를 잰다. */
+function 선언판픽스처() {
+  const 원본 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-반입-선언판-'));
+  임시들.push(원본);
+  const go = G(원본);
+  go('init', '-q', '-b', 'master');
+  for (const d of ['보드', '장부', '인계문']) fs.mkdirSync(path.join(원본, 'docs', '_ops', d), { recursive: true });
+  fs.writeFileSync(path.join(원본, 'docs', '_ops', '보드', 'aaaa1111.md'), '| 산 세션의 줄 |\n');
+  fs.writeFileSync(path.join(원본, 'docs', '_ops', '보드', 'cccc2222.md'), '| 폰 세션 자기 줄 |\n');
+  fs.writeFileSync(path.join(원본, 'docs', '_ops', '장부', 'F010.md'),
+    '| F010 | 2026-08-01 | 마찰 | 신고문 | master 가 쓴 해소 |\n');
+  fs.writeFileSync(path.join(원본, 'seed.txt'), 'seed\n');
+  go('add', '-A'); go('commit', '-qm', 'seed');
+
+  go('checkout', '-qb', 'claude/선언판');
+  fs.writeFileSync(path.join(원본, '폰산출물.md'), '폰이 만든 것\n');
+  fs.writeFileSync(path.join(원본, 'docs', '_ops', '보드', 'aaaa1111.md'), '| 폰이 본 낡은 줄 |\n');   // 남의 조각 M
+  fs.writeFileSync(path.join(원본, 'docs', '_ops', '장부', 'F010.md'),
+    '| F010 | 2026-08-01 | 마찰 | 신고문 | |\n');                                    // 해소 칸을 되돌린 낡은 판 M
+  fs.writeFileSync(path.join(원본, 'docs', '_ops', '장부', 'F020.md'),
+    '| F020 | 2026-08-07 | 실수 | 브랜치가 새로 적은 신호 | |\n');                    // 새 조각 A
+  fs.writeFileSync(path.join(원본, 'docs', '_ops', '인계문', 'cccc2222.md'), '인계문 본문\n'); // 인계문 조각 A
+  go('rm', '-q', '--', 'docs/_ops/보드/cccc2222.md');                                // 자기 줄 지움 D (board-move 모양)
+  go('add', '-A'); go('commit', '-qm', '폰 작업');
+  go('checkout', '-q', 'master');
+  // ⚠ master 는 갈라진 뒤 아무것도 안 고친다 — 「양쪽」 건너뜀이 아니라 **선언판 제외**가 막는지를 재는 픽스처다.
+
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-반입-선언판repo-'));
+  임시들.push(repo);
+  spawnSync('git', ['clone', '-q', 원본, repo], { encoding: 'utf8' });
+  for (const [k, v] of [['user.name', 't'], ['user.email', 't@t'], ['commit.gpgsign', 'false']]) {
+    spawnSync('git', ['config', k, v], { cwd: repo, encoding: 'utf8' });
+  }
+  return { repo, 브랜치: 'origin/claude/선언판' };
+}
+
+test('🔴 F357: 보드·인계문 조각과 장부 조각의 낡은 판은 반입이 못 건드린다 — 새 장부 조각(A)만 받는다',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const { repo, 브랜치 } = 선언판픽스처();
+    const r = 돌린다(repo, ['--받기', 브랜치]);
+    assert.strictEqual(r.코드, 0, r.글);
+    assert.ok(fs.existsSync(path.join(repo, '폰산출물.md')), '진짜 산출물은 들어와야 한다');
+    assert.strictEqual(읽기(repo, 'docs/_ops/보드/aaaa1111.md'), '| 산 세션의 줄 |\n',
+      '남의 보드 조각이 브랜치의 낡은 판으로 덮였다 — 죽은 줄이 되살아나는 자리다(F357)');
+    assert.match(읽기(repo, 'docs/_ops/장부/F010.md'), /master 가 쓴 해소/,
+      '장부 해소 칸이 갈라진 시점 판으로 되돌아갔다(F357)');
+    assert.ok(!fs.existsSync(path.join(repo, 'docs', '_ops', '인계문', 'cccc2222.md')),
+      '인계문 조각이 반입됐다 — 선언판은 통째로 안 받는다');
+    assert.ok(fs.existsSync(path.join(repo, 'docs', '_ops', '보드', 'cccc2222.md')),
+      '브랜치의 보드 조각 삭제(D)가 master 로 전파됐다');
+    assert.match(읽기(repo, 'docs/_ops/장부/F020.md'), /브랜치가 새로 적은 신호/,
+      '새 번호 조각(A)까지 막았다 — 브랜치가 적은 신호가 통째로 사라진다(추가전용이 막던 그 사고)');
+  });
+
+test('F357: 목록 판정은 lib/선언판.js 한 벌 — 두 도구가 같은 답을 낸다 (사본이면 여기서 갈라진다)', () => {
+  const { 선언판인가 } = require(path.resolve(__dirname, '..', 'tools', 'lib', '선언판.js'));
+  const { 반입제외인가 } = require(TOOL);
+  const { 공유선언판인가 } = require(path.resolve(__dirname, '..', 'tools', '작업본소유자.js'));
+  for (const f of ['docs/_ops/보드/aaaa1111.md', 'docs/_ops/장부/F001.md', 'docs/_ops/인계문/x.md',
+    'docs/_ops/인계문.md', 'docs/세션보드.md', 'docs/세션보드_아카이브.md']) {
+    assert.ok(선언판인가(f), `선언판을 못 알아본다: ${f}`);
+    assert.ok(공유선언판인가(f), `작업본소유자 쪽 판정이 갈라졌다: ${f}`);
+  }
+  assert.ok(!선언판인가('docs/이해대장.html'), '선언판이 아닌 문서까지 막았다(거짓양성)');
+  assert.ok(반입제외인가('docs/_ops/보드/aaaa1111.md', 'M'), '보드 조각 M 을 받는다');
+  assert.ok(반입제외인가('docs/_ops/장부/F001.md', 'M'), '장부 조각 M(해소 칸 되돌림)을 받는다');
+  assert.ok(!반입제외인가('docs/_ops/장부/F001.md', 'A'), '장부 새 조각(A)까지 막았다');
+  assert.ok(!반입제외인가('docs/_ops/마찰신호.md', 'M'), '추가전용(행 합치기)까지 통째 제외로 돌렸다');
+});
