@@ -377,6 +377,20 @@ function 링크화(폴더, { 사본경로 = null, 정본경로 = null } = {}) {
   return 0;
 }
 
+/** 플래그 값 자리(`--이름 X`·`--갈래 Y` 의 X·Y)를 뺀 「넣을 파일」 인자만 추린다.
+ *  🔴 실측 2026-08-13: 플래그가 **없으면** `indexOf`가 -1 → `-1+1=0` 이 되어 0번째 인자
+ *  (첫 파일)를 값 자리로 오인해 버렸다. 파일 목록이 비면 루프가 0회라 **조용히 exit 0**
+ *  — 성공의 얼굴을 한 무동작(새는 방향은 언제나 「통과」다). 값 자리는 플래그가 실제로
+ *  있을 때만 뺀다. 회귀 = tests/운영자료.test.js 「파일인자」. */
+function 파일인자(인자) {
+  const 값자리 = new Set();
+  for (const 플래그 of ['--이름', '--갈래']) {
+    const j = 인자.indexOf(플래그);
+    if (j >= 0) 값자리.add(j + 1);
+  }
+  return 인자.filter((a, k) => !a.startsWith('--') && !값자리.has(k));
+}
+
 function main(argv) {
   const 인자 = argv.slice(2);
   const { 경로: 바탕, 폴백 } = 바탕화면();
@@ -433,9 +447,7 @@ function main(argv) {
   const i = 인자.indexOf('--이름');
   const 준이름 = i >= 0 ? 인자[i + 1] : null;
   const 사본강제 = 인자.includes('--사본');
-  const 갈래자리 = 인자.indexOf('--갈래');
-  // 값 자리(`--이름 X`·`--갈래 Y` 의 X·Y)는 넣을 파일이 아니다 — 안 빼면 갈래 이름이 파일로 취급된다.
-  const 파일들 = 인자.filter((a, k) => !a.startsWith('--') && k !== i + 1 && k !== 갈래자리 + 1);
+  const 파일들 = 파일인자(인자);
   if (준이름 && 파일들.length > 1) {
     console.error('🔴 --이름 은 파일 하나에만 쓴다');
     return 1;
@@ -483,6 +495,6 @@ function main(argv) {
   return 0;
 }
 
-module.exports = { 다음번호, 바로가기냐, 안전한이름, 이미있나, 짝찾기, 정본후보, 폴더명, 갈래들, 갈래폴더, 계열키, 옛판고르기 };
+module.exports = { 다음번호, 바로가기냐, 안전한이름, 이미있나, 짝찾기, 정본후보, 폴더명, 갈래들, 갈래폴더, 계열키, 옛판고르기, 파일인자 };
 
 if (require.main === module) process.exit(main(process.argv));
