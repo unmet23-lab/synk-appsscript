@@ -43,12 +43,32 @@ test('② 시맨틱은 킷 이름만 참조한다(hex 신설 금지)', () => {
   }
 });
 
-test('③-1 DESIGN.md 가 인용하는 hex 전수가 킷 안에 있다', () => {
+test('③-1 DESIGN.md 가 인용하는 hex 전수가 «정본» 안에 있다 (킷 또는 마스코트 램프)', () => {
   const md = fs.readFileSync(path.join(ROOT, 'DESIGN.md'), 'utf8').toUpperCase();
+  /* 2026-08-13: 인용 범위가 둘로 늘었다 — DESIGN.md §2-b(마스코트 색)가 킷 «밖»의 램프를 인용한다.
+   * 두 집합을 합쳐 보되 **합치는 것은 검사 범위이지 킷이 아니다** — 램프가 킷에 섞이지 않았는지는
+   * 아래 ③-1b 가 따로 잡는다(범위를 넓히면서 그 경계까지 지우면 그때부터 조용히 샌다). */
   const 킷hex = new Set(토큰.색.킷.map((c) => c.hex));
+  const 마스코트hex = new Set((토큰.색.마스코트?.램프 || []).map((c) => c.hex));
   const 인용 = [...new Set(md.match(/#[0-9A-F]{6}\b/g) || [])];
   assert.ok(인용.length >= 10, `DESIGN.md hex 인용이 ${인용.length}개뿐 — 추출이 헛돌고 있다`);
-  for (const h of 인용) assert.ok(킷hex.has(h), `DESIGN.md 의 ${h}가 킷에 없다 — 토큰과 요약 문서가 갈라졌다`);
+  for (const h of 인용) {
+    assert.ok(킷hex.has(h) || 마스코트hex.has(h),
+      `DESIGN.md 의 ${h}가 정본 어디에도 없다 — 토큰과 요약 문서가 갈라졌다`);
+  }
+});
+
+test('③-1b 마스코트 램프는 킷과 «겹치지 않는다» (유호님 확정 08-13 B안의 기계 잠금)', () => {
+  const 킷hex = new Set(토큰.색.킷.map((c) => c.hex));
+  const 램프 = (토큰.색.마스코트?.램프 || []).map((c) => c.hex);
+  assert.ok(램프.length >= 3, '마스코트 램프가 비었다 — ③-1 의 범위 확장이 헛돈다');
+  const 섞임 = 램프.filter((h) => 킷hex.has(h));
+  assert.deepEqual(섞임, [],
+    `램프가 킷에 편입돼 있다: ${섞임.join(', ')} — 확정은 「킷 밖 마스코트 고유색」이고, 편입은 그 확정을 뒤집는다`);
+  for (const c of (토큰.색.마스코트?.램프 || [])) {
+    assert.match(c.hex, /^#[0-9A-F]{6}$/, `램프 hex 형식(대문자 6자리) 위반: ${c.이름} ${c.hex}`);
+    assert.ok(c.직책, `${c.이름} 에 직책이 없다 — 모든 색에 직책이 있는 것이 이 저장소의 문법이다`);
+  }
 });
 
 test('③-2 폰트 스택이 브랜드_폰트_정본.md 와 문자 그대로 일치한다', () => {
