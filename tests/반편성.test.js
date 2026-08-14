@@ -17,6 +17,9 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..');
 const { engineSource } = require('./_engine-source');
 const code = engineSource();
+/* 부정 단언(「~가 없어야 한다」)의 주어만 이걸로 감싼다 — 주석이 금지 패턴을 «설명»하면 그 검사가
+ * 설명을 위반으로 읽는다. `section()` 은 앵커를 원문에서 찾아야 하므로 정제하지 않는다. (대기열 #Q72) */
+const { 코드만 } = require('./lib/소스검사.js');
 
 function section(startMarker, endMarker) {
   const start = code.indexOf(startMarker);
@@ -113,9 +116,12 @@ test('[v9.95] 표시명은 키와 분리돼 있고, 개원 기본값은 시각�
 
 test('[v9.95] 정원은 이름이 아니라 시트가 정한다 — 구 v8.3 이름 판정 잔존 0', () => {
   const raid = section('const smR = scheduleMap(ss);', 'const lg = ensureSheet(ss, \'league_pairs\'');
-  assert.equal(/indexOf\('집중반'\)/.test(raid), false, "보스 HP가 아직 '집중반' 이름으로 정원을 판정한다");
-  assert.equal(/indexOf\('주말정규반'\)/.test(raid), false, "보스 HP가 아직 '주말정규반' 이름으로 정원을 판정한다");
-  assert.equal(/Number\(num\)\s*<=\s*4\s*\?\s*20/.test(raid), false, "보스 HP가 아직 '번호 ≤4면 20명' 추측을 쓴다");
+  /* 부정 단언의 주어만 정제한다 — 「구 v8.3 이름 판정을 쓰지 않는다」를 **설명하는 주석**이 그대로
+   *   위반으로 잡히는 자리다(검사는 가장 잘 적어 둔 파일에서 깨진다). 아래 긍정 단언은 원문 그대로. */
+  const raid코드 = 코드만(raid);
+  assert.equal(/indexOf\('집중반'\)/.test(raid코드), false, "보스 HP가 아직 '집중반' 이름으로 정원을 판정한다");
+  assert.equal(/indexOf\('주말정규반'\)/.test(raid코드), false, "보스 HP가 아직 '주말정규반' 이름으로 정원을 판정한다");
+  assert.equal(/Number\(num\)\s*<=\s*4\s*\?\s*20/.test(raid코드), false, "보스 HP가 아직 '번호 ≤4면 20명' 추측을 쓴다");
   assert.ok(raid.includes('eS ? eS.cap'), '보스 HP가 schedule 시트의 정원을 안 읽는다');
 
   // scheduleMap이 정원·표시명을 실어 나르는 단일 소스여야 한다
@@ -167,5 +173,5 @@ test('[v9.95] 리그 짝짓기가 18반(짝수)·홀수 반 수 모두에서 안
   const body = section("const lg = ensureSheet(ss, 'league_pairs'", 'function leagueSettle_');
   assert.ok(/i \+ 1 < roster\.length/.test(body), '짝짓기 루프가 마지막 홀수 반에서 undefined를 짝으로 잡는다');
   // 반 수는 어디에도 하드코딩돼 있으면 안 된다(16반 전제가 남아 있으면 18반에서 2반이 조용히 빠진다)
-  assert.equal(/roster\.slice\(0,\s*\d+\)/.test(body), false, '리그 로스터에 반 수 상한이 박혀 있다');
+  assert.equal(/roster\.slice\(0,\s*\d+\)/.test(코드만(body)), false, '리그 로스터에 반 수 상한이 박혀 있다');
 });

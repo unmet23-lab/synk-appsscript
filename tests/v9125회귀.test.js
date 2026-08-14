@@ -10,6 +10,9 @@ const vm = require('node:vm');
 const ROOT = path.resolve(__dirname, '..');
 const { engineSource } = require('./_engine-source');
 const code = engineSource();
+/* 부정 단언(「~가 없어야 한다」)의 주어만 이걸로 감싼다 — 주석이 금지 패턴을 «설명»하면 그 검사가
+ * 설명을 위반으로 읽는다. 구간 앵커·긍정 단언은 원문 그대로 둔다. (대기열 #Q72) */
+const { 코드만 } = require('./lib/소스검사.js');
 const tbCode = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
 const mjCode = fs.readFileSync(path.join(ROOT, '만족도팩.js'), 'utf8');
 
@@ -112,7 +115,7 @@ test('[v9.125] voiceConsentMap_ 판정 — 화이트리스트(명시적 긍정�
   const seg = code.slice(code.indexOf('function voiceConsentMap_'), code.indexOf('function voiceConsentStat_'));
   assert.ok(seg.includes("v.indexOf('네') === 0") || seg.includes("v.indexOf('동의') === 0"),
     '명시적 긍정 판정이 없다');
-  assert.equal(/\?\s*'no'\s*:\s*'yes'/.test(seg), false,
+  assert.equal(/\?\s*'no'\s*:\s*'yes'/.test(코드만(seg)), false,
     "「'아니'가 아니면 전부 yes」 fail-open이 되살아났다 — '거부'·'보류'·'확인중'이 동의로 통과한다");
   assert.ok(/:\s*'';/.test(seg), '판정 불가를 보류(빈 값)로 떨어뜨리지 않는다');
 });
@@ -221,7 +224,7 @@ test('[v9.126] report_cards 멱등 가드가 월 열 Date 오염에 면역이다
   const seg = code.slice(code.indexOf('function runReportCards_'), code.indexOf('function reportCardData_'));
   assert.ok(seg.includes('ymTextColFix_(rc, 3, tz)'), '월 열 정상화가 없다 — 매 실행이 전원 카드를 다시 만든다');
   assert.ok(seg.includes("done.add(ymTextOf_(r[2], tz)"), '가드 비교값이 정규화되지 않았다');
-  assert.equal(/done\.add\(String\(r\[2\]\)/.test(seg), false, '구 String(r[2]) 비교가 되살아났다(라이브 37행 중복의 원인)');
+  assert.equal(/done\.add\(String\(r\[2\]\)/.test(코드만(seg)), false, '구 String(r[2]) 비교가 되살아났다(라이브 37행 중복의 원인)');
 });
 
 test('[v9.126] world_raid 월 열도 Date 오염에서 보호된다', () => {
@@ -372,7 +375,7 @@ test('[v9.129] ymTextOf_ — String(Date)가 텍스트로 굳은 셀도 yyyy-MM�
 test('[v9.130] groupBoardText_ — 조 편성이 없을 때 빈 문자열 대신 원인과 처방을 돌려준다', () => {
   const s = code.indexOf('function groupBoardText_');
   const seg = code.slice(s, code.indexOf('function ', s + 30));
-  assert.equal(/if \(!b\) return '';/.test(seg), false,
+  assert.equal(/if \(!b\) return '';/.test(코드만(seg)), false,
     '빈 문자열 반환이 되살아났다 — 강사 브리핑에서 조 편성표가 「원래 없는 항목」처럼 조용히 사라진다');
   // 원인 3종을 구분해 각각 다른 처방을 준다
   assert.ok(seg.includes('setSeasonStart'), '시즌 시작일 미설정 안내가 없다');
@@ -427,7 +430,7 @@ test('[v9.132] assignGroups 재실행이 교체다 — 시즌 열을 텍스트�
 
 test('[v9.132] 조 편성표가 실제 인원을 적는다 — 1인 조에 "3인 조"라고 쓰지 않는다', () => {
   const seg = code.slice(code.indexOf('function groupBoardRender_'), code.indexOf('function groupBoardPreview'));
-  assert.equal(/조 전체\(3인 조\)/.test(seg), false, '인원이 하드코딩돼 있다 — 1인 조에도 "3인 조"라고 찍힌다');
+  assert.equal(/조 전체\(3인 조\)/.test(코드만(seg)), false, '인원이 하드코딩돼 있다 — 1인 조에도 "3인 조"라고 찍힌다');
   assert.ok(seg.includes("arr.length + '인 조"), '실제 인원을 쓰지 않는다');
   assert.ok(seg.includes('arr.length !== 4'), '5인 조(정원 초과)가 이 분기로 안 온다 — 짝 규칙(pairSeatOf_)과 기준이 갈린다');
 });
