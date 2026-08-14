@@ -40,7 +40,11 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const { 저장소들 } = require('./lib/보드낡음.js');
 
-const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
+/* ROOT 는 **이 파일이 속한 저장소**다 — `CLAUDE_PROJECT_DIR` 을 얹지 않는다(회귀 `tests/게이트뿌리`).
+ * 이 검사기는 pre-commit 이 `$ROOT/tools/인용검사.js --스테이징` 으로 부르는데, 그 변수가 다른
+ * 저장소를 가리키면 **옆 저장소의 스테이징**을 재고 「새 인용 0건」으로 통과한다 — 워크트리는
+ * 이 저장소가 실제로 쓰는 층이다(F403). 옆 게이트에서 같은 모양이 실측돼 여기까지 같이 닫았다. */
+const ROOT = path.resolve(__dirname, '..');
 
 /* 인용으로 읽을 확장자. 좁게 연다 — 새는 방향이 「통과」인 자리가 아니라 「거짓 적색」인 자리라
  * 모르는 확장자는 조용히 넘긴다(`.mn` 같은 낱말이 파일로 읽히면 소음만 는다). */
