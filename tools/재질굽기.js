@@ -62,6 +62,30 @@ style of the second reference image: same size in frame, same camera angle, same
 composition. ${재질.펠트}, a single ring of delicate cream hand-stitching around the ball, one soft
 warm highlight from upper left. No face, no eyes, no mouth. ${공통스튜디오}`,
   },
+  /* 표정 2컷 — 모션 데모용(깜빡임·눈웃음). 「입은 아낀다」 확정이라 웃음은 «눈»으로만 낸다.
+   * 실루엣·색·조명이 기본 컷과 1픽셀이라도 어긋나면 교대할 때 튀므로 참조를 기본 컷 하나로 묶는다. */
+  {
+    이름: '펠트_눈감음',
+    비율: '1:1',
+    참조: [],
+    런타임참조: ['펠트_본체'],
+    지시: `Take the felted mascot in the reference image and change ONLY the eyes: replace the two
+round black bead eyes with closed eyes — two short, gentle downward-curved stitched lines in dark
+thread, as if peacefully blinking. Everything else must be pixel-identical to the reference: same
+silhouette, same wool texture, same color, same lighting, same size, same position, same background.
+No mouth, no other change. ${공통스튜디오}`,
+  },
+  {
+    이름: '펠트_눈웃음',
+    비율: '1:1',
+    참조: [],
+    런타임참조: ['펠트_본체'],
+    지시: `Take the felted mascot in the reference image and change ONLY the eyes: replace the two
+round black bead eyes with happy smiling eyes — two upward-curved arcs (^ ^) in dark stitched
+thread, the classic warm eye-smile. Everything else must be pixel-identical to the reference: same
+silhouette, same wool texture, same color, same lighting, same size, same position, same background.
+Absolutely no mouth. ${공통스튜디오}`,
+  },
   {
     이름: '글래시_앱화면',
     비율: '9:16',
