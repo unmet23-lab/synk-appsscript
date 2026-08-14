@@ -600,7 +600,13 @@ function fakeLogSheet() { // 헤더 1행 가정 — data는 2행부터의 실데
     data: [],
     raw: [],   // Sheets 에 «건넨» 원본 — 저장 후엔 아포스트로피가 소비돼 안 보이므로 따로 잡아 둔다
     텍스트열: {},  // 1-기반 열 번호 → 1 (setNumberFormat('@') 로 못박은 칸)
-    getLastRow() { return this.data.length + 1; },
+    /* [vNEXT] 실물 `getLastRow` 는 «내용이 있는» 마지막 행이다 — `clearContent` 로 비운 꼬리는 안 센다.
+     *   행 수를 그냥 세면 비운 행이 계속 잡혀, 다음 실행이 빈 행을 「옛 편성」으로 읽고 되쓴다(거짓 적색). */
+    getLastRow() {
+      let n = 0;
+      this.data.forEach((row, i) => { if ((row || []).some((v) => v !== '' && v != null)) n = i + 1; });
+      return n + 1;
+    },
     getMaxRows() { return this.data.length + 1000; },
     /* 🔑 실제 Sheets 는 «자동» 서식 칸에 들어온 'yyyy-MM-dd' 문자열을 **Date 로 삼킨다** — 텍스트(@)로
      *   못박은 칸만 문자열로 남는다. 이걸 안 흉내 내면 멱등 시험이 라이브와 «다른 것»을 잰다:
@@ -617,11 +623,28 @@ function fakeLogSheet() { // 헤더 1행 가정 — data는 2행부터의 실데
       const self = this;
       return {
         getValues() { return self.data.slice(r - 2, r - 2 + n).map((row) => row.slice(c - 1, c - 1 + w)); },
+        /* [vNEXT] 실물은 «읽기»도 준다 — `assignGroups` 는 서식을 박기 전에 먼저 읽어 보고 판단한다.
+         *   안 주면 그 분기에서 TypeError 라 시험이 「돌다 죽는다」로만 보이고, 서식 판정 자체는 안 재진다. */
+        getNumberFormat() { return self.텍스트열[c] ? '@' : '0.###'; },
         setNumberFormat(f) { if (f === '@') for (let i = 0; i < (w || 1); i++) self.텍스트열[c + i] = 1; },
+        /* 🔑 실물 `clearContent` 는 **행을 지우지 않고 값만 비운다** — 그 뒤 `getLastRow` 는 그대로다.
+         *   여기서 `data.length = 0` 으로 접으면 흉내가 라이브보다 착해져, 「지운 자리에 덮어쓴다」가
+         *   실제로는 어긋나 있어도 초록이 된다(fakeLogSheet 머리말과 같은 축). */
+        clearContent() {
+          for (let i = 0; i < n; i++) {
+            if (!self.data[r - 2 + i]) continue;
+            for (let j = 0; j < (w || 1); j++) self.data[r - 2 + i][c - 1 + j] = '';
+          }
+        },
+        /* [vNEXT] 실물은 «범위 안»에만 쓴다 — 옛 판은 행을 통째로 갈아치워, 한 열만 고쳐 쓰는 호출
+         *   (`assignGroups` 의 시즌 열 정상화 = 폭 1)이 나머지 열을 통째로 날렸다. 그 자리에서 이 흉내가
+         *   라이브보다 «사나워» 거짓 적색을 냈다(변이 실측 08-15에서 잡혔다). */
         setValues(v) {
           v.forEach((row, i) => {
             self.raw.push(row.slice());
-            self.data[r - 2 + i] = row.map((cell, j) => self.삼킴(저장(cell), c + j));
+            const 행 = self.data[r - 2 + i] || [];
+            row.forEach((cell, j) => { 행[c - 1 + j] = self.삼킴(저장(cell), c + j); });
+            self.data[r - 2 + i] = 행;
           });
         }
       };
@@ -906,11 +929,111 @@ test('🔴 실패 반이 여럿이면 «뒤쪽» 반의 원인이 바뀌어도 �
     '같은 원인 집합인데 서명이 갈렸다 — dedup 이 풀려 실패 메일이 메일 쿼터를 태운다');
 });
 
-test('🔴 assignGroups 는 «입력»도 접는다 — 한쪽만 접으면 전원이 걸러져 「0명 확정」이 나온다', () => {
-  /* 학생 선별은 반키_(r[4]) !== cls 다. cls 를 안 접으면 손으로 assignGroups('정규반2(9시)') 를 부를 때
-   *   한쪽만 접혀 아무도 안 맞고, 그런데 실패가 아니라 «0명 확정»이라는 성공 문장이 나온다(검수 48599e195c0f). */
-  const fn = section('function assignGroups(className, opts)', 'function assignGroupsAll(');
-  assert.ok(/const cls = 반키_\(className\)/.test(fn),
-    'assignGroups 입력이 안 접힌다 — assignGroups("정규반2(9시)") 직접 호출이 학생을 전원 거른다');
-  assert.ok(/반키_\(r\[4\]\) !== cls/.test(fn), '학생 선별이 반키_ 를 안 탄다 — 양쪽이 같은 통로를 타야 맞는다');
+/* ── [vNEXT] `assignGroups` 를 «실행»으로 잰다 (대기열 P3 #Q81) ──────────────────────
+ * 옛 판은 함수 본문을 정규식으로 훑어 `반키_(className)`·`반키_(r[4]) !== cls` 가 «적혀 있는지»만 봤다.
+ * 그 검사는 양쪽으로 다 샌다 — 같은 뜻을 다른 모양으로 리팩터하면 **거짓 적색**이고, 통로는 그대로인데
+ * 조건·순서가 틀어지면 **조용한 초록**이다. 이 저장소 규약은 「탐지력은 픽스처가 진다」이므로
+ * 실제로 태우고 `groups` 에 무엇이 적히는지를 잰다(원 신호 = 검수 48599e195c0f).
+ * 🔑 시트층만 스텁이고 **판정은 전부 실물**이다 — 잘라 온 구간에 seasonStartOf_·seasonKeyOf_·
+ *   seasonLabelOf_·skillScoreOf_·quietScoreMap_·buildGroupPlan_ 이 함께 들어온다. */
+function loadAssign() {
+  const core = section('const GROUP_COUNT = 4;', '\n// 전 반 일괄');
+  const 반키src = section('function 반키_(', '/* --- 그 반의 오늘');
+  const toDatesrc = section('function toDate_(v) {', '\nfunction ');  // seasonStartOf_ 가 쓴다 — 스텁 대신 실물
+  const names = ['SpreadsheetApp', 'Utilities', 'Logger', 'classDowOk_', 'langColOf_',
+    'ensureSheet', 'GROUPS_HEADERS', 'Session', 'getState'];
+  return (stub) => new Function(...names,
+    `${반키src}\n${toDatesrc}\n${core}\nreturn assignGroups;`)(...names.map((n) => stub[n]));
+}
+
+/* groups 헤더는 손으로 안 적는다 — 정본에서 파생시킨다(열이 늘면 이 시험도 같이 움직인다). */
+const GROUPS_HEADERS = new Function(
+  `${section('const GROUPS_HEADERS = [', '\n')}\nreturn GROUPS_HEADERS;`)();
+
+/* 반들 = profiles E열에 그대로 들어갈 «표시명» 목록(학생 1명씩). groups 시트는 새로 안 짓고
+ *   `fakeLogSheet()` 를 쓴다 — 아포스트로피 소비·Date 삼킴·텍스트 서식이 이미 정직하게 들어 있다. */
+function 배정Rig(반들) {
+  const pfHead = new Array(80).fill('');
+  pfHead[0] = 'student_id'; pfHead[1] = '이름'; pfHead[3] = 'role'; pfHead[4] = 'class_name';
+  pfHead[5] = '학교'; pfHead[6] = '동네';
+  const pfRows = 반들.map((c, i) => {
+    const r = new Array(80).fill('');
+    r[0] = 'S' + (i + 1); r[1] = '학생' + (i + 1); r[3] = 'student'; r[4] = c;
+    r[15] = (반들.length - i) * 10;      // P 획득 누계 — 실력 순서를 못박아 좌석이 실행마다 안 흔들린다
+    r[5] = '제' + (i + 1) + '학교';
+    return r;
+  });
+  const pf = {
+    getLastRow: () => pfRows.length + 1,
+    getLastColumn: () => pfHead.length,
+    getRange: (r, c, n, w) => ({ getValues: () => pfRows.slice(r - 2, r - 2 + n).map((row) => row.slice(c - 1, c - 1 + w)) })
+  };
+  const groups = fakeLogSheet();
+  const rig = {
+    groups,
+    산행: () => groups.data.filter((r) => String(r[0] || '') !== ''),   // clearContent 로 비운 꼬리는 뺀다
+    ss: {
+      getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar',
+      getSheetByName: (n) => (n === 'profiles' ? pf : null)   // lesson_close 없음 → quietScoreMap_ 은 빈 맵
+    },
+    stub: {
+      SpreadsheetApp: { getActiveSpreadsheet: () => rig.ss },
+      /* 🔑 `toISOString` 을 쓰지 않는다 — 그건 UTC 로 접어서, 로컬 tz 로 지은 날짜가 CI(UTC)와
+       *   내 기계에서 하루씩 갈린다(repo 밖 환경에 기대는 검사는 CI 에서 깨진다). */
+      Utilities: {
+        formatDate: (d) => [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'),
+          String(d.getDate()).padStart(2, '0')].join('-')
+      },
+      Logger: { log() {} },
+      classDowOk_: (t, dow) => (String(t) === '주말' ? dow === 6 : (dow >= 1 && dow <= 5)),
+      // 실물과 같은 규약 — 번호가 아니라 «이름»으로 찾는다(조편성.test.js 의 열 안전 검사와 같은 축)
+      langColOf_: (_sh, name) => pfHead.indexOf(name) + 1,
+      ensureSheet: (_ss, name) => (name === 'groups' ? groups : { getLastRow: () => 1 }),
+      GROUPS_HEADERS,
+      Session: { getScriptTimeZone: () => 'Asia/Ulaanbaatar' },
+      // 실물 반환 모양 그대로({row, val}) — 시즌 시작일은 이 시험의 축이 아니라 값만 고정한다
+      getState: (_st, key) => (key === '시즌시작일' ? { row: 1, val: '2027-01-04' } : { row: -1, val: '' })
+    }
+  };
+  return rig;
+}
+
+test('🔴 assignGroups 는 «입력»도 접는다 — 한쪽만 접으면 전원이 걸러져 「배정된 학생이 없습니다」가 나온다', () => {
+  /* 학생 선별은 `반키_(r[4]) !== cls` 다. 표시명으로 부를 때 cls 를 안 접으면 아무도 안 맞고,
+   *   그런데 «실패»가 아니라 정상 안내문이 나와 강사는 그 반이 빈 줄 안다(검수 48599e195c0f). */
+  const rig = 배정Rig(['정규반2(9시)', '정규반2', '평일11A']);
+  const out = loadAssign()(rig.stub)('정규반2(9시)');
+
+  assert.ok(out.includes('정규반2 확정 편성: 2명'),
+    '표시명으로 불렀더니 그 반 학생이 안 잡힌다 — 한쪽만 접혔다: ' + out);
+  assert.deepEqual(rig.산행().map((r) => r[2]).sort(), ['S1', 'S2'],
+    'profiles 표시명(「정규반2(9시)」)과 정본 키(「정규반2」) 중 한쪽만 잡혔거나 남의 반이 섞였다: '
+    + JSON.stringify(rig.산행().map((r) => [r[1], r[2]])));
+  assert.deepEqual([...new Set(rig.산행().map((r) => r[1]))], ['정규반2'],
+    'groups B열이 접힌 키가 아니다 — groupBoardOf_ 의 조인이 안 맞아 그 반이 통째로 «빈 후보»가 된다');
+  assert.equal(rig.산행()[0].length, GROUPS_HEADERS.length, '행 폭이 헤더 폭과 다르다 — 열이 밀린다');
+});
+
+test('🔴 재실행은 «누적»이 아니라 교체다 — 표시명으로 부르든 정본 키로 부르든 한 벌이어야 한다', () => {
+  /* 접기가 어긋나면 두 이름이 서로 다른 반으로 보여, 같은 학생이 두 조에 동시에 들어간다
+   *   (엔진_셋업확장.js:1542 가 경고하는 그 실패 모양 — 「재실행이 교체가 아니라 누적」). */
+  const rig = 배정Rig(['정규반2(9시)', '정규반2', '평일11A']);
+  const 배정 = loadAssign()(rig.stub);
+  배정('정규반2(9시)');
+  배정('평일11A');
+  배정('정규반2');                        // 같은 반을 정본 키로 다시
+
+  assert.equal(rig.산행().length, 3,
+    '행이 쌓였다 — 한 학생이 여러 조에 동시에 들어간다: ' + JSON.stringify(rig.산행().map((r) => [r[1], r[2], r[4]])));
+  assert.deepEqual(rig.산행().filter((r) => r[1] === '평일11A').map((r) => r[2]), ['S3'],
+    '남의 반 편성이 쓸렸거나 남았다 — 같은 시즌·반만 걷어내야 한다');
+  assert.equal(new Set(rig.산행().map((r) => r[2])).size, 3, '같은 학생이 두 행에 있다');
+});
+
+test('🔴 시즌 칸을 텍스트로 못박고 쓴다 — 시트가 Date 로 삼키면 다음 실행의 대조가 영영 안 맞는다', () => {
+  const rig = 배정Rig(['정규반2(9시)']);
+  loadAssign()(rig.stub)('정규반2(9시)');
+  assert.ok(rig.groups.텍스트열[1], 'groups A열을 텍스트(@)로 안 박았다 — 다음 적재도 날짜로 삼켜진다');
+  assert.equal(typeof rig.산행()[0][0], 'string',
+    '저장된 시즌 칸이 문자열이 아니다 — 시트가 삼켰다: ' + Object.prototype.toString.call(rig.산행()[0][0]));
 });
