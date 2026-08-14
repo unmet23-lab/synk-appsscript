@@ -21,6 +21,11 @@ const { 코드만 } = require('./lib/소스검사.js');
  * 08-03 실측: 리베이스 직후 이 파일의 9건이 「섹션 끝 표식을 찾지 못함」으로 한꺼번에 죽었다 —
  * 코드는 멀쩡한데 테스트만 죽는 형태라, 원인을 모르면 진짜 결함을 찾아 헤매게 된다. */
 const code = engineSource().replace(/\r\n/g, '\n');
+/* 🔑 **부정 단언 전용** 정제본 — 「없어야 한다」를 원문에 대고 재면 누군가 그 문구를 주석에 적는 순간
+ *   가드가 엉뚱하게 빨개진다(대기열 P3 #Q72). 긍정 단언과 `section()` 앵커는 원문 `code` 를 그대로 본다.
+ *   ⚠ **토큰 스캐너(:790)만은 예외로 원문을 본다** — 주석에 붙여넣은 토큰도 git 이력에 박히면 유출이다.
+ *   대가: 엔진을 한 번 렉싱한다(≈0.6초 · 모듈 적재 시 1회). 자리마다 감싸면 3회다. */
+const 코드정제 = 코드만(code);
 
 function section(startMarker, endMarker) {
   const s = code.indexOf(startMarker);
@@ -189,7 +194,7 @@ test('[v9.138] 수집이 채점보다 우선 — 채점 못 한 응답도 원문
   // 적재 배열에 고른답(ans)이 채점 결과와 **무관하게** 들어가는지 — 조건부로 들어가면 판정불가 응답이 유실된다
   assert.ok(/out\.push\(\[[\s\S]*?셀안전_\(ans\),[\s\S]*?g\.ok === null/.test(sweep),
     '고른 답이 채점 결과보다 뒤에 조건부로 들어간다 — 판정 못 한 응답이 통째로 버려질 수 있다');
-  assert.ok(!/if \(g\.ok === null\) return/.test(sweep), '판정 보류 행을 return으로 버린다(수집 원칙 위반)');
+  assert.ok(!/if \(g\.ok === null\) return/.test(코드만(sweep)), '판정 보류 행을 return으로 버린다(수집 원칙 위반)');
   // 문항 텍스트 스냅샷 — contents가 개정되면 ID만으로는 2년 뒤 해석이 불가능해진다
   assert.ok(sweep.includes('meta.cat') && sweep.includes('meta.q') && sweep.includes('meta.a'),
     '문항 분류·문제·정답 스냅샷이 행에 없다 — 문항 개정 후 과거 데이터가 해석 불능이 된다');
@@ -238,8 +243,8 @@ test('[v9.138] 숙제 폼 증분은 멱등이고, 구 링크를 죽이지 않는
   ['숙제ID', '재작성원본'].forEach(t =>
     assert.ok(fn.includes(`titles.indexOf('${t}') === -1`), `${t} 문항이 멱등 가드 없이 추가된다(재실행마다 중복 문항)`));
   // 필수로 만들면 이미 배포된 구 프리필 링크(그 문항이 없는)가 전부 제출 불가가 된다
-  assert.ok(!/setTitle\('숙제ID'\)\.setRequired\(true\)/.test(fn), '숙제ID가 필수 응답이다 — 구 링크로 들어온 학생이 숙제를 못 낸다');
-  assert.ok(!/setTitle\('재작성원본'\)\.setRequired\(true\)/.test(fn), '재작성원본이 필수 응답이다 — 최초 제출이 불가능해진다');
+  assert.ok(!/setTitle\('숙제ID'\)\.setRequired\(true\)/.test(코드만(fn)), '숙제ID가 필수 응답이다 — 구 링크로 들어온 학생이 숙제를 못 낸다');
+  assert.ok(!/setTitle\('재작성원본'\)\.setRequired\(true\)/.test(코드만(fn)), '재작성원본이 필수 응답이다 — 최초 제출이 불가능해진다');
   // URL 틀 2종이 서로 다른 토큰을 써야 한다(같으면 한쪽이 다른 쪽을 덮어쓴다)
   assert.ok(fn.includes("prefillTemplate2_(form, '학생ID', '숙제ID', 'QZTOKEN')"), '기본 링크 틀이 없다');
   assert.ok(fn.includes("prefillTemplate2_(form, '학생ID', '재작성원본', 'REDOTOKEN')"), '다시쓰기 링크 틀이 없다');
@@ -258,8 +263,9 @@ test('[v9.138] 커버리지 리포트는 총량이 아니라 빈 유형을 먼�
     '강의 한줄요약을 숙제 문항연결과 같이 센다');
   assert.ok(fn.includes("'  강의 한줄요약 편입 '"), '편입 실측이 리포트에 안 뜬다 — 「배선했다」가 선언으로만 남는다');
   // 읽기 전용이어야 아무 때나 눌러도 안전하다(6개월마다 열어보는 용도)
+  const 리포트코드 = 코드만(fn); // 부정 단언 전용 — 루프 안에서 감싸면 낱말 수만큼 다시 렉싱된다
   ['setValue', 'appendRow', 'setValues', 'insertColumns'].forEach(w =>
-    assert.ok(!fn.includes(w), `커버리지 리포트가 ${w}로 시트를 쓴다 — 읽기 전용이어야 한다`));
+    assert.ok(!리포트코드.includes(w), `커버리지 리포트가 ${w}로 시트를 쓴다 — 읽기 전용이어야 한다`));
   assert.ok(fn.includes('quiz_log') && fn.includes('hw_feedback') && fn.includes('voice_log'), '수집 3종을 모두 재지 않는다');
 });
 
@@ -305,7 +311,7 @@ test('[v9.138] 대화 배치 — 하루 1턴 상한·리허설 차단·실패해
   assert.ok(/permanent[\s\S]{0,400}tl\.appendRow\(/.test(fn), '영구 오류에서 학생 문장을 버린다(수집 원칙 위반)');
   assert.ok(fn.includes("props.setProperty('대화폼_포인터'"), '포인터 전진이 없다 — 같은 응답에 매일 밤 재과금된다');
   // 외부 발송 0 — 학생에게 가는 경로는 앱 화면뿐이어야 한다(메일·메신저로 새면 승인 없는 외부 발송이 된다)
-  assert.ok(!/MailApp\.sendEmail\([^)]*sid/.test(fn), '학생에게 직접 메일을 보낸다 — 답장은 시트에만 쓴다');
+  assert.ok(!/MailApp\.sendEmail\([^)]*sid/.test(코드만(fn)), '학생에게 직접 메일을 보낸다 — 답장은 시트에만 쓴다');
   const call = section('function callClaudeTalk_(', 'const res = UrlFetchApp.fetch');
   assert.ok(call.includes('enum: HW_ERROR_TAGS'), '대화에서도 오류 태그를 같은 어휘로 받지 않는다(두 축이 갈라진다)');
   /* [v9.145] 프롬프트 제약은 이제 TALK_SYSTEM_PROMPT 상수에 산다(prompt_ver 해시가 변경을 보게 하려고 뽑았다).
@@ -374,7 +380,7 @@ test('[v9.145] prompt_ver는 손으로 올리는 상수가 아니라 프롬프�
   assert.ok(/system:\s*TALK_SYSTEM_PROMPT/.test(call),
     '시스템 프롬프트가 인라인이다 — 프롬프트를 고쳐도 prompt_ver가 그대로여서 데이터가 조용히 섞인다');
   // 톱레벨 계산 금지 — AI_FEEDBACK_MODEL은 Code.js에 있고 라이브 파일 로드 순서가 보장되지 않는다
-  assert.ok(!/^const TALK_PROMPT_VER\s*=/m.test(code),
+  assert.ok(!/^const TALK_PROMPT_VER\s*=/m.test(코드정제),
     'prompt_ver를 톱레벨에서 계산한다 — 로드 순서에 따라 undefined를 지문에 넣는다(v9.57 계열 사고)');
 });
 
@@ -452,7 +458,7 @@ test('[v9.187] 첨삭도 출처(model·prompt_ver)와 문항 텍스트를 남긴
   const fn = section('function fbPromptVer_()', '\n}\n');
   assert.ok(fn.includes('computeDigest'), 'fbPromptVer_가 해시가 아니다 — 손 번호는 언젠가 안 올라간다');
   assert.ok(fn.includes('FB_SYSTEM_PROMPT') && fn.includes('AI_FEEDBACK_MODEL'), '프롬프트·모델이 지문에 안 들어간다');
-  assert.ok(!/^const FB_PROMPT_VER\s*=/m.test(code), 'prompt_ver를 톱레벨에서 계산한다 — 로드 순서에 따라 undefined가 지문에 들어간다');
+  assert.ok(!/^const FB_PROMPT_VER\s*=/m.test(코드정제), 'prompt_ver를 톱레벨에서 계산한다 — 로드 순서에 따라 undefined가 지문에 들어간다');
   const call = section('function callClaudeFeedback_(', 'const res = UrlFetchApp.fetch');
   assert.ok(/system:\s*FB_SYSTEM_PROMPT/.test(call),
     '첨삭 시스템 프롬프트가 인라인이다 — 프롬프트를 고쳐도 prompt_ver가 그대로여서 병렬쌍이 조용히 섞인다');
@@ -577,7 +583,7 @@ test('[v9.138] 퀴즈ID와 문제는 같은 선택에서 나온다 — 두 사�
 test('[v9.188] 개인 퀴즈ID는 날짜로 갈라진다 — 상수로 되돌아오면 그날부터 응답이 사라진다', () => {
   const fn = section('function writeSharedCols_(', 'const WORLD_HP_PER');
   // ① 상수 복귀 금지 — 이 한 줄이 되돌아오는 것이 곧 데이터 유실의 재발이다
-  assert.ok(!/pq \? 'AIQ' :/.test(fn),
+  assert.ok(!/pq \? 'AIQ' :/.test(코드만(fn)),
     "개인 퀴즈ID가 상수 'AIQ'로 되돌아왔다 — dedup 키가 학생당 하나로 굳어 이틀째부터 응답이 통째로 버려진다");
   // ② 날짜 재료가 실제로 그 자리에 있어야 한다(선언이 블록 안에 갇히면 참조 불가라 조용히 깨진다)
   assert.ok(/const tdQ = Utilities\.formatDate\(new Date\(\), ss\.getSpreadsheetTimeZone\(\), 'yyyy-MM-dd'\)/.test(fn),
@@ -613,7 +619,7 @@ test('[v9.188] ai_daily 프룬은 아카이브 뒤에만·지우기는 쓰기 �
   const iSet = fn.indexOf('ad.getRange(2, 1, rowsD.length, 5).setValues(rowsD)');
   assert.notEqual(iSet, -1, '남길 행을 다시 쓰지 않는다');
   assert.ok(iSet < iClear, '지우기가 쓰기보다 먼저다 — 그 사이 6분 타임아웃이면 오늘 것까지 사라진다');
-  assert.ok(!/ad\.getRange\(2, 1, ad\.getLastRow\(\) - 1, 5\)\.clearContent\(\)/.test(fn),
+  assert.ok(!/ad\.getRange\(2, 1, ad\.getLastRow\(\) - 1, 5\)\.clearContent\(\)/.test(코드만(fn)),
     '시트 전체를 통째로 지우는 구 코드가 되돌아왔다');
 });
 
@@ -749,7 +755,7 @@ test('[v9.176] 정답이 쌓였는데 전송 통로가 안 열려 있으면 월�
     '통로 미개통을 아무도 말하지 않는다 — 안 해도 그 사이 아무 일이 없어서 「채점표는 있는데 못 읽는」 상태로 2년이 간다');
   assert.ok(/골든픽스처_자동전송_설치\.md/.test(본문), '무엇을 하면 되는지 문서를 지목하지 않는다');
   assert.ok(/내보내기/.test(본문), '대안(드라이브로 받아 옮기기)이 살아 있다는 것을 안 알린다 — 못 하면 막힌 줄 안다');
-  assert.equal(/getProperty\(GH_TOKEN_KEY\)\s*\)?\s*[;,]?\s*\n?\s*.*\+\s*(token|tok)/.test(본문), false,
+  assert.equal(/getProperty\(GH_TOKEN_KEY\)\s*\)?\s*[;,]?\s*\n?\s*.*\+\s*(token|tok)/.test(코드만(본문)), false,
     '토큰 값을 메일 본문에 싣는다 — 존재 여부만 봐야 한다');
 });
 
@@ -759,20 +765,20 @@ test('[v9.179] 설치 확인은 편집기에서도 돈다 — 확인 수단이 �
   assert.ok(/\nfunction checkGoldenPush\(\)/.test(code), '공개 진입점이 없다 — 시트가 안 열리면 확인 방법이 0이 된다');
   const 본문 = section('function checkGoldenPush()', '\n}\n');
   assert.ok(/골든전송점검_\(\)/.test(본문), '점검 본체를 부르지 않는다 — 두 벌이 되면 갈라진다');
-  assert.equal(/getProperty\(GH_TOKEN_KEY\)/.test(본문), false, '공개 함수가 토큰을 직접 만진다 — 노출 표면에 비밀을 올리지 않는다');
-  assert.equal(/UrlFetchApp|method:\s*'put'/.test(본문), false, '공개 함수가 직접 네트워크를 친다 — 점검 본체에 위임해야 조준이 한 곳이다');
+  assert.equal(/getProperty\(GH_TOKEN_KEY\)/.test(코드만(본문)), false, '공개 함수가 토큰을 직접 만진다 — 노출 표면에 비밀을 올리지 않는다');
+  assert.equal(/UrlFetchApp|method:\s*'put'/.test(코드만(본문)), false, '공개 함수가 직접 네트워크를 친다 — 점검 본체에 위임해야 조준이 한 곳이다');
 });
 
 test('[v9.177] 연결 점검은 읽기 전용이고, 실패를 구별해서 말한다 — 설치한 날 확인돼야 설치가 끝난 것이다', () => {
   const 점검 = section('function 골든전송점검_()', '\n}\n');
-  assert.equal(/method:\s*'put'|method:\s*'post'|method:\s*'delete'/i.test(점검), false,
+  assert.equal(/method:\s*'put'|method:\s*'post'|method:\s*'delete'/i.test(코드만(점검)), false,
     '점검이 쓰기를 한다 — 확인하려다 저장소를 건드리면 점검을 못 누르게 된다');
   assert.ok(/api\.github\.com\/repos\/' \+ GH_OWNER \+ '\/' \+ GH_REPO/.test(점검), '저장소 자체를 보지 않는다');
   for (const [코드, 단서] of [['401', '만료'], ['404', 'Repository access'], ['push', 'Read and write']]) {
     assert.ok(점검.includes(코드) && 점검.includes(단서),
       `${코드} 실패에 고칠 곳을 안 알려준다 — 「실패했습니다」 한 줄이면 어디를 손볼지 모른다`);
   }
-  assert.equal(/msg:[^}]*\+\s*token/.test(점검), false, '토큰 값을 메시지에 싣는다');
+  assert.equal(/msg:[^}]*\+\s*token/.test(코드만(점검)), false, '토큰 값을 메시지에 싣는다');
 
   // 보낼 것이 없을 때도 점검 결과를 함께 낸다(여기서 조용히 끝나면 6개월 뒤에나 알게 된다)
   const 전송 = section('function pushGoldenFixture_()', '\n}\n');
@@ -786,13 +792,17 @@ test('[v9.175] 토큰은 소스에 없다 — 스크립트 속성에서만 읽�
   const 본문 = 전송();
   assert.ok(/PropertiesService\.getScriptProperties\(\)\.getProperty\(GH_TOKEN_KEY\)/.test(본문),
     '토큰을 스크립트 속성에서 읽지 않는다');
+  /* 🚫 여기만은 `코드만()` 으로 감싸지 않는다 — 이 축의 유일한 예외다.
+   *   위의 다른 부정 단언들은 「코드가 무엇을 하는가」를 물으니 주석은 과녁 밖이지만,
+   *   토큰은 **주석에 붙여넣어도 유출**이다(git 이력에 박히면 되돌릴 수 없다 · 아래 메시지 그대로).
+   *   감싸는 순간 「주석에 붙여넣기」가 이 스캐너의 사각이 된다. 그래서 원문 `code` 를 본다. */
   assert.equal(/gh[pousr]_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{20,}/.test(code), false,
     '소스에 GitHub 토큰처럼 생긴 문자열이 있다 — git 이력에 박히면 되돌릴 수 없다');
 });
 
 test('[v9.175] 토큰이 로그·반환문으로 새지 않는다 (실패 응답도 잘라서 낸다)', () => {
   const 본문 = 전송();
-  assert.equal(/Logger\.log\([^)]*token/.test(본문), false, '토큰을 로그에 싣는다 — 실행 로그는 화면에 그대로 뜬다');
+  assert.equal(/Logger\.log\([^)]*token/.test(코드만(본문)), false, '토큰을 로그에 싣는다 — 실행 로그는 화면에 그대로 뜬다');
   assert.equal(/return[^;]*\+\s*token|token\s*\+/.test(본문.replace(/'Bearer ' \+ token/g, '')), false,
     '토큰을 문자열에 이어 붙여 돌려준다 — 메뉴 alert에 그대로 뜬다');
   assert.ok(/getContentText\(\)\.slice\(0,/.test(본문), 'GitHub 응답 본문을 통째로 돌려준다 — 자르지 않으면 무엇이 섞일지 모른다');
@@ -803,7 +813,7 @@ test('[v9.175] 조준이 상수다 — 소유자·저장소·경로·브랜치�
   for (const c of ['GH_OWNER', 'GH_REPO', 'GH_PATH', 'GH_BRANCH']) {
     assert.ok(new RegExp(`const ${c} = '`).test(code), `${c}가 상수로 고정돼 있지 않다`);
   }
-  assert.equal(/const GH_PATH = 'evals\/픽스처\.json'/.test(code), false,
+  assert.equal(/const GH_PATH = 'evals\/픽스처\.json'/.test(코드정제), false,
     '합성 픽스처를 덮어쓴다 — 유형 커버리지를 재던 표본이 사라진다(둘은 다른 질문에 답한다)');
 });
 
@@ -813,7 +823,7 @@ test('[v9.175] 자동 배치에 넣지 않는다 — 바깥으로 나가는 쓰�
     const i = 셋업.indexOf(`function ${배치}(`);
     if (i === -1) continue;
     const 본문 = 셋업.slice(i, 셋업.indexOf('\n}\n', i));
-    assert.equal(/pushGoldenFixture_|menuPushGolden/.test(본문), false,
+    assert.equal(/pushGoldenFixture_|menuPushGolden/.test(코드만(본문)), false,
       `${배치}가 픽스처를 자동 전송한다 — 비가역 외부 쓰기가 승인 없이 도는 경로가 생긴다`);
   }
 });
@@ -1073,5 +1083,5 @@ test('[v9.197] 자기선언 — 배선 4자리(안 걸리면 영원히 안 돈�
     '워치독 reqSheets에 없다 — 탭이 지워져도 배치는 정상을 보고한다(소급 불가)');
   const fn = section('function selfDeclareLogNightly_()', '\nfunction aiFeedbackHealth_');
   assert.ok(fn.includes('writeIfChanged('), '소독 통로를 안 쓴다 — 학생이 친 `=`가 라이브 수식이 된다');
-  assert.equal(/appendRow\(/.test(fn), false, 'appendRow 직기입은 소독 우회다(v9.157)');
+  assert.equal(/appendRow\(/.test(코드만(fn)), false, 'appendRow 직기입은 소독 우회다(v9.157)');
 });
