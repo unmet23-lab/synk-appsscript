@@ -145,7 +145,7 @@ test('[v9.147] 새 지급 경로는 PT 단일 소스·일일 한도·미인식 �
     '퀴즈 포인트 지급이 quiz_log 적재보다 앞선다');
 });
 
-test('[v9.147] 골든셋은 무작위 표본이고 주간 배치에 걸려 있으며 발행 첨삭을 소급 정정하지 않는다', () => {
+test('[v9.147] 강사 정답 모음은 무작위 표본이고 주간 배치에 걸려 있으며 발행 첨삭을 소급 정정하지 않는다', () => {
   const g = sectionToEnd('function goldenSampleWeekly_()');
   // ① 무작위 — 순서대로 자르면(slice만) 시간순 표본이 되어 「AI가 맞았다」 라벨이 한쪽으로 굳는다
   assert.ok(g.includes('Math.random()'), '표본이 무작위가 아니다 — 강사 선택/시간순 표본은 반쪽 채점표를 만든다');
@@ -156,24 +156,24 @@ test('[v9.147] 골든셋은 무작위 표본이고 주간 배치에 걸려 있�
   // ③ 멱등 — 같은 fb_id를 다시 뽑지 않는다
   assert.ok(g.includes('already.has(id)'), '멱등 가드가 없다 — 매주 같은 카드가 다시 쌓인다');
   // ④ 쓰기 대상은 teacher_gold뿐 — hw_feedback을 건드리면 발행된 첨삭을 소급 정정하게 된다
-  assert.equal(/fb\.getRange\([^)]*\)\.setValue/.test(g), false, '골든셋이 hw_feedback을 쓴다 — 3단 데이터 정합이 깨진다');
+  assert.equal(/fb\.getRange\([^)]*\)\.setValue/.test(g), false, '강사 정답 모음이 hw_feedback을 쓴다 — 3단 데이터 정합이 깨진다');
   // ⑤ 배선·골격
   assert.ok(section('function weeklyJobs()', 'function monthlyJobs()').includes("safeRun('goldenSample', goldenSampleWeekly_)"),
-    '골든셋이 어느 트리거에도 안 걸렸다(영원히 안 돎)');
+    '강사 정답 모음이 어느 트리거에도 안 걸렸다(영원히 안 돎)');
   assert.ok(section('function sheetSkeleton_()', 'function buildMonsterDetailCards').includes("['teacher_gold', GOLD_HEADERS]"),
     '시트 골격에 teacher_gold 누락 — Glide가 테이블로 못 잡는다');
-  assert.ok(code.includes("'강사판정'") && code.includes("'강사교정'"), '골든셋 헤더에 강사 응답 칸이 없다');
+  assert.ok(code.includes("'강사판정'") && code.includes("'강사교정'"), '강사 정답 모음 헤더에 강사 응답 칸이 없다');
 });
 
-test('[v9.147] 커버리지 계기판은 참여율을 재고, 골든셋의 예상 실패 모드를 먼저 말한다', () => {
+test('[v9.147] 커버리지 계기판은 참여율을 재고, 강사 정답 모음의 예상 실패 모드를 먼저 말한다', () => {
   const r = section('function dataCoverageReport(', 'function quizFormUrlOf_'); // 인자 목록은 앵커에 넣지 않는다(v9.166에서 opts가 붙어 한 번 죽었다)
   // 참여율 = 압축이 감량인지 출혈인지를 가르는 유일한 숫자. 총량만 보면 소수 열성 학생이 가린다.
   assert.ok(r.includes('참여율'), '참여율 섹션이 없다 — 압축의 부작용을 재는 계기가 없다');
   assert.ok(r.includes("최근카운트('hw_feedback'") && r.includes("최근카운트('quiz_log'") && r.includes("최근카운트('talk_log'"),
     '참여 분자가 세 입구를 다 안 본다');
   assert.ok(r.includes("r[3] === 'student'"), '참여율 분모가 학생 역할이 아니다');
-  // 골든셋의 두 실패 모드를 리포트가 스스로 지목해야 한다(강사 무응답 · 「AI가 맞았다」 라벨 0)
-  assert.ok(r.includes('강사 교정 골든셋'), '골든셋 섹션이 없다');
+  // 강사 정답 모음의 두 실패 모드를 리포트가 스스로 지목해야 한다(강사 무응답 · 「AI가 맞았다」 라벨 0)
+  assert.ok(r.includes('강사 교정 정답 모음'), '강사 정답 모음 섹션이 없다');
   assert.ok(r.includes('유인이 0인 업무'), '강사 무응답이라는 예상 실패 모드를 리포트가 말하지 않는다');
   assert.ok(r.includes('반쪽 채점표'), '「AI가 맞았다」 라벨 0 경보가 없다');
 });
