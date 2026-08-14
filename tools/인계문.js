@@ -25,7 +25,18 @@
 const path = require('path');
 const report = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'session-report.js'));
 
-const 사본금지 = process.argv.slice(2).includes('--no-save');
+// 모르는 인자는 실행이 아니라 정지다 — 2026-08-14 실측: `--help` 를 받은 채 그대로 실행돼
+// 산 세션의 가짜 「마감」 인계문이 목차 맨 위(「여기를 복사하라」 자리)를 차지했다(F096 증상의
+// 새 입구 — 탐색·오타 호출이 곧 파일 쓰기였다). 인자 층에서 막아야 쓰기 층에 안 닿는다.
+// 대가: 부르는 쪽이 새 플래그를 먼저 쓰면 거짓 정지 — 방향이 시끄러운 쪽(exit 1)이라 바로 보인다.
+const 인자 = process.argv.slice(2);
+const 모르는 = 인자.filter((a) => a !== '--no-save');
+if (모르는.length) {
+  process.stderr.write(`[인계문] 모르는 인자: ${모르는.join(' ')} — 아무것도 안 썼다.\n`
+    + '  끊을 때(파일 갱신) = 인자 없이 · 점검(화면만) = --no-save\n');
+  process.exit(1);
+}
+const 사본금지 = 인자.includes('--no-save');
 
 const cwd = process.cwd();
 const sid = report.hostSessionId(''); // 호스트 id — 커밋 트레일러에 박히는 그 값(F074)
