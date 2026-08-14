@@ -1737,29 +1737,58 @@ function talkIndexSnapshot_(ss, tz, when) {
     const cN = String(r[4] || '').trim();
     if (r[0] && r[3] === 'student' && cN) cls[cN] = 1;
   });
-  const sh = ensureSheet(ss, TALK_INDEX_LOG_SHEET, TALK_INDEX_LOG_HEADERS);
-  const seen = {};                                             // 'season|week|sid' → 1 (기존 행)
-  if (sh.getLastRow() >= 2) sh.getRange(2, 2, sh.getLastRow() - 1, 4).getValues()
-    .forEach(r => { seen[String(r[0]) + '|' + String(r[1]) + '|' + String(r[3])] = 1; });
+  /* [v9.234] 분모는 «끝난 차시»까지만 — 이 적재는 월요일 07시, 그날 수업 «전»에 돈다. `lessonNoOf_` 는
+   *   대상일을 포함해 세므로(:1575 `i <= days`) `now` 를 그대로 넘기면 평일반은 **아직 안 한 월요일 차시**가
+   *   max 에 들어가 지수가 상시 낮게 나온다(1주차는 분모 1·분자 0 이라 0%). 어제 끝까지로 잰다.
+   *   ⚠ 주차 «표기»는 now 기준 그대로다 — 이 행의 뜻은 「N주차 «시작 시점»의 누적」이고, 소비자의 전주 대비도
+   *   누적 대 누적이라 뜻이 안 갈린다. 시즌 첫 월요일엔 lessonNo=0 이라 행이 아예 안 생긴다(그게 옳다). */
+  const 잰시각 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 0);
   const quiet = quietScoreMap_(ss);                            // 반 루프 밖 1회 — talkIndexOf_ 가 반마다 lesson_close 를 다시 읽지 않게
-  const rows = [];
-  let dup = 0;
+  /* 무거운 반별 계산은 락 «밖»에서 끝낸다 — 락은 아래 읽기·검사·쓰기만 감싼다. */
+  const 후보 = [];
+  const 실패반 = [];
   Object.keys(cls).sort().forEach(cN => {
     let ti = [];
-    try { ti = talkIndexOf_(ss, cN, now, tz, null, quiet); } catch (e) { Logger.log('발화 지수 적재 스킵(' + cN + '): ' + e); }
-    ti.forEach(x => {
-      if (!x.max) return;                                      // 아직 잴 차시가 없는 학생 — 행을 만들지 않는다
+    /* [v9.234] 실패한 반을 «이름으로» 모은다 — 예전엔 Logger.log 한 줄로 삼켜서, 그 반 학생이 전원 빠져도
+     *   `safeRun` 은 배치를 성공으로 보고했다(미실행이 통과와 같은 모양 · F207). 이제 요약에 실려 나간다. */
+    try { ti = talkIndexOf_(ss, cN, 잰시각, tz, null, quiet); }
+    catch (e) { 실패반.push(cN); Logger.log('발화 지수 적재 실패(' + cN + '): ' + e); }
+    ti.forEach(x => { if (x.max) 후보.push([cN, x]); });        // 아직 잴 차시가 없는 학생 — 행을 만들지 않는다
+  });
+  /* [v9.234] 읽기·검사·쓰기를 스크립트 락으로 직렬화한다 — 예약 실행과 손 재실행이 겹치면 두 실행이 같은
+   *   `seen` 을 보고 같은 키를 나란히 붙여, 선언한 멱등성이 깨진다(append-only 라 되돌리기도 어렵다). */
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  const rows = [];
+  let dup = 0;
+  try {
+    const sh = ensureSheet(ss, TALK_INDEX_LOG_SHEET, TALK_INDEX_LOG_HEADERS);
+    const seen = {};                                           // 'season|week|sid' → 1 (기존 행)
+    /* [v9.234] 시즌 칸은 `seasonKeyOf_` 로 접어서 읽는다 — 시트 기본 서식이 'yyyy-MM-dd' 문자열을 **Date 로
+     *   삼켜서**, 다시 읽으면 'Mon Aug 17 2026…' 이 되어 멱등 키가 영영 안 맞는다(재실행마다 같은 주차가
+     *   통째로 중복 적재된다). `groups` 시트가 v9.132 에 이미 물린 함정이고 그 처방이 이 함수다 — 새 로그만
+     *   그 통로를 안 타고 맨몸 `String()` 으로 대조하고 있었다(같은 판정이 두 곳에 있으면 갈라진다). */
+    if (sh.getLastRow() >= 2) sh.getRange(2, 2, sh.getLastRow() - 1, 4).getValues()
+      .forEach(r => { seen[seasonKeyOf_(r[0], tz) + '|' + String(r[1]) + '|' + String(r[3])] = 1; });
+    후보.forEach(p => {
+      const cN = p[0], x = p[1];
       const k = season + '|' + week + '|' + x.sid;
       if (seen[k]) { dup++; return; }
       seen[k] = 1;
       rows.push([now, season, week, cN, x.sid, x.name, x.got, x.max, x.quiet, x.pct]);
     });
-  });
-  // 반·student_id·이름은 상담시트·폼에서 온 「남의 글」이 profiles→groups 를 거쳐 흘러온 원문이다(아포스트로피 접두는
-  //   저장 때 소비돼 getValues 가 원문을 돌려주므로 앞단 소독은 여기서 되살아나지 않는다 — Code.js:1036 주석).
-  //   append 형 로그의 선례(lesson_close·lecture_view)와 같은 공용 통로를 탄다: 문자열만 셀안전_, Date·number 는 타입 보존.
-  if (rows.length) sh.getRange(sh.getLastRow() + 1, 1, rows.length, TALK_INDEX_LOG_HEADERS.length).setValues(행소독_(rows));
-  return '발화 지수 적재 — 신규 ' + rows.length + '행 + 중복 스킵 ' + dup + '행 (시즌 ' + season + ' · ' + week + '주차 · 반 ' + Object.keys(cls).length + '개)';
+    // 반·student_id·이름은 상담시트·폼에서 온 「남의 글」이 profiles→groups 를 거쳐 흘러온 원문이다(아포스트로피 접두는
+    //   저장 때 소비돼 getValues 가 원문을 돌려주므로 앞단 소독은 여기서 되살아나지 않는다 — Code.js:1036 주석).
+    //   append 형 로그의 선례(lesson_close·lecture_view)와 같은 공용 통로를 탄다: 문자열만 셀안전_, Date·number 는 타입 보존.
+    if (rows.length) {
+      // 시즌 칸을 텍스트로 못박아 «다음» 적재부터는 삼킴 자체가 안 일어나게 한다(위 읽기 정규화와 짝 — 한쪽만으론 못 닫는다:
+      //   서식은 새 시트만 지키고, 이미 Date 로 굳은 옛 행은 읽기 정규화가 산다).
+      sh.getRange(1, 2, sh.getMaxRows(), 1).setNumberFormat('@');
+      sh.getRange(sh.getLastRow() + 1, 1, rows.length, TALK_INDEX_LOG_HEADERS.length).setValues(행소독_(rows));
+    }
+  } finally { lock.releaseLock(); }
+  return '발화 지수 적재 — 신규 ' + rows.length + '행 + 중복 스킵 ' + dup + '행 (시즌 ' + season + ' · ' + week + '주차 · 반 ' + Object.keys(cls).length + '개)'
+    + (실패반.length ? ' · ⚠ 실패 반 ' + 실패반.length + '개: ' + 실패반.join(', ') : '');
 }
 /* [v9.99] 학생용 오늘의 만남 — sid → "1R 바트 · 2R 사란 · 3R 뭉흐".
  *   calcAll이 profiles DY129에 싣는다. 오늘 수업이 없는 반은 키를 만들지 않는다(학생 화면 공란 = 카드 숨김).
