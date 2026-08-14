@@ -34,7 +34,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 누끼 = os.path.join(ROOT, "docs", "캐릭터", "마스코트_누끼")
-S = 4  # 확산은 1/4 해상 저주파층에서 — 빠르고, 보정장의 매끈함이 수학적으로 보장된다
+격자 = 256  # 확산 격자 크기 — 입력 해상과 무관하게 고정해야 1024든 2048이든 같은 수술이 된다
 
 
 def 코어hex(rgb, al):
@@ -50,6 +50,7 @@ def 속수리(im, K=4.5, lam=0.22, 반복=420):
     a = np.array(im).astype(np.float32)
     rgb, al = a[..., :3], a[..., 3]
     W, H = im.size
+    S = max(1, round(W / 격자))
 
     small = np.asarray(im.resize((W // S, H // S), Image.LANCZOS), np.float32)
     srgb, sal = small[..., :3].copy(), small[..., 3]
