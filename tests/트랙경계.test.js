@@ -898,6 +898,92 @@ test('tools/인계문.js 모르는 인자 — 아무것도 안 쓰고 멈춘다(
   assert.match(r.stderr, /모르는 인자/, '거부 사유가 안 보인다 — 부르는 쪽이 무엇을 고칠지 모른다');
 });
 
+/* ── 죽음 도장(`끝남`)은 «/close 통로»에서만 찍힌다 (F447 · 2026-08-15) ─────────────
+ * 무엇이 고장나 있었나: 도장이 SessionEnd 훅에만 있어서, `/close` 를 다 돌고도 **창이 열려
+ *   있는 동안은** 그 세션이 board-guard 에게 「살아있다」로 읽혔다. 그래서 제 인계문이 시킨
+ *   다음 걸음을 다음 세션이 못 집었다 — 인계 통로가 자기 처방을 스스로 막는다(맹점 ③).
+ * ⚠ F447 은 「도장이 **없다**」로 적었지만 재실측은 다르다: 인계문 57건 중 무도장 **0건**
+ *   (도장 53 + 만진 기록 자체가 없는 세션 4). 창을 닫으면 SessionEnd 가 뒤늦게 찍는다 —
+ *   **없는 게 아니라 늦는다.** 그래서 이 회귀가 잠그는 것은 「찍히나」가 아니라 «언제»다.
+ * 🔑 세 방향을 같은 무게로 못박는다(통과 목록도 차단 목록과 같은 무게 — CLAUDE.md):
+ *   ㉠ 저장 모드는 찍는다 ㉡ `--no-save`(점검)는 안 찍는다 ㉢ **인계문을 쓰는 다른 통로는
+ *   안 찍는다.** ㉢ 이 급소다 — 도장을 공용 writer(`writeHandoffFile`)로 올리면 세 통로가
+ *   한꺼번에 통과하는데, 그중 둘(`context-budget` 🔴 wake · `track-boundary`)은 **살아서
+ *   계속 도는** 세션이 부르는 자리라 산 세션의 작업본이 ⚪ 유물로 떨어진다(F252 그 사고).
+ * 탐지력은 픽스처로 못박는다 — 실저장소 상태 폴더는 건드리지 않는다. */
+function 만진기록두기(state, cwd, sid) {
+  const store = require(path.join(HOOKS, 'lib', 'handoff-store.js'));
+  // 이름 규칙은 track-collision 이 쓰는 것과 같다 — 도장은 **기존 파일에만** 찍힌다.
+  const p = path.join(state, `track-${store.projectKey(cwd)}-${store.safeId(sid)}.json`);
+  fs.writeFileSync(p, JSON.stringify({ baseline: 'x', touched: { 'a.js': 1 }, at: Date.now() }));
+  return p;
+}
+/** 상태 폴더를 통째로 읽어 도장을 센다 — 경로를 손으로 맞히면 «못 찾아서 초록»이 난다. */
+function 도장들(state) {
+  return fs.readdirSync(state).filter((f) => f.startsWith('track-')).map((f) => {
+    let j = {}; try { j = JSON.parse(fs.readFileSync(path.join(state, f), 'utf8')); } catch (_) { /* 깨진 건 무도장으로 센다 */ }
+    return { f, 끝남: j.끝남 };
+  });
+}
+
+test('🔴 tools/인계문.js 저장 모드 — 인계문과 **같은 걸음**에서 죽음 도장을 찍는다 (F447)', () => {
+  const TOOL = path.join(ROOT, 'tools', '인계문.js');
+  const d = 임시('synk-tb-stamp-');
+  const state = 임시('synk-tb-stampst-');
+  const sid = 'stamp-close-sess';
+  만진기록두기(state, d, sid);
+
+  훅띄우기(TOOL, {
+    cwd: d, encoding: 'utf8', timeout: 20000,
+    env: { ...process.env, SYNK_CTXBUDGET_DIR: state, CLAUDE_CODE_HOST_SESSION_ID: sid },
+  });
+
+  const 잰것 = 도장들(state);
+  assert.equal(잰것.length, 1, `상태 폴더에 track 파일이 1개가 아니다(${잰것.length}) — 이 시험이 엉뚱한 것을 재고 있다`);
+  assert.ok(Number(잰것[0].끝남) > 0,
+    '🔴 /close 가 인계문을 쓰고도 도장을 안 찍었다 — 창이 열려 있는 동안 이 세션은 「살아있다」로 읽혀,'
+    + ' 제 인계문이 시킨 다음 걸음을 다음 세션이 못 집는다(F447 실사고: 세션 하나가 P1 트랙을 포기했다)');
+});
+
+test('🔴 tools/인계문.js --no-save — 점검은 도장을 안 찍는다 (산 세션을 죽이면 안 된다)', () => {
+  const TOOL = path.join(ROOT, 'tools', '인계문.js');
+  const d = 임시('synk-tb-nostamp-');
+  const state = 임시('synk-tb-nostampst-');
+  const sid = 'nosave-stamp-sess';
+  만진기록두기(state, d, sid);
+
+  훅띄우기([TOOL, '--no-save'], {
+    cwd: d, encoding: 'utf8', timeout: 20000,
+    env: { ...process.env, SYNK_CTXBUDGET_DIR: state, CLAUDE_CODE_HOST_SESSION_ID: sid },
+  });
+
+  const 잰것 = 도장들(state);
+  assert.equal(잰것.length, 1, `상태 폴더에 track 파일이 1개가 아니다(${잰것.length}) — 이 시험이 엉뚱한 것을 재고 있다`);
+  assert.strictEqual(잰것[0].끝남, undefined,
+    '🔴 점검(--no-save)이 도장을 찍었다 — 「인계문 다시 보기」 한 번에 산 세션의 미커밋이 ⚪(이어받아도 된다)로 떨어진다(F252 재현)');
+});
+
+test('🔴 track-boundary(살아서 계속 도는 세션)는 도장을 안 찍는다 — 도장을 공용 writer 로 올리면 여기가 샌다', () => {
+  const state = 임시('synk-tb-livest-');
+  const cwd = 임시('synk-tb-livecwd-');
+  const sid = 'live-boundary-sess';
+  만진기록두기(state, cwd, sid);
+
+  const r = 돌려({
+    tool_name: 'Bash', tool_input: { command: 'git commit -m "x" -- a.md' },
+    cwd, session_id: sid, tool_response: 성공, transcript_path: 트랜스크립트(400_000),
+  }, state);
+  assert.equal(r.발화, true, '전제가 깨졌다 — 훅이 발화를 안 해서 이 시험은 아무것도 안 재고 있다');
+  assert.ok(fs.existsSync(path.join(cwd, 'docs', '_ops', '인계문.md')),
+    '전제가 깨졌다 — 훅이 인계문을 안 썼다(그럼 「썼는데 도장은 안 찍었다」를 못 잰다)');
+
+  const 잰것 = 도장들(state);
+  assert.equal(잰것.length, 1, `상태 폴더에 track 파일이 1개가 아니다(${잰것.length}) — 이 시험이 엉뚱한 것을 재고 있다`);
+  assert.strictEqual(잰것[0].끝남, undefined,
+    '🔴 트랙 경계에서 도장이 찍혔다 — 이 세션은 계속 일하는데 그 작업본이 ⚪ 유물이 된다.'
+    + ' 도장은 «인계문을 쓰는 것»이 아니라 «창을 닫는 것»에 붙어야 한다(F447 · F252)');
+});
+
 /* 장치와 발동 조건은 같은 커밋에서 — 플래그만 만들고 처방이 안 가리키면 아무도 안 쓴다.
  *
  * ⚠ **재는 파일이 옮겨졌다: `context-budget.js` → `/close` 스킬** (F353 · 2026-08-12).
