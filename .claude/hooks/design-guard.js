@@ -86,6 +86,37 @@ function 킷추출() {
   return 조각;
 }
 
+/* 「전문을 읽어라」는 처방의 **대가를 지금 재서** 말한다.
+ * 🔴 여기 크기를 손으로 적으면 파일이 자라는 순간 거짓말이 된다 — 실측(2026-08-14 · #Q73):
+ *   이 줄은 「≈4.5KB — read-budget 무료 구간」이라 적혀 있었는데 실물은 **17,507B** 였다.
+ *   즉 read-budget 이 「큰 파일」로 막는 읽기를 이 훅이 **무료라고 말하며 권하고** 있었다.
+ *   그게 F103 「따를 수 없는 처방」이고, 따를 수 없는 처방은 우회를 정상 통로로 만든다.
+ *   장치는 안 도는 쪽보다 **맞는 얼굴로 틀린 값을 내는 쪽**으로 더 자주 샌다(CLAUDE.md 맹점 ④).
+ * BIG 은 read-budget 소스에서 읽는다 — 같은 값을 두 곳에 안 적는다(tests/디자인가드.test.js 와 같은 통로).
+ * ⚠ 대가: BIG 선언 모양이 바뀌면 정규식이 못 잡아 무료/초과 판정만 조용히 빠진다(크기는 계속 맞다).
+ *   그 자리는 이미 닫혀 있다 — 그 테스트가 **같은 정규식**을 쓰므로 여기보다 먼저 적색이 된다. */
+function 전문읽기_대가() {
+  let size;
+  try { size = fs.statSync(DESIGN).size; } catch (_) {
+    return '값이 더 필요하면 DESIGN.md 전문을 연다 — 크기를 못 쟀으니 구역 읽기(`offset`+`limit`)로.';
+  }
+  const kb = (size / 1024).toFixed(1);
+  const 속 = '킷 표·철칙·폰트 스택·로고·산출물별 통로';
+  let BIG = null;
+  try {
+    const 예산 = fs.readFileSync(path.join(ROOT, '.claude', 'hooks', 'read-budget.js'), 'utf8');
+    const m = 예산.match(/const BIG\s*=\s*(\d+)\s*\*\s*(\d+)/);
+    if (m) BIG = Number(m[1]) * Number(m[2]);
+  } catch (_) { /* 못 읽으면 크기만 말한다 — 이 훅을 여기서 멈추지 않는다 */ }
+  if (BIG === null) return `값이 더 필요하면 DESIGN.md 전문(${kb}KB): ${속}.`;
+  const bigKb = (BIG / 1024).toFixed(0);
+  return size < BIG
+    ? `값이 더 필요하면 DESIGN.md 전문(${kb}KB — read-budget 무료 구간 ${bigKb}KB 안): ${속}.`
+    : `⚠ DESIGN.md 가 ${kb}KB 로 read-budget 「큰 파일」(${bigKb}KB)을 넘었다 — **전문 읽기가 예산에 걸린다.**\n`
+      + '  지금은 필요한 절만 `Read offset/limit` 로 열고, 처분은 숫자를 올리는 것이 아니라 **이 파일을 문턱 아래로 되돌리는 것**이다\n'
+      + '  (tests/디자인가드.test.js 가 이미 적색이다 — 주인 없는 적색은 남의 배포를 막는다).';
+}
+
 function 메시지(filePath) {
   const k = 킷추출();
   if (!k) {
@@ -109,7 +140,7 @@ function 메시지(filePath) {
     '     · emil-design-eng             : 모션·이징·인터랙션 판단 (모션이 있을 때만)',
     '  ③ 검사 — node tools/브랜드렌더린트.js <파일>   (0=위반없음 1=위반 2=크롬없음·미실행)',
     '',
-    '값이 더 필요하면 DESIGN.md 전문(≈4.5KB — read-budget 무료 구간): 색 19·폰트 스택·로고·산출물별 통로.',
+    전문읽기_대가(),
     '새 파일이면 렌더 린트 등록층(tools/브랜드렌더린트.js `대상`)에 넣을지 판단해라 — 등록 안 된 파일은 CI 가 영원히 안 본다.',
   ].join('\n');
 }
