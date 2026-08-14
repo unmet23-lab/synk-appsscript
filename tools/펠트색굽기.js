@@ -74,6 +74,36 @@ the classic warm eye-smile. Everything else must be pixel-identical to the refer
 same wool fiber texture, same wool color, same cream hand-stitching, same lighting, same size, same
 position, same background. Absolutely no mouth. ${스튜디오}`,
   },
+  /* ── 전 세트 재파생 — 유호 픽 08-15 「1.ㄴ」=㉡네이티브 판 확정 ──
+   * ㉡ 본체가 ㉠보다 +3.8% 커서 표정·¾ 를 그 판에서 다시 파생시켜야 교대 때 안 튄다.
+   * 좌¾ 는 굽지 않는다 — 「VIEWER'S LEFT」 지시도 우향으로 구워지는 실측이 있어(memory/
+   * mascot-felt-liveness ①) `python tools/컷미러.py 코랄_우34 → 코랄_좌34` 가 정본 통로다. */
+  {
+    이름: '코랄_눈감음',
+    비율: '1:1',
+    참조: [],
+    런타임참조: ['코랄_본체'],
+    대체참조: [참조.재염색],
+    지시: `Take the felted mascot in the reference image and change ONLY the eyes: replace the two
+round black bead eyes with closed eyes — two short, gentle downward-curved stitched lines in dark
+thread, as if peacefully blinking. Everything else must be pixel-identical to the reference: same
+silhouette, same wool fiber texture, same wool color, same cream hand-stitching, same lighting, same
+size, same position, same background. No mouth, no other change. ${스튜디오}`,
+  },
+  {
+    이름: '코랄_우34',
+    비율: '1:1',
+    참조: [참조.견본],
+    런타임참조: ['코랄_본체'],
+    대체참조: [참조.재염색, 참조.견본],
+    지시: `Rotate the felted mascot from the first reference image into a three-quarter view: the
+character is turned about 35 degrees so it now faces toward the VIEWER'S RIGHT. Both round glossy
+black bead eyes remain visible, the far eye slightly foreshortened near the edge of the face. Keep
+everything else identical to the first reference image: same needle-felted wool material, same cream
+hand-stitched accents, same lighting from upper left, same total height in frame, same centered
+composition, same plain light gray background. This is the same character, same proportions —
+rounded dome head, wavy flowing bottom edge. No mouth. ${색규약} ${스튜디오}`,
+  },
 ];
 
 (async () => {
