@@ -20,6 +20,9 @@ const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 const 엔진 = fs.readFileSync(path.join(ROOT, '상담AI.js'), 'utf8').replace(/\r\n/g, '\n');
+/* 부정 단언(「~가 없어야 한다」)의 주어만 이걸로 감싼다 — 주석이 금지어를 «설명»하면 그 검사가
+ * 설명을 위반으로 읽는다. 구간 앵커는 원문 그대로 둔다(앵커가 주석 배너면 정제가 앵커를 지운다). */
+const { 코드만 } = require('./lib/소스검사.js');
 
 const api = new Function(엔진 + '\n;return { 상담_정규화_: 상담_정규화_, 상담_메시지조립_: 상담_메시지조립_, 상담_창열림_: 상담_창열림_, 상담_확인화면본_: 상담_확인화면본_ };')();
 
@@ -103,7 +106,7 @@ test('초안 링크는 서명 토큰 fail-closed 다 — 시트를 읽기 전에
 /* 🔴 보안 검토(2026-08-04)가 잡은 4건의 회귀. 넷 다 「초록인 채로 새는」 형태라 문구가 아니라 배선을 본다. */
 test('메일 링크에 웹훅 마스터 키(상담AI_URL키)를 싣지 않는다 — 그 키는 doPost 의 유일한 인증이다', () => {
   const fn = 엔진.slice(엔진.indexOf('function 상담_인계알림_('), 엔진.indexOf('function 상담_인계메일_('));
-  assert.ok(!/k=.*상담AI_URL키|상담AI_URL키.*base|getProperty\('상담AI_URL키'\)/.test(fn),
+  assert.ok(!/k=.*상담AI_URL키|상담AI_URL키.*base|getProperty\('상담AI_URL키'\)/.test(코드만(fn)),
     '인계 메일이 마스터 키를 링크에 싣는다 — 메일함이 곧 위조 웹훅 권한이 된다');
   assert.ok(fn.includes('상담_링크토큰_'), '서명 토큰 대신 무엇으로 링크를 인증하는지 알 수 없다');
   const tok = 엔진.slice(엔진.indexOf('function 상담_링크토큰_('));
@@ -113,7 +116,7 @@ test('메일 링크에 웹훅 마스터 키(상담AI_URL키)를 싣지 않는다
 test('발송은 2단이다 — 메일 링크(act=draft)는 부작용이 없고, 발송 링크는 메일에 없다', () => {
   const 알림 = 엔진.slice(엔진.indexOf('function 상담_인계알림_('), 엔진.indexOf('function 상담_인계메일_('));
   assert.ok(알림.includes('act=draft'), '메일 링크가 확인 단계를 거치지 않는다');
-  assert.ok(!알림.includes('act=send'), 'act=send 가 메일에 실렸다 — 메일 스캐너·미리보기가 열면 학부모에게 실제로 나간다(비가역)');
+  assert.ok(!코드만(알림).includes('act=send'), 'act=send 가 메일에 실렸다 — 메일 스캐너·미리보기가 열면 학부모에게 실제로 나간다(비가역)');
   const fn = 엔진.slice(엔진.indexOf('function 상담_초안발송_('));
   assert.ok(/const 실행 = String\(p\.act \|\| ''\) === 'send'/.test(fn), '확인·발송을 가르는 플래그가 없다');
   const 확인분기 = fn.indexOf('if (!실행)');
@@ -137,7 +140,7 @@ test('인계 메일은 다이제스트를 타지 않는다 — 다음 날 08시�
   // ⚠ 구간은 상담_인계알림_ 하나만 자른다 — 상담_인계메일_ 까지 삼키면 그 안의 **정당한 폴백**을 위반으로 읽는다
   //   (초록/적색이 뒤집히는 게 아니라 거짓 적색이 되는 자리 · 08-04 「테스트 자신이 결함」 계열)
   const 알림 = 엔진.slice(엔진.indexOf('function 상담_인계알림_('), 엔진.indexOf('function 상담_인계메일_('));
-  assert.ok(!/\badminMail\(/.test(알림), '인계 알림이 아직 adminMail(다이제스트 큐)로 나간다 — 링크가 도착할 때는 창이 닫혀 있다');
+  assert.ok(!/\badminMail\(/.test(코드만(알림)), '인계 알림이 아직 adminMail(다이제스트 큐)로 나간다 — 링크가 도착할 때는 창이 닫혀 있다');
 });
 
 test('IG 잠금 비대칭은 fail-closed 다 — 페이지ID만 걸면 인스타가 무잠금으로 새면 안 된다', () => {
@@ -163,7 +166,7 @@ test('초안 발송은 1회성 + 24시간 창 검사를 지난다', () => {
 
 test('doGet 은 여전히 HtmlService 를 반환하지 않는다 (⛔ 2026-08-03 — 171개 전역이 원장 권한으로 열린다)', () => {
   const doget = 엔진.slice(엔진.indexOf('function doGet('), 엔진.indexOf('function 상담_정규화_('));
-  assert.ok(!/HtmlService/.test(doget), 'doGet 에 HtmlService 가 들어왔다 — 상담AI.js 머리말 ⛔ 참조');
+  assert.ok(!/HtmlService/.test(코드만(doget)), 'doGet 에 HtmlService 가 들어왔다 — 상담AI.js 머리말 ⛔ 참조');
 });
 
 /* 🔴 실행층 방어(F081 계열) — 이 함수는 ScriptApp.getService()·MailApp·UrlFetchApp 를 쓴다.
@@ -320,6 +323,10 @@ test('플랫폼을 아는 기록 호출은 하나도 빠짐없이 채널을 넘�
  * 신호가 네트워크 오류로 위장된다(마커를 만드는 판정 자체는 옛글자런타임.test.js ⑥이 진다). */
 
 const 발송주소픽스처 = 'https://script.example/exec?act=send&s=S1&i=abcd1234&t=tok&d=1';
+
+/* ⚠ 아래 `본` 은 **`코드만()` 으로 감싸지 않는다** — `api.상담_확인화면본_()` 이 그려 낸 «런타임 산출»
+ *   (유호님이 실제로 볼 확인 화면 HTML)이지 파일 원문이 아니다. JS 렉서를 대면 화면 문구의 `//`·`/*`
+ *   를 주석으로 읽어 본문을 지운다 — 부정 단언이라 그래도 초록이라 아무도 모른다. (갈래 ⓑ · 대기열 #Q72) */
 
 test('역번역 성공 — 발송 링크가 실리고 역번역이 보인다', () => {
   const 본 = api.상담_확인화면본_('Сайн байна уу', ['안녕하세요'], 1, 발송주소픽스처);

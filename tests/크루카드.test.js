@@ -9,6 +9,9 @@ const path = require('node:path');
 // 탐지력은 「사본을 변이시키면 빨개지는가」로 재고, **실파일은 절대 안 건드린다**(F065·F067·code-edit-guard).
 const ROOT = process.env.SYNK_TEST_SRC_ROOT || path.resolve(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
+/* 부정 단언(「~가 없어야 한다」)의 주어만 이걸로 감싼다 — 주석이 금지어를 «설명»하면 그 검사가
+ * 설명을 위반으로 읽는다. 구간 앵커·긍정 단언은 원문 그대로 둔다. (대기열 #Q72) */
+const { 코드만 } = require('./lib/소스검사.js');
 
 const server = read('crewcard/크루카드.js');
 const 상담 = read('crewcard/상담시트.js');
@@ -194,8 +197,9 @@ test('두 검사 자신의 탐지력 — 픽스처로 못박는다', () => {
 
 test('서버 보안 불변식 — doGet 무부작용·hp 선차단·일일상한·락 채번', () => {
   const doGet = server.slice(server.indexOf('function doGet'), server.indexOf('function doPost'));
+  const doGet코드 = 코드만(doGet); // 루프 밖에서 한 번만 정제한다(자리마다 감싸면 렉싱이 4배)
   for (const bad of ['appendRow', 'setProperty', 'insertSheet', 'deleteRow']) {
-    assert.ok(!doGet.includes(bad), `doGet에 부작용(${bad}) — GET은 읽기 전용이어야 한다`);
+    assert.ok(!doGet코드.includes(bad), `doGet에 부작용(${bad}) — GET은 읽기 전용이어야 한다`);
   }
   const doPost = server.slice(server.indexOf('function doPost'), server.indexOf('function 크루_탭_'));
   const order = ['body.form', 'body.hp', 'DAILY_CAP', 'waitLock', 'appendRow', 'releaseLock'];
@@ -364,7 +368,7 @@ test('수식 인젝션 차단 — doPost의 시트 쓰기 경로가 전부 소�
   assert.ok(doPost.includes('return 셀안전_(String(v).slice(0, MAX_CELL))'),
     '사용자 입력이 소독 없이 appendRow로 간다 — 익명 수식 인젝션 재개통');
   assert.ok(doPost.includes('return 셀안전_(String(body.lang'), 'lang(요청 본문)이 소독을 안 지난다');
-  assert.ok(!/return String\(v\)\.slice/.test(doPost), '소독 없는 원시 반환 경로가 남아 있다');
+  assert.ok(!/return String\(v\)\.slice/.test(코드만(doPost)), '소독 없는 원시 반환 경로가 남아 있다');
 });
 
 test('HtmlService 노출 표면 — 밑줄 없는 전역 함수는 doGet·doPost뿐', () => {
@@ -378,9 +382,12 @@ test('HtmlService 노출 표면 — 밑줄 없는 전역 함수는 doGet·doPost
 test('상담시트 이관 — 안전 불변식(학생ID 비움·소독·중복 차단·반 정본 24)', () => {
   // 공개 폼이 곧바로 앱 로스터가 되면 장난 제출 한 번이 학생 계정이 된다.
   // syncProfiles가 학생ID 없는 행을 건너뛰는 성질이 유일한 안전 지점이므로, 이관은 ID를 비워야만 한다.
-  const 매핑 = 상담.slice(상담.indexOf('function 크루카드_상담매핑_'), 상담.indexOf('function 상담시트_이관_'));
-  assert.ok(!/['"]학생ID['"]\s*:/.test(매핑), '이관 매핑이 학생ID를 채운다 — 공개 접수가 앱 로스터로 직행한다');
-  assert.ok(!/['"]반['"]\s*:/.test(매핑), '이관 매핑이 「반」을 채운다 — 배정은 사람의 결정이어야 한다');
+  /* ⚠ 이름을 `매핑` 에서 갈랐다 — 이 파일엔 `매핑` 선언이 넷인데 :436 은 원문 그대로다.
+   *   계수기는 파일 하나를 한 스코프로 근사하고 «첫 선언이 이긴다» — 같은 이름을 쓰면 여기 정제본이
+   *   저쪽 원문까지 「안전」으로 물들인다(숫자는 좋아지는데 사각은 남는 결말 · 조편성 `골격코드` 와 같은 처분). */
+  const 매핑코드 = 코드만(상담.slice(상담.indexOf('function 크루카드_상담매핑_'), 상담.indexOf('function 상담시트_이관_')));
+  assert.ok(!/['"]학생ID['"]\s*:/.test(매핑코드), '이관 매핑이 학생ID를 채운다 — 공개 접수가 앱 로스터로 직행한다');
+  assert.ok(!/['"]반['"]\s*:/.test(매핑코드), '이관 매핑이 「반」을 채운다 — 배정은 사람의 결정이어야 한다');
 
   const 이관 = 상담.slice(상담.indexOf('function 상담시트_이관_'), 상담.indexOf('function 상담_첫빈행_'));
   assert.ok(이관.includes('셀안전_('), '이관 경로가 소독을 안 지난다 — 상담시트로 수식 인젝션 우회');
@@ -395,7 +402,7 @@ test('상담시트 이관 — 안전 불변식(학생ID 비움·소독·중복 �
 
   // 삭제 함수(샘플정리)는 유지보수용이다 — 익명 진입점에서 부르는 순간 공개 GET/POST가 행을 지운다
   const 진입 = server.slice(server.indexOf('function doGet'), server.indexOf('function 크루_탭_'));
-  assert.ok(!/상담시트_샘플정리_|deleteRow/.test(진입), 'doGet/doPost가 삭제 경로에 닿는다');
+  assert.ok(!/상담시트_샘플정리_|deleteRow/.test(코드만(진입)), 'doGet/doPost가 삭제 경로에 닿는다');
 });
 
 test('등록일 — 카드를 열면 오늘 날짜가 이미 들어가 있다(KR·MN)', () => {
@@ -419,7 +426,7 @@ test('날짜 기준 — 채번과 등록일이 같은 타임존(시트 TZ를 믿
   // 실측: 이 스프레드시트 TZ는 America/Los_Angeles다. 시트 TZ로 등록일을 찍으면
   // 크루카드번호 SL-20260804 와 등록일 2026-08-03 이 같은 행에서 하루 어긋난다.
   assert.ok(/const TZ_ = 'Asia\/Ulaanbaatar'/.test(server), 'TZ_ 정본 상수가 없다');
-  assert.ok(!/getSpreadsheetTimeZone/.test(상담), '등록일이 시트 TZ를 쓴다 — 채번과 하루 어긋난다');
+  assert.ok(!/getSpreadsheetTimeZone/.test(코드만(상담)), '등록일이 시트 TZ를 쓴다 — 채번과 하루 어긋난다');
   const 채번 = server.match(/Utilities\.formatDate\(.*yyyyMMdd'\)/)[0];
   assert.ok(채번.includes('TZ_'), `채번이 TZ_를 안 쓴다: ${채번}`);
   assert.ok(/Utilities\.formatDate\(new Date\(\), TZ_, 'yyyy-MM-dd'\)/.test(상담), '등록일이 TZ_를 안 쓴다');

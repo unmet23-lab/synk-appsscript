@@ -21,6 +21,10 @@ const path = require('path');
 const REPO = path.join(__dirname, '..');
 const TOOLS = path.join(REPO, 'tools');
 const SRC = fs.readFileSync(path.join(TOOLS, 'notebooklm-drive.js'), 'utf8');
+/* 부정 단언(「~가 없어야 한다」)의 주어만 이걸로 감싼다 — 주석이 금지 패턴을 «설명»하면 그 검사가
+ * 설명을 위반으로 읽는다. 긍정 단언(`assert.match(SRC, …)`)은 원문 그대로 둔다. (대기열 #Q72) */
+const { 코드만 } = require('./lib/소스검사.js');
+const SRC코드 = 코드만(SRC);
 
 // ── ① .cmd 순수 ASCII (F069) ────────────────────────────────────────────
 test('tools/*.cmd 는 비ASCII 바이트가 0이다 (cmd.exe는 CP949로 파싱한다)', () => {
@@ -41,7 +45,7 @@ test('tools/*.cmd 는 비ASCII 바이트가 0이다 (cmd.exe는 CP949로 파싱�
 test('개인정보 게이트를 사본으로 만들지 않고 export의 것을 그대로 쓴다', () => {
   assert.match(SRC, /require\('\.\/notebooklm-export\.js'\)/,
     'export 모듈을 안 쓴다 — 게이트가 둘이 되면 한쪽만 고쳐지고, 새는 방향은 언제나 「통과」다');
-  assert.ok(!/const PII\s*=|scanPII\s*\(text\)\s*\{/.test(SRC),
+  assert.ok(!/const PII\s*=|scanPII\s*\(text\)\s*\{/.test(SRC코드),
     '게이트 로직을 여기에 복제했다 — 정의는 한 곳이어야 한다');
   const E = require(path.join(TOOLS, 'notebooklm-export.js'));
   const D = require(path.join(TOOLS, 'notebooklm-drive.js'));
@@ -57,7 +61,9 @@ test('마운트가 없으면 딴 폴더로 폴백하지 않고 멈춘다', () =>
   assert.match(블록, /process\.exit\(\s*2\s*\)/,
     '멈추지 않는다 — 「올라간 줄 알았는데 안 올라간」 상태가 최악이다');
   // 폴백 경로를 몰래 두지 않았는지: 대상 결정이 --out 과 DEFAULT_OUT 둘뿐이어야 한다
-  assert.ok(!/catch[\s\S]{0,120}mkdirSync\([\s\S]{0,60}Desktop/.test(SRC),
+  /* ⚠ 정제본으로 잰다 — 주석이 「바탕화면으로 폴백하지 않는다」를 설명하면 그 설명이 위반이 된다.
+   *   거리 단언(`[\s\S]{0,120}`)이라 주석이 빠지면 거리가 «줄어든다» = 더 잘 잡는 쪽이라 안전하다. */
+  assert.ok(!/catch[\s\S]{0,120}mkdirSync\([\s\S]{0,60}Desktop/.test(SRC코드),
     '실패 시 바탕화면 등으로 새는 경로가 있다');
 });
 
@@ -65,6 +71,8 @@ test('마운트 탐지는 Node 쪽에 있다 (.cmd에 한글 경로를 두지 �
   assert.match(SRC, /function findDriveRoot\(\)/, '마운트 탐지 함수가 없다');
   assert.match(SRC, /'내 드라이브'|"내 드라이브"/, '한국어 마운트 이름을 안 본다 — 유호님 환경이 한국어다');
   assert.match(SRC, /'My Drive'|"My Drive"/, '영문 마운트 이름을 안 본다 — 계정 언어가 바뀌면 못 찾는다');
+  /* ⚠ `cmd` 는 **배치 스크립트**지 JS 가 아니다 — `코드만()` 으로 감싸지 않는다(갈래 ⓒ 비JS · #Q72).
+   *   배치의 주석은 `REM`·`::` 이고, JS 렉서를 대면 경로의 `//` 를 주석으로 읽어 뒤를 지운다. */
   const cmd = fs.readFileSync(path.join(TOOLS, 'notebooklm-drive.cmd'), 'utf8');
   assert.ok(!/내 드라이브|My Drive/.test(cmd), '.cmd가 마운트 경로를 직접 들고 있다 — 탐지는 Node 몫이다');
 });
@@ -73,7 +81,7 @@ test('마운트 탐지는 Node 쪽에 있다 (.cmd에 한글 경로를 두지 �
 test('묶음 파일 이름이 내용과 무관하게 고정 패턴이다 (드라이브가 같은 파일로 보게)', () => {
   assert.match(SRC, /SYNK_\$\{[^}]*prefix[^}]*\}_\$\{String\(/,
     '이름이 그룹+일련번호 형태가 아니다 — 이름이 매번 바뀌면 드라이브가 새 파일로 보고 소스가 끊긴다');
-  assert.ok(!/만든날[^\n]*\.pdf|\$\{만든날\}[^\n]*pdf/.test(SRC),
+  assert.ok(!/만든날[^\n]*\.pdf|\$\{만든날\}[^\n]*pdf/.test(SRC코드),
     '파일 이름에 날짜를 박았다 — 매일 새 파일이 생겨 폴더 소스가 무한히 늘어난다(날짜는 본문 머리말에 둔다)');
 });
 

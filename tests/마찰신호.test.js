@@ -40,7 +40,12 @@ function run(ledger, args, expectFail = false) {
 }
 
 /* 행은 이제 두 곳에 산다 — 동결 아카이브(.md)와 조각 폴더(장부/F0NN.md · F250 후반).
- * 같은 번호는 조각이 이긴다(도구의 read() 와 같은 규칙 — 규칙이 갈리면 여기가 먼저 빨개져야 한다). */
+ * 같은 번호는 조각이 이긴다(도구의 read() 와 같은 규칙 — 규칙이 갈리면 여기가 먼저 빨개져야 한다).
+ *
+ * ⚠ 이 함수가 내주는 것은 **장부 마크다운 표의 한 행**(그것도 도구를 실제로 돌려 나온 산출)이지
+ *   JS 원문이 아니다 — 아래 `!행.includes(…)`·`!/--파일/.test(새행)` 부정 단언들을 `코드만()` 으로
+ *   감싸지 않는다(갈래 ⓑ 런타임 산출 + ⓒ 비JS · 대기열 #Q72). 감싸면 신고문 속 `//`·`/*` 를 주석으로
+ *   읽어 행을 지운다 → 「그 문자열이 없다」가 항상 참이 되어 **영원히 초록**이다. */
 const rowsOf = (ledger) => {
   const rows = new Map();
   for (const l of fs.readFileSync(ledger, 'utf8').split('\n')) {
@@ -821,6 +826,7 @@ function 해소용장부() {
   const id = (rowsOf(ledger).at(-1).match(/F\d{3}/) || [])[0];
   return { ledger, id };
 }
+/* `rowsOf` 의 ⚠ 를 그대로 상속한다 — 이건 장부 표의 한 «칸»이라 `코드만()` 대상이 아니다(ⓑ+ⓒ · #Q72). */
 const 해소칸 = (ledger, id) => (rowsOf(ledger).find((r) => r.includes(id)) || '').split('|').at(-2) || '';
 
 test('🔴 [F301] resolve: 모르는 옵션은 **해소문으로 접히지 않는다** — 막고 말한다', () => {

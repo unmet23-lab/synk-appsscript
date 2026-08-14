@@ -268,7 +268,7 @@ test('groups가 시트 골격에 등록돼 preflightGlide가 자동 생성한다
 // 바꿔 이 사고 계급(정의 위치·파일 순서 의존) 자체를 제거 — 이제 지키는 불변식은
 // 「골격은 톱레벨 const로 되돌아가지 않는다」 + 「참조 상수의 정의가 실존한다」다.
 test('시트 골격은 지연 평가 함수다 — 톱레벨 const로 되돌리면 초기화 순서 사고가 되살아난다', () => {
-  assert.equal(code.includes('const SHEET_SKELETON'), false,
+  assert.equal(코드만(code).includes('const SHEET_SKELETON'), false,
     '골격이 톱레벨 const로 회귀 — 타파일 상수 참조가 파일 초기화 순서에 따라 전 트리거를 죽인다');
   const DECL = 'function sheetSkeleton_()';
   const skeletonAt = code.indexOf(DECL);
@@ -309,7 +309,7 @@ test('시즌 시작일은 ▶ 버튼 한 번으로 실수 설정되지 않는다
   const body = code.slice(i, code.indexOf('\n// 시즌 라벨', i));
   assert.ok(/if \(!dateStr\)/.test(body), '인자 없이 실행했을 때의 분기가 없다');
   const guard = body.slice(body.indexOf('if (!dateStr)'), body.indexOf('const d = toDate_'));
-  assert.equal(/setState/.test(guard), false,
+  assert.equal(/setState/.test(코드만(guard)), false,
     '인자 없이 실행했는데 시즌 시작일을 써버린다 — ▶ 오작동으로 차시가 통째로 밀린다');
 });
 
@@ -324,7 +324,7 @@ test('학교·동네 열은 번호를 박지 않고 이름으로 찾는다', () 
   const body = code.slice(i, code.indexOf('\n/* =====', i));
   assert.ok(/langColOf_\(pfG, '학교'\)/.test(body) && /langColOf_\(pfG, '동네'\)/.test(body),
     '학교·동네 열을 langColOf_로 확보하지 않는다');
-  assert.equal(/pfG\.getRange\(1, *7[0-9]/.test(body), false,
+  assert.equal(/pfG\.getRange\(1, *7[0-9]/.test(코드만(body)), false,
     'profiles 70번대 열에 헤더를 직접 쓴다 — 오늘의알림(76)·나의여정(77)을 덮어쓸 자리다');
 });
 
@@ -332,7 +332,7 @@ test('조 편성이 오늘의알림·나의여정 열을 침범하지 않는다'
   const i = code.indexOf('function assignGroups(className, opts)');
   const body = code.slice(i, code.indexOf('\n// 전 반 일괄', i));
   assert.ok(/langColOf_\(pf, '학교'\)/.test(body), '학교 열을 이름으로 찾지 않는다');
-  assert.equal(/r\[7[67]\]/.test(body), false,
+  assert.equal(/r\[7[67]\]/.test(코드만(body)), false,
     'r[76]·r[77]을 직접 읽는다 — 공유 열이 늘어나면 엉뚱한 값이 학교·동네로 들어간다');
 });
 
@@ -346,7 +346,7 @@ test('역할·짝·발표자는 시트에 저장하지 않는다 (매 차시 쓰
     const i = pure.indexOf(`function ${fn}`);
     assert.notEqual(i, -1, `${fn} 정의를 찾지 못함`);
     const body = pure.slice(i, pure.indexOf('\nfunction ', i + 1));
-    assert.equal(/setValue|appendRow|setValues/.test(body), false,
+    assert.equal(/setValue|appendRow|setValues/.test(코드만(body)), false,
       `${fn}이 시트에 쓴다 — 매 차시 쓰기가 발생해 월 500건 한도를 넘긴다`);
   });
 });

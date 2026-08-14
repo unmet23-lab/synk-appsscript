@@ -46,6 +46,9 @@ function run(fx, args, 덧env = {}) {
     env: { ...process.env, SYNK_BOARD: fx.board, SYNK_BOARD_ARCHIVE: fx.archive, ...덧env },
   });
 }
+/* ⚠ 이 `read` 가 읽는 것은 **보드·아카이브 마크다운**이지 JS 원문이 아니다 — 아래 `!read(…).includes(…)`
+ *   부정 단언들을 `코드만()` 으로 감싸지 않는다(갈래 ⓒ 비JS · 대기열 #Q72). 감싸면 렉서가 표 칸의
+ *   `//`·`/*` 를 주석으로 읽어 줄을 지운다 → 「줄이 지워졌다」가 항상 참이 되어 **영원히 초록**이다. */
 const read = (p) => fs.readFileSync(p, 'utf8');
 
 /** 이 저장소가 절대 허용하지 않는 상태 = 줄이 양쪽 어디에도 없음. */

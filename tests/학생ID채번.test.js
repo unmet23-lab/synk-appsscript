@@ -44,7 +44,9 @@ test('채번 통로가 하나다 — SYNK 번호를 조립하는 곳은 학생ID
   assert.equal(조립, 1, `'SYNK-' + … 조립이 ${조립}곳 — 학생ID_포맷_ 하나만 남아야 한다`);
 
   // 옛 통로(인라인 스캔) 금지
-  const imp = section(폼리포트, 'function importFormResponses()', 'function setupStore()');
+  /* 🔑 여기도 정제본으로 잰다 — 아래 test 의 `imp` 는 이미 정제인데 이 자리만 원문이면 계수기가
+   *   «첫 선언이 이긴다» 근사로 **저쪽까지 원문으로 물들여** 멀쩡한 자리가 위험으로 세어졌다(#Q72 실측). */
+  const imp = 코드만(section(폼리포트, 'function importFormResponses()', 'function setupStore()'));
   assert.ok(!/match\(\/\^SYNK-/.test(imp), 'importFormResponses에 인라인 SYNK 스캔이 되살아났다');
 });
 
@@ -103,7 +105,7 @@ test('크루카드(별도 프로젝트)는 여전히 학생ID를 만들지 않�
   // 락은 프로젝트마다 별개다 — 저쪽에서 채번하면 이쪽 락이 아무것도 못 막는다.
   assert.ok(!/'SYNK-/.test(코드만(크루카드상담)),
     '크루카드 프로젝트가 학생ID를 조립한다 — 프로젝트 간 락은 공유되지 않아 번호가 겹친다');
-  const 매핑 = section(크루카드상담, 'function 크루카드_상담매핑_', 'function 상담시트_이관_');
+  const 매핑 = 코드만(section(크루카드상담, 'function 크루카드_상담매핑_', 'function 상담시트_이관_'));
   assert.ok(!/['"]학생ID['"]\s*:/.test(매핑), '이관 매핑이 학생ID를 채운다');
 });
 
