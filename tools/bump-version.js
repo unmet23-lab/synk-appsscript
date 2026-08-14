@@ -231,9 +231,17 @@ function collectUsedVersions() {
  *
  * 처방 = 「잘못 쓸 수 없는 통로」로 옮긴다(CLAUDE.md 신뢰성).
  *   ⓐ `--desc` 를 **채번 전에** 강제한다(채번 뒤에 막으면 번호만 태운다).
- *   ⓑ 짜는 동안에는 `[vNEXT]` 라고 적는다 — 이 자리표는 `\[v9\.\d+` 에 안 걸려 **애초에 안 빨개진다.**
- *      채번이 상수를 쓰는 **같은 실행에서** 모든 엔진 파일의 `[vNEXT]` 를 `[v9.N]` 으로 바꾼다.
+ *   ⓑ 짜는 동안에는 `[vNEXT]` 라고 적는다 — 이 자리표는 `\[v9\.\d+` 에 안 걸려 **safety [v9.55] 를
+ *      안 건드린다.** 채번이 상수를 쓰는 **같은 실행에서** 모든 엔진 파일의 `[vNEXT]` 를 `[v9.N]` 으로 바꾼다.
  *   🔑 순서를 바꾸라고 사람에게 시키는 대신, 순서가 하나뿐인 통로를 만든 것이다. */
+/* [2026-08-15] F450 — 위 ⓑ 를 「그러니 커밋해도 안전」으로 읽은 세션이 실재한다(실측 `694497ad`:
+ *   커밋 본문이 「버전은 [vNEXT] 그대로 둔다 — 먼저 박으면 남의 배포를 막는다 F078」이라 적으면서
+ *   자리표를 커밋해 **정확히 남의 배포를 막았다**). 그 오독의 출처가 이 주석과 `auto-commit.js` 였다.
+ * 🔑 가른다: 자리표는 **미커밋인 동안** 안전하다(safety 짝이 없어 안 빨개진다). 커밋되는 순간
+ *   `tests/버전채번.test.js` 「실저장소에 [vNEXT] 자리표가 남아 있지 않다」가 빨개지고, 그 적색은
+ *   낸 사람이 아니라 **그 뒤 커밋하는 모든 세션의 배포**를 막는다 — ⓑ 가 없애려던 그 상태 그대로다.
+ * 🔑 그래서 프로즈가 아니라 기계로 옮겼다: `tools/자리표검사.js` 가 pre-commit 에서 **커밋될 blob**
+ *   을 보고 막는다(작업본이 아니다 · F302). 판정은 아래 `자리표자리` 하나가 지고 훅은 발동만 맡는다. */
 /* [2026-08-12] F339 — 라벨을 붙인 자리표(`[vNEXT·E²]`)를 **통째로 놓쳤다.** 정확히 `[vNEXT]` 만 봤으니
  *   치환도 `--check` 도 조용히 지나갔고, 실측 08-12 에 `엔진_운영배치.js` 의 `[vNEXT·E²]` 하나가
  *   `--check` 초록 아래 살아남았다 — 잡은 것은 기계가 아니라 사람 눈이다. 가드가 로직이 아니라
@@ -357,10 +365,27 @@ function hardcodedHeadVersion() {
   return m ? m[0] : null;
 }
 
+/** 내용 한 덩이에서 자리표가 앉은 자리들 — `[{줄, 문구}]`.
+ *
+ *  🔑 **디스크를 읽는 쪽(`pendingPlaceholders`)과 커밋될 blob 을 읽는 쪽(`tools/자리표검사.js`)이
+ *  이 함수 하나를 쓴다.** 둘로 적으면 갈라지고, 갈라지는 방향은 언제나 「통과」다 — F339 가 정확히
+ *  그 형태였다(패턴이 네 곳에 손으로 적혀 라벨 자리표를 통째로 놓쳤다). 그래서 **경로도 파일도
+ *  모르는** 순수 함수로 둔다: 읽는 자리가 늘어도 판정은 안 늘어난다.
+ *  ⚠ 줄 번호를 함께 내는 이유는 처방 때문이다 — 「어느 파일」까지만 말하면 2,000줄짜리 엔진
+ *  파일에서 사람이 자리를 다시 찾아야 하고, 다시 찾게 만드는 처방은 잘 안 따라진다. */
+function 자리표자리(내용) {
+  const 결과 = [];
+  const 줄들 = String(내용).split(/\r?\n/);
+  for (let i = 0; i < 줄들.length; i++) {
+    for (const m of 줄들[i].matchAll(자리표())) 결과.push({ 줄: i + 1, 문구: m[0] });
+  }
+  return 결과;
+}
+
 /** `[vNEXT]`·`[vNEXT·라벨]` 이 남아 있는 파일들. 범위 = **배포 집합**(F390). */
 function pendingPlaceholders() {
   return 배포파일들().filter((f) => {
-    try { return 자리표().test(fs.readFileSync(path.join(rootDir(), f), 'utf8')); }
+    try { return 자리표자리(fs.readFileSync(path.join(rootDir(), f), 'utf8')).length > 0; }
     catch (_) { return false; }
   });
 }
@@ -585,7 +610,7 @@ function main(argv) {
 module.exports = {
   parseVer, cmpVer, maxVer, nextVer, versionOf, replaceVersionLine, collectUsedVersions, main, 선점인가,
   chainEntries, mergeChain, entryVer,
-  engineFiles, 배포파일들, maxTagInEngines, pendingPlaceholders, stampPlaceholders, check,
+  engineFiles, 배포파일들, maxTagInEngines, 자리표자리, pendingPlaceholders, stampPlaceholders, check,
   historyDocPath, maxTagInHistoryDoc, hardcodedHeadVersion,
 };
 
