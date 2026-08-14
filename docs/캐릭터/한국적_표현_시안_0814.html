@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SYNK — 한국적 표현 시안 4갈래 (조각보·자모·빛·나전 눈금)</title>
+<style>
+:root{
+  --paper:#FBF7EE; --cream:#F6F1E8; --cream3:#E7DDC7;
+  --ink:#171820; --navy:#1A2340; --navy2:#0F1730; --navy3:#2A3358;
+  --slate:#8A93AD; --slate2:#5F657D;
+  --coral:#FF6B5C; --coral3:#E8543F; --coralwash:#FFE9E4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--navy2);color:var(--cream);
+  font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  line-height:1.6;padding:38px 22px 80px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto}
+
+h1{font-size:28px;font-weight:800;letter-spacing:-.02em;margin-bottom:9px}
+.lead{color:var(--slate);font-size:15px;max-width:80ch;margin-bottom:8px}
+.lead b{color:var(--cream)}
+.meta{color:var(--slate);font-size:13px;margin-bottom:34px}
+
+section{margin-bottom:52px}
+.head{display:flex;align-items:baseline;gap:12px;margin-bottom:6px;flex-wrap:wrap}
+.num{width:27px;height:27px;flex:none;border-radius:50%;background:var(--navy3);color:var(--cream);
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;
+  font-variant-numeric:tabular-nums;line-height:1}
+h2{font-size:21px;font-weight:800;letter-spacing:-.02em}
+.tag{font-size:12px;font-weight:800;color:var(--navy2);background:var(--cream3);
+  padding:3px 9px;border-radius:99px;letter-spacing:-.01em}
+.why{color:var(--slate);font-size:14px;max-width:82ch;margin:8px 0 20px;line-height:1.68}
+.why b{color:var(--cream);font-weight:700}
+
+.panel{background:var(--navy);border:1px solid var(--navy3);border-radius:16px;padding:24px}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:820px){.duo{grid-template-columns:1fr}}
+.cardcap{font-size:12.5px;color:var(--slate);margin-top:11px;text-align:center}
+
+/* ══ ① 조각보 ══════════════════════════════════════════════
+   자투리를 이어 하나로 — SYNK(잇는다)와 서사가 같다.
+   전통 「색동」이 아니라 킷 색만 쓴다: 한국적인 것은 색이 아니라 «잇는 구조»에 있다. */
+.jogak{aspect-ratio:4/5;border-radius:14px;overflow:hidden;position:relative;
+  display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(8,1fr);
+  gap:4px;background:var(--navy3);padding:4px}     /* gap = 바느질선 — 조각보는 «이어붙인 자국»이 보여야 조각보다 */
+.jogak i{display:block;border-radius:2px}
+.jogak .t{position:absolute;inset:auto 0 0 0;padding:18px 20px 20px;z-index:3;
+  background:linear-gradient(to top,rgba(15,23,48,.94),rgba(15,23,48,.72) 55%,rgba(15,23,48,0))}
+.jogak .t h3{font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.jogak .t p{font-size:13px;color:var(--cream3);margin-top:5px}
+.jogak.light{background:var(--cream3)}
+.jogak.light .t{background:linear-gradient(to top,rgba(251,247,238,.95),rgba(251,247,238,.75) 55%,rgba(251,247,238,0))}
+.jogak.light .t h3{color:var(--ink)}
+.jogak.light .t p{color:var(--slate2)}
+
+/* ══ ② 한글 자모 — 진도 연동 ═════════════════════════════════
+   한국어 학원만 쓸 수 있는 「한국적」. 배운 글자가 브랜드가 된다. */
+.jamo{display:grid;grid-template-columns:repeat(10,1fr);gap:7px}
+@media(max-width:820px){.jamo{grid-template-columns:repeat(7,1fr)}}
+/* 1차는 안 배운 자모를 «흐린 글자»로 했다가 렌더 린트에 대비 1.44 로 26건 걸렸다.
+   흐리게 하는 대신 «면의 유무»로 가른다 — 킷 3규칙 「위계는 색이 아니라 밀도」가 이쪽이고,
+   덤으로 안 배운 글자도 읽힌다(앞으로 배울 것이 보이는 편이 학생에게 낫다). */
+.jamo b{aspect-ratio:1;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-size:19px;font-weight:700;background:var(--navy2);color:var(--slate);
+  border:1px solid var(--navy3);
+  transition:color .28s ease,background-color .28s ease,border-color .28s ease}
+.jamo b.on{background:var(--navy3);color:var(--cream);border-color:#3a456f}
+.jamo b.now{background:var(--coral);color:var(--ink);border-color:var(--coral)}   /* 신호 1점 */
+
+/* ══ ③ 빛 — 자개의 물성 ═══════════════════════════════════════
+   자개의 정체는 문양이 아니라 «각도에 따라 색이 변하는 것»이다.
+   그림으로 쓰면 죽은 자개, 움직이면 산 자개. */
+.gloss{position:relative;border-radius:14px;overflow:hidden;aspect-ratio:16/7;
+  background:var(--navy2)}
+.gloss .art{position:absolute;inset:0;
+  background:url('자개_0814/자개띠_투명_1080x450.png') center/cover no-repeat}
+.gloss .band{position:absolute;top:-30%;bottom:-30%;width:38%;left:-40%;
+  background:linear-gradient(100deg,rgba(246,241,232,0),rgba(246,241,232,.42) 42%,rgba(231,221,199,.62) 52%,rgba(246,241,232,.30) 62%,rgba(246,241,232,0));
+  mix-blend-mode:screen;transform:skewX(-14deg);
+  animation:sweep 5.2s cubic-bezier(.45,0,.25,1) infinite}
+@keyframes sweep{0%{transform:translateX(0) skewX(-14deg)}
+  62%,100%{transform:translateX(380%) skewX(-14deg)}}
+.gloss .tilt{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(70% 110% at var(--mx,50%) var(--my,50%),
+    rgba(246,241,232,.20),rgba(246,241,232,0) 58%);
+  transition:background .12s linear}
+.gloss .hint{position:absolute;left:0;right:0;bottom:0;padding:11px 15px;z-index:3;
+  font-size:12.5px;color:var(--cream3);
+  background:linear-gradient(to top,rgba(15,23,48,.9),rgba(15,23,48,0))}
+@media(prefers-reduced-motion:reduce){.gloss .band{animation:none;opacity:.5;left:32%}}
+
+/* ══ ④ 나전 눈금 — 한 수 더 ══════════════════════════════════
+   나전은 원래 «조각을 박는» 공예다. 진도를 나갈수록 조각이 하나씩 박혀 문양이 완성된다.
+   물성·학습·수집이 한 점에서 만나는 자리. */
+/* 격자는 문양 비율에 맞춘다 — 1080×450 = 2.4:1 이라 12×5 가 정확히 맞는다.
+   안 맞추면 조각마다 문양이 늘어나 «다 박혀도 원래 그림이 안 된다»(1차 실측). */
+.inlay{display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:repeat(5,1fr);
+  gap:3px;aspect-ratio:12/5;border-radius:12px;overflow:hidden;
+  background:var(--navy2);padding:3px}
+.inlay i{display:block;border-radius:2px;
+  background-image:url('자개_0814/자개띠_투명_1080x450.png');
+  background-size:1200% 500%;
+  opacity:.07;filter:grayscale(1);
+  transition:opacity .3s ease,filter .3s ease}
+.inlay i.set{opacity:1;filter:none}
+
+/* 진도 손잡이 */
+.ctl{display:flex;align-items:center;gap:14px;margin-top:18px;flex-wrap:wrap}
+.ctl label{font-size:13px;font-weight:800;color:var(--slate);white-space:nowrap}
+.ctl output{font-size:13px;font-weight:800;color:var(--cream);font-variant-numeric:tabular-nums;
+  min-width:9ch;white-space:nowrap}
+input[type=range]{flex:1;min-width:190px;height:26px;background:transparent;-webkit-appearance:none;appearance:none}
+input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:99px;background:var(--navy3)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+  width:19px;height:19px;border-radius:50%;background:var(--coral);margin-top:-7px;
+  border:2px solid var(--navy);cursor:pointer;transition:transform .12s ease}
+input[type=range]::-webkit-slider-thumb:active{transform:scale(.96)}
+input[type=range]:focus-visible::-webkit-slider-thumb{outline:2px solid var(--coral);outline-offset:2px}
+
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--navy3);
+  font-size:12.5px;color:var(--slate);line-height:1.78}
+footer b{color:var(--cream)}
+footer code{font-family:'DM Mono',ui-monospace,Consolas,monospace;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>한국적 표현 — 시안 4갈래</h1>
+<p class="lead">유호님 질문(08-14) <b>「다른 한국적인 걸 표현할 수 있는 아이디어 없어? 트렌디해 보이도록」</b>에 대한 실물입니다.
+넷은 <b>서로 다른 층</b>에 앉아서 골라 쓰는 게 아니라 <b>같이 갈 수 있습니다</b> — ①은 레이아웃, ②는 콘텐츠, ③은 마감의 물성, ④는 성장의 눈금입니다.</p>
+<p class="meta">2026-08-14 · 킷 23색 안에서만 · 신호 1점(Coral) 유지 · 움직임은 transform·opacity만 · <code>prefers-reduced-motion</code> 존중</p>
+
+<!-- ═══ ① 조각보 ═══ -->
+<section>
+  <div class="head"><span class="num">1</span><h2>조각보</h2><span class="tag">레이아웃 층</span></div>
+  <p class="why">자투리 천을 이어 하나를 만드는 공예입니다. <b>SYNK = 잇는다</b> — 이름과 서사가 정확히 같습니다.
+  전통 조각보의 인상은 <b>색동(알록달록함)</b>에서 온다고들 하지만, 실제 구조적 아름다움은 <b>크기가 다른 면이 어긋나게 맞물리는 것</b>과
+  <b>바느질선</b>에 있습니다. 그래서 색은 킷 안에서만 쓰고 구조만 가져왔습니다 — 한국적인 것이 색이 아니라 짜임에 있으면 촌스러워지지 않습니다.</p>
+  <div class="panel">
+    <div class="duo">
+      <div>
+        <div class="jogak" id="jogakDark"></div>
+        <p class="cardcap">캐러셀 표지 · 다크</p>
+      </div>
+      <div>
+        <div class="jogak light" id="jogakLight"></div>
+        <p class="cardcap">인쇄물 표지 · 라이트</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ② 한글 자모 ═══ -->
+<section>
+  <div class="head"><span class="num">2</span><h2>한글 자모</h2><span class="tag">콘텐츠 층 · 진도 연동</span></div>
+  <p class="why">가장 정직하고 <b>아무도 못 베끼는 한국적</b>입니다 — 우리는 한국어 학원이니까요.
+  한글을 예쁘게 그리는 건 흔합니다. 차별점은 <b>학생이 배운 글자만 켜진다</b>는 것입니다.
+  브랜드 패턴이 곧 그 학생의 진도표가 되고, 몽골 학생에겐 <b>「내가 배운 글자가 여기 있다」</b>가 됩니다.
+  아래 손잡이를 움직여 보세요 — 켜진 칸이 배운 글자, <b>산호색 한 칸이 지금 배우는 글자</b>입니다.</p>
+  <div class="panel">
+    <div class="jamo" id="jamo"></div>
+    <div class="ctl">
+      <label for="p1">배운 자모</label>
+      <input type="range" id="p1" min="0" max="40" value="14" aria-label="배운 자모 수">
+      <output id="o1">14 / 40</output>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ③ 빛 ═══ -->
+<section>
+  <div class="head"><span class="num">3</span><h2>빛</h2><span class="tag">자개의 물성 · 마감 층</span></div>
+  <p class="why">자개의 정체는 문양이 아니라 <b>보는 각도에 따라 색이 변하는 것</b>입니다.
+  그림으로 박아두면 죽은 자개고, <b>움직여야 산 자개</b>입니다. 영상 오프닝·릴스 전환·표지 진입에서 빛이 한 번 지나가면,
+  같은 문양이 «인쇄된 무늬»가 아니라 «실물 표면»으로 읽힙니다.
+  아래 문양 위에 <b>마우스를 올려 움직여 보세요</b> — 빛이 따라옵니다(터치에서도 됩니다).</p>
+  <div class="panel">
+    <div class="gloss" id="gloss">
+      <div class="art"></div>
+      <div class="band"></div>
+      <div class="tilt" id="tilt"></div>
+      <div class="hint">빛이 지나갈 때만 자개가 «표면»이 된다 — 5.2초에 한 번, 0.9초 동안.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ④ 나전 눈금 ═══ -->
+<section>
+  <div class="head"><span class="num">4</span><h2>나전 눈금</h2><span class="tag">한 수 더 · 성장 층</span></div>
+  <p class="why"><b>나전은 원래 자개 조각을 «박아 넣는» 공예입니다.</b> 그래서 자개는 진도 눈금으로 쓸 수 있는 유일한 재료입니다 —
+  학생이 나아갈수록 조각이 하나씩 박혀 문양이 완성됩니다. 여기서 <b>물성·학습·수집이 한 점에서 만납니다</b>:
+  학생에겐 채워지는 그림이고, 우리에겐 진도 데이터고, 브랜드에겐 자개입니다.
+  막대나 퍼센트로 하면 그냥 진행바지만, 자개로 하면 <b>완성해서 갖고 싶은 것</b>이 됩니다.</p>
+  <div class="panel">
+    <div class="inlay" id="inlay"></div>
+    <div class="ctl">
+      <label for="p2">박힌 조각</label>
+      <input type="range" id="p2" min="0" max="60" value="24" aria-label="박힌 자개 조각 수">
+      <output id="o2">24 / 60</output>
+    </div>
+  </div>
+</section>
+
+<footer>
+<b>넷은 경쟁하지 않습니다.</b> ①조각보는 화면의 뼈대, ②자모는 그 안에 담기는 내용, ③빛은 표지·영상의 마감, ④눈금은 학생이 쌓는 것 —
+층이 달라서 <b>동시에 켤 수 있습니다</b>. 자개는 ③④에서만 나오므로 「표지·마감 전용」 확정도 그대로 지켜집니다.<br>
+<b>지금 이 시안의 한계:</b> ②의 자모 순서는 실제 커리큘럼이 아니라 자모 순서이고(연동은 커리큘럼 확정 후),
+④의 조각 수 48은 임의값입니다 — 실제로는 「한 시즌 = 교재 1권」에 맞춰야 합니다.<br>
+<b>자개 문양은 새로 굽지 않았습니다</b> — 08-14 에 고정한 <code>자개_0814/자개띠_투명_1080x450.png</code> 한 파일만 씁니다.
+</footer>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ① 조각보 — 크기가 다른 면이 «어긋나게» 맞물리는 것이 이 공예의 구조다.
+     칸을 무작위로 뿌리면 조각보가 아니라 모자이크가 되므로, 큰 면 몇 개를 먼저
+     앉히고 남은 칸을 작은 조각으로 메운다(실제 조각보의 짜임 순서와 같다). */
+  /* 1차 시안은 조각을 무작위로 뿌렸더니 «모자이크»가 됐다 — 인접한 면의 밝기가 비슷해
+     짜임이 안 보였다. 조각보가 조각보로 읽히는 조건은 두 가지다:
+       ㉠ 크기가 다른 면이 «어긋나게» 물릴 것   ㉡ 인접한 면의 «명도가 갈릴 것»
+     그래서 배치는 손으로 정하고(t = 명도 단), 색은 킷 안에서만 쓴다. */
+  var 판 = [
+    {c:1,r:1,w:3,h:2,t:3}, {c:4,r:1,w:3,h:2,t:0},
+    {c:1,r:3,w:2,h:3,t:1}, {c:3,r:3,w:2,h:2,t:4}, {c:5,r:3,w:2,h:2,t:2},
+    {c:3,r:5,w:4,h:2,t:0},
+    {c:1,r:6,w:1,h:1,t:9}, {c:2,r:6,w:1,h:1,t:2},   /* 신호 1점 — 작게 한 칸만(철칙 ④) */
+    /* 제목이 앉는 하단 면은 각 판의 «바탕 쪽» 단으로 — 스크림이 같은 방향이라 탁해지지 않는다. */
+    {c:1,r:7,w:2,h:2,t:2}, {c:3,r:7,w:4,h:2,t:1}
+  ];
+  function 조각보(el, 단){
+    var html = 판.map(function(b){
+      return '<i style="grid-column:'+b.c+'/span '+b.w+';grid-row:'+b.r+'/span '+b.h+
+             ';background:'+단[b.t]+'"></i>';
+    }).join('');
+    el.innerHTML = html +
+      '<div class="t"><h3>괜찮아요<br>다섯 뜻</h3><p>같은 말인데 뜻이 다섯 개예요.</p></div>';
+  }
+  /* 단[0..4] = 어두움→밝음 · 단[9] = 신호(Coral). 다크판과 라이트판은 «순서가 뒤집힌 같은 킷»이다. */
+  var 다크단 = {0:'#0F1730',1:'#1A2340',2:'#2A3358',3:'#E7DDC7',4:'#F6F1E8',9:'#FF6B5C'};
+  var 라이트단 = {0:'#FBF7EE',1:'#F6F1E8',2:'#E7DDC7',3:'#2A3358',4:'#1A2340',9:'#FF6B5C'};
+  조각보(document.getElementById('jogakDark'), 다크단);
+  조각보(document.getElementById('jogakLight'), 라이트단);
+
+  /* ② 한글 자모 — 자음 19 + 모음 21 = 40 */
+  var 자모 = ('ㄱ ㄲ ㄴ ㄷ ㄸ ㄹ ㅁ ㅂ ㅃ ㅅ ㅆ ㅇ ㅈ ㅉ ㅊ ㅋ ㅌ ㅍ ㅎ ' +
+              'ㅏ ㅐ ㅑ ㅒ ㅓ ㅔ ㅕ ㅖ ㅗ ㅘ ㅙ ㅚ ㅛ ㅜ ㅝ ㅞ ㅟ ㅠ ㅡ ㅢ ㅣ').split(' ');
+  var jamoEl = document.getElementById('jamo');
+  jamoEl.innerHTML = 자모.map(function(j){ return '<b>' + j + '</b>'; }).join('');
+  var 칸 = jamoEl.querySelectorAll('b');
+  function 그리기1(v){
+    for(var i=0;i<칸.length;i++){
+      칸[i].className = (i < v - 1) ? 'on' : (i === v - 1 ? 'now' : '');
+    }
+    document.getElementById('o1').textContent = v + ' / 40';
+  }
+  var p1 = document.getElementById('p1');
+  p1.addEventListener('input', function(){ 그리기1(+p1.value); });
+  그리기1(+p1.value);
+
+  /* ④ 나전 눈금 — 12×4 = 48 조각. 각 칸은 문양의 «자기 자리»를 보여준다
+     (background-position 을 격자 좌표로 준다 — 그래서 다 박히면 원래 문양이 된다). */
+  var inlay = document.getElementById('inlay');
+  var 총조각 = 60;                                   // 12×5 — 문양 비율(2.4:1)과 같은 격자
+  var h4 = '';
+  for(var r=0;r<5;r++) for(var c=0;c<12;c++){
+    h4 += '<i style="background-position:' + (c*100/11) + '% ' + (r*100/4) + '%"></i>';
+  }
+  inlay.innerHTML = h4;
+  var 조각 = inlay.querySelectorAll('i');
+  // 박히는 순서를 좌→우로 하면 «진행바»가 된다. 흩어 박아야 «문양이 드러난다».
+  var 순서 = [];
+  for(var i=0;i<총조각;i++) 순서.push(i);
+  순서.sort(function(a,b){
+    var ka = ((a*23) % 총조각), kb = ((b*23) % 총조각);  // 고정 셔플(매번 같은 순서 — 재현된다)
+    return ka - kb;
+  });
+  function 그리기2(v){
+    for(var i=0;i<조각.length;i++) 조각[i].className = '';
+    for(var k=0;k<v;k++) 조각[순서[k]].className = 'set';
+    document.getElementById('o2').textContent = v + ' / ' + 총조각;
+  }
+  var p2 = document.getElementById('p2');
+  p2.addEventListener('input', function(){ 그리기2(+p2.value); });
+  그리기2(+p2.value);
+
+  /* ③ 빛 — 포인터 각도에 반응. 실제 자개가 «각도»에 반응하는 것의 화면 번역이다. */
+  var gloss = document.getElementById('gloss'), tilt = document.getElementById('tilt');
+  function 각도(e){
+    var r = gloss.getBoundingClientRect();
+    var pt = e.touches ? e.touches[0] : e;
+    tilt.style.setProperty('--mx', ((pt.clientX - r.left) / r.width * 100) + '%');
+    tilt.style.setProperty('--my', ((pt.clientY - r.top) / r.height * 100) + '%');
+  }
+  gloss.addEventListener('mousemove', 각도);
+  gloss.addEventListener('touchmove', 각도, {passive:true});
+})();
+</script>
+</body>
+</html>
