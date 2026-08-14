@@ -29,17 +29,13 @@ const os = require('node:os');
 const path = require('node:path');
 const { execFileSync, spawnSync } = require('node:child_process');
 
-/* ROOT 는 **지금 커밋되는 저장소**다 — `CLAUDE_PROJECT_DIR` 로 잡으면 안 된다. 그 변수가 다른
- * 저장소를 가리키는 자리가 실재하고(워크트리 · F403), 그때 이 게이트는 **옆 저장소의 인덱스를
- * 재고 조용히 통과한다**(실측 `tests/대장동봉E2E.test.js`). git 훅은 저장소 뿌리에서 도니
- * 그 자리를 git 에게 묻는다 — 옆 게이트(계약동봉)가 cwd 를 그대로 쓰는 것과 같은 층이다. */
-function 저장소뿌리() {
-  try {
-    return execFileSync('git', ['rev-parse', '--show-toplevel'],
-      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
-  } catch (_) { return null; }
-}
-const ROOT = 저장소뿌리() || path.resolve(__dirname, '..');
+/* ROOT 는 **이 파일이 속한 저장소**다 — `CLAUDE_PROJECT_DIR` 을 얹으면 안 된다(회귀 `tests/게이트뿌리`).
+ *   그 변수가 다른 저장소를 가리키는 자리가 실재하고(워크트리 · F403), 그때 이 게이트는 **옆
+ *   저장소의 인덱스를 재고 조용히 통과한다**(실측 `tests/대장동봉E2E.test.js`).
+ * 🔑 `__dirname/..` 이 곧 답이다 — 훅은 `$ROOT/tools/…` 로 부르고 워크트리엔 제 사본이 있으니,
+ *   이 파일의 자리가 곧 커밋되는 저장소다. git 에게 되묻는 판도 써 봤지만 그건 **cwd 를 따라가**
+ *   남의 저장소에서 부르면 그 저장소를 답한다 — 더 많은 부품으로 더 넓은 사각을 만든다. */
+const ROOT = path.resolve(__dirname, '..');
 const 정본경로 = 'docs/SYNK_철학.md';
 const 산출경로 = 'docs/이해대장.html';
 
