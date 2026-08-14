@@ -478,7 +478,15 @@ function 폴백(말, 끝) {
       console.error('[이해대장] 형제 저장소를 못 읽어 동기 대조를 **못 했다** — 막지 않는다.');
       return 0;
     }
-    const 지금 = fs.existsSync(산출경로) ? fs.readFileSync(산출경로, 'utf8') : null;
+    /* 🔑 줄끝은 판정 대상이 아니다 — 이 저장소는 `core.autocrlf=true` 이고 이 경로엔 `.gitattributes`
+     *   지정이 없어 **체크아웃이 CRLF 로 내려준다.** 바이트 대조를 그대로 쓰면 새 클론·`git checkout`
+     *   직후의 첫 검사가 «내용이 같은데» 「안 따라온다」로 막고, 그 적색은 `/deploy` 2단계 게이트라
+     *   곧 **모든 세션의 배포 정지**다 — 08-14 실측: 같은 내용 LF 통과 · CRLF 차단(exit 1).
+     *   막으려던 사고를 장치 자신이 내는 자리라 여기서 접는다(CLAUDE.md 가드 맹점 ④).
+     * ⚠ 대가: 줄끝«만» 다른 판을 「같다」로 읽는다 — 이 화면은 브라우저가 여는 HTML 이라 줄끝을
+     *   요구하는 소비자가 없다. 내용 차이는 그대로 잡힌다(회귀 `tests/대장동봉.test.js` 가 양쪽을 못박는다). */
+    const 줄끝접기 = (s) => s.replace(/\r\n/g, '\n');
+    const 지금 = fs.existsSync(산출경로) ? 줄끝접기(fs.readFileSync(산출경로, 'utf8')) : null;
     if (지금 === html) {
       console.log(`[이해대장] 커밋될 화면이 정본 ${ver} 와 같다 — 통과.`);
       return 0;
