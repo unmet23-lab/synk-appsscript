@@ -1746,13 +1746,21 @@ function talkIndexSnapshot_(ss, tz, when) {
   const quiet = quietScoreMap_(ss);                            // 반 루프 밖 1회 — talkIndexOf_ 가 반마다 lesson_close 를 다시 읽지 않게
   /* 무거운 반별 계산은 락 «밖»에서 끝낸다 — 락은 아래 읽기·검사·쓰기만 감싼다. */
   const 후보 = [];
-  const 실패반 = [];
+  const 실패반 = [];                                           // 서명이 될 «이름(원인 첫 줄)»
+  const 실패상세 = [];                                         // 진단용 스택 — 서명 밖(둘째 줄 아래)
   Object.keys(cls).sort().forEach(cN => {
     let ti = [];
     /* [v9.234] 실패한 반을 «이름으로» 모은다 — 예전엔 Logger.log 한 줄로 삼켜서, 그 반 학생이 전원 빠져도
      *   `safeRun` 은 배치를 성공으로 보고했다(미실행이 통과와 같은 모양 · F207). 이제 요약에 실려 나간다. */
+    /* [v9.236] 원인 «첫 줄»까지 이름 옆에 붙인다 — 반 이름만으로는 같은 반의 «다른» 실패가 같은 dedup
+     *   서명을 공유해 그날 두 번째 원인이 영영 안 알려진다(검수 758bae69853f). 스택은 아래 줄로 보낸다:
+     *   서명은 첫 줄 120자라(:1002) 스택이 앞에 오면 안정성이 깨지고, 아예 없으면 진단이 로그 뒤짐이 된다. */
     try { ti = talkIndexOf_(ss, cN, 잰시각, tz, null, quiet); }
-    catch (e) { 실패반.push(cN); Logger.log('발화 지수 적재 실패(' + cN + '): ' + e); }
+    catch (e) {
+      실패반.push(cN + '(' + String(e && e.message ? e.message : e).split('\n')[0].slice(0, 60) + ')');
+      실패상세.push(cN + ' ← ' + String(e && e.stack ? e.stack : e));
+      Logger.log('발화 지수 적재 실패(' + cN + '): ' + e);
+    }
     ti.forEach(x => { if (x.max) 후보.push([cN, x]); });        // 아직 잴 차시가 없는 학생 — 행을 만들지 않는다
   });
   /* [v9.234] 읽기·검사·쓰기를 스크립트 락으로 직렬화한다 — 예약 실행과 손 재실행이 겹치면 두 실행이 같은
@@ -1795,7 +1803,8 @@ function talkIndexSnapshot_(ss, tz, when) {
    *   ⚠ 첫 줄에 행수 같은 «변동값»을 넣지 않는다 — `safeRun` 의 dedup 서명이 에러 첫 줄 120자라(:1002),
    *      매번 서명이 달라지면 하루 1통 제한이 풀려 실패 메일이 메일 쿼터를 태우고 학부모·미납 알림까지
    *      죽는다(:998 주석이 경고하는 바로 그 자기증폭). 반 이름은 안정적이라 서명이 고정된다. */
-  if (실패반.length) throw new Error('발화 지수 적재 — 실패 반 ' + 실패반.length + '개: ' + 실패반.join(', ') + '\n' + 요약);
+  if (실패반.length) throw new Error('발화 지수 적재 — 실패 반 ' + 실패반.length + '개: ' + 실패반.join(', ')
+    + '\n' + 요약 + '\n' + 실패상세.join('\n'));
   return 요약;
 }
 /* [v9.99] 학생용 오늘의 만남 — sid → "1R 바트 · 2R 사란 · 3R 뭉흐".
@@ -1981,7 +1990,11 @@ function assignGroups(className, opts) {
   const tz = ss.getSpreadsheetTimeZone();
   const season = seasonLabelOf_(ss, tz);
   if (!season) return '⚠ 시즌 시작일이 없습니다 — setSeasonStart("2027-02-01") 먼저 실행하세요.';
-  const cls = String(className || '').trim();
+  /* [v9.236] 입력도 접는다 — 아래 학생 선별은 `반키_(r[4]) !== cls` 라, 손으로 `assignGroups('정규반2(9시)')`
+   *   를 부르면 한쪽만 접혀 **전원이 걸러지고 「0명 확정」**이 나온다(검수 48599e195c0f). `assignGroupsAll`
+   *   은 schedule A열의 정본 키를 넘기므로 그 경로의 동작은 안 바뀐다. 접힌 키가 groups B열에 저장되는
+   *   것도 옳다 — `groupBoardOf_` 의 조인이 그 키를 본다. */
+  const cls = 반키_(className);
   if (!cls) return '⚠ 반 이름이 필요합니다 — assignGroups("정규반1") 형태로 실행하세요.';
 
   const pf = ss.getSheetByName('profiles');
