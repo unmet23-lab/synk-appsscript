@@ -910,11 +910,16 @@ function weeklyReport(asText) {
     body += '기록 없음 — 편성·수업 시작 후 매주 월요일 쌓입니다\n';
   } else {
     const rowsT = tl.getRange(2, 2, tl.getLastRow() - 1, 9).getValues(); // B시즌 ~ J pct
-    const lastT = rowsT[rowsT.length - 1];
-    const curSeason = String(lastT[0]), curWeek = Number(lastT[1]);
+    /* [v9.234] 현재 시즌·주차는 «지금»에서 계산한다 — 예전엔 마지막 «물리» 행을 이번 주로 삼아서, 이번 주
+     *   적재가 0행이면(첫 수업 전 · 시즌 경계 · 모든 max=0 · 적재 실패) **지난주 숫자를 이번 주라고 보고**했다.
+     *   「이번 주 기록 없음」과 「낡은 기록」이 같은 모양이면 안 된다 — 원장이 그 차이를 못 본다.
+     *   시즌 칸도 seasonKeyOf_ 로 접어 읽는다(시트가 날짜로 삼킨 옛 행까지 같은 글자로 맞춘다). */
+    const startT = seasonStartOf_(ss);
+    const curSeason = seasonLabelOf_(ss, tz);
+    const curWeek = startT ? seasonWeekOf_(startT, new Date()) : 0;
     const prevPct = {}, cur = [];
     rowsT.forEach(r => {
-      if (String(r[0]) !== curSeason) return;
+      if (seasonKeyOf_(r[0], tz) !== curSeason) return;
       const w = Number(r[1]);
       if (w === curWeek - 1) prevPct[String(r[3])] = Number(r[8]);
       else if (w === curWeek) cur.push(r);
