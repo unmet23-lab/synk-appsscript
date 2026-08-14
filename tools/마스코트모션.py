@@ -86,7 +86,7 @@ def 배경(폭, 높이):
 
 
 def 상태(t):
-    """그 시각의 스프라이트·변형을 정한다 — 앱 상태 머신과 같은 모양."""
+    """그 시각의 스프라이트·변형을 정한다 — 앱 상태 머신과 같은 모양. (문법=보간 · 젤리 물리)"""
     깜빡 = any(abs(t - c) < 0.075 for c in (0.9, 1.75, 5.1))
     웃음 = 2.5 <= t < 4.2
 
@@ -107,7 +107,54 @@ def 상태(t):
         sx, sy = 숨 * (1 - 0.05 * 튐), 숨 * (1 + 0.06 * 튐)
 
     컷 = "눈감음" if 깜빡 else ("눈웃음" if 웃음 else "기본")
-    return 컷, 떠오름, sx, sy
+    return 컷, 떠오름, sx, sy, 0.0, (0.0, 0.0)
+
+
+def 상태_스톱모션(t):
+    """펠트 문법 = «스톱모션 인형극»(아드만 교체 애니·몰카 계열).
+
+    젤리 물리를 펠트에 씌우면 «고무 인형에 양모 씌운 것»으로 읽힌다 — 재질 정직성 위반.
+    펠트가 사는 길은 실물 인형극의 세 가지다:
+      ① 투스(on twos) — 캐릭터 시간을 12fps 스텝으로 양자화(24fps 컨테이너에 스텝당 2프레임).
+         «손으로 한 장씩 찍은» 리듬이 이것 하나에서 나온다.
+      ② 변형 대신 자세 — squash 는 3% 이내(양모가 눌리는 만큼만), 반응은 홉·기울임·움찔로.
+      ③ 보일(boil) — 스텝마다 ±1px·±0.5° 미세 지터. 실물 스톱모션에서 프레임마다 손이
+         닿아 생기는 «살아있는 떨림»의 디지털 등가물. 시드=스텝 번호(재현 가능·Date 없음).
+    """
+    스텝 = int(t * 12)
+    ts = 스텝 / 12.0  # 캐릭터는 이 시간만 안다 — 부드러운 t 를 쓰면 문법이 죽는다
+
+    깜빡 = any(abs(ts - c) < 0.085 for c in (0.9, 1.75, 5.3))
+    웃음 = 2.9 <= ts < 4.6
+
+    떠오름 = round(math.sin(ts * 1.6) * 7.0)  # 대기 봅(bob) — 양자화돼 뚝뚝 끊기는 게 정답
+    sx = sy = 1.0 + math.sin(ts * 2.4) * 0.008  # 숨은 아주 얕게(양모는 거의 안 늘어난다)
+    기울기 = 0.0
+
+    if 2.2 <= ts < 2.4:  # 예비 동작(anticipation) — 웅크림
+        sx, sy = 1.02, 0.96
+        떠오름 += 8
+    elif 2.4 <= ts < 2.75:  # 홉 — 포물선 + 진행 방향으로 기울기
+        p = (ts - 2.4) / 0.35
+        떠오름 -= 34 * math.sin(p * math.pi)
+        기울기 = 4.0 * math.sin(p * math.pi)
+    elif 2.75 <= ts < 2.9:  # 착지 — 반동
+        sx, sy = 1.03, 0.97
+        떠오름 += 5
+        기울기 = -2.0
+    elif 웃음:  # 칭찬 — 좌우로 번갈아 기우는 «인형극 춤» + 잦아드는 홉 2회
+        p = ts - 2.9
+        감쇠 = math.exp(-p * 1.4)
+        기울기 = 5.0 * 감쇠 * math.sin(p * 7.4)
+        떠오름 -= 16 * 감쇠 * abs(math.sin(p * 5.2))
+
+    # ③ 보일 — 스텝이 시드라 같은 스텝은 늘 같은 값(재현 가능)
+    rng = np.random.default_rng(스텝)
+    지터 = (float(rng.uniform(-1.4, 1.4)), float(rng.uniform(-1.0, 1.0)))
+    기울기 += float(rng.uniform(-0.5, 0.5))
+
+    컷 = "눈감음" if 깜빡 else ("눈웃음" if 웃음 else "기본")
+    return 컷, 떠오름, sx, sy, 기울기, 지터
 
 
 def 코어색(img):
@@ -139,7 +186,12 @@ def main():
     ap.add_argument("--폭", type=int, default=720)
     ap.add_argument("--높이", type=int, default=1280)
     ap.add_argument("--비율", type=float, default=0.46, help="마스코트 폭 / 화면 폭")
+    ap.add_argument("--문법", default="보간", choices=["보간", "스톱모션"],
+                    help="보간=젤리 물리(30fps 연속) · 스톱모션=인형극(24fps 컨테이너·12fps 투스)")
     args = ap.parse_args()
+
+    fps = 24 if args.문법 == "스톱모션" else FPS
+    상태함수 = 상태_스톱모션 if args.문법 == "스톱모션" else 상태
 
     경로 = {
         "기본": os.path.join(args.컷폴더, f"{args.접두}{args.기본}.png"),
@@ -161,20 +213,23 @@ def main():
         컷들[k] = im.resize((목표폭, max(1, int(im.height * 배율))), Image.LANCZOS)
 
     무대판 = 배경(args.폭, args.높이)
-    총 = int(길이 * FPS)
+    총 = int(길이 * fps)
     tmp = tempfile.mkdtemp(prefix="mascot_motion_")
     최대ΔE = 0.0
 
     for i in range(총):
-        t = i / FPS
-        컷, dy, sx, sy = 상태(t)
+        t = i / fps
+        컷, dy, sx, sy, 기울기, (jx, jy) = 상태함수(t)
         기 = 컷들[컷]
         w, h = max(1, int(기.width * sx)), max(1, int(기.height * sy))
         스 = 기.resize((w, h), Image.LANCZOS)
+        if abs(기울기) > 0.05:  # 회전은 중심 기준 — 작은 각이라 앵커 오차 무시 가능
+            스 = 스.rotate(기울기, resample=Image.BICUBIC, expand=True)
+            w, h = 스.size
 
         프레임 = 무대판.copy()
-        x = (args.폭 - w) // 2
-        y = int(args.높이 * 0.40 - h / 2 + dy)
+        x = int((args.폭 - w) / 2 + jx)
+        y = int(args.높이 * 0.40 - h / 2 + dy + jy)
         프레임.paste(스, (x, y), 스)
         프레임.save(os.path.join(tmp, f"{i:04d}.png"))
 
@@ -184,7 +239,7 @@ def main():
 
     os.makedirs(os.path.dirname(os.path.abspath(args.출력)) or ".", exist_ok=True)
     cmd = [
-        "ffmpeg", "-y", "-framerate", str(FPS), "-i", os.path.join(tmp, "%04d.png"),
+        "ffmpeg", "-y", "-framerate", str(fps), "-i", os.path.join(tmp, "%04d.png"),
         "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18",
         "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2", args.출력,
     ]
@@ -194,7 +249,7 @@ def main():
         return 1
 
     크기 = os.path.getsize(args.출력) / 1024
-    print(f"✅ {args.출력} — {총}프레임 {길이}초 @{FPS}fps · {크기:.0f}KB")
+    print(f"✅ {args.출력} — {총}프레임 {길이}초 @{fps}fps · 문법={args.문법} · {크기:.0f}KB")
     print(f"   코어 무손상: 최대 ΔE {최대ΔE:.2f} (임계 2.0 — 리샘플 여유) "
           f"{'OK' if 최대ΔE <= 2.0 else '🔴 초과'}")
     print(f"   스프라이트 3컷 교대 = 앱 구현과 동형(색 연산 0 · 변형은 위치·스케일뿐)")
