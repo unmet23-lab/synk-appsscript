@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK 라디오 오버레이 — 마스코트</title>
+<!--
+  라디오24 오버레이 · 마스코트 상주 층 (유호 확정 08-14 「화면에 세워서 자동으로 움직이고 반응하게」 · Claude FM 오마주)
+
+  구현 명세 = tools/마스코트모션.py (앱 구현 방식 그대로 — 스프라이트 «교체» + 트랜스폼뿐, 색 연산 0).
+  그림 정본 = docs/캐릭터/마스코트_렌더/ (유호 확정 13컷 · README.md 의 역할표를 따른다).
+  킷: 무대=Navy2 #0F1730 + 좌상단 따뜻한 빛(마스코트모션.py 배경()과 동일 무대) · 글자=Cream · 신호 1점=Coral 테두리.
+
+  이 파일이 안 싣는 것(근거가 있는 제외 — 넓히기 전에 원문을 연다):
+    · 별눈(본체별눈)   — 발동 닫힌 목록(진화·생애 첫·시즌 완주)에 라디오 사건이 없다. 컷 자체를 로드하지 않는다.
+    · 슬픔 계열 4컷    — 슬럼프 신고는 공개 화면에 되쏘지 않는다(라디오24_설계 §2 I-2). 반응 자체가 금지.
+    · 텍스트·이모지    — 명령 피드백 문안은 P3 전광판 몫. 이 층은 마스코트만.
+  틀릴 때의 모습: 컷 경로가 깨지면 방송에 마스코트가 조용히 «없음»으로 나간다 — 그래서 로드 실패는
+  콘솔 에러 + (무대/데모 모드에선) 화면 경고로 드러낸다. 침묵 실패 금지.
+-->
+<style>
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+  /* 무대 모드(?무대=1) — 마스코트모션.py 배경()과 같은 무대: Navy2 + 좌상단 따뜻한 빛 */
+  body.무대 {
+    background:
+      radial-gradient(120% 70% at 10% 5%, rgba(255,214,170,.30), rgba(255,214,170,0) 60%),
+      #0F1730;
+  }
+  #마스코트틀 {
+    position: absolute;
+    /* 기본 자리 = 우하단(방송 구석) — ?자리= 로 바꾼다 */
+    right: 2.5vw; bottom: 3.5vh;
+    width: var(--폭, 22vw);
+    will-change: transform;
+  }
+  #마스코트틀 img {
+    display: block; width: 100%; height: auto;
+    /* 색 연산 0 — filter·blend 금지(마스코트모션.py 무손상 규격) */
+    user-select: none; -webkit-user-drag: none; pointer-events: none;
+  }
+  #마스코트틀 img[hidden] { display: none; }
+  .경고 {
+    position: absolute; left: 12px; bottom: 12px; max-width: 46ch;
+    font: 13px/1.5 system-ui, sans-serif; color: #F6F1E8;
+    background: rgba(15,23,48,.86); border: 1px solid #FF6B5C;
+    padding: 10px 12px; border-radius: 8px; white-space: pre-wrap;
+  }
+  #데모판 {
+    position: absolute; left: 12px; top: 12px;
+    font: 12px/1.6 ui-monospace, monospace; font-variant-numeric: tabular-nums;
+    color: #F6F1E8;
+    background: rgba(15,23,48,.72); padding: 8px 10px; border-radius: 8px;
+    display: none;
+  }
+  body.데모 #데모판 { display: block; }
+</style>
+</head>
+<body>
+<div id="마스코트틀" aria-hidden="true"></div>
+<div id="데모판"></div>
+<script>
+'use strict';
+/* ── 설정(URL 파라미터) ─────────────────────────────────────────── */
+const 인자 = new URLSearchParams(location.search);
+if (인자.get('무대') === '1') document.body.classList.add('무대');
+if (인자.get('demo') === '1' || 인자.get('데모') === '1') document.body.classList.add('데모');
+{
+  const 폭 = parseFloat(인자.get('크기'));
+  if (폭 > 0 && 폭 <= 1) document.documentElement.style.setProperty('--폭', (폭 * 100) + 'vw');
+  const 자리 = 인자.get('자리'); // 우하(기본)·좌하·우상·좌상
+  const 틀 = document.getElementById('마스코트틀');
+  if (자리 === '좌하') { 틀.style.right = 'auto'; 틀.style.left = '2.5vw'; }
+  if (자리 === '우상') { 틀.style.bottom = 'auto'; 틀.style.top = '3.5vh'; }
+  if (자리 === '좌상') { 틀.style.right = 'auto'; 틀.style.left = '2.5vw'; 틀.style.bottom = 'auto'; 틀.style.top = '3.5vh'; }
+}
+
+/* ── 컷 (그림 정본 · 역할 = 마스코트_렌더/README.md) ───────────────
+   「본채깜찍」의 «본채»는 유호 원본 파일명 그대로다 — 고치지 않는다. */
+const 컷경로 = '../../docs/캐릭터/마스코트_렌더/';
+const 컷표 = {
+  기본:   '본체.png',
+  깜빡:   '본체눈감음2.png',  // ⌒⌒ 잔잔 감음 = 깜빡임 프레임·잠
+  눈웃음: '본체눈감음.png',   // ∪∪ 눈웃음 = 만족·눈인사
+  기쁨:   '본채깜찍.png',     // 보상 순간 전용 — 상시 금지(아래 최대지속 상수가 기계로 막는다)
+  놀람:   '본체놀람.png',
+};
+const 틀 = document.getElementById('마스코트틀');
+const 이미지 = {};
+let 준비 = false;
+
+function 경고(문구) {
+  console.error('[마스코트 오버레이] ' + 문구);
+  if (document.body.classList.contains('무대') || document.body.classList.contains('데모')) {
+    const el = document.createElement('div');
+    el.className = '경고'; el.textContent = '🔴 ' + 문구;
+    document.body.appendChild(el);
+  }
+}
+
+Promise.all(Object.entries(컷표).map(([이름, 파일]) => new Promise(끝 => {
+  const im = new Image();
+  im.onload = () => 끝({ 이름, im, ok: true });
+  im.onerror = () => 끝({ 이름, 파일, ok: false });
+  im.src = 컷경로 + 파일;
+}))).then(결과 => {
+  const 실패 = 결과.filter(r => !r.ok);
+  if (실패.length) { 경고('컷이 없다 — 안 뜬 것이다(통과 아님): ' + 실패.map(r => r.파일).join(', ')); return; }
+  for (const r of 결과) {
+    이미지[r.이름] = r.im;
+    r.im.hidden = (r.이름 !== '기본');
+    틀.appendChild(r.im);
+  }
+  준비 = true;
+});
+
+let 현재표정 = '기본';
+function 표정(이름) {
+  if (!준비 || 이름 === 현재표정) return;
+  이미지[현재표정].hidden = true;
+  이미지[이름].hidden = false;
+  현재표정 = 이름;
+}
+
+/* ── 상태 (마스코트모션.py 상태()의 웹 이식 — 부유·숨·깜빡·스프링·감쇠 튐 공식 그대로) ── */
+const 시작 = performance.now();
+let 다음깜빡 = 2000 + Math.random() * 3000;
+let 반응 = null;          // {종류, 시작t}
+const 대기열 = [];         // 반응 중 수신분(최대 3 — 넘치면 버리고 콘솔에 남긴다)
+const 최대지속 = { 인사: .3, 라운드: 1.1, 정답: 2.3, 체크인: 1.4, 투표: 2.2 }; // 초 — 기쁨 컷 «상시 금지»의 기계 실체
+
+function 밤인가(now) {
+  if (인자.get('밤') === '1') return true;
+  if (인자.get('밤') === '0') return false;
+  const 시 = new Date(now).getHours(); // VPS/송출 PC 로컬시 = 울란바토르
+  return 시 >= 3 && 시 < 6;
+}
+
+let 마지막틱 = 0;
+function 프레임() {
+  requestAnimationFrame(프레임);
+  한틱();
+}
+function 한틱() {
+  if (!준비) return;
+  마지막틱 = performance.now();
+  const t = (performance.now() - 시작) / 1000;
+  const 폭px = 틀.clientWidth || 300;
+  const 자 = 폭px / 331;               // 모션 도구 기준(720px 무대 · 마스코트 331px)으로 진폭 환산
+  const 밤 = 밤인가(Date.now());
+
+  let 떠오름 = Math.sin(t * 1.9) * 10 * 자 * (밤 ? .5 : 1);
+  const 숨 = 1 + Math.sin(t * (밤 ? 1.5 : 2.4)) * 0.012;
+  let sx = 숨, sy = 숨, 기울기 = 0, 컷 = 밤 ? '깜빡' : '기본';
+
+  if (반응) {
+    const p = t - 반응.시작t;
+    const 끝t = 최대지속[반응.종류];
+    if (p >= 끝t) {
+      반응 = null;
+      if (대기열.length) 반응시작(대기열.shift());
+    } else switch (반응.종류) {
+      case '인사': {            // 탭 스프링 300ms — sx +13% · sy −15% · 들림 14px
+        const s = Math.sin(p / .3 * Math.PI);
+        sx = 숨 * (1 + 0.13 * s); sy = 숨 * (1 - 0.15 * s);
+        떠오름 += 14 * s * 자;
+        break;
+      }
+      case '라운드': {           // 라운드 열림 — 놀람(은은) + 소홉
+        컷 = '놀람';
+        const s = Math.sin(Math.min(p / .35, 1) * Math.PI);
+        떠오름 += 10 * s * 자;
+        break;
+      }
+      case '정답': {             // 정답 공개 — 기쁨 + 통통 튐(감쇠), 끝에 눈웃음 마무리
+        const 튐 = Math.exp(-p * 2.6) * Math.sin(p * 13);
+        떠오름 -= 26 * Math.abs(튐) * 0.7 * 자;
+        sx = 숨 * (1 - 0.05 * 튐); sy = 숨 * (1 + 0.06 * 튐);
+        컷 = p < 1.7 ? '기쁨' : '눈웃음';
+        break;
+      }
+      case '체크인': {           // 자습 체크인 접수 — 눈인사 + 소홉
+        컷 = '눈웃음';
+        const s = Math.sin(Math.min(p / .4, 1) * Math.PI);
+        떠오름 += 8 * s * 자;
+        break;
+      }
+      case '투표': {             // 투표 반영 — 몸 살랑(감쇠 기울임 · 표정은 기본)
+        기울기 = Math.exp(-p * 1.4) * Math.sin(p * 5.5) * 6;
+        break;
+      }
+    }
+  } else if (!밤) {
+    // 자연 깜빡임 150ms (반응 중엔 반응이 이긴다 — 모션 도구와 같은 우선순위)
+    const ms = t * 1000;
+    if (ms > 다음깜빡 + 150) 다음깜빡 = ms + 2200 + Math.random() * 3000;
+    else if (ms > 다음깜빡) 컷 = '깜빡';
+  }
+
+  표정(컷);
+  틀.style.transform = `translateY(${(-떠오름).toFixed(2)}px) rotate(${기울기.toFixed(2)}deg) scale(${sx.toFixed(4)}, ${sy.toFixed(4)})`;
+}
+requestAnimationFrame(프레임);
+// rAF 기아 폴백 — 숨은 탭·절전에선 rAF 가 서고 setInterval 만 돈다(실측 08-14: 데모판은 돌고
+// transform 은 빈 채였다). 150ms 넘게 굶으면 인터벌이 대신 튼다 — OBS 에선 rAF 가 이긴다.
+setInterval(() => { if (performance.now() - 마지막틱 > 150) 한틱(); }, 100);
+
+/* ── 이벤트 입구 (봇·P3 전광판·데모가 같은 문으로 들어온다) ─────────── */
+const 허용반응 = new Set(Object.keys(최대지속));
+function 반응시작(종류) {
+  반응 = { 종류, 시작t: (performance.now() - 시작) / 1000 };
+}
+function 반응요청(종류) {
+  if (!허용반응.has(종류)) {
+    // '슬럼프' 포함 — 공개 화면 되쏘기 금지(설계 §2 I-2). 조용히 무시하되 기록은 남긴다.
+    console.warn('[마스코트 오버레이] 허용 목록 밖 반응 무시: ' + 종류);
+    return;
+  }
+  if (반응) { if (대기열.length < 3) 대기열.push(종류); else console.warn('[마스코트 오버레이] 대기열 초과 — 버림: ' + 종류); }
+  else 반응시작(종류);
+}
+try {
+  new BroadcastChannel('라디오오버레이').onmessage = e => { if (e.data && e.data.종류) 반응요청(e.data.종류); };
+} catch (_) { /* OBS CEF 구버전 — postMessage 만으로 동작 */ }
+window.addEventListener('message', e => {
+  if (e.data && e.data.채널 === '라디오오버레이' && e.data.종류) 반응요청(e.data.종류);
+});
+window.마스코트반응 = 반응요청; // 콘솔·시험용
+
+/* ── 데모 시나리오 (?demo=1 — 방송·봇 없이 반응을 눈으로 검수하는 용도) ── */
+if (document.body.classList.contains('데모')) {
+  const 판 = document.getElementById('데모판');
+  const 시나리오 = [
+    ['인사',   '탭 스프링(300ms)'],
+    ['라운드', '퀴즈 라운드 열림 — 놀람'],
+    ['정답',   '정답 공개 — 기쁨+통통 튐'],
+    ['체크인', '자습 체크인 — 눈인사'],
+    ['투표',   '빗소리 투표 반영 — 살랑'],
+  ];
+  let i = 0;
+  판.textContent = '데모 대기 — 3초 뒤 시작';
+  setInterval(() => {
+    const [종류, 설명] = 시나리오[i % 시나리오.length];
+    반응요청(종류);
+    판.textContent = `데모 ${(i % 시나리오.length) + 1}/5 — ${설명}\n(수동: 콘솔에서 마스코트반응('정답'))`;
+    i++;
+  }, 3800);
+}
+</script>
+</body>
+</html>
