@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>브랜드 분위기 판정 — 같은 화면, 재질만 바꿔서 본다</title>
+<style>
+/* ─────────────────────────────────────────────
+   브랜드 분위기(그래픽 스타일) 축 판정 재료 · 2026-08-14
+   변수 격리: 색·글·레이아웃 전부 동결 — 바뀌는 것은 «재질»뿐.
+   (색상 확정은 유호 지시로 「가결」 강등 — 이 문서는 색을 판정하지 않는다)
+   스크립트 0 · 외부 자원 0 (폰트는 시스템 근사 — SUIT·DM Mono 실물 아님)
+   젤리 램프 = 킷 단만 사용: Coral Soft #FFCFC6 · Coral 2 #FF8877 · Coral #FF6B5C · Coral 3 #E8543F
+   그림자 = Navy 2 틴트(15,23,48)만 — 순검정 0
+   ───────────────────────────────────────────── */
+:root{
+  --navy-ink:#131A32; --navy2:#0F1730; --navy:#1A2340; --navy3:#2A3358;
+  --cream:#F6F1E8; --cream3:#E7DDC7; --slate:#8A93AD;
+  --coral:#FF6B5C; --coral2:#FF8877; --coral3:#E8543F; --coral-soft:#FFCFC6;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--navy-ink); color:var(--cream);
+  font-family:'SUIT','Inter Tight','Pretendard',-apple-system,'Segoe UI','Malgun Gothic',sans-serif;
+  padding:48px 24px 80px; line-height:1.6;
+}
+.mono{font-family:'DM Mono',ui-monospace,'Cascadia Mono',Consolas,monospace}
+.wrap{max-width:1280px;margin:0 auto}
+h1{font-size:28px;font-weight:800;letter-spacing:-0.02em;margin-bottom:8px}
+.sub{color:var(--slate);font-size:14px;max-width:760px}
+.sub b{color:var(--cream3);font-weight:600}
+.frozen{
+  display:inline-block;margin-top:14px;padding:6px 12px;border:1px solid var(--navy3);
+  border-radius:999px;font-size:12px;color:var(--slate)
+}
+.frozen b{color:var(--cream)}
+
+/* ── 폰 3벌 ── */
+.row{display:flex;gap:28px;flex-wrap:wrap;margin-top:36px;justify-content:center}
+.col{flex:1 1 320px;max-width:380px}
+.tag{font-size:12px;letter-spacing:0.14em;color:var(--slate);margin-bottom:10px;text-transform:uppercase}
+.tag b{color:var(--cream);letter-spacing:0.14em}
+.phone{
+  border-radius:28px;padding:22px 20px 26px;min-height:560px;
+  display:flex;flex-direction:column;position:relative;overflow:hidden;
+  border:1px solid var(--navy3);
+}
+.caption{margin-top:14px;font-size:13px;color:var(--slate)}
+.caption b{color:var(--cream3);font-weight:600}
+
+/* 공통 화면 뼈대 (셋이 완전히 같은 구조) */
+.statusbar{display:flex;justify-content:space-between;font-size:11px;letter-spacing:0.18em;color:var(--slate);position:relative;z-index:2}
+.applabel{font-size:11px;letter-spacing:0.32em;color:var(--slate);margin-top:26px;position:relative;z-index:2}
+.screentitle{font-size:26px;font-weight:800;letter-spacing:-0.01em;margin-top:6px;position:relative;z-index:2}
+.steps{display:flex;gap:16px;margin-top:14px;font-size:12.5px;color:var(--slate);align-items:center;position:relative;z-index:2}
+.step{display:flex;align-items:center;gap:6px}
+.step.on{color:var(--cream);font-weight:700}
+.card{margin-top:22px;border-radius:20px;padding:22px 20px 26px;flex:1;display:flex;flex-direction:column;align-items:center;position:relative;z-index:2}
+.q-label{font-size:12px;color:var(--slate);align-self:flex-start}
+.q{font-size:21px;font-weight:800;align-self:flex-start;margin-top:6px}
+.recwrap{margin:auto;display:flex;flex-direction:column;align-items:center;gap:18px;padding:18px 0}
+.rec{width:96px;height:96px;border-radius:50%;position:relative}
+.rec::after{content:'';position:absolute;inset:0;margin:auto;width:18px;height:18px;border-radius:50%;background:var(--navy2)}
+.timer{font-size:22px;letter-spacing:0.12em;font-variant-numeric:tabular-nums}
+.hint{font-size:12.5px;color:var(--slate);margin-top:2px}
+
+/* ㉠ 현행 — 플랫 */
+.flat{background:var(--navy2)}
+.flat .dot{width:7px;height:7px;border-radius:50%;background:var(--navy3)}
+.flat .step.on .dot{background:var(--cream)}
+.flat .card{background:var(--navy)}
+.flat .rec{background:var(--coral)}
+
+/* ㉡ 글래시 젤리 */
+.glass{background:var(--navy2)}
+.glass::before{ /* 유리가 비출 빛 — 배경 발광 (재질의 전제) */
+  content:'';position:absolute;inset:-40%;z-index:0;
+  background:
+    radial-gradient(38% 30% at 24% 18%, rgba(255,107,92,0.16), transparent 70%),
+    radial-gradient(30% 26% at 82% 70%, rgba(255,136,119,0.10), transparent 70%),
+    radial-gradient(26% 22% at 60% 30%, rgba(246,241,232,0.05), transparent 70%);
+}
+.glass .dot{width:9px;height:9px;border-radius:50%;
+  background:radial-gradient(circle at 32% 28%, rgba(246,241,232,0.75), rgba(246,241,232,0.16) 42%, rgba(15,23,48,0.6) 100%);
+  border:1px solid rgba(246,241,232,0.14)}
+.glass .step.on .dot{
+  background:radial-gradient(circle at 32% 28%, var(--coral-soft), var(--coral) 55%, var(--coral3) 100%);
+  box-shadow:0 0 10px rgba(255,107,92,0.55);border-color:rgba(255,136,119,0.5)}
+.glass .card{
+  background:linear-gradient(160deg, rgba(246,241,232,0.055), rgba(246,241,232,0.015) 55%);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(246,241,232,0.13);border-top-color:rgba(246,241,232,0.26);
+  box-shadow:inset 0 1px 0 rgba(246,241,232,0.10), 0 24px 40px -24px rgba(15,23,48,0.85);
+}
+.glass .card::before{ /* 비스듬한 광택 한 줄 */
+  content:'';position:absolute;top:0;left:8%;width:38%;height:1px;
+  background:linear-gradient(90deg, transparent, rgba(246,241,232,0.5), transparent);
+}
+.glass .rec{
+  background:
+    radial-gradient(circle at 32% 26%, var(--coral2) 0%, var(--coral) 44%, var(--coral3) 100%);
+  box-shadow:
+    inset 0 -10px 16px rgba(15,23,48,0.42),
+    inset 0 8px 12px rgba(255,207,198,0.55),
+    0 0 34px rgba(255,107,92,0.35),
+    0 18px 26px -14px rgba(15,23,48,0.85);
+  animation:breath 3.2s ease-in-out infinite;
+}
+.glass .rec::before{ /* 젤리 하이라이트 */
+  content:'';position:absolute;top:12px;left:18px;width:34px;height:20px;border-radius:50%;
+  background:rgba(246,241,232,0.75);filter:blur(5px);transform:rotate(-18deg);
+}
+.glass .timer{text-shadow:0 0 18px rgba(246,241,232,0.28)}
+@keyframes breath{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+@media (prefers-reduced-motion: reduce){.glass .rec{animation:none}}
+
+/* ㉢ 펠트 — CSS 근사 (한계는 캡션에 명시) */
+.felt{background:var(--navy2)}
+.felt::before{ /* 원단 결 — 노이즈 */
+  content:'';position:absolute;inset:0;z-index:0;opacity:0.55;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.55 0 0 0 0 0.58 0 0 0 0 0.68 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.felt .dot{width:8px;height:8px;border-radius:50%;background:var(--navy3);box-shadow:0 1px 0 rgba(15,23,48,0.6)}
+.felt .step.on .dot{background:var(--cream3)}
+.felt .card{
+  background:var(--navy);
+  border:2px dashed rgba(246,241,232,0.28); /* 스티치 */
+  box-shadow:0 14px 22px -14px rgba(15,23,48,0.9), inset 0 0 60px rgba(15,23,48,0.35);
+}
+.felt .card::before{content:'';position:absolute;inset:0;border-radius:18px;opacity:0.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.9 0 0 0 0 0.86 0 0 0 0 0.8 0 0 0 0.045 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events:none}
+.felt .rec{
+  background:radial-gradient(circle at 36% 30%, var(--coral2) 0%, var(--coral) 55%, var(--coral3) 100%);
+  box-shadow:inset 0 -6px 10px rgba(15,23,48,0.55), 0 10px 16px -8px rgba(15,23,48,0.9);
+  outline:2px dashed rgba(246,241,232,0.35);outline-offset:-7px; /* 박음질 */
+}
+.felt .rec::before{content:'';position:absolute;inset:0;border-radius:50%;opacity:0.75;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='2'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 0.75 0 0 0 0 0.7 0 0 0 0.10 0'/%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ── 판정표 ── */
+section{margin-top:56px}
+h2{font-size:19px;font-weight:800;margin-bottom:14px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:13.5px}
+th,td{padding:10px 14px;text-align:center;border-bottom:1px solid var(--navy3)}
+th{color:var(--slate);font-weight:600;font-size:12px;letter-spacing:0.06em}
+td:first-child,th:first-child{text-align:left}
+td:first-child{font-weight:700;color:var(--cream)}
+.g{color:#8fd694;font-weight:700}.m{color:var(--cream3)}.b{color:#e08a8a}
+.note{font-size:12.5px;color:var(--slate);margin-top:10px;max-width:860px}
+.note b{color:var(--cream3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>같은 화면, 재질만 바꿔서 본다</h1>
+  <p class="sub">유호님이 보낸 숙제 화면(오늘의 말하기 · 답하기)을 그대로 두고 <b>「분위기(그래픽 스타일)」 층만</b> 세 가지로 갈아 끼웠습니다.
+  마스코트는 일부러 없습니다 — 말하기 화면은 녹음 집중 확정이라, <b>캐릭터 없이 크롬(버튼·카드·점)만으로 분위기가 서는지</b>가 이 대조의 과녁입니다.</p>
+  <span class="frozen">동결: 색 · 문구 · 레이아웃 · 폰트 위계 — <b>변수는 재질 하나</b> (색 판정은 별도 · 지금 색은 가결 상태)</span>
+
+  <div class="row">
+    <div class="col">
+      <div class="tag">㉠ <b>현행</b> — 플랫</div>
+      <div class="phone flat">
+        <div class="statusbar mono"><span>9:41</span><span>SYSTEM</span></div>
+        <div class="applabel mono">SYNK TALK</div>
+        <div class="screentitle">오늘의 말하기</div>
+        <div class="steps">
+          <span class="step"><span class="dot"></span>듣기</span>
+          <span class="step"><span class="dot"></span>따라 말하기</span>
+          <span class="step on"><span class="dot"></span>답하기</span>
+        </div>
+        <div class="card">
+          <span class="q-label">03 · 이번엔 내 말로 답해요</span>
+          <span class="q">요즘 어떻게 지내요?</span>
+          <div class="recwrap">
+            <div class="rec"></div>
+            <span class="timer mono">00:07</span>
+          </div>
+          <span class="hint">듣고 있어요 — 다 말하면 다시 눌러요</span>
+        </div>
+      </div>
+      <p class="caption">깨끗하지만 <b>재질이 없다</b> — 면과 원이 전부 무광 단색이라, 어느 브랜드가 만들어도 이 화면이 나온다. 유호님이 느낀 「특별하지 않음」의 정체.</p>
+    </div>
+
+    <div class="col">
+      <div class="tag">㉡ <b>글래시 젤리</b> — 마스코트의 세계를 크롬까지</div>
+      <div class="phone glass">
+        <div class="statusbar mono"><span>9:41</span><span>SYSTEM</span></div>
+        <div class="applabel mono">SYNK TALK</div>
+        <div class="screentitle">오늘의 말하기</div>
+        <div class="steps">
+          <span class="step"><span class="dot"></span>듣기</span>
+          <span class="step"><span class="dot"></span>따라 말하기</span>
+          <span class="step on"><span class="dot"></span>답하기</span>
+        </div>
+        <div class="card">
+          <span class="q-label">03 · 이번엔 내 말로 답해요</span>
+          <span class="q">요즘 어떻게 지내요?</span>
+          <div class="recwrap">
+            <div class="rec"></div>
+            <span class="timer mono">00:07</span>
+          </div>
+          <span class="hint">듣고 있어요 — 다 말하면 다시 눌러요</span>
+        </div>
+      </div>
+      <p class="caption">카드=유리 패널(뒷빛이 비침) · 녹음 버튼=<b>코랄 젤리</b>(광택·숨쉬기 — 램프는 킷 단 그대로) · 진행점=유리 구슬. 마스코트가 없는 화면에서도 <b>마스코트와 같은 재질의 세계</b>가 산다.</p>
+    </div>
+
+    <div class="col">
+      <div class="tag">㉢ <b>펠트·크래프트</b> — CSS 근사</div>
+      <div class="phone felt">
+        <div class="statusbar mono"><span>9:41</span><span>SYSTEM</span></div>
+        <div class="applabel mono">SYNK TALK</div>
+        <div class="screentitle">오늘의 말하기</div>
+        <div class="steps">
+          <span class="step"><span class="dot"></span>듣기</span>
+          <span class="step"><span class="dot"></span>따라 말하기</span>
+          <span class="step on"><span class="dot"></span>답하기</span>
+        </div>
+        <div class="card">
+          <span class="q-label">03 · 이번엔 내 말로 답해요</span>
+          <span class="q">요즘 어떻게 지내요?</span>
+          <div class="recwrap">
+            <div class="rec"></div>
+            <span class="timer mono">00:07</span>
+          </div>
+          <span class="hint">듣고 있어요 — 다 말하면 다시 눌러요</span>
+        </div>
+      </div>
+      <p class="caption">⚠<b>근사치다</b> — 실제 펠트 «일러스트·렌더»는 이보다 훨씬 좋고, 게임(LBP·털실 커비)은 크롬까지 성공시킨 실증이 있다. 다만 그건 전담 아트팀 체제였다 — 1인+AI 생성 체제에서는 전 부품 텍스처를 일관되게 굽는 비용이 최대이고, 질감이 작은 부품·글자 밑에서 노이즈가 되는 관리 축이 추가로 붙는다.</p>
+    </div>
+  </div>
+
+  <section>
+    <h2>후보 5 판정표</h2>
+    <div class="tablewrap">
+    <table>
+      <tr><th>후보</th><th>UI 크롬 번역<br>(버튼·카드가 그 재질이 되나)</th><th>명품·신비감</th><th>온기·케어</th><th>AI 재현 일관성<br>(1인 운영 전제)</th><th>차별성·신선</th><th>전환 비용</th></tr>
+      <tr><td>글래시 젤리</td><td class="g">◎ 가장 싸고 즉시 (그라데이션·프리베이크로 성립)</td><td class="g">○~◎ (신비감 · 단 「젤리=제과」 오독 벡터 있음)</td><td class="m">△→○ (크롬 온기 장치 별도 명세 조건)</td><td class="g">◎ 13컷 실증 (⚠캐릭터 한정 — 세계 전체는 미실증)</td><td class="g">○~◎ (유리 일반 아닌 «젤리 물성»으로)</td><td class="g">최소 (마스코트 유지 — 단 부차 근거)</td></tr>
+      <tr><td>Folk Craft (니트·펠트)</td><td class="m">△ 가능하나 비용 최대 (게임 실증 있음 — LBP·털실 커비 · 전 부품 텍스처 프리베이크)</td><td class="m">△ (유아 오독 위험)</td><td class="g">◎ 최강 · 몽골 양모 문화 정합</td><td class="m">△ 재질 흔들림</td><td class="g">◎</td><td class="b">최대 (마스코트 전면 재생성)</td></tr>
+      <tr><td>봉제 인형 (스톱모션)</td><td class="m">△ (위와 동일 축)</td><td class="m">△</td><td class="g">◎</td><td class="m">△</td><td class="g">○~◎ (영상 강함)</td><td class="b">최대</td></tr>
+      <tr><td>종이접기</td><td class="m">△ (종이 레이어=머티리얼 디자인과 동형 → 신선의 반대)</td><td class="m">○</td><td class="m">○</td><td class="m">△</td><td class="m">△</td><td class="b">최대</td></tr>
+      <tr><td>Vivid Anime</td><td class="b">✗</td><td class="b">✗</td><td class="m">○</td><td class="b">✗ 인물 일관성 최난</td><td class="b">✗ 가장 흔함</td><td class="b">최대 (마스코트 문법 자체 충돌)</td></tr>
+    </table>
+    </div>
+    <p class="note"><b>결정 축은 첫 칸이다.</b> 유호님이 밋밋하다고 느낀 화면들(숙제·녹음)은 일러스트가 들어갈 자리가 없는 기능 화면이라,
+    스타일이 사는 곳이 «그림 조각»이 아니라 <b>화면의 살갗</b>이어야 한다. 크래프트 크롬도 게임에선 실증됐지만(LBP·털실 커비 — 전담 아트팀 체제),
+    1인 + AI 생성 체제에서 전 부품 텍스처를 일관되게 굽는 비용이 최대다. 애니는 추가로 「입 없는 무언의 선생님」 확정(표현 예산)과 문법이 정면 충돌한다.</p>
+    <p class="note">⚠<b>비대칭 심사 자백:</b> 「전환 비용 최소」는 글래시가 현직(마스코트 13컷)이라 생기는 이점이지 스타일 자체의 우열이 아니다 —
+    그래서 판정의 주근거는 전환 비용이 아니라 <b>크롬 번역 비용 + 재현 일관성</b>이다.</p>
+  </section>
+
+  <section>
+    <h2>통일의 형태 — 「전 표면 같은 농도」가 아니라 「세계관 하나 · 층별 눈금」</h2>
+    <p class="note">듀오링고·헤드스페이스가 실증한 문법: <b>세계관은 하나, 농도는 층마다</b>. 이대로 채택하면 —</p>
+    <p class="note">① <b>히어로·보상 순간</b>(인사·축하·진화·SNS·영상) = 풀 재질(렌더 실물).
+    ② <b>기능 크롬</b>(버튼·카드·진행점) = 조용한 파생 토큰 — 광택 1점·발광·눌림 물성만 상속.
+    <b>라이브 블러 0 · 전부 프리베이크</b>(그라데이션·스프라이트) — 몽골 주력 저가 안드로이드에서 실시간 유리는 못 선다. 저가 실기기 1대 실측이 통과 조건.
+    ③ <b>인쇄·학부모 문서</b> = 불투명 변환 규칙(반투명·발광은 백라이트 없는 종이에서 죽는다) + 격식 문서는 워드마크 우선 유지.</p>
+  </section>
+</div>
+</body>
+</html>
