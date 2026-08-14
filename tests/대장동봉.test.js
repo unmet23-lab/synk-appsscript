@@ -13,7 +13,10 @@ const assert = require('node:assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { spawnSync } = require('child_process');
+/* 🔑 공용 통로로 띄운다 — 직접 `spawnSync` 하면 **미실행이 「차단」으로 번역된다**: 스폰이 실패하면
+ *   `status` 가 null 이고 `null !== 0` 이라 아래 「막는다」 단언이 전부 초록이 된다. 실제로 이 파일의
+ *   첫 판이 그랬고 `tests/훅통로.test.js` 가 잡았다(그 가드가 노린 바로 그 모양). */
+const { 훅띄우기 } = require('./lib/훅띄우기.js');
 
 const ROOT = path.join(__dirname, '..');
 const 도구 = path.join(ROOT, 'tools', '이해대장.js');
@@ -29,8 +32,9 @@ function 검사(화면내용) {
     const 산출 = path.join(방, 'b.html');
     fs.copyFileSync(정본실물, 정본);
     if (화면내용 !== null) fs.writeFileSync(산출, 화면내용, 'utf8');
-    const r = spawnSync(process.execPath, [도구, '--검사'], {
-      cwd: ROOT, encoding: 'utf8',
+    // 통과코드 = 0(같다)·1(차단) 둘뿐이다 — 그 밖은 결과가 아니라 오류다(통로가 던진다).
+    const r = 훅띄우기([도구, '--검사'], {
+      cwd: ROOT, encoding: 'utf8', 통과코드: [0, 1],
       env: { ...process.env, SYNK_대장_정본: 정본, SYNK_대장_산출: 산출 },
     });
     return { 막혔나: r.status !== 0, 출력: String(r.stderr || '') + String(r.stdout || '') };
