@@ -1085,7 +1085,7 @@ function monthlyReportJob()       { safeRun('monthlyReport', monthlyReport); }  
 
 function weeklyJobs() {    // 매주 월 07시
   safeRun('raidMonday', raidMonday); // 게임(레이드) 설정 — 시트 쓰기만, 메일 리포트 아님
-  safeRun('goldenSample', goldenSampleWeekly_); // [v9.147] 강사 교정 골든셋 무작위 표본 — 2년 뒤 모델 선택의 채점표(소급 불가)
+  safeRun('goldenSample', goldenSampleWeekly_); // [v9.147] 강사 교정 정답 모음 무작위 표본 — 2년 뒤 모델 선택의 채점표(소급 불가)
   let lpText = ''; // [v9.86·D] 주간 교안 초안 — 생성은 여기서, 링크 보고는 아래 통합 리포트 섹션으로(메일 순증 0)
   safeRun('lessonPlanDrafts', function () { lpText = lessonPlanDrafts_(); });
   let silText = ''; // [v9.91] 4주차 침묵 학생 명단 — 시즌 4주차 주에만 값이 생긴다(그 외 주는 섹션 생략)
@@ -3602,7 +3602,7 @@ function menuMigrateInterviewSid() { menuRun_(migrateInterviewSid); }
 function menuInterviewPersonalLink() { menuRun_(interviewPersonalLink); }
 function menuCreateTalkForm() { menuRun_(createTalkForm); } // [v9.138] 한국어 대화 폼 — 회화 앱 1세대(재실행 안전)
 function menuDataCoverage() { menuRun_(dataCoverageReport); } // [v9.138] 커버리지 — 읽기 전용이라 언제 눌러도 안전
-// [v9.166] 골든셋 → 회화 앱 평가 픽스처. 시트는 안 건드리고 내 드라이브에 JSON 1개를 새로 만든다.
+// [v9.166] 강사 정답 모음 → 회화 앱 평가 픽스처. 시트는 안 건드리고 내 드라이브에 JSON 1개를 새로 만든다.
 //   식별자는 함수 안에서 전부 잘려 나간다(동의 v18.9의 「비식별 사용」 · 목적지가 git이라 되돌릴 수 없음).
 function menuExportGolden() { menuRun_(exportGoldenFixture_); }
 // [v9.175] 같은 픽스처를 SYNK-talk 저장소에 **직접** 올린다(손으로 받아 옮기는 절차 제거).
@@ -4119,8 +4119,8 @@ function onOpen() {
        *   앱은 학생에게 자기 학생ID를 어디서도 보여주지 않으므로, 개인 링크가 없으면 궤적은 0에 가깝다. */
       .addItem('🔗 면접폼 개인 링크 만들기(학생ID 미리채움)', 'menuInterviewPersonalLink')
       .addItem('📊 수집 커버리지 보기(읽기 전용)', 'menuDataCoverage')
-      .addItem('📤 골든셋 → 회화 앱 픽스처 내보내기', 'menuExportGolden')
-      .addItem('🚀 골든셋 → SYNK-talk 저장소로 바로 보내기', 'menuPushGolden')
+      .addItem('📤 강사 정답 모음 → 회화 앱 픽스처 내보내기', 'menuExportGolden')
+      .addItem('🚀 강사 정답 모음 → SYNK-talk 저장소로 바로 보내기', 'menuPushGolden')
       .addItem('🔎 대화 수집 점검(밤 배치 확인·머리글 치유)', 'menuTalkLogCheck')
       .addToUi();
   } catch (eMenu) { Logger.log('시트 메뉴 생성 스킵: ' + eMenu); } // UI 없는 컨텍스트(트리거 실행)에서는 조용히 통과
