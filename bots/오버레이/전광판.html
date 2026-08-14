@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK 라디오 오버레이 — 전광판</title>
+<!--
+  라디오24 오버레이 · P3 전광판 층 (설계 §5 P3 · 기본 화면 = 학원 합산 전광판 §8 채택 확정)
+
+  이 파일은 «그리기»만 한다 — 무엇을 싣고 뺄지는 전부 `전광판판정.js`(순수·회귀가 잰다)가 정한다.
+  화면 코드는 회귀가 원리상 못 닿는 층이라, 판정을 여기 두면 틀린 것이 **송출 첫날**에야 드러난다.
+
+  마스코트(`마스코트.html`)와 **같은 문**으로 듣는다 — BroadcastChannel('라디오오버레이').
+  둘은 서로를 모른다: 봇이 한 번 보내면 이 파일은 문안을, 마스코트는 모션을 각자 집는다
+  (릴레이를 넣으면 마스코트가 두 번 반응한다).
+
+  ▶ 이 파일이 «내보내는» 것 = 노출 확인(BroadcastChannel('라디오전광판')):
+      { 종류:'노출',   round_id, at }   — 라운드 카드를 실제로 그린 시각
+      { 종류:'마감확인', round_id, at }   — 응답 마감을 그린 시각
+    이게 규격의 급소다. `radio.quiz_round.shown_at` 은 **「화면에 나간 시각」**이고 not null 이라,
+    라운드를 «만든» 쪽이 그 값을 지어내면 안 보여준 것을 보여줬다고 적는 행이 된다.
+    화면만이 「그렸다」를 안다 — 그래서 적는 쪽은 이 확인을 받고 적는다.
+
+  안 하는 것(근거 있는 제외 — 넓히기 전에 원문을 연다):
+    · 개인 순위·개인 성적·정답률 — §8 영구 금지(판정층 `금지칸` 이 기계로 문다).
+    · 학생코드·실명·급수 — §3 철칙. 사람 표기는 유튜브 닉네임 하나.
+    · 라운드 «열림» 에 정답 표시 — 정답은 마감 뒤에만(판정층이 떼고 경고한다).
+    · innerHTML — 채팅 원문이 그대로 오는 자리라 textContent 만 쓴다(회귀가 0 을 문다).
+    · 몽골어 지어내기 — 검수 전까지 한국어만 그린다(문안표 mn 칸이 비어 있다).
+-->
+<style>
+  :root {
+    /* 브랜드 킷(DESIGN.md) — 다크 반전면 팔레트. 신호는 Coral 1점 · Lime·KC 반입 0. */
+    --navy2:  #0F1730;
+    --cream:  #F6F1E8;
+    --cream3: #E7DDC7;
+    --slate:  #8A93AD;
+    --coral:  #FF6B5C;
+    --카드바닥: rgba(15, 23, 48, .82);
+    --테두리: rgba(231, 221, 199, .16);
+  }
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+  body {
+    /* 브랜드 폰트 정본(DESIGN.md:90) 그대로 — 송출 PC 에 파일이 없으면 스택이 알아서 내려간다. */
+    font-family: 'Inter Tight', 'SUIT Variable', system-ui, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    color: var(--cream);
+    -webkit-font-smoothing: antialiased;
+  }
+  /* 무대 모드(?무대=1) — 마스코트.html 과 같은 무대(방송 없이 눈으로 검수). */
+  body.무대 {
+    background:
+      radial-gradient(120% 70% at 10% 5%, rgba(255,214,170,.30), rgba(255,214,170,0) 60%),
+      var(--navy2);
+  }
+
+  /* ── 기본 화면 = 학원 합산 전광판 (§8) ─────────────────────────── */
+  #합산 {
+    position: absolute; left: 2.5vw; bottom: 3.5vh;
+    display: grid; gap: 10px;
+    padding: 18px 22px 16px;
+    background: var(--카드바닥); border: 1px solid var(--테두리); border-radius: 14px;
+  }
+  #합산 .제목 { font-size: 13px; letter-spacing: .12em; color: var(--slate); margin-bottom: 2px; }
+  #합산 .줄 { display: grid; grid-template-columns: auto auto; align-items: baseline; gap: 14px; }
+  #합산 .이름 { font-size: 15px; color: var(--cream3); }
+  #합산 .값 {
+    justify-self: end;
+    font-size: 30px; font-weight: 700; line-height: 1;
+    font-variant-numeric: tabular-nums; /* 숫자가 바뀌어도 폭이 안 흔들린다 */
+  }
+  #합산 .값.모름 { font-size: 18px; color: var(--slate); font-weight: 500; }
+
+  /* ── 라운드 카드 (동심원 모서리: 바깥 16 = 안쪽 10 + 패딩) ─────── */
+  #라운드 {
+    position: absolute; left: 50%; top: 6vh; transform: translateX(-50%) translateY(-14px);
+    width: min(58vw, 780px);
+    padding: 20px 24px 18px;
+    background: var(--카드바닥); border: 1px solid var(--테두리); border-radius: 16px;
+    opacity: 0; pointer-events: none;
+    transition: opacity .28s ease, transform .28s ease;
+  }
+  #라운드.보임 { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #라운드 .머리 { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  #라운드 .꼬리표 { font-size: 12px; letter-spacing: .14em; color: var(--slate); }
+  #라운드 .남은 { font-size: 13px; color: var(--cream3); font-variant-numeric: tabular-nums; }
+  #라운드 .지시문 { margin: 12px 0 14px; font-size: 26px; font-weight: 700; line-height: 1.35; }
+  #라운드 .보기목록 { display: grid; gap: 8px; }
+  #라운드 .보기 {
+    display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 12px;
+    padding: 9px 12px; border: 1px solid var(--테두리); border-radius: 10px;
+    font-size: 18px;
+  }
+  #라운드 .보기 .번호 { color: var(--slate); font-weight: 700; font-variant-numeric: tabular-nums; }
+  #라운드 .보기 .몫 { font-size: 14px; color: var(--slate); font-variant-numeric: tabular-nums; opacity: 0; }
+  #라운드.공개 .보기 .몫 { opacity: 1; }
+  /* 정답 = 신호 1점(Coral · 다크 위 글자 허용). 나머지는 가라앉힌다 — 「틀렸다」를 칠하지 않는다. */
+  #라운드 .보기.정답 { border-color: var(--coral); }
+  #라운드 .보기.정답 .번호 { color: var(--coral); }
+  #라운드.공개 .보기:not(.정답) { color: var(--slate); }
+  #라운드 .시계 { height: 3px; margin-top: 14px; background: rgba(231,221,199,.14); border-radius: 2px; overflow: hidden; }
+  #라운드 .시계 i { display: block; height: 100%; width: 100%; background: var(--coral); transform-origin: left center; }
+  #라운드 .꼬리 { margin-top: 12px; font-size: 13px; color: var(--slate); min-height: 1em; }
+
+  /* ── 명령 피드백 토스트 (설계 §5 P3 — 채팅 답글이 아니라 오버레이로) ── */
+  #토스트 {
+    position: absolute; left: 50%; bottom: 4vh; transform: translateX(-50%);
+    display: grid; gap: 8px; justify-items: center;
+  }
+  #토스트 .알림 {
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 9px 16px; border-radius: 999px;
+    background: var(--카드바닥); border: 1px solid var(--테두리);
+    font-size: 16px;
+    animation: 뜸 .3s ease both;
+  }
+  #토스트 .알림 .무엇 { color: var(--cream3); font-size: 13px; letter-spacing: .06em; }
+  #토스트 .알림 .누구 { font-weight: 700; }
+  #토스트 .알림.끝 { animation: 짐 .3s ease both; }
+  @keyframes 뜸 { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes 짐 { to { opacity: 0; transform: translateY(-6px); } }
+
+  .경고 {
+    position: absolute; right: 12px; top: 12px; max-width: 44ch;
+    font: 13px/1.5 system-ui, sans-serif; color: var(--cream);
+    background: rgba(15,23,48,.9); border: 1px solid var(--coral);
+    padding: 10px 12px; border-radius: 8px; white-space: pre-wrap;
+  }
+  #데모판 {
+    position: absolute; left: 12px; top: 12px;
+    font: 12px/1.6 ui-monospace, monospace; font-variant-numeric: tabular-nums;
+    color: var(--cream); background: rgba(15,23,48,.72);
+    padding: 8px 10px; border-radius: 8px; display: none; white-space: pre-wrap;
+  }
+  body.데모 #데모판 { display: block; }
+  @media (prefers-reduced-motion: reduce) {
+    #라운드, #토스트 .알림 { transition: none; animation: none; }
+  }
+</style>
+</head>
+<body>
+<section id="합산" aria-label="학원 합산 전광판">
+  <div class="제목" id="합산제목"></div>
+  <div class="줄"><span class="이름" id="이름1"></span><span class="값 모름" id="값1">—</span></div>
+  <div class="줄"><span class="이름" id="이름2"></span><span class="값 모름" id="값2">—</span></div>
+  <div class="줄"><span class="이름" id="이름3"></span><span class="값 모름" id="값3">—</span></div>
+</section>
+
+<section id="라운드" aria-live="polite">
+  <div class="머리">
+    <span class="꼬리표" id="라운드꼬리표"></span>
+    <span class="남은" id="남은시간"></span>
+  </div>
+  <div class="지시문" id="지시문"></div>
+  <div class="보기목록" id="보기목록"></div>
+  <div class="시계"><i id="시계바"></i></div>
+  <div class="꼬리" id="라운드꼬리"></div>
+</section>
+
+<div id="토스트"></div>
+<div id="데모판"></div>
+
+<script src="전광판판정.js"></script>
+<script>
+'use strict';
+const 판정 = window.전광판판정;
+
+/* ── 설정(URL 파라미터) ─────────────────────────────────────────── */
+const 인자 = new URLSearchParams(location.search);
+if (인자.get('무대') === '1') document.body.classList.add('무대');
+if (인자.get('demo') === '1' || 인자.get('데모') === '1') document.body.classList.add('데모');
+
+const 요소 = (id) => document.getElementById(id);
+const 글 = (el, s) => { el.textContent = s; };   // innerHTML 을 쓰지 않는다(채팅 원문이 오는 자리)
+
+function 경고(문구) {
+  console.error('[전광판] ' + 문구);
+  if (document.body.classList.contains('무대') || document.body.classList.contains('데모')) {
+    const el = document.createElement('div');
+    el.className = '경고';
+    글(el, '경고 — ' + 문구);
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 8000);
+  }
+}
+
+if (!판정) {
+  경고('전광판판정.js 를 못 읽었다 — 판정 없이 그리지 않는다(파일 두 개를 같은 폴더에 둔다).');
+} else {
+  시작();
+}
+
+function 시작() {
+  const 수 = (n) => n.toLocaleString('ko-KR');
+
+  /* ── 기본 화면 = 학원 합산 전광판 ───────────────────────────── */
+  글(요소('합산제목'), 판정.병기('합산제목'));
+  글(요소('이름1'), 판정.병기('맞힌문제'));
+  글(요소('이름2'), 판정.병기('진화레벨합'));
+  글(요소('이름3'), 판정.병기('체크인주간'));
+  글(요소('라운드꼬리표'), 판정.병기('라운드제목'));
+
+  function 합산그리기(값) {
+    const 짝 = [['값1', 값.맞힌문제], ['값2', 값.진화레벨합], ['값3', 값.체크인주간]];
+    for (const [id, v] of 짝) {
+      const el = 요소(id);
+      /* 「모름」과 「0」을 가른다 — 0 으로 접으면 안 잰 것이 실적 0 으로 둔갑한다(F207). */
+      if (v === null) { 글(el, '—'); el.classList.add('모름'); }
+      else { 글(el, 수(v)); el.classList.remove('모름'); }
+    }
+  }
+
+  /* ── 라운드 카드 ─────────────────────────────────────────── */
+  const 라운드칸 = 요소('라운드');
+  const 보기칸 = 요소('보기목록');
+  let 현재라운드 = null;   // {round_id, 마감ms, 창}
+  let 시계타이머 = null;
+  let 숨김타이머 = null;
+
+  function 시계멈춤() { if (시계타이머) { clearInterval(시계타이머); 시계타이머 = null; } }
+
+  function 라운드그리기(값) {
+    시계멈춤();
+    clearTimeout(숨김타이머);
+    라운드칸.classList.remove('공개');
+    보기칸.replaceChildren();
+    값.보기들.forEach((o, i) => {
+      const 줄 = document.createElement('div');
+      줄.className = '보기';
+      줄.dataset.option = o.option_id;
+      const 번호 = document.createElement('span'); 번호.className = '번호'; 글(번호, String(i + 1));
+      const 말 = document.createElement('span'); 글(말, o.label);
+      const 몫 = document.createElement('span'); 몫.className = '몫'; 글(몫, '');
+      줄.append(번호, 말, 몫);
+      보기칸.appendChild(줄);
+    });
+    글(요소('지시문'), 값.지시문);
+    글(요소('라운드꼬리'), '');
+    라운드칸.classList.add('보임');
+
+    현재라운드 = { round_id: 값.round_id, 마감ms: Date.now() + 값.마감초 * 1000, 창: 값.마감초 * 1000 };
+    시계틱();
+    시계타이머 = setInterval(시계틱, 200);
+
+    /* 🔑 노출 확인 — 「그렸다」를 아는 것은 화면뿐이다. 적는 쪽이 이걸 받고 shown_at 을 적는다. */
+    내보내기({ 종류: '노출', round_id: 값.round_id, at: new Date().toISOString() });
+  }
+
+  function 시계틱() {
+    if (!현재라운드) return;
+    const 남음 = Math.max(0, 현재라운드.마감ms - Date.now());
+    요소('시계바').style.transform = 'scaleX(' + (남음 / 현재라운드.창).toFixed(4) + ')';
+    글(요소('남은시간'), 판정.병기('남은시간') + ' ' + Math.ceil(남음 / 1000) + '초');
+    if (남음 <= 0) 마감그리기({ round_id: 현재라운드.round_id }, true);
+  }
+
+  function 마감그리기(값, 시간만료) {
+    시계멈춤();
+    요소('시계바').style.transform = 'scaleX(0)';
+    글(요소('남은시간'), 판정.병기('마감'));
+    /* 시간만료는 이 화면의 «추정»이다 — 원장에 적는 마감은 보낸 쪽이 확정한 것만 확인한다. */
+    if (!시간만료) 내보내기({ 종류: '마감확인', round_id: 값.round_id, at: new Date().toISOString() });
+  }
+
+  function 정답그리기(값) {
+    시계멈춤();
+    라운드칸.classList.add('공개');
+    글(요소('남은시간'), 판정.병기('정답제목'));
+    const 총 = Object.values(값.분포).reduce((a, b) => a + b, 0);
+    for (const 줄 of 보기칸.children) {
+      const id = 줄.dataset.option;
+      if (id === 값.정답) 줄.classList.add('정답');
+      const n = 값.분포[id];
+      const 몫 = 줄.querySelector('.몫');
+      /* 개인은 없고 **집단 합산**만 그린다(§8) — 안 온 분포는 빈칸으로 두고 0 으로 안 접는다. */
+      글(몫, n === undefined ? '' : (총 > 0 ? Math.round((n / 총) * 100) + '%' : String(n)));
+    }
+    const 꼬리 = [];
+    if (값.응답수 !== null) 꼬리.push(판정.병기('응답수') + ' ' + 수(값.응답수));
+    꼬리.push(판정.병기('재도전'));
+    글(요소('라운드꼬리'), 꼬리.join('  ·  '));
+    숨김타이머 = setTimeout(() => { 라운드칸.classList.remove('보임'); 현재라운드 = null; }, 12000);
+  }
+
+  /* ── 토스트 (닉네임만 · 최대 3) ───────────────────────────── */
+  const 토스트칸 = 요소('토스트');
+  function 토스트(무엇, 누구) {
+    while (토스트칸.children.length >= 3) 토스트칸.firstElementChild.remove();
+    const el = document.createElement('div'); el.className = '알림';
+    const a = document.createElement('span'); a.className = '무엇'; 글(a, 무엇);
+    const b = document.createElement('span'); b.className = '누구'; 글(b, 누구 || '');
+    el.append(a, b);
+    토스트칸.appendChild(el);
+    setTimeout(() => { el.classList.add('끝'); setTimeout(() => el.remove(), 320); }, 4200);
+  }
+
+  /* ── 사건 입구 (봇·데모가 같은 문 — 마스코트도 이 문을 듣는다) ── */
+  const 셈 = { 받음: 0, 버림: 0, 경고: 0 };
+  function 사건(원본) {
+    셈.받음++;
+    const r = 판정.정규화(원본);
+    if (!r.ok) {
+      셈.버림++;
+      console.warn('[전광판] 버림 — ' + r.사유);
+      /* 금지칸은 «보낸 쪽의 결함»이라 조용히 넘기지 않는다(무대·데모에서 눈에 보이게). */
+      if (r.사유.indexOf('금지칸') === 0) 경고(r.사유);
+      데모판갱신();
+      return;
+    }
+    for (const w of r.경고) { 셈.경고++; 경고(w); }
+    if (r.종류 === '합산') 합산그리기(r.값);
+    else if (r.종류 === '라운드') 라운드그리기(r.값);
+    else if (r.종류 === '마감') 마감그리기(r.값, false);
+    else if (r.종류 === '정답') 정답그리기(r.값);
+    else if (r.종류 === '연동') 토스트(판정.병기('연동'), r.값.닉네임);
+    else if (r.종류 === '체크인') 토스트(판정.병기('체크인'), r.값.닉네임);
+    else if (r.종류 === '투표') 토스트(판정.병기('투표'), r.값.선택);
+    else if (r.종류 === '인사') 토스트(판정.병기('시작'), '');
+    데모판갱신();
+  }
+
+  let 입구 = null;
+  try { 입구 = new BroadcastChannel('라디오오버레이'); 입구.onmessage = (e) => 사건(e.data); }
+  catch (_) { /* OBS CEF 구버전 — postMessage 만으로 동작 */ }
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.채널 === '라디오오버레이') 사건(e.data);
+  });
+  window.전광판사건 = 사건; // 콘솔·시험용
+
+  /* ── 노출 확인 내보내기 ─────────────────────────────────── */
+  let 출구 = null;
+  try { 출구 = new BroadcastChannel('라디오전광판'); } catch (_) { 출구 = null; }
+  function 내보내기(쪽지) {
+    쪽지.판 = 판정.판;
+    if (출구) 출구.postMessage(쪽지);
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage(Object.assign({ 채널: '라디오전광판' }, 쪽지), '*');
+      }
+    } catch (_) { /* 부모 창이 없거나 교차 출처 — BroadcastChannel 만으로 충분하다 */ }
+    console.info('[전광판] 확인 ' + 쪽지.종류 + ' round=' + 쪽지.round_id + ' at=' + 쪽지.at);
+  }
+
+  /* ── 데모 (?demo=1 — 방송·봇 없이 눈으로 검수) ──────────────── */
+  function 데모판갱신() {
+    if (!document.body.classList.contains('데모')) return;
+    글(요소('데모판'),
+      '전광판 ' + 판정.판 + '\n'
+      + '받음 ' + 셈.받음 + ' = 그림 ' + (셈.받음 - 셈.버림) + ' + 버림 ' + 셈.버림 + ' · 경고 ' + 셈.경고 + '\n'
+      + '몽골어 검수 대기 ' + 판정.몽골어대기().length + '칸(한국어만 그린다)\n'
+      + "수동: 전광판사건({종류:'정답', 정답:'B', 분포:{A:3,B:9}, 응답수:12})");
+  }
+
+  if (document.body.classList.contains('데모')) {
+    const 대본 = [
+      { 종류: '인사' },
+      { 종류: '합산', 맞힌문제: 128, 진화레벨합: 412, 체크인주간: 37 },
+      { 종류: '연동', 닉네임: '바트자야' },
+      { 종류: '라운드', round_id: 'demo-1', 지시문: '다음 빈칸에 알맞은 것을 고르세요 — 학교( ) 갑니다.', 보기들: [
+        { option_id: 'A', label: '을' }, { option_id: 'B', label: '에' }, { option_id: 'C', label: '와' }, { option_id: 'D', label: '보다' },
+      ], 마감초: 12 },
+      { 종류: '체크인', 닉네임: '어용' },
+      { 종류: '정답', round_id: 'demo-1', 정답: 'B', 분포: { A: 4, B: 21, C: 3, D: 1 }, 응답수: 29 },
+      { 종류: '투표', 선택: '빗소리', 합계: { 빗소리: 12, asmr: 7 } },
+      { 종류: '슬럼프' },                                    // 허용 목록 밖 — 버려지는 것을 데모판이 센다
+      { 종류: '체크인', 닉네임: '누구', student_code: 'S-001' }, // 금지칸 — 사건 전체가 버려진다(화면 경고)
+    ];
+    let i = 0;
+    데모판갱신();
+    setInterval(() => { 사건(대본[i % 대본.length]); i++; }, 3200);
+  }
+}
+</script>
+</body>
+</html>
