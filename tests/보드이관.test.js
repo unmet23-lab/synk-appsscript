@@ -397,6 +397,109 @@ test('[F226] 잔재에 **남의 삽입**이 섞이면 여전히 멈춘다 (예�
   assertNeverLost(fx, 'F226 + 남의 삽입');
 });
 
+/* ── 마찰 F433 — 죽은 주인의 잔재 위에서 거절문이 **못 따를 처방**을 내밀었다 ────────
+ * 위 F226 은 「내 잔재면 이어서 간다」만 열었다. 남의 잔재면 그대로 멈추는 게 맞는데(바로 위 시험),
+ * 그때 옛 판이 내민 처방은 언제나 **「그 세션이 커밋한 뒤 다시 돌려라」 하나**였다. 그 주인이
+ * 죽었으면 그 문장은 영원히 실행 불가고, 잠기는 것은 신고자 한 명이 아니라 **보드 정리 전체**다
+ * — 만석이 안 풀리면 board-guard 가 모든 세션의 새 선언을 계속 막는다. 세션이 9~15개 도는
+ * 이 저장소에서 lock 경합은 상시라 이 잠금도 상시고, 실측 2026-08-14 하루에 두 번 밟았다.
+ * 출구(잔재 줄을 needle 로 한 번 더 돌리면 F226 경로로 이어서 커밋한다)는 **이미 있었는데
+ * 처방에 안 적혀 있어** 아는 사람만 풀 수 있었다 — 아는 사람만 아는 출구는 없는 것과 같다.
+ *
+ * 지키는 성질 셋. ③이 없으면 「늘 새 문구를 낸다」가 초록이 되는데, 그건 생사를 **안 재는** 것과
+ * 글자 하나 다르지 않다(그리고 산 주인의 줄을 치우라고 시켜 원칙 ⑥을 스스로 무너뜨린다):
+ *   ① 잔재 주인이 **죽었으면** 실행 가능한 명령을 그 자리에 찍는다.
+ *   ② 그 명령을 **되먹이면 실제로 통과하고 잠금이 풀린다**(F103 자기 처방 검사 — 문구만 갈고 끝내지 않는다).
+ *   ③ 잔재 주인이 **살아 있으면** 옛 문구 그대로다.
+ * ─────────────────────────────────────────────────────────────── */
+const 남의sid433 = 'local_f433beef-1111-2222-3333-444455556666';
+/* 재료는 **지문 하나**다(해시 0) — `local_f433beef` 는 `_` 때문에 해시 정규식의 `\b` 에 안 걸린다.
+ * 일부러 그 모양으로 뒀다: 커밋이 아직 없는 트랙(양보·조사·판정안)이 F165 가 판 그 자리고,
+ * 잔재 줄에서도 그쪽이 더 흔하다(죽은 세션은 대개 커밋 전에 죽는다). */
+const 남의줄433 = '| 2026-08-05 | **남의 이관 병** | z.js | ✅종결 (`local_f433beef`) |';
+
+/** 「남의 세션이 board-move 를 돌리다 ②커밋에서 죽었다」 = 아카이브에 삽입 + 미커밋 + **보드에 줄 그대로**.
+ *  마지막 조건이 핵심이다 — 처방(그 줄을 needle 로 다시 돌리기)이 걸릴 자리가 거기라, 아카이브에만
+ *  넣으면 시험이 실물과 다른 모양을 재게 된다. */
+function mk남의잔재픽스처({ 산주인 = false } = {}) {
+  const fx = mkRepoFixture();
+  fs.writeFileSync(fx.board, read(fx.board).replace(ROW, ROW + '\n' + 남의줄433), 'utf8');
+  git(fx.dir, 'commit', '-q', '-m', 'board', '--', '세션보드.md');
+  fs.writeFileSync(fx.archive, read(fx.archive) + 남의줄433 + '\r\n', 'utf8');   // ← 삽입만, 미커밋
+  let 박동 = null;
+  if (산주인) {
+    /* 좌표는 board-move 가 보는 것과 **같은 방법으로** 만든다(mk주인픽스처 머리말과 같은 이유). */
+    const 최상위 = git(fx.dir, 'rev-parse', '--show-toplevel').stdout.trim();
+    박동 = path.join(store.stateDir(), `track-${store.projectKey(최상위)}-${store.safeId(남의sid433)}.json`);
+    fs.mkdirSync(store.stateDir(), { recursive: true });
+    fs.writeFileSync(박동, JSON.stringify({ touched: [] }), 'utf8');
+  }
+  return { fx, 박동 };
+}
+
+test('[F433] 잔재 주인이 **죽었으면** 거절문이 실행 가능한 명령을 준다', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx } = mk남의잔재픽스처();
+  const before = { b: read(fx.board), a: read(fx.archive) };
+
+  const r = run(fx, ['옮길 트랙 갑']);
+  assert.notEqual(r.status, 0, '남의 잔재 위에 그냥 커밋했다 — F102 가 열렸다');
+  assert.equal(read(fx.board), before.b, '거부인데 보드가 변했다');
+  assert.equal(read(fx.archive), before.a, '거부인데 아카이브가 변했다');
+  assert.match(String(r.stderr), /주인은 \*\*죽었다\*\*/, '생사를 안 재고 옛 문구만 낸다 — F433 재현');
+  assert.match(String(r.stderr), /board-move\.js "남의 이관 병"/, '어느 줄부터 치우면 되는지 안 준다');
+  assert.doesNotMatch(String(r.stderr), /그 세션이 커밋한 뒤 다시 돌려라/,
+    '죽은 주인에게 「기다려라」를 아직 낸다 — 그 처방은 영원히 실행 불가다');
+});
+
+test('[F433] 잔재에 **내 것이 섞여 있어도** 처방은 남의 줄만 가리킨다', { skip: !hasGit && 'git 없음' }, () => {
+  /* 🔑 이 시험이 따로 있는 이유 = **위 시험에서는 이 단언이 원리상 못 실패한다.** 처음엔 위에
+   *   「내 줄은 처방에 안 든다」를 같이 걸었는데, 그 픽스처의 아카이브 차분엔 내 줄이 애초에
+   *   없어서(내 줄은 보드에만 있다) 변이를 심어도 초록이었다 — 실측으로 잡았다. 차분에 **둘 다**
+   *   올라오는 모양은 여기(F226 내 잔재 + 남의 삽입)뿐이고, 그게 실물에서도 가장 흔한 꼴이다. */
+  const fx = mk잔재픽스처();                                   // ① 내 잔재(ROW 가 아카이브에 미커밋)
+  fs.writeFileSync(fx.archive, read(fx.archive) + 남의줄433 + '\r\n', 'utf8');   // ② 그 위에 남의 삽입
+
+  const r = run(fx, ['옮길 트랙 갑']);
+  assert.notEqual(r.status, 0, '남의 삽입이 섞였는데 그냥 커밋했다');
+  assert.match(String(r.stderr), /board-move\.js "남의 이관 병"/, '진짜 막고 있는 남의 줄을 안 가리킨다');
+  assert.doesNotMatch(String(r.stderr), /board-move\.js "옮길 트랙 갑"/,
+    '지금 막힌 바로 그 명령을 다시 돌리라고 한다 — 원 없는 처방이 진짜 과녁을 가린다');
+});
+
+test('[F433·F103] 그 처방을 **되먹이면 통과하고 잠금이 풀린다** (자기 처방을 자기가 막지 않는지)', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx } = mk남의잔재픽스처();
+  /* 🔑 문구를 여기서 **재현하지 않는다** — 거절문이 실제로 내민 명령을 그대로 뽑아 되먹인다
+   *   (tests/board-guard.test.js 의 만석 처방 시험과 같은 축). 시험이 처방을 다시 적으면
+   *   도구가 딴 문구를 내도 초록이라, 정작 「따를 수 있나」를 아무도 안 재게 된다. */
+  const 처방 = (String(run(fx, ['옮길 트랙 갑']).stderr).match(/board-move\.js "([^"]+)"/) || [])[1];
+  assert.ok(처방, '거절문에서 실행할 명령을 못 뽑았다');
+
+  const r2 = run(fx, [처방]);
+  assert.equal(r2.status, 0, '거절문이 시킨 명령을 그 가드가 다시 막는다 — F103 그 모양: ' + r2.stderr);
+  assert.ok(atHead(fx, '세션보드_아카이브.md').includes(남의줄433), '처방이 돌았는데 잔재가 커밋 안 됐다');
+  assert.ok(!read(fx.board).includes(남의줄433), '처방이 돌았는데 보드에서 안 빠졌다');
+
+  /* 알맹이는 여기다 — **원래 막혀 있던 이관이 이제 열려야** 신고가 닫힌다(문구만 고친 게 아니다). */
+  const r3 = run(fx, ['옮길 트랙 갑']);
+  assert.equal(r3.status, 0, '잔재를 치웠는데도 여전히 막힌다 — 잠금이 안 풀렸다: ' + r3.stderr);
+  assertNeverLost(fx, 'F433 처방 뒤');
+  assert.ok(atHead(fx, '세션보드_아카이브.md').includes(ROW), '내 줄이 아카이브에 커밋 안 됐다');
+});
+
+test('[F433] 잔재 주인이 **살아 있으면** 옛 문구 그대로다 (생사를 재는지 — 늘 새 문구면 안 재는 것과 같다)', { skip: !hasGit && 'git 없음' }, () => {
+  const { fx, 박동 } = mk남의잔재픽스처({ 산주인: true });
+  try {
+    const before = { b: read(fx.board), a: read(fx.archive) };
+    const r = run(fx, ['옮길 트랙 갑']);
+    assert.notEqual(r.status, 0, '살아있는 주인의 잔재 위에 커밋했다');
+    assert.equal(read(fx.board), before.b, '거부인데 보드가 변했다');
+    assert.equal(read(fx.archive), before.a, '거부인데 아카이브가 변했다');
+    assert.match(String(r.stderr), /그 세션이 커밋한 뒤 다시 돌려라/, '산 주인인데 기다리라고 안 한다');
+    assert.doesNotMatch(String(r.stderr), /board-move\.js "남의 이관 병"/,
+      '산 주인의 줄을 치우라고 시킨다 — 그 처방을 따르면 원칙⑥이 스스로 무너진다');
+  } finally { 치우기(박동); }
+});
+
 test('[F146] 해시처럼 생긴 딴 것에는 안 걸린다 (없는 커밋으로 정상 이관을 막지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
   const { fx, 줄, 박동 } = mk주인픽스처(남의sid, { 해시덮기: 'deadbee' });   // 7자 hex, 커밋 아님
   try {
