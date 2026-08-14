@@ -51,12 +51,29 @@ function 판(옵션) {
     PropertiesService: { getScriptProperties: () => ({ getProperty: (k) => (o.속성 === undefined ? 속성기본 : o.속성)[k] || null }) },
     SpreadsheetApp: {
       getActiveSpreadsheet: () => ({
-        getSheetByName: (n) => (n === 'profiles' && 표 ? {
-          getLastRow: () => 표.length,
-          getRange: () => ({ getDisplayValues: () => 표.map((r) => r.slice()) }),
-        } : null),
+        getSheetByName: (n) => {
+          if (n === 'profiles' && 표) {
+            return {
+              getLastRow: () => 표.length,
+              getRange: () => ({ getDisplayValues: () => 표.map((r) => r.slice()) }),
+            };
+          }
+          if (n === 'groups' && o.조표) {
+            return {
+              getLastRow: () => o.조표.length + 1,   // +1 = 머리글 행(스윕은 2행부터 읽는다)
+              getRange: () => ({ getValues: () => o.조표.map((r) => r.slice()) }),
+            };
+          }
+          return null;
+        },
+        getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar',
       }),
     },
+    /* 조·좌석 동봉의 경계 스텁 — 시즌 판정 자체는 실물(Code.js) 몫이고, 여기서 재는 것은
+     * 스윕의 이음(현 시즌만 · DEMO 제외 · [[sid,조,좌석]] 문자열)이다. */
+    seasonLabelOf_: () => (o.시즌 === undefined ? 'S1' : o.시즌),
+    seasonKeyOf_: (v) => String(v == null ? '' : v),
+    GROUPS_HEADERS: ['시즌', 'class_name', 'student_id', '이름', '조', '좌석', '확정', '편성일', '편성근거', '고정'],
     UrlFetchApp: {
       fetch: (url, opt) => {
         요청.push({ url, opt });
@@ -279,4 +296,45 @@ test('명부스윕 ⑤ syncProfiles 꼬리에서 궤적갱신_ 뒤·calcAll 앞�
   // 탐지 픽스처 — 맨 호출을 통과시키면 이 검사는 영원히 초록이다
   assert.equal(감쌌나('궤적갱신_(src);\n명부스윕_();\ncalcAll();'), false, '탐지가 무력하다 — 감싸지 않은 호출을 통과시킨다');
   assert.equal(감쌌나('try { 명부스윕_(); } catch (e) {}'), true, '거짓양성 — 정상 형태를 위반으로 읽는다');
+});
+
+/* ⑥ 조·좌석 동봉(숙제서클 §10-3 · talk 20260814100000). 스냅샷 의미라 새는 방향이 둘이다:
+ *   지난 시즌 행이 섞이면 옛 조가 되살아나고, 미편성을 안 실으면 서버가 못 비운다. */
+test('명부스윕 ⑥ groups 의 현 시즌 행만 [[sid,조,좌석]] 로 싣는다 — 지난 시즌·DEMO 는 뺀다', () => {
+  const p = 판({
+    조표: [
+      ['S1', 'A반', 'SYNK-001', '바트', 1, 2, '확정', '', '', ''],
+      ['S0', 'A반', 'SYNK-009', '옛시즌', 3, 4, '확정', '', '', ''],   // 지난 시즌 — 스냅샷 아님
+      ['S1', 'A반', 'DEMO-9', '시연', 2, 1, '', '', '', ''],
+      ['S1', 'A반', 'SYNK-002', '사랑', 2, 3, '', '', '', ''],
+    ],
+  });
+  p.fn();
+  assert.equal(p.요청.length, 1, '왕복이 안 나갔다');
+  const 보낸 = JSON.parse(p.요청[0].opt.payload).조편성;
+  assert.deepEqual(보낸, [['SYNK-001', '1', '2'], ['SYNK-002', '2', '3']],
+    '현 시즌·실학생만 문자열로 실려야 한다 — 지난 시즌이 섞이면 옛 조가 서버에서 되살아난다');
+});
+
+test('명부스윕 ⑥-b 시트 없음·미편성이면 빈 스냅샷을 싣는다 — 키를 빼면 서버가 못 비운다', () => {
+  const 없음 = 판({});
+  없음.fn();
+  assert.deepEqual(JSON.parse(없음.요청[0].opt.payload).조편성, [],
+    'groups 시트가 없을 때 조편성 키가 안 실렸다 — 재편성 전 학생의 옛 조가 영영 남는다');
+  const 미편성 = 판({ 조표: [] });
+  미편성.fn();
+  assert.deepEqual(JSON.parse(미편성.요청[0].opt.payload).조편성, [], '빈 groups 가 빈 스냅샷이 아니다');
+});
+
+test('명부스윕 ⑥-c 조편성문제는 알림 사유·서명에 든다 — 서버만 알고 사람이 모르면 안 고쳐진다', () => {
+  const 응답 = JSON.stringify({
+    ok: true, 문제들: [], 막힘: [],
+    조편성문제: [{ 줄: 3, 번호: 'SYNK-002', 사유: '조·좌석이 1~20 정수가 아니다(조=0 좌석=3)' }],
+  });
+  const p = 판({ 응답 });
+  p.fn();
+  assert.equal(p.메일.length, 1, '조편성문제가 있는데 알림이 안 울렸다');
+  assert.match(p.메일[0].본문, /조 편성에 못 실린 행/, '알림 본문에 조 편성 블록이 없다');
+  assert.match(p.메일[0].본문, /SYNK-002/, '어느 학생인지 이름으로 안 부른다 — 찾는 왕복이 「나중에」가 된다');
+  assert.match(p.상태.명부스윕_상태, /\/g1#/, '서명이 조편성문제를 안 센다 — 다음 날 같은 문제가 조용해진다');
 });
