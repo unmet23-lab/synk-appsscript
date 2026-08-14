@@ -105,9 +105,13 @@ def 입자층(rng, 개수, r범위, 밝기, 속도, 폭, 높이):
     )
 
 
-def 배경_코드(폭, 높이):
+def 배경_코드(폭, 높이, 장식=True):
     """빛·입자·안개·심도만. 사람도 공간도 교재도 그리지 않는다(철학 §0).
-       코랄(신호)은 배경에 0점 — 신호는 마스코트 하나다(킷 철칙 ④)."""
+       코랄(신호)은 배경에 0점 — 신호는 마스코트 하나다(킷 철칙 ④).
+
+       장식=False 는 **C안(민무늬)** 이다. 킷 「신호는 하나」를 끝까지 밀면 안개·보케마저
+       두 번째 신호일 수 있다 — 그 통념을 깨는 쪽을 대조에 세워야 A 가 허수아비를 안 이긴다.
+       남는 것은 바탕 방사 그라디언트뿐이고, 그건 색이 아니라 «밀도»라 신호로 안 센다."""
     rng = np.random.default_rng(20260814)
 
     # 바탕: Navy 2 중심 → 가장자리로 가라앉는 방사 그라디언트(비네트를 색이 아니라 밀도로)
@@ -138,6 +142,8 @@ def 배경_코드(폭, 높이):
 
     def 프레임(t):
         buf = 바탕.copy()
+        if not 장식:
+            return buf
 
         oa = int((t * 5.0) % 높이)
         ob = int((t * 11.0) % 높이)
@@ -287,7 +293,7 @@ def 검증(프레임들, 마스크들):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--배경", default="코드", help="'코드' 또는 Veo mp4 경로")
+    ap.add_argument("--배경", default="코드", help="'코드' · '민무늬' · 또는 Veo mp4 경로")
     ap.add_argument("--출력", required=True)
     ap.add_argument("--폭", type=int, default=720)
     ap.add_argument("--높이", type=int, default=1280)
@@ -296,7 +302,10 @@ def main():
 
     폭, 높이 = a.폭, a.높이
     기본, 감음 = 마스코트컷()
-    배경 = 배경_코드(폭, 높이) if a.배경 == "코드" else 배경_영상(a.배경, 폭, 높이)
+    if a.배경 in ("코드", "민무늬"):
+        배경 = 배경_코드(폭, 높이, 장식=(a.배경 == "코드"))
+    else:
+        배경 = 배경_영상(a.배경, 폭, 높이)
 
     ff = subprocess.Popen(
         ["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
