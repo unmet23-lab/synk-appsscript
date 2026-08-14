@@ -12,8 +12,11 @@ const REPO = 'C:/Users/q1212/Documents/SYNK-appsscript';
 const 출력 = path.join(REPO, 'docs/캐릭터/재질대조_0814');
 const 모델 = 'nano-banana-pro-preview';
 
+/* ⚠본체 참조는 «정본»이다 — `마스코트_렌더/본체.png`(08-13)는 비율 확정 전 판이라
+ * 쓰면 긴 몸통이 나온다(08-14 실사고: 유호님이 「왜 예전 버전이냐」로 잡았다).
+ * 정본 = 유호 확정 「③으로 통일」(비율 강 0.925 + 속수리) · `tools/마스코트정본.py` 산출. */
 const 참조들 = {
-  글래시본체: path.join(REPO, 'docs/캐릭터/마스코트_렌더/본체.png'),
+  글래시본체: path.join(REPO, 'docs/캐릭터/마스코트_정본/본체.png'),
   글래시오브: path.join(REPO, 'docs/캐릭터/명품판_0814/녹음오브_대기.png'),
   펠트장면: path.join(REPO, 'docs/캐릭터/명품판_0814/펠트장면.jpg'),
 };
@@ -82,7 +85,10 @@ function 키() {
 const mime = (p) => (p.toLowerCase().endsWith('.jpg') || p.toLowerCase().endsWith('.jpeg') ? 'image/jpeg' : 'image/png');
 
 async function 한컷(k, 작업, 결과경로들) {
-  const refs = [...작업.참조, ...(작업.런타임참조 || []).map((n) => 결과경로들[n])];
+  // 런타임참조는 같은 실행의 산출물이 1순위, 없으면 디스크에 이미 구워둔 것(단독 재실행 통로).
+  const 앞선것 = (n) => 결과경로들[n] || path.join(출력, `${n}.png`);
+  const refs = [...작업.참조, ...(작업.런타임참조 || []).map(앞선것)];
+  for (const r of refs) if (!fs.existsSync(r)) throw new Error(`${작업.이름} 참조 없음 — ${r}`);
   const parts = [{ text: 작업.지시 }];
   for (const r of refs) parts.push({ inline_data: { mime_type: mime(r), data: fs.readFileSync(r).toString('base64') } });
   const t0 = Date.now();
