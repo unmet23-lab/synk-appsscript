@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SYNK 캐러셀 — 자개 액자 예시 (7장)</title>
+<style>
+:root{
+  --paper:#FBF7EE; --cream:#F6F1E8; --cream3:#E7DDC7;
+  --ink:#171820; --navy:#1A2340; --navy2:#0F1730; --navy3:#2A3358;
+  --slate:#8A93AD; --slate2:#5F657D;
+  --coral:#FF6B5C; --coral3:#E8543F;
+  /* 마스코트 고유색 — 킷 밖 · 캐릭터가 데리고 오는 것만(실행규칙 ①) */
+  --cherry:#FB7A87;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);color:var(--ink);
+  font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  line-height:1.6;padding:36px 20px 72px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:27px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
+.sub{color:var(--slate2);font-size:14.5px;margin-bottom:4px;max-width:78ch}
+.sub b{color:var(--ink)}
+.meta{color:var(--slate2);font-size:13px;margin-bottom:26px}
+.warn{background:var(--paper);border-left:4px solid var(--coral3);border-radius:10px;
+  padding:13px 16px;font-size:13.5px;margin-bottom:14px;color:var(--ink)}
+.warn b{font-weight:800}
+.note{background:var(--paper);border-left:4px solid var(--navy3);border-radius:10px;
+  padding:13px 16px;font-size:13.5px;margin-bottom:26px;color:var(--ink)}
+.note b{font-weight:800}
+
+/* ── 카드 판 ── */
+.deck{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+@media(max-width:720px){.deck{grid-template-columns:1fr}}
+
+.card{container-type:inline-size;aspect-ratio:4/5;border-radius:18px;overflow:hidden;
+  background:var(--navy2);color:var(--paper);
+  border:1px solid rgba(42,51,88,.55);
+  box-shadow:0 1px 2px rgba(15,23,48,.10),0 10px 28px rgba(15,23,48,.18);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:9cqw 7.5cqw 14cqw;position:relative;text-align:center}
+
+/* 장 번호 — 한 장에 신호 1점 */
+.badge{position:absolute;top:5.5cqw;left:6cqw;width:7cqw;height:7cqw;border-radius:50%;
+  background:var(--cherry);color:var(--ink);z-index:3;
+  display:flex;align-items:center;justify-content:center;
+  font-size:3.3cqw;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+
+.shot{width:47cqw;height:47cqw;object-fit:contain;display:block;
+  margin:0 0 1.5cqw;filter:drop-shadow(0 2.6cqw 3cqw rgba(15,23,48,.55))}
+
+.ttl{font-size:7.4cqw;font-weight:800;letter-spacing:-.02em;line-height:1.22;margin-top:.6cqw}
+.rule{width:11cqw;height:.85cqw;border-radius:99px;background:var(--cherry);margin:2.6cqw 0 2.4cqw}
+.txt{font-size:3.62cqw;line-height:1.62;color:var(--cream3);max-width:82cqw;font-weight:500}
+.txt q{quotes:none;font-weight:800;color:var(--paper)}
+
+.foot{position:absolute;left:0;right:0;bottom:6.5cqw;z-index:3;
+  display:flex;align-items:center;justify-content:center;gap:2cqw;
+  font-size:3.1cqw;font-weight:800;letter-spacing:-.01em;color:var(--paper)}
+.foot .mk{color:var(--coral)}
+.foot .tagline{font-weight:500;color:var(--slate);font-size:2.7cqw}
+
+/* ══ 자개 카드 — 표지·마감 전용 ══
+   ⚠ 마스코트를 얹지 않는다. 마스코트도 반투명 광택 오브라 자개와 나란히 두면
+   「압도적 크래프트 1점」이 둘이 되어 서로 잡아먹는다(명품 신호 ④ 절제).
+   ⚠ 자개 자체가 그 지면의 신호라 밑줄(rule)도 뺐다 — 신호 1점(철칙 ④). */
+.card.najeon{justify-content:flex-start;padding-top:13cqw}
+.card.najeon .band{position:absolute;left:0;right:0;bottom:0;width:100%;
+  height:33.34%;                 /* 정확히 하단 1/3 */
+  background:url('자개_0814/자개띠_투명_1080x450.png') center bottom/cover no-repeat;
+  pointer-events:none}
+/* 마감은 문양이 위에서 내려와 감싼다 — 표지와 위아래로 대칭이라 7장이 액자가 된다 */
+.card.najeon.close .band{bottom:auto;top:0;transform:rotate(180deg)}
+.card.najeon.close{justify-content:flex-end;padding-top:9cqw;padding-bottom:20cqw}
+.card.najeon .ttl{font-size:9.2cqw;line-height:1.16}
+.card.najeon .txt{font-size:3.8cqw;color:var(--cream3);margin-top:3.2cqw}
+
+/* 원본 렌더의 좌상단 라이팅을 이어받는다 — 다크가 완전히 죽지 않게 */
+.card.najeon::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 70% at 18% 6%, rgba(251,247,238,.06), rgba(251,247,238,0) 60%)}
+
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--cream3);
+  font-size:12.5px;color:var(--slate2);line-height:1.75}
+footer code{font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px}
+footer b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>자개 액자 캐러셀 — 예시 7장</h1>
+<p class="sub">유호님 아이디어(08-14) <b>「캐러셀 첫 시작이나 마지막을 자개로」</b>를 실물로 세운 것입니다.
+자개는 <b>바탕이 아니라 나전(인레이)</b>으로 들어가고, 표지와 마감 두 장에만 씁니다 —
+가운데 다섯 장은 마스코트가 맡습니다.</p>
+<p class="meta">2026-08-14 · 인스타그램 캐러셀 4:5 · 자개 정본 = <code>docs/캐릭터/자개_0814/자개띠_투명_1080x450.png</code> · 문구는 기존 「괜찮아요 다섯 뜻」 세트 재사용(형식 검증용)</p>
+
+<div class="note">
+<b>왜 표지·마감에만 자개인가.</b> 자개는 조각마다 색이 터지는 <b>압도적 크래프트</b>라, 마스코트(반투명 광택 오브)와
+한 화면에 두면 둘이 서로 잡아먹습니다. 그래서 <b>자개 카드에는 마스코트가 없고, 마스코트 카드에는 자개가 없습니다</b>.
+표지에서는 문양이 아래에서 올라오고 마감에서는 위에서 내려와 — 일곱 장이 하나의 <b>액자</b>가 됩니다.
+</div>
+
+<div class="warn">
+<b>발행 전 남은 것 — 몽골어 병기가 비어 있습니다(의도).</b>
+「괜찮아요」는 상황마다 몽골어 대응 낱말이 갈려서 지어 넣으면 뜻이 새어 나갑니다. 말가이 검수에서 채웁니다.
+</div>
+
+<div class="deck">
+
+  <!-- 1 표지 — 자개(아래에서 올라온다) -->
+  <div class="card najeon cover">
+    <span class="badge">1</span>
+    <h2 class="ttl">괜찮아요<br>다섯 뜻</h2>
+    <p class="txt">같은 말인데 뜻이 다섯 개예요.<br>어느 쪽인지 알면 대화가 훨씬 편해져요.</p>
+    <div class="band"></div>
+    <div class="foot">SYNK<span class="mk">&lt;</span> <span class="tagline">한국어, 게임처럼</span></div>
+  </div>
+
+  <!-- 2 수락 -->
+  <div class="card">
+    <span class="badge">2</span>
+    <img class="shot" src="마스코트_누끼/본체눈감음.png" alt="마스코트 — 눈웃음">
+    <h2 class="ttl">네, 좋아요</h2>
+    <div class="rule"></div>
+    <p class="txt">"커피 마실래요?" — <q>괜찮아요!</q><br>웃으면서 말하면 받아들이는 뜻이에요.</p>
+    <div class="foot">SYNK<span class="mk">&lt;</span></div>
+  </div>
+
+  <!-- 3 사양 -->
+  <div class="card">
+    <span class="badge">3</span>
+    <img class="shot" src="마스코트_누끼/본체.png" alt="마스코트 — 담담한 표정">
+    <h2 class="ttl">안 주셔도 돼요</h2>
+    <div class="rule"></div>
+    <p class="txt">똑같은 말인데 고개를 살짝 저으면<br>정중히 사양하는 뜻이 돼요.</p>
+    <div class="foot">SYNK<span class="mk">&lt;</span></div>
+  </div>
+
+  <!-- 4 다독임 -->
+  <div class="card">
+    <span class="badge">4</span>
+    <img class="shot" src="마스코트_누끼/본체눈감음2.png" alt="마스코트 — 잔잔한 표정">
+    <h2 class="ttl">걱정 마세요</h2>
+    <div class="rule"></div>
+    <p class="txt">친구가 미안해할 때 <q>괜찮아요</q> —<br>마음 쓰지 말라고 다독이는 말이에요.</p>
+    <div class="foot">SYNK<span class="mk">&lt;</span></div>
+  </div>
+
+  <!-- 5 안부 -->
+  <div class="card">
+    <span class="badge">5</span>
+    <img class="shot" src="마스코트_누끼/본체놀람.png" alt="마스코트 — 걱정하는 표정">
+    <h2 class="ttl">어디 아파요?</h2>
+    <div class="rule"></div>
+    <p class="txt">끝을 올려서 <q>괜찮아요?</q> 하면<br>몸이 어떤지 묻는 말이 돼요.</p>
+    <div class="foot">SYNK<span class="mk">&lt;</span></div>
+  </div>
+
+  <!-- 6 칭찬 -->
+  <div class="card">
+    <span class="badge">6</span>
+    <img class="shot" src="마스코트_누끼/본체눈감음.png" alt="마스코트 — 눈웃음">
+    <h2 class="ttl">마음에 들어요</h2>
+    <div class="rule"></div>
+    <p class="txt">"이 옷 어때요?" — <q>괜찮네요!</q><br>이때는 좋다는 칭찬이에요.</p>
+    <div class="foot">SYNK<span class="mk">&lt;</span></div>
+  </div>
+
+  <!-- 7 마감 — 자개가 위에서 내려와 닫는다 -->
+  <div class="card najeon close">
+    <span class="badge">7</span>
+    <div class="band"></div>
+    <h2 class="ttl">오늘 한 번</h2>
+    <p class="txt">받기 · 사양 · 다독임 · 안부 · 칭찬.<br>다섯 중 하나만 골라 오늘 써 봐요.</p>
+    <div class="foot">SYNK<span class="mk">&lt;</span> <span class="tagline">저장해 두고 꺼내 보세요</span></div>
+  </div>
+
+</div>
+
+<footer>
+<b>자개 자산은 한 번만 굽고 고정합니다.</b> 문양은 생성할 때마다 달라지므로 이후 카드는 전부
+<code>자개_0814/자개띠_투명_1080x450.png</code> 한 파일을 참조합니다 — 매번 새로 만들면 브랜드가 서지 않습니다.<br>
+<b>배경을 투명으로 뺀 이유:</b> 렌더 원본은 순흑 옻칠 무대인데 DESIGN.md 철칙 ①이 순검정을 금지합니다.
+검정을 알파로 빼고 카드 바닥에 킷 다크(Navy 2)를 깔아 같은 그림을 킷 안에서 세웠습니다(투명 24.4% · 반투명 21.2%).
+덕분에 이 띠는 어떤 어두운 배경에도 재사용됩니다.<br>
+<b>실측:</b> 원본에서 문양은 y 502~903(원본의 39%)이었고 그 구간만 잘라 1080×450 띠로 만들어 카드 하단 정확히 1/3에 앉혔습니다.
+Gemini 생성 표식은 (912,905)-(1016,975)에서 실측해 지웠습니다 — 그 창 안에 문양이 없음을 밝기(243 vs 문양 600+)로 확인한 뒤에만 덮었습니다.<br>
+<b>미리보기 주의:</b> 이 시트는 카드가 실제 발행 폭(1080px)보다 작게 렌더되므로 글자가 작아 보입니다. 발행본에서는 <code>cqw</code>가 1080px 기준으로 잡힙니다.
+</footer>
+
+</div>
+</body>
+</html>
