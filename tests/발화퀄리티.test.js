@@ -581,9 +581,13 @@ test('스냅샷 쓰기가 공용 소독 통로를 탄다 — 이름이 «=»로 
 // 스냅샷 함수를 실제로 실행한다 — 문구 검사로는 멱등(재실행 안전)을 못 잡는다
 function loadSnapshot() {
   const src = section("const TALK_INDEX_LOG_SHEET = 'talk_index_log'", '/* [v9.99] 학생용 오늘의 만남');
+  /* [v9.235] `반키_` 는 이 구간 «밖»(groupBoardOf_ 앞)에 산다 — 스텁을 지어 넣지 않고 같은 소스에서
+   *   진짜 함수를 잘라 붙인다. 스텁은 사본이라 실물이 퇴행해도 이 시험은 계속 초록이고, 그 침묵이
+   *   정확히 이 회귀가 막으려는 실패 모양이다(safety.test.js:1061 과 같은 규약). */
+  const 반키src = section('function 반키_(', '/* --- 그 반의 오늘');
   const names = ['seasonStartOf_', 'seasonWeekOf_', 'seasonLabelOf_', 'SEASON_WEEKS',
     'ensureSheet', 'quietScoreMap_', 'talkIndexOf_', 'Logger', '행소독_', 'seasonKeyOf_', 'LockService'];
-  return (stub) => new Function(...names, `${src}\nreturn talkIndexSnapshot_;`)(...names.map((n) => stub[n]));
+  return (stub) => new Function(...names, `${반키src}\n${src}\nreturn talkIndexSnapshot_;`)(...names.map((n) => stub[n]));
 }
 
 /* 시트를 흉내 낼 때 «아포스트로피 소비»까지 흉내 낸다 — 실제 Sheets 는 저장 시 접두 `'`를 먹고
@@ -730,12 +734,17 @@ test('🔴 분모는 «끝난 차시»까지다 — 월요일 07시 적재가 �
   assert.ok(w < 월요일아침, '잰 시각이 실행 시각보다 앞이 아니다');
 });
 
-test('🔴 반 하나가 터져도 조용히 넘어가지 않는다 — 그 반 학생 전원이 스냅샷에서 빠진다', () => {
+test('🔴 반 하나가 터져도 조용히 넘어가지 않는다 — 실패가 safeRun 의 오류 경로로 «올라간다»', () => {
+  /* [v9.235] 예전엔 실패 반을 «요약 문자열»에만 실었다. 그런데 그 문자열은 :1094 에서 `Logger.log` 로만
+   *   가서 `safeRun` 은 배치를 성공으로 보고했다 — 실패 메일 0·재시도 0(검수 05a4f9b9c40e).
+   *   그래서 «문자열에 실렸는지»가 아니라 «던지는지»를 잰다: 그게 알림·재시도가 도는 유일한 통로다. */
   const rig = snapshotRig();
   rig.던질반 = '평일11A';
-  const out = loadSnapshot()(rig.stub)(rig.ss);
-  assert.ok(/실패 반 1개/.test(out), '실패를 요약이 안 말한다 — 배치는 성공으로 보고된다: ' + out);
-  assert.ok(out.includes('평일11A'), '어느 반이 빠졌는지 안 말한다 — 이름이 없으면 손이 못 간다: ' + out);
+  let 던진것 = null;
+  try { loadSnapshot()(rig.stub)(rig.ss); } catch (e) { 던진것 = e; }
+  assert.ok(던진것, '실패한 반이 있는데 정상 반환했다 — safeRun 이 성공으로 보고하고 실패 메일도 재시도도 안 돈다');
+  assert.ok(/실패 반 1개/.test(던진것.message), '몇 개 반이 빠졌는지 안 말한다: ' + 던진것.message);
+  assert.ok(던진것.message.includes('평일11A'), '어느 반이 빠졌는지 안 말한다 — 이름이 없으면 손이 못 간다: ' + 던진것.message);
   assert.equal(rig.log.data.length, 0, '터진 반의 행이 어딘가에서 만들어졌다');
 });
 
@@ -758,4 +767,76 @@ test('🔴 주간 리포트는 «마지막 물리 행»을 이번 주로 삼지 
     '마지막 물리 행을 이번 주로 삼는다 — 이번 주 0행이면 지난주 숫자를 이번 주라고 보고한다');
   assert.ok(/seasonWeekOf_\(/.test(꼬리), '현재 주차를 «지금»에서 계산하지 않는다');
   assert.ok(/seasonKeyOf_\(/.test(꼬리), '시즌 칸을 접어 읽지 않는다 — 시트가 날짜로 삼킨 행이 대조에서 빠진다');
+});
+
+/* ── [v9.235] 반 키 접기 + 실패 전파 (재검수 차단급 2건 · 대기열 #Q78) ───────────────── */
+
+/* profiles 를 갈아끼운 rig — 반 이름·반 개수를 시험마다 바꾼다(기본 rig 는 「평일11A」 한 반 고정).
+ *   sid 를 반 이름에서 파생시켜 반마다 다르게 한다: 같은 sid 가 두 반에서 나오면 둘째 반이 멱등 키에
+ *   걸려 «중복 스킵»이 되고, 그러면 「나머지 반은 살아남았나」를 재려던 시험이 엉뚱한 것을 잰다. */
+function 반여럿Rig(반들) {
+  const rig = snapshotRig();
+  const pfRows = 반들.map((c, i) => ['S' + (i + 1), '학생' + (i + 1), '', 'student', c]);
+  const pf = {
+    getLastRow: () => pfRows.length + 1,
+    getRange: (r, c, n, w) => ({ getValues: () => pfRows.slice(r - 2, r - 2 + n).map((row) => row.slice(c - 1, c - 1 + w)) })
+  };
+  rig.ss = { getSheetByName: (n) => (n === 'profiles' ? pf : null), getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar' };
+  rig.받은반 = [];                    // talkIndexOf_ 가 실제로 받은 반 키 — 접기 판정의 재료
+  rig.stub.talkIndexOf_ = (ss2, cN) => {
+    rig.받은반.push(cN);
+    if (rig.던질반 === cN) throw new Error('groups 읽기 실패(흉내)');
+    return [{ sid: cN + '-1', name: '학생', grp: 1, got: 3, max: 6, quiet: 0, pct: 50 }];
+  };
+  return rig;
+}
+
+test('🔴 반 표시명의 «(시간)»을 접어서 넘긴다 — 안 접으면 그 반이 통째로 «빈 후보»가 된다', () => {
+  /* `profiles` E열은 「정규반2(9시)」처럼 시간을 달고 오는데 `groups` B열은 「정규반2」다(`assignGroups`
+   *   가 그렇게 접어서 쓴다). 원문을 그대로 넘기면 `groupBoardOf_` 의 `String(r[1]) === cls` 가 안 맞아
+   *   그 반 학생 «전원»이 조용히 빠진다 — 그리고 0건은 정상과 같은 얼굴이다(검수 d8461c489202).
+   *   스텁이 아니라 실물 `반키_` 를 잘라 넣고 잰다(loadSnapshot 주석 참고). */
+  const rig = 반여럿Rig(['정규반2(9시)']);
+  loadSnapshot()(rig.stub)(rig.ss);
+  assert.deepEqual(rig.받은반, ['정규반2'],
+    'profiles E열 원문을 그대로 넘겼다 — groups B열과 안 맞아 그 반이 조용히 빠진다: ' + JSON.stringify(rig.받은반));
+  assert.equal(rig.log.data.length, 1, '접힌 반의 행이 안 쌓였다');
+  assert.equal(rig.log.data[0][3], '정규반2', '로그의 class 칸이 접힌 키가 아니다 — 소비자가 반별로 못 모은다');
+});
+
+test('🔴 한 반이 터져도 나머지 반 적재는 살린다 — 던지는 자리는 «쓰기 뒤»여야 한다', () => {
+  /* 실패를 올리는 것과 나머지를 버리는 것은 다른 일이다. 반 하나가 터졌다고 그 주를 통째로 안 남기면
+   *   재시도가 돌 때까지 «성한 반»의 그 주 궤적도 같이 사라진다(append 형 로그라 되돌리기도 어렵다). */
+  const rig = 반여럿Rig(['평일11A', '평일11B']);
+  rig.던질반 = '평일11A';
+  let 던진것 = null;
+  try { loadSnapshot()(rig.stub)(rig.ss); } catch (e) { 던진것 = e; }
+  assert.ok(던진것, '실패가 안 올라갔다 — safeRun 이 성공으로 보고한다');
+  assert.equal(rig.log.data.length, 1, '성한 반(평일11B)의 행이 같이 버려졌다: ' + rig.log.data.length);
+  assert.equal(rig.log.data[0][3], '평일11B', '살아남은 행이 성한 반의 것이 아니다');
+  assert.equal(rig.잠금.품, 1, '락을 안 풀고 던졌다 — 다음 실행이 30초를 통째로 기다리다 죽는다');
+});
+
+test('🔴 실패 에러의 «첫 줄»에 행수가 안 들어간다 — dedup 서명이 매번 갈리면 메일 쿼터를 태운다', () => {
+  /* `safeRun` 은 에러 «첫 줄 120자»를 서명으로 하루 1통 제한을 건다(엔진_셋업확장.js:1002). 첫 줄에
+   *   신규·스킵 행수 같은 변동값이 들어가면 서명이 실행마다 달라져 제한이 풀리고, 10분마다 도는
+   *   스위프가 실패 메일로 쿼터를 태워 학부모·미납 알림까지 죽인다(:998 이 경고하는 자기증폭). */
+  const rig = 반여럿Rig(['평일11A', '평일11B']);
+  rig.던질반 = '평일11A';
+  let 던진것 = null;
+  try { loadSnapshot()(rig.stub)(rig.ss); } catch (e) { 던진것 = e; }
+  const 첫줄 = String(던진것 && 던진것.message).split('\n')[0];
+  assert.ok(첫줄.includes('평일11A'), '서명이 될 첫 줄에 실패 반 이름이 없다 — 반이 바뀌어도 같은 서명이 된다: ' + 첫줄);
+  assert.ok(!/신규|스킵/.test(첫줄),
+    '첫 줄에 행수 같은 변동값이 있다 — 실행마다 서명이 갈려 하루 1통 제한이 풀린다: ' + 첫줄);
+});
+
+test('🔴 반 키 접기가 «한 곳»에서만 산다 — 호출부마다 손으로 적으면 새로 난 자리가 그 통로를 안 탄다', () => {
+  /* 이 결함이 난 자리가 정확히 그것이다: 접기를 손으로 적어 온 곳이 5곳이었고, 새로 생긴 자리가 안 탔다.
+   *   ⚠ 대상은 «이 파일»뿐이다 — 엔진_운영배치.js:3056·3169 는 아직 못 옮겼고(두 세션이 작업중인 파일),
+   *     합본(`code`)으로 세면 그 2곳이 잡혀 남의 커밋을 막는다. 그 이관은 작업대기열에 세웠다. */
+  const 셋업 = fs.readFileSync(path.join(__dirname, '..', '엔진_셋업확장.js'), 'utf8');
+  const 쓴곳 = (코드만(셋업).match(/split\('\('\)\[0\]/g) || []).length;
+  assert.equal(쓴곳, 1,
+    `엔진_셋업확장.js 에 «(» 접기가 ${쓴곳}곳이다 — 반키_ 정의 1곳이어야 하고 호출부는 반키_ 를 부른다`);
 });
