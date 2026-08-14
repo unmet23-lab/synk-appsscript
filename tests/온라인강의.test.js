@@ -16,7 +16,12 @@ const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 const { engineSource } = require('./_engine-source');
+/* 주석 제거 통로는 공용 하나다 — `tests/lib/소스검사.js` (F401 계열 · 대기열 P3 #Q72). */
+const { 코드만 } = require('./lib/소스검사.js');
 const code = engineSource();
+/* 🔑 **부정 단언 전용** 정제본 — 「없어야 한다」를 원문에 대고 재면 그 문구를 주석에 적는 순간
+ *   가드가 엉뚱하게 빨개진다. 긍정 단언과 `section()` 앵커는 원문 `code` 를 그대로 본다. */
+const 코드정제 = 코드만(code);
 
 function section(startMarker, endMarker) {
   const start = code.indexOf(startMarker);
@@ -77,8 +82,8 @@ test('[v9.119] 레벨 열은 이름으로 찾는다 — 위치 상수는 같은 
   assert.ok(code.includes('function profileLevelCol_(pf)'), '헤더 이름으로 찾는 헬퍼가 없다');
   assert.ok(body.includes('profileLevelCol_(pf)'), '레벨 열을 이름으로 안 찾는다');
   // 실패 이력: r[7]=연락처(v9.106) · r[18]=몬스터단계(v9.119 초판). profiles는 128열이고 계속 늘어난다
-  assert.equal(/const lv = .*r\[7\]/.test(body), false, 'H열(연락처)을 레벨로 읽는 코드가 되살아났다');
-  assert.equal(/PROFILE_LEVEL_COL/.test(code), false, '위치 상수 방식이 되살아났다');
+  assert.equal(/const lv = .*r\[7\]/.test(코드만(body)), false, 'H열(연락처)을 레벨로 읽는 코드가 되살아났다');
+  assert.equal(/PROFILE_LEVEL_COL/.test(코드정제), false, '위치 상수 방식이 되살아났다');
 });
 
 test('[v9.119] 레벨 열을 못 찾으면 매칭을 포기한다 — 엉뚱한 열로 오답을 내지 않는다', () => {
@@ -87,7 +92,7 @@ test('[v9.119] 레벨 열을 못 찾으면 매칭을 포기한다 — 엉뚱한 
   assert.ok(/return -1/.test(helper), '못 찾았을 때 -1을 돌려주지 않는다');
   assert.ok(/lvCol < 0/.test(body), '못 찾은 경우를 호출부가 안 다룬다');
   // 폭 고정은 열이 늘면 바로 깨진다(구 15열이 그랬다)
-  assert.equal(/pf\.getRange\(2, 1, pf\.getLastRow\(\) - 1, 15\)/.test(body), false, '읽기 폭이 15열로 고정됐다');
+  assert.equal(/pf\.getRange\(2, 1, pf\.getLastRow\(\) - 1, 15\)/.test(코드만(body)), false, '읽기 폭이 15열로 고정됐다');
   assert.ok(/pf\.getLastColumn\(\)/.test(body), '읽기 폭이 시트 실폭 기준이 아니다');
 });
 
@@ -154,7 +159,7 @@ test('[v9.106] 시청 확인은 한국어 한 문장 산출로 받는다 (체크
   const body = section('function createLectureForm()', 'function sweepLectureForm_(ss)');
   assert.ok(body.includes('addParagraphTextItem'), '서술 문항이 없다 — 체크만으로는 3주 뒤 전원 100%가 된다');
   assert.ok(/한국어로 한 문장/.test(body), '한 줄 요약 문항이 사라졌다');
-  assert.equal(/addCheckboxItem\(\)\s*\.setTitle\('(봤|시청)/.test(body), false, '시청 여부 체크박스가 생겼다');
+  assert.equal(/addCheckboxItem\(\)\s*\.setTitle\('(봤|시청)/.test(코드만(body)), false, '시청 여부 체크박스가 생겼다');
 });
 
 /* ── ⑥ [v9.121] 카탈로그와 폼 선택지가 갈리지 않는다 ────────
@@ -171,13 +176,13 @@ test('[v9.121] 선택지 문자열은 한 곳에서만 만든다 (생성·동기
   // 생성부가 자기만의 선택지 조립을 되살리면 두 모양이 갈린다
   const create = section('function createLectureForm()', 'function sweepLectureForm_(ss)');
   assert.ok(create.includes('lectureChoices_(ss)'), '생성부가 공용 빌더를 안 쓴다 — 모양이 갈릴 수 있다');
-  assert.equal(/choices\.push\(/.test(create), false, '생성부에 선택지 조립이 되살아났다(중복 정본)');
+  assert.equal(/choices\.push\(/.test(코드만(create)), false, '생성부에 선택지 조립이 되살아났다(중복 정본)');
 });
 
 test('[v9.121] 동기화는 문항을 지웠다 만들지 않는다 (응답 열 계약 보존)', () => {
   const body = section('function syncLectureFormChoices()', 'function createLectureForm()');
   assert.ok(body.includes('setChoiceValues('), '선택지 교체가 없다');
-  assert.equal(/deleteItem\(|addListItem\(/.test(body), false,
+  assert.equal(/deleteItem\(|addListItem\(/.test(코드만(body)), false,
     '문항을 삭제·재생성한다 — 응답 시트 열이 갈려 sweep 적재가 어긋난다');
   assert.ok(body.includes('FormApp.ItemType.LIST'), '목록 문항을 유형으로 찾지 않는다');
 });
@@ -233,7 +238,7 @@ test('[v9.123] 남긴 이유와 지운 내역을 보고한다 (조용한 삭제 
 test('[v9.123] 자동 제목 재구성은 제목이 아니라 강의ID에서 차시를 얻는다(순환 금지)', () => {
   const body = section('function pruneStaleLectures()', 'function lectureChoices_(ss)');
   assert.ok(body.includes("id.split('-').pop()"), '차시 번호를 강의ID에서 얻지 않는다');
-  assert.equal(/const auto = [^\n]*r\[4\]/.test(body), false,
+  assert.equal(/const auto = [^\n]*r\[4\]/.test(코드만(body)), false,
     '자동 제목을 제목 자신으로 만든다 — 항상 일치해 ③ 잠금이 죽는다');
 });
 
@@ -333,7 +338,7 @@ test('[v9.124] 강의 메뉴 5종은 결과를 보여주는 래퍼를 부른다'
     });
   // 원본 함수를 메뉴에 직접 걸면 결과가 안 보이던 상태로 되돌아간다
   ['setupLectures', 'createLectureForm', 'pruneStaleLectures', 'syncLectureFormChoices'].forEach((fn) => {
-    assert.equal(code.includes(`.addItem('📚 강의 자리 깔기(1단계)', '${fn}')`), false, `${fn}이 메뉴에 직접 걸렸다`);
+    assert.equal(코드정제.includes(`.addItem('📚 강의 자리 깔기(1단계)', '${fn}')`), false, `${fn}이 메뉴에 직접 걸렸다`);
   });
 });
 
@@ -346,7 +351,7 @@ test('[v9.124] 실패는 alert로 보이고, 실행 기록에도 실패로 남�
 
 test('[v9.124] 조인 진단은 읽기 전용이고, 안 붙을 때 원인을 지목한다', () => {
   const body = section('function lectureJoinDiag()', 'function liveLectureLevels_(ss)');
-  assert.equal(/setValues\(|deleteRows\(|setState\(|appendRow\(/.test(body), false,
+  assert.equal(/setValues\(|deleteRows\(|setState\(|appendRow\(/.test(코드만(body)), false,
     '진단이 시트를 쓴다 — 읽기 전용이어야 아무 때나 눌러도 안전하다');
   assert.ok(body.includes('profileLevelCol_(pf)') && body.includes('lectureRatesOf_(ss)'),
     '실제 조인 경로가 아니라 다른 계산을 본다 — 진단이 본체와 갈리면 거짓 안심을 준다');

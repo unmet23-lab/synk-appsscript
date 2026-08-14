@@ -16,6 +16,9 @@ const { engineSource } = require('./_engine-source');
 /* 주석 제거 통로는 공용 하나다 — `tests/lib/소스검사.js` (F401 계열 · 대기열 P3 줄73). */
 const { 코드만 } = require('./lib/소스검사.js');
 const code = engineSource();
+/* 🔑 **부정 단언 전용** 정제본 — 「없어야 한다」를 원문에 대고 재면 그 문구를 주석에 적는 순간
+ *   가드가 엉뚱하게 빨개진다(대기열 P3 #Q72). 긍정 단언과 구간 앵커는 원문 `code` 를 그대로 본다. */
+const 코드정제 = 코드만(code);
 
 function section(startMarker, endMarker) {
   const s = code.indexOf(startMarker);
@@ -47,6 +50,7 @@ test('4인 조는 3라운드 안에 나머지 셋을 정확히 한 번씩 만난
   for (let seat = 0; seat < 4; seat++) {
     const mates = G.pairRoundsOf_(seat, 4);
     assert.equal(mates.length, 3, `좌석 ${seat}의 라운드 수가 3이 아님`);
+    // 🚫 `코드만()` 대상 아님 — `mates` 는 `pairRoundsOf_()` 가 **짜 낸 좌석 배열**이지 소스 글이 아니다.
     assert.ok(!mates.includes(seat), `좌석 ${seat}이 자기 자신과 짝이 됨`);
     const uniq = [...new Set(mates)];
     assert.equal(uniq.length, 3, `좌석 ${seat}이 같은 상대를 두 번 만남: ${mates.join(',')}`);
@@ -194,6 +198,11 @@ test('20분 프로토콜이 조 편성표가 나가는 모든 경로에 실린�
   assert.ok(hud.includes('TALK_ROUNDS') && hud.includes('ROLE_DUTY'),
     'Glide 반 상세 HUD에 타임박스·역할 의무가 없다(교실에서 보는 화면)');
   assert.ok(hud.includes('b.focus'), 'HUD에 정밀 청취 조 표시가 없다');
+  /* ⚠ **이 조각은 `코드만()` 으로 감싸면 안 된다 — 꼬리가 통째로 눕는다.**
+   *   끝 앵커 `[v9.91] 📋 차시 마감폼` 이 주석 배너 «안»이라 조각이 미종료 `/*` 로 끝나고,
+   *   그러면 `소스검사.js:102~107` 의 `끝===-1` 가지가 그 자리부터 끝까지를 줄바꿈으로 눕힌다
+   *   (실측 3698자 → 3537자). 아래 둘은 **긍정** 단언이라 지금은 무해하지만, 여기에 부정 단언을
+   *   붙이며 감싸면 «공허참»이 된다 — 적색이 아니라 초록으로 샌다. 감싸려거든 끝 앵커부터 코드 심볼로. */
   const plan = section('function lessonPlanFill_(', '[v9.91] 📋 차시 마감폼');
   assert.ok(plan.includes('TALK_ROUNDS') && plan.includes('ROLE_DUTY'), '주간 교안에 20분 타임박스가 없다');
   assert.ok(plan.includes('o.talkReal'), '교안 §12 지명 계획이 발화 실측으로 승격되지 않았다');
@@ -215,8 +224,9 @@ test('DY129 점거 가드 — 남의 헤더를 덮지 않는다(열 충돌 사�
   assert.ok(/dyCur && dyCur !== '오늘의만남'/.test(blk), '남의 헤더 판정 분기가 없다');
   // 충돌 분기 안에 기입이 있으면 가드가 무의미해진다 — 기입은 else(정상) 쪽에만 있어야 한다
   const clash = blk.slice(blk.indexOf("dyCur && dyCur !== '오늘의만남'"), blk.indexOf('} else {'));
-  assert.ok(!clash.includes('writeIfChanged'), '충돌 상태인데도 기입한다 — 가드가 무력');
-  assert.ok(!clash.includes("setValue('오늘의만남')"), '충돌 상태인데 헤더를 덮어쓴다');
+  const 충돌코드 = 코드만(clash); // 부정 단언 전용
+  assert.ok(!충돌코드.includes('writeIfChanged'), '충돌 상태인데도 기입한다 — 가드가 무력');
+  assert.ok(!충돌코드.includes("setValue('오늘의만남')"), '충돌 상태인데 헤더를 덮어쓴다');
   assert.ok(blk.includes("setState(stDY, '만남열충돌', '')"), '충돌 해소 시 재무장이 없다 — 다음 사고에 침묵한다');
 });
 
@@ -236,8 +246,9 @@ function loadPreview() {
 test('미리보기는 시트를 전혀 건드리지 않는다(개원 전 확인용)', () => {
   const s2 = code.indexOf('function groupBoardPreview()');
   const body = code.slice(s2, code.indexOf('// 수동 확인용', s2));
+  const 미리보기코드 = 코드만(body); // 부정 단언 전용 — 루프 안에서 감싸면 낱말 수만큼 다시 렉싱된다
   ['SpreadsheetApp', 'getSheetByName', 'setValue', 'writeIfChanged'].forEach((bad) => {
-    assert.ok(!body.includes(bad), `미리보기가 ${bad}를 쓴다 — 확인용 함수가 실데이터를 만지면 안 된다`);
+    assert.ok(!미리보기코드.includes(bad), `미리보기가 ${bad}를 쓴다 — 확인용 함수가 실데이터를 만지면 안 된다`);
   });
 });
 
@@ -260,8 +271,8 @@ test('미리보기 출력에 강사가 볼 5요소가 전부 있다', () => {
 
 test('음성 보관은 무기한 단일 소스이고 구 기간 문구가 코드에 남아 있지 않다', () => {
   assert.ok(/const VOICE_RETENTION_MONTHS = 0/.test(code), 'VOICE_RETENTION_MONTHS = 0(무기한) 상수가 없다');
-  assert.ok(!code.includes('졸업 후 3년'), '구 보관 문구(졸업 후 3년)가 코드에 남아 있다');
-  assert.ok(!code.includes('녹음일로부터 1년'), '구 1년 문구가 남아 있다');
+  assert.ok(!코드정제.includes('졸업 후 3년'), '구 보관 문구(졸업 후 3년)가 코드에 남아 있다');
+  assert.ok(!코드정제.includes('녹음일로부터 1년'), '구 1년 문구가 남아 있다');
   /* 🔴 **[v19.0] 문구 쪽 검사는 여기서 뺐다.** 보관 기간·철회 안내는 유호님 확정(D7)으로
    *   동의문에서 **지운 것**이고, 이 검사가 그대로면 「지운 것을 도로 넣어라」가 된다.
    *   보관 정책 자체는 위 상수(코드 층)가 계속 지킨다 — 문장 층은 아래 D7 검사가 진다. */
@@ -350,7 +361,7 @@ test('음성 동의 게이트 — 동의 확인 없이는 녹음이 적재되지
     'voiceSweep_가 녹음을 공개로 전환한다 — 미성년 목소리가 링크만으로 열린다(v9.156에서 폐지한 경로)');
   assert.ok(sweep.includes('held.length') && sweep.includes('adminMail'),
     '보류를 통지하지 않는다 — 학생 쪽에서 "왜 반영이 안 되지"가 미스터리로 남는다');
-  assert.ok(!/DriveApp[\s\S]{0,80}remove|setTrashed/.test(sweep),
+  assert.ok(!/DriveApp[\s\S]{0,80}remove|setTrashed/.test(코드만(sweep)),
     '보류분을 자동 삭제한다 — 오판이면 복구 불가이고 종이 동의서 학생일 수 있다');
 });
 
@@ -391,7 +402,7 @@ test('미션ID 증분은 멱등이고, 이미 뿌려진 학생별 링크를 죽�
   // 멱등 — 야간 배치가 매일 부르므로 가드가 없으면 문항이 매일 하나씩 늘어난다
   assert.ok(/if \(!had\)/.test(fn) && /indexOf\('미션ID'\) > -1/.test(fn), '멱등 가드가 없다 — 야간 배치가 매일 문항을 하나씩 추가한다');
   // profiles DB열에 이미 뿌려진 학생별 링크가 죽으면 안 된다 → 기존 키를 덮지 않고 별도 키로 낸다
-  assert.ok(!/setState\(st, '목소리폼URL틀'/.test(fn), "기존 '목소리폼URL틀'을 덮어쓴다 — profiles에 이미 뿌려진 학생별 링크가 죽는다");
+  assert.ok(!/setState\(st, '목소리폼URL틀'/.test(코드만(fn)), "기존 '목소리폼URL틀'을 덮어쓴다 — profiles에 이미 뿌려진 학생별 링크가 죽는다");
   assert.ok(/setState\(st, '목소리폼미션틀'/.test(fn), '미션별 링크 틀을 별도 키로 내지 않는다');
   // 틀은 문항이 생긴 **뒤에** 뽑아야 프리필 자리가 잡힌다
   assert.ok(fn.indexOf("addTextItem().setTitle('미션ID')") < fn.indexOf("setState(st, '목소리폼미션틀'"),
@@ -469,7 +480,7 @@ test('보낼 수 없는 파일은 API에 닿기 전에 거른다', () => {
   const call = fn.indexOf('speech:recognize');
   assert.ok(gate !== -1 && gate < call, '미지원 포맷을 API에 보낸다 — 실패인데 과금될 수 있다');
   assert.ok(size !== -1 && size < call, '크기 초과 파일을 걸러내지 않는다');
-  assert.ok(!fn.includes("encoding:"), 'encoding을 고정한다 — 잘못 지정하면 인식이 깨진다(헤더 자동 인식에 맡길 것)');
+  assert.ok(!코드만(fn).includes("encoding:"), 'encoding을 고정한다 — 잘못 지정하면 인식이 깨진다(헤더 자동 인식에 맡길 것)');
 });
 
 test('전사는 성장 카드보다 먼저 돈다(같은 밤에 전사문이 카드에 실리도록)', () => {
@@ -510,8 +521,9 @@ test('동의 문항은 제목만 보고 스킵하지 않는다 — 문구 개정
    *   금지해 두면 도움말만 바뀌고 화면엔 옛 선택지가 남은 채 "갱신했습니다"가 나온다. 선택지 변경은
    *   열 이름을 바꾸지 않으므로 착지에 영향이 없고, 이미 접수된 응답 값도 시트에 그대로 남는다. */
   const sync = fn.slice(fn.indexOf('const syncHelp'), fn.indexOf('const A = CONSENT_Q_TITLE'));
+  const 동기화코드 = 코드만(sync); // 부정 단언 전용
   ['setTitle', 'deleteItem'].forEach((bad) =>
-    assert.ok(!sync.includes(bad), `도움말 동기화가 ${bad}를 호출한다 — 열 착지·기존 응답이 깨진다`));
+    assert.ok(!동기화코드.includes(bad), `도움말 동기화가 ${bad}를 호출한다 — 열 착지·기존 응답이 깨진다`));
   assert.ok(sync.includes('it.setChoiceValues(choices)'), '동기화가 선택지를 정본으로 맞추지 않는다 — 선택지 개정이 라이브 화면에 영원히 안 닿는다');
 });
 
@@ -519,6 +531,6 @@ test('출석 원본은 실행당 1회만 읽는다(반 18개 × 전체 읽기 �
   const fn = section('function attDayMapCached_(', '/* [v9.99] 🔈 발화 지수');
   assert.ok(fn.includes('if (TALK_ATT_CACHE_) return TALK_ATT_CACHE_'), '출석 읽기 메모이즈가 없다');
   const idx = section('function talkIndexOf_(', '/* [v9.99] 학생용 오늘의 만남');
-  assert.ok(!idx.includes("getSheetByName('attendance')"),
+  assert.ok(!코드만(idx).includes("getSheetByName('attendance')"),
     '발화 지수가 attendance를 직접 읽는다 — 캐시를 우회하면 반마다 전체 읽기가 된다');
 });
