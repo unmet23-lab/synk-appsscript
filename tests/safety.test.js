@@ -348,9 +348,20 @@ test('[v9.50] 웰컴 대기열은 syncProfiles가 쌓고 아침 배치가 발송
 
 test('[v9.47·v9.51] 칭찬(+3P)은 일일 한도에 있고 태그는 사유 접미로 흐른다(태그 열 폐기)', () => {
   assert.ok(code.includes("'칭찬': 1"));
-  const dig = section('function parentWeeklyDigestCore_', 'function restoreDrill');
+  const dig = 코드만(section('function parentWeeklyDigestCore_', 'function restoreDrill'));
   assert.ok(dig.includes("rs.indexOf('칭찬·') === 0")); // 크루의 눈 태그 = reason 접미('칭찬·집중력')
-  assert.equal(dig.includes('/* [v9.0] H 태그 */'), false); // 구 8열(라이브=🔒 Row ID) 읽기가 되살아나면 Row ID가 태그로 샌다
+  /* 🔴 구 8열(라이브 H열 = 🔒 Row ID) 읽기가 되살아나면 Row ID가 태그로 샌다.
+   *    옛 판은 이 자리에서 «주석 배너 한 줄»이 없는 것을 금지로 삼았는데, 그 글자는 엔진
+   *    어디에도 없었다(실물은 이 구간 안 point_logs 읽기 줄에 달린 다른 문장이다). 그래서
+   *    코드가 무엇을 하든 항상 통과했다 — **주석은 행동이 아니고, 회귀가 되살아나도 그
+   *    주석을 다시 쓰지는 않는다.** 2026-08-14 실측으로 발각(대기열 #Q72).
+   *    행동으로 잰다: 읽기가 «있어야 하고»(없으면 아래 열 수 검사가 공허참이다) «6열이어야 한다».
+   *    `dig` 를 정제해 두는 이유 — 앞으로 이 구간에 「8열 금지」를 설명하는 주석이 달려도
+   *    그것이 위반으로 잡히지 않게 한다(설명이 자세할수록 잘 걸리는 자리다). */
+  assert.match(dig, /pl\.getRange\([\s\S]{0,80}?\.getValues\(\)/,
+    'point_logs 읽기가 이 구간에서 사라졌다 — 아래 열 수 검사가 공허참이 된다');
+  assert.equal(/pl\.getRange\([\s\S]{0,80}?,\s*8\)/.test(dig), false,
+    '구 8열 읽기 부활 — H열(🔒 Row ID)이 크루의 눈 태그로 샌다');
   const dg = section('function dailyGuard()', 'function notifyDailyAwards');
   assert.ok(dg.includes("rs.split('·')[0]")); // 한도는 기본 사유('칭찬')로 판정 — 태그 4종이 각각 1회씩 뚫리지 않게
   // 데모 시드가 8열(Row ID 자리)을 침범하지 않는다
