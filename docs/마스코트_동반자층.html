@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>마스코트 동반자층 — 시스템 한눈에</title>
+<style>
+  /* 정본 = docs/캐릭터/마스코트_말할순간_설계.md — 이 화면은 그 파생 한 장(값을 여기서 새로 정하지 않는다).
+     색 값 = docs/디자인_토큰.json 그대로(자립형 — link 는 헤드리스 렌더린트에 안 실린다). */
+  :root{
+    --synk-navy-2:#0F1730; /* 바탕(다크) */
+    --synk-navy:#1A2340;   /* 카드 면 */
+    --synk-navy-3:#2A3358; /* 괘선 */
+    --synk-cream:#F6F1E8;  /* 잉크(다크 위) */
+    --synk-slate:#8A93AD;  /* 보조 잉크 2 — 바닥은 Navy 2·Navy·Navy Ink만 */
+    --synk-coral:#FF6B5C;  /* 신호(유일) */
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--synk-navy-2);
+    color: var(--synk-cream);
+    font-family: 'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    font-weight: 500;
+    line-height: 1.6;
+    padding: 48px 24px 80px;
+  }
+  .판 { max-width: 1080px; margin: 0 auto; }
+
+  /* 머리 */
+  .머리 { display:flex; align-items:center; gap:28px; margin-bottom:14px; }
+  .머리 img { width:110px; height:auto; }
+  .머리 h1 { font-size:34px; font-weight:800; letter-spacing:-0.02em; line-height:1.25; }
+  .머리 .부제 { color: var(--synk-slate); font-size:15px; margin-top:6px; }
+  .상태띠 { display:flex; gap:10px; flex-wrap:wrap; margin:18px 0 36px; }
+  .상태띠 span { font-size:13px; padding:5px 12px; border-radius:999px; border:1px solid var(--synk-navy-3); color:var(--synk-cream); }
+  .상태띠 .포인트 { background: var(--synk-coral); color: var(--synk-navy-2); border-color: var(--synk-coral); font-weight:800; }
+
+  /* 절 공통 */
+  section { margin-bottom:40px; }
+  h2 { font-size:20px; font-weight:800; letter-spacing:-0.01em; margin-bottom:14px; }
+  h2 .번호 { color: var(--synk-coral); margin-right:8px; }
+  .카드 { background: var(--synk-navy); border:1px solid var(--synk-navy-3); border-radius:16px; padding:22px 24px; }
+  .여림 { color: var(--synk-slate); font-size:14px; }
+
+  /* 지붕 — 보조 원칙 */
+  .지붕 { border-left:4px solid var(--synk-coral); }
+  .지붕 .한줄 { font-size:19px; font-weight:800; margin-bottom:12px; }
+  .금지들 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .금지 { background: var(--synk-navy-2); border:1px solid var(--synk-navy-3); border-radius:12px; padding:14px 16px; font-size:14px; }
+  .금지 b { display:block; margin-bottom:4px; font-weight:800; }
+
+  /* 두뇌 + 창구 */
+  .구조 { display:grid; grid-template-columns: 300px 1fr; gap:16px; align-items:stretch; }
+  .두뇌 { background: var(--synk-navy); border:2px solid var(--synk-coral); border-radius:16px; padding:22px; text-align:center; display:flex; flex-direction:column; justify-content:center; }
+  .두뇌 .큰 { font-size:22px; font-weight:800; }
+  .두뇌 .여림 { margin-top:8px; }
+  .창구들 { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+  .창구 { background: var(--synk-navy); border:1px solid var(--synk-navy-3); border-radius:12px; padding:14px 16px; }
+  .창구 b { display:block; font-weight:800; margin-bottom:3px; }
+  .창구 .여림 { font-size:13px; }
+  .창구.새길 { border-style:dashed; }
+
+  /* 발화 3층 · 지식 2층 */
+  .삼층 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .층 { background: var(--synk-navy); border:1px solid var(--synk-navy-3); border-radius:12px; padding:16px 18px; }
+  .층 b { display:block; font-weight:800; margin-bottom:5px; }
+  .층 .누가 { font-size:12px; color: var(--synk-navy-2); background: var(--synk-cream); display:inline-block; padding:2px 9px; border-radius:999px; font-weight:800; margin-bottom:9px; }
+  .층 p { font-size:14px; color: var(--synk-cream); }
+  .층 .여림 { font-size:13px; margin-top:6px; }
+
+  /* 말할 순간 3벌 */
+  .세벌 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .벌 { background: var(--synk-navy); border:1px solid var(--synk-navy-3); border-radius:16px; padding:20px; }
+  .벌 h3 { font-size:17px; font-weight:800; margin-bottom:2px; }
+  .벌 .합 { font-size:13px; color: var(--synk-slate); margin-bottom:14px; font-variant-numeric: tabular-nums; }
+  .벌 .묶음 { margin-bottom:12px; }
+  .벌 .묶음이름 { font-size:12px; font-weight:800; color: var(--synk-coral); letter-spacing:0.04em; margin-bottom:5px; }
+  .벌 ul { list-style:none; }
+  .벌 li { font-size:13.5px; padding:3px 0 3px 14px; position:relative; }
+  .벌 li::before { content:''; position:absolute; left:0; top:11px; width:5px; height:5px; border-radius:50%; background: var(--synk-navy-3); }
+  .벌 li q { font-style:normal; color: var(--synk-cream); }
+  .벌 li q::before, .벌 li q::after { color: var(--synk-slate); }
+  .벌 .꼬리 { font-size:12.5px; color: var(--synk-slate); margin-top:10px; border-top:1px solid var(--synk-navy-3); padding-top:9px; }
+
+  /* 성향 라우팅 */
+  .길들 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .길 { background: var(--synk-navy); border:1px solid var(--synk-navy-3); border-radius:12px; padding:16px 18px; font-size:14px; }
+  .길 b { display:block; font-weight:800; margin-bottom:5px; }
+  .화살 { color: var(--synk-coral); font-weight:800; }
+
+  /* 안 하는 것 */
+  .안함 { display:grid; grid-template-columns:repeat(2,1fr); gap:8px 24px; font-size:14px; }
+  .안함 li { list-style:none; padding-left:16px; position:relative; }
+  .안함 li::before { content:'✗'; position:absolute; left:0; color: var(--synk-coral); font-weight:800; }
+
+  /* 진행 상태 */
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:left; padding:9px 12px; border-bottom:1px solid var(--synk-navy-3); vertical-align:top; }
+  th { font-weight:800; font-size:13px; color: var(--synk-slate); }
+  td b { font-weight:800; }
+
+  .꼬리말 { color: var(--synk-slate); font-size:13px; margin-top:44px; border-top:1px solid var(--synk-navy-3); padding-top:16px; }
+  .꼬리말 code { font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace; font-size:12px; color: var(--synk-cream); }
+</style>
+</head>
+<body>
+<div class="판">
+
+  <div class="머리">
+    <img src="캐릭터/마스코트_렌더/본체.png" alt="SYNK 마스코트">
+    <div>
+      <h1>마스코트 동반자층 — 시스템 한눈에</h1>
+      <div class="부제">한 존재가 다섯 창구에서 · 비서 겸 친구 겸 따뜻한 선생님 · 유호님 확정 2026-08-14</div>
+    </div>
+  </div>
+  <div class="상태띠">
+    <span class="포인트">지금 단계 = 설계 초안, 유호님 줄별 검토 대기</span>
+    <span>확정 뒤에 코드를 시작한다</span>
+    <span>정본 문서: docs/캐릭터/마스코트_말할순간_설계.md</span>
+  </div>
+
+  <section>
+    <div class="카드 지붕">
+      <div class="한줄">지붕 하나 — 마스코트는 메인 기능을 대체하지 않는다. 이해하고 «보조하는» 안내자다.</div>
+      <div class="금지들">
+        <div class="금지"><b>기능의 문이 되지 않는다</b>마스코트를 통째로 꺼도 숙제·출석·판정·리포트는 전부 그대로 돈다.</div>
+        <div class="금지"><b>데이터를 쓰지 않는다</b>엔진·DB에 대해 영원히 읽기 전용 — 저장은 각 화면의 기능이 한다.</div>
+        <div class="금지"><b>고장 나면 조용해진다</b>못 읽으면 침묵. 틀린 말도 오류 화면도 아니고, 그날 말이 없는 것뿐이다.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="번호">1</span>두뇌는 하나, 창구는 다섯 — 어디서 만나도 같은 존재</h2>
+    <div class="구조">
+      <div class="두뇌">
+        <div class="큰">두뇌 하나</div>
+        <div class="여림">아는 것 · 성격 · 말투<br>지식 = 문서 전체(153개)를 근거로,<br>단 <b>약속 층(FAQ 정본)이 항상 이긴다</b><br>수강료·환불 같은 숫자는 확정값만 말한다</div>
+      </div>
+      <div class="창구들">
+        <div class="창구"><b>페이스북 · 인스타그램</b><span class="여림">문의 고객 상담 — 프로필·표정 컷으로 형상화(코드 통로 이미 있음)</span></div>
+        <div class="창구"><b>홈페이지</b><span class="여림">학원 소개 안내자</span></div>
+        <div class="창구"><b>앱 — 학생</b><span class="여림">친구가 먼저, 비서는 그다음 · 살아 움직이는 실물</span></div>
+        <div class="창구"><b>앱 — 강사</b><span class="여림">비서 + 시스템 선생님(문서 기반 Q&A)</span></div>
+        <div class="창구 새길"><b>앱 — 학부모</b><span class="여림">유호님 확정 08-14: 메신저 아닌 앱 — 리포트·지원 기능과 한 지붕 · 통로 신설 필요</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="번호">2</span>말은 세 층이 정한다 — 족집게이면서 시끄럽지 않은 이유</h2>
+    <div class="삼층">
+      <div class="층"><span class="누가">규칙이 정한다</span><b>언제 말하나</b><p>「말할 순간 표」에 있는 순간에만 입을 연다. 표 밖 발화는 기계(테스트)가 금지한다.</p></div>
+      <div class="층"><span class="누가">AI가 정한다</span><b>뭐라고 하나</b><p>문구는 그 순간의 목적 안에서 매번 새로 짓는다 — 상수 문장은 사흘이면 질린다.</p><p class="여림">AI에는 이름을 안 보낸다 — 이름은 앱이 끼운다.</p></div>
+      <div class="층"><span class="누가">기억이 정한다</span><b>또 말해도 되나</b><p>말한 것을 기록하고 최근에 한 말은 다시 안 한다. 기억 없는 비서는 알람시계다.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="번호">3</span>말할 순간 3벌 — 53줄 = 강사 18 + 학생 23 + 학부모 12</h2>
+    <div class="세벌">
+      <div class="벌">
+        <h3>강사 — 비서 겸 시스템 선생님</h3>
+        <div class="합">18줄 = 먼저 10 + 물으면 4 + 학생 잇기 4</div>
+        <div class="묶음"><div class="묶음이름">먼저 말 건다</div><ul>
+          <li><q>이번 주 5건이 왔어요</q> — 판정 큐 도착</li>
+          <li><q>두 건만 더 하면 이번 주 끝이에요</q></li>
+          <li><q>이번 주 끝! 고생하셨어요</q> — 실제로 끝낸 순간에만</li>
+          <li><q>오늘 반 아이들 숙제가 다 모였어요</q> — 수업일</li>
+        </ul></div>
+        <div class="묶음"><div class="묶음이름">물으면 답한다</div><ul>
+          <li>사용법·판정 기준·운영 절차 — 문서 근거 + 출처 병기</li>
+          <li>모르면 지어내지 않고 원장 인계</li>
+        </ul></div>
+        <div class="묶음"><div class="묶음이름">학생을 잇는다</div><ul>
+          <li><q>저녁 활동에서 더 살아나요 — 보시기에도 그래요?</q></li>
+          <li><q>남겨주신 관찰로 이번 주 숙제가 바뀌었어요</q></li>
+        </ul></div>
+        <div class="꼬리">안 하는 것 — 빈 날의 기계적 인사 · 판정 유도 · 강사·반 비교 · 재촉 반복</div>
+      </div>
+      <div class="벌">
+        <h3>학생 — 친구가 먼저</h3>
+        <div class="합">23줄 = 먼저 14 + 물으면 3 + 성향·호기심 6</div>
+        <div class="묶음"><div class="묶음이름">알아봐 주고 응원한다</div><ul>
+          <li><q>방금 그거, 처음부터 끝까지 네 문장이었어</q></li>
+          <li><q>오늘 축구 얘기였네! 축구 좋아하는구나</q> — 말한 «내용»에 호기심</li>
+          <li><q>지난번 그거 다시 하는 거야? 멋진데</q> — 재도전</li>
+          <li><q>이번 주 매일 왔네 — 나 다 보고 있었어</q> — 끊김은 침묵</li>
+          <li><q>오늘도 와줘서 좋았어</q> — 힘든 날, 결과 언급 0</li>
+          <li><q>왔구나! 기다렸어</q> — 며칠 만의 복귀, 죄책감 0</li>
+        </ul></div>
+        <div class="묶음"><div class="묶음이름">궁금해한다 (답이 곧 성향 데이터)</div><ul>
+          <li><q>요즘 저녁에 하는 게 더 편해?</q></li>
+          <li><q>단어 게임이 제일 재밌어?</q></li>
+          <li><q>난 아직 너를 알아가는 중이야</q> — 수집 초기 프레임</li>
+          <li><q>요즘도 그 꿈 생각해? 더 듣고 싶어</q></li>
+        </ul></div>
+        <div class="꼬리">안 하는 것 — 숙제 정답 미리 주기 · 스트릭 압박 · 평가어·비교 · 부족을 들추는 «관심»</div>
+      </div>
+      <div class="벌">
+        <h3>학부모 — 똑똑한 안내자</h3>
+        <div class="합">12줄 = 먼저 6 + 물으면 3 + 성향 팁 3</div>
+        <div class="묶음"><div class="묶음이름">묻기 전에, 그 순간에</div><ul>
+          <li><q>방금 도착했어요</q> — 등원한 그때</li>
+          <li><q>오늘 처음으로 한국어로 끝까지 말했어요</q> — 그날 저녁</li>
+          <li>주간 리포트 한 줄 요약 — 자세한 건 리포트가 정본</li>
+        </ul></div>
+        <div class="묶음"><div class="묶음이름">물으면 답한다</div><ul>
+          <li>학원 질문 — 약속 층 우선 · 모르면 원장 인계</li>
+          <li><q>우리 아이 어때요?</q> — 리포트의 사실만</li>
+        </ul></div>
+        <div class="묶음"><div class="묶음이름">검증된 것만 팁으로</div><ul>
+          <li><q>소리 내 읽을 때 더 잘 외워요 — 집에서 한 문장씩</q></li>
+        </ul></div>
+        <div class="꼬리">안 하는 것 — 다른 아이·평균 비교 · 불안 조성 · 수강료 재촉을 마스코트 입으로 · 지어내기</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="번호">4</span>성향은 두 길로만 흐른다 — 관심이 상처가 되지 않게</h2>
+    <div class="길들">
+      <div class="길"><b>물음형 <span class="화살">→</span> 학생에게 바로</b>「요즘 저녁이 더 편해?」 — 틀려도 안 다치고, 학생의 답이 그대로 성향 데이터가 된다. 수집 초기엔 「아직 알아가는 중이야」라고 스스로 말한다.</div>
+      <div class="길"><b>단정형 <span class="화살">→</span> 강사 확인을 지나서만</b>「이 아이는 저녁형이다」처럼 단정해서 무언가를 바꾸는 것은 강사의 [그래요/아니에요]를 지난 것만 학생·학부모에 닿는다. 그 탭이 곧 엔진의 교정 데이터다.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="번호">5</span>지금 어디까지 왔나</h2>
+    <div class="카드">
+      <table>
+        <tr><th>칸</th><th>상태</th></tr>
+        <tr><td><b>방향·원칙</b> (보조 원칙 · 두뇌 1 + 창구 5 · 세 층 분리 · 성향 두 길)</td><td>✅ 유호님 확정 08-14</td></tr>
+        <tr><td><b>말할 순간 표 53줄</b></td><td>초안 완성 — ⏳ 유호님 줄별 ○/✗</td></tr>
+        <tr><td><b>강사에게 여는 문서 경계선</b> (강사 열림 / 학부모 열림 / 내부 닫힘 / 원장만)</td><td>⏳ 유호님</td></tr>
+        <tr><td><b>배선</b> (두뇌 이관 · 학부모 앱 통로 · 출결 신호 · 발화 기억층)</td><td>표 확정 뒤 설계 — 코드 0줄 (의도된 순서)</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <div class="꼬리말">
+    정본 = <code>docs/캐릭터/마스코트_말할순간_설계.md</code> (줄별 상한·신호 실물·금지 목록 전문) · 이 화면은 파생 한 장 — 값이 갈리면 정본이 이긴다.<br>
+    함께 확정된 것 — 상담봇 지식을 문서 기반으로(약속 층 우선) · 메신저 형상화 = 프로필 + 표정 컷 14장(통로 실재) · 학부모 창구 = 앱.
+  </div>
+
+</div>
+</body>
+</html>
