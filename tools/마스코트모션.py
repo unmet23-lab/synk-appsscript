@@ -266,6 +266,99 @@ def _웃음(t):
     return 1.0 - _스무스((t - 8.10) / 0.28)
 
 
+def _주기노이즈(시드, n, 시그마=18.0):
+    """10초 루프에 안전한 부드러운 주기 노이즈 — 원형 가우시안 컨볼브라 끝이 곧 처음이다.
+    시드 고정 = 같은 입력이면 같은 영상(재현 가능 · 시각·난수 의존 0)."""
+    rng = np.random.default_rng(시드)
+    x = rng.standard_normal(n)
+    k = int(시그마 * 4) | 1
+    off = np.arange(k) - k // 2
+    g = np.exp(-0.5 * (off / 시그마) ** 2)
+    g /= g.sum()
+    xp = np.concatenate([x[-k:], x, x[:k]])
+    y = np.convolve(xp, g, "same")[k:-k]
+    y -= y.mean()
+    s = float(y.std())
+    return y / s if s > 1e-9 else y
+
+
+def _노이즈값(arr, t, 주기=10.0):
+    n = len(arr)
+    f = (t / 주기) * n
+    i0 = int(math.floor(f))
+    a = f - math.floor(f)
+    return float(arr[i0 % n] * (1 - a) + arr[(i0 + 1) % n] * a)
+
+
+def _가로스미어(im, 반경):
+    """가로 전용 박스 스미어 — 턴 전환의 모션블러. 2D 가우시안은 초점 잃은 그림으로 읽히고
+    캔버스 경계 상자가 비쳤다(정지컷 실측 08-14) — 방향이 있어야 «움직임»으로 읽힌다."""
+    r = int(round(반경))
+    if r < 1:
+        return im
+    a = np.asarray(im, dtype=np.float32)
+    al = a[:, :, 3:4] / 255.0
+    pm = np.concatenate([a[:, :, :3] * al, al * 255.0], axis=2)
+    k = 2 * r + 1
+    pm = np.pad(pm, ((0, 0), (r + 1, r), (0, 0)), mode="constant")
+    c = np.cumsum(pm, axis=1)
+    box = (c[:, k:] - c[:, :-k]) / k
+    ao = box[:, :, 3:4] / 255.0
+    rgb = box[:, :, :3] / np.maximum(ao, 1e-4)
+    out = np.dstack([np.clip(rgb, 0, 255), np.clip(box[:, :, 3], 0, 255)]).astype(np.uint8)
+    return Image.fromarray(out, "RGBA")
+
+
+def _교차(앞, 뒤, cx앞, cx뒤, b):
+    """정면·¾ 컷의 프리멀티플라이 크로스페이드 — 실루엣이 다른 두 렌더를 스트레이트 알파로
+    섞으면 알파 0 영역의 무의미한 RGB 가 새어 halo 가 된다. 가로는 알파 무게중심으로 정렬."""
+    W, H = 앞.size
+    A = np.asarray(앞, dtype=np.float32)
+    Bm = np.zeros_like(A)
+    뒤a = np.asarray(뒤, dtype=np.float32)
+    off = int(round(cx앞 - cx뒤))
+    x0d, x1d = max(0, off), min(W, off + 뒤.width)
+    x0s = max(0, -off)
+    if x1d > x0d:
+        Bm[:, x0d:x1d] = 뒤a[:H, x0s:x0s + (x1d - x0d)]
+    aA, aB = A[:, :, 3:4] / 255.0, Bm[:, :, 3:4] / 255.0
+    Pm = A[:, :, :3] * aA * (1 - b) + Bm[:, :, :3] * aB * b
+    am = aA * (1 - b) + aB * b
+    rgb = Pm / np.maximum(am, 1e-4)
+    return Image.fromarray(
+        np.dstack([np.clip(rgb, 0, 255), np.clip(am[:, :, 0] * 255.0, 0, 255)]).astype(np.uint8), "RGBA")
+
+
+def _치마지연(몸, 램프, sdx, sdy):
+    """치마 팔로우스루 — 아래 자락만 잘라 «조금 전의 몸» 위치에 다시 붙인다(부자연 원인 ②
+    치마·몸 한 덩어리). 시프트가 실루엣 자체를 바꾸므로 눈 패치처럼 원본 알파로 되돌리지
+    않는다 — 자락이 끌리는 게 목적이다. 이음새는 넓은 세로 램프라 안 보인다."""
+    A = np.asarray(몸, dtype=np.float32)
+    a = A[:, :, 3:4] / 255.0
+    P = A[:, :, :3] * a
+    w = 램프[:, None, None]
+    a몸, P몸 = a * (1 - w), P * (1 - w)
+    a치, P치 = a * w, P * w
+    dx, dy = int(round(sdx)), int(round(sdy))
+    a치 = np.roll(a치, (dy, dx), axis=(0, 1))
+    P치 = np.roll(P치, (dy, dx), axis=(0, 1))
+    if dy > 0:
+        a치[:dy], P치[:dy] = 0, 0
+    elif dy < 0:
+        a치[dy:], P치[dy:] = 0, 0
+    if dx > 0:
+        a치[:, :dx], P치[:, :dx] = 0, 0
+    elif dx < 0:
+        a치[:, dx:], P치[:, dx:] = 0, 0
+    # 파티션은 «가산»으로 되돌린다 — over 합성은 램프 중간(w=0.5)에서 0.75 로 꺼져
+    # 무대색이 허리띠처럼 비쳤다(정지컷 실측 08-14). 겹침은 1로 클립, 틈은 시프트 몇 px 뿐.
+    합 = a몸 + a치
+    rgb = (P몸 + P치) / np.maximum(합, 1e-4)
+    ao = np.clip(합, 0.0, 1.0)
+    return Image.fromarray(
+        np.dstack([np.clip(rgb, 0, 255), np.clip(ao[:, :, 0] * 255.0, 0, 255)]).astype(np.uint8), "RGBA")
+
+
 def 라이브(args):
     """«3D LIVE» 문법(유호 지시 08-14 「뚝뚝 끊기지 않고 전부 이어지는 살아있는 느낌」).
 
@@ -380,18 +473,78 @@ def 라이브(args):
     목표폭 = args.폭 * args.비율
     총 = int(길이초 * fps)
 
+    # ── 라이브2 확장(1단계 리깅 심화 · 유호 확정 08-14) — ¾ 턴·치마 지연·노이즈 아이들 ──
+    확장 = args.문법 == "라이브2"
+    측면들, 측면중x, 정면중x = {}, {}, 0.0
+    노이즈, 세로램프, 치마한계 = None, None, 0.0
+    원척 = W0 / 목표폭  # 출력 px → 원본 px (치마 시프트는 원본 해상도에서 건다)
+    if 확장:
+        for 쪽, 지정 in (("좌", args.좌34컷), ("우", args.우34컷)):
+            p34 = os.path.join(args.컷폴더, (지정 or f"{접두}{쪽}34") + ".png")
+            if not os.path.exists(p34):
+                print(f"🔴 ¾ 컷이 없다 — 안 돌린 것이다(통과 아님): {p34}")
+                return 2
+            im = 알파써넣기(p34)
+            im = im.resize((max(1, int(im.width * H0 / im.height)), H0), Image.LANCZOS)  # 키가 불변축
+            a34 = np.asarray(im, dtype=np.float32)[:, :, 3]
+            측면중x[쪽] = float((np.arange(a34.shape[1]) * a34.sum(axis=0)).sum() / max(1.0, a34.sum()))
+            측면들[쪽] = im
+            d34 = float(np.linalg.norm(_lab(코어색(im)) - _lab(원본색)))
+            print(f"   ¾ {쪽} 코어 ΔE {d34:.2f} (컷 굽기 변동 실측 — 리깅 무손상 게이트와 다른 층)")
+        af = np.asarray(기본컷, dtype=np.float32)[:, :, 3]
+        정면중x = float((np.arange(af.shape[1]) * af.sum(axis=0)).sum() / max(1.0, af.sum()))
+        노이즈 = {k: _주기노이즈(시드, 총) for k, 시드 in
+                 (("dy", 11), ("dx", 22), ("기울기", 33), ("숨", 44), ("표류", 55))}
+        치마선, 페더y = 0.62 * H0, 0.07 * H0
+        yy = np.arange(H0, dtype=np.float32)
+        r = np.clip((yy - (치마선 - 페더y)) / (2 * 페더y), 0, 1)
+        세로램프 = r * r * (3 - 2 * r)
+        치마한계 = 0.035 * H0
+
     정지컷들 = [float(s) for s in args.정지컷.split(",")] if args.정지컷 else None
     tmp = args.정지컷폴더 if 정지컷들 else tempfile.mkdtemp(prefix="mascot_live_")
     os.makedirs(tmp, exist_ok=True)
     최대ΔE = 0.0
 
+    def 자세(t):
+        """그 시각의 몸 변형 전부 — 치마 지연이 «조금 전의 몸»을 물어야 해서 순수 함수로 뺐다.
+        확장=False 면 구 라이브와 수치가 동일하다(회귀 없음이 이 함수의 계약)."""
+        s = _웃음(t)
+        시선몸 = 키프레임(t - 0.08, 시선키)   # 머리는 100ms 늦게 따라온다
+        # 창은 턴의 최고속 구간(|0.50→0.90|)으로 좁힌다 — 넓히면 두 렌더가 반반 겹친
+        # «눈 네 개» 프레임이 눈에 띄게 오래 산다(정지컷 실측 08-14).
+        블렌드 = _스무스((abs(시선몸) - 0.50) / 0.40) if 확장 else 0.0
+        숨 = 1.0 + 0.011 * math.sin(2 * math.pi * 0.3 * t)
+        sx = 숨 * (1.0 - 0.03 * abs(시선몸) * (1.0 - 블렌드))  # 진짜 ¾ 가 서면 가짜 스퀴즈는 물러난다
+        sy = 숨
+        dy = 8.0 * math.sin(2 * math.pi * 0.2 * t) + 3.0 * math.sin(2 * math.pi * 0.5 * t + 1.3)
+        기울기 = -3.2 * 시선몸
+        px오프 = 시선몸 * 16.0
+        if 확장:  # 노이즈 아이들 — 순수 사인의 기계감(부자연 원인 ③)을 주기 노이즈로 깬다
+            dy += 3.2 * _노이즈값(노이즈["dy"], t)
+            px오프 += 2.4 * _노이즈값(노이즈["dx"], t)
+            기울기 += 0.9 * _노이즈값(노이즈["기울기"], t)
+            sy *= 1.0 + 0.004 * _노이즈값(노이즈["숨"], t)
+        if s > 0.0:  # 눈웃음 — 잦아드는 통통 튐(전부 지수 감쇠 · 어디서도 안 끊긴다)
+            p = max(0.0, t - 5.90)
+            env = s * math.exp(-1.6 * p)
+            튐 = env * abs(math.sin(2 * math.pi * 1.35 * p))
+            dy -= 26.0 * 튐
+            기울기 += 2.4 * env * math.sin(2 * math.pi * 2.1 * p)
+            sy *= 1.0 + 0.04 * env * math.sin(2 * math.pi * 1.35 * p)
+            sx *= 1.0 - 0.03 * env * math.sin(2 * math.pi * 1.35 * p)
+        return s, 시선몸, 블렌드, sx, sy, dy, 기울기, px오프
+
     def 프레임렌더(i, t, 저장경로):
         nonlocal 최대ΔE
-        s = _웃음(t)
+        s, 시선몸, 블렌드, sx, sy, dy, 기울기, px오프 = 자세(t)
         b = _깜빡(t) * (1.0 - s)
         시선눈 = 키프레임(t + 0.10, 시선키)   # 눈이 먼저 간다
-        시선몸 = 키프레임(t - 0.08, 시선키)   # 머리는 100ms 늦게 따라온다
         표류 = 0.006 * math.sin(2 * math.pi * 0.4 * t + 0.7) + 0.004 * math.sin(2 * math.pi * 0.9 * t)
+        if 확장:
+            b *= (1.0 - 블렌드)  # ¾ 컷의 눈은 구워진 것 — 패치 깜빡임은 정면에서만 산다
+            표류 += 0.004 * _노이즈값(노이즈["표류"], t)
+            시선눈 = 시선눈 * (1.0 - 블렌드)  # 전환 중 패치 눈이 멀리 가면 ¾ 눈과 4개로 겹친다
         edx = (시선눈 * 0.058 + 표류) * 눈거리
         edy = (0.010 * math.sin(2 * math.pi * 0.5 * t + 2.1) - 0.012 * s) * 눈거리
 
@@ -405,19 +558,16 @@ def 라이브(args):
         몸.paste(패치판, (x0 + int(round(edx)), y0 + int(round(edy))), 패치판)
         몸.putalpha(기본알파)  # paste 는 알파도 섞는다 — 안 되돌리면 무대색이 사각 테두리로 비친다(실측)
 
-        숨 = 1.0 + 0.011 * math.sin(2 * math.pi * 0.3 * t)
-        sx = 숨 * (1.0 - 0.03 * abs(시선몸))          # 원근 스퀴즈 — 돌아본 만큼 살짝 좁아진다
-        sy = 숨
-        dy = 8.0 * math.sin(2 * math.pi * 0.2 * t) + 3.0 * math.sin(2 * math.pi * 0.5 * t + 1.3)
-        기울기 = -3.2 * 시선몸
-        if s > 0.0:  # 눈웃음 — 잦아드는 통통 튐(전부 지수 감쇠 · 어디서도 안 끊긴다)
-            p = max(0.0, t - 5.90)
-            env = s * math.exp(-1.6 * p)
-            튐 = env * abs(math.sin(2 * math.pi * 1.35 * p))
-            dy -= 26.0 * 튐
-            기울기 += 2.4 * env * math.sin(2 * math.pi * 2.1 * p)
-            sy *= 1.0 + 0.04 * env * math.sin(2 * math.pi * 1.35 * p)
-            sx *= 1.0 - 0.03 * env * math.sin(2 * math.pi * 1.35 * p)
+        if 확장 and 블렌드 > 0.003:  # ¾ 크로스페이드 — 회전감(부자연 원인 ①)은 컷이 낸다
+            쪽 = "좌" if 시선몸 < 0 else "우"
+            몸 = _교차(몸, 측면들[쪽], 정면중x, 측면중x[쪽], 블렌드)
+            if 블렌드 < 0.997:  # 전환 순간만 모션 스미어 — 남는 겹침이 «빠른 턴의 잔상»으로 읽힌다
+                몸 = _가로스미어(몸, 0.010 * W0 * math.sin(math.pi * 블렌드))
+        if 확장:  # 치마 팔로우스루 — 자락이 0.09초 전의 몸을 따라온다
+            _, _, _, _, _, dy늦, _, px늦 = 자세(t - 0.09)
+            sdy = max(-치마한계, min(치마한계, (dy늦 - dy) * 원척))
+            sdx = max(-치마한계, min(치마한계, (px늦 - px오프) * 원척))
+            몸 = _치마지연(몸, 세로램프, sdx, sdy)
 
         tw = max(1, int(목표폭 * sx))
         th = max(1, int(몸.height * (목표폭 / W0) * sy))
@@ -426,11 +576,11 @@ def 라이브(args):
             스 = 스.rotate(기울기, resample=Image.BICUBIC, expand=True)
         w, h = 스.size
         프레임 = 무대판.copy()
-        px = int((args.폭 - w) / 2 + 시선몸 * 16.0)
+        px = int((args.폭 - w) / 2 + px오프)
         py = int(args.높이 * 0.40 - h / 2 + dy)
         프레임.paste(스, (px, py), 스)
         프레임.save(저장경로)
-        if i % 30 == 0:
+        if i % 30 == 0 and (not 확장 or 블렌드 < 0.5):  # ¾ 구간은 컷 간 굽기 변동이 섞인다 — 리깅 무손상만 잰다
             d = float(np.linalg.norm(_lab(코어색(스)) - _lab(원본색)))
             최대ΔE = max(최대ΔE, d)
 
@@ -455,11 +605,12 @@ def 라이브(args):
         return 1
 
     크기 = os.path.getsize(args.출력) / 1024
-    print(f"✅ {args.출력} — {총}프레임 {길이초}초 @{fps}fps · 문법=라이브 · {크기:.0f}KB")
+    print(f"✅ {args.출력} — {총}프레임 {길이초}초 @{fps}fps · 문법={args.문법} · {크기:.0f}KB")
     print(f"   눈검출: 기본=검출 · {' · '.join(검출로그)}"
           + (f" · 피부게인 {' · '.join(게인로그)}" if 게인로그 else ""))
     print(f"   코어 무손상: 최대 ΔE {최대ΔE:.2f} (임계 2.0) {'OK' if 최대ΔE <= 2.0 else '🔴 초과'}")
-    print(f"   모든 주기(부유 0.2/0.5 · 숨 0.3 · 표류 0.4/0.9/0.5Hz)가 10초의 배수 — 무한 루프 재생 가능")
+    print("   모든 주기(부유 0.2/0.5 · 숨 0.3 · 표류 0.4/0.9/0.5Hz"
+          + (" · 노이즈=10초 원형" if 확장 else "") + ")가 10초의 배수 — 무한 루프 재생 가능")
     return 0 if 최대ΔE <= 2.0 else 1
 
 
@@ -492,16 +643,19 @@ def main():
     ap.add_argument("--폭", type=int, default=720)
     ap.add_argument("--높이", type=int, default=1280)
     ap.add_argument("--비율", type=float, default=0.46, help="마스코트 폭 / 화면 폭")
-    ap.add_argument("--문법", default="보간", choices=["보간", "스톱모션", "라이브"],
+    ap.add_argument("--문법", default="보간", choices=["보간", "스톱모션", "라이브", "라이브2"],
                     help="보간=젤리 물리(30fps 연속) · 스톱모션=인형극(24fps 컨테이너·12fps 투스) · "
-                         "라이브=눈 레이어 분리 리깅(60fps · 시선/깜빡임/눈웃음 전부 이어짐)")
+                         "라이브=눈 레이어 분리 리깅(60fps · 시선/깜빡임/눈웃음 전부 이어짐) · "
+                         "라이브2=라이브+1단계 심화(¾ 턴 크로스페이드·치마 팔로우스루·노이즈 아이들)")
+    ap.add_argument("--좌34컷", default=None, help="라이브2: 왼쪽 ¾ 컷 파일명(기본={접두}좌34)")
+    ap.add_argument("--우34컷", default=None, help="라이브2: 오른쪽 ¾ 컷 파일명(기본={접두}우34)")
     ap.add_argument("--감음컷", default=None, help="깜빡임 컷 파일명(확장자 제외 · 기본={접두}눈감음)")
     ap.add_argument("--웃음컷", default=None, help="눈웃음 컷 파일명(확장자 제외 · 기본={접두}눈웃음)")
     ap.add_argument("--정지컷", default=None, help="라이브 전용: 't1,t2,…' 초의 정지 프레임만 굽고 종료(검수용)")
     ap.add_argument("--정지컷폴더", default=None, help="정지컷 저장 폴더")
     args = ap.parse_args()
 
-    if args.문법 == "라이브":
+    if args.문법 in ("라이브", "라이브2"):
         return 라이브(args)
 
     fps = 24 if args.문법 == "스톱모션" else FPS

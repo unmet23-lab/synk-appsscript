@@ -121,6 +121,80 @@ warm coral-red thread for contrast. Keep everything else pixel-identical to the 
 silhouette, same fuzzy wool fiber texture, same two round glossy black bead eyes, same lighting, same
 size, same position, same plain light gray background. No mouth. ${공통스튜디오}`,
   },
+  /* ── 모션 1단계 컷 6 — 유호 확정 08-14 「코랄·체리핑크 둘 다 · 1단계 2단계」 ──
+   * ¾ 측면 2장(부자연 원인 ① 회전감)은 코랄 본체에서 굽고, 체리핑크는 그 산출물을
+   * «색만» 갈아입힌다(색 시안과 같은 통로) — 독립 생성이면 색마다 포즈가 갈린다.
+   * 방향은 «보는 사람 기준»으로 못박는다 — 모델이 캐릭터 기준 좌우를 뒤집은 실측이 있다. */
+  {
+    이름: '펠트_좌34',
+    비율: '1:1',
+    참조: [],
+    런타임참조: ['펠트_본체'],
+    지시: `Rotate the felted mascot from the reference image into a three-quarter view: the character
+is turned about 35 degrees so it now faces toward the VIEWER'S LEFT. Both round glossy black bead
+eyes remain visible, the far eye slightly foreshortened near the edge of the face. Keep everything
+else identical to the reference: same needle-felted wool material and exact same wool color, same
+cream hand-stitched accents, same lighting from upper left, same total height in frame, same centered
+composition, same plain light gray background. This is the same character, same proportions —
+rounded dome head, wavy flowing bottom edge. No mouth. ${공통스튜디오}`,
+  },
+  {
+    이름: '펠트_우34',
+    비율: '1:1',
+    참조: [],
+    런타임참조: ['펠트_본체'],
+    지시: `Rotate the felted mascot from the reference image into a three-quarter view: the character
+is turned about 35 degrees so it now faces toward the VIEWER'S RIGHT. Both round glossy black bead
+eyes remain visible, the far eye slightly foreshortened near the edge of the face. Keep everything
+else identical to the reference: same needle-felted wool material and exact same wool color, same
+cream hand-stitched accents, same lighting from upper left, same total height in frame, same centered
+composition, same plain light gray background. This is the same character, same proportions —
+rounded dome head, wavy flowing bottom edge. No mouth. ${공통스튜디오}`,
+  },
+  {
+    이름: '펠트체리_눈감음',
+    비율: '1:1',
+    참조: [],
+    런타임참조: ['펠트_눈감음'],
+    지시: `Take the felted mascot in the reference image and change ONLY the wool color: recolor the
+wool to a soft cherry pink (#FB7A87), a milky sweet pink like cherry blossom candy. Keep everything
+else pixel-identical to the reference: same silhouette, same fuzzy wool fiber texture, same closed
+eyes (two short gentle downward-curved stitched lines), same cream hand-stitched accents, same
+lighting, same size, same position, same plain light gray background. No mouth. ${공통스튜디오}`,
+  },
+  {
+    이름: '펠트체리_눈웃음',
+    비율: '1:1',
+    참조: [],
+    런타임참조: ['펠트_눈웃음'],
+    지시: `Take the felted mascot in the reference image and change ONLY the wool color: recolor the
+wool to a soft cherry pink (#FB7A87), a milky sweet pink like cherry blossom candy. Keep everything
+else pixel-identical to the reference: same silhouette, same fuzzy wool fiber texture, same happy
+smiling eyes (two upward-curved arcs in dark stitched thread), same cream hand-stitched accents, same
+lighting, same size, same position, same plain light gray background. No mouth. ${공통스튜디오}`,
+  },
+  {
+    이름: '펠트체리_좌34',
+    비율: '1:1',
+    참조: [],
+    런타임참조: ['펠트_좌34'],
+    지시: `Take the felted mascot in the reference image and change ONLY the wool color: recolor the
+wool to a soft cherry pink (#FB7A87), a milky sweet pink like cherry blossom candy. Keep everything
+else pixel-identical to the reference: same three-quarter turned pose, same silhouette, same fuzzy
+wool fiber texture, same two round glossy black bead eyes, same cream hand-stitched accents, same
+lighting, same size, same position, same plain light gray background. No mouth. ${공통스튜디오}`,
+  },
+  {
+    이름: '펠트체리_우34',
+    비율: '1:1',
+    참조: [],
+    런타임참조: ['펠트_우34'],
+    지시: `Take the felted mascot in the reference image and change ONLY the wool color: recolor the
+wool to a soft cherry pink (#FB7A87), a milky sweet pink like cherry blossom candy. Keep everything
+else pixel-identical to the reference: same three-quarter turned pose, same silhouette, same fuzzy
+wool fiber texture, same two round glossy black bead eyes, same cream hand-stitched accents, same
+lighting, same size, same position, same plain light gray background. No mouth. ${공통스튜디오}`,
+  },
   {
     이름: '글래시_앱화면',
     비율: '9:16',
