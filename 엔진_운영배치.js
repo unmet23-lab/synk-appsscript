@@ -901,6 +901,35 @@ function weeklyReport(asText) {
   body += '\n🧯 복구 리허설: ' + (dDays < 0 ? '기록 없음 — restoreDrill을 한 번 실행해주세요 (10분, 안전)'
     : dDays + '일 전' + (dDays > 30 ? ' ⚠️ 30일 초과 — 이번 주 권장' : ' ✅')) + '\n';
 
+  // [v9.233] 🗣 발화 지수 꼬리 — 라이브 계산이 아니라 talk_index_log(매주 월 적재)에 «남긴 결과»를 읽는다.
+  //   시즌이 지나도 궤적이 남는 것이 이 칸의 존재 이유(세계판 대조 08-14). 전주 대비 = 어제의 그 학생과만 비교.
+  //   하위 3 지명은 원장 내부 계기판 — 학생·학부모 화면에 싣지 않는다(㉢).
+  body += '\n🗣 발화 지수(주간 스냅샷)\n';
+  const tl = ss.getSheetByName(TALK_INDEX_LOG_SHEET);
+  if (!tl || tl.getLastRow() < 2) {
+    body += '기록 없음 — 편성·수업 시작 후 매주 월요일 쌓입니다\n';
+  } else {
+    const rowsT = tl.getRange(2, 2, tl.getLastRow() - 1, 9).getValues(); // B시즌 ~ J pct
+    const lastT = rowsT[rowsT.length - 1];
+    const curSeason = String(lastT[0]), curWeek = Number(lastT[1]);
+    const prevPct = {}, cur = [];
+    rowsT.forEach(r => {
+      if (String(r[0]) !== curSeason) return;
+      const w = Number(r[1]);
+      if (w === curWeek - 1) prevPct[String(r[3])] = Number(r[8]);
+      else if (w === curWeek) cur.push(r);
+    });
+    if (!cur.length) body += '이번 주 기록 0행 (시즌 ' + curSeason + ' · ' + curWeek + '주차)\n';
+    else {
+      body += curWeek + '주차 ' + cur.length + '명 기록 · 하위 3 (전주 대비):\n';
+      cur.sort((a, b) => Number(a[8]) - Number(b[8])).slice(0, 3).forEach(r => {
+        const p = prevPct[String(r[3])];
+        body += '· ' + (r[4] || r[3]) + ' (' + r[2] + ') — ' + r[8] + '%' +
+          (p === undefined ? ' (전주 기록 없음)' : ' (전주 ' + p + '%)') + '\n';
+      });
+    }
+  }
+
   if (wantText) return body;
   if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 주간 리포트', title + '\n\n' + body);
   Logger.log('주간 리포트 발송');
