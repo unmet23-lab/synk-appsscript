@@ -86,6 +86,41 @@ thread, the classic warm eye-smile. Everything else must be pixel-identical to t
 silhouette, same wool texture, same color, same lighting, same size, same position, same background.
 Absolutely no mouth. ${공통스튜디오}`,
   },
+  /* 색 시안 3컷 — 유호 지시 08-14 「마스코트 색상을 다시 정해보자」(재질=펠트 확정 후).
+   * 본체를 참조로 «색만» 갈아입힌다 — 실루엣·질감·조명이 같아야 색만 대조된다. */
+  {
+    이름: '펠트_색_체리핑크',
+    비율: '1:1',
+    참조: [],
+    런타임참조: ['펠트_본체'],
+    지시: `Take the felted mascot in the reference image and change ONLY the wool color: recolor the
+wool to a soft cherry pink (#FB7A87), a milky sweet pink like cherry blossom candy. Keep everything
+else pixel-identical to the reference: same silhouette, same fuzzy wool fiber texture, same two round
+glossy black bead eyes, same cream hand-stitched accents, same lighting, same size, same position,
+same plain light gray background. No mouth. ${공통스튜디오}`,
+  },
+  {
+    이름: '펠트_색_딥체리',
+    비율: '1:1',
+    참조: [],
+    런타임참조: ['펠트_본체'],
+    지시: `Take the felted mascot in the reference image and change ONLY the wool color: recolor the
+wool to a rich deep cherry red (#C2273D), like ripe dark cherries, saturated and warm. Keep everything
+else pixel-identical to the reference: same silhouette, same fuzzy wool fiber texture, same two round
+glossy black bead eyes, same cream hand-stitched accents, same lighting, same size, same position,
+same plain light gray background. No mouth. ${공통스튜디오}`,
+  },
+  {
+    이름: '펠트_색_크림',
+    비율: '1:1',
+    참조: [],
+    런타임참조: ['펠트_본체'],
+    지시: `Take the felted mascot in the reference image and change ONLY the wool color: recolor the
+wool to a natural undyed cream oatmeal, like raw sheep wool, and change the hand-stitched accents to
+warm coral-red thread for contrast. Keep everything else pixel-identical to the reference: same
+silhouette, same fuzzy wool fiber texture, same two round glossy black bead eyes, same lighting, same
+size, same position, same plain light gray background. No mouth. ${공통스튜디오}`,
+  },
   {
     이름: '글래시_앱화면',
     비율: '9:16',
