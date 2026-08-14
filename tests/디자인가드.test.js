@@ -182,6 +182,34 @@ test('처방이 시킨 DESIGN.md 읽기가 read-budget 에 막히지 않는다 (
     `DESIGN.md 가 ${크기}B 로 read-budget 의 「큰 파일」(${BIG}B)이다 — 킷을 읽으라는 처방이 예산에 걸린다`);
 });
 
+/* 위 검사는 **파일이 자란 것**을 잡는다. 아래 둘은 **훅이 그 사실을 모른 채 반대로 말하는 것**을 잡는다.
+ * 08-14(#Q73) 실사고에서 새어 나온 자리가 정확히 여기다 — 위 검사가 적색인 동안 훅은
+ * 「≈4.5KB · read-budget 무료 구간」이라 적힌 손 값을 그대로 내보내며 전문 읽기를 권하고 있었다.
+ * 크기 초과보다 이쪽이 나쁘다: 예산에 막히는 읽기를 «무료»라 부르면 우회가 정상 통로가 된다(F103). */
+
+test('처방이 말하는 DESIGN.md 크기가 «지금» 크기다 (손으로 적으면 파일이 자라는 순간 거짓말이 된다)', () => {
+  const 지금 = (fs.statSync(DESIGN_MD).size / 1024).toFixed(1);
+  const out = execFileSync(process.execPath, [HOOK, '--show'], { encoding: 'utf8' });
+  assert.match(out, new RegExp(`${지금.replace('.', '\\.')}KB`),
+    `처방이 말하는 크기가 지금 크기(${지금}KB)와 다르다 — 파생이 아니라 손으로 적힌 값이다`);
+});
+
+test('픽스처: 문턱을 넘은 DESIGN.md 를 「무료 구간」이라 부르지 않는다 (탐지력)', () => {
+  const 앵커 = '# 킷\n\n- 3규칙: 신호는 하나\n\n이모지 과다 금지\n\n**철칙 4** — ① 순백 금지.\n\n- 감각 규칙: 동심원\n';
+
+  const 큰판 = path.join(임시, 'BIG.md');
+  fs.writeFileSync(큰판, 앵커 + '\n' + 'ㄱ'.repeat(20000), 'utf8'); // 한글 3B/자 = 60KB
+  const r = 호출(새세션(), 'a.html', { designMd: 큰판 });
+  assert.doesNotMatch(r.reason, /무료 구간/, '문턱을 넘었는데 「무료 구간」이라 말한다 — 따를 수 없는 처방(F103)');
+  assert.match(r.reason, /넘었다/, '문턱 초과를 아예 안 알린다 — 조용한 통과');
+
+  // 거짓양성도 본다: 문턱 아래에서까지 경고하면 그 경고는 곧 무시된다.
+  const 작은판 = path.join(임시, 'SMALL.md');
+  fs.writeFileSync(작은판, 앵커, 'utf8');
+  const r2 = 호출(새세션(), 'b.html', { designMd: 작은판 });
+  assert.match(r2.reason, /무료 구간/, '문턱 아래인데 「무료 구간」이라 말하지 않는다');
+});
+
 test('--show 가 훅과 같은 문장을 낸다 (잴 통로를 하나로 · F052)', () => {
   const out = execFileSync(process.execPath, [HOOK, '--show'], { encoding: 'utf8' });
   assert.match(out, /철칙 4/, '--show 가 킷을 안 보여준다');
