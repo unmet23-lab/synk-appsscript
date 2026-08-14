@@ -840,3 +840,35 @@ test('🔴 반 키 접기가 «한 곳»에서만 산다 — 호출부마다 손
   assert.equal(쓴곳, 1,
     `엔진_셋업확장.js 에 «(» 접기가 ${쓴곳}곳이다 — 반키_ 정의 1곳이어야 하고 호출부는 반키_ 를 부른다`);
 });
+
+test('🔴 같은 반의 «다른» 실패는 다른 서명을 낸다 — 이름만 실으면 그날 두 번째 원인이 영영 안 알려진다', () => {
+  /* safeRun 의 dedup 은 「함수명 + 에러 첫 줄」로 하루 1통이다(:1002·:1006). 첫 줄이 반 이름뿐이면
+   *   같은 반에서 원인이 바뀌어도 서명이 같아 두 번째 원인은 알림이 억제된다 — 그런데 그 두 번째가
+   *   더 무거운 고장일 수 있다(검수 758bae69853f). 그렇다고 스택을 첫 줄에 실으면 반대로 서명이
+   *   매번 갈린다. 원인 «첫 줄»만 서명에 싣고 스택은 아래로 내리는 이유가 이 둘 사이다. */
+  const 서명 = (원인) => {
+    const rig = 반여럿Rig(['평일11A', '평일11B']);
+    rig.stub.talkIndexOf_ = (ss2, cN) => {
+      if (cN === '평일11A') throw new Error(원인);
+      return [{ sid: cN + '-1', name: '학생', grp: 1, got: 3, max: 6, quiet: 0, pct: 50 }];
+    };
+    try { loadSnapshot()(rig.stub)(rig.ss); } catch (e) { return String(e.message).split('\n')[0]; }
+    return null;
+  };
+  const a = 서명('groups 읽기 실패');
+  const b = 서명('시트 권한 없음');
+  assert.ok(a && b, '실패가 안 올라갔다');
+  assert.notEqual(a, b, '원인이 달라도 서명이 같다 — 그날 두 번째 원인은 알림이 억제된다: ' + a);
+  assert.equal(서명('groups 읽기 실패'), a, '같은 원인인데 서명이 갈렸다 — dedup 이 안 먹어 메일 쿼터를 태운다');
+  assert.ok(a.includes('평일11A'), '서명에 반 이름이 없다 — 어느 반이 빠졌는지 손이 못 간다: ' + a);
+  assert.ok(!/\bat\s/.test(a), '스택이 서명(첫 줄)에 실렸다 — 줄 번호가 바뀔 때마다 서명이 갈린다: ' + a);
+});
+
+test('🔴 assignGroups 는 «입력»도 접는다 — 한쪽만 접으면 전원이 걸러져 「0명 확정」이 나온다', () => {
+  /* 학생 선별은 반키_(r[4]) !== cls 다. cls 를 안 접으면 손으로 assignGroups('정규반2(9시)') 를 부를 때
+   *   한쪽만 접혀 아무도 안 맞고, 그런데 실패가 아니라 «0명 확정»이라는 성공 문장이 나온다(검수 48599e195c0f). */
+  const fn = section('function assignGroups(className, opts)', 'function assignGroupsAll(');
+  assert.ok(/const cls = 반키_\(className\)/.test(fn),
+    'assignGroups 입력이 안 접힌다 — assignGroups("정규반2(9시)") 직접 호출이 학생을 전원 거른다');
+  assert.ok(/반키_\(r\[4\]\) !== cls/.test(fn), '학생 선별이 반키_ 를 안 탄다 — 양쪽이 같은 통로를 타야 맞는다');
+});
