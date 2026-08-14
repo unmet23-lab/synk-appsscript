@@ -24,6 +24,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { 훅띄우기 } = require('./lib/훅띄우기.js');
 
 const ROOT = path.join(__dirname, '..');
 const 검사기 = path.join(ROOT, 'tools', '자리표검사.js');
@@ -63,10 +64,17 @@ function mkRepo(담을것 = {}, 안담을것 = {}) {
   return dir;
 }
 
-/** 실물 검사기를 그 저장소에 대고 돌린다 — 대역이 아니다. */
+/** 실물 검사기를 그 저장소에 대고 돌린다 — 대역이 아니다.
+ *
+ *  🔑 `spawnSync` 를 직접 안 쓴다 — `tests/훅통로.test.js` 가 저장소를 훑어 그 형태를 금지한다.
+ *    이유가 이 파일에 그대로 걸린다: 검사기가 못 뜨거나 예외로 죽으면 종료코드가 1 이고, 그건
+ *    아래 탐지 검사들이 기대하는 「잡았다」와 **같은 값**이다 — 미실행이 통과로 번역된다.
+ *  ⚠ 그래서 통과코드를 0·1·2 로 못박고(이 게이트의 정상 종료는 그 셋뿐), 그 밖으로 끝나면
+ *    통로가 던진다. 1 안에서 「잡았다」와 「죽었다」를 마저 가르는 것은 **차단문 대조**다 —
+ *    아래 검사들이 코드만 보지 않고 무엇을 말했는지까지 재는 이유가 그것이다. */
 function 검사(dir, 인자 = ['--cached']) {
-  const r = spawnSync(process.execPath, [검사기, ...인자], {
-    cwd: dir, encoding: 'utf8',
+  const r = 훅띄우기([검사기, ...인자], {
+    cwd: dir, encoding: 'utf8', 통과코드: [0, 1, 2],
     env: { ...process.env, SYNK_BUMP_ROOT: dir, SYNK_SKIP_GUARD: '' },
   });
   return { code: r.status, 말 : (r.stderr || '') + (r.stdout || '') };
@@ -98,8 +106,10 @@ test('☠️ 인덱스를 본다 — 작업본이 아니다 ㉠ add 뒤 채번�
   /* `git add` 로 자리표를 담은 뒤 작업본만 채번한 상태. 작업본을 보는 게이트는 여기서 초록이 되고,
    * 그 커밋은 자리표를 그대로 싣는다 — 커밋되는 바이트가 아닌 것을 검사하면 이렇게 샌다. */
   const dir = mkRepo({ 'Code.js': 엔진(라벨자리표) }, { 'Code.js': 엔진(확정) });
-  const { code } = 검사(dir);
+  const { code, 말 } = 검사(dir);
   assert.equal(code, 1, '작업본을 봤다 — 인덱스의 자리표가 그대로 커밋된다(이 게이트가 죽는 첫째 방법)');
+  // 코드만 보면 「잡았다(1)」와 「죽었다(1)」가 같은 값이다 — 무엇을 말했는지까지 재야 갈린다
+  assert.match(말, /Code\.js:2/, '1 로 끝나긴 했는데 자리표를 지목하지 않았다 — 크래시를 탐지로 셀 뻔했다');
 });
 
 test('☠️ 인덱스를 본다 — 작업본이 아니다 ㉡ 작업본에만 자리표면 막지 않는다 (거짓양성 0)', () => {
