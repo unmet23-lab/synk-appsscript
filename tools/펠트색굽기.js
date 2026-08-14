@@ -1,0 +1,109 @@
+/* 펠트 마스코트를 «킷 코랄»로 다시 굽는다 — 유호 지시 08-15 (「펠트로 바뀌었어 · 색상은 코랄색으로」).
+ *
+ * 왜 다시 굽나(실측 08-15): `재질대조_0814/펠트_본체.png` 는 프롬프트에 "coral-red wool" 이라
+ * 적고 구웠는데 코어가 `#C55143` 로 착지했다 — 킷 Coral `#FF6B5C` 과 ΔE2000 13.4,
+ * 그리고 유호님이 08-02 에 「강렬하나 칙칙」으로 **기각한 V9 레드 `#C74A3A` 와 ΔE 1.9**.
+ * 라벨은 코랄인데 픽셀은 벽돌이었다.
+ *
+ * 🔑 통로 = **색을 낱말로 주지 않고 «참조»로 준다.**
+ *   `파생굽기.js` 머리말의 실측이 근거다 — 문장으로 「the same orb」라고 못박아도 호출이 갈리면
+ *   색이 갈렸고(ΔH 16), 참조에 물리자 붙었다(ΔH 1.8). `펠트_색_체리핑크` 가 목표 `#FB7A87` 에서
+ *   ΔE 7.9 벗어난 것도 같은 원인이다(프롬프트에 hex 를 적어 참조와 싸웠다).
+ *   그래서 참조 2장을 넣는다:
+ *     ①`재염색_본체.png` — 형태·재질·«정확한 목표색»을 동시에 진다.
+ *        (`tools/펠트색갈이.py` 가 선형광 게인으로 결정론적으로 만든 것 · 코어 ΔE 3.45)
+ *     ②`코랄견본.png` — 킷 코랄 램프 4단 색표. 명암이 어느 색으로 가야 하는지의 지시.
+ *
+ * ⚠검수는 이 파일이 하지 않는다 — 굽는 쪽이 스스로 합격을 선언하면 그 초록은 아무것도 증명하지 못한다.
+ *   측정은 `python tools/펠트색갈이.py` 와 같은 정의로 따로 돌린다.
+ * ⚠산출물은 정본 이름을 덮지 않는다 — 유호님이 눈으로 고른 뒤에 사람이 바꿔 넣는다.
+ * ⚠돈이 든다(1컷 ≈ 190원).
+ *
+ * 사용법:
+ *   node tools/펠트색굽기.js            # 전부
+ *   node tools/펠트색굽기.js 코랄_본체   # 하나만
+ */
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const { 키, 한컷 } = require('./lib/이미지굽기');
+
+const REPO = path.resolve(__dirname, '..');
+const 폴더 = path.join(REPO, 'docs/캐릭터/펠트코랄_0815');
+const 참조 = {
+  재염색: path.join(폴더, '재염색_본체.png'),
+  견본: path.join(폴더, '코랄견본.png'),
+};
+
+const 스튜디오 = `Studio product photography lighting from upper left, floating object with no ground
+shadow, centered on a plain light gray background (#E6E4E2), ultra high resolution, clean minimal
+luxury aesthetic. No text, no letters, no numbers, no logo, no watermark.`;
+
+/* 「색은 참조가 진다」를 매번 같은 문장으로 못박는다 — 이 문장이 흔들리면 색이 다시 갈린다.
+ * hex 를 «적지 않는다»: 적으면 모델이 참조와 낱말 사이에서 타협해 중간값으로 착지한다. */
+const 색규약 = `CRITICAL — the wool color must match the reference images exactly: the bright warm
+coral of the first reference image, and the color chart in the last reference image. Do not shift the
+hue toward brick, terracotta, rust, brown or deep red. Do not darken or desaturate it. The wool is a
+bright, warm, slightly pink-leaning coral.`;
+
+const 유지규약 = `Keep everything else identical to the first reference image: the exact same
+silhouette (rounded dome head, wavy flowing bottom edge), the same proportions, the same camera angle,
+the same centered composition, the same total height in frame, the same delicate cream hand-stitched
+accents along the bottom edge, and the same lighting direction.`;
+
+const 작업들 = [
+  {
+    이름: '코랄_본체',
+    비율: '1:1',
+    참조: [참조.재염색, 참조.견본],
+    지시: `Re-render the needle-felted wool mascot from the first reference image as a premium
+handcrafted needle-felted wool figurine. Premium handcrafted needle-felted wool material, soft dense
+wool with visible fuzzy fiber texture and fine loose fibers catching the light along the silhouette,
+warm artisanal craft quality. Two small round glossy black bead eyes exactly where the reference has
+them. No mouth, no other facial features. ${색규약} ${유지규약} ${스튜디오}`,
+  },
+  {
+    이름: '코랄_눈웃음',
+    비율: '1:1',
+    참조: [],
+    런타임참조: ['코랄_본체'],
+    대체참조: [참조.재염색],
+    지시: `Take the felted mascot in the reference image and change ONLY the eyes: replace the two
+round black bead eyes with happy smiling eyes — two upward-curved arcs (^ ^) in dark stitched thread,
+the classic warm eye-smile. Everything else must be pixel-identical to the reference: same silhouette,
+same wool fiber texture, same wool color, same cream hand-stitching, same lighting, same size, same
+position, same background. Absolutely no mouth. ${스튜디오}`,
+  },
+];
+
+(async () => {
+  for (const p of Object.values(참조)) {
+    if (!fs.existsSync(p)) {
+      console.error(`🔴 참조가 없다 — ${p}\n   먼저: python tools/펠트색갈이.py `
+        + `"docs/캐릭터/재질대조_0814/펠트_본체.png" "${참조.재염색}" --목표 "#FF6B5C" --견본 "${참조.견본}"`);
+      process.exit(1);
+    }
+  }
+  const k = 키();
+  const 결과 = {};
+  const 대상 = process.argv[2] ? 작업들.filter((z) => z.이름 === process.argv[2]) : 작업들;
+  let 실패 = 0;
+  for (const z of 대상) {
+    // 런타임참조는 같은 실행의 산출물이 1순위 → 디스크에 이미 구운 것 → 대체참조.
+    const 앞선것 = (n) => 결과[n] || path.join(폴더, `${n}.png`);
+    let refs = [...z.참조, ...(z.런타임참조 || []).map(앞선것)];
+    if (refs.some((r) => !fs.existsSync(r)) && z.대체참조) {
+      console.log(`   ↳ ${z.이름}: 선행 컷이 없어 대체참조로 간다(색이 갈릴 수 있다 — 검수에서 본다).`);
+      refs = z.대체참조;
+    }
+    try {
+      결과[z.이름] = await 한컷({ ...z, 참조: refs, k, 저장경로: path.join(폴더, `${z.이름}.png`) });
+    } catch (e) {
+      실패++;
+      console.error(`🔴 ${e.message}`);
+    }
+  }
+  console.log(`\n합계 = 시도 ${대상.length} = 성공 ${대상.length - 실패} + 실패 ${실패}`
+    + `  · 대략 ${대상.length * 190}원`);
+  process.exit(실패 ? 1 : 0);
+})();

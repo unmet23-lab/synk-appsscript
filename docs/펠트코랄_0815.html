@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>펠트 마스코트 — 코랄로 (0815)</title>
+<style>
+  /* 킷 골격 — 바탕 Navy 2 · 잉크 Cream · 신호 1점 Coral. 킷 밖 색 0.
+     ⚠통과/미달을 두 색으로 가르지 않는다(신호는 하나) — 미달만 Coral 이 짚고,
+       통과는 색이 아니라 «웨이트»가 진다(DESIGN.md: 위계는 색이 아니라 밀도). */
+  :root{
+    --navy2:#0F1730; --navy:#1A2340; --navy3:#2A3358; --cream:#F6F1E8; --cream3:#E7DDC7;
+    --slate:#8A93AD; --coral:#FF6B5C; --coral3:#E8543F;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    background:var(--navy2); color:var(--cream);
+    font-family:'SUIT','Inter Tight',-apple-system,'Segoe UI','Malgun Gothic',sans-serif;
+    letter-spacing:-0.02em; padding:56px 32px 80px;
+  }
+  .mono{font-family:'DM Mono',ui-monospace,'Cascadia Mono',Consolas,monospace}
+  header,.grid,.obs,footer{max-width:1040px;margin-left:auto;margin-right:auto}
+  header{margin-bottom:48px}
+  .kicker{font-size:13px;color:var(--slate);letter-spacing:.14em;text-transform:uppercase}
+  h1{font-size:34px;font-weight:800;margin-top:10px}
+  h1 em{color:var(--coral);font-style:normal}
+  .sub{margin-top:14px;font-size:15px;line-height:1.7;color:var(--slate);max-width:760px}
+  .sub b{color:var(--cream);font-weight:700}
+  .grid{display:flex;flex-direction:column;gap:56px}
+  .row h2{font-size:15px;font-weight:700;color:var(--cream3);margin-bottom:6px}
+  .row .note{font-size:13.5px;color:var(--slate);margin-bottom:18px;line-height:1.7;max-width:800px}
+  .row .note b{color:var(--cream);font-weight:700}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  figure{background:var(--navy);border-radius:14px;overflow:hidden}
+  figure img{width:100%;display:block}
+  figcaption{padding:12px 16px;font-size:12.5px;color:var(--slate);display:flex;
+    justify-content:space-between;gap:8px;align-items:baseline}
+  figcaption b{color:var(--cream);font-weight:700}
+
+  /* 색 칩 — 유호님이 «눈으로» 고르는 자리. 숫자는 아래 표가 진다. */
+  .chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+  .chip{border-radius:12px;overflow:hidden;background:var(--navy)}
+  .chip .swatch{height:104px}
+  .chip .lab{padding:10px 12px;font-size:12px;line-height:1.55;color:var(--slate)}
+  .chip .lab b{display:block;color:var(--cream);font-size:12.5px;font-weight:700}
+  .chip .lab .hex{color:var(--cream3)}
+  .chip.miss{outline:2px solid var(--coral3);outline-offset:-2px}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--navy3)}
+  th{color:var(--cream3);font-weight:700;font-size:12px;letter-spacing:.04em}
+  td{color:var(--slate)}
+  td b{color:var(--cream);font-weight:700}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+  .pass{color:var(--cream);font-weight:700}   /* 통과 = 색이 아니라 웨이트 */
+  .miss{color:var(--coral)}                   /* 미달 = 신호 1점 */
+  .tw{overflow-x:auto}
+
+  .obs{margin-top:64px;border-top:1px solid var(--navy);padding-top:32px}
+  .obs h2{font-size:15px;font-weight:700;color:var(--cream3);margin-bottom:14px}
+  .obs ol{margin-left:20px;display:flex;flex-direction:column;gap:12px}
+  .obs li{font-size:14px;line-height:1.75;color:var(--slate)}
+  .obs li strong{color:var(--cream);font-weight:700}
+  .ask{margin-top:28px;background:var(--navy);border-left:3px solid var(--coral);
+    border-radius:0 12px 12px 0;padding:18px 22px}
+  .ask h3{font-size:14px;color:var(--cream);font-weight:700;margin-bottom:10px}
+  .ask ul{margin-left:18px;display:flex;flex-direction:column;gap:8px}
+  .ask li{font-size:13.5px;line-height:1.7;color:var(--slate)}
+  .ask li b{color:var(--cream);font-weight:700}
+  footer{margin-top:56px;font-size:12px;color:var(--slate);line-height:1.8}
+  footer b{color:var(--cream3);font-weight:700}
+  @media (max-width:720px){.pair{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="kicker mono">SYNK · MASCOT COLOR · 2026-08-15</div>
+  <h1>펠트 마스코트를 <em>킷 코랄</em>로</h1>
+  <p class="sub">유호님 지시 08-15(「마스코트 바뀌었어 펠트 재질로. 색상은 코랄색으로」)로 만든 판정 재료.
+  재려고 열었더니 <b>기존 펠트 본체는 애초에 코랄이 아니었다</b> — 프롬프트엔 "coral-red wool"이라 적혀
+  있는데 픽셀은 벽돌빛이었고, 하필 유호님이 08-02 에 「강렬하나 칙칙」으로 <b>기각한 V9 레드와 같은 색</b>으로
+  읽히는 자리에 앉아 있었다. 그래서 이 보드는 「코랄을 새로 입혔다」가 아니라
+  <b>「코랄이 아니었던 것을 코랄로 되돌렸다」</b>의 재료다.</p>
+</header>
+
+<div class="grid">
+
+  <section class="row">
+    <h2>① 무엇이 어긋나 있었나 — 색 칩으로</h2>
+    <p class="note">전부 같은 정의로 잰 값이다(유채 픽셀의 채도 40~70 백분위 평균 = 「코어」).
+    ΔE2000 은 사람 눈이 느끼는 색차 — <b>3 미만이면 같은 색으로 읽히고, 12 이상이면 확실히 다른 색</b>이다.</p>
+    <div class="chips">
+      <div class="chip miss">
+        <div class="swatch" style="background:#C55143"></div>
+        <div class="lab"><b>기존 펠트 본체</b><span class="hex mono">#C55143</span>
+          킷 Coral 과 ΔE <b>13.4</b> — 다른 색</div>
+      </div>
+      <div class="chip miss">
+        <div class="swatch" style="background:#C74A3A"></div>
+        <div class="lab"><b>V9 레드 — 기각된 색</b><span class="hex mono">#C74A3A</span>
+          위 칩과 ΔE <b>1.9</b> — 같은 색으로 읽힌다</div>
+      </div>
+      <div class="chip">
+        <div class="swatch" style="background:#E55D50"></div>
+        <div class="lab"><b>㉠ 재염색 (결정론)</b><span class="hex mono">#E55D50</span>
+          킷 Coral 과 ΔE <b>5.9</b></div>
+      </div>
+      <div class="chip">
+        <div class="swatch" style="background:#E35A4D"></div>
+        <div class="lab"><b>㉡ 네이티브 굽기</b><span class="hex mono">#E35A4D</span>
+          킷 Coral 과 ΔE <b>6.7</b> · Coral 3 와 <b>2.7</b></div>
+      </div>
+      <div class="chip">
+        <div class="swatch" style="background:#FF6B5C"></div>
+        <div class="lab"><b>킷 Coral</b><span class="hex mono">#FF6B5C</span>
+          평면 UI 색 — 조준점</div>
+      </div>
+      <div class="chip">
+        <div class="swatch" style="background:#E8543F"></div>
+        <div class="lab"><b>킷 Coral 3</b><span class="hex mono">#E8543F</span>
+          킷 코랄 계열의 어두운 단</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="row">
+    <h2>② 통로 둘 — 같은 목표, 다른 방법</h2>
+    <p class="note">㉠<b>재염색</b> = 기존 렌더의 양모 픽셀만 골라 「염료를 갈아입힌다」(선형광 채널 게인 ·
+    <span class="mono">tools/펠트색갈이.py</span> · 0원 · 결정론적이라 같은 입력이면 늘 같은 답).
+    ㉡<b>네이티브 굽기</b> = 그 재염색본과 킷 코랄 색표를 <b>참조 이미지</b>로 물려 다시 구웠다
+    (<span class="mono">tools/펠트색굽기.js</span> · 2컷 380원). 색을 낱말로 주지 않은 것이 핵심이다 —
+    프롬프트의 hex 는 참조와 싸우다 중간값에 착지한다(그게 기존 판이 벽돌이 된 원인이다).</p>
+    <div class="pair">
+      <figure><img src="캐릭터/펠트코랄_0815/재염색_본체.png" alt="재염색 본체">
+        <figcaption><b>㉠ 재염색 · 본체</b><span>기하 원본과 +0.0% 동일 · 0원</span></figcaption></figure>
+      <figure><img src="캐릭터/펠트코랄_0815/코랄_본체.png" alt="네이티브 코랄 본체">
+        <figcaption><b>㉡ 네이티브 · 본체</b><span>잔섬유 생김 · +3.8% 커짐</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="row">
+    <h2>③ 같은 두 통로 — 눈웃음</h2>
+    <p class="note">표정은 <b>입 없이 눈으로만</b> 낸다(유호 확정 「입은 아낀다」).
+    네이티브 짝은 상태 정합 검사 통과 — <b>크기 -0.1% · 중심 0.0% · 색상 ΔH 1.1</b>이라 교대해도 안 튄다.</p>
+    <div class="pair">
+      <figure><img src="캐릭터/펠트코랄_0815/재염색_눈웃음.png" alt="재염색 눈웃음">
+        <figcaption><b>㉠ 재염색 · 눈웃음</b><span>코어 #EA6B5C(같은 좌표 기준)</span></figcaption></figure>
+      <figure><img src="캐릭터/펠트코랄_0815/코랄_눈웃음.png" alt="네이티브 코랄 눈웃음">
+        <figcaption><b>㉡ 네이티브 · 눈웃음</b><span>자수 아치 · 입 0</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="row">
+    <h2>④ 참고 — 바뀌기 전 그림</h2>
+    <p class="note">비교 기준. 이 컷이 8월 14일까지의 「펠트 마스코트」였다.</p>
+    <div class="pair">
+      <figure><img src="캐릭터/재질대조_0814/펠트_본체.png" alt="기존 펠트 본체">
+        <figcaption><b>기존 · 본체</b><span class="miss">코어 #C55143 = 벽돌</span></figcaption></figure>
+      <figure><img src="캐릭터/펠트코랄_0815/코랄견본.png" alt="킷 코랄 램프 견본">
+        <figcaption><b>굽기에 물린 색표</b><span>Coral Soft·2·Coral·3</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="row">
+    <h2>⑤ 측정표 — 왜 킷 Coral 에 «정확히» 못 닿는가</h2>
+    <p class="note">셋 다 <b>hue 5.2° ≈ 킷 Coral 의 5.5°</b>, 채도도 66% ≈ 64%. 남은 차이는 밝기 하나뿐이다.
+    그리고 그건 못 없앤다 — <b><span class="mono">#FF6B5C</span> 의 R 은 255, 즉 색역의 끝</b>이라
+    결이 있는 표면의 «평균»은 그 값에 닿을 수 없다(평균보다 어두운 섬유는 내려가고, 밝은 섬유는
+    255 에서 막혀 보상을 못 한다). 그래서 펠트 마스코트가 앉을 자리는 킷 코랄 계열의 한 단 아래,
+    즉 <b>Coral 3</b> 다 — 킷 «밖»이 아니라 킷 «안»이다.</p>
+    <div class="tw"><table>
+      <thead><tr>
+        <th>컷</th><th class="num">코어</th><th class="num">hue</th><th class="num">채도</th><th class="num">명도</th>
+        <th class="num">vs 킷 Coral</th><th class="num">vs Coral 3</th>
+      </tr></thead>
+      <tbody>
+        <tr><td><b>기존 펠트</b></td><td class="num mono">#C55143</td><td class="num">6.5°</td><td class="num">66%</td>
+          <td class="num">77%</td><td class="num miss">13.37</td><td class="num">6.96</td></tr>
+        <tr><td><b>㉠ 재염색</b></td><td class="num mono">#E55D50</td><td class="num">5.2°</td><td class="num">65%</td>
+          <td class="num">90%</td><td class="num">5.91</td><td class="num">3.21</td></tr>
+        <tr><td><b>㉡ 네이티브</b></td><td class="num mono">#E35A4D</td><td class="num">5.2°</td><td class="num">66%</td>
+          <td class="num">89%</td><td class="num">6.68</td><td class="num pass">2.67</td></tr>
+        <tr><td>킷 Coral <span class="mono">#FF6B5C</span></td><td class="num mono">—</td><td class="num">5.5°</td>
+          <td class="num">64%</td><td class="num">100%</td><td class="num">0</td><td class="num">—</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="row">
+    <h2>⑥ 부작용 실측 — 마스코트를 «올릴 수 있는 바닥»이 어떻게 바뀌나</h2>
+    <p class="note">마스코트가 체리에서 코랄로 가면 킷 코랄 면 위에서 묻힐 것이라 <b>예상했는데, 재보니 반대였다</b>.
+    막히는 면이 4개에서 3개로 줄고, K컬처 콘텐츠에서 실제로 걸렸던 핑크 두 색이 새로 열린다.
+    임계는 ΔE 12(<span class="mono">tools/브랜드렌더린트.js</span> 의 계산 그대로).</p>
+    <div class="tw"><table>
+      <thead><tr><th>킷 면</th><th class="num">hex</th><th class="num">체리 마스코트</th>
+        <th class="num">코랄 펠트</th><th>판정 변화</th></tr></thead>
+      <tbody>
+        <tr><td><b>Coral 3</b></td><td class="num mono">#E8543F</td><td class="num pass">15.4 통과</td>
+          <td class="num miss">3.0 막힘</td><td class="miss">→ 새로 막힘</td></tr>
+        <tr><td><b>KC Hot Pink</b></td><td class="num mono">#FF3E88</td><td class="num miss">11.9 막힘</td>
+          <td class="num pass">18.3 통과</td><td class="pass">→ 새로 통과</td></tr>
+        <tr><td><b>KC Pink 2</b></td><td class="num mono">#FF6BA8</td><td class="num miss">11.0 막힘</td>
+          <td class="num pass">21.8 통과</td><td class="pass">→ 새로 통과</td></tr>
+        <tr><td>Paper</td><td class="num mono">#FBF7EE</td><td class="num">33.9</td>
+          <td class="num pass">39.8</td><td>변화 없음(개선)</td></tr>
+        <tr><td>Cream 2</td><td class="num mono">#EFE7D7</td><td class="num">32.7</td>
+          <td class="num pass">37.6</td><td>변화 없음(개선)</td></tr>
+        <tr><td>Coral Wash</td><td class="num mono">#FFE9E4</td><td class="num">27.3</td>
+          <td class="num pass">34.7</td><td>변화 없음(개선)</td></tr>
+        <tr><td>Navy 2 — 가장 잘 뜨는 곳</td><td class="num mono">#0F1730</td><td class="num">57.5</td>
+          <td class="num">50.5</td><td>변화 없음(여전히 1위)</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</div>
+
+<div class="obs">
+  <h2>관찰 — 잰 것에서만 나온 것</h2>
+  <ol>
+    <li><strong>기존 펠트는 코랄이 아니었다.</strong> 라벨(프롬프트 문장)과 픽셀이 갈라져 있었고,
+      아무도 그 사이를 재지 않아 「펠트=코랄」로 문서에 적혀 있었다. 하필 착지한 자리가
+      <strong>이미 기각된 색</strong>이라 유호님이 그림을 보고 이상함을 느낀 것이 맞다.</li>
+    <li><strong>색은 낱말로 못 준다 — 참조로 준다.</strong> 프롬프트에 hex 를 적는 방식은
+      이 저장소에서 이미 두 번 어긋났다(체리핑크 시안이 목표에서 ΔE 7.9, 펠트 본체가 13.4).
+      이번엔 색을 <em>이미지</em>로 줬고 붙었다.</li>
+    <li><strong>완전 일치는 불가능하고, 그게 결함이 아니다.</strong> 킷 Coral 은 R 이 포화된
+      평면 UI 색이라 결 있는 물체의 평균이 닿을 수 없다. 펠트 마스코트의 정직한 자리는
+      <strong>Coral 3(ΔE 2.7)</strong> — 킷 안의 한 칸이다.</li>
+    <li><strong>내 예상이 틀렸다.</strong> 「코랄 마스코트는 코랄 면에서 묻힌다」고 봤는데
+      전수로 재보니 막히는 면이 오히려 줄었다(4→3). 예상으로 판정했으면 반대로 보고했을 자리다.</li>
+    <li><strong>다만 성격이 하나 바뀐다.</strong> 08-13 에 체리를 고른 이유는 「킷 색과 ΔE 9 이내면
+      코랄의 6번째 단으로 흡수돼 캐릭터 고유색 지위를 잃는다」였다. 코랄 펠트는 Coral 3 와 ΔE 2.7 이니
+      <strong>마스코트가 킷 색이 된다</strong> — 「IP 고유색」이라는 틀 자체가 코랄판에는 안 붙는다.
+      (08-14 에 유호님이 색을 「가결」로 강등해 두셨으므로 이건 확정 위반이 아니라 <em>성격 변경</em>이다.)</li>
+  </ol>
+
+  <div class="ask">
+    <h3>유호님 판정이 필요한 자리</h3>
+    <ul>
+      <li><b>㉠ 재염색</b>과 <b>㉡ 네이티브</b> 중 어느 쪽인가 — ㉠은 기하가 원본과 완전히 같고 0원,
+        ㉡은 잔섬유가 살아 결이 더 진짜 같지만 3.8% 커졌다(커진 것 자체는 문제가 아니고,
+        고른 쪽에서 <b>표정·¾ 컷 전부를 다시 파생</b>시켜야 세트가 안 튄다).</li>
+      <li><b>코랄판이 체리판을 대체하는가, 둘 다 남는가</b> — 08-14 확정은 「둘 다」였다.
+        둘 다면 이 코랄 세트가 «평소» 의상이 되고, 대체면 체리 자산 8컷이 이력으로 내려간다.</li>
+      <li><b>Coral 3 면 위 금지</b>를 규칙으로 박을지 — 코랄판을 쓰면 새로 생기는 유일한 제약이다
+        (기계로 막는 자리는 <span class="mono">tools/브랜드렌더린트.js</span> 하나).</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  재료 = <span class="mono">docs/캐릭터/펠트코랄_0815/</span> (재염색 2컷 · 네이티브 2컷 · 색표 1)
+  · 도구 = <span class="mono">tools/펠트색갈이.py</span>(결정론 재염색) ·
+  <span class="mono">tools/펠트색굽기.js</span>(참조 물린 굽기) ·
+  <span class="mono">tools/lib/이미지굽기.js</span>(공용 통로)<br>
+  검수 = <span class="mono">tools/상태컷정합.py</span> — 네이티브 짝 <b>정합</b>.
+  ⚠ 같은 도구가 내는 「색상 ΔH 위반」은 이 트랙에선 <b>거짓양성</b>이다(색을 바꾸는 게 목적인데
+  그 도구는 색이 안 바뀌어야 하는 상태 세트용이다) — 기하 칸만 읽었다.<br>
+  ⚠ 이 파일은 렌더 린트 등록층에 <b>안 넣었다</b> — 색 A/B 라 한 지면에 신호가 여럿이니
+  등록하면 영구 거짓 적색이 된다(선례 = 캐러셀 · 사유는 <span class="mono">브랜드렌더린트.js</span> 의 <span class="mono">제외</span>).<br>
+  지출 = 네이티브 2컷 ≈ 380원. 재염색·색표·측정 = 0원.
+  · 마스코트 정본(<span class="mono">docs/캐릭터/마스코트_정본/</span>)·킷 hex·앱 코드 <b>전부 무변경</b>.
+</footer>
+</body>
+</html>
