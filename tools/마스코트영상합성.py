@@ -27,7 +27,10 @@ from PIL import Image, ImageDraw, ImageFilter
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 누끼 = os.path.join(ROOT, "docs", "캐릭터", "마스코트_누끼")
 
-FPS = 30
+# 24 인 이유: Veo 가 «네이티브로» 24 로 낸다(08-14 실측 ffprobe). 우리가 30 으로 맞추면
+# B 만 프레임 중복 저더가 생기고, 그건 배경 품질이 아니라 우리 변환이 만든 불리함이다.
+# A·C 는 절차 생성이라 어느 fps 든 손해가 없으므로, 손해 보는 쪽에 맞춘다.
+FPS = 24
 초 = 6.0
 N = int(FPS * 초)
 
@@ -181,7 +184,10 @@ def 배경_코드(폭, 높이, 장식=True):
         rr = np.sqrt(((xx - 폭 * 0.5) / (폭 * 0.62)) ** 2 + ((yy - cy) / (높이 * 0.34)) ** 2)
         bloom = np.clip(1 - rr, 0, 1) ** 2.4 * (0.085 * 숨)
         buf += bloom[..., None] * np.array(체리코어, np.float32)
-        return np.clip(buf, 0, 255)
+        # 안개는 «빼는» 연산이라 설계 바닥 아래로 내려간다 — 08-14 실측에서 하위 1% 밝기가
+        # 6.0 까지 떨어져 킷 철칙 ①(순검정 금지)에 걸렸다. 이 자를 세우고서야 보였다.
+        # Navy Ink 에서 자른다(새 색이 아니라 «이미 정한 바닥»이다).
+        return np.clip(buf, np.array(NAVY_INK, np.float32), 255)
 
     return 프레임
 
@@ -254,8 +260,15 @@ def ciede2000(a, b):
 
 
 def 검증(프레임들, 마스크들):
-    """① 코어 hex 가 정본 #FB7A87 로 살아남았나  ② 바닥이 임계 12 를 넘나(하이라이트 기준)."""
-    코어표본, 바닥표본 = [], []
+    """① 코어 hex 가 정본 #FB7A87 로 살아남았나  ② 바닥이 임계 12 를 넘나(하이라이트 기준)
+       ③ 바닥이 «번잡한가»  ④ 순검정에 붙었나.
+
+       ③④ 는 08-14 에 Veo 판을 보고 뒤늦게 세웠다 — ②의 평균 ΔE 만으로는 못 잡는 두 자리다:
+       ③ 실루엣 바로 옆의 밝기 «편차». 평균이 멀쩡해도 그 자리가 번잡하면 윤곽이 씹힌다.
+          평균은 밝은 얼룩과 어두운 얼룩이 서로를 지워 「깨끗함」으로 보이게 만든다.
+       ④ 킷 철칙 ①은 순검정을 금지하는데, 생성 배경은 «우리 킷을 모른다» — 프레임의 최암부가
+          검정에 얼마나 붙었는지는 재봐야 안다."""
+    코어표본, 바닥표본, 편차표본, 최암표본 = [], [], [], []
     for img, m in zip(프레임들, 마스크들):
         a = img.astype(np.int32)
         속 = m > 250
@@ -270,14 +283,28 @@ def 검증(프레임들, 마스크들):
         s = (lum >= lo) & (lum <= hi)
         코어표본.append((np.median(r[s]), np.median(g[s]), np.median(b[s])))
 
-        # 바닥 = 실루엣 «바로 바깥» 링(24px) — 손 목록이 아니라 실제 픽셀이다
-        밖 = np.asarray(Image.fromarray((속 * 255).astype(np.uint8))
-                        .filter(ImageFilter.MaxFilter(9)), bool)
-        for _ in range(2):
-            밖 = np.asarray(Image.fromarray((밖 * 255).astype(np.uint8))
-                            .filter(ImageFilter.MaxFilter(9)), bool)
-        링 = 밖 & ~속
+        # 바닥 = 실루엣 «바로 바깥» 링 — 손 목록이 아니라 실제 픽셀이다.
+        # ⚠ 링의 안쪽 경계는 `속`(불투명 코어)이 «아니다». 젤리는 반투명 유리 테두리가 넓어서,
+        #   불투명 코어만 빼면 링 안에 **마스코트 자기 테두리**가 들어온다. 그러면 세 안이
+        #   공유하는 부분을 재면서 「배경을 쟀다」는 얼굴을 한다 — 08-14 실측에서 번잡도가
+        #   40.3 / 41.1 / 44.1 로 붙어 나온 것이 그 증상이었다(민무늬가 번잡할 리 없다).
+        #   그래서 알파가 «조금이라도» 있는 곳에서 한 번 더 여유를 주고 링을 띄운다.
+        def 부풀림(마, 횟수):
+            r = 마
+            for _ in range(횟수):
+                r = np.asarray(Image.fromarray((r * 255).astype(np.uint8))
+                               .filter(ImageFilter.MaxFilter(9)), bool)
+            return r
+
+        여유 = 부풀림(m > 0, 3)      # 마스코트의 발광·안티에일리어싱까지 통째로 제외
+        링 = 부풀림(여유, 4) & ~여유
         바닥표본.append((a[..., 0][링].mean(), a[..., 1][링].mean(), a[..., 2][링].mean()))
+
+        링밝기 = 0.299 * a[..., 0][링] + 0.587 * a[..., 1][링] + 0.114 * a[..., 2][링]
+        편차표본.append(링밝기.std())
+
+        전체밝기 = 0.299 * a[..., 0] + 0.587 * a[..., 1] + 0.114 * a[..., 2]
+        최암표본.append(np.percentile(전체밝기, 1))
 
     코어 = np.median(np.array(코어표본), axis=0)
     바닥 = np.median(np.array(바닥표본), axis=0)
@@ -286,6 +313,8 @@ def 검증(프레임들, 마스크들):
         코어편차=round(ciede2000(코어, 체리코어), 2),
         바닥=tuple(int(round(v)) for v in 바닥),
         바닥ΔE=round(ciede2000(체리하이라이트, 바닥), 1),
+        바닥번잡=round(float(np.median(편차표본)), 1),
+        최암부=round(float(np.median(최암표본)), 1),
     )
 
 
@@ -345,6 +374,10 @@ def main():
     print(f"  바닥(실루엣 밖) #{v['바닥'][0]:02X}{v['바닥'][1]:02X}{v['바닥'][2]:02X}"
           f"  하이라이트 대비 ΔE {v['바닥ΔE']} / 임계 12"
           f"   {'OK' if v['바닥ΔE'] >= 12 else 'X 바닥이 캐릭터를 먹는다'}")
+    print(f"  바닥 번잡도(실루엣 옆 밝기 편차) {v['바닥번잡']}"
+          f"   — 낮을수록 윤곽이 깨끗하다(임계 없음 · 안끼리 «대조»하는 값이다)")
+    print(f"  최암부(하위 1% 밝기) {v['최암부']}"
+          f"   {'OK' if v['최암부'] >= 8 else '⚠ 순검정에 붙었다 — 킷 철칙 ① 자리'}")
     sz = os.path.getsize(a.출력) / 1024
     print(f"  파일 {sz:.0f} KB · {폭}x{높이} · {초}초 {FPS}fps")
 
