@@ -457,6 +457,26 @@ function 명부스윕_() {
         몸.push(r);
       });
     }
+    /* 조·좌석 동봉(숙제서클 §10-3 · talk 20260814100000) — groups 시트의 **현 시즌 스냅샷**을
+     * [[학생ID, 조, 좌석]] 로 싣는다. 옛 서버는 이 키를 모른 채 무시한다(호환 방향 = 무동작).
+     * 시즌 미설정·시트 없음·미편성 = 빈 배열 — 「편성이 없다」는 사실 그대로고, 신판 서버는
+     * 빈 스냅샷을 받으면 남아 있던 조를 비운다(재편성에서 빠진 학생의 옛 조가 남으면 검수
+     * 콘솔이 그 학생을 남의 조에 계속 그린다). 값 검증은 서버가 지고 행별로 이름·사유로 되돌린다. */
+    const 조편성 = [];
+    const gs = ss.getSheetByName('groups');
+    if (gs && gs.getLastRow() >= 2) {   // 시트·행부터 본다 — 없으면 시즌 헬퍼도 안 부른다(미편성 = 빈 스냅샷)
+      const 조tz = ss.getSpreadsheetTimeZone();
+      const 조시즌 = seasonLabelOf_(ss, 조tz);
+      if (조시즌) {
+        gs.getRange(2, 1, gs.getLastRow() - 1, GROUPS_HEADERS.length).getValues().forEach(function (r) {
+          if (seasonKeyOf_(r[0], 조tz) !== 조시즌) return; // 지난 시즌 행 — 스냅샷이 아니다
+          const sid = String(r[2] || '').trim();
+          if (!sid || sid.indexOf('DEMO-') === 0) return; // 시연 행 — 명부와 같은 게이트
+          조편성.push([sid, String(r[4] == null ? '' : r[4]), String(r[5] == null ? '' : r[5])]);
+        });
+      }
+    }
+
     /* 보낼 행이 없으면 왕복도 하지 않는다 — 단 **돌아서지는 않는다.** 아래 상태 블록까지 흘려보내
      * 어제의 문제 서명을 비운다(여기서 return 하면 낡은 서명이 남아 다음 문제가 조용해진다). */
     if (머리 && 몸.length) {
@@ -464,7 +484,7 @@ function 명부스윕_() {
         method: 'post',
         contentType: 'application/json',
         headers: { apikey: anon, Authorization: 'Bearer ' + anon, 'x-roster-ingest-key': key },
-        payload: JSON.stringify({ 표: [머리].concat(몸) }),
+        payload: JSON.stringify({ 표: [머리].concat(몸), 조편성: 조편성 }),
         muteHttpExceptions: true,
       });
       const code = res.getResponseCode();
@@ -495,18 +515,21 @@ function 명부스윕_() {
           const 막힘 = j.막힘;
           const 역할오류들 = j.역할오류들 || [];
           const 무동의 = j.무동의 || [];
+          const 조문제들 = j.조편성문제 || [];   // 신판 서버만 낸다 — 옛 서버 응답에선 빈 배열
           Logger.log('명부스윕: 읽은행 ' + (j.읽은행 || 0) + ' · 넣음 ' + (j.넣음 || 0) + ' · 건너뜀 ' + (j.건너뜀 || 0) +
-            ' · 경쟁흡수 ' + (j.경쟁흡수 || 0) + ' · 문제 ' + 문제들.length + ' · 막힘 ' + 막힘.length + ' · 무동의 ' + 무동의.length);
-          if (문제들.length || 막힘.length || 역할오류들.length || 무동의.length) {
+            ' · 경쟁흡수 ' + (j.경쟁흡수 || 0) + ' · 문제 ' + 문제들.length + ' · 막힘 ' + 막힘.length + ' · 무동의 ' + 무동의.length +
+            ' · 조갱신 ' + ((j.조갱신 || []).length) + ' · 조해제 ' + (j.조해제 || 0) + ' · 조문제 ' + 조문제들.length);
+          if (문제들.length || 막힘.length || 역할오류들.length || 무동의.length || 조문제들.length) {
             /* 🔴 **자르지 말고 접는다**(①배포 검수 P2). `slice(0, 900)` 은 앞 900자가 같은 두 판을
              *   같다고 읽어, 뒤쪽에서 새로 깨진 학생이 영영 안 울렸다 — 개수 서명과 같은 병이 길이
              *   축으로 재발한 것이다. 세는 눈(개수)은 사람이 읽게 남기고, 가르는 눈은 전문 해시가 진다. */
             const 원서명 = ['p:' + 문제들.map(p => p.번호 || p.줄).join(','),
               'b:' + 막힘.map(p => p.번호).join(','),
               'r:' + 역할오류들.join(','),
-              'c:' + 무동의.join(',')].join('|');
+              'c:' + 무동의.join(','),
+              'g:' + 조문제들.map(p => p.번호 || p.줄).join(',')].join('|');
             서명 = 'p' + 문제들.length + '/b' + 막힘.length + '/r' + 역할오류들.length + '/c' + 무동의.length
-              + '#' + 접기_(원서명);
+              + '/g' + 조문제들.length + '#' + 접기_(원서명);
             const 줄 = [];
             if (문제들.length) 줄.push('■ 명부에 못 실린 행 — 시트를 고치면 다음 아침 자동 반영됩니다\n' +
               문제들.map(p => '· ' + (p.줄 || '?') + '행 ' + (p.번호 || '') + ': ' + (p.사유 || '')).join('\n'));
@@ -516,6 +539,9 @@ function 명부스윕_() {
             if (무동의.length) 줄.push('■ 오늘 명부에 새로 선 학생 중 동의가 0건입니다 — 다음 걸음은 동의 발급입니다\n' +
               무동의.map(c => '· ' + c).join('\n') +
               '\n(오늘 새로 선 학생만 셉니다 — 내일은 이 목록에 다시 안 뜹니다)');
+            if (조문제들.length) 줄.push('■ 조 편성에 못 실린 행 — groups 시트를 고치면 다음 아침 자동 반영됩니다\n' +
+              조문제들.map(p => '· ' + (p.줄 || '?') + '행 ' + (p.번호 || '') + ': ' + (p.사유 || '')).join('\n') +
+              '\n(그 학생은 검수 콘솔에 「조 미편성」으로 뜹니다 — 남의 조에 조용히 앉는 것보다 낫습니다)');
             본문 = 줄.join('\n\n');
           }
         }
