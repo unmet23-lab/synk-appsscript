@@ -10,6 +10,12 @@ const { ENGINE_FILES, engineSource, sharedBlocks } = require('./_engine-source')
 const { 코드만 } = require('./lib/소스검사.js');
 const MANIFEST_PATH = path.join(ROOT, 'appsscript.json');
 const code = engineSource(); // 엔진 전체를 한 문자열로 — 파일이 쪼개져도 아래 표식 검사가 그대로 산다
+/* 🔑 **부정 단언 전용** 정제본 — 「없어야 한다」를 원문에 대고 재면 누군가 그 문구를 주석에 적는 순간
+ *   가드가 엉뚱하게 빨개진다(대기열 P3 #Q72 · F401 계열). 감싸는 것은 **부정 단언의 주어뿐**이다:
+ *   긍정 단언과 `section()` 앵커는 원문 `code` 를 그대로 본다 — 앵커 다수가 주석 배너라
+ *   정제본에서 사라지고, 그러면 20건이 적색이 아니라 **미실행**으로 샌다(⑤회차 실측).
+ *   대가: 엔진 1.28MB 를 한 번 렉싱한다(≈0.6초 · 모듈 적재 시 1회). 자리마다 감싸면 15회다. */
+const 코드정제 = 코드만(code);
 
 function section(startMarker, endMarker) {
   const start = code.indexOf(startMarker);
@@ -166,7 +172,7 @@ test('브리핑 생산과 발송은 같은 종류의 ScriptLock으로 큐를 보
 });
 
 test('공개 웹 실행 함수가 새로 생기지 않았다', () => {
-  assert.equal(/^function\s+do(?:Get|Post)\s*\(/m.test(code), false);
+  assert.equal(/^function\s+do(?:Get|Post)\s*\(/m.test(코드정제), false);
 });
 
 test('재건용 핵심 시트 제목이 실제 읽기·쓰기 순서와 일치한다', () => {
@@ -182,7 +188,7 @@ test('재건 결과는 일부 단계가 실패하면 완료라고 표시하지 �
   const body = section('function bootstrapSynk()', 'function safeRun');
   assert.ok(body.includes("const rebuildFailed = log.some(line => line.indexOf('✗') === 0)"));
   assert.ok(body.includes("rebuildFailed ? 'SYNK OS 재건 일부 실패' : 'SYNK OS 재건 완료'"));
-  assert.equal(body.includes("['기준 테이블', setupTables]"), false);
+  assert.equal(코드만(body).includes("['기준 테이블', setupTables]"), false);
 });
 
 test('숙제 일괄 전개는 지급에 성공한 뒤에만 전개완료로 표시한다', () => {
@@ -204,7 +210,7 @@ test('월간 아카이브는 태그(H열)까지 8열로 이관·정리한다', (
   assert.ok(body.includes('data.length, 8).clearContent()'));
   assert.ok(body.includes('keep.length, 8).setValues(keep)'));
   // 7열만 다루던 옛 패턴이 남으면 태그가 유실되거나 다음 행에 밀려붙는다
-  assert.equal(/, 7\)\.(getValues|setValues|clearContent)/.test(body), false);
+  assert.equal(/, 7\)\.(getValues|setValues|clearContent)/.test(코드만(body)), false);
 });
 
 test('성장 리포트 메일은 공개 URL 링크 대신 PNG를 첨부로 보낸다', () => {
@@ -212,7 +218,7 @@ test('성장 리포트 메일은 공개 URL 링크 대신 PNG를 첨부로 보�
   assert.ok(body.includes('blob: blob.copyBlob()'));
   assert.ok(body.includes('{ attachments: [m.blob] }'));
   // 공개 URL(m.url)을 메일 본문에 실으면 미성년 실명·성적이 전달·캡처로 샌다
-  assert.equal(body.includes("'리포트 카드 보기: ' + m.url"), false);
+  assert.equal(코드만(body).includes("'리포트 카드 보기: ' + m.url"), false);
 });
 
 test.todo('숙제 일괄 지급을 별도 처리로그와 전용 잠금으로 원자화');
@@ -237,7 +243,7 @@ test('[v9.40] preflightGlide는 콘텐츠 부족분을 자동 복구하고 진�
     '자동 복구 후에도 불일치'            // ⑤ 복구 후 재실측 진단(경고 문구)
   ]);
   // 파괴 호출 금지 — setupSchedule은 라이브 15반 커스텀을 리셋한다
-  assert.equal(/setupSchedule\(\)/.test(body), false);
+  assert.equal(/setupSchedule\(\)/.test(코드만(body)), false);
 });
 
 test('[v9.40] 시트 골격에 월간 산출 5종이 있어 Glide가 조립 시점에 테이블로 잡을 수 있다', () => {
@@ -246,7 +252,7 @@ test('[v9.40] 시트 골격에 월간 산출 5종이 있어 Glide가 조립 시�
     assert.ok(body.includes(`['${name}',`), `SHEET_SKELETON에 ${name} 누락`);
   });
   // teacher_stats 구 3열 스키마가 되살아나면 calcTeacherStats 실사용 8열과 다시 어긋난다
-  assert.equal(body.includes("['teacher','지급수','편중률']"), false);
+  assert.equal(코드만(body).includes("['teacher','지급수','편중률']"), false);
 });
 
 test('[v9.40] 공지 헬퍼는 라이브 구 스키마(title_ko/body_ko)를 인식한다', () => {
@@ -257,7 +263,7 @@ test('[v9.40] 공지 헬퍼는 라이브 구 스키마(title_ko/body_ko)를 인�
   assert.ok(trBody.includes("'title_ko'"));
   // 리그·월드 정산이 notices 1~3열에 직접 쓰면 구 스키마에서 열이 어긋난다 — addNotice 경유 강제
   const settle = section('function leagueSettle_()', 'function leagueStoryDaily_()');
-  assert.equal(settle.includes("ensureSheet(ss, 'notices'"), false);
+  assert.equal(코드만(settle).includes("ensureSheet(ss, 'notices'"), false);
   assert.ok(settle.includes('addNotice(ss, nr[0], nr[1])'));
 });
 
@@ -288,7 +294,7 @@ test('[v9.47] 영상팩 메일은 SEND_SCENE_PACK 게이트 뒤에서만 발송�
 
 test('[v9.50] 스토리북은 단일본 1행으로 발간된다(챕터 분할 발간 제거)', () => {
   const sb = section('function buildMonthlyStorybook_()', 'const WORLD_HP_PER');
-  assert.ok(!sb.includes('rows.length, 8).setValues(rows)'), '구 13행 분할 발간 코드가 남아 있음');
+  assert.ok(!코드만(sb).includes('rows.length, 8).setValues(rows)'), '구 13행 분할 발간 코드가 남아 있음');
   assert.ok(sb.includes('const fullBody = rows.map('), '전문 조립 코드 없음');
 });
 
@@ -463,7 +469,7 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
    *   129·130이 주인 있는 열이었다(tests/수집.test.js 선점 검사가 잡음) ②131로 옮겼더니
    *   **라이브 profiles 에 이미 「학교」·「동네」가 있었다**(타 세션 라이브 실측).
    *   세 번째를 프로즈로 막지 않는다 — 번호를 쓰는 것 자체를 금지한다. */
-  assert.ok(!/CAREER_COL_\s*=\s*\d/.test(code),
+  assert.ok(!/CAREER_COL_\s*=\s*\d/.test(코드정제),
     '진로 블록이 고정 열 번호를 되살렸다 — 라이브에는 코드가 모르는 열이 자란다(Row ID·학교·동네)');
   assert.match(code, /profilesBlockWrite_\(dst, profilesBlockAt_\(dst, CAREER_HEADS_\)/,
     '진로 블록이 이름 해석(profilesBlockAt_)을 안 거친다');
@@ -600,7 +606,7 @@ test('[v9.49] 신규 사유 첨삭확인이 일일한도·미인식 스캐너에
   const scan = section('function unknownReasonScan_(', 'function checkUnknownReasonsNightly_');
   assert.ok(scan.includes("'첨삭'"), 'KNOWN_RS에 첨삭 누락 — 매일 밤 미인식 경보가 뜬다');
   // 사유에 '숙제'가 들어가면 숙제왕 카운트(indexOf 숙제)가 첨삭 확인으로 부풀려진다
-  assert.equal(code.includes("'숙제첨삭확인'"), false);
+  assert.equal(코드정제.includes("'숙제첨삭확인'"), false);
 });
 
 test('[v9.49] 스위프·야간 배치에 폼출석·첨삭정산·첨삭생성이 편입돼 있다', () => {
@@ -629,8 +635,8 @@ test('[v9.54] setupStore는 전체 열 보존 경로(replaceContentType)로만 c
   const body = section('function setupStore()', 'function healthCheck()');
   assert.ok(body.includes("replaceContentType(ss, 'store'"), 'setupStore는 replaceContentType에 위임해야 한다');
   // 구 6열 clear/압축 패턴이 되살아나면 몽골어(G)·영어(H)·Glide Row ID가 생존 행에서 오정렬된다
-  assert.equal(/clearContent\(\)/.test(body), false, 'setupStore 안에 직접 clearContent가 있으면 안 된다');
-  assert.equal(body.includes('getRange(2, 1, last - 1, 6)'), false, '6열 고정 접근 금지');
+  assert.equal(/clearContent\(\)/.test(코드만(body)), false, 'setupStore 안에 직접 clearContent가 있으면 안 된다');
+  assert.equal(코드만(body).includes('getRange(2, 1, last - 1, 6)'), false, '6열 고정 접근 금지');
 });
 
 test('[v9.54] 학부모 하이라이트는 쿼터 소진 시 월 마커를 미루고 보류 명단으로 이어 보낸다', () => {
@@ -653,7 +659,7 @@ test('[v9.54] 진화 배너 내레이터는 실제 단계명(mon.stage)을 쓴�
   const seg = code.slice(idx, idx + 400);
   assert.ok(seg.includes('mon.stage'), '{m} 슬롯은 mon.stage여야 한다');
   // pfData는 15열(인덱스 0~14)만 읽는다 — r[18]은 상시 undefined라 항상 "몬스터"로 나오던 v9.50·B1 결함
-  assert.equal(seg.includes('r[18]'), false);
+  assert.equal(코드만(seg).includes('r[18]'), false);
 });
 
 test('[v9.54] aiText_는 사고 OFF로 짧은 예산 전액을 본문에 쓴다(폴백률 급증 방지)', () => {
@@ -776,7 +782,7 @@ test('[v9.157] 폼 응답의 시트 직기입은 행소독_ 통로를 지난다 
   assert.ok(imp.includes('setValues(행소독_([rowArr]))'), '상담시트 1~59열 기입이 소독 통로를 지나지 않는다');
   assert.ok(imp.includes('setValues(행소독_([extArr]))'), '상담시트 증분(63~) 기입이 소독 통로를 지나지 않는다');
   assert.ok(/fr\.getRange\([\s\S]{0,60}setValues\(행소독_\(/.test(imp), 'form_responses 기입(이름=폼 유래)이 소독 통로를 지나지 않는다');
-  assert.equal(/setValues\(\[rowArr\]\)|setValues\(\[extArr\]\)|setValues\(\[\[\s*'R'/.test(imp), false,
+  assert.equal(/setValues\(\[rowArr\]\)|setValues\(\[extArr\]\)|setValues\(\[\[\s*'R'/.test(코드만(imp)), false,
     '소독 없는 직기입 경로가 되살아났다');
   // 스위프 3종 — 리드폼(공개 광고 CTA)·강의폼(학생 배포)·마감폼(강사). 전부 같은 스프레드시트에 profiles가 산다
   //   구간은 함수 경계로 자른다 — 「포인터 저장」 같은 문구 표식은 클램프용으로 함수 앞부분에도 나와서
@@ -801,7 +807,7 @@ test('[v9.157] 폼 응답의 시트 직기입은 행소독_ 통로를 지난다 
   sweeps.forEach(([name, label]) => {
     const body = fnOf(name);
     assert.ok(/\.(?:setValues|appendRow)\(행소독_\(/.test(body), label + ' 적재가 소독 통로를 지나지 않는다 — 폼 응답이 raw로 실린다');
-    assert.equal(/\.setValues\((?:out|add)\)|\.appendRow\(\[/.test(body), false, label + '에 소독 없는 적재가 남아 있다');
+    assert.equal(/\.setValues\((?:out|add)\)|\.appendRow\(\[/.test(코드만(body)), false, label + '에 소독 없는 적재가 남아 있다');
   });
 
   /* [v9.159] voiceSweep_ — 8번째 스위프. **위 배열에 넣을 수 없다**: 교재연동.js는 `ENGINE_FILES` 밖이라
@@ -815,7 +821,7 @@ test('[v9.157] 폼 응답의 시트 직기입은 행소독_ 통로를 지난다 
   const vs = tbSrc.slice(vsFrom, tbSrc.indexOf('\nfunction ', vsFrom + 10));
   assert.ok(/setValues\(행소독_\(vOut\)\)/.test(vs), 'voice_log 적재가 소독 통로를 지나지 않는다 — 목소리 폼 미션이 raw로 실린다');
   assert.ok(/setValues\(행소독_\(pOut\)\)/.test(vs), 'point_logs 적재가 소독 통로를 지나지 않는다');
-  assert.equal(/\.setValues\((?:vOut|pOut)\)/.test(vs), false, 'voiceSweep_에 소독 없는 적재가 남아 있다');
+  assert.equal(/\.setValues\((?:vOut|pOut)\)/.test(코드만(vs)), false, 'voiceSweep_에 소독 없는 적재가 남아 있다');
 
   // ── 탐지 능력은 픽스처로 못박는다 — 실제 셀안전_ 정의를 평가(정의 이동·문자 집합 약화 감지) ──
   const talkSrc = fs.readFileSync(path.join(ROOT, '상담AI.js'), 'utf8');
@@ -856,7 +862,7 @@ test('[v9.60] 잔재 청소는 자동생성 이름 + 빈 시트만 지운다(데
   assert.ok(body.includes('getLastRow() >= 2'), '응답이 있으면 보존해야 한다');
   assert.ok(body.includes('deleteSheet'), '삭제 경로 존재');
   // 이름 붙은 정본 시트를 지우는 경로가 생기면 안 된다
-  assert.equal(/deleteSheet\(ss\.getSheetByName/.test(body), false);
+  assert.equal(/deleteSheet\(ss\.getSheetByName/.test(코드만(body)), false);
 });
 
 test('[v9.54] 루트의 모든 엔진 .js가 .claspignore 허용목록에 있다(반쪽 배포 방지)', () => {
@@ -902,6 +908,8 @@ test('[2026-08-03] docs/버전_이력.md는 SYNK_VERSION을 따라오고, 머리
     `docs/버전_이력.md 최고 태그 v9.${docMax} ≠ SYNK_VERSION v9.${cur} — 버전을 올렸으면 그 파일 맨 아래에 한 줄 추가해야 한다(/deploy 커밋 단계)`);
 
   const head = doc.split(/^---$/m)[0];
+  /* 🚫 `코드만()` 으로 감싸지 않는다 — `head` 는 **마크다운**이지 JS 가 아니다(`**v9.NNN**` 은 굵게 표기다).
+   *   JS 렉서를 대면 언어가 달라 엉뚱한 구간을 지운다. SQL 주석 제거기를 안 합치는 것과 같은 갈래. */
   assert.ok(!/현재 버전\s*=\s*\**v9\.\d+/.test(head),
     '머리말에 「현재 버전 = v9.NNN」을 박지 마라 — 아무도 안 고쳐서 반드시 낡는다. 맨 아래 마지막 항목이 현재 버전이다');
 });
@@ -937,7 +945,7 @@ test('[v9.55] 약점 메모 스위프는 수업 전 메일보다 먼저 돈다(�
 
 test('[v9.56] 월 테마는 「이달의 무대」 — 구 "월 시즌" 표기가 학생 화면에 되살아나지 않는다', () => {
   assert.ok(code.includes("'월의 무대 · '"), '이달의시즌 배너 값은 「N월의 무대 · 이름」 형식');
-  assert.equal(code.includes("'월 시즌 · '"), false, '구 표기 부활 금지 — "시즌"은 커리큘럼 8주 트랙 전용(유호 07-24)');
+  assert.equal(코드정제.includes("'월 시즌 · '"), false, '구 표기 부활 금지 — "시즌"은 커리큘럼 8주 트랙 전용(유호 07-24)');
   assert.ok(code.includes('+ season + "\' 무대"'), '리그 결과 공지도 무대 표기');
 });
 
@@ -964,7 +972,7 @@ test('[v9.56] 교실 스크린 — 10분 보드에 편승하되 실패 격리·�
   assert.ok(body.includes("setAppState_(ss, '교실스크린HTML'"), '스크린 HTML은 app_state 한 키');
   assert.ok(body.includes('catch (eScr)'), '스크린 실패가 출결 보드를 깨면 안 된다');
   const scrSeg = body.slice(body.indexOf('교실 스크린 모드'));
-  assert.equal(/formatDate\(now,\s*tz,\s*'HH:mm'\)/.test(scrSeg), false,
+  assert.equal(/formatDate\(now,\s*tz,\s*'HH:mm'\)/.test(코드만(scrSeg)), false,
     '분 단위 시계를 넣으면 내용이 매 스위프 바뀌어 야간·주말에도 sync가 깨어난다');
 });
 
@@ -1158,6 +1166,8 @@ test('[v9.211] aiWeakMap_ 오류태그 빈도 합류 — 보조 신호는 첨삭
   const tail = weak['S1'][weak['S1'].length - 1];
   assert.ok(tail.indexOf('포인트B') === 0, '첨삭 최근 1건이 항목의 머리여야 한다(태그는 꼬리 접미)');
   assert.ok(tail.includes('조사:목적격(을/를) ×2'), '태그 빈도 상위(×2)가 꼬리에 안 실렸다');
+  /* 🚫 아래 셋은 `코드만()` 대상이 아니다 — `tail` 은 소스 글이 아니라 `aiWeakMap_()` 이 **실행돼 나온 값**이다.
+   *   계수기는 소스에서 온 함수의 산출까지 원문으로 물들여 세지만(그래서 여기가 🔴로 뜬다), 감싸면 뜻이 없다. */
   assert.equal(tail.includes('오류없음'), false, '「오류없음」이 약점으로 둔갑했다');
   assert.equal(tail.includes('높임:주체'), false, '격리 행의 태그가 약점 재료로 샜다');
   assert.equal(tail.includes('어휘:없는말'), false, '14일 창 밖 태그가 「최근 약점」으로 샜다');
@@ -1283,7 +1293,7 @@ test('[v9.68] schedule 시간 칸이 Date로 읽혀도 HH:mm으로 고정된다(
   // 소비처(교실스크린·미등원 알림·수업 전 메일)가 아니라 단일 소스에서 정규화해야 4곳이 함께 낫는다
   const sm = section('function scheduleMap(ss)', 'function schedOf(map, cls)');
   assert.ok(sm.includes('hhmmOf_(r[2], tzSc)'), 'scheduleMap이 원본 String(r[2])로 되돌아가면 1899 문자열이 다시 샌다');
-  assert.ok(!sm.includes('String(r[2])'), '원본 문자열화 잔재 — Date 오염 경로가 남는다');
+  assert.ok(!코드만(sm).includes('String(r[2])'), '원본 문자열화 잔재 — Date 오염 경로가 남는다');
 });
 
 test('[v9.69] 시트 자기치유가 야간에 돌고, 스토리북 병합은 v9.50 단일본 조립식을 그대로 쓴다', () => {
@@ -1349,7 +1359,7 @@ test('[v9.74] 퀴즈 카드 — 문제와 공개 안내만, 정답은 어떤 경
   // 호출부가 문제(q[0]·pq.q)만 넘기는지 — 정답(q[1]·pq.a)이 카드로 새는 회귀 차단
   assert.ok(code.includes('quizCardHtml_(pq ? pq.q : q[0], mnQ9, !!pq)'), '퀴즈 카드 호출부는 문제(한·몽)만 넘겨야 한다');
   const fnQ = section('function quizCardHtml_(', 'function prepCardHtml_(');
-  assert.ok(!fnQ.includes('quizAns'), '퀴즈 카드 빌더에 정답 인자가 생기면 언어정책(정답 평문 노출 금지) 위반');
+  assert.ok(!코드만(fnQ).includes('quizAns'), '퀴즈 카드 빌더에 정답 인자가 생기면 언어정책(정답 평문 노출 금지) 위반');
 });
 
 test('[v9.74] 수업준비 카드 — 검사 포인트의 제자리는 강사 화면, 워밍업 퀴즈는 정답 동봉', () => {
@@ -1447,9 +1457,9 @@ test('[v9.82] 결석 신고 카드 — 접수 확인 3태·빈 상태·사유 �
 
 test('[v9.74] 학부모 접점에서 몬스터 호칭 제거 — 성장 파트너(хамтрагч), 학생 세계관은 유지', () => {
   assert.ok(code.includes('도장이 쌓일수록 성장 파트너가 자라요'), '출석달력 캡션 교체 누락');
-  assert.ok(!code.includes('도장이 채워질수록 몬스터가 자라요'), '구 캡션 잔존');
+  assert.ok(!코드정제.includes('도장이 채워질수록 몬스터가 자라요'), '구 캡션 잔존');
   assert.ok(code.includes('학생의 성장 파트너가 진화했어요') && !code.includes('학생의 몬스터가 진화했어요'), '진화 학부모 메일 교체 누락');
-  assert.ok(!code.includes('-ийн монстр'), '학부모 몽골어 배너·하이라이트에 монстр 잔존'); // 학생용(운세 "дараагийн монстр"·onboarding "таны монстр")은 세계관 유지로 남는다
+  assert.ok(!코드정제.includes('-ийн монстр'), '학부모 몽골어 배너·하이라이트에 монстр 잔존'); // 학생용(운세 "дараагийн монстр"·onboarding "таны монстр")은 세계관 유지로 남는다
   const pq = section('const PARENT_Q = [', '];');
   assert.ok(pq.indexOf('монстр') === -1 && pq.indexOf('네 몬스터') === -1, '학부모 대화 카드에 몬스터 잔존');
   const hl = section('const HL_TPL = [', '];');
@@ -1506,7 +1516,7 @@ test('[v9.76] 리텐션 레이더·학생수는 role=student만 — 원장·강�
   assert.ok(body.includes("radarOut.push([isStu76 ?"), '비학생 행에도 신호 문자열이 찍힌다(학부모가 자기 행에서 볼 여지)');
   // 학생수는 role=student 집합 길이여야 한다(구 전체 행 수 count는 제거)
   assert.ok(code.includes("setState(st, '학생수', curStuIds.length)"), "'학생수'가 role=student 기준이 아니다");
-  assert.ok(!code.includes('const count = pfData.filter(r => r[0]).length'), '구 전체 행 수 count가 살아 있다');
+  assert.ok(!코드정제.includes('const count = pfData.filter(r => r[0]).length'), '구 전체 행 수 count가 살아 있다');
 });
 
 test('[v9.77] profiles 무결성 감시 — 유령 행·중복 ID·무효 role을 매일 자동 발각', () => {
@@ -1598,6 +1608,7 @@ test('[v9.78·리뷰 반영] HUD 보강 — AI 이스케이프·모순 억제·a
   // ① AI 브리핑 이스케이프(유일 XSS 잔여면이라는 리뷰 지적) + 미션 0건일 때 "특이사항 없음"과 동시 출력 모순 억제
   const aiOnly = brief('반', { ai: '<script>x</script>' });
   assert.ok(aiOnly.includes('&lt;script&gt;'), 'AI 브리핑이 이스케이프 없이 침투한다');
+  // 🚫 `코드만()` 대상 아님 — `aiOnly` 는 `brief()` 가 **그려 낸 HTML**이지 소스 글이 아니다.
   assert.ok(!aiOnly.includes('특이사항 없음'), 'AI 브리핑과 "특이사항 없음"이 동시 출력된다(모순)');
   // ② absent 캡 5(구 slice(0,5) 하위호환)
   const ab = rows({ absent: ['a','b','c','d','e','f','g'] });
@@ -1605,11 +1616,11 @@ test('[v9.78·리뷰 반영] HUD 보강 — AI 이스케이프·모순 억제·a
   // ③ 10열 격파찬스 = 라이브 소스(goal−weekDmg) — 죽은 raidLeft 스냅샷(금·일만 갱신) 회귀 금지
   const wiring = section('crewCols = Object.keys(cls).sort().map', 'writeIfChanged(cs, 2, 9, crewCols)');
   assert.ok(wiring.includes('(raidGoal[c] || 0) - (weekDmg[c] || 0)'), '10열이 라이브 소스가 아니다');
-  assert.ok(!wiring.includes('raidLeft[c]'), '10열이 죽은 raidLeft 스냅샷(월~목 발동 불가)을 다시 쓴다');
+  assert.ok(!코드만(wiring).includes('raidLeft[c]'), '10열이 죽은 raidLeft 스냅샷(월~목 발동 불가)을 다시 쓴다');
   // ④ hudDetailRows가 crewCols와 같은 map 안에서 push — 행 순서·개수 원자 동기
   assert.ok(wiring.includes('hudDetailRows.push('), '14열 행 생성이 9열 map 밖으로 이탈했다(반 순서 어긋남 위험)');
   // ⑤ 강사가 실행 불가한 안내 금지 — '해결' 표기는 시트 접근자만 가능
-  assert.ok(!code.includes("'해결'로 바꾸면 다음 브리핑부터"), '강사가 수행할 수 없는 풋노트 안내가 남아 있다');
+  assert.ok(!코드정제.includes("'해결'로 바꾸면 다음 브리핑부터"), '강사가 수행할 수 없는 풋노트 안내가 남아 있다');
 });
 
 test('[v9.81] 리그 카드 — 포디움·내 순위 하이라이트·넛지 환산·콜드·이스케이프·DO119 배선', () => {
@@ -1683,7 +1694,7 @@ test('[v9.81] 반 목록 카드 2열 + HUD 총원 필 — 유호 07-31 반 리�
   // [v9.87] 라이브 조립 계약 — Description = 「반몬스터」+「반카드요약」 2토큰(Glide가 공백 없이 잇는다).
   //   요약은 몬스터를 빼고 ' · '로 시작해야 "스파키 · 👥 4명 · ⚔️…"로 이어진다. 몬스터를 다시 넣으면 카드에 두 번 나온다.
   assert.ok(blk.includes("' · ' + ['👥 ' + v.n + '명'"), '요약이 구분자로 시작하지 않는다 — 반몬스터 토큰과 붙어 "스파키👥 4명"이 된다');
-  assert.ok(!blk.includes('m.name, boss'), '요약에 몬스터 이름이 다시 들어갔다 — Description 2토큰이라 카드에 중복 표기된다');
+  assert.ok(!코드만(blk).includes('m.name, boss'), '요약에 몬스터 이름이 다시 들어갔다 — Description 2토큰이라 카드에 중복 표기된다');
   assert.ok(code.includes('classMonster(v.total, v.n).name'), 'csOut 5열이 classMonster.name을 쓰지 않는다(15열과 판정 분열)');
   assert.ok(blk.includes("m.img.indexOf('http') === 0"), '몬스터 이미지가 URL 검증 없이 Image 열에 들어간다');
 });
@@ -1736,6 +1747,7 @@ test('[v9.84] 페이스라인·blob 추출 — 실행 검증(경계·과장 금�
   assert.equal(paceF('3~4급', '2033-06', '', now), '', '5년+ 오입력인데 침묵하지 않는다');
   assert.equal(paceF('', '2027-06', '', now), '', '목표 없음인데 침묵하지 않는다');
   assert.ok(paceF('5~6급', '2027년 3월', '', now).includes('약 '), '한국식 연월(2027년 3월) 파싱 실패');
+  // 🚫 `코드만()` 대상 아님 — `p` 는 `paceF()` 가 **내놓은 학생용 문장**이지 소스 글이 아니다.
   ['도달권', '합격', '보장', '가능'].forEach(wd => assert.ok(!p.includes(wd), '페이스라인에 보장성 단어 침투: ' + wd));
 });
 
@@ -1838,8 +1850,8 @@ test('[v9.90] 동의 마이그레이션(v18.6) — 멱등·명시 동의·거부
   // [v19.0] 대역을 v18 로 못 박아 뒀더니 판을 올리는 순간 빨개졌다 — 검사할 것은 대역이 아니라 **단일 소스**다
   assert.ok(/const CONSENT_VERSION = 'v\d+\.\d/.test(code), 'CONSENT_VERSION 단일 소스 정의가 없다');
   // 구 함수명 잔재 검사 — 역사 기록(설계노트 204·버전 문자열)은 허용하되, 정의와 '▶ 실행 지시'는 남아 있으면 안 된다(없는 함수를 유호님이 누른다)
-  assert.ok(!code.includes('function migrateConsentV185'), '구 함수 정의(V185)가 남아 있다');
-  assert.ok(!code.includes('migrateConsentV185 ▶'), '구 함수 ▶ 실행 안내가 남아 있다 — 유호님이 없는 함수를 실행하게 된다');
+  assert.ok(!코드정제.includes('function migrateConsentV185'), '구 함수 정의(V185)가 남아 있다');
+  assert.ok(!코드정제.includes('migrateConsentV185 ▶'), '구 함수 ▶ 실행 안내가 남아 있다 — 유호님이 없는 함수를 실행하게 된다');
 });
 
 test('[v9.90] 🛂 면접 기록 폼 — 재실행 안전·익명 회수·활용 동의·핵심 칸·워치독 편입', () => {
@@ -1937,14 +1949,14 @@ test('[v9.83] 포인트 경제 — 월간 소득 시뮬이 과잠·진화 앵커
 
 test('[v9.83] 과잠 자격 — 스토어 하차 + 재원 게이트 + 잔액 무차감', () => {
   // 과잠이 스토어에 남아 있으면 학생은 자격까지 간식·굿즈를 한 번도 못 산다(하위 티어 루프 사망).
-  assert.ok(!code.includes("'싱크 과잠','의류'"), '싱크 과잠이 아직 스토어 상품으로 팔린다');
+  assert.ok(!코드정제.includes("'싱크 과잠','의류'"), '싱크 과잠이 아직 스토어 상품으로 팔린다');
   assert.ok(code.includes('function jacketWatch_'), '과잠 자격 워처가 없다');
   assert.ok(code.includes("safeRun('jacketWatch', jacketWatch_)"), 'jacketWatch_가 어느 트리거에도 안 걸렸다(영원히 안 돎)');
   const blk = section('function jacketWatch_', '/* ===================== 시스템 헬스체크');
   assert.ok(blk.includes("r[3] !== 'student'"), 'role 필터가 없다 — 강사·학부모에게도 과잠이 나간다');
   assert.ok(blk.includes('already.has(sid)'), '멱등 가드가 없다 — 매일 같은 학생이 다시 적재된다');
   assert.ok(blk.includes('Number(r[15])'), '누계는 P열(16)이어야 한다 — 잔액(AQ)을 쓰면 간식을 산 학생이 자격을 잃는다');
-  assert.ok(!/appendPoints|\bbal\b/.test(blk), '포인트를 건드린다 — 무료 지급이 아니게 된다');
+  assert.ok(!/appendPoints|\bbal\b/.test(코드만(blk)), '포인트를 건드린다 — 무료 지급이 아니게 된다');
   assert.ok(blk.includes('JACKET_TENURE_MONTHS') && blk.includes('JACKET_MIN_POINTS'), '자격 조건이 상수를 안 쓴다');
 
   // [리뷰 B2] setupStore()는 코드 정본만 바꾼다 — ▶ 실행 전까지 라이브 contents에 옛 상품이 남아
@@ -2177,11 +2189,11 @@ test('[v9.87] 집계 정의 — 공동 담당=각자 온전 귀속 · 다반 강
 test('[v9.87] 축이 흔들리는 지점 3곳 — 조인 소스·헤더 정본 공유·데모 회수 기준', () => {
   const body = section('function calcTeacherStats()', 'function monthlyReport()');
   assert.ok(body.includes('teacherEmailMap_(ss)'), '강사 매핑 정본을 읽지 않는다');
-  assert.equal(body.includes("const teacher = String(r[4])"), false,
+  assert.equal(코드만(body).includes("const teacher = String(r[4])"), false,
     '학생 행 class_name을 강사로 쓰던 구 코드가 되살아났다');
   // 헤더는 골격·실사용이 같은 상수를 봐야 한다 — v9.40 드리프트(구 3열 vs 실사용 8열)의 근본 차단
   assert.ok(code.includes("['teacher_stats', TEACHER_STATS_HEADERS]"), 'SHEET_SKELETON이 헤더 정본 상수를 쓰지 않는다');
-  assert.equal(/\['teacher_stats', \[/.test(code), false, 'teacher_stats 헤더 리터럴이 두 곳으로 갈라졌다');
+  assert.equal(/\['teacher_stats', \[/.test(코드정제), false, 'teacher_stats 헤더 리터럴이 두 곳으로 갈라졌다');
   // 데모 회수: A열이 강사명이 된 뒤로 '데모' 접두만 보면 데모 오염 행이 영구 잔존한다
   const clr = section('function clearDemoData()', 'function bootstrapSynk()');
   assert.ok(/wipe\('teacher_stats'[^\n]*r\[8\]/.test(clr), '데모 회수가 담당반(I열) 기준이 아니다 — 강사명 라벨 행을 못 지운다');
@@ -2196,7 +2208,7 @@ test('[v9.88] 숙제·퀴즈 문항 자기완결 — 축약 참조 잔존 0 + �
 
   // ① QZ22 — 인용 따옴표가 있는 완전문이어야 한다
   assert.ok(code.includes('선생님께 「밥 먹었어?」 대신 뭐라고 할까요?'), 'QZ22 리라이팅이 사라졌다');
-  assert.ok(!code.includes('선생님께 밥 먹었어? 대신?'), 'QZ22 구 축약 문항이 되살아났다');
+  assert.ok(!코드정제.includes('선생님께 밥 먹었어? 대신?'), 'QZ22 구 축약 문항이 되살아났다');
 
   // ② homework 문항 라인에 "오늘 배운" 없는 축약 참조("오늘 단어/문법/문장/대화문/표현/문형") 잔존 0
   //    ("오늘 배운 단어"에는 "오늘 단어"가 연속 부분열로 없어 자동 통과 — 새 문항 추가 시에도 이 검사가 지킨다)
@@ -2220,7 +2232,7 @@ test('[v9.88] 숙제·퀴즈 문항 자기완결 — 축약 참조 잔존 0 + �
   assert.ok(code.includes('splitQuiz(mnQRaw9)[0]'), '몽골어 퀴즈 병기가 정답부를 자르지 않는다');
 
   // ⑤ 카드 안내 문구가 실제 버튼 라벨과 일치(07-31 버튼 3종 한 줄 정렬로 라벨이 "✏️ 숙제"로 압축됨)
-  assert.ok(!code.includes('✍️ <b>숙제 제출</b> 버튼'), '숙제 카드가 존재하지 않는 옛 버튼명(✍️ 숙제 제출)을 안내한다');
+  assert.ok(!코드정제.includes('✍️ <b>숙제 제출</b> 버튼'), '숙제 카드가 존재하지 않는 옛 버튼명(✍️ 숙제 제출)을 안내한다');
   assert.ok(code.includes('✏️ <b>숙제</b> 버튼'), '숙제 카드 제출 안내가 실제 버튼 라벨(✏️ 숙제)을 가리키지 않는다');
 });
 
@@ -2237,7 +2249,7 @@ test('[v9.80] absence_followup 골격 — 감지·연락·복귀 3구간이 한 
   const skel = section('function sheetSkeleton_()', 'function bootstrapSynk()');
   assert.ok(skel.includes("['absence_followup', ABSENCE_FOLLOWUP_HEADERS]"),
     '재건 목록(SHEET_SKELETON)에 없으면 원버튼 재건 후 시트가 사라진다');
-  assert.ok(!skel.includes("['absence_followup', ['날짜'"),
+  assert.ok(!코드만(skel).includes("['absence_followup', ['날짜'"),
     '헤더를 리터럴로 복제하면 두 정본이 갈라진다(단일 소스 유지)');
 });
 
@@ -2374,7 +2386,7 @@ test('[v9.97] 스토리북 월 키 — Date 오염이 멱등 가드를 깨지 �
   const build = section('function buildMonthlyStorybook_(', 'function sheetSelfHeal_(');
   assert.ok(build.includes('ymTextColFix_(sb, 1, tz)'), '발간 함수가 월 열 텍스트 고정을 안 한다');
   assert.ok(build.includes('ymTextOf_(r[0], tz) === ym'), '멱등 가드가 Date 오염 셀을 못 읽는다(중복 발간)');
-  assert.equal(/some\(r => String\(r\[0\]\) === ym\)/.test(code), false, '구 String() 직접 비교가 남아 있다');
+  assert.equal(/some\(r => String\(r\[0\]\) === ym\)/.test(코드정제), false, '구 String() 직접 비교가 남아 있다');
   const heal = section('function sheetSelfHeal_(', 'function worldBossOf(');
   assert.ok(heal.includes('ymTextColFix_(sb, 1'), '자기치유가 기존 Date 오염 행을 되돌리지 않는다');
   assert.ok(heal.includes('ymTextOf_(r[0]'), '중복 그룹핑이 Date 셀을 다른 달로 오인한다');
@@ -2402,7 +2414,7 @@ test('[v9.100] 「담당 강사」는 한 축 — 결석 복귀율과 케어지�
   const ns = section('function checkNoShow()', 'function checkEvolution');
   assert.ok(ns.includes('teachersOfClass_(emapNS, num)'),
     '결석 적재부가 공용 헬퍼를 안 쓴다 — teacher_stats와 담당 강사가 갈린다');
-  assert.equal(/const tNames = \(emapNS\.byClass\[num\]/.test(ns), false,
+  assert.equal(/const tNames = \(emapNS\.byClass\[num\]/.test(코드만(ns)), false,
     'byClass 직접 조회가 되살아났다(괄호 반명·번호 폴백·중복 제거가 빠져 미배정 오경보가 는다)');
   // 케어지수 쪽도 같은 헬퍼를 계속 쓰는지 — 한쪽만 바뀌면 다시 갈린다
   const ts = section('function calcTeacherStats()', 'function monthlyReport()');
@@ -2497,11 +2509,12 @@ test('[v9.110] 시트 메뉴 — 안전 항목만 올리고 파괴적 함수는 
   const start = code.indexOf('function onOpen()');
   assert.notEqual(start, -1, 'onOpen이 없어 시트 메뉴가 생기지 않는다');
   const menu = code.slice(start, code.indexOf('addToUi();', start) + 12); // onOpen 본문만 — 파일 다른 곳의 함수명에 오염되지 않게
+  const 메뉴코드 = 코드만(menu); // 부정 단언 전용 — 루프 안에서 감싸면 파괴적 함수 수만큼 다시 렉싱된다
   ['calcTeacherStats', 'calcAll', 'preflightGlide'].forEach((f) => {
     assert.ok(menu.includes(`'${f}'`), `메뉴에 ${f} 누락`);
   });
   ['setupSchedule', 'seedDemoData', 'clearDemoData', 'bootstrapSynk', 'resetAllTriggers'].forEach((f) => {
-    assert.equal(menu.includes(`'${f}'`), false, `파괴적 함수 ${f}가 메뉴에 올라갔다 — 한 번 잘못 누르면 라이브 사고`);
+    assert.equal(메뉴코드.includes(`'${f}'`), false, `파괴적 함수 ${f}가 메뉴에 올라갔다 — 한 번 잘못 누르면 라이브 사고`);
   });
   // UI 없는 컨텍스트(트리거)에서 죽지 않아야 한다 — onOpen 실패가 시트 열기를 막으면 안 된다
   //   ⚠ 여기 초판은 `code.slice(start, start + 1400)`이었다. 메뉴 항목이 늘자 catch가 1400자 밖으로
@@ -2841,7 +2854,7 @@ test('[v9.211] 🔴 출근 기록이 하나도 없는 강사는 미측정이다 
 
 test('[v9.211] 집계가 실제로 배선돼 있다 — 상수 null 로 되돌아가면 화면은 개원 전과 구별이 안 된다', () => {
   const body = section('function calcTeacherStats()', 'function monthlyReport()');
-  assert.equal(/const hwRate = null, 근태위반 = null/.test(body), false,
+  assert.equal(/const hwRate = null, 근태위반 = null/.test(코드만(body)), false,
     'v9.194 의 미측정 고정판이 되살아났다 — 채점 함수는 그대로라 회귀 대부분이 초록인 채 20점이 죽는다');
   assert.ok(body.includes('hwBy[k]') && body.includes('puBy[k]'), '행 조립이 집계 결과를 안 읽는다');
   /* 🔴 창은 **어제부터**다(i = 1). 오늘을 넣으면 아직 안 끝난 날이 결근으로 잡혀 매일 오전마다 전 강사가
@@ -2850,7 +2863,7 @@ test('[v9.211] 집계가 실제로 배선돼 있다 — 상수 null 로 되돌�
   assert.ok(/for \(let i = 1; i <= ABSENCE_SEASON_DAYS; i\+\+\)/.test(body),
     '시즌 창이 오늘을 포함한다 — 근태가 매일 오전 「결근」을 만든다');
   // 요일 규칙은 단일 소스여야 한다 — 여기 요일 숫자를 다시 적으면 주말반 규칙이 갈라진다(v9.46)
-  assert.equal(/dow\s*[><=]=?\s*[0-6]/.test(body), false, 'calcTeacherStats 가 요일 규칙을 자기 안에 다시 적었다 — classDowOk_ 를 써야 한다');
+  assert.equal(/dow\s*[><=]=?\s*[0-6]/.test(코드만(body)), false, 'calcTeacherStats 가 요일 규칙을 자기 안에 다시 적었다 — classDowOk_ 를 써야 한다');
   // teacher_checkins 열 순서는 TC_* 상수 하나에서 나온다(하네스가 ['이름','구분','시각']로 픽스처를 짠다)
   assert.ok(/TC_NAME_COL - 1/.test(body) && /TC_TIME_COL - 1/.test(body), '체크인 열을 상수 대신 숫자로 박았다');
   assert.ok(code.includes("['teacher_checkins', ['이름','구분','시각']]"),
@@ -2975,8 +2988,10 @@ test('🔑 대기 승인·격리 오탐 복구(→노출)는 다음 밤 같은 �
 });
 
 test('☠️ 오류사전 커서가 필터 전 행 수(takeN)로 전진하지 않는다 — 그 표기가 대기 행을 영구 통과시키던 자리다', () => {
-  const src = engineSource();
-  assert.ok(!src.includes('String(from + takeN)'), '오류뱅크_포인터가 필터 전 행 수로 전진한다(재검수 P1 원상 복귀)');
+  const src = engineSource(); // 아래 «긍정» 단언은 원문을 본다 — 정제본으로 바꾸면 뜻이 달라진다
+  /* 부정 단언만 모듈 상단 `코드정제`(= `코드만(engineSource())` · 같은 글)를 쓴다 —
+   *   여기서 또 `코드만(src)` 를 부르면 1.28MB 를 한 번 더 렉싱한다(실측 +0.6초). */
+  assert.ok(!코드정제.includes('String(from + takeN)'), '오류뱅크_포인터가 필터 전 행 수로 전진한다(재검수 P1 원상 복귀)');
   assert.ok(src.includes('오류뱅크전진_(슬라이스.map(r => r[8]), 슬라이스.map(r => r[2]), Date.now())'),
     '오류사전 로더가 커서 통로(상태 I열+제출일 C열 — 격리 복구 창의 기준)를 안 탄다');
 });
