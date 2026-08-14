@@ -23,6 +23,10 @@ const 확정 = require(path.join(__dirname, 'lib', '확정대조.js'));
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
 const 대기열경로 = path.join(ROOT, 'docs', '_ops', '작업대기열.md');
 const 대기열좌표 = 'docs/_ops/작업대기열.md';   // git pathspec — fs 경로와 따로 둔다
+/* 공용 lib 은 **이 도구 옆**에서 부른다 — `ROOT` 는 «자료»의 뿌리(`CLAUDE_PROJECT_DIR` 로 갈아끼운다)지
+ * 코드의 뿌리가 아니다. ROOT 로 부르면 픽스처 뿌리를 물린 순간 모듈이 통째로 사라진다(2026-08-14 실측:
+ * 집기 회귀가 그 자리에서 MODULE_NOT_FOUND). 자료 경로만 ROOT 를 받는다(`보드.내파일(ROOT, …)`). */
+const 라이브 = (이름) => require(path.join(__dirname, 'lib', 이름));
 const 보일줄수 = 3;
 const 낡음보일수 = 3;
 
@@ -52,7 +56,7 @@ function 항목들() {
  * 겹쳐서 두 세션이 같은 걸 짓는 사고(F070)가 못 고르는 것보다 비싸다. */
 function 보드글자() {
   try {
-    const 보드 = require(path.join(ROOT, 'tools', 'lib', '보드.js'));
+    const 보드 = 라이브('보드.js');
     const 표 = typeof 보드.읽기 === 'function' ? 보드.읽기() : null;
     if (표) return JSON.stringify(표);
   } catch { /* 아래 폴백 */ }
@@ -99,8 +103,8 @@ const 줄참조RE = /대기열\s*(P\d)?[^)\]]{0,10}?줄\s*(\d+)/g;
 /** 보드 표의 한 줄 → 점유 판정이 쓰는 모양. 회귀가 **이 통로로** 픽스처를 넣는다(모양을 손으로
  *  베껴 만들면 진짜 파싱은 한 번도 안 검사된다). */
 function 행(보드줄) {
-  const 보드 = require(path.join(ROOT, 'tools', 'lib', '보드.js'));
-  const 표 = require(path.join(ROOT, 'tools', 'lib', '표.js'));
+  const 보드 = 라이브('보드.js');
+  const 표 = 라이브('표.js');
   const 칸 = 표.칸나누기(String(보드줄 || ''));
   const 트랙 = String(칸[1] || '').replace(/\*/g, '').trim();
   return {
@@ -120,7 +124,7 @@ function 행(보드줄) {
 /** 보드 **활성** 줄들. 못 읽으면 `null`(「없다」와 안 접는다). */
 function 보드행들() {
   try {
-    const 보드 = require(path.join(ROOT, 'tools', 'lib', '보드.js'));
+    const 보드 = 라이브('보드.js');
     const rows = 보드.줄들(ROOT);
     if (!Array.isArray(rows)) return null;
     return rows.filter((r) => 보드.활성행(r.줄)).map((r) => 행(r.줄));
@@ -133,7 +137,7 @@ function 점유(항목, 행들) {
   if (!Array.isArray(행들) || !항목) return null;
   const 씨 = 씨앗(항목.본문);
   let 보드lib = null;
-  try { 보드lib = require(path.join(ROOT, 'tools', 'lib', '보드.js')); } catch { /* ③ 만 건너뛴다 */ }
+  try { 보드lib = 라이브('보드.js'); } catch { /* ③ 만 건너뛴다 */ }
   /* 대기열 파일 자신은 자리가 아니다 — 줄을 닫는 세션마다 규약상 만진다(공용 장부와 같은 이유). */
   const 내자리 = 보드lib
     ? new Set([...보드lib.파일자리(항목.본문, { 판꼬리: true })].filter((p) => !p.includes('작업대기열')))
@@ -499,18 +503,146 @@ function 출력() {
   /* 뒤 절반(형제 커밋 제목 규약)이 **위 낡음 대조의 재료**다 — 장치와 그 발동 조건은 같은 자리에
    * 있어야 한다. 여기 안 적으면 형제에서 일하는 세션은 그 규약을 볼 기회가 없고, 그러면 검사는
    * 원리상 아무것도 못 본다(장치만 있고 안 도는 F026 모양). */
-  console.log('  전문: docs/_ops/작업대기열.md — 고르면 **내 보드 파일에 선언**하고 트랙 칸에 그 줄의 `#Qnn` 을 적는다'
-    + '(그게 점유 판정의 조인 키다 · 유호 채택 08-14). 끝내면 그 층을 갱신해 담는다'
+  /* 발동 조건을 장치와 **같은 자리**에 적는다 — 손잡이를 지어 놓고 안 부르면 없는 것과 같다.
+   * 순서가 규칙이다: 「재기 전에 선언」(F415 — 열고·재고 판단하는 5분이 무보호 구간이었다). */
+  console.log('  전문: docs/_ops/작업대기열.md — 고르면 **재기 전에 선언부터**:'
+    + ' `node tools/대기열.js --집기 #Qnn --파일 "…"` 가 보드 줄을 조립해 준다(그대로 Write — 써야 board-guard 가 겹침을 본다 · F415).'
+    + ' 끝내면 그 층을 갱신해 담는다'
     + ' (형제 저장소 커밋이면 제목에 「대기열 P*n*」 — 그게 낡음 대조의 재료다).'
     + (낡음.측정 ? '' : ` ⚠낡음 대조 미실행 — ${낡음.사유}`));
+  return 0;
+}
+
+/* ── 집기 — 「재기 전에 선언한다」를 한 줄로 (F415 · 2026-08-14) ─────────────────
+ *
+ * ■ 무엇이 샜나 (실측 2026-08-14 `local_71748fd0` — 한 세션이 10분에 4번)
+ *   훅은 모든 세션에 **같은 🟢 3건**을 뿌리는데 점유 표식은 보드 선언 하나뿐이라,
+ *   「열고·재고·판단하는」 5분이 통째로 무보호 구간이다. #Q73 의 절별 부피를 재는 사이
+ *   434254de 가, #Q72·#Q49 를 선언하려는 사이 f30e7914·f8fd4dd0 가, 결정 큐 배달 결함을
+ *   읽는 사이 옆 세션이 전부 가져갔다. 🔑 **가드는 제대로 일했다** — 중복 구현은 0이고
+ *   샌 것은 컨텍스트다. 그래서 적색도 경보도 없다: 선언이 계측보다 비싸면 계측을 먼저 한다.
+ *   여기가 그 값을 뒤집는 자리다(선언 5초 · 계측 5분).
+ *
+ * ■ 성격 = **프린터다. 가드가 아니다.**
+ *   보드 파일을 이 도구가 **쓰지 않는다** — 쓰면 `board-guard`(PreToolUse: Write)가 안 돌아
+ *   겹침 판정이 통째로 우회된다(가드는 로직보다 등록층에서 샌다 · 새는 방향은 언제나 「통과」).
+ *   여기는 Write 할 **내용을 조립해 낼 뿐**이고 마지막 문은 그대로 board-guard 다.
+ *   그 앞의 「이미 남이 잡았나」도 새로 안 짓는다 — 이 파일의 `점유()` 를 그대로 부른다.
+ *
+ * ■ 대가 — 틀릴 때 어떤 모습인가 (장치 예산 · CLAUDE.md 가드 맹점 ④)
+ *   ① 「만지는 파일」은 도구가 대신 못 적는다 — 그래서 `--파일` 이 **필수**다. 비면 거절한다.
+ *      빈 칸으로 나가면 점유 판정 ③(파일 자리)이 그 줄에 대해 눈이 먼다.
+ *   ② 제목이 상한을 넘으면 자른다 — 자른 문구는 원문과 갈릴 수 있다. 그래서 조인 키는 제목이
+ *      아니라 `#Qnn` 이고 그것은 **안 자른다**(트랙 칸 맨 앞).
+ *   ③ 유령 선언(집어 놓고 안 함) — 새 장치를 안 세운다. `board-move`·보드수거·인계문이 이미 받는다.
+ *   닫은 것 = **없다.** 손으로 조립하던 것은 도구가 아니라 사람 행위라 끌 통로가 없다. */
+
+/** board-guard 의 칸 상한을 **그 파일에서** 읽는다 — 값을 두 곳에 적으면 갈라진다.
+ *  못 읽으면 200 으로 두되 그 사실을 밝힌다. 틀려도 조용하지 않다: 넘치면 board-guard 가 deny 한다. */
+function 칸상한() {
+  try {
+    const 소스 = fs.readFileSync(path.join(ROOT, '.claude', 'hooks', 'board-guard.js'), 'utf8');
+    const m = /const MAX_CELL\s*=\s*(\d+)/.exec(소스);
+    if (m) return { 값: Number(m[1]), 출처: 'board-guard' };
+  } catch { /* 아래 폴백 */ }
+  return { 값: 200, 출처: '폴백(board-guard 를 못 읽었다)' };
+}
+
+/** 대기열 본문 → 트랙 칸에 쓸 이름. 첫 `**…**` 굵은 span 이 그 줄이 스스로 붙인 이름이다. */
+function 굵은제목(본문) {
+  const s = String(본문 || '').replace(/^\s*〖[^〗]*〗\s*/, '').replace(/^\s*#Q\d+\s*/, '');
+  const m = /\*\*([\s\S]+?)\*\*/.exec(s);
+  return (m ? m[1] : s).replace(/\s+/g, ' ').trim();
+}
+
+function 오늘날짜(d = new Date()) {
+  const p = (x) => String(x).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/** 보드 표의 트랙 칸 한 줄. `#Qnn` 은 조인 키라 절대 안 자른다. */
+function 트랙칸(항목, 상한) {
+  const 층 = String(항목.층 || '').split(' ')[0] || 'P?';
+  const 꼬리 = `(대기열 ${층} 줄${항목.줄번호} · 새 선언 · 남의 줄 무변경)`;
+  const 머리 = `#Q${항목.id} `;
+  const 여유 = 상한 - 머리.length - 꼬리.length - 4;   // `**` 두 벌
+  let 제목 = 굵은제목(항목.본문);
+  if (제목.length > 여유) 제목 = `${제목.slice(0, Math.max(12, 여유 - 1))}…`;
+  return `**${머리}${제목}**${꼬리}`;
+}
+
+/** 새 보드 파일의 머리. 기존 파일이 있으면 안 쓴다(그 파일의 모양이 정본이다). */
+const 보드머리 = (지문) => [`# 보드 — ${지문}`, '', '| 날짜 | 트랙 | 만질 파일 | 상태/다음 |', '|---|---|---|---|'];
+
+/** `--집기 #Qnn --파일 "…"` → Write 할 보드 파일 **전문**을 조립한다. 디스크는 안 만진다. */
+function 집기(id, 파일칸, sid = process.env.CLAUDE_CODE_HOST_SESSION_ID) {
+  const 목록 = 항목들();
+  if (!목록) return { 오류: `대기열 파일이 없다 — ${대기열좌표}` };
+  const 항목 = 목록.find((x) => x.id === id);
+  if (!항목) {
+    const 있는것 = 목록.filter((x) => Number.isInteger(x.id)).map((x) => `#Q${x.id}`).join(' ');
+    return { 오류: `#Q${id} 가 열린 항목에 없다 — 이미 닫혔거나 번호가 틀렸다.\n   열린 것: ${있는것}` };
+  }
+  /* 점유 대조가 **먼저**다 — 잡힌 자리면 `--파일` 을 짜는 수고 자체가 낭비다(이 손잡이의 취지가
+   * 「비켜날 것을 빨리 알기」다). 판정은 새로 안 짓는다 — 위 `점유()` 그대로이고, 못 읽으면
+   * 「없다」로 접지 않는다(초록은 분모와 함께). */
+  const 행들 = 보드행들();
+  const 잡힘 = 행들 === null ? null : 점유(항목, 행들);
+  if (잡힘) {
+    return { 오류: `#Q${id} 는 **이미 남이 잡았다**(근거 ${잡힘.근거}) — 겹치면 내가 비켜난다.\n`
+      + `   그 트랙: ${잡힘.트랙.slice(0, 90)}\n`
+      + '   죽은 세션이면 그 줄부터 치운다: node tools/board-move.js "<그 트랙 문구>"' };
+  }
+  if (!String(파일칸 || '').trim()) {
+    return { 오류: '`--파일` 이 필요하다 — 「만질 파일」 칸은 도구가 대신 못 적는다.\n'
+      + '   예) --파일 "`DESIGN.md` · 회귀 `tests/디자인가드.test.js` · 훅 무변경 · talk 0 · 운영 DB 0 · 배포 0"\n'
+      + '   그 칸이 비면 이 도구의 점유 판정 ③(파일 자리)이 그 줄에 대해 눈이 먼다.' };
+  }
+  const 보드 = 라이브('보드.js');
+  const 내 = 보드.내파일(ROOT, sid);
+  if (!내) return { 오류: '세션 지문을 못 읽었다($CLAUDE_CODE_HOST_SESSION_ID) — 내 보드 파일을 못 고른다.' };
+
+  const 상한 = 칸상한();
+  const 지문 = path.basename(내, '.md');
+  const 파일칸전문 = `${String(파일칸).trim()} · 이 줄`;
+  const 새줄 = `| ${오늘날짜()} | ${트랙칸(항목, 상한.값)} | ${파일칸전문} | 작업중 (\`local_${지문}\`) — ▶착수 |`;
+  const 기존 = fs.existsSync(내) ? fs.readFileSync(내, 'utf8').replace(/\s*$/, '') : null;
+  const 본문 = `${기존 || 보드머리(지문).join('\n')}\n${새줄}\n`;
+  const 넘침 = 라이브('표.js').칸나누기(새줄)
+    .map((c, i) => ({ i, n: String(c).length })).filter((c) => c.n > 상한.값);
+  return { 경로: 내, 본문, 새줄, 넘침, 상한, 미측정: 행들 === null };
+}
+
+function 집기보고(argv, i) {
+  const 인자 = String(argv[i + 1] || '');
+  const m = /^#?Q?(\d+)$/i.exec(인자.trim());
+  if (!m) {
+    console.log('사용: node tools/대기열.js --집기 #Q73 --파일 "`DESIGN.md` · 회귀 `tests/…` · talk 0 · 운영 DB 0 · 배포 0"');
+    console.log('  보드 파일은 **이 도구가 안 쓴다** — 낸 내용을 그대로 Write 해야 board-guard 가 겹침을 본다.');
+    return 1;
+  }
+  const fi = argv.indexOf('--파일');
+  const r = 집기(Number(m[1]), fi === -1 ? '' : argv[fi + 1]);
+  if (r.오류) { console.log(`✗ ${r.오류}`); return 1; }
+  if (r.미측정) console.log('⚠ 보드 표를 못 읽어 **점유 대조를 못 했다**(0건과 다른 상태다) — Write 가 board-guard 에 걸리는지로 가른다.\n');
+  if (r.넘침.length) console.log(`⚠ 칸 ${r.넘침.map((c) => `#${c.i}(${c.n}자)`).join('·')} 가 상한 ${r.상한.값}[${r.상한.출처}] 초과 — board-guard 가 막는다. 줄여서 Write 해라.\n`);
+  console.log(`▶ 이 내용을 그대로 Write 해라 — ${path.relative(ROOT, r.경로).replace(/\\/g, '/')}`);
+  console.log('  (도구가 안 쓴다 · Write 해야 board-guard 가 겹침·상한·주인 표식을 본다)\n');
+  console.log(r.본문);
+  console.log('— 붙인 뒤: 「만질 파일」 칸을 실제로 만질 것으로 고치고, 상태 칸 ▶착수 뒤에 다음 한 걸음을 적는다.');
   return 0;
 }
 
 module.exports = {
   항목들, 씨앗, 낡음후보, 층별시각, 차단, 차단표식, 집을수있음, 점유표식, 확정재료,
   점유, 보드행들, 행,
+  집기, 굵은제목, 트랙칸, 칸상한, 오늘날짜,
 };
 
 if (require.main === module) {
-  process.exit(process.argv.slice(2).includes('--확정대조') ? 확정보고() : 출력());
+  const argv = process.argv.slice(2);
+  const 집기i = argv.indexOf('--집기');
+  process.exit(집기i !== -1 ? 집기보고(argv, 집기i)
+    : argv.includes('--확정대조') ? 확정보고()
+      : 출력());
 }
