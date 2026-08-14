@@ -119,7 +119,12 @@ function parseEdgesFull(text) {
   const masked = maskCode(text);
   EDGE_RE.lastIndex = 0;
   while ((m = EDGE_RE.exec(masked)) !== null) {
-    for (const part of m[1].split(',')) {
+    /* [2026-08-14] 구분자는 쉼표«와» 가운뎃점 둘 다 받는다 — 이 저장소는 ` · ` 를 **어디서나** 쓰는데
+     *   이 한 칸만 쉼표를 요구했다. 그래서 두 문서가 `A@v1.9 · B` 로 적었고, 파서가 통째로 한 경로로
+     *   읽어 「깨진 참조」가 됐다(주인 없는 적색 = 그 뒤 커밋하는 모든 세션의 배포 정지).
+     *   ⚠ 새는 방향을 봤다: 더 쪼개는 쪽이라 **없던 엣지가 생길 뿐 있던 것이 숨지 않는다.** 경로에
+     *   ` · ` 가 든 파일은 없다. 「경로가 아닌 글」은 여전히 깨진 참조로 남는다 — 그건 숨기면 안 된다. */
+    for (const part of m[1].split(/,|\s·\s/)) {
       if (!part.trim()) continue;
       const e = splitVersion(part);
       if (e.target) out.push(e);
