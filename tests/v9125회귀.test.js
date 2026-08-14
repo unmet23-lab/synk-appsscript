@@ -411,11 +411,15 @@ test('[v9.132] seasonKeyOf_ — Date·String(Date)·문자열이 모두 같은 �
   assert.equal(ctx.seasonKeyOf_('정규반1', 'Asia/Ulaanbaatar'), '정규반1', '일반 텍스트를 날짜로 오변환한다');
 });
 
-test('[v9.132] 시즌 비교 5곳이 전부 정규화를 거친다 (하나라도 빠지면 그 화면만 조용히 빈다)', () => {
+test('[v9.132] 시즌 비교 7곳이 전부 정규화를 거친다 (하나라도 빠지면 그 화면만 조용히 빈다)', () => {
   const raw = (code.match(/String\(r\[0\]\)\s*[!=]==\s*season/g) || []);
   assert.deepEqual(raw, [], '정규화를 안 거치는 시즌 비교가 남아 있다: ' + raw.join(' / '));
   const norm = (code.match(/seasonKeyOf_\(r\[0\], tz\)/g) || []).length;
-  assert.equal(norm, 5, '정규화 지점이 5곳이 아니다(현재 ' + norm + ') — 새 비교가 늘었거나 하나가 사라졌다');
+  /* [vNEXT] 5 → 7 — `talk_index_log` 의 적재(멱등 키)와 소비(주간 리포트 꼬리)가 새 비교 둘을 더했다.
+   *   그 둘은 처음에 맨몸 `String()` 으로 짰다가 ①배포 검수 P1 으로 잡혔다: 시트가 'yyyy-MM-dd' 를
+   *   Date 로 삼켜 재실행마다 중복 적재였다 — v9.132 가 groups 시트에서 이미 겪은 그 함정 그대로다.
+   *   숫자를 올릴 때는 «왜 늘었는지»를 여기 적는다(안 적으면 다음 사람이 무심코 올려 래칫이 풀린다). */
+  assert.equal(norm, 7, '정규화 지점이 7곳이 아니다(현재 ' + norm + ') — 새 비교가 늘었거나 하나가 사라졌다');
 });
 
 test('[v9.132] assignGroups 재실행이 교체다 — 시즌 열을 텍스트로 굳혀 다음 비교가 어긋나지 않는다', () => {
