@@ -75,6 +75,17 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
 .card.najeon .ttl{font-size:9.2cqw;line-height:1.16}
 .card.najeon .txt{font-size:3.8cqw;color:var(--cream3);margin-top:3.2cqw}
 
+/* 표지에서만 — 로고가 자개 문양 «위»에 앉아 묻힌다(실측 08-14: 문양이 알록달록해
+   흰 글자가 안 읽힌다 · 렌더 린트는 배경이 이미지면 대비를 못 재서 초록이 나온다).
+   잉크 스크림을 깔아 글자를 세운다 — 킷대로 순검정이 아니라 Navy 2 틴트다.
+   마감(close)에는 안 건다: 거기선 문양이 위에 있고 로고는 다크 바닥에 앉는다. */
+.card.najeon.cover::after{content:'';position:absolute;left:0;right:0;bottom:0;height:17%;z-index:2;
+  background:linear-gradient(to top,rgba(15,23,48,.88),rgba(15,23,48,.45) 45%,rgba(15,23,48,0));
+  pointer-events:none}
+/* 태그라인은 Slate(저채도 보조색)라 스크림 위에서도 문양에 먹힌다 — 표지에서만 Cream 3 로 올린다.
+   색을 바꾸는 게 아니라 «같은 킷 안에서 한 단 밝은 잉크»를 쓰는 것이다(신호 1점 불변). */
+.card.najeon.cover .foot .tagline{color:var(--cream3)}
+
 /* 원본 렌더의 좌상단 라이팅을 이어받는다 — 다크가 완전히 죽지 않게 */
 .card.najeon::before{content:'';position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(120% 70% at 18% 6%, rgba(251,247,238,.06), rgba(251,247,238,0) 60%)}
@@ -113,57 +124,57 @@ footer b{color:var(--ink)}
     <h2 class="ttl">괜찮아요<br>다섯 뜻</h2>
     <p class="txt">같은 말인데 뜻이 다섯 개예요.<br>어느 쪽인지 알면 대화가 훨씬 편해져요.</p>
     <div class="band"></div>
-    <div class="foot">SYNK<span class="mk">&lt;</span> <span class="tagline">한국어, 게임처럼</span></div>
+    <div class="foot">syn<span class="mk">&lt;</span> <span class="tagline">한국어, 게임처럼</span></div>
   </div>
 
   <!-- 2 수락 -->
   <div class="card">
     <span class="badge">2</span>
-    <img class="shot" src="마스코트_누끼/본체눈감음.png" alt="마스코트 — 눈웃음">
+    <img class="shot" src="마스코트_정본/본체눈감음.png" alt="마스코트 — 눈웃음">
     <h2 class="ttl">네, 좋아요</h2>
     <div class="rule"></div>
     <p class="txt">"커피 마실래요?" — <q>괜찮아요!</q><br>웃으면서 말하면 받아들이는 뜻이에요.</p>
-    <div class="foot">SYNK<span class="mk">&lt;</span></div>
+    <div class="foot">syn<span class="mk">&lt;</span></div>
   </div>
 
   <!-- 3 사양 -->
   <div class="card">
     <span class="badge">3</span>
-    <img class="shot" src="마스코트_누끼/본체.png" alt="마스코트 — 담담한 표정">
+    <img class="shot" src="마스코트_정본/본체.png" alt="마스코트 — 담담한 표정">
     <h2 class="ttl">안 주셔도 돼요</h2>
     <div class="rule"></div>
     <p class="txt">똑같은 말인데 고개를 살짝 저으면<br>정중히 사양하는 뜻이 돼요.</p>
-    <div class="foot">SYNK<span class="mk">&lt;</span></div>
+    <div class="foot">syn<span class="mk">&lt;</span></div>
   </div>
 
   <!-- 4 다독임 -->
   <div class="card">
     <span class="badge">4</span>
-    <img class="shot" src="마스코트_누끼/본체눈감음2.png" alt="마스코트 — 잔잔한 표정">
+    <img class="shot" src="마스코트_정본/본체눈감음2.png" alt="마스코트 — 잔잔한 표정">
     <h2 class="ttl">걱정 마세요</h2>
     <div class="rule"></div>
     <p class="txt">친구가 미안해할 때 <q>괜찮아요</q> —<br>마음 쓰지 말라고 다독이는 말이에요.</p>
-    <div class="foot">SYNK<span class="mk">&lt;</span></div>
+    <div class="foot">syn<span class="mk">&lt;</span></div>
   </div>
 
   <!-- 5 안부 -->
   <div class="card">
     <span class="badge">5</span>
-    <img class="shot" src="마스코트_누끼/본체놀람.png" alt="마스코트 — 걱정하는 표정">
+    <img class="shot" src="마스코트_정본/본체놀람.png" alt="마스코트 — 걱정하는 표정">
     <h2 class="ttl">어디 아파요?</h2>
     <div class="rule"></div>
     <p class="txt">끝을 올려서 <q>괜찮아요?</q> 하면<br>몸이 어떤지 묻는 말이 돼요.</p>
-    <div class="foot">SYNK<span class="mk">&lt;</span></div>
+    <div class="foot">syn<span class="mk">&lt;</span></div>
   </div>
 
   <!-- 6 칭찬 -->
   <div class="card">
     <span class="badge">6</span>
-    <img class="shot" src="마스코트_누끼/본체눈감음.png" alt="마스코트 — 눈웃음">
+    <img class="shot" src="마스코트_정본/본체눈감음.png" alt="마스코트 — 눈웃음">
     <h2 class="ttl">마음에 들어요</h2>
     <div class="rule"></div>
     <p class="txt">"이 옷 어때요?" — <q>괜찮네요!</q><br>이때는 좋다는 칭찬이에요.</p>
-    <div class="foot">SYNK<span class="mk">&lt;</span></div>
+    <div class="foot">syn<span class="mk">&lt;</span></div>
   </div>
 
   <!-- 7 마감 — 자개가 위에서 내려와 닫는다 -->
@@ -172,7 +183,7 @@ footer b{color:var(--ink)}
     <div class="band"></div>
     <h2 class="ttl">오늘 한 번</h2>
     <p class="txt">받기 · 사양 · 다독임 · 안부 · 칭찬.<br>다섯 중 하나만 골라 오늘 써 봐요.</p>
-    <div class="foot">SYNK<span class="mk">&lt;</span> <span class="tagline">저장해 두고 꺼내 보세요</span></div>
+    <div class="foot">syn<span class="mk">&lt;</span> <span class="tagline">저장해 두고 꺼내 보세요</span></div>
   </div>
 
 </div>
