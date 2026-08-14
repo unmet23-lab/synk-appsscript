@@ -13,6 +13,9 @@ const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const 폼리포트 = read('엔진_폼리포트.js');
 const 콘텐츠AI = read('엔진_콘텐츠AI.js');
 const 크루서버 = read('crewcard/크루카드.js');
+/* 부정 단언(「~가 없어야 한다」)의 주어만 이걸로 감싼다 — 주석이 금지 패턴을 «설명»하면 그 검사가
+ * 설명을 위반으로 읽는다(「메일을 쏘지 않는다」를 적어 둔 자리가 곧 위반이 된다). (대기열 #Q72) */
+const { 코드만 } = require('./lib/소스검사.js');
 
 /* ── 발동층 ─────────────────────────────────────────────────────── */
 
@@ -23,8 +26,8 @@ test('배선 — parentSweep이 crewIntakeWatch를 부른다 (안 불리면 로�
 });
 
 test('결정 못박기 — 크루카드 웹앱은 메일을 쏘지 않는다 (익명 POST = 메일 폭탄 벡터)', () => {
-  assert.ok(!/MailApp|GmailApp/.test(크루서버), 'crewcard 웹앱에 메일 발송이 생겼다 — 무토큰 익명 엔드포인트가 메일을 발사하게 된다');
-  assert.ok(!/MailApp|GmailApp/.test(read('crewcard/상담시트.js')), 'crewcard 이관부에 메일 발송이 생겼다(같은 이유)');
+  assert.ok(!/MailApp|GmailApp/.test(코드만(크루서버)), 'crewcard 웹앱에 메일 발송이 생겼다 — 무토큰 익명 엔드포인트가 메일을 발사하게 된다');
+  assert.ok(!/MailApp|GmailApp/.test(코드만(read('crewcard/상담시트.js'))), 'crewcard 이관부에 메일 발송이 생겼다(같은 이유)');
 });
 
 test('사본 동치 — 상한·타임존이 웹앱 정본과 갈리면 경고 시점과 「오늘」이 어긋난다', () => {
@@ -71,7 +74,7 @@ test('🔴 사본 동치 — crew_errors 열 스키마: 쓰는 쪽 헤더와 읽
 test('마커 방식 금지 — 마지막 serial 비교로 되돌아가면 crew_cards 초기화 후 영원히 침묵한다', () => {
   const fn = 폼리포트.slice(폼리포트.indexOf('function crewIntakeWatch_'), 폼리포트.indexOf('function importFormResponses'));
   assert.ok(/indexOf\(s\) === -1/.test(fn), '집합 차집합(새 원소만) 판정이 사라졌다');
-  assert.ok(!/>\s*이전문|이전문\s*</.test(fn), 'serial 크기 비교(마커)가 되살아났다 — 채번 리셋에 눈이 먼다');
+  assert.ok(!/>\s*이전문|이전문\s*</.test(코드만(fn)), 'serial 크기 비교(마커)가 되살아났다 — 채번 리셋에 눈이 먼다');
 });
 
 /* ── 실행 하네스 ───────────────────────────────────────────────── */

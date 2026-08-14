@@ -270,6 +270,7 @@ test('--readme 는 지도 표를 폴더에서 생성한다 (손 목록은 실제
   const 갱신 = fs.readFileSync(path.join(maps, '_읽어보세요.md'), 'utf8');
   assert.match(갱신, /수업지도/, '폴더에 실재하는 지도가 표에 없다');
   assert.match(갱신, /docs\/정본\.md/);
+  /* ⚠ `갱신` 은 도구가 다시 쓴 **마크다운**이다 — `코드만()` 대상 아님(ⓑ 런타임 산출 + ⓒ 비JS · #Q72). */
   assert.ok(!갱신.includes('낡은손표'), '옛 손 표가 그대로 남았다');
   assert.match(갱신, /지도표:시작/, '재생성 마커가 없으면 다음 갱신이 표를 못 찾는다');
 });

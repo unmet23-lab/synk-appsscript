@@ -27,11 +27,14 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const 훅원본 = path.join(ROOT, 'tools', 'githooks', 'pre-commit');
 
+/* 주석 제거 통로는 공용 하나다 — `tests/lib/소스검사.js` (F401 계열 · 대기열 P3 #Q72).
+ * 여기 있던 지역 사본은 **줄머리 `//` 만** 지워서 인라인 주석이 그대로 코드로 세어졌다. */
+const { 코드만 } = require('./lib/소스검사.js');
+
 /** 판정 1벌 — 이 소스가 ROOT 를 `CLAUDE_PROJECT_DIR` 로 잡는가. 주석에 그 이름이 나오는 것은
  *  위반이 아니다(이 저장소는 왜 안 쓰는지를 주석으로 적는다 — 그걸 잡으면 처방이 곧 위반이 된다). */
 function 환경변수로뿌리를잡나(소스) {
-  return /^[^\n]*\bROOT\s*=[^\n]*process\.env\.CLAUDE_PROJECT_DIR/m
-    .test(소스.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, ''));
+  return /^[^\n]*\bROOT\s*=[^\n]*process\.env\.CLAUDE_PROJECT_DIR/m.test(코드만(소스));
 }
 
 /** 훅이 `node "$ROOT/tools/….js"` 로 부르는 검사기들 — 목록의 출처는 훅 하나뿐이다. */

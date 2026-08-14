@@ -159,6 +159,9 @@ test(`키트 ${킷개수}색이 hex 원천과 전부 일치한다`, () => {
  *   ① 실제로 킷에 있는 색인가(죽은 예외가 쌓이면 다음 사람이 그 목록을 신뢰한다)
  *   ② 원천 HTML 에 정말 없는가(있으면 예외가 필요 없다 — 조용히 검사를 건너뛰게 된다)
  *   ③ 근거 문서가 실재하는가(사유 문자열은 얼마든지 쓸 수 있다) */
+/* ⚠ 이 파일의 `!src.includes(hex)`·`!up.includes(…)` 부정 단언들은 **HTML·CSS·인쇄물**을 본다 —
+ *   `코드만()`(JS 렉서)으로 감싸지 않는다(갈래 ⓒ 비JS · 대기열 #Q72). HTML 주석은 `<!-- -->` 이고,
+ *   JS 렉서를 대면 `url(//…)`·`https://` 뒤가 잘려 「그 색이 없다」가 거짓으로 참이 된다. */
 test('hex 원천 밖 색은 근거가 실재한다(예외가 통로가 되지 않게)', () => {
   const src = fs.readFileSync(HEX_SOURCE, 'utf8').toUpperCase();
   const canon = fs.readFileSync(CANON, 'utf8');

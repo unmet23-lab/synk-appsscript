@@ -6,6 +6,10 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..');
 const bump = require(path.join(ROOT, 'tools', 'bump-version.js'));
 const src = fs.readFileSync(path.join(ROOT, 'tools', 'bump-version.js'), 'utf8');
+/* 부정 단언(「~가 없어야 한다」)의 주어만 이걸로 감싼다 — 주석이 금지 패턴을 «설명»하면 그 검사가
+ * 설명을 위반으로 읽는다. ⚠ **자리표(`[vNEXT]`) 검사에는 쓰지 않는다** — 버전 태그는 «주석에 사는
+ * 것»이 정상이라 정제하면 과녁이 통째로 사라져 늘 초록이 된다(아래 두 자리 · 대기열 #Q72). */
+const { 코드만 } = require('./lib/소스검사.js');
 
 /* [v9.116] 버전 자동 채번 — 2026-08-01 하루에 6번 겹친 동시 발번(v9.80·81·87·100·107·112)의 근본 대책.
  * 이 테스트가 지키는 것은 채번기의 "유일성 보장 경로"다. 여기가 뚫리면 충돌이 조용히 돌아온다. */
@@ -301,6 +305,8 @@ test('🔑 자리표를 엔진 전체에서 **한 번에** 확정한다', () => 
   });
   const 바뀐 = 그루트에서(d, () => bump.stampPlaceholders('v9.6'));
   const 궤적 = fs.readFileSync(path.join(d, '엔진_궤적.js'), 'utf8');
+  /* ⚠ 여기 `궤적` 은 `코드만()` 대상이 «아니다» — 자리표 `[vNEXT]` 는 **일부러 주석 안에 산다**
+   *   (이 파일 아래 F339 절이 그 규약을 적는다). 정제하면 과녁이 사라져 늘 초록이다(갈래 ⓓ · #Q72). */
   assert.ok(!/\[vNEXT\]/.test(궤적), `자리표가 남았다:\n${궤적}`);
   assert.equal((궤적.match(/\[v9\.6\]/g) || []).length, 2, '한 파일 안의 자리표를 전부 바꾸지 않았다');
   assert.ok(바뀐.some((x) => x.startsWith('엔진_궤적.js')), `바뀐 파일을 보고하지 않았다: ${JSON.stringify(바뀐)}`);
@@ -553,7 +559,7 @@ test('🔑 엔진 파일 목록은 손으로 적지 않고 _engine-source 에서
   const 정본 = require(path.join(ROOT, 'tests', '_engine-source.js')).ENGINE_FILES;
   const 도구 = bump.engineFiles();
   for (const f of 정본) assert.ok(도구.includes(f), `${f} 를 안 본다 — 목록이 갈라지면 그 파일의 태그가 검사에서 빠진다`);
-  assert.ok(!/const ENGINE_FILES\s*=\s*\[/.test(src), 'bump-version 이 목록을 다시 적었다 — 분할할 때 조용히 갈라진다');
+  assert.ok(!/const ENGINE_FILES\s*=\s*\[/.test(코드만(src)), 'bump-version 이 목록을 다시 적었다 — 분할할 때 조용히 갈라진다');
 });
 
 test('[F017] 파싱 보조 — 체인 조각과 버전 추출', () => {

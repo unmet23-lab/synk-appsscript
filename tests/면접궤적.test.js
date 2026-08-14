@@ -24,6 +24,10 @@ const ROOT = process.env.SYNK_TEST_SRC_ROOT || path.resolve(__dirname, '..');
 const 폼리포트 = fs.readFileSync(path.join(ROOT, '엔진_폼리포트.js'), 'utf8');
 const 셋업 = fs.readFileSync(path.join(ROOT, '엔진_셋업확장.js'), 'utf8');
 
+/* 부정 단언(「~가 없어야 한다」)의 주어만 이걸로 감싼다 — 주석이 금지 패턴을 «설명»하면 그 검사가
+ * 설명을 위반으로 읽는다. `함수본문` 은 중괄호를 세므로 원문을 받아야 한다. (대기열 #Q72) */
+const { 코드만 } = require('./lib/소스검사.js');
+
 /** 최상위 function 본문을 이름으로 잘라 온다(중괄호 깊이 추적). */
 function 함수본문(src, name) {
   const i = src.indexOf(`function ${name}(`);
@@ -129,7 +133,7 @@ test('🔴 공개 링크에는 프리필이 섞이지 않는다 — 기본값이
   const 생성 = 함수본문(폼리포트, 'createInterviewLogForm');
   assert.ok(/setState\(st, '면접폼URL', form\.getPublishedUrl\(\)\)/.test(생성),
     '공개 링크가 발행 URL 그대로가 아니다 — 지금까지 뿌린 링크·QR가 미아가 된다');
-  assert.equal(/setState\(st, '면접폼URL',[^)]*SIDTOKEN/.test(생성), false,
+  assert.equal(/setState\(st, '면접폼URL',[^)]*SIDTOKEN/.test(코드만(생성)), false,
     '공개 링크에 프리필 토큰이 들어갔다 — 익명 기본값이 뒤집힌다');
 });
 
@@ -156,7 +160,7 @@ test('🔴 명단에 없는 학생ID를 거절하지 않는다 — 그게 유호
   const 링크 = 함수본문(폼리포트, 'interviewPersonalLink');
   const i대조 = 링크.indexOf('profiles');
   assert.notEqual(i대조, -1, '명단 대조 자체가 없다 — 누구 링크인지 확인할 방법이 사라진다');
-  assert.equal(/return[^\n]*명단에 없/.test(링크), false,
+  assert.equal(/return[^\n]*명단에 없/.test(코드만(링크)), false,
     '명단에 없다고 링크를 안 주고 끝낸다 — 테스트 고객·상담만 한 분이 전부 막힌다');
   assert.ok(링크.indexOf('개인 링크 (이 분에게만') > i대조, '대조 뒤에 링크를 돌려주지 않는다');
   assert.ok(/단톡에 올리면 남의 ID로 제출/.test(링크), '개인 링크를 뿌리면 안 되는 이유를 안 알려준다');
@@ -173,7 +177,7 @@ test('틀이 없으면 안내하고 멈춘다 (빈 틀로 깨진 링크를 건�
 test('🔑 학생ID 조립이 채번과 같은 통로다 — 한 글자만 달라도 조인이 통째로 죽는다', () => {
   const 정규 = 함수본문(폼리포트, '면접학생ID정규화_');
   assert.ok(/학생ID_포맷_\(/.test(정규), '채번 통로를 안 쓴다');
-  assert.equal(/'SYNK-'\s*\+/.test(정규), false, "'SYNK-' 를 여기서 따로 이어 붙인다 — 같은 파일 L1099 의 경고");
+  assert.equal(/'SYNK-'\s*\+/.test(코드만(정규)), false, "'SYNK-' 를 여기서 따로 이어 붙인다 — 같은 파일 L1099 의 경고");
 });
 
 test('행동: 정규화가 실제로 무엇을 받아 무엇을 내는가 (픽스처)', () => {

@@ -19,6 +19,8 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
+/* 부정 단언의 주어만 정제한다 — 주석이 금지 패턴을 «설명»하면 그 설명이 위반으로 잡힌다(대기열 #Q72). */
+const { 코드만 } = require('./lib/소스검사.js');
 const path = require('node:path');
 const { 훅띄우기 } = require('./lib/훅띄우기');
 
@@ -149,7 +151,7 @@ test('[단일 출처] 옛글자 클래스를 쓰는 층이 전부 같은 정의�
                            [path.join(__dirname, '..', 'tools', 'lib', '옛글자.js'), 'tools/lib/옛글자.js']]) {
     const src = fs.readFileSync(f, 'utf8');
     assert.match(src, /require\([^)]*옛글자\.js['"]\s*\)\)?/, `${이름} 가 lib/옛글자.js 를 안 쓴다 — 사본이 부활했나`);
-    assert.ok(!/new RegExp\('\[\\\\u30/.test(src), `${이름} 안에 옛글자 클래스 사본이 남아 있다`);
+    assert.ok(!/new RegExp\('\[\\\\u30/.test(코드만(src)), `${이름} 안에 옛글자 클래스 사본이 남아 있다`);
   }
 
   /* 🔴 커밋 층은 `.test()` 를 쓰므로 **전역 플래그를 떼서** 물려받아야 한다 — 전역 정규식의

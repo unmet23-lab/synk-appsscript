@@ -13,6 +13,8 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const path = require('node:path');
+/* 부정 단언의 주어만 정제한다 — 주석이 금지 패턴을 «설명»하면 그 설명이 위반으로 잡힌다(대기열 #Q72). */
+const { 코드만 } = require('./lib/소스검사.js');
 
 const { 다음번호, 바로가기냐, 안전한이름, 이미있나, 짝찾기, 정본후보, 폴더명, 기저키, 짝의심,
   상태판정, 스냅샷원본 } = require('../tools/운영자료.js');
@@ -368,7 +370,7 @@ test('스냅샷원본: 구운 PDF 만 원본 md 를 찾는다 — 아닌 것에 
 
 test('닫힌 손잡이 — `--갱신` 은 소스에서 사라졌다(사본을 다시 굽는 통로 0)', () => {
   const 소스 = fs.readFileSync(path.join(ROOT, 'tools', '운영자료.js'), 'utf8');
-  assert.ok(!/function 갱신\s*\(/.test(소스),
+  assert.ok(!/function 갱신\s*\(/.test(코드만(소스)),
     '사람이 불러야 도는 손잡이는 안 부르면 낡는다 — 처방은 --링크화 이고, 낡음 보고는 --지금상태 다');
 });
 

@@ -156,6 +156,9 @@ test('[v9.138] previewOneReportCard는 Drive 파일을 공유하지 않는다', 
   assert.deepEqual(rec.sharing, [],
     'previewOneReportCard가 setSharing을 호출했다 — 학생 실명·성적 카드가 인증 없이 열리는 링크가 다시 생겼다');
   assert.ok(url, '프리뷰 URL이 반환되지 않았다');
+  /* ⚠ `url`·`out` 은 함수를 **실제로 돌려 나온 산출**(반환 URL·요약문)이지 파일 원문이 아니다 —
+   *   이 파일의 `!… .test(url)`·`.test(out)` 부정 단언들을 `코드만()` 으로 감싸지 않는다
+   *   (갈래 ⓑ 런타임 산출 · 대기열 #Q72). 감싸면 URL 의 `//` 가 주석으로 잘려 늘 초록이 된다. */
   assert.ok(!/lh3\.googleusercontent\.com/.test(url),
     '공개 lh3 URL을 반환한다 — 이 주소는 파일이 공개일 때만 열리므로 공개 공유를 전제한다');
   assert.ok(/drive\.google\.com/.test(url),

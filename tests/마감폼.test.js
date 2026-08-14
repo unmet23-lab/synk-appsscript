@@ -9,6 +9,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+/* 부정 단언의 주어만 정제한다 — 주석이 금지 패턴을 «설명»하면 그 설명이 위반으로 잡힌다(대기열 #Q72). */
+const { 코드만 } = require('./lib/소스검사.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const { engineSource } = require('./_engine-source');
@@ -46,7 +48,7 @@ test('조 편성이 읽는 시트 이름과 마감폼이 쓰는 시트 이름이
 
 test('침묵 점수는 발화가 아니라 미발화를 센다 (의미 반전이 유지되는지)', () => {
   const reader = bodyOf('function quietScoreMap_', '\n}');
-  assert.equal(/indexOf\('발화자'\)/.test(reader), false,
+  assert.equal(/indexOf\('발화자'\)/.test(코드만(reader)), false,
     "'발화자' 열을 읽고 있다 — 마감폼은 미발화자를 적재하므로 의미가 뒤집힌다");
 });
 

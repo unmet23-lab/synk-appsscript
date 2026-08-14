@@ -14,6 +14,8 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
+/* 부정 단언의 주어만 정제한다 — 주석이 금지 패턴을 «설명»하면 그 설명이 위반으로 잡힌다(대기열 #Q72). */
+const { 코드만 } = require('./lib/소스검사.js');
 
 const REPO = path.join(__dirname, '..');
 const 모사환경 = require(path.join(REPO, 'tools', 'lib', 'ci모사환경.js'));
@@ -40,7 +42,7 @@ test('만들기: TZ=UTC · HOME=존재하는 빈 임시 폴더 · SYNK_MEMORY_DI
 test('test-ci 가 한 벌을 쓰고, 인라인 홈 조립이 없다', () => {
   const src = fs.readFileSync(path.join(REPO, 'tools', 'test-ci.js'), 'utf8');
   assert.ok(/ci모사환경/.test(src), 'test-ci 가 lib/ci모사환경 을 안 쓴다');
-  assert.ok(!/mkdtempSync/.test(src), 'test-ci 에 인라인 홈 조립(mkdtempSync)이 남았다 — 조리법이 두 벌이면 갈라진다');
+  assert.ok(!/mkdtempSync/.test(코드만(src)), 'test-ci 에 인라인 홈 조립(mkdtempSync)이 남았다 — 조리법이 두 벌이면 갈라진다');
 });
 
 test('clasp-guard 안전테스트 폴백이 한 벌의 env 로 스위트를 돈다 (F389 의 원형이 실 HOME 실행이었다)', () => {
