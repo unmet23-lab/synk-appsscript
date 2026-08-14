@@ -1734,7 +1734,7 @@ function talkIndexSnapshot_(ss, tz, when) {
   if (!pf || pf.getLastRow() < 2) return '프로필 없음 — 적재 없음.';
   const cls = {};
   pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
-    const cN = String(r[4] || '').trim();
+    const cN = 반키_(r[4]);                                    // [v9.235] 「정규반2(9시)」→「정규반2」 — groups B열과 같은 키로 접는다
     if (r[0] && r[3] === 'student' && cN) cls[cN] = 1;
   });
   /* [v9.234] 분모는 «끝난 차시»까지만 — 이 적재는 월요일 07시, 그날 수업 «전»에 돈다. `lessonNoOf_` 는
@@ -1787,8 +1787,16 @@ function talkIndexSnapshot_(ss, tz, when) {
       sh.getRange(sh.getLastRow() + 1, 1, rows.length, TALK_INDEX_LOG_HEADERS.length).setValues(행소독_(rows));
     }
   } finally { lock.releaseLock(); }
-  return '발화 지수 적재 — 신규 ' + rows.length + '행 + 중복 스킵 ' + dup + '행 (시즌 ' + season + ' · ' + week + '주차 · 반 ' + Object.keys(cls).length + '개)'
-    + (실패반.length ? ' · ⚠ 실패 반 ' + 실패반.length + '개: ' + 실패반.join(', ') : '');
+  const 요약 = '발화 지수 적재 — 신규 ' + rows.length + '행 + 중복 스킵 ' + dup + '행 (시즌 ' + season + ' · ' + week + '주차 · 반 ' + Object.keys(cls).length + '개)';
+  /* [v9.235] 실패 반이 있으면 «적재를 끝낸 뒤» 던진다 — 여태 이 요약은 :1094 에서 `Logger.log` 로만 가서
+   *   `safeRun` 의 오류 경로(실패 메일·재시도)를 안 탔다. 그 반 학생이 전원 빠져도 배치는 «성공»으로
+   *   보고됐다 — 미실행이 통과와 같은 모양이다(F207 · 검수 05a4f9b9c40e).
+   *   던지는 자리가 락 «밖»·쓰기 «뒤»인 이유: 한 반이 실패했다고 나머지 반 적재를 통째로 버리면 안 된다.
+   *   ⚠ 첫 줄에 행수 같은 «변동값»을 넣지 않는다 — `safeRun` 의 dedup 서명이 에러 첫 줄 120자라(:1002),
+   *      매번 서명이 달라지면 하루 1통 제한이 풀려 실패 메일이 메일 쿼터를 태우고 학부모·미납 알림까지
+   *      죽는다(:998 주석이 경고하는 바로 그 자기증폭). 반 이름은 안정적이라 서명이 고정된다. */
+  if (실패반.length) throw new Error('발화 지수 적재 — 실패 반 ' + 실패반.length + '개: ' + 실패반.join(', ') + '\n' + 요약);
+  return 요약;
 }
 /* [v9.99] 학생용 오늘의 만남 — sid → "1R 바트 · 2R 사란 · 3R 뭉흐".
  *   calcAll이 profiles DY129에 싣는다. 오늘 수업이 없는 반은 키를 만들지 않는다(학생 화면 공란 = 카드 숨김).
@@ -1985,7 +1993,7 @@ function assignGroups(className, opts) {
   const members = [];
   rows.forEach(r => {
     if (!r[0] || r[3] !== 'student') return;
-    if (String(r[4] || '').split('(')[0].trim() !== cls) return;
+    if (반키_(r[4]) !== cls) return;
     members.push({
       sid: String(r[0]), name: String(r[1] || r[0]), skill: skillScoreOf_(r),
       quiet: Number(quiet[String(r[0])] || 0),
@@ -2052,6 +2060,16 @@ function assignGroupsAll(opts) {
   Logger.log(L.join('\n'));
   return L.join('\n');
 }
+
+/* [v9.235] 반 표시명 → 조인 키. `profiles` E열은 「정규반2(9시)」처럼 시간을 달고 오는데 `schedule` A열·
+ *   `groups` B열은 「정규반2」다. 이 접기를 호출부마다 손으로 적어 왔고(이 파일 4곳 + 엔진_운영배치 2곳),
+ *   새로 난 자리 하나가 그 통로를 안 타서 그 반이 통째로 «빈 후보»로 조용히 빠졌다(검수 d8461c489202 —
+ *   `talkIndexSnapshot_` 이 원문을 그대로 넘기고 `groupBoardOf_` 는 `String(r[1]) === cls` 로 맞춘다).
+ *   바로 위 `seasonKeyOf_` 와 같은 이유로 같은 판정은 한 곳에서만 산다 — 갈라지면 어느 쪽이 옳은지
+ *   아무도 모르고, 틀린 쪽은 «0건»이라는 정상적인 얼굴로 나온다.
+ *   ⚠ 아직 이 통로 밖: 엔진_운영배치.js:3056·3169 — 두 세션이 작업중인 파일이라 못 건드렸다(대기열에 세웠다).
+ *      그래서 회귀도 이 파일만 잠근다(남의 작업본을 깨는 검사는 남의 커밋을 막는다). */
+function 반키_(v) { return String(v == null ? '' : v).split('(')[0].trim(); }
 
 /* --- 그 반의 오늘(또는 지정 차시) 조·역할·짝 한 판 --- */
 function groupBoardOf_(ss, cls, when, tz) {
@@ -3436,7 +3454,8 @@ function silentRosterAlert_(ss, tz) {
   const pf = ss.getSheetByName('profiles');
   const nameOf = {}, clsOf = {};
   if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
-    if (r[0] && r[3] === 'student') { nameOf[String(r[0])] = String(r[1] || r[0]); clsOf[String(r[0])] = String(r[4] || ''); }
+    // [v9.235] 표시 그룹핑도 같은 키로 접는다 — 「정규반2(9시)」와 「정규반2」가 섞이면 한 반이 두 줄로 갈라져 보인다(빈 값은 그대로 '' → '(반 미상)').
+    if (r[0] && r[3] === 'student') { nameOf[String(r[0])] = String(r[1] || r[0]); clsOf[String(r[0])] = 반키_(r[4]); }
   });
   const cnt = {};
   lc.getRange(2, 1, lc.getLastRow() - 1, LESSON_CLOSE_HEADERS.length).getValues().forEach(r => {
@@ -3487,7 +3506,7 @@ function lessonCloseGapAlert_(ss, tz) {
   if (!pf || pf.getLastRow() < 2) return '';
   const clsOf = {};
   pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
-    if (r[0] && r[3] === 'student' && r[4]) clsOf[String(r[0])] = String(r[4]).split('(')[0].trim();
+    if (r[0] && r[3] === 'student' && r[4]) clsOf[String(r[0])] = 반키_(r[4]);
   });
 
   // ① 어제 실제로 수업한 반 = 출석 기록이 1건이라도 있는 반
@@ -3542,7 +3561,7 @@ function lessonCloseRate_(ss, tz) {
   if (!pf || pf.getLastRow() < 2) return '';
   const clsOf = {};
   pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
-    if (r[0] && r[3] === 'student' && r[4]) clsOf[String(r[0])] = String(r[4]).split('(')[0].trim();
+    if (r[0] && r[3] === 'student' && r[4]) clsOf[String(r[0])] = 반키_(r[4]);
   });
   const taught = {}; // 반|날짜 → true
   const att = ss.getSheetByName('attendance');
