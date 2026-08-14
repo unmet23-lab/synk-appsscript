@@ -88,6 +88,22 @@ test('eval 출력 면제의 근거 — 형제 채점기가 그 축을 실제로 
     '채점 종료코드가 문자 축을 안 본다 — 한자가 나가도 초록으로 끝난다');
 });
 
+/* 🔴 반입 스킬 면제(`.claude/skills/last30days/`)도 근거가 살아 있어야 한다 — 근거는
+ *   「우리가 쓴 글이 아니라 반입물」이라는 프로비넌스다. `skills-lock.json` 에서 항목이
+ *   사라지면(우리 것이 됐거나 출처를 잃었으면) 면제는 눈감기가 되므로 여기서 빨개진다. */
+test('반입 스킬 면제의 근거 — skills-lock.json 에 그 스킬의 프로비넌스가 실재한다', () => {
+  const 잠금 = JSON.parse(fs.readFileSync(path.join(ROOT, 'skills-lock.json'), 'utf8'));
+  const 항목 = 잠금.skills && 잠금.skills.last30days;
+  assert.ok(항목 && 항목.source && 항목.computedHash,
+    'skills-lock.json 에 last30days 프로비넌스가 없다 — 그러면 옛글자 면제(`tools/lib/옛글자.js`)는 '
+    + '근거를 잃는다: 면제를 지우든지 프로비넌스를 되살리든지 **같은 커밋**에서 정한다');
+  /* 좁음 검사 — 면제가 스킬 «계열»로 넓어지면 다음 반입물이 판정 없이 지나간다. */
+  assert.ok(대상인가('.claude/skills/synk-brand/SKILL.md'),
+    '면제가 last30days 밖 스킬까지 삼킨다 — 좁게(그 스킬 하나) 유지한다');
+  assert.ok(!대상인가('.claude/skills/last30days/scripts/lib/cjk.py'),
+    '반입 스킬 면제가 실제로 안 걸린다 — 이 검사와 면제 목록이 갈라졌다');
+});
+
 test('탐지력 — 면제는 «기록»에만 걸리고 우리가 쓴 글에는 안 걸린다', () => {
   const 사본 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-문서문자면제-'));
   try {
