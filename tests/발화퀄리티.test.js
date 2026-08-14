@@ -586,7 +586,8 @@ function loadSnapshot() {
    *   정확히 이 회귀가 막으려는 실패 모양이다(safety.test.js:1061 과 같은 규약). */
   const 반키src = section('function 반키_(', '/* --- 그 반의 오늘');
   const names = ['seasonStartOf_', 'seasonWeekOf_', 'seasonLabelOf_', 'SEASON_WEEKS',
-    'ensureSheet', 'quietScoreMap_', 'talkIndexOf_', 'Logger', '행소독_', 'seasonKeyOf_', 'LockService'];
+    'ensureSheet', 'quietScoreMap_', 'talkIndexOf_', 'Logger', '행소독_', 'seasonKeyOf_', 'LockService',
+    'Utilities'];   // [vNEXT] 잘라 온 구간에 `원인지문_` 이 함께 들어온다(반키_ 바로 뒤) — 그 다이제스트용
   return (stub) => new Function(...names, `${반키src}\n${src}\nreturn talkIndexSnapshot_;`)(...names.map((n) => stub[n]));
 }
 
@@ -666,6 +667,19 @@ function snapshotRig() {
         { sid: 'S9', name: '신입', grp: 1, got: 0, max: 0, quiet: 0, pct: 0 } // 아직 잴 차시 없음 — 행 금지
       ]),
       Logger: { log() {} },
+      /* [vNEXT·검수 c59f24d9] `원인지문_` 이 쓰는 다이제스트 — **가짜 해시를 지어 넣지 않는다.**
+       *   같은 MD5 를 실제로 돌린다: 지문이 「원인이 바뀌면 갈린다」를 증명해야 하는데, 스텁이
+       *   길이만 맞춘 가짜면 그 증명이 스텁의 성질이 되고 실물은 안 재진다.
+       * 🔑 Apps Script 는 **부호 있는** 바이트(-128~127)를 준다 — 부호 없이 주면 실물의
+       *   `(b & 0xFF)` 보정이 우연히 맞아떨어져, 실물이 퇴행해도 이 시험은 계속 초록이다.
+       *   「가짜 시트가 라이브보다 착했다」와 같은 축이라 부호까지 흉내 낸다. */
+      Utilities: {
+        DigestAlgorithm: { MD5: 'MD5' },
+        Charset: { UTF_8: 'UTF_8' },
+        computeDigest: (_알고, raw) => Array.from(
+          require('crypto').createHash('md5').update(String(raw), 'utf8').digest()
+        ).map((b) => (b > 127 ? b - 256 : b)),
+      },
       // 실물과 같은 규약(Code.js 행소독_ → 셀안전_): 문자열만 소독, Date·number 는 타입 보존
       행소독_: (rows) => rows.map((r) => r.map((v) =>
         (typeof v === 'string' && /^[=+\-@\t\r]/.test(v) ? "'" + v : v)))
@@ -862,6 +876,34 @@ test('🔴 같은 반의 «다른» 실패는 다른 서명을 낸다 — 이름
   assert.equal(서명('groups 읽기 실패'), a, '같은 원인인데 서명이 갈렸다 — dedup 이 안 먹어 메일 쿼터를 태운다');
   assert.ok(a.includes('평일11A'), '서명에 반 이름이 없다 — 어느 반이 빠졌는지 손이 못 간다: ' + a);
   assert.ok(!/\bat\s/.test(a), '스택이 서명(첫 줄)에 실렸다 — 줄 번호가 바뀔 때마다 서명이 갈린다: ' + a);
+});
+
+test('🔴 실패 반이 여럿이면 «뒤쪽» 반의 원인이 바뀌어도 서명이 갈린다 — 120자 «밖»은 서명이 아니다', () => {
+  /* 바로 위 시험은 «한 반»만 실패시켜 이 자리를 못 봤다(검수 c59f24d91ca6 · 815c0ea77f09).
+   *   safeRun 의 서명은 첫 줄을 **120자로 자른** 것이다(:1002). 반 이름 + 원인 60자를 이어 붙이면
+   *   셋째 반부터는 통째로 그 «밖»이라, 그 반의 고장이 바뀌어도 하루 1통 제한에 걸려 진단 메일이
+   *   영영 안 온다 — 「고정된 서명」이 「분해능 있는 서명」과 다르다는 것이 이 시험의 전부다.
+   * 🔑 자르기를 여기서 **실물과 같은 식으로** 다시 적는다(`.split('\n')[0].slice(0,120)`) — 안 자르고
+   *   비교하면 전문에는 원인이 살아 있으니 고치기 «전»에도 초록이고, 그 침묵이 이 버그 자체다. */
+  const 반들 = ['평일11A', '평일11B', '평일11C', '평일11D'];
+  const 서명 = (마지막원인) => {
+    const rig = 반여럿Rig(반들);
+    rig.stub.talkIndexOf_ = (ss2, cN) => {
+      // 앞 반들의 원인은 «고정»이고 길다 — 뒤 반을 120자 밖으로 밀어내는 것이 이 시험의 조건이다
+      throw new Error(cN === '평일11D' ? 마지막원인 : cN + ' 고정 원인 ' + '가'.repeat(50));
+    };
+    try { loadSnapshot()(rig.stub)(rig.ss); }
+    catch (e) { return String(e.message).split('\n')[0].slice(0, 120); }   // ← safeRun(:1002) 과 같은 자르기
+    return null;
+  };
+  const a = 서명('마지막 반 원인 하나');
+  const b = 서명('마지막 반 원인 둘');
+  assert.ok(a && b, '실패가 안 올라갔다');
+  assert.ok(a.length >= 120, '첫 줄이 120자에 못 미친다 — 조건이 안 서서 이 시험은 아무것도 안 재고 있다: ' + a);
+  assert.notEqual(a, b,
+    '뒤쪽 반의 원인이 바뀌었는데 «잘린» 서명이 같다 — 그 반의 고장은 영영 안 알려진다: ' + a);
+  assert.equal(서명('마지막 반 원인 하나'), a,
+    '같은 원인 집합인데 서명이 갈렸다 — dedup 이 풀려 실패 메일이 메일 쿼터를 태운다');
 });
 
 test('🔴 assignGroups 는 «입력»도 접는다 — 한쪽만 접으면 전원이 걸러져 「0명 확정」이 나온다', () => {
