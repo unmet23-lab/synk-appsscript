@@ -23,6 +23,8 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
+/* 부정 단언의 주어만 정제한다 — 주석이 금지 패턴을 «설명»하면 그 설명이 위반으로 잡힌다(대기열 #Q72). */
+const { 코드만 } = require('./lib/소스검사.js');
 const { ROOT, engineSource } = require('./_engine-source');
 const { 뱅크읽기 } = require('../tools/lib/문법뱅크.js');
 
@@ -210,7 +212,7 @@ test('[급수⑫] 스토리북 소비자가 급수 칸에 안 걸린다', () => 
    * (레벨 노출은 별개 설계 판정이고, 지금 계약은 「문형 — 의미」 두 칸이다.) */
   const 배지 = code.split('\n').filter((l) => l.indexOf("const gB = i =>") >= 0)[0];
   assert.ok(배지, '스토리북 문법 배지 조립부(gB)를 못 찾았다');
-  assert.ok(!/G\[i\]\[2\]/.test(배지), '배지가 급수 칸을 싣는다 — 학부모 리포트에 급수가 노출된다');
+  assert.ok(!/G\[i\]\[2\]/.test(코드만(배지)), '배지가 급수 칸을 싣는다 — 학부모 리포트에 급수가 노출된다');
 });
 
 test('[급수⑬] 출제 풀이 두 배열을 잇는다 — 겹침은 한 번만·게이트와는 갈린다', () => {

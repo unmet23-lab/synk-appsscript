@@ -23,6 +23,9 @@ function sectionOf(src, startMarker, endMarker) {
 }
 const section = (s, e) => sectionOf(code, s, e);
 const packSection = (s, e) => sectionOf(pack, s, e);
+/* 부정 단언(「~가 없어야 한다」)의 주어만 이걸로 감싼다 — 주석이 금지 패턴을 «설명»하면 그 검사가
+ * 설명을 위반으로 읽는다. `sectionOf` 의 앵커는 원문에서 찾아야 하니 정제하지 않는다. (대기열 #Q72) */
+const { 코드만 } = require('./lib/소스검사.js');
 
 function assertOrder(text, markers) {
   let previous = -1;
@@ -204,7 +207,7 @@ test('[v9.71] 연결 스위프 — 새 행 없으면 즉시 종료(10분 틱 무
 test('[v9.71·C1] 연결은 자동 확정이 아니다 — 대기 접수·유호님 승인 게이트·실명 미노출(아동정보 가로채기 차단)', () => {
   const sweep = packSection('function MJ_msgLinkSweep_(', 'function MJ_canSendNow_(');
   assert.ok(sweep.includes("'대기'"), '신규 요청이 대기 상태로 접수되지 않는다 — ID만 알면 자동 연결되는 구멍');
-  assert.ok(!sweep.includes("appendRow([psid, sid, students[sid]"), '접수 행/답장에 학생 실명이 들어간다 — 승인 전 실명 노출 금지');
+  assert.ok(!코드만(sweep).includes("appendRow([psid, sid, students[sid]"), '접수 행/답장에 학생 실명이 들어간다 — 승인 전 실명 노출 금지');
   assert.ok(sweep.includes("psid === 'anon'"), 'anon 세션(매니챗/자체폼) 차단이 없다');
   assert.ok(sweep.includes("links.pairs.has(psid + '|' + sid)"), '같은 psid+sid 중복 접수 방지가 없다');
   assert.ok(sweep.includes('승인 필요'), '유호님 승인 요청 메일이 없다');
@@ -246,6 +249,8 @@ test('[v9.72] 만료 안내문 — 몽골어·한국어 병기이고 성과 보�
   assert.ok(/[Ѐ-ӿ]/.test(t), '몽골어(키릴)가 없다');
   assert.ok(t.includes('바야르') && t.includes('14') && t.includes('2027-03-01'));
   assert.ok(t.includes('만료됩니다'), '한국어 병기가 없다');
+  /* ⚠ `t` 는 안내문 조립기를 **실제로 돌려 나온 학부모용 문장**이지 파일 원문이 아니다 —
+   *   `코드만()` 으로 감싸지 않는다(갈래 ⓑ · 대기열 #Q72). 광고법 금칙어는 문장 어디에 있든 위반이다. */
   ['보장', '합격', '성적', '반드시', '무조건', '100%', 'баталгаа', 'баталгаатай'].forEach(w => { // 뒤 2개 = 몽골어 '보장'(적대 리뷰 L3)
     assert.ok(!t.includes(w), `안내문에 금지 표현이 들어갔다: ${w}`);
   });
@@ -254,7 +259,7 @@ test('[v9.72] 만료 안내문 — 몽골어·한국어 병기이고 성과 보�
 test('[v9.72] 만료 처리 — 단계 창(하루 놓쳐도 따라잡음)·성공분만 마커(실패는 재시도)·갱신·만료 제외', () => {
   const src = packSection('function MJ_expiryDaily_(', 'function MJ_expirySection_(');
   // [적대 리뷰 M2] 정확일(===) 매칭 금지 — 창 방식이어야 배치가 하루 죽어도 안내가 유실되지 않는다
-  assert.ok(!src.includes('dLeft === 14 ||'), '정확일 매칭이 부활했다 — 배치 하루 결손 시 안내 영구 유실');
+  assert.ok(!코드만(src).includes('dLeft === 14 ||'), '정확일 매칭이 부활했다 — 배치 하루 결손 시 안내 영구 유실');
   assert.ok(src.includes("(dLeft >= 0 && dLeft <= 3) ? 'D3'"), 'D3 단계 창이 없다');
   assert.ok(src.includes("(dLeft > 3 && dLeft <= 14) ? 'D14'"), 'D14 단계 창이 없다');
   assert.ok(src.includes('memo.indexOf(mark) > -1'), '마커 검사(중복 방지)가 없다');

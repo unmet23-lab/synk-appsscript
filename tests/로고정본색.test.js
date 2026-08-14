@@ -113,6 +113,7 @@ test('「//」는 세 번째 색이 아니라 잉크의 저채도다', () => {
   }
 });
 
+/* ⚠ 대상은 **SVG·CSS** 다 — `코드만()`(JS 렉서)으로 감싸지 않는다(갈래 ⓒ 비JS · 대기열 #Q72). */
 test('변수 이름과 값이 어긋나지 않는다 — var(--gold) 가 크림을 뱉으면 안 된다', () => {
   const src = fs.readFileSync(SHEET, 'utf8');
   for (const dead of ['--gold', '--orange', '--blue', '--midnight'])

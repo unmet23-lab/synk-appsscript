@@ -80,6 +80,9 @@ test('폰트 지정 산출물이 최소 1개는 검사된다(스캔이 조용히
 for (const [f, abs] of htmlTargets) {
   const src = fs.readFileSync(abs, 'utf8');
 
+  /* ⚠ 여기 대상은 **HTML·CSS** 다 — `코드만()`(JS 렉서)으로 감싸지 않는다(갈래 ⓒ 비JS · #Q72).
+   *   주석 제거는 이미 이 파일의 `stripComments`(HTML 주석 + CSS 블록 주석)가 맡는다. 아래 `decl`
+   *   도 font-family 선언 «값»이지 원문이 아니다. */
   if (!EXEMPT.has(f)) test(`${f} — 폐기된 구 폰트를 쓰지 않는다`, () => {
     const live = stripComments(src);
     for (const bad of RETIRED) {

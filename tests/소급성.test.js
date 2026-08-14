@@ -9,6 +9,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { engineSource } = require('./_engine-source');
+/* 부정 단언의 주어만 정제한다 — 주석이 금지 패턴을 «설명»하면 그 설명이 위반으로 잡힌다(대기열 #Q72). */
+const { 코드만 } = require('./lib/소스검사.js');
 const code = engineSource().replace(/\r\n/g, '\n');
 
 function section(startMarker, endMarker) {
@@ -102,7 +104,7 @@ test('[v9.207] ⑥ schema_ver — 3시트가 열을 갖고, 적재 5자리가 �
    *    안 잘라 넷이 갈라져 있었다(①배포 검수 P3 `2d09296c` 가 짚었다 — schema_ver 가 그 비대칭을 발화시켰다).
    *    새 시트를 이 리포트에 추가하면서 같은 실수를 하면 여기서 빨개진다(새는 방향이 닫힌다). */
   const 리포트 = section('function dataCoverageReport(opts)', '\n}\n');
-  assert.ok(!/_HEADERS\.length\)\.getValues\(\)/.test(리포트),
+  assert.ok(!/_HEADERS\.length\)\.getValues\(\)/.test(코드만(리포트)),
     'dataCoverageReport 가 헤더 상수 폭을 시트에 그대로 요구한다 — 치유를 안 지난 라이브 시트에서 getRange 가 던져 ' +
     '리포트가 통째로 죽는다. hw(`Math.min(HW_FEEDBACK_HEADERS.length, fb.getLastColumn())`)와 같은 모양으로 자를 것');
   /* ⑤ [v9.208] voice_log — 수집 4시트의 마지막(파일이 달라 위 3시트 축에 못 실렸던 자리 · A-8 2단계).

@@ -15,6 +15,9 @@ const assert = require('node:assert/strict');
 
 const { engineSource } = require('./_engine-source');
 const code = engineSource().replace(/\r\n/g, '\n');
+/* 부정 단언(「~가 없어야 한다」)의 주어만 이걸로 감싼다 — 주석이 금지 패턴을 «설명»하면 그 검사가
+ * 설명을 위반으로 읽는다(「CARD_OFF 에 넣지 않는다」를 적어 둔 자리가 곧 위반이 된다). (대기열 #Q72) */
+const { 코드만 } = require('./lib/소스검사.js');
 
 /* 파일 끝까지 자르는 변형 — 마지막 엔진 파일(엔진_수집.js)의 마지막 함수는 뒤에 표식이 없다.
  * 없는 표식을 억지로 만들면(다음 함수 이름 등) 그 이름이 바뀌는 순간 가드가 죽는다. */
@@ -90,8 +93,9 @@ test('[v9.147] 데일리 훅과 학부모 카드는 압축 대상이 아니다(�
   ['기록실', '플레이스타일', '시냅스케미', '매치업프리뷰'].forEach(k => {
     assert.ok(off.includes(k), `CARD_OFF에 ${k} 누락`);
   });
+  const off코드 = 코드만(off); // 루프 밖에서 한 번만 정제한다
   ['운세', '몬스터한마디', '학업추세', '나의여정', '오늘의알림'].forEach(k => {
-    assert.equal(off.includes(k), false, `${k}는 유지 대상인데 CARD_OFF에 들어갔다 — 데일리 훅/학부모 카드를 끄면 수집의 분모가 마른다`);
+    assert.equal(off코드.includes(k), false, `${k}는 유지 대상인데 CARD_OFF에 들어갔다 — 데일리 훅/학부모 카드를 끄면 수집의 분모가 마른다`);
   });
   // 적용된 결과 검사 — 상수만 있고 카드 생성부가 안 보면 아무 일도 안 일어난다
   assert.ok(code.includes('CARD_OFF.기록실 ? [\'\'] :'), '기록실 카드가 스위치를 안 본다');
@@ -156,7 +160,7 @@ test('[v9.147] 강사 정답 모음은 무작위 표본이고 주간 배치에 �
   // ③ 멱등 — 같은 fb_id를 다시 뽑지 않는다
   assert.ok(g.includes('already.has(id)'), '멱등 가드가 없다 — 매주 같은 카드가 다시 쌓인다');
   // ④ 쓰기 대상은 teacher_gold뿐 — hw_feedback을 건드리면 발행된 첨삭을 소급 정정하게 된다
-  assert.equal(/fb\.getRange\([^)]*\)\.setValue/.test(g), false, '강사 정답 모음이 hw_feedback을 쓴다 — 3단 데이터 정합이 깨진다');
+  assert.equal(/fb\.getRange\([^)]*\)\.setValue/.test(코드만(g)), false, '강사 정답 모음이 hw_feedback을 쓴다 — 3단 데이터 정합이 깨진다');
   // ⑤ 배선·골격
   assert.ok(section('function weeklyJobs()', 'function monthlyJobs()').includes("safeRun('goldenSample', goldenSampleWeekly_)"),
     '강사 정답 모음이 어느 트리거에도 안 걸렸다(영원히 안 돎)');

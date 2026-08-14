@@ -16,6 +16,9 @@ const test = require('node:test');
 const assert = require('node:assert');
 const path = require('node:path');
 const fs = require('node:fs');
+/* 부정 단언(「~가 없어야 한다」)의 주어만 이걸로 감싼다 — 주석이 금지 패턴을 «설명»하면 그 검사가
+ * 설명을 위반으로 읽는다(「옛 통로를 쓰지 않는다」를 적어 둔 자리가 곧 위반이 된다). (대기열 #Q72) */
+const { 코드만 } = require('./lib/소스검사.js');
 const os = require('node:os');
 const { spawnSync } = require('node:child_process'); // git 재현용 — node 자식은 아래 통로로 띄운다
 const { 훅띄우기 } = require('./lib/훅띄우기');
@@ -991,10 +994,11 @@ test('🔑 「이름→지문」 변환은 **한 곳**이다 — 인계문수거
   /* 갈라졌을 때의 증상이 조용하다: 한쪽만 고치면 수거는 산 세션의 인계문을 거둬 가고,
    * 소유자 도구는 그걸 ❔로 두어 아무도 안 짖는다. 그래서 사본 자체를 금지한다. */
   const src = fs.readFileSync(path.resolve(__dirname, '..', 'tools', '인계문수거.js'), 'utf8');
+  const src코드 = 코드만(src); // 부정 단언의 주어만 — 위 긍정 단언(`assert.match(src, …)`)은 원문 그대로
   assert.match(src, /소유자\.인계문지문\(/, '수거가 공용 변환을 안 쓴다 — 어디서 오는지 알 수 없다');
-  assert.ok(!/\(\[A-Za-z0-9_-\]\+\)\\\.md/.test(src),
+  assert.ok(!/\(\[A-Za-z0-9_-\]\+\)\\\.md/.test(src코드),
     '옛 통로(파일명 정규식 사본)가 돌아왔다 — 자리 판정이 빠져 폴더 밖 파일까지 세션 파일로 읽는다');
-  assert.ok(!/['"`]docs\/_ops\/인계문/.test(src),
+  assert.ok(!/['"`]docs\/_ops\/인계문/.test(src코드),
     '인계문 자리를 한 벌 더 적었다 — 자리가 바뀌면 두 도구가 다른 폴더를 본다');
 });
 

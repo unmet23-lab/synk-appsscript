@@ -196,6 +196,7 @@ test('🔑 위임이 실제로 돈다 — 줄이 보드에서 빠지고 아카�
   assert.strictEqual(수거.옮기기(r.대상[0], root), '옮김');
 
   const 보드파일 = path.join(root, 'docs', '_ops', '보드', '0badc0de.md');
+  /* ⚠ 대상은 **보드 마크다운**이다 — `코드만()` 으로 감싸지 않는다(갈래 ⓒ 비JS · 대기열 #Q72). */
   assert.ok(!fs.readFileSync(보드파일, 'utf8').includes('반쪽 게이트'), '보드에서 빠져야 한다');
   assert.ok(fs.readFileSync(path.join(root, 'docs', '세션보드_아카이브.md'), 'utf8').includes('반쪽 게이트'),
     '아카이브에 서야 한다 — 유실이 아니라 이동이다');

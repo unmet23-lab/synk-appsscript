@@ -12,6 +12,9 @@ const fs = require('fs');
 const path = require('path');
 const { 서클모듈, 자수실측, 적합실측, 최악픽스처, 크롬있나 } = require('../tools/서클조판.js');
 const { engineSource } = require('./_engine-source.js');
+/* 부정 단언(「~가 없어야 한다」)의 주어만 이걸로 감싼다 — 주석이 금지 패턴을 «설명»하면 그 검사가
+ * 설명을 위반으로 읽는다(「slice(1) 잔재가 없다」를 적어 둔 자리가 곧 위반이 된다). (대기열 #Q72) */
+const { 코드만 } = require('./lib/소스검사.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const M = 서클모듈();
@@ -415,8 +418,9 @@ test('`--넘침시험`은 브라우저 «안에서» 부풀린다 — 걷기가 
   // 넣는 쪽도 «쪽마다» 머리를 가려야 한다 — 재는 쪽만 고치고 여기 잔재가 남아 있었다(검수 P1 69d2304d)
   assert.ok(/parentElement\.querySelector\('\.z'\) === z\) return;/.test(본문),
     '부풀리기가 머리 칸을 안 가린다 — 다중 조에서 둘째 쪽 머리를 학생 칸처럼 부풀린다');
-  assert.ok(!/\.slice\(1\)/.test(본문), '부풀리기에 slice(1) 잔재가 남아 있다 — 문서 첫 칸만 건너뛴다');
-  assert.ok(!/m\.kept = \{ text:/.test(본문), '옛 방식(카드 kept 부풀리기)이 남아 있다 — 걷기가 그걸 먼저 지운다');
+  const 본문코드 = 코드만(본문);
+  assert.ok(!/\.slice\(1\)/.test(본문코드), '부풀리기에 slice(1) 잔재가 남아 있다 — 문서 첫 칸만 건너뛴다');
+  assert.ok(!/m\.kept = \{ text:/.test(본문코드), '옛 방식(카드 kept 부풀리기)이 남아 있다 — 걷기가 그걸 먼저 지운다');
   // 실측 자체는 크롬이 필요하다 — 여기서는 «어느 층에서 부풀리는가»만 못박는다(F296)
 });
 
@@ -424,7 +428,7 @@ test('머리 칸은 «쪽마다» 있다 — 첫 칸 하나만 빼면 조가 둘
   const 도구 = fs.readFileSync(path.join(ROOT, 'tools', '서클조판.js'), 'utf8');
   assert.ok(/z\.parentElement\.querySelector\('\.z'\) === z/.test(도구),
     '머리 칸을 문서 인덱스(i===0)로 가른다 — 둘째 쪽 머리가 학생 칸으로 센다(검수 P2 6f1bcc3f)');
-  assert.ok(!/잰것\.slice\(1\)/.test(도구), 'slice(1) 로 머리를 빼는 자리가 남아 있다 — 첫 쪽만 빠진다');
+  assert.ok(!/잰것\.slice\(1\)/.test(코드만(도구)), 'slice(1) 로 머리를 빼는 자리가 남아 있다 — 첫 쪽만 빠진다');
   assert.ok((도구.match(/filter\(z => !z\.머리\)/g) || []).length >= 2,
     '머리 판정을 쓰는 소비자가 둘(적합실측·넘침시험) 다 안 바뀌었다');
 });

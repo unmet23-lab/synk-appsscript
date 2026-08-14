@@ -16,6 +16,8 @@ const test = require('node:test');
 const assert = require('node:assert');
 const path = require('node:path');
 const fs = require('node:fs');
+/* 부정 단언의 주어만 정제한다 — 주석이 금지 패턴을 «설명»하면 그 설명이 위반으로 잡힌다(대기열 #Q72). */
+const { 코드만 } = require('./lib/소스검사.js');
 const { 훅띄우기 } = require('./lib/훅띄우기');   // 날 spawnSync 금지 — 미실행이 「통과」로 번역된다
 
 const ROOT = path.resolve(__dirname, '..');
@@ -230,8 +232,9 @@ test('실저장소 — 카드가 «어느 이해가 비었는지»를 숫자로 
 
 test('실저장소 — 카드는 정본에서 뽑은 것이지 훅에 베낀 사본이 아니다', (t) => {
   if (!fs.existsSync(정본)) return t.skip('docs/SYNK_철학.md 없음');
-  const 훅소스 = fs.readFileSync(HOOK, 'utf8');
   // 게이트 본문의 특징 어절이 훅 소스에 박혀 있으면 그건 사본이다 — 정본이 바뀌어도 안 따라온다.
+  // 과녁은 «내보내는 글»이므로 주석은 뺀다(설명으로 인용한 한 줄이 사본으로 잡히면 처방이 곧 위반이다).
+  const 훅소스 = 코드만(fs.readFileSync(HOOK, 'utf8'));
   for (const 어절 of ['하나라도 빠지면 미완성', '산출이 엔진에 닿는가']) {
     assert.ok(!훅소스.includes(어절), `훅 소스에 정본 문구가 베껴져 있다("${어절}") — 개정되면 갈라진다`);
   }

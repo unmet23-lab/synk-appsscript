@@ -12,6 +12,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+/* 부정 단언의 주어만 정제한다 — 주석이 금지 패턴을 «설명»하면 그 설명이 위반으로 잡힌다(대기열 #Q72). */
+const { 코드만 } = require('./lib/소스검사.js');
 
 // SYNK_TEST_SRC_ROOT = 변이 실험용 이음매. 평소엔 실소스를 본다(실파일은 절대 안 건드린다 · F065·F067).
 const ROOT = process.env.SYNK_TEST_SRC_ROOT || path.resolve(__dirname, '..');
@@ -239,7 +241,7 @@ test('⛔ 두 시트가 Glide 금지 선언과 함께 있다 — 남의 결과�
   /* Row Owner는 행 전체를 학생 기기로 내려보낸다(구 조립가이드의 실측 경고). trajectory는
    * 한 행이 한 사람이지만, outcome_log는 남의 행까지 같은 시트에 있다. 화면을 안 만드는 것이 방어다. */
   assert.match(궤적, /⛔ Glide 바인딩 금지/, 'Glide 금지 선언이 사라졌다 — 다음 조립 때 올라간다');
-  assert.ok(!/setAppState_|CARD_FONT|Glide/.test(함수본문(궤적, '궤적재작성_')),
+  assert.ok(!/setAppState_|CARD_FONT|Glide/.test(코드만(함수본문(궤적, '궤적재작성_'))),
     'trajectory가 앱 상태·카드로 새어 나가는 경로가 생겼다');
 });
 

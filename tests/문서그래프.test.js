@@ -90,6 +90,7 @@ test('--add는 없는 정본을 거부한다(오탈자 엣지 차단)', () => {
         encoding: 'utf8', stdio: 'pipe',
       });
     });
+    /* ⚠ 대상은 **마크다운 문서**다 — `코드만()` 으로 감싸지 않는다(갈래 ⓒ 비JS · 대기열 #Q72). */
     assert.ok(!fs.readFileSync(target, 'utf8').includes('파생'), '거부됐으면 파일이 안 바뀌어야 한다');
   } finally {
     fs.unlinkSync(target);
