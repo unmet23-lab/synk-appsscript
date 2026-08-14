@@ -1,0 +1,93 @@
+#!/usr/bin/env node
+'use strict';
+/* 이해대장 «동봉» 게이트 — 정본 개정이 화면을 두고 가는 커밋을 **커밋 전에** 막는다.
+ *   (유호 지시 2026-08-14 「정본 고칠 때 이해대장 재생성 자동으로 되게 해줘」)
+ *
+ * ■ 무엇을 막나 — `docs/SYNK_철학.md` 는 이 커밋에 있는데 그 파생인 `docs/이해대장.html` 이 안 따라온 커밋.
+ *
+ * ■ 왜 사전 차단인가 — 같은 자리가 **하루에 네 번**이었다(08-13 23:35 · 08-14 00:06 · 05:58 · 13:0x).
+ *   전부 「fix: 이해대장 생성물 재생성 — 주인 없는 적색이 남의 배포를 막고 있었다」다. `tests/이해대장.test.js`
+ *   가 사후에 빨개지는데, 이 저장소의 스위트는 `/deploy` 2단계 게이트라 그 적색은 고친 사람이 아니라
+ *   **그 뒤 커밋하는 모든 세션의 배포**를 막는다. 사후 검사는 탐지지 예방이 아니다(CLAUDE.md 신뢰성).
+ *
+ * ■ 🔑 판정은 여기서 안 한다 — `tools/이해대장.js --검사` 하나가 진다. 여기가 맡는 것은
+ *   **무엇을 판정 대상으로 세우나**(=이 커밋이 끝난 뒤의 내용)뿐이다. 옆 계약동봉 게이트와 같은 규약.
+ *
+ * ■ 🔑 재는 것은 작업본이 아니라 **커밋 이후의 내용**이다 — `git commit -- 경로들` 은 범위를 못 박으므로,
+ *   작업본에서 둘 다 고쳐 놓고 정본만 커밋하면 **작업본은 초록인데 HEAD 는 빨갛다**(F302 그 자리).
+ *     이후 내용 = 스테이징됐으면 인덱스(`:경로`) · 아니면 HEAD(`HEAD:경로`)
+ *
+ * ■ ⚠ 대가 (맹점 ④ — 새 장치엔 틀릴 때의 모습을 함께 적는다)
+ *   틀리는 방향은 **거짓 초록**이다: 형제 저장소를 못 읽는 기계에서는 판정층이 「못 쟀다」로 접고
+ *   통과시킨다(막으면 그 세션은 정본을 한 글자도 못 고친다 · F103·F296). 그때 잡는 것은 사후 회귀다.
+ *   즉 형제가 없으면 **예방만 잃고 탐지는 남는다.** 「못 했다」를 조용히 넘기지 않고 찍는 이유가 이것이다.
+ *   닫은 것: 08-14 하루 네 번의 회수 커밋 — 이제 그 커밋을 «내기 전에» 묻는다.
+ */
+
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { execFileSync, spawnSync } = require('node:child_process');
+
+const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
+const 정본경로 = 'docs/SYNK_철학.md';
+const 산출경로 = 'docs/이해대장.html';
+
+const 말 = (s) => process.stderr.write(s + '\n');
+
+function git(args) {
+  return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+}
+
+/* ☠️ `-z` 인 이유는 옆 게이트와 같다 — 기본 출력은 비ASCII 경로를 `"\353\217..."` 로 이스케이프해서
+ *   한글 경로 대조가 **영원히 안 맞는다**. 그리고 그 모양은 「검사가 통과했다」와 똑같다. */
+function 스테이징목록() {
+  try {
+    return new Set(git(['diff', '--cached', '--name-only', '-z', '--diff-filter=ACMR'])
+      .split('\0').filter(Boolean));
+  } catch (_) { return new Set(); }
+}
+
+/** `ref:경로` 를 읽는다. ref `''` = 인덱스. 없으면 `null`. */
+function 판본(ref, 경로) {
+  try { return git(['show', `${ref}:${경로}`]); } catch (_) { return null; }
+}
+
+function main() {
+  const 스테이징 = 스테이징목록();
+  if (!스테이징.has(정본경로)) return 0;          // 정본이 안 담긴 커밋은 이 게이트의 대상이 아니다
+
+  const 정본뒤 = 판본('', 정본경로);
+  if (정본뒤 === null) {
+    말(`[이해대장] 커밋될 정본을 못 읽어 동기 대조를 **못 했다**(${정본경로}) — 막지 않는다.`);
+    return 0;
+  }
+  const 산출뒤 = 판본(스테이징.has(산출경로) ? '' : 'HEAD', 산출경로);
+
+  /* 임시 파일 두 벌 — 작업본을 건드리지 않는다. 옆 세션이 같은 파일을 읽는 중일 수 있고,
+   * 커밋 훅이 작업본을 흔들면 그 자체가 남의 트랙을 깨는 사고다(F073 축). */
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-대장-'));
+  try {
+    const 정본tmp = path.join(방, 'SYNK_철학.md');
+    const 산출tmp = path.join(방, '이해대장.html');
+    fs.writeFileSync(정본tmp, 정본뒤, 'utf8');
+    if (산출뒤 !== null) fs.writeFileSync(산출tmp, 산출뒤, 'utf8');
+
+    const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', '이해대장.js'), '--검사'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      env: { ...process.env, SYNK_대장_정본: 정본tmp, SYNK_대장_산출: 산출tmp },
+    });
+    if (r.stdout) process.stdout.write(r.stdout);
+    if (r.stderr) process.stderr.write(r.stderr);
+    if (r.status === null) {
+      말('[이해대장] 판정기를 못 돌려 동기 대조를 **못 했다** — 막지 않는다.');
+      return 0;
+    }
+    return r.status;
+  } finally {
+    try { fs.rmSync(방, { recursive: true, force: true }); } catch (_) { /* 임시방 청소 실패는 판정이 아니다 */ }
+  }
+}
+
+process.exit(main());

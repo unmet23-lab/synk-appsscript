@@ -32,8 +32,11 @@ const path = require('node:path');
 const { 칸나누기 } = require('./lib/표.js');
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
-const 정본경로 = path.join(ROOT, 'docs', 'SYNK_철학.md');
-const 산출경로 = path.join(ROOT, 'docs', '이해대장.html');
+/* ⚠ 두 경로는 갈아끼울 수 있다 — `--검사` 가 **작업본이 아니라 커밋될 내용**을 재야 하기 때문이다.
+ *   작업본을 재는 검사는 「양쪽 다 고쳐 놓고 정본만 커밋」을 원리상 못 본다(F302 · 계약동봉 게이트가
+ *   같은 이유로 같은 규약을 쓴다). 갈아끼우는 것은 게이트뿐이고 평소 생성은 기본값 그대로다. */
+const 정본경로 = process.env.SYNK_대장_정본 || path.join(ROOT, 'docs', 'SYNK_철학.md');
+const 산출경로 = process.env.SYNK_대장_산출 || path.join(ROOT, 'docs', '이해대장.html');
 
 /** 브랜드 킷 — DESIGN.md §1 이 정본. 여기 있는 것은 «인용»이고, 새 색을 만들지 않는다. */
 const 킷 = {
@@ -461,6 +464,37 @@ function 폴백(말, 끝) {
 </script>
 </html>`;
 
+  /* ── `--검사` — 쓰지 않고 «갈라졌나»만 답한다 (유호 지시 08-14 「정본 고칠 때 자동으로」) ──
+   * 왜 여기인가: 화면은 정본의 파생이라 정본만 커밋되면 **커밋된 화면이 낡는다.** 그 적색은 낸
+   *   사람이 아니라 그 뒤 커밋하는 모든 세션의 배포를 막는다(`/deploy` 2단계 게이트) — 08-14
+   *   하루에만 회수 커밋이 넷이다. 사후 회귀는 탐지지 예방이 아니라, 커밋 전으로 앞당긴다.
+   * 🔑 판정은 여기 하나가 진다 — 훅도 회귀도 이 모드를 부른다(같은 판정을 두 곳에 적으면 갈라지고,
+   *   갈라지는 방향은 언제나 「통과」다).
+   * ⚠ **형제 저장소가 없으면 「갈라졌다」가 아니라 「못 쟀다」다**(F296·F207). 그 기계에서 그린 판은
+   *   실측 칸이 빠져 커밋된 판과 늘 다르므로, 막으면 그 세션은 정본을 한 글자도 못 고친다(F103).
+   *   회귀 `tests/이해대장.test.js` 가 이미 같은 축을 못박고 있다(열화판을 커밋에 싣지 않는다). */
+  if (process.argv.includes('--검사')) {
+    if (!실측) {
+      console.error('[이해대장] 형제 저장소를 못 읽어 동기 대조를 **못 했다** — 막지 않는다.');
+      return 0;
+    }
+    const 지금 = fs.existsSync(산출경로) ? fs.readFileSync(산출경로, 'utf8') : null;
+    if (지금 === html) {
+      console.log(`[이해대장] 커밋될 화면이 정본 ${ver} 와 같다 — 통과.`);
+      return 0;
+    }
+    console.error(`[이해대장] 차단 — 이 커밋이 정본을 고치는데 화면(\`docs/이해대장.html\`)이 ${지금 === null ? '**없다**' : '**안 따라온다**'}.`);
+    console.error('');
+    console.error('  이대로 커밋하면 `tests/이해대장.test.js` 가 **HEAD 에서** 빨개진다. 그 적색은 고친 사람이 아니라');
+    console.error('  그 뒤 커밋하는 **모든 세션의 배포**를 막는다 — 08-14 하루에만 회수 커밋이 넷이었다.');
+    console.error('');
+    console.error('  → 다시 그려 **같은 커밋에** 담는다:');
+    console.error('     node tools/이해대장.js  &&  git add -- docs/이해대장.html');
+    console.error('     git commit -m "…" -- docs/SYNK_철학.md docs/이해대장.html   (경로에 둘 다 넣는다)');
+    console.error('  ⚠ 작업본은 이미 맞을 수 있다 — 재는 것은 **커밋될 내용**이다(F302).');
+    return 1;
+  }
+
   fs.writeFileSync(산출경로, html, 'utf8');
   console.log(`[이해대장] ${path.relative(ROOT, 산출경로)} — 정본 ${ver} · 이해 ${칸전체.length}칸 중 ${빈칸}칸이 비었다`
     + ` · 엔진에 닿는 층 ${닿는층}/${층수}`
@@ -475,5 +509,5 @@ function 폴백(말, 끝) {
   }
 }
 
-if (require.main === module) main();
+if (require.main === module) process.exit(main() || 0);
 module.exports = { 표뽑기, 비었나, 평문, 도달색, 도달판정, 도달실측, 엔진점수, 층기호, 지시문, 먼저볼곳, 킷 };
