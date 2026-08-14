@@ -29,7 +29,17 @@ const os = require('node:os');
 const path = require('node:path');
 const { execFileSync, spawnSync } = require('node:child_process');
 
-const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
+/* ROOT 는 **지금 커밋되는 저장소**다 — `CLAUDE_PROJECT_DIR` 로 잡으면 안 된다. 그 변수가 다른
+ * 저장소를 가리키는 자리가 실재하고(워크트리 · F403), 그때 이 게이트는 **옆 저장소의 인덱스를
+ * 재고 조용히 통과한다**(실측 `tests/대장동봉E2E.test.js`). git 훅은 저장소 뿌리에서 도니
+ * 그 자리를 git 에게 묻는다 — 옆 게이트(계약동봉)가 cwd 를 그대로 쓰는 것과 같은 층이다. */
+function 저장소뿌리() {
+  try {
+    return execFileSync('git', ['rev-parse', '--show-toplevel'],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  } catch (_) { return null; }
+}
+const ROOT = 저장소뿌리() || path.resolve(__dirname, '..');
 const 정본경로 = 'docs/SYNK_철학.md';
 const 산출경로 = 'docs/이해대장.html';
 
@@ -41,11 +51,28 @@ function git(args) {
 
 /* ☠️ `-z` 인 이유는 옆 게이트와 같다 — 기본 출력은 비ASCII 경로를 `"\353\217..."` 로 이스케이프해서
  *   한글 경로 대조가 **영원히 안 맞는다**. 그리고 그 모양은 「검사가 통과했다」와 똑같다. */
-function 스테이징목록() {
+/* 경로 → 상태 글자(A·M·D·R…). ⚠ `--diff-filter=ACMR` 로 **삭제를 걸러내면 안 된다**: 화면을
+ * 지우는 커밋에서 그 경로가 목록에 없어 게이트가 HEAD 사본(= 커밋 뒤엔 없는 파일)을 재고
+ * 조용히 통과했다(실측 `tests/대장동봉E2E.test.js` — 화면이 안 바뀌는 개정과 겹치면 그대로 샌다).
+ * 이름이 바뀐 경우 원래 자리도 「없어진다」로 센다 — 커밋 뒤 그 경로에 파일이 없는 건 같다. */
+function 스테이징상태() {
+  const 표 = new Map();
   try {
-    return new Set(git(['diff', '--cached', '--name-only', '-z', '--diff-filter=ACMR'])
-      .split('\0').filter(Boolean));
-  } catch (_) { return new Set(); }
+    const 조각 = git(['diff', '--cached', '--name-status', '-z']).split('\0');
+    for (let i = 0; i < 조각.length; i += 1) {
+      const 글자 = (조각[i] || '')[0];
+      if (!글자) continue;
+      if (글자 === 'R' || 글자 === 'C') {
+        if (글자 === 'R') 표.set(조각[i + 1], 'D');
+        표.set(조각[i + 2], 글자);
+        i += 2;
+      } else {
+        표.set(조각[i + 1], 글자);
+        i += 1;
+      }
+    }
+  } catch (_) { return new Map(); }
+  return 표;
 }
 
 /** `ref:경로` 를 읽는다. ref `''` = 인덱스. 없으면 `null`. */
@@ -54,15 +81,30 @@ function 판본(ref, 경로) {
 }
 
 function main() {
-  const 스테이징 = 스테이징목록();
-  if (!스테이징.has(정본경로)) return 0;          // 정본이 안 담긴 커밋은 이 게이트의 대상이 아니다
+  const 스테이징 = 스테이징상태();
+  const 정본상태 = 스테이징.get(정본경로);
+  // 정본이 안 담긴 커밋은 이 게이트의 대상이 아니다. 정본을 **지우는** 커밋도 마찬가지 —
+  // 그건 이 가드가 아니라 사람이 볼 일이고, 여기서 막으면 되돌릴 통로가 사라진다.
+  if (!정본상태 || 정본상태 === 'D') return 0;
 
   const 정본뒤 = 판본('', 정본경로);
   if (정본뒤 === null) {
     말(`[이해대장] 커밋될 정본을 못 읽어 동기 대조를 **못 했다**(${정본경로}) — 막지 않는다.`);
     return 0;
   }
-  const 산출뒤 = 판본(스테이징.has(산출경로) ? '' : 'HEAD', 산출경로);
+
+  /* ⚠ 판정기가 통째로 없는 자리(부분 체크아웃·낡은 워크트리)를 차단으로 바꾸면 그 세션은
+   * 정본을 한 글자도 못 고친다 — 따를 수 없는 처방은 우회를 정상 통로로 만든다(F103).
+   * 훅이 이 게이트에 대해 쓰는 규약(「없으면 막지 않고 말한다」)을 게이트도 그대로 쓴다.
+   * 안 두면 `node` 가 MODULE_NOT_FOUND 로 1을 내고 그게 곧 차단이 된다(실측). */
+  const 판정기 = path.join(ROOT, 'tools', '이해대장.js');
+  if (!fs.existsSync(판정기)) {
+    말(`[이해대장] 판정기가 없어 동기 대조를 **못 했다**(${판정기}) — 막지 않는다.`);
+    return 0;
+  }
+
+  const 산출상태 = 스테이징.get(산출경로);
+  const 산출뒤 = 산출상태 === 'D' ? null : 판본(산출상태 ? '' : 'HEAD', 산출경로);
 
   /* 임시 파일 두 벌 — 작업본을 건드리지 않는다. 옆 세션이 같은 파일을 읽는 중일 수 있고,
    * 커밋 훅이 작업본을 흔들면 그 자체가 남의 트랙을 깨는 사고다(F073 축). */
@@ -73,7 +115,7 @@ function main() {
     fs.writeFileSync(정본tmp, 정본뒤, 'utf8');
     if (산출뒤 !== null) fs.writeFileSync(산출tmp, 산출뒤, 'utf8');
 
-    const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', '이해대장.js'), '--검사'], {
+    const r = spawnSync(process.execPath, [판정기, '--검사'], {
       cwd: ROOT,
       encoding: 'utf8',
       env: { ...process.env, SYNK_대장_정본: 정본tmp, SYNK_대장_산출: 산출tmp },
