@@ -2,261 +2,266 @@
 <style>
   :root{
     --paper:#FBF7EE; --ink:#171820; --coral:#FF6B5C; --coral3:#E8543F;
-    --navy2:#0F1730; --slate:#5F657D; --cream2:#EFE7D7; --line:rgba(23,24,32,.12);
-    --card:#F6F1E8; --shadow:0 2px 8px rgba(15,23,48,.10); --shadow-hi:0 6px 24px rgba(15,23,48,.14);
+    --navy2:#0F1730; --slate:#5F657D; --cream2:#EFE7D7; --cream3:#E7DDC7; --line:rgba(23,24,32,.12);
+    --card:#F6F1E8; --shadow:0 2px 8px rgba(15,23,48,.10);
   }
   @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-    --paper:#0F1730; --ink:#F6F1E8; --card:#1A2340; --cream2:#2A3358; --slate:#8A93AD;
-    --coral3:#FF6B5C; --line:rgba(246,241,232,.14);
-    --shadow:0 2px 8px rgba(0,0,0,.4); --shadow-hi:0 6px 24px rgba(0,0,0,.5);
+    --paper:#0F1730; --ink:#F6F1E8; --card:#1A2340; --cream2:#2A3358; --cream3:#2A3358; --slate:#8A93AD;
+    --coral3:#FF6B5C; --line:rgba(246,241,232,.14); --shadow:0 2px 8px rgba(0,0,0,.4);
   }}
   :root[data-theme="dark"]{
-    --paper:#0F1730; --ink:#F6F1E8; --card:#1A2340; --cream2:#2A3358; --slate:#8A93AD;
-    --coral3:#FF6B5C; --line:rgba(246,241,232,.14);
-    --shadow:0 2px 8px rgba(0,0,0,.4); --shadow-hi:0 6px 24px rgba(0,0,0,.5);
+    --paper:#0F1730; --ink:#F6F1E8; --card:#1A2340; --cream2:#2A3358; --cream3:#2A3358; --slate:#8A93AD;
+    --coral3:#FF6B5C; --line:rgba(246,241,232,.14); --shadow:0 2px 8px rgba(0,0,0,.4);
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);
     font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
     font-weight:500;line-height:1.65;letter-spacing:-.02em;-webkit-font-smoothing:antialiased}
   .wrap{max-width:940px;margin:0 auto;padding:56px 24px 96px}
-  header{margin-bottom:56px}
-  .eyebrow{font-family:'DM Mono',ui-monospace,Consolas,monospace;font-size:12px;letter-spacing:.24em;
-    text-transform:uppercase;color:var(--slate);font-weight:400;margin-bottom:14px}
+  header{margin-bottom:48px}
+  .eyebrow{font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;
+    letter-spacing:.24em;text-transform:uppercase;color:var(--slate);font-weight:400;margin-bottom:14px}
   h1{font-size:clamp(30px,5vw,46px);font-weight:800;letter-spacing:-.04em;margin:0 0 16px;text-wrap:balance}
   .lede{font-size:17px;color:var(--slate);max-width:62ch;text-wrap:pretty;margin:0}
   h2{font-size:23px;font-weight:800;letter-spacing:-.04em;margin:56px 0 8px;text-wrap:balance}
   .sub{color:var(--slate);font-size:15px;margin:0 0 22px;max-width:66ch;text-wrap:pretty}
+
+  .done{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-bottom:8px}
+  .fixed{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .fixed::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--coral)}
+  .fixed .lab{font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;font-size:10px;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--slate);font-weight:400;margin-bottom:6px}
+  .fixed .val{font-size:27px;font-weight:800;letter-spacing:-.04em;margin-bottom:6px}
+  .fixed .desc{font-size:13.5px;color:var(--slate);text-wrap:pretty}
+  .pending .val{color:var(--slate)}
+  .pending::before{background:var(--cream3)}
+
   .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(268px,1fr))}
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow)}
-  .name{font-size:26px;font-weight:800;letter-spacing:-.04em;margin:0 0 2px}
-  .say{font-family:'DM Mono',ui-monospace,Consolas,monospace;font-size:12px;color:var(--slate);
+  .card.pick{border:1px solid var(--coral)}
+  .name{font-size:28px;font-weight:800;letter-spacing:-.04em;margin:0 0 2px}
+  .say{font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;color:var(--slate);
     margin:0 0 14px;font-weight:400}
   .why{font-size:14.5px;margin:0 0 14px;text-wrap:pretty}
   .meta{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:7px}
   .row{display:flex;gap:10px;font-size:13px;align-items:baseline}
-  .k{font-family:'DM Mono',ui-monospace,Consolas,monospace;font-size:10.5px;letter-spacing:.1em;
-    text-transform:uppercase;color:var(--slate);min-width:52px;flex-shrink:0;font-weight:400;padding-top:2px}
-  .v{color:var(--ink);opacity:.9}
+  .k{font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;font-size:10.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--slate);min-width:50px;flex-shrink:0;font-weight:400;padding-top:2px}
+  .v{opacity:.9}
   .flag{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;
-    background:var(--cream2);color:var(--ink);margin-top:14px}
-  .flag.warn{background:var(--cream2);color:var(--ink);border:1px solid var(--coral)}
+    background:var(--cream2);margin-top:14px}
+  .flag.hot{border:1px solid var(--coral)}
   .box{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--coral);
     border-radius:14px;padding:20px 22px;margin:28px 0}
   .box h3{margin:0 0 8px;font-size:16px;font-weight:800;letter-spacing:-.03em}
   .box p{margin:0;font-size:14.5px;text-wrap:pretty}
-  .set{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px;
-    box-shadow:var(--shadow)}
-  .set h3{margin:0 0 4px;font-size:19px;font-weight:800;letter-spacing:-.03em}
-  .set .tag{font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11px;
-    letter-spacing:.14em;text-transform:uppercase;color:var(--slate);font-weight:400}
-  .trio{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin:16px 0 14px}
-  .slot{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px}
-  .slot .lab{font-family:'DM Mono',ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:.12em;
-    text-transform:uppercase;color:var(--slate);font-weight:400;margin-bottom:5px}
-  .slot .val{font-size:19px;font-weight:800;letter-spacing:-.03em}
-  .note{font-size:13.5px;color:var(--slate);margin:0;text-wrap:pretty}
+  .out{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 22px;margin:24px 0}
+  .out h3{margin:0 0 10px;font-size:15px;font-weight:800;letter-spacing:-.03em}
+  .out ul{margin:0;padding-left:18px;font-size:14px}
+  .out li{margin-bottom:6px;text-wrap:pretty}
   footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--line);font-size:13px;color:var(--slate)}
   strong{font-weight:700}
 </style>
 
 <div class="wrap">
 <header>
-  <div class="eyebrow">SYNK · 2026-08-15</div>
+  <div class="eyebrow">SYNK · 2026-08-15 · 갱신</div>
   <h1>이름을 나눈다 — 작명 판정표</h1>
-  <p class="lede">지금 이름이 없는 것 셋(학습 엔진 · 그래픽 엔진 · 마스코트)의 작명 재료입니다.
-  후보는 기존 킷 관례(짧은 영어 단어 + 역할)를 따랐고, 몽골어 발음과 상표 지형을 함께 적었습니다.
-  <strong>고르는 것은 유호님이고, 이 표는 재료입니다.</strong></p>
+  <p class="lede">두 이름은 확정됐습니다. 남은 것은 마스코트 하나이고,
+  <strong>한국 순우리말로 짓는 방향</strong>이 정해졌습니다.</p>
 </header>
 
+<div class="done">
+  <div class="fixed">
+    <div class="lab">학습 엔진 · 확정</div>
+    <div class="val">SYNK Core</div>
+    <div class="desc">학생을 이해하는 뇌. 기존 호칭을 그대로 승격해 이관 비용 0.</div>
+  </div>
+  <div class="fixed">
+    <div class="lab">그래픽 엔진 · 확정</div>
+    <div class="val">Loom</div>
+    <div class="desc">베틀 — 원본과 레시피로 자산을 짜낸다. 재질이 몇 개가 되든 안 낡는 이름.</div>
+  </div>
+  <div class="fixed pending">
+    <div class="lab">마스코트 · 픽 대기</div>
+    <div class="val">?</div>
+    <div class="desc">학생이 매일 부르는 유일한 이름. 한국 순우리말 방향 확정.</div>
+  </div>
+</div>
+
+<div class="out">
+  <h3>먼저 — 제안하신 셋을 실측으로 걸렀습니다</h3>
+  <ul>
+    <li><strong>Yomi</strong> — 일본어로 「저승」을 뜻하는 단어(요미)와 발음이 같고 「읽기」라는 뜻으로도
+    쓰입니다. 한국적이지 않을 뿐 아니라 검색했을 때 저승 쪽이 먼저 나와서 위험합니다.</li>
+    <li><strong>Yonor</strong> — 뜻이 없고, 영어 표기에서 발음이 흔들립니다(요노르 / 이오노르).
+    Sonor 의 강점이던 몽골어 뜻도 사라집니다.</li>
+    <li><strong>반디</strong>(제가 후보로 생각했던 것) — 몽골어 банди 가 <strong>「라마의 제자·초심 승려」</strong>라
+    종교 함의가 있습니다. 웹 실측으로 확인하고 내렸습니다. 현지 검수가 왜 필요한지 보여주는 사례입니다.</li>
+  </ul>
+</div>
+
 <div class="box">
-  <h3>먼저 — 셋을 한자리에서 정하는 이유</h3>
-  <p>따로 지으면 서로 안 어울립니다. 특히 마스코트 이름은 이미 다른 작업(브랜드 정합·몬스터 단계 삭제)을
-  막고 있는 칸이라, 세 개를 한 번에 닫으면 그 트랙도 같이 풀립니다.</p>
+  <h3>한국 순우리말 방향이 맞습니다 — 이유 하나</h3>
+  <p>우리는 한국어를 가르치는 회사입니다. 마스코트 이름이 순우리말이면
+  <strong>그 이름 자체가 학생이 배우는 첫 한국어 단어</strong>가 됩니다. 「이 아이 이름은 «초롱»이야,
+  초롱초롱한 눈이라는 뜻이야」 — 이게 첫 수업이 되는 구조입니다. 상표 관점에서도 순우리말은 고유성이 높습니다.</p>
 </div>
 
-<h2>① 학습 엔진 — 학생을 이해하는 뇌</h2>
-<p class="sub">수집 → 계약 → 추론. 비출시 내부 시스템이지만 우리 회사의 심장이고, 평생 계획의 종착(세계 1위 개인화 챗봇)이
-이것입니다. 이름의 과녁 = <strong>「이해」와 「기억」</strong>. 학생 화면에 뜨는 이름은 아닙니다.</p>
+<h2>마스코트 — 한국 순우리말 후보 다섯</h2>
+<p class="sub">기준: 정본이 규정한 성격(장난스럽고 따뜻한 무언의 선생님 · <strong>입은 아끼고 눈으로 말한다</strong>) ·
+2음절 · 몽골 아이가 부르기 쉬운 소리 · 로마자 표기가 깔끔할 것.</p>
 
 <div class="grid">
-  <div class="card">
-    <p class="name">SYNK Core</p>
-    <p class="say">싱크 코어 · Синк Кор</p>
-    <p class="why">가장 안전한 선택. 이미 문서에서 「코어 엔진」으로 부르고 있어 이관 비용이 0이고,
-    킷 색 이름(Coral Core)과 같은 어휘라 계보가 자연스럽습니다.</p>
+  <div class="card pick">
+    <p class="name">초롱</p>
+    <p class="say">Chorong · Чоронг</p>
+    <p class="why">두 뜻이 하나의 그림으로 만납니다. <strong>초롱불</strong>(어두울 때 옆에서 밝혀 주는 작은 등불
+    = 동반자) + <strong>초롱초롱한 눈</strong>. 우리 마스코트는 입을 아끼고 표현이 전부 눈에 있다는 확정이
+    있는데, 그 확정을 이름이 그대로 안습니다.</p>
     <div class="meta">
-      <div class="row"><span class="k">강점</span><span class="v">즉시 통함 · 설명 불필요</span></div>
-      <div class="row"><span class="k">약점</span><span class="v">평범함 — 「우리 것」이라는 느낌이 약함</span></div>
-      <div class="row"><span class="k">상표</span><span class="v">SYNK 계열 안 — 별도 출원 불필요</span></div>
+      <div class="row"><span class="k">뜻</span><span class="v">등불 · 눈이 맑고 또렷한 모양</span></div>
+      <div class="row"><span class="k">강점</span><span class="v">성격·형태·동반자 역할 셋 다 맞음</span></div>
+      <div class="row"><span class="k">약점</span><span class="v">3음절로 들릴 수 있음(초·롱)</span></div>
     </div>
-    <span class="flag">안전한 기본값</span>
+    <span class="flag hot">내 1픽</span>
   </div>
 
   <div class="card">
-    <p class="name">Ger</p>
-    <p class="say">게르 · Гэр</p>
-    <p class="why">몽골 전통 가옥이자 <strong>「집」</strong>이라는 뜻. 학생의 모든 것이 모여 사는 곳이라는 은유가
-    정확하고, 몽골 학생·학부모에게는 설명이 필요 없는 단어입니다. 유목민이 옮겨도 늘 같은 집이라는 결도 맞습니다.</p>
+    <p class="name">라온</p>
+    <p class="say">Raon · Раон</p>
+    <p class="why">순우리말 <strong>「즐거운」</strong>. 우리 철학의 첫 조건이 「재미있는가」인데 그것을 이름이
+    직접 선언합니다. 다섯 중 <strong>발음이 가장 쉽고</strong> 로마자 표기도 가장 깔끔합니다(Raon).</p>
     <div class="meta">
-      <div class="row"><span class="k">강점</span><span class="v">현지 정서 직결 · 짧고 발음 쉬움</span></div>
-      <div class="row"><span class="k">약점</span><span class="v">일반명사라 단독 상표는 약함(내부명이라 무관)</span></div>
-      <div class="row"><span class="k">확장</span><span class="v">RPG 의 「거점·마을」로 그대로 이어짐</span></div>
-    </div>
-    <span class="flag">현지 뿌리 계열</span>
-  </div>
-
-  <div class="card">
-    <p class="name">Compass</p>
-    <p class="say">컴퍼스 · Луужин(루진)</p>
-    <p class="why">이미 우리 시스템에 「나침반 3문항」이 있습니다. 삶 이해(㉢)의 어휘를 엔진 전체 이름으로
-    올리는 선택 — 「무엇을 틀렸나」가 아니라 <strong>「어디로 가고 싶은가」</strong>를 이름에 새깁니다.</p>
-    <div class="meta">
-      <div class="row"><span class="k">강점</span><span class="v">궁극 가치와 직결 · 뜻이 즉시 서는 은유</span></div>
-      <div class="row"><span class="k">약점</span><span class="v">영어권 흔한 단어 · 기존 「나침반 3문항」과 층이 겹칠 수 있음</span></div>
-    </div>
-    <span class="flag">철학 직결 계열</span>
-  </div>
-</div>
-
-<h2>② 그래픽 엔진 — 펠트 재질 파이프라인</h2>
-<p class="sub">정본(값) + 통로(도구) + 자(검증). 몇 년 뒤 RPG 까지 이월될 층입니다.
-이름의 과녁 = <strong>「손으로 만든 질감」과 「빛」</strong>. 대외적으로 불릴 가능성이 가장 높은 이름입니다
-(스타일 카테고리를 소유하려는 자리).</p>
-
-<div class="grid">
-  <div class="card">
-    <p class="name">Feltworks</p>
-    <p class="say">펠트웍스 · Фэлтворкс</p>
-    <p class="why">재질 이름을 그대로 안고 갑니다. <strong>「SYNK 펠트」가 스타일 카테고리가 되는 길에
-    가장 빠른 이름</strong> — 부르는 순간 무엇인지 알고, 공방(works)의 결이 수공 리얼리즘과 맞습니다.</p>
-    <div class="meta">
-      <div class="row"><span class="k">강점</span><span class="v">카테고리 소유에 최적 · 자기 설명적</span></div>
-      <div class="row"><span class="k">약점</span><span class="v">펠트에 갇힘 — 초현실(2호) 계열이 들어오면 이름이 좁아짐</span></div>
-    </div>
-    <span class="flag warn">2호 계열 확장 시 재검토 필요</span>
-  </div>
-
-  <div class="card">
-    <p class="name">Loom</p>
-    <p class="say">룸 · Лоом</p>
-    <p class="why"><strong>베틀</strong>. 실에서 천을 짜내는 기계 — 원본과 레시피로 자산을 짜낸다는 엔진의
-    동작과 은유가 정확히 맞습니다. 펠트에서 출발했지만 재질에 갇히지 않아 초현실 계열까지 안고 갑니다.
-    짧고, 몽골어에서도 발음이 무리 없습니다.</p>
-    <div class="meta">
-      <div class="row"><span class="k">강점</span><span class="v">동작과 은유 일치 · 재질 중립 · 4글자</span></div>
-      <div class="row"><span class="k">약점</span><span class="v">한 번은 설명이 필요함(「베틀이라는 뜻」)</span></div>
-      <div class="row"><span class="k">확장</span><span class="v">2호·3호 재질이 와도 이름이 안 낡음</span></div>
-    </div>
-    <span class="flag">확장성 최상</span>
-  </div>
-
-  <div class="card">
-    <p class="name">Handloom</p>
-    <p class="say">핸드룸 · Хандлоом</p>
-    <p class="why">Loom 에 <strong>수공</strong>을 명시한 판. 우리 구분자(잔섬유·스티치·수공 리얼리즘)를
-    이름이 직접 선언합니다. 모두가 매끈한 CGI 로 갈 때 반대편에 선다는 판정을 이름으로 못박는 선택.</p>
-    <div class="meta">
-      <div class="row"><span class="k">강점</span><span class="v">차별화를 이름이 진다 · 스타일 선언</span></div>
-      <div class="row"><span class="k">약점</span><span class="v">8글자 — 셋 중 가장 김 · 「수공」에 갇힐 여지</span></div>
-    </div>
-    <span class="flag">구분자 선언 계열</span>
-  </div>
-</div>
-
-<h2>③ 마스코트 — 학생 옆의 그 아이</h2>
-<p class="sub">이름의 과녁이 앞의 둘과 완전히 다릅니다. 여기만 <strong>학생이 매일 부르는 이름</strong>이고,
-몽골 아이들이 부르기 쉬워야 하며, 정본이 규정한 성격(장난스럽고 따뜻한 무언의 선생님 · 입은 아낀다)에 맞아야 합니다.
-2음절 · 부드러운 자음을 기준으로 뽑았습니다.</p>
-
-<div class="grid">
-  <div class="card">
-    <p class="name">Sonor</p>
-    <p class="say">소노르 · Сонор</p>
-    <p class="why">몽골어로 <strong>「예민하게 잘 듣는·기민한」</strong>. 말은 아끼고 잘 듣는 존재라는
-    정본 성격과 정확히 맞습니다. 몽골 학생에게는 뜻이 통하고, 한국어로도 소리가 곱습니다.</p>
-    <div class="meta">
-      <div class="row"><span class="k">강점</span><span class="v">성격 규정과 일치 · 현지에서 뜻이 섬</span></div>
-      <div class="row"><span class="k">약점</span><span class="v">유호님이 뜻을 새로 익혀야 함</span></div>
-    </div>
-    <span class="flag">뜻이 성격과 맞음</span>
-  </div>
-
-  <div class="card">
-    <p class="name">Nomi</p>
-    <p class="say">노미 · Номи</p>
-    <p class="why">몽골어 <strong>Ном(놈, 책)</strong>에서 온 애칭형. 공부 친구라는 뜻이 자연스럽게 서고,
-    2음절이라 아이들이 부르기 가장 쉽습니다. 한국어·영어에서도 발음이 동일합니다.</p>
-    <div class="meta">
-      <div class="row"><span class="k">강점</span><span class="v">부르기 최상 · 3개 언어 발음 동일 · 다정함</span></div>
-      <div class="row"><span class="k">약점</span><span class="v">「책」이 학습 이미지로 살짝 무거울 수 있음</span></div>
+      <div class="row"><span class="k">뜻</span><span class="v">즐거운</span></div>
+      <div class="row"><span class="k">강점</span><span class="v">부르기 최상 · 철학 ① 직결 · 표기 간결</span></div>
+      <div class="row"><span class="k">약점</span><span class="v">뜻이 그림이 아니라 추상 · 한국서 최근 흔해짐</span></div>
     </div>
     <span class="flag">부르기 최상</span>
   </div>
 
   <div class="card">
-    <p class="name">Tugu</p>
-    <p class="say">투구 · Туг</p>
-    <p class="why">몽골어 <strong>Туг(투그, 깃발)</strong>의 애칭형. 앞서서 이끄는 존재이자 소속의 표식.
-    동글동글한 펠트 인형의 생김새와 소리가 맞물리는 결(투구·뚱실)도 있습니다.</p>
+    <p class="name">노을</p>
+    <p class="say">Noul · Ноул</p>
+    <p class="why">저녁 하늘의 붉은빛 — <strong>우리 마스코트의 코랄색 그 자체</strong>입니다.
+    이름과 색이 하나가 되는 유일한 후보이고, 몽골 초원의 노을은 학생들에게 익숙한 풍경입니다.</p>
     <div class="meta">
-      <div class="row"><span class="k">강점</span><span class="v">형태와 소리의 결이 맞음 · 씩씩함</span></div>
-      <div class="row"><span class="k">약점</span><span class="v">한국어 「투구(헬멧)」와 동음</span></div>
+      <div class="row"><span class="k">뜻</span><span class="v">해 질 무렵의 붉은 하늘빛</span></div>
+      <div class="row"><span class="k">강점</span><span class="v">색과 이름이 한 몸 · 풍경이 현지와 공유됨</span></div>
+      <div class="row"><span class="k">약점</span><span class="v">「저무는 것」이라 성장 서사와 살짝 어긋남</span></div>
     </div>
-    <span class="flag warn">한국어 동음 확인 필요</span>
+    <span class="flag">색과 한 몸</span>
+  </div>
+
+  <div class="card">
+    <p class="name">도담</p>
+    <p class="say">Dodam · Додам</p>
+    <p class="why">「도담도담 자란다」— <strong>아이가 탈 없이 야무지게 자라는 모양</strong>을 뜻하는 순우리말.
+    학생의 성장을 지켜보는 존재라는 역할과 정확히 맞고, 소리가 동글동글해서 펠트 인형의 생김새와도 어울립니다.</p>
+    <div class="meta">
+      <div class="row"><span class="k">뜻</span><span class="v">잘 자라는 모양</span></div>
+      <div class="row"><span class="k">강점</span><span class="v">성장 서사 직결 · 소리와 형태가 맞물림</span></div>
+      <div class="row"><span class="k">약점</span><span class="v">한국인이 아니면 뜻이 안 보임</span></div>
+    </div>
+    <span class="flag">성장 서사</span>
+  </div>
+
+  <div class="card">
+    <p class="name">나래</p>
+    <p class="say">Narae · Нарэ</p>
+    <p class="why">순우리말 <strong>「날개」</strong>. 그리고 몽골어 <strong>нар(나르 · 태양)</strong>와 소리가
+    가까워서, 몽골 학생 귀에는 태양의 결이 함께 들립니다. 한쪽에선 날개, 한쪽에선 해 — 두 언어가 한 이름에서 만납니다.</p>
+    <div class="meta">
+      <div class="row"><span class="k">뜻</span><span class="v">날개 (+ 몽골어 태양과 소리 근사)</span></div>
+      <div class="row"><span class="k">강점</span><span class="v">두 언어에 걸쳐 뜻이 섬 · 비상의 은유</span></div>
+      <div class="row"><span class="k">약점</span><span class="v">날개 = 형태에 날개가 없어 그림과 불일치</span></div>
+    </div>
+    <span class="flag">두 언어가 만남</span>
   </div>
 </div>
 
-<h2>한 벌로 골랐을 때 — 조합 예시 셋</h2>
-<p class="sub">개별로 좋은 이름보다 <strong>세 개가 형제로 들리는가</strong>가 더 중요합니다. 아래는 제가
-실제로 소리 내어 맞춰 본 조합입니다.</p>
+<h2>2차 후보 — 뻔하지 않은 쪽 (유호 요청 · 시스템에 뿌리가 있는 이름들)</h2>
+<p class="sub">트렌디함은 소리가 아니라 <strong>아무도 안 쓴 각도</strong>에서 옵니다. 이번 넷은 전부
+우리 시스템(수집·재질·성장)에 뿌리를 둔 이름입니다.</p>
 
-<div class="set">
-  <span class="tag">조합 A — 안전 · 계보 우선</span>
-  <h3>가장 무난하고, 가장 빨리 정착합니다</h3>
-  <div class="trio">
-    <div class="slot"><div class="lab">학습 엔진</div><div class="val">SYNK Core</div></div>
-    <div class="slot"><div class="lab">그래픽 엔진</div><div class="val">SYNK Loom</div></div>
-    <div class="slot"><div class="lab">마스코트</div><div class="val">Nomi</div></div>
+<div class="grid">
+  <div class="card pick">
+    <p class="name">모아</p>
+    <p class="say">Moa · Моа</p>
+    <p class="why">「모으다」에서 온 이름. 우리 시스템 전체가 «수집»으로 서 있고, 학생의 순간·성장·말을
+    모아 두는 아이 — <strong>이름이 캐릭터의 행동 그 자체</strong>입니다. 이름을 설명하는 순간
+    시스템 철학까지 전달됩니다.</p>
+    <div class="meta">
+      <div class="row"><span class="k">뜻</span><span class="v">모으다 — 수집 철학 직결</span></div>
+      <div class="row"><span class="k">강점</span><span class="v">발음 최상 · 성별 중립 · 고유성 높음 · Moa 표기 간결</span></div>
+      <div class="row"><span class="k">약점</span><span class="v">뜻이 한 번의 설명은 필요함</span></div>
+    </div>
+    <span class="flag hot">2차 1픽 — 네 축 무감점</span>
   </div>
-  <p class="note">SYNK 우산 아래 둘이 형제로 서고, 마스코트만 고유명으로 독립합니다(마리오 문법).
-  상표는 SYNK 하나로 덮이고, 새 출원이 필요 없습니다.</p>
+
+  <div class="card">
+    <p class="name">몽글</p>
+    <p class="say">Monggeul · Монгүл</p>
+    <p class="why">뜻이 세 겹입니다. ①<strong>몽글몽글</strong> — 펠트 촉감 그 자체 ②<strong>몽</strong>골의 몽
+    ③한국어의 <strong>글</strong>. 몽골 아이가 한국 글을 배우는 회사의 마스코트가 「몽글」 —
+    세상에 하나뿐인 각도입니다.</p>
+    <div class="meta">
+      <div class="row"><span class="k">뜻</span><span class="v">부드러운 촉감 + 몽골 + 글</span></div>
+      <div class="row"><span class="k">강점</span><span class="v">고유성 최상 · 재질과 한 몸</span></div>
+      <div class="row"><span class="k">약점</span><span class="v">「몽골」과 소리 한 끗 — 친근할지 놀림일지 현지 검수가 가른다</span></div>
+    </div>
+    <span class="flag">도전픽 — 검수 통과 조건부</span>
+  </div>
+
+  <div class="card">
+    <p class="name">윤슬</p>
+    <p class="say">Yunseul · Юнсэл</p>
+    <p class="why">물결 위에 반짝이는 햇빛·달빛. 지금 한국에서 가장 사랑받는 순우리말이고
+    「반짝이는 눈」과도 닿습니다. 정직한 각주: <strong>그래서 이미 유행 중</strong>입니다 —
+    「뻔하지 않음」 축에서는 몇 년 안에 깎일 이름입니다.</p>
+    <div class="meta">
+      <div class="row"><span class="k">뜻</span><span class="v">물결에 비쳐 반짝이는 빛</span></div>
+      <div class="row"><span class="k">강점</span><span class="v">뜻과 소리가 가장 아름다움</span></div>
+      <div class="row"><span class="k">약점</span><span class="v">발음 최난(다섯 중) · 유행이 이미 시작됨</span></div>
+    </div>
+    <span class="flag">트렌디 — 단 유행 진행 중</span>
+  </div>
+
+  <div class="card">
+    <p class="name">아람</p>
+    <p class="say">Aram · Арам</p>
+    <p class="why">가을에 잘 익어 <strong>저절로 벌어진 열매</strong>. 도담의 성장 서사를 더 또렷한 그림으로
+    안은 이름입니다 — 학생이 스스로 여물어 열린다. 소리가 둥글어 펠트 인형과 어울립니다.</p>
+    <div class="meta">
+      <div class="row"><span class="k">뜻</span><span class="v">잘 익어 벌어진 열매 — 결실</span></div>
+      <div class="row"><span class="k">강점</span><span class="v">성장 그림이 구체적 · 발음 쉬움 · 성별 중립</span></div>
+      <div class="row"><span class="k">약점</span><span class="v">고유성 중간(사람 이름으로 존재)</span></div>
+    </div>
+    <span class="flag">성장 서사 2</span>
+  </div>
 </div>
 
-<div class="set">
-  <span class="tag">조합 B — 뿌리 · 정서 우선</span>
-  <h3>몽골 학생에게는 이쪽이 훨씬 가깝게 들립니다</h3>
-  <div class="trio">
-    <div class="slot"><div class="lab">학습 엔진</div><div class="val">Ger</div></div>
-    <div class="slot"><div class="lab">그래픽 엔진</div><div class="val">Loom</div></div>
-    <div class="slot"><div class="lab">마스코트</div><div class="val">Sonor</div></div>
-  </div>
-  <p class="note">집(Ger)·베틀(Loom)·잘 듣는 아이(Sonor) — 셋 다 <strong>손으로 만지는 것들</strong>의
-  어휘라 세계관이 하나로 섭니다. RPG 로 갔을 때 세계관 확장이 가장 자연스러운 조합입니다.</p>
-</div>
-
-<div class="set">
-  <span class="tag">조합 C — 선언 · 대외 우선</span>
-  <h3>바깥에서 가장 또렷하게 들립니다</h3>
-  <div class="trio">
-    <div class="slot"><div class="lab">학습 엔진</div><div class="val">Compass</div></div>
-    <div class="slot"><div class="lab">그래픽 엔진</div><div class="val">Handloom</div></div>
-    <div class="slot"><div class="lab">마스코트</div><div class="val">Nomi</div></div>
-  </div>
-  <p class="note">둘 다 뜻이 즉시 서고 우리 철학·구분자를 이름이 직접 선언합니다.
-  대신 이름이 길고 SYNK 우산과의 계보는 약해집니다.</p>
+<div class="out">
+  <h3>검토 후 뺀 것</h3>
+  <ul>
+    <li><strong>아띠</strong>(「친구」로 알려진 말) — 순우리말 여부에 논란이 있고 표준국어대사전에 없습니다.
+    한국어 학원이 가짜 순우리말을 쓰면 그 자체가 사고라 뺐습니다.</li>
+  </ul>
 </div>
 
 <div class="box">
-  <h3>제 추천 — 조합 B, 그중에서도 그래픽 엔진 = Loom</h3>
-  <p>이유는 하나입니다. 이 이름들 중 <strong>몇 년 뒤에도 안 낡을 것</strong>이 Loom 이기 때문입니다.
-  Feltworks 는 2호 재질(초현실)이 들어오는 순간 좁아지고, Handloom 은 수공에 갇힙니다.
-  Loom 은 「원본에서 자산을 짜낸다」는 동작 자체를 가리켜서, 재질이 몇 개가 되든 이름이 그대로 섭니다.
-  학습 엔진은 취향이 크게 갈리는 자리라 유호님 픽에 맡깁니다.</p>
+  <h3>제 판정 — 일곱 이름 전체 순위</h3>
+  <p><strong>1위 모아</strong> — 시스템·발음·중립성·고유성 네 축 모두 감점이 없는 유일한 이름.
+  <strong>2위 초롱</strong> — 「눈으로 말한다」 확정과의 맞물림은 여전히 최강.
+  <strong>3위 몽글</strong> — 성립하면 고유성 최고, 단 현지 검수 통과가 조건.
+  <strong>4위 나래</strong> — 마스코트를 여자아이로 확정하면 1위로 올라옵니다(현지 친근함 압도적).
+  나머지(라온·노을·도담·윤슬·아람)는 좋은 이름이지만 위 넷을 이기는 축이 없습니다.</p>
 </div>
 
 <footer>
-  판정 재료 · 2026-08-15 · 고르시면 정본(철학·킷·설계 문서)과 코드 주석까지 한 번에 도장 찍겠습니다.
-  이름은 몽골어 뜻·발음 기준으로 적었고, 최종 확정 전 현지 검수(말가이) 한 번을 권합니다.
+  확정 = SYNK Core · Loom (유호님 2026-08-15) · 마스코트 = 픽 대기.
+  픽이 오면 철학 정본·브랜드킷·설계 문서·코드 주석·앱까지 한 번에 도장 찍습니다.
+  마스코트 이름은 확정 전 현지 검수 1회를 권합니다 — 반디 사례가 그 이유입니다.
 </footer>
 </div>
