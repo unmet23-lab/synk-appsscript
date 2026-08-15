@@ -1,0 +1,352 @@
+"""Loom L2b — 펠트 패치 라이브러리. 중립 패치를 «잘라» 두고, 재염색으로 임의 색을 0원에 파생한다.
+
+왜 있나(설계 정본 `docs/펠트엔진_설계.md` §2 L2b · §3-3 「신규 파일이라 자유」):
+  지금 펠트를 입는 것은 마스코트뿐이다 — 결이 필요한 새 오브젝트(녹음 오브·3D 타이포·캠페인 오브)는
+  매번 사진에서 손으로 잘라 쓰거나, 생성 모델을 다시 굴려야 했다. 후자는 헌법 1·4 가 이미 기각했다.
+  그래서 «타일 한 장 + 재염색»으로 접는다: 결은 정본 사진에서 한 번 오고, 색은 연산이 낸다.
+
+세 다리(정본 · 통로 · 자) 중 이 파일은 «통로»다:
+  정본 = `docs/디자인_토큰.json` 재질.펠트 (좌표·크기를 여기서 읽는다 — 하드코딩 0)
+  통로 = 절단(이 파일) → 재염색(`tools/펠트색갈이.py` 를 **그대로 호출**한다 · 재구현 0)
+  자   = `--자`(코어 ΔE · 결 보존 · 이음매) — 남이 같은 숫자를 다시 낼 수 있게 정의를 박아 둔다.
+
+⚠F472 — 토큰 라벨을 그대로 믿으면 눈알이 섞인다:
+  `울패치.원점` 은 이름과 달리 «중심»이다(집행 코드 `마스코트인형리깅.py:167` 이 `cx - s//2` 로 읽는다).
+  왼위 원점으로 읽으면 검은 구슬 눈이 타일에 들어온다(저채도 13.93% 실측 · 중심으로 읽으면 0.00%).
+  그래서 이 도구는 ①중심으로 읽고 ②자른 뒤 «깨끗한 양모인지 스스로 검사»해 더러우면 거부한다.
+  라벨이 또 어긋나도 오염된 타일이 라이브러리 정본이 되지는 않는다(맹점 ④ — 안 도는 쪽보다 이쪽으로 샌다).
+
+사용법:
+  python tools/펠트패치.py 절단                              중립 패치를 잘라 라이브러리에 둔다
+  python tools/펠트패치.py 염색 "#FF6B5C" --이름 코랄         목표색 패치를 파생한다(0원)
+  python tools/펠트패치.py 자 <패치.png>                      한 장을 잰다
+  python tools/펠트패치.py 도달                              코랄 base 에서 «어디까지 갈 수 있나» 실측
+"""
+import argparse
+import io
+import json
+import os
+import subprocess
+import sys
+
+# 콘솔이 cp949 면 «»·ΔE 가 print 에서 죽는다 — 재는 층이 값을 깨뜨리면 원본이 멀쩡해도 오진이 된다.
+if hasattr(sys.stdout, 'buffer'):
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+
+try:
+    import numpy as np
+    from PIL import Image
+except ImportError as e:
+    sys.exit(f'의존성이 없다 — python -m pip install pillow numpy ({e})')
+
+뿌리 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(뿌리, 'tools'))
+# 색 판정은 «한 곳에서만» 산다 — 같은 판정을 두 곳에 적으면 갈라진다(CLAUDE.md 맹점 ④).
+import 펠트색갈이 as 색갈이  # noqa: E402
+
+# 회귀는 «픽스처 위에서» 탐지력을 못박아야 한다 — 실저장소만 검사하면 버그가 아직 있기를
+# 요구하게 되고(맹점 ②), 정본 사진이 바뀌는 날 탐지기까지 같이 죽는다. friction.js 와 같은 문법.
+사진뿌리 = os.environ.get('SYNK_FELT_ROOT', 뿌리)
+토큰경로 = os.environ.get('SYNK_FELT_TOKEN', os.path.join(뿌리, 'docs', '디자인_토큰.json'))
+라이브러리 = os.environ.get('SYNK_FELT_LIB', os.path.join(뿌리, 'docs', '캐릭터', '펠트패치_0815'))
+기본패치 = os.path.join(라이브러리, '중립_평상복.png')
+
+# 절단 자기검사 문턱 — 「깨끗한 양모」의 정의. 정본 사진이 바뀌면 여기서 먼저 빨개진다(대가 §7).
+저채도상한 = 0.02   # 재염색이 원리적으로 안 닿는 픽셀(C*≤C_바닥) 비율. 눈알 1개면 13.9% 로 튄다.
+암부상한 = 0.01     # L*<20 비율. 구슬 눈·깊은 그림자 탐지(저채도와 «다른 축»이라 따로 센다).
+
+
+def 토큰읽기():
+    with open(토큰경로, encoding='utf-8') as f:
+        펠트 = json.load(f)['재질']['펠트']
+    울 = 펠트['울패치']
+    # 옛 라벨을 «조용히 받아주지» 않는다 — 받아주면 F472 가 그대로 되살아나고, 그때는
+    # 이 도구가 오염된 타일을 「통과」의 얼굴로 낸다. 원인을 쓸 수 없게 만드는 쪽이 처방이다.
+    if '중심' not in 울:
+        if '원점' in 울:
+            sys.exit('🔴 토큰이 옛 키 「원점」을 쓴다 — 그 값은 실제로 «중심»이라 이름을 바꿔야 한다.\n'
+                     '   docs/디자인_토큰.json 재질.펠트.울패치 에서 "원점" → "중심" (숫자는 그대로 · F472)')
+        sys.exit('🔴 토큰 재질.펠트.울패치 에 「중심」이 없다')
+    return 펠트
+
+
+def 사진경로(펠트, 슬롯):
+    return os.path.join(사진뿌리, 펠트['정본사진'][슬롯].replace('/', os.sep))
+
+
+# ── 색 측정 (전부 색갈이의 정의를 벡터로 옮긴 것 — 상수·식은 저기서 온다) ──────────
+def lab배열(arr):
+    """arr = uint8 (H,W,3) → (L,a,b) 각각 (H,W). 색갈이.lab 과 같은 식·같은 백색점."""
+    c = arr.astype(np.float64) / 255.0
+    lin = np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
+    r, g, b = lin[..., 0], lin[..., 1], lin[..., 2]
+    X = r * .4124564 + g * .3575761 + b * .1804375
+    Y = r * .2126729 + g * .7151522 + b * .0721750
+    Z = r * .0193339 + g * .1191920 + b * .9503041
+
+    def f(t):
+        return np.where(t > 216 / 24389, np.cbrt(t), (841 / 108) * t + 4 / 29)
+    fx, fy, fz = f(X / .95047), f(Y), f(Z / 1.08883)
+    return 116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)
+
+
+def 채도배열(arr):
+    _, a, b = lab배열(arr)
+    return np.hypot(a, b)
+
+
+def 박스흐림(a, r):
+    """분리형 박스 블러(누적합) — scipy 없이. 결(고주파)을 뽑기 위한 저주파 추정."""
+    def 한축(x):
+        n = x.shape[1]
+        pad = np.pad(x, ((0, 0), (r + 1, r)), mode='reflect')
+        cs = np.cumsum(pad, axis=1)
+        cs = np.pad(cs, ((0, 0), (1, 0)))
+        return (cs[:, 2 * r + 1:2 * r + 1 + n] - cs[:, :n]) / (2 * r + 1)
+    return 한축(한축(a).T).T
+
+
+def 결에너지(arr, r=4):
+    """결 = «선형광 로그»의 고주파 잔차 표준편차. 재염색·블렌딩이 섬유를 뭉개면 내려간다.
+
+    ⚠자를 세 판 굴려서 여기로 돌아왔다(실측 08-15) — 기록해 두는 이유는 «채널 상대대비»가
+      더 정밀해 보이는 함정이라 다음 사람이 같은 길을 또 파기 때문이다:
+      ①L*(이 판) → ②로그 휘도 → ③캐리어 채널 상대대비 → ①로 복귀.
+      ③이 무너진 자리가 진단의 핵심이다: base 는 진한 코랄이라 **R 이 8bit 평균 250.8 로 천장에
+      붙어 «납작»하고**(상대σ 0.065), 결의 실제 변조는 G(0.320)·B(0.363)가 진다. 그래서 캐리어를
+      「밝은 채널」로 고르면 코랄계 과녁에선 R, 파랑계 과녁에선 G·B 가 뽑혀 **서로 다른 물리량을
+      비교**하게 된다 — Navy 563%·CoolBlue 495% 는 노이즈가 아니라 자가 채널을 갈아탄 값이었다.
+      ②는 휘도가 세 채널 가중합이라 게인이 섞는 비율을 바꿔 같은 병을 다른 얼굴로 냈다(Navy 194%).
+
+    그래서 «보이는가»를 직접 잰다 — L* 고주파 잔차의 σ. L* 는 지각 균등이라 σ 가 곧 「결이 눈에
+      띄는 정도」다. 채널을 안 갈아타므로 과녁이 달라도 같은 물리량이다.
+    ⚠이 자는 게인 불변이 **아니다**(그게 대가다): 밝은 과녁으로 물들이면 같은 반사율 변조가 더 큰
+      ΔL* 로 펴져 100% 를 넘는다. 넘는 것은 «결이 더 잘 보인다»는 참말이지 오차가 아니다.
+      그래서 판정은 «떨어질 때»만 문제 삼는다 — 뭉갠 몫은 염색 통로가 찍는 무릎% 가 따로 증언한다."""
+    L, _, _ = lab배열(arr)
+    return float(np.std(L - 박스흐림(L, r)))
+
+
+def 이음매비(arr):
+    """타일을 «반복 배치»했을 때 경계가 티나는 정도.
+    감싸기 경계(마지막↔첫) 밝기차 ÷ 내부 이웃 밝기차. 1.0 이면 내부와 구별 안 됨 = 이음매 없음."""
+    L, _, _ = lab배열(arr)
+    내부 = (np.mean(np.abs(np.diff(L, axis=1))) + np.mean(np.abs(np.diff(L, axis=0)))) / 2
+    감싸기 = (np.mean(np.abs(L[:, 0] - L[:, -1])) + np.mean(np.abs(L[0, :] - L[-1, :]))) / 2
+    return float(감싸기 / max(내부, 1e-9))
+
+
+def 코어색(arr):
+    """색갈이.코어 와 «같은 정의» — 채도 충만 표본의 40~70 백분위 평균(하이라이트·최암부 제외)."""
+    C = 채도배열(arr)
+    m = C > 색갈이.C_충만
+    if m.sum() < 200:
+        return None
+    표본 = [(float(c), tuple(int(v) for v in p)) for c, p in zip(C[m], arr[m])]
+    return 색갈이.코어(표본)
+
+
+# ── 절단 ────────────────────────────────────────────────────────────────────
+def 자기검사(arr, 어디):
+    """자른 것이 «진짜 깨끗한 양모»인지 스스로 본다 — F472 가 이 문을 세운 이유다."""
+    C = 채도배열(arr)
+    L, _, _ = lab배열(arr)
+    n = C.size
+    저채도 = float((C <= 색갈이.C_바닥).sum()) / n
+    암부 = float((L < 20).sum()) / n
+    print(f'   자기검사 — 저채도(재염색 안 닿음) {저채도*100:.2f}% (상한 {저채도상한*100:.0f}%)'
+          f' · 암부 L*<20 {암부*100:.2f}% (상한 {암부상한*100:.0f}%)')
+    문제 = []
+    if 저채도 > 저채도상한:
+        문제.append(f'저채도 {저채도*100:.2f}% > {저채도상한*100:.0f}%')
+    if 암부 > 암부상한:
+        문제.append(f'암부 {암부*100:.2f}% > {암부상한*100:.0f}%')
+    if 문제:
+        sys.exit(f'🔴 {어디} 는 양모가 아니다 — {" · ".join(문제)}\n'
+                 f'   좌표를 «중심»으로 읽고 있는지, 그 사진에 맞는 좌표인지 본다(F472).')
+    return 저채도, 암부
+
+
+def 타일_거울(arr):
+    """거울 확장 — 이음매가 «구조적으로» 0(가장자리가 서로의 거울상이라 이어붙어도 안 끊긴다).
+    대가: 타일이 2배가 되고 좌우·상하 대칭이 생긴다(집행 코드가 회전·배율 두 벌로 깨는 그 주기)."""
+    좌우 = np.concatenate([arr, arr[:, ::-1]], axis=1)
+    return np.concatenate([좌우, 좌우[::-1, :]], axis=0)
+
+
+def 타일_엇갈림(arr):
+    """반칸 굴리기 + 가장자리 0 인 가중치로 섞기 — 크기 그대로 «진짜 주기» 타일.
+    대가: 섞는 자리에서 섬유가 두 벌 겹쳐 결이 깎인다(얼마나 깎이는지는 --자 가 잰다)."""
+    S = arr.shape[0]
+    굴림 = np.roll(np.roll(arr, S // 2, axis=0), S // 2, axis=1)
+    d = np.minimum(np.arange(S), S - 1 - np.arange(S)) / (S / 2.0)   # 가장자리 0 · 중앙 1
+    w1 = d * d * (3 - 2 * d)                                          # smoothstep
+    w = (w1[:, None] * w1[None, :])[..., None]
+    return np.clip(arr * w + 굴림 * (1 - w), 0, 255).astype(np.uint8)
+
+
+def 절단(a):
+    펠트 = 토큰읽기()
+    cx, cy = 펠트['울패치']['중심']      # «중심»이다 — 옛 이름 「원점」이 F472 를 냈다
+    s = 펠트['울패치']['한변px']
+    경로 = 사진경로(펠트, a.슬롯)
+    im = Image.open(경로).convert('RGB')
+    W, H = im.size
+    x0, y0 = cx - s // 2, cy - s // 2
+    print(f'■ 절단  {os.path.relpath(경로, 뿌리)}  {W}x{H}')
+    print(f'   토큰 울패치 «중심»({cx},{cy}) 한변 {s}px → 크롭 x{x0}~{x0+s} y{y0}~{y0+s}')
+    if x0 < 0 or y0 < 0 or x0 + s > W or y0 + s > H:
+        sys.exit(f'🔴 크롭이 사진 밖이다 — 이 좌표는 {W}x{H} 사진용이 아니다(F472 갈래 ㉡)')
+    원 = np.asarray(im.crop((x0, y0, x0 + s, y0 + s)), dtype=np.uint8)
+    자기검사(원, f'{a.슬롯} 중심({cx},{cy})')
+
+    표 = {'원본': 원, '거울': 타일_거울(원), '엇갈림': 타일_엇갈림(원)}
+    기준결 = 결에너지(원)
+    print(f'\n   {"타일 방식":<8} {"한변":>5} {"결(L*σ)":>9} {"결 보존":>7} {"이음매비":>8}   판정')
+    for 이름, t in 표.items():
+        e, r = 결에너지(t), 이음매비(t)
+        print(f'   {이름:<8} {t.shape[0]:>5} {e:>9.3f} {e/기준결*100:>6.1f}% {r:>8.3f}'
+              f'   {"← 이어붙이면 티난다" if r > 1.3 else "이음매 없음"}')
+
+    os.makedirs(라이브러리, exist_ok=True)
+    선택 = 표[a.타일]
+    Image.fromarray(선택).save(기본패치)
+    print(f'\n■ 라이브러리  {os.path.relpath(기본패치, 뿌리)}  ({a.타일} · {선택.shape[1]}x{선택.shape[0]})')
+    코어 = 코어색(선택)
+    print(f'   중립 base 코어 #{색갈이.hexs(코어)} — 이 색에서 재염색이 출발한다')
+
+
+# ── 염색 (통로 재사용: 펠트색갈이.py 를 그대로 부른다) ──────────────────────────
+def 염색하기(입력, 출력, 목표, 조용히=False):
+    cmd = [sys.executable, os.path.join(뿌리, 'tools', '펠트색갈이.py'), 입력, 출력, '--목표', 목표]
+    env = dict(os.environ, PYTHONIOENCODING='utf-8')
+    p = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', env=env)
+    if p.returncode != 0:
+        sys.exit(f'🔴 재염색 실패 — {p.stderr.strip() or p.stdout.strip()}')
+    if not 조용히:
+        print(p.stdout.rstrip())
+    return p.stdout
+
+
+def 염색(a):
+    if not os.path.exists(기본패치):
+        sys.exit(f'🔴 중립 패치가 없다 — 먼저 `python tools/펠트패치.py 절단`')
+    os.makedirs(라이브러리, exist_ok=True)
+    이름 = a.이름 or a.목표.lstrip('#')
+    출력 = os.path.join(라이브러리, f'{이름}.png')
+    print(f'■ 염색  {os.path.relpath(기본패치, 뿌리)} → {a.목표.upper()}')
+    염색하기(기본패치, 출력, a.목표)
+    base = np.asarray(Image.open(기본패치).convert('RGB'), dtype=np.uint8)
+    out = np.asarray(Image.open(출력).convert('RGB'), dtype=np.uint8)
+    재기(out, 출력, 목표=a.목표, 기준결=결에너지(base))
+
+
+# ── 자 ──────────────────────────────────────────────────────────────────────
+def 재기(arr, 이름, 목표=None, 기준결=None):
+    코어 = 코어색(arr)
+    e, r = 결에너지(arr), 이음매비(arr)
+    print(f'■ 자  {os.path.relpath(이름, 뿌리) if os.path.isabs(str(이름)) else 이름}'
+          f'  ({arr.shape[1]}x{arr.shape[0]})')
+    if 코어 is None:
+        print('   🔴 유채 표본 200 미만 — 잴 양모가 없다')
+        return None
+    줄 = f'   코어 #{색갈이.hexs(코어)}'
+    d = None
+    if 목표:
+        d = 색갈이.de2000(색갈이.lab(코어), 색갈이.lab(색갈이.hex2rgb(목표)))
+        줄 += f'  목표 {목표.upper()} 와 ΔE2000 **{d:.2f}**'
+    print(줄)
+    보존 = f'  (base 대비 {e/기준결*100:.1f}%)' if 기준결 else ''
+    print(f'   결 {e:.3f} L*σ{보존} · 이음매비 {r:.3f}')
+    if d is not None and d > 3.0:
+        print('   🔴 코어가 목표에서 ΔE 3 초과 — 이 색은 이 base 에서 안 나온다(도달 밖)')
+    return {'코어': 코어, 'ΔE': d, '결': e, '이음매': r}
+
+
+def 자(a):
+    arr = np.asarray(Image.open(a.패치).convert('RGB'), dtype=np.uint8)
+    재기(arr, a.패치, 목표=a.목표)
+
+
+# ── 도달 한계 ───────────────────────────────────────────────────────────────
+def 도달(a):
+    """코랄 base 에서 «어디까지» 갈 수 있나. 재염색은 선형광 채널 게인이라
+    출발색에서 멀어질수록 한 채널을 크게 밀어야 하고, 그때 결이 먼저 죽는다.
+    이 표가 라이브러리의 «사용 설명서»다 — 빨간 칸은 base 를 하나 더 떠야 하는 자리."""
+    if not os.path.exists(기본패치):
+        sys.exit('🔴 중립 패치가 없다 — 먼저 `python tools/펠트패치.py 절단`')
+    과녁 = list(a.과녁)
+    base = np.asarray(Image.open(기본패치).convert('RGB'), dtype=np.uint8)
+    기준결 = 결에너지(base)
+    base코어 = 코어색(base)
+    print(f'■ 도달 한계  base 코어 #{색갈이.hexs(base코어)} · 결 {기준결:.3f} L*σ · 과녁 {len(과녁)}색\n')
+    print(f'   {"이름":<10} {"목표":<9} {"목표C*":>6} {"코어ΔE":>7} {"결비":>7} {"무릎":>7}   판정')
+    임시 = os.path.join(라이브러리, '_도달_임시.png')
+    결과 = []
+    for 이름, hexv in 과녁:
+        로그 = 염색하기(기본패치, 임시, hexv, 조용히=True)
+        out = np.asarray(Image.open(임시).convert('RGB'), dtype=np.uint8)
+        코어 = 코어색(out)
+        d = 색갈이.de2000(색갈이.lab(코어), 색갈이.lab(색갈이.hex2rgb(hexv)))
+        보존 = 결에너지(out) / 기준결
+        # 무릎에 걸린 비율은 «염색 통로가 스스로 찍는 숫자»를 그대로 읽는다 — 두 번 세지 않는다.
+        무릎 = 로그.rsplit('무릎에 걸린 픽셀', 1)[-1].rsplit('(', 1)[-1].split(')')[0] \
+            if '무릎에 걸린 픽셀' in 로그 else '?'
+        C = 색갈이.chroma(색갈이.hex2rgb(hexv))
+        판정 = '✅' if (d <= 3.0 and 보존 >= 0.75) else ('🟡' if d <= 3.0 or 보존 >= 0.75 else '🔴')
+        print(f'   {이름:<10} {hexv.upper():<9} {C:>6.1f} {d:>7.2f} {보존*100:>6.1f}%'
+              f' {무릎:>7}   {판정}')
+        결과.append((이름, hexv, C, d, 보존, 판정))
+    if os.path.exists(임시):
+        os.remove(임시)
+    ok = [r for r in 결과 if r[5] == '✅']
+    print(f'\n   합계 {len(결과)}색 = ✅{len(ok)} + 🟡{sum(1 for r in 결과 if r[5]=="🟡")}'
+          f' + 🔴{sum(1 for r in 결과 if r[5]=="🔴")}')
+    print('   ✅ = 코어 ΔE≤3 이고 결 75% 이상 남음(그 색은 0원에 나온다)')
+    # 도달 실패는 «색상»이 아니라 «채도»로 갈린다 — 게인은 채도를 못 낮춘다(진한 염료를 묽게 못 만든다).
+    못간 = [r for r in 결과 if r[3] > 3.0]
+    if 못간:
+        print(f'\n   🔑 도달 밖 {len(못간)}색의 공통점 = **낮은 채도**'
+              f'(C* {min(r[2] for r in 못간):.0f}~{max(r[2] for r in 못간):.0f})'
+              f' · 도달한 색은 C* {min(r[2] for r in 결과 if r[3] <= 3.0):.0f} 이상')
+        print('      게인은 «곱»이라 채도를 못 낮춘다 — 묽은·회색 펠트는 이 base 에서 안 나온다.')
+        print(f'      → 그 계열이 필요하면 **낮은 채도 base 를 한 장 더 뜬다**(연회색 양모 사진).')
+        print(f'      못 간 색: {" · ".join(f"{r[0]}(C* {r[2]:.0f})" for r in 못간)}')
+
+
+def 색쌍(s):
+    if '=' not in s:
+        raise argparse.ArgumentTypeError('이름=#RRGGBB 모양이어야 한다')
+    n, v = s.split('=', 1)
+    return (n, v)
+
+
+def main():
+    ap = argparse.ArgumentParser(description='Loom L2b — 펠트 패치 라이브러리')
+    sub = ap.add_subparsers(dest='명령', required=True)
+
+    p1 = sub.add_parser('절단', help='정본 사진에서 중립 패치를 잘라 라이브러리에 둔다')
+    p1.add_argument('--슬롯', default='평상복', choices=['평상복', '특별'])
+    p1.add_argument('--타일', default='거울', choices=['원본', '거울', '엇갈림'])
+    p1.set_defaults(fn=절단)
+
+    p2 = sub.add_parser('염색', help='중립 패치에서 목표색 패치를 파생한다(0원)')
+    p2.add_argument('목표', help='예 "#FF6B5C"')
+    p2.add_argument('--이름', help='라이브러리 파일 이름(생략하면 hex)')
+    p2.set_defaults(fn=염색)
+
+    p3 = sub.add_parser('자', help='패치 한 장을 잰다')
+    p3.add_argument('패치')
+    p3.add_argument('--목표', help='이 색을 노렸다면 ΔE 도 같이 잰다')
+    p3.set_defaults(fn=자)
+
+    p4 = sub.add_parser('도달', help='base 에서 어디까지 갈 수 있나 실측')
+    p4.add_argument('--과녁', type=색쌍, nargs='+', required=True, metavar='이름=#RRGGBB')
+    p4.set_defaults(fn=도달)
+
+    a = ap.parse_args()
+    a.fn(a)
+
+
+if __name__ == '__main__':
+    main()
