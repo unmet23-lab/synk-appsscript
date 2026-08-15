@@ -328,11 +328,61 @@ im.save(r'${회색.replace(/\\/g, '\\\\')}')
     assert.match(r3.stdout + r3.stderr, /유채 픽셀/, '왜 자격 미달인지 분모를 말해야 한다');
   });
 
-  test('⑥-e 실저장소 — 지금 라이브러리 7장이 역할 정합 초록이다(거짓양성만 검사)', () => {
+  test('⑥-e 실저장소 — 지금 라이브러리가 역할 정합 초록이다(거짓양성만 검사)', () => {
     const lib = path.join(루트, 'docs', '캐릭터', '펠트패치_0815');
     if (!fs.existsSync(path.join(lib, '라이브러리.json'))) return skip('장부가 없다 — 건너뜀');
     const r = 돌리기(['역할']);
     assert.strictEqual(r.status, 0, `실저장소 역할 정합이 깨졌다:\n${r.stdout}\n${r.stderr}`);
     assert.match(r.stdout, /미등록 0/, '정합 요약이 안 나왔다');
+  });
+
+  /* ── 중립(무채) 슬롯 — Fabric034 반입(유호 확정 08-15 「후보 1번으로 가자」).
+   * 무채 base 는 자기검사의 축이 뒤집힌다: 저채도 100% 가 정상, 오염은 «유채 얼룩»이다.
+   * 그리고 저채도 과녁은 base 를 자동으로 갈아탄다 — 코랄 base 로 가면 도달 밖이 되는 자리. */
+  test('⑧ 중립 슬롯 — 회색 정본에서 자르고, 유채 사진은 거부하고, 저채도 과녁은 중립 base 를 탄다', () => {
+    const dir = 임시();
+    const lib = path.join(dir, 'lib');
+    // 회색 정본 + 울패치중립 토큰을 손으로 깐다(픽스처의 유채 사진과 별도)
+    const 만들기 = spawnSync(PY, ['-c', `
+import json
+from PIL import Image
+im = Image.new('RGB', (512, 512), (161, 159, 165))
+px = im.load()
+for y in range(512):
+    for x in range(512):
+        d = ((x * 7 + y * 13) % 7) - 3
+        r, g, b = px[x, y]
+        px[x, y] = (r + d, g + d * 2, b + d)
+im.save(r'${path.join(dir, 'gray.png').replace(/\\/g, '\\\\')}')
+im2 = Image.new('RGB', (512, 512), (250, 125, 107))   # 유채(코랄) — 중립 슬롯이 거부해야 한다
+im2.save(r'${path.join(dir, 'coral.png').replace(/\\/g, '\\\\')}')
+json.dump({'재질': {'펠트': {
+    '정본사진': {'평상복': 'coral.png', '특별': 'coral.png', '중립': 'gray.png'},
+    '울패치': {'중심': [256, 256], '한변px': 144},
+    '울패치중립': {'중심': [256, 256], '한변px': 144},
+}}, '색': {'마스코트': {'램프': [{'이름': 'Cherry Core', 'hex': '#FB7A87'}]}}},
+    open(r'${path.join(dir, 'token.json').replace(/\\/g, '\\\\')}', 'w', encoding='utf-8'))
+`], { encoding: 'utf8' });
+    assert.strictEqual(만들기.status, 0, 만들기.stderr);
+    const env = { SYNK_FELT_TOKEN: path.join(dir, 'token.json'), SYNK_FELT_ROOT: dir, SYNK_FELT_LIB: lib };
+    // ①회색 정본 → 원료_중립 절단·등록
+    const r1 = 돌리기(['절단', '--슬롯', '중립'], env);
+    assert.strictEqual(r1.status, 0, `무채검사가 깨끗한 회색을 거부했다:\n${r1.stdout}\n${r1.stderr}`);
+    assert.ok(fs.existsSync(path.join(lib, '원료_중립.png')), '원료_중립이 안 써졌다');
+    const 장 = JSON.parse(fs.readFileSync(path.join(lib, '라이브러리.json'), 'utf8'))['패치'];
+    assert.strictEqual(장['원료_중립']?.역할, '원료');
+    // ②유채 사진을 중립 슬롯으로 자르면 죽는다 — 축이 뒤집힌 검사가 실제로 뒤집혀 있는지
+    const 유채토큰 = JSON.parse(fs.readFileSync(path.join(dir, 'token.json'), 'utf8'));
+    유채토큰['재질']['펠트']['정본사진']['중립'] = 'coral.png';
+    fs.writeFileSync(path.join(dir, 'token2.json'), JSON.stringify(유채토큰));
+    const r2 = 돌리기(['절단', '--슬롯', '중립'], { ...env, SYNK_FELT_TOKEN: path.join(dir, 'token2.json') });
+    assert.notStrictEqual(r2.status, 0, `유채 사진을 무채 base 로 받아줬다:\n${r2.stdout}`);
+    assert.match(r2.stdout + r2.stderr, /무채 양모가 아니다|유채/, '왜 거부했는지 말해야 한다');
+    // ③저채도 과녁(Slate C* 15)은 base 를 자동으로 중립으로 갈아탄다 + 도달한다
+    const r3 = 돌리기(['염색', '#8A93AD', '--이름', 'slate'], env);
+    assert.strictEqual(r3.status, 0, r3.stderr);
+    assert.match(r3.stdout, /base = 원료_중립/, `저채도 과녁이 코랄 base 로 갔다 — 도달 밖이 된다:\n${r3.stdout}`);
+    const m = r3.stdout.match(/ΔE2000 \*\*([\d.]+)\*\*/);
+    assert.ok(m && Number(m[1]) <= 3.0, `중립 base 에서 Slate 에 못 닿았다:\n${r3.stdout}`);
   });
 }

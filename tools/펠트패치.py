@@ -62,8 +62,12 @@ import 펠트색갈이 as 색갈이  # noqa: E402
 토큰경로 = os.environ.get('SYNK_FELT_TOKEN', os.path.join(뿌리, 'docs', '디자인_토큰.json'))
 라이브러리 = os.environ.get('SYNK_FELT_LIB', os.path.join(뿌리, 'docs', '캐릭터', '펠트패치_0815'))
 기본패치 = os.path.join(라이브러리, '원료_평상복.png')
+중립패치 = os.path.join(라이브러리, '원료_중립.png')
 장부파일 = '라이브러리.json'          # 역할 장부 — 라이브러리 폴더 안에 산다
 체리문턱 = 6.0   # 마스코트 체리 코어와 이보다 가까우면 마스코트전용(코랄↔체리 실측 10.2 · Coral2↔체리 9.1 밖)
+# base 자동 선택의 갈림값 — 게인은 곱이라 유채 base 의 채도를 못 낮춘다(도달 실측: 코랄 base 는
+# C* 53↑ 만 도달·15~21 전멸 / 중립 base 는 Slate 0.09·CoralSoft 1.01). C_충만(30) 아래 과녁 = 중립 몫.
+저채도갈림 = 30.0
 
 # 절단 자기검사 문턱 — 「깨끗한 양모」의 정의. 정본 사진이 바뀌면 여기서 먼저 빨개진다(대가 §7).
 저채도상한 = 0.02   # 재염색이 원리적으로 안 닿는 픽셀(C*≤C_바닥) 비율. 눈알 1개면 13.9% 로 튄다.
@@ -135,6 +139,27 @@ def 기본패치확인():
                  '(코어↔킷 Coral ΔE 3.85 · 08-15 역할 층).\n'
                  '   git mv 로 「원료_평상복.png」 으로 바꾸고 라이브러리.json 에 역할=원료 로 올린다.')
     sys.exit('🔴 원료 패치가 없다 — 먼저 `python tools/펠트패치.py 절단`')
+
+
+def base고르기(선택, 목표hex):
+    """어느 원료에서 물들일까. 자동 = 과녁 채도가 가른다(색상이 아니라 «채도»가 도달을 정한다 — 실측).
+    반환 = (경로, 무채여부)."""
+    if 선택 == '코랄':
+        기본패치확인()
+        return 기본패치, False
+    if 선택 == '중립':
+        if not os.path.exists(중립패치):
+            sys.exit('🔴 중립 원료가 없다 — 먼저 `python tools/펠트패치.py 절단 --슬롯 중립`')
+        return 중립패치, True
+    C = 색갈이.chroma(색갈이.hex2rgb(목표hex))
+    if C < 저채도갈림:
+        if os.path.exists(중립패치):
+            print(f'   base = 원료_중립 (과녁 C* {C:.1f} < {저채도갈림:.0f} — 코랄 base 는 채도를 못 낮춘다)')
+            return 중립패치, True
+        print(f'   ⚠ 과녁 C* {C:.1f} 는 중립 base 몫인데 원료_중립 이 없다 — 코랄 base 로 가면 도달 밖이 된다'
+              f'(`절단 --슬롯 중립` 이 먼저다)')
+    기본패치확인()
+    return 기본패치, False
 
 
 # ── 색 측정 (전부 색갈이의 정의를 벡터로 옮긴 것 — 상수·식은 저기서 온다) ──────────
@@ -281,20 +306,45 @@ def 타일_엇갈림(arr):
     return np.clip(arr * w + 굴림 * (1 - w), 0, 255).astype(np.uint8)
 
 
+def 무채검사(arr, 어디):
+    """중립(무채) base 의 «깨끗한 회색 양모» 검사 — 유채 자기검사와 축이 뒤집힌다:
+    저채도가 100% 인 게 정상이고, 잡아야 할 오염은 «유채 얼룩»(색 스티커·염색 자국)과 암부다."""
+    C = 채도배열(arr)
+    L, _, _ = lab배열(arr)
+    n = C.size
+    유채 = float((C > 색갈이.C_충만).sum()) / n
+    암부 = float((L < 20).sum()) / n
+    print(f'   무채검사 — 유채(색 오염) {유채*100:.2f}% (상한 2%) · 암부 L*<20 {암부*100:.2f}% (상한 {암부상한*100:.0f}%)')
+    문제 = []
+    if 유채 > 0.02:
+        문제.append(f'유채 {유채*100:.2f}% > 2%')
+    if 암부 > 암부상한:
+        문제.append(f'암부 {암부*100:.2f}% > {암부상한*100:.0f}%')
+    if 문제:
+        sys.exit(f'🔴 {어디} 는 무채 양모가 아니다 — {" · ".join(문제)}\n'
+                 f'   유채 천이면 --슬롯 평상복 계열이 맞고, 중립 정본 사진이 오염됐으면 사진부터 본다.')
+
+
 def 절단(a):
     펠트 = 토큰읽기()
-    cx, cy = 펠트['울패치']['중심']      # «중심»이다 — 옛 이름 「원점」이 F472 를 냈다
-    s = 펠트['울패치']['한변px']
+    블록키 = '울패치중립' if a.슬롯 == '중립' else '울패치'
+    if 블록키 not in 펠트:
+        sys.exit(f'🔴 토큰 재질.펠트.{블록키} 가 없다 — 정본사진.{a.슬롯} 좌표 블록부터 등재한다')
+    cx, cy = 펠트[블록키]['중심']      # «중심»이다 — 옛 이름 「원점」이 F472 를 냈다
+    s = 펠트[블록키]['한변px']
     경로 = 사진경로(펠트, a.슬롯)
     im = Image.open(경로).convert('RGB')
     W, H = im.size
     x0, y0 = cx - s // 2, cy - s // 2
     print(f'■ 절단  {os.path.relpath(경로, 뿌리)}  {W}x{H}')
-    print(f'   토큰 울패치 «중심»({cx},{cy}) 한변 {s}px → 크롭 x{x0}~{x0+s} y{y0}~{y0+s}')
+    print(f'   토큰 {블록키} «중심»({cx},{cy}) 한변 {s}px → 크롭 x{x0}~{x0+s} y{y0}~{y0+s}')
     if x0 < 0 or y0 < 0 or x0 + s > W or y0 + s > H:
         sys.exit(f'🔴 크롭이 사진 밖이다 — 이 좌표는 {W}x{H} 사진용이 아니다(F472 갈래 ㉡)')
     원 = np.asarray(im.crop((x0, y0, x0 + s, y0 + s)), dtype=np.uint8)
-    자기검사(원, f'{a.슬롯} 중심({cx},{cy})')
+    if a.슬롯 == '중립':
+        무채검사(원, f'{a.슬롯} 중심({cx},{cy})')
+    else:
+        자기검사(원, f'{a.슬롯} 중심({cx},{cy})')
     if a.평탄화:
         전 = 저주파폭(원)
         원 = 평탄화(원)
@@ -311,20 +361,32 @@ def 절단(a):
 
     os.makedirs(라이브러리, exist_ok=True)
     선택 = 표[a.타일]
-    이름 = a.이름 if a.이름.startswith('원료_') else f'원료_{a.이름}'
-    if 이름 != a.이름:
+    이름 = a.이름
+    if a.슬롯 == '중립' and 이름 == '원료_평상복':
+        이름 = '원료_중립'                      # 슬롯이 갈리면 기본 이름도 갈린다 — 평상복 base 를 덮으면 사고다
+    if not 이름.startswith('원료_'):
+        이름 = f'원료_{이름}'
         print(f'   이름에 「원료_」 접두를 붙였다 — base 는 팔레트 색이 아니라서 이름부터 갈라 둔다(역할 층)')
     낼곳 = os.path.join(라이브러리, f'{이름}.png')
     Image.fromarray(선택).save(낼곳)
-    장부등록(이름, '원료', 왜=f'{a.슬롯} 정본 사진에서 자른 파생 출발점 — 산출물 노출 금지(코어가 코랄이라 «중립» 아님)')
+    왜 = ('무채 파생 출발점 — 산출물 노출 금지 · 출처 ambientCG Fabric034 (CC0 · 유호 확정 08-15)'
+          if a.슬롯 == '중립' else
+          f'{a.슬롯} 정본 사진에서 자른 파생 출발점 — 산출물 노출 금지(코어가 코랄이라 «중립» 아님)')
+    장부등록(이름, '원료', 왜=왜)
     print(f'\n■ 라이브러리  {os.path.relpath(낼곳, 뿌리)}  ({a.타일} · {선택.shape[1]}x{선택.shape[0]} · 역할=원료)')
     코어 = 코어색(선택)
-    print(f'   원료 base 코어 #{색갈이.hexs(코어)} — 이 색에서 재염색이 출발한다(산출물 노출 금지)')
+    if 코어 is not None:
+        print(f'   원료 base 코어 #{색갈이.hexs(코어)} — 이 색에서 재염색이 출발한다(산출물 노출 금지)')
+    else:
+        L, _, _ = lab배열(선택)
+        print(f'   원료 base 무채 — 평균 L* {float(L.mean()):.1f} · 재염색은 --무채base 통로가 진다(산출물 노출 금지)')
 
 
 # ── 염색 (통로 재사용: 펠트색갈이.py 를 그대로 부른다) ──────────────────────────
-def 염색하기(입력, 출력, 목표, 조용히=False):
+def 염색하기(입력, 출력, 목표, 조용히=False, 무채=False):
     cmd = [sys.executable, os.path.join(뿌리, 'tools', '펠트색갈이.py'), 입력, 출력, '--목표', 목표]
+    if 무채:
+        cmd.append('--무채base')
     env = dict(os.environ, PYTHONIOENCODING='utf-8')
     p = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', env=env)
     if p.returncode != 0:
@@ -335,8 +397,8 @@ def 염색하기(입력, 출력, 목표, 조용히=False):
 
 
 def 염색(a):
-    기본패치확인()
     os.makedirs(라이브러리, exist_ok=True)
+    base경로, 무채 = base고르기(a.base, a.목표)
     이름 = a.이름 or a.목표.lstrip('#')
     # 역할 판정 — 체리 근접이면 공용으로 «못» 낸다(실행규칙 ①을 프로즈가 아니라 통로가 지킨다)
     역할값 = a.역할
@@ -352,10 +414,10 @@ def 염색(a):
             print(f'   역할 = 마스코트전용 (마스코트 체리 코어와 ΔE {d체리:.1f} ≤ {체리문턱:.0f} — 실행규칙 ① 승계)')
     역할값 = 역할값 or '공용'
     출력 = os.path.join(라이브러리, f'{이름}.png')
-    print(f'■ 염색  {os.path.relpath(기본패치, 뿌리)} → {a.목표.upper()}  (역할={역할값})')
-    염색하기(기본패치, 출력, a.목표)
+    print(f'■ 염색  {os.path.relpath(base경로, 뿌리)} → {a.목표.upper()}  (역할={역할값})')
+    염색하기(base경로, 출력, a.목표, 무채=무채)
     장부등록(이름, 역할값, 목표=a.목표)
-    base = np.asarray(Image.open(기본패치).convert('RGB'), dtype=np.uint8)
+    base = np.asarray(Image.open(base경로).convert('RGB'), dtype=np.uint8)
     out = np.asarray(Image.open(출력).convert('RGB'), dtype=np.uint8)
     재기(out, 출력, 목표=a.목표, 기준결=결에너지(base))
 
@@ -392,17 +454,18 @@ def 도달(a):
     """코랄 base 에서 «어디까지» 갈 수 있나. 재염색은 선형광 채널 게인이라
     출발색에서 멀어질수록 한 채널을 크게 밀어야 하고, 그때 결이 먼저 죽는다.
     이 표가 라이브러리의 «사용 설명서»다 — 빨간 칸은 base 를 하나 더 떠야 하는 자리."""
-    기본패치확인()
+    base경로, 무채 = base고르기(a.base, '#808080' if a.base == '중립' else '#FF6B5C')
     과녁 = list(a.과녁)
-    base = np.asarray(Image.open(기본패치).convert('RGB'), dtype=np.uint8)
+    base = np.asarray(Image.open(base경로).convert('RGB'), dtype=np.uint8)
     기준결 = 결에너지(base)
     base코어 = 코어색(base)
-    print(f'■ 도달 한계  base 코어 #{색갈이.hexs(base코어)} · 결 {기준결:.3f} L*σ · 과녁 {len(과녁)}색\n')
+    코어표기 = f'#{색갈이.hexs(base코어)}' if base코어 is not None else '무채'
+    print(f'■ 도달 한계  base {os.path.basename(base경로)} 코어 {코어표기} · 결 {기준결:.3f} L*σ · 과녁 {len(과녁)}색\n')
     print(f'   {"이름":<10} {"목표":<9} {"목표C*":>6} {"코어ΔE":>7} {"결비":>7} {"무릎":>7}   판정')
     임시 = os.path.join(라이브러리, '_도달_임시.png')
     결과 = []
     for 이름, hexv in 과녁:
-        로그 = 염색하기(기본패치, 임시, hexv, 조용히=True)
+        로그 = 염색하기(base경로, 임시, hexv, 조용히=True, 무채=무채)
         out = np.asarray(Image.open(임시).convert('RGB'), dtype=np.uint8)
         코어 = 코어색(out)
         d = 색갈이.de2000(색갈이.lab(코어), 색갈이.lab(색갈이.hex2rgb(hexv)))
@@ -455,8 +518,8 @@ def 역할(a):
         역 = 항.get('역할')
         비고 = 항.get('왜', 항.get('목표', ''))
         print(f'   {이름:<18} {역:<8} #{색갈이.hexs(코어) if 코어 else "──────":<8} {비고[:52]}')
-        if 역 not in ('원료', '공용', '마스코트전용'):
-            문제.append(f'{이름}: 역할 「{역}」 은 없는 값 — 원료/공용/마스코트전용 중 하나')
+        if 역 not in ('원료', '공용', '마스코트전용', '정본사진'):
+            문제.append(f'{이름}: 역할 「{역}」 은 없는 값 — 원료/공용/마스코트전용/정본사진 중 하나')
         if 역 == '원료' and not 이름.startswith('원료_'):
             문제.append(f'{이름}: 역할=원료인데 이름에 「원료_」 접두가 없다 — 팔레트 색으로 오독된다(이 겹침이 이 층을 세웠다)')
         if 이름.startswith('원료_') and 역 != '원료':
@@ -491,7 +554,7 @@ def main():
     sub = ap.add_subparsers(dest='명령', required=True)
 
     p1 = sub.add_parser('절단', help='정본 사진에서 원료 패치를 잘라 라이브러리에 둔다')
-    p1.add_argument('--슬롯', default='평상복', choices=['평상복', '특별'])
+    p1.add_argument('--슬롯', default='평상복', choices=['평상복', '특별', '중립'])
     p1.add_argument('--타일', default='거울', choices=['원본', '거울', '엇갈림'])
     p1.add_argument('--평탄화', action='store_true',
                     help='구워진 조명 경사만 걷어낸다(결·색 유지) — 타일 반복 시 얼룩을 없앤다')
@@ -503,6 +566,8 @@ def main():
     p2.add_argument('--이름', help='라이브러리 파일 이름(생략하면 hex)')
     p2.add_argument('--역할', choices=['공용', '마스코트전용'],
                     help='생략하면 자동 — 체리 근접(ΔE≤6)은 마스코트전용, 나머지 공용')
+    p2.add_argument('--base', default='자동', choices=['자동', '코랄', '중립'],
+                    help='자동 = 과녁 C*<30 이면 중립(회색) base, 아니면 코랄 base')
     p2.set_defaults(fn=염색)
 
     p3 = sub.add_parser('자', help='패치 한 장을 잰다')
@@ -512,6 +577,7 @@ def main():
 
     p4 = sub.add_parser('도달', help='base 에서 어디까지 갈 수 있나 실측')
     p4.add_argument('--과녁', type=색쌍, nargs='+', required=True, metavar='이름=#RRGGBB')
+    p4.add_argument('--base', default='코랄', choices=['코랄', '중립'], help='어느 원료에서 실측할까')
     p4.set_defaults(fn=도달)
 
     p5 = sub.add_parser('역할', help='역할 장부 표 + 장부↔실물 정합 검증')
