@@ -3053,7 +3053,7 @@ function teachersOfClass_(emap, cls) {
   };
   const exact = pick(emap.byClass[raw]);
   if (exact.length) return exact;
-  const bare = raw.split('(')[0].trim();
+  const bare = 반키_(raw);   // [v9.238] 손으로 적던 접기를 공용 통로로 — 한쪽만 바뀌면 조용히 갈라진다(#Q78 실사고)
   if (bare && bare !== raw) {
     const byBare = pick(emap.byClass[bare]);
     if (byBare.length) return byBare;
@@ -3166,7 +3166,9 @@ function calcTeacherStats() {
   data.forEach(r => {
     if (!r[0] || r[3] !== 'student' || !r[4]) return;
     const rawCls = String(r[4]).trim();
-    const cls = rawCls.split('(')[0].trim() || rawCls;
+    // [v9.238] 접기는 공용 통로 `반키_`(엔진_셋업확장.js) — `|| rawCls` 폴백은 뜻이 달라 그대로 둔다:
+    //   반명이 「(9시)」처럼 괄호로 시작하면 접은 값이 빈 문자열이라, 그때는 원문을 키로 살린다.
+    const cls = 반키_(rawCls) || rawCls;
     clsOfT[String(r[0]).trim()] = cls; // [v9.196] 키를 sids와 같은 규칙으로 — 갈라지면 숙제 분모가 조용히 0이 된다
     if (!memo[rawCls]) memo[rawCls] = teachersOfClass_(emap, rawCls);
     const names = memo[rawCls].length ? memo[rawCls] : [TEACHER_UNASSIGNED + ' ' + cls];
