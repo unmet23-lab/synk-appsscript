@@ -474,7 +474,10 @@ function selfDeclareLogNightly_() {
     /* 기준선은 **쓴 뒤 시트를 다시 세어** 올린다 — 감시가 재는 단위와 같아야 하고(행 인덱스로 올리면
      * 다음 밤이 늘 헐겁다), 잠금 밖에서 읽어 둔 수에 더하면 그 사이 남이 적은 줄만큼 **모자라게** 박혀
      * 그만큼의 삭제가 다음 밤에 안 보인다(①배포 검수 3차 P2). 세는 곳이 둘이면 갈라지므로 함수 하나로 판다. */
-    if (add.length) PropertiesService.getScriptProperties().setProperty(SELF_DECLARE_HWM_, String(selfDeclareCount_(log)));
+    /* [v9.241] **쓰는 쪽도 새 키를 쓴다** — 읽는 쪽만 갈아탔더니 이 줄이 밤마다 옛 키를 되살려
+     *   「승계는 한 번뿐」이 무효가 됐다(①배포 검수 2회차 P2 · 7f91b9dad177). 기준선이 두 키로
+     *   갈라지면 append 뒤의 삭제를 놓치고, 새 키를 지우면 옛 키가 또 승계돼 같은 경보가 반복된다. */
+    if (add.length) PropertiesService.getScriptProperties().setProperty(탭수축키_(SELF_DECLARE_TAB_), String(selfDeclareCount_(log)));
     return add.length;
   } finally { lock.releaseLock(); }
 }
@@ -802,8 +805,13 @@ function systemWatchdog(asText) {
     ? '지워진 시트: ' + 지워짐.join(', ') + ' — 되살리세요(bootstrapSynk). 의도한 삭제였다면 스크립트 속성 `' + SEEN_TABS_ + '` 에서 그 이름 줄을 지우면 이 경보가 멎습니다'
     : '시트 구조 정상 (골격 ' + 골격탭.length + '종 · 지워진 것 없음)');
   if (미출생.length) add(true, '아직 안 태어난 시트 ' + 미출생.length + '종(경보 아님 — 필요해지면 bootstrapSynk ▶ 1회): ' + 미출생.join(', '));
+  /* 명부는 **첫 실행에 반드시 한 번 저장한다** — 씨앗 35종이 마침 전부 살아 있으면 새 이름이 0이라
+   * 옛 판은 아무것도 안 썼고, 그러면 「명부에서 그 이름 줄을 지우세요」 처방이 지울 대상조차 없다
+   * (그리고 다음 실행이 또 씨앗을 깔아 되돌린다 · ①배포 검수 2회차 P2 · 54ff60d02fa9 · F103). */
   const 새이름 = 골격탭.filter(n => 산탭[n] && !본적[n]);
-  if (새이름.length) propsW.setProperty(SEEN_TABS_, Object.keys(본적).concat(새이름).join('\n'));
+  if (새이름.length || propsW.getProperty(SEEN_TABS_) == null) {
+    propsW.setProperty(SEEN_TABS_, Object.keys(본적).concat(새이름).join('\n'));
+  }
 
   /* [v9.241] «탭이 있나»로는 원리상 못 보는 사고 — 탭을 지워도 야간 배치의 ensureSheet 가 빈 시트로
    *   되살리므로 주간 워치독이 볼 때는 «있다»(v9.197 이 자기선언 한 탭에서 이미 적어 둔 말이다).
