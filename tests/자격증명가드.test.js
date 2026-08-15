@@ -168,6 +168,58 @@ test('평범한 문장·짧은 값은 비밀로 오인하지 않는다', () => {
   }
 });
 
+// ── 규칙③ 내장 브라우저로 로그인 벽 화면을 열지 않는다 (F467) ───────────────
+
+test('🔴 내장 브라우저로 로그인 벽 화면을 열면 막는다 — F467 실교정 그대로', () => {
+  const d = 새상태();
+  const r = 가드('mcp__Claude_Browser__navigate', { url: 'https://www.instagram.com/synk.lab/' }, d);
+  assert.equal(r.차단, true, 'F467 과 같은 형태가 통과했다');
+  assert.match(r.사유, /F467/, '왜 막는지 근거가 없다');
+  assert.match(r.사유, /브라우저열기\.js/, '작업 계정 크롬 통로를 안 알려준다');
+  assert.match(r.사유, /claude-in-chrome/,
+    '직접 조작해야 할 때의 통로를 안 알려준다 — 갈 길을 안 주면 BYPASS 가 정상 통로가 된다(F103)');
+});
+
+test('🔑 «진짜 크롬»은 같은 주소라도 막지 않는다 — 거기엔 로그인 세션이 산다', () => {
+  const d = 새상태();
+  assert.equal(가드('mcp__claude-in-chrome__navigate', { url: 'https://www.instagram.com/synk.lab/' }, d).조용, true,
+    '정당한 통로까지 막으면 남는 길이 없다 — 그 가드는 자기 처방을 자기가 막는다(F103)');
+});
+
+test('로그인 벽 목록 — 저장소가 실제로 쓰는 곳이 전부 걸린다', () => {
+  for (const url of [
+    'https://www.instagram.com/x',
+    'https://business.facebook.com/latest/home',
+    'https://gemini.google.com/app',
+    'https://docs.google.com/spreadsheets/d/abc/edit',
+    'https://script.google.com/home',
+    'https://supabase.com/dashboard/project/abc',
+  ]) {
+    const d = 새상태();
+    assert.equal(가드('mcp__Claude_Browser__navigate', { url }, d).차단, true, `로그인 벽인데 통과했다: ${url}`);
+  }
+});
+
+test('내장 브라우저의 «정당한 자리»는 그대로 둔다 — 프리뷰·공개 페이지', () => {
+  for (const url of [
+    'http://localhost:5173/',
+    'https://developer.mozilla.org/en-US/docs/Web/CSS',
+    'https://synk.mn/apply',
+  ]) {
+    const d = 새상태();
+    assert.equal(가드('mcp__Claude_Browser__navigate', { url }, d).조용, true,
+      `내장으로 열어도 되는 곳을 막았다 — 거짓양성이 BYPASS 를 가르친다: ${url}`);
+  }
+});
+
+test('🔑 막은 이동은 «간 곳»으로 적지 않는다 — 안 간 화면으로 규칙①을 판정하면 안 된다', () => {
+  const d = 새상태();
+  이동('https://www.glideapps.com/app/abc/edit', d);                                        // 실제로 간 곳
+  가드('mcp__Claude_Browser__navigate', { url: 'https://script.google.com/home/p/settings' }, d); // 막힌 이동
+  assert.equal(가드('mcp__claude-in-chrome__form_input', { ref: 'r', value: '학생 로스터' }, d).조용, true,
+    '막아 놓고 그 주소를 기록해, 가지도 않은 자격증명 화면에 있다고 판정했다');
+});
+
 // ── 1회용 예외 ─────────────────────────────────────────────────────────────
 
 test('예외는 한 번만 통한다 — 상시 해제 스위치가 아니다', () => {

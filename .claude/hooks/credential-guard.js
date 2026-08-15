@@ -42,6 +42,26 @@ const 자격URL = [
   [/\/(password|signin|login|oauth\/authorize)\b/i, '비밀번호·로그인·권한 승인 화면'],
 ];
 
+/* ── 로그인해야 쓰는 화면 (F467) ───────────────────────────────────────────
+ * 실사고 2026-08-15: 로그인 벽이 있는 인스타그램을 **내장 브라우저**로 열었다가 유호님 교정
+ *   (「구글 크롬으로 해줘 왜 굳이 이걸로」). 규약(원격 작업 = 작업 계정 크롬 · `tools/브라우저열기.js`)은
+ *   이미 있었는데 **내장 브라우저를 기본값으로 집은 것**이 병이다.
+ *
+ * 🔑 막는 것은 «내장 브라우저» 하나뿐이다.
+ *   `claude-in-chrome` 은 유호님의 **진짜 크롬**이라 로그인 세션이 살아 있고, 그게 정당한 통로다.
+ *   서버를 안 가르고 막으면 남는 통로가 없어져 따를 수 없는 처방이 된다(F103 — 그런 가드는
+ *   우회를 정상 통로로 만든다). 그래서 아래 사유문은 **갈 수 있는 두 길을 먼저 준다.**
+ *
+ * ⚠ 목록은 **실측된 것만** 넣는다(근거 없는 조항은 안 넣는다). 로그인 없이 보이는 공개 페이지·
+ *   localhost 프리뷰는 내장 브라우저가 맞는 자리라, 넓히는 순간 매 세션 오탐이 된다. */
+const 로그인벽 = [
+  [/(^|\/\/|\.)instagram\.com/i, '인스타그램 — F467 이 난 바로 그 화면'],
+  [/(^|\/\/|\.)(facebook|fb)\.com/i, '페이스북 — 홍보 게시물 발행 통로(유호님 계정)'],
+  [/gemini\.google\.com/i, 'Gemini — 이미지·영상 생성(전송은 유호님 손)'],
+  [/(script|drive|docs|sheets|mail)\.google\.com/i, '구글 작업 계정 자산 — 계정이 어긋나면 F089 처럼 오진단이 난다'],
+  [/supabase\.com\/dashboard/i, 'Supabase 대시보드 — 운영 DB'],
+];
+
 /* ── 자격증명처럼 생긴 값 ──────────────────────────────────────────────────
  * 이건 URL 을 몰라도 돈다 — 「비밀을 페이지에 타이핑한다」는 반대 방향의 같은 사고다. */
 const 자격값 = [
@@ -64,6 +84,8 @@ const 쓰기도구 = ['form_input', 'computer', 'browser_batch', 'computer_batch
   'file_upload', 'upload_image', 'javascript_tool', 'teach_step', 'teach_batch', 'write_clipboard'];
 
 const 끝이름 = (t) => String(t || '').split('__').pop();
+/** 어느 MCP 서버가 부른 것인가 — `mcp__<서버>__<도구>`. 내장 브라우저와 진짜 크롬을 가르는 축이다. */
+const 서버이름 = (t) => (String(t || '').split('__')[1] || '');
 
 function out(decision, reason) {
   process.stdout.write(JSON.stringify({
@@ -156,10 +178,28 @@ for (const [re, 뭔지] of 자격값) {
   }
 }
 
-/* ── 이동 도구: URL 을 적어 둔다 (판정은 하지 않는다) ────────────────────── */
+/* ── 이동 도구: URL 을 적어 둔다 + 규칙③(내장 브라우저 ↔ 로그인 벽) ──────── */
 if (이동도구.includes(이름)) {
   const url = String(ti.url || '');
   if (url && !/^(back|forward)$/i.test(url)) {
+    /* 규칙③ — 기록보다 **먼저** 판정한다. 막은 이동은 일어나지 않았으니 적으면 안 된다
+     * (적어 두면 규칙①이 「거기 가 있다」고 믿고 엉뚱한 화면을 자격증명 화면으로 판정한다). */
+    if (서버이름(tool) === 'Claude_Browser') {
+      for (const [re, 뭔지] of 로그인벽) {
+        if (re.test(url)) {
+          if (예외소비()) break;
+          out('deny', `[credential-guard] 내장 브라우저로 «로그인해야 쓰는 화면»을 연다 — 여기엔 유호님 로그인 세션이 없다 (F467).`
+            + `\n대상: ${url}  (${뭔지})`
+            + '\n\n🔑 열려도 로그인 화면만 나온다 — 유호님 교정 08-15 「구글 크롬으로 해줘 왜 굳이 이걸로」.'
+            + '\n\n→ 둘 중 하나로 간다:'
+            + `\n   ㄱ. 유호님이 보고 클릭할 화면이면 —  node tools/브라우저열기.js "${url}"`
+            + '\n      (작업 계정 unmet23@gmail.com 크롬 프로필로 연다 · 못 찾으면 폴백 없이 정지)'
+            + '\n   ㄴ. 내가 직접 조작해야 하면 —  mcp__claude-in-chrome__* (유호님의 진짜 크롬 · 로그인 세션이 산다)'
+            + '\n\n→ 로그인 없이 보이는 공개 페이지라 정말 내장으로 열어야 하면:'
+            + '\n   node .claude/hooks/credential-guard.js --allow-next');
+        }
+      }
+    }
     const tabs = 읽기(sid);
     tabs[String(ti.tabId || '_')] = url;
     tabs._최근 = url;

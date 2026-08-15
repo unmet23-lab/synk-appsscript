@@ -18,6 +18,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 
 const { 시트흉내, 계약검사, 계약조항 } = require('./lib/시트흉내.js');
@@ -177,8 +178,70 @@ test('변이 픽스처가 계약 6조를 «하나도 안 빼고» 덮는다', ()
    3. 갈라짐 예방 — 되읽는 쓰기 흉내를 «새로» 지으면 공용 통로를 쓴다
    ───────────────────────────────────────────────────────────── */
 
-/** 정의부만 센다 — 호출(`.setValues(`)은 앞에 점이 있다. */
-const 정의됨 = (src, 이름) => new RegExp('(^|[^.\\w])' + 이름 + '\\s*[:(]').test(src);
+/**
+ * 정의부 표기 사전 — **이 저장소가 실제로 쓰는 세 가지**(전수 실측 2026-08-15 · F463).
+ *   ① 축약형  `setValues(v) { … }`      ② 콜론형  `setValues: (v) => …`      ③ 할당형  `rng.setValues = (v) => …`
+ *
+ * ①② 는 「앞에 점이 없는 이름」 하나로 호출(`.setValues(`)과 갈린다. ③ 은 그 규칙에 **원리상 안 걸린다** —
+ * 정의인데 앞에 점이 있기 때문이다. F463 이 판정 규칙을 고칠 때 ①② 만 보고 ③ 을 안 봤고,
+ * 그 사각에 걸린 파일이 하필 **이 파일 자신**이었다(아래 변이 픽스처가 ③ 으로 흉내를 뒤튼다).
+ * 새는 방향은 그때도 「통과」였다 — 적게 세면 목록이 짧아져 다 처리한 것처럼 보인다.
+ *
+ * ⚠ **사전이지 파서가 아니다** — 여기 없는 표기(`Object.assign(rng, { setValues })`·구조분해·계산된 키)는
+ *    여전히 못 본다. 그래서 아래 픽스처가 「무엇을 잡는가」를 셋으로 **못박아** 둔다: 넷째 표기가
+ *    실제로 쓰이는 날, 고칠 자리는 이 사전 하나이고 그 사실이 픽스처에 바로 드러난다.
+ */
+const 정의표기 = (이름) => [
+  new RegExp('(^|[^.\\w])' + 이름 + '\\s*[:(]'),
+  new RegExp('[\\w$)\\]]\\s*\\.\\s*' + 이름 + '\\s*=\\s*(\\(|function|async|[A-Za-z_$][\\w$]*\\s*=>)')
+];
+const 정의됨 = (src, 이름) => 정의표기(이름).some((re) => re.test(src));
+
+/**
+ * 되읽는 쓰기 흉내를 «지은» 파일을 찾는다 — 쓰기와 읽기를 **둘 다** 정의한 것만.
+ * 되읽지 않는 것(캡처 전용)은 F460 두 방향 중 어느 쪽으로도 샐 수 없어 과녁이 아니다.
+ *
+ * 뿌리를 인자로 받는 이유 = **탐지력은 픽스처가 지고 실저장소는 거짓양성만 본다**(맹점 ②).
+ * 판정은 이 함수 하나뿐이라 픽스처와 실저장소가 갈라질 자리가 없다(맹점 ④).
+ * 하위 폴더까지 훑는 이유 = 옛 판은 `tests/*.test.js` 만 봐서 `tests/lib/` 이 통째로 분모 밖이었다.
+ */
+const 흉내파일찾기 = (뿌리) => {
+  const 나온것 = [];
+  const 훑기 = (디렉터리, 접두) => {
+    for (const 항목 of fs.readdirSync(디렉터리, { withFileTypes: true })) {
+      const 전체 = path.join(디렉터리, 항목.name);
+      const 상대 = 접두 ? 접두 + '/' + 항목.name : 항목.name;
+      if (항목.isDirectory()) { 훑기(전체, 상대); continue; }
+      if (!항목.name.endsWith('.js')) continue;
+      const src = fs.readFileSync(전체, 'utf8');
+      if (정의됨(src, 'setValues') && 정의됨(src, 'getValues')) 나온것.push(상대);
+    }
+  };
+  훑기(뿌리, '');
+  return 나온것.sort();
+};
+
+test('탐지력 — 정의 표기 세 가지를 다 잡고, «호출만»·«쓰기만» 은 안 잡는다 (픽스처)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-흉내표기-'));
+  try {
+    const 쓰기 = (이름, 몸) => fs.writeFileSync(path.join(방, 이름), 몸, 'utf8');
+    쓰기('축약형.test.js', 'const r = { setValues(v) { this.v = v; }, getValues() { return this.v; } };');
+    쓰기('콜론형.test.js', 'const r = { setValues: (v) => v, getValues: () => [[1]] };');
+    쓰기('할당형.test.js', 'const rng = {};\nrng.setValues = (v) => { rng.v = v; };\nrng.getValues = () => rng.v;');
+    쓰기('호출만.test.js', 'sh.getRange(1,1,1,1).setValues([[1]]);\nconst x = sh.getRange(1,1,1,1).getValues();');
+    쓰기('쓰기만.test.js', 'const r = { setValues(v) { 기록.push(v); } };');
+    fs.mkdirSync(path.join(방, '깊이'));
+    쓰기('깊이/하위.test.js', 'const r = { setValues(v) { this.v = v; }, getValues() { return this.v; } };');
+
+    assert.deepEqual(흉내파일찾기(방), ['깊이/하위.test.js', '축약형.test.js', '콜론형.test.js', '할당형.test.js'].sort(),
+      '표기 사전에 구멍이 있다 — 못 잡은 표기로 흉내를 지으면 계약이 통째로 안 물린다(F463 이 실제로 그렇게 샜다)');
+
+    // 분모를 함께 낸다 — 「0 놓침」이 「0건 돌았다」와 같은 모양이 되면 안 된다(F207)
+    assert.equal(fs.readdirSync(방).length, 6, '픽스처 수가 바뀌었다 — 무엇을 쟀는지가 달라졌으니 기대값도 같이 고친다');
+  } finally {
+    fs.rmSync(방, { recursive: true, force: true });
+  }
+});
 
 /**
  * 지금 남아 있는 손수 지은 «되읽는» 흉내 — 실측 2026-08-15(#Q85).
@@ -190,16 +253,13 @@ const 정의됨 = (src, 이름) => new RegExp('(^|[^.\\w])' + 이름 + '\\s*[:(]
  */
 const 면제 = {
   'safety.test.js': '캡처 전용(w.push) — 쓴 값을 되읽지 않아 F460 두 방향으로 샐 수 없다',
-  '접수감시.test.js': '한 시험 전용 덮어쓰기 스텁 — 「행이 밀린 상태」를 만들려고 getRange 를 그 시험에서만 갈아끼운다(시트 흉내가 아니라 시나리오다)'
+  '접수감시.test.js': '한 시험 전용 덮어쓰기 스텁 — 「행이 밀린 상태」를 만들려고 getRange 를 그 시험에서만 갈아끼운다(시트 흉내가 아니라 시나리오다)',
+  'lib/시트흉내.js': '공용 통로 «자신» — 계약을 지는 쪽이라 자기를 태울 자리가 아니다(옛 판은 `tests/*.test.js` 만 봐서 이 파일이 분모 밖이었다)',
+  '시트흉내계약.test.js': '변이 픽스처 — 계약검사의 «탐지력»을 재려고 공용 통로를 일부러 뒤튼다(그것도 할당형 ③ 으로 · F463 이 못 보던 바로 그 표기다)'
 };
 
 test('되읽는 쓰기 흉내를 «새로» 지으면 공용 통로를 쓴다 — 면제 목록 밖이면 빨개진다', () => {
-  const 발견 = fs.readdirSync(TESTS)
-    .filter((f) => f.endsWith('.test.js'))
-    .filter((f) => {
-      const src = fs.readFileSync(path.join(TESTS, f), 'utf8');
-      return 정의됨(src, 'setValues') && 정의됨(src, 'getValues');
-    });
+  const 발견 = 흉내파일찾기(TESTS);
 
   assert.ok(발견.length > 0, '탐지기가 0건을 냈다 — 통로가 바뀌었을 수 있다(0건은 초록이 아니라 미측정이다 · F207)');
 
