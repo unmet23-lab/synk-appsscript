@@ -23,7 +23,10 @@ const statePath = (name) => path.join(TMP, `${name}.json`);
 /* 회귀는 네트워크를 안 탄다 — 라이브 대조(≈15초 pull)는 자격증명이 있는 기계에서만 서고,
  * 그걸 회귀에 태우면 CI 는 「자격증명이 없어서 초록」이 된다. 탐지력은 배포판점검 픽스처가 진다.
  * 🔑 끄는 것과 발동 배선이 사라진 것은 다르다 — 배선 자체는 아래 「등록층」 검사가 따로 본다. */
-const 라이브끔 = { SYNK_ROT_LIVE: '0' };
+/* 🔑 회차 장부 축(④-㉡)도 같이 끈다 — 그쪽은 형제 저장소의 도구를 **스폰해 네트워크를 탄다.**
+ *   안 끄면 이 파일의 모든 훅 실행이 `api.supabase.com` 을 부르고, 자격증명 없는 기계(CI)에선
+ *   그게 「미측정」 메모로 새어 나와 침묵 검사(정지 조건)를 통째로 무르게 만든다. */
+const 라이브끔 = { SYNK_ROT_LIVE: '0', SYNK_ROT_LEDGER: '0' };
 
 /** 훅 모드 실행. 반환은 stdout 문자열(빈 문자열 = 침묵). */
 function runHook(env = {}, extra = []) {
@@ -294,7 +297,7 @@ test('🔑 등록층 — 주간 실행이 실제로 라이브를 켠다 (스스�
    * 구조 검사인 이유: 켜진 경로는 라이브 pull(≈15초·자격증명)이라 회귀가 실제로 밟을 수 없다. */
   const src = fs.readFileSync(TOOL, 'utf8');
   assert.match(src, /SYNK_ROT_LIVE\s*!==\s*'0'/, '기본이 꺼짐으로 뒤집혔다 — 그러면 아무도 안 켠다');
-  assert.match(src, /collect\(\{\s*라이브\s*\}\)/, 'main 이 collect 에 라이브를 안 넘긴다 — 플래그만 있고 배선이 없다');
+  assert.match(src, /collect\(\{\s*라이브,\s*장부:\s*장부켬\s*\}\)/, 'main 이 collect 에 라이브를 안 넘긴다 — 플래그만 있고 배선이 없다');
   const 훅 = (JSON.parse(fs.readFileSync(path.join(ROOT, '.claude', 'settings.json'), 'utf8'))
     .hooks?.SessionStart || []).flatMap((g) => g.hooks || []).find((h) => /rot-check/.test(h.command));
   assert.ok(훅, '주간 점검이 SessionStart 에 등록돼 있지 않다 — 발동 조건이 통째로 없다');
@@ -421,4 +424,139 @@ test('🔑 [F386] 실장부 — 열림이 새로/묵은으로 «빠짐없이» �
     '보류가 열림에도 세어졌다 — /evolve 알림이 판정 끝난 행으로 다시 포화된다');
   assert.ok(v.새로.every((r) => r.date > v.기준) && v.묵은.every((r) => r.date <= v.기준),
     '날짜 가르기가 기준점을 안 지킨다');
+});
+
+// ── 회차 장부 축 (조용한 실패 장부 ④-㉡ · 2026-08-15) ────────────────────────
+// 형제(SYNK-talk)의 cron 장부는 「부르면 답할 뿐」이라 아무도 안 부르면 조용하다 — 실측: radio 잡이
+// url NULL 로 16회 전부 죽었는데 15시간 아무도 몰랐다. 여기서 6시간마다 먼저 말하게 한다.
+// 🔑 탐지력은 전부 **픽스처**가 진다(F296) — 실저장소 경로는 자격증명·네트워크에 기대고, 그 기계에서
+//    깨지는 검사는 곧 꺼진다. 실저장소에는 「거짓양성이 없나」만 남긴다.
+const 장부픽스처 = (이름, 본문) => {
+  const 뿌리 = path.join(TMP, `형제-${이름}`);
+  fs.mkdirSync(path.join(뿌리, 'tools'), { recursive: true });
+  fs.writeFileSync(path.join(뿌리, 'tools', '회차장부.js'), 본문, 'utf8');
+  return [{ 뿌리, 저장소: `형제-${이름}` }];
+};
+
+test('🔑 판정 갈래 — 「아직 안 부었다」는 조용하고 「돌았는데 안 적혔다」는 적색이다', () => {
+  const 판정 = (v) => R.장부판정(v);
+  const 하나 = (g, 섰던적 = false) => 판정({ 측정: true, 섰던적, 결과: [{ 저장소: 'talk', ...g }] });
+
+  // ⏳유호(companion 승인 묶음)를 기다리는 상태 — 6시간마다 우는 경보가 되면 승인 날엔 아무도 안 읽는다
+  const 미적용 = 하나({ 판정: 2, 판: false });
+  assert.strictEqual(미적용.red.length + 미적용.notes.length, 0, '판 미적용이 경보를 냈다 — 매 6시간 거짓 적색이 된다');
+
+  const 초록 = 하나({ 판정: 0, 판: true, 안적힘: 0, 이상: 0 });
+  assert.strictEqual(초록.red.length + 초록.notes.length, 0, '이상 0인데 소리를 냈다');
+
+  const 침묵 = 하나({ 판정: 1, 판: true, 안적힘: 7, 이상: 0, 과녁: 'ref' });
+  assert.strictEqual(침묵.red.length, 1);
+  assert.match(침묵.red[0].kind, /침묵/, '장부 자신이 안 불린 것과 cron 이상이 같은 문구면 처방이 갈리지 않는다');
+
+  const 이상 = 하나({ 판정: 1, 판: true, 안적힘: 0, 이상: 16, 과녁: 'ref', 최근이상: [{ jobname: 'radio-promote-hourly', outcome: '발사실패' }] });
+  assert.strictEqual(이상.red.length, 1);
+  assert.match(이상.red[0].text, /radio-promote-hourly→발사실패/, '어느 잡이 죽었는지가 안 실렸다 — 「이상 16건」만으론 열 대상이 없다');
+
+  // 스폰·파싱이 죽은 것 = 못 잼. 적색은 아니지만 침묵도 아니다.
+  const 못잼 = 하나({ 못잼: true, 사유: 'timeout' });
+  assert.strictEqual(못잼.red.length, 0);
+  assert.strictEqual(못잼.notes.length, 1);
+});
+
+test('🔑 판정 2 안의 두 갈래 — 「판이 없다」와 「판을 못 열었다」는 처방이 다르다', () => {
+  /* 자격증명이 죽었을 때 `판: null` 이 온다. 이걸 「아직 안 부었다」와 뭉치면 그 창이 통째로
+   * 조용해진다 — 이 축이 막으려는 병 그 자체다(0건과 못 잼이 같은 모양). */
+  const 못열었다 = R.장부판정({ 측정: true, 섰던적: false, 결과: [{ 저장소: 'talk', 판정: 2, 판: null, 사유: 'HTTP 401' }] });
+  assert.strictEqual(못열었다.notes.length, 1, '판을 못 연 것이 조용히 넘어갔다');
+  assert.match(못열었다.notes[0].text, /401/, '왜 못 열었는지가 안 실렸다');
+});
+
+test('🔑 래치 — 한 번 섰던 판이 사라지면 적색이다 (안 그러면 「아직 안 부었네」와 같은 모양이 된다)', () => {
+  const g = { 저장소: 'talk', 판정: 2, 판: false };
+  assert.strictEqual(R.장부판정({ 측정: true, 섰던적: false, 결과: [g] }).red.length, 0);
+  const 사라짐 = R.장부판정({ 측정: true, 섰던적: true, 결과: [g] });
+  assert.strictEqual(사라짐.red.length, 1, '섰던 판이 사라졌는데 조용했다');
+  assert.match(사라짐.red[0].kind, /사라졌다/);
+
+  // 도장은 켜기만 한다 — 끄면 다음 회차부터 위 갈래가 영영 안 열린다
+  assert.deepStrictEqual(R.장부도장({ 결과: [{ 판: true }] }), { 장부섰나: true });
+  assert.deepStrictEqual(R.장부도장({ 결과: [{ 판: false }] }), {}, '판이 없다고 래치를 껐다 — 그러면 「사라졌다」를 영영 못 낸다');
+});
+
+test('🔑 종료 코드 1·2 는 고장이 아니라 판정이다 — status!==0 을 「못 잼」으로 번역하면 적색이 사라진다', () => {
+  const 형제 = 장부픽스처('적색', 'process.stdout.write(JSON.stringify({도구:"회차장부",판:true,판정:1,안적힘:3,이상:0,과녁:"ref"})+"\\n");process.exitCode=1;\n');
+  const v = R.장부Section(true, 형제);
+  assert.strictEqual(v.측정, true);
+  assert.strictEqual(v.결과.length, 1);
+  assert.strictEqual(v.결과[0].못잼, undefined, 'exit 1 을 고장으로 읽었다 — 진짜 적색이 통째로 사라진다');
+  assert.strictEqual(v.결과[0].판정, 1);
+  assert.strictEqual(R.장부판정({ ...v, 섰던적: true }).red.length, 1);
+});
+
+test('🔑 옛 체크아웃(사람글)·모양이 다른 JSON 은 둘 다 «못 잼» 이다 — 조용한 통과가 없다', () => {
+  const 사람글 = R.장부Section(true, 장부픽스처('사람글', 'console.log("■ 대조 — cron 이 돈 횟수");\n'));
+  assert.strictEqual(사람글.결과[0].못잼, true, '`--json` 을 모르는 옛 판이 조용히 통과했다');
+
+  /* ⓑ 파싱은 통과하는데 모양이 다른 JSON — 여기가 유일한 문이다. 이 검사가 없으면 `판정` 이 없는
+   * 응답이 아래 판정에서 어느 갈래에도 안 걸려 **초록과 구분이 안 된다**. */
+  const 딴모양 = R.장부Section(true, 장부픽스처('딴모양', 'console.log(JSON.stringify({ok:true,빚:0}));\n'));
+  assert.strictEqual(딴모양.결과[0].못잼, true, '모양이 다른 JSON 이 통과했다 — 「이상 0」과 같은 모양이 된다');
+});
+
+test('형제에 그 도구가 없으면 «해당 없음» 이다 — 없는 빚을 모름으로 세면 CI 가 영구 경보가 된다', () => {
+  const 빈뿌리 = path.join(TMP, '형제-없음');
+  fs.mkdirSync(빈뿌리, { recursive: true });
+  const v = R.장부Section(true, [{ 뿌리: 빈뿌리, 저장소: '형제-없음' }]);
+  assert.deepStrictEqual(v.결과, [], '도구가 없는데 모름을 냈다 — 따를 수 없는 경보는 통로를 끈다(F103)');
+});
+
+test('🔑 등록층 — 회차 장부 축이 기본 켜짐이고, 6시간 스로틀이 실제로 문을 연다', () => {
+  /* 위 검사들은 전부 「판정이 맞나」다. 배선이 없으면 전부 초록인 채 이 축은 한 번도 안 돈다 —
+   * 그 모양이 정확히 이 도구가 없애려는 침묵이다(장치와 발동 조건은 같은 커밋 · CLAUDE.md). */
+  const src = fs.readFileSync(TOOL, 'utf8');
+  assert.match(src, /SYNK_ROT_LEDGER\s*!==\s*'0'/, '기본이 꺼짐으로 뒤집혔다 — 그러면 아무도 안 켠다');
+  assert.match(src, /!주간 && !배포차례 && !장부차례/, '스로틀 문이 장부 차례를 안 본다 — 6시간이 지나도 안 열린다');
+  const 훅 = (JSON.parse(fs.readFileSync(path.join(ROOT, '.claude', 'settings.json'), 'utf8'))
+    .hooks?.SessionStart || []).flatMap((g) => g.hooks || []).find((h) => /rot-check/.test(h.command));
+  assert.doesNotMatch(훅.command, /SYNK_ROT_LEDGER=0/, '등록층에서 꺼 두면 코드가 멀쩡해도 영원히 안 돈다');
+
+  const f = statePath('장부주기');
+  const now = Date.now();
+  fs.writeFileSync(f, JSON.stringify({ last: now, 배포: now, 장부: now - 7 * 3600 * 1000 }), 'utf8');
+  process.env.SYNK_ROT_STATE = f;
+  try {
+    assert.strictEqual(R.dueNow(now, '장부', R.장부_주기_일), true, '7시간이 지났는데 6시간 주기가 안 열렸다');
+    assert.strictEqual(R.dueNow(now, '장부', 1), false, '주기 인자를 안 쓴다');
+  } finally { delete process.env.SYNK_ROT_STATE; }
+});
+
+test('🔑 꺼져 있으면 «차례»도 아니다 — 아니면 도장을 영영 못 찍어 나머지 스로틀이 무의미해진다', () => {
+  const f = statePath('장부꺼짐');
+  const now = Date.now();
+  // 주간·배포는 방금 돌았고, 장부만 한 번도 안 쟀다. 축이 꺼져 있으면 그래도 침묵이어야 한다.
+  fs.writeFileSync(f, JSON.stringify({ last: now, 배포: now }), 'utf8');
+  assert.strictEqual(runHook({ SYNK_ROT_STATE: f }), '',
+    '꺼진 축이 스로틀 문을 열어 뒀다 — 매 세션 collect 가 통째로 다시 돈다');
+});
+
+test('축만() 은 그 축의 항목만 고른다 — 하루·6시간 알림에 주간 리포트가 딸려 오면 그게 소음이다', () => {
+  const r = {
+    red: [{ text: 'A', 배포: true }, { text: 'B', 장부: true }, { text: 'C' }],
+    warn: [{ text: 'D', 장부: true }], notes: [{ text: 'E', 배포: true }],
+  };
+  assert.deepStrictEqual(R.축만(r, ['장부']).red.map((x) => x.text), ['B']);
+  assert.deepStrictEqual(R.축만(r, ['장부']).warn.map((x) => x.text), ['D']);
+  assert.strictEqual(R.축만(r, ['장부']).notes.length, 0);
+  assert.strictEqual(R.축만(r, ['배포', '장부']).findings, 4);
+  // render() 가 만지는 키가 빠지면 리포트 전체가 예외로 죽고, 그 자리에선 침묵과 같다
+  for (const k of ['mem', 'doc', '장부']) assert.ok(R.축만(r, ['장부'])[k], `축약 판에 ${k} 키가 없다`);
+});
+
+test('실저장소 — 축을 끄면 형제를 안 부르고 거짓양성 0 (탐지는 위 픽스처가 진다)', () => {
+  const v = R.장부Section(false);
+  assert.strictEqual(v.측정, false, '꺼도 네트워크를 탔다');
+  const r = R.collect();
+  assert.ok(r.장부 && r.장부.ok, `회차 장부 검사기가 죽었다: ${r.장부 && r.장부.error}`);
+  assert.strictEqual(r.장부.value.측정, false, 'collect() 기본이 형제를 부른다 — CI 가 네트워크를 탄다');
+  assert.ok(!r.red.some((x) => x.장부), '안 쟀는데 장부 적색이 나왔다');
 });
