@@ -2,10 +2,10 @@
 <html lang="ko">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SYNK 엔진 지도 — 세 엔진이 한 학생에게 닿는 길</title>
+<title>SYNK 엔진 지도 — 닿는 셋과 쌓는 셋</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap">
-<!-- 지도 v1.0 · 2026-08-15 · 내부 문서(운영자료 「엔진」 갈래 뿌리) -->
+<!-- 지도 v2.0 · 2026-08-15 · 내부 문서(운영자료 「엔진」 갈래 뿌리) · v1.0→v2.0: 자산층 3엔진(궤적·대조·처방) 편입 + 두 줄 구조 + 대체 불가 시험 3문 + ⑩ 규격 (유호 확정 08-15) -->
 <style>
   :root{
     --paper:#FBF7EE; --ink:#171820; --navy:#1A2340; --navy2:#0F1730; --navy3:#2A3358;
@@ -23,6 +23,8 @@
   header .meta{color:var(--slate);font-size:.82em;margin-top:14px;}
   .banner{background:var(--wash);border-left:4px solid var(--coral);padding:.8em 1.1em;margin:0 0 14px;font-size:.93em;}
   h2{font-size:1.22em;font-weight:800;margin:2.2em 0 .6em;padding-bottom:.3em;border-bottom:3px solid var(--coral);}
+  h3.row{font-size:1.0em;font-weight:800;margin:1.4em 0 .2em;color:var(--navy);}
+  h3.row .sub{font-weight:600;color:var(--slate2);font-size:.88em;}
   p{margin:.55em 0;}
   table{border-collapse:collapse;width:100%;font-size:.9em;margin:.8em 0;}
   th,td{border:1px solid var(--navy3);padding:.55em .7em;text-align:left;vertical-align:top;}
@@ -30,15 +32,16 @@
   .muted{color:var(--slate2);}
   .small{font-size:.86em;}
   code{color:var(--ink);background:var(--cream3);padding:.06em .35em;border-radius:4px;font-family:inherit;font-size:.93em;}
-  .tri{display:flex;flex-wrap:wrap;gap:14px;margin:1.2em 0;}
+  .tri{display:flex;flex-wrap:wrap;gap:14px;margin:.6em 0 1.2em;}
   .eng{flex:1 1 260px;background:var(--cream);border:1px solid var(--cream3);border-top:5px solid var(--coral);padding:18px 20px;}
   .eng h3{margin:0 0 .2em;font-size:1.15em;font-weight:800;}
   .eng .role{color:var(--slate2);font-size:.88em;margin-bottom:.5em;}
   .eng a{color:var(--ink);}
+  .eng.asset{border-top-color:var(--navy3);}
   .flow{background:var(--cream);border:1px solid var(--cream3);padding:1em 1.3em;margin:1em 0;}
   .flow ol{margin:.3em 0 .2em;padding-left:1.4em;}
   .flow li{margin:.45em 0;}
-  ul{margin:.4em 0 .8em;padding-left:1.3em;}
+  ul,ol{margin:.4em 0 .8em;padding-left:1.3em;}
   li{margin:.3em 0;}
   footer{margin-top:3em;padding-top:1em;border-top:1px solid var(--cream3);color:var(--slate2);font-size:.84em;}
   a{color:var(--ink);}
@@ -48,16 +51,19 @@
 <header>
   <div class="kicker">SYNK 고유 IP · 엔진 갈래의 표지</div>
   <h1>SYNK 엔진 지도</h1>
-  <p class="one">SYNK LAB(학원) · SYNK STUDIO 곁에서 회사의 심장이 될 <b>고유 IP 세 벌</b> —
-  두뇌(SYNK Core) · 몸(Loom) · 얼굴(몽글). 셋은 따로 팔리는 제품이 아니라,
-  「한 사람을 깊이 이해하는 교육」이라는 한 문장을 셋이 나눠 맡은 <b>하나의 시스템</b>이다.</p>
-  <div class="meta">지도 v1.0 · 2026-08-15 · 각 엔진의 전체 상은 아래 소개서 3벌에 있다</div>
+  <p class="one">회사의 심장이 될 <b>고유 IP 여섯 벌</b>, 두 줄 —
+  오늘의 학생 한 명에게 닿는 <b>「닿는 셋」</b>(Core·Loom·몽글)과,
+  세월이 회사에게만 쌓아 주는 <b>「쌓는 셋」</b>(궤적·대조·처방).
+  여섯은 따로 팔리는 제품이 아니라 「한 사람을 깊이 이해하는 교육」 한 문장을 나눠 맡은 <b>하나의 시스템</b>이다.</p>
+  <div class="meta">지도 v2.0 · 2026-08-15 · 각 엔진의 전체 상은 소개서 6벌에 있다 · 쌓는 셋의 이름은 가칭(대외 이름 ⏳유호)</div>
 </header>
 
 <div class="banner"><b>시제 안내(철학 §0)</b> — 학생 0명 · 개원 2027-02-25 전. 아래의 「하루」는 관측이 아니라 <b>설계된 그림</b>이다 —
 그 그림의 어디까지가 코드로 섰는지는 각 소개서의 대장(⑦절)이 솔직하게 말한다.</div>
 
-<h2>세 엔진 — 역할 분담</h2>
+<h2>여섯 엔진 — 두 줄, 역할 분담</h2>
+
+<h3 class="row">닿는 셋 <span class="sub">— 제품층 · 오늘의 학생 한 명에게 (매일 닿는다)</span></h3>
 <div class="tri">
   <div class="eng">
     <h3><a href="./SYNK_Core_소개서.html">SYNK Core</a></h3>
@@ -79,29 +85,97 @@
     학생에게 따뜻한 친구, 강사·원장에게 안내자, 학부모에게 신뢰의 창구 — 두뇌 하나, 창구 다섯.
   </div>
 </div>
-<p><b>왜 셋이 한 벌인가</b> — 이해만 있으면 계기판이고(차갑다), 몸만 있으면 장식이고(비어 있다),
-얼굴만 있으면 말뿐이다(못 믿는다). 이해가 몸을 입고 관계로 돌아올 때만 「나만의 선생님」이 된다.
+
+<h3 class="row">쌓는 셋 <span class="sub">— 자산층 · 회사의 다음 결정에게 (세월이 쌓는다 · 학생 화면에 직접 닿지 않는다)</span></h3>
+<div class="tri">
+  <div class="eng asset">
+    <h3><a href="./궤적엔진_소개서.html">궤적 엔진</a></h3>
+    <div class="role">발자취 — 떠난 뒤에도 잇는 관측</div>
+    「무엇을 목표했고 실제로 어디에 도착했는가」를 한 사람으로 잇는다. 교육의 진짜 성적표는
+    몇 년 뒤의 삶에서 나온다 — 인증·매칭·선배 매칭·정착, 「한국행 인프라」로 가는 문 전부의 유일한 전제.
+    <span class="small muted">코드 라이브 · 데이터는 첫 졸업생부터.</span>
+  </div>
+  <div class="eng asset">
+    <h3><a href="./대조엔진_소개서.html">대조 엔진</a></h3>
+    <div class="role">지도 — 화자 일반의 오류 분포</div>
+    학생 하나의 교정을 「몽골어 화자 일반은 여기서 이렇게 틀린다」로 승격하는 비식별 집계층.
+    교재·출제·모델 평가가 감이 아니라 분포를 읽게 한다 — 시장에 존재하지 않는 말뭉치.
+    <span class="small muted">재료 생산자 라이브 · 집계층은 개원 직후.</span>
+  </div>
+  <div class="eng asset">
+    <h3><a href="./처방엔진_소개서.html">처방 엔진</a></h3>
+    <div class="role">의술 — 가르치는 법을 배운다</div>
+    「이 상태의 학생에게 이 개입을 줬더니 30일 뒤 이렇게 됐다」의 짝. 이것이 쌓이면 엔진은
+    한국어가 아니라 <b>가르치는 법</b>을 배운다 — 과목·언어가 바뀌어도 남는 마지막 자산.
+    <span class="small muted">여섯 중 마지막 순서가 맞다 — 단 로그 규격은 개원 전 마감.</span>
+  </div>
+</div>
+
+<p><b>왜 여섯이 한 벌인가</b> — 이해만 있으면 계기판이고(차갑다), 몸만 있으면 장식이고(비어 있다),
+얼굴만 있으면 말뿐이다(못 믿는다). 그리고 그 셋이 매일 만드는 것을 쌓는 셋이 받아 —
+졸업 뒤의 삶(궤적)·화자 일반의 지도(대조)·가르치는 법(처방)으로 바꾼다.
 베낄 수 있는 것은 어느 하나이고, 가치는 결합에서만 난다.</p>
 
-<h2>한 학생의 하루 — 세 엔진이 함께 도는 그림 (설계)</h2>
+<h2>왜 두 줄로 가르나 — 그리고 쌓는 셋의 3규칙</h2>
+<p>여섯을 한 줄로 두면 서로 다른 두 물건이 섞인다. 닿는 셋의 소비자는 <b>오늘의 학생 한 명</b>이고(매일 돈다),
+쌓는 셋의 소비자는 <b>회사의 다음 결정</b>(교재·출제·매칭·모델 평가)이다. 주기도, 성공 기준도, 지나는 게이트도 다르다 —
+닿는 셋은 철학 게이트 ①②③④ 전부를 지나고, 쌓는 셋은 배관이라 ③④만 지난다(철학 v1.9 적용 대상 가름 그대로).
+실측 교훈이 이 가름의 근거다: 궤적 코드는 라이브였는데 「Core 안 어딘가」로 취급돼 어느 엔진 대장에도 안 잡혔고, 그래서 아무도 안 키웠다.</p>
+<p><b>쌓는 셋의 3규칙</b> — 이 규칙 덕에 엔진이 여섯이어도 파이프라인은 늘지 않는다:</p>
+<ol>
+<li><b>자기 수집 통로를 새로 만들지 않는다</b> — 닿는 셋이 걷은 것에서 읽기만 한다(집계·조인·승격). 이 규칙이 무너지면 엔진 6개 = 파이프라인 6개가 되어 관리 비용이 곱해진다.</li>
+<li><b>학생 화면에 직접 닿지 않는다</b> — 산출은 비식별이고(㉣), 「일반·평균」은 비교의 씨앗이라(㉢) 학생 접점에 안 나간다. 학생에게 닿는 것은 언제나 닿는 셋을 거친다.</li>
+<li><b>분모 없는 숫자를 내지 않는다</b> — 자산층의 산출은 전부 «값 + 몇 건 위인가» 한 벌.</li>
+</ol>
+
+<h2>대체 불가 시험 3문 — 엔진 후보의 관문</h2>
+<p>「AI에 대체되지 않는 우리만의 자산인가」는 감이 아니라 이 세 문으로 잰다.
+일곱째 이후의 엔진 후보도 이 시험을 지나야 엔진이라 부른다 — 핵심은 ①이다:
+AI가 못 하는 것을 찾는 게 아니라(그 목록은 매년 짧아진다), <b>AI가 잘할수록 우리가 세지는 것</b>을 찾는다.</p>
+<div class="wide"><table>
+<thead><tr><th style="width:46%">문</th><th>통과 못 하면</th></tr></thead>
+<tbody>
+<tr><td>① <b>모델이 두 배 똑똑해지면 이 자산은 커지나, 작아지나?</b></td><td>작아지면 자산이 아니라 일시적 격차다</td></tr>
+<tr><td>② <b>돈으로 살 수 있나?</b></td><td>살 수 있으면 자산이 아니라 비용이다</td></tr>
+<tr><td>③ <b>우리가 안 하면 다른 누가 할 수 있나?</b></td><td>할 수 있으면 자산이 아니라 시간문제다</td></tr>
+</tbody>
+</table></div>
+<p class="small muted">여섯 엔진의 답안은 각 소개서 ⑧절에 있다. 공통 원리 — 모델은 인터넷에 있는 것을 다 알지만
+인터넷에 없는 것은 영영 모른다: 우리 학생이 실제로 틀리는 것 · 우리가 개입한 결과 · 졸업 뒤 그 사람의 삶.</p>
+
+<h2>한 학생의 하루 — 엔진들이 함께 도는 그림 (설계)</h2>
 <div class="flow"><ol>
 <li><b>저녁, 숙제</b> — 학생이 앱에서 오늘의 말하기 숙제를 한다. 녹음이 자동으로 받아 적히고, AI가 고쳐 답장한다. 오류는 23가지 유형으로 태그되어 쌓인다. <span class="muted">(Core — 수집)</span></li>
 <li><b>답장의 꼬리 한 줄</b> — 「이 자리, 지난주엔 세 번 틀렸는데 오늘은 맞았어.」 점수가 아니라 어제의 자기와의 대조가 돌아온다. <span class="muted">(Core — 되돌려주기)</span></li>
 <li><b>홈 화면의 몽글</b> — 무오류를 알아보고 눈웃음으로 반긴다. 쓰다듬으면 폭신하게 눌리고 사각사각 소리가 난다. 잘한 날의 관심 — 감시가 아니라 알아봐 줌. <span class="muted">(몽글×Loom — 반응)</span></li>
 <li><b>다음 날의 과제</b> — 엔진이 그 학생의 상태(약점·리듬·끈기)를 읽어 다음 과제를 고른다. 검수 확정 한 번 말고는 사람 손 0. <span class="muted">(Core — 행동이 바뀜)</span></li>
 <li><b>주말, 학부모</b> — 자녀가 이번 주 무엇을 얼마나 했는지가 몽골어 리포트로 자동 도착하고, 궁금한 것은 같은 얼굴(몽글 상담봇)에게 물으면 된다. <span class="muted">(몽글 — 신뢰)</span></li>
-<li><b>교실의 선생님</b> — 관찰·기록은 시스템이 지고 있으니, 선생님은 아이와 눈을 맞추는 일에 온전히 선다. <span class="muted">(세 엔진의 목적 — 사람의 자리)</span></li>
+<li><b>교실의 선생님</b> — 관찰·기록은 시스템이 지고 있으니, 선생님은 아이와 눈을 맞추는 일에 온전히 선다. <span class="muted">(닿는 셋의 목적 — 사람의 자리)</span></li>
+<li><b>그리고 보이지 않는 곳에서</b> — 그 하루 전부가 쌓는 셋의 그릇에 떨어진다: 오늘의 교정은 화자 일반의 지도(대조)로,
+오늘의 개입과 반응은 가르치는 법(처방)으로, 그리고 몇 년 뒤 이 학생의 도착지는 다음 학생의 길(궤적)로. <span class="muted">(쌓는 셋 — 사람 손 0)</span></li>
 </ol></div>
 
-<h2>지금 상태 — 세 줄 요약 (2026-08-15)</h2>
+<h2>지금 상태 — 여섯 줄 요약 (2026-08-15)</h2>
 <div class="wide"><table>
 <thead><tr><th style="width:16%">엔진</th><th>한 줄 상태</th></tr></thead>
 <tbody>
 <tr><td><b>SYNK Core</b></td><td>수집층 라이브 · 도달 사슬 7칸 중 6칸 코드로 섰다(대부분 리허설) · ㉡사람·㉢삶 층 「돈다」 0 · 엔진 점수 79/102(08-12) — 상세는 소개서 ⑦</td></tr>
-<tr><td><b>Loom</b></td><td>설계 정본 v0.1 + 2D·3D 통로·패치 라이브러리·3D LIVE v4 섰다 · 감각층 v4 시제품(유호 귀검수 왕복 중) · 앱 실시간 탑재는 Expo 화면 트랙에서</td></tr>
+<tr><td><b>Loom</b></td><td>설계 정본 v0.1 + 2D·3D 통로·패치 라이브러리·3D LIVE v4 섰다 · 감각층 v5 시제품(유호 귀검수 왕복 중) · 앱 실시간 탑재는 Expo 화면 트랙에서</td></tr>
 <tr><td><b>몽글 엔진</b></td><td>이름 확정(말가이 검수 후 일괄 전파) · 행동 정본·말할순간 표 v1.1 확정 · 1단계 강사판 코드 착지(운영 붓기 ⏳유호) · 학생판·학부모판은 순서 대기</td></tr>
+<tr><td><b>궤적 엔진</b></td><td>코드 라이브(<code>outcome_log</code>·<code>trajectory</code>·자동 수확) · 데이터 0행(졸업생 0 — 정상) · ⏳유호 = 「선배 모드」 · 상세는 소개서 ⑦·⑩</td></tr>
+<tr><td><b>대조 엔진</b></td><td>재료 생산자 전부 라이브(오류 태그 23종·검수 통로·문항 스냅샷) · 승격 집계층 코드 0 — 세우는 시점 = 개원 직후</td></tr>
+<tr><td><b>처방 엔진</b></td><td>코드 0 · 개입 생산자 서는 중(과제선택 v5.9 트랙) · 지금 몫은 개입 로그 규격 하나(개원 전 마감 — 소개서 ⑩)</td></tr>
 </tbody>
 </table></div>
+
+<h2>소개서 공통 규격 — ⑦과 ⑩은 쌍이다</h2>
+<p>모든 엔진 소개서는 두 개의 정직한 절을 쌍으로 갖는다(v2.0 규격 · 유호 확정 08-15):</p>
+<ul>
+<li><b>⑦ 지금 어디까지 왔나 (대장)</b> — 지나온 길. 코드·데이터·미결을 숨기지 않고 적는다.</li>
+<li><b>⑩ 지금 안 하면 영영 못 갖는 것 (닫히는 문)</b> — 오는 길. 엔진마다 「나중에 지어도 되는 것」과
+「지금이 아니면 영영 없는 것」이 다르고, <b>우선순위는 크기가 아니라 문이 닫히는 순서로 정한다.</b>
+이 칸이 처음부터 있었다면 궤적 코드가 이름 없이 놓여 있지 않았을 것이다 — 그 실측이 이 규격의 근거다.</li>
+</ul>
 
 <h2>홈페이지에 실을 때 — 파생 게이트</h2>
 <ul>
@@ -113,6 +187,6 @@
 <footer>
 이 폴더(운영자료 「4_SYNK 엔진」)는 회사 고유 IP의 저장소다 — 각 엔진 하위 폴더에 소개서가 살고,
 앞으로 각 엔진의 자산·판정·실측이 여기로 모인다. 저장소 정본 경로 = <code>docs/엔진/</code> ·
-소개서가 낡았는지는 바탕화면 <code>_지금상태.html</code>이 말한다. · 지도 v1.0 · 2026-08-15
+소개서가 낡았는지는 바탕화면 <code>_지금상태.html</code>이 말한다. · 지도 v2.0 · 2026-08-15 (v1.0: 세 엔진 → v2.0: 여섯 엔진 · 유호 확정)
 </footer>
 </html>
