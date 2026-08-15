@@ -244,6 +244,86 @@ test('🔑 이관 오류 기록은 락 **밖**이다 — 이관이 계통적으�
   // 최상위 catch의 기록은 finally가 이미 락을 푼 뒤라 문제없다(그쪽은 검사 대상 아님)
 });
 
+/* ═══════════════════════════════════════════════════════════════════
+ * 🔴 [2026-08-15] 인계된 「실탄 왕복」 절차가 안 돈다 — 개명은 오류 주입이 **아니다**
+ *
+ *   10일째 ⏳유호로 걸려 있던 절차: 「crew_cards 탭 이름을 잠깐 바꿔 두고 → 제출 1회 →
+ *   즉시 원복」. 그 절차는 감시가 «도는데도» 「안 돈다」로 읽히게 만든다 —
+ *     ① 크루_탭_ 이 없는 탭을 **되만든다**(자기치유 [v9.163]) → doPost 는 throw 하지 않고
+ *        crew_errors 는 한 줄도 안 생긴다. 체크리스트 ①~⑤가 전부 ✗ 로 보이는데 원인은
+ *        「감시가 죽었다」가 아니라 «아무것도 주입되지 않았다»다(맹점 ④ — 맞는 얼굴로 틀린 값).
+ *     ② 되만든 탭이 이름을 선점하므로 **원복이 이름 충돌로 막힌다**(시트 이름은 유일하다).
+ *        원복하려면 방금 생긴 탭을 먼저 지워야 하는데, 그때는 이미 접수가 그 안에 있다.
+ *     ③ 새 탭은 빈 탭이라 채번이 001 로 **되감긴다** → 기존 Serial 과 겹친다.
+ *   자기치유 자체는 옳다 — 못박는 것은 「그래서 개명은 시험이 못 된다」다.
+ *   대신 도는 절차 = crew_errors 에 시험행 1줄(읽는 쪽 반증) — memory/crewcard-error-watch.
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/* 두 함수(크루_탭_·크루_다음번호_)를 실소스에서 떼어 실행한다.
+ * ⚠ 흉내는 «캡처 전용»이다 — 쓴 값을 되읽지 않는다(safety.test.js 와 같은 계열).
+ *   되읽는 흉내를 여기서 새로 지으면 공용 통로가 갈라진다(F460 · 시트흉내계약.test.js 가 막는다).
+ *   읽기가 필요한 채번 검사는 공용 `시트흉내()` 를 그대로 쓴다. */
+function 탭함수_(기록) {
+  const src = server.match(/function 크루_탭_\(\)[\s\S]*?\n\}/)[0];
+  const 번호src = server.match(/function 크루_다음번호_\(sh, today\)[\s\S]*?\n\}/)[0];
+  return new Function(
+    'SpreadsheetApp', 'CONSULT_SHEET_ID', 'CREW_TAB', 'COLUMNS',
+    src + '\n' + 번호src + '\nreturn { 탭: 크루_탭_, 번호: 크루_다음번호_ };'
+  )(
+    {
+      openById: () => ({
+        getSheetByName: () => null,                 // 탭이 없다 = 사람이 이름을 바꿔 둔 상태
+        insertSheet: () => { 기록.생성++; return 기록.새탭; }
+      })
+    },
+    'FAKE', 'crew_cards', COLUMNS
+  );
+}
+
+test('🔴 개명된 crew_cards 는 오류를 못 만든다 — 크루_탭_ 이 되만들어 접수가 그대로 성공한다', () => {
+  const 기록 = { 생성: 0, 헤더: null, 얼림: 0, 넣은행: null };
+  /* 새 탭의 기본 폭은 26열(Sheets 기본값)이라 185열 정본과 다르다 — 그 폭 확장까지 흉내 내야
+   * 「되만든 탭에도 정상 append 된다」(=오류가 안 난다)를 정직하게 잴 수 있다. */
+  기록.새탭 = {
+    maxCols: 26,
+    getMaxColumns() { return this.maxCols; },
+    insertColumnsAfter(_after, n) { this.maxCols += n; return this; },
+    getLastRow() { return 0; },                     // 갓 만든 탭 = 빈 탭
+    setFrozenRows() { 기록.얼림++; },
+    appendRow(r) {
+      if (r.length > this.maxCols) throw new Error('열 폭 초과 — 실물 appendRow 가 여기서 터진다');
+      기록.넣은행 = r;
+    },
+    getRange: () => ({
+      setValues(v) { 기록.헤더 = v[0].slice(); return this; },   // 캡처만 — 되읽지 않는다
+      setFontWeight() { return this; }
+    })
+  };
+  const fns = 탭함수_(기록);
+  const sh = fns.탭();
+
+  assert.equal(기록.생성, 1, '탭이 없는데 안 만들었다 — 자기치유가 사라졌다([v9.163] 회귀)');
+  assert.deepEqual(기록.헤더, COLUMNS, '되만든 탭에 헤더 정본이 안 깔렸다');
+  assert.ok(sh.getMaxColumns() >= COLUMNS.length,
+    `되만든 탭이 ${sh.getMaxColumns()}열 — 185열을 넣을 폭이 안 됐다`);
+  // 🔑 이 한 줄이 절차 결함의 본체다: append 가 성립한다 = throw 가 없다 = crew_errors 가 안 생긴다
+  assert.doesNotThrow(() => sh.appendRow(COLUMNS.map(() => '')),
+    '되만든 탭에 append 가 터진다 — 그렇다면 개명이 오류 주입이 되지만, 실측은 성공이다');
+  assert.equal(기록.넣은행.length, COLUMNS.length, '접수 행이 안 들어갔다');
+});
+
+test('🔴 되만든 탭은 채번을 001 로 되감는다 — 기존 Serial 과 겹친다', () => {
+  const 오늘 = '20260815';
+  const fns = 탭함수_({ 생성: 0 });
+  // 첫행:1 = 헤더까지 담는 통짜 격자(시트흉내 계약의 두 관례 중 하나)
+  const 산탭 = 시트흉내({ 첫행: 1, 행들: [COLUMNS, ['', 'SL-20260815-001'], ['', 'SL-20260815-002']] });
+  assert.equal(fns.번호(산탭, 오늘), 3, '살아 있는 탭에서 다음 번호가 3이 아니다');
+
+  const 되만든탭 = 시트흉내({ 첫행: 1, 행들: [COLUMNS] });   // 헤더만 있는 갓 만든 탭
+  assert.equal(fns.번호(되만든탭, 오늘), 1,
+    '되만든 빈 탭이 1부터 채번하지 않는다 — 이 검사의 전제가 바뀌었으면 절차 경고문부터 고쳐라');
+});
+
 function 오류로그하네스_(over) {
   const 저장 = { rows: [], props: {}, sh: null, 생성: 0, 헤더: null };
   // 시트 대역은 실제와 같은 「행이 쌓인다」 성질을 갖는다 — getLastRow를 상수로 두면
