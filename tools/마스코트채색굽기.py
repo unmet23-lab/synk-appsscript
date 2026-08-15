@@ -31,7 +31,8 @@ if not TOKEN:
         pass
 print(f"[채색굽기] HF 토큰: {'있음(로그인 층)' if TOKEN else '없음(익명 — GPU 몫 0이면 여기서 죽는다)'}")
 
-client = Client("microsoft/TRELLIS.2", hf_token=TOKEN)
+# ⚠ 인자명은 `token` 이다 — `hf_token` 은 gradio_client 2.6.0 에서 TypeError(실측 08-15).
+client = Client("microsoft/TRELLIS.2", token=TOKEN)
 api = client.view_api(return_format="dict", print_info=False)
 eps = api.get("named_endpoints", {})
 for need in ("/start_session", "/preprocess_image", "/image_to_3d", "/extract_glb"):
