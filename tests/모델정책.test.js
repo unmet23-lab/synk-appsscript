@@ -286,3 +286,52 @@ test('심문에서도 --검수 는 기본을 이긴다 — 1회성 하향 통로
   // 오타는 여전히 기본으로 접지 않고 거절한다 — 기본픽 인자가 그 계약을 무르면 안 된다
   assert.throws(() => 정책.분석설정(['--검수', 'solll'], 정책.심문기본), /모르는 검수 선택지/);
 });
+
+/* ── [F445] 폐지된 심문 통로가 «살아있는 지시문»에 되살아나지 않는다 ─────────────
+ * 🔴 왜 여기 붙나: 이 파일이 지키는 것이 「유호님이 닫은 선택지가 닫힌 채로 있는가」인데,
+ *   `fable심문` 은 08-14 유호 지시(「너무 낭비」)로 **폐지**된 뒤에도 정작 **모델 정본인
+ *   `tools/모델정책.js` 가 그것을 「예외 하나」로 계속 적고 있었다**(실측 08-15 · :455).
+ *   그 낡은 한 줄이 F445 의 마지막 자리였다 — 심문 통로가 둘로 읽히면 대기열·보드가 엉뚱한
+ *   쪽을 지목하고, 그러면 회차 «간» 대조가 원리상 무효가 된다(F281 — 그 대조가 게이트의 존재 이유).
+ *   08-13 재판정이 경고했는데 08-14 에 재발했으니 **2번째**다 — 그래서 프로즈가 아니라 이 검사가 진다.
+ *
+ * 🔑 재는 것은 «살아있는 지시문»뿐이다 — `docs/`·장부·아카이브는 **기록**이라 뺀다.
+ *   기록까지 금지하면 사고 이력을 못 적게 되고, 그러면 다음 사람이 왜 폐지됐는지를 잃는다.
+ * 💸 대가: 「폐지」·「🚫」가 같은 줄에 있으면 통과시킨다 — 그 낱말을 달고 되살리는 문장은 못 잡는다.
+ *   그 대신 **「예외가 있다」고 태연히 적는 모양**(F445 가 실제로 난 그 모양)은 잡는다. */
+test('[F445] 폐지된 `fable심문` 이 살아있는 지시문에 「쓸 수 있는 통로」로 남아 있지 않다', () => {
+  const fs = require('node:fs');
+  const 볼곳 = [];
+  const 훑기 = (rel) => {
+    const p = path.join(ROOT, rel);
+    let st; try { st = fs.statSync(p); } catch (_) { return; }
+    if (st.isFile()) { if (/\.(js|json|md)$/.test(rel)) 볼곳.push(rel); return; }
+    for (const e of fs.readdirSync(p)) 훑기(`${rel}/${e}`);
+  };
+  훑기('tools'); 훑기('.claude/skills'); 훑기('.claude/agents'); 훑기('.claude/hooks'); 훑기('.claude/settings.json');
+
+  // 분모부터 — 0건 훑기는 통과와 **같은 초록**이다(F207).
+  assert.ok(볼곳.length > 50, `살아있는 지시문을 ${볼곳.length}개만 봤다 — 이 분모면 초록이 미실행이다`);
+
+  const 위반 = [];
+  for (const rel of 볼곳) {
+    let src; try { src = fs.readFileSync(path.join(ROOT, rel), 'utf8'); } catch (_) { continue; }
+    if (!src.includes('fable심문')) continue;
+    src.split(/\r?\n/).forEach((l, i) => {
+      if (!l.includes('fable심문')) return;
+      if (l.includes('폐지') || l.includes('🚫')) return;      // 폐지를 «기록하는» 줄은 통과
+      위반.push(`${rel}:${i + 1}  ${l.trim().slice(0, 100)}`);
+    });
+  }
+  assert.deepStrictEqual(위반, [],
+    '폐지된 통로를 «있는 것»으로 적은 줄이다 — 이름이 겹치면 대기열이 엉뚱한 통로를 지목한다(F445·F281):\n'
+    + 위반.join('\n'));
+
+  // 구조 쪽도 못박는다 — 부를 통로 자체가 없어야 「이름 겹침」이 원리적으로 안 산다.
+  for (const 죽은 of ['.claude/skills/fable심문', 'tools/심문자.md', 'docs/심문자.md']) {
+    assert.ok(!fs.existsSync(path.join(ROOT, 죽은)), `${죽은} 이 되살아났다 — 폐지가 무름됐다(🚫부활)`);
+  }
+  // 살아남은 단일 통로가 실제로 있어야 이 폐지가 「둘 다 없앰」이 아니다.
+  assert.ok(fs.existsSync(path.join(ROOT, 'tools', 'codex-review.js')),
+    '심문 통로가 하나도 없다 — 폐지가 게이트까지 지웠다');
+});
