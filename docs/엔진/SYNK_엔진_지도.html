@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SYNK 엔진 지도 — 세 엔진이 한 학생에게 닿는 길</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap">
+<!-- 지도 v1.0 · 2026-08-15 · 내부 문서(운영자료 「엔진」 갈래 뿌리) -->
+<style>
+  :root{
+    --paper:#FBF7EE; --ink:#171820; --navy:#1A2340; --navy2:#0F1730; --navy3:#2A3358;
+    --cream:#F6F1E8; --cream3:#E7DDC7; --coral:#FF6B5C; --coral3:#E8543F; --wash:#FFE9E4;
+    --slate2:#5F657D; --slate:#8A93AD;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--paper);color:var(--ink);
+    font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    line-height:1.75;max-width:1080px;margin:0 auto;padding:0 26px 64px;word-break:keep-all;font-size:16px;}
+  header{background:var(--navy2);color:var(--cream);margin:0 -26px 34px;padding:44px 30px 30px;}
+  header .kicker{color:var(--slate);font-size:.82em;letter-spacing:.12em;font-weight:600;}
+  header h1{margin:.25em 0 .1em;font-size:2.05em;font-weight:800;letter-spacing:-.01em;color:var(--cream);}
+  header .one{color:var(--cream);font-size:1.06em;max-width:46em;}
+  header .meta{color:var(--slate);font-size:.82em;margin-top:14px;}
+  .banner{background:var(--wash);border-left:4px solid var(--coral);padding:.8em 1.1em;margin:0 0 14px;font-size:.93em;}
+  h2{font-size:1.22em;font-weight:800;margin:2.2em 0 .6em;padding-bottom:.3em;border-bottom:3px solid var(--coral);}
+  p{margin:.55em 0;}
+  table{border-collapse:collapse;width:100%;font-size:.9em;margin:.8em 0;}
+  th,td{border:1px solid var(--navy3);padding:.55em .7em;text-align:left;vertical-align:top;}
+  th{background:var(--navy2);color:var(--cream);font-weight:600;}
+  .muted{color:var(--slate2);}
+  .small{font-size:.86em;}
+  code{color:var(--ink);background:var(--cream3);padding:.06em .35em;border-radius:4px;font-family:inherit;font-size:.93em;}
+  .tri{display:flex;flex-wrap:wrap;gap:14px;margin:1.2em 0;}
+  .eng{flex:1 1 260px;background:var(--cream);border:1px solid var(--cream3);border-top:5px solid var(--coral);padding:18px 20px;}
+  .eng h3{margin:0 0 .2em;font-size:1.15em;font-weight:800;}
+  .eng .role{color:var(--slate2);font-size:.88em;margin-bottom:.5em;}
+  .eng a{color:var(--ink);}
+  .flow{background:var(--cream);border:1px solid var(--cream3);padding:1em 1.3em;margin:1em 0;}
+  .flow ol{margin:.3em 0 .2em;padding-left:1.4em;}
+  .flow li{margin:.45em 0;}
+  ul{margin:.4em 0 .8em;padding-left:1.3em;}
+  li{margin:.3em 0;}
+  footer{margin-top:3em;padding-top:1em;border-top:1px solid var(--cream3);color:var(--slate2);font-size:.84em;}
+  a{color:var(--ink);}
+  .wide{overflow-x:auto;}
+</style>
+
+<header>
+  <div class="kicker">SYNK 고유 IP · 엔진 갈래의 표지</div>
+  <h1>SYNK 엔진 지도</h1>
+  <p class="one">SYNK LAB(학원) · SYNK STUDIO 곁에서 회사의 심장이 될 <b>고유 IP 세 벌</b> —
+  두뇌(SYNK Core) · 몸(Loom) · 얼굴(몽글). 셋은 따로 팔리는 제품이 아니라,
+  「한 사람을 깊이 이해하는 교육」이라는 한 문장을 셋이 나눠 맡은 <b>하나의 시스템</b>이다.</p>
+  <div class="meta">지도 v1.0 · 2026-08-15 · 각 엔진의 전체 상은 아래 소개서 3벌에 있다</div>
+</header>
+
+<div class="banner"><b>시제 안내(철학 §0)</b> — 학생 0명 · 개원 2027-02-25 전. 아래의 「하루」는 관측이 아니라 <b>설계된 그림</b>이다 —
+그 그림의 어디까지가 코드로 섰는지는 각 소개서의 대장(⑦절)이 솔직하게 말한다.</div>
+
+<h2>세 엔진 — 역할 분담</h2>
+<div class="tri">
+  <div class="eng">
+    <h3><a href="./SYNK_Core_소개서.html">SYNK Core</a></h3>
+    <div class="role">두뇌 — 이해하는 엔진</div>
+    학생이 매일 한 숙제·게임·말하기가 사람 손 없이 데이터가 되어 닿고, 엔진이 그 학생의
+    실력(㉠)·사람(㉡)·삶(㉢)을 점점 깊이 알게 되며, 다음에 줄 것을 바꾼다.
+    회사의 모든 앱이 평생 꺼내 쓰는 비출시 내부 엔진.
+  </div>
+  <div class="eng">
+    <h3><a href="./Loom_소개서.html">Loom</a></h3>
+    <div class="role">몸과 감각 — 재질 엔진</div>
+    회사 전용 재질(펠트 1호)을 어느 지면에서든 같은 색·같은 결·같은 빛·같은 소리·같은 만짐으로
+    재현하는 사진 기반 파이프라인. 「명품」의 조건인 일관성을 시스템으로 만든다.
+  </div>
+  <div class="eng">
+    <h3><a href="./몽글엔진_소개서.html">몽글 엔진</a></h3>
+    <div class="role">얼굴 — 관계 엔진</div>
+    Core의 이해와 Loom의 몸을 입고 사람 앞에 서는 개인화의 인격.
+    학생에게 따뜻한 친구, 강사·원장에게 안내자, 학부모에게 신뢰의 창구 — 두뇌 하나, 창구 다섯.
+  </div>
+</div>
+<p><b>왜 셋이 한 벌인가</b> — 이해만 있으면 계기판이고(차갑다), 몸만 있으면 장식이고(비어 있다),
+얼굴만 있으면 말뿐이다(못 믿는다). 이해가 몸을 입고 관계로 돌아올 때만 「나만의 선생님」이 된다.
+베낄 수 있는 것은 어느 하나이고, 가치는 결합에서만 난다.</p>
+
+<h2>한 학생의 하루 — 세 엔진이 함께 도는 그림 (설계)</h2>
+<div class="flow"><ol>
+<li><b>저녁, 숙제</b> — 학생이 앱에서 오늘의 말하기 숙제를 한다. 녹음이 자동으로 받아 적히고, AI가 고쳐 답장한다. 오류는 23가지 유형으로 태그되어 쌓인다. <span class="muted">(Core — 수집)</span></li>
+<li><b>답장의 꼬리 한 줄</b> — 「이 자리, 지난주엔 세 번 틀렸는데 오늘은 맞았어.」 점수가 아니라 어제의 자기와의 대조가 돌아온다. <span class="muted">(Core — 되돌려주기)</span></li>
+<li><b>홈 화면의 몽글</b> — 무오류를 알아보고 눈웃음으로 반긴다. 쓰다듬으면 폭신하게 눌리고 사각사각 소리가 난다. 잘한 날의 관심 — 감시가 아니라 알아봐 줌. <span class="muted">(몽글×Loom — 반응)</span></li>
+<li><b>다음 날의 과제</b> — 엔진이 그 학생의 상태(약점·리듬·끈기)를 읽어 다음 과제를 고른다. 검수 확정 한 번 말고는 사람 손 0. <span class="muted">(Core — 행동이 바뀜)</span></li>
+<li><b>주말, 학부모</b> — 자녀가 이번 주 무엇을 얼마나 했는지가 몽골어 리포트로 자동 도착하고, 궁금한 것은 같은 얼굴(몽글 상담봇)에게 물으면 된다. <span class="muted">(몽글 — 신뢰)</span></li>
+<li><b>교실의 선생님</b> — 관찰·기록은 시스템이 지고 있으니, 선생님은 아이와 눈을 맞추는 일에 온전히 선다. <span class="muted">(세 엔진의 목적 — 사람의 자리)</span></li>
+</ol></div>
+
+<h2>지금 상태 — 세 줄 요약 (2026-08-15)</h2>
+<div class="wide"><table>
+<thead><tr><th style="width:16%">엔진</th><th>한 줄 상태</th></tr></thead>
+<tbody>
+<tr><td><b>SYNK Core</b></td><td>수집층 라이브 · 도달 사슬 7칸 중 6칸 코드로 섰다(대부분 리허설) · ㉡사람·㉢삶 층 「돈다」 0 · 엔진 점수 79/102(08-12) — 상세는 소개서 ⑦</td></tr>
+<tr><td><b>Loom</b></td><td>설계 정본 v0.1 + 2D·3D 통로·패치 라이브러리·3D LIVE v4 섰다 · 감각층 v4 시제품(유호 귀검수 왕복 중) · 앱 실시간 탑재는 Expo 화면 트랙에서</td></tr>
+<tr><td><b>몽글 엔진</b></td><td>이름 확정(말가이 검수 후 일괄 전파) · 행동 정본·말할순간 표 v1.1 확정 · 1단계 강사판 코드 착지(운영 붓기 ⏳유호) · 학생판·학부모판은 순서 대기</td></tr>
+</tbody>
+</table></div>
+
+<h2>홈페이지에 실을 때 — 파생 게이트</h2>
+<ul>
+<li>이 갈래의 문서들은 <b>내부 정본</b>이다. 홈페이지·소개 자료로 나갈 때는 시스템 내부(수집 구조·배선·도구 이름)를 펼치지 않고, <b>철학이 사람에게 닿는 이야기</b>로 다시 쓴다(철학 Ⅲ-7 · 유호 확정 08-14).</li>
+<li>시제 게이트(§0) — 대장에 없는 것을 현재형으로 쓰지 않는다. 「문을 열기 전에 여기까지 지어 놓았습니다」가 우리만 할 수 있는 가장 센 말이다.</li>
+<li>비교 금지(㉢) · 식별 데이터 반출 금지(㉣) · 과학 인용은 귀속형 — 파생 게이트 전문은 철학 정본 머리말.</li>
+</ul>
+
+<footer>
+이 폴더(운영자료 「4_SYNK 엔진」)는 회사 고유 IP의 저장소다 — 각 엔진 하위 폴더에 소개서가 살고,
+앞으로 각 엔진의 자산·판정·실측이 여기로 모인다. 저장소 정본 경로 = <code>docs/엔진/</code> ·
+소개서가 낡았는지는 바탕화면 <code>_지금상태.html</code>이 말한다. · 지도 v1.0 · 2026-08-15
+</footer>
+</html>
