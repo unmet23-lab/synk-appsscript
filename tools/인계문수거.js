@@ -48,6 +48,17 @@ function git(args) {
   return { ok: !r.error && r.status === 0, out: String(r.stdout || ''), err: String(r.stderr || '') };
 }
 
+/** HEAD 에 그 경로가 있나 — `git add` 가 빈손인 두 까닭(남이 선점 / 스테이징된 삭제)을
+ *  가르는 유일한 자다. 자세한 갈래는 실행()의 add 루프 주석에 있다.
+ *  묻는 통로를 `-- <pathspec>` 으로 맞춘 것은 의도다 — `HEAD:경로` 리비전 문법은 인자
+ *  인코딩을 타는데, 이 저장소의 경로엔 한글이 있고 그 자리는 Windows 에서 갈린다.
+ *  add 와 **같은 통로로 묻어야** 「add 는 못 찾았는데 여기선 찾았다」가 안 생긴다.
+ *  출력 유무만 본다 — 경로 문자열 비교는 정규화(NFC/NFD)에서 또 갈린다. */
+function HEAD에있나(p) {
+  const r = git(['ls-tree', '--name-only', 'HEAD', '--', p]);
+  return r.ok && r.out.trim() !== '';
+}
+
 /** 커밋해도 되는 상태인가 — rebase·merge·bisect 중이거나 HEAD 가 분리돼 있으면 거른다.
  *  그때의 커밋은 남의 진행 중 작업에 끼어들거나(F035·F038) 붙을 가지가 없다. */
 function 커밋못하는이유() {
@@ -108,11 +119,26 @@ function 실행(r) {
   // (08-07 실측: 87d2dfa 가 선점한 ba86eeb2 하나에 시작 훅 수거가 통째로 죽었다).
   // 사라진 경로는 이미 남의 커밋에 실려 있어 건너뛰어도 잃는 내용이 없다 — 그 밖의
   // add 실패(index.lock 등)는 사라짐이 아니므로 전과 같이 전체를 접는다.
+  //
+  // ⚠ 단 `did not match any files` 는 **서로 다른 두 상태**를 같은 말로 뱉는다 — 안 가르면
+  //   한쪽이 영영 안 거둬진다. 가르는 자는 하나: **HEAD 에 그 경로가 있나.**
+  //   ⓐ 딴 세션이 이미 커밋했다 → HEAD 에도 없다 → 건너뛴다(위 문단의 원래 뜻).
+  //   ⓑ 삭제가 **이미 스테이징**돼 있다 → 작업본에도 index 에도 없어 add 는 빈손인데
+  //      **HEAD 에는 그대로 있다** → 아직 아무도 안 거뒀다. 여기서 건너뛰면 다음 실행도
+  //      똑같이 건너뛰어 그 삭제는 공유 인덱스에 **영영** 남고, 모든 세션의 「미커밋 0」
+  //      판독을 흐린다. add 없이도 commit 의 pathspec 이 그 삭제를 그대로 싣는다.
+  //   08-15 실측: 만료 5건이 ⓑ 로 굳어 있었는데 도구는 「5건 전부 딴 세션이 먼저 거뒀다 —
+  //   커밋 안 함(잃은 내용 없음)」고 **확신에 찬 얼굴로 거짓을** 말했다(지침 v9.2 맹점 ④:
+  //   장치는 안 도는 쪽보다 「맞는 얼굴로 틀린 값」 쪽으로 더 자주 샌다). 손 커밋 4b5ffe00
+  //   으로 실물을 풀었고, 도구가 다시는 못 놓치게 판별자를 여기 둔다.
   const 사라짐 = new Set();
   for (const p of [...r.수거, ...r.만료, ...r.내것].map((x) => x.경로).concat(r.목차더러움 ? [목차] : [])) {
     const a = git(['add', '--', p]);
     if (a.ok) continue;
-    if (/did not match any files/.test(a.err)) { 사라짐.add(p); continue; }
+    if (/did not match any files/.test(a.err)) {
+      if (HEAD에있나(p)) continue;      // ⓑ 스테이징된 삭제 — 아직 안 거뒀다. 범위에 그대로 둔다.
+      사라짐.add(p); continue;           // ⓐ 남이 선점했다 — 잃는 내용이 없다.
+    }
     return { 실패: `git add 실패: ${a.err.trim() || '알 수 없음'}` };
   }
   r.수거 = r.수거.filter((x) => !사라짐.has(x.경로));
