@@ -29,11 +29,105 @@
 #   blender -b -P tools/마스코트인형리깅.py -- anim2 <glb> <본체누끼> <눈감음> <눈웃음> <출력폴더> [프레임수=600] [시작] [끝]
 #     시작·끝 = 렌더 «구간»만 좁힌다(키프레임은 늘 전체 N 을 박는다 — 결정론이라 구간 이어붙기에 이음매 0).
 #     ⚠ 블렌더가 긴 렌더 중 조용히 죽을 수 있다(실측 08-15: 572/600 에서 exit 0 얼굴) — 빠진 구간만 재굽는 용도.
-# 이후 조립: ffmpeg -framerate 60 -i <출력폴더>/f_%04d.png -c:v libx264 -pix_fmt yuv420p -crf 18 <출력.mp4>
-import bpy, sys, math
+#   python tools/마스코트인형리깅.py 조립 <프레임폴더> <출력.mp4> [프레임수=600] [fps=60] [--재굽기=a-b,c-d]
+#     ⚠ 조립은 «이 통로 하나»로만 한다 — 맨손 ffmpeg 금지(구 머리말의 그 한 줄이 이번 사고의 통로다).
+#     블렌더 없이 도는 유일한 모드다(파이썬 표준 + ffmpeg).
+import sys, math
 
-argv = sys.argv[sys.argv.index("--") + 1:]
+argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
 MODE = argv[0]
+
+if MODE == "조립":
+    # 프레임 폴더 → mp4. 굽기 «전에» 폴더가 한 벌인지부터 잰다.
+    # 왜(실사고 08-15): 렌더가 도는 중에 맨손 ffmpeg 로 구웠더니 앞 절반은 새 렌더·뒤 절반은
+    #   «앞 렌더가 남긴 낡은 파일»인 영상이 나왔다(코랄_3D라이브_v3.mp4 의 f300·f450·f480 이
+    #   v2 와 바이트 동일). 그걸 라이브 판으로 읽고 「좌 턴이 안 착지한다」는 없는 결함을 진단했다 —
+    #   렌더 폴더는 덮어쓰기라 «렌더 머리»보다 뒤 번호는 늘 지난 판이다.
+    # 잣대 둘: ①1~N 이 다 있는가 ②mtime 이 번호 순으로 단조증가하는가(역행 = 두 벌이 섞였다는 뜻).
+    # 대가(틀릴 때의 모습):
+    #   · 거짓양성 — 중간 구간을 «일부러» 다시 구우면 그 구간이 최신이라 정당한 역행이 생긴다.
+    #     거절문이 `--재굽기=<시작>-<끝>` 과 그 조건을 함께 알려준다. ⚠붙여넣을 값을 만들어 주지는
+    #     않는다 — 그러면 이번 사고의 역행 지점이 그대로 면제문으로 나와 세탁 처방이 된다.
+    #   · 거짓음성 — mtime 을 안 보존하고 폴더를 복사하면 시각이 평평해져 ②가 조용히 통과한다.
+    #     그 경우 남는 방어는 ① 뿐이다.
+    #   · 「렌더가 지금 도는 중인가」를 따로 안 잰다 — 빈 폴더 위면 ①이, 낡은 한 벌 위면 ②가 잡아
+    #     실측된 두 경우를 이미 덮는다(중복 장치를 안 만든다).
+    import os, glob, time, subprocess
+    # 윈도 콘솔은 cp949 라 「—」 하나에 도구가 죽는다(실측) — 진단문을 내는 게 일인 가드가
+    # 자기 출력에 죽으면 그 자리가 통째로 사각이 된다. 못 그리는 글자는 대체해서라도 낸다.
+    for 통 in (sys.stdout, sys.stderr):
+        try:
+            통.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+    자리 = [a for a in argv[1:] if not a.startswith("--")]
+    폴더, 출력 = 자리[0], 자리[1]
+    N = int(자리[2]) if len(자리) > 2 else 600
+    fps = int(자리[3]) if len(자리) > 3 else 60
+    재굽기 = []
+    for a in argv:
+        if a.startswith("--재굽기="):
+            for 구간 in a.split("=", 1)[1].split(","):
+                lo, hi = 구간.split("-")
+                재굽기.append((int(lo), int(hi)))
+
+    def 면제(i):
+        return any(lo <= i <= hi for lo, hi in 재굽기)
+
+    때 = {}
+    for p in glob.glob(os.path.join(폴더, "f_*.png")):
+        번호 = os.path.basename(p)[2:-4]
+        if 번호.isdigit():
+            때[int(번호)] = os.path.getmtime(p)
+
+    빠짐 = [i for i in range(1, N + 1) if i not in 때]
+    if 빠짐:
+        print(f"🔴 조립 거절 — 1~{N} 중 {len(빠짐)}장이 없다:",
+              ", ".join(str(i) for i in 빠짐[:20]) + (" …" if len(빠짐) > 20 else ""))
+        print(f"   ▶ 빠진 구간만 다시 굽는다: … -- anim2 <…> <출력폴더> {N} {빠짐[0]} {빠짐[-1]}")
+        raise SystemExit(2)
+
+    def 시각(i):
+        return time.strftime("%H:%M:%S", time.localtime(때[i]))
+
+    # 선언한 «재굽기» 구간은 이웃보다 새 것이어야 한다 — 안 그러면 이 면제가 이번 사고를 그대로
+    # 세탁한다(낡은 꼬리의 첫 번호를 「내가 다시 구웠다」고 적으면 나머지 낡은 판은 자기들끼리
+    # 단조증가라 통과한다). 다시 구운 구간은 정의상 «새 섬»이다 — 그걸 기계가 되묻는다.
+    거짓선언 = [(lo, hi) for lo, hi in 재굽기
+                if (lo - 1 in 때 and 때[lo] < 때[lo - 1]) or (hi + 1 in 때 and 때[hi] < 때[hi + 1])]
+    if 거짓선언:
+        print("🔴 조립 거절 — --재굽기 로 선언한 구간이 이웃보다 «오래됐다». 다시 구운 게 아니다:")
+        for lo, hi in 거짓선언:
+            print(f"   {lo}-{hi} : f_{lo:04d}({시각(lo)}) · f_{hi:04d}({시각(hi)})")
+        print("   ▶ 면제를 지우고, 렌더를 끝낸 뒤 다시 부른다.")
+        raise SystemExit(2)
+
+    역행 = [i for i in range(2, N + 1)
+            if 때[i] < 때[i - 1] and not (면제(i) or 면제(i - 1))]
+    if 역행:
+        print(f"🔴 조립 거절 — 프레임 두 벌이 섞였다(mtime 역행 {len(역행)}곳).")
+        for i in 역행[:5]:
+            print(f"   f_{i-1:04d}({시각(i-1)}) → f_{i:04d}({시각(i)}) : {(때[i-1]-때[i])/60:.1f}분 뒤로")
+        print("   왜: 렌더가 아직 도는 중이면 «렌더 머리» 뒤 번호는 앞 렌더가 남긴 낡은 파일이다.")
+        print("   ▶ 렌더가 끝난 뒤 다시 부른다.")
+        print("   · 중간 구간을 «일부러» 다시 구운 경우에만 --재굽기=<시작>-<끝> 으로 선언한다"
+              " — 그 구간이 이웃보다 새 것일 때만 통과한다(위 사고는 이걸로 못 지난다).")
+        raise SystemExit(2)
+
+    if "--검사만" in argv:
+        print(f"검사 OK — {N}장 · 빠짐 0 · 역행 0 (굽지 않았다)")
+        raise SystemExit(0)
+
+    r = subprocess.run(["ffmpeg", "-y", "-v", "error", "-framerate", str(fps),
+                        "-start_number", "1", "-i", os.path.join(폴더, "f_%04d.png"),
+                        "-frames:v", str(N), "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                        "-crf", "18", 출력])
+    if r.returncode != 0:
+        raise SystemExit("🔴 ffmpeg 실패")
+    print(f"조립 OK — {N}장 · {fps}fps · 한 벌 확인(빠짐 0 · 역행 0) → {출력}")
+    raise SystemExit(0)
+
+import bpy
 GLB = argv[1]
 사진물체분수 = 597.0 / 1024.0   # 원본 사진에서 물체가 차지하는 프레임 높이 비율(상태컷정합 실측)
 
