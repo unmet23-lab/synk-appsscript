@@ -29,6 +29,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
+const { 마스코트경로다 } = require('./lib/마스코트자산');
+
 const ROOT = path.resolve(__dirname, '..');
 const 기본폭 = 720;
 
@@ -53,7 +55,7 @@ function 굽기(파일) {
   const src = path.resolve(ROOT, 파일);
   const html = fs.readFileSync(src, 'utf8');
   const 폴더 = path.dirname(src);
-  let 센것 = 0, 총바이트 = 0, 마스코트단것 = 0;
+  let 센것 = 0, 총바이트 = 0, 마스코트단것 = 0, 마스코트총 = 0;
 
   const 나온판 = html.replace(/<img\b[^>]*>/g, (tag) => {
     const m = tag.match(/\ssrc=["']([^"']+)["']/);
@@ -70,9 +72,12 @@ function 굽기(파일) {
 
     let 새태그 = tag.replace(m[0], ` src="${uri}"`);
     /* 마스코트면 린트가 볼 수 있게 표식을 단다 — 경로가 사라지기 «전에» 판정한다. */
-    if (/마스코트_(누끼|렌더)[\/\\]/.test(경로) && !/data-synk-mascot/.test(새태그)) {
-      새태그 = 새태그.replace(/^<img\b/, '<img data-synk-mascot');
-      마스코트단것++;
+    if (마스코트경로다(경로)) {
+      마스코트총++;
+      if (!/data-synk-mascot/.test(새태그)) {
+        새태그 = 새태그.replace(/^<img\b/, '<img data-synk-mascot');
+        마스코트단것++;
+      }
     }
     return 새태그;
   });
@@ -81,8 +86,13 @@ function 굽기(파일) {
   fs.writeFileSync(out, 나온판);
   const kb = (n) => (n / 1024).toFixed(0) + 'KB';
   console.log(`✅ ${path.relative(ROOT, out)}`);
+  /* ⚠ 「단 것 0장」만 내면 «눈을 감았다»와 «달 필요가 없었다»가 같은 모양이 된다 — 분모와 함께 낸다.
+   *   (실측 08-15: 소스에 손으로 표식을 박은 판이 「0장」으로 찍혀 두 번 재게 만들었다.) */
   console.log(`   심은 그림 ${센것}장 · 그림 합 ${kb(총바이트)} · 파일 ${kb(Buffer.byteLength(나온판))}` +
-              ` · data-synk-mascot 단 것 ${마스코트단것}장`);
+              ` · 마스코트 ${마스코트총}장 = 자동 표식 ${마스코트단것} + 소스에 이미 있던 것 ${마스코트총 - 마스코트단것}`);
+  if (마스코트총 === 0) {
+    console.log('   ⚠ 마스코트 0장 — 이 판에 마스코트가 없거나, 경로가 `tools/lib/마스코트자산.js` 목록 밖이다(린트도 같이 눈을 감는다).');
+  }
   if (센것 === 0) console.log('   ⚠ 심은 그림이 0장이다 — 이 판은 애초에 그림이 없거나 이미 자립형이다.');
   return out;
 }

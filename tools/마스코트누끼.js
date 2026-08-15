@@ -15,6 +15,7 @@
  * 쓰기:
  *   node tools/마스코트누끼.js                 # 마스코트_렌더 전체
  *   node tools/마스코트누끼.js 본체.png 본체놀람.png
+ *   node tools/마스코트누끼.js --입력 docs/캐릭터/펠트코랄_0815 --출력 docs/캐릭터/펠트코랄_0815/누끼 재염색_본체.png
  * 나가는 값: 0=전부 성공 · 1=일부 실패 · 2=크롬 없음(안 돌렸다 — 통과 아님)
  */
 const { execFileSync } = require('child_process');
@@ -23,8 +24,10 @@ const path = require('path');
 const os = require('os');
 
 const REPO = path.resolve(__dirname, '..');
-const SRC_DIR = path.join(REPO, 'docs', '캐릭터', '마스코트_렌더');
-const OUT_DIR = path.join(REPO, 'docs', '캐릭터', '마스코트_누끼');
+/* 기본값은 첫 손님(마스코트_렌더)이고, `--입력`·`--출력` 으로 다른 세트에도 같은 통로를 쓴다.
+ * 08-15 둘째 손님 = 펠트 코랄 정본(`펠트코랄_0815/재염색_*.png` — 아예 RGB 라 알파 자체가 없다). */
+let SRC_DIR = path.join(REPO, 'docs', '캐릭터', '마스코트_렌더');
+let OUT_DIR = path.join(REPO, 'docs', '캐릭터', '마스코트_누끼');
 const SIZE = 1024;              // 캐러셀 최대 사용폭 ~540px → 2배수로 충분(원본 2048 은 과하다)
 const SAT_배경 = 0.055;         // 이 아래 + 밝으면 배경
 const SAT_경계 = 0.13;          // 이 사이는 가장자리 → 알파를 비례로 (계단 방지)
@@ -102,17 +105,36 @@ function main() {
     console.error('SKIP: 크롬을 못 찾았다 — 배경 제거를 **안 돌렸다**(통과 아님). CHROME_PATH 로 지정할 수 있다.');
     process.exit(2);
   }
-  if (!fs.existsSync(SRC_DIR)) { console.error(`원본 폴더가 없다: ${SRC_DIR}`); process.exit(2); }
+  const 인자 = process.argv.slice(2);
+  const 옵션빼기 = (이름) => {
+    const i = 인자.indexOf(이름);
+    if (i < 0) return null;
+    const v = 인자[i + 1];
+    if (!v) { console.error(`${이름} 뒤에 폴더가 없다`); process.exit(2); }
+    인자.splice(i, 2);
+    return v;
+  };
+  const 입력옵션 = 옵션빼기('--입력');
+  const 출력옵션 = 옵션빼기('--출력');
+  if (입력옵션) SRC_DIR = path.resolve(REPO, 입력옵션);
+  if (출력옵션) OUT_DIR = path.resolve(REPO, 출력옵션);
 
-  const 컷 = process.argv.slice(2).length
-    ? process.argv.slice(2)
+  if (!fs.existsSync(SRC_DIR)) { console.error(`원본 폴더가 없다: ${SRC_DIR}`); process.exit(2); }
+  /* 「원본은 안 건드린다」를 프로즈가 아니라 기계로 지킨다 — 같은 폴더면 이름이 같아 덮어쓴다. */
+  if (path.resolve(SRC_DIR) === path.resolve(OUT_DIR)) {
+    console.error('입력과 출력이 같은 폴더다 — 원본을 덮어쓴다. 하위 폴더를 지정한다(예: --출력 docs/캐릭터/펠트코랄_0815/누끼)');
+    process.exit(2);
+  }
+
+  const 컷 = 인자.length
+    ? 인자
     : fs.readdirSync(SRC_DIR).filter((f) => f.toLowerCase().endsWith('.png'));
   if (!컷.length) { console.error('처리할 PNG 가 없다'); process.exit(2); }
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-누끼-'));
 
-  console.log(`배경 제거 ${컷.length}컷 → docs/캐릭터/마스코트_누끼/  (원본 무변경 · ${SIZE}px)`);
+  console.log(`배경 제거 ${컷.length}컷 → ${path.relative(REPO, OUT_DIR).replace(/\\/g, '/')}/  (원본 무변경 · ${SIZE}px)`);
   let ok = 0;
   try {
     for (const c of 컷) {
