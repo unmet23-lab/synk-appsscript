@@ -245,3 +245,31 @@ test('실저장소 — 통로가 로드되고 공개 면이 그대로 있다(거
     assert.strictEqual(typeof 변이[이름], 'function', `${이름} 이 공개 면에서 사라지면 호출부가 조용히 옛 손하네스로 되돌아간다`);
   }
 });
+
+test('계획이 스스로 돌면 CLI 가 이름을 대고 막는다 — 맞는 판이 실패로 읽히던 자리', () => {
+  /* 🔴 2026-08-15 실측. 머리말 「쓰는 법」은 계획 안에서 `변이검사()` 를 부르라고 가르쳤는데
+     CLI 는 `module.exports` 를 기대한다 — 한 파일에 계약이 둘 있었다. 그 모양으로 돌리면
+     계획을 require 할 때 제대로 돌아 **「변이 8/8」이 멀쩡히 찍히고**, 그 뒤 CLI 가 빈 계획으로
+     또 불러 스택 트레이스가 붙는다. 숫자는 맞는데 화면이 틀린 자리라, 읽는 사람은 그 판을
+     실패로 접는다 — 그게 이 통로가 없애려던 바로 그 오독이다. */
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), '변이계획-'));
+  const 계획 = path.join(dir, '자기호출계획.js');
+  fs.writeFileSync(계획, "'use strict';\n// exports 없이 아무것도 안 내놓는 계획\n");
+  try {
+    const r = require('node:child_process').spawnSync(process.execPath,
+      [path.join(__dirname, '..', 'tools', '변이.js'), 계획], { encoding: 'utf8' });
+    assert.notStrictEqual(r.status, 0, '빈 계획인데 0 으로 끝났다 — 미측정이 통과로 접힌다');
+    const 말 = `${r.stderr || ''}${r.stdout || ''}`;
+    assert.match(말, /변이검사/, '무엇이 잘못됐는지(계획이 스스로 부른다) 이름을 안 댄다');
+    assert.equal(/at Object\.<anonymous>/.test(말), false,
+      '스택 트레이스로 죽는다 — 사용자는 이걸 「변이가 실패했다」로 읽는다');
+  } finally { 치우기(dir); }
+});
+
+test('머리말 「쓰는 법」이 CLI 와 같은 계약을 가르친다 — 계약이 둘이면 갈라진다', () => {
+  const 소스 = fs.readFileSync(path.join(__dirname, '..', 'tools', '변이.js'), 'utf8');
+  const 머리말 = 소스.slice(0, 소스.indexOf('*/') + 2);
+  assert.match(머리말, /module\.exports\s*=/, '머리말이 exports 형을 안 가르친다');
+  assert.equal(/^\s*\*\s*변이검사\(\{/m.test(머리말), false,
+    '머리말이 아직 「계획 안에서 변이검사() 를 부르라」고 가르친다 — CLI 계약과 갈라진다');
+});
