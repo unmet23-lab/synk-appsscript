@@ -57,7 +57,15 @@ function 시트흉내(옵션) {
     첫행,
     data: (o.행들 || []).map((r) => r.slice()),
     raw: [],            // Sheets 에 «건넨» 원본 — 저장 후엔 아포스트로피가 소비돼 안 보인다
-    텍스트열: {},        // 1-기반 열 번호 → 1 (setNumberFormat('@') 로 못박은 칸)
+    /* 1-기반 열 번호 → 서식 문자열. 실물은 준 서식을 그대로 보관하므로 '@' 만 기억하지 않는다
+     *   (좁게 기억하면 「그 열을 yyyy-MM 으로 박았나」 같은 검사가 이 통로로는 원리상 못 선다). */
+    서식: {},
+    /** `서식` 에서 **파생**한다 — 같은 판정을 두 곳에 적으면 갈라진다. */
+    get 텍스트열() {
+      const out = {};
+      Object.keys(this.서식).forEach((c) => { if (this.서식[c] === '@') out[c] = 1; });
+      return out;
+    },
 
     getLastRow() {
       let n = 0;
@@ -69,7 +77,7 @@ function 시트흉내(옵션) {
 
     /** 계약 ④ — 자동 서식 칸만 삼킨다. */
     삼킴(v, 열) {
-      if (this.텍스트열[열]) return v;
+      if (this.서식[열] === '@') return v;
       if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) {
         const d = new Date(v + 'T00:00:00');
         if (!isNaN(d.getTime())) return d;
@@ -96,9 +104,9 @@ function 시트흉내(옵션) {
           return out;
         },
         getValue() { return this.getValues()[0][0]; },
-        getNumberFormat() { return self.텍스트열[c] ? '@' : '0.###'; },
+        getNumberFormat() { return self.서식[c] || '0.###'; },
         setNumberFormat(f) {
-          if (f === '@') for (let i = 0; i < 폭; i++) self.텍스트열[c + i] = 1;
+          for (let i = 0; i < 폭; i++) self.서식[c + i] = f;
           return this;
         },
         /* 계약 ③ — 값만 비운다. 여기서 행을 splice 하거나 `data.length = 0` 으로 접으면

@@ -12,6 +12,8 @@ const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 /* 부정 단언(「~가 없어야 한다」)의 주어만 이걸로 감싼다 — 주석이 금지어를 «설명»하면 그 검사가
  * 설명을 위반으로 읽는다. 구간 앵커·긍정 단언은 원문 그대로 둔다. (대기열 #Q72) */
 const { 코드만 } = require('./lib/소스검사.js');
+/* 시트 흉내는 공용 하나다 — 계약·근거·변이 픽스처가 거기 산다(#Q85 · F460). */
+const { 시트흉내 } = require('./lib/시트흉내.js');
 
 const server = read('crewcard/크루카드.js');
 const 상담 = read('crewcard/상담시트.js');
@@ -499,32 +501,15 @@ const 이관헤더_ = ['이름(한국어)', '이름(몽골어)', '연락처', '�
   // 재제출 거동이 검사되지 않은 채 초록이 된다(가드가 지킨다는 열을 실제로 열지 않는 계열).
   '인지채널', '추천인'];
 
+/* 쓰기·읽기·삼킴은 **공용 통로**에 얹는다(`tests/lib/시트흉내.js` · #Q85 · F460).
+ *   손으로 다시 지으면 사본이 되고, 라이브와 갈라져도 아무도 못 잰다. */
 function 가짜시트_(headers, dataRows) {
   const W = headers.length;
   const pad = (r) => { const o = r.slice(); while (o.length < W) o.push(''); return o; };
   const grid = [new Array(W).fill(''), pad(headers)];
   (dataRows || []).forEach((r) => grid.push(pad(r)));
-  return {
-    grid,
-    getLastRow: () => grid.length,
-    getLastColumn: () => W,
-    getRange(r, c, nr = 1, nc = 1) {
-      return {
-        getValues: () => {
-          const out = [];
-          for (let i = 0; i < nr; i++) out.push((grid[r - 1 + i] || new Array(W).fill('')).slice(c - 1, c - 1 + nc));
-          return out;
-        },
-        setValues: (vals) => {
-          for (let i = 0; i < nr; i++) {
-            if (!grid[r - 1 + i]) grid[r - 1 + i] = new Array(W).fill('');
-            for (let j = 0; j < nc; j++) grid[r - 1 + i][c - 1 + j] = vals[i][j];
-          }
-        },
-        setValue: (v) => { if (!grid[r - 1]) grid[r - 1] = new Array(W).fill(''); grid[r - 1][c - 1] = v; },
-      };
-    },
-  };
+  const sh = 시트흉내({ 첫행: 1, 행들: grid });
+  return Object.assign(sh, { grid: sh.data, getLastColumn: () => W });
 }
 
 function 이관하네스_(src) {
