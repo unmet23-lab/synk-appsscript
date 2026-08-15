@@ -473,24 +473,27 @@ test('🔴 워치독이 궤적 2시트를 본다 — 탭이 사라져도 배치 
    *   이름을 바꾸면 ensureSheet 가 빈 시트를 새로 만들고 수확은 계속 성공한다 — 손으로 적은
    *   졸업생 소식이 사라졌다는 신호가 어디에도 안 뜬다. 그리고 그 데이터는 **소급이 안 된다.**
    *   워치독의 「누락 시트」 줄이 이 사고를 사람에게 알리는 유일한 층이다. */
+  /* [v9.241] 워치독의 손 목록(`const reqSheets`)이 **골격 정본 도출**로 바뀌었다. 지키는 사실은
+   *   그대로다 — 「궤적 2시트가 워치독의 눈에 든다」. 재는 자리만 한 칸 올라갔다: 이제 그 답은
+   *   `sheetSkeleton_()` 이 들고 있고, 워치독은 거기서 파생한다. 그래서 검사도 두 칸으로 나뉜다.
+   *   ⚠ 손 목록으로 되돌아가면 ②가 빨개진다 — 그게 이 회귀의 새 급소다. */
   const 콘텐츠AI = fs.readFileSync(path.join(ROOT, '엔진_콘텐츠AI.js'), 'utf8');
+  const 셋업 = fs.readFileSync(path.join(ROOT, '엔진_셋업확장.js'), 'utf8');
   const OUT = 문자열상수(궤적, 'OUTCOME_TAB_');
   const TRJ = 문자열상수(궤적, 'TRAJECTORY_TAB_');
-  const DECL = 'const reqSheets = ';
 
-  /* [v9.197] reqSheets 에 상수로 들어온 다른 탭도 함께 묶어 준다 — 배열리터럴은 리터럴을 «실행»하므로
-   *   미결 식별자가 하나라도 있으면 ReferenceError 로 이 검사 전체가 죽는다(궤적과 무관한 이유로). */
-  const SELF = 문자열상수(콘텐츠AI, 'SELF_DECLARE_TAB_');
-  const 실목록 = 배열리터럴(콘텐츠AI, DECL, { OUTCOME_TAB_: OUT, TRAJECTORY_TAB_: TRJ, SELF_DECLARE_TAB_: SELF });
-  assert.ok(실목록.includes(OUT), `워치독 필수 시트 목록에 ${OUT} 이 없다 — 탭이 사라져도 아무도 안 외친다`);
-  assert.ok(실목록.includes(TRJ), `워치독 필수 시트 목록에 ${TRJ} 가 없다`);
+  // ① 도출 원천(골격)에 두 탭이 **상수 참조로** 들어 있다.
+  const 골격 = 셋업.slice(셋업.indexOf('function sheetSkeleton_()'), 셋업.indexOf('function 수집장부탭_()'));
+  assert.notEqual(골격.length, 0, '골격 구역을 못 떴다 — 이 검사가 조용히 0건이 되는 자리다');
+  assert.ok(/\[\s*OUTCOME_TAB_\s*,/.test(골격), `골격에 ${OUT} 이 없다 — 워치독·재건·매니페스트가 한꺼번에 이 탭을 잃는다`);
+  assert.ok(/\[\s*TRAJECTORY_TAB_\s*,/.test(골격), `골격에 ${TRJ} 가 없다`);
+  /* 🔑 이름을 두 곳에 적지 않았는지 — 문자열로 또 적으면 탭 이름을 바꾼 날 한쪽만 갈린다. */
+  assert.ok(!코드만(골격).includes(`'${OUT}'`) && !코드만(골격).includes(`'${TRJ}'`),
+    '골격이 궤적 탭 이름을 문자열로 또 적었다 — 엔진_궤적.js 의 상수를 참조해야 한다');
 
-  /* 🔑 이름을 두 곳에 적지 않았는지 **결과로** 가른다. 상수를 갈아 끼워 목록이 따라 갈리면
-   *   참조고, 안 갈리면 문자열을 또 적은 것이다(그때 탭 이름을 바꾸면 워치독만 옛 이름을 찾아
-   *   매주 「누락 시트」를 외친다 — 가드가 늑대소년이 되는 자리다). */
-  const 변이 = 배열리터럴(콘텐츠AI, DECL, { OUTCOME_TAB_: 'ZZ_결과', TRAJECTORY_TAB_: 'ZZ_궤적', SELF_DECLARE_TAB_: SELF });
-  assert.ok(변이.includes('ZZ_결과') && 변이.includes('ZZ_궤적'),
-    '워치독이 탭 이름을 문자열로 또 적었다 — 엔진_궤적.js 의 OUTCOME_TAB_·TRAJECTORY_TAB_ 를 참조해야 한다');
-  assert.ok(!변이.includes(OUT) && !변이.includes(TRJ),
-    '상수를 갈았는데 옛 이름이 목록에 남아 있다 — 참조와 하드코딩이 섞였다');
+  // ② 워치독이 그 골격에서 **도출**한다(손 목록으로 되돌아가면 여기서 죽는다).
+  assert.ok(/const 골격탭 = sheetSkeleton_\(\)/.test(콘텐츠AI),
+    '워치독이 골격에서 도출하지 않는다 — 손 목록으로 되돌아갔다(v9.144·v9.202 와 같은 병의 세 번째)');
+  assert.ok(!코드만(콘텐츠AI).includes('const reqSheets'),
+    '손 목록 `reqSheets` 가 되살아났다 — 새 시트가 생길 때마다 다시 낡는다');
 });

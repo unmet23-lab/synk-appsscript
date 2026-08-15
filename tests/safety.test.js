@@ -488,7 +488,8 @@ test('[v9.49] hw_feedback 골격 — 학생확인(Glide 전용)과 포인트지�
    *   그래서 검사도 문자열 대조가 아니라 **실값의 자리**를 본다 — 진짜 위험은 문구가 아니라 **중간 삽입**이다.
    *   소비처 4곳이 폭 9·10·11로 읽고 sweepFeedbackAck_는 11번째 열을 손으로 찍으므로,
    *   앞 11칸의 순서가 하나라도 밀리면 첨삭 카드 내용과 포인트 지급 표시가 통째로 어긋난다(에러 없이). */
-  assert.ok(body.includes("['hw_feedback', HW_FEEDBACK_HEADERS]"), '시트 골격이 헤더 정본 상수를 쓰지 않는다(배치와 두 벌로 갈라진다)');
+  // [v9.241] 골격 행에 세 번째 칸(수집 표식)이 붙을 수 있다 — 지키는 사실은 「헤더 정본 상수를 쓰는가」다.
+  assert.ok(/\['hw_feedback', HW_FEEDBACK_HEADERS[,\]]/.test(body), '시트 골격이 헤더 정본 상수를 쓰지 않는다(배치와 두 벌로 갈라진다)');
   const H = new Function(`${code.slice(code.indexOf('const HW_FEEDBACK_HEADERS = ['), code.indexOf('];', code.indexOf('const HW_FEEDBACK_HEADERS = [')) + 2)}
     return HW_FEEDBACK_HEADERS;`)();
   assert.deepEqual(H.slice(0, 11),

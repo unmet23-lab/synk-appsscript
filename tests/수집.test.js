@@ -541,14 +541,15 @@ test('[v9.138] 학생이 낸 글은 셀 수식 인젝션 차단을 거쳐 시트
 /* ── ⑥ 배선 — 만들어만 두고 아무도 안 부르는 상태를 막는다(v9.90 ROLE_TALK 사고 계열) ── */
 
 test('[v9.138] 퀴즈 수집이 실제로 배선돼 있다 — 시트·스위프·폼·열·경고', () => {
-  assert.ok(/\['quiz_log', QUIZ_LOG_HEADERS\]/.test(code), 'quiz_log가 시트 골격 정본에 없다 — 재건·preflight가 이 시트를 모른다');
+  // [v9.241] 골격 행에 세 번째 칸(수집 표식)이 붙을 수 있다 — 지키는 사실은 「골격에 있고 헤더 정본을 쓴다」다.
+  assert.ok(/\['quiz_log', QUIZ_LOG_HEADERS[,\]]/.test(code), 'quiz_log가 시트 골격 정본에 없다 — 재건·preflight가 이 시트를 모른다');
   assert.ok(code.includes("safeRun('quizSweep', function () { quizSweep_(ss); })"), 'quizSweep_가 10분 스위프에 배선되지 않았다(폼 응답이 영원히 안 옮겨진다)');
   assert.ok(code.includes("formAlreadyMade_(ss, '퀴즈폼_응답', '퀴즈폼URL틀', '퀴즈폼ID'"), '퀴즈 폼 생성이 재실행 안전 가드를 통과하지 않는다');
   assert.ok(code.includes("setState(st, '퀴즈폼URL틀', prefillTemplate2_(form, '학생ID', '퀴즈ID'))"), '퀴즈 폼 URL 틀이 두 필드 프리필로 저장되지 않는다');
   // 학생 행에 링크가 실제로 실리는지 — 열만 만들고 값을 안 넣으면 버튼이 조용히 안 뜬다(v9.61이 잡았던 그 결함)
   assert.ok(code.includes("quizFormUrlOf_(kv['퀴즈폼URL틀'], sid,"), '학생 행에 퀴즈 폼 링크가 채워지지 않는다');
   // [v9.138] 대화층도 같은 3종 배선 — 시트·배치·폼이 하나라도 빠지면 「대화 0건」 상태가 그대로 유지된다
-  assert.ok(/\['talk_log', TALK_LOG_HEADERS\]/.test(code), 'talk_log가 시트 골격 정본에 없다');
+  assert.ok(/\['talk_log', TALK_LOG_HEADERS[,\]]/.test(code), 'talk_log가 시트 골격 정본에 없다');
   assert.ok(code.includes("safeRun('talkBatch', talkBatch_)"), 'talkBatch_가 야간 배치에 배선되지 않았다(답장이 영원히 안 만들어진다)');
   assert.ok(code.includes("formAlreadyMade_(ss, '대화폼_응답', '대화폼URL틀', '대화폼ID'"), '대화 폼 생성이 재실행 안전 가드를 통과하지 않는다');
   assert.ok(code.includes("formUrlOf(kv['대화폼URL틀'], sid)"), '학생 행에 대화 폼 링크가 채워지지 않는다');
@@ -1011,7 +1012,8 @@ function loadShrinkGuard(props, mails) {
 
 /* 기록 n건짜리 시트 — 마지막 «행 인덱스»와 «남은 기록 수»를 따로 준다(가운데를 파낸 삭제를 흉내낸다). */
 function 이력시트(ids) {
-  return { getLastRow: () => ids.length + 1,
+  return { getName: () => 'self_declare_log', // [v9.241] 공용 통로가 탭 이름으로 기준선 키를 짓는다
+    getLastRow: () => ids.length + 1,
     getRange: (r, c, nRows) => ({ getValues: () => ids.slice(0, nRows).map(v => [v]) }) };
 }
 
@@ -1035,8 +1037,8 @@ test('[v9.197] 자기선언 — 가운데를 파낸 삭제도 잡는다(마지�
    * 그 값이 그대로라 행 인덱스로 재는 감시는 통째로 눈이 먼다 — 그래서 실제 기록 수를 센다. */
   const props = {}, mails = [];
   const guard = loadShrinkGuard(props, mails);
-  const 온전 = { getLastRow: () => 6, getRange: () => ({ getValues: () => [['S1'], ['S2'], ['S3'], ['S4'], ['S5']] }) };
-  const 파냄 = { getLastRow: () => 6, getRange: () => ({ getValues: () => [['S1'], [''], [''], [''], ['S5']] }) };
+  const 온전 = { getName: () => 'self_declare_log', getLastRow: () => 6, getRange: () => ({ getValues: () => [['S1'], ['S2'], ['S3'], ['S4'], ['S5']] }) };
+  const 파냄 = { getName: () => 'self_declare_log', getLastRow: () => 6, getRange: () => ({ getValues: () => [['S1'], [''], [''], [''], ['S5']] }) };
   guard(온전);
   assert.deepEqual(mails, []);
   guard(파냄); // 마지막 행 인덱스는 6 그대로인데 기록은 5 → 2 로 줄었다
@@ -1077,10 +1079,16 @@ test('[v9.197] 자기선언 — 배선 4자리(안 걸리면 영원히 안 돈�
   //    줄머리 앵커로 «살아 있는 호출»만 센다. 새는 방향은 언제나 「통과」다.
   assert.ok(/^\s*safeRun\('selfDeclareLog', selfDeclareLogNightly_\)/m.test(nj),
     '야간 배치에 «살아 있는» 호출이 없다 — 코드는 있는데 아무도 안 부르는 상태가 된다(강사 정답 모음과 같은 형태)');
-  assert.ok(code.includes('[SELF_DECLARE_TAB_, SELF_DECLARE_HEADERS]'),
+  assert.ok(/\[SELF_DECLARE_TAB_, SELF_DECLARE_HEADERS[,\]]/.test(code),
     'SHEET_SKELETON에 없다 — 원버튼 재건 뒤 이력 탭이 사라진다');
-  assert.ok(/const reqSheets = \[[\s\S]*?SELF_DECLARE_TAB_\]/.test(code),
-    '워치독 reqSheets에 없다 — 탭이 지워져도 배치는 정상을 보고한다(소급 불가)');
+  /* [v9.241] 워치독의 손 목록(`reqSheets`)이 **골격 도출**로 바뀌었다(대기열 #Q89). 지키는 사실은 그대로다 —
+   *   「이 탭이 워치독 눈에 든다」. 이제 그 답은 위 골격 등재가 지고, 워치독은 거기서 파생한다.
+   *   그리고 존재 검사만으로는 이 탭의 사고를 못 본다(ensureSheet 가 빈 시트로 되살린다) —
+   *   그래서 수집 표식으로 «몇 줄 남았나»까지 함께 잰다. 전문 회귀 = tests/수집탭워치독.test.js. */
+  assert.ok(/const 골격탭 = sheetSkeleton_\(\)/.test(code),
+    '워치독이 골격에서 도출하지 않는다 — 손 목록으로 되돌아가면 새 시트가 감시 밖으로 샌다');
+  assert.ok(/\[SELF_DECLARE_TAB_, SELF_DECLARE_HEADERS, 수집표식_\]/.test(code),
+    '자기선언 탭에 수집 표식이 없다 — 탭이 지워져도 배치는 정상을 보고한다(소급 불가)');
   const fn = section('function selfDeclareLogNightly_()', '\nfunction aiFeedbackHealth_');
   assert.ok(fn.includes('writeIfChanged('), '소독 통로를 안 쓴다 — 학생이 친 `=`가 라이브 수식이 된다');
   assert.equal(/appendRow\(/.test(코드만(fn)), false, 'appendRow 직기입은 소독 우회다(v9.157)');

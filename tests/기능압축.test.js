@@ -164,7 +164,8 @@ test('[v9.147] 강사 정답 모음은 무작위 표본이고 주간 배치에 �
   // ⑤ 배선·골격
   assert.ok(section('function weeklyJobs()', 'function monthlyJobs()').includes("safeRun('goldenSample', goldenSampleWeekly_)"),
     '강사 정답 모음이 어느 트리거에도 안 걸렸다(영원히 안 돎)');
-  assert.ok(section('function sheetSkeleton_()', 'function buildMonsterDetailCards').includes("['teacher_gold', GOLD_HEADERS]"),
+  // [v9.241] 세 번째 칸(수집 표식) 허용 — 지키는 사실은 「골격에 있고 헤더 정본 상수를 쓴다」다.
+  assert.ok(/\['teacher_gold', GOLD_HEADERS[,\]]/.test(section('function sheetSkeleton_()', 'function buildMonsterDetailCards')),
     '시트 골격에 teacher_gold 누락 — Glide가 테이블로 못 잡는다');
   assert.ok(code.includes("'강사판정'") && code.includes("'강사교정'"), '강사 정답 모음 헤더에 강사 응답 칸이 없다');
 });

@@ -8,7 +8,7 @@ function replaceContentType(ss, type, items) {
   // [v5.2] 전체 열 보존 — G열(몽골어)/H열(영어) 번역이 다른 type의 setup 재실행에도 밀리지 않음
   //        단, 같은 type을 재실행하면 그 type의 번역은 초기화됨 → translateContents 재실행
   const ct = ss.getSheetByName('contents') ||
-    ensureSheet(ss, 'contents', ['콘텐츠ID','유형','이름','설명','이미지URL','순번','몽골어','영어']); // [v9.9] 무에서 재건 대응
+    ensureSheet(ss, 'contents', CONTENTS_HEADERS); // [v9.9] 무에서 재건 대응 · [v9.241] 헤더 정본 공유(골격 등재)
   const last = ct.getLastRow();
   const width = Math.max(ct.getLastColumn(), 8);
   if (ct.getMaxColumns() < width) ct.insertColumnsAfter(ct.getMaxColumns(), width - ct.getMaxColumns()); // [v9.40] 그리드 폭 가드 — Glide가 열을 줄인 시트에서 8열 접근 예외 방지
@@ -485,21 +485,61 @@ function selfDeclareLogNightly_() {
  * ⚠ 세는 것은 `getLastRow()` 가 **아니라 실제 기록 수**다 — 마지막 행은 «중간»을 지워도 그대로라
  *   행 인덱스로 재면 가운데를 파낸 삭제가 통째로 안 보인다(①배포 검수 P2). 잠금 밖에서 도는 읽기다. */
 const SELF_DECLARE_HWM_ = '자기선언이력_최고건수';
-/** 남은 기록 수 — 감시와 기준선 갱신이 **같은 자를 쓰도록** 세는 곳을 하나로 둔다. */
-function selfDeclareCount_(log) {
-  const 끝 = log.getLastRow();
-  return 끝 < 2 ? 0 : log.getRange(2, 1, 끝 - 1, 1).getValues().filter(r => String(r[0] || '').trim()).length;
+/* [v9.241] 위 통로를 **수집 장부 전체**로 넓혔다 — 자기선언 하나에만 달려 있던 자를 공용으로 판다.
+ *   왜: 같은 노출을 가진 탭이 아홉인데(골격 `수집표식_`) 감시는 하나였다. 호출부마다 같은 코드를
+ *   베끼면 세는 법이 갈라지고, 갈라진 쪽은 언제나 「통과」로 샌다.
+ *   ⚠ 정책(경보를 어디로 보내나·기준선을 도로 내리나)은 **부르는 쪽**이 정한다 — 밤마다 도는
+ *   자기선언은 한 번 알리고 새 기준으로 가고(매일 같은 메일 금지), 주간 워치독은 안 내린다
+ *   (고칠 때까지 리포트에 남아야 한다). 세는 법만 공용이다. */
+const 탭수축키_ = (탭) => '탭최고건수_' + 탭;
+/** [v9.241] «한 번이라도 있었던» 골격 탭 명부(줄바꿈 구분) — 워치독이 「지워짐」과 「안 태어남」을 가른다. */
+const SEEN_TABS_ = '본적있는탭';
+/** [v9.241] 「없다」를 두 뜻으로 가른다 — 순수 함수라 픽스처로 탐지력을 못박을 수 있다(회귀 `수집탭워치독`).
+ * @param {string[]} 골격탭 골격 정본의 탭 이름들
+ * @param {!Object} 산탭 지금 스프레드시트에 있는 이름 집합(`{이름:true}`)
+ * @param {!Object} 본적 한 번이라도 있었던 이름 집합(`{이름:true}`)
+ * @returns {{지워짐: string[], 미출생: string[]}} */
+function 탭없음가르기_(골격탭, 산탭, 본적) {
+  const 없음 = 골격탭.filter(n => !산탭[n]);
+  return { 지워짐: 없음.filter(n => !!본적[n]), 미출생: 없음.filter(n => !본적[n]) };
 }
+/** 남은 기록 수 — 감시와 기준선 갱신이 **같은 자를 쓴다**. `getLastRow()` 가 아닌 이유는 위 주석. */
+function 탭기록수_(sh) {
+  const 끝 = sh.getLastRow();
+  return 끝 < 2 ? 0 : sh.getRange(2, 1, 끝 - 1, 1).getValues().filter(r => String(r[0] || '').trim()).length;
+}
+/** 기준선 대비 지금. 늘었으면 기준선을 올리고, 줄었으면 **그대로 두고 알린다**(내리는 것은 부르는 쪽 몫). */
+function 탭수축_(sh) {
+  const 탭 = sh.getName();
+  const props = PropertiesService.getScriptProperties();
+  /* [v9.241] 구 키 승계 — 자기선언은 v9.197부터 제 이름의 키에 기준선을 쌓아 왔다. 새 키로 갈아타며
+   *   그 값을 안 옮기면 감시가 0에서 다시 시작해 **그 사이의 삭제를 못 본다**(가드 자신의 조용한 실패). */
+  const 키 = 탭수축키_(탭);
+  let raw = props.getProperty(키);
+  if (raw == null && 탭 === SELF_DECLARE_TAB_) raw = props.getProperty(SELF_DECLARE_HWM_);
+  const hwm = Number(raw || 0);
+  const 지금 = 탭기록수_(sh);
+  if (지금 > hwm) props.setProperty(키, String(지금));
+  return { 탭: 탭, hwm: hwm, 지금: 지금, 줄었나: !!hwm && 지금 < hwm };
+}
+/** 의도한 축소(데모 퇴장 등) — 기준선을 지운다. 다음 실행이 지금 값을 새 기준으로 잡는다. */
+function 탭수축기준선지움_(탭) {
+  const props = PropertiesService.getScriptProperties();
+  props.deleteProperty(탭수축키_(탭));
+  if (탭 === SELF_DECLARE_TAB_) props.deleteProperty(SELF_DECLARE_HWM_);
+}
+/** 남은 기록 수(자기선언) — 옛 이름은 호출부 3곳이 쓰므로 공용 통로로 넘기는 얇은 껍질로 남긴다. */
+function selfDeclareCount_(log) { return 탭기록수_(log); }
 function selfDeclareShrinkGuard_(log) {
   const props = PropertiesService.getScriptProperties();
-  const hwm = Number(props.getProperty(SELF_DECLARE_HWM_) || 0);
-  const now = selfDeclareCount_(log);
-  if (!hwm || now >= hwm) { if (now > hwm) props.setProperty(SELF_DECLARE_HWM_, String(now)); return now; }
+  const r = 탭수축_(log);
+  const hwm = r.hwm, now = r.지금;
+  if (!r.줄었나) return now;
   adminMail('[SYNK] 🌱 자기선언 이력이 줄었다 — ' + hwm + '건 → ' + now + '건',
     '학생이 스스로 쓴 선언(드림한줄·최애·몬스터이름)의 이력 탭 `' + SELF_DECLARE_TAB_ + '` 이 줄었습니다.\n'
     + '이 데이터는 소급이 안 됩니다 — 탭을 지우셨거나 이름을 바꾸셨다면 되돌려 주세요.\n'
-    + '의도한 정리였다면 스크립트 속성 `' + SELF_DECLARE_HWM_ + '` 를 지우면 이 알림이 새 기준으로 재설정됩니다.');
-  props.setProperty(SELF_DECLARE_HWM_, String(now)); // 매일 같은 메일을 보내지 않는다 — 한 번 알리고 새 기준으로 간다
+    + '의도한 정리였다면 스크립트 속성 `' + 탭수축키_(SELF_DECLARE_TAB_) + '` 를 지우면 이 알림이 새 기준으로 재설정됩니다.');
+  props.setProperty(탭수축키_(SELF_DECLARE_TAB_), String(now)); // 매일 같은 메일을 보내지 않는다 — 한 번 알리고 새 기준으로 간다
   return now;
 }
 
@@ -693,25 +733,51 @@ function systemWatchdog(asText) {
   }
 
   // [v9.25] 5) 시트 구조·용량·쿼터 — 구 healthCheck 흡수 (월요일 정기 메일 통합)
-  const reqSheets = ['profiles','point_logs','attendance','teacher_checkins','notices',
-    'form_responses','contents','class_stats','app_state','raid','schedule',
-    'monthly_snapshot','titles','achievements','story','manual_titles','teacher_stats',
-    'report_cards','league_history','class_fuel','weekly_topics','hw_batch','today_board',
-    'league_pairs','world_raid','synk_stories','synk_cards','academic_log',
-    'exit_log','absence_notice','inquiries','payments', // [v9.28] 신규 시트 4종
-    /* [v9.184] 궤적 레일 2종. **문자열이 아니라 상수를 쓴다** — 이 목록은 손 목록이라 새 시트가
-     * 생길 때마다 낡았고(Code.js 「워치독 reqSheets 등록」 주석이 그 흔적이다), 탭 이름을 두 곳에
-     * 적으면 이름을 바꾼 날 워치독만 옛 이름을 찾아 「누락 시트」를 매주 외친다.
-     * 🔴 왜 이 둘이 특히 필요한가: outcome_log 의 절반은 **원장이 손으로 적는다.** 탭을 실수로
-     *   지우거나 이름을 바꾸면 ensureSheet 가 빈 시트를 새로 만들고, 배치 로그는 그대로 정상을
-     *   보고한다 — 손으로 적은 졸업생 소식이 사라졌다는 신호가 어디에도 안 뜬다(소급 불가). */
-    OUTCOME_TAB_, TRAJECTORY_TAB_,
-    /* [v9.197] 자기선언 이력. 여기 있어야 하는 이유는 outcome_log 와 같다 — 탭이 사라져도
-     * ensureSheet 가 빈 시트를 새로 만들고 배치는 정상을 보고한다. 다만 이쪽은 «학생이 스스로 쓴 것»이라
-     * 잃으면 다시 물어볼 수도 없다(소급 불가). */
-    SELF_DECLARE_TAB_];
-  const missSheet = reqSheets.filter(n => !ss.getSheetByName(n));
-  add(missSheet.length === 0, missSheet.length ? '누락 시트: ' + missSheet.join(', ') : '시트 구조 정상 (' + reqSheets.length + '종)');
+  /* [v9.241] 목록을 **골격 정본에서 도출한다.** 실측(교체 직전): 손 목록 35종 · 골격 53종 ·
+   *   손이 **한 번도 못 보던 22종**. 그 22종에 수집 장부 6종(voice_log·talk_index_log·mastery_log·
+   *   quiz_log·hw_feedback·teacher_gold)이 전부 들어 있었다. 이 함수는 같은 병을 이미 두 번 앓았고(v9.144 월키 열 ·
+   *   v9.202 트리거 목록) 처방은 매번 같았다: **선언하는 자리에서 도출한다.** 세 번째라 목록을
+   *   손으로 다시 적을 수 없게 만든다 — 골격에 시트를 더하면 그 순간 감시에 든다.
+   *   (반대 방향도 실측했다: 손 목록에만 있던 contents·class_stats·schedule·trajectory 는 골격에
+   *    편입해 데려왔다 — 도출로 갈아타며 감시가 **좁아지는** 것이 이 교체의 유일한 사고 모양이다.)
+   *
+   * 🔑 「없다」를 두 뜻으로 가른다 — 안 가르면 미개원 상태에서 여러 탭이 매주 «누락»으로 떠서
+   *   사람이 이 점검을 통째로 무시한다(v9.202 가 트리거 숫자에서 겪은 그 자리다).
+   *     · 한 번이라도 있었는데 지금 없다 = **지워졌다**(경보 — 되살릴 사람은 원장뿐)
+   *     · 한 번도 없었다              = **아직 안 태어났다**(정보 — 골격 보장이 만든다)
+   *   가르는 자 = 스크립트 속성에 누적하는 «본 적 있는 탭» 명부(줄이지 않는다).
+   * ⚠ 틀릴 때의 모습 둘: ①이 판이 서기 **전에** 지워진 탭은 영영 「안 태어남」으로 읽힌다(명부의
+   *   첫 줄이 «지금 있는 것»이라 그렇다) ②의도적으로 없앤 탭은 명부에서 이름을 지울 때까지 매주
+   *   경보로 남는다 — 그 처방을 메시지에 함께 적는다(따를 수 없는 경보는 세우지 않는다). */
+  const 골격탭 = sheetSkeleton_().map(k => k[0]);
+  const 산탭 = {}; ss.getSheets().forEach(s => { 산탭[s.getName()] = true; });
+  const propsW = PropertiesService.getScriptProperties();
+  const 본적 = {};
+  String(propsW.getProperty(SEEN_TABS_) || '').split('\n').forEach(n => { if (n) 본적[n] = true; });
+  const 갈림 = 탭없음가르기_(골격탭, 산탭, 본적);
+  const 지워짐 = 갈림.지워짐, 미출생 = 갈림.미출생;
+  add(지워짐.length === 0, 지워짐.length
+    ? '지워진 시트: ' + 지워짐.join(', ') + ' — 되살리세요(bootstrapSynk). 의도한 삭제였다면 스크립트 속성 `' + SEEN_TABS_ + '` 에서 그 이름 줄을 지우면 이 경보가 멎습니다'
+    : '시트 구조 정상 (골격 ' + 골격탭.length + '종 · 지워진 것 없음)');
+  if (미출생.length) add(true, '아직 안 태어난 시트 ' + 미출생.length + '종(경보 아님 — 필요해지면 bootstrapSynk ▶ 1회): ' + 미출생.join(', '));
+  const 새이름 = 골격탭.filter(n => 산탭[n] && !본적[n]);
+  if (새이름.length) propsW.setProperty(SEEN_TABS_, Object.keys(본적).concat(새이름).join('\n'));
+
+  /* [v9.241] «탭이 있나»로는 원리상 못 보는 사고 — 탭을 지워도 야간 배치의 ensureSheet 가 빈 시트로
+   *   되살리므로 주간 워치독이 볼 때는 «있다»(v9.197 이 자기선언 한 탭에서 이미 적어 둔 말이다).
+   *   그래서 수집 장부는 «몇 줄 남았나»로 잰다 — 되살아난 빈 시트는 행 수가 안 되살아난다.
+   *   목록은 골격의 세 번째 칸에서 도출한다(`수집장부탭_`). */
+  const 줄어든 = [];
+  const 수집탭 = 수집장부탭_();
+  수집탭.forEach(n => {
+    const shC = ss.getSheetByName(n);
+    if (!shC) return; // 없는 것은 위 존재 축이 이미 말했다 — 두 번 외치지 않는다
+    const rC = 탭수축_(shC);
+    if (rC.줄었나) 줄어든.push(n + ' ' + rC.hwm + '→' + rC.지금 + '건');
+  });
+  add(줄어든.length === 0, 줄어든.length
+    ? '수집 장부가 줄었다: ' + 줄어든.join(' · ') + ' — 소급이 안 되는 데이터입니다. 되돌리거나, 의도한 정리였다면 스크립트 속성 `' + 탭수축키_('<탭이름>') + '` 를 지우세요'
+    : '수집 장부 ' + 수집탭.length + '종 줄지 않음');
   const plRows = pl ? pl.getLastRow() - 1 : 0; // pl = point_logs (섹션 4에서 조회)
   add(plRows <= 8000, 'point_logs ' + plRows + '행' + (plRows > 8000 ? ' — 아카이빙 확인 필요' : ''));
   const mailQ = MailApp.getRemainingDailyQuota();
