@@ -82,6 +82,11 @@ try {
   owner = require(path.join(__dirname, '..', '..', 'tools', '작업본소유자.js'));
   store = require(path.join(__dirname, 'lib', 'handoff-store.js'));
 } catch (_) { process.exit(0); }
+/* 잠금 나이 판정은 **실패 문장을 꾸미는 곁가지**다 — 못 불러와도 이 훅이 죽으면 안 된다.
+ * 이 훅이 안 뜨는 순간 모든 세션의 미커밋 보호가 함께 꺼진다(F025). 그래서 위 블록과 달리
+ * 여기서는 `process.exit` 하지 않고 없는 채로 간다 — 실패 문장은 예전 그대로 나간다. */
+let 잠금lib = null;
+try { 잠금lib = require(path.join(__dirname, '..', '..', 'tools', 'lib', 'git잠금.js')); } catch (_) { /* 곁가지 없음 */ }
 const 나 = store.safeId(원본sid);
 
 /* 내가 **직접 쓴 내용**의 지문 — `{좌표: 해시}`. 좌표는 만진 기록과 같은 공간(형제는 `../이름/`).
@@ -265,7 +270,7 @@ function 한저장소(뿌리, 이름, 내touched, 남touched, 지문) {
   const 메시지 = `자동커밋: ${머리} — 미커밋 노출 차단(Stop 훅)`;
 
   const add = git(['add', '--', ...후보], 뿌리);
-  if (add.error || add.status !== 0) return { 이름, 후보: [], 함께남김, 깨짐, 무기록, 밖에서바뀜, 적색, 미측정, 증거없음, 실패: String(add.stderr || add.error || '').trim().slice(0, 160) };
+  if (add.error || add.status !== 0) return { 이름, 뿌리, 후보: [], 함께남김, 깨짐, 무기록, 밖에서바뀜, 적색, 미측정, 증거없음, 실패: String(add.stderr || add.error || '').trim().slice(0, 160) };
 
   let cm;
   for (let 시도 = 0; 시도 < 3; 시도++) {
@@ -274,7 +279,7 @@ function 한저장소(뿌리, 이름, 내touched, 남touched, 지문) {
     if (!/index\.lock/.test(String(cm.stderr || ''))) break;
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 300); // 옆 세션 훅과의 락 경합만 기다린다
   }
-  if (cm.error || cm.status !== 0) return { 이름, 후보: [], 함께남김, 깨짐, 무기록, 밖에서바뀜, 적색, 미측정, 증거없음, 실패: String(cm.stderr || cm.error || '').trim().slice(0, 160) };
+  if (cm.error || cm.status !== 0) return { 이름, 뿌리, 후보: [], 함께남김, 깨짐, 무기록, 밖에서바뀜, 적색, 미측정, 증거없음, 실패: String(cm.stderr || cm.error || '').trim().slice(0, 160) };
 
   /* 커밋했다고 믿지 말고 결과를 본다(F071) — 겹침·경로 어긋남이면 git 은 성공처럼 조용히 지나간다. */
   const 남은 = gitOk(['status', '--porcelain', '-z', '--', ...후보], 뿌리);
@@ -317,7 +322,14 @@ if (!결과들.length) process.exit(0);
 const 줄 = [];
 for (const r of 결과들) {
   const 딱지 = r.이름 ? `${r.이름} ` : '';
-  if (r.실패) { 줄.push(`[자동커밋] ⚠ ${딱지}커밋 실패 — 이번 턴은 물러난다: ${r.실패}`); continue; }
+  if (r.실패) {
+    줄.push(`[자동커밋] ⚠ ${딱지}커밋 실패 — 이번 턴은 물러난다: ${r.실패}`);
+    /* 「이번 턴은 물러난다」도 **경합일 때만** 참이다 — 고아 잠금이면 다음 턴도, 그 다음 턴도
+     * 똑같이 물러나고 세션이 끝난다. 그때 남는 것이 무보호 미커밋이다(F025 · F493 실측 68건). */
+    const 잠금 = 잠금lib ? 잠금lib.고아잠금줄(r.뿌리 || ROOT, { 실패문: r.실패 }) : '';
+    if (잠금) 줄.push(잠금);
+    continue;
+  }
   if (r.후보.length) {
     줄.push(`[자동커밋] ${딱지}${r.후보.length}개 → ${r.해시} (${r.머리})`);
     if (r.미완) 줄.push(`   ⚠ 커밋 뒤에도 일부가 미커밋으로 남았다 — \`git -C ${r.이름 ? `../${r.이름}` : '.'} status\` 로 직접 확인`);
