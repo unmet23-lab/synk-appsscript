@@ -80,6 +80,48 @@ test('깨진 참조는 없다 — 있으면 알림이 거짓말을 한다', () =
   assert.deepStrictEqual(G.build().broken, []);
 });
 
+/* [2026-08-15] 탐지는 옳았는데 **처방이 없어** 적색이 오래 앉아 있던 자리(clasp-guard 가 그동안 모두의
+ * 배포를 막는다). `docs/브랜드킷.html` 의 `파생:` 이 경로 뒤에 산문을 이어 붙여 깨진 참조 1건이 됐고,
+ * 문구가 「가리키는 정본이 없다」 하나뿐이라 읽은 세션이 **실재하는 파일을 찾으러 갔다.** 갈래를 가른다.
+ * ⚠ 탐지력은 픽스처로 못박고, 실저장소에는 거짓양성만 검사한다(실저장소가 빨간 채여야 통과하는 회귀 금지). */
+test('산문이 섞인 파생은 「없는 파일」이 아니라 「산문」으로 분류한다 — 픽스처', () => {
+  const stem = `docgraph-prose-${process.pid}`;
+  const derived = path.join(ROOT, 'docs', `${stem}_파생.md`);
+  // 실제로 물린 모양 그대로 — 한 주석 안에서 줄을 넘어가며 산문이 목록에 붙는다.
+  fs.writeFileSync(derived,
+    `# 임시 파생\n\n<!-- 파생: docs/문서_지도.md · 로고 도형 = docs/문서_지도.md §3 복사\n     조립: python tools/x.py — 손 편집 금지 -->\n`,
+    'utf8');
+  try {
+    const hits = G.build().broken.filter((b) => b.from === `docs/${stem}_파생.md`);
+    assert.strictEqual(hits.length, 1, `깨진 참조 ${hits.length}건 — 산문 조각 하나가 잡혀야 한다`);
+    assert.strictEqual(hits[0].kind, '산문',
+      `산문 조각을 "${hits[0].kind}" 로 분류했다 — 「없는파일」이면 읽는 사람이 실재하는 파일을 찾으러 간다`);
+  } finally {
+    fs.unlinkSync(derived);
+  }
+});
+
+test('진짜 오탈자 경로는 그대로 「없는파일」이다 — 갈래를 나누다 처방을 뒤바꾸면 안 된다', () => {
+  const stem = `docgraph-typo-${process.pid}`;
+  const derived = path.join(ROOT, 'docs', `${stem}_파생.md`);
+  fs.writeFileSync(derived, `# 임시 파생\n\n<!-- 파생: docs/${stem}_없는정본.md -->\n`, 'utf8');
+  try {
+    const hits = G.build().broken.filter((b) => b.from === `docs/${stem}_파생.md`);
+    assert.strictEqual(hits.length, 1);
+    assert.strictEqual(hits[0].kind, '없는파일');
+  } finally {
+    fs.unlinkSync(derived);
+  }
+});
+
+test('경로 모양 판정은 공백을 근거로 쓰지 않는다 — 실저장소 정본 6종에 공백이 실재한다', () => {
+  // 거짓양성이 나면 멀쩡한 엣지가 「산문」으로 불린다. 실측 경로를 그대로 넣어 못박는다.
+  assert.ok(G.looksLikePath('docs/정본/SYNK LAB/SYNK LAB 소개서.txt'), '공백 든 실재 정본을 산문으로 봤다');
+  assert.ok(G.looksLikePath('docs/디자인_토큰.json'));
+  assert.ok(!G.looksLikePath('로고 도형 = docs/발표물/_브랜드킷.md §3 복사'), '§ 뒤가 붙은 산문을 경로로 봤다');
+  assert.ok(!G.looksLikePath('docs/a.md\n     조립: python tools/x.py'), '줄을 넘는 조각을 경로로 봤다');
+});
+
 test('--add는 없는 정본을 거부한다(오탈자 엣지 차단)', () => {
   const tmp = path.join(os.tmpdir(), `docgraph-${process.pid}.md`);
   fs.writeFileSync(path.join(ROOT, 'docs', path.basename(tmp)), '# 임시\n', 'utf8');

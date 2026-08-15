@@ -100,6 +100,20 @@ function splitVersion(raw) {
   return { target: s, version: null };
 }
 
+/** 타깃이 «경로 모양»인가 — 아니면 `파생:` 목록에 **산문이 섞인** 것이다.
+ * [2026-08-15] 왜 가르나: 둘 다 「깨진 참조」로 뭉쳐 있었고 문구가 「가리키는 정본이 없다」 하나뿐이라,
+ * 산문이 섞였을 때 읽는 사람이 **없는 파일을 찾으러 간다.** 실측 — `docs/브랜드킷.html:4` 의 `파생:` 이
+ * 경로 둘 뒤에 산문을 이어 붙여 적색이 났는데(`2fa44a03` 이 수리), 그 적색을 본 세션은 「대상 파일은
+ * 실재한다」를 확인하는 데 시간을 쓰고 **그 오진을 인계문에 실어 다음 세션까지 보냈다.** 탐지는 옳았고
+ * 처방만 없었다 — 주인 없는 적색은 모두의 배포를 막으므로(clasp-guard) 처방 없는 적색은 오래 앉아 있는다.
+ * ⚠ 판정은 **보수적으로** 둘만 본다. 이 저장소의 정본 경로 29종엔 공백이 6건 실재하므로(`SYNK LAB …`)
+ *   공백은 근거로 못 쓴다. 새는 방향도 적는다 — 산문이 한 줄이고 확장자로 끝나면 「없는 파일」로 샌다.
+ *   그래도 적색은 그대로 뜨고 건수도 같다(갈래 이름만 틀린다) — 숨기는 방향이 아니다. */
+function looksLikePath(target) {
+  if (/[\r\n]/.test(target)) return false;          // 경로는 줄을 넘지 않는다
+  return /\.[A-Za-z0-9]{1,5}$/.test(target);        // 확장자로 끝난다(실측 29종 = .md/.txt/.js/.html/.json)
+}
+
 /* 코드 구역을 **길이를 보존한 채** 지운다.
  * [2026-08-03] 두 번째로 물린 함정이다. memory-graph는 이미 stripCode를 갖고 있었는데
  * doc-graph는 없었고, 표기법을 **설명하는** 문서(`docs/_ops/부패점검.md`)를 쓰자마자
@@ -255,7 +269,7 @@ function build() {
     for (const e of d.edges) {
       const target = e.target;
       if (!docs.has(target) && !fs.existsSync(path.join(ROOT, target))) {
-        broken.push({ from: d.rel, target });
+        broken.push({ from: d.rel, target, kind: looksLikePath(target) ? '없는파일' : '산문' });
         continue;
       }
       if (!derivedOf.has(target)) derivedOf.set(target, []);
@@ -497,8 +511,19 @@ function main() {
   }
 
   if (g.broken.length) {
-    console.log(`\n  ⚠ 깨진 참조 — ${g.broken.length}건(가리키는 정본이 없다)`);
-    for (const b of g.broken) console.log(`    ${b.from} → ${b.target}`);
+    const 산문 = g.broken.filter((b) => b.kind === '산문');
+    const 없는파일 = g.broken.filter((b) => b.kind !== '산문');
+    if (없는파일.length) {
+      console.log(`\n  ⚠ 깨진 참조 — ${없는파일.length}건(가리키는 정본이 없다)`);
+      for (const b of 없는파일) console.log(`    ${b.from} → ${b.target}`);
+    }
+    if (산문.length) {
+      console.log(`\n  ⚠ 파생 목록에 산문이 섞였다 — ${산문.length}건(**파일이 없는 게 아니다** — 찾으러 가지 말 것)`);
+      console.log('     고칠 자리: 그 문서의 `<!-- 파생: … -->` 에서 경로가 아닌 조각을 **별도 주석으로 뗀다**(경로만 남긴다).');
+      console.log('     ⚠ 기계 조립물이면 **생성기부터** 고친다 — 산출물만 고치면 다음 재조립이 되살린다.');
+      // 줄바꿈이 든 조각은 그대로 찍으면 「여러 건」처럼 보인다 — 한 조각임이 보이게 이스케이프해 찍는다.
+      for (const b of 산문) console.log(`    ${b.from} → ${JSON.stringify(b.target)}`);
+    }
   }
 
   if (g.stale.length) {
@@ -557,5 +582,5 @@ function main() {
 if (require.main === module) main();
 module.exports = {
   build, parseEdges, parseEdgesFull, splitVersion, canonVersion, selfDeclaredCanon, selfDeclaredHold, sameVersion,
-  isCanon, addEdge, 엣지본문, 코드머리끝, rel, shouldSkip, ROOT, findMapGaps, DOC_MAP,
+  isCanon, addEdge, 엣지본문, 코드머리끝, rel, shouldSkip, ROOT, findMapGaps, DOC_MAP, looksLikePath,
 };
