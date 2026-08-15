@@ -29,8 +29,12 @@ function 흠찾기(css) {
   else {
     const p = 인쇄[1];
     if (!/\.듦[^{]*\{[^}]*opacity:1!important/.test(p)) 흠.push('인쇄에서 등장 숨김을 안 푼다(.듦 opacity 리셋 없음)');
-    if (!/background:var\(--paper\)/.test(p)) 흠.push('인쇄 바탕이 종이가 아니다');
-    if (!/color:var\(--ink\)/.test(p)) 흠.push('인쇄 잉크가 Ink 가 아니다');
+    /* ⚠`body{` 에 못박는다 — 인쇄 블록에는 `html{background:var(--paper)}` 도 따로 있어서
+       느슨하게 찾으면 **body 를 다시 검게 바꿔도 초록**이다(변이 검사가 실제로 그 구멍을 냈다).
+       지면의 바닥을 정하는 것은 body 다. */
+    if (!/body\{[^}]*background:var\(--paper\)/.test(p)) 흠.push('인쇄 바탕이 종이가 아니다');
+    if (!/body\{[^}]*color:var\(--ink\)/.test(p)) 흠.push('인쇄 잉크가 Ink 가 아니다');
+    if (/body\{[^}]*color:var\(--cream\)/.test(p)) 흠.push('인쇄 잉크가 Cream 이다 — 배경을 끄면 1.13:1 로 사라진다');
     if (!/-webkit-text-fill-color:var\(--ink\)/.test(p)) 흠.push('인쇄 제목이 투명하게 남는다(text-fill-color 폴백 없음)');
   }
   if (!/:focus-visible\{/.test(css)) 흠.push(':focus-visible 이 없다');
