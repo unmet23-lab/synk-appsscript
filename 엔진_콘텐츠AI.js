@@ -1603,7 +1603,7 @@ function sweepAcademicForm_(ss) {
   if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
     if (r[0] && r[3] === 'student') students.push({ sid: String(r[0]).trim(), n: String(r[1] || ''), c: String(r[4] || '') });
   });
-  const al = ensureSheet(ss, 'academic_log', ['log_id', 'student_id', '날짜', '유형', '값', '비고', '입력자']);
+  const al = ensureSheet(ss, 'academic_log', ACADEMIC_LOG_HEADERS); // [v9.239] 헤더 정본 공유(엔진_셋업확장)
   let seq = 0; // AL 채번 — 기존 최대 번호를 이어간다(수기 입력 AL001~ 예시와 공존)
   if (al.getLastRow() >= 2) al.getRange(2, 1, al.getLastRow() - 1, 1).getValues().forEach(r => {
     const m = /^AL(\d+)$/.exec(String(r[0] || '')); if (m) seq = Math.max(seq, Number(m[1]));

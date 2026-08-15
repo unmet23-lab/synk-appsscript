@@ -9,6 +9,14 @@
 //   TEACHER_STATS_·ABSENCE_FOLLOWUP_)을 참조하는데, 톱레벨 const면 파일 초기화 순서(filePushOrder)가
 //   틀어지는 순간 ReferenceError로 전 트리거가 즉사한다(07-24 상담AI.gs:27 실사고와 같은 계급).
 //   호출 시점(런타임)엔 전 파일이 로드돼 있어 순서 자체가 무의미해진다 — 순서 의존 제거가 목적이지 성능 아님.
+// [v9.239] 학습 수집면 헤더 정본 3벌 — 같은 배열이 여러 곳(골격·리허설 시딩·재건·교재연동)에 손사본으로
+//   살아 갈라질 수 있었다(v9.138 hw_feedback·v9.87 teacher_stats 와 같은 병 — 두 벌은 반드시 갈라진다).
+//   여기 한 벌에서 전부 파생시킨다. 열 추가는 끝에만(기존 데이터 열 위치 보존).
+//   VOICE_LOG_HEADERS 가 여기 사는 이유: 쓰는 쪽(교재연동.js)은 ENGINE_FILES 밖이라, 골격이 참조하는
+//   정본은 엔진 쪽에 있어야 테스트 하네스·filePushOrder 선두 고정과 안 부딪친다(08-15 실측).
+const MASTERY_LOG_HEADERS = ['student_id', 'grammar_id', '상태', '첫기록일', '도달일', '출처', 'updated_at'];
+const ACADEMIC_LOG_HEADERS = ['log_id', 'student_id', '날짜', '유형', '값', '비고', '입력자'];
+const VOICE_LOG_HEADERS = ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at', '전사', '전사상태', '전사일시', '급수', '미션ID', 'schema_ver']; // [v9.208] schema_ver — A-8 2단계(수집 4시트 중 마지막) · 끝에만 붙인다
 function sheetSkeleton_() {
   return [
     ['profiles', ['user_id','이름','이름_몽골','role','class_name','생일','email','연락처','messenger_link','parent_of','tuition','등록일','보호자명','보호자연락처','created_at']],
@@ -38,7 +46,7 @@ function sheetSkeleton_() {
     ['inquiries', ['student_id','이름','문의내용','상태','접수시각']], // [v9.28] 학부모 문의 인바운드
     ['payments', ['student_id','이름','금액(만₮)','납부일','방법','비고','created_at']], // [v9.28] 매출 원장(수동 기입)
     ['crew_projects', ['시즌','반','프로젝트명','한줄소개','결과물링크','사진URL','공개일','참여크루','비고']], // [v9.29] 시즌 프로젝트 포트폴리오 — 수동 기입 전용(hall_of_fame 패턴 · 트리거·배치 연동 없음)
-    ['mastery_log', ['student_id','grammar_id','상태','첫기록일','도달일','출처','updated_at']], // [v9.36] 문법 도달 로그 — expandMasteryLog_ upsert, 진화 게이트 재료(Glide 비바인딩)
+    ['mastery_log', MASTERY_LOG_HEADERS], // [v9.36] 문법 도달 로그 — expandMasteryLog_ upsert, 진화 게이트 재료(Glide 비바인딩) · [v9.239] 헤더 정본 공유(손사본 3벌 → 1벌)
     [SELF_DECLARE_TAB_, SELF_DECLARE_HEADERS], // [v9.197] 자기선언 이력 — 학생이 덮어쓰는 3칸(드림한줄·최애·몬스터이름)의 변경만 append(selfDeclareLogNightly_)
     ['attendance_batch', ['날짜','class_name','출석자목록','입력자','created_at','처리상태']], // [v9.36] 수업 시작 출석 1탭(B안) → expandAttendanceBatch_가 attendance로 전개
     ['groups', GROUPS_HEADERS], // [v9.80] 조 편성(시즌×반 1벌) — assignGroupsAll이 채운다. 역할·짝·발표자는 여기서 계산만 하고 저장하지 않는다(매 차시 쓰기 0)
@@ -55,7 +63,7 @@ function sheetSkeleton_() {
     ['synk_cards', ['월','student_id','카드HTML']],
     ['world_raid', ['월','보스명','HP','누적데미지','상태']],
     ['league_pairs', ['week','반A','반B','상태','결과']],
-    ['academic_log', ['log_id','student_id','날짜','유형','값','비고','입력자']],
+    ['academic_log', ACADEMIC_LOG_HEADERS], // [v9.239] 헤더 정본 공유(손사본 3벌 → 1벌)
     ['jacket_grants', ['student_id','이름','자격도달일','재원개월','누적P','지급상태']], // [v9.83] 🧥 과잠 자격 대장
     // [v9.138] 📊 학습 데이터 축적층 — 「2년 축적 → AI 회화 앱」의 원본. 운영 시트가 아니라 **수집기**다.
     //   quiz_log: 구조상 가장 크게 새던 곳 — 퀴즈 100문항을 매일 띄우면서 학생의 선택을 한 건도 안 받고 있었다.
@@ -67,7 +75,13 @@ function sheetSkeleton_() {
     //   [v9.147] teacher_gold: 학생 데이터가 아니라 **정답(채점표)**을 쌓는 유일한 시트. 무인 발행이라
     //   「강사가 실제로 한 교정」이 어디에도 안 남는데, 그게 없으면 2년 뒤 모델 선택을 감으로 한다.
     //   강사판정·강사교정·사유·강사 4열은 **Glide가 채운다**(주 5행이라 update 예산 ≈ 월 20).
-    ['teacher_gold', GOLD_HEADERS]
+    ['teacher_gold', GOLD_HEADERS],
+    // [v9.239] 수집면 «출생» 단일화(엔진도달 전수감사 §9-4 (2)) — 학습 데이터 탭 3종이 골격 밖에서
+    //   ensureSheet 로만 태어나 「우리 수집면 목록」이 두 갈래였다(갈라진 쪽의 증상은 언제나 「통과」).
+    //   골격 등재 = 재건·system_manifest 대조·월키 보호(textKeyCols_ 도출)의 눈에 들어온다.
+    ['voice_log', VOICE_LOG_HEADERS],               // 음성 원본·전사 — 교재연동 voiceSweep_ 가 쓴다
+    [TALK_INDEX_LOG_SHEET, TALK_INDEX_LOG_HEADERS], // 발화 지수 주간 스냅샷 — talkIndexSnapshot_ (v9.233)
+    [OUTCOME_TAB_, OUTCOME_HEADERS_]                // 궤적 결과 관측 — 엔진_궤적 (의도↔결과 조인의 결과쪽)
   ];
 }
 
@@ -251,7 +265,7 @@ function seedDemoData() {
   L.push('✓ point_logs: ' + plRows.length + '행(시상·왕관·구매·편중 시나리오)');
 
   // ⑤ mastery_log — 01 게이트 통과(G3 9/12)·03 게이트 대기 직전 세팅
-  const ml = ensureSheet(ss, 'mastery_log', ['student_id', 'grammar_id', '상태', '첫기록일', '도달일', '출처', 'updated_at']);
+  const ml = ensureSheet(ss, 'mastery_log', MASTERY_LOG_HEADERS);
   const mlRows = [];
   GRAMMAR_BANK.forEach(g => {
     const stg = grammarStageOf_(g[0]);
@@ -267,7 +281,7 @@ function seedDemoData() {
   L.push('✓ mastery+마감폼 이력: 진화 게이트 활성(' + mlRows.length + '건)');
 
   // ⑥ academic_log — 학업추세 차트·레벨업 축하 재료
-  const al = ensureSheet(ss, 'academic_log', ['log_id', 'student_id', '날짜', '유형', '값', '비고', '입력자']);
+  const al = ensureSheet(ss, 'academic_log', ACADEMIC_LOG_HEADERS);
   al.getRange(al.getLastRow() + 1, 1, 8, 7).setValues([
     ['ALD1', 'DEMO-01', d8(day(65)), 'level', 2, '[DEMO]', T], ['ALD2', 'DEMO-01', d8(day(65)), 'mock', 55, '[DEMO]', T],
     ['ALD3', 'DEMO-01', d8(day(35)), 'mock', 68, '[DEMO]', T], ['ALD4', 'DEMO-01', d8(day(5)), 'level', 3, '[DEMO] 레벨업!', T],
