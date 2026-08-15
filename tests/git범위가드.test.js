@@ -1446,6 +1446,38 @@ test('⑨-b 스케줄러 push 스크립트의 손 호출을 막는다 — 처방
   });
 });
 
+/* ── 규칙 ⑩: 훅 건너뛰기(`--no-verify`) (F473 · 2026-08-15) ──────────────────
+ * 한 플래그가 pre-commit 여덟 + commit-msg 하나를 한꺼번에 끈다. 그중 제어문자·옛글자는
+ * 커밋되는 순간 이력에 영원히 남아 다음 커밋으로 못 고친다 — 그래서 사후 검사로는 늦다. */
+
+test('⑩ 훅 건너뛰기를 막는다 — commit·amend·결합 플래그·push 전부', () => {
+  [
+    'git commit --no-verify -m "x" -- a.md',
+    'git commit --amend --no-verify -F msg.txt',
+    'git commit -n -m "x" -- a.md',
+    'git commit -nm "x" -- a.md',
+    'git push --no-verify origin master',
+  ].forEach((c) => {
+    const r = 가드(c);
+    assert.ok(r.차단, '훅 건너뛰기가 통과했다: ' + c);
+    assert.match(r.사유, /F473/, `막긴 했는데 다른 규칙이 잡았다(원인이 안 고쳐진 것): ${c}`);
+  });
+});
+
+test('⑩ 정상 통로·확인 통로는 그대로 둔다 — 그리고 이 사고를 «적는» 커밋도 통과해야 한다', () => {
+  [
+    // 차단 사유가 시키는 처방 그 자체 — 이게 막히면 남는 문은 BYPASS 하나뿐이다(맹점 ③)
+    'git commit --amend -F msg.txt',
+    // push 의 -n 은 --dry-run 이다 — 확인용 통로를 막으면 따를 수 없는 처방이 된다
+    'git push -n origin master',
+    // 🔑 44~46 줄이 경고한 그 자리 — 메시지 «안»의 문자열을 실행으로 읽으면 이 사고를 문서화할 수 없다
+    'git commit -m "F473 — --no-verify 를 내 편의로 쓴 사고를 적는다" -- docs/x.md',
+    'GIT_SCOPE_BYPASS=1 git commit --no-verify -m "x" -- a.md',
+  ].forEach((c) => {
+    assert.equal(가드(c).차단, false, '막으면 안 되는 것을 막았다: ' + c);
+  });
+});
+
 test('⑨-b 읽기·언급은 자유다 — 문서화를 벌하는 가드는 BYPASS 를 가르친다', () => {
   [
     'cat tools/memory-push.cmd',
