@@ -15,6 +15,8 @@ const ROOT = path.resolve(__dirname, '..');
 const { engineSource } = require('./_engine-source');
 /* 주석 제거 통로는 공용 하나다 — `tests/lib/소스검사.js` (F401 계열 · 대기열 P3 줄73). */
 const { 코드만 } = require('./lib/소스검사.js');
+/* 시트 흉내도 공용 하나다 — `tests/lib/시트흉내.js` (#Q85 · F460). 계약·근거·변이 픽스처가 거기 산다. */
+const { 시트흉내 } = require('./lib/시트흉내.js');
 const code = engineSource();
 /* 🔑 **부정 단언 전용** 정제본 — 「없어야 한다」를 원문에 대고 재면 그 문구를 주석에 적는 순간
  *   가드가 엉뚱하게 빨개진다(대기열 P3 #Q72). 긍정 단언과 구간 앵커는 원문 `code` 를 그대로 본다. */
@@ -591,66 +593,12 @@ function loadSnapshot() {
   return (stub) => new Function(...names, `${반키src}\n${src}\nreturn talkIndexSnapshot_;`)(...names.map((n) => stub[n]));
 }
 
-/* 시트를 흉내 낼 때 «아포스트로피 소비»까지 흉내 낸다 — 실제 Sheets 는 저장 시 접두 `'`를 먹고
- *   getValues 가 원문을 돌려준다(Code.js:1036). 그걸 안 흉내 내면 소독을 켠 순간 멱등 키가 갈려
- *   테스트만 빨개지거나(거짓 적색) 반대로 실제 위험을 못 본다. */
-function fakeLogSheet() { // 헤더 1행 가정 — data는 2행부터의 실데이터만 담는다
-  const 저장 = (v) => (typeof v === 'string' && v[0] === "'" ? v.slice(1) : v);
-  return {
-    data: [],
-    raw: [],   // Sheets 에 «건넨» 원본 — 저장 후엔 아포스트로피가 소비돼 안 보이므로 따로 잡아 둔다
-    텍스트열: {},  // 1-기반 열 번호 → 1 (setNumberFormat('@') 로 못박은 칸)
-    /* [vNEXT] 실물 `getLastRow` 는 «내용이 있는» 마지막 행이다 — `clearContent` 로 비운 꼬리는 안 센다.
-     *   행 수를 그냥 세면 비운 행이 계속 잡혀, 다음 실행이 빈 행을 「옛 편성」으로 읽고 되쓴다(거짓 적색). */
-    getLastRow() {
-      let n = 0;
-      this.data.forEach((row, i) => { if ((row || []).some((v) => v !== '' && v != null)) n = i + 1; });
-      return n + 1;
-    },
-    getMaxRows() { return this.data.length + 1000; },
-    /* 🔑 실제 Sheets 는 «자동» 서식 칸에 들어온 'yyyy-MM-dd' 문자열을 **Date 로 삼킨다** — 텍스트(@)로
-     *   못박은 칸만 문자열로 남는다. 이걸 안 흉내 내면 멱등 시험이 라이브와 «다른 것»을 잰다:
-     *   08-14 실측에서 이 흉내가 없어 「재실행이 행을 안 늘린다」가 초록인 채 라이브만 중복 적재였다. */
-    삼킴(v, 열) {
-      if (this.텍스트열[열]) return v;
-      if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) {
-        const d = new Date(v + 'T00:00:00');
-        if (!isNaN(d.getTime())) return d;
-      }
-      return v;
-    },
-    getRange(r, c, n, w) {
-      const self = this;
-      return {
-        getValues() { return self.data.slice(r - 2, r - 2 + n).map((row) => row.slice(c - 1, c - 1 + w)); },
-        /* [vNEXT] 실물은 «읽기»도 준다 — `assignGroups` 는 서식을 박기 전에 먼저 읽어 보고 판단한다.
-         *   안 주면 그 분기에서 TypeError 라 시험이 「돌다 죽는다」로만 보이고, 서식 판정 자체는 안 재진다. */
-        getNumberFormat() { return self.텍스트열[c] ? '@' : '0.###'; },
-        setNumberFormat(f) { if (f === '@') for (let i = 0; i < (w || 1); i++) self.텍스트열[c + i] = 1; },
-        /* 🔑 실물 `clearContent` 는 **행을 지우지 않고 값만 비운다** — 그 뒤 `getLastRow` 는 그대로다.
-         *   여기서 `data.length = 0` 으로 접으면 흉내가 라이브보다 착해져, 「지운 자리에 덮어쓴다」가
-         *   실제로는 어긋나 있어도 초록이 된다(fakeLogSheet 머리말과 같은 축). */
-        clearContent() {
-          for (let i = 0; i < n; i++) {
-            if (!self.data[r - 2 + i]) continue;
-            for (let j = 0; j < (w || 1); j++) self.data[r - 2 + i][c - 1 + j] = '';
-          }
-        },
-        /* [vNEXT] 실물은 «범위 안»에만 쓴다 — 옛 판은 행을 통째로 갈아치워, 한 열만 고쳐 쓰는 호출
-         *   (`assignGroups` 의 시즌 열 정상화 = 폭 1)이 나머지 열을 통째로 날렸다. 그 자리에서 이 흉내가
-         *   라이브보다 «사나워» 거짓 적색을 냈다(변이 실측 08-15에서 잡혔다). */
-        setValues(v) {
-          v.forEach((row, i) => {
-            self.raw.push(row.slice());
-            const 행 = self.data[r - 2 + i] || [];
-            row.forEach((cell, j) => { 행[c - 1 + j] = self.삼킴(저장(cell), c + j); });
-            self.data[r - 2 + i] = 행;
-          });
-        }
-      };
-    }
-  };
-}
+/* 시트 흉내는 **손으로 다시 짓지 않는다** — 공용 통로 `tests/lib/시트흉내.js` 하나다(#Q85 · F460).
+ *   아포스트로피 소비·Date 삼킴·범위 안 쓰기·clearContent 는 값만·getLastRow 는 내용 있는 마지막 행 —
+ *   이 다섯이 «계약»이고, 그 계약은 저 파일에 근거(사고 번호)와 함께 적혀 있으며
+ *   `tests/시트흉내계약.test.js` 의 변이 픽스처가 양방향(착함·사나움)으로 물고 있다.
+ *   여기서 사본을 다시 만들면 한쪽만 라이브와 갈라지는 날이 오고, 그날 아무도 못 잰다. */
+const fakeLogSheet = () => 시트흉내({ 첫행: 2 });   // 헤더 1행 가정 — data 는 2행부터의 실데이터만 담는다
 
 function snapshotRig() {
   const pfRows = [['S1', '바트', '', 'student', '평일11A'], ['S2', '사란', '', 'student', '평일11A']];
