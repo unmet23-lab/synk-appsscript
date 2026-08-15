@@ -45,6 +45,8 @@ const 보드lib = require(path.join(__dirname, 'lib', '보드.js'));
 /* 커밋 가능 상태 판정은 `인계문수거` 것을 그대로 쓴다 — rebase·merge·분리 HEAD 를 여기 다시
  * 적으면 두 수거 도구가 서로 다른 「지금 커밋해도 되나」를 보게 된다(그쪽 머리말과 같은 축). */
 const { 커밋못하는이유 } = require(path.join(__dirname, '인계문수거.js'));
+/* 잠금 나이 판정도 같은 이유로 한 통로다 — 두 수거기가 서로 다른 「고아인가」를 보면 갈라진다. */
+const 잠금lib = require(path.join(__dirname, 'lib', 'git잠금.js'));
 
 /* `SYNK_BOARD_ROOT` 는 `tools/board.js`·`tools/board-move.js` 와 **같은 이름의 이음매**다.
  * 이름이 갈리면 조사와 실행이 서로 다른 저장소를 보고, 그 방향은 「거둘 게 없다」(=침묵)다. */
@@ -161,7 +163,11 @@ if (require.main === module) {
   ].filter(Boolean).join(' · ');
 
   if (!결과.옮김.length) {
-    process.stdout.write(`[보드수거] 거두지 못했다${꼬리 ? ` — ${꼬리}` : ''}\n`);
+    /* 이 도구는 board-move 의 사유를 안 들고 있어 「실패 N건」까지만 말한다(그래서 원인이 안 보인다).
+     * 그 사유 중 재시도로 **영영 안 풀리는** 하나는 여기서 이름을 댈 수 있다 — 잠금의 나이다(F493).
+     * 거절(원칙⑥)은 정상 판정이라 분모에서 뺀다: 그때 잠금 얘기를 꺼내면 오경보다. */
+    const 잠금 = 결과.실패.length ? 잠금lib.고아잠금줄(ROOT) : '';
+    process.stdout.write(`[보드수거] 거두지 못했다${꼬리 ? ` — ${꼬리}` : ''}\n${잠금 ? 잠금 + '\n' : ''}`);
     process.exit(모드 === '실행' ? 2 : 0);   // 명시 실행의 실패는 소리 내고, 훅은 다음 기회에 맡긴다
   }
   process.stdout.write(

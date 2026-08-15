@@ -34,6 +34,8 @@ const { spawnSync } = require('child_process');
 // 생존 판정·sid 표기는 작업본소유자 것을 그대로 쓴다 — ROOT 이음매(SYNK_OWNER_ROOT)도
 // 그쪽과 같은 env 라 두 도구가 항상 같은 저장소·같은 심장박동을 본다.
 const 소유자 = require(path.join(__dirname, '작업본소유자.js'));
+/* 잠금 판정은 **한 곳에서만** 산다 — 보드수거도 같은 통로를 부른다(같은 판정을 두 곳에 적으면 갈라진다). */
+const 잠금lib = require(path.join(__dirname, 'lib', 'git잠금.js'));
 const ROOT = process.env.SYNK_OWNER_ROOT || path.resolve(__dirname, '..');
 
 // 자리(폴더·목차)와 「이름→세션 지문」 변환도 그쪽 것 하나를 쓴다 — 여기 한 벌 더 적었더니
@@ -213,7 +215,10 @@ if (require.main === module) {
     process.exit(0); // hook 모드 빈손은 침묵 — 잔소리하는 장치는 읽히지 않게 된다
   }
   if (결과.실패) {
-    process.stdout.write(`[인계문수거] 거두지 못했다(${결과.실패}) — 미커밋 그대로, 다음 실행이 다시 시도한다\n`);
+    /* 「다음 실행이 다시 시도한다」는 **경합일 때만** 참이다 — 고아 잠금이면 그 재시도가
+     * 영영 안 통한다(F493 실측: 9시간 8분 · 그 창의 커밋 0건). 가르는 자는 잠금의 나이 하나다. */
+    const 잠금 = 잠금lib.고아잠금줄(ROOT, { 실패문: 결과.실패 });
+    process.stdout.write(`[인계문수거] 거두지 못했다(${결과.실패}) — 미커밋 그대로, 다음 실행이 다시 시도한다\n${잠금 ? 잠금 + '\n' : ''}`);
     process.exit(모드 === '실행' ? 2 : 0); // 명시 실행의 실패는 소리 내고, 훅은 다음 기회에 맡긴다
   }
   process.stdout.write(`[인계문수거] 죽은 세션 인계문 ${r.수거.length}건${r.만료.length ? ` + 만료 정리 ${r.만료.length}건(TTL 이 이미 지운 것 — 보호 아님)` : ''}${r.내것.length ? ' + 내 세션 파일' : ''}을 커밋했다(${결과}) — F111 통로${r.보류.length ? ` · 보류 ${r.보류.length}건은 살아있는 세션 것이라 남겼다` : ''}${r.사라짐 ? ` · ${r.사라짐}건은 딴 세션이 먼저 거둬 건너뜀` : ''}\n`);
