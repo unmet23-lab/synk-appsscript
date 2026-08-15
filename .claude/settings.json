@@ -108,6 +108,18 @@
             "statusMessage": "던진 검수·심문 회수"
           }
         ]
+      },
+      {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' _IGNORE || true; G=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/게이트.js\"; { command -v node >/dev/null && [ -f \"$G\" ]; } || { echo \"SYNK 게이트 미실행: $G (node 또는 파일 없음 — F044)\" >&2; exit 1; }; node \"$G\" --훅",
+            "shell": "bash",
+            "timeout": 15,
+            "statusMessage": "서버측 잠금 상태"
+          }
+        ]
       }
     ],
     "PreToolUse": [
