@@ -92,9 +92,16 @@ function 킷추출() {
  *   즉 read-budget 이 「큰 파일」로 막는 읽기를 이 훅이 **무료라고 말하며 권하고** 있었다.
  *   그게 F103 「따를 수 없는 처방」이고, 따를 수 없는 처방은 우회를 정상 통로로 만든다.
  *   장치는 안 도는 쪽보다 **맞는 얼굴로 틀린 값을 내는 쪽**으로 더 자주 샌다(CLAUDE.md 맹점 ④).
- * BIG 은 read-budget 소스에서 읽는다 — 같은 값을 두 곳에 안 적는다(tests/디자인가드.test.js 와 같은 통로).
- * ⚠ 대가: BIG 선언 모양이 바뀌면 정규식이 못 잡아 무료/초과 판정만 조용히 빠진다(크기는 계속 맞다).
- *   그 자리는 이미 닫혀 있다 — 그 테스트가 **같은 정규식**을 쓰므로 여기보다 먼저 적색이 된다. */
+ * 🔴 2차(2026-08-15 · #Q73 수리 하루 만에 26B 재초과): 초과 분기의 구 처방 「파일을 문턱 아래로
+ *   되돌려라」 자체가 사람이 바이트를 지키는 해법이라 재발했다(같은 절차 2번째 = 시스템 결함).
+ *   그래서 지금 초과 분기는 수선 지시가 아니라 **따라갈 수 있는 읽기 경로**를 처방한다 —
+ *   구역 읽기(limit≤CHUNK)는 read-budget 이 **일부러 예산 밖에 둔** 권장 통로다(그쪽 F103 조항).
+ *   크기·CHUNK·구역 수 전부 지금 재서 말한다. 「한 구역에 전문이 들어온다」는 전제는
+ *   tests/디자인가드.test.js 가 줄수 ≤ CHUNK 로 지킨다(바이트 문턱보다 수십 배 여유).
+ * BIG·CHUNK 는 read-budget 소스에서 읽는다 — 같은 값을 두 곳에 안 적는다.
+ * ⚠ 대가: 선언 모양이 바뀌면 정규식이 못 잡아 무료/초과 판정만 조용히 빠진다(크기는 계속 맞다).
+ *   그 자리는 닫혀 있다 — BIG 파싱이 죽으면 문턱 초과 픽스처가 「넘었다」를 잃고,
+ *   CHUNK 파싱이 죽으면 그 테스트의 상수 추출 단언이 먼저 적색이 된다. */
 function 전문읽기_대가() {
   let size;
   try { size = fs.statSync(DESIGN).size; } catch (_) {
@@ -103,18 +110,29 @@ function 전문읽기_대가() {
   const kb = (size / 1024).toFixed(1);
   const 속 = '킷 표·철칙·폰트 스택·로고·산출물별 통로';
   let BIG = null;
+  let CHUNK = null;
   try {
     const 예산 = fs.readFileSync(path.join(ROOT, '.claude', 'hooks', 'read-budget.js'), 'utf8');
     const m = 예산.match(/const BIG\s*=\s*(\d+)\s*\*\s*(\d+)/);
     if (m) BIG = Number(m[1]) * Number(m[2]);
+    const c = 예산.match(/const CHUNK\s*=\s*(\d+)/);
+    if (c) CHUNK = Number(c[1]);
   } catch (_) { /* 못 읽으면 크기만 말한다 — 이 훅을 여기서 멈추지 않는다 */ }
   if (BIG === null) return `값이 더 필요하면 DESIGN.md 전문(${kb}KB): ${속}.`;
   const bigKb = (BIG / 1024).toFixed(0);
-  return size < BIG
-    ? `값이 더 필요하면 DESIGN.md 전문(${kb}KB — read-budget 무료 구간 ${bigKb}KB 안): ${속}.`
-    : `⚠ DESIGN.md 가 ${kb}KB 로 read-budget 「큰 파일」(${bigKb}KB)을 넘었다 — **전문 읽기가 예산에 걸린다.**\n`
-      + '  지금은 필요한 절만 `Read offset/limit` 로 열고, 처분은 숫자를 올리는 것이 아니라 **이 파일을 문턱 아래로 되돌리는 것**이다\n'
-      + '  (tests/디자인가드.test.js 가 이미 적색이다 — 주인 없는 적색은 남의 배포를 막는다).';
+  if (size < BIG) return `값이 더 필요하면 DESIGN.md 전문(${kb}KB — read-budget 무료 구간 ${bigKb}KB 안): ${속}.`;
+  let 구역처방 = '`Read` 에 `offset`+`limit` 을 줘 **구역으로** 연다';
+  if (CHUNK !== null) {
+    let 줄수 = null;
+    try { 줄수 = fs.readFileSync(DESIGN, 'utf8').split(/\r?\n/).length; } catch (_) { /* 줄수 없이 말한다 */ }
+    const 구역수 = 줄수 === null ? null : Math.max(1, Math.ceil(줄수 / CHUNK));
+    구역처방 = `\`Read\` 에 \`limit: ${CHUNK}\` 을 줘 **구역으로** 연다`
+      + (구역수 === null ? '' : 구역수 === 1
+        ? `(${줄수}줄이라 그 한 번에 전문이 다 들어온다)`
+        : `(${줄수}줄 = ${구역수}구역 — offset 을 ${CHUNK}씩 올려 이어 읽는다)`);
+  }
+  return `⚠ DESIGN.md 가 ${kb}KB 로 read-budget 「큰 파일」(${bigKb}KB)을 넘었다 — 전문 통짜 읽기는 예산(세션·일일)에 걸린다.\n`
+    + `  전문이 필요하면 ${구역처방} — 구역 읽기는 그 예산 밖이다(같은 파일 재읽기만 센다). ${속} 전부가 거기 있다.`;
 }
 
 function 메시지(filePath) {
