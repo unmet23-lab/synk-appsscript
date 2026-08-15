@@ -288,6 +288,46 @@ im.save(r'${사진}')
     assert.match(r.stdout + r.stderr, /옛 이름|git mv/, '옛 이름을 알아보고 고칠 길(git mv → 원료_평상복)을 대야 한다(F103)');
   });
 
+  /* ── 무채 base 모드(08-15 · ㉯ 연회색 원료) — 게인은 곱이라 유채 base 의 채도를 못 낮춘다.
+   * 회색 base 가 저채도 색역을 여는데, 기존 마스크(채도 C*14 미만 = 안 칠함)는 회색 천을 통째로
+   * 거부했다. --무채base 가 그 문을 연다 — 단 자격 검사(유채 ≤2%)가 오용(마스코트 사진)을 막는다. */
+  test('⑦ 무채base — 회색 천이 저채도 목표(Slate)에 닿고, 자격 검사가 오용을 막는다', () => {
+    const dir = 임시();
+    const 색갈이 = path.join(루트, 'tools', '펠트색갈이.py');
+    const 회색 = path.join(dir, 'gray.png');
+    const 만들기 = spawnSync(PY, ['-c', `
+from PIL import Image
+im = Image.new('RGB', (256, 256), (161, 159, 165))   # 연회색 천(C* ~3)
+px = im.load()
+for y in range(256):
+    for x in range(256):
+        d = ((x * 7 + y * 13) % 7) - 3
+        r, g, b = px[x, y]
+        px[x, y] = (r + d, g + d * 2, b + d)
+im.save(r'${회색.replace(/\\/g, '\\\\')}')
+`], { encoding: 'utf8' });
+    assert.strictEqual(만들기.status, 0, 만들기.stderr);
+    const env = { ...process.env, PYTHONIOENCODING: 'utf-8' };
+    // ①회색 천 + --무채base → Slate ΔE ≤ 3 (기존 유채 base 에선 18.4 로 도달 밖이던 색)
+    const r1 = spawnSync(PY, [색갈이, 회색, path.join(dir, 'slate.png'), '--목표', '#8A93AD', '--무채base'],
+      { encoding: 'utf8', env });
+    assert.strictEqual(r1.status, 0, `무채base 가 회색 천을 거부했다:\n${r1.stdout}\n${r1.stderr}`);
+    const m = r1.stdout.match(/㉠[^\n]*ΔE2000 \*\*([\d.]+)\*\*/);
+    assert.ok(m, `㉠ 정확도 줄이 없다:\n${r1.stdout}`);
+    assert.ok(Number(m[1]) <= 3.0, `회색 base 에서 Slate 에 못 닿았다 — ΔE ${m[1]}`);
+    // ②회색 천 + 플래그 없음 → 죽되, 고칠 길(--무채base)을 말한다(F103)
+    const r2 = spawnSync(PY, [색갈이, 회색, path.join(dir, 'x.png'), '--목표', '#8A93AD'],
+      { encoding: 'utf8', env });
+    assert.notStrictEqual(r2.status, 0, '유채 마스크가 회색 천을 통과시켰다 — 마스크 축이 죽었다');
+    assert.match(r2.stdout + r2.stderr, /무채base/, '거부 사유가 고칠 플래그를 말해야 한다(F103)');
+    // ③유채 그림(픽스처 코랄) + --무채base → 자격 검사가 죽인다 — 눈·배경을 마스크 없이 칠하게 된다
+    const { 사진 } = 픽스처(dir, { 눈: false });
+    const r3 = spawnSync(PY, [색갈이, 사진, path.join(dir, 'y.png'), '--목표', '#8A93AD', '--무채base'],
+      { encoding: 'utf8', env });
+    assert.notStrictEqual(r3.status, 0, `유채 그림에 무채base 를 받아줬다 — 마스크가 지킬 것을 전면 도색한다:\n${r3.stdout}`);
+    assert.match(r3.stdout + r3.stderr, /유채 픽셀/, '왜 자격 미달인지 분모를 말해야 한다');
+  });
+
   test('⑥-e 실저장소 — 지금 라이브러리 7장이 역할 정합 초록이다(거짓양성만 검사)', () => {
     const lib = path.join(루트, 'docs', '캐릭터', '펠트패치_0815');
     if (!fs.existsSync(path.join(lib, '라이브러리.json'))) return skip('장부가 없다 — 건너뜀');

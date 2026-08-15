@@ -18,9 +18,17 @@
   실측(펠트_본체 · 4px 격자 65,536 표본): 양모 = C* 45+ 18.9% · C* 30~45 3.1% ·
   무채(배경+눈+크림실) 76.4%. 경계는 채도로 페더링해 후광(halo)을 막는다.
 
+무채 base 모드(08-15 · ㉯ 연회색 원료 — 유호 확정 「가·나 한벌로」):
+  게인은 «곱»이라 유채 base 의 채도를 못 낮춘다 — 회색·파스텔 계열(C* 15~21)은 저채도 base 에서만
+  나온다. 그런데 이 도구의 마스크(채도 C* 14 미만 = 안 칠함)는 회색 천을 통째로 마스크 밖에 둔다.
+  그래서 `--무채base` 를 명시하면 마스크를 끄고 전면을 칠한다(코어는 채도 대신 **L\* 40~70 백분위**).
+  ⚠자격 검사가 지킨다: 유채 픽셀이 2% 를 넘는 그림(마스코트 사진 류 — 눈·배경·스티치를 마스크가
+  지켜야 하는 그림)에 이 플래그를 쓰면 죽는다 — 두 모드는 서로의 오용을 서로 잡는다.
+
 사용법:
   python tools/펠트색갈이.py <입력.png> <출력.png> --목표 "#FF6B5C"
   python tools/펠트색갈이.py <입력.png> <출력.png> --목표 "#FF6B5C" --견본 견본.png
+  python tools/펠트색갈이.py <회색천.png> <출력.png> --목표 "#8A93AD" --무채base
 """
 import argparse
 import math
@@ -156,8 +164,9 @@ def hexs(rgb):
     return ''.join('%02X' % max(0, min(255, round(c))) for c in rgb)
 
 
-def 적용(px, W, H, 게인, 무릎):
-    """게인을 선형광에서 곱한다. 같은 RGB 는 같은 답이라 캐시로 접는다(보정 회차의 비용)."""
+def 적용(px, W, H, 게인, 무릎, 전면=False):
+    """게인을 선형광에서 곱한다. 같은 RGB 는 같은 답이라 캐시로 접는다(보정 회차의 비용).
+    전면=True(무채 base): 마스크를 끈다 — 전면이 천이라 지킬 것이 없다(자격 검사가 선행)."""
     out = Image.new('RGB', (W, H))
     o = out.load()
     캐시 = {}
@@ -167,7 +176,7 @@ def 적용(px, W, H, 게인, 무릎):
             p = px[x, y]
             got = 캐시.get(p)
             if got is None:
-                w = 가중치(chroma(p))
+                w = 1.0 if 전면 else 가중치(chroma(p))
                 if w <= 0.0:
                     got = (p, 0, 0)
                 else:
@@ -200,6 +209,9 @@ def main():
                     help='하이라이트 압축 시작점(선형광 0~1). 낮추면 결이 살고 코어가 목표에서 멀어진다')
     ap.add_argument('--보정', type=int, default=3,
                     help='조준 보정 회차(닫힌 루프). 1 이면 한 번만 곱하고 끝낸다')
+    ap.add_argument('--무채base', action='store_true',
+                    help='전면이 무채 천(회색 원료 base)일 때 — 마스크를 끄고 코어를 L* 백분위로 잰다. '
+                         '유채 픽셀 2% 초과 그림엔 못 쓴다(마스크가 지킬 것이 있는 그림)')
     a = ap.parse_args()
 
     im = Image.open(a.입력).convert('RGB')
@@ -212,19 +224,39 @@ def main():
     #   변환식이 거의 맞았는데도 ΔE 9.2 로 읽혔다 — 움직이는 과녁을 쟀다.
     #   그래서 백분위는 «입력에서 한 번만» 쓰고, 그 좌표를 들고 출력에서 같은 자리를 재비교한다.
     표본 = []
+    전체 = 0
     for y in range(0, H, 3):
         for x in range(0, W, 3):
             p = px[x, y]
             c = chroma(p)
+            전체 += 1
             if c > C_충만:
                 표본.append((c, p, (x, y)))
-    if len(표본) < 200:
-        sys.exit(f'유채 표본이 {len(표본)}개뿐 — 이 그림엔 갈아입힐 양모가 없다')
 
-    표본.sort(key=lambda t: t[0])
-    lo, hi = int(len(표본) * 0.40), int(len(표본) * 0.70)
-    코어밴드 = 표본[lo:hi] or 표본
-    코어좌표 = [t[2] for t in 코어밴드]
+    if a.무채base:
+        # 자격 검사 — 유채가 2% 를 넘으면 이건 「전면 천」이 아니라 마스크가 지킬 것이 있는 그림이다.
+        유채율 = len(표본) / max(전체, 1)
+        if 유채율 > 0.02:
+            sys.exit(f'🔴 유채 픽셀 {유채율*100:.1f}% — 무채 base 가 아니다(마스크가 눈·배경·스티치를 '
+                     f'지켜야 하는 그림). --무채base 를 빼고 돌린다.')
+        # 코어를 «L* 40~70 백분위»로 잰다 — 채도축이 죽은 그림에서 «천 그 자체»의 자리.
+        L표본 = []
+        for y in range(0, H, 3):
+            for x in range(0, W, 3):
+                p = px[x, y]
+                L표본.append((lab(p)[0], p, (x, y)))
+        L표본.sort(key=lambda t: t[0])
+        lo, hi = int(len(L표본) * 0.40), int(len(L표본) * 0.70)
+        코어밴드 = L표본[lo:hi] or L표본
+        코어좌표 = [t[2] for t in 코어밴드]
+    else:
+        if len(표본) < 200:
+            sys.exit(f'유채 표본이 {len(표본)}개뿐 — 이 그림엔 갈아입힐 양모가 없다.\n'
+                     f'   전면이 무채 천(회색 원료 base)이면 --무채base 로 돌린다(F103).')
+        표본.sort(key=lambda t: t[0])
+        lo, hi = int(len(표본) * 0.40), int(len(표본) * 0.70)
+        코어밴드 = 표본[lo:hi] or 표본
+        코어좌표 = [t[2] for t in 코어밴드]
 
     def 좌표평균(image_px):
         n = len(코어좌표)
@@ -236,14 +268,18 @@ def main():
         return tuple(v / n for v in s)
 
     def 자유측정(image_px):
-        """입력과 «같은 정의»를 출력에 새로 적용한 값 — 외부 검토자가 계산할 숫자."""
+        """입력과 «같은 정의»를 출력에 새로 적용한 값 — 외부 검토자가 계산할 숫자.
+        무채 base 모드에선 축도 같이 간다: 출력은 유채가 됐어도 «천 전체»가 과녁이므로 L* 백분위."""
         t = []
         for y in range(0, H, 3):
             for x in range(0, W, 3):
                 q = image_px[x, y]
-                c = chroma(q)
-                if c > C_충만:
-                    t.append((c, q))
+                if a.무채base:
+                    t.append((lab(q)[0], q))
+                else:
+                    c = chroma(q)
+                    if c > C_충만:
+                        t.append((c, q))
         if len(t) < 200:
             return None
         return 코어([(c, q) for c, q in t])
@@ -262,7 +298,7 @@ def main():
         # ⚠순서 주의 — zip(원본, 조준) 다. 뒤집으면 게인이 역수가 되어 «어두워지는데»
         #   그림은 그럴싸하게 나온다(실측 08-15: 첫 판이 R×0.622 로 더 칙칙해졌다).
         게인 = tuple(t / max(s, 1e-6) for s, t in zip(s_lin, 조준))
-        out, 칠한수, clipped = 적용(px, W, H, 게인, a.무릎)
+        out, 칠한수, clipped = 적용(px, W, H, 게인, a.무릎, 전면=a.무채base)
         o = out.load()
         anchored = 좌표평균(o)
         d = de2000(lab(anchored), lab(목표))
