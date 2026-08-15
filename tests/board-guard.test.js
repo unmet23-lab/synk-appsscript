@@ -785,7 +785,10 @@ test('🔴 [F235] 편집 전 판을 못 읽으면 **전량 차단으로 돌아�
  * 탐지력은 **여기 픽스처가 진다** — 실저장소는 살아있는 세션이 매 실행마다 달라 초록이 우연이 된다.
  * 세 갈래를 조건 하나씩 바꿔 가른다: ①전부 막힘+첫 선언 ②전부 막힘+내 줄 이미 있음 ③일부만 막힘. */
 const { spawnSync: 실행 } = require('child_process');
-const store = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'handoff-store.js'));
+/* 🔴 박동을 디스크에 쓰는 픽스처다 — 공유 폴더면 남의 sweep 이 지우고 내 가짜 세션이 남의
+ *   판정에 섞인다. 사유 전문 = tests/lib/상태격리.js */
+const { 격리된store } = require('./lib/상태격리');
+const store = 격리된store(__filename);
 const hasGit = 실행('git', ['--version'], { encoding: 'utf8' }).status === 0;
 const 남세션278 = 'local_f278aaaa-1111-2222-3333-444455556666';
 const 내세션278 = 'local_f278bbbb-1111-2222-3333-444455556666';

@@ -21,7 +21,10 @@ const { spawnSync } = require('node:child_process');
 const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const TOOL = path.join(__dirname, '..', 'tools', '보드껍데기정리.js');
-const store = require('../.claude/hooks/lib/handoff-store.js');
+/* 🔴 박동을 디스크에 쓰는 픽스처다 — 공유 폴더면 남의 sweep 이 지우고 내 가짜 세션이 남의
+ *   판정에 섞인다. 사유 전문 = tests/lib/상태격리.js */
+const { 격리된store } = require('./lib/상태격리');
+const store = 격리된store(__filename);
 const 보드id = require('../.claude/hooks/lib/board-id.js');
 
 const git = (cwd, ...args) => spawnSync('git', args, { cwd, encoding: 'utf8' });
