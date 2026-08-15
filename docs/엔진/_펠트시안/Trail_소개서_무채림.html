@@ -15,7 +15,7 @@
    통로: python tools/펠트천굽기.py → node tools/펠트문서.js --굽기
    문법: 순흑에 가까운 무대 · 실물 펠트 오브 1점 · 유리 크롬(스펙큘러+분산 림)
    색:  무대 Navy 2 · 잉크 Cream · 3층 Slate · 신호 Coral «빛으로만»
-        ⚠유리에 안료를 칠하지 않는다 — 색은 1.5px 분산 림(스펙트럼 판)이 낸다.
+        ⚠유리에 안료를 칠하지 않는다 — 색은 1.5px 분산 림(무채 판)이 낸다.
    천:  Cream 결 93.6% · Paper 결 92.9% · 240px WEBP q80 (실물 양모 사진 — 헌법 ①)
    ──────────────────────────────────────────────────────────────────────── */
   :root{
@@ -95,13 +95,11 @@
   .유리::before{
     content:'';position:absolute;inset:0;border-radius:inherit;padding:1.2px;pointer-events:none;
     background:conic-gradient(from 208deg,
-      rgba(78,124,255,0.55) 25deg,
-      rgba(200,255,61,0.3) 80deg,
-      rgba(255,212,71,0.4) 130deg,
-      rgba(255,107,92,0.45) 185deg,
-      rgba(255,62,136,0.34) 232deg,
-      rgba(78,124,255,0.5) 290deg,
-      rgba(246,241,232,0.55) 338deg);
+      rgba(138,147,173,0.45) 25deg,
+      rgba(246,241,232,0.6) 120deg,
+      rgba(138,147,173,0.35) 210deg,
+      rgba(246,241,232,0.42) 300deg,
+      rgba(138,147,173,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
@@ -196,13 +194,11 @@
   .번호::before{
     content:'';position:absolute;inset:0;border-radius:50%;padding:1.4px;pointer-events:none;
     background:conic-gradient(from 208deg,
-      rgba(78,124,255,0.55) 25deg,
-      rgba(200,255,61,0.3) 80deg,
-      rgba(255,212,71,0.4) 130deg,
-      rgba(255,107,92,0.45) 185deg,
-      rgba(255,62,136,0.34) 232deg,
-      rgba(78,124,255,0.5) 290deg,
-      rgba(246,241,232,0.55) 338deg);
+      rgba(138,147,173,0.45) 25deg,
+      rgba(246,241,232,0.6) 120deg,
+      rgba(138,147,173,0.35) 210deg,
+      rgba(246,241,232,0.42) 300deg,
+      rgba(138,147,173,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
