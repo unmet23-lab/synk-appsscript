@@ -2111,6 +2111,10 @@ function runTeacherStats_({ profileRows, logs = [], oldStats = [], hwRows = null
       ymShift_: () => '2026-06',               // 전월 필터 기준 고정(시계 비의존)
       readPointLogs_: () => logs,
       teacherEmailMap_, classNumOf,
+      /* [v9.238·#Q79] 반 키 접기는 공용 통로 `반키_` 하나다(엔진_셋업확장.js). 이 구간 «밖»에 살아
+       *   하네스가 넣어 줘야 하는데, **스텁을 지어 넣지 않는다** — 스텁은 사본이라 실물이 퇴행해도
+       *   여기는 계속 초록이고, 그 침묵이 정확히 이 통로가 막으려는 실패 모양이다(발화퀄리티.test.js:584 과 같은 규약). */
+      반키_: loadFunction('function 반키_(', '/* [v9.237·검수 c59f24d9]', '반키_', {}),
       ensureSheet: () => tsSheet,
       // [v9.107] 3지표 의존 — 이 하네스는 academic_log·absence_followup·enrollments를 주지 않는다(전부 null).
       //   즉 지표 열은 '미측정 빈칸' 경로를 타며, 그 경로가 기존 8열 계산을 깨지 않는지가 여기서 지켜진다.
