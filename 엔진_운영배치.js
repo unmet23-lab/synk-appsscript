@@ -1930,7 +1930,7 @@ function expandMasteryLog_() {
       if (r[0] && r[3] === 'student' && r[4]) (roster[String(r[4])] = roster[String(r[4])] || []).push(String(r[0]).trim());
     });
   }
-  const ml = ensureSheet(ss, 'mastery_log', ['student_id', 'grammar_id', '상태', '첫기록일', '도달일', '출처', 'updated_at']);
+  const ml = ensureSheet(ss, 'mastery_log', MASTERY_LOG_HEADERS); // [v9.240] 헤더 정본 공유(엔진_셋업확장)
   const mkey = {}; // 'sid|gid' → {row(시트 행번호), st}
   if (ml.getLastRow() >= 2) {
     ml.getRange(2, 1, ml.getLastRow() - 1, 3).getValues().forEach((r, i) => {
@@ -2026,7 +2026,7 @@ function seedMasteryForExisting() {
   const pf = ss.getSheetByName('profiles');
   if (!pf || pf.getLastRow() < 2 || pf.getMaxColumns() < 42) { Logger.log('seedMastery: profiles/AP열 없음 — calcAll 먼저 실행'); return; }
   const pfData = pf.getRange(2, 1, pf.getLastRow() - 1, 42).getValues();
-  const ml = ensureSheet(ss, 'mastery_log', ['student_id', 'grammar_id', '상태', '첫기록일', '도달일', '출처', 'updated_at']);
+  const ml = ensureSheet(ss, 'mastery_log', MASTERY_LOG_HEADERS); // [v9.240] 헤더 정본 공유(엔진_셋업확장)
   const mkey = {};
   if (ml.getLastRow() >= 2) {
     ml.getRange(2, 1, ml.getLastRow() - 1, 3).getValues().forEach((r, i) => {
