@@ -35,9 +35,9 @@ const 낡음보일수 = 3;
  *   한쪽이 여기 없으면 규약이 있어도 기계가 못 읽는다(점유 판정 신호 ②). 1부터 센다(사람이 읽는 수).
  * 🔑 `id` = 영구 `#Qnn`(유호 채택 08-14) — 줄번호와 달리 **줄이 움직여도 안 변한다.** 점유 판정의
  *   조인 키라 셋 중 가장 세다. 없으면 `null` — 「모름」이지 「없어도 된다」가 아니다(회귀가 fail 로 잡는다). */
-function 항목들() {
-  if (!fs.existsSync(대기열경로)) return null;
-  const 줄들 = fs.readFileSync(대기열경로, 'utf8').split(/\r?\n/);
+function 항목들(텍스트) {
+  if (텍스트 === undefined && !fs.existsSync(대기열경로)) return null;
+  const 줄들 = (텍스트 === undefined ? fs.readFileSync(대기열경로, 'utf8') : String(텍스트)).split(/\r?\n/);
   const 결과 = [];
   let 층 = '';
   줄들.forEach((줄, i) => {
@@ -49,6 +49,32 @@ function 항목들() {
     결과.push({ 층, 본문: m[1].trim(), 줄번호: i + 1, id: idm ? Number(idm[1]) : null });
   });
   return 결과;
+}
+
+/* 채번 규칙 위반 판정 — **이 저장소에서 판정하는 자리는 여기 하나다**(F461 처방 ㄴ).
+ *
+ * 왜 함수로 뽑았나 — 규칙(「열린 줄은 전부 `#Qnn` 을 갖고, 그 번호는 유일하다」)을 재던 곳은
+ *   `tests/대기열점유.test.js` 안의 **인라인 사본**뿐이었다. 커밋 게이트를 새로 지으면서 그 열몇
+ *   줄을 베끼면 판정이 두 곳에 갈리고, 갈라지는 방향은 언제나 「통과」다(CLAUDE.md 맹점 ④).
+ *   그래서 사본을 만들지 않고 **이 하나를 사후 회귀와 사전 게이트가 같이 부른다.**
+ *
+ * 🔑 `분모` 를 함께 낸다 — 파싱이 통째로 실패해 0건이면 `중복:[]`·`없음:[]` 이라 **위반 없음과
+ *   똑같은 모양**이다. 부르는 쪽이 0을 초록으로 읽지 않게 센 개수를 들려 보낸다(F207).
+ * 🔑 id 가 없는 줄은 중복 셈에서 뺀다 — `없음` 이 이미 그 줄을 지목하고 있고, 여기 넣으면
+ *   「번호 없는 줄 둘」이 `#Qnull` 중복이라는 엉뚱한 사유로 뜬다.
+ */
+function 채번(줄들) {
+  const 전체 = 줄들 || [];
+  const 최대 = Math.max(0, ...전체.map((it) => (Number.isInteger(it.id) ? it.id : 0)));
+  const 없음 = 전체.filter((it) => !Number.isInteger(it.id));
+  const 본것 = new Map();
+  const 중복 = [];
+  for (const it of 전체) {
+    if (!Number.isInteger(it.id)) continue;
+    if (본것.has(it.id)) 중복.push({ id: it.id, 먼저: 본것.get(it.id), 나중: it.줄번호 });
+    else 본것.set(it.id, it.줄번호);
+  }
+  return { 최대, 없음, 중복, 분모: 전체.length };
 }
 
 /* 보드에 이미 선언된 트랙의 글자를 모은다 — 제목 몇 글자가 겹치면 「누가 잡았다」로 본다.
@@ -635,7 +661,7 @@ function 집기보고(argv, i) {
 
 module.exports = {
   항목들, 씨앗, 낡음후보, 층별시각, 차단, 차단표식, 집을수있음, 점유표식, 확정재료,
-  점유, 보드행들, 행,
+  점유, 보드행들, 행, 채번, 대기열좌표,
   집기, 굵은제목, 트랙칸, 칸상한, 오늘날짜,
 };
 
