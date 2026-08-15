@@ -71,7 +71,8 @@ im.save(r'${사진.replace(/\\/g, '\\\\')}')
 json.dump({'재질': {'펠트': {
     '정본사진': {'평상복': 'photo.png', '특별': 'photo.png'},
     '울패치': {'${키}': [${중심[0]}, ${중심[1]}], '한변px': ${한변}},
-}}}, open(r'${토큰.replace(/\\/g, '\\\\')}', 'w', encoding='utf-8'))
+}}, '색': {'마스코트': {'램프': [{'이름': 'Cherry Core', 'hex': '#FB7A87'}]}}},
+    open(r'${토큰.replace(/\\/g, '\\\\')}', 'w', encoding='utf-8'))
 `;
   const r = spawnSync(PY, ['-c', py], { encoding: 'utf8', env: { ...process.env, PYTHONIOENCODING: 'utf-8' } });
   assert.strictEqual(r.status, 0, `픽스처 생성 실패: ${r.stderr}`);
@@ -212,6 +213,86 @@ im.save(r'${사진}')
     const dir = 임시();
     const r = 돌리기(['절단'], { SYNK_FELT_LIB: dir });
     assert.strictEqual(r.status, 0, `정본 사진이 자기검사에서 죽었다 — 사진이 바뀌었나:\n${r.stdout}\n${r.stderr}`);
-    assert.ok(fs.existsSync(path.join(dir, '중립_평상복.png')), '패치가 안 써졌다');
+    assert.ok(fs.existsSync(path.join(dir, '원료_평상복.png')), '패치가 안 써졌다(08-15 개명 — 「중립」은 코랄 원료였다)');
+  });
+
+  /* ── 역할 층(08-15 · 유호 「가·나 한벌로」) — 중립·코랄·체리 세 분홍이 겹쳐 보인 수리 ㉮.
+   * 라벨이 값과 다른 말을 하는 것이 이 라이브러리의 고질(F472)이라, 역할도 프로즈가 아니라
+   * 장부+검증으로 못박는다. 탐지력은 픽스처가 진다 — 실저장소에는 거짓양성만 검사한다. */
+  test('⑥ 절단·염색이 역할 장부를 쓴다 — 원료는 접두 강제, 체리 근접은 마스코트전용 자동', () => {
+    const dir = 임시();
+    const { 토큰 } = 픽스처(dir, { 눈: true });
+    const lib = path.join(dir, 'lib');
+    const env = { SYNK_FELT_TOKEN: 토큰, SYNK_FELT_ROOT: dir, SYNK_FELT_LIB: lib };
+    assert.strictEqual(돌리기(['절단'], env).status, 0);
+    // 파랑(체리에서 먼 색) → 공용
+    assert.strictEqual(돌리기(['염색', '#4E7CFF', '--이름', '파랑'], env).status, 0);
+    // 체리 코어 그대로 → 마스코트전용 «자동» — 실행규칙 ① 을 통로가 지킨다
+    const 체 = 돌리기(['염색', '#FB7A87', '--이름', '체리'], env);
+    assert.strictEqual(체.status, 0, 체.stderr);
+    assert.match(체.stdout, /마스코트전용/, `체리 근접인데 자동 태그가 안 붙었다:\n${체.stdout}`);
+    const 장 = JSON.parse(fs.readFileSync(path.join(lib, '라이브러리.json'), 'utf8'))['패치'];
+    assert.strictEqual(장['원료_평상복']?.역할, '원료', '절단이 원료 역할을 안 올렸다');
+    assert.strictEqual(장['파랑']?.역할, '공용');
+    assert.strictEqual(장['체리']?.역할, '마스코트전용');
+    // 검증 명령이 이 상태를 초록으로 읽어야 한다(자기 처방 되먹임 · F103)
+    const v = 돌리기(['역할'], env);
+    assert.strictEqual(v.status, 0, `통로로만 만든 라이브러리가 검증에서 죽었다:\n${v.stdout}\n${v.stderr}`);
+  });
+
+  test('⑥-b 체리 근접을 «공용»으로 내달라면 죽는다 — 실행규칙 ① 은 플래그로 못 뚫는다', () => {
+    const dir = 임시();
+    const { 토큰 } = 픽스처(dir, { 눈: true });
+    const lib = path.join(dir, 'lib');
+    const env = { SYNK_FELT_TOKEN: 토큰, SYNK_FELT_ROOT: dir, SYNK_FELT_LIB: lib };
+    assert.strictEqual(돌리기(['절단'], env).status, 0);
+    const r = 돌리기(['염색', '#FB7A87', '--이름', '체리2', '--역할', '공용'], env);
+    assert.notStrictEqual(r.status, 0, `체리를 공용으로 냈다 — 겹침이 라이브러리로 되돌아온다:\n${r.stdout}`);
+    assert.match(r.stdout + r.stderr, /마스코트전용/, '거부 사유가 고칠 길을 말해야 한다(F103)');
+  });
+
+  test('⑥-c 검증은 통로 밖 패치·역할 위조를 잡는다 — 새는 방향은 언제나 「통과」라서', () => {
+    const dir = 임시();
+    const { 토큰 } = 픽스처(dir, { 눈: true });
+    const lib = path.join(dir, 'lib');
+    const env = { SYNK_FELT_TOKEN: 토큰, SYNK_FELT_ROOT: dir, SYNK_FELT_LIB: lib };
+    assert.strictEqual(돌리기(['절단'], env).status, 0);
+    assert.strictEqual(돌리기(['염색', '#FB7A87', '--이름', '체리'], env).status, 0);
+    // ①통로 밖에서 굴러들어온 미등록 패치
+    fs.copyFileSync(path.join(lib, '원료_평상복.png'), path.join(lib, '몰래.png'));
+    const r1 = 돌리기(['역할'], env);
+    assert.notStrictEqual(r1.status, 0, `미등록 패치를 통과시켰다:\n${r1.stdout}`);
+    assert.match(r1.stdout + r1.stderr, /몰래/, '어느 패치가 문제인지 이름을 대야 한다');
+    fs.rmSync(path.join(lib, '몰래.png'));
+    // ②장부를 손으로 고쳐 체리를 공용으로 위조 — 실물 픽셀을 재는 검증이 잡아야 한다
+    const 장부경로 = path.join(lib, '라이브러리.json');
+    const 장 = JSON.parse(fs.readFileSync(장부경로, 'utf8'));
+    장['패치']['체리']['역할'] = '공용';
+    fs.writeFileSync(장부경로, JSON.stringify(장, null, 1));
+    const r2 = 돌리기(['역할'], env);
+    assert.notStrictEqual(r2.status, 0, `장부 위조(체리→공용)를 통과시켰다 — 실측이 아니라 장부를 믿고 있다:\n${r2.stdout}`);
+    assert.match(r2.stdout + r2.stderr, /실행규칙|마스코트전용/, '왜 안 되는지 근거 규칙을 대야 한다');
+  });
+
+  test('⑥-d 옛 이름 「중립_평상복」 은 조용히 안 받는다 — 고칠 이름을 대며 죽는다(F472 문법)', () => {
+    const dir = 임시();
+    const { 토큰 } = 픽스처(dir, { 눈: true });
+    const lib = path.join(dir, 'lib');
+    const env = { SYNK_FELT_TOKEN: 토큰, SYNK_FELT_ROOT: dir, SYNK_FELT_LIB: lib };
+    assert.strictEqual(돌리기(['절단'], env).status, 0);
+    fs.renameSync(path.join(lib, '원료_평상복.png'), path.join(lib, '중립_평상복.png'));
+    const r = 돌리기(['염색', '#4E7CFF'], env);
+    assert.notStrictEqual(r.status, 0, `옛 이름을 그대로 받아줬다 — 「중립」 거짓 라벨이 되살아난다:\n${r.stdout}`);
+    // ⚠「원료_평상복」 만 맞추면 안 된다 — 파일이 없어 «다른 사유»(재염색 실패)로 죽어도
+    // 경로 문자열에 그 이름이 섞여 우연히 통과한다(변이 실측 08-15). 옛 이름을 «알아본» 증거를 요구한다.
+    assert.match(r.stdout + r.stderr, /옛 이름|git mv/, '옛 이름을 알아보고 고칠 길(git mv → 원료_평상복)을 대야 한다(F103)');
+  });
+
+  test('⑥-e 실저장소 — 지금 라이브러리 7장이 역할 정합 초록이다(거짓양성만 검사)', () => {
+    const lib = path.join(루트, 'docs', '캐릭터', '펠트패치_0815');
+    if (!fs.existsSync(path.join(lib, '라이브러리.json'))) return skip('장부가 없다 — 건너뜀');
+    const r = 돌리기(['역할']);
+    assert.strictEqual(r.status, 0, `실저장소 역할 정합이 깨졌다:\n${r.stdout}\n${r.stderr}`);
+    assert.match(r.stdout, /미등록 0/, '정합 요약이 안 나왔다');
   });
 }
