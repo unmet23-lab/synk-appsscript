@@ -17,6 +17,21 @@
 const MASTERY_LOG_HEADERS = ['student_id', 'grammar_id', '상태', '첫기록일', '도달일', '출처', 'updated_at'];
 const ACADEMIC_LOG_HEADERS = ['log_id', 'student_id', '날짜', '유형', '값', '비고', '입력자'];
 const VOICE_LOG_HEADERS = ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at', '전사', '전사상태', '전사일시', '급수', '미션ID', 'schema_ver']; // [v9.208] schema_ver — A-8 2단계(수집 4시트 중 마지막) · 끝에만 붙인다
+// [v9.241] 골격 밖에 살던 필수 탭 4종의 헤더 정본. 이 넷은 setup·재건이 만들거나(contents·class_stats·
+//   trajectory) 사람이 채우는데(schedule), **지도에 없었다** — 그래서 워치독의 손 목록에만 이름이 있었다.
+const CONTENTS_HEADERS = ['콘텐츠ID','유형','이름','설명','이미지URL','순번','몽골어','영어'];
+const CLASS_STATS_HEADERS = ['class_name','학생수','반누적포인트','반월간포인트','반몬스터','이번달출석합','반주간데미지','주간평균'];
+/* [v9.241] 골격 행의 **세 번째 칸** = 이 탭이 «수집 장부»인가(append-only · 지워지면 소급 불가).
+ *
+ * 왜 여기 적나: 이 표식을 다른 파일에 목록으로 두면 새 수집 탭이 생기는 날 그 목록만 안 늘고,
+ *   갈라진 쪽의 증상은 언제나 「통과」다(v9.239 가 수집면 «출생»에서 겪은 것과 같은 병).
+ *   시트를 선언하는 **바로 그 줄**에 붙이면 낡을 자리가 없다.
+ * 무엇이 표식을 받나: 행이 쌓이기만 하고 **줄어들 이유가 없는** 탭. 데모 퇴장(`exitDemoMode`)이
+ *   지우는 탭은 그 자리에서 기준선을 함께 지운다(아래 `wipe`) — 안 그러면 개원 첫 주에
+ *   따를 수 없는 경보가 뜬다(F103).
+ * 읽는 쪽: `수집장부탭_()` → 주간 워치독의 «줄었나» 검사. 골격을 쓰는 나머지 셋(재건·사전점검·
+ *   매니페스트)은 k[0]·k[1] 만 보므로 칸이 늘어도 영향이 없다. */
+const 수집표식_ = '수집';
 function sheetSkeleton_() {
   return [
     ['profiles', ['user_id','이름','이름_몽골','role','class_name','생일','email','연락처','messenger_link','parent_of','tuition','등록일','보호자명','보호자연락처','created_at']],
@@ -46,14 +61,14 @@ function sheetSkeleton_() {
     ['inquiries', ['student_id','이름','문의내용','상태','접수시각']], // [v9.28] 학부모 문의 인바운드
     ['payments', ['student_id','이름','금액(만₮)','납부일','방법','비고','created_at']], // [v9.28] 매출 원장(수동 기입)
     ['crew_projects', ['시즌','반','프로젝트명','한줄소개','결과물링크','사진URL','공개일','참여크루','비고']], // [v9.29] 시즌 프로젝트 포트폴리오 — 수동 기입 전용(hall_of_fame 패턴 · 트리거·배치 연동 없음)
-    ['mastery_log', MASTERY_LOG_HEADERS], // [v9.36] 문법 도달 로그 — expandMasteryLog_ upsert, 진화 게이트 재료(Glide 비바인딩) · [v9.239] 헤더 정본 공유(손사본 3벌 → 1벌)
-    [SELF_DECLARE_TAB_, SELF_DECLARE_HEADERS], // [v9.197] 자기선언 이력 — 학생이 덮어쓰는 3칸(드림한줄·최애·몬스터이름)의 변경만 append(selfDeclareLogNightly_)
+    ['mastery_log', MASTERY_LOG_HEADERS, 수집표식_], // [v9.36] 문법 도달 로그 — expandMasteryLog_ upsert, 진화 게이트 재료(Glide 비바인딩) · [v9.239] 헤더 정본 공유(손사본 3벌 → 1벌)
+    [SELF_DECLARE_TAB_, SELF_DECLARE_HEADERS, 수집표식_], // [v9.197] 자기선언 이력 — 학생이 덮어쓰는 3칸(드림한줄·최애·몬스터이름)의 변경만 append(selfDeclareLogNightly_)
     ['attendance_batch', ['날짜','class_name','출석자목록','입력자','created_at','처리상태']], // [v9.36] 수업 시작 출석 1탭(B안) → expandAttendanceBatch_가 attendance로 전개
     ['groups', GROUPS_HEADERS], // [v9.80] 조 편성(시즌×반 1벌) — assignGroupsAll이 채운다. 역할·짝·발표자는 여기서 계산만 하고 저장하지 않는다(매 차시 쓰기 0)
     ['lectures', LECTURE_HEADERS],           // [v9.106] 온라인 강의 카탈로그(유호님이 채운다)
     ['lecture_views', LECTURE_VIEW_HEADERS], // [v9.106] 수강 이력 — 주말반 승급 판정의 나머지 절반
     ['lesson_close', LESSON_CLOSE_HEADERS], // [v9.91] 차시 마감폼 적재 — 진도 3택·미발화자. 조 편성 침묵 점수·이월 경보·4주차 명단의 공통 원천
-    ['hw_feedback', HW_FEEDBACK_HEADERS], // [v9.49] AI 숙제 첨삭 카드 — aiFeedbackBatch_ 생성. I상태: '노출'=공개(게이트 통과·무인)/'대기'=수동검수 모드/'격리:'·'오류:'=미노출([v9.63]), J학생확인=Glide 전용(스크립트 불가침), K포인트지급=스크립트 전용 · [v9.138] 헤더 정본을 배치와 공유(구 구조는 두 벌이라 갈라졌다) + 수집 4열(숙제ID·오류태그·재작성원본·다시쓰기URL)
+    ['hw_feedback', HW_FEEDBACK_HEADERS, 수집표식_], // [v9.49] AI 숙제 첨삭 카드 — aiFeedbackBatch_ 생성. I상태: '노출'=공개(게이트 통과·무인)/'대기'=수동검수 모드/'격리:'·'오류:'=미노출([v9.63]), J학생확인=Glide 전용(스크립트 불가침), K포인트지급=스크립트 전용 · [v9.138] 헤더 정본을 배치와 공유(구 구조는 두 벌이라 갈라졌다) + 수집 4열(숙제ID·오류태그·재작성원본·다시쓰기URL)
     ['student_errors', ['날짜','student_id','반','유형','메모','입력자','created_at','상태']], // [v9.36] 강사 개인 약점 메모(선택 입력) — 리포트·브리핑 노출은 후속(학생 앱 미노출)
     ['onboarding', ['role','제목','안내KO','안내MN','아이콘']], // [v9.38] 역할별 홈 안내 카드(setupOnboarding) — 재건 목록 누락분 보강
     ['system_manifest', ['지표','값','상태']], // [v9.37] buildSystemManifest 출력 — 시트·콘텐츠·트리거·의존성 실측 정본(수동 숫자 대체)
@@ -68,21 +83,33 @@ function sheetSkeleton_() {
     // [v9.138] 📊 학습 데이터 축적층 — 「2년 축적 → AI 회화 앱」의 원본. 운영 시트가 아니라 **수집기**다.
     //   quiz_log: 구조상 가장 크게 새던 곳 — 퀴즈 100문항을 매일 띄우면서 학생의 선택을 한 건도 안 받고 있었다.
     //   문항 텍스트·정답을 행에 함께 스냅샷한다(contents가 개정돼도 2년 뒤 해석이 가능하도록).
-    ['quiz_log', QUIZ_LOG_HEADERS],
+    ['quiz_log', QUIZ_LOG_HEADERS, 수집표식_],
     //   talk_log: 지금 앱이 쌓는 것은 전부 단문·단답이라 **「대화」가 0건**이었다 — 회화 앱을 만들겠다면서
     //   다회차 주고받기가 한 건도 없는 상태. 이 시트가 그 구멍을 메운다(숙제·퀴즈보다 큰 구멍이다).
-    ['talk_log', TALK_LOG_HEADERS],
+    ['talk_log', TALK_LOG_HEADERS, 수집표식_],
     //   [v9.147] teacher_gold: 학생 데이터가 아니라 **정답(채점표)**을 쌓는 유일한 시트. 무인 발행이라
     //   「강사가 실제로 한 교정」이 어디에도 안 남는데, 그게 없으면 2년 뒤 모델 선택을 감으로 한다.
     //   강사판정·강사교정·사유·강사 4열은 **Glide가 채운다**(주 5행이라 update 예산 ≈ 월 20).
-    ['teacher_gold', GOLD_HEADERS],
+    ['teacher_gold', GOLD_HEADERS, 수집표식_],
     // [v9.239] 수집면 «출생» 단일화(엔진도달 전수감사 §9-4 (2)) — 학습 데이터 탭 3종이 골격 밖에서
     //   ensureSheet 로만 태어나 「우리 수집면 목록」이 두 갈래였다(갈라진 쪽의 증상은 언제나 「통과」).
     //   골격 등재 = 재건·system_manifest 대조·월키 보호(textKeyCols_ 도출)의 눈에 들어온다.
-    ['voice_log', VOICE_LOG_HEADERS],               // 음성 원본·전사 — 교재연동 voiceSweep_ 가 쓴다
-    [TALK_INDEX_LOG_SHEET, TALK_INDEX_LOG_HEADERS], // 발화 지수 주간 스냅샷 — talkIndexSnapshot_ (v9.233)
-    [OUTCOME_TAB_, OUTCOME_HEADERS_]                // 궤적 결과 관측 — 엔진_궤적 (의도↔결과 조인의 결과쪽)
+    ['voice_log', VOICE_LOG_HEADERS, 수집표식_],               // 음성 원본·전사 — 교재연동 voiceSweep_ 가 쓴다
+    [TALK_INDEX_LOG_SHEET, TALK_INDEX_LOG_HEADERS, 수집표식_], // 발화 지수 주간 스냅샷 — talkIndexSnapshot_ (v9.233)
+    [OUTCOME_TAB_, OUTCOME_HEADERS_, 수집표식_],               // 궤적 결과 관측 — 엔진_궤적 (의도↔결과 조인의 결과쪽)
+    /* [v9.241] 지도 밖에 살던 필수 탭 4종 편입 — 주간 워치독의 손 목록에만 이름이 있어서, 목록을
+     *   골격에서 도출하는 순간 **감시에서 사라질 뻔했다**(실측: 손 35종 중 이 넷만 골격 밖).
+     *   셋은 코드가 만들고(contents·class_stats·trajectory) `schedule` 은 사람이 채운다 —
+     *   그래서 `schedule` 은 지워지면 아무도 되살리지 않는다(존재 검사가 가장 값진 자리). */
+    ['contents', CONTENTS_HEADERS],       // 게임 콘텐츠 원장(setupContents 계열이 채운다)
+    ['class_stats', CLASS_STATS_HEADERS], // 반 집계(calcAll 산출)
+    ['schedule', SCHEDULE_HEADERS],       // 시간표 — 사람이 채우는 유일한 골격 탭
+    [TRAJECTORY_TAB_, TRAJECTORY_HEADERS_] // 궤적 의도(엔진_궤적) — 결과쪽 outcome_log 의 짝
   ];
+}
+/** [v9.241] 수집 장부 탭 이름 — 골격의 세 번째 칸에서 **도출**한다(손 목록 금지 · 회귀가 대조한다). */
+function 수집장부탭_() {
+  return sheetSkeleton_().filter(function (k) { return k[2] === 수집표식_; }).map(function (k) { return k[0]; });
 }
 
 /* ===================== [v9.43] 🎴 몬스터·보스 상세 카드 — "눌렀을 때 우와" =====================
@@ -574,6 +601,10 @@ function clearDemoData() {
       else flush();
     }
     flush();
+    /* [v9.241] 의도한 축소는 **기준선도 함께 내린다** — 안 그러면 데모 퇴장 다음 주 워치독이
+     *   「수집 장부가 줄었다」고 외치고, 그 경보엔 따를 처방이 없다(F103). 지운 자리에서
+     *   지우므로 새 수집 탭이 이 목록에 들어와도 자동으로 보호된다(손 목록이 안 생긴다). */
+    if (n) 탭수축기준선지움_(name);
     if (n) L.push('✓ ' + name + ' ' + n + '행');
   };
   const isDemoSid = r => String(r[0] || '').indexOf('DEMO-') === 0;
