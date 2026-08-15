@@ -1,4 +1,4 @@
-"""Loom L2b — 펠트 패치 라이브러리. 중립 패치를 «잘라» 두고, 재염색으로 임의 색을 0원에 파생한다.
+"""Loom L2b — 펠트 패치 라이브러리. 원료 패치를 «잘라» 두고, 재염색으로 임의 색을 0원에 파생한다.
 
 왜 있나(설계 정본 `docs/펠트엔진_설계.md` §2 L2b · §3-3 「신규 파일이라 자유」):
   지금 펠트를 입는 것은 마스코트뿐이다 — 결이 필요한 새 오브젝트(녹음 오브·3D 타이포·캠페인 오브)는
@@ -16,11 +16,23 @@
   그래서 이 도구는 ①중심으로 읽고 ②자른 뒤 «깨끗한 양모인지 스스로 검사»해 더러우면 거부한다.
   라벨이 또 어긋나도 오염된 타일이 라이브러리 정본이 되지는 않는다(맹점 ④ — 안 도는 쪽보다 이쪽으로 샌다).
 
+역할 층(유호 확정 08-15 「가·나 한벌로」 — 색 겹침 수리 ㉮):
+  구 이름 「중립」은 거짓말이었다 — 마스코트 평상복에서 잘랐으니 코어가 코랄이고(킷 Coral 과
+  ΔE2000 3.85 · 킷 내부 한 단 7.4 보다 좁다), 팔레트의 한 색처럼 나란히 놓이면 분홍 셋이 겹친다.
+  그래서 패치마다 «역할»을 장부(`라이브러리.json`)에 박는다:
+    원료       파생의 출발점 — 산출물에 그대로 노출 금지(파일명 `원료_` 접두 강제)
+    공용       UI 오브젝트·비마스코트 지면에 쓴다
+    마스코트전용  체리 계열 — 마스코트 몸·마스코트가 직접 내는 것에만(실행규칙 ① 승계:
+               체리는 UI 색이 아니라 마스코트가 데리고 오는 것 · memory mascot-cherry-jelly-kit)
+  염색이 목표색을 마스코트 체리 코어와 대조해(ΔE ≤ 6) 자동으로 마스코트전용을 박고,
+  `역할` 명령이 장부↔실물 정합(미등록·접두·체리 근접)을 검증한다.
+
 사용법:
-  python tools/펠트패치.py 절단                              중립 패치를 잘라 라이브러리에 둔다
+  python tools/펠트패치.py 절단                              원료 패치를 잘라 라이브러리에 둔다
   python tools/펠트패치.py 염색 "#FF6B5C" --이름 코랄         목표색 패치를 파생한다(0원)
   python tools/펠트패치.py 자 <패치.png>                      한 장을 잰다
-  python tools/펠트패치.py 도달                              코랄 base 에서 «어디까지 갈 수 있나» 실측
+  python tools/펠트패치.py 도달                              원료 base 에서 «어디까지 갈 수 있나» 실측
+  python tools/펠트패치.py 역할                              역할 장부 표 + 정합 검증
 """
 import argparse
 import io
@@ -49,7 +61,9 @@ import 펠트색갈이 as 색갈이  # noqa: E402
 사진뿌리 = os.environ.get('SYNK_FELT_ROOT', 뿌리)
 토큰경로 = os.environ.get('SYNK_FELT_TOKEN', os.path.join(뿌리, 'docs', '디자인_토큰.json'))
 라이브러리 = os.environ.get('SYNK_FELT_LIB', os.path.join(뿌리, 'docs', '캐릭터', '펠트패치_0815'))
-기본패치 = os.path.join(라이브러리, '중립_평상복.png')
+기본패치 = os.path.join(라이브러리, '원료_평상복.png')
+장부파일 = '라이브러리.json'          # 역할 장부 — 라이브러리 폴더 안에 산다
+체리문턱 = 6.0   # 마스코트 체리 코어와 이보다 가까우면 마스코트전용(코랄↔체리 실측 10.2 · Coral2↔체리 9.1 밖)
 
 # 절단 자기검사 문턱 — 「깨끗한 양모」의 정의. 정본 사진이 바뀌면 여기서 먼저 빨개진다(대가 §7).
 저채도상한 = 0.02   # 재염색이 원리적으로 안 닿는 픽셀(C*≤C_바닥) 비율. 눈알 1개면 13.9% 로 튄다.
@@ -72,6 +86,55 @@ def 토큰읽기():
 
 def 사진경로(펠트, 슬롯):
     return os.path.join(사진뿌리, 펠트['정본사진'][슬롯].replace('/', os.sep))
+
+
+def 마스코트체리():
+    """토큰 색.마스코트.램프 의 Cherry Core — 「마스코트 IP 색」 판정은 램프(체리)만 본다(토큰 _쓰임 ②).
+    픽스처 토큰엔 없을 수 있다 — 그때는 체리 근접 검사만 조용히 빠진다(역할 층 자체는 그대로 돈다)."""
+    try:
+        with open(토큰경로, encoding='utf-8') as f:
+            램프 = json.load(f)['색']['마스코트']['램프']
+        for 단 in 램프:
+            if 단.get('이름') == 'Cherry Core':
+                return 색갈이.hex2rgb(단['hex'])
+    except (KeyError, OSError, ValueError):
+        return None
+    return None
+
+
+# ── 역할 장부 ─────────────────────────────────────────────────────────────────
+def 장부읽기():
+    p = os.path.join(라이브러리, 장부파일)
+    if os.path.exists(p):
+        with open(p, encoding='utf-8') as f:
+            return json.load(f)
+    return {'_주': '역할 장부 — 절단·염색이 쓰고, 「역할」 명령과 tests/펠트패치.test.js 가 읽는다. '
+                   '원료=파생 출발점(산출물 노출 금지) · 공용=UI 오브 · 마스코트전용=체리 계열(실행규칙 ①).',
+            '패치': {}}
+
+
+def 장부등록(이름, 역할, 왜=None, 목표=None):
+    장 = 장부읽기()
+    항 = {'역할': 역할}
+    if 왜:
+        항['왜'] = 왜
+    if 목표:
+        항['목표'] = 목표.upper()
+    장['패치'][이름] = 항
+    with open(os.path.join(라이브러리, 장부파일), 'w', encoding='utf-8') as f:
+        json.dump(장, f, ensure_ascii=False, indent=1)
+        f.write('\n')
+
+
+def 기본패치확인():
+    if os.path.exists(기본패치):
+        return
+    옛 = os.path.join(라이브러리, '중립_평상복.png')
+    if os.path.exists(옛):
+        sys.exit('🔴 옛 이름 「중립_평상복.png」 이 남아 있다 — 이 패치는 중립이 아니라 «코랄 원료»다'
+                 '(코어↔킷 Coral ΔE 3.85 · 08-15 역할 층).\n'
+                 '   git mv 로 「원료_평상복.png」 으로 바꾸고 라이브러리.json 에 역할=원료 로 올린다.')
+    sys.exit('🔴 원료 패치가 없다 — 먼저 `python tools/펠트패치.py 절단`')
 
 
 # ── 색 측정 (전부 색갈이의 정의를 벡터로 옮긴 것 — 상수·식은 저기서 온다) ──────────
@@ -248,11 +311,15 @@ def 절단(a):
 
     os.makedirs(라이브러리, exist_ok=True)
     선택 = 표[a.타일]
-    낼곳 = os.path.join(라이브러리, f'{a.이름}.png')
+    이름 = a.이름 if a.이름.startswith('원료_') else f'원료_{a.이름}'
+    if 이름 != a.이름:
+        print(f'   이름에 「원료_」 접두를 붙였다 — base 는 팔레트 색이 아니라서 이름부터 갈라 둔다(역할 층)')
+    낼곳 = os.path.join(라이브러리, f'{이름}.png')
     Image.fromarray(선택).save(낼곳)
-    print(f'\n■ 라이브러리  {os.path.relpath(낼곳, 뿌리)}  ({a.타일} · {선택.shape[1]}x{선택.shape[0]})')
+    장부등록(이름, '원료', 왜=f'{a.슬롯} 정본 사진에서 자른 파생 출발점 — 산출물 노출 금지(코어가 코랄이라 «중립» 아님)')
+    print(f'\n■ 라이브러리  {os.path.relpath(낼곳, 뿌리)}  ({a.타일} · {선택.shape[1]}x{선택.shape[0]} · 역할=원료)')
     코어 = 코어색(선택)
-    print(f'   중립 base 코어 #{색갈이.hexs(코어)} — 이 색에서 재염색이 출발한다')
+    print(f'   원료 base 코어 #{색갈이.hexs(코어)} — 이 색에서 재염색이 출발한다(산출물 노출 금지)')
 
 
 # ── 염색 (통로 재사용: 펠트색갈이.py 를 그대로 부른다) ──────────────────────────
@@ -268,13 +335,26 @@ def 염색하기(입력, 출력, 목표, 조용히=False):
 
 
 def 염색(a):
-    if not os.path.exists(기본패치):
-        sys.exit(f'🔴 중립 패치가 없다 — 먼저 `python tools/펠트패치.py 절단`')
+    기본패치확인()
     os.makedirs(라이브러리, exist_ok=True)
     이름 = a.이름 or a.목표.lstrip('#')
+    # 역할 판정 — 체리 근접이면 공용으로 «못» 낸다(실행규칙 ①을 프로즈가 아니라 통로가 지킨다)
+    역할값 = a.역할
+    체리 = 마스코트체리()
+    if 체리 is not None:
+        d체리 = 색갈이.de2000(색갈이.lab(색갈이.hex2rgb(a.목표)), 색갈이.lab(체리))
+        if d체리 <= 체리문턱:
+            if a.역할 == '공용':
+                sys.exit(f'🔴 이 색은 마스코트 체리 코어와 ΔE {d체리:.1f} (≤{체리문턱:.0f}) — 공용으로 못 낸다.\n'
+                         f'   체리는 UI 색이 아니라 마스코트가 데리고 오는 것이다(실행규칙 ① · 유호 확정 08-13).\n'
+                         f'   `--역할 마스코트전용` 으로 내거나, 공용 천이 필요하면 킷 색으로 물들인다.')
+            역할값 = '마스코트전용'
+            print(f'   역할 = 마스코트전용 (마스코트 체리 코어와 ΔE {d체리:.1f} ≤ {체리문턱:.0f} — 실행규칙 ① 승계)')
+    역할값 = 역할값 or '공용'
     출력 = os.path.join(라이브러리, f'{이름}.png')
-    print(f'■ 염색  {os.path.relpath(기본패치, 뿌리)} → {a.목표.upper()}')
+    print(f'■ 염색  {os.path.relpath(기본패치, 뿌리)} → {a.목표.upper()}  (역할={역할값})')
     염색하기(기본패치, 출력, a.목표)
+    장부등록(이름, 역할값, 목표=a.목표)
     base = np.asarray(Image.open(기본패치).convert('RGB'), dtype=np.uint8)
     out = np.asarray(Image.open(출력).convert('RGB'), dtype=np.uint8)
     재기(out, 출력, 목표=a.목표, 기준결=결에너지(base))
@@ -312,8 +392,7 @@ def 도달(a):
     """코랄 base 에서 «어디까지» 갈 수 있나. 재염색은 선형광 채널 게인이라
     출발색에서 멀어질수록 한 채널을 크게 밀어야 하고, 그때 결이 먼저 죽는다.
     이 표가 라이브러리의 «사용 설명서»다 — 빨간 칸은 base 를 하나 더 떠야 하는 자리."""
-    if not os.path.exists(기본패치):
-        sys.exit('🔴 중립 패치가 없다 — 먼저 `python tools/펠트패치.py 절단`')
+    기본패치확인()
     과녁 = list(a.과녁)
     base = np.asarray(Image.open(기본패치).convert('RGB'), dtype=np.uint8)
     기준결 = 결에너지(base)
@@ -353,6 +432,53 @@ def 도달(a):
         print(f'      못 간 색: {" · ".join(f"{r[0]}(C* {r[2]:.0f})" for r in 못간)}')
 
 
+# ── 역할 검증 ───────────────────────────────────────────────────────────────
+def 역할(a):
+    """장부↔실물 정합. 새는 방향은 언제나 «통과»다 — 그래서 미등록·이름·체리 근접을 전부 fail 로 낸다.
+    ⚠대가: 이 검증은 «불릴 때만» 돈다(도구 명령+회귀) — L4 소비자(재질굽기.js 슬롯)가 서면
+    그쪽에 장부 읽기를 배선해야 한다. 안 하면 장부는 초록인데 원료가 노출된다(설계 정본 §7)."""
+    장 = 장부읽기()['패치']
+    체리 = 마스코트체리()
+    실물 = sorted(f[:-4] for f in os.listdir(라이브러리)
+                if f.endswith('.png') and not f.startswith('_')) if os.path.isdir(라이브러리) else []
+    문제 = []
+    print(f'■ 역할 장부  {os.path.join(os.path.relpath(라이브러리, 뿌리), 장부파일)}')
+    print(f'   {"이름":<18} {"역할":<8} {"코어":<9} 비고')
+    for 이름 in 실물:
+        항 = 장.get(이름)
+        if 항 is None:
+            문제.append(f'{이름}.png 가 장부에 없다 — 절단/염색 통로 밖에서 들어온 패치다(통로로 다시 내거나 장부에 올린다)')
+            continue
+        경로 = os.path.join(라이브러리, f'{이름}.png')
+        arr = np.asarray(Image.open(경로).convert('RGB'), dtype=np.uint8)
+        코어 = 코어색(arr)
+        역 = 항.get('역할')
+        비고 = 항.get('왜', 항.get('목표', ''))
+        print(f'   {이름:<18} {역:<8} #{색갈이.hexs(코어) if 코어 else "──────":<8} {비고[:52]}')
+        if 역 not in ('원료', '공용', '마스코트전용'):
+            문제.append(f'{이름}: 역할 「{역}」 은 없는 값 — 원료/공용/마스코트전용 중 하나')
+        if 역 == '원료' and not 이름.startswith('원료_'):
+            문제.append(f'{이름}: 역할=원료인데 이름에 「원료_」 접두가 없다 — 팔레트 색으로 오독된다(이 겹침이 이 층을 세웠다)')
+        if 이름.startswith('원료_') and 역 != '원료':
+            문제.append(f'{이름}: 이름은 원료인데 역할이 「{역}」 — 한쪽이 거짓말이다(F472 문법)')
+        if 체리 is not None and 역 == '공용' and 코어 is not None:
+            d = 색갈이.de2000(색갈이.lab(코어), 색갈이.lab(체리))
+            if d <= 체리문턱:
+                문제.append(f'{이름}: 공용인데 실측 코어가 마스코트 체리와 ΔE {d:.1f} (≤{체리문턱:.0f}) — '
+                            f'마스코트전용이어야 한다(실행규칙 ①)')
+    for 이름 in 장:
+        if 이름 not in 실물:
+            문제.append(f'장부의 {이름} 실물({이름}.png)이 없다 — 지웠으면 장부에서도 뺀다')
+    역할수 = {}
+    for 이름 in 실물:
+        r = (장.get(이름) or {}).get('역할', '미등록')
+        역할수[r] = 역할수.get(r, 0) + 1
+    print(f'\n   합계 {len(실물)}장 = ' + ' + '.join(f'{k} {v}' for k, v in sorted(역할수.items())))
+    if 문제:
+        sys.exit('🔴 역할 정합 실패 ' + str(len(문제)) + '건\n   ' + '\n   '.join(문제))
+    print('   ✅ 정합 — 미등록 0 · 이름↔역할 어긋남 0 · 체리 근접 공용 0')
+
+
 def 색쌍(s):
     if '=' not in s:
         raise argparse.ArgumentTypeError('이름=#RRGGBB 모양이어야 한다')
@@ -364,17 +490,19 @@ def main():
     ap = argparse.ArgumentParser(description='Loom L2b — 펠트 패치 라이브러리')
     sub = ap.add_subparsers(dest='명령', required=True)
 
-    p1 = sub.add_parser('절단', help='정본 사진에서 중립 패치를 잘라 라이브러리에 둔다')
+    p1 = sub.add_parser('절단', help='정본 사진에서 원료 패치를 잘라 라이브러리에 둔다')
     p1.add_argument('--슬롯', default='평상복', choices=['평상복', '특별'])
     p1.add_argument('--타일', default='거울', choices=['원본', '거울', '엇갈림'])
     p1.add_argument('--평탄화', action='store_true',
                     help='구워진 조명 경사만 걷어낸다(결·색 유지) — 타일 반복 시 얼룩을 없앤다')
-    p1.add_argument('--이름', default='중립_평상복', help='라이브러리에 낼 파일 이름')
+    p1.add_argument('--이름', default='원료_평상복', help='라이브러리에 낼 파일 이름(원료_ 접두 강제)')
     p1.set_defaults(fn=절단)
 
-    p2 = sub.add_parser('염색', help='중립 패치에서 목표색 패치를 파생한다(0원)')
+    p2 = sub.add_parser('염색', help='원료 패치에서 목표색 패치를 파생한다(0원)')
     p2.add_argument('목표', help='예 "#FF6B5C"')
     p2.add_argument('--이름', help='라이브러리 파일 이름(생략하면 hex)')
+    p2.add_argument('--역할', choices=['공용', '마스코트전용'],
+                    help='생략하면 자동 — 체리 근접(ΔE≤6)은 마스코트전용, 나머지 공용')
     p2.set_defaults(fn=염색)
 
     p3 = sub.add_parser('자', help='패치 한 장을 잰다')
@@ -385,6 +513,9 @@ def main():
     p4 = sub.add_parser('도달', help='base 에서 어디까지 갈 수 있나 실측')
     p4.add_argument('--과녁', type=색쌍, nargs='+', required=True, metavar='이름=#RRGGBB')
     p4.set_defaults(fn=도달)
+
+    p5 = sub.add_parser('역할', help='역할 장부 표 + 장부↔실물 정합 검증')
+    p5.set_defaults(fn=역할)
 
     a = ap.parse_args()
     a.fn(a)
