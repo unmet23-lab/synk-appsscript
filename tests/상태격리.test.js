@@ -153,13 +153,17 @@ test('격리된store 는 STATE_DIR 을 이 시험 전용으로 간다 (기본 �
 });
 
 test('🔴 handoff-store 를 먼저 require 했으면 조용히 넘어가지 않고 던진다 (순서가 이 통로의 전부다)', () => {
+  /* 🔴 표식을 «서로의 부분문자열이 아닌» 두 낱말로 고른다 — 첫 판이 `던졌다`/`안던졌다` 였고
+   *   `/던졌다/` 가 **`안던졌다` 에도 맞아** 변이가 통과했다(변이 실측 2026-08-15 · 구멍 1건).
+   *   부정형이 긍정형을 품는 것은 한국어에서 기본값이라, 이 자리는 늘 이렇게 가른다. */
   const r = 자식([
     "require('./.claude/hooks/lib/handoff-store.js');",          // ← 먼저 굳혀 버린다
     "const { 격리된store } = require('./tests/lib/상태격리');",
-    "try { 격리된store('여기.test.js'); process.stdout.write('안던졌다'); }",
-    "catch (e) { process.stdout.write('던졌다:' + e.message); }",
+    "try { 격리된store('여기.test.js'); process.stdout.write('MUTANT-SILENT'); }",
+    "catch (e) { process.stdout.write('THREW:' + e.message); }",
   ].join('\n'));
   assert.equal(r.status, 0, '자식이 죽었다: ' + r.stderr);
-  assert.match(r.stdout, /던졌다/,
+  assert.doesNotMatch(r.stdout, /MUTANT-SILENT/,
     '먼저 굳은 STATE_DIR 을 그대로 쓰고 넘어갔다 — 격리한 줄 알고 공유 폴더에 쓰게 된다');
+  assert.match(r.stdout, /THREW:.*격리된store/, '던지긴 했는데 고치는 법을 안 알려준다: ' + r.stdout);
 });
