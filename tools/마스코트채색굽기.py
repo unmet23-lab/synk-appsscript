@@ -20,7 +20,18 @@ if len(sys.argv) < 3:
 IMG, OUT = sys.argv[1], sys.argv[2]
 SEED = int(sys.argv[3]) if len(sys.argv) > 3 else 1234
 
-client = Client("microsoft/TRELLIS.2")
+# 로그인 층 자동 감지 — env HF_TOKEN 이 먼저, 없으면 `hf auth login` 이 저장한 토큰.
+# 익명은 GPU 몫 0 실측(08-15)이라 토큰이 서는 날 이 스크립트가 그대로 로그인 층을 탄다.
+TOKEN = os.environ.get("HF_TOKEN")
+if not TOKEN:
+    try:
+        from huggingface_hub import get_token
+        TOKEN = get_token()
+    except ImportError:
+        pass
+print(f"[채색굽기] HF 토큰: {'있음(로그인 층)' if TOKEN else '없음(익명 — GPU 몫 0이면 여기서 죽는다)'}")
+
+client = Client("microsoft/TRELLIS.2", hf_token=TOKEN)
 api = client.view_api(return_format="dict", print_info=False)
 eps = api.get("named_endpoints", {})
 for need in ("/start_session", "/preprocess_image", "/image_to_3d", "/extract_glb"):
