@@ -68,8 +68,8 @@ function 세션기록(state, repo, sid, touched, 분전, 검사시각, 끝남 = 
   const t = new Date(Date.now() - 분전 * 60000);
   fs.utimesSync(p, t, t);
 }
-function 돌린다({ repo, state, 나, 인자 = [], 형제 }) {
-  const env = { ...process.env, SYNK_OWNER_ROOT: repo, SYNK_CTXBUDGET_DIR: state };
+function 돌린다({ repo, state, 나, 인자 = [], 형제, 환경 = {} }) {
+  const env = { ...process.env, SYNK_OWNER_ROOT: repo, SYNK_CTXBUDGET_DIR: state, ...환경 };
   /* 형제를 안 준 검사는 **기본 경로**(`<ROOT>/../SYNK-talk`)를 그대로 쓴다 — 픽스처 ROOT 는
    * 임시 폴더라 그 형제가 없고, 그래서 이 파일의 옛 검사들은 값이 하나도 안 바뀐다.
    * ⚠ 여기에 실저장소 경로가 새어 들어가면 CI 와 로컬이 다른 세계를 보게 된다(repo 밖 의존). */
@@ -543,6 +543,72 @@ test('리모트가 없으면 침묵한다 — 대기가 원리적으로 없는 �
   const { repo, state } = 픽스처();
   const out = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'] });
   assert.doesNotMatch(out, /못 읽었다|대기 중인 클라우드/, 'origin 이 없는 저장소에서 경고를 내면 거짓양성이다');
+});
+
+/* ── ⏱ #Q95: fetch 스로틀 ───────────────────────────────────────────────────
+ * 왜 여기 붙나: `git fetch` 는 이 도구에서 가장 비싼 한 칸이다(실측 8회 — 도구 전체
+ * 3.0~9.9초 중 1.4~4.6초 = 어느 회차에서나 약 절반). 그래서 「N분보다 자주는 안 딴다」로 바꿨다.
+ *
+ * 🔑 **이 네 검사가 스로틀의 유일한 증거다.** 위 옛 검사 4건은 픽스처가 매번 새 저장소라
+ *   `FETCH_HEAD` 가 없고(=모름 → 딴다), 그래서 스로틀 코드에 **닿지도 않는다** — 그 상태로
+ *   전부 초록이면 「스로틀이 있다」와 「스로틀이 죽었다」가 같은 모양이 된다(안 닿는 가드).
+ * 🔑 그리고 값과 대가를 **따로** 잠근다: 건너뛰는가(①) · 비상구로 끌 수 있는가(②) ·
+ *   스스로 만료하는가(③ — 이게 「하루짜리 사각으로 안 돌아간다」의 근거다) · 낡음을 말하는가(④). */
+function 원격가지추가(원본, 브랜치, 제목) {
+  const go = (...a) => spawnSync('git',
+    ['-c', 'user.name=t', '-c', 'user.email=t@t', '-c', 'commit.gpgsign=false', ...a], { cwd: 원본, encoding: 'utf8' });
+  go('checkout', '-q', 'master');
+  go('checkout', '-qb', 브랜치);
+  fs.writeFileSync(path.join(원본, `${브랜치.replace(/\W/g, '_')}.md`), 'x\n');
+  go('add', '-A'); go('commit', '-qm', 제목);
+}
+/** `FETCH_HEAD` 의 수정 시각 = 이 도구가 읽는 「마지막으로 딴 때」. 그걸 뒤로 밀어 나이를 만든다. */
+function fetch나이먹인다(repo, 분전) {
+  const t = new Date(Date.now() - 분전 * 60000);
+  fs.utimesSync(path.join(repo, '.git', 'FETCH_HEAD'), t, t);
+}
+
+/* ⚠ 이 검사만 `SYNK_OWNER_FETCH_MIN` 을 **안 넘긴다** — 기본값이 곧 실제로 도는 값이라,
+ *   전부 env 로 고정하면 기본값을 0(=끔)으로 돌려놔도 아무 검사도 안 빨개진다. */
+test('⏱ [#Q95] 신선하면 fetch 를 건너뛴다(기본값) — 그 대가로 방금 올라온 가지는 이번 회차에 안 뜬다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  const 원본 = 원격붙인다(repo, { 브랜치: 'claude/처음부터있던것' });
+  const 첫 = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'] });
+  assert.match(첫, /처음부터있던것/, 'FETCH_HEAD 가 없으면(=모름) 반드시 따야 한다 — 이 회차가 그 전제다');
+
+  원격가지추가(원본, 'claude/방금올라온것', 'docs: 방금');
+  const 둘 = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'] });
+  assert.doesNotMatch(둘, /방금올라온것/, '스로틀이 죽으면 이 줄이 그냥 통과한다 — 여기가 「실제로 건너뛰었나」의 유일한 문이다');
+  assert.match(둘, /처음부터있던것/, '건너뛰었다고 이미 받아둔 ref 까지 잃으면 안 된다 — 캐시된 ref 로 판정해야 한다');
+});
+
+test('⏱ [#Q95] 비상구 — `SYNK_OWNER_FETCH_MIN=0` 이면 언제나 딴다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  const 원본 = 원격붙인다(repo, { 브랜치: 'claude/처음부터있던것' });
+  돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'], 환경: { SYNK_OWNER_FETCH_MIN: '0' } });
+  원격가지추가(원본, 'claude/방금올라온것', 'docs: 방금');
+  const 둘 = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'], 환경: { SYNK_OWNER_FETCH_MIN: '0' } });
+  assert.match(둘, /방금올라온것/, '끌 수 없는 스로틀은 「확실히 보고 싶다」는 자리에서 우회를 정상 통로로 만든다(F103)');
+});
+
+test('⏱ [#Q95] 스스로 만료한다 — 나이가 간격을 넘으면 다시 딴다(하루짜리 사각으로 안 돌아간다)', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  const 원본 = 원격붙인다(repo, { 브랜치: 'claude/처음부터있던것' });
+  돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'], 환경: { SYNK_OWNER_FETCH_MIN: '10' } });
+  원격가지추가(원본, 'claude/방금올라온것', 'docs: 방금');
+  fetch나이먹인다(repo, 11);                                    // 간격(10분)을 넘겼다
+  const 둘 = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'], 환경: { SYNK_OWNER_FETCH_MIN: '10' } });
+  assert.match(둘, /방금올라온것/, '만료가 안 걸리면 스로틀은 「영원히 안 딴다」가 된다 — 그게 옛 주석이 겁낸 그 병이다');
+});
+
+test('💸 [#Q95] 건너뛴 회차는 **몇 분 전 기준**인지 말한다 — 방금 잰 값처럼 읽히면 안 된다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  원격붙인다(repo, { 브랜치: 'claude/처음부터있던것' });
+  돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'], 환경: { SYNK_OWNER_FETCH_MIN: '10' } });
+  fetch나이먹인다(repo, 5);                                     // 아직 간격 안: 건너뛴다
+  const 둘 = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'], 환경: { SYNK_OWNER_FETCH_MIN: '10' } });
+  assert.match(둘, /5분 전 fetch 기준/, '낡음을 안 적으면 이 절이 「모름을 안전으로 바꾸는」 자리가 된다');
+  assert.doesNotMatch(둘, /못 읽었다/, '건너뜀은 **실패가 아니다** — 둘을 같은 문장으로 내면 처방이 뒤바뀐다');
 });
 
 /* ── F195: 얕은 클론(=클라우드 세션의 모양)에서의 원격 대기 판정 ─────────────────
