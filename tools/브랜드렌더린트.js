@@ -83,6 +83,9 @@ for (const [hex, v] of Object.entries(킷밖_유예)) KIT[hex] = `⏳${v.이름}
  * 📏 대가 실측(킷 23색 전수 · 임계 12): 막히는 면 체리만 6 → 합집합 6 = **새로 막히는 면 0개**.
  *    허용 넷 전부 통과 유지(Paper 22.5 · Cream 2 20.5 · Coral Wash 15.3 · Navy 2 26.7). */
 const 토큰 = require(path.join(ROOT, 'docs', '디자인_토큰.json'));
+/* 마스코트 «그림»을 경로로 알아보는 목록은 이 파일에 적지 않는다 — 갈라진 사본이 조용히 눈을 감는다.
+ * 브라우저로 넘길 코드라 정규식 객체가 아니라 «소스»를 받아 저쪽에서 짓는다(이스케이프가 안 갈린다). */
+const { 패턴소스: 마스코트패턴소스 } = require('./lib/마스코트자산');
 const 램프맵 = (단들) => Object.fromEntries((단들 || []).map((c) => [c.hex.toUpperCase(), c.이름]));
 const MASCOT = 램프맵(토큰.색.마스코트?.램프);
 const MASCOT_바닥 = { ...MASCOT, ...램프맵(토큰.색.마스코트?.평상복램프) };
@@ -412,7 +415,7 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freez
    *   조용히 통과시키느니 한계를 적는 쪽이 낫다 — 안 적으면 「0건」이 「깨끗함」으로 읽힌다. */
   const 마스코트다 = (el) =>
     el.hasAttribute('data-synk-mascot') ||
-    /마스코트_(누끼|렌더)\\//.test(el.getAttribute('src') || '');
+    new RegExp(${JSON.stringify(마스코트패턴소스)}).test(el.getAttribute('src') || '');
 
   let 마스코트잰것 = 0;
   for (const el of document.querySelectorAll('img')) {
