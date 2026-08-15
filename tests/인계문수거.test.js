@@ -325,6 +325,55 @@ test('경쟁 아님: 사라짐 밖의 add 실패(index.lock 등)는 전과 같�
   } finally { 복원(); fs.rmSync(path.join(gitdir, 'index.lock'), { force: true }); }
 });
 
+/* ── 스테이징된 삭제 — `add` 가 빈손인 **두 번째** 까닭 ────────────────────────────────
+ * 08-15 실측: 만료 5건의 삭제가 **이미 인덱스에 올라간** 채 굳어 있었다. 그 경로는 작업본에도
+ * index 에도 없어 `git add` 가 위 경쟁과 **똑같은** 「did not match any files」를 내는데,
+ * 도구는 그 한 문장만 보고 선점으로 읽어 「5건 전부 딴 세션이 먼저 거뒀다 — 커밋 안 함(잃은
+ * 내용 없음)」이라고 확신에 찬 얼굴로 거짓을 말했다. 실제로는 아무도 안 거뒀고, 다음 실행도
+ * 같은 판정을 내리니 그 삭제는 공유 인덱스에 **영영** 남아 모든 세션의 「미커밋 0」 판독을
+ * 흐린다. 선점과 갈라지는 자리는 하나뿐이다 — 선점은 HEAD 에도 없고, 이쪽은 HEAD 에 있다. */
+
+test('🔴 「스테이징된 삭제」를 «남이 선점했다»로 읽지 않는다 — 도구가 영영 못 집던 자리', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, g } = 픽스처();
+  const 경로 = `${폴더}/dead0012.md`;
+  인계문두기(repo, 'dead0012', '<!-- at:1 -->\nTTL 이 지운 만료 자국\n');
+  g('add', '--', 경로); g('commit', '-qm', 'dead0012 반입');   // ① HEAD 에 들어간다
+  fs.rmSync(path.join(repo, 경로));                            // ② TTL 청소가 지운다
+  g('add', '--', 경로);                                        // ③ 삭제를 **스테이징만** 해 둔다
+  // 픽스처가 그 상태를 실제로 만들었는지부터 확인한다 — 아니면 이 검사는 아무것도 안 재고
+  // 초록만 낸다(미실행과 통과가 같은 모양 · F207).
+  assert.strictEqual(String(g('status', '--short', '--', 경로).stdout).slice(0, 2), 'D ',
+    '픽스처가 「스테이징된 삭제」를 못 만들었다 — 이 검사는 그 상태에서만 뜻이 있다');
+
+  const { 실행, 복원 } = 실행만로드(repo);
+  try {
+    const 전 = 커밋수(g);
+    const r = { 수거: [], 만료: [{ xy: 'D ', 경로 }], 내것: [], 보류: [], 잡파일: [], 목차더러움: false };
+    const 결과 = 실행(r);
+    assert.strictEqual(typeof 결과, 'string',
+      `선점으로 접었다: ${JSON.stringify(결과)} — 그 삭제는 공유 인덱스에 영영 남는다`);
+    assert.strictEqual(커밋수(g), 전 + 1, '커밋이 안 생겼다');
+    assert.ok(마지막커밋파일들(g).includes(경로),
+      '삭제가 커밋에 안 실렸다 — add 가 빈손이어도 commit 의 pathspec 이 싣는 자리다');
+    assert.strictEqual(r.사라짐, 0,
+      '아무도 안 거둔 것을 「사라짐」으로 셌다 — 숫자가 아니라 보고 문장 자체가 거짓이 된다');
+  } finally { 복원(); }
+});
+
+test('가르는 자는 HEAD 다 — HEAD 에도 없는 경로는 전과 같이 선점으로 건너뛴다(고쳐서 되레 넓히지 않았나)', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, g } = 픽스처();
+  인계문두기(repo, 'dead0013', '<!-- at:1 -->\n아직 안 거둬진 죽은 세션 본문\n');
+  const { 실행, 복원 } = 실행만로드(repo);
+  try {
+    const r = 낡은스냅샷([`${폴더}/gone0003.md`, `${폴더}/dead0013.md`]);
+    const 결과 = 실행(r);
+    assert.strictEqual(typeof 결과, 'string', `수거가 실패로 접혔다: ${JSON.stringify(결과)}`);
+    assert.ok(!마지막커밋파일들(g).includes(`${폴더}/gone0003.md`),
+      'HEAD 에 없는 경로까지 범위에 남겼다 — pathspec fatal 로 수거 전체가 죽는다');
+    assert.strictEqual(r.사라짐, 1, '선점 판정이 사라졌다 — 08-07 실측(F071)의 봉합이 풀린다');
+  } finally { 복원(); }
+});
+
 /* ── 등록층 — 가드·수거는 로직보다 등록층에서 샌다(CLAUDE.md 맹점 목록) ────────────────── */
 
 test('등록: SessionStart 훅이 인계문수거 --hook 을 이식 가능한 꼴로 부른다', () => {
