@@ -24,6 +24,8 @@
 #   blender -b -P tools/마스코트인형리깅.py -- probe <glb> <본체누끼.png> <출력.png>
 #   blender -b -P tools/마스코트인형리깅.py -- anim  <glb> <본체누끼> <눈감음> <눈웃음> <출력폴더> [프레임수=600]
 #   blender -b -P tools/마스코트인형리깅.py -- probe2 <glb> <본체누끼> <출력접두> <yaw도들(콤마 · 예 0,20,35,45)>
+#   blender -b -P tools/마스코트인형리깅.py -- probe3 <채색glb> <출력접두> <yaw도들(예 0,45,90,135,180)>
+#     probe3 = 텍스처가 구워진 GLB 전용(마스코트채색굽기.py 산출) — 투영·울패치를 안 타므로 요 제한이 없다.
 #   blender -b -P tools/마스코트인형리깅.py -- anim2 <glb> <본체누끼> <눈감음> <눈웃음> <출력폴더> [프레임수=600] [시작] [끝]
 #     시작·끝 = 렌더 «구간»만 좁힌다(키프레임은 늘 전체 N 을 박는다 — 결정론이라 구간 이어붙기에 이음매 0).
 #     ⚠ 블렌더가 긴 렌더 중 조용히 죽을 수 있다(실측 08-15: 572/600 에서 exit 0 얼굴) — 빠진 구간만 재굽는 용도.
@@ -217,7 +219,9 @@ def make_material(obj, img_paths, hybrid=False):
     obj.data.materials.append(mat)
     return mat, mixes
 
-def build_scene(glb, img_paths, hybrid=False):
+def build_scene(glb, img_paths, hybrid=False, textured=False):
+    # textured=True → GLB 에 구워져 온 재질을 그대로 쓴다(투영·울패치 통로를 아예 안 탄다).
+    # 이 갈래에서만 요 제한이 없다 — 표면 전체가 자기 색을 지고 있어 뒤태까지 성립한다.
     scene_reset()
     obj = import_glb(glb)
     obj = normalize(obj)
@@ -256,7 +260,7 @@ def build_scene(glb, img_paths, hybrid=False):
     bg.inputs[0].default_value = (0.00303, 0.00674, 0.0319, 1.0)  # Navy 2 #0F1730 (sRGB→linear 근사)
     bg.inputs[1].default_value = 1.0
 
-    mat, mixes = make_material(obj, img_paths, hybrid=hybrid)
+    mat, mixes = (None, []) if textured else make_material(obj, img_paths, hybrid=hybrid)
 
     for eng in ("BLENDER_EEVEE_NEXT", "BLENDER_EEVEE", "CYCLES"):
         try:
@@ -334,6 +338,17 @@ elif MODE == "probe2":
         scn.render.filepath = f"{접두}yaw{int(y):+04d}.png"
         bpy.ops.render.render(write_still=True)
         print("PROBE2 OK", scn.render.filepath)
+
+elif MODE == "probe3":
+    # 텍스처 GLB 눈검증 — 요 각별 스틸. 여기서 «뒤태»를 처음 본다(투영 통로에는 없던 각).
+    접두 = argv[2]
+    yaws = [float(x) for x in argv[3].split(",")] if len(argv) > 3 else [0, 45, 90, 135, 180]
+    scn, obj, rig, mixes = build_scene(GLB, [], textured=True)
+    for y in yaws:
+        rig.rotation_euler = (0, 0, math.radians(y))
+        scn.render.filepath = f"{접두}yaw{int(y):+04d}.png"
+        bpy.ops.render.render(write_still=True)
+        print("PROBE3 OK", scn.render.filepath)
 
 elif MODE == "anim2":
     # 큰 턴 + 제스처(호흡·바운스·깜빡임·눈웃음·더블 홉) — 아이들(rig) 위에 제스처(gest) 부모를 얹는다.
