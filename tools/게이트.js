@@ -32,6 +32,7 @@
 
 const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 
 const ROOT = path.join(__dirname, '..');
@@ -95,6 +96,28 @@ function 장부의현재상태(경로 = 장부경로) {
   return 상태;
 }
 
+/**
+ * GitHub 에 보낼 요청 몸통. **여기서만 조립한다.**
+ *
+ * 🔴 2026-08-15 실측 — 이 함수가 없어서 난 사고: `세우기` 는 `규칙정의` 를 통째로 보냈는데
+ *   `바꾸기`(PUT)는 gh 인자(`-F 'conditions[ref_name][include][]=…'`)로 몸통을 **손으로 다시**
+ *   조립하면서 `exclude` 를 빠뜨렸다 → `422 Missing required parameter \`exclude\``.
+ *   증상이 지독한 것은 **세우는 길은 멀쩡하고 «푸는 길»만 죽었다**는 점이다 — 잠금은 서고
+ *   장부도 초록인데, 막혔을 때 여는 열쇠만 없다. 그건 이 도구가 존재하는 이유 자체이고
+ *   (「문보다 열쇠를 먼저 짓는다」) 그게 죽으면 유호님 손이 필요해진다 = 철학 ㉡ 위반.
+ *   새는 방향이 「못 연다」였다 — 조용히 통과하는 대신 죽어 준 것만이 다행이다.
+ */
+function 요청몸통(목표 = 규칙정의.enforcement) {
+  return { ...규칙정의, enforcement: 목표 };
+}
+
+/** 몸통을 임시 파일로 떨군다 — gh 는 `--input` 으로만 중첩 JSON 을 온전히 받는다. */
+function 몸통파일(목표) {
+  const p = path.join(os.tmpdir(), `synk-ruleset-${process.pid}-${목표 || 'new'}.json`);
+  fs.writeFileSync(p, JSON.stringify(요청몸통(목표)), 'utf8');
+  return p;
+}
+
 function 규칙찾기(저장소) {
   const r = gh(['api', `repos/${저장소}/rulesets`]);
   if (!r.성공) return { 실패: r.오류 || 'gh api 실패' };
@@ -140,8 +163,7 @@ function 상태보기() {
 }
 
 function 세우기() {
-  const 본문 = path.join(require('node:os').tmpdir(), `synk-ruleset-${process.pid}.json`);
-  fs.writeFileSync(본문, JSON.stringify(규칙정의), 'utf8');
+  const 본문 = 몸통파일();
   try {
     for (const 저장소 of 저장소들) {
       const { 찾음, 실패 } = 규칙찾기(저장소);
@@ -167,19 +189,21 @@ function 바꾸기(목표, 사유) {
   if (목표 === 'disabled' && !사유) {
     죽기('푸는 데는 사유가 필요하다', 'node tools/게이트.js --풀기 --사유 "무엇이 막혀서 푸는지"');
   }
-  for (const 저장소 of 저장소들) {
-    const { 찾음, 실패 } = 규칙찾기(저장소);
-    if (실패) 죽기(`${저장소} 의 규칙을 못 읽었다 — ${실패}`);
-    if (!찾음) { console.log(`  · ${저장소} — 규칙이 없다. 건너뛴다(먼저 --세우기).`); continue; }
-    if (찾음.enforcement === 목표) { console.log(`  · ${저장소} — 이미 ${목표}. 건너뛴다.`); continue; }
+  const 본문 = 몸통파일(목표);
+  try {
+    for (const 저장소 of 저장소들) {
+      const { 찾음, 실패 } = 규칙찾기(저장소);
+      if (실패) 죽기(`${저장소} 의 규칙을 못 읽었다 — ${실패}`);
+      if (!찾음) { console.log(`  · ${저장소} — 규칙이 없다. 건너뛴다(먼저 --세우기).`); continue; }
+      if (찾음.enforcement === 목표) { console.log(`  · ${저장소} — 이미 ${목표}. 건너뛴다.`); continue; }
 
-    const r = gh(['api', '--method', 'PUT', `repos/${저장소}/rulesets/${찾음.id}`,
-      '-f', `name=${규칙이름}`, '-f', 'target=branch', '-f', `enforcement=${목표}`,
-      '-F', 'conditions[ref_name][include][]=~DEFAULT_BRANCH',
-      '-F', 'rules[][type]=deletion', '-F', 'rules[][type]=non_fast_forward']);
-    if (!r.성공) 죽기(`${저장소} 의 규칙을 못 바꿨다 — ${r.오류}`);
-    장부쓰기({ 무엇: 목표 === 'active' ? '걸기' : '풀기', 저장소, 규칙: 규칙이름, id: 찾음.id, 사유: 사유 || null });
-    console.log(`  ${목표 === 'active' ? '🔒' : '🔓'} ${저장소} — ${목표}`);
+      const r = gh(['api', '--method', 'PUT', `repos/${저장소}/rulesets/${찾음.id}`, '--input', 본문]);
+      if (!r.성공) 죽기(`${저장소} 의 규칙을 못 바꿨다 — ${r.오류}`);
+      장부쓰기({ 무엇: 목표 === 'active' ? '걸기' : '풀기', 저장소, 규칙: 규칙이름, id: 찾음.id, 사유: 사유 || null });
+      console.log(`  ${목표 === 'active' ? '🔒' : '🔓'} ${저장소} — ${목표}`);
+    }
+  } finally {
+    fs.rmSync(본문, { force: true });
   }
   if (목표 === 'disabled') {
     console.log('\n🔓 **풀렸다. 다시 거는 것을 잊지 않는다** — 세션 시작마다 훅이 이 상태를 소리친다.');
@@ -226,4 +250,4 @@ function 진입() {
 
 if (require.main === module) 진입();
 
-module.exports = { 저장소들, 규칙이름, 규칙정의, 장부의현재상태, 장부경로 };
+module.exports = { 저장소들, 규칙이름, 규칙정의, 요청몸통, 장부의현재상태, 장부경로 };
