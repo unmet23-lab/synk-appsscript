@@ -166,6 +166,56 @@ test('🔑 통합 — 고아 잠금에 막힌 인계문수거는 「다시 시�
   assert.match(out, /고아/, '세션 시작에서 이 줄이 안 나오면 사람은 9시간 뒤에도 아무것도 모른다');
 });
 
+/* ── ⑤-2 Stop 훅(auto-commit) — 결과가 가장 나쁜 자리다.
+ *    수거기가 못 거두면 다음 세션이 다시 본다. 그런데 Stop 훅이 매 턴 「이번 턴은 물러난다」만
+ *    하고 세션이 끝나면, 남는 것은 **무보호 미커밋**이다(F025 · F493 실측 68건).
+ *    ⚠ 이 훅이 못 뜨면 모든 세션의 미커밋 보호가 함께 꺼진다 — 그래서 곁가지는 실패 안전이다. */
+
+const 자동커밋훅 = path.resolve(__dirname, '..', '.claude', 'hooks', 'auto-commit.js');
+const 지문훅 = path.resolve(__dirname, '..', '.claude', 'hooks', 'edit-stamp.js');
+
+/** 편집 지문은 **edit-stamp 를 그대로 띄워** 남긴다 — 형식을 여기 다시 적으면 갈라진다(F225). */
+function 훅판(잠금분) {
+  const { repo, g } = 픽스처();
+  const state = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-lock-hook-')); 임시들.push(state);
+  const sid = 'local_cafebabe-1111-2222-3333-444444444444';
+  fs.writeFileSync(path.join(repo, '일감.txt'), '내가 쓴 것\n');
+  fs.writeFileSync(path.join(state, `track-${store.projectKey(repo)}-${store.safeId(sid)}.json`),
+    JSON.stringify({ touched: ['일감.txt'] }));
+  훅띄우기(지문훅, {
+    cwd: repo, encoding: 'utf8', timeout: 15000, windowsHide: true,
+    input: JSON.stringify({ session_id: sid, cwd: repo, tool_name: 'Edit', tool_input: { file_path: path.join(repo, '일감.txt') } }),
+    env: { ...process.env, CLAUDE_PROJECT_DIR: repo, CLAUDE_CODE_HOST_SESSION_ID: sid, SYNK_CTXBUDGET_DIR: state, SYNK_OWNER_ROOT: '' },
+  });
+  if (잠금분 !== null) 잠금두기(repo, 잠금분);
+  void g;
+  return { repo, state, sid };
+}
+function 훅돌린다({ repo, state, sid }) {
+  const r = 훅띄우기(자동커밋훅, {
+    cwd: repo, encoding: 'utf8', timeout: 30000, windowsHide: true,
+    input: JSON.stringify({ session_id: sid, cwd: repo }),
+    env: {
+      ...process.env, CLAUDE_PROJECT_DIR: repo, CLAUDE_CODE_HOST_SESSION_ID: sid,
+      SYNK_CTXBUDGET_DIR: state, SYNK_OWNER_ROOT: '', SYNK_AUTOCOMMIT_OFF: '',
+    },
+  });
+  return String(r.stdout || '') + String(r.stderr || '');
+}
+
+test('🔑 Stop 훅 — 고아 잠금에 막히면 「이번 턴은 물러난다」 옆에 고아를 말한다', { skip: !git있나 && 'git 없음' }, () => {
+  const 판 = 훅판(548);
+  const out = 훅돌린다(판);
+  assert.match(out, /커밋 실패/, '이 회차는 실제로 막혀야 한다 — 안 막히면 아래 검사가 무의미하다');
+  assert.match(out, /고아/, '세션이 여기서 끝나면 그 미커밋은 무보호로 남는다 — 물러난 이유를 이름 대야 한다');
+});
+
+test('🔴 Stop 훅 거짓양성 — 잠금 없이 정상 커밋된 턴엔 고아 줄이 없다', { skip: !git있나 && 'git 없음' }, () => {
+  const 판 = 훅판(null);
+  const out = 훅돌린다(판);
+  assert.doesNotMatch(out, /고아/, 'Stop 훅은 매 턴 돈다 — 여기서 오경보가 나면 그 절은 곧 안 읽힌다');
+});
+
 /* ── ⑥ 보드수거 — 이 도구는 board-move 의 «사유»를 안 들고 있어 「실패 N건」까지만 말한다.
  *    그 사유 중 재시도로 영영 안 풀리는 하나(잠금)를 여기서 이름 댈 수 있는지 본다.
  *    ⚠ 거절(원칙⑥)은 정상 판정이라 분모에서 빠져야 한다 — 안 가르면 멀쩡한 회차마다 경보다. */
