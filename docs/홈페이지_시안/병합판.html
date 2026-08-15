@@ -4,12 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SYNK LAB</title>
-<!-- 홈페이지 2벌 비교(유호 지시 08-15) — ㉯ 도전안판(명품판 문법).
-     짝 = 정석판.html · 대조 = 비교_0815.html · 계보 = 확정 v5(대본형·하이패션) + 08-14 명품판(다크 무대·
-     전용 렌더 1점·계기 링·«안이 보인다»·절제). 카피는 정석판과 같은 확정 원천만 쓴다.
-     이번 판에서 뺀 것(정직): 표정판 교차(깜빡임)·눈 빔 — 새 렌더(본체.png)의 눈 좌표·표정판 정합
-     실측이 아직 없다. 픽 후 2라운드에서 실측하고 태운다. ⛔ 마스코트 이름 안 적는다 · 개원 장소는 본문에 안 적는다
-     (JSON-LD 의 서울 주소 = 사업자 등록지 · 08-10 확정 4칸 문면 그대로 — 몽골 캠퍼스 주소가 아니다). -->
+<!-- 홈페이지 2라운드 — ㉰병합판(유호 08-15 「정석판 기각 · 도전안판과 병합판이 궁금」).
+     얼굴 = 도전안판(다크 무대·살아있는 마스코트·대본형) · 하부 = 정석판의 정보 블록을 다크로 번역
+     (왜 SYNK 3카드 · 수업 4줄 · FAQ 아코디언). 정석판은 기각됐으므로 그 파일은 더 안 고친다.
+     ⛔ 마스코트 이름 안 적는다(검수 게이트 전) · 개원 장소는 본문에 안 적는다
+        (JSON-LD 의 서울 주소 = 사업자 등록지 · 08-10 확정 4칸 문면 그대로).
+     🔑 그림은 상대경로로 두고, 배포판은 `node tools/시안굽기.js` 가 자립형으로 굽는다
+        (첨부 하나로 건너갈 때 상대경로는 전멸한다 — 08-15 실측). -->
 <meta name="description" content="SYNK LAB — 정원은 16명, 선생님은 17명입니다. 몽골 학생을 위한 한국어 학원.">
 <script type="application/ld+json">
 {
@@ -42,9 +43,10 @@
   font-family:'SUIT Variable'; font-style:normal; font-weight:100 900; font-display:swap;
   src:url('https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.woff2') format('woff2-variations');
 }
-/* 킷 값만(디자인_토큰 v10) — 다크 단일 무대: Navy 2 바탕 · Cream 잉크 · Slate 보조 · 신호는 Coral 하나 */
+/* 킷 값만(디자인_토큰 v10) — 다크 단일 무대.
+   면은 2단이다: 바탕 Navy 2 · 카드 Navy(앱 §2-c 와 같은 원리 — 한 단으로는 카드가 안 떠 보인다). */
 :root{
-  --bg:#0F1730; --ink:#F6F1E8; --sub:#8A93AD; --line:#2A3358; --sig:#FF6B5C;
+  --bg:#0F1730; --card:#1A2340; --ink:#F6F1E8; --sub:#8A93AD; --line:#2A3358; --sig:#FF6B5C;
   --heat:0;
   --ease:cubic-bezier(.16,1,.3,1); --gut:clamp(22px,5.4vw,72px);
   --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
@@ -73,7 +75,7 @@ nav.lang button,nav.lang span{
   font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--sub);
 }
 nav.lang span{cursor:default}
-nav.lang button[aria-current="true"],nav.lang span[aria-current="true"]{color:var(--ink)}
+nav.lang span[aria-current="true"]{color:var(--ink)}
 nav.lang button:disabled{cursor:default;opacity:.4}
 
 /* ── 무대 ─────────────────────────────────────── */
@@ -141,11 +143,12 @@ nav.lang button:disabled{cursor:default;opacity:.4}
 .ask[aria-current="true"]{color:var(--ink)}
 .hint{margin-top:clamp(22px,4vh,40px);text-align:center}
 
-/* ── 챕터 ─────────────────────────────────────── */
+/* ── 챕터 공통 ────────────────────────────────── */
 .below{padding:clamp(80px,15vh,180px) var(--gut) clamp(56px,9vh,100px);max-width:1180px;margin:0 auto}
 .chap{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--sub);display:block;margin-bottom:18px}
 h2{font-size:clamp(34px,7.6vw,84px);font-weight:800;letter-spacing:-.05em;line-height:.96;text-wrap:balance;margin-bottom:22px}
 h2 em{font-style:normal;color:var(--sub)}
+h2.mid{font-size:clamp(26px,4.6vw,48px);line-height:1.06}
 .lead{color:var(--sub);font-size:clamp(15px,1.8vw,18px);line-height:1.7;max-width:60ch;letter-spacing:-.01em}
 .gap{height:clamp(70px,13vh,150px)}
 .pillar{display:grid;grid-template-columns:auto 1fr;gap:clamp(18px,4vw,64px);padding:clamp(28px,4.4vh,50px) 0;border-top:1px solid var(--line)}
@@ -154,7 +157,25 @@ h2 em{font-style:normal;color:var(--sub)}
 .pillar h3{font-size:clamp(19px,3vw,28px);font-weight:800;letter-spacing:-.035em;line-height:1.2;margin-bottom:11px;text-wrap:balance}
 .pillar p{color:var(--sub);font-size:clamp(14px,1.6vw,16px);max-width:52ch;line-height:1.62}
 
-/* «안이 보인다» — 속수집 오브(배경 구움) = 원형 페이드 마스크로 무대에 녹인다(구 시안 검증 처방) */
+/* ── [정석판에서 편입] 신뢰 3카드 — 다크 번역 ─── */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;margin-top:34px}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:18px;
+  padding:clamp(20px,3vw,30px);display:grid;align-content:start;gap:10px;
+}
+.card .n{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--sub)}
+.card h3{font-size:clamp(18px,2.4vw,23px);font-weight:800;letter-spacing:-.03em;line-height:1.25;text-wrap:balance}
+.card p{color:var(--sub);font-size:15px;line-height:1.65}
+
+/* ── [정석판에서 편입] 수업 4줄 ───────────────── */
+.rows{margin-top:30px}
+.row{display:grid;grid-template-columns:auto 1fr;gap:clamp(18px,4vw,64px);padding:clamp(24px,3.8vh,42px) 0;border-top:1px solid var(--line)}
+.row:last-of-type{border-bottom:1px solid var(--line)}
+.row .n{font-family:var(--mono);font-size:11px;color:var(--sub);letter-spacing:.1em;padding-top:.55em}
+.row h3{font-size:clamp(18px,2.8vw,26px);font-weight:800;letter-spacing:-.035em;line-height:1.2;margin-bottom:10px;text-wrap:balance}
+.row p{color:var(--sub);font-size:clamp(14px,1.6vw,16px);max-width:56ch;line-height:1.65}
+
+/* ── «안이 보인다» + 매일의 고리 ──────────────── */
 .inside{display:grid;gap:clamp(28px,5vw,64px);align-items:center;grid-template-columns:1fr}
 @media (min-width:880px){.inside{grid-template-columns:.9fr 1.1fr}}
 .inside .orb2{position:relative;display:grid;place-items:center}
@@ -167,13 +188,35 @@ h2 em{font-style:normal;color:var(--sub)}
 .inside h3{font-size:clamp(24px,4vw,40px);font-weight:800;letter-spacing:-.04em;line-height:1.1;text-wrap:balance;margin-bottom:14px}
 .inside p{color:var(--sub);font-size:clamp(14px,1.7vw,17px);line-height:1.7;max-width:52ch}
 .inside b.sig{color:var(--sig);font-weight:800}
+.loop{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px;margin-top:clamp(34px,6vh,64px)}
+.step{border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:12px;align-content:start;background:var(--card)}
+.step img{
+  width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block;
+  outline:1px solid rgba(255,255,255,.1);outline-offset:-1px;   /* 이미지 아웃라인 예외(DESIGN §8) */
+}
+.step .t{font-size:14px;font-weight:800;letter-spacing:-.02em}
+.step .d{font-size:13px;color:var(--sub);line-height:1.55}
 
-/* 보내기 = 종이비행기 서사(액자 플레이트 — 배경 구움이라 마스크 대신 액자) */
+/* ── [정석판에서 편입] FAQ 아코디언 ───────────── */
+.faq{margin-top:30px;border-top:1px solid var(--line)}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{
+  cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:14px;
+  padding:clamp(16px,2.6vh,24px) 2px;font-size:clamp(15px,2vw,19px);font-weight:800;letter-spacing:-.025em;min-height:48px;
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:'+';font-family:var(--mono);color:var(--sub);font-size:18px;flex:none}
+.faq details[open] summary::after{content:'\2212'}
+.faq summary:hover,.faq summary:focus-visible{color:var(--ink);outline:0}
+.faq .a{color:var(--sub);font-size:clamp(14px,1.7vw,16px);line-height:1.7;max-width:64ch;padding:0 2px clamp(18px,2.8vh,26px)}
+
+/* ── 상담(종이비행기) ─────────────────────────── */
 .send{display:grid;gap:clamp(24px,4vw,56px);align-items:center;grid-template-columns:1fr}
 @media (min-width:880px){.send{grid-template-columns:1.1fr .9fr}}
 .plate{border-radius:22px;overflow:hidden;outline:1px solid rgba(255,255,255,.1);outline-offset:-1px}
 .plate img{width:100%;height:auto;display:block;transform:translateY(0);transition:transform .9s var(--ease)}
 .send:hover .plate img{transform:translateY(-8px)}
+.send h3{font-size:clamp(24px,4vw,40px);font-weight:800;letter-spacing:-.04em;line-height:1.1;margin-bottom:14px;text-wrap:balance}
 .cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
 .cta{
   display:inline-flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer;
@@ -194,7 +237,7 @@ footer a:hover{color:var(--ink);border-color:var(--sub)}
 
 /* 🔑 숨김은 `html.js` 에만 건다 — 스크립트 첫 줄이 그 클래스를 붙이므로, JS 가 안 돌거나
    rAF·관찰자가 발화하지 않는 상황(구형·오류·백그라운드 탭)에서는 본문이 그냥 보인다.
-   실측 08-15: 숨김이 기본값이면 탭이 hidden 일 때 rAF 가 안 돌아 첫 화면이 통째로 비었다. */
+   실측 08-15: 숨김이 기본값이면 탭이 hidden 일 때 첫 화면이 통째로 비었다. */
 html.js .rise{opacity:0;transform:translateY(18px)}
 html.js .lit .rise{opacity:1;transform:none;transition:opacity .95s var(--ease),transform .95s var(--ease)}
 .lit .rise:nth-of-type(2){transition-delay:.12s}
@@ -230,7 +273,7 @@ html.js .reveal.lit{opacity:1;transform:none}
     <div class="orb-float">
       <div class="orb-nod" id="nod">
         <div class="orb-tilt" id="tilt">
-          <div class="orb-img"><img src="../캐릭터/마스코트_렌더/본체.png" alt="SYNK 마스코트"></div>
+          <div class="orb-img"><img src="../캐릭터/마스코트_렌더/본체.png" alt="SYNK 마스코트" data-굽기폭="720"></div>
         </div>
       </div>
     </div>
@@ -244,7 +287,6 @@ html.js .reveal.lit{opacity:1;transform:none}
   </div>
 </section>
 
-<!-- 본문 = 정석판과 같은 확정 원천(철학 Ⅲ 파생 카피 · FAQ ✅⚠분) — 문법만 다르다. -->
 <section class="below">
   <span class="chap">00</span>
   <h2><em>정원은 16명,</em><br>선생님은 17명입니다.</h2>
@@ -252,7 +294,30 @@ html.js .reveal.lit{opacity:1;transform:none}
 
   <div class="gap"></div>
 
-  <span class="chap">01</span>
+  <!-- ▼ 정석판에서 편입 ① — 학부모가 3초 안에 찾던 답. 다크로 번역했다. -->
+  <span class="chap">01 — 왜 SYNK</span>
+  <h2 class="mid">부모님이 가장 답답했던 것부터<br>해결합니다.</h2>
+  <div class="cards">
+    <div class="card reveal">
+      <span class="n">01</span>
+      <h3>매주, 몽골어 리포트가 갑니다</h3>
+      <p>오늘 무엇을 배웠고 무엇이 늘었는지 — 부모님이 한국어를 몰라도 몽골어로 직접 확인하실 수 있습니다.</p>
+    </div>
+    <div class="card reveal">
+      <span class="n">02</span>
+      <h3>숙제는 매일 봐줍니다</h3>
+      <p>학생이 쓴 한국어 문장을 교정해 돌려주고, 오늘의 핵심 포인트 한 가지를 몽골어로 설명해 줍니다. 다음 미션도 함께 줍니다.</p>
+    </div>
+    <div class="card reveal">
+      <span class="n">03</span>
+      <h3>기간이 아니라 도달로 올라갑니다</h3>
+      <p>한 레벨은 한 시즌(8주)입니다. 기간을 채워 자동으로 올라가는 것이 아니라, 그 레벨의 목표에 실제로 도달했을 때 올라갑니다.</p>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <span class="chap">02 — 우리가 하는 일</span>
   <div class="pillar reveal">
     <span class="n">01</span>
     <div>
@@ -284,7 +349,43 @@ html.js .reveal.lit{opacity:1;transform:none}
 
   <div class="gap"></div>
 
-  <span class="chap">02</span>
+  <!-- ▼ 정석판에서 편입 ② — 수업이 실제로 어떻게 굴러가는지. -->
+  <span class="chap">03 — 수업</span>
+  <h2 class="mid">하루가 이렇게 흘러갑니다.</h2>
+  <div class="rows">
+    <div class="row reveal">
+      <span class="n">01</span>
+      <div>
+        <h3>매일 K-컬처 워밍업</h3>
+        <p>수업 전 매일, 100% 한국어로 진행되는 무료 K-컬처 워밍업이 있습니다. 몸을 움직이고 한국 문화를 접하면서 한국어에 몰입한 상태로 수업에 들어갑니다.</p>
+      </div>
+    </div>
+    <div class="row reveal">
+      <span class="n">02</span>
+      <div>
+        <h3>16명 소그룹 정규 수업</h3>
+        <p>전 반 정원 16명. 처음부터 시작하는 레벨이 있어 한국어를 하나도 몰라도 됩니다. 팀으로 완성하는 프로젝트, 반 레이드, 무대가 수업의 일부입니다.</p>
+      </div>
+    </div>
+    <div class="row reveal">
+      <span class="n">03</span>
+      <div>
+        <h3>한국인 원어민 회화</h3>
+        <p>한국인 원어민 강사의 회화 수업이 있습니다. 회화·글로벌 영어·TOPIK 집중 대비가 함께 들어간 등록에 포함되고, 정규 한국어에 집중한 등록에는 들어 있지 않습니다 — 아이에게 맞는 쪽은 상담에서 안내해 드립니다.</p>
+      </div>
+    </div>
+    <div class="row reveal">
+      <span class="n">04</span>
+      <div>
+        <h3>평일반과 토요일반</h3>
+        <p>평일반과 토요일반이 있습니다. 토요일은 문법이 아니라 회화 중심이고, 일요일은 쉽니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <span class="chap">04 — 쌓이는 것</span>
   <div class="inside">
     <div class="orb2 reveal"><img src="../캐릭터/명품판_0814/속수집오브.png" alt="수집 오브 렌더 — 셸 안에 아이의 기록이 모여 있다" data-굽기폭="880"></div>
     <div class="reveal">
@@ -292,14 +393,72 @@ html.js .reveal.lit{opacity:1;transform:none}
       <p>숙제 한 문장, 말하기 한 마디 — <b class="sig">아이의 매일이 이 안에 모입니다.</b> 모인 만큼 아이를 더 깊이 이해하게 되고, 그 이해가 우리 아이만의 학습으로 돌아옵니다. 그리고 매주, 몽골어 리포트로 부모님이 직접 확인하십니다.</p>
     </div>
   </div>
+  <div class="loop reveal">
+    <div class="step">
+      <img src="../캐릭터/명품판_0814/아이콘_숙제_파생.png" alt="" aria-hidden="true" data-굽기폭="440">
+      <span class="t">매일 숙제</span>
+      <span class="d">하루 한 번, 부담 없는 크기로. 쓴 문장은 그대로 두지 않습니다.</span>
+    </div>
+    <div class="step">
+      <img src="../캐릭터/명품판_0814/아이콘_재생_파생.png" alt="" aria-hidden="true" data-굽기폭="440">
+      <span class="t">말하기</span>
+      <span class="d">읽고 외우는 데서 멈추지 않고, 실제로 말하게 합니다.</span>
+    </div>
+    <div class="step">
+      <img src="../캐릭터/명품판_0814/아이콘_기록_파생.png" alt="" aria-hidden="true" data-굽기폭="440">
+      <span class="t">기록</span>
+      <span class="d">교정과 오늘의 핵심 포인트가 아이의 기록으로 남습니다.</span>
+    </div>
+    <div class="step">
+      <img src="../캐릭터/명품판_0814/아이콘_달력_파생.png" alt="" aria-hidden="true" data-굽기폭="440">
+      <span class="t">매주 리포트</span>
+      <span class="d">그 기록이 매주 몽골어 리포트로 부모님께 갑니다.</span>
+    </div>
+  </div>
 
   <div class="gap"></div>
 
-  <span class="chap">03</span>
+  <!-- ▼ 정석판에서 편입 ③ — 첫 화면 대본이 못 받는 나머지 질문을 여기서 받는다. -->
+  <span class="chap">05 — 자주 묻는 질문</span>
+  <h2 class="mid">묻기 전에, 먼저 답해 둡니다.</h2>
+  <div class="faq">
+    <details>
+      <summary>언제 문을 여나요?</summary>
+      <p class="a">2027년 2월 11일 2주 무료 체험으로 먼저 열고, 2월 25일 정식 개원합니다. 지금은 사전 상담과 사전 등록을 받는 단계입니다.</p>
+    </details>
+    <details>
+      <summary>한 반에 몇 명인가요?</summary>
+      <p class="a">전 반 정원 16명, 소그룹입니다. 그런데 선생님은 17명입니다 — 아이 열여섯 각자를 이해하는 「나만의 선생님」 열여섯에, 교실의 진짜 선생님 한 명.</p>
+    </details>
+    <details>
+      <summary>아이가 한국어를 하나도 모르는데 괜찮은가요?</summary>
+      <p class="a">괜찮습니다. 레벨을 나눠 시작합니다. 한 레벨은 한 시즌(8주)이고, 기간을 채우면 자동으로 올라가는 것이 아니라 그 레벨의 목표에 실제로 도달했을 때 올라갑니다.</p>
+    </details>
+    <details>
+      <summary>부모가 한국어를 못 하는데 아이가 뭘 배우는지 알 수 있나요?</summary>
+      <p class="a">매주 몽골어로 자녀 진도 리포트가 갑니다. 오늘 무엇을 배웠고 무엇이 늘었는지 부모님이 몽골어로 직접 확인하실 수 있습니다.</p>
+    </details>
+    <details>
+      <summary>한국인 선생님이 있나요?</summary>
+      <p class="a">한국인 원어민 강사의 회화 수업이 있습니다. 회화·글로벌 영어·TOPIK 집중 대비가 함께 들어간 등록에 포함되고, 정규 한국어에 집중한 등록에는 들어 있지 않습니다. 아이에게 맞는 쪽은 상담에서 안내해 드립니다.</p>
+    </details>
+    <details>
+      <summary>숙제는 어떻게 봐주나요?</summary>
+      <p class="a">학생이 쓴 한국어 문장을 교정해 돌려주고, 오늘의 핵심 포인트 한 가지를 몽골어로 설명해 줍니다. 다음 미션도 함께 줍니다.</p>
+    </details>
+    <details>
+      <summary>수강료는 얼마인가요?</summary>
+      <p class="a">월 42만₮부터입니다 — 기간권(1·3·6개월)과 구성에 따라 달라집니다. 우리 아이에게 맞는 반과 정확한 금액은 상담에서 안내해 드립니다. 천천히 보고 정하셔도 됩니다.</p>
+    </details>
+  </div>
+
+  <div class="gap"></div>
+
+  <span class="chap">06 — 상담</span>
   <div class="send">
     <div class="plate reveal"><img src="../캐릭터/명품판_0814/종이비행기.png" alt="종이비행기 렌더" data-굽기폭="1100"></div>
     <div class="reveal">
-      <h3 style="font-size:clamp(24px,4vw,40px);font-weight:800;letter-spacing:-.04em;line-height:1.1;margin-bottom:14px">질문을 보내 주세요.</h3>
+      <h3>질문을 보내 주세요.</h3>
       <div class="cta-row">
         <a class="cta primary" href="https://www.instagram.com/synk.mn" rel="noopener">인스타그램으로 상담 문의</a>
         <a class="cta quiet" href="tel:+821066835577">전화 +82 10-6683-5577</a>
@@ -317,9 +476,12 @@ html.js .reveal.lit{opacity:1;transform:none}
 </footer>
 
 <script>
-/* 답 = docs/자주묻는질문_정본.md 의 ✅·⚠(범위 즉답)분만 — 정석판 FAQ 와 같은 원천.
+/* 첫 줄의 `js` 클래스가 숨김을 «켠다» — 이 줄에 닿지 못하면 본문은 숨겨지지 않는다. */
+document.documentElement.className = 'js';
+
+/* 답 = docs/자주묻는질문_정본.md 의 ✅·⚠(범위 즉답)분만 — 아래 FAQ 아코디언과 같은 원천.
    「앱」 답은 S2 정본 개서판 — 「7단계 진화」는 08-14 「몬스터 7단계 삭제」 확정으로 걷었고(낡은 카피),
-   「스트릭·도전 배지」 열거는 확정 밖 **자체 판단**으로 함께 뺐다(첫 화면은 기능 열거 최소).
+   「스트릭·도전 배지」 열거는 확정 밖 자체 판단으로 함께 뺐다(첫 화면은 기능 열거 최소).
    FAQ 정본 S2 문면은 그대로다 — 이 개서는 유호 확인 대상이고, 정본 수리는 별도 트랙. */
 const QA = [
   ['언제 여나요',      '2027년 2월 11일 2주 무료 체험, 2월 25일 정식 개원합니다. 지금은 사전 상담과 사전 등록을 받습니다.'],
@@ -331,9 +493,6 @@ const QA = [
   ['재미있나요',       '수업 전 매일 무료 K컬처 워밍업이 있습니다. 몸을 움직이고 한국 문화를 접한 상태로 수업에 들어갑니다.'],
   ['수강료는 얼마인가요', '월 42만₮부터입니다 — 기간권(1·3·6개월)과 구성에 따라 달라집니다. 우리 아이에게 맞는 반과 정확한 금액은 상담에서 안내해 드립니다. 천천히 보고 정하셔도 됩니다.'],
 ];
-
-/* 첫 줄의 `js` 클래스가 숨김을 «켠다» — 이 줄에 닿지 못하면 본문은 숨겨지지 않는다. */
-document.documentElement.className = 'js';
 
 const answer = document.getElementById('answer');
 const asks   = document.getElementById('asks');
@@ -365,7 +524,7 @@ function say(i){
   }, 240);
 }
 
-/* 시선(기울임)+열 — 확정 v5 의 검증된 패턴에서 빔·표정판만 뺀 것(머리말 주석의 사유). */
+/* 시선(기울임)+열 — 확정 v5 의 검증된 패턴에서 빔·표정판만 뺐다(새 렌더의 눈 좌표 미실측). */
 const tilt = document.getElementById('tilt');
 let mx = 0, my = 0, queued = false;
 function paint(){
