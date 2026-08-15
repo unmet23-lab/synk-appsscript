@@ -32,8 +32,11 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
 const { 코드만 } = require('./lib/소스검사');
+/* 🔴 node 자식을 `spawnSync` 로 직접 띄우지 않는다 — 그 자리에서 «미실행»이 「통과」로 번역된다.
+ *   `tests/훅통로.test.js` 가 저장소 전체에 이 규칙을 건다(실측: 첫 판이 그걸 어겨 master 를
+ *   빨갛게 만들 뻔했다 — 내가 고치려던 바로 그 「주인 없는 적색」을 내가 낼 뻔한 자리다). */
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const TESTS = __dirname;
 const 공용통로 = path.join(TESTS, 'lib', '상태격리.js');
@@ -134,8 +137,7 @@ test('예외가 낡으면 빨개진다 — 없는 파일이나 실제로 안 쓰
 });
 
 /* ── ③ 공용 통로가 실제로 좌표를 가는가 (선언이 아니라 프로세스로 잰다) ── */
-const 자식 = (본문) => spawnSync(process.execPath, ['-e', 본문], {
-  encoding: 'utf8',
+const 자식 = (본문) => 훅띄우기(['-e', 본문], {
   cwd: path.join(TESTS, '..'),
   env: { ...process.env, SYNK_CTXBUDGET_DIR: '' },
 });
