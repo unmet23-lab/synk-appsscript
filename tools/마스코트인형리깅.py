@@ -24,7 +24,9 @@
 #   blender -b -P tools/마스코트인형리깅.py -- probe <glb> <본체누끼.png> <출력.png>
 #   blender -b -P tools/마스코트인형리깅.py -- anim  <glb> <본체누끼> <눈감음> <눈웃음> <출력폴더> [프레임수=600]
 #   blender -b -P tools/마스코트인형리깅.py -- probe2 <glb> <본체누끼> <출력접두> <yaw도들(콤마 · 예 0,20,35,45)>
-#   blender -b -P tools/마스코트인형리깅.py -- anim2 <glb> <본체누끼> <눈감음> <눈웃음> <출력폴더> [프레임수=600]
+#   blender -b -P tools/마스코트인형리깅.py -- anim2 <glb> <본체누끼> <눈감음> <눈웃음> <출력폴더> [프레임수=600] [시작] [끝]
+#     시작·끝 = 렌더 «구간»만 좁힌다(키프레임은 늘 전체 N 을 박는다 — 결정론이라 구간 이어붙기에 이음매 0).
+#     ⚠ 블렌더가 긴 렌더 중 조용히 죽을 수 있다(실측 08-15: 572/600 에서 exit 0 얼굴) — 빠진 구간만 재굽는 용도.
 # 이후 조립: ffmpeg -framerate 60 -i <출력폴더>/f_%04d.png -c:v libx264 -pix_fmt yuv420p -crf 18 <출력.mp4>
 import bpy, sys, math
 
@@ -367,9 +369,11 @@ elif MODE == "anim2":
             setattr(o, path, cur)
             o.keyframe_insert(path, index=idx, frame=f)
 
-    # 큰 턴 우 (f100~215): 예비동작 +7° → -38° 스윙 → -32° 이완 → 복귀. 좌 (f400~510) 대칭.
-    keys(gest, "rotation_euler", 2, [(1, 0), (100, 0), (118, 7), (150, -38), (185, -32), (215, 0),
-                                     (400, 0), (415, -6), (445, 36), (480, 30), (510, 0), (N, 0)], to_rad=True)
+    # 큰 턴 우 (f100~215): 예비동작 +6° → -30° 스윙 → -26° 이완 → 복귀. 좌 (f400~510) 대칭.
+    # ⚠ 정점 ±38/36 은 기각(첫 렌더 실측 f150) — 아이들 합산 net 이 30° 를 넘으면 투영 시차로
+    #   가까운 눈 안에 코랄이 새어 「깨진 눈」이 된다. 뜬 눈의 안전 한계 = net ~25°(감은 눈은 더 버틴다).
+    keys(gest, "rotation_euler", 2, [(1, 0), (100, 0), (118, 6), (150, -30), (185, -26), (215, 0),
+                                     (400, 0), (415, -5), (445, 28), (480, 24), (510, 0), (N, 0)], to_rad=True)
     keys(gest, "rotation_euler", 0, [(1, 0), (100, 0), (150, -3), (215, 0),
                                      (400, 0), (445, 3), (510, 0), (N, 0)], to_rad=True)
 
@@ -399,7 +403,9 @@ elif MODE == "anim2":
     pulse(blink, 445, 4, 5, 5)      # 7.4s 깜빡 — 좌 턴 정점과 겹침(살아있는 우연)
     pulse(smile, 285, 8, 70, 10)    # 4.75s~ 눈웃음 — 더블 홉과 한 호흡
 
+    scn.frame_start = int(argv[7]) if len(argv) > 7 else 1
+    scn.frame_end = int(argv[8]) if len(argv) > 8 else N
     scn.render.image_settings.file_format = "PNG"
     scn.render.filepath = OUT + "\\f_"
     bpy.ops.render.render(animation=True)
-    print("ANIM2 OK", N, "frames →", OUT, "engine=", scn.render.engine)
+    print("ANIM2 OK", scn.frame_start, "~", scn.frame_end, "→", OUT, "engine=", scn.render.engine)
