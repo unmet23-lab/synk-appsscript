@@ -33,6 +33,7 @@ const { spawnSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_INTERVAL_DAYS = 7;
 const 배포_주기_일 = 1;        // 라이브 드리프트만 하루 (F244 — 왜인지는 `배포Section` 머리말)
+const 장부_주기_일 = 0.25;     // 회차 장부는 6시간 (조용한 실패 장부 ④-㉡ — `장부Section` 머리말)
 const 배포_대조_한도 = 20000;  // 프로젝트당 clasp pull 상한(실측 8.5s) — 훅 예산 60초 안에서 끝나야 한다
 const stateFile = () =>
   process.env.SYNK_ROT_STATE || path.join(ROOT, '.claude', 'state', 'rot-check.json');
@@ -256,6 +257,55 @@ function 편집중인가(파일들, projRoot, 미커밋) {
   return 파일들.every((f) => 미커밋.has(앞 ? `${앞}/${f}` : f));
 }
 
+/* 🔗 형제(`SYNK-talk`)의 «회차 장부» — cron 이 무엇을 냈나 (조용한 실패 장부 ④-㉡).
+ *
+ * ■ 왜 여기인가 — 장부 자신이 「부르면 답할 뿐」이라 **아무도 안 부르면 조용하다**(④ 종결 시점의
+ *   남은 칸). 실측 08-15: radio 잡이 `url` NULL 로 **16회 전부** 죽었는데 15시간 아무도 몰랐다.
+ *   새 훅을 세우지 않고 이 도구에 축 하나로 얹은 이유는 셋이다 —
+ *     ① 이 도구엔 **키별 스로틀이 이미 있다**(F244). 6시간에 한 번만 네트워크를 쓴다.
+ *     ② 세션 시작에서 먼저 말하는 자리가 이미 이것이다(장치를 안 늘린다 · 경량 원칙).
+ *     ③ `작업본소유자 --hook` 은 **지금 다른 세션이 비용을 깎는 중**이라(#Q95) 얹으면 안 된다.
+ *
+ * ⚠ **판정은 형제 소유다** — 여기서 요약·대조를 다시 계산하지 않고 `판정`·`안적힘`·`이상` 을
+ *   옮기기만 한다(`형제배포빚` 과 같은 규칙 · 같은 판정을 두 곳에 적으면 갈라진다).
+ * ⚠ **종료 코드로 갈래를 정하지 않는다** — 그쪽 1·2 는 고장이 아니라 판정이다. 갈라내는 재료는
+ *   stdout 의 JSON 유무 하나뿐이다. `status!==0` 을 「못 잼」으로 읽으면 진짜 적색이 통째로 사라진다.
+ * ⚠ 도구가 없으면 **모름이 아니라 «해당 없음»** 이다(그냥 건너뛴다) — 형제 없는 클론·CI 에서
+ *   영구 경보가 되고, 따를 수 없는 경보는 통로를 끈다(F103·F296).
+ *
+ * 비용 실측(2026-08-15 · 판 미적용 상태 = HTTP 1회): 828ms. 판이 서면 2회라 ~1.7초로 본다.
+ *   6시간 스로틀이라 세션 시작 평균 비용은 그 1/N 이다. */
+const 장부_시간제한 = 10000;
+
+function 장부Section(잰다, 형제들) {
+  if (!잰다) return { 측정: false, 사유: '차례 아님' };
+  let 목록 = 형제들;   // 픽스처가 주입하는 자리 — 탐지력은 실저장소가 아니라 픽스처가 진다(F296)
+  if (!목록) {
+    try { 목록 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'handoff-store.js')).siblings(ROOT); } catch (_) { return { 측정: false, 사유: '형제 목록을 못 읽었다' }; }
+  }
+  const 결과 = [];
+  for (const { 뿌리, 저장소 } of 목록) {
+    const 도구 = path.join(뿌리, 'tools', '회차장부.js');
+    if (!fs.existsSync(도구)) continue;                       // 해당 없음 — 0건도 모름도 아니다
+    const r = spawnSync(process.execPath, [도구, '--json'], {
+      cwd: 뿌리, encoding: 'utf8', timeout: 장부_시간제한, windowsHide: true,
+    });
+    /* 마지막 줄만 읽는다 — 그쪽이 stdout 을 JSON 한 줄로 지키지만, 옛 체크아웃(`--json` 을 모르는
+     * 판)은 **사람글**을 낸다. 그때 `JSON.parse` 가 던지고 아래가 «못 잼»으로 받는다 — 그게 옳다. */
+    const 줄 = String(r.stdout || '').trim().split('\n').filter(Boolean).pop();
+    let o = null;
+    try { o = 줄 ? JSON.parse(줄) : null; } catch (_) { o = null; }
+    /* 모양 검사를 따로 두는 이유는 `형제배포빚` 머리말 ⓑ 와 같다 — 파싱을 통과하는 «다른 모양»은
+     * 아래에서 `판정 === 2` 도 `=== 1` 도 아니라 **조용히 통과**한다. 여기가 유일한 문이다. */
+    if (!o || typeof o.판정 !== 'number') {
+      결과.push({ 저장소, 못잼: true, 사유: r.error ? String(r.error.message || r.error).slice(0, 120) : `stdout 에 판정이 없다(exit ${r.status})` });
+      continue;
+    }
+    결과.push({ 저장소, 판정: o.판정, 판: o.판, 과녁: o.과녁 || null, 안적힘: Number(o.안적힘) || 0, 이상: Number(o.이상) || 0, 사유: o.사유 || null, 최근이상: Array.isArray(o.최근이상) ? o.최근이상 : [] });
+  }
+  return { 측정: true, 결과, 섰던적: !!상태().장부섰나 };
+}
+
 function notebooklmSection() {
   // 하네스 폴더와 결정적으로 다른 점: 노트북LM 묶음은 **올린 뒤 손이 닿지 않는다.**
   // 자료는 구글 계정 안으로 복사돼 버려서, 저장소가 아무리 바뀌어도 그쪽은 그대로다.
@@ -351,7 +401,7 @@ function toilSection() {
 // ⚠  = 아직 거짓은 아니지만 방치하면 🔴이 된다
 const EVOLVE_THRESHOLD = 2; // 지침: 마찰 신호 2건이면 /evolve 실행을 **제안**한다
 
-function collect({ 라이브 = false, 시간제한 } = {}) {
+function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false } = {}) {
   const mem = attempt('memory', memorySection);
   const doc = attempt('doc', docSection);
   const fri = attempt('friction', frictionSection);
@@ -363,15 +413,16 @@ function collect({ 라이브 = false, 시간제한 } = {}) {
   const 절단 = attempt('절단문서', () => 절단문서Section());
   const dep = attempt('배포판', () => 배포Section(라이브, 시간제한));
   const 재질 = attempt('재질의금지', 재질의Section);
+  const 장부 = attempt('회차장부', () => 장부Section(장부잰다));
 
   const red = [];
   const warn = [];
   const notes = [];
 
-  for (const s of [mem, doc, fri, har, nbl, nbd, toi, map, 절단, dep, 재질]) {
-    // `배포:true` = 하루 스로틀로 따로 도는 항목(F244). 문구가 아니라 이 표식으로 고른다 —
-    // 앵커는 문구가 바뀌면 죽고, 죽으면 배포 절만 조용히 리포트에서 빠진다.
-    if (!s.ok) red.push({ kind: '검사기 고장', text: `${s.name} 검사가 실패했다 — ${s.error}`, 배포: s === dep });
+  for (const s of [mem, doc, fri, har, nbl, nbd, toi, map, 절단, dep, 재질, 장부]) {
+    // `배포:true`·`장부:true` = 각자 스로틀로 따로 도는 항목(F244). 문구가 아니라 이 표식으로
+    // 고른다 — 앵커는 문구가 바뀌면 죽고, 죽으면 그 절만 조용히 리포트에서 빠진다.
+    if (!s.ok) red.push({ kind: '검사기 고장', text: `${s.name} 검사가 실패했다 — ${s.error}`, 배포: s === dep, 장부: s === 장부 });
   }
 
   if (절단.ok && 절단.value.present) {
@@ -534,7 +585,13 @@ function collect({ 라이브 = false, 시간제한 } = {}) {
     });
   }
 
-  return { mem, doc, fri, har, dep, red, warn, notes, findings: red.length + warn.length + notes.length };
+  if (장부.ok && 장부.value.측정) {
+    const j = 장부판정(장부.value);
+    red.push(...j.red);
+    notes.push(...j.notes);
+  }
+
+  return { mem, doc, fri, har, dep, 장부, red, warn, notes, findings: red.length + warn.length + notes.length };
 }
 
 /* ── 출력 ────────────────────────────────────────────────────────────────── */
@@ -631,14 +688,69 @@ function 배포도장(now, dep) {
  *   `r.X.ok` 로 만지면 리포트 전체가 예외로 죽고, 출력은 「부패 점검기 자체가 실패했다」
  *   한 줄이 된다 — 배포 알림 자리에서 그건 침묵과 같다. `{ ok: false }` 는 「이 절은 안
  *   쟀다」는 뜻이고, 절을 늘리는 사람이 여기를 같이 안 늘리면 그 자리에서 터진다(08-10 실측). */
-function 배포만(r) {
-  const 고른다 = (a) => a.filter((x) => x.배포);
+function 축만(r, 축들) {
+  const 고른다 = (a) => a.filter((x) => 축들.some((k) => x[k]));
   const [red, warn, notes] = [고른다(r.red), 고른다(r.warn), 고른다(r.notes)];
   return {
     red, warn, notes,
-    mem: { ok: false }, doc: { ok: false },
+    mem: { ok: false }, doc: { ok: false }, 장부: { ok: false },
     findings: red.length + warn.length + notes.length,
   };
+}
+
+/* 회차 장부 판정 — 네 갈래를 **다른 소리로** 낸다. 하나로 뭉치면 늘 우는 경보가 되고, 늘 우는
+ * 경보는 꺼진다(F113). 오늘 정상인 상태(판 미적용)가 그 넷 중 하나라 특히 그렇다.
+ * `장부Section`(부르기·파싱)과 갈라 둔 이유는 이 함수가 **네트워크 없이 픽스처로 재지는 층**이라서다. */
+function 장부판정(v) {
+  const red = [];
+  const notes = [];
+  for (const g of (v && v.결과) || []) {
+    const 이름 = `${g.저장소} 회차 장부`;
+    if (g.못잼) {
+      // 미측정은 통과가 아니다 — 다만 적색도 아니다(네트워크가 한 번 끊긴 것과 cron 이 죽은 것은 다르다).
+      notes.push({ kind: '회차 장부 미측정', text: `${이름} — ${g.사유}. 그쪽에서 직접: node tools/회차장부.js`, 장부: true });
+      continue;
+    }
+    if (g.판정 === 2) {
+      /* 🔑 그쪽 «판정 2» 안에 갈래가 둘이고 **처방이 다르다** — 뭉치면 둘 다 안 하게 된다:
+       *   `판 === false` = 판을 열어 봤는데 없다   → 아래 ⏳ 갈래
+       *   `판 === null`  = 판을 **열지도 못했다**(자격증명·네트워크) → 미측정. 조용하면 그 창이 통째로 사라진다. */
+      if (g.판 !== false) {
+        notes.push({ kind: '회차 장부 미측정', text: `${이름} — ${g.사유 || '판을 못 열었다'}. 그쪽에서 직접: node tools/회차장부.js`, 장부: true });
+        continue;
+      }
+      /* 판이 아직 안 부어진 상태 = **오늘의 정상**이다(`20260815080000` 은 companion 승인 묶음에
+       * 얹혀 부어진다 · ⏳유호). 여기서 6시간마다 적색을 내면 승인 날까지 거짓 경보만 쌓인다.
+       * 🔑 다만 **한 번이라도 섰던 판이 사라진 것**은 전혀 다른 사건이라 적색으로 가른다 —
+       *   래치가 없으면 그 사고가 「아직 안 부었네」와 같은 모양이 되어 영영 안 보인다. */
+      if (v.섰던적) {
+        red.push({
+          kind: '회차 장부 판이 사라졌다',
+          text: `${이름} — 전에는 \`ops.cron_runs\` 가 섰는데 지금 없다(${g.사유 || '판 미적용'}). `
+            + 'cron 은 계속 도는데 장부만 사라진 상태다',
+          장부: true,
+        });
+      }
+      continue;
+    }
+    if (g.판정 === 1) {
+      const 꼬리 = (g.최근이상 || []).slice(0, 3).map((x) => `${x.jobname}→${x.outcome}`).join(' · ');
+      red.push({
+        kind: g.안적힘 > 0 ? '회차 장부가 침묵했다' : 'cron 이 이상을 냈다',
+        text: `${이름}(${g.과녁 || '과녁 모름'}) — ${g.안적힘 > 0
+          ? `cron 은 돌았는데 안 적힌 회차 ${g.안적힘}건(장부가 안 불렸다 · 요약만 보면 안 보인다)`
+          : `이상 ${g.이상}건${꼬리 ? ` — ${꼬리}` : ''}`}. 전량: cd ../${g.저장소} && node tools/회차장부.js --자세히`,
+        장부: true,
+      });
+    }
+  }
+  return { red, notes };
+}
+
+/* 「판이 한 번이라도 섰다」는 **래치**다 — 켜기만 하고 끄지 않는다. 끄는 순간 「판이 사라졌다」는
+ * 사고가 「아직 안 부었다」와 같은 모양이 되어 다음 회차부터 영영 안 보인다(그게 이 축을 만든 병). */
+function 장부도장(v) {
+  return (v.결과 || []).some((g) => g.판 === true) ? { 장부섰나: true } : {};
 }
 
 /* ── 진입점 ──────────────────────────────────────────────────────────────── */
@@ -648,6 +760,9 @@ function main() {
   /* 라이브 대조는 **사람이 부른 실행에서만** 돈다 — `collect()` 기본값이 꺼짐인 이유와 같다.
    * 여기서 켜는 것이 이 장치의 발동 조건이다(장치와 발동 조건은 같은 커밋 · CLAUDE.md 신뢰성). */
   const 라이브 = process.env.SYNK_ROT_LIVE !== '0';
+  /* 회차 장부도 같은 문을 둔다 — 회귀·CI 는 네트워크를 안 탄다(그 자리 탐지력은 픽스처가 진다 · F296).
+   * ⚠ 끄는 것과 배선이 사라진 것은 다르다 — 배선 자체는 `tests/부패점검.test.js` 등록층 검사가 본다. */
+  const 장부켬 = process.env.SYNK_ROT_LEDGER !== '0';
 
   if (isHook) {
     // 훅은 무슨 일이 있어도 세션을 방해하지 않는다: 항상 exit 0, 예외는 통째로 삼킨다.
@@ -658,19 +773,30 @@ function main() {
       const 강제 = args.includes('--force');
       const 주간 = 강제 || dueNow(now);
       const 배포차례 = 강제 || dueNow(now, '배포', 배포_주기_일);
-      if (!주간 && !배포차례) return;
+      /* 🔑 꺼져 있으면 **차례도 아니다.** 안 그러면 도장을 영영 못 찍어(측정 안 했으니) 이 축이
+       *   스로틀 문을 매 세션 열어 둔 채가 되고, 나머지 두 축의 스로틀이 통째로 무의미해진다. */
+      const 장부차례 = 장부켬 && (강제 || dueNow(now, '장부', 장부_주기_일));
+      if (!주간 && !배포차례 && !장부차례) return;
       /* 여기까지 왔으면 둘 중 하나는 차례다 — 그러면 **재는 건 늘 잰다.** 「배포 차례일 때만
        * 켠다」로 좁혔더니, 주간만 차례인 날 주간 리포트가 「라이브 미측정」이라는 거짓 메모를
        * 달았다(몇 시간 전에 쟀는데도). 아낄 값은 주 1회 12초뿐이라 아낄 이유가 없다. */
-      const r = collect({ 라이브, 시간제한: 배포_대조_한도 });
+      /* 🔴 라이브 대조(clasp pull · 실측 12.4초)는 **자기 차례일 때만** 켠다. 장부 축이 6시간이라
+       *   그냥 두면 하루 네 번 clasp 를 당기게 되고, 그 비용은 이 축이 막으려는 손실보다 크다.
+       *   위 「재는 건 늘 잰다」와 어긋나지 않는다 — 그 문장의 분모는 «주간·배포 둘» 이었다. */
+      const r = collect({ 라이브: 라이브 && (주간 || 배포차례), 시간제한: 배포_대조_한도, 장부: 장부켬 });
       if (주간) stamp(now, { last: now, findings: r.findings });
+      /* 장부 도장도 **실제로 잰 실행에만** 찍는다(배포 도장과 같은 축) — 못 잰 6시간에 찍으면
+       * 그 창이 조용히 사라진다. `측정:false` 는 「차례가 아니었다」이고 여기 오지 않는다. */
+      if (r.장부.ok && r.장부.value.측정) stamp(now, { 장부: now, ...장부도장(r.장부.value) });
       /* 배포 도장은 **실제로 잰 날에만** 찍는다(차례였는지가 아니라 쟀는지가 재료다) — 못 잰 날에
        * 찍으면 그 하루가 조용히 사라지고, 그게 이 항목을 하루로 떼어낸 이유(F244)를 무효로 만든다. */
       if (r.dep.ok && r.dep.value.측정) stamp(now, { 배포: now, ...배포도장(now, r.dep.value) });
-      const 볼것 = 주간 ? r : 배포만(r);
+      const 볼것 = 주간 ? r : 축만(r, [배포차례 && '배포', 장부차례 && '장부'].filter(Boolean));
       if (!볼것.findings) return; // 정지 조건 — 깨끗하면 한 글자도 넣지 않는다
+      const 라벨 = 주간 ? '주간 부패 점검'
+        : [배포차례 && '라이브 배포 대조(하루)', 장부차례 && '회차 장부 대조(6시간)'].filter(Boolean).join(' + ');
       const body =
-        `[rot-check · ${주간 ? '주간 부패 점검' : '라이브 배포 대조(하루)'}] 이 저장소의 「조용한 부패」 자동 점검 결과다.\n` +
+        `[rot-check · ${라벨}] 이 저장소의 「조용한 부패」 자동 점검 결과다.\n` +
         render(볼것) +
         '\n\n※ 이건 지시가 아니라 관측이다. 지금 트랙과 무관하면 유호님께 한 줄로 알리고 넘어가라.' +
         ' 고칠 때는 해당 도구(tools/memory-graph.js · doc-graph.js · friction.js)를 직접 볼 것.';
@@ -688,7 +814,7 @@ function main() {
     return;
   }
 
-  const r = collect({ 라이브 });
+  const r = collect({ 라이브, 장부: 장부켬 });
 
   if (args.includes('--json')) {
     console.log(JSON.stringify({
@@ -697,6 +823,7 @@ function main() {
       doc: r.doc.ok ? r.doc.value : { error: r.doc.error },
       friction: r.fri.ok ? { open: r.fri.value.open.length, total: r.fri.value.total } : { error: r.fri.error },
       harness: r.har.ok ? r.har.value : { error: r.har.error },
+      장부: r.장부.ok ? r.장부.value : { error: r.장부.error },
     }, null, 2));
     process.exit(r.red.length ? 1 : 0);
   }
@@ -725,4 +852,4 @@ if (require.main === module) main();
  * 조용하다」 — 둘 다 침묵을 닮았다. 그래서 베끼지 않고 **이 한 벌을 빌려 쓴다**(회귀는
  * tests/절단문서.test.js ③ 이 그대로 진다). ⚠ 시각은 안 돌려준다 — 부르는 쪽은 `--since` 로
  * 이미 걸러진 목록을 받으므로 필요 없다. */
-module.exports = { collect, render, dueNow, stateFile, harnessSection, toilSection, mapSection, 절단문서Section, 뒤커밋들, 배포Section, 배포도장, 편집중인가, EVOLVE_THRESHOLD, 마지막개정, frictionSection };
+module.exports = { collect, render, dueNow, stateFile, harnessSection, toilSection, mapSection, 절단문서Section, 뒤커밋들, 배포Section, 배포도장, 편집중인가, EVOLVE_THRESHOLD, 마지막개정, frictionSection, 장부Section, 장부판정, 장부도장, 축만, 장부_주기_일 };
