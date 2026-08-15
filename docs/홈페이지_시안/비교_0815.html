@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>홈페이지 2벌 비교 — 0815</title>
+<!-- 유호 지시 08-15 「도전안 방식도, 일반 방식도 채택해서 비교해보자」 의 대조 보드.
+     실물 = 같은 폴더의 정석판.html · 도전안판.html (크롬에서 열어야 모션·대본이 돈다).
+     내부 결정 재료 — 대외 발행물 아님. -->
+<style>
+:root{
+  --bg:#FBF7EE; --ink:#171820; --sub:#5F657D; --line:#E7DDC7; --card:#F6F1E8;
+  --wash:#FFE9E4; --coral:#FF6B5C; --sig3:#E8543F; --navy2:#0F1730; --cream:#F6F1E8; --slate:#8A93AD;
+  --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  font-weight:500;line-height:1.6;-webkit-font-smoothing:antialiased;
+  padding:clamp(24px,5vw,64px);max-width:1060px;margin:0 auto;
+}
+.micro{font-size:10.5px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:var(--sub)}
+h1{font-size:clamp(26px,4.6vw,44px);font-weight:800;letter-spacing:-.04em;line-height:1.1;margin:10px 0 8px}
+.date{color:var(--sub);font-size:13px;margin-bottom:30px}
+.pair{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:34px}
+@media(min-width:760px){.pair{grid-template-columns:1fr 1fr}}
+.open{
+  display:block;text-decoration:none;border-radius:18px;padding:22px;border:1px solid var(--line);
+  color:var(--ink);background:var(--card);
+}
+.open.b{background:var(--navy2);color:var(--cream);border-color:var(--navy2)}
+.open .tag{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--sub)}
+.open.b .tag{color:var(--slate)}
+.open h2{font-size:clamp(19px,2.6vw,26px);font-weight:800;letter-spacing:-.03em;margin:8px 0 6px}
+.open p{font-size:14px;color:var(--sub);line-height:1.6}
+.open.b p{color:var(--slate)}
+.open .go{display:inline-block;margin-top:14px;font-size:13px;font-weight:800;border-bottom:2px solid var(--coral);padding-bottom:2px}
+.open.b .go{color:var(--coral)}
+h3{font-size:clamp(17px,2.4vw,22px);font-weight:800;letter-spacing:-.03em;margin:36px 0 12px}
+.twrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+th,td{text-align:left;vertical-align:top;padding:12px 14px;border-top:1px solid var(--line);line-height:1.55}
+th{font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+thead th{border-top:0;color:var(--sub);font-size:12px;letter-spacing:.06em}
+td.axis{color:var(--sub);white-space:nowrap;font-size:13px}
+.verdict{background:var(--wash);border-radius:18px;padding:clamp(18px,3vw,28px);margin-top:36px}
+.verdict h3{margin-top:0}
+.verdict p{font-size:15px;line-height:1.7;max-width:72ch}
+.verdict b{font-weight:800}
+ul.notes{margin:14px 0 0 18px;display:grid;gap:8px;font-size:14px;color:var(--sub)}
+ul.notes b{color:var(--ink);font-weight:800}
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<span class="micro">SYNK LAB · 내부 결정 재료</span>
+<h1>홈페이지 2벌 비교</h1>
+<p class="date">2026-08-15 · 유호 지시 「도전안 방식도, 일반 방식도 채택해서 비교해보자」 — 뼈대 카피(슬로건·부연·기둥 4·FAQ·creed)는 두 판 모두 기확정분이고, 연결 문장 소수만 신조입니다(아래 「알아둘 것」에 목록 — 새 사실·숫자 주장 0).</p>
+
+<div class="pair">
+  <a class="open" href="정석판.html">
+    <span class="tag">A</span>
+    <h2>정석판 — 일반 방식</h2>
+    <p>Paper 라이트 정보형. 목차형 섹션(왜 SYNK → 수업 → 시스템 → FAQ → 상담), 아코디언 FAQ, 절제된 모션. 학원 홈페이지의 정석을 킷으로 최상급 마감.</p>
+    <span class="go">열어 보기 →</span>
+  </a>
+  <a class="open b" href="도전안판.html">
+    <span class="tag">B</span>
+    <h2>도전안판 — 명품판 문법</h2>
+    <p>다크 무대 단일. 살아있는 마스코트(시선 기울임·열 반응)+계기 링, 질문을 누르면 답하는 대본형 첫 화면, 편집 타이포 챕터, «안이 보인다» 수집 오브, 종이비행기 상담 서사.</p>
+    <span class="go">열어 보기 →</span>
+  </a>
+</div>
+
+<h3>대조표</h3>
+<div class="twrap">
+<table>
+  <thead><tr><th></th><th>A 정석판</th><th>B 도전안판</th></tr></thead>
+  <tbody>
+    <tr><td class="axis">첫 화면이 하는 일</td><td>슬로건·개원 시점·상담 버튼이 3초 안에 읽힌다</td><td>살아있는 캐릭터가 시선을 잡고, 질문을 누르게 만든다</td></tr>
+    <tr><td class="axis">학부모(40~50대) 정보 도달</td><td><b>빠르다</b> — 원하는 답이 목차·FAQ로 바로 보인다</td><td>느리다 — 질문을 눌러야 나온다(대신 기억에 남는다)</td></tr>
+    <tr><td class="axis">명품 신호 4 (08-14 유호 기준)</td><td>부분 — 절제·타이포는 있으나 전용 렌더·모션 물성이 약하다</td><td><b>전부</b> — 화면(챕터)당 전용 렌더 1점씩(마스코트·수집 오브·종이비행기)·모션 물성·편집 타이포·절제</td></tr>
+    <tr><td class="axis">「누구나 만든 것」으로 읽힐 위험</td><td>있다 — 구조 자체가 표준이라 마감으로만 가른다</td><td>낮다 — 이 문법의 학원 사이트는 드물다</td></tr>
+    <tr><td class="axis">반대쪽 위험</td><td>평범함</td><td>정보를 찾는 학부모에게 차갑거나 불편하게 읽힐 수 있다</td></tr>
+    <tr><td class="axis">카피 원천</td><td>뼈대=기확정 · 신조=섹션 헤드라인·카드 요약(사실 주장 0)</td><td>뼈대=기확정 + v5 확정(대본형) 계보 · 신조=«안이 보인다» 서사</td></tr>
+    <tr><td class="axis">모션</td><td>스크롤 등장만(절제)</td><td>부유·호흡·시선 기울임·열 반응·계기 링(전부 transform/opacity)</td></tr>
+    <tr><td class="axis">몽골어판 확장</td><td colspan="2">동일 — MN 버튼 「준비 중」(본문 몽골어는 검수 통로 뒤)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="verdict">
+  <h3>판정안 — 병합을 권합니다</h3>
+  <p><b>B(도전안판)를 얼굴로, A(정석판)의 정보 블록을 B의 스크롤 하부에 편입하는 병합판</b>이 최종 후보입니다. 근거 셋: ① 유호님이 세워 온 기준(하이패션·명품 신호 4·08-14 명품판 계보)에 B가 정면으로 맞습니다. ② A의 강점(학부모 정보 도달)은 첫 화면을 희생하지 않고 하부 편입(왜 SYNK 3카드·수업 4줄·FAQ 아코디언)으로 가져올 수 있습니다 — B의 대본형 답과 FAQ는 같은 원천이라 충돌이 없습니다. ③ 두 판의 뼈대 카피가 같은 확정 원천이라 병합 비용이 낮습니다. 반대로 <b>A 단독 채택은 권하지 않습니다</b> — 「누구나」로 읽히는 위험은 08-14 유호님 피드백(「누구나 쉽게 구현한 느낌이 제일 싫다」)에서 이미 확인된 바로 그 문제입니다.</p>
+</div>
+
+<h3>이번 판에서 뺀 것 · 알아둘 것</h3>
+<ul class="notes">
+  <li><b>표정판 교차(깜빡임)·눈 빔은 미탑재</b> — 새 렌더(본체.png)의 눈 좌표·표정판 정합 실측이 아직 없어, 픽 후 2라운드에서 실측하고 태웁니다(구 시안은 구 마스코트의 실측값이라 재사용 불가).</li>
+  <li><b>「캐릭터 7단계 진화」 카피를 걷었습니다</b> — 08-14 「몬스터 7단계 삭제」 확정과 어긋나는 낡은 카피인데 FAQ 정본 S2·구 시안 QA에 아직 남아 있습니다. FAQ 정본 쪽 수리는 별도 트랙으로 올립니다.</li>
+  <li><b>마스코트 이름은 안 적었습니다</b> — 원어민 검수 게이트 전이라, 두 판 모두 그림만 쓰고 이름은 비웠습니다.</li>
+  <li><b>다크/라이트</b> — v5의 「라이트 기본+hover 다크 무대」 확정은 v5 계보의 것이고, B는 08-14 명품판 다크 무대 계보를 따랐습니다. 픽 때 조정 가능합니다.</li>
+  <li><b>렌더린트 상시 등록은 픽 후</b> — 시안 2벌을 CI에 영구 등록하면 버릴 판까지 계속 검사합니다. 확정판이 정해지면 그 판만 등록합니다.</li>
+  <li><b>기계 검사 실측(08-15)</b> — 브랜드렌더린트 세 파일 전부 통과(대비 위반 0 · 킷 밖 색 0 · 킷 밖 서체 0 · 구역 위반 0 · 마스코트 바닥 통과) + voice-guard 금칙어 0.</li>
+  <li><b>신조 문장 목록(전부 확정 사실의 재표현 — 새 사실·숫자 0)</b> — A: 섹션 헤드라인 2(「부모님이 가장 답답했던 것부터」·「묻기 전에, 먼저 답해 둡니다」)와 신뢰 카드 요약문. B: «안이 보인다» 서사(「아이의 매일이 이 안에 모입니다」). 양판: 앱 문구 개서(위 항목).</li>
+  <li><b>전화 CTA</b> — FAQ 정본 §3에 「대표 연락처 미개통」 행이 남아 있습니다(전화번호는 08-10 JSON-LD 4칸 확정이 더 나중). 라이브 전 개통 1회 확인과 FAQ §3 행 갱신이 필요합니다.</li>
+</ul>
+
+<footer>
+  <span class="micro">SYNK LAB · 내부 결정 재료 · 대외 발행물 아님</span>
+</footer>
+</body>
+</html>
