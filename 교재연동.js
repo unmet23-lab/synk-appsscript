@@ -335,6 +335,11 @@ function voiceWithdraw(studentId, confirm) {
   });
   // ③ voice_log 행 삭제 — 아래에서 위로 지워야 인덱스가 밀리지 않는다
   mine.map(m => m.row).sort((a, b) => b - a).forEach(r => vl.deleteRow(r));
+  /* [v9.241] **의도한 축소이므로 기준선도 내린다** — 안 그러면 주간 워치독이 다음 주부터
+   *   「수집 장부가 줄었다」를 매주 외친다. 우리가 시킨 삭제라 따를 처방이 없는 경보다(F103).
+   *   데모 퇴장(`wipe`)과 같은 규칙을 이 통로에도 적는다 — 수집 탭에서 **행을 지우는 자리**는
+   *   여기와 거기 둘뿐이고, 둘 다 그 자리에서 내린다(①배포 검수 P2 · 723c1d0137a4). */
+  if (mine.length) 탭수축기준선지움_('voice_log');
   // ④ 성장 카드 비우기 — 첫 목소리 URL이 카드 HTML에 박혀 있어 지우지 않으면 링크가 남는다.
   //    [v9.125] 헤더만 있는 profiles(getLastRow()=1) 가드 — getRange(2,1,0,1) 예외가 뒤 단계를 죽이던 구멍
   const pf = ss.getSheetByName('profiles');
