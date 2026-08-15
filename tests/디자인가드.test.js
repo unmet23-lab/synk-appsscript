@@ -201,9 +201,10 @@ test('처방이 말하는 DESIGN.md 크기가 «지금» 크기다 (손으로 �
     `처방이 말하는 크기가 지금 크기(${지금}KB)와 다르다 — 파생이 아니라 손으로 적힌 값이다`);
 });
 
-test('픽스처: 문턱을 넘은 DESIGN.md 를 「무료 구간」이라 부르지 않는다 (탐지력)', () => {
-  const 앵커 = '# 킷\n\n- 3규칙: 신호는 하나\n\n이모지 과다 금지\n\n**철칙 4** — ① 순백 금지.\n\n- 감각 규칙: 동심원\n';
+/** 앵커만 살아 있는 최소 픽스처 — 크기·줄수만 바꿔 가며 여러 검사가 공유한다(두 곳에 안 적는다). */
+const 앵커 = '# 킷\n\n- 3규칙: 신호는 하나\n\n이모지 과다 금지\n\n**철칙 4** — ① 순백 금지.\n\n- 감각 규칙: 동심원\n';
 
+test('픽스처: 문턱을 넘은 DESIGN.md 를 「무료 구간」이라 부르지 않는다 (탐지력)', () => {
   const 큰판 = path.join(임시, 'BIG.md');
   fs.writeFileSync(큰판, 앵커 + '\n' + 'ㄱ'.repeat(20000), 'utf8'); // 한글 3B/자 = 60KB
   const r = 호출(새세션(), 'a.html', { designMd: 큰판 });
@@ -215,6 +216,26 @@ test('픽스처: 문턱을 넘은 DESIGN.md 를 「무료 구간」이라 부르
   fs.writeFileSync(작은판, 앵커, 'utf8');
   const r2 = 호출(새세션(), 'b.html', { designMd: 작은판 });
   assert.match(r2.reason, /무료 구간/, '문턱 아래인데 「무료 구간」이라 말하지 않는다');
+});
+
+test('픽스처: 문턱을 넘으면 «따라갈 수 있는» 구역 읽기를 처방한다 (옛 처방으로 되돌아가면 빨개진다)', () => {
+  /* 🔴 08-15 변이 실측으로 드러난 구멍 — 이 검사가 없는 동안, 초과 분기 처방을 옛 문구
+   * (「이 파일을 문턱 아래로 되돌려라」)로 되돌리는 변이가 **CI 를 그대로 통과했다**.
+   * 위 검사들은 「크기를 맞게 말하는가」만 보고, 그때 훅이 **무엇을 시키는가**는 아무도 안 봤다.
+   * 그래서 처방 교체(F468) 자체에 회귀가 없었다 — 수리가 되돌려져도 조용한 상태였다.
+   * 옛 처방은 사람이 바이트를 지키게 하는 해법이라 이미 두 번 깨졌다(#Q73 · F468) — 되돌아오면 세 번째다. */
+  const 소스 = fs.readFileSync(path.join(ROOT, '.claude', 'hooks', 'read-budget.js'), 'utf8');
+  const CHUNK = Number((/const CHUNK\s*=\s*(\d+)/.exec(소스) || [])[1]);
+  assert.ok(Number.isFinite(CHUNK), 'read-budget 의 CHUNK 를 못 읽었다 — 이 검사가 조용히 무의미해진다');
+
+  const 큰판 = path.join(임시, 'BIG-처방.md');
+  fs.writeFileSync(큰판, 앵커 + '\n' + 'ㄱ'.repeat(20000), 'utf8');
+  const r = 호출(새세션(), 'a.html', { designMd: 큰판 });
+
+  assert.match(r.reason, new RegExp(`limit[^\\n]*${CHUNK}`),
+    `문턱을 넘었는데 구역 읽기(limit ≤ ${CHUNK})를 안 시킨다 — read-budget 이 **일부러 예산 밖에 둔** 유일한 통로다(F103)`);
+  assert.doesNotMatch(r.reason, /문턱 아래로 되돌/,
+    '처방이 「파일을 줄여라」로 되돌아갔다 — 그건 사람이 바이트를 지키는 해법이고 이미 두 번 깨졌다(F468)');
 });
 
 test('--show 가 훅과 같은 문장을 낸다 (잴 통로를 하나로 · F052)', () => {
