@@ -494,11 +494,44 @@ const SELF_DECLARE_HWM_ = '자기선언이력_최고건수';
 const 탭수축키_ = (탭) => '탭최고건수_' + 탭;
 /** [v9.241] «한 번이라도 있었던» 골격 탭 명부(줄바꿈 구분) — 워치독이 「지워짐」과 「안 태어남」을 가른다. */
 const SEEN_TABS_ = '본적있는탭';
+/* [v9.241] 명부의 **첫 줄** = v9.240 까지 워치독이 손 목록으로 요구하던 35종.
+ *
+ * 🔴 왜 필요한가(①배포 검수 P1 · 866317b868f8·fceb49ea3d20): 명부가 빈 채로 첫 실행을 맞으면
+ *   **그때 이미 없는 탭**이 전부 「아직 안 태어남」(정보)으로 접힌다 — 옛 판이 「누락 시트」로
+ *   외치던 경보가 교체 순간 조용히 사라진다. 즉 이 판의 첫 실행이 **경보를 지우는 마이그레이션**이
+ *   될 뻔했다. 옛 판이 필수로 요구했다는 것은 「있어야 한다고 이미 판정했다」는 뜻이므로
+ *   본 적 있음으로 깔고 시작하는 것이 옳다 — 없으면 그대로 «지워짐» 경보가 이어진다.
+ * 🔑 이 목록은 **역사다 — 늘리지 마라.** 새 탭은 골격에 적고, 명부는 실행이 채운다.
+ *   `tests/수집탭워치독.test.js` 가 같은 35종을 픽스처로 들고 대조한다(갈리면 빨개진다).
+ * ⚠ **톱레벨 const 가 아니라 함수인 이유**(v9.135 와 같은 계급 · 이번에 실제로 밟았다):
+ *   `OUTCOME_TAB_`·`TRAJECTORY_TAB_` 는 `엔진_궤적.js`(로드 **마지막**)에 산다. 톱레벨 상수로 두면
+ *   초기화 시점에 `ReferenceError: Cannot access 'OUTCOME_TAB_' before initialization` 로
+ *   **전 트리거가 즉사한다**(07-24 상담AI.gs:27 실사고와 같은 자리). 호출 시점엔 전 파일이 로드돼 있다. */
+function 옛필수탭_() {
+  return ['profiles', 'point_logs', 'attendance', 'teacher_checkins', 'notices',
+    'form_responses', 'contents', 'class_stats', 'app_state', 'raid', 'schedule',
+    'monthly_snapshot', 'titles', 'achievements', 'story', 'manual_titles', 'teacher_stats',
+    'report_cards', 'league_history', 'class_fuel', 'weekly_topics', 'hw_batch', 'today_board',
+    'league_pairs', 'world_raid', 'synk_stories', 'synk_cards', 'academic_log',
+    'exit_log', 'absence_notice', 'inquiries', 'payments',
+    OUTCOME_TAB_, TRAJECTORY_TAB_, SELF_DECLARE_TAB_];
+}
 /** [v9.241] 「없다」를 두 뜻으로 가른다 — 순수 함수라 픽스처로 탐지력을 못박을 수 있다(회귀 `수집탭워치독`).
  * @param {string[]} 골격탭 골격 정본의 탭 이름들
  * @param {!Object} 산탭 지금 스프레드시트에 있는 이름 집합(`{이름:true}`)
  * @param {!Object} 본적 한 번이라도 있었던 이름 집합(`{이름:true}`)
  * @returns {{지워짐: string[], 미출생: string[]}} */
+/** [v9.241] 명부 원문 → «본 적 있는» 집합. **첫 실행(`null`)은 옛 필수 35종으로 깔린다.**
+ * 순수 함수로 뽑은 이유: 이 한 줄이 「교체가 기존 경보를 지우는가」를 통째로 가르는데, 워치독 안에
+ * 인라인으로 두면 회귀가 못 잡는다(①배포 검수 P1 변이가 실제로 그 구멍으로 통과했다).
+ * ⚠ 빈 문자열(`''`)은 `null` 과 다르다 — 「명부를 의도적으로 비웠다」이므로 씨앗을 다시 깔지 않는다.
+ * @param {?string} 원문 스크립트 속성 값(없으면 null)
+ * @returns {!Object} `{탭이름: true}` */
+function 본적명부_(원문) {
+  const 본적 = {};
+  (원문 == null ? 옛필수탭_() : String(원문).split('\n')).forEach(n => { if (n) 본적[n] = true; });
+  return 본적;
+}
 function 탭없음가르기_(골격탭, 산탭, 본적) {
   const 없음 = 골격탭.filter(n => !산탭[n]);
   return { 지워짐: 없음.filter(n => !!본적[n]), 미출생: 없음.filter(n => !본적[n]) };
@@ -516,8 +549,16 @@ function 탭수축_(sh) {
    *   그 값을 안 옮기면 감시가 0에서 다시 시작해 **그 사이의 삭제를 못 본다**(가드 자신의 조용한 실패). */
   const 키 = 탭수축키_(탭);
   let raw = props.getProperty(키);
-  if (raw == null && 탭 === SELF_DECLARE_TAB_) raw = props.getProperty(SELF_DECLARE_HWM_);
-  const hwm = Number(raw || 0);
+  if (raw == null && 탭 === SELF_DECLARE_TAB_) {
+    raw = props.getProperty(SELF_DECLARE_HWM_);
+    /* 승계는 **한 번뿐이다** — 옛 키를 남겨 두면 처방이 자기 발등을 찍는다: 경보문이 시키는 대로
+     * 새 키를 지워도 다음 실행이 옛 키에서 같은 기준선을 다시 물어 와 **같은 경보가 영원히 반복**된다
+     * (①배포 검수 P2 · fc1dbb715f44). 따를 수 없는 처방은 우회를 정상 통로로 만든다(F103). */
+    if (raw != null) { props.setProperty(키, raw); props.deleteProperty(SELF_DECLARE_HWM_); }
+  }
+  /* 오염된 속성(사람 손·부분 쓰기)은 `Number` 가 NaN 을 낸다 — 그러면 비교가 전부 false 라
+   * 감시가 «조용히» 꺼진다. 0으로 접어 첫 실행처럼 기준을 새로 깐다(①배포 검수 P3 · f84cc19e7eba). */
+  const hwm = Number(raw || 0) || 0;
   const 지금 = 탭기록수_(sh);
   if (지금 > hwm) props.setProperty(키, String(지금));
   return { 탭: 탭, hwm: hwm, 지금: 지금, 줄었나: !!hwm && 지금 < hwm };
@@ -752,8 +793,9 @@ function systemWatchdog(asText) {
   const 골격탭 = sheetSkeleton_().map(k => k[0]);
   const 산탭 = {}; ss.getSheets().forEach(s => { 산탭[s.getName()] = true; });
   const propsW = PropertiesService.getScriptProperties();
-  const 본적 = {};
-  String(propsW.getProperty(SEEN_TABS_) || '').split('\n').forEach(n => { if (n) 본적[n] = true; });
+  /* 첫 실행은 **빈 명부가 아니라 옛 필수 35종**으로 시작한다 — 안 그러면 이 판의 첫 실행이
+   * 기존 「누락 시트」 경보를 정보 줄로 바꿔 지운다(①배포 검수 P1). 근거·주의 = `옛필수탭_` 선언부. */
+  const 본적 = 본적명부_(propsW.getProperty(SEEN_TABS_));
   const 갈림 = 탭없음가르기_(골격탭, 산탭, 본적);
   const 지워짐 = 갈림.지워짐, 미출생 = 갈림.미출생;
   add(지워짐.length === 0, 지워짐.length
@@ -775,8 +817,11 @@ function systemWatchdog(asText) {
     const rC = 탭수축_(shC);
     if (rC.줄었나) 줄어든.push(n + ' ' + rC.hwm + '→' + rC.지금 + '건');
   });
+  /* 처방엔 **실제 속성 키**를 적는다 — `탭수축키_('<탭이름>')` 처럼 자리표를 그대로 내보내면
+   * 원장은 무엇을 지워야 하는지 알 수 없다(①배포 검수 P3 · eb2fb8b5be83 · F103 계열). */
+  const 줄어든키 = 줄어든.map(s => 탭수축키_(s.split(' ')[0]));
   add(줄어든.length === 0, 줄어든.length
-    ? '수집 장부가 줄었다: ' + 줄어든.join(' · ') + ' — 소급이 안 되는 데이터입니다. 되돌리거나, 의도한 정리였다면 스크립트 속성 `' + 탭수축키_('<탭이름>') + '` 를 지우세요'
+    ? '수집 장부가 줄었다: ' + 줄어든.join(' · ') + ' — 소급이 안 되는 데이터입니다. 되돌리거나, 의도한 정리였다면 스크립트 속성 ' + 줄어든키.map(k => '`' + k + '`').join(' · ') + ' 를 지우세요'
     : '수집 장부 ' + 수집탭.length + '종 줄지 않음');
   const plRows = pl ? pl.getLastRow() - 1 : 0; // pl = point_logs (섹션 4에서 조회)
   add(plRows <= 8000, 'point_logs ' + plRows + '행' + (plRows > 8000 ? ' — 아카이빙 확인 필요' : ''));
