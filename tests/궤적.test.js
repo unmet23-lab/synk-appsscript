@@ -12,6 +12,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+/* 시트 흉내는 공용 하나다 — 계약·근거·변이 픽스처가 거기 산다(#Q85 · F460). */
+const { 시트흉내 } = require('./lib/시트흉내.js');
 /* 부정 단언의 주어만 정제한다 — 주석이 금지 패턴을 «설명»하면 그 설명이 위반으로 잡힌다(대기열 #Q72). */
 const { 코드만 } = require('./lib/소스검사.js');
 
@@ -253,52 +255,29 @@ test('⛔ 두 시트가 Glide 금지 선언과 함께 있다 — 남의 결과�
  * 그래서 여기서는 시트를 흉내 내 **실제로 돌린다.** 문구를 바꿔도 안 걸리고, 동작이 틀리면 걸린다.
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-/** 시트 스텁 — getRange/getValues/setValues/서식만. Apps Script 없이 도는 최소한. */
+/** 시트 스텁 — 쓰기·비우기·서식·삼킴은 **공용 통로**에 얹는다(`tests/lib/시트흉내.js` · #Q85 · F460).
+ *   여기서 손으로 다시 지으면 그 순간 사본이 되고, 라이브와 갈라져도 아무도 못 잰다 —
+ *   실제로 옛 판의 `clearContent` 는 **no-op** 이었다(계약 ③ 위반: 「지운 자리에 덮어쓴다」가
+ *   어긋나도 초록이 되는 «착한 쪽» 모양). 여기 남은 것은 궤적 시험에만 필요한 겉면뿐이다. */
 function 가짜시트_(이름, 격자) {
-  const g = 격자.map((r) => r.slice());
-  const 서식 = {};
-  return {
-    _g: g, _서식: 서식,
+  const sh = 시트흉내({ 첫행: 1, 행들: 격자 });
+  const 원래getRange = sh.getRange.bind(sh);
+  return Object.assign(sh, {
+    _g: sh.data, _서식: sh.서식,
     getName: () => 이름,
-    getLastRow: () => g.length,
-    getLastColumn: () => g.reduce((m, r) => Math.max(m, r.length), 0),
-    getMaxRows: () => Math.max(g.length, 1000),
+    getMaxRows: () => Math.max(sh.data.length, 1000),
     getMaxColumns: () => 40,
     insertRowsAfter() { return this; },
     insertColumnsAfter() { return this; },
     setFrozenRows() { return this; },
     getFormUrl: () => '',
     getRange(r, c, nr, nc) {
-      nr = nr || 1; nc = nc || 1;
-      return {
-        getValues() {
-          const out = [];
-          for (let i = 0; i < nr; i++) {
-            const row = g[r - 1 + i] || [];
-            const o = [];
-            for (let j = 0; j < nc; j++) o.push(row[c - 1 + j] === undefined ? '' : row[c - 1 + j]);
-            out.push(o);
-          }
-          return out;
-        },
-        getValue() { return this.getValues()[0][0]; },
-        setValues(v) {
-          v.forEach((row, i) => {
-            const ri = r - 1 + i;
-            while (g.length <= ri) g.push([]);
-            row.forEach((val, j) => { g[ri][c - 1 + j] = val; });
-          });
-          return this;
-        },
-        setValue(v) { return this.setValues([[v]]); },
-        setFontWeight() { return this; },
-        setNumberFormat(f) { 서식[c] = f; return this; },
-        getNumberFormat() { return 서식[c] || ''; },
-        setDataValidation() { return this; },
-        clearContent() { return this; },
-      };
+      const rng = 원래getRange(r, c, nr, nc);
+      rng.setFontWeight = () => rng;
+      rng.setDataValidation = () => rng;
+      return rng;
     },
-  };
+  });
 }
 
 /** 엔진_궤적.js 를 스텁 전역과 함께 평가해 함수들을 꺼낸다. */

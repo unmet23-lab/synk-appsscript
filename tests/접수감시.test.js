@@ -5,6 +5,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+/* 시트 흉내는 공용 하나다 — 계약·근거·변이 픽스처가 거기 산다(#Q85 · F460). */
+const { 시트흉내 } = require('./lib/시트흉내.js');
 
 // SYNK_TEST_SRC_ROOT = 변이 실험용 이음매(궤적·크루카드 테스트와 같은 규약). 평소엔 실소스를 본다.
 const ROOT = process.env.SYNK_TEST_SRC_ROOT || path.resolve(__dirname, '..');
@@ -79,33 +81,14 @@ test('마커 방식 금지 — 마지막 serial 비교로 되돌아가면 crew_c
 
 /* ── 실행 하네스 ───────────────────────────────────────────────── */
 
+/* 쓰기·읽기·삼킴은 **공용 통로**에 얹는다(`tests/lib/시트흉내.js` · #Q85 · F460) — 손으로 다시 지으면
+ *   사본이 되고, 라이브와 갈라져도 아무도 못 잰다. 여기 남은 것은 이 시험에만 필요한 겉면뿐이다.
+ *   ⚠ 실제 Range 에 있는 메서드를 빠뜨리면 코드가 예외로 조용히 건너뛰고 하네스만 초록이 된다(실측). */
 function 시트_(grid) {
   const W = grid.reduce((m, r) => Math.max(m, r.length), 0);
   const pad = (r) => { const o = r.slice(); while (o.length < W) o.push(''); return o; };
-  const g = grid.map(pad);
-  return {
-    grid: g,
-    getLastRow: () => g.length,
-    getLastColumn: () => W,
-    getRange(r, c, nr = 1, nc = 1) {
-      return {
-        getValues: () => {
-          const out = [];
-          for (let i = 0; i < nr; i++) out.push((g[r - 1 + i] || new Array(W).fill('')).slice(c - 1, c - 1 + nc));
-          return out;
-        },
-        setValues: (vals) => {
-          for (let i = 0; i < nr; i++) {
-            if (!g[r - 1 + i]) g[r - 1 + i] = new Array(W).fill('');
-            for (let j = 0; j < nc; j++) g[r - 1 + i][c - 1 + j] = vals[i][j];
-          }
-        },
-        setValue: (v) => { if (!g[r - 1]) g[r - 1] = new Array(W).fill(''); g[r - 1][c - 1] = v; },
-        // 실제 Range에 있는 메서드다 — 빠뜨리면 코드가 예외로 조용히 건너뛰고 하네스만 초록이 된다(실측)
-        getValue: () => ((g[r - 1] || [])[c - 1]),
-      };
-    },
-  };
+  const sh = 시트흉내({ 첫행: 1, 행들: grid.map(pad) });
+  return Object.assign(sh, { grid: sh.data, getLastColumn: () => W });
 }
 
 const 상담헤더 = ['이름(한국어)', '연락처', '처리상태', '크루카드번호'];

@@ -13,6 +13,8 @@ const code = engineSource();
 /* 부정 단언(「~가 없어야 한다」)의 주어만 이걸로 감싼다 — 주석이 금지 패턴을 «설명»하면 그 검사가
  * 설명을 위반으로 읽는다. 구간 앵커·긍정 단언은 원문 그대로 둔다. (대기열 #Q72) */
 const { 코드만 } = require('./lib/소스검사.js');
+/* 시트 흉내는 공용 하나다 — 계약·근거·변이 픽스처가 거기 산다(#Q85 · F460). */
+const { 시트흉내 } = require('./lib/시트흉내.js');
 const tbCode = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
 const mjCode = fs.readFileSync(path.join(ROOT, '만족도팩.js'), 'utf8');
 
@@ -170,18 +172,16 @@ test('[v9.125] 시즌 종료 게이트 — groupBoardOf_·todayPairsBySid_·grou
 // 자기치유 ④ 블록을 잘라 실제로 실행한다(삭제가 걸린 로직이라 문구 검사로는 부족하다)
 function runRcDedupe(rows) {
   const deleted = [];
-  const rc = {
+  /* 쓰기·읽기·서식은 **공용 통로**에 얹는다(`tests/lib/시트흉내.js` · #Q85 · F460) — 옛 판은
+   *   `setValues` 가 no-op 이라 「쓴 적 없는데 초록」이 되는 «착한 쪽» 모양이었다.
+   *   ym 칸은 텍스트(@)로 못박힌 열이라는 것이 이 블록의 전제라 그대로 박아 준다. */
+  const sh = 시트흉내({ 첫행: 2, 행들: rows });
+  sh.getRange(1, 3, 1, 1).setNumberFormat('@');
+  const rc = Object.assign(sh, {
     getName: () => 'report_cards',
-    getLastRow: () => rows.length + 1,
-    getMaxRows: () => rows.length + 10,
-    getRange: (r, c, n, w) => ({
-      getValues: () => rows.slice(r - 2, r - 2 + n).map(x => x.slice(c - 1, c - 1 + (w || 1))),
-      setValues: () => {},
-      getNumberFormat: () => '@',
-      setNumberFormat: () => {},
-    }),
-    deleteRow: (rn) => { deleted.push(rn); rows.splice(rn - 2, 1); },
-  };
+    getMaxRows: () => sh.data.length + 10,
+    deleteRow: (rn) => { deleted.push(rn); sh.data.splice(rn - 2, 1); },
+  });
   const s = code.indexOf('/* ④ [v9.126] report_cards');
   const e = code.indexOf('// [v9.6] 🌍 월드 레이드 — 학원 전체');
   assert.ok(s > -1 && e > s, '자기치유 ④ 블록 표식을 찾지 못함');
@@ -193,7 +193,7 @@ function runRcDedupe(rows) {
     (v) => String(v == null ? '' : v).trim(),
     { log: () => {} }
   );
-  return { deleted, remaining: rows.map(r => r[0] + '/' + r[1] + '/' + r[2]) };
+  return { deleted, remaining: sh.data.map(r => r[0] + '/' + r[1] + '/' + r[2]) };
 }
 
 const rcRow = (id, sid, ym, url, created) => [id, sid, ym, url || '', '칭호', '코멘트', created || '2026-08-01'];
