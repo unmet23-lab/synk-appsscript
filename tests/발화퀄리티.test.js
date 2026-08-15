@@ -421,7 +421,9 @@ test('미션ID 증분은 멱등이고, 이미 뿌려진 학생별 링크를 죽�
   // [v9.208] 「맨 끝」→「고정 11번째」 — 지키려는 불변식은 처음부터 「앞에 끼우지 않는다」다(앞을 읽는 소비처:
   //   전사 7~9열·삭제 6열·점검 8열). schema_ver 가 규약(새 열은 끝에만)대로 붙자 「끝」은 위치의 증거가 아니게 됐다
   //   — 소급성 ④ audio_ref·수집 quiz/hw 와 같은 처방(구간을 닫는다).
-  const hdr = tb.match(/const VOICE_LOG_HEADERS = \[([^\]]+)\]/)[1].split(',').map(x => x.trim().replace(/'/g, ''));
+  //   [vNEXT] 정의가 엔진_셋업확장.js 로 이사(수집면 출생 단일화 — 골격이 참조하는 정본은 엔진 쪽) — 거기서 읽는다.
+  const 셋업 = fs.readFileSync(path.join(ROOT, '엔진_셋업확장.js'), 'utf8');
+  const hdr = 셋업.match(/const VOICE_LOG_HEADERS = \[([^\]]+)\]/)[1].split(',').map(x => x.trim().replace(/'/g, ''));
   assert.equal(hdr[10], '미션ID', '미션ID가 11번째(고정 위치)가 아니다 — 앞을 고정 인덱스로 읽는 소비처가 통째로 밀린다');
   assert.equal(hdr.indexOf('전사'), 6, '전사 열 위치가 밀렸다 — voiceTranscribe_의 getRange(row, 7, 1, 3)이 엉뚱한 칸을 쓴다');
 });

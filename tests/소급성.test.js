@@ -113,7 +113,10 @@ test('[v9.207] ⑥ schema_ver — 3시트가 열을 갖고, 적재 5자리가 �
    *    ⚠ 적재 값 `SCHEMA_VER` 는 엔진_수집.js 의 전역 상수를 교재연동.js 가 함수 안에서 참조한다 —
    *    사본 상수를 두면 계약.test.js(판 대조)가 그 사본을 못 본다. 이 검사는 참조가 실려 있는 것까지만 잰다. */
   const 교재 = require('fs').readFileSync(require('path').join(__dirname, '..', '교재연동.js'), 'utf8').replace(/\r\n/g, '\n');
-  const vm = 교재.match(/const VOICE_LOG_HEADERS = (\[[^\]]*\]);/);
+  /* [vNEXT] 정의는 엔진_셋업확장.js 로 이사(수집면 출생 단일화) — 골격이 참조하는 정본은 엔진 쪽에 산다.
+   *   교재연동.js 는 그 전역을 런타임에 쓴다(같은 GAS 프로젝트 · filePushOrder 12번째). */
+  const 셋업원문 = require('fs').readFileSync(require('path').join(__dirname, '..', '엔진_셋업확장.js'), 'utf8').replace(/\r\n/g, '\n');
+  const vm = 셋업원문.match(/const VOICE_LOG_HEADERS = (\[[^\]]*\]);/);
   assert.ok(vm, 'VOICE_LOG_HEADERS 정의를 찾지 못함(이름을 바꿨다면 이 검사도 함께 옮겨라)');
   assert.ok(new Function('return ' + vm[1])().includes('schema_ver'),
     'voice_log에 schema_ver가 없다 — 그 시트 행은 어느 계약 규격으로 쓰였는지 영영 말하지 못한다(A-8 · 소급 불가)');

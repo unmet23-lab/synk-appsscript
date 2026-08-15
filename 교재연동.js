@@ -398,7 +398,9 @@ const STT_OK_MIME = ['audio/flac', 'audio/x-flac', 'audio/wav', 'audio/x-wav', '
  * [v9.190] '미션ID'(맨 끝) — 과업 축(유호님 승인 08-06 · 스키마 감사 잔여 1건).
  *   '미션'은 자유 문자열이라 같은 과제가 다섯 표기로 쌓인다 — "무엇을 읽었을 때의 발음인가"로 묶을 수가 없다.
  *   맨 끝 증분이라 앞을 읽는 소비처(전사 7~9열·삭제 6열·점검 8열)는 전부 그대로다. */
-const VOICE_LOG_HEADERS = ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at', '전사', '전사상태', '전사일시', '급수', '미션ID', 'schema_ver']; // [v9.208] schema_ver — A-8 2단계(수집 4시트 중 마지막) · 끝에만 붙인다
+// [v9.239] VOICE_LOG_HEADERS 정본은 엔진_셋업확장.js(골격 곁)로 이사 — 수집면 출생 단일화로 골격이
+//   이 헤더를 참조하게 됐는데, 이 파일은 ENGINE_FILES(테스트 하네스·filePushOrder 선두 고정) 밖이라
+//   정본이 엔진 쪽에 살아야 한다. 여기 쓰임(ensureSheet·헤더보정_)은 런타임 호출이라 로드 순서 무관.
 
 /* GCP 액세스 토큰 — ①서비스 계정(GCP_SA_JSON) ②없으면 스크립트 자체 토큰(매니페스트에 스코프를 넣은 경우).
  * 토큰은 1시간짜리라 캐시에 50분 보관한다(매 파일마다 토큰 발급하면 그 자체가 쿼터·지연이다). */
@@ -725,7 +727,7 @@ function masteryFromFeedback_(ss) {
     '명백한 것만 담고, 애매하면 제외한다. 목록에 없는 ID는 절대 만들지 않는다.';
 
   // mastery_log upsert 준비 — (sid|gid) → {row, 상태, 마지막근거일}
-  const ml = ensureSheet(ss, 'mastery_log', ['student_id', 'grammar_id', '상태', '첫기록일', '도달일', '출처', 'updated_at']);
+  const ml = ensureSheet(ss, 'mastery_log', MASTERY_LOG_HEADERS); // [v9.239] 헤더 정본 공유(엔진_셋업확장)
   const idx = {};
   if (ml.getLastRow() >= 2) ml.getRange(2, 1, ml.getLastRow() - 1, 7).getValues().forEach((r, i) => {
     const sid = String(r[0] || '').trim(), gid = String(r[1] || '').trim();

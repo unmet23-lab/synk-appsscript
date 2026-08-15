@@ -420,7 +420,7 @@ test('[v9.187] 수집 4시트 — 기존 열 순서 불변, 새 열은 맨 끝�
   assert.deepEqual(HH.slice(0, 15), ['id', 'student_id', '제출일', '제출문', '고친문장', '오늘의포인트', '칭찬', '다음미션',
     '상태', '학생확인', '포인트지급', '숙제ID', '오류태그', '재작성원본', '다시쓰기URL'], 'hw_feedback 기존 15열 순서가 바뀌었다');
   assert.deepEqual(HH.slice(15, 19), ['숙제문항', '급수', 'model', 'prompt_ver'], 'hw_feedback 감사 4열의 순서가 바뀌었거나 하나가 사라졌다'); // [v9.207] 구간을 닫는다
-  const VH = JSON.parse(교재소스().match(/const VOICE_LOG_HEADERS = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
+  const VH = JSON.parse(code.match(/const VOICE_LOG_HEADERS = (\[[^\]]*\]);/)[1].replace(/'/g, '"')); // [vNEXT] 정의가 엔진_셋업확장(engineSource 안)으로 이사
   assert.deepEqual(VH.slice(0, 9), ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at', '전사', '전사상태', '전사일시'],
     'voice_log 기존 9열 순서가 바뀌었다');
   assert.deepEqual(VH.slice(9, 11), ['급수', '미션ID'], 'voice_log 증분 2열(급수·미션ID)이 이 자리에 이 순서로 있지 않다 — 라이브 시트가 이 순서로 서 있어 바꾸면 이름표와 값이 어긋난다'); // [v9.208] 구간을 닫는다 — 열린 slice(9)는 규약대로 끝에 붙는 새 열(schema_ver)마다 거짓 적색(quiz·hw 가 v9.207 에서 닫은 같은 병)
