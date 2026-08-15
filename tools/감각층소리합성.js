@@ -14,6 +14,10 @@
 //   + 스프링 느리게(9.2→6.8Hz — 출렁임은 남기고 조급함만 뺀다) + 낟알·뭉·톡·«몽» 전부 길고 느리게.
 //   하이톤 = 음높이 축을 올린다 — 곡선 전체 ~1.4× 위로 + 몸통 공명 1150→1480Hz(작은 몸) +
 //   저역 온기층 축소(0.15→0.07) + LP 상향(1900→2700 — 올라간 배음이 숨쉬게).
+// v5 (08-15 · 유호 귀검수 4 「귀여운 느낌은 있는데 상큼한 느낌이 없어」): 옹알이만 — 속도·음높이 유지,
+//   ①어택 크리스프(0.34→0.22 — 첫입은 톡, 꼬리는 여전히 둥글게) ②밝기 개방(LP 3400·3차 배음 강화
+//   +4차 한 방울·저역 온기 0.07→0.05·숨소리 절반) ③이슬 «핑» — 음절 머리에 1.9~2.4kHz 초소형 반짝
+//   ④말끝 치켜(flick) — 만족·반김·간지럼 끝을 살짝 올린다(상승 억양=상큼). 잠꼬대는 전부 제외(자는 소리).
 // 산출: A·B × { tap 4 · grain 8 · press 3 } + M(옹알이 · 프로파일 무관 = 목소리 정체성 1개) 7종 + body 2종
 //   (A = 유호 확정 08-15 「a 방향이 맞아」 — B 는 비교 이력용으로만 남긴다)
 
@@ -148,8 +152,9 @@ function makeMurmur(rnd, syllables, opt) {
       const t = i / sn;
       let f = s.y.f0 + (s.y.f1 - s.y.f0) * t;
       if (i < grace) f = s.y.f0 * (0.78 + 0.22 * i / grace);
+      if (s.y.flick && t > 0.85) f *= 1 + 0.08 * ((t - 0.85) / 0.15); // v5: 말끝 살짝 치켜 — 상승 억양=상큼
       target[s0 + i] = f;
-      const atk = 0.34, relS = 0.44; // v4: 어택·릴리즈 둥글게 — 말끝이 스르르 잦아든다
+      const atk = opt.atk || 0.22, relS = 0.44; // v5: 첫입은 톡(크리스프), 꼬리는 둥글게(v4) — 상큼의 절반은 어택이다
       let e = 1;
       if (t < atk) e = 0.5 * (1 - Math.cos(Math.PI * t / atk));
       else if (t > 1 - relS) e = 0.5 * (1 - Math.cos(Math.PI * (1 - t) / relS));
@@ -166,16 +171,29 @@ function makeMurmur(rnd, syllables, opt) {
     p += v / SR;
     const vib = 1 + 0.008 * Math.sin(2 * Math.PI * 6.3 * i / SR); // 미세 파르르(사람 비브라토 아님)
     ph += 2 * Math.PI * p * vib / SR;
-    const tone = Math.sin(ph) + 0.34 * Math.sin(2.01 * ph + 0.4) + 0.10 * Math.sin(3.02 * ph)
-      + 0.07 * Math.sin(0.5 * ph); // v4: 옥타브 아래 축소 — 몸은 작고 목소리는 밝게
+    const tone = Math.sin(ph) + 0.34 * Math.sin(2.01 * ph + 0.4) + 0.16 * Math.sin(3.02 * ph)
+      + 0.05 * Math.sin(4.03 * ph + 0.9) // v5: 고차 배음 강화 — 밝음·맑음(상큼의 몸통)
+      + 0.05 * Math.sin(0.5 * ph); // v5: 옥타브 아래 더 축소 — 온기는 남기고 흐림만 뺀다
     x[i] = tone * env[i];
   }
   const res = runBiquad(x, biquad('bp', 1480, 5)); // v4: 몸통 공명 상향 — 더 작은 몸 = 더 귀여운 공명(전 옹알이 공통)
   const mix = new Float64Array(n);
   for (let i = 0; i < n; i++) mix[i] = 0.68 * x[i] + 0.45 * res[i];
-  const out = runBiquad(mix, biquad('lp', opt.lp || 2700, 0.8));
+  const out = runBiquad(mix, biquad('lp', opt.lp || 3400, 0.8)); // v5: 밝기 개방 2700→3400
+  if (opt.sparkle !== 0) {
+    // v5: 이슬 «핑» — 음절 머리마다 아주 작은 고음 방울 하나(이슬·과즙의 반짝). LP 뒤에 얹어 크리스프하게.
+    for (const s of segs) {
+      const s0 = Math.round(SR * s.at);
+      const pf = 1900 + rnd() * 500;
+      const pn = Math.round(SR * 0.045);
+      for (let i = 0; i < pn && s0 + i < n; i++) {
+        const t = i / SR;
+        out[s0 + i] += Math.sin(2 * Math.PI * pf * t) * Math.exp(-t * 90) * 0.09 * (s.y.amp || 1);
+      }
+    }
+  }
   const br = runBiquad(noise(n, rnd), biquad('lp', 850, 0.8));
-  for (let i = 0; i < n; i++) out[i] += br[i] * (opt.breath || 0.016);
+  for (let i = 0; i < n; i++) out[i] += br[i] * (opt.breath || 0.012); // v5: 숨소리 절반 — 뽀얀 김을 걷어 맑게
   return normalize(out, opt.peak || 0.6);
 }
 // boing: 몸 되튐 «몽» — 꾹 눌렀다 놓으면 몸이 낮게 튕겨 돌아온다(목소리 아님 · 몸의 소리)
@@ -196,15 +214,16 @@ function makeBoing(rnd) {
   for (let i = 0; i < tick.length; i++) x[i] += tick[i] * 0.25 * Math.exp(-i / (tick.length * 0.4));
   return normalize(x, 0.5);
 }
-// 옹알이 어휘 7 — 이름은 기분이지 뜻이 아니다(언어 0) · v4: 음절 ~1.5× 길게(차분) + 곡선 ~1.4× 위로(하이톤)
+// 옹알이 어휘 7 — 이름은 기분이지 뜻이 아니다(언어 0) · v4: 음절 ~1.5× 길게(차분)+곡선 ~1.4× 위로(하이톤)
+// v5: flick(말끝 치켜)로 상큼 — 하강 곡선(따뜻함)은 유지하되 끝만 살짝 올린다 · 잠꼬대는 상큼 전부 제외
 const MURMURS = [
-  { 이름: '만족', syl: [{ ms: 480, f0: 650, f1: 525 }] },
-  { 이름: '만족2', syl: [{ ms: 220, f0: 580, f1: 620 }, { ms: 430, f0: 670, f1: 510 }] },
+  { 이름: '만족', syl: [{ ms: 480, f0: 650, f1: 525, flick: true }] },
+  { 이름: '만족2', syl: [{ ms: 220, f0: 580, f1: 620 }, { ms: 430, f0: 670, f1: 510, flick: true }] },
   { 이름: '궁금', syl: [{ ms: 340, f0: 565, f1: 815 }] },
-  { 이름: '반김', syl: [{ ms: 180, f0: 540, f1: 700 }, { ms: 260, f0: 730, f1: 640 }] },
-  { 이름: '간지럼', syl: [{ ms: 130, f0: 750, f1: 850, amp: 0.85 }, { ms: 130, f0: 810, f1: 900, amp: 0.9 }, { ms: 170, f0: 865, f1: 700 }] },
+  { 이름: '반김', syl: [{ ms: 180, f0: 540, f1: 700 }, { ms: 260, f0: 730, f1: 640, flick: true }] },
+  { 이름: '간지럼', syl: [{ ms: 130, f0: 750, f1: 850, amp: 0.85 }, { ms: 130, f0: 810, f1: 900, amp: 0.9 }, { ms: 170, f0: 865, f1: 700, flick: true }] },
   { 이름: '잠깸', syl: [{ ms: 380, f0: 450, f1: 485, amp: 0.8 }, { ms: 320, f0: 555, f1: 755 }] },
-  { 이름: '잠꼬대', syl: [{ ms: 540, f0: 480, f1: 435, amp: 0.55 }, { ms: 450, f0: 455, f1: 412, amp: 0.45 }], opt: { lp: 1450, breath: 0.028, peak: 0.42 } },
+  { 이름: '잠꼬대', syl: [{ ms: 540, f0: 480, f1: 435, amp: 0.55 }, { ms: 450, f0: 455, f1: 412, amp: 0.45 }], opt: { lp: 1450, breath: 0.028, peak: 0.42, atk: 0.36, sparkle: 0 } },
 ];
 
 // 프로파일 — A: 포근·낮음(깊은 펠트) / B: 밝은 사각(보풀 결이 또렷) · v2에서 둘 다 부드럽게 하향
@@ -256,7 +275,7 @@ function main() {
     rows.push({ 파일: `body/boing_${i + 1}.wav`, ms: info.ms, bytes: info.bytes });
   }
   const total = rows.reduce((s, r) => s + r.bytes, 0);
-  console.log(`[감각층소리합성 v4] ${rows.length}개 = A·B ${COUNTS.tap + COUNTS.grain + COUNTS.press}×2 + 옹알이 ${MURMURS.length} + 몸 2 · 합계 ${(total / 1024).toFixed(1)}KB · 씨앗 ${SEED_BASE}`);
+  console.log(`[감각층소리합성 v5] ${rows.length}개 = A·B ${COUNTS.tap + COUNTS.grain + COUNTS.press}×2 + 옹알이 ${MURMURS.length} + 몸 2 · 합계 ${(total / 1024).toFixed(1)}KB · 씨앗 ${SEED_BASE}`);
   for (const r of rows) console.log(`  ${r.파일}  ${r.ms}ms  ${(r.bytes / 1024).toFixed(1)}KB`);
 }
 main();
