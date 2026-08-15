@@ -92,9 +92,51 @@ test('⑥ 규칙 정의가 한 곳에만 산다 — 두 곳에 적으면 갈라�
   /* 기본 가지를 «이름»으로 박으면 나중에 갈릴 때 조용히 빗나간다 */
   assert.deepEqual(게이트.규칙정의.conditions.ref_name.include, ['~DEFAULT_BRANCH'],
     '기본 가지를 특수값이 아니라 이름으로 박았다 — 가지 이름이 바뀌면 규칙이 조용히 빗나간다');
-  /* 규칙 목록이 소스에 두 번 적혔는지 — PUT 경로가 정의를 베껴 쓰면 거기서 갈라진다 */
+  /* 규칙 목록이 소스에 두 번 적혔는지 — PUT 경로가 정의를 베껴 쓰면 거기서 갈라진다.
+     🔴 이 검사는 원래 `<= 2` 였고, 실제 사고는 그 «허용된 2번째»에서 났다(⑨⑩ 참조).
+        복제를 한 칸 봐 주면 갈라짐도 한 칸 봐 주는 것이다 — 그래서 1로 조인다. */
   const 정의개수 = (소스.match(/non_fast_forward/g) || []).length;
-  assert.ok(정의개수 <= 2, `non_fast_forward 가 ${정의개수}곳에 적혔다 — 파생이 아니라 복제다`);
+  assert.ok(정의개수 <= 1, `non_fast_forward 가 ${정의개수}곳에 적혔다 — 파생이 아니라 복제다`);
+});
+
+test('⑨ 🔴 요청 몸통에 `exclude` 가 살아 있다 — 이게 빠져 «푸는 길»만 422 로 죽었다', () => {
+  /* 2026-08-15 실사고. 세우기는 `규칙정의` 를 통째로 보내 통과했고, 바꾸기(PUT)만 gh 인자로
+     몸통을 손조립하다 `exclude` 를 빠뜨려 `422 Missing required parameter exclude` 로 죽었다.
+     증상이 지독한 자리 = **잠그는 길은 멀쩡하고 여는 길만 죽는다.** 장부도 화면도 초록인데
+     막혔을 때 열 열쇠가 없다 — 그건 이 도구의 존재 이유가 통째로 사라진 상태다. */
+  for (const 목표 of ['active', 'disabled']) {
+    const 몸통 = 게이트.요청몸통(목표);
+    assert.deepEqual(몸통.conditions.ref_name.exclude, [],
+      `${목표}: exclude 가 빠졌다 — GitHub 이 422 로 거절한다(푸는 길이 막힌다)`);
+    assert.deepEqual(몸통.conditions.ref_name.include, ['~DEFAULT_BRANCH'], `${목표}: 대상 가지가 빠졌다`);
+    assert.equal(몸통.enforcement, 목표, `${목표}: enforcement 가 안 갈렸다 — 풀어도 안 풀린다`);
+    assert.deepEqual(몸통.rules.map((r) => r.type).sort(), ['deletion', 'non_fast_forward'],
+      `${목표}: 규칙이 몸통에서 사라졌다 — PUT 이 규칙을 통째로 지운다`);
+  }
+  /* 원본을 갉아먹지 않는지 — 파생이 정의를 바꾸면 다음 호출이 오염된다 */
+  assert.equal(게이트.규칙정의.enforcement, 'active', '요청몸통이 규칙정의를 제자리에서 고쳤다');
+});
+
+test('⑩ 몸통을 손으로 조립하지 않는다 — 갈라지는 자리를 원천 차단한다', () => {
+  /* 호출부마다 고치는 대신 «잘못 쓸 수 없는 통로»만 남긴다: gh 에는 `--input` 으로만 준다.
+     이 검사가 없으면 다음 사람이 또 손조립을 적고, 그때도 세우기는 통과하고
+     푸는 길만 죽는다(같은 병 3번째).
+
+     🔑 **주석은 벗기고 본다** — 첫 판에서 이 검사가 스스로 빨개졌다: 사고를 기록한
+        «주석»이 금지 문자열을 그대로 인용하고 있었기 때문이다. 사고를 적으면 검사가
+        깨지는 도구는, 다음 사람에게 「기록하지 마라」를 가르친다. */
+  const 코드만 = 소스.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  assert.equal(/conditions\[/.test(코드만), false,
+    'gh 인자에 conditions 손조립이 남아 있다 — 정의와 갈라지는 자리다');
+  assert.equal(/rules\[\]/.test(코드만), false, 'gh 인자에 rules 손조립이 남아 있다');
+  /* 주석 벗기기가 실제로 일했는지 — 안 벗겨졌으면 위 둘은 「늘 초록」이 아니라 「늘 적색」이다 */
+  assert.ok(코드만.length < 소스.length, '주석이 하나도 안 벗겨졌다 — 벗기기 정규식이 죽었다');
+  assert.match(코드만, /요청몸통/, '주석을 너무 벗겨 코드까지 날렸다');
+  /* 몸통을 보내는 곳은 전부 `--input` 이어야 한다 — POST·PUT 둘 다 */
+  const 몸통보냄 = (코드만.match(/'--method', '(POST|PUT)'/g) || []).length;
+  const 인풋 = (코드만.match(/'--input', 본문/g) || []).length;
+  assert.ok(몸통보냄 > 0, '몸통을 보내는 호출을 하나도 못 찾았다 — 이 검사가 0건을 초록으로 읽고 있다');
+  assert.equal(인풋, 몸통보냄, `몸통을 보내는 호출 ${몸통보냄}개 중 --input 은 ${인풋}개다`);
 });
 
 test('⑦ 다루는 저장소가 둘 다 등록돼 있다', () => {
