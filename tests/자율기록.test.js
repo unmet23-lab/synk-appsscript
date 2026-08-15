@@ -13,7 +13,9 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 
-const { 파싱, 다음번호, 검증, 접기, HTML, esc, 인자값들, 결과값, 필수 } = require('../tools/자율기록.js');
+const {
+  파싱, 다음번호, 검증, 접기, HTML, esc, 인자값들, 저장소경로, sha인가, 결과값, 필수, 효과값,
+} = require('../tools/자율기록.js');
 
 const 온전한결정 = {
   종류: '결정',
@@ -226,4 +228,102 @@ test('인자값들: 같은 이름을 여러 번 받는다 — 한 인자를 파�
 test('인자값들: 없으면 빈 배열 · 값 없는 꼬리 플래그는 세지 않는다', () => {
   assert.deepStrictEqual(인자값들(['--제목', 'ㄱ'], '--대안'), []);
   assert.deepStrictEqual(인자값들(['--대안'], '--대안'), []);
+});
+
+/* ── 효과 축 (2026-08-15 신설) ──────────────────────────────────
+ * 못박는 실패 형태 넷 — 전부 **「통과」의 얼굴로 새는** 쪽이다:
+ *   ⑤ 효과가 판정(승인 축)을 덮거나 그 반대 — 두 축이 한 칸으로 뭉개지는 것.
+ *   ⑥ 오타 효과값이 「섰다」로 읽히는 것 — 안 잰 것이 잰 것처럼 보인다.
+ *   ⑦ 「아직」이 28건 전부에 그려져 배경이 되는 것 — 그러면 「뒤집힘」이 안 보인다.
+ *   ⑧ **`커밋` 칸의 산문을 sha 로 물어 「유실」로 접는 것** — 첫 실전이 실제로 그랬다(#16).
+ */
+
+test('접기: 효과 레코드가 없으면 「아직」 — 안 잰 것이 기본값이다', () => {
+  const { 목록 } = 접기([온전한결정]);
+  assert.strictEqual(목록[0].효과, '아직');
+  assert.strictEqual(목록[0].효과근거, '');
+});
+
+test('접기⑤: 효과와 판정은 다른 축 — 하나를 얹어도 다른 하나가 안 바뀐다', () => {
+  const { 목록 } = 접기([
+    온전한결정,
+    { 종류: '판정', 번호: 1, 날짜: '2026-08-12', 결과: '유지', 메모: '그대로 두자' },
+    { 종류: '효과', 번호: 1, 날짜: '2026-08-15', 효과: '뒤집힘', 근거: '되돌림 커밋 abc1234' },
+  ]);
+  assert.strictEqual(목록[0].결과, '유지');
+  assert.strictEqual(목록[0].판정메모, '그대로 두자');
+  assert.strictEqual(목록[0].효과, '뒤집힘');
+  assert.strictEqual(목록[0].효과근거, '되돌림 커밋 abc1234');
+  /* 결정 본문도 그대로 — 「원래 뭘 골랐나」가 사라지면 학습 재료가 아니다 */
+  assert.strictEqual(목록[0].고른것, 온전한결정.고른것);
+});
+
+test('접기: 효과가 두 번이면 뒤(=최신)가 이긴다 — 판정과 같은 규칙', () => {
+  const { 목록 } = 접기([
+    온전한결정,
+    { 종류: '효과', 번호: 1, 날짜: '2026-08-13', 효과: '섰다', 근거: '첫 관측' },
+    { 종류: '효과', 번호: 1, 날짜: '2026-08-15', 효과: '뒤집힘', 근거: '다시 보니 되돌려졌다' },
+  ]);
+  assert.strictEqual(목록[0].효과, '뒤집힘');
+  assert.strictEqual(목록[0].효과근거, '다시 보니 되돌려졌다');
+});
+
+test('접기⑥: 모르는 효과값은 「아직」으로 떨어진다 — 오타가 「쟀다」로 보이지 않게', () => {
+  const { 목록 } = 접기([
+    온전한결정,
+    { 종류: '효과', 번호: 1, 날짜: '2026-08-15', 효과: '섰담', 근거: 'ㄱ' },
+  ]);
+  assert.strictEqual(목록[0].효과, '아직');
+});
+
+test('HTML⑦: 「아직」은 안 그린다 — 전건에 회색 칩이 붙으면 뒤집힘이 안 보인다', () => {
+  const 안잰것 = HTML(접기([온전한결정]));
+  assert.ok(!안잰것.includes('class="effect"'), '아직인데 효과 줄이 그려졌다');
+  const 잰것 = HTML(접기([
+    온전한결정,
+    { 종류: '효과', 번호: 1, 날짜: '2026-08-15', 효과: '뒤집힘', 근거: '되돌림 커밋 abc1234' },
+  ]));
+  assert.ok(잰것.includes('class="effect"'));
+  assert.ok(잰것.includes('e-뒤집힘'));
+  assert.ok(잰것.includes('되돌림 커밋 abc1234'));
+});
+
+test('HTML: 카드에 data-e 가 붙는다 — 「그 뒤」 필터가 그걸로 돈다', () => {
+  const h = HTML(접기([온전한결정]));
+  assert.ok(h.includes('data-e="아직"'));
+  assert.ok(h.includes("상태={r:'',a:'',e:''}"), '필터 상태에 e 축이 없다');
+});
+
+test('HTML: 「그 뒤」 계기가 분모와 함께 뜬다 — 0이 좋은 0인지 안 잰 0인지 갈리게', () => {
+  const h = HTML(접기([온전한결정]));
+  assert.ok(h.includes('그 뒤'), '두 번째 계기 줄이 없다');
+  assert.ok(/그 뒤 <b>1<\/b>/.test(h), '분모(전체 건수)가 안 붙었다');
+});
+
+test('효과값: 네 가지뿐 · 평가어가 아니라 밖에서 확인 가능한 사실이다', () => {
+  assert.deepStrictEqual(효과값, ['아직', '섰다', '뒤집힘', '무효']);
+  /* 「좋았다/나빴다」류가 들어오면 관측이 아니라 자평이 쌓인다 — 그 순간 재료가 죽는다 */
+  for (const v of 효과값) assert.ok(!/좋|나쁨|성공|실패/.test(v), `평가어가 섞였다: ${v}`);
+});
+
+test('sha인가⑧: 「커밋」 칸의 산문을 sha 로 보지 않는다 — 실측 #16 의 그 값', () => {
+  /* 이 한 줄이 없던 첫 판은 산문 행을 git 에 물어 「그 커밋이 저장소에 없다」를 받고
+     멀쩡한 결정을 「무효」 후보로 올렸다 — 안 도는 게 아니라 맞는 얼굴로 틀린 값이었다. */
+  assert.strictEqual(sha인가('(이 기록과 같은 커밋)'), false);
+  assert.strictEqual(sha인가(''), false);
+  assert.strictEqual(sha인가(null), false);
+  assert.strictEqual(sha인가('직전 커밋'), false);
+  assert.strictEqual(sha인가('abc1234'), true);
+  assert.strictEqual(sha인가('  ABC1234  '), true);
+  assert.strictEqual(sha인가('a'.repeat(40)), true);
+  assert.strictEqual(sha인가('abc123'), false, '7자 미만은 git 이 못 문다');
+});
+
+test('저장소경로: 실제로 쓰인 이름 셋을 모두 안다 — 모르면 「밖」으로 접혀 스캔이 눈감는다', () => {
+  /* 실측(2026-08-15): 장부의 저장소 값은 talk 20 · appsscript 7 · SYNK-appsscript 1.
+     `SYNK-appsscript` 를 몰라 「저장소 밖 1건」으로 접히던 것이 첫 스캔의 구멍이었다. */
+  for (const 이름 of ['', 'appsscript', 'SYNK-appsscript', 'as', 'talk', 'SYNK-talk']) {
+    assert.ok(저장소경로(이름), `모르는 저장소 이름: ${이름 || '(빈칸)'}`);
+  }
+  assert.strictEqual(저장소경로('없는저장소'), null, '모르는 이름은 null 로 드러나야 한다');
 });
