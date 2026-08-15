@@ -4419,8 +4419,7 @@ function setupHomework() {
 
 function setupAcademic() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sh = ensureSheet(ss, 'academic_log',
-    ['log_id', 'student_id', '날짜', '유형', '값', '비고', '입력자']);
+  const sh = ensureSheet(ss, 'academic_log', ACADEMIC_LOG_HEADERS); // [v9.240] 헤더 정본 공유(엔진_셋업확장)
   if (sh.getLastRow() < 2) { // 빈 시트(헤더만)일 때만 예시 3행 — 재실행 안전
     sh.getRange(2, 1, 3, 7).setValues([
       ['AL001', '(예시)S001', '2026-05-01', 'level', 3, '3급 인증', '(예시)'],
@@ -4621,7 +4620,7 @@ function setupClassroomInputs() {
   const tp = ensureSheet(ss, 'weekly_topics', ['class_name', '배운내용', '입력자', 'created_at', '배운내용_mn']);
   ensureLessonCols_(tp); // F~L 승격: 문법태그·전체도달도·예외학생·숙제완료자·연료미션·처리상태·학습전개상태
   ensureSheet(ss, 'attendance_batch', ['날짜', 'class_name', '출석자목록', '입력자', 'created_at', '처리상태']); // 수업 시작 출석 1탭(멀티선택) — parentSweep이 attendance로 전개
-  ensureSheet(ss, 'mastery_log', ['student_id', 'grammar_id', '상태', '첫기록일', '도달일', '출처', 'updated_at']);   // 스크립트 전용(진화 게이트 재료)
+  ensureSheet(ss, 'mastery_log', MASTERY_LOG_HEADERS);   // 스크립트 전용(진화 게이트 재료) · [v9.240] 헤더 정본 공유(엔진_셋업확장)
   ensureSheet(ss, 'student_errors', ['날짜', 'student_id', '반', '유형', '메모', '입력자', 'created_at', '상태']);       // 강사 선택 입력(학생 미노출)
   // [v9.38c] Glide 폼 대상 입력 시트 일괄 보장 — 배치 함수가 만들 때까지 안 생겨 Glide 바인딩이 막히던 것 방지(멱등, 기존은 무해)
   ensureSheet(ss, 'hw_batch', ['date', 'class_name', '완료자목록', '입력자', 'created_at', '처리상태']);              // 강사 숙제 멀티체크
