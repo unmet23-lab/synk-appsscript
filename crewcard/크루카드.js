@@ -105,7 +105,7 @@ function doPost(e) {
     // 채번+기록은 락 안에서 원자적으로 — 동시 제출 2건이 같은 번호를 받는 것을 막는다
     const lock = LockService.getScriptLock();
     lock.waitLock(20000);
-    let serial, 이관오류 = null;
+    let serial, 이관오류 = null, 이관결과 = null;
     try {
       const sh = 크루_탭_();
       serial = 'SL-' + today + '-' + ('00' + 크루_다음번호_(sh, today)).slice(-3);
@@ -122,7 +122,7 @@ function doPost(e) {
       props.setProperty(capKey, String(Number(props.getProperty(capKey) || 0) + 1));
       /* 상담데이터입력에도 1행(학생ID 비움 — 상담시트.js 머리말). 원본은 crew_cards가 정본이므로
        * 이관이 실패해도 접수 자체는 이미 성립했다 → 삼키고 로그만 남긴다(제출자에게 실패를 보이지 않는다). */
-      try { 상담시트_이관_(data, body.lang, serial); }
+      try { 이관결과 = 상담시트_이관_(data, body.lang, serial); }
       catch (e2) {
         console.warn('[크루카드] 상담시트 이관 실패(접수는 정상): ' + e2);
         /* 기록은 **락 밖으로** 미룬다 — 기록 1회가 시트 왕복 2번(≈1초)이라 임계구역이 그만큼 길어지고,
@@ -132,6 +132,18 @@ function doPost(e) {
       }
     } finally {
       lock.releaseLock();
+    }
+    /* [2026-08-15] 🔑 이관의 실패 두 갈래는 **throw 가 아니라 return** 이다 —
+     *   `상담시트_이관_`은 탭이 없으면 `{ok:false,error:'no-tab'}`, 증분 전이면 `not-migrated`를
+     *   **돌려준다**(상담시트.js). 위 catch 는 원리상 그것을 못 잡는다. 반환값을 안 읽는 동안
+     *   그 두 실패는 crew_errors 에 한 줄도 안 남았고, 유실 경보(crewIntakeWatch_ ·「이관 유실
+     *   의심」창)는 「없어졌다」만 알고 **「왜」는 영영 몰랐다**. 08-15 실측으로 드러난 자리.
+     * 🔑 예외와 **같은 통로**로 보낸다(stage 도 그대로) — 기록 자리가 둘로 갈라지면 또 한쪽만 낡는다.
+     * 🔑 자리는 락 **밖**이다 — 위 catch 의 기록을 락 밖으로 미룬 이유(자기증폭 고리)가 여기에도 그대로 걸린다. */
+    if (!이관오류 && !(이관결과 && 이관결과.ok === true)) {
+      const 사유 = (이관결과 && 이관결과.error) ? String(이관결과.error) : '반환없음';
+      console.warn('[크루카드] 상담시트 이관 거부(접수는 정상): ' + 사유);
+      이관오류 = '거부: ' + 사유;   // 문자열도 그대로 받는다 — 크루_오류로그_는 `err.stack || err`
     }
     if (이관오류) 크루_오류로그_('이관:' + serial, 이관오류);      // 유실 경보(crewIntakeWatch_)가 원인까지 갖게 한다
     return 크루_응답_({ ok: true, serial: serial });

@@ -422,6 +422,102 @@ test('🔒 크루_오류로그_는 절대 throw 하지 않는다 — 기록하�
   assert.equal(널.저장.rows.length, 1, 'undefined 오류도 기록 자체는 남아야 한다');
 });
 
+/* ═══════════════════════════════════════════════════════════════════
+ * 🔴 [2026-08-15] 이관 실패의 「왜」 — 실패가 throw 가 **아니라 return** 이다
+ *
+ *   `상담시트_이관_`은 두 갈래를 던지지 않고 **돌려준다**(상담시트.js):
+ *     `{ok:false,error:'no-tab'}`(탭이 없다) · `{ok:false,error:'not-migrated'}`(증분 전).
+ *   호출부가 `try{ 상담시트_이관_(…) }catch` 만 두고 반환값을 안 읽는 동안, 그 두 실패는
+ *   crew_errors 에 **한 줄도 안 남았다**. 유실 경보(crewIntakeWatch_)는 「없어졌다」는 알아도
+ *   「왜」는 영영 모른다 — 조용한 실패 장부 ⑤(memory/silent-failure-ledger).
+ *
+ *   ⚠ 이 절을 **문자열 grep 으로 짜면 안 된다** — 낱말은 남기고 배선만 끊는 변이가 그리로 샌다
+ *     (같은 장부 ②의 회귀 초판이 변이 4 중 2 를 정확히 그렇게 놓쳤다 · 지침 맹점 ④).
+ *     그래서 실소스의 doPost 를 대역 위에서 **실제로 돌려** 기록 유무로 판정한다.
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/* 실소스 doPost 를 떼어 대역 위에서 돌린다. `이관` = 이관의 반환값(함수면 호출 — 던지는 경우). */
+function doPost하네스_(이관) {
+  const src = server.slice(server.indexOf('function doPost'), server.indexOf('function 크루_탭_'));
+  const 저장 = { 오류: [], 접수행: null, 이관호출: 0, 경고: [], 락해제: null };
+  const props = {};
+  const 탭 = { appendRow(r) { 저장.접수행 = r; }, getMaxColumns: () => COLUMNS.length, getLastRow: () => 1 };
+  const doPost = new Function(
+    'MAX_BODY', 'MAX_CELL', 'DAILY_CAP', 'TZ_', 'COLUMNS',
+    'PropertiesService', 'Utilities', 'LockService', 'console',
+    '크루_응답_', '크루_탭_', '크루_다음번호_', '셀안전_', '상담시트_이관_', '크루_오류로그_',
+    src + '\nreturn doPost;'
+  )(
+    100000, 2000, 300, 'Asia/Ulaanbaatar', COLUMNS,
+    { getScriptProperties: () => ({ getProperty: (k) => props[k], setProperty: (k, v) => { props[k] = v; } }) },
+    { formatDate: () => '20260815' },
+    // 락을 푸는 «순간» 기록이 몇 건이었는지 남긴다 — 임계구역 안 기록을 실행으로 잡는 유일한 재료
+    { getScriptLock: () => ({ waitLock() {}, releaseLock() { 저장.락해제 = 저장.오류.length; } }) },
+    { warn: (m) => 저장.경고.push(String(m)), error: () => {} },
+    (o) => o,                                     // 크루_응답_ — 회신 객체를 그대로 본다
+    () => 탭, () => 1, (v) => v,
+    function () { 저장.이관호출++; return typeof 이관 === 'function' ? 이관() : 이관; },
+    (stage, err) => { 저장.오류.push({ stage: String(stage), detail: String((err && err.stack) || err) }); }
+  );
+  const 제출 = { postData: { contents: JSON.stringify({ form: 'crew_card', lang: 'kr', data: { name_kr: '홍길동' } }) } };
+  return { 제출: () => doPost(제출), 저장: 저장 };
+}
+
+test('🔴 이관이 `{ok:false}`를 **돌려주면** crew_errors 에 사유가 남는다 (return 은 catch 밖이다)', () => {
+  ['no-tab', 'not-migrated'].forEach((사유) => {
+    const h = doPost하네스_({ ok: false, error: 사유 });
+    const res = h.제출();
+    assert.equal(h.저장.이관호출, 1, '이관을 안 불렀다 — 하네스 전제가 깨졌다');
+    assert.equal(h.저장.오류.length, 1,
+      `이관이 «${사유}» 로 거부됐는데 crew_errors 기록이 0건 — 유실 경보에 「왜」가 영영 안 붙는다`);
+    assert.match(h.저장.오류[0].stage, /^이관:SL-/, '기록 stage 가 이관 자리가 아니다 — 읽는 쪽이 못 가른다');
+    assert.match(h.저장.오류[0].detail, new RegExp(사유),
+      '기록에 사유가 안 실렸다 — 「거부됐다」만 알고 어느 갈래인지는 모른다');
+    assert.equal(res.ok, true, '접수 자체는 이미 성립했다 — 제출자에게 실패를 보이면 안 된다');
+    assert.ok(res.serial, '회신에 Serial 이 없다');
+  });
+});
+
+test('🔑 아무것도 안 돌려줘도 조용히 통과하지 않는다 — 이관의 반환 계약이 바뀌는 날 빨개진다', () => {
+  const h = doPost하네스_(undefined);
+  h.제출();
+  assert.equal(h.저장.오류.length, 1,
+    '이관이 undefined 를 돌려줬는데 기록 0건 — 계약이 바뀌면 이 배선이 조용히 죽는다');
+  assert.match(h.저장.오류[0].detail, /반환없음/, '「반환이 없었다」와 「거부됐다」가 구분되지 않는다');
+});
+
+test('정상 이관 4형(new·update·locked·dup)에는 기록이 안 남는다 — 거짓 경보 0', () => {
+  [{ ok: true, merge: 'new', row: 9 }, { ok: true, merge: 'update', row: 9 },
+    { ok: true, merge: 'locked', row: 9 }, { ok: true, skip: 'dup' }].forEach((r) => {
+    const h = doPost하네스_(r);
+    const res = h.제출();
+    assert.equal(h.저장.오류.length, 0,
+      `정상 이관(${JSON.stringify(r)})에 오류를 적었다 — 매 제출마다 우는 경보는 아무도 안 읽는다`);
+    assert.equal(res.ok, true);
+  });
+});
+
+test('예외 경로는 그대로다 — 반환값 판독이 기존 catch 를 밀어내지 않았다', () => {
+  const h = doPost하네스_(() => { throw new Error('시트 다운'); });
+  const res = h.제출();
+  assert.equal(h.저장.오류.length, 1, '던져진 이관 오류가 기록을 안 지난다 — 옛 경로가 죽었다');
+  assert.match(h.저장.오류[0].detail, /시트 다운/);
+  assert.equal(res.ok, true, '이관이 터져도 접수 회신은 성공이어야 한다');
+});
+
+test('🔑 두 갈래 모두 기록은 락 **밖**이다 — 문자열 순서가 아니라 실행 시점으로 잰다', () => {
+  /* 기록 1회 = 시트 왕복 2번(≈1초). 임계구역 안에서 하면 이관이 계통적으로 깨진 날 **매 제출마다**
+   * 락이 그만큼 길어지고, 뒤 제출의 waitLock(20000)이 타임아웃 난다(적대 리뷰 M3).
+   * 위 문자열 검사(i기록 > i해제)는 «반환 판독» 갈래를 안 본다 — 그 갈래를 여기서 실행으로 못박는다. */
+  [{ ok: false, error: 'no-tab' }, () => { throw new Error('x'); }].forEach((이관) => {
+    const h = doPost하네스_(이관);
+    h.제출();
+    assert.equal(h.저장.락해제, 0,
+      '락을 풀기 전에 이미 crew_errors 를 적었다 — 임계구역 안에서 시트를 왕복한다');
+    assert.equal(h.저장.오류.length, 1, '기록 자체가 안 남았다 — 이 검사의 전제가 깨졌다');
+  });
+});
+
 test('수식 인젝션 차단 — 셀안전_가 정본과 같고 실제로 막는다', () => {
   // 계기(08-04 적대 리뷰): 익명 POST 한 번으로 crew_cards에 라이브 수식이 착지하고, 같은
   // 스프레드시트의 상담 연락처가 IMPORTDATA로 빠져나갈 수 있었다. [v9.153] profiles와 같은 계열.
