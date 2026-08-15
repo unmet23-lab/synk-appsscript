@@ -68,11 +68,24 @@ for (const [hex, v] of Object.entries(킷밖_유예)) KIT[hex] = `⏳${v.이름}
  * 그래서 이 색들의 통과 여부는 **파일 단위**로 갈린다:
  *   · `마스코트콘텐츠` 목록 안 → 통과(마스코트가 주인공인 자리다)
  *   · 그 밖(=앱 UI·대외 문서) → 「키트 밖 색」으로 그대로 잡힌다  ← 실행 규칙 ①이 여기서 강제된다
- * 값은 토큰 정본에서 파생한다(손으로 적은 사본이 갈라진 F143 을 반복하지 않는다). */
+ * 값은 토큰 정본에서 파생한다(손으로 적은 사본이 갈라진 F143 을 반복하지 않는다).
+ *
+ * ── 2026-08-15: 램프가 **의상별로 둘**이 됐다 (유호님 확정 08-15 ① 상태 의상) ──
+ * 평소=코랄(평상복램프) · 특별한 순간=체리(램프). 여기서 **두 상수로 가르는 것이 핵심**이다 —
+ * 한 배열에 그냥 붙이면 아래 두 검사가 같은 값을 읽어, IP 색 판정이 코랄 hex 까지
+ * 「마스코트 고유색」으로 읽고 다른 지면의 판정이 **조용히** 바뀐다(새는 방향은 언제나 「통과」다).
+ *   · MASCOT      = 체리만        → ② IP 색 판정(kitHexes 얹기). 코랄을 넣지 않는 이유:
+ *                                    평상복 코랄은 킷 Coral 3 와 ΔE2000 2.7 이라 **이미 킷 색**이고,
+ *                                    IP 색으로 올리면 코랄 계열 면을 칠할 때 킷 값 대신
+ *                                    「측정된 렌더 hex」가 통과해 버린다(철칙 ④가 무뎌진다).
+ *   · MASCOT_바닥 = 체리 ∪ 코랄   → ① 바닥 계산. 평상복이 **제일 많이 보이는 옷**인데
+ *                                    체리만 재면 정작 실물을 안 재는 꼴이 된다.
+ * 📏 대가 실측(킷 23색 전수 · 임계 12): 막히는 면 체리만 6 → 합집합 6 = **새로 막히는 면 0개**.
+ *    허용 넷 전부 통과 유지(Paper 22.5 · Cream 2 20.5 · Coral Wash 15.3 · Navy 2 26.7). */
 const 토큰 = require(path.join(ROOT, 'docs', '디자인_토큰.json'));
-const MASCOT = Object.fromEntries(
-  (토큰.색.마스코트?.램프 || []).map((c) => [c.hex.toUpperCase(), c.이름])
-);
+const 램프맵 = (단들) => Object.fromEntries((단들 || []).map((c) => [c.hex.toUpperCase(), c.이름]));
+const MASCOT = 램프맵(토큰.색.마스코트?.램프);
+const MASCOT_바닥 = { ...MASCOT, ...램프맵(토큰.색.마스코트?.평상복램프) };
 /* ── 마스코트를 올릴 수 있는 바닥 = **목록이 아니라 계산** ───────────────────
  * 처음엔 허용 바닥 넷(Paper·Cream 2·Coral Wash·Navy 2)을 목록으로 뒀는데,
  * 첫 실행에서 캐러셀의 Cream 바닥이 위반으로 잡혔다 — 재보니 Cream 23.5 로 «충분»했다.
@@ -502,14 +515,16 @@ function deltaE2000(h1, h2) {
 }
 
 /* 바닥 하나에 대한 판정 — 램프 전 단 중 **가장 먼저 먹히는 단**이 기준이다.
- * 최솟값을 쓰는 이유: 코어가 또렷해도 하이라이트가 먹히면 윤곽이 뭉갠다(그게 실제 증상이다). */
+ * 최솟값을 쓰는 이유: 코어가 또렷해도 하이라이트가 먹히면 윤곽이 뭉갠다(그게 실제 증상이다).
+ * ⚠ 여기가 읽는 것은 `MASCOT` 이 아니라 **`MASCOT_바닥`(두 의상 합집합)**이다 — 마스코트가
+ *   실제로 어느 옷을 입고 그 면 위에 서든 먹히면 먹히는 것이라서다(위 의상 주석). */
 function 마스코트가바닥에서는가(bgHex) {
-  const 단 = Object.keys(MASCOT);
+  const 단 = Object.keys(MASCOT_바닥);
   if (!단.length) return { ok: true, 최소: null, 단: null };
   let 최소 = Infinity, 이름 = null;
   for (const h of 단) {
     const d = deltaE2000(h, bgHex);
-    if (d < 최소) { 최소 = d; 이름 = MASCOT[h]; }
+    if (d < 최소) { 최소 = d; 이름 = MASCOT_바닥[h]; }
   }
   return { ok: 최소 >= 마스코트바닥_임계, 최소: Math.round(최소 * 10) / 10, 단: 이름 };
 }
@@ -639,7 +654,7 @@ function main(argv) {
 if (require.main === module) process.exit(main(process.argv.slice(2)));
 module.exports = {
   KIT, 킷밖_유예, 구역밖_유예, FONTS_OK, GENERIC_OK, KC_FONTS_OK, KC_COLORS, KC_SCOPE, KC_COLOR_SCOPE,
-  MASCOT, 마스코트바닥_임계, 마스코트가바닥에서는가, deltaE2000,
+  MASCOT, MASCOT_바닥, 마스코트바닥_임계, 마스코트가바닥에서는가, deltaE2000,
   마스코트콘텐츠, 마스코트콘텐츠인가,
   findChrome, 측정, 대상, 제외, ROOT,
 };
