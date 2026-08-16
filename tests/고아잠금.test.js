@@ -216,6 +216,45 @@ test('🔴 Stop 훅 거짓양성 — 잠금 없이 정상 커밋된 턴엔 고�
   assert.doesNotMatch(out, /고아/, 'Stop 훅은 매 턴 돈다 — 여기서 오경보가 나면 그 절은 곧 안 읽힌다');
 });
 
+/* ── ⑤-3 friction — 네 번째 자리이자 **가장 조용했던** 자리다.
+ *    실측(F493): 고아 잠금 아래서 `git add` 가 조용히 지고 → `diff HEAD` 가 빈손 →
+ *    「커밋 건너뜀 — 커밋할 변경이 없다(**장부는 저장됐다**)」. 맞는 얼굴인데 값이 틀렸다:
+ *    갓 태어난 장부 조각이 **미추적**으로 남는다(F025 — 이력 어디에도 없는 유일한 무보호 상태).
+ *    그리고 이 자리의 옛 처방(「손으로 커밋한다」)은 고아 잠금에서 **그것도 막힌다**(F103). */
+
+const 장부도구 = path.resolve(__dirname, '..', 'tools', 'friction.js');
+
+function 장부판(잠금분) {
+  const { repo, g } = 픽스처();
+  fs.mkdirSync(path.join(repo, 'docs', '_ops', '장부'), { recursive: true });
+  fs.writeFileSync(path.join(repo, 'docs', '_ops', '마찰신호.md'), '# 장부\n');
+  g('add', '--', 'docs/_ops/마찰신호.md'); g('commit', '-qm', 'ledger');
+  if (잠금분 !== null) 잠금두기(repo, 잠금분);
+  return repo;
+}
+function 장부돌린다(repo, 설명) {
+  const r = 훅띄우기([장부도구, 'add', '마찰', 설명], {
+    cwd: repo, encoding: 'utf8', timeout: 60000, windowsHide: true, 통과코드: [0, 1],
+    env: { ...process.env, SYNK_FRICTION_ROOT: repo, SYNK_FRICTION_LEDGER: path.join(repo, 'docs', '_ops', '마찰신호.md') },
+  });
+  return String(r.stdout || '') + String(r.stderr || '');
+}
+
+test('🔴 friction — 고아 잠금에 `add` 가 지면 「변경 없음」이 아니라 «미추적»이라고 말한다', { skip: !git있나 && 'git 없음' }, () => {
+  const repo = 장부판(548);
+  const out = 장부돌린다(repo, '잠금 아래 신고');
+  assert.doesNotMatch(out, /커밋할 변경이 없다/, '「장부는 저장됐다」로 읽히면 그 조각은 무보호인 채 잊힌다 — 맞는 얼굴로 틀린 값');
+  assert.match(out, /미추적/, '무엇이 남았는지 이름을 대야 손이 간다');
+  assert.match(out, /고아/, '옛 처방(손 커밋)은 이 상태에서 똑같이 막힌다 — 원인을 안 대면 따를 수 없는 처방이다(F103)');
+});
+
+test('🔑 friction 거짓양성 — 잠금이 없으면 평소대로 커밋하고 아무 경보도 안 낸다', { skip: !git있나 && 'git 없음' }, () => {
+  const repo = 장부판(null);
+  const out = 장부돌린다(repo, '평소 신고');
+  assert.match(out, /✔ 커밋/, '이 회차는 실제로 커밋돼야 한다 — 안 그러면 위 검사가 무의미하다');
+  assert.doesNotMatch(out, /미추적|고아/, '평소 회차에 경보가 붙으면 진짜 사고 때 그 줄이 안 읽힌다');
+});
+
 /* ── ⑥ 보드수거 — 이 도구는 board-move 의 «사유»를 안 들고 있어 「실패 N건」까지만 말한다.
  *    그 사유 중 재시도로 영영 안 풀리는 하나(잠금)를 여기서 이름 댈 수 있는지 본다.
  *    ⚠ 거절(원칙⑥)은 정상 판정이라 분모에서 빠져야 한다 — 안 가르면 멀쩡한 회차마다 경보다. */
