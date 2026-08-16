@@ -41,12 +41,19 @@ HDRI세기 = float(값("--hdri세기", "0.35"))
 그림자층 = 켜짐("--그림자층")
 글자 = 값("--글자", "ㅅ")
 폰트경로 = 값("--폰트")
+# 헌법 — 「반복 부품의 갇힌 빛은 **무채**」다. 코랄이 갇히는 것은 히어로 1점뿐이라,
+# 불릿·체크처럼 지면에 수십 개 도는 부품은 같은 레진이되 갇힌 빛만 크림이다(킷 철칙 ④).
+갇힌빛 = 값("--갇힌빛", "코랄")
 
 # 3차 누적 단계 — 앞의 것을 포함한다. 대조는 이 눈금 하나만 움직여서 낸다(F045).
 순서 = ["기준", "속", "봉입", "박막", "빛", "결"]
 켬 = lambda 이름: 순서.index(단계) >= 순서.index(이름)
 
 CORAL = (1.0, 0.239, 0.216, 1.0)
+CREAM = (0.965, 0.949, 0.918, 1.0)
+갇힌색 = lambda: CORAL if 갇힌빛 == "코랄" else CREAM
+# 무채 레진의 흡수는 «색»이 아니라 «어둠»이다 — 크림을 흡수색으로 주면 하얗게 뜬다.
+흡수색 = lambda: CORAL if 갇힌빛 == "코랄" else (0.42, 0.44, 0.50, 1.0)
 루트 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 펠트타일 = os.path.join(루트, "docs", "캐릭터", "펠트패치_0815", "Cream3.png")
 
@@ -117,7 +124,17 @@ if 부품 == "합주":
     cam.rotation_euler = (math.radians(85.0), 0, math.radians(4.2))
     cam_data.dof.focus_distance = 9.9
     cam_data.dof.aperture_fstop = 4.4
-elif 부품 in ("판", "원판", "칩"):
+elif 부품 == "판":
+    # ⚠ **여기만 ⑤광학(오프센터·심도)을 일부러 어긴다.** 카드 테두리는 9분할(border-image)로
+    #   늘려 쓰는 부품이라 원근이 있으면 네 변의 두께가 달라져 «못 늘린다».
+    #   ⑤는 «구도»의 자이고 재질의 자가 아니다 — 굴절·분산·박막·모따기 하이라이트는 그대로 산다.
+    #   그래서 이 예외는 재질을 깎지 않는다(깎았다면 예외를 두지 않았을 것이다).
+    cam_data.type = 'ORTHO'
+    cam_data.ortho_scale = 2.35
+    cam_data.dof.use_dof = False
+    cam.location = (0, -7.0, 0)
+    cam.rotation_euler = (math.radians(90), 0, 0)
+elif 부품 in ("원판", "칩"):
     # 각진 부품은 «모서리»가 주인공이라 더 정면에 가깝게 — 대신 완전 정면은 피한다.
     cam.location = (0.62, -6.6, 1.05)
     cam.rotation_euler = (math.radians(81.5), 0, math.radians(5.4))
@@ -140,6 +157,12 @@ def area(name, loc, rot, size, energy, color=(1, 1, 1), shape='DISK'):
     o = bpy.data.objects.new(name, d)
     o.location = loc; o.rotation_euler = rot
     scene.collection.objects.link(o)
+    # 🔴 **1~3차 전 판에 있던 결함**(08-16 발견) — Cycles 의 램프는 기본값이 «카메라에 보임»이다.
+    #    rim 램프가 피사체 뒤 위에 있어서, 렌더마다 실루엣을 가로지르는 **흰 뚜껑**으로 찍혔다.
+    #    실물 제품 사진은 소프트박스를 화면에 넣지 않는다 — 그게 CG 티의 조용한 원인 중 하나였다.
+    #    ⚠끄는 것은 «카메라 직선» 하나뿐이다: 반사·굴절·확산은 그대로라 조명은 1도 안 바뀐다
+    #      (그래서 이 수정은 §3-4 여섯 자의 값을 건드리지 않는다 — 지우는 것은 «카메라가 본 램프»뿐).
+    o.visible_camera = 켜짐("--램프보임")
     return o
 
 
@@ -370,7 +393,7 @@ def 레진재질(봉입있음):
     nt.links.new(g.outputs[0], out.inputs["Surface"])
 
     vol = nt.nodes.new("ShaderNodeVolumeAbsorption")
-    vol.inputs["Color"].default_value = CORAL
+    vol.inputs["Color"].default_value = 흡수색()
     # 🔑 봉입물이 들어오면 밀도가 «두 일»을 한다 — 두께로 색을 만들고, 갇힌 것을 삼킨다.
     #    2.9 에서는 박편이 반사한 빛까지 통째로 흡수돼 검은 조각으로 보였다(실측).
     vol.inputs["Density"].default_value = 2.05 if 봉입있음 else 2.9
@@ -378,7 +401,7 @@ def 레진재질(봉입있음):
         # 🔑 흡수만 있으면 «색 필터»다. 산란이 있어야 «덩어리»가 된다.
         #    ⚠2차에서 기각한 «방출»과 다르다: 방출은 흡수를 상쇄하고, 산란은 안 한다.
         sc = nt.nodes.new("ShaderNodeVolumeScatter")
-        sc.inputs["Color"].default_value = (1.0, 0.62, 0.55, 1.0)
+        sc.inputs["Color"].default_value = (1.0, 0.62, 0.55, 1.0) if 갇힌빛 == "코랄" else (0.86, 0.88, 0.94, 1.0)
         sc.inputs["Density"].default_value = 0.42
         sc.inputs["Anisotropy"].default_value = 0.35
         add = nt.nodes.new("ShaderNodeAddShader")
@@ -393,7 +416,7 @@ def 레진재질(봉입있음):
 def 코어재질(세기=1.15):
     m, nt, out = 새재질("Loom_코어")
     e = nt.nodes.new("ShaderNodeEmission")
-    e.inputs["Color"].default_value = CORAL
+    e.inputs["Color"].default_value = 갇힌색()
     e.inputs["Strength"].default_value = 세기
     nt.links.new(e.outputs[0], out.inputs["Surface"])
     return m
