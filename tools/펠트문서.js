@@ -51,9 +51,13 @@
 'use strict';
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const 루트 = path.dirname(__dirname);
+/* Loom 부품 통로 — 재질·부품·율의 정본은 여기 하나다(2026-08-16 배선).
+   이 파일은 그 위에 «지면 골격»(판·레일·표지·표·수치·모션)만 얹는다. */
+const loom = require('./lib/loom.js');
 const 천길 = path.join(루트, 'docs', 'tools', '펠트천.json');
 const 토큰길 = path.join(루트, 'docs', '디자인_토큰.json');
 
@@ -201,96 +205,46 @@ function 스킨(쓸천, 림 = '무채') {
         ⚠유리에 안료를 칠하지 않는다 — 색은 1.5px 분산 림(${림} 판)이 낸다.
    천:  ${천주} · ${규격.한변}px ${규격.형식} (실물 양모 사진 — 헌법 ①)
    ──────────────────────────────────────────────────────────────────────── */
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ① Loom — 색·율·재질·부품 14종. **여기가 정본이고 이 파일은 그것을 소비한다.**
+
+   ⚠이 주석에 백틱을 쓰지 않는다 — 여기는 템플릿 리터럴 «안»이라 하나로 지면이 통째로 끊긴다.
+
+   왜 갈랐나 (실측 08-16): 이 스킨과 tools/lib/loom.js 가 **선택자 20개를 두 곳에서**
+   정의하고 있었다(.유리 · .번호 · blockquote · a · code · h2 · h3 · ol · ul · p · td · th …).
+   그래서 loom 이 «구운 재질»(Blender 렌더)로 갈아탄 뒤에도 소개서 6벌은 여기 있는
+   backdrop-filter:blur(30px) 글래스모피즘을 계속 입고 있었다 — F498(유호 「너무 싸구려 AI처럼」)이
+   고쳐진 것은 loom 쪽뿐이었고, 실제 지면은 안 닿았다. 지침: 같은 판정을 두 곳에 적으면 갈라진다.
+
+   그리고 loom 에만 있던 부품 9종이 이 지면에 **아예 없었다** —
+   각주번호·체크·칩·히어로수·실금·잔번호·쪽번호·링크점·인용부호. 전부 맨 텍스트였다.
+   ⚠순서가 규율이다 — loom 이 «먼저», 골격이 «뒤». 뒤가 이기므로 골격은 고의로 덮을 수 있고,
+     덮은 자리는 아래 §② 에 이유가 한 줄씩 붙어 있다(이유 없는 덮기는 중복 정본의 재발이다).
+   ══════════════════════════════════════════════════════════════════════════ */
+${loom.css({ 지면: '문서', 림, 천: 천[기본천[0]] ? `url(${천[기본천[0]].uri})` : null })}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ② 지면 골격 — Loom 부품이 «안 다루는» 층: 판·레일·표지·표·수치·콜아웃·모션.
+      부품이 「지면의 작은 것」이라면 여기는 「지면 그 자체」다.
+   ══════════════════════════════════════════════════════════════════════════ */
   :root{
-${색줄}
 ${천줄}
-    --결: 84px;
-    --깃: 22px;                 /* 유리 조각 모서리 */
-    --깃속: 12px;               /* 그 안에 드는 것(동심원: 바깥 − 패딩) */
     --유리막: rgba(var(--navyink-rgb),.55);
     --윤: rgba(var(--cream-rgb),.16);      /* 위 스펙큘러 */
     --윤약: rgba(var(--cream-rgb),.07);
     --금: rgba(var(--cream-rgb),.10);      /* 괘선 — 유리에 그은 실금 */
     --그늘: 0,0,0;                          /* 무대는 순흑 그림자를 쓴다(면이 아니라 빛의 부재) */
-    --font: ${서체.본문스택};
   }
-  *{box-sizing:border-box;}
   /* ⚠scroll-behavior 를 html 에 상시로 걸지 않는다 — 링크로 들어올 때 «먼 거리 자동 스크롤»이
      로드 순간에 돌아 어수선하다. 부드러움은 사용자가 «누른» 이동에만 붙인다(스크립트). */
-  /* color-scheme 은 «스킨이» 진다 — 원고의 <meta> 에 맡기면 전파 대상 문서마다 그 한 줄이 빠져서
-     검은 무대에 흰 스크롤바가 한 줄 선다(실측: 이 스킨의 computed color-scheme 이 normal 이었다). */
-  html{scroll-padding-top:96px;background:var(--navy2);color-scheme:dark;}
-
-  /* 드래그 선택 — 안 정하면 OS 기본 파랑이 뜬다(킷 밖 색이 지면에 얹히는 유일한 자리다). */
-  ::selection{background:rgba(var(--coral-rgb),.28);color:var(--cream);}
-
-  /* 초점 — 검은 무대에서 키보드 사용자가 «지금 어디»를 잃지 않게. 마우스엔 안 뜬다(:focus-visible).
-     바깥 코랄 링 + 안쪽 크림 실선 = 어떤 면 위에 서도 한쪽은 보인다(레일 알약·유리·무대). */
-  :focus-visible{
-    outline:2px solid var(--coral);outline-offset:3px;border-radius:6px;
-    box-shadow:0 0 0 1px rgba(var(--cream-rgb),.55),0 0 14px 2px rgba(var(--coral-rgb),.45);
-  }
-
-  /* ── 무대 ───────────────────────────────────────────────────────────────
-     가장자리는 킷에서 가장 깊은 면(Navy 2) 그대로 두고, 가운데만 한 단 들어올린다.
-     = 순흑을 새로 만들지 않고 «무대 조명»으로 깊이를 낸다(새 hex 0개). */
-  body{
-    margin:0;min-height:100vh;
-    background:
-      radial-gradient(105% 62% at 50% -14%, rgba(var(--navy3-rgb),.62) 0%, rgba(var(--navy3-rgb),0) 58%),
-      radial-gradient(120% 88% at 50% 34%, rgba(0,0,0,0) 8%, rgba(0,0,0,.66) 100%),
-      linear-gradient(180deg, rgba(0,0,0,.34), rgba(0,0,0,.52)),
-      var(--navy2);
-    background-attachment:fixed;
-    color:var(--cream);
-    font-family:var(--font);font-weight:450;font-size:17px;line-height:1.72;
-    letter-spacing:-.021em;word-break:keep-all;
-    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
-  }
+  html{scroll-padding-top:96px;}
 
   .판{max-width:1220px;margin:0 auto;padding:0 26px 120px;
       display:grid;grid-template-columns:minmax(0,1fr);gap:0 44px;}
   .글{max-width:70ch;min-width:0;}
 
-  /* ── 유리 ───────────────────────────────────────────────────────────────
-     세 겹으로 «두께»를 만든다: ①위에서 든 빛(스펙큘러) ②몸의 반투명 ③무대에 진 그림자.
-     backdrop-filter 가 없는 환경에서도 몸 색이 있어 그대로 선다(성능·구형 폴백). */
-  .유리{
-    position:relative;
-    border-radius:var(--깃);
-    /* 몸은 무대보다 «어둡다» — 레퍼런스 실측: 유리는 밝아서 보이는 게 아니라
-       어두운 몸 위에서 테두리만 형형해서 유리로 읽힌다. 밝히면 그냥 반투명 카드가 된다. */
-    background:
-      linear-gradient(176deg, rgba(var(--cream-rgb),.11) 0%, rgba(var(--cream-rgb),.022) 26%,
-                     rgba(0,0,0,.06) 62%, rgba(0,0,0,.14) 100%),
-      var(--유리막);
-    -webkit-backdrop-filter:blur(30px) saturate(165%);
-    backdrop-filter:blur(30px) saturate(165%);
-    box-shadow:
-      inset 0 1px 0 var(--윤),
-      inset 0 -1px 0 var(--윤약),
-      0 1px 2px rgba(var(--그늘),.6),
-      0 30px 60px -28px rgba(var(--그늘),1);
-    padding:24px 26px;
-  }
-  /* 분산 림 — 유리 가장자리에서 파장이 갈라진다. 테두리 «두께만» 남기는 마스크 xor. */
-  .유리::before{
-    content:'';position:absolute;inset:0;border-radius:inherit;padding:1.2px;pointer-events:none;
-    background:conic-gradient(from 208deg,
-      ${림줄});
-    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
-    mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
-    -webkit-mask-composite:xor;mask-composite:exclude;
-    /* 블룸 = 림이 무대로 새어 나온 잔광. 별도 층을 안 쓰고 림 자신에 드리운다
-       (::after 는 콜아웃의 신호 빛줄이 이미 쓴다 — 한 자리에 둘을 겹치면 조용히 하나가 죽는다). */
-    opacity:.95;z-index:1;
-    filter:saturate(1.5)
-           drop-shadow(0 0 5px rgba(var(--kccoolblue-rgb),.34))
-           drop-shadow(0 0 10px rgba(var(--coral-rgb),.2));
-  }
-  .유리>*{position:relative;z-index:2;}
-  .유리.잔잔{--깃:16px;padding:18px 20px;}
-  .유리.잔잔::before{opacity:.72;}
+  /* ── 유리 = Loom §② 가 진다(위임). 여기 남는 것은 «이 지면만의 변주» 하나뿐 ──── */
   .유리.깊은{
     box-shadow:
       inset 0 1px 0 rgba(var(--cream-rgb),.22),
@@ -349,66 +303,16 @@ ${천줄}
     .표지{grid-template-columns:112px minmax(0,1fr);align-items:start;gap:34px;}
   }
 
-  /* ── 절 머리 — 유리 원판 번호 + 사라지는 실금 ───────────────────────────── */
-  h2{
-    display:flex;align-items:center;gap:.62em;flex-wrap:wrap;
-    margin:4.2em 0 .85em;font-size:clamp(1.32rem,2.5vw,1.72rem);font-weight:800;
-    letter-spacing:-.038em;line-height:1.24;color:var(--cream);
-  }
-  h2>span:not(.번호){flex:0 1 auto;min-width:0;}
-  h2::after{
-    content:'';flex:1 1 3em;min-width:2em;height:1px;
-    background:linear-gradient(90deg,rgba(var(--cream-rgb),.24),rgba(var(--cream-rgb),0));
-  }
-  .번호{
-    flex:none;width:2.05em;height:2.05em;border-radius:50%;position:relative;
-    display:grid;place-items:center;
-    font-size:.62em;font-weight:800;letter-spacing:0;color:var(--cream);
-    background:
-      linear-gradient(170deg,rgba(var(--cream-rgb),.14),rgba(var(--cream-rgb),.02) 58%),
-      var(--유리막);
-    box-shadow:inset 0 1px 0 rgba(var(--cream-rgb),.2),0 12px 22px -12px rgba(var(--그늘),.95);
-  }
-  .번호::before{
-    content:'';position:absolute;inset:0;border-radius:50%;padding:1.4px;pointer-events:none;
-    background:conic-gradient(from 208deg,
-      ${림줄});
-    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
-    mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
-    -webkit-mask-composite:xor;mask-composite:exclude;
-    opacity:1;filter:saturate(1.6)
-      drop-shadow(0 0 4px rgba(var(--kccoolblue-rgb),.5))
-      drop-shadow(0 0 8px rgba(var(--coral-rgb),.28));
-  }
-  h3{margin:2.1em 0 .4em;font-size:1.02rem;font-weight:800;letter-spacing:-.028em;color:var(--cream);}
+  /* ── 절 머리·본문·링크·코드 = Loom §② 가 진다(위임) ────────────────────────
+     남기는 것 셋. 이유가 없으면 안 남긴다 — 이유 없는 덮기가 곧 중복 정본이다.
+       ㉠ h3 앞 코랄 대시 — 3단 제목의 «신호». Loom 은 h3 를 부품으로 안 본다(글자층).
+       ㉡ 레일·차례·꼬리의 링크점 억제 — 메뉴 항목마다 코랄 점이 서면 신호 1점이 죽는다.
+       ㉢ 레일 ol 은 부품 «순번»이 아니다 — 유리 원판이 서면 .n 의 01 과 두 번 세어진다. */
   h3::before{content:'';display:inline-block;width:14px;height:1px;vertical-align:middle;
     margin-right:.6em;background:rgba(var(--coral-rgb),.85);}
-
-  /* ── 본문 ──────────────────────────────────────────────────────────────── */
-  p{margin:.75em 0;color:var(--cream);}
-  ul,ol{margin:.7em 0 1.1em;padding-left:1.3em;}
-  li{margin:.42em 0;}
-  li::marker{color:var(--slate);}
-  b,strong{font-weight:750;color:var(--cream);}
-  .흐린{color:var(--slate);}
-  .작게{font-size:.9rem;}
-  /* 링크 — v0.2 는 본문과 «같은 색·같은 굵기»에 밑선 알파 .28 뿐이었다(렌더 실측).
-     읽는 사람이 40~50대라는 것을 셈에 넣으면 그건 링크가 아니라 밑줄 친 글자다.
-     그래서 셋을 겹친다: ①밑선을 .28→.62 ②굵기 한 단(450→560) ③앞에 코랄 점 하나.
-     ⚠코랄은 여기서도 «면이 아니라 빛»이다 — 3px 점이라 신호 1점 규율을 넘지 않는다. */
-  a{color:var(--cream);text-decoration:none;font-weight:560;
-    box-shadow:inset 0 -1px 0 rgba(var(--cream-rgb),.62);
-    transition:box-shadow 180ms ease,color 180ms ease;}
-  .글 a:not(.민)::before,p a:not(.민)::before{
-    content:'';display:inline-block;width:3px;height:3px;border-radius:50%;
-    vertical-align:.32em;margin-right:.34em;background:var(--coral);
-    box-shadow:0 0 6px rgba(var(--coral-rgb),.7);}
-  a:hover{color:var(--cream);box-shadow:inset 0 -1px 0 rgba(var(--coral-rgb),.9);}
   .레일 a::before,.접이차례 a::before,footer a::before{content:none;}
-  code{font-family:inherit;font-size:.93em;font-weight:600;color:var(--cream);
-    background:rgba(var(--cream-rgb),.085);
-    padding:.1em .45em;border-radius:7px;
-    box-shadow:inset 0 0 0 1px rgba(var(--cream-rgb),.09);}
+  .레일 ol>li{padding-left:0;margin:0;min-height:0;counter-increment:none;}
+  .레일 ol>li::before,.레일 ol>li::after{content:none;}
 
   /* 콜아웃 — 유리 판 + 왼쪽에 세운 빛 한 줄 */
   .알림{margin:22px 0;padding:20px 24px;font-size:.96rem;overflow:hidden;}
@@ -425,8 +329,8 @@ ${천줄}
   .수치 .n{font-size:1.3rem;font-weight:800;letter-spacing:-.032em;line-height:1.22;color:var(--cream);}
   .수치 .l{margin-top:4px;font-size:.85rem;line-height:1.5;color:var(--slate);}
 
-  blockquote{margin:1.4em 0;padding:22px 26px;font-size:.97rem;color:var(--slate);}
-  blockquote i,blockquote em{color:var(--cream);font-style:italic;}
+  /* 인용 = Loom 부품 «인용부호»가 진다(위임) — 여기서는 유리 판과 겹쳐 쓰므로 안여백만 준다. */
+  blockquote.유리{padding:var(--단) calc(var(--단) + var(--숨));}
 
   /* ── 표 = 유리판 위의 실금 ───────────────────────────────────────────────── */
   .표틀{margin:1.5em 0;padding:6px;overflow-x:auto;}
@@ -502,11 +406,8 @@ ${천줄}
      Coral 은 라이트에서 글자 금지라 강조 글자는 Coral 3. 짝 전량은 «--대비» 가 잰다.
      ⚠이 주석에 백틱을 쓰지 않는다 — 스킨 CSS 는 템플릿 리터럴 «안»이라 백틱 하나가 지면을 통째로 끊는다. */
   @media print{
-    html{background:var(--paper);color-scheme:light;}
-    body{
-      background:var(--paper);background-attachment:initial;color:var(--ink);
-      font-size:10.6pt;line-height:1.62;
-    }
+    /* ⚠재질을 종이에서 «굳히는» 층(유리→판 · 레진→구슬 · 번호→찍힌 원판)은 Loom 낮 지면이 진다.
+       여기 남는 것은 골격의 인쇄 변주뿐이다 — 판·레일·표지·표·수치·콜아웃·꼬리. */
     .판{display:block;padding:0;max-width:none;}
     .글{max-width:none;}
     .레일,.접이차례{display:none;}
@@ -517,13 +418,6 @@ ${천줄}
        안전판에 기대는 대신 인쇄에서는 숨김 자체를 없앤다(못 새게 만드는 쪽이 싸다). */
     html.js .듦,html.js .듦.왔다{opacity:1!important;transform:none!important;transition:none!important;}
 
-    /* 유리 → 종이 위의 «판». 유리는 뒤가 비쳐서 유리인데 종이엔 뒤가 없다. */
-    .유리{
-      background:var(--cream2);border:1px solid var(--cream3);
-      -webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;
-      break-inside:avoid;padding:14px 16px;
-    }
-    .유리::before{content:none;}
     .유리.깊은{box-shadow:none;}
 
     .표지{padding:0 0 22px;gap:16px;grid-template-columns:74px minmax(0,1fr);}
@@ -534,44 +428,19 @@ ${천줄}
     }
     .표지 .한줄{color:var(--ink);font-size:12pt;max-width:46ch;}
     .표지 .꼭지,.표지 .메타{color:var(--slate2);}
-    .오브{
-      width:74px;height:74px;border-radius:20px;color:var(--ink);font-size:1.7rem;
-      box-shadow:none;border:1px solid var(--cream3);   /* 배경을 끄면 천이 사라지므로 테두리가 형태를 진다 */
-    }
-    .오브::before,.오브::after{content:none;}
-
-    h2{color:var(--ink);margin:1.5em 0 .5em;font-size:14pt;break-after:avoid;}
-    h2::after{background:var(--cream3);}
-    .번호{background:var(--cream3);color:var(--ink);box-shadow:none;}
-    .번호::before{content:none;}
-    h3{color:var(--ink);margin:1.1em 0 .3em;break-after:avoid;}
-
-    p,li,b,strong,td,th,.표지 .한줄{color:var(--ink);}
-    li::marker{color:var(--slate2);}
-    .흐린,blockquote,footer{color:var(--slate2);}
-    blockquote i,blockquote em{color:var(--ink);}
-    a{color:var(--ink);font-weight:640;box-shadow:none;
-      border-bottom:1px solid var(--coral3);}
-    .글 a::before,p a::before{background:var(--coral);box-shadow:none;}
-    code{color:var(--ink);background:var(--cream2);box-shadow:inset 0 0 0 1px var(--cream3);}
 
     .표틀{overflow:visible;padding:0;}
     table{break-inside:auto;}
     thead th{background:var(--cream3);color:var(--ink);}
-    thead{display:table-header-group;}          /* 표가 쪽을 넘어가면 머리를 다시 찍는다 */
     tbody td{border-top:1px solid var(--cream3);}
     tbody tr:hover td{background:none;}
-    tr{break-inside:avoid;}
 
     .수치들{gap:8px;}
     .수치 .n{color:var(--ink);}
     .수치 .l{color:var(--slate2);}
-    .알림::after{background:var(--coral);box-shadow:none;}
+    .알림::after{background:var(--coral3);box-shadow:none;}
     .알림.조용::after{background:var(--slate2);}
     footer{border-top:1px solid var(--cream3);}
-
-    @page{margin:14mm;}
-    *{print-color-adjust:exact;-webkit-print-color-adjust:exact;}
   }
 </style>`;
 }
@@ -760,6 +629,110 @@ ${차례.map((c, i) => `    <li><a href="#${c.id}"><span class="n">${String(i + 
   return { 흠, 잰것, 바이트: Buffer.byteLength(s, 'utf8'), 원본바이트: Buffer.byteLength(원본, 'utf8') };
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   전량 — 「어느 지면들이 이 스킨을 입는가」를 **한 자리에** 적는다 (2026-08-16)
+
+   왜 이게 없으면 전파가 안 되나 (실측):
+     소개서 6벌을 굽는 명령이 **저장소 어디에도 없었다** — 이 파일 46행 주석의 예시 한 줄뿐이라
+     사람이 6번 손으로 쳐야 했다. 그래서 토큰·스킨이 바뀌어도 지면에 «안 닿았다».
+     철학 정본 「하지 않는 것 ㉡ — 사람 손을 늘리는 해법은 해법이 아니라 미룬 결함이다」의 자리다.
+     ⚠목록을 여기 한 곳에만 둔다 — 두 곳에 적으면 갈라지고, 갈라지면 한쪽이 조용히 안 구워진다.
+
+   대가 — 틀릴 때의 모습:
+     · **산출물을 손으로 고쳐 두면 전량 굽기가 그것을 조용히 되돌린다**(실측 08-16: `Loom_소개서`
+       한 벌이 원고보다 5,869자 앞서 있었다 — 원고 v1.0 / 산출 v1.2). exit 0 으로 지나간다.
+       → 닫은 방식 = `--재현` 이 굽기 전에 «원고가 정본인가»를 6벌 전량 대조하고,
+         `tests/펠트문서.test.js` 가 그것을 회귀로 못박는다. 되돌리는 통로 = `--되메우기`.
+   ══════════════════════════════════════════════════════════════════════════ */
+const 지면방 = { 원고: 'docs/엔진/_원고', 산출: 'docs/엔진' };
+
+/** 원고 ↔ 산출물 짝 전량. 원고방에 있는 것이 분모다(산출물 쪽은 지도·구판이 섞여 분모가 못 된다). */
+function 지면짝들(방 = 지면방) {
+  const 원고방 = path.join(루트, 방.원고);
+  if (!fs.existsSync(원고방)) return [];
+  return fs.readdirSync(원고방).filter((f) => f.endsWith('.html')).sort()
+    .map((f) => ({ 이름: f, 원고: path.join(원고방, f), 산출: path.join(루트, 방.산출, f) }));
+}
+
+/** 몸통 = `</style>` 뒤. 스킨은 굽기마다 바뀌므로 «원고가 정본인가»는 몸통으로만 갈린다. */
+const 몸통 = (s) => {
+  const i = s.indexOf('</style>');
+  return (i < 0 ? s : s.slice(i + 8)).replace(/\r\n/g, '\n').trim();
+};
+
+/**
+ * 재현 대조 — 원고를 다시 구우면 «지금 그 자리에 있는 산출물»이 나오는가.
+ * 🔑 이것이 「원고가 정본이다」의 유일한 증거다. 갈라진 지면은 재굽기가 손 수정을 삼킨다.
+ * @param 임시방 굽기 결과를 버릴 디렉터리(비교만 하고 산출물은 안 건드린다)
+ */
+function 재현대조(임시방, 방 = 지면방) {
+  fs.mkdirSync(임시방, { recursive: true });
+  return 지면짝들(방).map((p) => {
+    if (!fs.existsSync(p.산출)) return { ...p, 상태: '산출없음' };
+    const 임시 = path.join(임시방, '재현_' + p.이름);
+    try { 굽기(p.원고, 임시); } catch (e) { return { ...p, 상태: '굽기실패', 사유: e.message }; }
+    const a = 몸통(fs.readFileSync(임시, 'utf8'));
+    const b = 몸통(fs.readFileSync(p.산출, 'utf8'));
+    return { ...p, 상태: a === b ? '재현' : '갈라짐', 원고자: a.length, 산출자: b.length };
+  });
+}
+
+/**
+ * 되메우기 — 산출물에서 원고를 복원한다(구운 스킨을 표식으로 되돌린다).
+ * 산출물을 손으로 고쳐 버린 자리를 «원고가 정본»으로 되돌리는 유일한 통로.
+ * ⚠원고를 덮어쓴다 — `--재현` 이 「갈라짐」이라 말한 지면에만 쓴다.
+ *
+ * 🔑 «굽기가 넣은 것»을 통째로 뜯는다 — `스킨()` 은 meta+style 이고 `스크립트()` 는 script 두 벌이다.
+ *    개수를 숫자로 박지 않고 «style 뒤에 붙어 오는 script 를 연달아» 먹는다. 숫자를 박으면
+ *    스크립트가 한 벌 늘어난 날 되메우기가 조용히 반쪽만 뜯고, 그 원고는 두 번 다시 안 맞는다.
+ * ⚠**되메운 뒤 스스로 왕복을 잰다** — 반쪽만 뜯겨도 파일은 멀쩡해 보이기 때문이다(실측 08-16:
+ *   첫 판이 script 두 벌을 남겨 원고에 실었는데 `--되메우기` 는 ✅ 를 찍고 끝났다).
+ */
+function 되메우기(산출, 원고) {
+  const s = fs.readFileSync(산출, 'utf8');
+  const 뜯기 = /(?:<meta name="theme-color"[^>]*>\s*)?<style>[\s\S]*?<\/style>(?:\s*<script[^>]*>[\s\S]*?<\/script>)*/;
+  if (!뜯기.test(s)) throw new Error('구운 스킨을 못 찾았다 — 이 파일은 굽기 산출물이 아니다: ' + 산출);
+  const 되돌린 = s.replace(뜯기, 표식);
+  if (!되돌린.includes(표식)) throw new Error('표식이 안 들어갔다 — 되메우기 실패');
+
+  /* 왕복 시험 — 되메운 원고를 다시 구우면 산출물의 «몸통»이 그대로 나와야 한다. */
+  const 임시 = path.join(os.tmpdir(), 'synk-되메움-' + path.basename(산출));
+  fs.writeFileSync(임시 + '.원고', 되돌린, 'utf8');
+  굽기(임시 + '.원고', 임시);
+  const 왕복 = 몸통(fs.readFileSync(임시, 'utf8'));
+  const 원본몸통 = 몸통(s);
+  if (왕복 !== 원본몸통) {
+    throw new Error('왕복이 안 맞는다 — 되메운 원고를 다시 구우면 몸통이 달라진다('
+      + 왕복.length + '자 vs ' + 원본몸통.length + '자). 원고를 쓰지 않았다: ' + 산출);
+  }
+
+  fs.mkdirSync(path.dirname(원고), { recursive: true });
+  fs.writeFileSync(원고, 되돌린, 'utf8');
+  return { 바이트: Buffer.byteLength(되돌린, 'utf8') };
+}
+
+/**
+ * 전량 굽기 — 「Loom 을 입는 지면」 목록 전량.
+ * ⚠**게이트가 함수 «안»에 있다.** CLI 분기에 두면 테스트가 못 닿고, 못 닿는 게이트는
+ *   변이 검사에서 구멍으로 나온다(실측 08-16: 게이트를 꺼도 21건이 전부 초록이었다).
+ * @throws 원고가 낡은 지면이 하나라도 있으면 **한 벌도 굽지 않고** 던진다 —
+ *         갈라진 채로 구우면 산출물의 손 수정이 exit 0 으로 사라진다.
+ */
+function 전량({ 림 = '무채', 방 = 지면방, 임시방 } = {}) {
+  const 갈 = 재현대조(임시방 || path.join(os.tmpdir(), 'synk-재현대조'), 방)
+    .filter((r) => r.상태 === '갈라짐');
+  if (갈.length) {
+    const e = new Error('원고가 낡은 지면 ' + 갈.length + '벌 — 지금 구우면 산출물의 손 수정이 사라진다: '
+      + 갈.map((r) => r.이름).join(', ') + '\n먼저 돌린다: node tools/펠트문서.js --재현');
+    e.갈라짐 = 갈;
+    throw e;
+  }
+  return 지면짝들(방).map((p) => {
+    const r = 굽기(p.원고, p.산출, [], 림);
+    return { ...p, 바이트: r.바이트, 흠: 검사(p.산출).흠 };
+  });
+}
+
 /** 자립성 — 외부에서 끌어오는 «그림»이 하나라도 있으면 첨부 단독일 때 전멸한다. */
 function 검사(파일) {
   const 원문 = fs.readFileSync(파일, 'utf8');
@@ -839,10 +812,57 @@ if (require.main === module) {
         + '  ·  안 잰 짝 0 — 스킨이 쓰는 글자×면 전량(밤 ' + 줄.filter((r) => !r.지면).length
         + ' + 낮 ' + 줄.filter((r) => r.지면 === '낮').length + ')');
       if (실패) process.exit(1);
+    } else if (모드 === '--재현') {
+      const 줄 = 재현대조(path.join(os.tmpdir(), 'synk-재현대조'));
+      console.log('■ 원고가 정본인가 — 다시 구우면 지금 그 자리의 산출물이 나오는가 (%d벌)', 줄.length);
+      for (const r of 줄) {
+        if (r.상태 === '재현') console.log('   ✅ ' + r.이름);
+        else if (r.상태 === '갈라짐') console.log('   🔴 ' + r.이름 + ' — 몸통 다름(원고 ' + r.원고자
+          + '자 vs 산출 ' + r.산출자 + '자) · 재굽기가 산출물의 손 수정을 삼킨다');
+        else console.log('   ❔ ' + r.이름 + ' — ' + r.상태 + (r.사유 ? ' · ' + r.사유 : ''));
+      }
+      const 갈 = 줄.filter((r) => r.상태 === '갈라짐');
+      console.log('\n   합계 ' + 줄.length + '벌 = 재현 ' + 줄.filter((r) => r.상태 === '재현').length
+        + ' + 갈라짐 ' + 갈.length + ' + 못 잼 ' + 줄.filter((r) => !['재현', '갈라짐'].includes(r.상태)).length);
+      if (갈.length) {
+        console.log('\n   → 산출물 쪽이 최신이면 원고를 되메운다(그 뒤 --전량 이 열린다):');
+        갈.forEach((r) => console.log('     node tools/펠트문서.js --되메우기 ' +
+          path.relative(루트, r.산출).split(path.sep).join('/') + ' ' +
+          path.relative(루트, r.원고).split(path.sep).join('/')));
+        process.exit(1);
+      }
+    } else if (모드 === '--되메우기') {
+      const [, 산출, 원고출] = 남은;
+      if (!산출 || !원고출) throw new Error('용법: node tools/펠트문서.js --되메우기 <산출물.html> <원고.html>');
+      const r = 되메우기(path.join(루트, 산출), path.join(루트, 원고출));
+      console.log('■ 되메움  %s → %s  (%sKB · 구운 스킨을 표식으로 되돌렸다)',
+        산출, 원고출, (r.바이트 / 1024).toFixed(1));
+    } else if (모드 === '--전량') {
+      let 결과;
+      try { 결과 = 전량({ 림 }); } catch (e) {
+        if (!e.갈라짐) throw e;
+        console.error('🔴 원고가 낡은 지면 %d벌 — 지금 구우면 산출물의 손 수정이 조용히 사라진다.', e.갈라짐.length);
+        e.갈라짐.forEach((r) => console.error('   · ' + r.이름));
+        console.error('   먼저 돌린다: node tools/펠트문서.js --재현   (되메우기 명령을 그대로 낸다)');
+        process.exit(1);
+      }
+      console.log('■ 전량 굽기 %d벌 (림 %s) — 이 목록이 「Loom 을 입는 지면」의 정본이다', 결과.length, 림);
+      let 실패 = 0;
+      for (const p of 결과) {
+        const ok = !p.흠.length;
+        if (!ok) 실패++;
+        console.log('   ' + (ok ? '✅' : '🔴') + ' ' + 채움(p.이름, 26)
+          + (p.바이트 / 1024).toFixed(1) + 'KB' + (ok ? '' : '  ' + p.흠.join(' / ')));
+      }
+      console.log('\n   합계 ' + 결과.length + '벌 = 구움 ' + (결과.length - 실패) + ' + 흠 ' + 실패);
+      if (실패) process.exit(1);
     } else if (모드 === '--스킨') {
       console.log(스킨(남은.slice(1), 림));
     } else {
       console.log('용법:\n  node tools/펠트문서.js --굽기 <입력.html> <출력.html> [천…] [--림 스펙트럼|무채]\n' +
+        '  node tools/펠트문서.js --전량 [--림 …]      # 원고방 전량 (지면 목록의 정본)\n' +
+        '  node tools/펠트문서.js --재현               # 원고가 정본인가 (전량 굽기의 게이트)\n' +
+        '  node tools/펠트문서.js --되메우기 <산출물> <원고>\n' +
         '  node tools/펠트문서.js --검사 <문서.html>\n  node tools/펠트문서.js --대비\n' +
         '  node tools/펠트문서.js --스킨 [천…]');
       process.exit(2);
@@ -850,4 +870,5 @@ if (require.main === module) {
   } catch (e) { console.error('🔴 ' + e.message); process.exit(1); }
 }
 
-module.exports = { 스킨, 굽기, 검사, 원고, 대비판정, 표식, 기본천, 림레시피, 클래스지도 };
+module.exports = { 스킨, 굽기, 검사, 원고, 대비판정, 표식, 기본천, 림레시피, 클래스지도,
+  지면짝들, 재현대조, 되메우기, 전량, 지면방, 몸통 };

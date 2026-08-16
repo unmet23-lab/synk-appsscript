@@ -24,10 +24,14 @@ const 도구 = require(path.join(루트, 'tools', '펠트문서.js'));
 /* ── 검사기 — 스킨 문자열 하나를 받아 흠을 낸다(테스트와 픽스처가 같은 눈을 쓴다) ── */
 function 흠찾기(css) {
   const 흠 = [];
-  const 인쇄 = css.match(/@media print\{([\s\S]*?)\n  \}/);
-  if (!인쇄) 흠.push('@media print 블록이 없다');
+  /* ⚠**인쇄 블록은 하나가 아니다**(2026-08-16 배선 뒤) — Loom 낮 지면이 한 벌, 지면 골격이 한 벌.
+     첫 판은 `match` 로 «맨 앞 하나»만 봐서, 골격 블록에 멀쩡히 살아 있는 규칙 둘을 「없다」고 했다.
+     한 곳만 보는 검사기는 층이 늘어난 날 **거짓 빨강**을 내고, 거짓 빨강은 검사기를 끄게 만든다.
+     그래서 전량을 이어 붙여 본다 — 어느 블록이 지든 「인쇄된 종이가 이러한가」가 물음이다. */
+  const 인쇄들 = [...css.matchAll(/@media print\{([\s\S]*?)\n  \}/g)];
+  if (!인쇄들.length) 흠.push('@media print 블록이 없다');
   else {
-    const p = 인쇄[1];
+    const p = 인쇄들.map((m) => m[1]).join('\n');
     if (!/\.듦[^{]*\{[^}]*opacity:1!important/.test(p)) 흠.push('인쇄에서 등장 숨김을 안 푼다(.듦 opacity 리셋 없음)');
     /* ⚠`body{` 에 못박는다 — 인쇄 블록에는 `html{background:var(--paper)}` 도 따로 있어서
        느슨하게 찾으면 **body 를 다시 검게 바꿔도 초록**이다(변이 검사가 실제로 그 구멍을 냈다).
@@ -160,6 +164,135 @@ test('원고 변환 — 지면만 갈고 «글자»는 한 자도 안 바꾼다'
   }
   assert.ok(!/class="(kicker|one|meta|banner|wide|toc|card|cards|legend|small|muted)"/.test(새),
     '옛 클래스가 남아 있다 — 스킨에 그 자리가 없어서 스타일이 통째로 빠진다');
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   원고가 정본인가 — 전량 굽기의 게이트 (2026-08-16 · 실사고에서 왔다)
+
+   무엇을 밟았나: `docs/엔진/Loom_소개서.html` 이 자기 원고보다 **5,869자 앞서 있었다**.
+   누군가 산출물을 손으로 고쳤고, 원고는 v1.0 인 채였다. 그 상태로 `--전량` 을 돌리면
+   그 수정이 **exit 0 으로** 사라진다 — 화면도, 테스트도, git 도 아무도 안 운다
+   (다시 구운 지면은 «멀쩡한 문서»로 보인다 · 새는 방향은 언제나 「통과」다).
+
+   ⚠탐지력은 픽스처가 진다(가드 맹점 ②) — 실저장소가 병들어 있기를 요구하지 않는다.
+     실저장소 쪽은 «갈라짐 0»이라는 거짓양성만 본다.
+   ══════════════════════════════════════════════════════════════════════════ */
+const fs = require('node:fs');
+const os = require('node:os');
+
+/** 픽스처 — 원고 한 벌을 구워 놓고, 산출물만 손으로 고친 상태를 만든다. */
+function 픽스처방() {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-원고픽스처-'));
+  const 원고방 = path.join(방, '_원고');
+  fs.mkdirSync(원고방, { recursive: true });
+  const 씨 = fs.readFileSync(path.join(루트, 'docs', '엔진', '_원고', 'Trail_소개서.html'), 'utf8');
+  fs.writeFileSync(path.join(원고방, '갑.html'), 씨, 'utf8');
+  fs.writeFileSync(path.join(원고방, '을.html'), 씨, 'utf8');
+  도구.굽기(path.join(원고방, '갑.html'), path.join(방, '갑.html'));
+  도구.굽기(path.join(원고방, '을.html'), path.join(방, '을.html'));
+  return { 방, 원고방, 상대: { 원고: path.relative(루트, 원고방), 산출: path.relative(루트, 방) } };
+}
+
+test('탐지력 — 산출물만 손으로 고치면 「갈라짐」으로 잡는다(픽스처)', () => {
+  const { 방, 상대 } = 픽스처방();
+  const 임시 = path.join(os.tmpdir(), 'synk-재현대조-시험');
+
+  const 처음 = 도구.재현대조(임시, 상대);
+  assert.strictEqual(처음.length, 2, '픽스처 분모가 2가 아니다 — 0/0 은 초록이 아니라 «안 쟀다»다');
+  assert.ok(처음.every((r) => r.상태 === '재현'), '갓 구운 짝이 재현 안 된다: '
+    + JSON.stringify(처음.map((r) => [r.이름, r.상태])));
+
+  // 산출물 «을» 만 손으로 고친다 — 원고는 그대로다.
+  const 을 = path.join(방, '을.html');
+  fs.writeFileSync(을, fs.readFileSync(을, 'utf8')
+    .replace('</div><!-- /글 -->', '<p class="듦">손으로 더한 문단 — 원고에는 없다</p>\n</div><!-- /글 -->'), 'utf8');
+
+  const 뒤 = 도구.재현대조(임시, 상대);
+  const 갈 = 뒤.filter((r) => r.상태 === '갈라짐');
+  assert.strictEqual(갈.length, 1, '손 수정을 못 잡았다 — 전량 굽기가 그것을 조용히 삼킨다');
+  assert.strictEqual(갈[0].이름, '을.html', '엉뚱한 지면을 갈라짐이라 했다');
+});
+
+test('자기 처방 — 「갈라짐」이 시키는 되메우기가 실제로 통과시킨다', () => {
+  const { 방, 원고방, 상대 } = 픽스처방();
+  const 임시 = path.join(os.tmpdir(), 'synk-재현대조-처방');
+  const 을 = path.join(방, '을.html');
+  fs.writeFileSync(을, fs.readFileSync(을, 'utf8')
+    .replace('</div><!-- /글 -->', '<p class="듦">손으로 더한 문단</p>\n</div><!-- /글 -->'), 'utf8');
+  assert.strictEqual(도구.재현대조(임시, 상대).filter((r) => r.상태 === '갈라짐').length, 1);
+
+  // 가드가 내는 그 명령 그대로 — 통하지 않으면 그 처방은 우회를 정상 통로로 만든다(F103).
+  도구.되메우기(을, path.join(원고방, '을.html'));
+  const 뒤 = 도구.재현대조(임시, 상대);
+  assert.ok(뒤.every((r) => r.상태 === '재현'), '되메운 뒤에도 갈라짐이 남았다: '
+    + JSON.stringify(뒤.map((r) => [r.이름, r.상태])));
+  assert.ok(fs.readFileSync(path.join(원고방, '을.html'), 'utf8').includes('손으로 더한 문단'),
+    '되메운 원고에 손 수정이 안 실렸다 — 되돌린 것이 아니라 버린 것이다');
+});
+
+test('되메우기는 반쪽만 뜯으면 «쓰지 않고» 던진다', () => {
+  const { 방, 원고방 } = 픽스처방();
+  const 갑 = path.join(방, '갑.html');
+  const 원고갑 = path.join(원고방, '갑.html');
+  const 전 = fs.readFileSync(원고갑, 'utf8');
+  // 굽기 산출물이 아닌 파일 — 뜯을 스킨이 없다.
+  assert.throws(() => 도구.되메우기(원고갑, path.join(방, '버릴.html')), /굽기 산출물이 아니다/);
+  도구.되메우기(갑, 원고갑);
+  assert.notStrictEqual(fs.readFileSync(원고갑, 'utf8').length, 0);
+  assert.ok(전.includes(도구.표식) && fs.readFileSync(원고갑, 'utf8').includes(도구.표식),
+    '되메운 원고에 표식이 없다 — 다시 못 굽는다');
+});
+
+/* 🔑 왕복 시험이 진짜로 막는가 — «반쪽 뜯기»를 실제로 만들어 본다.
+   굽기가 넣은 script 바로 뒤에 «굽기가 안 넣은» script 를 한 벌 붙이면, 되메우기의
+   「연달아 먹기」가 그것까지 삼킨다. 그러면 되메운 원고를 다시 구워도 그 script 가 안 돌아와
+   몸통이 어긋난다 — 이때 원고를 쓰면 그 한 벌이 영원히 사라진다(파일은 멀쩡해 보인다). */
+test('되메우기 — 왕복이 어긋나면 원고를 «건드리지 않고» 던진다', () => {
+  const { 방, 원고방 } = 픽스처방();
+  const 을 = path.join(방, '을.html');
+  const 원고을 = path.join(원고방, '을.html');
+  const 원고전 = fs.readFileSync(원고을, 'utf8');
+
+  /* ⚠줄끝을 가정하지 않는다 — 이 저장소의 작업본은 사실상 전부 CRLF 라(F477),
+     `\n` 을 박은 치환은 조용히 «원본 그대로»를 돌려주고 픽스처가 헛것이 된다.
+     그래서 마지막 </script> 뒤에 끼워 넣는 것으로 자리를 잡는다(줄끝 무관). */
+  const 원본을 = fs.readFileSync(을, 'utf8');
+  const 끝 = 원본을.lastIndexOf('</script>') + '</script>'.length;
+  assert.ok(끝 > 10, '픽스처 확인 — 굽기 산출물에 script 가 없다');
+  fs.writeFileSync(을, 원본을.slice(0, 끝) + '<script>/*굽기가 안 넣은 것*/</script>' + 원본을.slice(끝), 'utf8');
+  assert.ok(fs.readFileSync(을, 'utf8').includes('굽기가 안 넣은 것'), '픽스처 확인 — 덧붙인 script 가 안 들어갔다');
+
+  assert.throws(() => 도구.되메우기(을, 원고을), /왕복이 안 맞는다/,
+    '반쪽 뜯기가 통과했다 — 이 원고는 다시 구우면 한 벌이 사라진다');
+  assert.strictEqual(fs.readFileSync(원고을, 'utf8'), 원고전,
+    '던지면서 원고를 이미 덮었다 — 「쓰지 않고 던진다」가 거짓이다');
+});
+
+test('전량 굽기 — 갈라진 지면이 있으면 «한 벌도» 굽지 않고 던진다', () => {
+  const { 방, 상대 } = 픽스처방();
+  const 을 = path.join(방, '을.html');
+  const 갑 = path.join(방, '갑.html');
+  fs.writeFileSync(을, fs.readFileSync(을, 'utf8')
+    .replace('</div><!-- /글 -->', '<p class="듦">손으로 더한 문단</p>\n</div><!-- /글 -->'), 'utf8');
+  const 갑전 = fs.readFileSync(갑, 'utf8');
+  const 을전 = fs.readFileSync(을, 'utf8');
+
+  assert.throws(() => 도구.전량({ 방: 상대, 임시방: path.join(os.tmpdir(), 'synk-전량-시험') }),
+    /원고가 낡은 지면/, '갈라진 채로 구웠다 — 손 수정이 exit 0 으로 사라지는 자리다');
+  assert.strictEqual(fs.readFileSync(갑, 'utf8'), 갑전, '멀쩡한 지면까지 구웠다 — 게이트가 반만 섰다');
+  assert.strictEqual(fs.readFileSync(을, 'utf8'), 을전, '갈라진 지면을 덮었다 — 손 수정이 사라졌다');
+});
+
+test('실저장소 — 「Loom 을 입는 지면」 전량이 원고에서 재현된다(0 은 분모와 함께)', () => {
+  const 짝 = 도구.지면짝들();
+  assert.ok(짝.length >= 6, `지면 분모가 ${짝.length} 이다 — 0/0 초록은 「안 쟀다」와 같은 모양이다`);
+  const 줄 = 도구.재현대조(path.join(os.tmpdir(), 'synk-재현대조-실'));
+  const 갈 = 줄.filter((r) => r.상태 === '갈라짐');
+  const 못잼 = 줄.filter((r) => !['재현', '갈라짐'].includes(r.상태));
+  assert.strictEqual(갈.length, 0,
+    '원고보다 앞선 산출물 ' + 갈.length + '벌 — `node tools/펠트문서.js --재현` 이 되메우기 명령을 낸다: '
+    + 갈.map((r) => r.이름).join(', '));
+  assert.strictEqual(못잼.length, 0, '못 잰 지면: ' + 못잼.map((r) => r.이름 + '(' + r.상태 + ')').join(', '));
 });
 
 test('낮 지면은 «배경 그래픽 끔»에도 읽힌다 — 이게 낮 지면이 있는 이유다', () => {
