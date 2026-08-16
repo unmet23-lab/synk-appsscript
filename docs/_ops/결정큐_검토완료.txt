@@ -191,3 +191,6 @@ d02c3ac285  harness-deletion-verdict-0816:73
 9eeef5ccfd  harness-deletion-verdict-0816:74
 08c0ddcfad  harness-deletion-verdict-0816:91
 13d02bf545  task-selection-by-state:3
+874ed3ad54  harness-deletion-verdict-0816:106
+e005cbcb7c  harness-deletion-verdict-0816:121
+66015e0b79  harness-deletion-verdict-0816:123
