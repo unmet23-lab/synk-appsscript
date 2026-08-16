@@ -16,6 +16,7 @@
 //   node tools/friction.js defer F006 "왜 지금 안 닫나 · 어디서 판정했나"   보류(F386)
 //   node tools/friction.js --open                   열림만(아직 아무도 판정 안 함)
 //   node tools/friction.js --보류                    보류만(판정하고 열어둔 것)
+//   node tools/friction.js --이세션                  내 커밋이 만진 파일을 지목한 살아있는 행(F496 · /close 5-c)
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -596,6 +597,105 @@ function report(mode) {
   console.log('');
 }
 
+/* ── 「이 세션이 고쳤을 법한 살아있는 행」 (F496 · 2026-08-16) ──────────────────
+ * 왜 있나 — 실측: 열림 6건 중 **3건이 이미 고쳐진 것**이었고(F451·F490·F491), 그중 둘은
+ *   같은 세션이 같은 날 고치고 둘 다 안 닫았다. `friction-close-guard` 는 **커밋 시점에
+ *   한 번** 알리고 끝이라 두 방향으로 샌다: ①커밋 메시지에 번호를 안 달면 원리상 눈이 멀고
+ *   ②번호를 달아 짖어도 그대로 세션이 끝나면 아무도 다시 안 본다. 그 훅 머리말이 스스로
+ *   「위험한 건 그 상태로 세션이 끝나는 것이다」라 적었는데, **끝나는 자리에 검사가 0**이었다.
+ *
+ * 🔑 판별식이 아니라 «자리»가 비어 있었다 — 이 축은 F092·F096·F107·F132 에 이어 여섯 번째이고
+ *   앞의 넷은 전부 훅 판별식에 예외를 덧대는 처방이었다. 그래서 여기서는 **번호를 안 본다**:
+ *   커밋 메시지 대신 «내 커밋이 만진 파일»과 «행이 지목한 파일»을 맞춘다.
+ *
+ * ⚠ 대가 (틀릴 때의 모습을 먼저 적는다 · CLAUDE.md 맹점 ④)
+ *   · 신고문이 파일을 안 적으면 **못 잡는다** — 그래서 아래는 언제나 «분모»를 함께 낸다(F207).
+ *   · 파일명만으로 맞춘다(`마스코트모션.py` 는 경로 없이 적히는 것이 실측 기본값) — 같은
+ *     이름의 다른 파일이 있으면 거짓양성이다. 이건 **알림이지 차단이 아니라** 대가가 작고,
+ *     새는 방향도 「한 번 더 본다」 쪽이다.
+ *   · 이 세션 커밋이 0건이면 아무것도 안 낸다 — 고친 게 없으니 그게 맞는 침묵이다.
+ *   · 닫을 것 1개 = **없다**. 이건 가드가 아니라 «안 도는 장치를 발화시키는 자리»라
+ *     대신 끌 것이 없다(`friction-close-guard` 는 커밋 시점을 계속 지켜야 한다 — 둘은
+ *     같은 축의 다른 시점이고, 오늘 실측이 그 둘 다 필요하다는 증거다). */
+
+/** 글에서 저장소 파일을 뽑는다 — **파일명만** 남긴다(신고문은 경로를 자주 생략한다). */
+function 언급된파일(글) {
+  const 이름들 = String(글 || '').match(
+    /[\w가-힣][\w가-힣.\/_-]*\.(?:js|mjs|cjs|ts|tsx|py|md|json|sql|html|yml|yaml|sh)\b/g) || [];
+  return new Set(이름들.map((p) => p.split('/').pop()));
+}
+
+/* 기록물은 뺀다 — 장부·보드·인계문은 **모든** 신고·해소 커밋에 딸려 들어와서,
+ * 안 빼면 살아있는 행 전부가 매번 걸린다(신호가 아니라 소음이 된다).
+ * 판정은 friction-close-guard 의 같은 규칙과 축을 맞춘다. */
+const 기록물이름 = (이름) => 이름 === path.basename(LEDGER) || /^F\d+\.md$/.test(이름)
+  || /^[0-9a-f]{8}\.md$/.test(이름) || 이름 === '인계문.md' || 이름 === '세션보드_아카이브.md';
+
+/** 이 세션 커밋이 만진 파일 이름 — `null` 이면 **못 쟀다**(0건과 다르다 · F207). */
+function 내커밋파일(sid) {
+  if (!sid) return null;
+  const 나 = (args) => {
+    try {
+      return require('child_process').execFileSync('git', args,
+        { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 8000 });
+    } catch (_) { return null; }
+  };
+  const 해시들 = 나(['log', '--format=%H', '-n', '200', `--grep=Session-Id: ${sid}`]);
+  if (해시들 === null) return null;
+  const 목록 = 해시들.split('\n').filter(Boolean);
+  if (!목록.length) return new Set();
+  const 파일 = new Set();
+  for (const sha of 목록) {
+    const 출력 = 나(['show', '--format=', '--name-only', '-z', sha]);
+    if (출력 === null) continue;
+    for (const p of 출력.split('\0').filter(Boolean)) {
+      const 이름 = p.split('/').pop();
+      if (!기록물이름(이름)) 파일.add(이름);
+    }
+  }
+  return 파일;
+}
+
+/** `/close` 가 부르는 자리. 살아있는 행 중 내 커밋 파일과 겹치는 것을 낸다. */
+function 이세션분(sid) {
+  const rows = read().rows.filter(살아있나);
+  const 내파일 = 내커밋파일(sid);
+  const 지목한행 = rows.map((r) => ({ r, 파일: 언급된파일(r.signal) }))
+    .filter((x) => x.파일.size > 0);
+
+  if (내파일 === null) {
+    console.log('\n[friction] ❔ **못 쟀다** — git 을 못 불렀다(0건이 아니다 · F207).');
+    console.log(`  살아있는 행 ${rows.length}건은 그대로 서 있다: node tools/friction.js --open\n`);
+    return 2;
+  }
+  const 걸린 = 내파일.size
+    ? 지목한행.filter((x) => [...x.파일].some((f) => 내파일.has(f)))
+    : [];
+
+  console.log(`\n[friction] 이 세션이 고쳤을 법한 살아있는 행 — **${걸린.length}건**`);
+  console.log(`  분모 = 살아있는 ${rows.length}행 = 파일을 지목한 ${지목한행.length}`
+    + ` + 안 지목한 ${rows.length - 지목한행.length}  ·  내 커밋이 만진 파일 ${내파일.size}종`);
+  if (!내파일.size) {
+    console.log('  (이 세션 커밋이 0건이다 — 고친 게 없으니 닫을 것도 없다)\n');
+    return 0;
+  }
+  if (!걸린.length) {
+    console.log('  ✔ 겹치는 행이 없다. ⚠ 신고문이 파일을 안 적은 행은 여기서 원리상 안 잡힌다'
+      + ` — 그 ${rows.length - 지목한행.length}건은 --open 으로 직접 본다.\n`);
+    return 0;
+  }
+  for (const { r, 파일 } of 걸린) {
+    const 겹 = [...파일].filter((f) => 내파일.has(f));
+    console.log(`\n  · ${r.id} [${상태(r)}] — 내 커밋이 만진 \`${겹.join('`·`')}\` 를 이 행이 지목한다`);
+    console.log(`      ${String(r.signal || '').slice(0, 120)}…`);
+    console.log(`      다 고쳤으면: node tools/friction.js resolve ${r.id} "무엇이 실제로 막았나"`);
+    console.log(`      아직이면  : node tools/friction.js defer ${r.id} "왜 지금 안 닫나"`);
+  }
+  console.log('\n  ⚠ 파일이 겹친다고 고쳐진 것은 아니다 — **여는 것은 그 행이고 판정은 사람이 한다.**');
+  console.log('  닫기 전 F083: 신고 원문의 결함을 되넣어 회귀가 빨개지는지 본다(node tools/변이.js).\n');
+  return 1;
+}
+
 function main() {
   const args = process.argv.slice(2);
   if (!fs.existsSync(LEDGER)) {
@@ -700,6 +800,10 @@ function main() {
       조각.push(남은[i]);
     }
     defer(args[1], 셸이바꾼말(본문또는파일(조각, 파일, '보류 사유'), '보류 사유'));
+  } else if (args.includes('--이세션')) {
+    /* `/close` 5-c 가 부르는 자리 — 종료코드로 갈린다: 0=겹치는 행 없음 · 1=판정할 행 있음 · 2=못 쟀다.
+     * 셋을 갈라야 「안 걸렸다」와 「안 쟀다」가 같은 모양이 되지 않는다(F207). */
+    process.exit(이세션분(process.env.CLAUDE_CODE_HOST_SESSION_ID || ''));
   } else {
     report(args.includes('--open') ? 'open' : (args.includes('--보류') ? '보류' : null));
   }
@@ -711,4 +815,6 @@ module.exports = {
   LEDGER, FOLDER, KINDS, TAG_PREFIX, LOCK, LOCK_STALE_MS,
   // 상태 판정 — 소비자(rot-check · friction-close-guard)는 자기 정규식을 쓰지 않고 이것을 쓴다.
   DEFER, 상태, 열렸나, 보류인가, 해소됐나, 살아있나,
+  // F496 — 「끝나는 자리」에서 부르는 통로(회귀가 이 셋을 각각 잡는다)
+  언급된파일, 기록물이름, 이세션분,
 };
