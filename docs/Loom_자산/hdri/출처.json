@@ -1,0 +1,24 @@
+{
+  "받은날": "2026-08-16",
+  "승인": "유호 08-16 「전부다 승인할게」",
+  "자산": [
+    {
+      "이름": "monochrome_studio_02",
+      "판": "1k hdr",
+      "출처": "Poly Haven",
+      "저작권": "CC0",
+      "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/monochrome_studio_02_1k.hdr",
+      "쓰임": "기본값 — 무채(monochrome) 스튜디오·어두운 천장. 킷 철칙 ④(신호 1점)를 안 건드린다",
+      "바이트": 1562415
+    },
+    {
+      "이름": "ferndale_studio_02",
+      "판": "1k hdr",
+      "출처": "Poly Haven",
+      "저작권": "CC0",
+      "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/ferndale_studio_02_1k.hdr",
+      "쓰임": "고대비 대조군 — ②감광(검은 띠)이 더 센 판. 대조에만 쓴다",
+      "바이트": 1264564
+    }
+  ]
+}
