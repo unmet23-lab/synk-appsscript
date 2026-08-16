@@ -96,14 +96,17 @@ test('시안굽기: 표식 없는 펠트 마스코트를 구우면 data-synk-mas
       '<!doctype html><meta charset="utf-8"><body>' +
       '<img src="펠트코랄_0815/누끼/재염색_본체.png" alt="" data-굽기폭="64">' +
       '</body>', 'utf8');
+    /* ⚠ 굽기가 내는 판까지 **finally 로** 지운다 — 정리를 assert 뒤에 두면 **실패한 회차만**
+     *   저장소에 유물을 남긴다(실측 2026-08-15 21:08 · `_자립형.html` 3건이 미추적으로 남아
+     *   있었다 = F025 무보호). 새는 방향이 「초록일 땐 깨끗」이라 조용히 쌓인다. */
+    const 나온판 = 판.replace(/\.html$/, '_자립형.html');
     try {
       execFileSync('node', [path.join(ROOT, 'tools', '시안굽기.js'), 판], { encoding: 'utf8' });
-      const 나온판 = 판.replace(/\.html$/, '_자립형.html');
       const 결과 = fs.readFileSync(나온판, 'utf8');
       assert.match(결과, /data-synk-mascot/, '펠트 경로인데 표식이 안 붙었다 — 린트가 눈을 감는다');
       assert.match(결과, /data:image\/webp;base64,/, '그림이 인라인되지 않았다');
-      fs.rmSync(나온판, { force: true });
     } finally {
+      fs.rmSync(나온판, { force: true });
       fs.rmSync(판, { force: true });
     }
   } finally {
