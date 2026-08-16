@@ -109,6 +109,84 @@ test('⑦ 훅이 스로틀을 실제로 «쓴다» — 상수만 두고 안 쓰�
   assert.ok(가지.캐시경로.startsWith(os.tmpdir()), '캐시가 저장소 안에 있다 — 새 장부가 하나 는다');
 });
 
+// ── ⑦-b 밀림 경보 (F502) ────────────────────────────────────────────────────
+/** 픽스처 저장소 — 실저장소의 그날 상태에 기대면 CI 에서 깨진다(F296). */
+function 픽스처저장소() {
+  const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-밀림-'));
+  const g = (...a) => require('node:child_process').spawnSync('git', a, { cwd: 뿌리, encoding: 'utf8' });
+  g('init', '-q', '-b', 'master');
+  g('config', 'user.email', 't@t'); g('config', 'user.name', 't');
+  g('commit', '-q', '--allow-empty', '-m', '바탕');
+  /* origin/master 를 «수동으로» 만든다 — 진짜 리모트 없이 ahead 를 만들 수 있다.
+     (네트워크·자격에 기대는 검사는 CI 에서 깨진다) */
+  g('update-ref', 'refs/remotes/origin/master', 'HEAD');
+
+  /* ⚠ **시각을 명시로 벌린다.** 처음엔 그냥 `n` 개를 연달아 찍었는데, 전부 같은 초에 생겨
+     `min`(가장 오래된 것)과 `max`(가장 최근)가 **값이 같았다** — 그래서 둘을 바꿔치기하는
+     변이가 통과했다(2026-08-16 변이 ⑦ 이 잡은 구멍). 나이를 재는 검사의 픽스처는
+     나이가 실제로 갈려 있어야 한다. */
+  const 커밋 = (몇시간전들) => {
+    for (const h of 몇시간전들) {
+      const iso = new Date(Date.now() - h * 3600000).toISOString();
+      require('node:child_process').spawnSync('git',
+        ['commit', '-q', '--allow-empty', '-m', `c-${h}h`],
+        { cwd: 뿌리, encoding: 'utf8', env: { ...process.env, GIT_AUTHOR_DATE: iso, GIT_COMMITTER_DATE: iso } });
+    }
+  };
+  return { 뿌리, 커밋 };
+}
+
+test('⑦-b 밀림 — 안 밀린 커밋을 «센다», 그리고 못 세면 0 이 아니라 null 이다', () => {
+  const { 뿌리, 커밋 } = 픽스처저장소();
+  try {
+    assert.equal(가지.안밀린것(뿌리).수, 0, '갓 만든 저장소가 0 이 아니다');
+    커밋([5, 1]);                                   // 5시간 전 · 1시간 전
+    assert.equal(가지.안밀린것(뿌리).수, 2, 'ahead 를 못 센다');
+
+    /* 🔑 보고해야 하는 것은 **가장 오래된 것**이다 — 「제일 최근 커밋이 1시간 전」은
+       위험을 축소해 읽게 만든다. 5 와 1 을 벌려 두었으니 둘을 바꾸면 여기서 깨진다. */
+    const { 최고령_시간 } = 가지.안밀린것(뿌리);
+    assert.ok(최고령_시간 !== null && Math.abs(최고령_시간 - 5) < 0.5,
+      `최고령이 «가장 오래된 것»(≈5시간)이 아니다: ${최고령_시간}`);
+
+    /* 저장소가 아닌 곳 = **못 잰 것**이다. 여기서 0 을 주면 사고가 난 날에 조용해진다. */
+    const 빈곳 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-비저장소-'));
+    try {
+      assert.equal(가지.안밀린것(빈곳).수, null, '저장소가 아닌데 «0건»이라고 답한다 — 모름을 안전으로 바꿨다');
+    } finally { fs.rmSync(빈곳, { recursive: true, force: true }); }
+  } finally {
+    fs.rmSync(뿌리, { recursive: true, force: true });
+  }
+});
+
+test('⑦-c 밀림 문턱은 실측값이고, 경보가 스로틀 «밖»에 있다', () => {
+  /* 문턱을 발명하면 아무도 안 믿는다 — reflog 실측 p99=29 에서 왔다는 근거가 소스에 남아야 한다. */
+  assert.equal(가지.안밀린_문턱, 30, '문턱이 실측값(30)에서 벗어났다 — 바꾸려면 다시 재고 근거를 갱신한다');
+  assert.match(소스, /p99 \*\*29\*\*|p99 29/, '문턱의 근거(실측 분포)가 소스에서 사라졌다');
+
+  /* 🔴 경보가 스로틀 안으로 들어가면 **사고가 난 그 세션에서 조용해진다** — 캐시가 신선한
+     동안 return 해 버리기 때문이다. 네트워크 0 이라 아낄 것도 없다. */
+  const 훅몸통 = 코드.slice(코드.indexOf('function 훅()'), 코드.indexOf('function 진입'));
+  const 경보위치 = 훅몸통.indexOf('밀림경보()');
+  const 스로틀위치 = 훅몸통.indexOf('나이 < 신선_분');
+  assert.ok(경보위치 >= 0, '훅이 밀림 경보를 안 부른다');
+  assert.ok(경보위치 < 스로틀위치, '밀림 경보가 스로틀 뒤에 있다 — 캐시가 신선한 세션에서 조용해진다');
+
+  /* gh 가 죽어도 경보는 살아야 한다 — 가드가 서로를 끌어내리면 안 된다. */
+  const 진입몸통 = 코드.slice(코드.indexOf('function 진입'));
+  assert.match(진입몸통, /gh\(\['--version'\]\)\.성공\) \{ 밀림경보\(\); return; \}/,
+    'gh 가 없을 때 밀림 경보까지 같이 꺼진다');
+});
+
+test('⑦-d 밀림 경보가 원격 기준의 «나이»를 자기가 다시 구현하지 않는다 (신뢰성 ④)', () => {
+  const 몸통 = 코드.slice(코드.indexOf('function 밀림경보'), 코드.indexOf('function 나이_시간'));
+  assert.match(몸통, /작업본소유자.*fetch나이_분/s, 'fetch 나이 판정을 공용 통로에서 안 가져온다');
+  assert.ok(!/FETCH_HEAD/.test(코드), 'FETCH_HEAD 를 여기서 직접 읽는다 — 같은 판정이 두 곳에 앉는다');
+  /* 그 통로가 실제로 그 이름을 내주는지도 본다 — 안 내주면 위 require 가 런타임에 죽는다. */
+  assert.equal(typeof require('../tools/작업본소유자.js').fetch나이_분, 'function',
+    '작업본소유자가 fetch나이_분 을 export 하지 않는다 — 경보가 조용히 기준을 못 적는다');
+});
+
 // ── ⑧ 검사 자신의 눈 ────────────────────────────────────────────────────────
 test('⑧ 주석 벗기기가 살아 있다 — 죽으면 위 검사들이 통째로 눈이 먼다', () => {
   /* 벗기기가 조용히 «아무것도 안 벗기게» 되면 ②③ 이 주석 속 인용까지 읽어 거짓양성을 내고,
