@@ -30,6 +30,7 @@
  *
  * ■ 사용
  *   node tools/마누스.js --크레딧
+ *   node tools/마누스.js --작업목록 [개수]     # 계정에 **실제로** 있는 작업(크레딧 0 · 유령 id 판별)
  *   node tools/마누스.js --던지기 "<질문>" [--라벨 "짧은 이름"]
  *   node tools/마누스.js --런목록
  *   node tools/마누스.js --이어받기 <런ID>     # 폴러가 죽었을 때 다시 붙는다
@@ -105,6 +106,24 @@ function 생성몸통(질문, 라벨) {
   return { message: { content: String(질문) }, ...(라벨 ? { title: String(라벨) } : {}) };
 }
 
+/* 조회 오류가 «회복 불가»인가 — 같은 요청을 다시 보내도 영영 같은 답인가.
+ *
+ * 🔑 왜 필요한가 (실측 F509): 폴러는 조회 실패를 **전부** 「일시 오류」로 보고 60초 뒤 다시 물었다.
+ *   없는 작업 id 에 대고 `404 not_found` 를 **167회 · 180분** 반복했고, 그동안 런은 「도는 중」
+ *   이었다. 원래 주석은 「일시 오류로 폴러를 죽이지 않는다」고 전제를 적어 뒀는데, 그 전제가
+ *   안 맞는 오류가 있다는 것을 안 적었다 — 그래서 전제가 깨진 날 아무도 못 봤다.
+ *
+ * ⚠ 새는 방향을 골랐다: **모르면 «일시»로 본다**(false). 회복 가능한 것을 회복 불가로 접으면
+ *   도는 작업을 끊고 크레딧을 버리는데, 그건 비가역이다. 반대로 접으면 최대 상한분만 늦다.
+ *   그래서 HTTP 코드를 못 읽은 오류(네트워크·JSON 파싱)는 전부 재시도 쪽으로 남긴다. */
+function 회복불가인가(메시지) {
+  const m = /HTTP (\d{3})/.exec(String(메시지 == null ? '' : 메시지));
+  if (!m) return false;                                    // 코드를 못 읽었다 = 네트워크·파싱 — 다음 회차에 통할 수 있다
+  const 코드 = Number(m[1]);
+  if (코드 === 408 || 코드 === 425 || 코드 === 429) return false;   // 시간·혼잡 — 기다리면 풀린다
+  return 코드 >= 400 && 코드 < 500;                        // 나머지 4xx = 요청 자체가 틀렸다
+}
+
 function 장부적기(줄) {
   fs.mkdirSync(path.dirname(장부), { recursive: true });
   fs.appendFileSync(장부, JSON.stringify(줄) + '\n', 'utf8');   // append-only — 행 삭제 금지
@@ -121,6 +140,29 @@ async function 던지기(질문, 라벨) {
    *   박아 두면 등급이 바뀌는 날 조용히 깨진다. 계정 기본값에 맡긴다. */
   const 작업 = await 부르기('task.create', { method: 'POST', body: 생성몸통(질문, 라벨) });
   const 작업id = 작업ID캐기(작업);
+
+  /* 🔑 캔 id 를 **한 번 써 본다** — 읽기 전용이라 크레딧 0이고 1초면 끝난다.
+   *
+   * 실측 F509: 생성이 HTTP 200 과 id 를 냈는데 그 id 가 계정 어디에도 없었다
+   *   (`task.list` 3건 중 0건 · 크레딧 소모 0 · 그 시각에 만들어진 작업 자체가 없었다).
+   *   던지기는 그걸 모른 채 폴러를 띄웠고, 폴러는 404 를 167회 물으며 **3시간**을 태웠다.
+   *   확인은 한 번이면 되는데 안 해서, 「모른다」가 「도는 중」의 얼굴로 3시간을 살았다.
+   *
+   * ⚠ 일시 오류로 여기서 막지 않는다 — 마누스는 이미 돌고 있을 수 있고(크레딧은 이미 탔다),
+   *   확인 실패를 곧 작업 실패로 접으면 멀쩡한 작업을 버리게 된다. 회복 불가일 때만 멈춘다. */
+  try {
+    await 부르기(`task.listMessages?task_id=${encodeURIComponent(작업id)}&limit=1`);
+  } catch (e) {
+    if (회복불가인가(e.message)) {
+      console.error('🔴 생성은 200 인데 **그 작업 id 가 안 열린다** — 폴러를 띄우지 않는다(3시간을 태우지 않으려고).');
+      console.error(`   캔 id: ${작업id}`);
+      console.error(`   조회 오류: ${e.message}`);
+      console.error(`   생성 응답 원문: ${JSON.stringify(작업).slice(0, 600)}`);
+      console.error('   → 위 원문에 **진짜** task id 필드가 따로 있는지 본다(`작업ID캐기` 후보 4개 밖일 수 있다).');
+      return 2;
+    }
+    console.error(`⚠ 작업 id 확인이 «일시» 오류로 실패했다(${e.message}) — 판정을 미루고 폴러는 그대로 띄운다.`);
+  }
 
   const 런ID = 런.런ID발급(종류);
   const 로그 = 런.로그경로(런ID);
@@ -144,6 +186,9 @@ async function 던지기(질문, 라벨) {
   런.런쓰기({
     런ID, 종류, 로그, pid: child.pid,
     작업id, 질문,
+    /* 생성 응답 원문을 남긴다 — F509 때 이걸 안 남겨서, 사후에 **어느 필드를 집었는지**를
+     * 원리상 못 쟀다(장부엔 캔 id 하나뿐이었다). 진단이 안 되는 실패는 두 번 난다. */
+    생성응답: JSON.stringify(작업).slice(0, 1000),
     시작: new Date().toISOString(), 상태: '진행',
     대상: (라벨 || 질문).replace(/\s+/g, ' ').slice(0, 80),
     세션: process.env.CLAUDE_CODE_HOST_SESSION_ID || '',
@@ -177,6 +222,20 @@ async function 붙기(런ID, r) {
     try {
       j = await 부르기(`task.listMessages?task_id=${encodeURIComponent(r.작업id)}&order=desc&limit=30`);
     } catch (e) {
+      /* 🔑 회복 불가와 일시 오류를 **가른다**(F509: 안 갈라서 404 를 167회·180분 물었다).
+       * 회복 불가면 기다림이 값을 못 낸다 — 그 자리에서 실패로 끝내고 사람에게 넘긴다. */
+      if (회복불가인가(e.message)) {
+        const 코드 = 4;
+        런.런갱신(런ID, {
+          상태: 런.상태이름(코드), 끝: new Date().toISOString(), 종료코드: 코드,
+          비고: `조회가 회복 불가로 끝났다 — ${String(e.message).split('\n')[0]}`,
+        });
+        장부적기({ 때: new Date().toISOString(), 일: '실패', 런ID, 작업id: r.작업id, 왜: '조회 회복불가', 오류: String(e.message).slice(0, 400) });
+        console.error(`[폴러] 🔴 회복 불가 — 다시 물어도 같은 답이다. 멈춘다(재시도로 시간을 태우지 않는다).`);
+        console.error(`  ${e.message}`);
+        console.error(`  작업 id 가 계정에 실재하는지부터 본다: node tools/마누스.js --작업목록`);
+        return 1;
+      }
       /* 일시 오류로 폴러를 죽이지 않는다 — 죽으면 「멈춤」으로 보이고 사람이 재던져 크레딧을 또 태운다. */
       console.error(`[폴러] 조회 실패(다음 회차에 다시 본다): ${e.message}`);
       await 잠깐(폴링초 * 1000);
@@ -186,27 +245,37 @@ async function 붙기(런ID, r) {
     const 상태 = String(j.task_status || j.status || (j.data && j.data.task_status) || '').toLowerCase();
     console.log(`[폴러] ${new Date().toISOString()} 상태=${상태 || '(빈값)'}`);
 
+    /* ⚠ 아래 세 종료 경로의 `상태` 는 **손으로 적지 않는다.** F509 실측: 여기서 셋 다 '완주'
+     * 라고 적어 두는 바람에, 결과가 0바이트인 종료코드 3 이 「✅ 완주」로 장부에 앉았다.
+     * 이름은 `검수런.상태이름(종료코드)` 한 곳에서만 나온다(codex-review 와 같은 규칙). */
     if (상태 === 'stopped' || 상태 === 'error') {
+      const 코드 = 상태 === 'stopped' ? 0 : 1;
       결과쓰기(런ID, r, 상태, j);
-      런.런갱신(런ID, { 상태: '완주', 끝: new Date().toISOString(), 종료코드: 상태 === 'stopped' ? 0 : 1, 마누스상태: 상태 });
-      장부적기({ 때: new Date().toISOString(), 일: '완주', 런ID, 작업id: r.작업id, 마누스상태: 상태 });
+      런.런갱신(런ID, { 상태: 런.상태이름(코드), 끝: new Date().toISOString(), 종료코드: 코드, 마누스상태: 상태 });
+      장부적기({ 때: new Date().toISOString(), 일: 런.상태이름(코드), 런ID, 작업id: r.작업id, 마누스상태: 상태 });
       console.log(`[폴러] 끝 — ${상태}`);
-      return 0;
+      return 코드;
     }
     if (상태 === 'waiting') {
-      /* 사람 확인을 요구하는 상태다. 우리 규약상 자동 승인은 안 한다 — 드러내고 멈춘다. */
+      /* 사람 확인을 요구하는 상태다. 우리 규약상 자동 승인은 안 한다 — 드러내고 멈춘다.
+       * 결과 파일은 쓴다(원문이 들어 있다). 그래도 '완주'가 아니다 — 답이 안 끝났기 때문이다. */
+      const 코드 = 2;
       결과쓰기(런ID, r, 상태, j);
-      런.런갱신(런ID, { 상태: '완주', 끝: new Date().toISOString(), 종료코드: 2, 마누스상태: 'waiting' });
+      런.런갱신(런ID, { 상태: 런.상태이름(코드), 끝: new Date().toISOString(), 종료코드: 코드, 마누스상태: 'waiting', 비고: '마누스가 사람 확인을 기다린다 — 결과 파일은 있다' });
       장부적기({ 때: new Date().toISOString(), 일: '대기', 런ID, 작업id: r.작업id });
       console.log(`[폴러] 마누스가 사람 확인을 기다린다 — 자동 승인하지 않는다.`);
-      return 0;
+      return 코드;
     }
     await 잠깐(폴링초 * 1000);
   }
 
-  런.런갱신(런ID, { 상태: '완주', 끝: new Date().toISOString(), 종료코드: 3, 비고: `폴러 상한 ${폴러상한분}분 초과 — 마누스는 계속 돌고 있을 수 있다` });
+  const 코드 = 3;
+  런.런갱신(런ID, { 상태: 런.상태이름(코드), 끝: new Date().toISOString(), 종료코드: 코드, 비고: `폴러 상한 ${폴러상한분}분 초과 — 결과 파일 없음 · 마누스는 계속 돌고 있을 수 있다` });
+  /* 종결 행을 장부에도 적는다 — F509 때 이게 없어서 append-only 장부가 「던짐」 한 줄로 끝났고,
+   * 장부만 보면 그 실탄이 아직 도는 것처럼 보였다. */
+  장부적기({ 때: new Date().toISOString(), 일: '상한초과', 런ID, 작업id: r.작업id, 상한분: 폴러상한분 });
   console.log(`[폴러] 상한 ${폴러상한분}분 초과 — 다시 붙으려면 --이어받기 ${런ID}`);
-  return 0;
+  return 코드;
 }
 
 function 결과쓰기(런ID, r, 상태, j) {
@@ -259,13 +328,33 @@ async function 크레딧() {
   return 0;
 }
 
+/* 계정에 **실제로** 있는 작업을 센다 — 읽기 전용 · 크레딧 0.
+ * 왜 있나(F509): 던진 실탄의 작업 id 가 계정에 없었는데, 그걸 확인할 통로가 없어서
+ * 「id 가 유령이다」를 임시 스크립트로 잰 뒤에야 알았다. 진단 명령이 없으면 진단을 안 한다. */
+async function 작업목록(제한) {
+  const j = await 부르기(`task.list?limit=${Number(제한) > 0 ? Number(제한) : 20}`);
+  const 목록 = Array.isArray(j.data) ? j.data : (Array.isArray(j.tasks) ? j.tasks : []);
+  console.log(`마누스 계정 작업 ${목록.length}건 (이 목록에 없는 id 는 폴링해도 영영 404 다)`);
+  for (const t of 목록) {
+    let 때 = String(t.created_at || '');
+    if (/^\d+$/.test(때)) { try { 때 = new Date(Number(때) * 1000).toISOString(); } catch (_) { /* 원문 그대로 */ } }
+    console.log(`  ${t.id}  ${때}  ${String(t.status || '?').padEnd(9)} 크레딧${String(t.credit_usage ?? '?').padStart(4)}  ${String(t.title || '').slice(0, 46)}`);
+  }
+  return 0;
+}
+
 function 런목록() {
   const s = 런.요약();
   const 내것 = (x) => x.런.종류 === 종류;
   const 줄 = (x) => `  · ${x.런.런ID} · ${x.판.분 == null ? '?' : x.판.분}분 · ${x.런.대상}`;
   const 완 = s.완주미처분.filter(내것), 멈 = s.멈춤.filter(내것), 진 = s.진행.filter(내것);
-  if (!완.length && !멈.length && !진.length) { console.log('던진 사실심문 없음.'); return 0; }
+  const 실 = s.실패미처분.filter(내것);
+  if (!완.length && !실.length && !멈.length && !진.length) { console.log('던진 사실심문 없음.'); return 0; }
   if (완.length) { console.log(`✅ 완주 · 안 주움 ${완.length}건:`); 완.forEach((x) => console.log(줄(x))); }
+  if (실.length) {
+    console.log(`🔴 **실패로 끝남** ${실.length}건 — 주울 답이 없다(로그를 열어도 답이 아니라 오류다):`);
+    실.forEach((x) => { console.log(줄(x)); console.log(`      왜: ${x.런.비고 || `종료코드 ${x.런.종료코드}`}`); });
+  }
   if (진.length) { console.log(`⏳ 도는 중 ${진.length}건:`); 진.forEach((x) => console.log(줄(x))); }
   if (멈.length) {
     console.log(`⚠ 폴러가 멈춤 ${멈.length}건 — **마누스는 계속 돌고 있을 수 있다.** 재던지기 말고 이어받아라(크레딧 0):`);
@@ -280,6 +369,7 @@ async function main() {
   const 값 = (플래그) => { const i = argv.indexOf(플래그); return i >= 0 ? argv[i + 1] : null; };
 
   if (argv.includes('--크레딧')) return 크레딧();
+  if (argv.includes('--작업목록')) return 작업목록(값('--작업목록'));
   if (argv.includes('--런목록')) return 런목록();
   if (argv.includes('--폴러')) return 폴러(값('--폴러'));
   if (argv.includes('--이어받기')) {
@@ -307,5 +397,5 @@ async function main() {
 if (require.main === module) {
   main().then((c) => process.exit(c || 0)).catch((e) => { console.error(`🔴 ${e.message}`); process.exit(1); });
 } else {
-  module.exports = { 생성몸통, 작업ID캐기, 키, 키경로, 종류, API };
+  module.exports = { 생성몸통, 작업ID캐기, 회복불가인가, 키, 키경로, 종류, API };
 }
