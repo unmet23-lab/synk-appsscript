@@ -1779,11 +1779,22 @@ function 던지기(argv) {
 function 런현황() {
   const s = 런.요약();
   const 줄 = (x) => `  · ${x.런.런ID} · ${x.런.종류} · ${x.판.분 == null ? '?' : x.판.분}분 · ${x.런.대상}`;
-  if (!s.진행.length && !s.멈춤.length && !s.완주미처분.length) { console.log('던진 런 없음.'); return 0; }
+  if (!s.진행.length && !s.멈춤.length && !s.완주미처분.length && !s.실패미처분.length) { console.log('던진 런 없음.'); return 0; }
   if (s.완주미처분.length) {
     console.log(`✅ 완주했는데 **아직 안 주운** 런 ${s.완주미처분.length}건 — 결과를 읽고 처분해라:`);
     s.완주미처분.forEach((x) => { console.log(줄(x)); console.log(`      로그: ${x.런.로그}`); });
     console.log(`   처분 도장: node tools/codex-review.js --런처분 <런ID>`);
+  }
+  /* 실패는 완주와 **다른 칸**이다 — 뭉치면 ✅ 의 얼굴로 나가고, 사람이 「결과가 있다」고 믿고
+   * 로그를 연다(실측 F509: 44KB 가 전부 404 였다). 여기선 답이 없다는 말부터 한다. */
+  if (s.실패미처분.length) {
+    console.log(`🔴 **실패로 끝난** 런 ${s.실패미처분.length}건 — 주울 답이 없다(통과가 아니다):`);
+    s.실패미처분.forEach((x) => {
+      console.log(`${줄(x)} — 종료코드 ${x.런.종료코드 == null ? '?' : x.런.종료코드}`);
+      console.log(`      왜: ${x.런.비고 || '(비고 없음 — 로그 끝을 본다)'}`);
+      console.log(`      로그: ${x.런.로그}`);
+    });
+    console.log(`   고치고 다시 던졌거나 접었으면 도장: node tools/codex-review.js --런처분 <런ID> --사유 "무엇을 했나"`);
   }
   if (s.멈춤.length) {
     console.log(`🔴 **멈춘** 런 ${s.멈춤.length}건(죽었거나 매달렸다 — 통과가 아니다):`);
@@ -2206,7 +2217,7 @@ if (require.main === module) {
      * 「통과」 방향으로 새므로(새 spawn 자리가 `...process.env` 를 펼치는 날) 벽을 두 개 세운다.
      * 실측 08-12: 손자 하나가 부모 런을 「진행」→「실패」로 덮는 것을 격리 픽스처로 재현했다. */
     if (런.자식인가()) return;
-    try { 런.런갱신(런ID, { 상태: 코드 === 0 ? '완주' : '실패', 끝: new Date().toISOString(), 종료코드: 코드 }); }
+    try { 런.런갱신(런ID, { 상태: 런.상태이름(코드), 끝: new Date().toISOString(), 종료코드: 코드 }); }
     catch (_) { /* 상태를 못 적어도 결과는 장부에 있다 — 여기서 더 죽이지 않는다 */ }
   };
   try {
