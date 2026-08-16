@@ -148,3 +148,80 @@ test('⑧ 키 파일이 없으면 발급 경로를 함께 말한다 — 따를 �
     if (옛 === undefined) delete process.env.MANUS_KEY_PATH; else process.env.MANUS_KEY_PATH = 옛;
   }
 });
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * ⑬~⑱ 상태 판독 — **이 통로가 세워진 날부터 어떤 런도 «끝났다»고 말할 수 없었다.**
+ *
+ * 실측 2026-08-16(응답 원문 · 작업 6건 이력 전량 · 네트워크로 직접 확인):
+ *   `task.listMessages` 최상위 키 = has_more · messages · next_cursor · ok · request_id · task_id
+ *   → `task_status` 도 `status` 도 `data` 도 **없다.** 옛 판독은 그 셋만 봤으니 간헐이 아니라
+ *     구조적으로 늘 빈값이었고(실측 154/154 회), 빈값은 조용히 다음 회차로 흘러
+ *     `stopped`·`error`·`waiting` 어느 종료 분기에도 못 닿았다. 도달 가능한 출구는
+ *     180분 상한 하나뿐 — 실제로 답이 **11분**에 끝난 작업 하나가 그 뒤 144분을 더 돌았다.
+ * 아래 픽스처는 그 응답 모양을 그대로 못박는다(네트워크 0).
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+/** 실측 응답 모양. ⚠ 최상위에 상태 필드가 **없다** — 그게 이 픽스처의 핵심이다. */
+function 응답(메시지들) {
+  return { has_more: false, messages: 메시지들, next_cursor: null, ok: true, request_id: 'req_x', task_id: 'T1' };
+}
+const 상태메시지 = (agent_status, timestamp) => ({ type: 'status_update', timestamp: String(timestamp), status_update: { agent_status, brief: `Manus is ${agent_status}` } });
+const 말메시지 = (timestamp) => ({ type: 'assistant_message', timestamp: String(timestamp), assistant_message: { content: '답' } });
+
+test('⑬ 끝난 작업을 «끝났다»고 읽는다 — 이 한 줄이 3시간을 태우던 자리다', () => {
+  const j = 응답([상태메시지('stopped', 1786878493812), 말메시지(1786878493000), 상태메시지('running', 1786877836000)]);
+  const { 상태, 출처 } = 통로.상태캐기(j);
+  assert.strictEqual(상태, 'stopped');
+  assert.strictEqual(출처, 'status_update');
+  /* 픽스처가 실측 모양인지 스스로 확인한다 — 최상위 상태 필드가 생기면 이 검사의 전제가 낡는다. */
+  assert.ok(!('task_status' in j) && !('status' in j) && !('data' in j),
+    '실측 응답엔 최상위 상태 필드가 없다 — 있다면 벤더가 바꾼 것이고 그때 이 회귀를 다시 잰다');
+});
+
+test('⑭ 🔴 **최신 하나**만 본다 — 한 작업이 running→stopped→running 으로 다시 도는 것이 실재한다', () => {
+  /* 실측 2건(뒤에 사람이 말을 더 건 대화형 작업). 옛 stopped 를 집으면 **도는 작업을 끝났다고
+   * 적는다** — 그리고 그 오독은 언제나 「끝났다」 방향이라 조용히 통과한다. */
+  const j = 응답([상태메시지('running', 3000), 상태메시지('stopped', 2000), 상태메시지('running', 1000)]);
+  assert.strictEqual(통로.상태캐기(j).상태, 'running', '가장 최근 상태가 running 이면 아직 도는 중이다');
+});
+
+test('⑮ 배열 순서가 아니라 timestamp 로 고른다 — order 인자를 누가 바꿔도 안 흔들린다', () => {
+  const 오름 = 응답([상태메시지('running', 1000), 상태메시지('stopped', 2000)]);   // asc 로 받은 모양
+  const 내림 = 응답([상태메시지('stopped', 2000), 상태메시지('running', 1000)]);   // desc 로 받은 모양
+  assert.strictEqual(통로.상태캐기(오름).상태, 'stopped');
+  assert.strictEqual(통로.상태캐기(내림).상태, 'stopped');
+});
+
+test('⑯ 못 찾으면 «못찾음» 이라고 말한다 — 모름을 running 으로 접지 않는다', () => {
+  const { 상태, 출처 } = 통로.상태캐기(응답([말메시지(1000)]));
+  assert.strictEqual(상태, '', '모르는 것을 아는 척하면 폴러가 상한까지 헛돈다');
+  assert.strictEqual(출처, '못찾음', '어디를 봤는지 안 적으면 로그만으로 원인을 못 가른다');
+  assert.strictEqual(통로.상태캐기({}).상태, '');
+  assert.strictEqual(통로.상태캐기(null).상태, '');
+});
+
+test('⑰ 벤더가 최상위 필드를 넣으면 그건 2차로 쓴다 — 다만 status_update 가 우선이다', () => {
+  const j = 응답([상태메시지('running', 1000)]);
+  j.task_status = 'stopped';
+  assert.strictEqual(통로.상태캐기(j).상태, 'running', 'status_update 가 있으면 그게 참값이다');
+  const 빈 = 응답([말메시지(1000)]);
+  빈.task_status = 'STOPPED';
+  const r = 통로.상태캐기(빈);
+  assert.strictEqual(r.상태, 'stopped', '소문자로 눕혀야 아래 분기(=== "stopped")에 닿는다');
+  assert.strictEqual(r.출처, '최상위필드');
+});
+
+test('⑱ 🔑 장치가 **실제로 발화한다** — 폴러가 상태캐기를 쓰고, 연속 빈값에 상한이 걸려 있다', () => {
+  /* 스스로 발화하지 않는 장치는 안 돈다 — 함수만 있고 폴러가 옛 식을 그대로 쓰면 아무것도 안 바뀐다. */
+  const src = fs.readFileSync(path.join(__dirname, '..', 'tools', '마누스.js'), 'utf8');
+  const 줄들 = src.split(/\r?\n/).filter((l) => !/^\s*[*/]/.test(l));
+  const 코드줄 = 줄들.join('\n');
+  /* 🔴 처음엔 `/상태캐기\(j\)/` 로 훑었는데 그건 **함수 정의 줄**에도 맞는다 — 폴러를 옛 식으로
+   * 되돌려 놔도 초록이었다(변이 ⑥ 이 잡아냈다). 정의는 「있다」의 증거지 「쓴다」의 증거가 아니다. */
+  const 부름 = 줄들.filter((l) => /상태캐기\s*\(/.test(l) && !/function\s+상태캐기/.test(l));
+  assert.ok(부름.length > 0, '폴러가 공용 판독을 실제로 불러야 한다(함수만 두고 안 쓰면 그대로다)');
+  assert.ok(/연속빈값\s*\+=\s*1/.test(코드줄) && /연속빈값\s*>=\s*빈값상한/.test(코드줄),
+    '빈값이 몇 회 연속인지 세고 상한에서 끊어야 한다 — 안 그러면 못 읽는 상태가 「도는 중」으로 흘러 상한까지 간다');
+  assert.ok(Number.isInteger(통로.빈값상한) && 통로.빈값상한 > 0 && 통로.빈값상한 <= 30,
+    `빈값상한 «${통로.빈값상한}» — 실측상 첫 status_update 는 생성 +1~2초에 뜬다(6/6). 30회를 넘기면 장치가 사실상 없는 것이다`);
+});
