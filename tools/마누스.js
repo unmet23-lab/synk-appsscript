@@ -1,0 +1,311 @@
+#!/usr/bin/env node
+'use strict';
+/**
+ * 마누스 — **「밖의 사실」 적대 심문**을 세션 밖으로 던지는 통로 하나.
+ *
+ * ■ 왜 있나 (유호 지시 2026-08-16)
+ *   지금 검수는 **코드 한 축뿐**이다(`codex-review.js`). 그런데 틀리면 돈이 걸리는 축은
+ *   따로 있다 — 법령·업종코드·FDI·상표·시세. 그 층은 지금 세션 안에서 검색 한 번으로
+ *   판정되고, 적대 반박 패스도 없고, 기록도 안 남는다. **코드는 두 번 보는데 돈은 한 번도
+ *   안 본다.** 이 파일이 그 자리다.
+ *
+ * ■ 왜 마누스인가 — 「똑똑해서」가 아니다
+ *   스택에서 **노트북을 닫아도 도는 유일한 계산기**라서다(클로드 세션=죽음 · 헤르메스=PC와
+ *   함께 죽음 · Actions=한도 소진). 30~80분짜리 조사를 세션 수명에서 떼어내는 것이 값이다.
+ *
+ * ■ 🔑 왜 «로컬 폴러»를 띄우는가 (이 파일의 유일한 설계 판단)
+ *   줍기는 이미 `review-runs` 훅 + `lib/검수런.js` 가 한다 — **새 훅을 안 만든다.** 그런데
+ *   그 판정기는 런의 생사를 **로컬 pid** 로 본다(`살아있나`). 마누스 작업은 클라우드에 살아
+ *   pid 가 없으니, 그냥 등록하면 **던지자마자 「멈춤 · 프로세스 없음」으로 오판**된다.
+ *   → 그래서 던지기가 로컬 폴러 자식을 띄운다. 그 순간 codex 런과 **글자까지 같은 모양**이
+ *     되고, 훅·판정기·처분 도장이 전부 그대로 재사용된다. 장치 +1 이 아니라 +0 이다.
+ *
+ * ■ 대가 (틀릴 때의 모습 — 규칙대로 적는다)
+ *   ① **그럴듯한 오답이 제일 위험하다.** 산출물은 «반박문»이지 «판정»이 아니다 — 최종 판정은
+ *      사람·세션이 진다. 그래서 결과 파일 머리에 그 문장을 박는다.
+ *   ② 노트북이 닫히면 **폴러만 죽고 마누스는 계속 돈다.** 그때 런은 「멈춤」으로 보이는데
+ *      실제로는 살아 있다 — 그 둘을 가르려고 `--이어받기` 가 있다(재던지기 아님 · 크레딧 0).
+ *   ③ 크레딧은 유한하다(무료 등급 = 하루 300 · 조사 1건 200~500). 한 발이 하루치다.
+ *   ▶ 닫을 것 1개: 없다. 이 축은 새 층이고 대체하는 옛 통로가 0이다(추가임을 밝힌다).
+ *
+ * ■ 사용
+ *   node tools/마누스.js --크레딧
+ *   node tools/마누스.js --던지기 "<질문>" [--라벨 "짧은 이름"]
+ *   node tools/마누스.js --런목록
+ *   node tools/마누스.js --이어받기 <런ID>     # 폴러가 죽었을 때 다시 붙는다
+ *   node tools/마누스.js --폴러 <런ID>          # 내부용(던지기가 띄운다) — 직접 부르지 않는다
+ */
+
+const fs = require('fs');
+const path = require('path');
+const { spawn } = require('child_process');
+
+const ROOT = path.resolve(__dirname, '..');
+const 런 = require(path.join(ROOT, 'tools', 'lib', '검수런.js'));
+
+const 종류 = '사실심문';
+const API = 'https://api.manus.ai/v2';
+const 결과방 = path.join(ROOT, 'docs', '_ops', '사실심문');
+const 장부 = path.join(ROOT, 'docs', '_ops', '사실심문기록.jsonl');
+
+/* 폴링 간격 — 마누스 작업은 25~80분이 정상이라 촘촘히 볼 값이 없다.
+ * 상한은 「영원히 도는 폴러」를 막는 것이지 작업을 끊는 것이 아니다(마누스는 계속 돈다). */
+const 폴링초 = 60;
+const 폴러상한분 = 180;
+
+/** 키는 **파일에서만** 읽는다 — 환경변수 안내는 리터럴 키를 셸 기록에 남긴다(`모델정책.js` 와 같은 축). */
+const 키경로 = () => process.env.MANUS_KEY_PATH || 'C:/Users/q1212/SYNK_보안/마누스.txt';
+
+function 키() {
+  const p = 키경로();
+  let s;
+  try { s = fs.readFileSync(p, 'utf8'); } catch (_) {
+    throw new Error(`마누스 키 파일을 못 읽었다: ${p}\n  → 발급: https://manus.im/app?show_settings=integrations&app_name=api`);
+  }
+  /* 주석·빈 줄을 걷어낸다 — 안내문이 남은 파일을 키로 보내면 401 이 나는데, 그 401 은
+   * 「키가 틀렸다」로 읽혀 사람이 엉뚱한 곳을 고친다. */
+  const 값 = s.split(/\r?\n/).map((x) => x.trim()).filter((x) => x && !x.startsWith('#'))[0];
+  if (!값) throw new Error(`키 파일이 비어 있다: ${p}`);
+  return 값;
+}
+
+async function 부르기(경로, { method = 'GET', body = null } = {}) {
+  if (typeof fetch !== 'function') throw new Error('이 node 에 fetch 가 없다 — node 18+ 가 필요하다');
+  const res = await fetch(`${API}/${경로}`, {
+    method,
+    headers: { 'x-manus-api-key': 키(), ...(body ? { 'Content-Type': 'application/json' } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const 원문 = await res.text();
+  let j = null;
+  try { j = JSON.parse(원문); } catch (_) { /* 파싱 실패는 아래서 원문째로 드러낸다 */ }
+  if (!res.ok) throw new Error(`마누스 ${경로} → HTTP ${res.status}\n  ${원문.slice(0, 400)}`);
+  if (j == null) throw new Error(`마누스 ${경로} → JSON 이 아니다\n  ${원문.slice(0, 400)}`);
+  return j;
+}
+
+/* 응답에서 작업 id 를 캔다. 벤더 문서가 생성 응답의 필드명을 안 적어 뒀으므로 **추정하지 않고
+ * 후보를 훑되, 못 찾으면 원문을 통째로 드러내고 멈춘다** — 폴백으로 빈 id 를 흘리면 폴러가
+ * 영원히 헛돌고 그게 「도는 중」과 같은 모양이 된다. */
+function 작업ID캐기(j) {
+  const 후보 = [j && j.task_id, j && j.id, j && j.data && j.data.task_id, j && j.data && j.data.id];
+  const v = 후보.find((x) => typeof x === 'string' && x);
+  if (!v) throw new Error(`생성 응답에서 task_id 를 못 찾았다 — 원문:\n${JSON.stringify(j).slice(0, 600)}`);
+  return v;
+}
+
+/* 생성 요청 몸통 — **순수 함수다.** 갈리는 판단을 한 곳에 모아 회귀가 닿게 한다.
+ * ⚠ 모양은 실물에서 왔다. 벤더 문서 `task-lifecycle.md` 는 `{prompt}` 라고 적어 뒀는데
+ *   실제 API 는 400 `message.content is required` 를 낸다(2026-08-16 실측 · 회귀가 못박는다).
+ *   → 문서를 근거로 `prompt` 로 되돌리지 마라. 되돌리는 순간 전 호출이 400 이다.
+ * ⚠ `agent_profile` 은 **일부러 안 보낸다** — 등급마다 쓸 수 있는 프로필이 달라(무료=lite)
+ *   박아 두면 등급이 바뀌는 날 조용히 깨진다. 계정 기본값에 맡긴다. */
+function 생성몸통(질문, 라벨) {
+  if (!질문 || !String(질문).trim()) throw new Error('질문이 비어 있다 — 빈 작업을 만들면 크레딧만 탄다');
+  return { message: { content: String(질문) }, ...(라벨 ? { title: String(라벨) } : {}) };
+}
+
+function 장부적기(줄) {
+  fs.mkdirSync(path.dirname(장부), { recursive: true });
+  fs.appendFileSync(장부, JSON.stringify(줄) + '\n', 'utf8');   // append-only — 행 삭제 금지
+}
+
+// ── 던지기 ────────────────────────────────────────────────────────────────
+async function 던지기(질문, 라벨) {
+  if (!질문) { console.error('질문이 없다 — node tools/마누스.js --던지기 "<질문>"'); return 2; }
+
+  /* ⚠ 몸통 모양은 **실물에서 왔다.** 벤더 문서 `task-lifecycle.md` 는 `{prompt}` 라고 적어
+   *   뒀는데 실제 API 는 400 `message.content is required` 를 낸다(2026-08-16 실측).
+   *   → 문서를 근거로 `prompt` 로 되돌리지 마라. 되돌리는 순간 전 호출이 400 이다.
+   * ⚠ `agent_profile` 은 **일부러 안 보낸다** — 등급마다 쓸 수 있는 프로필이 달라(무료=lite)
+   *   박아 두면 등급이 바뀌는 날 조용히 깨진다. 계정 기본값에 맡긴다. */
+  const 작업 = await 부르기('task.create', { method: 'POST', body: 생성몸통(질문, 라벨) });
+  const 작업id = 작업ID캐기(작업);
+
+  const 런ID = 런.런ID발급(종류);
+  const 로그 = 런.로그경로(런ID);
+  fs.mkdirSync(path.dirname(로그), { recursive: true });
+
+  let child;
+  const fd = fs.openSync(로그, 'a');
+  try {
+    child = spawn(process.execPath, [__filename, '--폴러', 런ID], {
+      cwd: ROOT, detached: true, windowsHide: true,
+      stdio: ['ignore', fd, fd],
+      env: { ...process.env, SYNK_REVIEW_RUN_ID: 런ID },
+    });
+    child.unref();
+  } catch (e) {
+    console.error(`🔴 폴러를 못 띄웠다(${e.message}) — 마누스 작업 ${작업id} 는 이미 돌고 있다.`);
+    console.error(`   나중에 붙으려면: node tools/마누스.js --이어받기 ${런ID}`);
+    return 2;
+  } finally { fs.closeSync(fd); }
+
+  런.런쓰기({
+    런ID, 종류, 로그, pid: child.pid,
+    작업id, 질문,
+    시작: new Date().toISOString(), 상태: '진행',
+    대상: (라벨 || 질문).replace(/\s+/g, ' ').slice(0, 80),
+    세션: process.env.CLAUDE_CODE_HOST_SESSION_ID || '',
+  });
+  장부적기({ 때: new Date().toISOString(), 일: '던짐', 런ID, 작업id, 라벨: 라벨 || '', 질문 });
+
+  console.log(`🚀 던졌다 — 이 세션이 끝나도 마누스는 계속 돈다.`);
+  console.log(`   런 ${런ID} · 마누스 작업 ${작업id} · 폴러 pid ${child.pid}`);
+  console.log(`   로그: ${로그}`);
+  console.log(`   **기다리지 마라.** 결과는 세션을 새로 열 때 review-runs 훅이 알린다.`);
+  return 0;
+}
+
+// ── 폴러(자식) ────────────────────────────────────────────────────────────
+const 잠깐 = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function 폴러(런ID) {
+  /* 부모가 런을 적기 전에 자식이 먼저 깰 수 있다 — 그 창은 밀리초지만 실재한다. */
+  let r = null;
+  for (let i = 0; i < 30 && !(r && r.작업id); i++) { r = 런.런읽기(런ID); if (!(r && r.작업id)) await 잠깐(1000); }
+  if (!(r && r.작업id)) { console.error(`[폴러] 런 ${런ID} 에서 작업id 를 못 읽었다 — 멈춘다`); return 2; }
+  return 붙기(런ID, r);
+}
+
+async function 붙기(런ID, r) {
+  const 마감 = Date.now() + 폴러상한분 * 60 * 1000;
+  console.log(`[폴러] 런 ${런ID} · 작업 ${r.작업id} · ${폴링초}초마다 본다`);
+
+  while (Date.now() < 마감) {
+    let j;
+    try {
+      j = await 부르기(`task.listMessages?task_id=${encodeURIComponent(r.작업id)}&order=desc&limit=30`);
+    } catch (e) {
+      /* 일시 오류로 폴러를 죽이지 않는다 — 죽으면 「멈춤」으로 보이고 사람이 재던져 크레딧을 또 태운다. */
+      console.error(`[폴러] 조회 실패(다음 회차에 다시 본다): ${e.message}`);
+      await 잠깐(폴링초 * 1000);
+      continue;
+    }
+
+    const 상태 = String(j.task_status || j.status || (j.data && j.data.task_status) || '').toLowerCase();
+    console.log(`[폴러] ${new Date().toISOString()} 상태=${상태 || '(빈값)'}`);
+
+    if (상태 === 'stopped' || 상태 === 'error') {
+      결과쓰기(런ID, r, 상태, j);
+      런.런갱신(런ID, { 상태: '완주', 끝: new Date().toISOString(), 종료코드: 상태 === 'stopped' ? 0 : 1, 마누스상태: 상태 });
+      장부적기({ 때: new Date().toISOString(), 일: '완주', 런ID, 작업id: r.작업id, 마누스상태: 상태 });
+      console.log(`[폴러] 끝 — ${상태}`);
+      return 0;
+    }
+    if (상태 === 'waiting') {
+      /* 사람 확인을 요구하는 상태다. 우리 규약상 자동 승인은 안 한다 — 드러내고 멈춘다. */
+      결과쓰기(런ID, r, 상태, j);
+      런.런갱신(런ID, { 상태: '완주', 끝: new Date().toISOString(), 종료코드: 2, 마누스상태: 'waiting' });
+      장부적기({ 때: new Date().toISOString(), 일: '대기', 런ID, 작업id: r.작업id });
+      console.log(`[폴러] 마누스가 사람 확인을 기다린다 — 자동 승인하지 않는다.`);
+      return 0;
+    }
+    await 잠깐(폴링초 * 1000);
+  }
+
+  런.런갱신(런ID, { 상태: '완주', 끝: new Date().toISOString(), 종료코드: 3, 비고: `폴러 상한 ${폴러상한분}분 초과 — 마누스는 계속 돌고 있을 수 있다` });
+  console.log(`[폴러] 상한 ${폴러상한분}분 초과 — 다시 붙으려면 --이어받기 ${런ID}`);
+  return 0;
+}
+
+function 결과쓰기(런ID, r, 상태, j) {
+  fs.mkdirSync(결과방, { recursive: true });
+  const 목록 = Array.isArray(j.messages) ? j.messages : (Array.isArray(j.data) ? j.data : []);
+  /* order=desc 로 받았으니 읽는 순서는 뒤집는다 — 사람이 위에서 아래로 읽는다. */
+  const 말 = 목록.slice().reverse()
+    .filter((m) => /assistant/i.test(String(m.type || m.role || m.event_type || '')))
+    .map((m) => String(m.content || m.text || m.message || '')).filter(Boolean);
+
+  const 본문 = [
+    `# 사실 심문 — ${r.대상 || r.질문 || 런ID}`,
+    '',
+    `> ⚠ **이것은 «반박문»이지 «판정»이 아니다.** 마누스가 그럴듯하게 틀릴 수 있고, 그때 이 파일은`,
+    `> 「검수 통과」의 얼굴을 한다. 최종 판정은 사람·세션이 진다 — 여기 적힌 근거를 원문까지 열고 쓴다.`,
+    '',
+    `- 런: \`${런ID}\` · 마누스 작업: \`${r.작업id}\` · 마누스 상태: **${상태}**`,
+    `- 던진 때: ${r.시작} · 주운 때: ${new Date().toISOString()}`,
+    '',
+    '## 질문(던진 원문)',
+    '',
+    '```',
+    String(r.질문 || '(없음)'),
+    '```',
+    '',
+    '## 답',
+    '',
+    말.length ? 말.join('\n\n---\n\n') : '_(assistant 메시지를 못 찾았다 — 아래 원문을 본다)_',
+    '',
+    '## 원문 응답 (파싱이 틀렸을 때 여기서 판정한다)',
+    '',
+    '```json',
+    JSON.stringify(j, null, 1).slice(0, 20000),
+    '```',
+    '',
+  ].join('\n');
+
+  const 경로 = path.join(결과방, `${런.파일명(런ID)}.md`);
+  fs.writeFileSync(경로, 본문, 'utf8');
+  console.log(`[폴러] 결과: ${경로}`);
+}
+
+// ── 조회 ──────────────────────────────────────────────────────────────────
+async function 크레딧() {
+  const j = await 부르기('usage.availableCredits');
+  const d = j.data || j;
+  console.log(`💰 마누스 지갑 — 총 ${d.total_credits}`);
+  console.log(`   가입선물 ${d.free_credits ?? 0} · 구독 ${d.periodic_credits ?? 0} · 애드온 ${d.addon_credits ?? 0} · 매일갱신 ${d.refresh_credits ?? 0}/${d.max_refresh_credits ?? 0}`);
+  if (!d.periodic_credits) console.log('   ⚠ 구독 크레딧 0 — 무료 등급이다(조사 1건 200~500이면 하루 한 발).');
+  return 0;
+}
+
+function 런목록() {
+  const s = 런.요약();
+  const 내것 = (x) => x.런.종류 === 종류;
+  const 줄 = (x) => `  · ${x.런.런ID} · ${x.판.분 == null ? '?' : x.판.분}분 · ${x.런.대상}`;
+  const 완 = s.완주미처분.filter(내것), 멈 = s.멈춤.filter(내것), 진 = s.진행.filter(내것);
+  if (!완.length && !멈.length && !진.length) { console.log('던진 사실심문 없음.'); return 0; }
+  if (완.length) { console.log(`✅ 완주 · 안 주움 ${완.length}건:`); 완.forEach((x) => console.log(줄(x))); }
+  if (진.length) { console.log(`⏳ 도는 중 ${진.length}건:`); 진.forEach((x) => console.log(줄(x))); }
+  if (멈.length) {
+    console.log(`⚠ 폴러가 멈춤 ${멈.length}건 — **마누스는 계속 돌고 있을 수 있다.** 재던지기 말고 이어받아라(크레딧 0):`);
+    멈.forEach((x) => { console.log(줄(x)); console.log(`      node tools/마누스.js --이어받기 ${x.런.런ID}`); });
+  }
+  return 0;
+}
+
+// ── main ──────────────────────────────────────────────────────────────────
+async function main() {
+  const argv = process.argv.slice(2);
+  const 값 = (플래그) => { const i = argv.indexOf(플래그); return i >= 0 ? argv[i + 1] : null; };
+
+  if (argv.includes('--크레딧')) return 크레딧();
+  if (argv.includes('--런목록')) return 런목록();
+  if (argv.includes('--폴러')) return 폴러(값('--폴러'));
+  if (argv.includes('--이어받기')) {
+    const id = 값('--이어받기');
+    const r = 런.런읽기(id);
+    if (!(r && r.작업id)) { console.error(`런 ${id} 를 못 읽었다(또는 작업id 가 없다)`); return 2; }
+    런.런갱신(id, { 상태: '진행', pid: process.pid });
+    return 붙기(id, r);
+  }
+  /* 질문은 대개 여러 줄이고 따옴표·괄호를 품는다 — 셸에 맡기면 깨진다(CLAUDE.md 셸 조항).
+   * 그래서 파일 통로를 기본으로 두고, `--던지기 "<한 줄>"` 은 짧은 것만 받는다. */
+  if (argv.includes('--질문파일')) {
+    const p = 값('--질문파일');
+    let q;
+    try { q = fs.readFileSync(p, 'utf8').trim(); } catch (_) { console.error(`질문 파일을 못 읽었다: ${p}`); return 2; }
+    return 던지기(q, 값('--라벨'));
+  }
+  if (argv.includes('--던지기')) return 던지기(값('--던지기'), 값('--라벨'));
+
+  console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(0, 42).join('\n'));
+  return 0;
+}
+
+/* 회귀가 순수 함수에 닿게 한다 — require 로 들여올 때 main 이 돌면 테스트가 네트워크를 친다. */
+if (require.main === module) {
+  main().then((c) => process.exit(c || 0)).catch((e) => { console.error(`🔴 ${e.message}`); process.exit(1); });
+} else {
+  module.exports = { 생성몸통, 작업ID캐기, 키, 키경로, 종류, API };
+}
