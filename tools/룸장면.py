@@ -315,8 +315,13 @@ def 모따기(o, 폭=0.014, 단=4, 각=math.radians(52)):
     mod.segments = 단
     mod.limit_method = 'ANGLE'
     mod.angle_limit = 각
-    mod.harden_normals = True
-    o.data.use_auto_smooth = True if hasattr(o.data, "use_auto_smooth") else False
+    # 🔴 실측 08-16 — 여기 `o.data.use_auto_smooth = True if hasattr(...) else False` 라고 적었다.
+    #    삼항은 «값»만 고를 뿐 대입 자체는 막지 못한다 — Blender 4.1 에서 사라진 속성이라
+    #    각진 부품 셋(원판·판·칩)이 전부 AttributeError 로 죽었다. hasattr 를 쓴 줄이
+    #    hasattr 의 보호를 못 받는 모양이었다(맞는 얼굴로 틀린 값 · 지침 v9.2 맹점 ④).
+    if hasattr(o.data, "use_auto_smooth"):
+        o.data.use_auto_smooth = True
+    # harden_normals 는 «부드럽게 칠해진 면»을 요구한다 — 안 걸면 모따기 띠가 각져 보인다.
     bpy.ops.object.shade_smooth()
     return o
 
@@ -628,7 +633,10 @@ def 원판세우기():
     """번호 원판 — `loom.js` 의 `.원판`. 각진 테두리라 **모따기가 결정적**이다."""
     bpy.ops.mesh.primitive_cylinder_add(radius=1.0, depth=0.26, vertices=192, location=(0, 0, 0))
     o = bpy.context.object; o.name = "원판"
-    o.rotation_euler = (math.radians(7.5), math.radians(-3.0), 0)   # ④불완전 — 정면 평행 금지
+    # 🔴 첫 판은 실린더를 «누워 있는 동전»으로 뒀다 — 렌더는 아름다웠지만 지면의 `.번호` 는
+    #    **정면 원**이라 타원을 원형 상자에 넣으면 눌린 알약으로 읽힌다(용도가 형상을 정한다).
+    #    축을 카메라 쪽으로 세운다 = «들어 보인 동전». 기울기 6°·4° 는 ④불완전(정면 평행 금지).
+    o.rotation_euler = (math.radians(90 - 6.0), math.radians(-4.0), 0)
     모따기(o, 폭=0.030, 단=5)
     o.data.materials.append(유리재질())
 

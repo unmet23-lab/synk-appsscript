@@ -161,16 +161,36 @@ function 굽기(칸, 옵션 = {}) {
   const 초 = ((Date.now() - 잰다) / 1000).toFixed(1);
   for (const 줄 of 출.split(/\r?\n/)) if (/^\[loom\]/.test(줄)) console.log('   ' + 줄);
   console.log('   ⏱ ' + 초 + '초');
+
+  /* 🔴 **회귀 장치 — 실사고 08-16.** `blender -b -P` 는 스크립트가 예외로 죽어도 **exit 0** 이다.
+   *    각진 부품 셋(원판·판·칩)이 `AttributeError` 로 통째로 안 구워졌는데 이 통로는
+   *    「▶ 원판 … ⏱ 1.8초」를 찍고 다음으로 넘어갔다 — «맞는 얼굴로 틀린 값»의 교과서다.
+   *    시간으로 재지 않는다(빠른 판이 정상일 수도 있다). **판이 디스크에 있는지**로 잰다.
+   *    ⚠exit code 도 stderr 도 근거가 못 된다 — Blender 는 둘 다 정상으로 낸다. */
+  const 나올것 = (옵션.그림자층 && 칸.두층) ? [이름 + '_몸', 이름 + '_접지'] : [이름];
+  const 없는판 = 나올것.filter((n) => !fs.existsSync(path.join(출력, n + '.png')));
+  if (없는판.length) {
+    const 예외 = 출.split(/\r?\n/).filter((l) => /Error|Traceback|^\s+File "/.test(l)).slice(-4);
+    console.error('   🔴 **안 구워졌다** — 없는 판: ' + 없는판.join(', '));
+    if (예외.length) console.error('      ' + 예외.join('\n      '));
+    throw new Error('굽기 실패: ' + 이름 + ' (Blender 는 exit 0 으로 나왔다)');
+  }
   return 출;
 }
 
+/** 이 부품이 내야 할 판 중 **없는 것**. 두 층 부품은 둘 다 있어야 «있다»다. */
+function 없는판(칸, 출력 = 구움) {
+  const 나올것 = 칸.두층 ? [칸.이름 + '_몸', 칸.이름 + '_접지'] : [칸.이름];
+  return 나올것.filter((n) => !fs.existsSync(path.join(출력, n + '.png')));
+}
+
 function 분모() {
-  const 있나 = (n) => fs.existsSync(path.join(구움, n + '.png')) ||
-                      fs.existsSync(path.join(구움, n + '_몸.png'));
-  const 구운것 = 부품표.filter((k) => 있나(k.이름));
+  const 있나 = (k) => !없는판(k).length;
+  const 구운것 = 부품표.filter((k) => 있나(k));
   console.log('■ Loom 굽는 층 분모 — ' + 구운것.length + '/' + 부품표.length + ' 부품');
   console.log('  (합계 = 구움 ' + 구운것.length + ' + 안 구움 ' + (부품표.length - 구운것.length) + ')\n');
-  for (const k of 부품표) console.log('  ' + (있나(k.이름) ? '✅' : '⬜') + ' ' + k.이름.padEnd(12) + ' ' + k.쓰임);
+  for (const k of 부품표) console.log('  ' + (있나(k) ? '✅' : '⬜') + ' ' + k.이름.padEnd(12) + ' ' + k.쓰임
+    + (있나(k) ? '' : '   (없는 판: ' + 없는판(k).join(', ') + ')'));
   const h = fs.existsSync(기본HDRI());
   console.log('\n  ' + (h ? '✅' : '⬜') + ' HDRI 환경맵' + (h ? '' : '  → node tools/룸굽기.js --자산'));
   if (구운것.length < 부품표.length) console.log('\n▶ 안 구운 것 굽기: node tools/룸굽기.js --전량');
@@ -230,8 +250,9 @@ async function main() {
   let 대상 = [];
   if (a.includes('--전량')) {
     const 다시 = a.includes('--다시');
-    const 있나 = (k) => fs.existsSync(path.join(구움, k.이름 + (k.두층 ? '_몸' : '') + '.png'));
-    대상 = 부품표.filter((k) => 다시 || !있나(k));
+    /* ⚠**판을 전부** 확인한다. `_몸` 하나만 보던 판에서 `_접지` 가 빠진 부품이 «있다»로 세어져
+     *   건너뛰었다(실측 08-16 · 레진구_글자). 두 층 부품의 절반만 있는 상태는 «있음»이 아니다. */
+    대상 = 부품표.filter((k) => 다시 || 없는판(k).length);
   } else if (a.includes('--굽기')) {
     const n = 집('--굽기');
     const k = 부품표.find((x) => x.이름 === n);
