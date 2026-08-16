@@ -26,6 +26,9 @@
  *   · 훅은 `Stop` 에서 돈다 — 한 턴 안의 여러 API 호출 중 **마지막 것만** 본다. 그래서 기본은
  *     Stop 경계에서만 되감는다. `--턴마다` 는 API 호출마다 재는 상한값이고, 둘의 차이는
  *     「한 턴 안에서 임계를 여러 개 뛰어넘은 폭」이다(그 경우 훅은 한 번만 운다).
+ *     🔴 **그 경계를 한 번 틀렸다**(F505 · 첫 판): 「도구를 안 부르는 assistant 레코드」로 셌는데
+ *     한 턴의 응답이 레코드로 쪼개져 나와 턴 중간이 전부 걸렸다(사람 턴 2개인 세션에서 **95**).
+ *     지금은 `진짜사용자턴()` 하나로 가른다 — 고치면서 발동 합계가 662→607 로 내려갔다.
  *
  * ■ 대가 (새 장치는 이걸 함께 적는다 — CLAUDE.md 맹점 ④)
  *   · **틀릴 때의 모습** = 「초록으로 안 나온다」가 아니라 **그럴듯한 표가 나온다**. 이 축이
@@ -66,6 +69,19 @@ function 인자(argv) {
 const k = (n) => `${Math.round(n / 1000)}k`;
 
 /**
+ * **사람이 보낸 턴인가.** 훅이 도는 자리를 가르는 유일한 표지다.
+ * ⚠ `tool_result` 는 role 이 user 지만 사람이 보낸 것이 아니다 — 이걸 안 빼면 턴 중간이 전부 걸린다.
+ */
+function 진짜사용자턴(o) {
+  if (!o || o.type !== 'user') return false;
+  const m = o.message;
+  if (!m || m.role !== 'user') return false;
+  const c = m.content;
+  if (typeof c === 'string') return true;
+  return Array.isArray(c) && !c.some((b) => b && b.type === 'tool_result');
+}
+
+/**
  * 전사 한 벌을 되감는다.
  *
  * 🔑 `usage` 는 **구조로만** 읽는다(`o.message.usage`) — 문자열 패턴은 F500 이 세 번 속은 자리다.
@@ -82,11 +98,16 @@ async function 되감기(file, 턴마다) {
   let 훅요약 = 0;           // ㉢ 분모 — Stop 훅 배치가 기록을 남긴 자리
   let 깨움 = 0;             // ㉢ — context-budget 이 AI 를 깨운 기록(🔴 첫 도달 · 세션당 1회)
 
+  let 첫발동자리 = -1;      // 첫 발동이 몇 번째 Stop 이었나 → 「경고 뒤 몇 턴 더 갔나」의 재료
+
   const 판정하기 = () => {
     if (!최근) return;
     평가 += 1;
     const r = 발동판정(최근.ctx, 최근.model, prev);
-    if (r.발동) 발동들.push({ ctx: 최근.ctx, 단계: r.단계, 색: r.색 });
+    if (r.발동) {
+      발동들.push({ ctx: 최근.ctx, 단계: r.단계, 색: r.색 });
+      if (첫발동자리 < 0) 첫발동자리 = 평가;
+    }
     prev = r.다음단계;
   };
 
@@ -107,28 +128,35 @@ async function 되감기(file, 턴마다) {
       }
       continue;
     }
-    // `usage` 와 `content` 는 **같은 레코드**에 실린다 — 그래서 이 한 줄로 둘 다 본다.
-    if (line.indexOf('"usage"') === -1) continue; // 파싱 비용 절약(훅과 같은 방식)
+    /* 🔑 **턴 경계 = «다음 사용자 메시지»다** (2026-08-16 정답 대조로 고침).
+     *   첫 판은 「도구를 안 부르는 assistant 레코드」를 Stop 으로 셌는데 **틀렸다** — 한 턴의 응답이
+     *   텍스트 레코드와 도구 레코드로 **쪼개져** 나오므로 턴 «중간»이 전부 걸린다.
+     *   정답 대조: 사용자 메시지가 **2개**인 세션(이 도구를 짠 세션 자신)에서 옛 방식은 **95**를 셌다.
+     *   그 오차는 「한 턴 안에서 임계를 여러 개 뛰어넘은 세션」의 발동 횟수를 부풀린다.
+     * ⚠ 도구 결과(`tool_result`)는 role 이 user 지만 **사용자 턴이 아니다** — 안 빼면 같은 병이다. */
+    const 사용자후보 = line.indexOf('"type":"user"') !== -1;
+    if (!사용자후보 && line.indexOf('"usage"') === -1) continue; // 파싱 비용 절약(훅과 같은 방식)
     let o;
     try { o = JSON.parse(line); } catch (_) { continue; }
+    if (진짜사용자턴(o)) {
+      if (!턴마다) { 판정하기(); 최근 = null; } // 앞 턴이 여기서 끝났다 = 훅이 돈 자리
+      continue;
+    }
     const m = o && o.message;
     const u = m && m.usage;
-    if (u) {
-      const ctx = (Number(u.input_tokens) || 0) + (Number(u.cache_read_input_tokens) || 0)
-        + (Number(u.cache_creation_input_tokens) || 0);
-      if (ctx > 0) {
-        턴 += 1;
-        if (ctx > 최대) 최대 = ctx;
-        최근 = { ctx, model: String(m.model || '') };
-        if (턴마다) { 판정하기(); continue; }
-        // Stop 경계인가 — 이 assistant 턴이 도구를 더 안 부르면 여기서 훅이 돈다.
-        const 내용 = Array.isArray(m.content) ? m.content : [];
-        const 도구부름 = 내용.some((b) => b && b.type === 'tool_use');
-        if (!도구부름) 판정하기();
-      }
-    }
+    if (!u) continue;
+    const ctx = (Number(u.input_tokens) || 0) + (Number(u.cache_read_input_tokens) || 0)
+      + (Number(u.cache_creation_input_tokens) || 0);
+    if (ctx <= 0) continue;
+    턴 += 1;
+    if (ctx > 최대) 최대 = ctx;
+    최근 = { ctx, model: String(m.model || '') };
+    if (턴마다) 판정하기();
   }
-  return { 발동들, 최대, 턴, 평가, 훅요약, 깨움 };
+  if (!턴마다) 판정하기(); // 파일 끝 = 마지막 턴의 Stop (뒤에 사용자 메시지가 없다)
+  // 발동뒤 = 첫 경고 뒤에 세션이 **몇 턴 더 갔나**. 안 울린 전사는 null(0 과 다르다 · F207).
+  const 발동뒤 = 첫발동자리 < 0 ? null : 평가 - 첫발동자리;
+  return { 발동들, 최대, 턴, 평가, 훅요약, 깨움, 발동뒤 };
 }
 
 async function 되감기층(dir, days, 턴마다) {
@@ -213,7 +241,8 @@ async function main() {
   const dir = a.dir || require('./memory-graph.js').projectDir();
 
   console.log(`\n=== 훅 발동 실측 — context-budget · 최근 ${a.days}일 ===`);
-  console.log('  두 층은 뜻이 다르다: ㉠ 되감기 = 울어야 했던 횟수 · ㉡ 장부 = 흔적이 남은 횟수(바닥값)\n');
+  console.log('  세 층은 뜻이 다르다 — 합치지 않는다:');
+  console.log('    ㉠ 되감기 = 울어야 «했던» 횟수 · ㉡ 장부(repo) = 흔적이 남은 횟수(바닥값) · ㉢ 착지(전사) = 훅이 «돈» 자국\n');
 
   if (!a.장부만) {
     const r = await 되감기층(dir, a.days, a.턴마다);
@@ -247,6 +276,17 @@ async function main() {
         console.log(`  ${문턱}k 이상 간 세션 ${큰것.length}개 = 울린 것 ${큰것.length - 침묵.length} + **침묵 ${침묵.length}**`);
         for (const x of 침묵) console.log(`     🔴 침묵: ${x.id} ${x.날} · 최대 ${k(x.최대)} · 턴 ${x.턴}`);
       }
+      /* 🔑 **이 축의 원래 질문에 답하는 칸** — 「경고가 먹히나」.
+       *   F500 의 두 번째 판이 문자열로 재서 「뒤 96% 가 30턴+ 계속」이라고 냈던 자리다(거짓양성).
+       *   ⚠ 이 수 하나로 «순종»을 단정하지 마라 — 이 저장소 세션은 원래 짧다(전사당 Stop 평균이
+       *      아래 분모에 있다). 기준선(안 울린 세션의 잔여 턴) 대조는 아직 안 세웠다. */
+      if (운것.length) {
+        const 뒤 = 운것.map((x) => x.발동뒤).sort((p, q) => p - q);
+        const 즉시 = 뒤.filter((n) => n === 0).length;
+        const 평균 = (뒤.reduce((t, n) => t + n, 0) / 뒤.length).toFixed(2);
+        console.log(`  경고 뒤 세션이 더 간 턴: 중앙 ${뒤[Math.floor(뒤.length / 2)]} · 평균 ${평균} · **그 자리에서 끝난 것 ${즉시}/${운것.length}(${Math.round(즉시 / 운것.length * 100)}%)**`);
+      }
+
       // ㉢ 착지층(전사) — 조건이 아니라 **훅이 실제로 돈 자국**이다. ㉠ 과 나란히 놔야 뜻이 산다.
       const 기록가능 = 판정한것.filter((x) => x.훅요약 > 0);
       const 깨운것 = 판정한것.filter((x) => x.깨움 > 0);
@@ -254,6 +294,17 @@ async function main() {
       console.log(`  분모: Stop 훅 기록이 **있는** 전사 ${기록가능.length} / 잰 것 ${판정한것.length} (없는 전사의 0 은 침묵이 아니라 미측정)`);
       console.log(`  깨움 ${깨운것.reduce((t, x) => t + x.깨움, 0)}건 · 전사 ${깨운것.length}개`);
       console.log(`  ⚠ 이 층은 **🔴 첫 도달(세션당 1회)** 만 본다 — 화면 문구만 낸 2회차 이후 발동은 안 남는다.`);
+      /* 🔴 **㉢ 의 「자국 없음」을 침묵으로 읽지 마라** — 기제가 실측으로 규명됐다(2026-08-16):
+       *   깨움은 `additionalContext` 라 **다음 턴에 실린다.** 경고 직후 세션이 끝나면 —
+       *   그게 바로 이 훅이 **바라던 결과**다 — 실릴 자리가 없어 전사에 안 남는다.
+       *   대조 실측: 자국 있는 97개는 발동 뒤 Stop 중앙 1 · 「뒤가 0」이 **3%** 인데,
+       *   자국 없는 400개는 중앙 0 · 「뒤가 0」이 **84%** 다. 즉 ㉢ 은 «계속 간 세션»만 본다.
+       *   그리고 훅은 돌았다: `hookInfos` 의 「컨텍스트 예산 확인」이 490/508 전사에 남아 있다.
+       *   ⚠ 옛 주석의 「표본율 2.0%」는 **틀린 수였다** — F505 이전의 잘못된 Stop 계산에서 나왔다. */
+      const 훅요약합 = 판정한것.reduce((t, x) => t + x.훅요약, 0);
+      const 평가합 = 판정한것.reduce((t, x) => t + x.평가, 0);
+      console.log(`  🔑 **표본율 ${(훅요약합 / Math.max(1, 평가합) * 100).toFixed(1)}%** (레코드 ${훅요약합} / Stop 경계 ${평가합}) — 이 층의 0 은 침묵이 아니라 미측정이다`);
+      console.log('     그리고 깨움은 **다음 턴에 실린다** — 경고 직후 끝난 세션(= 바라던 결과)엔 자국이 안 남는다');
       for (const 문턱 of [600]) {
         const 큰것 = 판정한것.filter((x) => x.최대 >= 문턱 * 1000);
         const 자국 = 큰것.filter((x) => x.깨움 > 0);
