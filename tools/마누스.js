@@ -95,15 +95,37 @@ function 작업ID캐기(j) {
   return v;
 }
 
+/* 이 계정이 **실제로 돌릴 수 있는** 프로필. 아래 실측이 이 상수의 근거다. */
+const 기본프로필 = process.env.MANUS_AGENT_PROFILE || 'manus-1.6-lite';
+
 /* 생성 요청 몸통 — **순수 함수다.** 갈리는 판단을 한 곳에 모아 회귀가 닿게 한다.
  * ⚠ 모양은 실물에서 왔다. 벤더 문서 `task-lifecycle.md` 는 `{prompt}` 라고 적어 뒀는데
  *   실제 API 는 400 `message.content is required` 를 낸다(2026-08-16 실측 · 회귀가 못박는다).
  *   → 문서를 근거로 `prompt` 로 되돌리지 마라. 되돌리는 순간 전 호출이 400 이다.
- * ⚠ `agent_profile` 은 **일부러 안 보낸다** — 등급마다 쓸 수 있는 프로필이 달라(무료=lite)
- *   박아 두면 등급이 바뀌는 날 조용히 깨진다. 계정 기본값에 맡긴다. */
-function 생성몸통(질문, 라벨) {
+ *
+ * 🔴 `agent_profile` 은 **반드시 보낸다.** 옛 판은 정확히 반대로 적혀 있었다 —
+ *   「등급마다 프로필이 다르니 박지 말고 계정 기본값에 맡긴다」. 그 전제를 **한 번도 안 쟀고**,
+ *   틀렸다. 계정 기본값이라는 것이 없다. 2026-08-16 실측(조건 하나씩만 바꾼 대조 · 크레딧 0):
+ *
+ *     프로필 없음        → HTTP 200 + task_id + task_url … 그런데 `task.list` 에 **없다**(유령)
+ *     manus-1.6         → HTTP 200 … 역시 **유령**(무료 등급이 못 쓰는 프로필인데 에러를 안 낸다)
+ *     manus-1.6-lite    → HTTP 200 … **실재한다** ✅
+ *     manus-1.5·오타     → HTTP 400 `Valid profiles are: manus-1.6, manus-1.6-lite, manus-1.6-max`
+ *
+ *   즉 **틀린 이름은 400 으로 시끄럽고, 등급 밖 프로필은 200 으로 조용하다.** 조용한 쪽이
+ *   이 통로를 죽였다 — 던진 실탄이 3시간 404 를 돌고 「완주」로 앉았고(F509), 이 통로는
+ *   세워진 뒤 **성공한 런이 0건**이었다. 유일한 증상은 「404 가 계속 난다」뿐이었다.
+ *
+ * ⚠ 옛 주석의 걱정(등급이 바뀌는 날 조용히 깨진다)은 옳았다 — 답이 틀렸을 뿐이다.
+ *   그 걱정은 이제 **던지기의 id 확인**이 받는다(회복 불가면 1초 만에 원문과 함께 멈춘다).
+ *   등급이 올라가면 `MANUS_AGENT_PROFILE=manus-1.6` 으로 넘긴다 — 상수를 고칠 필요가 없다. */
+function 생성몸통(질문, 라벨, 프로필) {
   if (!질문 || !String(질문).trim()) throw new Error('질문이 비어 있다 — 빈 작업을 만들면 크레딧만 탄다');
-  return { message: { content: String(질문) }, ...(라벨 ? { title: String(라벨) } : {}) };
+  return {
+    message: { content: String(질문) },
+    agent_profile: String(프로필 || 기본프로필),
+    ...(라벨 ? { title: String(라벨) } : {}),
+  };
 }
 
 /* 조회 오류가 «회복 불가»인가 — 같은 요청을 다시 보내도 영영 같은 답인가.
@@ -158,7 +180,10 @@ async function 던지기(질문, 라벨) {
       console.error(`   캔 id: ${작업id}`);
       console.error(`   조회 오류: ${e.message}`);
       console.error(`   생성 응답 원문: ${JSON.stringify(작업).slice(0, 600)}`);
-      console.error('   → 위 원문에 **진짜** task id 필드가 따로 있는지 본다(`작업ID캐기` 후보 4개 밖일 수 있다).');
+      console.error(`   보낸 프로필: ${기본프로필}`);
+      console.error('   → 원인 1순위는 **등급 밖 agent_profile** 이다(실측: 등급 밖이면 400 이 아니라 200+유령).');
+      console.error('     이 계정이 실제로 무엇을 돌리는지: node tools/마누스.js --작업목록');
+      console.error('     맞는 프로필을 알면: MANUS_AGENT_PROFILE=<프로필> 로 넘긴다.');
       return 2;
     }
     console.error(`⚠ 작업 id 확인이 «일시» 오류로 실패했다(${e.message}) — 판정을 미루고 폴러는 그대로 띄운다.`);
@@ -395,7 +420,16 @@ async function main() {
 
 /* 회귀가 순수 함수에 닿게 한다 — require 로 들여올 때 main 이 돌면 테스트가 네트워크를 친다. */
 if (require.main === module) {
-  main().then((c) => process.exit(c || 0)).catch((e) => { console.error(`🔴 ${e.message}`); process.exit(1); });
+  /* 🔴 `process.exit()` 를 **즉시 부르지 않는다.** 실측 2026-08-16(Windows · node v24.18):
+   *   fetch 두 번을 탄 직후 끊으면 libuv 가 닫히는 핸들에 `uv_async_send` 를 쏴
+   *   `Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)` 로 **abort** 한다.
+   *   종료코드가 0xC0000409 로 바뀌어, **던지기가 성공해도 부르는 쪽엔 실패로 보였다** —
+   *   그러면 스크립트·훅이 재던져 크레딧을 또 태운다. 이 파일이 막으려던 바로 그 사고다.
+   *   갈래 대조: GET 한 번·POST 한 번(400)은 멀쩡했고, 200 뒤 두 번째 fetch 가 붙을 때만 났다.
+   *   그래서 exitCode 만 적고 이벤트 루프가 스스로 마르게 둔다 — 폴러 자식은 `unref()` 라 안 붙잡는다. */
+  main()
+    .then((c) => { process.exitCode = c || 0; })
+    .catch((e) => { console.error(`🔴 ${e.message}`); process.exitCode = 1; });
 } else {
-  module.exports = { 생성몸통, 작업ID캐기, 회복불가인가, 키, 키경로, 종류, API };
+  module.exports = { 생성몸통, 작업ID캐기, 회복불가인가, 기본프로필, 키, 키경로, 종류, API };
 }
