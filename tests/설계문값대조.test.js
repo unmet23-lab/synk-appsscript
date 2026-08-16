@@ -11,16 +11,29 @@
  *   ⇒ 처방은 옳았고(기계) **층이 틀렸다.** 이 파일이 그 주소다 — `tests/설계문_폐기어휘.test.js`
  *   와 같은 문서층이고, 착수 차단과 무관하게 **오늘 돈다**.
  *
- * 무엇을 지키나 — 「같은 값이 두 곳에 적힌 자리」 넷:
+ * 무엇을 지키나 — 「같은 값이 두 곳에 적힌 자리」 넷 + 「적용 순서」 하나:
  *   ① `input_hash` 의 대상 낱말      — 「요약 문자열」 ↔ 「렌더된 요청 본문 전체」 (13회차 갈래 6)
  *   ② `degraded` 의 생산자           — 호출 봉투가 그 값을 실으면 안 된다 (13회차 갈래 7 · v5.7 D1)
  *   ③ `policy_ver` 값의 자리수       — 12 ↔ 16 ↔ 전문 (13회차 갈래 8)
  *   ④ `policy_ver` 재료 «수»         — §5-1 ↔ §12-5 (v12 항30 이 「이미 한다」고 적었던 그 대조)
+ *   ⑤ **DDL 적용 순서**              — 자기보다 «아래»에서 처음 만들어지는 표를 참조하는 문장
+ *                                      (13회차 갈래 9 · 2026-08-16 세션 `local_fe2e0293` 신설)
+ *
+ * ⑤ 는 앞 넷과 «축이 다르다» — 앞 넷은 「같은 값이 두 곳에서 갈렸나」를 보고, ⑤ 는 「이 문서를 빈 DB 에
+ * 위에서 아래로 적용하면 죽나」를 본다. 왜 필요했나: v5.10 은 `generation_batch_runs` 의 RLS·revoke 를
+ * 그 표의 `create` 보다 **44줄 앞**에 뒀다 ⇒ 빈 스키마에서 「relation does not exist」로 즉사한다.
+ * §12-21 이 「빈 DB 전량 적용」을 «필수»로 걸어 놓고도 못 잡았다 — 그것이 ⛔착수 차단 중인 **구현의
+ * 인수 조건**이라 한 줄도 안 돌기 때문이다(v13 §6 의 규율 = 처방을 «오늘 도는» 주소에 적는다).
  *
  * ⚠ **이 장치의 대가**(새 장치엔 대가를 함께 적는다 · CLAUDE.md 맹점 ④):
- *   - **틀릴 때의 모습** = 「맞는 얼굴로 틀린 값」 쪽으로 샌다. 이 검사는 «낱말»을 보지 «뜻»을 못 본다 —
+ *   - **틀릴 때의 모습** = 「맞는 얼굴로 틀린 값」 쪽으로 샌다. ①~④ 는 «낱말»을 보지 «뜻»을 못 본다 —
  *     같은 모순을 다른 낱말로 적으면 초록이다. 그러니 초록을 「절 간 모순 0」으로 읽지 마라.
- *     읽을 수 있는 것은 **「이 넷은 안 갈렸다」**뿐이고, 분모는 이 파일의 대조 수(4)다.
+ *     읽을 수 있는 것은 **「이 다섯은 안 갈렸다」**뿐이고, 분모는 이 파일의 대조 수(5)다.
+ *   - **⑤ 가 틀릴 때의 모습은 «다르다»** — 이것은 낱말이 아니라 순서를 재므로 거짓음성이 아니라
+ *     **거짓양성** 쪽으로 샌다(산문 속 표 이름, 문자열 리터럴). 그래서 검사 대상을 «SQL 코드블록 안의
+ *     DDL 문장»으로 좁혔고, 그 좁힘 자체가 사각이다: **`create table` 문 밖·DDL 문 밖에서 표를 참조하는
+ *     자리(예: plpgsql 함수 본문)는 안 본다.** 그건 의도다 — 함수 본문은 실행 시점에 해석되므로 적용을
+ *     죽이지 않는다. ⑤ 가 재는 것은 **「마이그가 끝까지 도나」** 하나뿐이다.
  *   - **문서를 고칠 때 회귀가 더 자주 깨진다** — 그것이 목적이다(지금까진 안 깨졌다).
  *   - **닫은 것** = §12 항30 의 「§12-21 이 **이미** 대조한다」는 문장. 장치 총량은 +1 이지만
  *     **«있다고 적힌 없는 장치» −1** 이다. 그 문장은 v5.10 에서 정정했다.
@@ -113,7 +126,77 @@ function 대조4_재료수(본문) {
     : [{ 대조: '④재료수', 줄번호: 0, 본문: `§5-1 은 ${절5_1} · §12-5 는 ${절12_5} — 한 문서에 두 정본` }];
 }
 
-const 대조들 = [대조1_input_hash, 대조2_degraded, 대조3_자리수, 대조4_재료수];
+// ─────────────────────────────────────────────── ⑤ DDL 적용 순서
+
+/** ```sql 코드블록 «안»의 줄만 — 원래 줄번호를 유지한다(산문 속 표 이름은 대상 밖). */
+function sql줄들(본문) {
+  const 결과 = [];
+  let 블록안 = false;
+  본문.split('\n').forEach((줄, i) => {
+    if (/^\s*```sql\s*$/.test(줄)) { 블록안 = true; return; }
+    if (/^\s*```\s*$/.test(줄)) { 블록안 = false; return; }
+    if (블록안) 결과.push({ 줄, 줄번호: i + 1 });
+  });
+  return 결과;
+}
+
+/**
+ * 「빈 DB 에 위에서 아래로 적용하면 죽는 문장」만 본다 = **DDL 문장**.
+ * 시작 줄부터 세미콜론까지를 한 문장으로 모으고, 줄 끝 주석(`--`)은 떼어낸다.
+ */
+const DDL시작 = /^(create table|alter table|create (unique )?index|create trigger|drop trigger|revoke|grant|comment on)/i;
+
+function DDL문장들(줄목록) {
+  const 결과 = [];
+  let 모으는중 = null;
+  for (const { 줄, 줄번호 } of 줄목록) {
+    const 코드 = 줄.replace(/--.*$/, '');
+    if (모으는중 === null) {
+      if (!DDL시작.test(코드.trim())) continue;
+      모으는중 = { 시작: 줄번호, 본문: 코드 };
+    } else {
+      모으는중.본문 += '\n' + 코드;
+    }
+    if (코드.includes(';')) { 결과.push(모으는중); 모으는중 = null; }
+  }
+  if (모으는중) 결과.push(모으는중);   // 세미콜론을 못 만난 꼬리도 버리지 않는다
+  return 결과;
+}
+
+/** 이 문서가 «스스로 만드는» 표만 대상이다 — `engine.learners` 처럼 밖에서 오는 표는 대조 밖. */
+function 표생성줄(줄목록) {
+  const 표 = new Map();
+  for (const { 줄, 줄번호 } of 줄목록) {
+    const m = 줄.match(/^create table\s+(?:if not exists\s+)?engine\.([a-z_]+)/i);
+    if (m && !표.has(m[1])) 표.set(m[1], 줄번호);
+  }
+  return 표;
+}
+
+/**
+ * ⑤ 어느 DDL 문장도 «자기보다 아래»에서 처음 만들어지는 표를 참조하지 않는다.
+ * 🔑 이 한 줄이 규칙의 전부다(설계 §3-5-b 머리 · 13회차 갈래 9).
+ */
+function 대조5_DDL순서(본문) {
+  const 줄목록 = sql줄들(본문);
+  const 생성줄 = 표생성줄(줄목록);
+  if (생성줄.size === 0) return [];      // 볼 대상이 없다 — 분모는 아래 «분모» 검사가 따로 공개한다
+  const 걸린것 = [];
+  for (const { 시작, 본문: 문장 } of DDL문장들(줄목록)) {
+    for (const [표, 만든줄] of 생성줄) {
+      if (시작 >= 만든줄) continue;
+      if (!new RegExp(`engine\\.${표}\\b`).test(문장)) continue;
+      걸린것.push({
+        대조: '⑤DDL순서',
+        줄번호: 시작,
+        본문: `engine.${표} 는 ${만든줄} 줄에서 처음 만들어진다 — 빈 DB 에서 이 문장이 즉사한다: ${문장.trim().split('\n')[0].slice(0, 70)}`,
+      });
+    }
+  }
+  return 걸린것;
+}
+
+const 대조들 = [대조1_input_hash, 대조2_degraded, 대조3_자리수, 대조4_재료수, 대조5_DDL순서];
 const 전량대조 = (본문) => 대조들.flatMap((f) => f(본문));
 
 // ─────────────────────────────────────────────── 픽스처 — 탐지력 증명
@@ -162,9 +245,78 @@ test('픽스처 ④ — 두 절의 재료 수가 갈리면 잡는다 · 못 읽�
   assert.match(못읽음[0].본문, /미측정/);
 });
 
+/* ⑤ 픽스처 — v5.10 이 실제로 저지른 그 형태를 가짜로 재현해 「잡는 눈」임을 증명한다.
+ * 🔑 이 픽스처가 이 파일에서 가장 중요하다: 실저장소는 방금 «고쳐서» 초록이므로,
+ *    고친 뒤의 초록만으로는 「검사가 도는지」와 「검사가 눈이 먼지」가 같은 모양이다. */
+const 빈DB에서죽는판 = [
+  '```sql',
+  'create table if not exists engine.generation_jobs (',
+  '  job_id uuid primary key',
+  ');',
+  'alter table engine.generation_batch_runs enable row level security;',
+  'create table if not exists engine.generation_batch_runs (',
+  '  run_id uuid primary key',
+  ');',
+  '```',
+].join('\n');
+
+const 순서가맞는판 = [
+  '```sql',
+  'create table if not exists engine.generation_jobs (',
+  '  job_id uuid primary key',
+  ');',
+  'create table if not exists engine.generation_batch_runs (',
+  '  run_id uuid primary key',
+  ');',
+  'alter table engine.generation_batch_runs enable row level security;',
+  '```',
+].join('\n');
+
+test('픽스처 ⑤ — create 보다 «앞»에서 그 표를 참조하면 잡는다 (v5.10 이 저지른 그 형태)', () => {
+  const 걸린것 = 대조5_DDL순서(빈DB에서죽는판);
+  assert.equal(걸린것.length, 1);
+  assert.equal(걸린것[0].줄번호, 5, '즉사하는 문장의 줄번호를 그대로 짚어야 한다');
+  assert.match(걸린것[0].본문, /generation_batch_runs 는 6 줄에서 처음 만들어진다/);
+});
+
+test('픽스처 ⑤ — 순서가 맞으면 통과한다 (거짓양성 0)', () => {
+  assert.deepEqual(대조5_DDL순서(순서가맞는판), []);
+});
+
+test('픽스처 ⑤ — «밖에서 오는 표»와 «산문 속 이름»은 대조 밖이다', () => {
+  // engine.learners 는 이 문서가 만들지 않는다 — 참조해도 순서 결함이 아니다.
+  const 외부표 = [
+    '```sql',
+    'create table if not exists engine.generation_jobs (',
+    '  learner_id uuid not null references engine.learners(learner_id)',
+    ');',
+    '```',
+  ].join('\n');
+  assert.deepEqual(대조5_DDL순서(외부표), [], '밖에서 오는 표를 결함으로 세면 안 된다');
+
+  // 코드블록 «밖»의 산문이 표 이름을 말하는 것은 DDL 이 아니다.
+  const 산문 = [
+    'alter table engine.generation_batch_runs 를 앞에 두면 죽는다고 이 문서가 적는다.',
+    '```sql',
+    'create table if not exists engine.generation_batch_runs (run_id uuid);',
+    '```',
+  ].join('\n');
+  assert.deepEqual(대조5_DDL순서(산문), [], '산문은 적용되지 않는다 — 잡으면 문서를 못 쓰게 만든다');
+});
+
+test('픽스처 ⑤ — 줄 끝 주석에 적힌 표 이름은 실행되지 않는다', () => {
+  const 주석 = [
+    '```sql',
+    'create table if not exists engine.generation_jobs (job_id uuid);   -- engine.generation_batch_runs 는 아래에 있다',
+    'create table if not exists engine.generation_batch_runs (run_id uuid);',
+    '```',
+  ].join('\n');
+  assert.deepEqual(대조5_DDL순서(주석), []);
+});
+
 // ─────────────────────────────────────────────── 실저장소 — 거짓양성만 검사
 
-test('실저장소 — 설계문의 절 간 값이 갈린 자리가 0건이다 (대조 4벌)', (t) => {
+test('실저장소 — 설계문의 절 간 값이 갈린 자리가 0건이다 (대조 5벌)', (t) => {
   if (!fs.existsSync(설계문)) {
     t.skip('설계문이 없다 — 부재를 적색으로 위장하지 않는다(F296)');
     return;
@@ -178,7 +330,7 @@ test('실저장소 — 설계문의 절 간 값이 갈린 자리가 0건이다 (
   );
 });
 
-test('실저장소 — 대조 넷이 «실제로 대상을 찾았다»(분모 공개 · F207)', (t) => {
+test('실저장소 — 대조 다섯이 «실제로 대상을 찾았다»(분모 공개 · F207)', (t) => {
   if (!fs.existsSync(설계문)) {
     t.skip('설계문이 없다(F296)');
     return;
@@ -191,4 +343,11 @@ test('실저장소 — 대조 넷이 «실제로 대상을 찾았다»(분모 �
   const { 절5_1, 절12_5 } = 재료수들(본문);
   assert.equal(typeof 절5_1, 'number', '④ §5-1 재료 수를 못 읽었다 — 미측정이다');
   assert.equal(typeof 절12_5, 'number', '④ §12-5 회귀 벌수를 못 읽었다 — 미측정이다');
+
+  // ⑤ 의 분모는 «표 수»와 «DDL 문장 수» 둘 다다 — 어느 쪽이 0이어도 그 초록은 미실행이다.
+  const 줄목록 = sql줄들(본문);
+  const 표수 = 표생성줄(줄목록).size;
+  const 문장수 = DDL문장들(줄목록).length;
+  assert.ok(표수 >= 3, `⑤ 이 볼 표가 ${표수}개다 — 이 설계문은 최소 셋(jobs·attempts·batch_runs)을 만든다`);
+  assert.ok(문장수 >= 20, `⑤ 이 볼 DDL 문장이 ${문장수}개다 — 코드블록을 못 읽었을 수 있다(미실행)`);
 });
