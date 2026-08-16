@@ -51,6 +51,7 @@
 'use strict';
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const 루트 = path.dirname(__dirname);
@@ -760,6 +761,88 @@ ${차례.map((c, i) => `    <li><a href="#${c.id}"><span class="n">${String(i + 
   return { 흠, 잰것, 바이트: Buffer.byteLength(s, 'utf8'), 원본바이트: Buffer.byteLength(원본, 'utf8') };
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   전량 — 「어느 지면들이 이 스킨을 입는가」를 **한 자리에** 적는다 (2026-08-16)
+
+   왜 이게 없으면 전파가 안 되나 (실측):
+     소개서 6벌을 굽는 명령이 **저장소 어디에도 없었다** — 이 파일 46행 주석의 예시 한 줄뿐이라
+     사람이 6번 손으로 쳐야 했다. 그래서 토큰·스킨이 바뀌어도 지면에 «안 닿았다».
+     철학 정본 「하지 않는 것 ㉡ — 사람 손을 늘리는 해법은 해법이 아니라 미룬 결함이다」의 자리다.
+     ⚠목록을 여기 한 곳에만 둔다 — 두 곳에 적으면 갈라지고, 갈라지면 한쪽이 조용히 안 구워진다.
+
+   대가 — 틀릴 때의 모습:
+     · **산출물을 손으로 고쳐 두면 전량 굽기가 그것을 조용히 되돌린다**(실측 08-16: `Loom_소개서`
+       한 벌이 원고보다 5,869자 앞서 있었다 — 원고 v1.0 / 산출 v1.2). exit 0 으로 지나간다.
+       → 닫은 방식 = `--재현` 이 굽기 전에 «원고가 정본인가»를 6벌 전량 대조하고,
+         `tests/펠트문서.test.js` 가 그것을 회귀로 못박는다. 되돌리는 통로 = `--되메우기`.
+   ══════════════════════════════════════════════════════════════════════════ */
+const 지면방 = { 원고: 'docs/엔진/_원고', 산출: 'docs/엔진' };
+
+/** 원고 ↔ 산출물 짝 전량. 원고방에 있는 것이 분모다(산출물 쪽은 지도·구판이 섞여 분모가 못 된다). */
+function 지면짝들(방 = 지면방) {
+  const 원고방 = path.join(루트, 방.원고);
+  if (!fs.existsSync(원고방)) return [];
+  return fs.readdirSync(원고방).filter((f) => f.endsWith('.html')).sort()
+    .map((f) => ({ 이름: f, 원고: path.join(원고방, f), 산출: path.join(루트, 방.산출, f) }));
+}
+
+/** 몸통 = `</style>` 뒤. 스킨은 굽기마다 바뀌므로 «원고가 정본인가»는 몸통으로만 갈린다. */
+const 몸통 = (s) => {
+  const i = s.indexOf('</style>');
+  return (i < 0 ? s : s.slice(i + 8)).replace(/\r\n/g, '\n').trim();
+};
+
+/**
+ * 재현 대조 — 원고를 다시 구우면 «지금 그 자리에 있는 산출물»이 나오는가.
+ * 🔑 이것이 「원고가 정본이다」의 유일한 증거다. 갈라진 지면은 재굽기가 손 수정을 삼킨다.
+ * @param 임시방 굽기 결과를 버릴 디렉터리(비교만 하고 산출물은 안 건드린다)
+ */
+function 재현대조(임시방, 방 = 지면방) {
+  fs.mkdirSync(임시방, { recursive: true });
+  return 지면짝들(방).map((p) => {
+    if (!fs.existsSync(p.산출)) return { ...p, 상태: '산출없음' };
+    const 임시 = path.join(임시방, '재현_' + p.이름);
+    try { 굽기(p.원고, 임시); } catch (e) { return { ...p, 상태: '굽기실패', 사유: e.message }; }
+    const a = 몸통(fs.readFileSync(임시, 'utf8'));
+    const b = 몸통(fs.readFileSync(p.산출, 'utf8'));
+    return { ...p, 상태: a === b ? '재현' : '갈라짐', 원고자: a.length, 산출자: b.length };
+  });
+}
+
+/**
+ * 되메우기 — 산출물에서 원고를 복원한다(구운 스킨을 표식으로 되돌린다).
+ * 산출물을 손으로 고쳐 버린 자리를 «원고가 정본»으로 되돌리는 유일한 통로.
+ * ⚠원고를 덮어쓴다 — `--재현` 이 「갈라짐」이라 말한 지면에만 쓴다.
+ *
+ * 🔑 «굽기가 넣은 것»을 통째로 뜯는다 — `스킨()` 은 meta+style 이고 `스크립트()` 는 script 두 벌이다.
+ *    개수를 숫자로 박지 않고 «style 뒤에 붙어 오는 script 를 연달아» 먹는다. 숫자를 박으면
+ *    스크립트가 한 벌 늘어난 날 되메우기가 조용히 반쪽만 뜯고, 그 원고는 두 번 다시 안 맞는다.
+ * ⚠**되메운 뒤 스스로 왕복을 잰다** — 반쪽만 뜯겨도 파일은 멀쩡해 보이기 때문이다(실측 08-16:
+ *   첫 판이 script 두 벌을 남겨 원고에 실었는데 `--되메우기` 는 ✅ 를 찍고 끝났다).
+ */
+function 되메우기(산출, 원고) {
+  const s = fs.readFileSync(산출, 'utf8');
+  const 뜯기 = /(?:<meta name="theme-color"[^>]*>\s*)?<style>[\s\S]*?<\/style>(?:\s*<script[^>]*>[\s\S]*?<\/script>)*/;
+  if (!뜯기.test(s)) throw new Error('구운 스킨을 못 찾았다 — 이 파일은 굽기 산출물이 아니다: ' + 산출);
+  const 되돌린 = s.replace(뜯기, 표식);
+  if (!되돌린.includes(표식)) throw new Error('표식이 안 들어갔다 — 되메우기 실패');
+
+  /* 왕복 시험 — 되메운 원고를 다시 구우면 산출물의 «몸통»이 그대로 나와야 한다. */
+  const 임시 = path.join(os.tmpdir(), 'synk-되메움-' + path.basename(산출));
+  fs.writeFileSync(임시 + '.원고', 되돌린, 'utf8');
+  굽기(임시 + '.원고', 임시);
+  const 왕복 = 몸통(fs.readFileSync(임시, 'utf8'));
+  const 원본몸통 = 몸통(s);
+  if (왕복 !== 원본몸통) {
+    throw new Error('왕복이 안 맞는다 — 되메운 원고를 다시 구우면 몸통이 달라진다('
+      + 왕복.length + '자 vs ' + 원본몸통.length + '자). 원고를 쓰지 않았다: ' + 산출);
+  }
+
+  fs.mkdirSync(path.dirname(원고), { recursive: true });
+  fs.writeFileSync(원고, 되돌린, 'utf8');
+  return { 바이트: Buffer.byteLength(되돌린, 'utf8') };
+}
+
 /** 자립성 — 외부에서 끌어오는 «그림»이 하나라도 있으면 첨부 단독일 때 전멸한다. */
 function 검사(파일) {
   const 원문 = fs.readFileSync(파일, 'utf8');
@@ -839,10 +922,60 @@ if (require.main === module) {
         + '  ·  안 잰 짝 0 — 스킨이 쓰는 글자×면 전량(밤 ' + 줄.filter((r) => !r.지면).length
         + ' + 낮 ' + 줄.filter((r) => r.지면 === '낮').length + ')');
       if (실패) process.exit(1);
+    } else if (모드 === '--재현') {
+      const 줄 = 재현대조(path.join(os.tmpdir(), 'synk-재현대조'));
+      console.log('■ 원고가 정본인가 — 다시 구우면 지금 그 자리의 산출물이 나오는가 (%d벌)', 줄.length);
+      for (const r of 줄) {
+        if (r.상태 === '재현') console.log('   ✅ ' + r.이름);
+        else if (r.상태 === '갈라짐') console.log('   🔴 ' + r.이름 + ' — 몸통 다름(원고 ' + r.원고자
+          + '자 vs 산출 ' + r.산출자 + '자) · 재굽기가 산출물의 손 수정을 삼킨다');
+        else console.log('   ❔ ' + r.이름 + ' — ' + r.상태 + (r.사유 ? ' · ' + r.사유 : ''));
+      }
+      const 갈 = 줄.filter((r) => r.상태 === '갈라짐');
+      console.log('\n   합계 ' + 줄.length + '벌 = 재현 ' + 줄.filter((r) => r.상태 === '재현').length
+        + ' + 갈라짐 ' + 갈.length + ' + 못 잼 ' + 줄.filter((r) => !['재현', '갈라짐'].includes(r.상태)).length);
+      if (갈.length) {
+        console.log('\n   → 산출물 쪽이 최신이면 원고를 되메운다(그 뒤 --전량 이 열린다):');
+        갈.forEach((r) => console.log('     node tools/펠트문서.js --되메우기 ' +
+          path.relative(루트, r.산출).split(path.sep).join('/') + ' ' +
+          path.relative(루트, r.원고).split(path.sep).join('/')));
+        process.exit(1);
+      }
+    } else if (모드 === '--되메우기') {
+      const [, 산출, 원고출] = 남은;
+      if (!산출 || !원고출) throw new Error('용법: node tools/펠트문서.js --되메우기 <산출물.html> <원고.html>');
+      const r = 되메우기(path.join(루트, 산출), path.join(루트, 원고출));
+      console.log('■ 되메움  %s → %s  (%sKB · 구운 스킨을 표식으로 되돌렸다)',
+        산출, 원고출, (r.바이트 / 1024).toFixed(1));
+    } else if (모드 === '--전량') {
+      /* ⚠굽기 전에 «원고가 정본인가»부터 본다 — 갈라진 채로 구우면 손 수정이 exit 0 으로 사라진다. */
+      const 갈 = 재현대조(path.join(os.tmpdir(), 'synk-재현대조')).filter((r) => r.상태 === '갈라짐');
+      if (갈.length) {
+        console.error('🔴 원고가 낡은 지면 %d벌 — 지금 구우면 산출물의 손 수정이 조용히 사라진다.', 갈.length);
+        갈.forEach((r) => console.error('   · ' + r.이름));
+        console.error('   먼저 돌린다: node tools/펠트문서.js --재현   (되메우기 명령을 그대로 낸다)');
+        process.exit(1);
+      }
+      const 짝 = 지면짝들();
+      console.log('■ 전량 굽기 %d벌 (림 %s) — 이 목록이 「Loom 을 입는 지면」의 정본이다', 짝.length, 림);
+      let 실패 = 0;
+      for (const p of 짝) {
+        const r = 굽기(p.원고, p.산출, [], 림);
+        const c = 검사(p.산출);
+        const ok = !c.흠.length;
+        if (!ok) 실패++;
+        console.log('   ' + (ok ? '✅' : '🔴') + ' ' + 채움(p.이름, 26)
+          + (r.바이트 / 1024).toFixed(1) + 'KB' + (ok ? '' : '  ' + c.흠.join(' / ')));
+      }
+      console.log('\n   합계 ' + 짝.length + '벌 = 구움 ' + (짝.length - 실패) + ' + 흠 ' + 실패);
+      if (실패) process.exit(1);
     } else if (모드 === '--스킨') {
       console.log(스킨(남은.slice(1), 림));
     } else {
       console.log('용법:\n  node tools/펠트문서.js --굽기 <입력.html> <출력.html> [천…] [--림 스펙트럼|무채]\n' +
+        '  node tools/펠트문서.js --전량 [--림 …]      # 원고방 전량 (지면 목록의 정본)\n' +
+        '  node tools/펠트문서.js --재현               # 원고가 정본인가 (전량 굽기의 게이트)\n' +
+        '  node tools/펠트문서.js --되메우기 <산출물> <원고>\n' +
         '  node tools/펠트문서.js --검사 <문서.html>\n  node tools/펠트문서.js --대비\n' +
         '  node tools/펠트문서.js --스킨 [천…]');
       process.exit(2);
@@ -850,4 +983,5 @@ if (require.main === module) {
   } catch (e) { console.error('🔴 ' + e.message); process.exit(1); }
 }
 
-module.exports = { 스킨, 굽기, 검사, 원고, 대비판정, 표식, 기본천, 림레시피, 클래스지도 };
+module.exports = { 스킨, 굽기, 검사, 원고, 대비판정, 표식, 기본천, 림레시피, 클래스지도,
+  지면짝들, 재현대조, 되메우기, 지면방, 몸통 };
