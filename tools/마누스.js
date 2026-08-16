@@ -447,6 +447,21 @@ async function 작업목록(제한) {
   return 0;
 }
 
+/**
+ * 다시 붙을 때 런에 덧쓰는 칸들. **함수로 뺀 이유가 전부다** — 인라인이면 회귀가 이 모양을
+ * 손으로 베껴 재현하게 되고, 그러면 여기를 망가뜨려도 시험이 초록이다(실측: 그렇게 변이 2건이
+ * 샜다). 시험이 이 함수를 직접 부르므로 모양이 한 곳에만 산다.
+ *
+ * · `재개` — 무응답 시계를 **지금부터** 다시 잰다(`검수런.무응답분`). 안 찍으면 다시 붙은 런이
+ *   계속 「멈춤」으로 읽혀, 다음 세션이 같은 원격 작업에 폴러를 하나 더 붙인다(F511 · 실측).
+ * · `끝`·`종료코드`·`비고` — 죽은 폴러가 남긴 잔재를 지운다. `상태:진행` 옆의 `종료코드:3` 은
+ *   서로 모순인 기록이고, 모순은 읽는 쪽마다 다르게 접힌다(F509 가 정확히 그 자리였다).
+ *   `undefined` 를 넣으면 `JSON.stringify` 가 그 칸을 아예 뺀다 — 지우는 통로가 이것뿐이다.
+ */
+function 재개덧(pid) {
+  return { 상태: '진행', pid, 재개: new Date().toISOString(), 끝: undefined, 종료코드: undefined, 비고: undefined };
+}
+
 function 런목록() {
   const s = 런.요약();
   const 내것 = (x) => x.런.종류 === 종류;
@@ -480,7 +495,7 @@ async function main() {
     const id = 값('--이어받기');
     const r = 런.런읽기(id);
     if (!(r && r.작업id)) { console.error(`런 ${id} 를 못 읽었다(또는 작업id 가 없다)`); return 2; }
-    런.런갱신(id, { 상태: '진행', pid: process.pid });
+    런.런갱신(id, 재개덧(process.pid));
     return 붙기(id, r);
   }
   /* 질문은 대개 여러 줄이고 따옴표·괄호를 품는다 — 셸에 맡기면 깨진다(CLAUDE.md 셸 조항).
@@ -510,5 +525,5 @@ if (require.main === module) {
     .then((c) => { process.exitCode = c || 0; })
     .catch((e) => { console.error(`🔴 ${e.message}`); process.exitCode = 1; });
 } else {
-  module.exports = { 생성몸통, 작업ID캐기, 상태캐기, 말본문, 회복불가인가, 기본프로필, 빈값상한, 키, 키경로, 종류, API };
+  module.exports = { 생성몸통, 작업ID캐기, 상태캐기, 말본문, 회복불가인가, 기본프로필, 빈값상한, 키, 키경로, 종류, API, 재개덧 };
 }
