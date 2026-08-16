@@ -54,6 +54,13 @@ const 장부 = path.join(ROOT, 'docs', '_ops', '사실심문기록.jsonl');
 const 폴링초 = 60;
 const 폴러상한분 = 180;
 
+/* 상태를 연속 몇 회 못 읽으면 접을 것인가. **실측이 이 숫자의 근거다**(작업 6건 이력 전량):
+ * 첫 `status_update(running)` 이 작업 생성 **+1~2초**에 떴다(6/6). 폴러의 첫 조회는 +15초쯤이니
+ * 5회(≈5분)는 그 30배 여유다. ⚠ 대가: 마누스가 5분 넘게 status_update 를 하나도 안 내는 작업이
+ * 실재하면 도는 작업을 「판독 불가」로 끊는다 — 그 대가는 `--이어받기` 한 줄(크레딧 0)이고,
+ * 반대 방향으로 틀렸을 때의 대가는 실측된 대로 **3시간**이다. */
+const 빈값상한 = 5;
+
 /** 키는 **파일에서만** 읽는다 — 환경변수 안내는 리터럴 키를 셸 기록에 남긴다(`모델정책.js` 와 같은 축). */
 const 키경로 = () => process.env.MANUS_KEY_PATH || 'C:/Users/q1212/SYNK_보안/마누스.txt';
 
@@ -238,8 +245,41 @@ async function 폴러(런ID) {
   return 붙기(런ID, r);
 }
 
+/* 상태가 **어디에 사는가.** 실측(작업 6건 · 응답 원문): `task.listMessages` 최상위 키는
+ * `has_more·messages·next_cursor·ok·request_id·task_id` 뿐이고 `task_status` 도 `status` 도
+ * `data` 도 **없다.** 그래서 옛 판독 `j.task_status || j.status || (j.data && j.data.task_status)`
+ * 는 간헐이 아니라 **구조적으로** 늘 빈값이었고 — 실측 154/154 회 — `stopped`·`error`·`waiting`
+ * 어느 종료 분기에도 못 닿아 도달 가능한 출구가 180분 상한 하나뿐이었다.
+ * 실제 상태는 메시지 안 `status_update.agent_status` 에 있다. 어휘는 실측 두 낱말 —
+ * `running`("Manus is running")·`stopped`("Manus finished working") — 이고 `task.list` 의
+ * `status` 와 같은 낱말이라 **아래 분기는 손대지 않았다**(고칠 것은 읽는 자리 하나였다).
+ * ⚠ 반드시 **최신 하나**만 본다: 한 작업이 running→stopped→running→stopped 로 여러 번 도는 것이
+ *   실재한다(실측 2건 — 뒤에 사람이 말을 더 건 대화형 작업). 옛 `stopped` 를 집으면 도는 작업을
+ *   끝났다고 적고, 그 오독은 언제나 「끝났다」 방향이다. */
+function 상태캐기(j) {
+  const 갱신 = (Array.isArray(j && j.messages) ? j.messages : [])
+    .filter((m) => m && m.status_update && m.status_update.agent_status);
+  if (갱신.length) {
+    /* 응답을 `order=desc` 로 받지만 **순서에 기대지 않고 timestamp 로 고른다** — 나중에 누가 그
+     * 인자를 바꾸면 조용히 옛 상태를 집게 되고, 조용한 오독은 통과 방향으로만 샌다. */
+    let 최신 = 갱신[0];
+    let 최대 = Number(최신.timestamp);
+    for (const m of 갱신) {
+      const t = Number(m.timestamp);
+      if (Number.isFinite(t) && !(Number.isFinite(최대) && 최대 >= t)) { 최신 = m; 최대 = t; }
+    }
+    return { 상태: String(최신.status_update.agent_status).toLowerCase(), 출처: 'status_update' };
+  }
+  /* 최상위 필드는 **지금 응답엔 없다.** 벤더가 나중에 넣으면 그걸 쓰는 게 맞으니 2차로 남겨 두되,
+   * 여기서 못 찾은 것을 「도는 중」으로 접지는 않는다 — 그 판정은 부르는 쪽의 연속 빈값 상한이 한다. */
+  const 위 = (j && (j.task_status || j.status)) || '';
+  if (위) return { 상태: String(위).toLowerCase(), 출처: '최상위필드' };
+  return { 상태: '', 출처: '못찾음' };
+}
+
 async function 붙기(런ID, r) {
   const 마감 = Date.now() + 폴러상한분 * 60 * 1000;
+  let 연속빈값 = 0;
   console.log(`[폴러] 런 ${런ID} · 작업 ${r.작업id} · ${폴링초}초마다 본다`);
 
   while (Date.now() < 마감) {
@@ -267,8 +307,29 @@ async function 붙기(런ID, r) {
       continue;
     }
 
-    const 상태 = String(j.task_status || j.status || (j.data && j.data.task_status) || '').toLowerCase();
-    console.log(`[폴러] ${new Date().toISOString()} 상태=${상태 || '(빈값)'}`);
+    const { 상태, 출처 } = 상태캐기(j);
+    /* 출처를 함께 적는다 — 옛 로그는 154줄이 전부 `상태=(빈값)` 이었는데 **어디를 봤는지**가 안 적혀
+     * 있어서, 사후에 「응답이 비었나 / 우리가 딴 데를 봤나」를 로그만으로는 못 갈랐다. */
+    console.log(`[폴러] ${new Date().toISOString()} 상태=${상태 || '(빈값)'} (출처=${출처})`);
+
+    /* 🔑 빈값을 **「도는 중」으로 접지 않는다.** 옛 판독은 늘 빈값이었고, 빈값은 조용히 아래
+     * `잠깐()` 으로 흘러 상한까지 갔다 — 그래서 3시간을 태우고도 「결과 파일 없음」만 남았다.
+     * 못 읽는 것은 도는 것이 아니다: 몇 회 연속이면 그 자리에서 사람에게 넘긴다. */
+    if (!상태) {
+      연속빈값 += 1;
+      if (연속빈값 >= 빈값상한) {
+        const 코드 = 5;
+        런.런갱신(런ID, {
+          상태: 런.상태이름(코드), 끝: new Date().toISOString(), 종료코드: 코드,
+          비고: `상태를 ${빈값상한}회 연속 못 읽었다 — 응답 모양이 바뀌었을 수 있다(마누스 작업은 계속 돌고 있을 수 있다)`,
+        });
+        장부적기({ 때: new Date().toISOString(), 일: '판독불가', 런ID, 작업id: r.작업id, 연속빈값 });
+        console.error(`[폴러] 🔴 상태를 ${빈값상한}회 연속 못 읽었다 — **도는 중이 아니라 못 읽는 중이다.** 멈춘다.`);
+        console.error(`  응답 최상위 키: ${Object.keys(j || {}).join('·') || '(없음)'}`);
+        console.error(`  마누스 쪽 상태는 여기서 직접 본다: node tools/마누스.js --작업목록`);
+        return 코드;
+      }
+    } else 연속빈값 = 0;
 
     /* ⚠ 아래 세 종료 경로의 `상태` 는 **손으로 적지 않는다.** F509 실측: 여기서 셋 다 '완주'
      * 라고 적어 두는 바람에, 결과가 0바이트인 종료코드 3 이 「✅ 완주」로 장부에 앉았다.
@@ -303,13 +364,31 @@ async function 붙기(런ID, r) {
   return 코드;
 }
 
+/* 답 본문이 **어디에 사는가.** 실측(응답 원문): assistant 메시지는
+ *   { id, type:'assistant_message', timestamp, assistant_message: { content: '…' } }
+ * 이다 — 본문은 `m.assistant_message.content` 에 있고 `m.content` 는 **없다.**
+ * 🔴 옛 코드는 `m.content || m.text || m.message` 를 훑었다. 타입 필터는 통과하는데 본문이
+ *   전부 빈 문자열이 돼 `filter(Boolean)` 에서 사라졌고, 결과 파일의 「## 답」 칸엔
+ *   `_(assistant 메시지를 못 찾았다)_` 만 남았다 — **답은 도착해 있는데 사람이 읽는 자리엔 안 왔다.**
+ *   F512 와 같은 병이다: 벤더 응답의 필드명을 재지 않고 후보로 나열했고, 나열은 전부 빗나가도
+ *   아무 소리를 안 낸다. 그래서 여기선 **실측한 자리를 1순위**로 두고 옛 후보는 뒤에 남긴다. */
+function 말본문(m) {
+  if (!m) return '';
+  const 실측 = m.assistant_message && m.assistant_message.content;
+  const v = 실측 != null ? 실측 : (m.content != null ? m.content : (m.text != null ? m.text : m.message));
+  /* content 가 조각 배열로 오는 벤더도 있다 — 그때 String() 은 "[object Object]" 를 낸다.
+   * 그건 「못 찾음」보다 나쁘다: 틀린 값이 맞는 얼굴로 파일에 앉는다. */
+  if (Array.isArray(v)) return v.map((x) => (typeof x === 'string' ? x : (x && x.text) || '')).filter(Boolean).join('\n');
+  return typeof v === 'string' ? v : '';
+}
+
 function 결과쓰기(런ID, r, 상태, j) {
   fs.mkdirSync(결과방, { recursive: true });
   const 목록 = Array.isArray(j.messages) ? j.messages : (Array.isArray(j.data) ? j.data : []);
   /* order=desc 로 받았으니 읽는 순서는 뒤집는다 — 사람이 위에서 아래로 읽는다. */
   const 말 = 목록.slice().reverse()
     .filter((m) => /assistant/i.test(String(m.type || m.role || m.event_type || '')))
-    .map((m) => String(m.content || m.text || m.message || '')).filter(Boolean);
+    .map(말본문).filter(Boolean);
 
   const 본문 = [
     `# 사실 심문 — ${r.대상 || r.질문 || 런ID}`,
@@ -368,6 +447,21 @@ async function 작업목록(제한) {
   return 0;
 }
 
+/**
+ * 다시 붙을 때 런에 덧쓰는 칸들. **함수로 뺀 이유가 전부다** — 인라인이면 회귀가 이 모양을
+ * 손으로 베껴 재현하게 되고, 그러면 여기를 망가뜨려도 시험이 초록이다(실측: 그렇게 변이 2건이
+ * 샜다). 시험이 이 함수를 직접 부르므로 모양이 한 곳에만 산다.
+ *
+ * · `재개` — 무응답 시계를 **지금부터** 다시 잰다(`검수런.무응답분`). 안 찍으면 다시 붙은 런이
+ *   계속 「멈춤」으로 읽혀, 다음 세션이 같은 원격 작업에 폴러를 하나 더 붙인다(F511 · 실측).
+ * · `끝`·`종료코드`·`비고` — 죽은 폴러가 남긴 잔재를 지운다. `상태:진행` 옆의 `종료코드:3` 은
+ *   서로 모순인 기록이고, 모순은 읽는 쪽마다 다르게 접힌다(F509 가 정확히 그 자리였다).
+ *   `undefined` 를 넣으면 `JSON.stringify` 가 그 칸을 아예 뺀다 — 지우는 통로가 이것뿐이다.
+ */
+function 재개덧(pid) {
+  return { 상태: '진행', pid, 재개: new Date().toISOString(), 끝: undefined, 종료코드: undefined, 비고: undefined };
+}
+
 function 런목록() {
   const s = 런.요약();
   const 내것 = (x) => x.런.종류 === 종류;
@@ -401,7 +495,7 @@ async function main() {
     const id = 값('--이어받기');
     const r = 런.런읽기(id);
     if (!(r && r.작업id)) { console.error(`런 ${id} 를 못 읽었다(또는 작업id 가 없다)`); return 2; }
-    런.런갱신(id, { 상태: '진행', pid: process.pid });
+    런.런갱신(id, 재개덧(process.pid));
     return 붙기(id, r);
   }
   /* 질문은 대개 여러 줄이고 따옴표·괄호를 품는다 — 셸에 맡기면 깨진다(CLAUDE.md 셸 조항).
@@ -431,5 +525,5 @@ if (require.main === module) {
     .then((c) => { process.exitCode = c || 0; })
     .catch((e) => { console.error(`🔴 ${e.message}`); process.exitCode = 1; });
 } else {
-  module.exports = { 생성몸통, 작업ID캐기, 회복불가인가, 기본프로필, 키, 키경로, 종류, API };
+  module.exports = { 생성몸통, 작업ID캐기, 상태캐기, 말본문, 회복불가인가, 기본프로필, 빈값상한, 키, 키경로, 종류, API, 재개덧 };
 }

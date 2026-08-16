@@ -157,7 +157,32 @@ function 도달실측(root) {
   const 생산자만 = 집기('생산자섰는데도달0상한');
   const 행동안바뀜 = 집기('행동안바뀜상한');
   return (도달0 === null && 생산자만 === null && 행동안바뀜 === null)
-    ? null : { 도달0, 생산자만, 행동안바뀜, 어디: p };
+    ? null : { 도달0, 생산자만, 행동안바뀜, 어디: p, 성격: 도달0성격(p) };
+}
+
+/**
+ * 도달 0 인 사건의 «성격» — 숫자 하나로는 «지금 할 일»과 «이유가 이미 밝혀진 것»이 같은 얼굴을 한다.
+ *   유호 확정 08-14 「0은 분모와 함께 쓴다」의 집행이다: 「3종」이 아니라 «사유가 적힌 3 + 미판정 0».
+ *   실측 2026-08-16 기준 셋은 전부 사유가 적혀 있다(제어 사건 둘 · 생산자 0 인 `exam.result`) —
+ *   그런데 화면은 분모 없이 빨간 3 만 내고 있어서 **급한 일처럼 보였다**.
+ *
+ * 🔑 성격을 여기서 **분류하지 않는다** — 왜 0 인지는 형제 저장소의 `엔진도달` 맵에 이미 문장으로
+ *   적혀 있다(`{사유: …}`). 이쪽에서 갈래를 다시 지으면 같은 판정이 두 곳에 살고, 갈리는 날
+ *   화면이 코드보다 오래된 말을 한다. 여기서는 **있는 것을 옮길 뿐**이다.
+ * ⚠ 판정 축은 `도달` 배열의 유무다(부품·소비자가 실재하는 칸). **사유 문장을 매칭하지 않는다** —
+ *   문장은 개서되고, 그날 화면이 조용히 빈다.
+ * ⚠ 못 읽으면 `null` — 「사유 0」과 「안 읽었다」를 같은 모양으로 두지 않는다(F207).
+ */
+function 도달0성격(모듈경로) {
+  let V;
+  try { V = require(모듈경로); } catch { return null; }
+  if (!Array.isArray(V.앱사건) || !Array.isArray(V.서버사건) || !V.엔진도달) return null;
+  return [...V.앱사건, ...V.서버사건]
+    .filter((e) => {
+      const 칸 = V.엔진도달[e];
+      return !(칸 && Array.isArray(칸.도달) && 칸.도달.length);
+    })
+    .map((e) => ({ 사건: e, 사유: (V.엔진도달[e] || {}).사유 || null }));
 }
 
 /**
@@ -327,14 +352,33 @@ function main() {
   const 층수 = 이해.length - 1;
   const 실측 = 도달실측(ROOT);
   const 점수 = 엔진점수(ROOT);
+  const 성격 = 실측 ? 실측.성격 : null;
+  const 미판정 = 성격 ? 성격.filter((s) => !s.사유).length : null;
+  /* 「3종」이 분모 없이 빨갛게 서서 **급한 일처럼 보이던** 자리다 — 유호 확정 08-14 「0은 분모와
+   * 함께 쓴다」를 여기에 건다. 셋 중 손댈 것이 몇인지가 이 한 줄에서 갈린다.
+   * ⚠ 래칫값과 실측 목록이 갈리면 그걸 말한다 — 조용히 둘 중 하나를 고르면 화면이 거짓을 낸다. */
+  const 도달분모 = 성격 === null
+    ? '<span class="잔글"> (성격은 못 읽었다 — 「사유 0」이 아니다)</span>'
+    : `<span class="잔글"> = 왜 0인지 코드가 답하는 것 ${성격.length - 미판정}</span> + <b>손댈 것 ${미판정}</b>`
+      + (성격.length === 실측.도달0 ? ''
+        : ` <b>⚠ 래칫 ${실측.도달0}과 실측 ${성격.length}이 갈렸다</b>`);
   const 도달줄 = 실측
-    ? `<b>도달이 0인 사건 ${실측.도달0}종</b> · 생산자는 섰는데 도달이 0인 사건 <b>${실측.생산자만}종</b>`
+    ? `<b>도달이 0인 사건 ${실측.도달0}종</b>${도달분모} · 생산자는 섰는데 도달이 0인 사건 <b>${실측.생산자만}종</b>`
       + (실측.행동안바뀜 === null
         ? ' · 행동층 래칫은 <b>못 읽었다</b>(형제 저장소가 옛 판 — 「빚 0」이 아니다)'
         : ` · 자동으로 도는데 «다음에 줄 것»을 안 바꾸는 부품 <b>${실측.행동안바뀜}개</b>`)
       + '<span class="잔글"> — 래칫이라 내려가면 통과, 올라가면 빨개진다 · 실값 정본 = SYNK-talk/lib/이벤트검증.js</span>'
     : '<b>⚠ 못 쟀다</b><span class="잔글"> — 형제 저장소(SYNK-talk)를 못 읽었다. '
       + '「빚이 0」이 아니라 「안 재봤다」이다 — 이 둘을 같은 모양으로 두지 않는다.</span>';
+
+  /* 이름을 대게 한다 — 「3종」은 셀 수 없고 `exam.result` 는 셀 수 있다(F055 · 판단 재료의 단위).
+   * 사유는 형제 저장소 코드에 이미 있는 문장 그대로다 — 여기서 요약하지 않는다(요약하는 순간 갈린다). */
+  const 도달사유 = 성격 && 성격.length
+    ? `<details class="사유"><summary>도달이 0인 ${성격.length}종 — 무엇이고, 왜 0인가</summary><ul>`
+      + 성격.map((s) => `<li><code>${esc(s.사건)}</code> — `
+        + (s.사유 ? esc(s.사유) : '<b>사유가 안 적혔다 — 이게 진짜 손댈 자리다</b>') + '</li>').join('')
+      + '</ul></details>'
+    : '';
 
   /* [v9.243] 시트층 줄 — 위 세 래칫이 **원리상 못 보는 층**이다.
    *   위는 전부 앱 사건 14종을 센다. 그런데 오늘 실제로 데이터가 쌓이는 곳은 시트층이고
@@ -436,6 +480,12 @@ function main() {
   .실측{margin-top:12px;padding:12px 16px;background:var(--cream);border-left:6px solid var(--emerald);
         border-radius:8px;font-size:12.5px}
   .잔글{color:var(--slate2);font-size:11.5px}
+  .사유{margin:6px 0 0;padding:8px 16px;background:var(--paper);border:1px solid var(--cream3);
+        border-radius:8px;font-size:12px;color:var(--slate2)}
+  .사유 summary{cursor:pointer;color:var(--navy);font-weight:700}
+  .사유 ul{margin:8px 0 2px;padding-left:20px}
+  .사유 li{margin:0 0 6px;line-height:1.55}
+  .사유 code{background:var(--cream);border-radius:4px;padding:1px 6px;color:var(--navy)}
   .범례{margin-top:36px;padding-top:16px;border-top:1px solid var(--cream3);color:var(--slate2);font-size:12px}
   .칩{display:inline-block;border-radius:999px;padding:2px 12px;margin:0 8px 6px 0;font-weight:700;font-size:11.5px}
   footer{margin-top:24px;color:var(--slate2);font-size:11.5px;line-height:1.7}
@@ -465,6 +515,7 @@ function main() {
 🔗 <b>테두리 쳐진 마지막 블록이 이 표의 결론이다</b> — 모으는 것만으로는 아무것도 안 자란다. <b>「돈다」가 초록인데 그 블록이 빨간 층이 가장 위험하다</b>(다 된 것처럼 보이는 미완성). 도달의 정의는 <b>「읽힌 것」</b>이지 「보이는 것」이 아니다.</p>
 <div class="카드들">${카드들(이해)}</div>
 <div class="실측">📏 엔진 도달 실측 <span class="잔글">(앱 사건 층)</span> — ${도달줄}</div>
+${도달사유}
 <div class="${시트층클래스}">🗂 시트층 도달 실측 <span class="잔글">(오늘 실제로 쌓이는 곳 — 위 래칫이 원리상 못 보는 층)</span> — ${시트줄}</div>
 
 <h2 class="절">A-2. 실물 대장 — 무엇을 만들었나 <span style="font-weight:400;color:${킷.slate2};font-size:14px">(왼쪽 띠 = 조직 층)</span></h2>
@@ -550,7 +601,12 @@ function 폴백(말, 끝) {
   fs.writeFileSync(산출경로, html, 'utf8');
   console.log(`[이해대장] ${path.relative(ROOT, 산출경로)} — 정본 ${ver} · 이해 ${칸전체.length}칸 중 ${빈칸}칸이 비었다`
     + ` · 엔진에 닿는 층 ${닿는층}/${층수}`
-    + (실측 ? ` · 도달 0인 사건 ${실측.도달0}종(생산자만 선 것 ${실측.생산자만}종 · 행동 안 바뀌는 부품 ${실측.행동안바뀜 === null ? '못 읽음' : `${실측.행동안바뀜}개`})` : ' · 도달 실측 못 함(형제 저장소 없음)')
+    + (실측
+      ? ` · 도달 0인 사건 ${실측.도달0}종(${실측.성격 === null ? '성격 못 읽음'
+        : `사유 적힌 것 ${실측.성격.filter((s) => s.사유).length} · 손댈 것 ${실측.성격.filter((s) => !s.사유).length}`}`
+        + ` · 생산자만 선 것 ${실측.생산자만}종`
+        + ` · 행동 안 바뀌는 부품 ${실측.행동안바뀜 === null ? '못 읽음' : `${실측.행동안바뀜}개`})`
+      : ' · 도달 실측 못 함(형제 저장소 없음)')
     /* 시트층은 이 저장소 안에 살아서 워크트리·CI 에서도 늘 잰다 — 위 앱층과 달리 「못 읽음」이 드물다. */
     + (시트셈 ? ` · 시트층 수집 ${시트셈.전체}종 = 제품 ${시트셈.제품}+자산 ${시트셈.자산}+도달0 ${시트셈.도달0}` : ' · 시트층 도달 못 쟀다')
     + (점수 ? ` · 엔진 점수 ${점수.현재.전체}/${점수.현재.분모}(${점수.현재.판} · 회차 ${점수.회차수})` : ' · 엔진 점수 아직 안 쟀다'));
