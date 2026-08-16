@@ -36,13 +36,80 @@ const MARKER = 활자주입.마커;
 /** 줄끝만 통일한다 — 파이썬 write_text·git autocrlf 를 거치며 CRLF 가 섞여도 내용 대조가 안 흔들리게. */
 const normalize = (s) => s.replace(/\r\n/g, '\n');
 
+/* ══════════════════════════════════════════════════════════════════════════
+   Loom — 발표물 6벌이 부품을 «입는» 통로 (F517 · 2026-08-16)
+
+   왜 원고에 CSS 를 안 적고 여기서 얹나:
+     적으면 같은 CSS 가 6벌로 갈라지고, 토큰이 바뀌어도 지면에 안 닿는다 — 소개서 6벌이
+     정확히 그 상태였다(F498). **CSS 는 `loom.js` 한 곳에서만 나온다.**
+
+   🔴 **훅이 없으면 안 얹는다** — 이게 이 파일에서 제일 중요한 줄이다.
+     `지면방` 의 전파 술어는 CSS 주석 마커 하나(`/*loom부품:`)라, 얹기만 하면 부품이 0개여도
+     「입었다」로 켜진다(F517②). 실측: 착수 시점 발표물 6벌의 부품 클래스는 **6벌 전부 0개**였다.
+     그대로 얹었으면 「전파 13/21 초록 · 부품 0」이 됐을 것이다.
+     ⇒ 원고가 부품을 실제로 부를 때만 얹는다. 그래야 «마커가 켜졌다» = «부품이 있다» 가 된다.
+   ══════════════════════════════════════════════════════════════════════════ */
+const loom = require('./lib/loom.js');
+/* 🔴 `부품만` 이 아니라 `인쇄부품` 이다 — 발표물은 **종이로 나가는 지면**이다.
+ *   `낮` 층이 없으면 부품 색이 Cream 계열로 남고, 크롬 인쇄는 「배경 그래픽」이 기본 꺼짐이라
+ *   흰 종이 위 Cream = **1.13:1** 로 부품이 통째로 사라진다(화면에선 멀쩡해 보인다). */
+const LOOM_지면 = '인쇄부품';
+/** 얹은 블록을 되뜯는 표식 — `--check` 가 원고와 1:1 로 대조하려면 되돌릴 수 있어야 한다. */
+const LOOM_열기 = `<style data-loom="${LOOM_지면}">`;
+const LOOM_뜯기 = /\n?<style data-loom="[^"]*">[\s\S]*?<\/style>/;
+
+/** Loom 이 정의하는 한글 부품 클래스 전량 — 목록을 손으로 안 든다(CSS 에서 파생). */
+function 부품클래스들(css = loom.css({ 지면: LOOM_지면 })) {
+  return new Set([...css.matchAll(/\.([가-힣][가-힣\w-]*)/g)].map((m) => m[1]));
+}
+
+/**
+ * 이 원고가 실제로 부르는 Loom 훅 — 부품 클래스 + 범위 클래스.
+ * ⚠**마크업만 본다**(`</style>` 뒤). 원고의 CSS 안에 우연히 같은 이름이 있어도 그건 훅이 아니다.
+ */
+function 훅들(html, 클래스 = 부품클래스들()) {
+  const i = html.indexOf('</style>');
+  const 본문 = i < 0 ? html : html.slice(i + 8);
+  const 쓰는것 = new Set([...본문.matchAll(/class="([^"]*)"/g)]
+    .flatMap((m) => m[1].split(/\s+/)).filter(Boolean));
+  const 범위 = (loom.기본범위[LOOM_지면] || '.룸').slice(1);
+  return [...쓰는것].filter((c) => c === 범위 || 클래스.has(c)).sort();
+}
+
+/**
+ * 얹을까 — **훅이 하나라도 있을 때만.** 이 한 줄이 「마커만 켜진 초록」을 막는 게이트다.
+ * 🔑 `if (훅.length)` 를 빌드 루프 «안»에 두지 않고 함수로 뗀 이유: 그 루프는 파이썬 임베드를
+ *    타므로 픽스처가 못 닿고, **못 닿는 게이트는 변이 검사에서 구멍으로 나온다**(실측 08-16:
+ *    게이트를 꺼도 시험 9건이 전부 초록이었다). 지면방 `분모확인()` 이 떼어져 있는 것과 같은 계열.
+ */
+const 얹을까 = (훅) => 훅.length > 0;
+
+/**
+ * 얹기 — 원고의 **마지막 `</style>` 뒤**에 둔다.
+ * 🔑 앞에 두면 안 되는 이유(처음에 그렇게 짰다가 되돌렸다): 부품 클래스와 원고 클래스는
+ *   특정도가 같다(`.칩` vs `.tag` = 0,1,0). 앞에 두면 동점에서 원고가 이겨,
+ *   `class="tag 칩"` 을 달아도 **아무 일도 안 일어난다** — 훅은 늘었는데 화면은 그대로인,
+ *   딱 「맞는 얼굴로 틀린 값」이다. 부품 클래스는 «내가 일부러 단 것»이므로 이기는 게 맞다.
+ * ⚠안 단 요소는 여전히 안전하다 — 맨요소 규칙은 `.룸` 안에서만 살기 때문이다(F517).
+ */
+function loom얹기(html, css) {
+  const i = html.lastIndexOf('</style>');
+  if (i < 0) throw new Error('원고에 </style> 이 없다 — 얹을 자리를 못 찾았다');
+  const 뒤 = i + '</style>'.length;
+  return html.slice(0, 뒤) + '\n' + LOOM_열기 + '\n' + css + '\n</style>' + html.slice(뒤);
+}
+const loom뜯기 = (html) => html.replace(LOOM_뜯기, '');
+
 /**
  * 산출물에서 임베드된 @font-face 묶음을 도로 마커로 되돌린다 → 소스와 1:1 비교가 된다.
  * 빌드가 `marker → faces.join('\n')` 이라 되돌리는 것도 그 한 덩어리다.
  * base64 안엔 `}` 가 안 나온다(알파벳이 A-Za-z0-9+/=) — `[^}]*` 가 안전한 이유.
  */
+/* ⚠Loom 블록을 **먼저** 뜯는다 — 순서가 뒤바뀌면 `@font-face` 정규식이 첫 매치를 찾을 때
+ *   앞에 얹힌 블록 안을 먼저 볼 수 있다. 지금 Loom CSS 엔 `@font-face` 가 없지만,
+ *   «오늘 없다»를 근거로 순서를 정하면 생기는 날 조용히 틀린다. */
 const unembed = (html) =>
-  normalize(html).replace(/@font-face\{[^}]*\}(?:\n@font-face\{[^}]*\})*/, MARKER);
+  loom뜯기(normalize(html)).replace(/@font-face\{[^}]*\}(?:\n@font-face\{[^}]*\})*/, MARKER);
 
 /** 파이썬 실행기를 찾는다. 못 찾으면 **통과가 아니라 실패** — 조용히 건너뛰면 낡은 산출물이 초록으로 남는다. */
 function findPython() {
@@ -164,9 +231,18 @@ function main() {
       const html = fs.readFileSync(out, 'utf8');
       if (!/@font-face/.test(html)) { stale.push(`${outNameOf(s)} — 산출물에 @font-face 가 없다(임베드 안 된 사본)`); continue; }
       if (html.includes(MARKER)) { stale.push(`${outNameOf(s)} — 마커가 그대로 남았다(치환 실패본)`); continue; }
-      if (unembed(html) !== normalize(fs.readFileSync(path.join(DIR, s), 'utf8'))) {
+      const 원고 = normalize(fs.readFileSync(path.join(DIR, s), 'utf8'));
+      if (unembed(html) !== 원고) {
         stale.push(`${outNameOf(s)} — 소스와 산출물 내용이 어긋난다(소스를 고치고 안 구웠다)`);
+        continue;
       }
+      /* Loom — 「훅이 있나」와 「얹혔나」가 **어긋나면** 그것도 낡음이다.
+       * 훅을 원고에 새로 달고 안 구우면 산출물엔 CSS 가 없고, 훅을 뗐는데 안 구우면 CSS 만 남는다.
+       * 뒤쪽이 특히 위험하다 — 마커는 켜져 있어서 「입었다」로 읽힌다(F517②). */
+      const 훅 = 훅들(원고);
+      const 얹힘 = LOOM_뜯기.test(normalize(html));
+      if (얹을까(훅) && !얹힘) stale.push(`${outNameOf(s)} — 훅 ${훅.length}개(${훅.join('·')})인데 Loom 이 안 얹혔다`);
+      else if (!얹을까(훅) && 얹힘) stale.push(`${outNameOf(s)} — 훅 0개인데 Loom 이 얹혔다(부품 0인 채 마커만 켜진다)`);
     }
     if (stale.length) {
       console.log(`🔴 발표물 빌드 필요 ${stale.length}건 — \`node tools/발표물빌드.js --pdf\` 를 돌려라`);
@@ -184,6 +260,9 @@ function main() {
   }
 
   let fail = 0;
+  /* CSS 는 한 번만 조립한다 — 6번 부르면 6번 갈릴 수 있는 자리를 원천에서 없앤다. */
+  const loomCss = loom.css({ 지면: LOOM_지면 });
+  const loom붙은것 = [], loom안붙은것 = [];
   for (const s of srcs) {
     const src = path.join(DIR, s);
     const out = path.join(DIR, outNameOf(s));
@@ -201,15 +280,43 @@ function main() {
     }
 
     // 「돌았다」가 아니라 **결과**를 본다 — 치환이 안 돼도 rc 0 으로 끝날 수 있다.
-    const html = fs.readFileSync(out, 'utf8');
+    let html = fs.readFileSync(out, 'utf8');
     if (!활자주입.주입됐나(html)) {
       fail++;
       console.error('   🔴 산출물에 임베드가 안 들어갔다(마커 잔존 또는 @font-face 없음)');
+      continue;
+    }
+
+    /* Loom — **훅이 있을 때만** 얹는다(F517②). 훅 0 이면 CSS 도 마커도 안 간다. */
+    const 훅 = 훅들(fs.readFileSync(src, 'utf8'));
+    if (얹을까(훅)) {
+      html = loom얹기(html, loomCss);
+      fs.writeFileSync(out, html, 'utf8');
+      /* 얹은 «결과»를 본다 — 여기서도 「돌았다」는 근거가 아니다. */
+      if (!/\/\*loom부품:/.test(html) || !LOOM_뜯기.test(normalize(html))) {
+        fail++;
+        console.error('   🔴 Loom 을 얹었는데 산출물에서 못 찾겠다');
+        continue;
+      }
+      loom붙은것.push(`${outNameOf(s)} (훅 ${훅.length}: ${훅.join('·')})`);
+      console.log(`   ✅ Loom 부품 ${훅.length}종 — ${훅.join('·')}`);
+    } else {
+      loom안붙은것.push(outNameOf(s));
+      console.log('   ·  Loom 훅 0 — 안 얹었다(부품 0인 채 마커만 켜지는 것을 막는다)');
     }
   }
 
+  /* 0 은 분모와 함께 쓴다 — 「몇 벌이 입었나」를 갈래로 쪼개 밝힌다. */
   console.log(`\n${fail ? '🔴' : '✅'} 발표물 ${srcs.length}종 · 실패 ${fail}건`);
+  console.log(`   Loom = 입음 ${loom붙은것.length} + 훅 없어 안 입음 ${loom안붙은것.length}  (합계 ${srcs.length})`);
+  loom붙은것.forEach((s) => console.log(`     ✅ ${s}`));
+  loom안붙은것.forEach((s) => console.log(`     ·  ${s} — 훅을 달면 다음 빌드에 입는다`));
   return fail ? 1 : 0;
 }
 
-process.exit(main());
+/* 🔑 CLI 로 부를 때만 돈다 — `require` 로 열 수 있어야 **게이트를 픽스처가 문다**.
+ *   그전엔 로드 즉시 `process.exit` 이라 단위 시험이 원리적으로 못 닿았고, 못 닿는 게이트는
+ *   변이 검사에서 구멍으로 나온다(지면방 `분모확인()` 이 같은 이유로 떼어져 있다). */
+if (require.main === module) process.exit(main());
+
+module.exports = { 훅들, 얹을까, 부품클래스들, loom얹기, loom뜯기, unembed, LOOM_지면, LOOM_뜯기 };
