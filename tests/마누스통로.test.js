@@ -24,7 +24,25 @@ test('① 생성 몸통은 message.content 다 — 문서의 `prompt` 로 되돌
   assert.strictEqual(b.message.content, '질문 본문', 'content 가 message 안에 있어야 한다');
   assert.strictEqual(b.title, '라벨');
   assert.ok(!('prompt' in b), '`prompt` 를 보내면 실제 API 가 400 을 낸다');
-  assert.ok(!('agent_profile' in b), 'agent_profile 을 박으면 등급이 바뀌는 날 조용히 깨진다');
+});
+
+/* 🔴 이 검사는 **정확히 반대로** 적혀 있었다 — 「agent_profile 을 박으면 안 된다」.
+ * 그 전제를 아무도 안 쟀고, 그것이 이 통로를 세운 날부터 죽여 온 원인이었다.
+ * 실측 2026-08-16(조건 하나씩만 바꾼 대조 · 크레딧 0):
+ *   없음 → 200+유령 · manus-1.6 → 200+유령 · manus-1.6-lite → 실재 ✅ · 오타 → 400.
+ * 등급 밖 프로필은 **에러가 아니라 유령**이라, 이 한 칸이 빠지면 증상이 「404 가 계속 난다」뿐이다. */
+test('①-b agent_profile 을 **반드시** 보낸다 — 빼면 마누스가 200+유령을 낸다 (F509 근본 원인)', () => {
+  const b = 통로.생성몸통('질문 본문', '라벨');
+  assert.ok('agent_profile' in b, 'agent_profile 이 없으면 작업이 안 만들어진다(200 은 나온다 — 그게 함정이다)');
+  assert.strictEqual(b.agent_profile, 통로.기본프로필);
+  /* 벤더가 400 으로 알려준 유효 목록 밖 값을 상수로 두면 전 호출이 400 이다. */
+  assert.ok(['manus-1.6', 'manus-1.6-lite', 'manus-1.6-max'].includes(통로.기본프로필),
+    `기본프로필 «${통로.기본프로필}» 이 벤더 유효 목록 밖이다 — 그러면 던지기가 전부 400 이다`);
+});
+
+test('①-c 프로필은 부를 때 갈아끼울 수 있다 — 등급이 오르면 상수를 안 고친다', () => {
+  const b = 통로.생성몸통('질문', null, 'manus-1.6-max');
+  assert.strictEqual(b.agent_profile, 'manus-1.6-max');
 });
 
 test('② 라벨이 없으면 title 을 아예 안 보낸다 — 빈 문자열 title 은 목록을 더럽힌다', () => {
@@ -80,6 +98,17 @@ test('⑪ 상태 이름은 마누스가 손으로 안 적는다 — 검수런 �
   assert.ok(!/상태:\s*'완주'/.test(src),
     "마누스가 '완주'를 리터럴로 적으면 종료코드 3(결과 0바이트)이 ✅ 로 앉는다 — 런.상태이름(코드) 를 쓴다");
   assert.ok(/런\.상태이름\(/.test(src), '공용 통로를 실제로 부르는지 본다(주석만 고치고 넘어간 판을 막는다)');
+});
+
+/* ⑫ 는 「성공인데 실패로 보인다」 자리다 — 던지기가 실제로 통했는데 종료코드가 0xC0000409 로
+ * 나갔다(실측 2026-08-16 · Windows node v24.18 · libuv assert). 부르는 쪽이 그걸 읽으면
+ * 재던지고, 재던지면 크레딧이 또 탄다 — 이 파일이 막으려는 사고 그 자체다. */
+test('⑫ CLI 는 process.exit() 로 즉시 끊지 않는다 — 루프가 마르게 둔다', () => {
+  const src = fs.readFileSync(path.join(__dirname, '..', 'tools', '마누스.js'), 'utf8');
+  const 코드줄 = src.split(/\r?\n/).filter((l) => !/^\s*[*/]/.test(l));   // 주석은 규칙 밖(자기 픽스처 신고 금지)
+  assert.ok(!코드줄.some((l) => /process\.exit\s*\(/.test(l)),
+    'fetch 를 탄 뒤 즉시 process.exit() 하면 libuv 가 abort 해 성공이 실패 코드로 나간다');
+  assert.ok(/process\.exitCode\s*=/.test(src), '종료코드를 아예 안 적으면 실패가 0 으로 나간다(반대 방향 사고)');
 });
 
 test('⑥ 키 파일의 주석·빈 줄을 걷어낸다 — 안내문을 키로 보내면 401 이 「키 오류」로 오독된다', () => {
