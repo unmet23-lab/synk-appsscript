@@ -66,6 +66,18 @@
         "hooks": [
           {
             "type": "command",
+            "command": "IFS= read -r -d '' _IGNORE || true; W=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/작업가지.js\"; { command -v node >/dev/null && [ -f \"$W\" ]; } || { echo \"SYNK 작업가지 미실행: $W (node 또는 파일 없음 — F044)\" >&2; exit 1; }; node \"$W\" --훅",
+            "shell": "bash",
+            "timeout": 30,
+            "statusMessage": "열린 작업 PR 확인"
+          }
+        ]
+      },
+      {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
             "command": "IFS= read -r -d '' _IGNORE || true; D=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/session-decisions.js\"; { command -v node >/dev/null && [ -f \"$D\" ]; } || { echo \"SYNK session-decisions 미실행: $D (node 또는 훅 파일 없음 — F044)\" >&2; exit 1; }; node \"$D\"",
             "shell": "bash",
             "timeout": 20,
