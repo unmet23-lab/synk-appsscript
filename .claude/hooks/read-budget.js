@@ -48,8 +48,32 @@ const REREAD_FREE = 2; // 같은 파일: 이 횟수까지 조용히
 const REREAD_HARD = 5; // 같은 파일: 이 횟수를 넘기면 차단
 
 // 「큰 파일」의 경계. 16 KB ≈ 7,600 토큰(아래 환산 근거) — 한 호출이 이보다 커지면
-// 그 비용은 남은 턴 수만큼 곱해진다. 작은 파일은 이 훅이 아예 건드리지 않는다.
+// 그 비용은 남은 턴 수만큼 곱해진다.
+// ⚠ 이 값은 **개수 층의 경계일 뿐**이다 — 작은 파일도 아래 «누적 바이트» 층이 센다(2026-08-16).
 const BIG = 16 * 1024;
+
+// ── 누적 바이트 층 (2026-08-16 신설) ──────────────────────────────────────
+// 왜 생겼나: 위 개수 층이 **실제 소모의 17.6% 밖에 못 보고 있었다**(실측).
+//   Read 호출 12,379회를 크기로 가르니 — ~2KB 48.2%(몫 11.7%) · 2~8KB 41.6%(**48.5%**) ·
+//   8~16KB 7.3%(22.2%) · **16KB+ 2.9%(17.6%)**. 즉 과녁이 「큰 파일 몇 개」였는데
+//   실제로 먹은 건 **작은 파일 수천 개**였다. 훅은 멀쩡히 돌면서 82.4% 를 안 보고 있었다
+//   — 안 도는 쪽이 아니라 「맞는 얼굴로 틀린 값」 쪽으로 샌 것이다(CLAUDE.md 맹점 ④).
+//
+// 임계는 추정이 아니라 **분포에서 뽑았다**(세션 1047개 · 7일 · 세션당 Read 누적):
+//   p50 33KB · p75 55KB · p90 85KB · p95 111KB · p99 193KB · 최대 466KB
+//   → 경고는 p90 위, 차단은 p99 위. **정상 작업 10 중 9 는 이 훅을 만나지도 않는다.**
+const SESS_BYTES_WARN = 100 * 1024;
+const SESS_BYTES_HARD = 250 * 1024;
+// 일일은 세션을 갈아타며 새는 것을 막는다(개수 층과 같은 이유). ⚠ 이 두 값만은 분포가 아니라
+// 「세션 임계 × 하루 세션 수」 어림이다 — 날짜별 합계는 아직 안 쟀다. 실측하면 조정한다.
+const DAY_BYTES_WARN = 600 * 1024;
+const DAY_BYTES_HARD = 1500 * 1024;
+
+// 대가(맹점 ④): 틀리면 **정당한 대량 읽기가 막힌다** — 정본 전수 검수·압축 작업이 그렇다.
+//   그래서 차단에도 `--reset` 통로를 남겼고, 임계를 p99 위에 둬서 상위 1% 만 만난다.
+//   🔑 **닫은 것은 없다.** 개수 층과 이 층은 서로 다른 실패 모드를 잡고, 실측이 둘 다 실재함을
+//   보였다(16KB+ 354회 = 개수 층의 대상 · 2~8KB 5,152회 = 이 층만 보는 대상).
+//   한쪽을 닫으면 그 구간이 통째로 사각이 된다.
 
 // 「구역 읽기」의 경계(줄). 이 이하로 limit 을 주면 무료 통과 — 처방이 시키는 경로를
 // 벌주면 그 처방은 따를 수 없는 처방이 되고, 우회가 정상 통로가 된다(F103).
@@ -86,19 +110,26 @@ function dayFile(day) {
   return path.join(DIR, `d-${safeName(day)}.json`);
 }
 
+// `bytes` 는 2026-08-16 에 더한 칸이다 — 옛 카운터 파일엔 없으니 0 으로 시작한다(하위 호환).
 function readState(file) {
   try {
     const j = JSON.parse(fs.readFileSync(file, 'utf8'));
-    return { n: Number(j.n) || 0, files: j.files && typeof j.files === 'object' ? j.files : {} };
+    return {
+      n: Number(j.n) || 0,
+      bytes: Number(j.bytes) || 0,
+      files: j.files && typeof j.files === 'object' ? j.files : {},
+    };
   } catch (_) {
-    return { n: 0, files: {} };
+    return { n: 0, bytes: 0, files: {} };
   }
 }
 
 function writeState(file, state) {
   try {
     fs.mkdirSync(DIR, { recursive: true });
-    fs.writeFileSync(file, JSON.stringify({ n: state.n, files: state.files, at: Date.now() }));
+    fs.writeFileSync(file, JSON.stringify({
+      n: state.n, bytes: state.bytes || 0, files: state.files, at: Date.now(),
+    }));
   } catch (_) {
     /* 카운터를 못 써도 작업을 막지 않는다 — 이 훅은 예산 관리지 안전장치가 아니다 */
   }
@@ -163,7 +194,9 @@ try {
   process.exit(0); // 없는 파일은 Read 자신이 알린다 — 예산 문제가 아니다
 }
 
-if (size <= BIG) process.exit(0); // 작은 파일은 이 훅의 관심 밖이다
+// ⚠ 여기서 «작은 파일은 관심 밖» 으로 끊던 줄이 있었다 — 그게 82.4% 사각의 원인이었다(2026-08-16).
+// 이제 작은 파일도 누적 바이트 층이 센다. 개수 층만 이 경계를 쓴다.
+const isBig = size > BIG;
 
 const kb = Math.round(size / 1024);
 const approxTok = Math.round((size / 1024) * TOKENS_PER_KB);
@@ -201,18 +234,40 @@ if (isChunk) {
   process.exit(0);
 }
 
-// 여기부터 = 큰 파일 **전문** 읽기
-const n = sst.n + 1;
-const dn = dst.n + 1;
+// 여기부터 = **전문** 읽기(크기 무관). 구역 읽기는 위에서 이미 빠졌다.
+// 개수 층은 큰 파일만 센다(옛 축 그대로) · 바이트 층은 전부 센다(새 축).
+const n = isBig ? sst.n + 1 : sst.n;
+const dn = isBig ? dst.n + 1 : dst.n;
+const sb = sst.bytes + size;
+const db = dst.bytes + size;
 
-if (n > HARD) {
+const asKB = (b) => `${Math.round(b / 1024)}KB`;
+
+// ── 바이트 층 차단이 먼저다 — 이쪽이 실제 비용 축이다 ──
+if (sb > SESS_BYTES_HARD) {
+  out('deny',
+    `[read-budget] 이 세션에서 Read 로 이미 ${asKB(sst.bytes)} 를 실었다 — **세션 상한 ${asKB(SESS_BYTES_HARD)} 초과**(이번 ${kb}KB 를 더하면 ${asKB(sb)}).\n` +
+    `실측 분포에서 세션당 누적은 p50 33KB · p90 85KB · p99 193KB 다 — 여기까지 왔으면 상위 1% 다.\n` +
+    '한 번 실린 것은 남은 턴 내내 다시 청구된다. 이미 읽은 내용을 쓰거나, **세션을 끊는 편이 싸다**.\n' +
+    `${HOW}\n${RESET}`);
+}
+
+if (db > DAY_BYTES_HARD) {
+  out('deny',
+    `[read-budget] 오늘 Read 로 실은 양이 ${asKB(dst.bytes)} 다 — **일일 상한 ${asKB(DAY_BYTES_HARD)} 초과**.\n` +
+    '세션을 새로 열어도 이 예산은 그대로다(세션당이던 층은 갈아타며 샜다 · 08-04 실사고).\n' +
+    `${HOW}\n${RESET}`);
+}
+
+// ── 개수 층(옛 축) — 큰 파일 연속 열기 ──
+if (isBig && n > HARD) {
   out('deny',
     `[read-budget] 이 세션에서 큰 파일을 이미 ${n - 1}개 통째로 읽었다 — 세션 상한 ${HARD}개 초과.\n` +
     `이번 대상: \`${path.basename(fp)}\` ${kb} KB(약 ${approxTok.toLocaleString()} 토큰).\n` +
     `${HOW}\n${RESET}`);
 }
 
-if (dn > DAY_HARD) {
+if (isBig && dn > DAY_HARD) {
   out('deny',
     `[read-budget] 오늘 이미 큰 파일 ${dn - 1}개를 통째로 읽었다 — **일일 상한 ${DAY_HARD}개** 초과.\n` +
     '세션을 새로 열어도 이 예산은 그대로다. 상한이 세션당이던 층은 세션을 갈아타며 샜다(08-04 실사고).\n' +
@@ -220,19 +275,23 @@ if (dn > DAY_HARD) {
 }
 
 sst.n = n;
+sst.bytes = sb;
 sst.files[key] = rn;
 writeState(sfile, sst);
 dst.n = dn;
+dst.bytes = db;
 writeState(dfile, dst);
 
 const notes = [];
-if (n > FREE) notes.push(`세션 ${n}/${HARD}개`);
-if (dn > DAY_FREE) notes.push(`오늘 ${dn}/${DAY_HARD}개`);
+if (isBig && n > FREE) notes.push(`세션 ${n}/${HARD}개`);
+if (isBig && dn > DAY_FREE) notes.push(`오늘 ${dn}/${DAY_HARD}개`);
 if (rn > REREAD_FREE) notes.push(`\`${path.basename(fp)}\` ${rn}번째`);
+if (sb > SESS_BYTES_WARN) notes.push(`**세션 누적 ${asKB(sb)}/${asKB(SESS_BYTES_HARD)}**`);
+if (db > DAY_BYTES_WARN) notes.push(`오늘 누적 ${asKB(db)}/${asKB(DAY_BYTES_HARD)}`);
 
 if (notes.length) {
   out('allow',
-    `[read-budget] 큰 파일 전문 읽기 — ${notes.join(' · ')} · 이번 ${kb} KB(약 ${approxTok.toLocaleString()} 토큰).\n${HOW}`);
+    `[read-budget] Read 전문 — ${notes.join(' · ')} · 이번 ${kb} KB(약 ${approxTok.toLocaleString()} 토큰).\n${HOW}`);
 }
 
 process.exit(0);
