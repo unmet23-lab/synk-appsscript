@@ -1651,3 +1651,35 @@ test('🔴 [F103] 처방 문서가 「가드가 막는 보드 파일」을 가�
       + `  걸린 줄: ${(줄[0] || '').trim().slice(0, 160)}`);
   }
 });
+
+/* ── ⑧-c · F495 「주인을 못 잰 보드 파일」이 **제3칸**으로 서는가 (2026-08-16) ──────────────
+ * 무엇이 새던 자리인가: `board-id.파일지문()` 은 이름이 `<8자리 hex>.md` 가 아니면 `''` 을 내는데,
+ * 소비자(`원칙7처방`·상한 셈의 F372 빼기)가 그 빈 값을 **「죽지 않았다」로 접었다.** 칸이
+ * 「살았다 / 죽었다」 둘뿐이라 「못 쟀다」가 산 쪽으로 접히고, 그 방향은 영구 잠금이다 —
+ * 주인이 죽어도 죽은 줄 목록에 안 떠서 board-move 처방을 아무도 못 받는다.
+ *
+ * ⚠ 왜 **픽스처로만** 재나: 실저장소에는 지금 어긋난 이름이 1건 실재한다(`local_008484b1.md`).
+ *   실저장소에 대고 「그 알림이 없다」를 걸면 그 줄이 고쳐지는 순간 빨개지는 회귀가 된다 —
+ *   버그가 아직 있을 것을 요구하는 회귀의 거울상이다. 탐지력은 픽스처가 지고 실저장소에는
+ *   아무것도 안 건다(CLAUDE.md 가드 맹점 ②). */
+const 표머리F495 = ['| 날짜 | 트랙/작업 | 만지는 파일 | 상태 |', '|---|---|---|---|'].join('\n') + '\n';
+
+test('🔴 F495 탐지력 — 지문 꼴이 아닌 보드 파일을 **이름을 대고** 드러낸다(막지는 않는다)', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'f495-detect-'));
+  fs.writeFileSync(보드파일(root, 'local_008484b1'), 표머리F495 + activeRow(1) + '\n', 'utf8');
+  const 내파일 = 보드파일(root, 'aaaa1111');
+  const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: 표머리F495 + activeRow(2) + '\n' } });
+  assert.strictEqual(r.결정, 'allow',
+    '막으면 안 된다 — ⑧-c 는 드러내는 층이다. 생성 deny 는 비지문 이름을 «아직 없는 파일 + 통과 기대»로 넣는 남의 픽스처를 죽인다(맹점 ③)');
+  assert.match(r.알림, /못 잰/, '「못 쟀다」 칸이 안 섰다 — 살았다/죽었다 둘로 접히면 F495 그대로다');
+  assert.match(r.알림, /local_008484b1\.md/, '이름을 안 대면 어느 파일인지 못 찾아 처방이 안 돈다');
+  assert.match(r.알림, /git mv/, '고치는 명령이 없으면 따를 수 없는 처방이다(F103)');
+});
+
+test('🟢 F495 거짓양성 0 — 보드 파일 이름이 전부 지문 꼴이면 그 알림은 안 뜬다', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'f495-clean-'));
+  fs.writeFileSync(보드파일(root, 'bbbb2222'), 표머리F495 + activeRow(1) + '\n', 'utf8');
+  const 내파일 = 보드파일(root, 'aaaa1111');
+  const r = 판정({ tool_name: 'Write', tool_input: { file_path: 내파일, content: 표머리F495 + activeRow(2) + '\n' } });
+  assert.doesNotMatch(r.알림, /못 잰/, '멀쩡한 이름에 대고 짖으면 그 알림은 곧 안 읽힌다');
+});
