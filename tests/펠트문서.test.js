@@ -162,6 +162,95 @@ test('원고 변환 — 지면만 갈고 «글자»는 한 자도 안 바꾼다'
     '옛 클래스가 남아 있다 — 스킨에 그 자리가 없어서 스타일이 통째로 빠진다');
 });
 
+/* ══════════════════════════════════════════════════════════════════════════
+   원고가 정본인가 — 전량 굽기의 게이트 (2026-08-16 · 실사고에서 왔다)
+
+   무엇을 밟았나: `docs/엔진/Loom_소개서.html` 이 자기 원고보다 **5,869자 앞서 있었다**.
+   누군가 산출물을 손으로 고쳤고, 원고는 v1.0 인 채였다. 그 상태로 `--전량` 을 돌리면
+   그 수정이 **exit 0 으로** 사라진다 — 화면도, 테스트도, git 도 아무도 안 운다
+   (다시 구운 지면은 «멀쩡한 문서»로 보인다 · 새는 방향은 언제나 「통과」다).
+
+   ⚠탐지력은 픽스처가 진다(가드 맹점 ②) — 실저장소가 병들어 있기를 요구하지 않는다.
+     실저장소 쪽은 «갈라짐 0»이라는 거짓양성만 본다.
+   ══════════════════════════════════════════════════════════════════════════ */
+const fs = require('node:fs');
+const os = require('node:os');
+
+/** 픽스처 — 원고 한 벌을 구워 놓고, 산출물만 손으로 고친 상태를 만든다. */
+function 픽스처방() {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-원고픽스처-'));
+  const 원고방 = path.join(방, '_원고');
+  fs.mkdirSync(원고방, { recursive: true });
+  const 씨 = fs.readFileSync(path.join(루트, 'docs', '엔진', '_원고', 'Trail_소개서.html'), 'utf8');
+  fs.writeFileSync(path.join(원고방, '갑.html'), 씨, 'utf8');
+  fs.writeFileSync(path.join(원고방, '을.html'), 씨, 'utf8');
+  도구.굽기(path.join(원고방, '갑.html'), path.join(방, '갑.html'));
+  도구.굽기(path.join(원고방, '을.html'), path.join(방, '을.html'));
+  return { 방, 원고방, 상대: { 원고: path.relative(루트, 원고방), 산출: path.relative(루트, 방) } };
+}
+
+test('탐지력 — 산출물만 손으로 고치면 「갈라짐」으로 잡는다(픽스처)', () => {
+  const { 방, 상대 } = 픽스처방();
+  const 임시 = path.join(os.tmpdir(), 'synk-재현대조-시험');
+
+  const 처음 = 도구.재현대조(임시, 상대);
+  assert.strictEqual(처음.length, 2, '픽스처 분모가 2가 아니다 — 0/0 은 초록이 아니라 «안 쟀다»다');
+  assert.ok(처음.every((r) => r.상태 === '재현'), '갓 구운 짝이 재현 안 된다: '
+    + JSON.stringify(처음.map((r) => [r.이름, r.상태])));
+
+  // 산출물 «을» 만 손으로 고친다 — 원고는 그대로다.
+  const 을 = path.join(방, '을.html');
+  fs.writeFileSync(을, fs.readFileSync(을, 'utf8')
+    .replace('</div><!-- /글 -->', '<p class="듦">손으로 더한 문단 — 원고에는 없다</p>\n</div><!-- /글 -->'), 'utf8');
+
+  const 뒤 = 도구.재현대조(임시, 상대);
+  const 갈 = 뒤.filter((r) => r.상태 === '갈라짐');
+  assert.strictEqual(갈.length, 1, '손 수정을 못 잡았다 — 전량 굽기가 그것을 조용히 삼킨다');
+  assert.strictEqual(갈[0].이름, '을.html', '엉뚱한 지면을 갈라짐이라 했다');
+});
+
+test('자기 처방 — 「갈라짐」이 시키는 되메우기가 실제로 통과시킨다', () => {
+  const { 방, 원고방, 상대 } = 픽스처방();
+  const 임시 = path.join(os.tmpdir(), 'synk-재현대조-처방');
+  const 을 = path.join(방, '을.html');
+  fs.writeFileSync(을, fs.readFileSync(을, 'utf8')
+    .replace('</div><!-- /글 -->', '<p class="듦">손으로 더한 문단</p>\n</div><!-- /글 -->'), 'utf8');
+  assert.strictEqual(도구.재현대조(임시, 상대).filter((r) => r.상태 === '갈라짐').length, 1);
+
+  // 가드가 내는 그 명령 그대로 — 통하지 않으면 그 처방은 우회를 정상 통로로 만든다(F103).
+  도구.되메우기(을, path.join(원고방, '을.html'));
+  const 뒤 = 도구.재현대조(임시, 상대);
+  assert.ok(뒤.every((r) => r.상태 === '재현'), '되메운 뒤에도 갈라짐이 남았다: '
+    + JSON.stringify(뒤.map((r) => [r.이름, r.상태])));
+  assert.ok(fs.readFileSync(path.join(원고방, '을.html'), 'utf8').includes('손으로 더한 문단'),
+    '되메운 원고에 손 수정이 안 실렸다 — 되돌린 것이 아니라 버린 것이다');
+});
+
+test('되메우기는 반쪽만 뜯으면 «쓰지 않고» 던진다', () => {
+  const { 방, 원고방 } = 픽스처방();
+  const 갑 = path.join(방, '갑.html');
+  const 원고갑 = path.join(원고방, '갑.html');
+  const 전 = fs.readFileSync(원고갑, 'utf8');
+  // 굽기 산출물이 아닌 파일 — 뜯을 스킨이 없다.
+  assert.throws(() => 도구.되메우기(원고갑, path.join(방, '버릴.html')), /굽기 산출물이 아니다/);
+  도구.되메우기(갑, 원고갑);
+  assert.notStrictEqual(fs.readFileSync(원고갑, 'utf8').length, 0);
+  assert.ok(전.includes(도구.표식) && fs.readFileSync(원고갑, 'utf8').includes(도구.표식),
+    '되메운 원고에 표식이 없다 — 다시 못 굽는다');
+});
+
+test('실저장소 — 「Loom 을 입는 지면」 전량이 원고에서 재현된다(0 은 분모와 함께)', () => {
+  const 짝 = 도구.지면짝들();
+  assert.ok(짝.length >= 6, `지면 분모가 ${짝.length} 이다 — 0/0 초록은 「안 쟀다」와 같은 모양이다`);
+  const 줄 = 도구.재현대조(path.join(os.tmpdir(), 'synk-재현대조-실'));
+  const 갈 = 줄.filter((r) => r.상태 === '갈라짐');
+  const 못잼 = 줄.filter((r) => !['재현', '갈라짐'].includes(r.상태));
+  assert.strictEqual(갈.length, 0,
+    '원고보다 앞선 산출물 ' + 갈.length + '벌 — `node tools/펠트문서.js --재현` 이 되메우기 명령을 낸다: '
+    + 갈.map((r) => r.이름).join(', '));
+  assert.strictEqual(못잼.length, 0, '못 잰 지면: ' + 못잼.map((r) => r.이름 + '(' + r.상태 + ')').join(', '));
+});
+
 test('낮 지면은 «배경 그래픽 끔»에도 읽힌다 — 이게 낮 지면이 있는 이유다', () => {
   const 흰 = 1; // 흰 종이 상대휘도
   const 비 = (Y) => (Math.max(Y, 흰) + 0.05) / (Math.min(Y, 흰) + 0.05);
