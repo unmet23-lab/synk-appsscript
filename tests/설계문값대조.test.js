@@ -144,7 +144,10 @@ function sql줄들(본문) {
  * 「빈 DB 에 위에서 아래로 적용하면 죽는 문장」만 본다 = **DDL 문장**.
  * 시작 줄부터 세미콜론까지를 한 문장으로 모으고, 줄 끝 주석(`--`)은 떼어낸다.
  */
-const DDL시작 = /^(create table|alter table|create (unique )?index|create trigger|drop trigger|revoke|grant|comment on)/i;
+/* 🔑 `create constraint trigger` 를 따로 적은 이유 = 실사용이 잡은 사각이다. 첫 판은 `create trigger`
+ *    만 적었는데, 갈래 10 집행이 `create constraint trigger` 를 쓰자 그 문장이 **검사 밖으로 빠졌다**.
+ *    가드가 「막는 것을 다 잡는지」는 규칙이 아니라 실제 표기로 확인한다(CLAUDE.md 맹점 ①). */
+const DDL시작 = /^(create table|alter table|create (unique )?index|create (constraint )?trigger|drop trigger|revoke|grant|comment on)/i;
 
 function DDL문장들(줄목록) {
   const 결과 = [];

@@ -364,13 +364,31 @@ async function 붙기(런ID, r) {
   return 코드;
 }
 
+/* 답 본문이 **어디에 사는가.** 실측(응답 원문): assistant 메시지는
+ *   { id, type:'assistant_message', timestamp, assistant_message: { content: '…' } }
+ * 이다 — 본문은 `m.assistant_message.content` 에 있고 `m.content` 는 **없다.**
+ * 🔴 옛 코드는 `m.content || m.text || m.message` 를 훑었다. 타입 필터는 통과하는데 본문이
+ *   전부 빈 문자열이 돼 `filter(Boolean)` 에서 사라졌고, 결과 파일의 「## 답」 칸엔
+ *   `_(assistant 메시지를 못 찾았다)_` 만 남았다 — **답은 도착해 있는데 사람이 읽는 자리엔 안 왔다.**
+ *   F512 와 같은 병이다: 벤더 응답의 필드명을 재지 않고 후보로 나열했고, 나열은 전부 빗나가도
+ *   아무 소리를 안 낸다. 그래서 여기선 **실측한 자리를 1순위**로 두고 옛 후보는 뒤에 남긴다. */
+function 말본문(m) {
+  if (!m) return '';
+  const 실측 = m.assistant_message && m.assistant_message.content;
+  const v = 실측 != null ? 실측 : (m.content != null ? m.content : (m.text != null ? m.text : m.message));
+  /* content 가 조각 배열로 오는 벤더도 있다 — 그때 String() 은 "[object Object]" 를 낸다.
+   * 그건 「못 찾음」보다 나쁘다: 틀린 값이 맞는 얼굴로 파일에 앉는다. */
+  if (Array.isArray(v)) return v.map((x) => (typeof x === 'string' ? x : (x && x.text) || '')).filter(Boolean).join('\n');
+  return typeof v === 'string' ? v : '';
+}
+
 function 결과쓰기(런ID, r, 상태, j) {
   fs.mkdirSync(결과방, { recursive: true });
   const 목록 = Array.isArray(j.messages) ? j.messages : (Array.isArray(j.data) ? j.data : []);
   /* order=desc 로 받았으니 읽는 순서는 뒤집는다 — 사람이 위에서 아래로 읽는다. */
   const 말 = 목록.slice().reverse()
     .filter((m) => /assistant/i.test(String(m.type || m.role || m.event_type || '')))
-    .map((m) => String(m.content || m.text || m.message || '')).filter(Boolean);
+    .map(말본문).filter(Boolean);
 
   const 본문 = [
     `# 사실 심문 — ${r.대상 || r.질문 || 런ID}`,
@@ -507,5 +525,5 @@ if (require.main === module) {
     .then((c) => { process.exitCode = c || 0; })
     .catch((e) => { console.error(`🔴 ${e.message}`); process.exitCode = 1; });
 } else {
-  module.exports = { 생성몸통, 작업ID캐기, 상태캐기, 회복불가인가, 기본프로필, 빈값상한, 키, 키경로, 종류, API, 재개덧 };
+  module.exports = { 생성몸통, 작업ID캐기, 상태캐기, 말본문, 회복불가인가, 기본프로필, 빈값상한, 키, 키경로, 종류, API, 재개덧 };
 }
