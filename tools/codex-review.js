@@ -1798,10 +1798,12 @@ function 런현황() {
   }
   if (s.멈춤.length) {
     console.log(`🔴 **멈춘** 런 ${s.멈춤.length}건(죽었거나 매달렸다 — 통과가 아니다):`);
-    /* 이어받기 명령은 **종류마다 도구가 다르다** — 여기서 손으로 적지 않는다(F511).
-     * 옛 판은 `x.런.인자.join(' ')` 이라 `인자` 칸이 없는 사실심문 런에서 TypeError 로 죽었고,
-     * 멈춤 절에서 끊겨 아래 「도는 중」이 통째로 안 나왔다. */
-    s.멈춤.forEach((x) => { console.log(`${줄(x)} — ${x.판.사유 || ''}`); console.log(런.이어받기줄(x.런)); });
+    s.멈춤.forEach((x) => {
+      const 이 = 런.이어받기명령(x.런);
+      console.log(`${줄(x)} — ${x.판.사유 || ''}`);
+      console.log(`      이어받기: ${이.명령}`);
+      if (이.비고) console.log(`      ↩ ${이.비고}`);
+    });
   }
   if (s.진행.length) {
     console.log(`⏳ 도는 중 ${s.진행.length}건:`);
