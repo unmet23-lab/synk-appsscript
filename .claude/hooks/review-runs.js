@@ -62,7 +62,7 @@ function main() {
   try { 한도 = 런.한도상태(); } catch (_) { /* 마커를 못 읽으면 알림만 포기한다 — 런 알림은 그대로 */ }
   const 한도표시 = !!(한도 && !한도.지남);
 
-  const 총 = s.완주미처분.length + s.멈춤.length + s.진행.length;
+  const 총 = s.완주미처분.length + s.실패미처분.length + s.멈춤.length + s.진행.length;
   if (!총 && !한도표시) process.exit(0);   // 던진 것도 한도 마커도 없다 — 한 글자도 안 쓴다
 
   const 줄 = [];
@@ -88,6 +88,21 @@ function main() {
       줄.push(`     로그: ${x.런.로그}`);
     }
     줄.push('   읽고 처분했으면 도장(찍기 전까진 세션마다 뜬다): node tools/codex-review.js --런처분 <런ID> --사유 "무엇을 했나"');
+  }
+
+  /* 🔴 실패는 ✅ 칸에서 뺀다. 실측 F509: 종료코드 3(결과 0바이트)짜리 런이 여기서
+   * 「✅ 결과가 이미 나와 있다. 지금 읽어라」로 나갔고, 그 말을 믿고 연 로그 44KB 가
+   * 전부 404 였다. 알림이 틀리는 방향은 언제나 «통과» 쪽이라, 이 칸을 따로 세운다. */
+  if (s.실패미처분.length) {
+    const 짧게2 = (v, n) => { const t = String(v == null ? '' : v).replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
+    줄.push('');
+    줄.push(`🔴 **실패로 끝난 것 ${s.실패미처분.length}건 — 주울 답이 없다**(로그를 열어도 답이 아니라 오류다):`);
+    for (const x of s.실패미처분) {
+      줄.push(`   · ${x.런.런ID} (${x.런.종류} · ${x.판.분}분 전 · 코드 ${x.런.종료코드 == null ? '?' : x.런.종료코드}) ${짧게2(x.런.대상, 60)}`);
+      줄.push(`     왜: ${짧게2(x.런.비고, 110) || '(비고 없음 — 로그 끝을 본다)'}`);
+      줄.push(`     로그: ${x.런.로그}`);
+    }
+    줄.push('   다시 던졌거나 접었으면 도장: node tools/codex-review.js --런처분 <런ID> --사유 "무엇을 했나"');
   }
 
   if (s.멈춤.length) {

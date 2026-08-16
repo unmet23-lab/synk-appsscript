@@ -119,7 +119,9 @@ test('마커는 런 목록에 안 선다 — 들이면 「런ID undefined · 멈
   const 런 = 런모듈();
   런.한도기록(실측줄);
   const s = 런.요약();
-  assert.strictEqual(s.진행.length + s.멈춤.length + s.완주미처분.length, 0,
+  /* 분모에 **모든 칸**을 넣는다 — 칸이 늘었는데 여기를 안 넓히면 유령이 새 칸으로 조용히 샌다
+   * (F509 에서 '실패미처분' 이 늘었다 · 지침 「초록은 분모와 함께 읽는다」). */
+  assert.strictEqual(s.진행.length + s.멈춤.length + s.완주미처분.length + s.실패미처분.length, 0,
     '한도.json 이 런으로 읽혔다 — 유령 멈춤 알림이 진짜 신호를 죽인다');
 });
 
