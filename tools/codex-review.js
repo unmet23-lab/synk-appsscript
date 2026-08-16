@@ -1798,7 +1798,12 @@ function 런현황() {
   }
   if (s.멈춤.length) {
     console.log(`🔴 **멈춘** 런 ${s.멈춤.length}건(죽었거나 매달렸다 — 통과가 아니다):`);
-    s.멈춤.forEach((x) => { console.log(`${줄(x)} — ${x.판.사유 || ''}`); console.log(`      이어받기: node tools/codex-review.js ${x.런.인자.join(' ')}  (체크포인트가 있어 끝난 회차는 안 다시 돈다)`); });
+    s.멈춤.forEach((x) => {
+      const 이 = 런.이어받기명령(x.런);
+      console.log(`${줄(x)} — ${x.판.사유 || ''}`);
+      console.log(`      이어받기: ${이.명령}`);
+      if (이.비고) console.log(`      ↩ ${이.비고}`);
+    });
   }
   if (s.진행.length) {
     console.log(`⏳ 도는 중 ${s.진행.length}건:`);
