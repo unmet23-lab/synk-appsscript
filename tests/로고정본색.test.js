@@ -31,21 +31,25 @@ function allHtml() {
   return out;
 }
 
-/** v10 Crew Dossier 19색. 여기 없는 색은 이 문서에 못 들어온다. */
-const KIT = new Set([
-  '#F6F1E8', '#FF6B5C', '#1A2340', '#C8FF3D', '#171820',
-  '#FBF7EE', '#EFE7D7', '#E7DDC7',
-  '#FFE9E4', '#FFCFC6', '#FF8877', '#E8543F',
-  '#2A3358', '#131A32', '#0F1730',
-  '#FF3E88', '#FF6BA8', '#FFD447', '#4E7CFF',
-]);
-/** 종이·먹 자체는 색이 아니다. */
-const NEUTRAL = new Set(['#FFFFFF', '#000000']);
-
+/**
+ * 킷 전량. 여기 없는 색은 이 문서에 못 들어온다.
+ * 🔴 **손 목록을 안 든다**(2026-08-16 · F520): 초판은 「v10 Crew Dossier 19색」을 hex 로 박아 뒀는데,
+ *   그 뒤 킷이 **23색**(19 + Slate 2 + Lime Family 2)이 되도록 이 목록만 안 따라왔다.
+ *   그래서 정본이 정식으로 들인 `Slate #8A93AD`·`Slate 2 #5F657D`(DESIGN.md §킷 「보조 잉크 2」)를
+ *   이 가드가 **「키트 밖 색」이라고 불렀다** — 새는 방향이 「적색」이라 안 보이다가, 그 색을 쓰는
+ *   지면이 처음 들어오는 날 남의 트랙을 막는다. 같은 판정을 두 곳에 적으면 갈라진다(CLAUDE.md 맹점 ④).
+ *   ⇒ **기계 원천에서 파생한다.** 토큰 파일 자신이 같은 교훈을 이미 적어 뒀다(`색._킷주`:
+ *   「이름에 개수를 박지 않는다 — 개수는 배열이 안다」).
+ */
 function expand(h) {
   const s = h.replace('#', '');
   return '#' + (s.length === 3 ? [...s].map((c) => c + c).join('') : s).toUpperCase();
 }
+
+const 토큰 = require(path.join(__dirname, '..', 'docs', '디자인_토큰.json'));
+const KIT = new Set(토큰['색']['킷'].map((c) => expand(c['hex'])));
+/** 종이·먹 자체는 색이 아니다. */
+const NEUTRAL = new Set(['#FFFFFF', '#000000']);
 
 function colorsIn(src) {
   const found = new Set();

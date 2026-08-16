@@ -137,6 +137,24 @@ test('탐지력 — 문자열·주석 «안»의 중괄호가 깊이를 못 속�
   }
 });
 
+test('탐지력 — @page 는 «가두는» 게 아니라 버린다 (남의 지면 상자를 안 바꾼다)', () => {
+  /* 🔴 이걸 통과시키면 발표물 6벌이 자기 `@page{size:A4;margin:0}` 을 잃는다 — 6벌 전부.
+   *   가둘 수 없는 것을 «조용히 통과»시키면 통과가 곧 침범이다. */
+  assert.strictEqual(범위씌우기('@page{margin:14mm}h2{color:red}', '.룸'), '.룸 h2{color:red}');
+  assert.strictEqual(범위씌우기('@media print{@page{margin:14mm}h2{color:red}}', '.룸'),
+    '@media print{.룸 h2{color:red}}');
+});
+
+test('인쇄부품 — 낮 층은 실리고 @page 는 안 실린다(규칙으로는)', () => {
+  const out = css({ 지면: '인쇄부품' });
+  assert.ok(/@media print\{/.test(out),
+    '낮 층이 없다 — 종이에서 부품이 Cream on 흰 종이 1.13:1 로 사라진다');
+  /* 주석에 적힌 `@page` 는 규칙이 아니다 — 규칙만 센다. */
+  assert.strictEqual(out.replace(/\/\*[\s\S]*?\*\//g, '').match(/@page\b/g), null,
+    '@page 규칙이 살아 나갔다 — 남의 지면 상자를 덮는다');
+  assert.deepStrictEqual(안가둔것(out, 기본범위['인쇄부품']), []);
+});
+
 test('탐지력 — 범위가 없으면 한 글자도 안 바꾼다(무변경이 기본값)', () => {
   const 들 = 'h2{color:red}body{margin:0}';
   assert.strictEqual(범위씌우기(들, null), 들);
