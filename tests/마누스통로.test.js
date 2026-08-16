@@ -220,8 +220,41 @@ test('⑱ 🔑 장치가 **실제로 발화한다** — 폴러가 상태캐기�
    * 되돌려 놔도 초록이었다(변이 ⑥ 이 잡아냈다). 정의는 「있다」의 증거지 「쓴다」의 증거가 아니다. */
   const 부름 = 줄들.filter((l) => /상태캐기\s*\(/.test(l) && !/function\s+상태캐기/.test(l));
   assert.ok(부름.length > 0, '폴러가 공용 판독을 실제로 불러야 한다(함수만 두고 안 쓰면 그대로다)');
+  /* 답 추출도 같은 잣대로 본다 — 여기도 변이가 구멍을 냈다(결과쓰기를 옛 인라인 식으로 되돌려도 초록이었다). */
+  const 답부름 = 줄들.filter((l) => /말본문/.test(l) && !/function\s+말본문/.test(l));
+  assert.ok(답부름.length > 0, '결과쓰기가 공용 답 추출을 실제로 써야 한다');
+  assert.ok(!/m\.content \|\| m\.text \|\| m\.message/.test(코드줄),
+    '옛 인라인 추출이 남아 있다 — 그 식은 실측 자리(assistant_message.content)를 못 본다');
   assert.ok(/연속빈값\s*\+=\s*1/.test(코드줄) && /연속빈값\s*>=\s*빈값상한/.test(코드줄),
     '빈값이 몇 회 연속인지 세고 상한에서 끊어야 한다 — 안 그러면 못 읽는 상태가 「도는 중」으로 흘러 상한까지 간다');
   assert.ok(Number.isInteger(통로.빈값상한) && 통로.빈값상한 > 0 && 통로.빈값상한 <= 30,
     `빈값상한 «${통로.빈값상한}» — 실측상 첫 status_update 는 생성 +1~2초에 뜬다(6/6). 30회를 넘기면 장치가 사실상 없는 것이다`);
+});
+
+/* ⑲~㉑ 답 본문 — **F512 와 같은 병이 한 층 아래에 또 있었다**(실측: 상태를 고쳐 결과 파일을
+ * 처음 받아 보고서야 드러났다). assistant 메시지는
+ *   { type:'assistant_message', assistant_message: { content: '…' } }
+ * 인데 옛 코드는 `m.content || m.text || m.message` 를 훑었다. 타입 필터는 통과하고 본문만
+ * 빈 문자열이 돼 `filter(Boolean)` 에서 사라져, 「## 답」 칸에 «못 찾았다»만 남았다.
+ * 던진 실탄의 답이 도착해 있는데 사람이 읽는 자리엔 안 온 것이다. */
+
+test('⑲ 🔴 답 본문은 `assistant_message.content` 에 있다 — 도착한 답이 «못 찾았다»로 앉던 자리', () => {
+  const m = { id: 'x', type: 'assistant_message', assistant_message: { content: '**결론: 전체 판정은 무너진다.**' } };
+  assert.strictEqual(통로.말본문(m), '**결론: 전체 판정은 무너진다.**');
+});
+
+test('⑳ 옛 후보 필드도 계속 읽는다 — 고치면서 되던 것을 깨지 않는다', () => {
+  assert.strictEqual(통로.말본문({ content: 'A' }), 'A');
+  assert.strictEqual(통로.말본문({ text: 'B' }), 'B');
+  assert.strictEqual(통로.말본문({ message: 'C' }), 'C');
+  /* 실측 자리가 1순위다 — 둘 다 있으면 벤더가 실제로 채우는 쪽을 쓴다. */
+  assert.strictEqual(통로.말본문({ content: '옛', assistant_message: { content: '실측' } }), '실측');
+});
+
+test('㉑ 객체를 String() 으로 눕히지 않는다 — "[object Object]" 는 «못 찾음»보다 나쁘다', () => {
+  /* 틀린 값이 **맞는 얼굴로** 파일에 앉으면 사람이 그걸 답으로 읽는다(가드 맹점 ④). */
+  assert.strictEqual(통로.말본문({ assistant_message: { content: { 깊은: '객체' } } }), '');
+  assert.strictEqual(통로.말본문({ assistant_message: { content: [{ text: '조각1' }, '조각2'] } }), '조각1\n조각2');
+  assert.strictEqual(통로.말본문(null), '');
+  assert.strictEqual(통로.말본문({}), '');
 });
