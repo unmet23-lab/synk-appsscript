@@ -84,9 +84,15 @@ function lint(file) {
   // 기간 약속 금지 — 승급은 도달제다(정본 ■7)
   if (/(\d+)\s*(개월|주|년)\s*이?면\s*\d*\s*급/.test(text)) bad.push('기간 약속(「N개월이면 N급」)');
 
-  // 비노출 잠금 — 고객 대면물에서 SYNK STUDIO·Wear·Pantry 는 언급하지 않는다(정본 ■8)
-  const hidden = ['STUDIO', 'Wear', 'Pantry'].filter((w) => text.includes(w));
+  // 비노출 잠금 — 고객 대면물에서 SYNK STUDIO 는 언급하지 않는다(정본 ■8)
+  const hidden = ['STUDIO'].filter((w) => text.includes(w));
   if (hidden.length) bad.push(`비노출 잠금 위반: ${hidden.join(', ')}`);
+
+  // 철회된 제품 라인 — 의류·굿즈·식품(구 Wear·Pantry·우산명)은 2026-08-16 계보에서
+  // 제거됐다(조직계보 v1.4 부록 5 · 유호님 확정). 비노출이 아니라 철회라 예외 자리가
+  // 없다 — 투자자 덱에도 안 쓴다. 구 덱을 재활용하면 조용히 되살아나므로 여기서 막는다.
+  const 철회됨 = ['Wear', 'Pantry', 'SYNK LIFE', '웨어', '팬트리'].filter((w) => text.includes(w));
+  if (철회됨.length) bad.push(`철회된 제품 라인(2026-08-16): ${철회됨.join(', ')}`);
 
   // 소개·안내물에 가격 수치를 넣지 않는다(정본 ■8)
   if (/\d[\d,]*\s*만?₮|\d[\d,]*\s*원(?![가-힣])/.test(text)) bad.push('가격 수치');
