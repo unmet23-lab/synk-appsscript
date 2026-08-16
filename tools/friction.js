@@ -353,7 +353,16 @@ function 장부커밋실행(계획, 내몫) {
   /* 갓 태어난 조각은 미추적이라 diff HEAD 에 안 보인다 — 경로를 못 박아 스테이지부터 한다.
    * (F025: 미추적은 이력·stash·reflog 어디에도 없는 유일한 무보호 상태 — 그 시간을 0으로 만든다.) */
   const 추적전 = gitQuiet(['status', '--porcelain', '--', 경로]);
-  if (추적전 !== null && /^\?\?/m.test(추적전)) gitQuiet(['add', '--', 경로]);
+  const 미추적이었나 = 추적전 !== null && /^\?\?/m.test(추적전);
+  if (미추적이었나) gitQuiet(['add', '--', 경로]);
+  /* 🔴 `add` 가 **안 먹은 것**과 「정말 바뀐 게 없다」가 아래 diff 에서 같은 모양이다(F493 실측:
+   * 고아 잠금 아래 `add` 가 조용히 지고 → diff 빈손 → 「커밋할 변경이 없다(장부는 저장됐다)」).
+   * 그 문장은 맞는 얼굴인데 값이 틀렸다 — 갓 태어난 조각이 **미추적**으로 남는다(F025 무보호).
+   * 그래서 미추적이었던 경로는 add 뒤에 **실제로 스테이지됐는지**를 다시 본다. */
+  if (미추적이었나) {
+    const 추적후 = gitQuiet(['status', '--porcelain', '--', 경로]);
+    if (추적후 === null || /^\?\?/m.test(추적후)) return { 실패: true, 동승: 0, 미추적: true };
+  }
   const stat = gitQuiet(['diff', '--numstat', 'HEAD', '--', 경로]);
   if (stat === null || !stat.trim()) return { 건너뜀: '커밋할 변경이 없다' };
   const [추가, 삭제] = stat.trim().split('\n')[0].split('\t').map((n) => Number(n) || 0);
@@ -380,7 +389,17 @@ function 장부커밋실행(계획, 내몫) {
 function 커밋보고(r) {
   if (!r) return;
   if (r.건너뜀) { console.log(`  · 커밋 건너뜀 — ${r.건너뜀}(장부는 저장됐다)`); return; }
-  if (r.실패) { console.log('  ⚠ 장부가 미커밋으로 남았다 — 손으로 커밋한다(기록 자체는 안 잃었다)'); return; }
+  if (r.실패) {
+    console.log(r.미추적
+      ? '  🔴 장부 조각이 **미추적**으로 남았다 — 손으로 `git add` 부터 한다(미추적은 이력 어디에도 없는 유일한 무보호 상태 · F025)'
+      : '  ⚠ 장부가 미커밋으로 남았다 — 손으로 커밋한다(기록 자체는 안 잃었다)');
+    /* 고아 잠금이면 그 처방(손 커밋)도 똑같이 막힌다 — 따를 수 없는 처방은 우회를 정상 통로로
+     * 만든다(F103). 3회 재시도가 겨눈 것은 «경합»뿐이라, 고아는 여기서 이름을 대야 한다. */
+    let 잠금 = '';
+    try { 잠금 = require(path.join(__dirname, 'lib', 'git잠금.js')).고아잠금줄(ROOT); } catch (_) { /* 곁가지 */ }
+    if (잠금) console.log(잠금);
+    return;
+  }
   if (r.남이실음) { console.log('  ✔ 장부는 이미 커밋돼 있다 — 옆 세션이 같은 순간에 실었다'); return; }
   console.log(`  ✔ 커밋 ${r.해시}${r.동승 ? ` (남의 행 ${r.동승}개 동승 — 장부는 공용이라 정상)` : ''}`);
 }
