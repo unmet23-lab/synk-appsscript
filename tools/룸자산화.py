@@ -1,0 +1,126 @@
+# 구운 판(1100px PNG)을 «지면이 삼킬 수 있는 것»으로 바꾼다.
+#
+# 왜 이 단계가 따로 있나 — 실측된 실패 모드 둘:
+#   ① **첨부로 떠도는 지면에서 그림이 전멸한다.** 홈페이지 트랙 실측(08-15): 외부 파일 참조로 만든
+#      지면을 첨부 단독으로 열자 그림 **7/7 전멸**. ⇒ Loom 재질은 base64 로 지면 «안»에 산다.
+#   ② **1100px 판을 35px 원판에 그대로 걸면** 지면 하나가 수 MB 가 된다. 쓰는 크기로 줄여야 한다.
+#      줄이는 것은 손해가 아니라 **슈퍼샘플링**이다 — 1100→128 은 굴절의 미세 결을 평균내
+#      오히려 «찍은 것»에 가까워진다.
+#
+# 알파 여백을 먼저 **잘라낸다**: 렌더의 60%는 빈 알파고, 그걸 그대로 줄이면 몸이 조각만 남는다.
+# 몸·접지 두 장은 **같은 상자**로 자른다(따로 자르면 그림자가 어긋난다).
+#
+# 사용: python tools/룸자산화.py
+import sys, os, io, json, base64
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
+import numpy as np
+from PIL import Image
+
+루트 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+구움 = os.path.join(루트, "docs", "Loom_자산", "구움")
+낼곳 = os.path.join(루트, "docs", "Loom_자산", "구운재질.json")
+
+# 쓰는 크기 × 2(레티나) 로 잡는다. 「더 크게 두면 안전하다」가 아니다 —
+# 지면 무게가 부품 수만큼 곱해지므로 여기가 곧 지면 성능이다.
+규격 = {
+    "원판":       {"크기": 128, "쓰임": "번호 원판 — h2·ol·차례·각주 (지면당 수십 개)"},
+    "레진구_무채": {"크기": 96,  "쓰임": "불릿·체크 (지면당 수십 개 · 갇힌 빛 무채)"},
+    "유리구":     {"크기": 96,  "쓰임": "표식 구슬·링크점"},
+    "레진구":     {"크기": 320, "쓰임": "히어로수 — 지면당 1점"},
+    "레진구_글자": {"크기": 420, "쓰임": "브랜드 히어로 — 갇힌 자모 (표지 전용)"},
+    "칩":         {"크기": 256, "쓰임": "태그·칩"},
+    "판":         {"크기": 256, "쓰임": "유리 카드 테두리 (9분할 border-image)"},
+    "합주":       {"크기": 640, "쓰임": "표지 장면"},
+}
+
+
+def 상자(a, 문턱=6):
+    """알파가 사는 최소 사각형. 없으면 None."""
+    ys, xs = np.where(a > 문턱)
+    if not len(ys):
+        return None
+    return (int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1)
+
+
+def 합(b1, b2):
+    if b1 is None: return b2
+    if b2 is None: return b1
+    return (min(b1[0], b2[0]), min(b1[1], b2[1]), max(b1[2], b2[2]), max(b1[3], b2[3]))
+
+
+def 정사각(b, w, h):
+    """자른 상자를 정사각으로 넓힌다 — CSS 에서 background-size 를 한 값으로 쓰기 위해서.
+    ⚠억지로 늘리지 않고 «넓히기»만 한다(잘라내면 모따기 하이라이트가 잘린다)."""
+    x0, y0, x1, y1 = b
+    변 = max(x1 - x0, y1 - y0)
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    x0 = int(max(0, min(w - 변, cx - 변 / 2)))
+    y0 = int(max(0, min(h - 변, cy - 변 / 2)))
+    return (x0, y0, x0 + 변, y0 + 변)
+
+
+def 웹피(im, 크기, 품질=88):
+    im = im.resize((크기, 크기), Image.LANCZOS)
+    buf = io.BytesIO()
+    im.save(buf, format="WEBP", quality=품질, method=6)
+    return buf.getvalue()
+
+
+def 데이터URI(b):
+    return "data:image/webp;base64," + base64.b64encode(b).decode("ascii")
+
+
+낸것 = {}
+합계 = 0
+print("■ Loom 자산화 — 구운 판 → 지면이 삼킬 수 있는 것\n")
+for 이름, spec in 규격.items():
+    몸길 = os.path.join(구움, 이름 + "_몸.png")
+    접길 = os.path.join(구움, 이름 + "_접지.png")
+    한길 = os.path.join(구움, 이름 + ".png")
+    두장 = os.path.exists(몸길) and os.path.exists(접길)
+    if not 두장 and not os.path.exists(한길):
+        print("  ⬜ %-12s 안 구웠다" % 이름)
+        continue
+
+    if 두장:
+        몸 = Image.open(몸길).convert("RGBA")
+        접 = Image.open(접길).convert("RGBA")
+        w, h = 몸.size
+        b = 정사각(합(상자(np.asarray(몸)[:, :, 3]), 상자(np.asarray(접)[:, :, 3])), w, h)
+        몸b = 웹피(몸.crop(b), spec["크기"])
+        접b = 웹피(접.crop(b), spec["크기"], 품질=80)
+        낸것[이름] = {"몸": 데이터URI(몸b), "접지": 데이터URI(접b),
+                     "층": 2, "px": spec["크기"], "쓰임": spec["쓰임"]}
+        바 = len(몸b) + len(접b)
+        print("  ✅ %-12s 두 층(몸+접지) · %dpx · %.1fKB" % (이름, spec["크기"], 바 / 1024))
+    else:
+        im = Image.open(한길).convert("RGBA")
+        w, h = im.size
+        b = 정사각(상자(np.asarray(im)[:, :, 3]), w, h)
+        몸b = 웹피(im.crop(b), spec["크기"])
+        낸것[이름] = {"몸": 데이터URI(몸b), "층": 1, "px": spec["크기"], "쓰임": spec["쓰임"]}
+        바 = len(몸b)
+        print("  ✅ %-12s 한 층 · %dpx · %.1fKB" % (이름, spec["크기"], 바 / 1024))
+    합계 += 바
+
+# 🔑 0은 분모와 함께 쓴다 — 「몇 개 냈다」만 적으면 안 낸 것이 이름 없이 사라진다.
+안낸것 = [n for n in 규격 if n not in 낸것]
+print("\n  합계 = 낸 것 %d + 안 낸 것 %d (전체 %d)" % (len(낸것), len(안낸것), len(규격)))
+if 안낸것:
+    print("  안 낸 것: " + ", ".join(안낸것) + "  → node tools/룸굽기.js --전량")
+print("  지면에 실리는 무게 = %.1fKB (base64 전 · 실제 %.1fKB)" % (합계 / 1024, 합계 * 4 / 3 / 1024))
+
+with open(낼곳, "w", encoding="utf-8") as f:
+    json.dump({
+        "판": "loom-구운재질 v1",
+        "만든날": "2026-08-16",
+        "어떻게": "tools/룸굽기.js (Blender Cycles) → tools/룸자산화.py",
+        "왜 base64 인가": "외부 참조는 첨부 단독 지면에서 전멸한다(실측 08-15 · 7/7)",
+        "부품": 낸것,
+    }, f, ensure_ascii=False)
+print("\n✅ " + os.path.relpath(낼곳, 루트) + " — `tools/lib/loom.js` 가 여기서 읽는다")
