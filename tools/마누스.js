@@ -155,11 +155,23 @@ function 장부적기(줄) {
 async function 던지기(질문, 라벨) {
   if (!질문) { console.error('질문이 없다 — node tools/마누스.js --던지기 "<질문>"'); return 2; }
 
+  /* 이어받을 수 있는 종류인지 **원격 작업을 만들기 전에** 본다(F511). `런ID발급()` 도 같은 것을
+   * 거절하지만 그 자리는 task.create 뒤라, 거기서 걸리면 크레딧은 이미 나갔는데 장부엔 아무것도
+   * 안 남는다 — 유령이 하나 더 생기는 모양이다. 값이 드는 쪽 앞에 벽을 하나 더 세운다. */
+  if (!런.아는종류(종류)) {
+    console.error(`🔴 종류 「${종류}」 가 tools/lib/검수런.js 의 이어받기표에 없다 — 던지면 멈춘 날 이어받을 방법이 없다(F511).`);
+    return 2;
+  }
+
   /* ⚠ 몸통 모양은 **실물에서 왔다.** 벤더 문서 `task-lifecycle.md` 는 `{prompt}` 라고 적어
    *   뒀는데 실제 API 는 400 `message.content is required` 를 낸다(2026-08-16 실측).
    *   → 문서를 근거로 `prompt` 로 되돌리지 마라. 되돌리는 순간 전 호출이 400 이다.
-   * ⚠ `agent_profile` 은 **일부러 안 보낸다** — 등급마다 쓸 수 있는 프로필이 달라(무료=lite)
-   *   박아 두면 등급이 바뀌는 날 조용히 깨진다. 계정 기본값에 맡긴다. */
+   * 🔴 `agent_profile` 은 **반드시 보낸다**(F510 · `생성몸통` 이 `기본프로필` 로 채운다).
+   *   옛 주석은 여기서 「일부러 안 보낸다 — 계정 기본값에 맡긴다」고 근거처럼 적혀 있었는데,
+   *   그 「계정 기본값」은 **한 번도 안 잰 전제**였고 존재하지 않았다. 프로필을 빼면 API 가
+   *   200 + task_id 를 주는데 그 작업이 계정 어디에도 없다(유령) — 통로가 선 날부터 성공 런이
+   *   0건이었던 원인이다. 등급이 오르면 상수를 고치지 말고 `MANUS_AGENT_PROFILE` 로 넘긴다.
+   *   🚫 이 줄을 「등급 바뀌는 날 깨진다」를 이유로 되돌리지 마라 — 되돌리면 전부 유령이 된다. */
   const 작업 = await 부르기('task.create', { method: 'POST', body: 생성몸통(질문, 라벨) });
   const 작업id = 작업ID캐기(작업);
 
@@ -368,6 +380,21 @@ async function 작업목록(제한) {
   return 0;
 }
 
+/**
+ * 다시 붙을 때 런에 덧쓰는 칸들. **함수로 뺀 이유가 전부다** — 인라인이면 회귀가 이 모양을
+ * 손으로 베껴 재현하게 되고, 그러면 여기를 망가뜨려도 시험이 초록이다(실측: 변이 2건이 그렇게
+ * 샜다). 시험이 이 함수를 직접 부르므로 이제 한 곳만 존재한다.
+ *
+ * · `재개` — 무응답 시계를 **지금부터** 다시 잰다. 안 찍으면 다시 붙은 런이 계속 「멈춤」으로
+ *   읽혀, 다음 세션이 같은 원격 작업에 폴러를 하나 더 붙인다(F511 후속 · 실측으로 잡았다).
+ * · `끝`·`종료코드`·`비고` — 죽은 폴러가 남긴 잔재를 지운다. `상태:진행` 옆의 `종료코드:3` 은
+ *   서로 모순인 기록이고, 모순은 읽는 쪽마다 다르게 접힌다(F509 가 정확히 그 자리였다).
+ *   `undefined` 를 넣으면 `JSON.stringify` 가 그 칸을 아예 뺀다 — 지우는 통로가 이것뿐이다.
+ */
+function 재개덧(pid) {
+  return { 상태: '진행', pid, 재개: new Date().toISOString(), 끝: undefined, 종료코드: undefined, 비고: undefined };
+}
+
 function 런목록() {
   const s = 런.요약();
   const 내것 = (x) => x.런.종류 === 종류;
@@ -383,7 +410,9 @@ function 런목록() {
   if (진.length) { console.log(`⏳ 도는 중 ${진.length}건:`); 진.forEach((x) => console.log(줄(x))); }
   if (멈.length) {
     console.log(`⚠ 폴러가 멈춤 ${멈.length}건 — **마누스는 계속 돌고 있을 수 있다.** 재던지기 말고 이어받아라(크레딧 0):`);
-    멈.forEach((x) => { console.log(줄(x)); console.log(`      node tools/마누스.js --이어받기 ${x.런.런ID}`); });
+    /* 이 줄은 원래도 맞았다 — 그래도 손으로 안 적는다(F511). 셋 중 둘이 틀렸던 이유가
+     * 「각자 적었다」이고, 맞는 하나를 남겨 두면 다음 종류에서 또 셋이 갈린다. */
+    멈.forEach((x) => { console.log(줄(x)); console.log(런.이어받기줄(x.런)); });
   }
   return 0;
 }
@@ -401,7 +430,7 @@ async function main() {
     const id = 값('--이어받기');
     const r = 런.런읽기(id);
     if (!(r && r.작업id)) { console.error(`런 ${id} 를 못 읽었다(또는 작업id 가 없다)`); return 2; }
-    런.런갱신(id, { 상태: '진행', pid: process.pid });
+    런.런갱신(id, 재개덧(process.pid));
     return 붙기(id, r);
   }
   /* 질문은 대개 여러 줄이고 따옴표·괄호를 품는다 — 셸에 맡기면 깨진다(CLAUDE.md 셸 조항).
@@ -431,5 +460,5 @@ if (require.main === module) {
     .then((c) => { process.exitCode = c || 0; })
     .catch((e) => { console.error(`🔴 ${e.message}`); process.exitCode = 1; });
 } else {
-  module.exports = { 생성몸통, 작업ID캐기, 회복불가인가, 기본프로필, 키, 키경로, 종류, API };
+  module.exports = { 생성몸통, 작업ID캐기, 회복불가인가, 기본프로필, 키, 키경로, 종류, API, 재개덧 };
 }
