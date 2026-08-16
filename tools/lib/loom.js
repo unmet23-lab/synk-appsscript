@@ -200,7 +200,11 @@ function 번호들(색, 유, 림줄) {
      letter-spacing:-.038em;line-height:var(--줄제목);color:var(--cream);}
   h2>span:not(.번호){flex:0 1 auto;min-width:0;}
   h2:not(:has(.번호))::before{content:counter(절,decimal-leading-zero);position:relative;${원판('2.05em', '.62em')}}
-  h2:not(:has(.번호))::after{content:'';flex:1 1 3em;min-width:2em;height:var(--실);
+  /* ⚠사라지는 실금은 «번호와 무관»하다 — :has(.번호) 로 함께 가두면 옛 원고(번호를 손으로 적은
+     지면)에서 절 실금이 통째로 사라진다. 실측 08-16: 소개서 6벌이 전부 그 모양이었다.
+     ::before(번호)만 갈리고 ::after(실금)는 어느 쪽이든 선다.
+     ⚠이 주석에 백틱을 쓰지 않는다 — 여기는 템플릿 리터럴 «안»이라 하나로 CSS 가 통째로 끊긴다. */
+  h2::after{content:'';flex:1 1 3em;min-width:2em;height:var(--실);
      background:linear-gradient(90deg,${알파(색, 'Cream', .24)},${알파(색, 'Cream', 0)});}
   .번호{position:relative;${원판('2.05em', '.62em')}}
   .번호::before{position:absolute;inset:0;${원판림(유['림원판두께px'])}}
@@ -349,27 +353,27 @@ const 구움표 = [
     min-width:2.9em;height:2.9em;padding:0 var(--참) .025em;}
   .히어로수::before{display:none;}` },
 
-  { 부품: ['태그'], 자산: '칩', css: (P) => `
-  /* 칩 — 가로로 늘어나는 부품이라 «늘려도 안 무너지는» 9분할로 얹는다.
-     border-image 는 네 모서리를 고정하고 변만 늘린다(직교 렌더라 네 변의 두께가 같다). */
-  .칩{background-image:none;background-color:transparent;box-shadow:none;
-    border:14px solid transparent;border-image:url("${P['칩']['몸']}") 42 fill / 14px / 0 stretch;
-    padding:calc(var(--숨) - 2px) calc(var(--참) - 6px);}
-  .칩::before{display:none;}` },
-
   { 부품: ['링크점'], 자산: '유리구', css: (P) => `
   /* 링크점 — 본문 링크 뒤의 작은 표식 구슬. 유리(통과시킨다)라 «가리키는 것»이 비쳐 보인다. */
   a .점,.링크점{${얹기(P['유리구'])}box-shadow:none;}` },
 
-  { 부품: [], 자산: '판', css: (P) => `
-  /* 유리 카드 — 크기가 지면마다 달라 통짜 렌더로는 못 쓴다. 직교로 구운 판을 9분할로 늘린다.
-     ⚠**테두리만** 가져온다(fill 없음) — 안쪽을 늘리면 굴절 결이 늘어져 «찢어진 유리»가 된다.
-       그래서 카드 안쪽은 CSS 반투명이 남는다. 이 부품은 «반쯤 구운» 상태이고,
-       부품 목록에는 카드가 없으므로(=구획이 아니라 그릇) 재질 분모에도 안 센다. */
-  .유리{border:22px solid transparent;
-    border-image:url("${P['판']['몸']}") 58 / 22px / 0 stretch;
-    padding:calc(var(--단) - 8px) calc(var(--단) + var(--숨) - 8px);}
-  .유리::before{opacity:.35;}          /* 흉내 림은 아주 옅게만 — 렌더 테와 겹치면 두 겹이 된다 */` },
+  /* 🔴 «판»·«칩» 은 여기 없다 — 2026-08-16 에 넣었다가 **렌더 실측으로 둘 다 물렸다.**
+     한 번이면 실수지만 둘이면 부류다. 뿌리는 하나 — **border-image 는 border-radius 를 무시한다.**
+     9분할은 언제나 «각진» 사각을 그리는데 우리 부품은 둘 다 둥글다(카드 22px · 칩 999px).
+     둘은 원리적으로 못 겹친다:
+       · 판 — 둥근 카드 위에 각진 액자가 얹혀 모서리마다 밝은 ㄱ자 표식이 남았다.
+       · 칩 — 알약 대신 «글자 아래로 어긋난 검은 사각»이 그려졌다(1배에서도 그대로).
+     둘 다 **없을 때보다 더 CG 로 읽혔다** — 여섯 자 ④(불완전)·⑤(광학)의 정확한 반대 방향이다.
+
+     ⚠**규율: 구움표는 border-image 를 쓰지 않는다.** 아래 회귀가 기계로 막는다
+       (`tests/loom.test.js` 「구움표는 border-image 를 안 쓴다」).
+     ▶ 다시 여는 조건 — «늘어나는» 부품을 구우려면 9분할이 아니라 **세 겹 배경**이어야 한다
+       (왼쪽 마구리 · 늘어나는 가운데 · 오른쪽 마구리 · 셋 다 따로 굽는다). 그러면 border-radius 와
+       싸우지 않고 clip 으로 둥글릴 수 있다. 지금 자산은 통짜 한 장이라 그 재료가 없다.
+
+     🔑 그래서 **재질 분모가 구움 9 → 8 로 내려간다**(태그가 흉내로 돌아온다).
+        「흉내 9→0」은 «CSS 가 나갔나»로 센 값이었고, «그려지나»는 안 재고 있었다.
+        내린 값이 맞는 값이다 — 깨진 것을 구움으로 세면 분모가 거짓말을 한다. */
 ];
 
 /** 구움층 — 있는 자산만 덮는다. 없으면 그 줄이 통째로 안 나가고 CSS 흉내가 산다. */
