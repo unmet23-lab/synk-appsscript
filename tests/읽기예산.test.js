@@ -34,6 +34,10 @@ const REREAD_FREE = 2;
 const REREAD_HARD = 5;
 const BIG = 16 * 1024;
 const CHUNK = 400;
+// 누적 바이트 층(2026-08-16). 훅 상수를 import 하지 않고 **여기 따로 적는다** — 우리 상수를
+// 빌려 쓰면 상수가 틀린 날 테스트도 같이 초록이 된다(F457 과 같은 축).
+const SESS_BYTES_WARN = 100 * 1024;
+const SESS_BYTES_HARD = 250 * 1024;
 
 // 카운터를 임시 폴더에 격리한다 — 안 하면 이 테스트가 실환경 일일 예산을 먹어 치운다.
 const BUDGET_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-read-budget-test-'));
@@ -251,4 +255,76 @@ test('settings.json 이 Read 를 이 훅으로 라우팅한다', () => {
   assert.ok(!/[A-Za-z]:\\/.test(cmd), '등록에 윈도 절대경로가 박혔다');
   // 실패 안전: 훅을 못 찾으면 통과가 아니라 차단이어야 한다
   assert.ok(cmd.includes('"permissionDecision":"deny"'), '훅 미실행 시 통과하게 돼 있다(F044)');
+});
+
+// ── ③ 누적 바이트 층 (2026-08-16 신설) ─────────────────────────────────────
+// 왜: 옛 층은 16KB 이상만 봤고, 실측에서 그건 Read 소모의 **17.6%** 였다.
+//     나머지 82.4%(특히 2~8KB 구간이 혼자 48.5%)는 어느 층도 안 보고 있었다.
+//     훅은 그동안 «맞는 얼굴로» 돌고 있었다 — 안 도는 쪽보다 이쪽이 더 위험하다(맹점 ④).
+// 픽스처가 BIG **아래**인 것이 이 절의 핵심이다 — 개수 층이 못 보는 크기여야
+// 「무엇이 잡았는지」가 갈린다.
+
+function midFile(bytes) {
+  fixSeq += 1;
+  const p = path.join(FIX, `mid-${fixSeq}.md`);
+  fs.writeFileSync(p, 'ㄱ'.repeat(Math.ceil((bytes || 15 * 1024) / 3)));
+  const sz = fs.statSync(p).size;
+  assert.ok(sz <= BIG, '이 픽스처는 개수 층 경계 아래여야 한다 — 아니면 무엇이 잡았는지 못 가른다');
+  return p;
+}
+
+test('정상 세션(실측 p50 = 33KB)은 누적 층을 만나지도 않는다', () => {
+  const s = freshSession();
+  let r;
+  for (let i = 1; i <= 2; i += 1) r = call(s, { file_path: midFile(15 * 1024) });
+  assert.ok(r.silent,
+    '30KB 에서 울면 실측 세션의 절반이 매번 경고를 본다 — 그런 가드는 곧 꺼진다');
+});
+
+test('16KB 미만 파일이 쌓이면 누적 층이 잡는다 (옛 층이 통째로 못 보던 구간)', () => {
+  const s = freshSession();
+  let r;
+  for (let i = 1; i <= 7; i += 1) r = call(s, { file_path: midFile(15 * 1024) });
+  assert.ok(!r.silent,
+    `누적 105KB(경고선 ${SESS_BYTES_WARN / 1024}KB)인데 조용하다 — 바이트 층이 안 세어지고 있다`);
+  assert.notStrictEqual(r.decision, 'deny', '경고 자리에서 차단하면 정상 작업이 막힌다');
+  assert.match(r.reason, /세션 누적/, '무엇이 걸렸는지 문구가 말해야 한다');
+});
+
+test('누적이 세션 상한을 넘으면 차단한다', () => {
+  const s = freshSession();
+  let r;
+  for (let i = 1; i <= 17; i += 1) r = call(s, { file_path: midFile(15 * 1024) });
+  assert.strictEqual(r.decision, 'deny',
+    `누적 255KB 인데 통과했다 — 상한 ${SESS_BYTES_HARD / 1024}KB`);
+  assert.match(r.reason, /세션 상한/);
+});
+
+test('구역 읽기는 누적 바이트를 안 먹는다 (처방을 벌주면 우회가 정상 통로가 된다 · F103)', () => {
+  const s = freshSession();
+  const big = bigFile(60 * 1024);
+  let r;
+  for (let i = 1; i <= 2; i += 1) r = call(s, { file_path: big, limit: 100 });
+  // 전문이었으면 120KB 라 경고선을 넘었을 자리다.
+  assert.ok(r.silent || !/누적/.test(r.reason || ''),
+    '구역 읽기가 누적을 먹으면 차단 사유가 시키는 그 경로가 같은 가드에 막힌다');
+});
+
+test('일일 누적도 세션을 갈아타면 살아남는다 (바이트 축 — 변이가 구멍으로 잡은 자리)', () => {
+  const day = `bytes-day-${process.pid}`;
+  let r;
+  // 세션마다 1장씩 = 세션 누적은 절대 안 걸린다. 걸릴 수 있는 건 일일 축뿐이다.
+  for (let i = 1; i <= 11; i += 1) {
+    r = call(freshSession(), { file_path: bigFile(60 * 1024) }, { day });
+  }
+  assert.match(r.reason || '', /오늘 누적/,
+    '세션을 갈아타면 바이트 예산이 리셋된다 — 08-04 스크린샷과 같은 형태의 구멍');
+});
+
+test('작은 파일도 누적에 실린다 (경계 아래라고 0으로 치면 82.4% 가 다시 사각이 된다)', () => {
+  const s = freshSession();
+  for (let i = 1; i <= 6; i += 1) call(s, { file_path: midFile(15 * 1024) });
+  // 여기까지 90KB — 아직 조용하다. 다음 한 장이 경고선을 넘긴다.
+  const r = call(s, { file_path: midFile(15 * 1024) });
+  assert.ok(!r.silent, '작은 파일이 누적에서 빠지면 이 자리가 영원히 조용하다');
 });
