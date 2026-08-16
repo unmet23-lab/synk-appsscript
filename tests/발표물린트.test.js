@@ -158,8 +158,18 @@ test('구 서체가 CSS 스택에만 남아도 잡는다 (본문 텍스트엔 �
 
 test('가격 수치·비노출 잠금·기간 약속을 잡는다', () => {
   assert.strictEqual(run(page({ text: '월 55만₮ 입니다' })).code, 1, '가격 수치를 통과시켰다');
-  assert.strictEqual(run(page({ text: 'SYNK Wear 도 준비 중' })).code, 1, '비노출 잠금을 통과시켰다');
+  assert.strictEqual(run(page({ text: 'SYNK STUDIO 가 만듭니다' })).code, 1, '비노출 잠금을 통과시켰다');
   assert.strictEqual(run(page({ text: '6개월이면 3급' })).code, 1, '기간 약속을 통과시켰다');
+});
+
+// 철회는 「안 쓰기로 했다」로는 안 지켜진다 — 구 덱·구 문구를 재활용하는 순간 되살아난다.
+// 유호님 확정 2026-08-16(조직계보 v1.4 부록 5) 을 기계로 못박는 자리.
+test('철회된 제품 라인이 발표물에 되살아나면 잡는다 (2026-08-16)', () => {
+  for (const 문구 of ['SYNK Wear (준비중)', 'SYNK Pantry 는 식품', 'SYNK LIFE 소개', '싱크 웨어 굿즈', '팬트리 간식']) {
+    const v = run(page({ text: 문구 }));
+    assert.strictEqual(v.code, 1, `철회된 제품 라인을 통과시켰다: ${문구}`);
+    assert.match(v.out, /철회된 제품 라인/, `철회가 아닌 다른 사유로 걸렸다: ${문구}`);
+  }
 });
 
 test('인쇄 규격 누락을 잡는다 — 여백 0·배경 인쇄', () => {
