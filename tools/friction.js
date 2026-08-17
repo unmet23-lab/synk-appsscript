@@ -541,6 +541,61 @@ function defer(id, why) {
   커밋보고(장부커밋실행(장부커밋(`docs: 마찰 ${String(id).toUpperCase()} 보류 — ${제목요약(safe)}`, 결과.경로), [1, 1]));
 }
 
+/* ── 「남이 고쳐 놓고 안 닫은 행」 (F596 · 2026-08-18) ─────────────────────────
+ * 왜 또 있나 — 바로 아래 `이세션분`(F496)은 **내 커밋**만 본다(`Session-Id` 트레일러로 고른다).
+ *   그래서 세션 A 가 고치고 안 닫으면, B·C·D 는 그 행을 **영원히 「열림」으로** 본다 —
+ *   자기 커밋이 아니니 그 장치의 눈에 원리상 안 들어온다.
+ *   실측 2026-08-18(`local_61375a0b`): 열림 14건을 훑어 트랙을 고르는데 **F549·F562 가 이미
+ *   master 에 착지해 있었다**(a0a66d71 · 93b321a1). 둘 다 보드 줄까지 종결·아카이브된 상태였고,
+ *   나는 그걸 모른 채 각각을 열어 보고서야 알았다. 이 저장소는 세션이 십수 개 동시에 도니
+ *   「남이 고쳤다」가 기본값이고, 그 조사비를 **모든 세션이 매번** 다시 낸다.
+ *
+ * 🔑 새 장치가 아니라 **이미 있는 목록이 진실을 말하게** 한 것이다 — 새 도구 0 · 새 훅 0 · 새 장부 0.
+ *
+ * ⚠ 대가 (틀릴 때의 모습 · CLAUDE.md 맹점 ④)
+ *   · 🔴 **표식은 「닫혔다」가 아니다.** 같은 판에서 F544 가 반례였다 — `876d18f9 fix:…(F544)` 가
+ *     착지했는데도 그 행은 **정당하게 열려 있다**(커밋이 세 처방 중 ③만 넣고 ①②를 장부에 남겼다).
+ *     그래서 자동으로 안 닫는다(F092: 안 고쳤는데 닫은 실측이 이미 있다). 여는 것은 표식이고 **판정은 사람**이다.
+ *   · 제목이 `fix:`·`feat:` 계열일 때만 센다 — `docs: 마찰 … 신고`·`보류`·보드 커밋은 번호를 달고도
+ *     안 고친 것들이라 넣으면 **전부** 걸려 소음이 된다.
+ *   · **`origin/master` 에 담긴 것만** 본다. 그래야 「지금 남이 워크트리에서 도는 중」(F585·F589·F590)이
+ *     「이미 착지」로 안 읽힌다 — 그 둘을 뭉개면 남의 진행 중인 트랙을 닫으라고 권하게 된다.
+ *   · git 을 못 부르면 **null(=못 쟀다)** 이지 0건이 아니다(F207).
+ *   · 닫을 것 1개 = **없다**(안전 가드를 억지로 닫지 않는다). 이건 차단이 아니라 알림 한 줄이고,
+ *     `이세션분`은 «내 세션이 방금 고친 것»을 끝나는 자리에서 잡는 다른 시점이라 계속 필요하다. */
+
+/** 제목이 «고쳤다»고 말하나. 기록 커밋(신고·보류·보드·아카이브)은 번호를 달아도 고침이 아니다. */
+const 고침제목 = (제목) => /^(fix|feat|perf|refactor)\s*(\([^)]*\))?\s*:/i.test(String(제목 || '').trim());
+
+/**
+ * 열린 행 중 **origin/master 에 이미 착지한 고침 커밋**이 그 번호를 단 것.
+ * 돌려주는 것: `Map<id, {sha, 제목}>` · `null` 이면 못 쟀다.
+ */
+function 착지한고침(ids, { 실행 } = {}) {
+  if (!ids.length) return new Map();
+  const 나 = 실행 || ((args) => {
+    try {
+      return require('child_process').execFileSync('git', args,
+        { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 10000 });
+    } catch (_) { return null; }
+  });
+  const 출력 = 나(['log', 'origin/master', '--extended-regexp',
+    `--grep=(${ids.join('|')})`, '--format=%h%x1f%s', '-n', '400']);
+  if (출력 === null) return null;                             // 못 쟀다 ≠ 0건 (F207)
+
+  const 맞음 = new Map();
+  for (const 줄 of 출력.split('\n')) {
+    if (!줄.trim()) continue;
+    const [sha, 제목] = 줄.split('\x1f');
+    if (!고침제목(제목)) continue;
+    for (const id of ids) {
+      /* 뒤에 숫자가 더 붙는 것을 막는다 — F54 가 F549 에 걸리면 표식이 통째로 거짓이 된다. */
+      if (new RegExp(`${id}(?![0-9])`).test(제목) && !맞음.has(id)) 맞음.set(id, { sha, 제목 });
+    }
+  }
+  return 맞음;
+}
+
 function report(mode) {
   const { rows } = read();
   const open = rows.filter(열렸나);
@@ -551,7 +606,24 @@ function report(mode) {
   if (mode === 'open' || mode === '보류') {
     const 낼것 = mode === 'open' ? open : 보류;
     console.log(`\n[마찰 신호] ${mode === 'open' ? '열림(아직 아무도 판정 안 함)' : '보류(판정하고 열어둔 것)'} ${낼것.length}건\n`);
-    for (const r of 낼것) console.log(`  ${r.id}  ${r.date}  [${r.kind}]  ${mode === 'open' ? r.signal : r.resolved}`);
+    const 착지 = mode === 'open' ? 착지한고침(낼것.map((r) => r.id)) : new Map();
+    for (const r of 낼것) {
+      console.log(`  ${r.id}  ${r.date}  [${r.kind}]  ${mode === 'open' ? r.signal : r.resolved}`);
+      const 표 = 착지 && 착지.get(r.id);
+      if (표) {
+        console.log(`      🩹 **이미 닫혔을 수 있다** — \`${표.sha}\` 가 이 번호를 달고 master 에 착지했다: ${표.제목}`);
+        console.log('         ⚠ 착지 ≠ 해소다(F544 반례: 세 처방 중 하나만 넣고 나머지를 이 행에 남긴 커밋이 있었다).');
+        console.log(`         열어 보고 판정한다 — 다 됐으면 node tools/friction.js resolve ${r.id} "…"`);
+      }
+    }
+    if (mode === 'open') {
+      /* 0 은 분모와 함께 쓴다(유호 확정 08-14) — 「표식 0」과 「git 을 못 읽었다」는 다른 말이다. */
+      console.log(착지 === null
+        ? `\n  ❔ 착지 대조를 **못 쟀다** — git 을 못 불렀거나 origin/${'master'} 참조가 없다(0건이 아니다 · F207).`
+        : `\n  🩹 착지 표식 ${착지.size}/${낼것.length}건 — 나머지 ${낼것.length - 착지.size}건은 master 에 그 번호를 단 fix 가 없다.`);
+      console.log('     🔑 이 대조가 보는 것은 «남의» 커밋이다 — `--이세션` 은 내 커밋만 봐서 원리상 여기를 못 본다(F596).');
+      console.log('     ⚠ 번호를 «안 단» fix 는 원리상 못 잡는다 — 이 0 은 「고쳐진 게 없다」가 아니라 「번호를 단 fix 가 없다」다.');
+    }
     console.log('');
     return;
   }
@@ -822,4 +894,6 @@ module.exports = {
   DEFER, 상태, 열렸나, 보류인가, 해소됐나, 살아있나,
   // F496 — 「끝나는 자리」에서 부르는 통로(회귀가 이 셋을 각각 잡는다)
   언급된파일, 기록물이름, 이세션분,
+  // F596 — 「남이 고쳐 놓고 안 닫은 행」 표식(자동으로 안 닫는다 · 판정은 사람)
+  고침제목, 착지한고침,
 };
