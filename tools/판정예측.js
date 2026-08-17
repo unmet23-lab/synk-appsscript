@@ -48,6 +48,7 @@ const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 const 큐 = require(path.join(ROOT, 'tools', 'decision-queue.js'));
+const 메모리 = require(path.join(ROOT, 'tools', 'memory-graph.js'));
 const 정본 = path.join(ROOT, 'docs', '_ops', '판정예측.jsonl');
 
 /* ── 닫힌 어휘 ────────────────────────────────────────────────────────────
@@ -244,11 +245,12 @@ function 인자값(인자, 이름) {
   return i >= 0 ? 인자[i + 1] : null;
 }
 
-/** 지금 큐에 살아 있는 ⏳ 항목. **여기 없다 = 답이 왔거나 문구가 바뀌었다**(급소 ②). */
+/** 지금 큐에 살아 있는 ⏳ 항목. **여기 없다 = 답이 왔거나 문구가 바뀌었다**(급소 ②).
+ *  ⚠ 메모리 자리는 **손으로 조립하지 않는다** — `memory-graph.memoryDir()` 하나가 정본이다.
+ *  첫 판이 `projects/<이 기계 이름>/memory` 를 직접 이어 붙였고 `tests/메모리그래프.test.js`
+ *  가 그 자리에서 잡았다(같은 판정을 두 곳에 적으면 갈라진다 · CLAUDE.md 신뢰성 ④). */
 function 큐항목들() {
-  const dir = process.env.SYNK_MEMORY_DIR
-    || path.join(process.env.USERPROFILE || process.env.HOME || '', '.claude', 'projects',
-      'C--Users-q1212-Documents-SYNK-appsscript', 'memory');
+  const dir = 메모리.memoryDir();
   let items;
   try {
     items = 큐.extract(dir);
