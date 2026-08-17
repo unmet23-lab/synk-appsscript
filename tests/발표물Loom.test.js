@@ -57,10 +57,22 @@ function 방짓기(본문, 옵션) {
 
 /* ══ 훅 판정 — 무엇을 훅으로 세나 ═════════════════════════════════════════ */
 
-test('훅들 — 부품 클래스와 범위 클래스만 센다', () => {
-  assert.deepEqual(빌드.훅들('<style></style><div class="tag 칩">x</div>'), ['칩']);
-  assert.deepEqual(빌드.훅들('<style></style><div class="룸"><h2>x</h2></div>'), ['룸']);
-  assert.deepEqual(빌드.훅들('<style></style><div class="tag">x</div>'), []);
+test('훅들 — 마크업에 «닿는» 선택자만 센다 (판정은 `loom훅.js` 한 곳)', () => {
+  /* 2026-08-17: 클래스 교집합에서 «닿나»로 옮겼다. 옛 판은 `지면방` 과 **다른 답을 낼 수 있었다** —
+   * `.번호` 처럼 `h2>span:not(.번호)` 안에만 사는 클래스는 「부품 클래스」엔 잡히지만
+   * 아무 데도 안 닿는다. 그런 원고면 빌드는 얹고 등록층은 빨개진다. */
+  const 칩 = 빌드.훅들('<style></style><div class="tag 칩">x</div>');
+  assert.ok(칩.includes('.칩'), '부품 클래스를 달면 그 부품 선택자가 닿는다: ' + JSON.stringify(칩));
+  assert.ok(칩.every((s) => s.startsWith('.칩')),
+    '`.칩` 만 달았는데 다른 부품까지 닿으면 훅 판정이 헐거운 것이다: ' + JSON.stringify(칩));
+
+  const 룸 = 빌드.훅들('<style></style><div class="룸"><h2>x</h2></div>');
+  assert.ok(룸.includes('.룸'), '범위 클래스 자체도 훅이다: ' + JSON.stringify(룸));
+  assert.ok(룸.some((s) => s.startsWith('.룸 h2')),
+    '범위 안에 갇힌 맨요소 규칙이 `.룸` 을 씌우면 살아난다: ' + JSON.stringify(룸));
+
+  assert.deepEqual(빌드.훅들('<style></style><div class="tag">x</div>'), [],
+    '부품도 범위도 없으면 닿는 것이 0 — 여기서 얹으면 부품 0인 채 마커만 켜진다');
 });
 
 test('훅들 — 원고 «CSS» 안의 같은 이름은 훅이 아니다(마크업만 본다)', () => {
@@ -69,12 +81,12 @@ test('훅들 — 원고 «CSS» 안의 같은 이름은 훅이 아니다(마크�
    * ⚠픽스처는 **속성 선택자**라야 한다 — `.칩{}` 만 두면 `class="…"` 문자열이 CSS 에 없어서
    *   「CSS 까지 본다」로 망가뜨려도 결과가 같다(첫 판이 그래서 변이 구멍으로 나왔다). */
   assert.deepEqual(빌드.훅들('<style>[class="칩"]{color:red}</style><div class="tag">x</div>'), []);
-  assert.deepEqual(빌드.훅들('<style>[class="칩"]{color:red}</style><div class="tag 칩">x</div>'), ['칩']);
+  assert.ok(빌드.훅들('<style>[class="칩"]{color:red}</style><div class="tag 칩">x</div>').includes('.칩'));
 });
 
 test('얹을까 — 훅 0 이면 안 얹는다 (게이트 그 자체)', () => {
   assert.equal(빌드.얹을까([]), false, '훅 0 인데 얹으면 부품 0인 채 마커만 켜진다');
-  assert.equal(빌드.얹을까(['칩']), true);
+  assert.equal(빌드.얹을까(['.칩']), true);
 });
 
 /* ══ 왕복 — 얹은 것을 되뜯을 수 있나(`--check` 가 원고와 1:1 로 대조하려면 필수) ══ */
