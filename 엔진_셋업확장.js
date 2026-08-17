@@ -35,41 +35,41 @@ const 수집표식_ = '수집';
 function sheetSkeleton_() {
   return [
     ['profiles', ['user_id','이름','이름_몽골','role','class_name','생일','email','연락처','messenger_link','parent_of','tuition','등록일','보호자명','보호자연락처','created_at']],
-    ['point_logs', ['id','student_id','points','reason','given_by','created_at','month','태그']],
-    ['attendance', ['id','student_id','timestamp','method']],
+    ['point_logs', ['id','student_id','points','reason','given_by','created_at','month','태그'], 수집표식_], // [v9.244] 월간 아카이빙이 여기서 행을 옮긴다 — 그 자리(archivePointLogs)가 기준선을 함께 내린다
+    ['attendance', ['id','student_id','timestamp','method'], 수집표식_], // [v9.244] 출석 사건 — 그날 누가 왔는지는 소급이 안 된다
     ['teacher_checkins', ['이름','구분','시각']],
     ['form_responses', ['제출시각']],
     ['raid', ['week','class_name','목표','달성포인트','상태','보상지급']],
     ['carryover', ['student_id','points']], ['app_state', ['key','value']],
     ['titles', ['월','student_id','칭호']], ['manual_titles', ['student_id','칭호','부여자','날짜']],
-    ['achievements', ['student_id','업적','등급','달성일']],
+    ['achievements', ['student_id','업적','등급','달성일'], 수집표식_], // [v9.244] 달성일은 그 시점 기록이라 재계산으로 못 되살린다
     ['monthly_snapshot', ['월','student_id','월간포인트','랭킹']],
     ['story', ['월','student_id','이름','스토리']],
     ['notices', ['title','body','date','title_mn','body_mn']],
-    ['weekly_topics', ['class_name','배운내용','입력자','created_at','배운내용_mn','문법태그','전체도달도','예외학생','숙제완료자','연료미션','처리상태','학습전개상태']], // [v9.36] 수업 로그 승격(F~L) — ensureLessonCols_가 기존 시트도 보정
+    ['weekly_topics', ['class_name','배운내용','입력자','created_at','배운내용_mn','문법태그','전체도달도','예외학생','숙제완료자','연료미션','처리상태','학습전개상태'], 수집표식_], // [v9.36] 수업 로그 승격(F~L) — ensureLessonCols_가 기존 시트도 보정 · [v9.244] 배운내용·문법태그·도달도는 그 주의 학습 원본이다
     ['class_fuel', ['class_name','미션','입력자','created_at']],
-    ['hw_batch', ['date','class_name','완료자목록','입력자','created_at','처리상태']],
+    ['hw_batch', ['date','class_name','완료자목록','입력자','created_at','처리상태'], 수집표식_], // [v9.244] 그날 누가 숙제를 냈나 — 전개 뒤에도 원본으로 남는다
     ['today_board', ['유형','이름','반','시각','퇴근']],
     ['teacher_stats', TEACHER_STATS_HEADERS], // [v9.40] 구 3열(teacher·지급수·편중률)이 실사용 8열과 불일치하던 드리프트 정정 · [v9.87] 정본 상수 공유로 드리프트 재발 자체를 차단(+담당반 9열)
     ['report_cards', ['card_id','student_id','월','image_url','칭호','코멘트','created_at']], // [v9.28] 실사용 7열로 정정(구 3열은 setupV5Triggers·runReportCards_와 불일치하던 결함)
     ['league_history', ['월','시즌','챔피언반','챔피언포인트','준우승','준우승포인트','MVP_id','MVP이름','MVP포인트','created_at']], ['hall_of_fame', ['연도','이름','반','업적','한마디','사진URL']],
     ['raid_story', ['date','class_name','유형','제목','스토리']],
     [KPI_SHEET_NAME, KPI_HEADERS], // [v9.26] 이탈률·전환율 계측 시트
-    ['exit_log', ['student_id','이름','반','퇴소감지일','재원일수']], // [v9.28] 퇴소 이벤트 로그
-    ['absence_notice', ['student_id','반','날짜','사유','등록시각']], // [v9.28] 학부모 결석 사전신고
-    ['absence_followup', ABSENCE_FOLLOWUP_HEADERS], // [v9.89] 결석 추적 — checkNoShow 감지 1건=1행, 연락은 폼, 복귀는 자동 판정. 「결석 복귀율」(등급 심사 20점) 원본
+    ['exit_log', ['student_id','이름','반','퇴소감지일','재원일수'], 수집표식_], // [v9.28] 퇴소 이벤트 로그 · [v9.244] 이탈 이해의 원본 — 떠난 순간은 소급이 안 된다
+    ['absence_notice', ['student_id','반','날짜','사유','등록시각'], 수집표식_], // [v9.28] 학부모 결석 사전신고 · [v9.244] 결석 «사유»는 그날만 적힌다
+    ['absence_followup', ABSENCE_FOLLOWUP_HEADERS, 수집표식_], // [v9.89] 결석 추적 — checkNoShow 감지 1건=1행, 연락은 폼, 복귀는 자동 판정. 「결석 복귀율」(등급 심사 20점) 원본
     ['inquiries', ['student_id','이름','문의내용','상태','접수시각']], // [v9.28] 학부모 문의 인바운드
     ['payments', ['student_id','이름','금액(만₮)','납부일','방법','비고','created_at']], // [v9.28] 매출 원장(수동 기입)
     ['crew_projects', ['시즌','반','프로젝트명','한줄소개','결과물링크','사진URL','공개일','참여크루','비고']], // [v9.29] 시즌 프로젝트 포트폴리오 — 수동 기입 전용(hall_of_fame 패턴 · 트리거·배치 연동 없음)
     ['mastery_log', MASTERY_LOG_HEADERS, 수집표식_], // [v9.36] 문법 도달 로그 — expandMasteryLog_ upsert, 진화 게이트 재료(Glide 비바인딩) · [v9.239] 헤더 정본 공유(손사본 3벌 → 1벌)
     [SELF_DECLARE_TAB_, SELF_DECLARE_HEADERS, 수집표식_], // [v9.197] 자기선언 이력 — 학생이 덮어쓰는 3칸(드림한줄·최애·몬스터이름)의 변경만 append(selfDeclareLogNightly_)
-    ['attendance_batch', ['날짜','class_name','출석자목록','입력자','created_at','처리상태']], // [v9.36] 수업 시작 출석 1탭(B안) → expandAttendanceBatch_가 attendance로 전개
+    ['attendance_batch', ['날짜','class_name','출석자목록','입력자','created_at','처리상태'], 수집표식_], // [v9.36] 수업 시작 출석 1탭(B안) → expandAttendanceBatch_가 attendance로 전개 · [v9.244] 전개돼도 입력 원본은 여기다
     ['groups', GROUPS_HEADERS], // [v9.80] 조 편성(시즌×반 1벌) — assignGroupsAll이 채운다. 역할·짝·발표자는 여기서 계산만 하고 저장하지 않는다(매 차시 쓰기 0)
     ['lectures', LECTURE_HEADERS],           // [v9.106] 온라인 강의 카탈로그(유호님이 채운다)
-    ['lecture_views', LECTURE_VIEW_HEADERS], // [v9.106] 수강 이력 — 주말반 승급 판정의 나머지 절반
-    ['lesson_close', LESSON_CLOSE_HEADERS], // [v9.91] 차시 마감폼 적재 — 진도 3택·미발화자. 조 편성 침묵 점수·이월 경보·4주차 명단의 공통 원천
+    ['lecture_views', LECTURE_VIEW_HEADERS, 수집표식_], // [v9.106] 수강 이력 — 주말반 승급 판정의 나머지 절반 · [v9.244] 학생이 «무엇을 언제 봤나»
+    ['lesson_close', LESSON_CLOSE_HEADERS, 수집표식_], // [v9.91] 차시 마감폼 적재 — 진도 3택·미발화자. 조 편성 침묵 점수·이월 경보·4주차 명단의 공통 원천 · [v9.244] 🔴 #Q100 을 세운 반례 그 자체
     ['hw_feedback', HW_FEEDBACK_HEADERS, 수집표식_], // [v9.49] AI 숙제 첨삭 카드 — aiFeedbackBatch_ 생성. I상태: '노출'=공개(게이트 통과·무인)/'대기'=수동검수 모드/'격리:'·'오류:'=미노출([v9.63]), J학생확인=Glide 전용(스크립트 불가침), K포인트지급=스크립트 전용 · [v9.138] 헤더 정본을 배치와 공유(구 구조는 두 벌이라 갈라졌다) + 수집 4열(숙제ID·오류태그·재작성원본·다시쓰기URL)
-    ['student_errors', ['날짜','student_id','반','유형','메모','입력자','created_at','상태']], // [v9.36] 강사 개인 약점 메모(선택 입력) — 리포트·브리핑 노출은 후속(학생 앱 미노출)
+    ['student_errors', ['날짜','student_id','반','유형','메모','입력자','created_at','상태'], 수집표식_], // [v9.244] 강사가 본 약점 — teacher_gold 와 같은 계급(사람 산출이지만 학습 재료) · [v9.36] 강사 개인 약점 메모(선택 입력) — 리포트·브리핑 노출은 후속(학생 앱 미노출)
     ['onboarding', ['role','제목','안내KO','안내MN','아이콘']], // [v9.38] 역할별 홈 안내 카드(setupOnboarding) — 재건 목록 누락분 보강
     ['system_manifest', ['지표','값','상태']], // [v9.37] buildSystemManifest 출력 — 시트·콘텐츠·트리거·의존성 실측 정본(수동 숫자 대체)
     // [v9.40] 월간 배치 산출 시트 5종 — 배치가 매월 1일에야 ensureSheet로 만들던 것을 골격 정본에 편입.
@@ -78,7 +78,7 @@ function sheetSkeleton_() {
     ['synk_cards', ['월','student_id','카드HTML']],
     ['world_raid', ['월','보스명','HP','누적데미지','상태']],
     ['league_pairs', ['week','반A','반B','상태','결과']],
-    ['academic_log', ACADEMIC_LOG_HEADERS], // [v9.239] 헤더 정본 공유(손사본 3벌 → 1벌)
+    ['academic_log', ACADEMIC_LOG_HEADERS, 수집표식_], // [v9.239] 헤더 정본 공유(손사본 3벌 → 1벌) · [v9.244] 학업 사건 원장 — append 전용
     ['jacket_grants', ['student_id','이름','자격도달일','재원개월','누적P','지급상태']], // [v9.83] 🧥 과잠 자격 대장
     // [v9.138] 📊 학습 데이터 축적층 — 「2년 축적 → AI 회화 앱」의 원본. 운영 시트가 아니라 **수집기**다.
     //   quiz_log: 구조상 가장 크게 새던 곳 — 퀴즈 100문항을 매일 띄우면서 학생의 선택을 한 건도 안 받고 있었다.
@@ -147,14 +147,27 @@ function 수집장부탭_() {
  *   · 닫을 것 = 없다(안전 가드는 억지로 닫지 않는다). 대신 **분모를 안 늘렸다** — 새 검사는
  *     기존 골격에서 도출하고, 새 시트·새 속성·새 배치를 하나도 만들지 않는다.
  *
- * ■ 🔴 정직한 한계 — **분모는 「수집 표식이 붙은 것」이지 「수집되는 것 전부」가 아니다**
- *   실측 08-16 의 반례: `lesson_close`(차시 마감폼 — 진도 3택·미발화자)는 append-only 이고
- *   소급이 안 되며 **실제로 도달한다**(`quietScoreMap_` → `assignGroups` 침묵 점수). 그런데
- *   수집 표식이 없어 여기서도, 위 «줄었나» 감시에서도 분모 밖이다. 즉 「위반 0」은 **표식이
- *   붙은 9종 안에서만** 참이다 — 0 은 분모와 함께 읽는다(유호 확정 08-14).
- *   ⚠ 표식을 넓히는 것은 이 커밋의 몫이 아니다: 표식은 «줄었나» 경보의 과녁이기도 해서
- *   넓히면 그쪽 알림이 함께 늘어난다(따를 수 없는 경보를 만들면 둘 다 무시된다 · F103).
- *   → 별도 트랙으로 세운다(대기열). 여기 적어 두는 것이 「알고도 두지 마라」의 이행이다. */
+ * ■ ✅ [v9.244 · #Q100] 분모를 넓혔다 — 9종 → **22종**(골격 57 전건 판정)
+ *   v9.243 이 스스로 적어 둔 한계(「분모는 «표식이 붙은 것»이지 «수집되는 것 전부»가 아니다」)를
+ *   닫은 자리다. 반례였던 `lesson_close` 를 포함해 13종이 들어왔고, 판정 두 관문은 이것이다:
+ *     ㉠ 행이 쌓이기만 하고 **줄어들 이유가 없는가**(줄이는 자리가 있으면 그 자리가 기준선을
+ *        함께 내리는가 — 안 내리면 따를 수 없는 경보가 된다 · F103)
+ *     ㉡ **소급이 안 되는 학습·운영 원본인가**(파생·재계산 가능하면 탈락 — 지워도 다시 만든다)
+ *   탈락 35종의 사유는 셋뿐이다: 파생·재생성(class_stats·teacher_stats·titles·synk_* 등 15) ·
+ *   사람이 고치는 원장(profiles·contents·schedule·lectures·notices 등 13) · 게임 상태(raid·
+ *   world_raid·carryover·league_pairs 등 7). 전건표 = `docs/엔진도달_설계.md` §8-1.
+ *   🔑 **넓힌 13종 중 11종은 이미 닿고 있었다** — 빚이 는 게 아니라 «안 보이던 도달»이 보였다.
+ *      새 빚은 둘(achievements·exit_log)뿐이라 래칫은 5 → 7 이다.
+ *
+ * ■ 대가 (넓히기의 F103 축 — 「경보가 몇 건 늘어나는가」)
+ *   ·「수집 장부가 줄었다」는 탭이 몇이든 **경보 줄이 언제나 1줄**이고(`엔진_콘텐츠AI.js` 주간
+ *     워치독의 `add(줄어든.length === 0, …join(' · '))`), 발동은 **행 수가 최고점 아래로 떨어질
+ *     때만**이다. 미개원(전 탭 0행)에서는 hwm 도 0이라 넓혀도 새 경보가 0건이다.
+ *   · 행을 지우는 자리는 전수로 셋뿐이고 셋 다 그 자리에서 기준선을 내린다 — 데모 퇴장(`wipe`,
+ *     범용이라 새 탭이 들어와도 자동 보호) · 음성 철회(`교재연동.js`) · **월간 아카이빙
+ *     (`archivePointLogs`, 이 커밋이 추가)**. 그래서 늘어난 경보 = **0건**이다.
+ *   · 다만 자기치유가 행을 지우는 `teacher_checkins`(연타 제거)는 **표식을 안 준다** — 기준선을
+ *     안 내리는 삭제라 매주 외치게 된다. 학생 산출도 아니라 ㉡에서도 걸린다. */
 function 수집도달_() {
   return {
     /* 오류 태그 13열 → `aiWeakMap_` 이 14일 창으로 집계해 AI 퀴즈 프롬프트·반 브리핑·연습 노트
@@ -173,7 +186,30 @@ function 수집도달_() {
      *   빈 시트를 읽는다(`tests/발화퀄리티.test.js` 가 talk_index 에서 먼저 못박은 규칙). */
     [OUTCOME_TAB_]: { 소비자: '엔진_궤적.js:궤적_최신관측_', 층: '자산' },
 
+    /* ↓ [v9.244] #Q100 이 분모를 9→22 로 넓히며 함께 채운 칸들. 넓히기 전 「위반 0」은 9종 안에서만
+     *   참이었다 — 이 열한 줄은 **이미 닿고 있었는데 장부 밖이라 안 보이던** 도달이다(빚이 아니다).
+     *   경계선: 소비자 = 읽어서 **다른 산출물의 값·선택이 바뀌는** 자리(전개·집계·판정).
+     *            사유   = 읽는 곳이 **렌더링(카드·리포트·메일)뿐이거나 0**. 위 talk_index_log 가
+     *                     세운 그 갈림 그대로다 — 「보이는 것」은 도달이 아니다. */
+    'point_logs': { 소비자: 'Code.js:calcAll', 층: '제품' },
+    'attendance': { 소비자: 'Code.js:calcAll', 층: '제품' },
+    'attendance_batch': { 소비자: '엔진_운영배치.js:expandAttendanceBatch_', 층: '제품' },
+    'hw_batch': { 소비자: '엔진_운영배치.js:expandHwBatch', 층: '제품' },
+    'weekly_topics': { 소비자: '엔진_운영배치.js:expandMasteryLog_', 층: '제품' },
+    'lesson_close': { 소비자: '엔진_셋업확장.js:quietScoreMap_', 층: '제품' },
+    'lecture_views': { 소비자: '엔진_셋업확장.js:lectureRatesOf_', 층: '제품' },
+    'student_errors': { 소비자: '엔진_콘텐츠AI.js:aiWeakMap_', 층: '제품' },
+    'absence_notice': { 소비자: '엔진_운영배치.js:checkNoShow', 층: '제품' },
+    'absence_followup': { 소비자: '엔진_운영배치.js:calcTeacherStats', 층: '자산' },
+    'academic_log': { 소비자: '엔진_운영배치.js:calcTeacherStats', 층: '자산' },
+
     /* ↓ 여기부터가 오늘의 빚이다. 사유는 전부 «무엇이 서면 닿는가» 형태로 적는다. */
+    /* 쓰는 쪽(checkAchievements)만 있고 읽는 곳은 월간 리포트의 렌더 한 곳이다. 🔑 무엇이 서면
+     * 닿는가 = 업적 이력이 다음 미션·난이도 선택의 입력이 되는 날(지금은 달성 여부만 보여준다). */
+    'achievements': { 사유: '읽는 곳이 월간 리포트 렌더 하나 = 사람 화면이다 — 달성한 것을 보여줄 뿐 다음 미션·난이도를 안 바꾼다. 업적 이력이 과제 선택의 입력이 되는 날 닿는다.' },
+    /* 🔴 이 층에서 가장 아픈 칸 — 이탈 이해의 유일한 원본인데 **읽는 자리가 0이다**(쓰기만 있다).
+     * 🔑 무엇이 서면 닿는가 = 퇴소 직전 N주의 출석·발화·숙제 궤적을 이탈 신호로 되읽는 날. */
+    'exit_log': { 사유: '읽는 자리가 0이다 — syncProfiles 가 적기만 한다. 퇴소 직전 궤적을 이탈 신호로 되읽는 배선이 서면 닿는다(㉡ 사람 이해의 재료).' },
     /* 읽는 곳은 있다 — 수집 장부 점검 리포트가 응답 수·정답률·확신도 채움률을 «센다». 그런데
      * 세기만 하고 다음 문제를 안 고른다. 🔑 무엇이 서면 닿는가 = 개인 퀴즈 출제(`aiQuizBatch_`)가
      * 이 탭의 오답 문항을 재출제 재료로 읽는 날. 지금 그 출제는 hw_feedback 태그만 본다. */
@@ -202,12 +238,15 @@ function 수집도달_() {
  *
  * · `도달0` = 도달이 0인 수집 탭 수. ⚠ 새 수집 탭을 세우면서 도달을 안 적으면 여기서 걸린다.
  *   📉 5 (2026-08-16 · 신설 · quiz_log·talk_log·voice_log·talk_index_log·self_declare_log)
+ *   📈 7 (2026-08-17 · #Q100 이 **분모를 9→22 로 넓히며** achievements·exit_log 둘을 드러냈다.
+ *      ⚠ 래칫이 올라간 유일한 정당 사유 = **분모 확대**다. 같은 분모에서 오르면 그건 결함이고,
+ *      그때는 이 줄이 아니라 도달을 고친다. 넓힌 13종 중 11종은 이미 닿고 있었다.)
  * · `손` = «사람이 눌러야만 도는» 도달 수. 갈라 세는 이유는 **다른 병**이기 때문이다 —
  *   도달0 은 「안 읽는다」이고 이쪽은 「읽는데 저절로 안 돈다」다. 한 숫자로 뭉치면 손 통로가
  *   늘어도 총합이 그대로라 조용하다(형제 장부가 못 보는 갈림 · 설계 §2).
  *   📉 1 (2026-08-16 · 신설 · teacher_gold = 의도된 사람 게이트 · 🚫자동 배치 편입 재제안) */
 function 시트도달상한_() {
-  return { 도달0: 5, 손: 1 };
+  return { 도달0: 7, 손: 1 };
 }
 
 /* ===================== [v9.43] 🎴 몬스터·보스 상세 카드 — "눌렀을 때 우와" =====================
