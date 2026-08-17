@@ -292,3 +292,38 @@ test('🔑 실저장소 — 데모 퇴장이 지우는 수집 탭은 **기준선
   assert.ok(/if\s*\(\s*n\s*\)\s*\{?\s*탭수축기준선지움_\(name\)/.test(구역),
     'wipe 가 기준선을 안 지운다(또는 죽은 조건 아래 있다) — 의도한 축소가 다음 주 경보로 되돌아온다');
 });
+
+test('🔑 실저장소 — 월간 아카이빙도 point_logs 기준선을 함께 내린다(#Q100 이 연 세 번째 삭제 자리)', () => {
+  /* [vNEXT] `point_logs` 가 수집 표식을 받은 순간 `archivePointLogs` 는 「수집 장부가 줄었다」의
+   *   발원지가 된다 — 매달 1일마다, 우리가 시킨 이동인데 따를 처방이 없는 경보다(F103).
+   * 🔴 **조건까지 못박는다** — 바로 위 `wipe` 검사가 변이 시험에서 배운 것 그대로다: 호출문만
+   *   보면 `if (false)` 로 죽여도 통과한다. `move.length` = 실제로 옮긴 행 수이니 조건이 곧 규격. */
+  const 배치 = fs.readFileSync(path.join(ROOT, '엔진_운영배치.js'), 'utf8');
+  const i = 배치.indexOf("arc.getRange(arc.getLastRow() + 1, 1, move.length, 8).setValues(move)");
+  assert.notEqual(i, -1, '아카이빙 이동 지점을 못 찾았다 — 이 검사가 조용히 0건이 되는 자리다');
+  const 구역 = 배치.slice(i, i + 1400);
+  assert.ok(/if\s*\(\s*move\.length\s*\)\s*\{?\s*탭수축기준선지움_\('point_logs'\)/.test(구역),
+    '월간 아카이빙이 기준선을 안 내린다(또는 죽은 조건 아래 있다) — 매달 1일 「줄었다」 오경보가 선다');
+});
+
+test('🔴 실저장소 — #Q100 이 넓힌 분모가 그대로 산다(표식 22종 · 신규 13종 전건)', () => {
+  /* 표식은 **두 장부의 분모**다(«줄었나» 감시 · 도달 장부). 한 줄이 조용히 빠지면 그 탭은 두 곳
+   * 모두에서 사라지고, 증상은 언제나 「위반 0」이다 — 그래서 이름을 세지 말고 **적어서** 못박는다. */
+  const ctx = 엔진(속성흉내());
+  const 수집 = ctx.수집장부탭_();
+  const 신규 = ['point_logs', 'attendance', 'attendance_batch', 'achievements', 'weekly_topics',
+    'hw_batch', 'exit_log', 'absence_notice', 'absence_followup', 'lecture_views',
+    'lesson_close', 'student_errors', 'academic_log'];
+  const 빠짐 = 신규.filter((n) => 수집.indexOf(n) === -1);
+  assert.deepEqual(빠짐, [], `#Q100 이 넣은 수집 탭이 분모 밖으로 나갔다 — ${빠짐.join(', ')}`);
+  assert.equal(수집.length, 22, `수집 표식 ${수집.length}종 — 22가 아니면 판정표(docs/엔진도달_설계.md §8-1)와 갈라졌다`);
+  /* 🔴 **탈락 쪽도 못박는다** — 통과 목록만 검사하면 「넓히기」가 무제한으로 번져도 초록이다.
+   *   `teacher_checkins` 는 자기치유가 연타를 지우는데(`엔진_폼리포트.js`) 그 자리가 기준선을
+   *   안 내린다 — 표식을 주면 매주 우는 경보가 된다. 학생 산출도 아니라 ㉡에서도 걸린다. */
+  assert.equal(수집.indexOf('teacher_checkins'), -1,
+    'teacher_checkins 에 수집 표식이 붙었다 — 자기치유가 기준선 없이 행을 지워 따를 수 없는 경보가 된다(F103)');
+  /* 파생·재계산되는 탭은 지워져도 다시 태어난다 — 표식은 «소급 불가»에만 준다. */
+  ['class_stats', 'teacher_stats', 'titles', 'system_manifest', 'groups', 'schedule'].forEach((n) => {
+    assert.equal(수집.indexOf(n), -1, `${n} 은 파생·재생성 탭이라 수집 표식 대상이 아니다`);
+  });
+});

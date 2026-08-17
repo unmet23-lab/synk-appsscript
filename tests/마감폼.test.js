@@ -113,7 +113,12 @@ test('lesson_close가 시트 골격에 있고, 헤더 정본 상수가 실존한
   const skeletonAt = code.indexOf('function sheetSkeleton_()');
   assert.notEqual(skeletonAt, -1, 'sheetSkeleton_()을 찾지 못함');
   const body = code.slice(skeletonAt, code.indexOf('\n  ];', skeletonAt));
-  assert.ok(/\['lesson_close', LESSON_CLOSE_HEADERS\]/.test(body), 'lesson_close가 시트 골격에 없다');
+  /* [vNEXT · #Q100] 세 번째 칸(수집 표식)이 붙을 수 있으므로 **닫는 괄호까지 못박지 않는다** —
+   *   이 검사의 뜻은 「골격에 있고 헤더 정본 상수를 쓴다」이지 「칸이 둘이다」가 아니었다.
+   *   칸 수까지 잠그면 표식을 넓히는 정당한 변경이 무관한 검사를 빨갛게 만든다(모양≠뜻). */
+  assert.ok(/\['lesson_close', LESSON_CLOSE_HEADERS[,\]]/.test(body), 'lesson_close가 시트 골격에 없다');
+  assert.ok(/\['lesson_close', LESSON_CLOSE_HEADERS, 수집표식_\]/.test(body),
+    'lesson_close에 수집 표식이 없다 — 차시 마감은 소급이 안 되는 수집 장부다(#Q100)');
   assert.notEqual(code.indexOf('const LESSON_CLOSE_HEADERS = ['), -1, 'LESSON_CLOSE_HEADERS 정의를 찾지 못함');
 });
 

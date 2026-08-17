@@ -42,7 +42,9 @@ const TB_VOICE_REASON = '목소리제출';     // point_logs 사유(멱등 키)
 const TB_NOTE_MAX = 3;                   // 연습 노트 최대 항목 수(인지 부하 상한)
 const TB_GROWTH_MIN_DAYS = 21;           // 성장 카드 최소 간격(처음↔최신)
 const TB_JUDGE_MAX_PER_RUN = 20;         // C. 문법 판정 — 밤당 최대 학생 수(비용·시간 가드)
-const TB_JUDGE_TEXT_CAP = 600;           // 학생당 판정 입력 문장 길이 상한(자)
+const TB_JUDGE_TEXT_CAP = 600;           // 학생당 판정 입력 문장 길이 상한(자 · 쓰기·말하기 공용)
+const TB_VOICE_JUDGE_MAX_PER_RUN = 10;   // C-2. 말하기 판정 — 밤당 최대 학생 수(쓰기보다 낮다: STT 뒤에 도는 자리라 시간이 이미 깎여 있다)
+const TB_TALK_JUDGE_MAX_PER_RUN = 15;    // C-3. 대화 판정 — 밤당 최대 학생 수(말하기보다 높고 쓰기보다 낮다: STT «앞»이라 예산이 남아 있고, 재료는 22시 대화 배치가 이미 만들어 뒀다)
 
 // profiles 열을 헤더 이름으로 찾는다 — 열 번호 하드코딩 금지(집필 중 54↔106 오계산을 실제로
 // 냈던 오류 클래스의 회귀 장치. 다른 세션이 열을 추가·이동해도 이름이 맞으면 안전).
@@ -145,10 +147,16 @@ function setupTextbookLink() {
 function 교재연동Nightly() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   try { masteryFromFeedback_(ss); } catch (e) { Logger.log('masteryFromFeedback_ 오류: ' + e); }
+  /* [v9.249 · #Q99] 대화 판정은 **STT 앞**이다 — 재료(학생문)는 22시 대화 배치가 이미 적어 뒀으니
+   *   이 밤에 만들어질 것을 기다릴 필요가 없고, `voiceTranscribe_` 뒤로 밀면 6분 예산이 깎인 뒤라
+   *   굶는다(말하기 상한을 10 으로 낮춰야 했던 그 자리 · 말하기는 그 밤 전사분을 봐야 해서 뒤에 선다). */
+  try { masteryFromTalk_(ss); } catch (e) { Logger.log('masteryFromTalk_ 오류: ' + e); }
   // [v9.190] 폼 문항 자기적용 — **스위프보다 앞**이어야 그날 응답부터 미션ID 열을 읽는다(멱등·이미 있으면 침묵)
   try { migrateVoiceFormMissionId(); } catch (e) { Logger.log('migrateVoiceFormMissionId 오류: ' + e); }
   try { voiceSweep_(ss); } catch (e) { Logger.log('voiceSweep_ 오류: ' + e); }
   try { voiceTranscribe_(ss); } catch (e) { Logger.log('voiceTranscribe_ 오류: ' + e); } // [v9.107] 적재 직후 전사 — 성장 카드가 전사문을 실을 수 있게 카드 생성보다 앞
+  // [v9.248 · #Q99] 전사 **직후** — 그날 밤 전사분이 그날 밤 문법 판정에 들어간다(스트림은 전사일시 워터마크)
+  try { masteryFromVoice_(ss); } catch (e) { Logger.log('masteryFromVoice_ 오류: ' + e); }
   try { writeVoiceLinks_(ss); } catch (e) { Logger.log('writeVoiceLinks_ 오류: ' + e); }
   try { buildVoiceGrowthCards_(ss); } catch (e) { Logger.log('buildVoiceGrowthCards_ 오류: ' + e); }
   // 연습 노트는 주 1회(일요일 밤)면 충분 — 매일 바뀌면 "노트"가 아니라 소음이 된다
@@ -718,8 +726,7 @@ function masteryFromFeedback_(ss) {
   if (!sids.length) { props.setProperty('문법판정_포인터', String(last)); return; }
 
   // 판정 대상 문법 목록 — GRAMMAR_BANK(Code.js 전역)의 G2xx·G3xx만(진화 1~3단계 스코프, 프롬프트 압축)
-  const bankList = [];
-  try { GRAMMAR_BANK.forEach(g => { if (/^G[23]/.test(g[0])) bankList.push(g[0] + '=' + g[1]); }); } catch (e) { return; }
+  const bankList = 문법판정목록_();
   if (!bankList.length) return;
   const schema = {
     type: 'object', additionalProperties: false, required: ['used', 'wrong'],
@@ -731,18 +738,7 @@ function masteryFromFeedback_(ss) {
   const system = '한국어 교육 문법 판정관. 학생 문장에서 아래 문법 항목의 사용 여부를 보수적으로 판정한다. ' +
     '명백한 것만 담고, 애매하면 제외한다. 목록에 없는 ID는 절대 만들지 않는다.';
 
-  // mastery_log upsert 준비 — (sid|gid) → {row, 상태, 마지막근거일}
-  const ml = ensureSheet(ss, 'mastery_log', MASTERY_LOG_HEADERS); // [v9.239] 헤더 정본 공유(엔진_셋업확장)
-  const idx = {};
-  if (ml.getLastRow() >= 2) ml.getRange(2, 1, ml.getLastRow() - 1, 7).getValues().forEach((r, i) => {
-    const sid = String(r[0] || '').trim(), gid = String(r[1] || '').trim();
-    if (sid && gid) idx[sid + '|' + gid] = { row: i + 2, st: String(r[2] || ''), d: dstr(r[6] || r[3], tz) };
-  });
-  const validGid = {};
-  bankList.forEach(s => { validGid[s.split('=')[0]] = 1; });
-
-  let judged = 0, reached = 0;
-  const append = [];
+  const 판정들 = [];
   for (const sid of sids) {
     let out;
     try {
@@ -750,26 +746,365 @@ function masteryFromFeedback_(ss) {
         '문법 목록(ID=이름):\n' + bankList.join('\n') + '\n\n학생 문장:\n' + bySid[sid],
         schema, 2048);
     } catch (e) { Logger.log('문법판정 실패(' + sid + '): ' + e); continue; } // 학생 단위 격리 — 다음 학생 계속
-    judged++;
-    const mark = (gid, correct) => {
-      if (!validGid[gid]) return; // AI가 지어낸 ID 차단
-      const k = sid + '|' + gid, ex = idx[k];
-      if (!ex) { // 첫 근거 — '연습'으로 입장
-        append.push([sid, gid, '연습', today, '', correct ? 'AI첨삭' : 'AI첨삭(오류)', new Date()]);
-        idx[k] = { row: 0, st: '연습', d: today };
-        return;
-      }
-      if (ex.st === '도달') return; // 단방향 상향 — 강등 없음
-      if (correct && ex.d && ex.d !== today) { // 서로 다른 날 2회째 올바름 = 도달
-        if (ex.row) { ml.getRange(ex.row, 3, 1, 5).setValues([['도달', ml.getRange(ex.row, 4).getValue() || today, today, 'AI첨삭', new Date()]]); reached++; }
-        ex.st = '도달';
-      } else if (ex.row) { ml.getRange(ex.row, 7).setValue(new Date()); ex.d = today; } // 근거일 갱신
-    };
-    (out.used || []).forEach(g => mark(String(g).trim(), true));
-    (out.wrong || []).forEach(g => mark(String(g).trim(), false));
+    판정들.push({ sid: sid, used: out.used, wrong: out.wrong });
   }
-  if (append.length) ml.getRange(ml.getLastRow() + 1, 1, append.length, 7).setValues(append);
+  /* 반영은 공용 통로 하나다(아래 `masteryApply_`) — 판정관이 둘이 되며 upsert 를 복제하면 갈라지고,
+   *   갈라진 쪽 증상은 언제나 「통과」다(CLAUDE.md 신뢰성 ④). 쓰기는 `단독승격: true` — 이 층의
+   *   근거만으로 «도달» 까지 갈 수 있다(v9.59 이래의 규칙 그대로, 바뀐 것 없음). */
+  const 결과 = masteryApply_(ss, tz, today, 판정들, { 이름: 'AI첨삭', 단독승격: true });
   // 포인터는 이번에 판정한 학생 수와 무관하게 전진 — 남은 학생은 다음 제출 때 자연 재판정(단순성 우선)
   props.setProperty('문법판정_포인터', String(last));
-  if (judged) Logger.log('✅ 문법 판정 ' + judged + '명 · 신규 기록 ' + append.length + ' · 도달 승격 ' + reached);
+  if (판정들.length) Logger.log('✅ 문법 판정 ' + 판정들.length + '명 · 신규 기록 ' + 결과.신규 + ' · 도달 승격 ' + 결과.승격);
+}
+
+/* 판정 대상 문법 목록 — `GRAMMAR_BANK`(Code.js 전역)의 G2xx·G3xx 만(진화 1~3단계 스코프).
+ * 판정관이 둘(쓰기·말하기)이라 목록도 한 곳에서 파생시킨다 — 두 곳에 적으면 한쪽만 낡고,
+ * 낡은 쪽은 「못 찾음」이 아니라 **판정 범위가 조용히 갈리는** 모양으로 샌다. */
+function 문법판정목록_() {
+  const out = [];
+  try { GRAMMAR_BANK.forEach(g => { if (/^G[23]/.test(g[0])) out.push(g[0] + '=' + g[1]); }); } catch (e) { return []; }
+  return out;
+}
+
+/* [v9.248 · #Q99] 문법 판정 → `mastery_log` 반영 — **쓰는 통로 하나**.
+ *
+ * ■ 왜 갈랐나 — 판정관이 셋이 됐다(쓰기 `masteryFromFeedback_` · 말하기 `masteryFromVoice_` ·
+ *   [v9.249] 대화 `masteryFromTalk_`). upsert 를 복제하면 「단방향 상향」·「서로 다른 날 2회」 같은
+ *   불변식이 세 곳에 적히고, 한쪽만 고쳐지는 날 그 쪽은 **조용히 통과**한다(CLAUDE.md 신뢰성 ④ ·
+ *   ⛔짓는 동안 복제 금지). 판정관이 늘어도 이 함수만 늘지 않는 것이 이 통로의 값이다.
+ *
+ * ■ `출처.단독승격` — 이 층의 근거만으로 «도달» 까지 갈 수 있는가.
+ *   쓰기만 true 다(v9.59 규칙 그대로). 나머지 둘이 false 인 이유는 **서로 다르다** — 한 낱말로
+ *   뭉치면 둘 중 하나가 풀리는 날 나머지도 같이 풀려 버린다:
+ *   · 말하기 = **재는 층이 ASR 이다.** 자동 전사는 학생 발화를 매끄럽게 다듬을 수 있고(조사·어미
+ *     복원), 그러면 «맞게 말했다» 가 사실이 아닌 채로 선다.
+ *     ⚠ 다시 여는 조건 = 첫 학생들의 전사문을 사람이 표본으로 대조해 「ASR 이 실제로 다듬는가」를
+ *        재고 난 뒤다(지금은 학생 0명이라 그 표본이 없다 — 못 재는 것을 근거로 열지 않는다).
+ *   · 대화 = **직전 답장이 올바른 형태를 방금 보여줬다.** 대화 지문이 「틀린 곳은 답장에서 살짝
+ *     고쳐 준다」라, 학생이 그 형태를 되받아 쓰면 이 층에서 모방과 습득이 구분되지 않는다.
+ *     ⚠ 다시 여는 조건 = 첫 학생들의 대화에서 「답장에 안 나온 문법을 학생이 먼저 썼는가」를
+ *        사람이 표본으로 재고 난 뒤다.
+ *   공통점은 하나뿐이다 — 진화 게이트는 강등이 없어 되돌릴 수 없으니, 확실치 않은 신호 **단독**
+ *   으로는 열지 않는다. 쓰기 확인이 한 번 겹치면 승격한다(아래 「천장」이 그 자리다).
+ *
+ * ■ 천장(정직하게 적는다) — 근거 칸이 한 칸이라 **마지막 근거**만 본다. 그래서 「말하기 → 쓰기」·
+ *   「대화 → 쓰기」 순서면 승격한다(쓰기 확인이 있으므로 의도된 통과다). 막는 것은 **같은 약한 층이
+ *   연달아 두 번**이다. ⚠ 그래서 «말하기 → 대화» 처럼 약한 층 둘이 엇갈리면 승격한다 — 근거 칸이
+ *   하나라 「앞의 근거가 무엇이었나」를 못 보기 때문이다. 지금은 그 조합이 재료상 드물고(대화·음성
+ *   둘 다 하는 학생) 두 층의 병이 서로 달라 동시에 같은 착각을 만들 확률이 낮다고 보아 열어 둔다 —
+ *   닫으려면 근거 칸을 층별로 갈라야 하고, 그건 `mastery_log` 스키마 변경이라 이 판의 범위 밖이다.
+ *
+ * @param {{sid:string, used?:string[], wrong?:string[]}[]} 판정들
+ * @param {{이름:string, 단독승격:boolean}} 출처
+ * @returns {{신규:number, 승격:number}}
+ */
+function masteryApply_(ss, tz, today, 판정들, 출처) {
+  if (!판정들 || !판정들.length) return { 신규: 0, 승격: 0 };
+  const validGid = {};
+  문법판정목록_().forEach(s => { validGid[s.split('=')[0]] = 1; });
+  if (!Object.keys(validGid).length) return { 신규: 0, 승격: 0 }; // 뱅크를 못 읽었다 — 지어낸 ID 차단이 죽으니 아무것도 안 쓴다
+
+  // mastery_log upsert 준비 — (sid|gid) → {row, 상태, 마지막근거일, 마지막출처}
+  const ml = ensureSheet(ss, 'mastery_log', MASTERY_LOG_HEADERS); // [v9.239] 헤더 정본 공유(엔진_셋업확장)
+  const idx = {};
+  if (ml.getLastRow() >= 2) ml.getRange(2, 1, ml.getLastRow() - 1, 7).getValues().forEach((r, i) => {
+    const sid = String(r[0] || '').trim(), gid = String(r[1] || '').trim();
+    if (sid && gid) idx[sid + '|' + gid] = { row: i + 2, st: String(r[2] || ''), d: dstr(r[6] || r[3], tz), src: String(r[5] || '') };
+  });
+
+  let 승격 = 0;
+  const append = [];
+  const mark = (sid, gid, correct) => {
+    if (!validGid[gid]) return; // AI가 지어낸 ID 차단
+    const 근거 = 출처.이름 + (correct ? '' : '(오류)');
+    const k = sid + '|' + gid, ex = idx[k];
+    if (!ex) { // 첫 근거 — '연습'으로 입장
+      append.push([sid, gid, '연습', today, '', 근거, new Date()]);
+      idx[k] = { row: 0, st: '연습', d: today, src: 근거 };
+      return;
+    }
+    if (ex.st === '도달') return; // 단방향 상향 — 강등 없음
+    // 같은 층의 근거가 연달아 두 번인데 그 층이 단독 승격을 못 하면, 여기서 멈춘다(위 ■ 참고)
+    const 같은층연속 = !출처.단독승격 && ex.src.indexOf(출처.이름) === 0;
+    if (correct && !같은층연속 && ex.d && ex.d !== today) { // 서로 다른 날 2회째 올바름 = 도달
+      if (ex.row) { ml.getRange(ex.row, 3, 1, 5).setValues([['도달', ml.getRange(ex.row, 4).getValue() || today, today, 근거, new Date()]]); 승격++; }
+      ex.st = '도달';
+    } else if (ex.row) { ml.getRange(ex.row, 6, 1, 2).setValues([[근거, new Date()]]); ex.d = today; ex.src = 근거; } // 근거·근거일 갱신
+  };
+  판정들.forEach(p => {
+    (p.used || []).forEach(g => mark(p.sid, String(g).trim(), true));
+    (p.wrong || []).forEach(g => mark(p.sid, String(g).trim(), false));
+  });
+  if (append.length) ml.getRange(ml.getLastRow() + 1, 1, append.length, 7).setValues(append);
+  return { 신규: append.length, 승격: 승격 };
+}
+
+/* [v9.248 · #Q99] 🎙 C-2. 말하기 문법 판정 — **전사문이 처음으로 엔진에 닿는다** (시트층 도달 3/5)
+ *
+ * ■ 무엇이 비어 있었나
+ *   `voice_log` 는 시트층 도달 장부에서 「읽는 곳이 전사 상태 관리·진단·삭제뿐」이었다.
+ *   학생이 **말한 것**이 학원 안 어디로도 되돌아가지 않는다는 뜻이다 — 전사비를 내고 글로
+ *   옮겨 놓고는 그 글을 아무도 안 읽었다.
+ *
+ * ■ 원신호가 **구조적으로** 못 보는 것 (이 층에서 값을 가장 빨리 내는 축 · §8-1)
+ *   문법 도달 판정(`masteryFromFeedback_`)의 입력은 `hw_feedback` 제출문 하나 — 즉 **쓴 글**뿐이다.
+ *   그래서 「글로는 아직 안 썼는데 말로는 쓰는 문법」은 진화·연습 노트 어디에도 없고,
+ *   그 학생은 두 층 모두에서 **아직 그 문법을 모르는 학생**으로 남는다. 첨삭에 확신도 열이
+ *   없어 「찍어서 맞힘」이 안 보이던 자리(2/5)와 같은 무늬다.
+ *
+ * ■ 왜 `masteryFromFeedback_` 에 합치지 않았나 — 그 함수의 커서는 `hw_feedback` 행 번호다.
+ *   합치면 ①**숙제를 안 낸 학생의 전사문은 통째로 안 읽힌다**(커서가 hw 신규 0 이면 즉시 반환) —
+ *   말하기만 하는 학생이 정확히 그 사각이다. ②판정 결과를 쓰기·말하기로 **귀속시킬 수 없어**
+ *   위 `단독승격` 가드가 원리상 못 선다. 그래서 스트림도 판정도 갈라 두고, **쓰는 통로만** 공유한다.
+ *
+ * ■ 스트림을 «전사일시» 워터마크로 잡는 이유 (행 번호 커서를 안 쓴다)
+ *   행 번호로 걸으면 «아직 전사 안 된 행»을 지나쳐 버리고, 그 행은 나중에 전사돼도 커서 뒤라
+ *   **영구 누락**이다 — 오류뱅크 커서가 v9.211·v9.212 에서 두 번 고친 바로 그 병이다.
+ *   전사가 끝나야 도장이 찍히므로, 도장 시각으로 흐름을 잡으면 행은 «전사되는 순간» 스트림에
+ *   들어온다. 같은 전사를 두 번 먹지 않는 것도 이 워터마크가 진다(두 번 먹으면 같은 근거가
+ *   «다른 날 2회»로 둔갑해 거짓 승격이 난다).
+ *
+ * ■ 대가 (지침 신뢰성 맹점④ — 틀릴 때의 모습 + 닫을 것)
+ *   · 틀릴 때의 모습 = **조용히 적은 재료**. 전사는 끝났는데 전사일시가 비거나 깨진 행은
+ *     스트림에 못 들어오는데, 겉으로는 「전사 대기」와 같은 모양이다 → 세어서 로그에 적는다.
+ *   · 닫을 것 = **판정에 실패한 학생이 있으면 워터마크를 그 앞에서 세운다.** 안 그러면 그 학생의
+ *     전사문은 다시 못 읽힌다(전진해 버린 커서 뒤라). 실패는 격리하되 **재료는 안 버린다.**
+ *   · 남는 천장(안 닫았다) = 벽 뒤에 있던 «성공한 학생의 나중 행»은 다음 밤 다시 읽힌다.
+ *     이때 승격이 나려면 마지막 근거가 쓰기여야 하는데, 그 경우는 애초에 승격이 옳은 자리다.
+ *   · 새 시트·새 트리거 0 — 이미 쌓이는 탭을 읽고, 야간 오케스트레이터에 한 줄 붙는다.
+ *   ⚠ **하루 지연이 있다** — 이 함수는 `voiceTranscribe_` **뒤**에 서므로 그날 밤 전사분을 그날
+ *     밤에 판정한다. 반대로 `masteryFromFeedback_` 는 앞에 그대로 둔다(순서를 바꾸면 STT 가
+ *     6분 실행 예산을 먼저 먹어 쓰기 판정이 굶는다 — 얻는 것보다 잃는 것이 크다). */
+function masteryFromVoice_(ss) {
+  const apiKey = PropertiesService.getScriptProperties().getProperty('CLAUDE_API_KEY');
+  if (!apiKey) return; // 키 없으면 0초 스킵(전 AI 기능 공통 스위치 원칙)
+  const vl = ss.getSheetByName('voice_log');
+  if (!vl || vl.getLastRow() < 2) return;
+  헤더보정_(vl, VOICE_LOG_HEADERS); // 구 9열 시트도 그대로 살아야 한다(voiceTranscribe_ 와 같은 공용 치유)
+  /* 폭은 시트 물리 폭으로 클램프한다 — 구 시트에서 12열을 요구하면 예외가 나고, 그러면 이 재료가
+   *   아니라 야간 오케스트레이터의 이 칸이 통째로 죽는다(v9.209 의 1710 교훈과 같은 자리). */
+  const w = Math.min(VOICE_LOG_HEADERS.length, vl.getLastColumn());
+  if (w < 9) return; // 전사일시 열이 없다 — 워터마크 스트림을 만들 수 없다(치유가 실패한 시트)
+
+  const props = PropertiesService.getScriptProperties();
+  const 마크전 = String(props.getProperty('문법판정_음성마크') || '');
+  const tz = ss.getSpreadsheetTimeZone();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  /* 전사일시는 문자열로 찍히지만 시트가 Date 로 되받는 자리가 있다(이 저장소가 네 번 밟은 월키
+   *   Date 오염 계열) — 두 모양을 한 자로 눕혀야 사전순 비교가 «시간순»이 된다. */
+  const 도장 = (v) => (v instanceof Date ? Utilities.formatDate(v, tz, 'yyyy-MM-dd HH:mm') : String(v || '').trim());
+
+  const rows = vl.getRange(2, 1, vl.getLastRow() - 1, w).getValues();
+  const 새행 = [];
+  let 버린행 = 0;
+  rows.forEach(r => {
+    const sid = String(r[0] || '').trim();
+    const 전사 = String(r[6] || '').trim();
+    if (!sid || !전사) return;                                   // 아직 전사 전이거나 실패 — 재료가 아니다
+    if (String(r[7] || '').trim() !== '완료') return;            // 상태 정본은 voiceTranscribe_ 가 찍는 '완료' 하나
+    const t = 도장(r[8]);
+    if (!t) { 버린행++; return; }                                // 전사는 있는데 도장이 없다 — 스트림에 못 넣는다(조용한 손실)
+    if (t <= 마크전) return;                                     // 이미 먹은 구간
+    새행.push({ sid: sid, 글: 전사, t: t });
+  });
+  if (버린행) Logger.log('🎙 말하기 판정 — 전사일시가 없어 못 읽은 행 ' + 버린행 + '건(전사는 완료돼 있다)');
+  if (!새행.length) return;
+
+  /* 도장 순으로 걷는다 — 상한에 걸려 멈출 때 **같은 도장을 가진 행은 통째로** 담는다.
+   *   중간에서 자르면 그 도장은 워터마크가 되는데, 못 담은 동률 행은 `t <= 마크전` 에 걸려
+   *   영원히 안 읽힌다(경계에서만 새는 종류의 유실이라 평소엔 안 보인다). */
+  새행.sort((a, b) => (a.t < b.t ? -1 : a.t > b.t ? 1 : 0));
+  const 글 = {};
+  const sid순 = [];
+  let 마지막도장 = '', 담은행 = 0;
+  for (const x of 새행) {
+    const 새학생 = sid순.indexOf(x.sid) === -1;
+    if (새학생 && sid순.length >= TB_VOICE_JUDGE_MAX_PER_RUN && x.t !== 마지막도장) break;
+    if (새학생) { 글[x.sid] = ''; sid순.push(x.sid); }
+    글[x.sid] = (글[x.sid] + '\n' + x.글).slice(-TB_JUDGE_TEXT_CAP);
+    마지막도장 = x.t;
+    담은행++;
+  }
+
+  const bankList = 문법판정목록_();
+  if (!bankList.length) return;
+  const schema = {
+    type: 'object', additionalProperties: false, required: ['used', 'wrong'],
+    properties: {
+      used: { type: 'array', items: { type: 'string' }, description: '학생이 명백히 올바르게 사용한 문법 ID만(확신 없으면 제외)' },
+      wrong: { type: 'array', items: { type: 'string' }, description: '사용을 시도했으나 틀린 문법 ID만' }
+    }
+  };
+  /* 지문이 «말한 문장»임을 밝혀야 하는 이유 둘 — 안 밝히면 판정관이 글의 잣대를 그대로 댄다.
+   *   ①구어는 어미를 줄이고 군말·되풀이가 섞인다(그건 오류가 아니다) ②전사는 기계가 옮긴
+   *   것이라 학생이 안 한 실수가 섞일 수 있다(그래서 애매하면 제외가 더 강하게 걸려야 한다). */
+  const 음성지문 = '한국어 교육 문법 판정관. 아래 문장은 학생이 **말한 것을 기계가 글로 옮긴 것**이다. ' +
+    '구어의 특징(어미 줄임·군말·되풀이·띄어쓰기 흐트러짐)은 오류로 보지 않는다. ' +
+    '전사 오류가 섞일 수 있으니 명백한 것만 담고, 조금이라도 애매하면 제외한다. 목록에 없는 ID는 절대 만들지 않는다.';
+
+  const 판정들 = [];
+  const 실패 = {};
+  for (const sid of sid순) {
+    let out;
+    try {
+      out = aiCall_(apiKey, 음성지문,
+        '문법 목록(ID=이름):\n' + bankList.join('\n') + '\n\n학생이 말한 문장(전사):\n' + 글[sid],
+        schema, 2048);
+    } catch (e) { Logger.log('말하기 문법판정 실패(' + sid + '): ' + e); 실패[sid] = 1; continue; } // 학생 단위 격리
+    판정들.push({ sid: sid, used: out.used, wrong: out.wrong });
+  }
+
+  /* 워터마크 — 실패한 학생이 하나라도 있으면 **그 학생의 가장 이른 도장 앞**에서 세운다.
+   *   전진시키면 그 전사문은 커서 뒤로 넘어가 다시 못 읽힌다(실패는 격리하되 재료는 안 버린다). */
+  let 벽 = '';
+  새행.forEach(x => { if (실패[x.sid] && (!벽 || x.t < 벽)) 벽 = x.t; });
+  let 마크후 = 마크전;
+  새행.forEach(x => { if ((!벽 || x.t < 벽) && x.t <= 마지막도장 && x.t > 마크후) 마크후 = x.t; });
+  if (마크후 !== 마크전) props.setProperty('문법판정_음성마크', 마크후);
+
+  const 결과 = masteryApply_(ss, tz, today, 판정들, { 이름: 'AI음성', 단독승격: false });
+  /* 0 은 분모와 함께 읽는다(유호 확정 08-14) — 안 그러면 「말하기가 진화에 닿는다」가
+   *   실제로 판정된 학생 0명이어도 참이 된다. */
+  Logger.log('🎙 말하기 문법 판정 — 새 전사 ' + 새행.length + '행 = 이번에 읽은 ' + 담은행
+    + '행(학생 ' + sid순.length + '명 = 판정 ' + 판정들.length + ' + 실패 ' + Object.keys(실패).length
+    + ') + 상한 밖 ' + (새행.length - 담은행) + '행 · 신규 기록 ' + 결과.신규 + ' · 도달 승격 ' + 결과.승격);
+}
+
+/* [v9.249 · #Q99] 🗣 C-3. 대화 문법 판정 — **스스로 고른 문장이 처음으로 엔진에 닿는다** (시트층 도달 4/5)
+ *
+ * ■ 무엇이 비어 있었나
+ *   `talk_log` 는 도달 장부에서 「읽는 곳이 진단 리포트뿐 — 턴 수·최장 턴만 센다」였다.
+ *   회화 앱의 핵심 재료라고 골격 주석이 스스로 적어 둔 탭인데, 그 안의 한국어를 아무도 안 읽었다.
+ *
+ * ■ 🔴 사유가 낡은 **네 번째 방식** — 이번엔 처방이 «이미 서 있었다»
+ *   그 칸의 사유는 「다회차 이력을 다음 답장의 맥락으로 싣는 배선이 서면 닿는다」였다. 그런데
+ *   `talkBatch_` 는 이미 `talkHistory_(logRows, sid)` 로 직전 6턴을 프롬프트에 싣는다(v9.138 이래).
+ *   즉 처방을 글자대로 따르면 **아무것도 안 짓고 도달 칸만 뒤집게** 된다 — 이 장부가 스스로 금지한
+ *   「소비자 없이 도달 칸 채우기」다. 앞선 셋과 나란히 두면 사유가 낡는 방식이 네 가지다:
+ *     1/5 지목이 참 · 2/5 지목한 **이름이 없었다**(F531) · 3/5 처방이 **이미 기각된 통로**였다 ·
+ *     4/5 처방이 **이미 서 있었다**(그래서 따르면 빈 도장이 된다).
+ *   🔑 그리고 사유의 첫 문장도 틀렸다 — 읽는 곳은 진단 리포트«뿐»이 아니었다(답장이 읽는다).
+ *      다만 그 읽기는 **같은 기능 안에서 도는 고리**라 학생 이해가 한 칸도 안 자란다: 대화를 읽어
+ *      대화를 쓴다. 도달의 뜻은 「읽는 자리가 있다」가 아니라 **「다음에 줄 것이 바뀐다」**다.
+ *
+ * ■ 원신호가 **구조적으로** 못 보는 것 (이 층에서 값을 가장 빨리 내는 축 · §8-0)
+ *   문법 판정관 둘의 입력은 숙제 제출문(C)과 전사문(C-2)이다 — **둘 다 우리가 낸 과제의 산출**이다.
+ *   과제는 쓸 문법을 정해 주므로, 「과제가 안 물어봤는데 학생이 스스로 쓴 문법」은 어느 층에도 없다.
+ *   대화는 학생이 화제도 문장도 고른다 — 자발적으로 맞게 쓴 문법은 도달의 **더 강한** 증거다.
+ *   (1/5 결석·3인조 · 2/5 찍어서 맞힘 · 3/5 말한 것 — 같은 축이 네 번 연속 통했다.)
+ *
+ * ■ 왜 판정관 둘에 합치지 않았나 — 커서가 다르다
+ *   `masteryFromFeedback_` 의 커서는 `hw_feedback` 행이라 **숙제를 안 낸 학생의 대화문은 통째로
+ *   안 읽힌다**(신규 0 이면 즉시 반환). 대화만 하는 학생이 정확히 그 사각이다. 그리고 합치면
+ *   판정을 층별로 귀속할 수 없어 아래 `단독승격` 가드가 원리상 못 선다. 스트림·지문은 갈라 두고
+ *   **쓰는 통로(`masteryApply_`)만** 공유한다 — 판정관이 셋이 되어도 불변식은 한 곳에만 적힌다.
+ *
+ * ■ 스트림은 «행 번호» 포인터다 (말하기의 워터마크를 안 베낀다)
+ *   전사는 행이 앉은 **뒤에** 채워지므로 행 번호로 걸으면 미전사 행을 영구 누락한다 — 그래서 C-2 는
+ *   전사일시 도장을 쓴다. 대화는 반대다: `talkBatch_` 가 학생문을 **append 시점에** 넣고(API 가
+ *   실패한 행조차 학생문은 남긴다) 나중에 채우는 칸이 없다. 없는 병에 약을 쓰면 그 약이 새 병이 된다.
+ *   ⚠ 그래서 `from > last` 되감기를 둔다 — `wipe`·시연 종료로 탭이 짧아지면 포인터가 끝 밖에 선다.
+ *
+ * ■ `출처.단독승격 = false` — 이유가 말하기와 **다르다**(같은 칸, 다른 병)
+ *   말하기가 false 인 것은 재는 층이 ASR 이라서다. 대화가 false 인 것은 **직전 답장이 올바른 형태를
+ *   방금 보여줬기** 때문이다 — 지문이 「틀린 곳은 답장에서 살짝 고쳐 준다」라, 학생이 그 형태를
+ *   되받아 쓰면 이 층에서 **모방과 습득이 구분되지 않는다**. 진화 게이트는 강등이 없어 되돌릴 수
+ *   없으니 이 층 근거 **단독**으로는 «도달»까지 안 보낸다(쓰기 확인이 한 번 겹치면 승격한다).
+ *   ⚠ 다시 여는 조건 = 첫 학생들의 대화에서 「답장에 안 나온 문법을 학생이 먼저 썼는가」를 사람이
+ *      표본으로 재고 난 뒤다(지금은 학생 0명이라 그 표본이 없다 — 못 재는 것을 근거로 열지 않는다).
+ *
+ * ■ 대가 (지침 신뢰성 맹점④ — 틀릴 때의 모습 + 닫을 것)
+ *   · 틀릴 때의 모습 = **조용히 좁아진 재료**. 구 8열 시트에서도 학생문은 D열이라 읽히지만, 폭이
+ *     4 미만으로 깨진 시트는 재료 0 인데 「대화가 없는 밤」과 같은 모양이다 → 폭 미달은 즉시 반환하고
+ *     읽은 행·학생·판정·실패를 **분모와 함께** 로그에 적는다(0 은 분모와 함께 · 유호 확정 08-14).
+ *   · 닫을 것 = **판정에 실패한 학생이 있으면 포인터를 그 학생의 첫 행 앞에서 세운다.** 전진시키면
+ *     그 문장은 커서 뒤라 다시 못 읽힌다(실패는 격리하되 재료는 안 버린다 · C-2 와 같은 규율).
+ *   · 남는 천장(안 닫았다) = 상한에 걸려 못 읽은 학생은 다음 밤에 읽힌다. 대화는 하루 1턴 가드가
+ *     있어 밤당 신규 행이 학생 수를 못 넘으므로, 상한 15 는 실제로는 미개원 규모에서 안 걸린다.
+ *   · 헤더 치유를 **안 한다** — 읽는 자가 쓰면 진단이 대상을 바꾼다(`talkBatch_`·`menuTalkLogCheck`
+ *     가 이미 치유를 진다). 폭은 물리 폭으로 클램프한다(구 시트에서 13열을 요구하면 이 칸이 죽는다).
+ *   · 새 시트·새 트리거 0 — 이미 쌓이는 탭을 읽고, 야간 오케스트레이터에 한 줄 붙는다. */
+function masteryFromTalk_(ss) {
+  const apiKey = PropertiesService.getScriptProperties().getProperty('CLAUDE_API_KEY');
+  if (!apiKey) return; // 키 없으면 0초 스킵(전 AI 기능 공통 스위치 원칙)
+  const tl = ss.getSheetByName('talk_log');
+  if (!tl || tl.getLastRow() < 2) return;
+  const w = Math.min(TALK_LOG_HEADERS.length, tl.getLastColumn());
+  if (w < 4) return; // 학생문(D열)이 없다 — 재료가 아니다(구 8열 시트는 통과한다)
+
+  const props = PropertiesService.getScriptProperties();
+  const last = tl.getLastRow();
+  const from = Number(props.getProperty('문법판정_대화포인터')) || 1;
+  if (from > last) { props.setProperty('문법판정_대화포인터', String(last)); return; } // wipe·감축 뒤 되감기
+  if (from >= last) return;
+
+  const tz = ss.getSpreadsheetTimeZone();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const rows = tl.getRange(from + 1, 1, last - from, w).getValues();
+
+  /* 상한에 걸리면 **그 앞 행에서 멈춘다** — 포인터가 담지도 않은 학생의 행을 넘어가면 그 문장은
+   *   영구 누락이다(경계에서만 새는 종류라 평소엔 안 보인다 · C-2 가 동률 도장으로 배운 것과 같은 병). */
+  const 글 = {};
+  const sid순 = [];
+  let 담은행 = 0;
+  for (let i = 0; i < rows.length; i++) {
+    const sid = String(rows[i][1] || '').trim();
+    const 문장 = String(rows[i][3] || '').trim();
+    if (!sid || !문장) { 담은행 = i + 1; continue; } // 빈 행은 재료가 아니다 — 지나가도 잃는 것이 없다
+    const 새학생 = sid순.indexOf(sid) === -1;
+    if (새학생 && sid순.length >= TB_TALK_JUDGE_MAX_PER_RUN) break;
+    if (새학생) { 글[sid] = ''; sid순.push(sid); }
+    글[sid] = (글[sid] + '\n' + 문장).slice(-TB_JUDGE_TEXT_CAP); // 상한은 쓰기·말하기와 공용(한 함수에 자 하나)
+    담은행 = i + 1;
+  }
+  if (!sid순.length) { // 재료 0 — 빈 행만 지났다면 포인터는 그만큼 전진해도 안전하다
+    if (담은행) props.setProperty('문법판정_대화포인터', String(from + 담은행));
+    return;
+  }
+
+  const bankList = 문법판정목록_();
+  if (!bankList.length) return; // 뱅크를 못 읽었다 — 지어낸 ID 차단이 죽으니 아무것도 안 판정한다
+  const schema = {
+    type: 'object', additionalProperties: false, required: ['used', 'wrong'],
+    properties: {
+      used: { type: 'array', items: { type: 'string' }, description: '학생이 명백히 올바르게 사용한 문법 ID만(확신 없으면 제외)' },
+      wrong: { type: 'array', items: { type: 'string' }, description: '사용을 시도했으나 틀린 문법 ID만' }
+    }
+  };
+  /* 지문이 «자유 대화»임을 밝혀야 하는 이유 둘 — 안 밝히면 판정관이 작문 과제의 잣대를 그대로 댄다.
+   *   ①채팅은 짧고 반말·이모지·줄임이 섞인다(그건 오류가 아니다) ②직전 답장이 올바른 형태를 보여준
+   *   뒤라, 되받아 쓴 것은 습득의 증거로 약하다 → 애매하면 제외가 더 강하게 걸려야 한다. */
+  const 대화지문 = '한국어 교육 문법 판정관. 아래 문장은 학생이 **자유 대화에서 스스로 쓴 것**이다. ' +
+    '과제가 정해 준 문법이 아니라 학생이 고른 표현이므로, 채팅의 특징(짧은 문장·구어체·줄임·이모지)은 오류로 보지 않는다. ' +
+    '직전 답장이 올바른 형태를 보여준 뒤 그대로 되받아 쓴 것일 수 있으니, 명백한 것만 담고 조금이라도 애매하면 제외한다. ' +
+    '목록에 없는 ID는 절대 만들지 않는다.';
+
+  const 판정들 = [];
+  const 실패 = {};
+  for (const sid of sid순) {
+    let out;
+    try {
+      out = aiCall_(apiKey, 대화지문,
+        '문법 목록(ID=이름):\n' + bankList.join('\n') + '\n\n학생이 대화에서 쓴 문장:\n' + 글[sid],
+        schema, 2048);
+    } catch (e) { Logger.log('대화 문법판정 실패(' + sid + '): ' + e); 실패[sid] = 1; continue; } // 학생 단위 격리
+    판정들.push({ sid: sid, used: out.used, wrong: out.wrong });
+  }
+
+  /* 포인터 — 실패한 학생이 하나라도 있으면 **그 학생의 첫 행 앞**에서 세운다.
+   *   전진시키면 그 문장은 커서 뒤로 넘어가 다시 못 읽힌다(실패는 격리하되 재료는 안 버린다). */
+  let 벽 = 0;
+  for (let i = 0; i < 담은행; i++) {
+    if (실패[String(rows[i][1] || '').trim()]) { 벽 = i + 1; break; }
+  }
+  const 전진 = 벽 ? 벽 - 1 : 담은행;
+  if (전진 > 0) props.setProperty('문법판정_대화포인터', String(from + 전진));
+
+  const 결과 = masteryApply_(ss, tz, today, 판정들, { 이름: 'AI대화', 단독승격: false });
+  /* 0 은 분모와 함께 읽는다(유호 확정 08-14) — 안 그러면 「대화가 진화에 닿는다」가 실제로 판정된
+   *   학생 0명이어도 참이 된다. 상한 밖·실패·전진 폭이 한 줄에서 갈린다. */
+  Logger.log('🗣 대화 문법 판정 — 새 행 ' + rows.length + '행 = 이번에 읽은 ' + 담은행
+    + '행(학생 ' + sid순.length + '명 = 판정 ' + 판정들.length + ' + 실패 ' + Object.keys(실패).length
+    + ') + 상한 밖 ' + (rows.length - 담은행) + '행 · 포인터 전진 ' + 전진 + '행'
+    + ' · 신규 기록 ' + 결과.신규 + ' · 도달 승격 ' + 결과.승격);
 }

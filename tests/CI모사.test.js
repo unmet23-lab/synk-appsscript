@@ -15,15 +15,18 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
+const { 파일소스 } = require('./lib/소스검사');
 
 const ROOT = path.resolve(__dirname, '..');
-const SRC = fs.readFileSync(path.join(ROOT, 'tools', 'test-ci.js'), 'utf8');
+/* 🔑 `파일소스()` 로 읽는다 — 읽으면서 줄끝 표기를 접는다(#Q101 · 2026-08-17).
+ *   그전엔 원문 그대로 읽고 앵커 쪽에서 `\r?\n` 으로 CRLF 만 받아냈다. 형제 축(줄 끝 공백)은
+ *   열려 있어서, 행동을 한 글자도 안 바꾸는 변형에 아래 두 시험이 **실측으로** 빨개졌다.
+ *   접기는 이제 이음매가 진다 — 여기 손 접기를 다시 적으면 그게 곧 사본이다. */
+const SRC = 파일소스(path.join(ROOT, 'tools', 'test-ci.js'));
 
 /** test-ci.js 의 비교 로직을 그 소스에서 **꺼내 와** 돌린다(베껴 쓰면 같이 눈이 먼다). */
 function movedFrom(src, before, after) {
-  // ⚠ 줄끝을 `\n` 으로 박지 않는다 — 이 저장소 파일은 CRLF 라 그대로 두면 **검사가
-  //   조용히 안 걸린다**(F046 과 같은 함정: 앵커를 손으로 쓰면 줄끝에서 깨진다).
-  const body = src.match(/const moved = \[\];\r?\n([\s\S]*?)\r?\nif \(code !== 0/);
+  const body = src.match(/const moved = \[\];\n([\s\S]*?)\nif \(code !== 0/);
   assert.ok(body, 'test-ci.js 에서 변화 비교 블록을 못 찾았다 — 구조가 바뀌었으면 이 회귀도 갱신하라');
   const moved = [];
   new Function('moved', 'before', 'after', body[1])(moved, before, after);

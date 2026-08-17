@@ -69,11 +69,58 @@ test('🔑 선파악·기능체크 프롬프트 둘 다 앱의 방향을 먹는�
   }
 });
 
-test('방향 정본 파일이 저장소에 실재하고 상한 안이다 — 없으면 검수자가 방향 없이 돈다', () => {
+/* 🔑 계약이 2026-08-17 에 바뀌었다(유호 픽 ㉡ · F549). 옛 계약은 「**파일**이 상한 안」이었는데,
+ *   그 파일은 유호님 확정 문구라 기계가 못 줄인다 — 그래서 master 가 주인 없는 적색으로 섰다.
+ *   새 계약은 「**싣는 것**이 상한 안 · 중요한 절이 조용히 안 사라진다」다. 상한값은 그대로. */
+test('방향 정본이 실재하고, 싣는 것이 상한 안이며, 안 실린 절은 이름이 드러난다', () => {
   const t = fs.readFileSync(검수.방향경로, 'utf8');
   assert.ok(t.includes('4개년') || t.includes('로드맵'), '방향 파일에 로드맵이 없다');
-  assert.ok(t.length <= 검수.방향상한, `방향 파일이 상한(${검수.방향상한})을 넘는다 — 프롬프트가 비대해진다`);
-  assert.ok(검수.방향텍스트().includes('데이터'), '방향텍스트()가 파일 내용을 안 돌려준다');
+
+  const 원본 = console.error; const 잡힌 = []; console.error = (...a) => 잡힌.push(a.join(' '));
+  let 실린것;
+  try { 실린것 = 검수.방향텍스트(); } finally { console.error = 원본; }
+
+  assert.ok(실린것.includes('데이터'), '방향텍스트()가 파일 내용을 안 돌려준다');
+  if (t.length <= 검수.방향상한) {
+    assert.strictEqual(잡힌.length, 0, '다 들어가는데 경고를 냈다 — 거짓양성');
+    return;                                    // 파일이 상한 안이면 고를 것이 없다
+  }
+  /* 여기부터는 «넘쳤을 때» 계약이다 — 실저장소가 넘치든 안 넘치든 둘 다 정상이라 갈라 검사한다. */
+  const 본문 = 실린것.split('\n\n…(상한')[0];
+  assert.ok(본문.length <= 검수.방향상한, `싣는 본문이 상한(${검수.방향상한})을 넘었다 — 프롬프트가 비대해진다`);
+  assert.strictEqual(잡힌.length, 1, '뺀 절이 있는데 stderr 가 조용하다 — 운영자가 못 본다');
+  // 경고가 내는 수는 `trim()` 뒤 길이다(파일 끝 개행 차이로 1~2자 갈린다) — 재는 층을 맞춘다.
+  assert.ok(잡힌[0].includes(t.trim().length.toLocaleString()), `실측 문자수가 경고에 없다: ${잡힌[0]}`);
+  assert.match(실린것, /안 실렸다/, '프롬프트 본문에도 «무엇이 빠졌는지»가 있어야 검수자가 안다');
+});
+
+test('🔴 넘칠 때 가장 먼저 지키는 절은 «설계 불변식»이다 — 뒤에서 자르면 그게 첫 희생이었다', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-방향-우선-'));
+  const p = path.join(d, '방향.md');
+  const 채움 = (n) => '가'.repeat(n);
+  fs.writeFileSync(p, [
+    '# 머리', 채움(100),
+    '## 로드맵', 채움(2500),
+    '## 「출시」의 정의', 채움(2500),
+    '## 설계 불변식', 채움(2500),   // 문서 «맨 뒤» — 옛 통로에서 첫 희생이던 자리
+  ].join('\n'));
+
+  const 원본 = console.error; const 잡힌 = []; console.error = (...a) => 잡힌.push(a.join(' '));
+  let r; try { r = 검수.방향텍스트(p); } finally { console.error = 원본; }
+
+  assert.ok(r.includes('# 머리'), '머리는 언제나 실린다 — 나머지를 읽는 틀이다');
+  assert.ok(r.includes('## 설계 불변식'), '🔴 문서 맨 뒤라는 이유로 불변식이 빠졌다 — 고치려던 병 그 자체다');
+  assert.ok(!r.includes('## 「출시」의 정의'), '우선순위가 낮은 절이 상한을 먹었다');
+  assert.match(r, /안 실렸다/, '빠진 절이 본문에 안 드러난다 — 검수자가 모르고 판정한다');
+  assert.ok(잡힌.length === 1 && 잡힌[0].includes('출시'), `뺀 절 이름이 stderr 에 없다: ${잡힌.join('|')}`);
+});
+
+test('모르는 새 절은 «버리지 않고» 맨 뒤로 간다 — 정본이 개정돼도 사라지지 않는다', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-방향-새절-'));
+  const p = path.join(d, '방향.md');
+  fs.writeFileSync(p, ['# 머리', '가'.repeat(100), '## 설계 불변식', '나'.repeat(100), '## 아직 없는 절', '다'.repeat(100)].join('\n'));
+  const r = 검수.방향텍스트(p);
+  assert.ok(r.includes('## 아직 없는 절') && r.includes('다'), '상한 안인데 새 절이 빠졌다');
 });
 
 test('방향 정본이 상한을 넘으면 stderr 경고에 실측 문자수가 실린다 — 조용한 뒤잘림 금지 (상한 안이면 침묵)', () => {
