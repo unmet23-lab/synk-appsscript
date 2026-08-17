@@ -63,6 +63,19 @@ if (/GIT_SCOPE_BYPASS=1/.test(exec)) process.exit(0);
 const G = '\\bgit\\s+(?:(?:-[Cc]|--git-dir|--work-tree|--exec-path|--namespace)(?:=\\S+|\\s+\\S+)\\s+|--?[\\w-]+\\s+)*';
 const re = (body, flags) => new RegExp(G + body, flags);
 
+/* 서브커맨드 **이름이 끝나는 자리** — `\b` 로 적으면 `-` 가 낱말 경계라 이름을 반토막 낸다.
+ * 2026-08-17 실측(F573): ④의 `merge\b` 가 **`git merge-base --is-ancestor` 를 deny** 했다.
+ *   그건 커밋을 만들 수 없는 **읽기 전용 조회**이고, 하필 인계문·F566 계열이 「착지 확인에 쓰라」고
+ *   지목하는 명령이다 — 즉 가드가 자기 처방의 확인 통로를 막았다(F103 형태).
+ * 🔑 `G` 상수와 **같은 뿌리의 두 번째다**: 그때는 `git` 과 서브커맨드 «사이»(전역 옵션)를 놓쳤고,
+ *   이번엔 서브커맨드 이름의 «끝»을 놓쳤다. 그래서 또 호출부마다 고치지 않고 상수를 하나 둔다.
+ * 실물 분모(`git help -a` 실측 8종): merge-base·merge-file·merge-index·merge-tree·merge-one-file ·
+ *   commit-tree·commit-graph·checkout-index — 전부 이 문으로 샜다.
+ * ⚠ 새는 방향이 **차단**이라 조용하지 않았다(막히면 사람이 본다). 그래도 값이 비싼 이유는
+ *   막힌 것이 «확인» 통로라서다 — 확인을 못 하면 판정이 추정으로 내려간다.
+ * ⚠ `mergetool` 은 원래 안 걸렸다(`merge` 뒤 `t` 는 낱말 경계가 아니다) — 대시 있는 이름만 샜다. */
+const 끝 = '(?![-\\w])';
+
 /* `-C <경로>`가 붙으면 그 저장소가 대상이다 — 아래 ④⑤는 git 상태를 실제로 읽으므로
  * cwd 대신 그 경로에서 물어야 한다(안 그러면 남의 저장소 상태로 판정한다). */
 const cdir = /\bgit\s+(?:[^&|;]*?\s)?-C\s+(['"]?)([^'"\s]+)\1/.exec(exec);
@@ -107,7 +120,7 @@ const 대안 = '\n→ 대신: git commit -m "..." -- 경로A 경로B'
 const 걸린조각 = (발동, 예외) => exec.split(/&&|\|\||[;|\n]/).find((s) => 발동(s) && !(예외 && 예외(s)));
 
 /* ① git add -A / --all / . — untracked까지 담는다(F015: 유호님 git 밖 정본·자격증명 폴더가 같은 트리에 있다) */
-if (걸린조각((s) => re('add\\b[^&|;]*?(\\s-A\\b|\\s--all\\b|\\s\\.(\\s|$))').test(s))) {
+if (걸린조각((s) => re('add' + 끝 + '[^&|;]*?(\\s-A\\b|\\s--all\\b|\\s\\.(\\s|$))').test(s))) {
   deny('[git-scope-guard] `git add -A` · `git add .` 차단 — 내가 지정하지 않은 파일까지 담는다.'
     + '\n이 저장소는 세션 여럿이 같은 작업 트리를 공유하고, 유호님의 git 밖 정본과 자격증명 폴더가 그 안에 있다.'
     + '\n2026-08-03 실사고(F015): 이 명령이 사업문서 2종을 커밋해 push까지 갔다.' + 대안);
@@ -115,8 +128,8 @@ if (걸린조각((s) => re('add\\b[^&|;]*?(\\s-A\\b|\\s--all\\b|\\s\\.(\\s|$))')
 
 /* ② git commit -a / --all — untracked는 안 담지만 **남의 tracked 수정**을 담는다(F013·F014 계열) */
 if (걸린조각(
-  (s) => re('commit\\b[^&|;]*?(\\s-a\\b|\\s--all\\b|\\s-[a-zA-Z]*a[a-zA-Z]*\\b)').test(s),
-  (s) => re('commit\\b[^&|;]*?\\s--\\s').test(s))) {
+  (s) => re('commit' + 끝 + '[^&|;]*?(\\s-a\\b|\\s--all\\b|\\s-[a-zA-Z]*a[a-zA-Z]*\\b)').test(s),
+  (s) => re('commit' + 끝 + '[^&|;]*?\\s--\\s').test(s))) {
   deny('[git-scope-guard] `git commit -a` 차단 — 추적 중인 **남의 미커밋 수정**까지 함께 커밋된다.'
     + '\n같은 작업 트리를 세션 5~6개가 공유한다(F013·F014 실사고).' + 대안);
 }
@@ -137,8 +150,8 @@ if (걸린조각(
  *
  * ⚠ `-n` 은 **commit 에서만** 잡는다 — `git push -n` 은 `--dry-run` 이라 오히려 안전한 쪽이고,
  *   그것까지 막으면 확인용 통로가 사라져 따를 수 없는 처방이 된다(F103). */
-if (걸린조각((s) => re('commit\\b[^&|;]*?(\\s--no-verify\\b|\\s-[a-zA-Z]*n[a-zA-Z]*\\b)').test(s))
-  || 걸린조각((s) => re('push\\b[^&|;]*?\\s--no-verify\\b').test(s))) {
+if (걸린조각((s) => re('commit' + 끝 + '[^&|;]*?(\\s--no-verify\\b|\\s-[a-zA-Z]*n[a-zA-Z]*\\b)').test(s))
+  || 걸린조각((s) => re('push' + 끝 + '[^&|;]*?\\s--no-verify\\b').test(s))) {
   deny('[git-scope-guard] `--no-verify` 차단 — 훅 건너뛰기는 **유호님이 명시로 요청할 때만**이다 (F473).'
     + '\n이 한 플래그가 끄는 게이트가 아홉이다(pre-commit 여덟 + commit-msg 하나).'
     + '\n그중 제어문자·옛글자는 커밋되는 순간 **이력에 영원히 남아** 다음 커밋으로 못 고친다.'
@@ -154,8 +167,8 @@ if (걸린조각((s) => re('commit\\b[^&|;]*?(\\s--no-verify\\b|\\s-[a-zA-Z]*n[a
  * 미커밋 테스트 파일과 codex/ 디렉터리가 정리 한 번에 소멸). dry-run(-n)만 통과 —
  * 커밋과 달리 범위를 좁혀도(경로 지정) 남의 신작을 지우는 성질이 그대로라 경로 예외를 두지 않는다. */
 if (걸린조각(
-  (s) => re('clean\\b').test(s),
-  (s) => re('clean\\b[^&|;]*?(\\s-n\\b|\\s--dry-run\\b)').test(s))) {
+  (s) => re('clean' + 끝).test(s),
+  (s) => re('clean' + 끝 + '[^&|;]*?(\\s-n\\b|\\s--dry-run\\b)').test(s))) {
   deny('[git-scope-guard] `git clean` 차단 — 미추적 파일은 git의 어떤 안전망에도 없어 복구가 불가능하고,'
     + '\n이 공유 트리의 미추적 파일은 대개 다른 세션이 방금 만든 작업물이다(F025 실사고).'
     + '\n→ 확인만 하려면: git clean -n (dry-run — 지우지 않고 목록만)'
@@ -172,7 +185,7 @@ if (걸린조각(
  *   원격 조회 실패는 「대상 아님」으로 접는다: 이 규칙의 새는 방향은 「통과」지만, 대상 아닌 저장소를
  *   막는 쪽으로 새면 BYPASS 습관을 가르친다(v6.11) — ③의 「경로 예외 없음」과 반대 성질의 자리다. */
 {
-  const 푸시조각 = 걸린조각((s) => re('push\\b').test(s));
+  const 푸시조각 = 걸린조각((s) => re('push' + 끝).test(s));
   if (푸시조각) {
     let 원격들 = '';
     try {
@@ -226,7 +239,7 @@ if (걸린조각(
  *     통과권이 된다. ②③⑤⑦이 전부 그 형태였다 — 지금은 넷 다 `걸린조각` 을 통한다. */
 const 마침꼴 = '(merge|rebase|cherry-pick|revert)\\b[^&|;]*?\\s--(continue|abort|skip|quit)\\b';
 const 커밋생성 = !!걸린조각(
-  (s) => re('(commit|cherry-pick|revert|merge)\\b').test(s),
+  (s) => re('(commit|cherry-pick|revert|merge)' + 끝).test(s),
   (s) => re(마침꼴).test(s));
 if (커밋생성) {
   const { execFileSync } = require('child_process');
@@ -267,8 +280,8 @@ if (커밋생성) {
  *   판정을 바꾼다 — 위험한 조각(abort 아닌 되감기)을 **먼저** 집고, 없을 때만 abort 조각을 쓴다.
  *   그냥 첫 조각을 쓰면 `git rebase --abort && git reset --hard` 가 abort 의 완화를 물려받는다. */
 const 되감기꼴 = (s) => re('(rebase|merge|cherry-pick|revert)\\s+--abort\\b').test(s)
-  || re('reset\\b[^&|;]*?\\s--hard\\b').test(s)
-  || re('(checkout|restore)\\b[^&|;]*?\\s--\\s+\\.').test(s);
+  || re('reset' + 끝 + '[^&|;]*?\\s--hard\\b').test(s)
+  || re('(checkout|restore)' + 끝 + '[^&|;]*?\\s--\\s+\\.').test(s);
 const 탈출구꼴 = (s) => re('(rebase|merge|cherry-pick|revert)\\s+--abort\\b').test(s);
 const 되감기조각 = 걸린조각(되감기꼴, 탈출구꼴) || 걸린조각(되감기꼴);
 if (되감기조각) {
@@ -341,7 +354,7 @@ if (되감기조각) {
  *      가르는 기준은 ⑦의 원칙 그대로 **범위**다 — 잃을 것이 없으면(깨끗한 트리·빈 stash) 조용하다. */
 {
   const { execFileSync } = require('child_process');
-  const 하위 = (s) => { const m = re('stash\\b\\s*(\\S*)').exec(s); return m ? String(m[1] || '') : null; };
+  const 하위 = (s) => { const m = re('stash' + 끝 + '\\s*(\\S*)').exec(s); return m ? String(m[1] || '') : null; };
   const 조회 = /^(list|show|create|store)$/;   // 트리도 stash 목록도 안 줄인다
   const 쏟기 = /^(pop|apply)$/;
   const 없애기 = /^(drop|clear|branch)$/;
@@ -370,7 +383,7 @@ if (되감기조각) {
         .map((m) => ({ sha: m[1], ref: m[2], 제목: m[3] }));
     } catch { /* 저장소 밖 — 가드가 판단할 자리가 아니다 */ }
     /* clear 는 전부, drop·branch 는 지목한 하나(생략하면 stash@{0}) */
-    const 겨눈 = re('stash\\b[^&|;]*?(stash@\\{\\d+\\})').exec(없애는조각);
+    const 겨눈 = re('stash' + 끝 + '[^&|;]*?(stash@\\{\\d+\\})').exec(없애는조각);
     const 겨냥 = /\bclear\b/.test(없애는조각) ? 잔 : 잔.filter((s) => s.ref === (겨눈 ? 겨눈[1] : 'stash@{0}'));
     /* 🔴 stash **바깥** ref 만 센다 — `refs/stash` 는 정의상 stash@{0} 을 가리키므로 그걸 세면
      *   맨 위 조각이 **언제나 못 박힌 것**으로 읽혀 규칙이 통째로 안 돈다(실 저장소 탐침이 잡았다:
