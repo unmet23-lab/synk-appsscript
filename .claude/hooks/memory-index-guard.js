@@ -22,10 +22,17 @@
 //   규칙을 지키는 게 아니라 훅을 끈다(v6.11: "과잉 차단은 BYPASS 습관을 만든다").
 //   재는 축은 「들어온 조각」이 아니라 **편집 결과의 줄**이다 — 부분 치환은 조각이 짧아도
 //   결과 줄이 277자일 수 있고, 그게 그대로 통과하던 자리가 F123 이다(08-06 MEMORY.md 압축 실측 3줄).
+//
+// ③ 축(2026-08-17 · F519) — **동시 편집**. 위 ①② 는 「한 세션이 파일을 살찌우는 것」만 봤고,
+//   「두 세션이 같은 파일을 동시에 고치는 것」은 아무 층도 안 봤다. 저장소 안 파일을 지키는 넉 층
+//   (git status · 작업본소유자 · board-guard · repo-staleness)이 **전부 이 파일 밖**이라서다.
+//   실사고: 두 세션이 같은 8차 압축을 각자 돌렸고 나중에 쓴 판이 남이 내린 5줄을 되살렸다.
+//   발각은 우연이었다(로그의 바이트 수가 안 맞은 것뿐).
 'use strict';
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const crypto = require('crypto');
 
 const MAX_LINE = 250;
 const TARGET = 'MEMORY.md';
@@ -124,11 +131,85 @@ try {
 }
 
 const tool = String(input.tool_name || '');
-if (!/^(Edit|Write|MultiEdit)$/.test(tool)) process.exit(0);
-
 const ti = input.tool_input || {};
+
+/* ── 기준(base) 도장 — 「내가 무엇을 보고 조립했나」의 유일한 증거 (F519) ─────────────
+ *
+ * 이 파일은 repo **밖**이라 git·board-guard·작업본소유자·repo-staleness 어느 층도 못 본다.
+ * 그래서 동시 편집을 가를 재료가 하나도 없다 — 남이 그 사이 넣은 줄인지, 내가 지우기로 한
+ * 줄인지 구별할 방법이 **원리상** 없었다. 그 재료를 여기서 만든다: 내가 이 파일을 전문으로
+ * 연 순간의 판을 세션별로 남긴다.
+ *
+ * 🔑 하네스가 이미 막고 있지 않다 — 실측(2026-08-17)으로 갈랐다. 남이 고친 뒤의 Edit 은
+ *   "the edit applied cleanly, but the file contains other changes not in your context" 라는
+ *   **알림 한 줄과 함께 그대로 적용**됐다. 알림은 되돌림이 아니다.
+ *
+ * 자리는 tmp 다(세션이 죽으면 같이 사라지는 것이 맞다 — 기준은 그 세션의 눈이지 저장소의 사실이 아니다). */
+const 기준DIR = process.env.SYNK_INDEX_BASE_DIR || path.join(os.tmpdir(), 'synk-index-base');
+const 기준키 = (sid, file) =>
+  `${String(sid).replace(/[^\w.-]/g, '_')}-${crypto.createHash('sha1').update(file).digest('hex').slice(0, 8)}`;
+function 기준쓰기(sid, file, 본문) {
+  if (!sid || 본문 == null) return;
+  try {
+    fs.mkdirSync(기준DIR, { recursive: true });
+    fs.writeFileSync(path.join(기준DIR, 기준키(sid, file)), 본문, 'utf8');
+  } catch (_) { /* 도장을 못 남기면 다음 판정이 「모름」이 된다 — 모름은 아래에서 알림으로 드러난다 */ }
+}
+function 기준읽기(sid, file) {
+  if (!sid) return null;
+  try { return fs.readFileSync(path.join(기준DIR, 기준키(sid, file)), 'utf8'); } catch (_) { return null; }
+}
+
+/** 이 편집으로 파일이 어떻게 되는지와 무관하게, **셸이 이 파일을 덮어쓰는 모양**인지 본다.
+ *
+ * F519 의 실사고가 정확히 이 통로였다: 조립 산출물(`MEMORY.new.md`)을 만들고 그것을 옮겼다.
+ * 그렇게 들어온 판은 Edit·Write 를 안 거치므로 위 ①②③ 이 **한 번도 안 돈다** — 그리고
+ * 그 흔적이 이미 저장소에 남아 있었다: 줄당 250자 가드가 서 있는 내내 301자 줄이 하나 살았다
+ * (memory/memory-index-total-cap.md · 「Edit·Write 가 아닌 통로로 들어왔다는 뜻」).
+ *
+ * ⚠ 여기서 잡는 것은 **셸이 목적지로 이 파일을 적은 경우**뿐이다. `node 조립.js` 처럼
+ *   스크립트 안에서 fs 로 쓰는 것은 명령문에 안 드러나 **원리상 못 본다**(이 장치의 대가). */
+function 셸덮어쓰기(cmd) {
+  const T = String.raw`(?:[^\s"'<>|;&]*[\/\\])?MEMORY\.md`;
+  const 후보 = [
+    [new RegExp(String.raw`>>?\s*["']?${T}`), '리다이렉트(> · >>)'],
+    [new RegExp(String.raw`\btee\b[^|;&]*?${T}`), 'tee'],
+    [new RegExp(String.raw`\bsed\b[^|;&]*\s-i[^|;&]*${T}`), 'sed -i'],
+    [new RegExp(String.raw`\b(?:mv|cp)\b[^|;&]*\s["']?${T}["']?\s*(?:$|[|;&])`), 'mv·cp 의 목적지'],
+    [new RegExp(String.raw`\b(?:Set-Content|Out-File|Add-Content)\b[^|;&]*${T}`), 'PowerShell 쓰기 cmdlet'],
+    [new RegExp(String.raw`\b(?:Move-Item|Copy-Item)\b[^|;&]*${T}["']?\s*(?:$|[|;&])`), 'PowerShell 이동·복사의 목적지'],
+  ];
+  for (const [re, 이름] of 후보) if (re.test(cmd)) return 이름;
+  return null;
+}
+
+if (tool === 'Bash' || tool === 'PowerShell') {
+  const 모양 = 셸덮어쓰기(String(ti.command || ''));
+  if (!모양) process.exit(0);
+  deny(
+    `[memory-index-guard] 셸로 메모리 인덱스를 덮어쓰려 한다 — ${모양}.\n` +
+    '→ 이 통로엔 판정층이 **하나도 없다**. 남이 그 사이 넣은 줄이 소리 없이 사라진다(F519 실사고:\n' +
+    '  두 세션이 같은 압축을 동시에 했고 나중에 쓴 판이 남이 내린 5줄을 되살렸다 · 발각은 우연이었다).\n' +
+    '→ **`Write` 도구로 써라** — 그래야 이 훅이 「내가 읽은 판 vs 지금 디스크」를 대조한다(그게 이 층의 전부다).\n' +
+    '→ 조립 산출물(`MEMORY.new.md` 류)은 **스크래치패드**에 둔다. 메모리 폴더에 두면\n' +
+    '  `tools/decision-queue.js` 가 폴더의 `*.md` 를 훑어 그것을 새 소스로 읽는다(F519 곁가지: ⏳ 유령 34건).'
+  );
+}
+
+if (!/^(Read|Edit|Write|MultiEdit)$/.test(tool)) process.exit(0);
+
 const filePath = String(ti.file_path || '').replace(/\\/g, '/');
 if (path.basename(filePath) !== TARGET) process.exit(0);
+
+/* Read = 판정이 아니라 **도장**이다(조용히 통과시킨다).
+ * ⚠ 구역 읽기(offset·limit)는 도장을 안 찍는다 — 일부만 본 세션을 「전문을 본 세션」으로 세면
+ *   아래 3자 대조의 기준이 거짓이 되고, 거짓 기준은 **막아야 할 것을 통과**시킨다.
+ *   구역 읽기는 read-budget 이 권장하는 정상 통로라 드문 일도 아니다. */
+if (tool === 'Read') {
+  if (ti.offset != null || ti.limit != null) process.exit(0);
+  try { 기준쓰기(input.session_id, filePath, fs.readFileSync(filePath, 'utf8')); } catch (_) { /* 없는 파일 */ }
+  process.exit(0);
+}
 
 // 인덱스 항목 줄만 본다. 머리말·구획 제목·인용문은 길어도 되고, 실제로 규칙을 설명하는 자리다.
 const isEntry = (line) => /^\s*-\s*\[/.test(line);
@@ -175,6 +256,43 @@ const 검사줄 = 결과 !== null
   ? 결과.split('\n').filter((l) => !known.has(l.trim()))
   : incoming.flatMap((chunk) => chunk.split('\n'));
 const offenders = 검사줄.filter((l) => isEntry(l) && l.length > MAX_LINE);
+
+/* ── ③ 동시 편집 — 되돌릴 수 없는 손해라 ①② 보다 **먼저** 판정한다 (F519) ──────────
+ *
+ * 순서가 규칙이다. F228 에서 이미 한 번 배웠다: ①②(칸·줄수 = 되돌릴 수 있는 불편)가 앞에서
+ * deny 해 버리면 겹침 검사(되돌릴 수 없는 손해)가 **구조적으로 침묵**한다. 그래서 ① 은 위에서
+ * **계산만** 하고 판정은 여기 아래로 미뤘다. 길이·총량은 문장을 고치면 끝이지만, 모르고 지운
+ * 남의 줄은 아무도 모른다 — 되돌림 비용이 다르면 앞자리는 비싼 쪽이 가진다.
+ *
+ * 재는 축은 셋이다: **내가 읽은 판(기준) · 지금 디스크 · 내가 쓸 판**.
+ *   지금 디스크엔 있는데 → 내 기준엔 없었고 → 내 판에도 없는 줄 = **내가 못 본 채 지우는 줄**.
+ * 기준에 있던 줄을 내가 뺀 것은 압축이다(내 판정이라 안 막는다 — 그걸 막으면 F103).
+ *
+ * Write 만 본다. Edit·MultiEdit 은 `old_string` 이 지금 디스크와 대조되므로 **모르는 줄을
+ * 원리상 못 지운다** — 안 새는 자리에 검사를 세우면 거짓양성만 는다. */
+const 줄집합 = (본문) => new Set(본문.split('\n').map((l) => l.trim()));
+const 기준본 = 기준읽기(input.session_id, filePath);
+const 소실 = (tool === 'Write' && 디스크 !== null && 결과 !== null && 기준본 !== null)
+  ? 디스크.split('\n').filter((l) => {
+    const t = l.trim();
+    return isEntry(l) && !줄집합(기준본).has(t) && !줄집합(결과).has(t);
+  })
+  : [];
+
+if (소실.length) {
+  const 보기 = 소실.slice(0, 5)
+    .map((l) => `   · ${l.trim().slice(0, 90)}${l.trim().length > 90 ? '…' : ''}`).join('\n');
+  deny(
+    `[memory-index-guard] 내가 읽은 판과 **지금 디스크**가 다르다 — 이 통째 쓰기로 ${소실.length}줄이 사라진다.\n` +
+    `${보기}${소실.length > 5 ? `\n   · … 외 ${소실.length - 5}줄` : ''}\n` +
+    '→ 이 줄들은 내가 이 파일을 연 뒤에 **다른 세션이 넣은 것**이다(내 기준 판엔 없었다).\n' +
+    '  repo 밖 파일이라 git·board-guard·작업본소유자 어느 층도 이 충돌을 못 본다 — 그래서 여기서 본다(F519).\n' +
+    '→ ① **`Read` 로 지금 판을 다시 열고** 그 위에서 다시 조립해라 — 내 압축 결과에 저 줄들을 얹는다.\n' +
+    '→ ② 그래도 지우는 게 맞다면, 다시 읽은 뒤 같은 Write 를 하면 **통과한다**. 그때는 판정이지 사고가 아니다.\n' +
+    '→ ⚠ 줄이는 편집 자체는 안 막는다. 막는 건 «내가 못 본 줄»이 사라지는 것 하나뿐이다.' +
+    (offenders.length ? `\n→ (참고) 같은 편집에 ${MAX_LINE}자 초과 줄도 ${offenders.length}개 있다 — 이 건을 푼 뒤 다시 나온다.` : '')
+  );
+}
 
 if (offenders.length) {
   const worst = offenders.sort((a, b) => b.length - a.length)[0];
@@ -236,4 +354,29 @@ if (결과 !== null && 줄수(결과) > MAX_LINES && 줄수(결과) > 지금줄 
     '   대기다. 여기서 막는 목적은 이기는 게 아니라 **늘리는 순간을 보이게 하는 것**이다.)\n' +
     '→ 지금 상태 = node .claude/hooks/memory-index-guard.js --check <MEMORY.md 경로>'
   );
+}
+
+/* ── 여기까지 왔으면 이 편집은 통과다. 두 가지를 남긴다. ─────────────────────────
+ *
+ * ㉠ **기준 갱신** — 내가 쓰는 판이 곧 내가 아는 판이다. 이걸 안 하면 내 두 번째 Write 가
+ *   내 «첫 번째 Write 가 넣은 줄»을 남의 줄로 읽어 스스로를 막는다(거짓차단 = 우회의 씨앗 · F103).
+ *   ⚠ 이 도장은 낙관적이다 — 도구가 이 뒤에 실패하면 「쓴 적 없는 판」이 기준이 된다.
+ *     그 방향은 **덜 막는 쪽**이라 사고가 아니라 누락이고, 다시 Read 하면 즉시 참으로 돌아온다.
+ *
+ * ㉡ **기준이 없으면 그렇다고 말한다** — 통째 쓰기인데 이 세션이 이 파일을 전문으로 연 적이 없으면
+ *   ③ 은 **아무것도 재지 않았다**. 그때 조용하면 「초록」과 「안 잼」이 화면에서 같은 모양이 된다(F207).
+ *   막지는 않는다: 이 훅이 Read 매처에서 빠지는 날 그 침묵이 곧 상시 차단이 되기 때문이다
+ *   (따를 수 없는 처방 · F103). 대신 어느 층이 비었는지를 말한다. */
+if (결과 !== null) 기준쓰기(input.session_id, filePath, 결과);
+
+if (tool === 'Write' && 디스크 !== null && 기준본 === null) {
+  const 글 = '[memory-index-guard] 이 세션은 이 인덱스를 **`Read` 로 연 적이 없다** — '
+    + '동시 편집 대조(③)를 **안 돌렸다**(통과가 아니라 미측정이다 · F519).\n'
+    + '→ 남이 그 사이 넣은 줄이 이 통째 쓰기에 실려 사라져도 아무도 모른다.\n'
+    + '→ 다음부터: 조립 전에 `Read` 로 전문을 연다(구역 읽기 offset·limit 은 기준이 안 된다).\n'
+    + '→ 이 알림이 매번 뜨면 매처가 `Read` 를 안 잡고 있다는 뜻이다 — `.claude/settings.json` 을 본다.';
+  process.stdout.write(JSON.stringify({
+    systemMessage: 글,
+    hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: 글 },
+  }));
 }
