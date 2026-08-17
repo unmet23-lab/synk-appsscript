@@ -193,17 +193,23 @@ function 테스트결과(sha, 주입) {
   return run판정(이커밋, 최신);
 }
 
-/** ④ 실행층 — 얇다(판정은 `잔여판정`). 반환은 **줄 배열**이라 옛 호출부와 모양이 같다. */
-function 잔여(cwd, 주입) {
+/** ④ 의 **관측만** 뜬다 — 판정 0줄.
+ *  🔑 이 조립이 두 곳에 있으면 갈라지고, 갈라진 쪽 증상은 「통과」다(맹점 ④).
+ *     그래서 `잔여()` 도 `패킷()` 도 여기 하나만 부른다. */
+function 잔여관측(cwd, 주입) {
   const 돌리기 = (주입 && 주입.실행) || 실행;
   const 있나 = (주입 && 주입.있나) || fs.existsSync;
   const 장부 = path.join(cwd, 'tools', 'friction.js');
-  const 관측 = {
+  return {
     마찰: 있나(장부) ? 돌리기('node', [장부]) : { ok: false, out: '', 코드: null, 오류: 'tools/friction.js 없음' },
     동결: 돌리기('git', ['-c', 'core.quotepath=false', 'grep', '-l', '-e', 'failed_p0', '--', 'docs', '계약']),
     승인: 돌리기('node', [path.join(cwd, 'tools', '승인.js'), 'check']),
   };
-  return 잔여판정(관측).줄;
+}
+
+/** ④ 실행층 — 얇다(판정은 `잔여판정`). 반환은 **줄 배열**이라 옛 호출부와 모양이 같다. */
+function 잔여(cwd, 주입) {
+  return 잔여판정(잔여관측(cwd, 주입)).줄;
 }
 
 function 패킷(sha, 환경, 영향) {
@@ -220,11 +226,7 @@ function 패킷(sha, 환경, 영향) {
   console.log(stat || '(변경 없음)');
   console.log('```\n');
   console.log(`**③ 학생·운영자에게 미치는 영향**  ${영향 || '⚠ 아직 안 적음 — 이 한 줄은 사람이 쓴다(자동 조립 불가)'}\n`);
-  const 남음 = 잔여판정({
-    마찰: fs.existsSync(path.join(cwd, 'tools', 'friction.js')) ? 실행('node', [path.join(cwd, 'tools', 'friction.js')]) : { ok: false, 오류: 'tools/friction.js 없음' },
-    동결: git('grep', '-l', '-e', 'failed_p0', '--', 'docs', '계약'),
-    승인: 실행('node', [path.join(cwd, 'tools', '승인.js'), 'check']),
-  });
+  const 남음 = 잔여판정(잔여관측(cwd));
   console.log(`**④ 남은 P0/P1/P2** (잰 것 ${남음.잰것}/${남음.전체})`);
   console.log(남음.줄.map((l) => `- ${l}`).join('\n') + '\n');
   console.log(`**⑤ 실행한 테스트와 결과** (${테스트.층})`);
@@ -260,4 +262,4 @@ if (require.main === module) {
   패킷(sha, 값('--env'), 값('--영향'));
 }
 
-module.exports = { 잔여, 테스트결과, 잔여판정, run판정, json읽기, sha고르기 };
+module.exports = { 잔여, 잔여관측, 테스트결과, 잔여판정, run판정, json읽기, sha고르기 };
