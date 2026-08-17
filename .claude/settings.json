@@ -192,13 +192,6 @@
           },
           {
             "type": "command",
-            "command": "IFS= read -r -d '' IN || true; case \"$IN\" in *MEMORY.md*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/memory-index-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\" ;; esac",
-            "shell": "bash",
-            "timeout": 30,
-            "statusMessage": "메모리 인덱스 비대화 검사"
-          },
-          {
-            "type": "command",
             "command": "IFS= read -r -d '' IN || true; case \"$IN\" in *docs*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/doc-propagation.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\" ;; esac",
             "shell": "bash",
             "timeout": 30,
@@ -224,6 +217,18 @@
             "shell": "bash",
             "timeout": 30,
             "statusMessage": "내 판이 origin 보다 뒤처졌나"
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Edit|Write|MultiEdit|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' IN || true; case \"$IN\" in *MEMORY.md*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/memory-index-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\" ;; esac",
+            "shell": "bash",
+            "timeout": 30,
+            "statusMessage": "메모리 인덱스 검사(비대화·동시편집)"
           }
         ]
       },
