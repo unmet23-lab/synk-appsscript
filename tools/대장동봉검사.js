@@ -59,6 +59,10 @@ const 입력들 = [
   'docs/_ops/엔진점수.jsonl',  // 엔진 점수 줄
 ];
 
+/** 게이트 → 판정기 이음매. **한 곳에서만 짓는다** — 양쪽에 손으로 적으면 이름이 갈리고,
+ *  갈린 날 판정기는 조용히 폴백해서 «옛 처방»을 낸다(변이 ④ 가 그 모양을 실제로 통과시켰다). */
+const 이음매 = 'SYNK_대장_담긴입력';
+
 const 말 = (s) => process.stderr.write(s + '\n');
 
 function git(args) {
@@ -138,7 +142,7 @@ function main() {
        * 「docs/SYNK_철학.md 도 넣어라」를 내밀면 안 고친 파일을 담으라는 말이 되고, 그대로 따르면
        * 정작 담아야 할 생성기가 빠진다. 따를 수 없는 처방은 우회를 정상 통로로 만든다(F103).
        * 문구는 판정기 한 곳이 짓는다 — 여기서 같이 지으면 두 곳이 갈린다(신뢰성 ④). */
-      env: { ...process.env, SYNK_대장_정본: 정본tmp, SYNK_대장_산출: 산출tmp, SYNK_대장_담긴입력: 담긴입력.join(' ') },
+      env: { ...process.env, SYNK_대장_정본: 정본tmp, SYNK_대장_산출: 산출tmp, [이음매]: 담긴입력.join(' ') },
     });
     if (r.stdout) process.stdout.write(r.stdout);
     if (r.stderr) process.stderr.write(r.stderr);
@@ -152,4 +156,8 @@ function main() {
   }
 }
 
-process.exit(main());
+/* 훅은 이 파일을 **명령으로** 부른다 — 그때만 돈다. `require` 로 열면 목록과 이음매만 내준다:
+ * 회귀가 소스 «글자»를 보고 판정하면 주석 처리된 줄도 있는 것으로 세고, 그 초록은 발동 목록이
+ * 실제로 좁아진 것과 모양이 같다(변이 ③ 이 그렇게 통과했다). 재는 층을 값 자체로 옮긴다. */
+if (require.main === module) process.exit(main());
+else module.exports = { 입력들, 이음매 };
