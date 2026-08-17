@@ -28,6 +28,8 @@ const { spawnSync } = require('child_process');
 
 const ROOT = process.env.SYNK_BOARD_ROOT || path.resolve(__dirname, '..');
 const 보드lib = require(path.join(__dirname, 'lib', '보드.js'));
+/* master 직접 커밋을 그 자리에서 미는 공용 통로 — 같은 판정을 두 곳에 적으면 갈라진다. */
+const 동기 = require(path.join(__dirname, 'lib', 'master동기.js'));
 /* ⚠ `ROOT` 가 아니라 `__dirname` 기준이다 — `SYNK_BOARD_ROOT` 는 **검사 대상 폴더**를 가리키는
  * 이음매지 코드가 사는 곳이 아니다. ROOT 기준으로 부르면 픽스처(`.claude` 없는 임시 저장소)에서
  * 통째로 죽고, 그러면 회귀가 정작 「지우는가」에 도달을 못 한다(board-move 도 같은 좌표를 쓴다). */
@@ -163,3 +165,5 @@ if (남음) {
   process.exit(1);
 }
 console.log(`[껍데기정리] 완료 — ${지울것.length}개를 **한 커밋**으로 지웠다.`);
+/* 커밋과 push 는 한 벌이다 — master 직접 커밋이라 안 밀면 좌초한다(tools/lib/master동기.js). */
+console.log(동기.줄내기('껍데기정리', 동기.밀기(ROOT)));

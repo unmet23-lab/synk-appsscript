@@ -58,6 +58,8 @@ const ARCHIVE = process.env.SYNK_BOARD_ARCHIVE || path.join(ROOT, 'docs', '세�
 const 보드lib = require(path.join(__dirname, 'lib', '보드.js'));
 // 표 칸 가르기는 이 한 통로만 쓴다 — 날 `split('|')` 은 백틱 안 파이프에서 칸을 밀어낸다(F119).
 const 표 = require(path.join(__dirname, 'lib', '표.js'));
+/* master 직접 커밋을 그 자리에서 미는 공용 통로 — 같은 판정을 두 곳에 적으면 갈라진다. */
+const 동기 = require(path.join(__dirname, 'lib', 'master동기.js'));
 /* 근거 후보 수집 — 원칙⑦ 거절이 「무엇을 열어야 하나」까지 내민다 (#Q93 ㉡ · 2026-08-16).
  * 여기서만 부른다: 이 거절문이 사람이 그 판단 앞에 **실제로 서 있는** 유일한 자리다. */
 const 보드근거 = require(path.join(__dirname, 'lib', '보드근거.js'));
@@ -641,3 +643,6 @@ if (!headHas(ARCHIVE, row) || headHas(BOARD, row)) {
     '  git: ' + ((c.stderr || '') + (c.stdout || '')).trim().split(/\r?\n/).slice(0, 4).join(' / '));
 }
 console.log(`[board-move] 완료 — 아카이브 삽입 + 보드 제거를 **한 커밋**으로 못박았다${껍데기 ? ' · 빈 파일은 지웠다' : ''}(F102).`);
+/* 커밋과 push 는 한 벌이다 — 이건 master 직접 커밋이라, 안 밀면 이 노트북에만 남고
+ * 쌓이면 master 가 갈라져 그때부턴 push 자체가 튕긴다(사연 = tools/lib/master동기.js 머리말). */
+console.log(동기.줄내기('board-move', 동기.밀기(root)));
