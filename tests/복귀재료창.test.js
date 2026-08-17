@@ -86,8 +86,12 @@ function 태우기(옵션) {
   const ql = o.퀴즈행들 ? 탭(QUIZ_LOG_HEADERS.slice(), o.퀴즈행들) : null;
   const el = o.퇴소들 ? 탭(['student_id', '이름', '반', '퇴소감지일', '재원일수'], o.퇴소들) : null;
   const ad = 탭(['student_id', '날짜', '한문장', '퀴즈문제', '퀴즈정답해설']);
+  /* `오류들` 을 주면 **약점맵도 정본을 태운다** — 그래야 「호출부가 창을 약점맵에 넘기는가」가 재진다.
+   * 스텁으로 두면 그 배선을 끊어도 프롬프트가 안 변해 변이가 통째로 안 잡힌다(실측: 변이 ⑧ 구멍). */
+  const se = o.오류들 ? 탭(['날짜', '학생ID', '', '유형', '메모', '', '', '상태'], o.오류들) : null;
   const ss = {
-    getSheetByName: (n) => (n === 'quiz_log' ? ql : n === 'exit_log' ? el : n === 'ai_daily' ? ad : null),
+    getSheetByName: (n) => (n === 'quiz_log' ? ql : n === 'exit_log' ? el
+      : n === 'student_errors' ? se : n === 'ai_daily' ? ad : null),
     getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar'
   };
   const fmt = (dt) => dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
@@ -98,7 +102,7 @@ function 태우기(옵션) {
     Logger: { log: (m) => 로그.push(String(m)) },
     ensureSheet: (s, n) => (n === 'ai_daily' ? ad : 탭([])),
     aiStudents_: () => 학생들.map((s) => Object.assign({}, s)),
-    aiWeakMap_: () => (o.약점 || {}),
+    aiWeakMap_: o.오류들 ? aiWeakMap_ : () => (o.약점 || {}),
     복귀창_,
     복귀_공백상한일: 공백상한일,
     aiCall_: (k, sys, usr) => { 호출.push({ 시스템: sys, 사용자: usr }); return { items: [] }; },
@@ -136,6 +140,19 @@ test('[#Q99 5/5] exit_log 가 있으면 돌아온 학생의 프롬프트가 실�
     '돌아온 학생인데 창이 안 넓어졌다 — exit_log 를 읽고도 다음에 줄 것이 안 바뀌면 도달이 아니다');
   assert.notEqual(있을때.사용자, 없을때.사용자,
     '두 판의 프롬프트가 **글자 하나 안 달라졌다** — 「읽는다」는 도달이 아니다(설계 §5)');
+});
+
+test('[#Q99 5/5] 호출부가 창을 «약점맵에도» 넘긴다 — 배선 한 가닥만 빠져도 여기서 빨개진다', () => {
+  /* 🔴 이 검사가 없어서 변이 ⑧(`aiWeakMap_(ss, 복귀All_())` → `aiWeakMap_(ss)`)이 **구멍**으로 났다.
+   *   함수를 따로 태우는 검사(아래)는 함수가 옳은지만 재고, 호출부가 그걸 **넘기는지**는 안 잰다.
+   *   여기서는 약점맵도 정본을 태워, 모델이 받는 「약점:」 칸이 exit_log 유무로 갈리는지 본다. */
+  const 학생들 = [{ id: 'S1', lv: 3, fav: '', dream: '', pain: '' }];
+  const 오류들 = [오류행('S1', 40, '조사', '을/를')]; // 통상 14일 창 **밖**
+  const 없을때 = 태우기({ 학생들, 오류들 });
+  const 있을때 = 태우기({ 학생들, 오류들, 퇴소들: [퇴소행('S1', 30)] });
+  assert.ok(!없을때.사용자.includes('을/를'), '창 밖 약점이 실렸다 — 통상 학생의 14일 창이 깨졌다');
+  assert.ok(있을때.사용자.includes('을/를'),
+    '호출부가 약점맵에 창을 안 넘겼다 — 같은 학생이 퀴즈 재료와 약점 재료에서 다른 사람이 된다');
 });
 
 test('[#Q99 5/5] 약점맵도 같은 창을 쓴다 — 한 학생이 두 산출에서 다른 사람이 되지 않는다', () => {
