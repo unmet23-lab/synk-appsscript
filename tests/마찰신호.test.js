@@ -968,3 +968,86 @@ test('🔑 [F386] 실제 장부 — 세 상태가 겹치지 않고 합이 전체
   assert.strictEqual(rows.filter(real.살아있나).length, 열림 + 보류,
     '살아있음이 열림+보류와 갈렸다 — 두 곳에서 세면 갈라진다');
 });
+
+// ── F596 「남이 고쳐 놓고 안 닫은 행」 표식 ──────────────────────────────────
+// 지키려는 성질: ①고침 커밋만 센다 ②못 쟀다 ≠ 0건 ③origin/master 에 담긴 것만
+// ④번호 접두 오탐 금지 ⑤**자동으로 안 닫는다**(표식이지 판정이 아니다 · F092)
+
+test('🔑 [F596] 고침 제목만 센다 — 신고·보류·보드 커밋은 번호를 달아도 «안 고친 것»이다', () => {
+  const { 고침제목 } = require(TOOL);
+  for (const s of ['fix: 무엇을 고쳤다 (F544)', 'feat: 무엇을 지었다', 'perf: 빠르게', 'refactor: 통로 하나로',
+    'fix(가드): 괄호 범위형도 고침이다']) {
+    assert.ok(고침제목(s), `고침인데 안 센다: ${s}`);
+  }
+  /* 🔴 거짓양성 방향이 급소다 — 이 셋이 걸리면 살아있는 행 «전부»가 매번 표식을 달아
+     신호가 소음이 된다(신고·보류·보드 커밋은 모든 행에 딸려 들어간다). */
+  for (const s of ['docs: 마찰 F544 신고 — 무엇이 샜다', 'docs: 마찰 F544 보류 — 왜 지금 안 닫나',
+    'docs: 보드 61375a0b — F544 를 집었다', 'test: F544 회귀 추가', 'chore: F544 정리',
+    '  이 문장 안에 fix: 가 들어 있다']) {
+    assert.ok(!고침제목(s), `고침이 아닌데 센다: ${s}`);
+  }
+});
+
+test('🔑 [F596] 못 쟀다는 0건이 아니다 — git 이 죽으면 null 이다 (F207)', () => {
+  const { 착지한고침 } = require(TOOL);
+  assert.strictEqual(착지한고침(['F001'], { 실행: () => null }), null,
+    'git 실패를 «표식 0건»으로 접었다 — 못 잰 판이 「고쳐진 게 없다」와 같은 모양이 된다');
+  /* 빈 목록은 물어볼 것이 없다 — git 을 부르지도 않는다(0건이 맞는 침묵). */
+  let 불렀나 = false;
+  const 빈 = 착지한고침([], { 실행: () => { 불렀나 = true; return ''; } });
+  assert.strictEqual(빈.size, 0);
+  assert.ok(!불렀나, '물어볼 행이 0인데 git 을 불렀다');
+});
+
+test('🔑 [F596] «origin/master 에 담긴 것»만 본다 — 남이 지금 도는 트랙을 「착지」로 읽으면 안 된다', () => {
+  const { 착지한고침 } = require(TOOL);
+  let 받은인자 = null;
+  착지한고침(['F001'], { 실행: (args) => { 받은인자 = args; return ''; } });
+  assert.ok(받은인자 && 받은인자.includes('origin/master'),
+    'origin/master 를 안 지정했다 — 로컬 가지·남의 워크트리 커밋이 「이미 착지」로 읽힌다');
+});
+
+test('🔑 [F596] 번호 접두 오탐 금지 — F54 가 F549 에 걸리면 표식이 통째로 거짓이다', () => {
+  const { 착지한고침 } = require(TOOL);
+  const 로그 = ['aaa1111\x1ffix: 무엇을 고쳤다 (F549)'].join('\n');
+  const m = 착지한고침(['F54', 'F549'], { 실행: () => 로그 });
+  assert.ok(m.has('F549'), 'F549 를 못 잡는다');
+  assert.ok(!m.has('F54'), 'F54 가 F549 의 앞자리에 걸렸다 — 엉뚱한 행에 「닫혔을 수 있다」가 붙는다');
+});
+
+test('🔑 [F596] 고침이 아닌 커밋은 표식을 못 만든다 (분모가 아니라 갈래가 틀리면 전부 걸린다)', () => {
+  const { 착지한고침 } = require(TOOL);
+  const 로그 = [
+    'bbb2222\x1fdocs: 마찰 F001 신고 — 무엇이 샜다',
+    'ccc3333\x1fdocs: 보드 abcd1234 — F001 착수',
+  ].join('\n');
+  assert.strictEqual(착지한고침(['F001'], { 실행: () => 로그 }).size, 0,
+    '기록 커밋이 「이미 닫혔을 수 있다」를 만든다 — 모든 행이 매번 걸려 신호가 죽는다');
+});
+
+test('🔴 [F596] --open 은 «표식»이지 판정이 아니다 — 장부 바이트를 한 글자도 안 바꾼다 (F092)', () => {
+  /* 실측 반례가 같은 판에 있었다: F544 는 `fix:…(F544)` 가 착지했는데도 그 커밋이 처방 셋 중
+     하나만 넣어 **정당하게 열려 있었다**. 자동으로 닫았으면 살아 있는 결함을 지웠을 것이다. */
+  const L = mkLedger();
+  const 전 = fs.readFileSync(L, 'utf8');
+  run(L, ['--open']);
+  assert.strictEqual(fs.readFileSync(L, 'utf8'), 전,
+    '--open 이 장부를 고쳤다 — 표식이 자동 닫기로 넘어갔다');
+
+  const 소스 = fs.readFileSync(TOOL, 'utf8');
+  const a = 소스.indexOf('function report(mode)');
+  const b = 소스.indexOf('function 언급된파일', a + 1);
+  assert.ok(a >= 0 && b > a, 'report 구간을 못 찾았다 — 이 검사가 눈이 멀었다');
+  assert.ok(!/resolve\s*\(|withLock\s*\(|writeFileSync/.test(소스.slice(a, b)),
+    'report 가 장부를 쓰는 통로를 들었다 — 표식은 읽기만 해야 한다');
+});
+
+test('🔑 [F596] --open 이 대조를 실제로 «부른다» — 함수만 두고 안 부르면 조용히 옛 목록이다', () => {
+  const 소스 = fs.readFileSync(TOOL, 'utf8');
+  const a = 소스.indexOf('function report(mode)');
+  const b = 소스.indexOf('function 언급된파일', a + 1);
+  const 몸통 = 소스.slice(a, b);
+  assert.match(몸통, /착지한고침\(/, 'report 가 착지 대조를 안 부른다');
+  assert.match(몸통, /착지 === null/, '못 쟀다 갈래를 화면에서 안 가른다(0건과 같은 모양이 된다 · F207)');
+  assert.match(몸통, /착지 표식 \$\{[^}]*\}\/\$\{/, '표식 수를 분모 없이 낸다(유호 확정 08-14)');
+});
