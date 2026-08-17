@@ -14,6 +14,9 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
+/* 표기 접기 정의는 저장소에 하나뿐이다(`tests/lib/소스검사.js`) — 손으로 접으면 CRLF 축만 막히고
+ * 줄끝 공백은 샌다(도구층 실측 08-17: 12벌 전부 그 반쪽 · #Q101). */
+const { 표기접기 } = require('../tests/lib/소스검사.js');
 const 토큰 = require(path.join(ROOT, 'docs', '디자인_토큰.json'));
 /** 산출 경로 — 환경변수가 이음매다(테스트가 실파일 안 건드리고 --check 탐지력을 잰다). */
 const OUT = process.env.SYNK_토큰_OUT
@@ -53,9 +56,10 @@ if (require.main === module) {
   const css = build();
   if (process.argv.includes('--check')) {
     const 현재 = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : '';
-    // ⚠ 줄끝은 내용이 아니다 — Windows 새 체크아웃(워크트리·CI 격리 사본)은 autocrlf 가 CRLF 로
+    // ⚠ 줄끝 표기는 내용이 아니다 — Windows 새 체크아웃(워크트리·CI 격리 사본)은 autocrlf 가 CRLF 로
     //   내려놓아 바이트 비교가 전부 거짓 적색이 됐다(2026-08-07 실측 · git diff 는 0건이었다).
-    if (현재.replace(/\r\n/g, '\n') !== css) {
+    // 🔑 **양쪽을 같은 문으로 접는다** — 한쪽만 접으면 그 비대칭이 곧 다음 거짓 적색이다.
+    if (표기접기(현재) !== 표기접기(css)) {
       console.error(`[토큰빌드] ${path.relative(ROOT, OUT)} 가 정본과 어긋난다 — node tools/토큰빌드.js 로 재생성하라.`);
       process.exit(1);
     }

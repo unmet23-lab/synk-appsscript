@@ -30,6 +30,9 @@
 const fs = require('fs');
 const path = require('path');
 const { ROOT, 뱅크읽기 } = require('./lib/문법뱅크.js');
+/* 파일을 «검사 대상으로» 읽는 문 — 읽으면서 두 축(CRLF·줄끝 공백)을 접는다. 손으로 접으면
+ * CRLF 축만 막힌다(도구층 실측 08-17: 손 접기 12벌 전부가 그 반쪽 · #Q101). */
+const { 파일소스 } = require('../tests/lib/소스검사.js');
 
 const 상대경로 = path.join('계약', '문법급수_계약.json');
 const 계약경로 = path.join(ROOT, 상대경로);
@@ -60,7 +63,7 @@ function 계약글(소스) {
 function main(argv) {
   const check = argv.includes('--check');
   const 새글 = 계약글();
-  const 옛글 = fs.existsSync(계약경로) ? fs.readFileSync(계약경로, 'utf8').replace(/\r\n/g, '\n') : null;
+  const 옛글 = fs.existsSync(계약경로) ? 파일소스(계약경로) : null;
 
   if (옛글 === 새글) {
     console.log(`문법 급수 계약 최신 ✓ (문법 ${계약짓기().문법.length}개)`);
