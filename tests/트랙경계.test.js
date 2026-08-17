@@ -287,7 +287,11 @@ test('인계문 — 트랙 없음을 「멈춰라」가 아니라 「새 트랙�
     ]);
     assert.equal(report.무주줄(확정), 0,
       '지문이 다 적힌 보드인데 무주줄을 셌다 — 머리글·구분선을 데이터 줄로 셌을 것이다');
-    const a = report.buildHandoff(확정, null, { dirty: 0 });
+    /* 🔑 `가지: {모름:false}` = **가지(워크트리) 층까지 다 훑었다** (F529 로 분모가 넓어졌다).
+     *   임시 폴더는 git 저장소가 아니라 실제로는 그 층을 못 재고, 못 잰 회차는 「다시 열 필요
+     *   없다」를 쓸 수 없다 — 여기서 재고 싶은 것은 **다 쟀을 때 단정하는가**이므로 명시한다. */
+    const 다쟀다 = { dirty: 0, 가지: { 줄들: [], 모름: false } };
+    const a = report.buildHandoff(확정, null, 다쟀다);
     assert.doesNotMatch(a, /멈춰라/,
       `🔴 트랙 없이 끝난 세션에 「멈춰라」가 나갔다 — F170 이 그대로다:\n${a}`);
     assert.match(a, /새 트랙/, '다음 수를 안 줬다 — 「없다」로만 끝나면 새 세션이 보드·장부를 되훑는다');
@@ -472,7 +476,9 @@ test('인계문 — 글쓴이 지문을 「내 것」으로 배달하지 않는�
     const 없음 = 보드('synk-tb-f332a-', [
       '| 2026-08-12 | 남의 트랙 | a.js | ▶작업중 (`local_11112222`) — 남이 하는 일 |\n',
     ]);
-    const a = report.buildHandoff(없음, null, { dirty: 0 });
+    // 🔑 가지 층까지 다 훑은 회차로 고정한다 — 못 잰 회차엔 이 단정 문장이 아예 안 나간다(F529).
+    const 다쟀다 = { dirty: 0, 가지: { 줄들: [], 모름: false } };
+    const a = report.buildHandoff(없음, null, 다쟀다);
     assert.match(a, new RegExp(지문), '지문을 통째로 지웠다 — 「그 세션이 누구였나」는 커밋·보드를 되짚는 비용을 줄이는 재료다');
     assert.doesNotMatch(a, new RegExp('내 것\\(`' + 지문 + '`\\)'),
       `🔴 글쓴이 지문이 「내 것」으로 나갔다 — 받은 세션이 죽은 세션의 보드 파일에 자기 줄을 쓴다(F250·F332):\n${a}`);
@@ -513,7 +519,7 @@ test('인계문 — 글쓴이 지문을 「내 것」으로 배달하지 않는�
     /* ④ 거짓양성 방향 — 지문이 없는 세션(폰 클라우드 등)에서도 문장이 서야 한다.
      *   백틱만 남거나 「그 세션()」이 나가면 이음매가 오히려 혼란을 만든다. */
     process.env.CLAUDE_CODE_HOST_SESSION_ID = '';
-    const d = report.buildHandoff(없음, null, { dirty: 0 });
+    const d = report.buildHandoff(없음, null, 다쟀다);
     const d첫줄 = d.split('\n')[0];
     /* ⚠ 옛 검사는 `/끝난 세션/` 이었다 — 그 단언 자체가 F343 의 원인이라 문구가 바뀌었다.
      *   지키려던 것(「지문이 없다고 이음매가 통째로 사라지지 않는다」)은 그대로 두고 축만 옮긴다. */
@@ -1133,6 +1139,162 @@ test('🔴 등록층 — settings.json 이 track-boundary 를 실제로 부르�
     '🔴 node·훅 파일이 없을 때 조용히 넘어간다 — 실행 불가는 드러나야 한다(F044)');
   assert.ok(/CLAUDE_PROJECT_DIR/.test(cmd) && /PWD/.test(cmd),
     '🔴 등록이 로컬 절대경로다 — 다른 기계·클라우드에서 통째로 죽는다(F044)');
+});
+
+/* ── 🔴 F529 (2026-08-17) — 인계문이 **워크트리 가지 안의 보드 선언**을 못 본다 ───────────────
+ *
+ * 실사고: 세션 `24ba4d6b` 는 10:04 에 가지 안에서 보드를 선언하고, PR #24 를 「변이 미검증 1건」인
+ *   채 열어 두고 마감했다. 4분 뒤 쓰인 그 세션의 인계문은 «▶ 트랙 없이 끝난 세션이다 — 추정이
+ *   아니라 실측이다 … 보드를 다시 열 필요 없다» 였다. 08-15 확정 「코드 트랙은 워크트리+PR」의
+ *   순서가 ①EnterWorktree ②보드 선언이라, **모든 코드 트랙의 선언이 가지 안에 앉는다.**
+ *
+ * 🔑 이 병이 F521(대기열)·F528(board-guard)보다 나쁜 이유: 인계문은 다음 세션의 **첫 입력**이라
+ *   「다시 열 필요 없다」가 못 보는 것을 넘어 **안 보게 만든다.** 실측 2026-08-17 수리 직전:
+ *   가지에 선언한 세션 **10 중 10** 이 master 보드에 줄 0 — 사각은 부분이 아니라 전멸이었다.
+ *
+ * ⚠ 탐지력은 **픽스처로** 못박는다(F296·가드 맹점 ②) — 실저장소의 열린 가지 수에 기대면
+ *   PR 이 다 머지된 날 이 시험이 조용히 아무것도 안 재게 된다. */
+const 가지픽스처 = (가지, 파일, ...줄들) =>
+  [`~보드가지~${가지}`, `+++ b/docs/_ops/보드/${파일}`, ...줄들.map((l) => `+${l}`)].join('\n');
+
+const 보드폴더 = (prefix, 파일, 본문) => {
+  const d = 임시(prefix);
+  fs.mkdirSync(path.join(d, 'docs', '_ops', '보드'), { recursive: true });
+  if (파일) fs.writeFileSync(path.join(d, 'docs', '_ops', '보드', 파일),
+    '| 날짜 | 트랙/작업 | 파일 | 상태 |\n|---|---|---|---|\n' + (본문 || ''));
+  return d;
+};
+
+test('boardTrack — 워크트리 «가지 안»의 보드 선언을 찾는다 (F529 · 실측 10/10 전멸)', () => {
+  // master 에는 **남의 줄만** 있다 — 실측 10건이 전부 이 모양이었다(내 줄 0).
+  const d = 보드폴더('synk-tb-f529a-', 'ffffffff.md',
+    '| 2026-08-17 | 남의 트랙 | a.js | 작업중 (`local_ffffffff`) — 남이 하는 일 |\n');
+  const 나 = 'local_24ba4d6b-1111-2222-3333-444455556666';
+  const 가지출력 = 가지픽스처('worktree-board-rows-denominator', '24ba4d6b.md',
+    '| 2026-08-17 | **보드 전체 상한도 셀 수 있는 줄만 센다** | board-guard.js | 착수 (`local_24ba4d6b`) — 다음=변이 재실행 후 머지 |');
+
+  /* ① 먼저 **옛 사각을 재현**한다 — 가지를 안 보면 null 이고, 그 null 이 「트랙 없이 끝났다」로
+   *   번역됐다. 이게 안 서면 아래 초록은 탐지력을 못 잰다(가드 맹점 ②). */
+  assert.equal(report.boardTrack(d, [], 나, { 가지: { 줄들: [], 모름: false } }), null,
+    '픽스처가 옛 사각을 재현하지 못한다 — 이 시험은 아무것도 못 잰다');
+
+  const 찾음 = report.boardTrack(d, [], 나, { 가지출력 });
+  assert.ok(찾음 && /보드 전체 상한/.test(찾음.track),
+    `🔴 가지 안의 내 선언을 못 찾았다 — F529 가 그대로다(다음 세션이 갇힌 트랙을 버린다): ${JSON.stringify(찾음)}`);
+  assert.match(찾음.state, /변이 재실행/, '상태 칸(=다음 할 일)을 안 가져왔다 — 주소만 있고 내용이 없으면 인계가 아니다');
+  assert.equal(찾음.가지, 'worktree-board-rows-denominator',
+    '🔴 어느 가지인지를 안 실었다 — 위 「원본 …」 경로는 master 에 없어서, 가지 이름이 없으면 받은 세션은 열 곳이 없다');
+
+  /* ② 반대 방향 — 가지 층이 F338·F073 을 되돌리면 안 된다. 남의 가지 줄은 내 지문·내 해시를
+   *   인용해도 내 트랙이 아니다(master 에서 막아 둔 것을 새 층이 뚫으면 그게 회귀다). */
+  assert.equal(report.boardTrack(d, [], 'local_99998888-0000-0000-0000-000000000000', { 가지출력 }), null,
+    '🔴 남의 가지 줄을 내 트랙으로 집었다 — 가지 층이 F073·F338 을 되돌렸다');
+});
+
+test('boardTrack — master 에 내 줄이 있으면 가지 층을 **부르지도 않는다** (F529 수리의 대가)', () => {
+  const 나 = 'local_ba86eeb2-565d-438b-85c1-6d98aeb187a7';
+  const d = 보드폴더('synk-tb-f529b-', 'ba86eeb2.md',
+    '| 2026-08-17 | 내 master 트랙 | a.js | 작업중 (`local_ba86eeb2`) — 다음=회귀 |\n');
+
+  /* `보드.가지줄들` 은 git 스폰 1회(실측 226~486ms)다 — master 에서 이미 찾았는데도 매번 부르면
+   *   마감 경로가 그만큼 느려진다. 「안 부른다」를 **글자가 아니라 접근으로** 잰다. */
+  let 봤나 = false;
+  const 감시 = { get 줄들() { 봤나 = true; return []; }, 모름: false };
+  const 찾음 = report.boardTrack(d, [], 나, { 가지: 감시 });
+  assert.ok(찾음 && /내 master 트랙/.test(찾음.track), 'master 줄을 못 찾았다 — 옛 판정이 깨졌다');
+  assert.equal(찾음.가지, undefined, 'master 줄에 가지 이름이 붙었다 — 없는 가지를 가리킨다');
+  assert.equal(봤나, false, '🔴 master 에서 찾고도 가지 층을 훑었다 — 마감마다 git 스폰 한 번이 공짜로 붙는다');
+});
+
+test('인계문 — 가지에서 찾은 줄은 «어느 가지인지»와 F403 을 달고 나간다 (F529)', () => {
+  const 원래 = process.env.CLAUDE_CODE_HOST_SESSION_ID;
+  process.env.CLAUDE_CODE_HOST_SESSION_ID = 'local_24ba4d6b-1111-2222-3333-444455556666';
+  try {
+    const d = 보드폴더('synk-tb-f529c-', 'ffffffff.md',
+      '| 2026-08-17 | 남의 트랙 | a.js | 작업중 (`local_ffffffff`) |\n');
+    const 가지출력 = 가지픽스처('worktree-board-rows-denominator', '24ba4d6b.md',
+      '| 2026-08-17 | **보드 전체 상한** | board-guard.js | 착수 (`local_24ba4d6b`) — 다음=변이 재실행 후 머지 |');
+    const h = report.buildHandoff(d, null, { dirty: 0, 가지출력 });
+
+    assert.doesNotMatch(h, /트랙 없이 끝난 세션이다/,
+      `🔴 가지에 선언이 멀쩡히 있는데 「트랙 없이 끝났다」로 나갔다 — 실사고 24ba4d6b 그대로다:\n${h}`);
+    assert.doesNotMatch(h, /다시 열 필요 없다/, '🔴 확인을 금지하는 문장이 그대로 나갔다');
+    assert.match(h, /다음=변이 재실행/, '가지 줄의 「다음 할 일」을 안 실었다');
+    assert.match(h, /worktree-board-rows-denominator/,
+      `🔴 가지 이름이 없다 — 「원본 docs/_ops/보드/24ba4d6b.md」는 master 에 없어서 받은 세션이 못 연다:\n${h}`);
+    assert.match(h, /머지 안 된 가지/, '그 줄이 아직 master 에 없다는 사실을 안 밝혔다');
+    assert.match(h, /F403|gh pr list/,
+      '🔴 갇힌 트랙인지 볼 통로를 안 줬다 — 가지에만 있는 선언이 바로 F403 «워크트리 갇힘»의 모습이다');
+  } finally {
+    if (원래 === undefined) delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
+    else process.env.CLAUDE_CODE_HOST_SESSION_ID = 원래;
+  }
+});
+
+test('인계문 — 가지 층을 «못 쟀으면» 「다시 열 필요 없다」를 안 쓴다 (F529 · 아는 만큼만)', () => {
+  const 원래 = process.env.CLAUDE_CODE_HOST_SESSION_ID;
+  process.env.CLAUDE_CODE_HOST_SESSION_ID = 'local_ba86eeb2-565d-438b-85c1-6d98aeb187a7';
+  try {
+    const d = 보드폴더('synk-tb-f529d-', 'ffffffff.md',
+      '| 2026-08-17 | 남의 트랙 | a.js | 작업중 (`local_ffffffff`) |\n');
+
+    const 못잼 = report.buildHandoff(d, null, { dirty: 0, 가지: { 줄들: [], 모름: true } });
+    assert.doesNotMatch(못잼, /다시 열 필요 없다/,
+      `🔴 못 잰 층을 «없다»로 번역했다 — 이 문장은 확인 자체를 금지한다(F529 의 급소):\n${못잼}`);
+    assert.match(못잼, /못 훑었다/, '못 쟀다는 사실을 안 밝혔다 — 초록은 분모와 함께 쓴다(F207)');
+    assert.match(못잼, /새 트랙/, '못 잰 갈래에 다음 수가 없다');
+
+    // 반대 방향 — 다 쟀으면 단정은 **살아 있어야** 한다(F170 이 세운 값을 이 수리가 죽이면 안 된다).
+    const 다잼 = report.buildHandoff(d, null, { dirty: 0, 가지: { 줄들: [], 모름: false } });
+    assert.match(다잼, /다시 열 필요 없다/,
+      `🔴 다 재고도 단정을 못 한다 — F170 이 없앤 「보드를 다시 열어라」가 되살아났다:\n${다잼}`);
+  } finally {
+    if (원래 === undefined) delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
+    else process.env.CLAUDE_CODE_HOST_SESSION_ID = 원래;
+  }
+});
+
+test('낡음 — 가지에만 있는 원본을 「사라짐」으로 단정하지 않는다 (F529 가 반대편에 세울 뻔한 거짓말)', () => {
+  const 원래 = process.env.CLAUDE_CODE_HOST_SESSION_ID;
+  process.env.CLAUDE_CODE_HOST_SESSION_ID = 'local_24ba4d6b-1111-2222-3333-444455556666';
+  try {
+    const d = 보드폴더('synk-tb-f529e-', 'ffffffff.md',
+      '| 2026-08-17 | 남의 트랙 | a.js | 작업중 (`local_ffffffff`) |\n');
+    const 가지출력 = 가지픽스처('worktree-board-rows-denominator', '24ba4d6b.md',
+      '| 2026-08-17 | **보드 전체 상한** | board-guard.js | 착수 (`local_24ba4d6b`) — 다음=변이 재실행 후 머지 |');
+
+    // 🔑 **왕복으로** 못박는다(build→낡음) — 문구를 다듬다 좌표가 어긋나면 대조가 조용히 죽는다.
+    const h = report.buildHandoff(d, null, { dirty: 0, 가지출력 });
+    const v = report.낡음(d, h, { 가지출력 });
+    assert.ok(v, '대조 자체가 안 섰다 — 인계문에 원본 좌표가 안 실렸다');
+    assert.equal(v.판정, '가지',
+      `🔴 가지에 살아 있는 줄을 「${v.판정}」으로 판정했다 — 한 거짓말을 고치며 반대편에 새 거짓말을 세운 꼴이다`);
+    assert.equal(v.가지, 'worktree-board-rows-denominator', '어느 가지인지를 안 실었다');
+
+    const 경고 = report.낡음경고(v);
+    assert.match(경고, /안 온 것/,
+      '🔴 「지워졌다」와 「아직 안 왔다」를 같은 무게로 냈다 — 받은 세션이 갇힌 트랙을 버린다(F403)');
+
+    /* 반대 방향 — 가지에 **없으면** 「사라짐」은 그대로다. 이 수리는 순증이라,
+     *   가지에서 실제로 찾았을 때만 판정을 바꾼다(F343 이 세운 경고를 안 깎는다). */
+    const 없는가지 = 가지픽스처('worktree-딴것', 'aabbccdd.md', '| 2026-08-17 | 딴 트랙 | z.js | 착수 (`local_aabbccdd`) |');
+    assert.equal(report.낡음(d, h, { 가지출력: 없는가지 }).판정, '사라짐',
+      '🔴 가지에 없는데도 「가지」로 냈다 — 사라진 줄을 살아있다고 말한다');
+  } finally {
+    if (원래 === undefined) delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
+    else process.env.CLAUDE_CODE_HOST_SESSION_ID = 원래;
+  }
+});
+
+test('무주줄 — 분모가 boardTrack 이 훑는 범위와 같다 (F529 · 갈라지면 더 센 단정이 나간다)', () => {
+  const d = 보드폴더('synk-tb-f529f-', 'ffffffff.md',
+    '| 2026-08-17 | 남의 트랙 | a.js | 작업중 (`local_ffffffff`) |\n');
+  // 가지 안의 **재료 없는 줄** — 파일명도 지문 꼴이 아니고 해시도 없다.
+  const 가지출력 = 가지픽스처('worktree-x', '유물-옛판.md', '| 2026-08-17 | 재료 없는 줄 | c.js | 미확정 |');
+
+  assert.equal(report.무주줄(d, { 가지: { 줄들: [], 모름: false } }), 0, 'master 쪽 셈이 틀렸다');
+  assert.equal(report.무주줄(d, { 가지출력 }), 1,
+    '🔴 가지 안의 모호한 줄을 안 셌다 — boardTrack 은 그 줄을 보는데 분모만 master 라면, 「모호 0 = 실측된 없음」으로 기울어 **더 센 단정**이 나간다(가드 맹점 ④)');
 });
 
 // ⚠ 실저장소 검사는 **거짓양성만** — 이 스위트가 쓰는 가짜 세션 id 가 실인계문에 박혔는지만 본다.

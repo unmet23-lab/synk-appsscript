@@ -54,6 +54,18 @@
         "hooks": [
           {
             "type": "command",
+            "command": "IFS= read -r -d '' _IGNORE || true; G=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/형제초록.js\"; { command -v node >/dev/null && [ -f \"$G\" ]; } || { echo \"SYNK 형제초록 미실행: $G (node 또는 파일 없음 — F044)\" >&2; exit 1; }; node \"$G\" --하네스",
+            "shell": "bash",
+            "timeout": 20,
+            "statusMessage": "형제 저장소 초록 도장 대조"
+          }
+        ]
+      },
+      {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
             "command": "IFS= read -r -d '' _IGNORE || true; O=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/작업본소유자.js\"; { command -v node >/dev/null && [ -f \"$O\" ]; } || { echo \"SYNK 작업본소유자 미실행: $O (node 또는 파일 없음 — F044)\" >&2; exit 1; }; node \"$O\" --hook",
             "shell": "bash",
             "timeout": 20,
