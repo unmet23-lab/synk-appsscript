@@ -34,14 +34,16 @@
  *
  * 쓰기:
  *   node tools/작동대장.js              → docs/작동대장.html 생성
+ *   node tools/작동대장.js --바로가기   → 생성 + 바탕화면 「SYNK 운영자료」에 .lnk (이해대장 옆)
  *   node tools/작동대장.js --수렴검사   → 두 번 그려 같은지 검사(다르면 exit 1)
- *   node tools/작동대장.js --요약       → 화면 없이 다섯 통 개수만 (보드·보고용)
+ *   node tools/작동대장.js --요약       → 화면 없이 네 통 개수만 (보드·보고용)
  */
 'use strict';
 
 const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
+const { 칸나누기 } = require('./lib/표.js');   // 날 split 은 백틱 안 파이프에서 칸을 민다(F119·F253)
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
 const 산출경로 = process.env.SYNK_작동대장_산출 || path.join(ROOT, 'docs', '작동대장.html');
@@ -80,7 +82,7 @@ function 부품읽기() {
     const h = line.match(/^##\s+(.+?)\s+\((대외|내부)\)\s*$/);
     if (h) { 현재 = { 이름: h[1], 노출: h[2], 행들: [] }; 구역들.push(현재); continue; }
     if (!/^\|/.test(line) || !현재) continue;
-    const cells = line.replace(/^\|/, '').replace(/\|\s*$/, '').split('|').map((s) => s.trim());
+    const cells = 칸나누기(line);   // 양끝 파이프는 이 통로가 뗀다
     if (cells.length !== 5) continue;
     if (cells[0] === '상태' || /^-+$/.test(cells[0].replace(/\s/g, ''))) continue;
     현재.행들.push({ 상태: cells[0], 시스템: cells[1], 한줄: cells[2], 시작: cells[3], 최근: cells[4] });
@@ -98,7 +100,9 @@ function 사슬읽기() {
   const 층들 = [];
   for (const line of md.split(/\r?\n/)) {
     if (!/^\|\s*\*\*㉠|^\|\s*\*\*㉡|^\|\s*\*\*㉢/.test(line)) continue;
-    const cells = line.replace(/^\|/, '').replace(/\|\s*$/, '').split('|').map((s) => s.trim());
+    // 🔑 이 줄이야말로 날 split 이 못 쓰이는 자리다 — A-1 의 칸 안에는 `talk_index_log` 같은
+    //    백틱 코드가 잔뜩 있고, 그 안에 파이프가 하나만 들어와도 칸이 통째로 밀린다(F119·F253).
+    const cells = 칸나누기(line);
     if (cells.length < 5) continue;
     const 기호 = (cells[0].match(/[㉠㉡㉢]/) || [''])[0];
     const 이름 = cells[0].replace(/\*\*/g, '').trim();
@@ -582,6 +586,13 @@ function 본체() {
 
   fs.mkdirSync(path.dirname(산출경로), { recursive: true });
   fs.writeFileSync(산출경로, html, 'utf8');
+
+  if (argv.includes('--바로가기')) {
+    // 운영자료 폴더 통로는 하나뿐이다(유호 상시 08-09) — 손 경로 금지.
+    // 못 찾는 화면은 0 이다: 주간 재심에 쓰라고 지은 것이니 여는 자리가 이해대장 옆이어야 한다.
+    execFileSync(process.execPath, [path.join(ROOT, 'tools', '운영자료.js'), '--링크', 산출경로],
+      { stdio: 'inherit' });
+  }
   console.log(`✅ [작동대장] ${path.relative(ROOT, 산출경로)} (${html.length}자) · 수렴 ${x === y ? '✅' : '🔴'}`);
   console.log(`   장치 ${d.장치들.length} = 🟠${d.통.깨짐.length} + 🔴${d.통.맨몸.length} + ⚫${d.통.안불림.length} + 🟢${d.통.괜찮음.length}`);
   if (d.못읽음.length) { console.log(`   🔴 못 읽은 입력 ${d.못읽음.length}건 — 화면 Ⅷ 절에 실렸다.`); }
