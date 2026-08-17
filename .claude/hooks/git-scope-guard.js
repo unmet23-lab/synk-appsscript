@@ -288,9 +288,37 @@ if (커밋생성) {
 /* ⚠ ⑤의 `--abort` 는 **예외가 아니라 완화**다(아래 F103 주석). 그래서 조각을 고르는 순서가
  *   판정을 바꾼다 — 위험한 조각(abort 아닌 되감기)을 **먼저** 집고, 없을 때만 abort 조각을 쓴다.
  *   그냥 첫 조각을 쓰면 `git rebase --abort && git reset --hard` 가 abort 의 완화를 물려받는다. */
+/* ⑤-a 「작업본을 통째로 덮어쓰는 형태」 — 축이 **표기가 아니라 행위**다 (F590 · 2026-08-18).
+ *
+ * 왜 바꿨나: 옛 판정은 `(checkout|restore)…\s--\s+\.` 하나였다. 즉 「`-- .` 라고 쓴 것」만 봤다.
+ *   실측 2026-08-18(격리 픽스처 `M a.txt` · 실훅 24칸): **소멸형 16건 중 막힌 것 5 · 구멍 11**.
+ *   구멍에는 `git checkout .` 과 `git restore .` 이 들어 있었다 — `--` 를 뺀, git 이 스스로 권하는
+ *   가장 흔한 표기다. 그리고 그 둘은 `.claude/settings.local.json` 허용목록의
+ *   `Bash(git checkout *)`·`Bash(git restore *)` 에 걸려 **권한 프롬프트조차 없이** 돈다.
+ *   F037(옆 세션 미커밋 2파일 소멸)이 지키려던 자리가 정확히 그 형태로 열려 있었다.
+ * 🔑 F590 신고분(`checkout-index -a -f`)은 그 11 중 하나였다. 신고문은 「그 한 명령의 실사용이
+ *   0이면 안 닫는다」를 판정 기준으로 뒀는데, 실사용 0은 참이었지만(`git log -S` 전량 = 장부·주석·
+ *   픽스처뿐) **분모가 그 명령이 아니라 행위 부류**였다. 부류로 세니 답이 뒤집힌다.
+ * ⚠ 대가(틀릴 때의 모습): pathspec 을 `.`·`./`·`:/` 로만 센다 — `git checkout -- '*'` 이나
+ *   최상위 폴더를 손으로 나열한 형태는 여전히 통과한다(새는 방향은 「통과」다). 여기까지 넓힌 이유는
+ *   나열형은 **범위를 사람이 골랐다**는 뜻이라 ①③⑤가 공유하는 「범위」 원칙 안이기 때문이다.
+ * ⚠ 경로 지정형은 통과여야 한다 — `git checkout -- a.txt`·`git checkout-index a.txt` 는 한 파일만
+ *   꺼내는 정당한 통로다. 과잉 차단은 BYPASS 를 습관으로 만든다(F590 신고문이 못박은 조건). */
+const 전량pathspec = '\\s(?:--\\s+)?(?:\\.\\/?|:\\/)(?=\\s|$)';
+/* `--force-with-lease` 류가 `\b` 로 새는 것이 F573 이었다 — 긴 플래그 끝은 전부 `끝` 으로 닫는다. */
+const 강제꼴 = '\\s(?:--force|--discard-changes|-[a-zA-Z]*f[a-zA-Z]*)' + 끝;
+/* `--staged`(=`--cached`)만 있고 `--worktree` 가 없으면 인덱스만 되돌린다 — 작업본 내용은 남으므로
+ * 잃는 것이 없다. 이걸 안 빼면 정당한 언스테이징이 막혀 또 BYPASS 를 가르친다. */
+const 인덱스만 = (s) => /--(staged|cached)\b/.test(s) && !/--worktree\b/.test(s);
+const 덮어쓰기꼴 = (s) =>
+  (re('(checkout|restore)' + 끝 + '[^&|;]*?' + 전량pathspec).test(s) && !인덱스만(s))
+  || re('(checkout|switch)' + 끝 + '[^&|;]*?' + 강제꼴).test(s)
+  || re('checkout-index' + 끝 + '[^&|;]*?\\s(?:--all|-[a-zA-Z]*a[a-zA-Z]*)' + 끝).test(s)
+  || re('read-tree' + 끝 + '[^&|;]*?\\s-[a-zA-Z]*u[a-zA-Z]*' + 끝).test(s);
+
 const 되감기꼴 = (s) => re('(rebase|merge|cherry-pick|revert)\\s+--abort\\b').test(s)
   || re('reset' + 끝 + '[^&|;]*?\\s--hard\\b').test(s)
-  || re('(checkout|restore)' + 끝 + '[^&|;]*?\\s--\\s+\\.').test(s);
+  || 덮어쓰기꼴(s);
 const 탈출구꼴 = (s) => re('(rebase|merge|cherry-pick|revert)\\s+--abort\\b').test(s);
 const 되감기조각 = 걸린조각(되감기꼴, 탈출구꼴) || 걸린조각(되감기꼴);
 if (되감기조각) {
