@@ -60,6 +60,12 @@
   .hb-bar{width:26px;border-radius:4px 4px 0 0}
   .hb-v{font-size:12px;font-weight:700;color:var(--navy);margin-top:5px;font-variant-numeric:tabular-nums}
   .hb-k{font-size:11px;color:var(--slate2)}
+  .d0{color:var(--slate2);font-weight:700}
+  .dg{color:var(--em);font-weight:800}
+  .db{color:var(--coral3);font-weight:800}
+  .chip-row{margin:9px 0;font-size:13px;line-height:2}
+  .chip-t{font-weight:800;margin-right:9px;font-size:12.5px}
+  .chip-row code{background:var(--cream);border:1px solid var(--cream3)}
   ol.axes{margin:8px 0 0;padding-left:22px}
   ol.axes li{margin:7px 0;font-size:13.5px;color:#3A3F52}
   code{background:var(--cream);padding:1px 6px;border-radius:5px;font-size:12.5px;
@@ -73,7 +79,7 @@
 
 <h1>작동 대장</h1>
 <p class="sub">이번 주에 <b>무엇을 뜯을 것인가</b>를 고르는 한 장 — 「무엇이 있나」가 아니라 <b>「무엇이 실제로 도나」</b>를 잰다.</p>
-<div class="stamp">🕐 측정 2026-08-17 06:53 UTC · 수렴검사 ✅ 두 번 돌려 같았다</div>
+<div class="stamp">🕐 측정 2026-08-17 07:13 UTC · 수렴검사 ✅ 두 번 돌려 같았다</div>
 
 <h2><span class="no">Ⅰ</span>이해 사슬 — 학생의 무엇이 엔진까지 닿나</h2>
 <p class="lead">판정의 주인은 <code>docs/SYNK_철학.md</code> 부록 A-1 이다. 이 화면은 <b>인용</b>이고 여기서 다시 판정하지 않는다.</p>
@@ -96,8 +102,20 @@
       <div class="chain-r">엔진에 <b>끊겼다</b></div>
     </div>
 
-<h2><span class="no">Ⅱ</span>네 통 — 이번 주 후보</h2>
-<p class="lead">장치 <b>136개</b>(도구·라이브러리·훅)를 회귀 198벌 · 마찰 장부 306건 · 저장소 글 443벌 · git 이력에 대조했다. <b>왼쪽이 급한 순서다.</b></p>
+<h2><span class="no">Ⅱ</span>지난 기록 대비 — <b>주간 재심은 이 절만 읽는다</b></h2>
+<p class="lead">「지금 상태」는 이 화면이 지고, <b>「무엇이 어떻게 움직였나」는 기록 장부</b>가 진다 — 그 주의 사진은 다시 계산하지 않으니 뒤집힐 값이 없다. 기록 = <code>node tools/작동대장.js --기록</code>(append-only · 지우지 않는다).</p>
+<table class="t"><thead><tr><th>통</th><th>지난 기록 (2026-08-17)</th><th>지금</th><th>움직임</th></tr></thead><tbody>
+    <tr><td>🟠 자꾸 깨진다</td><td class="c">15</td><td class="c"><b>15</b></td><td class="c"><span class="d0">±0</span></td></tr>
+    <tr><td>🔴 맨몸이다</td><td class="c">10</td><td class="c"><b>10</b></td><td class="c"><span class="d0">±0</span></td></tr>
+    <tr><td>⚫ 아무도 안 부른다</td><td class="c">1</td><td class="c"><b>1</b></td><td class="c"><span class="d0">±0</span></td></tr>
+    <tr><td>🟢 괜찮다</td><td class="c">110</td><td class="c"><b>110</b></td><td class="c"><span class="d0">±0</span></td></tr>
+    <tr><td class="dim">장치 · 마찰 장부</td><td class="c dim">—</td><td class="c dim">—</td><td class="c"><span class="d0">±0</span> · <span class="d0">±0</span></td></tr>
+  </tbody></table>
+  <p class="none">통을 드나든 파일은 없다 — 숫자가 같으면 <b>진짜로</b> 같다(이 절이 0 을 0 이라고 말할 수 있는 이유는 위 장부에 지난 목록이 통째로 있기 때문이다).</p>
+
+
+<h2><span class="no">Ⅲ</span>네 통 — 지금 상태</h2>
+<p class="lead">장치 <b>136개</b>(도구·라이브러리·훅)를 회귀 198벌 · 마찰 장부 309건 · 저장소 글 443벌 · git 이력에 대조했다. <b>왼쪽이 급한 순서다.</b></p>
 <div class="tongs">
 <div class="tong" style="--c:#C79200">
     <div class="tong-h"><span class="tong-i">🟠</span><span class="tong-n">자꾸 깨진다</span></div>
@@ -121,7 +139,7 @@
   </div>
 </div>
 
-<h2><span class="no">Ⅲ</span>🟠 자꾸 깨진다 — <b>15건</b> <span class="dim">· 재설계 1순위</span></h2>
+<h2><span class="no">Ⅳ</span>🟠 자꾸 깨진다 — <b>15건</b> <span class="dim">· 재설계 1순위</span></h2>
 <p class="lead">수리가 아니라 <b>재설계</b>를 볼 자리다 — 같은 파일이 마찰 장부에 5번 넘게 올랐다는 것은 <b>고쳐도 또 아팠다</b>는 뜻이다. 「2번째 = 실수가 아니라 시스템 결함 · 3번째 = 원인을 쓸 수 없게 만든다」(CLAUDE.md).</p>
 <table class="t">
     <thead><tr><th>파일</th><th>깨진 이력</th><th>회귀</th><th>부르는 곳</th><th>마지막 손댐 <span class="dim">(참고)</span></th></tr></thead>
@@ -134,7 +152,7 @@
     </tr>
 <tr>
       <td class="mono">tools/codex-review.js</td>
-      <td class="c"><span class="pill warn">14건</span> <span class="fs">F249 F292 F308 F314 F319 F333 F342</span></td>
+      <td class="c"><span class="pill warn">15건</span> <span class="fs">F249 F292 F308 F314 F319 F333 F342</span></td>
       <td class="c">있다</td>
       <td class="c">28곳</td>
       <td class="c">2026-08-17<span class="dim"> · 0일</span></td>
@@ -157,7 +175,7 @@
       <td class="mono">tools/이해대장.js</td>
       <td class="c"><span class="pill warn">9건</span> <span class="fs">F364 F432 F438 F520 F525 F527 F536</span></td>
       <td class="c">있다</td>
-      <td class="c">27곳</td>
+      <td class="c">28곳</td>
       <td class="c">2026-08-17<span class="dim"> · 0일</span></td>
     </tr>
 <tr>
@@ -199,7 +217,7 @@
       <td class="mono">tools/변이.js</td>
       <td class="c"><span class="pill warn">6건</span> <span class="fs">F477 F485 F490 F491 F497 F526</span></td>
       <td class="c">있다</td>
-      <td class="c">131곳</td>
+      <td class="c">132곳</td>
       <td class="c">2026-08-15<span class="dim"> · 2일</span></td>
     </tr>
 <tr>
@@ -207,7 +225,7 @@
       <td class="c"><span class="pill warn">6건</span> <span class="fs">F246 F304 F341 F366 F433 F458</span></td>
       <td class="c">있다</td>
       <td class="c">40곳</td>
-      <td class="c">2026-08-16<span class="dim"> · 1일</span></td>
+      <td class="c">2026-08-17<span class="dim"> · 0일</span></td>
     </tr>
 <tr>
       <td class="mono">.claude/hooks/git-scope-guard.js</td>
@@ -232,22 +250,22 @@
     </tr></tbody></table>
     
 <div class="hist"><div class="hb"><div class="hb-bar" style="height:84px;background:#E7DDC7"></div>
-      <div class="hb-v">71</div><div class="hb-k">0건</div></div><div class="hb"><div class="hb-bar" style="height:27.211267605633804px;background:#E7DDC7"></div>
-      <div class="hb-v">23</div><div class="hb-k">1</div></div><div class="hb"><div class="hb-bar" style="height:16.56338028169014px;background:#E7DDC7"></div>
-      <div class="hb-v">14</div><div class="hb-k">2</div></div><div class="hb"><div class="hb-bar" style="height:8.28169014084507px;background:#E7DDC7"></div>
-      <div class="hb-v">7</div><div class="hb-k">3</div></div><div class="hb"><div class="hb-bar" style="height:7.098591549295774px;background:#E7DDC7"></div>
-      <div class="hb-v">6</div><div class="hb-k">4</div></div><div class="hb"><div class="hb-bar" style="height:3.549295774647887px;background:#E8543F"></div>
-      <div class="hb-v">3</div><div class="hb-k">5</div></div><div class="hb"><div class="hb-bar" style="height:3.549295774647887px;background:#E8543F"></div>
-      <div class="hb-v">3</div><div class="hb-k">6</div></div><div class="hb"><div class="hb-bar" style="height:3.549295774647887px;background:#E8543F"></div>
+      <div class="hb-v">70</div><div class="hb-k">0건</div></div><div class="hb"><div class="hb-bar" style="height:27.6px;background:#E7DDC7"></div>
+      <div class="hb-v">23</div><div class="hb-k">1</div></div><div class="hb"><div class="hb-bar" style="height:16.8px;background:#E7DDC7"></div>
+      <div class="hb-v">14</div><div class="hb-k">2</div></div><div class="hb"><div class="hb-bar" style="height:9.6px;background:#E7DDC7"></div>
+      <div class="hb-v">8</div><div class="hb-k">3</div></div><div class="hb"><div class="hb-bar" style="height:7.2px;background:#E7DDC7"></div>
+      <div class="hb-v">6</div><div class="hb-k">4</div></div><div class="hb"><div class="hb-bar" style="height:3.6px;background:#E8543F"></div>
+      <div class="hb-v">3</div><div class="hb-k">5</div></div><div class="hb"><div class="hb-bar" style="height:3.6px;background:#E8543F"></div>
+      <div class="hb-v">3</div><div class="hb-k">6</div></div><div class="hb"><div class="hb-bar" style="height:3.6px;background:#E8543F"></div>
       <div class="hb-v">3</div><div class="hb-k">7</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
       <div class="hb-v">1</div><div class="hb-k">8</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
       <div class="hb-v">1</div><div class="hb-k">9</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
       <div class="hb-v">2</div><div class="hb-k">11</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
-      <div class="hb-v">1</div><div class="hb-k">14</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
+      <div class="hb-v">1</div><div class="hb-k">15</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
       <div class="hb-v">1</div><div class="hb-k">19</div></div></div>
   <p class="more">가로 = 그 도구가 마찰 장부에 인용된 건수 · 세로 = 도구 개수 · <b style="color:#E8543F">빨강 = 5건 이상</b>(「자꾸 깨진다」로 세는 구간).</p>
 
-<h2><span class="no">Ⅳ</span>🔴 맨몸이다 — <b>10건</b> <span class="dim">· 뜯기 전에 회귀부터</span></h2>
+<h2><span class="no">Ⅴ</span>🔴 맨몸이다 — <b>10건</b> <span class="dim">· 뜯기 전에 회귀부터</span></h2>
 <p class="lead">저장소 여기저기서 부르는데 회귀 198벌 어디에도 이름이 안 나온다. <b>뜯어도 아무 테스트가 안 빨개진다</b> — 지금 이게 도는지 기계가 모른다.</p>
 <table class="t">
     <thead><tr><th>파일</th><th>깨진 이력</th><th>회귀</th><th>부르는 곳</th><th>마지막 손댐 <span class="dim">(참고)</span></th></tr></thead>
@@ -323,7 +341,7 @@
     </tr></tbody></table>
     
 
-<h2><span class="no">Ⅴ</span>⚫ 아무도 안 부른다 — <b>1건</b> <span class="dim">· 삭제 후보</span></h2>
+<h2><span class="no">Ⅵ</span>⚫ 아무도 안 부른다 — <b>1건</b> <span class="dim">· 삭제 후보</span></h2>
 <p class="lead">회귀·다른 도구·훅·문서·<code>settings.json</code> 어디에도 이름이 없다. 경량 원칙의 과녁이다 — 다만 <b>삭제는 실사용 실측 후 건별</b>이고, 「대장에 떴다」는 삭제 근거가 아니라 <b>열어볼 이유</b>다(유호 08-13).</p>
 <table class="t">
     <thead><tr><th>파일</th><th>깨진 이력</th><th>회귀</th><th>부르는 곳</th><th>마지막 손댐 <span class="dim">(참고)</span></th></tr></thead>
@@ -336,7 +354,7 @@
     </tr></tbody></table>
     
 
-<h2><span class="no">Ⅵ</span>부품 — 대외 구역별 상태</h2>
+<h2><span class="no">Ⅶ</span>부품 — 대외 구역별 상태</h2>
 <p class="lead">정본 = <code>docs/시스템_대장.md</code> (45줄). 막대 = 🟢 라이브 · 🟡 반영 대기 · ⚪ 설계만.</p>
 <table class="t"><thead><tr><th>구역</th><th>줄</th><th>상태 분포</th><th class="mono">🟢·🟡·⚪</th></tr></thead><tbody><tr>
       <td>접수·상담 <span class="dim">(대외)</span></td>
@@ -419,7 +437,7 @@
       <td class="c mono">4 · 0 · 0</td>
     </tr></tbody></table>
 
-<h2><span class="no">Ⅶ</span>안 잰 축 — <b>이 화면이 «모르는» 것</b></h2>
+<h2><span class="no">Ⅷ</span>안 잰 축 — <b>이 화면이 «모르는» 것</b></h2>
 <div class="warnbox"><b>0 과 「안 쟀다」는 다르다.</b> 여기 적힌 것은 이 판에서 <b>일부러 빼거나 못 잰</b> 축이다 — 화면의 초록을 이 목록과 함께 읽는다.</div>
 <ol class="axes"><li><b>부품 47줄의 개별 작동</b> — 「부품 → 파일」 자동 매핑이 안 선다(대장의 «최근» 버전 태그로 커밋을 못 찾는다 · 실측 08-17: <code>v9.245</code> 실패). 그래서 다섯 통은 <b>장치 층만</b> 본다.</li><li><b>형제 저장소(SYNK-talk)의 엔진 도달</b> — 일부러 안 읽는다. 그 저장소의 <i>작업본</i>을 물면 값이 진동한다(F537 의 원인 후보). 읽어야 할 때는 <code>git show origin/master:</code> 로만.</li><li><b>훅·도구의 실제 발동 횟수</b> — <code>tools/훅발동.js</code> 가 따로 잰다. 그 값은 transcript 시각에 의존해 이 판에 섞으면 수렴이 깨진다.</li><li><b>「부른다/지킨다」의 정확도</b> — 이름 일치라 <b>스쳐 지나간 언급도 센다</b>. 그래서 이 화면은 초록 쪽을 근거로 안 쓰고 <b>0 인 쪽만</b> 신호로 쓴다(거짓 초록보다 거짓 빨강이 안전하다).</li><li><b>「오래 안 봤다」 시간 축</b> — <b>일부러 뺐다.</b> 「낡음」은 시간이 아니라 <b>지금 방향과의 정합</b>이다(유호 확정 08-17). 「마지막 손댐」 열은 참고이지 판정이 아니다.</li><li><b>「학생이 실제로 더 잘하게 됐나」</b> — 학생 0명이라 못 잰다(철학 정본이 같은 이유로 게이트에서 뺐다).</li></ol>
 
