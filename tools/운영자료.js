@@ -359,19 +359,33 @@ function 바로가기대상읽기(링크경로, { 셸 = ps, 캐시쓰나 = true 
 /** ⚠ `셸` 은 **시험이 꽂는 자리**다 — 안 주면 실제 PowerShell(=캐시 탐)로 간다.
  *  이 통로가 없으면 「닿았나」 판정의 탐지력을 픽스처로 못 지고, 실저장소(=유호님 바탕화면)에
  *  기대는 검사만 남는다 — 그건 CI 에서 원리상 깨진다(F296). */
-function 목록읽기(폴더, { 셸 } = {}) {
+function 목록읽기(폴더, { 셸, 하위 = true } = {}) {
   if (!fs.existsSync(폴더)) return [];
   const sh = [];
-  for (const n of fs.readdirSync(폴더)) {
-    // 만드는 중이던 임시 링크는 목록에도 번호에도 끼지 않는다(중간에 죽으면 남는다).
-    if (n.startsWith('__mk-')) continue;
-    // 하위 폴더는 자료가 아니다 — 「SYNK LAB\운영」 아래의 `SYNK_지도`(HTML+PDF 쌍)가 여기 걸린다.
-    // 세면 `--지금상태`가 폴더를 ❔모름 행으로 오보하고 옛판 판정에 끼어든다(2026-08-15).
-    try { if (fs.statSync(path.join(폴더, n)).isDirectory()) continue; } catch { continue; }
-    const 대상 = n.toLowerCase().endsWith('.lnk')
-      ? 바로가기대상읽기(path.join(폴더, n), 셸 ? { 셸 } : undefined) : null;
-    sh.push({ 이름: n, 대상 });
-  }
+  const 한겹 = (d, 하위이름) => {
+    for (const n of fs.readdirSync(d)) {
+      // 만드는 중이던 임시 링크는 목록에도 번호에도 끼지 않는다(중간에 죽으면 남는다).
+      if (n.startsWith('__mk-')) continue;
+      let 폴더냐;
+      try { 폴더냐 = fs.statSync(path.join(d, n)).isDirectory(); } catch { continue; }
+      if (폴더냐) {
+        // **폴더 자체는 자료가 아니다** — 세면 `--지금상태`가 폴더를 ❔모름 행으로 오보한다
+        // (「SYNK LAB\운영」 아래 `SYNK_지도` 쌍이 그렇게 걸렸다 · 2026-08-15). 그건 그대로 두고,
+        // 안에 든 **파일은 센다**(2026-08-17): 유호 지시로 「SYNK 코어\엔진」이 생기면서 소개서
+        // 7벌이 한 겹 아래로 내려갔는데, 건너뛰기만 하면 그 7벌이 **조용히 「안 닿음」**이 된다 —
+        // 새는 방향이 「통과」가 아니라 「거짓 적색」이라 더 나쁘다: 따를 수 없는 경보는 통로를 끈다(F103).
+        if (하위 && !하위이름) 한겹(path.join(d, n), n);
+        continue;
+      }
+      const 놓인곳 = path.join(d, n);
+      const 대상 = n.toLowerCase().endsWith('.lnk')
+        ? 바로가기대상읽기(놓인곳, 셸 ? { 셸 } : undefined) : null;
+      // `이름` = 맨 파일명(짝찾기·계열 판정이 쓰는 값) · `상대` = 갈래 폴더 기준 경로(path.join 이 쓰는 값).
+      // 둘을 한 칸에 뭉치면 하위폴더가 생기는 순간 한쪽이 반드시 틀린다.
+      sh.push({ 이름: n, 상대: 하위이름 ? path.join(하위이름, n) : n, 하위: 하위이름 || null, 대상 });
+    }
+  };
+  한겹(폴더, null);
   캐시쓰기();   // 폴더 한 벌을 읽고 나서 한 번 — 파일마다 쓰면 그게 다음 병목이다
   return sh;
 }
@@ -537,7 +551,11 @@ function 의심보고(의심) {
 /** 같은 계열의 옛 판을 걷는다. 기본은 **드라이런** — 지우려면 `--집행`.
  *  `방금` 을 주면 그 파일이 속한 계열만 본다(파일을 넣은 직후 자동 호출되는 자리). */
 function 옛판정리(폴더, { 집행 = false, 조용히 = false, 방금 = null } = {}) {
-  const 이름들 = 목록읽기(폴더).map((it) => it.이름);
+  // 🔴 **하위폴더는 안 본다**(`하위: false`) — 이 함수는 지우는 함수다. 아래 `rmSync` 가
+  //    `path.join(폴더, x.이름)` 로 지우므로 하위폴더 파일이 섞이면 **없는 경로를 지우고**
+  //    `force: true` 라 조용히 성공한다 — 「🗑 걷었다」가 찍히는데 파일은 살아 있는 모양이다.
+  //    계열 판정을 폴더 너머로 넓히지 않는 것은 그 자체로도 확정된 규율이다(🚫계열 넓히기).
+  const 이름들 = 목록읽기(폴더, { 하위: false }).map((it) => it.이름);
   // 방금 넣은 파일에 판 표기가 없으면 걷을 계열 자체가 없다 — 여기서 끝낸다.
   // (계열만 을 null 로 두면 「제한 없음」이 되어 넣기와 무관한 파일까지 폴더 전체를 훑는다.)
   if (방금 && !계열키(방금)) return 0;
@@ -616,7 +634,7 @@ const 때 = (p) => { try { return fs.statSync(p).mtime; } catch { return null; }
 /** 갈래 하나의 상태 줄들. */
 function 상태줄들(폴더, 후보) {
   return 목록읽기(폴더).map((it) => {
-    const 놓인곳 = path.join(폴더, it.이름);
+    const 놓인곳 = path.join(폴더, it.상대);   // 하위폴더면 `엔진\Trail 소개서.lnk`
     const 바로가기 = it.이름.toLowerCase().endsWith('.lnk');
     const 외부 = it.이름.toLowerCase().endsWith('.url');
     const 실체 = 바로가기 ? it.대상 : 놓인곳;
@@ -630,6 +648,7 @@ function 상태줄들(폴더, 후보) {
     });
     return {
       이름: it.이름,
+      하위: it.하위,   // 하위폴더 이름(최상위면 null) — 화면에 자리를 밝힌다
       가리키는곳: 바로가기 && 실체 ? path.relative(ROOT, 실체).replace(/\\/g, '/') : null,
       정본: 정본 ? path.relative(ROOT, 정본).replace(/\\/g, '/') : null,
       판: 정본 ? 정본판(정본) : (실체 && /\.(md|html)$/i.test(실체) ? 정본판(실체) : null),
@@ -655,7 +674,10 @@ function 지금상태빌드(뿌리) {
   const 표 = (줄) => `<table><thead><tr><th>상태</th><th>이름</th><th>판</th><th>마지막 갱신</th><th>가리키는 곳</th></tr></thead><tbody>${
     줄.map((r) => {
       const [기호, 말] = 판정문[r.판정];
-      return `<tr><td class="s" title="${esc(말)}">${기호} ${esc(말)}</td><td>${esc(r.이름)}</td>`
+      // 하위폴더에 든 것은 자리를 앞에 붙인다(`엔진 ▸ Trail 소개서.lnk`) — 이름만 찍으면
+      // 최상위와 구분이 안 되고, 유호님이 화면에서 그 파일을 찾을 수가 없다.
+      const 이름칸 = r.하위 ? `<span class=q>${esc(r.하위)} ▸ </span>${esc(r.이름)}` : esc(r.이름);
+      return `<tr><td class="s" title="${esc(말)}">${기호} ${esc(말)}</td><td>${이름칸}</td>`
         + `<td>${r.판 ? esc(r.판) : '<span class=q>—</span>'}</td><td>${날짜글(r.갱신)}</td>`
         + `<td class="p">${r.가리키는곳 ? esc(r.가리키는곳) : '<span class=q>이 폴더가 원본</span>'}</td></tr>`;
     }).join('')}</tbody></table>`;
@@ -766,7 +788,9 @@ function 링크화(폴더, { 사본경로 = null, 정본경로 = null } = {}) {
   }
 
   /* 자동 — 최상위 사본 중 짝이 확실하고 내용까지 같은 것만. */
-  const 사본들 = 목록읽기(폴더).filter(
+  // 최상위만 본다(`하위: false`) — 이 함수는 사본을 **바로가기로 갈아치운다**(지우고 다시 만든다).
+  // 아래가 전부 `path.join(폴더, it.이름)` 를 쓰므로 하위폴더 파일이 섞이면 엉뚱한 자리를 만진다.
+  const 사본들 = 목록읽기(폴더, { 하위: false }).filter(
     (it) => !it.이름.toLowerCase().endsWith('.lnk') && fs.statSync(path.join(폴더, it.이름)).isFile()
   );
   const 후보 = 정본후보();
@@ -972,7 +996,8 @@ function main(argv) {
       console.log(`\n■ ${갈래들[g]} — ${항목.length}건`);
       for (const it of 항목) {
         const 꼬리 = it.대상 ? `  → ${it.대상}${fs.existsSync(it.대상) ? '' : '  🔴 대상 없음'}` : '';
-        console.log(`  · ${it.이름}${꼬리}`);
+        // 하위폴더에 든 것은 자리를 밝힌다 — 이름만 찍으면 최상위와 구분이 안 된다.
+        console.log(`  · ${it.상대}${꼬리}`);
       }
       if (!항목.length) console.log('  (비었거나 아직 없다)');
     }
