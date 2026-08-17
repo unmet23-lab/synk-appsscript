@@ -68,14 +68,48 @@ const 행번호 = (src, i) => src.slice(0, i).split('\n').length;
 /** 한 파일의 위반 행 번호들. 훅 경로를 푸는 파일에서 **반환형** node 자식을 직접 띄운 자리.
  *  (execFileSync 는 금지하지 않는다 — 던지는 형태라 미실행이 저절로 빨갛다. 결함은 반환형이
  *   미실행을 결과처럼 돌려주는 데서 났고, 실측된 반환형 표기는 아래 둘이다.) */
+/* 🔴 F535 (2026-08-17) — 이 규칙이 **도구 스폰을 훅으로 오탐해** master 를 빨갛게 세워 뒀다.
+ *
+ * 실측 2026-08-17(수리 직전): `process.execPath` 를 띄우는 시험 파일 **15** 중 적색은 **1**
+ *   (`형제초록.test.js:61`)뿐이었다. 나머지 14는 **같은 모양인데 파일에 「hooks」 낱말이 없어서**
+ *   조용했다. 즉 적색이 자의적이고(그 파일은 훅 등재를 확인하느라 그 낱말을 쓸 뿐이다), 나머지
+ *   14는 낱말 하나만 들어오면 빨개지는 지뢰다. 주인 세션이 죽어 **아무도 못 닫는 적색**이 되어
+ *   남의 배포·트랙 종결 게이트를 상시로 막았다.
+ *
+ * 🔑 그런데 **게이트를 자리 단위로 좁히는 것은 답이 아니다** — 이 파일 머리말(12~14행)이 그걸
+ *   이미 실측해 기각했다: 훅을 **인자로 받는** 도우미(`run(hook, …)`)가 통째로 사각이 된다.
+ *   그래서 기본값은 그대로 **위반**으로 두고, «증명된 도구 호출»만 뗀다 — 인자에 `tools` 경로가
+ *   **글자로** 있고 `hooks` 는 없는 자리. 변수로 넘어온 훅은 영원히 증명이 안 되므로 그 사각은
+ *   닫힌 채로 남는다(면제의 방향을 「모르면 위반」으로 못박은 것이 이 설계의 전부다).
+ *
+ * ⚠ 인덱스는 **`주석뺀` 기준**이다 — `문자열소거`·`템플릿만소거` 는 길이를 보존하므로(줄보존)
+ *   세 판의 자리가 정확히 겹친다. 문자열을 지운 판에서 `'tools'` 를 찾으면 당연히 못 찾는다.
+ */
+/* ⚠ 이 패턴에 **따옴표·백틱을 글자로 쓰지 않는다** — 위 스트리퍼는 정규식 리터럴을 모르는
+ *   날 정규식이라, 여기 홑따옴표가 하나 들어가면 그 뒤 파일 전체의 문자열 짝이 밀린다.
+ *   실측(이 수리 중): `['"`+백틱+`]tools…` 로 썼다가 **이 파일 자신의 픽스처 3자리**가 위반으로
+ *   튀어나왔다 — 51~52행이 경고한 바로 그 함정(F103: 가드는 자기 전처리에 눈이 먼다)을
+ *   고치는 사람이 그대로 밟았다. 그래서 낱말 경계로만 잰다(따옴표를 볼 이유가 없다). */
+const 도구인자 = /\btools\b/;
+const 인자창 = 400;
+function 도구스폰(주석뺀, i) {
+  const 창 = 주석뺀.slice(i, i + 인자창);
+  const 끝 = 창.indexOf(']');                  // 첫 인자 배열까지만 본다 — 뒤 옵션 객체는 판정 재료가 아니다
+  const 인자 = 끝 === -1 ? 창 : 창.slice(0, 끝);
+  if (/hooks/i.test(인자)) return false;        // 훅이 섞이면 증명 실패 → 위반으로 남긴다
+  return 도구인자.test(인자);
+}
+
 function 위반들(원문) {
   const 주석뺀 = 주석소거(원문);
   if (!/hooks/i.test(주석뺀)) return [];       // 훅과 무관한 회귀는 이 규칙의 대상이 아니다
   const 코드판 = 문자열소거(주석뺀);
   const 표기판 = 템플릿만소거(주석뺀);
   const 줄들 = new Set([
-    ...[...코드판.matchAll(/spawnSync\s*\(\s*process\.execPath/g)].map((m) => 행번호(코드판, m.index)),
-    ...[...표기판.matchAll(/spawnSync\s*\(\s*['"]node['"]/g)].map((m) => 행번호(표기판, m.index)),
+    ...[...코드판.matchAll(/spawnSync\s*\(\s*process\.execPath/g)]
+      .filter((m) => !도구스폰(주석뺀, m.index)).map((m) => 행번호(코드판, m.index)),
+    ...[...표기판.matchAll(/spawnSync\s*\(\s*['"]node['"]/g)]
+      .filter((m) => !도구스폰(주석뺀, m.index)).map((m) => 행번호(표기판, m.index)),
   ]);
   return [...줄들].sort((a, b) => a - b);
 }
@@ -124,6 +158,67 @@ test('훅과 무관한 회귀는 대상이 아니다 (규칙이 자기 범위를
     "const TOOL = path.join(ROOT, 'tools', 'bump-version.js');\n"
     + 'const r = spawnSync(process.execPath, [TOOL], { encoding: "utf8" });\n');
   assert.deepStrictEqual(스캔(d), [], '훅을 안 보는 회귀까지 끌어왔다');
+});
+
+/* 🔴 F535 — 「hooks 라는 낱말이 파일 어딘가에 있다」는 이유로 **도구 스폰**까지 벌하던 자리.
+ *   위 「도구.test.js」 검사는 파일에 hooks 낱말이 **없어서** 통과했을 뿐이라 이 자리를 못 봤다 —
+ *   실측 15파일 중 14가 그 모양이었고(조용한 지뢰), 낱말이 하나 들어온 1건만 빨갰다. */
+test('🔴 F535 — 훅도 보는 파일 안의 «도구» 스폰은 위반이 아니다 (적색이 낱말 하나로 갈리면 안 된다)', () => {
+  const d = 임시();
+  fs.writeFileSync(path.join(d, '섞인.test.js'),
+    "const HOOK = path.join(ROOT, '.claude', 'hooks', 'x.js');\n"
+    + "const r0 = 훅띄우기(HOOK, { encoding: 'utf8' });\n"
+    + "const r = spawnSync(process.execPath, [path.join(as, 'tools', '형제초록.js'), ...args], { cwd: as });\n");
+  assert.deepStrictEqual(스캔(d), [],
+    '🔴 도구를 띄우는 자리를 훅 위반으로 셌다 — 주인 없는 적색이 되어 남의 배포를 상시로 막는다(F535 실사고)');
+});
+
+test('🔴 F535 — 면제는 «증명된 도구»에만. 훅이 섞이면 그대로 위반이다 (모르면 위반)', () => {
+  const d = 임시();
+  // ① 변수로 넘어온 훅 옆에 tools 낱말이 있어도 면제되지 않는다 — 증명이 아니라 정황이다.
+  fs.writeFileSync(path.join(d, '정황.test.js'),
+    "const HOOKS = path.join(ROOT, '.claude', 'hooks');\n"
+    + "const 도구들 = 'tools';\n"
+    + 'function run(hook) { return spawnSync(process.execPath, [hook], { encoding: "utf8" }); }\n');
+  assert.deepStrictEqual(스캔(d), ['정황.test.js:3'],
+    '🔴 면제가 넓다 — 훅을 인자로 받는 도우미가 다시 사각이 됐다(머리말 12~14행이 기각한 그 구멍)');
+
+  // ② 같은 인자 안에 hooks 가 섞이면 증명 실패다.
+  const e = 임시();
+  fs.writeFileSync(path.join(e, '혼합.test.js'),
+    "const 설명 = 'hooks 도 함께 본다';\n"
+    + "const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'x.js'), path.join(ROOT, '.claude', 'hooks', 'y.js')], {});\n");
+  assert.deepStrictEqual(스캔(e), ['혼합.test.js:2'],
+    '🔴 인자에 훅이 섞였는데 도구라고 면제했다');
+
+  /* ③ 면제는 **인자 배열 안**에서만 증명된다 — 뒤따르는 옵션 객체의 `tools` 는 정황이다.
+   *   (변이가 이 구멍을 드러냈다: 경계를 안 닫아도 13건이 전부 초록이었다.) */
+  const f = 임시();
+  fs.writeFileSync(path.join(f, '뒤에.test.js'),
+    "const HOOK = path.join(ROOT, '.claude', 'hooks', 'x.js');\n"
+    + "const r = spawnSync(process.execPath, [HOOK], { cwd: path.join(ROOT, 'tools') });\n");
+  assert.deepStrictEqual(스캔(f), ['뒤에.test.js:2'],
+    '🔴 인자 배열 **뒤**의 tools 를 증거로 삼아 훅 스폰을 면제했다 — 경계를 안 닫으면 정황이 증명으로 격상된다');
+});
+
+/* 🔑 표기형(`'node'`)도 **같은 면제**를 지나야 한다 — 한쪽만 고치면 두 갈래가 갈라지고,
+ *   갈라진 쪽의 증상은 언제나 「통과」다(CLAUDE.md 가드 맹점 ④). 변이가 이 구멍도 드러냈다. */
+test("🔴 F535 — 'node' 표기형의 도구 스폰도 면제된다 (두 갈래가 갈라지지 않는다)", () => {
+  /* ⚠ 표기형 픽스처는 **템플릿 리터럴**로 쓴다 — `표기판` 은 따옴표 문자열을 살려 두므로
+   *   따옴표로 쓰면 이 파일 자신이 위반으로 잡힌다(48~49행의 규약 · 고치며 실제로 밟았다). */
+  const d = 임시();
+  fs.writeFileSync(path.join(d, '표기도구.test.js'), `const HOOK = path.join(ROOT, '.claude', 'hooks', 'x.js');
+const r = spawnSync('node', [path.join(ROOT, 'tools', 'bump-version.js')], { encoding: 'utf8' });
+`);
+  assert.deepStrictEqual(스캔(d), [],
+    '🔴 표기형 갈래엔 면제가 안 걸렸다 — 같은 판정이 두 곳에 따로 살면 한쪽만 낡는다');
+
+  // 반대 방향 — 표기형이라고 훅 스폰까지 면제되면 안 된다.
+  const e = 임시();
+  fs.writeFileSync(path.join(e, '표기훅.test.js'), `const HOOK = path.join(ROOT, '.claude', 'hooks', 'x.js');
+const r = spawnSync('node', [HOOK], { encoding: 'utf8' });
+`);
+  assert.deepStrictEqual(스캔(e), ['표기훅.test.js:2'], '🔴 표기형 훅 스폰이 면제로 샜다');
 });
 
 test('🔑 주석·문자열 속 옛 형태는 위반이 아니다 — 검사가 자기 픽스처를 신고하면 안 된다', () => {

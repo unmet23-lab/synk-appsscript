@@ -14,7 +14,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const { engineSource } = require('./_engine-source');
-const code = engineSource().replace(/\r\n/g, '\n');
+/* 줄끝 표기 접기는 `_engine-source` 이음매가 진다 — 여기서 다시 접지 않는다(F526 ㉠ · 같은 판정을 두 곳에 두면 갈라진다). */
+const code = engineSource();
 /* 부정 단언(「~가 없어야 한다」)의 주어만 이걸로 감싼다 — 주석이 금지 패턴을 «설명»하면 그 검사가
  * 설명을 위반으로 읽는다(「CARD_OFF 에 넣지 않는다」를 적어 둔 자리가 곧 위반이 된다). (대기열 #Q72) */
 const { 코드만 } = require('./lib/소스검사.js');
