@@ -35,13 +35,16 @@ const 게이트원본 = path.join(ROOT, 'tools', '대장동봉검사.js');
 const 정본경로 = 'docs/SYNK_철학.md';
 const 산출경로 = 'docs/이해대장.html';
 
-/** 화면은 정본의 파생이다 — 대역 판정기가 쓰는 규칙과 **같은 한 곳**에서 온다(첫 줄 = 판). */
-const 그린다 = (정본내용) => `<!-- ${String(정본내용).split('\n')[0].trim()} -->\n`;
+/* 🔑 [F520] 화면의 부모는 **둘**이다 — 정본(무엇을 그리나 = 첫 줄)과 생성기(어떻게 그리나 = 판형).
+ *   실물도 그렇다: `tools/이해대장.js` 를 고치면 **같은 정본에서 다른 HTML** 이 나온다. 대역이 이
+ *   둘째 부모를 안 지면 「생성기만 담은 커밋」을 원리상 못 재고, 그 자리가 F520 이 샌 자리다. */
+const 그린다 = (정본내용, 판형 = 'v1') => `<!-- ${String(정본내용).split('\n')[0].trim()} · ${판형} -->\n`;
 
-/* 판정층 대역 — 실물과 같은 이음매를 읽고, 산출이 정본의 파생인지 **내용으로** 답한다.
+/* 판정층 대역 — 실물과 같은 이음매를 읽고, 산출이 **두 부모**의 파생인지 내용으로 답한다.
  * 실물의 처방(다시 그리기 · 같은 커밋에 담기)도 그대로 낸다: 차단문이 그대로 칠 수 있는
- * 명령을 안 내밀면 다음 수는 BYPASS 다(F103). */
-const 대역판정기 = `#!/usr/bin/env node
+ * 명령을 안 내밀면 다음 수는 BYPASS 다(F103). 처방의 «경로»는 이음매(`SYNK_대장_방아쇠`)로
+ * 받는다 — 실물이 그러하고, 그래야 「무엇을 먹였나」가 여기서 재진다. */
+const 대역판정기 = (판형 = 'v1') => `#!/usr/bin/env node
 'use strict';
 const fs = require('fs');
 if (!process.argv.includes('--검사')) process.exit(0);
@@ -52,14 +55,16 @@ if (!정본) {
   process.exit(0);
 }
 const 판 = fs.readFileSync(정본, 'utf8').split('\\n')[0].trim();
-const 그려야할것 = '<!-- ' + 판 + ' -->\\n';
+const 그려야할것 = '<!-- ' + 판 + ' · ${판형} -->\\n';
 const 지금 = fs.existsSync(산출) ? fs.readFileSync(산출, 'utf8') : null;
 if (지금 === 그려야할것) {
   console.log('[이해대장] 커밋될 화면이 정본 ' + 판 + ' 와 같다 — 통과.');
   process.exit(0);
 }
+const 방아쇠 = (process.env.SYNK_대장_방아쇠 || 'docs/SYNK_철학.md').split('\\n').filter(Boolean);
 console.error('[이해대장] 차단 — 화면(docs/이해대장.html)이 ' + (지금 === null ? '**없다**' : '**안 따라온다**') + '.');
 console.error('  → node tools/이해대장.js  &&  git add -- docs/이해대장.html');
+console.error('     git commit -m "…" -- ' + 방아쇠.join(' ') + ' docs/이해대장.html');
 process.exit(1);
 `;
 
@@ -90,7 +95,7 @@ function mkRepo(정본내용 = '판 v1\n본문 한 줄') {
    * 픽스처에서 0을 내는 자리지기가 되고, 그 자리가 규약대로 도는지도 같이 드러난다. */
   fs.mkdirSync(path.join(dir, 'tools'), { recursive: true });
   fs.copyFileSync(게이트원본, path.join(dir, 'tools', '대장동봉검사.js'));
-  fs.writeFileSync(path.join(dir, 'tools', '이해대장.js'), 대역판정기, 'utf8');
+  fs.writeFileSync(path.join(dir, 'tools', '이해대장.js'), 대역판정기(), 'utf8');
 
   fs.mkdirSync(path.join(dir, 'docs'), { recursive: true });
   fs.writeFileSync(path.join(dir, 정본경로), 정본내용, 'utf8');
@@ -111,6 +116,23 @@ function 커밋(dir, 경로들, env) {
     throw new Error(`git 을 못 띄웠다 — 미실행은 차단이 아니다: ${r.error ? r.error.code : r.signal}`);
   }
   return { 막혔나: r.status !== 0, 출력: String(r.stderr || '') + String(r.stdout || '') };
+}
+
+/** 경로를 안 대는 커밋 — 이때만 **인덱스**가 커밋 내용이다.
+ *  ⚠ `git commit -- 경로들` 은 그 경로에 대해 **작업본**을 담으므로 인덱스와 작업본이
+ *  갈린 상태를 원리상 못 만든다. 그 갈림을 재려면 이 통로여야 한다. */
+function 커밋전체(dir) {
+  const r = spawnSync('git', ['commit', '-m', '시도'], { cwd: dir, encoding: 'utf8' });
+  if (r.error || r.status === null) {
+    throw new Error(`git 을 못 띄웠다 — 미실행은 차단이 아니다: ${r.error ? r.error.code : r.signal}`);
+  }
+  return { 막혔나: r.status !== 0, 출력: String(r.stderr || '') + String(r.stdout || '') };
+}
+
+/** 생성기를 다른 «판형»으로 갈아 스테이징한다 — 같은 정본에서 다른 화면이 나오는 실제 모양. */
+function 생성기를간다(dir, 판형, { 담을까 = true } = {}) {
+  fs.writeFileSync(path.join(dir, 'tools', '이해대장.js'), 대역판정기(판형), 'utf8');
+  if (담을까) git(dir, ['add', '--', 'tools/이해대장.js']);
 }
 
 const 준비 = (t, ...a) => { try { return mkRepo(...a); } catch (_) { return t.skip('git 을 못 돌린다'), null; } };
@@ -156,9 +178,83 @@ test('🔴 급소 — 정본을 고치면서 화면을 **지우는** 커밋도 �
   assert.match(r.출력, /없다/, `막히긴 했는데 「없다」가 아니라 다른 이유를 댔다 — 처방이 어긋난다:\n${r.출력}`);
 });
 
+/* ── 둘째 부모: 생성기 (F520 — 게이트가 이 축을 원리상 못 보던 자리) ─────
+ * 실측 2026-08-17: `tools/이해대장.js` 를 만진 커밋 **합계 12 = 동봉 0 + 두고감 12**.
+ * 그중 `d17c95ed`(Stop 훅 자동커밋)는 화면을 낡은 채 HEAD 에 세웠고, 다음 커밋이 사람 손으로
+ * 맞출 때까지 남아 있었다 — 즉 **아무도 안 맞췄으면 그대로 남았다**. 게이트는 그때 「통과」였다:
+ * 판정층이 틀린 게 아니라 **발동 조건이 정본 하나만 봤다**(신고문의 후보 ㉡이 참 · ㉠은 기각 —
+ * 훅은 그 커밋에서 실제로 돌았다). */
+
+test('🔴 급소 — 생성기만 담은 커밋이 화면을 두고 가면 막힌다 (F520 · 여기가 12/12 로 새던 자리)', (t) => {
+  const dir = 쓰고버린다(t); if (!dir) return;
+  생성기를간다(dir, 'v2');                                    // 같은 정본인데 다른 화면이 나온다
+  const r = 커밋(dir, ['tools/이해대장.js']);
+  assert.ok(r.막혔나,
+    `생성기만 담은 커밋이 그대로 나갔다 — 화면이 «도구보다 낡은» 채 HEAD 에 선다(F520):\n${r.출력}`);
+  assert.match(r.출력, /이해대장\.html/, '막히긴 했는데 어느 파일인지 안 말한다 — 처방이 없으면 다음 수는 BYPASS 다');
+});
+
+test('🔴 급소 — 차단문이 **생성기 경로**를 처방에 댄다 (정본을 대면 따를수록 트랙이 갈린다 · F302)', (t) => {
+  const dir = 쓰고버린다(t); if (!dir) return;
+  생성기를간다(dir, 'v2');
+  const r = 커밋(dir, ['tools/이해대장.js']);
+  assert.ok(r.막혔나, r.출력);
+  assert.match(r.출력, /git commit[^\n]*tools\/이해대장\.js/,
+    `처방이 «담아야 할 경로»로 생성기를 안 댄다 — 그대로 따르면 생성기가 그 커밋에서 빠져\n`
+    + `트랙이 두 커밋으로 갈리고, 그 틈에 남이 배포하면 첫 커밋만 담긴 배포본이 남는다(F302):\n${r.출력}`);
+  assert.doesNotMatch(r.출력, /git commit[^\n]*SYNK_철학\.md/,
+    `생성기 커밋인데 처방이 정본을 담으라고 한다 — 따를 수 없는 처방은 우회를 정상 통로로 만든다(F103):\n${r.출력}`);
+});
+
+test('🔑 처방대로 생성기와 화면을 함께 담으면 그대로 통과한다 (자기 처방이 실제로 통하는가 · 맹점 ③)', (t) => {
+  const dir = 쓰고버린다(t); if (!dir) return;
+  생성기를간다(dir, 'v2');
+  fs.writeFileSync(path.join(dir, 산출경로), 그린다('판 v1', 'v2'), 'utf8');
+  const r = 커밋(dir, ['tools/이해대장.js', 산출경로]);
+  assert.strictEqual(r.막혔나, false, `처방대로 했는데 또 막혔다 — 그러면 남는 문은 BYPASS 뿐이다:\n${r.출력}`);
+});
+
+test('생성기를 고쳐도 화면이 그대로면 통과한다 (전건 차단은 BYPASS 습관을 만든다 · 주석·리팩터가 대부분이다)', (t) => {
+  const dir = 쓰고버린다(t); if (!dir) return;
+  fs.writeFileSync(path.join(dir, 'tools', '이해대장.js'), 대역판정기() + '// 주석만 더했다\n', 'utf8');
+  git(dir, ['add', '--', 'tools/이해대장.js']);
+  const r = 커밋(dir, ['tools/이해대장.js']);
+  assert.strictEqual(r.막혔나, false,
+    `화면이 안 바뀌는 생성기 수정을 막았다 — 그러면 그 파일을 한 글자도 못 고친다:\n${r.출력}`);
+});
+
+/* ── 통과와 미실행이 같은 모양이면 안 된다 — 생성기 축 (F207 · F302) ───── */
+
+test('🔴 생성기의 스테이징분과 작업본이 갈리면 **막지 않고 말한다** — 그리는 몸이 커밋될 내용이 아니다', (t) => {
+  const dir = 쓰고버린다(t); if (!dir) return;
+  생성기를간다(dir, 'v2');                                     // 인덱스 = v2
+  생성기를간다(dir, 'v3', { 담을까: false });                   // 작업본 = v3 (안 담았다)
+  const r = 커밋전체(dir);                                     // 경로를 안 대야 인덱스가 커밋 내용이다
+  assert.strictEqual(r.막혔나, false,
+    `못 쟀는데 막았다 — 판정 못 하는 상태를 차단으로 바꾸면 그 세션은 생성기를 못 고친다(F103):\n${r.출력}`);
+  assert.match(r.출력, /\[이해대장\][^\n]*못 했다/,
+    `못 쟀는데 이 게이트가 조용했다 — 통과와 미실행이 같은 모양이 됐다(F207):\n${r.출력}`);
+});
+
+/* ⚠ 이 시험이 없으면 위 대조의 «줄끝접기»가 통째로 안 재진다 — 변이로 실측했다(구멍 1건).
+ * 인덱스 블롭은 LF 인데 작업본은 CRLF 로 체크아웃되므로(core.autocrlf=true), 안 접으면 이 게이트가
+ * **윈도우에서 언제나 「못 했다」**가 된다. 그 모양은 통과와 같아서 아무도 못 본다 —
+ * 08-14 에 옆 판정층이 같은 줄끝 축에서 저장소 전체 배포를 멈춘 그 자리다. */
+test('🔴 줄끝만 다른 생성기는 «갈렸다»가 아니다 — 안 접으면 이 게이트가 윈도우에서 영영 「못 했다」다', (t) => {
+  const dir = 쓰고버린다(t); if (!dir) return;
+  생성기를간다(dir, 'v2');                                     // 인덱스 = v2 (LF)
+  const 몸 = fs.readFileSync(path.join(dir, 'tools', '이해대장.js'), 'utf8');
+  fs.writeFileSync(path.join(dir, 'tools', '이해대장.js'), 몸.replace(/\r?\n/g, '\r\n'), 'utf8'); // 작업본 = 같은 v2 (CRLF)
+  const r = 커밋전체(dir);
+  assert.doesNotMatch(r.출력, /스테이징분과 작업본이 달라/,
+    `줄끝만 다른 같은 생성기를 «갈렸다»로 읽었다 — 이 게이트가 윈도우에서 한 번도 안 서게 된다:\n${r.출력}`);
+  assert.ok(r.막혔나,
+    `못 쟀다고 접고 통과시켰다 — 줄끝을 접었으면 판정까지 가서 낡은 화면을 막았어야 한다:\n${r.출력}`);
+});
+
 /* ── 거짓 차단 (거짓 차단은 곧 꺼지는 가드다) ───────────────────────── */
 
-test('정본이 안 담긴 커밋에서는 게이트가 아예 안 선다 (매 커밋 소음 0)', (t) => {
+test('부모가 **둘 다** 안 담긴 커밋에서는 게이트가 아예 안 선다 (매 커밋 소음 0)', (t) => {
   const dir = 쓰고버린다(t); if (!dir) return;
   fs.writeFileSync(path.join(dir, 'docs', '아무거나.md'), '내용\n', 'utf8');
   git(dir, ['add', '--', 'docs/아무거나.md']);

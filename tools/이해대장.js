@@ -643,14 +643,20 @@ function 폴백(말, 끝) {
       console.log(`[이해대장] 커밋될 화면이 정본 ${ver} 와 같다 — 통과.`);
       return 0;
     }
-    console.error(`[이해대장] 차단 — 이 커밋이 정본을 고치는데 화면(\`docs/이해대장.html\`)이 ${지금 === null ? '**없다**' : '**안 따라온다**'}.`);
+    /* 🔑 [F520] «무엇이 방아쇠였나»는 게이트가 안다(발동 조건은 그쪽 몫) — 처방 문장은 여기 한 곳에서만
+     *   찍고 **경로만** 받아 끼운다. 화면의 부모는 둘(정본·생성기)이라, 생성기 커밋에 대고
+     *   「정본을 담아라」고 시키면 그대로 따를 때 생성기가 그 커밋에서 빠져 트랙이 두 커밋으로
+     *   갈린다 — 따를 수 없는 처방은 우회를 정상 통로로 만든다(F103 · F302).
+     * ⚠ 이음매가 안 오는 자리(회귀가 판정층만 직접 부를 때)는 옛 기본값 그대로 정본이다. */
+    const 방아쇠 = (process.env.SYNK_대장_방아쇠 || 'docs/SYNK_철학.md').split('\n').filter(Boolean);
+    console.error(`[이해대장] 차단 — 이 커밋이 화면의 부모(${방아쇠.join(' · ')})를 고치는데 화면(\`docs/이해대장.html\`)이 ${지금 === null ? '**없다**' : '**안 따라온다**'}.`);
     console.error('');
     console.error('  이대로 커밋하면 `tests/이해대장.test.js` 가 **HEAD 에서** 빨개진다. 그 적색은 고친 사람이 아니라');
     console.error('  그 뒤 커밋하는 **모든 세션의 배포**를 막는다 — 08-14 하루에만 회수 커밋이 넷이었다.');
     console.error('');
     console.error('  → 다시 그려 **같은 커밋에** 담는다:');
     console.error('     node tools/이해대장.js  &&  git add -- docs/이해대장.html');
-    console.error('     git commit -m "…" -- docs/SYNK_철학.md docs/이해대장.html   (경로에 둘 다 넣는다)');
+    console.error(`     git commit -m "…" -- ${방아쇠.join(' ')} docs/이해대장.html   (경로에 전부 넣는다)`);
     console.error('  ⚠ 작업본은 이미 맞을 수 있다 — 재는 것은 **커밋될 내용**이다(F302).');
     return 1;
   }
