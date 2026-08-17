@@ -24,19 +24,20 @@ const 정본실물 = path.join(ROOT, 'docs', 'SYNK_철학.md');
 const 산출실물 = path.join(ROOT, 'docs', '이해대장.html');
 const 훅원본 = path.join(ROOT, 'tools', 'githooks', 'pre-commit');
 
-/** `--검사` 를 사본 두 벌에 대고 돌린다 — 저장소 파일은 읽기만 한다(옆 세션의 작업본을 흔들지 않는다). */
-function 검사(화면내용) {
+/** `--검사` 를 사본 두 벌에 대고 돌린다 — 저장소 파일은 읽기만 한다(옆 세션의 작업본을 흔들지 않는다).
+ *  @param {string[]} [방아쇠] 게이트가 넘기는 «담아야 할 경로»(F520). 안 주면 이음매 없이 부르는
+ *         옛 자리 그대로다 — 그 기본값이 정본인지도 아래에서 함께 잰다. */
+function 검사(화면내용, 방아쇠) {
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-대장시험-'));
   try {
     const 정본 = path.join(방, 'a.md');
     const 산출 = path.join(방, 'b.html');
     fs.copyFileSync(정본실물, 정본);
     if (화면내용 !== null) fs.writeFileSync(산출, 화면내용, 'utf8');
+    const env = { ...process.env, SYNK_대장_정본: 정본, SYNK_대장_산출: 산출 };
+    if (방아쇠) env.SYNK_대장_방아쇠 = 방아쇠.join('\n');
     // 통과코드 = 0(같다)·1(차단) 둘뿐이다 — 그 밖은 결과가 아니라 오류다(통로가 던진다).
-    const r = 훅띄우기([도구, '--검사'], {
-      cwd: ROOT, encoding: 'utf8', 통과코드: [0, 1],
-      env: { ...process.env, SYNK_대장_정본: 정본, SYNK_대장_산출: 산출 },
-    });
+    const r = 훅띄우기([도구, '--검사'], { cwd: ROOT, encoding: 'utf8', 통과코드: [0, 1], env });
     return { 막혔나: r.status !== 0, 출력: String(r.stderr || '') + String(r.stdout || '') };
   } finally { try { fs.rmSync(방, { recursive: true, force: true }); } catch (_) { /* 청소 실패는 판정이 아니다 */ } }
 }
@@ -91,6 +92,34 @@ test('🔑 차단문이 **그대로 칠 수 있는 명령**을 내민다 (손으
   assert.match(r.출력, /git add -- docs\/이해대장\.html/, '같은 커밋에 담는 방법을 안 준다(F302 가 이 가드의 이유다)');
 });
 
+/* ── 처방의 «경로»는 방아쇠를 따라간다 (F520 — 화면의 부모가 둘이라 문장 하나로는 못 맞춘다) ──
+ * 판정은 여전히 이 한 곳이 지고, «무엇이 방아쇠였나»만 게이트가 이음매로 넘긴다. 그래서
+ * 처방 문장도 한 곳에서만 찍힌다 — 두 곳에서 각자 찍으면 갈라지고, 갈라진 처방은 못 따른다. */
+
+test('🔑 생성기가 방아쇠면 처방이 **생성기 경로**를 댄다 (정본을 대면 따를수록 트랙이 갈린다 · F302)', (t) => {
+  if (!잴수있나()) return t.skip('형제 저장소를 못 읽어 판정층이 접혔다(F296)');
+  const r = 검사(null, ['tools/이해대장.js']);
+  assert.ok(r.막혔나, r.출력);
+  assert.match(r.출력, /git commit[^\n]*tools\/이해대장\.js/,
+    `방아쇠를 넘겼는데 처방이 그 경로를 안 댄다 — 그대로 따르면 생성기가 커밋에서 빠진다:\n${r.출력}`);
+  assert.doesNotMatch(r.출력, /git commit[^\n]*SYNK_철학\.md/,
+    `생성기 커밋인데 정본을 담으라고 한다 — 따를 수 없는 처방은 우회를 정상 통로로 만든다(F103):\n${r.출력}`);
+});
+
+test('🔑 부모 둘이 함께 방아쇠면 처방이 **둘 다** 댄다 (하나만 대면 나머지가 조용히 빠진다)', (t) => {
+  if (!잴수있나()) return t.skip('형제 저장소를 못 읽어 판정층이 접혔다(F296)');
+  const r = 검사(null, ['docs/SYNK_철학.md', 'tools/이해대장.js']);
+  assert.match(r.출력, /git commit[^\n]*docs\/SYNK_철학\.md[^\n]*tools\/이해대장\.js/,
+    `방아쇠 둘 중 하나만 처방에 실렸다 — 빠진 쪽이 그 커밋에서 조용히 떨어진다:\n${r.출력}`);
+});
+
+test('이음매가 안 오면 옛 기본값(정본)이다 — 게이트를 안 거쳐 부르는 자리를 깨지 않는다', (t) => {
+  if (!잴수있나()) return t.skip('형제 저장소를 못 읽어 판정층이 접혔다(F296)');
+  const r = 검사(null);
+  assert.match(r.출력, /git commit[^\n]*docs\/SYNK_철학\.md/,
+    `이음매 없이 부르니 처방에서 정본이 사라졌다 — 옛 호출 자리가 못 따를 명령을 받는다:\n${r.출력}`);
+});
+
 /* ── 등재 — 도구만 두고 안 부르면 장치는 안 돈다 ─────────────────────── */
 
 test('실저장소: pre-commit 이 이 게이트를 부른다 (스스로 발화하지 않는 장치는 안 돈다)', () => {
@@ -112,4 +141,28 @@ test('실저장소: 지금 커밋된 화면은 정본과 같다 (거짓양성 �
   const r = 검사(fs.readFileSync(산출실물, 'utf8'));
   if (/못 했다/.test(r.출력)) return t.skip('형제 저장소를 못 읽어 판정층이 접혔다(F296)');
   assert.strictEqual(r.막혔나, false, `실저장소가 이미 갈라져 있다 — node tools/이해대장.js:\n${r.출력}`);
+});
+
+/* ── 방아쇠 목록이 화면의 입력을 덮는가 (F520 의 남은 칸 — 부모는 둘이 아니라 다섯이었다) ──
+ * 「정본+생성기」로 넓힌 뒤에도, 생성기가 `require` 하는 부품만 담은 커밋은 여전히 조용히 통과한다.
+ * 🔑 게이트를 **require 해서 값을 잰다** — 소스 글자를 grep 하면 주석 처리된 줄까지 「있다」로 세고,
+ *   그 초록은 목록이 실제로 좁아진 것과 모양이 같다(변이로 실측한 자리).
+ * 🔑 재는 것은 «한 홉»뿐이다 — 전이 입력(시트도달 → 엔진 원본)까지 넣으면 사실상 매 커밋이라
+ *   E2E 의 「소음 0」과 부딪는다. 그 축은 사후 회귀가 진다. */
+const { 방아쇠목록 } = require(path.join(ROOT, 'tools', '대장동봉검사.js'));
+
+test('🔴 급소 — 방아쇠 목록이 생성기 자신을 포함한다 (F520 이 난 바로 그 칸)', () => {
+  assert.ok(방아쇠목록.includes('tools/이해대장.js'),
+    `생성기가 방아쇠에 없다 — 도구만 담은 커밋에서 이 게이트는 눈이 먼다. 지금 목록: ${방아쇠목록.join(' · ')}`);
+});
+
+test('🔴 급소 — 생성기가 읽는 in-repo 부품이 방아쇠 목록에서 빠지지 않는다 (한 홉 드리프트)', () => {
+  const 생성기 = fs.readFileSync(도구, 'utf8');
+  /* `require('./lib/…')` 만 센다 — `node:` 내장과 동적 require(형제 저장소)는 이 저장소 밖이거나
+   * 경로가 실행 시점에 정해져서, 스테이징 목록과 대조할 수 있는 이름이 아니다. */
+  const 읽는것 = [...생성기.matchAll(/require\('\.\/([^']+)'\)/g)].map((m) => `tools/${m[1]}`);
+  assert.ok(읽는것.length, '생성기의 in-repo require 를 하나도 못 뽑았다 — 이 검사가 0건 위에서 초록이 됐다(F207)');
+  const 빠진것 = 읽는것.filter((p) => !방아쇠목록.includes(p));
+  assert.deepStrictEqual(빠진것, [],
+    `생성기가 읽는데 방아쇠에 없다 — 그 파일만 고친 커밋에서 화면이 조용히 낡는다:\n  ${빠진것.join('\n  ')}`);
 });

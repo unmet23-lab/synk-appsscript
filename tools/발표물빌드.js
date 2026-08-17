@@ -50,6 +50,9 @@ const normalize = (s) => s.replace(/\r\n/g, '\n');
      ⇒ 원고가 부품을 실제로 부를 때만 얹는다. 그래야 «마커가 켜졌다» = «부품이 있다» 가 된다.
    ══════════════════════════════════════════════════════════════════════════ */
 const loom = require('./lib/loom.js');
+/* 「닿나」 판정은 여기 베끼지 않는다 — 뿌리는 쪽(여기)과 세는 쪽(`지면방`)이 갈리면
+ * 조용히 통과한다. 재는 자는 하나다(F517①). */
+const loom훅 = require('./lib/loom훅.js');
 /* 🔴 `부품만` 이 아니라 `인쇄부품` 이다 — 발표물은 **종이로 나가는 지면**이다.
  *   `낮` 층이 없으면 부품 색이 Cream 계열로 남고, 크롬 인쇄는 「배경 그래픽」이 기본 꺼짐이라
  *   흰 종이 위 Cream = **1.13:1** 로 부품이 통째로 사라진다(화면에선 멀쩡해 보인다). */
@@ -58,22 +61,19 @@ const LOOM_지면 = '인쇄부품';
 const LOOM_열기 = `<style data-loom="${LOOM_지면}">`;
 const LOOM_뜯기 = /\n?<style data-loom="[^"]*">[\s\S]*?<\/style>/;
 
-/** Loom 이 정의하는 한글 부품 클래스 전량 — 목록을 손으로 안 든다(CSS 에서 파생). */
-function 부품클래스들(css = loom.css({ 지면: LOOM_지면 })) {
-  return new Set([...css.matchAll(/\.([가-힣][가-힣\w-]*)/g)].map((m) => m[1]));
-}
-
 /**
- * 이 원고가 실제로 부르는 Loom 훅 — 부품 클래스 + 범위 클래스.
- * ⚠**마크업만 본다**(`</style>` 뒤). 원고의 CSS 안에 우연히 같은 이름이 있어도 그건 훅이 아니다.
+ * 이 원고가 실제로 부르는 Loom 훅 — **닿는 선택자들**의 이름.
+ *
+ * 🔑 판정을 여기 안 적는다. 2026-08-17 까지는 적었고(부품 클래스 ∩ 마크업 클래스),
+ *    `지면방` 은 따로 자기 판정을 들었다 — **같은 물음에 두 답**이라 갈릴 수 있었다.
+ *    실제 갈리는 자리: `.번호` 처럼 `h2>span:not(.번호)` 안에만 사는 클래스는
+ *    「부품 클래스」 정규식엔 잡히지만 **아무 데도 안 닿는다.** 그런 원고 하나면
+ *    빌드는 「훅 1개」라 얹고, 등록층은 「마커만」이라 빨개진다.
+ *    ⇒ 재는 자는 `tools/lib/loom훅.js` 하나다.
+ * ⚠**마크업만 본다** — 원고의 CSS 안에 우연히 같은 이름이 있어도 그건 훅이 아니다.
  */
-function 훅들(html, 클래스 = 부품클래스들()) {
-  const i = html.indexOf('</style>');
-  const 본문 = i < 0 ? html : html.slice(i + 8);
-  const 쓰는것 = new Set([...본문.matchAll(/class="([^"]*)"/g)]
-    .flatMap((m) => m[1].split(/\s+/)).filter(Boolean));
-  const 범위 = (loom.기본범위[LOOM_지면] || '.룸').slice(1);
-  return [...쓰는것].filter((c) => c === 범위 || 클래스.has(c)).sort();
+function 훅들(html, css = loom.css({ 지면: LOOM_지면 })) {
+  return loom훅.닿는선택자들(css, html).map((d) => d.선택자).sort();
 }
 
 /**
@@ -319,4 +319,4 @@ function main() {
  *   변이 검사에서 구멍으로 나온다(지면방 `분모확인()` 이 같은 이유로 떼어져 있다). */
 if (require.main === module) process.exit(main());
 
-module.exports = { 훅들, 얹을까, 부품클래스들, loom얹기, loom뜯기, unembed, LOOM_지면, LOOM_뜯기 };
+module.exports = { 훅들, 얹을까, loom얹기, loom뜯기, unembed, LOOM_지면, LOOM_뜯기 };
