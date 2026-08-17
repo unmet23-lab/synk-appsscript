@@ -398,7 +398,7 @@ test('[v9.145] 이미 서 있는 시트에 새 열 이름표를 붙인다 — en
   assert.ok(section('function hwFeedbackEnsureCols_(', '\n}\n').includes('헤더보정_'), 'hw 치유가 공용 본체를 안 쓴다');
   assert.ok(section('function quizSweep_(ss)', '\n}\n').includes('헤더보정_(ql, QUIZ_LOG_HEADERS)'),
     'quiz_log에 치유가 없다 — 라이브 11열 시트에서 급수 칸이 조용히 버려진다');
-  const 교재 = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8').replace(/\r\n/g, '\n');
+  const 교재 = 파일소스(path.join(ROOT, '교재연동.js'));
   assert.ok(교재.includes('헤더보정_(vl, VOICE_LOG_HEADERS)'), 'voice_log에 공용 치유가 없다 — 9열 시트에서 급수 칸이 버려진다');
 });
 
@@ -408,7 +408,7 @@ test('[v9.145] 이미 서 있는 시트에 새 열 이름표를 붙인다 — en
  * 전부 소급 불가 계열 — profiles 급수는 승급하면 과거가 지워지는 현재값이다.
  * ───────────────────────────────────────────────────────────── */
 
-const 교재소스 = () => fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8').replace(/\r\n/g, '\n');
+const 교재소스 = () => 파일소스(path.join(ROOT, '교재연동.js'));
 
 /* [v9.190] 제목을 「급수가 맨 끝」에서 「증분은 끝에만」으로 고친다 — hw_feedback은 이미 급수 뒤에
  *   3열이 더 있어(model·prompt_ver…) 구 제목이 자기 본문과 어긋나 있었다. 지키는 것은 처음부터
