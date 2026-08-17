@@ -69,10 +69,16 @@ function 엔진값(root) {
   };
 }
 
-/** 엔진 코드에 «실재하는» 함수 이름들. */
+/**
+ * 엔진 코드에 «실재하는» 함수 이름들.
+ *
+ * 🔴 **ASCII 로 좁히지 않는다** — 첫 판은 `[A-Za-z_$][\w$]*` 였고, 그러면 이 저장소 함수의 절반인
+ *   한국어 이름(`수집도달_`·`골든픽스처_`·`궤적_최신관측_`)이 **분모에서 통째로 빠진다**(회귀가
+ *   잡았다). 분모가 좁으면 이 검사는 「없다」를 남발하고, 거짓양성은 검사를 통째로 죽인다.
+ */
 function 함수이름들(몸) {
   const out = new Set();
-  const re = /function\s+([A-Za-z_$][\w$]*)\s*\(/g;
+  const re = /function\s+([^\s(){}]+)\s*\(/g;
   let m;
   while ((m = re.exec(몸))) out.add(m[1]);
   return out;
@@ -104,8 +110,11 @@ function 함수이름들(몸) {
  *     사유가 `TALK_LOG_HEADERS` 를 언급하는 정상 문장이 빨개진다(거짓양성이 검사를 죽인다).
  */
 function 코드이름들(사유) {
-  return (String(사유 || '').match(/[A-Za-z][A-Za-z0-9_]*/g) || [])
+  return (String(사유 || '').match(/[가-힣A-Za-z][가-힣A-Za-z0-9_]*/g) || [])
     .filter((s) => !/^[A-Z0-9_]+$/.test(s))                    // ALL_CAPS 상수는 이 검사의 과녁이 아니다(⚠②)
+    /* 이 저장소의 «코드 이름» 두 꼴: 밑줄로 끝나는 비공개 함수(`골든픽스처_`·`aiWeakMap_`)와
+     *   camelCase(`syncProfiles`). 한국어를 받는 이유는 절반이 그 꼴이라서다 — 한국어 산문이
+     *   밑줄로 끝나는 일은 없으므로 이 필터가 곧 «코드처럼 생김»의 정의가 된다. */
     .filter((s) => /[A-Z]/.test(s.slice(1)) || s.endsWith('_'));
 }
 
