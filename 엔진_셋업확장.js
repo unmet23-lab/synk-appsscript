@@ -184,11 +184,12 @@ function 수집도달_() {
     /* 전사문이 쌓이는데 읽는 것은 전사 «상태»(대기·완료·실패) 관리와 삭제뿐이다. 🔑 무엇이 서면
      * 닿는가 = 전사문에서 발음·오류를 뽑아 약점맵에 합류시키는 날(`aiWeakMap_` 의 셋째 재료). */
     'voice_log': { 사유: '읽는 곳이 전사 상태 관리·진단·삭제뿐이다 — 전사문 자체를 학습 재료로 읽는 자리가 0이다. 전사문의 오류가 약점맵에 합류하는 날 닿는다.' },
-    /* 🔴 이 층이 세우려는 함정의 표본 — 읽는 코드는 있는데 그 끝이 사람 화면이다.
-     * ⚠ 「조 편성에 발화 축이 없다」는 뜻이 아니다(실측 08-16): `assignGroups` 는 발화를 이미 본다 —
-     *   단 `quietScoreMap_` 이 **원신호** `lesson_close` 의 미발화자 칸을 세지, 이 주간 지수
-     *   (got·max·quiet·pct)를 안 읽는다. 그래서 «요약을 낸 것»만 도달이 0이다. */
-    [TALK_INDEX_LOG_SHEET]: { 사유: '읽는 곳이 주간 리포트 꼬리 하나 = 사람 화면이다 — 전주 대비를 보여줄 뿐 다음 조·역할·과제를 안 바꾼다. 조 편성이 원신호(lesson_close 미발화자) 대신 이 주간 지수를 입력으로 받는 날 닿는다.' },
+    /* ✅ [v9.245 · #Q99] 갚았다 — 이 층이 세운 함정의 표본이 첫 출구가 됐다. 08-16 의 사유는
+     * 「조 편성이 원신호 대신 이 주간 지수를 입력으로 받는 날 닿는다」였고, 받게 만든 것이 이 칸이다.
+     * 🔑 도달을 «주간 리포트 꼬리»가 아니라 `assignGroups` 로 적는 이유: 꼬리는 읽어서 **보여줄 뿐**
+     *   이고(설계 §5 「읽힌 것이지 보이는 것이 아니다」), 다음 조·좌석·역할을 바꾸는 자리는 여기다.
+     *   읽는 몸은 `발화지수침묵맵_` 이지만 그것 역시 «읽기만» 한다 — 지목은 **출력이 바뀌는 자리**로. */
+    [TALK_INDEX_LOG_SHEET]: { 소비자: '엔진_셋업확장.js:assignGroups', 층: '제품' },
     /* 학생이 스스로 쓴 선언(드림한줄·최애·몬스터이름)의 «변경 이력». 철학 ㉢(삶 이해)의 재료인데
      * 읽는 자리가 0이라 A-1 ㉢ 행의 「끊겼다」가 여기서도 참이다. 🔑 무엇이 서면 닿는가 =
      * 드림맵·시즌 회고가 이 이력을 맥락으로 읽는 날(지금은 최신 3칸만 profiles 에서 본다). */
@@ -202,12 +203,14 @@ function 수집도달_() {
  *
  * · `도달0` = 도달이 0인 수집 탭 수. ⚠ 새 수집 탭을 세우면서 도달을 안 적으면 여기서 걸린다.
  *   📉 5 (2026-08-16 · 신설 · quiz_log·talk_log·voice_log·talk_index_log·self_declare_log)
+ *   📉 4 (2026-08-17 · #Q99 · `talk_index_log` → `assignGroups` 침묵 축 · 잔여 = quiz_log·talk_log·
+ *        voice_log·self_declare_log · ⚠ `self_declare_log` 는 **재료가 0**이라 지금 못 연다)
  * · `손` = «사람이 눌러야만 도는» 도달 수. 갈라 세는 이유는 **다른 병**이기 때문이다 —
  *   도달0 은 「안 읽는다」이고 이쪽은 「읽는데 저절로 안 돈다」다. 한 숫자로 뭉치면 손 통로가
  *   늘어도 총합이 그대로라 조용하다(형제 장부가 못 보는 갈림 · 설계 §2).
  *   📉 1 (2026-08-16 · 신설 · teacher_gold = 의도된 사람 게이트 · 🚫자동 배치 편입 재제안) */
 function 시트도달상한_() {
-  return { 도달0: 5, 손: 1 };
+  return { 도달0: 4, 손: 1 };
 }
 
 /* ===================== [v9.43] 🎴 몬스터·보스 상세 카드 — "눌렀을 때 우와" =====================
@@ -2125,11 +2128,88 @@ function buildGroupPlan_(members, fixed) {
     arr.forEach((m, seat) => {
       out.push({
         sid: m.sid, name: m.name, grp: g + 1, seat: seat,
-        why: '실력 ' + rankOf[m.sid] + '/' + n + (m.quiet > 0 ? ' · 침묵 ' + m.quiet + '회' : '') + (m.tag ? ' · ' + m.tag : '')
+        /* [v9.245] #Q99 — 라벨을 호출부가 준다. `quiet` 의 **눈금이 원천마다 다르기 때문**이다
+         *   (원신호=횟수 / 지수=못 받은 발화량 %). 여기서 「회」를 박으면 지수로 편성한 날
+         *   편성표에 「침묵 37회」가 찍힌다 — 맞는 얼굴로 틀린 값(CLAUDE.md 맹점④).
+         *   라벨이 없는 옛 호출부는 종전대로 「N회」로 읽는다(호환 · 회귀가 둘 다 잰다). */
+        why: '실력 ' + rankOf[m.sid] + '/' + n
+          + (m.quiet > 0 ? ' · ' + (m.quietWhy || ('침묵 ' + m.quiet + '회')) : '')
+          + (m.tag ? ' · ' + m.tag : '')
       });
     });
   });
   return out;
+}
+
+/* [v9.245] 🗣 **원신호 → 요약 갈아타기** — 조 편성의 침묵 축이 주간 발화 지수를 읽는다 (대기열 P1 #Q99).
+ *
+ * ■ 왜 갈아타나 — 마감폼이 못 보는 원인이 둘 있다
+ *   `quietScoreMap_` 은 차시 마감폼의 「미발화자」를 **세기만** 한다 = 자리는 받았는데 말 안 한 횟수.
+ *   그런데 발화가 모자란 원인은 셋이고(`talkIndexOf_` 머리 주석) 그중 둘 — **결석해서 그날 역할을
+ *   통째로 못 받음** · **3인 조라 역할이 3개만 돌아 '질문'이 없음** — 은 마감폼에 한 줄도 안 남는다.
+ *   그 둘을 이미 재고 있는 것이 `talk_index_log` 의 `pct` 인데, 여태 읽는 곳이 주간 리포트 꼬리
+ *   하나 = **사람 화면**이었다(설계 §8 「이 층 고유의 함정」의 표본 — 읽어서 보여줄 뿐 다음에 줄
+ *   것을 안 바꿨다). 여기서 처음으로 그 요약이 «다음 조»를 바꾼다.
+ *
+ * ■ ⚠ 분모가 다르다 — 갈아탈 때 **둘을 동시에 바꾸지 않는다**(F045)
+ *   · 원신호 = 차시 단위 **횟수**(0,1,2… 상한 없음 · 클수록 조용하다)
+ *   · 요약   = 시즌 누적 **비율** `pct` 0~100 (클수록 **많이** 말했다 — 방향이 반대다)
+ *   그래서 `100 - pct` 로 **뒤집어서** 넘긴다. 이 값이 편성 알고리즘에서 안전한 이유는 하나뿐이다 —
+ *   `buildGroupPlan_` 이 이 값을 **서열로만** 쓴다(`quietHi` = 양수들의 중앙값, 그 위를 'QUIET' 로
+ *   묶어 흩는다). 눈금이 바뀌어도 「조용한 절반을 흩는다」는 규칙 자체는 안 바뀐다.
+ *   ⚠ 그래서 **사람이 읽는 칸은 같이 못 간다** — 그대로 두면 편성표에 「침묵 37회」가 찍힌다(맞는
+ *     얼굴로 틀린 값). 단위를 밝힌 라벨을 함께 넘긴다(`quietWhy`).
+ *
+ * ■ 미측정은 0이다 — 오늘의 원신호와 **같은 모양**이라 새 실패를 안 만든다
+ *   스냅샷은 월 07시 주 1회라 그 뒤 들어온 학생은 행이 없다. 0 을 주면 `quietHi` 가 **양수만**
+ *   중앙값을 내므로 그 학생은 「조용하다」로 안 묶인다 — 안 재본 사람을 흩는 것보다 옳다.
+ *   단 **0 은 분모와 함께 읽는다**(유호 확정 08-14): 몇 명을 지수로 쟀고 몇 명이 미측정인지를
+ *   `assignGroups` 의 반환 문구가 그대로 말한다. 안 그러면 「지수로 편성했다」가 0명이어도 참이 된다.
+ *
+ * ■ ⚠ 고리가 닫힌다 — 그리고 그게 옳다(숨기지 않는다)
+ *   `assignGroups` → `groups` → `groupBoardOf_` → `talkIndexOf_` → 이 로그 → 다시 `assignGroups`.
+ *   폭주하지 않는 이유 둘: ①**시간이 갈라져 있다**(편성은 시즌당 1회 · 스냅샷은 주 1회) ②**방향이
+ *   교정이다** — 「지난 편성에서 발화 기회를 못 받은 학생을 이번엔 흩어놓는다」이지 그 반대가 아니다.
+ *   시즌 첫 편성에는 `groups` 가 없어 스냅샷도 없다 → 자동으로 원신호 폴백(닭·달걀이 스스로 풀린다).
+ *
+ * @returns {?{맵: Record<string, number>, 주차: number}} 이 시즌·반의 행이 없으면 null(원신호로 돌아간다) */
+function 발화지수침묵맵_(ss, season, cls, tz) {
+  const sh = ss.getSheetByName(TALK_INDEX_LOG_SHEET);
+  if (!sh || sh.getLastRow() < 2) return null;
+  /* 열은 이름으로 찾는다 — 위치 상수는 열이 하나 늘 때마다 엉뚱한 값을 읽는다(v9.119 가 같은 자리에서
+   *   두 번 물린 함정 · `quietScoreMap_` 이 쓰는 규칙 그대로). 헤더가 낡았으면 조용히 틀린 값을 내지
+   *   말고 null 로 돌아간다 — 원신호 축이 살아 있는 편이 0으로 채운 지수보다 낫다. */
+  const head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(h => String(h));
+  const iSeason = head.indexOf('season'), iWeek = head.indexOf('week'), iCls = head.indexOf('class');
+  const iSid = head.indexOf('student_id'), iPct = head.indexOf('pct');
+  if (iSeason < 0 || iWeek < 0 || iCls < 0 || iSid < 0 || iPct < 0) return null;
+  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues();
+  /* 시즌 칸은 `seasonKeyOf_` 로 접어 읽는다 — 시트 기본 서식이 'yyyy-MM-dd' 문자열을 **Date 로 삼켜서**
+   *   맨몸 `String()` 대조는 'Mon Aug 17 2026…' 과 영영 안 맞는다(v9.234 가 적재 쪽에서 이미 물린
+   *   함정 · 같은 판정을 두 곳에 다르게 적으면 갈라진다). 반 키도 `반키_` 로 접는다(v9.235). */
+  const 이번 = rows.filter(r => seasonKeyOf_(r[iSeason], tz) === season && 반키_(r[iCls]) === cls);
+  if (!이번.length) return null;
+  /* `got`·`max` 는 시즌 **누적**이라 최신 주차 하나만 본다 — 옛 주차를 섞으면 같은 학생이 두 번 세지고,
+   *   먼저 온 행이 이기면 편성이 몇 주 전 사진으로 굳는다. */
+  let week = 0;
+  이번.forEach(r => { const w = Number(r[iWeek]) || 0; if (w > week) week = w; });
+  if (!week) return null;
+  const 맵 = {};
+  이번.forEach(r => {
+    if ((Number(r[iWeek]) || 0) !== week) return;
+    const sid = String(r[iSid] || '').trim();
+    if (!sid) return;
+    /* 🔴 빈 칸을 0 으로 읽지 않는다 — **뒤집기 때문에 부호가 반대다.** 원신호는 값이 없으면 0 =
+     *   「조용하지 않다」(보수)인데, 여기선 `Number('') === 0` → `100 - 0` = **「최대로 조용함」**이
+     *   된다. 안 잰 학생을 가장 조용한 학생으로 세워 흩는 것은 재본 학생을 밀어내는 오작동이다.
+     *   그래서 못 읽는 칸은 아예 맵에 안 넣는다 → 호출부에서 미측정(0)으로 떨어진다. */
+    const 원 = r[iPct];
+    if (원 === '' || 원 === null || 원 === undefined) return;
+    const pct = Number(원);
+    if (!isFinite(pct)) return;
+    맵[sid] = Math.min(100, Math.max(0, 100 - pct));        // 방향을 뒤집는다 — 클수록 말이 없었다
+  });
+  return Object.keys(맵).length ? { 맵: 맵, 주차: week } : null;
 }
 
 /* --- 반 하나 편성 — 앱이 제안하고 강사는 확인만 한다(유호님 확정) --- */
@@ -2150,14 +2230,22 @@ function assignGroups(className, opts) {
   // 학교·동네는 이름으로 열을 찾는다 — 열 번호를 박으면 공유 열이 늘어날 때마다 엉뚱한 값을 읽는다.
   const schoolCol = langColOf_(pf, '학교'), areaCol = langColOf_(pf, '동네');
   const rows = pf.getRange(2, 1, pf.getLastRow() - 1, pf.getLastColumn()).getValues();
-  const quiet = quietScoreMap_(ss);
+  /* [v9.245] #Q99 — 침묵 축의 원천을 **요약(주간 발화 지수)** 으로 갈아탄다(위 `발화지수침묵맵_` 머리말).
+   *   지수 행이 없는 시즌·반(시즌 첫 주 · 첫 스냅샷 전 · 헤더 낡음)에만 원신호로 돌아간다 — 축을
+   *   통째로 잃는 것보다 낫다. **어느 쪽으로 갔는지는 아래 반환 문구가 말한다**(조용한 대체 금지). */
+  const 지수 = 발화지수침묵맵_(ss, season, cls, tz);
+  const quiet = 지수 ? 지수.맵 : quietScoreMap_(ss);
   const members = [];
   rows.forEach(r => {
     if (!r[0] || r[3] !== 'student') return;
     if (반키_(r[4]) !== cls) return;
+    const sid = String(r[0]);
+    const q = Number(quiet[sid] || 0);
     members.push({
-      sid: String(r[0]), name: String(r[1] || r[0]), skill: skillScoreOf_(r),
-      quiet: Number(quiet[String(r[0])] || 0),
+      sid: sid, name: String(r[1] || r[0]), skill: skillScoreOf_(r),
+      quiet: q,
+      /* 단위를 사람 칸에 밝힌다 — 지수는 «못 받은 발화량 %» 라 「N회」로 찍히면 거짓이 된다. */
+      quietWhy: q > 0 ? (지수 ? '발화 지수 ' + (100 - q) + '%' : '침묵 ' + q + '회') : '',
       tag: String(r[schoolCol - 1] || '').trim() || String(r[areaCol - 1] || '').trim()  // 둘 다 선택 입력
     });
   });
@@ -2204,8 +2292,14 @@ function assignGroups(className, opts) {
   //   짝도 성립하지 않는다. 조 수 정책(12명 미만 반은 몇 개 조?)은 유호님 결정 사항이라 여기선 경고만 낸다.
   const tiny = sizes.filter(s => s >= 1 && s <= 2).length;
   const warn = tiny ? '\n⚠ 1~2인 조 ' + tiny + '개 — 이 조엔 발표 역할이 배정되지 않습니다(소인원 반 조 수 정책 필요)' : '';
+  /* [v9.245] #Q99 — **0 은 분모와 함께 읽는다**(유호 확정 08-14). 이 줄이 없으면 지수로 «잰» 학생이
+   *   0명이어도 「발화 지수로 편성했다」가 참이 되어, 좋은 0과 「안 재봤다」가 한 얼굴이 된다. */
+  const 잰명 = 지수 ? members.filter(m => 지수.맵[m.sid] !== undefined).length : 0;
+  const 축 = 지수
+    ? '\n🗣 침묵 축 = 발화 지수 ' + 지수.주차 + '주차 — ' + members.length + '명 = 잰 ' + 잰명 + '명 + 미측정 ' + (members.length - 잰명) + '명'
+    : '\n🗣 침묵 축 = 마감폼 원신호(미발화자 횟수) — 이 시즌·반의 주간 지수 행이 아직 없습니다';
   return '✅ ' + cls + ' ' + confirmed + ' 편성: ' + members.length + '명 → ' +
-    sizes.join('·') + '명' + (Object.keys(fixed).length ? ' (고정 ' + Object.keys(fixed).length + '명 유지)' : '') + warn;
+    sizes.join('·') + '명' + (Object.keys(fixed).length ? ' (고정 ' + Object.keys(fixed).length + '명 유지)' : '') + 축 + warn;
 }
 
 // 전 반 일괄 — schedule에 있는 코어 반 전부. 시즌 3차시까지 1회 실행이 규칙서 §8 절차다.
