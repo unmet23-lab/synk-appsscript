@@ -24,6 +24,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const { ROOT, ENGINE_FILES, engineSource, engineParts, 표기접기 } = require('./_engine-source');
+const 소스검사 = require('./lib/소스검사');
 
 /* 실제로 죽던 그 모양 그대로 — `'\n}\n'` 처럼 **줄 끝을 걸친** 표식으로 구간을 자른다. */
 function 잘라본다(소스, 시작, 끝) {
@@ -109,4 +110,58 @@ test('🔑 [옛 통로 금지] 실저장소: 호출부가 engineSource() 를 다
   assert.ok(파일들.length > 0, '테스트 파일 0건 — 분모가 비면 이 초록은 판정이 아니다(F207)');
   const 샌곳 = 파일들.filter((f) => 옛통로인가(fs.readFileSync(path.join(ROOT, 'tests', f), 'utf8')));
   assert.deepEqual(샌곳, [], `이 파일들이 이음매 뒤에서 또 접는다: ${샌곳.join(', ')}`);
+});
+
+/* ── #Q101 — 엔진 «밖» 파일을 읽는 자리도 같은 문을 지난다 (2026-08-17) ────────────────
+ * F526 이 세운 접기는 자리가 `_engine-source` 라 **엔진 소스를 읽는 호출부만** 안전했다.
+ * 엔진 아닌 파일을 읽는 자리엔 지날 문이 없어 저마다 손으로 접었고, 29벌 전부 CRLF 축만
+ * 접은 반쪽이었다. 실측(분모 3945 · 새 적색 10): 표식 절단 5 = CI모사 2 · 리포트카드 2 · 수집 1.
+ * 그래서 정의를 `lib/소스검사.js` 하나로 모으고 `파일소스()`·`구간()` 을 문으로 냈다. */
+
+test('🔴 [탐지력] 접기 정의가 **한 벌**이다 — 두 곳이면 한쪽만 고쳐지는 날 갈라진다', () => {
+  assert.equal(표기접기, 소스검사.표기접기,
+    '`_engine-source` 가 자기 사본을 다시 들었다 — 같은 판정이 두 곳이면 갈라진다(CLAUDE.md)');
+  const 사본 = fs.readFileSync(path.join(ROOT, 'tests', '_engine-source.js'), 'utf8');
+  assert.doesNotMatch(사본, /const 표기접기 = /,
+    '`_engine-source` 안에 접기 정의가 다시 생겼다 — 정의는 lib/소스검사.js 한 곳이다');
+});
+
+test('🔴 [탐지력] 표기접기 픽스처 — 실저장소가 우연히 깨끗하면 접기가 죽어도 초록이다', () => {
+  assert.ok(소스검사.표기접기픽스처.length >= 4, '픽스처가 비면 이 초록은 판정이 아니다(F207)');
+  for (const { 왜, 입력, 기대 } of 소스검사.표기접기픽스처) {
+    assert.equal(소스검사.표기접기(입력), 기대, `접기가 이 축에서 죽었다 — ${왜}`);
+  }
+});
+
+test('🔴 [탐지력] 구간() 은 앵커를 찾기 «전에» 접는다 — 표기 한 글자에 표식이 끊기던 자리', () => {
+  const 원 = 'function f_(a) {\n  var x = 1;\n}\nfunction g_() {\n}\n';
+  for (const [축, 판] of [['줄끝 공백', 원.replace(/\n/g, ' \n')], ['CRLF', 원.replace(/\n/g, '\r\n')]]) {
+    /* 접기 없이는 «진짜로» 끊기는지부터 보인다 — 안 끊기면 이 픽스처가 실패 모드를 재현 못 한 것이다. */
+    assert.equal(판.indexOf('\n}\n'), -1, `픽스처가 실패 모드를 재현 못 함 — ${축}`);
+    assert.equal(소스검사.구간(판, 'function f_(a) {', '\n}\n'),
+      소스검사.구간(원, 'function f_(a) {', '\n}\n'), `구간() 이 ${축} 축에서 다른 구간을 잘랐다`);
+  }
+});
+
+test('🔴 [급소] 구간() 은 끝앵커를 못 찾으면 **던진다** — 손 자르기는 `slice(i, -1)` 로 파일 나머지를 삼켰다', () => {
+  const 소스 = 'function f_() {\n  var x = 1;\n';   // 닫는 줄이 없다
+  /* 옛 모양을 그대로 재현해 «무엇이 나빴는지»를 값으로 못박는다: 부정 단언이 뒤집히고(적색),
+   * 긍정 단언은 조용히 초록이 된다. 둘 다 「엉뚱한 구간을 봤다」는 사실을 안 보여 준다. */
+  const i = 소스.indexOf('function f_() {');
+  assert.equal(소스.slice(i, 소스.indexOf('\n}\n', i)), 'function f_() {\n  var x = 1;',
+    '옛 손 자르기가 파일 나머지를 삼키지 않는다면 이 회귀가 지킬 것이 없다');
+  assert.throws(() => 소스검사.구간(소스, 'function f_() {', '\n}\n'), /못 찾았다/,
+    '끝앵커가 없는데 조용히 무언가를 돌려준다 — 미실행이 초록과 같은 모양이 된다');
+});
+
+test('🔑 [실저장소] 엔진 밖 파일을 읽는 세 자리가 손 접기를 안 쓴다 (거짓양성 검사)', () => {
+  /* 겨누는 것은 «이 트랙이 문으로 보낸 파일들»뿐이다 — 저장소 전량은 아직 29벌이고(실측),
+   * 그 이관은 이 트랙 밖이다(장부 F526 ▶). 여기 목록만 되돌아가지 않게 못박는다. */
+  const 문을쓴다 = ['CI모사.test.js', '리포트카드공개.test.js', '수집.test.js'];
+  for (const f of 문을쓴다) {
+    const src = fs.readFileSync(path.join(ROOT, 'tests', f), 'utf8');
+    assert.doesNotMatch(src, /readFileSync\([^)]*\)\s*\.replace\(\/\\r/,
+      `${f} 가 손 접기로 돌아갔다 — 그 접기는 CRLF 축만 막는 반쪽이다(#Q101 실측)`);
+    assert.match(src, /require\('\.\/lib\/소스검사(\.js)?'\)/, `${f} 가 공용 통로를 안 지난다`);
+  }
 });

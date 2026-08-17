@@ -21,10 +21,12 @@ const { ROOT, ENGINE_FILES, engineSource } = require('./_engine-source');
  *   다섯이 같은 정규식을 저마다 적고 있었다 — 한쪽만 고쳐지는 날 그 검사가 조용히 눈먼다.
  *   옛 판의 `(^|[^:])\/\/` 는 `://` 만 지키는 어림법이라 `'// 로 시작하는 문자열'` 은 못 지켰다.
  *   공용 판은 렉서라 문자열·정규식 리터럴 «안»을 원리적으로 안 건드린다. */
-const { 코드만 } = require('./lib/소스검사.js');
+const { 코드만, 구간, 파일소스 } = require('./lib/소스검사.js');
 
-/** 소스 읽기 — 줄끝을 LF로 통일한다. 이 저장소 작업본은 CRLF라 '\n}\n' 같은 표식이 안 걸린다. */
-const readSrc = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/\r\n/g, '\n');
+/** 소스 읽기 — 줄끝 **표기**를 접는다(#Q101 · 2026-08-17).
+ *  🔑 그전엔 여기서 손으로 `.replace(/\r\n/g,'\n')` 만 했다 — CRLF 축만 막은 반쪽이라,
+ *    줄 끝 공백 한 칸에 `'\n}\n'` 표식이 끊겨 아래 두 시험이 실측으로 빨개졌다. 접기는 이음매가 진다. */
+const readSrc = (f) => 파일소스(path.join(ROOT, f));
 
 /* ── GAS 스텁 ────────────────────────────────────────────────────────── */
 const ACCESS = {
@@ -395,10 +397,9 @@ test('[v9.156] 실패하면 첫 오류 원문을 남긴다', () => {
 
 test('[v9.156] 🔴 배치가 카드를 공개로 열지 않는다 — 이게 이 판의 핵심', () => {
   /* 닫는 함수가 있어도 배치가 매달 다시 열면 아무 의미가 없다. 결과(코드)로 검사한다. */
-  const src = readSrc('엔진_폼리포트.js');
-  const s = src.indexOf('function runReportCards_(');
-  const raw = src.slice(s, src.indexOf('\n}\n', s));
-  const body = 코드만(raw);
+  /* 🔑 `구간()` 으로 자른다 — 손으로 `slice(s, indexOf(끝, s))` 하면 끝앵커를 못 찾을 때
+   *   `slice(s, -1)` 이 되어 **파일 나머지 전부**가 본문이 된다(아래 부정 단언이 그때 뒤집힌다). */
+  const body = 구간(readSrc('엔진_폼리포트.js'), 'function runReportCards_(', '\n}\n');
   assert.ok(body.includes('createFile('), '주석 제거가 코드까지 지웠다');
   assert.ok(!/setSharing/.test(body), 'runReportCards_가 아직 공개 공유를 한다 — 매달 카드가 다시 열린다');
   assert.ok(body.includes('SEND_REPORT_EMAIL'), '메일 발송 경로가 사라졌다 — 카드가 학부모에게 닿을 길이 없다');
@@ -406,14 +407,14 @@ test('[v9.156] 🔴 배치가 카드를 공개로 열지 않는다 — 이게 �
 
 test('[v9.156] 🔴 음성 스위프가 녹음을 공개로 열지 않고, 성장 카드에 재생 링크를 싣지 않는다', () => {
   const src = readSrc('교재연동.js');
-  const s = src.indexOf('function voiceSweep_(');
-  const raw = src.slice(s, src.indexOf('\n}\n', s));
-  const body = 코드만(raw);
+  /* 🔑 이 시험이 «조용히 초록»이던 자리다(#Q101 실측): 손으로 자르면 끝앵커를 못 찾을 때
+   *   `slice(s, -1)` 로 파일 나머지 전부가 본문이 되는데, 거기 `setSharing` 이 없으면
+   *   아래 부정 단언은 **엉뚱한 구간을 보고도 통과한다**. `구간()` 은 그때 던진다. */
+  const body = 구간(src, 'function voiceSweep_(', '\n}\n');
   assert.ok(!/setSharing/.test(body), 'voiceSweep_가 아직 미성년 녹음을 공개로 연다');
 
-  const g = src.indexOf('function buildVoiceGrowthCards_(');
-  // ⚠ 주석을 먼저 지운다 — 「왜 링크를 뺐는가」를 적은 주석에 [듣기](url)가 들어 있어, 안 지우면 주석이 코드로 잡힌다
-  const gbody = 코드만(src.slice(g, src.indexOf('\n}\n', g)));
+  // ⚠ 주석을 먼저 지운다 — 「왜 링크를 뺐는가」를 적은 주석에 [듣기](url)가 들어 있어, 안 지우면 주석이 코드로 잡힌다(구간() 이 함께 진다)
+  const gbody = 구간(src, 'function buildVoiceGrowthCards_(', '\n}\n');
   assert.ok(gbody.includes('목소리 타임랩스'), '주석 제거가 코드까지 지웠다');
   assert.ok(!/\[듣기\]\(/.test(gbody), '성장 카드가 아직 공개 URL을 [듣기] 링크로 싣는다');
   assert.ok(/처음의 나/.test(gbody) && /오늘의 나/.test(gbody), '대비 구조가 사라졌다 — 링크만 빼고 값은 남겨야 한다');
@@ -457,18 +458,12 @@ test('[v9.138] 새 공개 공유(setSharing ANYONE)가 승인 없이 늘지 않�
 });
 
 test('[v9.138] previewOneReportCard 본문에는 공유·공개URL이 한 글자도 없다', () => {
-  const src = readSrc('엔진_폼리포트.js');
-  const s = src.indexOf('function previewOneReportCard(');
-  assert.notEqual(s, -1, 'previewOneReportCard를 찾지 못했다 — 함수명이 바뀌면 이 검사를 갱신하라');
   // 닫는 중괄호까지만 자른다 — '다음 function까지'로 자르면 뒤따르는 주석(setSharing을 설명하는
   // 문장)이 딸려 들어와 검사가 거짓으로 실패한다(실제로 한 번 겪었다).
-  const end = src.indexOf('\n}\n', s);
-  assert.notEqual(end, -1, '함수 끝(열 0의 })을 못 찾았다');
-  const raw = src.slice(s, end);
-  assert.ok(raw.includes('previewOneReportCard'), '엉뚱한 구간을 잘랐다');
-  // 주석을 걷어내고 **코드만** 본다 — "setSharing 없음" 같은 설명 문장에 걸려 거짓 실패하지 않도록.
-  // (`://`는 URL이라 줄주석으로 오인하지 않는다.)
-  const body = 코드만(raw);
+  // 🔑 `구간()` 은 주석을 걷어내고 준다 — "setSharing 없음" 같은 설명 문장에 걸려 거짓 실패하지 않도록.
+  //   앵커를 못 찾으면 던진다(옛 판의 `slice(s, -1)` 은 파일 나머지를 본문으로 삼았다 · #Q101).
+  const body = 구간(readSrc('엔진_폼리포트.js'), 'function previewOneReportCard(', '\n}\n');
+  assert.ok(body.includes('previewOneReportCard'), '엉뚱한 구간을 잘랐다');
   assert.ok(body.includes('createFile('), '주석 제거가 코드까지 지웠다 — 이 검사가 빈 문자열을 통과시킨다');
   assert.ok(!body.includes('setSharing'), 'previewOneReportCard 본문에 setSharing이 돌아왔다');
   assert.ok(!body.includes('lh3.googleusercontent.com'), '본문이 공개 lh3 URL을 다시 만든다');

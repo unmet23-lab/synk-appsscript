@@ -16,7 +16,7 @@ const path = require('node:path');
 
 const { ROOT, engineSource } = require('./_engine-source');
 /* 주석 제거 통로는 공용 하나다 — `tests/lib/소스검사.js` (F401 계열 · 대기열 P3 줄73). */
-const { 코드만 } = require('./lib/소스검사.js');
+const { 코드만, 구간, 파일소스 } = require('./lib/소스검사.js');
 /* 줄끝 표기 정규화는 **`_engine-source` 이음매가 진다** — 여기서 다시 접지 않는다(F526 ㉠).
  * 08-03 실측: 리베이스 직후 이 파일의 9건이 「섹션 끝 표식을 찾지 못함」으로 한꺼번에 죽었다(CRLF) —
  * 코드는 멀쩡한데 테스트만 죽는 형태라, 원인을 모르면 진짜 결함을 찾아 헤매게 된다.
@@ -821,18 +821,20 @@ test('[v9.175] 조준이 상수다 — 소유자·저장소·경로·브랜치�
 });
 
 test('[v9.175] 자동 배치에 넣지 않는다 — 바깥으로 나가는 쓰기는 사람이 누를 때만 돈다', () => {
-  const 셋업 = fs.readFileSync(path.join(ROOT, '엔진_셋업확장.js'), 'utf8').replace(/\r\n/g, '\n');
+  /* 🔑 이 시험이 #Q101 의 「부정 단언 뒤집힘」 실물이다: 옛 판은 손 접기(CRLF 축만) + 손 자르기라,
+   *   줄 끝에 공백 한 칸만 들어가도 `indexOf('\n}\n')` 이 -1 → `slice(i, -1)` 로 **파일 나머지 전부**가
+   *   본문이 됐다. 그러면 「배치에 pushGoldenFixture_ 가 없다」가 파일 어딘가의 정의 때문에 뒤집혀
+   *   빨개진다. 접기·자르기 둘 다 이음매(`구간()`)가 진다 — 못 찾으면 조용히 넘기지 않고 던진다. */
+  const 셋업 = 파일소스(path.join(ROOT, '엔진_셋업확장.js'));
   for (const 배치 of ['morningJobs', 'nightJobs', 'weeklyJobs', 'monthlyJobs']) {
-    const i = 셋업.indexOf(`function ${배치}(`);
-    if (i === -1) continue;
-    const 본문 = 셋업.slice(i, 셋업.indexOf('\n}\n', i));
-    assert.equal(/pushGoldenFixture_|menuPushGolden/.test(코드만(본문)), false,
+    if (셋업.indexOf(`function ${배치}(`) === -1) continue;
+    assert.equal(/pushGoldenFixture_|menuPushGolden/.test(구간(셋업, `function ${배치}(`, '\n}\n')), false,
       `${배치}가 픽스처를 자동 전송한다 — 비가역 외부 쓰기가 승인 없이 도는 경로가 생긴다`);
   }
 });
 
 test('[v9.175] 메뉴에 등록돼 있다 — 만들어도 안 불리면 없는 것이다', () => {
-  const 셋업 = fs.readFileSync(path.join(ROOT, '엔진_셋업확장.js'), 'utf8').replace(/\r\n/g, '\n');
+  const 셋업 = 파일소스(path.join(ROOT, '엔진_셋업확장.js'));
   assert.ok(/function menuPushGolden\(\)\s*\{\s*menuRun_\(pushGoldenFixture_\);/.test(셋업), '메뉴 래퍼가 없다');
   assert.ok(/addItem\('[^']*SYNK-talk[^']*', 'menuPushGolden'\)/.test(셋업),
     'onOpen 메뉴에 항목이 없다 — 함수는 있는데 누를 자리가 없다(등록층 누락)');
@@ -847,8 +849,8 @@ test('[v9.175] 메뉴에 등록돼 있다 — 만들어도 안 불리면 없는 
  *   ⚠ 검사 축이 「정의가 살아 있는 것」인 이유 — 대체된 구판(`migrateConsentV185`)은 주석에만
  *   남고 정의가 지워진다. 주석만 보고 요구하면 **버그가 아직 있을 것을 요구하는 회귀**가 된다. */
 test('[2026-08-07] ▶ 표기는 메뉴가 실행 경로다 — 편집기 드롭다운은 비개발자에게 경로가 아니다', () => {
-  const 셋업 = fs.readFileSync(path.join(ROOT, '엔진_셋업확장.js'), 'utf8').replace(/\r\n/g, '\n');
-  const code = fs.readFileSync(path.join(ROOT, 'Code.js'), 'utf8').replace(/\r\n/g, '\n');
+  const 셋업 = 파일소스(path.join(ROOT, '엔진_셋업확장.js'));
+  const code = 파일소스(path.join(ROOT, 'Code.js'));
   const 손실행 = [...new Set([...code.matchAll(/([a-zA-Z_][a-zA-Z0-9_]*)\(▶/g)].map((m) => m[1]))];
   assert.ok(손실행.length >= 3, `Code.js 의 (▶ 표기를 못 찾았다 — 표기가 바뀌었으면 이 검사부터 고친다(현재 ${손실행.length}건)`);
 
