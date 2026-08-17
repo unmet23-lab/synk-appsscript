@@ -2403,6 +2403,89 @@ function 오류뱅크포이즌_(연속실패, 전진폭) {
   return { 전진: false, 카운터: n };
 }
 
+/* [v9.247 · #Q99] 문항 라벨 — 「무엇을」 틀렸나를 한 조각으로 줄인다.
+ * 유형(quiz_log 4열)은 contents 의 **분류**(문법 카테고리)라 가장 짧고 정확한 라벨이다.
+ * ⚠ 그런데 **개인 퀴즈는 유형이 전부 '개인퀴즈'**다(엔진_수집.js `quizSweep_` 의 qMap AIQ 가지가
+ *   `cat: '개인퀴즈'` 를 박는다). 그대로 세면 「개인퀴즈 ×5」라는, 맞는 얼굴로 아무것도 안 말하는
+ *   라벨이 나온다 — 그리고 카드가 개인 퀴즈를 **우선** 띄우므로(Code.js `pq ? pq.q : q[0]`)
+ *   활동 중인 학생의 응답은 대부분 이쪽이다. 즉 유형만 믿으면 재료가 통째로 무의미해진다.
+ *   그 경우엔 문제 원문의 앞머리를 쓴다(문항 스냅샷은 quizSweep_ 이 이미 행에 박아 둔다). */
+function 퀴즈라벨_(유형, 문제) {
+  const t = String(유형 || '').trim();
+  if (t && t !== '개인퀴즈') return t.slice(0, 12);
+  const q = String(문제 || '').trim().replace(/\s+/g, ' ');
+  return q ? q.slice(0, 24) : '';
+}
+
+/* [v9.247 · #Q99] 🔁 지난 퀴즈 되읽기 — 개인 퀴즈 출제가 **자기 결과**를 재료로 받는다.
+ * 시트층 도달 장부(`엔진_셋업확장.js` `수집도달_`)에서 `quiz_log` 는 「읽는 곳이 진단 리포트뿐」이었다.
+ * 매일 약점으로 문제를 내면서 그 답이 맞았는지를 한 번도 안 돌려받았다 — 출제 → 응답 → **재출제**의
+ * 마지막 칸이 비어 있었고, 그래서 엔진은 자기 개입이 먹혔는지 원리상 알 수 없었다.
+ *
+ * ■ 축이 둘인 이유 — 하나는 원신호(hw_feedback)가 **구조적으로 못 보는 것**이다
+ *   ㉠ 오답 — 낸 문제를 틀렸다. 재출제 재료.
+ *   ㉡ **찍어서 맞힘**(정답 + 확신도 '찍었어요') — 다른 어느 층에서도 이 학생은 「맞은 학생」이다.
+ *      첨삭은 제출한 글만 보므로 이 축이 아예 없다. 확신도가 quiz_log 에서 가장 값비싼 열인
+ *      이유가 이것이고(엔진_수집.js `퀴즈응답포인트_` ①), 정답에도 포인트를 주는 설계가 이 축을
+ *      살려 둔 대가다 — 살려 둔 값을 여기서 처음 쓴다.
+ *   ⚠ '판정보류'는 **어느 축에도 안 넣는다**(`quizGrade_` 의 세 갈래 원칙 — 모르는 것과 틀린 것은
+ *      다르다). 보류를 오답으로 뭉개면 정답 미등록 문항이 영원한 약점으로 둔갑한다.
+ *
+ * ■ 창은 14일 — `aiWeakMap_` 과 같다(한 재료에 창 하나. 갈리면 「최근」이 자리마다 다른 뜻이 된다).
+ * ■ 왜 `aiWeakMap_` 에 합류시키지 않았나 — 그 배열은 소비처 셋이 `slice(-2)`·`slice(-1)` 로 집어
+ *   항목을 늘리면 **강사 손메모가 밀려난다**(v9.209 가 태그를 꼬리로만 실은 이유). 그리고 이 재료의
+ *   과녁은 개인 퀴즈 출제 한 곳이지 반 브리핑·연습 노트가 아니다.
+ *
+ * ■ 대가 (지침 신뢰성 맹점④)
+ *   · 틀릴 때의 모습 = **조용히 적은 재료**. 문항 스냅샷이 빈 행(ai_daily 가 이틀 넘게 지연된 응답을
+ *     못 채우는 자리 — `quizSweep_` 이 스스로 적어 둔 한계)은 라벨을 못 만들어 빠지는데, 겉으로는
+ *     그냥 「재료 없음」과 같은 모양이다. → 그래서 버린 행 수를 세어 함께 돌려주고 호출부가 로그에 적는다.
+ *   · 닫을 것 = 한 학생 재료를 **70자로 못박는다**. 재료가 늘어도 배치 프롬프트 토큰이 안 는다.
+ *   · 새 시트·새 배치·새 속성 0 — 이미 쌓이는 탭을 읽기만 한다. */
+function 퀴즈오답맵_(ss) {
+  const 맵 = {};
+  let 버린행 = 0;
+  const ql = ss.getSheetByName('quiz_log');
+  if (!ql || ql.getLastRow() < 2) return { 맵: 맵, 버린행: 0 };
+  /* 폭은 시트 물리 폭으로 클램프한다 — 구 시트(11열)에서 13열을 요구하면 예외가 나고,
+   *   그러면 이 재료가 아니라 ① 절 전체가 죽는다(v9.209 의 1710 교훈과 같은 자리).
+   * ⚠ 이 한 줄은 **흉내로는 못 재는 자리**다(시트흉내 계약 ⑥은 요청한 폭을 늘 채워 준다) —
+   *   라이브 Range 만 던진다. 변이로 증명 못 하는 줄이라 여기 적어 둔다(초록의 근거가 아니다).
+   *   폭이 모자라 제출일 칸이 없으면 아래 날짜 게이트가 그 행을 통째로 버린다 — 별도 분기 불필요. */
+  const w = Math.min(QUIZ_LOG_HEADERS.length, ql.getLastColumn());
+  const cut = Date.now() - 14 * 86400000;
+  const agg = {}; // 학생 → 라벨 → { 오답, 찍맞, t }
+  ql.getRange(2, 1, ql.getLastRow() - 1, w).getValues().forEach(r => {
+    const sid = String(r[1] || '').trim();
+    if (!sid) return;
+    const 판정 = String(r[7] || '').trim();
+    /* 🔑 문구를 리터럴로 다시 적지 않는다 — 폼 3택의 정본은 `QUIZ_LOG_HEADERS` 옆 `QUIZ_CONFIDENCE`
+     *   하나다. 두 곳에 적으면 갈라지고, 갈라진 쪽은 **조용히 아무것도 안 고른다**(축이 죽어도 초록). */
+    const 찍맞 = 판정 === '정답' && String(r[8] || '').trim() === QUIZ_CONFIDENCE[QUIZ_CONFIDENCE.length - 1];
+    if (판정 !== '오답' && !찍맞) return;
+    const d = toDate_(r[9]) || (r[10] instanceof Date ? r[10] : null);
+    if (!d || d.getTime() < cut) return;
+    const 라벨 = 퀴즈라벨_(r[3], r[4]);
+    if (!라벨) { 버린행++; return; } // 문항 스냅샷이 빈 행 — 세지 않으면 이 손실이 안 보인다
+    const g = (agg[sid] = agg[sid] || {});
+    const e = g[라벨] = g[라벨] || { 오답: 0, 찍맞: 0, t: 0 };
+    if (판정 === '오답') e.오답++; else e.찍맞++;
+    if (d.getTime() > e.t) e.t = d.getTime();
+  });
+  Object.keys(agg).forEach(sid => {
+    const g = agg[sid];
+    const 순 = Object.keys(g).sort((a, b) =>
+      ((g[b].오답 + g[b].찍맞) - (g[a].오답 + g[a].찍맞)) || (g[b].t - g[a].t)); // 반복 많은 것 먼저, 같으면 최근
+    const 틀림 = 순.filter(k => g[k].오답).slice(0, 2).map(k => k + (g[k].오답 > 1 ? ' ×' + g[k].오답 : ''));
+    const 찍음 = 순.filter(k => g[k].찍맞).slice(0, 1);
+    const 조각 = [];
+    if (틀림.length) 조각.push('틀림 ' + 틀림.join(' · '));
+    if (찍음.length) 조각.push('찍어서 맞힘 ' + 찍음.join(' · '));
+    if (조각.length) 맵[sid] = 조각.join(' | ').slice(0, 70);
+  });
+  return { 맵: 맵, 버린행: 버린행 };
+}
+
 // ── 야간 오케스트레이터: H1 한 문장 + A1/A2/A4 개인 퀴즈 + G 오류사전 + H5 반 브리핑 + E5 리텐션 멘트 ──
 function aiStudioBatch_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -2450,6 +2533,15 @@ function aiStudioBatch_() {
   try {
     const stus = stusAll_().filter(s => !doneToday[s.id]);
     const weak = weakAll_();
+    /* [v9.247 · #Q99] 지난 퀴즈 되읽기 — 출제 → 응답 → **재출제**의 마지막 칸(위 `퀴즈오답맵_`).
+     *   ① 절에서만 부른다: 이 재료의 과녁은 개인 퀴즈 한 곳이고, ③반브리핑·연습노트는 안 건드린다. */
+    const 지난퀴즈 = 퀴즈오답맵_(ss);
+    /* 0 은 분모와 함께 읽는다(유호 확정 08-14) — 안 그러면 「지난 퀴즈로 재출제한다」가
+     *   재료를 받은 학생 0명이어도 참이 된다. 버린 행은 위 «조용한 손실»을 드러내는 자리다. */
+    Logger.log('개인 퀴즈 재출제 재료: 대상 ' + stus.length + '명 = 지난 퀴즈 있는 '
+      + stus.filter(s => 지난퀴즈.맵[s.id]).length + '명 + 없는 '
+      + stus.filter(s => !지난퀴즈.맵[s.id]).length + '명'
+      + (지난퀴즈.버린행 ? ' · 문항 스냅샷이 비어 버린 행 ' + 지난퀴즈.버린행 + '건' : ''));
     const schema = {
       type: 'object', additionalProperties: false, required: ['items'],
       properties: { items: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['i', 's', 'q', 'a'], properties: {
@@ -2475,16 +2567,23 @@ function aiStudioBatch_() {
       const userMsg = chunk.map((s, i) => {
         const fv = s.fav || s.taste, gl = s.dream || s.cGoal || s.vision;
         const wk = (weak[s.id] || []).slice(-2).join(' / ') || (s.pain ? '입학 자기보고: ' + s.pain.slice(0, 40) : '기록 없음');
+        // [v9.247 · #Q99] 별도 칸으로 싣는다 — 약점 칸에 합치면 slice(-2)가 강사 손메모를 밀어낸다
+        const qz = 지난퀴즈.맵[s.id] || '';
         // [v9.206] 이름은 싣지 않는다(방향 불변식 4) — 매칭은 인덱스 i가 지고, 산출 칸(s·q·a)에 이름 자리가 없다
         return i + '. 급수 ' + (s.lv || '미정') +
           ' | 약점: ' + wk +
+          (qz ? ' | 지난 퀴즈: ' + qz : '') +
           (fv ? ' | 최애: ' + fv.slice(0, 40) : '') + (gl ? ' | 목표: ' + gl.slice(0, 30) : '');
       }).join('\n');
       try {
         calls++;
         const out = aiCall_(apiKey,
           'SYNK LAB(몽골 울란바토르, 뇌과학 기반 게임화 한국어 학원)의 개인화 튜터. 학생마다 오늘의 한 문장(응원+미니미션)과 약점 기반 퀴즈 1문제를 만든다. ' +
-          '약점이 있으면 반드시 그 문법을 쓰고, 최애(아이돌·게임)가 있으면 예문 소재로 자연스럽게 쓴다(사실 주장 금지 — 가상 서술만). 따뜻하되 과장 없는 반말 응원 톤.',
+          '약점이 있으면 반드시 그 문법을 쓰고, 최애(아이돌·게임)가 있으면 예문 소재로 자연스럽게 쓴다(사실 주장 금지 — 가상 서술만). 따뜻하되 과장 없는 반말 응원 톤. ' +
+          /* [v9.247 · #Q99] 재출제 지시 — 재료만 실으면 모델이 무시할 수 있다. 「찍어서 맞힘」을 따로 말해 주는
+           *   이유: 그 학생은 채점상 «맞은 학생»이라, 지시가 없으면 모델이 굳이 다시 낼 이유를 못 찾는다. */
+          '「지난 퀴즈」가 실려 있으면 그 문법을 다시 낸다 — 같은 문제를 그대로 베끼지 말고 같은 문법의 새 문제로. ' +
+          '「찍어서 맞힘」은 맞았어도 아직 모르는 것이니 틀린 것과 똑같이 다시 낸다.',
           '학생 목록:\n' + userMsg, schema, 8096);
         const rowsN = [];
         (out.items || []).forEach(it => {
