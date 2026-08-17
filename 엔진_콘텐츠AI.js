@@ -2578,7 +2578,11 @@ function 성취맵_(ss) {
   let 거른행 = 0;
   const ach = ss.getSheetByName('achievements');
   if (!ach || ach.getLastRow() < 2) return { 맵: 맵, 거른행: 0 };
-  const w = Math.min(4, ach.getLastColumn()); // 폭 클램프 — 위 「닫을 것」
+  /* 폭 클램프 — 위 「닫을 것」. ⚠ **흉내로는 못 재는 자리다**(`퀴즈오답맵_` 의 같은 줄과 같은 성질):
+   *   시트흉내 계약 ⑥ 은 «요청한 폭»을 늘 채워 주므로, 이 `Math.min` 을 지워도 회귀는 초록이다
+   *   (실측 — 변이 ⑥ 이 구멍으로 남았다). 던지는 것은 라이브 Range 뿐이다. **초록의 근거가
+   *   아니라서 여기 적어 둔다** — 이 줄을 지우면 구 시트에서 ① 절 전체가 그날 밤 안 돈다. */
+  const w = Math.min(4, ach.getLastColumn());
   if (w < 3) return { 맵: 맵, 거른행: 0 };    // 등급 칸이 없으면 히든을 못 가른다
   const 금지 = {};
   순위파생업적_().forEach(n => { 금지[n] = 1; });
