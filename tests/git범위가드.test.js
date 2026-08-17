@@ -16,6 +16,11 @@ const { ROOT } = require('./_engine-source');
 
 // SYNK_TEST_SCOPE_HOOK = 변이 실험용 이음매(스크린샷예산의 SYNK_TEST_HOOK 과 같은 목적, 이름만 분리 —
 // 한 변수를 두 훅이 나눠 쓰면 test-ci 가 전체를 돌릴 때 한쪽 변이가 다른 쪽에 새어 든다).
+// 🔴 격리 사본은 **`.claude/hooks/` 를 통째로** 복사해서 만든다 — 파일 하나만 임시폴더에 두면
+//    이 훅이 깊은 경로에서 지연 require 하는 `lib/handoff-store.js` 가 안 잡힌다. 그때 증상은
+//    「그 검사들만 빨감」이라 **변이 결과로 오독하기 쉽다**(실측 2026-08-18 · F590 트랙에서 기준선 적색
+//    2건 → 사유가 `Cannot find module …\lib\handoff-store.js` 였다. 변이 통로가 「기준선이 이미 적색」
+//    으로 멈춰 세워 준 덕에 그 판의 숫자를 안 믿었다 — 그게 그 게이트의 값이다).
 const HOOK = process.env.SYNK_TEST_SCOPE_HOOK || path.join(ROOT, '.claude', 'hooks', 'git-scope-guard.js');
 
 /* [2026-08-04] 가드가 **저장소 상태**(진행 중인 rebase·미커밋 수정)를 보게 되면서
@@ -208,6 +213,56 @@ test('진행 중이어도 커밋이 아닌 명령·의식적 우회는 통과한
   });
 });
 
+/* ── F573: 서브커맨드 «이름의 끝» — `-` 는 낱말 경계다 (2026-08-17 실측) ────────────
+ * 실사고: ④의 `merge\b` 가 `git merge-base --is-ancestor` 를 deny 했다. 그건 커밋을 만들 수
+ *   없는 **읽기 전용 조회**이고, 하필 인계문·F566 계열이 「착지 확인에 쓰라」고 지목하는 명령이다
+ *   — 가드가 자기 처방의 확인 통로를 막았다(F103 형태).
+ * 🔑 이 검사가 재는 것은 규칙 하나가 아니라 **성질**이다: 어떤 규칙도 서브커맨드 이름을
+ *   반토막 내 읽지 않는다. 새 규칙이 `\b` 로 다시 적으면 여기서 빨개진다.
+ * ⚠ 분모를 같은 test 안에 둔다 — 목록만 줄여서 초록을 만들 수 없게(F207). 대시 없는 형태
+ *   (`git merge other`)는 계속 차단이어야 하고, 그게 깨지면 경계가 탐지력을 먹은 것이다. */
+const 대시서브커맨드 = [
+  // git help -a 실측(2026-08-17) — 위 동사 목록과 접두가 겹치는 실존 서브커맨드 전량
+  'git merge-base --is-ancestor HEAD HEAD',
+  'git merge-tree HEAD HEAD',
+  'git merge-file a.md b.md c.md',
+  'git merge-index cat a.md',
+  'git merge-one-file',
+  'git commit-tree HEAD^{tree} -m x',
+  'git commit-graph verify',
+  'git checkout-index a.md',
+];
+
+test('F573 대시 서브커맨드를 커밋 생성으로 읽지 않는다 — 읽기 전용 조회가 막히면 확인 통로가 사라진다', () => {
+  임시저장소('MERGE_HEAD', (dir) => {
+    assert.equal(대시서브커맨드.length, 8, '분모가 바뀌었다 — 목록을 줄여 초록을 만든 것이 아닌지 본다');
+    대시서브커맨드.forEach((c) => {
+      const r = 가드_at(c, dir);
+      assert.equal(r.차단, false, `대시 서브커맨드를 막았다(이름을 반토막 읽었다): ${c}\n사유: ${r.사유}`);
+    });
+    /* 대시가 아니라 **붙은** 이름도 같은 축이다 — `mergetool` 은 하필 충돌을 푸는 그 명령이라,
+     * 경계를 `(?!-)` 로 좁혀 적으면 여기가 막힌다(옛 `\b` 에서는 우연히 안 막혔다). */
+    ['git mergetool', 'git mergetool --tool=vimdiff'].forEach((c) => {
+      assert.equal(가드_at(c, dir).차단, false, `충돌 해소 통로를 막았다: ${c}`);
+    });
+    // 분모 — 이 둘이 통과하면 경계가 탐지력을 먹었다는 뜻이고, 위 초록은 전부 의미가 없다
+    assert.ok(가드_at('git merge other', dir).차단, 'merge 진행 중 새 머지를 막지 못했다 — 경계가 규칙을 죽였다');
+    assert.ok(가드_at('git commit -m "x" -- a.md', dir).차단, 'F038 원형을 막지 못했다 — 경계가 규칙을 죽였다');
+  });
+});
+
+test('F573 규칙들이 서브커맨드 끝을 `\\b` 로 적지 않는다 — 옛 통로를 소스에서 금지한다', () => {
+  /* HOOK 을 읽는다(ROOT 고정 경로가 아니라) — 변이는 `SYNK_TEST_SCOPE_HOOK` 으로 격리 사본을 물리므로
+   * 고정 경로를 읽으면 이 검사만 원본을 보고 초록이 되어 변이가 조용히 통과한다(F207 계열). */
+  const 소스 = fs.readFileSync(HOOK, 'utf8');
+  assert.match(소스, /const 끝 = '\(\?!\[-/, '공용 경계 상수 `끝` 이 없다 — 호출부마다 적으면 또 갈라진다');
+  /* `re('<동사>\\b` 형태만 잡는다 — 동사 «뒤»가 아니라 플래그 뒤의 `\b`(`\s--hard\b`)는 정당하다. */
+  const 샌자리 = [...소스.matchAll(/re\('(\([a-z|-]+\)|[a-z-]+)\\\\b/g)].map((m) => m[1]);
+  assert.deepEqual(샌자리, [],
+    `서브커맨드 바로 뒤에 \\b 를 쓴 자리가 남았다(대시 이름을 반토막 읽는다): ${샌자리.join(' · ')}\n`
+    + '→ `re(\'add\' + 끝 + …)` 형태로 적는다.');
+});
+
 test('저장소 밖에서도 훅이 죽지 않는다 — 가드가 터지면 모든 Bash가 막힌다', () => {
   const dir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'no-git-'));
   try {
@@ -248,6 +303,80 @@ test('트리가 깨끗하면 되감기는 통과한다 (정당한 abort를 막�
   임시저장소(null, (dir) => {
     ['git rebase --abort', 'git reset --hard', 'git checkout -- .'].forEach((c) => {
       assert.equal(가드_at(c, dir).차단, false, '깨끗한 트리인데 막았다: ' + c);
+    });
+  });
+});
+
+/* ── F590: ⑤의 축은 «표기»가 아니라 «행위»다 (2026-08-18 실측) ────────────────────
+ * 옛 판정은 `(checkout|restore)…\s--\s+\.` 하나였다 — 즉 「`-- .` 라고 쓴 것」만 봤다.
+ * 격리 픽스처로 실훅에 태워 보니 **소멸형 16건 중 막힌 것 5 · 구멍 11**이었고, 그 구멍에
+ * `git checkout .` 과 `git restore .` 이 들어 있었다. 둘은 git 이 스스로 권하는 가장 흔한 표기이고,
+ * `.claude/settings.local.json` 허용목록의 `Bash(git checkout *)`·`Bash(git restore *)` 에 걸려
+ * **권한 프롬프트도 없이** 돈다 — F037(옆 세션 미커밋 2파일 소멸)이 그대로 열려 있었다.
+ * 🔑 F590 신고분(`checkout-index -a -f`)은 그 11 중 하나다. 신고문의 판정 기준은 「그 한 명령의
+ *   실사용이 0이면 안 닫는다」였고 실사용 0은 참이었지만(`git log -S` 전량 = 장부·주석·픽스처뿐),
+ *   **분모가 명령이 아니라 행위 부류**였다. 부류로 세면 답이 뒤집힌다.
+ * ⚠ 분모를 같은 test 안에 둔다 — 목록을 줄여 초록을 만들 수 없게(F207). */
+const 소멸형 = [
+  'git reset --hard', 'git reset --hard origin/master',        // 옛 규칙 (살아 있나)
+  'git checkout -- .', 'git restore -- .', 'git checkout HEAD -- .',
+  'git checkout .', 'git restore .',                            // ← 가장 흔한 표기가 새던 자리
+  'git restore --worktree .', 'git restore --source=HEAD --staged --worktree .',
+  'git checkout -f', 'git checkout --force master',
+  'git switch -f master', 'git switch --discard-changes master',
+  'git checkout-index -a -f', 'git checkout-index --all --force',  // ← F590 신고분
+  'git read-tree -u --reset HEAD',
+];
+
+test('🔴 F590 작업본을 통째로 덮어쓰는 형태를 «행위»로 막는다 — 표기만 보면 11칸이 샌다', () => {
+  더러운저장소((dir) => {
+    assert.equal(소멸형.length, 16, '분모가 바뀌었다 — 목록을 줄여 초록을 만든 것이 아닌지 본다');
+    소멸형.forEach((c) => {
+      const r = 가드_at(c, dir);
+      assert.ok(r.차단, `작업본을 덮어쓰는데 통과했다(남의 미커밋이 소멸한다): ${c}`);
+      assert.ok(/미커밋/.test(r.사유), '차단 사유에 원리가 없다: ' + c);
+      assert.ok(/a\.md/.test(r.사유), '무엇이 사라질지 안 보여준다 — 그러면 판단할 수 없다: ' + c);
+    });
+  });
+});
+
+/* 과잉 차단은 BYPASS 를 습관으로 만든다(2026-08-01 clasp-guard 실사고: 사고를 **문서화하는** 커밋이
+ * 막혔다). 그래서 「통과해야 하는 목록」을 같은 무게로 검사한다 — 특히 세 부류:
+ *   ⓐ 커밋 메시지에 그 명령을 «적기만» 한 것  ⓑ 경로를 지정한 정당한 통로  ⓒ 인덱스만 되돌리는 것 */
+test('🔴 F590 넓힌 판정이 정당한 통로를 안 막는다 — 과잉 차단은 우회를 가르친다', () => {
+  더러운저장소((dir) => {
+    [
+      // ⓐ 적기만 한 것 (실행되지 않는 텍스트)
+      'git commit -m "docs: 마찰 F590 — git checkout . 이 구멍이었다" -- docs/x.md',
+      'git commit -m \'fix: git checkout-index -a -f 도 같은 부류\' -- docs/y.md',
+      // ⓑ 경로 지정 — 범위를 사람이 골랐다(①③⑤가 공유하는 원칙)
+      'git checkout -- a.md', 'git checkout HEAD -- a.md', 'git checkout-index a.md',
+      // ⓒ 인덱스만 — 작업본 내용은 남는다(잃을 것이 없다)
+      'git restore --staged .', 'git restore --cached .', 'git read-tree HEAD',
+      // ⓓ 트리를 안 건드리는 것
+      'git checkout -b feature/새것', 'git switch -c feature/새것', 'git switch master',
+      // ⓔ `--force` 오탐 — 이건 ⑥의 자리이지 ⑤가 아니다
+      'git push --force-with-lease origin master',
+      /* ⓕ 🔑 강제꼴의 «경계»를 재는 유일한 실물 — `-C` 의 긴 이름이다(진짜 플래그다).
+       *   가지를 강제로 다시 만들 뿐 작업본 수정은 그대로 들고 간다 → 통과가 정답.
+       *   경계를 `끝` 대신 `\b` 로 적으면 `--force` 뒤의 `-` 가 낱말 경계라 여기가 막힌다(F573 그 형태).
+       *   변이 ⑦이 이 줄 없이는 구멍이었다 — 이 한 줄이 그 자리를 실제 명령으로 못박는다. */
+      'git switch --force-create feature/새것',
+    ].forEach((c) => {
+      const r = 가드_at(c, dir);
+      assert.ok(!/되감기 차단/.test(r.사유), `⑤가 정당한 통로를 막았다: ${c}\n사유: ${r.사유}`);
+    });
+    // 분모 — 이 둘이 통과하면 위 초록은 「규칙이 죽었다」는 뜻이라 전부 의미가 없다
+    assert.ok(가드_at('git checkout .', dir).차단, '탐지력이 죽었다 — 예외가 규칙을 먹었다');
+    assert.ok(가드_at('git restore --staged --worktree .', dir).차단,
+      '`--staged` 예외가 `--worktree` 까지 풀어 줬다 — 그 조합은 작업본을 덮는다');
+  });
+});
+
+test('🔴 F590 깨끗한 트리에서는 넓힌 형태도 전부 통과한다 (잃을 것이 없으면 조용하다)', () => {
+  임시저장소(null, (dir) => {
+    소멸형.forEach((c) => {
+      assert.equal(가드_at(c, dir).차단, false, `깨끗한 트리인데 막았다 — BYPASS 를 가르친다: ${c}`);
     });
   });
 });
