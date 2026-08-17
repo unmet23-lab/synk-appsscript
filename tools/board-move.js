@@ -84,13 +84,30 @@ const rowsIn = (text) => text.split(/\r?\n/).filter(isRow);
 /* 「줄을 뺀 뒤 남은 게 상투구뿐인가」도 `tools/lib/보드.js` 하나에서 온다 — 같은 판정을
  * **이미 쌓인 것**에도 쓰는 `tools/보드껍데기정리.js` 가 있어서다(사연·판정 근거는 그 파일 머리말). */
 const 껍데기인가 = 보드lib.껍데기인가;
-/* 종료 코드는 **계약**이다: 0 옮겼다 · 1 못 옮겼다 · 6 원칙⑥(줄 주인이 아직 살아 있다).
+/* 종료 코드는 **계약**이다: 0 옮겼다 · 1 못 옮겼다 · 6 원칙⑥(줄 주인이 아직 살아 있다) ·
+ * 7 잔재를 닫았다(F572 — 요청한 줄을 «옮긴» 게 아니라 앞선 실행의 미커밋을 담았다).
  * 6 을 따로 판 이유(F278 · 2026-08-09): board-guard 가 「이 처방이 실제로 도는가」를 `--dry` 로
  * 물어보는데, 1 하나로는 **「board-move 가 거절했다」와 「board-move 가 아예 못 돌았다」**(아카이브
  * 없음·저장소 아님·경로 어긋남)를 못 가른다. 못 가르면 환경 고장이 「옮길 게 없다」로 읽혀
  * 상한이 조용히 풀린다 — 새는 방향이다. 글자(stderr 문구)로 가르지 않는 이유는 그게 곧
  * 두 번째 정의라서다(문구를 다듬는 순간 판정이 갈라진다). */
 const die = (msg, code) => { console.error('[board-move] ' + msg); process.exit(code || 1); };
+/* 7 = **잔재를 닫았다**(F572 · 아래 `잔재닫기`). 0 과 가르는 이유는 0 이 「요청한 그 줄을 옮겼다」는
+ * 뜻이고 이쪽은 아니기 때문이다 — 뭉치면 호출자(`보드수거`)가 안 옮긴 줄을 「옮김」으로 센다. */
+const 잔재닫음 = 7;
+
+/* git 통로는 **needle 조회보다 위**에 둔다 — 아래 「못 찾았다」 자리에서 이미 git 이 필요하다(F572).
+ * `root`·`rel`·`inRepo` 는 BOARD 가 정해진 뒤에만 뜻이 있어 그 자리에 그대로 남는다. */
+const git = (args, cwd) => spawnSync('git', ['-c', 'core.quotePath=false', ...args], { cwd, encoding: 'utf8' });
+const topOf = (p) => { const r = git(['rev-parse', '--show-toplevel'], path.dirname(p)); return r.status === 0 ? r.stdout.trim() : null; };
+
+/** 다중집합 차집합 — 같은 줄이 두 번 있는 경우를 세면서 뺀다. 한 곳에만 둔다: 아래 `아카이브차분`
+ *  과 `잔재닫기` 가 **같은 재료**로 「무엇이 더해졌나」를 봐야 한다(두 번 재면 갈라진다). */
+const 행빼기 = (a, b) => {
+  const m = new Map();
+  for (const l of b) m.set(l, (m.get(l) || 0) + 1);
+  return a.filter((l) => { const n = m.get(l) || 0; return n ? (m.set(l, n - 1), false) : true; });
+};
 
 const args = process.argv.slice(2);
 const dry = args.includes('--dry');
@@ -142,6 +159,145 @@ if (미완확인 && !미완사유) {
     '  사유는 이관 커밋 메시지에 남는다 — 그게 다음 세션이 이 판정을 되짚는 유일한 재료다.');
 }
 
+/* ── 잔재 닫기 — 「옮김은 끝났고 커밋만 안 됐다」 (F572 · 2026-08-17 실사고) ──────────
+ *
+ * 원칙⑤ 거절문이 내미는 F433 처방(「잔재 줄부터 마저 옮겨라」)이 **실물로 튕겼다.** 이 파일이
+ * 스스로 「남는 사각」이라 적어둔 판이 실재했다: 잔재를 남긴 세션이 **보드 삭제까지 작업본에
+ * 쓰고** 죽으면 그 줄은 보드에 없어서 needle 이 못 찾는다. 그러면 유일한 출구가 못 따를 처방이
+ * 되고, 잠기는 것은 신고자 한 명이 아니라 **보드 정리 전체**다(그날 완료 줄 5건 · 3시간).
+ *
+ * 🔑 **문을 하나 더 달지 않는다** — 처방이 가리키는 그 명령 자신이 이 상태를 알아보게 한다.
+ *   `--잔재닫기` 같은 손잡이는 머리말이 이미 기각한 모양이고(「탈출구가 곧 우회다」), 무엇보다
+ *   **아는 사람만 쓸 수 있는 출구는 없는 것과 같다**(F433 이 그 교훈으로 태어났다).
+ *
+ * 🔑 게이트는 **주인의 생사가 아니라 차분의 «모양»**이다. 여기서 재는 것은 「이 커밋이 남의
+ *   것을 실어가나」이고, 그건 diff 를 보면 끝난다 — 원칙⑥(산 주인)은 «지금 옮겨도 되는 줄인가»를
+ *   묻는 다른 질문이고, 이 자리엔 옮길 줄이 아예 없다(이미 옮겨져 있다). 모양 검사가 생사보다
+ *   **더 세다**: 죽은 세션도 보드 파일에 딴 편집을 남길 수 있고, 그걸 실어가면 그게 F073 이다.
+ *
+ * ⚠ **틀릴 때의 모습**: 게이트가 새면 남의 보드 편집이 내 커밋에 실린다. 그래서 셋 다 요구한다 —
+ *   ①아카이브에서 **빠진** 행 0(장부유실 방향이면 손을 안 댄다) ②needle 이 더해진 행 **정확히
+ *   1줄**에 걸린다 ③함께 담을 보드 파일의 차분이 **그 행들의 삭제뿐**(추가 0·다른 삭제 0).
+ *   하나라도 어긋나면 아무것도 쓰지 않고 무엇이 걸렸는지 이름을 댄다.
+ * ⚠ 아카이브를 커밋하면 그 파일의 **더해진 행 전부**가 실린다 — 그래서 ③은 needle 이 걸린 행
+ *   하나가 아니라 **더해진 행 전부**에 대해 본다. 「한 줄만 닫는다」는 원리상 불가능하다.
+ * ⚠ 보드 줄이 **아직 남아 있는** 잔재 행은 그대로 둔다 — 아카이브만 커밋되고 보드에 줄이 남은
+ *   상태는 F102 가 «유실 대신 중복»으로 일부러 고른 쪽이다. 다만 **조용히 두지 않고** 보고한다.
+ */
+/** @returns {null | {닫을행들:string[], 보드파일들:string[], 남는중복:string[]}} 못 닫을 이유는 `사유` 로. */
+function 잔재조사(needle) {
+  const r = topOf(ARCHIVE);
+  if (!r) return { 사유: '저장소 밖이다 — 잔재를 닫을 층이 없다' };
+  const 상대 = (p) => path.relative(r, p).split(path.sep).join('/');
+  const head = git(['show', `HEAD:${상대(ARCHIVE)}`], r);
+  if (head.status !== 0) return { 사유: '아카이브의 HEAD 판을 못 읽었다' };
+
+  const 있던 = rowsIn(head.stdout).map((l) => l.trim());
+  const 지금 = rowsIn(fs.readFileSync(ARCHIVE, 'utf8')).map((l) => l.trim());
+  const 더해진 = 행빼기(지금, 있던);
+  const 지워진 = 행빼기(있던, 지금);
+
+  // ① 장부에서 빠진 행이 있으면 이건 잔재가 아니라 다른 사고다 — 손을 안 댄다.
+  if (지워진.length) return { 사유: `아카이브에서 **빠진** 행이 ${지워진.length}건 있다 — 잔재 닫기가 아니라 장부유실 방향이다` };
+  if (!더해진.length) return null;                                  // 잔재가 없다 = 정말 못 찾은 것
+  // ② needle 이 더해진 행 하나에 걸려야 한다(0=딴 얘기 · 2+=모호).
+  const 걸린것 = 더해진.filter((l) => l.includes(needle));
+  if (걸린것.length !== 1) {
+    return 걸린것.length === 0 ? null
+      : { 사유: `그 문구가 아카이브의 잔재 ${걸린것.length}줄에 걸린다 — 더 구체적인 문구를 달라` };
+  }
+
+  // ③ 함께 담을 보드 파일의 차분이 **그 행들의 삭제뿐**인지 본다.
+  const 폴더 = 보드lib.폴더(ROOT);
+  const 더해진집합 = new Set(더해진);
+  const 보드파일들 = []; const 걸림 = [];
+  const st = git(['status', '--porcelain', '--', 상대(폴더)], r);
+  for (const 줄 of (st.stdout || '').split(/\r?\n/)) {
+    const 경로 = 줄.slice(3).trim().replace(/^"|"$/g, '');
+    if (!경로 || !/\.md$/i.test(경로)) continue;
+    if (줄.startsWith('??')) continue;            // 미추적 보드 파일엔 HEAD 판이 없다 = 삭제가 아니다
+    const 절대 = path.join(r, 경로);
+    const h = git(['show', `HEAD:${경로}`], r);
+    if (h.status !== 0) continue;
+    const 그전 = rowsIn(h.stdout).map((l) => l.trim());
+    const 지금줄 = fs.existsSync(절대) ? rowsIn(fs.readFileSync(절대, 'utf8')).map((l) => l.trim()) : [];
+    const 뺀것 = 행빼기(그전, 지금줄);
+    const 넣은것 = 행빼기(지금줄, 그전);
+    if (!뺀것.length && !넣은것.length) continue;  // 표 줄은 안 바뀌었다(머리말 등만 바뀜) — 안 담는다
+    if (넣은것.length || 뺀것.some((l) => !더해진집합.has(l))) {
+      걸림.push(`${경로} — 추가 ${넣은것.length}줄 · 잔재 아닌 삭제 ${뺀것.filter((l) => !더해진집합.has(l)).length}줄`);
+      continue;
+    }
+    보드파일들.push(경로);
+  }
+  if (걸림.length) {
+    return { 사유: '보드 파일에 **잔재 삭제가 아닌** 변경이 섞여 있다 — 담으면 남의 편집을 실어간다:\n       ' + 걸림.join('\n       ') };
+  }
+
+  /* 보드 줄이 아직 남아 있는 잔재 행 — 담긴 보드 파일들이 지운 것 말고 나머지다. */
+  const 지워진행 = new Set(보드파일들.flatMap((경로) => {
+    const h = git(['show', `HEAD:${경로}`], r);
+    const 그전 = rowsIn(h.stdout).map((l) => l.trim());
+    const 절대 = path.join(r, 경로);
+    const 지금줄 = fs.existsSync(절대) ? rowsIn(fs.readFileSync(절대, 'utf8')).map((l) => l.trim()) : [];
+    return 행빼기(그전, 지금줄);
+  }));
+  return {
+    닫을행들: 더해진,
+    보드파일들,
+    남는중복: 더해진.filter((l) => !지워진행.has(l)),
+    뿌리: r,
+    상대,
+  };
+}
+
+/** 「보드에서 못 찾았다」의 **단 하나의 자리**. 두 곳(파일 고르기 · 그 파일 안 검색)에서 같은
+ *  판정을 내리므로 문구도 잔재 처리도 여기서만 적는다 — 나뉘면 한쪽만 잔재를 알아본다. */
+function 못찾음(needle) {
+  잔재닫기(needle);                                 // 닫았으면 여기서 끝난다(exit 7)
+  die(`보드에서 "${needle}" 가 든 줄을 못 찾았다.`);
+}
+
+/** 잔재를 닫는다. 닫았으면 `process.exit` 로 끝내고, 못 닫으면 **돌아온다**(호출부가 원래 거절문을 낸다). */
+function 잔재닫기(needle) {
+  const j = 잔재조사(needle);
+  if (!j) return;                                  // 잔재 없음 = 조용히 원래 거절문으로
+  if (j.사유) {
+    die(`보드에서 "${needle}" 가 든 줄을 못 찾았다 — 아카이브 잔재도 닫을 수 없다:\n` +
+      `  ${j.사유}\n  **아무것도 쓰지 않았다.**`);
+  }
+  const 목록 = (행들) => 행들.map((l) => '       · ' + l.slice(0, 110)).join('\n');
+  console.log(`[board-move] 그 줄은 **이미 아카이브에 옮겨져 있다** — 남은 것은 «커밋»이다(F572).`);
+  console.log(`  닫을 잔재 ${j.닫을행들.length}줄 · 함께 담을 보드 파일 ${j.보드파일들.length}개`);
+  console.log(목록(j.닫을행들));
+  for (const p of j.보드파일들) console.log(`       ↳ 보드 삭제 동봉: ${p}`);
+  if (j.남는중복.length) {
+    console.log(`  ⚠ 보드 줄이 **아직 남아 있는** 잔재 ${j.남는중복.length}줄 — 아카이브·보드 양쪽에 보이게 남는다(F102 가 유실 대신 고른 쪽):`);
+    console.log(목록(j.남는중복));
+  }
+  if (dry) { console.log('[board-move] --dry — 쓰지 않았다.'); process.exit(0); }
+
+  const c = git(['commit',
+    '-m', `docs: 중단된 board-move 의 원자 커밋을 닫는다 — 잔재 ${j.닫을행들.length}줄 (F572)\n\n` +
+      '옮김은 작업본에서 이미 끝났고 커밋만 안 된 상태였다(주인이 커밋 전에 죽었다).\n' +
+      '이 커밋이 실어가는 것은 아카이브의 더해진 행과 그 행들의 보드 삭제뿐이다 —\n' +
+      '차분 모양으로 못박았다: 아카이브 삭제 0 · 보드 추가 0 · 잔재 아닌 보드 삭제 0.',
+    '--', j.상대(ARCHIVE), ...j.보드파일들], j.뿌리);
+  if (c.status !== 0) {
+    die('잔재를 담는 커밋이 실패했다 — 아무것도 안 바뀌었다(작업본은 그대로다):\n  git: ' +
+      ((c.stderr || '') + (c.stdout || '')).trim().split(/\r?\n/).slice(0, 4).join(' / '));
+  }
+  /* 착지 확인 — 「커밋됐나」는 작업본이 아니라 커밋된 내용으로 판정한다(F071 축). */
+  const 안착 = git(['show', `HEAD:${j.상대(ARCHIVE)}`], j.뿌리);
+  const 담긴것 = 안착.status === 0 ? rowsIn(안착.stdout).map((l) => l.trim()) : [];
+  const 빠진것 = j.닫을행들.filter((l) => !담긴것.includes(l));
+  if (빠진것.length) {
+    die(`커밋은 됐는데 아카이브의 HEAD 판에 ${빠진것.length}줄이 없다 — 이 도구를 먼저 고쳐라:\n` + 목록(빠진것));
+  }
+  console.log(`[board-move] 완료 — 잔재 ${j.닫을행들.length}줄을 **한 커밋**으로 닫았다(F572 · F102 순서 유지).`);
+  process.exit(잔재닫음);
+}
+
 /* 보드 정본은 `docs/_ops/보드/<지문>.md` 의 세션별 파일이다(F250) — 옮길 줄이 **어느 파일**에
  * 있는지부터 가른다. 아래 원칙 ①~⑥(줄끝 실측·아카이브 먼저·산주인 검사·깨끗할 때만 커밋)은
  * 그 파일 하나를 대상으로 그대로 돈다 — 파일이 좁아진 만큼 남의 줄을 건드릴 길이 사라졌다.
@@ -154,7 +310,7 @@ const BOARD = process.env.SYNK_BOARD || (() => {
    * 실측: `fe43f4b4.md:5`(✅종결·주인 사망)이 그 상태로 남아 있었다. */
   const 후보 = [...(보드lib.줄들(ROOT) || []), ...(보드lib.유령들(ROOT) || [])]
     .filter((r) => r.줄.includes(needle));
-  if (!후보.length) die(`보드에서 "${needle}" 가 든 줄을 못 찾았다.`);
+  if (!후보.length) 못찾음(needle);
   const 파일들 = [...new Set(후보.map((r) => r.파일))];
   if (파일들.length > 1) {
     die(`"${needle}" 가 세션 파일 ${파일들.length}개에 걸린다 — 더 구체적인 문구를 달라:\n  ` + 파일들.join('\n  '));
@@ -169,7 +325,7 @@ const archiveEol = eolOf(archiveText);
 
 const boardLines = boardText.split(/\r?\n/);
 const hits = boardLines.map((l, i) => ({ l, i })).filter((x) => isRow(x.l) && x.l.includes(needle));
-if (!hits.length) die(`보드에서 "${needle}" 가 든 줄을 못 찾았다.`);
+if (!hits.length) 못찾음(needle);
 if (hits.length > 1) die(`"${needle}" 가 ${hits.length}줄에 걸린다 — 더 구체적인 문구를 달라:\n  ` +
   hits.map((h) => h.l.slice(0, 80)).join('\n  '));
 
@@ -218,8 +374,7 @@ console.log(`  보드 ${JSON.stringify(boardEol)} · 아카이브 ${JSON.stringi
  * 쓴 뒤에 재면 「내가 만든 더러움」과 「원래 있던 남의 미커밋」이 구분되지 않는다. */
 /* ⚠ `core.quotePath=false` 없으면 git 이 한글 경로를 8진 이스케이프(`"\354\204\270…"`)로 뱉는다.
  * 이 저장소는 경로가 전부 한글이라, 빼면 아래 경고가 **읽을 수 없는 채로** 뜬다(F045 계열: 재는 층이 값을 깨뜨린다). */
-const git = (args, cwd) => spawnSync('git', ['-c', 'core.quotePath=false', ...args], { cwd, encoding: 'utf8' });
-const topOf = (p) => { const r = git(['rev-parse', '--show-toplevel'], path.dirname(p)); return r.status === 0 ? r.stdout.trim() : null; };
+/* `git`·`topOf` 는 위(needle 조회보다 앞)로 올렸다 — 그 자리에서 이미 필요하다(F572). */
 const root = topOf(BOARD);
 const inRepo = !!root && root === topOf(ARCHIVE);
 const rel = (p) => path.relative(root, p).split(path.sep).join('/');
@@ -497,14 +652,10 @@ const boardDirty = inRepo ? dirtyOf(BOARD) : '';
 const 아카이브차분 = () => {
   const r = git(['show', `HEAD:${rel(ARCHIVE)}`], root);
   if (r.status !== 0) return null;
-  const 빼기 = (a, b) => {
-    const m = new Map();
-    for (const l of b) m.set(l, (m.get(l) || 0) + 1);
-    return a.filter((l) => { const n = m.get(l) || 0; return n ? (m.set(l, n - 1), false) : true; });
-  };
+  /* 다중집합 빼기는 위 `행빼기` 하나를 쓴다 — `잔재닫기` 도 같은 재료로 「무엇이 더해졌나」를 본다. */
   const 있던것 = r.stdout.split(/\r?\n/).map((l) => l.trim());
   const 지금것 = archiveText.split(/\r?\n/).map((l) => l.trim());
-  return { 더해진것: 빼기(지금것, 있던것), 지워진것: 빼기(있던것, 지금것) };
+  return { 더해진것: 행빼기(지금것, 있던것), 지워진것: 행빼기(있던것, 지금것) };
 };
 /* **게을리** 부른다(+메모) — 옛 판은 `archiveDirty &&` 뒤에서만 돌았고, 여기서 눈치 없이 앞으로
  * 당기면 아카이브가 깨끗한 평상시 실행마다 `git show` 가 한 번 더 붙는다. 재료를 한 곳으로
@@ -539,9 +690,11 @@ if (archiveDirty && !내잔재뿐()) {
   };
   /* **내 줄은 뺀다** — 잔재에 내 것이 섞여 있어도 막고 있는 것은 «남의» 삽입이다. 안 빼면
    * 「지금 막힌 그 명령을 다시 돌려라」라는 원 없는 처방이 목록에 끼어 진짜 과녁을 가린다.
-   * ⚠ 남는 사각: 잔재 줄의 **보드 줄이 이미 사라진** 경우(손 편집 등)엔 이 명령이 「못 찾았다」로
-   *   튕긴다. F226 실물은 언제나 보드 줄이 남아 있는 모양이라(아카이브 커밋 «전»에 죽는다)
-   *   그쪽을 기본으로 뒀고, 어긋나면 도구가 스스로 큰 소리로 말한다 — 조용히 틀리지 않는다. */
+   * ✅ **그 사각은 닫혔다**(F572 · 2026-08-17). 옛 주석은 「잔재 줄의 보드 줄이 이미 사라진 판에선
+   *   이 명령이 「못 찾았다」로 튕긴다 — F226 실물은 언제나 보드 줄이 남아 있는 모양이라 그쪽을
+   *   기본으로 뒀다」였는데, 그 확률 판단이 **그날 반례를 만났다**(보드 삭제까지 쓰고 죽은 세션).
+   *   이제 아래 명령이 그 상태를 알아보고 **잔재를 닫는다**(`잔재닫기` · 종료 코드 7) — 처방이
+   *   가리키는 명령 «자신»이 도는 쪽으로 고쳤으니 이 문구는 그대로 둔다(문을 하나 더 달지 않는다). */
   const 잔재행들 = ((차분() || {}).더해진것 || []).filter(isRow).filter((l) => l !== row.trim());
   const 죽은잔재 = 잔재행들.filter((l) => !산주인들(l, '').length);
   const 처방 = 잔재행들.length && 죽은잔재.length === 잔재행들.length

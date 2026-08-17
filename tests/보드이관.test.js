@@ -1062,3 +1062,168 @@ test('[F407·자기처방] 사유 없음 거절문이 **내미는 명령을 그�
   assert.equal(r2.status, 0, '거절문이 내민 그 명령이 안 돈다 — 우회가 정상 통로가 된다: ' + r2.stderr);
   assert.ok(read(fx.archive).includes(줄), '처방대로 했는데 아카이브에 안 들어갔다');
 });
+
+/* ── ⑧ 잔재 닫기 — 「옮김은 끝났고 커밋만 안 됐다」 (F572 · 2026-08-17 실사고) ────────────
+ *
+ * 원칙⑤ 거절문이 내미는 F433 처방(「잔재 줄부터 마저 옮겨라」)이 실물로 튕겼다. 잔재를 남긴
+ * 세션이 **보드 삭제까지 작업본에 쓰고** 죽으면 그 줄은 보드에 없어서 needle 이 못 찾는다 —
+ * 이 도구가 스스로 「남는 사각」이라 적어둔 그 판이고, 그날 완료 줄 5건이 3시간 갇혔다.
+ *
+ * ⚠ 여기서 새는 방향은 **「통과」**다: 게이트가 느슨하면 남의 보드 편집이 이 커밋에 실린다(F073).
+ *   그래서 픽스처는 「닫히나」와 **「안 닫혀야 할 때 안 닫히나」를 같은 무게로** 잰다.
+ * 🔑 게이트는 주인의 생사가 아니라 **차분의 모양**이다 — 옮길 줄이 아예 없으니 원칙⑥과 다른
+ *   질문이고, 모양 검사가 더 세다(죽은 세션도 보드 파일에 딴 편집을 남길 수 있다).
+ */
+
+const 잔재줄 = '| 2026-08-05 | **잔재 트랙 병** | z.js | ✅종결 `deadbea7` |';
+/* 문구가 위 줄과 **겹치도록** 지었다(「병」 ⊂ 「병정」) — 모호 게이트를 재려면 겹쳐야 한다. */
+const 잔재줄둘 = '| 2026-08-05 | **잔재 트랙 병정** | v.js | ✅종결 `deadbea7` |';
+const 산줄 = '| 2026-08-05 | **도는 트랙 정** | y.js | ▶작업중 |';
+
+/** 실사고 상태를 그대로 짓는다: 아카이브 +1줄 / 보드 −1줄이 **둘 다 미커밋**.
+ *  ⚠ 이름을 `mk잔재픽스처` 로 하면 **위 F226 픽스처와 충돌한다**(함수 선언은 호이스팅되어 뒤가
+ *    이긴다) — 그 판에서 F226·F433 세 시험이 조용히 내 픽스처를 불러 빨개졌다. 실측으로 밟았다. */
+function mk보드삭제잔재픽스처({ 보드에도남김 = false, 보드에딴편집 = false, 아카이브에서삭제 = false, 둘째잔재 = false } = {}) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'boardmove-f572-'));
+  const 보드폴더 = path.join(dir, 'docs', '_ops', '보드');
+  fs.mkdirSync(보드폴더, { recursive: true });
+  const board = path.join(보드폴더, 'deadbea7.md');
+  const archive = path.join(dir, 'docs', '세션보드_아카이브.md');
+
+  const 머리 = ['<!-- 세션 보드 정본 조각 -->', ''];
+  const 잔재들 = 둘째잔재 ? [잔재줄, 잔재줄둘] : [잔재줄];
+  fs.writeFileSync(board, [...머리, ...잔재들, 산줄, ''].join('\n'), 'utf8');
+  fs.writeFileSync(archive, ['# 아카이브', '', '---', '', '| 2026-08-03 | **옛 트랙** | c.js | 완료 |', ''].join('\r\n'), 'utf8');
+
+  git(dir, 'init', '-q');
+  git(dir, 'config', 'user.email', 'test@synk.local');
+  git(dir, 'config', 'user.name', 'boardmove-test');
+  git(dir, 'config', 'commit.gpgsign', 'false');
+  git(dir, 'add', '-A');
+  git(dir, 'commit', '-q', '-m', 'fixture');
+
+  // ── 여기부터가 「중단된 board-move」의 작업본 상태다 ──
+  const 아카이브줄들 = fs.readFileSync(archive, 'utf8').split('\r\n');
+  const sep = 아카이브줄들.findIndex((l) => /^\s*---\s*$/.test(l));
+  아카이브줄들.splice(sep + 2, 0, ...잔재들);
+  fs.writeFileSync(archive, 아카이브줄들.join('\r\n'), 'utf8');
+
+  if (아카이브에서삭제) {   // 장부유실 방향 — 손을 대면 안 되는 판
+    fs.writeFileSync(archive,
+      fs.readFileSync(archive, 'utf8').replace('| 2026-08-03 | **옛 트랙** | c.js | 완료 |\r\n', ''), 'utf8');
+  }
+  if (!보드에도남김) {      // 보드 삭제까지 이미 작업본에 썼다 = 실사고 그 모양
+    const 남은것 = [...머리,
+      ...(보드에딴편집 ? [산줄, '| 2026-08-05 | **새 선언 무** | x.js | ▶작업중 |'] : [산줄]), ''];
+    fs.writeFileSync(board, 남은것.join('\n'), 'utf8');
+  }
+  return { dir, board, archive };
+}
+
+/** 잔재 경로는 `SYNK_BOARD` 를 **안** 넘긴다 — 처방문의 명령이 그렇게 돈다(사람이 손으로 친다). */
+function run잔재(fx, args) {
+  return 훅띄우기([TOOL, ...args], {
+    encoding: 'utf8',
+    통과코드: [0, 1, 6, 7],
+    env: {
+      ...process.env,
+      SYNK_BOARD_ROOT: fx.dir,
+      SYNK_BOARD_ARCHIVE: fx.archive,
+      SYNK_BOARD: '',
+      CLAUDE_CODE_HOST_SESSION_ID: 'local_11111111-2222-3333-4444-555566667777',
+    },
+  });
+}
+const at잔재HEAD = (fx, rel) => git(fx.dir, 'show', `HEAD:${rel}`).stdout;
+
+test('[F572] 보드 줄이 이미 사라진 잔재를 **닫는다** — 옛 판은 「못 찾았다」로 튕겼다', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mk보드삭제잔재픽스처();
+  const r = run잔재(fx, ['잔재 트랙 병']);
+  assert.equal(r.status, 7, '잔재를 닫았으면 7 이어야 한다(0 은 「그 줄을 옮겼다」는 뜻이다): ' + r.stderr);
+  assert.ok(at잔재HEAD(fx, 'docs/세션보드_아카이브.md').includes('잔재 트랙 병'), '아카이브 추가가 커밋에 안 들어갔다');
+  assert.ok(!at잔재HEAD(fx, 'docs/_ops/보드/deadbea7.md').includes('잔재 트랙 병'), '보드 삭제가 커밋에 안 들어갔다');
+  assert.ok(at잔재HEAD(fx, 'docs/_ops/보드/deadbea7.md').includes('도는 트랙 정'), '남아야 할 줄까지 사라졌다');
+  const 남은것 = git(fx.dir, 'status', '--porcelain').stdout.trim();
+  assert.equal(남은것, '', '닫았는데 미커밋이 남았다 — 세션이 끝나면 또 잠근다:\n' + 남은것);
+});
+
+test('[F572·자기처방] 원칙⑤ 거절문이 **내미는 명령을 그대로** 돌리면 지나간다 (F103 되먹임)', { skip: !hasGit && 'git 없음' }, () => {
+  /* 그날 실물 순서 그대로: ①다른 줄을 옮기려다 원칙⑤에 막힌다 ②거절문이 내민 명령을 그대로 친다.
+   * 손으로 옮겨 적지 않고 **stderr 에서 뽑아** 되먹인다 — 옮겨 적으면 그건 처방이 아니라 내 해석이다. */
+  const fx = mk보드삭제잔재픽스처();
+  fs.appendFileSync(fx.board, '| 2026-08-05 | **옮기려는 트랙 기** | w.js | ✅종결 |\n', 'utf8');
+  git(fx.dir, 'commit', '-q', '-m', '새 완료 줄', '--', 'docs/_ops/보드/deadbea7.md');
+
+  const 막힘 = run잔재(fx, ['옮기려는 트랙 기']);
+  assert.notEqual(막힘.status, 0, '아카이브가 더러운데 옮겨졌다 — 원칙⑤가 죽었다');
+  const m = String(막힘.stderr).match(/node tools\/board-move\.js\s+"([^"]+)"/);
+  assert.ok(m, '거절문이 그대로 돌릴 명령을 안 내민다(F433): ' + 막힘.stderr);
+
+  const r2 = run잔재(fx, [m[1]]);
+  assert.equal(r2.status, 7, '거절문이 내민 그 명령이 안 돈다 — 우회가 정상 통로가 된다(F103): ' + r2.stderr);
+  assert.ok(at잔재HEAD(fx, 'docs/세션보드_아카이브.md').includes('잔재 트랙 병'), '처방대로 했는데 안 담겼다');
+});
+
+test('[F572] 보드 파일에 **잔재 삭제가 아닌 변경**이 섞이면 아무것도 쓰지 않는다 (남의 편집을 안 실어간다)', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mk보드삭제잔재픽스처({ 보드에딴편집: true });
+  const 전 = git(fx.dir, 'rev-parse', 'HEAD').stdout.trim();
+  const r = run잔재(fx, ['잔재 트랙 병']);
+  assert.notEqual(r.status, 7, '남의 새 선언이 섞였는데 닫았다 — 그게 F073 이다');
+  assert.match(String(r.stderr), /잔재 삭제가 아닌/, '무엇이 걸렸는지 이름을 안 댄다');
+  assert.equal(git(fx.dir, 'rev-parse', 'HEAD').stdout.trim(), 전, '거절인데 커밋이 생겼다');
+  assert.ok(read(fx.board).includes('새 선언 무'), '남의 편집이 사라졌다');
+});
+
+test('[F572] 아카이브에서 **빠진** 행이 있으면 손을 안 댄다 (장부유실 방향은 잔재가 아니다)', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mk보드삭제잔재픽스처({ 아카이브에서삭제: true });
+  const 전 = git(fx.dir, 'rev-parse', 'HEAD').stdout.trim();
+  const r = run잔재(fx, ['잔재 트랙 병']);
+  assert.notEqual(r.status, 7, '장부에서 행이 빠진 판을 닫았다 — 그 상태를 커밋으로 굳히면 안 된다');
+  assert.match(String(r.stderr), /빠진|장부유실/, '왜 안 닫는지 안 말한다');
+  assert.equal(git(fx.dir, 'rev-parse', 'HEAD').stdout.trim(), 전, '거절인데 커밋이 생겼다');
+});
+
+test('[F572] 보드 줄이 **아직 남아 있으면** 정상 이관 경로가 그대로 열린다 (F226 자리를 안 막는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mk보드삭제잔재픽스처({ 보드에도남김: true });
+  const r = run잔재(fx, ['잔재 트랙 병']);
+  assert.ok([0, 7].includes(r.status), '보드에 줄이 살아 있는데 막혔다: ' + r.stderr);
+  assert.ok(at잔재HEAD(fx, 'docs/세션보드_아카이브.md').includes('잔재 트랙 병'), '어느 경로로든 아카이브엔 담겨야 한다');
+});
+
+test('[F572] `--dry` 는 계획만 내고 **커밋하지 않는다**', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mk보드삭제잔재픽스처();
+  const 전 = git(fx.dir, 'rev-parse', 'HEAD').stdout.trim();
+  const r = run잔재(fx, ['잔재 트랙 병', '--dry']);
+  assert.equal(r.status, 0, '--dry 는 0 이어야 한다: ' + r.stderr);
+  assert.match(String(r.stdout), /이미 아카이브에 옮겨져 있다/, '무엇을 하려는지 안 말한다');
+  assert.equal(git(fx.dir, 'rev-parse', 'HEAD').stdout.trim(), 전, '--dry 인데 커밋했다');
+});
+
+/* 🔴 아래 둘은 **변이가 낸 구멍을 메운 것**이다 — 「모호한 문구도 닫는다」로 망가뜨렸는데 61건이
+ * 전부 초록이었다(2026-08-17 실측). 게이트 ②(needle 이 정확히 1줄)에 회귀가 없었다. */
+test('[F572] needle 이 잔재 **여러 줄**에 걸리면 거절한다 (엉뚱한 잔재를 닫지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mk보드삭제잔재픽스처({ 둘째잔재: true });
+  const 전 = git(fx.dir, 'rev-parse', 'HEAD').stdout.trim();
+  const r = run잔재(fx, ['잔재 트랙 병']);        // 「병」과 「병정」 둘 다에 걸린다
+  assert.notEqual(r.status, 7, '모호한 문구로 닫았다 — 어느 잔재를 닫은 것인지 말할 수 없다');
+  assert.match(String(r.stderr), /잔재 \d+줄에 걸린다|더 구체적인/, '왜 안 닫는지·무엇을 하라는지 안 말한다');
+  assert.equal(git(fx.dir, 'rev-parse', 'HEAD').stdout.trim(), 전, '거절인데 커밋이 생겼다');
+});
+
+test('[F572] 잔재가 둘이어도 **문구를 좁히면** 닫힌다 (모호 거절이 막다른 길이 아니다 · F103)', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mk보드삭제잔재픽스처({ 둘째잔재: true });
+  const r = run잔재(fx, ['잔재 트랙 병정']);      // 둘째 것만 가리킨다
+  assert.equal(r.status, 7, '좁힌 문구로도 안 닫히면 모호 거절이 못 따를 처방이 된다: ' + r.stderr);
+  /* 아카이브 커밋은 더해진 행 **전부**를 싣는다 — 「한 줄만 닫는다」는 원리상 불가능하다(도구 주석 그대로). */
+  const 담김 = git(fx.dir, 'show', 'HEAD:docs/세션보드_아카이브.md').stdout;
+  assert.ok(담김.includes('잔재 트랙 병정'), '가리킨 잔재가 안 담겼다');
+  assert.ok(담김.includes('잔재 트랙 병'), '같은 파일의 더해진 행은 함께 실린다 — 그 원리를 회귀로 못박는다');
+});
+
+test('[F572·거짓양성] 잔재가 **없으면** 원래 거절문 그대로다 (없는 문구를 닫힘으로 번역하지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mk보드삭제잔재픽스처({ 보드에도남김: true });
+  git(fx.dir, 'commit', '-q', '-m', '아카이브 정리', '--', 'docs/세션보드_아카이브.md');   // 잔재를 없앤다
+  const r = run잔재(fx, ['없는 문구 xyzzy']);
+  assert.equal(r.status, 1, '못 찾은 것은 1 이어야 한다');
+  assert.match(String(r.stderr), /못 찾았다/, '원래 거절문이 사라졌다');
+});
