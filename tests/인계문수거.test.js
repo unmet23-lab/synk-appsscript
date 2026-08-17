@@ -374,6 +374,113 @@ test('가르는 자는 HEAD 다 — HEAD 에도 없는 경로는 전과 같이 �
   } finally { 복원(); }
 });
 
+/* ── 부분 적용 — add 가 죽어도 「미커밋 그대로」라고 말하던 자리 (2026-08-18 실물) ─────────
+ * 🔴 세션 시작 실측: `git add` 가 **경로별로** 돌다 index.lock 에 걸렸고, 그 순간 만료 삭제
+ *   22건 중 **앞 6건만** 인덱스에 앉은 알파벳 접두 절단이 남았다. 그런데 보고문은
+ *   「미커밋 그대로, 다음 실행이 다시 시도한다」였다 — 안 도는 쪽이 아니라 **맞는 얼굴로 틀린
+ *   값** 쪽으로 샌 것이다(CLAUDE.md 가드 맹점 ④). 옛 회귀(`:313`)는 실패«는» 봤지만
+ *   인덱스가 어떤 꼴로 남는지는 한 줄도 안 쟀다.
+ * 🔑 봉합은 둘이다 — ㉠원인: 원자 add 를 먼저 쳐서 잠금 실패에 부분 적용이 **못 생기게** 한다
+ *   ㉡대가: 그래도 남을 수 있는 판(무시 경로 등)은 **재서** 말한다. ㉠만 하면 「이제 안 남는다」는
+ *   단정이 되고, 그 단정이 틀리는 날 문장은 다시 거짓이 된다.
+ * 탐지력은 **픽스처**가 진다(맹점 ②) — git 호출자를 갈아끼워 «호출 모양»을 못박는다. */
+
+/** git 호출을 가짜로 세운다 — 무엇이 몇 번 불렸는지가 이 검사의 재료다. */
+function 가짜git(응답) {
+  const 부른것 = [];
+  const 호출 = (args) => {
+    부른것.push(args.join(' '));
+    return 응답(args) || { ok: true, out: '', err: '' };
+  };
+  호출.부른것 = 부른것;
+  호출.add호출 = () => 부른것.filter((c) => c.startsWith('add '));
+  return 호출;
+}
+
+test('🔑 부분 적용의 원인을 없앤다 — 정상 판에서 add 는 «한 번»이다(경로별 루프를 안 돈다)', () => {
+  const { add단계 } = require(TOOL);
+  const 후보 = [`${폴더}/a.md`, `${폴더}/b.md`, `${폴더}/c.md`];
+  const g = 가짜git(() => ({ ok: true, out: '', err: '' }));
+  const r = add단계(g, () => false, 후보);
+  assert.strictEqual(r.실패, undefined, `정상인데 실패로 접혔다: ${r.실패}`);
+  assert.strictEqual(r.사라짐.size, 0);
+  assert.deepStrictEqual(g.add호출(), [`add -- ${후보.join(' ')}`],
+    'add 를 경로별로 나눠 쳤다 — 나눠 치는 순간 잠금이 루프 도중에 걸릴 창이 다시 열린다');
+});
+
+test('🔑 잠금 실패에는 경로별 루프를 «아예» 안 돈다 — 앞쪽 몇 건이 앉을 자리 자체가 없다', () => {
+  /* 🔴 이것이 08-18 실물의 원인 봉합이다. 옛 판은 여기서 add 를 N 번 쳤고, 앞의 몇 번은
+   *   성공한 뒤 인덱스에 남았다. 원자 add 는 잠금에서 0건을 앉힌다(같은 날 실측). */
+  const { add단계 } = require(TOOL);
+  const 후보 = [`${폴더}/a.md`, `${폴더}/b.md`, `${폴더}/c.md`];
+  const g = 가짜git(() => ({ ok: false, out: '', err: "fatal: Unable to create '.git/index.lock': File exists." }));
+  const r = add단계(g, () => false, 후보);
+  assert.match(String(r.실패), /git add 실패/, '잠금을 실패로 안 번역했다 — 파일이 있는데 지나가면 F025 유실이다');
+  assert.strictEqual(g.add호출().length, 1,
+    `잠금인데 add 를 ${g.add호출().length}번 쳤다 — 경로별 루프에 들어간 순간 부분 적용이 되살아난다`);
+});
+
+test('경로가 사라진 판에서만 경로별로 되돈다 — F071 봉합을 원자 add 가 삼키지 않았다', () => {
+  const { add단계 } = require(TOOL);
+  const 사라진 = `${폴더}/gone.md`;
+  const 산것 = `${폴더}/dead.md`;
+  const g = 가짜git((args) => (args.includes(사라진)
+    ? { ok: false, out: '', err: `fatal: pathspec '${사라진}' did not match any files` }
+    : { ok: true, out: '', err: '' }));
+  const r = add단계(g, () => false, [사라진, 산것]);   // HEAD 에도 없다 = ⓐ 선점
+  assert.strictEqual(r.실패, undefined, `선점을 실패로 접었다: ${r.실패}`);
+  assert.deepStrictEqual([...r.사라짐], [사라진], '선점 판정이 사라졌다 — 08-07 실측(F071)의 봉합이 풀린다');
+  assert.strictEqual(g.add호출().length, 3, '원자 1회 + 경로별 2회여야 한다(되도는 자리를 안 밟았다)');
+});
+
+test('ⓑ 스테이징된 삭제는 원자 add 를 지나서도 «범위에 남는다» — HEAD 판별자가 살아 있다', () => {
+  const { add단계 } = require(TOOL);
+  const 삭제 = `${폴더}/staged-delete.md`;
+  const g = 가짜git(() => ({ ok: false, out: '', err: `fatal: pathspec '${삭제}' did not match any files` }));
+  const r = add단계(g, (p) => p === 삭제, [삭제]);      // HEAD 에는 있다 = ⓑ
+  assert.strictEqual(r.실패, undefined);
+  assert.strictEqual(r.사라짐.size, 0,
+    '아무도 안 거둔 삭제를 「사라짐」으로 셌다 — 그 삭제는 공유 인덱스에 영영 남는다(F257 계열)');
+});
+
+test('🔑 「미커밋 그대로」는 0건을 «잰» 때만 쓴다 — 못 쟀으면 못 쟀다고 말한다(F207)', () => {
+  const { 잔여문구 } = require(TOOL);
+  assert.strictEqual(잔여문구(0), '미커밋 그대로');
+  assert.match(잔여문구(6), /6건/, '남은 수를 안 말하면 읽는 사람은 「그대로」로 읽는다');
+  assert.doesNotMatch(잔여문구(6), /미커밋 그대로/, '잔여가 있는데 「그대로」라고 말한다 — 08-18 그 거짓 그대로다');
+  for (const 못잼 of [null, undefined]) {
+    assert.doesNotMatch(잔여문구(못잼), /미커밋 그대로/, '못 잰 것을 0 으로 접었다 — 미실행과 통과가 같은 모양이다');
+  }
+});
+
+test('🔴 실패 뒤 잔여를 «세어» 보고한다 — 루프가 앞 한 건을 앉히고 죽는 판', { skip: !git있나 && 'git 없음' }, () => {
+  /* 잠금이 루프 **도중에** 잡히는 창은 프로세스 밖에서 못 만든다. 같은 코드 경로(=경로별 루프가
+   * 앞 건을 앉힌 뒤 죽는다)를 결정적으로 재현하는 대역으로 **무시 경로**를 쓴다 — 08-18 실측:
+   * `git add -- <무시 파일>` 은 `did not match` 가 아닌 다른 fatal 을 내고, 그때 앞 건은 앉는다.
+   * ⚠ 이 모양은 실제 후보엔 안 온다(`status --porcelain` 이 무시 파일을 안 낸다) — 재현 장치다. */
+  const { repo, g } = 픽스처();
+  const 사라진 = `${폴더}/gone0004.md`;                    // 원자 add 를 «did not match» 로 떨궈 루프로 보낸다
+  인계문두기(repo, 'dead0014', '<!-- at:1 -->\n앉을 파일\n');
+  fs.writeFileSync(path.join(repo, '.gitignore'), '무시대상.md\n');
+  g('add', '--', '.gitignore'); g('commit', '-qm', 'ignore 규칙');
+  fs.writeFileSync(path.join(repo, '무시대상.md'), 'x\n');
+
+  const { 실행, 복원 } = 실행만로드(repo);
+  try {
+    const 전 = 커밋수(g);
+    const r = { 수거: [사라진, `${폴더}/dead0014.md`, '무시대상.md'].map((p) => ({ xy: '??', 경로: p })), 만료: [], 내것: [], 보류: [], 잡파일: [], 목차더러움: false };
+    const 결과 = 실행(r);
+    assert.ok(결과 && 결과.실패, `실패로 안 끝났다: ${JSON.stringify(결과)} — 이 픽스처가 무너지면 아래 잔여 검사는 장식이다`);
+    assert.strictEqual(커밋수(g), 전, '실패인데 커밋이 생겼다');
+    // 픽스처가 실제로 「부분 적용」을 만들었는지부터 확인한다(안 만들었으면 이 검사는 0 을 재고 초록이다 · F207).
+    const 앉은것 = String(g('diff', '--cached', '--name-only').stdout).split(/\r?\n/).filter(Boolean);
+    assert.deepStrictEqual(앉은것, [`${폴더}/dead0014.md`],
+      '픽스처가 부분 적용을 못 만들었다 — 이 검사는 그 상태에서만 뜻이 있다');
+    assert.strictEqual(결과.잔여, 1,
+      `잔여를 ${결과.잔여} 로 냈다 — 「미커밋 그대로」가 다시 거짓으로 나간다(08-18 그 문장)`);
+  } finally { 복원(); }
+});
+
 /* ── 등록층 — 가드·수거는 로직보다 등록층에서 샌다(CLAUDE.md 맹점 목록) ────────────────── */
 
 test('등록: SessionStart 훅이 인계문수거 --hook 을 이식 가능한 꼴로 부른다', () => {
