@@ -141,7 +141,7 @@ test('☠️ 6(원칙⑥ · 주인이 되살아났다)은 「거절」이지 실
   process.env.SYNK_BOARD_MOVE_BIN = 스텁(root, 6);
   try {
     const r = 수거.조사(root);
-    assert.strictEqual(수거.옮기기(r.대상[0], root), '거절');
+    assert.strictEqual(수거.옮기기(r.대상[0], root).판정, '거절');
   } finally { delete process.env.SYNK_BOARD_MOVE_BIN; }
 });
 
@@ -150,7 +150,7 @@ test('☠️ 1(못 옮겼다)은 「실패」다 — 6 과 뭉치면 고장이 �
   process.env.SYNK_BOARD_MOVE_BIN = 스텁(root, 1);
   try {
     const r = 수거.조사(root);
-    assert.strictEqual(수거.옮기기(r.대상[0], root), '실패');
+    assert.strictEqual(수거.옮기기(r.대상[0], root).판정, '실패');
   } finally { delete process.env.SYNK_BOARD_MOVE_BIN; }
 });
 
@@ -164,7 +164,7 @@ test('☠️ 답이 **안 오면** 「못받음」이다 — 통과로도 실패
   process.env.SYNK_BOARD_SWEEP_TIMEOUT_MS = '400';
   try {
     const r = 수거.조사(root);
-    assert.strictEqual(수거.옮기기(r.대상[0], root), '못받음');
+    assert.strictEqual(수거.옮기기(r.대상[0], root).판정, '못받음');
   } finally {
     delete process.env.SYNK_BOARD_MOVE_BIN;
     delete process.env.SYNK_BOARD_SWEEP_TIMEOUT_MS;
@@ -178,7 +178,7 @@ test('🔑 실행 자체가 안 되는 것은 「실패」다 — `node` 가 sta
   process.env.SYNK_BOARD_MOVE_BIN = path.join(root, '없는파일.js');
   try {
     const r = 수거.조사(root);
-    assert.strictEqual(수거.옮기기(r.대상[0], root), '실패');
+    assert.strictEqual(수거.옮기기(r.대상[0], root).판정, '실패');
   } finally { delete process.env.SYNK_BOARD_MOVE_BIN; }
 });
 
@@ -193,7 +193,7 @@ test('🔑 위임이 실제로 돈다 — 줄이 보드에서 빠지고 아카�
   execFileSync('git', ['commit', '-qm', 'fixture'], { cwd: root });
 
   const r = 수거.조사(root);
-  assert.strictEqual(수거.옮기기(r.대상[0], root), '옮김');
+  assert.strictEqual(수거.옮기기(r.대상[0], root).판정, '옮김');
 
   const 보드파일 = path.join(root, 'docs', '_ops', '보드', '0badc0de.md');
   /* ⚠ 대상은 **보드 마크다운**이다 — `코드만()` 으로 감싸지 않는다(갈래 ⓒ 비JS · 대기열 #Q72). */
@@ -338,6 +338,198 @@ test('🔑 전역에서 유일하면 그 문구가 먼저다 — 파일부터 �
   assert.strictEqual(보드.이관문구(갑, [갑, 을]), '알파 브라보*');
   assert.strictEqual(보드.이관문구(갑, [갑, 을], [갑]), '알파 브라보*',
     '파일을 넘겼다고 전역 유일 문구를 버리면 처방문의 명령이 「세션 파일 2개에 걸린다」로 죽는다');
+});
+
+/* ── ⑦ 사유를 낸다 — 「실패 N건」에서 멈추지 않는다 (F571 · 2026-08-17 실사고) ────────
+ *
+ * 옛 판은 종료 코드만 읽고 사유를 버렸다(`spawnSync` 가 `encoding:'utf8'` 로 **이미 받아 놓고**).
+ * 그날 실측: 죽은 세션의 고아 미커밋 1줄이 ①board-move 원칙⑤ ②이 도구(완료 줄 5건)
+ * ③`git merge origin/master`(로컬 master 57 뒤) 를 함께 잠갔는데, board-move 가 낸 **완성형
+ * 처방**(F433 — 칠 명령까지 적힌)이 3시간 넘게 아무 화면에도 안 갔다.
+ *
+ * ⚠ 새는 방향이 여기선 **「통과」가 아니라 「침묵」**이다 — 그래서 픽스처가 재는 것은
+ *   「판정이 맞나」가 아니라 **「사유가 화면까지 오나」**다. 판정만 재면 옛 판도 초록이었다.
+ * ⚠ 탐지력은 이 픽스처가 진다(가드 맹점 ②) — 실저장소는 「지금 막힌 게 없으면 조용하다」만 본다.
+ */
+
+/** stderr 로 말하고 죽는 스텁 — board-move 의 `die` 와 같은 모양(사유는 stderr, 진행은 stdout). */
+function 말하는스텁(root, 이름, 코드, 사유) {
+  const p = path.join(root, `stub-${이름}.js`);
+  fs.writeFileSync(p, `console.log('진행 보고 한 줄');\nconsole.error(${JSON.stringify(사유)});\nprocess.exit(${코드});\n`, 'utf8');
+  return p;
+}
+
+test('☠️ 실패엔 board-move 가 낸 사유가 **실려 온다** — 옛 판은 여기서 종료 코드만 남겼다', () => {
+  const root = 저장소({ '0badc0de': 머리 + 완료줄 + '\n' });
+  const 사유 = '아카이브에 이관 전부터 **남의** 미커밋이 있다\n  ▶ node tools/board-move.js "그 줄"';
+  process.env.SYNK_BOARD_MOVE_BIN = 말하는스텁(root, 'die', 1, 사유);
+  try {
+    const r = 수거.옮기기(수거.조사(root).대상[0], root);
+    assert.strictEqual(r.판정, '실패');
+    assert.match(r.사유, /남의\*\* 미커밋/, '사유 본문이 와야 한다');
+    assert.match(r.사유, /board-move\.js "그 줄"/, '**칠 수 있는 명령**까지 와야 한다 — 그게 F433 의 값이다');
+  } finally { delete process.env.SYNK_BOARD_MOVE_BIN; }
+});
+
+test('☠️ stderr 가 먼저다 — stdout 의 진행 보고를 사유로 착각하면 처방이 사라진다', () => {
+  const root = 저장소({ '0badc0de': 머리 + 완료줄 + '\n' });
+  process.env.SYNK_BOARD_MOVE_BIN = 말하는스텁(root, 'both', 1, '진짜 사유');
+  try {
+    const r = 수거.옮기기(수거.조사(root).대상[0], root);
+    assert.match(r.사유, /진짜 사유/);
+    assert.ok(!r.사유.includes('진행 보고'), 'stdout 이 stderr 를 밀어내면 안 된다');
+  } finally { delete process.env.SYNK_BOARD_MOVE_BIN; }
+});
+
+test('☠️ 거절(원칙⑥)엔 사유를 **안** 싣는다 — 정상 판정이 실패의 얼굴로 서면 적색이 안 읽힌다', () => {
+  const root = 저장소({ '0badc0de': 머리 + 완료줄 + '\n' });
+  process.env.SYNK_BOARD_MOVE_BIN = 말하는스텁(root, 'alive', 6, '주인이 살아 있다');
+  try {
+    const r = 수거.옮기기(수거.조사(root).대상[0], root);
+    assert.strictEqual(r.판정, '거절');
+    assert.strictEqual(r.사유, '', '거절은 고장이 아니다');
+  } finally { delete process.env.SYNK_BOARD_MOVE_BIN; }
+});
+
+test('🔑 아무 말 없이 죽으면 「빈칸이다」를 적는다 — 「사유 없음」과 「안 물어봤음」을 가른다', () => {
+  const root = 저장소({ '0badc0de': 머리 + 완료줄 + '\n' });
+  process.env.SYNK_BOARD_MOVE_BIN = 스텁(root, 1);   // 아무것도 안 말하고 1 로 죽는다
+  try {
+    const r = 수거.옮기기(수거.조사(root).대상[0], root);
+    assert.strictEqual(r.판정, '실패');
+    assert.match(r.사유, /아무 말도 안 했다/, '빈 문자열로 두면 이 트랙이 그대로 되돌아온다(F207 축)');
+  } finally { delete process.env.SYNK_BOARD_MOVE_BIN; }
+});
+
+test('☠️ 타임아웃 사유는 **미실행임을 말한다** — 「실패」로 뭉치면 다음 실행이 안 다시 본다', () => {
+  const root = 저장소({ '0badc0de': 머리 + 완료줄 + '\n' });
+  const 멈춤 = path.join(root, 'stub-hang2.js');
+  fs.writeFileSync(멈춤, 'setInterval(() => {}, 1000);\n', 'utf8');
+  process.env.SYNK_BOARD_MOVE_BIN = 멈춤;
+  process.env.SYNK_BOARD_SWEEP_TIMEOUT_MS = '400';
+  try {
+    const r = 수거.옮기기(수거.조사(root).대상[0], root);
+    assert.strictEqual(r.판정, '못받음');
+    assert.match(r.사유, /미실행이지 통과가 아니다/);
+  } finally {
+    delete process.env.SYNK_BOARD_MOVE_BIN;
+    delete process.env.SYNK_BOARD_SWEEP_TIMEOUT_MS;
+  }
+});
+
+/* ── 사유블록 — 화면에 어떻게 서나(순수 함수라 환경에 안 기댄다) ───────────── */
+
+test('☠️ 같은 사유 여럿은 **한 번만** 찍고 건수를 적는다 — 실측 5건이 글자까지 같았다', () => {
+  const 결과 = { 옮김: [], 거절: [], 못받음: [], 실패: [
+    { 지문: 'aaaaaaaa', 사유: '고아 잠금이 막는다' },
+    { 지문: 'bbbbbbbb', 사유: '고아 잠금이 막는다' },
+    { 지문: 'cccccccc', 사유: '고아 잠금이 막는다' },
+  ] };
+  const b = 수거.사유블록(결과);
+  assert.strictEqual((b.match(/고아 잠금이 막는다/g) || []).length, 1, '5번 찍으면 처방이 소음에 묻힌다');
+  assert.match(b, /실패 3건/, '몇 건이 그 사유인지가 재료다');
+  for (const 지문 of ['aaaaaaaa', 'bbbbbbbb', 'cccccccc']) assert.ok(b.includes(지문), '어느 줄들인지 대야 한다');
+});
+
+test('☠️ 사유가 다르면 따로 선다 — 묶기가 과하면 두 원인이 하나로 보인다', () => {
+  const 결과 = { 옮김: [], 거절: [], 못받음: [], 실패: [
+    { 지문: 'aaaaaaaa', 사유: '갑 사유' }, { 지문: 'bbbbbbbb', 사유: '을 사유' },
+  ] };
+  const b = 수거.사유블록(결과);
+  assert.match(b, /갑 사유/); assert.match(b, /을 사유/);
+  assert.strictEqual((b.match(/board-move 가 낸 사유 그대로/g) || []).length, 2);
+});
+
+test('☠️ 실패·못받음이 0 이면 **한 자도 안 낸다** — 평상시 상주 비용이 0 이어야 한다', () => {
+  assert.strictEqual(수거.사유블록({ 옮김: [{ 지문: 'a' }], 거절: [{ 지문: 'b' }], 실패: [], 못받음: [] }), '');
+});
+
+test('🔑 실패와 못받음은 갈라 적는다 — 「고장」과 「안 돌았다」는 다음 행동이 다르다', () => {
+  const b = 수거.사유블록({ 옮김: [], 거절: [], 실패: [{ 지문: 'aaaaaaaa', 사유: '고장' }], 못받음: [{ 지문: 'bbbbbbbb', 사유: '무응답' }] });
+  assert.match(b, /실패 1건/); assert.match(b, /못받음 1건/);
+});
+
+test('☠️ 긴 사유는 자르되 **몇 줄 감췄는지 말한다** — 조용한 절단은 「이게 전부」로 읽힌다', () => {
+  const root = 저장소({ '0badc0de': 머리 + 완료줄 + '\n' });
+  process.env.SYNK_BOARD_MOVE_BIN = 말하는스텁(root, 'long', 1, Array.from({ length: 30 }, (_, i) => `줄${i}`).join('\n'));
+  process.env.SYNK_BOARD_SWEEP_REASON_LINES = '5';
+  try {
+    const r = 수거.옮기기(수거.조사(root).대상[0], root);
+    assert.match(r.사유, /줄0/); assert.ok(!r.사유.includes('줄29'), '상한을 넘긴 줄은 안 실린다');
+    assert.match(r.사유, /25줄 더/, '감춘 줄 수를 밝혀야 한다(CLAUDE.md 「no silent caps」)');
+  } finally {
+    delete process.env.SYNK_BOARD_MOVE_BIN;
+    delete process.env.SYNK_BOARD_SWEEP_REASON_LINES;
+  }
+});
+
+/* ── CLI — 사유가 실제로 화면까지 오나(끝은 사람 화면이다) ───────────────── */
+
+/** 완료 줄 하나를 담은 **git 픽스처**를 만든다 — CLI 는 커밋 가능 상태를 저장소에서 잰다. */
+function CLI픽스처(파일들) {
+  const root = 저장소(파일들);
+  execFileSync('git', ['init', '-q'], { cwd: root });
+  execFileSync('git', ['config', 'user.email', 't@t'], { cwd: root });
+  execFileSync('git', ['config', 'user.name', 't'], { cwd: root });
+  execFileSync('git', ['add', '-A'], { cwd: root });
+  execFileSync('git', ['commit', '-qm', 'fixture'], { cwd: root });
+  return root;
+}
+
+/* ⚠ `커밋못하는이유()` 는 **이 저장소**의 git 상태를 본다(픽스처가 아니라) — 남의 rebase·merge 가
+ *   도는 순간엔 CLI 가 사유 대신 「지금은 커밋할 수 없다」로 물러난다. 그건 이 트랙의 결함이 아니라
+ *   옳은 동작이라 **fail 이 아니라 skip 으로 드러낸다**(F296 · repo 밖 환경에 기대는 검사). */
+const 막힌출력 = (s) => /지금은 커밋할 수 없다/.test(s);
+
+test('☠️ 전건 실패면 CLI 가 사유를 낸다 — 이 트랙(F571)의 실물 증상이 바로 이 자리였다', (t) => {
+  const root = CLI픽스처({ '0badc0de': 머리 + 완료줄 + '\n' });
+  const 사유 = '아카이브에 남의 미커밋이 있다\n  ▶ node tools/board-move.js "그 줄"';
+  /* 통과코드에 2 를 넣는다 — `--실행` 의 전건 실패는 **일부러** 2 로 끝난다(「명시 실행의 실패는
+   * 소리 낸다」). 0 만 기대하면 이 검사가 도구의 의도된 적색을 「안 떴다」로 읽는다. */
+  const r = 훅띄우기([수거JS, '--실행'], {
+    encoding: 'utf8', 통과코드: [0, 2],
+    env: { ...process.env, SYNK_BOARD_ROOT: root, SYNK_BOARD_MOVE_BIN: 말하는스텁(root, 'cli', 1, 사유) },
+  });
+  const out = String(r.stdout);
+  if (막힌출력(out)) return t.skip('이 저장소에 진행 중인 git 작업이 있다 — 사유 층에 도달 못 한다');
+  assert.match(out, /거두지 못했다/);
+  assert.match(out, /실패 1건/);
+  assert.match(out, /board-move\.js "그 줄"/, '처방 명령이 화면에 서야 한다 — 옛 판은 여기가 빈칸이었다');
+});
+
+test('☠️ **부분 실패**에서도 사유가 선다 — 한 건이라도 옮기면 옛 판은 「실패 N건」만 적고 끝났다', (t) => {
+  /* 남은 N 건은 다음 실행에도 **같은 이유로** 막힌다. 성공 한 건이 그 사실을 가리면 안 된다. */
+  const 갑 = '| 2026-08-12 | **알파 트랙** | a.js | ✅**종결** `aaaa1111` |';
+  const root = CLI픽스처({ '0badc0de': 머리 + 완료줄 + '\n', 'deadbea7': 머리 + 갑 + '\n' });
+  const 골라죽는스텁 = path.join(root, 'stub-mixed.js');
+  fs.writeFileSync(골라죽는스텁,
+    'if (String(process.argv[2]).includes("알파")) { console.error("알파만 막힌 사유"); process.exit(1); }\nprocess.exit(0);\n', 'utf8');
+  const r = 훅띄우기([수거JS, '--실행'], {
+    encoding: 'utf8', 통과코드: [0, 2],
+    env: { ...process.env, SYNK_BOARD_ROOT: root, SYNK_BOARD_MOVE_BIN: 골라죽는스텁 },
+  });
+  const out = String(r.stdout);
+  if (막힌출력(out)) return t.skip('이 저장소에 진행 중인 git 작업이 있다 — 사유 층에 도달 못 한다');
+  assert.match(out, /1건을 거뒀다|거뒀다\(F368\)/, '옮긴 건수는 그대로 보고한다');
+  assert.match(out, /알파만 막힌 사유/, '부분 실패의 사유가 성공에 묻히면 안 된다');
+});
+
+test('☠️ 전건 성공이면 사유 블록이 **안 뜬다** — 평상시 세션시작 출력이 안 늘어야 한다', (t) => {
+  const root = CLI픽스처({ '0badc0de': 머리 + 완료줄 + '\n' });
+  const r = 훅띄우기([수거JS, '--실행'], {
+    encoding: 'utf8',
+    env: { ...process.env, SYNK_BOARD_ROOT: root, SYNK_BOARD_MOVE_BIN: 스텁(root, 0) },
+  });
+  const out = String(r.stdout);
+  if (막힌출력(out)) return t.skip('이 저장소에 진행 중인 git 작업이 있다 — 사유 층에 도달 못 한다');
+  assert.ok(!out.includes('사유 그대로'), '실패가 0 이면 사유 블록은 소음이다');
+});
+
+test('🔑 실저장소 — 지금 막힌 게 없으면 조용하다(탐지력은 위 픽스처가 진다)', () => {
+  const r = 수거.조사(REPO);
+  if (r === null) return;
+  /* 불변식만 본다: 사유 블록은 실패·못받음이 있을 때만 서는 함수다 — 빈 결과에 말을 지어내지 않는다. */
+  assert.strictEqual(수거.사유블록({ 옮김: r.대상, 거절: [], 실패: [], 못받음: [] }), '');
 });
 
 test('☠️ 같은 파일의 **유령**과 겹치면 문구를 안 고른다 — 못 쓸 명령을 만드느니 스킵이 낫다', () => {
