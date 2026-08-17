@@ -36,6 +36,9 @@ const { spawnSync } = require('child_process');
 const 소유자 = require(path.join(__dirname, '작업본소유자.js'));
 /* 잠금 판정은 **한 곳에서만** 산다 — 보드수거도 같은 통로를 부른다(같은 판정을 두 곳에 적으면 갈라진다). */
 const 잠금lib = require(path.join(__dirname, 'lib', 'git잠금.js'));
+/* master 직접 커밋을 그 자리에서 미는 통로 — `작업가지 --닫기` 와 **같은 파일**을 쓴다
+ * (같은 판정을 두 곳에 적으면 갈라진다 · 사연은 tools/lib/master동기.js 머리말). */
+const 동기 = require(path.join(__dirname, 'lib', 'master동기.js'));
 const ROOT = process.env.SYNK_OWNER_ROOT || path.resolve(__dirname, '..');
 
 // 자리(폴더·목차)와 「이름→세션 지문」 변환도 그쪽 것 하나를 쓴다 — 여기 한 벌 더 적었더니
@@ -222,6 +225,12 @@ if (require.main === module) {
     process.exit(모드 === '실행' ? 2 : 0); // 명시 실행의 실패는 소리 내고, 훅은 다음 기회에 맡긴다
   }
   process.stdout.write(`[인계문수거] 죽은 세션 인계문 ${r.수거.length}건${r.만료.length ? ` + 만료 정리 ${r.만료.length}건(TTL 이 이미 지운 것 — 보호 아님)` : ''}${r.내것.length ? ' + 내 세션 파일' : ''}을 커밋했다(${결과}) — F111 통로${r.보류.length ? ` · 보류 ${r.보류.length}건은 살아있는 세션 것이라 남겼다` : ''}${r.사라짐 ? ` · ${r.사라짐}건은 딴 세션이 먼저 거둬 건너뜀` : ''}\n`);
+
+  /* 커밋과 push 는 한 벌이다 — 이 도구는 master 에 **직접** 커밋하므로, 안 밀면 그 커밋은
+   * 이 노트북에만 있다. 실측 2026-08-17: 그렇게 좌초된 수거 커밋이 8건 쌓여 master 가
+   * 갈라졌고(5앞/57뒤), 그때부터 push 자체가 non-fast-forward 로 거절됐다.
+   * 여기서 미는 것이 그 상태를 애초에 안 만든다 — 커밋이 났을 때만 도니 빈손 세션엔 왕복 0회다. */
+  process.stdout.write(동기.줄내기('인계문수거', 동기.밀기(ROOT)) + '\n');
   process.exit(0);
 }
 
