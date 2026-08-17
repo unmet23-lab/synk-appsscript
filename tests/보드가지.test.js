@@ -152,6 +152,92 @@ test('☠️ master 가 그 사이 아카이브한 **남의 옛 줄**은 안 딸
   assert.match(줄들[0].줄, /내 트랙/);
 });
 
+// ───────────────────────────────── 기준이 «신선한 쪽»인가 (F565)
+//
+// 🔴 왜 순수 픽스처로는 못 잡나: 결함이 **어느 ref 를 기준으로 부르나**에 있었다. 파서는 멀쩡하고,
+//    낡은 기준으로 잰 값과 신선한 기준으로 잰 값이 **같은 모양**으로 나온다(새는 방향 = 「통과」).
+//    그래서 이 절만 진짜 저장소를 세운다 — `update-ref` 로 origin 을 흉내내 네트워크는 0이다.
+
+/** 로컬 master 가 뒤처진 트리를 그대로 만든다 — F565 가 실측한 그 배치.
+ *  `origin/master`(=B) 는 남의 줄을 이미 받았고, 로컬 `master`(=A) 는 아직 못 받았다.
+ *  내 가지는 `EnterWorktree` 처럼 **origin/master 에서** 떴다. 세울 수 없으면 `null`. */
+function 뒤처진트리() {
+  const root = 저장소세우기();
+  if (!root) return null;
+  const A = g(['rev-parse', 'HEAD'], root).stdout.trim();
+  // origin 이 이미 받은 남의 줄(B)
+  쓰기(root, 'bbbb2222', 표줄('남의 트랙 — 이미 머지됐다', '`tools/남.js`', '▶착수'));
+  g(['add', '-A'], root); g(['commit', '-qm', '남의 줄'], root);
+  const B = g(['rev-parse', 'HEAD'], root).stdout.trim();
+  if (g(['update-ref', 'refs/remotes/origin/master', B], root).status !== 0) return null;
+  // 내 가지는 origin/master(=B) 에서 뜬다
+  g(['checkout', '-q', '-b', 'worktree-내트랙'], root);
+  쓰기(root, 'aaaa1111', 표줄('내 트랙', '`tools/x.js`', '▶착수'));
+  g(['add', '-A'], root); g(['commit', '-qm', '내 선언'], root);
+  // 로컬 master 만 뒤로 — 이게 「57 커밋 뒤」의 축소판이다
+  g(['checkout', '-q', 'master'], root);
+  if (g(['reset', '--hard', '-q', A], root).status !== 0) return null;
+  return root;
+}
+
+test('🔴 [F565] 뒤처진 로컬 master 를 기준으로 삼으면 **이미 머지된 남의 줄**이 내 가지 선언으로 딸려 온다', (t) => {
+  const root = 뒤처진트리();
+  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다 — 통과로 위장하지 않는다');
+
+  // 대조군 — 옛 순서(로컬 우선). 픽스처가 실제로 갈라내는지 먼저 못박는다(안 그러면 아래 초록이 공짜다).
+  const 낡음 = 보드.가지줄들(root, { 기준: ['master', 'origin/master'] });
+  assert.strictEqual(낡음.기준, 'master');
+  assert.strictEqual(낡음.줄들.length, 2,
+    `픽스처가 결함을 재현 못 했다 — 이 대조군이 2줄이 아니면 아래 검사는 아무것도 안 잰다: ${낡음.줄들.map((x) => x.줄).join(' // ')}`);
+  assert.ok(낡음.줄들.some((x) => /남의 트랙/.test(x.줄)), '유령의 정체가 「남의 줄」이 아니다 — 다른 것을 재고 있다');
+
+  // 본검사 — 지금 순서(origin 우선). 이때는 **조용해야** 한다(아래 assert).
+  const 원래 = process.stderr.write.bind(process.stderr);
+  let 말한것 = '';
+  process.stderr.write = (s) => { 말한것 += String(s); return true; };
+  let r;
+  try { r = 보드.가지줄들(root); } finally { process.stderr.write = 원래; }
+  assert.ok(!/F565/.test(말한것),
+    `🔴 1순위로 쟀는데도 폴백 경고가 떴다 — 상시로 우는 경보는 사람이 무시하는 법을 배워 장치가 꺼진다: ${말한것.trim()}`);
+  assert.strictEqual(r.모름, false, `git 을 못 불렀다: ${JSON.stringify(r)}`);
+  assert.strictEqual(r.기준, 'origin/master', '기준이 신선한 쪽이 아니다 — 순서가 되돌아갔다');
+  assert.strictEqual(r.줄들.length, 1,
+    `🔴 이미 머지된 남의 줄이 「안 머지된 가지의 선언」으로 딸려 왔다(소비자 셋이 이 분모를 먹는다): ${r.줄들.map((x) => x.줄).join(' // ')}`);
+  assert.match(r.줄들[0].줄, /내 트랙/);
+});
+
+test('☠️ [F565] `origin/master` 가 없으면 `master` 로 내려가되 **말한다** — 조용한 폴백이 그 대가다', (t) => {
+  const root = 저장소세우기();
+  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다');
+  g(['checkout', '-q', '-b', 'worktree-내트랙'], root);
+  쓰기(root, 'aaaa1111', 표줄('내 트랙', '`tools/x.js`', '▶착수'));
+  g(['add', '-A'], root); g(['commit', '-qm', '내 선언'], root);
+  g(['checkout', '-q', 'master'], root);
+
+  const 원래 = process.stderr.write.bind(process.stderr);
+  let 말한것 = '';
+  process.stderr.write = (s) => { 말한것 += String(s); return true; };
+  let r;
+  try { r = 보드.가지줄들(root); } finally { process.stderr.write = 원래; }
+
+  assert.strictEqual(r.모름, false, '원격이 없다고 판정 자체가 죽으면 새 클론에서 이 층이 통째로 꺼진다');
+  assert.strictEqual(r.기준, 'master', '폴백이 안 걸렸다 — 이 픽스처엔 origin/master 가 없다');
+  assert.strictEqual(r.줄들.length, 1, '폴백 경로에서 줄을 못 뽑았다');
+  assert.match(말한것, /F565/, '🔴 폴백이 조용하다 — 낡은 기준으로 잰 값이 신선한 값과 같은 모양으로 나간다(맹점 ④)');
+});
+
+test('🔑 [F565] 주입구로 들어온 출력엔 기준이 `null` 이다 — 「안 쟀다」를 「1순위로 쟀다」로 접지 않는다', () => {
+  const r = 보드.가지줄들('.', { 출력: 가지출력('가지A', 'aaaaaaaa.md', 표줄('내 선언')) });
+  assert.strictEqual(r.기준, null);
+  assert.strictEqual(r.모름, false, '주입구는 「못 봤다」가 아니다');
+});
+
+test('🔑 [F565] 기준 순서의 정본은 하나다 — 신선한 쪽이 먼저', () => {
+  assert.strictEqual(보드.가지기준[0], 'origin/master',
+    '순서가 되돌아갔다 — `EnterWorktree` 가 origin/master 에서 가지를 떼므로 로컬이 먼저면 늘 낡은 기준으로 잰다');
+  assert.ok(보드.가지기준.includes('master'), '폴백이 사라졌다 — 원격 없는 클론에서 이 층이 통째로 꺼진다');
+});
+
 // ───────────────────────────────── 머리형 비켜남 (F524)
 
 test('🔴 [F524] `무접촉=#Q99` 는 점유가 아니다 — 비켜난 쪽이 그 줄의 주인으로 적혔다(실측)', () => {
