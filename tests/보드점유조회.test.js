@@ -17,10 +17,14 @@
 
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { execFileSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+
+/* 🔑 **직접 spawn 하지 않는다**(`tests/훅통로.test.js` 가 기계로 막는다 · 이 파일도 그 규칙에 걸렸었다):
+ *   못 띄운 것이 「빈 출력」이 되어 통과로 번역되는 자리다. 여기선 더더욱 그렇다 — 이 회귀의
+ *   단언 대상 자체가 **exit 코드**라, 미실행(코드 null)이 조용히 섞이면 재는 것이 사라진다. */
+const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const BOARDJS = path.join(__dirname, '..', 'tools', 'board.js');
 const HOOK = path.join(__dirname, '..', '.claude', 'hooks', 'board-guard.js');
@@ -43,8 +47,11 @@ const 줄 = (트랙, 파일칸, 상태 = '작업중') =>
 
 /** 조회를 돌린다 — **exit 코드와 글을 함께** 돌려준다(판정의 권위는 exit 이다 · 변이 통로와 같은 축). */
 function 점유(root, 경로들, env) {
-  const r = spawnSync(process.execPath, [BOARDJS, '--점유', ...경로들], {
+  /* `통과코드` 를 셋 다 연다 — 0(비었다)·1(잡혔다)·2(못 뽑았다)가 **전부 정상 결과**이고
+   * 그 셋을 가르는 것이 이 회귀의 일이다. 그 밖의 코드·미실행은 결과가 아니라 사고라 던진다. */
+  const r = 훅띄우기([BOARDJS, '--점유', ...경로들], {
     encoding: 'utf8',
+    통과코드: [0, 1, 2],
     env: { ...process.env, SYNK_BOARD_ROOT: root, CLAUDE_CODE_HOST_SESSION_ID: `local_${내지문}-x`, ...(env || {}) },
   });
   return { 코드: r.status, 글: String(r.stdout || '') + String(r.stderr || '') };
@@ -77,11 +84,11 @@ test('🔑 **가드와 같은 판정** — 조회가 초록인 자리를 가드�
     ['tools/안겹치는것.js', 줄('내 트랙', 'tools/안겹치는것.js')],
   ]) {
     const 조회 = 점유(root, [물음]);
-    const out = execFileSync(process.execPath, [HOOK], {
+    const out = String(훅띄우기(HOOK, {
       input: JSON.stringify({ tool_name: 'Write', tool_input: { file_path: 보드파일, content: 새줄 } }),
       encoding: 'utf8',
       env: { ...process.env, SYNK_BOARD_ROOT: root, CLAUDE_CODE_HOST_SESSION_ID: `local_${내지문}-x` },
-    });
+    }).stdout || '');
     const 막았나 = out.trim()
       ? ((JSON.parse(out).hookSpecificOutput || {}).permissionDecision === 'deny') : false;
     assert.strictEqual(조회.코드 === 1, 막았나,
