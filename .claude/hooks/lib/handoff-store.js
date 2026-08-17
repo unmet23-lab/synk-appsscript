@@ -17,6 +17,8 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const wt = require(path.join(__dirname, 'worktrees.js'));
+// 「형제는 어디 있나」의 정본. 이 파일이 위에서 말하는 「공용 통로」와 같은 조항의 적용이다.
+const 형제저장소 = require(path.join(__dirname, '형제저장소.js'));
 
 // 이음매는 테스트 격리 전용 — 로직을 끄지 않고 위치만 바꾼다. **세 훅이 같은 이름을 봐야 한다**
 // (갈라지면 바통이 안 넘어가고, 증상은 「조용히 아무 일도 안 일어남」이라 눈에 안 띈다).
@@ -85,7 +87,9 @@ function batonName(cwd, sessionId) {
  *   오귀속은 「내것」 쪽으로 새고, 그건 곧 남의 작업본을 편집해도 된다는 말이 된다(F073). */
 const SIBLING_DEFAULT = ['SYNK-talk'];
 
-/** 형제 저장소들 `[{뿌리, 저장소}]`. 경로 규칙은 `tools/계약동기화.js` 와 같은 `<root>/../<이름>`.
+/** 형제 저장소들 `[{뿌리, 저장소}]`. 자리는 `형제저장소.형제경로()` 하나에서 파생한다 —
+ *  「`<root>/../<이름>`」을 손으로 적으면 **워크트리에서 `..` 이 `worktrees/` 를 가리켜** 형제가
+ *  통째로 빠지고, 그러면 형제 파일의 주인이 다시 ❔모름이 된다(이 절이 없애려던 바로 그 상태).
  *  이 기계에 없으면 **조용히 빠진다** — CI 엔 형제가 없고, 거기서 없는 것을 못 읽었다고 울면
  *  거짓 경보가 되어 장치가 꺼진다(못 읽은 것과 없는 것은 읽는 쪽이 갈라 말한다).
  *  이음매 `SYNK_OWNER_SIBLINGS` = 테스트 격리 전용. **쓰는 쪽·읽는 쪽이 같은 이름을 봐야 한다** —
@@ -94,7 +98,7 @@ function siblings(root) {
   const 지정 = String(process.env.SYNK_OWNER_SIBLINGS || '').trim();
   const 후보 = 지정
     ? 지정.split(/[;,]/).map((s) => s.trim()).filter(Boolean).map((s) => path.resolve(root, s))
-    : SIBLING_DEFAULT.map((n) => path.resolve(root, '..', n));
+    : SIBLING_DEFAULT.map((n) => 형제저장소.형제경로(root, n));
   const 본 = new Set([path.resolve(root)]);
   const 결과 = [];
   for (const 뿌리 of 후보) {
