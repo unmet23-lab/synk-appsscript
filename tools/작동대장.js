@@ -34,9 +34,15 @@
  *
  * 쓰기:
  *   node tools/작동대장.js              → docs/작동대장.html 생성
+ *   node tools/작동대장.js --기록       → 그 주의 사진을 장부에 «덧붙인다»(주간 재심의 재료)
  *   node tools/작동대장.js --바로가기   → 생성 + 바탕화면 「SYNK 운영자료」에 .lnk (이해대장 옆)
  *   node tools/작동대장.js --수렴검사   → 두 번 그려 같은지 검사(다르면 exit 1)
  *   node tools/작동대장.js --요약       → 화면 없이 네 통 개수만 (보드·보고용)
+ *
+ * 🔑 두 자리를 가른다 — **화면은 「지금」, 장부는 「움직임」**:
+ *   화면은 매번 다시 그려져 낡을 수 있지만, 장부에 박힌 그 주의 사진은 다시 계산하지 않으니
+ *   원리상 안 낡는다. 그래서 주간 재심은 화면 전량이 아니라 **Ⅱ절(지난 기록 대비)만** 읽으면 된다.
+ *   유호 지시 08-17: 「도전안 좋다 · 기록용으로 사용하면 너무 좋을 것 같다.」
  */
 'use strict';
 
@@ -47,6 +53,16 @@ const { 칸나누기 } = require('./lib/표.js');   // 날 split 은 백틱 안 
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
 const 산출경로 = process.env.SYNK_작동대장_산출 || path.join(ROOT, 'docs', '작동대장.html');
+
+/** 기록 장부 — **append-only**. 유호 지시 08-17(「도전안 좋다 · 기록용으로 쓰면 너무 좋겠다」).
+ *
+ * 🔑 왜 상시 화면과 «따로» 두나: 상시 화면은 매번 다시 그려져 낡고 진동할 수 있지만(F537),
+ *    **그 주의 사진은 원리상 안 낡는다** — 다시 계산하지 않으니 뒤집힐 값이 없다.
+ *    그래서 「지금 상태」는 화면이 지고, 「무엇이 어떻게 움직였나」는 이 장부가 진다.
+ * 🔑 그리고 한 겹이 아니라 **여러 주가 쌓여야** 답이 나오는 질문이 있다 —
+ *    「보드 계열 42건」이 다음 달에 늘었나 줄었나는 diff 절 하나로는 영원히 못 답한다.
+ * ⚠ 행 삭제 금지(CLAUDE.md append-only 장부 규약) — `tests/작동대장.test.js` 가 형식을 지킨다. */
+const 기록경로 = process.env.SYNK_작동대장_기록 || path.join(ROOT, 'docs', '_ops', '작동대장_기록.jsonl');
 
 /** 브랜드 킷 — DESIGN.md §1 이 정본. 여기 있는 것은 «인용»이고 새 색을 만들지 않는다. */
 const 킷 = {
@@ -329,10 +345,73 @@ function 재기(오늘) {
   const 손댐 = 손댐지도();
   const 적체 = 적체읽기();
   const { 통, 분포 } = 분류(장치들, 말, 참조, 마찰, 손댐, 오늘);
-  return { 부품, 사슬, 장치들, 말, 참조, 마찰, 손댐, 적체, 통, 분포, 못읽음: [...못읽음] };
+  const 기록 = 기록읽기();
+  // ⚠ 못읽음을 «먼저» 붙인다 — 스냅샷이 그것을 세므로, 순서가 뒤면 기록이 통째로 죽는다.
+  const d = { 부품, 사슬, 장치들, 말, 참조, 마찰, 손댐, 적체, 통, 분포, 기록, 못읽음: [...못읽음] };
+  // ⚠ 「지금」 스냅샷의 날짜는 견주기에 안 쓴다 — 쓰면 화면이 시각에 물려 수렴이 깨진다(F537 의 축).
+  d.움직임 = 기록.줄들.length ? 움직임(스냅샷(d, '(지금)'), 기록.줄들.at(-1)) : null;
+  return d;
 }
 
-module.exports = { 재기, 분류, 경로풀기, 깨짐기준 };
+/* ── 기록 장부 — 그 주의 사진 (append-only) ─────────────────────────────── */
+
+/** 한 회차를 «다시 계산할 필요 없는 모양»으로 접는다 — 이것이 장부에 실릴 전부다. */
+function 스냅샷(d, 날짜) {
+  const 짧게 = (줄들) => 줄들.map((r) => [r.경로, r.마찰수]);
+  return {
+    날짜,
+    장치: d.장치들.length,
+    회귀: d.말 ? d.말.회귀개수 : null,
+    마찰: d.마찰 ? d.마찰.전체 : null,
+    통: {
+      깨짐: d.통.깨짐.length, 맨몸: d.통.맨몸.length,
+      안불림: d.통.안불림.length, 괜찮음: d.통.괜찮음.length,
+    },
+    깨짐: 짧게(d.통.깨짐),
+    맨몸: d.통.맨몸.map((r) => r.경로),
+    안불림: d.통.안불림.map((r) => r.경로),
+    못읽음: d.못읽음.length,
+  };
+}
+
+/** 장부를 읽는다. **못 읽은 줄은 조용히 버리지 않는다** — 몇 줄이 깨졌는지 함께 낸다(F207). */
+function 기록읽기() {
+  if (!있나(기록경로)) return { 줄들: [], 깨진줄: 0, 있나: false };
+  const s = 읽기(기록경로);
+  if (s == null) { 못읽음.push('작동대장 기록 장부 — 읽다 실패'); return { 줄들: [], 깨진줄: 0, 있나: true }; }
+  const 줄들 = []; let 깨진줄 = 0;
+  for (const line of s.split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    try { 줄들.push(JSON.parse(line)); } catch { 깨진줄++; }
+  }
+  if (깨진줄) 못읽음.push(`작동대장 기록 장부 — 파싱 안 되는 줄 ${깨진줄}건`);
+  return { 줄들, 깨진줄, 있나: true };
+}
+
+/** 지난 사진과 지금을 견준다. 「무엇이 새로 들어왔나 · 무엇이 빠졌나」가 재심의 실제 재료다. */
+function 움직임(지금, 지난) {
+  if (!지난) return null;
+  const 집합 = (v) => new Set((v || []).map((x) => (Array.isArray(x) ? x[0] : x)));
+  const 갈래 = (이름) => {
+    const a = 집합(지난[이름]); const b = 집합(지금[이름]);
+    return { 들어옴: [...b].filter((x) => !a.has(x)), 빠짐: [...a].filter((x) => !b.has(x)) };
+  };
+  const 지난깨짐 = new Map((지난.깨짐 || []).map(([p, n]) => [p, n]));
+  const 오름 = (지금.깨짐 || [])
+    .filter(([p, n]) => 지난깨짐.has(p) && n > 지난깨짐.get(p))
+    .map(([p, n]) => ({ 경로: p, 전: 지난깨짐.get(p), 후: n }));
+  return {
+    지난날짜: 지난.날짜,
+    델타: {
+      깨짐: 지금.통.깨짐 - 지난.통.깨짐, 맨몸: 지금.통.맨몸 - 지난.통.맨몸,
+      안불림: 지금.통.안불림 - 지난.통.안불림, 괜찮음: 지금.통.괜찮음 - 지난.통.괜찮음,
+      장치: 지금.장치 - 지난.장치, 마찰: (지금.마찰 || 0) - (지난.마찰 || 0),
+    },
+    깨짐: 갈래('깨짐'), 맨몸: 갈래('맨몸'), 안불림: 갈래('안불림'), 마찰오름: 오름,
+  };
+}
+
+module.exports = { 재기, 분류, 경로풀기, 깨짐기준, 스냅샷, 기록읽기, 움직임, 기록경로 };
 
 /* ── 그리기 ──────────────────────────────────────────────────────────────── */
 
@@ -373,6 +452,62 @@ function 분포막대(분포) {
       <div class="hb-v">${v}</div><div class="hb-k">${k}${k === 0 ? '건' : ''}</div></div>`;
   }).join('')}</div>
   <p class="more">가로 = 그 도구가 마찰 장부에 인용된 건수 · 세로 = 도구 개수 · <b style="color:${킷.coral3}">빨강 = ${깨짐기준}건 이상</b>(「자꾸 깨진다」로 세는 구간).</p>`;
+}
+
+/** ±N 을 색으로 — 🟠🔴⚫ 는 줄면 좋고, 🟢 는 늘면 좋다. */
+function 델타(n, 늘면좋나) {
+  if (!n) return '<span class="d0">±0</span>';
+  const 좋음 = 늘면좋나 ? n > 0 : n < 0;
+  return `<span class="${좋음 ? 'dg' : 'db'}">${n > 0 ? '+' : ''}${n}</span>`;
+}
+
+function 목록칩(제목, 항목들, 색) {
+  if (!항목들.length) return '';
+  return `<div class="chip-row"><span class="chip-t" style="color:${색}">${esc(제목)}</span>
+    ${항목들.slice(0, 10).map((s) => `<code>${esc(s)}</code>`).join(' ')}
+    ${항목들.length > 10 ? `<span class="dim">…외 ${항목들.length - 10}</span>` : ''}</div>`;
+}
+
+function 움직임절(움, 기록) {
+  if (!기록.있나) {
+    return `<div class="warnbox"><b>아직 기록이 없다.</b> <code>node tools/작동대장.js --기록</code> 를
+      한 번 돌리면 그 순간이 장부에 박히고, <b>다음 판부터 여기에 「무엇이 움직였나」가 뜬다.</b>
+      기록은 지우지 않는다(append-only) — 그래서 몇 주가 쌓이면 추세가 보인다.</div>`;
+  }
+  if (!움) {
+    return `<div class="warnbox">장부 파일은 있는데 <b>읽을 수 있는 줄이 0</b>이다 — 「움직임 없음」이 아니라
+      <b>「못 읽었다」</b>다(F207). <code>docs/_ops/작동대장_기록.jsonl</code> 을 연다.</div>`;
+  }
+  const D = 움.델타;
+  const 조용 = !움.깨짐.들어옴.length && !움.깨짐.빠짐.length && !움.맨몸.들어옴.length
+    && !움.맨몸.빠짐.length && !움.안불림.들어옴.length && !움.안불림.빠짐.length && !움.마찰오름.length;
+  return `<table class="t"><thead><tr><th>통</th><th>지난 기록 (${esc(움.지난날짜)})</th><th>지금</th><th>움직임</th></tr></thead><tbody>
+    <tr><td>🟠 자꾸 깨진다</td><td class="c">${기록.줄들.at(-1).통.깨짐}</td><td class="c"><b>${기록.줄들.at(-1).통.깨짐 + D.깨짐}</b></td><td class="c">${델타(D.깨짐, false)}</td></tr>
+    <tr><td>🔴 맨몸이다</td><td class="c">${기록.줄들.at(-1).통.맨몸}</td><td class="c"><b>${기록.줄들.at(-1).통.맨몸 + D.맨몸}</b></td><td class="c">${델타(D.맨몸, false)}</td></tr>
+    <tr><td>⚫ 아무도 안 부른다</td><td class="c">${기록.줄들.at(-1).통.안불림}</td><td class="c"><b>${기록.줄들.at(-1).통.안불림 + D.안불림}</b></td><td class="c">${델타(D.안불림, false)}</td></tr>
+    <tr><td>🟢 괜찮다</td><td class="c">${기록.줄들.at(-1).통.괜찮음}</td><td class="c"><b>${기록.줄들.at(-1).통.괜찮음 + D.괜찮음}</b></td><td class="c">${델타(D.괜찮음, true)}</td></tr>
+    <tr><td class="dim">장치 · 마찰 장부</td><td class="c dim">—</td><td class="c dim">—</td><td class="c">${델타(D.장치, true)} · ${델타(D.마찰, true)}</td></tr>
+  </tbody></table>
+  ${조용 ? '<p class="none">통을 드나든 파일은 없다 — 숫자가 같으면 <b>진짜로</b> 같다(이 절이 0 을 0 이라고 말할 수 있는 이유는 위 장부에 지난 목록이 통째로 있기 때문이다).</p>' : `
+  ${목록칩('🟠 새로 들어옴', 움.깨짐.들어옴, 킷.coral3)}
+  ${목록칩('🟠 빠짐', 움.깨짐.빠짐, 킷.emerald)}
+  ${목록칩('🔴 맨몸 새로', 움.맨몸.들어옴, 킷.coral3)}
+  ${목록칩('🔴 맨몸 벗어남', 움.맨몸.빠짐, 킷.emerald)}
+  ${목록칩('⚫ 삭제 후보 새로', 움.안불림.들어옴, 킷.navy)}
+  ${목록칩('⚫ 삭제 후보 벗어남', 움.안불림.빠짐, 킷.emerald)}
+  ${움.마찰오름.length ? `<div class="chip-row"><span class="chip-t" style="color:${킷.coral3}">📈 또 아팠다</span>
+    ${움.마찰오름.map((x) => `<code>${esc(x.경로)}</code><span class="dim"> ${x.전}→${x.후}</span>`).join(' · ')}</div>` : ''}`}`;
+}
+
+function 추세표(기록) {
+  const 줄들 = 기록.줄들.slice(-8);
+  if (줄들.length < 2) return '';
+  return `<table class="t"><thead><tr><th>기록</th><th class="c">🟠</th><th class="c">🔴</th><th class="c">⚫</th><th class="c">🟢</th><th class="c">장치</th><th class="c">마찰 장부</th></tr></thead><tbody>
+  ${줄들.map((r) => `<tr><td class="mono">${esc(r.날짜)}</td>
+    <td class="c">${r.통.깨짐}</td><td class="c">${r.통.맨몸}</td><td class="c">${r.통.안불림}</td>
+    <td class="c">${r.통.괜찮음}</td><td class="c dim">${r.장치}</td><td class="c dim">${r.마찰 ?? '?'}</td></tr>`).join('')}
+  </tbody></table>
+  <p class="more">기록 ${기록.줄들.length}건 중 최근 ${줄들.length}건 · 전량 = <code>docs/_ops/작동대장_기록.jsonl</code></p>`;
 }
 
 function 그리기(d, 도장) {
@@ -476,6 +611,12 @@ function 그리기(d, 도장) {
   .hb-bar{width:26px;border-radius:4px 4px 0 0}
   .hb-v{font-size:12px;font-weight:700;color:var(--navy);margin-top:5px;font-variant-numeric:tabular-nums}
   .hb-k{font-size:11px;color:var(--slate2)}
+  .d0{color:var(--slate2);font-weight:700}
+  .dg{color:var(--em);font-weight:800}
+  .db{color:var(--coral3);font-weight:800}
+  .chip-row{margin:9px 0;font-size:13px;line-height:2}
+  .chip-t{font-weight:800;margin-right:9px;font-size:12.5px}
+  .chip-row code{background:var(--cream);border:1px solid var(--cream3)}
   ol.axes{margin:8px 0 0;padding-left:22px}
   ol.axes li{margin:7px 0;font-size:13.5px;color:#3A3F52}
   code{background:var(--cream);padding:1px 6px;border-radius:5px;font-size:12.5px;
@@ -495,7 +636,12 @@ function 그리기(d, 도장) {
 <p class="lead">판정의 주인은 <code>docs/SYNK_철학.md</code> 부록 A-1 이다. 이 화면은 <b>인용</b>이고 여기서 다시 판정하지 않는다.</p>
 ${사슬띠}
 
-<h2><span class="no">Ⅱ</span>네 통 — 이번 주 후보</h2>
+<h2><span class="no">Ⅱ</span>지난 기록 대비 — <b>주간 재심은 이 절만 읽는다</b></h2>
+<p class="lead">「지금 상태」는 이 화면이 지고, <b>「무엇이 어떻게 움직였나」는 기록 장부</b>가 진다 — 그 주의 사진은 다시 계산하지 않으니 뒤집힐 값이 없다. 기록 = <code>node tools/작동대장.js --기록</code>(append-only · 지우지 않는다).</p>
+${움직임절(d.움직임, d.기록)}
+${추세표(d.기록)}
+
+<h2><span class="no">Ⅲ</span>네 통 — 지금 상태</h2>
 <p class="lead">장치 <b>${d.장치들.length}개</b>(도구·라이브러리·훅)를 회귀 ${d.말 ? d.말.회귀개수 : '?'}벌 · 마찰 장부 ${d.마찰 ? d.마찰.읽은수 : '?'}건 · 저장소 글 ${d.말 ? d.말.조각.length : '?'}벌 · git 이력에 대조했다. <b>왼쪽이 급한 순서다.</b></p>
 <div class="tongs">
 ${통칸('#C79200', '🟠', '자꾸 깨진다', d.통.깨짐.length, `마찰 ${깨짐기준}건 이상 — 고쳐도 또 아팠다 · 재설계 후보`)}
@@ -504,28 +650,28 @@ ${통칸(킷.navy, '⚫', '아무도 안 부른다', d.통.안불림.length, '�
 ${통칸(킷.emerald, '🟢', '괜찮다', d.통.괜찮음.length, '안 건드린다')}
 </div>
 
-<h2><span class="no">Ⅲ</span>🟠 자꾸 깨진다 — <b>${d.통.깨짐.length}건</b> <span class="dim">· 재설계 1순위</span></h2>
+<h2><span class="no">Ⅳ</span>🟠 자꾸 깨진다 — <b>${d.통.깨짐.length}건</b> <span class="dim">· 재설계 1순위</span></h2>
 <p class="lead">수리가 아니라 <b>재설계</b>를 볼 자리다 — 같은 파일이 마찰 장부에 ${깨짐기준}번 넘게 올랐다는 것은 <b>고쳐도 또 아팠다</b>는 뜻이다. 「2번째 = 실수가 아니라 시스템 결함 · 3번째 = 원인을 쓸 수 없게 만든다」(CLAUDE.md).</p>
 ${줄표(d.통.깨짐, 20)}
 ${분포막대(d.분포)}
 
-<h2><span class="no">Ⅳ</span>🔴 맨몸이다 — <b>${d.통.맨몸.length}건</b> <span class="dim">· 뜯기 전에 회귀부터</span></h2>
+<h2><span class="no">Ⅴ</span>🔴 맨몸이다 — <b>${d.통.맨몸.length}건</b> <span class="dim">· 뜯기 전에 회귀부터</span></h2>
 <p class="lead">저장소 여기저기서 부르는데 회귀 ${d.말 ? d.말.회귀개수 : '?'}벌 어디에도 이름이 안 나온다. <b>뜯어도 아무 테스트가 안 빨개진다</b> — 지금 이게 도는지 기계가 모른다.</p>
 ${줄표(d.통.맨몸, 20)}
 
-<h2><span class="no">Ⅴ</span>⚫ 아무도 안 부른다 — <b>${d.통.안불림.length}건</b> <span class="dim">· 삭제 후보</span></h2>
+<h2><span class="no">Ⅵ</span>⚫ 아무도 안 부른다 — <b>${d.통.안불림.length}건</b> <span class="dim">· 삭제 후보</span></h2>
 <p class="lead">회귀·다른 도구·훅·문서·<code>settings.json</code> 어디에도 이름이 없다. 경량 원칙의 과녁이다 — 다만 <b>삭제는 실사용 실측 후 건별</b>이고, 「대장에 떴다」는 삭제 근거가 아니라 <b>열어볼 이유</b>다(유호 08-13).</p>
 ${줄표(d.통.안불림, 20)}
 
-<h2><span class="no">Ⅵ</span>부품 — 대외 구역별 상태</h2>
+<h2><span class="no">Ⅶ</span>부품 — 대외 구역별 상태</h2>
 <p class="lead">정본 = <code>docs/시스템_대장.md</code> (${부품수 == null ? '못 읽음' : `${부품수}줄`}). 막대 = 🟢 라이브 · 🟡 반영 대기 · ⚪ 설계만.</p>
 ${d.부품 ? `<table class="t"><thead><tr><th>구역</th><th>줄</th><th>상태 분포</th><th class="mono">🟢·🟡·⚪</th></tr></thead><tbody>${구역표}</tbody></table>` : '<p class="none">시스템 대장을 못 읽었다.</p>'}
 
-<h2><span class="no">Ⅶ</span>안 잰 축 — <b>이 화면이 «모르는» 것</b></h2>
+<h2><span class="no">Ⅷ</span>안 잰 축 — <b>이 화면이 «모르는» 것</b></h2>
 <div class="warnbox"><b>0 과 「안 쟀다」는 다르다.</b> 여기 적힌 것은 이 판에서 <b>일부러 빼거나 못 잰</b> 축이다 — 화면의 초록을 이 목록과 함께 읽는다.</div>
 <ol class="axes">${안잰축.map((s) => `<li>${s}</li>`).join('')}</ol>
 
-${d.못읽음.length ? `<h2><span class="no">Ⅷ</span>🔴 못 읽은 입력 — ${d.못읽음.length}건</h2>
+${d.못읽음.length ? `<h2><span class="no">Ⅸ</span>🔴 못 읽은 입력 — ${d.못읽음.length}건</h2>
 <div class="warnbox">입력을 못 읽으면 그 칸은 «비었다»가 아니라 «모른다»다(F207). 아래가 비어야 위 숫자를 믿는다.</div>
 <ol class="axes">${d.못읽음.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>` : ''}
 
@@ -560,6 +706,33 @@ function 본체() {
       for (const r of d.통.안불림) console.log(`     ${r.경로}`);
     }
     if (d.못읽음.length) { console.log(`  🔴 못 읽은 입력 ${d.못읽음.length}건:`); for (const s of d.못읽음) console.log(`     · ${s}`); }
+    return 0;
+  }
+
+  if (argv.includes('--기록')) {
+    // 그 주의 사진을 장부에 박는다. **덧붙이기만 한다** — 고치거나 지우지 않는다.
+    const d = 재기(오늘);
+    const 날짜 = new Date().toISOString().slice(0, 10);
+    if (d.못읽음.length) {
+      console.error(`🔴 [작동대장] 못 읽은 입력 ${d.못읽음.length}건 — **기록하지 않는다.**`);
+      for (const s of d.못읽음) console.error(`   · ${s}`);
+      console.error('   못 읽은 판을 장부에 박으면 다음 주 「움직임」이 통째로 거짓이 된다.');
+      return 1;
+    }
+    const 기존 = d.기록.줄들;
+    if (기존.some((r) => r.날짜 === 날짜) && !argv.includes('--강제')) {
+      console.log(`⏭ [작동대장] ${날짜} 기록이 이미 있다 — 건너뛴다(같은 날 두 줄은 추세를 흐린다).`);
+      console.log('   같은 날 또 박아야 하면 --강제. 기존 줄은 어느 경우에도 안 지운다.');
+      return 0;
+    }
+    const 줄 = JSON.stringify(스냅샷(d, 날짜));
+    fs.mkdirSync(path.dirname(기록경로), { recursive: true });
+    const 앞 = 있나(기록경로) ? 읽기(기록경로) : '';
+    const 꼬리 = 앞 && !앞.endsWith('\n') ? '\n' : '';
+    fs.appendFileSync(기록경로, `${꼬리}${줄}\n`, 'utf8');
+    console.log(`✅ [작동대장] 기록 ${기존.length + 1}번째 — ${날짜}`);
+    console.log(`   🟠${d.통.깨짐.length} · 🔴${d.통.맨몸.length} · ⚫${d.통.안불림.length} · 🟢${d.통.괜찮음.length}`);
+    console.log(`   ${path.relative(ROOT, 기록경로)} (append-only · 행 삭제 금지)`);
     return 0;
   }
 
