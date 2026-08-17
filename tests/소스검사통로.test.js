@@ -32,7 +32,14 @@ const path = require('node:path');
 const { 코드만, 줄맞춰코드만, 구간, 코드만픽스처, 상위집합픽스처 } = require('./lib/소스검사.js');
 
 const 여기 = path.join(__dirname, 'lib', '소스검사.js');
-const 형제 = path.join(__dirname, '..', '..', 'SYNK-talk', 'tests', 'lib', '소스검사.js');
+/* 자리는 정본 통로에서 — 손으로 `<repo>/..` 를 적으면 **워크트리에서 ④ 가 늘 skip** 이다
+ * (`..` 이 `worktrees/` 를 가리킨다). 코드 트랙은 규약상 워크트리에서 짓는다 — 즉 두 저장소의
+ * 공용 통로가 갈라졌는지를 정작 코드를 고치는 판에서 한 번도 안 재고 있었다. */
+const REPO = path.join(__dirname, '..');
+const 형제 = path.join(
+  require(path.join(REPO, '.claude', 'hooks', 'lib', '형제저장소.js')).형제경로(REPO),
+  'tests', 'lib', '소스검사.js',
+);
 
 /* ── ① 공용 통로의 힘 — 값으로 못박는다 ─────────────────────────────────────── */
 

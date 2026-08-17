@@ -40,7 +40,10 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const TALK = process.env.SYNK_TALK_ROOT || path.resolve(ROOT, '..', 'SYNK-talk');
+/* 이음매(`SYNK_TALK_ROOT`)는 그대로 이긴다 — 기본 자리만 정본 통로에서 파생한다(워크트리에서
+ * `ROOT/..` 는 `worktrees/` 라 형제를 못 찾고, 이 도구는 그때 「미실행(2)」으로 끝난다). */
+const TALK = process.env.SYNK_TALK_ROOT
+  || require(path.join(ROOT, '.claude', 'hooks', 'lib', '형제저장소.js')).형제경로(ROOT);
 const 린트 = require(path.join(ROOT, 'tools', '브랜드렌더린트.js'));
 const 토큰 = require(path.join(ROOT, 'docs', '디자인_토큰.json'));
 

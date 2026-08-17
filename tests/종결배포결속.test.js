@@ -27,8 +27,12 @@ const ROOT = path.resolve(__dirname, '..');
 const 스킬 = (name) =>
   fs.readFileSync(path.join(ROOT, '.claude', 'skills', name, 'SKILL.md'), 'utf8');
 
-/** `/close` 가 가리키는 형제 저장소의 도구. 없을 수 있다(클론 하나만 받은 기계·CI). */
-const 배포대조경로 = path.join(ROOT, '..', 'SYNK-talk', 'tools', '배포대조.js');
+/** `/close` 가 가리키는 형제 저장소의 도구. 없을 수 있다(클론 하나만 받은 기계·CI).
+ *  자리는 정본 통로에서 — 손으로 `ROOT/..` 를 적으면 워크트리에서 늘 skip 이다(`..` = `worktrees/`). */
+const 배포대조경로 = path.join(
+  require(path.join(ROOT, '.claude', 'hooks', 'lib', '형제저장소.js')).형제경로(ROOT),
+  'tools', '배포대조.js',
+);
 
 test('🔑 /close 에 배포 대조 «발동»이 있다 — 단계가 사라지면 도구는 있는데 아무도 안 돌리는 옛 상태로 돌아간다', () => {
   const close = 스킬('close');
@@ -93,8 +97,12 @@ test('☠️ /close 가 적은 상대 경로로 실제로 그 도구에 닿는�
   const m = close.match(/cd\s+(\.\.[^\s&|]*)\s*&&\s*node\s+(tools\/[^\s`]+)/);
   assert.ok(m, '3-b 의 실행 줄에서 「cd <경로> && node <도구>」를 못 뽑았다 — 형식이 바뀌었다');
 
-  const 목표 = path.join(ROOT, m[1], m[2]);
-  if (!fs.existsSync(path.join(ROOT, m[1]))) {
+  /* 상대 경로는 **사람이 서 있는 자리**에서 푼다 — 그건 주저장소지 워크트리가 아니다.
+   * `ROOT` 로 풀면 워크트리에서 `..` 이 `worktrees/` 를 가리켜 이 검사가 늘 skip 된다
+   * (코드 트랙은 규약상 워크트리에서 짓는다 — 즉 정작 스킬을 고치는 판에서 안 돌았다). */
+  const 기준 = require(path.join(ROOT, '.claude', 'hooks', 'lib', '형제저장소.js')).주저장소(ROOT);
+  const 목표 = path.join(기준, m[1], m[2]);
+  if (!fs.existsSync(path.join(기준, m[1]))) {
     t.skip(`형제 저장소가 이 기계에 없다 — 경로 실측 미실행(${m[1]})`);
     return;
   }
