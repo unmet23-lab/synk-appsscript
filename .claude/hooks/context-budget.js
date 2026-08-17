@@ -71,6 +71,20 @@ const T = thresholds(WINDOW); // 창을 안 뒤에야 임계가 정해진다
 const cwd = input.cwd || process.cwd();
 const sid = input.session_id;
 
+// 🔑 **모델 «관측»은 이 자리에서만 찍힌다** — 재심 배선 ㉠(모델 변경)의 급소다(2026-08-17 · F548).
+//   전사에서 모델을 뽑는 통로는 `message.usage` 줄인데 그건 어시스턴트가 한 턴을 마쳐야 찍힌다.
+//   그래서 SessionStart(=판정하는 자리)에는 **값이 원리상 없고**, 거기서 적으려 했더니 장부가
+//   영영 비어 ㉠ 이 발동 0 이었다. 판정은 그대로 대기열이 지고, 여기선 **적기만** 한다.
+//   ⚠ 아래 `발동판정` 이 대부분의 턴에서 곧장 exit 하므로 **그 앞**에 둔다 — 뒤에 두면
+//     컨텍스트가 임계에 닿은 세션에서만 관측이 찍혀 표본이 통째로 편향된다.
+//   ⚠ 계기판이지 가드가 아니다 — 여기서 터져도 컨텍스트 경고를 죽이지 않는다.
+try {
+  const 신호 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '재심신호.js'));
+  const wt = require(path.join(__dirname, 'lib', 'worktrees.js'));
+  // 장부는 **한 벌**이어야 한다 — 워크트리마다 따로 쌓이면 지워질 때 관측이 함께 사라진다.
+  신호.관측하기({ 뿌리: wt.mainWorktree(cwd), 모델: info.model });
+} catch (_) { /* 관측이 실패해도 세션은 방해하지 않는다 */ }
+
 const prev = store.readStage(cwd, sid);
 
 // 🔑 발동 여부는 **함수 하나**가 정한다 — 되감기(`tools/훅발동.js`)가 같은 함수를 쓴다.
