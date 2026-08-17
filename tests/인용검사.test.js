@@ -234,7 +234,8 @@ test('⑦ 면제 — 역사 문서는 자동 과녁에서 빠진다(목록 하�
 
 test('⑧ 실저장소 — 거짓양성만 본다(탐지력은 위 픽스처가 진다)', (t) => {
   const ROOT = path.resolve(__dirname, '..');
-  const 형제 = path.resolve(ROOT, '..', 'SYNK-talk');
+  // 자리는 정본 통로에서 — 손으로 `ROOT/..` 를 적으면 워크트리에서 늘 skip 이다(`..` = `worktrees/`).
+  const 형제 = require(path.join(ROOT, '.claude', 'hooks', 'lib', '형제저장소.js')).형제경로(ROOT);
   let 형제있음 = false;
   try { 형제있음 = fs.statSync(형제).isDirectory(); } catch (_) { 형제있음 = false; }
   if (!형제있음) return t.skip('형제 저장소(SYNK-talk)가 없다 — fail 이 아니라 skip 이다(F207)');

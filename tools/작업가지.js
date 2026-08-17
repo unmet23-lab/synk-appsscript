@@ -47,6 +47,10 @@ const path = require('node:path');
 const ROOT = path.join(__dirname, '..');
 const 기본가지 = 'master';
 
+/* 머지 뒤 로컬 master 를 전진시키는 통로 — `인계문수거` 와 **같은 파일**을 쓴다
+ * (같은 판정을 두 곳에 적으면 갈라진다 · 사연은 tools/lib/master동기.js 머리말). */
+const 동기 = require(path.join(__dirname, 'lib', 'master동기.js'));
+
 /** 스로틀 간격(분). 0 = 끄기(항상 조회). 기본 10분 — 작업본소유자의 fetch 스로틀과 같은 값. */
 const 신선_분 = Number(process.env.SYNK_PR_LIST_MIN ?? 10);
 
@@ -205,6 +209,12 @@ function 닫기() {
 
   const 지우기 = gh(['api', '--method', 'DELETE', `repos/{owner}/{repo}/git/refs/heads/${가지}`]);
   console.log(지우기.성공 ? '   원격 가지도 거뒀다.' : `   ⚠ 원격 가지가 남았다(${지우기.오류 || '사유 모름'}) — 목록에 계속 뜬다.`);
+
+  /* 🔑 머지는 **origin 에서만** 일어난다 — 여기서 멈추면 이 트리의 로컬 master 는 제자리다.
+   * 실측 2026-08-17: 그렇게 하루에 57 커밋 뒤처졌고, 로컬 판을 읽는 층이 전부 거짓을 냈다
+   * (F542 보드 줄 · F565 가지 기준 · F566 커밋 목록 — 셋 다 이 한 줄이 없어서 생긴 얼굴이다).
+   * `--ff-only` 라 머지 커밋을 만들지 않고, 남의 미커밋이 있으면 git 이 거절한다(그게 안전선이다). */
+  console.log(동기.줄내기('작업가지', 동기.전진(뿌리)));
   console.log('   로컬 워크트리 정리는 ExitWorktree(remove) 가 한다.\n');
 }
 
