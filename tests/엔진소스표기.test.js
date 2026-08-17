@@ -93,13 +93,20 @@ test('🔑 배선 — engineParts() 는 **안 접는다**. 두 이음매가 일�
   }
 });
 
-test('🔑 [옛 통로 금지] 호출부가 engineSource() 를 다시 접지 않는다 — 같은 판정이 두 곳이면 갈라진다', () => {
-  const 샌곳 = [];
-  for (const f of fs.readdirSync(path.join(ROOT, 'tests')).filter((x) => x.endsWith('.test.js'))) {
-    const src = fs.readFileSync(path.join(ROOT, 'tests', f), 'utf8');
-    /* 겨누는 것은 «engineSource() 의 결과를 다시 줄끝 접는» 표기 하나다.
-     * 파일을 직접 읽어 접는 호출부는 이 이음매 밖이라 대상이 아니다(그건 별건 · 장부 F526 ▶). */
-    if (/engineSource\(\)\s*\.replace\(\/\\r/.test(src)) 샌곳.push(f);
-  }
+/* 겨누는 것은 «engineSource() 의 결과를 다시 줄끝 접는» 표기 하나다.
+ * 파일을 직접 읽어 접는 호출부는 이 이음매 밖이라 대상이 아니다(그건 별건 · 장부 F526 ▶). */
+const 옛통로인가 = (src) => /engineSource\(\)\s*\.replace\(\/\\r/.test(src);
+
+test('🔴 [탐지력] 옛 통로 판별기가 실제로 잡는다 — 실저장소가 깨끗하면 아래 검사는 눈멀어도 초록이다', () => {
+  assert.ok(옛통로인가("const code = engineSource().replace(/\\r\\n/g, '\\n');"), '거둔 그 표기를 못 잡는다');
+  assert.ok(옛통로인가('const code = engineSource()\n  .replace(/\\r/g, ""); '), '줄을 바꿔 쓰면 빠져나간다');
+  assert.ok(!옛통로인가('const code = engineSource();'), '거짓양성 — 정상 호출을 위반으로 읽는다');
+  assert.ok(!옛통로인가("const s = 원고.replace(/\\r\\n/g, '\\n');"), '거짓양성 — 이음매 밖의 접기까지 잡는다');
+});
+
+test('🔑 [옛 통로 금지] 실저장소: 호출부가 engineSource() 를 다시 접지 않는다 (거짓양성 검사)', () => {
+  const 파일들 = fs.readdirSync(path.join(ROOT, 'tests')).filter((x) => x.endsWith('.test.js'));
+  assert.ok(파일들.length > 0, '테스트 파일 0건 — 분모가 비면 이 초록은 판정이 아니다(F207)');
+  const 샌곳 = 파일들.filter((f) => 옛통로인가(fs.readFileSync(path.join(ROOT, 'tests', f), 'utf8')));
   assert.deepEqual(샌곳, [], `이 파일들이 이음매 뒤에서 또 접는다: ${샌곳.join(', ')}`);
 });
