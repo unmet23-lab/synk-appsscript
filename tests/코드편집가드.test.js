@@ -452,3 +452,50 @@ test('settings.json 라우팅이 이 훅보다 넓다', () => {
   assert.ok(!/case "\$IN" in/.test(cmd),
     'settings.json 이 앞단에서 다시 거르고 있다 — 훅보다 좁은 필터는 그 자체가 구멍이다(F053)');
 });
+
+/* ── 자기 처방 되먹임 (CLAUDE.md 가드 맹점 ③) ────────────────────────────────────
+ * 「차단 사유가 시키는 명령을 그 가드에 되먹여 통과하는지 본다 — 따를 수 없는 처방은 우회를
+ * 정상 통로로 만든다(F103).」 이 훅은 그 함정을 **이미 한 번 밟았고**(머리말 F088: 3번 처방이
+ * 「스크래치패드로 옮겨라」인데 이미 스크래치패드였다), 2026-08-17 에 같은 자리에서 또 밟았다:
+ * F591 트랙이 처방 3 을 따르려다 **세 번 연속** 막혔다 — ①상대 표기로 스크래치패드에서 돌렸고
+ * ②경로를 node argv 로 조립했고 ③PowerShell 에서 `$env:CODE_EDIT_BYPASS='1'` 로 따옴표를 씌웠다.
+ * ①③은 처방문이 말해주지 않던 것이라 문구에 넣었고, 여기서 그 약속이 지켜지는지 잰다.
+ * ⚠ 실행은 하지 않는다 — 훅에 명령 문자열만 물리고 판정을 읽는다. */
+
+test('처방 되먹임 ① — 스크래치패드 «절대경로» 쓰기는 통과한다(처방 3 이 실제로 통한다)', () => {
+  /* ⚠ 두 갈래를 **따로** 잰다. 이 저장소의 실제 스크래치패드는 `AppData/Local/Temp/` 아래라
+   * `temp` 규칙과 `scratchpad` 규칙이 **겹친다** — 겹친 자리만 검사하면 한쪽을 통째로 지워도
+   * 초록이다(2026-08-17 변이로 실측한 구멍이다: `/scratchpad/` 를 죽였는데 36건 전부 통과했다). */
+  const 실물 = 가드('node -e "require(\'fs\').writeFileSync(\'C:/Users/x/AppData/Local/Temp/claude/scratchpad/mut.js\',\'x\')"');
+  assert.ok(!실물.차단,
+    `처방대로 했는데 막혔다 — 따를 수 없는 처방은 BYPASS 를 손버릇으로 만들고, 그 손버릇은 진짜 덮어쓰기도 통과시킨다: ${실물.사유.slice(0, 200)}`);
+
+  const temp밖 = 가드('node -e "require(\'fs\').writeFileSync(\'D:/work/scratchpad/mut.js\',\'x\')"');
+  assert.ok(!temp밖.차단,
+    `«scratchpad» 규칙 자체가 죽었다 — temp 아래가 아닌 스크래치패드를 못 본다: ${temp밖.사유.slice(0, 160)}`);
+});
+
+test('처방 되먹임 ② — 상대 표기는 막되, «왜 스크래치패드인데도 막았는지»를 말한다', () => {
+  const r = 가드('node -e "require(\'fs\').writeFileSync(\'mut.js\',\'x\')"');
+  assert.ok(r.차단,
+    '상대 표기를 통과시켰다 — cwd 를 모르는 채 열어주면 temp 아래 저장소에서 가드가 통째로 꺼진다(훅 머리말의 그 자리)');
+  assert.match(r.사유, /절대경로로 적어야 한다/,
+    '막기만 하고 이유를 안 말한다 — 그 침묵이 F591 에서 같은 처방을 세 번 헛돌게 했다(맞는 얼굴로 다른 것을 가리킨다)');
+});
+
+test('처방 되먹임 ③ — 문서화된 BYPASS 표기가 **두 셸 모두**에서 실제로 통한다', () => {
+  const bash = 가드('CODE_EDIT_BYPASS=1 node -e "require(\'fs\').writeFileSync(\'Code.js\',\'x\')"');
+  assert.ok(!bash.차단, `bash 표기 우회가 안 통한다: ${bash.사유.slice(0, 160)}`);
+
+  // 이 저장소의 주 셸은 PowerShell 이다(CLAUDE.md 「셸이 둘이다」) — 처방문이 한쪽만 알면 반쪽이다.
+  const ps = 가드('$env:CODE_EDIT_BYPASS=1; node -e "require(\'fs\').writeFileSync(\'Code.js\',\'x\')"', 'PowerShell');
+  assert.ok(!ps.차단, `PowerShell 표기 우회가 안 통한다 — 주 셸에서 못 쓰는 우회는 없는 우회다: ${ps.사유.slice(0, 160)}`);
+});
+
+test('처방 되먹임 ④ — 처방문이 두 셸의 표기를 **둘 다** 적고 있다', () => {
+  const r = 가드('node -e "require(\'fs\').writeFileSync(\'Code.js\',\'x\')"');
+  assert.ok(r.차단, '검사 전제가 깨졌다 — 이 명령은 막혀야 처방문이 나온다');
+  assert.match(r.사유, /CODE_EDIT_BYPASS=1/, '우회 표기를 안 알려준다');
+  assert.match(r.사유, /\$env:CODE_EDIT_BYPASS/,
+    'PowerShell 표기가 빠졌다 — 주 셸 사용자에겐 처방이 없는 것과 같다(F591 에서 실제로 헛돌았다)');
+});
