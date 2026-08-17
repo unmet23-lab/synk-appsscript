@@ -47,6 +47,7 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
+const 형제저장소 = require(path.join(ROOT, '.claude', 'hooks', 'lib', '형제저장소.js'));
 const 정본 = path.join(ROOT, 'docs', '_ops', '자율주행_결정록.jsonl');
 const 파생 = path.join(ROOT, 'docs', '자율주행_결정록.html');
 const 표시이름 = '자율주행 결정 기록';
@@ -509,7 +510,9 @@ function 판정(인자) {
 function 저장소경로(이름) {
   const s = String(이름 || '').trim();
   if (!s || s === 'appsscript' || s === 'SYNK-appsscript' || s === '(루트)' || s === 'as') return ROOT;
-  if (s === 'talk' || s === 'SYNK-talk') return path.join(ROOT, '..', 'SYNK-talk');
+  /* 자리는 정본 통로에서 — 워크트리에서 `ROOT/..` 는 `worktrees/` 라, 손으로 적으면 형제
+   * 커밋을 물을 때 없는 폴더를 cwd 로 줘 git 이 통째로 실패한다(그 실패는 「살아있음」으로 접힌다). */
+  if (s === 'talk' || s === 'SYNK-talk') return 형제저장소.형제경로(ROOT);
   return null;
 }
 

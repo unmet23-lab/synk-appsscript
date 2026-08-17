@@ -38,14 +38,16 @@ const { spawnSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const 도장경로 = path.join(ROOT, 'docs', '_ops', '형제초록.json');
+/* 「형제는 어디 있나」의 정본 — 사본을 만들면 갈라지고, 갈라진 쪽은 조용히 「없다」를 낸다. */
+const 형제저장소 = require(path.join(ROOT, '.claude', 'hooks', 'lib', '형제저장소.js'));
 
-/* 워크트리에서도 형제를 찾는다 — 워크트리 경로는 `<본체>/.claude/worktrees/<이름>` 이라
- * `..` 이 `worktrees/` 를 가리킨다(F403 이 남긴 자리 · `tools/이해대장.js` 와 같은 규약). */
+/* 워크트리에서도 형제를 찾는다 — 자리는 정본 하나에서 파생하고(`형제저장소.js`), **존재 판정은
+ * 여기 남는다**: 이 축이 묻는 것은 「저장소로 열리나」(`.git` 이 있나)라 술어가 다르다.
+ * 옛 판은 경로 모양 정규식이었고 `.claude/worktrees/` 밖의 워크트리를 못 봤다(F403 계열 · 실측 표는
+ * 정본 머리말). 못 찾으면 여전히 `null` — 「없다」와 「못 쟀다」를 부르는 쪽이 갈라 말한다. */
 function 형제경로(root = ROOT) {
-  const 후보 = [path.resolve(root, '..', 'SYNK-talk')];
-  const m = /^(.*)[\\/]\.claude[\\/]worktrees[\\/][^\\/]+$/.exec(path.resolve(root));
-  if (m) 후보.push(path.resolve(m[1], '..', 'SYNK-talk'));
-  return 후보.find((d) => fs.existsSync(path.join(d, '.git'))) || null;
+  const 자리 = 형제저장소.형제경로(root);
+  return fs.existsSync(path.join(자리, '.git')) ? 자리 : null;
 }
 
 function git(cwd, args) {

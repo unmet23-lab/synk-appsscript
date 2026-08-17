@@ -34,6 +34,13 @@ function mkPair(t) {
     fs.mkdirSync(path.join(as, 'tools'), { recursive: true });
     fs.mkdirSync(path.join(as, 'docs', '_ops'), { recursive: true });
     fs.copyFileSync(도구, path.join(as, 'tools', '형제초록.js'));
+    /* 도구가 기대는 것을 **그대로** 싣는다 — 형제 자리는 저장소에 통로가 하나뿐이라
+     * (`.claude/hooks/lib/형제저장소.js`) 도구가 그걸 `require` 한다. 사본에서 빼면 이 시험은
+     * 도구를 재는 게 아니라 MODULE_NOT_FOUND 를 잰다(실측 2026-08-17 — CI 모사가 잡았다). */
+    fs.mkdirSync(path.join(as, '.claude', 'hooks', 'lib'), { recursive: true });
+    for (const n of ['형제저장소.js', 'worktrees.js']) {
+      fs.copyFileSync(path.join(ROOT, '.claude', 'hooks', 'lib', n), path.join(as, '.claude', 'hooks', 'lib', n));
+    }
 
     fs.mkdirSync(talk, { recursive: true });
     git(talk, ['init', '-b', 'master']);

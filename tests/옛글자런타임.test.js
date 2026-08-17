@@ -56,7 +56,9 @@ test('[단일 출처] 런타임 판정의 문자 클래스가 커밋 층(.claude
 
 test('[단일 출처] 형제 SYNK-talk 의 런타임 판정과도 같다', (t) => {
   // ⚠ 형제는 repo 밖이라 CI 에 없다 — 없을 때 조용히 통과시키지 않고 skip 으로 드러낸다(F207).
-  const 형제 = path.join(ROOT, '..', 'SYNK-talk', 'lib', '옛글자.js');
+  // 자리는 정본 통로에서 — 손으로 `ROOT/..` 를 적으면 워크트리에서 늘 skip 이다(`..` = `worktrees/`).
+  const 형제뿌리 = require(path.join(ROOT, '.claude', 'hooks', 'lib', '형제저장소.js')).형제경로(ROOT);
+  const 형제 = path.join(형제뿌리, 'lib', '옛글자.js');
   if (!fs.existsSync(형제)) return t.skip('형제 저장소 SYNK-talk 가 이 기계에 없다 — 실물 대조는 로컬에서만');
   assert.equal(클래스뽑기(path.join(ROOT, '엔진_콘텐츠AI.js')), 클래스뽑기(형제),
     '두 저장소의 런타임 게이트가 다른 글자를 막는다 — 같은 모델이 같은 글자를 내도 한쪽만 걸린다');
