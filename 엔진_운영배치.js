@@ -3500,6 +3500,11 @@ function archiveMonthly() {
     arc.getRange(arc.getLastRow() + 1, 1, move.length, 8).setValues(move);
     pl.getRange(2, 1, data.length, 8).clearContent(); // 8열 클리어 — 남은 태그가 다음 행에 밀려붙는 오배치 차단
     if (keep.length) pl.getRange(2, 1, keep.length, 8).setValues(keep);
+    /* [v9.244 · #Q100] **의도한 축소이므로 기준선도 내린다** — point_logs 가 수집 표식을 받은 순간
+     *   이 월간 아카이빙은 「수집 장부가 줄었다」의 발원지가 된다. 우리가 시킨 이동이라 따를 처방이
+     *   없는 경보다(F103). 행을 지우는 자리는 전수로 셋뿐이고(데모 퇴장 `wipe` · 음성 철회
+     *   `교재연동.js` · 여기), 셋 다 **그 자리에서** 내린다 — 목록을 따로 두면 갈라진다. */
+    if (move.length) 탭수축기준선지움_('point_logs');
 
     const coOut = Object.keys(carry).map(k => [k, carry[k].n, carry[k].e]); // [v7.1]
     if (co.getLastRow() > 1) co.getRange(2, 1, co.getLastRow() - 1, 3).clearContent();
