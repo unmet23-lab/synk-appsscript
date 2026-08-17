@@ -262,7 +262,9 @@ test('필드로 만들지 않기로 한 항목이 계약 필드에 몰래 들어
 
 test('형제 저장소 SYNK-talk의 계약 파일이 이 저장소와 같다 (줄바꿈만 제외)', (t) => {
   // 형제는 이 저장소 밖이다 — CI엔 없다. 없음을 통과로 만들지 않고 skip으로 드러낸다.
-  const 형제 = path.join(REPO, '..', 'SYNK-talk', '계약', '수집_교정_계약.json');
+  // 자리는 정본 통로에서 — 손으로 `REPO/..` 를 적으면 워크트리에서 늘 skip 된다(`..` = `worktrees/`).
+  const 형제뿌리 = require(path.join(REPO, '.claude', 'hooks', 'lib', '형제저장소.js')).형제경로(REPO);
+  const 형제 = path.join(형제뿌리, '계약', '수집_교정_계약.json');
   if (!fs.existsSync(형제)) {
     return t.skip('형제 저장소 SYNK-talk가 이 기계에 없다 — 실물 대조는 로컬에서만 (탐지는 위 검사들이 진다)');
   }

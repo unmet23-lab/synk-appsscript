@@ -307,7 +307,9 @@ test('등록 — as 설치본(.git/hooks)도 최신이라 실제로 돈다', (t)
 /* 🔑 F379 의 새 사실 ②를 정면으로 잰다 — 형제 세션은 여기 스위트를 안 돌리므로,
  *   형제 커밋 층에 배선이 없으면 그쪽은 **영원히** 안 잡힌다. */
 test('등록 — 형제 SYNK-talk 의 pre-commit 이 이 검사를 부른다', (t) => {
-  const 형제 = path.join(ROOT, '..', 'SYNK-talk', 'tools', 'precommit.js');
+  // 자리는 정본 통로에서 — 손으로 `ROOT/..` 를 적으면 워크트리에서 늘 skip 이다(`..` = `worktrees/`).
+  const 형제뿌리 = require(path.join(ROOT, '.claude', 'hooks', 'lib', '형제저장소.js')).형제경로(ROOT);
+  const 형제 = path.join(형제뿌리, 'tools', 'precommit.js');
   if (!fs.existsSync(형제)) {
     return t.skip('형제 저장소 SYNK-talk 가 이 기계에 없다 — 배선 대조는 로컬에서만');
   }

@@ -143,7 +143,8 @@ test('발동 자리: rot-check 가 이 한 벌로 메모리를 훑는다 (F389 �
  * ⚠ 두 저장소는 각자 클론되므로 CI 에는 형제가 없다 → **skip 으로 드러낸다**(통과와 미실행이
  *    같은 모양이면 안 된다). 탐지력은 위 픽스처가 진다. */
 test('형제 저장소(SYNK-talk) docs 에 금지 주제가 대기로 되살아나지 않았다', (t) => {
-  const talk = path.join(REPO, '..', 'SYNK-talk', 'docs');
+  // 자리는 정본 통로에서 — 손으로 `REPO/..` 를 적으면 워크트리에서 늘 skip 이다(`..` = `worktrees/`).
+  const talk = path.join(require(path.join(REPO, '.claude', 'hooks', 'lib', '형제저장소.js')).형제경로(REPO), 'docs');
   if (!fs.existsSync(talk)) {
     t.skip(`SYNK-talk 없음(${talk}) — 각자 클론이라 CI 에는 없다. 탐지력은 픽스처가 진다`);
     return;

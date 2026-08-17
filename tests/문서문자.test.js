@@ -62,7 +62,8 @@ test('저장소 텍스트에 옛 글자(한자·가나)가 없다', () => {
  *   이 검사가 한 저장소에서 멈춰 있는 동안 그쪽은 아무도 안 봤다(F167 · F190 과 같은 형제 사각).
  * ⚠ 형제는 repo **밖 환경**이라 CI 에는 없다 — 없을 때 **조용히 통과시키지 않고 skip 으로 드러낸다**.
  *   통과와 미실행이 같은 모양이면 그 초록은 아무 말도 안 한 것이다. 탐지력은 아래 픽스처가 진다. */
-const 형제 = path.join(ROOT, '..', 'SYNK-talk');
+/* 자리는 정본 통로에서 — 손으로 `ROOT/..` 를 적으면 **워크트리에서 늘 skip** 이다(`..` = `worktrees/`). */
+const 형제 = require(path.join(ROOT, '.claude', 'hooks', 'lib', '형제저장소.js')).형제경로(ROOT);
 test('형제 저장소 SYNK-talk 텍스트에도 옛 글자가 없다', (t) => {
   if (!fs.existsSync(path.join(형제, '.git'))) {
     return t.skip('형제 저장소 SYNK-talk 가 이 기계에 없다 — 실물 대조는 로컬에서만');
