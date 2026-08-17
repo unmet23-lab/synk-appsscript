@@ -381,9 +381,17 @@ const 면제 = [
 /* 항목이 `.md` 로 끝나면 **그 파일 하나**, 아니면 **접두**(폴더·이름 앞머리)로 읽는다. */
 const 면제인가 = (rel) => 면제.some((p) => (p.endsWith('.md') ? rel === p : rel.startsWith(p)));
 
+/* ☠️ `-c core.quotepath=false` 는 장식이 아니다 — 기본값이면 git 이 비ASCII 경로를 통째로
+ *   `"docs/_ops/\354\236\245\353\266\200/F1.md"` 로 뱉는다(따옴표까지 붙는다). 그러면 아래 `담기` 의
+ *   `rel.endsWith('.md')` 가 **영원히 거짓**이라 그 문서는 과녁에 아예 안 들어온다.
+ *   🔴 실측 2026-08-17(F527 분모 세기 중 발각): 검사 과녁 168벌 중 **143벌이 그렇게 통째로 빠졌다**
+ *   — 보이던 것은 25벌(14.9%)뿐이고, `docs/SYNK_철학.md` 같은 정본이 그 사각에 있었다.
+ *   새는 방향이 「초록」이라 안 띄었다: 화면에는 늘 「문서 N벌 · 새 인용 0건」이 찍혔다(맹점 ④).
+ *   회귀 = `tests/인용검사_한글경로.test.js`(픽스처가 한글 경로 문서를 실제로 잡는지 못박는다). */
 function git(args) {
   try {
-    return String(execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }));
+    return String(execFileSync('git', ['-c', 'core.quotepath=false', ...args],
+      { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }));
   } catch (_) { return null; }
 }
 
