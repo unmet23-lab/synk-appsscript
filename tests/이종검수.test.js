@@ -1417,3 +1417,51 @@ test('🔑 통로가 창을 숨기고, 호출자가 준 옵션은 살린다 — 
   assert.strictEqual(o.stdio, 'ignore');
   assert.deepStrictEqual(Object.keys(검수.자식옵션()), ['windowsHide'], '인자 없이도 창은 숨긴다');
 });
+
+/* ── F541 — 「사유가 «다른 지적»을 논하는 기각」 ────────────────────────────
+ * 실측 2026-08-17: 같은 논증이 키를 하나 밀려 등록돼, 진짜 P1(rot-check.js:300)이 영구 기각되고
+ * 정작 틀린 지적(loom.js:642)은 게이트에 남았다. 장부 행은 제목·파일을 «키에서» 채우므로
+ * 겉보기엔 정상인 행이 된다 — 그래서 사람 눈이 아니라 기계가 져야 하는 자리다. */
+const 어긋남 = (파일, 사유) => 검수.사유_파일어긋남({ 파일, 제목: 't' }, 사유);
+
+test('☠️ F541 — 사유가 자기 파일을 한 번도 안 짚고 남의 파일만 논하면 기각을 안 받는다', () => {
+  const v = 어긋남('tools/rot-check.js', 'loom.js:641 의 at 분기는 머리 자신을 안 고치는 것이다');
+  assert.ok(v, '키를 밀려 친 기각이 그대로 등록됐다 — 진짜 결함이 영구히 걸러진다');
+  assert.deepStrictEqual(v.남, ['loom.js'], '어느 파일을 논하는지 안 짚으면 처방이 안 선다(F103)');
+});
+
+test('🔑 자기 파일을 짚으면 통과한다 — 경로로도, 파일 이름만으로도', () => {
+  assert.strictEqual(어긋남('tools/lib/loom.js', '`loom.js:598` 의 정규식은 keyframes 넷뿐이다'), null,
+    '이름만 짚은 정당한 기각을 막았다 — 내가 방금 쓴 기각이 이 모양이다(자기 처방을 막지 않는다)');
+  assert.strictEqual(어긋남('tools/lib/loom.js', 'tools/lib/loom.js 를 태워 반증했다'), null);
+  /* ⚠ 이름 갈래는 «남의 파일이 함께 있을 때»만 갈린다 — 그게 없으면 경로 갈래만으로도 초록이라
+   *   검사가 통과하는 척한다(변이가 드러냈다: 이 줄이 없으면 탐지를 실저장소가 지게 된다 · F296). */
+  assert.strictEqual(어긋남('tools/lib/loom.js', '`loom.js:598` 을 태웠다 — rot-check.js 와는 무관하다'), null,
+    '자기 파일을 이름으로 짚었는데 남의 파일이 함께 있다고 막았다');
+});
+
+test('🔑 닫은 것 — 사유가 «아무 파일도» 안 짚으면 판정하지 않는다(산문 기각은 정상이다)', () => {
+  assert.strictEqual(어긋남('tools/rot-check.js', '이 트랙의 과녁이 아니다 — 배포집합 밖이라 라이브에 안 나간다'), null);
+});
+
+test('🔑 파일이 아닌 지적은 대조 대상이 아니다 — 없는 것을 대조하면 그게 거짓양성이다', () => {
+  assert.strictEqual(어긋남('(기능체크)', 'tools/발표물린트.js:97 가 이미 고쳐졌다'), null);
+  assert.strictEqual(어긋남('(모름)', 'a.js 를 본다'), null);
+  assert.strictEqual(어긋남(undefined, 'a.js 를 본다'), null, '원본을 못 찾은 기각까지 막으면 통로가 죽는다');
+});
+
+test('☠️ 실저장소 — 거짓양성만 본다(탐지력은 위 픽스처가 진다 · F296)', () => {
+  const 줄 = fs.readFileSync(path.join(ROOT, 'docs', '_ops', '검수기각.jsonl'), 'utf8').trim().split('\n');
+  const 발화 = 줄.map((l) => JSON.parse(l)).filter((r) => !r.딴파일확인 && 어긋남(r.파일, r.사유));
+  /* 08-17 실측 = 73 중 4(진짜 1 = F541 그 행 · 남의 파일을 «근거로» 인용한 정당한 기각 3).
+   * 이 수가 늘면 문턱이 헐거워진 것이다 — 늘리지 말고 `--딴파일` 로 지나간 행을 장부가 기록한다. */
+  assert.ok(발화.length <= 4, `거짓양성이 늘었다(${발화.length}건) — 정당한 기각을 막기 시작하면 우회가 정상 통로가 된다(F103)`);
+  assert.ok(발화.some((r) => r.키 === '2b7e4da04edb'), 'F541 그 행을 못 잡는다 — 이 검사가 아무것도 안 지킨다');
+});
+
+test('🔑 등록층 — `--딴파일` 이 아는 플래그여야 처방이 실재한다(F515: 자기가 시킨 명령이 안 도는 자리)', () => {
+  assert.ok(검수.아는플래그.has('--딴파일'), '차단문이 시키는 플래그를 도구가 모른다 — 따를 수 없는 처방이다');
+  const src = fs.readFileSync(path.join(ROOT, 'tools', 'codex-review.js'), 'utf8');
+  assert.match(src, /const 어긋남 = 딴파일 \? null : 사유_파일어긋남\(원본, 사유\)/,
+    '기각 등록부가 이 검사를 안 지난다 — 순수 함수가 맞아도 배선에서 죽는다');
+});
