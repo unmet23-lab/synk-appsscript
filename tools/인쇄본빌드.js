@@ -47,12 +47,17 @@ const MANIFEST = [
   { src: 'docs/원어민_검수지_v1.md',       title: '원어민 검수지',              sub: '몽골어 원어민 검수 게이트',              group: '전달용' },
   { src: 'docs/몽골어_검수_발주서.md',     title: '몽골어 검수 발주서',         sub: '검수 범위·기준·납품 형식',               group: '전달용' },
   { src: 'docs/자주묻는질문_정본.md',      title: '자주 묻는 질문 (FAQ)',       sub: '챗봇·상담 데스크 공용 단일 원천',        group: '전달용' },
-  // C. 경영 정본
-  { src: 'docs/제품방향.md',               title: 'SYNK 제품 방향',             sub: '로드맵·「출시」의 정의·핵심 등식·설계 불변식', group: '경영 정본' },
-  { src: 'docs/SYNK_철학.md',              title: 'SYNK 철학 — 내부·운영 / 교육 / 대외', sub: '철학 3벌 — 유호님 확정 화법 · 새 슬로건', group: '경영 정본' },
-  { src: 'docs/기업철학_홈페이지_v1.md',   title: 'SYNK 기업 철학',             sub: '대외 철학 문서(홈페이지본)',             group: '경영 정본' },
-  { src: 'docs/조직계보_정본_v1.md',       title: 'SYNK 조직 계보',             sub: '브랜드 4 + 전사 레이어 2 — 로드맵 표기', group: '경영 정본' },
-  { src: 'docs/개원재무_2027_재산정_v1.md', title: '개원 재무 재산정 (2027)',   sub: '고정비·BEP·좌석 — 내부용',               group: '경영 정본' },
+  /* C. 경영 정본 — **기본 굽기에서 뺀다**(유호 픽 08-17 「ㄹ」= 분모 축소).
+   *   이 다섯은 «유호님 혼자 읽는» 문서다. 남에게 건네지도, 인쇄해 옆에 두지도 않는다.
+   *   그러면 PDF 일 이유가 없고, 바탕화면은 **정본 바로가기**로 두는 편이 낫다 —
+   *   바로가기는 원본을 가리키므로 **낡을 수가 없다**(사본은 낡는다 · `운영자료.js` 머리말 ②).
+   *   🔑 지우지 않고 `기본:false` 로 둔 이유: 이름을 대면(`인쇄본빌드.js 철학`) 여전히 구워진다.
+   *      「대외에 건넬 일이 생기는 날」이 있고, 그때 매니페스트를 다시 짜게 만들면 그 자리가 낡는다. */
+  { src: 'docs/제품방향.md',               title: 'SYNK 제품 방향',             sub: '로드맵·「출시」의 정의·핵심 등식·설계 불변식', group: '경영 정본', 기본: false },
+  { src: 'docs/SYNK_철학.md',              title: 'SYNK 철학 — 내부·운영 / 교육 / 대외', sub: '철학 3벌 — 유호님 확정 화법 · 새 슬로건', group: '경영 정본', 기본: false },
+  { src: 'docs/기업철학_홈페이지_v1.md',   title: 'SYNK 기업 철학',             sub: '대외 철학 문서(홈페이지본)',             group: '경영 정본', 기본: false },
+  { src: 'docs/조직계보_정본_v1.md',       title: 'SYNK 조직 계보',             sub: '브랜드 4 + 전사 레이어 2 — 로드맵 표기', group: '경영 정본', 기본: false },
+  { src: 'docs/개원재무_2027_재산정_v1.md', title: '개원 재무 재산정 (2027)',   sub: '고정비·BEP·좌석 — 내부용',               group: '경영 정본', 기본: false },
   // D. 교육 설계
   { src: 'docs/커리큘럼_정본_v1.md',       title: 'SYNK 커리큘럼 정본',         sub: '6레벨 학습설계·실라버스·평가 루브릭',    group: '교육 설계' },
   { src: 'docs/반편성_정본_v2.md',         title: '반편성 정본',                sub: '4실 24반·정원 16·384석·BEP 119명',      group: '교육 설계' },
@@ -252,10 +257,23 @@ ${bodyHtml}
 </body></html>`;
 }
 
+/**
+ * 무엇을 구울 것인가 — **순수 함수로 꺼내 둔다**(main 안에 두면 회귀가 원리상 못 본다).
+ * 🔑 이름을 «대면» 기본 갈래를 넘어 굽는다 — 안 대면 `기본:false` 는 빠진다(유호 픽 08-17 「ㄹ」).
+ *    두 자리를 가르는 이유: 「전량 재굽기」의 분모와 「이거 하나 달라」의 분모는 다르다.
+ *    합치면 둘 중 하나가 반드시 틀린다(전량이 5벌을 헛굽거나, 지목이 5벌을 못 굽거나).
+ * @param {string} [filter] 이름 부분일치. 없으면 기본 갈래 전량.
+ */
+function 굽을것(filter) {
+  return filter
+    ? MANIFEST.filter((d) => d.src.includes(filter) || d.title.includes(filter))
+    : MANIFEST.filter((d) => d.기본 !== false);
+}
+
 /* ── 빌드 ── */
 function main() {
   const filter = process.argv[2];
-  const targets = filter ? MANIFEST.filter((d) => d.src.includes(filter) || d.title.includes(filter)) : MANIFEST;
+  const targets = 굽을것(filter);
   if (!targets.length) { console.error('[인쇄본빌드] 매니페스트에 일치 항목이 없다: ' + filter); process.exit(1); }
   const py = ['python', 'python3'].find((p) => {
     try { execFileSync(p, ['-c', 'import fontTools'], { stdio: 'pipe' }); return true; } catch (_) { return false; }
@@ -295,4 +313,4 @@ function main() {
   process.exit(fail ? 1 : 0);
 }
 if (require.main === module) main();
-module.exports = { 치환, 폴백_점검, 인쇄_치환, MANIFEST };
+module.exports = { 치환, 폴백_점검, 인쇄_치환, MANIFEST, 굽을것 };
