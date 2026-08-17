@@ -208,6 +208,56 @@ test('진행 중이어도 커밋이 아닌 명령·의식적 우회는 통과한
   });
 });
 
+/* ── F573: 서브커맨드 «이름의 끝» — `-` 는 낱말 경계다 (2026-08-17 실측) ────────────
+ * 실사고: ④의 `merge\b` 가 `git merge-base --is-ancestor` 를 deny 했다. 그건 커밋을 만들 수
+ *   없는 **읽기 전용 조회**이고, 하필 인계문·F566 계열이 「착지 확인에 쓰라」고 지목하는 명령이다
+ *   — 가드가 자기 처방의 확인 통로를 막았다(F103 형태).
+ * 🔑 이 검사가 재는 것은 규칙 하나가 아니라 **성질**이다: 어떤 규칙도 서브커맨드 이름을
+ *   반토막 내 읽지 않는다. 새 규칙이 `\b` 로 다시 적으면 여기서 빨개진다.
+ * ⚠ 분모를 같은 test 안에 둔다 — 목록만 줄여서 초록을 만들 수 없게(F207). 대시 없는 형태
+ *   (`git merge other`)는 계속 차단이어야 하고, 그게 깨지면 경계가 탐지력을 먹은 것이다. */
+const 대시서브커맨드 = [
+  // git help -a 실측(2026-08-17) — 위 동사 목록과 접두가 겹치는 실존 서브커맨드 전량
+  'git merge-base --is-ancestor HEAD HEAD',
+  'git merge-tree HEAD HEAD',
+  'git merge-file a.md b.md c.md',
+  'git merge-index cat a.md',
+  'git merge-one-file',
+  'git commit-tree HEAD^{tree} -m x',
+  'git commit-graph verify',
+  'git checkout-index a.md',
+];
+
+test('F573 대시 서브커맨드를 커밋 생성으로 읽지 않는다 — 읽기 전용 조회가 막히면 확인 통로가 사라진다', () => {
+  임시저장소('MERGE_HEAD', (dir) => {
+    assert.equal(대시서브커맨드.length, 8, '분모가 바뀌었다 — 목록을 줄여 초록을 만든 것이 아닌지 본다');
+    대시서브커맨드.forEach((c) => {
+      const r = 가드_at(c, dir);
+      assert.equal(r.차단, false, `대시 서브커맨드를 막았다(이름을 반토막 읽었다): ${c}\n사유: ${r.사유}`);
+    });
+    /* 대시가 아니라 **붙은** 이름도 같은 축이다 — `mergetool` 은 하필 충돌을 푸는 그 명령이라,
+     * 경계를 `(?!-)` 로 좁혀 적으면 여기가 막힌다(옛 `\b` 에서는 우연히 안 막혔다). */
+    ['git mergetool', 'git mergetool --tool=vimdiff'].forEach((c) => {
+      assert.equal(가드_at(c, dir).차단, false, `충돌 해소 통로를 막았다: ${c}`);
+    });
+    // 분모 — 이 둘이 통과하면 경계가 탐지력을 먹었다는 뜻이고, 위 초록은 전부 의미가 없다
+    assert.ok(가드_at('git merge other', dir).차단, 'merge 진행 중 새 머지를 막지 못했다 — 경계가 규칙을 죽였다');
+    assert.ok(가드_at('git commit -m "x" -- a.md', dir).차단, 'F038 원형을 막지 못했다 — 경계가 규칙을 죽였다');
+  });
+});
+
+test('F573 규칙들이 서브커맨드 끝을 `\\b` 로 적지 않는다 — 옛 통로를 소스에서 금지한다', () => {
+  /* HOOK 을 읽는다(ROOT 고정 경로가 아니라) — 변이는 `SYNK_TEST_SCOPE_HOOK` 으로 격리 사본을 물리므로
+   * 고정 경로를 읽으면 이 검사만 원본을 보고 초록이 되어 변이가 조용히 통과한다(F207 계열). */
+  const 소스 = fs.readFileSync(HOOK, 'utf8');
+  assert.match(소스, /const 끝 = '\(\?!\[-/, '공용 경계 상수 `끝` 이 없다 — 호출부마다 적으면 또 갈라진다');
+  /* `re('<동사>\\b` 형태만 잡는다 — 동사 «뒤»가 아니라 플래그 뒤의 `\b`(`\s--hard\b`)는 정당하다. */
+  const 샌자리 = [...소스.matchAll(/re\('(\([a-z|-]+\)|[a-z-]+)\\\\b/g)].map((m) => m[1]);
+  assert.deepEqual(샌자리, [],
+    `서브커맨드 바로 뒤에 \\b 를 쓴 자리가 남았다(대시 이름을 반토막 읽는다): ${샌자리.join(' · ')}\n`
+    + '→ `re(\'add\' + 끝 + …)` 형태로 적는다.');
+});
+
 test('저장소 밖에서도 훅이 죽지 않는다 — 가드가 터지면 모든 Bash가 막힌다', () => {
   const dir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'no-git-'));
   try {
