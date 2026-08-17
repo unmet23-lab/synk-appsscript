@@ -114,12 +114,50 @@ function hostSessionId(fallback) {
 function 가지몫(cwd, 옵션) {
   const o = 옵션 || {};
   if (o.가지 && Array.isArray(o.가지.줄들)) return o.가지;
+  /* 🔑 주입구는 `보드.가지줄들` 의 계약(`{출력}`·`{실행}`)을 **그대로 통과**시킨다 — 여기서 모양을
+   *   좁히면 회귀가 실제 파서를 못 지나고 「손으로 벤 모양」만 재게 된다(가드 맹점 ①). */
+  const 주입 = (o.가지 && (typeof o.가지.출력 === 'string' || typeof o.가지.실행 === 'function'))
+    ? o.가지
+    : (typeof o.가지출력 === 'string' ? { 출력: o.가지출력 } : undefined);
+  const root = String(cwd || '.');
+  let r;
   try {
-    const r = 보드.가지줄들(String(cwd || '.'),
-      typeof o.가지출력 === 'string' ? { 출력: o.가지출력 } : undefined);
-    return r && Array.isArray(r.줄들) ? r : { 줄들: [], 모름: true };
+    r = 보드.가지줄들(root, 주입);
+    if (!r || !Array.isArray(r.줄들)) r = { 줄들: [], 모름: true };
   } catch (_) {
-    return { 줄들: [], 모름: true };
+    r = { 줄들: [], 모름: true };
+  }
+  /* 🔑 **「훑기 실패」와 「훑을 가지가 없다」를 가른다** (F529 잔여 · 가지 `1a6d5a77` 의 몫을
+   *   반입하며 한 겹 넓혔다). `가지줄들` 은 둘 다 `모름:true` 로 접는다 — git 을 못 부른 것뿐이니
+   *   그 층에선 그게 옳다. 그런데 여기서 그대로 받으면 **저장소가 아닌 뿌리**(픽스처·임시 폴더)에서
+   *   영영 「못 훑었다」가 되어, 참인 단정까지 죽는다. 저장소가 아니면 가지는 **원리상 0개**다:
+   *   못 잰 게 아니라 잴 것이 없다.
+   *   ⚠ 대가: 저장소인데 git 실행만 실패하면 여전히 「모름」이다 — 그쪽이 안전한 방향이다
+   *   (모름을 없음으로 접는 것이 F529 가 신고한 병 그 자체다). */
+  if (r.모름 && !저장소인가(root)) return { 줄들: [], 모름: false };
+  return r;
+}
+
+/**
+ * `root` 가 git 저장소 안인가 — `.git` 을 **위로 훑는다**.
+ *
+ * 🔑 두 자리를 같이 닫는다: ①워크트리는 `.git` 이 **파일**이라 `existsSync` 로 본다
+ *   (`isDirectory` 로 보면 워크트리 전건이 「저장소 아님」이 된다) ②저장소의 **하위 폴더**를
+ *   cwd 로 받으면 그 폴더엔 `.git` 이 없다 — 거기서 「원리상 0개」로 접으면 F529 가 신고한 병의
+ *   **반대 방향**으로(없음을 단정) 새므로 뿌리까지 올라가 본다.
+ * ⚠ 못 보면 `true`(=「모름」 유지) — 단정하지 않는 쪽이 안전한 방향이다.
+ */
+function 저장소인가(root) {
+  try {
+    let d = path.resolve(root);
+    for (;;) {
+      if (fs.existsSync(path.join(d, '.git'))) return true;
+      const up = path.dirname(d);
+      if (up === d) return false;
+      d = up;
+    }
+  } catch (_) {
+    return true;
   }
 }
 
@@ -153,8 +191,12 @@ function boardTrack(cwd, commits, sid, 옵션) {
    *   기계로 강제하는 규칙이라 인용될 수 없다 — 이 층에서 새는 방향이 아예 닫힌다.
    *   ①② 는 **주인을 안 밝힌 파일**(`유물-*.md` · 옛 픽스처)에만 남긴다: F165 가 지킨
    *   사각지대(해시만 있는 줄)는 그대로 살고, 남의 세션 파일은 어떤 재료로도 안 잡힌다. */
+  /* 🔴 폴더를 못 읽었다 ≠ 줄이 없다 (아래 문구가 그 차이에 기댄다) — 그런데 옛 판은 여기서
+   *   **곧장 null** 을 냈다. 그러면 「메인을 못 읽음」이 「트랙을 못 찾음」으로 번역되어, 가지
+   *   안에만 선언이 있는 트랙이 통째로 사라진다 — F529 가 신고한 병의 **같은 얼굴**이다.
+   *   재료가 손에 있으면 쓴다: 고르는 일은 아래 `고르기` 한 벌이 그대로 지므로 여기선 안 고른다
+   *   (그 함수는 아래에서 선언되어 이 자리엔 아직 없다 · 가드 맹점 ④). */
   const rows = 보드.줄들(String(cwd || '.'));
-  if (rows === null) return null;   // 폴더를 못 읽었다 ≠ 줄이 없다 (아래 문구가 그 차이에 기댄다)
   const hashes = (commits || []).map((c) => String(c).split(' ')[0]).filter((h) => /^[0-9a-f]{7,40}$/.test(h));
   const 나 = 보드id.지문(sid);
   if (!hashes.length && !나) return null;
@@ -220,7 +262,7 @@ function boardTrack(cwd, commits, sid, 옵션) {
     return null;
   };
 
-  const 메인 = 고르기(rows);
+  const 메인 = rows === null ? null : 고르기(rows);
   if (메인) return 메인;
 
   /* 🔴 F529 — 여기서 옛 구현은 `null` 을 반환했고, 그 null 이 인계문에서 «실측된 없음»으로
@@ -853,4 +895,4 @@ function writeHandoffFile(cwd, msg, meta) {
   } catch (_) { return null; }
 }
 
-module.exports = { dirtyCount, myCommits, hostSessionId, boardTrack, 무주줄, 종결줄, 잔여조각, 종결문구, buildHandoff, frame, blockOrder, writeHandoffFile, 낡음, 낡음경고 };
+module.exports = { dirtyCount, myCommits, hostSessionId, boardTrack, 가지몫, 무주줄, 종결줄, 잔여조각, 종결문구, buildHandoff, frame, blockOrder, writeHandoffFile, 낡음, 낡음경고 };
