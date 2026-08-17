@@ -238,6 +238,64 @@ test('🔑 [F565] 기준 순서의 정본은 하나다 — 신선한 쪽이 먼�
   assert.ok(보드.가지기준.includes('master'), '폴백이 사라졌다 — 원격 없는 클론에서 이 층이 통째로 꺼진다');
 });
 
+// ────────────────── 앞선 로컬 master 가 «가지»로 세어지는가 (①배포 검수 P1 · 2026-08-17)
+//
+// 🔴 F565 픽스처는 로컬 master 가 **뒤처진** 배치라 이 결함을 원리상 못 본다 — 방향이 반대다.
+//    `git branch --no-merged origin/master` 는 로컬이 origin 보다 **앞설 때** master 자신을 싣고,
+//    이 저장소는 「단발 편집은 master 직접」이 정본 동선이라 그 상태가 예외가 아니라 상시다.
+//    그러면 master 의 평범한 보드 변경이 「미머지 가지의 선언」으로 둔갑하고, 소비자 셋
+//    (대기열·board-guard·인계문)이 **이미 master 에 있는 일**에 「그 가지로 가라 · PR 을 닫아라」를 낸다.
+//    새는 방향이 «없는 일을 만든다» 라 아무 화면도 안 빨개진다.
+
+/** 로컬 master 가 origin 보다 **앞선** 트리 — 위 결함의 축소판. 세울 수 없으면 `null`. */
+function 앞선트리() {
+  const root = 저장소세우기();
+  if (!root) return null;
+  const A = g(['rev-parse', 'HEAD'], root).stdout.trim();
+  if (g(['update-ref', 'refs/remotes/origin/master', A], root).status !== 0) return null;
+  // 진짜 워크트리 가지 — origin/master 에서 뜬다
+  g(['checkout', '-q', '-b', 'worktree-내트랙'], root);
+  쓰기(root, 'aaaa1111', 표줄('내 트랙 — 진짜 가지', '`tools/x.js`', '▶착수'));
+  g(['add', '-A'], root); g(['commit', '-qm', '내 선언'], root);
+  // master 직접 커밋 — 아직 안 밀었다(=origin 보다 앞섬)
+  g(['checkout', '-q', 'master'], root);
+  쓰기(root, 'bbbb2222', 표줄('master 직접 편집 — 가지가 아니다', '`docs/x.md`', '▶착수'));
+  g(['add', '-A'], root); g(['commit', '-qm', 'master 직접'], root);
+  return root;
+}
+
+test('🔴 [P1] 앞선 로컬 `master` 는 «가지»가 아니다 — master 직접 편집이 미머지 가지 선언으로 딸려 오던 자리', (t) => {
+  const root = 앞선트리();
+  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다 — 통과로 위장하지 않는다');
+
+  // 🔑 픽스처가 전제를 실제로 재현했나 — 이걸 안 못박으면 아래 초록이 공짜다(맹점 ②).
+  const 목록 = g(['branch', '--no-merged', 'origin/master', '--format=%(refname:short)'], root)
+    .stdout.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+  assert.ok(목록.includes('master'),
+    `픽스처가 전제를 재현 못 했다 — git 이 master 를 안 실으면 이 검사는 아무것도 안 잰다: ${목록.join(' · ')}`);
+
+  const r = 보드.가지줄들(root);
+  assert.strictEqual(r.모름, false, `git 을 못 불렀다: ${JSON.stringify(r)}`);
+  assert.strictEqual(r.기준, 'origin/master');
+  assert.ok(!r.줄들.some((x) => /master 직접 편집/.test(x.줄)),
+    `🔴 master 직접 편집이 가지 선언으로 실렸다 — 소비자가 없는 가지·PR 을 지시한다: ${r.줄들.map((x) => x.줄).join(' // ')}`);
+  assert.strictEqual(r.줄들.length, 1, '진짜 가지 하나만 남아야 한다');
+  assert.match(r.줄들[0].줄, /진짜 가지/);
+});
+
+test('🔑 [P1] 거름은 «기준에 대응하는 그 가지»만 — 이름이 비슷한 가지는 안 지운다', (t) => {
+  const root = 앞선트리();
+  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다');
+  g(['checkout', '-q', '-b', 'master-백업'], root);
+  쓰기(root, 'cccc3333', 표줄('이름만 비슷한 가지', '`tools/y.js`', '▶착수'));
+  g(['add', '-A'], root); g(['commit', '-qm', '비슷한 이름'], root);
+  g(['checkout', '-q', 'master'], root);
+
+  const r = 보드.가지줄들(root);
+  assert.ok(r.줄들.some((x) => /이름만 비슷한 가지/.test(x.줄)),
+    `🔴 거름이 너무 넓다 — master 로 시작하는 진짜 가지까지 지웠다: ${r.줄들.map((x) => x.줄).join(' // ')}`);
+});
+
 // ───────────────────────────────── 머리형 비켜남 (F524)
 
 test('🔴 [F524] `무접촉=#Q99` 는 점유가 아니다 — 비켜난 쪽이 그 줄의 주인으로 적혔다(실측)', () => {
