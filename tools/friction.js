@@ -137,6 +137,8 @@ function today() {
  * 네 군데에서 동시에 터졌다(사연은 tools/lib/표.js 머리말). 장부는 add() 만 쓰는 통로가
  * 아니라서(손편집·폰작업반입 병합) 쓰는 쪽의 소독에 기대면 안 되고 읽는 쪽이 버텨야 한다. */
 const { 칸나누기, 칸안전 } = require(path.join(__dirname, 'lib', '표.js'));
+/* master 직접 커밋을 그 자리에서 미는 공용 통로 — 같은 판정을 두 곳에 적으면 갈라진다. */
+const 동기 = require(path.join(__dirname, 'lib', 'master동기.js'));
 const splitCells = (raw) => 칸나누기(`|${raw}|`);
 
 /* 조각 폴더의 행들 — 파일 하나 = 행 하나(F0NN.md). **못 읽음 ≠ 없다**:
@@ -403,6 +405,9 @@ function 커밋보고(r) {
   }
   if (r.남이실음) { console.log('  ✔ 장부는 이미 커밋돼 있다 — 옆 세션이 같은 순간에 실었다'); return; }
   console.log(`  ✔ 커밋 ${r.해시}${r.동승 ? ` (남의 행 ${r.동승}개 동승 — 장부는 공용이라 정상)` : ''}`);
+  /* 커밋과 push 는 한 벌이다 — 장부는 **공용**이라 안 밀면 다른 세션·다음 세션이 그 신호를 못 본다.
+   * 그리고 이건 master 직접 커밋이라 쌓이면 갈라져 push 자체가 튕긴다(tools/lib/master동기.js). */
+  console.log(동기.줄내기('friction', 동기.밀기(ROOT)));
 }
 
 /** 커밋 제목에 실을 요약 — 개행·과길이를 자른다(제목은 한 줄이어야 한다). */

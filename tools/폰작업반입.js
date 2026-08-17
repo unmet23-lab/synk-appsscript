@@ -39,6 +39,8 @@ const ROOT = process.env.SYNK_반입_ROOT || path.resolve(__dirname, '..');
  *  자리였다: 브랜치 판 보드 조각이 죽은 줄을 되살리고, 장부 조각의 낡은 판이 남의 해소 칸을
  *  조용히 되돌린다). */
 const { 선언판인가, 장부폴더 } = require(path.join(__dirname, 'lib', '선언판.js'));
+/* master 직접 커밋을 그 자리에서 미는 공용 통로 — 같은 판정을 두 곳에 적으면 갈라진다. */
+const 동기 = require(path.join(__dirname, 'lib', 'master동기.js'));
 
 /* 추가전용 — 행마다 번호가 붙은 장부. `checkout` 은 파일을 **통째로** 바꾸므로 갈라진 뒤
  * master 에 붙은 행이 소리 없이 사라진다(F195 실측: 대기 브랜치 하나를 받으면 폰은 두 행의
@@ -311,6 +313,9 @@ function 받기(브랜치) {
   const 방금 = (git(['log', '--format=%h %s', '-1']) || '').trim();
   if (!방금.includes('반입')) { console.error(`❌ 커밋이 안 된 것 같다 — HEAD: ${방금}`); process.exit(1); }
   console.log(`✅ 커밋 ${방금}`);
+  /* 커밋과 push 는 한 벌이다 — 폰에서 가져온 것이 이 노트북에만 남으면 반입한 값이 절반이다
+   * (master 직접 커밋이라 쌓이면 갈라져 push 자체가 튕긴다 · tools/lib/master동기.js). */
+  console.log(동기.줄내기('폰작업반입', 동기.밀기(ROOT)));
 
   병합이력(브랜치, `내용은 ${방금.split(' ')[0]} 로 이미 반입(공유 파일 제외)`);
 }
