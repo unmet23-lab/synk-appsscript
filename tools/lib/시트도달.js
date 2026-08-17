@@ -39,6 +39,7 @@ const 층들 = ['제품', '자산'];
  */
 function 엔진값(root) {
   const { engineSource } = require(path.join(root || ROOT, 'tests', '_engine-source.js'));
+  const 원본 = engineSource();
   const stub = new Proxy(function () {}, { get: () => stub, apply: () => stub });
   const ctx = {
     SpreadsheetApp: stub, Utilities: stub, Session: stub, MailApp: stub, GmailApp: stub,
@@ -47,7 +48,7 @@ function 엔진값(root) {
     PropertiesService: { getScriptProperties: () => stub, getUserProperties: () => stub, getDocumentProperties: () => stub },
   };
   vm.createContext(ctx);
-  vm.runInContext(engineSource(), ctx);
+  vm.runInContext(원본, ctx);
   for (const 이름 of ['수집도달_', '수집장부탭_', '시트도달상한_']) {
     if (typeof ctx[이름] !== 'function') {
       /* 조용히 빈 값을 뱉으면 화면이 「빚 0」을 보고한다 — 「모르겠다」와 「빚이 0」을 같은
@@ -63,7 +64,49 @@ function 엔진값(root) {
     장부: JSON.parse(JSON.stringify(ctx.수집도달_())),
     탭: Array.from(ctx.수집장부탭_(), String),
     상한: Object.assign({}, ctx.시트도달상한_()),
+    /* 사유 지목 검사의 **분모** — 주석을 벗긴 몸에서만 센다(주석에 남은 옛 함수가 초록을 만든다). */
+    함수들: Array.from(함수이름들(코드만(원본))),
   };
+}
+
+/** 엔진 코드에 «실재하는» 함수 이름들. */
+function 함수이름들(몸) {
+  const out = new Set();
+  const re = /function\s+([A-Za-z_$][\w$]*)\s*\(/g;
+  let m;
+  while ((m = re.exec(몸))) out.add(m[1]);
+  return out;
+}
+
+/**
+ * 사유 문장에서 «코드처럼 생긴 이름»만 골라낸다.
+ *
+ * 🔴 왜 있나 (F531 · 같은 병 **네 번째**에 기계로 옮겼다 — CLAUDE.md 신뢰성 「3번째면 원인을
+ *   쓸 수 없게 만든다」). 도달 장부의 사유 칸은 «선언»인데 다음 주자가 **실측처럼 읽는다**:
+ *     · 2/5 `quiz_log` — 사유가 지목한 `aiQuizBatch_` 는 **저장소에 없는 이름**이었다(주석 안 가정).
+ *       인계문이 그걸 「이미 오답 축을 쓴다」로 옮겨 적었고, 갚으러 간 세션이 그 이름을 찾다 헤맸다.
+ *     · 3/5 `voice_log` — 이름은 실재했지만 **그 통로가 이미 기각**돼 있었다.
+ *     · 4/5 `talk_log` — 처방이 **이미 서 있었다**(따르면 빈 도장).
+ *   셋 중 기계로 잡히는 것은 첫째뿐이다 — 그래서 첫째만 막는다. 「이름이 실재하는가」는 기계의
+ *   몫이고 「그 통로가 아직 열려 있는가」는 사람의 몫이다(억지로 넓히면 하루 만에 꺼진다).
+ *
+ * 규칙(사람이 따를 수 있게 · F103): **없는 것을 코드 이름으로 지목하지 않는다.** 아직 없는 소비자는
+ *   한국어로 적는다("업적 이력이 과제 선택의 입력이 되는 날") — 그러면 이 검사에 안 걸린다.
+ *
+ * 🔴 **밑줄을 이름 «몸통»에 넣는다** — 첫 판은 `[A-Za-z][A-Za-z0-9]*_?` 였고, 그러면 탭 이름 `a_log`
+ *   가 `a_` + `log` 로 쪼개져 **탭 이름마다 거짓양성**이 났다(회귀가 잡았다). 쪼개진 조각은 밑줄로
+ *   끝나므로 「코드처럼 생김」을 그대로 통과한다 — 잣대가 아니라 **토크나이저**가 병이었다.
+ *
+ * ⚠ 이 검사가 틀릴 때의 모습 = **조용한 통과**(두 자리, 둘 다 일부러 열어 뒀다):
+ *   ①순수 snake_case 함수 이름(`foo_bar`)은 탭 이름과 글자만으로 구분이 안 돼 안 본다. 이 저장소의
+ *     엔진 함수는 전부 camelCase 나 `이름_` 꼴이라 지금은 사각이 비어 있다.
+ *   ②ALL_CAPS(상수·헤더 이름)도 안 본다 — 이 검사가 찾는 것은 `function X(` 이고, 상수까지 넓히면
+ *     사유가 `TALK_LOG_HEADERS` 를 언급하는 정상 문장이 빨개진다(거짓양성이 검사를 죽인다).
+ */
+function 코드이름들(사유) {
+  return (String(사유 || '').match(/[A-Za-z][A-Za-z0-9_]*/g) || [])
+    .filter((s) => !/^[A-Z0-9_]+$/.test(s))                    // ALL_CAPS 상수는 이 검사의 과녁이 아니다(⚠②)
+    .filter((s) => /[A-Z]/.test(s.slice(1)) || s.endsWith('_'));
 }
 
 /**
@@ -73,9 +116,10 @@ function 엔진값(root) {
  * @param {string[]}               입력.탭    수집장부탭_() 의 결과 — 키 집합의 정본
  * @param {{도달0:number, 손:number}} 입력.상한
  * @param {Record<string, string>} [입력.원문] 파일명 → 소스. 없는 파일은 「못 읽었다」로 다룬다
+ * @param {string[]|Set<string>} [입력.함수들] 엔진에 실재하는 함수 이름 — **주면** 사유 지목까지 잰다(F531)
  * @returns {{위반: {종류:string, 탭?:string, 말:string}[], 셈: object}}
  */
-function 검사({ 장부, 탭, 상한, 원문 }) {
+function 검사({ 장부, 탭, 상한, 원문, 함수들 }) {
   const 위반 = [];
   const 딱지 = (종류, 말, 탭이름) => 위반.push(탭이름 ? { 종류, 탭: 탭이름, 말 } : { 종류, 말 });
   const 키 = Object.keys(장부 || {});
@@ -104,6 +148,15 @@ function 검사({ 장부, 탭, 상한, 원문 }) {
     if (사유) {
       셈.도달0++; 셈.도달0목록.push(k);
       if (/나중에|추후|언젠가/.test(String(사유))) 딱지('사유', '사유가 「나중에」다 — **무엇이 서면 닿는지**를 적는다', k);
+      /* ⑤ 사유가 지목한 «코드 이름»은 실재해야 한다 (F531 — 위 `코드이름들` 머리말이 근거).
+       *    분모(`함수들`)를 안 주면 이 검사는 **조용히 꺼진다** — 그래서 회귀가 「분모를 주면 잡는다」와
+       *    「안 주면 안 잡는다」를 둘 다 못박는다(꺼진 검사가 초록으로 보이는 것이 이 계열의 대표 실패). */
+      if (함수들) {
+        const 있다 = (n) => 함수들.indexOf === undefined ? 함수들.has(n) : 함수들.indexOf(n) !== -1;
+        코드이름들(사유).filter((n) => !있다(n) && (탭 || []).indexOf(n) === -1).forEach((n) => 딱지('사유지목',
+          `사유가 «${n}» 을 지목했는데 엔진에 \`function ${n}(\` 가 없다 — 사유는 선언이지 실측이 아니다(F531). `
+          + '아직 없는 소비자는 코드 이름이 아니라 한국어로 적는다(「…가 과제 선택의 입력이 되는 날」).', k));
+      }
       continue;
     }
 
@@ -141,14 +194,14 @@ function 검사({ 장부, 탭, 상한, 원문 }) {
 /** 실저장소를 읽어 검사한다 — 화면(`이해대장`)과 회귀가 같이 쓰는 입구. */
 function 읽다(root) {
   const r = root || ROOT;
-  const { 장부, 탭, 상한 } = 엔진값(r);
+  const { 장부, 탭, 상한, 함수들 } = 엔진값(r);
   const 원문 = {};
   for (const v of Object.values(장부)) {
     const m = v && v.소비자 && /^([^:]+):/.exec(String(v.소비자));
     if (!m || 원문[m[1]] !== undefined) continue;
     try { 원문[m[1]] = fs.readFileSync(path.join(r, m[1]), 'utf8'); } catch (e) { 원문[m[1]] = null; }
   }
-  return Object.assign({ 장부, 탭, 상한 }, 검사({ 장부, 탭, 상한, 원문 }));
+  return Object.assign({ 장부, 탭, 상한, 함수들 }, 검사({ 장부, 탭, 상한, 원문, 함수들 }));
 }
 
-module.exports = { ROOT, 층들, 엔진값, 검사, 읽다 };
+module.exports = { ROOT, 층들, 엔진값, 검사, 읽다, 코드이름들, 함수이름들 };
