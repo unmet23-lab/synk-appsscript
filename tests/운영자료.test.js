@@ -516,6 +516,36 @@ test('갈래는 셋(유호 지시 08-17 재편)이고, 모르는 갈래는 조�
   assert.throws(() => 갈래폴더('C:\\뿌리', '없는갈래'), /모르는 갈래/);
 });
 
+/* ── 워크트리를 가리키는 바로가기 금지 (🔴 실사고 2026-08-17) ──────────
+ * 「작동 대장」 링크가 `…\.claude\worktrees\worktree-operating-ledger\docs\작동대장.html` 을
+ * 가리킨 채 유호님 화면에 있었고, 그 트랙이 워크트리를 정리하자 죽었다. 죽었다는 것은
+ * **아무 데도 안 빨갰다** — `--지금상태` 를 굽고 나서야 「가리키는 대상이 없다」로 나왔다.
+ * 🔑 만드는 자리에서 막는다: 이미 죽은 링크를 나중에 찾아내는 것은 처방이 아니라 사후 수습이다. */
+const { 워크트리대상인가, 바로가기만들기: 링크만들기 } = require('../tools/운영자료.js');
+
+test('워크트리대상인가: 실사고 그 경로를 문다 (픽스처)', () => {
+  for (const p of [
+    'C:\\Users\\q\\Documents\\SYNK-appsscript\\.claude\\worktrees\\worktree-operating-ledger\\docs\\작동대장.html',
+    '/home/q/SYNK-appsscript/.claude/worktrees/desktop-two-folder-reorg/docs/이해대장.html',
+  ]) assert.ok(워크트리대상인가(p), `못 잡았다: ${p}`);
+});
+
+test('워크트리대상인가: 메인 트리와 이름만 닮은 경로는 안 문다 — 거짓양성 0', () => {
+  for (const p of [
+    'C:\\Users\\q\\Documents\\SYNK-appsscript\\docs\\작동대장.html',
+    'C:\\Users\\q\\Documents\\SYNK-appsscript\\docs\\worktrees_설계.md',   // 폴더가 아니라 이름의 일부
+    'C:\\Users\\q\\.claude\\worktrees.md',                                  // `.claude` 밑이지만 폴더가 아니다
+  ]) assert.ok(!워크트리대상인가(p), `거짓양성: ${p}`);
+});
+
+test('[배선] 바로가기만들기가 실제로 거부한다 — 판정만 살고 배선이 죽는 자리를 막는다', () => {
+  /* 순수 함수만 물면 「검사는 있는데 아무도 안 부른다」가 통과한다(F481 그 모양).
+   * 셸을 안 넘겨도 검사가 **먼저** 걸려야 하므로, 실제 COM 은 이 시험에서 안 불린다. */
+  const 워크트리 = path.join('C:', 'repo', '.claude', 'worktrees', '가지', 'docs', 'x.html');
+  assert.throws(() => 링크만들기(path.join('C:', '어딘가', 'x.lnk'), 워크트리),
+    /워크트리 안을 가리키는 바로가기는 만들지 않는다/);
+});
+
 test('파일인자 — 플래그가 없어도 0번째 파일을 값 자리로 오인하지 않는다 (🔴 -1+1=0 구멍 · 실측 08-13)', () => {
   /* 실사고 2026-08-13: `--갈래` 없이 `<파일> --이름 X` 로 부르면 `indexOf('--갈래')`가 -1,
    * `-1+1=0` 이라 0번째 인자(파일)가 걸러져 파일 목록이 비었다. 루프 0회 = **조용히 exit 0**
