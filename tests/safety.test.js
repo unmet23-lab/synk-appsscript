@@ -2252,7 +2252,9 @@ test('[v9.80] absence_followup 골격 — 감지·연락·복귀 3구간이 한 
     assert.ok(m[1].includes(`'${h}'`), `요구 열 '${h}' 누락`);
   });
   const skel = section('function sheetSkeleton_()', 'function bootstrapSynk()');
-  assert.ok(skel.includes("['absence_followup', ABSENCE_FOLLOWUP_HEADERS]"),
+  /* [vNEXT · #Q100] 세 번째 칸(수집 표식)이 붙을 수 있으므로 **닫는 괄호까지 못박지 않는다** —
+   *   이 검사의 뜻은 「재건 목록에 있고 헤더 정본 상수를 쓴다」이지 「칸이 둘이다」가 아니었다. */
+  assert.ok(/\['absence_followup', ABSENCE_FOLLOWUP_HEADERS[,\]]/.test(skel),
     '재건 목록(SHEET_SKELETON)에 없으면 원버튼 재건 후 시트가 사라진다');
   assert.ok(!코드만(skel).includes("['absence_followup', ['날짜'"),
     '헤더를 리터럴로 복제하면 두 정본이 갈라진다(단일 소스 유지)');
