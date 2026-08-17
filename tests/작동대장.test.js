@@ -529,3 +529,149 @@ test('기록하기 — CLI 와 훅이 쓰는 통로가 하나다(같은 입력�
     assert.equal(fs.readFileSync(장부, 'utf8').split('\n').filter((l) => l.trim()).length, 2);
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
+
+/* ── ㉡ 「도는데 아픈 것」 = 재심의 둘째 과녁 (#Q102 유호 픽 ㉰ · 2026-08-17) ─────────
+ *
+ * 이 절이 지키는 것은 **정본이 하나라는 사실**이다. 재심 알림은 작동 대장의 «파생»이라
+ * 목록·정본·훅을 새로 만들지 않는다 — 만들면 갈라지고(F554 가 그 계보), 갈라진 쪽 증상은 「통과」다.
+ *
+ * 🔑 그리고 이 축이 생긴 이유가 첫째 축의 **0** 이다: 설계상 분모인 〖모델상한〗 표식이 0건인데
+ *    그 0 은 「풀린 게 없다」가 아니라 「막힌 11건이 전부 저장소 밖 재료」였다(08-17 전수 실측).
+ *    그래서 여기서 가장 중요한 검사는 **0 과 「못 쟀다」를 가르는 것**이다(F207).
+ */
+
+/** ㉡ 렌더러를 실판으로 돌린다 — 장부만 픽스처로 갈아 끼운다(실저장소 장부는 안 건드린다). */
+function 아픈축돌리기(장부값) {
+  const env = { ...process.env };
+  if (장부값 !== undefined) env.SYNK_작동대장_기록 = 장부값;
+  const r = spawnSync(process.execPath, ['-e', `
+    require(${JSON.stringify(path.join(ROOT, 'tools', '대기열.js'))}).아픈것내기();
+  `], { env, cwd: ROOT, encoding: 'utf8' });
+  /* 계기판이지 가드가 아니다 — 어떤 장부 상태에서도 세션을 죽이면 안 된다. */
+  assert.equal(r.status, 0, `㉡ 렌더러가 세션을 죽였다: ${r.stderr}`);
+  return r.stdout;
+}
+
+/** 사진 두 장을 깐다 — 통 개수는 그대로 두고 **드나듦만** 일으킨다(개수만 보면 「아무 일 없음」). */
+function 아픈장부깔기(장부) {
+  fs.writeFileSync(장부, `${[
+    JSON.stringify(사진('2026-08-10', { 깨짐: 2, 맨몸: 1, 안불림: 0, 괜찮음: 97 },
+      { 깨짐: [['tools/lib/보드.js', 17], ['tools/codex-review.js', 15]], 맨몸: ['tools/재질굽기.js'] })),
+    JSON.stringify(사진('2026-08-17', { 깨짐: 2, 맨몸: 1, 안불림: 0, 괜찮음: 97 },
+      { 깨짐: [['tools/lib/보드.js', 19], ['tools/board.js', 11]], 맨몸: ['tools/룸굽기.js'] })),
+  ].join('\n')}\n`, 'utf8');
+}
+
+test('🔴 배선 — 재심 목록이 ㉡ 을 «실제로 부른다»(호출이 빠지면 과녁이 조용히 하나로 돌아간다)', () => {
+  /* 08-17 실측: `자동기록()` 호출 한 줄을 지웠는데 회귀 32건이 전부 초록이었다. 같은 구멍을
+   * 이 축에도 뚫지 않으려고 **불리는지**를 못박는다 — 함수만 검사하면 배선이 끊겨도 초록이다. */
+  const 대기열 = require(path.join(ROOT, 'tools', '대기열.js'));
+  assert.match(대기열.재심알림.toString(), /아픈것내기\(\)/,
+    '재심 알림이 ㉡ 을 안 부른다 — 과녁이 〖모델상한〗 하나로 되돌아갔고 그 축은 영구 0 이다');
+  assert.match(대기열.재심알림.toString(), /막힌것내기\(/,
+    '재심 알림이 ㉠ 을 안 부른다 — 둘로 넓힌 과녁이 한 축만 남았다');
+});
+
+test('🔴 순서 — 그 주 사진을 «목록보다 먼저» 박는다(뒤에 박으면 갓 도래한 회차가 지난 주를 본다)', () => {
+  const src = require(path.join(ROOT, 'tools', '대기열.js')).재심알림.toString();
+  const 사진자리 = src.indexOf('자동기록()');
+  const 목록자리 = src.indexOf('목록내기(r.모델바뀜');
+  assert.ok(사진자리 > 0 && 목록자리 > 0, '두 호출 중 하나가 사라졌다');
+  assert.ok(사진자리 < 목록자리,
+    '목록이 사진보다 먼저 나간다 — ㉡ 은 사진의 파생이라 이 순서가 곧 신선도다(오늘 것을 「낡았다」로 낸다)');
+});
+
+test('🔑 재계산 0 — ㉡ 은 장부를 읽기만 한다(다시 재면 화면과 장부가 갈라진다)', () => {
+  const src = require(path.join(ROOT, 'tools', '대기열.js')).아픈재료.toString();
+  assert.match(src, /기록읽기\(\)/, '장부를 안 읽는다 — 파생이 아니라 사본이 된다');
+  assert.doesNotMatch(src, /재기\(/,
+    '㉡ 이 스스로 다시 잰다 — 그 주 사진은 「다시 계산하지 않으니 안 낡는다」가 근거였고 그것이 깨진다');
+});
+
+test('🔴 움직임이 «앞에» 선다 — 매주 같은 15건을 같은 순서로 내면 셋째 주에 배경이 된다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-아픈1-'));
+  const 장부 = path.join(방, '기록.jsonl');
+  try {
+    아픈장부깔기(장부);
+    const out = 아픈축돌리기(장부);
+    const 움자리 = out.indexOf('지난 사진(2026-08-10)');
+    const 목록자리 = out.indexOf('🟠 자꾸 깨진다');
+    assert.ok(움자리 > 0, '지난 사진과 견주지 않았다 — 사진이 두 장인데 움직임 절이 없다');
+    assert.ok(목록자리 > 0, '아픈 목록 자체가 안 나왔다');
+    assert.ok(움자리 < 목록자리, '전체 목록이 움직임보다 앞이다 — 읽는 사람은 앞줄만 본다');
+    /* 개수는 그대로다(깨짐 2→2) — 그래서 **드나듦과 마찰 오름**이 이 축의 알맹이다. */
+    assert.match(out, /새로 들어옴: tools\/board\.js/, '통에 새로 들어온 파일을 안 짚었다');
+    assert.match(out, /tools\/lib\/보드\.js 17→19/, '마찰이 오른 파일을 안 짚었다 — 개수가 같으면 이것만이 신호다');
+    assert.match(out, /회귀 0 으로 새로 들어옴: tools\/룸굽기\.js/, '맨몸으로 새로 들어온 파일을 안 짚었다');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('🔴 같은 날 두 번째 세션에도 목록이 안 사라진다 — 기록하기가 「중복」이면 `통` 을 안 준다', () => {
+  /* 이 배선의 급소다: 사진을 «박은 결과»에서 목록을 읽으면 수요일에 세션을 두 번 연 날
+   * 둘째 세션부터 목록이 조용히 빈다(중복은 일부러 조용한 상태다). 그래서 장부에서 읽는다. */
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-아픈2-'));
+  const 장부 = path.join(방, '기록.jsonl');
+  try {
+    아픈장부깔기(장부);
+    const 첫 = 아픈축돌리기(장부);
+    const r = spawnSync(process.execPath, ['-e', `
+      const q = require(${JSON.stringify(path.join(ROOT, 'tools', '대기열.js'))});
+      q.자동기록();          // 오늘 날짜로 한 번 더 → '중복'(조용하다)
+      q.아픈것내기();
+    `], { env: { ...process.env, SYNK_작동대장_기록: 장부 }, cwd: ROOT, encoding: 'utf8' });
+    assert.equal(r.status, 0, `둘째 호출이 세션을 죽였다: ${r.stderr}`);
+    assert.match(r.stdout, /🟠 자꾸 깨진다/,
+      '같은 날 두 번째에 목록이 사라졌다 — 「중복」의 빈 `통` 을 읽었다(수요일에 두 번 열면 눈이 먼다)');
+    assert.match(첫, /🟠 자꾸 깨진다/, '첫 호출부터 목록이 없다');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('🔴 사진 없음·빈 장부·깨진 장부·낡음을 **0 과 안 접는다**(F207 — 넷이 다 다른 말이어야 한다)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-아픈3-'));
+  try {
+    /* ㉠ 파일 자체가 없다 — 「아픈 게 0」이 아니라 「아직 안 박았다」 */
+    const 없음 = 아픈축돌리기(path.join(방, '없다.jsonl'));
+    assert.match(없음, /사진이 아직 없다/, '사진 0 장을 「아픈 것 0」으로 읽었다');
+    assert.match(없음, /0건이 아니다/, '0 과 갈리는 말을 안 붙였다');
+
+    /* ㉡ 장부는 있는데 다 깨졌다 — 몇 줄이 깨졌는지까지 */
+    const 깨진 = path.join(방, '깨진.jsonl');
+    fs.writeFileSync(깨진, 'JSON 아님\n또 아님\n', 'utf8');
+    const 깨진출 = 아픈축돌리기(깨진);
+    assert.match(깨진출, /못 읽은 줄 2건/, '깨진 줄 수를 안 밝혔다 — 분모 없는 0 이 된다');
+    assert.match(깨진출, /장부가 깨졌다/, '깨진 장부를 「아픈 게 없다」쪽으로 읽었다');
+
+    /* ㉢ 빈 장부 — 깨진 줄이 0 이라 「못 읽은 줄 0건」이라고 말해선 안 된다(아무 말도 아닌 문장) */
+    const 빈 = path.join(방, '빈.jsonl');
+    fs.writeFileSync(빈, '', 'utf8');
+    const 빈출 = 아픈축돌리기(빈);
+    assert.match(빈출, /빈 장부이거나 읽다 실패했다/, '빈 장부와 깨진 장부가 같은 말을 낸다');
+    assert.doesNotMatch(빈출, /못 읽은 줄 0건/, '「못 읽은 줄 0건」은 맞는 얼굴로 아무 말도 안 하는 문장이다');
+
+    /* ㉣ 낡은 사진 — 「지금」이라고 말하면 그 주가 빈 사실이 사라진다 */
+    const 낡음 = path.join(방, '낡음.jsonl');
+    const 옛날 = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+    fs.writeFileSync(낡음, `${JSON.stringify(사진(옛날, { 깨짐: 1, 맨몸: 0, 안불림: 0, 괜찮음: 99 },
+      { 깨짐: [['tools/lib/보드.js', 19]] }))}\n`, 'utf8');
+    assert.match(아픈축돌리기(낡음), /일 낡았다/, '30일 전 사진을 「지금」처럼 냈다 — 그 뒤 주가 빈 사실이 사라진다');
+
+    /* ㉤ 사진 한 장 — 견줄 지난 주가 «없다»고 말한다(움직임 0 과 다르다) */
+    const 한장 = path.join(방, '한장.jsonl');
+    fs.writeFileSync(한장, `${JSON.stringify(사진(new Date().toISOString().slice(0, 10),
+      { 깨짐: 1, 맨몸: 0, 안불림: 0, 괜찮음: 99 }, { 깨짐: [['tools/lib/보드.js', 19]] }))}\n`, 'utf8');
+    const 한장출 = 아픈축돌리기(한장);
+    assert.match(한장출, /견줄 지난 주가 없다/, '첫 회차를 「움직임 0」으로 냈다 — 안 잰 것이지 안 움직인 게 아니다');
+    assert.doesNotMatch(한장출, /일 낡았다/, '오늘 박은 사진을 낡았다고 했다 — 날짜 축이 갈렸다(UTC/로컬)');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('🔑 임계값을 여기 다시 안 적는다 — 같은 판정이 두 곳에 살면 그날 갈라진다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-아픈4-'));
+  const 장부 = path.join(방, '기록.jsonl');
+  try {
+    아픈장부깔기(장부);
+    const out = 아픈축돌리기(장부);
+    assert.match(out, new RegExp(`마찰 ≥${대장.깨짐기준}`),
+      `화면의 임계값이 작동대장의 ${대장.깨짐기준} 과 다르다 — 목록은 한 곳에서 파생돼야 한다`);
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
