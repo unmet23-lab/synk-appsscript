@@ -2312,19 +2312,70 @@ function aiStudents_(ss) {
   });
   return list;
 }
+/* [v9.250 · #Q99 5/5] 돌아온 학생의 «재료 창»을 그 사람이 떠나기 전까지 넓힌다 — `exit_log` 도달.
+ *
+ * ■ 원신호가 **구조적으로** 못 보던 것 = 「돌아온 사람」.
+ *   아래 두 로더(`aiWeakMap_`·`퀴즈오답맵_`)의 창은 **오늘로부터 14일** 고정이다. 퇴소했다 돌아온
+ *   학생은 그 창이 통째로 비어 있다 — 안 오는 동안 오류가 안 쌓이기 때문이다. 그래서 개인 퀴즈가
+ *   급수 로테이션으로 떨어진다: **가장 개인화가 필요한 순간에 개인화가 꺼진다.** 그 사람의 기록은
+ *   `student_errors`·`quiz_log` 에 그대로 살아 있는데 «창 밖»이라 안 보였을 뿐이다.
+ *
+ * ■ 왜 `exit_log` 여야 하나 — 「지금 명부에 있는데 나간 적이 있다」는 이 탭에만 있다.
+ *   출석 공백으로는 **장기 결석**과 «나갔다 돌아옴»이 안 갈리고, 상담시트 처리상태는 «지금 상태»라
+ *   언제 나갔는지가 없다. profiles 는 퇴소자 행을 통째로 지우므로(v9.34 행 정합 불변식) 그쪽엔
+ *   재등록자와 신입을 가를 재료가 **원리적으로** 없다.
+ *
+ * ■ 창은 «옮기지» 않고 «넓힌다» — 옮기면 돌아온 뒤 새로 쌓인 것을 놓친다. 컷을 퇴소 시점 14일 전으로
+ *   내리면 「떠나기 전 마지막 14일 + 돌아온 뒤 전부」가 함께 든다. 프롬프트가 안 붓는 이유는 소비처가
+ *   이미 상한을 걸어 뒀기 때문이다(약점 `slice(-2)` · 오답맵 한 학생 70자).
+ *
+ * ⚠ **공백 상한** — 너무 오래된 약점은 그 사람의 «지금»이 아니다. 넘으면 안 넓히고 통상 창으로 둔다.
+ *   몇 명이 걸렸는지는 호출부가 분모와 함께 로그에 적는다(유호 확정 08-14 · 0 은 분모와 함께 읽는다).
+ * ⚠ 틀릴 때의 모습 = **창이 좁아지는 것**(넓히려다 거꾸로 자르면 통상 학생까지 재료를 잃는데 겉모습은
+ *   「재료 없음」과 같다) → 컷은 `Math.min` 으로만 내린다. 아래 두 로더가 그 안전판을 함께 진다.
+ * 🚫 학생에게 가는 글에 «나갔다 왔다»를 싣지 않는다 — 재료 창만 조용히 넓힌다. 결석·이탈을 학생 산출의
+ *   소재로 쓰지 않는 것은 이미 선 규율이다(`aiMonthlyTitles_` 프롬프트 「지각·결석 등 부정 소재 절대 금지」). */
+const 복귀_공백상한일 = 180;
+function 복귀창_(ss) {
+  const sh = ss.getSheetByName('exit_log');
+  if (!sh || sh.getLastRow() < 2) return { 맵: {}, 상한밖: 0 };
+  const 최종 = {};
+  sh.getRange(2, 1, sh.getLastRow() - 1, 5).getValues().forEach(r => {
+    const sid = String(r[0] == null ? '' : r[0]).trim();
+    if (!sid) return;
+    const d = toDate_(r[3]) || (r[3] instanceof Date ? r[3] : null); // 퇴소감지일
+    if (!d) return;
+    /* 두 번 나갔다 온 사람은 **마지막** 퇴소가 창을 정한다 — 더 최근일수록 창이 좁고, 좁은 쪽이 옳다. */
+    const t = d.getTime();
+    if (!최종[sid] || t > 최종[sid]) 최종[sid] = t;
+  });
+  const 바닥 = Date.now() - 복귀_공백상한일 * 86400000;
+  const 맵 = {}; let 상한밖 = 0;
+  Object.keys(최종).forEach(sid => { if (최종[sid] >= 바닥) 맵[sid] = 최종[sid]; else 상한밖++; });
+  return { 맵: 맵, 상한밖: 상한밖 };
+}
+/* 위 맵은 «나간 적 있는 사람» 전원이고 「돌아온 사람」은 그중 지금 명부에 있는 부분집합이다. 여기서
+ * 교집합을 안 뜨는 이유: 로더는 자기가 실제로 만난 학생 행에만 컷을 적용하고, 명부에 없는 사람의
+ * 집계는 아무도 안 읽는다. 「돌아온 N명」이라는 **분모는 명부를 쥔 호출부**가 센다(여기서 세면 틀린다). */
+
 // 최근 약점 로더 — student_errors(14일·미해결) + 첨삭 '오늘의포인트' 최근 1건 + 오류태그 빈도(14일·보조)
 // ⚠ 이 약점맵은 개원용 시트층이다 — 앱 이관 때 은퇴 예정(불변식 5 격리). 약점 계산을 앱 사슬에 세울 때
 //   이 로직을 복사하지 않는다(⛔짓는 동안 복제 금지) — 그쪽 정본은 엔진 교정 이력에서 새로 선다(철학정합 §3-A·B).
-function aiWeakMap_(ss) {
+// [v9.250 · #Q99 5/5] `복귀` = `복귀창_()` 산출(선택). 없으면 종전과 똑같이 «오늘 14일» 하나로 돈다.
+function aiWeakMap_(ss, 복귀) {
   const weak = {};
   const se = ss.getSheetByName('student_errors');
   const cut = Date.now() - 14 * 86400000;
+  const 복귀맵 = (복귀 && 복귀.맵) || {};
+  /* 컷은 **내리기만** 한다 — 퇴소가 오늘이면 퇴소-14일 = 통상 컷이라 같아지고, 그보다 이르면 넓어진다.
+   * `Math.min` 은 그 성질을 코드로 못박은 안전판이다(위 「틀릴 때의 모습」). */
+  const 컷_ = (sid) => (복귀맵[sid] ? Math.min(cut, 복귀맵[sid] - 14 * 86400000) : cut);
   const aggW = {}; // [v9.64] 학생×유형 집계 — 반복 많은 포인트를 앞세워 AI가 끈질긴 약점부터 공략(유형 태그로 표적도 선명)
   if (se && se.getLastRow() >= 2) se.getRange(2, 1, se.getLastRow() - 1, 8).getValues().forEach(r => {
     if (!r[1] || String(r[7] || '') === '해결') return;
     const d = toDate_(r[0]) || (r[6] instanceof Date ? r[6] : null);
-    if (!d || d.getTime() < cut) return;
     const k = String(r[1]).trim();
+    if (!d || d.getTime() < 컷_(k)) return;
     const gS = (aggW[k] = aggW[k] || {});
     const tK = String(r[3] || r[4] || '').slice(0, 10);
     const eW = gS[tK] = gS[tK] || { type: String(r[3] || ''), memo: '', t: 0, cnt: 0 };
@@ -2442,7 +2493,8 @@ function 퀴즈라벨_(유형, 문제) {
  *     그냥 「재료 없음」과 같은 모양이다. → 그래서 버린 행 수를 세어 함께 돌려주고 호출부가 로그에 적는다.
  *   · 닫을 것 = 한 학생 재료를 **70자로 못박는다**. 재료가 늘어도 배치 프롬프트 토큰이 안 는다.
  *   · 새 시트·새 배치·새 속성 0 — 이미 쌓이는 탭을 읽기만 한다. */
-function 퀴즈오답맵_(ss) {
+// [v9.250 · #Q99 5/5] `복귀` = `복귀창_()` 산출(선택) — 돌아온 학생만 컷을 내린다. 없으면 종전 그대로.
+function 퀴즈오답맵_(ss, 복귀) {
   const 맵 = {};
   let 버린행 = 0;
   const ql = ss.getSheetByName('quiz_log');
@@ -2454,6 +2506,10 @@ function 퀴즈오답맵_(ss) {
    *   폭이 모자라 제출일 칸이 없으면 아래 날짜 게이트가 그 행을 통째로 버린다 — 별도 분기 불필요. */
   const w = Math.min(QUIZ_LOG_HEADERS.length, ql.getLastColumn());
   const cut = Date.now() - 14 * 86400000;
+  /* [v9.250 · #Q99 5/5] 돌아온 학생은 통상 14일 창이 통째로 비어 있다 — 컷을 그 사람이 떠나기
+   *   14일 전으로 내려 «떠나기 전 마지막 + 돌아온 뒤 전부»를 함께 본다. `Math.min` = 좁아짐 방지. */
+  const 복귀맵 = (복귀 && 복귀.맵) || {};
+  const 컷_ = (sid) => (복귀맵[sid] ? Math.min(cut, 복귀맵[sid] - 14 * 86400000) : cut);
   const agg = {}; // 학생 → 라벨 → { 오답, 찍맞, t }
   ql.getRange(2, 1, ql.getLastRow() - 1, w).getValues().forEach(r => {
     const sid = String(r[1] || '').trim();
@@ -2464,7 +2520,7 @@ function 퀴즈오답맵_(ss) {
     const 찍맞 = 판정 === '정답' && String(r[8] || '').trim() === QUIZ_CONFIDENCE[QUIZ_CONFIDENCE.length - 1];
     if (판정 !== '오답' && !찍맞) return;
     const d = toDate_(r[9]) || (r[10] instanceof Date ? r[10] : null);
-    if (!d || d.getTime() < cut) return;
+    if (!d || d.getTime() < 컷_(sid)) return;
     const 라벨 = 퀴즈라벨_(r[3], r[4]);
     if (!라벨) { 버린행++; return; } // 문항 스냅샷이 빈 행 — 세지 않으면 이 손실이 안 보인다
     const g = (agg[sid] = agg[sid] || {});
@@ -2525,9 +2581,13 @@ function aiStudioBatch_() {
 
   // [v9.54] 학생·약점 로더 지연 메모이즈 — ①(한문장)과 ③(반브리핑)이 profiles·student_errors·hw_feedback
   //   전량을 각각 중복 read하던 것을 1회로. 실패 시 캐시가 남지 않으므로 섹션별 try 격리(뒤 섹션이 재시도)는 유지된다.
-  let _stusAll = null, _weakAll = null;
+  let _stusAll = null, _weakAll = null, _복귀All = null;
   const stusAll_ = () => (_stusAll || (_stusAll = aiStudents_(ss)));
-  const weakAll_ = () => (_weakAll || (_weakAll = aiWeakMap_(ss)));
+  /* [v9.250 · #Q99 5/5] 재료 창 — 돌아온 학생은 통상 14일 창이 비어 있다(위 `복귀창_`).
+   *   약점맵과 같은 메모이즈에 태우는 이유: ①(개인 퀴즈)과 ③(반 브리핑)이 같은 약점맵을 나눠 쓰는데,
+   *   창을 한쪽에만 넓히면 **같은 학생이 두 산출에서 다른 사람이 된다.** */
+  const 복귀All_ = () => (_복귀All || (_복귀All = 복귀창_(ss)));
+  const weakAll_ = () => (_weakAll || (_weakAll = aiWeakMap_(ss, 복귀All_())));
 
   // ① H1/A1/A2/A4 — 학생별 오늘의 한 문장 + 약점 퀴즈(관심사 반영), 배치 호출
   try {
@@ -2535,13 +2595,21 @@ function aiStudioBatch_() {
     const weak = weakAll_();
     /* [v9.247 · #Q99] 지난 퀴즈 되읽기 — 출제 → 응답 → **재출제**의 마지막 칸(위 `퀴즈오답맵_`).
      *   ① 절에서만 부른다: 이 재료의 과녁은 개인 퀴즈 한 곳이고, ③반브리핑·연습노트는 안 건드린다. */
-    const 지난퀴즈 = 퀴즈오답맵_(ss);
+    const 복귀 = 복귀All_();
+    const 지난퀴즈 = 퀴즈오답맵_(ss, 복귀);
     /* 0 은 분모와 함께 읽는다(유호 확정 08-14) — 안 그러면 「지난 퀴즈로 재출제한다」가
      *   재료를 받은 학생 0명이어도 참이 된다. 버린 행은 위 «조용한 손실»을 드러내는 자리다. */
     Logger.log('개인 퀴즈 재출제 재료: 대상 ' + stus.length + '명 = 지난 퀴즈 있는 '
       + stus.filter(s => 지난퀴즈.맵[s.id]).length + '명 + 없는 '
       + stus.filter(s => !지난퀴즈.맵[s.id]).length + '명'
       + (지난퀴즈.버린행 ? ' · 문항 스냅샷이 비어 버린 행 ' + 지난퀴즈.버린행 + '건' : ''));
+    /* [v9.250 · #Q99 5/5] 같은 규율 — 「돌아온 학생의 창을 넓힌다」가 **넓힌 사람 0명이어도 참**이 되지
+     *   않게 분모를 쪼갠다. 「돌아온 사람」은 퇴소 이력과 오늘 명부의 **교집합**이라 여기서만 셀 수 있다. */
+    const 복귀중 = stus.filter(s => 복귀.맵[s.id]).length;
+    Logger.log('복귀 재료 창: 오늘 대상 ' + stus.length + '명 = 창 넓힌 복귀 ' + 복귀중
+      + '명 + 통상 ' + (stus.length - 복귀중) + '명'
+      + ' · 퇴소 이력 ' + Object.keys(복귀.맵).length + '명(상한 안, 명부 밖 포함) + '
+      + 복귀.상한밖 + '명(공백 ' + 복귀_공백상한일 + '일 초과 — 안 넓힘)');
     const schema = {
       type: 'object', additionalProperties: false, required: ['items'],
       properties: { items: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['i', 's', 'q', 'a'], properties: {
