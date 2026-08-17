@@ -78,6 +78,19 @@ const 대화행 = (o) => {
 const 숙달행 = (o) => [o.sid, o.gid, o.상태 || '연습', o.첫기록일 || 날(3), '', o.출처 || 'AI첨삭',
   o.근거일 === undefined ? new Date(Date.now() - 86400000) : o.근거일];
 
+/** 읽기는 그대로 통과시키고 **쓰기만** 던지는 껍데기 — 시트 쓰기 실패(할당량·락·6분 초과)를 흉내 낸다. */
+function 쓰기폭발시트(sh) {
+  return Object.assign(Object.create(Object.getPrototypeOf(sh) || Object.prototype), sh, {
+    getRange: (...a) => {
+      const r = sh.getRange(...a);
+      return Object.assign(Object.create(Object.getPrototypeOf(r) || Object.prototype), r, {
+        setValues: () => { throw new Error('가짜 시트 쓰기 실패'); },
+        setValue: () => { throw new Error('가짜 시트 쓰기 실패'); }
+      });
+    }
+  });
+}
+
 /**
  * `masteryFromTalk_` 를 실제로 태우고, 모델에 건넨 것과 mastery_log 의 «남은 모양»을 돌려준다.
  * @param {{대화행들?:Array, 숙달행들?:Array, 응답?:object|Function, 포인터?:string, 쓰기?:boolean}} 옵션
@@ -108,7 +121,10 @@ function 태우기(옵션) {
     Utilities: { formatDate: fmt },
     Logger: { log: (m) => 로그.push(String(m)) },
     헤더보정_: () => {},
-    ensureSheet: (s, n) => (n === 'mastery_log' ? ml : 시트흉내({ 첫행: 1, 행들: [[]] })),
+    /* `쓰기폭발` — `masteryApply_` 의 **시트 쓰기만** 던지게 한다(읽기는 그대로).
+     *   AI 호출 실패는 이미 `응답: new Error()` 로 재고 있는데, 그 «뒤» 쓰기가 던지는 축은
+     *   안 재고 있었다 — 커서를 먼저 찍으면 그 행들이 영구 미판정이 되는 자리다. */
+    ensureSheet: (s, n) => (n === 'mastery_log' ? (o.쓰기폭발 ? 쓰기폭발시트(ml) : ml) : 시트흉내({ 첫행: 1, 행들: [[]] })),
     aiCall_: (k, sys, usr) => {
       호출.push({ 시스템: sys, 사용자: usr });
       const r = typeof o.응답 === 'function' ? o.응답(호출.length, usr) : (o.응답 || { used: [], wrong: [] });
@@ -125,9 +141,13 @@ function 태우기(옵션) {
   };
   const n = Object.keys(의존);
   const 판정관 = new Function(...n, `${교재조각}\nreturn { masteryFromTalk_, masteryFromFeedback_ };`)(...n.map((k) => 의존[k]));
-  (o.쓰기 ? 판정관.masteryFromFeedback_ : 판정관.masteryFromTalk_)(ss);
+  /* 던진 예외는 **삼키지 말고 돌려준다** — 야간 오케스트레이터가 함수별 try 로 삼키는 그 자리를
+   *   흉내 내되, 시험은 「던졌나」와 「그때 커서가 어디 섰나」를 둘 다 봐야 한다. */
+  let 예외 = null;
+  try { (o.쓰기 ? 판정관.masteryFromFeedback_ : 판정관.masteryFromTalk_)(ss); } catch (e) { 예외 = e; }
+  if (예외 && !o.쓰기폭발) throw 예외; // 폭발을 안 시켰는데 던졌다 = 진짜 결함이니 감추지 않는다
   const 숙달 = ml.data.slice(1).filter((r) => r && r[0]).map((r) => ({ sid: r[0], gid: r[1], 상태: r[2], 출처: r[5] }));
-  return { 호출, 로그, 숙달, 속성, 포인터: 속성['문법판정_대화포인터'] };
+  return { 호출, 로그, 숙달, 속성, 예외, 포인터: 속성['문법판정_대화포인터'] };
 }
 
 /* ───────────────────────── 1. 재료가 실제로 건네진다 ───────────────────────── */
@@ -290,6 +310,72 @@ test('[#Q99] 로그가 분모와 함께 나온다 — 「닿는다」가 학생 
   assert.match(줄, /새 행 \d+행/, '분모(새 행 수)가 없다');
   assert.match(줄, /학생 \d+명 = 판정 \d+ \+ 실패 \d+/, '학생 수를 판정·실패로 갈라 적지 않았다');
   assert.match(줄, /신규 기록 \d+/, '실제로 기록된 수가 없다 — 「돌았다」와 「닿았다」가 같은 모양이 된다');
+});
+
+/* ─────────── 4-b. 쓰기가 던져도 재료를 안 버린다 (①배포 검수 P1 `bfe9cce47844`) ───────────
+ *
+ * 🔴 위 4절이 재던 「실패」는 전부 **AI 호출** 실패다. 그 아래 `masteryApply_` 의 시트 쓰기가
+ *   던지는 축은 안 재고 있었고, 그 자리에서 포인터가 **쓰기보다 먼저** 찍히고 있었다 —
+ *   야간 오케스트레이터가 예외를 삼키는 동안 포인터만 전진해 그 문장은 커서 뒤로 넘어간다.
+ *   오류뱅크 커서가 v9.211·v9.212 에서 두 번 고친 병과 같은 모양이고, 새는 방향은 **조용한 유실**이라
+ *   평소 초록으로는 원리상 안 보인다(그래서 픽스처가 탐지력을 진다 · 가드 맹점 ②). */
+
+test('[P1] 시트 쓰기가 던지면 포인터가 안 움직인다 — 삼켜진 예외 뒤로 문장이 영구 미판정이 되면 안 된다', () => {
+  const r = 태우기({
+    대화행들: [대화행({ sid: 'S1' }), 대화행({ sid: 'S2' })],
+    응답: { used: ['G201'], wrong: [] },
+    쓰기폭발: true
+  });
+  assert.ok(r.예외, '쓰기가 안 던졌다 — 이 시험이 재려던 상황이 아예 안 만들어졌다(미실행은 통과와 같은 모양이다)');
+  assert.equal(r.포인터, undefined,
+    '쓰기가 던졌는데 포인터가 전진했다 — 그 행들은 커서 뒤라 다시 못 읽힌다(영구 미판정)');
+});
+
+test('[P1] 쓰기가 던져도 판정 자체는 돌았다 — 「포인터가 안 움직였다」가 «아무것도 안 했다»와 갈린다', () => {
+  const r = 태우기({
+    대화행들: [대화행({ sid: 'S1' })],
+    응답: { used: ['G201'], wrong: [] },
+    쓰기폭발: true
+  });
+  assert.equal(r.호출.length, 1, '판정 호출이 0건이면 포인터가 안 선 이유가 «재료 0» 일 수도 있다 — 축이 갈려야 한다');
+});
+
+test('[P1] 판정관 셋이 «쓰기 → 커서» 순서를 함께 지킨다 — 순서가 갈리면 갈린 쪽이 조용히 샌다', () => {
+  /* 같은 불변식을 세 함수가 각자 적는 자리라, 넷째 판정관이 붙는 날 순서만 뒤집혀도 초록이다.
+   *   그래서 «소스 순서»를 직접 못박는다 — 실행 검사는 그 함수를 태울 때만 재기 때문이다. */
+  const 판정관들 = [
+    ['masteryFromFeedback_', '문법판정_포인터'],
+    ['masteryFromVoice_', '문법판정_음성마크'],
+    ['masteryFromTalk_', '문법판정_대화포인터']
+  ];
+  /* 🔴 **「마지막 찍기가 뒤에 있나」로 물으면 안 된다** — 변이가 그 구멍을 잡아냈다(2/4 → 4/4):
+   *   앞에 한 줄을 «더» 넣어도 뒤의 진짜 줄이 그대로라 `lastIndexOf` 비교는 초록이다. 실제로 위험한
+   *   모양이 정확히 그것이다(중복 찍기). 그래서 **찍기 전부**를 보고, 물음을 바꾼다:
+   *     「쓰기까지 흘러갈 수 있는 찍기가 있나」 = 찍기와 쓰기 사이에 `return` 이 없으면 위반.
+   *   되감기·조기반환 자리(`if (from > last) { …; return; }`)는 쓰기에 도달하지 않으므로 정당하고,
+   *   이 물음이 그 둘을 정확히 가른다. */
+  const 몸 = 코드만(교재); // 주석 안의 낱말이 순서 판정을 뒤집지 못하게 벗긴 몸으로만 본다
+  for (const [이름, 커서] of 판정관들) {
+    const s = 몸.indexOf('function ' + 이름 + '(');
+    assert.notEqual(s, -1, `${이름} 를 못 찾았다`);
+    const e = 몸.indexOf('\nfunction ', s + 1);
+    const 구간 = 몸.slice(s, e === -1 ? undefined : e);
+    const 적용 = 구간.indexOf('masteryApply_(');
+    assert.notEqual(적용, -1, `${이름} 가 공용 쓰기 통로를 안 쓴다`);
+
+    const 찍기들 = [];
+    for (let i = 구간.indexOf("setProperty('" + 커서 + "'"); i !== -1;
+         i = 구간.indexOf("setProperty('" + 커서 + "'", i + 1)) 찍기들.push(i);
+    assert.ok(찍기들.length, `${이름} 에서 커서 ${커서} 를 찍는 자리를 못 찾았다`);
+    assert.ok(찍기들.some((i) => i > 적용),
+      `${이름}: 쓰기(masteryApply_) «뒤»에 커서(${커서})를 찍는 자리가 없다 — 전진이 아예 안 되면 같은 재료를 매일 다시 태운다`);
+
+    for (const i of 찍기들.filter((i) => i < 적용)) {
+      assert.ok(구간.slice(i, 적용).includes('return'),
+        `${이름}: 쓰기까지 흘러가는 자리에서 커서(${커서})를 «먼저» 찍는다(${i}) — `
+        + '쓰기가 던지면 야간이 예외를 삼키는 동안 커서만 전진해 그 재료는 영구 미판정이다');
+    }
+  }
 });
 
 /* ───────────────────── 5. 장부가 이 배선을 가리킨다 ───────────────────── */
