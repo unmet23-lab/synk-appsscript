@@ -40,19 +40,21 @@ function 픽스처() {
   /* 🔑 `core.quotepath` 를 **일부러 안 만진다** — 기본값 그대로여야 이 회귀가 실물을 잰다. */
 
   fs.mkdirSync(path.join(dir, 'docs'), { recursive: true });
-  /* 인용검사가 실제로 끌어오는 사슬 전부 — 하나라도 빠지면 도구가 안 서고, 그러면 이 회귀는
-   * 「사각이 있다」가 아니라 「못 쟀다」를 재게 된다(그 둘은 화면에서 같은 모양이다 · F207). */
-  const 옮길것 = [
-    'tools/인용검사.js', 'tools/lib/보드낡음.js', 'tools/lib/표.js', 'tools/lib/보드.js',
-    '.claude/hooks/lib/board-id.js',
-  ];
-  for (const rel of 옮길것) {
-    const 원본 = path.join(저장소뿌리, rel);
-    if (!fs.existsSync(원본)) return null;   // 사슬이 바뀌었다 — skip 으로 드러낸다
-    const 목적 = path.join(dir, rel);
-    fs.mkdirSync(path.dirname(목적), { recursive: true });
-    fs.copyFileSync(원본, 목적);
-  }
+  /* 재는 대상인 `인용검사.js` 는 **실물을 그대로** 옮긴다 — 이 회귀의 값은 거기서 나온다. */
+  const 원본 = path.join(저장소뿌리, 'tools', '인용검사.js');
+  if (!fs.existsSync(원본)) return null;      // 도구가 옮겨갔다 — skip 으로 드러낸다
+  fs.mkdirSync(path.join(dir, 'tools', 'lib'), { recursive: true });
+  fs.copyFileSync(원본, path.join(dir, 'tools', '인용검사.js'));
+
+  /* 유일한 로컬 의존인 `저장소들` 만 **대역으로 세운다**(실물은 표·보드 라이브러리를 줄줄이 끌고 온다).
+   * ⚠ 대역인 이유를 적는다 — 이 함수가 하는 일은 «형제 저장소(SYNK-talk)가 옆에 있나»이고,
+   *   그건 여기서 재는 축(경로 이스케이프)과 무관하다. 픽스처엔 형제가 없으니 `형제있음:false` 가
+   *   실물과 같은 답이다. 계약이 세 줄이라 드리프트해도 이 검사의 판정을 못 바꾼다.
+   *   (실물을 통째로 옮기면 `.claude/hooks/lib/board-id.js` 까지 끌려와, 이 파일이 「훅 회귀」로
+   *    잘못 분류돼 `tests/훅통로.test.js` 가 옛 통로 위반으로 신고한다 — 실측 08-17.) */
+  fs.writeFileSync(path.join(dir, 'tools', 'lib', '보드낡음.js'),
+    'const path = require("path");\n'
+    + 'exports.저장소들 = (root) => ({ 목록: [{ 이름: "as", 뿌리: path.resolve(String(root || ".")) }], 형제있음: false });\n');
 
   /* 인용이 가리킬 실물 — 3행에 이름이 있다. */
   fs.writeFileSync(path.join(dir, '대상.js'), ['// 1', '// 2', 'function 몽글쨈() {}', '// 4', ''].join('\n'));
