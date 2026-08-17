@@ -263,21 +263,55 @@ function 경로풀기(s) {
   return Buffer.from(bytes).toString('utf8');
 }
 
-function 손댐지도() {
-  let out;
-  try {
-    out = execFileSync('git',
-      ['-c', 'core.quotepath=false', 'log', '--since=1 year ago', '--date=short', '--format=@%ad', '--name-only'],
-      { cwd: ROOT, encoding: 'utf8', maxBuffer: 1024 * 1024 * 64 });
-  } catch (e) { 못읽음.push(`git 이력 — 읽다 실패: ${e.message}`); return null; }
-  const 지도 = new Map();   // 경로 → 최근 YYYY-MM-DD (첫 등장이 최신)
+/* 🔴 **못 셋째 — 시계가 둘이다**(F600 · 실측 2026-08-18):
+ *   `--date=short` 는 **작성자 타임존**으로 날짜를 렌더한다. 그런데 `오늘`(:773)은 **UTC 날짜**라,
+ *   한국(UTC+9)에서는 **매일 00:00~09:00 KST 동안 두 축이 하루 갈리고** 그 창에 손댄 파일이
+ *   전부 `-1일`로 인쇄됐다(실측: `codex-review`·`대기열` 이 `2026-08-18 · -1일`).
+ *   이 파일 머리말(:468~472)이 「이 저장소엔 「오늘」이 둘이다」를 이미 경고했는데, 그 못은
+ *   **기록 이음**에만 박혔고 여기 나이 계산엔 안 닿아 있었다 — git 이 «세 번째 시계»를 들고
+ *   들어오는 자리를 안 본 것이다.
+ *   ▶ 그래서 **git 에서 축을 없앤다**: `--date=unix`(타임존 없는 epoch)로 받아 JS 가 UTC 로 접는다.
+ *     `--date=format-local` 이나 `TZ=` 는 **repo 밖 환경에 기대는 검사**라 CI 에서 갈린다(F296).
+ *   ⚠ 대가: 08:00 KST 커밋이 화면에 «어제»로 적힌다. 참고 열이라 감당하되, 축은 열 이름이 말한다. */
+
+/** epoch 초 → UTC 날짜 `YYYY-MM-DD`. 숫자가 아니면 null(조용히 0 으로 접지 않는다).
+ *  🔑 `Number('')` 은 **0** 이라 빈 문자열이 `1970-01-01` 로 «맞는 얼굴»을 하고 들어온다 —
+ *     그래서 빈 값·공백은 숫자로 세기 «전에» 거른다(F207: 못 읽은 것과 0 은 다른 말이다). */
+function UTC날짜(초) {
+  if (typeof 초 === 'string' && !/^\s*-?\d+\s*$/.test(초)) return null;
+  const n = Number(초);
+  if (!Number.isFinite(n)) return null;
+  return new Date(n * 1000).toISOString().slice(0, 10);
+}
+
+/** git 출력 → `경로 → 최근 UTC 날짜` 지도. **순수 함수** — 픽스처가 탐지력을 진다(맹점 ②).
+ *  실저장소는 지금 안 깨져 있어, 실저장소만 검사하면 이 파서가 눈이 멀어도 초록이다. */
+function 손댐파싱(out) {
+  const 지도 = new Map();   // 경로 → 최근 YYYY-MM-DD (UTC · 첫 등장이 최신)
   let 현재날짜 = null;
   for (const line of out.split(/\r?\n/)) {
-    if (line.startsWith('@')) { 현재날짜 = line.slice(1).trim(); continue; }
+    /* 도장 줄은 `@<epoch>` — **숫자를 못박는다**. 두 방향을 다 막는다:
+     *   ㉠ `@types/index.js` 같은 «파일»을 날짜로 안 읽는다.
+     *   ㉡ 포맷이 옛 `--date=short` 로 되돌아가면 `@2026-08-18` 이 도장으로 «안» 잡혀
+     *      지도가 통째로 비고, 아래 `size === 0` 못이 **소리내어** 잡는다.
+     * 🔑 못 푼 도장을 세는 칸은 **일부러 안 둔다** — `\d+` 는 언제나 파싱되므로 그 계수기는
+     *    원리상 0 을 벗어날 수 없다. 못 도는 계수기는 분모의 얼굴을 한 장식이다(F543). */
+    if (/^@\d+$/.test(line)) { 현재날짜 = UTC날짜(line.slice(1)); continue; }
     const p = 경로풀기(line.trim());
     if (!p || !현재날짜) continue;
     if (!지도.has(p)) 지도.set(p, 현재날짜);
   }
+  return { 지도 };
+}
+
+function 손댐지도() {
+  let out;
+  try {
+    out = execFileSync('git',
+      ['-c', 'core.quotepath=false', 'log', '--since=1 year ago', '--date=unix', '--format=@%ad', '--name-only'],
+      { cwd: ROOT, encoding: 'utf8', maxBuffer: 1024 * 1024 * 64 });
+  } catch (e) { 못읽음.push(`git 이력 — 읽다 실패: ${e.message}`); return null; }
+  const { 지도 } = 손댐파싱(out);
   if (지도.size === 0) 못읽음.push('git 이력 — 경로를 하나도 못 읽었다(0건). 「오래 안 봤다」는 판정이 아니다.');
   return 지도;
 }
@@ -485,7 +519,7 @@ function 재심보강({ 본것, 뒤집음 = 0, 지금 = new Date() } = {}) {
 
 module.exports = {
   재기, 분류, 경로풀기, 깨짐기준, 스냅샷, 기록읽기, 움직임, 기록경로,
-  기록하기, 재심보강,
+  기록하기, 재심보강, 손댐파싱, UTC날짜, 나이꼬리,
 };
 
 /* ── 그리기 ──────────────────────────────────────────────────────────────── */
@@ -498,6 +532,15 @@ function 통칸(색, 기호, 제목, 수, 뜻) {
   </div>`;
 }
 
+/** 나이 꼬리. **음수를 0 으로 안 접는다**(F480·F207) — 축을 하나로 맞춘 뒤에도
+ *  시계 어긋남·리베이스로 «미래 날짜» 커밋은 실재한다. 접으면 그때 아무 말도 안 하는
+ *  «맞는 얼굴»이 되므로, 접는 대신 **다른 이름으로 드러낸다**. */
+function 나이꼬리(지난날) {
+  if (지난날 == null) return '';
+  if (지난날 < 0) return ` <span class="pill unk">앞선 날짜 ${-지난날}일</span>`;
+  return `<span class="dim"> · ${지난날}일</span>`;
+}
+
 function 줄표(줄들, 상한) {
   if (!줄들.length) return '<p class="none">해당 없음 — 이 통은 비었다.</p>';
   const 보임 = 줄들.slice(0, 상한);
@@ -507,10 +550,10 @@ function 줄표(줄들, 상한) {
       <td class="c">${r.마찰수 ? `<span class="pill warn">${r.마찰수}건</span> <span class="fs">${r.F.slice(0, 7).map(esc).join(' ')}</span>` : '—'}</td>
       <td class="c">${r.회귀있음 === false ? '<span class="pill bad">없다</span>' : r.회귀있음 === true ? '있다' : '<span class="pill unk">모름</span>'}</td>
       <td class="c">${r.참조수 == null ? '<span class="pill unk">모름</span>' : r.참조수 === 0 ? '<span class="pill bad">0곳</span>' : `${r.참조수}곳`}</td>
-      <td class="c">${r.날 ? `${esc(r.날)}<span class="dim"> · ${r.지난날}일</span>` : '<span class="pill unk">모름</span>'}</td>
+      <td class="c">${r.날 ? `${esc(r.날)}${나이꼬리(r.지난날)}` : '<span class="pill unk">모름</span>'}</td>
     </tr>`).join('\n');
   return `<table class="t">
-    <thead><tr><th>파일</th><th>깨진 이력</th><th>회귀</th><th>부르는 곳</th><th>마지막 손댐 <span class="dim">(참고)</span></th></tr></thead>
+    <thead><tr><th>파일</th><th>깨진 이력</th><th>회귀</th><th>부르는 곳</th><th>마지막 손댐 <span class="dim">(참고 · UTC)</span></th></tr></thead>
     <tbody>${tr}</tbody></table>
     ${남음 > 0 ? `<p class="more">…외 ${남음}건 — 전량은 <code>node tools/작동대장.js --요약</code></p>` : ''}`;
 }
