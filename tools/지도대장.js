@@ -41,7 +41,7 @@ const crypto = require('crypto');
 const { execFileSync, spawnSync } = require('child_process');
 const 활자주입 = require('./lib/활자주입.js');   // 마커·주입 판정은 한 곳에서만 온다
 const { 경로: 바탕화면 } = require('./lib/바탕화면.js');   // 바탕화면 실경로는 이 통로 하나뿐
-const { 폴더명: 운영자료폴더, 갈래폴더 } = require('./운영자료.js');   // 폴더 이름 정본(글자 사본 금지 · require 부작용 0)
+const { 갈래폴더 } = require('./운영자료.js');   // 폴더 이름 정본(글자 사본 금지 · require 부작용 0)
 
 /** repo 루트 — 환경변수가 이음매다(테스트가 픽스처 git 저장소로 「낡음」 탐지력을 CI에서 잰다.
  *  실저장소 이력은 CI에서 shallow 라 조상 판정이 조용히 어긋날 수 있다 — 그래서 픽스처가 진다). */
@@ -60,8 +60,9 @@ function 지도폴더() {
    *   — 그 판정은 위 통로가 지고, 통로가 못 찾은 날만 옛 조립으로 내려간다. */
   const 바탕 = 바탕화면() || path.join(os.homedir(), 'OneDrive', 'Desktop');
   // 지도는 「그날 보는 자료」라 운영 갈래에 산다. HTML+PDF 쌍이라 평평하게 풀면 개수가 두 배로
-  // 보여서, 운영 갈래 **안의** 폴더로 둔다(유호 확정 3폴더는 최상위 얘기다).
-  return path.join(갈래폴더(path.join(바탕, 운영자료폴더), '운영'), 'SYNK_지도');
+  // 보여서, 운영 갈래 **안의** 폴더로 둔다(유호 확정 폴더 수는 최상위 얘기다).
+  // 2026-08-17 재편으로 뿌리가 바탕화면 자체가 됐다 — 갈래 값이 「SYNK LAB\운영」을 들고 있다.
+  return path.join(갈래폴더(바탕, '운영'), 'SYNK_지도');
 }
 
 /* 엣지 정규식 — doc-graph 와 같은 표기.

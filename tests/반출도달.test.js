@@ -35,7 +35,8 @@ function 모사셸() {
 /** 갈래 폴더를 세운다. `항목` = { 갈래, 이름, 대상? } — 대상이 있으면 바로가기, 없으면 사본. */
 function 밭세우기(항목들) {
   const 밭 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-반출-'));
-  const 폴더 = path.join(밭, 운영자료.폴더명);
+  // 2026-08-17 재편: 뿌리 = 바탕화면 그 자체다(갈래 값이 「SYNK 코어」·「SYNK LAB\운영」을 든다).
+  const 폴더 = 밭;
   for (const g of Object.keys(운영자료.갈래들)) {
     fs.mkdirSync(운영자료.갈래폴더(폴더, g), { recursive: true });
   }
@@ -72,7 +73,9 @@ test('조상 폴더를 가리키는 바로가기도 도달이다 — 그 폴더�
   fs.writeFileSync(path.join(뿌리, 'docs/정본/SYNK LAB/자료/안쪽.pdf'), '');
 
   const { 폴더 } = 밭세우기([
-    { 갈래: '정본', 이름: '07_정본 폴더.lnk', 대상: path.join(뿌리, 'docs/정본/SYNK LAB') },
+    // 갈래는 재편(08-17) 뒤 셋뿐이다. 이 테스트가 재는 것은 갈래가 아니라 «조상 폴더» 판정이고,
+    // 이름의 옛 번호 접두(`07_`)는 일부러 남겼다 — 읽는 쪽은 관대해야 한다(「보관」에 그런 게 산다).
+    { 갈래: '운영', 이름: '07_정본 폴더.lnk', 대상: path.join(뿌리, 'docs/정본/SYNK LAB') },
   ]);
   const r = 운영자료.반출도달(폴더, ['docs/정본/SYNK LAB/자료/안쪽.pdf'], { 뿌리, 셸: 모사셸() });
   assert.equal(r.항목[0].근거, '상위폴더');
@@ -85,7 +88,9 @@ test('이웃 폴더를 조상으로 오인하지 않는다 (`…/SYNK LAB` 이 `
   fs.writeFileSync(path.join(뿌리, 'docs/정본/SYNK LAB2/남.pdf'), '');
 
   const { 폴더 } = 밭세우기([
-    { 갈래: '정본', 이름: '07_정본 폴더.lnk', 대상: path.join(뿌리, 'docs/정본/SYNK LAB') },
+    // 갈래는 재편(08-17) 뒤 셋뿐이다. 이 테스트가 재는 것은 갈래가 아니라 «조상 폴더» 판정이고,
+    // 이름의 옛 번호 접두(`07_`)는 일부러 남겼다 — 읽는 쪽은 관대해야 한다(「보관」에 그런 게 산다).
+    { 갈래: '운영', 이름: '07_정본 폴더.lnk', 대상: path.join(뿌리, 'docs/정본/SYNK LAB') },
   ]);
   const r = 운영자료.반출도달(폴더, ['docs/정본/SYNK LAB2/남.pdf'], { 뿌리, 셸: 모사셸() });
   assert.equal(r.항목[0].닿음, false, '접두만 같은 이웃 폴더는 조상이 아니다');
@@ -196,9 +201,11 @@ test('[배선] board-move 가 트랙을 닫을 때 「안 닿은 산출물」을
   let 폴더;
   try {
     const { 찾기 } = require('../tools/lib/바탕화면.js');
-    폴더 = path.join(찾기().경로, 운영자료.폴더명);
+    폴더 = 찾기().경로;
   } catch { return t.skip('바탕화면을 못 찾았다(F296)'); }
-  if (!fs.existsSync(폴더)) return t.skip('유호님 바탕화면 폴더가 없는 판이다');
+  /* 🔑 뿌리(=바탕화면)의 존재로 skip 을 가르면 **안 갈린다** — 바탕화면은 어느 판에나 있다.
+   * 재는 것은 「유호님 자료 폴더가 섰나」이므로 갈래 폴더를 본다(재편 전엔 뿌리가 그 역할이었다). */
+  if (!fs.existsSync(운영자료.갈래폴더(폴더, '운영'))) return t.skip('유호님 바탕화면 폴더가 없는 판이다');
   const 확 = 운영자료.화면확장자(폴더);
   if (!확 || !확.has('.html')) return t.skip('이 판에서는 `.html` 이 반출 대상 종류로 도출되지 않는다');
 
@@ -234,9 +241,10 @@ test('[실저장소] 도출한 확장자 집합에 `.js`·`.json` 이 안 들어
   let 폴더;
   try {
     const { 찾기 } = require('../tools/lib/바탕화면.js');
-    폴더 = path.join(찾기().경로, 운영자료.폴더명);
+    폴더 = 찾기().경로;
   } catch { return t.skip('바탕화면을 못 찾았다 — 이 판에서는 잴 수 없다(F296)'); }
-  if (!fs.existsSync(폴더)) return t.skip('유호님 바탕화면 폴더가 없는 판이다(CI·새 클론)');
+  // 위 테스트와 같은 이유로 뿌리가 아니라 갈래 폴더를 본다(뿌리는 어느 판에나 있어 skip 이 안 갈린다).
+  if (!fs.existsSync(운영자료.갈래폴더(폴더, '운영'))) return t.skip('유호님 바탕화면 폴더가 없는 판이다(CI·새 클론)');
 
   const 확 = 운영자료.화면확장자(폴더);
   if (!확) return t.skip('폴더가 비어 도출할 정본이 없다');
