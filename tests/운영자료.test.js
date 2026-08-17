@@ -808,3 +808,104 @@ test('실기계: 진짜 WScript.Shell 로 긴 줄표 이름 바로가기를 만�
     assert.deepEqual(fs.readdirSync(밭).filter((n) => n.startsWith('__mk-')), []);
   });
 });
+
+/* ── F604 계보 일곱째 — 걷기 루프가 «부분 삭제»를 남기고 그걸 아무도 안 센다 ──────────
+ *
+ * 옛 모양(2026-08-18 실측으로 잡았다 · F604 가 「안 했다」고 남긴 전수 감사에서 나왔다):
+ *     console.log(`🗑 ${x.이름} …`);            ← 로그가 **먼저**
+ *     if (집행) fs.rmSync(…, { force: true });  ← 행위가 **나중**
+ *   `rmSync` 가 던지면(Windows 에서 파일이 열려 있으면 EBUSY·EPERM 이 실제로 난다) 못 지운
+ *   그 파일까지 「🗑 걷었다」로 인쇄된 채 루프가 통째로 빠져나간다. 이 함수는 try 밖이라
+ *   (호출부의 try 는 갈래 계산만 감싼다) 프로세스가 그대로 죽고, 앞의 N 건은 **이미 지워진 뒤**다.
+ *   삭제 대상은 저장소 밖 유호님 바탕화면이라 되돌릴 이력이 없다(F025).
+ *   그리고 옛 코드는 무조건 `return 0` 이라 **부분 삭제가 종료코드 0 으로 나갔다.**
+ *
+ * F604 와 축은 같고 **방향만 반대**다 — 저기는 했는데 「안 했다」, 여기는 안 했는데 「했다」.
+ * 그래서 «부정 표기»를 찾는 검색으로는 영영 안 걸린다. 그 감사(문장 축 9건)는 전건 참이었고,
+ * 이 자리는 축을 «구조»(루프 안 비원자적 부작용)로 옮긴 뒤에야 나왔다.
+ *
+ * ⚠ 탐지력은 이 픽스처가 진다(맹점 ①·②) — 실저장소·실바탕화면 상태와 무관하다.
+ *   `fs.rmSync` 를 그 자리에서 갈아 끼워 실패를 **주입**한다. 실기계에서 파일을 잠그는 방법은
+ *   OS 마다 다르고 CI 에서 안 재현되는데, 재현 안 되는 회귀는 초록의 얼굴로 미측정이 된다(F296).
+ */
+const { 옛판정리 } = require('../tools/운영자료.js');
+
+/** 걷기 밭 — v1·v2 는 옛 판, v4 가 최신이라 v1·v2 만 걷기 대상이 된다.
+ *  콘솔을 가로채는 이유: 이 회귀가 무는 것의 절반이 **무엇이 인쇄됐나**다. */
+function 걷기밭에서(fn) {
+  const 밭 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-걷기-'));
+  for (const n of ['캐릭터 시안 v1.html', '캐릭터 시안 v2.html', '캐릭터 시안 v4.html']) {
+    fs.writeFileSync(path.join(밭, n), '내용');
+  }
+  const 원래rm = fs.rmSync;
+  const 원래log = console.log; const 원래err = console.error;
+  const 찍힌것 = [];
+  console.log = (...a) => 찍힌것.push(a.join(' '));
+  console.error = (...a) => 찍힌것.push(a.join(' '));
+  try {
+    return fn(밭, 찍힌것, (막을이름) => {
+      fs.rmSync = (p, o) => {
+        if (String(p).includes(막을이름)) { const e = new Error('EBUSY: resource busy'); e.code = 'EBUSY'; throw e; }
+        return 원래rm(p, o);
+      };
+    });
+  } finally {
+    fs.rmSync = 원래rm; console.log = 원래log; console.error = 원래err;
+    try { 원래rm(밭, { recursive: true, force: true }); } catch { /* 청소 실패는 삼킨다 */ }
+  }
+}
+
+test('🔴 [F604계보] 못 지운 파일은 「🗑」로 찍히지 않는다 — 로그가 행위보다 먼저면 실패가 성공으로 인쇄된다', () => {
+  걷기밭에서((밭, 찍힌것, 막기) => {
+    막기('v2');
+    옛판정리(밭, { 집행: true });
+    const 전문 = 찍힌것.join('\n');
+    assert.ok(!/🗑[^\n]*v2/.test(전문),
+      `못 지운 v2 가 「🗑」로 인쇄됐다 — 로그가 행위보다 먼저다:\n${전문}`);
+    assert.ok(/🗑[^\n]*v1/.test(전문), '실제로 지운 v1 은 찍혀야 한다 — 반대로 넓히면 보고가 빈다');
+  });
+});
+
+test('🔴 [F604계보] 부분 삭제는 **분모와 함께** 보고된다 — 몇 건 중 몇 건이 없으면 미실행과 같은 모양이다 (F207)', () => {
+  걷기밭에서((밭, 찍힌것, 막기) => {
+    막기('v2');
+    옛판정리(밭, { 집행: true });
+    const 전문 = 찍힌것.join('\n');
+    assert.match(전문, /대상 2건 중/, `대상 분모가 안 나왔다:\n${전문}`);
+    assert.match(전문, /1건 지웠고 1건 남았다/, `지운 수·남은 수를 안 셌다:\n${전문}`);
+  });
+});
+
+test('🔴 [F604계보] 부분 삭제는 **종료코드로도** 드러난다 — 0 으로 나가면 호출부가 완주로 읽는다', () => {
+  걷기밭에서((밭, _찍힌것, 막기) => {
+    막기('v2');
+    assert.strictEqual(옛판정리(밭, { 집행: true }), 1, '부분 적용인데 0 을 냈다');
+  });
+});
+
+test('한 건이 막혀도 **나머지는 계속 걷는다** — 걷기는 멱등이라 접는 것보다 낫다', () => {
+  걷기밭에서((밭, _찍힌것, 막기) => {
+    막기('v1');
+    옛판정리(밭, { 집행: true });
+    assert.ok(fs.existsSync(path.join(밭, '캐릭터 시안 v1.html')), '막은 v1 은 남아야 한다(픽스처 확인)');
+    assert.ok(!fs.existsSync(path.join(밭, '캐릭터 시안 v2.html')),
+      '앞이 막혔다고 뒤를 안 걷었다 — 한 번 잠긴 파일이 나머지를 영영 막는다');
+    assert.ok(fs.existsSync(path.join(밭, '캐릭터 시안 v4.html')), '최신판을 지웠다');
+  });
+});
+
+test('막힌 것이 없으면 종료코드 0 이고 최신판만 남는다 — 거짓양성을 안 만든다(맹점 ②)', () => {
+  걷기밭에서((밭, 찍힌것) => {
+    assert.strictEqual(옛판정리(밭, { 집행: true }), 0, '정상 완주인데 실패로 냈다');
+    assert.deepEqual(fs.readdirSync(밭), ['캐릭터 시안 v4.html'], '옛 판 둘을 다 걷어야 한다');
+    assert.match(찍힌것.join('\n'), /2건 중 2건 지웠다/, '완주도 분모와 함께 말한다');
+  });
+});
+
+test('드라이런은 **한 건도 안 지운다** — 로그 순서를 고치며 집행 갈래가 새지 않았나', () => {
+  걷기밭에서((밭, 찍힌것) => {
+    assert.strictEqual(옛판정리(밭, { 집행: false }), 0);
+    assert.strictEqual(fs.readdirSync(밭).length, 3, '드라이런이 파일을 지웠다 — 비가역 사고다');
+    assert.match(찍힌것.join('\n'), /\[드라이런\]/, '드라이런 표기가 사라졌다');
+  });
+});
