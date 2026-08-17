@@ -51,6 +51,9 @@ const ROOT = path.resolve(__dirname, '..');
 const 점검 = require(path.join(ROOT, 'tools', '배포판점검.js'));
 const 프로젝트 = require(path.join(ROOT, '.claude', 'hooks', 'lib', 'clasp-project.js'));
 const 런 = require(path.join(ROOT, 'tools', 'lib', '검수런.js'));
+/* 표 칸은 **날 `.split('|')` 로 가르지 않는다** — 보드 줄은 백틱 코드가 가득해서 그 안의 파이프에
+ * 칸이 밀린다. 공용 통로 하나가 지고, `tests/표칸.test.js` 가 옛 통로를 기계로 금지한다. */
+const 표 = require(path.join(ROOT, 'tools', 'lib', '표.js'));
 
 /* 동기 대기 — 이벤트 루프를 안 돌리고 잔다.
  * 왜 이 모양인가: 이 파일의 실행 사슬은 **전부 동기**(`execFileSync`)다. 회차 병렬을 위해
@@ -761,10 +764,11 @@ function 아는미완줄들(상한 = 24, 칸상한 = 100) {
     for (const 이름 of fs.readdirSync(방).filter((n) => n.endsWith('.md'))) {
       for (const 줄 of fs.readFileSync(path.join(방, 이름), 'utf8').split(/\r?\n/)) {
         if (!줄.trimStart().startsWith('|')) continue;
-        const 칸 = 줄.split('|').map((s) => s.trim());
-        if (칸.length < 5) continue;
-        const 트랙 = (칸[2] || '').replace(/\*\*/g, '');
-        const 상태 = (칸[4] || '').replace(/\*\*/g, '');
+        /* 칸 계약은 `tests/표칸.test.js` 가 진다 — [0]날짜 [1]트랙 [2]만질파일 [3]상태. */
+        const 칸 = 표.칸나누기(줄);
+        if (칸.length < 4) continue;
+        const 트랙 = (칸[1] || '').replace(/\*\*/g, '');
+        const 상태 = (칸[3] || '').replace(/\*\*/g, '');
         if (!트랙 || /^-+$/.test(트랙)) continue;      // 표 구분선
         줄들.push(`  · ${자르기(트랙, 칸상한)}\n      상태: ${자르기(상태, 칸상한)}`);
       }
