@@ -58,6 +58,9 @@ const 루트 = path.dirname(__dirname);
 /* Loom 부품 통로 — 재질·부품·율의 정본은 여기 하나다(2026-08-16 배선).
    이 파일은 그 위에 «지면 골격»(판·레일·표지·표·수치·모션)만 얹는다. */
 const loom = require('./lib/loom.js');
+/* 표기 접기 정의는 하나다 — `tests/lib/소스검사.js`. 재현 대조(아래 `몸통`)가 손으로 접으면
+ * CRLF 축만 막혀, 굽는 기계가 줄끝에 한 칸 흘린 날 «지면이 갈라졌다»가 된다(#Q101 · 14/14 반쪽). */
+const { 표기접기 } = require('../tests/lib/소스검사.js');
 const 천길 = path.join(루트, 'docs', 'tools', '펠트천.json');
 const 토큰길 = path.join(루트, 'docs', '디자인_토큰.json');
 
@@ -657,7 +660,7 @@ function 지면짝들(방 = 지면방) {
 /** 몸통 = `</style>` 뒤. 스킨은 굽기마다 바뀌므로 «원고가 정본인가»는 몸통으로만 갈린다. */
 const 몸통 = (s) => {
   const i = s.indexOf('</style>');
-  return (i < 0 ? s : s.slice(i + 8)).replace(/\r\n/g, '\n').trim();
+  return 표기접기(i < 0 ? s : s.slice(i + 8)).trim();
 };
 
 /**
@@ -844,6 +847,13 @@ if (require.main === module) {
         console.error('🔴 원고가 낡은 지면 %d벌 — 지금 구우면 산출물의 손 수정이 조용히 사라진다.', e.갈라짐.length);
         e.갈라짐.forEach((r) => console.error('   · ' + r.이름));
         console.error('   먼저 돌린다: node tools/펠트문서.js --재현   (되메우기 명령을 그대로 낸다)');
+        /* 나가는 문 (F544) — 이 차단은 «방향»을 못 본다. 「원고와 산출물이 다르다」는 관측은
+         * 산출물을 손으로 고친 **사고**와 원고를 고친 **정당한 작업**에서 똑같이 나온다.
+         * 되메우기는 산출물→원고 방향이라, 원고를 방금 고친 세션이 위 처방만 따르면 자기 수정을 지운다.
+         * 방향 자동 판정(git 시각·명시 플래그)은 F544 에 남겼고, 여기서는 나가는 문부터 연다 —
+         * 따를 수 없는 처방은 우회를 정상 통로로 만든다(F103). */
+        console.error('   ⚠ 원고를 «방금 고친» 것이면 되메우기를 따르지 마라 — 그 수정이 사라진다(F544).');
+        console.error('     그 경우의 통로: node tools/펠트문서.js --굽기 <원고 경로> <산출물 경로>  (갈라진 벌만 개별로)');
         process.exit(1);
       }
       console.log('■ 전량 굽기 %d벌 (림 %s) — 이 목록이 「Loom 을 입는 지면」의 정본이다', 결과.length, 림);

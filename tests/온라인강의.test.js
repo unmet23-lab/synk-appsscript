@@ -129,7 +129,9 @@ test('[v9.106] 스위프는 적재 뒤에 포인터를 마감한다 (메일 실�
 test('[v9.106] 배선 4곳 — 스위프·시트 골격·켜기 큐·주간 리포트', () => {
   assert.ok(code.includes("safeRun('sweepLectureForm'"), '10분 스위프에 안 걸려 있다 — 응답이 영영 전개되지 않는다');
   assert.ok(code.includes("['lectures', LECTURE_HEADERS]"), 'SHEET_SKELETON에 lectures가 없다');
-  assert.ok(code.includes("['lecture_views', LECTURE_VIEW_HEADERS]"), 'SHEET_SKELETON에 lecture_views가 없다');
+  /* [vNEXT · #Q100] `lecture_views` 는 수집 표식을 받아 칸이 셋이다 — 닫는 괄호를 못박지 않는다
+   *   (뜻은 「골격에 있고 헤더 정본 상수를 쓴다」이지 「칸이 둘이다」가 아니었다). */
+  assert.ok(/\['lecture_views', LECTURE_VIEW_HEADERS[,\]]/.test(code), 'SHEET_SKELETON에 lecture_views가 없다');
   assert.ok(code.includes("['강의폼URL', 'createLectureForm'"), '폼 미생성 감시(켜기 큐)에 없다 — 안 만들어도 아무도 모른다');
   assert.ok(code.includes('lectureWeeklyText_(ss)'), '주간 리포트 섹션에 안 걸려 있다');
 });

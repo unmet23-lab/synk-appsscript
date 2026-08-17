@@ -34,14 +34,25 @@ const ROOT = path.resolve(__dirname, '..');
  *  쓰려면 상수를 엔진 쪽(엔진_셋업확장)으로 옮기는 쪽이 정본이다(VOICE_LOG_HEADERS 가 그 사례). */
 const ENGINE_FILES = ['Code.js', '엔진_운영배치.js', '엔진_폼리포트.js', '엔진_콘텐츠AI.js', '엔진_셋업확장.js', '엔진_수집.js', '엔진_궤적.js'];
 
-/** 엔진 전체를 한 문자열로. 파일 사이는 개행으로만 잇는다(표식 검색에 영향 없게). */
+/** 줄끝 **표기** 접기 — 정의는 `tests/lib/소스검사.js` **한 곳**에 있다. 여기선 쓰기만 한다.
+ *
+ * 🔑 왜 옮겼나 (F526 ㉠ → #Q101 · 2026-08-17): 처음엔 이 파일이 정의를 들고 있었는데, 그러면
+ *   **엔진 소스를 읽는 호출부만** 안전하다. 엔진 아닌 파일을 읽는 자리(`tools/test-ci.js` 등)는
+ *   지날 문이 없어 저마다 손으로 접었고 29벌 전부 CRLF 축만 접은 반쪽이었다. 「소스를 검사 대상으로
+ *   삼는 통로」는 원래 `lib/소스검사.js` 라 정의를 그리로 모았다 — 같은 판정이 두 곳이면 갈라진다.
+ *   대가·두 축의 실측 근거는 그 파일의 `표기접기` 주석에 있다(여기 다시 적으면 그게 곧 사본이다). */
+const { 표기접기 } = require('./lib/소스검사');
+
+/** 엔진 전체를 한 문자열로. 파일 사이는 개행으로만 잇는다(표식 검색에 영향 없게).
+ *  줄끝 표기는 접어서 낸다 — 위 `표기접기` 주석. */
 function engineSource() {
-  return ENGINE_FILES
+  return 표기접기(ENGINE_FILES
     .map((f) => fs.readFileSync(path.join(ROOT, f), 'utf8'))
-    .join('\n');
+    .join('\n'));
 }
 
-/** 파일별 원문이 필요한 검사용(구문 검사·톱레벨 스코프 검사 등). */
+/** 파일별 원문이 필요한 검사용(구문 검사·톱레벨 스코프 검사 등).
+ *  ⚠ 여기는 **안 접는다** — 원문이 뜻인 자리다(`lib/소스검사.js` 의 `표기접기` 「대가」 절). */
 function engineParts() {
   return ENGINE_FILES.map((f) => ({
     file: f,
@@ -73,4 +84,6 @@ function sharedBlocks(code) {
   return out.sort((a, b) => a.start - b.start);
 }
 
-module.exports = { ROOT, ENGINE_FILES, engineSource, engineParts, sharedBlocks };
+/* `표기접기` 는 회귀가 **픽스처로** 탐지력을 못박으려고 내보낸다 — 실저장소만 보면
+ * 「접혔다」와 「원래 깨끗했다」가 같은 모양이라 못 가른다. 검사 쪽은 `tests/엔진소스표기.test.js`. */
+module.exports = { ROOT, ENGINE_FILES, engineSource, engineParts, sharedBlocks, 표기접기 };

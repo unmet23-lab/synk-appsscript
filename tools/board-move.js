@@ -262,7 +262,8 @@ function 반출알림() {
   try {
     const 운영자료 = require(path.join(__dirname, '운영자료.js'));
     const { 찾기: 바탕화면 } = require(path.join(__dirname, 'lib', '바탕화면.js'));
-    const 폴더 = path.join(바탕화면().경로, 운영자료.폴더명);
+    // 뿌리 = 바탕화면 그 자체다(2026-08-17 재편 — 갈래 값이 「SYNK 코어」·「SYNK LAB\운영」을 들고 있다).
+    const 폴더 = 바탕화면().경로;
 
     const 확장자 = 운영자료.화면확장자(폴더);
     if (!확장자) return;   // 폴더를 못 읽었다 = 도출할 정본이 없다. 조용히 둔다(아래 모름 갈래가 받는다)
