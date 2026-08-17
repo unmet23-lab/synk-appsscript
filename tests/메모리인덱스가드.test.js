@@ -458,6 +458,29 @@ test('[③·거짓차단 금지] 내가 쓴 판이 내 기준이 된다 — 내�
     '기준을 안 갱신하면 내 첫 Write 가 넣은 줄을 내가 «남의 줄»로 읽고 스스로를 막는다');
 });
 
+/* 🔴 변이가 짚은 구멍 — 차단문의 **처방 ①** 이 회귀에 한 번도 안 걸려 있었다.
+ * 「내 압축 결과에 저 줄들을 얹어라」가 그 문의 첫 처방인데, 그렇게 얹은 판이 통과하는지를
+ * 아무도 안 쟀다. 통과 안 하면 남는 출구가 ②(다시 읽고 그냥 지우기)뿐이라 처방이 반쪽이 된다(F103). */
+test('[③·자기 처방] 남의 줄을 내 판에 얹으면 통과한다 — 차단문이 첫 번째로 시키는 그 동작이다', () => {
+  const 판 = 새판();
+  fs.writeFileSync(판.file, 판본([1, 2, 3]), 'utf8');
+  읽기(판, 'sess-내');
+  fs.writeFileSync(판.file, 판본([1, 2, 3, 4]), 'utf8');        // 남이 넣은 4
+  assert.strictEqual(쓰기(판, 'sess-내', 판본([1, 2, 4])), 'allow',
+    '3 은 내 기준에 있던 줄이라 내가 뺀 것이고(압축), 4 는 얹었다 — 잃는 줄이 0이면 막을 이유가 없다');
+});
+
+test('[③·거짓양성] old_string 에 남의 줄을 담아 지우는 Edit 은 통과 — 눈으로 보고 지운 것이다', () => {
+  const 판 = 새판();
+  fs.writeFileSync(판.file, 판본([1, 2, 3]), 'utf8');
+  읽기(판, 'sess-내');
+  fs.writeFileSync(판.file, 판본([1, 2, 3, 4]), 'utf8');
+  assert.strictEqual(
+    decide({ session_id: 'sess-내', tool_name: 'Edit',
+      tool_input: { file_path: 판.file, old_string: `${항목(3)}\n${항목(4)}`, new_string: 항목(3) } }, 판.env),
+    'allow', 'old_string 이 디스크와 대조된다는 것은 그 줄을 실제로 봤다는 뜻이다 — 여기서 막으면 거짓차단이다');
+});
+
 test('[③·거짓양성] Edit 은 이 축을 안 본다 — old_string 이 디스크와 대조돼 모르는 줄을 못 지운다', () => {
   const 판 = 새판();
   fs.writeFileSync(판.file, 판본([1, 2, 3]), 'utf8');
