@@ -23,7 +23,7 @@
  *      유호님이 어제 적어 둔 「㉡2 보류」가 오늘 딴 칸을 가리킨다. 그래서 주소는 층 기호 + 열 순번이다.
  *
  * 쓰기: node tools/이해대장.js            → docs/이해대장.html 생성
- *      node tools/이해대장.js --바로가기  → 생성 + 바탕화면 「SYNK 운영자료」에 .lnk
+ *      node tools/이해대장.js --바로가기  → 생성 + 바탕화면 「SYNK 코어」에 .lnk
  */
 'use strict';
 
@@ -684,9 +684,11 @@ function 폴백(말, 끝) {
 
   if (바로가기) {
     const { execFileSync } = require('node:child_process');
-    // 운영자료 폴더 통로는 하나뿐이다(유호 상시 08-09) — 손 경로 금지.
-    execFileSync(process.execPath, [path.join(ROOT, 'tools', '운영자료.js'), '--링크', 산출경로],
-      { stdio: 'inherit' });
+    /* 운영자료 폴더 통로는 하나뿐이다(유호 상시 08-09) — 손 경로 금지.
+     * 갈래 = **코어**(유호 지시 2026-08-17 재편에서 이해 대장을 「SYNK 코어」의 예시로 직접 들었다).
+     * ⚠ 옛 `--링크` 는 운영자료가 모르는 플래그였다 — 조용히 무시되고 기본 갈래로 떨어졌다. */
+    execFileSync(process.execPath,
+      [path.join(ROOT, 'tools', '운영자료.js'), 산출경로, '--갈래', '코어'], { stdio: 'inherit' });
   }
 }
 
