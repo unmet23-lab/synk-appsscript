@@ -79,7 +79,7 @@
 
 <h1>작동 대장</h1>
 <p class="sub">이번 주에 <b>무엇을 뜯을 것인가</b>를 고르는 한 장 — 「무엇이 있나」가 아니라 <b>「무엇이 실제로 도나」</b>를 잰다.</p>
-<div class="stamp">🕐 측정 2026-08-17 07:13 UTC · 수렴검사 ✅ 두 번 돌려 같았다</div>
+<div class="stamp">🕐 측정 2026-08-17 13:08 UTC · 수렴검사 ✅ 두 번 돌려 같았다</div>
 
 <h2><span class="no">Ⅰ</span>이해 사슬 — 학생의 무엇이 엔진까지 닿나</h2>
 <p class="lead">판정의 주인은 <code>docs/SYNK_철학.md</code> 부록 A-1 이다. 이 화면은 <b>인용</b>이고 여기서 다시 판정하지 않는다.</p>
@@ -105,26 +105,38 @@
 <h2><span class="no">Ⅱ</span>지난 기록 대비 — <b>주간 재심은 이 절만 읽는다</b></h2>
 <p class="lead">「지금 상태」는 이 화면이 지고, <b>「무엇이 어떻게 움직였나」는 기록 장부</b>가 진다 — 그 주의 사진은 다시 계산하지 않으니 뒤집힐 값이 없다. 기록 = <code>node tools/작동대장.js --기록</code>(append-only · 지우지 않는다).</p>
 <table class="t"><thead><tr><th>통</th><th>지난 기록 (2026-08-17)</th><th>지금</th><th>움직임</th></tr></thead><tbody>
-    <tr><td>🟠 자꾸 깨진다</td><td class="c">15</td><td class="c"><b>15</b></td><td class="c"><span class="d0">±0</span></td></tr>
-    <tr><td>🔴 맨몸이다</td><td class="c">10</td><td class="c"><b>10</b></td><td class="c"><span class="d0">±0</span></td></tr>
+    <tr><td>🟠 자꾸 깨진다</td><td class="c">15</td><td class="c"><b>17</b></td><td class="c"><span class="db">+2</span></td></tr>
+    <tr><td>🔴 맨몸이다</td><td class="c">10</td><td class="c"><b>7</b></td><td class="c"><span class="dg">-3</span></td></tr>
     <tr><td>⚫ 아무도 안 부른다</td><td class="c">1</td><td class="c"><b>1</b></td><td class="c"><span class="d0">±0</span></td></tr>
-    <tr><td>🟢 괜찮다</td><td class="c">110</td><td class="c"><b>110</b></td><td class="c"><span class="d0">±0</span></td></tr>
-    <tr><td class="dim">장치 · 마찰 장부</td><td class="c dim">—</td><td class="c dim">—</td><td class="c"><span class="d0">±0</span> · <span class="d0">±0</span></td></tr>
+    <tr><td>🟢 괜찮다</td><td class="c">110</td><td class="c"><b>111</b></td><td class="c"><span class="dg">+1</span></td></tr>
+    <tr><td class="dim">장치 · 마찰 장부</td><td class="c dim">—</td><td class="c dim">—</td><td class="c"><span class="d0">±0</span> · <span class="dg">+30</span></td></tr>
   </tbody></table>
-  <p class="none">통을 드나든 파일은 없다 — 숫자가 같으면 <b>진짜로</b> 같다(이 절이 0 을 0 이라고 말할 수 있는 이유는 위 장부에 지난 목록이 통째로 있기 때문이다).</p>
+  
+  <div class="chip-row"><span class="chip-t" style="color:#E8543F">🟠 새로 들어옴</span>
+    <code>tools/인용검사.js</code> <code>tools/lib/보드낡음.js</code>
+    </div>
+  
+  
+  <div class="chip-row"><span class="chip-t" style="color:#13724A">🔴 맨몸 벗어남</span>
+    <code>tools/재질굽기.js</code> <code>.claude/hooks/citation-guard.js</code> <code>tools/룸굽기.js</code>
+    </div>
+  
+  
+  <div class="chip-row"><span class="chip-t" style="color:#E8543F">📈 또 아팠다</span>
+    <code>tools/lib/보드.js</code><span class="dim"> 19→23</span> · <code>tools/codex-review.js</code><span class="dim"> 15→17</span> · <code>tools/작업본소유자.js</code><span class="dim"> 11→12</span> · <code>tools/대기열.js</code><span class="dim"> 7→10</span> · <code>tools/board-move.js</code><span class="dim"> 6→9</span> · <code>tools/인계문.js</code><span class="dim"> 5→6</span></div>
 
 
 <h2><span class="no">Ⅲ</span>네 통 — 지금 상태</h2>
-<p class="lead">장치 <b>136개</b>(도구·라이브러리·훅)를 회귀 198벌 · 마찰 장부 309건 · 저장소 글 443벌 · git 이력에 대조했다. <b>왼쪽이 급한 순서다.</b></p>
+<p class="lead">장치 <b>136개</b>(도구·라이브러리·훅)를 회귀 210벌 · 마찰 장부 339건 · 저장소 글 455벌 · git 이력에 대조했다. <b>왼쪽이 급한 순서다.</b></p>
 <div class="tongs">
 <div class="tong" style="--c:#C79200">
     <div class="tong-h"><span class="tong-i">🟠</span><span class="tong-n">자꾸 깨진다</span></div>
-    <div class="tong-v">15</div>
+    <div class="tong-v">17</div>
     <div class="tong-d">마찰 5건 이상 — 고쳐도 또 아팠다 · 재설계 후보</div>
   </div>
 <div class="tong" style="--c:#E8543F">
     <div class="tong-h"><span class="tong-i">🔴</span><span class="tong-n">맨몸이다</span></div>
-    <div class="tong-v">10</div>
+    <div class="tong-v">7</div>
     <div class="tong-d">남들은 부르는데 회귀가 없다 · 뜯으면 위험</div>
   </div>
 <div class="tong" style="--c:#1A2340">
@@ -134,48 +146,62 @@
   </div>
 <div class="tong" style="--c:#13724A">
     <div class="tong-h"><span class="tong-i">🟢</span><span class="tong-n">괜찮다</span></div>
-    <div class="tong-v">110</div>
+    <div class="tong-v">111</div>
     <div class="tong-d">안 건드린다</div>
   </div>
 </div>
 
-<h2><span class="no">Ⅳ</span>🟠 자꾸 깨진다 — <b>15건</b> <span class="dim">· 재설계 1순위</span></h2>
+<h2><span class="no">Ⅳ</span>🟠 자꾸 깨진다 — <b>17건</b> <span class="dim">· 재설계 1순위</span></h2>
 <p class="lead">수리가 아니라 <b>재설계</b>를 볼 자리다 — 같은 파일이 마찰 장부에 5번 넘게 올랐다는 것은 <b>고쳐도 또 아팠다</b>는 뜻이다. 「2번째 = 실수가 아니라 시스템 결함 · 3번째 = 원인을 쓸 수 없게 만든다」(CLAUDE.md).</p>
 <table class="t">
     <thead><tr><th>파일</th><th>깨진 이력</th><th>회귀</th><th>부르는 곳</th><th>마지막 손댐 <span class="dim">(참고)</span></th></tr></thead>
     <tbody><tr>
       <td class="mono">tools/lib/보드.js</td>
-      <td class="c"><span class="pill warn">19건</span> <span class="fs">F306 F322 F330 F331 F337 F354 F356</span></td>
+      <td class="c"><span class="pill warn">23건</span> <span class="fs">F306 F322 F330 F331 F337 F354 F356</span></td>
       <td class="c">있다</td>
-      <td class="c">150곳</td>
+      <td class="c">157곳</td>
       <td class="c">2026-08-17<span class="dim"> · 0일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/codex-review.js</td>
-      <td class="c"><span class="pill warn">15건</span> <span class="fs">F249 F292 F308 F314 F319 F333 F342</span></td>
+      <td class="c"><span class="pill warn">17건</span> <span class="fs">F249 F292 F308 F314 F319 F333 F342</span></td>
       <td class="c">있다</td>
-      <td class="c">28곳</td>
+      <td class="c">30곳</td>
       <td class="c">2026-08-17<span class="dim"> · 0일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/작업본소유자.js</td>
-      <td class="c"><span class="pill warn">11건</span> <span class="fs">F253 F264 F270 F271 F315 F370 F381</span></td>
+      <td class="c"><span class="pill warn">12건</span> <span class="fs">F253 F264 F270 F271 F315 F370 F381</span></td>
       <td class="c">있다</td>
       <td class="c">50곳</td>
-      <td class="c">2026-08-16<span class="dim"> · 1일</span></td>
+      <td class="c">2026-08-17<span class="dim"> · 0일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/board.js</td>
       <td class="c"><span class="pill warn">11건</span> <span class="fs">F256 F322 F330 F331 F340 F343 F368</span></td>
       <td class="c">있다</td>
-      <td class="c">93곳</td>
-      <td class="c">2026-08-12<span class="dim"> · 5일</span></td>
+      <td class="c">98곳</td>
+      <td class="c">2026-08-17<span class="dim"> · 0일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/대기열.js</td>
+      <td class="c"><span class="pill warn">10건</span> <span class="fs">F289 F399 F415 F461 F521 F523 F528</span></td>
+      <td class="c">있다</td>
+      <td class="c">112곳</td>
+      <td class="c">2026-08-17<span class="dim"> · 0일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/이해대장.js</td>
       <td class="c"><span class="pill warn">9건</span> <span class="fs">F364 F432 F438 F520 F525 F527 F536</span></td>
       <td class="c">있다</td>
-      <td class="c">28곳</td>
+      <td class="c">30곳</td>
+      <td class="c">2026-08-17<span class="dim"> · 0일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/board-move.js</td>
+      <td class="c"><span class="pill warn">9건</span> <span class="fs">F246 F304 F341 F366 F433 F458 F569</span></td>
+      <td class="c">있다</td>
+      <td class="c">43곳</td>
       <td class="c">2026-08-17<span class="dim"> · 0일</span></td>
     </tr>
 <tr>
@@ -186,18 +212,11 @@
       <td class="c">2026-08-13<span class="dim"> · 4일</span></td>
     </tr>
 <tr>
-      <td class="mono">tools/대기열.js</td>
-      <td class="c"><span class="pill warn">7건</span> <span class="fs">F289 F399 F415 F461 F521 F523 F528</span></td>
-      <td class="c">있다</td>
-      <td class="c">106곳</td>
-      <td class="c">2026-08-17<span class="dim"> · 0일</span></td>
-    </tr>
-<tr>
       <td class="mono">tools/배포판점검.js</td>
       <td class="c"><span class="pill warn">7건</span> <span class="fs">F290 F306 F374 F426 F428 F482 F524</span></td>
       <td class="c">있다</td>
-      <td class="c">21곳</td>
-      <td class="c">2026-08-15<span class="dim"> · 2일</span></td>
+      <td class="c">22곳</td>
+      <td class="c">2026-08-17<span class="dim"> · 0일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/friction.js</td>
@@ -210,22 +229,22 @@
       <td class="mono">.claude/hooks/board-guard.js</td>
       <td class="c"><span class="pill warn">6건</span> <span class="fs">F341 F343 F354 F395 F523 F528</span></td>
       <td class="c">있다</td>
-      <td class="c">55곳</td>
+      <td class="c">58곳</td>
       <td class="c">2026-08-17<span class="dim"> · 0일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/변이.js</td>
       <td class="c"><span class="pill warn">6건</span> <span class="fs">F477 F485 F490 F491 F497 F526</span></td>
       <td class="c">있다</td>
-      <td class="c">132곳</td>
+      <td class="c">141곳</td>
       <td class="c">2026-08-15<span class="dim"> · 2일</span></td>
     </tr>
 <tr>
-      <td class="mono">tools/board-move.js</td>
-      <td class="c"><span class="pill warn">6건</span> <span class="fs">F246 F304 F341 F366 F433 F458</span></td>
+      <td class="mono">tools/인계문.js</td>
+      <td class="c"><span class="pill warn">6건</span> <span class="fs">F271 F353 F418 F447 F542 F566</span></td>
       <td class="c">있다</td>
-      <td class="c">40곳</td>
-      <td class="c">2026-08-17<span class="dim"> · 0일</span></td>
+      <td class="c">72곳</td>
+      <td class="c">2026-08-15<span class="dim"> · 2일</span></td>
     </tr>
 <tr>
       <td class="mono">.claude/hooks/git-scope-guard.js</td>
@@ -235,11 +254,18 @@
       <td class="c">2026-08-16<span class="dim"> · 1일</span></td>
     </tr>
 <tr>
-      <td class="mono">tools/인계문.js</td>
-      <td class="c"><span class="pill warn">5건</span> <span class="fs">F271 F353 F418 F447 F542</span></td>
+      <td class="mono">tools/인용검사.js</td>
+      <td class="c"><span class="pill warn">5건</span> <span class="fs">F348 F350 F526 F527 F560</span></td>
       <td class="c">있다</td>
-      <td class="c">66곳</td>
-      <td class="c">2026-08-15<span class="dim"> · 2일</span></td>
+      <td class="c">13곳</td>
+      <td class="c">2026-08-17<span class="dim"> · 0일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/lib/보드낡음.js</td>
+      <td class="c"><span class="pill warn">5건</span> <span class="fs">F256 F374 F386 F387 F564</span></td>
+      <td class="c">있다</td>
+      <td class="c">8곳</td>
+      <td class="c">2026-08-17<span class="dim"> · 0일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/rot-check.js</td>
@@ -250,93 +276,74 @@
     </tr></tbody></table>
     
 <div class="hist"><div class="hb"><div class="hb-bar" style="height:84px;background:#E7DDC7"></div>
-      <div class="hb-v">70</div><div class="hb-k">0건</div></div><div class="hb"><div class="hb-bar" style="height:27.6px;background:#E7DDC7"></div>
-      <div class="hb-v">23</div><div class="hb-k">1</div></div><div class="hb"><div class="hb-bar" style="height:16.8px;background:#E7DDC7"></div>
-      <div class="hb-v">14</div><div class="hb-k">2</div></div><div class="hb"><div class="hb-bar" style="height:9.6px;background:#E7DDC7"></div>
-      <div class="hb-v">8</div><div class="hb-k">3</div></div><div class="hb"><div class="hb-bar" style="height:7.2px;background:#E7DDC7"></div>
-      <div class="hb-v">6</div><div class="hb-k">4</div></div><div class="hb"><div class="hb-bar" style="height:3.6px;background:#E8543F"></div>
-      <div class="hb-v">3</div><div class="hb-k">5</div></div><div class="hb"><div class="hb-bar" style="height:3.6px;background:#E8543F"></div>
-      <div class="hb-v">3</div><div class="hb-k">6</div></div><div class="hb"><div class="hb-bar" style="height:3.6px;background:#E8543F"></div>
-      <div class="hb-v">3</div><div class="hb-k">7</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
+      <div class="hb-v">66</div><div class="hb-k">0건</div></div><div class="hb"><div class="hb-bar" style="height:31.818181818181817px;background:#E7DDC7"></div>
+      <div class="hb-v">25</div><div class="hb-k">1</div></div><div class="hb"><div class="hb-bar" style="height:19.09090909090909px;background:#E7DDC7"></div>
+      <div class="hb-v">15</div><div class="hb-k">2</div></div><div class="hb"><div class="hb-bar" style="height:6.363636363636364px;background:#E7DDC7"></div>
+      <div class="hb-v">5</div><div class="hb-k">3</div></div><div class="hb"><div class="hb-bar" style="height:10.181818181818182px;background:#E7DDC7"></div>
+      <div class="hb-v">8</div><div class="hb-k">4</div></div><div class="hb"><div class="hb-bar" style="height:5.090909090909091px;background:#E8543F"></div>
+      <div class="hb-v">4</div><div class="hb-k">5</div></div><div class="hb"><div class="hb-bar" style="height:3.8181818181818183px;background:#E8543F"></div>
+      <div class="hb-v">3</div><div class="hb-k">6</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
+      <div class="hb-v">2</div><div class="hb-k">7</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
       <div class="hb-v">1</div><div class="hb-k">8</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
-      <div class="hb-v">1</div><div class="hb-k">9</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
-      <div class="hb-v">2</div><div class="hb-k">11</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
-      <div class="hb-v">1</div><div class="hb-k">15</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
-      <div class="hb-v">1</div><div class="hb-k">19</div></div></div>
+      <div class="hb-v">2</div><div class="hb-k">9</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
+      <div class="hb-v">1</div><div class="hb-k">10</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
+      <div class="hb-v">1</div><div class="hb-k">11</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
+      <div class="hb-v">1</div><div class="hb-k">12</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
+      <div class="hb-v">1</div><div class="hb-k">17</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
+      <div class="hb-v">1</div><div class="hb-k">23</div></div></div>
   <p class="more">가로 = 그 도구가 마찰 장부에 인용된 건수 · 세로 = 도구 개수 · <b style="color:#E8543F">빨강 = 5건 이상</b>(「자꾸 깨진다」로 세는 구간).</p>
 
-<h2><span class="no">Ⅴ</span>🔴 맨몸이다 — <b>10건</b> <span class="dim">· 뜯기 전에 회귀부터</span></h2>
-<p class="lead">저장소 여기저기서 부르는데 회귀 198벌 어디에도 이름이 안 나온다. <b>뜯어도 아무 테스트가 안 빨개진다</b> — 지금 이게 도는지 기계가 모른다.</p>
+<h2><span class="no">Ⅴ</span>🔴 맨몸이다 — <b>7건</b> <span class="dim">· 뜯기 전에 회귀부터</span></h2>
+<p class="lead">저장소 여기저기서 부르는데 회귀 210벌 어디에도 이름이 안 나온다. <b>뜯어도 아무 테스트가 안 빨개진다</b> — 지금 이게 도는지 기계가 모른다.</p>
 <table class="t">
     <thead><tr><th>파일</th><th>깨진 이력</th><th>회귀</th><th>부르는 곳</th><th>마지막 손댐 <span class="dim">(참고)</span></th></tr></thead>
     <tbody><tr>
-      <td class="mono">tools/재질굽기.js</td>
-      <td class="c"><span class="pill warn">1건</span> <span class="fs">F443</span></td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">4곳</td>
-      <td class="c">2026-08-14<span class="dim"> · 3일</span></td>
-    </tr>
-<tr>
-      <td class="mono">.claude/hooks/citation-guard.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">3곳</td>
-      <td class="c">2026-08-12<span class="dim"> · 5일</span></td>
-    </tr>
-<tr>
       <td class="mono">tools/감각층소리합성.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">2곳</td>
+      <td class="c">3곳</td>
       <td class="c">2026-08-15<span class="dim"> · 2일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/룸굽기.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">2곳</td>
-      <td class="c">2026-08-16<span class="dim"> · 1일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/증거패킷.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">2곳</td>
+      <td class="c">3곳</td>
       <td class="c">2026-08-06<span class="dim"> · 11일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/파생굽기.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">2곳</td>
+      <td class="c">3곳</td>
       <td class="c">2026-08-14<span class="dim"> · 3일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/lib/이미지굽기.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">2곳</td>
+      <td class="c">3곳</td>
       <td class="c">2026-08-15<span class="dim"> · 2일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/마스코트누끼.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">1곳</td>
+      <td class="c">2곳</td>
       <td class="c">2026-08-15<span class="dim"> · 2일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/모드대비계측.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">1곳</td>
+      <td class="c">2곳</td>
       <td class="c">2026-08-14<span class="dim"> · 3일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/펠트색굽기.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">1곳</td>
+      <td class="c">2곳</td>
       <td class="c">2026-08-15<span class="dim"> · 2일</span></td>
     </tr></tbody></table>
     
