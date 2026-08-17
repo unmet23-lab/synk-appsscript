@@ -1,0 +1,158 @@
+#!/usr/bin/env node
+'use strict';
+/* 형제 저장소(SYNK-talk)가 초록인지 **as 세션이 보게 한다** — F518 ㉡.
+ *
+ * ■ 무엇이 비어 있었나 (2026-08-17 · 장부 F518)
+ *   이 저장소의 세션은 `node tools/test-ci.js` 로 **자기** master 만 잰다. 형제 저장소가 빨간 것은
+ *   어느 화면에도 안 뜬다 — 그래서 「두 저장소가 초록인지 아무도 모른다」가 성립했고, 실제로
+ *   앱이 08-15 부터 release 빌드 불가였는데 회귀 2314 가 전부 초록이라 **아무도 몰랐다**.
+ *
+ * ■ 🔑 이 도구는 **재지 않는다.** 「안 쟀다」를 드러낼 뿐이다(F207 축).
+ *   재는 판은 이미 값이 매겨져 있다 — 형제 스위트 실측 **3분 30초**라 매 세션에 붙일 수 없다
+ *   (F518 이 그 숫자를 재서 「못 쓴다」로 판정했다). 그래서 **도장과 대조**로 뒤집는다:
+ *     · 잰 세션이 도장을 찍는다 — 「talk master @<sha> · 통과 N · 실패 N · 잰 시각」
+ *     · 세션 시작에는 `rev-parse` **한 번**만 떠서 도장의 sha 와 비교한다.
+ *       같으면 그 판정이 아직 유효하고, 다르면 **「미측정 · 그 뒤 N 커밋」**이라 말한다.
+ *   비용 = rev-parse 1회 + 파일 1개 읽기.
+ *
+ * ■ ⚠ 대가 (맹점 ④ — 새 장치엔 틀릴 때의 모습을 함께 적는다)
+ *   틀리는 방향은 **낡은 도장이 「초록」으로 읽히는 것**이다. 그래서 도장에 sha 를 박고,
+ *   sha 가 다르면 **초록이라 말하지 않는다**(「미측정」이라고만 한다). 판정을 이월하지 않는다.
+ *   그리고 이 도구는 도장이 **정직한지** 모른다 — 안 재고 찍으면 그대로 믿는다. 그 축은
+ *   기계로 못 닫는다(재는 것 자체가 3분 30초라 검증이 곧 재측정이다). 대신 도장에 **잰 시각**을
+ *   박아 오래된 도장은 나이가 보이게 했다. 닫은 것 = 「sha 가 달라도 초록으로 읽히던 자리」.
+ *   안 닫은 것 = 「같은 sha 인데 거짓으로 찍은 도장」.
+ *
+ * ■ ⚠ 형제 저장소는 **repo 밖 환경**이다(CI·워크트리엔 없다 · F296).
+ *   없으면 「못 쟀다」라고 말하고 **절대 실패로 만들지 않는다** — 없는 것과 빨간 것은 다르다.
+ *
+ * 쓰기:
+ *   node tools/형제초록.js                     → 지금 상태를 한 줄로(사람용)
+ *   node tools/형제초록.js --하네스            → SessionStart 훅용(조용하면 아무 말 안 함)
+ *   node tools/형제초록.js --찍기 --통과 2321 --실패 0 --건너뜀 1 [--sha <sha>]
+ */
+
+const fs = require('node:fs');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+
+const ROOT = path.resolve(__dirname, '..');
+const 도장경로 = path.join(ROOT, 'docs', '_ops', '형제초록.json');
+
+/* 워크트리에서도 형제를 찾는다 — 워크트리 경로는 `<본체>/.claude/worktrees/<이름>` 이라
+ * `..` 이 `worktrees/` 를 가리킨다(F403 이 남긴 자리 · `tools/이해대장.js` 와 같은 규약). */
+function 형제경로(root = ROOT) {
+  const 후보 = [path.resolve(root, '..', 'SYNK-talk')];
+  const m = /^(.*)[\\/]\.claude[\\/]worktrees[\\/][^\\/]+$/.exec(path.resolve(root));
+  if (m) 후보.push(path.resolve(m[1], '..', 'SYNK-talk'));
+  return 후보.find((d) => fs.existsSync(path.join(d, '.git'))) || null;
+}
+
+function git(cwd, args) {
+  const r = spawnSync('git', args, { cwd, encoding: 'utf8' });
+  return (r.error || r.status !== 0) ? null : String(r.stdout || '').trim();
+}
+
+function 도장읽기() {
+  try { return JSON.parse(fs.readFileSync(도장경로, 'utf8')); } catch (_) { return null; }
+}
+
+/**
+ * 지금 상태를 판정한다. **판정은 여기 하나가 진다** — 사람용 출력과 훅용 출력이 같은 값을 쓴다
+ * (같은 판정을 두 곳에 적으면 갈라지고, 갈라지는 방향은 언제나 「통과」다).
+ * @returns {{칸:'없음'|'못찾음'|'도장없음'|'낡음'|'빨강'|'초록', 말:string}}
+ */
+function 판정() {
+  const 형제 = 형제경로();
+  if (!형제) return { 칸: '없음', 말: '형제 저장소(SYNK-talk)가 이 기계에 없다 — 초록인지 **못 쟀다**(빚 0이 아니다).' };
+
+  const 도장 = 도장읽기();
+  if (!도장 || !도장.sha) {
+    return { 칸: '도장없음', 말: '형제 저장소(SYNK-talk) master 가 초록인지 **아무도 안 쟀다**(도장 0) — `node tools/형제초록.js --찍기 …`' };
+  }
+
+  const 지금 = git(형제, ['rev-parse', 도장.ref || 'origin/master']);
+  if (!지금) return { 칸: '못찾음', 말: `형제 저장소의 \`${도장.ref || 'origin/master'}\` 를 못 읽어 도장과 **대조를 못 했다** — 막지 않는다.` };
+
+  const 나이 = 도장.잰시각 ? `${Math.max(0, Math.round((Date.now() - Date.parse(도장.잰시각)) / 3600000))}시간 전` : '시각 미상';
+
+  if (지금 !== 도장.sha) {
+    /* 몇 커밋 벌어졌는지 — 못 세면 「모른다」고 말한다(0으로 적으면 낡음이 「최신」처럼 보인다). */
+    const 셈 = git(형제, ['rev-list', '--count', `${도장.sha}..${지금}`]);
+    const 뒤 = 셈 === null ? '그 뒤 몇 커밋인지 모름(도장의 커밋이 형제 이력에 없다)' : `그 뒤 **${셈}커밋**`;
+    return {
+      칸: '낡음',
+      말: `형제 저장소(SYNK-talk) master 는 지금 **미측정**이다 — 마지막 도장은 \`${도장.sha.slice(0, 8)}\`(${나이}) · ${뒤}.`,
+    };
+  }
+
+  if (Number(도장.실패) > 0) {
+    return { 칸: '빨강', 말: `🔴 형제 저장소(SYNK-talk) master 가 **빨갛다** — 실패 ${도장.실패}건 (\`${도장.sha.slice(0, 8)}\` · ${나이}). 남의 배포를 막는다.` };
+  }
+
+  const 분모 = `통과 ${도장.통과 ?? '?'} + 실패 ${도장.실패 ?? '?'} + 건너뜀 ${도장.건너뜀 ?? '?'}`;
+  return { 칸: '초록', 말: `형제 저장소(SYNK-talk) master 초록 — ${분모} (\`${도장.sha.slice(0, 8)}\` · ${나이}).` };
+}
+
+function 찍기(argv) {
+  const 값 = (이름) => {
+    const i = argv.indexOf(이름);
+    return i >= 0 ? argv[i + 1] : undefined;
+  };
+  const 형제 = 형제경로();
+  if (!형제) { console.error('[형제초록] 형제 저장소가 없다 — 도장을 안 찍는다(없는 것을 잰 것으로 적지 않는다).'); return 1; }
+
+  const 실패 = 값('--실패');
+  if (실패 === undefined) {
+    console.error('[형제초록] `--실패 N` 이 없다 — **몇 건 실패했는지 없이 도장을 찍지 않는다.**');
+    console.error('  안 재고 찍은 도장은 「초록」과 모양이 같다. 재고 나서 그 숫자를 그대로 넣는다:');
+    console.error('  node tools/형제초록.js --찍기 --통과 2321 --실패 0 --건너뜀 1');
+    return 1;
+  }
+
+  const ref = 값('--ref') || 'origin/master';
+  /* sha 는 **잰 판**을 가리켜야 한다 — 여기서 다시 뜨면 재는 동안 남이 민 커밋을 가리킬 수 있다.
+   * 그래서 넘길 수 있게 두고, 안 넘기면 지금 값을 쓰되 그 사실을 말한다(F518 「ref 는 안 얼린다」). */
+  let sha = 값('--sha');
+  if (!sha) {
+    sha = git(형제, ['rev-parse', ref]);
+    if (!sha) { console.error(`[형제초록] 형제의 \`${ref}\` 를 못 읽어 도장을 못 찍는다.`); return 1; }
+    console.error(`[형제초록] ⚠ \`--sha\` 를 안 줘서 **지금** \`${ref}\`(${sha.slice(0, 8)}) 로 찍는다 — 재는 동안 남이 밀었으면 이 도장은 딴 판을 가리킨다.`);
+  }
+
+  const 도장 = {
+    저장소: 'SYNK-talk',
+    ref,
+    sha,
+    통과: Number(값('--통과')) || 0,
+    실패: Number(실패) || 0,
+    건너뜀: Number(값('--건너뜀')) || 0,
+    /* 누가 쟀나 — 도장은 **남의 실측을 옮겨 적을 수도 있다**(장부·보드에 sha 와 함께 남은 판).
+     * 출처를 안 적으면 옮겨 적은 것과 내가 잰 것이 같은 모양이 된다. 판정에는 안 쓰고 기록만 한다. */
+    잰곳: 값('--잰곳') || null,
+    /* 「찍은 시각」이 아니라 **「잰 시각」**이다 — 남의 실측을 옮겨 적을 때 지금 시각을 박으면
+     * 화면이 「0시간 전」이라 말해 낡은 판정이 갓 잰 것처럼 보인다(이 도구가 없애려는 바로 그 모양). */
+    잰시각: 값('--잰시각') || new Date().toISOString(),
+  };
+  fs.writeFileSync(도장경로, `${JSON.stringify(도장, null, 2)}\n`, 'utf8');
+  console.log(`[형제초록] 도장 — ${도장.ref} \`${sha.slice(0, 8)}\` · 통과 ${도장.통과} + 실패 ${도장.실패} + 건너뜀 ${도장.건너뜀}`);
+  return 0;
+}
+
+function main() {
+  const argv = process.argv.slice(2);
+  if (argv.includes('--찍기')) return 찍기(argv);
+
+  const r = 판정();
+  /* 훅 갈래는 **조용할 자격이 있을 때만** 조용하다 — 초록일 때만 한 줄, 나머지는 전부 말한다.
+   * 「없음·못찾음」까지 말하는 이유는 그것들이 「초록」과 같은 모양이 되면 안 되기 때문이다(F207). */
+  if (argv.includes('--하네스')) {
+    process.stderr.write(`${r.칸 === '초록' ? '✅ ' : ''}${r.말}\n`);
+    return 0;
+  }
+  console.log(r.말);
+  return 0;
+}
+
+if (require.main === module) process.exit(main());
+else module.exports = { 판정, 형제경로, 도장경로 };
