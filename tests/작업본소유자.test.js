@@ -1671,19 +1671,21 @@ test('🔑 나 자신은 옛 도장이 남아 있어도 선언 주인이다 — 
  * 호이스팅돼 **뒤엣것이 이긴다.** 처음에 그렇게 지었다가 기존 검사 3건이 조용히 깨졌다:
  * 저쪽은 「미커밋이 있는 옆 트리」를 만들고 이쪽은 「커밋만 있는 옆 트리」를 만들어, 저쪽
  * 검사들이 내 픽스처를 받아 🌿 를 영영 못 봤다. 깨진 이유가 이름이라 진단이 오래 걸린다. */
-function 갇힘픽스처({ 나이분 = 600, 반입 = false, 점유 = null } = {}) {
+function 갇힘픽스처({ 나이분 = 600, 반입 = false, 점유 = null, 머지 = null } = {}) {
   const { repo, state, g } = 픽스처();
   const 트리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-own-wt-'));
   임시들.push(트리);
   fs.rmSync(트리, { recursive: true, force: true });      // worktree add 는 빈 경로를 요구한다
-  /* 충돌 갈래는 **두 쪽이 같은 파일을 다르게 고쳐야** 성립한다 — 씨앗을 먼저 심는다. */
-  if (점유 === '충돌') {
+  /* 충돌 갈래는 **두 쪽이 같은 파일을 다르게 고쳐야** 성립한다 — 씨앗을 먼저 심는다.
+   * `머지:'evil'`(F583)도 같은 씨앗이 필요하다 — 손으로 해결할 자리가 있어야 evil merge 가 된다. */
+  const 겹침 = 점유 === '충돌' || 머지 === 'evil';
+  if (겹침) {
     fs.writeFileSync(path.join(repo, '겹치는파일.txt'), '원본\n');
     g('add', '-A'); g('commit', '-qm', '씨앗');
   }
   g('worktree', 'add', '-q', '--detach', 트리, 'HEAD');
   fs.writeFileSync(path.join(트리, '수리.js'), '// 유호님 신고 결함 수리\n');
-  if (점유 === '충돌') fs.writeFileSync(path.join(트리, '겹치는파일.txt'), '가지 쪽 수정\n');
+  if (겹침) fs.writeFileSync(path.join(트리, '겹치는파일.txt'), '가지 쪽 수정\n');
   /* 커밋 **시각**으로 나이를 심는다 — 도구도 같은 것을 잰다(폴더 mtime 은 체크아웃·청소로도
    * 움직여 「언제 멈췄나」를 안 말한다). 안 심으면 「방금 커밋」이라 갇힘여유에 그대로 걸러진다. */
   const 때 = new Date(Date.now() - 나이분 * 60000).toISOString();
@@ -1694,6 +1696,27 @@ function 갇힘픽스처({ 나이분 = 600, 반입 = false, 점유 = null } = {}
   wg('commit', '-qm', '수리 — 워크트리에서 완주');
   if (반입) {                                              // master 가 그 커밋을 이미 담은 상태
     g('merge', '-q', '--ff-only', String(wg('rev-parse', 'HEAD').stdout || '').trim());
+  }
+  /* 🫧 F583 — **머지 노드만 남은 트리**(reconcile 류). 실사고 `6df8320b` 의 그 모양을 그대로 짓는다:
+   *   ① 트리가 제 커밋을 하나 쌓고 ② master 는 따로 나아가고(→ ff 가 아니라 진짜 머지 노드가 된다)
+   *   ③ 트리가 master 를 되받아 «화해만» 하고 멈추고 ④ 그 사이 트리의 커밋은 master 에도 담긴다.
+   *   결과: `master..HEAD` 에 커밋 1개(머지 노드)뿐이고 `--no-merges` 는 0이다.
+   * 🔴 `evil` 갈래는 **새는 방향**을 잰다 — 손으로 제3의 값을 골라 해결하면 그 줄은 어느 부모에도
+   *   없으므로 `--cc` 가 비지 않는다. 그건 「볼 것 없음」이 아니라 유실 후보다. */
+  if (머지) {
+    const 트리커밋 = String(wg('rev-parse', 'HEAD').stdout || '').trim();
+    if (머지 === 'evil') fs.writeFileSync(path.join(repo, '겹치는파일.txt'), 'master 쪽 수정\n');
+    else fs.writeFileSync(path.join(repo, 'master쪽.txt'), 'master 쪽 진행\n');
+    g('add', '-A'); g('commit', '-qm', 'master 쪽 진행');
+    wg('merge', '--no-edit', 'master');                    // evil 갈래에선 실패해야 정상(UU 로 멈춘다)
+    if (머지 === 'evil') {
+      fs.writeFileSync(path.join(트리, '겹치는파일.txt'), '손으로 고른 제3의 값\n');
+      wg('add', '-A');
+      wg('commit', '-qm', '머지 — 손으로 해결한 자리가 있다');
+    }
+    /* master 가 트리의 커밋을 담는다 → 이제 머지 노드의 **두 부모가 전부 master 안**이다.
+     * `-X ours` 는 evil 갈래의 재충돌을 사람 손 없이 넘기려는 것뿐이다(master 쪽 값은 무관). */
+    g('merge', '--no-edit', '-q', '-X', 'ours', 트리커밋);
   }
   /* 🔑 F553 — 점유는 **진짜로 만든다.** 손으로 `UU` 글자를 심으면 사람이 실제로 만나는 상태를
    *   한 번도 안 재게 된다(가드 맹점 ①). 아래는 git 이 스스로 낸 충돌이고, 나이는 그 사이에도
@@ -1810,6 +1833,76 @@ test('🔑 거짓양성 — 작업본이 깨끗한 갇힘은 **여전히** 🧊 
       '🔴 F553 수리가 F403 을 통째로 껐다 — 완주한 트랙이 사라지는 그 사각이 되돌아온다');
     assert.match(out, /worktree remove/, '닫는 길을 뺏었다 — 스스로 조용해질 수 없는 경고가 된다');
     assert.doesNotMatch(out, /🧑/, '깨끗한 트리를 「손이 붙어 있다」고 했다 — 반대 방향으로 새는 문장이다');
+  });
+
+/* ── 🫧 볼 것이 없는 트리 (F583 · 2026-08-17) ─────────────────────────────────
+ * 시작 훅이 세션 `90a98dcc` 에게 낸 제 경보를 재서 발굴했다. 대상 `6df8320b` 실측:
+ *   `rev-list --count master..HEAD` = 1 · `--no-merges` = **0** · `diff-tree --cc` = **빈 출력**
+ * ⇒ 새로 쓴 줄이 한 줄도 없는데 화면은 F403 실사고(수리 163줄·회귀 245줄 유실)와 같은 문구였다.
+ * 🔑 이 절이 지키는 것은 **두 방향이다**: ①잃을 것 0 인 트리에 유실 경보를 안 낸다(소음)
+ *   ②그 완화가 **한 줄이라도 새로 쓴 트리**로 새지 않는다(유실). ②가 없으면 이 수리가 F403 을 끈다.
+ */
+test('🔑 탐지 — 머지 노드만 남은 트리는 🫧 로 내고 🧊 최고 경보를 안 낸다 (F583)',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const { repo, state } = 갇힘픽스처({ 머지: 'trivial' });
+    const out = 돌린다({ repo, state, 나: 'local_f583aaaa', 환경: 점유예산 });
+    assert.match(out, /🫧[\s\S]*볼 것이 없는 작업 트리 1건/,
+      '머지 노드뿐인 트리를 못 갈랐다 — DAG 로 결정되는 자리를 안 재면 이 경보는 영영 안 조용해진다');
+    assert.doesNotMatch(out, /완주한 트랙이 여기서 사라진다/,
+      '🔴 잃을 것이 0인 트리에 유실 경보를 냈다 — 그 문구가 진짜 유실에서도 안 읽히게 된다(F583 그 자체)');
+    assert.match(out, /worktree remove/,
+      '닫는 길을 안 줬다 — 조용해졌는데 치울 수 없으면 그 트리는 영영 목록에 남는다');
+    assert.match(out, /고른 조합/,
+      '대가를 안 적었다 — 안 잰 것이 있는데 「볼 것 없음」만 말하면 그 단정이 다음 오독의 씨앗이 된다');
+  });
+
+test('🔴 새는 방향 — 손으로 해결한 머지(evil)는 🫧 로 안 내린다 (`--cc` 가 비지 않는다)',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const { repo, state } = 갇힘픽스처({ 머지: 'evil' });
+    const out = 돌린다({ repo, state, 나: 'local_f583bbbb', 환경: 점유예산 });
+    assert.match(out, /🧊[\s\S]*워크트리에 갇힌 커밋 1건/,
+      '🔴 손으로 고른 값이 든 머지를 「볼 것 없음」으로 접었다 — 그 줄은 어느 부모에도 없다(유실)');
+    assert.doesNotMatch(out, /🫧/,
+      '🔴 evil merge 가 조용한 칸으로 샜다 — 이 수리가 F403 을 끈 것이다');
+  });
+
+test('🔑 F403 무력화 금지 — 진짜 내용 커밋이 있으면 🫧 가 아니라 🧊 다',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const out = 돌린다({ ...갇힘픽스처(), 나: 'local_f583cccc', 환경: 점유예산 });
+    assert.match(out, /🧊[\s\S]*워크트리에 갇힌 커밋 1건/, '완주한 트랙이 조용한 칸으로 내려갔다');
+    assert.doesNotMatch(out, /🫧/, '내용 커밋이 있는데 「볼 것 없음」이라 했다 — 반대 방향으로 새는 문장이다');
+  });
+
+test('🔑 침묵 계약 — 볼 것 없는 트리 **하나만** 있으면 --hook 은 세션을 안 깨운다 (F583)',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const { repo, state } = 갇힘픽스처({ 머지: 'trivial' });
+    assert.strictEqual(돌린다({ repo, state, 나: 'local_f583dddd', 인자: ['--hook'], 환경: 점유예산 }), '',
+      '잃을 것이 0인 트리 하나 때문에 매 세션을 깨웠다 — 그 소음이 옆의 진짜 유실까지 안 읽히게 만든다');
+  });
+
+test('🔴 세 칸 — 「못 쟀다」는 「볼 것 없음」이 아니다 (F207 · 이 칸이 새면 유실 방향이다)', () => {
+  const { 내용없나 } = require(TOOL);
+  /* 못 쟀는데 값이 0으로 «보이는» 모양 — `rev-list` 를 그 트리에만 실패시킬 손잡이가 없어
+   * 픽스처로는 못 만든다. 순수 함수라 값으로 직접 잰다. */
+  assert.strictEqual(내용없나({ 고유: { 잼: false, 내용커밋: 0, 손해결: 0 } }), false,
+    '🔴 못 잰 것을 「볼 것 없음」으로 접었다 — 시끄러운 쪽에 남겨야 유실이 안 샌다');
+  assert.strictEqual(내용없나({}), false, '고유 자체가 없는데 조용한 칸으로 내렸다');
+  assert.strictEqual(내용없나({ 고유: { 잼: true, 내용커밋: 1, 손해결: null } }), false,
+    '내용 커밋이 있는데 「볼 것 없음」이라 했다 — F403 이 그대로 꺼진다');
+  assert.strictEqual(내용없나({ 고유: { 잼: true, 내용커밋: 0, 손해결: 2 } }), false,
+    '손으로 해결한 머지가 있는데 접었다 — 그 줄은 어느 부모에도 없다');
+  assert.strictEqual(내용없나({ 고유: { 잼: true, 내용커밋: 0, 손해결: 0 } }), true,
+    '셋을 다 재고 0인데도 시끄러운 칸에 뒀다 — 그러면 이 수리가 아무것도 안 한 것이다');
+});
+
+test('🔴 손이 붙어 있으면 내용이 0이어도 🫧 가 아니다 — 점유 판정이 먼저다 (F553 ↔ F583 순서)',
+  { skip: !git있나 && 'git 없음' }, () => {
+    const { repo, state, 트리 } = 갇힘픽스처({ 머지: 'trivial' });
+    fs.writeFileSync(path.join(트리, '아직_안_커밋.js'), '// 손이 붙어 있다\n');
+    const out = 돌린다({ repo, state, 나: 'local_f583eeee', 환경: 점유예산 });
+    assert.match(out, /🧑[\s\S]*손이 붙어 있는 작업 트리 1건/,
+      '🔴 내용이 0이라는 이유로 사람이 붙어 있는 트리를 처분 칸에 넣었다 — F553 실사고 그 자체다');
+    assert.doesNotMatch(out, /worktree remove/, '지우라고 했다 — 그 미커밋은 어디에도 안 남는다(F025)');
   });
 
 /* ── 🔗 형제 저장소의 «배포빚» (대기열 #Q87 · 2026-08-15) ──────────────────────
