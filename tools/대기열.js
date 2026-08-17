@@ -19,6 +19,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const 확정 = require(path.join(__dirname, 'lib', '확정대조.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
 const 대기열경로 = path.join(ROOT, 'docs', '_ops', '작업대기열.md');
@@ -1177,6 +1178,20 @@ module.exports = {
 
 if (require.main === module) {
   const argv = process.argv.slice(2);
+  /* 🔴 **모르는 낱말을 삼키면 이 도구는 「전량 판」을 내고 끝난다** — 실측 2026-08-18:
+   *   `node tools/대기열.js --상세 "#Q113"` 이 오류 없이 목록 전량을 냈다. 좁혀 달라고 부탁한
+   *   사람은 그 출력을 **좁혀진 것**으로 읽는다(형제 F400·F435 가 정확히 그 모양이다).
+   * 🔑 목록은 눈으로 정하지 않았다 — `tests/lib/도구인자.js` 의 `CLI도구들()` 로 재서 여섯이고,
+   *   `tests/도구인자게이트.test.js` ④ 가 「자기 낱말 전량을 선언이 덮는가」를 매번 다시 센다.
+   *   ⚠ `git blame` 에 넘기는 `--line-porcelain` 은 **여기 넣지 않는다** — 넣으면 그 낱말이
+   *     CLI 에서 통과한다(처방을 따르면 병이 생기는 자리 · F103). */
+  const 아는플래그 = ['--집기', '--파일', '--재심완료', '--본것', '--뒤집음', '--확정대조'];
+  const 플래그오류 = 인자게이트('대기열', argv, 아는플래그);
+  if (플래그오류) {
+    console.error(`\n🔴 ${플래그오류}`);
+    console.error('   ▶ 위 낱말 중 하나를 쓴다 — 오타면 «좁힌 판»이 아니라 전량 판이 나간다.\n');
+    process.exit(1);
+  }
   const 집기i = argv.indexOf('--집기');
   process.exit(집기i !== -1 ? 집기보고(argv, 집기i)
     : argv.includes('--재심완료') ? 재심완료보고(argv)
