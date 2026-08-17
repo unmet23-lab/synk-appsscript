@@ -601,6 +601,92 @@ function 가지끝(root, 기준) {
   return null;
 }
 
+/* ── 로컬이 아직 안 받은 `origin/master` 의 선언 (F542) ────────────────────────
+ *
+ * ■ 무엇이 샜나 (2026-08-17 실측 · 세션 `b20caad9` 가 겪었고 `a0a573fb` 가 같은 자리에서 다시 겪었다)
+ *   위 `줄들(root)` 은 **작업 트리의 디스크**를 읽고 `가지줄들()` 은 **미머지 가지**를 읽는다.
+ *   그 둘 사이에 층이 하나 더 있다: **머지돼 origin 에 올라갔는데 이 트리의 로컬 master 가
+ *   아직 안 받은 줄.** 「워크트리+PR」 규약의 마지막 두 걸음이 그 자리를 정확히 만든다 —
+ *   `--닫기` 가 머지·push 를 하고 `ExitWorktree(remove)` 가 가지를 지우면, 그 트랙의 보드 줄은
+ *   **디스크에도 없고 가지에도 없고** origin/master 에만 산다.
+ *
+ * 🔴 그래서 인계문이 「▶ 트랙 없이 끝난 세션이다 — 추정이 아니라 실측이다 … 보드를 다시 열
+ *   필요 없다」를 냈다. F529 와 **같은 병의 세 번째 얼굴**이고 새는 방향도 같다: 못 본 것을
+ *   없는 것으로 번역하고, 인계문은 다음 세션의 첫 입력이라 **확인 자체를 금지**한다(F348).
+ *
+ * 🔑 모양은 `가지끝파싱()` 정본을 그대로 쓴다 — 같은 「순diff 의 `+` 줄」이라 파서를 새로 짜면
+ *   그날 갈라진다(맹점 ④). 다른 것은 **출처 이름표**뿐이다: 가지 줄은 「아직 안 머지됐다」고
+ *   말해야 하고 이 줄은 「이미 머지됐는데 내가 안 받았다」고 말해야 한다 — 처방이 정반대다
+ *   (앞은 `gh pr list`, 뒤는 `git merge --ff-only origin/master`).
+ *
+ * ■ 대가 — 틀릴 때 어떤 모습인가 (장치 예산)
+ *   ㉠ `origin/master` 는 **마지막 fetch 만큼만** 새것이다. 안 받은 판은 여전히 안 보인다 —
+ *     방향은 「못 봄」이라 아래 `모름` 이 아니라 조용한 0 이 된다. 이 층이 좁히는 것은
+ *     「이미 손에 있는데 안 열어 본 것」이고, 그게 F542 의 실측 모양이었다(ref 는 있었다).
+ *   ㉡ ref 자체가 없는 저장소(픽스처·새 클론)는 **모름이 아니라 0** 이다 — 못 잰 게 아니라
+ *     잴 것이 없다. 여기서 모름으로 올리면 참인 단정까지 죽는다(`가지몫` 이 이미 치른 값).
+ *   ㉢ ref 는 있는데 diff 가 지면 **`모름: true`** — 빈 배열과 접지 않는다(F207).
+ *   · 닫는 것 = **없다.** 새 판정이 아니라 있는 판정의 분모를 넓히는 것이라 대체할 옛 통로가 없다.
+ *
+ * 📏 비용 — 스폰 **1회**(happy path · 이 기계의 스폰 삯 약 73ms). 지면 `rev-parse` 1회가 더 붙어
+ *   「없는 ref」와 「못 부름」을 가른다. 부르는 자리가 세션 경계라 초당 도는 것이 없다.
+ */
+const 원격기준 = 'origin/master';
+
+/** `origin/master` 에는 있는데 이 작업 트리가 아직 안 받은 보드 표줄.
+ * @param {string} root
+ * @param {{출력?: string, 실행?: function, 기준?: string}} [옵션] `출력`·`실행` = 회귀 주입구
+ * @returns {{줄들: object[], 모름: boolean}} `모름` 이면 못 훑은 것이다 — 「없다」와 다르다
+ */
+function 원격줄들(root, 옵션) {
+  const o = 옵션 || {};
+  const rev = o.기준 || 원격기준;
+  if (typeof o.출력 === 'string') return { 줄들: 원격표(o.출력, rev), 모름: false };
+  const 실행 = typeof o.실행 === 'function' ? o.실행 : 원격끝;
+  let 출력 = null;
+  try { 출력 = 실행(root, rev); } catch (_) { 출력 = null; }
+  if (typeof 출력 !== 'string') return { 줄들: [], 모름: true };
+  return { 줄들: 원격표(출력, rev), 모름: false };
+}
+
+/** 파싱은 `가지끝파싱()` 한 벌이고 여기선 **이름표만 갈아 단다.**
+ *  `출처.가지` 로 두면 인계문이 「아직 안 머지된 가지」라고 말한다 — 정반대 처방이 나간다. */
+function 원격표(출력, rev) {
+  return 가지끝파싱(출력).map((r) => ({ ...r, 출처: { 원격: rev, 파일: r.파일 } }));
+}
+
+/** 얇은 실행층 — 판정 없음. 못 부르면 `null`(=모름), ref 가 아예 없으면 `''`(=재서 얻은 0).
+ *
+ * ⚠ 세 점(`HEAD...origin/master`)이다 — 두 점이면 **내가 앞선 것**(로컬에만 있는 줄)이 `-` 로
+ *   섞여 들어와, 「내가 안 받은 것」을 묻는 이 층의 질문이 통째로 흐려진다. */
+function 원격끝(root, rev) {
+  const { spawnSync } = require('child_process');
+  const cwd = path.resolve(String(root || '.'));
+  const 부르기 = (args) => spawnSync('git', [
+    '-c', 'core.quotepath=false',                     // 비ASCII 경로를 8진 이스케이프로 안 깨뜨린다(F527)
+    ...args,
+  ], { cwd, encoding: 'utf8', maxBuffer: 1e8, timeout: 20000 });
+  const d = 부르기(['diff', '-U0', '--no-color', `HEAD...${rev}`, '--', 'docs/_ops/보드/']);
+  if (d && !d.error && d.status === 0) {
+    const 줄들 = [];
+    let 파일 = '';
+    for (const raw of String(d.stdout || '').split(/\r?\n/)) {
+      if (raw.startsWith('+++ ')) {                    // `+++ b/docs/_ops/보드/xxx.md`
+        const p = raw.slice(4).trim();
+        파일 = p === '/dev/null' ? '' : path.basename(p.replace(/^[ab]\//, ''));
+        continue;
+      }
+      if (raw.charCodeAt(0) === 43 /* + */ && raw[1] === '|' && 파일) 줄들.push(가지끝줄(rev, 파일, raw.slice(1)));
+    }
+    return 줄들.join('\n');
+  }
+  /* 🔑 진 이유를 가른다 — **ref 가 없는 것**과 **git 을 못 부른 것**은 다른 사실이다.
+   *   앞은 재서 얻은 0(픽스처·원격 없는 클론엔 이 층이 원리상 없다), 뒤는 모름이다. */
+  const v = 부르기(['rev-parse', '--verify', '--quiet', `${rev}^{commit}`]);
+  if (v && !v.error && v.status !== 0) return '';
+  return null;
+}
+
 /** 조립기가 못 읽는 줄들 — 가드는 세는데 표에는 없는 것. 폴더를 못 읽으면 `null`(「비었다」와 다르다). */
 function 유령들(root) {
   const 전부 = 훑기(root);
@@ -787,6 +873,7 @@ function 산출물경로들(파일칸, 확장자집합) {
 module.exports = {
   폴더, 내파일, 줄들, 유령들, 주인없는줄들, 텍스트, 머리말,
   가지줄들, 가지끝파싱, 가지끝줄,
+  원격줄들, 원격기준,
   표줄, 데이터행, 유령, 유령사유, 껍데기인가, ISO날짜, 칸수,
   활성어휘, 활성행, 완료행, 대기기호, 대기행, 이관문구, 아카이브경로, 아카이브된줄들,
   상태첫구절, 완료의심어휘, 완료의심,
