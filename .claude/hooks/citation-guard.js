@@ -54,10 +54,21 @@ try {
   const { 저장소들 } = require(path.join(ROOT, 'tools', 'lib', '보드낡음.js'));
 
   /* 역사 문서(심문결과·장부·아카이브·보드·이력)는 면제 — 그쪽은 줄번호가 낡은 것이 정상이다.
-   * 🔑 목록은 도구에서 «가져온다». 여기 다시 적으면 그게 두 번째 정본이다. */
-  const 저장소상대 = rel.includes('/SYNK-appsscript/')
-    ? rel.slice(rel.indexOf('/SYNK-appsscript/') + '/SYNK-appsscript/'.length)
-    : rel;
+   * 🔑 목록은 도구에서 «가져온다». 여기 다시 적으면 그게 두 번째 정본이다.
+   *
+   * 🔑 상대경로는 **바로 위에서 구한 `ROOT`** 에서 낸다 — 저장소 «이름»을 문자열로 자르면
+   *   워크트리에서 면제가 통째로 죽는다: 워크트리는 `…/SYNK-appsscript/.claude/worktrees/<가지>/`
+   *   아래라 첫 조각이 걸려 `.claude/worktrees/<가지>/docs/_ops/보드/…` 가 나오고, 면제 목록은
+   *   `docs/_ops/보드/` 접두로 재기 때문이다(실측 08-17: 같은 보드 파일이 master 🟢 / 워크트리 🔴).
+   *   CLAUDE.md 가 코드 트랙에 워크트리를 «의무»로 만든 뒤라, 보드·마찰신호·인계문을 고칠 때마다
+   *   거짓 경고가 떴다 — 맞는 행동에 뜨는 경고는 무시를 정상 통로로 만든다(F103 축).
+   *   이름 하드코딩은 다른 이름으로 클론한 기계·클라우드에서도 같은 방향으로 샌다(F044 ①).
+   * ⚠ 면제를 «넓히지» 않는다 — 형제 저장소(SYNK-talk) 문서는 고치기 전과 똑같이 검사된다.
+   *   가드가 새는 방향은 언제나 「통과」라, 안 재본 자리를 면제로 여는 것은 이 트랙 몫이 아니다. */
+  const 워크트리접두 = /^\.claude\/worktrees\/[^/]+\//;
+  const 저장소상대 = (path.isAbsolute(rel) ? path.relative(ROOT, rel) : rel)
+    .replace(/\\/g, '/')
+    .replace(워크트리접두, ''); /* 메인 체크아웃의 훅이 워크트리 파일을 볼 때도 같은 문서다 */
   if (검사.면제인가(저장소상대)) 나가기(null);
 
   const 저 = 저장소들(ROOT);
