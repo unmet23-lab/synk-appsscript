@@ -100,6 +100,11 @@ function mkRepo(정본내용 = '판 v1\n본문 한 줄') {
   fs.mkdirSync(path.join(dir, 'docs'), { recursive: true });
   fs.writeFileSync(path.join(dir, 정본경로), 정본내용, 'utf8');
   fs.writeFileSync(path.join(dir, 산출경로), 그린다(정본내용), 'utf8');
+  /* 생성기의 **부품** — 실물에서 생성기가 `require` 하는 자리다(`tools/lib/표.js`). 대역이 이걸
+   * 읽지는 않지만, 이 시험이 재는 것은 «부품이 담겼을 때 게이트가 서느냐»(방아쇠 축)라 그걸로 족하다. */
+  fs.mkdirSync(path.join(dir, 'tools', 'lib'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'tools', 'lib', '표.js'), 'module.exports = {};\n', 'utf8');
+
   git(dir, ['add', '--', 'docs', 'tools']);
   git(dir, ['commit', '-m', '초기']);
   return dir;
@@ -192,6 +197,18 @@ test('🔴 급소 — 생성기만 담은 커밋이 화면을 두고 가면 막�
   assert.ok(r.막혔나,
     `생성기만 담은 커밋이 그대로 나갔다 — 화면이 «도구보다 낡은» 채 HEAD 에 선다(F520):\n${r.출력}`);
   assert.match(r.출력, /이해대장\.html/, '막히긴 했는데 어느 파일인지 안 말한다 — 처방이 없으면 다음 수는 BYPASS 다');
+});
+
+/* 부모는 둘이 아니라 **다섯**이다 — 생성기가 `require` 하는 부품과 점수 장부도 같은 화면을 바꾼다.
+ * 🔑 이 시험은 **행동**을 잰다(내주는 목록이 아니라). 목록만 재면 «내주는 값»과 «실제로 거르는 값»이
+ *   갈릴 수 있고, 갈린 쪽이 좁아도 회귀는 초록이다 — 변이로 실측한 자리라 그 층으로 안 잰다. */
+test('🔴 급소 — 생성기의 **부품**만 담은 커밋도 막는다 (방아쇠가 부모 둘에서 멈추면 여기가 샌다)', (t) => {
+  const dir = 쓰고버린다(t); if (!dir) return;
+  생성기를간다(dir, 'v2', { 담을까: false });                 // 화면은 낡는데 생성기는 안 담는다
+  fs.writeFileSync(path.join(dir, 'tools', 'lib', '표.js'), 'module.exports = { 개정: 2 };\n', 'utf8');
+  const r = 커밋(dir, ['tools/lib/표.js']);
+  assert.ok(r.막혔나,
+    `부품만 담은 커밋이 그대로 나갔다 — 방아쇠가 정본·생성기에서 멈추면 이 칸이 조용히 샌다:\n${r.출력}`);
 });
 
 test('🔴 급소 — 차단문이 **생성기 경로**를 처방에 댄다 (정본을 대면 따를수록 트랙이 갈린다 · F302)', (t) => {
