@@ -11,7 +11,8 @@ const assert = require('node:assert/strict');
 const { engineSource } = require('./_engine-source');
 /* 부정 단언의 주어만 정제한다 — 주석이 금지 패턴을 «설명»하면 그 설명이 위반으로 잡힌다(대기열 #Q72). */
 const { 코드만 } = require('./lib/소스검사.js');
-const code = engineSource().replace(/\r\n/g, '\n');
+/* 줄끝 표기 접기는 `_engine-source` 이음매가 진다 — 여기서 다시 접지 않는다(F526 ㉠ · 같은 판정을 두 곳에 두면 갈라진다). */
+const code = engineSource();
 
 function section(startMarker, endMarker) {
   const s = code.indexOf(startMarker);
