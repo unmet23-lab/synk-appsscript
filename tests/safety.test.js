@@ -723,7 +723,12 @@ test('[v9.54] 상담 임포트·정리의 600행 창은 시트 물리 행수로 
 test('[v9.54] AI 스튜디오는 학생·약점 로더를 1회만 read한다(①·③ 중복 제거)', () => {
   const body = section('function aiStudioBatch_()', 'function welcomeStoryBatch_(');
   assert.equal((body.match(/aiStudents_\(ss\)/g) || []).length, 1, 'aiStudents_ 전량 read는 메모이즈 안에서 1회만');
-  assert.equal((body.match(/aiWeakMap_\(ss\)/g) || []).length, 1, 'aiWeakMap_ 전량 read는 메모이즈 안에서 1회만');
+  /* [v9.250] 인자가 붙어도 잡는다 — `aiWeakMap_(ss, 복귀)` 로 넓힌 뒤 이 검사가 **0건을 세어 초록**이
+   *   될 뻔했다(찾는 모양이 낡으면 「1회만」이 「한 번도 안 함」과 구분이 안 된다). */
+  assert.equal((body.match(/aiWeakMap_\(ss[,)]/g) || []).length, 1, 'aiWeakMap_ 전량 read는 메모이즈 안에서 1회만');
+  /* [v9.250 · #Q99 5/5] 셋째 로더 — `exit_log` 전량 read 도 같은 규율을 진다. 창을 ①·③ 중 한쪽에만
+   *   넓히면 **같은 학생이 두 산출에서 다른 사람이 된다** — 그래서 «중복 제거»와 «정합»이 한 검사다. */
+  assert.equal((body.match(/복귀창_\(ss\)/g) || []).length, 1, '복귀창_ 전량 read는 메모이즈 안에서 1회만');
 });
 
 test('[v9.54] 미등원 판정은 attendance 부재 시 열리지 않는다(전원 미등원 오경보 방지)', () => {
