@@ -46,6 +46,10 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const { execFileSync } = require('child_process');
+/* 표기 접기 정의는 저장소에 하나뿐이다 — `tests/lib/소스검사.js`. 손으로 접으면 CRLF 축만 막히고
+ * 줄끝 공백 축은 샌다(도구층 실측 08-17: 손 접기 12벌 **전부** 그 반쪽 · #Q101). 여기서 새면
+ * 라이브 판 대조가 「모름」으로 접히고, 모름은 침묵이라 통과와 같은 모양이 된다. */
+const { 표기접기 } = require('../tests/lib/소스검사.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const { claspProjects, parseDeploymentLine } = require(path.join(ROOT, 'tools', 'deploy-security-check.js'));
@@ -149,7 +153,7 @@ function 배포목록(projRoot) {
  * 🔑 창은 **경로로 거른 이력**이다 — 전체 이력에서 N 개를 보면 문서 커밋이 창을 다 먹어,
  *   실제로는 뒤처짐일 뿐인데 「모름」이 나온다(이 함수를 손으로 짜 본 첫 판이 정확히 그랬다). */
 function 라이브판찾기(rel, 라이브내용, root = ROOT, 창 = 40) {
-  const n = (s) => s.replace(/\r\n/g, '\n');
+  const n = 표기접기;
   const 라이브 = n(라이브내용);
   let 줄들;
   try {

@@ -24,6 +24,11 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+/* 표기 접기의 정의는 저장소에 하나뿐이다 — `tests/lib/소스검사.js` 의 `표기접기`. 손으로 접으면
+ * CRLF 축만 막히고 «줄끝 공백» 축은 그대로 샌다: 08-17 실측에서 도구층의 손 접기 12벌이
+ * **전부** 그 반쪽이었다(#Q101). 도구가 tests/ 를 건너 부르는 것은 이미 선 통로다
+ * (`tools/lib/시트도달.js`·`tools/실행층점검.js` 가 먼저 썼다). */
+const { 표기접기 } = require('../tests/lib/소스검사.js');
 
 const REPO = path.join(__dirname, '..');
 const 계약폴더 = '계약';
@@ -39,10 +44,10 @@ function 대상들() {
     .map((f) => path.join(계약폴더, f));
 }
 
-// 줄바꿈만 정규화한다 — 이 저장소는 autocrlf=true 라 CRLF일 수 있고, 형제는 언제나 LF다.
-// 거짓 경보를 내는 가드는 곧 꺼진다. 줄바꿈 차이는 계약의 분열이 아니다(회귀도 같은 기준).
+// 표기를 접고 본다 — 이 저장소는 autocrlf=true 라 CRLF일 수 있고, 형제는 언제나 LF다.
+// 거짓 경보를 내는 가드는 곧 꺼진다. 표기 차이는 계약의 분열이 아니다(회귀도 같은 기준).
 const 읽기 = (p) => fs.readFileSync(p, 'utf8');
-const 정규화 = (s) => s.replace(/\r\n/g, '\n');
+const 정규화 = 표기접기;
 
 function main(argv) {
   const check = argv.includes('--check');

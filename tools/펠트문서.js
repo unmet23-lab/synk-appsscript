@@ -58,6 +58,9 @@ const 루트 = path.dirname(__dirname);
 /* Loom 부품 통로 — 재질·부품·율의 정본은 여기 하나다(2026-08-16 배선).
    이 파일은 그 위에 «지면 골격»(판·레일·표지·표·수치·모션)만 얹는다. */
 const loom = require('./lib/loom.js');
+/* 표기 접기 정의는 하나다 — `tests/lib/소스검사.js`. 재현 대조(아래 `몸통`)가 손으로 접으면
+ * CRLF 축만 막혀, 굽는 기계가 줄끝에 한 칸 흘린 날 «지면이 갈라졌다»가 된다(#Q101 · 14/14 반쪽). */
+const { 표기접기 } = require('../tests/lib/소스검사.js');
 const 천길 = path.join(루트, 'docs', 'tools', '펠트천.json');
 const 토큰길 = path.join(루트, 'docs', '디자인_토큰.json');
 
@@ -657,7 +660,7 @@ function 지면짝들(방 = 지면방) {
 /** 몸통 = `</style>` 뒤. 스킨은 굽기마다 바뀌므로 «원고가 정본인가»는 몸통으로만 갈린다. */
 const 몸통 = (s) => {
   const i = s.indexOf('</style>');
-  return (i < 0 ? s : s.slice(i + 8)).replace(/\r\n/g, '\n').trim();
+  return 표기접기(i < 0 ? s : s.slice(i + 8)).trim();
 };
 
 /**
