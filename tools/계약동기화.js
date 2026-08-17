@@ -32,7 +32,11 @@ const { 표기접기 } = require('../tests/lib/소스검사.js');
 
 const REPO = path.join(__dirname, '..');
 const 계약폴더 = '계약';
-const 형제뿌리 = path.join(REPO, '..', 'SYNK-talk');
+/* 형제 자리도 통로가 하나다 — 손으로 `REPO/../SYNK-talk` 를 적으면 **워크트리에서 `..` 이
+ * `worktrees/` 를 가리켜** 「형제가 이 기계에 없다」로 조용히 건너뛴다(아래 60행). 코드 트랙은
+ * 규약상 워크트리에서 짓는다(CLAUDE.md) — 즉 계약 동기화가 정작 필요한 판에서 안 돌았다. */
+const 형제저장소 = require(path.join(REPO, '.claude', 'hooks', 'lib', '형제저장소.js'));
+const 형제뿌리 = 형제저장소.형제경로(REPO);
 
 /** 동기화 대상 상대경로들 — 이름순(출력 순서를 기계로 고정). */
 function 대상들() {

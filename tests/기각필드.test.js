@@ -22,8 +22,10 @@ const path = require('node:path');
 
 const REPO = path.join(__dirname, '..');
 const 계약경로 = path.join(REPO, '계약', '수집_교정_계약.json');
-/** 형제 저장소(있을 때만 검사한다 — CI 에는 없다) */
-const TALK = path.join(REPO, '..', 'SYNK-talk');
+/** 형제 저장소(있을 때만 검사한다 — CI 에는 없다).
+ *  자리는 정본 통로에서 — 손으로 `REPO/..` 를 적으면 **워크트리에서 이 검사가 늘 skip 된다**
+ *  (`..` 이 `worktrees/` 를 가리킨다). 코드 트랙은 규약상 워크트리에서 짓는다. */
+const TALK = require(path.join(REPO, '.claude', 'hooks', 'lib', '형제저장소.js')).형제경로(REPO);
 
 function 계약읽기() {
   return JSON.parse(fs.readFileSync(계약경로, 'utf8'));
