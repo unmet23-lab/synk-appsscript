@@ -33,8 +33,11 @@ const outNameOf = (srcName) => srcName.slice(SRC_PREFIX.length);
 const 활자주입 = require('./lib/활자주입.js');
 const MARKER = 활자주입.마커;
 
-/** 줄끝만 통일한다 — 파이썬 write_text·git autocrlf 를 거치며 CRLF 가 섞여도 내용 대조가 안 흔들리게. */
-const normalize = (s) => s.replace(/\r\n/g, '\n');
+/** 표기를 접는다 — 파이썬 write_text·git autocrlf 를 거치며 CRLF·줄끝 공백이 섞여도 내용 대조가
+ *  안 흔들리게. 🔑 정의는 `tests/lib/소스검사.js` 하나다: 손으로 접으면 CRLF 축만 막히고 줄끝 공백은
+ *  그대로 새어, 파이썬이 한 칸 흘린 날 «지면이 갈라졌다»는 거짓 적색이 된다(#Q101 · 실측 14/14 반쪽).
+ *  ⚠ 대조 전용이다 — 쓰는 쪽(`writeFileSync(out, html)`)은 원문을 그대로 쓴다. */
+const { 표기접기: normalize } = require('../tests/lib/소스검사.js');
 
 /* ══════════════════════════════════════════════════════════════════════════
    Loom — 발표물 6벌이 부품을 «입는» 통로 (F517 · 2026-08-16)

@@ -32,6 +32,10 @@ const { execFileSync } = require('child_process');
 const ROOT = path.resolve(process.env.SYNK_GITHOOKS_ROOT || path.resolve(__dirname, '..'));
 const SRC_DIR = path.join(ROOT, 'tools', 'githooks');
 const store = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'handoff-store.js'));
+/* 표기 접기 정의도 **스크립트 곁**에서 읽는다(바로 위 주의와 같은 이유 — 대상 저장소를 바꿔도
+ * 도구의 부품은 안 바뀐다). 정의는 저장소에 하나뿐이다: 손으로 접으면 CRLF 축만 막히고 줄끝
+ * 공백은 샌다(도구층 실측 08-17: 손 접기 12벌 전부 그 반쪽 · #Q101). */
+const { 표기접기 } = require(path.join(__dirname, '..', 'tests', 'lib', '소스검사.js'));
 const check = process.argv.includes('--check');
 
 /** 그 저장소에서 **실제로 도는** 훅 폴더. 설정을 읽는다 — 자리를 추측하지 않는다
@@ -57,7 +61,7 @@ if (!names.length) {
  * 어디에도 안 남는다(실측 08-12 local_91cd3a7c). `.git/hooks` 는 git 밖이라 덮인 내용은
  * 복구 경로가 0이다 — 그래서 write 모드는 보고가 아니라 **거부**다(덮고 나서 말하면 늦다). */
 function 설치본단독줄(원본, 설치본) {
-  const 줄들 = (s) => String(s).replace(/\r\n/g, '\n').split('\n').map((l) => l.trim()).filter(Boolean);
+  const 줄들 = (s) => 표기접기(s).split('\n').map((l) => l.trim()).filter(Boolean);
   const 원본집합 = new Set(줄들(원본));
   return [...new Set(줄들(설치본))].filter((l) => !원본집합.has(l));
 }
@@ -98,7 +102,7 @@ for (const name of names) {
  * 미실행이 통과와 같은 모양이 된다.
  * 🚫 여기서 쓰지 않는다. 이유는 머리말 — 넓은 복사가 talk 의 pre-commit 을 삼킨 자리다. */
 const 실행부 = (원문) => {
-  const 줄 = String(원문).replace(/\r\n/g, '\n').split('\n');
+  const 줄 = 표기접기(원문).split('\n');
   const 셔뱅 = 줄[0] && 줄[0].startsWith('#!') ? [줄[0].trim()] : [];
   return [...셔뱅, ...줄.slice(셔뱅.length).map((l) => l.trim()).filter((l) => l && !l.startsWith('#'))].join('\n');
 };

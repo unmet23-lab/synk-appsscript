@@ -28,6 +28,10 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { execFileSync, spawnSync } = require('node:child_process');
+/* 표기 접기 정의는 하나다 — `tests/lib/소스검사.js`. 경로는 `__dirname` 기준이라 위 ROOT 주의와
+ * 충돌하지 않는다(언제나 **이 파일이 속한 저장소**의 것을 부른다). #Q101: 손으로 접으면 CRLF 축만
+ * 막히고 줄끝 공백은 새는데, 도구층 손 접기 12벌이 실측으로 전부 그 반쪽이었다. */
+const { 표기접기 } = require('../tests/lib/소스검사.js');
 
 /* ROOT 는 **이 파일이 속한 저장소**다 — `CLAUDE_PROJECT_DIR` 을 얹으면 안 된다(회귀 `tests/게이트뿌리`).
  *   그 변수가 다른 저장소를 가리키는 자리가 실재하고(워크트리 · F403), 그때 이 게이트는 **옆
@@ -141,7 +145,7 @@ function main() {
    *   안 접으면 이 검사가 **윈도우에서 언제나 「못 했다」**가 되고, 그 모양은 통과와 같다
    *   (옆 판정층이 08-14 에 같은 자리에서 거짓 적색을 낸 그 축). */
   if (스테이징.has(생성기경로)) {
-    const 접기 = (s) => (s === null ? null : String(s).replace(/\r\n/g, '\n'));
+    const 접기 = (s) => (s === null ? null : 표기접기(s));
     const 스테이징몸 = 접기(판본('', 생성기경로));
     let 작업본몸 = null;
     try { 작업본몸 = 접기(fs.readFileSync(path.join(ROOT, 생성기경로), 'utf8')); } catch (_) { 작업본몸 = null; }
