@@ -3848,6 +3848,42 @@ function monthlyGameBatch() {
 
 // [v7.9] ⚠️ 업적 신규 추가 동결 — 일일 왕관 + 월간 칭호 + 영구 업적의 명예 3중 체계로 충분.
 //        더 늘리면 전부 안 귀해진다. 여정 탭 노출은 최근 3개만 (마스터 체크리스트 참조).
+
+/* [v9.252 · #Q104] 등수에서 나온 업적의 이름 — **정본은 여기 하나다.** 아래 `award` 호출부도
+ *   이 상수를 쓴다. 이름을 두 곳에 적으면 갈라지고, 갈라진 쪽의 증상은 언제나 「통과」다:
+ *   소비층(`엔진_콘텐츠AI.js` `성취맵_`)이 **이름으로** 거르는데 여기서만 이름이 바뀌면
+ *   거름망이 조용히 빈다 — 그때 새는 방향은 「비교로 얻은 업적이 학생에게 가는 글의 근거로
+ *   실린다」이고, 그건 철학 「하지 않는 것 ㉢」(학생끼리 비교하지 않는다) 위반이 **초록으로
+ *   도는** 모양이다. 회귀 `tests/성취도달.test.js` 가 두 파일이 같은 값을 보는지 직접 잰다. */
+const ACH_명예의전당_ = '명예의 전당 입성';
+const ACH_TOP10단골_ = 'TOP10 단골';
+/** 남과의 비교가 조건인 업적 목록 — 학생 산출의 근거로 쓰지 않는다(철학 ㉢).
+ *  ⚠ `진짜 주인공`(제 점수가 3연속 오름)은 **자기 경신**이라 여기 없다. 철학이 허용한 유일한
+ *  비교가 「어제의 그 학생과」라, 「랭킹 계열」로 뭉쳐 지우면 허용된 축까지 함께 죽는다.
+ *  ⚠ 톱레벨 상수가 아니라 **함수**인 이유는 v9.135 규약이다 — 소비층이 다른 파일이라
+ *  로드 순서에 걸린다(호출 시점엔 전 파일이 로드돼 있다). */
+function 순위파생업적_() { return [ACH_명예의전당_, ACH_TOP10단골_]; }
+
+/* [v9.252 · #Q104] 히든 3종 — 이름과 **뜻을 붙여** 둔다. 이름만으로는 소비층이 뜻을 지어낸다
+ *   (「🎨 하루 세 빛깔」이 무엇을 뜻하는지는 아래 조건식에만 있다). 뜻을 소비층에 따로 적으면
+ *   그게 둘째 정본이 되어 조건이 바뀔 때 **말만 낡는다** — 맞는 얼굴로 틀린 값이 나온다.
+ * 🔑 이 셋이 이 탭의 급소다: `checkAchievements` 는 히든을 **라이브 point_logs 당월**로만 잡고
+ *   아카이브는 안 본다(소급지급 방지 · 아래 [v9.25] 주석). 그래서 월간 아카이빙이 지나가면
+ *   그 사실은 `achievements` 말고 **어디에도 안 남는다** — 재계산이 원리상 불가능하다.
+ *   실제로 `getHours()` 는 이 저장소 엔진 전체에서 아래 한 곳뿐이라, 「언제 움직이는가」의
+ *   유일한 영구 흔적이 이 셋이다(철학 ㉡ 사람 이해 — 대장에서 «돈다» 0인 층). */
+const ACH_히든_ = {
+  밤: { 이름: '🌙 한밤의 시냅스', 결: '밤 9시 넘어 움직인다' },
+  세빛깔: { 이름: '🎨 하루 세 빛깔', 결: '하루에 세 갈래를 건드린다' },
+  첫발자국: { 이름: '🌅 새 달의 첫 발자국', 결: '달 첫날에 시작을 끊는다' }
+};
+/** 히든 업적 이름 → 뜻. 소비층(`성취맵_`)이 학생에게 갈 글의 근거로 쓴다. */
+function 히든업적결_() {
+  const m = {};
+  Object.keys(ACH_히든_).forEach(k => { m[ACH_히든_[k].이름] = ACH_히든_[k].결; });
+  return m;
+}
+
 function checkAchievements() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
@@ -3910,9 +3946,9 @@ function checkAchievements() {
     const hid = (map, name) => Object.keys(map).forEach(sid => {
       if (!has.has(sid + '|' + name)) { hidRows.push([sid, name, '히든', today]); has.add(sid + '|' + name); }
     });
-    hid(night, '🌙 한밤의 시냅스');
-    hid(tricolor, '🎨 하루 세 빛깔');
-    hid(firstStep, '🌅 새 달의 첫 발자국');
+    hid(night, ACH_히든_.밤.이름);
+    hid(tricolor, ACH_히든_.세빛깔.이름);
+    hid(firstStep, ACH_히든_.첫발자국.이름);
     if (hidRows.length) ach.getRange(ach.getLastRow() + 1, 1, hidRows.length, 4).setValues(hidRows);
   }
 
@@ -3965,7 +4001,7 @@ function checkAchievements() {
     if (so >= 6) award(sid, 'SYNK 마스터의 탄생', '👑');
 
     const hist = (bySid[sid] || []);
-    if (hist.some(h => h.rank <= 3)) award(sid, '명예의 전당 입성', '🥇');
+    if (hist.some(h => h.rank <= 3)) award(sid, ACH_명예의전당_, '🥇');
 
     // [v5.1] 신규 업적: 레이드·TOP10 단골
     if ((raidWins[sid] || 0) >= 1) award(sid, '레이드 첫 승', '🥉');
@@ -3980,7 +4016,7 @@ function checkAchievements() {
     if (firstAtt[sid] && (Date.now() - firstAtt[sid]) >= 730 * 86400000) award(sid, '싱크 베테랑', '👑');
     let streak10 = 0, best10 = 0;
     hist.forEach(h => { if (h.rank <= 10) { streak10++; best10 = Math.max(best10, streak10); } else streak10 = 0; });
-    if (best10 >= 3) award(sid, 'TOP10 단골', '🥇');
+    if (best10 >= 3) award(sid, ACH_TOP10단골_, '🥇');
     const pos = hist.filter(h => h.pts > 0);
     for (let i = 2; i < pos.length; i++) {
       if (pos[i].pts > pos[i-1].pts && pos[i-1].pts > pos[i-2].pts) {
