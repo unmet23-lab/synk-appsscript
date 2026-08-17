@@ -117,10 +117,20 @@ function 해시들(text) {
   return [...out];
 }
 
+/* 워크트리는 `<주저장소>/.claude/worktrees/<가지>/` 에 산다 — 그래서 **형제가 자기 옆에 없다.**
+ * 그대로 재면 talk 인용이 「못잼」으로 접히고, citation-guard 는 적색만 알리므로
+ * **워크트리에서 쓴 거짓 talk 인용이 조용히 통과한다**(실측 08-17: 같은 문장이 메인 🔴 / 워크트리 🟢).
+ * CLAUDE.md 가 코드 트랙에 워크트리를 «의무»로 만든 뒤라 그 통로가 상시 열려 있었다.
+ * 🔑 `as` 는 **워크트리 그대로** 둔다 — 그 세션이 지금 고치는 판이 거기다. 갈라지는 건 형제 쪽뿐이다.
+ * ⚠ 꼬리는 **통째로** 벗긴다 — 워크트리 이름은 `feat/foo` 처럼 마디가 여럿일 수 있어(EnterWorktree 가
+ *   허용한다) 한 마디만 벗기면 형제를 `.claude/SYNK-talk` 에서 찾게 된다. */
+const 워크트리꼬리 = /[\\/]\.claude[\\/]worktrees[\\/].*$/;
+
 /** 대조할 저장소들. 형제가 없으면 **목록에서 빠진다** — 부재는 「없다」가 아니라 `못잼` 이다. */
 function 저장소들(root) {
   const as = path.resolve(String(root || '.'));
-  const 형제 = path.resolve(as, '..', 'SYNK-talk');
+  const 주저장소 = as.replace(워크트리꼬리, '');
+  const 형제 = path.resolve(주저장소, '..', 'SYNK-talk');
   const out = [{ 이름: 'as', 뿌리: as }];
   let 있나 = false;
   try { 있나 = fs.statSync(형제).isDirectory(); } catch (_) { 있나 = false; }
