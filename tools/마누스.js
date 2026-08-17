@@ -292,7 +292,7 @@ async function 붙기(런ID, r) {
       if (회복불가인가(e.message)) {
         const 코드 = 4;
         런.런갱신(런ID, {
-          상태: 런.상태이름(코드), 끝: new Date().toISOString(), 종료코드: 코드,
+          상태: 런.상태이름(코드, '마누스'), 끝: new Date().toISOString(), 종료코드: 코드,
           비고: `조회가 회복 불가로 끝났다 — ${String(e.message).split('\n')[0]}`,
         });
         장부적기({ 때: new Date().toISOString(), 일: '실패', 런ID, 작업id: r.작업id, 왜: '조회 회복불가', 오류: String(e.message).slice(0, 400) });
@@ -320,7 +320,7 @@ async function 붙기(런ID, r) {
       if (연속빈값 >= 빈값상한) {
         const 코드 = 5;
         런.런갱신(런ID, {
-          상태: 런.상태이름(코드), 끝: new Date().toISOString(), 종료코드: 코드,
+          상태: 런.상태이름(코드, '마누스'), 끝: new Date().toISOString(), 종료코드: 코드,
           비고: `상태를 ${빈값상한}회 연속 못 읽었다 — 응답 모양이 바뀌었을 수 있다(마누스 작업은 계속 돌고 있을 수 있다)`,
         });
         장부적기({ 때: new Date().toISOString(), 일: '판독불가', 런ID, 작업id: r.작업id, 연속빈값 });
@@ -337,8 +337,8 @@ async function 붙기(런ID, r) {
     if (상태 === 'stopped' || 상태 === 'error') {
       const 코드 = 상태 === 'stopped' ? 0 : 1;
       결과쓰기(런ID, r, 상태, j);
-      런.런갱신(런ID, { 상태: 런.상태이름(코드), 끝: new Date().toISOString(), 종료코드: 코드, 마누스상태: 상태 });
-      장부적기({ 때: new Date().toISOString(), 일: 런.상태이름(코드), 런ID, 작업id: r.작업id, 마누스상태: 상태 });
+      런.런갱신(런ID, { 상태: 런.상태이름(코드, '마누스'), 끝: new Date().toISOString(), 종료코드: 코드, 마누스상태: 상태 });
+      장부적기({ 때: new Date().toISOString(), 일: 런.상태이름(코드, '마누스'), 런ID, 작업id: r.작업id, 마누스상태: 상태 });
       console.log(`[폴러] 끝 — ${상태}`);
       return 코드;
     }
@@ -347,7 +347,7 @@ async function 붙기(런ID, r) {
        * 결과 파일은 쓴다(원문이 들어 있다). 그래도 '완주'가 아니다 — 답이 안 끝났기 때문이다. */
       const 코드 = 2;
       결과쓰기(런ID, r, 상태, j);
-      런.런갱신(런ID, { 상태: 런.상태이름(코드), 끝: new Date().toISOString(), 종료코드: 코드, 마누스상태: 'waiting', 비고: '마누스가 사람 확인을 기다린다 — 결과 파일은 있다' });
+      런.런갱신(런ID, { 상태: 런.상태이름(코드, '마누스'), 끝: new Date().toISOString(), 종료코드: 코드, 마누스상태: 'waiting', 비고: '마누스가 사람 확인을 기다린다 — 결과 파일은 있다' });
       장부적기({ 때: new Date().toISOString(), 일: '대기', 런ID, 작업id: r.작업id });
       console.log(`[폴러] 마누스가 사람 확인을 기다린다 — 자동 승인하지 않는다.`);
       return 코드;
@@ -356,7 +356,7 @@ async function 붙기(런ID, r) {
   }
 
   const 코드 = 3;
-  런.런갱신(런ID, { 상태: 런.상태이름(코드), 끝: new Date().toISOString(), 종료코드: 코드, 비고: `폴러 상한 ${폴러상한분}분 초과 — 결과 파일 없음 · 마누스는 계속 돌고 있을 수 있다` });
+  런.런갱신(런ID, { 상태: 런.상태이름(코드, '마누스'), 끝: new Date().toISOString(), 종료코드: 코드, 비고: `폴러 상한 ${폴러상한분}분 초과 — 결과 파일 없음 · 마누스는 계속 돌고 있을 수 있다` });
   /* 종결 행을 장부에도 적는다 — F509 때 이게 없어서 append-only 장부가 「던짐」 한 줄로 끝났고,
    * 장부만 보면 그 실탄이 아직 도는 것처럼 보였다. */
   장부적기({ 때: new Date().toISOString(), 일: '상한초과', 런ID, 작업id: r.작업id, 상한분: 폴러상한분 });
@@ -468,10 +468,20 @@ function 런목록() {
   const 줄 = (x) => `  · ${x.런.런ID} · ${x.판.분 == null ? '?' : x.판.분}분 · ${x.런.대상}`;
   const 완 = s.완주미처분.filter(내것), 멈 = s.멈춤.filter(내것), 진 = s.진행.filter(내것);
   const 실 = s.실패미처분.filter(내것);
-  if (!완.length && !실.length && !멈.length && !진.length) { console.log('던진 사실심문 없음.'); return 0; }
+  const 미 = s.미결미처분.filter(내것);
+  if (!완.length && !미.length && !실.length && !멈.length && !진.length) { console.log('던진 사실심문 없음.'); return 0; }
   if (완.length) { console.log(`✅ 완주 · 안 주움 ${완.length}건:`); 완.forEach((x) => console.log(줄(x))); }
+  /* 🟠 결과는 있는데 처리할 것이 남았다(F561) — 이 도구에선 코드 1(error)·2(waiting)이다.
+   * 둘 다 `결과쓰기()` 를 지났다. waiting 의 비고가 **「결과 파일은 있다」**인데 그 런이
+   * 아래 🔴 「주울 답이 없다」로 나가고 있었다 — 한 줄 안에서 서로를 부정했다. */
+  if (미.length) {
+    console.log(`🟠 **결과는 있고 처리할 것이 남음** ${미.length}건 — 오류가 아니다:`);
+    미.forEach((x) => { console.log(줄(x)); console.log(`      ${x.런.비고 || `마누스 상태 ${x.런.마누스상태 || '?'} — 결과 파일이 있다`}`); });
+  }
   if (실.length) {
-    console.log(`🔴 **실패로 끝남** ${실.length}건 — 주울 답이 없다(로그를 열어도 답이 아니라 오류다):`);
+    const 모름 = 실.filter((x) => x.판.결과 == null).length;
+    console.log(`🔴 **실패로 끝남** ${실.length}건 — `
+      + (모름 === 실.length ? '주울 답이 **있는지 모른다**(종료코드 뜻이 표에 없다 — 로그 끝을 본다):' : '주울 답이 없다(로그를 열어도 답이 아니라 오류다):'));
     실.forEach((x) => { console.log(줄(x)); console.log(`      왜: ${x.런.비고 || `종료코드 ${x.런.종료코드}`}`); });
   }
   if (진.length) { console.log(`⏳ 도는 중 ${진.length}건:`); 진.forEach((x) => console.log(줄(x))); }
