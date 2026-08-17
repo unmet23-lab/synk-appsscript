@@ -141,24 +141,75 @@ const { 칸나누기, 칸안전 } = require(path.join(__dirname, 'lib', '표.js'
 const 동기 = require(path.join(__dirname, 'lib', 'master동기.js'));
 const splitCells = (raw) => 칸나누기(`|${raw}|`);
 
+/* 조각 본문 → 그 파일의 F0NN 행 **전량**. 순수 함수다(관측 → 목록 · 판정은 아래가 진다).
+ * 🔑 옛 판은 `.find()` 로 **첫 행만** 집었다 — 겹친 둘째 행을 읽기 층에서 한 번 더 버린 것이다.
+ *   F586 은 「머지가 하나를 버린다」를 봤는데, 머지가 둘 다 살려 놔도 도구가 안 보여주면
+ *   없는 것과 같다. 그래서 막는 층(`.gitattributes` union)과 이 층은 한 벌이어야 한다.
+ * ⚠ 표기에 흔들리지 않게 `\s*` 를 앞뒤에 둔다 — 실제 장부에 `|  F526 |`(공백 둘)이 산다.
+ *   `^\| F` 로 재면 그 행이 「0행」으로 읽혀 **멀쩡한 파일이 깨진 것처럼** 보인다(실측 08-18). */
+function 조각행뽑기(본문) {
+  return String(본문).split('\n').map((l) => l.trim()).filter((l) => /^\|\s*F\d+\s*\|/.test(l));
+}
+
+/* 「조각 하나 = 행 하나」가 깨진 자리 — **분모와 함께** 낸다(F543: 분모 없는 0은 「안 재봤다」와 같은 모양).
+ * 두 가지가 같은 번호를 따면 같은 파일에 두 행이 앉는다(F586). 그 상태 자체는 손해가 아니다 —
+ * 손해는 그 다음에 사람이 하나를 고를 때 난다. 그래서 **고르기 전에** 보이게 한다.
+ * 파일명≠행번호도 같은 읽기로 잰다: 겹침을 푸는 처방이 「행을 새 번호 조각으로 옮기기」라,
+ * 옮기다 만 상태(이름만 그대로)가 정확히 이 모양이다. */
+function 조각이상(조각들) {
+  const 겹침 = [];
+  const 이름어긋남 = [];
+  for (const c of 조각들) {
+    const 번호들 = c.줄들.map((l) => (/^\|\s*(F\d+)\s*\|/.exec(l) || [])[1]).filter(Boolean);
+    if (c.줄들.length > 1) 겹침.push({ 파일: path.basename(c.파일), 행수: c.줄들.length, 번호들 });
+    else if (번호들.length === 1 && c.번호 && 번호들[0] !== c.번호) 이름어긋남.push({ 파일: path.basename(c.파일), 행: 번호들[0] });
+  }
+  return { 분모: 조각들.length, 겹침, 이름어긋남 };
+}
+
 /* 조각 폴더의 행들 — 파일 하나 = 행 하나(F0NN.md). **못 읽음 ≠ 없다**:
  * 없다로 번역하면 close-guard 가 침묵한다(새는 방향이 통과다 · 보드 쪼개기 회귀가 못박은 그 자리).
  * 그래서 못 읽은 조각은 열린 행 모양으로 세워 소리가 나게 한다. */
-function 조각행들() {
+function 조각들읽기() {
   let 이름들 = [];
   try { 이름들 = fs.readdirSync(FOLDER); } catch (_) { return []; }   // 폴더 없음 = 조각 0 (첫 add 전)
   const out = [];
   for (const 이름 of 이름들) {
     const m = /^(F\d+)\.md$/.exec(이름);
     if (!m) continue;
-    let 줄 = null;
-    try {
-      줄 = fs.readFileSync(path.join(FOLDER, 이름), 'utf8').split('\n')
-        .map((l) => l.trim()).find((l) => /^\|\s*F\d+\s*\|/.test(l));
-    } catch (_) { /* 아래 폴백 행으로 */ }
-    out.push({ 파일: path.join(FOLDER, 이름), 줄: 줄 || `| ${m[1]} | | 마찰 | (조각을 읽지 못했다: ${이름} — 열어 확인한다) | |` });
+    let 줄들 = [];
+    try { 줄들 = 조각행뽑기(fs.readFileSync(path.join(FOLDER, 이름), 'utf8')); } catch (_) { /* 아래 폴백 행으로 */ }
+    if (!줄들.length) 줄들 = [`| ${m[1]} | | 마찰 | (조각을 읽지 못했다: ${이름} — 열어 확인한다) | |`];
+    out.push({ 파일: path.join(FOLDER, 이름), 번호: m[1], 줄들 });
   }
   return out;
+}
+
+function 조각행들() {
+  return 조각들읽기().map((c) => ({ 파일: c.파일, 줄: c.줄들[0] }));
+}
+
+/* 배너 — 한 프로세스에 한 번만. 처방까지 함께 낸다(따를 수 없는 차단은 우회를 정상 통로로 만든다 · F103). */
+let 배너냈나 = false;
+function 겹침배너(조각들) {
+  if (배너냈나) return;
+  const { 겹침, 이름어긋남 } = 조각이상(조각들);
+  if (!겹침.length && !이름어긋남.length) return;
+  배너냈나 = true;
+  for (const g of 겹침) {
+    process.stderr.write(
+      `\n🔴 [장부] ${g.파일} 에 F0NN 행이 ${g.행수}개다 — 「조각 하나 = 행 하나」가 깨졌다(F586).\n`
+      + `   번호: ${g.번호들.join(' · ')}\n`
+      + '   왜: 가지 둘이 같은 번호를 따면 이렇게 앉는다. **둘 다 살아야 할 서로 다른 신고**일 수 있으니\n'
+      + '       하나를 지우지 마라 — F578 이 그렇게 사라졌고 유실 회귀는 번호 단위라 못 봤다.\n'
+      + '   처방: ①두 행을 읽어 같은 사건인지 가른다(같으면 한쪽만 남긴다 — 그때만 지운다)\n'
+      + `       ②다른 사건이면 나중 것을 **원문 그대로** 새 번호 조각으로 옮긴다(다음 번호 = node tools/friction.js add 가 딴다)\n`
+      + '       ③옮긴 자리를 커밋 메시지에 적는다 — 인용이 옛 번호를 가리킨 채 남는다\n',
+    );
+  }
+  for (const n of 이름어긋남) {
+    process.stderr.write(`\n🔴 [장부] ${n.파일} 안의 행은 ${n.행}다 — 파일명과 번호가 다르다(옮기다 만 자리일 수 있다 · F586).\n`);
+  }
 }
 
 function read() {
@@ -175,7 +226,11 @@ function read() {
     else rows.push(r);
   };
   lines.forEach((line, i) => 넣기(line, i, null));
-  for (const c of 조각행들()) 넣기(c.줄, -1, c.파일);
+  /* 조각의 행을 **전량** 싣는다 — 한 파일에 다른 번호의 행이 얹히면 옛 판은 그것을 통째로 못 봤다.
+   * 같은 번호끼리는 여전히 하나로 접히지만(표는 번호가 키다), 그 자리는 배너가 소리를 낸다. */
+  const 조각들 = 조각들읽기();
+  겹침배너(조각들);
+  for (const c of 조각들) for (const 줄 of c.줄들) 넣기(줄, -1, c.파일);
   rows.sort((a, b) => parseInt(a.id.slice(1), 10) - parseInt(b.id.slice(1), 10));
   return { text, lines, rows };
 }
@@ -890,6 +945,8 @@ if (require.main === module) main();
 module.exports = {
   read, splitCells, nextId, allocateId, seenElsewhere, 해소주장, withLock, 예약자,
   LEDGER, FOLDER, KINDS, TAG_PREFIX, LOCK, LOCK_STALE_MS,
+  // F586 — 「조각 하나 = 행 하나」. 추출과 판정을 갈라 둔다(판정은 순수 함수 + 분모 · F543)
+  조각행뽑기, 조각이상, 조각들읽기,
   // 상태 판정 — 소비자(rot-check · friction-close-guard)는 자기 정규식을 쓰지 않고 이것을 쓴다.
   DEFER, 상태, 열렸나, 보류인가, 해소됐나, 살아있나,
   // F496 — 「끝나는 자리」에서 부르는 통로(회귀가 이 셋을 각각 잡는다)
