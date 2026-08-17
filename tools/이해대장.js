@@ -586,14 +586,19 @@ function 폴백(말, 끝) {
       console.log(`[이해대장] 커밋될 화면이 정본 ${ver} 와 같다 — 통과.`);
       return 0;
     }
-    console.error(`[이해대장] 차단 — 이 커밋이 정본을 고치는데 화면(\`docs/이해대장.html\`)이 ${지금 === null ? '**없다**' : '**안 따라온다**'}.`);
+    /* 무엇이 이 검사를 부른 건지는 게이트가 안다(F520 뒤로 정본만이 아니다 — 생성기·부품도 화면을 바꾼다).
+     * 그 목록을 그대로 받아 처방에 박는다: 안 고친 파일을 담으라 하면 정작 담아야 할 것이 빠진다(F103). */
+    /* ⚠ 폴백은 **저장소 상대 경로 리터럴**이다 — `정본경로` 는 게이트가 갈아끼운 임시 파일일 수 있어
+     *   그걸 처방에 박으면 `git commit -- /tmp/synk-대장-xxxx/SYNK_철학.md` 라는 못 칠 명령이 나온다. */
+    const 담긴입력 = (process.env.SYNK_대장_담긴입력 || 'docs/SYNK_철학.md').trim().split(/\s+/).filter(Boolean);
+    console.error(`[이해대장] 차단 — 이 커밋이 화면의 입력(${담긴입력.join(' · ')})을 고치는데 화면(\`docs/이해대장.html\`)이 ${지금 === null ? '**없다**' : '**안 따라온다**'}.`);
     console.error('');
     console.error('  이대로 커밋하면 `tests/이해대장.test.js` 가 **HEAD 에서** 빨개진다. 그 적색은 고친 사람이 아니라');
     console.error('  그 뒤 커밋하는 **모든 세션의 배포**를 막는다 — 08-14 하루에만 회수 커밋이 넷이었다.');
     console.error('');
     console.error('  → 다시 그려 **같은 커밋에** 담는다:');
     console.error('     node tools/이해대장.js  &&  git add -- docs/이해대장.html');
-    console.error('     git commit -m "…" -- docs/SYNK_철학.md docs/이해대장.html   (경로에 둘 다 넣는다)');
+    console.error(`     git commit -m "…" -- ${담긴입력.join(' ')} docs/이해대장.html   (경로에 전부 넣는다)`);
     console.error('  ⚠ 작업본은 이미 맞을 수 있다 — 재는 것은 **커밋될 내용**이다(F302).');
     return 1;
   }
