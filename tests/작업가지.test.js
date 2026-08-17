@@ -229,3 +229,173 @@ test('⑩ 워크트리 생성·clasp 차단을 여기서 다시 구현하지 않
   assert.ok(!/clasp/.test(코드),
     'clasp 판정이 들어왔다 — 그건 clasp-guard 0번 검사가 이미 진다(08-01 실측)');
 });
+
+// ── ⑪~⑬ 실패 사유 (F580) ───────────────────────────────────────────────────
+/** 화면으로 나간 것을 그대로 받는다 — 「말했나」를 재는 검사는 말을 실제로 잡아야 한다. */
+function 찍힌것(fn) {
+  const 원래 = console.log;
+  const 줄 = [];
+  console.log = (...a) => 줄.push(a.map(String).join(' '));
+  try { fn(); } finally { console.log = 원래; }
+  return 줄.join('\n');
+}
+
+test('⑪ 실패 사유는 «절대» 빈 문자열이 아니다 (F580 — 사유 칸이 비면 화면에 단서가 0이다)', () => {
+  /* 🔑 spawnSync 의 timeout 은 자식을 죽여서 끝낸다 — status=null 이고 stderr 가 0바이트일 수 있다.
+     옛 코드는 그 자리를 stderr 하나로만 채워 `🔴 못 밀었다 — ` 를 냈다(실측 2026-08-17 · 15분 소모). */
+  const 빈판 = 가지.실패사유({ stdout: '', stderr: '', status: null, signal: 'SIGTERM' }, 30000);
+  assert.ok(빈판.trim(), 'stderr 0바이트 + status null 인데 사유가 비었다 — 그게 정확히 F580 이다');
+  assert.match(빈판, /SIGTERM/, '무엇이 죽였는지를 안 적는다');
+
+  const 시간초과 = 가지.실패사유(
+    { stdout: '', stderr: '', status: null, signal: 'SIGTERM', error: { code: 'ETIMEDOUT', message: 'timed out' } }, 30000);
+  assert.match(시간초과, /ETIMEDOUT/, '타임아웃 코드를 안 적는다');
+  assert.match(시간초과, /매달린/, '「막힌 것」과 「매달린 것」을 안 가른다 — 둘은 처방이 다르다');
+  assert.match(시간초과, /30초/, '몇 초 제한에 걸렸는지를 안 적는다 — 다음 사람이 제한을 못 고른다');
+
+  /* stderr 도 error 도 signal 도 없는 판(=순수 비영 종료)에서도 비면 안 된다. */
+  const 코드만 = 가지.실패사유({ stdout: '', stderr: '', status: 128 }, 30000);
+  assert.match(코드만, /128/, '종료코드조차 안 적는다');
+});
+
+test('⑫ 자격증명 자리를 지목하고, 우회는 «빈 헬퍼 먼저»다 (F580·F581)', () => {
+  /* 실측된 stderr 원문 그대로 넣는다 — 사람이 실제로 보는 표기로 검사한다(맹점 ①). */
+  for (const 원문 of [
+    "fatal: could not read Username for 'https://github.com'",
+    'fatal: User cancelled dialog.',
+    'bash: line 1: /dev/tty: No such device or address',
+    'error: failed to execute prompt script',
+  ]) {
+    assert.ok(가지.자격증명_흔적.test(원문), `실측된 자격증명 실패 원문을 못 알아본다: ${원문}`);
+  }
+  /* 거짓양성 방향도 본다 — 아무 실패나 자격증명으로 몰면 진짜 사유가 가려진다. */
+  assert.ok(!가지.자격증명_흔적.test('! [rejected] master -> master (non-fast-forward)'),
+    '갈라짐 실패를 자격증명으로 오진한다 — 처방이 통째로 빗나간다');
+
+  const 처방 = 가지.밀기처방({ 오류: "fatal: could not read Username for 'https://github.com'" }, '내가지');
+  assert.match(처방, /gh auth git-credential/, '살아 있는 통로(gh 헬퍼)를 안 준다');
+  assert.match(처방, /credential\.helper=\s/, '빈 헬퍼로 GCM 을 먼저 지우는 수가 빠졌다 — 물려받은 헬퍼가 그대로 다시 매달린다');
+
+  /* 시간초과만 있고 문구가 없는 판도 같은 자리로 보내야 한다 — 매달림은 아무 말도 안 남긴다. */
+  assert.match(가지.밀기처방({ 오류: '종료코드 없음 · stderr 0바이트', 시간초과: true }, '내가지'),
+    /gh auth git-credential/, '매달림(사유 문구 0)을 자격증명 자리로 안 보낸다');
+
+  /* 그 외 실패는 일반 처방이되 **비어 있지 않아야** 한다. */
+  const 일반 = 가지.밀기처방({ 오류: '! [rejected] (non-fast-forward)' }, '내가지');
+  assert.ok(일반.trim() && !/gh auth git-credential/.test(일반), '일반 실패에까지 자격증명 처방을 낸다');
+
+  /* 우회 인자의 **순서가 규약이다** — 빈 값이 뒤에 오면 gh 헬퍼를 도로 지운다. */
+  const 빈칸 = 가지.우회_인자.indexOf('credential.helper=');
+  const gh칸 = 가지.우회_인자.indexOf('credential.helper=!gh auth git-credential');
+  assert.ok(빈칸 >= 0 && gh칸 > 빈칸, '우회 인자 순서가 틀렸다 — 빈 헬퍼가 gh 헬퍼보다 뒤에 있다');
+});
+
+test('⑬ push 는 전부 «한 통로»를 지난다 — 옛 통로가 남으면 그 자리만 조용히 빈 사유를 낸다', () => {
+  const 자르기 = (from, to) => {
+    const a = 코드.indexOf(from);
+    const b = 코드.indexOf(to, a + 1);
+    assert.ok(a >= 0 && b > a, `소스에서 «${from}» ~ «${to}» 구간을 못 찾았다 — 검사가 눈이 멀었다`);
+    return 코드.slice(a, b);
+  };
+  const 열기몸통 = 자르기('function 열기', 'function 닫기');
+  const 닫기몸통 = 자르기('function 닫기', 'function 워크트리거두기처방');
+
+  for (const [이름, 몸통] of [['열기', 열기몸통], ['닫기', 닫기몸통]]) {
+    assert.match(몸통, /가지밀기\(/, `${이름} 가 공용 push 통로를 안 쓴다`);
+    assert.ok(!/git\(\['push'/.test(몸통),
+      `${이름} 에 직접 push 가 남아 있다 — 그 자리만 우회도 사유도 없이 조용히 죽는다`);
+    assert.match(몸통, /밀기처방\(/, `${이름} 의 push 실패가 처방 없이 죽는다(F103)`);
+  }
+
+  /* 우회는 **한 번뿐**이다 — 매달리는 통로에서 재시도를 늘리면 벽시계가 배로 는다. */
+  const 밀기몸통 = 자르기('function 가지밀기', 'function 밀기처방');
+  assert.equal((밀기몸통.match(/우회_인자/g) || []).length, 1,
+    '우회를 두 번 이상 시도한다 — 매달림이면 벽시계가 그만큼 곱해진다');
+});
+
+// ── ⑭~⑯ 갈라진 master (F577) ───────────────────────────────────────────────
+/** 앞 1 · 뒤 1 = **못 미는** 상태. 네트워크 0 으로 만든다(F296 — repo 밖에 기대면 CI 에서 깨진다). */
+function 갈라진픽스처() {
+  const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-갈라짐-'));
+  const g = (...a) => require('node:child_process').spawnSync('git', a, { cwd: 뿌리, encoding: 'utf8' });
+  g('init', '-q', '-b', 'master');
+  g('config', 'user.email', 't@t'); g('config', 'user.name', 't');
+  g('commit', '-q', '--allow-empty', '-m', '바탕');
+  g('checkout', '-q', '-b', '원격판');
+  g('commit', '-q', '--allow-empty', '-m', '원격만 가진 것');
+  g('update-ref', 'refs/remotes/origin/master', 'HEAD');   // 진짜 리모트 없이 origin/master 를 세운다
+  g('checkout', '-q', 'master');
+  g('commit', '-q', '--allow-empty', '-m', '나만 가진 것');
+  return 뿌리;
+}
+
+test('⑭ 갈라진 master 는 «문턱과 무관하게» 운다 (F577 — 실측 앞 7·뒤 57 인데 두 눈금 다 초록이었다)', () => {
+  const 뿌리 = 갈라진픽스처();
+  try {
+    const { 수 } = 가지.안밀린것(뿌리);
+    assert.equal(수, 1, '픽스처가 «앞 1» 이 아니다 — 재려던 상태가 아니다');
+    assert.ok(수 < 가지.안밀린_문턱,
+      '픽스처의 앞선 수가 문턱을 넘었다 — 그러면 옛 경보로도 울어 이 검사가 눈이 먼다');
+
+    const 화면 = 찍힌것(() => 가지.밀림경보(뿌리));
+    assert.ok(화면.trim(), '갈라졌는데 조용하다 — 이게 F577 의 얼굴이다(문턱 아래에 그대로 앉는다)');
+    assert.match(화면, /갈라졌다/, '갈라짐이라고 말하지 않는다');
+    assert.match(화면, /뒤 1/, '뒤처진 수를 안 낸다 — 「못 민다」의 크기를 못 읽는다');
+  } finally { fs.rmSync(뿌리, { recursive: true, force: true }); }
+});
+
+test('⑮ 갈라짐 경보가 «따를 수 없는» 처방을 안 낸다 (F103 — 그 처방이 우회를 정상 통로로 만든다)', () => {
+  const 뿌리 = 갈라진픽스처();
+  try {
+    const 화면 = 찍힌것(() => 가지.밀림경보(뿌리));
+    assert.ok(!/^\s*→ git push origin master\s*$/m.test(화면),
+      '`git push origin master` 를 처방으로 낸다 — 이 상태에서 그 명령은 rejected 로 죽는다');
+    assert.match(화면, /detached/, '갈라짐 처방이 detached 우회를 안 준다');
+    assert.match(화면, /merge origin\/master/, '반입 수를 안 준다 — 「갈라졌다」만 말하고 끝난다');
+  } finally { fs.rmSync(뿌리, { recursive: true, force: true }); }
+});
+
+test('⑯ 안 갈라졌으면 갈라짐 경보를 안 낸다 (거짓양성 — 매번 울면 한 주 만에 꺼진다)', () => {
+  const { 뿌리, 커밋 } = 픽스처저장소();
+  try {
+    커밋([2]);                                    // 앞 1 · 뒤 0 = 밀 수 있다
+    const 화면 = 찍힌것(() => 가지.밀림경보(뿌리));
+    assert.ok(!/갈라졌다/.test(화면), '밀 수 있는 판을 「갈라졌다」로 읽는다');
+  } finally { fs.rmSync(뿌리, { recursive: true, force: true }); }
+});
+
+test('⑯-b 갈라짐 처방 문장을 여기서 다시 적지 않는다 (신뢰성 ④ — 두 곳에 앉으면 하나만 낡는다)', () => {
+  const 몸통 = 코드.slice(코드.indexOf('function 밀림경보'), 코드.indexOf('function 나이_시간'));
+  assert.match(몸통, /동기\.갈라짐처방\(/, '갈라짐 처방을 공용 통로에서 안 가져온다');
+  assert.ok(!/worktree add --detach/.test(코드),
+    '갈라짐 처방 문장을 이 파일에 다시 적었다 — master동기 와 갈라져 하나만 낡는다');
+  assert.equal(typeof require('../tools/lib/master동기.js').갈라짐처방, 'function',
+    'master동기 가 갈라짐처방 을 export 하지 않는다 — 경보가 런타임에 죽는다');
+});
+
+// ── ⑰ 이어받은 워크트리 거두기 (F567) ──────────────────────────────────────
+test('⑰ 머지 뒤에 «이 워크트리를 거두는 명령»을 손에 쥐여 준다 (F567 — 갇힘 처방의 마지막 한 칸)', () => {
+  const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-거두기-'));
+  const g = (...a) => require('node:child_process').spawnSync('git', a, { cwd: 뿌리, encoding: 'utf8' });
+  g('init', '-q', '-b', 'master');
+  g('config', 'user.email', 't@t'); g('config', 'user.name', 't');
+  g('commit', '-q', '--allow-empty', '-m', '바탕');
+  const 곁 = path.join(뿌리, '곁트리');
+  const r = g('worktree', 'add', '-q', '-b', '일감', 곁);
+  if (r.status !== 0) { fs.rmSync(뿌리, { recursive: true, force: true }); return; }   // git 이 못 하면 잰 게 없다
+
+  try {
+    const 화면 = 찍힌것(() => 가지.워크트리거두기처방(곁, '일감'));
+    /* 🔑 「ExitWorktree 를 불러라」만으로는 못 닫는다 — 이어받은 워크트리에서는 그 도구가
+       「주인이 아니다」로 거절하고, 거기서 길이 끊긴다(실측 2026-08-17 `local_950d2850`). */
+    assert.match(화면, /ExitWorktree/, '먼저 부를 정규 통로를 안 말한다');
+    assert.match(화면, /거절/, '이어받은 워크트리에서 그 도구가 거절한다는 사실을 안 말한다');
+    assert.match(화면, /worktree remove/, '거절당했을 때 칠 실제 명령이 없다 — 여기서 길이 끊긴다');
+    assert.ok(화면.includes(곁), '지울 대상 경로를 안 적는다 — 사람이 다시 찾아야 한다');
+    assert.match(화면, /branch -D 일감/, '남는 가지를 거두는 수를 안 준다');
+
+    /* 워크트리가 아니면 이 말을 안 해야 한다 — 아무 데서나 지우라고 하면 그 경보가 꺼진다. */
+    const 본체화면 = 찍힌것(() => 가지.워크트리거두기처방(뿌리, 'master'));
+    assert.ok(!/worktree remove/.test(본체화면), '메인 트리에서도 워크트리를 지우라고 한다');
+  } finally { fs.rmSync(뿌리, { recursive: true, force: true }); }
+});
