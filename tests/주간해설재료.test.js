@@ -80,6 +80,28 @@ test('🔑 리드가 하나라도 있으면 센다 — 학생 0 이어도 마케
   assert.equal(ctx.주간해설재료_(ss), 1);
 });
 
+test('🔴 상담만 있어도 센다 — 상담은 다른 스프레드시트에 살아서 이 두 시트엔 안 보인다', () => {
+  // ①배포 검수 P2 `dab842724084`. 안 세면 「상담은 들어왔는데 아직 등록·리드가 0인 주」에
+  // 해설이 조용히 사라진다 — 이 판이 고르겠다고 적은 방향(돈 쪽으로 샌다)과 정반대다.
+  const ctx = 엔진();
+  const ss = 시트집합({
+    profiles: 시트흉내({ 첫행: 2, 행들: [] }),
+    leads: 시트흉내({ 첫행: 2, 행들: [] }),
+  });
+  assert.equal(ctx.주간해설재료_(ss, { cur: { consult: 3 } }), 3);
+});
+
+test('🔑 KPI 주입이 없으면(계산 실패) 그 갈래만 0 이다 — 터지지 않는다', () => {
+  const ctx = 엔진();
+  const ss = 시트집합({
+    profiles: 시트흉내({ 첫행: 2, 행들: [학생행('바트')] }),
+    leads: 시트흉내({ 첫행: 2, 행들: [] }),
+  });
+  assert.equal(ctx.주간해설재료_(ss, null), 1);
+  assert.equal(ctx.주간해설재료_(ss, { cur: null }), 1);
+  assert.equal(ctx.주간해설재료_(ss, { cur: { consult: undefined } }), 1);
+});
+
 // ── ③ 행 판정이 `updateBizDashboard` 와 같은가 (갈리면 두 곳이 다른 「재적」을 말한다) ──
 
 test('🔑 profiles 의 student 아닌 행은 재적이 아니다 (그 함수의 nStu 조건과 같다)', () => {

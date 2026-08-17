@@ -1445,7 +1445,7 @@ function weeklyJobs() {    // 매주 월 07시
    *   즉 새는 방향이 「돈이 샌다」쪽이고 「해설이 조용히 사라진다」쪽이 아니다 — 학생이 온 뒤에
    *   해설이 영영 안 나오는 조용한 실패보다, 로그에 이유가 남고 청구서에 보이는 쪽을 골랐다.
    *   닫는 것 = 없다(있던 호출에 입구를 다는 것이라 대체할 옛 통로가 없다). */
-  const 재료행 = 주간해설재료_(SpreadsheetApp.getActiveSpreadsheet());
+  const 재료행 = 주간해설재료_(SpreadsheetApp.getActiveSpreadsheet(), kpiInjection);
   if (!집계실물 || 재료행 === 0) {
     Logger.log('H7 해설 생략: 집계 섹션 실물 ' + 집계실물 + ' · 원본 재료 행 ' + 재료행 + ' — 재료가 없어 안 불렀다(호출 0 · 비용 0)');
   } else {
@@ -1472,11 +1472,14 @@ function weeklyJobs() {    // 매주 월 07시
  * 행 판정은 `updateBizDashboard` 의 것을 **그대로 따른다** — 갈라지면 두 곳이 다른 「재적」을 말한다:
  *   · profiles: A열 비지 않음 + D열 `'student'`  (그 함수의 `nStu` 루프와 같은 조건)
  *   · leads:    A열이 날짜로 읽힘 + B열(이름) 비지 않음  (그 함수의 `L` 적재 조건과 같다)
+ *   · 상담:     KPI 주입치의 `cur.consult` — 이 시트에 없다(`CONSULT_SHEET_ID` 는 다른 문서다)
  *
+ * @param {*} ss 앱 스프레드시트
+ * @param {?{cur:{consult:number}}} kpi `weeklyJobs` 가 이미 계산한 KPI 주입치 · `null` 이면 그 갈래만 0
  * @returns {number} 재료 행 수 · **`-1` = 못 쟀다**(0 과 다른 값이어야 한다 — 「좋은 0」과
  *   「안 재봤다」가 같은 모양이면 게이트가 거짓말한다). 부르는 쪽은 `-1` 을 «있음»으로 친다.
  */
-function 주간해설재료_(ss) {
+function 주간해설재료_(ss, kpi) {
   let n = 0;
   try {
     const pf = ss.getSheetByName('profiles');
@@ -1488,6 +1491,12 @@ function 주간해설재료_(ss) {
       const d = toDate_(r[0]) || (isNaN(new Date(r[0]).getTime()) ? null : new Date(r[0]));
       if (d && String(r[1] || '')) n++;
     });
+    /* [v9.256] 상담은 **다른 스프레드시트**에 산다(`CONSULT_SHEET_ID`) — 위 두 시트가 0 이어도
+     *   상담이 들어온 달은 해설할 재료가 있다(`kpiSection_` 의 전환율이 그걸 읽는다).
+     *   안 세면 이 게이트가 **fail-closed** 로 새서, 이 판이 고르겠다고 적은 방향과 정반대가 된다
+     *   (①배포 검수 P2 `dab842724084`). 새 I/O 는 안 낸다 — `weeklyJobs` 가 위에서 이미
+     *   계산해 둔 KPI 주입치를 읽는다(주입 실패 시 `null` 이라 그 갈래는 0으로 접힌다). */
+    if (kpi && kpi.cur) n += Number(kpi.cur.consult) || 0;
   } catch (e) {
     Logger.log('H7 재료 계수 실패 — 「있음」으로 본다(해설을 조용히 잃는 쪽으로 안 샌다): ' + e);
     return -1;
