@@ -1227,3 +1227,49 @@ test('[F572·거짓양성] 잔재가 **없으면** 원래 거절문 그대로다
   assert.equal(r.status, 1, '못 찾은 것은 1 이어야 한다');
   assert.match(String(r.stderr), /못 찾았다/, '원래 거절문이 사라졌다');
 });
+
+/* 🔴 아래 둘도 **변이가 낸 구멍을 메운 것**이다 (2026-08-17 실측 · `local_cc683bbf`).
+ * 위 넷은 «닫기 전» 게이트(모양 검사 셋)를 물었는데, **«커밋한 뒤»의 두 게이트에는 회귀가 0**이었다:
+ *   ①`if (c.status !== 0)` 커밋 실패 ②`if (빠진것.length)` 착지 확인 — 둘 다 지워도 63건이 전부 초록.
+ * 그 둘이 지키는 것은 F571 과 같은 축이다: **판정이 아니라 「사유가 화면까지 오나」.** 잔재 닫기는
+ * `보드수거` 가 자동으로 부르는 자리라(SessionStart), 여기서 거짓 「완료」가 나면 안 담긴 줄이
+ * «담김»으로 세어지고 그 줄은 보드에도 아카이브에도 없이 사라진다.
+ *
+ * ⚠ **①은 「exit≠7」만으로는 안 잡힌다** — 커밋 실패를 무시해도 바로 뒤 ②가 붙잡아 exit 1 로 죽기
+ *   때문이다. 다만 그때 화면에 오는 사유가 「이 도구를 먼저 고쳐라」로 **바뀐다**: 원인은 남의
+ *   pre-commit 훅인데 도구 탓으로 번역된다(F571 이 3시간을 태운 바로 그 모양). 그래서 이 시험은
+ *   상태 코드가 아니라 **사유의 «신원»**을 못박는다. */
+test('[F572] 잔재를 담는 **커밋이 막히면** 그 사유가 그대로 온다 (도구 탓으로 번역하지 않는다)', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mk보드삭제잔재픽스처();
+  const hook = path.join(fx.dir, '.git', 'hooks', 'pre-commit');
+  fs.writeFileSync(hook, '#!/bin/sh\nexit 1\n', 'utf8');
+  fs.chmodSync(hook, 0o755);
+  const 전 = git(fx.dir, 'rev-parse', 'HEAD').stdout.trim();
+
+  const r = run잔재(fx, ['잔재 트랙 병']);
+  assert.notEqual(r.status, 7, '커밋이 막혔는데 「닫았다」(7)로 끝났다 — 보드수거가 안 담긴 줄을 담김으로 센다');
+  assert.match(String(r.stderr), /커밋이 실패했다/, '커밋이 막힌 사실이 화면에 안 온다(F571 축)');
+  assert.doesNotMatch(String(r.stderr), /이 도구를 먼저 고쳐라/,
+    '남의 훅이 막은 것을 **도구 결함**으로 번역했다 — 다음 사람이 엉뚱한 곳을 판다');
+  assert.equal(git(fx.dir, 'rev-parse', 'HEAD').stdout.trim(), 전, '커밋이 막혔는데 커밋이 생겼다');
+  assert.ok(read(fx.archive).includes('잔재 트랙 병'), '실패인데 작업본의 잔재가 사라졌다 — 재실행할 재료가 없어진다');
+});
+
+/* ②의 시나리오 = 「커밋은 **성공**했는데 그 줄이 HEAD 에 안 실렸다」. 억지 상황이 아니라 이 도구가
+ * 스스로 방어하는 자리이고(주석: 「커밋됐나는 작업본이 아니라 커밋된 내용으로 판정한다」),
+ * pre-commit 훅이 임시 인덱스(`$GIT_INDEX_FILE`)에서 경로를 빼면 실제로 그 모양이 난다 — 실측했다. */
+test('[F572] 커밋은 됐는데 **HEAD 에 잔재가 없으면** 완료라고 말하지 않는다 (작업본으로 판정 안 한다)', { skip: !hasGit && 'git 없음' }, () => {
+  const fx = mk보드삭제잔재픽스처();
+  const hook = path.join(fx.dir, '.git', 'hooks', 'pre-commit');
+  // 커밋 자체는 통과시키되(exit 0) 아카이브만 이 커밋에서 빼낸다 — 「초록인데 안 실렸다」를 만든다.
+  fs.writeFileSync(hook,
+    '#!/bin/sh\ngit rm --cached -q --force -- docs/세션보드_아카이브.md 2>/dev/null || true\nexit 0\n', 'utf8');
+  fs.chmodSync(hook, 0o755);
+
+  const r = run잔재(fx, ['잔재 트랙 병']);
+  assert.notEqual(r.status, 7, '아카이브가 HEAD 에 안 실렸는데 「닫았다」(7)로 끝났다 — 줄이 조용히 사라진다');
+  assert.match(String(r.stderr), /HEAD 판에 .*없다|아카이브의 HEAD/,
+    '무엇이 안 실렸는지 이름을 안 댄다');
+  assert.ok(!git(fx.dir, 'show', 'HEAD:docs/세션보드_아카이브.md').stdout.includes('잔재 트랙 병'),
+    '픽스처가 성립 안 했다 — 아카이브가 그대로 실렸으면 이 시험은 아무것도 안 잰다');
+});
