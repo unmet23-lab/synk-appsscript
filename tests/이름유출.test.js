@@ -29,7 +29,7 @@ const { 배포집합, claspProjects } = require('../tools/배포판점검.js');
  *       아래 자리 목록에 검사 항목을 추가한 뒤 스냅샷을 갱신한다. 그냥 숫자만 올리지 않는다. */
 const 호출부재 = /\b(aiCall_|aiText_|callClaudeFeedback_)\(/;
 const 호출부스냅샷 = {
-  '교재연동.js': 1,        // masteryFromFeedback_ — 문법 목록+학생 문장만(식별자 0)
+  '교재연동.js': 2,        // masteryFromFeedback_(쓴 글) + [v9.248] masteryFromVoice_(말한 것의 전사) — 둘 다 문법 목록+문장만(식별자 0)
   '엔진_콘텐츠AI.js': 10,  // 첨삭 위임 1 + aiCall_ 6(튜터·오류은행·반브리핑·리텐션·칭호·SNS) + aiText_ 3(웰컴⛔·편지⛔·레벨진단)
   '엔진_셋업확장.js': 1,   // H7 주간 리포트 해설 — aiBody(집계 화이트리스트)만
 };
@@ -100,6 +100,24 @@ const 자리들 = [
     from: '몽골 학생의 한국어 레벨 테스트 결과로', to: 'Таны оноо',
     필수: [{ re: /if \(report\) report = nm \+/, 왜: '이름은 AI 밖(템플릿)이 끼운다 — 갈래②' }],
     금지: [{ re: /\bnm\b(?=[^;]*1536)/, 왜: '레벨 진단 프롬프트에 리드 이름' }],
+  },
+  /* [v9.248 · #Q99] 문법 판정관 둘 — 스냅샷은 「교재연동.js 에 호출부가 몇이냐」만 셌고, 그 안에
+   *   무엇이 실리는지는 **아무도 안 봤다**(주석이 「식별자 0」이라 말할 뿐이었다). 말하기 판정을
+   *   더하며 그 빈칸을 같이 닫는다 — 두 자리 모두 실리는 것은 문법 목록과 문장뿐이고,
+   *   `sid` 는 **묶음의 키**로만 쓰이지 프롬프트 문자열에 이어 붙지 않는다. */
+  {
+    id: '문법판정-쓰기입력', file: '교재연동.js',
+    from: 'out = aiCall_(apiKey, system,', to: 'schema, 2048);',
+    필수: [{ re: /bankList\.join/, 왜: '판정 목록이 문법 뱅크 파생이 아니다' },
+      { re: /bySid\[sid\]/, 왜: '실리는 것은 묶인 제출문뿐이어야 한다' }],
+    금지: [{ re: /\bsid\s*\+|\+\s*sid\b/, 왜: '문법 판정 입력에 student_id 가 문자열로 이어 붙었다' }],
+  },
+  {
+    id: '문법판정-말하기입력', file: '교재연동.js',
+    from: 'out = aiCall_(apiKey, 음성지문,', to: 'schema, 2048);',
+    필수: [{ re: /bankList\.join/, 왜: '판정 목록이 문법 뱅크 파생이 아니다' },
+      { re: /글\[sid\]/, 왜: '실리는 것은 묶인 전사문뿐이어야 한다' }],
+    금지: [{ re: /\bsid\s*\+|\+\s*sid\b/, 왜: '말하기 판정 입력에 student_id 가 문자열로 이어 붙었다' }],
   },
   {
     id: '주간리포트-H7', file: '엔진_셋업확장.js',
@@ -179,6 +197,8 @@ test('탐지력 — 이름이 되끼는 여섯 모양을 픽스처로 잡는다'
     { src: "aiCall_(apiKey, 'SYNK LAB … 칭호 작명가. …', chunk.map((s, i) => i + '. ' + s.n + ' | 월').join('\\n'), tSchema, 4096)", id: '칭호-입력', 기대: ['금지 검출'] },
     { src: "let report = aiText_('몽골 학생의 한국어 레벨 테스트 결과로 … 이름: ' + nm + ' 점수 ' + score, 1536);\n if (!report) report = nm + ' — Таны оноо';", id: '레벨진단-입력', 기대: ['필수 누락', '금지 검출'] },
     { src: "const cmtH7 = aiText_('주간 리포트다 …' + body.slice(0, 6000), 900)", id: '주간리포트-H7', 기대: ['필수 누락', '금지 검출'] },
+    { src: "out = aiCall_(apiKey, system, '학생 ' + sid + ' 문장:\\n' + bySid[sid], schema, 2048);", id: '문법판정-쓰기입력', 기대: ['필수 누락', '금지 검출'] },
+    { src: "out = aiCall_(apiKey, 음성지문, '학생 ' + sid + ' 전사:\\n' + 글[sid], schema, 2048);", id: '문법판정-말하기입력', 기대: ['필수 누락', '금지 검출'] },
   ];
   for (const f of 픽스처) {
     const 자리 = 자리들.find((z) => z.id === f.id);
