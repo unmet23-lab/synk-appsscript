@@ -46,6 +46,10 @@ const 찍었다 = QUIZ_CONFIDENCE[2];   // '찍었어요' — 정본에서 뽑�
 const 확실 = QUIZ_CONFIDENCE[0];
 
 const toDate_ = 불러오기('function toDate_(v)', '\n// [opt] 셀값', 'toDate_', {});
+/* [v9.250 · #Q99 5/5] ① 절이 이제 `복귀창_` 도 부른다 — **가짜로 막지 않고 진짜를 태운다.**
+ *   스텁으로 채우면 그 함수가 깨져도 이 시험이 초록이라, 여기서는 정본을 그대로 불러 쓴다.
+ *   아래 가짜 `ss` 에는 exit_log 가 없어 `{맵:{}, 상한밖:0}` 로 떨어진다 = 종전과 같은 창(회귀 보존). */
+const 복귀창_ = 불러오기('const 복귀_공백상한일', '// 최근 약점 로더', '복귀창_', { toDate_ });
 
 const 날 = (n) => {
   const x = new Date(Date.now() - n * 86400000);
@@ -89,6 +93,8 @@ function 태우기(옵션) {
     ensureSheet: (s, n) => (n === 'ai_daily' ? ad : 시트흉내({ 첫행: 1, 행들: [[]] })),
     aiStudents_: () => 학생들.map((s) => Object.assign({}, s)),
     aiWeakMap_: () => (o.약점 || {}),
+    복귀창_,          // [#Q99 5/5] 정본 그대로 — exit_log 없는 가짜 ss 에선 빈 맵이라 창이 안 움직인다
+    복귀_공백상한일: 180,
     aiCall_: (k, sys, usr) => { 호출.push({ 시스템: sys, 사용자: usr }); return { items: [] }; },
     AI_STUDIO_MAX_CALLS: 12,
     AI_DAILY_BATCH_SIZE: 15,
