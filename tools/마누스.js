@@ -223,7 +223,7 @@ async function 던지기(질문, 라벨) {
     생성응답: JSON.stringify(작업).slice(0, 1000),
     시작: new Date().toISOString(), 상태: '진행',
     대상: (라벨 || 질문).replace(/\s+/g, ' ').slice(0, 80),
-    세션: process.env.CLAUDE_CODE_HOST_SESSION_ID || '',
+    세션: require(path.join(ROOT, '.claude', 'hooks', 'lib', '세션식별.js')).표기id(),   // F633
   });
   장부적기({ 때: new Date().toISOString(), 일: '던짐', 런ID, 작업id, 라벨: 라벨 || '', 질문 });
 

@@ -1036,7 +1036,7 @@ function 주인생사(지문, 옵션) {
 }
 
 /** `--집기 #Qnn --파일 "…"` → Write 할 보드 파일 **전문**을 조립한다. 디스크는 안 만진다. */
-function 집기(id, 파일칸, sid = process.env.CLAUDE_CODE_HOST_SESSION_ID, 옵션) {
+function 집기(id, 파일칸, sid = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '세션식별.js')).자리id(), 옵션) {   // F633
   const 목록 = 항목들();
   if (!목록) return { 오류: `대기열 파일이 없다 — ${대기열좌표}` };
   const 항목 = 목록.find((x) => x.id === id);
@@ -1084,7 +1084,12 @@ function 집기(id, 파일칸, sid = process.env.CLAUDE_CODE_HOST_SESSION_ID, �
   }
   const 보드 = 라이브('보드.js');
   const 내 = 보드.내파일(ROOT, sid);
-  if (!내) return { 오류: '세션 지문을 못 읽었다($CLAUDE_CODE_HOST_SESSION_ID) — 내 보드 파일을 못 고른다.' };
+  /* 처방이 **따를 수 있어야** 한다(F103) — 예전 문구는 「$CLAUDE_CODE_HOST_SESSION_ID 를 채워라」였는데
+   * 클라우드에선 채울 수 없는 변수였다. 이제 어느 층이 비었는지를 그 자리에서 낸다(F633). */
+  if (!내) {
+    const 진단 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '세션식별.js')).진단();
+    return { 오류: `세션 지문을 못 읽었다 — 내 보드 파일을 못 고른다. (${진단.한줄}${진단.지문사유 ? ` · ${진단.지문사유}` : ''})` };
+  }
 
   const 상한 = 칸상한();
   const 지문 = path.basename(내, '.md');

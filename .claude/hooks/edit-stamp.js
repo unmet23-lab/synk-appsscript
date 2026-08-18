@@ -40,8 +40,9 @@ const abs = String((input.tool_input && input.tool_input.file_path) || '').trim(
 if (!abs) process.exit(0);
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
-/* 세션 id 는 **호스트 id** 다 — 자동커밋·track-collision 이 보는 것과 같은 id 여야 짝이 맞는다(F074). */
-const sid = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || input.session_id || '').trim();
+/* 자동커밋·track-collision 이 보는 것과 **같은 id** 여야 짝이 맞는다(F074) — 그래서 순서를
+ * 여기 적지 않고 `세션식별.자리id()` 한 곳에서 받는다(F633). */
+const sid = require(path.join(__dirname, 'lib', '세션식별.js')).자리id(process.env, input);
 if (!sid) process.exit(0);
 
 const 절대 = path.resolve(abs);

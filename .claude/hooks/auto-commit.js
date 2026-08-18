@@ -71,7 +71,11 @@ try {
 } catch (_) { process.exit(0); }
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
-const 원본sid = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || input.session_id || '').trim();
+/* 자리 id = 만진기록·편집지문의 키(쓰는 층과 같아야 한다) · 연락 id = 트레일러에 박히는 값.
+ * 클라우드에선 두 값이 실제로 갈린다(F633) — 그래서 아래 `git()` 이 넘기는 것은 «연락» 쪽이다. */
+const 세션식별 = require(path.join(__dirname, 'lib', '세션식별.js'));
+const 원본sid = 세션식별.자리id(process.env, input);
+const 연락sid = 세션식별.연락id();
 if (!원본sid) process.exit(0);
 
 /* 판정층은 하나 — 작업본소유자를 읽기만 한다. 못 읽으면 추측 커밋 대신 침묵(안전한 방향).
@@ -103,7 +107,10 @@ function git(args, cwd) {
   return spawnSync('git', ['-c', 'core.quotepath=false', ...args], {
     cwd, encoding: 'utf8', timeout: 15000, windowsHide: true,
     // Session-Id 트레일러(prepare-commit-msg)가 이 변수를 읽는다 — 없으면 커밋이 주인 없는 채로 남는다(F142)
-    env: { ...process.env, CLAUDE_CODE_HOST_SESSION_ID: 원본sid },
+    // ⚠ 넘기는 값은 **연락 id** 다(F633). 자리 id(내부 UUID)를 넣으면 트레일러의 뜻이
+    //   「연락 가능한 id」에서 「그냥 구분자」로 내려앉고, track-collision 의 내 커밋 대조도 어긋난다.
+    //   비었으면 **덮지 않는다** — 그러면 훅이 상속된 env 의 REMOTE 로 스스로 폴백한다.
+    env: { ...process.env, ...(연락sid ? { CLAUDE_CODE_HOST_SESSION_ID: 연락sid } : {}) },
   });
 }
 const gitOk = (args, cwd) => { const r = git(args, cwd); return (!r.error && r.status === 0) ? String(r.stdout || '') : null; };

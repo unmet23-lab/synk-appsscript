@@ -136,7 +136,9 @@ const 수리동반 = () => {
 
 // 세션당 같은 번호는 한 번만 — 한 트랙의 고침 커밋마다 짖으면 소음이 되고, 소음은 가드를 꺼지게 한다.
 const STATE_DIR = process.env.SYNK_FRICTION_GUARD_DIR || path.join(os.tmpdir(), 'synk-friction-guard');
-const sid = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || 'unknown').replace(/[^\w.-]/g, '_');
+/* 세션 키는 `세션식별.자리id()` 하나에서 온다(F633) — HOST 만 읽으면 클라우드 세션이 전부
+ * 리터럴 `unknown` 한 파일로 뭉쳐, 첫 세션이 말한 뒤 나머지가 영영 침묵한다(모름 → 통과). */
+const sid = String(require(path.join(__dirname, 'lib', '세션식별.js')).자리id() || 'unknown').replace(/[^\w.-]/g, '_');
 const 말한적 = path.join(STATE_DIR, `said-${sid}.json`);
 let 이미 = [];
 try { 이미 = JSON.parse(fs.readFileSync(말한적, 'utf8')); } catch (_) { 이미 = []; }

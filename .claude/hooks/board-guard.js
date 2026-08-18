@@ -10,6 +10,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const 표 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '표.js'));
 const 보드lib = require(path.join(__dirname, '..', '..', 'tools', 'lib', '보드.js'));
+const 세션식별 = require(path.join(__dirname, 'lib', '세션식별.js'));
 
 const MAX_CELL = 200;
 /* 상한 ① — **도는 트랙**(활성 − 유호·시점 대기) 수. 「병행 세션이 실제로 조율해야 하는 대상」이
@@ -72,7 +73,7 @@ if (base === '세션보드.md') {
   if (!/^\s*\|.*\b20\d\d-\d\d-\d\d\b/m.test(새내용)) process.exit(0);
   deny('[board-guard] `docs/세션보드.md` 는 더 이상 정본이 아니다 — 표는 세션별 파일에서 조립된다(F250).\n'
     + '→ 내 줄은 **내 파일에만** 쓴다: `docs/_ops/보드/<내 지문 8자리>.md`\n'
-    + '   지문 = `$CLAUDE_CODE_HOST_SESSION_ID` 에서 접두를 뺀 앞 8자리.\n'
+    + `   내 지문(지금 이 세션) = ${세션식별.지문() || '(모름 — node -e "console.log(require(\'./.claude/hooks/lib/세션식별.js\').진단().한줄)")'}\n`
     + '   전체 표를 보려면 `node tools/board.js`, 완료 줄 이관은 `node tools/board-move.js "문구"`.');
 }
 /* ⚠ 앞의 `/` 를 **요구하지 않는다** — 도구는 상대경로(`docs/_ops/보드/x.md`)로도 들어온다(F204).
@@ -604,7 +605,10 @@ const 산지문 = (() => {
  *   못 믿는다(`살았나` 가 현재 세션을 특례로 두므로, 정상 기계에서는 반드시 들어 있다).
  * ⚠ 좌표가 없는 줄(내가 지금 넣는 새 줄·`유물-*.md`)은 **산 것으로 센다** — 막는 쪽이다.
  *   여기서 새는 방향은 「상한이 헐거워진다」라, 모를 때는 빡빡한 쪽에 둔다. */
-const 내지문 = 보드id.지문(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
+/* 🔑 지문은 `세션식별.지문()` 하나에서 온다(F633). 예전엔 여기가 HOST 만 읽었는데 클라우드엔
+ *   그 변수가 없어 `''` 이 나왔고, 그러면 바로 아랫줄의 `생사쟀나` 가 **영구 false** 라
+ *   위 문단이 이름 댄 그 구멍(상한이 통째로 사라진다)이 클라우드 세션 전부에서 상시 열려 있었다. */
+const 내지문 = 세션식별.지문();
 const 생사쟀나 = 산지문 !== null && 산지문.size > 0 && !!내지문 && 산지문.has(내지문);
 function 죽은도는(text) {
   if (!생사쟀나) return 0;
@@ -964,7 +968,7 @@ if (셀수있는전체 > MAX_ROWS && total > 이전total) {
  *   바뀌므로 「새 줄」로 세면 갱신마다 막힌다. 트랙 칸이 그대로면 같은 줄이다.
  * ⚠ 내 지문을 **모르는 세션에는 요구하지 않는다** — 환경변수가 빈 환경(클라우드·폰)에서
  *   요구하면 따를 수 없는 처방이 되고, 그건 우회를 정상 통로로 만든다(F103). */
-const 내id = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
+const 내id = 세션식별.자리id();
 const 트랙칸 = (line) => (cellsOfRow(line)[1] || '').trim();
 const 파일칸 = (line) => (cellsOfRow(line)[2] || '').trim();
 /* `보드id`·`이전` 은 ① 위에서 이미 만들었다 — 여기서 다시 읽으면 같은 판정이 두 곳에서

@@ -12,6 +12,7 @@ const 보드 = require(path.join(__dirname, 'lib', '보드.js'));
 const 낡음 = require(path.join(__dirname, 'lib', '보드낡음.js'));
 // 지문 규칙은 한 곳에서만 산다 — 파일명과 줄 안의 지문이 갈라지지 않는 이유(board-id 머리말).
 const 보드id = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'board-id.js'));
+const 세션식별 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '세션식별.js'));
 
 const ROOT = process.env.SYNK_BOARD_ROOT || path.resolve(__dirname, '..');
 const 표 = 보드.텍스트(ROOT);
@@ -110,7 +111,7 @@ if (주인없음 === null) {
  *   자기 트랙을 찾았고, 옛 트랙의 아카이브 줄까지 매번 들이밀면 그건 소음이다(안 읽히는 장치가 된다).
  * ⚠ 유령까지 센다(`줄들` 이 아니라 훑기 전체) — 규격 밖이라 표에 안 뜰 뿐 **내 선언은 있다.**
  *   여기서 「내 줄 0」으로 읽으면 유령을 쓴 세션에게 「네 줄은 아카이브에 있다」고 거짓말한다. */
-const 내지문 = 보드id.지문(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
+const 내지문 = 세션식별.지문();   // F633 — 순서는 그 모듈 한 곳에만 있다
 if (내지문) {
   const 내것 = [...(보드.줄들(ROOT) || []), ...(보드.유령들(ROOT) || [])]
     .filter((r) => 보드id.파일지문(r.파일) === 내지문);

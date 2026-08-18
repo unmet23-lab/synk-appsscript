@@ -226,7 +226,7 @@ function 진행파일() {
   /* 지연 require — 이 모듈은 clasp-guard 훅도 부른다. 위(모델설정) 주석과 같은 축으로,
    * 훅 로드 경로에 새 require 사슬을 얹지 않는다(등록층에서 새면 방향은 언제나 「통과」다). */
   const store = require(path.join(ROOT, '.claude', 'hooks', 'lib', 'handoff-store.js'));
-  const 세션 = store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
+  const 세션 = store.safeId(require(path.join(ROOT, '.claude', 'hooks', 'lib', '세션식별.js')).자리id());   // F633
   return path.join(os.tmpdir(), 'synk-검수진행', `${store.projectKey(ROOT)}-${세션}.json`);
 }
 
@@ -2114,7 +2114,7 @@ function 던지기(argv) {
     런ID, 종류, 인자, 로그, pid: child.pid, HEAD: head,
     시작: new Date().toISOString(), 상태: '진행',
     대상: 인자.join(' ') || '(기본)',
-    세션: process.env.CLAUDE_CODE_HOST_SESSION_ID || '',
+    세션: require(path.join(ROOT, '.claude', 'hooks', 'lib', '세션식별.js')).표기id(),   // F633
   });
 
   console.log(`🚀 던졌다 — 이 세션이 끝나도 계속 돈다(pid ${child.pid}).`);

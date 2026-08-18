@@ -50,6 +50,7 @@ const ROOT = process.env.SYNK_TRACK_ROOT || path.resolve(__dirname, '..', '..');
 const 보드 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '보드.js'));
 const 표 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '표.js'));
 const store = require(path.join(__dirname, 'lib', 'handoff-store.js'));
+const 세션식별 = require(path.join(__dirname, 'lib', '세션식별.js'));
 const wt = require(path.join(__dirname, 'lib', 'worktrees.js'));
 
 /** 실패를 null 로 돌려주는 git — 이 훅은 편의지 안전장치가 아니다. git 사정으로 작업을 세우지 않는다.
@@ -74,9 +75,15 @@ try { input = JSON.parse(fs.readFileSync(0, 'utf8')); } catch (_) { process.exit
 const tool = String(input.tool_name || '');
 if (!/^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool)) process.exit(0);
 
-/* 세션 id 가 둘이다 — 트레일러에 박히는 건 **호스트 id** 다(prepare-commit-msg 가 그렇게 적었다).
- * 내부 에이전트 id 로 대조하면 내 커밋을 하나도 못 알아보고, 그러면 내 커밋마다 나를 경고한다. */
-const 내세션 = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || input.session_id || '').trim();
+/* 세션 id 가 **둘이다** — 그리고 클라우드에선 두 값이 실제로 갈린다(F633). 그래서 자리를 갈라 부른다.
+ *   · `자리세션` = 상태 파일 키(만진기록·박동). 쓰는 층과 같아야 한다 → `자리id()`.
+ *   · `연락세션` = 커밋 트레일러와 대조하는 값. 트레일러에 박히는 건 **연락 가능한 id** 다
+ *     (`prepare-commit-msg` 가 HOST→REMOTE 로 그렇게 적는다 · F628). 자리 id(내부 UUID)로
+ *     대조하면 내 커밋을 하나도 못 알아보고, 그러면 **내 커밋마다 나를 경고한다.**
+ *   실측 2026-08-18: 클라우드에서 자리=`e54f1033…`(UUID) · 연락=`cse_014P5Hsr…` 로 서로 다르다. */
+const 자리세션 = 세션식별.자리id(process.env, input);
+const 연락세션 = 세션식별.연락id(process.env) || 자리세션;
+const 내세션 = 자리세션;
 
 /* 🔑 상태 파일 키는 cwd 가 아니라 **메인 작업 트리**로 잡는다 (F079).
  *   cwd 해시로 잡으면 워크트리 세션이 다른 키를 받아(실측 `cec367f48f` vs `1fc2df68ae`)
@@ -485,14 +492,14 @@ if (내줄) {
  *   보드 줄 판별이 동점이라 포기했을 때(위) 표식 신호까지 같이 죽지 않게 하는 자리고,
  *   보드에 아직 안 적은 표식(작업 중 새로 생긴 F 번호)도 여기서 잡힌다. */
 for (const c of 새커밋) {
-  if (!c.sid || !내세션 || c.sid !== 내세션) continue;
+  if (!c.sid || !연락세션 || c.sid !== 연락세션) continue;   // 트레일러는 «연락» id 다(F633)
   for (const t of 표식.훑기(c.subject)) 내표식.add(t);
 }
 
 const 충돌 = [];
 for (const c of 새커밋) {
   if (알린것.has(c.sha)) continue;
-  if (c.sid && 내세션 && c.sid === 내세션) continue; // 내 커밋
+  if (c.sid && 연락세션 && c.sid === 연락세션) continue; // 내 커밋 — 트레일러는 «연락» id 다(F633)
 
   const 파일들 = (git([...(c.뿌리 ? ['-C', c.뿌리] : []), 'show', '--name-only', '--format=', c.sha]) || '')
     .split('\n').map((s) => s.trim()).filter(Boolean)

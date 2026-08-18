@@ -220,8 +220,11 @@ process.stdin.on('end', () => {
   let 지난 = {};
   try {
     const store = require(path.join(__dirname, 'lib', 'handoff-store.js'));
+    /* 세션 키는 `세션식별.자리id()` 하나에서 온다(F633) — 예전엔 HOST 만 읽어서 클라우드 세션이
+     * 전부 리터럴 `nosid` 로 뭉쳤다(실측: 이 컨테이너의 유일한 상태 파일이 `…-nosid.json` 이었다). */
+    const 세션식별 = require(path.join(__dirname, 'lib', '세션식별.js'));
     표 = path.join(store.stateDir(),
-      `staleness-${store.projectKey(cwd)}-${store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || 'nosid')}.json`);
+      `staleness-${store.projectKey(cwd)}-${store.safeId(세션식별.자리id(process.env, ev) || 'nosid')}.json`);
     try { 지난 = JSON.parse(fs.readFileSync(표, 'utf8')) || {}; } catch (_) { 지난 = {}; }
     const 최근 = Number(지난.at);
     if (Number.isFinite(최근) && Date.now() - 최근 < 조용한간격_MS) process.exit(0);

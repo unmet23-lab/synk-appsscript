@@ -83,8 +83,13 @@ function myCommits(cwd, hostSessionId) {
   return 모음;
 }
 
+/** 이 세션의 **자리 id** — 보드 파일명·상태 파일 키와 같은 값이어야 한다(F633).
+ *  이름은 옛것을 그대로 둔다(부르는 자리가 여럿이다). 순서는 `세션식별.자리id()` 한 곳에만 있다. */
 function hostSessionId(fallback) {
-  return process.env.CLAUDE_CODE_HOST_SESSION_ID || fallback || '';
+  /* ⚠ `fallback` 은 보통 **훅 payload 의 session_id** 다 — 그래서 env 세션 UUID «앞»에 놓는다.
+   *   자리id() 를 인자 없이 부르면 주변 env 가 fallback 을 가려, 테스트·서브프로세스에서
+   *   호출자가 준 id 가 조용히 무시된다(실측: 컨텍스트예산 회귀 3건이 그 모양으로 깨졌다). */
+  return require(path.join(__dirname, '세션식별.js')).자리id(process.env, { session_id: fallback });
 }
 
 /**

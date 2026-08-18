@@ -178,7 +178,7 @@ const DIR = process.env.SYNK_MEMORY_STATUS_DIR || path.join(os.tmpdir(), 'synk-m
 /** 세션 id 가 없으면 **날짜**로 떨어진다 — 한 파일을 모두가 공유하면 첫 세션 뒤 영영 안 뜬다
  *  (「모름」이 「통과」가 되는 형태 · design-guard 와 같은 판단). */
 function 표시경로(sid, filePath) {
-  const key = String(sid || process.env.CLAUDE_CODE_HOST_SESSION_ID || `날짜-${new Date().toISOString().slice(0, 10)}`);
+  const key = String(sid || require(path.join(__dirname, 'lib', '세션식별.js')).자리id() || `날짜-${new Date().toISOString().slice(0, 10)}`);   // F633
   const 파일키 = path.basename(String(filePath)).replace(/\.md$/i, '');
   return path.join(DIR, `${key}__${파일키}`.replace(/[^\w.-]/g, '_') + '.mark');
 }

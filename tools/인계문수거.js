@@ -88,7 +88,7 @@ function 조사() {
   const 박동분 = new Map(세션.map((s) => [소유자.짧게(s.sid), s.분]));
   const 산 = new Set(세션.filter(소유자.살았나).map((s) => 소유자.짧게(s.sid)));
   // 파일명 sid8 은 session-report 가 쓰는 표기와 같은 변환(local_ 접두 제거 + 8자)이다.
-  const 내sid8 = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || '').replace(/^local_/, '').slice(0, 8);
+  const 내sid8 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '세션식별.js')).지문();   // F633
 
   const r = { 수거: [], 만료: [], 내것: [], 보류: [], 잡파일: [], 목차더러움: false, 내sid8 };
   for (const it of 항목) {

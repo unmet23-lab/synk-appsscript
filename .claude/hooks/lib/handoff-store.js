@@ -19,6 +19,8 @@ const crypto = require('crypto');
 const wt = require(path.join(__dirname, 'worktrees.js'));
 // 「형제는 어디 있나」의 정본. 이 파일이 위에서 말하는 「공용 통로」와 같은 조항의 적용이다.
 const 형제저장소 = require(path.join(__dirname, '형제저장소.js'));
+/* 「나는 어느 세션인가」의 한 곳 (F633) — 쓰는 층·읽는 층이 같은 순서를 쓰게 한다. */
+const 세션식별 = require(path.join(__dirname, '세션식별.js'));
 
 // 이음매는 테스트 격리 전용 — 로직을 끄지 않고 위치만 바꾼다. **세 훅이 같은 이름을 봐야 한다**
 // (갈라지면 바통이 안 넘어가고, 증상은 「조용히 아무 일도 안 일어남」이라 눈에 안 띈다).
@@ -211,9 +213,14 @@ function trackRoot() {
   return process.env.SYNK_TRACK_ROOT || path.resolve(__dirname, '..', '..', '..');
 }
 
-/** 이 세션의 id — `track-collision:79` 와 같은 우선순위(호스트 id 가 먼저). */
+/** 이 세션의 id — 순서 판정은 `세션식별.자리id()` 하나가 진다(F633).
+ *
+ * 🔑 예전엔 여기가 `HOST || input.session_id` 를 **직접** 적었다. 순서 자체는 맞았는데 인자로
+ *   훅 stdin 을 요구해서 **훅이 아닌 도구는 이 통로에 못 들어왔다** — 그래서 도구·가드 십수 곳이
+ *   `process.env.CLAUDE_CODE_HOST_SESSION_ID` 만 읽는 옛 통로로 남았고, 클라우드에선 그 변수가
+ *   없어 쓰는 층(여기)과 읽는 층이 **다른 세션**을 가리켰다. 이제 순서는 그 모듈 한 곳에만 있다. */
 function trackSessionId(input) {
-  return String(process.env.CLAUDE_CODE_HOST_SESSION_ID || (input && input.session_id) || '').trim();
+  return 세션식별.자리id(process.env, input);
 }
 
 /** 심장박동만 갱신한다.

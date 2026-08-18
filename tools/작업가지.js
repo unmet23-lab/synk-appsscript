@@ -175,7 +175,7 @@ function 죽기(사유, 처방) {
 }
 
 function 지문() {
-  return (process.env.CLAUDE_CODE_HOST_SESSION_ID || '').replace(/^local_/, '').slice(0, 8) || null;
+  return require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '세션식별.js')).지문() || null;   // F633
 }
 
 /** 지금 어느 가지에 서 있나. detached 면 null. */

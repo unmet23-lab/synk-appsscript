@@ -315,9 +315,10 @@ function nextId(rows, opts) {
  *   났던 그 모양이다. 그래서 예약 태그를 **세션 고유 객체**(annotated tag)로 만든다: SHA 가 갈리면
  *   두 번째 push 는 「already exists」로 정직하게 거절되고, 그때부터 위의 F196 판별식이 일한다. */
 
-/** 예약 태그에 새길 주인 — 세션마다 달라야 SHA 가 갈린다(같으면 F201 이 그대로 돌아온다). */
+/** 예약 태그에 새길 주인 — 세션마다 달라야 SHA 가 갈린다(같으면 F201 이 그대로 돌아온다).
+ *  🔑 그래서 HOST 만 읽으면 안 된다 — 클라우드 세션이 전부 `unknown/<pid>` 로 뭉친다(F633). */
 function 예약자() {
-  return (process.env.CLAUDE_CODE_HOST_SESSION_ID || 'unknown') + '/' + process.pid;
+  return (require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '세션식별.js')).표기id() || 'unknown') + '/' + process.pid;
 }
 function allocateId(rows) {
   if (ISOLATED) return nextId(rows);                       // 격리 장부 — git 접촉 금지
@@ -691,8 +692,7 @@ function 점유(ids, 옵션) {
   let 내지문 = o.내지문;
   if (typeof 내지문 === 'undefined') {
     try {
-      내지문 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'board-id.js'))
-        .지문(process.env.CLAUDE_CODE_HOST_SESSION_ID) || '';
+      내지문 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '세션식별.js')).지문() || '';   // F633
     } catch (_) { 내지문 = ''; }
   }
   const 내것 = (x) => !!내지문 && String(x.파일 || '').startsWith(내지문);
@@ -1070,7 +1070,7 @@ function main() {
   } else if (args.includes('--이세션')) {
     /* `/close` 5-c 가 부르는 자리 — 종료코드로 갈린다: 0=겹치는 행 없음 · 1=판정할 행 있음 · 2=못 쟀다.
      * 셋을 갈라야 「안 걸렸다」와 「안 쟀다」가 같은 모양이 되지 않는다(F207). */
-    process.exit(이세션분(process.env.CLAUDE_CODE_HOST_SESSION_ID || ''));
+    process.exit(이세션분(require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '세션식별.js')).자리id()));   // F633
   } else {
     report(args.includes('--open') ? 'open' : (args.includes('--보류') ? '보류' : null));
   }

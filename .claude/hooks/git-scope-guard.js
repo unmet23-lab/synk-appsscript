@@ -673,7 +673,10 @@ for (let m; (m = 메시지인용.exec(cmd)) !== null;) {
       let 되돌림 = [];
       try {
         소유 = require(p.join(__dirname, '..', '..', 'tools', '작업본소유자.js'));
-        const 나 = process.env.CLAUDE_CODE_HOST_SESSION_ID || '';
+        /* 「나」는 만진기록의 키와 **같은 값**이어야 한다 — 쓰는 층과 같은 통로에서 뽑는다(F633).
+         * 예전엔 HOST 만 읽어서 클라우드에선 `''` 이 됐고, 그러면 내 기록이 내 것으로 안 잡혀
+         * 자기 커밋이 ⑧ 에 막혔다(F264 와 같은 증상). */
+        const 나 = require(p.join(__dirname, 'lib', '세션식별.js')).자리id();
         const 메인 = p.join(__dirname, '..', '..');
         const 뿌리들 = [...new Set([gitCwd, 메인])];
         /* sid → {좌표: 그 세션이 마지막으로 만진 ms}. 두 뿌리의 기록을 **합친다** — 좌표계가 달라
@@ -887,7 +890,7 @@ for (let m; (m = 메시지인용.exec(cmd)) !== null;) {
         /* 「이 내용을 이미 펼쳐 봤나」를 해시로 기억한다. 시계·mtime 에 안 기댄다(CI·환경 의존 금지). */
         const store = require(p.join(__dirname, 'lib', 'handoff-store.js'));
         const 기억 = p.join(store.stateDir(),
-          `commitscope-${store.projectKey(gitCwd)}-${store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || 'nosid')}.json`);
+          `commitscope-${store.projectKey(gitCwd)}-${store.safeId(require(p.join(__dirname, 'lib', '세션식별.js')).자리id() || 'nosid')}.json`);
         let 상태 = { seen: [], 회차: {} };
         try { const j = JSON.parse(fs.readFileSync(기억, 'utf8')); 상태 = { seen: j.seen || [], 회차: j.회차 || {} }; } catch { /* 없으면 새로 */ }
         const 새것 = 조각.filter((c) => !상태.seen.includes(c.해시));

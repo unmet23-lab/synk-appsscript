@@ -47,6 +47,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
+const 세션식별 = require(path.join(ROOT, '.claude', 'hooks', 'lib', '세션식별.js'));   // F633
 const 큐 = require(path.join(ROOT, 'tools', 'decision-queue.js'));
 const 메모리 = require(path.join(ROOT, 'tools', 'memory-graph.js'));
 const 정본 = path.join(ROOT, 'docs', '_ops', '판정예측.jsonl');
@@ -364,7 +365,7 @@ function 봉인(인자) {
       확신: p.확신,
       근거: p.근거,
       왜: String(p.왜).trim(),
-      세션: process.env.CLAUDE_CODE_HOST_SESSION_ID || '',
+      세션: 세션식별.표기id(),
     });
   }
   if (거절.length) {
@@ -402,7 +403,7 @@ function 채점(인자) {
     console.error('🔴 「부분」은 답이 닫힌 모양에서만 쓴다 — 자유서술에서 쓰면 늘 부분 적중이 된다(급소 ④).');
     return 1;
   }
-  붙이기([{ 종류: '채점', 지문: k, 날짜: 오늘(), 판정: v, 실제, 인용, 세션: process.env.CLAUDE_CODE_HOST_SESSION_ID || '' }]);
+  붙이기([{ 종류: '채점', 지문: k, 날짜: 오늘(), 판정: v, 실제, 인용, 세션: 세션식별.표기id() }]);
   const 표 = { 적중: '🎯', 빗나감: '❌', 부분: '◐', 무효: '⃠' };
   console.log(`${표[v]} ${k} [${그것.토픽}] 예측 ${그것.예측} ↔ 실제 ${실제 || '—'} → ${v}`);
   return 0;

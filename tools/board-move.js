@@ -49,6 +49,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const 보드id = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'board-id.js'));
+const 세션식별 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '세션식별.js'));
 
 /* `SYNK_BOARD_ROOT` 는 `tools/board.js` 와 **같은 이름의 이음매**다 — 후보 찾기(아래 BOARD)를
  * 픽스처에서 재려면 이게 필요하다. `SYNK_BOARD` 는 파일을 곧장 주므로 후보 찾기를 건너뛴다:
@@ -503,7 +504,7 @@ const 산주인들 = (대상행, 파일지문칸) => {
     console.error(`  ⚠ 주인 생사 검사를 **못 했다**(${e.code || e.message}) — 원칙 ⑥이 이번엔 안 돌았다.`);
     return [];
   }
-  const 나 = store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
+  const 나 = store.safeId(세션식별.자리id());   // F633 — 만진기록의 키와 같은 통로
   /* `선언살았나` 지 `살았나` 가 아니다 (F304) — 심장박동만 보면 **승계 자리에서 언제나 참**이라
    * board-guard 가 처방하는 「죽은 세션의 줄이면 치운다」가 30분간 원리상 잠긴다. SessionEnd
    * 도장이 찍힌 세션은 여기서 산 주인이 아니다(도장이 없으면 지금까지와 똑같이 보수적이다). */
@@ -577,7 +578,7 @@ if (산주인.length) {
     '  **아무것도 쓰지 않았다** — 줄은 보드에 그대로다.\n' +
     산주인.map((t) => '  · ' + t).join('\n') + '\n' +
     '  「✅종결」은 그 세션이 끝났다는 뜻이 아니다. 그 세션이 끝난 뒤 다시 돌려라.\n' +
-    '  내 줄인데 막혔다면 환경변수 CLAUDE_CODE_HOST_SESSION_ID 가 비었는지 본다(비면 내 커밋도 남의 것으로 보인다).',
+    '  내 줄인데 막혔다면 내 지문부터 본다: node -e "console.log(require(\'./.claude/hooks/lib/세션식별.js\').진단().한줄)"',
     6);
 }
 
@@ -597,7 +598,7 @@ if (산주인.length) {
  *   막으면 미탐이 아니라 오탐이고, 오탐은 이 도구를 안 쓰게 만든다. */
 if (!미완확인) {
   const 줄주인 = 파일의주인지문(BOARD);
-  const 나의지문 = 보드id.지문(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
+  const 나의지문 = 세션식별.지문();   // F633
   /* ⚠ **둘 다 있어야** 「남의 것」이라고 말한다. 내 지문을 못 읽는 환경(변수 비었음·픽스처)에서
    *   「모름」을 「남의 것」으로 읽으면 이 도구가 **자기 줄에도 걸려** 통째로 못 쓰게 된다 —
    *   그러면 처방이 못 따를 처방이 되고, 우회가 정상 통로가 된다(F103). 미탐 방향을 택했다. */

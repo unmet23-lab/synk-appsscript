@@ -121,19 +121,22 @@ test('세션이 바뀌면 다시 걸린다 (인계된 세션이 킷 없이 시�
 });
 
 test('세션 id 가 없어도 모든 세션이 한 표시를 공유하지 않는다 (「모름」이 「통과」가 되는 형태)', () => {
-  // 폴백은 두 단이다: session_id → CLAUDE_CODE_HOST_SESSION_ID → 날짜. 둘 다 검사한다.
-  const 원래 = process.env.CLAUDE_CODE_HOST_SESSION_ID;
+  // 폴백은 두 단이다: session_id → 세션식별.자리id() → 날짜. 둘 다 검사한다.
+  /* ⚠ 「식별자가 하나도 없다」는 **id 소스 전부**를 비워야 만들어진다(F633) — HOST 만 지우면
+   *   주변 env 의 `CLAUDE_CODE_SESSION_ID` 가 답을 흘려 넣어, 이 검사가 러너에 따라 갈린다(F296). */
+  const 세션식별 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '세션식별.js'));
+  const 원래 = new Map(세션식별.환경변수들.map((k) => [k, process.env[k]]));
   try {
+    for (const k of 세션식별.환경변수들) delete process.env[k];
     process.env.CLAUDE_CODE_HOST_SESSION_ID = 'host-abc';
     assert.match(guard.표시경로(undefined), /host-abc/, '호스트 세션 id 폴백이 안 걸린다');
 
-    delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
+    for (const k of 세션식별.환경변수들) delete process.env[k];
     const 오늘 = new Date().toISOString().slice(0, 10);
     assert.match(guard.표시경로(undefined), new RegExp(오늘.replace(/-/g, '.')),
       '식별자가 하나도 없을 때 날짜로 안 떨어진다 — 모든 세션이 한 파일을 공유해 첫 세션 이후 영영 안 뜬다');
   } finally {
-    if (원래 === undefined) delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
-    else process.env.CLAUDE_CODE_HOST_SESSION_ID = 원래;
+    for (const [k, v] of 원래) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
   }
 });
 

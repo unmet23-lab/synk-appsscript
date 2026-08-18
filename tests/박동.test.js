@@ -135,14 +135,19 @@ test('등록층 — code-edit-guard 가 Bash|PowerShell 에 «필터 없이» �
 
 test('안전 — 세션 id 를 모르면 아무 파일도 안 만들고 false 를 낸다(남의 파일 생성 금지)', () => {
   const d = 새폴더('무id');
-  const 옛 = process.env.CLAUDE_CODE_HOST_SESSION_ID;
+  /* ⚠ 「모름」은 **id 소스 전부**를 비워야 만들어진다(F633). HOST 하나만 지우면 주변 env 의
+   *   `CLAUDE_CODE_SESSION_ID` 가 답을 흘려 넣고, 그러면 이 검사는 **러너에 따라** 갈린다
+   *   (CI 엔 그 변수가 없어 통과 · 로컬 세션에선 실패 — F296 이 이름 댄 환경 의존 그 자리다).
+   *   목록을 여기 다시 적지 않는다 — 소스가 늘면 이 목록만 낡는다. */
+  const 세션식별 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '세션식별.js'));
+  const 옛것 = new Map(세션식별.환경변수들.map((k) => [k, process.env[k]]));
   const 옛dir = process.env.SYNK_CTXBUDGET_DIR;
   try {
-    delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
+    for (const k of 세션식별.환경변수들) delete process.env[k];
     process.env.SYNK_CTXBUDGET_DIR = d;
     assert.strictEqual(store.박동찍기({}), false, 'id 없이 찍으면 엉뚱한 이름의 파일이 쌓인다');
   } finally {
-    if (옛 === undefined) delete process.env.CLAUDE_CODE_HOST_SESSION_ID; else process.env.CLAUDE_CODE_HOST_SESSION_ID = 옛;
+    for (const [k, v] of 옛것) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
     if (옛dir === undefined) delete process.env.SYNK_CTXBUDGET_DIR; else process.env.SYNK_CTXBUDGET_DIR = 옛dir;
   }
   fs.rmSync(d, { recursive: true, force: true });

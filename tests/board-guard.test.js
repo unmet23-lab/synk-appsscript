@@ -297,9 +297,14 @@ test('🔴 [F165] 상태 칸 갱신은 지문 없이도 통과 — 트랙 칸이
   );
 });
 
-test('🔴 [F165] 세션 id 를 모르는 환경(클라우드·CI)에는 요구하지 않는다', () => {
+test('🔴 [F165] 세션 id 를 모르는 환경(CI)에는 요구하지 않는다', () => {
+  /* ⚠ 「모른다」는 **id 소스 전부**를 비워야 만들어진다(F633). HOST 하나만 비우면 클라우드에서
+   *   `CLAUDE_CODE_SESSION_ID` 가 답을 흘려 넣어, 이 검사가 러너에 따라 갈린다(F296).
+   *   🔑 그리고 이제 «클라우드»는 이 예외의 대상이 아니다 — 거기선 지문이 실제로 서므로
+   *      요구가 따를 수 있는 처방이 된다. 예외가 남는 자리는 id 가 정말 하나도 없는 CI 다. */
+  const 모름 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '세션식별.js')).모름env({});
   assert.strictEqual(
-    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: row(10), new_string: `${row(10)}\n${이름없는줄}` } }, { CLAUDE_CODE_HOST_SESSION_ID: '' }),
+    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: row(10), new_string: `${row(10)}\n${이름없는줄}` } }, 모름),
     'allow', '내 지문을 알 수 없는 세션에 지문을 요구했다 — 따를 수 없는 처방이다(F103)'
   );
 });

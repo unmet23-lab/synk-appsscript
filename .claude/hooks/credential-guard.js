@@ -163,7 +163,7 @@ try {
 const tool = String(input.tool_name || '');
 const 이름 = 끝이름(tool);
 const ti = input.tool_input || {};
-const sid = String(input.session_id || process.env.CLAUDE_CODE_HOST_SESSION_ID || 'unknown');
+const sid = require(path.join(__dirname, 'lib', '세션식별.js')).자리id(process.env, input) || 'unknown';   // F633
 
 /* ── 규칙② 먼저 — 값이 자격증명이면 URL 을 몰라도 막는다 ────────────────────
  * 도구를 가리지 않는다: 타이핑이든 붙여넣기든 업로드든, 비밀이 페이지로 나가는 건 같은 사고다. */

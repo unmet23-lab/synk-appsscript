@@ -38,6 +38,10 @@ const 보드lib = require(path.join(__dirname, 'lib', '보드.js'));   // 커밋
 /* 「세션 id → 보드 지문 8자리」도 여기 다시 적지 않는다 — 접두를 떼는 규칙이 갈라지면
  * 내 줄을 남의 선점으로 읽는다(실측: `local_` 를 안 뗀 판이 내 선언을 그대로 띄웠다 · F165). */
 const { 지문: 보드지문 } = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'board-id.js'));
+/* 「나는 어느 세션인가」 — 쓰는 층(만진기록)과 **같은 통로**에서 받는다(F633). 예전엔 이 파일이
+ * HOST 만 읽어서 클라우드에선 `나지금` 이 `''` 이 됐고, 그러면 아래 `살았나` 의 자기면제 절이
+ * 꺼져 F264 실사고(자기 파일을 자기 것으로 증명 못 함)가 상시 재장전됐다. */
+const 세션식별 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '세션식별.js'));
 
 /* 워크트리 — 이 도구의 사각지대였다 (F079 · 옆 세션 local_dee95eb9 이 실사고로 잡아 넘겼다).
  * 두 겹이었고 **둘 다 「보이는 것이 0건」으로 조용히 새는** 방향이다:
@@ -62,7 +66,7 @@ function 키기준(r) {
 const 살아있음_분 = Number(process.env.SYNK_OWNER_ALIVE_MIN || 30);
 
 /** 지금 이 프로세스의 세션 id. 심장박동을 **재지 않아도 되는 유일한 세션**이다 — 내가 돌고 있다. */
-const 나지금 = store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
+const 나지금 = store.safeId(세션식별.자리id());
 
 /** 심장박동이 아직 뛰는가. 인계문수거(F111)도 **이 판정 하나**를 쓴다 — 살았다/죽었다를
  *  두 곳에 적으면 갈라지고, 갈라진 쪽의 증상은 「살아있는 세션의 인계문을 거둬 감」이다.

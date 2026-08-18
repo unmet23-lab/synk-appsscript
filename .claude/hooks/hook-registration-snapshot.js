@@ -113,7 +113,7 @@ function 알림(본문) {
 let input;
 try { input = JSON.parse(fs.readFileSync(0, 'utf8')); } catch (_) { process.exit(0); }
 
-const sid = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || input.session_id || '').trim();
+const sid = require(path.join(__dirname, 'lib', '세션식별.js')).자리id(process.env, input);   // F633
 if (!sid) process.exit(0); // 세션을 못 가르면 도장도 판정도 의미가 없다
 
 const 이벤트 = String(input.hook_event_name || '');

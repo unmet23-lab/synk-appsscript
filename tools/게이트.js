@@ -71,7 +71,8 @@ function 죽기(사유, 처방) {
 }
 
 function 장부쓰기(줄) {
-  const 기록 = { 때: new Date().toISOString(), 지문: (process.env.CLAUDE_CODE_HOST_SESSION_ID || '').replace(/^local_/, '').slice(0, 8) || null, ...줄 };
+  const 지문 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '세션식별.js')).지문();   // F633
+  const 기록 = { 때: new Date().toISOString(), 지문: 지문 || null, ...줄 };
   fs.mkdirSync(path.dirname(장부경로), { recursive: true });
   fs.appendFileSync(장부경로, `${JSON.stringify(기록)}\n`, 'utf8');
   return 기록;
