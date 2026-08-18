@@ -527,11 +527,11 @@ function 원격붙인다(repo, { 브랜치, 병합 = false }) {
   return 원본;
 }
 
-test('☁ 원격에 대기 중인 클라우드(폰) 브랜치를 잡는다 — 로컬 HEAD 만 보면 안 보이는 자리', { skip: !git있나 && 'git 없음' }, () => {
+test('☁ 원격에 대기 중인 클라우드 세션 브랜치를 잡는다 — 로컬 HEAD 만 보면 안 보이는 자리', { skip: !git있나 && 'git 없음' }, () => {
   const { repo, state } = 픽스처();
   원격붙인다(repo, { 브랜치: 'claude/synk-docs-update-xg7oka' });
   const out = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'] });
-  assert.match(out, /claude\/synk-docs-update-xg7oka/, '대기 중인 폰 브랜치를 이름으로 말해야 한다');
+  assert.match(out, /claude\/synk-docs-update-xg7oka/, '대기 중인 브랜치를 이름으로 말해야 한다');
   assert.match(out, /인쇄본 PDF 16종/, '무슨 작업인지(커밋 제목)까지 줘야 열어볼지 판단할 수 있다');
 });
 
@@ -1142,7 +1142,7 @@ function 갈라진픽스처(공유파일) {
   return { repo, g };
 }
 
-test('🔴 폰 브랜치가 공유 선언판에서 부딪히면 **그 파일을 이름으로** 집는다 (F192)',
+test('🔴 대기 브랜치가 공유 선언판에서 부딪히면 **그 파일을 이름으로** 집는다 (F192)',
   { skip: !git있나 && 'git 없음' }, () => {
     const { repo } = 갈라진픽스처('docs/세션보드.md');
     const 충돌 = 반입충돌('폰', repo);
