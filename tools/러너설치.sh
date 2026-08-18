@@ -41,16 +41,18 @@ DIR="$HOME/actions-runner"
 
 CHECK_ONLY=0
 SWITCH_ONLY=0
+SHA_EXTRACT_ONLY=0
 MANUAL_SHA=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --확인)     CHECK_ONLY=1 ;;
     --스위치만)  SWITCH_ONLY=1 ;;
     --sha256)   MANUAL_SHA="${2:-}"; shift ;;
+    --sha추출)  SHA_EXTRACT_ONLY=1 ;;
     *)
       # 🔴 모르는 인자를 조용히 삼키면 「딴 과녁을 재고 초록」이 된다(F400 계열).
       printf '🔴 모르는 인자: %s\n' "$1" >&2
-      printf '   이 스크립트가 아는 것은 --확인 --스위치만 --sha256 뿐이다.\n' >&2
+      printf '   이 스크립트가 아는 것은 --확인 --스위치만 --sha256 --sha추출 뿐이다.\n' >&2
       exit 2 ;;
   esac
   shift
@@ -59,6 +61,25 @@ done
 say()  { printf '%s\n' "$*"; }
 step() { printf '\n▶ %s\n' "$*"; }
 die()  { printf '\n🔴 %s\n' "$1" >&2; shift; for l in "$@"; do printf '   %s\n' "$l" >&2; done; exit 1; }
+
+# ── 릴리스 JSON 에서 linux-x64 체크섬을 뽑는다 ─────────────────────────────
+# 🔴 왜 «마커»로 잡나 (2026-08-18 실측 · 유호님 노트북 첫 실행에서 터졌다).
+#    첫 판은 `tr ',' '\n' | grep -A2 'linux-x64' | grep -oE '[a-f0-9]{64}' | head -1` 이었다.
+#    그런데 릴리스 JSON 의 body 는 **한 줄**이다 — 개행이 `\n` 리터럴로 이스케이프돼 있어
+#    `grep -A2`(뒤 2줄)가 아무것도 좁히지 못한다. 그래서 `head -1` 이 목록 **맨 위** 형제
+#    (win-x64)의 체크섬을 집었고, 멀쩡히 받은 파일이 남의 값과 대조돼 검증이 터졌다.
+#    ⚠ 급소는 「안 돌았다」가 아니라 **돌면서 남의 값을 냈다**는 것이다 — 맞는 얼굴로 틀린 값을
+#    내는 자리다(CLAUDE.md 신뢰성 맹점 ④). 게다가 그때 낸 처방이 「지우고 다시 받아라」라서
+#    215MB 를 다시 받아도 똑같이 틀린다 — 따를수록 멀어지는 처방이었다(F103).
+#    그래서 형제와 섞일 수 없는 마커(`BEGIN SHA linux-x64 -->`)로 잡는다.
+# 🔑 stdin 으로 읽는다 — 회귀가 이 함수를 **실물 그대로** 재게 하려고(로직을 테스트에 베끼면
+#    두 곳이 갈라진다 · F063). 통로는 아래 `--sha추출`.
+sha_of_linux_x64() {
+  grep -oE 'BEGIN SHA linux-x64 -->[0-9a-f]{64}' | head -1 | grep -oE '[0-9a-f]{64}' || true
+}
+
+# 🔑 테스트 통로 — stdin 의 릴리스 JSON 에서 값만 찍고 끝난다(네트워크·상태 무접촉).
+if [ "$SHA_EXTRACT_ONLY" = "1" ]; then sha_of_linux_x64; exit 0; fi
 
 # ── 0. 여기가 리눅스인가 ────────────────────────────────────────────────────
 step "0/7 환경 확인"
@@ -159,8 +180,7 @@ URL="https://github.com/actions/runner/releases/download/${TAG}/${FILE}"
 # 🔴 체크섬은 **조용히 건너뛰지 않는다.** 못 읽으면 멈추고, 사람이 줄 수 있는 처방을 낸다(F103).
 SHA="$MANUAL_SHA"
 if [ -z "$SHA" ]; then
-  SHA="$(printf '%s' "$REL" | tr ',' '\n' | grep -A2 'linux-x64' \
-    | grep -oE '[a-f0-9]{64}' | head -1 || true)"
+  SHA="$(printf '%s' "$REL" | sha_of_linux_x64)"
 fi
 [ -n "$SHA" ] || die "릴리스에서 linux-x64 체크섬을 못 읽었다 — 검증 없이 설치하지 않는다." \
   "https://github.com/actions/runner/releases/tag/$TAG 를 열면" \
