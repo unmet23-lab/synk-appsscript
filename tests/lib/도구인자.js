@@ -70,15 +70,45 @@ function argv이름들(코드) {
   let m;
   const 직접 = new RegExp(`(?:const|let|var)\\s+(${이름꼴})\\s*=\\s*process\\.argv`, 'g');
   while ((m = 직접.exec(코드))) 이름.add(m[1]);
-  /* `함수(argv)` 로 넘기는 자리 — 받는 쪽 매개변수 이름까지 따라가야 그 함수 안의 비교가 보인다. */
-  for (const v of [...이름]) {
-    const esc = 정규식escape(v);
-    const 넘김 = new RegExp(`(${이름꼴})\\s*\\(\\s*${esc}\\b[^)]*\\)`, 'g');
-    while ((m = 넘김.exec(코드))) {
-      const 함수 = 정규식escape(m[1]);
-      const d = new RegExp(`function\\s+${함수}\\s*\\(\\s*(${이름꼴})`).exec(코드)
-        || new RegExp(`(?:const|let|var)\\s+${함수}\\s*=\\s*(?:async\\s*)?\\(?\\s*(${이름꼴})`).exec(코드);
-      if (d) 이름.add(d[1]);
+  /* 아래 둘은 **더 안 자랄 때까지 함께** 돈다 — 한 바퀴만 돌면 「매개변수로 받은 뒤 다시 자른」
+   * 꼴에서 둘째 걸음이 통째로 안 보인다: `main(process.argv)` → `const 인자 = argv.slice(2)`.
+   * 🔴 2026-08-18 실측: 그 한 걸음이 안 보여 도구 **여섯**(뉴스적재·브라우저열기·운영자료·자율기록·
+   *   판정예측·friction)이 「자기 낱말 0 = 위치 인자만 받는 도구」로 읽혔다. 실제로는 46개를 읽는다.
+   *   새는 방향이 「덜 요구한다」라서 ④가 그 도구들에 대해 **아무것도 안 지키고 있었다**. */
+  let 늘었나 = true;
+  while (늘었나) {
+    늘었나 = false;
+    /* ㉠ `함수(argv)` 로 넘기는 자리 — 받는 쪽 매개변수 이름까지 따라가야 그 함수 안의 비교가 보인다. */
+    for (const v of [...이름]) {
+      const esc = 정규식escape(v);
+      /* 🔴 이름 «뒤» 경계에 `\b` 를 쓰지 않는다 — JS 의 `\b` 는 ASCII 낱말 경계라 한글로 끝나는
+       *   이름(`인자`) 뒤에는 **원리상 안 붙는다**. 그래서 `쓰기(인자)` 가 한 번도 안 잡혔고,
+       *   한글 이름을 쓰는 이 저장소에서 그 걸음은 통째로 사각이었다(2026-08-18 픽스처가 잡았다). */
+      const 넘김 = new RegExp(`(${이름꼴})\\s*\\(\\s*${esc}(?![\\w$가-힣])[^)]*\\)`, 'g');
+      while ((m = 넘김.exec(코드))) {
+        const 함수 = 정규식escape(m[1]);
+        const d = new RegExp(`function\\s+${함수}\\s*\\(\\s*(${이름꼴})`).exec(코드)
+          || new RegExp(`(?:const|let|var)\\s+${함수}\\s*=\\s*(?:async\\s*)?\\(?\\s*(${이름꼴})`).exec(코드);
+        if (d && !이름.has(d[1])) { 이름.add(d[1]); 늘었나 = true; }
+      }
+    }
+    /* ㉡ 파생 이름 — **인자 목록 그대로**를 물려받은 이름(`const 인자 = argv.slice(2)`).
+     * 🔴 초기식이 그 이름으로 «시작»할 때만 따라간다(`.slice`·`.filter`·`.map`·`||`·끝).
+     *   아무 데나 섞여 있으면 따라가는 판은 **자식 명령줄을 조립한 배열**(`[...기본, '--porcelain']`)
+     *   까지 argv 갈래로 올리고, 그 순간 git 인자가 자기 낱말이 된다 — 이 파일이 세 번 뒤집힌
+     *   바로 그 증상이다. 실측으로 갈랐다: 느슨한 판은 `board-move`·`폰작업반입`에 git 인자를
+     *   실었고, 시작 고정 판은 그 둘에 **0개**를 더하면서 위 여섯을 되찾았다. */
+    for (const 줄 of 코드.split('\n')) {
+      const d = new RegExp(`(?:const|let|var)\\s+(${이름꼴})\\s*=\\s*(.+)$`).exec(줄);
+      if (!d || 이름.has(d[1])) continue;
+      /* `const args = argv || process.argv.slice(2)` — 폴백 꼴. `process.argv` 를 **초기식이 품고**
+       * 있으면 그 이름은 인자 목록이다. 단 배열·객체·템플릿으로 «조립»한 것은 뺀다(위 🔴 그대로).
+       * 🔴 실측: `toil.js` 가 정확히 이 꼴이고, 아래 한 줄이 없으면 `--date`·`--json` 이 안 보인다. */
+      if (/process\.argv/.test(d[2]) && !/^\s*[[{`]/.test(d[2])) { 이름.add(d[1]); 늘었나 = true; continue; }
+      for (const v of 이름) {
+        const 시작 = new RegExp(`^\\s*${정규식escape(v)}(?![\\w$가-힣])\\s*(?:\\.\\s*(?:slice|filter|map)\\s*\\(|\\|\\||;|$)`);
+        if (시작.test(d[2])) { 이름.add(d[1]); 늘었나 = true; break; }
+      }
     }
   }
   return [...이름];
@@ -143,6 +173,11 @@ function 도우미이름들(코드, argv이름) {
     while ((m = 넘김.exec(코드))) {
       const 앞 = 코드.slice(Math.max(0, m.index - 24), m.index);
       if (/(?:function|class)\s*$/.test(앞)) continue;                       // 정의부다
+      /* 🔴 **메서드 호출은 도우미가 아니다** — `['status'].concat(인자, '--porcelain')` 에서
+       *   `concat` 이 「argv 를 넘겨받는 도우미」로 등록됐고, 그 다음 걸음에서 **git 인자가 자기
+       *   낱말로** 올라왔다(2026-08-18 · 파생 따라가기 픽스처가 잡았다). 배열 메서드는 이름이
+       *   흔해서(`concat`·`slice`·`filter`) 이 구멍은 한 번 열리면 아무 도구에서나 샌다. */
+      if (/\.\s*$/.test(앞)) continue;                                       // 메서드 호출이다
       if (new RegExp(`(?:const|let|var)\\s+${정규식escape(m[1])}\\s*=\\s*$`).test(앞)) continue;
       이름.add(m[1]);
     }
@@ -369,6 +404,40 @@ const 인자층픽스처 = Object.freeze([
       + "const 값 = (f) => { const i = 인자.indexOf(f); return 인자[i + 1]; };\n"
       + "if (실행(['--porcelain'])) 값('--열기');",
     낱말: ['--열기'],
+    자식후보: ['--porcelain'],
+  },
+  {
+    왜: '🔴 매개변수 «뒤에 다시 자르는» 걸음 — 이 저장소 여섯 도구가 그 꼴이라 낱말이 통째로 안 보였다',
+    코드: "function main(argv) {\n  const 인자 = argv.slice(2);\n  if (인자.includes('--목록')) 목록();\n}\n"
+      + "if (require.main === module) process.exit(main(process.argv));",
+    낱말: ['--목록'],
+    자식후보: [],
+  },
+  {
+    /* ⚠ 이 픽스처는 **바퀴 수가 뜻이다** — ㉡(파생)이 만든 이름을 ㉠(매개변수)이 다시 물어야
+     *   `--적기` 가 보인다. 고정점 루프를 한 바퀴로 줄이면 여기만 빨개진다(변이가 첫 판을 구멍으로
+     *   잡았다: 다른 픽스처들은 ㉠→㉡ 순서라 한 바퀴로도 통과했다). */
+    왜: '🔴 ㉡이 만든 이름을 ㉠이 다시 문다 — 고정점 루프가 아니면 둘째 걸음이 안 보인다',
+    코드: "const argv = process.argv.slice(2);\nconst 인자 = argv.slice(2);\n"
+      + "function 쓰기(목록) { if (목록.includes('--적기')) {} }\n쓰기(인자);",
+    낱말: ['--적기'],
+    자식후보: [],
+  },
+  {
+    왜: '🔴 `argv || process.argv.slice(2)` 꼴 — `toil.js` 가 그 모양이다',
+    코드: "function main(argv) {\n  const args = argv || process.argv.slice(2);\n"
+      + "  if (args.indexOf('--date') !== -1) {}\n  report(args.includes('--json'));\n}",
+    낱말: ['--date', '--json'],
+    자식후보: [],
+  },
+  {
+    /* ⚠ 이 픽스처가 **파생 따라가기의 대가**를 잰다 — 초기식 아무 데나 그 이름이 섞였다고 따라가면
+     *   조립한 자식 명령줄이 argv 갈래로 올라오고, git 인자가 자기 낱말이 된다(형제 F592 모양).
+     *   실측으로 갈랐다: 느슨한 판이 `board-move`·`폰작업반입`에 git 인자를 실었다. */
+    왜: '🔴 조립한 자식 명령줄은 «인자 목록»이 아니다 — 파생 따라가기가 여기까지 가면 안 된다',
+    코드: "const 인자 = process.argv.slice(2);\nif (인자.includes('--전량')) {}\n"
+      + "const 깃인자 = ['status'].concat(인자, '--porcelain');\nif (깃인자.includes('--porcelain')) spawnSync('git', 깃인자);",
+    낱말: ['--전량'],
     자식후보: ['--porcelain'],
   },
 ]);
