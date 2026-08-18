@@ -19,6 +19,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
+
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
 const 상태들 = ['✅확정', '🔄개편중', '🔵논의중'];
 /* 한 정규식이 인용문 표기와 주석 표기를 **둘 다** 읽는다.
@@ -73,6 +75,10 @@ function 훑기(디렉, 목록) {
 }
 
 function 출력() {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  const 아는플래그 = ['--미표기', '--전체'];
+  const 플래그오류 = 인자게이트('문서상태', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const 전체 = process.argv.includes('--전체');
   const 파일들 = 대상들(전체);
   const 묶음 = new Map(상태들.map((s) => [s, []]));

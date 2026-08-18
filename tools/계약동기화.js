@@ -29,6 +29,7 @@ const path = require('path');
  * **전부** 그 반쪽이었다(#Q101). 도구가 tests/ 를 건너 부르는 것은 이미 선 통로다
  * (`tools/lib/시트도달.js`·`tools/실행층점검.js` 가 먼저 썼다). */
 const { 표기접기 } = require('../tests/lib/소스검사.js');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const REPO = path.join(__dirname, '..');
 const 계약폴더 = '계약';
@@ -54,6 +55,12 @@ const 읽기 = (p) => fs.readFileSync(p, 'utf8');
 const 정규화 = 표기접기;
 
 function main(argv) {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 이 도구는 종료 코드를 **돌려주는** 꼴이라(`process.exit(main(...))`) 여기서 `process.exit`
+   *   를 부르지 않는다 — 부르면 호출부의 코드 규약이 둘로 갈린다. */
+  const 아는플래그 = ['--check'];
+  const 플래그오류 = 인자게이트('계약동기화', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 1; }
   const check = argv.includes('--check');
   const 목록 = 대상들();
 

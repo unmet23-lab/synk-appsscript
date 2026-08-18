@@ -21,6 +21,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const readline = require('readline');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 // 실제 과금 비율(입력 1 기준) — 캐시읽기는 싸고 출력은 비싸다.
 // 절대액이 아니라 **어디를 고쳐야 효과가 큰지**를 가르는 용도다.
@@ -102,6 +103,12 @@ async function scanFile(file, wantTools) {
 }
 
 async function main() {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ `parseArgs` 는 **`process.argv` 전체**를 받는다(안에서 `i = 2` 부터 훑는다) — 게이트에는
+   *   `slice(2)` 를 준다. 안 자르면 node 실행 경로가 낱말로 안 걸릴 뿐 분모가 흐려진다. */
+  const 아는플래그 = ['--days', '--dir', '--tools'];
+  const 플래그오류 = 인자게이트('token-audit', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const a = parseArgs(process.argv);
   const dir = a.dir || defaultDir();
   if (!fs.existsSync(dir)) {

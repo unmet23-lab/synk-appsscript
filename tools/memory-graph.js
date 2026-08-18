@@ -19,6 +19,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 /* ── 표기 규약 ───────────────────────────────────────────────────────────── */
 // 링크 타입. 무타입 [[x]] = '관련'. 미지 타입은 리포트에 올리되 '관련'으로 취급한다
@@ -287,6 +288,10 @@ function writeBacklinks(nodes) {
 /* ── 출력 ────────────────────────────────────────────────────────────────── */
 function main() {
   const args = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  const 아는플래그 = ['--decisions', '--json', '--write'];
+  const 플래그오류 = 인자게이트('memory-graph', args, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const dir = memoryDir();
   const nodes = load(dir);
   if (!nodes) {

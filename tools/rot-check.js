@@ -29,6 +29,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_INTERVAL_DAYS = 7;
@@ -779,6 +780,13 @@ function 장부패치(장부차례, v, now) {
 /* ── 진입점 ──────────────────────────────────────────────────────────────── */
 function main() {
   const args = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ **훅 모드에서도 막는다** — 아래 `isHook` 절의 「무슨 일이 있어도 exit 0」은 *점검 중 예외*를
+   *   삼키는 규칙이지 «부를 때 이름을 틀린 것»까지 삼키라는 뜻이 아니다. 등록층 오타는 정상 실행이
+   *   0건이면서 초록으로 보이는 자리라, 여기서 조용히 통과시키면 그게 이 트랙이 막으려는 병이다. */
+  const 아는플래그 = ['--force', '--hook', '--json', '--quiet'];
+  const 플래그오류 = 인자게이트('rot-check', args, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const isHook = args.includes('--hook');
   /* 라이브 대조는 **사람이 부른 실행에서만** 돈다 — `collect()` 기본값이 꺼짐인 이유와 같다.
    * 여기서 켜는 것이 이 장치의 발동 조건이다(장치와 발동 조건은 같은 커밋 · CLAUDE.md 신뢰성). */

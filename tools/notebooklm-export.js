@@ -25,6 +25,8 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
+
 const REPO = path.resolve(__dirname, '..');
 // 하네스 경로는 손으로 조립하지 않는다 — 이 자리엔 이 기계 이름이 박혀 있었다(F206).
 const MEM = require('./memory-graph.js').memoryDir();
@@ -114,6 +116,10 @@ const SOURCE_ROOTS = [
 
 function main() {
   const args = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  const 아는플래그 = ['--dry', '--out'];
+  const 플래그오류 = 인자게이트('notebooklm-export', args, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const DRY = args.includes('--dry');
   const outIdx = args.indexOf('--out');
   const OUT = outIdx >= 0 && args[outIdx + 1] ? path.resolve(args[outIdx + 1]) : DEFAULT_OUT;

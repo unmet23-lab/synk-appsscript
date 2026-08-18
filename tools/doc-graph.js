@@ -28,6 +28,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = path.resolve(__dirname, '..');
 const SCAN_DIRS = ['docs'];
@@ -421,6 +422,12 @@ function 엣지본문(text, line, docRel) {
 
 function main() {
   const args = process.argv.slice(2);
+
+  /* 🔑 목록은 눈으로 정하지 않았다 — `tests/lib/도구인자.js` 의 `CLI도구들()` 로 재서 넷이고,
+   *   `tests/도구인자게이트.test.js` ④ 가 「자기 낱말 전량을 선언이 덮는가」를 매번 다시 센다. */
+  const 아는플래그 = ['--add', '--json', '--of', '--stamp'];
+  const 플래그오류 = 인자게이트('doc-graph', args, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
 
   const addIdx = args.indexOf('--add');
   if (addIdx !== -1) {

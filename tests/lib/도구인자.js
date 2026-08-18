@@ -204,6 +204,70 @@ function 인자층(코드) {
   };
 }
 
+/**
+ * 게이트가 **`require` 되는 순간에 도는가** — 그러면 남의 argv 를 자기 것으로 읽는다.
+ *
+ * 🔴 **실측 2026-08-18(이 트랙에서 밟았다)**: `harness-export.js` 에 게이트를 «최상위»에 달았더니
+ *   `node tools/rot-check.js --json` 이 죽었다. rot-check 는 경로·정본 버전만 얻으려고 그 파일을
+ *   `require` 하는데(`rot-check.js:208` · 그 줄 주석이 「require 는 생성기를 실행하지 않는다」라고
+ *   못박고 있다), 최상위 게이트가 **부모의 `--json`** 을 자기 낱말로 읽고 프로세스를 끊었다.
+ *   나간 문장은 「harness-export 가 아는 것은 --dry --out 뿐이다」 — **멀쩡한 도구가 남의 이름으로
+ *   죽는다.** 진단이 통째로 엉뚱한 파일로 가는 자리라, 사람 눈이 아니라 기계가 져야 한다.
+ *
+ * 판정: 게이트 호출의 **중괄호 깊이**가 0이면 최상위다(`if (require.main === module)` 한 줄 꼴은
+ *   깊이 0이어도 안전하므로 그 줄만 예외로 둔다).
+ * ⚠ **남는 대가**: 최상위 IIFE 안의 게이트는 깊이가 1이라 여기를 통과하는데 import 시점에 돈다.
+ *   이 저장소에 그 꼴은 0건이고(2026-08-18 실측), 생기면 그날 이 판정을 넓힌다 — 지금 닫지 않는다.
+ * @returns {string|null} 위반 사유 · 정상이거나 게이트가 없으면 null
+ */
+function import시점에도나(코드) {
+  const i = 코드.search(/인자게이트\s*\(/);
+  if (i === -1) return null;                                   // 게이트 없음 — 래칫의 몫이다
+  const 깊이 = 중괄호깊이(코드, i);
+  if (깊이 > 0) return null;
+  const 줄시작 = 코드.lastIndexOf('\n', i) + 1;
+  const 줄끝 = 코드.indexOf('\n', i);
+  const 그줄 = 코드.slice(줄시작, 줄끝 === -1 ? 코드.length : 줄끝);
+  if (/require\.main\s*===\s*module/.test(그줄)) return null;
+  return '최상위에서 판정한다 — `require` 하는 쪽의 argv 를 읽는다';
+}
+
+/**
+ * `시작`~`끝` 사이의 중괄호 깊이 — **문자열·템플릿·정규식 리터럴 안은 안 센다.**
+ * 리터럴 속 `{`(정규식 `/^\{/` 류)를 세면 깊이가 부풀어 최상위 게이트가 「안전」으로 읽힌다 —
+ * 새는 방향이 통과라 여기서 어림하지 않는다. 재료는 이미 `코드만` 을 지난 코드다(주석 없음).
+ */
+function 중괄호깊이(코드, 끝) {
+  const s = String(코드);
+  /* 정규식이냐 나눗셈이냐 — `소스검사.js` 렉서와 **같은 어림법**을 쓴다(둘이 갈리면 한쪽만 샌다). */
+  const 정규식앞 = /[([{,;:=!&|?+\-*%~^<>]$|\b(return|typeof|case|in|of|new|delete|void|instanceof)$/;
+  let 깊이 = 0;
+  let 직전코드 = '';
+  for (let i = 0; i < 끝 && i < s.length; i += 1) {
+    const c = s[i];
+    if (c === "'" || c === '"' || c === '`') {                 // 문자열·템플릿 — 짝까지 건너뛴다
+      i += 1;
+      while (i < s.length && s[i] !== c) i += (s[i] === '\\' ? 2 : 1);
+      continue;
+    }
+    if (c === '/' && 정규식앞.test(직전코드.trimEnd())) {       // 정규식 리터럴 — 짝까지 건너뛴다
+      let j = i + 1;
+      let 각괄호 = false;
+      for (; j < s.length && s[j] !== '\n'; j += 1) {
+        if (s[j] === '\\') { j += 1; continue; }
+        if (s[j] === '[') 각괄호 = true;
+        else if (s[j] === ']') 각괄호 = false;
+        else if (s[j] === '/' && !각괄호) break;
+      }
+      if (j < s.length && s[j] === '/') { i = j; continue; }    // 닫혔다 — 통째로 건너뛴다
+    }
+    if (c === '{') 깊이 += 1;
+    else if (c === '}') 깊이 -= 1;
+    직전코드 = (직전코드 + c).slice(-24);
+  }
+  return 깊이;
+}
+
 /** 선언한 `아는플래그` — 없으면 `null`. */
 function 선언목록(코드) {
   const m = 코드.match(/const\s+아는플래그\s*=\s*\[([^\]]*)\]/);
@@ -323,7 +387,38 @@ const 짝밀림픽스처 = Object.freeze({
   낱말: ['--닫기'],
 });
 
+/** 🔴 시점 픽스처 — **위반 쪽이 실측**이다(`harness-export.js` 최상위 판이 rot-check 를 죽였다).
+ *  안전 쪽 셋은 이 저장소가 실제로 쓰는 세 자리이고, 리터럴 둘은 깊이 세기가 부푸는 자리다 —
+ *  부풀면 최상위 게이트가 「안전」으로 읽혀 **검사가 통째로 장식이 된다**(새는 방향은 늘 통과). */
+const 시점픽스처 = Object.freeze([
+  {
+    왜: '🔴 실측 — 최상위 게이트는 `require` 하는 쪽의 argv 를 읽는다',
+    코드: "const args = process.argv.slice(2);\nconst 오류 = 인자게이트('t', args, ['--dry']);\nif (오류) 죽기(오류);",
+    위반: true,
+  },
+  {
+    왜: '함수 안 — 이 저장소의 주력 꼴',
+    코드: "function main() {\n  const 오류 = 인자게이트('t', args, ['--dry']);\n  if (오류) 죽기(오류);\n}",
+    위반: false,
+  },
+  {
+    왜: '`if (require.main === module) {` 블록 안 — 부품으로 불릴 때는 애초에 안 돈다',
+    코드: "if (require.main === module) {\n  const 오류 = 인자게이트('t', argv, ['--대조']);\n  if (오류) 죽기(오류);\n}",
+    위반: false,
+  },
+  {
+    왜: '🔑 정규식 속 `{` 가 깊이를 부풀리면 최상위 게이트가 「안전」으로 읽힌다',
+    코드: "const 꼴 = /^\\{\\s*/u;\nconst 오류 = 인자게이트('t', args, ['--dry']);\nif (오류) 죽기(오류);",
+    위반: true,
+  },
+  {
+    왜: '🔑 문자열 속 `{` 도 마찬가지다',
+    코드: "const 여는것 = '{';\nconst 오류 = 인자게이트('t', args, ['--dry']);\nif (오류) 죽기(오류);",
+    위반: true,
+  },
+]);
+
 module.exports = {
-  CLI도구들, 인자층, 낱말들, 선언목록, 답을쓰나,
-  인자층픽스처, 산문픽스처, 짝밀림픽스처,
+  CLI도구들, 인자층, 낱말들, 선언목록, 답을쓰나, import시점에도나, 중괄호깊이,
+  인자층픽스처, 산문픽스처, 짝밀림픽스처, 시점픽스처,
 };

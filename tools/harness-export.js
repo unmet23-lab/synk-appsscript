@@ -23,8 +23,12 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
+
 const REPO = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
+/* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+const 아는플래그 = ['--dry', '--out'];
 const DRY = args.includes('--dry');
 const outIdx = args.indexOf('--out');
 const DEFAULT_OUT = path.join(os.homedir(), 'OneDrive', 'Desktop', 'SYNK_하네스');
@@ -84,6 +88,13 @@ const banner = (vendor, entry) => `<!-- 이 파일은 생성물이다. 손으로
 `;
 
 function main() {
+  /* 🔴 게이트는 **`main()` 안**에서 판정한다 — 최상위에 두면 `require` 하는 쪽의 argv 를 읽는다.
+   *   실측 2026-08-18(이 트랙): 최상위 판이 `rot-check.js --json` 을 죽였다 — 그쪽이 이 파일을
+   *   경로·버전만 얻으려고 `require` 하는데(`rot-check.js:208`), 부모의 `--json` 이 여기 낱말로
+   *   읽혀 「harness-export 가 아는 것은 --dry --out 뿐이다」로 남의 실행을 끊었다.
+   *   새는 방향이 「멀쩡한 도구가 남의 이름으로 죽는다」라 진단이 통째로 엉뚱한 데로 간다. */
+  const 플래그오류 = 인자게이트('harness-export', args, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   log(`하네스 내보내기 — 정본 ${STAMP}`);
   log(`대상: ${OUT}${DRY ? '  [DRY RUN]' : ''}\n`);
 

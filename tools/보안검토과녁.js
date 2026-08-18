@@ -76,6 +76,7 @@ const path = require('path');
 
 const ROOT = process.env.SYNK_REVIEW_ROOT || path.resolve(__dirname, '..');
 const 점검 = require(path.join(__dirname, '배포판점검.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 /* 종료 코드는 **계약**이다 — 글자로 가르지 않는다(문구를 다듬는 순간 판정이 갈라진다).
  * board-move 가 6 을 판 것과 같은 이유다(그쪽 머리말). */
@@ -257,6 +258,10 @@ module.exports = { 과녁, 과녁상세, 대조, 언급했나, 코드, 기준표
 
 if (require.main === module) {
   const argv = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  const 아는플래그 = ['--대조'];
+  const 플래그오류 = 인자게이트('보안검토과녁', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const i = argv.indexOf('--대조');
   /* 이음매가 켜져 있으면 **판정보다 먼저** 말한다 — 이 줄이 없으면 고정 과녁으로 낸 초록이
    * 실측처럼 보이고, 그게 이 도구가 없애려던 모양 그 자체다(미실행이 통과와 같은 모양). */
