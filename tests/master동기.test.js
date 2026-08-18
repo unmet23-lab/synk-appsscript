@@ -27,6 +27,9 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+/* 주석 제거는 통로가 하나다 — 지역 사본을 만들면 저마다 다르게 틀린다(F401·#Q114).
+ * 여기 넷은 전부 같은 벗기기였는데, 그중 어느 것도 문자열 속 `//` 를 안 지켰다. */
+const { 코드만, 파일소스 } = require('./lib/소스검사.js');
 
 const 동기 = require('../tools/lib/master동기.js');
 
@@ -184,17 +187,13 @@ test('⑤ 메인 트리가 master 가 아니면 전진도 건너뛴다 — 남�
 /* 🔑 위 ①~⑤ 가 전부 초록이어도 **아무도 안 부르면** 드리프트는 그대로 자란다.
  *   스스로 발화하지 않는 장치는 안 돈다(CLAUDE.md) — 그래서 호출 자체를 못박는다. */
 test('⑥ 인계문수거는 커밋 뒤 밀기를 부른다', () => {
-  const s = fs.readFileSync(path.join(__dirname, '..', 'tools', '인계문수거.js'), 'utf8');
-  const 코드 = s.replace(/\/\*[\s\S]*?\*\//g, '').split('\n')
-    .map((l) => l.replace(/(^|\s)\/\/.*$/, '$1')).join('\n');
+  const 코드 = 코드만(파일소스(path.join(__dirname, '..', 'tools', '인계문수거.js')));
   assert.match(코드, /require\([^)]*master동기/, '공용 통로를 안 부른다');
   assert.match(코드, /동기\.밀기\(/, '커밋 뒤 밀기 호출이 없다 — 좌초 커밋이 다시 태어난다');
 });
 
 test('⑥ 작업가지 --닫기 는 머지 뒤 전진을 부른다', () => {
-  const s = fs.readFileSync(path.join(__dirname, '..', 'tools', '작업가지.js'), 'utf8');
-  const 코드 = s.replace(/\/\*[\s\S]*?\*\//g, '').split('\n')
-    .map((l) => l.replace(/(^|\s)\/\/.*$/, '$1')).join('\n');
+  const 코드 = 코드만(파일소스(path.join(__dirname, '..', 'tools', '작업가지.js')));
   assert.match(코드, /require\([^)]*master동기/, '공용 통로를 안 부른다');
   assert.match(코드, /동기\.전진\(/, '머지 뒤 전진 호출이 없다 — origin 만 앞서간다');
   // 그리고 그 호출은 **머지 뒤**여야 한다 — 앞이면 방금 머지분을 못 받는다.
@@ -219,13 +218,11 @@ const 면제 = new Map([
 test('⑥-b master 에 커밋하는 도구는 **전부** 밀기와 짝을 이룬다 (옛 통로 금지)', () => {
   const 도구방 = path.join(__dirname, '..', 'tools');
   const 커밋꼴 = /\(\s*\[\s*'commit'/;               // git(['commit'  ·  gitQuiet(['commit'
-  const 벗기기 = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').split('\n')
-    .map((l) => l.replace(/(^|\s)\/\/.*$/, '$1')).join('\n');
 
   const 커밋하는것 = [];
   for (const 이름 of fs.readdirSync(도구방)) {
     if (!이름.endsWith('.js')) continue;
-    const 코드 = 벗기기(fs.readFileSync(path.join(도구방, 이름), 'utf8'));
+    const 코드 = 코드만(파일소스(path.join(도구방, 이름)));
     if (커밋꼴.test(코드)) 커밋하는것.push([이름, 코드]);
   }
 
@@ -244,9 +241,7 @@ test('⑥-b master 에 커밋하는 도구는 **전부** 밀기와 짝을 이룬
 
 // ── ⑦ 전진은 머지 커밋을 만들지 않는다 (ff-only 고정) ───────────────────────
 test('⑦ 전진은 --ff-only 다 — 머지 커밋을 만들어 남의 이력을 흔들지 않는다', () => {
-  const s = fs.readFileSync(path.join(__dirname, '..', 'tools', 'lib', 'master동기.js'), 'utf8');
-  const 코드 = s.replace(/\/\*[\s\S]*?\*\//g, '').split('\n')
-    .map((l) => l.replace(/(^|\s)\/\/.*$/, '$1')).join('\n');
+  const 코드 = 코드만(파일소스(path.join(__dirname, '..', 'tools', 'lib', 'master동기.js')));
   assert.match(코드, /'--ff-only'/, 'ff-only 고정이 아니다');
   assert.ok(!/'merge'\s*,\s*'origin\//.test(코드.replace(/'--ff-only',\s*/, '')),
     'ff-only 없는 merge 호출이 있다');
