@@ -29,18 +29,36 @@ const 맵 = Object.fromEntries(유도.유도().map((r) => [r.구hex.toUpperCase(
 
 const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 
-/* 과녁 — 「현재 킷」으로 재지는 자리(tests/로고정본색.test.js 의 스캔 범위)와 그 원고 */
+/* ── 과녁 셋 ────────────────────────────────────────────────────────────────
+ *   ① 발표물 — `tests/로고정본색.test.js` 가 「킷 밖 색 0」으로 잰다(구움본 + 원고).
+ *   ② 「입는다」 지면 — `지면방` 이 살아있다고 판정한 것들. 굳은 산출물이 아니라 **지금 쓰는 화면**이다.
+ *   ③ 그 지면을 굽는 **생성기** — 🔑 여기가 뿌리다. 지면만 고치면 다음 빌드가 퇴역색을 도로 심는다
+ *      (실측 2026-08-18: 생성기 10벌 전부가 구 hex 를 들고 있었다 · 85건).
+ *   ⚠ 그래도 좁다 — `_archive`·굳은 HTML 은 토큰 규약 ④ 대로 소급 개서하지 않는다. */
+const 생성기들 = [
+  'tools/이해대장.js', 'tools/운영자료.js', 'tools/자율기록.js', 'tools/작동대장.js',
+  'tools/브랜드킷조립.py', 'tools/교재읽기본.js', 'tools/인쇄본빌드.js', 'tools/시스템대장.js',
+  'tools/발표물린트.js', 'tools/harness-export.js', 'tools/로고주입.js',
+];
+
 function 과녁들() {
   const out = [];
   const 발표물 = path.join(ROOT, 'docs', '발표물');
-  for (const sub of ['', '로고']) {
+  for (const sub of ['', '로고']) {                                    // ①
     const d = path.join(발표물, sub);
     if (!fs.existsSync(d)) continue;
     for (const f of fs.readdirSync(d)) if (f.endsWith('.html')) out.push(path.join(d, f));
   }
   out.push(path.join(발표물, '_브랜드킷.md'));
-  out.push(path.join(ROOT, 'tools', '로고주입.js'));
-  return out.filter((p) => fs.existsSync(p));
+
+  /* ② 목록을 여기 손으로 적지 않는다 — 지면방이 이미 그 판정을 진다(같은 판정을 두 곳에 적으면 갈라진다) */
+  for (const r of require('./lib/지면방.js').점검().갈래.입는다) out.push(path.join(ROOT, r.경로));
+  const 원고 = path.join(ROOT, 'docs', '엔진', '_원고');               // 구움본만 고치면 다음 빌드가 되돌린다
+  if (fs.existsSync(원고)) for (const f of fs.readdirSync(원고)) if (f.endsWith('.html')) out.push(path.join(원고, f));
+
+  for (const g of 생성기들) out.push(path.join(ROOT, g));               // ③
+
+  return [...new Set(out)].filter((p) => fs.existsSync(p));
 }
 
 let 총hex = 0, 총rgb = 0, 파일수 = 0;
