@@ -123,6 +123,25 @@ test('🔑 F628 — `CLAUDE_CODE_SESSION_ID` 로는 «안» 내려간다 (트레
     '내부 에이전트 id 까지 폴백했다 — 그 값으로는 세션에 메시지를 못 보낸다: ' + JSON.stringify(got));
 });
 
+test('🔴 F628×F300 — 폴백 판에서도 축약형은 전체 id 로 교정된다 (변이가 뚫은 구멍)', (t) => {
+  /* 변이 실측 2026-08-18: 교체 판정이 `$SID` 대신 옛 변수(`$CLAUDE_CODE_HOST_SESSION_ID`)를 보게
+   * 망가뜨렸는데 13건이 전부 초록이었다 — 기존 F300 검사가 **전부 HOST 를 세팅**하고 돌아서
+   * 두 값이 같았기 때문이다. 클라우드(HOST 없음)에서는 그 비교가 빈 문자열과 하는 비교가 되어
+   * **교정이 통째로 죽는다**: 손으로 적은 축약형이 그대로 박히고, 그 커밋은 모든 소유 판별에서
+   * 남의 것이 된다(F300 이 잡았던 바로 그 사고). 새는 방향은 여기서도 「통과」다. */
+  let dir;
+  try { dir = mkRepo(); } catch (e) { return t.skip('픽스처 생성 실패: ' + e.message); }
+
+  const 축약 = 'cse_01Fi49nN';                   // REMOTE 의 접두사 = 보드 지문 자리
+  const got = commit(dir, 'f628-d.txt', `클라우드 작업\n\nSession-Id: ${축약}`,
+    { CLAUDE_CODE_REMOTE_SESSION_ID: REMOTE });
+  assert.equal(got, REMOTE,
+    `폴백 판에서 축약형이 안 고쳐졌다(${JSON.stringify(got)}) — 이 커밋은 어느 세션과도 안 맞는다`);
+
+  const hits = (git(dir, ['log', '-1', '--format=%B']).match(/^Session-Id:/gm) || []).length;
+  assert.equal(hits, 1, `교체가 아니라 덧붙었다 — Session-Id 가 ${hits}줄이면 읽는 쪽이 갈린다`);
+});
+
 test('amend해도 트레일러가 중복되지 않는다', (t) => {
   let dir;
   try { dir = mkRepo(); } catch (e) { return t.skip('픽스처 생성 실패: ' + e.message); }
