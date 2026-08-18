@@ -25,6 +25,78 @@ function 지문(sid) {
   return String(sid || '').replace(/^[a-z]+_/, '').slice(0, 8).toLowerCase();
 }
 
+/* ── 환경에서 세션 id 를 «뽑는» 통로 (마찰 F634 · 2026-08-18) ────────────────
+ *
+ * 왜 갈랐나 — **축들이 서로 다른 규격을 요구하는데 뽑는 함수가 하나였다.**
+ *   ㉠ 연락 축(커밋 트레일러): 「이 세션에 **메시지를 보낼 수 있는** id」여야 한다.
+ *      F628 이 이 축을 정하고 `CLAUDE_CODE_SESSION_ID` 로 내려가는 것을 회귀로 금지했다 —
+ *      그건 내부 에이전트 id 라, 거기까지 폴백하면 트레일러의 뜻이 「연락 가능한 id」에서
+ *      「그냥 구분자」로 내려앉는다. 그 판단은 이 축에서 **옳다.**
+ *   ㉡ 보드 축(파일명·주인 판정): `docs/_ops/보드/<지문>.md` 가 되어야 하므로 **hex 8자리**여야 한다.
+ *      `파일지문()` 이 `/^([0-9a-f]{8})\.md$/` 로 못박는 그 규격이다.
+ *   ㉢ 「아무 id 면 되는」 축: 락 소유자·상태 파일 이름. 겹치지만 않으면 된다.
+ *
+ * 🔴 실측 2026-08-18 (클라우드 컨테이너) — 세 후보가 이렇게 갈린다:
+ *      HOST   `CLAUDE_CODE_HOST_SESSION_ID`   = **없음**            → 지문 `''`
+ *      REMOTE `CLAUDE_CODE_REMOTE_SESSION_ID` = `cse_01Scr7GJ3A…`  → `01scr7gj` = **hex 아님**
+ *      SESSION`CLAUDE_CODE_SESSION_ID`        = `79415d5c-36d0-…`  → `79415d5c` = **유일하게 hex**
+ *    그래서 F628 의 폴백 사슬(HOST→REMOTE)만으로는 보드 축이 원리상 안 선다. 폴백을 아무리
+ *    늘려도 **한 함수로는 못 푼다** — 축을 갈라야 한다. 그전까지 클라우드 세션은 여덟 자리에서
+ *    빈 지문으로 돌았고(`board.js`·`board-move.js`·`대기열.js --집기` 등), 새는 방향은 「통과」였다.
+ *
+ * 🔑 **HOST 가 있으면 세 통로 다 지금까지와 바이트 단위로 같다.** 폴백은 HOST 가 없을 때만 탄다 —
+ *   즉 노트북 세션의 판정은 하나도 안 바뀌고, 옛 커밋·옛 보드 줄의 주인도 그대로다. 이 성질이
+ *   없으면 「과거 판정이 갈린다」는 대가를 치러야 했다(F634 신고문 ㉠의 ⚠ 그 자리).
+ *
+ * ⚠ 틀릴 때의 모습 — 이 셋이 **같은 값을 줄 것이라고 부르는 쪽이 기대하면** 조용히 갈린다.
+ *   클라우드에서 `연락지문()`≠`보드지문()` 이다(`01scr7gj` vs `79415d5c`). 그러니 커밋 트레일러로
+ *   보드 파일을 찾거나, 보드 지문으로 세션에 메시지를 보내려 하면 안 된다. 그 둘을 잇는 것은
+ *   **사람이 적은 보드 줄**뿐이다. `tests/지문축.test.js` 가 이 갈라짐을 못박는다.
+ * ⚠ 닫은 것 1개: 호출부가 `process.env` 를 각자 읽던 통로(실측 26파일·40곳). 새로 그렇게 쓰면
+ *   `tests/지문축.test.js` 의 직독 금지 검사가 빨개진다.
+ */
+
+/** 이 환경에서 «메시지를 보낼 수 있는» 세션 id 원문 — 트레일러·연락 축. HOST → REMOTE. */
+function 연락id(env) {
+  const e = env || process.env;
+  return String(e.CLAUDE_CODE_HOST_SESSION_ID || e.CLAUDE_CODE_REMOTE_SESSION_ID || '');
+}
+
+/** 연락 축의 8자리 지문. 값이 없으면 `''` — 「주인 없음」이지 「내 것」이 아니다. */
+function 연락지문(env) {
+  return 지문(연락id(env));
+}
+
+/** 이 환경에서 «보드 파일명이 될 수 있는» 세션 id 원문 — 주인 판정 축. HOST → SESSION(hex8 일 때만).
+ *
+ *  REMOTE 로는 **안 내려간다**: 그 값은 base62 라 `파일지문()` 이 원리상 못 읽는다(위 실측).
+ *  SESSION 도 **hex8 로 시작할 때만** 받는다 — 모양이 안 맞는 값을 통과시키면 그 세션은 자기 파일을
+ *  만들 수는 있는데 아무도 그 파일의 주인을 못 읽는 상태가 된다(가장 나쁜 쪽: 조용히 고아가 된다). */
+function 보드id(env) {
+  const e = env || process.env;
+  const host = String(e.CLAUDE_CODE_HOST_SESSION_ID || '');
+  if (host) return host;
+  const sess = String(e.CLAUDE_CODE_SESSION_ID || '');
+  return /^[0-9a-f]{8}(?:[-0-9a-f]*)?$/i.test(sess) ? sess : '';
+}
+
+/** 보드 축의 8자리 지문 — 반드시 hex 8자리이거나 `''` 다. 이 불변식이 `파일지문()` 과 짝이다. */
+function 보드지문(env) {
+  const f = 지문(보드id(env));
+  return /^[0-9a-f]{8}$/.test(f) ? f : '';
+}
+
+/** 이 세션을 가리키는 **아무 id** — 「겹치지만 않으면 되는」 자리 전용(락 소유자·상태 파일 이름·기록).
+ *
+ *  위 두 축과 **쓰임이 다르다.** 여기서 나온 값으로 주인을 판정하거나 메시지를 보내면 안 된다 —
+ *  그래서 세 함수를 갈라 두었다. 이 자리는 「값이 있기만 하면」 되므로 폴백이 가장 넓다.
+ *  ⚠ 옛 통로들은 여기서 `'unknown'`·`'nosid'` 로 접었다 — 그러면 **모든 세션이 같은 이름**을 써서
+ *    락과 상태 파일이 서로를 덮는다. 이제 클라우드에서도 실제 값이 잡히므로 그 겹침이 사라진다. */
+function 세션id(env) {
+  const e = env || process.env;
+  return String(e.CLAUDE_CODE_HOST_SESSION_ID || e.CLAUDE_CODE_REMOTE_SESSION_ID || e.CLAUDE_CODE_SESSION_ID || '');
+}
+
 /** 줄에 **직접 적힌** 세션 지문들. `local_302d8acd` 처럼 접두가 붙은 것만 센다. */
 function 줄의지문(line) {
   const 표 = String(line || '').match(/\b[a-z]+_[0-9a-f]{8}\b/gi) || [];
@@ -58,4 +130,4 @@ function 파일지문(파일명) {
   return m ? m[1].toLowerCase() : '';
 }
 
-module.exports = { 지문, 줄의지문, 줄이말하나, 파일지문 };
+module.exports = { 지문, 줄의지문, 줄이말하나, 파일지문, 연락id, 연락지문, 보드id, 보드지문, 세션id };

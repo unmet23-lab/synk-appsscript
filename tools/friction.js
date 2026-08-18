@@ -20,6 +20,8 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'board-id.js'));
 
 // 테스트는 실제 장부를 건드리면 안 된다 — 회귀 테스트가 기록을 오염시키면 그 기록은 증거가 못 된다
 const LEDGER = process.env.SYNK_FRICTION_LEDGER || path.resolve(__dirname, '..', 'docs', '_ops', '마찰신호.md');
@@ -317,7 +319,7 @@ function nextId(rows, opts) {
 
 /** 예약 태그에 새길 주인 — 세션마다 달라야 SHA 가 갈린다(같으면 F201 이 그대로 돌아온다). */
 function 예약자() {
-  return (process.env.CLAUDE_CODE_HOST_SESSION_ID || 'unknown') + '/' + process.pid;
+  return (보드id.세션id() || 'unknown') + '/' + process.pid;
 }
 function allocateId(rows) {
   if (ISOLATED) return nextId(rows);                       // 격리 장부 — git 접촉 금지
@@ -692,7 +694,7 @@ function 점유(ids, 옵션) {
   if (typeof 내지문 === 'undefined') {
     try {
       내지문 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'board-id.js'))
-        .지문(process.env.CLAUDE_CODE_HOST_SESSION_ID) || '';
+        .보드지문() || '';
     } catch (_) { 내지문 = ''; }
   }
   const 내것 = (x) => !!내지문 && String(x.파일 || '').startsWith(내지문);
@@ -1070,7 +1072,7 @@ function main() {
   } else if (args.includes('--이세션')) {
     /* `/close` 5-c 가 부르는 자리 — 종료코드로 갈린다: 0=겹치는 행 없음 · 1=판정할 행 있음 · 2=못 쟀다.
      * 셋을 갈라야 「안 걸렸다」와 「안 쟀다」가 같은 모양이 되지 않는다(F207). */
-    process.exit(이세션분(process.env.CLAUDE_CODE_HOST_SESSION_ID || ''));
+    process.exit(이세션분(보드id.보드id() || ''));
   } else {
     report(args.includes('--open') ? 'open' : (args.includes('--보류') ? '보류' : null));
   }

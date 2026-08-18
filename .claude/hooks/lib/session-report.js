@@ -84,7 +84,7 @@ function myCommits(cwd, hostSessionId) {
 }
 
 function hostSessionId(fallback) {
-  return process.env.CLAUDE_CODE_HOST_SESSION_ID || fallback || '';
+  return 보드id.보드id() || fallback || '';
 }
 
 /**
