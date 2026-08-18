@@ -27,6 +27,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { memoryDir, load, decisions, INDEX_FILES } = require('./memory-graph.js');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const p2 = (n) => String(n).padStart(2, '0');
 const ymd = (d) => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
@@ -618,6 +619,10 @@ function 한장밀림(date, 파일) {
 
 function main() {
   const args = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  const 아는플래그 = ['--all', '--count', '--json', '--닫음', '--버려진', '--전체', '--절', '--조각', '--한장', '--확인'];
+  const 플래그오류 = 인자게이트('decision-queue', args, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const ci = args.indexOf('--count');
   const count = ci >= 0 ? Number(args[ci + 1]) || 3 : 3;
   const r = build({ count });

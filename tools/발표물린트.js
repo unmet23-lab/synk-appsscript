@@ -19,6 +19,7 @@ const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const 활자주입 = require('./lib/활자주입.js');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 // 정본 = docs/정본/SYNK/SYNK 집필 규범.txt §7(금칙어 — 구 발표물 제작 프롬프트 [공통 블록] ■2)
 //
@@ -296,6 +297,11 @@ function 넘침(file, chrome) {
 }
 
 function main(argv) {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 위치 인자(html 경로들)는 `--` 로 안 시작하니 안 걸린다 · 종료 코드를 돌려주는 꼴이다. */
+  const 아는플래그 = ['--넘침'];
+  const 플래그오류 = 인자게이트('발표물린트', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 2; }
   const 넘침검사 = argv.includes('--넘침');
   const files = argv.filter((a) => !a.startsWith('--'));
   if (!files.length) {

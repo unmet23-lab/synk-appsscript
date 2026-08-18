@@ -20,6 +20,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 // 테스트는 실제 장부를 건드리면 안 된다 — 회귀 테스트가 기록을 오염시키면 그 기록은 증거가 못 된다
 const LEDGER = process.env.SYNK_FRICTION_LEDGER || path.resolve(__dirname, '..', 'docs', '_ops', '마찰신호.md');
@@ -919,6 +920,11 @@ function 이세션분(sid) {
 
 function main() {
   const args = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 하위 명령(`add`·`resolve`·`F006` 류)은 `--` 로 안 시작하니 애초에 안 걸린다. */
+  const 아는플래그 = ['--date', '--open', '--보류', '--이세션', '--파일', '--해소', '--해소파일'];
+  const 플래그오류 = 인자게이트('friction', args, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   if (!fs.existsSync(LEDGER)) {
     console.error(`[friction] 장부가 없다: ${LEDGER}`);
     process.exit(1);

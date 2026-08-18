@@ -22,6 +22,7 @@ const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const REPO = path.resolve(__dirname, '..');
 /* 기본값은 첫 손님(마스코트_렌더)이고, `--입력`·`--출력` 으로 다른 세트에도 같은 통로를 쓴다.
@@ -100,12 +101,19 @@ img.src=${JSON.stringify(fileUrl(path.join(SRC_DIR, 이름)))};
 }
 
 function main() {
+  const 인자 = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * 🔴 **환경 점검(`findChrome`)보다 먼저** 판정한다. 뒤에 두면 크롬이 없는 기계에서 오타가
+   *   「SKIP: 크롬을 못 찾았다」로 나가고, 사람은 **인자는 맞았는데 환경이 문제**라고 읽는다 —
+   *   진단이 통째로 엉뚱한 데로 간다(실측 2026-08-18: 이 파일에 처음 달았을 때 실제로 그랬다). */
+  const 아는플래그 = ['--입력', '--출력'];
+  const 플래그오류 = 인자게이트('마스코트누끼', 인자, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const chrome = findChrome();
   if (!chrome) {
     console.error('SKIP: 크롬을 못 찾았다 — 배경 제거를 **안 돌렸다**(통과 아님). CHROME_PATH 로 지정할 수 있다.');
     process.exit(2);
   }
-  const 인자 = process.argv.slice(2);
   const 옵션빼기 = (이름) => {
     const i = 인자.indexOf(이름);
     if (i < 0) return null;

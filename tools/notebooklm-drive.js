@@ -31,6 +31,7 @@ const os = require('os');
 const { execFileSync } = require('child_process');
 
 const E = require('./notebooklm-export.js');   // 게이트·수집 규칙을 공유한다
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 const REPO = path.resolve(__dirname, '..');
 
 /* 드라이브 데스크톱 마운트를 **여기서** 찾는다 — .cmd 래퍼에 한글 경로를 두면 안 되기 때문이다.
@@ -87,6 +88,10 @@ ${본문}
 
 function main() {
   const args = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  const 아는플래그 = ['--dry', '--out'];
+  const 플래그오류 = 인자게이트('notebooklm-drive', args, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const DRY = args.includes('--dry');
   const i = args.indexOf('--out');
   const OUT = i >= 0 && args[i + 1] ? path.resolve(args[i + 1]) : DEFAULT_OUT;

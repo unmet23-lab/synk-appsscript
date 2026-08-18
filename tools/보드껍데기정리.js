@@ -34,7 +34,15 @@ const 동기 = require(path.join(__dirname, 'lib', 'master동기.js'));
  * 이음매지 코드가 사는 곳이 아니다. ROOT 기준으로 부르면 픽스처(`.claude` 없는 임시 저장소)에서
  * 통째로 죽고, 그러면 회귀가 정작 「지우는가」에 도달을 못 한다(board-move 도 같은 좌표를 쓴다). */
 const 보드id = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'board-id.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
+/* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+ * ⚠ 판정을 `require.main` 블록 **안**에 둔다 — 몸통이 최상위에서 도는 꼴이다(회귀 ③-3). */
+const 아는플래그 = ['--실행'];
+if (require.main === module) {
+  const 플래그오류 = 인자게이트('보드껍데기정리', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
+}
 const 실행 = process.argv.slice(2).includes('--실행');
 
 /* ⚠ `core.quotePath=false` 없으면 git 이 한글 경로를 8진 이스케이프로 뱉는다 — 이 저장소는

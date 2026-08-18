@@ -54,6 +54,7 @@ const { 표기접기 } = require('../tests/lib/소스검사.js');
 const ROOT = path.resolve(__dirname, '..');
 const { claspProjects, parseDeploymentLine } = require(path.join(ROOT, 'tools', 'deploy-security-check.js'));
 const 프로젝트 = require(path.join(ROOT, '.claude', 'hooks', 'lib', 'clasp-project.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 /* 지문 표기 — 설명에 섞여도 사람이 읽는 문장을 해치지 않는 짧은 꼬리표.
  * 8자리면 이 저장소 규모(배포 수십 건)에서 충돌이 실질적으로 없고, 사람이 눈으로 대조할 수 있다. */
@@ -700,6 +701,10 @@ function 안나간변경(root = ROOT, 프로젝트들목록 = null, { 도장 = t
 module.exports = { 배포집합, 지문, 배포목록, 라이브대조, 라이브판찾기, 라이브판접기, 못읽음, 판정, 점검, 지문표기, FP_RE, claspProjects, 안나간변경, 라이브도장, 도장찍기, 실측접기, 도장키, 미커밋집합, 배포집합미커밋 };
 
 if (require.main === module) {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  const 아는플래그 = ['--check', '--라이브'];
+  const 플래그오류 = 인자게이트('배포판점검', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const 라이브 = process.argv.includes('--라이브');
   const 프로젝트들 = claspProjects();
   const 결과 = 프로젝트들.map((p) => 점검(p, ROOT, { 라이브 }));

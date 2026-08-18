@@ -34,6 +34,7 @@ const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = path.join(__dirname, '..');
 const 장부경로 = path.join(ROOT, 'docs', '_ops', '게이트장부.jsonl');
@@ -302,6 +303,11 @@ function 훅() {
    조작한다.** 회귀가 저장소 설정을 바꾸는 것은 사고지 검사가 아니다. */
 function 진입() {
   const 인자 = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * 🔴 **gh 를 부르기 전에** 판정한다 — 이 도구는 GitHub 설정을 실제로 바꾼다. */
+  const 아는플래그 = ['--걸기', '--사유', '--세우기', '--풀기', '--훅'];
+  const 플래그오류 = 인자게이트('게이트', 인자, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const 있나 = (f) => 인자.includes(f);
   const 값 = (f) => { const i = 인자.indexOf(f); return i >= 0 ? 인자[i + 1] : undefined; };
 

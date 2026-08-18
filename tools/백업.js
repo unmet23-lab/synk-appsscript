@@ -26,6 +26,7 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { 찾기: 바탕화면찾기 } = require('./lib/바탕화면.js');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const 스냅샷폴더명 = 'SYNK_안전백업';
 const 큰파일한계 = 100 * 1024 * 1024; // 100MB — 넘으면 건너뛰고 소리 낸다(조용한 누락 금지)
@@ -185,6 +186,11 @@ function 찍기(보고, 진단만) {
 module.exports = { 상태줄경로, 파일복사, 저장소들, 클라우드루트, 본진, 실행, 스냅샷폴더명, 큰파일한계 };
 
 if (require.main === module) {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * 🔴 **`실행()` 보다 먼저** 판정한다 — 오타를 친 실행이 백업을 다 하고 죽으면 안 된다. */
+  const 아는플래그 = ['--진단'];
+  const 플래그오류 = 인자게이트('백업', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const 진단만 = process.argv.includes('--진단');
   찍기(실행({ 진단만 }), 진단만);
 }
