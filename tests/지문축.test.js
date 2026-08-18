@@ -152,6 +152,54 @@ test('🔑 분모를 밝힌다 — 통로를 실제로 «쓰는» 생산 파일�
     + '  「직독 0건」은 이 분모와 «함께» 읽어야 참이다(F207): 둘 다 0 이면 그냥 코드가 사라진 것이다.');
 });
 
+test('🔴 커밋 트레일러를 «찾는» 자리는 연락 축을 쓴다 — 보드 축을 넣으면 조용히 0건이 된다', () => {
+  /* 실측 2026-08-18 (`/close` 5-c 가 잡았다): `friction.js --이세션` 이 「이 세션 커밋이 0건이다 —
+   *   고친 게 없으니 닫을 것도 없다」를 냈는데, 실제 커밋은 **15건**이었다.
+   *   기전은 이 파일 머리말이 예언한 그것이다 — `이세션분` → `내커밋파일` 이
+   *   `git log --grep="Session-Id: <sid>"` 로 찾는데, 그 트레일러에 박히는 값은
+   *   `prepare-commit-msg` 가 쓰는 **연락 축**(HOST→REMOTE)이다. 거기에 보드 축(HOST→SESSION)을
+   *   넣으면 클라우드에서 두 값이 갈려 매칭이 0건이 되고, 새는 방향은 정확히 「통과」다.
+   * 🔑 그래서 이 검사는 「축을 갈랐다」가 아니라 **「갈라 놓고 제자리에 꽂았나」**를 잰다. */
+  const src = fs.readFileSync(path.join(ROOT, 'tools', 'friction.js'), 'utf8');
+  assert.match(src, /이세션분\(보드id\.연락id\(\)/,
+    '`이세션분` 에 연락 축이 아닌 값을 넘긴다 — 커밋 트레일러와 갈려 「내 커밋 0건」이 된다');
+  assert.ok(!/이세션분\(보드id\.보드지문\(|이세션분\(보드id\.보드id\(/.test(src),
+    '`이세션분` 에 보드 축이 남아 있다');
+});
+
+/** 셸 스크립트에서 «도는 줄»만 남긴다 — 주석은 과녁이 아니다.
+ *
+ * 🔴 첫 판이 여기서 거짓양성을 냈다: `prepare-commit-msg` 는 머리말에서
+ *   「`CLAUDE_CODE_SESSION_ID` 로는 안 내려간다」고 **일부러 그 이름을 적어** 이유를 설명한다.
+ *   원문 전체를 훑으면 그 설명이 곧 위반으로 잡힌다 — 금지를 문서화할수록 빨개지는 검사가 된다.
+ *   같은 병을 `tests/러너설치.test.js` 의 `대입이름들()` 에서 이미 한 번 고쳤다(CLAUDE.md 맹점 ④
+ *   = 가드는 자기 전처리에도 눈이 먼다). 아래 픽스처가 양쪽(탐지력·거짓양성)을 다 못박는다. */
+function 도는줄(src) {
+  return src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+}
+
+test('🔴 탐지력 — 실행부의 SESSION 폴백을 잡는다 (픽스처 · 버그가 아직 있을 것을 요구하지 않는다)', () => {
+  const 나쁜 = '#!/bin/sh\n# SESSION 은 안 쓴다\nSID="$CLAUDE_CODE_HOST_SESSION_ID"\n'
+    + '[ -n "$SID" ] || SID="$CLAUDE_CODE_SESSION_ID"\n';
+  assert.match(도는줄(나쁜).replace(/CLAUDE_CODE_(HOST|REMOTE)_SESSION_ID/g, ''), /CLAUDE_CODE_SESSION_ID/,
+    '실행부의 SESSION 폴백을 못 잡았다 — 이 회귀가 무력하다');
+
+  const 착한 = '#!/bin/sh\n# ⚠ CLAUDE_CODE_SESSION_ID 로는 안 내려간다 — 이유는 …\n'
+    + 'SID="$CLAUDE_CODE_HOST_SESSION_ID"\n[ -n "$SID" ] || SID="$CLAUDE_CODE_REMOTE_SESSION_ID"\n';
+  assert.ok(!/CLAUDE_CODE_SESSION_ID/.test(도는줄(착한).replace(/CLAUDE_CODE_(HOST|REMOTE)_SESSION_ID/g, '')),
+    '거짓양성 — 주석에 적힌 «금지 이유»를 위반으로 셌다');
+});
+
+test('🔑 트레일러를 박는 쪽과 찾는 쪽이 같은 축이다 — 두 파일이 갈라지면 아무도 못 찾는다', () => {
+  const 훅 = fs.readFileSync(path.join(ROOT, 'tools', 'githooks', 'prepare-commit-msg'), 'utf8');
+  // 훅은 셸이라 통로를 못 부른다 — 대신 «같은 폴백 사슬»을 쓰는지 본다(HOST → REMOTE, SESSION 은 금지).
+  const 코드 = 도는줄(훅);
+  assert.match(코드, /CLAUDE_CODE_HOST_SESSION_ID/, '훅이 HOST 를 안 본다');
+  assert.match(코드, /CLAUDE_CODE_REMOTE_SESSION_ID/, '훅이 REMOTE 폴백을 안 쓴다 — 클라우드에서 트레일러가 안 박힌다(F628)');
+  assert.ok(!/CLAUDE_CODE_SESSION_ID/.test(코드.replace(/CLAUDE_CODE_(HOST|REMOTE)_SESSION_ID/g, '')),
+    '훅이 SESSION 축까지 내려간다 — 트레일러의 뜻이 「연락 가능한 id」에서 「그냥 구분자」로 내려앉는다(F628)');
+});
+
 test('🔑 허용 목록의 파일이 실제로 존재한다 — 낡은 이름이 검사를 조용히 넓히지 않게', () => {
   for (const f of 직독_허용) {
     assert.ok(fs.existsSync(path.join(ROOT, f)), `허용 목록에 없는 파일이 적혀 있다: ${f}`);
