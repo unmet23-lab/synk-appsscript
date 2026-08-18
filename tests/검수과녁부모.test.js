@@ -22,6 +22,8 @@ const assert = require('node:assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+/* 주석 제거는 통로가 하나다 — 지역 사본은 저마다 다르게 틀린다(F401·#Q114). */
+const { 코드만 } = require('./lib/소스검사.js');
 const { execFileSync } = require('child_process');
 
 const 검수 = require('../tools/codex-review.js');
@@ -101,7 +103,6 @@ test('과녁을 뽑는 쪽과 읽는 쪽이 같은 부모 기준을 쓴다 — �
   /* ⚠ **주석을 걷어내고 센다.** 이 검사를 처음 짰을 때 주석까지 세어, 코드가 `머지기준` 을 잃어도
    * 바로 위 설명 주석이 그 낱말을 들고 있어서 초록이 났다(변이 ②가 잡았다 — 맹점 ④ 「맞는 얼굴로
    * 틀린 값」의 실물이다). 재려는 것은 **호출 인자**이지 그 자리에 무슨 말이 적혔는지가 아니다. */
-  const 코드만 = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
   const 본문 = (fn) => {
     const s = 소스.indexOf(`function ${fn}(`);
     assert.ok(s !== -1, `${fn} 이 사라졌다 — 이름이 바뀌었으면 이 계약도 함께 옮겨야 한다`);

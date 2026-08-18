@@ -11,6 +11,8 @@ const assert = require('node:assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+/* 주석 제거는 통로가 하나다 — 지역 사본은 저마다 다르게 틀린다(F401·#Q114). */
+const { 코드만 } = require('./lib/소스검사.js');
 
 const { 훅띄우기 } = require('./lib/훅띄우기.js');
 const 표 = require('../tools/lib/표.js');
@@ -124,7 +126,7 @@ test('옛 통로 금지 — tools·hooks 어디에도 날 split 으로 되돌아
 
   /* 주석·머리말의 인용만 빼고 본다 — 「/ 나 * 가 앞에 없는 줄」로 걸렀더니 옛 통로가
    * `.replace(/^\|/, '')` 의 정규식 슬래시 때문에 주석으로 분류돼 그냥 빠져나갔다(변이 실측). */
-  const 코드줄 = (src) => src.split('\n').filter((l) => !/^\s*(\/\/|\/?\*)/.test(l));
+  const 코드줄 = (src) => 코드만(src).split('\n');
   const 되돌아간것 = 대상.filter((rel) => 코드줄(fs.readFileSync(path.join(ROOT, rel), 'utf8'))
     .some((l) => l.includes(".split('|')")));
   assert.deepEqual(되돌아간것, [],

@@ -12,6 +12,8 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const path = require('node:path');
+/* 주석 제거는 통로가 하나다 — 지역 사본은 저마다 다르게 틀린다(F401·#Q114). */
+const { 코드만, 파일소스 } = require('./lib/소스검사.js');
 const { spawnSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -150,8 +152,7 @@ test('분리 HEAD·빈 값은 master 로 떨어진다 — 「HEAD 라는 브랜�
 
 test('🔴 gh 조회에 --branch 를 실제로 넘긴다 (남의 브랜치 초록이 내 초록이 된다)', () => {
   /* ⚠ 주석을 지우고 본다 — 위 설명 주석에 `--branch` 가 적혀 있어 검사가 산문을 보고 통과한다(F087). */
-  const 소스 = require('node:fs').readFileSync(도구경로, 'utf8')
-    .split('\n').filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join('\n');
+  const 소스 = 코드만(파일소스(도구경로));
   assert.match(소스, /'run',\s*'list'[\s\S]{0,120}'--branch'/,
     'gh run list 가 브랜치 필터 없이 돈다 — 폰 작업 claude/* run 이 같은 목록에 섞인다');
 });
@@ -175,8 +176,7 @@ test('🔴 스텝이 하나라도 돌았으면 미기동이 아니다 — 진짜
 
 test('적색 분기가 jobs 를 실제로 읽고 미기동을 가른다 — 판별 함수만 있고 배선이 없으면 그대로 샌다', () => {
   /* ⚠ 주석을 지우고 본다 — 설명 주석의 문구로 검사가 산문을 보고 통과하면 안 된다(F087). */
-  const 소스 = require('node:fs').readFileSync(도구경로, 'utf8')
-    .split('\n').filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join('\n');
+  const 소스 = 코드만(파일소스(도구경로));
   assert.match(소스, /'--json',\s*'jobs'/, 'run 의 jobs 를 안 읽는다 — 미기동 판별의 재료가 없다');
   assert.match(소스, /미기동인가\(jobs\)/, '판별 함수가 적색 분기에 배선돼 있지 않다');
 });

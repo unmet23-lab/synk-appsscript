@@ -37,6 +37,8 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+/* 주석 제거는 통로가 하나다 — 지역 사본은 저마다 다르게 틀린다(F401·#Q114). */
+const { 코드만 } = require('./lib/소스검사.js');
 const { 훅띄우기 } = require('./lib/훅띄우기');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -134,7 +136,7 @@ test('③ 맞는 인용에는 경고가 안 뜬다 — 탐지가 아무 데나 �
 
 test('④ 훅이 저장소 이름을 문자열로 박지 않는다', () => {
   const src = fs.readFileSync(HOOK, 'utf8');
-  const 주석뺀 = src.split('\n').filter((l) => !/^\s*(\*|\/\*|\/\/)/.test(l)).join('\n');
+  const 주석뺀 = 코드만(src);
   assert.ok(
     !/SYNK-appsscript/.test(주석뺀),
     '훅 코드에 저장소 이름이 다시 박혔다 — 상대경로는 `ROOT`(훅 파일 위치)에서 낸다',

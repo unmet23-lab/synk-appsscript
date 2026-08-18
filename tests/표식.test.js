@@ -16,6 +16,8 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
+/* 주석 제거는 통로가 하나다 — 지역 사본은 저마다 다르게 틀린다(F401·#Q114). */
+const { 코드만 } = require('./lib/소스검사.js');
 
 const 표식 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '표식.js'));
 
@@ -67,7 +69,7 @@ test('🔴 정규식을 내보내지 않는다 — 공유된 `/g` 는 `lastIndex
 
 // ── ③ 옛 통로 금지 ───────────────────────────────────────────────────
 /** 주석·머리말의 인용은 뺀다 — 검사가 자기 설명을 신고하면 안 된다(표칸 회귀와 같은 규칙). */
-const 코드줄 = (src) => src.split('\n').filter((l) => !/^\s*(\/\/|\/?\*)/.test(l));
+const 코드줄 = (src) => 코드만(src).split('\n');
 const 옛패턴 = /F0(\\d|\[0-9\])/; // 소스에 그대로 적힌 `F0\d{2}` · `F0[0-9]{2}`
 
 function js파일들(dir, 모음 = []) {

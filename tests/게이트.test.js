@@ -19,6 +19,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+/* 주석 제거는 통로가 하나다 — 지역 사본은 저마다 다르게 틀린다(F401·#Q114). */
+const { 코드만 } = require('./lib/소스검사.js');
 
 const 게이트 = require('../tools/게이트.js');
 const 소스 = fs.readFileSync(path.join(__dirname, '..', 'tools', '게이트.js'), 'utf8');
@@ -164,16 +166,16 @@ test('⑩ 몸통을 손으로 조립하지 않는다 — 갈라지는 자리를 
      🔑 **주석은 벗기고 본다** — 첫 판에서 이 검사가 스스로 빨개졌다: 사고를 기록한
         «주석»이 금지 문자열을 그대로 인용하고 있었기 때문이다. 사고를 적으면 검사가
         깨지는 도구는, 다음 사람에게 「기록하지 마라」를 가르친다. */
-  const 코드만 = 소스.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
-  assert.equal(/conditions\[/.test(코드만), false,
+  const 벗긴 = 코드만(소스);
+  assert.equal(/conditions\[/.test(벗긴), false,
     'gh 인자에 conditions 손조립이 남아 있다 — 정의와 갈라지는 자리다');
-  assert.equal(/rules\[\]/.test(코드만), false, 'gh 인자에 rules 손조립이 남아 있다');
+  assert.equal(/rules\[\]/.test(벗긴), false, 'gh 인자에 rules 손조립이 남아 있다');
   /* 주석 벗기기가 실제로 일했는지 — 안 벗겨졌으면 위 둘은 「늘 초록」이 아니라 「늘 적색」이다 */
-  assert.ok(코드만.length < 소스.length, '주석이 하나도 안 벗겨졌다 — 벗기기 정규식이 죽었다');
-  assert.match(코드만, /요청몸통/, '주석을 너무 벗겨 코드까지 날렸다');
+  assert.ok(벗긴.length < 소스.length, '주석이 하나도 안 벗겨졌다 — 벗기기 정규식이 죽었다');
+  assert.match(벗긴, /요청몸통/, '주석을 너무 벗겨 코드까지 날렸다');
   /* 몸통을 보내는 곳은 전부 `--input` 이어야 한다 — POST·PUT 둘 다 */
-  const 몸통보냄 = (코드만.match(/'--method', '(POST|PUT)'/g) || []).length;
-  const 인풋 = (코드만.match(/'--input', 본문/g) || []).length;
+  const 몸통보냄 = (벗긴.match(/'--method', '(POST|PUT)'/g) || []).length;
+  const 인풋 = (벗긴.match(/'--input', 본문/g) || []).length;
   assert.ok(몸통보냄 > 0, '몸통을 보내는 호출을 하나도 못 찾았다 — 이 검사가 0건을 초록으로 읽고 있다');
   assert.equal(인풋, 몸통보냄, `몸통을 보내는 호출 ${몸통보냄}개 중 --input 은 ${인풋}개다`);
 });

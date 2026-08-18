@@ -10,6 +10,9 @@ const assert = require('node:assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+/* 주석 제거는 통로가 하나다 — 지역 사본은 저마다 다르게 틀린다(F401·#Q114). */
+/* 🔑 여긴 «행 번호»가 뜻이다(위반 자리를 사람이 찾아간다) — 그래서 `줄맞춰코드만` 이다. */
+const { 줄맞춰코드만, 파일소스 } = require('./lib/소스검사.js');
 const { execFileSync } = require('child_process');
 
 const TOOL = path.join(__dirname, '..', 'tools', 'memory-graph.js');
@@ -227,8 +230,7 @@ function 조립검사(뿌리) {
       if (e.isDirectory()) { if (e.name !== 'node_modules' && e.name !== 'worktrees') 걷기(p); continue; }
       if (!e.name.endsWith('.js') || e.name === 조립정본) continue;
       결과.훑은수 += 1;
-      fs.readFileSync(p, 'utf8').split(/\r?\n/).forEach((줄, i) => {
-        if (/^\s*(\/\/|\*|\/\*)/.test(줄)) return;     // 주석 줄은 설명이지 조립이 아니다
+      줄맞춰코드만(파일소스(p)).split('\n').forEach((줄, i) => {
         for (const s of 손조립) if (s.re.test(줄)) 결과.위반.push(`${path.relative(뿌리, p)}:${i + 1} — ${s.이름}`);
       });
     }
