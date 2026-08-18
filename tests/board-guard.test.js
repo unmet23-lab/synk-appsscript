@@ -1834,3 +1834,88 @@ test('🔴 [F582·㉢] 박동이 **하나도 없으면** 막는다 — 빈 집�
     '🔴 생사를 못 재는 판에서 ④ 가 통째로 꺼졌다 — 모르면 막는 쪽에 둔다(F207)');
   assert.match(r.사유, /남이 이미 선언했다/, '④ 가 아닌 다른 검사가 막았다면 이 시험은 아무것도 안 잰다');
 });
+
+/* ── 🕰 겹침 판정이 «낡은 보드»로 났음을 말하는가 (F631 정정 · 2026-08-18) ────────────
+ *
+ * 🔴 왜 있나 — 실측: #Q115 를 두 세션이 **19분 차**로 각자 선언해 둘 다 끝까지 갔다. 뒤에 선언한
+ *   쪽의 체크아웃에는 앞 선언이 **아직 안 와 있었다**(`남의줄` 은 작업본을 읽는다). 그래서 가드는
+ *   조용했고, 그 침묵은 「안 겹친다」로 읽혔다. **「겹치는 줄 없음」과 「볼 보드가 낡았음」이 화면에서
+ *   같은 모양이면 안 된다** — 이 저장소가 반복해서 당하는 그 형태다.
+ *
+ * ⚠ 탐지력은 이 픽스처가 진다 — 실저장소는 보통 뒤처짐 0 이라 「조용함」이 「장치가 산다」를
+ *   증명하지 못한다(초록은 분모와 함께 읽는다 · F207). */
+const 낡음 = fs.mkdtempSync(path.join(os.tmpdir(), 'boardguard-stale-'));
+
+/** 뒤처진 체크아웃 하나를 만든다 → 보드 파일 경로. `보드바뀜` 이면 origin 쪽 커밋이 보드를 건드린다. */
+function 낡은저장소(이름, 보드바뀜) {
+  const root = path.join(낡음, 이름);
+  const 보드 = 보드파일(root, 'cccc3333');
+  const git = (...a) => execFileSync('git', ['-C', root, ...a], { encoding: 'utf8', stdio: 'pipe' });
+  const 상대 = 'docs/_ops/보드/cccc3333.md';
+  fs.writeFileSync(보드, `${머리}\n${기존}\n`, 'utf8');
+  git('init', '-q');
+  git('config', 'user.email', 'test@synk.local');
+  git('config', 'user.name', 'test');
+  git('add', 상대);
+  git('commit', '-qm', 'base', '--no-verify');
+  const 밑 = git('rev-parse', 'HEAD').trim();
+  /* origin 쪽에만 있는 커밋 — 보드를 건드리는 판과 안 건드리는 판을 갈라 만든다. */
+  if (보드바뀜) {
+    fs.writeFileSync(보드, `${머리}\n${기존}\n| 2026-08-18 | **남이 origin 에만 올린 선언** | x.js | 🔵착수(\`local_99999999\`) |\n`, 'utf8');
+    git('add', 상대);
+  } else {
+    fs.writeFileSync(path.join(root, '딴것.txt'), '보드와 무관한 커밋\n', 'utf8');
+    git('add', '딴것.txt');
+  }
+  git('commit', '-qm', '앞선 판', '--no-verify');
+  const 앞 = git('rev-parse', 'HEAD').trim();
+  git('update-ref', 'refs/remotes/origin/master', 앞);
+  git('reset', '-q', '--hard', 밑);          // 내 체크아웃은 뒤처진 채로 둔다
+  return 보드;
+}
+
+const 내새줄 = '| 2026-08-18 | **완전히 다른 트랙 제목이라 겹치지 않는다** | zzz.js | 🔵착수(`local_3fd8f6db`) |';
+const 새줄붙임 = (보드) => 판정({ tool_name: 'Edit', tool_input: { file_path: 보드, old_string: 기존, new_string: `${기존}\n${내새줄}` } }, 나);
+
+test('🔴 [🕰] 보드가 바뀐 채 뒤처졌으면 «낡은 보드로 냈다»고 말한다 — 겹침 0 이어도', { skip: git있음 ? false : 'git 없음' }, () => {
+  const r = 새줄붙임(낡은저장소('보드바뀜', true));
+  assert.strictEqual(r.결정, 'allow', '막으면 안 된다 — 뒤처짐은 차단 사유가 아니다(F192 와 같은 규율)');
+  assert.match(r.알림, /낡은 보드/, '🔴 「겹치는 줄 없음」과 「볼 보드가 낡았음」이 같은 모양으로 나갔다 — F631 그대로다');
+  assert.match(r.알림, /보드가 1번 바뀌었다/, '몇 번 바뀌었는지 안 말하면 사람이 당길지 말지 못 정한다');
+  assert.match(r.알림, /git fetch origin master/, '처방이 없는 경고는 우회를 정상 통로로 만든다(F103)');
+});
+
+test('🔴 [🕰·거짓양성] 뒤처졌어도 **보드가 안 바뀌었으면** 조용하다 — 소음은 곧 무시다', { skip: git있음 ? false : 'git 없음' }, () => {
+  const r = 새줄붙임(낡은저장소('보드안바뀜', false));
+  assert.ok(!/낡은 보드/.test(r.알림),
+    `보드와 무관한 뒤처짐에까지 울린다 — 이 저장소는 커밋 간격 중앙값 1분이라 상시 소음이 된다:\n${r.알림}`);
+});
+
+test('🔴 [🕰·거짓양성] **최신이면 조용하다** — 매 선언마다 울리면 그 경고는 곧 꺼진다', { skip: git있음 ? false : 'git 없음' }, () => {
+  /* 🔴 이 검사는 **변이가 뚫어서** 생겼다: 「최신 갈래(`if (!r.뒤) return null`)」를 죽여도
+   *   회귀 124건이 전부 초록이었다 — 즉 거짓양성 방향이 통째로 안 재지고 있었다.
+   *   새는 방향이 여기서는 「소음」이고, 소음은 사람이 가드를 끄게 만든다(F103). */
+  const root = path.join(낡음, '최신');
+  const 보드 = 보드파일(root, 'cccc3333');
+  const git = (...a) => execFileSync('git', ['-C', root, ...a], { encoding: 'utf8', stdio: 'pipe' });
+  fs.writeFileSync(보드, `${머리}\n${기존}\n`, 'utf8');
+  git('init', '-q');
+  git('config', 'user.email', 'test@synk.local');
+  git('config', 'user.name', 'test');
+  git('add', 'docs/_ops/보드/cccc3333.md');
+  git('commit', '-qm', 'base', '--no-verify');
+  git('update-ref', 'refs/remotes/origin/master', git('rev-parse', 'HEAD').trim());   // 뒤처짐 0
+  const r = 새줄붙임(보드);
+  assert.ok(!/낡은 보드/.test(r.알림), `최신인데 「낡았다」고 울린다 — 상시 소음이 되면 진짜 신호를 죽인다:\n${r.알림}`);
+});
+
+test('🔴 [🕰·거짓양성] 표 «밖» 편집에는 안 잰다 — 편집마다 git 을 부르지 않는다', { skip: git있음 ? false : 'git 없음' }, () => {
+  const 보드 = 낡은저장소('줄추가아님', true);
+  /* ⚠ 경계를 **실측으로** 잡았다: 처음엔 「있던 줄의 상태 칸만 고치는 편집」을 음성 사례로 뒀는데,
+   *   `새줄` 은 줄 «텍스트»의 차집합이라 상태 칸만 바뀌어도 새 줄로 세어진다 — 그 검사는 전제가
+   *   틀렸고 빨갛게 났다. 진짜 경계는 «표의 데이터 줄이냐»다. 머리글 주석만 고치면 안 잰다. */
+  const 머리주석 = '<!-- 세션 보드 정본 조각 -->';
+  fs.writeFileSync(보드, `${머리주석}\n${fs.readFileSync(보드, 'utf8')}`, 'utf8');
+  const r = 판정({ tool_name: 'Edit', tool_input: { file_path: 보드, old_string: 머리주석, new_string: '<!-- 세션 보드 정본 조각 (고침) -->' } }, 나);
+  assert.ok(!/낡은 보드/.test(r.알림), `표 밖 편집에까지 울린다 — 대가(23ms×매편집)를 안 내기로 한 자리다:\n${r.알림}`);
+});
