@@ -22,6 +22,7 @@ const path = require('path');
 const os = require('os');
 const { execFileSync } = require('child_process');
 const { findChrome } = require('./브랜드렌더린트.js');   // 크롬 찾기는 한 벌만 산다(두 곳에 적으면 갈라진다)
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -306,6 +307,10 @@ function 최악픽스처(M, 차시) {
 
 function main() {
   const argv = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  const 아는플래그 = ['--json', '--out', '--넘침시험', '--실측', '--자수', '--적합', '--차시', '--최악'];
+  const 플래그오류 = 인자게이트('서클조판', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const 값 = (k, d) => { const i = argv.indexOf(k); return i >= 0 && argv[i + 1] ? argv[i + 1] : d; };
   const M = 서클모듈();
   const 차시 = Number(값('--차시', '12')) || 12;

@@ -38,6 +38,7 @@
 const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 /** 얇은 실행층 — 판정이 없다. `코드` 는 종료 상태(못 띄웠으면 `null`).
  *  🔑 `코드` 를 버리면 「일치 0」과 「못 봤다」가 같은 `ok:false` 로 뭉친다 — 그게 옛 구멍이다. */
@@ -256,6 +257,11 @@ function sha고르기(argv) {
 
 if (require.main === module) {
   const argv = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  /* ⚠ 위치 인자(sha)는 `--` 로 안 시작하니 안 걸린다. */
+  const 아는플래그 = ['--env', '--영향'];
+  const 플래그오류 = 인자게이트('증거패킷', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const 값 = (플래그) => { const i = argv.indexOf(플래그); return i >= 0 ? argv[i + 1] : null; };
   const sha = sha고르기(argv);
   if (!sha) { console.error('사용법: 증거패킷.js <sha> [--env 개발|운영] [--영향 "한 줄"]'); process.exit(1); }

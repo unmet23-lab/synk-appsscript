@@ -42,6 +42,7 @@ const { execFileSync, spawnSync } = require('child_process');
 const 활자주입 = require('./lib/활자주입.js');   // 마커·주입 판정은 한 곳에서만 온다
 const { 경로: 바탕화면 } = require('./lib/바탕화면.js');   // 바탕화면 실경로는 이 통로 하나뿐
 const { 갈래폴더 } = require('./운영자료.js');   // 폴더 이름 정본(글자 사본 금지 · require 부작용 0)
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 /** repo 루트 — 환경변수가 이음매다(테스트가 픽스처 git 저장소로 「낡음」 탐지력을 CI에서 잰다.
  *  실저장소 이력은 CI에서 shallow 라 조상 판정이 조용히 어긋날 수 있다 — 그래서 픽스처가 진다). */
@@ -501,6 +502,10 @@ function 리포트(결과, { 훅 } = {}) {
 
 if (require.main === module) {
   const argv = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  const 아는플래그 = ['--bake', '--check', '--hook', '--json', '--readme', '--stamp'];
+  const 플래그오류 = 인자게이트('지도대장', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const has = (f) => argv.includes(f);
   const 값 = (f) => { const i = argv.indexOf(f); return i >= 0 ? argv[i + 1] : undefined; };
   const dir = 지도폴더();

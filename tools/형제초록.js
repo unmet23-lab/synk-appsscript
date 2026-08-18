@@ -40,6 +40,7 @@ const ROOT = path.resolve(__dirname, '..');
 const 도장경로 = path.join(ROOT, 'docs', '_ops', '형제초록.json');
 /* 「형제는 어디 있나」의 정본 — 사본을 만들면 갈라지고, 갈라진 쪽은 조용히 「없다」를 낸다. */
 const 형제저장소 = require(path.join(ROOT, '.claude', 'hooks', 'lib', '형제저장소.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 /* 워크트리에서도 형제를 찾는다 — 자리는 정본 하나에서 파생하고(`형제저장소.js`), **존재 판정은
  * 여기 남는다**: 이 축이 묻는 것은 「저장소로 열리나」(`.git` 이 있나)라 술어가 다르다.
@@ -181,6 +182,11 @@ function 찍기(argv) {
 
 function main() {
   const argv = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  /* ⚠ 종료 코드를 **돌려주는** 꼴이라 `process.exit` 를 여기서 부르지 않는다. */
+  const 아는플래그 = ['--ref', '--sha', '--건너뜀', '--실패', '--잰곳', '--잰시각', '--찍기', '--통과', '--하네스'];
+  const 플래그오류 = 인자게이트('형제초록', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 1; }
   if (argv.includes('--찍기')) return 찍기(argv);
 
   const r = 판정();

@@ -22,6 +22,7 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const https = require('https');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const 루트 = path.resolve(__dirname, '..');
 const 자산 = path.join(루트, 'docs', 'Loom_자산');
@@ -230,6 +231,12 @@ function 대조(축) {
 /* ── 진입 ─────────────────────────────────────────────────────────── */
 async function main() {
   const a = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  /* ⚠ 파이썬 자식(`룸장면.py`)에 넘기는 낱말(`--hdri`·`--폰트` 류)은 여기 없다 —
+   *   넣으면 CLI 에서 통과하면서 아무것도 안 한다(형제 F592 모양). */
+  const 아는플래그 = ['--굽기', '--다시', '--대조', '--분모', '--샘플', '--안개', '--자산', '--전량', '--한장', '--해상도'];
+  const 플래그오류 = 인자게이트('룸굽기', a, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const 집 = (f) => { const i = a.indexOf(f); return i >= 0 && a[i + 1] && !a[i + 1].startsWith('--') ? a[i + 1] : null; };
 
   if (a.includes('--자산')) return 자산받기();

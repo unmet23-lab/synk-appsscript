@@ -41,6 +41,7 @@ const ROOT = process.env.SYNK_반입_ROOT || path.resolve(__dirname, '..');
 const { 선언판인가, 장부폴더 } = require(path.join(__dirname, 'lib', '선언판.js'));
 /* master 직접 커밋을 그 자리에서 미는 공용 통로 — 같은 판정을 두 곳에 적으면 갈라진다. */
 const 동기 = require(path.join(__dirname, 'lib', 'master동기.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 /* 추가전용 — 행마다 번호가 붙은 장부. `checkout` 은 파일을 **통째로** 바꾸므로 갈라진 뒤
  * master 에 붙은 행이 소리 없이 사라진다(F195 실측: 대기 브랜치 하나를 받으면 폰은 두 행의
@@ -321,6 +322,11 @@ function 받기(브랜치) {
 }
 
 if (require.main === module) {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  /* ⚠ 위치 인자(브랜치 이름)는 `--` 로 안 시작하니 안 걸린다. */
+  const 아는플래그 = ['--받기'];
+  const 플래그오류 = 인자게이트('폰작업반입', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const i = process.argv.indexOf('--받기');
   if (i >= 0) {
     const 브랜치 = process.argv[i + 1];

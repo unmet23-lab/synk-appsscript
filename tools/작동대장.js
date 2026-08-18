@@ -63,6 +63,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { 칸나누기 } = require('./lib/표.js');   // 날 split 은 백틱 안 파이프에서 칸을 민다(F119·F253)
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
 const 산출경로 = process.env.SYNK_작동대장_산출 || path.join(ROOT, 'docs', '작동대장.html');
@@ -813,6 +814,11 @@ ${d.못읽음.length ? `<h2><span class="no">Ⅸ</span>🔴 못 읽은 입력 �
 
 function 본체() {
   const argv = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  /* ⚠ `--갈래` 는 **자식**(`운영자료.js`)에 넘기는 낱말이라 여기 없다 · 종료 코드를 돌려주는 꼴이다. */
+  const 아는플래그 = ['--강제', '--기록', '--바로가기', '--수렴검사', '--요약'];
+  const 플래그오류 = 인자게이트('작동대장', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 1; }
   const 오늘 = Date.parse(new Date().toISOString().slice(0, 10) + 'T00:00:00Z');
 
   if (argv.includes('--요약')) {

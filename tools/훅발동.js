@@ -52,6 +52,7 @@ const { spawnSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const { 발동판정 } = require(path.join(ROOT, '.claude', 'hooks', 'lib', 'context-size.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 function 인자(argv) {
   const a = { days: 30, dir: null, 세션: false, 턴마다: false, 되감기만: false, 장부만: false };
@@ -237,6 +238,11 @@ function 밴드표(값들, 라벨) {
 }
 
 async function main() {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  /* ⚠ `인자()` 는 **`process.argv` 전체**를 받는다(안에서 `i = 2` 부터) — 게이트엔 `slice(2)` 를 준다. */
+  const 아는플래그 = ['--days', '--dir', '--되감기만', '--세션', '--장부만', '--턴마다'];
+  const 플래그오류 = 인자게이트('훅발동', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const a = 인자(process.argv);
   const dir = a.dir || require('./memory-graph.js').projectDir();
 

@@ -39,6 +39,7 @@ const 잠금lib = require(path.join(__dirname, 'lib', 'git잠금.js'));
 /* master 직접 커밋을 그 자리에서 미는 통로 — `작업가지 --닫기` 와 **같은 파일**을 쓴다
  * (같은 판정을 두 곳에 적으면 갈라진다 · 사연은 tools/lib/master동기.js 머리말). */
 const 동기 = require(path.join(__dirname, 'lib', 'master동기.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 const ROOT = process.env.SYNK_OWNER_ROOT || path.resolve(__dirname, '..');
 
 // 자리(폴더·목차)와 「이름→세션 지문」 변환도 그쪽 것 하나를 쓴다 — 여기 한 벌 더 적었더니
@@ -248,6 +249,12 @@ function 보고(r, 모드) {
 
 if (require.main === module) {
   const argv = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  /* ⚠ **`조사()` 보다 먼저** 판정한다 — `--실행` 은 파일을 옮기는 쪽이라, 오타가 「보고 모드」로
+   *   조용히 접히면 사람은 거둔 줄 알고 넘어간다. */
+  const 아는플래그 = ['--hook', '--실행'];
+  const 플래그오류 = 인자게이트('인계문수거', argv, 아는플래그);
+  if (플래그오류) { process.stderr.write(`\n🔴 ${플래그오류}\n\n`); process.exit(1); }
   const 모드 = argv.includes('--hook') ? 'hook' : argv.includes('--실행') ? '실행' : '보고';
   const r = 조사();
   if (r === null) {
