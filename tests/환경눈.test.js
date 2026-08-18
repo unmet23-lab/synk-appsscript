@@ -16,13 +16,18 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
+/* 🔴 자식을 **직접** 안 띄운다 — `tests/lib/훅띄우기.js` 가 그 통로다(`tests/훅통로.test.js` 가 강제).
+ *   이유는 이 스위트에도 그대로 걸린다: 통과를 기대하는 검사는 프로세스가 «안 떠도» 초록이라,
+ *   직접 spawn 하면 「도구가 산다」를 증명한 적 없이 초록이 난다(CLAUDE.md 신뢰성 · F207). */
+const { 훅띄우기 } = require(path.join(__dirname, 'lib', '훅띄우기.js'));
 
 const ROOT = path.join(__dirname, '..');
 const 도구 = path.join(ROOT, 'tools', '환경눈.js');
 
-const 돌리기 = (args, env) => spawnSync(process.execPath, [도구, ...(args || [])], {
+const 돌리기 = (args, env, 통과코드) => 훅띄우기([도구, ...(args || [])], {
   cwd: ROOT, encoding: 'utf8',
   env: { ...process.env, ...(env || {}) },
+  통과코드: 통과코드 || [0],
 });
 
 /* ── ① 층 표가 낡지 않는다 ─────────────────────────────────────────────── */
@@ -83,8 +88,9 @@ test('🔑 `--훅` 은 눈먼 층이 있을 때만 말한다 (없으면 조용�
 });
 
 test('🔴 모르는 플래그는 조용히 안 삼킨다 (인자 게이트 · F400 계열)', () => {
-  const r = 돌리기(['--엉뚱한것']);
-  assert.notEqual(r.status, 0, '모르는 플래그인데 종료코드가 0 이다 — 「딴 과녁을 재고 초록」이 된다');
+  // 통과코드를 [1] 로 밝혀 «못 띄운 것»과 «1 로 죽은 것»을 가른다 — 둘을 뭉치면 미실행이 초록이 된다.
+  const r = 돌리기(['--엉뚱한것'], null, [1]);
+  assert.equal(r.status, 1, '모르는 플래그인데 종료코드가 1 이 아니다 — 「딴 과녁을 재고 초록」이 된다');
 });
 
 test('🔴 등록층 — 환경눈과 install-githooks 가 SessionStart 에 실제로 걸려 있다', () => {

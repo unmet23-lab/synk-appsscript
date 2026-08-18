@@ -51,6 +51,8 @@ const 보드 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '보드.
 const 표 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '표.js'));
 const store = require(path.join(__dirname, 'lib', 'handoff-store.js'));
 const wt = require(path.join(__dirname, 'lib', 'worktrees.js'));
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('./lib/board-id.js');
 
 /** 실패를 null 로 돌려주는 git — 이 훅은 편의지 안전장치가 아니다. git 사정으로 작업을 세우지 않는다.
  *
@@ -477,8 +479,6 @@ if (내줄) {
  *   `🚫F291 장부=남의 것` 이 파일 축에선 비켜남인데 표식 축에선 내 트랙이 된다(F354 축).
  *   트랙 칸은 날것 그대로다 — 거긴 비켜남을 적는 자리가 아니다(관례는 파일 칸). */
 const 표식 = require(path.join(__dirname, 'lib', '표식.js'));
-// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
-const 보드id = require('./lib/board-id.js');
 const 내표식 = new Set();
 if (내줄) {
   for (const t of 표식.훑기(`${내줄.트랙} ${보드.만지는텍스트(내줄.파일칸)}`)) 내표식.add(t);

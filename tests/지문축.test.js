@@ -69,19 +69,32 @@ test('🔴 연락 축은 SESSION 으로 «안» 내려간다 — F628 이 정한
     '내부 에이전트 id 까지 폴백했다 — 그 값으로는 세션에 메시지를 못 보낸다(F628 회귀와 같은 선)');
 });
 
-test('🔑 보드 축의 불변식 — 언제나 hex 8자리이거나 빈 문자열이다', () => {
+test('🔑 보드 축의 «폴백» 불변식 — HOST 가 없을 때는 hex 8자리이거나 빈 문자열이다', () => {
+  /* 🔴 HOST 가 준 값은 **모양을 심사하지 않는다** — 심사하면 「HOST 면 옛 판정과 동일」이 깨진다.
+   *   첫 판이 여기서 틀렸고 CI 가 잡았다(`sid-MINE` 같은 hex 아닌 id 로 도는 회귀 16건이 빨개졌다).
+   *   그래서 이 불변식의 과녁은 **폴백 갈래뿐**이다. */
   const 판들 = [
     판({}),
     판({ CLAUDE_CODE_SESSION_ID: 'zzzzzzzz-0000-0000-0000-000000000000' }),  // hex 아님
     판({ CLAUDE_CODE_SESSION_ID: 'abc' }),                                    // 너무 짧다
     판({ CLAUDE_CODE_SESSION_ID: SESSION_실물 }),
-    판({ CLAUDE_CODE_HOST_SESSION_ID: HOST_실물 }),
     판({ CLAUDE_CODE_REMOTE_SESSION_ID: REMOTE_실물 }),
   ];
   for (const env of 판들) {
     const f = board.보드지문(env);
     assert.ok(f === '' || /^[0-9a-f]{8}$/.test(f), `보드 축이 규격 밖 값을 냈다: ${JSON.stringify(f)}`);
     if (f) assert.equal(board.파일지문(`${f}.md`), f, '보드 축이 낸 값으로 만든 파일명을 파일지문() 이 못 읽는다 — 짝이 깨졌다');
+  }
+});
+
+test('🔴 HOST 는 hex 가 아니어도 그대로 쓴다 — 옛 통로가 그랬고, 그 약속이 이 통로의 뿌리다', () => {
+  /* 실측 2026-08-18: 이 줄이 없던 첫 판에서 회귀 16건이 빨개졌다 — `인계문수거` 가
+   *   「내 파일이 커밋에 없다」를 냈다. 픽스처의 id 가 `sid-MINE`·`local_TESTID-1234` 라
+   *   hex 심사에 걸려 통째로 `''` 가 됐기 때문이다. 운영의 HOST 가 hex 인 것은 관행이지
+   *   이 함수가 걸 조건이 아니다. */
+  for (const [raw, want] of [['sid-MINE', 'sid-mine'], ['local_TESTID-1234', 'testid-1'], ['host-abc', 'host-abc']]) {
+    assert.equal(board.보드지문(판({ CLAUDE_CODE_HOST_SESSION_ID: raw })), want,
+      `HOST «${raw}» 를 모양 때문에 떨어뜨렸다 — 옛 판정과 갈린다`);
   }
 });
 
