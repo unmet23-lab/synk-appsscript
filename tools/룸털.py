@@ -152,7 +152,7 @@ def 덩어리(이름, 위치, 크기, 밝기, 뭉치수, 자식수, 길이, 축=
     return ob
 
 # 뒤 — 위·뒤로 물러난 진한 회색. 앞 덩어리에 대부분 가려지므로 밀도를 낮게 둔다
-뒤 = 덩어리("back", (0.08, 0.62, 0.30), 1.05, 0.34,
+뒤 = 덩어리("back", (0.00, 0.58, 0.46), 1.04, 0.155,
           int(HAIR * 0.55), max(8, CHILD // 2), LEN * 0.92,
           축=(1.02, 0.99, 0.72), 흔들=0.040)
 # 앞 — 주인공. 밝은 흰색
@@ -187,7 +187,7 @@ cd = bpy.data.cameras.new("cam")
 cd.lens = 85
 cam = bpy.data.objects.new("cam", cd)
 scene.collection.objects.link(cam)
-cam.location = (1.15, -7.5, 1.25)
+cam.location = (0.55, -7.6, 1.35)
 cam.rotation_euler = (Vector((0, 0, 0.02)) - Vector(cam.location)).to_track_quat('-Z', 'Y').to_euler()
 scene.camera = cam
 cd.dof.use_dof = True
