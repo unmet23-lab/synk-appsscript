@@ -39,6 +39,7 @@ const { spawnSync } = require('child_process');
  * 있으니 이 파일의 자리가 곧 커밋되는 저장소다(`tests/게이트뿌리.test.js` 가 이 형태를 강제). */
 const ROOT = path.resolve(__dirname, '..');
 const 큐 = require(path.join(__dirname, '대기열.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 const 좌표 = 큐.대기열좌표;
 
 function git(args) {
@@ -64,6 +65,11 @@ function 작업본() {
 }
 
 function 보고(argv = []) {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 종료 코드를 **돌려주는** 꼴이라 `process.exit` 를 여기서 부르지 않는다. */
+  const 아는플래그 = ['--cached'];
+  const 플래그오류 = 인자게이트('대기열채번검사', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 2; }
   const 스테이징 = argv.includes('--cached');
   const src = 스테이징 ? 스테이징본() : 작업본();
   if (src.대상아님) return 0;                       // 이 커밋은 대기열을 안 건드린다

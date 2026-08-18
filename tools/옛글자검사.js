@@ -28,6 +28,7 @@ const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 const { 대상인가, 걸린줄, 처방 } = require('./lib/옛글자.js');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 /* ☠️ `-z` 인 이유: git 기본 출력은 비ASCII 경로를 `"\352\263\204..."` 로 이스케이프한다.
  *   이 저장소는 경로 대부분이 한글이라, 이스케이프된 이름으로 파일을 열면 **전부 실패**하고
@@ -107,6 +108,11 @@ function 작업트리본문(파일들, 뿌리경로) {
 }
 
 function main(argv) {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 종료 코드를 **돌려주는** 꼴이라 `process.exit` 를 여기서 부르지 않는다. */
+  const 아는플래그 = ['--cached'];
+  const 플래그오류 = 인자게이트('옛글자검사', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 2; }
   const 스테이징만 = argv.includes('--cached');
   let 뿌리경로;
   try {

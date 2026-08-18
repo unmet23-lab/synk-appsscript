@@ -37,6 +37,7 @@
 const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 function git(인자, 옵션 = {}) {
   return execFileSync('git', 인자, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, ...옵션 });
@@ -67,6 +68,11 @@ function 작업본문(파일, 뿌리경로) {
 }
 
 function main(argv) {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 종료 코드를 **돌려주는** 꼴이라 `process.exit` 를 여기서 부르지 않는다. */
+  const 아는플래그 = ['--cached'];
+  const 플래그오류 = 인자게이트('자리표검사', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 2; }
   const 스테이징만 = argv.includes('--cached');
   let 뿌리경로;
   try { 뿌리경로 = git(['rev-parse', '--show-toplevel']).trim(); }

@@ -32,6 +32,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = path.resolve(__dirname, '..');
 const CODE = path.join(ROOT, 'Code.js');
@@ -447,6 +448,12 @@ function check() {
 }
 
 function main(argv) {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * 🔴 **채번보다 먼저** 판정한다 — 이 도구는 origin 태그로 번호를 확보하므로, 오타를 친 실행이
+   *   번호를 태우고 죽으면 그 번호는 영영 사라진다(아래 주석이 같은 이유로 같은 순서를 요구한다). */
+  const 아는플래그 = ['--check', '--desc', '--dry', '--toil', '--구역', '--시스템', '--종류', '--한줄'];
+  const 플래그오류 = 인자게이트('bump-version', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exitCode = 1; return 1; }
   if (argv.includes('--check')) { const c = check(); if (c) process.exitCode = c; return c; }
 
   const dry = argv.includes('--dry');

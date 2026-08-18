@@ -45,6 +45,7 @@
 const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 /* 허용하는 셋 — 탭(0x09) · 개행(0x0A) · 복귀(0x0D). 나머지 C0 전부와 DEL(0x7F) 이 과녁이다.
  * DEL 은 엄밀히 C0 가 아니지만 **같은 병**이다(폭 0 · 에디터가 안 그린다) — 이름이 아니라
@@ -191,6 +192,11 @@ function 메시지검사(메시지파일) {
 }
 
 function main(argv) {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 종료 코드를 **돌려주는** 꼴이라 `process.exit` 를 여기서 부르지 않는다. */
+  const 아는플래그 = ['--cached', '--메시지'];
+  const 플래그오류 = 인자게이트('제어문자검사', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 2; }
   const 메시지자리 = argv.indexOf('--메시지');
   if (메시지자리 >= 0) return 메시지검사(argv[메시지자리 + 1]);
 

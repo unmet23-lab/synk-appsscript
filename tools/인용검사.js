@@ -39,6 +39,7 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { 저장소들 } = require('./lib/보드낡음.js');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 /* ROOT 는 **이 파일이 속한 저장소**다 — `CLAUDE_PROJECT_DIR` 을 얹지 않는다(회귀 `tests/게이트뿌리`).
  * 이 검사기는 pre-commit 이 `$ROOT/tools/인용검사.js --스테이징` 으로 부르는데, 그 변수가 다른
@@ -469,6 +470,11 @@ function 전량문서들() {
 
 function 출력() {
   const argv = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 종료 코드를 **돌려주는** 꼴이라 `process.exit` 를 여기서 부르지 않는다. */
+  const 아는플래그 = ['--새것', '--스테이징', '--자세히', '--전량', '--파일'];
+  const 플래그오류 = 인자게이트('인용검사', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 2; }
   const 전량 = argv.includes('--전량');
   const 스테이징 = argv.includes('--스테이징');
   const 새것만 = argv.includes('--새것') || 스테이징;

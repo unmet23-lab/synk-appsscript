@@ -36,6 +36,14 @@ const store = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'han
  * 도구의 부품은 안 바뀐다). 정의는 저장소에 하나뿐이다: 손으로 접으면 CRLF 축만 막히고 줄끝
  * 공백은 샌다(도구층 실측 08-17: 손 접기 12벌 전부 그 반쪽 · #Q101). */
 const { 표기접기 } = require(path.join(__dirname, '..', 'tests', 'lib', '소스검사.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
+/* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+ * ⚠ 판정을 `require.main` 블록 **안**에 둔다 — 이 파일은 몸통이 최상위에서 도는 꼴이다(회귀 ③-3). */
+const 아는플래그 = ['--check'];
+if (require.main === module) {
+  const 플래그오류 = 인자게이트('install-githooks', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
+}
 const check = process.argv.includes('--check');
 
 /** 그 저장소에서 **실제로 도는** 훅 폴더. 설정을 읽는다 — 자리를 추측하지 않는다

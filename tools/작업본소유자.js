@@ -38,6 +38,7 @@ const 보드lib = require(path.join(__dirname, 'lib', '보드.js'));   // 커밋
 /* 「세션 id → 보드 지문 8자리」도 여기 다시 적지 않는다 — 접두를 떼는 규칙이 갈라지면
  * 내 줄을 남의 선점으로 읽는다(실측: `local_` 를 안 뗀 판이 내 선언을 그대로 띄웠다 · F165). */
 const { 지문: 보드지문 } = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'board-id.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 /* 워크트리 — 이 도구의 사각지대였다 (F079 · 옆 세션 local_dee95eb9 이 실사고로 잡아 넘겼다).
  * 두 겹이었고 **둘 다 「보이는 것이 0건」으로 조용히 새는** 방향이다:
@@ -1438,6 +1439,11 @@ function 보고(r, { 훅 }) {
 }
 
 if (require.main === module) {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 이 파일의 `--운영` 은 **주석 안**이다(2026-08-18 실측) — 코드가 안 읽는 낱말은 선언에 없다. */
+  const 아는플래그 = ['--hook'];
+  const 플래그오류 = 인자게이트('작업본소유자', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { process.stderr.write(`\n🔴 ${플래그오류}\n\n`); process.exit(1); }
   const 훅 = process.argv.includes('--hook');
   const 글 = 보고(조사(), { 훅 });
   if (글) process.stdout.write(글 + '\n');
