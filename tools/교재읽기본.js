@@ -82,8 +82,8 @@ function 목차만들기(md) {
 
 // W5 로고 — docs/발표물/_브랜드킷.md §3 SVG 도형 정본 복사(좌표 재작도 금지)
 const LOGO_W5 = `<svg class="logo" viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-  <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
-  <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
+  <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="700" letter-spacing="-4" fill="#F6F1E8">syn</text>
+  <path d="M148.3 46.7 L114.3 66.35 L148.3 86 L161.3 86 L127.3 66.35 L161.3 46.7 Z" fill="#FF6B5C"/>
 </svg>`;
 
 const CSS = `
