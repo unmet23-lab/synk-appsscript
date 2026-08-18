@@ -128,6 +128,59 @@ test('☠️ 실저장소 거짓양성 — **내 줄**은 주인 없음에 안 �
   if (r.some((x) => x.지문 === 나)) assert.fail(관측());
 });
 
+/* 🔴 변이가 뚫은 구멍(2026-08-18 실측): 「생사를 안 재고 **전부 산 것으로**」 망가뜨렸는데 7건이
+ *   전부 초록이었다. 위 픽스처들은 지문이 상태 폴더에 **아예 없는** 값이라, 생사 판정을 지워도
+ *   여전히 「주인 없음」으로 잡혔기 때문이다 — 즉 그 검사들은 «필터가 있다»를 못 잰다.
+ *   그런데 이 파일 머리 ①이 못박은 대로 **새는 방향은 「주인 있음」**이다(그쪽으로 틀리면 다음
+ *   세션이 낡은 🎫 를 집는다). 그 방향을 재는 픽스처가 0이었다.
+ *
+ * 🔑 상태 폴더는 `handoff-store` 가 **모듈 적재 시점**에 정하므로(`SYNK_CTXBUDGET_DIR`),
+ *   같은 프로세스에서 못 바꾼다 — 자식 프로세스로 돌린다. 그게 이 검사의 유일한 스폰이다. */
+test('🔴 산 세션의 줄은 «빼고», 죽은 세션의 줄만 잡는다 (픽스처 · 생사 필터가 실제로 도는가)', (t) => {
+  const 상태 = fs.mkdtempSync(path.join(os.tmpdir(), 'board-owner-state-'));
+  const root = 저장소({});
+  try {
+    const store = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'handoff-store.js'));
+    const 접두 = `track-${store.projectKey(root)}-`;
+    const 산놈 = 'local_aaaaaaaa-1111-2222-3333-444444444444';
+    const 죽놈 = 'local_bbbbbbbb-5555-6666-7777-888888888888';
+    fs.writeFileSync(path.join(상태, `${접두}${산놈}.json`), '{}', 'utf8');
+    fs.writeFileSync(path.join(상태, `${접두}${죽놈}.json`), '{}', 'utf8');
+    // 박동을 **파일 mtime** 으로 준다 — `세션들()` 이 재는 그 값이다. 200분이면 어떤 문턱에도 죽는다.
+    const 옛날 = new Date(Date.now() - 200 * 60 * 1000);
+    fs.utimesSync(path.join(상태, `${접두}${죽놈}.json`), 옛날, 옛날);
+
+    const 폴더 = path.join(root, 'docs', '_ops', '보드');
+    fs.writeFileSync(path.join(폴더, 'aaaaaaaa.md'), 머리 + 보통줄 + '\n', 'utf8');
+    fs.writeFileSync(path.join(폴더, 'bbbbbbbb.md'), 머리 + 보통줄 + '\n', 'utf8');
+
+    const 본문 = 'const 보드=require(process.argv[1]);'
+      + 'const r=보드.주인없는줄들(process.argv[2]);'
+      + 'console.log(JSON.stringify(r===null?null:r.map((x)=>x.지문).sort()));';
+    let out;
+    try {
+      out = execFileSync(process.execPath, ['-e', 본문,
+        path.join(__dirname, '..', 'tools', 'lib', '보드.js'), root], {
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          SYNK_CTXBUDGET_DIR: 상태,
+          CLAUDE_CODE_HOST_SESSION_ID: '',   // 자기면제가 끼면 이 픽스처가 재는 축이 사라진다
+        },
+      });
+    } catch (e) { return t.skip('자식 실행 실패: ' + e.message); }
+
+    const 잡힌것 = JSON.parse(out.trim());
+    if (잡힌것 === null) return t.skip('생사를 못 쟀다 — 0건과 가른다(F207)');
+    assert.deepStrictEqual(잡힌것, ['bbbbbbbb'],
+      '죽은 세션의 줄만 잡아야 한다 — 산 세션 줄까지 잡으면 거짓양성이고, '
+      + '죽은 줄을 놓치면 **새는 방향(「주인 있음」)**이라 다음 세션이 낡은 줄을 집는다. 실제: ' + out.trim());
+  } finally {
+    fs.rmSync(상태, { recursive: true, force: true });
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('☠️ stdout 은 표뿐이다 — 경고 한 글자도 안 섞인다(파싱하는 곳이 넷)', () => {
   const out = execFileSync('node', [BOARDJS], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], cwd: REPO });
   assert.ok(!out.includes('마감을 선언한'), 'stdout 에 주인 경고가 새면 표 파서 넷이 새 줄을 만난다');
