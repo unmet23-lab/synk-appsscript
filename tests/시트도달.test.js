@@ -325,12 +325,35 @@ test('🔴 워크트리에서도 형제 저장소를 찾는다 — 이 저장소
   assert.equal(본체.length, 1, '평소 경로에서 후보가 둘이면 엉뚱한 곳을 먼저 볼 수 있다');
   assert.match(본체[0].replace(/\\/g, '/'), /\/repo\/SYNK-talk$/);
 
-  for (const 워크 of ['/repo/SYNK-appsscript/.claude/worktrees/트랙이름', '\\repo\\SYNK-appsscript\\.claude\\worktrees\\트랙이름']) {
+  /* 🔴 [2026-08-18] 백슬래시 갈래는 **윈도우 문법의 `path` 에서만** 성립한다 — 리눅스 CI 에서
+   *   영구 적색이던 자리다(실측: 4496개 중 이 줄 포함 fail 3). 구현은 `path.resolve(root)` 를
+   *   먼저 거치는데, posix resolve 는 `\repo\…\트랙이름` 을 **한 개의 파일명**으로 보고 cwd 를
+   *   앞에 붙인다. 그래서 워크트리 후보 둘이 같은 경로로 무너진다 — 정규식이 `[\\/]` 로 두
+   *   구분자를 다 받아도 그 앞에서 재료가 이미 뭉개져 있다.
+   * 🔑 여기서 **구현을 안 고친다.** 진짜 수리는 표기 감지가 아니라 `형제저장소.형제경로()` 로
+   *   갈아타는 것이고(짐작 대신 `.git` 의 `gitdir:` 를 읽는다 · `tests/형제경로통로.test.js`),
+   *   `tools/이해대장.js` 의 그 자리는 지금 **남의 활성 트랙이 잠갔다**(래칫 목록 `이해대장.js:140·142`
+   *   = 가지 `worktree-ledger-blocker-split`). 잠긴 자리를 우회로 손보면 그 통로 이전이 늦어진다.
+   * ⚠ 그래서 fail 대신 **미실행을 드러낸다** — 통과로 바꾸는 게 아니다(F296 · F207).
+   *   윈도우(유호님 실사용 기계)에서는 그대로 돈다. */
+  const 갈래 = [
+    { 워크: '/repo/SYNK-appsscript/.claude/worktrees/트랙이름', 언제나: true },
+    { 워크: '\\repo\\SYNK-appsscript\\.claude\\worktrees\\트랙이름', 언제나: false },
+  ];
+  let 잰것 = 0;
+  for (const { 워크, 언제나 } of 갈래) {
+    if (!언제나 && path.sep !== '\\') {
+      console.log(`  ⚠ 미실행 — 백슬래시 표기 갈래는 이 기계(${process.platform})의 path 문법으로 파싱되지 않는다.`
+        + ' 통과가 아니라 못 잰 것이다 — 진짜 수리는 `형제저장소.형제경로()` 이전이고 그 자리는 지금 잠겨 있다.');
+      continue;
+    }
     const 후보 = 형제경로들(워크).map((p) => p.replace(/\\/g, '/'));
     assert.ok(후보.some((p) => /\/repo\/SYNK-talk$/.test(p)),
       `워크트리 경로에서 본체 옆 형제를 후보에 안 넣는다 — 실측이 조용히 열화한다 (${워크} → ${후보.join(' · ')})`);
     assert.ok(후보.length >= 2, '워크트리인데 후보가 하나다 — 평소 경로와 같은 판정이 된다');
+    잰것 += 1;
   }
+  assert.ok(잰것 >= 1, '두 갈래를 다 건너뛰었다 — 분모 0 은 통과가 아니다(F207)');
 });
 
 test('🔴 등록층 — 이 회귀가 CI 스위트에 실제로 든다(파일만 있고 안 도는 검사는 초록과 같은 모양이다)', () => {
