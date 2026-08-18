@@ -53,94 +53,112 @@ CORAL = "--coral" in argv
 bpy.ops.wm.read_factory_settings(use_empty=True)
 scene = bpy.context.scene
 
-# ── 형태: ico sphere 를 superellipsoid 로 «접는다» ─────────────────────
-# 🔴 큐브+bevel+subsurf 는 면 크기가 극도로 불균일해서 파티클이 큰 면에만 몰렸다
-#    (렌더에 «맨살 패치»로 나왔다). ico 는 삼각형이 고르고, 정점을 직접 접으면
-#    Canvas 판과 «같은 수식»의 squircle 이 나온다 — 두 층이 같은 형태를 말하게 된다.
+# ── 덩어리 하나 = 형태 + 털 2층 + 재질 ────────────────────────────────
+# 레퍼런스의 «깊이»는 두 덩어리의 겹침에서 온다 — 뒤는 진한 회색, 앞은 밝은 흰색.
+# 한 덩어리만 두면 아무리 잘 구워도 «단품 사진»이고, 겹쳐야 «한 세계»가 된다.
 NEXP = 4.2
-AX = (1.00, 0.97, 0.83)
-bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=6, radius=1.0)
-ob = bpy.context.object
-for v in ob.data.vertices:
-    d = v.co.normalized()
-    k = (abs(d.x / AX[0]) ** NEXP + abs(d.y / AX[1]) ** NEXP + abs(d.z / AX[2]) ** NEXP) ** (-1.0 / NEXP)
-    v.co = d * k
 
-# ⓒ 유기적 변형 — 완벽한 대칭은 «도표»의 얼굴이다
-tex = bpy.data.textures.new("wob", type='CLOUDS')
-tex.noise_scale = 2.1
-disp = ob.modifiers.new("wob", 'DISPLACE')
-disp.texture = tex
-disp.strength = 0.052
-disp.mid_level = 0.5
+def 덩어리(이름, 위치, 크기, 밝기, 뭉치수, 자식수, 길이, 축=(1.00, 0.97, 0.83), 흔들=0.052):
+    """ico sphere 를 superellipsoid 로 접고, 털 2층을 심고, 재질을 물린다."""
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=6, radius=1.0)
+    ob = bpy.context.object
+    ob.name = 이름
+    for v in ob.data.vertices:
+        d = v.co.normalized()
+        k = (abs(d.x / 축[0]) ** NEXP + abs(d.y / 축[1]) ** NEXP + abs(d.z / 축[2]) ** NEXP) ** (-1.0 / NEXP)
+        v.co = d * k
+    ob.scale = (크기, 크기, 크기)
+    ob.location = 위치
+    bpy.ops.object.transform_apply(scale=True, location=True)
 
-bpy.ops.object.shade_smooth()
+    # ⓒ 유기적 변형 — 완벽한 대칭은 «도표»의 얼굴이다. 씨앗을 덩어리마다 달리해 쌍둥이를 피한다
+    tex = bpy.data.textures.new("wob_" + 이름, type='CLOUDS')
+    tex.noise_scale = 2.1
+    tex.noise_depth = 2
+    disp = ob.modifiers.new("wob", 'DISPLACE')
+    disp.texture = tex
+    disp.strength = 흔들
+    disp.mid_level = 0.5
+    disp.texture_coords = 'GLOBAL'
 
-# ── 털 — 2층 ─────────────────────────────────────────────────────────
-# 🔴 한 층만 쓰면 아무리 심어도 «면»이 된다(실측: 0.34 균일 길이 = 매끈한 덩어리).
-#    실물 모피는 «촘촘한 속털» + «길게 삐져나오는 겉털» 두 층이고,
-#    실루엣에서 털로 읽히게 만드는 것은 **겉털**이다.
-def 털층(이름, 개수, 자식, 길이, 뭉침, 거칠, 반경):
-    ob.modifiers.new(이름, 'PARTICLE_SYSTEM')
-    ps = ob.particle_systems[-1]
-    st = ps.settings
-    st.name = 이름
-    st.type = 'HAIR'
-    st.count = 개수
-    st.hair_length = 길이
-    st.hair_step = 5
-    st.render_type = 'PATH'
-    st.use_advanced_hair = True
-    st.distribution = 'RAND'
-    st.use_even_distribution = True
-    st.userjit = 0
-    st.child_type = 'INTERPOLATED'
-    st.rendered_child_count = 자식
-    st.child_percent = 자식
-    st.child_radius = 반경
-    st.child_roundness = 0.6
-    st.child_length = 1.0
-    st.child_length_threshold = 0.30
-    st.clump_factor = 뭉침
-    st.clump_shape = 0.22
-    st.roughness_1 = 거칠
-    st.roughness_1_size = 0.20
-    st.roughness_2 = 거칠 * 1.5
-    st.roughness_2_size = 0.55
-    st.roughness_endpoint = 거칠 * 1.3
-    st.kink = 'NO'
-    st.effector_weights.gravity = 0.145
-    st.brownian_factor = 0.0
-    return st
+    bpy.ops.object.shade_smooth()
 
-_속 = 털층("undercoat", int(HAIR * 0.86), CHILD, LEN * 0.58, 0.26, 0.008, 0.030)
-_겉 = 털층("guard",     int(HAIR * 0.14), max(6, CHILD // 5), LEN * 1.65, 0.18, 0.018, 0.062)
+    # ── 털 2층 ──
+    # 🔴 한 층만 쓰면 아무리 심어도 «면»이 된다(실측: 균일 길이 = 매끈한 덩어리).
+    #    실루엣에서 털로 읽히게 만드는 것은 «겉털»이다.
+    def 털층(층이름, 개수, 자식, 길, 뭉침, 거칠, 반경):
+        ob.modifiers.new(층이름, 'PARTICLE_SYSTEM')
+        st = ob.particle_systems[-1].settings
+        st.name = 이름 + "_" + 층이름
+        st.type = 'HAIR'
+        st.count = 개수
+        st.hair_length = 길
+        st.hair_step = 5
+        st.render_type = 'PATH'
+        st.use_advanced_hair = True
+        st.distribution = 'RAND'          # JIT 는 격자라 곡면에서 쏠린다
+        st.use_even_distribution = True   # 면적 가중 — 꺼져 있으면 큰 면이 굶는다
+        st.userjit = 0
+        st.child_type = 'INTERPOLATED'
+        st.rendered_child_count = 자식
+        st.child_percent = 자식
+        st.child_radius = 반경
+        st.child_roundness = 0.6
+        st.child_length = 1.0
+        st.child_length_threshold = 0.30
+        st.clump_factor = 뭉침
+        st.clump_shape = 0.22
+        st.roughness_1 = 거칠
+        st.roughness_1_size = 0.20
+        st.roughness_2 = 거칠 * 1.5
+        st.roughness_2_size = 0.55
+        st.roughness_endpoint = 거칠 * 1.3
+        st.kink = 'NO'
+        st.effector_weights.gravity = 0.145
+        st.brownian_factor = 0.0
+        # 🔑 굵기는 «건드리지 않는다» — 기본값이 뿌리→끝으로 자연히 가늘어진다.
+        #    손으로 고정하면 균일해지고, 균일함이 곧 「기하학적·징그러움」이다(유호 판정 08-18).
 
-ob.show_instancer_for_render = False
+    털층("undercoat", int(뭉치수 * 0.86), 자식수, 길이 * 0.58, 0.26, 0.008, 0.030)
+    털층("guard", int(뭉치수 * 0.14), max(6, 자식수 // 5), 길이 * 1.65, 0.18, 0.018, 0.062)
+    ob.show_instancer_for_render = False
 
-# ── 재질: Principled Hair BSDF ────────────────────────────────────────
-mat = bpy.data.materials.new("loom_fur")
-mat.use_nodes = True
-nt = mat.node_tree
-for n in list(nt.nodes):
-    nt.nodes.remove(n)
-hair = nt.nodes.new('ShaderNodeBsdfHairPrincipled')
-out = nt.nodes.new('ShaderNodeOutputMaterial')
-try:
-    hair.parametrization = 'COLOR'
-except Exception:
-    pass
-def 넣(이름, 값):
-    if 이름 in hair.inputs:
-        hair.inputs[이름].default_value = 값
-넣("Color", (0.72, 0.30, 0.26, 1.0) if CORAL else (0.875, 0.875, 0.875, 1.0))
-넣("Roughness", 0.44)
-넣("Radial Roughness", 0.36)
-넣("Coat", 0.20)
-넣("Random Color", 0.055)     # 가닥마다 미세하게 다른 색 — 균일함을 깨는 자리
-넣("Random Roughness", 0.10)
-nt.links.new(hair.outputs[0], out.inputs[0])
-ob.data.materials.append(mat)
+    # ── 재질: Principled Hair BSDF ──
+    mat = bpy.data.materials.new("fur_" + 이름)
+    mat.use_nodes = True
+    nt = mat.node_tree
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    hair = nt.nodes.new('ShaderNodeBsdfHairPrincipled')
+    out = nt.nodes.new('ShaderNodeOutputMaterial')
+    try:
+        hair.parametrization = 'COLOR'
+    except Exception:
+        pass
+    def 넣(키, 값):
+        if 키 in hair.inputs:
+            hair.inputs[키].default_value = 값
+    if CORAL:
+        넣("Color", (0.72 * 밝기 / 0.875, 0.30 * 밝기 / 0.875, 0.26 * 밝기 / 0.875, 1.0))
+    else:
+        넣("Color", (밝기, 밝기, 밝기, 1.0))
+    넣("Roughness", 0.44)
+    넣("Radial Roughness", 0.36)
+    넣("Coat", 0.20)
+    넣("Random Color", 0.055)     # 가닥마다 미세하게 다른 색 — 균일함을 깨는 자리
+    넣("Random Roughness", 0.10)
+    nt.links.new(hair.outputs[0], out.inputs[0])
+    ob.data.materials.append(mat)
+    return ob
+
+# 뒤 — 위·뒤로 물러난 진한 회색. 앞 덩어리에 대부분 가려지므로 밀도를 낮게 둔다
+뒤 = 덩어리("back", (0.08, 0.62, 0.30), 1.05, 0.34,
+          int(HAIR * 0.55), max(8, CHILD // 2), LEN * 0.92,
+          축=(1.02, 0.99, 0.72), 흔들=0.040)
+# 앞 — 주인공. 밝은 흰색
+앞 = 덩어리("front", (-0.10, -0.20, -0.10), 1.00, 0.875,
+          HAIR, CHILD, LEN)
+ob = 앞                                   # 카메라 초점·진단이 겨누는 덩어리
 
 # ── 조명 3점 ─────────────────────────────────────────────────────────
 def 등(이름, 위치, 에너지, 크기, 겨냥=(0, 0, 0)):
