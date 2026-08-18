@@ -27,6 +27,7 @@
 const fs = require('fs');
 const path = require('path');
 const { 키, 한컷 } = require('./lib/이미지굽기');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const REPO = path.resolve(__dirname, '..');
 const 폴더 = path.join(REPO, 'docs/캐릭터/펠트코랄_0815');
@@ -107,6 +108,12 @@ rounded dome head, wavy flowing bottom edge. No mouth. ${색규약} ${스튜디�
 ];
 
 (async () => {
+  /* 🔑 위치 인자(작업 이름)만 받는다 — 그래도 모르는 `--` 낱말은 막는다.
+   * 🔴 **참조 확인·굽기 앞**에 판정한다: 뒤에 두면 오타가 「참조가 없다」로 나가 사람이
+   *   엉뚱한 자리를 고친다(같은 날 `마스코트누끼` 에서 실제로 그 모양을 밟았다). */
+  const 아는플래그 = [];
+  const 플래그오류 = 인자게이트('펠트색굽기', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   for (const p of Object.values(참조)) {
     if (!fs.existsSync(p)) {
       console.error(`🔴 참조가 없다 — ${p}\n   먼저: python tools/펠트색갈이.py `

@@ -6,6 +6,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const 키경로 = process.env.GEMINI_KEY_PATH || 'C:/Users/q1212/SYNK_보안/제미나이.txt';
 const REPO = 'C:/Users/q1212/Documents/SYNK-appsscript';
@@ -246,6 +247,11 @@ async function 한컷(k, 작업, 결과경로들) {
 }
 
 (async () => {
+  /* 🔑 위치 인자(작업 이름)만 받는다 — 그래도 모르는 `--` 낱말은 막는다.
+   * 🔴 **굽기(=돈이 드는 호출) 앞**에 판정한다. */
+  const 아는플래그 = [];
+  const 플래그오류 = 인자게이트('재질굽기', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   fs.mkdirSync(출력, { recursive: true });
   const k = 키();
   const 결과경로들 = {};

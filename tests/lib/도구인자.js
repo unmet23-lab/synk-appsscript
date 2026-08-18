@@ -98,6 +98,16 @@ function argv이름들(코드) {
      *   까지 argv 갈래로 올리고, 그 순간 git 인자가 자기 낱말이 된다 — 이 파일이 세 번 뒤집힌
      *   바로 그 증상이다. 실측으로 갈랐다: 느슨한 판은 `board-move`·`폰작업반입`에 git 인자를
      *   실었고, 시작 고정 판은 그 둘에 **0개**를 더하면서 위 여섯을 되찾았다. */
+    /* ㉢ 구조분해의 **나머지**(`const [, , 명령, ...나머지] = process.argv`) — 앞칸은 위치 인자고
+     *   나머지가 곧 인자 목록이다. 실측: `승인.js` 가 그 꼴이라 `--json` 이 안 보였고, 선언에
+     *   적으면 ④가 「군더더기」로 빨개졌다 — 빼면 `승인.js check --json` 이 죽는다(F103). */
+    for (const 줄 of 코드.split('\n')) {
+      const d = new RegExp(`(?:const|let|var)\\s*\\[[^\\]]*\\.\\.\\.\\s*(${이름꼴})\\s*\\]\\s*=\\s*(.+)$`).exec(줄);
+      if (!d || 이름.has(d[1])) continue;
+      for (const v of 이름) {
+        if (new RegExp(`^\\s*${정규식escape(v)}(?![\\w$가-힣])`).test(d[2])) { 이름.add(d[1]); 늘었나 = true; break; }
+      }
+    }
     for (const 줄 of 코드.split('\n')) {
       const d = new RegExp(`(?:const|let|var)\\s+(${이름꼴})\\s*=\\s*(.+)$`).exec(줄);
       if (!d || 이름.has(d[1])) continue;
@@ -106,7 +116,10 @@ function argv이름들(코드) {
        * 🔴 실측: `toil.js` 가 정확히 이 꼴이고, 아래 한 줄이 없으면 `--date`·`--json` 이 안 보인다. */
       if (/process\.argv/.test(d[2]) && !/^\s*[[{`]/.test(d[2])) { 이름.add(d[1]); 늘었나 = true; continue; }
       for (const v of 이름) {
-        const 시작 = new RegExp(`^\\s*${정규식escape(v)}(?![\\w$가-힣])\\s*(?:\\.\\s*(?:slice|filter|map)\\s*\\(|\\|\\||;|$)`);
+        /* `[` 를 함께 받는 이유 = **argv 한 칸**(`const 모드 = 인자[0]`). 그 칸을 `===` 로 낱말과
+         * 견주는 도구가 이 저장소에 실재한다(`펠트문서.js` 가 하위 명령을 그렇게 읽는다) — 못
+         * 보면 그 도구는 「자기 낱말 --림 하나」로 읽히고, 나머지 여덟이 자식후보로 밀린다. */
+        const 시작 = new RegExp(`^\\s*${정규식escape(v)}(?![\\w$가-힣])\\s*(?:\\.\\s*(?:slice|filter|map)\\s*\\(|\\[|\\|\\||;|$)`);
         if (시작.test(d[2])) { 이름.add(d[1]); 늘었나 = true; break; }
       }
     }
@@ -442,6 +455,24 @@ const 인자층픽스처 = Object.freeze([
     코드: "const argv = process.argv.slice(2);\nconst 인자 = argv.slice(2);\n"
       + "function 쓰기(목록) { if (목록.includes('--적기')) {} }\n쓰기(인자);",
     낱말: ['--적기'],
+    자식후보: [],
+  },
+  {
+    /* ⚠ 못 보면 `승인.js` 의 `--json` 이 「군더더기」로 빨개지고, 시키는 대로 선언에서 빼면
+     *   `승인.js check --json` 이 죽는다 — 처방을 따르면 병이 생기는 자리다(F103). */
+    왜: '🔴 구조분해의 **나머지** — `const [, , 명령, ...나머지] = process.argv`',
+    코드: "const [, , 명령, ...나머지] = process.argv;\n"
+      + "if (명령 === 'check') check(나머지.includes('--json'));",
+    낱말: ['--json'],
+    자식후보: [],
+  },
+  {
+    /* ⚠ 이 꼴을 못 보면 `펠트문서.js` 가 「자기 낱말 --림 하나」로 읽히고 나머지 여덟이 자식후보로
+     *   밀린다 — 그대로 선언하면 **되던 하위 명령이 전부 죽는다**(F103). */
+    왜: '🔴 argv **한 칸**을 낱말과 견주는 꼴 — `const 모드 = 인자[0]; 모드 === "--굽기"`',
+    코드: "const 인자 = process.argv.slice(2);\nconst 모드 = 인자[0];\n"
+      + "if (모드 === '--굽기') 굽기();\nelse if (모드 === '--검사') 검사();",
+    낱말: ['--검사', '--굽기'],
     자식후보: [],
   },
   {

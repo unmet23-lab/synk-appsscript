@@ -17,6 +17,7 @@
  */
 'use strict';
 const { execFileSync } = require('child_process');
+const { 인자게이트 } = require('./lib/인자게이트.js');
 
 const 종류들 = ['semantic', 'technical', 'owner'];
 const 트레일러 = /^Approves-([A-Za-z]+):\s*([0-9a-f]{7,40})\b\s*(.*)$/;
@@ -106,6 +107,10 @@ function add(종류, sha, 사유) {
 }
 
 if (require.main === module) {
+  /* 🔑 하위 명령(`add`·`check`)과 그 값은 위치 인자다. `--json` 만 낱말로 받는다. */
+  const 아는플래그 = ['--json'];
+  const 플래그오류 = 인자게이트('승인', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const [, , 명령, ...나머지] = process.argv;
   if (명령 === 'add') add(나머지[0], 나머지[1], 나머지.slice(2).join(' '));
   else if (명령 === 'check' || !명령) check(나머지.includes('--json'));

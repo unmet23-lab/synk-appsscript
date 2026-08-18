@@ -20,6 +20,7 @@
  */
 const { spawnSync } = require('node:child_process');
 const path = require('node:path');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = path.resolve(__dirname, '..');
 const CI_워크플로 = 'syntax-check.yml';
@@ -119,6 +120,11 @@ function gh조회(브랜치, 창) {
 }
 
 function main() {
+  /* 🔑 이 도구는 **위치 인자만** 받는다 — 그래도 게이트를 건다. 모르는 `--` 낱말이 조용히
+   *   지나가면 사람은 자기가 부탁한 좁힘이 먹은 줄 알고, 그게 이 트랙의 병이다. */
+  const 아는플래그 = [];
+  const 플래그오류 = 인자게이트('원격ci', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const 인자 = process.argv[2] || 'HEAD';
   /* 🔴 `--verify --end-of-options` 는 장식이 아니다 — 없으면 인자가 **git 의 옵션으로 먹힌다**.
    *   `--help` 하나로 두 가지가 터졌다: ①exit 0 + 빈 출력이라 대상이 빈 문자열로 통과해 확신에

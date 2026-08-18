@@ -29,6 +29,7 @@ const os = require('os');
 const { execFileSync } = require('child_process');
 const { 칸나누기 } = require('./lib/표.js');   // 날 split 은 백틱 안 파이프에서 칸을 민다(F119·F253)
 const 활자주입 = require('./lib/활자주입.js');   // 마커를 뿌리는 쪽과 확인하는 쪽이 같은 글자를 쓴다
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = path.join(__dirname, '..');
 const OUT_DIR = path.join(ROOT, 'docs', '인쇄본');
@@ -272,6 +273,12 @@ function 굽을것(filter) {
 
 /* ── 빌드 ── */
 function main() {
+  /* 🔑 이 도구는 **위치 인자만** 받는다 — 그래도 게이트를 건다. 모르는 `--` 낱말이 조용히
+   *   지나가면 사람은 자기가 부탁한 좁힘이 먹은 줄 알고, 그게 이 트랙의 병이다. */
+  const 아는플래그 = [];
+  /* ⚠ `--pdf`·`--폴백허용` 은 **파이썬 자식**에 넘기는 낱말이라 여기 없다(298줄 spawn). */
+  const 플래그오류 = 인자게이트('인쇄본빌드', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const filter = process.argv[2];
   const targets = 굽을것(filter);
   if (!targets.length) { console.error('[인쇄본빌드] 매니페스트에 일치 항목이 없다: ' + filter); process.exit(1); }

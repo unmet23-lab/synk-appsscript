@@ -16,9 +16,17 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const MIME = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.svg': 'image/svg+xml' };
 
+/* 🔑 위치 인자만 받는다 — 그래도 모르는 `--` 낱말은 막는다. 판정은 `require.main` 블록 안에
+ * 둔다(이 파일은 몸통이 최상위에서 돈다 · 회귀 ③-3). */
+const 아는플래그 = [];
+if (require.main === module) {
+  const 플래그오류 = 인자게이트('자립형굽기', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(2); }
+}
 const 원본 = process.argv[2];
 if (!원본) { console.error('쓰기: node tools/자립형굽기.js <원본.html> [나갈곳.html]'); process.exit(2); }
 const 나갈곳 = process.argv[3] || 원본.replace(/\.html$/, '_자립형.html');

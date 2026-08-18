@@ -60,6 +60,7 @@
 const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -249,6 +250,12 @@ function 변이검사({ 시험, 변이들, 환경 = {}, 조용히 = false }) {
 module.exports = { 변이검사, 적용, 맞춰보기, 줄끝, 시험돌리기, 분모뽑기, 미측정판정 };
 
 if (require.main === module) {
+  /* 🔑 이 도구는 **위치 인자만** 받는다 — 그래도 게이트를 건다. 모르는 `--` 낱말이 조용히
+   *   지나가면 사람은 자기가 부탁한 좁힘·모드가 먹은 줄 알고, 그게 이 트랙의 병이다.
+   *   차단문은 「위치 인자만 받는다」로 나간다(빈 목록에서 문장이 깨지지 않게 통로가 갈라 쓴다). */
+  const 아는플래그 = [];
+  const 플래그오류 = 인자게이트('변이', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(2); }
   const 계획경로 = process.argv[2];
   if (!계획경로) {
     console.error('쓰는 법: node tools/변이.js <계획.js>');

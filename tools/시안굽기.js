@@ -30,6 +30,7 @@ const os = require('os');
 const path = require('path');
 
 const { 마스코트경로다 } = require('./lib/마스코트자산');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = path.resolve(__dirname, '..');
 const 기본폭 = 720;
@@ -98,6 +99,13 @@ function 굽기(파일) {
 }
 
 const 인자 = process.argv.slice(2);
+/* 🔑 위치 인자(굽을 파일)만 받는다 — 그래도 모르는 `--` 낱말은 막는다(회귀 ③-3 때문에
+ * 판정은 `require.main` 블록 안에 둔다: 이 파일은 몸통이 최상위에서 돈다). */
+const 아는플래그 = [];
+if (require.main === module) {
+  const 플래그오류 = 인자게이트('시안굽기', 인자, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
+}
 if (!인자.length) { console.error('쓸 파일을 달라: node tools/시안굽기.js docs/홈페이지_시안/병합판.html'); process.exit(1); }
 if (!ffmpeg있나()) { console.error('🔴 ffmpeg 가 없다 — 굽지 않고 멈춘다(그림 깨진 판을 내보내지 않는다).'); process.exit(1); }
 try { 인자.forEach(굽기); }
