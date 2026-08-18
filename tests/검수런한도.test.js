@@ -37,36 +37,30 @@ function 런모듈() {
 /* 2026-08-13 실측 stderr 한 줄 **그대로** — 가드는 사람이 실제로 보는 표기로 검사한다(CLAUDE.md 맹점 ①). */
 const 실측줄 = "ERROR: You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Aug 18th, 2026 12:39 PM.";
 
-/* 🔴 **시계에 기대는 픽스처** — `실측줄` 의 리셋 시각은 «절대 시각»이라 두 가지로 죽는다
- *   (2026-08-18 실측 · 대기열 #Q115 의 축 토글이 잡았다):
- *     ㉠ **시간대**: `new Date('Aug 18, 2026 12:39 PM')` 은 **로컬** 해석이다. UTC 에선
- *        12:39Z 라 아직 미래지만 KST 에선 03:39Z 라 이미 과거 — 그래서 아래 ④ 두 검사가
- *        UTC(=CI)에서만 초록이고 유호님 기계에서는 빨갛다. 같은 커밋인데 답이 갈린다.
- *     ㉡ **시각 그 자체**: 그 시각이 지나면 **모든 기계에서** 빨개진다. 실측 당시 남은 시간이
- *        5시간 45분이었다. 주인 없는 적색은 남의 배포를 막는다(F617 이 겪은 그 모양).
- *   👉 그래서 「살아있는 마커」가 전제인 자리는 **지금부터 N분 뒤**로 짓는다. 시각을 안 쓰는 게
- *      아니라, 시각을 **재료가 아니라 인자**로 만든다(F296 「repo 밖 환경에 기대는 검사」의 시각 축).
- *   ⚠ `실측줄` 자체는 그대로 둔다 — ① 은 «실측 원문을 알아보는가»가 과녁이고, 그 단언은
- *      파싱끼리 비교라 시간대에 안 걸린다. 증거를 지우면 서수 벗기기의 근거가 사라진다.
- *   ⚠ 달 이름을 `toLocaleString` 으로 뽑지 않는다 — 그건 ICU 로케일이라 **또 하나의 환경 축**이다. */
-const 달이름 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const 서수 = (n) => {
-  const 끝 = n % 10; const 십 = n % 100;
-  if (끝 === 1 && 십 !== 11) return `${n}st`;
-  if (끝 === 2 && 십 !== 12) return `${n}nd`;
-  if (끝 === 3 && 십 !== 13) return `${n}rd`;
-  return `${n}th`;
-};
-/** 실측 원문과 **같은 표기**로, 리셋 시각만 「지금부터 분뒤」인 줄. 로컬 시각으로 적는다
- *  (읽는 쪽 `한도기록` 이 `new Date(...)` 로 로컬 해석하므로 왕복이 맞아떨어진다). */
-function 살아있는줄(분뒤 = 180) {
-  const d = new Date(Date.now() + 분뒤 * 60000);
-  const ap = d.getHours() >= 12 ? 'PM' : 'AM';
-  const h = d.getHours() % 12 || 12;
-  const mm = String(d.getMinutes()).padStart(2, '0');
-  return "ERROR: You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), "
-    + 'visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at '
-    + `${달이름[d.getMonth()]} ${서수(d.getDate())}, ${d.getFullYear()} ${h}:${mm} ${ap}.`;
+/**
+ * 마커를 **살아있게** 못박는다 — 「지금 기준 미래」를 벽시계가 아니라 값으로 만든다.
+ *
+ * 🔴 왜 있나 (실측 2026-08-18 · `tools/환경대조.js` 시간대 축이 잡았다):
+ *   아래 두 검사는 `실측줄` 이 든 날짜(`Aug 18th, 2026 12:39 PM`)가 **「지금」보다 미래**라는 데
+ *   기대고 있었다. 그런데 그 문자열은 «로컬 시각»으로 파싱된다:
+ *     · TZ=UTC(= `test-ci` 가 모사하는 CI)  → 2026-08-18T12:39Z — 그날 12:39Z 까지만 미래
+ *     · TZ=Asia/Seoul(= 유호님 노트북)      → 2026-08-18T03:39Z — **이미 지났다**
+ *   ⇒ 같은 커밋이 유호님 기계에서는 **그날 아침부터 빨갛고**, CI 에서도 **12:39Z 부터 영구히**
+ *     빨개진다. 아무도 안 건드렸는데 모두의 배포 게이트가 막히는 «주인 없는 적색»이다(F296).
+ *
+ * 🔑 `실측줄` 자체는 **안 바꾼다** — 그건 실제로 받은 stderr 원문이고, 서수(`18th`) 벗기기 회귀가
+ *   그 원문에 걸려 있다(F083 「신고 원문을 그대로 다시 넣는다」). 고칠 것은 «파싱»이 아니라
+ *   «살아있음을 무엇으로 아는가»다. 그래서 감지는 원문이 지고, 생사는 여기서 값으로 준다.
+ *
+ * ⚠ 왜 `한도상태(지금)` 주입으로 안 되나: 아래 둘은 **자식 프로세스**(훅·codex-review)를 띄우고,
+ *   그쪽은 자기 `Date.now()` 를 쓴다. 부모가 주입해도 안 넘어간다 — 마커 «파일»에 적어야 닿는다.
+ */
+function 살려두기(런, 앞으로_분 = 60) {
+  const 경로 = 런.한도경로();
+  const 기록 = JSON.parse(fs.readFileSync(경로, 'utf8'));
+  기록.리셋시각 = new Date(Date.now() + 앞으로_분 * 60000).toISOString();
+  fs.writeFileSync(경로, JSON.stringify(기록), 'utf8');
+  return 기록;
 }
 
 // ───────────────────────────────── ① 감지 — 실측 원문을 그대로 알아본다
@@ -183,10 +177,8 @@ test('배선 핀: codex 깔때기와 던지기 입구가 한도막나 를 부르
 test('훅: 런 0건이어도 살아있는 마커면 알리고, 마커가 지났으면 침묵한다', () => {
   새방();
   const 런 = 런모듈();
-  /* 자식 프로세스(훅)라 「지금」을 주입할 수 없다 — 그래서 마커 자체를 미래로 짓는다. */
-  const 적힌 = 런.한도기록(살아있는줄());
-  assert.ok(적힌 && Date.parse(적힌.리셋시각) > Date.now(),
-    '픽스처가 이미 지난 시각을 적었다 — 이 검사의 전제(살아있는 마커)가 무너진 채 돈다');
+  런.한도기록(실측줄);
+  살려두기(런);   // 🔑 아래 ⚠ — 실측줄의 날짜에 기대지 않는다
   const env = { ...process.env, SYNK_REVIEW_RUNS: process.env.SYNK_REVIEW_RUNS };
   delete env[런.한도무시키];
   const out = execFileSync(process.execPath, [path.join(ROOT, '.claude', 'hooks', 'review-runs.js')],
@@ -207,10 +199,8 @@ test('훅: 런 0건이어도 살아있는 마커면 알리고, 마커가 지났�
 test('던지기: 살아있는 마커면 스폰 전에 끊는다 — 런 JSON·장부 던짐행 소음이 0이어야 한다', () => {
   const d = 새방();
   const 런 = 런모듈();
-  /* 자식 프로세스(codex-review)라 「지금」을 주입할 수 없다 — 위와 같은 이유로 미래 마커다. */
-  const 적힌 = 런.한도기록(살아있는줄());
-  assert.ok(적힌 && Date.parse(적힌.리셋시각) > Date.now(),
-    '픽스처가 이미 지난 시각을 적었다 — 차단을 기대하는 이 검사가 전제 없이 돈다');
+  런.한도기록(실측줄);
+  살려두기(런);   // 🔑 아래 ⚠ — 실측줄의 날짜에 기대지 않는다
   const 문서 = path.join(d, '픽스처설계.md');
   fs.writeFileSync(문서, '# 픽스처 — 이 파일은 심문에 닿기 전에 게이트가 끊어야 한다\n', 'utf8');
   const env = { ...process.env, SYNK_REVIEW_RUNS: process.env.SYNK_REVIEW_RUNS, SYNK_REVIEW_CKPT: process.env.SYNK_REVIEW_CKPT };
@@ -225,6 +215,23 @@ test('던지기: 살아있는 마커면 스폰 전에 끊는다 — 런 JSON·�
   const 런들 = fs.existsSync(process.env.SYNK_REVIEW_RUNS)
     ? fs.readdirSync(process.env.SYNK_REVIEW_RUNS).filter((f) => f.startsWith('심문-')) : [];
   assert.strictEqual(런들.length, 0, '차단됐는데 런 JSON 이 생겼다 — 「던졌는데 완료 0」 소음이 그대로다');
+});
+
+test('🔴 시한폭탄 금지 — 자식을 띄우는 검사는 마커의 «생사»를 값으로 준다(벽시계에 안 기댄다 · F296)', () => {
+  /* 왜 등록층인가 — 「이 파일이 언젠가 빨개진다」는 **그날이 오기 전엔 값으로 못 잰다**.
+   *   그날 잡으면 이미 늦다(주인 없는 적색이 모두의 배포 게이트를 막는다). 그래서 «기대는 모양»
+   *   자체를 금지한다. 실측 2026-08-18: 이 두 검사가 `실측줄` 의 날짜가 미래라는 데 기대고 있었고,
+   *   KST 에서는 그날 아침에 이미, UTC 에서도 12:39Z 부터 영구히 빨개질 판이었다. */
+  const src = fs.readFileSync(__filename, 'utf8');
+  const 자식띄움 = src.split('\ntest(')
+    .filter((b) => /execFileSync\(process\.execPath/.test(b) && /한도기록\(실측줄\)/.test(b));
+  assert.ok(자식띄움.length >= 2,
+    `자식을 띄우면서 실측줄로 마커를 적는 검사를 ${자식띄움.length}건만 찾았다 — 이 회귀가 낡았다(과녁이 사라졌거나 이름이 바뀌었다)`);
+  for (const b of 자식띄움) {
+    assert.match(b, /살려두기\(/,
+      `자식 프로세스를 띄우는데 마커 생사를 실측줄의 날짜에 맡겼다 — 그 날짜가 지나는 순간 «주인 없는 적색»이 된다:\n`
+      + `      ${b.split('\n')[0].slice(0, 90)}`);
+  }
 });
 
 test('자기 처방: 차단문이 시키는 --한도무시 는 인자 검사를 통과한다(F103 — 처방이 거절되면 우회가 정상 통로가 된다)', () => {
