@@ -99,15 +99,30 @@ const 층들 = [
     잃는것: '하루 넘게 열린 PR 을 적색으로 못 낸다',
   },
   {
+    /* 🔴 이 칸이 **거짓 초록을 낼 뻔했다** (2026-08-18 · 셀프호스티드 트랙에서 그 자리 실측).
+     *   옛 판은 `push:` 트리거가 주석인지만 봤다. 그런데 그날 `push:` 를 되살리면서 job 에
+     *   `if: vars.SYNK_SELFHOSTED == 'on'` 스위치를 달았다 — 트리거는 살아 있는데 스위치가
+     *   꺼져 있으면 run 은 뜨자마자 `skipped` 로 «완료»된다. 즉 옛 판정이라면 이 칸이 ✅ 가 되고,
+     *   실제로는 검사 0건이다. 이 파일 머리말이 예언한 「표가 낡으면 다 보인다고 말한다」 그것이다.
+     * 🔑 그래서 **배선과 스위치를 둘 다** 본다. 스위치는 저장소 변수라 `gh` 로만 읽히므로,
+     *   `gh` 가 없는 기계에서는 「못 쟀다」로 남는다 — 그게 이 도구의 계약대로다(모름 ≠ 통과). */
     이름: '원격 CI',
     보이나: () => {
+      let 배선 = false;
       try {
         const y = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'syntax-check.yml'), 'utf8');
-        return /^\s{2}push:/m.test(y);      // 주석 처리돼 있으면 안 돈다
+        배선 = /^\s{2}push:/m.test(y);       // 주석 처리돼 있으면 안 돈다
+      } catch (_) { return false; }
+      if (!배선) return false;
+      if (!명령있나('gh')) return false;      // 스위치를 못 읽는다 — 「켜졌다」고 말할 근거가 없다
+      try {
+        const out = execFileSync('gh', ['variable', 'list', '--json', 'name,value'],
+          { cwd: ROOT, encoding: 'utf8' });
+        return JSON.parse(out).some((v) => v.name === 'SYNK_SELFHOSTED' && String(v.value).trim() === 'on');
       } catch (_) { return false; }
     },
     도구: '.github/workflows/syntax-check.yml · tools/원격ci.js',
-    잃는것: '푸시해도 run 이 안 생겨 진실 층이 0건이다(로컬 모사만 남는다)',
+    잃는것: '푸시해도 검사가 0건이다 — ①`push:` 가 주석이거나 ②러너 스위치(`SYNK_SELFHOSTED`)가 꺼졌거나 ③`gh` 가 없어 스위치를 못 읽었다',
   },
 ];
 
