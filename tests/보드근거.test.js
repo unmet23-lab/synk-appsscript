@@ -243,3 +243,74 @@ test('실저장소 보드 줄에 돌려도 안 죽고, 못 본 곳은 언제나 
     assert.doesNotThrow(() => 근거.근거글(결과));
   }
 });
+
+/* ── ⑧ 열린 장부 번호를 «어디서» 얻나 (F614 · 2026-08-18) ────────────────────
+ *
+ * 옛 판은 `node tools/friction.js --open` 을 자식으로 띄우고 그 **stdout 에서** `F\d{2,4}` 를
+ * 긁었다. 그 출력은 신고문 전문을 싣고, 이 저장소의 신고문은 서로를 상시 인용한다 —
+ * 그래서 **인용이 열림으로 둔갑했다**(실측 08-18: 긁힘 49 · 진짜 14 · 헛것 35 · 놓침 0).
+ *
+ * 🔑 새는 방향은 「부풀기」다. 부푼 목록은 이미 처분된 번호를 「아직 열림 — 미완의 증거다」로
+ *   내밀어, 사람이 **끝난 줄을 안 치우게** 만든다(F372·F395 와 같은 방향 · 아무도 안 운다).
+ *
+ * 🔑 **탐지력은 아래 픽스처가 진다**(가드 맹점 ② · F296). 실저장소에는 거짓양성만 건다 —
+ *   실장부의 열림 건수는 매일 바뀌므로 그 숫자를 검사에 박으면 내일 CI 가 빨개진다.
+ */
+
+/** 장부 모듈 흉내 — 신고문 칸이 «다른 번호를 인용하는» 실제 형태를 그대로 담는다. */
+const 가짜장부 = (rows) => ({
+  read: () => ({ rows }),
+  열렸나: (r) => !String(r.resolved || '').trim(),
+});
+
+test('🔴 신고문이 인용한 번호는 «열림»이 아니다 — 옛 정규식 통로가 세 배로 부풀던 자리', () => {
+  const rows = [
+    { id: 'F400', resolved: '✅ a1b2c3d 로 닫음' },
+    { id: 'F604', resolved: '', signal: '전수 감사 — F400·F435·F436·F493·F562·F543 계열이 여기엔 안 왔다' },
+    { id: 'F435', resolved: '✅ 해소' },
+    { id: 'F543', resolved: '⏸ 유호 판정 대기 — F493 과 같은 축' },
+  ];
+  const 뽑힌 = 근거.열림뽑기(가짜장부(rows));
+  assert.deepStrictEqual(뽑힌, ['F604'],
+    '열린 건 F604 하나다 — 그 신고문에 인용된 F400·F435·F436·F493·F562·F543 이 섞이면 옛 병이다');
+  for (const 헛것 of ['F435', 'F436', 'F493', 'F562', 'F543']) {
+    assert.ok(!뽑힌.includes(헛것), `${헛것} 은 인용일 뿐인데 열림으로 셌다 — 부풀기 재발`);
+  }
+});
+
+test('🔴 보류(⏸)는 열림이 아니다 — 판정을 여기서 다시 적지 않고 장부의 술어를 그대로 쓴다', () => {
+  const 장부 = require(path.join(REPO, 'tools', 'friction.js'));
+  const rows = [
+    { id: 'F001', resolved: '' },
+    { id: 'F002', resolved: '⏸ 유호 판정 대기' },
+    { id: 'F003', resolved: '✅ 고침' },
+  ];
+  /* 흉내가 아니라 **실제 술어**를 끼운다 — 두 곳에 적으면 갈라진다(신뢰성 ④). */
+  assert.deepStrictEqual(근거.열림뽑기({ read: () => ({ rows }), 열렸나: 장부.열렸나 }), ['F001']);
+});
+
+test('🔴 옛 통로를 되살릴 수 없다 — 이 파일은 friction.js 를 자식으로 띄우지 않는다', () => {
+  const src = fs.readFileSync(path.join(REPO, 'tools', 'lib', '보드근거.js'), 'utf8');
+  /* 주석·문자열의 언급은 위반이 아니다(그 사연을 적은 머리말이 자기 검사에 걸리면 안 된다).
+   * 코드에서 `friction.js` 를 프로세스로 부르는 형태만 본다. */
+  const 코드 = src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+  assert.ok(!/execFileSync\s*\(\s*process\.execPath/.test(코드),
+    'friction.js 를 자식 프로세스로 띄워 stdout 을 긁으면 F614 가 그대로 재발한다');
+  assert.ok(!/--open/.test(코드), '`--open` 출력을 긁는 통로가 코드에 되살아났다');
+});
+
+test('못 잼과 0건을 가른다 — 이 저장소가 아닌 root 는 null 이다', () => {
+  const 없는곳 = fs.mkdtempSync(path.join(os.tmpdir(), 'noledger-'));
+  assert.strictEqual(근거.열림장부(없는곳), null,
+    '빈 배열로 뭉개면 「열린 장부가 없다」로 읽혀 미완 줄이 완료의 얼굴로 나간다(F207)');
+});
+
+test('실저장소 — 열림 목록이 장부 모듈의 판정과 «글자 그대로» 같다 (거짓양성만 · 건수는 안 박는다)', () => {
+  const 장부 = require(path.join(REPO, 'tools', 'friction.js'));
+  const 얻은것 = 근거.열림장부(REPO);
+  if (얻은것 === null) return;                              // 못 읽으면 skip — fail 이 아니다(F296)
+  const 진짜 = 장부.read().rows.filter(장부.열렸나).map((r) => r.id);
+  assert.deepStrictEqual(얻은것, 진짜,
+    '이 둘이 갈라지면 「열린 장부」라는 이름이 두 뜻을 갖는다 — 갈라짐 자체가 결함이다');
+  assert.ok(얻은것.every((id) => /^F\d+$/.test(id)), '행 id 가 아닌 것이 섞였다');
+});
