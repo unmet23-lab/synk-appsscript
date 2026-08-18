@@ -333,6 +333,36 @@ test('🔴 워크트리에서도 형제 저장소를 찾는다 — 이 저장소
   }
 });
 
+/* 🔴 [2026-08-18] 위 검사의 **백슬래시 갈래가 리눅스 CI 에서 영구 적색**이었다 — 정규식은 두
+ *   구분자를 다 받는데 그 앞의 `path.resolve` 가 이 기계 문법으로만 읽어 재료를 먼저 뭉갰다.
+ *   윈도우에서는 우연히 통과했고, 원격 Actions 가 0건(소진)이라 아무도 안 쟀다.
+ * 🔑 수리는 「표기를 감지해 맞는 path 문법을 쓴다」인데, 그 수리에는 **반대 방향 구멍**이 있다:
+ *   귀찮다고 무조건 `path.win32` 로 읽으면 리눅스 실경로 `/home/user/…` 가 `\home\user\…` 로
+ *   나오고, `existsSync` 가 영원히 false 를 준다. 증상이 「형제 없음 = 못 쟀다」라 **조용하다** —
+ *   위 검사는 그 판에서도 초록이다(픽스처가 전부 `/repo/…` 가상 경로라서). 그래서 따로 못박는다.
+ * ⚠ 「리눅스에서만」 같은 조건을 안 단다 — 명제를 «그 기계의 기본 문법과 같아야 한다»로 적으면
+ *   어느 플랫폼에서도 참이고, 안 도는 검사를 만들지 않는다(F207). */
+test('🔴 표기 감지의 반대 방향 — 슬래시 경로를 win32 로 뭉개면 실경로가 «조용히» 죽는다', () => {
+  const path = require('node:path');
+  const { 형제경로들 } = require('../tools/이해대장.js');
+
+  // ① 평소(슬래시) 경로는 **이 기계의 기본 문법** 그대로여야 한다 — 무조건 win32 면 리눅스에서 갈린다
+  assert.strictEqual(형제경로들('/repo/SYNK-appsscript')[0],
+    path.resolve('/repo/SYNK-appsscript', '..', 'SYNK-talk'),
+    '슬래시 경로를 이 기계의 문법이 아닌 것으로 읽었다 — 리눅스에서 existsSync 가 영원히 false 가 된다');
+
+  // ② 이 저장소의 **진짜 루트**로도 같아야 한다(가상 경로만 재면 실사용 자리를 안 잰다)
+  const 여기 = path.resolve(__dirname, '..');
+  assert.strictEqual(형제경로들(여기)[0], path.resolve(여기, '..', 'SYNK-talk'),
+    '실제 저장소 경로에서 형제 후보가 이 기계 문법을 벗어났다 — 도달 실측이 조용히 「못 쟀다」가 된다');
+
+  // ③ 드라이브 문자는 어느 기계에서든 윈도우 문법으로 읽는다(유호님 실사용 표기)
+  const 드라이브 = 형제경로들('C:\\repo\\SYNK-appsscript\\.claude\\worktrees\\t')
+    .map((p) => p.replace(/\\/g, '/'));
+  assert.ok(드라이브.some((p) => /^C:\/repo\/SYNK-talk$/.test(p)),
+    `C:\\ 표기의 워크트리에서 본체 옆 형제를 못 찾았다 (${드라이브.join(' · ')})`);
+});
+
 test('🔴 등록층 — 이 회귀가 CI 스위트에 실제로 든다(파일만 있고 안 도는 검사는 초록과 같은 모양이다)', () => {
   const 러너 = fs.readFileSync(path.join(ROOT, 'tools', 'test-ci.js'), 'utf8');
   assert.match(러너, /tests/, 'CI 러너가 tests 를 안 본다 — 이 파일이 안 돌면 위 전부가 장식이다');
