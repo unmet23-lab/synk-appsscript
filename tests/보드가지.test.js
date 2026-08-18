@@ -460,3 +460,46 @@ test('☠️ [F619] 원격 목록을 **못 뽑으면** 0 을 「재서 얻은 0�
   assert.strictEqual(다봄.모름, false,
     '두 층을 다 보고 얻은 0 까지 모름으로 올리면 참인 단정이 죽는다 — 그러면 이 경보는 상시 소음이 된다(F103)');
 });
+
+// ── 훑을 목록·분모는 **순수 함수**가 진다 (F619 · 변이가 실행층의 사각을 잡았다)
+//
+// 🔴 첫 판은 이 판정을 `가지끝()` 실행층 안에 뒀는데, 그러면 **「원격 층만 못 봤다」를 픽스처로
+//    연출할 방법이 없다** — `git branch -r` 만 실패시키는 상태를 만들 수 없기 때문이다(같은 기준을
+//    쓰므로 지면 둘 다 진다). 변이 검사가 그 자리를 정확히 구멍으로 잡았다: 「못 본 층을 0 으로
+//    접는다」와 「`origin/HEAD` 를 가지로 센다」 둘 다 망가뜨려도 47건이 전부 초록이었다.
+//    ⇒ 재는 대상을 실행층 밖으로 옮긴다. 실행층은 git 을 부르는 몫만 진다.
+
+const 가지 = (이름, sha) => ({ 이름, sha });
+const 주 = new Set(['master', 'origin/master']);
+
+test('☠️ [F619] 훑을가지: 못 본 원격 층은 **null 로 남는다** — 0 으로 접으면 「없다」와 같은 모양이 된다', () => {
+  const r = 보드.훑을가지([가지('worktree-a', 'aaa')], null, 주);
+  assert.strictEqual(r.분모.원격, null,
+    '🔴 못 본 층을 0 으로 접었다 — 위층이 「반쪽만 봤다」를 못 읽어 그 0 이 「빈 자리」로 나간다(F619)');
+  assert.strictEqual(r.분모.로컬, 1);
+  assert.deepStrictEqual(r.가지들, ['worktree-a'], '원격을 못 봐도 로컬은 그대로 훑는다');
+
+  const 다봄 = 보드.훑을가지([], [], 주);
+  assert.strictEqual(다봄.분모.원격, 0, '두 층을 다 보고 얻은 0 까지 null 로 올리면 참인 단정이 죽는다');
+});
+
+test('☠️ [F619] 훑을가지: 같은 커밋은 한 번 · 갈린 커밋은 둘 · 기준 자신은 뺀다', () => {
+  const 같음 = 보드.훑을가지([가지('w-a', 'aaa')], [가지('origin/w-a', 'aaa')], 주);
+  assert.deepStrictEqual(같음.가지들, ['w-a'], '같은 커밋을 두 번 훑는다 — 노트북 비용이 곱절이 된다');
+  assert.strictEqual(같음.분모.훑음, 1);
+
+  const 갈림 = 보드.훑을가지([가지('w-a', 'bbb')], [가지('origin/w-a', 'aaa')], 주);
+  assert.deepStrictEqual(갈림.가지들.sort(), ['origin/w-a', 'w-a'],
+    '🔴 이름으로 접었다 — 아직 안 민 로컬 커밋의 선언이 통째로 사라진다');
+
+  const 기준자신 = 보드.훑을가지([가지('master', 'mmm')], [가지('origin/master', 'mmm')], 주);
+  assert.deepStrictEqual(기준자신.가지들, [], '기준 자신이 「미머지 가지」로 실리면 master 직접 편집이 남의 선언처럼 나온다');
+});
+
+test('☠️ [F619] 가지목록파싱: `origin/HEAD` 는 **별칭이지 가지가 아니다** — 세면 분모가 부푼다', () => {
+  const r = 보드.가지목록파싱('origin/HEAD abc123\norigin/w-a def456\nw-b 789abc\n');
+  assert.deepStrictEqual(r.map((x) => x.이름), ['origin/w-a', 'w-b'],
+    '🔴 `origin/HEAD` 를 가지로 셌다 — origin/master 와 같은 커밋을 가리키는 항목이 하나 더 생긴다');
+  assert.deepStrictEqual(r[0], { 이름: 'origin/w-a', sha: 'def456' }, '이름·sha 를 잘못 갈랐다');
+  assert.deepStrictEqual(보드.가지목록파싱(''), [], '빈 출력은 빈 배열이다 — 여기서 모름을 만들지 않는다');
+});
