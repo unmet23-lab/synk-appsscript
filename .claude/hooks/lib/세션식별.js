@@ -78,7 +78,13 @@ function 자리id(env = process.env, input = null) {
     || 값(env, 'CLAUDE_CODE_SESSION_ID');
 }
 
-/** ③ 보드 지문 8자리 — hex 가 아니면 `''`(모름). */
+/** ③ **보드** 지문 8자리 — hex 가 아니면 `''`(모름).
+ *
+ * ⚠ 8자리 지문이 이 저장소에 **둘** 있다. 섞으면 조용히 못 찾는다(F633 수리 중 회귀가 잡았다):
+ *   · 이 함수      = 보드 파일명 규칙. `board-id.파일지문()` 이 **hex 를 요구**한다.
+ *   · 인계문 파일명 = `session-report:951` 규칙 — `^local_` 만 떼고 8자, **hex 무관**.
+ *   인계문 쪽에 이 함수를 쓰면 hex 가 아닌 지문에서 자기 파일을 못 찾는다. 그쪽은 `자리id()` 만
+ *   받아가고 변환은 자기 규칙을 쓴다(합치지 않는 것이 지금은 맞다 — 두 규칙이 실제로 다르다). */
 function 지문(env = process.env, input = null) {
   const f = 보드id.지문(자리id(env, input));
   return HEX8.test(f) ? f : '';

@@ -1327,7 +1327,10 @@ test('☠️ 표식은 남이 청소하는 폴더에 두지 않는다 — 거기
     assert.notEqual(path.resolve(path.dirname(표식)), 청소구역,
       `표식이 handoff-store 청소 구역 안이다(${표식}) — sweep 이 \`at\` 없는 파일을 즉시 지운다`);
     // 이름 규칙은 그 모듈에서 파생돼야 한다 — 규칙을 손으로 베끼면 세션 구분이 갈라진다.
-    assert.ok(표식.includes(store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || '')),
+    // ⚠ 세션 id 도 **그 통로에서** 받는다(F633). 여기서 env 를 직접 읽으면, 클라우드처럼
+    //   HOST 가 빈 환경에서 기대값이 `safeId('')`='unknown' 으로 굳어 검사가 공허해진다.
+    const 세션식별 = require(path.join(ROOT, '.claude', 'hooks', 'lib', '세션식별.js'));
+    assert.ok(표식.includes(store.safeId(세션식별.자리id())),
       '표식 이름이 세션 키를 안 쓴다 — 남의 실행을 내 것으로 읽는다');
   } finally {
     if (옛 !== undefined) process.env.SYNK_REVIEW_INFLIGHT = 옛;

@@ -88,7 +88,12 @@ function 조사() {
   const 박동분 = new Map(세션.map((s) => [소유자.짧게(s.sid), s.분]));
   const 산 = new Set(세션.filter(소유자.살았나).map((s) => 소유자.짧게(s.sid)));
   // 파일명 sid8 은 session-report 가 쓰는 표기와 같은 변환(local_ 접두 제거 + 8자)이다.
-  const 내sid8 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '세션식별.js')).지문();   // F633
+  /* ⚠ 여기서 `세션식별.지문()` 을 쓰면 안 된다(F633 수리 중 실측) — 그건 **보드 파일명** 규칙이라
+   *   hex 를 요구하는데, 인계문 파일명은 `session-report:951` 의 규칙(`^local_` 만 떼고 8자,
+   *   hex 무관)이다. 두 규칙을 섞으면 hex 가 아닌 지문에서 **내 파일을 못 찾는다**(회귀가 잡았다).
+   *   바뀐 것은 id 를 **어디서 받나** 하나뿐이다 — 변환은 그대로 둔다. */
+  const 세션식별 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '세션식별.js'));
+  const 내sid8 = String(세션식별.자리id()).replace(/^local_/, '').slice(0, 8);
 
   const r = { 수거: [], 만료: [], 내것: [], 보류: [], 잡파일: [], 목차더러움: false, 내sid8 };
   for (const it of 항목) {
