@@ -169,7 +169,7 @@ test('원고 변환 — 지면만 갈고 «글자»는 한 자도 안 바꾼다'
 /* ══════════════════════════════════════════════════════════════════════════
    원고가 정본인가 — 전량 굽기의 게이트 (2026-08-16 · 실사고에서 왔다)
 
-   무엇을 밟았나: `docs/엔진/Loom_소개서.html` 이 자기 원고보다 **5,869자 앞서 있었다**.
+   무엇을 밟았나: `docs/엔진/Loom_소개서.html`(08-18 부터 `SYNK_Loom_소개서.html`) 이 자기 원고보다 **5,869자 앞서 있었다**.
    누군가 산출물을 손으로 고쳤고, 원고는 v1.0 인 채였다. 그 상태로 `--전량` 을 돌리면
    그 수정이 **exit 0 으로** 사라진다 — 화면도, 테스트도, git 도 아무도 안 운다
    (다시 구운 지면은 «멀쩡한 문서»로 보인다 · 새는 방향은 언제나 「통과」다).
@@ -185,7 +185,7 @@ function 픽스처방() {
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-원고픽스처-'));
   const 원고방 = path.join(방, '_원고');
   fs.mkdirSync(원고방, { recursive: true });
-  const 씨 = fs.readFileSync(path.join(루트, 'docs', '엔진', '_원고', 'Trail_소개서.html'), 'utf8');
+  const 씨 = fs.readFileSync(path.join(루트, 'docs', '엔진', '_원고', 'SYNK_Trail_소개서.html'), 'utf8');
   fs.writeFileSync(path.join(원고방, '갑.html'), 씨, 'utf8');
   fs.writeFileSync(path.join(원고방, '을.html'), 씨, 'utf8');
   도구.굽기(path.join(원고방, '갑.html'), path.join(방, '갑.html'));
