@@ -742,6 +742,50 @@ function 활성줄전량(root, 옵션) {
   return { 줄들: 모음, 모름: 못본층.length > 0, 못본층, 분모, 기준: 가지판.기준 };
 }
 
+/** `git branch --format='%(refname:short) %(objectname)'` 출력 → `[{이름, sha}]`.
+ *
+ * ⚠ `origin/HEAD` 는 **별칭이지 가지가 아니다** — 세면 분모가 부풀고 `origin/master` 와 같은 커밋을
+ *   가리키는 항목이 하나 더 생긴다. 실행층 안에 두면 이 한 줄을 픽스처로 못 재서 변이가 통과한다
+ *   (2026-08-18 실측: 그 상태로 「변이 6/8 · 구멍 2」였다). */
+function 가지목록파싱(출력) {
+  return String(출력 || '').split(/\r?\n/).map((s) => s.trim()).filter(Boolean)
+    .map((l) => { const i = l.lastIndexOf(' '); return { 이름: l.slice(0, i), sha: l.slice(i + 1) }; })
+    .filter((x) => x.이름 && !/(^|\/)HEAD$/.test(x.이름));
+}
+
+/**
+ * 로컬·원격 가지 목록 → **훑을 목록과 분모** (마찰 F619 · 2026-08-18).
+ *
+ * @param {{이름:string,sha:string}[]} 로컬  로컬 미머지 가지 (`null` 이면 못 봤다)
+ * @param {{이름:string,sha:string}[]|null} 원격  원격추적 미머지 가지 — **`null` = 그 층을 못 봤다**
+ * @param {Set<string>} 주가지들  기준 자신(로컬·원격 두 이름) — 가지가 아니다
+ * @returns {{가지들: string[], 분모: {로컬:number|null, 원격:number|null, 훑음:number}}}
+ *
+ * 🔑 **중복은 sha 로 접는다.** 이름으로 접으면 로컬이 앞선 가지(내가 커밋했고 아직 안 민 판)의
+ *   선언이 조용히 사라진다 — 새는 방향이 「그 트랙은 빈 자리다」라 이 함수가 고치려는 병 그 자체다.
+ *   같은 커밋이면 훑을 값이 같으니 한 번만 돈다(노트북은 대개 그 경우라 **비용이 안 는다**).
+ *
+ * 🔴 **`원격: null` 을 0 으로 접지 않는다.** 접는 순간 「가지가 없다」와 「가지를 못 봤다」가 같은
+ *   모양이 되고, 부르는 쪽은 그 0 을 「재서 얻은 0」으로 읽는다 — 그게 F619 다.
+ */
+function 훑을가지(로컬, 원격, 주가지들) {
+  const 로 = Array.isArray(로컬) ? 로컬 : [];
+  const 주 = 주가지들 instanceof Set ? 주가지들 : new Set(주가지들 || []);
+  const 로컬sha = new Set(로.map((x) => x.sha));
+  const 가지들 = [
+    ...로.map((x) => x.이름),
+    ...(Array.isArray(원격) ? 원격 : []).filter((x) => !로컬sha.has(x.sha)).map((x) => x.이름),
+  ].filter((n) => !주.has(n));
+  return {
+    가지들,
+    분모: {
+      로컬: Array.isArray(로컬) ? 로컬.length : null,
+      원격: Array.isArray(원격) ? 원격.length : null,
+      훑음: 가지들.length,
+    },
+  };
+}
+
 /** 얇은 실행층 — 여기엔 판정이 없다(판정은 위 순수 파서에 있다). 못 부르면 `null`(=모름).
  *
  * 🔑 가지마다 **병합기준 대비 순diff**(`기준...가지`)를 뜬다. 「가지 끝의 파일 전문」이 아니다 —
@@ -763,10 +807,7 @@ function 가지끝(root, 기준, 메모) {
   /** `<이름> <sha>` 줄들 → `[{이름, sha}]`. 못 부르면 `null`(=모름 · 「없다」가 아니다). */
   const 목록 = (args) => {
     const r = 부르기(args);
-    if (!r || r.error || r.status !== 0) return null;
-    return String(r.stdout || '').split(/\r?\n/).map((s) => s.trim()).filter(Boolean)
-      .map((l) => { const i = l.lastIndexOf(' '); return { 이름: l.slice(0, i), sha: l.slice(i + 1) }; })
-      .filter((x) => x.이름 && !/(^|\/)HEAD$/.test(x.이름));   // `origin/HEAD` 는 별칭이지 가지가 아니다
+    return (!r || r.error || r.status !== 0) ? null : 가지목록파싱(r.stdout);
   };
 
   for (const 기 of 기준) {
@@ -808,21 +849,10 @@ function 가지끝(root, 기준, 메모) {
      *   더는 「0」이라 말하지 않는다. 이 값이 board-guard(Write 시점 훅)에서 사람 손에 붙는다 —
      *   낮추려면 다시 재라. */
     const 원격 = 목록(['branch', '-r', '--no-merged', 기, '--format=%(refname:short) %(objectname)']);
-    const 로컬sha = new Set(로컬.map((x) => x.sha));
-    const 가지들 = [
-      ...로컬.map((x) => x.이름),
-      ...(원격 || []).filter((x) => !로컬sha.has(x.sha)).map((x) => x.이름),
-    ].filter((n) => !주가지들.has(n));
-
-    /* 분모를 **돌려준다**(F207 · F619 처방 ㉡) — 0 을 받은 쪽이 「가지가 없다」와 「가지를 못 봤다」를
-     * 가를 재료가 지금까지 반환에도 출력에도 없었다. `원격: null` = 그 층을 못 훑었다. */
-    if (메모) {
-      메모.분모 = {
-        로컬: 로컬.length,
-        원격: 원격 === null ? null : 원격.length,
-        훑음: 가지들.length,
-      };
-    }
+    /* 🔑 **합치기·중복접기·분모는 순수 함수가 진다**(`훑을가지`) — 실행층에 두면 「원격만 못 봤다」를
+     *   픽스처로 연출할 방법이 없어 그 축이 통째로 안 재진다(변이 검사가 실제로 구멍으로 잡았다). */
+    const { 가지들, 분모 } = 훑을가지(로컬, 원격, 주가지들);
+    if (메모) 메모.분모 = 분모;
 
     /* 🔑 가지가 없으면 **재서 얻은 0** 이다 — `모름` 으로 올리지 않는다(그러면 분모가 거꾸로 샌다).
      *   ⚠ 단 그 말은 **훑을 층을 다 봤을 때만** 참이다: 원격 목록을 못 뽑았으면(`원격 === null`)
@@ -1119,7 +1149,7 @@ function 산출물경로들(파일칸, 확장자집합) {
 
 module.exports = {
   폴더, 내파일, 줄들, 유령들, 주인없는줄들, 텍스트, 머리말,
-  가지줄들, 가지끝파싱, 가지끝줄, 가지기준, 활성줄전량,
+  가지줄들, 가지끝파싱, 가지끝줄, 가지기준, 활성줄전량, 가지목록파싱, 훑을가지,
   원격줄들, 원격기준,
   표줄, 데이터행, 유령, 유령사유, 껍데기인가, ISO날짜, 칸수,
   활성어휘, 활성행, 완료행, 대기기호, 대기행, 놓은줄, 이관문구, 아카이브경로, 아카이브된줄들,
