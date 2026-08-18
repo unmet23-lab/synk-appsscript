@@ -23,6 +23,8 @@ const assert = require('node:assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+/* 주석 제거는 통로가 하나다 — 지역 사본은 저마다 다르게 틀린다(F401·#Q114). */
+const { 코드만, 파일소스 } = require('./lib/소스검사.js');
 
 const REPO = path.resolve(__dirname, '..');
 const 근거 = require(path.join(REPO, 'tools', 'lib', '보드근거.js'));
@@ -290,10 +292,11 @@ test('🔴 보류(⏸)는 열림이 아니다 — 판정을 여기서 다시 적
 });
 
 test('🔴 옛 통로를 되살릴 수 없다 — 이 파일은 friction.js 를 자식으로 띄우지 않는다', () => {
-  const src = fs.readFileSync(path.join(REPO, 'tools', 'lib', '보드근거.js'), 'utf8');
-  /* 주석·문자열의 언급은 위반이 아니다(그 사연을 적은 머리말이 자기 검사에 걸리면 안 된다).
-   * 코드에서 `friction.js` 를 프로세스로 부르는 형태만 본다. */
-  const 코드 = src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+  /* 주석의 언급은 위반이 아니다(그 사연을 적은 머리말이 자기 검사에 걸리면 안 된다).
+   * 코드에서 `friction.js` 를 프로세스로 부르는 형태만 본다.
+   * 🔑 통로를 쓴다 — 지역 사본(`(^|[^:])\/\/…`)은 `://` 만 지켜서, 위 주석이 말한
+   *   「문자열의 언급」은 정작 못 지켰다(`'// 참고'` 를 주석으로 먹는다). */
+  const 코드 = 코드만(파일소스(path.join(REPO, 'tools', 'lib', '보드근거.js')));
   assert.ok(!/execFileSync\s*\(\s*process\.execPath/.test(코드),
     'friction.js 를 자식 프로세스로 띄워 stdout 을 긁으면 F614 가 그대로 재발한다');
   assert.ok(!/--open/.test(코드), '`--open` 출력을 긁는 통로가 코드에 되살아났다');
