@@ -41,37 +41,25 @@ if (!files.length) {
   process.exit(1);
 }
 
-/* 테스트가 읽는 파일들의 (경로·수정시각·크기) 스냅샷.
+/* 테스트가 읽는 파일들의 스냅샷 + 「도는 동안 바뀐 파일」 가르기는 lib/런중변경.js 한 벌이다.
  *
  * 왜 있나 (2026-08-04 실측, 거짓 적색 2회):
  *   이 저장소는 세션이 동시에 여럿 돈다. 스위트가 20초 넘게 도는 동안 **옆 세션이
  *   Code.js·HTML 을 편집하면** 테스트가 중간 상태를 읽고 빨간불이 된다. 그런데 그
  *   적색은 진짜 적색과 **모양이 완전히 같다** — 실제로 그걸 보고 남의 살아있는
  *   작업본(Code.js)을 고치러 갈 뻔했다. 통과/미실행을 가르는 것과 같은 규율이다:
- *   **거짓 적색과 진짜 적색이 같은 모양이면 안 된다.** */
-function snapshot() {
-  const out = new Map();
-  const walk = (dir, depth) => {
-    let ents;
-    try { ents = fs.readdirSync(dir, { withFileTypes: true }); } catch (_) { return; }
-    for (const e of ents) {
-      // `.claude/state` 는 훅이 매 턴 갱신하는 런타임 상태라 늘 바뀐다 — 세면 경고에 노이즈만 는다.
-      if (e.name === 'node_modules' || e.name === '.git' || e.name === 'state') continue;
-      const p = path.join(dir, e.name);
-      if (e.isDirectory()) { if (depth > 0) walk(p, depth - 1); continue; }
-      if (!/\.(js|json|md|html|txt)$/i.test(e.name)) continue;
-      try { const s = fs.statSync(p); out.set(path.relative(ROOT, p), `${s.mtimeMs}:${s.size}`); } catch (_) { /* 사라진 파일 */ }
-    }
-  };
-  walk(ROOT, 0);
-  for (const d of ['tests', 'tools', 'docs', '.claude']) walk(path.join(ROOT, d), 2);
-  return out;
-}
+ *   **거짓 적색과 진짜 적색이 같은 모양이면 안 된다.**
+ *
+ * 왜 두 갈래인가 (F616 · 2026-08-18 실측 2회): 옛 판은 `mtimeMs:size` 만 봐서 **이 스위트가
+ *   제자리에서 다시 굽고 바이트를 되돌리는 산출물**까지 「옆 세션이 편집 중」으로 단정했다.
+ *   격리 컨테이너(다른 세션 0)에서도 떴고, 처방문이 가리키는 `작업본소유자` 목록은 비어 있었다 —
+ *   따를 수 없는 처방(F103)이라 **진짜 적색까지 상시 「못 믿는다」로** 내려앉았다. 조리법은 lib 에. */
+const { 스냅샷, 가르기 } = require('./lib/런중변경.js');
 
 console.log(`[test-ci] CI 모사: TZ=UTC · HOME=${fakeHome}(빈 폴더) · 테스트 ${files.length}파일`);
-const before = snapshot();
+const before = 스냅샷(ROOT);
 const r = spawnSync(process.execPath, ['--test', ...files], { cwd: ROOT, env, stdio: 'inherit' });
-const after = snapshot();
+const after = 스냅샷(ROOT);
 
 모사.치우기();
 
@@ -82,17 +70,29 @@ if (r.error) {
 const code = r.status === null ? 1 : r.status;
 
 // 도는 동안 바뀐 파일 — 스위트가 스스로 만드는 임시물은 위 스냅샷 대상에 없다(tmp 로 나간다).
-const moved = [];
-for (const [p, v] of after) if (before.has(p) && before.get(p) !== v) moved.push(p);
-for (const p of before.keys()) if (!after.has(p)) moved.push(`${p} (삭제됨)`);
+const { 밖에서, 제자리 } = 가르기(before, after);
+const 몇벌 = (a, n) => a.slice(0, n).map((p) => `   · ${p}`).concat(a.length > n ? [`   · … 외 ${a.length - n}건`] : []);
 
-if (code !== 0 && moved.length) {
+/* 분모를 «색과 무관하게» 낸다 (F207 의 거울상 · F616 ③).
+ * 이 칸이 없으면 「밖에서 0」이 「아무 창도 없었다」로 읽힌다 — 밖에서 바뀌었다가 같은 바이트로
+ * 돌아온 판은 여기 앉으므로, 그 칸을 지우면 창이 있었다는 사실 자체가 사라진다. */
+if (제자리.length) {
+  console.log('');
+  console.log(`[test-ci] ℹ 제자리 굽기 ${제자리.length}벌 — 이 런이 다시 굽고 **바이트가 되돌아온** 파일(밖에서 바뀐 것 아님).`);
+  for (const l of 몇벌(제자리, 4)) console.log(l);
+}
+
+if (code !== 0 && 밖에서.length) {
   console.error('');
-  console.error(`[test-ci] ⚠ **이 적색은 못 믿는다** — 테스트가 도는 동안 ${moved.length}개 파일이 바뀌었다(옆 세션이 편집 중).`);
-  for (const p of moved.slice(0, 8)) console.error(`   · ${p}`);
-  if (moved.length > 8) console.error(`   · … 외 ${moved.length - 8}건`);
+  console.error(`[test-ci] ⚠ **이 적색은 못 믿는다** — 도는 동안 ${밖에서.length}개 파일의 «내용»이 달라졌다(옆 세션이 편집 중일 수 있다).`);
+  for (const l of 몇벌(밖에서, 8)) console.error(l);
   console.error('   → **고치러 가기 전에 재실행하라.** 08-04 실측: 이 거짓 적색 2회, 하마터면 남의 작업본을 고칠 뻔했다.');
-  console.error('   → 여전히 빨갛고 이 경고가 없으면 그건 진짜다. 누구 파일인지는 `node tools/작업본소유자.js`.');
+  console.error('   → 누구 파일인지는 `node tools/작업본소유자.js`.');
+} else if (code !== 0) {
+  console.error('');
+  console.error('[test-ci] ✔ 밖에서 바뀐 파일 **0** — 이 적색을 「옆 세션 탓」으로 돌릴 근거는 없다(재실행은 답이 아니다).');
+  console.error('   → 위 제자리 굽기는 창이 **닫힌** 것이다. 실패한 검사를 그대로 읽어라.');
+  console.error('   ⚠ 단 한 자리만 남는다: 밖에서 바뀌었다가 **정확히 같은 바이트로** 돌아온 파일은 제자리 칸에 앉는다.');
 }
 
 /* ⚠ 초록을 「CI 초록」이라 단언하지 않는다 — 이건 **모사**라 환경 의존 실패(git 이력·얕은 클론
