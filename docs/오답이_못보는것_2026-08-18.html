@@ -67,6 +67,8 @@ code{background:var(--quiet); padding:.12em .38em; border-radius:3px; color:var(
 /* 축 카드 — 이 문서의 본체 */
 .axis{margin-top:26px; border:1px solid var(--rule); border-radius:4px; background:var(--surface); overflow:hidden}
 .axis.open{border-color:var(--panel-edge); background:var(--panel)}
+.axis.proposed{border-style:dashed; border-color:var(--slate2)}
+.axis.proposed .rank{color:var(--fg2)}
 .axis .head{padding:22px 26px 0}
 .axis .rank{font-family:var(--mono); font-size:10.5px; letter-spacing:.15em; text-transform:uppercase;
   color:var(--fg2); display:flex; gap:10px; align-items:center; flex-wrap:wrap}
@@ -138,11 +140,13 @@ footer .sep{margin:0 8px; opacity:.45}
 </header>
 
 <div class="verdict">
-  <div class="label">유호님 확정 · 2026-08-18</div>
-  <p>여섯 축 <strong>전건 채택</strong> — 「1,2,3,4,5,6 전부 추가하자」</p>
+  <div class="label">1차 ✅확정 · 2차 제안 중 · 2026-08-18</div>
+  <p>1차 여섯 축 <strong>전건 채택</strong> — 「1,2,3,4,5,6 전부 추가하자」</p>
   <p>넷은 <strong>새 수집 없이 오늘 열린다</strong>. 둘은 스키마 한 칸씩이면 열리는데
      <strong>개원 전에 안 열면 첫 시즌치가 통째로 안 남는다</strong>(같은 시트라 한 커밋으로 나간다).
-     하나는 반 수가 쌓여야 읽힌다. 착수 추적은 작업 대기열 <code>#Q116</code>~<code>#Q121</code> 이 진다.</p>
+     하나는 반 수가 쌓여야 읽힌다. 착수 추적은 작업 대기열 <code>#Q116</code>~<code>#Q121</code> 이 진다.
+     <br><br>그리고 <strong>2차 여섯(G~L)이 §D 에 섰다</strong> — 1차가 ㉠(실력)에 쏠려 있었기에
+     이번엔 <strong>㉢(삶)과 ㉡(사람)</strong> 을 직접 겨눈다. 아직 확정 전이라 대기열에는 안 넣었다.</p>
 </div>
 
 <section>
@@ -339,7 +343,166 @@ footer .sep{margin:0 8px; opacity:.45}
 </section>
 
 <section>
-  <h2>D · 순서</h2>
+  <h2>D · 2차 발굴 — 아직 제안</h2>
+  <h3>1차 여섯은 ㉠(실력)에 쏠려 있었다 — 이번엔 ㉢·㉡ 을 판다</h3>
+  <p>
+    ✅확정된 <b>A~F 는 무게중심이 ㉠</b> 쪽이다. 그런데 철학 정본은 <b>㉡ 이 우리 회사가 존재하는 이유</b>라 적었고,
+    <b>㉢ 은 소급이 안 되는 유일한 층</b>이다. 아래 여섯은 그 두 층을 직접 겨눈다.
+    <span class="sig">점선 테두리 = 아직 유호님 확정 전.</span>
+  </p>
+
+  <div class="axis proposed">
+    <div class="head">
+      <div class="rank"><span>축 G</span><span class="pill">㉢ 삶</span><span class="pill">유일한 도달 0 을 여는 열쇠</span></div>
+      <h4>꿈의 «변화»가 신호다</h4>
+    </div>
+    <p class="what">
+      <code>self_declare_log</code> 는 학생이 덮어쓰는 3칸(드림한줄·최애·몬스터이름)의 <b>바뀐 것만</b> 매일 밤 append 한다.
+      그리고 이 시트는 우리 수집 22종 중 <b>유일하게 남은 「도달 0」</b>이다.
+    </p>
+    <div class="body">
+      <blockquote>
+        <p>읽는 자리가 0이다 — 탭 축소 감시만 이 이름을 안다. 드림맵·시즌 회고가 선언의 «변화»를 맥락으로 읽는 날 닿는다
+          (<b>㉢ 삶 이해의 첫 재료</b>).</p>
+        <cite>엔진_셋업확장.js — 코드가 스스로 적어둔 사유</cite>
+      </blockquote>
+      <div class="why">
+        <b>왜 「값」이 아니라 「변화」인가</b> — 지금 꿈이 무엇인지는 <code>profiles</code> 한 칸이면 안다.
+        그 칸이 못 보는 것은 <b>언제 · 몇 번 · 무엇에서 무엇으로</b> 바뀌었나다.
+        꿈이 세 번 바뀐 학생과 한 번도 안 바꾼 학생은 <b>완전히 다른 사람</b>인데 지금은 같은 한 줄이다.
+        그리고 <b>바뀐 시점의 맥락</b>이 급소다 — 시험 직후인가, 특정 수업 뒤인가, 이탈 직전인가.
+      </div>
+      <dl>
+        <dt>지을 것</dt>
+        <dd>변화 이력을 읽어 시즌 회고·드림맵 카드의 <b>맥락</b>으로 넘기는 함수. <b>새 수집 0</b>(이미 매일 밤 쌓인다)</dd>
+        <dt>대가</dt>
+        <dd>학생 0명이라 지금 행은 0이다 — <b>코드는 지금 서지만 값은 개원 후에 흐른다</b></dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="axis proposed">
+    <div class="head">
+      <div class="rank"><span>축 H</span><span class="pill">㉡ 사람</span><span class="pill">새 수집 0 · 오늘 열림</span></div>
+      <h4>시간대 × 정답률 — 「언제 집중이 오르는가」를 «직접» 잰다</h4>
+    </div>
+    <p class="what">
+      철학 정본의 ㉡ 정의가 문자 그대로 <b>「어떤 성향이고, 어떤 습관이며, <u>언제 집중이 오르는가</u>」</b>인데,
+      <b>그 마지막 조각을 재는 코드가 0이다.</b>
+    </p>
+    <div class="body">
+      <div class="why">
+        <b>재료는 이미 모든 행에 있다</b> — <code>quiz_log</code>·<code>talk_log</code> 가 <code>제출일</code> 과 별개로
+        <code>created_at</code> 을 든다. 즉 <b>몇 시에 풀었는지가 이미 남아 있고 아무도 안 읽는다.</b>
+        시각 × <code>정답여부</code> 만 교차하면 「이 학생은 밤 10시 뒤 정답률이 30% 떨어진다」가 나온다.
+      </div>
+      <dl>
+        <dt>그러면 바뀌는 것</dt>
+        <dd><b>숙제 알림 시각을 학생마다 다르게.</b> 지금은 전원 같은 시각에 나간다 —
+          집중이 오르는 시간에 알림이 가면 같은 콘텐츠로 더 많이 배운다</dd>
+        <dt>이미 선 것</dt>
+        <dd>talk 의 <code>학습자상태 v7</code> 에 <b>「언제 집중」 띠축이 이미 있다</b> — 읽는 층은 서 있고
+          <b>먹일 재료가 이 저장소에서 나온다</b></dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="axis proposed">
+    <div class="head">
+      <div class="rank"><span>축 I</span><span class="pill">㉢ 삶</span><span class="pill">코칭의 급소</span></div>
+      <h4>목표–행동 거리 — 6급이라 말하고 3급만 푸는 학생</h4>
+    </div>
+    <p class="what">
+      학생이 선언한 목표(TOPIK 6급 · 한국 유학)와 실제 행동(푸는 문제의 급수 · 제출률)의 <b>간극</b>.
+      축 A(회피 지도)의 ㉢ 판이다 — 저쪽이 「안 쓴 문법」이면 이쪽은 <b>「안 가는 방향」</b>이다.
+    </p>
+    <div class="body">
+      <div class="why">
+        <b>왜 아무도 안 보나</b> — 목표는 <code>profiles</code>·상담 시트에 있고 행동은 <code>quiz_log</code> 의
+        <code>급수</code> 열에 있는데, <b>둘을 잇는 코드가 없다.</b> 간극이 크다는 건 둘 중 하나다 —
+        목표가 허상이거나, <b>두려워서 낮은 난이도로 피하고 있거나.</b> 처방이 정반대인데 지금은 둘 다 안 보인다.
+      </div>
+      <dl>
+        <dt>지을 것</dt>
+        <dd>목표 급수 − 최근 4주 실제 급수 중앙값 = 거리. <b>새 수집 0</b></dd>
+        <dt>주의</dt>
+        <dd>이 값을 <b>학생에게 그대로 보여주지 않는다</b> — 「너 목표에 한참 못 미쳐」는 우리 말투가 아니다.
+          강사 브리핑과 시즌 회고의 <b>대화 재료</b>로만 쓴다</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="axis proposed">
+    <div class="head">
+      <div class="rank"><span>축 J</span><span class="pill">소급 불가</span><span class="pill">도달 0</span></div>
+      <h4>이탈의 전조 — 떠난 학생이 남긴 마지막 2주</h4>
+    </div>
+    <p class="what">
+      <code>exit_log</code>(<code>student_id·이름·반·퇴소감지일·재원일수</code>)도 <b>도달 0</b>이고,
+      코드가 그 값을 이렇게 적었다 — <b>「이탈 이해의 원본 — 떠난 순간은 소급이 안 된다」</b>.
+    </p>
+    <div class="body">
+      <div class="why">
+        <b>리텐션 레이더와 다른 물건이다</b> — 레이더는 「<b>지금</b> 위험한 사람」을 규칙으로 짚는다(2주 무포인트).
+        이 축은 반대 방향이다: <b>이미 떠난 사람의 마지막 2주를 역으로 훑어 「무엇이 전조였나」를 배운다.</b>
+        규칙을 사람이 정하는 대신 <b>데이터가 규칙을 고친다</b> — 그게 레이더를 매년 더 정확하게 만든다.
+      </div>
+      <dl>
+        <dt>불변식 6 과의 관계</dt>
+        <dd>「무엇이 통했는지」의 <b>가장 비싼 판</b>이다 — 이탈은 되돌릴 수 없어서, 막은 한 명이 곧 전부다</dd>
+        <dt>대가</dt>
+        <dd>표본이 이탈자 수라 <b>가장 늦게 열리는 축</b>이다. 다만 배선을 미리 세워두지 않으면
+          <b>첫 이탈자들의 마지막 2주가 그냥 사라진다</b></dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="axis proposed">
+    <div class="head">
+      <div class="rank"><span>축 K</span><span class="pill">㉢ 삶</span><span class="pill">모델이 잘 읽는 축</span></div>
+      <h4>진로 언어의 구체화 — 문장이 자라는가</h4>
+    </div>
+    <p class="what">
+      나침반·드림맵 답변이 시즌마다 <b>얼마나 구체적으로 바뀌는가.</b>
+      「한국 가고 싶어요」 → 「부산대 컴공 가서 게임 만들래요」. 이 구체화 자체가 성장이다.
+    </p>
+    <div class="body">
+      <div class="why">
+        <b>불변식 5 의 「사는 쪽」 전형</b> — 고유명사 수·시간 표현·조건절 같은 건
+        모델이 좋아질수록 <b>더 정확하게</b> 읽는다. 우리가 규칙을 하드코딩할 자리가 아니라,
+        <b>그 시점 최고 모델에게 시키고 결과만 축적</b>하는 자리다.
+      </div>
+      <dl>
+        <dt>대가</dt>
+        <dd>시즌 2회차부터 의미가 생긴다(1회차는 비교 대상이 없다) — <b>그래서 1회차를 반드시 남겨야 한다</b></dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="axis proposed">
+    <div class="head">
+      <div class="rank"><span>축 L</span><span class="pill">강사 층</span><span class="pill">🔴 유일하게 새 수집이 든다</span></div>
+      <h4>강사 예측 vs 실제 — 직관을 데이터로 바꾼다</h4>
+    </div>
+    <p class="what">
+      강사가 시즌 초에 「이 학생 이번에 4급」이라 <b>예측</b>한 것과 실제 결과를 짝으로 남긴다.
+    </p>
+    <div class="body">
+      <div class="why">
+        <b>두 가지가 동시에 나온다</b> — ①강사 캘리브레이션(누가 어느 방향으로 치우치는지 = 강사 교육 재료)
+        ②<b>엔진이 강사의 직관을 배운다.</b> 사람이 맞히는데 기계가 못 맞히는 자리가 곧 엔진의 다음 과제다.
+      </div>
+      <dl>
+        <dt>대가 — 정직하게</dt>
+        <dd>여섯 중 <b>유일하게 새 수집이 든다</b>(강사 폼에 칸 1개). 철학 ㉡「사람 손을 늘리지 않는다」에
+          닿는 자리라, <b>시즌 초 1회 · 드롭다운 한 번</b>을 넘기면 이 축은 접는 게 맞다</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>E · 순서</h2>
   <h3>새 수집 0 인 것부터, 소급 불가한 것은 개원 전에</h3>
   <div class="scroll">
     <table>
@@ -358,10 +521,16 @@ footer .sep{margin:0 8px; opacity:.45}
     A·B·F 는 <b>학생이 오기 전에도 코드가 선다</b>(재료는 개원 후에 흐르지만 배선은 지금 완성된다).
     C·D 는 스키마라 <b>첫 행이 쌓이기 전에</b> 열어야 한다 — 나중에 칸을 더해도 지난 행에는 값이 안 채워진다.
   </p>
+  <p>
+    <span class="sig">2차(G~L)는 아직 순서를 안 매긴다</span> — 확정 전이고, 확정되면 이 표에 합류한다.
+    다만 성격은 지금 말할 수 있다: <b>H(시간대)는 A·B 와 같은 급</b>(새 수집 0 · 오늘 열림)이고,
+    <b>G·K 는 첫 시즌을 놓치면 비교 기준선이 영영 안 생기며</b>, <b>J(이탈)는 배선을 미리 안 세우면
+    첫 이탈자들의 마지막 2주가 그냥 사라진다.</b>
+  </p>
 </section>
 
 <section>
-  <h2>E · 안 담은 것</h2>
+  <h2>F · 안 담은 것</h2>
   <h3>생각했지만 뺀 축과 그 이유</h3>
   <div class="scroll">
     <table>
