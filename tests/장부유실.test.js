@@ -478,3 +478,347 @@ test('🔴 실 저장소 — 이력에 올라왔던 행이 지금도 전부 있�
     + `  git show <그 커밋>:${장부} | grep "^| F123 |"\n`
     + '(번호는 위 목록의 것으로 바꾼다. 폰 브랜치에만 남아 있는 경우가 실제로 있었다 — F123·08-07)');
 });
+
+/* ── F605 ─ jsonl 장부: CLAUDE.md 가 「이 파일이 잡는다」고 적은 대상이 여기 없었다 ──────────
+ * 정본 문장: 「append-only 장부(마찰신호.md·심문기록·**결정록 류 jsonl**)는 행 삭제 금지 —
+ *   tests/장부유실.test.js 가 fail 로 잡는다」. 실측 2026-08-18: 이 파일의 과녁은 위 두 상수
+ *   (`마찰신호.md` · `docs/_ops/장부`)뿐이고 jsonl 은 **한 줄도 안 봤다**. 상주 텍스트가
+ *   «없는 보호»를 있다고 말하던 자리다(F605 · 맹점 ④ — 맞는 얼굴로 틀린 값).
+ *
+ * 🔑 «번호»가 아니라 «줄 전문»이 키다 — F605 가 「행 단위 ID 가 없어 못 잰다」를 ㉢의 대가로
+ *   적었는데, 실측으로 틀렸다. append-only 라는 성질 자체가 축이다: 한 번 올라온 레코드 줄이
+ *   지금 없으면 그게 유실이다. 번호가 필요한 쪽은 마찰 조각(사람이 인용하는 주소)이지 jsonl 이 아니다.
+ *
+ * 🔑 이 회귀는 «막는 층»과 한 벌이다 — `.gitattributes` 의 `docs/_ops/*.jsonl merge=union`.
+ *   실측 2026-08-18 (`jsonl머지` 실험 · 두 가지가 각자 마지막에 한 줄씩 append 한 판):
+ *     · 지정 없음 = **충돌 exit 1 · 표식 3줄** → 사람이 「하나 고르기」로 풀면 한 세션의 레코드가 증발
+ *     · union    = **충돌 0 · 표식 0 · 두 행 전부 생존**
+ *   F578 이 정확히 그렇게 사라졌고, 그때 마찰 조각에만 union 을 걸었다(F586). jsonl 12벌은 안 걸렸다.
+ *   워크트리+PR 이 정본 동선이라 가지는 상시 갈라져 있고, append-only 파일은 **둘 다 마지막 줄을
+ *   건드리므로 갈라지면 반드시 충돌한다** — 드문 사고가 아니라 동선의 기본값이다.
+ *
+ * 〖틀릴 때의 모습〗 — 맹점 ④
+ *   ① **머리말·빈 줄을 레코드로 세는 것.** 08-18 실측에서 내 첫 측정기가 여기서 틀렸다:
+ *      「현재」는 모든 줄을, 「이력」은 `{` 줄만 세어 `판정예측.jsonl`(주석 2줄)이 멀쩡한데
+ *      「2행 유실」로 나왔다. 두 축은 **같은 것을 세야** 한다(CLAUDE.md 「재는 층이 값을 깨뜨리지 않는지」).
+ *   ② 「사라짐 0」이 **미측정**일 수 있다 — 경로 glob 이 빗나가거나 diff 를 못 읽으면 그 모양이다.
+ *      그래서 분모(벌 수·레코드 수) 하한을 같이 단언한다(F207·F543).
+ *   ③ union 이 새는 방향(같은 행을 양쪽이 다르게 고쳐 행이 «는다»)은 **이 탐지기 안**이다 —
+ *      수정은 diff 에서 삭제+추가 쌍이라 옛 줄이 「이력에 있는데 지금 없다」로 걸린다.
+ *      실측: 12벌 전부 이력 삭제줄 0 = 기존 행을 고친 적이 한 번도 없다. 그날이 오면 이 검사가 먼저 운다.
+ * 〖닫은 것〗 없다 — 이 자리는 지금까지 **기계 0**이었다(닫을 옛 통로가 없다). 대신 정본 문장이
+ *   참이 되므로, 「기계가 막아 줄 것」으로 읽고 지나가던 세션의 전제가 이제 실제로 선다. */
+
+const jsonl과녁 = 'docs/_ops/*.jsonl';
+const jsonl추적중 = (cwd) => new Set(git(cwd, 'ls-files', '--', jsonl과녁).split(/\r?\n/).filter(Boolean));
+
+/* 대상 = 지금 추적되는 것 **∪ 이력에 한 번이라도 있던 것** (F605 후속 · `local_9b74b64b`).
+ * 🔑 `ls-files` 만 보면 **장부를 통째로 지우는 것이 목록에서까지 사라져 조용히 통과한다** —
+ *   한 벌이 없어지면 그 벌의 레코드 전부가 후보에서도 빠지므로 「사라짐 0」이 나온다.
+ *   새는 방향이 「통과」인 전형이고(맹점 ④), 이 축이 막으려던 사고(반입이 통째로 덮어쓰기)의
+ *   가장 큰 판이 정확히 이 모양이다. 변이 M1 이 이 자리를 잡는다. */
+const jsonl장부들 = (cwd) => {
+  const s = jsonl추적중(cwd);
+  try {
+    for (const f of git(cwd, 'log', '--all', '--format=', '--name-only', '--', jsonl과녁).split(/\r?\n/)) {
+      const v = f.trim();
+      if (v) s.add(v);
+    }
+  } catch { /* 이력 0 — 아래 분모 하한이 드러낸다 */ }
+  return [...s].sort();
+};
+
+/* 레코드 = `{` 로 시작하는 줄 하나. 머리말 주석(`#`)·빈 줄은 레코드가 아니다(〖틀릴 때의 모습〗①).
+ * 현재 파일과 diff 양쪽이 **이 한 함수**를 지나야 두 축이 안 갈린다. */
+const jsonl레코드 = (본문) => new Set(본문.split(/\r?\n/).filter((l) => l.startsWith('{')));
+
+/* 이력에 한 번이라도 올라왔던 레코드. 범위를 인자로 받는 이유는 F469 와 같다 —
+ * `--all`(누구든 올린 적 있나)과 `HEAD`(**내 가지**에 있었나)를 같은 정규식으로 재야 답이 안 갈린다.
+ * 🔑 머지 커밋은 `log -p` 가 안 펼치지만, 사라진 줄은 그 **부모 커밋**에서 이미 `+` 로 잡혀 있다 —
+ *   그래서 「머지가 하나 고르기로 버린 행」이 이 축에 그대로 걸린다(아래 F605 탐지 회귀가 못박는다). */
+const jsonl이력 = (cwd, p, 범위 = '--all') =>
+  new Set([...git(cwd, 'log', 범위, '-p', '--format=', '--', p).matchAll(/^\+(\{[^\r\n]*)/gm)].map((m) => m[1]));
+
+/* 후보 레코드 → 그걸 들고 있는 앞선 판. 번호판(`앞선판번호`)과 축은 같고 읽는 단위만 다르다 */
+function jsonl앞선판(cwd, p, 후보) {
+  const 어디 = new Map();
+  const 본sha = new Set();
+  for (const { ref, 이름 } of 살아있는후보(cwd)) {
+    if (어디.size >= 후보.length) break;
+    let sha;
+    try { sha = git(cwd, 'rev-parse', '--verify', '--quiet', `${ref}^{commit}`).trim(); } catch { continue; }
+    if (!sha || 본sha.has(sha)) continue;
+    본sha.add(sha);
+    try { git(cwd, 'merge-base', '--is-ancestor', sha, 'HEAD'); continue; } catch { /* 앞서 있다 = 재료다 */ }
+    let 있는것;
+    try { 있는것 = jsonl레코드(git(cwd, 'show', `${sha}:${p}`)); } catch { continue; }
+    for (const r of 후보) if (!어디.has(r) && 있는것.has(r)) 어디.set(r, 이름);
+  }
+  return 어디;
+}
+
+/* 반환에 **분모**를 필수 칸으로 둔다 — 「사라짐 0」과 「안 재봤다」가 같은 모양이 되는 것을 막는다(F543 ㉠) */
+function jsonl유실(cwd) {
+  const 경로들 = jsonl장부들(cwd);
+  const 추적중 = jsonl추적중(cwd);
+  const 벌 = [];
+  let 레코드수 = 0;
+  /* 지금 «어디엔가» 살아 있는 레코드 전부 — 추적이 끊긴 경로를 판정할 때만 쓴다(그때만 만든다).
+   * 이게 없으면 **이름 바꾸기가 대량 거짓적색**이 된다: 옛 경로는 못 읽고 그 레코드는 새 경로에
+   * 멀쩡히 살아 있는데 「전부 유실」로 나온다. 파일이 아니라 «레코드»가 판정 단위다. */
+  let 살아있는전체 = null;
+  const 전체레코드 = () => {
+    if (살아있는전체) return 살아있는전체;
+    살아있는전체 = new Set();
+    for (const q of 추적중) {
+      try { for (const r of jsonl레코드(fs.readFileSync(path.join(cwd, q), 'utf8'))) 살아있는전체.add(r); }
+      catch { /* 그 벌은 아래 못읽음으로 따로 선다 */ }
+    }
+    return 살아있는전체;
+  };
+  /* 판정은 **한 통로**로만 낸다 — 살아 있는 벌과 사라진 벌이 각자 판정하면 갈라진다
+   * (「같은 판정을 두 곳에 적으면 갈라진다」 · 지침 v9.2 가드 ④). */
+  const 벌판정 = (p, 현재) => {
+    const 이력 = jsonl이력(cwd, p);
+    const 후보 = [...이력].filter((r) => !현재.has(r));
+    if (!후보.length) return { 사라짐: [], 뒤처짐: [], 어디: new Map() };
+    /* 내 가지 이력에 있던 것이 지금 없다 = **내가 지웠다**(머지가 버린 것 포함). 남이 들고 있어도 유실이다 */
+    const 내이력 = jsonl이력(cwd, p, 'HEAD');
+    const 내가지움 = 후보.filter((r) => 내이력.has(r));
+    const 안온것 = 후보.filter((r) => !내이력.has(r));
+    const 어디 = 안온것.length ? jsonl앞선판(cwd, p, 안온것) : new Map();
+    return {
+      사라짐: [...내가지움, ...안온것.filter((r) => !어디.has(r))],
+      뒤처짐: 안온것.filter((r) => 어디.has(r)),
+      어디,
+    };
+  };
+
+  for (const p of 경로들) {
+    let 현재;
+    try { 현재 = jsonl레코드(fs.readFileSync(path.join(cwd, p), 'utf8')); }
+    catch {
+      /* 🔑 추적 목록에 없는 경로 = **지워졌거나 이름이 바뀐 장부**다. 「못 읽었다」로 접으면
+       *   파일 통째 삭제가 조용히 통과한다 — 살아 있는 «전체» 레코드를 「지금」으로 두고 같은
+       *   판정을 지나게 한다. 지워졌으면 그 레코드가 아무 데도 없어 잡히고, 이름만 바뀌었으면
+       *   새 경로에 살아 있어 안 잡힌다(변이 M1·M2). */
+      if (!추적중.has(p)) { 벌.push({ 파일: p, 사라진벌: true, 현재: 0, ...벌판정(p, 전체레코드()) }); continue; }
+      벌.push({ 파일: p, 못읽음: true, 사라짐: [], 뒤처짐: [], 어디: new Map() }); continue;
+    }
+    레코드수 += 현재.size;
+    벌.push({ 파일: p, 현재: 현재.size, ...벌판정(p, 현재) });
+  }
+  return { 분모: 경로들.length, 레코드수, 벌, 못읽음: 벌.filter((b) => b.못읽음).map((b) => b.파일) };
+}
+
+/* 픽스처 단언용 — 파일명과 사라진 개수만 본다(줄 전문은 길어 읽기 어렵다) */
+const j판정 = (cwd) => jsonl유실(cwd).벌
+  .filter((b) => b.사라짐.length || b.뒤처짐.length)
+  .map((b) => ({ 파일: path.basename(b.파일), 사라짐: b.사라짐.length, 뒤처짐: b.뒤처짐.length }));
+
+const J장부 = 'docs/_ops/심문기록.jsonl';
+const j줄 = (n) => JSON.stringify({ id: n, 판정: `내용 ${n}` });
+const j판 = (ns, 머리말 = '') => 머리말 + ns.map(j줄).join('\n') + '\n';
+
+function j픽스처(판들) {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'jsonl유실-'));
+  git(d, 'init', '-q');
+  fs.mkdirSync(path.join(d, path.dirname(J장부)), { recursive: true });
+  for (const p of 판들) {
+    fs.writeFileSync(path.join(d, J장부), p);
+    git(d, 'add', '--', J장부);
+    커밋(d, '판');
+  }
+  git(d, 'branch', '-M', 'master');
+  return d;
+}
+
+test('🔑 F605 탐지 — jsonl 에서 레코드가 사라지면 잡는다 (지금까지 이 자리는 기계 0이었다)', () => {
+  const d = j픽스처([j판([1, 2, 3]), j판([1, 3])]);
+  assert.deepStrictEqual(j판정(d), [{ 파일: '심문기록.jsonl', 사라짐: 1, 뒤처짐: 0 }]);
+  치우기(d);
+});
+
+/* 🔑 이 트랙의 급소 — F578 이 실제로 증발한 모양을 jsonl 로 그대로 재현한다.
+ * 머지 커밋 자체는 `log -p` 가 안 펼치므로, 「삭제줄을 센다」식 측정기는 **원리상 이걸 못 본다**.
+ * 여기서 잡히는 이유는 A 의 레코드가 그 부모 커밋에서 이미 `+` 로 이력에 올랐기 때문이다. */
+test('🔑 F605 탐지 — 머지 충돌을 「하나 고르기」로 풀어 남의 append 가 사라져도 잡는다 (F578 의 실제 모양)', () => {
+  const d = j픽스처([j판([1, 2])]);
+  git(d, 'checkout', '-q', '-b', 'A');
+  fs.writeFileSync(path.join(d, J장부), j판([1, 2, 3]));   // 세션 A 가 자기 결과를 append
+  git(d, 'add', '--', J장부); 커밋(d, 'A 가 append');
+  git(d, 'checkout', '-q', 'master');
+  fs.writeFileSync(path.join(d, J장부), j판([1, 2, 4]));   // 세션 B 가 같은 base 에서 append
+  git(d, 'add', '--', J장부); 커밋(d, 'B 가 append');
+
+  let 충돌 = false;
+  try { git(d, '-c', 'user.email=t@t', '-c', 'user.name=t', 'merge', 'A', '-m', 'Merge A'); }
+  catch { 충돌 = true; }
+  assert.ok(충돌, 'union 이 안 걸린 판에서 충돌이 안 났다 — 이 픽스처가 재현하려던 상황이 아니다');
+
+  /* 사람이 가장 빠른 길로 푼다: 자기 것만 남기고 커밋 (그게 F578 이다) */
+  fs.writeFileSync(path.join(d, J장부), j판([1, 2, 4]));
+  git(d, 'add', '--', J장부); 커밋(d, '충돌 해소 — 하나 고르기');
+
+  assert.deepStrictEqual(j판정(d), [{ 파일: '심문기록.jsonl', 사라짐: 1, 뒤처짐: 0 }],
+    '머지가 버린 레코드를 못 잡으면 이 검사는 F578 통로에 눈이 먼 채 초록이다');
+  치우기(d);
+});
+
+test('F605 거짓양성 — 레코드가 늘기만 하면 0 (append-only 의 정상 동작을 막으면 그 검사는 꺼진다)', () => {
+  const d = j픽스처([j판([1, 2]), j판([1, 2, 3])]);
+  assert.deepStrictEqual(j판정(d), []);
+  치우기(d);
+});
+
+/* 🔑 08-18 실측으로 내 첫 측정기가 틀렸던 자리 — 두 축이 다른 것을 세면 멀쩡한 파일이 빨개진다 */
+test('🔑 F605 거짓양성 — 머리말 주석·빈 줄은 레코드가 아니다 (`판정예측.jsonl` 이 실제로 이 모양이다)', () => {
+  const 머리 = '# 판정 예측 장부 — 봉인된 예측만 들어온다\n# 형식: {"id":…}\n';
+  const d = j픽스처([j판([1, 2], 머리), j판([1, 2, 3], 머리) + '\n']);
+  assert.deepStrictEqual(j판정(d), [],
+    '주석을 레코드로 세면 「현재」와 「이력」이 다른 것을 세어 유실 0인 파일이 유실로 나온다');
+  assert.strictEqual(jsonl레코드(머리 + j줄(1) + '\n\n').size, 1);
+  치우기(d);
+});
+
+/* 🔑 F215·F469 의 jsonl 판 — 이걸 안 가르면 남이 장부에 한 줄 더할 때마다 내 워크트리가 빨개진다.
+ * 거짓적색의 처방(「그 줄을 되돌려 넣어라」)이 그대로 장부 오염이라 위험은 쓰기 쪽이다. */
+test('🔑 F605 거짓양성 — 기본 가지에 살아 있으면 유실이 아니라 뒤처짐이다 (F469 의 jsonl 판)', () => {
+  const d = j픽스처([j판([1, 2])]);
+  git(d, 'checkout', '-q', '-b', 'claude/wt');     // 워크트리 가지 — 상류가 안 걸린다
+  git(d, 'checkout', '-q', 'master');
+  fs.writeFileSync(path.join(d, J장부), j판([1, 2, 3]));
+  git(d, 'add', '--', J장부); 커밋(d, 'master 가 한 줄 더한다');
+  git(d, 'checkout', '-q', 'claude/wt');
+  assert.deepStrictEqual(j판정(d), [{ 파일: '심문기록.jsonl', 사라짐: 0, 뒤처짐: 1 }]);
+  치우기(d);
+});
+
+test('🔑 F605 탐지 — 죽은 가지에만 남은 레코드는 그대로 유실이다 (F123 원칙이 jsonl 에서도 산다)', () => {
+  const d = j픽스처([j판([1, 2])]);
+  git(d, 'checkout', '-q', '-b', 'claude/dead');
+  fs.writeFileSync(path.join(d, J장부), j판([1, 2, 3]));
+  git(d, 'add', '--', J장부); 커밋(d, '죽은 가지에만 산다');
+  git(d, 'checkout', '-q', '-b', 'claude/wt', 'master');
+  assert.deepStrictEqual(j판정(d), [{ 파일: '심문기록.jsonl', 사라짐: 1, 뒤처짐: 0 }]);
+  치우기(d);
+});
+
+/* 🔑 막는 층 — «표기»가 아니라 «행위»로 잰다(F590). `.gitattributes` 를 grep 하면 패턴이 실제로
+ * 그 경로에 붙는지·union 이 정말 두 append 를 남기는지를 하나도 안 재고 초록이 된다. */
+test('🔑 F605 막는 층 — 이 저장소의 `.gitattributes` 로 머지하면 두 세션의 append 가 **둘 다** 산다', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'jsonlunion-'));
+  git(d, 'init', '-q');
+  fs.mkdirSync(path.join(d, path.dirname(J장부)), { recursive: true });
+  fs.copyFileSync(path.join(REPO, '.gitattributes'), path.join(d, '.gitattributes'));   // 실물 그대로
+  fs.writeFileSync(path.join(d, J장부), j판([1, 2]));
+  git(d, 'add', '-A'); 커밋(d, 'base'); git(d, 'branch', '-M', 'master');
+
+  git(d, 'checkout', '-q', '-b', 'A');
+  fs.writeFileSync(path.join(d, J장부), j판([1, 2, 3]));
+  git(d, 'add', '-A'); 커밋(d, 'A');
+  git(d, 'checkout', '-q', '-b', 'B', 'master');
+  fs.writeFileSync(path.join(d, J장부), j판([1, 2, 4]));
+  git(d, 'add', '-A'); 커밋(d, 'B');
+
+  git(d, '-c', 'user.email=t@t', '-c', 'user.name=t', 'merge', 'A', '-m', 'Merge A');
+  const 본문 = fs.readFileSync(path.join(d, J장부), 'utf8');
+  assert.strictEqual(jsonl레코드(본문).size, 4,
+    'union 이 안 걸렸다 — 갈라진 두 세션이 각자 append 하면 머지가 한쪽을 버린다(F578·F586).'
+    + ' `.gitattributes` 의 `docs/_ops/*.jsonl merge=union` 을 확인한다');
+  assert.ok(!/^(<<<<<<<|=======|>>>>>>>)/m.test(본문),
+    '충돌 표식이 남았다 — union 이 아니라 사람이 «하나 고르는» 자리가 됐다. 그 선택이 곧 유실이다');
+  치우기(d);
+});
+
+test('🔴 F605 실 저장소 — jsonl 장부에서 이력에 올라왔던 레코드가 지금도 전부 있다', () => {
+  const { 분모, 레코드수, 벌, 못읽음 } = jsonl유실(REPO);
+  /* 미측정 방어 — glob 이 빗나가거나 diff 를 못 읽으면 「사라짐 0」이 나오는데 그건 통과가 아니다(F207·F543).
+   * 탐지력은 위 픽스처가 지고, 여기서는 **거짓양성만** 본다(맹점 ②). */
+  assert.ok(분모 >= 10, `jsonl 장부를 ${분모}벌만 찾았다 — 대상 소실은 통과가 아니다(2026-08-18 실측 12벌)`);
+  assert.ok(레코드수 > 250, `레코드가 ${레코드수}줄만 읽혔다 — 표기를 못 잡고 있다(2026-08-18 실측 325줄)`);
+  assert.deepStrictEqual(못읽음, [], '추적되는 jsonl 을 작업본에서 못 읽었다 — 미측정이 초록으로 앉는다');
+
+  const 뒤 = 벌.filter((b) => b.뒤처짐.length);
+  if (뒤.length) console.log(
+    `  ⚠ 내 작업본엔 없지만 **앞선 판에 살아 있는** jsonl 레코드 — 유실이 아니라 뒤처짐이다:\n`
+    + 뒤.map((b) => `      · ${path.basename(b.파일)} ${b.뒤처짐.length}줄 ← ${[...new Set(b.어디.values())].join(', ')}`).join('\n')
+    + '\n    → 복원 커밋 금지. 기본 가지가 들고 있으면 `git pull --rebase`, 남의 워크트리면 그 세션이 올릴 때까지 둔다.');
+
+  const 사라진벌 = 벌.filter((b) => b.사라짐.length)
+    .map((b) => ({ 파일: path.basename(b.파일), 사라짐: b.사라짐.length, 보기: b.사라짐[0].slice(0, 90) }));
+  assert.deepStrictEqual(사라진벌, [],
+    'jsonl 장부에서 레코드가 사라졌다(내 가지가 지웠거나, 머지 충돌을 «하나 고르기»로 풀었거나).\n'
+    + '  되살리는 법 — 그 줄이 살아있는 판을 찾아 **지우지 말고 그 줄만** 되돌려 넣는다:\n'
+    + `    git log --all -S '<사라진 줄의 일부>' --oneline -- docs/_ops/<파일>.jsonl\n`
+    + '  ⚠ 충돌이 났다면 답은 «하나 고르기»가 아니라 **둘 다 남기기**다 — 그게 F578 을 증발시킨 손이다.');
+});
+
+/* ── F605 후속 ─ 위 축이 «한 벌 통째로» 사라지는 판을 못 보던 자리 (`local_9b74b64b` · 2026-08-18) ──
+ * 두 세션이 F605 를 병렬로 잡았다(F070 의 모양). 먼저 착지한 판(`7ea7ddcc` · `local_82d71975`)이
+ *   막는 층(.gitattributes union)까지 세워 본류를 끝냈고, 여기 둘은 그 위에 남아 있던 구멍만 얹는다.
+ *
+ * ㉠ **대상 목록이 `ls-files` 뿐이었다.** 그러면 장부 파일이 통째로 사라질 때 그 벌이 목록에서도
+ *   빠져 후보가 0이 되고, 화면에는 「사라짐 0」이 뜬다 — 가장 큰 유실이 가장 조용하다.
+ *   이 축이 애초에 막으려던 사고(F195 = 반입이 통째로 덮어쓰기)의 최대판이 정확히 이 모양이다.
+ *   ⚠ 넓히는 대가 = 이름 바꾸기가 대량 거짓적색이 될 수 있다. 그래서 추적이 끊긴 경로의 「지금」을
+ *     «살아 있는 전체 레코드»로 잡는다 — 판정 단위가 파일이 아니라 레코드이기 때문에 성립한다.
+ *
+ * ㉡ **F605 자신의 실패 모양이 봉인돼 있지 않았다.** 이 트랙이 고친 것은 「jsonl 이 무보호」가
+ *   아니라 «상주 문장과 기계 과녁이 갈라진 것»이고, 그 갈라짐은 조용하다 — 문장은 계속
+ *   「막아 준다」고 말하고 검사는 계속 초록이다. 과녁을 다시 좁히면 그때는 무엇이 우는가?
+ *   지금까지는 **아무것도 안 울었다**. 그래서 둘을 한 검사에 묶는다.
+ *   ⚠ 산문을 «파싱»하지 않는다 — 표현이 조금만 바뀌어도 「대상 0건」으로 새고 그 방향이 통과다.
+ *     맡긴 대상을 여기 **값으로 못박고** 양방향(문장에 있나 · 과녁에 닿나)을 둘 다 단언한다. */
+
+test('🔑 F605 탐지 — 장부를 통째로 지워도 잡는다 (`ls-files` 만 보면 최대 유실이 가장 조용하다)', () => {
+  const d = j픽스처([j판([1, 2])]);
+  fs.rmSync(path.join(d, J장부));
+  git(d, 'add', '-A'); 커밋(d, '장부를 통째로 지운다');
+  assert.deepStrictEqual(j판정(d), [{ 파일: path.basename(J장부), 사라짐: 2, 뒤처짐: 0 }]);
+  치우기(d);
+});
+
+test('🔑 F605 거짓양성 — 장부 이름만 바뀌면 유실이 아니다 (판정 단위는 파일이 아니라 «레코드»다)', () => {
+  const d = j픽스처([j판([1, 2])]);
+  const 새경로 = 'docs/_ops/심문기록_v2.jsonl';
+  git(d, 'mv', J장부, 새경로); 커밋(d, '장부 이름을 바꾼다');
+  assert.deepStrictEqual(j판정(d), [],
+    '이름만 바뀌었는데 유실로 읽었다 — 넓힌 대상 목록이 거짓적색을 낳으면 그 검사는 곧 꺼진다(F103)');
+  /* 경계 — 이름을 바꾼 «뒤에» 레코드를 지우면 그건 그대로 유실이어야 한다.
+   * 이게 없으면 위 단언은 「이름이 바뀐 벌은 통째로 안 본다」로도 통과한다(맹점 ②).
+   * ⚠ 사라진 레코드는 **그것을 들고 있던 경로마다** 한 번씩 선다(옛 이름·새 이름 둘 다).
+   *   중복이 아니라 목록이다 — 복원할 때 어느 판의 어느 경로를 뒤져야 하는지가 그것이라 안 접는다. */
+  fs.writeFileSync(path.join(d, 새경로), j판([1]));
+  git(d, 'add', '-A'); 커밋(d, '옮긴 장부에서 한 줄을 지운다');
+  assert.deepStrictEqual(j판정(d), [
+    { 파일: path.basename(J장부), 사라짐: 1, 뒤처짐: 0 },
+    { 파일: path.basename(새경로), 사라짐: 1, 뒤처짐: 0 },
+  ]);
+  치우기(d);
+});
+
+/* 정본이 이 파일에 맡긴 대상 — 산문에서 파싱하지 않고 값으로 못박는다(위 ㉡의 ⚠) */
+const 맡긴대상 = [
+  { 낱말: '마찰신호.md', 닿나: () => 장부.endsWith('마찰신호.md') },
+  { 낱말: '심문기록', 닿나: (ps) => ps.some((p) => p.includes('심문기록')) },
+  { 낱말: '결정록', 닿나: (ps) => ps.some((p) => p.includes('결정록')) },
+];
+
+test('🔴 F605 실 저장소 — CLAUDE.md 가 이 파일에 맡긴 대상을 이 검사가 «실제로» 잰다', () => {
+  const 문장 = fs.readFileSync(path.join(REPO, 'CLAUDE.md'), 'utf8')
+    .split(/\r?\n/).find((l) => l.includes('장부유실.test.js'));
+  assert.ok(문장,
+    'CLAUDE.md 가 이 파일을 더는 안 짚는다 — 문장을 지웠거나 옮겼다면 이 검사의 존재 이유도 같이\n'
+    + '  판정해야 한다. 조용히 초록이 되는 것이 F605 였다.');
+
+  const 경로들 = jsonl장부들(REPO);
+  for (const { 낱말, 닿나 } of 맡긴대상) {
+    assert.ok(문장.includes(낱말),
+      `CLAUDE.md 의 그 문장이 「${낱말}」을 더는 안 든다 — 표현을 바꿨으면 이 목록도 같이 바꾼다.\n`
+      + `  안 그러면 이 검사가 «없는 약속»을 지키게 된다(그 반대가 F605 였다).\n  문장: ${문장}`);
+    assert.ok(닿나(경로들),
+      `CLAUDE.md 가 「${낱말}」을 이 파일에 맡겼는데 과녁이 그것에 안 닿는다 — F605 가 정확히 이 모양이었다.\n`
+      + `  지금 jsonl 과녁(${jsonl과녁}) 이 잡은 것 ${경로들.length}벌: ${경로들.map((p) => path.basename(p)).join(' · ')}`);
+  }
+});

@@ -1432,8 +1432,22 @@ function weeklyJobs() {    // 매주 월 07시
    * ■ 대가 — 틀릴 때의 모습: 집계 섹션이 전부 비었는데 «해설이 필요한» 주는 원리상 없다(해설의 입력이
    *   그 섹션들이다). 새는 방향은 「해설이 빠진다」이고 리포트 본문은 그대로 나간다. 닫는 것 = 없다
    *   (새 판정이 아니라 있던 호출에 입구를 다는 것이라 대체할 옛 통로가 없다). */
-  if (!집계실물) {
-    Logger.log('H7 해설 생략: 집계 섹션 실물 0 — 재료가 없어 안 불렀다(호출 0 · 비용 0)');
+  /* 🔴 [v9.255] **v9.254 의 게이트는 안 닫혔다** — ①배포 검수 P1 `222c989ac23f` 실측 2026-08-18.
+   *   위 `집계실물` 은 섹션이 «돌려준 글자»가 비었나를 묻는데, 화이트리스트 섹션 둘은 재료가 0이어도
+   *   **상수 서식**을 돌려준다: `kpiSection_` 은 `'· 이탈률 …0/0명=0%'` 를 무조건 조립하고
+   *   `updateBizDashboard` 는 9줄짜리 라벨 배열을 `join` 해 돌려준다(둘 다 무데이터 조기반환이 없다).
+   *   그래서 미개원(학생 0·리드 0)에서도 `집계실물 >= 2` 였고, 막으려던 그 호출이 그대로 나갔다.
+   * 🔑 그래서 **원본 행**을 따로 센다 — 서식이 아니라 시트의 레코드. 두 물음은 층이 다르다:
+   *   `집계실물` = 「먹일 글자가 렌더됐나」(전 섹션이 예외로 죽은 주를 잡는다)
+   *   `재료행`   = 「세상에 말할 것이 있나」(미개원처럼 «0 이 서식으로 찍히는» 주를 잡는다)
+   *   한쪽만으로는 둘 다 못 잡아 AND 로 묶는다.
+   * ■ 대가 — 틀릴 때의 모습: 재료 계수가 **못 쟀을 때**(`-1`)는 «있음»으로 쳐서 호출이 나간다.
+   *   즉 새는 방향이 「돈이 샌다」쪽이고 「해설이 조용히 사라진다」쪽이 아니다 — 학생이 온 뒤에
+   *   해설이 영영 안 나오는 조용한 실패보다, 로그에 이유가 남고 청구서에 보이는 쪽을 골랐다.
+   *   닫는 것 = 없다(있던 호출에 입구를 다는 것이라 대체할 옛 통로가 없다). */
+  const 재료행 = 주간해설재료_(SpreadsheetApp.getActiveSpreadsheet(), kpiInjection);
+  if (!집계실물 || 재료행 === 0) {
+    Logger.log('H7 해설 생략: 집계 섹션 실물 ' + 집계실물 + ' · 원본 재료 행 ' + 재료행 + ' — 재료가 없어 안 불렀다(호출 0 · 비용 0)');
   } else {
     try { // [v9.50·H7] 주간 지표 AI 해설 — 숫자 위 판단 층(계산은 코드가, AI는 해설만·실패해도 리포트는 그대로 발송)
       // [v9.206] 입력은 body(전문·이름 포함)가 아니라 aiBody(집계 섹션만) — 방향 불변식 4. 절단은 방어가 아니었다(이름 섹션이 앞쪽이라 먼저 나감).
@@ -1448,6 +1462,46 @@ function weeklyJobs() {    // 매주 월 07시
   safeRun('calcTeacherStats', calcTeacherStats); // [v9.41·자동화] 강사 지표(케어지수·왕관편중) 주간 자동 갱신 — 월 1회(monthlyReport)만 갱신돼 원장 뷰가 한 달 낡던 것 해소(멱등·전월 왕관 기준이라 주중 재실행 무해)
   safeRun('systemManifest', buildSystemManifest); // [v9.37] 주간 실측 스냅샷 — 시트·콘텐츠·트리거·의존성 드리프트를 system_manifest 시트에 갱신
   // [v7.0] pruneAppState 제거 — 인자(ss, 월)가 필요한 archiveMonthly 내부 헬퍼였음 (무인자 호출 시 매주 실패)
+}
+
+/** [v9.255] H7 주간 해설이 읽을 «원본 재료» 행 수 — 서식 문자열이 아니라 시트 레코드를 센다.
+ *
+ * 왜 따로 세나: 위 `weeklyJobs` 의 화이트리스트 섹션은 재료가 0이어도 «0 이 박힌 서식»을 돌려준다.
+ *   렌더된 글자로 「비었나」를 물으면 언제나 「안 비었다」가 나온다(v9.254 가 그렇게 샜다).
+ *
+ * 행 판정은 `updateBizDashboard` 의 것을 **그대로 따른다** — 갈라지면 두 곳이 다른 「재적」을 말한다:
+ *   · profiles: A열 비지 않음 + D열 `'student'`  (그 함수의 `nStu` 루프와 같은 조건)
+ *   · leads:    A열이 날짜로 읽힘 + B열(이름) 비지 않음  (그 함수의 `L` 적재 조건과 같다)
+ *   · 상담:     KPI 주입치의 `cur.consult` — 이 시트에 없다(`CONSULT_SHEET_ID` 는 다른 문서다)
+ *
+ * @param {*} ss 앱 스프레드시트
+ * @param {?{cur:{consult:number}}} kpi `weeklyJobs` 가 이미 계산한 KPI 주입치 · `null` 이면 그 갈래만 0
+ * @returns {number} 재료 행 수 · **`-1` = 못 쟀다**(0 과 다른 값이어야 한다 — 「좋은 0」과
+ *   「안 재봤다」가 같은 모양이면 게이트가 거짓말한다). 부르는 쪽은 `-1` 을 «있음»으로 친다.
+ */
+function 주간해설재료_(ss, kpi) {
+  let n = 0;
+  try {
+    const pf = ss.getSheetByName('profiles');
+    if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().forEach(function (r) {
+      if (r[0] && r[3] === 'student') n++;
+    });
+    const ld = ss.getSheetByName('leads');
+    if (ld && ld.getLastRow() >= 2) ld.getRange(2, 1, ld.getLastRow() - 1, 2).getValues().forEach(function (r) {
+      const d = toDate_(r[0]) || (isNaN(new Date(r[0]).getTime()) ? null : new Date(r[0]));
+      if (d && String(r[1] || '')) n++;
+    });
+    /* [v9.256] 상담은 **다른 스프레드시트**에 산다(`CONSULT_SHEET_ID`) — 위 두 시트가 0 이어도
+     *   상담이 들어온 달은 해설할 재료가 있다(`kpiSection_` 의 전환율이 그걸 읽는다).
+     *   안 세면 이 게이트가 **fail-closed** 로 새서, 이 판이 고르겠다고 적은 방향과 정반대가 된다
+     *   (①배포 검수 P2 `dab842724084`). 새 I/O 는 안 낸다 — `weeklyJobs` 가 위에서 이미
+     *   계산해 둔 KPI 주입치를 읽는다(주입 실패 시 `null` 이라 그 갈래는 0으로 접힌다). */
+    if (kpi && kpi.cur) n += Number(kpi.cur.consult) || 0;
+  } catch (e) {
+    Logger.log('H7 재료 계수 실패 — 「있음」으로 본다(해설을 조용히 잃는 쪽으로 안 샌다): ' + e);
+    return -1;
+  }
+  return n;
 }
 
 function monthlyJobs() {   // 매월 1일 05시 — 순서 고정이 핵심

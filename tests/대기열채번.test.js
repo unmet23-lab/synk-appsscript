@@ -30,7 +30,7 @@ const 좌표 = 큐.대기열좌표;
 const 훅원본 = path.join(ROOT, 'tools', 'githooks', 'pre-commit');
 const 게이트원본 = path.join(ROOT, 'tools', '대기열채번검사.js');
 const 도구원본 = path.join(ROOT, 'tools', '대기열.js');
-const 라이브원본 = path.join(ROOT, 'tools', 'lib', '확정대조.js');
+const 라이브뿌리 = path.join(ROOT, 'tools', 'lib');
 
 /** 진짜 파서로 넣는다 — 모양을 손으로 베끼면 파싱은 한 번도 안 검사된다. */
 const 재기 = (본문) => 큐.채번(큐.항목들(본문));
@@ -101,11 +101,22 @@ function mkRepo(초기 = 큐파일('- [ ] 〖지금〗 #Q1 **처음부터 있던
 
   /* 게이트와 그 판정 통로는 **실물을 그대로** 싣는다 — 이 시험의 과녁이 그것이다.
    * 옆 게이트들(계약동봉·옛글자·인용검사…)은 일부러 안 싣는다: 훅이 「없으면 막지 않고
-   * 말한다」로 넘어가는 규약이라, 그 자리가 규약대로 도는지도 같이 드러난다. */
+   * 말한다」로 넘어가는 규약이라, 그 자리가 규약대로 도는지도 같이 드러난다.
+   *   ⚠ **그 「일부러 안 싣는다」는 최상위 게이트(`tools/*.js`)에만 걸린다.** `tools/lib/` 는
+   *     옆 게이트가 아니라 **과녁 자신의 부품**이라, 손으로 세면 조용히 낡는다:
+   *     2026-08-18 실측 — `대기열.js` 에 `lib/인자게이트.js` require 가 한 줄 늘자 이 픽스처가
+   *     MODULE_NOT_FOUND 로 통째로 죽었다(F606 부착 트랙 · 그쪽 자기 회귀 14건은 초록이었고
+   *     **전량 CI 만** 잡았다 — 즉 남의 트랙에서 터지는 크래시다).
+   *     게다가 이 도구는 `라이브(이름)` 으로 lib 를 **이름으로 늦게** 부른다(`보드.js`·`표.js`) —
+   *     어떤 손 목록도 그 갈래까지는 원리상 못 좇는다. 그래서 lib 는 **통째로** 싣는다. */
   fs.mkdirSync(path.join(dir, 'tools', 'lib'), { recursive: true });
   fs.copyFileSync(게이트원본, path.join(dir, 'tools', '대기열채번검사.js'));
   fs.copyFileSync(도구원본, path.join(dir, 'tools', '대기열.js'));
-  fs.copyFileSync(라이브원본, path.join(dir, 'tools', 'lib', '확정대조.js'));
+  const lib들 = fs.readdirSync(라이브뿌리).filter((n) => n.endsWith('.js'));
+  assert.ok(lib들.length > 0, 'tools/lib 를 하나도 못 실었다 — 빈 복사는 「없는 파일」과 같은 모양이다');
+  for (const 이름 of lib들) {
+    fs.copyFileSync(path.join(라이브뿌리, 이름), path.join(dir, 'tools', 'lib', 이름));
+  }
 
   fs.mkdirSync(path.join(dir, path.dirname(좌표)), { recursive: true });
   fs.writeFileSync(path.join(dir, 좌표), 초기, 'utf8');
