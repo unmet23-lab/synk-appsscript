@@ -56,6 +56,26 @@ test('틀린 지정은 **조용히 흘리지 않는다** — 폴백이 답을 �
   assert.ok(/8자리 hex/.test(판.사유), 판.사유);
 });
 
+/* 🔴 `.claude/` 없이 `tools/` 만 복사해 세우는 픽스처가 이 저장소에 실재한다
+ *   (`tests/대기열채번.test.js` 의 E2E). 첫 판이 board-id 를 **맨 위에서** require 해서,
+ *   그 픽스처의 `대기열.js` 가 로드 시점에 `MODULE_NOT_FOUND` 로 죽었다 — 내 변경 하나가
+ *   남의 스위트 5건을 무너뜨렸고 CI 모사가 그것을 잡았다.
+ *   ⚠ 고치는 방향이 둘이었다: 지문 뽑기를 여기서 다시 구현하거나(판정이 두 곳 → 갈라진다),
+ *   **못 열면 「못 읽었다」로 떨어뜨리거나.** 이 저장소의 대원칙은 후자다. */
+test('🔑 [F632] `.claude/` 가 없는 트리에서도 **로드는 된다** — 그리고 「못 읽었다」로 떨어진다', () => {
+  const fs = require('fs');
+  const os = require('os');
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'fp-noclaude-'));
+  fs.mkdirSync(path.join(방, 'tools', 'lib'), { recursive: true });
+  fs.copyFileSync(path.join(ROOT, 'tools', 'lib', '세션지문.js'), path.join(방, 'tools', 'lib', '세션지문.js'));
+
+  const 밖 = require(path.join(방, 'tools', 'lib', '세션지문.js'));   // 여기서 던지면 그게 그 사고다
+  const 판 = 밖.읽기({ 환경: { CLAUDE_CODE_HOST_SESSION_ID: 'cloud_ffff0000' } });
+  assert.strictEqual(판.출처, '없음', '판정기를 못 열었는데 「호스트에서 읽었다」고 하면 맞는 얼굴의 거짓이다');
+  assert.ok(/board-id/.test(판.사유), `왜 못 쟀는지를 안 적으면 0 과 구별이 안 된다: ${판.사유}`);
+  assert.strictEqual(밖.지문('cloud_ffff0000'), '', '여기서 slice 를 다시 구현하면 판정이 두 곳에 앉는다');
+});
+
 /* ── ② 접두 — 지어내지 않는다 ─────────────────────────────────────────────── */
 
 test('접두는 sid 에서 뽑고, 모르면 `sess_` 다 — `local_` 로 박지 않는다', () => {

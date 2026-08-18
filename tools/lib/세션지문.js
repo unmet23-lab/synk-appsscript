@@ -34,7 +34,31 @@
 'use strict';
 
 const path = require('node:path');
-const 보드id = require(path.join(__dirname, '..', '..', '.claude', 'hooks', 'lib', 'board-id.js'));
+
+/* 🔴 board-id 는 **부를 때** 연다 (2026-08-18 실측 · CI 모사가 잡았다).
+ *   맨 위에서 `require` 하면 이 파일을 물고 있는 `대기열.js` 가 **로드 시점에** 죽는다 —
+ *   `tools/` 만 복사해 세우는 E2E 픽스처(`tests/대기열채번.test.js`)에는 `.claude/` 가 없어서,
+ *   내 변경이 그 스위트 5건을 통째로 `MODULE_NOT_FOUND` 로 무너뜨렸다.
+ *   ⚠ 그렇다고 지문 뽑기를 여기서 **다시 구현하지 않는다** — 같은 판정이 두 곳에 앉으면
+ *   갈라지고, 갈라진 쪽의 증상은 언제나 「통과」다. 못 열면 이 파일의 대원칙대로
+ *   **「못 읽었다」로 떨어진다**(사유에 그 사실을 적는다). */
+let _보드id = null;
+let _못연사유 = '';
+function 보드id() {
+  if (_보드id || _못연사유) return _보드id;
+  try {
+    _보드id = require(path.join(__dirname, '..', '..', '.claude', 'hooks', 'lib', 'board-id.js'));
+  } catch (e) {
+    _못연사유 = `board-id.js 를 못 열었다(${(e && e.code) || e}) — 지문 판정을 여기서 지어내지 않는다`;
+  }
+  return _보드id;
+}
+
+/** 지문 뽑기 — **판정은 board-id 하나가 진다.** 못 열면 빈 문자열이고, 그 사유는 `읽기().사유` 가 낸다. */
+function 지문(sid) {
+  const b = 보드id();
+  return b ? b.지문(sid) : '';
+}
 
 /** 사람이 손으로 주는 지정값의 꼴 — 보드 파일명 규격(`<8자리 hex>.md`)과 같다. */
 const 지정꼴 = /^[0-9a-f]{8}$/;
@@ -50,9 +74,9 @@ const 기본접두 = 'sess_';
 
 /** 보드 줄·파일명에 쓰는 표기 — `<접두><지문>`. 접두를 모르면 `sess_` 다(`local_` 로 박지 않는다). */
 function 표기(sid) {
-  const 지문 = 보드id.지문(sid);
-  if (!지문) return '';
-  return `${접두뽑기(sid) || 기본접두}${지문}`;
+  const 값 = 지문(sid);
+  if (!값) return '';
+  return `${접두뽑기(sid) || 기본접두}${값}`;
 }
 
 /**
@@ -68,9 +92,12 @@ function 표기(sid) {
  */
 function 읽기(옵션 = {}) {
   const 환경 = 옵션.환경 || process.env;
+  /* 판정기를 못 열었으면 **읽은 척하지 않는다** — 아래 갈래는 전부 `지문()` 위에 서 있어서,
+   * 여기서 안 막으면 「호스트에서 읽었다 · 지문은 빈 문자열」이라는 맞는 얼굴의 거짓이 나온다. */
+  if (!보드id()) return { sid: '', 지문: '', 접두: '', 표기: '', 출처: '없음', 사유: _못연사유 };
   const 지정 = String(옵션.지정 || 환경.SYNK_SESSION_FINGERPRINT || '').trim();
   if (지정) {
-    const 후보 = 보드id.지문(지정);
+    const 후보 = 지문(지정);
     if (지정꼴.test(후보)) {
       return { sid: 지정, 지문: 후보, 접두: 접두뽑기(지정) || 기본접두, 표기: 표기(지정), 출처: '지정', 사유: '' };
     }
@@ -82,16 +109,16 @@ function 읽기(옵션 = {}) {
 
   const 호스트 = String(환경.CLAUDE_CODE_HOST_SESSION_ID || '').trim();
   if (호스트) {
-    return { sid: 호스트, 지문: 보드id.지문(호스트), 접두: 접두뽑기(호스트) || 기본접두, 표기: 표기(호스트), 출처: '호스트', 사유: '' };
+    return { sid: 호스트, 지문: 지문(호스트), 접두: 접두뽑기(호스트) || 기본접두, 표기: 표기(호스트), 출처: '호스트', 사유: '' };
   }
 
   const 훅 = String((옵션.훅입력 && 옵션.훅입력.session_id) || '').trim();
   if (훅) {
-    return { sid: 훅, 지문: 보드id.지문(훅), 접두: 접두뽑기(훅) || 기본접두, 표기: 표기(훅), 출처: '훅', 사유: '' };
+    return { sid: 훅, 지문: 지문(훅), 접두: 접두뽑기(훅) || 기본접두, 표기: 표기(훅), 출처: '훅', 사유: '' };
   }
 
   return { sid: '', 지문: '', 접두: '', 표기: '', 출처: '없음',
-    사유: 'CLAUDE_CODE_HOST_SESSION_ID 가 비어 있다(클라우드·폰 세션에서 실재한다)' };
+    사유: 'CLAUDE_CODE_HOST_SESSION_ID 가 비어 있다(클라우드 세션에서 실측했다)' };
 }
 
 /**
@@ -114,4 +141,4 @@ function 처방(사유, 명령 = 'node tools/board.js', { 플래그 = '' } = {})
   return 줄.join('\n');
 }
 
-module.exports = { 읽기, 처방, 접두뽑기, 표기, 기본접두, 지문: 보드id.지문 };
+module.exports = { 읽기, 처방, 접두뽑기, 표기, 기본접두, 지문 };
