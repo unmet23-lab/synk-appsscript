@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK 로고 — 「더 트렌디하게」 진단 + 개선안 대조 (2026-08-18)</title>
+<!--
+  유호님 요청 08-18: 「브랜드킷 로고(심볼·네이밍)를 지금보다 더 감각적으로 트렌디하게」
+  ▶ 이 파일은 **후보 시트이지 정본이 아니다.** 정본은 docs/발표물/_브랜드킷.md §3 (W5·W1) 그대로다.
+     여기서 유호님이 고른 것만 정본으로 올라간다.
+  ▶ 진단은 취향이 아니라 **실측**이다 — 로고 네 요소의 꺾임 각도를 재니 60.9° / 71.1° / 80.5° 로
+     전부 달랐다. 같은 글자 `<` 가 워드마크와 심볼에서 9.4° 차이 난다.
+  ▶ 색은 브랜드 킷 23색만 쓴다(tests/로고정본색.test.js 가 기계로 잡는다).
+  ▶ 도형은 <defs> 에 한 번만 정의하고 <use> 로 꺼낸다 — 후보시트에서 복붙이 락업을 조용히 깨뜨렸다.
+-->
+<style>
+:root{
+  --paper:#FBF7EE; --cream:#F6F1E8; --cream2:#EFE7D7; --cream3:#E7DDC7;
+  --navy:#1A2340; --navy2:#0F1730; --navy3:#2A3358; --ink:#171820;
+  --coral:#FF6B5C; --coral3:#E8543F; --wash:#FFE9E4;
+  --slate2:#5F657D; --slate:#8A93AD;
+  --hair:rgba(26,35,64,.2); --hair2:rgba(26,35,64,.09);
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{
+  background:var(--cream2); color:var(--navy); padding:10mm 8mm 24mm;
+  font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic',sans-serif; font-weight:500;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{ max-width:1220px; margin:0 auto; }
+
+h1{ font-size:8.4mm; font-weight:800; letter-spacing:-.028em; line-height:1.1; }
+.sub{ font-size:3.6mm; color:var(--navy3); margin-top:2.6mm; line-height:1.62; max-width:210mm; }
+.sub b{ color:var(--navy); }
+h2{ font-size:5.2mm; font-weight:800; margin-top:16mm; padding-bottom:2.2mm; border-bottom:.7mm solid var(--navy3); letter-spacing:-.015em; }
+h2 span{ font-size:3.2mm; font-weight:500; color:var(--navy3); margin-left:3mm; letter-spacing:0; }
+h3{ font-size:4mm; font-weight:800; margin-top:8mm; margin-bottom:3mm; letter-spacing:-.01em; }
+p.lead{ font-size:3.3mm; color:var(--navy3); line-height:1.65; margin-top:2.5mm; max-width:200mm; }
+p.lead b{ color:var(--navy); }
+code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding:.3mm 1.2mm; border-radius:1mm; font-size:.92em; }
+
+/* ── 진단 표 ── */
+table.m{ border-collapse:collapse; margin-top:4mm; font-size:3.1mm; background:var(--cream); border-radius:2mm; overflow:hidden; box-shadow:0 .3mm 2mm rgba(26,35,64,.07); }
+table.m th,table.m td{ padding:2.4mm 4mm; text-align:left; border-bottom:.25mm solid var(--hair2); }
+table.m th{ background:var(--navy2); color:var(--cream); font-weight:700; font-size:2.9mm; letter-spacing:.02em; }
+table.m td.n{ text-align:right; font-family:ui-monospace,monospace; font-weight:700; }
+table.m tr:last-child td{ border-bottom:0; }
+table.m tr.bad td{ background:var(--wash); }
+table.m td .why{ display:block; font-size:2.7mm; color:var(--slate2); margin-top:.8mm; font-weight:500; }
+
+/* ── 카드 그리드 ── */
+.grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:6mm; margin-top:6mm; }
+.c{ border-radius:3mm; overflow:hidden; border:.4mm solid var(--hair); background:var(--cream); display:flex; flex-direction:column; }
+.c.rec{ border:.9mm solid var(--coral); box-shadow:0 1mm 5mm rgba(255,107,92,.18); }
+.c.base{ border-style:dashed; opacity:.92; }
+.c .stage{ padding:9mm 6mm; display:flex; align-items:center; justify-content:center; min-height:50mm; }
+.c .stage.d{ background:var(--navy2); }
+.c .stage.l{ background:var(--paper); box-shadow:inset 0 0 0 .3mm rgba(26,35,64,.09); }
+.c .cap{ padding:3.6mm 4.6mm 4.8mm; border-top:.3mm solid var(--hair); flex:1; }
+.c .cap .id{
+  display:inline-block; font-family:ui-monospace,monospace; font-size:2.9mm; font-weight:800;
+  background:var(--navy); color:var(--cream); padding:.8mm 2.4mm; border-radius:1.4mm; letter-spacing:.06em;
+}
+.c .cap .id.rec{ background:var(--coral); color:var(--ink); }   /* 코랄 면 위 글자 = Ink 만 */
+.c .cap .id.base{ background:var(--cream3); color:var(--navy); }
+.c .cap .t{ font-size:3.5mm; font-weight:800; margin-top:2.4mm; line-height:1.35; letter-spacing:-.01em; }
+.c .cap .d{ font-size:3mm; color:var(--navy3); margin-top:1.8mm; line-height:1.55; }
+.c .cap .m{ font-size:2.8mm; color:var(--slate2); margin-top:2mm; font-family:ui-monospace,monospace; }
+.c .cap .cost{ font-size:2.85mm; color:var(--navy3); margin-top:2.4mm; padding-top:2.2mm; border-top:.25mm solid var(--hair2); line-height:1.5; }
+.c .cap .cost b{ color:var(--navy); font-weight:800; }
+
+/* ── 콜아웃 ── */
+.call{ margin-top:6mm; background:var(--wash); border-left:1.2mm solid var(--coral); border-radius:0 2mm 2mm 0; padding:4.4mm 5.4mm; font-size:3.2mm; line-height:1.62; color:var(--navy); }
+.call b{ font-weight:800; }
+.call .h{ font-weight:800; font-size:3.5mm; display:block; margin-bottom:1.6mm; letter-spacing:-.01em; }
+.call.dark{ background:var(--navy2); color:var(--cream3); border-left-color:var(--coral); }
+.call.dark .h{ color:var(--cream); }
+.call.dark b{ color:var(--cream); }
+
+/* ── 모션 데모 ── */
+@keyframes synk-close{
+  0%, 42%   { transform:translateX(0); }
+  62%, 100% { transform:translateX(-5px); }
+}
+@keyframes synk-node{
+  0%, 42%   { opacity:1; transform:scale(1); }
+  58%       { opacity:1; transform:scale(1.5); }
+  70%, 100% { opacity:0; transform:scale(.4); }
+}
+.motion .arm{ animation:synk-close 2.6s cubic-bezier(.22,1,.36,1) infinite; }
+.motion .nd{ animation:synk-node 2.6s cubic-bezier(.22,1,.36,1) infinite; transform-origin:129.5px 66.35px; }
+@media (prefers-reduced-motion:reduce){ .motion .arm,.motion .nd{ animation:none; } .motion .nd{ opacity:0; } }
+
+/* ── 축 머리 ── */
+.axis{ display:flex; align-items:baseline; gap:3mm; flex-wrap:wrap; margin-top:14mm; }
+.axis .num{ font-family:ui-monospace,monospace; font-size:3.2mm; font-weight:800; background:var(--navy2); color:var(--cream); padding:1mm 2.6mm; border-radius:1.4mm; letter-spacing:.04em; }
+.axis .ttl{ font-size:5.2mm; font-weight:800; letter-spacing:-.018em; }
+.axis .q{ font-size:3.2mm; color:var(--navy3); }
+.axisline{ height:.7mm; background:var(--navy3); margin-top:2.4mm; border-radius:1mm; }
+
+/* ── 조합 미리보기 ── */
+.combo{ display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:6mm; margin-top:6mm; }
+.combo .k{ background:var(--navy2); border-radius:3mm; padding:8mm 6mm 5mm; }
+.combo .k .row{ display:flex; align-items:center; justify-content:center; min-height:34mm; }
+.combo .k .lbl{ margin-top:4mm; padding-top:3mm; border-top:.3mm solid rgba(246,241,232,.18); }
+.combo .k .lbl .n{ font-family:ui-monospace,monospace; font-size:2.9mm; font-weight:800; color:var(--coral); letter-spacing:.05em; }
+.combo .k .lbl .t{ font-size:3.3mm; font-weight:700; color:var(--cream); margin-top:1.4mm; }
+.combo .k .lbl .d{ font-size:2.9mm; color:var(--cream3); margin-top:1.4mm; line-height:1.5; }
+
+/* ── 생성형 시그니처 ── */
+.sig{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:4mm; margin-top:5mm; }
+.sig .s{ background:var(--navy2); border-radius:2.4mm; padding:6mm 3mm 3.6mm; text-align:center; }
+.sig .s .nm{ font-size:2.9mm; color:var(--cream3); margin-top:3mm; font-weight:700; }
+.sig .s .nm em{ display:block; font-style:normal; font-size:2.6mm; color:var(--slate); margin-top:.8mm; font-family:ui-monospace,monospace; }
+
+.foot{ margin-top:16mm; padding-top:5mm; border-top:.5mm solid var(--hair); font-size:3mm; color:var(--navy3); line-height:1.65; }
+.foot b{ color:var(--navy); }
+</style>
+</head>
+<body>
+
+<!-- ══════════ 도형 정본 — 여기서만 정의한다 ══════════ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+
+  <!-- 워드마크 글자 조각 · 기준선 y=86 · 글자 크기 72 (정본 좌표계 그대로) -->
+  <path id="syn-0" d="M34.4 57.1 26.0 58.0Q25.5 56.1 23.7 54.6Q22.0 53.1 18.8 53.1Q15.9 53.1 13.9 54.4Q12.0 55.6 12.0 57.6Q12.0 59.3 13.3 60.4Q14.6 61.5 17.5 62.2L24.3 63.6Q29.8 64.8 32.5 67.4Q35.3 70.0 35.3 74.2Q35.3 77.9 33.1 80.8Q31.0 83.6 27.2 85.2Q23.4 86.8 18.5 86.8Q11.3 86.8 6.9 83.7Q2.5 80.7 1.7 75.3L10.7 74.4Q11.3 77.1 13.3 78.4Q15.3 79.8 18.5 79.8Q21.8 79.8 23.8 78.4Q25.8 77.1 25.8 75.1Q25.8 71.8 20.5 70.6L13.8 69.2Q8.2 68.0 5.4 65.2Q2.7 62.4 2.7 58.2Q2.7 54.5 4.7 51.8Q6.8 49.2 10.3 47.7Q13.9 46.2 18.6 46.2Q25.6 46.2 29.5 49.2Q33.5 52.1 34.4 57.1Z M45.0 100.7Q43.1 100.7 41.5 100.4Q39.9 100.1 38.9 99.7L41.1 92.5L41.5 92.7Q44.4 93.4 46.3 92.8Q48.3 92.2 49.5 89.0L50.3 86.8L36.1 46.7H45.9L54.9 76.4H55.4L64.4 46.7H74.3L58.6 90.7Q57.5 93.9 55.7 96.1Q53.9 98.3 51.2 99.5Q48.6 100.7 45.0 100.7Z M86.2 63.0V86.0H77.0V46.7H86.1V53.4H86.5Q87.9 50.1 90.7 48.2Q93.6 46.2 98.0 46.2Q102.1 46.2 105.1 47.9Q108.1 49.6 109.8 53.0Q111.5 56.3 111.5 61.0V86.0H102.2V62.4Q102.2 58.5 100.2 56.3Q98.2 54.0 94.6 54.0Q92.1 54.0 90.3 55.1Q88.4 56.2 87.3 58.1Q86.2 60.1 86.2 63.0Z"/>
+  <path id="syn-tight" d="M35.8 57.9 25.9 58.5Q25.5 56.6 23.8 55.3Q22.1 53.9 19.3 53.9Q16.7 53.9 15.0 55.0Q13.3 56.0 13.3 57.8Q13.3 59.2 14.4 60.2Q15.5 61.2 18.2 61.8L25.4 63.2Q31.1 64.3 33.9 66.9Q36.7 69.5 36.7 73.8Q36.7 77.7 34.5 80.6Q32.2 83.5 28.3 85.1Q24.4 86.8 19.3 86.8Q11.5 86.8 6.8 83.5Q2.2 80.2 1.4 74.6L12.1 74.1Q12.6 76.5 14.5 77.7Q16.3 78.9 19.3 78.9Q22.1 78.9 23.9 77.8Q25.7 76.7 25.7 75.0Q25.7 72.0 20.6 71.0L13.8 69.6Q8.1 68.5 5.3 65.6Q2.5 62.8 2.5 58.4Q2.5 54.6 4.5 51.9Q6.6 49.2 10.4 47.7Q14.1 46.2 19.1 46.2Q26.6 46.2 30.8 49.3Q35.1 52.5 35.8 57.9Z M44.0 100.7Q41.9 100.7 40.1 100.4Q38.3 100.1 37.1 99.6L39.6 91.5L39.9 91.6Q42.7 92.4 44.6 91.9Q46.6 91.5 47.6 88.8L48.2 87.1L34.1 46.7H45.6L53.7 75.6H54.1L62.3 46.7H73.8L58.6 90.3Q57.5 93.4 55.6 95.8Q53.7 98.1 50.9 99.4Q48.0 100.7 44.0 100.7Z M84.0 63.3V86.0H73.1V46.7H83.8V53.7H84.2Q85.5 50.2 88.4 48.2Q91.4 46.2 95.7 46.2Q99.8 46.2 102.9 48.0Q105.9 49.8 107.6 53.1Q109.3 56.4 109.3 61.0V86.0H98.4V62.9Q98.4 59.4 96.6 57.3Q94.7 55.2 91.4 55.2Q89.2 55.2 87.6 56.2Q85.9 57.2 84.9 59.0Q84.0 60.8 84.0 63.3Z"/>
+  <path id="syn-wide" d="M31.6 55.6 26.2 57.0Q25.5 55.0 23.6 53.2Q21.7 51.4 17.7 51.4Q14.1 51.4 11.7 53.1Q9.4 54.7 9.4 57.2Q9.4 59.5 11.0 60.8Q12.6 62.2 16.1 63.0L21.9 64.4Q27.2 65.7 29.8 68.3Q32.3 71.0 32.3 75.0Q32.3 78.4 30.4 81.1Q28.5 83.8 25.0 85.3Q21.6 86.8 17.0 86.8Q11.0 86.8 7.1 84.2Q3.2 81.6 2.1 76.6L7.8 75.2Q8.6 78.3 10.9 79.9Q13.2 81.5 16.9 81.5Q21.1 81.5 23.6 79.7Q26.2 77.9 26.2 75.4Q26.2 71.2 20.3 69.8L13.8 68.3Q8.4 67.0 5.8 64.3Q3.3 61.6 3.3 57.6Q3.3 54.3 5.2 51.7Q7.1 49.1 10.3 47.7Q13.6 46.2 17.7 46.2Q23.6 46.2 26.9 48.8Q30.2 51.4 31.6 55.6Z M43.5 100.7Q41.9 100.7 40.7 100.5Q39.5 100.2 39.0 100.0L40.6 94.7L41.2 94.9Q44.2 95.6 46.3 94.6Q48.3 93.6 49.9 89.3L51.0 86.2L36.5 46.7H43.1L53.9 78.1H54.3L65.1 46.7H71.7L55.0 91.7Q53.9 94.8 52.2 96.8Q50.6 98.8 48.4 99.7Q46.2 100.7 43.5 100.7Z M83.8 62.4V86.0H77.8V46.7H83.6V52.9H84.1Q85.5 49.9 88.3 48.0Q91.1 46.2 95.6 46.2Q99.6 46.2 102.6 47.8Q105.6 49.4 107.2 52.7Q108.9 56.0 108.9 61.0V86.0H102.9V61.5Q102.9 56.9 100.5 54.2Q98.1 51.6 93.9 51.6Q91.0 51.6 88.7 52.9Q86.4 54.1 85.1 56.5Q83.8 58.9 83.8 62.4Z"/>
+
+  <!-- M0 · 현재 정본 꺾쇠 (벌림 80.5°) -->
+  <path id="chev-0" d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z"/>
+
+  <!-- M1 · 60° 정합 꺾쇠 — 심볼 ^ 와 같은 각도 · x-height(47~86)에 정렬 -->
+  <path id="chev-60" d="M146 46.7 L112 66.35 L146 86 L159 86 L125 66.35 L159 46.7 Z"/>
+
+  <!-- M2 · 시냅스 갭 — 두 팔이 꼭짓점에서 만나지 않고, 그 틈을 노드가 건넌다 -->
+  <g id="chev-gap">
+    <path class="arm" d="M124 59.42 L146 46.7 L159 46.7 L137 59.42 Z"/>
+    <path class="arm" d="M124 73.28 L146 86 L159 86 L137 73.28 Z"/>
+    <circle class="nd" cx="112" cy="66.35" r="5.5"/>
+  </g>
+
+  <!-- M3 · k 복원 — 꺾쇠 왼쪽에 스템을 세우면 `synk` 로 읽힌다. 갭 5 는 「아직 안 붙은 동기화」 -->
+  <g id="k-gap">
+    <rect x="116" y="33.6" width="11" height="52.4"/>
+    <path d="M166 46.7 L132 66.35 L166 86 L179 86 L145 66.35 L179 46.7 Z"/>
+  </g>
+  <g id="k-join">
+    <rect x="116" y="33.6" width="11" height="52.4"/>
+    <path d="M161 46.7 L127 66.35 L161 86 L174 86 L140 66.35 L174 46.7 Z"/>
+  </g>
+
+  <!-- 심볼 · 정본 ~ ^ ^ < (= s·y·n·k) · viewBox 240×110 -->
+  <g id="sym-0" fill="none" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter">
+    <path d="M10 62 C17 50, 29 50, 36 60 C41 67, 48 67, 52 58"/>
+    <path d="M68 68 L88 34 L108 68"/>
+    <path d="M124 68 L144 34 L164 68"/>
+    <path d="M228 22 L186 52 L228 82"/>
+  </g>
+  <!-- 심볼 · 60° 정합 + 기준선 정렬(k 가 baseline 68 을 14 뚫고 내려가던 것을 올림) -->
+  <g id="sym-60" fill="none" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter">
+    <path d="M10 62 C17 50, 29 50, 36 60 C41 67, 48 67, 52 58"/>
+    <path d="M68 68 L88 34 L108 68"/>
+    <path d="M124 68 L144 34 L164 68"/>
+    <path d="M228 23 L189 45.5 L228 68"/>
+  </g>
+
+</defs></svg>
+
+
+<div class="wrap">
+
+  <h1>SYNK 로고 — 더 감각적으로, 더 트렌디하게</h1>
+  <div class="sub">
+    유호님 요청(2026-08-18)에 대한 <b>진단 + 개선안 대조 시트</b>입니다. 정본은 아직 그대로예요 —
+    <b>여기서 유호님이 고른 것만</b> <code>_브랜드킷.md §3</code> 로 올라갑니다.<br>
+    먼저 짚을 게 있습니다. <b>지금 로고가 감각적으로 안 보이는 이유는 취향이 아니라 기하학입니다.</b>
+    네 요소의 꺾임 각도를 실제로 재 봤더니 전부 달랐습니다.
+  </div>
+
+
+  <!-- ══════════════════ 진단 ══════════════════ -->
+  <h2>진단 <span>왜 지금 「감각적」이 안 나오는가 — 잰 것 3 + 읽은 것 2</span></h2>
+
+  <h3>① 잰 것 — 같은 글자 <code>&lt;</code> 가 두 자산에서 9.4° 다르다</h3>
+  <p class="lead">
+    로고의 모든 꺾임을 각도로 환산했습니다. 좋은 마크는 <b>하나의 기하 규칙에서 파생</b>되는데,
+    지금은 네 요소가 각자 다른 규칙으로 그려져 있습니다. 눈은 이걸 「덜 정돈됐다」로 읽습니다.
+  </p>
+  <table class="m">
+    <tr><th>요소</th><th>어디</th><th>두 팔 벌림</th><th>판정</th></tr>
+    <tr><td><code>^</code> (= y)</td><td>심볼 2번째 획</td><td class="n">60.9°</td><td>기준 후보 — 가장 예리하다</td></tr>
+    <tr><td><code>^</code> (= n)</td><td>심볼 3번째 획</td><td class="n">60.9°</td><td>위와 동일 ✅</td></tr>
+    <tr class="bad"><td><code>&lt;</code> (= k)</td><td>심볼 4번째 획</td><td class="n">71.1°</td><td>같은 심볼 안에서 <b>10.2° 어긋남</b></td></tr>
+    <tr class="bad"><td><code>&lt;</code> (= k)</td><td><b>워드마크</b> <code>syn&lt;</code></td><td class="n">80.5°</td><td><b>같은 글자인데 심볼과 9.4° 어긋남</b><span class="why">워드마크와 심볼을 나란히 놓으면 한 가족으로 안 보이는 실제 원인</span></td></tr>
+  </table>
+  <p class="lead">
+    획 두께도 같은 문제입니다 — 워드마크 꺾쇠의 실제 획은 <code>9.16</code>, 심볼 획을 같은 좌표계로 환산하면
+    <code>7.12</code>. <b>29% 차이</b>입니다. 그리고 심볼의 <code>k</code> 는 기준선을 <b>14 만큼 뚫고 내려가</b> 있습니다.
+  </p>
+
+  <h3>② 잰 것 — 워드마크는 로고가 아니라 <b>조판</b>이다</h3>
+  <p class="lead">
+    <code>syn</code> 은 Inter Tight 를 <code>font-size:72 / weight:600 / letter-spacing:-1</code> 로 친 것입니다.
+    커스터마이즈가 <b>0</b>이에요. 정본 문서도 이미 인정하고 있습니다 —
+    「Inter Tight 가 없는 기기에서는 자형이 미세하게 달라진다」.<br>
+    <b>누구나 3초에 재현할 수 있는 글자는 소유할 수 없습니다.</b> 2020년대 브랜드가 「감각 있다」는 인상을 주는
+    첫 번째 요인이 커스텀 레터폼인데, 지금 로고엔 그 층이 통째로 없습니다.
+  </p>
+
+  <h3>③ 잰 것 — 서체 정본과 로고가 충돌한 채 방치돼 있다</h3>
+  <p class="lead">
+    <code>docs/브랜드_폰트_정본.md</code> 는 「워드마크 = DM Mono」로 잠겨 있는데 실물 로고는 모노가 아니라 그로테스크입니다.
+    <code>_브랜드킷.md §3</code> 에 <b>🔴 미해결로 적혀만 있고</b> 아직 안 고쳤습니다. 어느 쪽이든 이번에 닫아야 합니다.
+  </p>
+
+  <h3>④ 읽은 것 — <code>&lt;</code> 가 <b>k 로 안 읽힌다</b></h3>
+  <p class="lead">
+    <code>syn&lt;</code> 를 처음 보는 사람은 「신크」가 아니라 「신, 그리고 화살표」로 읽습니다.
+    게다가 <code>&lt;</code> 단독은 개발자 도구 브랜드에서 가장 닳은 기호예요 — <b>차별점이 아니라 클리셰 쪽</b>에 가깝습니다.
+    브랜드명이 로고에서 안 읽히면 인지 비용을 계속 물게 됩니다. 학원은 이름을 외우게 해야 하는 업종이고요.
+  </p>
+
+  <h3>⑤ 읽은 것 — 브랜드 모티프가 로고에 <b>0</b>이다</h3>
+  <p class="lead">
+    <code>DESIGN.md §1</code> 은 모티프를 <b>「시냅스 노드·링크」</b>로 정해 뒀습니다. 이름 SYNK(=동기화)의 그림이라고요.
+    그런데 로고에는 그 흔적이 하나도 없습니다. <b>서사가 로고에서 끊깁니다</b> — 브랜드 문서 안에서만 사는 설정이 됐어요.
+  </p>
+
+  <div class="call">
+    <span class="h">그래서 「트렌디하게」를 이렇게 번역했습니다</span>
+    <code>CLAUDE.md</code> 는 트렌디를 <b>「유행을 좇는 것이 아니라 유행이 되는 것」</b>으로 정의합니다.
+    그래서 이 시트는 <b>2026 로고 트렌드 모음집을 만들지 않았습니다.</b> 대신 위 진단 다섯 개를 하나씩 닫습니다 —
+    ①②는 <b>기하 정합·커스텀</b>으로, ④는 <b>이름이 읽히게</b>, ⑤는 <b>모티프를 형태에 넣어서</b>.
+    유행하는 스타일을 입히는 게 아니라, <b>남이 못 베끼는 구조</b>를 만드는 쪽입니다.
+  </div>
+
+
+  <!-- ══════════════════ 축 1 ══════════════════ -->
+  <div class="axis">
+    <span class="num">축 1</span>
+    <span class="ttl">심볼 — 꺾쇠를 어떻게 할 것인가</span>
+    <span class="q">여기서 <b>하나</b>를 고르세요</span>
+  </div>
+  <div class="axisline"></div>
+
+  <div class="grid">
+
+    <div class="c base">
+      <div class="stage d">
+        <svg width="240" height="139" viewBox="-8 -2 200 116">
+          <use href="#syn-0" fill="#F6F1E8"/><use href="#chev-0" fill="#FF6B5C"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id base">M0 · 현재 정본</span>
+        <div class="t">지금 쓰는 것 (W5)</div>
+        <div class="d">대조 기준입니다. 아래 안들은 전부 이것과 같은 크기·같은 자리에서 렌더했으니 그대로 눈으로 비교하시면 됩니다.</div>
+        <div class="m">벌림 80.5° · 획 9.16 · 커스텀 0</div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="stage d">
+        <svg width="240" height="139" viewBox="-8 -2 200 116">
+          <use href="#syn-0" fill="#F6F1E8"/><use href="#chev-60" fill="#FF6B5C"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id">M1 · 60° 정합</span>
+        <div class="t">각도만 맞춘다 — 형태는 안 건드림</div>
+        <div class="d">꺾쇠를 심볼 <code>^</code> 와 <b>같은 60°</b>로 좁히고, 소문자 높이(x-height)에 정확히 맞췄습니다.
+          날렵해지고, 처음으로 워드마크와 심볼이 <b>한 가족</b>이 됩니다.</div>
+        <div class="m">벌림 60° · 형태 유지 · 폭 +6%</div>
+        <div class="cost"><b>대가</b> — 이름은 여전히 안 읽히고(진단 ④), 모티프도 여전히 0(진단 ⑤).
+          <b>가장 안전하지만 가장 적게 바뀝니다.</b></div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="stage d">
+        <svg width="240" height="139" viewBox="-8 -2 200 116">
+          <use href="#syn-0" fill="#F6F1E8"/><use href="#chev-gap" fill="#FF6B5C"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id">M2 · 시냅스 갭</span>
+        <div class="t">두 팔이 <b>안 만난다</b> — 그 틈을 점이 건넌다</div>
+        <div class="d">꺾쇠를 60°로 맞춘 뒤 <b>꼭짓점을 잘라내고</b> 그 자리에 노드를 놓았습니다.
+          이게 문자 그대로 <b>시냅스</b>예요 — 뉴런은 붙어 있지 않고, 신호가 틈을 건너갑니다.
+          <code>DESIGN.md §1</code> 의 모티프가 로고 안으로 들어옵니다.</div>
+        <div class="m">벌림 60° · 갭 12 · 노드 r5.5 · 폭 +6%</div>
+        <div class="cost"><b>대가</b> — 아주 작게 쓰면(파비콘 16px·도장) 갭이 뭉개져 그냥 점 세 개로 보입니다.
+          <b>최소 크기 규정이 따로 필요합니다.</b></div>
+      </div>
+    </div>
+
+    <div class="c rec">
+      <div class="stage d">
+        <svg width="240" height="139" viewBox="-8 -2 200 116">
+          <use href="#syn-tight" fill="#F6F1E8"/><use href="#k-gap" fill="#FF6B5C"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id rec">M3 · k 복원 (추천)</span>
+        <div class="t">획 하나를 세우면 <b><code>synk</code> 로 읽힌다</b></div>
+        <div class="d">꺾쇠 왼쪽에 스템을 세웠습니다. <b>기존 꺾쇠는 하나도 안 버립니다</b> —
+          소문자 <code>k</code> 의 팔이 원래 <code>&lt;</code> 모양이거든요. 획 하나 추가로 진단 ④가 닫힙니다.<br>
+          그리고 스템과 팔 사이 <b>갭 5</b> 를 남겼습니다. <b>「아직 동기화되지 않은 k」</b> — 브랜드 이름의 뜻이
+          형태에 들어옵니다(진단 ⑤).</div>
+        <div class="m">벌림 60° · 스템 11×52.4 · 갭 5 · 폭 +18%</div>
+        <div class="cost"><b>대가</b> — 가로가 <b>18% 길어집니다</b>(150 → 179). 그리고 심볼도 같이 <code>k</code> 로 다시 짜야 해요
+          (축 3 참조). 확정 형태를 바꾸는 유일한 안입니다.</div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="stage d">
+        <svg width="240" height="139" viewBox="-8 -2 200 116">
+          <use href="#syn-0" fill="#F6F1E8"/>
+          <path d="M146 47.5 L114 66.35 L146 85.2" fill="none" stroke="#FF6B5C" stroke-width="11.5"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id">M4 · 소프트</span>
+        <div class="t">모서리를 둥글게 — 부드러운 쪽</div>
+        <div class="d">같은 60°인데 획 끝과 꼭짓점을 라운드로 마감했습니다. 날카로움이 빠지고 <b>친근</b>해집니다.
+          학원·10대 타겟이라는 업종 성격과는 이쪽이 더 맞을 수도 있어요.</div>
+        <div class="m">벌림 60° · round cap/join</div>
+        <div class="cost"><b>대가</b> — 「명품·연구소」 톤이 약해집니다. 브랜드 킷 전체가 각진 그로테스크라
+          <b>로고만 혼자 부드러워지는</b> 위험이 있습니다.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="call">
+    <span class="h">밝은 바탕에서도 확인하세요 — 인쇄물·안내문은 전부 이쪽입니다</span>
+    다크에서 예뻐 보이는 것이 종이에서 무너지는 일이 잦습니다. 아래는 추천안(M3)의 라이트 판입니다.
+  </div>
+  <div class="grid">
+    <div class="c">
+      <div class="stage l">
+        <svg width="240" height="139" viewBox="-8 -2 200 116">
+          <use href="#syn-tight" fill="#1A2340"/><use href="#k-gap" fill="#FF6B5C"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id">M3-L · 밝은 바탕</span>
+        <div class="t">Paper 위 · 잉크는 Navy</div>
+        <div class="d">코랄은 <b>도형이라 대비 기준 적용 제외</b>(§3 색 규칙 ①). 글자 <code>syn</code> 만 Navy 로 바뀝니다 — 순검정은 안 씁니다.</div>
+      </div>
+    </div>
+    <div class="c">
+      <div class="stage l">
+        <svg width="240" height="139" viewBox="-8 -2 200 116">
+          <use href="#syn-0" fill="#1A2340"/><use href="#chev-60" fill="#FF6B5C"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id">M1-L · 밝은 바탕</span>
+        <div class="t">최소 변경안의 라이트 판</div>
+        <div class="d">지금 인쇄물 6종에 들어간 것과 <b>가로폭이 같습니다</b> — 이 안을 고르면 재조판이 0입니다.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════ 축 2 ══════════════════ -->
+  <div class="axis">
+    <span class="num">축 2</span>
+    <span class="ttl">네이밍 — 글자를 어떻게 짤 것인가</span>
+    <span class="q">여기서 <b>하나</b>를 고르세요</span>
+  </div>
+  <div class="axisline"></div>
+  <p class="lead">
+    축 1과 <b>독립</b>입니다 — 어느 꺾쇠를 고르든 글자는 따로 정할 수 있어요.
+    셋 다 같은 꺾쇠(60°)를 달아서 <b>글자 차이만</b> 보이게 했습니다.
+  </p>
+
+  <div class="grid">
+
+    <div class="c base">
+      <div class="stage d">
+        <svg width="240" height="139" viewBox="-8 -2 200 116">
+          <use href="#syn-0" fill="#F6F1E8"/><use href="#chev-60" fill="#FF6B5C"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id base">T0 · 현재</span>
+        <div class="t">Inter Tight 600 · 자간 −1</div>
+        <div class="d">지금 값입니다. 무난하지만 <b>중립적이에요</b> — 기억에 남는 구석이 없습니다.</div>
+        <div class="m">weight 600 · tracking −1</div>
+      </div>
+    </div>
+
+    <div class="c rec">
+      <div class="stage d">
+        <svg width="240" height="139" viewBox="-8 -2 200 116">
+          <use href="#syn-tight" fill="#F6F1E8"/><use href="#chev-60" fill="#FF6B5C"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id rec">T1 · 초타이트 (추천)</span>
+        <div class="t">700 · 자간 −4 — 글자가 <b>서로 밀착</b>한다</div>
+        <div class="d">2020년대 중반 워드마크의 사실상 표준입니다. 글자가 붙으면 <b>덩어리</b>로 읽히고,
+          덩어리는 멀리서도 알아봅니다(간판·앱 아이콘·영상 워터마크).<br>
+          <b>이름이 「동기화」인 브랜드가 글자를 띄워 놓을 이유가 없습니다</b> — 뜻과 형태가 같은 말을 합니다.</div>
+        <div class="m">weight 700 · tracking −4 · 잉크폭 111.5→109.3</div>
+        <div class="cost"><b>대가</b> — 아주 작게 쓰면 <code>n</code> 의 속공간이 막혀 뭉갭니다. 최소 크기 규정 필요.</div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="stage d">
+        <svg width="240" height="139" viewBox="-8 -2 200 116">
+          <use href="#syn-wide" fill="#F6F1E8"/><use href="#chev-60" fill="#FF6B5C"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id">T2 · 라이트 와이드</span>
+        <div class="t">400 · 자간 +1.5 — 여백이 말한다</div>
+        <div class="d">가늘고 넓게. <b>럭셔리·연구소</b> 톤입니다. 「SYNK LAB」의 LAB 쪽을 강조하는 방향이에요.</div>
+        <div class="m">weight 400 · tracking +1.5</div>
+        <div class="cost"><b>대가</b> — 작은 크기에서 <b>획이 사라집니다.</b> 앱 상단바(20px)·명함에서 힘이 빠져요.
+          10대 타겟에는 차갑게 읽힐 수도 있습니다.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="call">
+    <span class="h">🔴 여기서 같이 닫아야 하는 것 — 서체 정본 충돌</span>
+    <code>브랜드_폰트_정본.md</code> 는 「워드마크 = DM Mono」인데 실물은 그로테스크입니다.
+    위 셋 중 무엇을 고르셔도 <b>전부 그로테스크</b>라, 고르는 순간 폰트 정본의 그 줄을
+    <b>「워드마크는 로고 정본을 따른다」</b>로 고쳐야 합니다. <code>_브랜드킷.md §3</code> 이 이미 그렇게 제안해 놓고
+    2주째 안 고쳐진 상태예요 — 이번에 같이 닫겠습니다.
+  </div>
+
+
+  <!-- ══════════════════ 축 3 ══════════════════ -->
+  <div class="axis">
+    <span class="num">축 3</span>
+    <span class="ttl">심볼 자산 — 정사각 자리에 무엇을 넣을 것인가</span>
+    <span class="q">앱 아이콘·워터마크·도장</span>
+  </div>
+  <div class="axisline"></div>
+  <p class="lead">
+    지금 심볼은 <code>~ ^ ^ &lt;</code> 넉 자(= s·y·n·k)입니다. <b>개념은 좋은데 아무도 그렇게 못 읽습니다.</b>
+    그리고 위 진단 ①대로 워드마크와 각도가 안 맞아요.
+  </p>
+
+  <div class="grid">
+
+    <div class="c base">
+      <div class="stage d">
+        <svg width="270" height="124" viewBox="0 0 240 110"><use href="#sym-0" stroke="#FBF7EE"/></svg>
+      </div>
+      <div class="cap">
+        <span class="id base">S0 · 현재 정본</span>
+        <div class="t"><code>~ ^ ^ &lt;</code> 넉 자</div>
+        <div class="d">가로로 깁니다(240:110). <b>정사각 자리에 넣으면 아주 작아져요</b> — 앱 아이콘에서 획이 사라집니다.</div>
+        <div class="m">^ 60.9° / &lt; 71.1° — 안에서도 안 맞음</div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="stage d">
+        <svg width="270" height="124" viewBox="0 0 240 110"><use href="#sym-60" stroke="#FBF7EE"/></svg>
+      </div>
+      <div class="cap">
+        <span class="id">S1 · 60° 정합</span>
+        <div class="t">각도 통일 + 기준선 정렬</div>
+        <div class="d">네 번째 획을 <b>60°</b>로 맞추고, 기준선을 14 뚫고 내려가던 것을 <b>올려서 정렬</b>했습니다.
+          네 글자가 처음으로 같은 규칙 위에 섭니다.</div>
+        <div class="m">전 요소 60° · baseline 68 정렬</div>
+      </div>
+    </div>
+
+    <div class="c rec">
+      <div class="stage d">
+        <svg width="150" height="150" viewBox="0 0 120 120">
+          <rect x="0" y="0" width="120" height="120" rx="26" fill="#0F1730"/>
+          <rect x="24" y="25" width="9" height="70" fill="#F6F1E8"/>
+          <path d="M83.5 42.5 L38 68.75 L83.5 95 L95.5 95 L50 68.75 L95.5 42.5 Z" fill="#FF6B5C"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id rec">S2 · k 모노그램 (추천 · M3 와 한 벌)</span>
+        <div class="t">워드마크에서 <b>잘라낸</b> 심볼</div>
+        <div class="d">축 1에서 M3(k 복원)을 고르시면 심볼은 <b>따로 그릴 필요가 없습니다</b> —
+          워드마크의 <code>k</code> 를 그대로 떼어 정사각에 앉히면 됩니다.<br>
+          <b>자산 두 벌이 한 벌이 됩니다</b>(진단 ①의 근본 해결). 스템의 끊긴 조각이 갭을 한 번 더 말합니다.</div>
+        <div class="m">정사각 · 워드마크에서 파생</div>
+        <div class="cost"><b>대가</b> — <code>~ ^ ^ &lt;</code> 4획 심볼을 <b>버리게 됩니다.</b>
+          유호님이 준 원안이라 이건 유호님 판단 자리예요.</div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ══════════════════ 축 4 ══════════════════ -->
+  <div class="axis">
+    <span class="num">축 4</span>
+    <span class="ttl">로고가 <b>하는 일</b> — 정지 그림에서 그칠 것인가</span>
+    <span class="q">여기가 실제로 「트렌디」를 가르는 자리입니다</span>
+  </div>
+  <div class="axisline"></div>
+  <p class="lead">
+    2026 기준으로 브랜드가 감각 있어 보이는 결정적 층은 <b>정지 로고가 아니라 반복되는 0.4초</b>입니다.
+    그리고 우리에겐 이게 장식이 아니에요 — <b>갭이 있으면 붙는 순간이 필연</b>이 되고, 브랜드 이름이 문자 그대로 「동기화」입니다.
+  </p>
+
+  <div class="grid">
+    <div class="c rec motion">
+      <div class="stage d">
+        <svg width="240" height="139" viewBox="-8 -2 200 116">
+          <use href="#syn-tight" fill="#F6F1E8"/>
+          <g fill="#FF6B5C">
+            <rect x="116" y="33.6" width="11" height="52.4"/>
+            <g class="arm"><path d="M166 46.7 L132 66.35 L166 86 L179 86 L145 66.35 L179 46.7 Z"/></g>
+          </g>
+          <circle class="nd" cx="129.5" cy="66.35" r="2.6" fill="#FF6B5C"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id rec">Y1 · 동기화 모션 (강력 추천)</span>
+        <div class="t">갭이 <b>닫힌다</b> — 0.4초, 딱 한 번</div>
+        <div class="d">앱 스플래시·영상 인트로·웹 로더·발표 첫 장에서 <b>항상 같은 0.4초</b>가 재생됩니다.
+          사람들이 기억하는 건 로고 모양이 아니라 이 움직임이 돼요.<br>
+          이징은 <code>cubic-bezier(.22,1,.36,1)</code> — 빠르게 붙고 부드럽게 멎습니다.
+          <b>딸깍 붙는 느낌</b>이 나야 하고, 튕기면 안 됩니다.</div>
+        <div class="m">2.6s 루프(시연용) · 실사용 0.4s 1회</div>
+        <div class="cost"><b>대가</b> — <code>prefers-reduced-motion</code> 대응이 필수입니다(이 카드도 이미 대응했습니다).
+          그리고 <b>정지 상태를 「붙은 쪽」으로 할지 「벌어진 쪽」으로 할지</b>를 정해야 해요 — 저는 <b>벌어진 쪽</b>을 추천합니다.
+          그래야 모션이 「닫는」 방향이 되고, 정지 로고에도 긴장이 남습니다.</div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="stage d" style="flex-direction:column; gap:6mm;">
+        <svg width="190" height="110" viewBox="-8 -2 200 116">
+          <use href="#syn-tight" fill="#F6F1E8"/><use href="#k-join" fill="#FF6B5C"/>
+        </svg>
+        <svg width="118" height="68" viewBox="-8 -2 200 116">
+          <use href="#syn-tight" fill="#F6F1E8"/><use href="#k-join" fill="#FF6B5C"/>
+        </svg>
+        <svg width="42" height="42" viewBox="0 0 120 120">
+          <rect x="24" y="25" width="9" height="70" fill="#F6F1E8"/>
+          <path d="M83.5 42.5 L38 68.75 L83.5 95 L95.5 95 L50 68.75 L95.5 42.5 Z" fill="#FF6B5C"/>
+        </svg>
+      </div>
+      <div class="cap">
+        <span class="id">Y2 · 크기별 자동 전환</span>
+        <div class="t">작아지면 <b>스스로 단순해진다</b></div>
+        <div class="d">큰 자리는 갭이 보이는 판, 중간은 붙은 판, 아주 작으면 모노그램.
+          지금도 W1/W5/S1 로 나눠 쓰고 있지만 <b>「언제 무엇을」이 사람 기억에 있습니다</b> —
+          CSS 한 벌로 자동 전환되게 만들면 사람 손이 빠집니다(철학 정본 ㉡).</div>
+        <div class="m">≥120px 갭판 / 40–120 붙은판 / &lt;40 모노그램</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════ 조합 ══════════════════ -->
+  <h2>추천 조합 <span>축 1·2·3·4 를 묶으면 이렇게 됩니다</span></h2>
+
+  <div class="combo">
+    <div class="k">
+      <div class="row">
+        <svg width="230" height="133" viewBox="-8 -2 200 116">
+          <use href="#syn-tight" fill="#F6F1E8"/><use href="#k-gap" fill="#FF6B5C"/>
+        </svg>
+      </div>
+      <div class="lbl">
+        <div class="n">A · M3 + T1 + S2 + Y1</div>
+        <div class="t">추천 — 「읽히는 이름 + 뜻이 든 형태」</div>
+        <div class="d">이름이 <code>synk</code> 로 읽히고, 갭이 브랜드 뜻을 말하고, 모션이 그걸 완성하고,
+          심볼이 워드마크에서 파생됩니다. <b>진단 5개가 전부 닫힙니다.</b><br>
+          대가: 인쇄물 6종 재조판 + 심볼 원안 폐기.</div>
+      </div>
+    </div>
+
+    <div class="k">
+      <div class="row">
+        <svg width="230" height="133" viewBox="-8 -2 200 116">
+          <use href="#syn-0" fill="#F6F1E8"/><use href="#chev-60" fill="#FF6B5C"/>
+        </svg>
+      </div>
+      <div class="lbl">
+        <div class="n">B · M1 + T0 + S1</div>
+        <div class="t">최소 변경 — 「정합만 맞춘다」</div>
+        <div class="d">각도·기준선만 정리합니다. 확정 형태를 유지하고 가로폭이 같아 <b>재조판 0</b>.<br>
+          대가: 진단 ④⑤(이름이 안 읽힘·모티프 0)는 <b>안 닫힙니다.</b> 「정돈됐다」까지는 가도 「감각적」까지는 못 갑니다.</div>
+      </div>
+    </div>
+
+    <div class="k">
+      <div class="row">
+        <svg width="230" height="133" viewBox="-8 -2 200 116">
+          <use href="#syn-0" fill="#F6F1E8"/><use href="#chev-gap" fill="#FF6B5C"/>
+        </svg>
+      </div>
+      <div class="lbl">
+        <div class="n">C · M2 + T0 + Y1</div>
+        <div class="t">중간 — 「형태는 두고 모티프만 넣는다」</div>
+        <div class="d">꺾쇠를 <code>&lt;</code> 로 유지한 채 시냅스만 심습니다. 모션도 성립하고 가로폭도 그대로.<br>
+          대가: 이름은 여전히 안 읽힙니다(진단 ④). <b>A 와 B 사이에서 망설여지면 이겁니다.</b></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════ 도전안 ══════════════════ -->
+  <h2>도전안 <span>통념을 깬 쪽 — 채택 전에 리스크를 꼭 읽어 주세요</span></h2>
+
+  <div class="call dark">
+    <span class="h">「로고를 하나 더 잘 그린다」가 아니라 — 학생 수만큼 로고가 있다면?</span>
+    SYNK 의 궁극 가치는 <b>「한 사람을 깊이 이해하는 시스템」</b>입니다. 그런데 로고는 전 학생에게 똑같아요.<br><br>
+    <b>제안</b> — 심볼의 획 각도·간격을 그 학생의 데이터에서 파생시킵니다. 수료증·크루카드·앱 프로필에
+    <b>그 학생만의 SYNK 마크</b>가 찍힙니다. 「내 마크」가 생기면 그건 로고가 아니라 <b>소유물</b>이 됩니다.<br>
+    기술적으로는 이미 배선이 있습니다 — 이해 대장 ㉠㉡㉢ 가 그 입력이에요.
+    <b>남이 베낄 수 없습니다.</b> 데이터가 없으면 못 만드니까요. 이게 유행을 좇는 대신 유행이 되는 쪽입니다.
+  </div>
+
+  <div class="sig">
+    <div class="s">
+      <svg width="86" height="86" viewBox="0 0 120 120">
+        <rect x="24" y="25" width="9" height="70" fill="#F6F1E8"/>
+        <path d="M83.5 42.5 L38 68.75 L83.5 95.0 L95.5 95.0 L50 68.75 L95.5 42.5 Z" fill="#FF6B5C"/>
+      </svg>
+      <div class="nm">학생 A<em>각도 60° · 갭 6</em></div>
+    </div>
+    <div class="s">
+      <svg width="86" height="86" viewBox="0 0 120 120">
+        <rect x="24" y="25" width="9" height="70" fill="#F6F1E8"/>
+        <path d="M75.0 42.5 L37 68.75 L75.0 95.0 L87.0 95.0 L49 68.75 L87.0 42.5 Z" fill="#FF6B5C"/>
+      </svg>
+      <div class="nm">학생 B<em>각도 45° · 갭 5</em></div>
+    </div>
+    <div class="s">
+      <svg width="86" height="86" viewBox="0 0 120 120">
+        <rect x="24" y="25" width="9" height="70" fill="#F6F1E8"/>
+        <path d="M93.0 42.5 L41 68.75 L93.0 95.0 L105.0 95.0 L53 68.75 L105.0 42.5 Z" fill="#FF6B5C"/>
+      </svg>
+      <div class="nm">학생 C<em>각도 76° · 갭 8</em></div>
+    </div>
+    <div class="s">
+      <svg width="86" height="86" viewBox="0 0 120 120">
+        <rect x="24" y="25" width="9" height="70" fill="#F6F1E8"/>
+        <path d="M78.0 42.5 L36 68.75 L78.0 95.0 L90.0 95.0 L48 68.75 L90.0 42.5 Z" fill="#FF6B5C"/>
+      </svg>
+      <div class="nm">학생 D<em>각도 55° · 갭 4</em></div>
+    </div>
+  </div>
+
+  <div class="call">
+    <span class="h">⚠ 이 도전안의 급소 — 채택하면 반드시 같이 정해야 합니다</span>
+    철학 정본은 <b>㉢ 「학생끼리 비교하지 않는다」</b>를 못 박고 있습니다. 생성형 마크가
+    <b>「잘한 애는 예쁜 마크」</b>가 되는 순간 이 조항을 정면으로 위반합니다.<br>
+    <b>그래서 매핑은 「등급」이 아니라 「다름」에만 걸어야 합니다</b> — 성적·정답률·출석률은 입력에서 <b>빼고</b>,
+    성향·리듬·선택(㉡ 사람 이해)만 씁니다. 어느 마크가 더 낫다고 말할 수 없어야 통과입니다.
+    이 규칙을 못 지킬 것 같으면 <b>도전안은 접는 게 맞습니다.</b>
+  </div>
+
+
+  <!-- ══════════════════ 다음 ══════════════════ -->
+  <h2>고르는 법 <span>유호님이 하실 일은 이것뿐입니다</span></h2>
+  <p class="lead">
+    ① 축 1에서 하나 (<b>M0 / M1 / M2 / M3 / M4</b>) &nbsp;·&nbsp;
+    ② 축 2에서 하나 (<b>T0 / T1 / T2</b>) &nbsp;·&nbsp;
+    ③ 축 3에서 하나 (<b>S0 / S1 / S2</b>) &nbsp;·&nbsp;
+    ④ 축 4 모션을 <b>할지 말지</b> &nbsp;·&nbsp;
+    ⑤ 도전안(생성형 시그니처)을 <b>열지 말지</b><br>
+    <b>「A 조합 그대로」</b> 한 마디도 됩니다. 조합을 정해 주시면 그 다음은 제가 합니다 —
+    정본 <code>§3</code> 개정 · 인쇄물 6종 재주입(<code>tools/로고주입.js</code> 명령 한 번) ·
+    회귀 테스트 · 폰트 정본 충돌 마감까지.
+  </p>
+
+  <div class="foot">
+    <b>이 파일의 지위</b> — 후보 시트입니다. 정본은 <code>docs/발표물/_브랜드킷.md §3</code> 이고 아직 <b>안 바뀌었습니다.</b><br>
+    <b>색</b> — 브랜드 킷 23색만 썼습니다(<code>tests/로고정본색.test.js</code> 통과). 코랄 면 위 글자는 Ink 만.<br>
+    <b>실측 근거</b> — 각도·획 두께는 정본 SVG 좌표에서 직접 계산했습니다. 눈대중이 아닙니다.<br>
+    <b>안 한 것</b> — <code>syn</code> 세 글자를 <b>완전 커스텀 벡터로 다시 그리는 것</b>은 이 시트에 없습니다.
+    진단 ②의 진짜 해답은 그건데, 조합이 정해지기 전에 그리면 버리는 작업이 됩니다.
+    <b>조합 확정 후 별도 트랙</b>으로 올리겠습니다 — 그때 <code>n</code> 의 어깨를 심볼 <code>^</code> 와 같은 각으로 깎는 것부터 합니다.
+  </div>
+
+</div>
+</body>
+</html>
