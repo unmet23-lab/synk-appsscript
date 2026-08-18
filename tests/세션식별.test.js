@@ -83,6 +83,23 @@ test('표기id — 연락이 되면 연락 id, 아니면 자리 id (락·기록�
   assert.equal(세션식별.표기id({}), '');
 });
 
+test('모름env — 「어떤 세션도 아니다」를 만들 때 소스가 **하나도** 안 남는다', () => {
+  /* 이 검사가 없으면, 소스가 하나 늘고 목록이 안 늘어도 아무도 안 운다 — 그리고 그 순간
+   * 「모름」을 만들던 회귀들이 주변 env 를 조용히 줍는다(러너에 따라 갈리는 검사 · F296).
+   * 변이 실측 2026-08-18: 목록에서 한 줄을 지웠더니 12건이 전부 초록이었다(구멍 1). */
+  const 가득 = { CLAUDE_CODE_HOST_SESSION_ID: HOST, CLAUDE_CODE_REMOTE_SESSION_ID: CSE, CLAUDE_CODE_SESSION_ID: UUID, 남는것: 'x' };
+  const 빈 = 세션식별.모름env(가득);
+  assert.equal(세션식별.자리id(빈), '', '자리 id 가 남았다 — 비우지 못한 소스가 있다');
+  assert.equal(세션식별.연락id(빈), '', '연락 id 가 남았다 — 비우지 못한 소스가 있다');
+  assert.equal(세션식별.지문(빈), '');
+  assert.equal(빈.남는것, 'x', '무관한 변수까지 지웠다 — 부르는 쪽 환경이 깨진다');
+  /* 목록 자체도 잰다 — 「비웠다」의 분모다. 이 함수가 읽는 이름이 전부 목록에 있어야 한다. */
+  for (const k of 세션식별.환경변수들) assert.equal(빈[k], '', `${k} 가 안 비워졌다`);
+  assert.ok(세션식별.환경변수들.includes('CLAUDE_CODE_SESSION_ID'), '자리 폴백의 마지막 칸이 목록에 없다');
+  assert.ok(세션식별.환경변수들.includes('CLAUDE_CODE_REMOTE_SESSION_ID'), '연락 폴백의 마지막 칸이 목록에 없다');
+  assert.ok(세션식별.환경변수들.includes('CLAUDE_CODE_HOST_SESSION_ID'), '첫 칸이 목록에 없다');
+});
+
 /* ─────────────────────── ㉡ 소비자 계약(급소) ─────────────────────── */
 
 test('지문은 `board-id.파일지문()` 이 **실제로 받아들이는** 모양이어야 한다', () => {
