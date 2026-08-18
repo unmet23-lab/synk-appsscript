@@ -127,7 +127,10 @@ test('세션 id 가 없어도 모든 세션이 한 표시를 공유하지 않는
     process.env.CLAUDE_CODE_HOST_SESSION_ID = 'host-abc';
     assert.match(guard.표시경로(undefined), /host-abc/, '호스트 세션 id 폴백이 안 걸린다');
 
+    // 세 변수를 **다** 비운다 — `board-id` 통로가 HOST→(REMOTE|SESSION) 로 폴백하므로(F634), 하나만 비우면 이 검사가 «도는 기계»에 따라 갈린다(클라우드엔 나머지 둘이 실재한다 · F296·F628 그 자리).
     delete process.env.CLAUDE_CODE_HOST_SESSION_ID;
+    delete process.env.CLAUDE_CODE_REMOTE_SESSION_ID;
+    delete process.env.CLAUDE_CODE_SESSION_ID;
     const 오늘 = new Date().toISOString().slice(0, 10);
     assert.match(guard.표시경로(undefined), new RegExp(오늘.replace(/-/g, '.')),
       '식별자가 하나도 없을 때 날짜로 안 떨어진다 — 모든 세션이 한 파일을 공유해 첫 세션 이후 영영 안 뜬다');

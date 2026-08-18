@@ -33,6 +33,8 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('./lib/board-id.js');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 // 경로를 밖에서 갈아끼울 수 있어야 **앵커가 죽은 판**을 픽스처로 만들 수 있다
@@ -170,7 +172,7 @@ const DIR = process.env.SYNK_DESIGN_GUARD_DIR || path.join(os.tmpdir(), 'synk-de
 /** 세션 id 가 없으면 **날짜**로 떨어진다 — 모든 세션이 한 파일을 공유하면
  *  첫 세션 이후로 영영 안 뜬다(「모름」이 「통과」가 되는 형태). 최소 하루 1회는 뜬다. */
 function 표시경로(sid) {
-  const key = String(sid || process.env.CLAUDE_CODE_HOST_SESSION_ID || `날짜-${new Date().toISOString().slice(0, 10)}`);
+  const key = String(sid || 보드id.세션id() || `날짜-${new Date().toISOString().slice(0, 10)}`);
   return path.join(DIR, key.replace(/[^\w.-]/g, '_') + '.mark');
 }
 

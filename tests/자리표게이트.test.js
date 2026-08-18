@@ -187,6 +187,19 @@ test('🔒 배선 — 실 훅을 태운 진짜 `git commit` 이 실제로 막힌
   fs.copyFileSync(검사기, path.join(dir, 'tools', '자리표검사.js'));
   fs.copyFileSync(path.join(ROOT, 'tools', 'bump-version.js'), path.join(dir, 'tools', 'bump-version.js'));
 
+  /* 🔴 부품이 사는 폴더는 **둘**이다 — `tools/lib` 와 `.claude/hooks/lib`. 둘 다 통째로 싣는다.
+   *   2026-08-18 실측(F634 이관): `bump-version.js` 에 `../.claude/hooks/lib/board-id.js` require 가
+   *   한 줄 늘자 이 픽스처가 MODULE_NOT_FOUND 로 죽었고, 증상은 「게이트가 막았다」가 아니라
+   *   **「다른 이유로 실패했다」** 였다 — 그걸 통과로 셀 뻔한 자리를 이 스위트가 스스로 잡았다.
+   *   손으로 세면 조용히 낡으므로 목록을 만들지 않는다(F606·F611 계보). */
+  const 훅라이브뿌리 = path.join(ROOT, '.claude', 'hooks', 'lib');
+  fs.mkdirSync(path.join(dir, '.claude', 'hooks', 'lib'), { recursive: true });
+  const 훅lib들 = fs.readdirSync(훅라이브뿌리).filter((n) => n.endsWith('.js'));
+  assert.ok(훅lib들.length > 0, '.claude/hooks/lib 를 하나도 못 실었다 — 빈 복사는 「없는 파일」과 같은 모양이다');
+  for (const 이름 of 훅lib들) {
+    fs.copyFileSync(path.join(훅라이브뿌리, 이름), path.join(dir, '.claude', 'hooks', 'lib', 이름));
+  }
+
   const 막힘 = spawnSync('git', ['commit', '-m', '자리표를 실은 커밋'], { cwd: dir, encoding: 'utf8' });
   assert.notEqual(막힘.status, 0,
     `실 훅을 태웠는데 자리표가 든 커밋이 그대로 들어갔다 — 등재는 됐는데 안 도는 상태다:\n${막힘.stdout}${막힘.stderr}`);

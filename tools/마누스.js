@@ -43,6 +43,8 @@ const { spawn } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const 런 = require(path.join(ROOT, 'tools', 'lib', '검수런.js'));
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('../.claude/hooks/lib/board-id.js');
 
 const 종류 = '사실심문';
 const API = 'https://api.manus.ai/v2';
@@ -223,7 +225,7 @@ async function 던지기(질문, 라벨) {
     생성응답: JSON.stringify(작업).slice(0, 1000),
     시작: new Date().toISOString(), 상태: '진행',
     대상: (라벨 || 질문).replace(/\s+/g, ' ').slice(0, 80),
-    세션: process.env.CLAUDE_CODE_HOST_SESSION_ID || '',
+    세션: 보드id.세션id() || '',
   });
   장부적기({ 때: new Date().toISOString(), 일: '던짐', 런ID, 작업id, 라벨: 라벨 || '', 질문 });
 
