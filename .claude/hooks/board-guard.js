@@ -604,7 +604,7 @@ const 산지문 = (() => {
  *   못 믿는다(`살았나` 가 현재 세션을 특례로 두므로, 정상 기계에서는 반드시 들어 있다).
  * ⚠ 좌표가 없는 줄(내가 지금 넣는 새 줄·`유물-*.md`)은 **산 것으로 센다** — 막는 쪽이다.
  *   여기서 새는 방향은 「상한이 헐거워진다」라, 모를 때는 빡빡한 쪽에 둔다. */
-const 내지문 = 보드id.지문(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
+const 내지문 = 보드id.보드지문();
 const 생사쟀나 = 산지문 !== null && 산지문.size > 0 && !!내지문 && 산지문.has(내지문);
 function 죽은도는(text) {
   if (!생사쟀나) return 0;
@@ -964,7 +964,7 @@ if (셀수있는전체 > MAX_ROWS && total > 이전total) {
  *   바뀌므로 「새 줄」로 세면 갱신마다 막힌다. 트랙 칸이 그대로면 같은 줄이다.
  * ⚠ 내 지문을 **모르는 세션에는 요구하지 않는다** — 환경변수가 빈 환경(클라우드·폰)에서
  *   요구하면 따를 수 없는 처방이 되고, 그건 우회를 정상 통로로 만든다(F103). */
-const 내id = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
+const 내id = String(보드id.보드id() || '');
 const 트랙칸 = (line) => (cellsOfRow(line)[1] || '').trim();
 const 파일칸 = (line) => (cellsOfRow(line)[2] || '').trim();
 /* `보드id`·`이전` 은 ① 위에서 이미 만들었다 — 여기서 다시 읽으면 같은 판정이 두 곳에서

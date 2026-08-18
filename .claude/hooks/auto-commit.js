@@ -61,6 +61,8 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('./lib/board-id.js');
 
 if (process.env.SYNK_AUTOCOMMIT_OFF === '1') process.exit(0);
 
@@ -71,7 +73,7 @@ try {
 } catch (_) { process.exit(0); }
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
-const 원본sid = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || input.session_id || '').trim();
+const 원본sid = String(보드id.보드id() || input.session_id || '').trim();
 if (!원본sid) process.exit(0);
 
 /* 판정층은 하나 — 작업본소유자를 읽기만 한다. 못 읽으면 추측 커밋 대신 침묵(안전한 방향).

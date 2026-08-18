@@ -226,7 +226,7 @@ function 진행파일() {
   /* 지연 require — 이 모듈은 clasp-guard 훅도 부른다. 위(모델설정) 주석과 같은 축으로,
    * 훅 로드 경로에 새 require 사슬을 얹지 않는다(등록층에서 새면 방향은 언제나 「통과」다). */
   const store = require(path.join(ROOT, '.claude', 'hooks', 'lib', 'handoff-store.js'));
-  const 세션 = store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
+  const 세션 = store.safeId(보드id.세션id() || '');
   return path.join(os.tmpdir(), 'synk-검수진행', `${store.projectKey(ROOT)}-${세션}.json`);
 }
 
@@ -1187,6 +1187,8 @@ const 잠금플래그 = [
  *   모르는 이름은 **기본값으로 접지 않고 거절**한다 — 오타를 조용히 sol 로 읽으면
  *   「luna 로 돌렸다」고 믿는 상태가 만들어진다. */
 const 정책 = require(path.join(ROOT, 'tools', '모델정책.js'));
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('../.claude/hooks/lib/board-id.js');
 const 효력들 = 정책.효력들;
 const 모델플래그 = 정책.코덱스플래그;
 /* require 시점엔 **기본 픽만** 놓는다 — env·CLI 는 main() 에서 얹는다. 이 모듈은 clasp-guard 훅도
@@ -2114,7 +2116,7 @@ function 던지기(argv) {
     런ID, 종류, 인자, 로그, pid: child.pid, HEAD: head,
     시작: new Date().toISOString(), 상태: '진행',
     대상: 인자.join(' ') || '(기본)',
-    세션: process.env.CLAUDE_CODE_HOST_SESSION_ID || '',
+    세션: 보드id.세션id() || '',
   });
 
   console.log(`🚀 던졌다 — 이 세션이 끝나도 계속 돈다(pid ${child.pid}).`);
