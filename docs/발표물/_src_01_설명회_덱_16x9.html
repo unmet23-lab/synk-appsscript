@@ -30,14 +30,14 @@
 
 :root{
   /* 01 Core */
-  --cream:#F6F1E8; --coral:#FF6B5C; --navy:#1A2340; --ink:#171820;
+  --cream:#E4E4E7; --coral:#FF6B5C; --navy:#262626; --ink:#1B1B1A;
   /* 02 Cream family */
-  --paper:#FBF7EE; --cream-2:#EFE7D7; --cream-3:#E7DDC7;
+  --paper:#FAFAF9; --cream-2:#EAEAEA; --cream-3:#D1D2D4;
   /* 03 Coral family */
   --coral-wash:#FFE9E4; --coral-soft:#FFCFC6; --coral-3:#E8543F;
   /* 04 Navy family */
-  --navy-3:#2A3358; --navy-2:#0F1730;
-  --hair:rgba(42,51,88,.25);
+  --navy-3:#373737; --navy-2:#08090C;
+  --hair:rgba(55,55,55,.25);
 }
 *{ box-sizing:border-box; margin:0; padding:0; }
 html,body{
@@ -74,11 +74,11 @@ h1.sm{ font-size:24mm; }
    ⚠ 「같은 크기」를 지키는 게 핵심이다. 처음엔 14mm(≈40pt)로 잡았다가 3열 슬라이드에서
       19.8pt 까지 내려갔다 — 번역이 들어오면 그 크기로 투사되는데, 설명회장 뒷줄은 못 읽는다.
       자리를 작게 잡아 두면 나중에 번역을 줄이게 된다. 순서가 틀렸다. */
-.mn{ font-size:14mm; color:rgba(26,35,64,.5); letter-spacing:.06em; margin-top:6mm; font-weight:700; line-height:1.2; }
+.mn{ font-size:14mm; color:rgba(38,38,38,.5); letter-spacing:.06em; margin-top:6mm; font-weight:700; line-height:1.2; }
 h1 + .mn{ font-size:22mm; }
 h1.sm + .mn{ font-size:18mm; }
 .mn.s{ font-size:12mm; margin-top:5mm; }
-.dark .mn{ color:rgba(246,241,232,.36); }
+.dark .mn{ color:rgba(228,228,231,.36); }
 .dark .one{ color:var(--cream-3); }
 .dark .one b{ color:var(--cream); }
 
@@ -93,7 +93,7 @@ h1.sm + .mn{ font-size:18mm; }
 .dark::before{
   content:''; position:absolute; inset:0;
   background-image:
-    radial-gradient(circle at 9mm 9mm, rgba(246,241,232,.13) 0 .5mm, transparent .5mm);
+    radial-gradient(circle at 9mm 9mm, rgba(228,228,231,.13) 0 .5mm, transparent .5mm);
   background-size:16mm 16mm;
 }
 .dark > *{ position:relative; }
@@ -121,7 +121,7 @@ h1.sm + .mn{ font-size:18mm; }
 /* 사진 자리 — 개원 전이라 실사진이 없다. 무엇을 찍을지 지시문으로 남긴다 */
 .photo{ margin-top:9mm; border:.7mm dashed var(--hair); border-radius:4mm; padding:7mm 8mm;
   background:var(--cream-2); font-size:6.4mm; color:var(--navy-3); font-weight:700; line-height:1.45; }
-.dark .photo{ border-color:rgba(246,241,232,.35); background:rgba(246,241,232,.07); color:var(--cream-3); }
+.dark .photo{ border-color:rgba(228,228,231,.35); background:rgba(228,228,231,.07); color:var(--cream-3); }
 
 /* 세 질문 (맺음) */
 .q3{ margin-top:9mm; }
@@ -151,7 +151,7 @@ h1.sm + .mn{ font-size:18mm; }
 
 @media screen{
   body{ background:var(--cream-2); padding:8mm; }
-  .sl{ box-shadow:0 4mm 14mm rgba(15,23,48,.25); margin:0 auto 8mm; }
+  .sl{ box-shadow:0 4mm 14mm rgba(8,9,12,.25); margin:0 auto 8mm; }
 }
 </style>
 </head>
@@ -164,7 +164,7 @@ h1.sm + .mn{ font-size:18mm; }
     <!-- LOGO SLOT ▸ 주입은 tools/로고주입.js -->
     <div class="symbol">
       <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#E4E4E7">syn</text>
             <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
           </svg>
     </div>

@@ -13,18 +13,18 @@
 -->
 <style>
 :root{
-  --navy-3:#2A3358; --coral:#FF6B5C; --cream:#F6F1E8;
-  --paper:#FBF7EE; --navy:#1A2340; --navy-2:#0F1730;
-  --hair:rgba(26,35,64,.2);
+  --navy-3:#373737; --coral:#FF6B5C; --cream:#E4E4E7;
+  --paper:#FAFAF9; --navy:#262626; --navy-2:#08090C;
+  --hair:rgba(38,38,38,.2);
 }
 *{ box-sizing:border-box; margin:0; padding:0; }
 body{
-  background:#EFE7D7; color:var(--navy); padding:10mm 8mm 20mm;
+  background:#EAEAEA; color:var(--navy); padding:10mm 8mm 20mm;
   font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic',sans-serif; font-weight:500;
 }
 .wrap{ max-width:1180px; margin:0 auto; }
 h1{ font-size:8.4mm; font-weight:800; letter-spacing:-.025em; }
-.sub{ font-size:3.6mm; color:#2A3358; margin-top:2.4mm; line-height:1.6; max-width:215mm; }
+.sub{ font-size:3.6mm; color:#373737; margin-top:2.4mm; line-height:1.6; max-width:215mm; }
 h2{ font-size:5.2mm; font-weight:800; margin-top:14mm; padding-bottom:2.2mm; border-bottom:.7mm solid var(--navy-3); }
 h2 span{ font-size:3.2mm; font-weight:500; color:var(--navy-3); margin-left:3mm; }
 
@@ -34,27 +34,27 @@ h2 span{ font-size:3.2mm; font-weight:500; color:var(--navy-3); margin-left:3mm;
 .c .stage{ padding:8mm 6mm; display:flex; align-items:center; justify-content:center; min-height:48mm; }
 .c .stage.d{ background:var(--navy-2); }
 .c .stage.l{ background:var(--paper); }
-.c .stage.g{ background:#E7DDC7; }
+.c .stage.g{ background:#D1D2D4; }
 .c .cap{ padding:3.4mm 4.4mm 4.4mm; border-top:.3mm solid var(--hair); }
 .c .cap .id{
   display:inline-block; font-family:ui-monospace,monospace; font-size:2.9mm; font-weight:800;
   background:var(--navy); color:#fff; padding:.8mm 2.4mm; border-radius:1.4mm; letter-spacing:.06em;
 }
-.c .cap .id.rec{ background:var(--coral); color:#171820; }  /* 코랄 면 위 글자 = Ink 만 */
+.c .cap .id.rec{ background:var(--coral); color:#1B1B1A; }  /* 코랄 면 위 글자 = Ink 만 */
 .c .cap .t{ font-size:3.5mm; font-weight:800; margin-top:2.2mm; }
-.c .cap .d{ font-size:2.9mm; color:#2A3358; margin-top:1.4mm; line-height:1.5; }
+.c .cap .d{ font-size:2.9mm; color:#373737; margin-top:1.4mm; line-height:1.5; }
 .c .cap .m{ font-size:2.7mm; color:var(--navy-3); margin-top:1.4mm; font-family:ui-monospace,monospace; }
 
 table{ width:100%; border-collapse:collapse; margin-top:5mm; font-size:3.2mm; background:#fff; border-radius:2mm; overflow:hidden; }
 th,td{ text-align:left; padding:2.6mm 3.4mm; border-bottom:.3mm solid var(--hair); }
 th{ font-size:2.8mm; color:var(--navy-3); font-weight:800; letter-spacing:.06em; }
 td.n{ text-align:right; font-family:ui-monospace,monospace; }
-.ok{ color:#1A2340; font-weight:800; } .bad{ color:#E8543F; font-weight:800; }
+.ok{ color:#262626; font-weight:800; } .bad{ color:#E8543F; font-weight:800; }
 
-.note{ margin-top:7mm; border-left:1.1mm solid var(--coral); padding:3.4mm 0 3.4mm 5mm; font-size:3.3mm; line-height:1.65; color:#171820; }
+.note{ margin-top:7mm; border-left:1.1mm solid var(--coral); padding:3.4mm 0 3.4mm 5mm; font-size:3.3mm; line-height:1.65; color:#1B1B1A; }
 .note.b{ border-left-color:var(--navy-3); }
 .note b{ color:var(--navy); font-weight:800; }
-code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding:.3mm 1.2mm; border-radius:1mm; }
+code{ font-family:ui-monospace,monospace; background:rgba(38,38,38,.07); padding:.3mm 1.2mm; border-radius:1mm; }
 .hidden{ position:absolute; width:0; height:0; overflow:hidden; }
 </style>
 </head>
@@ -99,7 +99,7 @@ code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding
     <div class="c main">
       <div class="stage d">
         <svg width="230" height="84" viewBox="-8 -2 181 116">
-          <use href="#syn" fill="#F6F1E8"/><use href="#chev" fill="#FF6B5C"/>
+          <use href="#syn" fill="#E4E4E7"/><use href="#chev" fill="#FF6B5C"/>
         </svg>
       </div>
       <div class="cap">
@@ -113,7 +113,7 @@ code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding
     <div class="c main">
       <div class="stage d">
         <svg width="300" height="110" viewBox="-8 -2 296 116">
-          <use href="#syn" fill="#F6F1E8"/><use href="#chev" fill="#FF6B5C"/><use href="#slash" fill="#F6F1E8" opacity=".5"/>
+          <use href="#syn" fill="#E4E4E7"/><use href="#chev" fill="#FF6B5C"/><use href="#slash" fill="#E4E4E7" opacity=".5"/>
         </svg>
       </div>
       <div class="cap">
@@ -127,7 +127,7 @@ code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding
     <div class="c">
       <div class="stage l">
         <svg width="300" height="110" viewBox="-8 -2 296 116">
-          <use href="#syn" fill="#1A2340"/><use href="#chev" fill="#FF6B5C"/><use href="#slash" fill="#2A3358" opacity=".45"/>
+          <use href="#syn" fill="#262626"/><use href="#chev" fill="#FF6B5C"/><use href="#slash" fill="#373737" opacity=".45"/>
         </svg>
       </div>
       <div class="cap">
@@ -141,7 +141,7 @@ code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding
     <div class="c">
       <div class="stage l">
         <svg width="230" height="84" viewBox="-8 -2 181 116">
-          <use href="#syn" fill="#1A2340"/><use href="#chev" fill="#FF6B5C"/>
+          <use href="#syn" fill="#262626"/><use href="#chev" fill="#FF6B5C"/>
         </svg>
       </div>
       <div class="cap">
@@ -155,7 +155,7 @@ code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding
     <div class="c">
       <div class="stage d">
         <svg width="300" height="110" viewBox="-8 -2 296 116">
-          <use href="#syn" fill="#F6F1E8"/><use href="#chev" fill="#FF6B5C"/><use href="#slash" fill="#2A3358" opacity=".45"/>
+          <use href="#syn" fill="#E4E4E7"/><use href="#chev" fill="#FF6B5C"/><use href="#slash" fill="#373737" opacity=".45"/>
         </svg>
       </div>
       <div class="cap">
@@ -169,7 +169,7 @@ code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding
     <div class="c">
       <div class="stage g">
         <svg width="300" height="110" viewBox="-8 -2 296 116">
-          <use href="#syn" fill="#171820"/><use href="#chev" fill="#171820"/><use href="#slash" fill="#2A3358" opacity=".45"/>
+          <use href="#syn" fill="#1B1B1A"/><use href="#chev" fill="#1B1B1A"/><use href="#slash" fill="#373737" opacity=".45"/>
         </svg>
       </div>
       <div class="cap">
@@ -188,7 +188,7 @@ code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding
 
     <div class="c">
       <div class="stage d">
-        <svg width="272" height="112" viewBox="0 0 240 110"><use href="#sym" stroke="#F6F1E8"/></svg>
+        <svg width="272" height="112" viewBox="0 0 240 110"><use href="#sym" stroke="#E4E4E7"/></svg>
       </div>
       <div class="cap">
         <span class="id rec">S1 · 어두운 바탕 기본</span>
@@ -199,7 +199,7 @@ code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding
 
     <div class="c">
       <div class="stage l">
-        <svg width="272" height="112" viewBox="0 0 240 110"><use href="#sym" stroke="#1A2340"/></svg>
+        <svg width="272" height="112" viewBox="0 0 240 110"><use href="#sym" stroke="#262626"/></svg>
       </div>
       <div class="cap">
         <span class="id rec">S4 · 밝은 바탕 기본</span>
@@ -212,9 +212,9 @@ code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding
       <div class="stage d">
         <svg width="272" height="112" viewBox="0 0 240 110">
           <g fill="none" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter">
-            <path d="M10 62 C17 50, 29 50, 36 60 C41 67, 48 67, 52 58" stroke="#F6F1E8"/>
-            <path d="M68 68 L88 34 L108 68" stroke="#F6F1E8"/>
-            <path d="M124 68 L144 34 L164 68" stroke="#F6F1E8"/>
+            <path d="M10 62 C17 50, 29 50, 36 60 C41 67, 48 67, 52 58" stroke="#E4E4E7"/>
+            <path d="M68 68 L88 34 L108 68" stroke="#E4E4E7"/>
+            <path d="M124 68 L144 34 L164 68" stroke="#E4E4E7"/>
             <path d="M228 22 L186 52 L228 82" stroke="#FF6B5C"/>
           </g>
         </svg>
@@ -230,9 +230,9 @@ code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding
       <div class="stage d">
         <svg width="272" height="112" viewBox="0 0 240 110">
           <g fill="none" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter">
-            <path d="M10 62 C17 50, 29 50, 36 60 C41 67, 48 67, 52 58" stroke="#F6F1E8"/>
-            <path d="M68 68 L88 34 L108 68" stroke="#F6F1E8"/>
-            <path d="M124 68 L144 34 L164 68" stroke="#F6F1E8"/>
+            <path d="M10 62 C17 50, 29 50, 36 60 C41 67, 48 67, 52 58" stroke="#E4E4E7"/>
+            <path d="M68 68 L88 34 L108 68" stroke="#E4E4E7"/>
+            <path d="M124 68 L144 34 L164 68" stroke="#E4E4E7"/>
             <path d="M228 22 L186 52 L228 82" stroke="#FF6B5C"/>
           </g>
         </svg>
@@ -253,10 +253,10 @@ code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding
     <div class="c">
       <div class="stage d">
         <svg width="330" height="70" viewBox="0 0 470 100">
-          <g transform="translate(0,8) scale(0.62)"><use href="#sym" stroke="#F6F1E8"/></g>
-          <line x1="172" y1="18" x2="172" y2="78" stroke="rgba(246,241,232,.3)" stroke-width="2"/>
+          <g transform="translate(0,8) scale(0.62)"><use href="#sym" stroke="#E4E4E7"/></g>
+          <line x1="172" y1="18" x2="172" y2="78" stroke="rgba(228,228,231,.3)" stroke-width="2"/>
           <g transform="translate(196,4) scale(0.72)">
-            <use href="#syn" fill="#F6F1E8"/><use href="#chev" fill="#FF6B5C"/>
+            <use href="#syn" fill="#E4E4E7"/><use href="#chev" fill="#FF6B5C"/>
           </g>
         </svg>
       </div>
@@ -270,9 +270,9 @@ code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding
     <div class="c">
       <div class="stage d">
         <svg width="230" height="140" viewBox="0 0 240 200">
-          <g transform="translate(0,10) scale(1)"><use href="#sym" stroke="#F6F1E8"/></g>
+          <g transform="translate(0,10) scale(1)"><use href="#sym" stroke="#E4E4E7"/></g>
           <g transform="translate(44,96) scale(0.66)">
-            <use href="#syn" fill="#F6F1E8"/><use href="#chev" fill="#FF6B5C"/>
+            <use href="#syn" fill="#E4E4E7"/><use href="#chev" fill="#FF6B5C"/>
           </g>
         </svg>
       </div>
@@ -287,10 +287,10 @@ code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding
       <div class="stage d">
         <svg width="330" height="76" viewBox="0 0 430 100">
           <g transform="translate(0,8) scale(0.66)">
-            <use href="#syn" fill="#F6F1E8"/><use href="#chev" fill="#FF6B5C"/>
+            <use href="#syn" fill="#E4E4E7"/><use href="#chev" fill="#FF6B5C"/>
           </g>
-          <text x="200" y="46" font-family="Inter Tight, system-ui, sans-serif" font-size="17" font-weight="700" letter-spacing="4.4" fill="#F6F1E8">SYNK LAB</text>
-          <text x="200" y="70" font-family="Inter Tight, SUIT Variable, system-ui, sans-serif" font-size="15" font-weight="500" fill="#E7DDC7">점수를 넘어, 삶을 설계합니다</text>
+          <text x="200" y="46" font-family="Inter Tight, system-ui, sans-serif" font-size="17" font-weight="700" letter-spacing="4.4" fill="#E4E4E7">SYNK LAB</text>
+          <text x="200" y="70" font-family="Inter Tight, SUIT Variable, system-ui, sans-serif" font-size="15" font-weight="500" fill="#D1D2D4">점수를 넘어, 삶을 설계합니다</text>
         </svg>
       </div>
       <div class="cap">
@@ -306,12 +306,12 @@ code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding
   <h2>대비 실측 <span>색 배정의 근거 — 눈이 아니라 계산</span></h2>
   <table>
     <tr><th>요소</th><th>바탕</th><th class="n">대비비</th><th>판정</th></tr>
-    <tr><td>Cream #F6F1E8 — <code>syn</code></td><td>Navy 2 #0F1730</td><td class="n" id="c1">—</td><td class="ok">최선</td></tr>
-    <tr><td>Coral #FF6B5C — <code>&lt;</code></td><td>Navy 2 #0F1730</td><td class="n" id="c5">—</td><td class="ok">통과</td></tr>
-    <tr><td>Navy 3 #2A3358</td><td>Navy 2 #0F1730</td><td class="n" id="c2">—</td><td class="bad">묻힘 — 다크에 남색 계열 금지</td></tr>
-    <tr><td>Navy #1A2340 — <code>syn</code></td><td>Paper #FBF7EE</td><td class="n" id="c4">—</td><td class="ok">최선</td></tr>
-    <tr><td>Coral #FF6B5C — <b>면·도형</b></td><td>Paper #FBF7EE</td><td class="n" id="c6">—</td><td class="bad">글자 불가 · 면만</td></tr>
-    <tr><td>Coral 3 #E8543F — 라이트 강조 글자</td><td>Paper #FBF7EE</td><td class="n" id="c3">—</td><td class="ok">24px↑ / 18.7px↑ bold</td></tr>
+    <tr><td>Cream #E4E4E7 — <code>syn</code></td><td>Navy 2 #08090C</td><td class="n" id="c1">—</td><td class="ok">최선</td></tr>
+    <tr><td>Coral #FF6B5C — <code>&lt;</code></td><td>Navy 2 #08090C</td><td class="n" id="c5">—</td><td class="ok">통과</td></tr>
+    <tr><td>Navy 3 #373737</td><td>Navy 2 #08090C</td><td class="n" id="c2">—</td><td class="bad">묻힘 — 다크에 남색 계열 금지</td></tr>
+    <tr><td>Navy #262626 — <code>syn</code></td><td>Paper #FAFAF9</td><td class="n" id="c4">—</td><td class="ok">최선</td></tr>
+    <tr><td>Coral #FF6B5C — <b>면·도형</b></td><td>Paper #FAFAF9</td><td class="n" id="c6">—</td><td class="bad">글자 불가 · 면만</td></tr>
+    <tr><td>Coral 3 #E8543F — 라이트 강조 글자</td><td>Paper #FAFAF9</td><td class="n" id="c3">—</td><td class="ok">24px↑ / 18.7px↑ bold</td></tr>
   </table>
 
   <div class="note">
@@ -342,8 +342,8 @@ code{ font-family:ui-monospace,monospace; background:rgba(26,35,64,.07); padding
   const lum = hex => { const n = parseInt(hex.slice(1),16);
     return .2126*lin((n>>16)&255) + .7152*lin((n>>8)&255) + .0722*lin(n&255); };
   const ratio = (a,b) => { const l1=lum(a), l2=lum(b); const [hi,lo]=l1>l2?[l1,l2]:[l2,l1]; return (hi+.05)/(lo+.05); };
-  [['c1','#F6F1E8','#0F1730'],['c5','#FF6B5C','#0F1730'],['c2','#2A3358','#0F1730'],
-   ['c4','#1A2340','#FBF7EE'],['c6','#FF6B5C','#FBF7EE'],['c3','#E8543F','#FBF7EE']]
+  [['c1','#E4E4E7','#08090C'],['c5','#FF6B5C','#08090C'],['c2','#373737','#08090C'],
+   ['c4','#262626','#FAFAF9'],['c6','#FF6B5C','#FAFAF9'],['c3','#E8543F','#FAFAF9']]
   .forEach(([id,f,b]) => document.getElementById(id).textContent = ratio(f,b).toFixed(2) + ' : 1');
 })();
 </script>

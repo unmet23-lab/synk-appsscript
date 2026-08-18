@@ -27,12 +27,12 @@
   //             06 Slate 2색은 2026-08-07 유호님 확정 추가 (컨셉 정본 조항 ⓔ)
   //             07 Lime Family = Lime 2(조항 ⓕ) + Emerald(조항 ⓖ) — 둘 다 2026-08-07 유호님 확정
   const KIT = {
-    '#f6f1e8': 'Cream', '#ff6b5c': 'Coral', '#1a2340': 'Navy', '#c8ff3d': 'Lime', '#171820': 'Ink',
-    '#fbf7ee': 'Paper', '#efe7d7': 'Cream 2', '#e7ddc7': 'Cream 3',
+    '#e4e4e7': 'Chalk', '#ff6b5c': 'Coral', '#262626': 'Graphite 3', '#c8ff3d': 'Lime', '#1b1b1a': 'Ink',
+    '#fafaf9': 'Paper', '#eaeaea': 'Chalk 2', '#d1d2d4': 'Chalk 3',
     '#ffe9e4': 'Coral Wash', '#ffcfc6': 'Coral Soft', '#ff8877': 'Coral 2', '#e8543f': 'Coral 3',
-    '#2a3358': 'Navy 3', '#131a32': 'Navy Ink', '#0f1730': 'Navy 2',
+    '#373737': 'Graphite 4', '#1d1d1c': 'Graphite 2', '#08090c': 'Graphite',
     '#ff3e88': 'KC Hot Pink', '#ff6ba8': 'KC Pink 2', '#ffd447': 'KC Sun', '#4e7cff': 'KC Cool Blue',
-    '#8a93ad': 'Slate', '#5f657d': 'Slate 2',
+    '#8a8a8a': 'Ash', '#676767': 'Ash 2',
     '#b8e836': 'Lime 2', '#13724a': 'Emerald',
   };
 
