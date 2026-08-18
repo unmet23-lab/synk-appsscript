@@ -492,3 +492,40 @@ test('🔑 [F619] `활성줄전량` 이 가지 분모를 **그대로 올려 보�
   assert.strictEqual(a.분모.가지, 2,
     `🔴 「가지 줄 수」 칸이 가지 «개수» 로 덮였다 — 두 칸이 섞이면 분모가 거짓이 된다: ${JSON.stringify(a.분모)}`);
 });
+
+test('🔴 [F619·F565] 폴백으로 `master` 를 기준 삼으면 **`origin/master` 가 가지로 잡힌다** — 거기서 F565 가 되살아난다', (t) => {
+  /* `-a` 로 넓히면서 새로 생긴 자리다. 기준이 `origin/master` 일 때는 git 이 그 ref 자신을
+   * `--no-merged` 에서 빼 주므로 안 뜬다 — 그래서 **폴백(`master`) 판에서만** 드러난다.
+   * 그 판에서 `origin/master` 를 안 거르면, 이미 머지돼 origin 에 올라간 남의 줄이
+   * 「아직 안 머지된 가지의 선언」으로 딸려 온다. 그 층은 `원격줄들()` 이 따로 지고,
+   * 처방이 정반대다(앞은 `gh pr list`, 뒤는 `git merge --ff-only`). */
+  const root = 저장소세우기();
+  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다');
+  const A = g(['rev-parse', 'HEAD'], root).stdout.trim();
+  쓰기(root, 'bbbb2222', 표줄('**남의 트랙 — 이미 머지됐다**', '`tools/남.js`'));
+  g(['add', '-A'], root); g(['commit', '-qm', '남의 줄'], root);
+  g(['update-ref', 'refs/remotes/origin/master', g(['rev-parse', 'HEAD'], root).stdout.trim()], root);
+  g(['reset', '--hard', '-q', A], root);               // 로컬 master 만 뒤로
+
+  // 대조군 — 이 픽스처에서 `origin/master` 가 실제로 「미머지 가지」로 뜨는지 먼저 못박는다
+  const 날것 = g(['branch', '-a', '--no-merged', 'master', '--format=%(refname:short)'], root).stdout;
+  assert.match(날것, /origin\/master/,
+    `픽스처가 결함을 재현 못 했다 — 이 대조군이 없으면 아래 초록은 공짜다: ${JSON.stringify(날것)}`);
+
+  const r = 보드.가지줄들(root, { 기준: ['master'] });
+  assert.strictEqual(r.모름, false);
+  assert.ok(!r.줄들.some((x) => /남의 트랙/.test(x.줄)),
+    `🔴 \`origin/master\` 가 가지로 잡혀 이미 머지된 남의 줄이 딸려 왔다(F565 재발): ${r.줄들.map((x) => x.줄).join(' // ')}`);
+  assert.strictEqual(r.분모.원격, 0, `🔴 원격 후보로 세어졌다 — 거른 게 아니라 담은 것이다: ${JSON.stringify(r.분모)}`);
+});
+
+test('🔑 [F619] `실행` 주입구로 들어온 출력에도 분모는 `null` 이다 — 아무 가지도 안 훑었다', () => {
+  /* `출력` 주입구는 위에서 판다. 여기는 **`실행` 주입구** — 실행층을 갈아 끼우면 그쪽은
+   * `메모.분모` 를 안 적으므로, 그 빈칸을 `{0,0,0}` 으로 메우면 「안 쟀다」가 「0개 훑었다」가 된다.
+   * 새는 방향은 「통과」다(0 을 좋은 0 으로 읽는다 · F207). */
+  const r = 보드.가지줄들('.', { 실행: () => 가지출력('worktree-x', 'aaaa1111.md', 표줄('내 트랙')) });
+  assert.strictEqual(r.모름, false, '주입구는 정상 경로다 — 모름이 아니다');
+  assert.strictEqual(r.줄들.length, 1, '주입한 출력 자체는 그대로 파싱돼야 한다');
+  assert.strictEqual(r.분모, null,
+    `🔴 안 훑고 분모를 지어냈다 — 그 0 은 「가지가 없다」와 글자 하나 다르지 않다: ${JSON.stringify(r.분모)}`);
+});
