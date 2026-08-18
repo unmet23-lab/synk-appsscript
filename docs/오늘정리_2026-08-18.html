@@ -1,0 +1,468 @@
+<title>오늘 지은 것과 이길 자리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400..900;1,400&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* SYNK 킷 v10 Crew Dossier — 신호 1점(Coral) · 위계는 색이 아니라 밀도 · Lime·KC 반입 없음.
+   철칙 ①순백·순검정 금지 ②라이트 배경에 Coral «글자» 금지(→Coral 3) ③코랄 면 위 글자는 Ink·Navy 2만 ④신호 1점·강조 최대 2곳 */
+:root{
+  --paper:#FBF7EE; --ink:#171820; --navy:#1A2340; --navy2:#0F1730;
+  --navy3:#2A3358; --navyink:#131A32;
+  --slate2:#5F657D; --slate:#8A93AD;
+  --cream:#F6F1E8; --cream2:#EFE7D7; --cream3:#E7DDC7;
+  --coral:#FF6B5C; --coral3:#E8543F; --coralsoft:#FFCFC6; --coralwash:#FFE9E4;
+
+  --bg:var(--paper); --surface:var(--cream); --fg:var(--ink); --fg2:var(--slate2);
+  --rule:var(--cream3); --rule-soft:var(--cream2); --quiet:var(--cream2);
+  --sig-text:var(--coral3); --sig-fill:var(--coral); --on-sig:var(--ink);
+  --panel:var(--coralwash); --panel-edge:var(--coralsoft); --on-panel:var(--ink);
+
+  --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:var(--navy2); --surface:var(--navy); --fg:var(--cream); --fg2:var(--slate);
+    --rule:var(--navy3); --rule-soft:var(--navyink); --quiet:var(--navyink);
+    --sig-text:var(--coral); --on-sig:var(--navy2);
+    --panel:var(--navy3); --panel-edge:var(--coral3); --on-panel:var(--cream);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:var(--navy2); --surface:var(--navy); --fg:var(--cream); --fg2:var(--slate);
+  --rule:var(--navy3); --rule-soft:var(--navyink); --quiet:var(--navyink);
+  --sig-text:var(--coral); --on-sig:var(--navy2);
+  --panel:var(--navy3); --panel-edge:var(--coral3); --on-panel:var(--cream);
+}
+
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--fg); font-family:var(--font);
+  font-weight:450; font-size:16.5px; line-height:1.76; letter-spacing:-.012em; -webkit-font-smoothing:antialiased}
+.wrap{max-width:880px; margin:0 auto; padding:0 24px 96px}
+
+header{padding:64px 0 0}
+.eyebrow{font-family:var(--mono); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--fg2); display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+.eyebrow .dot{width:4px; height:4px; border-radius:50%; background:var(--sig-fill); display:inline-block}
+h1{font-size:clamp(38px,6.2vw,58px); line-height:1.05; font-weight:800; letter-spacing:-.038em;
+  margin:20px 0 0; text-wrap:balance}
+h1 em{font-style:normal; color:var(--sig-text)}
+.deck{margin:18px 0 0; font-size:19px; line-height:1.6; color:var(--fg2); max-width:62ch; text-wrap:pretty}
+.meta{margin-top:28px; padding-top:16px; border-top:1px solid var(--rule); font-family:var(--mono);
+  font-size:12px; color:var(--fg2); display:flex; gap:8px 22px; flex-wrap:wrap}
+
+.verdict{margin:44px 0 0; background:var(--sig-fill); color:var(--on-sig); border-radius:4px; padding:30px 32px}
+.verdict .label{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+  opacity:.62; margin-bottom:10px}
+.verdict p{margin:0; font-size:23px; line-height:1.4; font-weight:700; letter-spacing:-.026em; text-wrap:balance; max-width:none}
+.verdict p + p{margin-top:12px; font-size:16.5px; font-weight:500; line-height:1.64; opacity:.86; letter-spacing:-.012em}
+
+section{margin-top:64px}
+h2{font-size:13px; font-family:var(--mono); font-weight:500; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--fg2); margin:0 0 8px; padding-bottom:14px; border-bottom:1px solid var(--rule)}
+h3{font-size:25px; font-weight:800; letter-spacing:-.032em; line-height:1.22; margin:26px 0 0; text-wrap:balance}
+h4{font-size:18px; font-weight:700; letter-spacing:-.024em; margin:24px 0 0}
+p{margin:12px 0 0; max-width:68ch}
+strong{font-weight:700}
+code,.n{font-family:var(--mono); font-size:.88em; font-variant-numeric:tabular-nums}
+code{background:var(--quiet); padding:.12em .38em; border-radius:3px; color:var(--fg)}
+
+.scroll{overflow-x:auto; margin-top:20px; -webkit-overflow-scrolling:touch}
+table{border-collapse:collapse; width:100%; min-width:660px; font-size:15px; font-variant-numeric:tabular-nums}
+th,td{text-align:left; padding:12px 18px 12px 0; border-bottom:1px solid var(--rule-soft); vertical-align:top}
+th{font-family:var(--mono); font-size:11px; letter-spacing:.11em; text-transform:uppercase; color:var(--fg2);
+  font-weight:500; border-bottom:1px solid var(--rule); padding-bottom:9px; white-space:nowrap}
+td:last-child,th:last-child{padding-right:0}
+tbody tr:last-child td{border-bottom:none}
+td .sub{display:block; margin-top:3px; font-size:13.5px; line-height:1.5; color:var(--fg2)}
+.who{font-family:var(--mono); font-size:12px; color:var(--fg2); white-space:nowrap}
+
+/* 상태 = 색이 아니라 밀도 (킷 3규칙) — 채움/외곽선/파선 세 단계 */
+.chip{display:inline-block; font-family:var(--mono); font-size:10.5px; letter-spacing:.08em;
+  text-transform:uppercase; padding:2px 9px; border-radius:99px; white-space:nowrap; line-height:1.7}
+.chip.done{background:var(--fg); color:var(--bg); font-weight:500}
+.chip.wait{border:1px solid var(--rule); color:var(--fg2)}
+.chip.held{border:1px dashed var(--slate2); color:var(--fg2)}
+.chip.block{background:var(--panel); border:1px solid var(--panel-edge); color:var(--on-panel); font-weight:600}
+
+.why{margin-top:20px; padding:15px 18px; background:var(--quiet); border-left:2px solid var(--sig-fill);
+  border-radius:0 3px 3px 0; font-size:15px; line-height:1.66}
+.why b{font-weight:700}
+.why p{margin:10px 0 0; max-width:none}
+.why p:first-child{margin:0}
+
+.nums{margin-top:22px; display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px;
+  background:var(--rule); border:1px solid var(--rule); border-radius:4px; overflow:hidden}
+.nums div{background:var(--surface); padding:16px 18px}
+.nums .k{font-family:var(--mono); font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--fg2)}
+.nums .v{display:block; margin-top:6px; font-size:26px; font-weight:800; letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums; line-height:1.1}
+.nums .n2{display:block; margin-top:5px; font-size:13px; line-height:1.5; color:var(--fg2)}
+
+ul{margin:12px 0 0; padding-left:1.1em; max-width:68ch}
+li{margin-top:7px}
+li::marker{color:var(--fg2)}
+
+.split{margin-top:20px; display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--rule);
+  border:1px solid var(--rule); border-radius:4px; overflow:hidden}
+.split > div{background:var(--surface); padding:20px 22px}
+.split .lose{background:var(--quiet)}
+.split .q{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--fg2)}
+.split h4{margin:6px 0 0; font-size:19px}
+.split ul{margin-top:10px; font-size:14.5px}
+@media (max-width:660px){ .split{grid-template-columns:1fr} }
+
+footer{margin-top:72px; padding-top:22px; border-top:1px solid var(--rule); font-family:var(--mono);
+  font-size:11.5px; line-height:1.9; color:var(--fg2)}
+footer .sep{margin:0 8px; opacity:.45}
+::selection{background:var(--sig-fill); color:var(--on-sig)}
+:focus-visible{outline:2px solid var(--sig-text); outline-offset:3px; border-radius:2px}
+@media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important} }
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">
+    <span>하루 정리</span><span class="dot"></span><span>2026-08-18</span><span class="dot"></span><span>실측 기반</span>
+  </div>
+  <h1>오늘 지은 것과 <em>이길 자리</em></h1>
+  <p class="deck">
+    오늘 저장소에서 실제로 무엇이 바뀌었는지, 그리고 그것이 몽골 TOPIK 시장에서
+    경쟁자를 이길 무기가 됐는지를 <b>같은 표 위에서</b> 잰다.
+    숫자는 전부 오늘 이 저장소를 직접 열어 잰 값이다.
+  </p>
+  <div class="meta">
+    <span>재료 = git 실측 · 도구 실행 · 열린 PR 15건 직접 열람</span>
+    <span>스위트 4,707건 fail 0</span>
+    <span>층 = 이 저장소 (SYNK-talk 미측정)</span>
+  </div>
+</header>
+
+<div class="verdict">
+  <div class="label">판정 · 2026-08-18</div>
+  <p>무기의 <strong>설계와 과녁</strong>은 오늘 생겼다. 무기 <strong>자체는 아직 안 생겼다.</strong></p>
+  <p>오늘 학생 접점 코드 변경은 <b>0건</b>이다 — <code>Code.js</code>·<code>엔진_*</code>·<code>contents_*</code>가
+     한 줄도 안 바뀌었고 버전은 <code>v9.256</code> 그대로다. 오늘 판 275커밋은 전부 <b>개발 인프라와 판정 문서</b>다.
+     그게 낭비였다는 뜻은 아니다 — 다만 <b>경쟁자와의 거리는 오늘 안 줄었다.</b>
+     <br><br>그리고 이길 수 있는 자리 셋은 실물이 다 서 있는데 <strong>축적된 행이 전부 0</strong>이고,
+     그 창이 <b>6개월</b>이다.</p>
+</div>
+
+<section>
+  <h2>1 · 오늘의 숫자</h2>
+  <h3>먼저 셀 수 있는 것부터</h3>
+  <div class="nums">
+    <div><span class="k">오늘 커밋</span><span class="v">275</span><span class="n2">전 가지 합산 · master 반입 20</span></div>
+    <div><span class="k">학생 접점 코드</span><span class="v">0</span><span class="n2">v9.256 → v9.256 무변동</span></div>
+    <div><span class="k">테스트</span><span class="v">4,707</span><span class="n2">fail 0 · skip 126 · 3분 3초</span></div>
+    <div><span class="k">신설 테스트 파일</span><span class="v">12</span><span class="n2">총 228개</span></div>
+    <div><span class="k">신고된 마찰</span><span class="v">14</span><span class="n2">F623~F645 · 해소 8 · 보류 6</span></div>
+    <div><span class="k">안 머지된 PR</span><span class="v">15</span><span class="n2">전부 오늘 열림</span></div>
+    <div><span class="k">가드·장치</span><span class="v">141</span><span class="n2">🟢114 · 🟠20 · 🔴6 · ⚫1</span></div>
+    <div><span class="k">라이브 지연</span><span class="v">3판</span><span class="n2">라이브 v9.253 · 저장소 v9.256</span></div>
+  </div>
+  <div class="why">
+    <p><b>이 표에서 제일 무거운 칸은 「학생 접점 코드 0」이 아니라 「안 머지된 PR 15」다.</b>
+    오늘 한 일의 대부분이 <b>master 밖</b>에 있다. 실제로 오늘 그 대가가 이미 났다 —
+    대기열 번호 <code>#Q116</code>이 <b>두 가지에서 각각 발급</b>됐고(F645), 서로를 못 봐서
+    반입되는 날 같은 번호가 두 개를 가리킨다. 대기열은 번호로 서로를 참조하므로 그 참조가 통째로 어긋난다.</p>
+  </div>
+</section>
+
+<section>
+  <h2>2 · 시스템 변경</h2>
+  <h3>실제로 코드가 바뀐 것 — 14 트랙</h3>
+  <p>전부 <b>배관</b>이다(철학 게이트 ③④만 지난다). 학생·학부모가 닿는 층은 이 표에 없다.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>트랙</th><th>무엇을 고쳤나</th><th>어디까지</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>원격 CI 되살리기</b><span class="sub">#Q77 종결 · 유호 확정 「2로 간다」</span></td>
+        <td>Actions 무료분 소진으로 4일간 꺼져 있던 원격 검사를 <b>셀프호스티드 러너</b>로 되살렸다. 왜 무료분으로는 원리상 안 되는지 실측 — 스위트 2.7분 × 하루 머지 PR 71건 = <b>월 5,760분</b> vs 무료 3,000분.<span class="sub">러너 설치를 「우분투에서 한 줄」로 압축(<code>tools/러너설치.sh</code>)</span></td>
+        <td><span class="chip done">머지됨</span><span class="sub">run 1797 초록 2분10초</span></td>
+      </tr>
+      <tr>
+        <td><b>F642</b> 러너 설치 체크섬<span class="sub">유호님 노트북 첫 실행에서 터진 자리</span></td>
+        <td>릴리스 JSON에서 <b>형제 파일(win-x64)의 체크섬</b>을 집어, 멀쩡히 받은 215MB를 남의 값과 대조해 검증이 터졌다. 안 도는 게 아니라 <b>돌면서 남의 값을 냈다</b>.</td>
+        <td><span class="chip done">해소</span><span class="sub">회귀 4건 신설</span></td>
+      </tr>
+      <tr>
+        <td><b>F634</b> 「내가 누구인가」<span class="sub">클라우드 세션이 빈 지문을 받는다</span></td>
+        <td>세션 지문의 정답이 층마다 다른데 통로가 하나뿐이라, 클라우드 세션은 보드 파일명을 만들 수 없었다. <b>축을 셋으로 갈라</b> 호출부 33곳을 공용 통로로 이관.</td>
+        <td><span class="chip done">해소</span><span class="sub">회귀 63건 동반 수리</span></td>
+      </tr>
+      <tr>
+        <td><b>F635</b> 가드가 안 닿는 통로<span class="sub">가드는 등록층에서 샌다</span></td>
+        <td><code>board-guard</code>의 판정은 건강한데 <b>Write/Edit에만 등록</b>돼 있어, Bash로 쓴 보드 줄은 원리상 가드를 안 지났다. 이 세션의 기본 지시가 「가능하면 Bash로 편집하라」라서 <b>상시 우회 통로로 승격</b>돼 있었다.</td>
+        <td><span class="chip done">해소</span></td>
+      </tr>
+      <tr>
+        <td><b>F628</b> 커밋 주인 표식<span class="sub">정본이 「이걸로 읽는다」고 못박은 재료</span></td>
+        <td><code>Session-Id</code> 트레일러가 두 층에서 안 박혀 <b>최신 194커밋 연속 공백</b>이었다. 즉 커밋 주인을 트레일러로 읽으라는 규약이 그동안 재료 없이 돌았다.</td>
+        <td><span class="chip done">폴백으로 해소</span><span class="sub">머지층은 포기(유호 픽)</span></td>
+      </tr>
+      <tr>
+        <td><b>F641·F643</b> 인계문이 인계문을 지운다<span class="sub">가장 아팠던 자리</span></td>
+        <td>클라우드 세션에서 <b>인계문 43개가 한 번에 사라졌다</b>. 낡음 판정을 파일 안에 적힌 시각으로만 해서, <b>갓 클론한 저장소</b>는 git이 방금 내려준 정본을 전부 「유물」로 읽었다. 하필 지문 없는 계정은 인계가 유일한 통로다.</td>
+        <td><span class="chip done">해소</span><span class="sub">지우는 쪽만 fail-closed</span></td>
+      </tr>
+      <tr>
+        <td><b>F623</b> 낡은 전제 회수<span class="sub">유호 교정 08-18</span></td>
+        <td>「폰으로 작업하는 게 없는데 왜 폰 관련 작업을 계속 하고 있어?」 — 코드 주석에 박힌 낡은 전제를 <b>실물과 대조 없이 판정 근거로 승계</b>하고 새 주석으로 재생산하고 있었다. 그 낱말이 다시 늘지 않게 <b>래칫</b>을 걸었다.</td>
+        <td><span class="chip done">해소</span></td>
+      </tr>
+      <tr>
+        <td><b>F619·F610·F612·F616·F618·F620</b><span class="sub">장치가 자기 부작용을 재던 계열</span></td>
+        <td>점유 조회가 원격 전용 가지를 못 봐 「재서 얻은 0」이 실은 「안 본 0」이었던 것 · <code>test-ci</code>가 자기 스위트의 부작용을 「옆 세션」에게 돌리던 것 · 래칫 키가 행 번호라 위에 한 줄만 더해도 우는 것 · 검사가 홈을 방어 없이 읽던 것.</td>
+        <td><span class="chip done">전건 해소</span></td>
+      </tr>
+      <tr>
+        <td><b>시동 배너</b> 「눈먼 층 N/6」<span class="sub">유호 픽 ② · 한 수 더</span></td>
+        <td>세션이 시작될 때 <b>이 환경에서 못 재는 층이 몇 개인지</b>를 한 줄로 낸다 + git 훅 자동 설치를 등록. 「못 쟀다」가 「없다」로 읽히던 자리를 분모와 함께 보게 만든다.</td>
+        <td><span class="chip done">머지됨</span></td>
+      </tr>
+      <tr>
+        <td><b>F630</b> 간헐 적색<span class="sub">같은 트리·결과 갈림</span></td>
+        <td>보드 주인 검사가 <b>자기 런의 길이</b> 때문에 빨개진다. 같은 트리에서 아무것도 안 고치고 다시 돌리면 초록이 됐다.</td>
+        <td><span class="chip held">보류</span><span class="sub">기전 미특정 — 관측만 올림</span></td>
+      </tr>
+      <tr>
+        <td><b>F639</b> <code>reset --hard</code> 사고</td>
+        <td>빈 커밋 하나를 되돌리려다 <b>미커밋 30파일·478줄</b>을 같이 날렸다. 되돌리려던 것은 1커밋이었다.</td>
+        <td><span class="chip held">복구함 · 장치 미신설</span></td>
+      </tr>
+      <tr>
+        <td><b>F640</b> 플랫폼 분모 「모른다」</td>
+        <td>러너를 배열 표기로 바꾼 대가 — <code>runs-on: [self-hosted, linux]</code>를 못 읽어 매 런 경고가 붙는다. <b>틀린 초록은 아니고 과소주장</b>이라, 위험한 건 값이 아니라 <b>닳음</b>이다.</td>
+        <td><span class="chip held">보류</span><span class="sub">처방은 설계까지 정해 둠</span></td>
+      </tr>
+      <tr>
+        <td><b>F644</b> 인계문이 「못 쟀다」를 「없다」로</td>
+        <td>커밋 4건을 낸 세션의 인계문에 <b>「커밋 없음」·「트랙 없이 끝난 세션이다」</b>가 나란히 찍혔다. 다음 세션이 앞 세션 작업을 못 찾고 새 트랙을 잡게 만든다.</td>
+        <td><span class="chip held">보류</span></td>
+      </tr>
+      <tr>
+        <td><b>F645</b> 대기열 채번이 안 잠긴다</td>
+        <td><code>#Q116</code>이 <b>두 가지에 발급</b>됐다. 둘 다 master에 없어 서로를 못 본다. 장부·대기열 두 축의 채번이 같은 자리에서 동시에 샌다.</td>
+        <td><span class="chip held">보류</span><span class="sub">오늘 실측 충돌 1건</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>3 · 발전 설계</h2>
+  <h3>오늘 나온 판정·설계 — 전부 아직 master 밖이다</h3>
+  <p>이쪽이 <b>경쟁 질문의 진짜 재료</b>다. 코드는 한 줄도 안 바뀌었지만 방향이 여기서 확정됐다.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>산출물</th><th>무엇을 정했나</th><th>상태</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>앱 방향 설계</b><span class="sub">「AI를 껐을 때 남는 한국어」</span></td>
+        <td>유호님 확정 — <b>「TOPIK 교육 1등」과 「회화 챗봇」은 두 과녁이 아니다.</b> 근거: TOPIK 말하기 채점 3축이 전부 회화 능력이다. 과녁이 <b>반증 가능한 한 문장</b>이 됐다 — 「원어민 수준」은 누가 언제 무엇으로 판정하는지가 문장 안에 없어 게이트로 못 썼다.</td>
+        <td><span class="chip done">유호 확정</span><span class="sub">PR #143</span></td>
+      </tr>
+      <tr>
+        <td><b>경쟁 판정</b><span class="sub">이길 수 있는 자리 셋</span></td>
+        <td>경쟁 지형을 3층으로 갈랐다(같은 걸 만드는 곳 / 우리 자리를 이미 차지한 곳 / 날씨). <b>못 이길 축과 이길 축을 분리</b>했다. §4 아래 상세.</td>
+        <td><span class="chip wait">미머지</span><span class="sub">PR #143</span></td>
+      </tr>
+      <tr>
+        <td><b>엔진 축 A~F 여섯</b><span class="sub">「오답이 못 보는 것」</span></td>
+        <td>유호 <b>전건 채택</b> 「1,2,3,4,5,6 전부 추가하자」. 넷은 새 수집 없이 오늘 열리고, 둘은 스키마 한 칸씩인데 <b>개원 전에 안 열면 첫 시즌치가 통째로 안 남는다</b>. 대표 = 축 A <b>회피 지도</b>: 학습자가 어려운 문형을 피하면 오답 기반 시스템은 「잘한다」고 판정한다 — 실력은 안 느는데 지표가 초록이다.</td>
+        <td><span class="chip done">유호 확정</span><span class="sub">대기열 #Q116~#Q121</span></td>
+      </tr>
+      <tr>
+        <td><b>12축이 못 만드는 것</b><span class="sub">3차 발굴 · M~R</span></td>
+        <td>A~L 열두 축이 <b>전부 같은 종류</b>(이미 쌓인 데이터를 읽는 함수)라는 진단. 그래서 열둘을 다 지어도 서로를 못 배우고 새 종류의 진실이 안 생긴다. <b>축 M(잔존 지수)</b>·<b>축 N(개입 원장)</b>이 그 두 천장을 뚫는다. + 파일럿 구멍 셋 + 도전안(알파 1명).</td>
+        <td><span class="chip block">유호 확정 전</span><span class="sub">PR #148</span></td>
+      </tr>
+      <tr>
+        <td><b>설계 대조</b><span class="sub">바뀐 것과 그대로인 것</span></td>
+        <td>오늘 확정 셋이 기존 설계를 어디까지 바꿨는지 대조 — <b>거의 다 그대로다.</b> 불변식 7개·로드맵·엔진 도달 사슬은 한 줄도 안 바뀌었다. 새로 생긴 긴장 둘을 그대로 적어 뒀다.</td>
+        <td><span class="chip wait">미머지</span><span class="sub">PR #143</span></td>
+      </tr>
+      <tr>
+        <td><b>지침 v9.3</b></td>
+        <td>원격 CI를 <b>트랙 종료 게이트로 되돌린다</b>(유호 승인 「고쳐」) — 러너가 섰으니 「미검증임을 밝힌다」 조항을 원상 복구.</td>
+        <td><span class="chip wait">미머지</span><span class="sub">PR #152</span></td>
+      </tr>
+      <tr>
+        <td><b>엔진 여섯 이름</b></td>
+        <td>SYNK Loom · SYNK Prism · SYNK Temper … — 엔진 이름에 회사명 결합.</td>
+        <td><span class="chip wait">미머지</span><span class="sub">PR #144</span></td>
+      </tr>
+      <tr>
+        <td><b>메신저 판정</b><span class="sub">Slack 철회</span></td>
+        <td>유호 확정 08-18 + 위임층 신설 — 무응답 2일이면 봉인 예측을 확정 대상으로.</td>
+        <td><span class="chip wait">미머지</span><span class="sub">PR #140</span></td>
+      </tr>
+      <tr>
+        <td><b>브랜드</b> 로고·중성축</td>
+        <td>로고 「더 트렌디하게」 진단 + 개선안 대조 시트 · 킷의 중립 11색을 무채로(조항 ⓗ).</td>
+        <td><span class="chip wait">미머지</span><span class="sub">PR #146 · #151</span></td>
+      </tr>
+      <tr>
+        <td><b>Loom 엔진 퀄리티</b> · <b>F625·F632</b></td>
+        <td>Loom 엔진 실측 진단 · 「이미 닫혔나」와 「내가 누구인가」를 묻는 층 신설.</td>
+        <td><span class="chip wait">미머지</span><span class="sub">PR #136 · #133</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>4 · 경쟁 판정</h2>
+  <h3>「이길 무기가 생겼나」 — 축을 갈라야 답이 나온다</h3>
+  <p>
+    질문에 한 낱말로 답하면 거짓말이 된다. <b>한쪽 축은 이미 졌고, 다른 쪽 축은 그들이 들어올 수 없다.</b>
+    오늘 생긴 것은 <b>두 번째 축을 재는 방법</b>이다.
+  </p>
+
+  <div class="split">
+    <div class="lose">
+      <div class="q">못 이길 축</div>
+      <h4>「AI 튜터 성능」 자체</h4>
+      <ul>
+        <li><b>StarSpark AI</b>(구글 Gemini 팀 출신 2인)는 지금 <b>수천 명</b>이 월 $25씩 내고 쓴다. 피드백 루프가 이 순간 돌고 있다.</li>
+        <li>우리는 그 루프가 <b>6개월 뒤</b>에 시작된다. 이 격차는 코드로 못 메운다.</li>
+        <li>첨삭·대화·퀴즈 <b>기능 자체</b>는 Claude API + 프롬프트 4벌이다 — 경쟁사가 일주일이면 만든다.</li>
+        <li>우리 ③단계 자리(회화 챗봇, 개원+6개월)는 <b>이미 붐빈다</b> — TopikIQ · TOPIKly · 나래 한국어 · MyTOPIK. TOPIK II 작문 AI 채점·오류 분석까지 나와 있다.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="q">이길 축</div>
+      <h4>그들의 데이터에 없는 세 자리</h4>
+      <ul>
+        <li><b>몽골어 화자 오류 분포</b> — 태그 24종이 자유 문자열이 아니라 <code>enum</code>이라 <b>3만 건 집계가 된다</b>. 「조사:주격(이/가·은/는)」「어미:불규칙활용」「화용:공손성」.</li>
+        <li><b>㉡ 사람 이해</b> — 결석 패턴, 집중이 오르는 시간대, 강사가 눈으로 본 것. <b>D2C 앱은 구조적으로 못 닿는다.</b></li>
+        <li><b>㉢ 삶 이해</b> — 드림맵·나침반·시즌 회고. 파운데이션 모델이 <b>영원히 못 갖는 종류</b>다.</li>
+        <li>여기에 <b>몽골 × 한국어 × 유학</b>의 삼중 니치가 겹친다. TOPIK 4급이 한국 대학 입학 요건이라 목표가 단일하고 성과 측정이 쉽다. 그리고 <b>이 시장 크기로는 StarSpark도 OpenAI도 안 들어온다.</b></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="why">
+    <p><b>단, 세 자리 전부 현재 행 수가 0이다.</b> 실물(라벨 체계·그릇·화면)은 다 서 있는데 재료가 없다.
+    이해 대장 실측 — <b>12칸 중 3칸 공백 · 3층 중 엔진에 닿는 층은 1개</b>(㉠만).
+    ㉡·㉢의 「돈다」 칸은 <b>둘 다 0</b>이고, 철학 정본이 스스로 적어 뒀다 —
+    「<b>㉡ 행이 우리 회사가 존재하는 이유이고, 지금 「돈다」 칸이 비어 있다.</b>」</p>
+  </div>
+
+  <h3>그래서 오늘 실제로 «생긴» 무기는 무엇인가</h3>
+  <p>세 개다. 전부 코드가 아니라 <b>재는 법</b>이고, 그게 지금 단계에서는 맞다.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>오늘 생긴 것</th><th>왜 경쟁 우위인가</th><th>언제 실물이 되나</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>과녁이 잴 수 있는 문장이 됐다</b><span class="sub">「AI를 껐을 때 남는 한국어」</span></td>
+        <td>구호가 아니라 <b>게이트</b>다. TOPIK 급수는 이 능력의 증명서, 회화 챗봇은 이 능력을 굴리는 도구 — 둘이 같은 것의 앞뒤가 됐다. <b>반증이 가능해졌다</b>는 것이 핵심이다.</td>
+        <td><span class="chip done">오늘 확정</span></td>
+      </tr>
+      <tr>
+        <td><b>잔존 지수</b><span class="sub">축 M · 주 1회 3분 맨몸 회차</span></td>
+        <td><b>경쟁 D2C 앱이 원리상 못 내는 숫자다</b> — 그들은 앱 밖(AI 꺼진 상태)을 못 본다. 그리고 이 회차는 <b>교실에서 열어야</b> 번역기 오염이 안 섞이는데, 오프라인 접점이 있는 곳만 그 통제를 할 수 있다. <b>해자가 숫자 하나로 응축되는 자리.</b></td>
+        <td><span class="chip block">유호 확정 전</span><span class="sub">새 수집 0 · 새 시트 0</span></td>
+      </tr>
+      <tr>
+        <td><b>개입 원장</b><span class="sub">축 N · <code>intervention_log</code></span></td>
+        <td>개입은 최소 <b>일곱 곳</b>에서 나가는데 효과가 짝지어지는 건 <b>하나</b>다. 즉 엔진은 자기 개입이 먹혔는지 원리상 모른다. 원장이 서면 반대가 된다 — <b>축을 하나 더할 때마다 표가 커진다.</b></td>
+        <td><span class="chip block">🔴 소급 불가</span><span class="sub">개원 전에 서야 한다</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>지금 무기를 막고 있는 것 넷</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>차단자</th><th>무엇이 묶여 있나</th><th>푸는 데 드는 것</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>STT 403</b><span class="sub"><code>GCP_SA_JSON</code> 미설정</span></td>
+        <td>목소리 전사 <b>0건</b>. <code>voice_log</code>·<code>audio_ref</code>·<code>voiceSweep_</code>·<code>sttOne_</code> 코드는 전부 서 있다. <b>몽골 학생의 한국어 발화 음성은 우리 자산 중 가장 못 베끼는 것</b>인데 자격증명 하나에 묶여 있다.</td>
+        <td><b>설정 한 칸</b> · 오늘 열 수 있다<span class="sub">막는 것 없음</span></td>
+      </tr>
+      <tr>
+        <td><b>몽골어 검수자 0명</b></td>
+        <td>대기열 재료0 7건 중 <b>3건</b>. 미니게임 G1 문항팩은 <code>검수확정=false</code>라 <b>학생에게 한 문항도 안 나간다</b>. 개원 상담 인쇄물 5종·학부모 메일 21조각도 같이 묶였다.</td>
+        <td><b>300,000₮ · 14일</b><span class="sub">채용 채널까지 문서에 적혀 있다</span></td>
+      </tr>
+      <tr>
+        <td><b>배포 3판 밀림</b></td>
+        <td>라이브 <code>v9.253</code> · 저장소 <code>v9.256</code>. 우리 정본이 스스로 정한 기준이 <b>「배선을 짜놓고 안 배포하면 그 배관은 없는 것과 같다」</b>이므로, 그 기준으로 재면 v9.254~256은 <b>아직 없는 것</b>이다.</td>
+        <td>선행 트랙 2개 게이트 해소</td>
+      </tr>
+      <tr>
+        <td><b>학생 0명</b><span class="sub">개원 2027-02-25</span></td>
+        <td>이길 자리 셋의 행 수가 전부 0인 <b>근본 사유</b>. 소급 불가는 <b>㉢만 진짜다</b> — 첫 시즌 목표·나침반은 그 시점에만 물을 수 있다. ㉡의 행동 신호는 시스템이 자동으로 남기니 나중에 읽어도 된다.</td>
+        <td>도전안 ↓</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>5 · 도전안</h2>
+  <h3>내일은 커밋 수를 목표로 삼지 않는다</h3>
+  <p>
+    통념: 시스템을 더 단단하게 만들면 제품이 빨라진다. 오늘 실측이 그 통념에 반례를 냈다 —
+    <b>275커밋을 쓰고 경쟁 거리는 0만큼 줄었다.</b> 그리고 그 275커밋 중 상당수가
+    <b>어제 만든 장치가 오늘 낸 결함을 고치는 것</b>이었다(14건 중 9건이 장치 자신의 결함 계열).
+  </p>
+  <div class="why">
+    <p><b>도전안</b> — 내일 하루는 <b>새 장치를 0개 짓는다.</b> 대신 셋만 한다:
+    ①<b>STT 자격증명 한 칸</b>(가장 못 베끼는 자산이 설정 하나에 0건으로 묶여 있다)
+    ②<b>밀린 3판 배포</b>(우리 기준으로 지금 「없는 것」이다)
+    ③<b>열린 PR 15건 반입</b>(이미 F645로 대가가 났다).</p>
+    <p>셋 다 <b>새로 짓는 것이 0</b>이고, 셋 다 오늘 만든 어떤 설계보다 경쟁 우위를 크게 움직인다.
+    특히 ①은 <b>파일럿의 절반</b>을 막고 있다 — TOPIK 말하기 채점 3축이 전부 회화 능력인데
+    지금 파일럿 후측은 쓰기뿐이라, 「AI 껐을 때 남는 <b>말</b>」은 한 번도 안 재진다.</p>
+  </div>
+  <p>
+    그리고 별도로, <b>알파 1명</b>(PR #148 도전안)은 값이 크다.
+    개입 원장·스키마는 <b>소급이 안 되는데 검증할 행이 0</b>이라, 개원 첫 시즌에 칸이 잘못 잡힌 걸 알면
+    그 시즌은 다시 못 돌린다. 지침이 이미 답을 적어 뒀다 —
+    <b>「되돌림 비용이 큰 판정은 코드 독해에서 멈추지 말고 상태를 한 번 바꿔보고 되돌린다.」</b>
+    지금 우리는 열두 축 전부를 코드 독해만으로 확정하려 하고 있다.
+  </p>
+</section>
+
+<section>
+  <h2>6 · 이 정리를 만들며 잡은 것</h2>
+  <h3>오늘 설계 문서 셋이 개원일을 2주 당겨 적었다</h3>
+  <p>
+    <b>경쟁판정</b>(2회) · <b>설계대조</b>(1회) · <b>12축이 못 만드는 것</b>(1회)이
+    개원을 <code>2027-02-11</code>로 적었다. 정본은 <code>2027-02-25</code>다 —
+    철학 정본 3곳 · <code>상담AI.js:264</code> · <code>contents_상담AI.js:213</code>,
+    그리고 <code>tests/상담철학정합.test.js</code>가 그 문자열을 회귀로 못박고 있다.
+    <b>세 층이 일치하므로 정본 쪽이 참값이다.</b>
+  </p>
+  <div class="why">
+    <p>사소해 보이지만 사소하지 않다 — 그 문서들이 <b>「개원 전에 못 박아야 하는 것」의 마감선</b>을
+    그 날짜에서 역산한다. 소급 불가 항목(축 N 개입 원장 · P-1 0일차 사전 측정)의 데드라인이
+    <b>2주 앞당겨진 채</b>로 계산돼 있다. 반입 전에 세 문서 다 고쳐야 한다.</p>
+  </div>
+</section>
+
+<footer>
+  실측 = <code>git</code> 직접 조회 · <code>node tools/test-ci.js</code>(4,707건 fail 0) ·
+  <code>tools/이해대장.js</code> · <code>tools/작동대장.js</code> · <code>tools/시스템대장.js</code> ·
+  <code>tools/원격ci.js</code> · 열린 PR 15건 GitHub 직접 열람
+  <span class="sep">·</span> 검증 = 분리 반박 1패스
+  <br>
+  <b>안 잰 것</b> — 형제 저장소 <code>SYNK-talk</code>(학생 접점 정본 · 미니게임 G1~G4 실코드 · 엔진 4부품)는
+  이 환경에 없어 <b>못 쟀다</b>. 위 판정은 이 저장소 층에서만 참이다.
+  원격 CI 층도 이 커밋에 대해서는 <b>미검증</b>이다(push 전).
+  경쟁사 규모는 공개 기사 인용값이고 직접 검증한 값이 아니다.
+  <span class="sep">·</span> 이 판은 <b>일회성 정리</b>다 — 확정이 나면 내용은 대기열로 옮겨가고 이 판은 죽는다.
+</footer>
+
+</div>
