@@ -69,10 +69,12 @@ const 층들 = [
   {
     이름: '유호님 결정 큐',
     보이나: () => {
-      const d = process.env.SYNK_MEMORY_DIR
-        || path.join(process.env.HOME || process.env.USERPROFILE || '', '.claude', 'projects',
-          '-' + ROOT.replace(/^[/\\]/, '').replace(/[/\\]/g, '-'), 'memory');
-      return 있나(d);
+      /* 🔴 하네스 경로를 **손으로 조립하지 않는다** — 정본은 `memory-graph.memoryDir()` 하나다.
+       *   첫 판이 `path.join(home, '.claude', 'projects', …)` 로 손조립했다가
+       *   `tests/메모리그래프.test.js` 의 실저장소 검사에 잡혔다(그 검사가 정확히 이 자리를 지킨다 —
+       *   워크트리·슬러그 규칙이 바뀌면 손조립한 쪽만 조용히 딴 곳을 본다). */
+      try { return 있나(require(path.join(__dirname, 'memory-graph.js')).memoryDir()); }
+      catch (_) { return false; }
     },
     도구: '.claude/hooks/session-decisions.js',
     잃는것: '⏳유호 대기 줄이 이미 확정됐는지 대조를 못 한다',

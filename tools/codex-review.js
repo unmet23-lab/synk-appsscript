@@ -54,6 +54,8 @@ const 런 = require(path.join(ROOT, 'tools', 'lib', '검수런.js'));
 /* 표 칸은 **날 `.split('|')` 로 가르지 않는다** — 보드 줄은 백틱 코드가 가득해서 그 안의 파이프에
  * 칸이 밀린다. 공용 통로 하나가 지고, `tests/표칸.test.js` 가 옛 통로를 기계로 금지한다. */
 const 표 = require(path.join(ROOT, 'tools', 'lib', '표.js'));
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('../.claude/hooks/lib/board-id.js');
 
 /* 동기 대기 — 이벤트 루프를 안 돌리고 잔다.
  * 왜 이 모양인가: 이 파일의 실행 사슬은 **전부 동기**(`execFileSync`)다. 회차 병렬을 위해
@@ -1187,8 +1189,6 @@ const 잠금플래그 = [
  *   모르는 이름은 **기본값으로 접지 않고 거절**한다 — 오타를 조용히 sol 로 읽으면
  *   「luna 로 돌렸다」고 믿는 상태가 만들어진다. */
 const 정책 = require(path.join(ROOT, 'tools', '모델정책.js'));
-// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
-const 보드id = require('../.claude/hooks/lib/board-id.js');
 const 효력들 = 정책.효력들;
 const 모델플래그 = 정책.코덱스플래그;
 /* require 시점엔 **기본 픽만** 놓는다 — env·CLI 는 main() 에서 얹는다. 이 모듈은 clasp-guard 훅도
