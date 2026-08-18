@@ -1,0 +1,388 @@
+<title>오답이 못 보는 것</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400..800;1,400&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* SYNK 킷 — 신호 1점(Coral) · 위계는 색이 아니라 밀도 · Lime·KC 반입 없음 */
+:root{
+  --paper:#FBF7EE; --ink:#171820; --navy2:#0F1730;
+  --slate2:#5F657D; --slate:#8A93AD; --cream:#F6F1E8;
+  --coral:#FF6B5C; --coral3:#E8543F; --coralwash:#FFE9E4;
+
+  --bg:var(--paper); --surface:#FFFCF6; --fg:var(--ink); --fg2:var(--slate2);
+  --rule:#E4DCCB; --rule-soft:#EFE8DA;
+  --sig-text:var(--coral3); --sig-fill:var(--coral); --on-sig:var(--ink);
+  --panel:var(--coralwash); --panel-edge:#F6CFC7; --quiet:#F2EDE1;
+
+  --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:var(--navy2); --surface:#141D38; --fg:var(--cream); --fg2:var(--slate);
+    --rule:#263052; --rule-soft:#1C2647;
+    --sig-text:var(--coral); --on-sig:var(--navy2);
+    --panel:#2A1F2C; --panel-edge:#5A3A38; --quiet:#18213E;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:var(--navy2); --surface:#141D38; --fg:var(--cream); --fg2:var(--slate);
+  --rule:#263052; --rule-soft:#1C2647;
+  --sig-text:var(--coral); --on-sig:var(--navy2);
+  --panel:#2A1F2C; --panel-edge:#5A3A38; --quiet:#18213E;
+}
+
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--fg); font-family:var(--font);
+  font-weight:450; font-size:16.5px; line-height:1.78; letter-spacing:-.011em; -webkit-font-smoothing:antialiased}
+.wrap{max-width:820px; margin:0 auto; padding:0 24px 96px}
+
+header{padding:64px 0 0}
+.eyebrow{font-family:var(--mono); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--fg2); display:flex; gap:14px; flex-wrap:wrap; align-items:center}
+.eyebrow .dot{width:4px;height:4px;border-radius:50%;background:var(--sig-fill);display:inline-block}
+h1{font-size:clamp(38px,6.4vw,60px); line-height:1.06; font-weight:800; letter-spacing:-.035em;
+  margin:20px 0 0; text-wrap:balance}
+h1 em{font-style:normal; color:var(--sig-text)}
+.deck{margin:18px 0 0; font-size:19px; line-height:1.62; color:var(--fg2); max-width:62ch; text-wrap:pretty}
+.meta{margin-top:30px; padding-top:16px; border-top:1px solid var(--rule); font-family:var(--mono);
+  font-size:12px; color:var(--fg2); display:flex; gap:8px 22px; flex-wrap:wrap}
+
+.verdict{margin:44px 0 0; background:var(--sig-fill); color:var(--on-sig); border-radius:4px; padding:30px 32px}
+.verdict .label{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+  opacity:.62; margin-bottom:10px}
+.verdict p{margin:0; font-size:23px; line-height:1.42; font-weight:700; letter-spacing:-.024em; text-wrap:balance}
+.verdict p + p{margin-top:12px; font-size:16.5px; font-weight:500; line-height:1.66; opacity:.84; letter-spacing:-.011em}
+
+section{margin-top:64px}
+h2{font-size:13px; font-family:var(--mono); font-weight:500; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--fg2); margin:0 0 8px; padding-bottom:14px; border-bottom:1px solid var(--rule)}
+h3{font-size:25px; font-weight:800; letter-spacing:-.03em; line-height:1.24; margin:26px 0 0; text-wrap:balance}
+p{margin:12px 0 0; max-width:66ch}
+strong{font-weight:700}
+.sig{color:var(--sig-text); font-weight:700}
+code,.n{font-family:var(--mono); font-size:.88em; font-variant-numeric:tabular-nums}
+code{background:var(--quiet); padding:.12em .38em; border-radius:3px; color:var(--fg)}
+
+/* 축 카드 — 이 문서의 본체 */
+.axis{margin-top:26px; border:1px solid var(--rule); border-radius:4px; background:var(--surface); overflow:hidden}
+.axis.open{border-color:var(--panel-edge); background:var(--panel)}
+.axis .head{padding:22px 26px 0}
+.axis .rank{font-family:var(--mono); font-size:10.5px; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--fg2); display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+.axis.open .rank{color:var(--sig-text)}
+.axis .rank .pill{border:1px solid currentColor; border-radius:99px; padding:1px 8px; font-size:9.5px; letter-spacing:.1em}
+.axis h4{margin:9px 0 0; font-size:22px; font-weight:800; letter-spacing:-.028em; line-height:1.24; text-wrap:balance}
+.axis .what{margin:10px 0 0; font-size:16px; line-height:1.68; padding:0 26px 0; max-width:64ch}
+.axis .head + .what{padding-left:26px}
+.axis .body{padding:0 26px 24px}
+.axis dl{margin:18px 0 0; display:grid; grid-template-columns:88px 1fr; gap:0}
+.axis dt{font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--fg2); padding:11px 12px 11px 0; border-top:1px solid var(--rule-soft); line-height:1.6}
+.axis dd{margin:0; padding:11px 0; border-top:1px solid var(--rule-soft); font-size:15px; line-height:1.62}
+.axis.open dt,.axis.open dd{border-top-color:var(--panel-edge)}
+.axis dd b{font-weight:700}
+
+.why{margin-top:20px; padding:15px 18px; background:var(--quiet); border-left:2px solid var(--sig-fill);
+  border-radius:0 3px 3px 0; font-size:15px; line-height:1.66}
+.why b{color:var(--sig-text)}
+
+blockquote{margin:18px 0 0; padding:14px 18px; background:var(--quiet); border-left:2px solid var(--sig-fill);
+  border-radius:0 3px 3px 0; font-size:15px; line-height:1.62}
+blockquote p{margin:0; max-width:none}
+blockquote cite{display:block; margin-top:8px; font-style:normal; font-family:var(--mono);
+  font-size:11px; color:var(--fg2)}
+
+.scroll{overflow-x:auto; margin-top:20px}
+table{border-collapse:collapse; width:100%; min-width:540px; font-size:15px}
+th,td{text-align:left; padding:12px 16px 12px 0; border-bottom:1px solid var(--rule-soft); vertical-align:top}
+th{font-family:var(--mono); font-size:11px; letter-spacing:.11em; text-transform:uppercase; color:var(--fg2);
+  font-weight:500; border-bottom:1px solid var(--rule); padding-bottom:9px}
+td:last-child,th:last-child{padding-right:0}
+tbody tr:last-child td{border-bottom:none}
+
+/* 사분면 */
+.quad{margin-top:20px; display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--rule);
+  border:1px solid var(--rule); border-radius:4px; overflow:hidden}
+.quad div{background:var(--surface); padding:16px 18px}
+.quad .q{font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--fg2)}
+.quad b{display:block; margin-top:5px; font-size:16px; letter-spacing:-.02em}
+.quad span{display:block; margin-top:5px; font-size:14px; line-height:1.55; color:var(--fg2)}
+.quad .used{background:var(--panel)}
+.quad .used .q{color:var(--sig-text)}
+
+footer{margin-top:72px; padding-top:22px; border-top:1px solid var(--rule); font-family:var(--mono);
+  font-size:11.5px; line-height:1.9; color:var(--fg2)}
+footer .sep{margin:0 8px; opacity:.45}
+::selection{background:var(--sig-fill); color:var(--on-sig)}
+:focus-visible{outline:2px solid var(--sig-text); outline-offset:3px; border-radius:2px}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">
+    <span>엔진 축 발굴</span><span class="dot"></span><span>2026-08-18</span><span class="dot"></span><span>실측 기반</span>
+  </div>
+  <h1>오답이 <em>못 보는 것</em></h1>
+  <p class="deck">
+    「오류 분포·개입효과·집중 리듬·삶의 방향」은 이해 대장을 다시 부른 것에 가까웠다.
+    이 문서는 <b>우리 데이터 안에 있는데 아무도 안 읽고 있는 자리</b> 여섯을 판다 —
+    전부 코드를 직접 열어 확인했고, 차단자까지 이름을 붙였다.
+  </p>
+  <div class="meta">
+    <span>재료 = 루트 JS 실파일 · 시트 헤더 정본</span>
+    <span>선행 = 앱 방향설계 2026-08-18</span>
+  </div>
+</header>
+
+<div class="verdict">
+  <div class="label">발견</div>
+  <p>우리 코드가 스스로 「여기는 못 본다」고 적어둔 자리가 여럿 있다.</p>
+  <p>가장 값진 축 하나는 <strong>새 수집 없이 오늘 열린다</strong>. 둘은 스키마 한 칸씩이면 열리는데,
+     <strong>개원 전에 안 열면 첫 시즌치가 통째로 안 남는다.</strong></p>
+</div>
+
+<section>
+  <h2>A · 1순위</h2>
+
+  <div class="axis open">
+    <div class="head">
+      <div class="rank"><span>축 A</span><span class="pill">새 수집 0 · 오늘 열림</span></div>
+      <h4>회피 지도 — 배웠는데 한 번도 안 쓴 문법</h4>
+    </div>
+    <p class="what">
+      학습자는 어려운 문형을 <b>피해서</b> 오류율을 낮춘다. 그러면 오답 기반 시스템은 그 학생을
+      「잘한다」고 판정한다. 틀린 적이 없으니까. <b>실력은 안 늘고 있는데 지표는 초록이다.</b>
+    </p>
+    <div class="body">
+      <div class="why">
+        <b>왜 이게 급소인가</b> — 이건 오답에 <b>원리상</b> 안 나타난다. 경쟁 앱은 커리큘럼이 없어
+        「이 학생이 무엇을 배웠는지」를 모르고, 그래서 안 쓴 것을 셀 분모 자체가 없다.
+        그리고 TOPIK 말하기 채점 ②의 <b>「어휘 범위」</b>가 정확히 이 축을 잰다.
+      </div>
+      <dl>
+        <dt>계산법</dt>
+        <dd>급수 밴드 안의 문형(분모) − <code>mastery_log</code> 에 행이 있는 문형(분자) = <b>한 번도 산출에 안 나온 문형</b>.
+          「연습·도달」이 아니라 <b>행 자체가 없는 것</b>이 회피다.</dd>
+        <dt>이미 있는 것</dt>
+        <dd><code>GRAMMAR_BANK</code> <span class="n">72</span>종(도입급·재출현급 태그) · <code>STORY_GRAMMAR</code> <span class="n">96</span>문형 ·
+          급수 밴드 필터 <code>inBand()</code> · <code>mastery_log</code> upsert</dd>
+        <dt>지을 것</dt>
+        <dd>읽는 함수 하나. <b>새 수집 0 · 학생 입력 0 · 새 시트 0.</b></dd>
+        <dt>쓰는 자리</dt>
+        <dd>개인 퀴즈 출제(<code>aiStudioBatch_</code>)가 <b>회피 문형을 우선 출제</b>한다 →
+          강사 브리핑에 「이 반이 통째로 피하는 문형」</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="axis open">
+    <div class="head">
+      <div class="rank"><span>축 B</span><span class="pill">재료 완비 · 1/4만 쓰는 중</span></div>
+      <h4>확신 × 정오 — 네 칸 중 세 칸이 비었다</h4>
+    </div>
+    <p class="what">
+      <code>quiz_log</code> 에 <b>확신도가 필수 응답</b>으로 이미 쌓인다. 코드 주석이 그 이유까지 적어뒀다 —
+      「선택으로 두면 대부분 비게 되고, 그러면 이 축이 있으나 마나가 된다」.
+      그런데 지금 쓰는 것은 네 칸 중 하나뿐이다.
+    </p>
+    <div class="body">
+      <div class="quad">
+        <div class="used">
+          <div class="q">정답 · 확신 낮음</div>
+          <b>찍어서 맞힘</b>
+          <span>✅ 이미 쓴다 — 재출제 재료(<span class="n">v9.247</span>)</span>
+        </div>
+        <div>
+          <div class="q">오답 · 확신 <b>높음</b></div>
+          <b>알았는데 틀림</b>
+          <span>🔴 <b>가장 값진 칸인데 안 읽는다.</b> 개념을 <b>잘못</b> 알고 있다는 뜻이라
+            연습을 더 시키면 오히려 굳는다 — 재설명이 처방이다</span>
+        </div>
+        <div>
+          <div class="q">오답 · 확신 낮음</div>
+          <b>몰라서 틀림</b>
+          <span>🔴 미학습 — 처방은 연습량. 위 칸과 <b>정반대</b>인데 지금은 둘이 같은 「오답」이다</span>
+        </div>
+        <div>
+          <div class="q">정답 · 확신 높음</div>
+          <b>알고 맞힘</b>
+          <span>🔴 진짜 습득 — <b>도달 승격의 근거로 써야 할 유일한 칸</b>인데 지금은 「찍어서 맞힘」과 같이 센다</span>
+        </div>
+      </div>
+      <div class="why">
+        <b>왜 이게 급소인가</b> — 「오답」 한 덩어리에 <b>처방이 정반대인 두 상태</b>가 섞여 있다.
+        연습을 더 시켜야 하는 학생과, 연습을 더 시키면 오해가 굳는 학생이 지금 같은 취급을 받는다.
+        재료는 이미 매일 쌓이는데 읽는 코드가 없다.
+      </div>
+      <dl>
+        <dt>지을 것</dt>
+        <dd>사분면 분류 함수 + <code>aiStudioBatch_</code> 처방 분기. <b>새 수집 0.</b></dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>B · 개원 전에 열어야 하는 것</h2>
+  <p>
+    아래 둘은 스키마 한 칸씩이면 열린다. 그런데 <strong>지금 안 열면 첫 시즌 데이터가 통째로 안 남는다</strong> —
+    소급이 안 되는 자리다.
+  </p>
+
+  <div class="axis">
+    <div class="head">
+      <div class="rank"><span>축 C</span><span class="pill">스키마 1칸 · 소급 불가</span></div>
+      <h4>말–글 격차 — 글로는 맞는데 말로는 틀리는 자리</h4>
+    </div>
+    <p class="what">
+      우리는 <b>글</b>(<code>hw_feedback</code>)과 <b>말</b>(<code>voice_log</code>)과 <b>대화</b>(<code>talk_log</code>)를
+      전부 가진 유일한 곳이다. 문법 도달 판정도 이미 세 층에서 돈다. 그런데 —
+    </p>
+    <div class="body">
+      <blockquote>
+        <p>닫으려면 근거 칸을 층별로 갈라야 하고, 그건 <code>mastery_log</code> 스키마 변경이라 이 판의 범위 밖이다.</p>
+        <cite>교재연동.js — 코드가 스스로 적어둔 한계</cite>
+      </blockquote>
+      <div class="why">
+        <b>지금 무슨 일이 벌어지나</b> — <code>mastery_log</code> 의 <code>출처</code> 칸에는
+        <b>마지막 층 하나만</b> 남는다. 그래서 「글로는 도달, 말로는 미도달」이 한 칸에 뭉개진다.
+        <b>TOPIK 말하기의 급소가 정확히 여기인데 우리 눈이 감겨 있다.</b>
+      </div>
+      <dl>
+        <dt>지을 것</dt>
+        <dd><code>출처</code> 한 칸 → <b>층별 상태 3칸</b>(글·말·대화). 스키마 확장은 끝에 붙이는 것이라
+          기존 행 파손 없음(<code>schema_ver</code> 규약 그대로).</dd>
+        <dt>그러면</dt>
+        <dd>「이 학생은 <b>-는데</b> 를 글로는 쓰는데 말로는 한 번도 안 썼다」가 보인다 — 말하기 처방의 원자재</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="axis">
+    <div class="head">
+      <div class="rank"><span>축 D</span><span class="pill">스키마 1칸 · 소급 불가</span></div>
+      <h4>재발 간격 — 이 학생만의 망각 곡선</h4>
+    </div>
+    <p class="what">
+      <code>mastery_log</code> 는 <b>단방향 상향</b>이다 — 「도달」에 오르면 강등이 없다.
+      그래서 <b>3주 전에 도달한 문법을 오늘 다시 틀려도 시스템은 모른다.</b>
+    </p>
+    <div class="body">
+      <div class="why">
+        <b>왜 강등을 하면 안 되는가</b> — 강등을 넣으면 진화 게이트가 롤백되고 학생이 상실을 겪는다(게임화 파손).
+        그래서 처방은 강등이 아니라 <b>별도 칸</b>이다: 「도달 뒤 다시 틀린 횟수 · 마지막 재발일」.
+        상태는 그대로 두고 <b>재발만 센다.</b>
+      </div>
+      <dl>
+        <dt>그러면 보이는 것</dt>
+        <dd>이 학생의 <b>망각 주기</b>. 「조사는 2주면 흐려지고 어미는 6주 간다」 —
+          <b>복습 시점을 학생마다 다르게</b> 잡는 근거. 파운데이션 모델이 절대 못 갖는 종류다.</dd>
+        <dt>지을 것</dt>
+        <dd><code>mastery_log</code> 에 <code>재발횟수</code>·<code>마지막재발일</code> 2칸 + <code>masteryApply_</code> 의
+          「도달이면 return」 자리에서 <b>기록만 하고 상태는 유지</b></dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>C · 자산이 스스로 자라는 루프</h2>
+
+  <div class="axis">
+    <div class="head">
+      <div class="rank"><span>축 E</span><span class="pill">최대 자산 연결</span></div>
+      <h4>교재 개선 루프 — 어느 과가 실제로 안 통하는가</h4>
+    </div>
+    <p class="what">
+      강의 기록(<code>lesson_close</code>·강의 한줄요약)과 문법 도달(<code>mastery_log</code>)이 둘 다 있다.
+      둘을 이으면 <b>「이 과를 배운 반의 도달률」</b>이 나온다.
+    </p>
+    <div class="body">
+      <div class="why">
+        <b>왜 이게 특별한가</b> — 비교 대상이 학생이 아니라 <b>교재</b>다. 철학 ㉢(학생끼리 비교 금지)에 안 걸리면서,
+        우리 최대 자산(교재 원고 <span class="n">1,905</span>행 · 6권 골격)이 <b>데이터로 스스로 개정되는 루프</b>가 된다.
+        경쟁 앱은 교재가 없어서 이 루프 자체가 성립하지 않는다.
+      </div>
+      <dl>
+        <dt>주의</dt>
+        <dd>표본이 작은 동안 「이 과가 나쁘다」로 단정하면 오진이다 — <b>반 수가 쌓이기 전엔 순위를 안 매기고</b>
+          강사에게 「확인 요청」으로만 낸다</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="axis">
+    <div class="head">
+      <div class="rank"><span>축 F</span><span class="pill">철학 ㉢ 와 정확히 일치</span></div>
+      <h4>개인 기준선 — 침묵의 뜻이 학생마다 다르다</h4>
+    </div>
+    <p class="what">
+      <code>talk_index_log</code> 가 주간 발화 지수를 쌓고, 조 편성이 이미 침묵 축으로 쓴다.
+      그런데 지금은 <b>절대량</b>으로 본다 — 원래 말수가 적은 학생의 침묵과, 평소 활발한 학생의 침묵이 같은 신호로 취급된다.
+    </p>
+    <div class="body">
+      <div class="why">
+        <b>철학 정본이 이미 답을 적어뒀다</b> — <i>「비교는 어제의 그 학생과만」</i>.
+        절대량을 개인 기준선 대비 <b>편차</b>로 바꾸면, 그 조항이 처음으로 <b>코드가 된다.</b>
+        평소 활발하던 학생이 조용해진 주 — 그게 진짜 신호다.
+      </div>
+      <dl>
+        <dt>지을 것</dt>
+        <dd>주간 지수를 그 학생의 이동 평균 대비 <b>z 편차</b>로. 시트 재계산만. <b>새 수집 0.</b></dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>D · 순서</h2>
+  <h3>새 수집 0 인 것부터, 소급 불가한 것은 개원 전에</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th style="width:30%">축</th><th style="width:24%">새 수집</th><th>언제</th></tr></thead>
+      <tbody>
+        <tr><td><b>A 회피 지도</b></td><td>0</td><td><b>지금</b> — 읽는 함수 하나</td></tr>
+        <tr><td><b>B 확신 × 정오</b></td><td>0</td><td><b>지금</b> — 재료가 이미 매일 쌓인다</td></tr>
+        <tr><td><b>F 개인 기준선</b></td><td>0</td><td><b>지금</b> — 재계산만</td></tr>
+        <tr><td><b>C 말–글 격차</b></td><td>스키마 3칸</td><td><span class="sig">개원 전</span> — 소급 불가</td></tr>
+        <tr><td><b>D 재발 간격</b></td><td>스키마 2칸</td><td><span class="sig">개원 전</span> — 소급 불가</td></tr>
+        <tr><td><b>E 교재 루프</b></td><td>0</td><td>개원 후 — 반 수가 쌓여야 읽힌다</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    A·B·F 는 <b>학생이 오기 전에도 코드가 선다</b>(재료는 개원 후에 흐르지만 배선은 지금 완성된다).
+    C·D 는 스키마라 <b>첫 행이 쌓이기 전에</b> 열어야 한다 — 나중에 칸을 더해도 지난 행에는 값이 안 채워진다.
+  </p>
+</section>
+
+<section>
+  <h2>E · 안 담은 것</h2>
+  <h3>생각했지만 뺀 축과 그 이유</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th style="width:34%">후보</th><th>왜 뺐나</th></tr></thead>
+      <tbody>
+        <tr><td><b>자기 수정 신호</b><br><span class="n">말하다 스스로 고치는 것</span></td>
+          <td>실력이 느는 진짜 신호이고 지금 시스템은 이걸 <b>오류로 셀</b> 위험이 있다.
+            다만 STT 전사가 <span class="n">0</span>건이라 <b>지금은 잴 수 없다</b> — <code>GCP_SA_JSON</code> 이 열리면 그때 연다.</td></tr>
+        <tr><td><b>오류의 전염</b><br><span class="n">조사를 고쳤더니 어미가 틀린다</span></td>
+          <td>과잉일반화 탐지. 개입-효과 짝의 심화판이라 <b>그 짝이 먼저 서야</b> 성립한다(지금 관측 <span class="n">1</span>건).</td></tr>
+        <tr><td><b>학원 밖 사용 기록</b><br><span class="n">한국어로 댓글·메시지</span></td>
+          <td>「실제로 쓸 수 있는 한국어」의 가장 직접적인 증거지만 <b>수집에 사람 손이 든다</b> —
+            철학 ㉡ 위반. 게임화 미션으로 푸는 길은 있으나 별도 트랙이다.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  근거 = <code>MASTERY_LOG_HEADERS</code>·<code>QUIZ_LOG_HEADERS</code>·<code>GRAMMAR_BANK</code>·<code>masteryApply_</code> 직접 열람<span class="sep">·</span>
+  코드 주석의 자기 한계 기술 2건 인용<br>
+  <b>제안이다</b> — 어느 것도 아직 안 지었고, 착수는 유호님 확정 뒤에.<span class="sep">·</span>
+  형제 저장소 <code>SYNK-talk</code> 는 이 환경에 없어, 그쪽에 같은 축이 이미 섰는지는 <b>안 쟀다</b>.
+</footer>
+
+</div>
