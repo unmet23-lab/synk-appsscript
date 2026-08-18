@@ -7,7 +7,7 @@ const { execFileSync } = require('node:child_process');
 const ROOT = path.resolve(__dirname, '..');
 const { ENGINE_FILES, engineSource, sharedBlocks } = require('./_engine-source');
 /* 주석 제거 통로는 공용 하나다 — `tests/lib/소스검사.js` (F401 계열 · 대기열 P3 줄73). */
-const { 코드만 } = require('./lib/소스검사.js');
+const { 코드만, 줄맞춰코드만 } = require('./lib/소스검사.js');
 const MANIFEST_PATH = path.join(ROOT, 'appsscript.json');
 const code = engineSource(); // 엔진 전체를 한 문자열로 — 파일이 쪼개져도 아래 표식 검사가 그대로 산다
 /* 🔑 **부정 단언 전용** 정제본 — 「없어야 한다」를 원문에 대고 재면 누군가 그 문구를 주석에 적는 순간
@@ -1116,7 +1116,7 @@ test('[v9.64] 연습 포인트 폼 — 재실행=제자리 업그레이드(복�
   const body = section('function createTeacherMemoForm()', 'function importFormResponses()');
   assertOrder(body, ['syncTeacherMemoForm_', 'FormApp.create']); // 동기화 가드가 생성보다 앞 — 재실행 시 복제 경로로 못 간다
   const sync = section('function syncTeacherMemoForm_', 'function createTeacherMemoForm()');
-  assert.equal(/\.add[A-Z]\w*Item\(/.test(sync.replace(/\/\/[^\n]*/g, '')), false,
+  assert.equal(/\.add[A-Z]\w*Item\(/.test(코드만(sync)), false,
     '업그레이드 경로에서 항목 추가 금지 — 응답 시트에 새 열이 생겨 sweep 위치 파싱(1~6열)이 깨진다');
   const morning = section('function morningJobs()', 'function nightJobs()');
   assert.ok(morning.includes("safeRun('teacherMemoFormSync'"), '아침 로스터 자동 동기화 미편입');
@@ -1849,8 +1849,7 @@ test('[v9.90] 동의 마이그레이션(v18.6) — 멱등·명시 동의·거부
   /* [v9.138] 판 번호 단일 소스 — 선언 1곳 + 게이트 2곳(워치독·노션)이 같은 상수를 보는지 **결과로** 확인한다.
    *   조각 검사만 하면 "상수는 있는데 어디선가 아직 리터럴을 비교" 하는 상태를 통과시킨다(guard-must-check-result 교훈).
    *   허용 예외: 주석의 역사 기록('v18.5→v18.6' 같은 경위 서술)은 실행 경로가 아니므로 센다면 오탐이 된다 → 코드 줄만 본다. */
-  const 판리터럴 = code.split('\n')
-    .filter(l => !/^\s*(\/\/|\*|\/\*)/.test(l))          // 주석 줄 제외(경위 서술은 남겨둬야 한다)
+  const 판리터럴 = 코드만(code).split('\n')   // 통로가 «인라인» 주석까지 지운다 — 줄 걸러내기는 그걸 못 했다
     .filter(l => /'상담동의'/.test(l) && /'v18\.\d/.test(l));
   assert.equal(판리터럴.length, 0, '동의 판 번호가 실행 코드에 하드코딩돼 있다(CONSENT_VERSION을 써야 한다): ' + 판리터럴.join(' ⏎ '));
   // [v19.0] 대역을 v18 로 못 박아 뒀더니 판을 올리는 순간 빨개졌다 — 검사할 것은 대역이 아니라 **단일 소스**다
@@ -1942,10 +1941,11 @@ test('[v9.83] 포인트 경제 — 월간 소득 시뮬이 과잠·진화 앵커
   //   죽어 있었다(정규식 `.`은 \r을 매치하지 않아 `$`가 문자열 끝에 닿지 못해 replace가 무동작).
   //   결과 = 꼬리 주석의 "+5P·+3P" 4건이 위반으로 잡혀 master가 상시 실패 → 전 트랙 배포 게이트가 막혀 있었다.
   //   같은 커밋이 체크아웃 줄바꿈 설정에 따라 통과/실패가 갈리던 것이라 회귀 장치로서도 신뢰 불가였다.
-  code.split(/\r?\n/).forEach((ln, i) => {
+  /* 🔑 `줄맞춰코드만` 이다 — 아래 `i + 1` 은 사람이 찾아갈 **행 번호**라 주석 줄을 버리면 밀린다.
+   *   위 v9.87 의 CRLF 병(`.` 이 `\r` 을 못 물어 replace 가 무동작)도 렉서가 원천에서 없앤다. */
+  줄맞춰코드만(code).split('\n').forEach((ln, i) => {
     const t = ln.trim();
-    if (t.startsWith('*') || t.startsWith('//') || t.startsWith('/*')) return; // 버전 이력 주석은 역사라 그대로 둔다
-    if (/\+\s?\d+\s?P(?![a-zA-Z가-힣])/.test(ln.replace(/\/\/.*$/, ''))) claims.push((i + 1) + ': ' + t.slice(0, 90));
+    if (/\+\s?\d+\s?P(?![a-zA-Z가-힣])/.test(ln)) claims.push((i + 1) + ': ' + t.slice(0, 90));
   });
   // 유일한 예외: 몽골어 응원 문구 "어제의 자신보다 정확히 +1P 더" — 지급 약속이 아니라 최소 단위 비유이고
   //   단가가 어떻게 바뀌어도 참이다. 다른 예외를 늘리려면 그 자리에 진짜 지급 약속이 없는지 먼저 확인할 것.
@@ -2346,7 +2346,7 @@ test('[v9.80] 결석 연락 폼 — 항목 고정(응답 열 파싱 계약)·재
   const items = cf.match(/\.add[A-Z]\w*Item\(/g) || [];
   assert.equal(items.length, 8, '항목 수가 바뀌었다(강사·반은 List/Text 2분기라 8개 호출 = 6문항)');
   const sync = section('function syncAbsenceForm_(', 'function createAbsenceForm()');
-  assert.equal(/\.add[A-Z]\w*Item\(/.test(sync.replace(/\/\/[^\n]*/g, '')), false,
+  assert.equal(/\.add[A-Z]\w*Item\(/.test(코드만(sync)), false,
     '업그레이드 경로에서 항목 추가 금지 — 응답 시트에 새 열이 생겨 스위프 위치 파싱(1~7열)이 깨진다');
   const sw = section('function sweepAbsenceForm_(', '첨삭 품질 게이트');
   assert.ok(sw.includes('last - from, 7'), '응답 7열 읽기가 아니다 — 폼 항목 수와 어긋나면 값이 밀린다');
