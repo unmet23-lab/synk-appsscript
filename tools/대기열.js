@@ -20,6 +20,7 @@ const { spawnSync } = require('child_process');
 
 const 확정 = require(path.join(__dirname, 'lib', '확정대조.js'));
 const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
+const 세션지문 = require(path.join(__dirname, 'lib', '세션지문.js'));
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
 const 대기열경로 = path.join(ROOT, 'docs', '_ops', '작업대기열.md');
@@ -1036,7 +1037,11 @@ function 주인생사(지문, 옵션) {
 }
 
 /** `--집기 #Qnn --파일 "…"` → Write 할 보드 파일 **전문**을 조립한다. 디스크는 안 만진다. */
-function 집기(id, 파일칸, sid = process.env.CLAUDE_CODE_HOST_SESSION_ID, 옵션) {
+function 집기(id, 파일칸, sid, 옵션) {
+  /* 「내가 누구인가」는 **한 통로**에서 읽는다(F632) — 못 읽었을 때의 사유를 아래 처방이
+   * 그대로 인용해야 하므로, 판정을 여기서 한 번만 짓고 돌려 쓴다. */
+  const 나판 = 세션지문.읽기({ 지정: (옵션 && 옵션.지정) || '' });
+  const 내sid = sid === undefined || sid === null ? 나판.sid : sid;
   const 목록 = 항목들();
   if (!목록) return { 오류: `대기열 파일이 없다 — ${대기열좌표}` };
   const 항목 = 목록.find((x) => x.id === id);
@@ -1083,8 +1088,16 @@ function 집기(id, 파일칸, sid = process.env.CLAUDE_CODE_HOST_SESSION_ID, �
       + '   그 칸이 비면 이 도구의 점유 판정 ③(파일 자리)이 그 줄에 대해 눈이 먼다.' };
   }
   const 보드 = 라이브('보드.js');
-  const 내 = 보드.내파일(ROOT, sid);
-  if (!내) return { 오류: '세션 지문을 못 읽었다($CLAUDE_CODE_HOST_SESSION_ID) — 내 보드 파일을 못 고른다.' };
+  const 내 = 보드.내파일(ROOT, 내sid);
+  /* 🔴 여기가 **따를 수 없는 처방**이던 자리다 (F632 · 2026-08-18 실측).
+   *   옛 판은 「세션 지문을 못 읽었다」 한 줄로 끝났고 **다음 명령이 없었다.** 그런데 정본은
+   *   「고르면 재기 전에 선언부터 — `--집기` 가 보드 줄을 조립해 준다(그대로 Write)」라,
+   *   그 유일한 통로가 닫히면 규약을 지키는 길이 **보드 파일을 손으로 쓰는 것**뿐이 된다.
+   *   그게 우회를 정상 통로로 만드는 무늬다(F103). 이제 지정 통로를 함께 낸다. */
+  if (!내) {
+    const 명령 = `node tools/대기열.js --집기 #Q${id} --파일 "${String(파일칸).slice(0, 40)}…"`;
+    return { 오류: 세션지문.처방(나판.사유 || `내 보드 파일을 못 고른다(sid: "${내sid}")`, 명령, { 플래그: '--지문' }) };
+  }
 
   const 상한 = 칸상한();
   const 지문 = path.basename(내, '.md');
@@ -1094,9 +1107,14 @@ function 집기(id, 파일칸, sid = process.env.CLAUDE_CODE_HOST_SESSION_ID, �
    *   그러면 이 도구는 또 「따를 수 없는 처방」을 낸다(F569 가 닫으려던 바로 그 자리다).
    * 🔑 그리고 **누가 누구를 언제 이어받았는지**를 상태 칸에 박는다 — 승계가 쉬워지면 새는 방향은
    *   「산 세션의 줄을 죽었다고 오판해 가로채기」이고, 그때 이력에 남는 유일한 재료가 이 문구다. */
+  /* 🔑 접두는 **박지 않고 sid 에서 뽑는다** (F632). 옛 판은 `local_` 리터럴이라, 클라우드 세션이
+   *   이 통로로 선언하면 공유 선언판이 provenance 를 잘못 말했다. 읽는 쪽은 접두를 전부 떼므로
+   *   파손이 안 나고 — 그래서 **증상이 없다**(새는 방향이 「통과」인 그 무늬다).
+   *   접두를 모르면 `sess_` 다: 모른다고 적는 편이 `local_` 이라 단정하는 것보다 참에 가깝다. */
+  const 나 = `${세션지문.접두뽑기(내sid) || 세션지문.기본접두}${지문}`;
   const 새줄 = 승계가능
-    ? `| ${오늘날짜()} | ${잡힘.트랙raw} | ${파일칸전문} | 작업중 (\`local_${지문}\`) — ▶착수 · 죽은 \`${잡힘.지문}\` 승계(마감 도장 확인) |`
-    : `| ${오늘날짜()} | ${트랙칸(항목, 상한.값)} | ${파일칸전문} | 작업중 (\`local_${지문}\`) — ▶착수 |`;
+    ? `| ${오늘날짜()} | ${잡힘.트랙raw} | ${파일칸전문} | 작업중 (\`${나}\`) — ▶착수 · 죽은 \`${잡힘.지문}\` 승계(마감 도장 확인) |`
+    : `| ${오늘날짜()} | ${트랙칸(항목, 상한.값)} | ${파일칸전문} | 작업중 (\`${나}\`) — ▶착수 |`;
   const 기존 = fs.existsSync(내) ? fs.readFileSync(내, 'utf8').replace(/\s*$/, '') : null;
   const 본문 = `${기존 || 보드머리(지문).join('\n')}\n${새줄}\n`;
   const 넘침 = 라이브('표.js').칸나누기(새줄)
@@ -1118,7 +1136,11 @@ function 집기보고(argv, i) {
     return 1;
   }
   const fi = argv.indexOf('--파일');
-  const r = 집기(Number(m[1]), fi === -1 ? '' : argv[fi + 1]);
+  /* `--지문` = 지문을 못 읽는 기계(클라우드·폰)의 **따를 수 있는 길** (F632). 환경변수보다 이쪽을
+   * 먼저 안내한다 — POSIX 셸의 `VAR=값 명령` 은 ASCII 이름만 받고, 사람이 한 번에 치기도 쉽다. */
+  const si = argv.indexOf('--지문');
+  const 준지문 = si === -1 ? '' : String(argv[si + 1] || '');
+  const r = 집기(Number(m[1]), fi === -1 ? '' : argv[fi + 1], undefined, { 지정: 준지문 });
   if (r.오류) { console.log(`✗ ${r.오류}`); return 1; }
   if (r.미측정) console.log('⚠ 보드 표를 못 읽어 **점유 대조를 못 했다**(0건과 다른 상태다) — Write 가 board-guard 에 걸리는지로 가른다.\n');
   if (r.놓인것) {
@@ -1197,7 +1219,7 @@ if (require.main === module) {
    *   `tests/도구인자게이트.test.js` ④ 가 「자기 낱말 전량을 선언이 덮는가」를 매번 다시 센다.
    *   ⚠ `git blame` 에 넘기는 `--line-porcelain` 은 **여기 넣지 않는다** — 넣으면 그 낱말이
    *     CLI 에서 통과한다(처방을 따르면 병이 생기는 자리 · F103). */
-  const 아는플래그 = ['--집기', '--파일', '--재심완료', '--본것', '--뒤집음', '--확정대조'];
+  const 아는플래그 = ['--집기', '--파일', '--지문', '--재심완료', '--본것', '--뒤집음', '--확정대조'];
   const 플래그오류 = 인자게이트('대기열', argv, 아는플래그);
   if (플래그오류) {
     console.error(`\n🔴 ${플래그오류}`);

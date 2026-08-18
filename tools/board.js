@@ -12,6 +12,7 @@ const 보드 = require(path.join(__dirname, 'lib', '보드.js'));
 const 낡음 = require(path.join(__dirname, 'lib', '보드낡음.js'));
 // 지문 규칙은 한 곳에서만 산다 — 파일명과 줄 안의 지문이 갈라지지 않는 이유(board-id 머리말).
 const 보드id = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'board-id.js'));
+const 세션지문 = require(path.join(__dirname, 'lib', '세션지문.js'));
 
 const ROOT = process.env.SYNK_BOARD_ROOT || path.resolve(__dirname, '..');
 const 표 = 보드.텍스트(ROOT);
@@ -110,7 +111,15 @@ if (주인없음 === null) {
  *   자기 트랙을 찾았고, 옛 트랙의 아카이브 줄까지 매번 들이밀면 그건 소음이다(안 읽히는 장치가 된다).
  * ⚠ 유령까지 센다(`줄들` 이 아니라 훑기 전체) — 규격 밖이라 표에 안 뜰 뿐 **내 선언은 있다.**
  *   여기서 「내 줄 0」으로 읽으면 유령을 쓴 세션에게 「네 줄은 아카이브에 있다」고 거짓말한다. */
-const 내지문 = 보드id.지문(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
+/* 🔴 옛 판은 지문을 못 읽으면 **아무 말도 안 했다**(F632). 그러면 「내 줄이 없다」와
+ *   「내가 누군지 못 읽어 **안 쟀다**」가 같은 침묵이 된다 — 미측정이 판정의 얼굴을 쓰는
+ *   그 자리다(F207). 되찾기는 F146 의 처방이라, 조용히 꺼지면 그 사고가 그대로 돌아온다. */
+const 나판 = 세션지문.읽기();
+const 내지문 = 나판.지문;
+if (!내지문) {
+  console.error('\n⚠ 되찾기 층을 **안 돌렸다** — 「내 줄 없음」이 아니라 「안 쟀다」다(F207·F632).');
+  console.error(`   ${세션지문.처방(나판.사유, 'node tools/board.js')}`);
+}
 if (내지문) {
   const 내것 = [...(보드.줄들(ROOT) || []), ...(보드.유령들(ROOT) || [])]
     .filter((r) => 보드id.파일지문(r.파일) === 내지문);
