@@ -61,10 +61,19 @@ FACES = [
     ("DM Mono", 500, "DM_Mono/DMMono-Medium.ttf"),
 ]
 
+# ⚠ 이 목록은 윈도 경로만 담고 있었다(2026-08-18 실측). 그래서 클라우드(리눅스) 세션에서
+#   `--pdf` 가 **6종 전부 rc=1** 로 죽었고, 문구는 「크롬을 못 찾았다」뿐이라 원인이 안 보였다.
+#   같은 판정을 이미 세 곳이 하고 있었는데(`tools/브랜드렌더린트.js` · `tools/지도대장.js` ·
+#   `tools/마스코트누끼.js`) 여기만 갈라져 있었다 — 같은 판정을 네 곳에 적으면 그중 하나는 낡는다.
+#   🔑 `CHROME_PATH` 를 맨 앞에 둔다: 명시 지정이 자동 탐색을 이긴다.
 CHROME_CANDIDATES = [
+    os.environ.get("CHROME_PATH"),
     r"C:\Program Files\Google\Chrome\Application\chrome.exe",
     r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
     os.path.join(os.environ.get("LOCALAPPDATA", ""), r"Google\Chrome\Application\chrome.exe"),
+    "/usr/bin/google-chrome",
+    "/usr/bin/chromium-browser",
+    "/usr/bin/chromium",
 ]
 
 

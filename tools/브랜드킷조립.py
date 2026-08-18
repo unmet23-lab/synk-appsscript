@@ -174,10 +174,10 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 
 <div class="band">
   <svg viewBox="-8 -2 296 116" role="img" aria-label="SYNK">
-    <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
-    <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
-    <path d="M196 92 L216 40 L228 40 L208 92 Z" fill="#F6F1E8" opacity=".5"/>
-    <path d="M234 92 L254 40 L266 40 L246 92 Z" fill="#F6F1E8" opacity=".5"/>
+    <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="700" letter-spacing="-4" fill="#F6F1E8">syn</text>
+    <path d="M148.3 46.7 L114.3 66.35 L148.3 86 L161.3 86 L127.3 66.35 L161.3 46.7 Z" fill="#FF6B5C"/>
+    <path d="M207.3 92 L227.3 40 L239.3 40 L219.3 92 Z" fill="#F6F1E8" opacity=".5"/>
+    <path d="M245.3 92 L265.3 40 L277.3 40 L257.3 92 Z" fill="#F6F1E8" opacity=".5"/>
   </svg>
   <h1>SYNK 브랜드 킷 — 완성본</h1>
   <p>2026-08-15 · 값 원천 = 디자인_토큰.json(23색+마스코트+재질+사운드+감각) · 이 문서는 조립 산출물 — 고칠 땐 토큰을 고치고 <code>python tools/브랜드킷조립.py</code></p>
@@ -195,14 +195,14 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
   <div class="logogrid">
     <div class="logocard" style="background:var(--navy2)">
       <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-        <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
-        <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
+        <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="700" letter-spacing="-4" fill="#F6F1E8">syn</text>
+        <path d="M148.3 46.7 L114.3 66.35 L148.3 86 L161.3 86 L127.3 66.35 L161.3 46.7 Z" fill="#FF6B5C"/>
       </svg>
     </div>
     <div class="logocard" style="background:var(--paper); outline:1px solid #E7DDC7">
       <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-        <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#1A2340">syn</text>
-        <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
+        <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="700" letter-spacing="-4" fill="#1A2340">syn</text>
+        <path d="M148.3 46.7 L114.3 66.35 L148.3 86 L161.3 86 L127.3 66.35 L161.3 46.7 Z" fill="#FF6B5C"/>
       </svg>
     </div>
     <div class="logocard" style="background:var(--navy2)">
@@ -211,7 +211,7 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
           <path d="M10 62 C17 50, 29 50, 36 60 C41 67, 48 67, 52 58"/>
           <path d="M68 68 L88 34 L108 68"/>
           <path d="M124 68 L144 34 L164 68"/>
-          <path d="M228 22 L186 52 L228 82"/>
+          <path d="M228 23 L189 45.5 L228 68"/>
         </g>
       </svg>
     </div>
