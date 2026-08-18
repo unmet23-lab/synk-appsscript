@@ -35,6 +35,7 @@
 
 const path = require('node:path');
 const 동기 = require(path.join(__dirname, 'master동기.js'));
+const { 칸나누기 } = require(path.join(__dirname, '표.js'));
 
 /** 저장소 뿌리 기준 git 경로. 뿌리 **밖**이면 `null`(= 못 잰다) — 픽스처가 여기로 떨어진다. */
 function git경로(뿌리, 파일) {
@@ -124,9 +125,11 @@ function 마스터판(id, o = {}) {
   };
 }
 
-/** 행의 **마지막 칸**(해소 칸) 원문. 파싱은 부르는 쪽 규칙을 안 빌린다 — 보여 줄 문장일 뿐이다. */
+/** 행의 **마지막 칸**(해소 칸) 원문 — 보여 줄 문장을 뽑는 자리다.
+ *  🔑 날 `split` 으로 가르지 않는다: 해소문에는 백틱 안 파이프(`` `a|b` ``)가 실제로 산다.
+ *  칸 가르기는 저장소에 **한 통로**뿐이다(`lib/표.js` · `tests/표칸.test.js` 가 옛 통로를 금지한다). */
 function 마지막칸(줄) {
-  const 칸 = String(줄).replace(/^\|/, '').replace(/\|$/, '').split('|');
+  const 칸 = 칸나누기(String(줄));
   return 칸.length ? 칸[칸.length - 1] : '';
 }
 
