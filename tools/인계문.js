@@ -42,17 +42,29 @@
 const path = require('path');
 const report = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'session-report.js'));
 const store = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'handoff-store.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 // 모르는 인자는 실행이 아니라 정지다 — 2026-08-14 실측: `--help` 를 받은 채 그대로 실행돼
 // 산 세션의 가짜 「마감」 인계문이 목차 맨 위(「여기를 복사하라」 자리)를 차지했다(F096 증상의
 // 새 입구 — 탐색·오타 호출이 곧 파일 쓰기였다). 인자 층에서 막아야 쓰기 층에 안 닿는다.
 // 대가: 부르는 쪽이 새 플래그를 먼저 쓰면 거짓 정지 — 방향이 시끄러운 쪽(exit 1)이라 바로 보인다.
+// 🔑 판정은 **공용 통로**(`lib/인자게이트.js`)가 한다 — 손으로 적은 사본이 남아 있으면 한쪽만
+//    `--키=값` 이나 `--` 종결자를 다르게 다루고, 갈라진 쪽이 조용히 통과한다(F401 축).
+// ⚠ 다만 이 도구는 **위치 인자도 거절한다** — 통로는 `--` 낱말만 보므로 그 칸을 여기서 따로 센다.
+//    받는 위치 인자가 0개인데 하나라도 오면 그건 오타이고, 이 도구에서 오타는 곧 파일 쓰기다(위 실측).
+// ⚠ 판정을 `require.main` 블록 **안**에 둔다 — 최상위에 두면 이 파일을 `require` 하는 쪽의
+//    argv 를 자기 낱말로 읽고 남의 실행을 «인계문» 이름으로 끊는다(같은 날 `harness-export.js`
+//    에서 실제로 그랬다 · 회귀 `tests/도구인자게이트.test.js` ③-3).
 const 인자 = process.argv.slice(2);
-const 모르는 = 인자.filter((a) => a !== '--no-save');
-if (모르는.length) {
-  process.stderr.write(`[인계문] 모르는 인자: ${모르는.join(' ')} — 아무것도 안 썼다.\n`
-    + '  끊을 때(파일 갱신) = 인자 없이 · 점검(화면만) = --no-save\n');
-  process.exit(1);
+const 아는플래그 = ['--no-save'];
+if (require.main === module) {
+  const 플래그오류 = 인자게이트('인계문', 인자, 아는플래그);
+  const 모르는위치 = 인자.filter((a) => !a.startsWith('--'));
+  if (플래그오류 || 모르는위치.length) {
+    process.stderr.write(`[인계문] ${플래그오류 || `모르는 인자: ${모르는위치.join(' ')}`} — 아무것도 안 썼다.\n`
+      + '  끊을 때(파일 갱신) = 인자 없이 · 점검(화면만) = --no-save\n');
+    process.exit(1);
+  }
 }
 const 사본금지 = 인자.includes('--no-save');
 

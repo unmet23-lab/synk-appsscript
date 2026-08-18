@@ -20,6 +20,8 @@
 'use strict';
 
 const { execFileSync } = require('child_process');
+const path = require('path');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 /** 08-12 에 끈 15개. 원래 값은 **전부 2(자동)** 였다 — 되돌리려면 2, 다시 끄려면 4. */
 const 서비스들 = [
@@ -93,6 +95,11 @@ function 처방(행들) {
 }
 
 function 본문() {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 종료 코드를 **돌려주는** 꼴이라 `process.exit` 를 여기서 부르지 않는다. */
+  const 아는플래그 = ['--처방'];
+  const 플래그오류 = 인자게이트('삼성서비스', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 1; }
   const 처방만 = process.argv.includes('--처방');
   const 행들 = 재기();
 

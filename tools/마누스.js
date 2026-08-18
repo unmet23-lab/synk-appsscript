@@ -43,6 +43,7 @@ const { spawn } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const 런 = require(path.join(ROOT, 'tools', 'lib', '검수런.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const 종류 = '사실심문';
 const API = 'https://api.manus.ai/v2';
@@ -495,6 +496,15 @@ function 런목록() {
 // ── main ──────────────────────────────────────────────────────────────────
 async function main() {
   const argv = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * 🔴 이 도구는 **크레딧을 태운다** — 오타가 조용히 접히면 「던진 줄 알았는데 안 던져졌다」와
+   *   「엉뚱한 것을 던졌다」가 같은 얼굴이 된다. 그래서 네트워크를 타기 **전**에 판정한다.
+   * ⚠ 종료 코드는 **돌려준다** — 아래 진입점이 `process.exitCode = c || 0` 으로 덮으므로,
+   *   여기서 `exitCode` 를 적고 `null` 을 돌려주면 **오류를 찍고도 exit 0** 이 된다(실측: 첫 판이
+   *   정확히 그랬다 — 게이트가 말은 하는데 부르는 쪽엔 성공으로 보였다). */
+  const 아는플래그 = ['--던지기', '--라벨', '--런목록', '--이어받기', '--작업목록', '--질문파일', '--크레딧', '--폴러'];
+  const 플래그오류 = 인자게이트('마누스', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 1; }
   const 값 = (플래그) => { const i = argv.indexOf(플래그); return i >= 0 ? argv[i + 1] : null; };
 
   if (argv.includes('--크레딧')) return 크레딧();

@@ -25,6 +25,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { 인자게이트 } = require('./lib/인자게이트.js');
 const { 칸나누기 } = require('./lib/표.js');   // 날 split 은 백틱 안 파이프에서 칸을 민다(F119·F253)
 
 const ROOT = path.resolve(process.env.SYNK_대장_ROOT || path.join(__dirname, '..'));
@@ -349,6 +350,11 @@ function 정본도장() {
 }
 
 function main(argv) {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 종료 코드를 **돌려주는** 꼴이라 `process.exit` 를 여기서 부르지 않는다. */
+  const 아는플래그 = ['--check', '--render', '--구역', '--상태', '--소급', '--시스템', '--시작', '--최근', '--한줄'];
+  const 플래그오류 = 인자게이트('시스템대장', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 1; }
   const md = fs.readFileSync(대장경로(), 'utf8');
   const p = 파싱(md);
   const 문제 = 검증(p);

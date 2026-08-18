@@ -27,6 +27,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const 키경로 = process.env.GEMINI_KEY_PATH || 'C:/Users/q1212/SYNK_보안/제미나이.txt';
 const REPO = path.resolve(__dirname, '..');
@@ -152,6 +153,11 @@ async function 한컷(k, 작업, 슬롯, 재질이름) {
 (async () => {
   /* 재질은 «묻지 않고 고르지 않는다» — 기본값을 두면 픽이 뒤집힌 뒤에도 옛 재질이 조용히 나오고,
    * 그건 통과의 얼굴을 한다. 안 주면 돈 쓰기 전에 멈춘다. */
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 위치 인자(작업 이름)는 `--` 로 안 시작하니 애초에 안 걸린다. */
+  const 아는플래그 = ['--갈래', '--재질'];
+  const 플래그오류 = 인자게이트('파생굽기', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const 재질i = process.argv.indexOf('--재질');
   const 재질이름 = 재질i >= 0 ? process.argv[재질i + 1] : null;
   if (!재질들[재질이름]) {

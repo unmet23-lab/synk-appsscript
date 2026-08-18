@@ -17,6 +17,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = path.resolve(__dirname, '..');
 const SCHEMA = path.join(ROOT, 'docs', '크루카드', '크루카드_스키마.json');
@@ -29,6 +30,10 @@ const PAIRS = [
 const RE = /("fieldSchema":\s*"data:application\/json;base64,)([A-Za-z0-9+/=]+)(")/;
 
 function main() {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  const 아는플래그 = ['--check'];
+  const 플래그오류 = 인자게이트('크루카드_스키마굽기', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const check = process.argv.includes('--check');
   /* LF 정규화 — autocrlf=true 체크아웃(Windows)은 이 파일을 CRLF로 내려준다. raw로 구우면
    * 굽는 기계의 OS에 따라 base64가 달라져, 같은 정본인데 CI(LF)와 로컬(CRLF)이 서로를 적색으로 본다. */

@@ -55,6 +55,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const 보드lib = require(path.join(__dirname, 'lib', '보드.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 /* 커밋 가능 상태 판정은 `인계문수거` 것을 그대로 쓴다 — rebase·merge·분리 HEAD 를 여기 다시
  * 적으면 두 수거 도구가 서로 다른 「지금 커밋해도 되나」를 보게 된다(그쪽 머리말과 같은 축). */
 const { 커밋못하는이유 } = require(path.join(__dirname, '인계문수거.js'));
@@ -207,6 +208,12 @@ const 짧게 = (줄) => String(줄).replace(/\s+/g, ' ').slice(0, 64);
 
 if (require.main === module) {
   const argv = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ **`조사()` 보다 먼저** 판정한다 — 이 도구의 `--실행` 은 파일을 옮기는 쪽이라, 오타가
+   *   「보고 모드」로 조용히 접히면 사람은 거둔 줄 알고 넘어간다. */
+  const 아는플래그 = ['--hook', '--실행'];
+  const 플래그오류 = 인자게이트('보드수거', argv, 아는플래그);
+  if (플래그오류) { process.stderr.write(`\n🔴 ${플래그오류}\n\n`); process.exit(1); }
   const 모드 = argv.includes('--hook') ? 'hook' : argv.includes('--실행') ? '실행' : '보고';
   const r = 조사();
 
