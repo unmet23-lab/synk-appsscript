@@ -174,7 +174,22 @@ def 등(이름, 위치, 에너지, 크기, 겨냥=(0, 0, 0)):
 
 등("key",  (-3.0, -3.8, 3.6), 620, 2.8)
 등("fill", (4.2, -1.2, -2.0), 14, 6.0)
-등("rim",  (0.4, 4.6, 2.6), 560, 2.2)
+_rim = 등("rim",  (0.4, 4.6, 2.6), 560, 2.2)
+
+# ── Light Linking — rim 은 «앞» 덩어리만 비춘다 ──────────────────────
+# rim 의 직책은 「앞 덩어리의 실루엣을 띄우는 것」인데, 뒤 덩어리에는 그게 정면 조명이 되어
+# 진회색이어야 할 것을 흰색으로 만든다. 세기로는 못 푼다(낮추면 앞의 실루엣이 같이 죽는다).
+try:
+    _rc = bpy.data.collections.new("rim_receivers")
+    _rc.objects.link(앞)
+    _rim.data.light_linking.receiver_collection = _rc
+    print("DIAG light-linking ON — rim → front only")
+except Exception as _e:
+    # 폴백: 이 판에 light linking 이 없으면 rim 을 앞쪽으로 당겨 뒤에 덜 닿게 한다.
+    # ⚠효과가 같지 않다 — 폴백을 탄 것을 «조용히» 넘기지 않는다.
+    _rim.location = (0.5, 2.9, 2.2)
+    _rim.data.energy = 380
+    print("DIAG light-linking 없음(%s) — 폴백: rim 을 앞으로 당김" % _e)
 
 world = bpy.data.worlds.new("w")
 scene.world = world
