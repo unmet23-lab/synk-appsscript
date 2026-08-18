@@ -23,6 +23,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { 파일소스, 코드만 } = require('./lib/소스검사');
@@ -119,14 +120,44 @@ test('🔴 배선 — 스냅샷이 **내용 해시**를 든다(도장만 들면 
   assert.match(SRC, /앞\.도장 === 도장/, '도장이 같을 때 앞판을 재사용하지 않는다 — 전량 두 번 읽으면 비용이 두 배다');
 });
 
-test('스냅샷 대상이 테스트가 읽는 곳을 덮는다 — 루트·tests·tools·docs·.claude', () => {
-  // 실측된 거짓 적색 2회의 진원지가 **Code.js(루트)** 와 **docs/ 아래 HTML** 이었다.
-  const walk = SRC.match(/walk\(ROOT, 0\);\s*for \(const d of \[([^\]]*)\]\)/);
-  assert.ok(walk, '스냅샷 대상 목록을 못 찾았다');
-  for (const d of ['tests', 'tools', 'docs', '.claude']) {
-    assert.ok(walk[1].includes(`'${d}'`), `스냅샷이 ${d} 를 안 본다`);
+/* 🔴 여기 있던 소스 앵커(`walk(ROOT, 0); for (const d of [...])` 정규식)를 **픽스처로 바꿨다**.
+ *   왜 (2026-08-18 변이 실측 · 4건 중 **구멍 3**): 그 앵커는 «목록에 적힌 글자»만 봐서, 글자를 안
+ *   건드리고 걸음만 망가뜨리는 변이가 전부 통과했다 — ①`.claude/state` 를 안 거른다 ②`node_modules`
+ *   를 안 거른다 ③하위 폴더를 안 훑는다(깊이 2→0). 셋 다 새는 방향이 「통과」다.
+ *   그리고 앵커 자신이 이 파일의 약점을 한 번 더 보여줬다: 인자 이름 하나(`ROOT`→`루트`)에
+ *   빨개졌다 — **행동은 한 글자도 안 바뀌었는데**. 재는 것을 글자에서 행동으로 옮긴다. */
+test('🔑 [픽스처] 스냅샷 걸음 — 루트·하위 2겹·html 은 담고, 런타임 상태와 node_modules 는 뺀다', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-스냅샷걸음-'));
+  try {
+    // 실측된 거짓 적색 2회의 진원지가 **Code.js(루트)** 와 **docs/ 아래 HTML** 이었다.
+    for (const d of ['docs/교재_읽기본', 'tests', 'tools/lib', '.claude/state', 'tools/node_modules/남의팩']) {
+      fs.mkdirSync(path.join(dir, d), { recursive: true });
+    }
+    const 쓰기 = (상대, 내용) => fs.writeFileSync(path.join(dir, ...상대.split('/')), 내용);
+    쓰기('Code.js', '// 루트\n');
+    쓰기('docs/이해대장.html', '<html></html>\n');
+    쓰기('docs/교재_읽기본/권1.html', '<html></html>\n');   // ③ 하위 2겹 — F616 이 본 두 파일 중 하나
+    쓰기('tools/lib/깊이2.js', '// 하위 2겹\n');
+    쓰기('tests/한벌.test.js', '// 검사\n');
+    쓰기('.claude/훅.js', '// 훅\n');
+    쓰기('.claude/state/턴.json', '{}\n');                 // ① 매 턴 갱신되는 런타임 상태
+    쓰기('tools/node_modules/남의팩/index.js', '// 남의 것\n');   // ② 내 편집 대상이 아니다
+    쓰기('docs/그림.png', 'PNG');                          // 테스트가 읽지 않는 확장자
+
+    const 본것 = new Set([...snapshot(null, dir).keys()].map((p) => p.replace(/\\/g, '/')));
+    assert.ok(본것.size > 0, '스냅샷이 0벌 — 이 초록은 판정이 아니라 미실행이다(F207)');
+    for (const p of ['Code.js', 'docs/이해대장.html', 'docs/교재_읽기본/권1.html',
+      'tools/lib/깊이2.js', 'tests/한벌.test.js', '.claude/훅.js']) {
+      assert.ok(본것.has(p), `스냅샷이 ${p} 를 안 본다 — 그 자리의 편집은 영영 안 보인다`);
+    }
+    assert.ok(!본것.has('.claude/state/턴.json'),
+      '`.claude/state` 를 셌다 — 훅이 매 턴 갱신하는 자리라 경고가 노이즈에 묻혀 죽는다');
+    assert.ok(!본것.has('tools/node_modules/남의팩/index.js'),
+      'node_modules 를 셌다 — 내 편집 대상이 아닌데 매 설치마다 수천 벌이 경고에 섞인다');
+    assert.ok(!본것.has('docs/그림.png'), '테스트가 읽지 않는 확장자까지 셌다');
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
   }
-  assert.match(SRC, /\.\(js\|json\|md\|html\|txt\)\$/i, '확장자 목록이 좁아졌다 — html 이 빠지면 실측된 거짓 적색을 놓친다');
 });
 
 // ── ④ 실동작 — 픽스처가 아니라 진짜 파일로 한 바퀴 ───────────────────────────
