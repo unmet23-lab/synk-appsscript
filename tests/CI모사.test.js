@@ -26,7 +26,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const { 파일소스 } = require('./lib/소스검사');
+const { 파일소스, 코드만 } = require('./lib/소스검사');
 
 const ROOT = path.resolve(__dirname, '..');
 /* 🔑 `파일소스()` 로 읽는다 — 읽으면서 줄끝 표기를 접는다(#Q101 · 2026-08-17).
@@ -186,4 +186,91 @@ test('🔑 실동작 — 진짜 파일의 mtime 만 움직이면 밖에서바뀜
   } finally {
     fs.utimesSync(대상, s.atime, s.mtime);   // 도장을 되돌린다 — 남의 런에 이 검사가 섞이지 않게
   }
+});
+/* ── ③ 플랫폼 축 — 모사가 **못 지우는** 차이 (마찰 F620 · 2026-08-18) ────────────────
+ *
+ * ■ 실사고: 리눅스 클라우드 세션이 `test-ci` 를 돌리자 fail 3 이 났고, 셋 다 윈도우에서는
+ *   **초록**이던 것이다. 그런데 이 도구의 머리말은 지우는 축을 ①시간대 ②홈 둘로 못박아 놓고
+ *   「초록이면 CI 도 초록」이라고 **단언**했다 — 플랫폼은 그 목록에 없다.
+ *   즉 **재지 않은 축에 대한 주장**이고(F474·F608 과 같은 병), 새는 방향은 「통과」다.
+ *
+ * ■ 지울 수 없는 축은 **이름 대고 말하는 것**이 유일한 처방이다. 그래서 여기서 재는 것은
+ *   「플랫폼이 같은가」가 아니라 **「같다/다르다/모른다 셋이 문장에서 갈리는가」**다 —
+ *   셋이 같은 문장이면 이 축은 없는 것과 같다.
+ *
+ * ■ 왜 픽스처가 지나: 이 검사가 도는 판은 그날 하나뿐이라(이 기계의 OS 하나) 실행 환경으로는
+ *   세 갈래 중 한 갈래밖에 못 잰다. 실환경에는 거짓양성 불변식만 건다. */
+
+const 모사환경 = require(path.join(ROOT, 'tools', 'lib', 'ci모사환경.js'));
+
+test('☠️ 러너 라벨 → 판 — 모르는 라벨을 **추측하지 않는다**(추측하면 「같다」가 거짓으로 선다)', () => {
+  assert.strictEqual(모사환경.러너판('ubuntu-latest'), 'linux');
+  assert.strictEqual(모사환경.러너판('windows-2022'), 'win32');
+  assert.strictEqual(모사환경.러너판('macos-14'), 'darwin');
+  for (const 모름 of ['self-hosted', '${{ matrix.os }}', '', null, '처음보는라벨']) {
+    assert.strictEqual(모사환경.러너판(모름), null, `모르는 라벨을 판으로 단정했다: ${모름}`);
+  }
+});
+
+/** 임시 워크플로 폴더 — 실저장소의 `.github` 는 하나뿐이라 갈래를 연출할 수 없다. */
+function 워크트리픽스처(파일들) {
+  const 뿌리 = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'synk-ci판-'));
+  const dir = path.join(뿌리, '.github', 'workflows');
+  fs.mkdirSync(dir, { recursive: true });
+  for (const [이름, 본문] of Object.entries(파일들 || {})) fs.writeFileSync(path.join(dir, 이름), 본문, 'utf8');
+  return 뿌리;
+}
+
+test('☠️ CI판 — 유일하면 그 판, 갈리거나 못 읽으면 **null(모름)**. 「없음」을 「같음」으로 접지 않는다', () => {
+  const 하나 = 모사환경.CI판(워크트리픽스처({ 'a.yml': 'jobs:\n  t:\n    runs-on: ubuntu-latest\n' }));
+  assert.strictEqual(하나.판, 'linux');
+  assert.deepStrictEqual(하나.라벨들, ['ubuntu-latest']);
+
+  const 갈림 = 모사환경.CI판(워크트리픽스처({
+    'a.yml': 'jobs:\n  t:\n    runs-on: ubuntu-latest\n',
+    'b.yaml': 'jobs:\n  t:\n    runs-on: windows-latest\n',
+  }));
+  assert.strictEqual(갈림.판, null, '🔴 OS 가 갈린 판을 하나로 접었다 — 그 순간 「같다」가 절반만 참인 말이 된다');
+  assert.match(갈림.사유, /다르다/);
+
+  assert.strictEqual(모사환경.CI판(워크트리픽스처({})).판, null, '워크플로 0건을 판으로 단정했다');
+  assert.strictEqual(모사환경.CI판(워크트리픽스처({ 'a.yml': 'jobs:\n  t:\n    steps: []\n' })).판, null,
+    '`runs-on:` 이 없는데 판을 단정했다');
+  assert.strictEqual(모사환경.CI판(path.join(ROOT, '없는폴더-xyz')).판, null, '폴더가 없는데 판을 단정했다');
+});
+
+test('☠️ [F620 급소] 플랫폼줄이 **세 갈래를 다르게** 낸다 — 셋이 같으면 이 축은 없는 것과 같다', () => {
+  const 리 = { 판: 'linux', 라벨들: ['ubuntu-latest'], 파일수: 1 };
+  const 셋 = [
+    모사환경.플랫폼줄('linux', 리),                                           // 같다
+    모사환경.플랫폼줄('win32', 리),                                           // 다르다
+    모사환경.플랫폼줄('win32', { 판: null, 라벨들: [], 사유: '워크플로 파일이 0건이다' }), // 모른다
+  ];
+  assert.strictEqual(new Set(셋).size, 3, `갈래가 문장에서 안 갈렸다:\n${셋.join('')}`);
+  assert.match(셋[0], /같다.*linux/, '같은 판인데 그 사실을 안 적으면 재진 축이 안 보인다');
+  assert.match(셋[1], /win32[\s\S]*CI 는 linux/, '어느 판에서 재고 어느 판을 못 쟀는지 이름을 대야 한다');
+  assert.match(셋[1], /원리상 안 보인다/, '🔴 다른 판인데 한계를 안 적었다 — 그게 F620 의 거짓 보증이다');
+  assert.match(셋[2], /모른다/, '못 읽은 것을 「같다」로도 「다르다」로도 접지 않는다(F207)');
+  /* ⚠ 「같다」라는 **낱말**로 재면 자기 설명(「같다」로 접지 않는다)에 걸린다 — 가드는 자기
+   *   전처리에도 눈이 먼다(CLAUDE.md 맹점). 재는 것은 낱말이 아니라 **판정 문구**다. */
+  assert.doesNotMatch(셋[2], /플랫폼은 CI 와 \*\*같다\*\*/,
+    '🔴 모름이 「같다」 판정으로 샜다 — 새는 방향은 언제나 통과다');
+});
+
+test('☠️ [F620 배선] test-ci 가 플랫폼 줄을 **실제로 낸다** — 순수 함수만 세우고 안 부르면 장치는 안 돈다', () => {
+  const 코드 = 코드만(SRC);
+  assert.match(코드, /모사환경\.플랫폼줄\(/, '🔴 플랫폼 줄을 안 부른다 — 지울 수 없는 축이 다시 침묵한다(F620)');
+  assert.match(코드, /모사환경\.CI판\(/, 'CI 판을 안 읽으면 견줄 대상이 없다');
+  assert.match(코드, /plat=\$\{process\.platform\}/, '머리 줄이 어느 판에서 재는지 안 밝힌다');
+  /* 🔑 판정과 분모는 **함께 다닌다** — 초록에만 달면 「내 적색이 저쪽 판에도 나는가」를 못 가른다. */
+  const i = 코드.indexOf('모사환경.플랫폼줄(');
+  const j = 코드.indexOf('console.log(code === 0');
+  assert.ok(i > 0 && j > i, '🔴 플랫폼 줄이 초록/적색 판정보다 뒤에 있다 — 적색 판에서는 분모가 안 붙는다');
+});
+
+test('☠️ 실저장소 거짓양성 — 이 저장소의 CI 판은 실제로 읽히고, 갈래 이름이 아는 것 중 하나다', () => {
+  const ci = 모사환경.CI판(ROOT);
+  assert.ok(ci.파일수 > 0, '워크플로가 0건이다 — 이 저장소에 CI 가 있는데 못 읽었다면 그게 결함이다');
+  if (ci.판 === null) return;   // 갈린 판은 위 픽스처가 진다
+  assert.ok(['linux', 'win32', 'darwin'].includes(ci.판), `모르는 판: ${ci.판}`);
 });
