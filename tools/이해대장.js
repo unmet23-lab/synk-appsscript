@@ -136,26 +136,10 @@ function esc(s) {
  *   그 판을 그대로 커밋하면 master 의 화면이 실측을 잃는다(이 파일의 회귀가 경고한 그 자리).
  *   후보를 순서대로 본다: ①옆(평소) ②워크트리면 본체의 옆. 둘 다 없으면 null 그대로다
  *   — 「못 읽었다」와 「빚이 0」을 같은 모양으로 두지 않는 규칙은 안 건드린다. */
-/* 🔴 [2026-08-18] 표기를 **감지**한다 — 위 정규식은 `[\\/]` 로 두 구분자를 다 받는데, 그 앞의
- *   `path.resolve` 가 이 기계의 문법으로만 읽어서 재료를 먼저 뭉갠다. 실측(CI 모사 · 리눅스):
- *   `\repo\SYNK-appsscript\.claude\worktrees\트랙이름` 을 posix resolve 가 **한 개의 파일명**으로
- *   보고 cwd 를 앞에 붙였고, 그래서 워크트리 후보 둘이 같은 경로로 무너져 회귀가 fail 했다
- *   (`tests/시트도달.test.js:318`). 윈도우에서는 우연히 통과했다 — **로컬 초록은 CI 초록이 아니다.**
- * ⚠ 무조건 win32 로 읽지 않는다. 그러면 리눅스 실경로 `/home/user/…` 가 `\home\user\…` 로 나와
- *   `existsSync` 가 영원히 false 를 주고, 증상은 「형제 없음」이라 **조용히 통과의 얼굴**을 한다. */
-function 경로문법(p) {
-  const s = String(p || '');
-  if (/^[a-zA-Z]:[\\/]/.test(s) || s.startsWith('\\\\')) return path.win32;   // 드라이브 문자·UNC
-  if (s.includes('\\') && !s.includes('/')) return path.win32;                // 백슬래시만 쓰는 표기
-  return path;                                                                 // 그 외 = 이 기계의 문법
-}
-
 function 형제경로들(root) {
-  const P = 경로문법(root);
-  const 절대 = P.resolve(root);
-  const 후보 = [P.resolve(절대, '..', 'SYNK-talk')];
-  const m = /^(.*)[\\/]\.claude[\\/]worktrees[\\/][^\\/]+$/.exec(절대);
-  if (m) 후보.push(P.resolve(m[1], '..', 'SYNK-talk'));
+  const 후보 = [path.resolve(root, '..', 'SYNK-talk')];
+  const m = /^(.*)[\\/]\.claude[\\/]worktrees[\\/][^\\/]+$/.exec(path.resolve(root));
+  if (m) 후보.push(path.resolve(m[1], '..', 'SYNK-talk'));
   return 후보;
 }
 
