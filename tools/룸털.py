@@ -182,7 +182,7 @@ _rim = 등("rim",  (0.4, 4.6, 2.6), 560, 2.2)
 try:
     _rc = bpy.data.collections.new("rim_receivers")
     _rc.objects.link(앞)
-    _rim.data.light_linking.receiver_collection = _rc
+    _rim.light_linking.receiver_collection = _rc      # ← light data 가 아니라 object 에 붙는다
     print("DIAG light-linking ON — rim → front only")
 except Exception as _e:
     # 폴백: 이 판에 light linking 이 없으면 rim 을 앞쪽으로 당겨 뒤에 덜 닿게 한다.
