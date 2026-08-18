@@ -45,7 +45,12 @@ function registry() {
   for (const [event, entries] of Object.entries(settings().hooks || {})) {
     for (const e of entries || []) {
       for (const h of e.hooks || []) {
-        const m = /hooks\/([a-z-]+)\.js/.exec(String(h.command || ''));
+        /* ⚠ `[a-z-]+` 로 좁히면 **한글 훅 파일명을 통째로 못 본다** — 등록이 있는데
+         * 「등록이 없다」는 거짓 실패가 나고, 반대로 미등록 한글 훅은 조용히 통과한다
+         * (실측 2026-08-18: `원격능력.js` 를 등록했는데 이 파서가 못 읽어 fail).
+         * 이 저장소는 `tools/` 를 이미 한글로 짓는다(작업가지·대기열·보드수거…) —
+         * 훅만 영문을 강제할 근거가 없으므로 **파서가 표기를 따라간다**(가드 맹점 ①). */
+        const m = /hooks\/([^\s"'/]+?)\.js/.exec(String(h.command || ''));
         if (m) out.set(m[1], { event, matcher: e.matcher, command: String(h.command) });
       }
     }

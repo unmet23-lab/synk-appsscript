@@ -156,6 +156,18 @@
             "statusMessage": "훅 등록 스냅샷"
           }
         ]
+      },
+      {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' _IGNORE || true; R=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/remote-capability.js\"; { command -v node >/dev/null && [ -f \"$R\" ]; } || { echo \"SYNK remote-capability 미실행: $R (node 또는 훅 파일 없음 — F044)\" >&2; exit 1; }; node \"$R\"",
+            "shell": "bash",
+            "timeout": 15,
+            "statusMessage": "원격 능력 진단(안 되는 것만)"
+          }
+        ]
       }
     ],
     "PreToolUse": [
