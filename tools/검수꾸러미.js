@@ -41,6 +41,7 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const 표 = require(path.join(ROOT, 'tools', 'lib', '표.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 const 낼곳 = path.join(ROOT, 'docs', '_ops', '검수꾸러미');
 
 /* ── 묶음 정의 — 발주서 A~M 의 실물. 선언값은 검수표 제목이 스스로 적은 수다 ─────────── */
@@ -291,6 +292,12 @@ function 본문(묶음, 조각) {
 
 function main() {
   const args = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 이 도구는 `--회차=3` 과 `--회차 3` **두 입구**를 다 받는다(아래 줄) — 그래서 게이트가
+   *   `=` 앞의 키로 대조한다. 그 대조가 없던 첫 판은 여기서 되던 명령을 죽였다(F103). */
+  const 아는플래그 = ['--내보내기', '--회차'];
+  const 플래그오류 = 인자게이트('검수꾸러미', args, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const 회차 = Number((args.find((a) => a.startsWith('--회차')) || '').split('=')[1] || args[args.indexOf('--회차') + 1] || 1) || 1;
   const 내보내기 = args.includes('--내보내기');
 

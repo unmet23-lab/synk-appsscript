@@ -45,6 +45,7 @@ const ROOT = path.resolve(__dirname, '..');
 const TALK = process.env.SYNK_TALK_ROOT
   || require(path.join(ROOT, '.claude', 'hooks', 'lib', '형제저장소.js')).형제경로(ROOT);
 const 린트 = require(path.join(ROOT, 'tools', '브랜드렌더린트.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 const 토큰 = require(path.join(ROOT, 'docs', '디자인_토큰.json'));
 
 const 킷 = Object.fromEntries(토큰.색.킷.map((c) => [c.이름, c.hex.toUpperCase()]));
@@ -319,6 +320,11 @@ function html조각(r) {
 }
 
 function main(argv) {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 종료 코드를 **돌려주는** 꼴이라 `process.exit` 를 여기서 부르지 않는다. */
+  const 아는플래그 = ['--json', '--쓰기'];
+  const 플래그오류 = 인자게이트('모드대비계측', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 1; }
   if (!fs.existsSync(테마경로)) {
     console.error(`SKIP — talk 저장소를 못 찾았다: ${테마경로}`);
     console.error('  (미실행이지 통과가 아니다 · SYNK_TALK_ROOT 로 경로를 줄 수 있다)');

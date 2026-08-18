@@ -21,6 +21,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
+
 const ROOT = path.join(__dirname, '..');
 const 낼곳 = path.join(ROOT, 'docs', '_ops', '검수꾸러미', '회수');
 
@@ -99,6 +101,11 @@ function 검사(머리, 행들) {
 
 function main() {
   const args = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 위치 인자(채운 .tsv 경로들)는 `--` 로 안 시작하니 애초에 안 걸린다. */
+  const 아는플래그 = ['--내보내기'];
+  const 플래그오류 = 인자게이트('검수회수', args, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const 내보내기 = args.includes('--내보내기');
   const 파일들 = args.filter((a) => !a.startsWith('--'));
 

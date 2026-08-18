@@ -24,6 +24,7 @@ const fs = require('fs');
 // 모델·사고 수준은 모델정책이 정본이다(유호님 확정 "flash high" · 2026-08-05) — 여기 하드코딩하지 않는다.
 // 이 파일의 「2.5-flash 는 신규 키에 404」 실측이 그 정본의 근거 중 하나로 들어가 있다.
 const 정책 = require('./모델정책.js');
+const { 인자게이트 } = require('./lib/인자게이트.js');
 // 말투 자는 voice-guard 가 정본이다(원본 = skills/synk-brand 「반례」 표). 여기서 규칙을 다시 쓰지 않는다.
 const { 위반찾기: 말투위반 } = require('../.claude/hooks/voice-guard.js');
 
@@ -169,6 +170,11 @@ async function 제미나이(key, model, prompt, opts = {}) {
 
 async function main() {
   const argv = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 위치 인자 두 벌(`<한국어> <몽골어>`)은 `--` 로 안 시작하니 애초에 안 걸린다. */
+  const 아는플래그 = ['--파일'];
+  const 플래그오류 = 인자게이트('몽골어대조', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   let ko, mn;
   if (argv[0] === '--파일') {
     if (!argv[1] || !fs.existsSync(argv[1])) {

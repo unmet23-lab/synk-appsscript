@@ -19,6 +19,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = path.resolve(__dirname, '..');
 // 픽스처 이음매 — 회귀가 실저장소를 건드리지 않고 탐지력을 잴 수 있게 한다(bump-version 의 SYNK_BUMP_ROOT 와 같은 계열).
@@ -203,6 +204,11 @@ function sources() {
 
 function main() {
   const args = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 자식(`인쇄본빌드.js`)에 넘기는 `--pdf` 는 **이 도구도 읽는 낱말**이라 선언에 있다(274줄). */
+  const 아는플래그 = ['--check', '--pdf'];
+  const 플래그오류 = 인자게이트('발표물빌드', args, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 1; }
   const wantPdf = args.includes('--pdf');
   const checkOnly = args.includes('--check');
 

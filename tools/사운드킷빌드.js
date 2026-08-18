@@ -15,6 +15,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
+
 const ROOT = path.resolve(__dirname, '..');
 const 토큰 = require(path.join(ROOT, 'docs', '디자인_토큰.json'));
 const OUT_DIR = path.join(ROOT, 'docs', '브랜드_사운드킷');
@@ -81,6 +83,12 @@ function wavBytes(pcm) {
 }
 
 if (require.main === module) {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ **`buildAll()` 보다 먼저** 판정한다 — 뒤에 두면 오타를 친 실행이 파일을 다 쓰고 나서
+   *   죽어, 「모르는 낱말인데 부작용은 났다」가 된다. */
+  const 아는플래그 = ['--check'];
+  const 플래그오류 = 인자게이트('사운드킷빌드', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const files = buildAll();
   if (process.argv.includes('--check')) {
     for (const f of files) {

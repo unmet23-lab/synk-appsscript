@@ -15,6 +15,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
+
 const DIR = path.resolve(__dirname, '..', 'docs', '발표물');
 
 // 어두운 바탕 기준(syn=Cream · `<`=Coral — 브랜드킷 §3 v2.0). 밝은 바탕에 쓸 땐 syn=#1A2340(Navy).
@@ -38,6 +40,15 @@ function inject(html) {
   return { out, hits };
 }
 
+/* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+ * ⚠ 판정을 `require.main` 블록 **안**에 둔다 — 이 파일은 몸통이 통째로 최상위에서 도는 꼴이라,
+ *   게이트만 밖에 두면 `require` 하는 쪽의 argv 를 읽고 남의 실행을 남의 이름으로 끊는다
+ *   (같은 날 `harness-export.js` 에서 실제로 그랬다 · 회귀 ③-3). */
+const 아는플래그 = ['--check'];
+if (require.main === module) {
+  const 플래그오류 = 인자게이트('로고주입', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
+}
 const check = process.argv.includes('--check');
 if (!fs.existsSync(DIR)) { console.log('[로고주입] docs/발표물 없음 — 할 일 없음'); process.exit(0); }
 

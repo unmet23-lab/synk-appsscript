@@ -30,6 +30,7 @@
 const fs = require('fs');
 const path = require('path');
 const { ROOT, 뱅크읽기 } = require('./lib/문법뱅크.js');
+const { 인자게이트 } = require('./lib/인자게이트.js');
 /* 파일을 «검사 대상으로» 읽는 문 — 읽으면서 두 축(CRLF·줄끝 공백)을 접는다. 손으로 접으면
  * CRLF 축만 막힌다(도구층 실측 08-17: 손 접기 12벌 전부가 그 반쪽 · #Q101). */
 const { 파일소스 } = require('../tests/lib/소스검사.js');
@@ -61,6 +62,11 @@ function 계약글(소스) {
 }
 
 function main(argv) {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 종료 코드를 **돌려주는** 꼴이라 `process.exit` 를 여기서 부르지 않는다. */
+  const 아는플래그 = ['--check'];
+  const 플래그오류 = 인자게이트('문법급수계약', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 1; }
   const check = argv.includes('--check');
   const 새글 = 계약글();
   const 옛글 = fs.existsSync(계약경로) ? 파일소스(계약경로) : null;

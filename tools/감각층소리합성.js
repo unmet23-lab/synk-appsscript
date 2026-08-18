@@ -25,6 +25,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
+
 const SR = 22050;
 const SEED_BASE = 20260815; // 판 씨앗 — 바꾸면 다른 판이다(정본 판 = 20260815)
 
@@ -235,6 +237,10 @@ const COUNTS = { tap: 4, grain: 8, press: 3 };
 const MAKERS = { tap: makeTap, grain: makeGrain, press: makePress };
 
 function main() {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다. */
+  const 아는플래그 = ['--out'];
+  const 플래그오류 = 인자게이트('감각층소리합성', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const outIdx = process.argv.indexOf('--out');
   if (outIdx === -1 || !process.argv[outIdx + 1]) {
     console.error('사용: node tools/감각층소리합성.js --out <디렉터리>');
