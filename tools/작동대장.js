@@ -60,6 +60,19 @@
 'use strict';
 
 const fs = require('node:fs');
+
+/* ── Loom — 이 지면이 부품을 «입는» 통로 (2026-08-18 · ④ 지면 배선) ──────────────
+ * 판정(훅 게이트·얹을 자리·멱등·범위진단)은 전부 `tools/lib/loom얹기.js` 하나가 진다.
+ * 여기서 고르는 것은 프리셋 하나뿐 — `부품만` = 지면이 자기 디자인을 지고 부품만 얹는 판.
+ * 🔴 훅이 0 이면 통로가 «안 얹는다». 그래야 「마커만 켜진 초록」이 안 생긴다(F517②). */
+const loom얹기모듈 = require('./lib/loom얹기.js');
+function loom태우기(html) {
+  const r = loom얹기모듈.얹기(html, { 지면: '부품만' });
+  if (!r.얹힘 && r.범위흠) console.error('   ⚠ Loom 미적용 — ' + r.범위흠);
+  else if (r.얹힘) console.error(`   ✅ Loom 부품 ${r.훅.length}종 — ${r.훅.join('·')}`);
+  return r.html;
+}
+
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { 칸나누기 } = require('./lib/표.js');   // 날 split 은 백틱 안 파이프에서 칸을 민다(F119·F253)
@@ -79,8 +92,8 @@ const 기록경로 = process.env.SYNK_작동대장_기록 || path.join(ROOT, 'do
 
 /** 브랜드 킷 — DESIGN.md §1 이 정본. 여기 있는 것은 «인용»이고 새 색을 만들지 않는다. */
 const 킷 = {
-  paper: '#FBF7EE', ink: '#171820', navy: '#1A2340', navy2: '#0F1730', navy3: '#2A3358',
-  cream: '#F6F1E8', cream3: '#E7DDC7', slate2: '#5F657D',
+  paper: '#FAFAF9', ink: '#1B1B1A', navy: '#262626', navy2: '#08090C', navy3: '#373737',
+  cream: '#E4E4E7', cream3: '#D1D2D4', slate2: '#676767',
   coral: '#FF6B5C', coral3: '#E8543F', coralWash: '#FFE9E4',
   sun: '#FFD447', emerald: '#13724A',
 };
@@ -753,7 +766,7 @@ function 그리기(d, 도장) {
   .warnbox b{color:var(--coral3)}
   footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--cream3);
     color:var(--slate2);font-size:12.5px}
-</style></head><body><div class="wrap">
+</style></head><body><div class="wrap 룸">
 
 <h1>작동 대장</h1>
 <p class="sub">이번 주에 <b>무엇을 뜯을 것인가</b>를 고르는 한 장 — 「무엇이 있나」가 아니라 <b>「무엇이 실제로 도나」</b>를 잰다.</p>
@@ -879,7 +892,7 @@ function 본체() {
   const html = 그리기(d, { 시각, 수렴: x === y });
 
   fs.mkdirSync(path.dirname(산출경로), { recursive: true });
-  fs.writeFileSync(산출경로, html, 'utf8');
+  fs.writeFileSync(산출경로, loom태우기(html), 'utf8');
 
   if (argv.includes('--바로가기')) {
     /* 운영자료 폴더 통로는 하나뿐이다(유호 상시 08-09) — 손 경로 금지.

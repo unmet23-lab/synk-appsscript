@@ -213,8 +213,8 @@ function 내부HTML(파싱결과, 제목맵, { 날짜, 도장 }) {
      * 1층 --tx(Cream) · 2층 --dim(Cream 3) · 3층 --mute(Slate). 3층은 판번호·라벨·주석 몫이다.
      * 🔴 --mute 는 **다크 전용**이다(Slate on Paper 2.86). 이 템플릿의 바닥 3면 전부 통과:
      *    --bg 5.78 · --card 5.05 · legend 의 wash 합성면 4.98. */
-    --bg: #0F1730; --card: #1A2340; --line: #2A3358;
-    --tx: #F6F1E8; --dim: #E7DDC7; --mute: #8A93AD;
+    --bg: #08090C; --card: #262626; --line: #373737;
+    --tx: #E4E4E7; --dim: #D1D2D4; --mute: #8A8A8A;
     --sig: #FF6B5C; --wash: rgba(255,107,92,.12);
     --sans: 'Inter Tight', 'SUIT Variable', -apple-system, 'Segoe UI',
             'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
@@ -289,8 +289,8 @@ function 대외HTML(파싱결과, { 날짜, 도장 }) {
      * 구 회색 #6B7186 을 되살린 것이 아니다 — 그 값은 Paper 4.53·Cream 4.31 로 미달이라
      * 명도만 내려 크림 3면을 통과시킨 값이 Slate 2 다(Paper 5.39 · Wash 4.95).
      * 🔴 --mute 는 **라이트 전용**이다(Slate 2 는 다크 바닥에서 3.07 로 미달). */
-    --bg: #FBF7EE; --tx: #171820; --nv: #1A2340; --nv3: #2A3358; --mute: #5F657D;
-    --line: #E7DDC7; --sig: #FF6B5C; --sig3: #E8543F; --wash: #FFE9E4;
+    --bg: #FAFAF9; --tx: #1B1B1A; --nv: #262626; --nv3: #373737; --mute: #676767;
+    --line: #D1D2D4; --sig: #FF6B5C; --sig3: #E8543F; --wash: #FFE9E4;
     --sans: 'Inter Tight', 'SUIT Variable', -apple-system, 'Segoe UI',
             'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
     /* Consolas 맨 앞 — 지도대장 PDF 폰트 게이트 */

@@ -33,14 +33,14 @@
 -->
 <style>
   :root{
-    --paper:#FBF7EE; --ink:#171820; --navy:#0F1730; --navy2:#1A2340;
-    --cream:#F6F1E8; --cream2:#E7DDC7; --coral:#FF6B5C; --coral-soft:#FFE9E4;
-    --rule:#E7DDC7;
+    --paper:#FAFAF9; --ink:#1B1B1A; --navy:#08090C; --navy2:#262626;
+    --cream:#E4E4E7; --cream2:#D1D2D4; --coral:#FF6B5C; --coral-soft:#FFE9E4;
+    --rule:#D1D2D4;
     /* 2026-08-05 신설 — 키트 밖 회색(#5C5850 9곳·#8A8578 1곳)의 대체 잉크.
-       ⚠ 이 파일의 이름표는 키트와 **뒤집혀 있다**: 여기 `--navy`(#0F1730)가 키트의 Navy 2 이고,
-         `--navy2`(#1A2340)가 키트의 Navy 다. 값은 전부 키트 안이라 렌더는 옳다 —
+       ⚠ 이 파일의 이름표는 키트와 **뒤집혀 있다**: 여기 `--navy`(#08090C)가 키트의 Navy 2 이고,
+         `--navy2`(#262626)가 키트의 Navy 다. 값은 전부 키트 안이라 렌더는 옳다 —
          이름만 헷갈리니 새로 넣는 것은 키트 이름을 그대로 쓴다(--navy-3 = Navy 3). */
-    --navy-3:#2A3358;
+    --navy-3:#373737;
   }
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
@@ -68,7 +68,7 @@
   header p.lede{margin:0 0 26px; color:var(--cream2); font-size:16px}
   .id-grid{
     display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-    gap:2px; background:rgba(246,241,232,.14); border:1px solid rgba(246,241,232,.14);
+    gap:2px; background:rgba(228,228,231,.14); border:1px solid rgba(228,228,231,.14);
   }
   .id-grid div{background:var(--navy); padding:13px 16px}
   .id-grid dt{
@@ -82,7 +82,7 @@
     background:var(--coral); color:var(--navy); font-weight:700;
     padding:1px 7px; border-radius:3px; white-space:nowrap;
   }
-  header .fill{box-shadow:0 0 0 1px rgba(246,241,232,.3)}
+  header .fill{box-shadow:0 0 0 1px rgba(228,228,231,.3)}
 
   /* ── 본문 ─────────────────────────────────────────────── */
   main{padding:0 0 72px}
