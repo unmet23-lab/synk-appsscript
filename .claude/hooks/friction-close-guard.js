@@ -45,6 +45,8 @@ const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { stripNonExecutedText } = require(path.join(__dirname, 'lib', 'shell-text.js'));
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('./lib/board-id.js');
 
 let input;
 try { input = JSON.parse(fs.readFileSync(0, 'utf8')); } catch (_) { process.exit(0); }
@@ -136,7 +138,7 @@ const 수리동반 = () => {
 
 // 세션당 같은 번호는 한 번만 — 한 트랙의 고침 커밋마다 짖으면 소음이 되고, 소음은 가드를 꺼지게 한다.
 const STATE_DIR = process.env.SYNK_FRICTION_GUARD_DIR || path.join(os.tmpdir(), 'synk-friction-guard');
-const sid = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || 'unknown').replace(/[^\w.-]/g, '_');
+const sid = String(보드id.세션id() || 'unknown').replace(/[^\w.-]/g, '_');
 const 말한적 = path.join(STATE_DIR, `said-${sid}.json`);
 let 이미 = [];
 try { 이미 = JSON.parse(fs.readFileSync(말한적, 'utf8')); } catch (_) { 이미 = []; }

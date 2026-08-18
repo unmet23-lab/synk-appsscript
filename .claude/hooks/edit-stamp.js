@@ -32,6 +32,8 @@
 const fs = require('fs');
 const path = require('path');
 const store = require(path.join(__dirname, 'lib', 'handoff-store.js'));
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('./lib/board-id.js');
 
 let input = {};
 try { input = JSON.parse(fs.readFileSync(0, 'utf8')); } catch (_) { process.exit(0); }
@@ -41,7 +43,7 @@ if (!abs) process.exit(0);
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
 /* 세션 id 는 **호스트 id** 다 — 자동커밋·track-collision 이 보는 것과 같은 id 여야 짝이 맞는다(F074). */
-const sid = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || input.session_id || '').trim();
+const sid = String(보드id.보드id() || input.session_id || '').trim();
 if (!sid) process.exit(0);
 
 const 절대 = path.resolve(abs);

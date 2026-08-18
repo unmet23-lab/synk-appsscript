@@ -233,3 +233,68 @@ test('🔴 지침·안내가 가리키는 경로가 실재한다 (죽은 명령�
     assert.match(fs.readFileSync(path.join(ROOT, 파일), 'utf8'), new RegExp(상대), `${파일}: ${사유}`);
   }
 });
+
+/* ── 건너뜀(skipped) — 셀프호스티드 스위치가 꺼진 판 (2026-08-18) ──────────────
+ *
+ * 워크플로 job 에 `if: vars.SYNK_SELFHOSTED == 'on'` 스위치를 달면서 생긴 **새 상태**다.
+ * 스위치가 꺼져 있으면 run 은 뜨자마자 한 스텝도 안 돌고 `conclusion: skipped` 로 «완료»된다.
+ * 두 방향으로 다 샐 수 있어서 양쪽을 못박는다:
+ *   ㉠ 성공으로 접으면 → **검사 0건이 「통과」**가 된다(새는 방향은 언제나 통과).
+ *   ㉡ 적색으로 접으면 → 「코드가 깨졌다」로 들려 빈 로그를 열게 만든다(F210 이 같은 병이었다).
+ */
+
+test('🔴 건너뜀은 초록이 아니다 — 한 스텝도 안 돌았는데 통과로 읽으면 검사 0건이 초록이 된다', () => {
+  const r = 판정({ runs: [run({ conclusion: 'skipped' })], 담는가: 전부담김 });
+  assert.notEqual(r.상태, '초록', 'skipped 를 초록으로 읽었다 — 스위치가 꺼진 채로 「원격도 봤다」가 된다');
+  assert.equal(r.상태, '건너뜀', `skipped 를 자기 이름으로 안 냈다: ${r.상태}`);
+});
+
+test('🔴 건너뜀은 적색도 아니다 — 처방이 다르다(로그를 열 게 아니라 스위치를 켠다)', () => {
+  const r = 판정({ runs: [run({ conclusion: 'skipped' })], 담는가: 전부담김 });
+  assert.notEqual(r.상태, '적색', 'skipped 를 적색으로 읽었다 — 빈 로그를 열게 만든다');
+});
+
+test('🔑 건너뜀과 «진짜 완료본»이 섞이면 진짜가 이긴다 — 스위치를 켠 뒤의 판이 그 모양이다', () => {
+  const r = 판정({
+    runs: [
+      run({ conclusion: 'skipped', createdAt: '2026-08-18T09:00:00Z', databaseId: 1 }),
+      run({ conclusion: 'success', createdAt: '2026-08-18T10:00:00Z', databaseId: 2 }),
+    ],
+    담는가: 전부담김,
+  });
+  assert.equal(r.상태, '초록', '건너뜀이 뒤에 온 진짜 초록을 가렸다');
+  assert.equal(r.run.databaseId, 2);
+});
+
+test('🔑 도는 중이 있으면 건너뜀보다 먼저다 — 스위치를 막 켠 창이 그 모양이다', () => {
+  const r = 판정({
+    runs: [
+      run({ conclusion: 'skipped', createdAt: '2026-08-18T09:00:00Z', databaseId: 1 }),
+      run({ status: 'in_progress', conclusion: null, createdAt: '2026-08-18T10:00:00Z', databaseId: 2 }),
+    ],
+    담는가: 전부담김,
+  });
+  assert.equal(r.상태, '대기', `도는 run 이 있는데 ${r.상태} 로 냈다`);
+});
+
+test('🔑 건너뜀이 취소보다 먼저 나온다 — 원인이 하나로 특정되는 쪽을 먼저 말한다', () => {
+  const r = 판정({
+    runs: [
+      run({ conclusion: 'cancelled', createdAt: '2026-08-18T09:00:00Z', databaseId: 1 }),
+      run({ conclusion: 'skipped', createdAt: '2026-08-18T09:30:00Z', databaseId: 2 }),
+    ],
+    담는가: 전부담김,
+  });
+  assert.equal(r.상태, '건너뜀', `${r.상태} 로 냈다 — 특정된 원인(스위치 꺼짐)을 뒤로 미뤘다`);
+});
+
+test('🔴 종료코드는 초록만 0 이다 — 건너뜀도 1 이어야 「미검증」이 게이트를 못 지난다', () => {
+  const 상태들 = ['건너뜀', '취소뿐', '대기', '적색', '미검증', '미push'];
+  for (const s of 상태들) {
+    assert.notEqual(s, '초록', `상태 목록에 초록이 섞였다: ${s}`);
+  }
+  // 실제 종료코드는 도구 말미의 `process.exit(r.상태 === '초록' ? 0 : 1)` 한 줄이 진다.
+  const src = require('node:fs').readFileSync(도구경로, 'utf8');
+  assert.match(src, /process\.exit\(r\.상태 === '초록' \? 0 : 1\)/,
+    '종료코드 판정이 「초록만 0」에서 벗어났다 — 새 상태가 늘 때마다 여기가 급소다');
+});
