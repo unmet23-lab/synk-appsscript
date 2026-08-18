@@ -27,7 +27,10 @@ const SID = 'local_11111111-2222-3333-4444-555555555555';
 function git(cwd, args, env) {
   return execFileSync('git', args, {
     cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, CLAUDE_CODE_HOST_SESSION_ID: '', ...(env || {}) },
+    /* 🔑 **두 변수를 다** 비운다 — 훅이 `HOST` → `REMOTE` 로 폴백하므로(F628), 하나만 비우면
+     *   이 검사가 «내가 도는 기계»에 따라 갈린다: 클라우드에선 REMOTE 가 실제로 있어
+     *   「환경변수가 없으면 아무것도 안 한다」가 그 기계에서만 빨개진다(F296 그 자리다). */
+    env: { ...process.env, CLAUDE_CODE_HOST_SESSION_ID: '', CLAUDE_CODE_REMOTE_SESSION_ID: '', ...(env || {}) },
   });
 }
 
@@ -81,6 +84,43 @@ test('환경변수가 없으면 아무것도 하지 않는다 (손커밋·CI를 
   assert.equal(got, '', '환경변수가 없는데 트레일러가 박혔다: ' + JSON.stringify(got));
   const body = git(dir, ['log', '-1', '--format=%B']).trim();
   assert.equal(body, '유호 손커밋', '본문이 변형됐다: ' + JSON.stringify(body));
+});
+
+/* ── F628 폴백 — 클라우드엔 `HOST` 가 아예 없다 ─────────────────────────────────
+ * 실측 2026-08-18: 기준 `origin/master@ef6b0a41` 에서 **최신 194커밋 연속** 트레일러가 없었고,
+ * 있는 126건은 전부 `local_` 접두였다 — 클라우드가 박은 적이 한 번도 없다. 가드가 조용히
+ * `exit 0` 하던 자리다(새는 방향이 「아무 일도 안 남」이라 아무도 못 봤다). */
+const REMOTE = 'cse_01Fi49nN7q4mpXF7RsLDkqeZ';
+
+test('🔴 F628 — HOST 가 없으면 REMOTE 로 폴백해 박는다 (클라우드의 기본 상태)', (t) => {
+  let dir;
+  try { dir = mkRepo(); } catch (e) { return t.skip('픽스처 생성 실패: ' + e.message); }
+
+  const got = commit(dir, 'f628-a.txt', '클라우드 커밋', { CLAUDE_CODE_REMOTE_SESSION_ID: REMOTE });
+  assert.equal(got, REMOTE,
+    'HOST 가 없을 때 트레일러가 안 박혔다 — 클라우드 커밋이 다시 주인 없이 쌓인다: ' + JSON.stringify(got));
+});
+
+test('🔑 F628 — HOST 가 있으면 HOST 가 이긴다 (폴백은 «없을 때만»)', (t) => {
+  let dir;
+  try { dir = mkRepo(); } catch (e) { return t.skip('픽스처 생성 실패: ' + e.message); }
+
+  const got = commit(dir, 'f628-b.txt', '노트북 커밋',
+    { CLAUDE_CODE_HOST_SESSION_ID: SID, CLAUDE_CODE_REMOTE_SESSION_ID: REMOTE });
+  assert.equal(got, SID,
+    '폴백이 우선순위를 뒤집었다 — 노트북에서 박히던 값이 바뀌면 옛 커밋과 새 커밋의 주인이 갈린다: ' + JSON.stringify(got));
+});
+
+test('🔑 F628 — `CLAUDE_CODE_SESSION_ID` 로는 «안» 내려간다 (트레일러의 뜻을 지킨다)', (t) => {
+  let dir;
+  try { dir = mkRepo(); } catch (e) { return t.skip('픽스처 생성 실패: ' + e.message); }
+
+  // 그건 메시지를 못 보내는 내부 에이전트 id 다 — 여기까지 폴백하면 트레일러가 「연락 가능한 id」에서
+  // 「그냥 구분자」로 내려앉는다. 훅 머리말이 그 이유를 적어 뒀고, 이 검사가 그 문장을 못박는다.
+  const got = commit(dir, 'f628-c.txt', '내부 id 뿐인 판',
+    { CLAUDE_CODE_SESSION_ID: 'ad0673f3-a839-5087-86fd-4b5f602a093d' });
+  assert.equal(got, '',
+    '내부 에이전트 id 까지 폴백했다 — 그 값으로는 세션에 메시지를 못 보낸다: ' + JSON.stringify(got));
 });
 
 test('amend해도 트레일러가 중복되지 않는다', (t) => {
