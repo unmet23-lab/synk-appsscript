@@ -812,7 +812,7 @@ function 출력() {
    *   비었지」를 다시 헤매고, 그 줄이 남의 산 트랙과 겹치지 않는다는 것도 못 믿는다. */
   const 놓인것 = 행들 ? 전체.filter((it) => { const p = 점유표.get(it); return p && p.놓임; }) : [];
   if (놓인것.length) {
-    console.log(`  🎫 **주인이 놓은 자리 ${놓인것.length}건** — 「나는 이걸 안 한다」고 스스로 내려놓은 줄이라 **점유가 아니다**(CLAUDE.md 세션 규약의 유일한 예외 · F285·F556). 집어도 된다:`);
+    console.log(`  **주인이 놓은 자리 ${놓인것.length}건** — 「나는 이걸 안 한다」고 스스로 내려놓은 줄이라 **점유가 아니다**(CLAUDE.md 세션 규약의 유일한 예외 · F285·F556). 집어도 된다:`);
     for (const it of 놓인것.slice(0, 보일줄수)) {
       const p = 점유표.get(it);
       console.log(`    · [${it.층.split(' ')[0]}${Number.isInteger(it.id) ? ` #Q${it.id}` : ` 줄${it.줄번호}`}] ${씨앗(it.본문)}…`
