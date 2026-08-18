@@ -155,3 +155,81 @@ test('🔑 `--확인` 은 저장소를 안 바꾼다', (t) => {
   const 후 = spawnSync('git', ['status', '--porcelain'], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(후.stdout, 전.stdout, '`--확인` 이 작업 트리를 건드렸다 — 읽기 전용이어야 한다');
 });
+
+/* ── ⑤ 체크섬 추출 — 형제 파일의 값을 집지 않는다 ─────────────────────────
+ *
+ * 왜 이 절이 생겼나 (2026-08-18 · 유호님 노트북 **첫 실행**에서 터졌다):
+ *   릴리스에서 체크섬을 뽑는 첫 판이 `grep -A2 'linux-x64' | grep -oE '[a-f0-9]{64}' | head -1`
+ *   이었다. 그런데 릴리스 JSON 의 body 는 **한 줄**이다 — 개행이 `\n` 리터럴로 이스케이프돼
+ *   있어서 `-A2`(뒤 2줄)가 아무것도 좁히지 못하고, `head -1` 이 목록 맨 위 형제(win-x64)의
+ *   체크섬을 집었다. 실측: 진짜 linux-x64 값은 `04cf0be1…` 인데 스크립트는 `d59123a4…` 를
+ *   집었고, **멀쩡히 받은 215MB** 가 남의 값과 대조돼 검증이 터졌다.
+ *
+ *   🔴 이 자리가 위험한 이유는 「안 돌았다」가 아니라 **돌면서 남의 값을 냈다**는 것이다
+ *   (CLAUDE.md 신뢰성 맹점 ④ — 장치는 안 도는 쪽보다 이쪽으로 더 자주 샌다). 게다가 그때
+ *   낸 처방이 「지우고 다시 받아라」여서, 따를수록 같은 곳으로 돌아온다(F103).
+ *
+ *   그래서 탐지를 **픽스처**가 진다 — 실저장소·네트워크에 기대지 않는다(F296). 아래 두 검사는
+ *   짝이다: 하나는 새 통로가 맞는 값을 집는지, 다른 하나는 **픽스처가 실제로 그 버그를
+ *   재현하는지**(안 그러면 이 회귀는 통과만 하는 장식이다 · 맹점 ②). */
+
+/** 실제 릴리스 body 모양. win-x64 가 linux-x64 **앞**에 온다 — 그게 버그의 조건이었다. */
+function 릴리스픽스처(linux, win, arm) {
+  return JSON.stringify({
+    tag_name: 'v2.336.0',
+    body: [
+      '## SHA-256 Checksums',
+      '',
+      `- actions-runner-win-x64-2.336.0.zip <!-- BEGIN SHA win-x64 -->${win}<!-- END SHA win-x64 -->`,
+      `- actions-runner-linux-x64-2.336.0.tar.gz <!-- BEGIN SHA linux-x64 -->${linux}<!-- END SHA linux-x64 -->`,
+      `- actions-runner-linux-arm64-2.336.0.tar.gz <!-- BEGIN SHA linux-arm64 -->${arm}<!-- END SHA linux-arm64 -->`,
+    ].join('\n'),
+  });
+}
+
+/* v2.336.0 의 linux-x64 실측값. 픽스처는 네트워크를 안 타므로 버전이 올라도 안 낡는다. */
+const 리눅스실측 = '04cf0be1aff4c3ec3554466c39124ca250e3effd8873bb7e8d68535aa9505d5d';
+const 윈도우가짜 = `d59123a4${'1'.repeat(56)}`;   // 실측 앞 8자리 + 픽스처용 채움
+const ARM가짜 = `beef${'2'.repeat(60)}`;
+
+test('🔴 체크섬 — 형제(win-x64)가 앞에 있어도 linux-x64 값을 집는다', () => {
+  const r = spawnSync('bash', [스크립트, '--sha추출'], {
+    input: 릴리스픽스처(리눅스실측, 윈도우가짜, ARM가짜), encoding: 'utf8', cwd: ROOT,
+  });
+  assert.equal(r.status, 0, `--sha추출 이 실패했다:\n${r.stderr}`);
+  assert.equal(r.stdout.trim(), 리눅스실측,
+    '릴리스에서 linux-x64 가 아닌 값을 집었다 — 멀쩡히 받은 파일이 남의 체크섬과 대조돼 터진다');
+});
+
+test('🔑 탐지력 — 이 픽스처가 «옛 파이프라인의» 버그를 실제로 재현한다', () => {
+  /* 버그가 아직 있을 것을 요구하지 않는다(맹점 ②): 옛 로직을 여기서 한 번만 재현해,
+   * 픽스처가 그 함정을 담고 있음을 못박는다. 이게 없으면 위 검사는 「무엇이든 통과」다. */
+  const 옛로직 = "tr ',' '\\n' | grep -A2 'linux-x64' | grep -oE '[a-f0-9]{64}' | head -1";
+  const r = spawnSync('bash', ['-c', 옛로직], {
+    input: 릴리스픽스처(리눅스실측, 윈도우가짜, ARM가짜), encoding: 'utf8',
+  });
+  assert.equal(r.stdout.trim(), 윈도우가짜,
+    '픽스처가 옛 버그를 재현하지 못한다 — 그렇다면 위 검사는 탐지력이 없다(장식이다)');
+});
+
+test('🔴 체크섬을 못 찾으면 «빈 값»을 낸다 — 아무거나 집어 오지 않는다', () => {
+  /* 못 읽는 것은 사고가 아니다. 사고는 «못 읽었는데 뭔가를 냈다»이다.
+   * 빈 값이면 호출부의 `[ -n "$SHA" ] || die …` 가 멈춰 세우고 처방을 낸다. */
+  const 마커없음 = JSON.stringify({ tag_name: 'v9.9.9', body: `- 어떤파일.tar.gz ${'a'.repeat(64)}` });
+  const r = spawnSync('bash', [스크립트, '--sha추출'], { input: 마커없음, encoding: 'utf8', cwd: ROOT });
+  assert.equal(r.status, 0, '마커가 없을 때 죽는다 — 호출부가 처방을 낼 기회를 뺏는다');
+  assert.equal(r.stdout.trim(), '',
+    '마커가 없는데 64자리 hex 를 집어 왔다 — 이게 정확히 첫 판이 저지른 일이다');
+});
+
+test('🔑 `--sha추출` 은 네트워크·저장소를 안 건드린다', (t) => {
+  const 전 = spawnSync('git', ['status', '--porcelain'], { cwd: ROOT, encoding: 'utf8' });
+  if (전.status !== 0) return t.skip('git 을 못 돌렸다 — 이 축은 안 재졌다');
+  const r = spawnSync('bash', [스크립트, '--sha추출'], {
+    input: 릴리스픽스처(리눅스실측, 윈도우가짜, ARM가짜), encoding: 'utf8', cwd: ROOT,
+    env: { ...process.env, HOME: os.tmpdir() },
+  });
+  assert.equal(r.status, 0);
+  const 후 = spawnSync('git', ['status', '--porcelain'], { cwd: ROOT, encoding: 'utf8' });
+  assert.equal(후.stdout, 전.stdout, '`--sha추출` 이 작업 트리를 건드렸다');
+});
