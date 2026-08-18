@@ -30,6 +30,7 @@ const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { 인자게이트 } = require('./lib/인자게이트.js');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -62,20 +63,33 @@ function 읽기(tap) {
 const 묶음 = (arr) => [...arr].sort().join('+');
 
 /**
+ * 뒤집힘 한 건의 **성격**. 🔑 이 갈래가 없으면 이 도구가 늑대를 부른다 — 실측 2026-08-18:
+ *   메모리 축 5건·refs 축 1건이 전부 「건너뜀 ↔ 통과」였고, 그건 결함이 아니라 정본 F296 규율이
+ *   («실저장소 검사는 fail 아닌 skip 으로 드러낸다») **제대로 도는 모습**이다. 같은 줄에 섞어 내면
+ *   진짜 하나(통과↔실패)가 여섯 속에 묻힌다.
+ *   · `판정뒤집힘` — 통과 ↔ 실패. **답을 기계가 정했다.** 이것만이 고칠 것이다.
+ *   · `실행바뀜`   — 건너뜀이 끼었다. 이 기계에선 그 검사가 돌고 저 기계에선 안 돈다(커버리지 차이).
+ */
+function 성격(기준, 변형) {
+  return (기준.includes('건너뜀') || 변형.includes('건너뜀')) ? '실행바뀜' : '판정뒤집힘';
+}
+
+/**
  * 두 판을 견준다. **순수 함수**다.
- * @returns {{뒤집힘:{이름,기준,변형}[], 한쪽에만:{이름,어디}[], 기준분모:number, 변형분모:number}}
- *   · `뒤집힘`   — 양쪽에 다 있는데 상태가 다르다 = **답을 기계가 정한 자리**
+ * @returns {{판정뒤집힘:object[], 실행바뀜:object[], 한쪽에만:{이름,어디}[], 기준분모:number, 변형분모:number}}
  *   · `한쪽에만` — 한 판에만 있는 검사(파일이 안 돌았거나 이름이 바뀌었다). 「같다」로 접지 않는다(F207)
  */
 function 대조(기준, 변형) {
-  const 뒤집힘 = []; const 한쪽에만 = [];
+  const 판정뒤집힘 = []; const 실행바뀜 = []; const 한쪽에만 = [];
   for (const [이름, a] of 기준) {
     const b = 변형.get(이름);
     if (b === undefined) { 한쪽에만.push({ 이름, 어디: '기준에만' }); continue; }
-    if (묶음(a) !== 묶음(b)) 뒤집힘.push({ 이름, 기준: 묶음(a), 변형: 묶음(b) });
+    const ka = 묶음(a); const kb = 묶음(b);
+    if (ka === kb) continue;
+    (성격(ka, kb) === '판정뒤집힘' ? 판정뒤집힘 : 실행바뀜).push({ 이름, 기준: ka, 변형: kb });
   }
   for (const 이름 of 변형.keys()) if (!기준.has(이름)) 한쪽에만.push({ 이름, 어디: '변형에만' });
-  return { 뒤집힘, 한쪽에만, 기준분모: 기준.size, 변형분모: 변형.size };
+  return { 판정뒤집힘, 실행바뀜, 한쪽에만, 기준분모: 기준.size, 변형분모: 변형.size };
 }
 
 /* ── 축 — 무엇을 하나씩 흔드나 ─────────────────────────────────────────────── */
@@ -187,14 +201,28 @@ function 찍기(제목, r) {
     for (const x of r.한쪽에만.slice(0, 5)) console.log(`      · [${x.어디}] ${x.이름}`);
     if (r.한쪽에만.length > 5) console.log(`      · … 외 ${r.한쪽에만.length - 5}건`);
   }
-  if (!r.뒤집힘.length) { console.log('   ✅ 뒤집힌 검사 0 — 이 축은 판정을 안 바꾼다'); return; }
-  console.log(`   🔴 **뒤집힌 검사 ${r.뒤집힘.length}건** — 이 축이 답을 정한다:`);
-  for (const x of r.뒤집힘) console.log(`      · ${x.기준} → ${x.변형}   ${x.이름}`);
+  /* 실행바뀜을 «먼저» 낸다 — 개수가 보통 더 많은데, 아래 판정뒤집힘이 화면 끝에 남아야 눈에 든다. */
+  if (r.실행바뀜.length) {
+    console.log(`   ℹ 실행 여부만 바뀐 검사 ${r.실행바뀜.length}건 — **결함이 아니다**(F296 규율이 도는 모습):`);
+    for (const x of r.실행바뀜) console.log(`      · ${x.기준} → ${x.변형}   ${x.이름}`);
+  }
+  if (!r.판정뒤집힘.length) { console.log('   ✅ 판정이 뒤집힌 검사 0 — 이 축은 «답»을 안 바꾼다'); return; }
+  console.log(`   🔴 **판정이 뒤집힌 검사 ${r.판정뒤집힘.length}건** — 이 축이 답을 정한다(고칠 것은 여기다):`);
+  for (const x of r.판정뒤집힘) console.log(`      · ${x.기준} → ${x.변형}   ${x.이름}`);
 }
+
+/* 이 도구가 아는 낱말 — **한 곳**에 둔다(차단문과 갈라지면 처방이 거절되고, 거절된 처방은
+ * 우회를 정상 통로로 만든다 · F103). 늘릴 때 여기만 고친다. */
+const 아는플래그 = ['--목록', '--축', '--기준만', '--대조'];
 
 function 주() {
   const argv = process.argv.slice(2);
   const 값 = (f) => { const i = argv.indexOf(f); return i >= 0 ? argv[i + 1] : undefined; };
+
+  /* 모르는 낱말을 조용히 삼키지 않는다 — 삼키면 「딴 과녁을 재고 초록」이 된다(F400·F435 계열).
+   * 이 도구는 특히 위험하다: 오타 하나로 «축을 하나도 안 흔든 판»이 「뒤집힘 0」으로 나간다. */
+  const 플래그오류 = 인자게이트('환경대조', argv, 아는플래그);
+  if (플래그오류) 죽기(플래그오류);
 
   if (argv.includes('--목록')) {
     console.log('축 목록:');
@@ -236,6 +264,7 @@ function 주() {
   const 기준 = 돌리기(ROOT);
   console.log(`[환경대조] 기준 ${기준.size}검사`);
 
+  let 고칠것 = 0;
   for (const 이름 of 고른것) {
     const a = 축들.find((x) => x.이름 === 이름);
     console.log(`\n[환경대조] 축 «${이름}» — ${a.설명}`);
@@ -243,11 +272,19 @@ function 주() {
     if (a.클론) { const c = 클론뿌리(); 치울것 = c.치울것; 판 = 돌리기(c.뿌리); }
     else 판 = 돌리기(ROOT, a.환경());
     if (치울것) { try { fs.rmSync(치울것, { recursive: true, force: true }); } catch (_) { /* 임시 */ } }
-    찍기(`축 «${이름}»`, 대조(기준, 판));
+    const r = 대조(기준, 판);
+    고칠것 += r.판정뒤집힘.length;
+    찍기(`축 «${이름}»`, r);
   }
 
   console.log('\n⚠ 안 잰 축: **플랫폼**(윈도우 경로 문법) — 리눅스에서 만들 수 없다.');
   console.log('   유호님 기계에서 한 번: node tools/환경대조.js --기준만 내판.json');
+  /* 종료코드로도 낸다 — 사람이 화면을 안 읽어도 게이트가 걸 수 있게(스스로 발화하지 않는 장치는 안 돈다).
+   * ⚠ «실행바뀜»으로는 안 막는다: 그건 결함이 아니라 규율이 도는 모습이고, 막으면 곧 꺼진다. */
+  if (고칠것) {
+    console.error(`\n🔴 판정이 뒤집힌 검사 총 ${고칠것}건 — 답을 기계가 정하는 자리다(F296).`);
+    process.exit(1);
+  }
 }
 
 module.exports = { 읽기, 대조, 묶음, 축들 };
