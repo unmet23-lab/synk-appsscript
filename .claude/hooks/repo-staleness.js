@@ -36,6 +36,8 @@
 const path = require('path');
 const fs = require('fs');
 const { execFileSync } = require('child_process');
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('./lib/board-id.js');
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..', '..');
 const 기준 = 'origin/master';
@@ -221,7 +223,7 @@ process.stdin.on('end', () => {
   try {
     const store = require(path.join(__dirname, 'lib', 'handoff-store.js'));
     표 = path.join(store.stateDir(),
-      `staleness-${store.projectKey(cwd)}-${store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || 'nosid')}.json`);
+      `staleness-${store.projectKey(cwd)}-${store.safeId(보드id.세션id() || 'nosid')}.json`);
     try { 지난 = JSON.parse(fs.readFileSync(표, 'utf8')) || {}; } catch (_) { 지난 = {}; }
     const 최근 = Number(지난.at);
     if (Number.isFinite(최근) && Date.now() - 최근 < 조용한간격_MS) process.exit(0);
