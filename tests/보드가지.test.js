@@ -330,102 +330,6 @@ test('🔑 [F384·F524] 안내문이 머리형을 **말한다** — 말 안 하�
   }
 });
 
-// ───────────────────────────────── 원격 전용 가지 (장부 619)
-//
-// 🔴 왜 순수 픽스처로는 못 잡나: 결함이 **어느 git 명령을 부르나**에 있었다 — `git branch --no-merged`
-//    는 로컬 가지만 본다. 파서는 멀쩡했고, 「원격에만 있는 선언 11줄」이 `모름:false · 0건` 으로
-//    나갔다(재서 얻은 0의 얼굴을 한 **안 잰 0** · 맹점 ④). 그래서 이 절만 진짜 저장소를 세운다 —
-//    `update-ref` 로 원격 추적 ref 를 흉내내니 네트워크는 0이다.
-//
-// ⚠ 노트북에서는 안 샜다: 「워크트리+PR」 규약이 트랙마다 로컬 가지를 만든다. 새는 곳은 **새 클론·
-//    클라우드 세션**이고, 그 환경에서는 이게 상시 조건이다(실측 2026-08-18: 로컬 2 · 원격 9 · 줄 14).
-
-/** 선언이 **원격 추적 ref 에만** 사는 트리 — 로컬 가지는 안 만든다(새 클론의 모양 그대로). */
-function 원격전용트리() {
-  const root = 저장소세우기();
-  if (!root) return null;
-  const A = g(['rev-parse', 'HEAD'], root).stdout.trim();
-  if (g(['update-ref', 'refs/remotes/origin/master', A], root).status !== 0) return null;
-  // 남의 선언을 얹은 커밋을 만들고 → 원격 ref 로만 남긴 뒤 → 로컬 가지는 지운다
-  g(['checkout', '-q', '-b', '임시'], root);
-  쓰기(root, 'cccc3333', 표줄('원격에만 사는 남의 트랙', '`tools/원격.js`', '▶착수'));
-  g(['add', '-A'], root); g(['commit', '-qm', '남의 선언'], root);
-  const B = g(['rev-parse', 'HEAD'], root).stdout.trim();
-  if (g(['update-ref', 'refs/remotes/origin/남의가지', B], root).status !== 0) return null;
-  g(['checkout', '-q', 'master'], root);
-  if (g(['branch', '-q', '-D', '임시'], root).status !== 0) return null;
-  return root;
-}
-
-test('🔴 [619] 원격 전용 가지의 선언을 본다 — 못 보면 그 자리는 「빈 자리 · 집어라」로 읽힌다', (t) => {
-  const root = 원격전용트리();
-  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다 — 통과로 위장하지 않는다');
-
-  /* 대조군 — 로컬만 훑으면 0이다. 이게 0이 아니면 픽스처가 결함을 재현 못 한 것이라 아래가 공짜 초록이다. */
-  const 로컬만 = g(['branch', '--no-merged', 'origin/master', '--format=%(refname:short)'], root).stdout.trim();
-  assert.strictEqual(로컬만, '', `픽스처 전제가 깨졌다 — 로컬 미머지 가지가 남아 있다: ${로컬만}`);
-
-  const r = 보드.가지줄들(root);
-  assert.strictEqual(r.모름, false, `git 을 못 불렀다: ${JSON.stringify(r)}`);
-  assert.strictEqual(r.줄들.length, 1,
-    `🔴 원격에만 있는 선언을 못 봤다 — 그런데 «모름:false» 라 부르는 쪽은 「재서 얻은 0」으로 읽는다: ${JSON.stringify(r.줄들)}`);
-  assert.match(r.줄들[0].줄, /원격에만 사는 남의 트랙/);
-  assert.strictEqual(r.줄들[0].출처.가지, 'origin/남의가지', '가지 이름이 안 실렸다 — 처방이 「어디를 보라」를 못 말한다');
-});
-
-test('🔑 [619] 분모를 돌려준다 — 「가지가 없다」와 「가지를 못 봤다」를 부르는 쪽이 가를 수 있어야 한다', (t) => {
-  const root = 원격전용트리();
-  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다');
-  const r = 보드.가지줄들(root);
-  assert.ok(r.가지분모, '분모가 아예 없다 — 0 을 받은 쪽에 가를 재료가 없다(F207)');
-  assert.strictEqual(r.가지분모.로컬, 0, '로컬 분모가 틀렸다');
-  assert.strictEqual(r.가지분모.원격, 1, '원격 분모가 틀렸다 — 이 수가 0이면 위 검사가 무엇을 쟀는지 알 수 없다');
-
-  /* 진짜로 가지가 0인 트리에서도 **모름은 거짓**이고 분모는 0/0 이다 — 그게 「잰 0」의 모양이다. */
-  const 빈트리 = 저장소세우기();
-  if (!빈트리) return t.skip('이 환경에선 git 저장소를 못 세운다');
-  g(['update-ref', 'refs/remotes/origin/master', g(['rev-parse', 'HEAD'], 빈트리).stdout.trim()], 빈트리);
-  const 빈 = 보드.가지줄들(빈트리);
-  assert.strictEqual(빈.모름, false);
-  assert.deepStrictEqual(빈.가지분모, { 로컬: 0, 원격: 0 }, '가지가 정말 없을 때의 분모가 0/0 이 아니다');
-});
-
-test('🔴 [619] **다른 원격의 주가지**는 「미머지 가지」가 아니다 — git 은 준 ref 하나만 빼 준다', (t) => {
-  /* 🔑 이 검사가 재는 것: `git branch -r --no-merged origin/master` 는 `origin/master` 만 빼고
-   *   `backup/master` 는 **그대로 낸다**. 그걸 트랙 선언으로 읽으면 그 주가지의 평범한 보드 변경이
-   *   통째로 「남의 미머지 선언」이 되고, 소비자 셋이 «없는 일»을 낸다(로컬 갈래가 이미 막아 둔 병).
-   *   ⚠ 대조군을 먼저 세운다 — 픽스처가 그 ref 를 실제로 만들어야 이 초록이 공짜가 아니다. */
-  const root = 원격전용트리();
-  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다');
-  g(['checkout', '-q', '-b', '백업임시'], root);
-  쓰기(root, 'dddd4444', 표줄('다른 원격의 주가지에 있는 평범한 줄', '`tools/백업.js`', '▶착수'));
-  g(['add', '-A'], root); g(['commit', '-qm', '백업 주가지'], root);
-  const B = g(['rev-parse', 'HEAD'], root).stdout.trim();
-  if (g(['update-ref', 'refs/remotes/backup/master', B], root).status !== 0) return t.skip('원격 ref 를 못 만든다');
-  g(['checkout', '-q', 'master'], root);
-  g(['branch', '-q', '-D', '백업임시'], root);
-
-  const 원시 = g(['branch', '-r', '--no-merged', 'origin/master', '--format=%(refname:short)'], root).stdout;
-  assert.match(원시, /backup\/master/,
-    `픽스처가 전제를 못 세웠다 — git 이 이미 걸러 버렸으면 이 검사는 아무것도 안 잰다: ${원시.trim()}`);
-
-  const r = 보드.가지줄들(root);
-  assert.ok(!r.줄들.some((x) => String(x.출처.가지).split('/').pop() === 'master'),
-    `다른 원격의 주가지가 가지로 섞였다 — 그 평범한 보드 변경이 「미머지 선언」이 된다: ${JSON.stringify(r.줄들.map((x) => x.출처.가지))}`);
-  assert.ok(!r.줄들.some((x) => /다른 원격의 주가지에 있는 평범한 줄/.test(x.줄)),
-    '주가지의 줄이 트랙 선언으로 딸려 왔다');
-  assert.strictEqual(r.줄들.length, 1, `원격 전용 트랙 선언 하나만 남아야 한다: ${JSON.stringify(r.줄들.map((x) => x.줄))}`);
-});
-
-test('🔑 [619] 활성줄전량도 그 분모를 그대로 나른다 — 소비자 셋이 읽는 자리가 여기다', (t) => {
-  const root = 원격전용트리();
-  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다');
-  const a = 보드.활성줄전량(root);
-  assert.ok(a.분모 && a.분모.가지출처, '활성줄전량이 가지 분모를 안 나른다 — 여기서 끊기면 소비자는 여전히 0만 본다');
-  assert.strictEqual(a.분모.가지출처.원격, 1);
-  assert.ok(a.줄들.some((x) => /원격에만 사는 남의 트랙/.test(x.줄)), '원격 전용 선언이 활성 목록에 안 실렸다');
-});
-
 // ───────────────────────────────── 실저장소 (계약만 · 못 재면 skip)
 
 test('🔑 [F521] 실저장소 — `가지줄들` 계약: 줄들은 배열이고 모름은 boolean', (t) => {
@@ -438,4 +342,233 @@ test('🔑 [F521] 실저장소 — `가지줄들` 계약: 줄들은 배열이고
     assert.ok(보드.표줄(행.줄), `표줄이 아닌 것이 섞였다: ${행.줄.slice(0, 60)}`);
     assert.strictEqual(typeof 행.출처.가지, 'string');
   }
+});
+
+/* ── ⑥ 원격 전용 가지 (마찰 F619 · 2026-08-18) ─────────────────────────────────
+ *
+ * ■ 무엇이 샜나 — 「재서 얻은 0」이 **안 본 0** 이었다
+ *   `가지끝()` 이 후보를 `git branch --no-merged` 로 뽑았다. `-a` 가 없으니 **로컬 가지만** 본다.
+ *   노트북에서는 안 샌다 — 「워크트리+PR」 규약이 트랙마다 로컬 가지를 만드니 미머지 가지가 전부
+ *   로컬에 있다. 그런데 **새 클론·클라우드 세션**에는 남의 가지가 `origin/<이름>` 으로만 산다.
+ *   그 판에서 이 함수는 후보 0을 받고 「가지가 없으면 재서 얻은 0」 줄을 그대로 지나
+ *   `모름: false` 로 **「전부 봤다」를 단언**했다.
+ *   실측 2026-08-18(`cloud_ddd2c370`): 로컬 미머지 가지 **2** vs 원격 **14** · 그 원격 가지에
+ *   활성 보드 줄 **10**. 소비자 셋(`board-guard` 겹침 분모 · `대기열` 점유 · `friction --open`
+ *   점유)에게 그 0 은 「빈 자리다 · 집어라」로 읽힌다 — 새는 방향이 **「통과」**다. 실제로 그
+ *   거짓 0 을 믿고 착수해 같은 F608 을 두 세션이 지었다(F615 계열).
+ *
+ * 🔑 여기서 못박는 것 = **「0 을 냈으면 두 층을 다 세고 낸 것이다」**. 문구가 아니라 그 전제다.
+ *   그래서 픽스처는 **로컬 가지가 0인 트리**를 만든다 — 옛 판이 초록일 수 없는 유일한 모양이다.
+ */
+
+/** 남의 가지가 `origin/<이름>` 으로만 사는 트리 = 새 클론·클라우드 세션의 상시 상태.
+ *  로컬 가지는 **0개**다 — 옛 판(`--no-merged` 로컬만)은 여기서 반드시 0을 낸다. */
+function 원격전용트리() {
+  const root = 저장소세우기();
+  if (!root) return null;
+  const A = g(['rev-parse', 'HEAD'], root).stdout.trim();
+  if (g(['update-ref', 'refs/remotes/origin/master', A], root).status !== 0) return null;
+  g(['checkout', '-q', '-b', 'worktree-남트랙'], root);
+  쓰기(root, 'bbbb2222', 표줄('**남의 트랙 — 원격 가지에만 산다**', '`tools/lib/보드.js`', '▶착수'));
+  g(['add', '-A'], root); g(['commit', '-qm', '남의 선언'], root);
+  const B = g(['rev-parse', 'HEAD'], root).stdout.trim();
+  if (g(['update-ref', 'refs/remotes/origin/worktree-남트랙', B], root).status !== 0) return null;
+  g(['checkout', '-q', 'master'], root);
+  if (g(['branch', '-qD', 'worktree-남트랙'], root).status !== 0) return null;   // 클론에는 없던 것
+  return root;
+}
+
+test('🔴 [F619 급소] 가지가 `origin/<이름>` 으로만 있어도 본다 — 클라우드 세션엔 그게 상시다', (t) => {
+  const root = 원격전용트리();
+  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다 — 통과로 위장하지 않는다');
+
+  /* 대조군 — 픽스처가 결함을 실제로 재현하는지 먼저 못박는다(안 그러면 아래 초록이 공짜다).
+   * 로컬 미머지 가지가 0이어야 옛 판이 0을 냈다는 말이 성립한다. */
+  const 로컬만 = g(['branch', '--no-merged', 'origin/master', '--format=%(refname:short)'], root).stdout.trim();
+  assert.strictEqual(로컬만, '',
+    `픽스처가 「로컬 가지 0」을 못 만들었다 — 이 검사는 아무것도 안 잰다: ${JSON.stringify(로컬만)}`);
+
+  const r = 보드.가지줄들(root);
+  assert.strictEqual(r.모름, false, `git 을 못 불렀다: ${JSON.stringify(r)}`);
+  assert.strictEqual(r.줄들.length, 1,
+    '🔴 원격 전용 가지의 선언이 안 보인다 — 그 0 이 「빈 자리다·집어라」로 읽혀 같은 트랙을 두 벌 짓는다(F619)');
+  assert.match(r.줄들[0].줄, /남의 트랙/);
+  assert.strictEqual(r.줄들[0].출처.가지, 'origin/worktree-남트랙',
+    '어느 가지인지 안 적으면 처방이 「어디를 보라」를 못 말한다');
+});
+
+test('🔴 [F619] 0 을 낼 때 **분모를 함께** 낸다 — 「가지가 없다」와 「가지를 못 봤다」가 갈리는 자리', (t) => {
+  const root = 저장소세우기();
+  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다');
+  g(['update-ref', 'refs/remotes/origin/master', g(['rev-parse', 'HEAD'], root).stdout.trim()], root);
+
+  const 빈판 = 보드.가지줄들(root);
+  assert.strictEqual(빈판.모름, false);
+  assert.deepStrictEqual(빈판.분모, { 로컬: 0, 원격: 0, 훑음: 0 },
+    '🔴 진짜 0 인데 분모가 없다 — 분모 없는 0 은 F619 의 거짓 0 과 글자 하나 다르지 않다(F207)');
+
+  const 있는판 = 보드.가지줄들(원격전용트리() || root);
+  assert.ok(있는판.분모 && 있는판.분모.원격 >= 1,
+    `🔴 원격 층을 셌다는 증거가 반환에 없다: ${JSON.stringify(있는판.분모)}`);
+});
+
+test('🔑 [F619] 주입구로 들어온 출력엔 분모가 `null` 이다 — 「안 쟀다」를 「0개 훑었다」로 접지 않는다', () => {
+  const r = 보드.가지줄들('.', { 출력: 가지출력('worktree-x', 'aaaa1111.md', 표줄('내 트랙')) });
+  assert.strictEqual(r.분모, null, '주입구는 아무 가지도 안 훑는다 — 0 을 적으면 그게 거짓 분모다');
+  assert.strictEqual(r.줄들.length, 1, '주입구 자체는 그대로 돌아야 한다');
+});
+
+test('☠️ [F619] 로컬 `X` 와 `origin/X` 가 **같은 판**이면 한 번만 훑는다 — 안 그러면 스폰이 두 배다', (t) => {
+  const root = 저장소세우기();
+  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다');
+  g(['update-ref', 'refs/remotes/origin/master', g(['rev-parse', 'HEAD'], root).stdout.trim()], root);
+  g(['checkout', '-q', '-b', 'worktree-내트랙'], root);
+  쓰기(root, 'aaaa1111', 표줄('내 트랙'));
+  g(['add', '-A'], root); g(['commit', '-qm', '내 선언'], root);
+  const H = g(['rev-parse', 'HEAD'], root).stdout.trim();
+  g(['update-ref', 'refs/remotes/origin/worktree-내트랙', H], root);   // push 해 둔 상태 = 노트북 상시
+  g(['checkout', '-q', 'master'], root);
+
+  const r = 보드.가지줄들(root);
+  assert.strictEqual(r.분모.로컬, 1);
+  assert.strictEqual(r.분모.원격, 1, '픽스처가 로컬·원격 쌍을 못 만들었다');
+  assert.strictEqual(r.분모.훑음, 1,
+    `🔴 같은 판을 두 번 훑는다 — 노트북의 상시 상태라 스폰 값이 그대로 두 배가 된다: ${JSON.stringify(r.분모)}`);
+  assert.strictEqual(r.줄들.length, 1);
+  assert.strictEqual(r.줄들[0].출처.가지, 'worktree-내트랙',
+    '🔴 이름이 원격판으로 남았다 — 사람이 따르는 처방(「그 가지로 가라」)은 짧은 쪽이라야 따를 수 있다');
+});
+
+test('☠️ [F619] 로컬이 원격보다 **앞서면** 둘 다 훑는다 — 접으면 안 민 커밋의 선언이 사라진다', (t) => {
+  const root = 저장소세우기();
+  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다');
+  g(['update-ref', 'refs/remotes/origin/master', g(['rev-parse', 'HEAD'], root).stdout.trim()], root);
+  g(['checkout', '-q', '-b', 'worktree-내트랙'], root);
+  쓰기(root, 'aaaa1111', 표줄('민 선언'));
+  g(['add', '-A'], root); g(['commit', '-qm', '민 것'], root);
+  g(['update-ref', 'refs/remotes/origin/worktree-내트랙', g(['rev-parse', 'HEAD'], root).stdout.trim()], root);
+  쓰기(root, 'aaaa1111', 표줄('민 선언'), 표줄('**아직 안 민 선언**', '`tools/y.js`'));
+  g(['add', '-A'], root); g(['commit', '-qm', '안 민 것'], root);
+  g(['checkout', '-q', 'master'], root);
+
+  const r = 보드.가지줄들(root);
+  assert.strictEqual(r.분모.훑음, 2,
+    `🔴 sha 가 다른데 접었다 — 안 민 커밋의 선언이 통째로 사라진다: ${JSON.stringify(r.분모)}`);
+  assert.ok(r.줄들.some((x) => /아직 안 민 선언/.test(x.줄)),
+    '🔴 로컬에만 있는 선언이 빠졌다 — 그 트랙이 「빈 자리」로 불린다');
+});
+
+test('🔴 [F619·F565] `origin/master` 는 «가지»가 아니다 — 뒤처진 로컬에서 그게 가지로 잡히면 F565 가 되돌아온다', (t) => {
+  /* `-a` 로 넓히면서 새로 생긴 구멍이다: 로컬 master 가 뒤처진 판에서 `origin/master` 자신이
+   * 「미머지 가지」로 잡힌다. 그 줄들은 「이미 머지된 남의 줄」이고, 그 층은 `원격줄들()` 이 진다.
+   * 넓히면서 옛 계약을 흘리지 않았는지 여기서 판다. */
+  const root = 뒤처진트리();
+  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다');
+  const r = 보드.가지줄들(root);
+  assert.strictEqual(r.모름, false);
+  assert.ok(!r.줄들.some((x) => /남의 트랙/.test(x.줄)),
+    `🔴 이미 머지된 남의 줄이 「안 머지된 가지의 선언」으로 딸려 왔다(F565 재발): ${r.줄들.map((x) => x.줄).join(' // ')}`);
+  assert.strictEqual(r.줄들.length, 1, '내 가지의 선언 하나만 남아야 한다');
+  assert.match(r.줄들[0].줄, /내 트랙/);
+});
+
+test('🔑 [F619] `활성줄전량` 이 가지 분모를 **그대로 올려 보낸다** — 층을 지나며 사라지면 아무도 못 읽는다', (t) => {
+  /* 픽스처는 **가지 1개 · 선언 2줄**이다 — 「줄 수」와 「가지 수」가 갈려야 두 칸이 안 섞였음을
+   * 증명한다(같은 수면 이 검사는 아무것도 안 잰다). */
+  const root = 저장소세우기();
+  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다');
+  g(['update-ref', 'refs/remotes/origin/master', g(['rev-parse', 'HEAD'], root).stdout.trim()], root);
+  g(['checkout', '-q', '-b', 'worktree-남트랙'], root);
+  쓰기(root, 'bbbb2222', 표줄('**남의 트랙 ①**'), 표줄('**남의 트랙 ②**', '`tools/y.js`'));
+  g(['add', '-A'], root); g(['commit', '-qm', '선언 둘'], root);
+  g(['update-ref', 'refs/remotes/origin/worktree-남트랙', g(['rev-parse', 'HEAD'], root).stdout.trim()], root);
+  g(['checkout', '-q', 'master'], root);
+  g(['branch', '-qD', 'worktree-남트랙'], root);        // 원격에만 남긴다 = 새 클론
+
+  const a = 보드.활성줄전량(root);
+  assert.ok(a.분모 && a.분모.가지분모, `🔴 가지 분모가 위층에서 사라졌다: ${JSON.stringify(a.분모)}`);
+  assert.strictEqual(a.분모.가지분모.원격, 1, '원격 층을 셌다는 증거가 안 올라왔다');
+  assert.strictEqual(a.분모.가지분모.훑음, 1, '훑은 가지는 하나다');
+  assert.strictEqual(a.분모.가지, 2,
+    `🔴 「가지 줄 수」 칸이 가지 «개수» 로 덮였다 — 두 칸이 섞이면 분모가 거짓이 된다: ${JSON.stringify(a.분모)}`);
+});
+
+test('🔴 [F619·F565] 폴백으로 `master` 를 기준 삼으면 **`origin/master` 가 가지로 잡힌다** — 거기서 F565 가 되살아난다', (t) => {
+  /* `-a` 로 넓히면서 새로 생긴 자리다. 기준이 `origin/master` 일 때는 git 이 그 ref 자신을
+   * `--no-merged` 에서 빼 주므로 안 뜬다 — 그래서 **폴백(`master`) 판에서만** 드러난다.
+   * 그 판에서 `origin/master` 를 안 거르면, 이미 머지돼 origin 에 올라간 남의 줄이
+   * 「아직 안 머지된 가지의 선언」으로 딸려 온다. 그 층은 `원격줄들()` 이 따로 지고,
+   * 처방이 정반대다(앞은 `gh pr list`, 뒤는 `git merge --ff-only`). */
+  const root = 저장소세우기();
+  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다');
+  const A = g(['rev-parse', 'HEAD'], root).stdout.trim();
+  쓰기(root, 'bbbb2222', 표줄('**남의 트랙 — 이미 머지됐다**', '`tools/남.js`'));
+  g(['add', '-A'], root); g(['commit', '-qm', '남의 줄'], root);
+  g(['update-ref', 'refs/remotes/origin/master', g(['rev-parse', 'HEAD'], root).stdout.trim()], root);
+  g(['reset', '--hard', '-q', A], root);               // 로컬 master 만 뒤로
+
+  // 대조군 — 이 픽스처에서 `origin/master` 가 실제로 「미머지 가지」로 뜨는지 먼저 못박는다
+  const 날것 = g(['branch', '-a', '--no-merged', 'master', '--format=%(refname:short)'], root).stdout;
+  assert.match(날것, /origin\/master/,
+    `픽스처가 결함을 재현 못 했다 — 이 대조군이 없으면 아래 초록은 공짜다: ${JSON.stringify(날것)}`);
+
+  const r = 보드.가지줄들(root, { 기준: ['master'] });
+  assert.strictEqual(r.모름, false);
+  assert.ok(!r.줄들.some((x) => /남의 트랙/.test(x.줄)),
+    `🔴 \`origin/master\` 가 가지로 잡혀 이미 머지된 남의 줄이 딸려 왔다(F565 재발): ${r.줄들.map((x) => x.줄).join(' // ')}`);
+  assert.strictEqual(r.분모.원격, 0, `🔴 원격 후보로 세어졌다 — 거른 게 아니라 담은 것이다: ${JSON.stringify(r.분모)}`);
+});
+
+test('🔑 [F619] `실행` 주입구로 들어온 출력에도 분모는 `null` 이다 — 아무 가지도 안 훑었다', () => {
+  /* `출력` 주입구는 위에서 판다. 여기는 **`실행` 주입구** — 실행층을 갈아 끼우면 그쪽은
+   * `메모.분모` 를 안 적으므로, 그 빈칸을 `{0,0,0}` 으로 메우면 「안 쟀다」가 「0개 훑었다」가 된다.
+   * 새는 방향은 「통과」다(0 을 좋은 0 으로 읽는다 · F207). */
+  const r = 보드.가지줄들('.', { 실행: () => 가지출력('worktree-x', 'aaaa1111.md', 표줄('내 트랙')) });
+  assert.strictEqual(r.모름, false, '주입구는 정상 경로다 — 모름이 아니다');
+  assert.strictEqual(r.줄들.length, 1, '주입한 출력 자체는 그대로 파싱돼야 한다');
+  assert.strictEqual(r.분모, null,
+    `🔴 안 훑고 분모를 지어냈다 — 그 0 은 「가지가 없다」와 글자 하나 다르지 않다: ${JSON.stringify(r.분모)}`);
+});
+
+test('☠️ [F619 델타] `origin/HEAD` 는 **별칭이지 가지가 아니다** — 이름으로 거르면 안 걸린다', (t) => {
+  /* 🔴 2026-08-18 실측(변이가 판 자리): 첫 판은 `버릴이름` 에 `'origin/HEAD'` 를 넣어 걸렀는데,
+   *   그 ref 의 `%(refname:short)` 는 `origin/HEAD` 가 아니라 그냥 **`origin`** 이다. 그래서
+   *   ①안 걸리고 ②같은 줄의 `!n.startsWith('origin/')` 가 그것을 **로컬 가지로** 센다.
+   *   필터가 「맞는 얼굴로 안 도는」 자리라(맹점 ④) 코드를 읽는 사람은 막혔다고 믿는다.
+   *   ⚠ 평소엔 `origin/HEAD` 가 `origin/master` 를 가리켜 `--no-merged` 가 알아서 뺀다 — 뜨는 것은
+   *     기본 가지가 master 가 아니거나 그 ref 가 낡았을 때다. 이 픽스처가 그 판을 연출한다. */
+  const root = 저장소세우기();
+  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다 — 통과로 위장하지 않는다');
+  const A = g(['rev-parse', 'HEAD'], root).stdout.trim();
+  g(['update-ref', 'refs/remotes/origin/master', A], root);
+  g(['checkout', '-q', '-b', '옮길가지'], root);
+  쓰기(root, 'aaaa1111', 표줄('원격 전용 트랙', '`tools/x.js`', '▶착수'));
+  g(['add', '-A'], root); g(['commit', '-qm', '선언'], root);
+  const B = g(['rev-parse', 'HEAD'], root).stdout.trim();
+  g(['checkout', '-q', 'master'], root);
+  g(['update-ref', 'refs/remotes/origin/w1', B], root);
+  g(['update-ref', 'refs/remotes/origin/HEAD', B], root);   // 별칭이 미머지 커밋을 가리킨다
+  g(['branch', '-qD', '옮길가지'], root);
+
+  // 🔑 픽스처가 전제를 재현했나 — 안 못박으면 아래 초록이 공짜다(맹점 ②).
+  const 날것 = g(['branch', '-a', '--no-merged', 'origin/master', '--format=%(refname:short)'], root)
+    .stdout.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+  assert.ok(날것.includes('origin'),
+    `픽스처가 전제를 재현 못 했다 — git 이 별칭을 «origin» 으로 안 실으면 이 검사는 아무것도 안 잰다: ${날것.join(' · ')}`);
+
+  /* 원격이 `origin` 하나라는 보장은 없다 — 이름으로 가르면 `upstream/x` 가 **로컬**로 세어진다.
+   * 별칭이 걸러진 뒤엔 그 축이 안 드러나므로(변이가 구멍으로 잡았다) 여기서 함께 못박는다. */
+  쓰기(root, 'bbbb2222', 표줄('다른 원격의 트랙', '`tools/y.js`', '▶착수'));
+  g(['add', '-A'], root); g(['commit', '-qm', '업스트림 선언'], root);
+  const C = g(['rev-parse', 'HEAD'], root).stdout.trim();
+  g(['reset', '-q', '--hard', 'HEAD~1'], root);
+  g(['update-ref', 'refs/remotes/upstream/w2', C], root);
+
+  const r = 보드.가지줄들(root);
+  assert.strictEqual(r.분모.로컬, 0,
+    '🔴 원격 별칭·다른 원격을 **로컬 가지**로 셌다 — 분모가 조용히 틀리고, 그 분모가 「몇 개를 훑었나」의 정본이다');
+  assert.strictEqual(r.분모.원격, 2, '별칭을 원격으로 세거나 다른 원격을 빠뜨리면 분모가 틀린다');
+  assert.strictEqual(r.분모.훑음, 2, '같은 sha 를 두 번 훑거나 한 가지를 빠뜨렸다');
+  assert.ok(!r.줄들.some((x) => x.출처 && x.출처.가지 === 'origin'),
+    '🔴 가지 이름이 `origin` 으로 나간다 — 사람이 「그 가지로 가라」를 따를 수 없다');
 });
