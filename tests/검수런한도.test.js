@@ -37,6 +37,38 @@ function 런모듈() {
 /* 2026-08-13 실측 stderr 한 줄 **그대로** — 가드는 사람이 실제로 보는 표기로 검사한다(CLAUDE.md 맹점 ①). */
 const 실측줄 = "ERROR: You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Aug 18th, 2026 12:39 PM.";
 
+/* 🔴 **시계에 기대는 픽스처** — `실측줄` 의 리셋 시각은 «절대 시각»이라 두 가지로 죽는다
+ *   (2026-08-18 실측 · 대기열 #Q115 의 축 토글이 잡았다):
+ *     ㉠ **시간대**: `new Date('Aug 18, 2026 12:39 PM')` 은 **로컬** 해석이다. UTC 에선
+ *        12:39Z 라 아직 미래지만 KST 에선 03:39Z 라 이미 과거 — 그래서 아래 ④ 두 검사가
+ *        UTC(=CI)에서만 초록이고 유호님 기계에서는 빨갛다. 같은 커밋인데 답이 갈린다.
+ *     ㉡ **시각 그 자체**: 그 시각이 지나면 **모든 기계에서** 빨개진다. 실측 당시 남은 시간이
+ *        5시간 45분이었다. 주인 없는 적색은 남의 배포를 막는다(F617 이 겪은 그 모양).
+ *   👉 그래서 「살아있는 마커」가 전제인 자리는 **지금부터 N분 뒤**로 짓는다. 시각을 안 쓰는 게
+ *      아니라, 시각을 **재료가 아니라 인자**로 만든다(F296 「repo 밖 환경에 기대는 검사」의 시각 축).
+ *   ⚠ `실측줄` 자체는 그대로 둔다 — ① 은 «실측 원문을 알아보는가»가 과녁이고, 그 단언은
+ *      파싱끼리 비교라 시간대에 안 걸린다. 증거를 지우면 서수 벗기기의 근거가 사라진다.
+ *   ⚠ 달 이름을 `toLocaleString` 으로 뽑지 않는다 — 그건 ICU 로케일이라 **또 하나의 환경 축**이다. */
+const 달이름 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const 서수 = (n) => {
+  const 끝 = n % 10; const 십 = n % 100;
+  if (끝 === 1 && 십 !== 11) return `${n}st`;
+  if (끝 === 2 && 십 !== 12) return `${n}nd`;
+  if (끝 === 3 && 십 !== 13) return `${n}rd`;
+  return `${n}th`;
+};
+/** 실측 원문과 **같은 표기**로, 리셋 시각만 「지금부터 분뒤」인 줄. 로컬 시각으로 적는다
+ *  (읽는 쪽 `한도기록` 이 `new Date(...)` 로 로컬 해석하므로 왕복이 맞아떨어진다). */
+function 살아있는줄(분뒤 = 180) {
+  const d = new Date(Date.now() + 분뒤 * 60000);
+  const ap = d.getHours() >= 12 ? 'PM' : 'AM';
+  const h = d.getHours() % 12 || 12;
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return "ERROR: You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), "
+    + 'visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at '
+    + `${달이름[d.getMonth()]} ${서수(d.getDate())}, ${d.getFullYear()} ${h}:${mm} ${ap}.`;
+}
+
 // ───────────────────────────────── ① 감지 — 실측 원문을 그대로 알아본다
 
 test('실측 stderr 에서 마커가 적히고 서수(18th)를 벗겨 리셋 시각이 선다', () => {
@@ -151,7 +183,10 @@ test('배선 핀: codex 깔때기와 던지기 입구가 한도막나 를 부르
 test('훅: 런 0건이어도 살아있는 마커면 알리고, 마커가 지났으면 침묵한다', () => {
   새방();
   const 런 = 런모듈();
-  런.한도기록(실측줄);   // 리셋 2026-08-18 — 이 판이 도는 「지금」 기준 미래다
+  /* 자식 프로세스(훅)라 「지금」을 주입할 수 없다 — 그래서 마커 자체를 미래로 짓는다. */
+  const 적힌 = 런.한도기록(살아있는줄());
+  assert.ok(적힌 && Date.parse(적힌.리셋시각) > Date.now(),
+    '픽스처가 이미 지난 시각을 적었다 — 이 검사의 전제(살아있는 마커)가 무너진 채 돈다');
   const env = { ...process.env, SYNK_REVIEW_RUNS: process.env.SYNK_REVIEW_RUNS };
   delete env[런.한도무시키];
   const out = execFileSync(process.execPath, [path.join(ROOT, '.claude', 'hooks', 'review-runs.js')],
@@ -172,7 +207,10 @@ test('훅: 런 0건이어도 살아있는 마커면 알리고, 마커가 지났�
 test('던지기: 살아있는 마커면 스폰 전에 끊는다 — 런 JSON·장부 던짐행 소음이 0이어야 한다', () => {
   const d = 새방();
   const 런 = 런모듈();
-  런.한도기록(실측줄);
+  /* 자식 프로세스(codex-review)라 「지금」을 주입할 수 없다 — 위와 같은 이유로 미래 마커다. */
+  const 적힌 = 런.한도기록(살아있는줄());
+  assert.ok(적힌 && Date.parse(적힌.리셋시각) > Date.now(),
+    '픽스처가 이미 지난 시각을 적었다 — 차단을 기대하는 이 검사가 전제 없이 돈다');
   const 문서 = path.join(d, '픽스처설계.md');
   fs.writeFileSync(문서, '# 픽스처 — 이 파일은 심문에 닿기 전에 게이트가 끊어야 한다\n', 'utf8');
   const env = { ...process.env, SYNK_REVIEW_RUNS: process.env.SYNK_REVIEW_RUNS, SYNK_REVIEW_CKPT: process.env.SYNK_REVIEW_CKPT };

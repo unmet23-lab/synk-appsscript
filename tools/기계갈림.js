@@ -66,9 +66,14 @@ const 변이표 = Object.freeze({
     env: () => ci모사환경.만들기(),
   },
   실홈: {
-    뜻: 'ci모사에서 **홈만** 되돌린다 — repo 밖(메모리·자격증명)에 닿는 검사가 드러난다',
+    뜻: 'ci모사에서 **홈만** 되돌린다(HOME=실제 홈) — ⚠이 컨테이너의 홈엔 재료가 없어 사실상 빈 홈이다',
     축: '홈 디렉터리',
     env: () => ({ env: { ...process.env, TZ: 'UTC' }, 치우기() {} }),
+  },
+  홈있음: {
+    뜻: 'ci모사에서 **홈에 재료만** 놓는다 — 바탕화면·메모리 정본이 «있는» 기계(유호님 판)의 축',
+    축: '홈 재료 존재',
+    env: 홈재료깔기,
   },
   KST: {
     뜻: 'ci모사에서 **시간대만** 유호님 기계로 (Asia/Seoul)',
@@ -82,6 +87,36 @@ const 변이표 = Object.freeze({
     env: () => ci모사환경.만들기(),
   },
 });
+
+/** 홈에 «재료»를 깐 가짜 홈 — F617 ① 이 난 축을 반대 방향에서 켠다.
+ *
+ * 🔑 `실홈`(HOME=/root) 이 갈림 0건이었던 이유가 여기 있다: 이 컨테이너의 실제 홈에는
+ *   바탕화면도 메모리 정본도 **없어서**, CI 모사의 빈 홈과 사실상 같은 홈이었다. 즉 그 변이는
+ *   축을 켠 것이 아니라 **안 켜고 0건을 받은 것**이다(초록은 분모와 함께 읽는다 · F207).
+ *   여기서 켜는 것은 「존재 여부」다 — 내용까지 유호님 기계와 같게는 못 만든다(그 한계를 표에 적는다).
+ *
+ * 깔아 두는 것 — 저장소가 실제로 홈에서 찾는 자리 그대로:
+ *   · `~/Desktop` · `~/OneDrive/Desktop` (`tools/lib/바탕화면.js` 의 폴백 사슬)
+ *   · `~/.claude/projects/<슬러그>/memory` (`tools/lib/확정대조.js` 가 읽는 메모리 정본) */
+function 홈재료깔기() {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-home-있음-'));
+  for (const 갈래 of [['Desktop'], ['OneDrive', 'Desktop']]) {
+    fs.mkdirSync(path.join(home, ...갈래), { recursive: true });
+  }
+  /* 🔑 하네스 폴더는 **손으로 조립하지 않는다** — `memory-graph.js` 의 `projectDir()` 이 유일한
+   *   통로다(F206: 다섯 곳이 각자 조립해 셋이 다르게 어긋났고 증상은 전부 「0건」이었다).
+   *   여기선 «가짜 홈» 아래에 같은 모양을 깔아야 하므로, 통로가 낸 절대경로에서 홈 몫만 떼어 쓴다.
+   *   실측: 이 자리를 손으로 적었더니 `tests/메모리그래프.test.js` 의 옛 통로 금지가 그 자리에서
+   *   잡았다 — 내 새 도구가 내가 방금 고친 가드에 걸린 것이라, 가드가 산다는 증거이기도 하다. */
+  const 하네스상대 = path.relative(os.homedir(), require('./memory-graph.js').projectDir());
+  const mem = path.join(home, 하네스상대, 'memory');
+  fs.mkdirSync(mem, { recursive: true });
+  /* 빈 폴더면 「있다」와 「비었다」를 못 가르는 검사가 또 조용해진다 — 최소 한 벌은 둔다. */
+  fs.writeFileSync(path.join(mem, 'index.md'), '# 메모리 인덱스 (기계갈림 픽스처 — 실물 아님)\n');
+  const env = { ...process.env, TZ: 'UTC', HOME: home, USERPROFILE: home };
+  delete env.SYNK_MEMORY_DIR;
+  return { env, fakeHome: home, 치우기() { try { fs.rmSync(home, { recursive: true, force: true }); } catch (_) { /* OS 가 마저 치운다 */ } } };
+}
 
 /** 얕은 클론을 전체 이력으로 — 워크플로의 `fetch-depth: 0` 축을 이 기계에서 켠다.
  *  🔑 되돌릴 수 없는 방향이라(다시 얕게는 못 만든다) **맨 마지막 변이**로만 돌린다. */
