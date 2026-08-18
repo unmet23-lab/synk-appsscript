@@ -7,14 +7,24 @@
  *   진짜 적색과 모양이 완전히 같아서, 실제로 그걸 보고 **남의 살아있는 작업본
  *   (Code.js ← 931bae1e 세션)을 고치러 갈 뻔했다.** 재실행하니 둘 다 초록이었다.
  *
+ * 🔴 그 장치가 반대로 샌 자리 (F616 · 2026-08-18 실측 2회 · 격리 컨테이너 = 다른 세션 0):
+ *   스냅샷 키가 `mtime:size` 뿐이라 「손댔다」와 「바뀌었다」를 못 갈랐고, 이 스위트 자신이
+ *   제자리에서 다시 굽는 산출물 둘(`docs/이해대장.html`·`docs/교재_읽기본/권1.html`)이
+ *   **「옆 세션이 편집 중」**으로 나갔다. 그 둘은 거의 모든 전체 런에 끼므로 적색이면 사실상 항상
+ *   「이 적색은 못 믿는다」가 함께 떴다 — 새는 방향이 통과가 아니라 **「빨간 것을 안 믿게 만든다」**다.
+ *   처방도 따를 수 없었다(F103): 「누구 파일인지는 `작업본소유자.js`」인데 그 목록엔 아무도 없다.
+ *
  * ⚠ 이 파일의 탐지력 한계: 스위트 전체를 돌리는 스크립트라 실동작 재현이 비싸서
- *   **비교 로직만 격리해 검사**하고, 배선(전후 스냅샷·경고 출력)은 소스로 본다.
- *   즉 「경고를 지웠다」는 잡지만 「비교가 미묘하게 틀렸다」는 아래 격리 검사가 진다.
+ *   **판정 함수를 직접 불러** 검사하고, 배선(전후 스냅샷·경고 발화)은 소스로 본다.
+ * 🔑 옛 판은 판정 블록을 소스에서 **정규식으로 긁어** `new Function` 으로 돌렸다. 구조를 바꾸면
+ *   그 긁기가 조용히 「못 찾음」이 되고 새는 방향은 통과다 — 그래서 `test-ci.js` 가 판정을
+ *   내보내게 하고 여기서 **실물을 부른다**(F543 계보 · 판정을 순수 함수로 뗀다).
  */
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
+const crypto = require('node:crypto');
 const { 파일소스 } = require('./lib/소스검사');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -23,41 +33,90 @@ const ROOT = path.resolve(__dirname, '..');
  *   열려 있어서, 행동을 한 글자도 안 바꾸는 변형에 아래 두 시험이 **실측으로** 빨개졌다.
  *   접기는 이제 이음매가 진다 — 여기 손 접기를 다시 적으면 그게 곧 사본이다. */
 const SRC = 파일소스(path.join(ROOT, 'tools', 'test-ci.js'));
+const { snapshot, 판정, 알림줄들 } = require('../tools/test-ci.js');
 
-/** test-ci.js 의 비교 로직을 그 소스에서 **꺼내 와** 돌린다(베껴 쓰면 같이 눈이 먼다). */
-function movedFrom(src, before, after) {
-  const body = src.match(/const moved = \[\];\n([\s\S]*?)\nif \(code !== 0/);
-  assert.ok(body, 'test-ci.js 에서 변화 비교 블록을 못 찾았다 — 구조가 바뀌었으면 이 회귀도 갱신하라');
-  const moved = [];
-  new Function('moved', 'before', 'after', body[1])(moved, before, after);
-  return moved;
-}
+/** 스냅샷 항목 한 칸 — 도장(mtime:size)과 내용 해시. */
+const 칸 = (도장, 내용) => ({ 도장, 해시: 내용 === null ? null : crypto.createHash('sha1').update(String(내용)).digest('hex') });
 
-test('🔑 도는 동안 바뀐 파일을 잡는다 — 수정도 삭제도', () => {
-  const before = new Map([['Code.js', '100:5'], ['docs/a.md', '200:9'], ['tests/b.js', '300:1']]);
-  const after = new Map([['Code.js', '999:7'], ['tests/b.js', '300:1'], ['새파일.js', '400:2']]);
-  const moved = movedFrom(SRC, before, after);
+// ── ① 판정 (픽스처가 탐지력을 진다) ──────────────────────────────────────────
 
-  assert.ok(moved.some((m) => m.startsWith('Code.js')), '내용이 바뀐 파일을 못 잡았다 — 거짓 적색이 진짜처럼 보인다');
-  assert.ok(moved.some((m) => m.startsWith('docs/a.md')), '사라진 파일을 못 잡았다');
-  assert.ok(!moved.some((m) => m.startsWith('tests/b.js')), '안 바뀐 파일을 바뀌었다고 했다 — 매번 경고면 경고가 죽는다');
+test('🔑 도는 동안 «내용이» 바뀐 파일을 잡는다 — 수정도 삭제도', () => {
+  const before = new Map([['Code.js', 칸('100:5', 'A')], ['docs/a.md', 칸('200:9', 'B')], ['tests/b.js', 칸('300:1', 'C')]]);
+  const after = new Map([['Code.js', 칸('999:7', 'A2')], ['tests/b.js', 칸('300:1', 'C')], ['새파일.js', 칸('400:2', 'D')]]);
+  const r = 판정(before, after);
+
+  assert.deepStrictEqual(r.밖에서바뀜, ['Code.js'], '내용이 바뀐 파일을 못 잡았다 — 거짓 적색이 진짜처럼 보인다');
+  assert.deepStrictEqual(r.사라짐, ['docs/a.md'], '사라진 파일을 못 잡았다');
+  assert.deepStrictEqual(r.되돌아옴, [], '안 바뀐 파일을 어딘가에 넣었다 — 매번 경고면 경고가 죽는다');
   // 새로 **생긴** 파일은 셀 필요가 없다 — 테스트가 읽던 대상이 아니었다(스위트 자신의 산출물이 섞인다)
-  assert.ok(!moved.some((m) => m.startsWith('새파일.js')), '새로 생긴 파일까지 셌다 — 거짓 경고가 는다');
+  assert.ok(!r.밖에서바뀜.includes('새파일.js'), '새로 생긴 파일까지 셌다 — 거짓 경고가 는다');
+  assert.strictEqual(r.분모, 3, '분모를 안 낸다 — 0건 판정과 미실행을 못 가른다(F207)');
+});
+
+test('🔴 F616 — 다시 쓰였지만 «바이트가 그대로»면 «밖에서 바뀜»이 아니다', () => {
+  /* 이 스위트가 제자리에서 다시 굽는 산출물의 실제 모양: mtime 은 움직이고 내용은 같다.
+   * 옛 판(`mtime:size` 비교)은 이것을 「옆 세션이 편집 중」으로 냈다. */
+  const before = new Map([['docs/이해대장.html', 칸('100:5', '같은내용')]]);
+  const after = new Map([['docs/이해대장.html', 칸('999:5', '같은내용')]]);
+  const r = 판정(before, after);
+  assert.deepStrictEqual(r.밖에서바뀜, [], '자기 스위트가 다시 구운 것을 「밖에서 바뀜」으로 냈다 — 적색을 상시 못 믿게 만든다(F616)');
+  assert.deepStrictEqual(r.되돌아옴, ['docs/이해대장.html'], '되돌아온 것을 안 센다 — 분모가 사라져 「몇 벌인지」를 또 아무도 모른다');
+});
+
+test('🔑 F616 — 한쪽을 못 읽었으면 «모름»이다(「같다」로 접지 않는다 · F207)', () => {
+  const before = new Map([['docs/x.html', 칸('100:5', '내용')], ['docs/y.html', 칸('100:5', null)]]);
+  const after = new Map([['docs/x.html', 칸('999:5', null)], ['docs/y.html', 칸('999:5', '내용')]]);
+  const r = 판정(before, after);
+  assert.deepStrictEqual(r.모름.sort(), ['docs/x.html', 'docs/y.html'], '못 읽은 것을 「같다」나 「바뀌었다」로 접었다');
+  assert.deepStrictEqual(r.밖에서바뀜, []);
+  assert.deepStrictEqual(r.되돌아옴, []);
 });
 
 test('🔑 변화가 없으면 조용하다 (거짓양성 0)', () => {
-  const same = new Map([['Code.js', '100:5'], ['docs/a.md', '200:9']]);
-  assert.deepStrictEqual(movedFrom(SRC, same, new Map(same)), [], '아무것도 안 바뀌었는데 경고 대상이 생겼다');
+  const same = new Map([['Code.js', 칸('100:5', 'A')], ['docs/a.md', 칸('200:9', 'B')]]);
+  const r = 판정(same, new Map(same));
+  assert.deepStrictEqual([r.밖에서바뀜, r.되돌아옴, r.사라짐, r.모름], [[], [], [], []], '아무것도 안 바뀌었는데 경고 대상이 생겼다');
 });
 
-test('배선 — 실행 전후로 스냅샷을 찍고, 적색일 때만 경고한다', () => {
-  assert.match(SRC, /const before = snapshot\(\)[\s\S]{0,400}spawnSync[\s\S]{0,200}const after = snapshot\(\)/,
-    '실행 **전후**로 스냅샷을 안 찍는다 — 한쪽만 찍으면 비교가 성립하지 않는다');
-  assert.match(SRC, /if \(code !== 0 && moved\.length\)/,
-    '초록일 때도 경고하거나, 적색인데 변화를 안 본다');
-  assert.match(SRC, /이 적색은 못 믿는다/, '거짓 적색이라는 표시가 사라졌다 — 진짜와 구별이 안 된다');
-  assert.match(SRC, /재실행하라/, '무엇을 하라는 지시가 없다 — 경고만 있으면 또 고치러 간다');
-  assert.match(SRC, /작업본소유자/, '누구 파일인지 가르는 도구를 안 알려준다(F073)');
+// ── ② 무엇을 말하는가 — 판정이 맞아도 문장이 틀리면 F616 이 그대로 산다 ──────────
+
+test('🔴 F616 — «되돌아옴»만 있으면 「이 적색은 못 믿는다」를 안 낸다', () => {
+  const 판 = { 밖에서바뀜: [], 되돌아옴: ['docs/이해대장.html'], 사라짐: [], 모름: [], 분모: 9 };
+  const 글 = 알림줄들(판, 1).join('\n');
+  assert.ok(!/못 믿/.test(글), '자기 부작용만 있는데 적색을 의심하라고 한다 — 그게 F616 이 잡은 그 자리다');
+  assert.ok(!/작업본소유자/.test(글), '없는 옆 세션을 찾으라는 처방이 나온다 — 따를 수 없는 처방은 가드를 끄게 만든다(F103)');
+  assert.match(글, /바이트 무변경/, '되돌아온 것을 아예 안 알린다 — 분모가 다시 안 보이게 된다');
+});
+
+test('🔑 «밖에서 바뀜»이 있으면 경고와 처방을 그대로 낸다 (2026-08-04 사고 방어는 살아 있다)', () => {
+  const 판 = { 밖에서바뀜: ['Code.js'], 되돌아옴: [], 사라짐: [], 모름: [], 분모: 9 };
+  const 글 = 알림줄들(판, 1).join('\n');
+  assert.match(글, /못 믿/, '진짜 외부 편집인데 조용하다 — 08-04 거짓 적색 2회가 되살아난다');
+  assert.match(글, /재실행하라/, '무엇을 하라는 지시가 없다 — 경고만 있으면 또 고치러 간다');
+  assert.match(글, /작업본소유자/, '누구 파일인지 가르는 도구를 안 알려준다(F073)');
+  assert.match(글, /Code\.js/, '어느 파일인지 안 짚어 준다');
+});
+
+test('🔑 초록이면 적색 경고를 안 낸다 — 되돌아옴 알림은 그래도 낸다(분모는 늘 보인다)', () => {
+  const 판 = { 밖에서바뀜: ['Code.js'], 되돌아옴: ['docs/이해대장.html'], 사라짐: [], 모름: [], 분모: 9 };
+  const 글 = 알림줄들(판, 0).join('\n');
+  assert.ok(!/못 믿/.test(글), '초록인데 적색 경고를 냈다');
+  assert.match(글, /바이트 무변경/, '초록 런에서는 분모를 안 낸다 — 「몇 벌인지」를 재는 유일한 자리가 적색뿐이 된다');
+});
+
+// ── ③ 배선 — 판정이 맞아도 안 불리면 장식이다 ────────────────────────────────
+
+test('배선 — 실행 전후로 스냅샷을 찍고, 뒤판은 앞판을 물려받는다(해시 두 번 안 읽는다)', () => {
+  assert.match(SRC, /const before = snapshot\(\)[\s\S]{0,400}spawnSync[\s\S]{0,200}const after = snapshot\(before\)/,
+    '실행 **전후**로 스냅샷을 안 찍거나, 뒤판이 앞판을 안 물려받는다(그러면 해시 비용이 두 배다)');
+  assert.match(SRC, /알림줄들\(판정\(before, after\), code\)/, '판정 결과가 화면으로 안 나간다 — 스스로 발화하지 않는 장치는 안 돈다');
+  assert.match(SRC, /module\.exports = \{[^}]*판정[^}]*\}/, '판정을 안 내보낸다 — 회귀가 다시 소스를 긁게 되고, 긁기는 조용히 「못 찾음」이 된다');
+  assert.match(SRC, /if \(require\.main === module\) 주\(\)/, 'require 만 해도 스위트가 돈다 — 회귀가 이 파일을 못 부른다');
+});
+
+test('🔴 배선 — 스냅샷이 **내용 해시**를 든다(도장만 들면 F616 이 그대로 되살아난다)', () => {
+  assert.match(SRC, /createHash/, '내용 해시를 안 쓴다 — 「손댔다」와 「바뀌었다」가 다시 한 글자가 된다');
+  assert.match(SRC, /앞\.도장 === 도장/, '도장이 같을 때 앞판을 재사용하지 않는다 — 전량 두 번 읽으면 비용이 두 배다');
 });
 
 test('스냅샷 대상이 테스트가 읽는 곳을 덮는다 — 루트·tests·tools·docs·.claude', () => {
@@ -68,4 +127,32 @@ test('스냅샷 대상이 테스트가 읽는 곳을 덮는다 — 루트·tests
     assert.ok(walk[1].includes(`'${d}'`), `스냅샷이 ${d} 를 안 본다`);
   }
   assert.match(SRC, /\.\(js\|json\|md\|html\|txt\)\$/i, '확장자 목록이 좁아졌다 — html 이 빠지면 실측된 거짓 적색을 놓친다');
+});
+
+// ── ④ 실동작 — 픽스처가 아니라 진짜 파일로 한 바퀴 ───────────────────────────
+
+test('🔑 실동작 — 진짜 파일의 mtime 만 움직이면 밖에서바뀜 0 · 되돌아옴 1 이다', (t) => {
+  /* 픽스처는 내가 만든 Map 이라 「스냅샷이 해시를 제대로 담는가」는 원리상 못 잰다.
+   * 그 한 칸만 실물로 본다 — 이 검사가 없으면 스냅샷이 해시를 안 담아도 위 ①이 전부 초록이다.
+   * ⚠ **쓰지 않는다.** 같은 바이트를 되쓰는 것도 쓰기라, `node --test` 가 파일별로 병렬이라는 걸
+   *   생각하면 남의 동시 편집을 덮을 수 있다. `utimes` 로 도장만 움직이면 재현은 같고 위험은 0이다. */
+  const 대상 = path.join(ROOT, 'docs', '이해대장.html');
+  if (!fs.existsSync(대상)) { t.skip(`산출물이 없는 체크아웃(${대상}) — 미실행이지 통과가 아니다`); return; }
+
+  const before = snapshot();
+  const 상대 = path.relative(ROOT, 대상).replace(/\\/g, '/');
+  assert.ok([...before.keys()].some((p) => p.replace(/\\/g, '/') === 상대),
+    '스냅샷이 이 산출물을 아예 안 본다 — 걸음이나 확장자 목록이 좁아졌다');
+
+  const s = fs.statSync(대상);
+  fs.utimesSync(대상, s.atime, new Date(s.mtimeMs + 1000));   // 도장만 1초 앞으로
+  try {
+    const after = snapshot(before);
+    const r = 판정(before, after);
+    const 든가 = (목록) => 목록.map((p) => p.replace(/\\/g, '/')).includes(상대);
+    assert.ok(!든가(r.밖에서바뀜), '내용은 그대로인데 「밖에서 바뀜」이다 — 스냅샷이 해시를 안 담고 있다(F616)');
+    assert.ok(든가(r.되돌아옴), '되돌아온 것으로도 안 센다 — 분모가 비면 「몇 벌인지」를 또 아무도 모른다');
+  } finally {
+    fs.utimesSync(대상, s.atime, s.mtime);   // 도장을 되돌린다 — 남의 런에 이 검사가 섞이지 않게
+  }
 });
