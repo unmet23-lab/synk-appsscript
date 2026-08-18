@@ -2,6 +2,30 @@
   "hooks": {
     "SessionStart": [
       {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' _IGNORE || true; E=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/환경눈.js\"; { command -v node >/dev/null && [ -f \"$E\" ]; } || { echo \"SYNK 환경눈 미실행: $E (node 또는 파일 없음 — F044)\" >&2; exit 1; }; node \"$E\" --훅",
+            "shell": "bash",
+            "timeout": 20,
+            "statusMessage": "이 환경이 못 재는 층"
+          }
+        ]
+      },
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' _IGNORE || true; I=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/install-githooks.js\"; { command -v node >/dev/null && [ -f \"$I\" ]; } || { echo \"SYNK install-githooks 미실행: $I (node 또는 파일 없음 — F044)\" >&2; exit 1; }; node \"$I\" --check >/dev/null 2>&1 || node \"$I\" >&2",
+            "shell": "bash",
+            "timeout": 30,
+            "statusMessage": "git 훅 설치 확인"
+          }
+        ]
+      },
+      {
         "matcher": "startup",
         "hooks": [
           {

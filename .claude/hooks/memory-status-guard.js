@@ -39,6 +39,8 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
 const { 줄판정 } = require(path.join(ROOT, 'tools', 'decision-queue.js'));
 const { memoryDir, INDEX_FILES } = require(path.join(ROOT, 'tools', 'memory-graph.js'));
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('./lib/board-id.js');
 
 /* 인덱스는 **한 파일이 아니다**(F184 쪼개기: MEMORY.md + 지도.md). 여기 이름을 다시 적으면
  * 갈라진다 — 목록은 memory-graph 의 INDEX_FILES 하나에서만 파생시킨다(CLAUDE.md 신뢰성 ④). */
@@ -178,7 +180,7 @@ const DIR = process.env.SYNK_MEMORY_STATUS_DIR || path.join(os.tmpdir(), 'synk-m
 /** 세션 id 가 없으면 **날짜**로 떨어진다 — 한 파일을 모두가 공유하면 첫 세션 뒤 영영 안 뜬다
  *  (「모름」이 「통과」가 되는 형태 · design-guard 와 같은 판단). */
 function 표시경로(sid, filePath) {
-  const key = String(sid || process.env.CLAUDE_CODE_HOST_SESSION_ID || `날짜-${new Date().toISOString().slice(0, 10)}`);
+  const key = String(sid || 보드id.세션id() || `날짜-${new Date().toISOString().slice(0, 10)}`);
   const 파일키 = path.basename(String(filePath)).replace(/\.md$/i, '');
   return path.join(DIR, `${key}__${파일키}`.replace(/[^\w.-]/g, '_') + '.mark');
 }
