@@ -49,6 +49,7 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..');
 const 큐 = require(path.join(ROOT, 'tools', 'decision-queue.js'));
 const 메모리 = require(path.join(ROOT, 'tools', 'memory-graph.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 const 정본 = path.join(ROOT, 'docs', '_ops', '판정예측.jsonl');
 
 /* ── 닫힌 어휘 ────────────────────────────────────────────────────────────
@@ -463,6 +464,11 @@ function 재현율보기() {
 
 function main(argv) {
   const 인자 = argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 종료 코드를 **돌려주는** 꼴이라 `process.exit` 를 여기서 부르지 않는다. */
+  const 아는플래그 = ['--대상', '--목록', '--봉인', '--실제', '--인용', '--자유포함', '--재현율', '--채점', '--파일', '--판정'];
+  const 플래그오류 = 인자게이트('판정예측', 인자, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 1; }
   if (인자.includes('--대상')) return 대상보기(인자);
   if (인자.includes('--봉인')) return 봉인(인자);
   if (인자.includes('--채점')) return 채점(인자);

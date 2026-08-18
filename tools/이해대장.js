@@ -31,6 +31,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { 칸나누기 } = require('./lib/표.js');
 const 시트도달 = require('./lib/시트도달.js');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
 /* ⚠ 두 경로는 갈아끼울 수 있다 — `--검사` 가 **작업본이 아니라 커밋될 내용**을 재야 하기 때문이다.
@@ -359,6 +360,13 @@ function 먼저볼곳(이해) {
 }
 
 function main() {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ `--갈래` 는 **자식**(`운영자료.js`)에 넘기는 낱말이라 여기 없다.
+   * 🔴 이 도구가 이 트랙의 출발점이다 — `node tools/이해대장.js --빨강` 이 오류 없이 전량 판을
+   *   냈고, 사람은 자기가 부탁한 좁힘이 된 줄 알았다. */
+  const 아는플래그 = ['--검사', '--바로가기'];
+  const 플래그오류 = 인자게이트('이해대장', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 1; }
   const 바로가기 = process.argv.includes('--바로가기');
   if (!fs.existsSync(정본경로)) {
     console.error(`[이해대장] 판단 정본이 없다: ${정본경로} — 그릴 재료가 없다(워크트리면 정상).`);

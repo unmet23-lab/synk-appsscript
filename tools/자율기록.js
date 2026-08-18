@@ -48,6 +48,7 @@ const { execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const 형제저장소 = require(path.join(ROOT, '.claude', 'hooks', 'lib', '형제저장소.js'));
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 const 정본 = path.join(ROOT, 'docs', '_ops', '자율주행_결정록.jsonl');
 const 파생 = path.join(ROOT, 'docs', '자율주행_결정록.html');
 const 표시이름 = '자율주행 결정 기록';
@@ -620,6 +621,13 @@ function 목록보기() {
 
 function main(argv) {
   const 인자 = argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 하위 명령(`add`·`판정`·`효과`)과 그 뒤 값들은 `--` 로 안 시작하니 안 걸린다.
+   *   `--이름` 은 **자식**(`운영자료.js`)에 넘기는 낱말이라 여기 없다 — 넣으면 CLI 에서
+   *   통과하면서 아무것도 안 한다(형제 F592 모양). */
+  const 아는플래그 = ['--결과', '--굽기', '--근거', '--대안', '--등재안함', '--메모', '--목록', '--번호', '--스캔', '--파일', '--효과'];
+  const 플래그오류 = 인자게이트('자율기록', 인자, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 1; }
   const cmd = 인자[0];
   if (cmd === 'add') return add(인자.slice(1));
   if (cmd === '판정') return 판정(인자.slice(1));

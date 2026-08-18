@@ -36,6 +36,7 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 // 바탕화면을 찾는 **단 하나의 통로**(파일 안 사본 금지 — `tests/바탕화면통로.test.js` 가 문다).
 const { 찾기: 바탕화면 } = require('./lib/바탕화면.js');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -955,6 +956,12 @@ function 파일인자(인자) {
 
 function main(argv) {
   const 인자 = argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 위치 인자(정본 경로)는 `--` 로 안 시작하니 안 걸린다. 종료 코드를 돌려주는 꼴이라
+   *   `process.exit` 를 여기서 부르지 않는다. */
+  const 아는플래그 = ['--갈래', '--갱신', '--닿았나', '--링크화', '--목록', '--사본', '--옛판', '--이름', '--정본', '--지금상태', '--집행'];
+  const 플래그오류 = 인자게이트('운영자료', 인자, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 1; }
   const { 경로: 바탕, 폴백 } = 바탕화면();
   /* 뿌리 = 바탕화면 그 자체다(갈래 값이 「SYNK 코어」·「SYNK LAB\운영」처럼 첫 토막을 들고 있다).
    * ⚠그래서 이 변수를 **그대로 목록읽기·옛판정리에 넘기면 안 된다** — 유호님 바탕화면 전체를

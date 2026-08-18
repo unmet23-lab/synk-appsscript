@@ -30,6 +30,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawn } = require('child_process');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 /** 작업 계정 — 유호님 확정. 여기 말고 다른 곳에 적지 않는다. */
 const 작업계정 = 'unmet23@gmail.com';
@@ -75,6 +76,11 @@ function 프로필폴더() {
 
 function main(argv) {
   const args = argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 위치 인자(열 주소)는 `--` 로 안 시작하니 안 걸린다 — 아래 `url` 이 그 칸이다. */
+  const 아는플래그 = ['--확인'];
+  const 플래그오류 = 인자게이트('브라우저열기', args, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const 확인만 = args.includes('--확인');
   const url = args.find((a) => !a.startsWith('--'));
 

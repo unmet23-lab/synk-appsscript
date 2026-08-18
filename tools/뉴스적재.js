@@ -29,6 +29,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { 찾기: 바탕화면 } = require('./lib/바탕화면.js');
 const { 갈래폴더 } = require('./운영자료.js');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 /** 로그 파일의 이름. 2026-08-17 재편으로 번호 접두(`NN_`)가 없어졌다 —
  *  옛 번호가 붙은 파일은 `로그찾기` 가 번호를 떼고 찾아내므로 이름이 바뀌어도 이어 쓴다. */
@@ -119,6 +120,11 @@ function 읽기(p, 이름) {
 
 function main(argv) {
   const 인자 = argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 종료 코드를 **돌려주는** 꼴이라 `process.exit` 를 여기서 부르지 않는다. */
+  const 아는플래그 = ['--날짜', '--상한', '--어디', '--요약', '--원시'];
+  const 플래그오류 = 인자게이트('뉴스적재', 인자, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); return 1; }
   const 값 = (k) => {
     const i = 인자.indexOf(k);
     return i >= 0 ? 인자[i + 1] : null;

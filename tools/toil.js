@@ -24,6 +24,7 @@
 const fs = require('fs');
 const path = require('path');
 const { 칸나누기 } = require('./lib/표.js');   // 날 split 은 백틱 안 파이프에서 칸을 민다(F119·F253)
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 /* 테스트는 실제 장부를 건드리면 안 된다 — 회귀가 기록을 오염시키면 그 기록은 증거가 못 된다.
  * ⚠ 상수가 아니라 **함수**다. 모듈 로드 시점에 고정하면 같은 프로세스 안에서 env를 갈아끼워도
@@ -145,6 +146,11 @@ function report(asJson) {
 
 function main(argv) {
   const args = argv || process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ 위치 인자(`add <종류> <설명>`)는 `--` 로 안 시작하니 애초에 안 걸린다. */
+  const 아는플래그 = ['--date', '--json'];
+  const 플래그오류 = 인자게이트('toil', args, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   if (!fs.existsSync(ledgerPath())) {
     console.error(`[toil] 장부가 없다: ${ledgerPath()}`);
     process.exit(1);

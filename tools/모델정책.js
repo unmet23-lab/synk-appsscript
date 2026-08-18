@@ -22,6 +22,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 function 확인불가(msg) {
   const e = new Error(msg);
@@ -502,6 +503,12 @@ module.exports = {
 
 if (require.main === module) {
   const argv = process.argv.slice(2);
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ `--검수`·`--모델`·`--회차`·`--효력` 은 **`codex-review.js` 의 낱말**이고 이 파일엔 그
+   *   정책 표로만 있다 — 여기 선언하면 CLI 에서 통과하면서 아무것도 안 한다(형제 F592 모양). */
+  const 아는플래그 = ['--제미나이확인'];
+  const 플래그오류 = 인자게이트('모델정책', argv, 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   (async () => {
     try {
       process.exit(argv.includes('--제미나이확인') ? await 제미나이확인() : 출력());

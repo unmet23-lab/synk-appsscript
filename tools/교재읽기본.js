@@ -27,6 +27,7 @@ const path = require('path');
 const { esc, 렌더 } = require('./lib/마크다운.js');
 // 바탕화면을 찾는 **단 하나의 통로**(파일 안 사본 금지 — `tests/바탕화면통로.test.js` 가 문다).
 const { 경로: 바탕화면 } = require('./lib/바탕화면.js');
+const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = path.join(__dirname, '..');
 const 본편 = path.join(ROOT, 'docs', '교재_시냅스코어_권1_원고_v2.md');
@@ -307,6 +308,12 @@ ${body}
 }
 
 if (require.main === module) {
+  /* 🔑 목록은 눈으로 정하지 않았다 — `CLI도구들()` 이 재고, 회귀 ④ 가 매번 다시 센다.
+   * ⚠ **`빌드()` 보다 먼저** 판정한다 — 뒤에 두면 오타를 친 실행이 굽기를 다 하고 죽는다.
+   *   `--지면-크기` 는 자식(인쇄 파이프)에 넘기는 낱말이라 여기 없다. */
+  const 아는플래그 = ['--바탕화면'];
+  const 플래그오류 = 인자게이트('교재읽기본', process.argv.slice(2), 아는플래그);
+  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
   const r = 빌드({ 바탕화면: process.argv.includes('--바탕화면') });
   console.log(`구웠다 — 과 ${r.과수}개 · 2과 합친 줄 ${r.합친줄수} · ${(r.바이트 / 1024).toFixed(0)}KB`);
   r.낸것.forEach((f) => console.log('  · ' + f));
