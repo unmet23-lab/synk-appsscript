@@ -2,6 +2,18 @@
   "hooks": {
     "SessionStart": [
       {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' _IGNORE || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/githook-install.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { echo \"SYNK githook-install 미실행: $H (node 또는 훅 파일 없음 — F044)\" >&2; exit 1; }; node \"$H\"",
+            "shell": "bash",
+            "timeout": 60,
+            "statusMessage": "git 훅 설치 확인"
+          }
+        ]
+      },
+      {
         "matcher": "startup",
         "hooks": [
           {
