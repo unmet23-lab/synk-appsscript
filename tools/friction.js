@@ -13,6 +13,7 @@
 //   node tools/friction.js add 마찰 --파일 경로.txt   신고문을 파일로(백틱·따옴표가 든 긴 글 · F297)
 //   node tools/friction.js resolve F006 "무엇이 막았나"
 //   node tools/friction.js resolve F006 --파일 경로.txt   해소문도 같은 통로다(F301)
+//   node tools/friction.js resolve F006 "…" --마스터확인함  origin/master 가 이미 닫은 번호를 **합쳐서** 닫는다(F625)
 //   node tools/friction.js defer F006 "왜 지금 안 닫나 · 어디서 판정했나"   보류(F386)
 //   node tools/friction.js --open                   열림만(아직 아무도 판정 안 함)
 //   node tools/friction.js --보류                    보류만(판정하고 열어둔 것)
@@ -139,6 +140,7 @@ function today() {
 const { 칸나누기, 칸안전 } = require(path.join(__dirname, 'lib', '표.js'));
 /* master 직접 커밋을 그 자리에서 미는 공용 통로 — 같은 판정을 두 곳에 적으면 갈라진다. */
 const 동기 = require(path.join(__dirname, 'lib', 'master동기.js'));
+const 장부마스터 = require(path.join(__dirname, 'lib', '장부마스터.js'));
 const splitCells = (raw) => 칸나누기(`|${raw}|`);
 
 /* 조각 본문 → 그 파일의 F0NN 행 **전량**. 순수 함수다(관측 → 목록 · 판정은 아래가 진다).
@@ -212,15 +214,23 @@ function 겹침배너(조각들) {
   }
 }
 
+/* 장부 행 한 줄 → 필드. **파싱은 여기 하나뿐이다** — `read()` 와 master 대조(`lib/장부마스터.js`)가
+ * 같은 줄을 각자 뜯으면 「해소냐」가 두 곳에서 갈리고, 갈라진 쪽의 증상은 언제나 「통과」다. */
+function 행파싱(line) {
+  const m = /^\|\s*(F\d+)\s*\|(.*)\|\s*$/.exec(String(line).trim());
+  if (!m) return null;
+  const cells = splitCells(m[2]);
+  return { id: m[1], date: cells[0], kind: cells[1], signal: cells[2], resolved: cells[3] || '' };
+}
+
 function read() {
   const text = fs.readFileSync(LEDGER, 'utf8');
   const lines = text.split('\n');
   const rows = [];
   const 넣기 = (line, i, 파일) => {
-    const m = /^\|\s*(F\d+)\s*\|(.*)\|\s*$/.exec(line.trim());
-    if (!m) return;
-    const cells = splitCells(m[2]);
-    const r = { id: m[1], date: cells[0], kind: cells[1], signal: cells[2], resolved: cells[3] || '', line: i, 파일 };
+    const 값 = 행파싱(line);
+    if (!값) return;
+    const r = { ...값, line: i, 파일 };
     const 자리 = 파일 ? rows.findIndex((x) => x.id === r.id) : -1;
     if (자리 >= 0) rows[자리] = r;   // 같은 번호는 조각이 이긴다 — 아카이브는 동결이라 이후의 진실은 조각 쪽
     else rows.push(r);
@@ -532,12 +542,45 @@ function add(kind, signal, date, 해소) {
   커밋보고(장부커밋실행(장부커밋(`docs: 마찰 ${실은id} ${해소safe ? '신고·해소' : '신고'} — ${제목요약(safe)}`, path.join(FOLDER, 실은id + '.md')), [1, 0]));
 }
 
-function resolve(id, by) {
+/* 「이 번호가 **origin/master 에서 이미 닫혔나**」 — 조각을 쓰기 전에 묻는 관문 (F625 처방 ㉠).
+ *
+ * 왜 쓰기 통로 앞인가: 이 저장소의 점유 장치는 전부 「지금 누가 잡고 있나」를 재는데, F625 는
+ *   잡은 사람이 나 하나인 채로 났다. 못 본 것은 «잡혔나»가 아니라 **«이미 끝났나»** 였다.
+ * ⚠ 락 **밖**에서 부른다 — 안에서 부르면 네트워크 왕복 동안 남의 세션이 장부 전체를 기다린다.
+ *   쓰기의 원자성은 아래 `withLock` 이 그대로 진다(이 관문은 「짓기 전에 묻는 층」이다).
+ * ⚠ 못 재면 **막지 않는다**(F296) — 새는 방향이 「통과」인 것을 알고 고른 값이다. 오프라인·얕은
+ *   클론 세션이 신호를 영영 못 닫는 쪽이 더 나쁘다. 대신 건너뛴 사실을 **한 줄로 찍는다**(F207).
+ * ⚠ 이미 로컬에서 해소된 행이면 아예 묻지 않는다 — 그건 아래 락 안의 검사가 낼 답이고,
+ *   여기서 먼저 막으면 「합쳐서 다시 닫아라」라는 **따를 필요 없는 처방**이 나간다(F103). */
+function 마스터관문(id, { 통로 = '?', 확인함 = false } = {}) {
+  const 번호 = String(id || '').toUpperCase();
+  const 있는행 = read().rows.find((x) => x.id.toUpperCase() === 번호);
+  if (있는행 && 해소됐나(있는행)) return true;
+  if (확인함) {
+    console.log(`  ⓘ master 대조 **우회**(--마스터확인함 · ${통로}) — ${번호} 는 그쪽 판을 읽고 합쳤다고 선언했다`);
+    return true;
+  }
+  const 판 = 장부마스터.마스터판(번호, {
+    뿌리: ROOT,
+    장부: LEDGER,
+    폴더: FOLDER,
+    행상태: (줄) => 상태(행파싱(줄) || {}),
+  });
+  const { 막힘, 글 } = 장부마스터.문구(번호, 판, {
+    조각경로: 장부마스터.git경로(ROOT, path.join(FOLDER, `${번호}.md`)) || '',
+  });
+  if (막힘) { console.error(글); return false; }
+  console.log(글);
+  return true;
+}
+
+function resolve(id, by, 옵션 = {}) {
   const safe = 칸안전(by || '');
   if (!safe) {
     console.error('[friction] 무엇이 이 신호를 막았는지 적는다(조항·훅·커밋). 빈 해소는 기록하지 않는다.');
     process.exit(1);
   }
+  if (!마스터관문(id, { 통로: 'resolve', 확인함: !!옵션.마스터확인함 })) process.exit(1);
   /* 찾기·검사·쓰기를 **한 락 안에서** 한다(F148) — 같은 조각을 두 세션이 같은 순간에 닫는
    * 창을 직렬화한다(「이미 해소」 검사가 그 창 안에서 유효해야 한다).
    * ⚠ 락 안에서는 process.exit 를 부르지 않는다 — finally 가 안 돌아 락 파일이 남는다. */
@@ -569,12 +612,15 @@ function resolve(id, by) {
 /** 「지금은 안 닫는다」를 장부에 적는다 — 고친 것이 아니라 **판정한 것**을 기록하는 통로.
  *  사유엔 «어디서 판정했나»(개정 판·보드 줄·커밋)를 함께 적는다. 그게 없으면 다음 세션이
  *  판정의 출처를 못 찾아 결국 다시 재게 되고, 그러면 이 상태를 만든 이유가 사라진다. */
-function defer(id, why) {
+function defer(id, why, 옵션 = {}) {
   const safe = 칸안전(why || '');
   if (!safe) {
     console.error('[friction] 왜 지금 안 닫는지와 **어디서 판정했는지**를 적는다(개정 판·보드 줄·커밋). 빈 보류는 기록하지 않는다.');
     process.exit(1);
   }
+  /* resolve 와 **같은 관문**을 탄다 — 옆자리만 안 태워서 F297→F301 이 났다. 여기서 새는 방향은
+   * 더 나쁘다: master 가 이미 닫은 번호 위에 보류 조각을 쓰면 그 행이 **열린 채로 되살아난다.** */
+  if (!마스터관문(id, { 통로: 'defer', 확인함: !!옵션.마스터확인함 })) process.exit(1);
   const 결과 = withLock(() => {
     const { rows } = read();
     const r = rows.find((x) => x.id.toUpperCase() === String(id).toUpperCase());
@@ -1007,24 +1053,28 @@ function main() {
   } else if (cmd === 'resolve') {
     /* add 와 **같은 두 함수**를 쓴다 — 옆자리만 안 고쳐서 F301 이 났다. */
     const 남은 = args.slice(2);
-    let 파일 = null; const 조각 = [];
+    let 파일 = null; let 마스터확인함 = false; const 조각 = [];
     for (let i = 0; i < 남은.length; i++) {
       if (남은[i] === '--파일') { 파일 = 남은[++i] || null; continue; }
-      if (/^--/.test(남은[i])) 모르는플래그(남은[i], ['--파일']);
+      /* master 관문의 **우회**다. 차단문이 시키는 명령이 바로 이것이라, 이 플래그가 없으면
+       * 그 처방은 따를 수 없는 처방이 되고 우회가 정상 통로가 된다(F103 · 가드 맹점 ③). */
+      if (남은[i] === '--마스터확인함') { 마스터확인함 = true; continue; }
+      if (/^--/.test(남은[i])) 모르는플래그(남은[i], ['--파일', '--마스터확인함']);
       조각.push(남은[i]);
     }
-    resolve(args[1], 셸이바꾼말(본문또는파일(조각, 파일, '해소문'), '해소문'));
+    resolve(args[1], 셸이바꾼말(본문또는파일(조각, 파일, '해소문'), '해소문'), { 마스터확인함 });
   } else if (cmd === 'defer' || cmd === '보류') {
     /* resolve 와 **같은 두 함수**를 쓴다 — 새 통로를 옆에 내면서 관문을 안 태우는 것이
      * F297→F301 의 형태다(같은 사고가 바로 옆자리에서 재발했다). 세 번째 통로부터 지킨다. */
     const 남은 = args.slice(2);
-    let 파일 = null; const 조각 = [];
+    let 파일 = null; let 마스터확인함 = false; const 조각 = [];
     for (let i = 0; i < 남은.length; i++) {
       if (남은[i] === '--파일') { 파일 = 남은[++i] || null; continue; }
-      if (/^--/.test(남은[i])) 모르는플래그(남은[i], ['--파일']);
+      if (남은[i] === '--마스터확인함') { 마스터확인함 = true; continue; }
+      if (/^--/.test(남은[i])) 모르는플래그(남은[i], ['--파일', '--마스터확인함']);
       조각.push(남은[i]);
     }
-    defer(args[1], 셸이바꾼말(본문또는파일(조각, 파일, '보류 사유'), '보류 사유'));
+    defer(args[1], 셸이바꾼말(본문또는파일(조각, 파일, '보류 사유'), '보류 사유'), { 마스터확인함 });
   } else if (args.includes('--이세션')) {
     /* `/close` 5-c 가 부르는 자리 — 종료코드로 갈린다: 0=겹치는 행 없음 · 1=판정할 행 있음 · 2=못 쟀다.
      * 셋을 갈라야 「안 걸렸다」와 「안 쟀다」가 같은 모양이 되지 않는다(F207). */
