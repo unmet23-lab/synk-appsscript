@@ -527,11 +527,11 @@ function 원격붙인다(repo, { 브랜치, 병합 = false }) {
   return 원본;
 }
 
-test('☁ 원격에 대기 중인 클라우드(폰) 브랜치를 잡는다 — 로컬 HEAD 만 보면 안 보이는 자리', { skip: !git있나 && 'git 없음' }, () => {
+test('☁ 원격에 대기 중인 클라우드 세션 브랜치를 잡는다 — 로컬 HEAD 만 보면 안 보이는 자리', { skip: !git있나 && 'git 없음' }, () => {
   const { repo, state } = 픽스처();
   원격붙인다(repo, { 브랜치: 'claude/synk-docs-update-xg7oka' });
   const out = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'] });
-  assert.match(out, /claude\/synk-docs-update-xg7oka/, '대기 중인 폰 브랜치를 이름으로 말해야 한다');
+  assert.match(out, /claude\/synk-docs-update-xg7oka/, '대기 중인 브랜치를 이름으로 말해야 한다');
   assert.match(out, /인쇄본 PDF 16종/, '무슨 작업인지(커밋 제목)까지 줘야 열어볼지 판단할 수 있다');
 });
 
@@ -540,6 +540,56 @@ test('🔴 이미 master 에 들어간 브랜치는 말하지 않는다 — 상�
   원격붙인다(repo, { 브랜치: 'claude/이미병합됨', 병합: true });
   const out = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'] });
   assert.doesNotMatch(out, /이미병합됨/, '병합된 브랜치까지 세면 매 세션 뜨고, 그러면 진짜 대기도 안 읽힌다');
+});
+
+/* ── ㉰ [2026-08-18] 「대기」와 「진행 중」을 가른다 (유호 픽) ─────────────────────────
+ * 바로 위 검사와 같은 병의 다음 칸이다 — 그쪽은 «이미 끝난 것»을 접고, 이쪽은 «지금 도는 것»을
+ * 접는다. 실측 그날: 이 배너가 7건을 「대기 중」이라 냈는데 일곱 다 그날 커밋된 산 세션의
+ * 가지였다. 7건이 매 세션 뜨면 그 자리는 배경 소음이 되고, 진짜 주인 없는 가지가 섞여도 안 읽힌다.
+ * ⚠ 재료는 캐시뿐이라 **못 읽는 날이 흔하다**(`gh` 없는 기계·첫 세션). 그때 「0건」으로 접으면
+ *   남의 산 가지를 「주인 없음」이라 부르게 되므로, 셋째 검사가 그 방향을 못박는다(F207). */
+const PR캐시쓰기 = (가지들) => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-pr캐시-'));
+  임시들.push(방);
+  const p = path.join(방, '목록.json');
+  fs.writeFileSync(p, JSON.stringify(가지들.map((h, i) => ({ number: i + 1, headRefName: h, title: 't' }))));
+  return p;
+};
+
+test('🔑 열린 PR 이 달린 가지는 「진행 중」으로 접히고 «대기» 에서 빠진다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  원격붙인다(repo, { 브랜치: 'claude/pr달린것' });
+  const out = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'],
+    환경: { SYNK_PR목록_캐시: PR캐시쓰기(['claude/pr달린것']) } });
+  assert.match(out, /열린 PR 이 달린 가지 1개/, 'PR 이 달린 가지를 「진행 중」으로 안 접었다');
+  assert.doesNotMatch(out, /대기 중인 클라우드 세션 브랜치/,
+    '주인이 있는 가지를 여전히 「대기 중」이라 부른다 — 그 말이 사람을 부르는데 부를 일이 없다');
+});
+
+test('🔑 PR 이 없는 가지는 그대로 «대기» 로 남는다 — 접는 것이 넓어지면 진짜가 묻힌다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  원격붙인다(repo, { 브랜치: 'claude/주인없는것' });
+  const out = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'],
+    환경: { SYNK_PR목록_캐시: PR캐시쓰기(['claude/전혀다른가지']) } });
+  assert.match(out, /대기 중인 클라우드 세션 브랜치 1개/, 'PR 없는 가지까지 접었다 — 이 배너가 존재할 이유가 사라진다');
+  assert.match(out, /주인없는것/, '대기 가지를 이름으로 말해야 한다');
+});
+
+test('🔴 캐시를 못 읽으면 «못 쟀다»다 — 가르지 않고 전부 내고, 그 사실을 말한다', { skip: !git있나 && 'git 없음' }, () => {
+  const { repo, state } = 픽스처();
+  원격붙인다(repo, { 브랜치: 'claude/캐시없는판' });
+  /* 없는 경로 · 깨진 JSON 둘 다 같은 갈래여야 한다 — 어느 쪽이든 「PR 0건」이 아니라 「못 봄」이다 */
+  const 깨진 = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'synk-pr깨짐-')), 'x.json');
+  fs.writeFileSync(깨진, '{이건 JSON 이 아니다');
+  임시들.push(path.dirname(깨진));
+  for (const 캐시 of [path.join(os.tmpdir(), 'synk-없는캐시-절대없음.json'), 깨진]) {
+    const out = 돌린다({ repo, state, 나: 'local_me', 인자: ['--hook'], 환경: { SYNK_PR목록_캐시: 캐시 } });
+    assert.match(out, /대기 중인 클라우드 세션 브랜치 1개/,
+      `캐시(${path.basename(캐시)})를 못 읽자 가지를 통째로 접었다 — 「못 봄」을 「PR 있음」으로 번역했다`);
+    assert.match(out, /열린 PR 을 \*\*못 쟀다\*\*/,
+      '못 쟀다는 사실을 안 밝힌다 — 미측정이 통과와 같은 모양이 된다(F207)');
+    assert.doesNotMatch(out, /열린 PR 이 달린 가지/, '못 쟀는데 「진행 중」 줄을 냈다');
+  }
 });
 
 test('🔴 원격을 못 읽은 것과 「0건」은 같은 모양이면 안 된다', { skip: !git있나 && 'git 없음' }, () => {
@@ -1142,7 +1192,7 @@ function 갈라진픽스처(공유파일) {
   return { repo, g };
 }
 
-test('🔴 폰 브랜치가 공유 선언판에서 부딪히면 **그 파일을 이름으로** 집는다 (F192)',
+test('🔴 대기 브랜치가 공유 선언판에서 부딪히면 **그 파일을 이름으로** 집는다 (F192)',
   { skip: !git있나 && 'git 없음' }, () => {
     const { repo } = 갈라진픽스처('docs/세션보드.md');
     const 충돌 = 반입충돌('폰', repo);
@@ -2056,3 +2106,23 @@ test('🔑 거짓양성 — 형제에 그 도구가 없으면 «해당 없음» 
     assert.doesNotMatch(out, /배포빚을 \*\*못 쟀다\*\*|배포본이 소스보다 낡았다/,
       `없는 도구를 「못 쟀다」로 세웠다 — 형제 없는 사본에서 영구 경보가 된다:\n${out}`);
   });
+
+/* ── F357 이관 [2026-08-18] — `tools/폰작업반입.js` 를 접으면서 이 층이 갈 곳이 없어졌다 ────
+ * 원래 이 검사는 `tests/폰작업반입.test.js:302` 에서 **두 도구**(폰작업반입 `반입제외인가` ·
+ * 작업본소유자 `공유선언판인가`)가 같은 답을 내는지 재는 교차 회귀였다. F357 이 그 사고였다 —
+ * 「선언판이 무엇인가」의 목록이 두 곳에 사본으로 앉아 갈라졌고, 갈라진 쪽의 증상은 통과였다.
+ * 도구를 접어 대조 상대가 하나 사라졌으므로 **명제를 축소해 옮긴다**: 두 도구 대조 → 「작업본소유자가
+ * 그 판정을 `lib/선언판.js` **한 곳에서만** 얻는가」. 사본이 다시 생기면 여기서 갈라진다.
+ * ⚠ 회귀를 통째로 지우지 않은 이유 — 접은 것은 «소비자 하나»이지 «단일 출처 규칙»이 아니다.
+ *   남은 소비자가 하나뿐이어도 그 하나가 목록을 손으로 베끼면 F357 은 그대로 재발한다. */
+test('F357: 선언판 목록은 `lib/선언판.js` 한 벌 — 작업본소유자가 사본을 들면 여기서 갈라진다', () => {
+  const { 선언판인가 } = require(path.resolve(__dirname, '..', 'tools', 'lib', '선언판.js'));
+  const { 공유선언판인가 } = require(path.resolve(__dirname, '..', 'tools', '작업본소유자.js'));
+  for (const f of ['docs/_ops/보드/aaaa1111.md', 'docs/_ops/장부/F001.md', 'docs/_ops/인계문/x.md',
+    'docs/_ops/인계문.md', 'docs/세션보드.md', 'docs/세션보드_아카이브.md']) {
+    assert.ok(선언판인가(f), `선언판을 못 알아본다: ${f}`);
+    assert.ok(공유선언판인가(f), `작업본소유자 쪽 판정이 갈라졌다 — 목록 사본이 생겼다는 뜻이다: ${f}`);
+  }
+  assert.ok(!선언판인가('docs/이해대장.html'), '선언판이 아닌 문서까지 막았다(거짓양성)');
+  assert.ok(!공유선언판인가('docs/이해대장.html'), '작업본소유자 쪽만 거짓양성이다 — 두 답이 갈라졌다');
+});
