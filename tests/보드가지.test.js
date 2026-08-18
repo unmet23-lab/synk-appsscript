@@ -529,3 +529,46 @@ test('🔑 [F619] `실행` 주입구로 들어온 출력에도 분모는 `null` 
   assert.strictEqual(r.분모, null,
     `🔴 안 훑고 분모를 지어냈다 — 그 0 은 「가지가 없다」와 글자 하나 다르지 않다: ${JSON.stringify(r.분모)}`);
 });
+
+test('☠️ [F619 델타] `origin/HEAD` 는 **별칭이지 가지가 아니다** — 이름으로 거르면 안 걸린다', (t) => {
+  /* 🔴 2026-08-18 실측(변이가 판 자리): 첫 판은 `버릴이름` 에 `'origin/HEAD'` 를 넣어 걸렀는데,
+   *   그 ref 의 `%(refname:short)` 는 `origin/HEAD` 가 아니라 그냥 **`origin`** 이다. 그래서
+   *   ①안 걸리고 ②같은 줄의 `!n.startsWith('origin/')` 가 그것을 **로컬 가지로** 센다.
+   *   필터가 「맞는 얼굴로 안 도는」 자리라(맹점 ④) 코드를 읽는 사람은 막혔다고 믿는다.
+   *   ⚠ 평소엔 `origin/HEAD` 가 `origin/master` 를 가리켜 `--no-merged` 가 알아서 뺀다 — 뜨는 것은
+   *     기본 가지가 master 가 아니거나 그 ref 가 낡았을 때다. 이 픽스처가 그 판을 연출한다. */
+  const root = 저장소세우기();
+  if (!root) return t.skip('이 환경에선 git 저장소를 못 세운다 — 통과로 위장하지 않는다');
+  const A = g(['rev-parse', 'HEAD'], root).stdout.trim();
+  g(['update-ref', 'refs/remotes/origin/master', A], root);
+  g(['checkout', '-q', '-b', '옮길가지'], root);
+  쓰기(root, 'aaaa1111', 표줄('원격 전용 트랙', '`tools/x.js`', '▶착수'));
+  g(['add', '-A'], root); g(['commit', '-qm', '선언'], root);
+  const B = g(['rev-parse', 'HEAD'], root).stdout.trim();
+  g(['checkout', '-q', 'master'], root);
+  g(['update-ref', 'refs/remotes/origin/w1', B], root);
+  g(['update-ref', 'refs/remotes/origin/HEAD', B], root);   // 별칭이 미머지 커밋을 가리킨다
+  g(['branch', '-qD', '옮길가지'], root);
+
+  // 🔑 픽스처가 전제를 재현했나 — 안 못박으면 아래 초록이 공짜다(맹점 ②).
+  const 날것 = g(['branch', '-a', '--no-merged', 'origin/master', '--format=%(refname:short)'], root)
+    .stdout.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+  assert.ok(날것.includes('origin'),
+    `픽스처가 전제를 재현 못 했다 — git 이 별칭을 «origin» 으로 안 실으면 이 검사는 아무것도 안 잰다: ${날것.join(' · ')}`);
+
+  /* 원격이 `origin` 하나라는 보장은 없다 — 이름으로 가르면 `upstream/x` 가 **로컬**로 세어진다.
+   * 별칭이 걸러진 뒤엔 그 축이 안 드러나므로(변이가 구멍으로 잡았다) 여기서 함께 못박는다. */
+  쓰기(root, 'bbbb2222', 표줄('다른 원격의 트랙', '`tools/y.js`', '▶착수'));
+  g(['add', '-A'], root); g(['commit', '-qm', '업스트림 선언'], root);
+  const C = g(['rev-parse', 'HEAD'], root).stdout.trim();
+  g(['reset', '-q', '--hard', 'HEAD~1'], root);
+  g(['update-ref', 'refs/remotes/upstream/w2', C], root);
+
+  const r = 보드.가지줄들(root);
+  assert.strictEqual(r.분모.로컬, 0,
+    '🔴 원격 별칭·다른 원격을 **로컬 가지**로 셌다 — 분모가 조용히 틀리고, 그 분모가 「몇 개를 훑었나」의 정본이다');
+  assert.strictEqual(r.분모.원격, 2, '별칭을 원격으로 세거나 다른 원격을 빠뜨리면 분모가 틀린다');
+  assert.strictEqual(r.분모.훑음, 2, '같은 sha 를 두 번 훑거나 한 가지를 빠뜨렸다');
+  assert.ok(!r.줄들.some((x) => x.출처 && x.출처.가지 === 'origin'),
+    '🔴 가지 이름이 `origin` 으로 나간다 — 사람이 「그 가지로 가라」를 따를 수 없다');
+});
