@@ -63,8 +63,18 @@ function 테스트파일들() {
  *   양쪽 다 해시하면 두 배인데, 도장(mtime:size)이 같은 파일은 내용도 같다고 보는 것이 옛 판의
  *   전제 그대로라 여기서 새로 무는 것이 없다.
  * @param {Map|null} 앞판 주면 도장이 같은 항목의 해시를 그대로 물려받는다(= 안 읽는다).
+ * @param {string} 루트 훑을 뿌리. **기본은 이 저장소**이고, 픽스처가 임시 트리를 넘길 때만 바뀐다.
+ *
+ * 🔑 이 인자가 왜 있나 (F616 델타 · 2026-08-18 변이 실측 4건 중 **구멍 3**):
+ *   판정·문장·배선은 회귀 11건이 덮는데 **걸음(무엇을 훑고 무엇을 거르나) 층은 소스 앵커뿐**이라,
+ *   목록 글자를 안 건드리면서 걸음만 망가뜨리는 변이가 전부 통과했다 — 실측:
+ *   ①`.claude/state` 를 안 거른다 ②`node_modules` 를 안 거른다 ③하위 폴더를 안 훑는다(깊이 2→0).
+ *   셋 다 새는 방향이 「통과」다: ①②는 매 런 노이즈로 경고를 죽이고, ③은 `tools/lib` 나 `docs`
+ *   아래 한 겹 더 들어간 자리가 통째로 사각이 된다 — F616 이 본 두 파일 중 하나가 바로
+ *   `docs/교재_읽기본/권1.html` 이다.
+ *   뿌리를 인자로 받으면 픽스처가 진짜 파일로 그 층을 잰다 — 소스 글자가 아니라 **행동**으로.
  */
-function snapshot(앞판 = null) {
+function snapshot(앞판 = null, 루트 = ROOT) {
   const out = new Map();
   const walk = (dir, depth) => {
     let ents;
@@ -75,7 +85,7 @@ function snapshot(앞판 = null) {
       const p = path.join(dir, e.name);
       if (e.isDirectory()) { if (depth > 0) walk(p, depth - 1); continue; }
       if (!/\.(js|json|md|html|txt)$/i.test(e.name)) continue;
-      const 상대 = path.relative(ROOT, p);
+      const 상대 = path.relative(루트, p);
       let 도장;
       try { const s = fs.statSync(p); 도장 = `${s.mtimeMs}:${s.size}`; } catch (_) { continue; /* 사라진 파일 */ }
       const 앞 = 앞판 && 앞판.get(상대);
@@ -85,8 +95,8 @@ function snapshot(앞판 = null) {
       out.set(상대, { 도장, 해시 });
     }
   };
-  walk(ROOT, 0);
-  for (const d of ['tests', 'tools', 'docs', '.claude']) walk(path.join(ROOT, d), 2);
+  walk(루트, 0);
+  for (const d of ['tests', 'tools', 'docs', '.claude']) walk(path.join(루트, d), 2);
   return out;
 }
 
