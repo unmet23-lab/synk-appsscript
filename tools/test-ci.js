@@ -9,8 +9,18 @@
  * 로컬 스위트는 CI 결과를 예측하지 못한다:
  *   ① 로컬 시간대(KST)      → CI는 UTC. 날짜·월 계산이 갈린다.
  *   ② 홈 디렉터리           → CI엔 메모리 정본도 자격증명도 없다.
- * 둘을 지우고 스위트를 돌린다. **여기서 초록이면 CI도 초록이다**(역은 성립하지 않는다 —
- * CI엔 shallow 체크아웃 등 여기서 못 지우는 차이가 더 있다).
+ * 둘을 지우고 스위트를 돌린다.
+ *
+ * 🔴 ③ **플랫폼은 못 지운다** (마찰 F620 · 2026-08-18에 추가). CI는 `ubuntu-latest`(linux)이고
+ *   유호님 로컬은 win32다 — OS는 갈아끼울 수 없으니 이 모사가 **원리상 못 재는 축**이다.
+ *   옛 머리말은 축을 ①②로 못박아 놓고 「여기서 초록이면 CI도 초록이다」라고 **단언**했고,
+ *   그래서 윈도우 세션에게 거짓 보증을 줬다: 리눅스 클라우드 세션이 돌리자 fail 3이 났는데
+ *   셋 다 윈도우에서는 초록이던 것이다. **재지 않은 축에 대한 주장**이 원인이고, 새는 방향은
+ *   언제나 「통과」다. 지울 수 없는 축은 **이름 대고 말한다** — 아래 출력이 매 실행 그 줄을 낸다
+ *   (판정은 `lib/ci모사환경.js` 의 `CI판`·`플랫폼줄` 한 곳에서 파생 — 손으로 적으면 갈라진다).
+ *
+ * ⇒ 여기서 초록이면 **같은 플랫폼의** CI도 초록이다(역은 성립하지 않는다 — CI엔 shallow
+ *   체크아웃 등 여기서 못 지우는 차이가 더 있다).
  *
  * 쓰는 곳: /deploy 2단계, 완료·배포 보고 직전. `node tools/test-ci.js`
  */
@@ -63,8 +73,18 @@ function 테스트파일들() {
  *   양쪽 다 해시하면 두 배인데, 도장(mtime:size)이 같은 파일은 내용도 같다고 보는 것이 옛 판의
  *   전제 그대로라 여기서 새로 무는 것이 없다.
  * @param {Map|null} 앞판 주면 도장이 같은 항목의 해시를 그대로 물려받는다(= 안 읽는다).
+ * @param {string} 루트 훑을 뿌리. **기본은 이 저장소**이고, 픽스처가 임시 트리를 넘길 때만 바뀐다.
+ *
+ * 🔑 이 인자가 왜 있나 (F616 델타 · 2026-08-18 변이 실측 4건 중 **구멍 3**):
+ *   판정·문장·배선은 회귀 11건이 덮는데 **걸음(무엇을 훑고 무엇을 거르나) 층은 소스 앵커뿐**이라,
+ *   목록 글자를 안 건드리면서 걸음만 망가뜨리는 변이가 전부 통과했다 — 실측:
+ *   ①`.claude/state` 를 안 거른다 ②`node_modules` 를 안 거른다 ③하위 폴더를 안 훑는다(깊이 2→0).
+ *   셋 다 새는 방향이 「통과」다: ①②는 매 런 노이즈로 경고를 죽이고, ③은 `tools/lib` 나 `docs`
+ *   아래 한 겹 더 들어간 자리가 통째로 사각이 된다 — F616 이 본 두 파일 중 하나가 바로
+ *   `docs/교재_읽기본/권1.html` 이다.
+ *   뿌리를 인자로 받으면 픽스처가 진짜 파일로 그 층을 잰다 — 소스 글자가 아니라 **행동**으로.
  */
-function snapshot(앞판 = null) {
+function snapshot(앞판 = null, 루트 = ROOT) {
   const out = new Map();
   const walk = (dir, depth) => {
     let ents;
@@ -75,7 +95,7 @@ function snapshot(앞판 = null) {
       const p = path.join(dir, e.name);
       if (e.isDirectory()) { if (depth > 0) walk(p, depth - 1); continue; }
       if (!/\.(js|json|md|html|txt)$/i.test(e.name)) continue;
-      const 상대 = path.relative(ROOT, p);
+      const 상대 = path.relative(루트, p);
       let 도장;
       try { const s = fs.statSync(p); 도장 = `${s.mtimeMs}:${s.size}`; } catch (_) { continue; /* 사라진 파일 */ }
       const 앞 = 앞판 && 앞판.get(상대);
@@ -85,8 +105,8 @@ function snapshot(앞판 = null) {
       out.set(상대, { 도장, 해시 });
     }
   };
-  walk(ROOT, 0);
-  for (const d of ['tests', 'tools', 'docs', '.claude']) walk(path.join(ROOT, d), 2);
+  walk(루트, 0);
+  for (const d of ['tests', 'tools', 'docs', '.claude']) walk(path.join(루트, d), 2);
   return out;
 }
 
@@ -139,9 +159,12 @@ function 주() {
   const files = 테스트파일들();
   /* CI 모사 환경은 lib/ci모사환경.js **한 벌**에서 온다 (F389) — clasp-guard 안전테스트와 여기가
    * 각자 조립하다 갈라져, 「여기 초록」이 배포 게이트 통과를 예측하지 못했다. 조리법은 그 파일에. */
-  const 모사 = require('./lib/ci모사환경.js').만들기();
+  const 모사환경 = require('./lib/ci모사환경.js');
+  const 모사 = 모사환경.만들기();
+  /* ③ 축 — 지울 수 없으니 잰 자리에서 이름을 댄다(F620 · 머리말). 워크플로에서 읽는다. */
+  const ci판 = 모사환경.CI판(ROOT);
 
-  console.log(`[test-ci] CI 모사: TZ=UTC · HOME=${모사.fakeHome}(빈 폴더) · 테스트 ${files.length}파일`);
+  console.log(`[test-ci] CI 모사: TZ=UTC · HOME=${모사.fakeHome}(빈 폴더) · plat=${process.platform} · 테스트 ${files.length}파일`);
   const before = snapshot();
   const r = spawnSync(process.execPath, ['--test', ...files], { cwd: ROOT, env: 모사.env, stdio: 'inherit' });
   const after = snapshot(before);
@@ -160,6 +183,9 @@ function 주() {
   /* ⚠ 초록을 「CI 초록」이라 단언하지 않는다 — 이건 **모사**라 환경 의존 실패(git 이력·얕은 클론
    * 같은 것)를 구조적으로 못 본다. 2026-08-04 F095: 여기서 1178/0 초록이던 그 순간 실제 CI 는
    * 적색이었고, 그 적색이 주인 없이 남아 모두의 배포 게이트를 막았다. 아는 만큼만 말한다. */
+  /* 🔴 초록·적색 **둘 다** 플랫폼 줄을 단다(F620). 초록에만 달면 「내 적색이 저쪽 판에도 나는가」를
+   *   못 가르고, 적색에만 달면 거짓 보증이 그대로 남는다 — 분모는 판정과 함께 다녀야 한다. */
+  console.log(모사환경.플랫폼줄(process.platform, ci판).replace(/\n$/, ''));
   console.log(code === 0
     // ⚠ 옛 안내는 `gh run list --limit 1` 이었는데, 그건 **남의 push 로 생긴 최신 run** 을 보여줄
     //   뿐이라 「내 커밋이 검증됐나」에 답하지 못한다(F175 · 웹훅이 끊겨 run 0건이던 날 실측).
