@@ -320,16 +320,39 @@ test('🔴 워크트리에서도 형제 저장소를 찾는다 — 이 저장소
    * <본체>/.claude/worktrees/<이름> 이라 `..` 이 worktrees/ 를 가리켜 형제가 그 옆에 없다.
    * 즉 **모든 코드 트랙**에서 이 줄이 열화했고, 그 판을 커밋하면 master 화면이 실측을 잃는다
    * (이 파일이 아니라 tests/이해대장.test.js 의 도구돌리기 주석이 먼저 경고한 자리다). */
+  /* 🔑 표기는 **기계마다 하나**다(F617). 옛 픽스처는 `/`꼴과 `\`꼴을 한 배열에 넣고 같은 단언을
+   *   걸었는데, POSIX 에서 `\` 는 구분자가 아니라 **파일 이름의 한 글자**다 — `path.resolve` 가 cwd 를
+   *   앞에 붙여 후보 둘이 통째로 접히고 `/repo/SYNK-talk$` 가 원리상 못 선다. 즉 이 검사의 답을
+   *   코드가 아니라 OS 가 정했다(리눅스·CI 에서만 상시 적색 · 맹점 ① 「사람이 실제로 쓰는 표기로」의 거울상).
+   *   그래서 **값**은 그 기계의 실제 표기로 재고, **꼴 인식**만 아래에서 표기 무관으로 따로 잰다. */
   const { 형제경로들 } = require('../tools/이해대장.js');
-  const 본체 = 형제경로들('/repo/SYNK-appsscript');
-  assert.equal(본체.length, 1, '평소 경로에서 후보가 둘이면 엉뚱한 곳을 먼저 볼 수 있다');
-  assert.match(본체[0].replace(/\\/g, '/'), /\/repo\/SYNK-talk$/);
+  /* 기대값은 **손으로 조립하지 않는다** — 정본 `형제저장소.형제경로()` 에 묻는다.
+   *   ① `tests/형제경로통로.test.js` 의 래칫이 손조립을 새 위반으로 문다(따를 수 있는 처방이라 따른다 · F103)
+   *   ② 그래서 이 검사가 재는 것이 「이해대장의 손조립 판이 **정본과 같은 자리**를 내는가」가 된다 —
+   *      래칫이 그 손조립을 빚으로 들고 있는 이유가 정확히 그 갈라짐이므로 과녁이 더 맞다.
+   *   ⚠ 이해대장이 나중에 정본을 채택하면 이 «값» 단언은 항진이 된다 — 그때 실질을 지는 것은
+   *      아래 «후보가 하나 늘었는가» 쪽이다. */
+  const { 형제경로 } = require('../.claude/hooks/lib/형제저장소.js');
+  const 뿌리 = path.resolve(path.sep === '\\' ? 'C:\\repo\\SYNK-appsscript' : '/repo/SYNK-appsscript');
+  const 형제 = 형제경로(뿌리);
 
-  for (const 워크 of ['/repo/SYNK-appsscript/.claude/worktrees/트랙이름', '\\repo\\SYNK-appsscript\\.claude\\worktrees\\트랙이름']) {
-    const 후보 = 형제경로들(워크).map((p) => p.replace(/\\/g, '/'));
-    assert.ok(후보.some((p) => /\/repo\/SYNK-talk$/.test(p)),
-      `워크트리 경로에서 본체 옆 형제를 후보에 안 넣는다 — 실측이 조용히 열화한다 (${워크} → ${후보.join(' · ')})`);
-    assert.ok(후보.length >= 2, '워크트리인데 후보가 하나다 — 평소 경로와 같은 판정이 된다');
+  const 본체 = 형제경로들(뿌리);
+  assert.equal(본체.length, 1, '평소 경로에서 후보가 둘이면 엉뚱한 곳을 먼저 볼 수 있다');
+  assert.equal(본체[0], 형제);
+
+  const 워크 = path.join(뿌리, '.claude', 'worktrees', '트랙이름');
+  const 후보 = 형제경로들(워크);
+  assert.ok(후보.includes(형제),
+    `워크트리 경로에서 본체 옆 형제를 후보에 안 넣는다 — 실측이 조용히 열화한다 (${워크} → ${후보.join(' · ')})`);
+  assert.ok(후보.length >= 2, '워크트리인데 후보가 하나다 — 평소 경로와 같은 판정이 된다');
+
+  /* 표기 무관 — 「워크트리 **꼴**을 알아보는가」(정규식이 `[\\/]` 둘 다 받는가)는 어느 OS 에서나 잰다.
+   *   값이 아니라 «후보가 하나 늘었는가»만 보므로 `\` 가 구분자가 아닌 기계에서도 성립한다.
+   *   이 줄이 없으면 정규식을 한쪽 표기로 좁혀도 반대쪽 기계에서만 조용히 열화한다. */
+  for (const 꼴 of ['/repo/SYNK-appsscript/.claude/worktrees/트랙이름',
+    '\\repo\\SYNK-appsscript\\.claude\\worktrees\\트랙이름']) {
+    assert.equal(형제경로들(꼴).length, 2,
+      `워크트리 꼴을 못 알아봤다(${꼴}) — 표기 하나만 받는 정규식으로 좁아지면 반대쪽 기계에서 조용히 열화한다`);
   }
 });
 
