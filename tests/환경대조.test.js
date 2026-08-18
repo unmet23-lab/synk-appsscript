@@ -15,7 +15,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { 파일소스 } = require('./lib/소스검사');
+const { 파일소스, 부름만 } = require('./lib/소스검사');
 
 const ROOT = path.resolve(__dirname, '..');
 const SRC = 파일소스(path.join(ROOT, 'tools', '환경대조.js'));
@@ -144,4 +144,43 @@ test('🔴 등록층 — 이 회귀가 CI 스위트에 실제로 든다(파일�
   assert.ok(fs.existsSync(path.join(ROOT, 'tests', '환경대조.test.js')));
   assert.match(파일소스(path.join(ROOT, 'tools', 'test-ci.js')), /tests/,
     'CI 러너가 tests 를 안 본다 — 이 파일이 안 돌면 위 전부가 장식이다');
+});
+
+// ── ⑤ 기준 안정성 — 「기준의 flaky」가 «모든 축의 뒤집힘»으로 새지 않는다 ──────
+/* 🔴 실측 2026-08-18(`local_3dd52c55`): 기준을 한 번만 뜨던 판에서 `tests/보드주인.test.js` 의
+ *   한 검사가 기준 1회차에만 빨갰고, 그 결과 재던 **네 축 전부**가 「실패 → 통과 1건」을 냈다.
+ *   축이 하나도 안 갈렸는데 갈렸다고 말한 것이다(그 검사는 홀로 돌리면 8/8 초록 · F315 계열).
+ *   이 도구가 내는 값이 곧 「고칠 것」이라, 거짓 뒤집힘 하나가 사람을 없는 축으로 보낸다.
+ * 🔑 실동작 한 판은 스위트 전량이라 회귀로 못 쓴다 — `돌림` 이음매에 픽스처를 끼워 잰다. */
+
+const { 안정기준 } = require('../tools/환경대조.js');
+
+/** 회차마다 다른 판을 내는 가짜 러너. */
+const 가짜러너 = (판들) => { let i = 0; return () => new Map(Object.entries(판들[i++]).map(([k, v]) => [k, [v]])); };
+
+test('⑤ 회차 내내 같은 답을 낸 검사만 기준에 남는다 — 흔들린 것은 «빼되 이름을 밝힌다»', () => {
+  const { 기준, 흔들린 } = 안정기준('/뿌리', 2, 가짜러너([
+    { 굳건: '통과', 흔들: '실패', 사라짐: '통과' },
+    { 굳건: '통과', 흔들: '통과' },
+  ]), () => {});
+  assert.deepEqual([...기준.keys()], ['굳건'], '흔들린 검사가 기준에 남았다 — 그게 모든 축의 뒤집힘이 된다');
+  assert.deepEqual(흔들린.map((x) => x.이름).sort(), ['사라짐', '흔들'],
+    '흔들린 것을 «조용히» 뺐다 — 안 세고 넘어가면 분모가 몰래 준다(F207)');
+  assert.deepEqual(흔들린.find((x) => x.이름 === '사라짐').답들, ['통과', '없음'],
+    '회차 사이에 사라진 검사를 「없음」으로 안 적었다 — 파일이 안 돈 판과 구별이 사라진다');
+});
+
+test('⑤ 회차 1이면 아무것도 안 뺀다 — 옵트아웃이 조용히 «다 뺐다»가 되면 안 된다', () => {
+  const { 기준, 흔들린 } = 안정기준('/뿌리', 1, 가짜러너([{ a: '통과', b: '실패' }]), () => {});
+  assert.deepEqual([...기준.keys()].sort(), ['a', 'b']);
+  assert.deepEqual(흔들린, []);
+});
+
+test('🔴 ⑤ 등록층 — CLI 가 기준을 «안정기준» 으로 뜨고, 흔들린 이름을 변형에서도 뺀다', () => {
+  /* 장치와 발동 조건은 같은 커밋에서 정한다 — 함수만 있고 CLI 가 옛 통로를 부르면 안 돈다. */
+  const 코드 = 부름만(SRC);
+  assert.match(코드, /const \{ 기준, 흔들린 \} = 안정기준\(/, 'CLI 가 기준을 한 번만 뜨는 옛 통로로 돌아갔다');
+  assert.match(코드, /for \(const 이름 of 흔들린이름\) 판\.delete\(이름\)/,
+    '변형에서 안 빼면 흔들린 검사가 `한쪽에만`(변형에만)으로 되살아나 「파일이 안 돌았다」로 읽힌다');
+  assert.ok(!/\bconst 기준 = 돌리기\(ROOT\)/.test(코드), '옛 통로(기준 1회)가 남아 있다');
 });
