@@ -804,7 +804,7 @@ function 가지끝(root, 기준, 메모) {
      *   착수했다가 같은 트랙(F608)을 두 세션이 짓는 일이 났다(F615 계열).
      *   ⚠ 원격 ref 는 **마지막 fetch 만큼만** 새것이다 — 안 받은 가지는 이래도 안 보인다. 이 판이
      *     좁히는 것은 「이미 손에 있는데 안 본 것」이고, 그게 F619 가 실측한 모양이다. */
-    const b = 부르기(['branch', '-a', '--no-merged', 기, '--format=%(refname:short)%09%(objectname)']);
+    const b = 부르기(['branch', '-a', '--no-merged', 기, '--format=%(refname:short)%09%(objectname)%09%(refname)']);
     if (!b || b.error || b.status !== 0) continue;
     /* 🔑 **어느 기준으로 쟀는지**를 여기서만 적는다(F565). 부르는 쪽이 다시 추측하면 갈라지고,
      *   갈라진 쪽은 「신선한 기준으로 쟀다」고 조용히 말한다 — 새는 방향이 「통과」다. */
@@ -822,13 +822,26 @@ function 가지끝(root, 기준, 메모) {
      *   ㉢ `origin/HEAD`(심볼릭 별칭이라 실체가 ㉡ 이다)
      * ㉡ 를 안 거르면 **로컬 master 가 뒤처진 판**에서 origin/master 가 「미머지 가지」로 잡히고,
      * 그 줄들은 F565 가 이름 댄 「이미 머지된 남의 줄」이다 — 그 층은 `원격줄들()` 이 따로 진다. */
-    const 버릴이름 = new Set([주가지, `origin/${주가지}`, 기, 'origin/HEAD']);
+    const 버릴이름 = new Set([주가지, `origin/${주가지}`, 기]);
+    /* 🔴 ㉢ 을 **이름으로 거르면 안 걸린다**(2026-08-18 실측 · 변이가 판 자리).
+     *   `origin/HEAD` 의 `%(refname:short)` 는 `origin/HEAD` 가 아니라 그냥 **`origin`** 이다.
+     *   그래서 `'origin/HEAD'` 를 버릴이름에 넣어도 안 걸리고, 같은 줄의 `!n.startsWith('origin/')`
+     *   가 그 `origin` 을 **로컬 가지로** 센다 — 필터가 «맞는 얼굴로 안 도는» 자리다(맹점 ④):
+     *   코드에 그 문자열이 적혀 있으니 읽는 사람은 막혔다고 믿는다.
+     *   ⚠ 평소엔 `origin/HEAD` 가 `origin/master` 를 가리켜 `--no-merged` 가 알아서 뺀다 —
+     *     뜨는 것은 기본 가지가 master 가 아니거나 그 ref 가 낡았을 때다. 드물지만 그때 분모가
+     *     조용히 틀리고(`로컬 1` 이 실은 원격 별칭이다) 가지 이름이 `origin` 으로 나가 사람이
+     *     「그 가지로 가라」를 따를 수 없다.
+     *   ⇒ **이름을 추측하지 말고 실제 ref 경로로 판정한다.** `refs/heads/`=로컬 · `refs/remotes/`=원격 ·
+     *     `refs/remotes/<원격>/HEAD`=별칭. 덤으로 원격 이름이 `origin` 이 아닌 판(`upstream/x`)도 바로 선다. */
     const 후보 = [];
     for (const raw of String(b.stdout || '').split(/\r?\n/)) {
-      const [이름, sha] = raw.split('\t');
+      const [이름, sha, ref] = raw.split('\t');
       const n = String(이름 || '').trim();
+      const r = String(ref || '').trim();
       if (!n || 버릴이름.has(n)) continue;
-      후보.push({ 이름: n, sha: String(sha || '').trim(), 로컬: !n.startsWith('origin/') });
+      if (/^refs\/remotes\/[^/]+\/HEAD$/.test(r)) continue;      // 심볼릭 별칭 — 가지가 아니다
+      후보.push({ 이름: n, sha: String(sha || '').trim(), 로컬: r ? r.startsWith('refs/heads/') : !n.startsWith('origin/') });
     }
     /* 🔑 같은 트랙이 로컬·원격 **둘 다**로 잡히는 것이 노트북의 상시 상태다(`X` 와 `origin/X`).
      *   sha 가 같으면 diff 도 같으니 한 번만 뜬다 — 안 그러면 스폰이 그대로 두 배가 된다.
