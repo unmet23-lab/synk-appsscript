@@ -294,6 +294,31 @@ test('rot-check 발화 지점 — 지도 문제가 주간 점검 warn 에 실린
   }
 });
 
+/* 🔴 F617 — 바탕화면이 **없는 기계**에서 `지도폴더()` 가 던지면, `훑기()` 는 자기 계약
+ *   (「폴더가 없으면 `있음:false` — 호출부가 통과와 구분할 수 있어야 한다」)을 못 지킨다.
+ *   그러면 바로 아래 실폴더 검사가 **준비해 둔 skip 에 닿지도 못하고 fail** 한다(실측 2026-08-18 ubuntu ·
+ *   SessionStart 는 같은 뿌리를 「[검사기 고장]」으로 냈다).
+ * 🔑 탐지력은 **여기 픽스처가 진다** — 실폴더 검사는 그 기계에 폴더가 있으면 원리상 이 갈래를 못 잰다(맹점 ②).
+ *   주입은 `lib/바탕화면.js` 가 이미 낸 이음매를 그대로 쓴다(그 파일 머리말: 「안 그러면 픽스처가
+ *   이 기계의 진짜 레지스트리에 오염돼 기계마다 다른 답을 낸다」) — 이 검사가 OS 와 무관한 이유다. */
+test('🔑 F617 — 바탕화면을 못 찾아도 지도폴더가 던지지 않는다(계약: 없으면 `있음:false` 로 드러난다)', () => {
+  const M = require(TOOL);
+  const 이전 = process.env.SYNK_지도_DIR;
+  delete process.env.SYNK_지도_DIR;          // 덮어쓰기가 있으면 이 갈래를 아예 안 지난다
+  try {
+    const 없는기계 = { env: {}, 실존: () => false, 조회: () => null };
+    let dir;
+    assert.doesNotThrow(() => { dir = M.지도폴더(없는기계); },
+      '바탕화면이 없으면 던진다 — 읽는 쪽이 `경로()`(쓰는 쪽 규율)를 쓰면 `||` 폴백이 죽은 코드가 된다(F617)');
+    assert.strictEqual(typeof dir, 'string');
+    assert.ok(dir.length > 0, '추측이라도 문자열은 나와야 `훑기()` 가 existsSync 로 걸러 `있음:false` 를 낼 수 있다');
+    assert.strictEqual(M.훑기(dir).있음, false, '없는 폴더인데 `있음:true` 다 — 통과와 미실행이 같은 모양이 된다');
+  } finally {
+    if (이전 === undefined) delete process.env.SYNK_지도_DIR;
+    else process.env.SYNK_지도_DIR = 이전;
+  }
+});
+
 test('실폴더 — 있으면 훑기가 죽지 않는지만 본다(거짓양성 아닌 실문제는 정상 신호다)', (t) => {
   const M = require(TOOL);
   const 결과 = M.훑기();
