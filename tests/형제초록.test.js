@@ -34,6 +34,13 @@ function mkPair(t) {
     fs.mkdirSync(path.join(as, 'tools'), { recursive: true });
     fs.mkdirSync(path.join(as, 'docs', '_ops'), { recursive: true });
     fs.copyFileSync(도구, path.join(as, 'tools', '형제초록.js'));
+    /* 🔴 `tools/lib` 부품은 **통째로** 싣는다 — 이름으로 골라 실으면 도구에 의존이 하나 늘 때마다
+     *   이 픽스처가 MODULE_NOT_FOUND 로 죽고, 그건 도구가 아니라 「사본이 덜 실렸다」를 재는 것이다
+     *   (2026-08-18 인자 게이트 부착이 실제로 그렇게 깨뜨렸다 · 같은 병 = F606 부착 트랙). */
+    fs.mkdirSync(path.join(as, 'tools', 'lib'), { recursive: true });
+    for (const n of fs.readdirSync(path.join(ROOT, 'tools', 'lib')).filter((x) => x.endsWith('.js'))) {
+      fs.copyFileSync(path.join(ROOT, 'tools', 'lib', n), path.join(as, 'tools', 'lib', n));
+    }
     /* 도구가 기대는 것을 **그대로** 싣는다 — 형제 자리는 저장소에 통로가 하나뿐이라
      * (`.claude/hooks/lib/형제저장소.js`) 도구가 그걸 `require` 한다. 사본에서 빼면 이 시험은
      * 도구를 재는 게 아니라 MODULE_NOT_FOUND 를 잰다(실측 2026-08-17 — CI 모사가 잡았다). */

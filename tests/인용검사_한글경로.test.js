@@ -45,6 +45,14 @@ function 픽스처() {
   if (!fs.existsSync(원본)) return null;      // 도구가 옮겨갔다 — skip 으로 드러낸다
   fs.mkdirSync(path.join(dir, 'tools', 'lib'), { recursive: true });
   fs.copyFileSync(원본, path.join(dir, 'tools', '인용검사.js'));
+  /* 🔴 도구가 `require` 하는 `tools/lib` 부품을 **통째로** 싣는다 — 이름으로 골라 실으면 도구에
+   *   의존이 하나 늘 때마다 이 픽스처가 MODULE_NOT_FOUND 로 죽고, 그건 「도구를 재는」 게 아니라
+   *   「사본이 덜 실렸다」를 재는 것이다. 같은 병을 `tests/대기열채번.test.js` 가 이미 한 번
+   *   겪었고(F606 부착 트랙 · 전량 CI 만 잡았다), 2026-08-18 인자 게이트 부착이 그걸 되풀이했다.
+   *   ⚠ 아래 `보드낡음.js` 대역은 **덮어쓰기 순서가 뜻이다** — 통째 복사 뒤에 써야 대역이 남는다. */
+  for (const 이름 of fs.readdirSync(path.join(저장소뿌리, 'tools', 'lib')).filter((n) => n.endsWith('.js'))) {
+    fs.copyFileSync(path.join(저장소뿌리, 'tools', 'lib', 이름), path.join(dir, 'tools', 'lib', 이름));
+  }
 
   /* 유일한 로컬 의존인 `저장소들` 만 **대역으로 세운다**(실물은 표·보드 라이브러리를 줄줄이 끌고 온다).
    * ⚠ 대역인 이유를 적는다 — 이 함수가 하는 일은 «형제 저장소(SYNK-talk)가 옆에 있나»이고,

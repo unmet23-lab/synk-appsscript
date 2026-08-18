@@ -189,6 +189,13 @@ function 가짜트리() {
     fs.mkdirSync(path.join(r, 'tools'), { recursive: true });
     fs.mkdirSync(path.join(r, '.claude', 'hooks', 'lib'), { recursive: true });
     fs.copyFileSync(TOOL, path.join(r, 'tools', 'memory-graph.js'));
+    /* 🔴 `tools/lib` 부품을 **통째로** 싣는다 — 이름으로 고르면 도구에 의존이 하나 늘 때마다
+     *   이 픽스처가 MODULE_NOT_FOUND 로 죽는다(2026-08-18 인자 게이트 부착이 그렇게 깨뜨렸다). */
+    const LIB = path.join(__dirname, '..', 'tools', 'lib');
+    fs.mkdirSync(path.join(r, 'tools', 'lib'), { recursive: true });
+    for (const n of fs.readdirSync(LIB).filter((x) => x.endsWith('.js'))) {
+      fs.copyFileSync(path.join(LIB, n), path.join(r, 'tools', 'lib', n));
+    }
     fs.copyFileSync(path.join(__dirname, '..', '.claude', 'hooks', 'lib', 'worktrees.js'),
       path.join(r, '.claude', 'hooks', 'lib', 'worktrees.js'));
   }

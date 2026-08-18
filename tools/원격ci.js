@@ -20,7 +20,6 @@
  */
 const { spawnSync } = require('node:child_process');
 const path = require('node:path');
-const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
 
 const ROOT = path.resolve(__dirname, '..');
 const CI_워크플로 = 'syntax-check.yml';
@@ -120,11 +119,13 @@ function gh조회(브랜치, 창) {
 }
 
 function main() {
-  /* 🔑 이 도구는 **위치 인자만** 받는다 — 그래도 게이트를 건다. 모르는 `--` 낱말이 조용히
-   *   지나가면 사람은 자기가 부탁한 좁힘이 먹은 줄 알고, 그게 이 트랙의 병이다. */
-  const 아는플래그 = [];
-  const 플래그오류 = 인자게이트('원격ci', process.argv.slice(2), 아는플래그);
-  if (플래그오류) { console.error(`\n🔴 ${플래그오류}\n`); process.exit(1); }
+  /* 🔑 **여기엔 공용 게이트를 안 단다** — 이 도구는 이미 «모르는 인자 = 모름» 을 자기 축으로
+   *   판정한다. `--help` 같은 낱말은 아래 `rev-parse --verify --end-of-options` 에서 커밋이
+   *   아니라고 판명되고, 도구는 exit≠0 과 함께 「❔ 모름」을 말한다(그 행동을 `tests/원격ci.test.js`
+   *   가 못박는다 · F191). 통로를 덧대면 그 낱말이 「모르는 플래그」로 바뀌어, **못 잰 것과 잘못
+   *   부른 것이 같은 문장**이 된다 — 이 도구가 없애려던 모양이 그것이다.
+   *   그래서 `tests/도구인자게이트.test.js` 의 «자체 게이트» 목록에 이름을 적고, 그 실효성은
+   *   거기 ③-5 가 실제로 돌려서 잰다(적어 두기만 하면 통과하는 면제는 안 만든다). */
   const 인자 = process.argv[2] || 'HEAD';
   /* 🔴 `--verify --end-of-options` 는 장식이 아니다 — 없으면 인자가 **git 의 옵션으로 먹힌다**.
    *   `--help` 하나로 두 가지가 터졌다: ①exit 0 + 빈 출력이라 대상이 빈 문자열로 통과해 확신에

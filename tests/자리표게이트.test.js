@@ -186,6 +186,13 @@ test('🔒 배선 — 실 훅을 태운 진짜 `git commit` 이 실제로 막힌
   fs.mkdirSync(path.join(dir, 'tools'), { recursive: true });
   fs.copyFileSync(검사기, path.join(dir, 'tools', '자리표검사.js'));
   fs.copyFileSync(path.join(ROOT, 'tools', 'bump-version.js'), path.join(dir, 'tools', 'bump-version.js'));
+  /* 🔴 두 도구가 `require` 하는 `tools/lib` 부품을 **통째로** 싣는다 — 이름으로 고르면 의존이
+   *   하나 늘 때마다 이 픽스처가 MODULE_NOT_FOUND 로 죽고, 그러면 「막혔다」가 자리표 때문인지
+   *   사본이 덜 실렸기 때문인지 갈리지 않는다(2026-08-18 인자 게이트 부착이 그 자리를 밟았다). */
+  fs.mkdirSync(path.join(dir, 'tools', 'lib'), { recursive: true });
+  for (const n of fs.readdirSync(path.join(ROOT, 'tools', 'lib')).filter((x) => x.endsWith('.js'))) {
+    fs.copyFileSync(path.join(ROOT, 'tools', 'lib', n), path.join(dir, 'tools', 'lib', n));
+  }
 
   const 막힘 = spawnSync('git', ['commit', '-m', '자리표를 실은 커밋'], { cwd: dir, encoding: 'utf8' });
   assert.notEqual(막힘.status, 0,
