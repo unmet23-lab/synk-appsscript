@@ -94,8 +94,8 @@ test('로고 주입기의 주입 정본이 키트 색이다 — 여기가 낡으
   const src = fs.readFileSync(LOGO_TOOL, 'utf8');
   const outside = [...colorsIn(src)].filter((c) => !KIT.has(c) && !NEUTRAL.has(c));
   assert.deepStrictEqual(outside, [], `로고주입.js 키트 밖 색: ${outside.join(', ')}`);
-  assert.ok(src.includes('#F6F1E8') && src.includes('#FF6B5C'),
-    'W5 주입 정본에 Cream(#F6F1E8)·Coral(#FF6B5C)이 없다 — 브랜드킷 §3 v2.0 도형 정본과 어긋난다');
+  assert.ok(src.includes('#E4E4E7') && src.includes('#FF6B5C'),
+    'W5 주입 정본에 Chalk(#E4E4E7)·Coral(#FF6B5C)이 없다 — 브랜드킷 §3 v2.0 도형 정본과 어긋난다');
 });
 
 test('코랄 면 위 글자는 Ink 다 — 흰 글자는 2.8 로 미달한다', () => {
@@ -103,7 +103,7 @@ test('코랄 면 위 글자는 Ink 다 — 흰 글자는 2.8 로 미달한다', 
   const rec = src.match(/\.id\.rec\{[^}]*\}/);
   assert.ok(rec, '.id.rec 규칙이 사라졌다');
   assert.ok(/background:var\(--coral\)/.test(rec[0]), '.id.rec 배경이 코랄이 아니다');
-  assert.ok(/color:#171820/i.test(rec[0]), `.id.rec 글자가 Ink 가 아니다 — ${rec[0]}`);
+  assert.ok(/color:#1B1B1A/i.test(rec[0]), `.id.rec 글자가 Ink 가 아니다 — ${rec[0]}`);
 });
 
 test('「//」는 세 번째 색이 아니라 잉크의 저채도다', () => {
