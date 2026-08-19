@@ -375,6 +375,15 @@ function sweep() {
 /** 바통을 떨군다. 같은 세션이 여러 번 떨구면 **마지막 것이 그 세션의 바통**이다(덮어쓰기). */
 function drop(cwd, sessionId, message, meta) {
   if (!String(message || '').trim()) return false;
+  /* ㈎ **실을 것이 없으면 바통을 안 남긴다** (F661 ㈎ · 유호 픽 2026-08-19).
+   *   왜 «쓰는» 층에서 막나 — 바통을 떨구는 자리가 둘이라(SessionEnd · context-budget 🔴) 각자
+   *   판정하면 갈라진다. 읽는 층(session-handoff)에서 막으면 이미 쓰인 바통을 매번 되읽어야 하고,
+   *   TTL 청소 대상으로도 남는다. 안 만든 바통은 청소할 것도 없다.
+   * 🔑 **판정은 여기서 «하지» 않는다** — `session-report.buildHandoff` 가 커밋·보드 줄을 재며
+   *   채운 값을 그대로 받는다(그 함수의 `o.메타` 주석이 근원). 여기서 문자열을 되읽어 판정하면
+   *   문구를 다듬는 순간 조용히 죽고, 그 증상은 「빈 인계문이 다시 나간다」= 통과와 같은 모양이다.
+   * ⚠ 새는 방향은 「남긴다」다 — 메타를 안 넘기는 호출부는 지금까지와 **바이트 단위로 같다**. */
+  if (meta && meta.실을것없음 === true) return false;
   try {
     fs.mkdirSync(STATE_DIR, { recursive: true });
     fs.writeFileSync(

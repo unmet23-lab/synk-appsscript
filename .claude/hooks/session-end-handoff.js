@@ -76,8 +76,28 @@ try {
 const worked = commits.length > 0 || 내미커밋 || stage > 0;
 if (!worked) process.exit(0);
 
-const msg = report.buildHandoff(cwd, sid, { dirty, reason: reason || undefined });
-store.drop(cwd, sid, msg, { trigger: `session-end:${reason || 'other'}` });
+/* ㈎ 「일했나」와 「실을 것이 있나」는 **다른 질문**이다 (F661 ㈎ · 유호 픽 2026-08-19).
+ *   위 `worked` 게이트는 ①커밋 ②내 편집 도장 ③임계 중 하나면 통과다. 그래서 **문서 한 줄만
+ *   고치고 커밋도 보드 선언도 없이 끝난 세션**이 계속 통과했고, 그 인계문은 다음 창에
+ *   「커밋 없음 · 트랙 없음 · 새 트랙을 잡아라」만 싣고 **유호님의 첫 발화 자리**를 썼다.
+ *   실측 2026-08-19(git 이력 전량 47건): 그런 «빈껍데기»가 4건 9%. 이 훅 머리말의 ② 수리
+ *   (저장소 더러움 → 내 편집 도장)가 55건 중 10건(18%)을 9%까지 내렸고, 여기가 그 나머지다.
+ * 🔑 판정은 `buildHandoff` 가 커밋·보드 줄을 재며 채운다 — 여기서 다시 재지 않는다(1.5초 예산).
+ * ⚠ 사본도 같이 안 쓴다: 사본은 「자동 입력이 안 닿는 자리에서 열어 복사할 것」인데, 복사해도
+ *   실을 것이 없는 글이라 남길 값이 없다. 오히려 `인계문수거` 훅이 그 빈 파일을 커밋해
+ *   이력에 잡음을 남긴다(실측: 그 커밋이 실제로 났다). */
+const 메타 = {};
+const msg = report.buildHandoff(cwd, sid, { dirty, reason: reason || undefined, 메타 });
+
+if (메타.실을것없음) {
+  process.stdout.write(JSON.stringify({
+    systemMessage: '↪ 인계 바통을 **안 남겼다** — 이 세션은 커밋도 보드 줄도 없어 다음 창에 실을 것이 없다'
+      + '(F661 ㈎). 새 창은 빈 첫 메시지로 열린다 — 유호님 용건이 그 세션의 출발점이 된다.',
+  }));
+  process.exit(0);
+}
+
+store.drop(cwd, sid, msg, { trigger: `session-end:${reason || 'other'}`, ...메타 });
 // 파일로도 남긴다 — 바통은 새 창이 **자동으로** 물지만, 자동 입력이 안 닿는 자리
 // (다른 계정·폰·자동 입력 실패)에서는 유호님이 열어서 복사할 것이 있어야 한다.
 const 파일 = report.writeHandoffFile(cwd, msg, { sessionId: report.hostSessionId(sid), reason: reason || undefined });

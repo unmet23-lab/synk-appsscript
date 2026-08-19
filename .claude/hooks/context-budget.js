@@ -121,14 +121,20 @@ if (dirty === null) {
   steps = `미커밋 0건 — ${CLOSE} 로 보드 줄만 정리하면 끝. 지금 끊으면 잃는 게 없다.`;
 }
 
-const handoffMsg = report.buildHandoff(cwd, sid, { dirty });
+/* ㈎ 여기도 같은 게이트를 지난다 (F661 ㈎ · 유호 픽 2026-08-19) — 바통을 떨구는 자리가 둘이라,
+ * 한쪽만 고치면 「🔴 를 넘긴 세션」에서 빈 인계문이 그대로 돌아온다. **판정은 재지 않고 받는다**:
+ * `buildHandoff` 가 커밋·보드 줄을 재며 `메타` 를 채우고, `store.drop` 이 그 값을 보고 거른다.
+ * ⚠ 커밋도 보드 줄도 없이 🔴(150k)에 닿는 세션은 드물지만 0이 아니다 — 긴 조사·독해만 하고
+ *   아무것도 안 남긴 세션이 정확히 그 모양이다. */
+const 메타 = {};
+const handoffMsg = report.buildHandoff(cwd, sid, { dirty, 메타 });
 
 // 🔴 부터 **바통을 떨군다** — 세션이 어떻게 끝나든(창을 그냥 닫아 SessionEnd 가 못 돌아도)
 // 다음 세션이 이어받게 하는 보험이다. 평범한 종료는 session-end-handoff 가 따로 떨군다.
-if (stage >= 2) store.drop(cwd, sid, handoffMsg, { ctx, trigger: `context-${stage === 3 ? 'last' : 'hard'}` });
+if (stage >= 2) store.drop(cwd, sid, handoffMsg, { ctx, trigger: `context-${stage === 3 ? 'last' : 'hard'}`, ...메타 });
 // 🔴 부터는 **파일로도** 남긴다 — 바통(자동 입력)이 안 닿는 자리(다른 계정·폰)의 보조 통로.
 // 유호님 08-04: "새 세션에서 바로 이어서 할 수 있게 프롬프트나 텍스트파일을 전달".
-if (stage >= 2) report.writeHandoffFile(cwd, handoffMsg, { sessionId: report.hostSessionId(sid), reason: `컨텍스트 ${Math.round(ctx / 1000)}k` });
+if (stage >= 2 && !메타.실을것없음) report.writeHandoffFile(cwd, handoffMsg, { sessionId: report.hostSessionId(sid), reason: `컨텍스트 ${Math.round(ctx / 1000)}k` });
 
 // ⚠ 퍼센트를 앞세우지 않는다 — **거짓 안심을 준다**(유호님 "오푸스·페이블만 쓸 것", 08-04).
 //   그 둘은 창이 1M 이라 끊어야 할 지점에서도 「31%」로 보인다. 실제 근거는 창 점유율이 아니라
