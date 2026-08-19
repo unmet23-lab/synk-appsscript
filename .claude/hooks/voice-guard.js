@@ -31,7 +31,52 @@ const 대상 = [
    * ⚠ 규칙 문서인 `skills/synk-brand` 는 여전히 밖이다(반례 표를 품어 자기가 인질이 된다). */
   /(^|\/)docs\/DM상담_Phase0_절차서\.md$/,
   /(^|\/)\.claude\/skills\/synk-content\/.*\.md$/,
+  /* 2026-08-19 실측 — **구멍은 둘이 아니라 셋이었다.** 위 목록은 「학생 문구는 `contents_*.js` 에 산다」는
+   *   설계 전제(CLAUDE.md 파일 차선: `Code.js` = 엔진 전용)로 짜였는데, 실물은 그 전제를 안 따랐다:
+   *   운세·마스코트 대사·학부모 카드 **91개 문구가 `Code.js` 안에 산다**. 훅이 생긴 08-06 이래 무검사였다.
+   * ⚠ 그렇다고 파일 전량을 대면 안 된다 — 그날 실측한 8건이 **전부 거짓양성**이었다(버전 이력 주석·
+   *   `Logger.log('…실패')`·관리자 메일 「메일 쿼터 부족」·원장용 리텐션 신호 「출석 추세 하락」·
+   *   그리고 «금칙어를 지키려고 쓴 주석» 「긍정형 — '부족·실패' 금칙」까지). 거짓양성 폭발은
+   *   BYPASS 습관을 만들고, 그러면 다음 사람은 규칙이 아니라 훅을 끈다(가드 맹점③).
+   * → 그래서 **파일이 아니라 «구역»을 본다** — 아래 `구역범위()` 참조. 마커가 없으면 이 파일은 통과한다. */
+  /(^|\/)Code\.js$/,
+  /(^|\/)엔진_[^/]*\.js$/,
 ];
+
+/* ── 구역 검사 ────────────────────────────────────────────────────────────────
+ * 파일 «전체»가 학생 접점인 파일(`contents_*.js`)과 달리, 엔진 파일은 코드와 학생 문구가 섞여 산다.
+ * 마커로 구역을 명시한 파일은 **그 구역만** 검사한다. 마커가 없으면 **아무것도 검사하지 않는다**
+ *   — 「전량 검사」로 폴백하면 위 ⚠ 의 거짓양성 폭발이 그대로 돌아온다(fail-open 이 아니라 «좁게 닫기»다).
+ * 마커를 안 두른 학생 문구는 여전히 무검사다. **분모를 숨기지 않는다** — `--check --구역` 이 몇 벌·몇 줄이
+ *   구역 안인지 세어 보여준다(F207: 초록은 분모와 함께만 읽는다).
+ */
+const 구역시작 = /@학생문구\s*:\s*시작/;
+const 구역끝 = /@학생문구\s*:\s*끝/;
+
+/** 마커 구역의 행 범위(0-based, 끝 포함). 마커가 없으면 null — 「구역 파일이 아니다」와 구분된다. */
+function 구역범위(text) {
+  const 줄들 = String(text).split('\n');
+  const 범위 = [];
+  let 열림 = -1;
+  줄들.forEach((l, i) => {
+    if (열림 < 0 && 구역시작.test(l)) { 열림 = i; return; }
+    if (열림 >= 0 && 구역끝.test(l)) { 범위.push([열림, i]); 열림 = -1; }
+  });
+  /* 닫히지 않은 시작은 «파일 끝까지»로 센다 — 마커를 지우다 만 편집이 검사를 통째로 끄면 안 된다. */
+  if (열림 >= 0) 범위.push([열림, 줄들.length - 1]);
+  return 범위.length ? 범위 : null;
+}
+
+/** 구역 밖을 **행 수를 유지한 채** 비운다(행 번호가 그대로 남아야 `--check` 가 자리를 짚는다). */
+function 구역만(text) {
+  const 범위 = 구역범위(text);
+  if (!범위) return null;
+  const 줄들 = String(text).split('\n');
+  return 줄들.map((l, i) => (범위.some(([a, b]) => i >= a && i <= b) ? l : '')).join('\n');
+}
+
+/** 이 경로가 「구역이 있어야만 검사되는」 파일인가. 목록을 두 곳에 적으면 갈라지므로 여기 하나에서 판정한다. */
+const 구역파일인가 = (p) => /(^|\/)(Code|엔진_[^/]*)\.js$/.test(String(p));
 
 /* 규칙. `대신`은 처방이자 **자기 검사 재료**다 — 차단하면서 시키는 문장이 이 훅을 통과하는지
  * 테스트가 되먹여 확인한다(CLAUDE.md 가드 맹점③: 따를 수 없는 처방은 우회를 정상 통로로 만든다). */
@@ -112,7 +157,7 @@ const 대상인가 = (p) => 대상.some((re) => re.test(p));
 
 /* 규칙을 다른 도구가 빌려 쓴다 — `tools/몽골어대조.js` 가 **역번역된 한국어**에 같은 자를 댄다.
  * 훅은 파일만 보고, 번역은 파일 밖에서 뉘앙스가 뒤집힌다. 자를 두 벌 만들면 갈라지므로 하나에서 파생시킨다. */
-module.exports = { 위반찾기, 규칙, 검사본, 주석제거, 대상인가 };
+module.exports = { 위반찾기, 규칙, 검사본, 주석제거, 대상인가, 구역범위, 구역만, 구역파일인가 };
 if (require.main !== module) return; // require 로 불렸으면 여기까지 — 아래는 CLI·훅 본체다
 
 /* --check [경로…] : 훅과 **같은 판정기**로 지금 상태를 잰다(F052 — 잴 통로를 하나로).
@@ -127,14 +172,28 @@ if (process.argv.includes('--check')) {
     파일들 = out.split('\0').filter(Boolean).filter(대상인가);
   }
   let 총 = 0;
+  const 구역없음 = [];   // 구역 파일인데 마커가 0개 = **통째로 무검사**. 초록에 섞으면 분모가 거짓이 된다(F207).
+  let 구역줄 = 0;
   console.log(`[voice-guard --check] 대상 ${파일들.length}개 파일`);
   for (const f of 파일들) {
     let 본문;
     try { 본문 = fs.readFileSync(f, 'utf8'); } catch (_) { continue; }
+    if (구역파일인가(f)) {
+      const 잘린것 = 구역만(본문);
+      if (잘린것 === null) { 구역없음.push(f); continue; }
+      구역줄 += (구역범위(본문) || []).reduce((n, [a, b]) => n + (b - a + 1), 0);
+      본문 = 잘린것;
+    }
     for (const v of 위반찾기(본문)) {
       총++;
       console.log(`  ✖ ${f}:${v.행} [${v.id}] "${v.문구}" — ${v.왜}`);
     }
+  }
+  /* 분모를 먼저 말하고 초록을 말한다 — 「0건」과 「안 봤다」는 같은 모양이다. */
+  if (구역줄) console.log(`  · 구역 검사: ${구역줄}줄 (엔진 파일 안의 학생 문구 구역만)`);
+  if (구역없음.length) {
+    console.log(`  ⚠ 구역 마커가 없어 **통째로 무검사**인 파일 ${구역없음.length}개 — ${구역없음.join(' · ')}`);
+    console.log('     → 그 파일의 학생 문구를 `// @학생문구:시작` ~ `// @학생문구:끝` 으로 두르면 검사에 들어온다.');
   }
   console.log(총 ? `\n  위반 ${총}건` : '  ✅ 위반 0건');
   process.exit(총 ? 1 : 0);
@@ -154,12 +213,32 @@ if (!대상인가(filePath)) process.exit(0);
  * 그 파일을 아예 못 고치게 되고, 그러면 다음 사람은 규칙이 아니라 훅을 끈다
  * (memory-index-guard 와 같은 판단). */
 const 새텍스트 = [];
-if (tool === 'Write') {
+const edits = tool === 'MultiEdit' && Array.isArray(ti.edits) ? ti.edits : [ti];
+
+if (구역파일인가(filePath)) {
+  /* 엔진 파일 — 구역 마커 안의 편집만 본다. 마커가 없으면 조용히 통과한다(위 ⚠ 의 거짓양성 폭발 방지).
+   * 「구역 안인가」는 **편집 전 파일**로 판정한다: `old_string` 의 줄 중 하나라도 구역 줄과 같으면 닿은 것이다.
+   * 문자열 통째 포함(`includes`)으로 재면 구역 경계를 걸친 편집이 조용히 새므로 **줄 단위**로 잰다. */
+  let 현재 = '';
+  try { 현재 = fs.readFileSync(filePath, 'utf8'); } catch (_) {}
+  if (tool === 'Write') {
+    const 새구역 = 구역만(String(ti.content || ''));
+    if (새구역 === null) process.exit(0);          // 새 내용에 마커가 없다 = 검사할 구역이 없다
+    const 옛구역 = 구역만(현재) || '';
+    const 기존 = new Set(옛구역.split('\n').map((l) => l.trim()));
+    새텍스트.push(새구역.split('\n').filter((l) => l.trim() && !기존.has(l.trim())).join('\n'));
+  } else {
+    const 구역텍스트 = 구역만(현재);
+    if (구역텍스트 === null) process.exit(0);      // 아직 마커가 없는 파일 = 무검사
+    const 구역줄 = new Set(구역텍스트.split('\n').map((l) => l.trim()).filter(Boolean));
+    const 닿나 = (old) => String(old).split('\n').some((l) => l.trim() && 구역줄.has(l.trim()));
+    for (const e of edits) if (닿나(e.old_string)) 새텍스트.push(String(e.new_string || ''));
+  }
+} else if (tool === 'Write') {
   let 기존 = new Set();
   try { 기존 = new Set(fs.readFileSync(filePath, 'utf8').split('\n').map((l) => l.trim())); } catch (_) {}
   새텍스트.push(String(ti.content || '').split('\n').filter((l) => !기존.has(l.trim())).join('\n'));
 } else {
-  const edits = tool === 'MultiEdit' && Array.isArray(ti.edits) ? ti.edits : [ti];
   for (const e of edits) 새텍스트.push(String(e.new_string || ''));
 }
 
