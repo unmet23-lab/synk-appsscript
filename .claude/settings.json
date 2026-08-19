@@ -437,6 +437,7 @@
     ]
   },
   "permissions": {
+    "defaultMode": "bypassPermissions",
     "allow": [
       "Bash(\"/c/Program Files/nodejs/node.exe\" --check *)",
       "PowerShell(git -C \"C:\\\\Users\\\\q1212\\\\Documents\\\\SYNK-appsscript\" status *)",
@@ -511,5 +512,7 @@
       "Read(**/.clasprc.json)",
       "Read(secrets/**)"
     ]
-  }
+  },
+  "skipDangerousModePermissionPrompt": true,
+  "inputNeededNotifEnabled": true
 }
