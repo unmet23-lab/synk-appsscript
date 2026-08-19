@@ -233,3 +233,67 @@ test('🔑 `--sha추출` 은 네트워크·저장소를 안 건드린다', (t) =
   const 후 = spawnSync('git', ['status', '--porcelain'], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(후.stdout, 전.stdout, '`--sha추출` 이 작업 트리를 건드렸다');
 });
+
+/* ── ⑥ 라벨 판정 — 러너가 «돌고 있는데» 없다고 말하지 않는다 ──────────────
+ *
+ * 왜 이 절이 생겼나 (2026-08-19 · 유호님 노트북 실측):
+ *   `--확인` 이 「리눅스 러너 **없음** · 세우려면 `bash tools/러너설치.sh`」를 냈다.
+ *   같은 순간 `svc.sh status` 는 `Running job: check` 였다 — **러너는 job 을 돌리는 중**이었다.
+ *
+ *   원인은 한 글자다: 스크립트가 `LABEL="linux"`(소문자)를 `grep -q` 로 찾는데, GitHub 가
+ *   러너에 붙이는 기본 라벨은 **`Linux`**(대문자)라 `self-hosted,Linux,X64` 에서 안 잡혔다.
+ *   ⚠ 급소는 **워크플로가 멀쩡했다**는 것 — Actions 의 `runs-on` 매칭은 대소문자를 무시한다.
+ *   즉 러너는 정상이고 **확인 도구만 눈이 멀었다**(F642 와 같은 형태 · 맹점 ④).
+ *
+ *   🔴 그리고 그 오판이 낸 처방이 「설치하라」였다 — 따르면 멀쩡한 러너를 **215MB 다시 깐다**.
+ *   따를수록 같은 자리로 돌아오는 처방이라 F103 계열이다. 그래서 이 절은 두 가지를 진다:
+ *   판정이 맞는지, 그리고 **틀린 상태에 «설치» 처방이 안 붙는지**. */
+
+/** 스크립트의 실물 판정을 그대로 부른다(로직 복제 없음 · F063). */
+function 라벨판정(줄들) {
+  const r = spawnSync('bash', [스크립트, '--라벨판정'], {
+    input: `${줄들}\n`, encoding: 'utf8', cwd: ROOT,
+  });
+  assert.equal(r.status, 0, `--라벨판정 실패:\n${r.stderr}`);
+  return r.stdout.trim();
+}
+
+test('🔴 대문자 `Linux` 라벨을 찾는다 (유호님 노트북 실물 줄)', () => {
+  assert.equal(라벨판정('synk-wsl-localhost|online|self-hosted,Linux,X64'), '등록=1 온라인=1',
+    'GitHub 가 실제로 붙이는 대문자 라벨을 못 찾는다 — 도는 러너를 「없다」고 말하게 된다');
+});
+
+test('🔑 탐지력 — 옛 `grep -q "linux"` 는 같은 줄에서 «못» 찾는다', () => {
+  /* 버그가 아직 있을 것을 요구하지 않는다(맹점 ②): 옛 로직을 여기서 한 번만 재현해,
+   * 픽스처가 그 함정을 담고 있음을 못박는다. 이게 없으면 위 검사는 「무엇이든 통과」다. */
+  const r = spawnSync('bash', ['-c', 'grep -q "linux"'], {
+    input: 'synk-wsl-localhost|online|self-hosted,Linux,X64\n', encoding: 'utf8',
+  });
+  assert.notEqual(r.status, 0,
+    '옛 로직이 이 줄을 찾아버린다 — 그렇다면 픽스처가 실제 버그를 안 담고 있다');
+});
+
+test('🔴 등록됐지만 오프라인인 상태를 «따로» 낸다', () => {
+  assert.equal(라벨판정('synk-wsl-localhost|offline|self-hosted,Linux,X64'), '등록=1 온라인=0',
+    '오프라인을 미등록과 뭉치면 「기계를 켜라」 대신 「설치하라」가 나간다');
+});
+
+test('🔑 경계 — `linux-arm` 을 리눅스x64 로 오인하지 않는다', () => {
+  assert.equal(라벨판정('other|online|self-hosted,linux-arm,ARM64'), '등록=0 온라인=0',
+    '부분일치로 찾고 있다 — 다른 아키텍처 러너를 우리 것으로 센다');
+});
+
+test('🔑 러너 0개와 라벨 불일치는 둘 다 «없다»로 수렴한다', () => {
+  assert.equal(라벨판정(''), '등록=0 온라인=0');
+  assert.equal(라벨판정('win|online|self-hosted,Windows,X64'), '등록=0 온라인=0');
+});
+
+test('🔴 오프라인 갈래에 «설치» 처방을 붙이지 않는다 (F103 — 따를수록 나빠지는 처방)', () => {
+  /* 세울 게 없는 상태에 「세우려면 설치하라」를 내면 멀쩡한 러너를 다시 깐다.
+   * 갈래를 나눈 목적이 그것이므로, 그 목적이 코드에 남아 있는지 여기서 못박는다. */
+  const m = /⏸ 러너가 \*\*오프라인\*\*이다[\s\S]*?\n(?=\s*else\b|\s*fi\b)/.exec(원문);
+  assert.ok(m, '오프라인 갈래가 사라졌다 — 미검증과 미설치가 다시 한 칸으로 뭉쳤다');
+  assert.ok(!/세우려면/.test(m[0]),
+    '오프라인인데 「세우려면 설치하라」가 붙어 있다 — 멀쩡한 러너를 215MB 다시 깔게 만든다');
+  assert.match(m[0], /다시 설치할 것 없다/, '「설치가 필요 없다」를 명시하지 않는다');
+});

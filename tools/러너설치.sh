@@ -42,17 +42,19 @@ DIR="$HOME/actions-runner"
 CHECK_ONLY=0
 SWITCH_ONLY=0
 SHA_EXTRACT_ONLY=0
+LABEL_TEST_ONLY=0
 MANUAL_SHA=""
 while [ $# -gt 0 ]; do
   case "$1" in
-    --확인)     CHECK_ONLY=1 ;;
-    --스위치만)  SWITCH_ONLY=1 ;;
-    --sha256)   MANUAL_SHA="${2:-}"; shift ;;
-    --sha추출)  SHA_EXTRACT_ONLY=1 ;;
+    --확인)      CHECK_ONLY=1 ;;
+    --스위치만)   SWITCH_ONLY=1 ;;
+    --sha256)    MANUAL_SHA="${2:-}"; shift ;;
+    --sha추출)   SHA_EXTRACT_ONLY=1 ;;
+    --라벨판정)   LABEL_TEST_ONLY=1 ;;
     *)
       # 🔴 모르는 인자를 조용히 삼키면 「딴 과녁을 재고 초록」이 된다(F400 계열).
       printf '🔴 모르는 인자: %s\n' "$1" >&2
-      printf '   이 스크립트가 아는 것은 --확인 --스위치만 --sha256 --sha추출 뿐이다.\n' >&2
+      printf '   이 스크립트가 아는 것은 --확인 --스위치만 --sha256 --sha추출 --라벨판정 뿐이다.\n' >&2
       exit 2 ;;
   esac
   shift
@@ -80,6 +82,42 @@ sha_of_linux_x64() {
 
 # 🔑 테스트 통로 — stdin 의 릴리스 JSON 에서 값만 찍고 끝난다(네트워크·상태 무접촉).
 if [ "$SHA_EXTRACT_ONLY" = "1" ]; then sha_of_linux_x64; exit 0; fi
+
+# ── 러너 목록에서 라벨을 찾는다 ────────────────────────────────────────────
+# 🔴 왜 `grep -q` 한 줄이 아닌가 (2026-08-19 실측 · 유호님 노트북에서 잡혔다).
+#    첫 판은 `grep -q "$LABEL"` 이었고 `LABEL="linux"`(소문자)인데, GitHub 가 러너에 실제로
+#    붙이는 기본 라벨은 **`Linux`**(대문자)다 — `self-hosted,Linux,X64`. grep 은 기본이
+#    대소문자 구분이라 **못 찾았고**, 러너가 online 으로 job 을 돌리는 «중»에도 `--확인` 이
+#    「리눅스 러너 없음 · 세우려면 설치하라」를 냈다.
+#    ⚠ 급소는 **워크플로가 멀쩡하다**는 것이다 — Actions 의 `runs-on` 라벨 매칭은 대소문자를
+#    무시한다. 즉 러너는 정상인데 **확인 도구만 눈이 멀었다**(F642 와 같은 형태 — 안 도는 게
+#    아니라 «돌면서 남의 답»을 낸다). 그리고 그 처방을 따르면 멀쩡한 러너를 215MB 다시 깐다.
+# 🔑 경계도 본다 — 부분일치로 찾으면 `linux-arm` 라벨을 단 러너를 x64 로 오인한다.
+#    라벨은 콤마로 갈린 목록이라 그 경계로 맞춘다(대소문자는 무시하되 «낱말»은 정확히).
+# 인자: $1=찾을 라벨 · $2 가 `--online` 이면 「그 라벨을 단 러너가 online 인가」까지 본다.
+# stdin: `이름|상태|라벨,라벨,…` 줄들.
+has_label() {
+  awk -F'|' -v want="$1" -v need_online="${2:-}" '
+    {
+      n = split($3, a, ",")
+      for (i = 1; i <= n; i++) {
+        lab = a[i]; gsub(/^[ \t]+|[ \t]+$/, "", lab)
+        if (tolower(lab) == tolower(want)) {
+          if (need_online != "--online" || tolower($2) == "online") { found = 1 }
+        }
+      }
+    }
+    END { exit found ? 0 : 1 }'
+}
+
+# 🔑 테스트 통로 — stdin 의 러너 목록에서 두 판정만 찍는다(네트워크·상태 무접촉).
+if [ "$LABEL_TEST_ONLY" = "1" ]; then
+  RUNNERS_IN="$(cat)"
+  REG=0; printf '%s\n' "$RUNNERS_IN" | has_label "$LABEL" && REG=1
+  ONL=0; printf '%s\n' "$RUNNERS_IN" | has_label "$LABEL" --online && ONL=1
+  printf '등록=%s 온라인=%s\n' "$REG" "$ONL"
+  exit 0
+fi
 
 # ── 0. 여기가 리눅스인가 ────────────────────────────────────────────────────
 step "0/7 환경 확인"
@@ -131,12 +169,21 @@ SWITCH_VAL="$(gh variable list --repo "$REPO" --json name,value \
 say "  스위치 $SWITCH = ${SWITCH_VAL:-<없음>}"
 
 HAS_LINUX=0
-if printf '%s\n' "$RUNNERS" | grep -q "$LABEL"; then HAS_LINUX=1; fi
+if printf '%s\n' "$RUNNERS" | has_label "$LABEL"; then HAS_LINUX=1; fi
+
+ONLINE=0
+if printf '%s\n' "$RUNNERS" | has_label "$LABEL" --online; then ONLINE=1; fi
 
 if [ "$CHECK_ONLY" = "1" ]; then
   say ""
-  if [ "$HAS_LINUX" = "1" ] && [ "$SWITCH_VAL" = "on" ]; then
-    say "🟢 둘 다 서 있다 — 원격 CI 가 돈다. 확인: node tools/원격ci.js"
+  if [ "$HAS_LINUX" = "1" ] && [ "$SWITCH_VAL" = "on" ] && [ "$ONLINE" = "1" ]; then
+    say "🟢 셋 다 섰다 — 원격 CI 가 돈다. 확인: node tools/원격ci.js"
+  elif [ "$HAS_LINUX" = "1" ] && [ "$SWITCH_VAL" = "on" ]; then
+    # 🔴 여기를 「아직이다」로 접으면 안 된다 — 세울 게 없다. 러너는 등록돼 있고 기계가 꺼져 있을
+    #    뿐이라, 처방이 「설치하라」면 멀쩡한 러너를 다시 깐다. 미검증과 미설치는 다른 상태다.
+    say "⏸ 러너가 **오프라인**이다 — 등록·스위치는 서 있다(다시 설치할 것 없다)."
+    say "   기계를 켜면 밀린 job 을 그때 잡는다. 그동안 검사는 「초록」이 아니라 **「대기」**다."
+    say "   기계가 켜져 있는데도 오프라인이면: cd \$HOME/actions-runner && sudo ./svc.sh status"
   else
     RUNNER_TXT="없음"; [ "$HAS_LINUX" = "1" ] && RUNNER_TXT="있음"
     say "⬜ 아직이다 — 리눅스 러너 $RUNNER_TXT · 스위치 ${SWITCH_VAL:-꺼짐}"
