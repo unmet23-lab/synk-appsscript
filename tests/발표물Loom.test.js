@@ -139,6 +139,18 @@ test('탐지력 — 훅을 떼고 «안 구우면» 잡는다 (마커만 켜진 
   assert.match(r.out, /훅 0개인데 Loom 이 얹혔다/);
 });
 
+
+test('탐지력 — loom 이 바뀐 뒤 «안 구우면» 잡는다 (블록 내용 대조 · 반박 H-2)', () => {
+  const dir = 방짓기('<div class="tag 칩">x</div>', { loom얹기: true });
+  /* 구세대 흉내 — 얹힌 블록 «안»의 마커 철자 하나를 비튼다. 지금 세대의 강제얹기 산출과
+   * 문자가 달라지므로 내용 대조만이 잡을 수 있다(훅↔얹힘 불리언은 여전히 정합). */
+  const p = path.join(dir, '01_시험.html');
+  fs.writeFileSync(p, fs.readFileSync(p, 'utf8').replace('/*loom부품:', '/*loom부품구세대:'), 'utf8');
+  const r = check(dir);
+  assert.equal(r.code, 1, '구세대 Loom 블록을 「최신」으로 통과시켰다\n' + r.out);
+  assert.match(r.out, /지금 세대와 다르다/);
+});
+
 /* ══ 실저장소 — 거짓양성 0 (탐지력의 근거로는 안 쓴다) ═══════════════════ */
 
 test('실저장소 — 발표물 6벌의 훅과 얹힘이 어긋나지 않는다', () => {

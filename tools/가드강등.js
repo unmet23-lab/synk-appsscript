@@ -128,6 +128,11 @@ function 상태() {
   console.log('→ 안전 가드 셋(배포·커밋범위·자격증명)은 언제나 돈다');
 }
 
+const { 인자게이트 } = require('./lib/인자게이트.js');
+const 아는플래그 = ['--상태', '--개원', '--되돌리기'];
+const 플래그오류 = 인자게이트('가드강등', process.argv.slice(2), 아는플래그);
+if (플래그오류) { console.error(플래그오류); process.exit(1); }
+
 const 인자 = process.argv[2];
 if (인자 === '--되돌리기') 되돌리기();
 else if (인자 === '--개원') 개원();

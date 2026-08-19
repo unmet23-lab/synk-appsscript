@@ -132,3 +132,23 @@ test('④-2 브랜드색.test.js 의 KIT 는 토큰에서 파생한다(인라인
   const src = fs.readFileSync(path.join(__dirname, '브랜드색.test.js'), 'utf8');
   assert.ok(/require\(['"]\.\.\/docs\/디자인_토큰\.json['"]\)/.test(src), 'KIT 가 토큰 정본에서 파생하지 않는다 — 목록이 두 곳이 되면 갈라진다');
 });
+
+/* ── ⑤ 기본색 (조항 ⓘ · 2026-08-19) — 새 슬롯은 잠금과 함께 태어난다 ─────────
+ * 새는 방향 실측(반박 패스 M-1): 기본색.이름 을 "coral" 로 바꿔도 전 스위트가 초록이었고,
+ * 그때 loom 기본천()은 조용히 Chalk 로 후퇴한다 — 브랜드 서명이 무채로 꺼진 채 적색이 없다.
+ * ⚠대가: 천을 못 구운 환경에선 ③(천 물기)이 skip 이다 — fail 로 두면 repo 밖 의존(F296)이 된다. */
+test('⑤ 기본색 — 이름이 킷에 실존 · 펠트얼굴 경로 생존 · loom 기본천이 그 천을 문다', () => {
+  const 기본 = 토큰.색.기본색;
+  assert.ok(기본, '색.기본색 슬롯이 없다 — 조항 ⓘ 의 기계 원천이 사라졌다');
+  const 이름들 = new Set(토큰.색.킷.map((c) => c.이름));
+  assert.ok(이름들.has(기본.이름), `기본색.이름 "${기본.이름}" 이 킷에 없다 — 기본천이 조용히 무채로 후퇴한다`);
+  const 얼굴 = 기본.펠트얼굴.split('.').reduce((o, k) => (o ? o[k] : null), 토큰);
+  assert.ok(Array.isArray(얼굴) && 얼굴.length >= 5, `펠트얼굴 경로가 죽었다: ${기본.펠트얼굴}`);
+  const 천길 = path.join(ROOT, 'docs', 'tools', '펠트천.json');
+  if (!fs.existsSync(천길)) return;                    // skip — 천 없는 환경(F296)
+  const 천 = JSON.parse(fs.readFileSync(천길, 'utf8'))['천'] || {};
+  if (!천[기본.이름]) return;                          // 기본색 천 미굽기 — 무채 후퇴가 정상
+  const loom = require('../tools/lib/loom.js');
+  assert.equal(loom.기본천(), `url(${천[기본.이름].uri})`,
+    '기본천()이 기본색 천을 안 문다 — 조항 ⓘ 「지정 없는 펠트 = 기본색」 배선이 끊겼다');
+});
