@@ -241,6 +241,74 @@ test('㈏⑩ 지문 출처는 «두 축 다» 싣는다 — 한 축만 대면 �
     'HOST 가 없을 때 보드 축이 CLAUDE_CODE_SESSION_ID 로 폴백하지 않는다 — 이음매의 안내와 구현이 갈라졌다');
 });
 
+/* ── ㈐ 유호님의 첫 발화 자리를 돌려준다 ────────────────────────────────────
+ * 옛 판은 인계문을 `initialUserMessage` 로 냈다 — 유호님이 쓰지도 읽지도 않은 글이 «유호님의
+ * 첫 메시지»로 대화에 박히고, 세션은 그것을 유호님 지시로 읽고 출발했다.
+ * 이제는 **plain-text stdout** 으로 낸다: 공식 문서가 SessionStart 를 「plain-text stdout 을
+ * 컨텍스트로 넣는」 세 이벤트 중 하나로 정해 뒀고, 이 저장소의 SessionStart 훅 대부분이 이미
+ * 그 통로를 쓴다(작업본소유자·대기열·philosophy-card — 매 세션 실제로 도는 것을 본다). */
+
+/** SessionStart 훅을 실제로 띄운다 — 형식 판정은 «진짜 출력»으로만 할 수 있다. */
+function 인계띄우기(cwd, stateDir, source) {
+  const { 훅띄우기 } = require('./lib/훅띄우기');
+  const r = 훅띄우기(path.join(HOOKS, 'session-handoff.js'), {
+    input: JSON.stringify({ session_id: 'NEW', hook_event_name: 'SessionStart', cwd, source: source || 'startup' }),
+    encoding: 'utf8',
+    timeout: 20000,
+    env: { ...process.env, SYNK_CTXBUDGET_DIR: stateDir },
+  });
+  return String(r.stdout || '');
+}
+
+test('㈐ 🔴 인계문은 «유호님의 첫 발화 자리»를 쓰지 않는다 — plain-text 컨텍스트로 나간다', () => {
+  const cwd = 저장소('synk-f661-p-', ['| 2026-08-19 | 남 | a.js | ▶작업중 (`local_11112222`) — 남 |\n']);
+  const 인계 = 'SYNK 이어서 작업한다 — 표식:㈐검사\n· (커밋 없음)';
+  assert.equal(store.drop(cwd, 'SID-P', 인계, { 실을것없음: false }), true, '픽스처 바통이 안 떨어졌다');
+
+  const out = 인계띄우기(cwd, store.stateDir());
+  assert.ok(out.trim(), '바통이 있는데 훅이 아무것도 안 냈다 — 인계가 통째로 끊겼다');
+  assert.match(out, /표식:㈐검사/, '인계문 본문이 안 실렸다');
+
+  /* 🔑 **이 단언이 ㈐ 의 봉인이다.** stdout 이 JSON 이면 Claude Code 가 그것을 «구조화 제어»로
+   *   파싱한다 — 그러면 plain-text 컨텍스트 통로를 못 타고, `initialUserMessage` 를 담았다면
+   *   그 순간 유호님의 첫 발화 자리로 되돌아간다. 두 방향을 한꺼번에 막는다. */
+  let 파싱됨 = null;
+  try { 파싱됨 = JSON.parse(out.trim()); } catch (_) { /* plain text 가 정답이다 */ }
+  assert.equal(파싱됨, null,
+    `stdout 이 JSON 이다 — SessionStart 의 plain-text 컨텍스트 통로를 못 탄다:\n${out.slice(0, 300)}`);
+  assert.doesNotMatch(out, /initialUserMessage/,
+    '🔴 인계문이 유호님의 첫 발화 자리로 돌아갔다 — 유호님이 쓰지 않은 글이 유호님의 첫 수가 된다(F661 ㈐)');
+});
+
+test('㈐ 머리말이 «누구 글인지»와 «옛 동작을 얻는 한 마디»를 준다 — 따를 수 없는 처방은 우회를 만든다(F103)', () => {
+  const cwd = 저장소('synk-f661-q-', ['| 2026-08-19 | 남 | a.js | ▶작업중 (`local_11112222`) — 남 |\n']);
+  store.drop(cwd, 'SID-Q', 'SYNK 이어서 작업한다 — 표식:㈐머리말', { 실을것없음: false });
+  const out = 인계띄우기(cwd, store.stateDir());
+
+  assert.match(out, /유호님이 쓰신 것이 아닙니다|유호님이 쓰신 글이 아니/,
+    '이 글이 유호님 것이 아니라는 말이 없다 — 그러면 컨텍스트로 옮겨도 세션은 지시로 읽는다');
+  assert.match(out, /용건이 이 세션의 출발점/,
+    '유호님 용건이 우선이라는 말이 없다 — ㈐ 의 본문이 빠졌다');
+  assert.match(out, /「이어서」|「계속」/,
+    '옛 동작(창만 열면 이어감)을 얻는 **한 마디**를 안 줬다 — 자동 출발을 없앤 대가를 유호님이 '
+    + '치르는데 무엇을 말해야 하는지 모르면 그건 처방이 아니다(F103)');
+  // 본문은 머리말 «뒤»에 온다 — 순서가 뒤집히면 세션이 인계문을 먼저 읽고 지시로 삼는다.
+  assert.ok(out.indexOf('용건이 이 세션의 출발점') < out.indexOf('표식:㈐머리말'),
+    '머리말이 인계문 본문보다 뒤에 있다 — 가르는 문장은 갈라야 할 것보다 먼저 읽혀야 한다');
+});
+
+test('㈐ resume·compact 는 그대로 조용하다 — 컨텍스트가 살아 있어 중복이 된다', () => {
+  const cwd = 저장소('synk-f661-r-', ['| 2026-08-19 | 남 | a.js | ▶작업중 (`local_11112222`) — 남 |\n']);
+  store.drop(cwd, 'SID-R', 'SYNK 이어서 작업한다 — 표식:㈐조용', { 실을것없음: false });
+  for (const src of ['resume', 'compact']) {
+    assert.equal(인계띄우기(cwd, store.stateDir(), src).trim(), '',
+      `${src} 에서 인계문이 나갔다 — 이어지는 세션에 중복 지시가 된다`);
+  }
+  // 그리고 바통은 **안 소비돼야** 한다 — 소비했으면 진짜 새 창이 빈손이 된다.
+  assert.match(인계띄우기(cwd, store.stateDir(), 'startup'), /표식:㈐조용/,
+    'resume·compact 가 바통을 먹어치웠다 — 다음 새 창이 이어받을 것을 잃는다');
+});
+
 /* ── 실저장소: 거짓양성만 본다 (탐지력은 위 픽스처가 진다 · 맹점 ②) ─────────── */
 
 test('㈏⑪ 실저장소 — 지금 이 저장소에서 만든 인계문이 위 규격을 지킨다', () => {

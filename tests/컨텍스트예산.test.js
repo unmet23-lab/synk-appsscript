@@ -62,7 +62,13 @@ function run(hook, payload, stateDir, env) {
     },
   });
   const out = (r.stdout || '').trim();
-  return { status: r.status, stderr: r.stderr || '', json: out ? JSON.parse(out) : null, msg: out ? String(JSON.parse(out).systemMessage || '') : '' };
+  /* ⚠ 훅 stdout 은 **두 통로**다 — JSON(구조화 제어)이거나 plain text(SessionStart 의 컨텍스트
+   *   주입 · F661 ㈐ 로 session-handoff 가 이쪽으로 옮겼다). 무조건 파싱하면 plain text 회차가
+   *   `SyntaxError` 로 죽고, 그 증상은 「훅이 깨졌다」로 보여 진짜 고장과 안 갈린다.
+   *   그래서 파싱은 «될 때만» 하고, 원문(`out`)은 언제나 그대로 돌려준다. */
+  let json = null;
+  try { json = out ? JSON.parse(out) : null; } catch (_) { json = null; }
+  return { status: r.status, stderr: r.stderr || '', out, json, msg: json ? String(json.systemMessage || '') : '' };
 }
 
 /** Stop 훅 — 컨텍스트 ctx 로 한 번 돌린다 */
@@ -550,23 +556,24 @@ test('🔑 세션이 여러 개여도 서로 덮지 않는다 — 최신 하나�
   }
 
   const got = startHook(st, cwd);
-  assert.ok(got.json, '바통이 셋인데 아무것도 못 집었다');
-  assert.match(got.json.hookSpecificOutput.initialUserMessage, /표식:SESS-C/,
+  // ⚠ 인계문은 이제 **plain-text stdout** 으로 나간다(F661 ㈐) — 유호님의 첫 발화 자리를 안 쓴다.
+  assert.ok(got.out, '바통이 셋인데 아무것도 못 집었다');
+  assert.match(got.out, /표식:SESS-C/,
     '가장 최근 바통이 아닌 것을 집었다 — 직전 세션이 아니라 옛 트랙을 이어간다');
 
   // 🔑 뒤처진 바통을 **함께 지우면 그 트랙은 영영 안 이어진다.** 08-04 실사고: 창을 여러 개
   //   쓰는 이 환경에선 300k 를 넘긴 세션이 동시에 여럿이라, 새 창 하나가 열릴 때마다 다른
   //   트랙의 인계문이 통째로 삭제됐다(1분 차이로 뒤엣것이 앞엣것을 밀어냈다).
-  assert.match(got.msg, /2건이 \*\*아직 대기/, '남은 인계문이 있다는 걸 안 알렸다');
+  assert.match(got.out, /2건이 \*\*아직 대기/, '남은 인계문이 있다는 걸 안 알렸다');
   assert.strictEqual(batons(st).length, 2, '집지 않은 바통까지 지웠다 — 그 트랙은 영영 안 이어진다');
 
   // 창을 더 열면 남은 것을 **최신 순으로 하나씩** 이어받는다
-  assert.match(startHook(st, cwd).json.hookSpecificOutput.initialUserMessage, /표식:SESS-B/,
+  assert.match(startHook(st, cwd).out, /표식:SESS-B/,
     '두 번째 창이 다음 바통을 못 받았다');
-  assert.match(startHook(st, cwd).json.hookSpecificOutput.initialUserMessage, /표식:SESS-A/,
+  assert.match(startHook(st, cwd).out, /표식:SESS-A/,
     '세 번째 창이 마지막 바통을 못 받았다');
   assert.strictEqual(batons(st).length, 0, '다 소비했는데 파일이 남았다');
-  assert.strictEqual(startHook(st, cwd).json, null, '다 소비했는데 또 물었다');
+  assert.strictEqual(startHook(st, cwd).out, '', '다 소비했는데 또 물었다');
 });
 
 test('🔑 다른 저장소의 바통은 물지 않는다 (결함 ②)', () => {
@@ -576,9 +583,9 @@ test('🔑 다른 저장소의 바통은 물지 않는다 (결함 ②)', () => {
   stop(310_000, { stateDir: st, cwd: other, sid: 'OTHER' });
   assert.strictEqual(batons(st).length, 1, '남의 저장소 바통이 안 떨어졌다(전제 실패)');
 
-  assert.strictEqual(startHook(st, mine).json, null, '다른 저장소 세션의 인계문을 물었다');
+  assert.strictEqual(startHook(st, mine).out, '', '다른 저장소 세션의 인계문을 물었다');
   assert.strictEqual(batons(st).length, 1, '남의 저장소 바통을 지워버렸다 — 그 세션이 이어받을 걸 뺏었다');
-  assert.ok(startHook(st, other).json, '자기 저장소 바통은 물어야 한다');
+  assert.ok(startHook(st, other).out, '자기 저장소 바통은 물어야 한다');
 });
 
 test('오래된 바통·resume·compact·무바통은 조용히 통과한다 (거짓양성 0)', () => {
@@ -591,15 +598,15 @@ test('오래된 바통·resume·compact·무바통은 조용히 통과한다 (�
     const j = JSON.parse(fs.readFileSync(p, 'utf8'));
     fs.writeFileSync(p, JSON.stringify({ ...j, at: Date.now() - 13 * 60 * 60 * 1000 }));
   }
-  assert.strictEqual(startHook(stale, cwd).json, null, '12시간 넘은 바통을 물었다');
+  assert.strictEqual(startHook(stale, cwd).out, '', '12시간 넘은 바통을 물었다');
 
   const live = newDir('live'); const c2 = newDir('p-live');
   stop(310_000, { stateDir: live, cwd: c2, sid: 'X' });
-  assert.strictEqual(startHook(live, c2, 'resume').json, null, 'resume 은 컨텍스트가 살아 있어 중복 지시가 된다');
-  assert.strictEqual(startHook(live, c2, 'compact').json, null, 'compact 도 이어지는 세션이다');
-  assert.ok(startHook(live, c2, 'startup').json, 'startup 은 물어야 한다');
+  assert.strictEqual(startHook(live, c2, 'resume').out, '', 'resume 은 컨텍스트가 살아 있어 중복 지시가 된다');
+  assert.strictEqual(startHook(live, c2, 'compact').out, '', 'compact 도 이어지는 세션이다');
+  assert.ok(startHook(live, c2, 'startup').out, 'startup 은 물어야 한다');
 
-  assert.strictEqual(startHook(newDir('empty'), newDir('p-empty')).json, null, '바통도 없는데 반응했다');
+  assert.strictEqual(startHook(newDir('empty'), newDir('p-empty')).out, '', '바통도 없는데 반응했다');
 });
 
 test('🔑 상태 파일이 무한히 쌓이지 않는다 (결함 ③) · 옛 형식은 즉시 버린다', () => {
@@ -630,8 +637,8 @@ test('🔑 임계에 안 닿고 끝나도 인계된다 — 자동화의 핵심 (
   const v = endHook(st, repo, 'END-1');
   assert.ok(v.json, '내 편집이 미커밋인데 인계를 안 남겼다 — 평상시 세션이 통째로 안 이어진다');
   assert.strictEqual(batons(st).length, 1, '바통이 없다');
-  assert.match(startHook(st, repo).json.hookSpecificOutput.initialUserMessage, /이어서 작업한다/,
-    '새 세션이 그 바통을 첫 메시지로 물지 않았다');
+  assert.match(startHook(st, repo).out, /이어서 작업한다/,
+    '새 세션이 그 바통을 컨텍스트로 물지 않았다');
 });
 
 test('일 안 한 세션은 바통을 남기지 않는다 (다음 세션이 엉뚱한 지시를 물지 않게)', (t) => {

@@ -47,15 +47,37 @@ let 대조 = '';
 try {
   const v = report.낡음(cwd, 메시지);
   const 경고 = report.낡음경고(v);
-  if (경고) { 메시지 += '\n' + 경고; 대조 = ` · 🔴 보드 원 줄 **${v.판정}**(경고를 첫 메시지에 붙였다)`; }
+  if (경고) { 메시지 += '\n' + 경고; 대조 = ` · 🔴 보드 원 줄 **${v.판정}**(경고를 함께 실었다)`; }
   else if (v) 대조 = ' · 보드 원 줄 그대로';   // 「쟀는데 같다」와 「안 쟀다」를 가른다(분모 · F207)
 } catch (_) { 대조 = ' · ⚠ 보드 원 줄 대조 실패'; }
 
-process.stdout.write(JSON.stringify({
-  hookSpecificOutput: {
-    hookEventName: 'SessionStart',
-    initialUserMessage: 메시지,
-  },
-  systemMessage: `↩ 직전 세션의 인계문을 첫 메시지로 넣었다${extra}${대조}.`,
-}));
+/* ── ㈐ **유호님의 첫 발화 자리를 돌려준다** (F661 ㈐ · 유호 픽 2026-08-19) ──────────────
+ * 옛 판은 `initialUserMessage` 로 냈다. 그러면 인계문이 **유호님이 쓰신 첫 메시지로** 대화에
+ * 박힌다 — 유호님은 그 글을 쓰지도 읽지도 않았는데 그것이 유호님의 첫 수가 된다. 실측
+ * 2026-08-19: 유호님이 「인계문이 도움이 되고 있냐」를 물으러 연 창이 인계문의 「새 트랙을
+ * 잡아라」부터 출발했고, 유호님은 진짜 용건을 그 위에 끼워 넣어야 했다.
+ *
+ * 🔑 **왜 `additionalContext` 가 아니라 plain-text stdout 인가** — 공식 문서가 정한 자리다:
+ *   「exceptions are UserPromptSubmit, UserPromptExpansion, and **SessionStart**, where Claude
+ *   Code adds **plain-text stdout as context that Claude can see and act on**」.
+ *   그리고 stdout 이 JSON 이면 «구조화 제어»로 파싱돼 그 통로를 못 탄다 — 즉 둘 중 하나다.
+ *   `additionalContext` 는 이 저장소의 PreToolUse·PostToolUse·Stop 에서 검증됐지만 **SessionStart
+ *   에서 쓰는 자리는 0건**이었다(실측). 검증 안 된 필드에 인계문 전체를 걸면, 안 먹었을 때
+ *   증상은 「인계문이 그냥 없다」= 조용한 유실이다(F096 이 고친 그 사고). 반면 plain-text stdout
+ *   은 **이 저장소의 SessionStart 훅 대부분이 이미 쓰는 통로**다(작업본소유자·대기열·philosophy-card
+ *   … 같은 매처에서 매 세션 실제로 도는 것을 본다). 되돌림 비용이 큰 쪽을 안 고른다.
+ *
+ * ⚠ **대가 — 자동 출발이 사라진다.** 옛 판은 유호님이 창만 열면 AI 턴이 깨어나 이어갔다.
+ *   이제는 유호님의 첫 발화가 있어야 세션이 움직인다. 그게 ㈐ 가 사려던 바로 그것이지만,
+ *   「이어서 해」만 하던 회차에는 한 마디가 늘어난다. 그래서 머리말이 **그 한 마디를 글자로**
+ *   준다 — 무엇을 말해야 옛 동작이 되는지 모르면 처방이 아니다(F103).
+ * ⚠ `systemMessage` 는 못 쓴다(그건 JSON 통로다). 대신 stdout 자체가 유호님 화면에도
+ *   `SessionStart:startup hook success:` 로 스치므로, 사본 경로·대기 건수를 꼬리에 싣는다. */
+const 머리 = '↩ **직전 세션이 남긴 인계문**입니다 — 자동 생성된 글이고 **유호님이 쓰신 것이 아닙니다.**\n'
+  + '🔑 **유호님이 용건을 말씀하시면 그 용건이 이 세션의 출발점이다** — 아래는 배경으로만 쓴다.\n'
+  + '   용건 없이 「이어서」·「계속」이라고만 하시면 그때 아래 트랙을 잇는다.\n'
+  + '──── 인계문 ────\n';
+const 꼬리 = `\n──── 인계문 끝 ────\n사본 \`docs/_ops/인계문.md\`${extra}${대조}\n`;
+
+process.stdout.write(머리 + 메시지 + 꼬리);
 process.exit(0);
