@@ -262,7 +262,6 @@ strong{ font-weight:800; }
     --ink:#1B1B1A; --ink-rgb:27,27,26;
     --coral:#FF6B5C; --coral-rgb:255,107,92;
     --coral3:#E8543F; --coral3-rgb:232,84,63;
-    --ash:#8A8A8A; --ash-rgb:138,138,138;
     --ash2:#676767; --ash2-rgb:103,103,103;
     --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   }
@@ -321,7 +320,7 @@ strong{ font-weight:800; }
      display:flex;align-items:center;gap:calc(var(--숨) * 2.5);flex-wrap:wrap;
      margin:var(--제목위) 0 var(--제목아래);
      font-size:clamp(1.32rem,2.5vw,1.72rem);font-weight:800;
-     letter-spacing:-.038em;line-height:var(--줄제목);color:var(--chalk);}
+     letter-spacing:-.038em;line-height:var(--줄제목);}
   .룸 h2>span:not(.번호){flex:0 1 auto;min-width:0;}
   .룸 h2:not(:has(.번호))::before{content:counter(절,decimal-leading-zero);position:relative;
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
@@ -486,7 +485,7 @@ strong{ font-weight:800; }
 
   /*loom부품:인용부호*/
   .룸 blockquote{position:relative;margin:var(--켜) 0;padding:var(--단) var(--단) var(--단) calc(var(--켜) + var(--참));
-    font-size:.97rem;color:var(--ash);}
+    font-size:.97rem;}
   .룸 blockquote::before{content:'\201C';position:absolute;left:var(--칸);top:calc(var(--칸) - var(--숨));
     display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;
     font-size:1.5em;line-height:1;font-weight:800;color:var(--chalk);
@@ -494,7 +493,7 @@ strong{ font-weight:800; }
     background:linear-gradient(170deg, rgba(228,228,231,0.13), rgba(228,228,231,0.02) 58%),
                rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 10px 20px -12px rgba(0,0,0,.9);}
-  .룸 blockquote i,.룸 blockquote em{color:var(--chalk);font-style:italic;}
+  .룸 blockquote i,.룸 blockquote em{;font-style:italic;}
 
   /*loom부품:표지오브*/
   /* 펠트 오브 — 이 지면에서 «부피»를 가진 유일한 물건이라 하나뿐이어야 한다.
@@ -518,7 +517,7 @@ strong{ font-weight:800; }
   /*loom부품:링크점*/
   /* 링크 — 40~50대가 읽는다는 것을 셈에 넣으면 밑선 알파만으로는 링크가 아니다.
      셋을 겹친다: 밑선 .62 · 굵기 한 단 · 앞에 코랄 점(3px 이라 신호 1점을 안 넘는다). */
-  .룸 a{color:var(--chalk);text-decoration:none;font-weight:560;
+  .룸 a{;text-decoration:none;font-weight:560;
     box-shadow:inset 0 -1px 0 rgba(228,228,231,0.62);
     transition:box-shadow 180ms ease,color 180ms ease;}
   .룸 a:not(.민):not(.레일 a)::before{content:'';display:inline-block;width:3px;height:3px;
@@ -581,7 +580,7 @@ strong{ font-weight:800; }
        못 옮기는 것 = 코스틱(샌 빛). 종이의 한계라 억지로 흉내내지 않는다. */
   @media print{
     .룸{background:var(--paper);color-scheme:light;}
-    .룸{background:var(--paper);background-attachment:initial;color:var(--ink);
+    .룸{background:var(--paper);background-attachment:initial;
          font-size:10.6pt;line-height:1.62;}
 
     .유리{background:var(--chalk2);border:1px solid var(--chalk3);
@@ -590,7 +589,7 @@ strong{ font-weight:800; }
     .유리::before{content:none;}
 
     /* 번호 — 유리 원판이 «찍힌 원판»이 된다. 분산 림은 선 하나로 굳는다. */
-    .룸 h2{color:var(--ink);margin:calc(var(--켜) * .6) 0 var(--참);font-size:14pt;break-after:avoid;}
+    .룸 h2{;margin:calc(var(--켜) * .6) 0 var(--참);font-size:14pt;break-after:avoid;}
     .룸 h2:not(:has(.번호))::before,.번호,.잔번호,.각주{
       background:var(--chalk3);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ash2);}
     .룸 h2:not(:has(.번호))::after{background:var(--chalk3);}
@@ -612,19 +611,19 @@ strong{ font-weight:800; }
     .칩{background:var(--chalk2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--chalk3);}
     .칩::before{content:none;}
     .실금{background:var(--chalk3);}
-    .룸 blockquote{color:var(--ash2);}
+    .룸 blockquote{;}
     .룸 blockquote::before{background:var(--chalk3);color:var(--ink);box-shadow:none;}
-    .룸 blockquote i,.룸 blockquote em{color:var(--ink);}
+    .룸 blockquote i,.룸 blockquote em{;}
     .오브{width:74px;height:74px;border-radius:20px;color:var(--ink);font-size:1.7rem;
       box-shadow:none;border:1px solid var(--chalk3);}   /* 배경을 끄면 천이 사라지니 테두리가 형태를 진다 */
     .오브::before,.오브::after{content:none;}
 
-    .룸 p,.룸 li,.룸 b,.룸 strong,.룸 td,.룸 th,.룸 h3{color:var(--ink);}
+    .룸 p,.룸 li,.룸 b,.룸 strong,.룸 td,.룸 th,.룸 h3{;}
     .룸 li::marker{color:var(--ash2);}
     .흐린,.룸 footer{color:var(--ash2);}
-    .룸 a{color:var(--ink);font-weight:640;box-shadow:none;border-bottom:1px solid var(--coral3);}
+    .룸 a{;font-weight:640;box-shadow:none;border-bottom:1px solid var(--coral3);}
     .룸 a:not(.민)::before{background:var(--coral3);box-shadow:none;}
-    .룸 code{color:var(--ink);background:var(--chalk2);box-shadow:inset 0 0 0 1px var(--chalk3);}
+    .룸 code{;background:var(--chalk2);box-shadow:inset 0 0 0 1px var(--chalk3);}
 
     /* 쪽번호 — 낮에만 산다. @page 여백 안에 앉힌다. */
     .쪽번호{display:block;position:fixed;bottom:4mm;right:0;
