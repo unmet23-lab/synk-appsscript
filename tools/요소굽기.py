@@ -102,11 +102,11 @@ def 알약():
 def 아이콘():
     """참조 ② 문법 — 겹친 두 스쿼클. 뒤판은 무채(Graphite 4 — 검은 무대에서 읽히는 가장 어두운 털),
     앞판이 기본색. 겹침의 그림자·빛이 «실물»의 깊이를 낸다."""
-    뒤 = 베개몸((1.0, 0.5, 1.0), 위치=(0.34, 0.55, 0.38), 회전z=-7)
+    뒤 = 베개몸((1.04, 0.5, 1.04), 위치=(0.52, 0.62, 0.56), 회전z=-8)
     짧은퍼(뒤, 'Graphite 4', 살재질('Graphite 4', 색['Graphite 4']), 털재질('Graphite 4', 색['Graphite 4']))
-    앞 = 베개몸((1.0, 0.5, 1.0), 위치=(-0.12, 0, -0.14), 회전z=3)
+    앞 = 베개몸((1.0, 0.5, 1.0), 위치=(-0.16, 0, -0.18), 회전z=3)
     짧은퍼(앞, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]))
-    return (0, -8.8, 0.3)
+    return (0.16, -8.8, 0.3)
 
 def 스티치():
     """자수(러닝 스티치) 실금 시안 — 코랄 펠트 띠 위에 분필색(Chalk) 땀이 지나간다.
@@ -118,15 +118,15 @@ def 스티치():
     p = 실.node_tree.nodes['Principled BSDF']
     p.inputs['Base Color'].default_value = 리니어(색['Chalk'])
     p.inputs['Roughness'].default_value = 0.38
-    for i in range(7):                       # 러닝 스티치 — 땀 7개, 번갈아 살짝 기운다
-        x = -1.8 + i * 0.6
-        bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(x, -0.42, 0.0))
+    for i in range(9):                       # 러닝 스티치 — 땀은 천을 «파고든다»(떠 있으면 콩이 된다)
+        x = -1.92 + i * 0.48
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(x, -0.335, 0.02 if i % 2 else -0.02))
         땀 = bpy.context.object
-        땀.scale = (0.22, 0.05, 0.05)
-        땀.rotation_euler = (0, 0, math.radians(6 if i % 2 else -6))
+        땀.scale = (0.19, 0.032, 0.032)
+        땀.rotation_euler = (0, math.radians(14 if i % 2 else -14), math.radians(4 if i % 2 else -4))
         bpy.ops.object.shade_smooth()
         땀.data.materials.append(실)
-    return (0, -7.2, 0.25)
+    return (0, -6.4, 0.2)
 
 형태들 = {'오브': 오브, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치}
 if 형태 not in 형태들:
