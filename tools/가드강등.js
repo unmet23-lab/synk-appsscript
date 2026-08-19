@@ -24,6 +24,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const { 인자게이트 } = require('./lib/인자게이트.js');
+
 const 루트 = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 const 설정경로 = path.join(루트, '.claude', 'settings.json');
 const 개원경로 = path.join(루트, '.claude', '개원.json');
@@ -128,13 +130,24 @@ function 상태() {
   console.log('→ 안전 가드 셋(배포·커밋범위·자격증명)은 언제나 돈다');
 }
 
-const 인자 = process.argv[2];
+/* 모르는 낱말 판정은 **공용 통로 하나**에서 온다 — 손으로 적으면 도구마다 갈리고,
+ * 갈라진 쪽이 조용히 통과한다(`tools/lib/인자게이트.js` 머리말 · 형제 F400·F435 계열).
+ * 옛 판은 자기 else 로 거절했지만 그 판정이 여기에만 있어 래칫(`tests/도구인자게이트.test.js`)이
+ * 이 파일을 「게이트 없음」으로 셌고, 그 적색이 master 를 막고 있었다(2026-08-19 실측). */
+const 아는플래그 = ['--되돌리기', '--개원', '--상태'];
+
+const 인자들 = process.argv.slice(2);
+const 플래그오류 = 인자게이트('가드강등', 인자들, 아는플래그);
+if (플래그오류) { console.error(플래그오류); process.exit(1); }
+
+const 인자 = 인자들[0];
 if (인자 === '--되돌리기') 되돌리기();
 else if (인자 === '--개원') 개원();
 else if (인자 === '--상태') 상태();
 else if (!인자) 적용();
 else {
+  /* `--` 로 시작하지 않는 낱말은 게이트가 안 본다(값 자리와 구별이 안 된다) — 여기서 거절한다. */
   console.error(`모르는 인자: ${인자}`);
-  console.error('쓰는 법: node tools/가드강등.js [--상태|--개원|--되돌리기]');
+  console.error(`쓰는 법: node tools/가드강등.js [${아는플래그.join('|')}]`);
   process.exit(1);
 }
