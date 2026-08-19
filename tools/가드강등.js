@@ -149,22 +149,27 @@ function 상태() {
   console.log('→ 안전 가드 셋(배포·커밋범위·자격증명)은 언제나 돈다');
 }
 
+/* 모르는 낱말은 **공용 판정**으로 거절한다 — 손으로 쓴 판정은 `--키=값`·`--` 종결자에서 갈라진다.
+ * 🔑 이 도구는 그 사각의 급소다: 오타 하나가 「재웠다」와 「안 재웠다」를 가르는데 **둘 다 조용하다.**
+ *   손 판정은 `process.argv[2]` 하나만 봐서 `--상태 --개원` 처럼 둘을 주면 뒤를 통째로 삼켰다.
+ * (병합 08-19: 게이트는 master 판 · 맨낱말 오타가 조용히 «적용»되는 구멍은 이쪽 else 가 막는다) */
 const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
+const 인자들 = process.argv.slice(2);
 const 아는플래그 = ['--상태', '--개원', '--되돌리기'];
-const 플래그오류 = 인자게이트('가드강등', process.argv.slice(2), 아는플래그);
+const 플래그오류 = 인자게이트('가드강등', 인자들, 아는플래그);
 if (플래그오류) {
-  console.error(`🔴 ${플래그오류}`);
-  console.error('쓰는 법: node tools/가드강등.js [--상태|--개원|--되돌리기]');
+  console.error(`\n🔴 ${플래그오류}`);
+  console.error('   ▶ 낱말 없이 부르면 «적용»이다 — 오타면 재운 줄 알고 안 재워진다.\n');
   process.exit(1);
 }
 
-const 인자 = process.argv[2];
+const 인자 = 인자들[0];
 if (인자 === '--되돌리기') 되돌리기();
 else if (인자 === '--개원') 개원();
 else if (인자 === '--상태') 상태();
 else if (!인자) { const 새마커 = 마커만들기(); if (새마커) console.log(`마커 생성: ${마커경로}`); 적용(); }
 else {
-  console.error(`모르는 인자: ${인자}`);
+  console.error(`모르는 인자: ${인자} — 맨낱말은 플래그가 아니다(조용히 «적용»으로 새지 않게 막는다).`);
   console.error('쓰는 법: node tools/가드강등.js [--상태|--개원|--되돌리기]');
   process.exit(1);
 }
