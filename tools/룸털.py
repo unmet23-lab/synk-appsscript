@@ -48,6 +48,8 @@ SAMPLES = int(인자("--samples", "96"))
 HAIR = int(인자("--hair", "12000"))
 CHILD = int(인자("--child", "24"))
 LEN = float(인자("--len", "0.155"))
+TONE = 인자("--tone", "AgX")            # AgX | Standard | Filmic — 축 ⑥(아래 톤 절)
+EXPO = float(인자("--exposure", "-0.10"))
 CORAL = "--coral" in argv
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -227,17 +229,27 @@ scene.render.resolution_y = PX
 scene.render.film_transparent = False
 scene.render.image_settings.file_format = 'PNG'
 scene.render.filepath = OUT
+# ── 톤 — 축 ⑥ (2026-08-19 신설 · 실측으로 들어왔다) ────────────────────────
+#   🔴 AgX 는 하이라이트를 강하게 접는다. 그래서 재질 밝기를 0.875 로 줘도 판에서는
+#      **평균 141/255(=0.55)** 로 나온다 — 「밝은 흰색」이 회색으로 읽히던 원인이 조명이
+#      아니라 **톤 곡선**이었다(실측 2026-08-19 · 앞 141.5 · 뒤 99.1).
+#   ⚠양쪽 끝이 다 실패한다: Standard 는 흰색을 살리는 대신 **하이라이트가 타서 결이 뭉갠다** ·
+#     AgX 는 결을 지키는 대신 **흰색이 회색이 된다**. 그래서 값이 아니라 **레버**로 뺐다 —
+#     같은 장면을 두 톤으로 굽고 자로 재서 고른다(눈으로 고르면 다음 판에서 또 흔들린다).
 _vt = [v.name for v in scene.view_settings.bl_rna.properties['view_transform'].enum_items]
-for _c in ('AgX', 'Filmic', 'Standard'):
+for _c in ([TONE] if TONE in _vt else []) + ['AgX', 'Filmic', 'Standard']:
     if _c in _vt:
         scene.view_settings.view_transform = _c
         break
 _lk = [v.name for v in scene.view_settings.bl_rna.properties['look'].enum_items]
-for _c in ('AgX - Punchy', 'Punchy', 'None'):
+_looks = ('None',) if scene.view_settings.view_transform == 'Standard' else ('AgX - Punchy', 'Punchy', 'None')
+for _c in _looks:
     if _c in _lk:
         scene.view_settings.look = _c
         break
-scene.view_settings.exposure = -0.10
+scene.view_settings.exposure = EXPO
+print('DIAG tone=%s look=%s exposure=%.2f' % (
+    scene.view_settings.view_transform, scene.view_settings.look, scene.view_settings.exposure))
 
 if os.path.exists(OUT):
     os.remove(OUT)
