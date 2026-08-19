@@ -35,8 +35,16 @@ const ROOT = path.resolve(__dirname, '..');
 const HOOKS = path.join(ROOT, '.claude', 'hooks');
 const SETTINGS = process.env.SYNK_TEST_SETTINGS || path.join(ROOT, '.claude', 'settings.json');
 
+/* 🔴 이 두 줄의 **순서가 규약이다** (`tests/lib/상태격리.js` · `tests/상태격리.test.js` 가 강제).
+ *   `handoff-store` 의 STATE_DIR 은 모듈 최상위 const 라 require 시점에 굳는다. 격리 없이 쓰면
+ *   픽스처가 **이 머신의 모든 세션이 공유하는 폴더**에 박동을 쓰고, 두 방향으로 샌다(둘 다 「통과」로
+ *   보인다): 남의 sweep 이 내 픽스처를 지워 «못 믿는 적색»이 되거나, 내 가짜 세션이 옆 세션의
+ *   board-guard·작업본소유자를 비켜나게 한다.
+ * ⚠ 그래서 `report` 보다 **먼저** 부른다 — session-report 가 handoff-store 를 물기 때문이다.
+ *   (손으로 env+require.cache 를 다뤘다가 이 회귀에 잡혔다. 공용 통로가 이미 있었다.) */
+const { 격리된store } = require('./lib/상태격리');
+const store = 격리된store(__filename);
 const report = require(path.join(HOOKS, 'lib', 'session-report.js'));
-// (handoff-store 는 ㈎⑤ 에서 **격리 로드**한다 — 상단에서 물면 STATE_DIR 이 굳는다)
 
 const 머리 = '| 날짜 | 트랙/작업 | 파일 | 상태 |\n|---|---|---|---|\n';
 
@@ -129,36 +137,23 @@ test('㈎④ 🔴 보드를 «못 읽으면» «없음» 이 아니다 — 모�
 /* ── ㈎ 게이트가 실제로 «쓰는 층» 에서 막는가 ─────────────────────────────── */
 
 test('㈎⑤ drop 은 «실을 것 없음» 바통을 안 쓴다 — 그리고 안 쓴 것은 청소할 것도 없다', () => {
-  /* ⚠ `STATE_DIR` 은 **모듈 로드 시점**에 굳는다(handoff-store 상단). 그래서 환경변수를 바꾼 뒤
-   *   캐시를 비워 **격리 로드**한다 — node 자식을 직접 띄우면 `tests/훅통로.test.js` 가 막는다
-   *   (그 자리에서 미실행이 「통과」로 번역되기 때문 · 실측: 이 파일이 그 회귀에 한 번 잡혔다). */
-  const dir = 임시('synk-f661-baton-');
-  const 경로 = require.resolve(path.join(HOOKS, 'lib', 'handoff-store.js'));
-  const 원래 = process.env.SYNK_CTXBUDGET_DIR;
-  process.env.SYNK_CTXBUDGET_DIR = dir;
-  delete require.cache[경로];
-  try {
-    const 격리 = require(경로);
-    assert.equal(격리.stateDir(), dir, '격리가 안 걸렸다 — 이 회차는 «미실행»이지 통과가 아니다(F207)');
+  const dir = store.stateDir();
+  // ⚠ 「몇 개 늘었나」로 센다 — 이 폴더는 이 시험 전용이지만 한 파일 안의 다른 회차와는 공유한다.
+  const 바통수 = () => fs.readdirSync(dir).filter((f) => f.startsWith('handoff-')).length;
+  const 전 = 바통수();
 
-    const 빈 = 격리.drop('/tmp/proj-f661', 'sid-empty', '실을 것 없는 글', { 실을것없음: true });
-    const 참 = 격리.drop('/tmp/proj-f661', 'sid-real', '실을 것 있는 글', { 실을것없음: false });
-    const 옛 = 격리.drop('/tmp/proj-f661', 'sid-old', '메타 없는 옛 호출부', undefined);
+  const 빈 = store.drop('/tmp/proj-f661', 'sid-empty', '실을 것 없는 글', { 실을것없음: true });
+  const 참 = store.drop('/tmp/proj-f661', 'sid-real', '실을 것 있는 글', { 실을것없음: false });
+  const 옛 = store.drop('/tmp/proj-f661', 'sid-old', '메타 없는 옛 호출부', undefined);
 
-    assert.equal(빈, false, '«실을 것 없음» 인데 바통을 썼다 — ㈎ 가 안 걸렸다');
-    assert.equal(참, true, '실을 것이 있는 바통까지 막혔다 — 인계가 통째로 끊긴다');
-    assert.equal(옛, true,
-      '메타를 안 넘기는 옛 호출부가 막혔다 — 새는 방향은 「남긴다」여야 하고, '
-      + '이 값이 false 가 되면 아직 안 고친 호출부의 인계문이 조용히 사라진다');
+  assert.equal(빈, false, '«실을 것 없음» 인데 바통을 썼다 — ㈎ 가 안 걸렸다');
+  assert.equal(참, true, '실을 것이 있는 바통까지 막혔다 — 인계가 통째로 끊긴다');
+  assert.equal(옛, true,
+    '메타를 안 넘기는 옛 호출부가 막혔다 — 새는 방향은 「남긴다」여야 하고, '
+    + '이 값이 false 가 되면 아직 안 고친 호출부의 인계문이 조용히 사라진다');
 
-    const 남은 = fs.readdirSync(dir).filter((f) => f.startsWith('handoff-'));
-    assert.equal(남은.length, 2, `바통 파일이 ${남은.length}개다 — «실을 것 없음» 하나는 만들어지지 않아야 한다: ${남은.join(' ')}`);
-  } finally {
-    if (원래 === undefined) delete process.env.SYNK_CTXBUDGET_DIR;
-    else process.env.SYNK_CTXBUDGET_DIR = 원래;
-    delete require.cache[경로]; // 다음 테스트가 «원래» STATE_DIR 로 로드하게 되돌린다
-    fs.rmSync(dir, { recursive: true, force: true });
-  }
+  assert.equal(바통수() - 전, 2,
+    `바통이 ${바통수() - 전}개 늘었다 — 셋을 떨궜지만 «실을 것 없음» 하나는 만들어지지 않아야 한다`);
 });
 
 test('㈎⑥ 바통을 떨구는 «두 자리» 가 모두 메타를 넘긴다 — 한쪽만 고치면 그쪽으로 되돌아온다', () => {
