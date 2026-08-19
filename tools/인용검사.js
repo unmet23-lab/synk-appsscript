@@ -376,7 +376,7 @@ const 면제 = [
   'docs/_ops/심문결과/', 'docs/_ops/보드/', 'docs/_ops/인계문/', 'docs/_ops/장부/',
   'docs/_archive/', 'docs/노션_대조_', 'docs/_ops/검수결과/',
   'docs/세션보드_아카이브.md', 'docs/지침_이력.md', 'docs/_ops/마찰신호.md',
-  'docs/_ops/인계문.md', 'docs/COWORK_지침.md', 'docs/버전_이력.md',
+  'docs/_ops/인계문.md', 'docs/버전_이력.md',
 ];
 /* 항목이 `.md` 로 끝나면 **그 파일 하나**, 아니면 **접두**(폴더·이름 앞머리)로 읽는다. */
 const 면제인가 = (rel) => 면제.some((p) => (p.endsWith('.md') ? rel === p : rel.startsWith(p)));
