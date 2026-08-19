@@ -170,7 +170,7 @@ code {{ font-family:'DM Mono',ui-monospace,Consolas,monospace; font-size:.92em }
 .cap {{ font-size:11.5px; color:var(--slate2); margin-top:6px; text-align:center }}
 footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 @media print {{ @page {{ margin:0 }} body {{ print-color-adjust:exact; -webkit-print-color-adjust:exact }} }}
-</style></head><body>
+</style></head><body class="룸">
 
 <div class="band">
   <svg viewBox="-8 -2 296 116" role="img" aria-label="SYNK">
@@ -294,6 +294,32 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
     with open(출력, 'w', encoding='utf-8') as f:
         f.write(html)
     print(f'■ 조립  {os.path.relpath(출력, 뿌리)}  ({len(html)//1024} KB · 킷 {len(킷)}색 · 패치 {len(장부)}장)')
+    얹기()
+
+
+def 얹기():
+    """Loom 부품 CSS 를 얹는다 — **이 함수가 없으면 재조립할 때마다 킷이 Loom 을 잃는다.**
+
+    파이썬이 CSS 를 만들지 않는다: 부품 값의 정본은 `tools/lib/loom.js` 하나이고, 여기서 베끼면
+    두 벌이 되어 갈라진다(갈라지는 방향은 늘 「통과」). 그래서 판정도 조립도 노드 통로에 맡기고
+    이 자리는 **부르기만** 한다. 얹기는 멱등이라 두 번 돌려도 블록이 안 쌓인다.
+
+    ⚠ 조용히 실패하지 않는다 — 노드가 없거나 통로가 죽으면 그 사실을 찍는다.
+      말 없는 폴백은 「초록 얼굴의 오류」다(F630 계보).
+    """
+    import subprocess
+    통로 = os.path.join(뿌리, 'tools', '지면얹기.js')
+    try:
+        r = subprocess.run(['node', 통로, '--적용'], cwd=뿌리,
+                           capture_output=True, text=True, encoding='utf-8', errors='replace')
+    except OSError as e:
+        print(f'🔴 Loom 얹기를 못 돌렸다 — {e}. 손으로: node tools/지면얹기.js --적용')
+        return
+    if r.returncode != 0:
+        print(f'🔴 Loom 얹기 실패(exit {r.returncode}) — 킷은 Loom 없이 남았다')
+        print((r.stdout or '') + (r.stderr or ''))
+        return
+    print('■ Loom  node tools/지면얹기.js --적용 (멱등)')
 
 
 if __name__ == '__main__':
