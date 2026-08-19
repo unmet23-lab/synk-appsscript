@@ -1,7 +1,7 @@
 # 요소굽기 — UI·UX 요소를 «실물»로 굽는다 (조항 ⓘ 집행급 · 유호 확정 08-19 「짧은 퍼」)
 # 퍼프로브.py 의 승격판. 형태별로 몸을 짓고 짧은 퍼를 심어 Cycles 로 찍는다.
 #   python3 -c "import sys; sys.argv=['x','--','형태=오브','색=Coral','샘플=96','너비=900','출력=/tmp/판.png']; exec(open('tools/요소굽기.py').read())"
-# 형태: 오브(표지 스쿼클) · 알약(버튼) · 아이콘(겹침 2장 — 참조 ② 문법) · 스티치(자수 실금 시안)
+# 형태: 오브(표지 스쿼클) · 알약(버튼) · 아이콘(겹침 2장) · 스티치(자수 — 채택 08-19) · 털실진행바(진행=0~1)
 # 규율: 염료는 토큰 킷 「이름」 참조(hex 하드코딩 금지) · 글자는 굽지 않는다(타이포 불가침 — HTML 층 몫)
 # ⚠룸굽기.js 합류 전의 독립 통로다 — 룸굽기는 blender.exe(윈도)를 부르고 이건 bpy 모듈(클라우드)로 돈다.
 import bpy, json, math, sys
@@ -74,17 +74,17 @@ def 짧은퍼(몸, 털이름, 살, 털, 길이=0.10, 개수=16000):
     ps.hair_length = 길이
     ps.hair_step = 5
     ps.child_type = 'INTERPOLATED'
-    ps.rendered_child_count = ps.child_percent = 55
+    ps.rendered_child_count = ps.child_percent = 70
     ps.clump_factor = 0.28
     ps.roughness_1 = 0.06
     ps.roughness_2 = 0.08
-    ps.roughness_endpoint = 0.05
+    ps.roughness_endpoint = 0.03
     ps.factor_random = 0.06
-    ps.length_random = 0.18
+    ps.length_random = 0.12
     ps.use_hair_bspline = True
     ps.render_step = 4
     ps.root_radius = 0.011
-    ps.tip_radius = 0.002
+    ps.tip_radius = 0.0015
     몸.data.materials.append(털)
     ps.material = len(몸.data.materials)
 
@@ -128,7 +128,46 @@ def 스티치():
         땀.data.materials.append(실)
     return (0, -6.4, 0.2), 86
 
-형태들 = {'오브': 오브, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치}
+def 털실진행바():
+    """털실 진행바 — 「실이 감긴다」(재질가족 제안 #1 · 유호 픽 08-19 실물화).
+    어두운 무채 펠트 홈 트랙 위에 코랄 털실(3가닥 꼬임 로프)이 진행분만큼 놓인다.
+    진행 인자(0~1): 진행=0.62 — 감아온 길이가 곧 진행률이다."""
+    진행 = min(1.0, max(0.05, float(인자.get('진행', '0.62'))))
+    트랙 = 베개몸((2.5, 0.28, 0.3), 크리스=0.7)
+    짧은퍼(트랙, 'Graphite 4', 살재질('Graphite 4', 색['Graphite 4']),
+          털재질('Graphite 4', 색['Graphite 4']), 길이=0.04, 개수=15000)
+    실몸 = bpy.data.materials.new('실몸')
+    실몸.use_nodes = True
+    p = 실몸.node_tree.nodes['Principled BSDF']
+    기본 = 리니어(색[염료이름])
+    p.inputs['Base Color'].default_value = tuple(v * 0.82 for v in 기본[:3]) + (1.0,)
+    p.inputs['Roughness'].default_value = 0.85
+    시작, 끝 = -2.5, -2.5 + 5.0 * 진행
+    N = 160
+    for st in range(3):                       # 3가닥 꼬임 — 나선 위상 120°씩
+        curve = bpy.data.curves.new('가닥%d' % st, 'CURVE')
+        curve.dimensions = '3D'
+        curve.bevel_depth = 0.062
+        curve.bevel_resolution = 6
+        curve.use_fill_caps = True
+        sp = curve.splines.new('POLY')
+        sp.points.add(N - 1)
+        for i in range(N):
+            x = 시작 + (끝 - 시작) * i / (N - 1)
+            θ = 2 * math.pi * (x / 0.62) + st * 2 * math.pi / 3
+            sp.points[i].co = (x, -0.30 - 0.075 * math.cos(θ), 0.075 * math.sin(θ), 1)
+        obj = bpy.data.objects.new('가닥%d' % st, curve)
+        bpy.context.collection.objects.link(obj)
+        bpy.ops.object.select_all(action='DESELECT')
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.convert(target='MESH')   # 곡선엔 털이 안 심겨 — 메쉬로 바꿔 보풀을 심는다
+        가닥 = bpy.context.object
+        bpy.ops.object.shade_smooth()
+        짧은퍼(가닥, 염료이름, 실몸, 털재질(염료이름, 색[염료이름]), 길이=0.03, 개수=3500)
+    return (0, -11.8, 0.0), 90
+
+형태들 = {'오브': 오브, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치, '털실진행바': 털실진행바}
 if 형태 not in 형태들:
     raise SystemExit('모르는 형태: ' + 형태 + ' — 아는 것은 ' + '·'.join(형태들))
 카메라위치, 카메라피치 = 형태들[형태]()
