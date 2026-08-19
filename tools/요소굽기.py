@@ -176,10 +176,10 @@ def 매끈재질(이름, hex_, 거칠기=0.5, 배율=1.0):
     p.inputs['Roughness'].default_value = 거칠기
     return m
 
-def 땀하나(x, y, z, 길이, 굵기, 재질, 회전y=11, 회전z=0):
+def 땀하나(x, y, z, 길이, 굵기, 재질, 회전y=11, 회전z=0, 납작=False):
     bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(x, y, z))
     땀 = bpy.context.object
-    땀.scale = (길이, 굵기, 굵기)
+    땀.scale = (길이, 0.006 if 납작 else 굵기, 굵기)   # 납작 = 분필 «가루선»(밑그림 ①단계 — 실이 아니다)
     땀.rotation_euler = (0, math.radians(회전y), math.radians(회전z))
     bpy.ops.object.shade_smooth()
     땀.data.materials.append(재질)
@@ -211,7 +211,7 @@ def 단추토글():
             for (x1, z1, x2, z2) in ((-0.28, 0.28, 0.28, -0.28), (-0.28, -0.28, 0.28, 0.28)):
                 길이 = math.hypot(x2 - x1, z2 - z1) / 2
                 각 = math.degrees(math.atan2(z2 - z1, x2 - x1))
-                땀하나(cx + (x1 + x2) / 2, -0.19, (z1 + z2) / 2, 길이, 0.055, 실재,
+                땀하나(cx + (x1 + x2) / 2, -0.19, (z1 + z2) / 2, 길이, 0.068, 실재,
                       회전y=-각, 회전z=0)
     단추(-1.15, True)
     단추(1.15, False)
@@ -242,12 +242,12 @@ def 밑그림():
             a = math.radians(중심각 + d)
             경로.append((cx + r * math.cos(a) * 1.0, cz + r * math.sin(a) * 1.0, 중심각 + d + 90))
     for (x, z, 각) in 경로:
-        땀하나(x, 앞, z, 0.085, 0.026, 분필, 회전y=-각)
+        땀하나(x, 앞, z, 0.085, 0.03, 분필, 회전y=-각, 납작=True)
     for (z, 폭) in ((0.16, 0.78), (-0.12, 0.55)):   # 글줄 자리 두 줄
         n = max(2, int(폭 * 2 / 0.26))
         for i in range(n):
             x = -폭 + (2 * 폭) * (i + 0.5) / n
-            땀하나(x, 앞, z, 0.075, 0.024, 분필, 회전y=0)
+            땀하나(x, 앞, z, 0.075, 0.028, 분필, 회전y=0, 납작=True)
     return (0, -7.8, 0.05), 88
 
 def 페이지점():
@@ -272,7 +272,7 @@ def 페이지점():
                 구멍.scale = (1, 0.5, 1)
                 bpy.ops.object.shade_smooth()
                 구멍.data.materials.append(구멍재)
-    return (0, -7.6, 0.0), 90
+    return (0, -10.8, 0.0), 90
 
 형태들 = {'오브': 오브, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치, '털실진행바': 털실진행바,
         '단추토글': 단추토글, '밑그림': 밑그림, '페이지점': 페이지점}
