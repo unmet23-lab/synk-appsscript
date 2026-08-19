@@ -28,7 +28,7 @@
 사용법:
   python tools/펠트색갈이.py <입력.png> <출력.png> --목표 "#FF6B5C"
   python tools/펠트색갈이.py <입력.png> <출력.png> --목표 "#FF6B5C" --견본 견본.png
-  python tools/펠트색갈이.py <회색천.png> <출력.png> --목표 "#8A93AD" --무채base
+  python tools/펠트색갈이.py <회색천.png> <출력.png> --목표 "#8A8A8A" --무채base
 """
 import argparse
 import math
