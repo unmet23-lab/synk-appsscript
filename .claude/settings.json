@@ -202,14 +202,14 @@
           },
           {
             "type": "command",
-            "command": "IFS= read -r -d '' IN || true; case \"$IN\" in *node*|*python*|*perl*|*ruby*|*deno*|*bun*|*@*|*'<<'*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/shell-inline-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\" ;; esac",
+            "command": "IFS= read -r -d '' IN || true; [ -f \"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/개원.json\" ] || exit 0; case \"$IN\" in *node*|*python*|*perl*|*ruby*|*deno*|*bun*|*@*|*'<<'*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/shell-inline-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\" ;; esac",
             "shell": "bash",
             "timeout": 30,
             "statusMessage": "셸 인라인 스크립트 검사"
           },
           {
             "type": "command",
-            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/code-edit-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\"",
+            "command": "IFS= read -r -d '' IN || true; [ -f \"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/개원.json\" ] || exit 0; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/code-edit-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\"",
             "shell": "bash",
             "timeout": 30,
             "statusMessage": "코드편집 통로 검사"
@@ -221,7 +221,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "IFS= read -r -d '' IN || true; case \"$IN\" in *.md*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/board-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\" ;; esac",
+            "command": "IFS= read -r -d '' IN || true; [ -f \"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/개원.json\" ] || exit 0; case \"$IN\" in *.md*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/board-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\" ;; esac",
             "shell": "bash",
             "timeout": 30,
             "statusMessage": "세션보드 비대화 검사"
@@ -242,7 +242,7 @@
           },
           {
             "type": "command",
-            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/track-collision.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\"",
+            "command": "IFS= read -r -d '' IN || true; [ -f \"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/개원.json\" ] || exit 0; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/track-collision.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\"",
             "shell": "bash",
             "timeout": 20,
             "statusMessage": "병렬 트랙 착지 확인"
@@ -261,7 +261,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "IFS= read -r -d '' IN || true; case \"$IN\" in *MEMORY.md*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/memory-index-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\" ;; esac",
+            "command": "IFS= read -r -d '' IN || true; [ -f \"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/개원.json\" ] || exit 0; case \"$IN\" in *MEMORY.md*) H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/memory-index-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\" ;; esac",
             "shell": "bash",
             "timeout": 30,
             "statusMessage": "메모리 인덱스 검사(비대화·동시편집)"
@@ -273,7 +273,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/screenshot-budget.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\"",
+            "command": "IFS= read -r -d '' IN || true; [ -f \"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/개원.json\" ] || exit 0; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/screenshot-budget.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\"",
             "shell": "bash",
             "timeout": 20,
             "statusMessage": "스크린샷 예산 검사"
@@ -297,7 +297,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/read-budget.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\"",
+            "command": "IFS= read -r -d '' IN || true; [ -f \"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/개원.json\" ] || exit 0; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/read-budget.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\"",
             "shell": "bash",
             "timeout": 20,
             "statusMessage": "읽기 예산 검사"
@@ -309,7 +309,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/voice-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\"",
+            "command": "IFS= read -r -d '' IN || true; [ -f \"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/개원.json\" ] || exit 0; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/voice-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\"",
             "shell": "bash",
             "timeout": 20,
             "statusMessage": "학생 접점 말투 검사"
@@ -321,7 +321,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/design-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\"",
+            "command": "IFS= read -r -d '' IN || true; [ -f \"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/개원.json\" ] || exit 0; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/design-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\"",
             "shell": "bash",
             "timeout": 20,
             "statusMessage": "브랜드 킷 주입"
@@ -333,7 +333,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/memory-status-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\"",
+            "command": "IFS= read -r -d '' IN || true; [ -f \"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/개원.json\" ] || exit 0; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/memory-status-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\"",
             "shell": "bash",
             "timeout": 20,
             "statusMessage": "메모리 낡은 ⏳ 확인"
