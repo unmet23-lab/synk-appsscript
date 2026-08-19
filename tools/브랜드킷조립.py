@@ -40,7 +40,7 @@ def 럼(hexv):
 
 def 글자색(hexv):
     """스와치 위 라벨 색 — 순백·순검정 금지라 킷의 Cream/Ink 로만 가른다."""
-    return '#F6F1E8' if 럼(hexv) < 0.35 else '#171820'
+    return '#E4E4E7' if 럼(hexv) < 0.35 else '#1B1B1A'
 
 
 def png_uri(경로, 최대변=None):
@@ -124,17 +124,17 @@ def main():
 <!-- 파생: docs/디자인_토큰.json · docs/캐릭터/펠트패치_0815/라이브러리.json · docs/발표물/_브랜드킷.md -->
 <!-- 로고 도형 = 위 _브랜드킷.md §3 복사 · 조립: python tools/브랜드킷조립.py — 손 편집 금지(재조립이 덮는다) -->
 <style>
-:root {{ --paper:#FBF7EE; --ink:#171820; --navy:#1A2340; --navy2:#0F1730; --navy3:#2A3358;
-  --cream:#F6F1E8; --coral:#FF6B5C; --coral3:#E8543F; --wash:#FFE9E4; --slate2:#5F657D; }}
+:root {{ --paper:#FAFAF9; --ink:#1B1B1A; --navy:#262626; --navy2:#08090C; --navy3:#373737;
+  --cream:#E4E4E7; --coral:#FF6B5C; --coral3:#E8543F; --wash:#FFE9E4; --slate2:#676767; }}
 * {{ box-sizing:border-box; margin:0 }}
 body {{ background:var(--paper); color:var(--ink); line-height:1.6;
   font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }}
 .band {{ background:var(--navy2); color:var(--cream); padding:56px 8% 48px; }}
 .band svg {{ width:200px; display:block }}
 .band h1 {{ font-size:30px; font-weight:800; margin-top:20px }}
-.band p {{ color:#8A93AD; font-size:13px; margin-top:6px }}
+.band p {{ color:#8A8A8A; font-size:13px; margin-top:6px }}
 section {{ padding:44px 8% }}
-section+section {{ border-top:1px solid #E7DDC7 }}
+section+section {{ border-top:1px solid #D1D2D4 }}
 h2 {{ font-size:21px; font-weight:800; margin-bottom:4px }}
 h2 em {{ font-style:normal; color:var(--coral3); }}
 h3 {{ font-size:13px; font-weight:800; color:var(--slate2); margin:22px 0 8px; text-transform:uppercase; letter-spacing:.06em }}
@@ -149,11 +149,11 @@ h3 {{ font-size:13px; font-weight:800; color:var(--slate2); margin:22px 0 8px; t
 .rulebox b {{ color:var(--coral3) }}
 ul {{ padding-left:1.2em; font-size:13.5px; max-width:80ch }} li {{ margin:4px 0 }}
 table {{ border-collapse:collapse; font-size:13.5px; margin-top:10px }}
-td,th {{ border:1px solid #E7DDC7; padding:7px 12px; text-align:left }}
+td,th {{ border:1px solid #D1D2D4; padding:7px 12px; text-align:left }}
 th {{ background:var(--wash); font-weight:800 }}
 code {{ font-family:'DM Mono',ui-monospace,Consolas,monospace; font-size:.92em }}
 .dark {{ background:var(--navy2); color:var(--cream) }}
-.dark h3 {{ color:#8A93AD }} .dark .lead {{ color:#8A93AD }}
+.dark h3 {{ color:#8A8A8A }} .dark .lead {{ color:#8A8A8A }}
 .dark td,.dark th {{ border-color:var(--navy3) }} .dark th {{ background:var(--navy3) }}
 .mascotrow {{ display:flex; gap:36px; align-items:center; flex-wrap:wrap; margin-top:14px }}
 .patchrow {{ display:flex; flex-wrap:wrap; gap:14px; margin-top:12px }}
@@ -174,10 +174,10 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 
 <div class="band">
   <svg viewBox="-8 -2 296 116" role="img" aria-label="SYNK">
-    <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
+    <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#E4E4E7">syn</text>
     <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
-    <path d="M196 92 L216 40 L228 40 L208 92 Z" fill="#F6F1E8" opacity=".5"/>
-    <path d="M234 92 L254 40 L266 40 L246 92 Z" fill="#F6F1E8" opacity=".5"/>
+    <path d="M196 92 L216 40 L228 40 L208 92 Z" fill="#E4E4E7" opacity=".5"/>
+    <path d="M234 92 L254 40 L266 40 L246 92 Z" fill="#E4E4E7" opacity=".5"/>
   </svg>
   <h1>SYNK 브랜드 킷 — 완성본</h1>
   <p>2026-08-15 · 값 원천 = 디자인_토큰.json(23색+마스코트+재질+사운드+감각) · 이 문서는 조립 산출물 — 고칠 땐 토큰을 고치고 <code>python tools/브랜드킷조립.py</code></p>
@@ -195,19 +195,19 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
   <div class="logogrid">
     <div class="logocard" style="background:var(--navy2)">
       <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-        <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
+        <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#E4E4E7">syn</text>
         <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
       </svg>
     </div>
-    <div class="logocard" style="background:var(--paper); outline:1px solid #E7DDC7">
+    <div class="logocard" style="background:var(--paper); outline:1px solid #D1D2D4">
       <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-        <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#1A2340">syn</text>
+        <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#262626">syn</text>
         <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
       </svg>
     </div>
     <div class="logocard" style="background:var(--navy2)">
       <svg viewBox="0 0 240 110" role="img" aria-label="SYNK">
-        <g fill="none" stroke="#FBF7EE" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter">
+        <g fill="none" stroke="#FAFAF9" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter">
           <path d="M10 62 C17 50, 29 50, 36 60 C41 67, 48 67, 52 58"/>
           <path d="M68 68 L88 34 L108 68"/>
           <path d="M124 68 L144 34 L164 68"/>
@@ -238,7 +238,7 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
     <div>
       {f'<img src="{마컷}" alt="몽글 — 펠트 정본(평상복)" style="width:250px;border-radius:16px;display:block">' if 마컷 else ''}
       <div style="display:flex;gap:8px;margin-top:8px">{표정컷}</div>
-      <div class="cap" style="color:#8A93AD">정본 = 펠트 코랄(평상복) · 유호 픽 08-15 ㉠재염색</div>
+      <div class="cap" style="color:#8A8A8A">정본 = 펠트 코랄(평상복) · 유호 픽 08-15 ㉠재염색</div>
     </div>
     <div>
       <h3>평상복 램프 (코랄 · 킷 계열 — 기본 모습)</h3><div class="swrow">{평상복램프}</div>
