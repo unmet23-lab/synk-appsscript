@@ -113,10 +113,10 @@
    ──────────────────────────────────────────────────────────────────────── */
   /* 색 — 이 CSS 가 «실제로 참조하는» 것만. 안 쓰는 색은 남의 지면에 안 들인다. */
   :root{
-    --chalk:#E4E4E7; --chalk-rgb:228,228,231;
-    --ink:#1B1B1A; --ink-rgb:27,27,26;
-    --coral:#FF6B5C; --coral-rgb:255,107,92;
-    --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --룸-chalk:#E4E4E7; --룸-chalk-rgb:228,228,231;
+    --룸-ink:#1B1B1A; --룸-ink-rgb:27,27,26;
+    --룸-coral:#FF6B5C; --룸-coral-rgb:255,107,92;
+    --룸-font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   }
   /* ── 율 — 모든 간격이 여기서 나온다. 이름 없는 px 을 지면에 적지 않는다.
      4px 기반 ×1.5 근사 — 인접 두 단이 눈에 갈려야 «고른» 것이 된다. */
@@ -179,7 +179,7 @@
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -194,7 +194,7 @@
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -217,7 +217,7 @@
     flex:none;width:1.55em;height:1.55em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.72em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -239,7 +239,7 @@
     flex:none;width:1.35em;height:1.35em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.66em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -250,7 +250,7 @@
     flex:none;width:1.25em;height:1.25em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -282,7 +282,7 @@
   /*loom부품:체크*/
   .체크{display:inline-grid;place-items:center;position:relative;
     width:1.3em;height:1.3em;border-radius:50%;flex:none;padding-bottom:.025em;
-    font-size:.72em;font-weight:800;color:var(--chalk);
+    font-size:.72em;font-weight:800;color:var(--룸-chalk);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
         rgba(228,228,231,0.58) 0%, rgba(228,228,231,0.12) 62%, rgba(228,228,231,0) 78%),
@@ -303,7 +303,7 @@
   .히어로수{display:inline-grid;place-items:center;position:relative;
     min-width:2.6em;height:2.6em;padding:0 var(--참) .025em;border-radius:999px;
     font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;letter-spacing:-.04em;
-    font-variant-numeric:tabular-nums;color:var(--chalk);
+    font-variant-numeric:tabular-nums;color:var(--룸-chalk);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
         rgba(255,107,92,0.58) 0%, rgba(255,107,92,0.12) 62%, rgba(255,107,92,0) 78%),
@@ -320,7 +320,7 @@
   /*loom부품:태그*/
   .칩{display:inline-flex;align-items:center;gap:var(--숨);
     padding:calc(var(--숨) + 1px) var(--참);border-radius:999px;position:relative;
-    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--chalk);
+    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--룸-chalk);
     background:linear-gradient(170deg, rgba(228,228,231,0.12), rgba(228,228,231,0.03) 60%),
                rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.18),0 8px 16px -10px rgba(0,0,0,.9);}
@@ -341,7 +341,7 @@
     font-size:.97rem;}
   .룸 blockquote::before{content:'\201C';position:absolute;left:var(--칸);top:calc(var(--칸) - var(--숨));
     display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;
-    font-size:1.5em;line-height:1;font-weight:800;color:var(--chalk);
+    font-size:1.5em;line-height:1;font-weight:800;color:var(--룸-chalk);
     padding-top:.28em;   /* 광학 — 여는 따옴표는 글리프가 위쪽에 몰려 있다 */
     background:linear-gradient(170deg, rgba(228,228,231,0.13), rgba(228,228,231,0.02) 58%),
                rgba(29,29,28,0.55);
@@ -352,9 +352,9 @@
   /* 펠트 오브 — 이 지면에서 «부피»를 가진 유일한 물건이라 하나뿐이어야 한다.
      빛을 먹는 재질(roughness .95)이라 유리·레진 옆에서 «사람이 만든 것»으로 읽힌다. */
   .오브{width:112px;height:112px;border-radius:31px;flex:none;position:relative;overflow:hidden;
-    background-color:var(--chalk);
+    background-color:var(--룸-chalk);
     display:grid;place-items:center;
-    color:var(--ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
+    color:var(--룸-ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
     box-shadow:
       inset 0 3px 4px rgba(255,255,255,.62),
       inset 0 -14px 24px -6px rgba(8,9,12,0.5),
@@ -375,7 +375,7 @@
     transition:box-shadow 180ms ease,color 180ms ease;}
   .룸 a:not(.민):not(.레일 a)::before{content:'';display:inline-block;width:3px;height:3px;
     border-radius:50%;vertical-align:.32em;margin-right:var(--숨);
-    background:var(--coral);box-shadow:0 0 6px rgba(255,107,92,0.7);}
+    background:var(--룸-coral);box-shadow:0 0 6px rgba(255,107,92,0.7);}
   .룸 a:hover{box-shadow:inset 0 -1px 0 rgba(255,107,92,0.9);}
 
   /*loom부품:쪽번호*/
@@ -385,7 +385,7 @@
   /*loom부품:본문타이포*/
   /* 🚫본문 타이포 — 불가침. 글자에 재질을 입히지 않는다(DESIGN.md §1 「타이포는 안 건드린다」).
      여기 있는 것은 «재질을 안 입힌다»는 선언이고, 그래서 분모에 든다(빠뜨린 것과 갈리게). */
-  .룸 p,.룸 li,.룸 td,.룸 th{font-family:var(--font);}
+  .룸 p,.룸 li,.룸 td,.룸 th{font-family:var(--룸-font);}
 
   /* ══ 구운 재질 (Blender Cycles · tools/룸굽기.js) ══ */
   /* 번호 원판 — 지면에서 가장 많이 도는 «각진» 부품이라 모따기가 여기서 값을 한다.
@@ -427,7 +427,7 @@
 <div class="판">
 
   <div class="머리">
-    <img src="캐릭터/마스코트_렌더/본체.png" alt="SYNK 마스코트">
+    <img src="캐릭터/펠트코랄_0815/누끼/재염색_본체.png" alt="SYNK 마스코트 — 펠트 코랄(평상복 정본)">
     <div>
       <h1>마스코트 동반자층 — 시스템 한눈에</h1>
       <div class="부제">한 존재가 다섯 창구에서 · 비서 겸 친구 겸 따뜻한 선생님 · 유호님 확정 2026-08-14</div>

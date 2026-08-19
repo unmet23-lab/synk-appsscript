@@ -87,10 +87,10 @@
    ──────────────────────────────────────────────────────────────────────── */
   /* 색 — 이 CSS 가 «실제로 참조하는» 것만. 안 쓰는 색은 남의 지면에 안 들인다. */
   :root{
-    --chalk:#E4E4E7; --chalk-rgb:228,228,231;
-    --ink:#1B1B1A; --ink-rgb:27,27,26;
-    --coral:#FF6B5C; --coral-rgb:255,107,92;
-    --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --룸-chalk:#E4E4E7; --룸-chalk-rgb:228,228,231;
+    --룸-ink:#1B1B1A; --룸-ink-rgb:27,27,26;
+    --룸-coral:#FF6B5C; --룸-coral-rgb:255,107,92;
+    --룸-font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   }
   /* ── 율 — 모든 간격이 여기서 나온다. 이름 없는 px 을 지면에 적지 않는다.
      4px 기반 ×1.5 근사 — 인접 두 단이 눈에 갈려야 «고른» 것이 된다. */
@@ -153,7 +153,7 @@
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -168,7 +168,7 @@
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -191,7 +191,7 @@
     flex:none;width:1.55em;height:1.55em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.72em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -213,7 +213,7 @@
     flex:none;width:1.35em;height:1.35em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.66em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -224,7 +224,7 @@
     flex:none;width:1.25em;height:1.25em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -256,7 +256,7 @@
   /*loom부품:체크*/
   .체크{display:inline-grid;place-items:center;position:relative;
     width:1.3em;height:1.3em;border-radius:50%;flex:none;padding-bottom:.025em;
-    font-size:.72em;font-weight:800;color:var(--chalk);
+    font-size:.72em;font-weight:800;color:var(--룸-chalk);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
         rgba(228,228,231,0.58) 0%, rgba(228,228,231,0.12) 62%, rgba(228,228,231,0) 78%),
@@ -277,7 +277,7 @@
   .히어로수{display:inline-grid;place-items:center;position:relative;
     min-width:2.6em;height:2.6em;padding:0 var(--참) .025em;border-radius:999px;
     font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;letter-spacing:-.04em;
-    font-variant-numeric:tabular-nums;color:var(--chalk);
+    font-variant-numeric:tabular-nums;color:var(--룸-chalk);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
         rgba(255,107,92,0.58) 0%, rgba(255,107,92,0.12) 62%, rgba(255,107,92,0) 78%),
@@ -294,7 +294,7 @@
   /*loom부품:태그*/
   .칩{display:inline-flex;align-items:center;gap:var(--숨);
     padding:calc(var(--숨) + 1px) var(--참);border-radius:999px;position:relative;
-    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--chalk);
+    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--룸-chalk);
     background:linear-gradient(170deg, rgba(228,228,231,0.12), rgba(228,228,231,0.03) 60%),
                rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.18),0 8px 16px -10px rgba(0,0,0,.9);}
@@ -315,7 +315,7 @@
     font-size:.97rem;}
   .룸 blockquote::before{content:'\201C';position:absolute;left:var(--칸);top:calc(var(--칸) - var(--숨));
     display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;
-    font-size:1.5em;line-height:1;font-weight:800;color:var(--chalk);
+    font-size:1.5em;line-height:1;font-weight:800;color:var(--룸-chalk);
     padding-top:.28em;   /* 광학 — 여는 따옴표는 글리프가 위쪽에 몰려 있다 */
     background:linear-gradient(170deg, rgba(228,228,231,0.13), rgba(228,228,231,0.02) 58%),
                rgba(29,29,28,0.55);
@@ -326,9 +326,9 @@
   /* 펠트 오브 — 이 지면에서 «부피»를 가진 유일한 물건이라 하나뿐이어야 한다.
      빛을 먹는 재질(roughness .95)이라 유리·레진 옆에서 «사람이 만든 것»으로 읽힌다. */
   .오브{width:112px;height:112px;border-radius:31px;flex:none;position:relative;overflow:hidden;
-    background-color:var(--chalk);
+    background-color:var(--룸-chalk);
     display:grid;place-items:center;
-    color:var(--ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
+    color:var(--룸-ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
     box-shadow:
       inset 0 3px 4px rgba(255,255,255,.62),
       inset 0 -14px 24px -6px rgba(8,9,12,0.5),
@@ -349,7 +349,7 @@
     transition:box-shadow 180ms ease,color 180ms ease;}
   .룸 a:not(.민):not(.레일 a)::before{content:'';display:inline-block;width:3px;height:3px;
     border-radius:50%;vertical-align:.32em;margin-right:var(--숨);
-    background:var(--coral);box-shadow:0 0 6px rgba(255,107,92,0.7);}
+    background:var(--룸-coral);box-shadow:0 0 6px rgba(255,107,92,0.7);}
   .룸 a:hover{box-shadow:inset 0 -1px 0 rgba(255,107,92,0.9);}
 
   /*loom부품:쪽번호*/
@@ -359,7 +359,7 @@
   /*loom부품:본문타이포*/
   /* 🚫본문 타이포 — 불가침. 글자에 재질을 입히지 않는다(DESIGN.md §1 「타이포는 안 건드린다」).
      여기 있는 것은 «재질을 안 입힌다»는 선언이고, 그래서 분모에 든다(빠뜨린 것과 갈리게). */
-  .룸 p,.룸 li,.룸 td,.룸 th{font-family:var(--font);}
+  .룸 p,.룸 li,.룸 td,.룸 th{font-family:var(--룸-font);}
 
   /* ══ 구운 재질 (Blender Cycles · tools/룸굽기.js) ══ */
   /* 번호 원판 — 지면에서 가장 많이 도는 «각진» 부품이라 모따기가 여기서 값을 한다.
@@ -399,7 +399,7 @@
 
 <h1>작동 대장</h1>
 <p class="sub">이번 주에 <b>무엇을 뜯을 것인가</b>를 고르는 한 장 — 「무엇이 있나」가 아니라 <b>「무엇이 실제로 도나」</b>를 잰다.</p>
-<div class="stamp">🕐 측정 2026-08-19 04:41 UTC · 수렴검사 ✅ 두 번 돌려 같았다</div>
+<div class="stamp">🕐 측정 2026-08-19 05:40 UTC · 수렴검사 ✅ 두 번 돌려 같았다</div>
 
 <h2><span class="no">Ⅰ</span>이해 사슬 — 학생의 무엇이 엔진까지 닿나</h2>
 <p class="lead">판정의 주인은 <code>docs/SYNK_철학.md</code> 부록 A-1 이다. 이 화면은 <b>인용</b>이고 여기서 다시 판정하지 않는다.</p>
@@ -426,20 +426,18 @@
 <p class="lead">「지금 상태」는 이 화면이 지고, <b>「무엇이 어떻게 움직였나」는 기록 장부</b>가 진다 — 그 주의 사진은 다시 계산하지 않으니 뒤집힐 값이 없다. 기록 = <code>node tools/작동대장.js --기록</code>(append-only · 지우지 않는다).</p>
 <table class="t"><thead><tr><th>통</th><th>지난 기록 (2026-08-19)</th><th>지금</th><th>움직임</th></tr></thead><tbody>
     <tr><td>🟠 자꾸 깨진다</td><td class="c">20</td><td class="c"><b>20</b></td><td class="c"><span class="d0">±0</span></td></tr>
-    <tr><td>🔴 맨몸이다</td><td class="c">6</td><td class="c"><b>7</b></td><td class="c"><span class="db">+1</span></td></tr>
-    <tr><td>⚫ 아무도 안 부른다</td><td class="c">1</td><td class="c"><b>2</b></td><td class="c"><span class="db">+1</span></td></tr>
-    <tr><td>🟢 괜찮다</td><td class="c">114</td><td class="c"><b>117</b></td><td class="c"><span class="dg">+3</span></td></tr>
-    <tr><td class="dim">장치 · 마찰 장부</td><td class="c dim">—</td><td class="c dim">—</td><td class="c"><span class="dg">+5</span> · <span class="dg">+1</span></td></tr>
+    <tr><td>🔴 맨몸이다</td><td class="c">6</td><td class="c"><b>6</b></td><td class="c"><span class="d0">±0</span></td></tr>
+    <tr><td>⚫ 아무도 안 부른다</td><td class="c">1</td><td class="c"><b>3</b></td><td class="c"><span class="db">+2</span></td></tr>
+    <tr><td>🟢 괜찮다</td><td class="c">114</td><td class="c"><b>118</b></td><td class="c"><span class="dg">+4</span></td></tr>
+    <tr><td class="dim">장치 · 마찰 장부</td><td class="c dim">—</td><td class="c dim">—</td><td class="c"><span class="dg">+6</span> · <span class="dg">+4</span></td></tr>
   </tbody></table>
   
   
   
-  <div class="chip-row"><span class="chip-t" style="color:#E8543F">🔴 맨몸 새로</span>
-    <code>tools/lib/룸잉크.js</code>
-    </div>
+  
   
   <div class="chip-row"><span class="chip-t" style="color:#262626">⚫ 삭제 후보 새로</span>
-    <code>tools/중성축_지면전파.js</code>
+    <code>tools/가드강등.js</code> <code>tools/중성축_지면전파.js</code>
     </div>
   
   
@@ -456,7 +454,7 @@
    · 재심 분모 1건이 붙어 있다</p>
 
 <h2><span class="no">Ⅲ</span>네 통 — 지금 상태</h2>
-<p class="lead">장치 <b>146개</b>(도구·라이브러리·훅)를 회귀 230벌 · 마찰 장부 395건 · 저장소 글 489벌 · git 이력에 대조했다. <b>왼쪽이 급한 순서다.</b></p>
+<p class="lead">장치 <b>147개</b>(도구·라이브러리·훅)를 회귀 231벌 · 마찰 장부 398건 · 저장소 글 491벌 · git 이력에 대조했다. <b>왼쪽이 급한 순서다.</b></p>
 <div class="tongs">
 <div class="tong" style="--c:#C79200">
     <div class="tong-h"><span class="tong-i">🟠</span><span class="tong-n">자꾸 깨진다</span></div>
@@ -465,17 +463,17 @@
   </div>
 <div class="tong" style="--c:#E8543F">
     <div class="tong-h"><span class="tong-i">🔴</span><span class="tong-n">맨몸이다</span></div>
-    <div class="tong-v">7</div>
+    <div class="tong-v">6</div>
     <div class="tong-d">남들은 부르는데 회귀가 없다 · 뜯으면 위험</div>
   </div>
 <div class="tong" style="--c:#262626">
     <div class="tong-h"><span class="tong-i">⚫</span><span class="tong-n">아무도 안 부른다</span></div>
-    <div class="tong-v">2</div>
+    <div class="tong-v">3</div>
     <div class="tong-d">저장소 어디에도 이름이 없다 · 삭제 후보</div>
   </div>
 <div class="tong" style="--c:#13724A">
     <div class="tong-h"><span class="tong-i">🟢</span><span class="tong-n">괜찮다</span></div>
-    <div class="tong-v">117</div>
+    <div class="tong-v">118</div>
     <div class="tong-d">안 건드린다</div>
   </div>
 </div>
@@ -523,7 +521,7 @@
       <td class="mono">tools/board.js</td>
       <td class="c"><span class="pill warn">15건</span> <span class="fs">F256 F322 F330 F331 F340 F343 F368</span></td>
       <td class="c">있다</td>
-      <td class="c">125곳</td>
+      <td class="c">126곳</td>
       <td class="c">2026-08-18<span class="dim"> · 1일</span></td>
     </tr>
 <tr>
@@ -551,21 +549,21 @@
       <td class="mono">.claude/hooks/board-guard.js</td>
       <td class="c"><span class="pill warn">11건</span> <span class="fs">F341 F343 F354 F395 F523 F528 F574</span></td>
       <td class="c">있다</td>
-      <td class="c">64곳</td>
+      <td class="c">65곳</td>
       <td class="c">2026-08-18<span class="dim"> · 1일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/이해대장.js</td>
       <td class="c"><span class="pill warn">11건</span> <span class="fs">F364 F432 F438 F520 F525 F527 F536</span></td>
       <td class="c">있다</td>
-      <td class="c">39곳</td>
+      <td class="c">40곳</td>
       <td class="c">2026-08-18<span class="dim"> · 1일</span></td>
     </tr>
 <tr>
       <td class="mono">.claude/hooks/git-scope-guard.js</td>
       <td class="c"><span class="pill warn">8건</span> <span class="fs">F266 F293 F305 F316 F473 F555 F573</span></td>
       <td class="c">있다</td>
-      <td class="c">27곳</td>
+      <td class="c">28곳</td>
       <td class="c">2026-08-18<span class="dim"> · 1일</span></td>
     </tr>
 <tr>
@@ -627,8 +625,8 @@
     
 <div class="hist"><div class="hb"><div class="hb-bar" style="height:84px;background:#D1D2D4"></div>
       <div class="hb-v">68</div><div class="hb-k">0건</div></div><div class="hb"><div class="hb-bar" style="height:33.35294117647059px;background:#D1D2D4"></div>
-      <div class="hb-v">27</div><div class="hb-k">1</div></div><div class="hb"><div class="hb-bar" style="height:21px;background:#D1D2D4"></div>
-      <div class="hb-v">17</div><div class="hb-k">2</div></div><div class="hb"><div class="hb-bar" style="height:7.411764705882353px;background:#D1D2D4"></div>
+      <div class="hb-v">27</div><div class="hb-k">1</div></div><div class="hb"><div class="hb-bar" style="height:22.235294117647058px;background:#D1D2D4"></div>
+      <div class="hb-v">18</div><div class="hb-k">2</div></div><div class="hb"><div class="hb-bar" style="height:7.411764705882353px;background:#D1D2D4"></div>
       <div class="hb-v">6</div><div class="hb-k">3</div></div><div class="hb"><div class="hb-bar" style="height:9.882352941176471px;background:#D1D2D4"></div>
       <div class="hb-v">8</div><div class="hb-k">4</div></div><div class="hb"><div class="hb-bar" style="height:7.411764705882353px;background:#E8543F"></div>
       <div class="hb-v">6</div><div class="hb-k">5</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
@@ -645,8 +643,8 @@
       <div class="hb-v">1</div><div class="hb-k">31</div></div></div>
   <p class="more">가로 = 그 도구가 마찰 장부에 인용된 건수 · 세로 = 도구 개수 · <b style="color:#E8543F">빨강 = 5건 이상</b>(「자꾸 깨진다」로 세는 구간).</p>
 
-<h2><span class="no">Ⅴ</span>🔴 맨몸이다 — <b>7건</b> <span class="dim">· 뜯기 전에 회귀부터</span></h2>
-<p class="lead">저장소 여기저기서 부르는데 회귀 230벌 어디에도 이름이 안 나온다. <b>뜯어도 아무 테스트가 안 빨개진다</b> — 지금 이게 도는지 기계가 모른다.</p>
+<h2><span class="no">Ⅴ</span>🔴 맨몸이다 — <b>6건</b> <span class="dim">· 뜯기 전에 회귀부터</span></h2>
+<p class="lead">저장소 여기저기서 부르는데 회귀 231벌 어디에도 이름이 안 나온다. <b>뜯어도 아무 테스트가 안 빨개진다</b> — 지금 이게 도는지 기계가 모른다.</p>
 <table class="t">
     <thead><tr><th>파일</th><th>깨진 이력</th><th>회귀</th><th>부르는 곳</th><th>마지막 손댐 <span class="dim">(참고 · UTC)</span></th></tr></thead>
     <tbody><tr>
@@ -690,21 +688,21 @@
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c">2곳</td>
       <td class="c">2026-08-17<span class="dim"> · 2일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/lib/룸잉크.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">1곳</td>
-      <td class="c">2026-08-19<span class="dim"> · 0일</span></td>
     </tr></tbody></table>
     
 
-<h2><span class="no">Ⅵ</span>⚫ 아무도 안 부른다 — <b>2건</b> <span class="dim">· 삭제 후보</span></h2>
+<h2><span class="no">Ⅵ</span>⚫ 아무도 안 부른다 — <b>3건</b> <span class="dim">· 삭제 후보</span></h2>
 <p class="lead">회귀·다른 도구·훅·문서·<code>settings.json</code> 어디에도 이름이 없다. 경량 원칙의 과녁이다 — 다만 <b>삭제는 실사용 실측 후 건별</b>이고, 「대장에 떴다」는 삭제 근거가 아니라 <b>열어볼 이유</b>다(유호 08-13).</p>
 <table class="t">
     <thead><tr><th>파일</th><th>깨진 이력</th><th>회귀</th><th>부르는 곳</th><th>마지막 손댐 <span class="dim">(참고 · UTC)</span></th></tr></thead>
     <tbody><tr>
+      <td class="mono">tools/가드강등.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c"><span class="pill bad">0곳</span></td>
+      <td class="c">2026-08-19<span class="dim"> · 0일</span></td>
+    </tr>
+<tr>
       <td class="mono">tools/자립형굽기.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
