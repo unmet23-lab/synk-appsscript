@@ -215,7 +215,10 @@ function 번호들(색, 유, 림줄, 분산 = true) {
   .번호::before{position:absolute;inset:0;${원판림(유['림원판두께px'])}}
 
   ${마커('순번')}
-  /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리). */
+  /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리).
+     🔴 «.민» 은 빠진다 — 번호를 **원고가 손으로 적은** 목록이다(«<li><span>1.</span>…»).
+        counter 를 그런 목록에 씌우면 «① 1. …» 두 번 번호가 되고, 그 사고는 남의 지면에서만 난다
+        (우리 원고는 번호를 안 적으니까). 실물 = 발표물 01 덱의 «ol.q3» (2026-08-19). */
   ol{list-style:none;counter-reset:순번;padding-left:0;margin:var(--단) 0;}
   ol>li{counter-increment:순번;position:relative;
         padding-left:calc(1.55em + var(--칸));margin:var(--참) 0;min-height:1.55em;}
@@ -224,6 +227,13 @@ function 번호들(색, 유, 림줄, 분산 = true) {
      1.55em=18.97px 인데 안 걸린 ::after 는 1.55em=26.34px 이었다(실측 08-16). 림이 원판보다 컸다. */
   ol>li::after{position:absolute;left:0;top:.06em;font-size:.72em;
     width:1.55em;height:1.55em;${원판림(1.1)}}
+  /* 🔴 «.민» — 번호를 **원고가 손으로 적은** 목록에서 원판만 걷는다(«<li><span>1.</span>…»).
+     counter 를 그런 목록에 씌우면 «① 1. …» 로 두 번 번호가 되고, 그 사고는 **남의 지면에서만** 난다
+     (우리 원고는 번호를 안 적는다). 실물 = 발표물 01 덱의 «ol.q3» (2026-08-19).
+     ⚠기본 규칙(위)은 안 건드린다 — 그 모양을 «흠 검사»가 재고 있어서, 선택자를 고치면
+     가드가 「순번 원판이 없다」로 거짓 적색을 낸다(실측). 규칙을 바꾸려면 가드부터 바꾼다. */
+  ol.민>li{counter-increment:none;padding-left:0;min-height:0;}
+  ol.민>li::before,ol.민>li::after{content:none;display:none;}
 
   ${마커('차례번호')}
   .잔번호{position:relative;${원판('1.35em', '.66em', `inset 0 1px 0 ${알파(색, 'Chalk', .16)}`)}}
@@ -472,8 +482,48 @@ function 잔부품(색, 유, 림줄, 천) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   ④ 낮 지면 — 인쇄·PDF
+   ④ 낮 지면 — 인쇄·PDF · 그리고 «밝은 화면»
    ══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * 밝은 바탕에서의 **글 색** — 인쇄(`낮`)와 밝은 화면(`밝은글`)이 **같은 한 벌**을 쓴다.
+ *
+ * 🔴 왜 뗐나 (2026-08-19 실측 · ④ 잔여 지면): `낮` 은 통째로 `@media print` 안에 있다.
+ *   그래서 `인쇄부품` 을 **밝은 화면** 지면에 얹으면 종이에서만 글이 검어지고 **화면에서는
+ *   h2·링크가 `--chalk`(#E4E4E7) 인 채로 남는다** — Paper(#FAFAF9) 위에서 대비 **1.05:1**,
+ *   즉 제목이 통째로 사라진다. 실측 = `docs/엔진/SYNK_엔진_지도.html` 렌더 전/후 대조.
+ *   부품(원판·칩)은 멀쩡히 보이므로 **「얹혔다」는 초록이 그대로 뜬다** — 맞는 얼굴로 틀린 값이다.
+ *
+ * ⇒ 값을 두 벌로 적지 않는다. 갈라지면 한쪽만 안 보이게 되고, 안 보이는 쪽은 아무도 안 센다.
+ */
+function 밝은글자() {
+  return `
+    h2{color:var(--ink);}
+    .흐린{color:var(--ash2);}
+    a{color:var(--ink);font-weight:640;box-shadow:none;border-bottom:1px solid var(--coral3);}
+    a:not(.민)::before{background:var(--coral3);box-shadow:none;}
+    blockquote i,blockquote em{color:var(--ink);}`;
+}
+
+/**
+ * 밝은 화면 — `낮` 의 «글 색»만 `@media print` 밖으로 낸다.
+ *
+ * 🔑 **부품의 재질은 안 굳힌다.** 종이에서 굳히는 이유는 「배경 그래픽이 안 나간다·glow 가 안 실린다」인데
+ *   밝은 «화면» 에는 그 한계가 없다 — 구운 유리 원판은 흰 종이색 위에서도 그대로 산다(어두운 물체다).
+ *   그래서 여기서 바꾸는 것은 **바탕에 직접 놓이는 글자**뿐이고, 그게 정확히 안 보이던 것들이다.
+ */
+function 밝은글(색, 레) {                                        // eslint-disable-line no-unused-vars
+  return `
+  /* ── 밝은 화면 — 바탕이 Paper 인 남의 지면에 얹을 때 (2026-08-19)
+     «낮» 과 **같은 값**을 쓰되 «@media print» 밖에 둔다. 위 «밝은글자()» 주석이 사유를 진다. */${밝은글자()}
+    /* 🔴 인용은 «안 흐린다» — 통짜 지면과 갈리는 유일한 값이고, 사유가 있다.
+       남의 지면에서 blockquote 는 «판» 위에 앉아 있을 수 있다(실측 2026-08-19: 개인정보 게시본은
+       blockquote 바탕이 Chalk 다). 거기에 Ash 2 를 얹으면 **4.46:1** — 기준 4.5 를 아슬하게
+       못 넘고 렌더린트가 문다. 우리는 그 판의 색을 모르므로 «흐림»으로는 대비를 보장할 수 없다.
+       ⇒ 남의 지면에서 인용의 신호는 색이 아니라 **따옴 부품과 레일**이 진다. */
+    blockquote{color:var(--ink);}`;
+}
+
 function 낮(색, 레) {
   return `
   /* ── 낮 지면 ────────────────────────────────────────────────────────────
@@ -496,7 +546,7 @@ function 낮(색, 레) {
     .유리::before{content:none;}
 
     /* 번호 — 유리 원판이 «찍힌 원판»이 된다. 분산 림은 선 하나로 굳는다. */
-    h2{color:var(--ink);margin:calc(var(--켜) * .6) 0 var(--참);font-size:14pt;break-after:avoid;}
+    h2{margin:calc(var(--켜) * .6) 0 var(--참);font-size:14pt;break-after:avoid;}
     h2:not(:has(.번호))::before,.번호,.잔번호,.각주{
       background:var(--chalk3);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ash2);}
     h2:not(:has(.번호))::after{background:var(--chalk3);}
@@ -518,18 +568,18 @@ function 낮(색, 레) {
     .칩{background:var(--chalk2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--chalk3);}
     .칩::before{content:none;}
     .실금{background:var(--chalk3);}
-    blockquote{color:var(--ash2);}
     blockquote::before{background:var(--chalk3);color:var(--ink);box-shadow:none;}
-    blockquote i,blockquote em{color:var(--ink);}
     .오브{width:74px;height:74px;border-radius:20px;color:var(--ink);font-size:1.7rem;
       box-shadow:none;border:1px solid var(--chalk3);}   /* 배경을 끄면 천이 사라지니 테두리가 형태를 진다 */
     .오브::before,.오브::after{content:none;}
-
+${밝은글자()}
+    /* 🔴 여기서부터는 **남의 지면의 글**까지 검게 만든다 — 종이에서는 Loom 이 판 전체를 가지므로 맞다.
+       화면(«밝은글»)에는 안 준다: 밝은 지면 «안»의 어두운 섬(header 같은 것)의 글까지 검어져
+       그 자리가 통째로 사라진다(2026-08-19 실측 · 엔진 지도 머리말). */
     p,li,b,strong,td,th,h3{color:var(--ink);}
     li::marker{color:var(--ash2);}
-    .흐린,footer{color:var(--ash2);}
-    a{color:var(--ink);font-weight:640;box-shadow:none;border-bottom:1px solid var(--coral3);}
-    a:not(.민)::before{background:var(--coral3);box-shadow:none;}
+    blockquote{color:var(--ash2);}
+    footer{color:var(--ash2);}
     code{color:var(--ink);background:var(--chalk2);box-shadow:inset 0 0 0 1px var(--chalk3);}
 
     /* 쪽번호 — 낮에만 산다. @page 여백 안에 앉힌다. */
@@ -676,6 +726,11 @@ const 지면들 = {
    *   「배경 그래픽」이 기본 꺼짐이라 바탕만 흰 종이가 되고 글자는 Cream 으로 남는다(1.13:1).
    *   `구움` 을 함께 두는 이유도 같다 — 화면(PDF 뷰어)에선 구운 재질이 살고, 종이에선 `낮` 이 굳힌다. */
   인쇄부품: ['율', '유리', '번호', '레진', '잔', '구움', '낮'],
+  /* 밝은부품 — 남의 «밝은 화면» 지면에 얹을 때. 인쇄부품 + `밝은글`.
+   * 🔴 왜 갈랐나(2026-08-19 실측): `인쇄부품` 의 `낮` 은 통째로 `@media print` 안이라
+   *   **화면에서는 글 색이 안 바뀐다.** Paper 바탕에 `--chalk` 제목 = **1.05:1** — 제목이 사라지는데
+   *   부품은 멀쩡히 보여서 「얹혔다」가 초록으로 뜬다. `낮` 도 함께 두는 이유 = 이 지면들은 인쇄도 된다. */
+  밝은부품: ['율', '유리', '번호', '레진', '잔', '구움', '밝은글', '낮'],
   흉내: ['율', '바탕', '유리', '번호', '레진', '잔', '낮'],       // 대조용 — 구운 층을 뺀 옛 판
 };
 
@@ -684,7 +739,7 @@ const 지면들 = {
  * 🔑 옵션이 아니라 기본값인 이유: 옵션이면 안 준 사람이 남의 판을 때리고, 그 사고는
  *    «화면이 멀쩡해 보이는» 쪽으로 난다. 통짜 지면 프리셋(문서·인쇄·웹)은 자기가 곧 판이라 안 가둔다.
  */
-const 기본범위 = { 부품만: '.룸', 인쇄부품: '.룸' };
+const 기본범위 = { 부품만: '.룸', 인쇄부품: '.룸', 밝은부품: '.룸' };
 
 /**
  * 분산 림의 KC Cool Blue 글로우를 낼까 — **프리셋별로** 정한다.
@@ -694,7 +749,9 @@ const 기본범위 = { 부품만: '.룸', 인쇄부품: '.룸' };
  * ⚠「낮을 실었나」로 갈랐다가 되돌렸다 — 그러면 `문서`·`인쇄` 까지 바뀌어 통짜 프리셋의
  *   바이트 동일성이 깨진다(회귀가 그 자리에서 잡았다).
  */
-const 기본분산 = { 인쇄부품: false };
+const 기본분산 = { 인쇄부품: false, 밝은부품: false };  /* 밝은부품도 «남의 지면»이라 같은 사유 —
+ * 두 번째 신호색(KC)을 남의 팔레트에 들이지 않는다. 발표물이 이 프리셋으로 옮겨 왔으므로
+ * 여기서 켜면 `로고정본색`·렌더린트의 「킷 밖 색」이 그 자리에서 문다. */
 
 /**
  * @param 옵션 {지면, 림, 천} — 천 = 펠트 타일 CSS url(...) 문자열(없으면 오브가 민 크림으로 선다)
@@ -770,6 +827,7 @@ ${색줄}
     레진: () => 레진부품(색, 레),
     잔: () => 잔부품(색, 유, 림줄, 옵션.천),
     낮: () => 낮(색, 레),
+    밝은글: () => 밝은글(색, 레),
     구움: () => (옵션.구움 === false ? '' : 구움층(구운재질())),
   };
 

@@ -187,7 +187,10 @@
            drop-shadow(0 0 8px rgba(255,107,92,0.28));}
 
   /*loom부품:순번*/
-  /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리). */
+  /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리).
+     🔴 «.민» 은 빠진다 — 번호를 **원고가 손으로 적은** 목록이다(«<li><span>1.</span>…»).
+        counter 를 그런 목록에 씌우면 «① 1. …» 두 번 번호가 되고, 그 사고는 남의 지면에서만 난다
+        (우리 원고는 번호를 안 적으니까). 실물 = 발표물 01 덱의 «ol.q3» (2026-08-19). */
   .룸 ol{list-style:none;counter-reset:순번;padding-left:0;margin:var(--단) 0;}
   .룸 ol>li{counter-increment:순번;position:relative;
         padding-left:calc(1.55em + var(--칸));margin:var(--참) 0;min-height:1.55em;}
@@ -211,6 +214,13 @@
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
            drop-shadow(0 0 8px rgba(255,107,92,0.28));}
+  /* 🔴 «.민» — 번호를 **원고가 손으로 적은** 목록에서 원판만 걷는다(«<li><span>1.</span>…»).
+     counter 를 그런 목록에 씌우면 «① 1. …» 로 두 번 번호가 되고, 그 사고는 **남의 지면에서만** 난다
+     (우리 원고는 번호를 안 적는다). 실물 = 발표물 01 덱의 «ol.q3» (2026-08-19).
+     ⚠기본 규칙(위)은 안 건드린다 — 그 모양을 «흠 검사»가 재고 있어서, 선택자를 고치면
+     가드가 「순번 원판이 없다」로 거짓 적색을 낸다(실측). 규칙을 바꾸려면 가드부터 바꾼다. */
+  .룸 ol.민>li{counter-increment:none;padding-left:0;min-height:0;}
+  .룸 ol.민>li::before,.룸 ol.민>li::after{content:none;display:none;}
 
   /*loom부품:차례번호*/
   .잔번호{position:relative;

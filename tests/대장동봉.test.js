@@ -156,13 +156,27 @@ test('🔴 급소 — 방아쇠 목록이 생성기 자신을 포함한다 (F520
     `생성기가 방아쇠에 없다 — 도구만 담은 커밋에서 이 게이트는 눈이 먼다. 지금 목록: ${방아쇠목록.join(' · ')}`);
 });
 
-test('🔴 급소 — 생성기가 읽는 in-repo 부품이 방아쇠 목록에서 빠지지 않는다 (한 홉 드리프트)', () => {
-  const 생성기 = fs.readFileSync(도구, 'utf8');
-  /* `require('./lib/…')` 만 센다 — `node:` 내장과 동적 require(형제 저장소)는 이 저장소 밖이거나
-   * 경로가 실행 시점에 정해져서, 스테이징 목록과 대조할 수 있는 이름이 아니다. */
-  const 읽는것 = [...생성기.matchAll(/require\('\.\/([^']+)'\)/g)].map((m) => `tools/${m[1]}`);
+test('🔴 급소 — 생성기가 읽는 in-repo 부품이 방아쇠 목록에서 빠지지 않는다 (**전이 폐포**)', () => {
+  /* 🔴 2026-08-19: 이 검사는 «한 홉»만 봤고, 그래서 두 홉째(`loom얹기` → `loom.js`)가 샜다 —
+   *   `loom.js` 만 고친 커밋에서 대장 화면이 낡았는데 방아쇠가 안 물었다. 홉 수를 하나 늘리는
+   *   대신 **폐포로** 올린다: 손 목록은 홉이 늘 때마다 같은 방식으로 다시 눈이 먼다. */
+  const 본것 = new Set(); const 읽는것 = []; const 큐 = [도구];
+  while (큐.length) {
+    const f = 큐.shift();
+    if (본것.has(f) || !fs.existsSync(f)) continue;
+    본것.add(f);
+    const 글 = fs.readFileSync(f, 'utf8');
+    /* `require('./lib/…')` 만 센다 — `node:` 내장과 동적 require(형제 저장소)는 이 저장소 밖이거나
+     * 경로가 실행 시점에 정해져서, 스테이징 목록과 대조할 수 있는 이름이 아니다. */
+    for (const m of 글.matchAll(/require\('(\.\.?\/[^']+)'\)/g)) {
+      const abs = path.resolve(path.dirname(f), m[1].endsWith('.js') ? m[1] : `${m[1]}.js`);
+      const rel = path.relative(ROOT, abs).split(path.sep).join('/');
+      if (!rel.startsWith('tools/')) continue;      // 정본 JSON·문서는 따로 등재돼 있다
+      읽는것.push(rel); 큐.push(abs);
+    }
+  }
   assert.ok(읽는것.length, '생성기의 in-repo require 를 하나도 못 뽑았다 — 이 검사가 0건 위에서 초록이 됐다(F207)');
-  const 빠진것 = 읽는것.filter((p) => !방아쇠목록.includes(p));
+  const 빠진것 = [...new Set(읽는것)].filter((p) => !방아쇠목록.includes(p));
   assert.deepStrictEqual(빠진것, [],
-    `생성기가 읽는데 방아쇠에 없다 — 그 파일만 고친 커밋에서 화면이 조용히 낡는다:\n  ${빠진것.join('\n  ')}`);
+    `생성기가 (전이로) 읽는데 방아쇠에 없다 — 그 파일만 고친 커밋에서 화면이 조용히 낡는다:\n  ${빠진것.join('\n  ')}`);
 });
