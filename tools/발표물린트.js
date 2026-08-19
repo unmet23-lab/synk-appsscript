@@ -46,7 +46,7 @@ const DEAD = [
  * #0B1A2E(구 미드나잇)도 2026-08-04 브랜드 키트 이관(_브랜드킷.md v2.0)으로 탈락 —
  * 반전면 확정값은 키트의 Navy 2 다.
  */
-const MIDNIGHT_OK = '#0F1730';
+const MIDNIGHT_OK = '#08090C';
 const MIDNIGHT_DEAD = ['#101528', '#08080B', '#0B1A2E'];
 
 function lint(file) {
