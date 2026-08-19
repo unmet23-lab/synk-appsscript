@@ -18,11 +18,6 @@ const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 
-/* 모르는 낱말 거절 — 이 도구는 지면 15벌을 한 번에 덮어쓴다. 오타가 「검산만 했다」로 보이면 안 된다. */
-const { 인자게이트 } = require('./lib/인자게이트.js');
-const 플래그오류 = 인자게이트('중성축_지면전파', process.argv.slice(2), ['--적용']);
-if (플래그오류) { console.error(플래그오류); process.exit(2); }
-
 /* 구 → 신. 값은 지어낸 것이 아니라 tools/중성축.js 가 유도한 것이다(같은 목록을 두 곳에 안 적기 위해 거기서 읽는다). */
 const 유도 = require('./중성축.js');
 const 맵 = Object.fromEntries(유도.유도().map((r) => [r.구hex.toUpperCase(), r.새hex.toUpperCase()]));
@@ -61,15 +56,17 @@ function 과녁들() {
   return [...new Set(out)].filter((p) => fs.existsSync(p));
 }
 
-let 총hex = 0, 총rgb = 0, 파일수 = 0;
-const 적용 = process.argv.includes('--적용');
+/* ── 순수부 ──────────────────────────────────────────────────────────────────
+ * 왜 함수로 떼는가(2026-08-19 · 작동대장 🔴 맨몸): 이 도구는 지면 수십 벌을 **덮어쓴다**.
+ * 그런데 치환이 조용히 틀리면 결과는 「색이 조금 이상한 그림」이라 아무도 못 잰다 — #Q103 이
+ * 적은 그 자리다. 최상위 스크립트인 채로는 픽스처를 못 물리므로 회귀가 원리상 못 선다.
+ * 여기서부터 fs·argv 를 안 만진다 = 테스트가 텍스트만 주고 값을 잰다. */
 
-for (const p of 과녁들()) {
-  let s = fs.readFileSync(p, 'utf8');
-  const 전 = s;
+/** 텍스트 한 벌에 맵을 적용한다. @returns {{텍스트:string, hex:number, rgb:number}} */
+function 치환(텍스트, 맵값) {
+  let s = String(텍스트);
   let h = 0, r = 0;
-
-  for (const [구, 신] of Object.entries(맵)) {
+  for (const [구, 신] of Object.entries(맵값)) {
     /* ① hex — 대소문자 무관, 3자리 축약형은 이 킷에 없으므로 6자리만 */
     s = s.replace(new RegExp(구, 'gi'), () => { h++; return 신; });
 
@@ -82,27 +79,55 @@ for (const p of 과녁들()) {
       (_m, p1, p2, p3) => { r++; return `${p1}${x}${p2}${y}${p3}${z}`; }
     );
   }
-
-  if (s !== 전) {
-    파일수++;
-    총hex += h; 총rgb += r;
-    console.log(`  ${path.relative(ROOT, p).padEnd(46)} hex ${String(h).padStart(3)} · rgb ${String(r).padStart(2)}`);
-    if (적용) fs.writeFileSync(p, s, 'utf8');
-  }
+  return { 텍스트: s, hex: h, rgb: r };
 }
 
-console.log(`\n과녁 ${과녁들().length}벌 중 ${파일수}벌 변경 · hex ${총hex} · rgb ${총rgb}`);
-if (!적용) { console.log('(파일 무변경 — 반영하려면 --적용)'); process.exit(0); }
-
-/* 검산 — 과녁에 구 hex/rgb 가 한 건도 안 남았는가 */
-const 남음 = [];
-for (const p of 과녁들()) {
-  const s = fs.readFileSync(p, 'utf8');
-  for (const 구 of Object.keys(맵)) {
-    if (new RegExp(구, 'i').test(s)) 남음.push(`${path.relative(ROOT, p)} : ${구}`);
+/** 텍스트에 남은 구 색의 이름들. 빈 배열 = 잔재 0. */
+function 잔재(텍스트, 맵값) {
+  const s = String(텍스트);
+  const 남음 = [];
+  for (const 구 of Object.keys(맵값)) {
+    if (new RegExp(구, 'i').test(s)) 남음.push(구);
     const [a, b, c] = rgb(구);
-    if (new RegExp(`rgba?\\(\\s*${a}\\s*,\\s*${b}\\s*,\\s*${c}\\b`).test(s)) 남음.push(`${path.relative(ROOT, p)} : rgb(${a},${b},${c})`);
+    if (new RegExp(`rgba?\\(\\s*${a}\\s*,\\s*${b}\\s*,\\s*${c}\\b`).test(s)) 남음.push(`rgb(${a},${b},${c})`);
   }
+  return 남음;
 }
-console.log(남음.length ? `🔴 잔재 ${남음.length}건\n   ` + 남음.join('\n   ') : '✅ 과녁 잔재 0');
-console.log('▶ 다음: node tools/발표물빌드.js  (원고를 고쳤으니 구움본을 다시 굽는다)');
+
+function main() {
+  /* 모르는 낱말 거절 — 이 도구는 지면 15벌을 한 번에 덮어쓴다. 오타가 「검산만 했다」로 보이면 안 된다. */
+  const { 인자게이트 } = require('./lib/인자게이트.js');
+  const 플래그오류 = 인자게이트('중성축_지면전파', process.argv.slice(2), ['--적용']);
+  if (플래그오류) { console.error(플래그오류); process.exit(2); }
+
+  let 총hex = 0, 총rgb = 0, 파일수 = 0;
+  const 적용 = process.argv.includes('--적용');
+  const 과녁 = 과녁들();
+
+  for (const p of 과녁) {
+    const 전 = fs.readFileSync(p, 'utf8');
+    const { 텍스트: s, hex: h, rgb: r } = 치환(전, 맵);
+
+    if (s !== 전) {
+      파일수++;
+      총hex += h; 총rgb += r;
+      console.log(`  ${path.relative(ROOT, p).padEnd(46)} hex ${String(h).padStart(3)} · rgb ${String(r).padStart(2)}`);
+      if (적용) fs.writeFileSync(p, s, 'utf8');
+    }
+  }
+
+  console.log(`\n과녁 ${과녁.length}벌 중 ${파일수}벌 변경 · hex ${총hex} · rgb ${총rgb}`);
+  if (!적용) { console.log('(파일 무변경 — 반영하려면 --적용)'); process.exit(0); }
+
+  /* 검산 — 과녁에 구 hex/rgb 가 한 건도 안 남았는가 */
+  const 남음 = [];
+  for (const p of 과녁들()) {
+    for (const 이름 of 잔재(fs.readFileSync(p, 'utf8'), 맵)) 남음.push(`${path.relative(ROOT, p)} : ${이름}`);
+  }
+  console.log(남음.length ? `🔴 잔재 ${남음.length}건\n   ` + 남음.join('\n   ') : '✅ 과녁 잔재 0');
+  console.log('▶ 다음: node tools/발표물빌드.js  (원고를 고쳤으니 구움본을 다시 굽는다)');
+}
+
+if (require.main === module) main();
+
+module.exports = { 치환, 잔재, 과녁들, 맵, rgb, 생성기들 };
