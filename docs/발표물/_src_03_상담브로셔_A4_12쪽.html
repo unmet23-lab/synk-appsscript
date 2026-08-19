@@ -27,9 +27,9 @@
 
 :root{
   --coral:#FF6B5C; --coral-3:#E8543F; --coral-wash:#FFE9E4; --coral-soft:#FFCFC6;
-  --paper:#FBF7EE; --navy:#1A2340; --navy-2:#0F1730; --navy-3:#2A3358;
-  --cream:#F6F1E8; --cream-2:#EFE7D7; --cream-3:#E7DDC7; --ink:#171820; /* 코랄 면 위 글자 전용 — 본문 잉크는 --navy */
-  --hair:rgba(42,51,88,.25);
+  --paper:#FAFAF9; --navy:#262626; --navy-2:#08090C; --navy-3:#373737;
+  --cream:#E4E4E7; --cream-2:#EAEAEA; --cream-3:#D1D2D4; --ink:#1B1B1A; /* 코랄 면 위 글자 전용 — 본문 잉크는 --navy */
+  --hair:rgba(55,55,55,.25);
 }
 *{ box-sizing:border-box; margin:0; padding:0; }
 html,body{
@@ -101,7 +101,7 @@ p b, b{ color:var(--navy); font-weight:800; }
 .cover::before{
   content:''; position:absolute; inset:0;
   background-image:
-    radial-gradient(circle at 6mm 6mm, rgba(246,241,232,.13) 0 .28mm, transparent .28mm);
+    radial-gradient(circle at 6mm 6mm, rgba(228,228,231,.13) 0 .28mm, transparent .28mm);
   background-size:10mm 10mm;
 }
 .cover > *{ position:relative; }
@@ -176,7 +176,7 @@ tr.hi td{ background:var(--coral-wash); }
 .band{ display:flex; gap:1.6mm; margin-top:5mm; }
 .band .c{ flex:1 1 0; border-radius:1.8mm; border:.3mm solid var(--hair); overflow:hidden; background:#fff; }
 .band .c .cap{ padding:2.6mm 1mm 2.2mm; text-align:center;
-  background:repeating-linear-gradient(45deg, rgba(42,51,88,.06) 0 1.1mm, transparent 1.1mm 2.6mm), var(--cream-2); }
+  background:repeating-linear-gradient(45deg, rgba(55,55,55,.06) 0 1.1mm, transparent 1.1mm 2.6mm), var(--cream-2); }
 .band .c.j .cap{ background:var(--navy-2); }
 .band .c .lv{ font-size:5mm; font-weight:800; line-height:1; color:var(--navy); letter-spacing:-.03em; }
 .band .c.j .lv{ color:var(--cream); }
@@ -217,7 +217,7 @@ tr.hi td{ background:var(--coral-wash); }
 
 @media screen{
   body{ background:var(--cream-2); padding:8mm; }
-  .pg{ box-shadow:0 3mm 12mm rgba(15,23,48,.2); margin:0 auto 8mm; }
+  .pg{ box-shadow:0 3mm 12mm rgba(8,9,12,.2); margin:0 auto 8mm; }
 }
 </style>
 </head>
@@ -229,7 +229,7 @@ tr.hi td{ background:var(--coral-wash); }
     <!-- LOGO SLOT ▸ 주입은 tools/로고주입.js (브랜드킷 §3) -->
     <div class="symbol">
       <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#E4E4E7">syn</text>
             <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
           </svg>
     </div>
@@ -322,7 +322,7 @@ tr.hi td{ background:var(--coral-wash); }
         <div class="d">100% 한국어 K컬처 신체활동</div>
       </div>
       <div class="ar">
-        <svg width="7mm" height="7mm" viewBox="0 0 24 24" fill="none" stroke="#2A3358" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+        <svg width="7mm" height="7mm" viewBox="0 0 24 24" fill="none" stroke="#373737" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14"/><path d="M13 6l6 6-6 6"/></svg>
       </div>
       <div class="st">
         <div class="i mono">STEP 2</div>
@@ -330,7 +330,7 @@ tr.hi td{ background:var(--coral-wash); }
         <div class="d">문법·어휘·독해·회화 체계 수업</div>
       </div>
       <div class="ar">
-        <svg width="7mm" height="7mm" viewBox="0 0 24 24" fill="none" stroke="#2A3358" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+        <svg width="7mm" height="7mm" viewBox="0 0 24 24" fill="none" stroke="#373737" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14"/><path d="M13 6l6 6-6 6"/></svg>
       </div>
       <div class="st hi">
         <div class="i mono">STEP 3</div>
@@ -646,7 +646,7 @@ tr.hi td{ background:var(--coral-wash); }
     <!-- LOGO SLOT ▸ 주입은 tools/로고주입.js -->
     <div class="symbol sm">
       <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#E4E4E7">syn</text>
             <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
           </svg>
     </div>
