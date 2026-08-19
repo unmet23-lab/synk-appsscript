@@ -118,12 +118,12 @@ def 스티치():
     p = 실.node_tree.nodes['Principled BSDF']
     p.inputs['Base Color'].default_value = 리니어(색['Chalk'])
     p.inputs['Roughness'].default_value = 0.38
-    for i in range(9):                       # 러닝 스티치 — 땀은 천을 «파고든다»(떠 있으면 콩이 된다)
-        x = -1.92 + i * 0.48
-        bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(x, -0.335, 0.02 if i % 2 else -0.02))
+    for i in range(9):                       # 러닝 스티치 — 땀은 천을 «파고들되» 한 줄로 고르게 간다
+        x = -1.92 + i * 0.48                 # (기울기를 번갈면 흩뿌린 지그재그로 읽힌다 — 시안2 실측)
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(x, -0.335, 0))
         땀 = bpy.context.object
-        땀.scale = (0.19, 0.032, 0.032)
-        땀.rotation_euler = (0, math.radians(14 if i % 2 else -14), math.radians(4 if i % 2 else -4))
+        땀.scale = (0.2, 0.032, 0.032)
+        땀.rotation_euler = (0, math.radians(11), 0)
         bpy.ops.object.shade_smooth()
         땀.data.materials.append(실)
     return (0, -6.4, 0.2)
