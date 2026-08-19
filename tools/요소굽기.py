@@ -1,7 +1,7 @@
 # 요소굽기 — UI·UX 요소를 «실물»로 굽는다 (조항 ⓘ 집행급 · 유호 확정 08-19 「짧은 퍼」)
 # 퍼프로브.py 의 승격판. 형태별로 몸을 짓고 짧은 퍼를 심어 Cycles 로 찍는다.
 #   python3 -c "import sys; sys.argv=['x','--','형태=오브','색=Coral','샘플=96','너비=900','출력=/tmp/판.png']; exec(open('tools/요소굽기.py').read())"
-# 형태: 오브(표지 스쿼클) · 알약(버튼) · 아이콘(겹침 2장) · 스티치(자수 — 채택 08-19) · 털실진행바(진행=0~1)
+# 형태: 오브 · 알약 · 아이콘 · 스티치(자수 채택) · 털실진행바(진행=0~1) · 단추토글 · 밑그림 · 페이지점
 # 규율: 염료는 토큰 킷 「이름」 참조(hex 하드코딩 금지) · 글자는 굽지 않는다(타이포 불가침 — HTML 층 몫)
 # ⚠룸굽기.js 합류 전의 독립 통로다 — 룸굽기는 blender.exe(윈도)를 부르고 이건 bpy 모듈(클라우드)로 돈다.
 import bpy, json, math, sys
@@ -167,7 +167,115 @@ def 털실진행바():
         짧은퍼(가닥, 염료이름, 실몸, 털재질(염료이름, 색[염료이름]), 길이=0.03, 개수=3500)
     return (0, -11.8, 0.0), 90
 
-형태들 = {'오브': 오브, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치, '털실진행바': 털실진행바}
+def 매끈재질(이름, hex_, 거칠기=0.5, 배율=1.0):
+    m = bpy.data.materials.new('매끈_' + 이름)
+    m.use_nodes = True
+    p = m.node_tree.nodes['Principled BSDF']
+    기본 = 리니어(hex_)
+    p.inputs['Base Color'].default_value = tuple(min(1.0, v * 배율) for v in 기본[:3]) + (1.0,)
+    p.inputs['Roughness'].default_value = 거칠기
+    return m
+
+def 땀하나(x, y, z, 길이, 굵기, 재질, 회전y=11, 회전z=0):
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(x, y, z))
+    땀 = bpy.context.object
+    땀.scale = (길이, 굵기, 굵기)
+    땀.rotation_euler = (0, math.radians(회전y), math.radians(회전z))
+    bpy.ops.object.shade_smooth()
+    땀.data.materials.append(재질)
+    return 땀
+
+def 단추토글():
+    """꿰맨 단추 토글 — 켬 = 실이 X 로 꿰매짐 / 끔 = 빈 구멍(제안 #2 실물화 · 유호 픽 08-19).
+    두 단추의 몸은 같고 «실»만 다르다 — 상태가 재질 차이가 아니라 바느질 유무로 읽힌다.
+    켬의 실 = 기본색(신호 1점 — 켜짐이 곧 신호다)."""
+    몸재 = 매끈재질('단추', 색['Chalk 3'], 거칠기=0.55)
+    구멍재 = 매끈재질('구멍', 색['Graphite 2'], 거칠기=0.9)
+    실재 = 매끈재질('실', 색[염료이름], 거칠기=0.42)
+    def 단추(cx, 꿰맴):
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.85, depth=0.3, location=(cx, 0, 0),
+                                            rotation=(math.radians(90), 0, 0))
+        몸 = bpy.context.object
+        bev = 몸.modifiers.new('bev', 'BEVEL')
+        bev.width = 0.11
+        bev.segments = 8
+        bpy.ops.object.shade_smooth()
+        몸.data.materials.append(몸재)
+        for dx, dz in ((-0.28, 0.28), (0.28, 0.28), (-0.28, -0.28), (0.28, -0.28)):
+            bpy.ops.mesh.primitive_cylinder_add(radius=0.085, depth=0.06,
+                location=(cx + dx, -0.14, dz), rotation=(math.radians(90), 0, 0))
+            구멍 = bpy.context.object
+            bpy.ops.object.shade_smooth()
+            구멍.data.materials.append(구멍재)
+        if 꿰맴:   # X 자 실 — 구멍 네 개를 대각으로 잇는다
+            for (x1, z1, x2, z2) in ((-0.28, 0.28, 0.28, -0.28), (-0.28, -0.28, 0.28, 0.28)):
+                길이 = math.hypot(x2 - x1, z2 - z1) / 2
+                각 = math.degrees(math.atan2(z2 - z1, x2 - x1))
+                땀하나(cx + (x1 + x2) / 2, -0.19, (z1 + z2) / 2, 길이, 0.055, 실재,
+                      회전y=-각, 회전z=0)
+    단추(-1.15, True)
+    단추(1.15, False)
+    return (0, -8.0, 0.0), 90
+
+def 밑그림():
+    """밑그림 점선 — 스켈레톤 로딩(제안 #7 실물화): 「아직 안 꿰맨 자수 도안」.
+    어두운 펠트 판 위에 분필 점선이 앞으로 생길 카드의 윤곽과 글줄 자리를 긋는다."""
+    판 = 베개몸((1.9, 0.3, 1.25), 크리스=0.66)
+    짧은퍼(판, 'Graphite 4', 살재질('Graphite 4', 색['Graphite 4']),
+          털재질('Graphite 4', 색['Graphite 4']), 길이=0.05, 개수=18000)
+    분필 = 매끈재질('분필', 색['Chalk'], 거칠기=0.5)
+    앞 = -0.33
+    w, h, r = 1.15, 0.62, 0.26          # 카드 윤곽 — 둥근 사각 경로를 따라 점선을 놓는다
+    경로 = []
+    for (sx, sz, ex, ez) in ((-w + r, h, w - r, h), (w, h - r, w, -h + r),
+                             (w - r, -h, -w + r, -h), (-w, -h + r, -w, h - r)):
+        길이 = math.hypot(ex - sx, ez - sz)
+        n = max(2, int(길이 / 0.3))
+        for i in range(n):
+            t = (i + 0.5) / n
+            경로.append((sx + (ex - sx) * t, sz + (ez - sz) * t,
+                        math.degrees(math.atan2(ez - sz, ex - sx))))
+    for (cx, cz, 각) in ((-w + r, h - r, None), (w - r, h - r, None),
+                         (w - r, -h + r, None), (-w + r, -h + r, None)):
+        중심각 = math.degrees(math.atan2(cz, cx))
+        for d in (-22, 22):
+            a = math.radians(중심각 + d)
+            경로.append((cx + r * math.cos(a) * 1.0, cz + r * math.sin(a) * 1.0, 중심각 + d + 90))
+    for (x, z, 각) in 경로:
+        땀하나(x, 앞, z, 0.085, 0.026, 분필, 회전y=-각)
+    for (z, 폭) in ((0.16, 0.78), (-0.12, 0.55)):   # 글줄 자리 두 줄
+        n = max(2, int(폭 * 2 / 0.26))
+        for i in range(n):
+            x = -폭 + (2 * 폭) * (i + 0.5) / n
+            땀하나(x, 앞, z, 0.075, 0.024, 분필, 회전y=0)
+    return (0, -7.8, 0.05), 88
+
+def 페이지점():
+    """바늘땀 페이지 점 — 페이지네이션(제안 #9 실물화): 지나온 쪽 = 꿰맨 땀(분필) ·
+    지금 = 기본색 땀(신호 1점) · 남은 쪽 = 빈 바늘구멍 두 점(꿰맬 자리)."""
+    띠 = 베개몸((2.2, 0.3, 0.42), 크리스=0.7)
+    짧은퍼(띠, 'Graphite 4', 살재질('Graphite 4', 색['Graphite 4']),
+          털재질('Graphite 4', 색['Graphite 4']), 길이=0.045, 개수=16000)
+    분필 = 매끈재질('분필', 색['Chalk'], 거칠기=0.5)
+    실재 = 매끈재질('실', 색[염료이름], 거칠기=0.42)
+    구멍재 = 매끈재질('구멍', 색['Graphite 2'], 거칠기=0.95)
+    앞 = -0.315
+    for k, x in enumerate((-1.6, -0.8, 0.0, 0.8, 1.6)):
+        if k < 2:
+            땀하나(x, 앞, 0, 0.2, 0.032, 분필)
+        elif k == 2:
+            땀하나(x, 앞 - 0.01, 0, 0.24, 0.042, 실재)
+        else:
+            for dx in (-0.09, 0.09):    # 빈 바늘구멍 — 땀 길이와 같은 간격의 두 점
+                bpy.ops.mesh.primitive_uv_sphere_add(radius=0.032, location=(x + dx, 앞 + 0.015, 0))
+                구멍 = bpy.context.object
+                구멍.scale = (1, 0.5, 1)
+                bpy.ops.object.shade_smooth()
+                구멍.data.materials.append(구멍재)
+    return (0, -7.6, 0.0), 90
+
+형태들 = {'오브': 오브, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치, '털실진행바': 털실진행바,
+        '단추토글': 단추토글, '밑그림': 밑그림, '페이지점': 페이지점}
 if 형태 not in 형태들:
     raise SystemExit('모르는 형태: ' + 형태 + ' — 아는 것은 ' + '·'.join(형태들))
 카메라위치, 카메라피치 = 형태들[형태]()
