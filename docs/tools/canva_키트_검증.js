@@ -32,7 +32,7 @@
     '#ffe9e4': 'Coral Wash', '#ffcfc6': 'Coral Soft', '#ff8877': 'Coral 2', '#e8543f': 'Coral 3',
     '#373737': 'Graphite 4', '#1d1d1c': 'Graphite 2', '#08090c': 'Graphite',
     '#ff3e88': 'KC Hot Pink', '#ff6ba8': 'KC Pink 2', '#ffd447': 'KC Sun', '#4e7cff': 'KC Cool Blue',
-    '#8a8a8a': 'Ash', '#676767': 'Ash 2',
+    '#8c8c8c': 'Ash', '#666666': 'Ash 2',
     '#b8e836': 'Lime 2', '#13724a': 'Emerald',
   };
 

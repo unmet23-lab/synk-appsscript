@@ -25,7 +25,14 @@ if (플래그오류) { console.error(플래그오류); process.exit(2); }
 
 /* 구 → 신. 값은 지어낸 것이 아니라 tools/중성축.js 가 유도한 것이다(같은 목록을 두 곳에 안 적기 위해 거기서 읽는다). */
 const 유도 = require('./중성축.js');
-const 맵 = Object.fromEntries(유도.유도().map((r) => [r.구hex.toUpperCase(), r.새hex.toUpperCase()]));
+/* 옮길 것 두 갈래 — 둘 다 없으면 지면이 조용히 낡는다:
+ *   ㉠ 구 킷 hex → 새 hex        (Slate 2 `#5F657D` → …)
+ *   ㉡ **옛 «유도값»** → 지금 값  (`#676767` → `#666666`) — 이건 «한때 새 hex 였던 것»이라
+ *      ㉠ 의 map 에도 DEAD 목록에도 안 걸린다. 이미 그 값으로 구워진 지면을 덮는 자리다. */
+const 맵 = Object.fromEntries([
+  ...유도.유도().map((r) => [r.구hex.toUpperCase(), r.새hex.toUpperCase()]),
+  ...Object.entries(유도.옛유도 || {}).map(([옛, v]) => [옛.toUpperCase(), v.지금.toUpperCase()]),
+]);
 
 const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 

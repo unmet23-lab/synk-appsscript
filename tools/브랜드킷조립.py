@@ -125,14 +125,14 @@ def main():
 <!-- 로고 도형 = 위 _브랜드킷.md §3 복사 · 조립: python tools/브랜드킷조립.py — 손 편집 금지(재조립이 덮는다) -->
 <style>
 :root {{ --paper:#FAFAF9; --ink:#1B1B1A; --navy:#262626; --navy2:#08090C; --navy3:#373737;
-  --cream:#E4E4E7; --coral:#FF6B5C; --coral3:#E8543F; --wash:#FFE9E4; --slate2:#676767; }}
+  --cream:#E4E4E7; --coral:#FF6B5C; --coral3:#E8543F; --wash:#FFE9E4; --slate2:#666666; }}
 * {{ box-sizing:border-box; margin:0 }}
 body {{ background:var(--paper); color:var(--ink); line-height:1.6;
   font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }}
 .band {{ background:var(--navy2); color:var(--cream); padding:56px 8% 48px; }}
 .band svg {{ width:200px; display:block }}
 .band h1 {{ font-size:30px; font-weight:800; margin-top:20px }}
-.band p {{ color:#8A8A8A; font-size:13px; margin-top:6px }}
+.band p {{ color:#8C8C8C; font-size:13px; margin-top:6px }}
 section {{ padding:44px 8% }}
 section+section {{ border-top:1px solid #D1D2D4 }}
 h2 {{ font-size:21px; font-weight:800; margin-bottom:4px }}
@@ -153,7 +153,7 @@ td,th {{ border:1px solid #D1D2D4; padding:7px 12px; text-align:left }}
 th {{ background:var(--wash); font-weight:800 }}
 code {{ font-family:'DM Mono',ui-monospace,Consolas,monospace; font-size:.92em }}
 .dark {{ background:var(--navy2); color:var(--cream) }}
-.dark h3 {{ color:#8A8A8A }} .dark .lead {{ color:#8A8A8A }}
+.dark h3 {{ color:#8C8C8C }} .dark .lead {{ color:#8C8C8C }}
 .dark td,.dark th {{ border-color:var(--navy3) }} .dark th {{ background:var(--navy3) }}
 .mascotrow {{ display:flex; gap:36px; align-items:center; flex-wrap:wrap; margin-top:14px }}
 .patchrow {{ display:flex; flex-wrap:wrap; gap:14px; margin-top:12px }}
@@ -238,7 +238,7 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
     <div>
       {f'<img src="{마컷}" alt="몽글 — 펠트 정본(평상복)" style="width:250px;border-radius:16px;display:block">' if 마컷 else ''}
       <div style="display:flex;gap:8px;margin-top:8px">{표정컷}</div>
-      <div class="cap" style="color:#8A8A8A">정본 = 펠트 코랄(평상복) · 유호 픽 08-15 ㉠재염색</div>
+      <div class="cap" style="color:#8C8C8C">정본 = 펠트 코랄(평상복) · 유호 픽 08-15 ㉠재염색</div>
     </div>
     <div>
       <h3>평상복 램프 (코랄 · 킷 계열 — 기본 모습)</h3><div class="swrow">{평상복램프}</div>
