@@ -28,6 +28,19 @@
 'use strict';
 
 const fs = require('node:fs');
+
+/* ── Loom — 이 지면이 부품을 «입는» 통로 (2026-08-18 · ④ 지면 배선) ──────────────
+ * 판정(훅 게이트·얹을 자리·멱등·범위진단)은 전부 `tools/lib/loom얹기.js` 하나가 진다.
+ * 여기서 고르는 것은 프리셋 하나뿐 — `부품만` = 지면이 자기 디자인을 지고 부품만 얹는 판.
+ * 🔴 훅이 0 이면 통로가 «안 얹는다». 그래야 「마커만 켜진 초록」이 안 생긴다(F517②). */
+const loom얹기모듈 = require('./lib/loom얹기.js');
+function loom태우기(html) {
+  const r = loom얹기모듈.얹기(html, { 지면: '부품만' });
+  if (!r.얹힘 && r.범위흠) console.error('   ⚠ Loom 미적용 — ' + r.범위흠);
+  else if (r.얹힘) console.error(`   ✅ Loom 부품 ${r.훅.length}종 — ${r.훅.join('·')}`);
+  return r.html;
+}
+
 const path = require('node:path');
 const { 칸나누기 } = require('./lib/표.js');
 const 시트도달 = require('./lib/시트도달.js');
@@ -41,8 +54,8 @@ const 산출경로 = process.env.SYNK_대장_산출 || path.join(ROOT, 'docs', '
 
 /** 브랜드 킷 — DESIGN.md §1 이 정본. 여기 있는 것은 «인용»이고, 새 색을 만들지 않는다. */
 const 킷 = {
-  paper: '#FBF7EE', ink: '#171820', navy: '#1A2340', navy2: '#0F1730', navy3: '#2A3358',
-  cream: '#F6F1E8', cream3: '#E7DDC7', slate2: '#5F657D',
+  paper: '#FAFAF9', ink: '#1B1B1A', navy: '#262626', navy2: '#08090C', navy3: '#373737',
+  cream: '#E4E4E7', cream3: '#D1D2D4', slate2: '#676767',
   coral: '#FF6B5C', coral3: '#E8543F', coralWash: '#FFE9E4',
   sun: '#FFD447', emerald: '#13724A',
 };
@@ -505,7 +518,7 @@ function main() {
 
   .카드들{display:grid;gap:14px}
   .카드{background:#fff;border:1px solid var(--cream3);border-radius:14px;overflow:hidden;
-        box-shadow:0 1px 2px rgba(23,24,32,.04)}
+        box-shadow:0 1px 2px rgba(27,27,26,.04)}
   .카드머리{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
             padding:14px 18px;background:var(--cream);border-bottom:1px solid var(--cream3)}
   .카드머리 h3{margin:0;font-size:17px;color:var(--navy);letter-spacing:-.01em}
@@ -530,7 +543,7 @@ function main() {
 
   .복사{font-family:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
         font-size:11px;font-weight:700;letter-spacing:.02em;
-        background:rgba(255,255,255,.82);color:var(--navy);border:1px solid rgba(23,24,32,.14);
+        background:rgba(255,255,255,.82);color:var(--navy);border:1px solid rgba(27,27,26,.14);
         border-radius:6px;padding:2px 8px;cursor:pointer;transition:transform .08s ease,background .12s ease}
   .복사:hover{background:#fff;transform:translateY(-1px)}
   .복사:active{transform:translateY(0)}
@@ -551,7 +564,7 @@ function main() {
   footer{margin-top:24px;color:var(--slate2);font-size:11.5px;line-height:1.7}
   @media print{.복사{display:none}.카드{break-inside:avoid}}
 </style>
-<div class="판">
+<div class="판 룸">
 <h1>이해 대장</h1>
 <p class="부제">SYNK 철학 정본 ${ver} · 부록 A 에서 자동으로 그린다 — <b>이 화면은 손으로 고치지 않는다.</b> 고칠 것이 있으면 아래 코드를 눌러 복사해 말하면 된다.</p>
 
@@ -665,7 +678,7 @@ function 폴백(말, 끝) {
     return 1;
   }
 
-  fs.writeFileSync(산출경로, html, 'utf8');
+  fs.writeFileSync(산출경로, loom태우기(html), 'utf8');
   console.log(`[이해대장] ${path.relative(ROOT, 산출경로)} — 정본 ${ver} · 이해 ${칸전체.length}칸 중 ${빈칸}칸이 비었다`
     + ` · 엔진에 닿는 층 ${닿는층}/${층수}`
     + (실측
