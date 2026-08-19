@@ -126,6 +126,18 @@
         "hooks": [
           {
             "type": "command",
+            "command": "IFS= read -r -d '' _IGNORE || true; K=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/결정.js\"; { command -v node >/dev/null && [ -f \"$K\" ]; } || { echo \"SYNK 결정 미실행: $K (node 또는 파일 없음 — F044)\" >&2; exit 1; }; node \"$K\" --훅",
+            "shell": "bash",
+            "timeout": 20,
+            "statusMessage": "유호님 확정 결정"
+          }
+        ]
+      },
+      {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
             "command": "IFS= read -r -d '' IN || true; Q=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/대기열.js\"; { command -v node >/dev/null && [ -f \"$Q\" ]; } || { echo \"SYNK 대기열 미실행: $Q (node 또는 파일 없음 — F044)\" >&2; exit 1; }; printf %s \"$IN\" | node \"$Q\"",
             "shell": "bash",
             "timeout": 20,
