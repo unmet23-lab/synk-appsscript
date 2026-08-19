@@ -4,7 +4,7 @@
 <title>SYNK 작동 대장 — 이번 주에 뜯을 것</title>
 <style>
   :root{--paper:#FAFAF9;--ink:#1B1B1A;--navy:#262626;--navy2:#08090C;
-    --cream:#E4E4E7;--cream3:#D1D2D4;--slate2:#676767;
+    --cream:#E4E4E7;--cream3:#D1D2D4;--slate2:#666666;
     --coral:#FF6B5C;--coral3:#E8543F;--wash:#FFE9E4;--sun:#FFD447;--em:#13724A}
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);
@@ -90,7 +90,7 @@
     --chalk:#E4E4E7; --chalk-rgb:228,228,231;
     --ink:#1B1B1A; --ink-rgb:27,27,26;
     --coral:#FF6B5C; --coral-rgb:255,107,92;
-    --ash:#8A8A8A; --ash-rgb:138,138,138;
+    --ash:#8C8C8C; --ash-rgb:140,140,140;
     --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   }
   /* ── 율 — 모든 간격이 여기서 나온다. 이름 없는 px 을 지면에 적지 않는다.
@@ -129,7 +129,7 @@
   .유리::before{
     content:'';position:absolute;inset:0;border-radius:inherit;
     padding:1.2px;pointer-events:none;z-index:1;
-    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
@@ -176,7 +176,7 @@
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
   .번호::before{position:absolute;inset:0;
     content:'';border-radius:50%;padding:1.4px;pointer-events:none;
-    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
@@ -205,7 +205,7 @@
   .룸 ol>li::after{position:absolute;left:0;top:.06em;font-size:.72em;
     width:1.55em;height:1.55em;
     content:'';border-radius:50%;padding:1.1px;pointer-events:none;
-    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
@@ -310,7 +310,7 @@
                rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.18),0 8px 16px -10px rgba(0,0,0,.9);}
   .칩::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
-    pointer-events:none;background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
+    pointer-events:none;background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;opacity:.8;}
@@ -410,7 +410,7 @@
 
 <h1>작동 대장</h1>
 <p class="sub">이번 주에 <b>무엇을 뜯을 것인가</b>를 고르는 한 장 — 「무엇이 있나」가 아니라 <b>「무엇이 실제로 도나」</b>를 잰다.</p>
-<div class="stamp">🕐 측정 2026-08-19 05:11 UTC · 수렴검사 ✅ 두 번 돌려 같았다</div>
+<div class="stamp">🕐 측정 2026-08-19 06:30 UTC · 수렴검사 ✅ 두 번 돌려 같았다</div>
 
 <h2><span class="no">Ⅰ</span>이해 사슬 — 학생의 무엇이 엔진까지 닿나</h2>
 <p class="lead">판정의 주인은 <code>docs/SYNK_철학.md</code> 부록 A-1 이다. 이 화면은 <b>인용</b>이고 여기서 다시 판정하지 않는다.</p>
@@ -437,10 +437,10 @@
 <p class="lead">「지금 상태」는 이 화면이 지고, <b>「무엇이 어떻게 움직였나」는 기록 장부</b>가 진다 — 그 주의 사진은 다시 계산하지 않으니 뒤집힐 값이 없다. 기록 = <code>node tools/작동대장.js --기록</code>(append-only · 지우지 않는다).</p>
 <table class="t"><thead><tr><th>통</th><th>지난 기록 (2026-08-19)</th><th>지금</th><th>움직임</th></tr></thead><tbody>
     <tr><td>🟠 자꾸 깨진다</td><td class="c">20</td><td class="c"><b>20</b></td><td class="c"><span class="d0">±0</span></td></tr>
-    <tr><td>🔴 맨몸이다</td><td class="c">6</td><td class="c"><b>6</b></td><td class="c"><span class="d0">±0</span></td></tr>
+    <tr><td>🔴 맨몸이다</td><td class="c">7</td><td class="c"><b>7</b></td><td class="c"><span class="d0">±0</span></td></tr>
     <tr><td>⚫ 아무도 안 부른다</td><td class="c">1</td><td class="c"><b>2</b></td><td class="c"><span class="db">+1</span></td></tr>
-    <tr><td>🟢 괜찮다</td><td class="c">114</td><td class="c"><b>118</b></td><td class="c"><span class="dg">+4</span></td></tr>
-    <tr><td class="dim">장치 · 마찰 장부</td><td class="c dim">—</td><td class="c dim">—</td><td class="c"><span class="dg">+5</span> · <span class="dg">+2</span></td></tr>
+    <tr><td>🟢 괜찮다</td><td class="c">117</td><td class="c"><b>118</b></td><td class="c"><span class="dg">+1</span></td></tr>
+    <tr><td class="dim">장치 · 마찰 장부</td><td class="c dim">—</td><td class="c dim">—</td><td class="c"><span class="dg">+2</span> · <span class="dg">+1</span></td></tr>
   </tbody></table>
   
   
@@ -448,7 +448,7 @@
   
   
   <div class="chip-row"><span class="chip-t" style="color:#262626">⚫ 삭제 후보 새로</span>
-    <code>tools/중성축_지면전파.js</code>
+    <code>tools/가드강등.js</code>
     </div>
   
   
@@ -459,13 +459,16 @@
     <td class="c dim">8건 보고 <b>1</b> 뒤집음</td></tr><tr><td class="mono">2026-08-19</td>
     <td class="c">20</td><td class="c">6</td><td class="c">1</td>
     <td class="c">114</td><td class="c dim">141</td><td class="c dim">394</td>
+    <td class="c dim">—</td></tr><tr><td class="mono">2026-08-19</td>
+    <td class="c">20</td><td class="c">7</td><td class="c">1</td>
+    <td class="c">117</td><td class="c dim">145</td><td class="c dim">395</td>
     <td class="c dim">—</td></tr>
   </tbody></table>
-  <p class="more">기록 2건 중 최근 2건 · 전량 = <code>docs/_ops/작동대장_기록.jsonl</code>
+  <p class="more">기록 3건 중 최근 3건 · 전량 = <code>docs/_ops/작동대장_기록.jsonl</code>
    · 재심 분모 1건이 붙어 있다</p>
 
 <h2><span class="no">Ⅲ</span>네 통 — 지금 상태</h2>
-<p class="lead">장치 <b>146개</b>(도구·라이브러리·훅)를 회귀 231벌 · 마찰 장부 396건 · 저장소 글 490벌 · git 이력에 대조했다. <b>왼쪽이 급한 순서다.</b></p>
+<p class="lead">장치 <b>147개</b>(도구·라이브러리·훅)를 회귀 233벌 · 마찰 장부 396건 · 저장소 글 493벌 · git 이력에 대조했다. <b>왼쪽이 급한 순서다.</b></p>
 <div class="tongs">
 <div class="tong" style="--c:#C79200">
     <div class="tong-h"><span class="tong-i">🟠</span><span class="tong-n">자꾸 깨진다</span></div>
@@ -474,7 +477,7 @@
   </div>
 <div class="tong" style="--c:#E8543F">
     <div class="tong-h"><span class="tong-i">🔴</span><span class="tong-n">맨몸이다</span></div>
-    <div class="tong-v">6</div>
+    <div class="tong-v">7</div>
     <div class="tong-d">남들은 부르는데 회귀가 없다 · 뜯으면 위험</div>
   </div>
 <div class="tong" style="--c:#262626">
@@ -532,21 +535,21 @@
       <td class="mono">tools/board.js</td>
       <td class="c"><span class="pill warn">15건</span> <span class="fs">F256 F322 F330 F331 F340 F343 F368</span></td>
       <td class="c">있다</td>
-      <td class="c">125곳</td>
+      <td class="c">126곳</td>
       <td class="c">2026-08-18<span class="dim"> · 1일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/변이.js</td>
       <td class="c"><span class="pill warn">14건</span> <span class="fs">F477 F485 F490 F491 F497 F526 F579</span></td>
       <td class="c">있다</td>
-      <td class="c">163곳</td>
+      <td class="c">164곳</td>
       <td class="c">2026-08-17<span class="dim"> · 2일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/test-ci.js</td>
       <td class="c"><span class="pill warn">13건</span> <span class="fs">F296 F353 F364 F413 F449 F461 F530</span></td>
       <td class="c">있다</td>
-      <td class="c">33곳</td>
+      <td class="c">34곳</td>
       <td class="c">2026-08-18<span class="dim"> · 1일</span></td>
     </tr>
 <tr>
@@ -560,7 +563,7 @@
       <td class="mono">.claude/hooks/board-guard.js</td>
       <td class="c"><span class="pill warn">11건</span> <span class="fs">F341 F343 F354 F395 F523 F528 F574</span></td>
       <td class="c">있다</td>
-      <td class="c">64곳</td>
+      <td class="c">65곳</td>
       <td class="c">2026-08-18<span class="dim"> · 1일</span></td>
     </tr>
 <tr>
@@ -574,7 +577,7 @@
       <td class="mono">.claude/hooks/git-scope-guard.js</td>
       <td class="c"><span class="pill warn">8건</span> <span class="fs">F266 F293 F305 F316 F473 F555 F573</span></td>
       <td class="c">있다</td>
-      <td class="c">27곳</td>
+      <td class="c">28곳</td>
       <td class="c">2026-08-18<span class="dim"> · 1일</span></td>
     </tr>
 <tr>
@@ -635,11 +638,11 @@
     </tr></tbody></table>
     
 <div class="hist"><div class="hb"><div class="hb-bar" style="height:84px;background:#D1D2D4"></div>
-      <div class="hb-v">67</div><div class="hb-k">0건</div></div><div class="hb"><div class="hb-bar" style="height:35.1044776119403px;background:#D1D2D4"></div>
-      <div class="hb-v">28</div><div class="hb-k">1</div></div><div class="hb"><div class="hb-bar" style="height:20.059701492537314px;background:#D1D2D4"></div>
-      <div class="hb-v">16</div><div class="hb-k">2</div></div><div class="hb"><div class="hb-bar" style="height:8.776119402985074px;background:#D1D2D4"></div>
-      <div class="hb-v">7</div><div class="hb-k">3</div></div><div class="hb"><div class="hb-bar" style="height:10.029850746268657px;background:#D1D2D4"></div>
-      <div class="hb-v">8</div><div class="hb-k">4</div></div><div class="hb"><div class="hb-bar" style="height:7.522388059701492px;background:#E8543F"></div>
+      <div class="hb-v">68</div><div class="hb-k">0건</div></div><div class="hb"><div class="hb-bar" style="height:34.588235294117645px;background:#D1D2D4"></div>
+      <div class="hb-v">28</div><div class="hb-k">1</div></div><div class="hb"><div class="hb-bar" style="height:19.764705882352942px;background:#D1D2D4"></div>
+      <div class="hb-v">16</div><div class="hb-k">2</div></div><div class="hb"><div class="hb-bar" style="height:8.647058823529411px;background:#D1D2D4"></div>
+      <div class="hb-v">7</div><div class="hb-k">3</div></div><div class="hb"><div class="hb-bar" style="height:9.882352941176471px;background:#D1D2D4"></div>
+      <div class="hb-v">8</div><div class="hb-k">4</div></div><div class="hb"><div class="hb-bar" style="height:7.411764705882353px;background:#E8543F"></div>
       <div class="hb-v">6</div><div class="hb-k">5</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
       <div class="hb-v">2</div><div class="hb-k">7</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
       <div class="hb-v">1</div><div class="hb-k">8</div></div><div class="hb"><div class="hb-bar" style="height:3px;background:#E8543F"></div>
@@ -654,8 +657,8 @@
       <div class="hb-v">1</div><div class="hb-k">31</div></div></div>
   <p class="more">가로 = 그 도구가 마찰 장부에 인용된 건수 · 세로 = 도구 개수 · <b style="color:#E8543F">빨강 = 5건 이상</b>(「자꾸 깨진다」로 세는 구간).</p>
 
-<h2><span class="no">Ⅴ</span>🔴 맨몸이다 — <b>6건</b> <span class="dim">· 뜯기 전에 회귀부터</span></h2>
-<p class="lead">저장소 여기저기서 부르는데 회귀 231벌 어디에도 이름이 안 나온다. <b>뜯어도 아무 테스트가 안 빨개진다</b> — 지금 이게 도는지 기계가 모른다.</p>
+<h2><span class="no">Ⅴ</span>🔴 맨몸이다 — <b>7건</b> <span class="dim">· 뜯기 전에 회귀부터</span></h2>
+<p class="lead">저장소 여기저기서 부르는데 회귀 233벌 어디에도 이름이 안 나온다. <b>뜯어도 아무 테스트가 안 빨개진다</b> — 지금 이게 도는지 기계가 모른다.</p>
 <table class="t">
     <thead><tr><th>파일</th><th>깨진 이력</th><th>회귀</th><th>부르는 곳</th><th>마지막 손댐 <span class="dim">(참고 · UTC)</span></th></tr></thead>
     <tbody><tr>
@@ -694,6 +697,13 @@
       <td class="c">2026-08-17<span class="dim"> · 2일</span></td>
     </tr>
 <tr>
+      <td class="mono">tools/중성축_지면전파.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c">2곳</td>
+      <td class="c">2026-08-18<span class="dim"> · 1일</span></td>
+    </tr>
+<tr>
       <td class="mono">tools/펠트색굽기.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
@@ -707,18 +717,18 @@
 <table class="t">
     <thead><tr><th>파일</th><th>깨진 이력</th><th>회귀</th><th>부르는 곳</th><th>마지막 손댐 <span class="dim">(참고 · UTC)</span></th></tr></thead>
     <tbody><tr>
+      <td class="mono">tools/가드강등.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c"><span class="pill bad">0곳</span></td>
+      <td class="c">2026-08-19<span class="dim"> · 0일</span></td>
+    </tr>
+<tr>
       <td class="mono">tools/자립형굽기.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c"><span class="pill bad">0곳</span></td>
       <td class="c">2026-08-17<span class="dim"> · 2일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/중성축_지면전파.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-08-18<span class="dim"> · 1일</span></td>
     </tr></tbody></table>
     
 

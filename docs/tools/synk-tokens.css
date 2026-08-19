@@ -20,8 +20,8 @@
   --synk-kc-pink-2:#FF6BA8; /* Part 6 전용 */
   --synk-kc-sun:#FFD447; /* 모드 C 2도 잉크 — 글자 금지 */
   --synk-kc-cool-blue:#4E7CFF; /* Part 6 전용 */
-  --synk-ash:#8A8A8A; /* 보조 잉크 2(3번째 글자 층) — 바닥은 Graphite·Graphite 2·Graphite 3만 */
-  --synk-ash-2:#676767; /* 보조 잉크 2(3번째 글자 층) — 바닥은 Paper·Chalk·Chalk 2만 */
+  --synk-ash:#8C8C8C; /* 보조 잉크 2(3번째 글자 층) — 바닥은 Graphite·Graphite 2·Graphite 3만 */
+  --synk-ash-2:#666666; /* 보조 잉크 2(3번째 글자 층) — 바닥은 Paper·Chalk·Chalk 2만 */
   --synk-lime-2:#B8E836; /* 성장·획득의 가라앉힌 층 — 다크 위 글자·면(Graphite 4 8.30 이상) / 라이트 위는 장식 면만(Paper 1.37 — 의미를 혼자 지면 안 된다) · 전용 구역 제한은 Lime 과 같다(철칙 ④) */
   --synk-emerald:#13724A; /* 성장·획득의 라이트 면 — 라이트 전용 글자·면(Paper 5.69·Chalk 4.68·Chalk 2 4.94·Coral Wash 5.10 / Chalk 3 3.93·Coral Soft 4.24 는 표식만) · 다크 금지(Graphite 3.35 — 다크의 성장색은 Lime) · 이 색을 면으로 깔면 글자는 Chalk·Paper만(Ink 2.90 미달) */
   /* 시맨틱(라이트 기본) */
@@ -29,7 +29,7 @@
   --synk-잉크:#1B1B1A; /* = Ink */
   --synk-발표물본문잉크:#262626; /* = Graphite 3 */
   --synk-보조잉크:#373737; /* = Graphite 4 */
-  --synk-보조잉크2:#676767; /* = Ash 2 */
+  --synk-보조잉크2:#666666; /* = Ash 2 */
   --synk-신호_면:#FF6B5C; /* = Coral */
   --synk-신호_글자_대형:#E8543F; /* = Coral 3 */
   --synk-신호_바닥:#FFE9E4; /* = Coral Wash */
@@ -44,7 +44,7 @@
   --synk-바탕:#08090C; /* = Graphite */
   --synk-잉크:#E4E4E7; /* = Chalk */
   --synk-보조잉크:#D1D2D4; /* = Chalk 3 */
-  --synk-보조잉크2:#8A8A8A; /* = Ash */
+  --synk-보조잉크2:#8C8C8C; /* = Ash */
   --synk-신호:#FF6B5C; /* = Coral */
   --synk-신호_보조:#FF8877; /* = Coral 2 */
   --synk-눌림:#E8543F; /* = Coral 3 */
