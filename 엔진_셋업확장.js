@@ -385,7 +385,7 @@ function buildMonsterDetailCards() {
   let wrote = 0;
   out.forEach((v, i) => { if (v && String(cur[i][0]) !== v[0]) { cur[i][0] = v[0]; wrote++; } });
   if (wrote) ct.getRange(2, col, n, 1).setValues(cur);
-  Logger.log('상세 카드: 갱신 ' + wrote + '건 (몬스터 ' + mons.length + '·보스류 ' + data.filter(r => r[1] === 'boss' || r[1] === 'worldboss').length + ') — 상세카드=' + col + '열');
+  Logger.log('상세 카드: 갱신 ' + wrote + '건 (캐릭터 ' + mons.length + '·보스류 ' + data.filter(r => r[1] === 'boss' || r[1] === 'worldboss').length + ') — 상세카드=' + col + '열');
   return '상세 카드 갱신 ' + wrote + '건';
 }
 
@@ -484,21 +484,21 @@ function seedDemoData() {
   at.getRange(at.getLastRow() + 1, 1, atRows.length, 4).setValues(atRows);
   L.push('✓ attendance: ' + atRows.length + '행(스트릭·미출석·보드 시나리오)');
 
-  // ④ point_logs — 지난달(시상 재료)+이번달(랭킹·왕관·레이드 재료). id 'PLD' 접두(PL 채번과 무충돌)
+  // ④ point_logs — 지난달(시상 재료)+이번달(랭킹·도전·성장·레이드 재료). id 'PLD' 접두(PL 채번과 무충돌)
   let seq = 0;
   const plRows = [];
   const pushPl = (sid, pts, rs, by, d) => { const dd = (d instanceof Date && d.getHours() === 0) ? new Date(d.getTime() + 15 * 3600000) : d; plRows.push(['PLD' + (++seq), sid, pts, rs, by, dd, Utilities.formatDate(dd, tz, 'yyyy-MM')]); }; // [v9.51] 7열만 기록 — 라이브 8열은 Glide 🔒 Row ID(충돌 지뢰). 태그는 사유 접미('칭찬·태그') 방식
   const T = '김재헌';
-  // 지난달: 01 챔피언(왕관 몰림 — 편중 시연)·07 숙제왕
+  // 지난달: 01 챔피언(인정 몰림 — 편중 시연)·07 숙제왕
   for (let i = 0; i < 8; i++) pushPl('DEMO-01', 10, '숙제완료', T, day(28 + i * 0.9 | 0));
-  pushPl('DEMO-01', 10, '오늘의 MVP', T, day(30)); pushPl('DEMO-01', 10, '오늘의 MVP', T, day(26));
-  pushPl('DEMO-01', 10, '오늘의 시냅스', T, day(33));
+  pushPl('DEMO-01', 10, '오늘의 도전', T, day(30)); pushPl('DEMO-01', 10, '오늘의 도전', T, day(26));
+  pushPl('DEMO-01', 10, '오늘의 성장', T, day(33));
   for (let i = 0; i < 9; i++) pushPl('DEMO-07', 10, '숙제완료', T, day(27 + (i * 0.8 | 0)));
-  pushPl('DEMO-02', 10, '숙제완료', T, day(29)); pushPl('DEMO-02', 10, '오늘의 시냅스', T, day(27));
+  pushPl('DEMO-02', 10, '숙제완료', T, day(29)); pushPl('DEMO-02', 10, '오늘의 성장', T, day(27));
   pushPl('DEMO-08', 10, '숙제완료', T, day(28)); // [검증 반영] DEMO-03 지난달 기록 0 — 정산·칭호 변수 원천 차단
   // 이번달: 진행 중 스토리 — 03 진화 임박(95P대), 04 무포인트(사각), 05 정지
   for (let i = 0; i < 6; i++) pushPl('DEMO-01', 10, '숙제완료', T, day(2 + i * 2));
-  pushPl('DEMO-01', 10, '오늘의 MVP', T, day(0)); // 오늘 왕관 — 축하 배너·알림 시연
+  pushPl('DEMO-01', 10, '오늘의 도전', T, day(0)); // 오늘 도전 — 축하 배너·알림 시연
   pushPl('DEMO-01', 3, '칭찬·집중력', T, day(1)); pushPl('DEMO-02', 3, '칭찬·친구도움', T, day(4)); // [v9.51] 💝 '크루의 눈' 시연 재료 — 태그=사유 접미
   for (let i = 0; i < 5; i++) pushPl('DEMO-02', 10, '숙제완료', T, day(3 + i * 3));
   for (let i = 0; i < 9; i++) pushPl('DEMO-03', 10, '숙제완료', T, day(1 + i * 2)); // [검증 반영] 6월 기록·출석·생일 전부 0인 설계라 90+5=95P '고정' → 진화까지 5P(임박 브리핑·한마디 확정 발화)
@@ -510,7 +510,7 @@ function seedDemoData() {
   pushPl('DEMO-08', -40, '스토어·싱크 스티커', '에르덴', day(4)); // 구매 이력(잔액 차감 시연)
   const pl = ss.getSheetByName('point_logs');
   pl.getRange(pl.getLastRow() + 1, 1, plRows.length, 7).setValues(plRows); // [v9.51] 7열 — 8열(🔒 Row ID) 침범 금지
-  L.push('✓ point_logs: ' + plRows.length + '행(시상·왕관·구매·편중 시나리오)');
+  L.push('✓ point_logs: ' + plRows.length + '행(시상·도전·성장·구매·편중 시나리오)');
 
   // ⑤ mastery_log — 01 게이트 통과(G3 9/12)·03 게이트 대기 직전 세팅
   const ml = ensureSheet(ss, 'mastery_log', MASTERY_LOG_HEADERS);
@@ -651,7 +651,7 @@ function runSeedChain_(ss, st, tz, L, t0, startIdx) {
   { const gp = getState(st, '데모시드_체인'); if (gp.row > 0) st.deleteRow(gp.row); }
   clearContinue_('seedDemoData');
   const rep = '🎭 데모 시드 완료 — 앱에서 8명의 크루가 살아 움직입니다\n' + L.join('\n') +
-    '\n\n확인: 학생(DEMO-01 바야르=에이스·02 사라=오늘 생일·03 테무진=진화까지 5P 임박) · 강사(데모정규반 브리핑·왕관밸런스) · 원장(레이더 🔴 냠카·케어사각 오윤아·계기판·시상 메일)' +
+    '\n\n확인: 학생(DEMO-01 바야르=에이스·02 사라=오늘 생일·03 테무진=진화까지 5P 임박) · 강사(데모정규반 브리핑·기회밸런스) · 원장(레이더 🔴 냠카·케어사각 오윤아·계기판·시상 메일)' +
     '\n격파 시연: demoRaidClearNow() · 상담→앱 검증: seedConsultDemo() · 제거: clearDemoData() 1회(⚠ 월말 전 필수).';
   Logger.log(rep);
   return rep;
@@ -936,7 +936,7 @@ function bootstrapSynk() {
   sheetSkeleton_().forEach(k => ensureSheet(ss, k[0], k[1]));
   const steps = [
     ['시간표·반 구조', setupSchedule], ['스토어', setupStore],
-    ['몬스터 7', setupMonsters], ['보스 12 + 대군주', setupBosses], ['시즌 12', setupSeasons],
+    ['캐릭터 7', setupMonsters], ['보스 12 + 대군주', setupBosses], ['시즌 12', setupSeasons],
     ['브레인팁 30', setupBrainTips], ['학부모 라벨', setupParentLabels], ['크루 응원', setupTeacherCheers],
     ['연료 미션', setupFuelMissions], ['칭호 설화', setupTitleLore], ['워밍업 퀴즈', setupQuiz],
     ['숙제 210', setupHomework], ['학업 로그', setupAcademic], // [v9.18] 학업 성장 축 시트 재건 편입
@@ -1040,7 +1040,7 @@ function preflightGlide() {
 
   if (ensureBudget('전체 계산(calcAll)')) { try { calcAll(); ok('전체 계산 1회(calcAll) — profiles 카드열·class_stats 9~13열·오늘의숙제/퀴즈/팁/보스 키 갱신'); } catch (e) { warn('calcAll 실패: ' + e.message); } }
   if (ensureBudget('강사 지표')) { try { calcTeacherStats(); ok('강사 지표 갱신(teacher_stats 8열 정규화)'); } catch (e) { warn('calcTeacherStats 실패: ' + e.message); } }
-  if (ensureBudget('몬스터 상세 카드')) { try { buildMonsterDetailCards(); ok('몬스터·보스 상세 카드(contents 상세카드 열) — 숨쉬는 단계색 카드'); } catch (e) { warn('상세 카드 실패: ' + e.message); } }
+  if (ensureBudget('캐릭터 상세 카드')) { try { buildMonsterDetailCards(); ok('캐릭터·보스 상세 카드(contents 상세카드 열) — 숨쉬는 단계색 카드'); } catch (e) { warn('상세 카드 실패: ' + e.message); } }
 
   // 1) app_state 중복 키 정리 — 같은 key 2행+면 첫 행만 유지(getState가 첫 행만 읽어 뒷행은 죽은 데이터.
   //    라이브 실측(2026-07-18): '상담폼ID' 2행 존재 → 뒷행이 혼동 유발)
@@ -1459,7 +1459,7 @@ function weeklyJobs() {    // 매주 월 07시
   else Logger.log('주간 통합 리포트: 쿼터 부족으로 미발송');
 
   safeRun('syncToNotion', syncToNotion_); // [v9.21] 앱→노션 크루 DB 동기화 (NOTION_TOKEN 없으면 자동 스킵)
-  safeRun('calcTeacherStats', calcTeacherStats); // [v9.41·자동화] 강사 지표(케어지수·왕관편중) 주간 자동 갱신 — 월 1회(monthlyReport)만 갱신돼 원장 뷰가 한 달 낡던 것 해소(멱등·전월 왕관 기준이라 주중 재실행 무해)
+  safeRun('calcTeacherStats', calcTeacherStats); // [v9.41·자동화] 강사 지표(케어지수·인정편중) 주간 자동 갱신 — 월 1회(monthlyReport)만 갱신돼 원장 뷰가 한 달 낡던 것 해소(멱등·전월 왕관 기준이라 주중 재실행 무해)
   safeRun('systemManifest', buildSystemManifest); // [v9.37] 주간 실측 스냅샷 — 시트·콘텐츠·트리거·의존성 드리프트를 system_manifest 시트에 갱신
   // [v7.0] pruneAppState 제거 — 인자(ss, 월)가 필요한 archiveMonthly 내부 헬퍼였음 (무인자 호출 시 매주 실패)
 }
