@@ -223,8 +223,8 @@ function 부품바탕() {
     const 토큰 = require('node:fs').readFileSync(
       require('node:path').join(__dirname, '..', '..', 'docs', '디자인_토큰.json'), 'utf8');
     const 색 = JSON.parse(토큰)['색'] || {};
-    _바탕캐시 = 색파싱(색['Graphite 2'] || 색['Graphite2'] || '#131A32');
-  } catch { _바탕캐시 = 색파싱('#131A32'); }
+    _바탕캐시 = 색파싱(색['Graphite 2'] || 색['Graphite2'] || '#1D1D1C');
+  } catch { _바탕캐시 = 색파싱('#1D1D1C'); }
   return _바탕캐시;
 }
 

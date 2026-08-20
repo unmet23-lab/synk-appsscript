@@ -31,7 +31,7 @@
  *      가지도 로컬에 남는다 — 즉 이 도구가 죽는 방향은 「PR 이 안 생긴다」(=오늘 동작)지
  *      「작업이 사라진다」가 아니다.
  *   ② `--훅` 은 10분 스로틀이라 **방금 연 PR 이 이번 세션에 안 뜰 수 있다.** 그래서 뜰 때
- *      「몇 분 전 기준」인지 함께 낸다(작업본소유자의 fetch 스로틀과 같은 규칙 · #Q95).
+ *      「몇 분 전 기준」인지 함께 낸다(#Q95 — 낡은 기준을 조용히 내지 않는다).
  *   ③ 머지는 **`--merge` 고정이다. 절대 squash 하지 않는다** — squash 는 커밋마다 박힌
  *      `Session-Id` 트레일러를 한 줄로 뭉개고, 이 저장소는 커밋 주인을 그 트레일러로만
  *      가른다(F041). 주인을 못 가르면 F073 이 되살아난다.
@@ -60,7 +60,7 @@ const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트
 // 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
 const 보드id = require('../.claude/hooks/lib/board-id.js');
 
-/** 스로틀 간격(분). 0 = 끄기(항상 조회). 기본 10분 — 작업본소유자의 fetch 스로틀과 같은 값. */
+/** 스로틀 간격(분). 0 = 끄기(항상 조회). 기본 10분. */
 const 신선_분 = Number(process.env.SYNK_PR_LIST_MIN ?? 10);
 
 /**
@@ -221,7 +221,7 @@ function 열기(제목) {
   if (앞선.성공 && 앞선.출력 === '0') {
     죽기(
       '이 가지에 커밋이 0건이다 — 커밋 0 인 PR 은 GitHub 이 거절한다.',
-      '보드 선언을 먼저 커밋한다: git add -- docs/_ops/보드/<지문>.md && git commit -m "docs: 보드 …" -- docs/_ops/보드/<지문>.md',
+      '먼저 작업 커밋을 하나 만든다 — 선언만 하는 자리는 이제 없다(위임 2단계). 정 급하면: git commit --allow-empty -m "chore: 트랙 열기 — <제목>"',
     );
   }
 
@@ -247,7 +247,7 @@ function 열기(제목) {
     '이 PR 은 **리뷰 게이트가 아니라 작업 목록**이다 — 승인 대기 0, 내가 열고 내가 머지한다.',
     '열려 있는 동안 = 이 트랙이 진행 중이라는 뜻이고, 세션이 죽어도 이 줄은 남는다(F403).',
     '',
-    `보드 정본: \`docs/_ops/보드/${지문() || '<지문>'}.md\``,
+    '**다음 할 일**: (여기에 1줄 — 이 PR 본문이 이 트랙의 유일한 선언이다 · 위임 2단계)',
     '',
     '닫기: `node tools/작업가지.js --닫기`',
   ].join('\n');
@@ -368,14 +368,36 @@ function 안밀린것(뿌리 = ROOT) {
   return { 수: n, 최고령_시간 };
 }
 
+/** 원격 기준(`FETCH_HEAD`)이 몇 분 낡았나. 한 번도 안 땄으면 `null` — 「0분」이 아니다(F207).
+ *
+ * 🔑 2026-08-20 **이사** — 원래 `tools/작업본소유자.js` 에 살았다. 보드 층을 걷을 때 그 도구에서
+ *   살아 있는 소비자가 이 한 곳뿐이라 여기로 옮겼다(사본이 아니라 이사 · 하네스 위임 2단계).
+ *   이사하며 `gitdir:` 을 정규식 대신 문자열로 읽는다 — `.git` 파일은 그 한 줄뿐이다.
+ * ⚠ 워크트리는 `.git` 이 **파일**이다 — `gitdir:` 을 따라가고 `commondir` 로 본체를 찾는다.
+ *   안 따라가면 워크트리에서 영원히 `null` 이고, 그 침묵은 「안 낡았다」와 모양이 같다. */
+function fetch나이_분(뿌리) {
+  try {
+    let g = path.join(뿌리, '.git');
+    if (fs.statSync(g).isFile()) {
+      const 원 = String(fs.readFileSync(g, 'utf8')).trim();
+      if (!원.startsWith('gitdir:')) return null;
+      g = path.resolve(뿌리, 원.slice('gitdir:'.length).trim());
+      const 공용 = path.join(g, 'commondir');                    // 워크트리 → 본체 .git 주소
+      if (fs.existsSync(공용)) g = path.resolve(g, String(fs.readFileSync(공용, 'utf8')).trim());
+    }
+    const f = path.join(g, 'FETCH_HEAD');
+    if (!fs.existsSync(f)) return null;                          // 한 번도 안 땄다 = 모름
+    return (Date.now() - fs.statSync(f).mtimeMs) / 60000;
+  } catch (_) { return null; }
+}
+
 /**
  * 밀림 경보 — F502. 커밋은 다들 지켰는데 **그 한 층 위가 비어 있던** 자리다.
  *
  * ⚠ **원격 기준이 낡았으면 이 수는 부풀려진다** — `origin/master` 는 로컬 추적 ref 라
  *   fetch 를 안 했으면 실제보다 뒤처져 있고, 그러면 안 밀린 것을 실제보다 «많게» 센다.
  *   틀리는 방향이 「더 자주 운다」라 눈이 어두워지지는 않지만, 그렇다고 **모른 채 단정하지는
- *   않는다** — 기준이 얼마나 낡았는지를 함께 낸다(같은 SessionStart 에서 작업본소유자가
- *   10분 스로틀로 fetch 하므로 보통은 신선하다).
+ *   않는다** — 기준이 얼마나 낡았는지를 함께 낸다(`fetch나이_분` · 바로 위).
  */
 function 밀림경보(뿌리 = ROOT) {
   const { 수, 최고령_시간 } = 안밀린것(뿌리);
@@ -405,8 +427,7 @@ function 밀림경보(뿌리 = ROOT) {
   console.log(`📤 **안 밀린 커밋 ${수}건** — 이 노트북에만 있다(문턱 ${안밀린_문턱}건).`);
   if (나이) console.log(`   가장 오래된 것이 ${나이}째 origin 에 못 닿았다.`);
 
-  let 기준 = null;
-  try { 기준 = require('./작업본소유자.js').fetch나이_분(ROOT); } catch (_) { /* 못 읽으면 안 적는다 */ }
+  const 기준 = fetch나이_분(ROOT);
   if (기준 !== null && 기준 > 30) {
     console.log(`   ⚠ 원격 기준이 ${Math.round(기준)}분 낡았다 — 이 수는 부풀려졌을 수 있다(fetch 뒤 다시 본다).`);
   }

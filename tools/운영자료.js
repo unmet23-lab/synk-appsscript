@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* 운영자료 내보내기 — 유호님이 눈으로 보는 산출물을 바탕화면 「SYNK 코어」·「SYNK LAB」로 보낸다.
+/* 운영자료 내보내기 — 유호님이 눈으로 보는 산출물을 바탕화면 「SYNK 방향」·「SYNK 자산」으로 보낸다.
  *
  * 유호 상시 지시(2026-08-09): "앞으로 뭐 만들면 여기로 다 넣어줘. 참고파일 등등 전부."
  * 경계 = 유호님이 보는 것만. 코드·테스트·훅·계약 JSON 은 repo 가 정본이라 넣지 않는다.
@@ -21,7 +21,7 @@
  *   node tools/운영자료.js --링크화                   사본을 같은 번호의 바로가기로 바꾼다(낡을 것을 0으로)
  *   node tools/운영자료.js --링크화 <사본> --정본 <경로>  이름이 갈려 자동으로 못 잡는 한 건을 짝을 대고 바꾼다
  *   node tools/운영자료.js --옛판 [--집행]            같은 계열의 옛 판을 걷는다(기본 드라이런)
- *   위 전부에 `--갈래 코어|운영|홍보` 를 붙일 수 있다(기본 = 운영 · `--지금상태` 는 늘 셋을 다 본다).
+ *   위 전부에 `--갈래 방향|브랜드|사업|홍보` 를 붙일 수 있다(기본 = 사업 · `--지금상태` 는 늘 넷을 다 본다).
  *
  * ②의 뒷문 — `--사본`으로 들어간 것은 바로가기가 아니라서 정본을 고쳐도 안 따라간다.
  * 2026-08-09 에 실제로 벌어졌다(정본의 주말가를 고쳤는데 유호님 화면은 옛값 그대로).
@@ -43,7 +43,7 @@ const ROOT = path.resolve(__dirname, '..');
  *
  * **뿌리가 둘이다.** 「SYNK 운영자료」 한 채 아래 넷(철학·정본·운영·엔진)이던 것을
  * 바탕화면에 바로 서는 두 채로 갈랐다 — 유호님 문장 그대로: *"철학과 엔진이 가장 중요하다"*.
- *   · `SYNK 코어` = 우리가 «만드는 것»(철학·이해대장·브랜드킷·엔진 소개서). 열 일이 가장 잦고
+ *   · `SYNK 방향` = 유호님이 «판단하는 것»(철학·확정·이해대장·작동대장). 열 일이 가장 잦고
  *     가장 안 낡아야 하는 것들이라 평평하게 둔다 — 하위 폴더를 파면 한 번 더 눌러야 한다.
  *   · `SYNK LAB` = 학원을 «굴리는 것». 그 안이 둘로 갈린다(유호 픽 08-17 ㉮):
  *       `운영` = 규칙 + 실무(급여·반편성·커리큘럼·재무·상표·지분) — 바뀌면 안 되는 것과 그날 보는 것을
@@ -58,20 +58,26 @@ const ROOT = path.resolve(__dirname, '..');
  *    ⚠읽는 쪽(`이름정리`·`이미있나`·`짝찾기`)의 `^\d{2}_` 벗기기는 **남긴다** — 「보관」으로 내린 옛
  *    파일과 남의 손이 붙인 번호를 관대하게 읽어야 한다. 엄격한 것은 쓰는 쪽 하나면 된다.
  *
- * 키(코어·운영·홍보)는 명령줄에서 쓰는 짧은 이름이고, 값은 **바탕화면 기준 상대 경로**다
- * (뿌리가 둘이라 폴더 이름 한 토막으로는 자리를 못 짚는다 — `갈래폴더`의 path.join 이 삼킨다). */
+ * 키(방향·브랜드·사업·홍보)는 명령줄에서 쓰는 짧은 이름이고, 값은 **바탕화면 기준 상대 경로**다
+ * (뿌리가 둘이라 폴더 이름 한 토막으로는 자리를 못 짚는다 — `갈래폴더`의 path.join 이 삼킨다).
+ * 🔑 2026-08-20 재편(유호 지시 「방향이랑 자산으로 나눠서 세분화」) — 4층 체계(조율·방향·자산·안전)
+ *   중 유호님이 직접 확인·수정하는 두 층이 폴더가 됐다: 「SYNK 방향」(판단 층 — 철학·확정·계기판)과
+ *   「SYNK 자산」(실물 층 — 브랜드·엔진 / 사업·운영 / 홍보·콘텐츠). 옛 «SYNK 코어·SYNK LAB» 두 채는
+ *   이 재편으로 걷었다. 옛 갈래 이름(코어·운영)을 별칭으로 남기지 않는다 — 남기면 그 이름이
+ *   가리키던 옛 채가 «있는 것처럼» 읽힌다(낡은 것은 남기지 않는다). */
 const 갈래들 = Object.freeze({
-  코어: 'SYNK 코어',
-  운영: path.join('SYNK LAB', '운영'),
-  홍보: path.join('SYNK LAB', '홍보·시안'),
+  방향: 'SYNK 방향',
+  브랜드: path.join('SYNK 자산', '브랜드·엔진'),
+  사업: path.join('SYNK 자산', '사업·운영'),
+  홍보: path.join('SYNK 자산', '홍보·콘텐츠'),
 });
-const 기본갈래 = '운영';
+const 기본갈래 = '사업';
 
-/** `_지금상태.html` 이 서는 자리. 뿌리가 둘이라 「먼저 여는 폴더」에 한 장만 둔다 —
+/** `_지금상태.html` 이 서는 자리. 「먼저 여는 폴더」에 한 장만 둔다 —
  *  뿌리마다 굽게 두면 유호님이 두 장을 열어야 하고, **안 연 한 장이 낡음의 자리**가 된다
  *  (그게 열람용 HTML 4벌을 걷어낸 이유다 · 2026-08-14). 바탕화면 최상위엔 두지 않는다:
  *  거기는 유호님이 배치한 자리라 우리 파생물이 끼면 그 자체가 어수선함이다. */
-const 상태파일 = path.join('SYNK 코어', '_지금상태.html');
+const 상태파일 = path.join('SYNK 방향', '_지금상태.html');
 
 /** 갈래 이름을 폴더 절대경로로. 모르는 갈래는 **조용히 기본으로 떨어뜨리지 않고** 던진다
  *  — 오타 하나가 엉뚱한 갈래에 파일을 쌓으면 유호님 화면에서만 드러난다. */
@@ -688,7 +694,7 @@ function 상태줄들(폴더, 후보) {
 const 날짜글 = (d) => (d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : '—');
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-/** `_지금상태.html` 을 「SYNK 코어」에 굽는다(`상태파일`) — 다른 파일보다 먼저 눈에 들어오게
+/** `_지금상태.html` 을 「SYNK 방향」에 굽는다(`상태파일`) — 다른 파일보다 먼저 눈에 들어오게
  *  밑줄로 시작한다. 뿌리(=바탕화면)에 바로 굽지 않는 이유는 `상태파일` 주석에 있다. */
 function 지금상태빌드(뿌리) {
   const 후보 = 정본후보();
@@ -711,20 +717,20 @@ function 지금상태빌드(뿌리) {
 
   const html = `<!doctype html><html lang="ko"><meta charset="utf-8">
 <title>SYNK 자료 — 지금 상태</title><style>
-body{background:#FAFAF9;color:#1B1B1A;font-family:'SUIT','Inter Tight','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+body{background:#FBF7F0;color:#2B2320;font-family:'SUIT','Inter Tight','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
      line-height:1.7;max-width:1040px;margin:0 auto;padding:44px 26px;word-break:keep-all;}
 header{background:#08090C;color:#E4E4E7;margin:-44px -26px 32px;padding:32px 26px 24px;}
 header h1{margin:0;font-size:1.45em;color:#E4E4E7;}
 header .cap{color:#8C8C8C;font-size:.86em;margin-top:6px;}
-h2{font-size:1.1em;margin:2em 0 .5em;padding-bottom:.25em;border-bottom:3px solid #FF6B5C;}
+h2{font-size:1.1em;margin:2em 0 .5em;padding-bottom:.25em;border-bottom:3px solid #F96859;}
 table{border-collapse:collapse;width:100%;font-size:.87em;}
 th,td{border:1px solid #373737;padding:.4em .55em;text-align:left;vertical-align:top;}
 th{background:#08090C;color:#E4E4E7;font-weight:600;}
 td.s{white-space:nowrap;}td.p{font-size:.92em;color:#666666;}
-/* 🔴 흐린 회색은 #666666 다 — #8C8C8C 는 종이(#FAFAF9) 위에서 대비 2.86 이라 린트가 문다.
+/* 🔴 흐린 회색은 #666666 다 — #8C8C8C 는 종이(#FBF7F0) 위에서 대비 2.86 이라 린트가 문다.
  *    #8C8C8C 는 남색 띠(#08090C) 위에서만 쓴다(header .cap). */
 .q{color:#666666;}
-.tally{background:#FFE9E4;border-left:4px solid #FF6B5C;padding:.7em 1em;margin:1.2em 0;font-size:.93em;}
+.tally{background:#FEF0E9;border-left:4px solid #F96859;padding:.7em 1em;margin:1.2em 0;font-size:.93em;}
 footer{margin-top:2.6em;color:#666666;font-size:.8em;}
 </style>
 <header><h1>SYNK 자료 — 지금 상태</h1>
@@ -956,7 +962,7 @@ function 파일인자(인자) {
 function main(argv) {
   const 인자 = argv.slice(2);
   const { 경로: 바탕, 폴백 } = 바탕화면();
-  /* 뿌리 = 바탕화면 그 자체다(갈래 값이 「SYNK 코어」·「SYNK LAB\운영」처럼 첫 토막을 들고 있다).
+  /* 뿌리 = 바탕화면 그 자체다(갈래 값이 「SYNK 방향」·「SYNK 자산\사업·운영」처럼 첫 토막을 들고 있다).
    * ⚠그래서 이 변수를 **그대로 목록읽기·옛판정리에 넘기면 안 된다** — 유호님 바탕화면 전체를
    *  우리 자료로 읽게 된다. 아래 통로는 전부 `갈래폴더(폴더, …)` 를 거친다. */
   const 폴더 = 바탕;
@@ -1006,7 +1012,7 @@ function main(argv) {
     }
     console.log(`\n■ ${r.항목.length}건 = 닿음 ${r.항목.length - 안닿음.length} + 안닿음 ${안닿음.length}`);
     if (안닿음.length) {
-      console.log(`\n보내기: node tools/운영자료.js ${안닿음.map((x) => `"${x.파일}"`).join(' ')} --갈래 운영`);
+      console.log(`\n보내기: node tools/운영자료.js ${안닿음.map((x) => `"${x.파일}"`).join(' ')} --갈래 사업`);
     }
     return 0;
   }
@@ -1028,9 +1034,9 @@ function main(argv) {
       }
       if (!항목.length) console.log('  (비었거나 아직 없다)');
     }
-    console.log(`\n${폴더}  — 전체 ${합}건 (뿌리 둘: 「SYNK 코어」·「SYNK LAB」)`);
+    console.log(`\n${폴더}  — 전체 ${합}건 (뿌리 둘: 「SYNK 방향」·「SYNK 자산」)`);
     if (인자.length === 0) {
-      console.log('\n쓰기: node tools/운영자료.js <파일...> [--갈래 코어|운영|홍보] [--이름 "표시 이름"]');
+      console.log('\n쓰기: node tools/운영자료.js <파일...> [--갈래 방향|브랜드|사업|홍보] [--이름 "표시 이름"]');
     }
     return 0;
   }

@@ -38,13 +38,33 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { 저장소들 } = require('./lib/보드낡음.js');
+const 형제저장소 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '형제저장소.js'));
 
 /* ROOT 는 **이 파일이 속한 저장소**다 — `CLAUDE_PROJECT_DIR` 을 얹지 않는다(회귀 `tests/게이트뿌리`).
  * 이 검사기는 pre-commit 이 `$ROOT/tools/인용검사.js --스테이징` 으로 부르는데, 그 변수가 다른
  * 저장소를 가리키면 **옆 저장소의 스테이징**을 재고 「새 인용 0건」으로 통과한다 — 워크트리는
  * 이 저장소가 실제로 쓰는 층이다(F403). 옆 게이트에서 같은 모양이 실측돼 여기까지 같이 닫았다. */
 const ROOT = path.resolve(__dirname, '..');
+
+/** 대조할 저장소들. 형제가 없으면 **목록에서 빠진다** — 부재는 「없다」가 아니라 `못잼` 이다.
+ *
+ * 🔑 `as` 는 **워크트리 그대로** 둔다 — 그 세션이 지금 고치는 판이 거기다. 주저장소로 밀면
+ *   아직 커밋 안 된 새 파일이 「어디에도 없다」로 적색이 된다(고치려던 것보다 나쁜 방향).
+ *   갈라지는 건 형제 쪽뿐이라 그 한 축만 `형제저장소` 통로에 맡긴다.
+ * ⚠ 존재 판정은 여기 남는다 — 이 축이 묻는 것은 「디렉터리로 열리나」다(저장소인지까지는 안 본다).
+ *   통로가 답하는 것은 **자리**뿐이다(그 파일 머리말 ⚠).
+ * 🔑 2026-08-20 **이사** — 원래 `tools/lib/보드낡음.js` 에 살았다. 보드 층을 걷을 때 이 함수만
+ *   살아 있어 유일한 소비자인 여기로 옮겼다(사본이 아니라 이사 · 하네스 위임 2단계).
+ */
+function 저장소들(root) {
+  const as = path.resolve(String(root || '.'));
+  const 형제 = 형제저장소.형제경로(as);
+  const out = [{ 이름: 'as', 뿌리: as }];
+  let 있나 = false;
+  try { 있나 = fs.statSync(형제).isDirectory(); } catch (_) { 있나 = false; }
+  if (있나) out.push({ 이름: 'talk', 뿌리: 형제 });
+  return { 목록: out, 형제있음: 있나 };
+}
 
 /* 인용으로 읽을 확장자. 좁게 연다 — 새는 방향이 「통과」인 자리가 아니라 「거짓 적색」인 자리라
  * 모르는 확장자는 조용히 넘긴다(`.mn` 같은 낱말이 파일로 읽히면 소음만 는다). */
@@ -373,10 +393,10 @@ function 문서판정(본문, 풀기, 읽기) {
 /* 역사 문서 — 「그때 그랬다」의 기록이라 지금 줄번호와 안 맞는 것이 **정상**이다.
  * 🔑 목록은 여기 하나에서 파생시킨다(둘에 적으면 갈린다 · 가드 맹점 ④). */
 const 면제 = [
-  'docs/_ops/심문결과/', 'docs/_ops/보드/', 'docs/_ops/인계문/', 'docs/_ops/장부/',
+  'docs/_ops/심문결과/', 'docs/_ops/장부/',
   'docs/_archive/', 'docs/노션_대조_', 'docs/_ops/검수결과/',
-  'docs/세션보드_아카이브.md', 'docs/지침_이력.md', 'docs/_ops/마찰신호.md',
-  'docs/_ops/인계문.md', 'docs/COWORK_지침.md', 'docs/버전_이력.md',
+  'docs/지침_이력.md', 'docs/_ops/마찰신호.md',
+  'docs/COWORK_지침.md', 'docs/버전_이력.md',
 ];
 /* 항목이 `.md` 로 끝나면 **그 파일 하나**, 아니면 **접두**(폴더·이름 앞머리)로 읽는다. */
 const 면제인가 = (rel) => 면제.some((p) => (p.endsWith('.md') ? rel === p : rel.startsWith(p)));

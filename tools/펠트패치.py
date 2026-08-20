@@ -224,14 +224,32 @@ def 이음매비(arr):
     return float(감싸기 / max(내부, 1e-9))
 
 
-def 코어색(arr):
-    """색갈이.코어 와 «같은 정의» — 채도 충만 표본의 40~70 백분위 평균(하이라이트·최암부 제외)."""
+def 코어색(arr, 무채폴백=False):
+    """색갈이.코어 와 «같은 정의» — 채도 충만 표본의 40~70 백분위 평균(하이라이트·최암부 제외).
+
+    🔴 **무채 천은 이 자로 못 잰다** — 유채 픽셀이 «원리상» 0 이라 표본이 안 모인다.
+      2026-08-20 실측: 양모 밤 축(Stitch C*14.8 · Oat 6.1 · Stone 7.6 · Ink 4.7 · Ink Deep 0.7)과
+      기존 Paper·Chalk·Chalk3·Ash 가 전부 여기 걸린다(`역할` 표의 `#──────` 가 그 증거였고,
+      `도달` 은 아예 None 을 그대로 lab() 에 넘겨 **크래시**했다).
+    🔑 그래서 «없는 축»을 억지로 쓰지 않고 **축을 바꾼다**: 코어의 뜻은 「극단(하이라이트·최암부)을
+      뺀 가운데 띠」이고, 유채 천에서는 그것을 채도가 가르지만 무채 천에서는 **명도**가 가른다.
+      같은 40~70 백분위·같은 평균이라 정의는 하나로 유지된다.
+    ⚠ 기본값은 False 다 — 폴백을 기본으로 켜면 「유채 표본이 없다」는 사실이 조용히 사라진다.
+      부르는 쪽이 「무채도 재고 싶다」를 명시할 때만 연다.
+    """
     C = 채도배열(arr)
     m = C > 색갈이.C_충만
-    if m.sum() < 200:
+    if m.sum() >= 200:
+        표본 = [(float(c), tuple(int(v) for v in p)) for c, p in zip(C[m], arr[m])]
+        return 색갈이.코어(표본)
+    if not 무채폴백:
         return None
-    표본 = [(float(c), tuple(int(v) for v in p)) for c, p in zip(C[m], arr[m])]
-    return 색갈이.코어(표본)
+    L, _, _ = lab배열(arr)
+    평면, Lf = arr.reshape(-1, 3), L.reshape(-1)
+    차례 = np.argsort(Lf)
+    lo, hi = int(차례.size * 0.40), int(차례.size * 0.70)
+    띠 = 평면[차례[lo:hi]] if hi > lo else 평면
+    return tuple(float(x) for x in 띠.mean(axis=0))
 
 
 # ── 절단 ────────────────────────────────────────────────────────────────────
@@ -425,13 +443,19 @@ def 염색(a):
 # ── 자 ──────────────────────────────────────────────────────────────────────
 def 재기(arr, 이름, 목표=None, 기준결=None):
     코어 = 코어색(arr)
+    # 무채 천(양모 밤 축·Paper·Stone…)은 «유채 코어»가 원리상 없다 — 명도축으로 잰다(코어색 주석).
+    # 🔴 옛 판은 여기서 「잴 양모가 없다」로 **판정을 포기**했다: 그래서 무채 천 4벌은 구워도
+    #   ΔE 를 한 번도 못 재고 있었다(`역할` 표의 `#──────` 가 그 흔적). 못 재는 것과 없는 것은 다르다.
+    무채축 = 코어 is None
+    if 무채축:
+        코어 = 코어색(arr, 무채폴백=True)
     e, r = 결에너지(arr), 이음매비(arr)
     print(f'■ 자  {os.path.relpath(이름, 뿌리) if os.path.isabs(str(이름)) else 이름}'
           f'  ({arr.shape[1]}x{arr.shape[0]})')
     if 코어 is None:
-        print('   🔴 유채 표본 200 미만 — 잴 양모가 없다')
+        print('   🔴 잴 픽셀이 없다')
         return None
-    줄 = f'   코어 #{색갈이.hexs(코어)}'
+    줄 = f'   코어 #{색갈이.hexs(코어)}' + ('  ※명도축(유채 표본 없음 — 무채 천)' if 무채축 else '')
     d = None
     if 목표:
         d = 색갈이.de2000(색갈이.lab(코어), 색갈이.lab(색갈이.hex2rgb(목표)))
@@ -467,7 +491,10 @@ def 도달(a):
     for 이름, hexv in 과녁:
         로그 = 염색하기(base경로, 임시, hexv, 조용히=True, 무채=무채)
         out = np.asarray(Image.open(임시).convert('RGB'), dtype=np.uint8)
-        코어 = 코어색(out)
+        # 무채 과녁은 «명도축» 코어로 잰다(코어색 주석) — 안 그러면 None 이 lab() 에서 죽는다.
+        유채코어 = 코어색(out)
+        코어 = 유채코어 if 유채코어 is not None else 코어색(out, 무채폴백=True)
+        축 = '' if 유채코어 is not None else '※'      # ※ = 명도축으로 쟀다
         d = 색갈이.de2000(색갈이.lab(코어), 색갈이.lab(색갈이.hex2rgb(hexv)))
         보존 = 결에너지(out) / 기준결
         # 무릎에 걸린 비율은 «염색 통로가 스스로 찍는 숫자»를 그대로 읽는다 — 두 번 세지 않는다.
@@ -475,7 +502,7 @@ def 도달(a):
             if '무릎에 걸린 픽셀' in 로그 else '?'
         C = 색갈이.chroma(색갈이.hex2rgb(hexv))
         판정 = '✅' if (d <= 3.0 and 보존 >= 0.75) else ('🟡' if d <= 3.0 or 보존 >= 0.75 else '🔴')
-        print(f'   {이름:<10} {hexv.upper():<9} {C:>6.1f} {d:>7.2f} {보존*100:>6.1f}%'
+        print(f'   {이름:<10} {hexv.upper():<9} {C:>6.1f} {d:>6.2f}{축:<1} {보존*100:>6.1f}%'
               f' {무릎:>7}   {판정}')
         결과.append((이름, hexv, C, d, 보존, 판정))
     if os.path.exists(임시):
