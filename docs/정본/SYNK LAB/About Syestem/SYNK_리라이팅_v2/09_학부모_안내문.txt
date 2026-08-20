@@ -141,4 +141,4 @@ SYNK의 약속 — 합격은 기본으로 챙깁니다. 그리고 그 위에, �
   그리고 교실에서 마음을 만나는 진짜 선생님 한 명.
 SYNK LAB
 
-<!-- 파생: docs/정본/SYNK LAB/SYNK LAB 소개서.txt, docs/SYNK_철학.md@v1.0 -->
+<!-- 파생: docs/정본/SYNK LAB/SYNK LAB 소개서.txt, docs/SYNK_철학.md@v1.9 -->
