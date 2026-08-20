@@ -35,10 +35,15 @@ const loom훅 = require('./loom훅.js');
 const 뜯기정규식 = /\n?<style data-loom="[^"]*">[\s\S]*?<\/style>/g;
 
 const CSS캐시 = new Map();
-/** 프리셋 CSS 는 한 번만 만든다 — 지면 12벌을 도는 루프에서 매번 조립하면 그게 빌드 시간의 전부가 된다. */
-function css(지면) {
-  if (!CSS캐시.has(지면)) CSS캐시.set(지면, loom.css({ 지면 }));
-  return CSS캐시.get(지면);
+/** 프리셋 CSS 는 한 번만 만든다 — 지면 12벌을 도는 루프에서 매번 조립하면 그게 빌드 시간의 전부가 된다.
+ * 천쓸까 — 이 지면에 `.오브` 가 없으면 기본색 천 data URI(실측 +17.4KB)는 그리지도 않을 짐이다
+ * (실측 08-19: 이해대장·작동대장 `.오브` 0 인데 부품만 오버레이가 통째로 물었다). 오브 있는 지면만
+ * 기본천을 문다 — 조항 ⓘ 「지정 없는 펠트 = 기본색」은 **펠트가 있는 자리**의 규정이지,
+ * 펠트 없는 지면에 짐을 싣는 규정이 아니다. */
+function css(지면, 천쓸까 = true) {
+  const 키 = 천쓸까 ? 지면 : 지면 + '|맨';
+  if (!CSS캐시.has(키)) CSS캐시.set(키, loom.css(천쓸까 ? { 지면 } : { 지면, 천: null }));
+  return CSS캐시.get(키);
 }
 
 /**
@@ -130,7 +135,7 @@ function 강제얹기(html, 지면) {
   const 벗은판 = 뜯기(html);
   const 자리 = 끼울자리(벗은판);
   if (!자리) throw new Error('`</style>` 도 `</head>` 도 없다 — 지면 CSS 뒤에 둘 자리가 없다');
-  const 블록 = `\n<style data-loom="${지면}">\n${css(지면)}\n</style>`;
+  const 블록 = `\n<style data-loom="${지면}">\n${css(지면, 클래스있나(벗은판, '오브'))}\n</style>`;
   return 벗은판.slice(0, 자리.위치) + 블록 + 벗은판.slice(자리.위치);
 }
 
