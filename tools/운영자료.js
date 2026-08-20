@@ -717,20 +717,20 @@ function 지금상태빌드(뿌리) {
 
   const html = `<!doctype html><html lang="ko"><meta charset="utf-8">
 <title>SYNK 자료 — 지금 상태</title><style>
-body{background:#FAFAF9;color:#1B1B1A;font-family:'SUIT','Inter Tight','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+body{background:#FBF7F0;color:#2B2320;font-family:'SUIT','Inter Tight','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
      line-height:1.7;max-width:1040px;margin:0 auto;padding:44px 26px;word-break:keep-all;}
 header{background:#08090C;color:#E4E4E7;margin:-44px -26px 32px;padding:32px 26px 24px;}
 header h1{margin:0;font-size:1.45em;color:#E4E4E7;}
 header .cap{color:#8C8C8C;font-size:.86em;margin-top:6px;}
-h2{font-size:1.1em;margin:2em 0 .5em;padding-bottom:.25em;border-bottom:3px solid #FF6B5C;}
+h2{font-size:1.1em;margin:2em 0 .5em;padding-bottom:.25em;border-bottom:3px solid #F96859;}
 table{border-collapse:collapse;width:100%;font-size:.87em;}
 th,td{border:1px solid #373737;padding:.4em .55em;text-align:left;vertical-align:top;}
 th{background:#08090C;color:#E4E4E7;font-weight:600;}
 td.s{white-space:nowrap;}td.p{font-size:.92em;color:#666666;}
-/* 🔴 흐린 회색은 #666666 다 — #8C8C8C 는 종이(#FAFAF9) 위에서 대비 2.86 이라 린트가 문다.
+/* 🔴 흐린 회색은 #666666 다 — #8C8C8C 는 종이(#FBF7F0) 위에서 대비 2.86 이라 린트가 문다.
  *    #8C8C8C 는 남색 띠(#08090C) 위에서만 쓴다(header .cap). */
 .q{color:#666666;}
-.tally{background:#FFE9E4;border-left:4px solid #FF6B5C;padding:.7em 1em;margin:1.2em 0;font-size:.93em;}
+.tally{background:#FEF0E9;border-left:4px solid #F96859;padding:.7em 1em;margin:1.2em 0;font-size:.93em;}
 footer{margin-top:2.6em;color:#666666;font-size:.8em;}
 </style>
 <header><h1>SYNK 자료 — 지금 상태</h1>
@@ -1012,7 +1012,7 @@ function main(argv) {
     }
     console.log(`\n■ ${r.항목.length}건 = 닿음 ${r.항목.length - 안닿음.length} + 안닿음 ${안닿음.length}`);
     if (안닿음.length) {
-      console.log(`\n보내기: node tools/운영자료.js ${안닿음.map((x) => `"${x.파일}"`).join(' ')} --갈래 운영`);
+      console.log(`\n보내기: node tools/운영자료.js ${안닿음.map((x) => `"${x.파일}"`).join(' ')} --갈래 사업`);
     }
     return 0;
   }
@@ -1036,7 +1036,7 @@ function main(argv) {
     }
     console.log(`\n${폴더}  — 전체 ${합}건 (뿌리 둘: 「SYNK 방향」·「SYNK 자산」)`);
     if (인자.length === 0) {
-      console.log('\n쓰기: node tools/운영자료.js <파일...> [--갈래 코어|운영|홍보] [--이름 "표시 이름"]');
+      console.log('\n쓰기: node tools/운영자료.js <파일...> [--갈래 방향|브랜드|사업|홍보] [--이름 "표시 이름"]');
     }
     return 0;
   }
