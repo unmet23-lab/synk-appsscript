@@ -12,14 +12,36 @@ const REPO = 'C:/Users/q1212/Documents/SYNK-appsscript';
 const 출력 = path.join(REPO, 'docs/캐릭터/재질대조_0814');
 const 모델 = 'nano-banana-pro-preview';
 
-/* ⚠본체 참조는 «정본»이다 — `마스코트_렌더/본체.png`(08-13)는 비율 확정 전 판이라
- * 쓰면 긴 몸통이 나온다(08-14 실사고: 유호님이 「왜 예전 버전이냐」로 잡았다).
- * 정본 = 유호 확정 「③으로 통일」(비율 강 0.925 + 속수리) · `tools/마스코트정본.py` 산출. */
+/* ⛔ **글래시 슬롯은 체리와 함께 퇴역했다 (2026-08-19 · 유호 확정 「이제 아예 안쓸거야」).**
+ *   이 슬롯의 프롬프트는 문자 그대로 «translucent cherry-red jelly» 라, 체리를 접으면
+ *   슬롯 자체가 뜻을 잃는다. 참조 그림(`마스코트_정본/본체.png`)도 그때 함께 지웠다.
+ *   🔑 상수를 «현행 코랄»로 몰래 바꾸지 않는다 — 프롬프트는 체리를 부르는데 참조만 코랄이면
+ *     맞는 얼굴로 틀린 값이 나온다(그게 08-14 사고 F443 의 모양이었다).
+ *   ⇒ **부르면 소리 내어 죽는다.** 조용히 없는 파일을 읽어 흐린 오류를 내지 않는다.
+ *   되살리려면: 토큰 `색.마스코트._의상` 의 퇴역 조항부터 되돌리고, 자산을 git 이력에서 꺼낸다
+ *   (`git log --all -- docs/캐릭터/마스코트_정본`). 파일만 되살리면 배선이 없다. */
+/* 🔑 «로드»가 아니라 «쓸 때» 죽는다 — 상수를 읽는 것만으로 던지면 이 파일을 require 하는
+ *   모든 곳이 통째로 멎는다(첫 판이 그랬다). 경로는 그대로 두고 `참조확인()` 이 문다. */
+const 퇴역참조 = new Set();
 const 참조들 = {
-  글래시본체: path.join(REPO, 'docs/캐릭터/마스코트_정본/본체.png'),
+  글래시본체: (퇴역참조.add(path.join(REPO, 'docs/캐릭터/마스코트_정본/본체.png')),
+              path.join(REPO, 'docs/캐릭터/마스코트_정본/본체.png')),
   글래시오브: path.join(REPO, 'docs/캐릭터/명품판_0814/녹음오브_대기.png'),
   펠트장면: path.join(REPO, 'docs/캐릭터/명품판_0814/펠트장면.jpg'),
 };
+
+/** 참조 그림이 실재하나 — 퇴역한 것이면 «왜» 없는지까지 말한다(흐린 ENOENT 를 안 낸다). */
+function 참조확인(경로들) {
+  for (const p of [].concat(경로들)) {
+    if (fs.existsSync(p)) continue;
+    if (퇴역참조.has(p)) {
+      throw new Error(`⛔ 글래시(체리) 슬롯은 퇴역했다 — 유호 확정 2026-08-19 「이제 아예 안쓸거야」.\n`
+        + `   이 슬롯의 프롬프트는 «cherry-red jelly» 라 코랄로 바꿔 굽는 것은 답이 아니다.\n`
+        + `   되살리기: 토큰 색.마스코트._의상 퇴역 조항 → git log --all -- docs/캐릭터/마스코트_정본`);
+    }
+    throw new Error(`🔴 참조 그림이 없다: ${p}`);
+  }
+}
 
 /* ── 재질 슬롯 ── */
 const 재질 = {
@@ -221,7 +243,7 @@ async function 한컷(k, 작업, 결과경로들) {
   // 런타임참조는 같은 실행의 산출물이 1순위, 없으면 디스크에 이미 구워둔 것(단독 재실행 통로).
   const 앞선것 = (n) => 결과경로들[n] || path.join(출력, `${n}.png`);
   const refs = [...작업.참조, ...(작업.런타임참조 || []).map(앞선것)];
-  for (const r of refs) if (!fs.existsSync(r)) throw new Error(`${작업.이름} 참조 없음 — ${r}`);
+  참조확인(refs);   /* 퇴역한 참조면 «왜» 없는지까지 말한다 — 흐린 「참조 없음」을 안 낸다 */
   const parts = [{ text: 작업.지시 }];
   for (const r of refs) parts.push({ inline_data: { mime_type: mime(r), data: fs.readFileSync(r).toString('base64') } });
   const t0 = Date.now();
