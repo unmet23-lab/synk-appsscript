@@ -12,8 +12,8 @@
      v2.2→v2.3: 쌓는 3호 Pilot→Temper (유호 확정 08-17) — 이름 게이트·작명 규약 절이 사유를 진다 -->
 <style>
   :root{
-    --paper:#FAFAF9; --ink:#1B1B1A; --navy:#262626; --navy2:#08090C; --navy3:#373737;
-    --cream:#E4E4E7; --cream3:#D1D2D4; --coral:#FF6B5C; --coral3:#E8543F; --wash:#FFE9E4;
+    --paper:#FBF7F0; --ink:#2B2320; --navy:#262626; --navy2:#08090C; --navy3:#373737;
+    --cream:#EDE7DC; --cream3:#D1D2D4; --coral:#F96859; --coral3:#AE322A; --wash:#FEF0E9;
     --slate2:#676767; --slate:#8A8A8A;
   }
   *{box-sizing:border-box;}
@@ -64,8 +64,8 @@
   /* 색 — 이 CSS 가 «실제로 참조하는» 것만. 안 쓰는 색은 남의 지면에 안 들인다. */
   :root{
     --룸-chalk:#E4E4E7; --룸-chalk-rgb:228,228,231;
-    --룸-ink:#1B1B1A; --룸-ink-rgb:27,27,26;
-    --룸-coral:#FF6B5C; --룸-coral-rgb:255,107,92;
+    --룸-ink:#2B2320; --룸-ink-rgb:43,35,32;
+    --룸-coral:#F96859; --룸-coral-rgb:249,104,89;
     --룸-font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   }
   /* ── 율 — 모든 간격이 여기서 나온다. 이름 없는 px 을 지면에 적지 않는다.
@@ -110,7 +110,7 @@
     -webkit-mask-composite:xor;mask-composite:exclude;
     opacity:.95;
     filter:saturate(1.5) drop-shadow(0 0 5px rgba(78,124,255,0.34))
-           drop-shadow(0 0 10px rgba(255,107,92,0.2));
+           drop-shadow(0 0 10px rgba(249,104,89,0.2));
   }
   .유리>*{position:relative;z-index:2;}
   .유리.잔잔{--깃:16px;padding:var(--칸) var(--단);}
@@ -156,7 +156,7 @@
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:순번*/
   /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리). */
@@ -182,7 +182,7 @@
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:차례번호*/
   .잔번호{position:relative;
@@ -256,13 +256,13 @@
     font-variant-numeric:tabular-nums;color:var(--룸-chalk);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
-        rgba(255,107,92,0.58) 0%, rgba(255,107,92,0.12) 62%, rgba(255,107,92,0) 78%),
+        rgba(249,104,89,0.58) 0%, rgba(249,104,89,0.12) 62%, rgba(249,104,89,0) 78%),
       rgba(29,29,28,0.62);
     box-shadow:
       inset 0 0 0 1px rgba(228,228,231,0.1),
-      inset 0 3px 10px -3px rgba(255,107,92,0.45),
+      inset 0 3px 10px -3px rgba(249,104,89,0.45),
       inset 0 -3px 10px -2px rgba(0,0,0,.58),
-      0 6px 14px -4px rgba(255,107,92,0.38);}
+      0 6px 14px -4px rgba(249,104,89,0.38);}
   .히어로수::before{
     content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
     background:radial-gradient(30% 22% at 38% 16%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);}
@@ -325,8 +325,8 @@
     transition:box-shadow 180ms ease,color 180ms ease;}
   .룸 a:not(.민):not(.레일 a)::before{content:'';display:inline-block;width:3px;height:3px;
     border-radius:50%;vertical-align:.32em;margin-right:var(--숨);
-    background:var(--룸-coral);box-shadow:0 0 6px rgba(255,107,92,0.7);}
-  .룸 a:hover{box-shadow:inset 0 -1px 0 rgba(255,107,92,0.9);}
+    background:var(--룸-coral);box-shadow:0 0 6px rgba(249,104,89,0.7);}
+  .룸 a:hover{box-shadow:inset 0 -1px 0 rgba(249,104,89,0.9);}
 
   /*loom부품:쪽번호*/
   /* 쪽번호 — 낮 지면에서만 산다. 화면에는 «쪽»이라는 것이 없다. */
@@ -422,13 +422,13 @@
     회사의 모든 앱이 평생 꺼내 쓰는 비출시 내부 엔진.
   </div>
   <div class="eng">
-    <h3><a href="./Loom_소개서.html">Loom</a></h3>
+    <h3><a href="./SYNK_Loom_소개서.html">SYNK Loom</a></h3>
     <div class="role 칩">몸과 감각 — 재질 엔진</div>
     회사 전용 재질(펠트 1호)을 어느 지면에서든 같은 색·같은 결·같은 빛·같은 소리·같은 만짐으로
     재현하는 사진 기반 파이프라인. 「명품」의 조건인 일관성을 시스템으로 만든다.
   </div>
   <div class="eng">
-    <h3><a href="./Vellum_소개서.html">SYNK Vellum</a></h3>
+    <h3><a href="./SYNK_Vellum_소개서.html">SYNK Vellum</a></h3>
     <div class="role 칩">닿는 면 — 관계 엔진</div>
     Core의 이해와 Loom의 몸이 사람 앞에 서는 면. 그 면 위에 앉는 얼굴이 <b>몽글</b>이다.
     학생에게 따뜻한 친구, 강사·원장에게 안내자, 학부모에게 신뢰의 창구 — 두뇌 하나, 창구 다섯.
@@ -439,21 +439,21 @@
 <h3 class="row">쌓는 셋 <span class="sub">— 자산층 · 회사의 다음 결정에게 (세월이 쌓는다 · 학생 화면에 직접 닿지 않는다)</span></h3>
 <div class="tri">
   <div class="eng asset">
-    <h3><a href="./Trail_소개서.html">Trail</a></h3>
+    <h3><a href="./SYNK_Trail_소개서.html">SYNK Trail</a></h3>
     <div class="role 칩">발자취 — 떠난 뒤에도 잇는 관측</div>
     「무엇을 목표했고 실제로 어디에 도착했는가」를 한 사람으로 잇는다. 교육의 진짜 성적표는
     몇 년 뒤의 삶에서 나온다 — 인증·매칭·선배 매칭·정착, 「한국행 인프라」로 가는 문 전부의 유일한 전제.
     <span class="small muted">코드 라이브 · 데이터는 첫 졸업생부터.</span>
   </div>
   <div class="eng asset">
-    <h3><a href="./Prism_소개서.html">Prism</a></h3>
+    <h3><a href="./SYNK_Prism_소개서.html">SYNK Prism</a></h3>
     <div class="role 칩">지도 — 화자 일반의 오류 분포</div>
     학생 하나의 교정을 「몽골어 화자 일반은 여기서 이렇게 틀린다」로 승격하는 비식별 집계층.
     교재·출제·모델 평가가 감이 아니라 분포를 읽게 한다 — 시장에 존재하지 않는 말뭉치.
     <span class="small muted">재료 생산자 라이브 · 집계층은 개원 직후.</span>
   </div>
   <div class="eng asset">
-    <h3><a href="./Temper_소개서.html">Temper</a></h3>
+    <h3><a href="./SYNK_Temper_소개서.html">SYNK Temper</a></h3>
     <div class="role 칩">의술 — 가르치는 법을 배운다</div>
     「이 상태의 학생에게 이 개입을 줬더니 30일 뒤 이렇게 됐다」의 짝. 이것이 쌓이면 엔진은
     한국어가 아니라 <b>가르치는 법</b>을 배운다 — 과목·언어가 바뀌어도 남는 마지막 자산.
