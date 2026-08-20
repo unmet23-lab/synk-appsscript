@@ -53,7 +53,13 @@ function newDir(tag) { return fs.mkdtempSync(path.join(tmpRoot, `${tag}-`)); }
 function run(hook, payload, stateDir, env) {
   const r = 훅띄우기(hook, {
     input: JSON.stringify(payload), encoding: 'utf8', timeout: 20000,
-    env: { ...process.env, SYNK_CTXBUDGET_DIR: stateDir, CLAUDE_CODE_HOST_SESSION_ID: '', ...(env || {}) },
+    // 세 변수를 **다** 비운다 — `board-id` 통로가 HOST→(REMOTE|SESSION) 로 폴백하므로(F634), 하나만 비우면 이 검사가 «도는 기계»에 따라 갈린다(클라우드엔 나머지 둘이 실재한다 · F296·F628 그 자리).
+    env: {
+      ...process.env,
+      SYNK_CTXBUDGET_DIR: stateDir,
+      CLAUDE_CODE_HOST_SESSION_ID: '', CLAUDE_CODE_REMOTE_SESSION_ID: '', CLAUDE_CODE_SESSION_ID: '',
+      ...(env || {}),
+    },
   });
   const out = (r.stdout || '').trim();
   return { status: r.status, stderr: r.stderr || '', json: out ? JSON.parse(out) : null, msg: out ? String(JSON.parse(out).systemMessage || '') : '' };

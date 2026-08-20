@@ -39,6 +39,8 @@ const 잠금lib = require(path.join(__dirname, 'lib', 'git잠금.js'));
 /* master 직접 커밋을 그 자리에서 미는 통로 — `작업가지 --닫기` 와 **같은 파일**을 쓴다
  * (같은 판정을 두 곳에 적으면 갈라진다 · 사연은 tools/lib/master동기.js 머리말). */
 const 동기 = require(path.join(__dirname, 'lib', 'master동기.js'));
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('../.claude/hooks/lib/board-id.js');
 const ROOT = process.env.SYNK_OWNER_ROOT || path.resolve(__dirname, '..');
 
 // 자리(폴더·목차)와 「이름→세션 지문」 변환도 그쪽 것 하나를 쓴다 — 여기 한 벌 더 적었더니
@@ -88,7 +90,7 @@ function 조사() {
   const 박동분 = new Map(세션.map((s) => [소유자.짧게(s.sid), s.분]));
   const 산 = new Set(세션.filter(소유자.살았나).map((s) => 소유자.짧게(s.sid)));
   // 파일명 sid8 은 session-report 가 쓰는 표기와 같은 변환(local_ 접두 제거 + 8자)이다.
-  const 내sid8 = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || '').replace(/^local_/, '').slice(0, 8);
+  const 내sid8 = 보드id.보드지문();
 
   const r = { 수거: [], 만료: [], 내것: [], 보류: [], 잡파일: [], 목차더러움: false, 내sid8 };
   for (const it of 항목) {

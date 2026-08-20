@@ -17,10 +17,10 @@ const path = require('path');
 
 const DIR = path.resolve(__dirname, '..', 'docs', '발표물');
 
-// 어두운 바탕 기준(syn=Cream · `<`=Coral — 브랜드킷 §3 v2.0). 밝은 바탕에 쓸 땐 syn=#1A2340(Navy).
+// 어두운 바탕 기준(syn=Cream · `<`=Coral — 브랜드킷 §3 v2.0). 밝은 바탕에 쓸 땐 syn=#262626(Navy).
 // ⚠ viewBox 여백을 깎지 말 것 — 획 두께 절반과 글자 사이드베어링이 여기 들어간다.
 const W5_DARK = `<svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#F6F1E8">syn</text>
+            <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#E4E4E7">syn</text>
             <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
           </svg>`;
 
