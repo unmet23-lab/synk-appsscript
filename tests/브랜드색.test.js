@@ -448,24 +448,26 @@ for (const [anchor, bg, fg, where] of DOC_CLAIMS) {
 const KIT_DOC = path.join(ROOT, 'docs', '발표물', '_브랜드킷.md');
 const KIT_SRC = fs.readFileSync(KIT_DOC, 'utf8');
 
+/* 2026-08-20 조항 ⓙ — Paper·Ink·코랄 축의 값이 갈렸다: 라이트 바탕 #FBF7F0 · Coral #F96859 ·
+ * Coral 3 #AE322A. 표(문서)와 이 목록은 같은 커밋에서 움직인다 — 한쪽만 고치면 여기가 빨개진다. */
 const KIT_CLAIMS = [
-  ['| 잉크 | Graphite 3 |', '#FAFAF9', '#262626', '킷 §1 색표 — Navy/Paper (고아였던 14.46)'],
-  ['| 보조 잉크·괘선 | Graphite 4 |', '#FAFAF9', '#373737', '킷 §1 색표 — Navy 3/Paper (고아였던 11.47)'],
-  ['| 반전면 잉크 | Chalk |', '#08090C', '#E4E4E7', '킷 §1 색표 — Cream/Navy 2'],
-  ['| 반전면 보조 | Chalk 3 |', '#08090C', '#D1D2D4', '킷 §1 색표 — Cream 3/Navy 2 (고아였던 13.13)'],
-  ['| **신호** | **Coral** |', '#08090C', '#FF6B5C', '킷 §1 색표 — Coral 다크'],
-  ['| **신호** | **Coral** |', '#FAFAF9', '#FF6B5C', '킷 §1 색표 — Coral 라이트(면만 근거)'],
-  ['| 신호 — 라이트 글자 | Coral 3 |', '#FAFAF9', '#E8543F', '킷 §1 색표 — Coral 3 라이트'],
+  ['| 잉크 | Graphite 3 |', '#FBF7F0', '#262626', '킷 §1 색표 — Graphite 3/Paper'],
+  ['| 보조 잉크·괘선 | Graphite 4 |', '#FBF7F0', '#373737', '킷 §1 색표 — Graphite 4/Paper'],
+  ['| 반전면 잉크 | Chalk |', '#08090C', '#E4E4E7', '킷 §1 색표 — Chalk/Graphite'],
+  ['| 반전면 보조 | Chalk 3 |', '#08090C', '#D1D2D4', '킷 §1 색표 — Chalk 3/Graphite (고아였던 13.13)'],
+  ['| **신호** | **Coral** |', '#08090C', '#F96859', '킷 §1 색표 — Coral 다크'],
+  ['| **신호** | **Coral** |', '#FBF7F0', '#F96859', '킷 §1 색표 — Coral 라이트(면만 근거)'],
+  ['| 신호 — 라이트 글자 | Coral 3 |', '#FBF7F0', '#AE322A', '킷 §1 색표 — Coral 3 라이트'],
   ['| Chalk `#E4E4E7` |', '#08090C', '#E4E4E7', '킷 §3 실측표 — Chalk 다크'],
-  ['| Chalk `#E4E4E7` |', '#FAFAF9', '#E4E4E7', '킷 §3 실측표 — Chalk 라이트(사라짐 근거)'],
-  ['| Coral `#FF6B5C` |', '#08090C', '#FF6B5C', '킷 §3 실측표 — Coral 다크'],
-  ['| Coral `#FF6B5C` |', '#FAFAF9', '#FF6B5C', '킷 §3 실측표 — Coral 라이트'],
-  ['| Coral 3 `#E8543F` |', '#08090C', '#E8543F', '킷 §3 실측표 — Coral 3 다크'],
-  ['| Coral 3 `#E8543F` |', '#FAFAF9', '#E8543F', '킷 §3 실측표 — Coral 3 라이트'],
+  ['| Chalk `#E4E4E7` |', '#FBF7F0', '#E4E4E7', '킷 §3 실측표 — Chalk 라이트(사라짐 근거)'],
+  ['| Coral `#F96859` |', '#08090C', '#F96859', '킷 §3 실측표 — Coral 다크'],
+  ['| Coral `#F96859` |', '#FBF7F0', '#F96859', '킷 §3 실측표 — Coral 라이트'],
+  ['| Coral 3 `#AE322A` |', '#08090C', '#AE322A', '킷 §3 실측표 — Coral 3 다크'],
+  ['| Coral 3 `#AE322A` |', '#FBF7F0', '#AE322A', '킷 §3 실측표 — Coral 3 라이트'],
   ['| Graphite 3 `#262626` |', '#08090C', '#262626', '킷 §3 실측표 — Graphite 3 다크(묻힘 근거)'],
-  ['| Graphite 3 `#262626` |', '#FAFAF9', '#262626', '킷 §3 실측표 — Graphite 3 라이트'],
+  ['| Graphite 3 `#262626` |', '#FBF7F0', '#262626', '킷 §3 실측표 — Graphite 3 라이트'],
   ['| Graphite 4 `#373737` |', '#08090C', '#373737', '킷 §3 실측표 — Graphite 4 다크(묻힘 근거)'],
-  ['| Graphite 4 `#373737` |', '#FAFAF9', '#373737', '킷 §3 실측표 — Graphite 4 라이트'],
+  ['| Graphite 4 `#373737` |', '#FBF7F0', '#373737', '킷 §3 실측표 — Graphite 4 라이트'],
 ];
 
 const kitLineWith = (anchor) => KIT_SRC.split(/\r?\n/).find((l) => l.includes(anchor));
