@@ -39,8 +39,8 @@
     --coral:#F96859; --coral-rgb:249,104,89;
     --coral2:#FD9C87; --coral2-rgb:253,156,135;
     --coral3:#AE322A; --coral3-rgb:174,50,42;
-    --ash:#8A8A8A; --ash-rgb:138,138,138;
-    --ash2:#676767; --ash2-rgb:103,103,103;
+    --ash:#8C8C8C; --ash-rgb:140,140,140;
+    --ash2:#666666; --ash2-rgb:102,102,102;
     --kccoolblue:#4E7CFF; --kccoolblue-rgb:78,124,255;
     --깃:22px; --깃속:12px;                /* 동심원 — 바깥 = 안쪽 + 패딩 */
     --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
@@ -89,7 +89,7 @@
   .유리::before{
     content:'';position:absolute;inset:0;border-radius:inherit;
     padding:1.2px;pointer-events:none;z-index:1;
-    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
@@ -136,7 +136,7 @@
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
   .번호::before{position:absolute;inset:0;
     content:'';border-radius:50%;padding:1.4px;pointer-events:none;
-    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
@@ -144,7 +144,10 @@
            drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:순번*/
-  /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리). */
+  /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리).
+     🔴 «.민» 은 빠진다 — 번호를 **원고가 손으로 적은** 목록이다(«<li><span>1.</span>…»).
+        counter 를 그런 목록에 씌우면 «① 1. …» 두 번 번호가 되고, 그 사고는 남의 지면에서만 난다
+        (우리 원고는 번호를 안 적으니까). 실물 = 발표물 01 덱의 «ol.q3» (2026-08-19). */
   ol{list-style:none;counter-reset:순번;padding-left:0;margin:var(--단) 0;}
   ol>li{counter-increment:순번;position:relative;
         padding-left:calc(1.55em + var(--칸));margin:var(--참) 0;min-height:1.55em;}
@@ -162,12 +165,19 @@
   ol>li::after{position:absolute;left:0;top:.06em;font-size:.72em;
     width:1.55em;height:1.55em;
     content:'';border-radius:50%;padding:1.1px;pointer-events:none;
-    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
            drop-shadow(0 0 8px rgba(249,104,89,0.28));}
+  /* 🔴 «.민» — 번호를 **원고가 손으로 적은** 목록에서 원판만 걷는다(«<li><span>1.</span>…»).
+     counter 를 그런 목록에 씌우면 «① 1. …» 로 두 번 번호가 되고, 그 사고는 **남의 지면에서만** 난다
+     (우리 원고는 번호를 안 적는다). 실물 = 발표물 01 덱의 «ol.q3» (2026-08-19).
+     ⚠기본 규칙(위)은 안 건드린다 — 그 모양을 «흠 검사»가 재고 있어서, 선택자를 고치면
+     가드가 「순번 원판이 없다」로 거짓 적색을 낸다(실측). 규칙을 바꾸려면 가드부터 바꾼다. */
+  ol.민>li{counter-increment:none;padding-left:0;min-height:0;}
+  ol.민>li::before,ol.민>li::after{content:none;display:none;}
 
   /*loom부품:차례번호*/
   .잔번호{position:relative;
@@ -260,7 +270,7 @@
                rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.18),0 8px 16px -10px rgba(0,0,0,.9);}
   .칩::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
-    pointer-events:none;background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
+    pointer-events:none;background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;opacity:.8;}
@@ -342,7 +352,7 @@
     .유리::before{content:none;}
 
     /* 번호 — 유리 원판이 «찍힌 원판»이 된다. 분산 림은 선 하나로 굳는다. */
-    h2{color:var(--ink);margin:calc(var(--켜) * .6) 0 var(--참);font-size:14pt;break-after:avoid;}
+    h2{margin:calc(var(--켜) * .6) 0 var(--참);font-size:14pt;break-after:avoid;}
     h2:not(:has(.번호))::before,.번호,.잔번호,.각주{
       background:var(--chalk3);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ash2);}
     h2:not(:has(.번호))::after{background:var(--chalk3);}
@@ -364,18 +374,23 @@
     .칩{background:var(--chalk2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--chalk3);}
     .칩::before{content:none;}
     .실금{background:var(--chalk3);}
-    blockquote{color:var(--ash2);}
     blockquote::before{background:var(--chalk3);color:var(--ink);box-shadow:none;}
-    blockquote i,blockquote em{color:var(--ink);}
     .오브{width:74px;height:74px;border-radius:20px;color:var(--ink);font-size:1.7rem;
       box-shadow:none;border:1px solid var(--chalk3);}   /* 배경을 끄면 천이 사라지니 테두리가 형태를 진다 */
     .오브::before,.오브::after{content:none;}
 
-    p,li,b,strong,td,th,h3{color:var(--ink);}
-    li::marker{color:var(--ash2);}
-    .흐린,footer{color:var(--ash2);}
+    h2{color:var(--ink);}
+    .흐린{color:var(--ash2);}
     a{color:var(--ink);font-weight:640;box-shadow:none;border-bottom:1px solid var(--coral3);}
     a:not(.민)::before{background:var(--coral3);box-shadow:none;}
+    blockquote i,blockquote em{color:var(--ink);}
+    /* 🔴 여기서부터는 **남의 지면의 글**까지 검게 만든다 — 종이에서는 Loom 이 판 전체를 가지므로 맞다.
+       화면(«밝은글»)에는 안 준다: 밝은 지면 «안»의 어두운 섬(header 같은 것)의 글까지 검어져
+       그 자리가 통째로 사라진다(2026-08-19 실측 · 엔진 지도 머리말). */
+    p,li,b,strong,td,th,h3{color:var(--ink);}
+    li::marker{color:var(--ash2);}
+    blockquote{color:var(--ash2);}
+    footer{color:var(--ash2);}
     code{color:var(--ink);background:var(--chalk2);box-shadow:inset 0 0 0 1px var(--chalk3);}
 
     /* 쪽번호 — 낮에만 산다. @page 여백 안에 앉힌다. */
@@ -438,7 +453,7 @@
     -webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.16),0 30px 60px -28px rgba(0,0,0,1);}
   .알.유::before{content:'';position:absolute;inset:0;border-radius:50%;padding:1.2px;
-    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;filter:saturate(1.5);}
