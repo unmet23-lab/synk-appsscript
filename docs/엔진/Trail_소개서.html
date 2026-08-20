@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap">
 <!-- 소개서 v1.1 · 2026-08-15 · 내부 문서(운영자료 「엔진」 갈래) · 이름 「Trail」 = 유호 확정 08-15(가칭 「궤적」에서 승격 · 한국어는 역할 설명으로만 남긴다) -->
-<meta name="theme-color" content="#0F1730">
+<meta name="theme-color" content="#08090C">
 <style>
 /* ── SYNK 지면 「검은 무대」 v0.2 — 조립 산출물(손 편집 금지) ────────────────────
    통로: python tools/펠트천굽기.py → node tools/펠트문서.js --굽기
@@ -56,32 +56,32 @@
   }
 
   :root{
-    --navy2:#0F1730; --navy2-rgb:15,23,48;
-    --navyink:#131A32; --navyink-rgb:19,26,50;
-    --navy:#1A2340; --navy-rgb:26,35,64;
-    --navy3:#2A3358; --navy3-rgb:42,51,88;
-    --cream:#F6F1E8; --cream-rgb:246,241,232;
-    --cream2:#EFE7D7; --cream2-rgb:239,231,215;
-    --cream3:#E7DDC7; --cream3-rgb:231,221,199;
-    --paper:#FBF7EE; --paper-rgb:251,247,238;
-    --ink:#171820; --ink-rgb:23,24,32;
-    --coral:#FF6B5C; --coral-rgb:255,107,92;
-    --coral2:#FF8877; --coral2-rgb:255,136,119;
-    --coral3:#E8543F; --coral3-rgb:232,84,63;
-    --slate:#8A93AD; --slate-rgb:138,147,173;
-    --slate2:#5F657D; --slate2-rgb:95,101,125;
+    --navy2:#08090C; --navy2-rgb:8,9,12;
+    --navyink:#1D1D1C; --navyink-rgb:19,26,50;
+    --navy:#262626; --navy-rgb:38,38,38;
+    --navy3:#373737; --navy3-rgb:42,51,88;
+    --cream:#EDE7DC; --cream-rgb:237,231,220;
+    --cream2:#EAEAEA; --cream2-rgb:239,231,215;
+    --cream3:#D1D2D4; --cream3-rgb:231,221,199;
+    --paper:#FBF7F0; --paper-rgb:251,247,238;
+    --ink:#2B2320; --ink-rgb:43,35,32;
+    --coral:#F96859; --coral-rgb:249,104,89;
+    --coral2:#FD9C87; --coral2-rgb:255,136,119;
+    --coral3:#AE322A; --coral3-rgb:174,50,42;
+    --slate:#8A8A8A; --slate-rgb:138,147,173;
+    --slate2:#676767; --slate2-rgb:95,101,125;
     --kccoolblue:#4E7CFF; --kccoolblue-rgb:78,124,255;
     --깃:22px; --깃속:12px;                /* 동심원 — 바깥 = 안쪽 + 패딩 */
     --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   }
   *{box-sizing:border-box;}
   html{scroll-padding-top:96px;background:var(--navy2);color-scheme:dark;}
-  ::selection{background:rgba(255,107,92,0.28);color:var(--cream);}
+  ::selection{background:rgba(249,104,89,0.28);color:var(--cream);}
   :focus-visible{outline:2px solid var(--coral);outline-offset:3px;border-radius:6px;
-    box-shadow:0 0 0 1px rgba(246,241,232,0.55),0 0 14px 2px rgba(255,107,92,0.45);}
+    box-shadow:0 0 0 1px rgba(228,228,231,0.55),0 0 14px 2px rgba(249,104,89,0.45);}
   body{margin:0;min-height:100vh;
     background:
-      radial-gradient(105% 62% at 50% -14%, rgba(42,51,88,0.62) 0%, rgba(42,51,88,0) 58%),
+      radial-gradient(105% 62% at 50% -14%, rgba(55,55,55,0.62) 0%, rgba(55,55,55,0) 58%),
       radial-gradient(120% 88% at 50% 34%, rgba(0,0,0,0) 8%, rgba(0,0,0,.66) 100%),
       linear-gradient(180deg, rgba(0,0,0,.34), rgba(0,0,0,.52)),
       var(--navy2);
@@ -95,21 +95,21 @@
   b,strong{font-weight:750;color:var(--cream);}
   .흐린{color:var(--slate);} .작게{font-size:.9rem;}
   code{font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.93em;font-weight:600;color:var(--cream);
-    background:rgba(246,241,232,0.085);padding:.1em .45em;border-radius:7px;
-    box-shadow:inset 0 0 0 1px rgba(246,241,232,0.09);}
+    background:rgba(228,228,231,0.085);padding:.1em .45em;border-radius:7px;
+    box-shadow:inset 0 0 0 1px rgba(228,228,231,0.09);}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 
   .유리{
     position:relative;border-radius:var(--깃);
     background:
-      linear-gradient(176deg, rgba(246,241,232,0.11) 0%, rgba(246,241,232,0.022) 26%,
+      linear-gradient(176deg, rgba(228,228,231,0.11) 0%, rgba(228,228,231,0.022) 26%,
                      rgba(0,0,0,.06) 62%, rgba(0,0,0,.14) 100%),
-      rgba(19,26,50,0.55);
+      rgba(29,29,28,0.55);
     -webkit-backdrop-filter:blur(30px) saturate(165%);
     backdrop-filter:blur(30px) saturate(165%);
     box-shadow:
-      inset 0 1px 0 rgba(246,241,232,0.16),
-      inset 0 -1px 0 rgba(246,241,232,0.07),
+      inset 0 1px 0 rgba(228,228,231,0.16),
+      inset 0 -1px 0 rgba(228,228,231,0.07),
       0 1px 2px rgba(0,0,0,.6),
       0 30px 60px -28px rgba(0,0,0,1);
     padding:var(--단) calc(var(--단) + var(--숨));
@@ -118,13 +118,13 @@
   .유리::before{
     content:'';position:absolute;inset:0;border-radius:inherit;
     padding:1.2px;pointer-events:none;z-index:1;
-    background:conic-gradient(from 208deg,rgba(138,147,173,0.45) 25deg,rgba(246,241,232,0.6) 120deg,rgba(138,147,173,0.35) 210deg,rgba(246,241,232,0.42) 300deg,rgba(138,147,173,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     opacity:.95;
     filter:saturate(1.5) drop-shadow(0 0 5px rgba(78,124,255,0.34))
-           drop-shadow(0 0 10px rgba(255,107,92,0.2));
+           drop-shadow(0 0 10px rgba(249,104,89,0.2));
   }
   .유리>*{position:relative;z-index:2;}
   .유리.잔잔{--깃:16px;padding:var(--칸) var(--단);}
@@ -145,32 +145,32 @@
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
     color:var(--cream);
     background:
-      linear-gradient(170deg, rgba(246,241,232,0.14), rgba(246,241,232,0.02) 58%),
-      rgba(19,26,50,0.55);
-    box-shadow:inset 0 1px 0 rgba(246,241,232,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
+      linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
+      rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
   /* ⚠사라지는 실금은 «번호와 무관»하다 — :has(.번호) 로 함께 가두면 옛 원고(번호를 손으로 적은
      지면)에서 절 실금이 통째로 사라진다. 실측 08-16: 소개서 6벌이 전부 그 모양이었다.
      ::before(번호)만 갈리고 ::after(실금)는 어느 쪽이든 선다.
      ⚠이 주석에 백틱을 쓰지 않는다 — 여기는 템플릿 리터럴 «안»이라 하나로 CSS 가 통째로 끊긴다. */
   h2::after{content:'';flex:1 1 3em;min-width:2em;height:var(--실);
-     background:linear-gradient(90deg,rgba(246,241,232,0.24),rgba(246,241,232,0));}
+     background:linear-gradient(90deg,rgba(228,228,231,0.24),rgba(228,228,231,0));}
   .번호{position:relative;
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
     color:var(--cream);
     background:
-      linear-gradient(170deg, rgba(246,241,232,0.14), rgba(246,241,232,0.02) 58%),
-      rgba(19,26,50,0.55);
-    box-shadow:inset 0 1px 0 rgba(246,241,232,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
+      linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
+      rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
   .번호::before{position:absolute;inset:0;
     content:'';border-radius:50%;padding:1.4px;pointer-events:none;
-    background:conic-gradient(from 208deg,rgba(138,147,173,0.45) 25deg,rgba(246,241,232,0.6) 120deg,rgba(138,147,173,0.35) 210deg,rgba(246,241,232,0.42) 300deg,rgba(138,147,173,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:순번*/
   /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리). */
@@ -183,20 +183,20 @@
     font-size:.72em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
     color:var(--cream);
     background:
-      linear-gradient(170deg, rgba(246,241,232,0.14), rgba(246,241,232,0.02) 58%),
-      rgba(19,26,50,0.55);
-    box-shadow:inset 0 1px 0 rgba(246,241,232,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
+      linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
+      rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
   /* ⚠림에도 «같은» font-size 를 준다 — em 은 자기 font-size 기준이라, .72em 이 걸린 ::before 는
      1.55em=18.97px 인데 안 걸린 ::after 는 1.55em=26.34px 이었다(실측 08-16). 림이 원판보다 컸다. */
   ol>li::after{position:absolute;left:0;top:.06em;font-size:.72em;
     width:1.55em;height:1.55em;
     content:'';border-radius:50%;padding:1.1px;pointer-events:none;
-    background:conic-gradient(from 208deg,rgba(138,147,173,0.45) 25deg,rgba(246,241,232,0.6) 120deg,rgba(138,147,173,0.35) 210deg,rgba(246,241,232,0.42) 300deg,rgba(138,147,173,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:차례번호*/
   .잔번호{position:relative;
@@ -205,9 +205,9 @@
     font-size:.66em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
     color:var(--cream);
     background:
-      linear-gradient(170deg, rgba(246,241,232,0.14), rgba(246,241,232,0.02) 58%),
-      rgba(19,26,50,0.55);
-    box-shadow:inset 0 1px 0 rgba(246,241,232,0.16);}
+      linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
+      rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.16);}
 
   /*loom부품:각주번호*/
   .각주{position:relative;
@@ -216,9 +216,9 @@
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
     color:var(--cream);
     background:
-      linear-gradient(170deg, rgba(246,241,232,0.14), rgba(246,241,232,0.02) 58%),
-      rgba(19,26,50,0.55);
-    box-shadow:inset 0 1px 0 rgba(246,241,232,0.16);
+      linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
+      rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.16);
     vertical-align:super;}
 
   /*loom부품:불릿*/
@@ -231,13 +231,13 @@
     width:7px;height:7px;border-radius:50%;
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
-        rgba(246,241,232,0.58) 0%, rgba(246,241,232,0.12) 62%, rgba(246,241,232,0) 78%),
-      rgba(19,26,50,0.62);
+        rgba(228,228,231,0.58) 0%, rgba(228,228,231,0.12) 62%, rgba(228,228,231,0) 78%),
+      rgba(29,29,28,0.62);
     box-shadow:
-      inset 0 0 0 1px rgba(246,241,232,0.1),
-      inset 0 3px 10px -3px rgba(246,241,232,0.45),
+      inset 0 0 0 1px rgba(228,228,231,0.1),
+      inset 0 3px 10px -3px rgba(228,228,231,0.45),
       inset 0 -3px 10px -2px rgba(0,0,0,.58),
-      0 6px 14px -4px rgba(246,241,232,0.38);
+      0 6px 14px -4px rgba(228,228,231,0.38);
   }
   ul>li::after{content:'';position:absolute;left:var(--숨);top:.62em;width:7px;height:7px;
     border-radius:50%;pointer-events:none;
@@ -249,13 +249,13 @@
     font-size:.72em;font-weight:800;color:var(--cream);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
-        rgba(246,241,232,0.58) 0%, rgba(246,241,232,0.12) 62%, rgba(246,241,232,0) 78%),
-      rgba(19,26,50,0.62);
+        rgba(228,228,231,0.58) 0%, rgba(228,228,231,0.12) 62%, rgba(228,228,231,0) 78%),
+      rgba(29,29,28,0.62);
     box-shadow:
-      inset 0 0 0 1px rgba(246,241,232,0.1),
-      inset 0 3px 10px -3px rgba(246,241,232,0.45),
+      inset 0 0 0 1px rgba(228,228,231,0.1),
+      inset 0 3px 10px -3px rgba(228,228,231,0.45),
       inset 0 -3px 10px -2px rgba(0,0,0,.58),
-      0 6px 14px -4px rgba(246,241,232,0.38);}
+      0 6px 14px -4px rgba(228,228,231,0.38);}
   .체크::before{
     content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
     background:radial-gradient(30% 22% at 38% 16%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);}
@@ -270,13 +270,13 @@
     font-variant-numeric:tabular-nums;color:var(--cream);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
-        rgba(255,107,92,0.58) 0%, rgba(255,107,92,0.12) 62%, rgba(255,107,92,0) 78%),
-      rgba(19,26,50,0.62);
+        rgba(249,104,89,0.58) 0%, rgba(249,104,89,0.12) 62%, rgba(249,104,89,0) 78%),
+      rgba(29,29,28,0.62);
     box-shadow:
-      inset 0 0 0 1px rgba(246,241,232,0.1),
-      inset 0 3px 10px -3px rgba(255,107,92,0.45),
+      inset 0 0 0 1px rgba(228,228,231,0.1),
+      inset 0 3px 10px -3px rgba(249,104,89,0.45),
       inset 0 -3px 10px -2px rgba(0,0,0,.58),
-      0 6px 14px -4px rgba(255,107,92,0.38);}
+      0 6px 14px -4px rgba(249,104,89,0.38);}
   .히어로수::before{
     content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
     background:radial-gradient(30% 22% at 38% 16%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);}
@@ -285,11 +285,11 @@
   .칩{display:inline-flex;align-items:center;gap:var(--숨);
     padding:calc(var(--숨) + 1px) var(--참);border-radius:999px;position:relative;
     font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--cream);
-    background:linear-gradient(170deg, rgba(246,241,232,0.12), rgba(246,241,232,0.03) 60%),
-               rgba(19,26,50,0.55);
-    box-shadow:inset 0 1px 0 rgba(246,241,232,0.18),0 8px 16px -10px rgba(0,0,0,.9);}
+    background:linear-gradient(170deg, rgba(228,228,231,0.12), rgba(228,228,231,0.03) 60%),
+               rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.18),0 8px 16px -10px rgba(0,0,0,.9);}
   .칩::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
-    pointer-events:none;background:conic-gradient(from 208deg,rgba(138,147,173,0.45) 25deg,rgba(246,241,232,0.6) 120deg,rgba(138,147,173,0.35) 210deg,rgba(246,241,232,0.42) 300deg,rgba(138,147,173,0.5) 350deg);
+    pointer-events:none;background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;opacity:.8;}
@@ -297,8 +297,8 @@
   /*loom부품:구분선*/
   /* 실금 — 선은 재질을 «안» 입는다. 획이라 두께가 없고, 두께가 없으면 물성이 없다. */
   .실금{height:var(--실);border:0;margin:var(--켜) 0;
-    background:linear-gradient(90deg,rgba(246,241,232,0),rgba(246,241,232,0.22) 18%,
-      rgba(246,241,232,0.22) 82%,rgba(246,241,232,0));}
+    background:linear-gradient(90deg,rgba(228,228,231,0),rgba(228,228,231,0.22) 18%,
+      rgba(228,228,231,0.22) 82%,rgba(228,228,231,0));}
 
   /*loom부품:인용부호*/
   blockquote{position:relative;margin:var(--켜) 0;padding:var(--단) var(--단) var(--단) calc(var(--켜) + var(--참));
@@ -307,9 +307,9 @@
     display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;
     font-size:1.5em;line-height:1;font-weight:800;color:var(--cream);
     padding-top:.28em;   /* 광학 — 여는 따옴표는 글리프가 위쪽에 몰려 있다 */
-    background:linear-gradient(170deg, rgba(246,241,232,0.13), rgba(246,241,232,0.02) 58%),
-               rgba(19,26,50,0.55);
-    box-shadow:inset 0 1px 0 rgba(246,241,232,0.2),0 10px 20px -12px rgba(0,0,0,.9);}
+    background:linear-gradient(170deg, rgba(228,228,231,0.13), rgba(228,228,231,0.02) 58%),
+               rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 10px 20px -12px rgba(0,0,0,.9);}
   blockquote i,blockquote em{color:var(--cream);font-style:italic;}
 
   /*loom부품:표지오브*/
@@ -321,9 +321,9 @@
     color:var(--ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
     box-shadow:
       inset 0 3px 4px rgba(255,255,255,.62),
-      inset 0 -14px 24px -6px rgba(15,23,48,0.5),
-      inset 8px 0 20px -10px rgba(15,23,48,0.35),
-      inset -8px 0 20px -10px rgba(15,23,48,0.35),
+      inset 0 -14px 24px -6px rgba(8,9,12,0.5),
+      inset 8px 0 20px -10px rgba(8,9,12,0.35),
+      inset -8px 0 20px -10px rgba(8,9,12,0.35),
       0 2px 0 rgba(0,0,0,.6), 0 38px 60px -20px rgba(0,0,0,1);}
   /* 잔털 림라이트 — 위 가장자리에서 빛이 섬유 «끝»을 태운다(펠트의 서명) */
   .오브::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
@@ -335,12 +335,12 @@
   /* 링크 — 40~50대가 읽는다는 것을 셈에 넣으면 밑선 알파만으로는 링크가 아니다.
      셋을 겹친다: 밑선 .62 · 굵기 한 단 · 앞에 코랄 점(3px 이라 신호 1점을 안 넘는다). */
   a{color:var(--cream);text-decoration:none;font-weight:560;
-    box-shadow:inset 0 -1px 0 rgba(246,241,232,0.62);
+    box-shadow:inset 0 -1px 0 rgba(228,228,231,0.62);
     transition:box-shadow 180ms ease,color 180ms ease;}
   a:not(.민):not(.레일 a)::before{content:'';display:inline-block;width:3px;height:3px;
     border-radius:50%;vertical-align:.32em;margin-right:var(--숨);
-    background:var(--coral);box-shadow:0 0 6px rgba(255,107,92,0.7);}
-  a:hover{box-shadow:inset 0 -1px 0 rgba(255,107,92,0.9);}
+    background:var(--coral);box-shadow:0 0 6px rgba(249,104,89,0.7);}
+  a:hover{box-shadow:inset 0 -1px 0 rgba(249,104,89,0.9);}
 
   /*loom부품:쪽번호*/
   /* 쪽번호 — 낮 지면에서만 산다. 화면에는 «쪽»이라는 것이 없다. */
@@ -381,13 +381,13 @@
     ol>li::after{content:none;}
 
     /* 레진 — 코어를 면으로, 굴절밴드를 선으로. 구슬로 읽히되 종이에서 뜨지 않는다. */
-    ul>li::before{background:rgba(232,84,63,0.22);
-      box-shadow:inset 0 0 0 1px rgba(232,84,63,0.55);}
+    ul>li::before{background:rgba(174,50,42,0.22);
+      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.55);}
     ul>li::after{background:none;}
     .체크,.히어로수{color:var(--ink);
-      background:radial-gradient(58% 58% at 50% 44%, rgba(232,84,63,0.26), rgba(232,84,63,0.07) 70%),
+      background:radial-gradient(58% 58% at 50% 44%, rgba(174,50,42,0.26), rgba(174,50,42,0.07) 70%),
                  var(--cream2);
-      box-shadow:inset 0 0 0 1px rgba(232,84,63,0.5);}
+      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.5);}
     .체크::before,.히어로수::before{content:none;}
 
     .칩{background:var(--cream2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--cream3);}
@@ -627,7 +627,7 @@
      v0.2 는 종이에도 검은 무대를 그대로 깔았다. 그게 왜 결함인지는 취향이 아니라 두 수치다:
        ① 크롬 인쇄의 「배경 그래픽」은 **기본이 꺼짐**이다 → 바탕만 흰 종이가 되고 글자는 Cream 그대로
           남는다. **Cream on 흰 종이 = 1.13:1** — 소개서 본문이 통째로 사라진다(Slate 3.06 · Paper 1.07).
-       ② 체크가 켜져 있어도 실측 A4 한 장의 **89.7%가 진남색 면**이다(바탕 rgb(15,23,48)).
+       ② 체크가 켜져 있어도 실측 A4 한 장의 **89.7%가 진남색 면**이다(바탕 rgb(8,9,12)).
      낮 지면은 잉크가 어두워서 그 체크가 켜지든 꺼지든 읽힌다(Ink on 흰 종이 17.68:1).
      ⚠«다른 디자인»이 아니라 **같은 골격에 다른 빛**이다 — 판·레일·오브·번호·표 구조가 그대로다.
      색은 킷 직책의 허용 바닥을 탄다: Slate 는 다크 전용이라 종이에선 Slate 2,
