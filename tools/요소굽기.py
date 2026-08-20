@@ -2,10 +2,13 @@
 # 퍼프로브.py 의 승격판. 형태별로 몸을 짓고 짧은 퍼를 심어 Cycles 로 찍는다.
 #   python3 -c "import sys; sys.argv=['x','--','형태=오브','색=Coral','샘플=96','너비=900','출력=/tmp/판.png']; exec(open('tools/요소굽기.py').read())"
 # 형태: 오브 · 알약 · 아이콘 · 스티치 · 털실진행바(진행=0~1) · 단추토글 · 밑그림 · 페이지점 · 폼폼 · 시침핀 · 와펜 · 블랭킷 · 실패스피너 · 직조라벨
-# 규율: 염료는 토큰 킷 「이름」 참조(hex 하드코딩 금지) · 글자는 굽지 않는다(타이포 불가침 — HTML 층 몫)
+#      · 패턴지판 · 다린천판 · 유리판 · 자수글자 · 레터프레스(등힘=90) · 라벨태그(등힘=80)
+# 규율: 염료는 토큰 킷 「이름」 참조(hex 하드코딩 금지) · **본문** 글자는 굽지 않는다(타이포 불가침 — HTML 층 몫)
+#      — 오브제 글자(고정 라벨 · 화면당 한 점)는 별도 항이다(글자공방 채택 08-20 · 옛 「글자는 굽지 않는다」는 본문 한정을 떨어뜨린 과대 일반화)
 # 2027 킷 배선(08-20): 실땀=Stitch · 무채=양모 회색(Oat·Stone·Ash Wool·Deep Wool) — 퇴역 대기 12색 사용 0
+# 조명: 원본(기본) · 결광2(자수 글자) · 스침(압인·라벨) — 인자 「조명=」로 덮어쓴다 · 글자 보조광 힘은 「등힘=」
 # ⚠룸굽기.js 합류 전의 독립 통로다 — 룸굽기는 blender.exe(윈도)를 부르고 이건 bpy 모듈(클라우드)로 돈다.
-import bpy, json, math, sys
+import bpy, json, math, sys, random
 
 토큰길 = '/home/user/synk-appsscript/docs/디자인_토큰.json'
 색 = {c['이름']: c['hex'] for c in json.load(open(토큰길, encoding='utf-8'))['색']['킷']}
@@ -453,63 +456,277 @@ def 판뒤구():
     뒤구 = 베개몸((0.6, 0.4, 0.6), 위치=(1.42, 0.50, 0.34), 크리스=0.62)
     짧은퍼(뒤구, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]))
 
+def 판재질(종류):
+    """판 3종의 재질 — **여기 한 곳에서만 정의한다.** 소비자마다 값을 지니면 대조가 거짓이 된다
+    (같은 재질이라 믿고 나란히 놓는데 값이 갈려 있는 형태). 두께도 함께 낸다."""
+    if 종류 == '패턴지':
+        m = bpy.data.materials.new('패턴지')
+        m.use_nodes = True
+        p = m.node_tree.nodes['Principled BSDF']
+        p.inputs['Base Color'].default_value = 리니어(색['Paper'])
+        p.inputs['Roughness'].default_value = 0.80   # 0.92 는 투과가 다 씻겨 불투명으로 읽혔다(시안2027)
+        if 'Transmission Weight' in p.inputs:
+            p.inputs['Transmission Weight'].default_value = 0.7   # 반투명 — 서리 낀 종이(유리 광 없음)
+        직물결(m, 규모=260.0, 세기=0.03)   # 종이 이빨 — 매끈하면 아크릴로 읽힌다
+        return m, 0.028
+    if 종류 == '유리':
+        m = bpy.data.materials.new('서리유리')
+        m.use_nodes = True
+        p = m.node_tree.nodes['Principled BSDF']
+        p.inputs['Base Color'].default_value = 리니어(색['Paper'])
+        p.inputs['Roughness'].default_value = 0.3    # 서리 — 맑은 유리는 창문이지 판이 아니다
+        if 'Transmission Weight' in p.inputs:
+            p.inputs['Transmission Weight'].default_value = 1.0
+        p.inputs['IOR'].default_value = 1.45
+        return m, 0.028
+    if 종류 == '다린천':
+        m = bpy.data.materials.new('다린천')
+        m.use_nodes = True
+        p = m.node_tree.nodes['Principled BSDF']
+        p.inputs['Base Color'].default_value = 리니어(색['Oat'])
+        p.inputs['Roughness'].default_value = 0.96
+        if 'Specular IOR Level' in p.inputs:
+            p.inputs['Specular IOR Level'].default_value = 0.12   # 광을 거의 죽인다 — 무광 숙청과 정합
+        직물결(m, 규모=200.0, 세기=0.045)   # 눌린 부직포 알갱이 — 민무늬는 도자기로 읽혔다(시안2027)
+        return m, 0.055
+    raise SystemExit('모르는 판 재질: ' + 종류)
+
+def 시접선(y앞=-0.055):
+    """패턴지 고유 장식 — 재단지의 시접 표시. 유리엔 못 얹는 것이라 후보의 «값»에 포함된다."""
+    분필 = 분필재질('시접', 색['Ash Wool'])
+    for i in range(7):                        # 왼 가장자리 «안쪽» 한 줄 한정(제안 3차 #3)
+        땀하나(-0.94, y앞, -0.55 + i * 0.185, 0.08, 0.024, 분필, 회전y=90, 납작=True)
+
 def 패턴지판():
     """패턴지(재단지) 판 — 유리 대체 «후보»(은퇴 미확정 — 유호 정정 08-20): 반투명 «판»을
     재단 도면 종이로 내는 시험. 공방 은유 안의 종이 — 빛을 «통과»시키되 차갑지 않다.
-    유리는 판정 전까지 존속 — 실물 대조는 판 3종 같은 구도. 분필 시접선 1곳 한정(745ffc93 제안 #3)."""
+    유리는 판정 전까지 존속 — 실물 대조는 판 3종 같은 구도."""
     판뒤구()
-    판 = 베개몸((1.35, 0.028, 0.95), 크리스=0.38, 레벨=4)
-    종이 = bpy.data.materials.new('패턴지')
-    종이.use_nodes = True
-    p = 종이.node_tree.nodes['Principled BSDF']
-    p.inputs['Base Color'].default_value = 리니어(색['Paper'])
-    p.inputs['Roughness'].default_value = 0.80   # 0.92 는 투과가 다 씻겨 불투명으로 읽혔다(시안2027)
-    if 'Transmission Weight' in p.inputs:
-        p.inputs['Transmission Weight'].default_value = 0.7   # 반투명 — 서리 낀 종이(유리 광 없음 · 드래프트 실측 0.55 는 불투명으로 읽혔다)
-    직물결(종이, 규모=260.0, 세기=0.03)   # 종이 이빨 — 매끈하면 아크릴로 읽힌다
-    판.data.materials.append(종이)
-    분필 = 분필재질('시접', 색['Ash Wool'])
-    for i in range(7):                        # 시접선 — 왼 가장자리 «안쪽» 한 줄 한정(제안 3차 #3)
-        땀하나(-0.94, -0.055, -0.55 + i * 0.185, 0.08, 0.024, 분필, 회전y=90, 납작=True)
+    재질, 두께 = 판재질('패턴지')
+    판 = 베개몸((1.35, 두께, 0.95), 크리스=0.38, 레벨=4)
+    판.data.materials.append(재질)
+    시접선()
     return (0, -6.8, 0.0), 90
 
 def 다린천판():
-    """다린 무광 천 판 — 카드·판 바닥(⏳판정 보류 08-20 — 실물 대조 후 확정): 결을 눕힌 무채 천.
-    광택 0 · 결 최소 — 다림질 자국의 «눌린» 면이다. 뒤구가 «막혀» 보이는 것이 이 판의 답이다."""
+    """다린 무광 천 판 — 카드·판 바닥 «후보»(은퇴 미확정 08-20 — 실물 대조 후 확정): 결을 눕힌
+    무채 천. 광택 0 · 결 최소 — 다림질 자국의 «눌린» 면. 뒤구가 «막혀» 보이는 것이 이 판의 답이다."""
     판뒤구()
-    판 = 베개몸((1.35, 0.055, 0.95), 크리스=0.34, 레벨=4)
-    천 = bpy.data.materials.new('다린천')
-    천.use_nodes = True
-    p = 천.node_tree.nodes['Principled BSDF']
-    p.inputs['Base Color'].default_value = 리니어(색['Oat'])
-    p.inputs['Roughness'].default_value = 0.96
-    if 'Specular IOR Level' in p.inputs:
-        p.inputs['Specular IOR Level'].default_value = 0.12   # 광을 거의 죽인다 — 무광 숙청과 정합
-    직물결(천, 규모=200.0, 세기=0.045)   # 눌린 부직포 알갱이 — 민무늬는 도자기로 읽혔다(시안2027)
-    판.data.materials.append(천)
+    재질, 두께 = 판재질('다린천')
+    판 = 베개몸((1.35, 두께, 0.95), 크리스=0.34, 레벨=4)
+    판.data.materials.append(재질)
     return (0, -6.8, 0.0), 90
 
 def 유리판():
-    """서리 유리 판 — 정보 판 후보 ②(⏳판정 보류 08-20 유호 «CSS 시안으론 똑같아 보인다 —
-    전부 제대로 만들고 나중에 결정»). 패턴지판과 같은 구도·조명·크기, 재질만 유리.
-    시접선은 재단지 고유 장식이라 없다 — 유리는 민면이 정체성이다."""
+    """서리 유리 판 — 정보 판의 현직(은퇴 미확정 — 유호 정정 08-20 「지금 굽고 있어」).
+    패턴지판과 같은 구도·조명·크기, 재질만 유리. 시접선은 재단지 고유 장식이라 없다."""
     판뒤구()
-    판 = 베개몸((1.35, 0.028, 0.95), 크리스=0.38, 레벨=4)
-    유리 = bpy.data.materials.new('서리유리')
-    유리.use_nodes = True
-    p = 유리.node_tree.nodes['Principled BSDF']
-    p.inputs['Base Color'].default_value = 리니어(색['Paper'])
-    p.inputs['Roughness'].default_value = 0.3    # 서리 — 글라스모피즘의 «흐린 비침»(맑은 유리는 창문이지 판이 아니다)
-    if 'Transmission Weight' in p.inputs:
-        p.inputs['Transmission Weight'].default_value = 1.0
-    p.inputs['IOR'].default_value = 1.45
-    판.data.materials.append(유리)
+    재질, 두께 = 판재질('유리')
+    판 = 베개몸((1.35, 두께, 0.95), 크리스=0.38, 레벨=4)
+    판.data.materials.append(재질)
     return (0, -6.8, 0.0), 90
+
+# ── 글자 공방 — 오브제 글자 3종 (유호 채택 08-20 「조율판 채택」 · 글자공방_0820 인계) ──────
+# 본문 글자는 여전히 HTML 층 몫이다. 여기서 굽는 것은 «고정 라벨급 오브제 글자» 화면당 한 점.
+글자후보 = (r'C:\Windows\Fonts\malgunbd.ttf',                      # 채택판을 구운 본가(윈도 · 맑은고딕 볼드)
+          '/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc')          # 클라우드 대역 — ⚠Noto CJK(CFF)는
+          # Blender 가 글리프를 1/3 스케일로 읽는다(실측 08-20: 「가」 0.30 vs wqy 0.73) — 후보에 안 넣는다.
+
+def 글자체(t):
+    """오브제 글자의 붓 — 맑은고딕 볼드(채택 환경)가 없으면 한글 되는 고딕으로 대신한다.
+    대역으로 구운 판은 시안 급이다 — 정본 글리프 확정은 본가 폰트로 굽는다.
+    ⚠fonts.load 는 없는 경로에도 예외 없이 «깨진 폰트»를 돌려준다(리눅스 실측 08-20 — ERROR
+    리포트만 남기고 두부 글리프가 나온다) — 그래서 파일 실존을 먼저 잰다."""
+    import os
+    for 길 in 글자후보:
+        if not os.path.isfile(길):
+            continue
+        try:
+            t.data.font = bpy.data.fonts.load(길)
+            return
+        except Exception:
+            continue
+    print('경고 · 글자체: 한글 폰트를 못 찾아 기본체 — 한글이 빈 칸으로 나올 수 있다')
+
+def 유리글자(본문, 크기, 위치, 재질, 돌출=0.032, 베벨=0.006):
+    """범용 «오브제 글자» — 잉크가 아니라 재질로 서는 글자(이름과 달리 재질 무관).
+    베벨이 핵심이다: 모서리가 둥글어야 빛을 물어 «부어 만든» 것으로 읽힌다(각지면 아크릴 간판)."""
+    bpy.ops.object.text_add()
+    t = bpy.context.object
+    t.data.body = 본문
+    글자체(t)
+    t.data.size = 크기
+    t.data.extrude = 돌출
+    t.data.bevel_depth = 베벨
+    t.data.bevel_resolution = 3
+    t.data.align_x = 'CENTER'
+    t.data.align_y = 'CENTER'
+    t.rotation_euler = (math.radians(90), 0, 0)   # 극 +z → 세계 -y: 돌출이 카메라 쪽으로 나온다
+    t.location = 위치
+    t.data.materials.append(재질)
+    return t
+
+def 글자곡선표본(본문, 크기, 간격=0.15):
+    """글자 윤곽을 땀 자리로 바꾼다 — 텍스트를 곡선으로 떠서 베지어를 균일 간격으로 걷는다.
+    돌려주는 것 = [(x, y, 진행각도), ...] (글리프 평면 좌표 — 호출자가 세계로 옮긴다).
+    **어떤 한글이든 자수 경로가 자동으로 나온다** — 글자마다 도안을 손으로 놓지 않는다."""
+    from mathutils.geometry import interpolate_bezier
+    bpy.ops.object.text_add()
+    t = bpy.context.object
+    t.data.body = 본문
+    글자체(t)
+    t.data.size = 크기
+    t.data.align_x = 'CENTER'
+    t.data.align_y = 'CENTER'
+    bpy.ops.object.convert(target='CURVE')
+    자리들 = []
+    for sp in t.data.splines:
+        if sp.type != 'BEZIER' or len(sp.bezier_points) < 2:
+            continue
+        bps = sp.bezier_points
+        n = len(bps)
+        걸음 = []
+        마디수 = n if sp.use_cyclic_u else n - 1
+        for i in range(마디수):
+            a, b = bps[i], bps[(i + 1) % n]
+            for v in interpolate_bezier(a.co, a.handle_right, b.handle_left, b.co, 8)[:-1]:
+                걸음.append((v.x, v.y))
+        지나온 = 0.0
+        다음땀 = 간격 * 0.5
+        for i in range(len(걸음)):
+            x0, y0 = 걸음[i]
+            x1, y1 = 걸음[(i + 1) % len(걸음)]
+            d = math.hypot(x1 - x0, y1 - y0)
+            while 지나온 + d >= 다음땀 and d > 1e-6:
+                t비 = (다음땀 - 지나온) / d
+                자리들.append((x0 + (x1 - x0) * t비, y0 + (y1 - y0) * t비,
+                              math.degrees(math.atan2(y1 - y0, x1 - x0))))
+                다음땀 += 간격
+            지나온 += d
+    bpy.data.objects.remove(t, do_unlink=True)
+    return 자리들
+
+def 글자등(받는것들, 위치=(0, -2.2, 0.4), 크기=1.6, 힘=150):
+    """«받는 것만 비추는» 보조광 — 라이트 링킹. 무대의 분위기(결광·스침)는 안 건드리고 명도만
+    반 단계 올린다. ⚠어두운 글자(먹·코랄 3·양모 실)에 직사 금지 — 바래서 죽는다(글자공방 함정 ③).
+    규칙: 밝은 글자는 글자를, 어두운 글자는 «바탕»을 비춘다. 힘은 은은하게 — 세면 무대와 그림자가 어긋난다."""
+    bpy.ops.object.light_add(type='AREA', location=위치,
+                             rotation=(math.radians(90), 0, 0))
+    등불 = bpy.context.object
+    등불.data.size = 크기
+    등불.data.energy = 힘
+    등불.name = '글자등'
+    받는 = bpy.data.collections.new('글자등_받는것')
+    bpy.context.scene.collection.children.link(받는)
+    for o in 받는것들:
+        받는.objects.link(o)
+    등불.light_linking.receiver_collection = 받는
+    return 등불
+
+def 자수글자():
+    """자수 글자 — 밤천(Ink) 위 코랄 아플리케 + 테두리 새틴 땀(채택판 = 글자공방 3차 · 결광2).
+    손맛이 핵심: 각도 ±8° · 길이 ±12% · 자리 ±0.004 지터(고정 씨앗 — 재현 가능).
+    ⚠텍스트 변환 메시에 바로 퍼 심기 금지(함정 ①) — 법선·밀도가 들쭉날쭉해 털이 제멋대로 뻗친다.
+    복셀 리메시(0.018) 후 심는다 — 획이 가는 글자는 0.018 이 획을 뭉갤 수 있음(글자별 확인)."""
+    바닥 = 베개몸((1.35, 0.055, 0.95), 크리스=0.34, 레벨=4)
+    바닥.data.materials.append(직물결(매끈재질('밤천', 색['Ink'], 거칠기=0.96), 규모=200.0, 세기=0.045))
+    본문 = 인자.get('본문', '가')
+    bpy.ops.object.text_add()
+    t = bpy.context.object
+    t.data.body = 본문
+    글자체(t)
+    t.data.size = 1.28
+    t.data.extrude = 0.018
+    t.data.bevel_depth = 0.006
+    t.data.bevel_resolution = 3
+    t.data.align_x = 'CENTER'
+    t.data.align_y = 'CENTER'
+    t.rotation_euler = (math.radians(90), 0, 0)
+    글y = -0.075
+    t.location = (0, 글y, 0.03)
+    bpy.ops.object.convert(target='MESH')
+    rm = t.modifiers.new('리메시', 'REMESH')
+    rm.mode = 'VOXEL'
+    rm.voxel_size = 0.018
+    bpy.ops.object.modifier_apply(modifier='리메시')
+    bpy.ops.object.shade_smooth()
+    짧은퍼(t, 염료이름, 살재질(염료이름, 색[염료이름]),
+          털재질(염료이름, 색[염료이름]), 길이=0.022, 개수=9000)
+    ps = t.particle_systems[-1].settings
+    ps.clump_factor = 0.35
+    ps.roughness_1 = 0.03
+    ps.roughness_2 = 0.04
+    ps.rendered_child_count = ps.child_percent = 40
+    실재 = 매끈재질('테두리실', 색['Stitch'], 거칠기=0.5)
+    손 = random.Random(20260820)               # 고정 씨앗 — 같은 판이 다시 나온다
+    for (px, py, 각) in 글자곡선표본(본문, 1.28, 간격=0.115):
+        땀하나(px + 손.uniform(-0.004, 0.004), 글y - 0.026,
+              py + 0.03 + 손.uniform(-0.004, 0.004),
+              0.046 * 손.uniform(0.88, 1.12), 0.018, 실재,
+              회전y=-각 + 손.uniform(-8, 8))
+    return (0, -6.8, 0.0), 90
+
+def 레터프레스():
+    """레터프레스 — 다린천 불리언 눌림 + 먹 상감(채택판 = 글자공방 4차 · 스침 · 등힘=90).
+    어두운 글자는 띄우면 죽는다 — 대신 «천만» 은은한 정면광을 받아 먹과의 대비가 오른다."""
+    재질, 두께 = 판재질('다린천')
+    판 = 베개몸((1.35, 두께, 0.95), 크리스=0.34, 레벨=4)
+    판.data.materials.append(재질)
+    본문 = 인자.get('본문', '숙제')
+    bpy.ops.object.text_add()
+    커터 = bpy.context.object
+    커터.data.body = 본문
+    글자체(커터)
+    커터.data.size = 0.68
+    커터.data.extrude = 0.03
+    # ⚠커터에 베벨 금지(함정 ②) — 베벨 텍스트는 획 모서리에서 자기교차가 생겨 불리언이 천을 통째로
+    #   삼킨다(시험 2회 재현). 눌린 모서리의 부드러움은 스침광의 그늘이 대신 낸다.
+    커터.data.align_x = 'CENTER'
+    커터.data.align_y = 'CENTER'
+    커터.rotation_euler = (math.radians(90), 0, 0)
+    커터.location = (0, -두께, 0.06)
+    bpy.ops.object.convert(target='MESH')
+    m = 판.modifiers.new('눌림', 'BOOLEAN')
+    m.operation = 'DIFFERENCE'
+    m.object = 커터
+    커터.hide_render = True
+    먹 = 매끈재질('먹', 색['Ink'], 거칠기=0.85)   # 인쇄 잉크의 새틴 한 방울(모서리 하이라이트)
+    유리글자(본문, 0.6696, (0, -0.026, 0.06), 먹, 돌출=0.012, 베벨=0.0)
+    # 등힘 채택값 = 90(유호 08-20) — 200 은 스침의 명암이 씻겼고 150 도 위계가 평평했다.
+    글자등([판], 위치=(0, -2.4, 0.3), 크기=2.2, 힘=float(인자.get('등힘', '90')))
+    return (0, -6.8, 0.0), 90
+
+def 라벨태그():
+    """라벨 태그 — 직조라벨 + 손 지터 테두리 + 코랄 3 진행 숫자(채택판 = 글자공방 4차 · 스침 · 등힘=80).
+    글자등은 «천만» 받는다 — 코랄 3 은 어두운 글자색이라 직사에 바랜다(함정 ③)."""
+    라벨 = 베개몸((0.95, 0.055, 1.3), 크리스=0.42)
+    라벨.data.materials.append(직물결(매끈재질('라벨천', 색['Oat'], 거칠기=0.88)))
+    실재 = 매끈재질('실', 색['Deep Wool'], 거칠기=0.72)
+    손 = random.Random(20260820)
+    앞, w, h = -0.075, 0.72, 1.05
+    for (sx, sz, ex, ez) in ((-w, h, w, h), (w, h, w, -h), (w, -h, -w, -h), (-w, -h, -w, h)):
+        길이 = math.hypot(ex - sx, ez - sz)
+        n = max(3, int(길이 / 0.24))
+        변각 = math.degrees(math.atan2(ez - sz, ex - sx))
+        for i in range(n):
+            tt = (i + 0.5) / n
+            땀하나(sx + (ex - sx) * tt + 손.uniform(-0.006, 0.006), 앞,
+                  sz + (ez - sz) * tt + 손.uniform(-0.006, 0.006),
+                  0.075 * 손.uniform(0.9, 1.1), 0.026, 실재,
+                  회전y=-변각 + 손.uniform(-7, 7))
+    강조 = 매끈재질('진행실', 색['Coral 3'], 거칠기=0.6)
+    유리글자(인자.get('본문', '3'), 0.40, (-0.26, -0.070, 0.30), 강조, 돌출=0.012, 베벨=0.004)
+    유리글자(인자.get('본문2', '/ 10'), 0.26, (0.20, -0.064, 0.285), 실재, 돌출=0.010, 베벨=0.004)
+    유리글자('SYNK', 0.15, (0, -0.063, -0.55),
+            매끈재질('보조실', 색['Ash Wool'], 거칠기=0.72), 돌출=0.008, 베벨=0.003)
+    글자등([라벨], 위치=(0, -2.4, 0.0), 크기=2.0, 힘=float(인자.get('등힘', '80')))
+    return (0, -9.2, 0.0), 90
 
 형태들 = {'오브': 오브, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치, '털실진행바': 털실진행바,
         '단추토글': 단추토글, '밑그림': 밑그림, '페이지점': 페이지점, '폼폼': 폼폼, '시침핀': 시침핀,
         '와펜': 와펜, '블랭킷': 블랭킷, '실패스피너': 실패스피너, '직조라벨': 직조라벨,
-        '패턴지판': 패턴지판, '다린천판': 다린천판, '유리판': 유리판}
+        '패턴지판': 패턴지판, '다린천판': 다린천판, '유리판': 유리판,
+        '자수글자': 자수글자, '레터프레스': 레터프레스, '라벨태그': 라벨태그}
 if 형태 not in 형태들:
     raise SystemExit('모르는 형태: ' + 형태 + ' — 아는 것은 ' + '·'.join(형태들))
 카메라위치, 카메라피치 = 형태들[형태]()
@@ -526,9 +743,27 @@ def 등(이름, 위치, 회전, 크기, 힘):
     L.data.energy = 힘
     L.name = 이름
 
-등('키', (-2.8, -2.2, 3.4), (math.radians(46), math.radians(-30), 0), 4.0, 1400)
-등('필', (2.6, -2.2, 0.6), (math.radians(78), math.radians(28), 0), 4.0, 80)
-등('림', (0.6, 2.6, 2.8), (math.radians(-42), 0, 0), 3.0, 560)
+# 조명 변주(글자공방 08-20 이식) — 형태별 채택 조명이 기본값, 「조명=」 인자로 덮어쓴다.
+조명 = 인자.get('조명', {'자수글자': '결광2', '레터프레스': '스침', '라벨태그': '스침'}.get(형태, '원본'))
+if 조명 == '원본':
+    등('키', (-2.8, -2.2, 3.4), (math.radians(46), math.radians(-30), 0), 4.0, 1400)
+    등('필', (2.6, -2.2, 0.6), (math.radians(78), math.radians(28), 0), 4.0, 80)
+    등('림', (0.6, 2.6, 2.8), (math.radians(-42), 0, 0), 3.0, 560)
+elif 조명 == '결광2':
+    # 펠트 «결»의 조명 — 키를 작고 가깝게(자연 비네트) + 림은 은은한 후광.
+    # ⚠조명을 옮겼으면 노출을 다시 계산한다(함정 ④): 결광 키는 원본보다 1.5배 가까워 역제곱으로
+    #   두 배 세게 때린다(950@3.4 ≈ 2050@5.1 상당) — 분홍 씻김의 진범. 거리 보정값 = 650.
+    등('키', (-1.9, -2.3, 1.6), (math.radians(62), math.radians(-27), 0), 2.2, 650)
+    등('필', (2.6, -2.2, 0.5), (math.radians(80), math.radians(27), 0), 4.0, 50)
+    등('림', (0.3, 2.4, 2.6), (math.radians(-44), 0, 0), 2.0, 560)
+elif 조명 == '스침':
+    # 압인의 조명 — 빛이 표면을 왼쪽에서 스치면 눌린 홈의 그늘이 깊어진다.
+    # ⚠스침광은 33°가 하한(함정 ⑤) — 14° 는 코사인 소멸로 면이 통째로 꺼진다(시험 실측).
+    등('키', (-3.0, -1.6, 1.2), (math.radians(33), math.radians(-63), 0), 3.0, 1300)
+    등('필', (2.6, -2.2, 0.5), (math.radians(80), math.radians(27), 0), 4.0, 120)
+    등('림', (0.6, 2.6, 2.8), (math.radians(-42), 0, 0), 3.0, 300)
+else:
+    raise SystemExit('모르는 조명: ' + 조명 + ' — 아는 것은 원본·결광2·스침')
 
 bpy.ops.object.camera_add(location=카메라위치, rotation=(math.radians(카메라피치), 0, 0))
 씬.camera = bpy.context.object
