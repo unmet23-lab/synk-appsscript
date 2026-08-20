@@ -231,9 +231,9 @@ function HTML(접힌것, 지금 = '') {
   src:url('https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.woff2') format('woff2-variations');
 }
 :root{
-  --paper:#FAFAF9; --ink:#1B1B1A; --navy:#262626; --navy2:#08090C; --navy3:#373737;
+  --paper:#FBF7F0; --ink:#2B2320; --navy:#262626; --navy2:#08090C; --navy3:#373737;
   --slate:#8C8C8C; --slate2:#666666; --cream:#E4E4E7; --cream2:#EAEAEA; --cream3:#D1D2D4;
-  --coral:#FF6B5C; --wash:#FFE9E4; --forest:#13724A;
+  --coral:#F96859; --wash:#FEF0E9; --forest:#13724A;
   --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
   --gut:clamp(20px,4.5vw,56px);
 }

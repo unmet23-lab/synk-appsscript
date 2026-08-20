@@ -24,8 +24,13 @@ const fs = require('fs');
 // 모델·사고 수준은 모델정책이 정본이다(유호님 확정 "flash high" · 2026-08-05) — 여기 하드코딩하지 않는다.
 // 이 파일의 「2.5-flash 는 신규 키에 404」 실측이 그 정본의 근거 중 하나로 들어가 있다.
 const 정책 = require('./모델정책.js');
-// 말투 자는 voice-guard 가 정본이다(원본 = skills/synk-brand 「반례」 표). 여기서 규칙을 다시 쓰지 않는다.
-const { 위반찾기: 말투위반 } = require('../.claude/hooks/voice-guard.js');
+/* 말투 자는 voice-guard 가 정본이었다(원본 = skills/synk-brand 「반례」 표).
+ * 🔴 2026-08-19 자기검증 층 철거(e75fc7fc)로 그 훅이 사라졌고, **이 파일은 그 뒤로 부르면 즉시 죽었다**
+ *   (require 실패 · 실측 08-20). 규칙을 여기서 다시 쓰지 않는다(지침: 고칠 때 새 장치를 짓지 않는다)
+ *   — 대신 층을 «미실행»으로 드러낸다. 빈 배열로 물러서면 「말투 위반 0건」이 되어 안 잰 것이 통과로 읽힌다. */
+let 말투위반 = null;
+try { ({ 위반찾기: 말투위반 } = require('../.claude/hooks/voice-guard.js')); }
+catch { 말투위반 = null; }
 
 const 기본키경로 = 'C:/Users/q1212/SYNK_보안/제미나이.txt';
 const 제미나이픽 = 정책.제미나이설정(); // 기본 = gemini-3.6-flash / thinking_level=high
@@ -111,7 +116,9 @@ function 토큰대조(원문, 역번역, 표식) {
  *    (그건 voice-guard 훅이 파일에서 잡는 자리다), 직역 강제라 표현이 요란해지는 것까지
  *    말투 위반으로 세면 거름망이 아니라 모래주머니가 된다.
  *    → 조건을 하나만 바꿔 대조한다: 같은 자 · 같은 언어 · 다른 것은 「번역을 거쳤다」뿐. */
+/** @returns {Array|null} — `null` 은 «못 쟀다»다(빈 배열 = 「쟀는데 0건」과 갈린다). */
 function 말투대조(원문, 역번역) {
+  if (!말투위반) return null;          // 자가 없다 — 0건으로 위장하지 않는다
   if (!역번역) return [];
   const 원문규칙 = new Set(말투위반(원문).map((v) => v.id));
   return 말투위반(역번역).filter((v) => !원문규칙.has(v.id));
@@ -234,9 +241,13 @@ async function main() {
   }
 
   const 말투 = 말투대조(ko, 역번역);
+  const 말투미실행 = 말투 === null;
   if (!역실패) {
     console.log('\n■ 말투 (역번역에 **새로** 생긴 위반 = 번역이 뉘앙스를 뒤집었다는 신호)');
-    if (말투.length) {
+    if (말투미실행) {
+      console.log('  🔴 이 층은 **안 돌았다** — 자(.claude/hooks/voice-guard.js)가 2026-08-19 철거됐다.');
+      console.log('     0건이 아니라 «미측정»이다. 말투는 사람이 본다(자 = skills/synk-brand 「반례」 표).');
+    } else if (말투.length) {
       for (const v of 말투) console.log(`  ✖ [${v.id}] "${v.문구}" — ${v.왜}`);
       console.log('  → 원문엔 없던 위반이다. 몽골어 문장이 손실·비교·재촉 쪽에서 세고 있지 않은지 본다.');
     } else {
@@ -244,11 +255,12 @@ async function main() {
     }
   }
 
-  // 실패 방향: 어느 층이든 「모름」이면 통과가 아니다.
-  const 통과 = !!문법 && 문법.판정 === '정상' && !역실패 && !말투.length;
+  // 실패 방향: 어느 층이든 「모름」이면 통과가 아니다 — 미실행도 「모름」이다.
+  const 통과 = !!문법 && 문법.판정 === '정상' && !역실패 && !말투미실행 && !말투.length;
   const 사유 = !문법 ? '판정불능'
     : 역실패 ? '역번역 실패'
     : 문법.판정 !== '정상' ? `문법 판정: ${문법.판정}`
+    : 말투미실행 ? '말투 층 미실행(voice-guard 철거 — 사람 검수 필요)'
     : `말투 위반 ${말투.length}건(${말투.map((v) => v.id).join('·')})`;
   console.log(`\n■ 종합: ${통과 ? '✅ 기계 검문 통과 — 대외 확정본은 그래도 사람 검수' : '🔴 사람 검수 필요'} (${사유})`);
   process.exit(통과 ? 0 : 2);

@@ -395,7 +395,7 @@ function 상담_첫빈행_(sh, nameCol) {
  *   ③ 「처리상태」 드롭다운  ④ 헤더·틀고정·조건부 서식(브랜드 키트)
  * 실행: 일회성으로 doGet에서 호출 → 로그 확인 → 호출 제거·push (러너를 상시로 두지 않는다)
  * ═══════════════════════════════════════════════════════════════════ */
-const 브랜드_ = { navy: '#262626', coral: '#FF6B5C', lime: '#C8FF3D', cream: '#E4E4E7', paper: '#FAFAF9', ink: '#1B1B1A' };
+const 브랜드_ = { navy: '#262626', coral: '#F96859', lime: '#C8FF3D', cream: '#E4E4E7', paper: '#FBF7F0', ink: '#2B2320' };
 
 function 상담시트_업그레이드_() {
   const ss = SpreadsheetApp.openById(CONSULT_SHEET_ID);
@@ -432,7 +432,7 @@ function 상담시트_업그레이드_() {
     const rule = SpreadsheetApp.newDataValidation().requireValueInList(처리상태_, true).setAllowInvalid(true).build();
     const rng = sh.getRange(CONSULT_HDR_ROW + 1, c, 행수, 1);
     rng.setDataValidation(rule);
-    const 색 = { '신규접수': 브랜드_.coral, '검토중': '#E9A611', '상담완료': '#3B82F6', '반배정': '#7C3AED', '앱편입': '#16A34A', '보류': '#9CA3AF', '취소': '#6B7280' };
+    const 색 = { '신규접수': 브랜드_.coral, '검토중': '#F5C445', '상담완료': '#3B82F6', '반배정': '#7C3AED', '앱편입': '#16A34A', '보류': '#9CA3AF', '취소': '#6B7280' };
     const rules = Object.keys(색).map(function (s) {
       return SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo(s)
         .setBackground(색[s]).setFontColor('#FFFFFF').setRanges([rng]).build();
