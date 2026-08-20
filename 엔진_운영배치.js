@@ -877,7 +877,7 @@ function weeklyReport(asText) {
   body += '\n🏫 반별 현황\n';
   if (cs && cs.getLastRow() >= 2) {
     cs.getRange(2, 1, cs.getLastRow() - 1, 6).getValues().forEach(r => {
-      body += '· ' + r[0] + ': ' + r[1] + '명, 월간 ' + r[3] + 'P, 몬스터 ' + r[4] + '\n';
+      body += '· ' + r[0] + ': ' + r[1] + '명, 월간 ' + r[3] + 'P, 캐릭터 ' + r[4] + '\n';
     });
   }
   // [v7.7] 🔕 무포인트 경보 — 최근 QUIET_DAYS일간 포인트 0 (조용히 멀어지는 학생)
@@ -1354,7 +1354,7 @@ function leagueSettle_() {
           '. 이 리듬이면 다음 주 결과는 아무도 모른다 — 리벤지 매치, 이미 예약됐다 ⏳']);
       } else {
         storyRows.push([todayL, loser, '리그', '🌱 사라지지 않는 데미지',
-          '🌱 ' + loser + '의 이번 주 성장은 어디로도 사라지지 않는다 — 전부 우리 몬스터의 양분이 됐다. ' + topLine(loser) +
+          '🌱 ' + loser + '의 이번 주 성장은 어디로도 사라지지 않는다 — 전부 우리 캐릭터의 양분이 됐다. ' + topLine(loser) +
           '. 불씨는 살아있다, 다음 주에 더 크게 타오른다 🔥']);
       }
     }
@@ -1362,7 +1362,7 @@ function leagueSettle_() {
       memberCls[winner].forEach(sid => winRows.push([sid, PT.리그, '리그승리', 'SYSTEM']));
       noticeRows.push([
         '🏆 주간 리그 결과: ' + a + ' × ' + b,
-        '이번 주 리듬왕은 ' + winner + ' (1인 평균 ' + hi + ' : ' + lo + ')! 승리 반 전원 +' + PT.리그 + 'P. 양 반 모두의 데미지는 각자의 몬스터에게 그대로 쌓였습니다 🌱',
+        '이번 주 리듬 챔피언은 ' + winner + ' (1인 평균 ' + hi + ' : ' + lo + ')! 승리 반 전원 +' + PT.리그 + 'P. 양 반 모두의 데미지는 각자의 몬스터에게 그대로 쌓였습니다 🌱',
         new Date()]);
       noticed++;
     }
@@ -1427,7 +1427,7 @@ function leagueStoryDaily_() {
       perD[c] = perD[c] || {}; perD[c][sid] = (perD[c][sid] || 0) + pts;
       if (pts > 0 && rs === '숙제완료') hwCnt[c] = (hwCnt[c] || 0) + 1;
       if (pts > 0 && (rs.indexOf('MVP') > -1 || rs.indexOf('시냅스') > -1))
-        crownD[c] = nmD[sid] + josa(nmD[sid], '이', '가') + ' ' + (rs.indexOf('MVP') > -1 ? '🌟 MVP' : '⚡ 시냅스') + ' 왕관을 썼다';
+        crownD[c] = nmD[sid] + josa(nmD[sid], '이', '가') + ' ' + (rs.indexOf('MVP') > -1 || rs.indexOf('도전') > -1 ? '🔥 오늘의 도전' : '🌱 오늘의 성장') + '을 해냈다';
     }
   });
   const rsS = ensureSheet(ss, 'raid_story', ['date','class_name','유형','제목','스토리']);
@@ -2055,7 +2055,7 @@ function seedMasteryForExisting() {
 //   사라져 참조 0건(죽은 코드)임을 전수 스캔으로 확인. 필요해지면 git 이력(v9.52 이전)에서 복원.
 
 /* ===================== [v7.9] 학부모 주간 다이제스트 ===================== */
-// 일요일 22시 — 등원·포인트·왕관·레이드·배운 것을 학부모에게 한 통으로 (등원 즉시 메일 대체)
+// 일요일 22시 — 등원·포인트·도전·성장·레이드·배운 것을 학부모에게 한 통으로 (등원 즉시 메일 대체)
 function parentWeeklyDigest() { parentWeeklyDigestCore_(''); } // 일요일 밤 본발송
 
 // [v9.34] 다이제스트 보류 재시도 — 일요일 발송이 쿼터로 끊기면 app_state '다이제스트보류'(weekKey|발송완료 sid,…)가 남고,
@@ -2114,7 +2114,7 @@ function parentWeeklyDigestCore_(holdRaw) {
   const tagW = {}; // [v9.0] 칭찬 태그 — pl 루프보다 앞에 선언
   const pl = ss.getSheetByName('point_logs');
   if (pl && pl.getLastRow() >= 2) {
-    pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => { // [v9.51] 6열이면 충분 — 구 8열(H 태그) 읽기는 폐기(라이브 H열=🔒 Row ID라, 왕관 행의 Row ID 문자열이 '크루의 눈'에 태그로 새던 결함 차단)
+    pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => { // [v9.51] 6열이면 충분 — 구 8열(H 태그) 읽기는 폐기(라이브 H열=🔒 Row ID라, 도전·성장 행의 Row ID 문자열이 '크루의 눈'에 태그로 새던 결함 차단)
       const sid = r[1], pts = Number(r[2]) || 0, rs = String(r[3] || ''), d = r[5];
       if (!sid || !d) return;
       const dd = asDate_(d);
@@ -2157,8 +2157,8 @@ function parentWeeklyDigestCore_(holdRaw) {
     const raidSt = raidBy[k.cls] || '';
     const lines = [];
     lines.push('이번 주 등원 ' + att + '회 · 포인트 +' + pts + 'P');
-    if (mvpN || synN) lines.push('👑 왕관: ' + [mvpN ? '🌟 오늘의 MVP ' + mvpN + '회' : '',
-      synN ? '⚡ 오늘의 시냅스 ' + synN + '회' : ''].filter(String).join(' · '));
+    if (mvpN || synN) lines.push([mvpN ? '🔥 도전 ' + mvpN + '회' : '',
+      synN ? '🌱 성장 ' + synN + '회' : ''].filter(String).join(' · '));
     if (tagW[k.sid] && tagW[k.sid].length) { // [v9.0] 크루의 눈 — 한/몽 병기
       const uniq = tagW[k.sid].filter((v, i, a) => a.indexOf(v) === i);
       lines.push('💬 크루의 눈: ' + uniq.join(' · ') + ' / ' + uniq.map(t => TAG_MN[t] || t).join(' · '));
@@ -2224,8 +2224,14 @@ function restoreDrill() {
 // 매일 22시. ① MVP·오늘의 시냅스: 같은 날·같은 반 각 1명(최초 지급만 유효)  ② 숙제완료·생일축하: 학생당 하루 1회
 // 초과분은 자동 정정(-P) + 원장 경고. 정정은 성장·잔액·레이드 데미지·칭호 카운트까지 대칭으로 되돌린다.
 // today 기준 검사라 자정이 지나면 자동 초기화 — 다음 날은 다시 지급 가능.
-const DAILY_LIMIT = { '숙제완료': 1, '생일축하': 1, '오늘의다짐': 1, '칭찬': 1, '첨삭확인': 1, '퀴즈응답': 1, '재작성': 1 }; // 사유(정확 일치)별 학생당 일일 한도 — [v9.28] 학생 셀프 미션 1일 1회 · [v9.47·B4] 칭찬(PT.칭찬)도 학생당 1일 1회(왕관과 차별화되는 "작은 인정"·경제 보호, 초과분 야간 자동 정정+강사 통보)
-const CLASS_AWARDS = ['오늘의 MVP', '오늘의 시냅스']; // [v7.6] 반당 하루 1명 왕관 2종
+const DAILY_LIMIT = { '숙제완료': 1, '생일축하': 1, '오늘의다짐': 1, '칭찬': 1, '첨삭확인': 1, '퀴즈응답': 1, '재작성': 1,
+  '오늘의 도전': 1, '오늘의 성장': 1, '오늘의 MVP': 1, '오늘의 시냅스': 1 }; // 사유(정확 일치)별 학생당 일일 한도 — [v9.28] 학생 셀프 미션 1일 1회 · [v9.47·B4] 칭찬(PT.칭찬)도 학생당 1일 1회(왕관과 차별화되는 "작은 인정"·경제 보호, 초과분 야간 자동 정정+강사 통보)
+/* [재구성 08-20 · 유호 확정] 「반당 하루 1명」 강제(CLASS_AWARDS)를 걷었다 — 철학 ㉢(학생끼리
+ * 비교하지 않는다)과 제도 층에서 충돌했다: 매일 반에서 1등을 뽑는 장치였고, 왕관편중%·미수혜자
+ * 명단이 그 병을 덮는 순번 운영을 만들고 있었다(판정안 docs/왕관제도_재구성_판정안.md §3).
+ * 새 제도 = 기준을 채우면 그날 «전원» 받는다 · 상한은 학생당 하루 각 1회(위 DAILY_LIMIT).
+ * ⚠ 옛 rs('오늘의 MVP'·'오늘의 시냅스')는 point_logs 역사·Glide 버튼에 남아 판독은 전부 겸용이다. */
+const CLASS_AWARDS = []; // 반당 정원 제도 폐지 — 배열은 하위 코드 모양 보존용(빈 배열 = 어느 상도 반당 강제 없음)
 const TAG_MN = { '발음↑': 'Дуудлага ↑', '열정': 'Хичээл зүтгэл', '친구도움': 'Найздаа тусалсан', '집중력': 'Төвлөрөл' }; // [v9.0] 칭찬 태그 몽골어
 function dailyGuard() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -2239,7 +2245,7 @@ function dailyGuard() {
   pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
     if (r[0] && r[3] === 'student' && r[4]) classOf[r[0]] = r[4];
   });
-  const byAward = {}, fixedA = {};   // [v7.6] 왕관 2종: byAward[상][반] = 지급 목록
+  const byAward = {}, fixedA = {};   // [v7.6 잔형] 옛 반당 정원 집계 — CLASS_AWARDS 가 비어 지금은 안 돈다(모양 보존)
   const bySR = {}, fixedSR = {};     // [v7.5] 학생×사유: 하루 1회
   (pl.getLastRow() < 2 ? [] : pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues()).forEach(r => { // [v8.2]
     const sid = r[1], pts = Number(r[2]) || 0, rs = String(r[3] || ''), d = r[5];
@@ -2314,7 +2320,7 @@ function dailyGuard() {
   if (fixRows.length) {
     appendPoints(ss, fixRows);
     adminMail('[SYNK] ⚠️ 일일 한도 초과 자동 정정 ' + fixRows.length + '건',
-      'MVP·시냅스는 반당 하루 1명, 숙제완료·생일은 학생당 하루 1회 규칙입니다.\n' +
+      '도전·성장을 포함한 일일 항목은 학생당 하루 1회 규칙입니다(반당 정원 없음 — 기준을 채우면 전원).\n' +
       '초과 지급분을 자동 정정했습니다 (내일이 되면 다시 지급 가능).\n\n' +
       fixRows.map(r => '· ' + r[0] + ' ' + r[2] + ' ' + r[1] + 'P').join('\n'));
     // [v9.28] 강사 본인 통보 — 정정 사실이 원장에게만 가서 교실에서 이유도 모른 채 포인트가 깎이던 문제 수정
@@ -2322,14 +2328,14 @@ function dailyGuard() {
     Object.keys(teacherNotices).forEach(byName => {
       const email = emapDG.byKey[byName];
       if (email && quotaOk(1)) MailApp.sendEmail(email, '[SYNK] 오늘 지급하신 포인트 일부가 자동 정정됐어요',
-        '하루 한도(왕관 반당 1명·숙제완료/생일 학생당 1회)를 넘어 자동으로 되돌린 내역입니다:\n\n' +
+        '하루 한도(도전·성장·숙제완료·생일 = 학생당 하루 1회)를 넘어 자동으로 되돌린 내역입니다:\n\n' +
         teacherNotices[byName].join('\n') + '\n\n같은 학생·같은 항목은 내일부터 다시 지급 가능해요.');
     });
   }
   Logger.log('일일 가드: 정정 ' + fixRows.length + '건');
 }
 
-/* [v7.6] 일일 왕관(오늘의 MVP·오늘의 시냅스) 학부모 알림 — 반당 하루 1명씩의 희소 소식 (한·몽 병기, 통합 1통) */
+/* [v7.6→재구성 08-20] 일일 인정(오늘의 도전·오늘의 성장) 학부모 알림 — 기준을 채운 학생 전원에게 (한·몽 병기, 통합 1통) */
 function notifyDailyAwards() {
   if (!PARENT_MAIL_MVP) return;
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -2363,22 +2369,22 @@ function notifyDailyAwards() {
     if (!hasM && !hasS) return; // 정정으로 상쇄된 지급은 알림 제외
     const o = info[sid];
     if (o.m.indexOf('@') === -1) return;
-    const title = hasM && hasS ? '🌟 ' + o.n + ' — 오늘의 MVP + 시냅스!'
-      : hasM ? '🌟 ' + o.n + ' — 오늘의 MVP!'
-      : '⚡ ' + o.n + ' — 오늘의 시냅스!';
+    const title = hasM && hasS ? '🔥 ' + o.n + ' — 오늘의 도전 + 성장!'
+      : hasM ? '🔥 ' + o.n + ' — 오늘의 도전!'
+      : '🌱 ' + o.n + ' — 오늘의 성장!';
     let body = '';
-    if (hasM) body += o.n + ' 학생이 오늘 ' + o.c + ' 수업에서 최고의 참여자(오늘의 MVP)로 선정되었습니다! (+' + netM[sid] + 'P)\n' +
-      '발표·태도·집중을 종합해 선생님이 하루 단 한 명에게 드리는 왕관입니다.\n\n';
-    if (hasS) body += o.n + ' 학생이 오늘 가장 크게 성장한 학생(오늘의 시냅스)으로 선정되었습니다! (+' + netS[sid] + 'P)\n' +
-      '어제의 나보다 한 걸음 — 노력과 태도에 드리는 하루 단 한 명의 왕관입니다.\n\n';
+    if (hasM) body += o.n + ' 학생이 오늘 ' + o.c + ' 수업에서 「오늘의 도전」을 받았습니다! (+' + netM[sid] + 'P)\n' +
+      '처음 손 들기, 처음 발표처럼 그날 처음 해본 도전에 선생님이 드리는 인정입니다.\n\n';
+    if (hasS) body += o.n + ' 학생이 오늘 「오늘의 성장」을 받았습니다! (+' + netS[sid] + 'P)\n' +
+      '어제의 나보다 한 걸음 — 전에 틀린 것을 오늘 맞힌 그 성장에 드리는 인정입니다.\n\n';
     body += '많이 칭찬해주세요 🎉\n\n';
-    if (hasM) body += o.n + ' сурагч өнөөдрийн хичээлийн шилдэг оролцогчоор (MVP) шалгарлаа! (+' + netM[sid] + 'P)\n';
-    if (hasS) body += o.n + ' сурагч өнөөдөр хамгийн их өссөн сурагчаар (Өнөөдрийн синапс) шалгарлаа! (+' + netS[sid] + 'P)\n';
-    body += 'Багшийн өдөрт ганцхан хүнд өгдөг титэм — гэртээ магтаж урамшуулаарай 🎉';
+    if (hasM) body += o.n + ' сурагч өнөөдөр шинэ зүйлд зориглон оролдсоноороо «Өнөөдрийн сорилт» авлаа! (+' + netM[sid] + 'P)\n';
+    if (hasS) body += o.n + ' сурагч өчигдрийн өөрөөсөө нэг алхам урагшилж «Өнөөдрийн өсөлт» авлаа! (+' + netS[sid] + 'P)\n';
+    body += 'Гэртээ магтаж урамшуулаарай 🎉';
     if (quotaOk(1)) { MailApp.sendEmail(o.m, '[SYNK] ' + title, body); sent++; } // [v9.34] 발송 성공분만 카운트 — 쿼터 미발송을 '발송'으로 세어 허위 마킹·수동 복구 차단하던 결함 수정
   });
   if (st && sent) setState(st, 'MVP메일발송일', today);
-  Logger.log('일일 왕관 학부모 메일: ' + sent + '통');
+  Logger.log('일일 도전·성장 학부모 메일: ' + sent + '통');
 }
 
 /* [v7.3] 조사 헬퍼 — 받침 판정(바트카가/테무진이), 비한글(이모지 등)은 병기 폴백 */
@@ -2424,7 +2430,7 @@ function raidStoryDaily() {
       if (!dayD[cls]) dayD[cls] = {};
       dayD[cls][sid] = (dayD[cls][sid] || 0) + pts;
       if (!topReason[sid]) topReason[sid] = String(r[3] || '');
-      const rsC = String(r[3] || ''); // [v7.7] 오늘의 왕관 순계(정정 자동 상쇄)
+      const rsC = String(r[3] || ''); // [v7.7] 오늘의 도전·성장 순계(정정 자동 상쇄)
       if (rsC.indexOf('MVP') > -1) { if (!crM[cls]) crM[cls] = {}; crM[cls][sid] = (crM[cls][sid] || 0) + pts; }
       else if (rsC.indexOf('시냅스') > -1) { if (!crS[cls]) crS[cls] = {}; crS[cls][sid] = (crS[cls][sid] || 0) + pts; }
     }
@@ -2452,7 +2458,7 @@ function raidStoryDaily() {
   const boss = bossOfMonth(ss, Number(Utilities.formatDate(now, tz, 'M')));
   const bN = boss ? boss.name : '이달의 보스';
   const PARTS = ['왼쪽 눈', '오른쪽 뿔', '꼬리', '왼팔', '코어', '등딱지', '오른발'];
-  const VERB = { '숙제': '숙제 완검으로', 'MVP': '오늘의 MVP 왕관의 힘으로', '시냅스': '반짝이는 시냅스 스파크로', '칭찬': '빛나는 태도 광선으로',
+  const VERB = { '숙제': '숙제 완검으로', 'MVP': '오늘의 도전의 힘으로', '시냅스': '반짝이는 시냅스 스파크로', '칭찬': '빛나는 태도 광선으로',
                  '생일': '생일 축포로', '출석': '출석 러시로', '레이드': '승리의 기세로' };
   function verbOf(rs) { for (var k in VERB) { if (rs.indexOf(k) > -1) return VERB[k]; } return '기습 공격으로'; }
   function pick(arr, seed) {
@@ -2491,10 +2497,10 @@ function raidStoryDaily() {
       if (remain === 0) lines.push('💥 ' + bN + '이(가) 힘이 거의 다 빠졌다 — 마지막 한 번만 치면 쓰러진다!');
       else lines.push('🩸 ' + bN + ' 남은 HP: ' + remain + ' / ' + hp);
     }
-    const crowns = []; // [v7.7] 👑 오늘의 왕관 코너
+    const crowns = []; // [v7.7→08-20] 오늘의 도전·성장 코너
     if (crM[cls]) Object.keys(crM[cls]).forEach(s => { if (crM[cls][s] > 0) crowns.push('🌟 MVP: ' + (nameOf[s] || s)); });
     if (crS[cls]) Object.keys(crS[cls]).forEach(s => { if (crS[cls][s] > 0) crowns.push('⚡ 시냅스: ' + (nameOf[s] || s)); });
-    if (crowns.length) lines.push('👑 오늘의 왕관 — ' + crowns.join(' · '));
+    if (crowns.length) lines.push('✨ 오늘의 도전·성장 — ' + crowns.join(' · '));
     out.push([today, cls, '일일', '⚔️ ' + cls + ' — 오늘 ' + tot + ' 데미지!', lines.join(' ')]);
   });
   if (out.length) rsSh.getRange(rsSh.getLastRow() + 1, 1, out.length, 5).setValues(out);
@@ -2883,7 +2889,7 @@ function checkEvolution() {
           '] (으)로 진화했습니다!\n꾸준한 노력의 결과예요. 많이 칭찬해주세요 🎉\n\n- SYNK 학원');
       });
     }
-    adminMail('[SYNK] 🐲 몬스터 진화 ' + evolved.length + '명',
+    adminMail('[SYNK] 🐲 캐릭터 진화 ' + evolved.length + '명',
       evolved.map(e => '· ' + e.id + ' ' + e.name + ': ' + e.from + ' → ' + e.to).join('\n')); // [v5.4] 브리핑 통합 · [v9.34] quotaOk 게이트 밖으로 — DIGEST_MODE 큐라 쿼터 무관, 쿼터 부족 밤 원장 브리핑 증발 수정
   }
   if (imminent.length) { // [v5.4] 브리핑 통합
@@ -2927,7 +2933,7 @@ function checkEvolution() {
 //   눈으로 잇지 못한다. 인센티브점수는 '획득 / 가능' 문자열(미측정 지표는 분모에서도 빠진다).
 //   [v9.194] 숙제·근태 2지표 + 등급판정 편입 — 정본 §7 이 「앱 자동 90점 5항목」이라 잡은 표를 열로 다 편다.
 //   등급판정은 총점이 아니라 **판정 문장**이다('88점 · 실버 ×1.15 · 미측정 20점 제외' / '심사 스킵(…)').
-const TEACHER_STATS_HEADERS = ['강사', '담당학생수', '1인당출석', '1인당포인트', '1인당칭찬', '케어지수', '지난달왕관', '왕관편중%', '담당반',
+const TEACHER_STATS_HEADERS = ['강사', '담당학생수', '1인당출석', '1인당포인트', '1인당칭찬', '케어지수', '지난달인정', '인정편중%', '담당반',
                                '승급통과율%', '승급배점', '결석복귀율%', '복귀배점', '재등록률%', '재등록배점',
                                '숙제제출률%', '숙제배점', '근태위반', '근태배점', '인센티브점수', '등급판정', '지표모수'];
 
@@ -3156,7 +3162,7 @@ function calcTeacherStats() {
   //   진짜 매핑은 teacherEmailMap_.byClass(강사 행 E열). 집계 정의(확정):
   //   ① 한 반에 강사 여러 명 = 그 반 전원을 각 강사에게 온전히 귀속. 1인당 지표(출석·포인트·칭찬)가 공동 담당에서도
   //      단독 담당과 같은 척도여야 비교가 되므로 분수 분할하지 않는다 → 담당학생수 합계는 재적을 넘을 수 있다.
-  //   ② 한 강사 여러 반 = 담당 반 전체를 한 행으로 합산(왕관 편중%만 예외 — 아래 반 단위 최댓값).
+  //   ② 한 강사 여러 반 = 담당 반 전체를 한 행으로 합산(인정 편중%만 예외 — 아래 반 단위 최댓값).
   //   ③ 매핑 없는 반 = '(미지정) 반명'으로 반별 1행 유지. 한 줄로 뭉치면 반별 케어 신호가 사라지고, 빼버리면 학생이
   //      조용히 증발한다. 매핑을 채우는 순간 자동으로 강사 행에 접힌다(별도 마이그레이션 없음).
   const emap = teacherEmailMap_(ss);
@@ -3183,12 +3189,13 @@ function calcTeacherStats() {
     });
   });
 
-  // [v7.8] 👑 왕관 공정성 — 강사별 지난달 왕관 수 + 편중도(한 학생 최다 비중 %, 60%↑면 골고루 권장)
+  // [v7.8→08-20 재정의] 도전·성장 기회 사각 — 강사별 지난달 인정 수 + 편중도. 정원제 폐지로 이 열의 뜻이
+  //   «공정하게 돌렸나»(감시)에서 «기회가 안 닿는 아이가 있나»(사각 탐지)로 바뀌었다(판정안 §4 ㉯).
   // [v9.34] 당월→전월 + 병합 읽기 — 매월 1일(monthlyReport) 실행 시점엔 당월 로그 0건 + archiveMonthly가
   //   전월 로그를 이미 아카이브로 옮긴 뒤라, point_logs 단독 당월 집계는 항상 0/0으로 덮여 v7.8 공정성 감지가 무력했음
   const tz8 = ss.getSpreadsheetTimeZone();
   const ym8 = ymShift_(Utilities.formatDate(new Date(), tz8, 'yyyy-MM'), -1); // 전월
-  const crownBy = {}; // 반 단위 집계 — 강사 롤업은 아래에서(왕관은 반당 1명 체제라 공정성 단위 = 반)
+  const crownBy = {}; // 반 단위 집계 — 강사 롤업은 아래에서(반 단위가 기회 사각을 읽는 자연스러운 창이다)
   readPointLogs_(ss, 7).forEach(r => { // 병합 읽기(monthlyReport와 동일 패턴) — G열(연월) 기준 전월 필터
     const rs = String(r[3] || ''), pts = Number(r[2]) || 0;
     if (pts <= 0 || rs.indexOf('정정') > -1) return;
@@ -3391,8 +3398,8 @@ function calcTeacherStats() {
     const hw = hwBy[k] || null, pu = puBy[k] || null;
     const hwRate = hw ? hw.rate : null, 근태위반 = pu ? pu.위반 : null;
     const hwScore = hwFn(hwRate), puScore = puFn(근태위반);
-    // [v9.87] 왕관 총계 = 담당 반 합산 / 편중% = 반 단위 최댓값(가장 쏠린 반). 여러 반 학생을 한 통에 섞으면
-    //   한 반의 100% 쏠림이 반 수만큼 희석돼 60% 경보가 죽는다 — 왕관은 반당 1명([v7.9])이라 공정성 단위도 반이다.
+    // [v9.87] 인정 총계 = 담당 반 합산 / 편중% = 반 단위 최댓값(가장 쏠린 반). 여러 반 학생을 한 통에 섞으면
+    //   한 반의 100% 쏠림이 반 수만큼 희석돼 60% 경보가 죽는다 — 기회 사각을 읽는 단위도 반이다(08-20 재정의).
     let tot = 0, worst = 0;
     clsList.forEach(cn => {
       const cb = crownBy[cn];
@@ -3794,7 +3801,7 @@ function monthlyGameBatch() {
   });
   story.getRange(story.getLastRow() + 1, 1, stRows.length, 4).setValues(stRows);
 
-  // [v7.8] 🏆 왕관 시상식 준비 메일 — 실물 왕관·스티커 수여 명단 + 상장 문구(로어 재사용)
+  // [v7.8→08-20] 🏆 도전·성장 시상식 준비 메일 — 상장·스티커 수여 명단 + 상장 문구(로어 재사용)
   if (ttRows.length && quotaOk(1)) {
     const loreMap = {};
     const ctA = ss.getSheetByName('contents');
@@ -3809,13 +3816,13 @@ function monthlyGameBatch() {
       if (!byTitle[t[2]]) byTitle[t[2]] = [];
       byTitle[t[2]].push(nmA[t[1]] + (clA[t[1]] ? ' (' + clA[t[1]] + ')' : ''));
     });
-    let aBody = ym + ' 왕관 시상식 준비물입니다.\n월 첫 수업 30초 세리머니 추천 — 실물 종이 왕관·스티커 수여 + 📸 학부모 공유용 사진!\n\n';
+    let aBody = ym + ' 이 달의 도전·성장 시상식 준비물입니다.\n월 첫 수업 30초 세리머니 추천 — 상장·스티커 수여 + 📸 학부모 공유용 사진!\n\n';
     Object.keys(byTitle).forEach(t => {
       aBody += t + ' — ' + byTitle[t].join(', ') + '\n';
       if (loreMap[t]) aBody += '   상장 문구: "' + loreMap[t] + '"\n';
     });
     // [v9.120] quotaOk 가드 신설 — 관문 밖이던 마지막 발송
-    if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🏆 ' + ym + ' 왕관 시상식 준비', aBody);
+    if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🏆 ' + ym + ' 도전·성장 시상식 준비', aBody);
   }
 
   // [v7.3] 최고 월간 기록(자기 경신 AS·AT) + 이달의 스토리(AU) — 학부모·여정 탭 원클릭 바인딩용
@@ -3846,7 +3853,7 @@ function monthlyGameBatch() {
 
 /* ===================== 누적 업적 ===================== */
 
-// [v7.9] ⚠️ 업적 신규 추가 동결 — 일일 왕관 + 월간 칭호 + 영구 업적의 명예 3중 체계로 충분.
+// [v7.9] ⚠️ 업적 신규 추가 동결 — 일일 도전·성장 + 월간 칭호 + 영구 업적의 명예 3중 체계로 충분.
 //        더 늘리면 전부 안 귀해진다. 여정 탭 노출은 최근 3개만 (마스터 체크리스트 참조).
 
 /* [v9.252 · #Q104] 등수에서 나온 업적의 이름 — **정본은 여기 하나다.** 아래 `award` 호출부도
@@ -4031,7 +4038,7 @@ function checkAchievements() {
       newRows.map(r => '· ' + r[0] + ' — ' + r[2] + ' ' + r[1]).join('\n')); // [v5.4] 브리핑 통합
   }
 
-  // [v7.7] 👑 왕관 컬렉션 — MVP·시냅스 누적 횟수를 AW·AX에 (여정 탭 "🌟 ×4 · ⚡ ×7" 표시용)
+  // [v7.7→08-20] 도전·성장 컬렉션 — 누적 횟수를 AW·AX에 따로 (여정 탭 "🔥 ×4 · 🌱 ×7" 표시용)
   if (pf.getMaxColumns() < 50) pf.insertColumnsAfter(pf.getMaxColumns(), 50 - pf.getMaxColumns());
   const crownOut = pfData.map(r =>
     (r[0] && r[3] === 'student') ? [spkAll[r[0]] || 0, praiseAll[r[0]] || 0] : ['', '']);
