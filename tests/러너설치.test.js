@@ -135,7 +135,10 @@ test('🔴 스위치 이름·라벨이 워크플로와 갈라지지 않는다', 
 
   const l = /^LABEL="([^"]+)"$/m.exec(원문);
   assert.ok(l, '스크립트에서 LABEL 을 못 읽었다');
-  assert.match(wf, new RegExp(`runs-on:\\s*\\[[^\\]]*\\b${l[1]}\\b`),
+  /* 🔑 `runs-on` 이 **조건식**이 된 뒤로 배열 표기(`[a, b]`)를 못 박으면 안 된다(2026-08-19) —
+   *   public/private 두 판을 받느라 private 갈래가 `fromJSON('["self-hosted","linux"]')` 안에 산다.
+   *   재는 것은 표기가 아니라 **라벨이 그 줄에 살아 있는가**다. 표기를 세면 갈래가 하나로 접힌다. */
+  assert.match(wf, new RegExp(`^\\s*runs-on:.*\\b${l[1]}\\b`, 'm'),
     `스크립트가 다는 라벨(${l[1]})을 워크플로의 runs-on 이 요구하지 않는다 — 러너가 job 을 못 잡는다`);
 });
 
