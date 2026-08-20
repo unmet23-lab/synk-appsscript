@@ -488,8 +488,10 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
     for (const b of d.broken) red.push({ kind: '깨진 링크', text: `${b.from} --${b.type}> ${b.target}` });
     for (const g of d.ghostInIndex) red.push({ kind: '인덱스 유령', text: `MEMORY.md가 없는 파일을 가리킨다: ${g}` });
     for (const u of d.unknown) warn.push({ kind: '미지 링크 타입', text: `${u.from}: ${u.type}>${u.target}` });
-    for (const m of d.missingFromIndex) warn.push({ kind: '인덱스 누락', text: m });
-    for (const o of d.orphans) warn.push({ kind: '고아 노드', text: o });
+    /* 「인덱스 누락」·「고아 노드」 검사는 08-20 은퇴 — 옛 규약(토픽 전수를 MEMORY.md 에 등재)의
+     * 검사다. 새 규약(08-20 압축: 인덱스는 핵심만 · 토픽 356벌은 이름으로 연다)에서 인덱스 밖은
+     * 정상이라, 이 두 경고는 매 실행 «정상을 소음으로» 냈다(실측: 누락 12 · 전부 의도된 비등재).
+     * ghostInIndex(인덱스가 죽은 파일을 가리킴)는 남는다 — 그건 새 규약에서도 진짜 부패다. */
   }
 
   if (doc.ok) {
