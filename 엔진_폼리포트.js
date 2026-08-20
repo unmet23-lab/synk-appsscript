@@ -2106,7 +2106,7 @@ function drawScoreChart_(sl, scores) {
   marker.remove();
   if (!scores || !scores.length) {
     const tb = sl.insertTextBox('이번이 첫 기록! ✨', L, T, W, H);
-    tb.getText().getTextStyle().setFontSize(13).setBold(true).setForegroundColor('#1A2340'); // [v9.35] 토큰 잉크
+    tb.getText().getTextStyle().setFontSize(13).setBold(true).setForegroundColor('#262626'); // [v9.35] 토큰 잉크
     return;
   }
   const use = scores.slice(-5), n = use.length;
@@ -2115,7 +2115,7 @@ function drawScoreChart_(sl, scores) {
     const sc = Math.max(0, Math.min(100, Number(use[i]) || 0));
     const bh = Math.max(H * (sc / 100), 2);
     const bar = sl.insertShape(SlidesApp.ShapeType.ROUND_RECTANGLE, L + i * slot + (slot - barW) / 2, T + H - bh, barW, bh);
-    bar.getFill().setSolidFill(i === n - 1 ? '#FF6B5C' : '#1A2340'); // [v9.35] 토큰 정렬 — 막대=인디고 · 최신 끝점=코랄 강조 (레이아웃 무변경)
+    bar.getFill().setSolidFill(i === n - 1 ? '#FF6B5C' : '#262626'); // [v9.35] 토큰 정렬 — 막대=인디고 · 최신 끝점=코랄 강조 (레이아웃 무변경)
     bar.getBorder().setTransparent();
   }
 }
@@ -3134,7 +3134,7 @@ function worldRaidMonthly_() { // 매월 1일: 지난달 판정·보상 → 이�
 }
 
 // [v9.12] 🃏 이달의 카드 — 월말 성과를 트레이딩 카드로 (0P도 참가 카드 — 소외 없음)
-const CARD_TIERS = [[200,'플래티나','linear-gradient(135deg,#F6F1E8,#E7DDC7,#FFE9E4)','💎'],[100,'골드','linear-gradient(135deg,#F5A623,#FDE68A)','🥇'],[50,'실버','linear-gradient(135deg,#CBD5E1,#F1F5F9)','🥈'],[0,'브론즈','linear-gradient(135deg,#D6A67C,#F3E3CF)','🥉']];
+const CARD_TIERS = [[200,'플래티나','linear-gradient(135deg,#E4E4E7,#D1D2D4,#FFE9E4)','💎'],[100,'골드','linear-gradient(135deg,#F5A623,#FDE68A)','🥇'],[50,'실버','linear-gradient(135deg,#CBD5E1,#F1F5F9)','🥈'],[0,'브론즈','linear-gradient(135deg,#D6A67C,#F3E3CF)','🥉']];
 function buildMonthlyCards_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
@@ -3180,7 +3180,7 @@ function buildMonthlyCards_() {
       '<div style="font-size:11px;color:#6B7280;">SYNK ' + ym + ' · ' + tier[3] + ' ' + tier[1] + '</div>' +
       '<div style="font-size:17px;font-weight:800;padding:3px 0;">' + s.nm + '</div>' +
       (mi.indexOf('http') === 0 ? '<img src="' + mi + '" style="width:72px;image-rendering:pixelated;display:block;margin:2px auto 0;"/>' : '') + // [v9.35] A안 이미지에도 무해
-      '<div style="font-size:12px;color:#131A32;">' + s.mon + '와 함께한 한 달</div>' +
+      '<div style="font-size:12px;color:#1D1D1C;">' + s.mon + '와 함께한 한 달</div>' +
       '<div style="font-size:11px;color:#6B7280;padding-top:2px;">' + (function(){ const ps2 = playStyleOf_(cardLogs[s.id] || []); return ps2[0] + ' ' + ps2[1]; })() + '</div>' +
       '<div style="font-size:13px;padding-top:6px;border-top:1px dashed #E5E7EB;margin-top:6px;">' + stat + '</div>' +
       '</div></div>'];
@@ -3232,10 +3232,10 @@ function updateTravelMap_() {
   for (let i = 0; i < 12; i++) {
     const nm = MAP_NAME[i];
     cells += done[i]
-      ? '<div style="width:31%;margin:1%;background:linear-gradient(135deg,#FBF7EE,#F6F1E8);border:2px solid #E7DDC7;border-radius:12px;text-align:center;padding:8px 0;float:left;"><div style="font-size:22px;">' + MAP_EMOJI[i] + '</div><div style="font-size:11px;font-weight:700;">' + nm + '</div><div style="font-size:10px;color:#131A32;">⭕ 정복!</div></div>'
+      ? '<div style="width:31%;margin:1%;background:linear-gradient(135deg,#FAFAF9,#E4E4E7);border:2px solid #D1D2D4;border-radius:12px;text-align:center;padding:8px 0;float:left;"><div style="font-size:22px;">' + MAP_EMOJI[i] + '</div><div style="font-size:11px;font-weight:700;">' + nm + '</div><div style="font-size:10px;color:#1D1D1C;">⭕ 정복!</div></div>'
       : '<div style="width:31%;margin:1%;background:#F3F4F6;border:2px dashed #D1D5DB;border-radius:12px;text-align:center;padding:8px 0;float:left;opacity:.75;"><div style="font-size:22px;">🌫️</div><div style="font-size:11px;color:#9CA3AF;">???</div><div style="font-size:10px;color:#9CA3AF;">' + (i + 1) + '월의 무대</div></div>';
   }
-  const html = CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #E7DDC7;border-radius:16px;padding:12px;"><div style="font-size:14px;font-weight:800;padding-bottom:6px;">🗺️ 시냅스 여행 지도 — 한국 12경 <span style="color:#131A32;">' + n + '/12곳 정복</span></div><div style="overflow:hidden;">' + cells + '</div><div style="clear:both;font-size:11px;color:#6B7280;padding-top:6px;">매달 싱크 스토리가 발간되면 새로운 무대에 도장이 찍혀요 📖</div></div>';
+  const html = CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #D1D2D4;border-radius:16px;padding:12px;"><div style="font-size:14px;font-weight:800;padding-bottom:6px;">🗺️ 시냅스 여행 지도 — 한국 12경 <span style="color:#1D1D1C;">' + n + '/12곳 정복</span></div><div style="overflow:hidden;">' + cells + '</div><div style="clear:both;font-size:11px;color:#6B7280;padding-top:6px;">매달 싱크 스토리가 발간되면 새로운 무대에 도장이 찍혀요 📖</div></div>';
   const st = ensureSheet(ss, 'app_state', ['key','value']);
   const data = st.getLastRow() < 2 ? [] : st.getRange(2, 1, st.getLastRow() - 1, 2).getValues();
   let found = -1;
