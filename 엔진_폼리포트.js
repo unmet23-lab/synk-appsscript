@@ -3175,7 +3175,7 @@ function buildMonthlyCards_() {
       : '🌟 다음 달 주인공 예약';
     const mi = String(monMapC[s.mon] || ''); // [v9.35]
     // [v9.35] 골격을 소프트 글로우 축으로 정렬(보더 #C4B5FD 2px·라운드 18/12·섀도) — 티어 그라디언트는 유지
-    return [ym, s.id, CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:' + tier[2] + ';border:2px solid #FBB7A3;border-radius:18px;padding:10px;max-width:230px;box-shadow:0 6px 18px rgba(255,107,92,.14);">' +
+    return [ym, s.id, CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:' + tier[2] + ';border:2px solid #FBB7A3;border-radius:18px;padding:10px;max-width:230px;box-shadow:0 6px 18px rgba(249,104,89,.14);">' +
       '<div style="background:#fff;border-radius:12px;padding:10px 12px;text-align:center;">' +
       '<div style="font-size:11px;color:#6B7280;">SYNK ' + ym + ' · ' + tier[3] + ' ' + tier[1] + '</div>' +
       '<div style="font-size:17px;font-weight:800;padding:3px 0;">' + s.nm + '</div>' +
