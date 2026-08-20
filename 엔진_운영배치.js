@@ -1,6 +1,6 @@
 // SYNK 엔진 분할부 — 운영 배치 — 상담 동기화·백업·알림·주간/월간 리포트·KPI·생일·레이드·출결 보드·숙제 전개·학습추적·다이제스트·한도 가드·결석 추적·진화·강사 케어·아카이빙·월간 게임 배치·누적 업적.
 // 원본은 Code.js 단일 파일이었다. 로드 순서 정본 = .clasp.json filePushOrder(상수 정본 Code.js가 선두). 표식 기반 테스트는 tests/_engine-source.js가 전 파일을 합본해 본다.
-// <!-- 파생: docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 급여 인센티브 정본.txt@v1.7 -->
+// <!-- 파생: docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 급여 인센티브 정본.txt@v1.8 -->
 //   ↑ 강사 인센티브 채점(정본 §7)을 이 파일이 그대로 구현한다 — 배점 구간·첫 시즌 표·미측정 재정규화·
 //   등급 배수가 전부 그 문서의 값이다. 정본이 오르면 doc-graph 가 이 줄을 「낡은 인용」으로 잡고,
 //   그 문서를 편집하는 세션에게는 doc-propagation 이 이 파일을 파생으로 띄운다. 대조 뒤 갱신 =
