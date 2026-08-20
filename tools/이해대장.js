@@ -92,7 +92,7 @@ ${줄}
 /** 브랜드 킷 — DESIGN.md §1 이 정본. 여기 있는 것은 «인용»이고, 새 색을 만들지 않는다. */
 const 킷 = {
   paper: '#FAFAF9', ink: '#1B1B1A', navy: '#262626', navy2: '#08090C', navy3: '#373737',
-  cream: '#E4E4E7', cream3: '#D1D2D4', slate2: '#676767',
+  cream: '#E4E4E7', cream3: '#D1D2D4', slate2: '#666666',
   coral: '#FF6B5C', coral3: '#E8543F', coralWash: '#FFE9E4',
   sun: '#FFD447', emerald: '#13724A',
 };
