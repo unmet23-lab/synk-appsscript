@@ -24,6 +24,9 @@ const OUT = process.env.SYNK_토큰_OUT
   : path.join(ROOT, 'docs', 'tools', 'synk-tokens.css');
 
 const slug = (이름) => 이름.toLowerCase().replace(/\s+/g, '-');
+/* `_` 접두는 이 파일 전체의 «메타» 규약이다(_정본·_규약·_킷주·_주). 시맨틱 블록 안에도 설명을
+ * 달 수 있어야 하는데 빌더만 그 규약을 몰라서, 주석 한 줄이 「킷에 없는 이름」으로 죽었다(실측 08-20). */
+const 값칸 = (o) => Object.entries(o).filter(([k]) => !k.startsWith('_'));
 
 // 시맨틱 값은 킷 「이름」 참조다 — 모르는 이름이면 조용히 넘기지 않고 죽는다.
 const 킷맵 = Object.fromEntries(토큰.색.킷.map((c) => [c.이름, c.hex]));
@@ -40,14 +43,14 @@ function build() {
   for (const c of 토큰.색.킷) L.push(`  --synk-${slug(c.이름)}:${c.hex}; /* ${c.직책} */`);
   const 라 = 토큰.색.시맨틱.라이트;
   L.push('  /* 시맨틱(라이트 기본) */');
-  for (const [k, v] of Object.entries(라)) L.push(`  --synk-${slug(k)}:${hexOf(v, `라이트.${k}`)}; /* = ${v} */`);
+  for (const [k, v] of 값칸(라)) L.push(`  --synk-${slug(k)}:${hexOf(v, `라이트.${k}`)}; /* = ${v} */`);
   L.push(`  --synk-font:${토큰.서체.본문스택};`);
   L.push(`  --synk-font-mono:${토큰.서체.모노스택};`);
   L.push(`  --synk-mn-scale:${토큰.서체.몽골어보정};`);
   L.push('}');
   L.push('/* 다크 — 앱·반전면. 근거 = 컨셉 정본 코랄 5단 다크 열 + Lime 운용 */');
   L.push('[data-synk-theme="dark"]{');
-  for (const [k, v] of Object.entries(토큰.색.시맨틱.다크)) L.push(`  --synk-${slug(k)}:${hexOf(v, `다크.${k}`)}; /* = ${v} */`);
+  for (const [k, v] of 값칸(토큰.색.시맨틱.다크)) L.push(`  --synk-${slug(k)}:${hexOf(v, `다크.${k}`)}; /* = ${v} */`);
   L.push('}');
   return L.join('\n') + '\n';
 }
