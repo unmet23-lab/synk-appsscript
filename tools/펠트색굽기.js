@@ -29,7 +29,9 @@ const path = require('path');
 const { 키, 한컷 } = require('./lib/이미지굽기');
 
 const REPO = path.resolve(__dirname, '..');
-const 폴더 = path.join(REPO, 'docs/캐릭터/펠트코랄_0815');
+/* 정본 폴더는 손으로 안 든다(2026-08-20) — 주인은 `docs/디자인_토큰.json` 이고
+ * `lib/마스코트자산.js` 가 창구다. 정본이 갈리면 이 도구가 저절로 따라간다. */
+const 폴더 = path.join(REPO, require('./lib/마스코트자산.js').정본폴더);
 const 참조 = {
   재염색: path.join(폴더, '재염색_본체.png'),
   견본: path.join(폴더, '코랄견본.png'),
