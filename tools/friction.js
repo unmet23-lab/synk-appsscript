@@ -215,7 +215,8 @@ function 겹침배너(조각들) {
 }
 
 function read() {
-  const text = fs.readFileSync(LEDGER, 'utf8');
+  // 옛 단일 아카이브(마찰신호.md)는 압축(08-20)으로 은퇴 — 없으면 조각(장부/F*.md)만으로 선다
+  const text = fs.existsSync(LEDGER) ? fs.readFileSync(LEDGER, 'utf8') : '';
   const lines = text.split('\n');
   const rows = [];
   const 넣기 = (line, i, 파일) => {
@@ -967,8 +968,8 @@ function 이세션분(sid) {
 
 function main() {
   const args = process.argv.slice(2);
-  if (!fs.existsSync(LEDGER)) {
-    console.error(`[friction] 장부가 없다: ${LEDGER}`);
+  if (!fs.existsSync(FOLDER) && !fs.existsSync(LEDGER)) {
+    console.error(`[friction] 장부가 없다: ${FOLDER} — 조각 폴더도 옛 아카이브(${LEDGER})도 없다`);
     process.exit(1);
   }
   const cmd = args[0];
