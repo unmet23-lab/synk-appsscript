@@ -57,6 +57,8 @@ const 기본가지 = 'master';
  * (같은 판정을 두 곳에 적으면 갈라진다 · 사연은 tools/lib/master동기.js 머리말). */
 const 동기 = require(path.join(__dirname, 'lib', 'master동기.js'));
 const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('../.claude/hooks/lib/board-id.js');
 
 /** 스로틀 간격(분). 0 = 끄기(항상 조회). 기본 10분 — 작업본소유자의 fetch 스로틀과 같은 값. */
 const 신선_분 = Number(process.env.SYNK_PR_LIST_MIN ?? 10);
@@ -175,7 +177,7 @@ function 죽기(사유, 처방) {
 }
 
 function 지문() {
-  return (process.env.CLAUDE_CODE_HOST_SESSION_ID || '').replace(/^local_/, '').slice(0, 8) || null;
+  return 보드id.보드지문() || null;
 }
 
 /** 지금 어느 가지에 서 있나. detached 면 null. */

@@ -51,6 +51,8 @@ const 보드 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '보드.
 const 표 = require(path.join(__dirname, '..', '..', 'tools', 'lib', '표.js'));
 const store = require(path.join(__dirname, 'lib', 'handoff-store.js'));
 const wt = require(path.join(__dirname, 'lib', 'worktrees.js'));
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('./lib/board-id.js');
 
 /** 실패를 null 로 돌려주는 git — 이 훅은 편의지 안전장치가 아니다. git 사정으로 작업을 세우지 않는다.
  *
@@ -76,7 +78,7 @@ if (!/^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool)) process.exit(0);
 
 /* 세션 id 가 둘이다 — 트레일러에 박히는 건 **호스트 id** 다(prepare-commit-msg 가 그렇게 적었다).
  * 내부 에이전트 id 로 대조하면 내 커밋을 하나도 못 알아보고, 그러면 내 커밋마다 나를 경고한다. */
-const 내세션 = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || input.session_id || '').trim();
+const 내세션 = String(보드id.보드id() || input.session_id || '').trim();
 
 /* 🔑 상태 파일 키는 cwd 가 아니라 **메인 작업 트리**로 잡는다 (F079).
  *   cwd 해시로 잡으면 워크트리 세션이 다른 키를 받아(실측 `cec367f48f` vs `1fc2df68ae`)

@@ -53,6 +53,31 @@ const allHooks = Object.entries(settings.hooks).flatMap(([event, groups]) =>
 const preToolUse = allHooks.filter((h) => h.event === 'PreToolUse');
 const 훅이름 = (h) => (String(h.command).match(/hooks\/([a-z-]+)\.js/) || [])[1] || '';
 
+/* ── 등록 명령에서 «실행되는 저장소 경로»를 뽑는 공용 통로 ──────────────
+ * 두 검사(③ 죽은 참조 · ④ 스캔 범위)가 각자 정규식을 들고 있었고, 둘 다 같은 자리에서 샜다.
+ * 판정을 두 곳에 적으면 갈라진다(CLAUDE.md) — 여기 하나에서 파생한다.
+ *
+ * 🔴 실측(2026-08-19 · `가드강등.js` 를 처음 실제로 켠 자리):
+ *   그 도구는 훅 명령 **앞**에 존재 검사 한 조각을 끼운다 —
+ *   `[ -f "${CLAUDE_PROJECT_DIR:-$PWD}/.claude/개원.json" ] || exit 0;`
+ *   그런데 이 절이 가리키는 것은 **실행되는 스크립트가 아니라 플래그 파일**이고,
+ *   미개원 동안 **없는 것이 정상**이다. 걷어내지 않으면 두 검사가 이것을 훅 스크립트로 오인한다.
+ *   ③은 첫 매치 하나만 뽑던 탓에 **원래 보던 스크립트를 대신 잃었고**, ④는 `개원.json` 의
+ *   `.js` 를 물어 `.claude/개원.js` 라는 있지도 않은 경로를 만들어냈다.
+ *   ⚠ 새는 방향이 더 나쁘다 — 지금은 fail 로 드러나지만, 개원해서 그 파일이 **생기면**
+ *     ③은 초록인 채 **훅 스크립트를 한 건도 안 본다**(맹점 ④ · 맞는 얼굴로 틀린 값).
+ *
+ * 파일명이 아니라 **형태**로 건다 — `|| exit 0` 으로 끝나는 존재 검사만 걷어내므로
+ * 스위치가 다른 파일을 보도록 바뀌어도 따라온다. 가드 자신의 실패 안전 절
+ * (`|| { … exit 2; }`)은 형태가 달라 걸리지 않는다. */
+const 스위치절 = /\[\s+-f\s+"\$\{CLAUDE_PROJECT_DIR:-\$PWD\}\/[^"]*"\s+\]\s+\|\|\s+exit\s+0;\s*/g;
+const 실행부 = (cmd) => String(cmd).replace(스위치절, '');
+
+/* 명령이 실제로 실행하는 경로를 **전부** 뽑는다.
+ * ⚠ 첫 매치만 뽑으면 명령이 두 경로를 참조할 때 나머지가 조용히 안 보인다 — 위 실측이 그 사례다. */
+const 참조경로 = (cmd) =>
+  [...실행부(cmd).matchAll(/\$\{CLAUDE_PROJECT_DIR:-\$PWD\}\/([^"'\s]+)/g)].map((m) => m[1]);
+
 /* 정보성 훅 — **가드가 아니다.** 막는 게 목적이 아니라 알리는 게 목적이다.
  * 이런 훅에 「못 돌면 deny」를 걸면, 편의 기능 하나가 고장났다고 **모든 Edit/Write 가 막힌다.**
  * 그건 F044 가 막으려던 것(가드의 조용한 통과)과 다른 방향의 사고다.
@@ -172,10 +197,11 @@ test('정보성 훅은 반대로 **차단하면 안 된다** — 그 예외를 �
 // ── ③ 죽은 참조 금지 ────────────────────────────────────────────────
 test('훅이 가리키는 파일이 실제로 존재한다', () => {
   for (const h of allHooks) {
-    const m = h.command.match(/\$\{CLAUDE_PROJECT_DIR:-\$PWD\}\/([^"]+)/);
-    assert.ok(m, `${h.event} 훅에서 대상 파일 경로를 못 읽었다`);
-    const target = path.join(ROOT, m[1]);
-    assert.ok(fs.existsSync(target), `훅이 없는 파일을 가리킨다: ${m[1]}`);
+    const 경로들 = 참조경로(h.command);
+    assert.ok(경로들.length, `${h.event} 훅에서 대상 파일 경로를 못 읽었다`);
+    for (const p of 경로들) {
+      assert.ok(fs.existsSync(path.join(ROOT, p)), `훅이 없는 파일을 가리킨다: ${p}`);
+    }
   }
 });
 
@@ -313,9 +339,8 @@ test('④ 스캔 범위 — 훅·도구·**라이브 엔진**·테스트에 다 
   // 훅으로 등록된 스크립트는 **전부** 대상이어야 한다 — 목록을 손으로 적지 않으므로 자동으로 따라온다.
   const 등록된 = new Set();
   for (const h of allHooks) {
-    for (const [, 경로] of String(h.command).matchAll(/\$\{CLAUDE_PROJECT_DIR:-\$PWD\}\/([^"'\s]+\.js)/g)) {
-      등록된.add(경로);
-    }
+    // `\.js` 를 앵커 없이 걸면 `개원.json` 이 `개원.js` 로 잘려 **없는 경로가 만들어진다**(위 실측).
+    for (const 경로 of 참조경로(h.command)) if (/\.js$/.test(경로)) 등록된.add(경로);
   }
   assert.ok(등록된.size >= 20,
     `등록 명령에서 스크립트 경로를 못 뽑았다(${등록된.size}건) — 표기가 바뀌었으면 이 검사부터 고친다`);
@@ -353,4 +378,45 @@ test('④ 탐지력 — 날문자는 잡고, 이스케이프 표기는 안 잡�
   // 탭·개행은 소스에 정상적으로 있다
   const 평범 = 'a' + String.fromCharCode(9) + 'b' + String.fromCharCode(10) + 'c';
   assert.deepStrictEqual(날문자들(평범), [], '탭·개행을 위반으로 셌다 — 저장소 전체가 빨개진다');
+});
+
+/* ── 위 두 검사의 «탐지력» — 픽스처로 못박는다 ──────────────────────────
+ * 실저장소만 보면 「위반 0건」과 「아무것도 못 뽑았다」가 같은 초록이다(F207).
+ * 여기서는 **뽑아야 할 것을 뽑는지**와 **죽은 경로를 여전히 잡는지**를 양쪽으로 잰다.
+ *
+ * 대가(CLAUDE.md — 새 장치엔 함께 적는다):
+ *  · 틀릴 때의 모습 = 스위치 표기가 바뀌면 `실행부` 가 못 걷어내고 ③이 다시 플래그 파일을
+ *    스크립트로 오인한다. 그 순간 아래 ⑥이 fail 로 먼저 운다 — 조용히 새지 않는다.
+ *  · 닫은 것 = ③·④가 각자 들고 있던 경로 정규식 2개를 `참조경로` 하나로 합쳤다(갈라짐 제거).
+ */
+test('🔑 참조경로 — 스위치가 껴도 진짜 스크립트를 계속 본다 (2026-08-19 실측 회귀)', () => {
+  const P = '${CLAUDE_PROJECT_DIR:-$PWD}/';
+  const 스위치 = '[ -f "' + P + '.claude/개원.json" ] || exit 0; ';
+  const 본체 = 'H="' + P + '.claude/hooks/board-guard.js"; node "$H"';
+
+  // ① 스위치가 껴도 본체 경로를 잃지 않는다 — 이게 깨지면 검사가 초록인 채 0건을 본다.
+  assert.deepStrictEqual(참조경로(스위치 + 본체), ['.claude/hooks/board-guard.js']);
+
+  // ② 스위치 유무가 판정을 바꾸지 않는다.
+  assert.deepStrictEqual(참조경로(스위치 + 본체), 참조경로(본체));
+
+  // ③ 명령이 두 경로를 참조하면 **둘 다** 뽑는다 (첫 매치만 보던 결함).
+  assert.deepStrictEqual(
+    참조경로('A="' + P + 'tools/가.js"; B="' + P + 'tools/나.js"'),
+    ['tools/가.js', 'tools/나.js']);
+
+  // ④ 탐지력이 줄지 않았다 — 죽은 경로는 그대로 뽑혀 나온다(그래야 ③ 검사가 fail 을 낸다).
+  assert.deepStrictEqual(참조경로('node "' + P + '.claude/hooks/없는훅.js"'),
+    ['.claude/hooks/없는훅.js']);
+
+  // ⑤ 가드 자신의 실패 안전 절(`|| { … exit 2; }`)은 걷어내지 않는다 — 형태가 다르다.
+  const 실패안전 = '{ command -v node >/dev/null && [ -f "$H" ]; } || { exit 2; }; ';
+  assert.deepStrictEqual(참조경로(실패안전 + 본체), ['.claude/hooks/board-guard.js']);
+
+  // ⑥ 스위치 절이 실제로 걷혔는지 — 표기가 바뀌면 여기가 먼저 운다.
+  assert.ok(!실행부(스위치 + 본체).includes('개원'),
+    '스위치 절이 안 걷혔다 — 등록 표기가 바뀌었으면 `스위치절` 정규식부터 고친다');
+
+  // ⑦ `.json` 이 `.js` 로 둔갑하지 않는다 — ④ 스캔 범위가 없는 경로를 지어내던 결함.
+  assert.deepStrictEqual(참조경로(스위치).filter((p) => /\.js$/.test(p)), []);
 });
