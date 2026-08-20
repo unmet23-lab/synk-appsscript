@@ -2128,7 +2128,7 @@ function insertMonsterImage_(sl, url) {
   const L = marker.getLeft(), T = marker.getTop(), W = marker.getWidth(), H = marker.getHeight();
   marker.remove();
   if (url && String(url).indexOf('http') === 0) {
-    try { sl.insertImage(url, L, T, W, H); } catch (e) { Logger.log('몬스터 이미지 삽입 실패: ' + e); }
+    try { sl.insertImage(url, L, T, W, H); } catch (e) { Logger.log('캐릭터 이미지 삽입 실패: ' + e); }
   }
 }
 
@@ -2542,7 +2542,7 @@ function buildMonthlyStorybook_() {
     pf.getRange(2, 1, pf.getLastRow() - 1, wide).getValues().forEach(r => {
       if (!r[0] || r[3] !== 'student') return;
       stuCnt++; nmB[r[0]] = r[1] || r[0]; clsB[r[0]] = String(r[4] || '');
-      if (wide >= 54 && String(r[53] || '').indexOf(ym) === 0) evolvedMap[r[0]] = r[18] || '몬스터';
+      if (wide >= 54 && String(r[53] || '').indexOf(ym) === 0) evolvedMap[r[0]] = r[18] || '캐릭터';
     });
   }
   const perM = {}; let raidWins = 0;
@@ -2711,8 +2711,8 @@ function buildMonthlyStorybook_() {
   // ═══ 전 ═══
   push(6, '제6화 — 대군주', '하늘이 갈라졌다. "' + (wb.open || '...') + '" ' + wN + '. 매달의 보스들을 뒤에서 부리던 존재가 처음으로 모습을 드러냈다. 한 반의 힘으로 어찌할 상대가 아니라는 것은, 그 그림자의 크기만으로 알 수 있었다.', gB(2));
   push(7, '제7화 — 집결', '멀리서 발소리가 들려왔다. ' + rvA + '이(가) 오고 있었다. 평일반이, 주말반이, ' + stuCnt + '명의 크루 전원이 한 전장에 모이고 있었다. ' + (evoActor
-    ? '그 한가운데서 빛이 터졌다. ' + evoActor.n + '의 몬스터가 ' + evoActor.evo + '(으)로 진화하는 순간이었다. 한 달의 포인트가 가장 필요한 순간에 형태를 바꾼 것이다.'
-    : '크루들의 몬스터가 일제히 낮게 울었다. 대군주의 그림자가 처음으로 흔들렸다.') + cameo() + cameo(), eB(3));
+    ? '그 한가운데서 빛이 터졌다. ' + evoActor.n + '의 캐릭터가 ' + evoActor.evo + '(으)로 진화하는 순간이었다. 한 달의 포인트가 가장 필요한 순간에 형태를 바꾼 것이다.'
+    : '크루들의 캐릭터가 일제히 낮게 울었다. 대군주의 그림자가 처음으로 흔들렸다.') + cameo() + cameo(), eB(3));
   push(8, '제8화 — 총공세', (C1 ? C1.n + '이(가) 앞으로 나섰다. ' + (C1.t.indexOf('스타') > -1 ? '이달의 무대를 가장 많이 가졌던 목소리' : '이달 가장 많이 성장한 목소리') + '가 첫 문장을 열었다.' : M.n + '이(가) 첫 문장을 열었다.') + ' 다음 크루가 이어받고, 또 다음 크루가 이어받았다. ' + stuCnt + '명의 한국어가 하나의 사슬이 되어 대군주를 감았다. ' + (world ? '이번 달 전교의 기록, ' + world.dmg + '. 그 전부가 지금 한 점을 향하고 있었다.' : '한 달의 기록 전부가 한 점을 향하고 있었다.') + cameo() + cameo(), gB(3));
 
   // ═══ 결 ═══
@@ -2722,7 +2722,7 @@ function buildMonthlyStorybook_() {
     push(9, '제9화 — 봉인', '전교의 총공세에 대군주가 밀려났다. "기억하는 자들이… 이렇게 많다니…" 어둠 속으로 사라지는 목소리는 처음보다 훨씬 작았다. 완전한 끝은 아니었다. 그러나 고개를 떨군 크루는 없었다. 오늘의 데미지는 남고, 대군주는 매달 약해진다. ' + M.n + '이(가) 먼저 웃었다. "다음 달엔 끝내자." *속이 후련한* 함성이 뒤따랐다.' + cameo(), eB(7));
   }
   push(10, '제10화 — 귀갓길', '돌아가는 버스 안, 크루들은 하나둘 잠들었다. ' + S1.n + '은(는) ' + M.n + '의 어깨에 기대어 있었다. 창밖의 불빛을 오래 바라보던 ' + M.n + '이(가) 낮게 중얼거렸다. "다음 달에도, 다 같이 오자." 대답 대신 고른 숨소리가 들렸다. 그것으로 충분했다.' + cameo(), eB(6));
-  push(11, '에필로그', '그날 밤, 불 꺼진 교실. 창밖 어둠 저편에서 희미한 목소리가 울렸다. "다음 달… 다시…" 크루들은 이제 그 목소리가 두렵지 않다. 내일 완료할 숙제가 다음 호의 화살이 되고, 내일 받을 왕관이 다음 호의 첫 문장이 된다. 이 책의 다음 주인공은, 지금 이 페이지를 덮는 당신이다.', '');
+  push(11, '에필로그', '그날 밤, 불 꺼진 교실. 창밖 어둠 저편에서 희미한 목소리가 울렸다. "다음 달… 다시…" 크루들은 이제 그 목소리가 두렵지 않다. 내일 완료할 숙제가 다음 호의 화살이 되고, 내일의 도전이 다음 호의 첫 문장이 된다. 이 책의 다음 주인공은, 지금 이 페이지를 덮는 당신이다.', '');
 
   { // [v9.17] 🎬 크레딧 롤 — 활동 전원 출연 · 무활동자는 다음 호 예고 (소외 0)
     const cast = Object.keys(perM).filter(s => nmB[s] && (perM[s] || 0) > 0).sort((a, b) => perM[b] - perM[a]).map(s => nmB[s]);
@@ -3161,7 +3161,7 @@ function buildMonthlyCards_() {
     const pts = Number(r[2]) || 0, rs = String(r[3] || '');
     if (pts > 0) (cardLogs[r[1]] = cardLogs[r[1]] || []).push({ d: parseInt(dstr(r[5], tz).slice(8), 10), rs: rs, pts: pts });
     if (pts > 0 || rs.indexOf('정정') > -1) mP[r[1]] = (mP[r[1]] || 0) + pts;
-    if (rs === '오늘의 MVP' || rs === '오늘의 시냅스') crowns[r[1]] = (crowns[r[1]] || 0) + 1;
+    if (rs === '오늘의 도전' || rs === '오늘의 MVP' || rs === '오늘의 성장' || rs === '오늘의 시냅스') crowns[r[1]] = (crowns[r[1]] || 0) + 1;
     if (rs === '레이드보상' || rs === '월드레이드') raids[r[1]] = (raids[r[1]] || 0) + 1;
   });
   const monMapC = monsterImgMap_(ss); // [v9.35] 단계명→이미지 — 카드에 몬스터 1장 삽입
