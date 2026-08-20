@@ -61,11 +61,34 @@ FACES = [
     ("DM Mono", 500, "DM_Mono/DMMono-Medium.ttf"),
 ]
 
-CHROME_CANDIDATES = [
-    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-    r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
-    os.path.join(os.environ.get("LOCALAPPDATA", ""), r"Google\Chrome\Application\chrome.exe"),
-]
+def _chrome_candidates():
+    """PDF 를 뽑을 크롬을 찾는다.
+
+    🔑 **윈도 경로만 있으면 이 저장소 밖에서는 PDF 가 원리적으로 안 나온다**(2026-08-19 실측:
+       리눅스 클라우드 세션에서 6종 전부 「크롬을 못 찾았다」로 죽었다). 유호님 노트북에서만
+       도는 빌드는 CI·클라우드에서 조용히 반쪽이 된다 — 그리고 그 반쪽은 **HTML 은 갱신되고
+       PDF 만 낡는** 모습으로 와서, 산출물 짝이 어긋난 것을 아무도 못 본다.
+    ⚠순서가 곧 우선순위다: 환경변수를 맨 앞에 둔다(부르는 쪽이 못 이기면 그건 규칙이 아니라 벽이다).
+    """
+    import glob as _glob
+    cands = [os.environ.get("SYNK_CHROME"), os.environ.get("CHROME_PATH")]
+    # 윈도 — 유호님 기본 환경
+    cands += [
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        os.path.join(os.environ.get("LOCALAPPDATA", ""), r"Google\Chrome\Application\chrome.exe"),
+    ]
+    # 리눅스·CI — 플레이라이트가 깔아 둔 크로미움이 가장 흔하다(버전 폴더라 glob 로 집는다)
+    cands += sorted(_glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"), reverse=True)
+    cands += [
+        "/usr/bin/google-chrome", "/usr/bin/google-chrome-stable",
+        "/usr/bin/chromium", "/usr/bin/chromium-browser", "/snap/bin/chromium",
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",  # macOS
+    ]
+    return cands
+
+
+CHROME_CANDIDATES = _chrome_candidates()
 
 
 def visible_text(src):
