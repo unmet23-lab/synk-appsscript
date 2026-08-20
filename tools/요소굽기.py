@@ -768,11 +768,54 @@ bpy.ops.object.camera_add(location=카메라위치, rotation=(math.radians(카�
 씬.camera.data.lens = 85
 
 씬.render.engine = 'CYCLES'
-씬.cycles.device = 'CPU'   # GPU(oneAPI) 는 매듭의 털에서 메모리가 터졌고 이득도 2배뿐이다(실측 08-20)
 씬.cycles.samples = 견본
 씬.cycles.use_denoising = True
 씬.render.resolution_x = 너비
 씬.render.resolution_y = int(너비 * 0.82)
 씬.render.filepath = 출력
-bpy.ops.render.render(write_still=True)
-print('구움:', 형태, 출력, '샘플', 견본, '염료', 염료이름, 색.get(염료이름))
+
+
+def GPU켜기():
+    """있는 GPU 백엔드 하나를 켜고 이름을 낸다 — 없으면 False(클라우드 bpy 통로가 이 갈래다)."""
+    try:
+        사전 = bpy.context.preferences.addons['cycles'].preferences
+    except (KeyError, AttributeError):
+        return False
+    for 종류 in ('OPTIX', 'CUDA', 'HIP', 'ONEAPI', 'METAL'):
+        try:
+            사전.compute_device_type = 종류
+            사전.get_devices()
+        except Exception:
+            continue
+        if any(d.type == 종류 for d in 사전.devices):
+            for d in 사전.devices:
+                d.use = (d.type == 종류)
+            return 종류
+    return False
+
+
+# ── 굽는 장치 — **GPU 먼저 · 죽으면 그 자리에서 CPU 로 되문다** (유호 확정 08-20) ──────────
+# 왜 되물림이 필요한가 (실측 08-20 · 노트북 Arc B390):
+#   · GPU 가 2.1배 빠르고(스냅 1152px/128샘플 76초 vs 160초) **출력은 픽셀 동일**하다
+#     (표본 106,097 · 평균 차이 0.10/255 · 최대 3) — 세트 일관성 위험은 0이다.
+#   · 그런데 털이 무거운 형태는 OUT_OF_RESOURCES 로 **죽는다**(매듭 2회 재현). 내장 GPU라
+#     수백만 가닥이 어차피 같은 시스템 RAM 을 쓴다 — 「GPU 로 옮기면 메모리가 는다」가 아니다.
+#   ⇒ 그래서 장치를 고르는 게 아니라 **순서**를 박는다. 되는 형태는 GPU 가 빠르게, 안 되는
+#     형태는 CPU 가 조용히 완주한다. 「장치=CPU」로 부르면 GPU 를 아예 안 건드린다.
+장치 = 인자.get('장치', 'GPU').upper()
+켠것 = GPU켜기() if 장치 == 'GPU' else False
+if 켠것:
+    print('GPU:', 켠것)
+    씬.cycles.device = 'GPU'
+    try:
+        bpy.ops.render.render(write_still=True)
+    except RuntimeError as 왜:      # OUT_OF_RESOURCES 류 — 판정하지 않고 되문다(장면마다 한계가 다르다)
+        print('GPU 가 죽어 CPU 로 되문다:', 왜)
+        씬.cycles.device = 'CPU'
+        bpy.ops.render.render(write_still=True)
+        켠것 = False
+else:
+    씬.cycles.device = 'CPU'
+    bpy.ops.render.render(write_still=True)
+print('구움:', 형태, 출력, '샘플', 견본, '염료', 염료이름, 색.get(염료이름),
+      '장치', 켠것 or 'CPU')
