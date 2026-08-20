@@ -2,15 +2,10 @@
 <html lang="ko">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Temper 소개서 — 가르치는 법을 배우는 엔진</title>
+<title>SYNK Prism 소개서 — 한 학생의 교정을 화자 일반의 지도로</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap">
-<!-- 소개서 v1.2 · 2026-08-17 · 내부 문서(운영자료 「엔진」 갈래) · 이름 「Temper」 = 유호 확정 08-17
-     (가칭 「처방」 → Pilot 08-15 → Temper 08-17 · 한국어는 역할 설명으로만 남긴다)
-     개명 사유 셋 — ①한국어 「파일럿」의 두 통용 뜻(조종사 · 시범·임시)이 둘 다 틀리다: 이 엔진은 여섯의 종점인데
-     이름이 「시범」으로 읽힌다 ②`Helm` 을 떨어뜨린 잣대(키를 우리가 잡으면 학생이 승객)에 조종사도 같은 자리로 걸린다 —
-     통과했던 건 「도선사」 은유 하나뿐 ③그 도선사 은유가 몽골어에서 안 선다는 것이 08-17 실측(пилот 대사전 미등재).
-     ⚠ Temper 의 알려진 대가는 지도 v2.3 「작명 규약」 절에 적혀 있다(일차 뜻 「성질」) — 지우지 말 것. -->
+<!-- 소개서 v1.1 · 2026-08-15 · 내부 문서(운영자료 「엔진」 갈래) · 이름 「Prism」 = 유호 확정 08-15(가칭 「대조」에서 승격 · 한국어는 역할 설명으로만 남긴다) -->
 <meta name="theme-color" content="#08090C">
 <style>
 /* ── SYNK 지면 「검은 무대」 v0.2 — 조립 산출물(손 편집 금지) ────────────────────
@@ -61,18 +56,18 @@
   }
 
   :root{
-    --navy2:#08090C; --navy2-rgb:15,23,48;
+    --navy2:#08090C; --navy2-rgb:8,9,12;
     --navyink:#1D1D1C; --navyink-rgb:19,26,50;
-    --navy:#262626; --navy-rgb:26,35,64;
+    --navy:#262626; --navy-rgb:38,38,38;
     --navy3:#373737; --navy3-rgb:42,51,88;
-    --cream:#E4E4E7; --cream-rgb:246,241,232;
+    --cream:#EDE7DC; --cream-rgb:237,231,220;
     --cream2:#EAEAEA; --cream2-rgb:239,231,215;
     --cream3:#D1D2D4; --cream3-rgb:231,221,199;
-    --paper:#FAFAF9; --paper-rgb:251,247,238;
-    --ink:#1B1B1A; --ink-rgb:23,24,32;
-    --coral:#FF6B5C; --coral-rgb:255,107,92;
-    --coral2:#FF8877; --coral2-rgb:255,136,119;
-    --coral3:#E8543F; --coral3-rgb:232,84,63;
+    --paper:#FBF7F0; --paper-rgb:251,247,238;
+    --ink:#2B2320; --ink-rgb:43,35,32;
+    --coral:#F96859; --coral-rgb:249,104,89;
+    --coral2:#FD9C87; --coral2-rgb:255,136,119;
+    --coral3:#AE322A; --coral3-rgb:174,50,42;
     --slate:#8A8A8A; --slate-rgb:138,147,173;
     --slate2:#676767; --slate2-rgb:95,101,125;
     --kccoolblue:#4E7CFF; --kccoolblue-rgb:78,124,255;
@@ -81,9 +76,9 @@
   }
   *{box-sizing:border-box;}
   html{scroll-padding-top:96px;background:var(--navy2);color-scheme:dark;}
-  ::selection{background:rgba(255,107,92,0.28);color:var(--cream);}
+  ::selection{background:rgba(249,104,89,0.28);color:var(--cream);}
   :focus-visible{outline:2px solid var(--coral);outline-offset:3px;border-radius:6px;
-    box-shadow:0 0 0 1px rgba(228,228,231,0.55),0 0 14px 2px rgba(255,107,92,0.45);}
+    box-shadow:0 0 0 1px rgba(228,228,231,0.55),0 0 14px 2px rgba(249,104,89,0.45);}
   body{margin:0;min-height:100vh;
     background:
       radial-gradient(105% 62% at 50% -14%, rgba(55,55,55,0.62) 0%, rgba(55,55,55,0) 58%),
@@ -129,7 +124,7 @@
     -webkit-mask-composite:xor;mask-composite:exclude;
     opacity:.95;
     filter:saturate(1.5) drop-shadow(0 0 5px rgba(78,124,255,0.34))
-           drop-shadow(0 0 10px rgba(255,107,92,0.2));
+           drop-shadow(0 0 10px rgba(249,104,89,0.2));
   }
   .유리>*{position:relative;z-index:2;}
   .유리.잔잔{--깃:16px;padding:var(--칸) var(--단);}
@@ -175,7 +170,7 @@
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:순번*/
   /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리). */
@@ -201,7 +196,7 @@
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:차례번호*/
   .잔번호{position:relative;
@@ -275,13 +270,13 @@
     font-variant-numeric:tabular-nums;color:var(--cream);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
-        rgba(255,107,92,0.58) 0%, rgba(255,107,92,0.12) 62%, rgba(255,107,92,0) 78%),
+        rgba(249,104,89,0.58) 0%, rgba(249,104,89,0.12) 62%, rgba(249,104,89,0) 78%),
       rgba(29,29,28,0.62);
     box-shadow:
       inset 0 0 0 1px rgba(228,228,231,0.1),
-      inset 0 3px 10px -3px rgba(255,107,92,0.45),
+      inset 0 3px 10px -3px rgba(249,104,89,0.45),
       inset 0 -3px 10px -2px rgba(0,0,0,.58),
-      0 6px 14px -4px rgba(255,107,92,0.38);}
+      0 6px 14px -4px rgba(249,104,89,0.38);}
   .히어로수::before{
     content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
     background:radial-gradient(30% 22% at 38% 16%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);}
@@ -344,8 +339,8 @@
     transition:box-shadow 180ms ease,color 180ms ease;}
   a:not(.민):not(.레일 a)::before{content:'';display:inline-block;width:3px;height:3px;
     border-radius:50%;vertical-align:.32em;margin-right:var(--숨);
-    background:var(--coral);box-shadow:0 0 6px rgba(255,107,92,0.7);}
-  a:hover{box-shadow:inset 0 -1px 0 rgba(255,107,92,0.9);}
+    background:var(--coral);box-shadow:0 0 6px rgba(249,104,89,0.7);}
+  a:hover{box-shadow:inset 0 -1px 0 rgba(249,104,89,0.9);}
 
   /*loom부품:쪽번호*/
   /* 쪽번호 — 낮 지면에서만 산다. 화면에는 «쪽»이라는 것이 없다. */
@@ -386,13 +381,13 @@
     ol>li::after{content:none;}
 
     /* 레진 — 코어를 면으로, 굴절밴드를 선으로. 구슬로 읽히되 종이에서 뜨지 않는다. */
-    ul>li::before{background:rgba(232,84,63,0.22);
-      box-shadow:inset 0 0 0 1px rgba(232,84,63,0.55);}
+    ul>li::before{background:rgba(174,50,42,0.22);
+      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.55);}
     ul>li::after{background:none;}
     .체크,.히어로수{color:var(--ink);
-      background:radial-gradient(58% 58% at 50% 44%, rgba(232,84,63,0.26), rgba(232,84,63,0.07) 70%),
+      background:radial-gradient(58% 58% at 50% 44%, rgba(174,50,42,0.26), rgba(174,50,42,0.07) 70%),
                  var(--cream2);
-      box-shadow:inset 0 0 0 1px rgba(232,84,63,0.5);}
+      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.5);}
     .체크::before,.히어로수::before{content:none;}
 
     .칩{background:var(--cream2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--cream3);}
@@ -726,11 +721,11 @@
 <div class="판">
 
 <nav class="레일" aria-label="차례">
-  <p class="꼭지">Temper</p>
+  <p class="꼭지">SYNK Prism</p>
   <ol>
     <li><a href="#s1"><span class="n">01</span> 한눈에</a></li>
     <li><a href="#s2"><span class="n">02</span> 왜 이 엔진인가</a></li>
-    <li><a href="#s3"><span class="n">03</span> 짝의 세 조각</a></li>
+    <li><a href="#s3"><span class="n">03</span> 무엇을 내는가</a></li>
     <li><a href="#s4"><span class="n">04</span> 어떻게 — 새 수집 0</a></li>
     <li><a href="#s5"><span class="n">05</span> 어디에 닿는가</a></li>
     <li><a href="#s6"><span class="n">06</span> 규율</a></li>
@@ -744,112 +739,126 @@
 <div class="글">
 
 <header class="표지">
-  <div class="오브" aria-hidden="true">T</div>
+  <div class="오브" aria-hidden="true">P</div>
   <div>
-    <p class="꼭지">SYNK 고유 IP · 쌓는 엔진 3호 (자산층 · 종점)</p>
-    <h1>Temper</h1>
-    <p class="한줄"><b>「이 상태의 학생에게 이 개입을 줬더니, 30일 뒤 이렇게 됐다」</b>의 짝을 쌓아 —
-  한국어가 아니라 <b>가르치는 법 그 자체</b>를 배우는 엔진. 여섯 엔진의 종점이고,
-  궁극 가치 문장의 마지막 칸(「학생마다 최적화된 로드맵을 <b>연구해</b> 제시한다」)의 «연구»가 실제로 도는 자리다.</p>
-    <p class="메타">소개서 v1.2 · 2026-08-17 · 이름 <b>Temper</b> = 유호 확정 08-17(구 <b>Pilot</b> 개명) · 코드 0 · 재료는 개원 후 — 단 §10의 규격 하나는 지금 몫</p>
+    <p class="꼭지">SYNK 고유 IP · 쌓는 엔진 2호 (자산층)</p>
+    <h1>SYNK Prism</h1>
+    <p class="한줄">학생 하나의 교정 한 건을 <b>「몽골어 화자 일반은 한국어의 여기서 이렇게 틀린다」는 지도</b>로
+  승격하는 엔진. SYNK Core가 «이 학생»을 알게 되는 엔진이라면, Prism은
+  «몽골어 화자가 한국어를 배울 때 무슨 일이 일어나는가»를 알게 되는 엔진이다.</p>
+    <p class="메타">소개서 v1.1 · 2026-08-15 · 이름 <b>Prism</b> = 유호 확정 08-15(첫 확정 · 세 자리 중 가장 먼저) · 재료 생산자는 라이브 · 집계층 코드 0</p>
   </div>
 </header>
-<div class="유리 알림 듦"><b>시제 안내(철학 §0)</b> — 학생 0명. 이 엔진은 여섯 중 유일하게 <b>설계 문서만 있는</b> 엔진이다 —
-그것이 정상이다: 재료(학생 데이터)가 0인데 집계를 먼저 세우면 검증할 수 없는 코드가 된다. 순서는 §7에 있다.</div>
+<div class="유리 알림 듦"><b>시제 안내(철학 §0)</b> — 학생 0명. 재료를 만드는 생산자(오류 태그·검수 통로)는 라이브지만
+이 엔진 자체의 집계층은 아직 코드 0이다 — 이 문서는 그 설계와 근거다.</div>
 <div class="유리 알림 조용 듦"><b>대외 반출 게이트</b> — 내부 정본. 대외물로 나갈 때는 철학이 사람에게 닿는 이야기로 다시 쓴다(철학 Ⅲ-7).</div>
 
 <details class="듦 유리 잔잔 접이차례">
   <summary>차례</summary>
-  <p style="margin:.7em 0 0"><a href="#s1">①한눈에</a> · <a href="#s2">②왜 이 엔진인가</a> · <a href="#s3">③짝의 세 조각</a> ·
+  <p style="margin:.7em 0 0"><a href="#s1">①한눈에</a> · <a href="#s2">②왜 이 엔진인가</a> · <a href="#s3">③무엇을 내는가</a> ·
 <a href="#s4">④어떻게 — 새 수집 0</a> · <a href="#s5">⑤어디에 닿는가</a> · <a href="#s6">⑥규율</a> ·
 <a href="#s7">⑦지금 상태(대장)</a> · <a href="#s8">⑧AI 시대의 차별점</a> · <a href="#s9">⑨목적지</a> · <a href="#s10">⑩닫히는 문</a></p>
 </details>
 
-<h2 id="s1" class="듦"><span class="번호">01</span><span>한눈에 — 이것이 Temper다</span></h2>
-<p class="듦">Prism이 「몽골어 화자는 <b>무엇이 어려운가</b>」의 지도라면, Temper는 「그래서 <b>무엇이 통하는가</b>」의 담금질이다.
-SYNK는 매일 학생에게 개입한다 — 과제를 골라 주고, 교정을 답장하고, 몽글이 말을 건다. 그 개입 하나하나에
-「그때 그 학생의 상태」와 「그 뒤 무엇이 달라졌나」를 짝지어 쌓으면, 회사는 세상 어디에도 없는 것을 갖게 된다:
-<b>몽골 학생에게 한국어를 가르치는 법의 실증 데이터.</b></p>
+<h2 id="s1" class="듦"><span class="번호">01</span><span>한눈에 — 이것이 Prism이다</span></h2>
+<p class="듦">몽골쌤의 검수 확정 한 번은 <b>세상에서 우리만 매일 만드는 라벨</b>이다 — 몽골어 화자가 실제로 쓴 한국어,
+그것의 원어민 교정, 오류 유형 태그가 한 벌로 묶인 데이터. 지금 이 라벨은 그 학생의 행에만 붙는다.
+Prism은 그 라벨들을 개인 캐비닛에서 꺼내 <b>비식별 분포</b>로 겹치는 집계층이다 —
+개인화(Core)와는 소비자가 다르다: Core의 산출은 「이 학생의 다음 과제」이고, 대조의 산출은 「회사의 다음 결정」(교재·출제·모델 평가)이다.</p>
 
 <h2 id="s2" class="듦"><span class="번호">02</span><span>왜 이 엔진이어야만 하는가</span></h2>
-<p class="듦"><b>오류 데이터는 언젠가 남도 갖는다. 개입-효과 짝은 개입한 곳만 가진다.</b>
-공개 말뭉치·연구가 쌓이면 「몽골어 화자가 무엇을 틀리는가」는 언젠가 흉내낼 수 있다.
-그러나 「이 상태의 학생에게 이렇게 지도했더니 이렇게 됐다」는 실제로 가르치는 곳에서만 생기고,
-가르치면서 <b>기록하는 규격을 갖춘 곳</b>에서만 쌓인다. 이것이 쌓이면 엔진은 한국어만이 아니라
-가르치는 법을 배운다 — 그리고 가르치는 법은 언어가 바뀌어도(타국 확장) 남는 층이다.</p>
+<p class="듦"><b>매일 만드는 가장 비싼 산출물이 갇혀 있다.</b> 실측(2026-08-15 · talk SQL 마이그레이션 전량 + <code>lib/*</code> + AS 엔진 코드 —
+코드 3층): <code>error_tags</code>를 학생 개인 너머의 분포로 승격하는 집계 자리는 <b>0건</b>이었다.
+있는 것은 셋 다 다른 물건이다 — 수집 커버리지(우리가 얼마나 모았나) · 약점맵(이 학생의 빈도) · 강사 정답 모음(모델 승률 채점표).
+「몽골어 화자 일반」을 세는 자리는 어디에도 없다.</p>
+<p class="듦"><b>그리고 이 데이터는 시장에 없다.</b> 영어 화자·중국어 화자의 한국어 학습 오류는 논문·말뭉치가 있다.
+몽골어 화자의 한국어 학습 데이터는 사실상 공백이다 — 매일 숙제를 실제로 걷는 몽골의 학원만 만들 수 있고,
+그 조건을 가진 회사가 우리다.</p>
+<p class="듦"><b>이 엔진의 씨앗은 이미 코드 안에 있다.</b> 오류 태그 어휘(<code>HW_ERROR_TAGS</code> · <code>엔진_수집.js</code>)는
+일반적인 한국어 오류 분류가 아니라 <b>몽골어 화자를 겨냥해 설계된 축</b>이다 — 주석이 그 근거를 직접 적고 있다:
+몽골어 화자가 무너지는 지점은 대부분 ①조사 체계 ②활용·불규칙 ③높임 등급이고, <b>몽골어도 SOV라 어순은 상대적으로 안전하다</b> —
+그래서 어순에는 1칸만 주고 조사에는 7칸을 준다. 즉 대조 지식은 이미 <b>어휘 설계</b>로는 존재하는데,
+그것을 데이터로 확인·갱신하는 <b>집계층</b>이 없는 상태다. 이 엔진은 그 한 칸을 채운다 —
+설계자의 가설(조사 7칸)이 실제 분포와 맞는지를 처음으로 잴 수 있게 된다.</p>
 
-<h2 id="s3" class="듦"><span class="번호">03</span><span>짝의 세 조각 — 하나라도 빠지면 일화다</span></h2>
+<h2 id="s3" class="듦"><span class="번호">03</span><span>무엇을 내는가 — 분포, 그리고 분포와 일화의 구분</span></h2>
+<ul class="듦">
+  <li><b>산출 단위</b> — 「이 급수대의 몽골어 화자는 (예컨대) 조사 선택을 이런 꼴로 자주 틀린다」 같은
+  <b>유형 × 급수 × 과업 종류</b>(숙제·퀴즈·발화)의 분포. 축의 재료는 이미 정의돼 있다: 오류 태그 23종(enum) · TOPIK 급수 태그 · 과업 축.</li>
+  <li><b>⚠분포와 일화를 가른다</b> — 표본이 작으면 분포가 아니라 일화다. 산출에는 언제나 분모(몇 건 위의 비율인가)를 함께 적고,
+  최소 표본 문턱을 못 넘는 칸은 비워 둔다(부푼 지도보다 빈 지도가 정직하다).</li>
+  <li><b>분포 ≠ 처방</b> — 「무엇이 어려운가」까지가 이 엔진의 몫이다. 「그래서 무엇이 통하는가」는 Temper의 몫이고, 둘을 섞으면 상관이 인과로 위장한다.</li>
+</ul>
+
+<h2 id="s4" class="듦"><span class="번호">04</span><span>어떻게 — 새 수집 0, 집계만 새로</span></h2>
+<p class="듦">쌓는 엔진 공통 규칙(지도 v2.0): <b>자기 수집 통로를 새로 만들지 않는다.</b> 대조의 재료는 전부 이미 걷고 있다.</p>
 <div class="유리 표틀 듦"><table>
-<thead><tr><th style="width:22%">조각</th><th>무엇</th><th>지금</th></tr></thead>
+<thead><tr><th style="width:30%">재료 (생산자)</th><th>상태</th></tr></thead>
 <tbody>
-<tr><td><b>개입</b></td><td>과제 선택 · 교정 답장 · 재도전 유도 · 몽글의 말 — 「시스템이 그 학생에게 한 것」</td><td>생산자가 서는 중(§4)</td></tr>
-<tr><td><b>상태 스냅샷</b></td><td>개입 <b>시점</b>의 그 학생 — 약점·리듬·직전 성과. 개입의 「왜」를 나중에 재구성할 수 없으므로 그 순간에 동봉해야 한다</td><td>🔴 규격 없음 — §10의 급소</td></tr>
-<tr><td><b>후행 관측</b></td><td>같은 오류의 30일 재발률 · 재발화 성공 · 과제 완주 — 「그래서 달라졌나」</td><td>재료는 Core 수집면에 이미 흐른다</td></tr>
+<tr><td>오류 태그 23종 (<code>HW_ERROR_TAGS</code> enum · 원문 보존)<br>
+<span class="작게 흐린">실측 2026-08-15: 어휘 24항목 = 오류 23종 + <code>오류없음</code> 1</span></td>
+<td>✅ 라이브 [v9.139]~ — 모델에 JSON schema enum으로 강제되고, 집계도 같은 상수를 읽는다(어휘와 집계가 갈라지지 않게).
+태그 체계가 바뀌어도 원문이 남아 소급 재계산 가능 — 단 <b>이름 변경·삭제는 과거 집계를 깨뜨린다</b>(늘리기만 안전).</td></tr>
+<tr><td>검수 확정 통로 (몽골쌤 확정 한 번)</td><td>✅ 라이브 — 사람 손은 이 한 칸뿐(철학 ㉡)</td></tr>
+<tr><td>퀴즈 선택 로그 (<code>quiz_log</code>) · 문항 스냅샷</td><td>✅ 라이브 — 문항이 개정돼도 그때 그 문항이 남는다</td></tr>
+<tr><td><b>승격 집계층 (이 엔진)</b></td><td>🔴 코드 0 — 개원 뒤 첫 데이터가 흐르기 시작하면 세우는 것이 순서다(재료 0 위에 집계를 먼저 세우면 검증을 못 한다)</td></tr>
 </tbody>
 </table></div>
 
-<h2 id="s4" class="듦"><span class="번호">04</span><span>어떻게 — 새 수집 0, 짝맺기만 새로</span></h2>
-<p class="듦">쌓는 엔진 공통 규칙(지도 v2.0): <b>자기 수집 통로를 새로 만들지 않는다.</b> 개입도 관측도 이미 Core의 수집면에 흐른다 — 없는 것은 둘을 «한 짝으로 잇는» 소비자다.</p>
-<ul class="듦">
-  <li><b>개입 생산자(서는 중)</b> — 상태기반 과제선택(설계 v5.9 트랙 진행 중) · 교정 답장·재도전 꼬리 · 몽글 개입 기록(<code>intervention.delivered</code>).</li>
-  <li><b>이미 있는 연결 원리</b> — 「교정을 받고 실제로 고쳐 썼는가」의 3단(원문→교정→재작성)이 이 엔진의 최소 단위 짝이다. 재시도 연결(<code>retry_of</code>)은 아직 끊긴 데가 있다(실측 빨강) — 이 자리가 Temper의 첫 배선 일감이다.</li>
-</ul>
-
 <h2 id="s5" class="듦"><span class="번호">05</span><span>어디에 닿는가</span></h2>
 <ul class="듦">
-  <li><b>과제 선택 정책의 승격</b> — 「이 상태엔 이 과제」가 설계자의 감에서 <b>실증 통계</b>로 올라선다.</li>
-  <li><b>몽글의 말할 순간</b> — 어떤 순간의 어떤 말이 실제로 행동을 바꿨는지가 말할순간 표의 다음 판 근거가 된다.</li>
-  <li><b>시즌 회고의 재료</b> — 「이번 시즌 이 학생에게 통한 것」을 사람이 판정하는 자리에 실증 짝을 올린다(판정은 사람 몫 — §6).</li>
-  <li><b>궁극적으로</b> — 학생별 로드맵 연구. 「연구해 제시한다」의 연구가 이 데이터 위에서 돈다.</li>
+  <li><b>교재·커리큘럼의 근거</b> — 교재 층은 재헌이형 전면 담당이다. 이 엔진은 파일을 만지지 않고 <b>확정 분포를 인계 재료로</b> 낸다 — 「4급 반이 실제로 틀리는 상위 유형」이 목차를 바꾸는 근거가 되도록.</li>
+  <li><b>출제 풀 가중치</b> — 자주 틀리는 자리를 더 내게. 숙제 뱅크·개인 퀴즈·문항팩의 출제가 감이 아니라 분포를 읽게 된다.</li>
+  <li><b>모델 평가 시험지</b> — 엔진 점수 시험지(102문항)의 다음 판 재료. 「몽골어 화자가 실제로 틀리는 자리」로 시험지를 굽으면, 새 모델 심판(모델 독립 원칙)이 우리 학생 기준으로 돈다.</li>
+  <li><b>(먼 미래) 기관 라이선스</b> — 몽골어 화자 한국어 학습 분포 데이터는 대학·연구기관·교육기관에 팔 수 있는 유일물이다. 지금 할 일 0 — 문만 적어 둔다.</li>
 </ul>
 
 <h2 id="s6" class="듦"><span class="번호">06</span><span>규율</span></h2>
 <ul class="듦">
-  <li><b>추정을 사실처럼 저장하지 않는다</b> — 짝은 상관이지 인과가 아니다. 「통했다」의 최종 판정은 사람(시즌 회고)이 내리고, 엔진은 근거를 올릴 뿐이다.</li>
-  <li><b>실험으로 학생을 가르지 않는다</b> — 효과를 재겠다고 학생을 A/B로 나누는 것은 「학생끼리 비교하지 않는다」(㉢)와 학생 경험 원칙에 어긋난다. 이 엔진은 <b>관찰</b>로만 배운다 — 모든 학생이 언제나 그 시점의 최선을 받는다.</li>
-  <li><b>비식별</b>(㉣) — 산출은 「어떤 상태엔 무엇이 통하나」이지 「누가」가 아니다.</li>
+  <li><b>비식별 집계만</b> — 이 엔진은 구조적으로 개인을 모른다: 입력이 이미 집계다(㉣과 정합).</li>
+  <li><b>학생 화면에 안 나간다</b> — 「평균적으로 여기를 틀린다」는 비교의 씨앗이다(㉢). 이 엔진의 산출은 회사 결정용이지 학생 접점용이 아니다 — 학생에게 닿는 것은 언제나 「어제의 너와의 대조」(Core)뿐이다.</li>
+  <li><b>분모 없는 숫자를 내지 않는다</b> — 모든 산출은 «비율 + 몇 건 위인가» 한 벌(0은 분모와 함께 쓴다).</li>
 </ul>
 
 <h2 id="s7" class="듦"><span class="번호">07</span><span>지금 어디까지 왔나 — 대장 (숨기지 않는다)</span></h2>
 <div class="유리 표틀 듦"><table>
 <thead><tr><th style="width:24%">층</th><th>상태 (2026-08-15)</th></tr></thead>
 <tbody>
-<tr><td><b>코드</b></td><td>🔴 0 — 이 엔진 자체의 코드는 한 줄도 없다.</td></tr>
-<tr><td><b>개입 생산자</b></td><td>🟡 서는 중 — 과제선택 v5.9 트랙 · <code>intervention.delivered</code> · 재작성 3단. 재시도 연결(<code>retry_of</code>)은 끊긴 데가 있다(실측).</td></tr>
-<tr><td><b>순서</b></td><td>여섯 엔진 중 <b>마지막이 맞다</b> — 궤적(지금 결정 하나) → 대조(개원 직후) → 처방(대조가 쌓인 뒤). 순서를 바꾸면 재료 없이 짓게 된다.</td></tr>
-<tr><td><b>지금 몫</b></td><td>단 하나 — §10의 「개입 로그 규격」. 이것만은 개원 전이 마감이다.</td></tr>
+<tr><td><b>재료 생산자</b></td><td>✅ 라이브 — §4의 셋 전부. 개원 첫 주부터 사람 손 없이 이 엔진의 재료가 매일 떨어진다.</td></tr>
+<tr><td><b>집계층 (이 엔진)</b></td><td>🔴 코드 0 · 데이터 0 — 세우는 시점 = 개원 직후(첫 실데이터로 집계를 검증하며 세운다).</td></tr>
+<tr><td><b>엔진 편입</b></td><td>✅ 이 소개서(2026-08-15) — 그전까지 「승격」 개념 자체가 어느 문서에도 이름이 없었다.</td></tr>
 </tbody>
 </table></div>
 
 <h2 id="s8" class="듦"><span class="번호">08</span><span>AI 시대의 진짜 차별점 — 왜 따라오기 어려운가</span></h2>
 <p class="듦">지도 v2.0의 대체 불가 시험 3문에 대면:</p>
 <ol class="듦">
-<li><b>모델이 두 배 똑똑해지면 커지나?</b> — 가장 크게 커진다. 개입-효과 짝은 지금의 AI로는 다 못 캐는 데이터다 — 모델이 좋아질수록 같은 짝에서 더 깊은 «가르치는 법»을 읽어 낸다.</li>
-<li><b>돈으로 살 수 있나?</b> — 존재하지 않아서 못 산다. 이 데이터를 가진 회사는 세계 어디에도 없다(있다면 그 회사가 이미 교육을 다시 쓰고 있을 것이다).</li>
-<li><b>우리 말고 누가?</b> — 매일 개입하고 · 매일 관측하고 · 그것을 한 사람 위에 잇는 규격을 가진 곳만. 셋 다 갖춘 곳은 규모와 무관하게 드물다 — 대형 에듀테크는 개입이 얕고(앱 알림), 학원은 기록이 없다.</li>
+<li><b>모델이 두 배 똑똑해지면 커지나?</b> — 커진다. 모델은 인터넷에 있는 것을 다 알지만 <b>인터넷에 없는 것은 영영 모른다.</b>
+몽골어 화자의 한국어 오류 분포는 인터넷에 없고, 모델이 셀수록 이 분포는 더 좋은 훈련·평가 재료가 된다.</li>
+<li><b>돈으로 살 수 있나?</b> — 시장에 물건이 없어서 못 산다. 만들려면 몽골에서 학원을 열고 매일 숙제를 걷어야 한다.</li>
+<li><b>우리 말고 누가?</b> — 수집이 「노는 자리」(게임·숙제·라디오)와 검수 리듬에 붙어 있어, 앱만 베껴서는 라벨 품질이 안 나온다.</li>
 </ol>
 
-<h2 id="s9" class="듦"><span class="번호">09</span><span>목적지 — 「연구해 제시한다」가 시스템이 되는 날</span></h2>
-<p class="듦">궁극 가치의 마지막 문장 — 「그 실현을 위해 학생마다 최적화된 로드맵을 연구해 제시한다」.
-지금 이 문장의 «연구»는 사람의 감이다. Temper가 차면 그것이 <b>도는 시스템</b>이 된다 —
-그리고 그 시스템은 한국어를 넘어(타국 확장 · 교육사업 세계 1등이라는 천장) 회사가 어느 과목을 가르치든 남는 마지막 자산이다.</p>
+<h2 id="s9" class="듦"><span class="번호">09</span><span>목적지 — 감이 아니라 데이터로 받치는 한 문장</span></h2>
+<p class="듦">「몽골인에게 한국어를 가장 잘 가르치는 회사」 — 이 문장을 주장이 아니라 <b>측정</b>으로 만드는 것.
+교재가, 출제가, 모델 선택이 전부 「몽골어 화자가 실제로 틀리는 자리」를 읽고 움직일 때,
+그 문장은 마케팅이 아니라 시스템의 성질이 된다.</p>
 
 <h2 id="s10" class="듦"><span class="번호">10</span><span>지금 안 하면 영영 못 갖는 것 — 닫히는 문</span></h2>
 <p class="듦 작게 흐린">⑦이 «지나온 길»이라면 이 절은 «닫히는 문»이다 — 모든 엔진 소개서의 공통 규격(지도 v2.0).</p>
-<p class="듦"><b>이 엔진의 급소는 효과가 아니라 «개입 시점의 상태»다.</b> 후행 관측은 나중에도 걷을 수 있다.
-그러나 「그때 그 학생이 어떤 상태였고, 시스템이 왜 그 개입을 골랐나」는 그 순간이 지나면 영영 재구성할 수 없다 —
-로그를 남겨도 스냅샷 없이 남기면, 2028년의 우리는 짝을 맺을 수 없는 반쪽 데이터 앞에 앉게 된다.</p>
+<p class="듦"><b>정직하게: 이 엔진의 문은 여섯 중 가장 천천히 닫힌다.</b> 원문 보존 원칙 덕에 태그 체계를 나중에 갈아도 소급 재계산이 된다.
+그래도 닫히는 것이 둘 있다.</p>
 <div class="유리 표틀 듦"><table>
 <thead><tr><th style="width:26%">문</th><th>언제 닫히나</th><th>지금 할 일</th></tr></thead>
 <tbody>
-<tr><td><b>개입 시점의 상태 스냅샷</b></td><td>개입하는 매 순간 — 개원 첫날부터 매일 닫힌다.</td><td><b>개입 로그 규격 1건(개원 전 마감)</b> — 개입을 적는 모든 자리(과제선택·교정·몽글)에 상태 스냅샷 동봉을 규격으로. 계약 판올림과 함께 가는 것이 맞다.</td></tr>
-<tr><td><b>재시도 연결</b></td><td>연결 없이 쌓인 재시도는 사후 짝맺기가 안 된다.</td><td><code>retry_of</code> 끊긴 자리 배선(실측 빨강 해소) — Temper의 첫 코드 일감.</td></tr>
+<tr><td><b>수집 안 한 날</b></td><td>매일. 생산자가 꺼져 있던 날의 데이터는 영영 없다 — 실사고가 이미 있었다(퀴즈 100문항을 매일 띄우면서 학생 선택을 한 건도 저장 안 하던 시절 · [v9.139]가 닫았다).</td><td>✅ 생산자는 서 있다 — 지킬 것: 개원 첫날 이 통로들이 켜져 있는 것.</td></tr>
+<tr><td><b>스냅샷 없는 로그</b></td><td>문항·교재가 개정되는 순간 — ID만 남은 로그는 해석 불능이 된다.</td><td>✅ 스냅샷 원칙이 이미 막고 있다 — 지킬 것: 새 수집면마다 이 원칙을 승계하는 것.</td></tr>
 </tbody>
 </table></div>
 
 <footer>
-<b>정본 지도</b> — 개입 축 정본 = <code>docs/상태기반_과제선택_설계.md</code> · 몽글 개입 = <code>docs/캐릭터/마스코트_배선_설계.md</code>(intervention) ·
-3단 원리 = 수집층 설계(원문→교정→재작성) · 사람 판정 자리 = 시즌 회고 · 형제 = <a href="./SYNK_엔진_지도.html">SYNK 엔진 지도</a> · 대조와의 경계 = 대조 소개서 §3.<br>
+<b>정본 지도</b> — 재료 정본 = <code>계약/수집_교정_계약.json</code>(오류 태그 23종 enum) · 급수 축 = memory <code>topik-grade-tagging</code> ·
+승격 부재 실측 = 이 소개서 §2(2026-08-15 · 코드 3층) · 형제 = <a href="./SYNK_엔진_지도.html">SYNK 엔진 지도</a> · 처방과의 경계 = §3.<br>
 이 문서는 내부 정본이며, 대외 반출은 철학 Ⅲ-7 게이트를 지난다. · 소개서 v1.0 · 2026-08-15
 </footer>
 

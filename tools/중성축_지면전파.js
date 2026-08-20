@@ -25,7 +25,30 @@ if (플래그오류) { console.error(플래그오류); process.exit(2); }
 
 /* 구 → 신. 값은 지어낸 것이 아니라 tools/중성축.js 가 유도한 것이다(같은 목록을 두 곳에 안 적기 위해 거기서 읽는다). */
 const 유도 = require('./중성축.js');
-const 맵 = Object.fromEntries(유도.유도().map((r) => [r.구hex.toUpperCase(), r.새hex.toUpperCase()]));
+/* 옮길 것 두 갈래 — 둘 다 없으면 지면이 조용히 낡는다:
+ *   ㉠ 구 킷 hex → 새 hex        (Slate 2 `#5F657D` → …)
+ *   ㉡ **옛 «유도값»** → 지금 값  (`#676767` → `#666666`) — 이건 «한때 새 hex 였던 것»이라
+ *      ㉠ 의 map 에도 DEAD 목록에도 안 걸린다. 이미 그 값으로 구워진 지면을 덮는 자리다. */
+const 맵 = Object.fromEntries([
+  ...유도.유도().map((r) => [r.구hex.toUpperCase(), r.새hex.toUpperCase()]),
+  ...Object.entries(유도.옛유도 || {}).map(([옛, v]) => [옛.toUpperCase(), v.지금.toUpperCase()]),
+]);
+
+/* 🔴 목표값이 «현재 킷»에 실재하는지 먼저 검사한다 (2026-08-20 · 조항 ⓙ 뒤 이 도구의 급소).
+ *   2027 킷이 Paper·Ink 값을 갈아 중성축의 정박점(#FAFAF9 등)이 킷 밖이 됐다 — 이 검사가 없으면
+ *   「전파 도구」가 킷 밖 색을 심는 도구가 된다(새는 방향이 「고쳤다」의 얼굴이라 최악이다). */
+{
+  const 킷hex = new Set(require(path.join(ROOT, 'docs', '디자인_토큰.json')).색.킷
+    .filter((c) => !String(c.직책 || '').startsWith('⏳'))
+    .map((c) => c.hex.toUpperCase()));
+  const 낡음 = [...new Set(Object.values(맵))].filter((h) => !킷hex.has(h));
+  if (낡음.length) {
+    console.error(`[중성축_지면전파] 🔴 목표값 ${낡음.length}종이 현재 킷(퇴역 대기 제외)에 없다: ${낡음.join(' ')}`);
+    console.error('  이 도구의 맵은 조항 ⓗ(중성축) 기준이다 — 조항 ⓙ(2027 킷) 이후에는 tools/중성축.js 의');
+    console.error('  정박점을 새 킷으로 갱신하거나, 2027 전파는 그 트랙의 맵으로 따로 돌린다. 아무것도 안 바꿨다.');
+    process.exit(1);
+  }
+}
 
 const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 
