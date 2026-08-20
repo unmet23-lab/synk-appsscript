@@ -32,6 +32,8 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('../.claude/hooks/lib/board-id.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const CODE = path.join(ROOT, 'Code.js');
@@ -190,7 +192,7 @@ function gitQuiet(args) {
  * ⚠ tools/friction.js 에 같은 판정이 인라인으로 한 벌 더 있다. **세 번째가 생기면 공용 통로로 옮긴다.** */
 /** 예약 태그에 새길 주인 — 세션마다 달라야 SHA 가 갈린다(같으면 F201 이 그대로 돌아온다). */
 function 예약자() {
-  return (process.env.CLAUDE_CODE_HOST_SESSION_ID || 'unknown') + '/' + process.pid;
+  return (보드id.세션id() || 'unknown') + '/' + process.pid;
 }
 
 function 선점인가(태그, 조회) {

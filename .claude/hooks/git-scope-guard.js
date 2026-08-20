@@ -20,6 +20,8 @@
 // 의도적 예외는 명령에 GIT_SCOPE_BYPASS=1 을 붙여 의식적으로 우회한다.
 'use strict';
 const fs = require('fs');
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('./lib/board-id.js');
 
 function out(decision, reason) {
   process.stdout.write(JSON.stringify({
@@ -520,6 +522,20 @@ for (let m; (m = 메시지인용.exec(cmd)) !== null;) {
     + '\n   의도적 예외라면 명령 앞에 GIT_SCOPE_BYPASS=1 을 붙인다.');
 }
 
+/* ⑧⑨ 은퇴 — 2026-08-19 유호님 지시.
+ *
+ * 둘 다 "이 파일을 다른 세션도 만졌는가"를 판정하려고 `tools/작업본소유자.js` 를 거쳐
+ * 원격에 `git fetch` 를 시도했다. 그 판정은 **여러 세션이 같은 작업 트리를 공유하며
+ * 보드 파일로 조율하던 체계**를 전제로 만들어졌는데, 그 체계(docs/_ops/보드 등)를
+ * 오늘 이미 지웠다. 남은 것은 실측 5.4초짜리 타임아웃뿐이었다 — 커밋마다 없는 것을
+ * 확인하려 드는 세금이었다.
+ *
+ * 남은 규칙: ①add -A ②commit -a ③clean ④진행중 커밋 ⑤되감기 ⑥메시지 셸 인용 ⑦stash ⑩--no-verify.
+ * 전부 로컬 git 상태만 보고, 네트워크를 안 거치고, F015·F013·F014·F025 실사고를 실제로 막았다.
+ * 아래 원문은 지우지 않고 남긴다 — 다시 여러 세션이 한 트리를 공유하게 되면 참고할 수 있게. */
+process.exit(0);
+
+/* eslint-disable */
 /* ⑧ **범위 안의 내용** — 규칙 ①~⑦ 전부가 못 보던 자리 (F073 · F104 · 2026-08-05).
  *
  * 🔑 이 가드가 여섯 곳에서 권하는 `git commit -m "…" -- 경로` 는 **인덱스**로부터는 지켜주지만
@@ -673,7 +689,7 @@ for (let m; (m = 메시지인용.exec(cmd)) !== null;) {
       let 되돌림 = [];
       try {
         소유 = require(p.join(__dirname, '..', '..', 'tools', '작업본소유자.js'));
-        const 나 = process.env.CLAUDE_CODE_HOST_SESSION_ID || '';
+        const 나 = 보드id.보드id() || '';
         const 메인 = p.join(__dirname, '..', '..');
         const 뿌리들 = [...new Set([gitCwd, 메인])];
         /* sid → {좌표: 그 세션이 마지막으로 만진 ms}. 두 뿌리의 기록을 **합친다** — 좌표계가 달라
@@ -887,7 +903,7 @@ for (let m; (m = 메시지인용.exec(cmd)) !== null;) {
         /* 「이 내용을 이미 펼쳐 봤나」를 해시로 기억한다. 시계·mtime 에 안 기댄다(CI·환경 의존 금지). */
         const store = require(p.join(__dirname, 'lib', 'handoff-store.js'));
         const 기억 = p.join(store.stateDir(),
-          `commitscope-${store.projectKey(gitCwd)}-${store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || 'nosid')}.json`);
+          `commitscope-${store.projectKey(gitCwd)}-${store.safeId(보드id.세션id() || 'nosid')}.json`);
         let 상태 = { seen: [], 회차: {} };
         try { const j = JSON.parse(fs.readFileSync(기억, 'utf8')); 상태 = { seen: j.seen || [], 회차: j.회차 || {} }; } catch { /* 없으면 새로 */ }
         const 새것 = 조각.filter((c) => !상태.seen.includes(c.해시));
