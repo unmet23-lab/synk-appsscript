@@ -331,8 +331,8 @@ def 와펜():
         a = 2 * math.pi * i / 16
         땀하나(r * math.cos(a), -0.21, r * math.sin(a), 0.13, 0.03, 실재,
               회전y=-math.degrees(a) - 90)
-    땀하나(-0.14, -0.23, -0.06, 0.14, 0.042, 실재, 회전y=45)    # 체크 — 짧은 획
-    땀하나(0.12, -0.23, 0.02, 0.26, 0.042, 실재, 회전y=-38)     # 체크 — 긴 획
+    땀하나(-0.14, -0.37, -0.06, 0.14, 0.042, 실재, 회전y=45)    # 체크 — 짧은 획(털끝 앞 y-0.37)
+    땀하나(0.12, -0.37, 0.02, 0.26, 0.042, 실재, 회전y=-38)     # 체크 — 긴 획
     return (0, -7.6, 0.0), 90
 
 def 블랭킷():
@@ -349,7 +349,7 @@ def 블랭킷():
         길이 = math.hypot(ex - sx, ez - sz)
         n = max(2, int(길이 / 0.42))
         변각 = math.degrees(math.atan2(ez - sz, ex - sx))
-        for i in range(n + 1):
+        for i in range(1, n):                # 끝점 제외 — 모서리에서 두 변의 땀이 겹쳐 ⌐ 가 된다(시안5 실측)
             t = i / n
             x, z = sx + (ex - sx) * t, sz + (ez - sz) * t
             땀하나(x + 법x * 0.11, 앞, z + 법z * 0.11, 0.13, 0.03, 실재, 회전y=-변각 - 90)  # 안쪽 세로 땀
@@ -429,13 +429,44 @@ def 직조라벨():
         for i in range(n):
             t = (i + 0.5) / n
             땀하나(sx + (ex - sx) * t, 앞, sz + (ez - sz) * t, 0.075, 0.026, 실재, 회전y=-변각)
-    for x in (-0.5, 0.5):                    # 고정 땀 — 위 모서리 안쪽, 보이는 자리에
-        땀하나(x, 앞 - 0.005, 0.92, 0.11, 0.034, 실재, 회전y=50 if x < 0 else -50)
-    return (0, -6.6, 0.0), 90
+    return (0, -6.6, 0.0), 90   # 고정 땀은 뺐다 — 테두리와 충돌해 오히려 어지럽다(시안5 실측)
+
+def 패턴지판():
+    """패턴지(재단지) 판 — 유리 은퇴의 후계(유호 확정 08-20): 반투명 «판»은 이제 유리가 아니라
+    재단 도면 종이다. 공방 은유 안의 종이 — 빛을 «통과»시키되 차갑지 않다.
+    분필 시접선 1곳 한정(745ffc93 제안 #3)."""
+    판 = 베개몸((1.35, 0.028, 0.95), 크리스=0.4)
+    종이 = bpy.data.materials.new('패턴지')
+    종이.use_nodes = True
+    p = 종이.node_tree.nodes['Principled BSDF']
+    p.inputs['Base Color'].default_value = 리니어(색['Paper'])
+    p.inputs['Roughness'].default_value = 0.92
+    if 'Transmission Weight' in p.inputs:
+        p.inputs['Transmission Weight'].default_value = 0.3   # 반투명 — 서리 낀 종이(유리 광 없음)
+    판.data.materials.append(종이)
+    분필 = 분필재질('시접', 색['Ash'])
+    for i in range(7):                        # 시접선 — 왼 가장자리 한 곳 한정
+        땀하나(-1.08, -0.05, -0.66 + i * 0.22, 0.07, 0.024, 분필, 회전y=90, 납작=True)
+    return (0, -6.8, 0.0), 90
+
+def 다린천판():
+    """다린 무광 천 판 — 카드·판 바닥의 새 기본(유호 확정 08-20): 결을 눕힌 무채 천.
+    광택 0 · 결 최소 — 다림질 자국의 «눌린» 면이다."""
+    판 = 베개몸((1.35, 0.055, 0.95), 크리스=0.55)
+    천 = bpy.data.materials.new('다린천')
+    천.use_nodes = True
+    p = 천.node_tree.nodes['Principled BSDF']
+    p.inputs['Base Color'].default_value = 리니어(색['Chalk 2'])
+    p.inputs['Roughness'].default_value = 0.96
+    if 'Specular IOR Level' in p.inputs:
+        p.inputs['Specular IOR Level'].default_value = 0.12   # 광을 거의 죽인다 — 무광 숙청과 정합
+    판.data.materials.append(천)
+    return (0, -6.8, 0.0), 90
 
 형태들 = {'오브': 오브, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치, '털실진행바': 털실진행바,
         '단추토글': 단추토글, '밑그림': 밑그림, '페이지점': 페이지점, '폼폼': 폼폼, '시침핀': 시침핀,
-        '와펜': 와펜, '블랭킷': 블랭킷, '실패스피너': 실패스피너, '직조라벨': 직조라벨}
+        '와펜': 와펜, '블랭킷': 블랭킷, '실패스피너': 실패스피너, '직조라벨': 직조라벨,
+        '패턴지판': 패턴지판, '다린천판': 다린천판}
 if 형태 not in 형태들:
     raise SystemExit('모르는 형태: ' + 형태 + ' — 아는 것은 ' + '·'.join(형태들))
 카메라위치, 카메라피치 = 형태들[형태]()
