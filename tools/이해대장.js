@@ -656,7 +656,9 @@ function 폴백(말, 끝) {
      *   요구하는 소비자가 없다. 내용 차이는 그대로 잡힌다(회귀 `tests/대장동봉.test.js` 가 양쪽을 못박는다). */
     const 줄끝접기 = (s) => s.replace(/\r\n/g, '\n');
     const 지금 = fs.existsSync(산출경로) ? 줄끝접기(fs.readFileSync(산출경로, 'utf8')) : null;
-    if (지금 === html) {
+    /* Loom CSS 주입(loom태우기)은 정상 쓰기 경로(아래 681행)에서만 걸리므로, 디스크의 완성본과
+     * 비교하려면 여기서도 같은 처리를 거쳐야 한다 — 안 그러면 매 정상 갱신이 「안 따라왔다」로 오판된다. */
+    if (지금 === 줄끝접기(loom태우기(html))) {
       console.log(`[이해대장] 커밋될 화면이 정본 ${ver} 와 같다 — 통과.`);
       return 0;
     }
