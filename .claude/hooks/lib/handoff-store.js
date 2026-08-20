@@ -19,6 +19,8 @@ const crypto = require('crypto');
 const wt = require(path.join(__dirname, 'worktrees.js'));
 // 「형제는 어디 있나」의 정본. 이 파일이 위에서 말하는 「공용 통로」와 같은 조항의 적용이다.
 const 형제저장소 = require(path.join(__dirname, '형제저장소.js'));
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('./board-id.js');
 
 // 이음매는 테스트 격리 전용 — 로직을 끄지 않고 위치만 바꾼다. **세 훅이 같은 이름을 봐야 한다**
 // (갈라지면 바통이 안 넘어가고, 증상은 「조용히 아무 일도 안 일어남」이라 눈에 안 띈다).
@@ -213,7 +215,7 @@ function trackRoot() {
 
 /** 이 세션의 id — `track-collision:79` 와 같은 우선순위(호스트 id 가 먼저). */
 function trackSessionId(input) {
-  return String(process.env.CLAUDE_CODE_HOST_SESSION_ID || (input && input.session_id) || '').trim();
+  return String(보드id.보드id() || (input && input.session_id) || '').trim();
 }
 
 /** 심장박동만 갱신한다.

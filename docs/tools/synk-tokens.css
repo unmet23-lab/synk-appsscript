@@ -1,52 +1,79 @@
 /* 자동 생성 — 손으로 고치지 말 것. 원천 = docs/디자인_토큰.json · 빌드 = node tools/토큰빌드.js */
 /* 조항(코랄 글자 금지·순백 금지 등)의 정본 = DESIGN.md·디자인_컨셉_정본_v1.md — 변수는 값만 나른다. */
 :root{
-  --synk-cream:#F6F1E8; /* 잉크(다크 위) — 순백 아님 */
-  --synk-coral:#FF6B5C; /* 신호(유일) — 다크=글자·면 / 라이트=면만 */
-  --synk-navy:#1A2340; /* 잉크(발표물 본문) — 순검정 금지 */
-  --synk-lime:#C8FF3D; /* 성장·획득(앱 전용) — 다크 카드 전용·라이트 글자 금지 */
-  --synk-ink:#171820; /* 본문·대형 타이포(라이트) */
-  --synk-paper:#FBF7EE; /* 바탕(라이트) — 순백 금지 */
-  --synk-cream-2:#EFE7D7; /* 문서 콜아웃 바닥 */
-  --synk-cream-3:#E7DDC7; /* 반전면 보조·괘선 */
-  --synk-coral-wash:#FFE9E4; /* 가장 연한 강조 바닥(라이트·넓게 허용) */
-  --synk-coral-soft:#FFCFC6; /* 패널·알약 필(카드당 1회) */
-  --synk-coral-2:#FF8877; /* 라이트=도형 소품만 / 다크=보조 강조 글자 */
-  --synk-coral-3:#E8543F; /* 라이트 대형 강조 글자(24px↑/18.7px↑bold) / 다크=눌림 상태 */
-  --synk-navy-3:#2A3358; /* 보조 잉크·괘선 */
-  --synk-navy-ink:#131A32; /* 문서의 가장 깊은 글자 */
-  --synk-navy-2:#0F1730; /* 바탕(다크·반전면) — 표지·머리 띠 */
-  --synk-kc-hot-pink:#FF3E88; /* Part 6 전용 */
+  --synk-coral-soft:#FBB7A3; /* 코랄 램프 1(보풀 빛) — 알약·여린 면 */
+  --synk-coral-2:#FD9C87; /* 코랄 램프 2(윗면) — 신호 보조 */
+  --synk-coral:#F96859; /* 코랄 램프 3(몸통) · 브랜드 기본색 — 행동·신호의 면. ⚠종이 위 글자 금지(2.75) — 글자는 Ink 를 얹거나 Coral 3 */
+  --synk-coral-3:#AE322A; /* 코랄 램프 4(그늘) — 신호 글자(5.98)·오답 */
+  --synk-coral-rim:#941F19; /* 코랄 램프 5(바닥) — 렌더 그림자·깊은 강조 */
+  --synk-coral-wash:#FEF0E9; /* 신호 바닥 — 코랄이 앉는 여린 면(새 Paper 파생) */
+  --synk-paper:#FBF7F0; /* 바탕(라이트) — 양모 종이. 팬톤 2026 Cloud Dancer 자리 */
+  --synk-ink:#2B2320; /* 잉크(라이트) — 갈색이 밴 따뜻한 먹(Paper 위 14.42) */
+  --synk-stitch:#F0E3C8; /* 실땀 — 모든 펠트 오브젝트의 테두리·구분선·자수 포인트(운용 규칙 ② · 마스코트 실물 밑단 실측) */
+  --synk-oat:#EDE7DC; /* 양모 회색 1 — 칩 바닥·가라앉은 면 */
+  --synk-stone:#C7BFB2; /* 양모 회색 2 — 비활성 테두리 */
+  --synk-ash-wool:#8D857A; /* 양모 회색 3 — 보조 글자·캡션 */
+  --synk-deep-wool:#575046; /* 양모 회색 4 — 보조 강조 */
+  --synk-lapis-soft:#C5D6F5; /* 청금석 1(보풀 빛) — 안내 칩 바닥 */
+  --synk-lapis:#3D6BC9; /* 청금석 2(몸통) · 2027 올해의 색 — 길잡이(안내·힌트)의 면. ⚠면 위 글자는 Paper(4.74 · Ink 는 3.04 미달) */
+  --synk-lapis-deep:#24448C; /* 청금석 3(그늘) — 링크·안내 글자(8.62) */
+  --synk-meadow-soft:#D3E8BE; /* 메도우 1(보풀 빛) — 정답 칩 바닥 */
+  --synk-meadow:#7DB45A; /* 메도우 2(몸통) — 자람(정답·성장)의 면. ⚠면 전용 — 종이 위 글자 금지(2.30) */
+  --synk-meadow-deep:#3F6B2E; /* 메도우 3(그늘) — 정답 글자(5.86) */
+  --synk-butter-soft:#FFEBB0; /* 버터 1(보풀 빛) — 보상 여린 면 */
+  --synk-butter:#F5C445; /* 버터 2(몸통) — 기쁨(별·보상)의 면 + Ink 글자(9.43) */
+  --synk-butter-deep:#7E5A10; /* 버터 3(그늘) — 보상 글자(5.86) */
+  --synk-pop-soft:#F8C7DE; /* 팝 핑크 1(보풀 빛) — 이벤트 칩 바닥 */
+  --synk-pop:#E05C97; /* 팝 핑크 2(몸통) — 특별함(기념·희귀)의 면. 면 위 Ink 글자(4.51) */
+  --synk-pop-deep:#99295D; /* 팝 핑크 3(그늘) — 기념 글자(6.95) */
+  --synk-kc-hot-pink:#FF3E88; /* Part 6 전용 — Pop 이 역할을 흡수하는지 후속 판정(조항 ⓙ 대가 ③) */
   --synk-kc-pink-2:#FF6BA8; /* Part 6 전용 */
   --synk-kc-sun:#FFD447; /* 모드 C 2도 잉크 — 글자 금지 */
   --synk-kc-cool-blue:#4E7CFF; /* Part 6 전용 */
-  --synk-slate:#8A93AD; /* 보조 잉크 2(3번째 글자 층) — 바닥은 Navy 2·Navy·Navy Ink만(Navy 3 위 4.00 미달 · Paper 2.86 금지) */
-  --synk-slate-2:#5F657D; /* 보조 잉크 2(3번째 글자 층) — 바닥은 Paper·Cream·Cream 2·Coral Wash만(Cream 3 위 4.27 미달 · 다크 금지) */
-  --synk-lime-2:#B8E836; /* 성장·획득의 가라앉힌 층 — 다크 위 글자·면(Navy 3 8.54 이상) / 라이트 위는 장식 면만(Paper 1.34 — 의미를 혼자 지면 안 된다) · 전용 구역 제한은 Lime 과 같다(철칙 ④) */
-  --synk-emerald:#13724A; /* 성장·획득의 라이트 면 — 라이트 전용 글자·면(Paper 5.56·Cream 5.28·Cream 2 4.83·Coral Wash 5.10 / Cream 3 4.41·Coral Soft 4.24 는 표식만) · 다크 금지(Navy 2 2.98 — 다크의 성장색은 Lime) · 이 색을 면으로 깔면 글자는 Cream·Paper만(Ink 2.97 미달) */
+  --synk-chalk:#E4E4E7; /* ⏳퇴역 대기(2027 킷 전환 08-20 · 다크 팔레트 트랙에서 재배선 후 삭제) — 잉크(다크 위) — 칠판 위의 분필 */
+  --synk-chalk-2:#EAEAEA; /* ⏳퇴역 대기(2027 킷 전환 08-20 · 다크 팔레트 트랙에서 재배선 후 삭제) — 다크 보조 */
+  --synk-chalk-3:#D1D2D4; /* ⏳퇴역 대기(2027 킷 전환 08-20 · 다크 팔레트 트랙에서 재배선 후 삭제) — 다크 보조 잉크 */
+  --synk-graphite:#08090C; /* ⏳퇴역 대기(2027 킷 전환 08-20 · 다크 팔레트 트랙에서 재배선 후 삭제) — 바탕(다크) */
+  --synk-graphite-2:#1D1D1C; /* ⏳퇴역 대기(2027 킷 전환 08-20 · 다크 팔레트 트랙에서 재배선 후 삭제) — 다크 면 */
+  --synk-graphite-3:#262626; /* ⏳퇴역 대기(2027 킷 전환 08-20 · 다크 팔레트 트랙에서 재배선 후 삭제) — 잉크(발표물 본문) */
+  --synk-graphite-4:#373737; /* ⏳퇴역 대기(2027 킷 전환 08-20 · 다크 팔레트 트랙에서 재배선 후 삭제) — 보조 잉크 */
+  --synk-ash:#8A8A8A; /* ⏳퇴역 대기(2027 킷 전환 08-20 · 다크 팔레트 트랙에서 재배선 후 삭제) — 다크 보조 잉크 2 */
+  --synk-ash-2:#676767; /* ⏳퇴역 대기(2027 킷 전환 08-20 · 다크 팔레트 트랙에서 재배선 후 삭제) — 보조 잉크 2 */
+  --synk-lime:#C8FF3D; /* ⏳퇴역 대기(2027 킷 전환 08-20 · 다크 팔레트 트랙에서 재배선 후 삭제) — 성장(다크) */
+  --synk-lime-2:#B8E836; /* ⏳퇴역 대기(2027 킷 전환 08-20 · 다크 팔레트 트랙에서 재배선 후 삭제) — 성장 보조 */
+  --synk-emerald:#13724A; /* ⏳퇴역 대기(2027 킷 전환 08-20 · 다크 팔레트 트랙에서 재배선 후 삭제) — 구 라이트 전용 녹색(조항 ⓖ 퇴역 — Meadow 가 승계) */
   /* 시맨틱(라이트 기본) */
-  --synk-바탕:#FBF7EE; /* = Paper */
-  --synk-잉크:#171820; /* = Ink */
-  --synk-발표물본문잉크:#1A2340; /* = Navy */
-  --synk-보조잉크:#2A3358; /* = Navy 3 */
-  --synk-보조잉크2:#5F657D; /* = Slate 2 */
-  --synk-신호_면:#FF6B5C; /* = Coral */
-  --synk-신호_글자_대형:#E8543F; /* = Coral 3 */
-  --synk-신호_바닥:#FFE9E4; /* = Coral Wash */
-  --synk-알약:#FFCFC6; /* = Coral Soft */
-  --synk-성장수치:#E8543F; /* = Coral 3 */
+  --synk-바탕:#FBF7F0; /* = Paper */
+  --synk-잉크:#2B2320; /* = Ink */
+  --synk-발표물본문잉크:#262626; /* = Graphite 3 */
+  --synk-보조잉크:#373737; /* = Graphite 4 */
+  --synk-보조잉크2:#676767; /* = Ash 2 */
+  --synk-신호_면:#F96859; /* = Coral */
+  --synk-신호_글자_대형:#AE322A; /* = Coral 3 */
+  --synk-신호_바닥:#FEF0E9; /* = Coral Wash */
+  --synk-알약:#FBB7A3; /* = Coral Soft */
+  --synk-성장수치:#AE322A; /* = Coral 3 */
+  --synk-실땀:#F0E3C8; /* = Stitch */
+  --synk-안내_면:#3D6BC9; /* = Lapis */
+  --synk-안내_글자:#24448C; /* = Lapis Deep */
+  --synk-정답_면:#7DB45A; /* = Meadow */
+  --synk-정답_글자:#3F6B2E; /* = Meadow Deep */
+  --synk-보상_면:#F5C445; /* = Butter */
+  --synk-보상_글자:#7E5A10; /* = Butter Deep */
+  --synk-기념_면:#E05C97; /* = Pop */
+  --synk-기념_글자:#99295D; /* = Pop Deep */
   --synk-font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   --synk-font-mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
   --synk-mn-scale:1.04;
 }
 /* 다크 — 앱·반전면. 근거 = 컨셉 정본 코랄 5단 다크 열 + Lime 운용 */
 [data-synk-theme="dark"]{
-  --synk-바탕:#0F1730; /* = Navy 2 */
-  --synk-잉크:#F6F1E8; /* = Cream */
-  --synk-보조잉크:#E7DDC7; /* = Cream 3 */
-  --synk-보조잉크2:#8A93AD; /* = Slate */
-  --synk-신호:#FF6B5C; /* = Coral */
-  --synk-신호_보조:#FF8877; /* = Coral 2 */
-  --synk-눌림:#E8543F; /* = Coral 3 */
+  --synk-바탕:#08090C; /* = Graphite */
+  --synk-잉크:#E4E4E7; /* = Chalk */
+  --synk-보조잉크:#D1D2D4; /* = Chalk 3 */
+  --synk-보조잉크2:#8A8A8A; /* = Ash */
+  --synk-신호:#F96859; /* = Coral */
+  --synk-신호_보조:#FD9C87; /* = Coral 2 */
+  --synk-눌림:#AE322A; /* = Coral 3 */
   --synk-성장:#C8FF3D; /* = Lime */
 }
