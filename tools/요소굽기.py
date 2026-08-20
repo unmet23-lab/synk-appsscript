@@ -319,11 +319,9 @@ def 시침핀():
 def 와펜():
     """와펜(자수 패치) — 성취 뱃지·급수장(제안 #3 · 채택 08-19). 「달아 준다」의 실물.
     코랄 펠트 원판 + 분필 실 테두리 땀 + 가운데 자수 체크(체크 채택분의 뱃지판)."""
-    bpy.ops.mesh.primitive_cylinder_add(radius=0.95, depth=0.3, rotation=(math.radians(90), 0, 0))
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=1.0)   # 납작 구 = 패치 원판 — 원기둥 캡 n-gon 은 헤어 보간이 폭발한다(실측 08-20 타임아웃)
     판 = bpy.context.object
-    bev = 판.modifiers.new('bev', 'BEVEL')
-    bev.width = 0.09
-    bev.segments = 6
+    판.scale = (0.95, 0.3, 0.95)
     bpy.ops.object.shade_smooth()
     짧은퍼(판, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]),
           길이=0.08, 개수=12000)
@@ -355,9 +353,25 @@ def 블랭킷():
             t = i / n
             x, z = sx + (ex - sx) * t, sz + (ez - sz) * t
             땀하나(x + 법x * 0.11, 앞, z + 법z * 0.11, 0.13, 0.03, 실재, 회전y=-변각 - 90)  # 안쪽 세로 땀
-            if i < n:                        # 능선 이음 땀 — 다음 세로 땀까지
-                tm = (i + 0.5) / n
-                땀하나(sx + (ex - sx) * tm, 앞, sz + (ez - sz) * tm, 길이 / n / 2 - 0.05, 0.03, 실재, 회전y=-변각)
+    능선 = bpy.data.curves.new('능선', 'CURVE')   # 연속 실 줄 — 땀으로 끊으면 T자 클러스터가 된다(시안4 실측)
+    능선.dimensions = '3D'
+    능선.bevel_depth = 0.028
+    능선.bevel_resolution = 4
+    sp = 능선.splines.new('POLY')
+    둘레 = []
+    r = 0.18
+    for (cx, cz, a0) in ((w - r + 0.18, h - r + 0.18, 0), (-w + r - 0.18, h - r + 0.18, 90),
+                         (-w + r - 0.18, -h + r - 0.18, 180), (w - r + 0.18, -h + r - 0.18, 270)):
+        for d in range(0, 91, 15):
+            a = math.radians(a0 + d)
+            둘레.append((cx + r * math.cos(a), 앞, cz + r * math.sin(a)))
+    sp.points.add(len(둘레) - 1)
+    for i, (x, y, z) in enumerate(둘레):
+        sp.points[i].co = (x, y, z, 1)
+    sp.use_cyclic_u = True
+    obj = bpy.data.objects.new('능선', 능선)
+    bpy.context.collection.objects.link(obj)
+    obj.data.materials.append(실재)
     return (0, -8.4, 0.0), 90
 
 def 실패스피너():
@@ -379,8 +393,8 @@ def 실패스피너():
     실재 = 매끈재질('실', 색[염료이름], 거칠기=0.5, 배율=0.85)
     for i in range(7):                       # 감긴 실 — 반지름이 살짝 다른 고리 일곱
         z = -0.42 + i * 0.14
-        bpy.ops.mesh.primitive_torus_add(major_radius=0.36 + 0.02 * (i % 3), minor_radius=0.05,
-                                         location=(0, 0, z))
+        bpy.ops.mesh.primitive_torus_add(major_radius=0.38, minor_radius=0.05,
+                                         location=(0.01 * (i % 2), 0, z))
         고리 = bpy.context.object
         bpy.ops.object.shade_smooth()
         고리.data.materials.append(실재)
@@ -405,7 +419,7 @@ def 직조라벨():
     라벨 = 베개몸((0.95, 0.055, 1.3), 크리스=0.42)
     천재 = 매끈재질('라벨천', 색['Chalk'], 거칠기=0.88)
     라벨.data.materials.append(천재)
-    실재 = 매끈재질('실', 색[염료이름], 거칠기=0.42)
+    실재 = 매끈재질('실', 색['Graphite 4'], 거칠기=0.42)   # 무채 실 기본 — 유채 실은 신호 1점 셈(칩은 반복 요소다)
     앞 = -0.075
     w, h = 0.72, 1.05
     for (sx, sz, ex, ez) in ((-w, h, w, h), (w, h, w, -h), (w, -h, -w, -h), (-w, -h, -w, h)):
@@ -415,8 +429,8 @@ def 직조라벨():
         for i in range(n):
             t = (i + 0.5) / n
             땀하나(sx + (ex - sx) * t, 앞, sz + (ez - sz) * t, 0.075, 0.026, 실재, 회전y=-변각)
-    for x in (-0.55, 0.55):                  # 고정 땀 — 위 모서리에 비스듬히
-        땀하나(x, 앞, 1.22, 0.1, 0.032, 실재, 회전y=50 if x < 0 else -50)
+    for x in (-0.5, 0.5):                    # 고정 땀 — 위 모서리 안쪽, 보이는 자리에
+        땀하나(x, 앞 - 0.005, 0.92, 0.11, 0.034, 실재, 회전y=50 if x < 0 else -50)
     return (0, -6.6, 0.0), 90
 
 형태들 = {'오브': 오브, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치, '털실진행바': 털실진행바,
