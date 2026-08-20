@@ -6,9 +6,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&family=DM+Mono:wght@300;400;500&display=swap">
 <style>
-  :root{ --ink:#171820; --sub:#7A7566; --line:#E7DDC7; }
+  :root{ --ink:#1B1B1A; --sub:#7A7566; --line:#D1D2D4; }
   *{ box-sizing:border-box; }
-  body{ margin:0; padding:34px 40px 70px; background:#FBF7EE; color:var(--ink);
+  body{ margin:0; padding:34px 40px 70px; background:#FAFAF9; color:var(--ink);
         font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
   .wrap{ max-width:1180px; margin:0 auto; }
   h1{ font-size:18px; font-weight:600; margin:0 0 5px; letter-spacing:-.01em; }
@@ -24,7 +24,7 @@
   .dl{ font:inherit; font-size:11px; padding:4px 10px; cursor:pointer; background:#fff;
        border:1px solid var(--line); border-radius:7px; color:var(--sub); }
   .toast{ position:fixed; left:50%; bottom:30px; transform:translateX(-50%) translateY(20px);
-          background:#0F1730; color:#F6F1E8; font-size:12.5px; padding:9px 18px; border-radius:99px;
+          background:#08090C; color:#E4E4E7; font-size:12.5px; padding:9px 18px; border-radius:99px;
           opacity:0; transition:all .18s ease; pointer-events:none; }
   .toast.on{ opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
@@ -45,7 +45,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-var BG='#0F1730', INK='#F6F1E8', SIG='#FF6B5C', PAPER='#FBF7EE', DARK='#171820',
+var BG='#08090C', INK='#E4E4E7', SIG='#FF6B5C', PAPER='#FAFAF9', DARK='#1B1B1A',
     DIM='#98A2B3', BODY='#475467', INK2='#FFD447'; // v1.5: 모드 C 2도 = KC Sun
 // 라이트 배경 위 "글자" 강조는 SIG(Coral)를 쓰지 않는다 — Paper 위 대비 2.6으로
 // 대형 텍스트 기준(3.0)에도 미달한다. Coral 3는 같은 자리에서 3.40으로 통과한다.

@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&family=DM+Mono:wght@300;400;500&display=swap">
 <style>
-  :root{ --ink:#171820; --sub:#7A7566; --line:#E7DDC7; --paper:#FBF7EE; }
+  :root{ --ink:#1B1B1A; --sub:#7A7566; --line:#D1D2D4; --paper:#FAFAF9; }
   *{ box-sizing:border-box; }
   body{ margin:0; background:var(--paper); color:var(--ink);
         font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
@@ -173,7 +173,7 @@
     <button class="ghost" id="reall">5종 전부 다시 그리기</button>
 
     <div class="rules">
-      <b>지켜지는 것</b> 배경 Navy 2 #0F1730 · 잉크 Cream #F6F1E8<br>
+      <b>지켜지는 것</b> 배경 Navy 2 #08090C · 잉크 Cream #E4E4E7<br>
       윤곽선 0 — 형태는 빛(밝기)으로만 드러남<br>
       점 임계값 고정 — 지글거림 없음<br>
       사람·얼굴 없음 (O4) · 초점 하나 (O2)<br>
@@ -194,7 +194,7 @@
 <script>
 var SIZES = { '4:5':[1080,1350], '1:1':[1080,1080], '9:16':[1080,1920] };
 var FONT = "'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif";
-var BG = '#0F1730', INK = [246,241,232], SIGC = [255,107,92];
+var BG = '#08090C', INK = [246,241,232], SIGC = [255,107,92];
 
 var RAMPS = {
   ember: [[255,233,228],[255,136,119],[255,107,92]],
@@ -956,7 +956,7 @@ function overlayText(ctx,W,H,u,id){
     var size=Math.round(52*u), lh=1.30;
     var blockH=(arr.length-1)*size*lh;
     var midY=H*0.745-blockH/2;
-    lines(ctx,arr,W*0.505,midY,size,lh,'#0F1730','600',true);
+    lines(ctx,arr,W*0.505,midY,size,lh,'#08090C','600',true);
     ctx.fillStyle='#FF6B5C';
     ctx.fillRect(W*0.505-32*u, midY-size-30*u, 64*u, 7*u);
     ctx.fillStyle='rgba(246,241,232,.55)'; ctx.font='500 '+Math.round(24*u)+'px '+FONT;
@@ -970,7 +970,7 @@ function overlayText(ctx,W,H,u,id){
   var botY=H-pad-44*u, startY=botY-bh;
   ctx.fillStyle='#FF6B5C';
   ctx.fillRect(pad,startY-base-44*u,78*u,9*u);
-  lines(ctx,arr,pad,startY,base,lh2,'#F6F1E8','600');
+  lines(ctx,arr,pad,startY,base,lh2,'#E4E4E7','600');
   ctx.fillStyle='rgba(246,241,232,.55)'; ctx.font='500 '+Math.round(24*u)+'px '+FONT;
   ctx.fillText(S.meta,pad,H-pad+6*u);
 }
