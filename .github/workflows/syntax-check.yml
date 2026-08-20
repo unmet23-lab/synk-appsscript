@@ -56,10 +56,23 @@ jobs:
     #      `tools/원격ci.js` 가 그 갈래를 `건너뜀`(=미실행)으로 따로 낸다 · 회귀 `tests/원격ci.test.js`.
     #    ⚠ 안 쟀다: 「skip 된 job 이 분을 안 쓴다」는 GitHub 문서의 동작이지 **이 저장소에서 실측하진
     #      못했다**(Actions 가 08-14 이후 죽어 있어 재볼 대상이 없다). 켠 뒤 첫 청구에서 확인한다.
-    if: vars.SYNK_SELFHOSTED == 'on'
-    # 🔴 `linux` 를 **함께** 요구한다 — 러너를 윈도우에 세우면 이 job 이 안 잡히고 그대로 드러난다.
-    #    조용히 윈도우에서 도는 것보다 낫다: 그러면 로컬 모사와 같은 축을 재면서 「원격도 봤다」가 된다.
-    runs-on: [self-hosted, linux]
+    # 🟢 2026-08-19 — **두 판을 다 받는다**(유호 확정 08-19 「저장소 공개」).
+    #    · public  = GitHub-hosted 가 **무제한 무료**다. 스위치도 러너도 필요 없고, 오히려 켜 두면
+    #                안 된다 — public 저장소 + self-hosted 러너는 **누구나 fork·PR 로 그 기계에서
+    #                코드를 돌릴 수 있는** 조합이라 GitHub 이 명시적으로 금한다.
+    #    · private = 종전 그대로. 스위치가 켜졌을 때만 self-hosted 에서 돌고 분은 0 이다.
+    #
+    #    🔑 왜 조건식인가 — 공개하는 순간 **사람 손 없이** 갈아타야 하기 때문이다. 손으로 바꾸게 두면
+    #      「공개는 했는데 워크플로가 아직 러너를 가리키는」 창이 생기고, 그 창이 정확히 위험 구간이다.
+    #    ⚠ 틀릴 때의 모습 — 이벤트에 `repository` 가 없으면 `private` 가 undefined 가 되는데,
+    #      그때 두 식 모두 **private 갈래로 떨어진다**(스위치 필요 · self-hosted). 즉 새는 방향이
+    #      「분 청구」나 「public 에서 러너 사용」이 아니라 **종전 동작**이라 안전하다.
+    #      회귀: `tests/워크플로.test.js` 가 두 갈래가 다 살아 있는지 센다.
+    if: ${{ github.event.repository.private == false || vars.SYNK_SELFHOSTED == 'on' }}
+    # 🔴 private 갈래는 `linux` 를 **함께** 요구한다 — 러너를 윈도우에 세우면 이 job 이 안 잡히고
+    #    그대로 드러난다. 조용히 윈도우에서 도는 것보다 낫다: 그러면 로컬 모사와 같은 축을 재면서
+    #    「원격도 봤다」가 된다(F617 — 윈도우 초록 3건이 리눅스에서 무너졌다).
+    runs-on: ${{ github.event.repository.private == false && 'ubuntu-latest' || fromJSON('["self-hosted","linux"]') }}
     # 러너가 죽거나 매달리면 job 이 무한정 남지 않게 한다(큐 대기에는 안 걸린다 — 시작 후 카운트다).
     timeout-minutes: 30
     steps:

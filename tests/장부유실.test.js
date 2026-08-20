@@ -721,11 +721,45 @@ const jsonl레코드 = (본문) => new Set(본문.split(/\r?\n/).filter((l) => l
 const jsonl이력 = (cwd, p, 범위 = '--all') =>
   new Set([...git(cwd, 'log', 범위, '-p', '--format=', '--', p).matchAll(/^\+(\{[^\r\n]*)/gm)].map((m) => m[1]));
 
+/* union 이 걸린 장부인가 — `.gitattributes` 를 손으로 파싱하지 않고 **git 에게 묻는다**.
+ * 경로 패턴·우선순위 표기를 여기서 다시 구현하면 판정이 둘이 되고, 갈라진 쪽이 조용히 통과한다
+ * (「같은 판정을 두 곳에 적으면 갈라진다」). 이 한 줄이면 언제나 git 과 같은 답이다. */
+const union장부 = (cwd, p) => {
+  try { return /merge:\s*union/.test(git(cwd, 'check-attr', 'merge', '--', p)); }
+  catch { return false; }
+};
+
+/* ⑤ union 장부에 한해 **원격 세션 가지**(`origin/claude/*`)도 「살아 있는 판」으로 받는다.
+ *   (㉣ · 유호 확정 2026-08-19 · F605 가 남의 가지 레코드를 「사라짐」으로 신고하던 자리)
+ *
+ * 🔑 근거를 **이름이 아니라 저장소가 스스로 선언한 병합 규칙**에서 가져온다 — 위 ④ 주석이 「애초에
+ *   이름으로는 못 가르는 갈래」라고 못박은 그 자리다. `.gitattributes` 의 `merge=union` 은
+ *   「이 파일은 갈라져도 머지가 두 행을 **다** 살린다」는 선언이고(그 파일 주석의 실측:
+ *   union = 충돌 0 · 표식 0 · 두 행 전부 생존), 그러면 남의 가지에만 있는 행은 «유실»이 아니라
+ *   «아직 안 머지됨»이다. 실측 2026-08-19: `작동대장_기록.jsonl` 3줄이 그 모양이었고 —
+ *   훅이 세션마다 박는 파생 기록이라 가지마다 갈리는 것이 **정상 동작**이다.
+ *
+ * ⚠ 대가(틀릴 때의 모습) — 그 가지가 영영 머지되지 않고 죽으면 그 행은 진짜 사라지는데 이 검사는
+ *   더 이상 안 잡는다. F123 을 그만큼 내준 것이다. 그래서 **union 이 걸린 파일로만** 좁혔다:
+ *   union 이 없는 장부에서는 종전 판정이 그대로 서고, 아래 픽스처 두 벌이 그 경계를 갈라 못박는다.
+ *   ⚠ 픽스처 저장소에는 `.gitattributes` 가 없어 union 이 안 걸린다 — 즉 기존 F123 픽스처는
+ *     이 갈래를 **지나지 않는다**(보호가 그대로라는 뜻이지, 안 재는 것이 아니다). */
+const 원격세션가지 = (cwd) => {
+  try {
+    return git(cwd, 'for-each-ref', '--format=%(refname)', 'refs/remotes/origin/claude/')
+      .split(/\r?\n/).filter(Boolean)
+      .map((ref) => ({ ref, 이름: `원격가지 ${ref.replace(/^refs\/remotes\//, '')}` }));
+  } catch { return []; /* 못 셌다 — 0건이라는 뜻이 아니다(F403) */ }
+};
+
 /* 후보 레코드 → 그걸 들고 있는 앞선 판. 번호판(`앞선판번호`)과 축은 같고 읽는 단위만 다르다 */
 function jsonl앞선판(cwd, p, 후보) {
   const 어디 = new Map();
   const 본sha = new Set();
-  for (const { ref, 이름 } of 살아있는후보(cwd)) {
+  const 후보들 = union장부(cwd, p)
+    ? [...살아있는후보(cwd), ...원격세션가지(cwd)]
+    : 살아있는후보(cwd);
+  for (const { ref, 이름 } of 후보들) {
     if (어디.size >= 후보.length) break;
     let sha;
     try { sha = git(cwd, 'rev-parse', '--verify', '--quiet', `${ref}^{commit}`).trim(); } catch { continue; }
@@ -910,6 +944,41 @@ test('🔑 F605 막는 층 — 이 저장소의 `.gitattributes` 로 머지하�
     + ' `.gitattributes` 의 `docs/_ops/*.jsonl merge=union` 을 확인한다');
   assert.ok(!/^(<<<<<<<|=======|>>>>>>>)/m.test(본문),
     '충돌 표식이 남았다 — union 이 아니라 사람이 «하나 고르는» 자리가 됐다. 그 선택이 곧 유실이다');
+  치우기(d);
+});
+
+/* ── ㉣ union 장부의 원격 세션 가지 (유호 확정 2026-08-19) ──────────────────────
+ * 두 벌이 **경계를 가른다**. 한 벌만 두면 「넓혔다」와 「다 풀었다」가 같은 모양이 된다. */
+
+test('🔑 ㉣ — union 장부에서 원격 세션 가지에만 있는 레코드는 «뒤처짐»이다 (유실이 아니라 아직 안 머지됨)', () => {
+  const d = j픽스처([j판([1, 2])]);
+  /* 축이 「저장소가 스스로 선언한 병합 규칙」이므로 선언부터 만든다 — 이름이 아니라 이 선언이 재료다 */
+  fs.writeFileSync(path.join(d, '.gitattributes'), 'docs/_ops/*.jsonl merge=union\n');
+  git(d, 'add', '--', '.gitattributes'); 커밋(d, 'union 선언');
+
+  git(d, 'checkout', '-q', '-b', 'other');
+  fs.writeFileSync(path.join(d, J장부), j판([1, 2, 3]));       // 남의 세션이 자기 줄을 append
+  git(d, 'add', '--', J장부); 커밋(d, '남의 append');
+  git(d, 'update-ref', 'refs/remotes/origin/claude/other-track', 'HEAD');
+  git(d, 'checkout', '-q', 'master');
+
+  assert.deepStrictEqual(j판정(d), [{ 파일: '심문기록.jsonl', 사라짐: 0, 뒤처짐: 1 }],
+    'union 장부인데 남의 가지 레코드를 「사라짐」으로 셌다 — union 은 머지가 두 행을 다 살린다는 선언이라\n'
+    + '  그 행은 유실이 아니라 아직 안 머지된 것이다(2026-08-19 작동대장_기록.jsonl 3줄이 그 모양이었다)');
+  치우기(d);
+});
+
+test('🔴 ㉣ 경계 — union 이 «없는» 장부에서는 원격 세션 가지를 안 받는다 (F123 이 그대로 선다)', () => {
+  const d = j픽스처([j판([1, 2])]);                            // `.gitattributes` 없음 = union 없음
+  git(d, 'checkout', '-q', '-b', 'other');
+  fs.writeFileSync(path.join(d, J장부), j판([1, 2, 3]));
+  git(d, 'add', '--', J장부); 커밋(d, '남의 append');
+  git(d, 'update-ref', 'refs/remotes/origin/claude/other-track', 'HEAD');
+  git(d, 'checkout', '-q', 'master');
+
+  assert.deepStrictEqual(j판정(d), [{ 파일: '심문기록.jsonl', 사라짐: 1, 뒤처짐: 0 }],
+    'union 이 없는 장부까지 원격 세션 가지를 받아 버렸다 — 그러면 ㉣ 가 F123 을 통째로 무른다.\n'
+    + '  넓힌 자리는 **저장소가 union 을 선언한 파일**뿐이어야 한다');
   치우기(d);
 });
 
