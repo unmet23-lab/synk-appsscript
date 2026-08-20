@@ -1,7 +1,7 @@
 # 요소굽기 — UI·UX 요소를 «실물»로 굽는다 (조항 ⓘ 집행급 · 유호 확정 08-19 「짧은 퍼」)
 # 퍼프로브.py 의 승격판. 형태별로 몸을 짓고 짧은 퍼를 심어 Cycles 로 찍는다.
 #   python3 -c "import sys; sys.argv=['x','--','형태=오브','색=Coral','샘플=96','너비=900','출력=/tmp/판.png']; exec(open('tools/요소굽기.py').read())"
-# 형태: 오브 · 알약 · 아이콘 · 스티치 · 털실진행바(진행=0~1) · 단추토글 · 밑그림 · 페이지점 · 폼폼 · 시침핀
+# 형태: 오브 · 알약 · 아이콘 · 스티치 · 털실진행바(진행=0~1) · 단추토글 · 밑그림 · 페이지점 · 폼폼 · 시침핀 · 와펜 · 블랭킷 · 실패스피너 · 직조라벨
 # 규율: 염료는 토큰 킷 「이름」 참조(hex 하드코딩 금지) · 글자는 굽지 않는다(타이포 불가침 — HTML 층 몫)
 # ⚠룸굽기.js 합류 전의 독립 통로다 — 룸굽기는 blender.exe(윈도)를 부르고 이건 bpy 모듈(클라우드)로 돈다.
 import bpy, json, math, sys
@@ -303,20 +303,125 @@ def 시침핀():
     짧은퍼(쿠션, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]),
           길이=0.09, 개수=14000)
     바늘재 = 매끈재질('바늘', 색['Chalk'], 거칠기=0.22)
-    bpy.ops.mesh.primitive_cylinder_add(radius=0.022, depth=1.55, location=(0.38, -0.1, 0.82),
-                                        rotation=(0, math.radians(18), 0))
+    # v2(유호 교정 08-20 「좀 어색」): 가장자리에 걸치지 않게 윗면 안쪽에 꽂고, 노출 축을 줄여 롤리팝 비율을 버린다
+    bpy.ops.mesh.primitive_cylinder_add(radius=0.024, depth=1.15, location=(0.3, -0.02, 0.79),
+                                        rotation=(math.radians(8), math.radians(20), 0))
     바늘 = bpy.context.object
     bpy.ops.object.shade_smooth()
     바늘.data.materials.append(바늘재)
-    머리재 = 매끈재질('핀머리', 색[염료이름], 거칠기=0.08)   # 레진 — 갇힌 빛(유리알 광)
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.14, location=(0.62, -0.1, 1.56))
+    머리재 = 매끈재질('핀머리', 색[염료이름], 거칠기=0.14)   # 레진 — 갇힌 빛(각진 반사는 거칠기로 눅인다)
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.155, location=(0.5, -0.1, 1.32))
     머리 = bpy.context.object
     bpy.ops.object.shade_smooth()
     머리.data.materials.append(머리재)
-    return (0, -9.2, 0.55), 90   # 시안 2판 실측: 내려봄 각이 또 위 치우침을 냈다(알약과 같은 병) — 수평 고정
+    return (0, -8.6, 0.35), 90
+
+def 와펜():
+    """와펜(자수 패치) — 성취 뱃지·급수장(제안 #3 · 채택 08-19). 「달아 준다」의 실물.
+    코랄 펠트 원판 + 분필 실 테두리 땀 + 가운데 자수 체크(체크 채택분의 뱃지판)."""
+    bpy.ops.mesh.primitive_cylinder_add(radius=0.95, depth=0.3, rotation=(math.radians(90), 0, 0))
+    판 = bpy.context.object
+    bev = 판.modifiers.new('bev', 'BEVEL')
+    bev.width = 0.09
+    bev.segments = 6
+    bpy.ops.object.shade_smooth()
+    짧은퍼(판, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]),
+          길이=0.08, 개수=12000)
+    실재 = 매끈재질('실', 색['Chalk'], 거칠기=0.4)
+    r = 0.7
+    for i in range(16):                      # 테두리 땀 — 원주를 따라 접선 방향
+        a = 2 * math.pi * i / 16
+        땀하나(r * math.cos(a), -0.21, r * math.sin(a), 0.13, 0.03, 실재,
+              회전y=-math.degrees(a) - 90)
+    땀하나(-0.14, -0.23, -0.06, 0.14, 0.042, 실재, 회전y=45)    # 체크 — 짧은 획
+    땀하나(0.12, -0.23, 0.02, 0.26, 0.042, 실재, 회전y=-38)     # 체크 — 긴 획
+    return (0, -7.6, 0.0), 90
+
+def 블랭킷():
+    """블랭킷 스티치 테두리 — 카드 감침질(제안 #4 · 채택 08-19). 카드 = 감쳐진 천 조각.
+    코랄 펠트 카드의 앞면 가장자리를 분필 실이 감아간다: 안쪽 세로 땀 + 능선 이음 땀."""
+    카드 = 베개몸((1.5, 0.4, 1.02), 크리스=0.6)
+    짧은퍼(카드, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]),
+          길이=0.07, 개수=16000)
+    실재 = 매끈재질('실', 색['Chalk'], 거칠기=0.4)
+    앞 = -0.42
+    w, h, 안 = 1.22, 0.78, 0.2              # 능선 사각(모서리 전 직선부만) + 안쪽 세로 땀
+    for (sx, sz, ex, ez, 법x, 법z) in ((-w + 0.2, h, w - 0.2, h, 0, -1), (w, h - 0.2, w, -h + 0.2, -1, 0),
+                                       (w - 0.2, -h, -w + 0.2, -h, 0, 1), (-w, -h + 0.2, -w, h - 0.2, 1, 0)):
+        길이 = math.hypot(ex - sx, ez - sz)
+        n = max(2, int(길이 / 0.42))
+        변각 = math.degrees(math.atan2(ez - sz, ex - sx))
+        for i in range(n + 1):
+            t = i / n
+            x, z = sx + (ex - sx) * t, sz + (ez - sz) * t
+            땀하나(x + 법x * 0.11, 앞, z + 법z * 0.11, 0.13, 0.03, 실재, 회전y=-변각 - 90)  # 안쪽 세로 땀
+            if i < n:                        # 능선 이음 땀 — 다음 세로 땀까지
+                tm = (i + 0.5) / n
+                땀하나(sx + (ex - sx) * tm, 앞, sz + (ez - sz) * tm, 길이 / n / 2 - 0.05, 0.03, 실재, 회전y=-변각)
+    return (0, -8.4, 0.0), 90
+
+def 실패스피너():
+    """실패(보빈) 스피너 — 로딩(제안 #8 · 채택 08-19). 기다림 = 실이 풀리는 시간.
+    무채 보빈에 코랄 실이 감기고 꼬리가 풀려 나간다."""
+    몸재 = 매끈재질('보빈', 색['Chalk 3'], 거칠기=0.6)
+    for z in (0.62, -0.62):
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.62, depth=0.14, location=(0, 0, z))
+        원반 = bpy.context.object
+        bev = 원반.modifiers.new('bev', 'BEVEL')
+        bev.width = 0.04
+        bev.segments = 4
+        bpy.ops.object.shade_smooth()
+        원반.data.materials.append(몸재)
+    bpy.ops.mesh.primitive_cylinder_add(radius=0.26, depth=1.1, location=(0, 0, 0))
+    허리 = bpy.context.object
+    bpy.ops.object.shade_smooth()
+    허리.data.materials.append(몸재)
+    실재 = 매끈재질('실', 색[염료이름], 거칠기=0.5, 배율=0.85)
+    for i in range(7):                       # 감긴 실 — 반지름이 살짝 다른 고리 일곱
+        z = -0.42 + i * 0.14
+        bpy.ops.mesh.primitive_torus_add(major_radius=0.36 + 0.02 * (i % 3), minor_radius=0.05,
+                                         location=(0, 0, z))
+        고리 = bpy.context.object
+        bpy.ops.object.shade_smooth()
+        고리.data.materials.append(실재)
+    꼬리 = bpy.data.curves.new('꼬리', 'CURVE')          # 풀려 나가는 꼬리 실
+    꼬리.dimensions = '3D'
+    꼬리.bevel_depth = 0.05
+    꼬리.bevel_resolution = 5
+    sp = 꼬리.splines.new('POLY')
+    N = 40
+    sp.points.add(N - 1)
+    for i in range(N):
+        t = i / (N - 1)
+        sp.points[i].co = (0.4 + 1.5 * t, -0.15 * math.sin(t * 5), -0.35 - 0.55 * t + 0.14 * math.sin(t * 9), 1)
+    obj = bpy.data.objects.new('꼬리', 꼬리)
+    bpy.context.collection.objects.link(obj)
+    obj.data.materials.append(실재)
+    return (0.55, -7.8, -0.15), 90
+
+def 직조라벨():
+    """직조 라벨 태그 — 카테고리 칩(제안 #10 · 채택 08-19). 옷 안쪽 라벨 문법.
+    분필색 얇은 천 조각 + 코랄 러닝 스티치 테두리 + 위 모서리 고정 땀 두 개(달려 있음)."""
+    라벨 = 베개몸((0.95, 0.055, 1.3), 크리스=0.42)
+    천재 = 매끈재질('라벨천', 색['Chalk'], 거칠기=0.88)
+    라벨.data.materials.append(천재)
+    실재 = 매끈재질('실', 색[염료이름], 거칠기=0.42)
+    앞 = -0.075
+    w, h = 0.72, 1.05
+    for (sx, sz, ex, ez) in ((-w, h, w, h), (w, h, w, -h), (w, -h, -w, -h), (-w, -h, -w, h)):
+        길이 = math.hypot(ex - sx, ez - sz)
+        n = max(3, int(길이 / 0.24))
+        변각 = math.degrees(math.atan2(ez - sz, ex - sx))
+        for i in range(n):
+            t = (i + 0.5) / n
+            땀하나(sx + (ex - sx) * t, 앞, sz + (ez - sz) * t, 0.075, 0.026, 실재, 회전y=-변각)
+    for x in (-0.55, 0.55):                  # 고정 땀 — 위 모서리에 비스듬히
+        땀하나(x, 앞, 1.22, 0.1, 0.032, 실재, 회전y=50 if x < 0 else -50)
+    return (0, -6.6, 0.0), 90
 
 형태들 = {'오브': 오브, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치, '털실진행바': 털실진행바,
-        '단추토글': 단추토글, '밑그림': 밑그림, '페이지점': 페이지점, '폼폼': 폼폼, '시침핀': 시침핀}
+        '단추토글': 단추토글, '밑그림': 밑그림, '페이지점': 페이지점, '폼폼': 폼폼, '시침핀': 시침핀,
+        '와펜': 와펜, '블랭킷': 블랭킷, '실패스피너': 실패스피너, '직조라벨': 직조라벨}
 if 형태 not in 형태들:
     raise SystemExit('모르는 형태: ' + 형태 + ' — 아는 것은 ' + '·'.join(형태들))
 카메라위치, 카메라피치 = 형태들[형태]()
