@@ -76,11 +76,22 @@ function 판정({ runs, 담는가 }) {
    * run 취소」가 일상이 됐다. 취소된 완료본을 적색으로 읽으면 상위 run 이 도는 몇 분 동안 거짓
    * 적색+빈 로그 처방이 나간다(08-07 실측 run 31173804076). 초록으로 읽는 것도 금지다 —
    * 아무것도 검사하지 않았다. 그래서 증거 풀에서 통째로 뺀다. */
-  const 완료 = 담긴.filter((r) => r.status === 'completed' && r.conclusion !== 'cancelled');
+  /* 🔴 **건너뜀도 증거가 아니다** (2026-08-18 · 셀프호스티드 스위치와 짝).
+   *   워크플로의 `if: vars.SYNK_SELFHOSTED == 'on'` 이 꺼져 있으면 run 은 **한 스텝도 안 돌고**
+   *   `conclusion: skipped` 로 «완료»된다. 취소와 같은 성질이다 — 아무것도 검사하지 않았다.
+   *   증거 풀에 두면 `conclusion !== 'success'` 라 **적색**으로 읽히는데, 그건 「코드가 깨졌다」로
+   *   들려 로그를 열게 만든다(빈 로그다). 반대로 성공 취급하면 **검사 0건이 통과**가 된다 —
+   *   새는 방향이 언제나 통과인 그 형태다. 그래서 풀에서 빼고 **자기 이름으로** 낸다. */
+  const 완료 = 담긴.filter((r) => r.status === 'completed'
+    && r.conclusion !== 'cancelled' && r.conclusion !== 'skipped');
   const 도는중 = 담긴.filter((r) => r.status !== 'completed');
+  const 건너뜀 = 담긴.filter((r) => r.status === 'completed' && r.conclusion === 'skipped');
   if (!완료.length) {
     // 아직 도는 중이면 초록도 적색도 아니다 — 「곧 초록이겠지」는 판정이 아니다.
     if (도는중.length) return { 상태: '대기', run: 도는중[0], 판정불가, 담긴: 담긴.length };
+    /* 취소보다 **먼저** 본다 — 건너뜀은 원인이 하나로 특정된다(스위치가 꺼졌다)이고,
+     * 취소는 「더 새 판이 왔다」라 처방이 다르다. 둘이 섞이면 특정된 쪽을 먼저 말한다. */
+    if (건너뜀.length) return { 상태: '건너뜀', run: 건너뜀[0], 판정불가, 담긴: 담긴.length };
     return { 상태: '취소뿐', run: 담긴[0], 판정불가, 담긴: 담긴.length };
   }
   return { 상태: 완료[0].conclusion === 'success' ? '초록' : '적색', run: 완료[0], 판정불가, 담긴: 담긴.length };
@@ -164,6 +175,13 @@ function main() {
     }
   } else if (r.상태 === '대기') {
     console.log(`[원격ci] ⏳ 대기 — ${짧게} 를 담은 ${run쪽} 이 아직 ${r.run.status}. 초록이 아니다.`);
+  } else if (r.상태 === '건너뜀') {
+    console.log(`[원격ci] 🔴 원격 미검증 — ${짧게} 를 담은 ${run쪽} 이 **건너뜀**(skipped)이다. 한 스텝도 안 돌았다.`);
+    console.log('   적색이 아니라 **미실행**이다 — 로그를 열어도 비어 있다(열지 말 것).');
+    console.log('   원인은 하나로 특정된다: 셀프호스티드 러너 스위치가 꺼져 있다.');
+    console.log('   → GitHub → 저장소 Settings → Secrets and variables → Actions → Variables 에서');
+    console.log('     `SYNK_SELFHOSTED` 를 `on` 으로 둔다. 그리고 러너가 Idle 인지 Settings → Actions → Runners 에서 본다.');
+    console.log(`   → 스위치를 켠 뒤 다시 돌리려면: gh workflow run ${CI_워크플로} --ref ${브랜치}`);
   } else if (r.상태 === '취소뿐') {
     console.log(`[원격ci] 🔴 원격 미검증 — ${짧게} 를 담은 run 은 취소본뿐이고(${run쪽}) 대신 도는 run 도 없다.`);
     console.log('   취소는 검사가 아니다 — 낡은 판을 접은 새 판이 완주하기 전에 그 판마저 사라진 모양이다.');

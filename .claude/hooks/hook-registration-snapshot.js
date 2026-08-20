@@ -42,6 +42,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('./lib/board-id.js');
 
 const DIR = process.env.SYNK_HOOKREG_DIR || path.join(os.tmpdir(), 'synk-hook-registration');
 
@@ -113,7 +115,7 @@ function 알림(본문) {
 let input;
 try { input = JSON.parse(fs.readFileSync(0, 'utf8')); } catch (_) { process.exit(0); }
 
-const sid = String(process.env.CLAUDE_CODE_HOST_SESSION_ID || input.session_id || '').trim();
+const sid = String(보드id.세션id() || input.session_id || '').trim();
 if (!sid) process.exit(0); // 세션을 못 가르면 도장도 판정도 의미가 없다
 
 const 이벤트 = String(input.hook_event_name || '');

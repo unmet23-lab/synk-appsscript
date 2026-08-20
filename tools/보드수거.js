@@ -219,7 +219,7 @@ if (require.main === module) {
   if (모드 !== 'hook') {
     process.stdout.write(
       `[보드수거] 표 ${r.전체수}줄 · 완료 ${r.완료수}줄 → 거둘 수 있는 것 ${r.대상.length}건` +
-      `${r.티켓.length ? ` · 🎫 라 남기는 것 ${r.티켓.length}건` : ''}` +
+      `${r.티켓.length ? ` · 이어받기 일감이라 남기는 것 ${r.티켓.length}건` : ''}` +   // 표식 글자 금지 — F612
       `${r.문구없음.length ? ` · 문구를 못 고른 것 ${r.문구없음.length}건` : ''}\n`);
     for (const c of r.대상) process.stdout.write(`   거둠 ${c.지문 || c.파일}  ${짧게(c.줄)}…\n`);
     for (const c of r.티켓) process.stdout.write(`   남김 ${c.지문 || c.파일}  🎫 이어받기 일감이 산다 — 집을지는 판단이라 사람 몫\n`);
@@ -243,7 +243,7 @@ if (require.main === module) {
     결과.거절.length ? `되살아나 거절 ${결과.거절.length}건(원칙⑥ — 정상 판정이다)` : '',
     결과.실패.length ? `실패 ${결과.실패.length}건` : '',
     결과.못받음.length ? `답 못 받음 ${결과.못받음.length}건(미실행이지 통과가 아니다)` : '',
-    r.티켓.length ? `🎫 ${r.티켓.length}건은 남겼다` : '',
+    r.티켓.length ? `이어받기 ${r.티켓.length}건은 남겼다` : '',   // 표식 글자 금지 — F612
   ].filter(Boolean).join(' · ');
 
   /* 🔑 [F571] 사유는 **판정과 함께** 낸다 — 옛 판은 「실패 N건」에서 멈췄고, board-move 가 낸

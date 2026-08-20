@@ -300,3 +300,47 @@ test('실폴더 — 있으면 훑기가 죽지 않는지만 본다(거짓양성 
   if (!결과.있음) { t.skip(`지도 폴더 없음(${결과.dir}) — CI·다른 기계에서는 미실행이 정상`); return; }
   assert.ok(Array.isArray(결과.지도들), '실폴더 훑기가 형태를 깨뜨렸다');
 });
+
+/* ── 🔴 [2026-08-18] 「폴더 없음」을 예외로 알리면 skip 절 전부가 눈이 먼다 ──────────────
+ * 실측(CI 모사 · 리눅스 클라우드): 바로 위 검사가 fail 로 떴다. 그 검사는 `있음:false` 를 받아
+ * skip 하도록 이미 쓰여 있었는데, `훑기()` 안의 `지도폴더()` 가 바탕화면을 못 찾아 **던져서**
+ * skip 절에 닿지 못했다. 같은 모양으로 눈이 먼 자리가 그때 셋이었다 — 이 검사 · `훑기()` 자신의
+ * `있음:false` 분기 · `시스템대장 --render` 의 「CI·클라우드 세션」 skip.
+ * 🔑 그래서 아래 셋은 **한 결함의 세 층**이다: 계약(찾기는 안 던진다) · 등록층(지도대장이 던지는
+ *   통로를 안 쓴다) · 행동(어느 기계에서도 지도폴더는 안 던진다). 한 층만 두면 나머지로 되돌아간다.
+ * ⚠ 「바탕화면이 없는 기계에서만」으로 조건을 달지 않는다 — 그러면 유호님 윈도우에서 영영 안 돌고,
+ *   안 도는 검사는 초록과 같은 모양이다(F207). 셋 다 환경과 무관하게 참이어야 하는 명제로 적었다. */
+
+test('🔴 계약 — 바탕화면을 못 찾아도 `찾기` 는 던지지 않는다(던질지는 호출부가 정한다)', () => {
+  const { 찾기 } = require(path.resolve(__dirname, '..', 'tools', 'lib', '바탕화면.js'));
+  let r;
+  assert.doesNotThrow(() => {
+    r = 찾기({ env: {}, 실존: () => false, 조회: () => null });
+  }, '없는 바탕화면을 찾는 것만으로 던진다 — 읽는 자리가 「없음」을 분기할 수 없게 된다');
+  assert.strictEqual(r.존재, false, '실존 0인데 존재:true 다 — 「못 찾았다」가 통과의 얼굴을 한다');
+});
+
+test('🔴 등록층 — 지도대장이 **던지는** 바탕화면 통로(`경로`)를 안 쓴다', () => {
+  const src = fs.readFileSync(TOOL, 'utf8');
+  const 임포트 = src.match(/require\(['"]\.\/lib\/바탕화면\.js['"]\)/g) || [];
+  assert.ok(임포트.length > 0, '바탕화면 통로를 아예 안 쓴다 — 이 검사가 재는 대상이 사라졌다');
+  assert.ok(!/\{\s*경로\s*:/.test(src.split('\n').filter((l) => l.includes('바탕화면.js')).join('\n')),
+    '`{ 경로: … }` 로 되돌아갔다 — 그 통로는 못 찾으면 던지고, 던지면 이 파일의 「폴더 없음」 분기 셋이 한꺼번에 죽는다');
+});
+
+test('🔴 행동 — 바탕화면이 없는 기계에서도 `지도폴더()` 는 던지지 않고 «없는 경로»를 준다', () => {
+  const M = require(TOOL);
+  const 이전 = process.env.SYNK_지도_DIR;
+  delete process.env.SYNK_지도_DIR;   // 덮어쓰기가 있으면 바탕화면 통로를 안 타 이 검사가 무력해진다
+  try {
+    let dir;
+    assert.doesNotThrow(() => { dir = M.지도폴더(); },
+      '지도폴더가 던진다 — 「폴더 없음」은 예외가 아니라 **없는 경로**로 알려야 호출부의 skip 절이 닿는다');
+    assert.strictEqual(typeof dir, 'string', '경로 대신 다른 것을 줬다');
+    assert.ok(dir.length > 0, '빈 경로다 — existsSync 가 이상하게 답한다');
+    assert.doesNotThrow(() => M.훑기(), '훑기가 던진다 — 위 실폴더 검사의 skip 절이 다시 눈이 먼다');
+  } finally {
+    if (이전 === undefined) delete process.env.SYNK_지도_DIR;
+    else process.env.SYNK_지도_DIR = 이전;
+  }
+});
