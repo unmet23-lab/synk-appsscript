@@ -24,10 +24,13 @@ const path = require('path');
 const os = require('os');
 
 const REPO = path.resolve(__dirname, '..');
-/* 기본값은 첫 손님(펠트코랄_0815)이고, `--입력`·`--출력` 으로 다른 세트에도 같은 통로를 쓴다.
- * 08-15 둘째 손님 = 펠트 코랄 정본(`펠트코랄_0815/재염색_*.png` — 아예 RGB 라 알파 자체가 없다). */
-let SRC_DIR = path.join(REPO, 'docs', '캐릭터', '펠트코랄_0815');
-let OUT_DIR = path.join(REPO, 'docs', '캐릭터', '펠트코랄_0815');
+/* 기본 대상 = **현행 정본 세트**. 폴더 이름을 여기 손으로 적지 않는다(2026-08-20) —
+ * 정본이 갈리면 이 도구가 옛 세트를 계속 깎게 되고, 그게 마스코트 10벌 공존을 만든 병이다.
+ * 주인은 `docs/디자인_토큰.json` 이고 `lib/마스코트자산.js` 가 그 창구다.
+ * `--입력`·`--출력` 으로 다른 세트에도 같은 통로를 쓴다. */
+const 자산 = require('./lib/마스코트자산.js');
+let SRC_DIR = path.join(REPO, 자산.정본폴더);
+let OUT_DIR = path.join(REPO, 자산.정본폴더);
 const SIZE = 1024;              // 캐러셀 최대 사용폭 ~540px → 2배수로 충분(원본 2048 은 과하다)
 const SAT_배경 = 0.055;         // 이 아래 + 밝으면 배경
 const SAT_경계 = 0.13;          // 이 사이는 가장자리 → 알파를 비례로 (계단 방지)
