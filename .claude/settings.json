@@ -32,6 +32,20 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "H=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/결정.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then node \"$H\" --훅; else echo \"📌 유호님 확정 요약을 못 냈다(도구·node 부재) — node tools/결정.js 로 직접 본다\"; fi",
+            "shell": "bash",
+            "timeout": 20,
+            "statusMessage": "유호님 확정 요약"
+          }
+        ]
+      }
     ]
   },
   "permissions": {
