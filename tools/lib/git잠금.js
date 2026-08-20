@@ -313,7 +313,29 @@ function 가름문(판정, 경로) {
     + `      → 끝날 때까지 기다린다. 몇십 분째 그대로면 **그 작업 자체가 원인**이니 그쪽을 본다.`;
 }
 
-module.exports = { 잠금상태, 고아잠금줄, 프로세스판정, 기본문턱분, 기본표본간격ms, 정지문턱ms };
+/** 커밋해도 되는 상태인가 — rebase·merge·bisect 중이거나 HEAD 가 분리돼 있으면 거른다.
+ *  그때의 커밋은 남의 진행 중 작업에 끼어들거나(F035·F038) 붙을 가지가 없다.
+ *
+ *  🔑 2026-08-20 이사: 이 판정은 `tools/인계문수거.js` 에 살았고 `보드수거.js` 가 빌려 썼다.
+ *     인계문 층을 하네스에 위임하며 그 파일을 걷었는데, 이 함수는 인계문과 무관한
+ *     «git 상태» 판정이라 같은 식구인 여기로 옮긴다(두 곳에 적으면 두 수거기가 서로 다른
+ *     「지금 커밋해도 되나」를 보게 된다 — 옮기는 이유가 그것이다). 바이트 동일.
+ *  @returns {string|null} 못 하는 이유, 또는 null(=해도 된다) */
+function 커밋못하는이유(뿌리) {
+  const R = 뿌리 || path.resolve(__dirname, '..', '..');
+  const d = spawnSync('git', ['rev-parse', '--git-dir'], { cwd: R, encoding: 'utf8' });
+  if (d.status !== 0) return 'git 을 못 불렀다';
+  const g = path.resolve(R, String(d.stdout || '').trim());
+  for (const m of ['rebase-merge', 'rebase-apply', 'MERGE_HEAD', 'CHERRY_PICK_HEAD', 'REVERT_HEAD', 'BISECT_LOG']) {
+    if (fs.existsSync(path.join(g, m))) return `${m} — 진행 중인 git 작업이 있다`;
+  }
+  if (spawnSync('git', ['symbolic-ref', '-q', 'HEAD'], { cwd: R, encoding: 'utf8' }).status !== 0) {
+    return 'HEAD 분리 상태 — 커밋이 가지 없이 떠돈다';
+  }
+  return null;
+}
+
+module.exports = { 잠금상태, 고아잠금줄, 프로세스판정, 커밋못하는이유, 기본문턱분, 기본표본간격ms, 정지문턱ms };
 
 /* 읽기 전용 CLI — 처방 ①은 **실행 가능**할 뿐 아니라 **판정 가능**해야 한다.
  * F562 전에는 여기서 「도는 git 이 있는지는 이 도구가 못 본다」로 끝나, 사람이 `Get-Process git` 을

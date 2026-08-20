@@ -63,7 +63,7 @@ const 대상확장자 = new Set(['.js', '.mjs', '.cjs', '.ts', '.tsx', '.jsx',
  *   사라지면(=우리 것이 되면) 이 예외는 근거를 잃으므로 `tests/문서문자.test.js` 가 «항목이
  *   살아 있는지»를 함께 못박는다(장치와 발동 조건은 한 커밋에 · evals 면제와 같은 골격).
  * ⚠ 좁게 뺀다 — 스킬 «계열»이 아니라 이 스킬 하나다. 다음 반입물은 그때 건별로 낸다. */
-const 제외 = [/^ARC-AGI-3-Agents\//, /(^|\/)node_modules\//, /^docs\/_ops\/인계문/, /^docs\/_ops\/마찰신호\.md$/,
+const 제외 = [/^ARC-AGI-3-Agents\//, /(^|\/)node_modules\//, /^docs\/_ops\/마찰신호\.md$/,
   /^docs\/_ops\/장부\//, /^evals\/출력_[^/]*\.json$/, /^\.claude\/skills\/last30days\//];
 
 /** 이 경로를 열어 볼 것인가. 경로는 **저장소 뿌리 기준 슬래시 표기**여야 한다(git 이 주는 그대로). */
