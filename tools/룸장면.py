@@ -49,6 +49,7 @@ HDRI세기 = float(값("--hdri세기", "0.35"))
 그림자층 = 켜짐("--그림자층")
 글자 = 값("--글자", "ㅅ")
 폰트경로 = 값("--폰트")
+펠트색 = 값("--펠트색")          # 펠트패치_0815 타일 이름(Coral·Oat·Paper·Stitch…) — 로고 부품이 쓴다
 # 헌법 — 「반복 부품의 갇힌 빛은 **무채**」다. 코랄이 갇히는 것은 히어로 1점뿐이라,
 # 불릿·체크처럼 지면에 수십 개 도는 부품은 같은 레진이되 갇힌 빛만 크림이다(킷 철칙 ④).
 갇힌빛 = 값("--갇힌빛", "코랄")
@@ -63,7 +64,8 @@ CREAM = (0.965, 0.949, 0.918, 1.0)
 # 무채 레진의 흡수는 «색»이 아니라 «어둠»이다 — 크림을 흡수색으로 주면 하얗게 뜬다.
 흡수색 = lambda: CORAL if 갇힌빛 == "코랄" else (0.42, 0.44, 0.50, 1.0)
 루트 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-펠트타일 = os.path.join(루트, "docs", "캐릭터", "펠트패치_0815", "Cream3.png")
+펠트패치 = os.path.join(루트, "docs", "캐릭터", "펠트패치_0815")
+펠트타일 = os.path.join(펠트패치, "Cream3.png")
 
 # 🔑 씨앗 고정 — 기포·봉입물의 «불완전»(§3-4 ④)은 난수인데, 씨앗이 흔들리면
 #    A/B 대조에서 재질이 아니라 «다른 개체»를 비교하게 된다(F045 ③: 대조는 입력을 얼린다).
@@ -159,7 +161,15 @@ elif 부품 == "판":
     cam_data.dof.use_dof = False
     cam.location = (0, -7.0, 0)
     cam.rotation_euler = (math.radians(90), 0, 0)
-elif 부품 in ("원판", "칩"):
+elif 부품 == "로고꺾쇠":
+    # ⚠ **판과 같은 예외** — 워드마크 위에 «그 자리 그대로» 앉는 합성 부품이라 원근이 있으면
+    #   벡터 정본과 외곽이 어긋난다. ⑤광학을 어기는 대신 입체는 결·붕긋함·그림자가 진다.
+    cam_data.type = 'ORTHO'
+    cam_data.ortho_scale = 2.5
+    cam_data.dof.use_dof = False
+    cam.location = (0, -7.0, 0)
+    cam.rotation_euler = (math.radians(90), 0, 0)
+elif 부품 in ("원판", "칩", "로고배지"):
     # 각진 부품은 «모서리»가 주인공이라 더 정면에 가깝게 — 대신 완전 정면은 피한다.
     cam.location = (0.62, -6.6, 1.05)
     cam.rotation_euler = (math.radians(81.5), 0, math.radians(5.4))
@@ -551,9 +561,15 @@ def 봉입_글자(중심=(0, 0, 0), 문자=None, 폰트=None):
         o.data.materials.append(파)
 
 
-def 펠트재질():
-    """헌법 ① — 결은 사진 픽셀에서만. 펠트는 실물이 있으니 «찍은 것»을 쓴다."""
-    m, nt, out = 새재질("Loom_펠트")
+def 펠트재질(색=None, 스케일=2.4, 돌림=0.0, 염색보정=False, 결흩기=0.0, 채도=1.22, 밝기=0.86):
+    """헌법 ① — 결은 사진 픽셀에서만. 펠트는 실물이 있으니 «찍은 것»을 쓴다.
+    색 = 펠트패치_0815 타일 이름(Coral·Oat·Paper·Stitch…). 안 주면 구판 그대로 Cream3 —
+    기존 호출은 전부 무인자라 이 확장은 더하는 층이다(F503).
+    스케일↑ = 결이 잘아진다 · 돌림 = 축 정렬 깨기 · 염색보정 = AgX·조명이 씻는 채도 복원.
+    결흩기 = 표본 좌표를 노이즈로 흩는다 — 🔴 2판 실측: 패치 전량이 «거울 타일»이라
+    어느 스케일에서도 반복 격자가 무늬로 드러났다. 소재가 아니라 좌표를 흩어야 풀린다
+    (픽셀은 여전히 실물 사진에서 온다 — 헌법 ① 그대로)."""
+    m, nt, out = 새재질("Loom_펠트" + ("_" + 색 if 색 else ""))
     p = nt.nodes.new("ShaderNodeBsdfPrincipled")
     p.inputs["Roughness"].default_value = 0.95
     if "Sheen Weight" in p.inputs:
@@ -561,17 +577,43 @@ def 펠트재질():
     if "Specular IOR Level" in p.inputs:
         p.inputs["Specular IOR Level"].default_value = 0.12
     try:
-        img = bpy.data.images.load(펠트타일)
+        타일 = os.path.join(펠트패치, 색 + ".png") if 색 else 펠트타일
+        img = bpy.data.images.load(타일)
         tex = nt.nodes.new("ShaderNodeTexImage"); tex.image = img
         tc2 = nt.nodes.new("ShaderNodeTexCoord")
         mp = nt.nodes.new("ShaderNodeMapping")
-        mp.inputs["Scale"].default_value = (2.4, 2.4, 2.4)
+        mp.inputs["Scale"].default_value = (스케일, 스케일, 스케일)
+        if 돌림:
+            mp.inputs["Rotation"].default_value = (0.0, 0.0, math.radians(돌림))
         nt.links.new(tc2.outputs["Object"], mp.inputs["Vector"])
-        nt.links.new(mp.outputs[0], tex.inputs["Vector"])
-        nt.links.new(tex.outputs["Color"], p.inputs["Base Color"])
+        if 결흩기:
+            nz = nt.nodes.new("ShaderNodeTexNoise")
+            nz.inputs["Scale"].default_value = 3.2
+            nz.inputs["Detail"].default_value = 4.0
+            nt.links.new(tc2.outputs["Object"], nz.inputs["Vector"])
+            빼 = nt.nodes.new("ShaderNodeVectorMath"); 빼.operation = 'SUBTRACT'
+            빼.inputs[1].default_value = (0.5, 0.5, 0.5)
+            nt.links.new(nz.outputs["Color"], 빼.inputs[0])
+            곱 = nt.nodes.new("ShaderNodeVectorMath"); 곱.operation = 'SCALE'
+            곱.inputs["Scale"].default_value = 결흩기
+            nt.links.new(빼.outputs["Vector"], 곱.inputs[0])
+            더 = nt.nodes.new("ShaderNodeVectorMath"); 더.operation = 'ADD'
+            nt.links.new(mp.outputs[0], 더.inputs[0])
+            nt.links.new(곱.outputs["Vector"], 더.inputs[1])
+            nt.links.new(더.outputs["Vector"], tex.inputs["Vector"])
+        else:
+            nt.links.new(mp.outputs[0], tex.inputs["Vector"])
+        색끝 = tex.outputs["Color"]
+        if 염색보정:
+            hsv = nt.nodes.new("ShaderNodeHueSaturation")
+            hsv.inputs["Saturation"].default_value = 채도
+            hsv.inputs["Value"].default_value = 밝기
+            nt.links.new(색끝, hsv.inputs["Color"])
+            색끝 = hsv.outputs["Color"]
+        nt.links.new(색끝, p.inputs["Base Color"])
         bump = nt.nodes.new("ShaderNodeBump")
         bump.inputs["Strength"].default_value = 0.34
-        nt.links.new(tex.outputs["Color"], bump.inputs["Height"])
+        nt.links.new(tex.outputs["Color"], bump.inputs["Height"])   # 결(요철)은 보정 전 원판을 쓴다
         nt.links.new(bump.outputs["Normal"], p.inputs["Normal"])
     except Exception as e:
         print("[loom] 🔴 펠트 타일 실패:", e)
@@ -713,6 +755,96 @@ def 합주세우기():
     레진세우기((0, -0.55, 0))
 
 
+def 구슬재질(이름="구슬"):
+    """마스코트의 구슬눈 — 잉크 #2B2320(리니어 환산값), 광은 조명이 맺는다."""
+    m, nt, out = 새재질(이름)
+    p = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    p.inputs["Base Color"].default_value = (0.0242, 0.0168, 0.0144, 1.0)
+    p.inputs["Roughness"].default_value = 0.14
+    if "Coat Weight" in p.inputs:
+        p.inputs["Coat Weight"].default_value = 0.6
+    nt.links.new(p.outputs[0], out.inputs["Surface"])
+    return m
+
+
+def 꺾쇠몸(이름="꺾쇠", 크기=1.0, 두께=0.32, 모폭=0.07, 평면="XZ"):
+    """로고 v2 꺾쇠 — 정본 좌표(벌림 60° · x-height 정렬)를 그대로 세운다.
+    🚫자리마다 눈대중으로 다시 그리지 않는다(DESIGN.md §4) — 좌표의 주인은 로고 정본이다."""
+    pts = [(146, 46.7), (112, 66.35), (146, 86), (159, 86), (125, 66.35), (159, 46.7)]
+    if 평면 == "XY":
+        verts = [((x - 135.5) / 24.0 * 크기, (66.35 - y) / 24.0 * 크기, 0.0) for x, y in pts]
+    else:
+        verts = [((x - 135.5) / 24.0 * 크기, 0.0, (66.35 - y) / 24.0 * 크기) for x, y in pts]
+    mesh = bpy.data.meshes.new(이름)
+    mesh.from_pydata(verts, [], [list(range(6))])
+    mesh.update()
+    o = bpy.data.objects.new(이름, mesh)
+    bpy.context.scene.collection.objects.link(o)
+    # 오목 다각형이라 삼각화를 먼저 — ngon 그대로 두면 솔리디파이가 면을 뒤집을 수 있다.
+    o.modifiers.new('tri', 'TRIANGULATE')
+    sol = o.modifiers.new('sol', 'SOLIDIFY'); sol.thickness = 두께; sol.offset = 0.0
+    bev = o.modifiers.new('bev', 'BEVEL'); bev.width = 모폭; bev.segments = 4
+    bev.limit_method = 'ANGLE'; bev.angle_limit = math.radians(52)
+    return o
+
+
+def 로고꺾쇠세우기():
+    """B2 «신호만 펠트» — 워드마크의 코랄 꺾쇠(로고 한 벌 확정 · 유호 08-21).
+    벡터 정본은 그대로 살고, 이 판은 그 위에 앉는 «표현층»이다.
+    🔴 1판 실측: XZ 평면에 지으면 Object 매핑이 이미지의 (x,y)만 써서 y=상수 → 결이
+    **1차원 줄무늬**로 뽑혔다(직물처럼 보임). XY 평면에 짓고 몸을 세워야 (x,y)가 다 산다."""
+    o = 꺾쇠몸("로고꺾쇠", 평면="XY")
+    o.rotation_euler = (math.radians(90.0), 0, 0)      # 정면 직교 카메라와 한 벌 — 원근 0
+    o.data.materials.append(펠트재질(펠트색 or "Coral", 스케일=2.6, 돌림=9.0, 염색보정=True, 결흩기=0.45))
+
+
+def 로고배지세우기():
+    """앱 아이콘 «몽글 배지» — 꺾쇠가 입이 되는 옆모습(로고 한 벌 확정 · 유호 08-21).
+    좌표는 확정 시안 SVG(r106 원판 기준)를 1/106 로 그대로 옮겼다 — 눈대중 금지."""
+    bpy.ops.mesh.primitive_cylinder_add(radius=1.0, depth=0.30, vertices=192, location=(0, 0, 0))
+    판 = bpy.context.object; 판.name = "배지판"
+    모따기(판, 폭=0.09, 단=5)
+    # 🔴 3판 실측: Oat 가 조명·AgX 에 씻겨 백색으로 떴다 — 원판만 염색을 진하게 건다(양모 오트의 따뜻함).
+    판.data.materials.append(펠트재질("Oat", 스케일=2.8, 돌림=9.0, 염색보정=True, 결흩기=0.45, 채도=1.5, 밝기=0.72))
+
+    def 붙이기(o, 위치):
+        o.parent = 판          # matrix_parent_inverse 는 항등 그대로 — location 이 판-로컬 좌표가 된다
+        o.location = 위치
+
+    입 = 꺾쇠몸("입", 크기=0.453, 두께=0.10, 모폭=0.030, 평면="XY")   # 시안: scale2 꺾쇠 폭 94 / 지름 212
+    입.data.materials.append(펠트재질("Coral", 스케일=2.6, 돌림=9.0, 염색보정=True, 결흩기=0.45))
+    붙이기(입, (-0.038, -0.236, 0.20))
+
+    눈 = 구("눈", 0.099, (0, 0, 0), 세그=96)                          # 1~2시 방향(유호 픽 08-20)
+    눈.data.materials.append(구슬재질())
+    붙이기(눈, (0.302, 0.340, 0.195))
+
+    bpy.ops.mesh.primitive_cylinder_add(radius=0.094, depth=0.024, vertices=96, location=(0, 0, 0))
+    홍조 = bpy.context.object; 홍조.name = "홍조"
+    홍조.scale = (1.0, 0.65, 1.0)
+    홍조.data.materials.append(펠트재질("CoralSoft", 스케일=3.0, 염색보정=True, 결흩기=0.45))
+    붙이기(홍조, (0.509, 0.038, 0.163))
+
+    # 🔴 1판 실측: z=0.02(원판 중간면)에 두니 뿔이 원판 실루엣 «뒤»에 숨어 겨우 비쳤다.
+    #   앞면 쪽(z 0.10)으로 당기고 조금 키워야 「반 이상 걸침」(시안 검산 기준)이 렌더에서도 산다.
+    뿔펠트 = 펠트재질("Coral", 스케일=3.5, 돌림=9.0, 염색보정=True, 결흩기=0.45)
+    for i, (x, y, r) in enumerate([(-0.075, 1.0, 0.082), (0.009, 1.005, 0.092), (0.094, 0.99, 0.070)]):
+        뿔 = 구("뿔%d" % i, r, (0, 0, 0), 세그=64)                     # 양모 뿔 — 원판 윗단에 걸친다
+        뿔.data.materials.append(뿔펠트)
+        붙이기(뿔, (x, y, 0.10))
+
+    실 = 펠트재질("Stitch")
+    for i in range(24):                                               # 실땀 링 r0.868 — 끊긴 땀 24개
+        a = i / 24.0 * math.tau
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.013, depth=0.12, vertices=24, location=(0, 0, 0))
+        땀 = bpy.context.object; 땀.name = "땀%d" % i
+        땀.rotation_euler = (math.radians(90), 0, a)
+        땀.data.materials.append(실)
+        붙이기(땀, (0.868 * math.cos(a), 0.868 * math.sin(a), 0.158))
+
+    판.rotation_euler = (math.radians(84.0), math.radians(-4.0), 0)   # 원판과 같은 «들어 보인» 각
+
+
 세우기표 = {
     "유리구": 유리세우기,
     "레진구": lambda: 레진세우기((0, 0, 0)),
@@ -720,6 +852,8 @@ def 합주세우기():
     "판": 판세우기,
     "칩": 칩세우기,
     "합주": 합주세우기,
+    "로고꺾쇠": 로고꺾쇠세우기,
+    "로고배지": 로고배지세우기,
 }
 
 
