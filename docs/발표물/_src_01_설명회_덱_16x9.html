@@ -107,7 +107,10 @@ h1.sm + .mn{ font-size:18mm; }
 /* 3열 (세 가지 힘) — 좌→우 순서 고정 */
 .col3{ display:flex; gap:9mm; margin-top:11mm; }
 .col3 .c{ flex:1 1 0; border:.6mm solid var(--hair); border-radius:5mm; padding:9mm 7mm; background:#fff; }
-.col3 .c .n{ font-size:5mm; font-weight:700; color:var(--navy-3); letter-spacing:.18em; }
+/* 번호는 Loom 부품(유리 원판)이 그린다 — 원고는 «크기»만 정하고 색·재질은 안 건드린다.
+   ⚠옛 규칙(`.n`)처럼 color 를 여기서 잡으면 원판 위 잉크가 어두워져 **숫자가 안 보인다**
+   (2026-08-19 렌더로 잡았다 — 전파는 초록인데 화면은 나빠진 자리). */
+.col3 .c .번호{ font-size:4.4mm; margin-bottom:1.5mm; }
 .col3 .c .t{ font-size:13mm; font-weight:800; margin-top:4mm; line-height:1.2; letter-spacing:-.03em; }
 .col3 .c .mn{ font-size:13mm; margin-top:4mm; }   /* 위 .t 와 같은 크기(정본 §1) */
 /* ⚠ 투사면 글자는 32pt(≈11.3mm) 아래로 내리지 않는다 — 설명회장은 조명이 밝고 뒷줄이 멀다.
@@ -237,19 +240,19 @@ h1.sm + .mn{ font-size:18mm; }
   <h1 class="sm" style="font-size:15mm">AI가 대신하기 어려운 <em>세 가지 힘</em></h1>
   <div class="col3">
     <div class="c">
-      <div class="n mono">01</div>
+      <div class="번호">01</div>
       <div class="t">질문하는 힘</div>
       <div class="mn">______</div>
       <div class="real">「나침반」 세션</div>
     </div>
     <div class="c">
-      <div class="n mono">02</div>
+      <div class="번호">02</div>
       <div class="t">스스로 하는 힘</div>
       <div class="mn">______</div>
       <div class="real">「싱크 크루」</div>
     </div>
     <div class="c">
-      <div class="n mono">03</div>
+      <div class="번호">03</div>
       <div class="t">마음을 얻는 힘</div>
       <div class="mn">______</div>
       <div class="real">반 레이드 · 발표</div>
@@ -310,19 +313,19 @@ h1.sm + .mn{ font-size:18mm; }
   <h1 class="sm" style="font-size:16mm">졸업할 때 <em>들고 나가는 세 가지</em></h1>
   <div class="col3">
     <div class="c">
-      <div class="n mono">01</div>
+      <div class="번호">01</div>
       <div class="t">TOPIK 급수</div>
       <div class="mn">______</div>
       <div class="real">준비 과정의 기록까지</div>
     </div>
     <div class="c">
-      <div class="n mono">02</div>
+      <div class="번호">02</div>
       <div class="t">팀으로 만든<br>결과물</div>
       <div class="mn">______</div>
       <div class="real">「싱크 포트폴리오」</div>
     </div>
     <div class="c">
-      <div class="n mono">03</div>
+      <div class="번호">03</div>
       <div class="t">자기만의<br>5년 로드맵</div>
       <div class="mn">______</div>
       <div class="real">아이가 직접 그린다</div>
@@ -380,22 +383,22 @@ h1.sm + .mn{ font-size:18mm; }
   </div>
   <table>
     <tr><th style="width:14mm">장</th><th style="width:48mm">화면</th><th style="width:34mm">대본 구간</th><th>넘기는 신호 — 이 말을 하기 직전에 넘긴다</th></tr>
-    <tr><td class="n mono">01</td><td>표지 · 슬로건</td><td class="c">입장~시작 전</td><td>청중 착석 동안 띄워 둔다. 첫 마디와 함께 02로.</td></tr>
-    <tr><td class="n mono">02</td><td>약속 하나, 질문 하나</td><td class="c">▷ 1</td><td>“약속 하나와 질문 하나를 들고 이 자리에 섰습니다”</td></tr>
-    <tr><td class="n mono">03</td><td>TOPIK은 확실하게</td><td class="c">▷ 2</td><td>“먼저 약속입니다”</td></tr>
-    <tr><td class="n mono">04</td><td>그 다음에 우리 아이는?</td><td class="c">▷ 3</td><td>“그리고 질문입니다”</td></tr>
-    <tr><td class="n mono">05</td><td>손안에 박사급 AI</td><td class="c">▷ 5–8</td><td>“지금 우리는 어떤 시대에 살고 있습니까”</td></tr>
-    <tr><td class="n mono">06</td><td>점수는 이제 기본</td><td class="c">▷ 9–10</td><td>“그래서 여쭙고 싶습니다”</td></tr>
-    <tr><td class="n mono">07</td><td>“나 이제 뭐 하지?”</td><td class="c">▷ 11–18</td><td>“한 장면을 상상해 보겠습니다”</td></tr>
-    <tr class="mark"><td class="n mono">08</td><td>세 가지 힘 (3열)</td><td class="c">▷ 19–28</td><td>“저는 세 가지라고 확신합니다” — <b>이 장은 오래 머문다(10구간)</b></td></tr>
-    <tr><td class="n mono">09</td><td>몸이 깨어날 때</td><td class="c">▷ 29–30</td><td>“하나. 뇌과학 학습법입니다”</td></tr>
-    <tr><td class="n mono">10</td><td>팀으로 만든 진짜 경험</td><td class="c">▷ 31–32</td><td>“둘. 「싱크 크루」 프로젝트입니다”</td></tr>
-    <tr><td class="n mono">11</td><td>“왜 배우는가”를 묻습니다</td><td class="c">▷ 33–34</td><td>“셋. 「나침반」 세션입니다”</td></tr>
-    <tr><td class="n mono">12</td><td>한국어에 영어까지</td><td class="c">▷ 35</td><td>“넷. 한국어에 영어까지 더합니다”</td></tr>
-    <tr><td class="n mono">13</td><td>졸업할 때 세 가지 (3열)</td><td class="c">▷ 36–40</td><td>“자격증 하나만 가지고 나가지 않습니다”</td></tr>
-    <tr class="mark"><td class="n mono">14</td><td>저희는 새 학원입니다</td><td class="c">▷ 41–44</td><td>“정직하게 말씀드릴 것이 하나 있습니다” — <b>화면이 말을 멈추는 자리. 시선을 사람에게.</b></td></tr>
-    <tr><td class="n mono">15</td><td>오늘 저녁, 물어봐 주세요</td><td class="c">▷ 45–47</td><td>“오늘 집에 돌아가시면”</td></tr>
-    <tr class="mark"><td class="n mono">16</td><td>슬로건 + 상담 안내</td><td class="c">▷ 48 ~ 끝</td><td>“합격은 기본으로 챙기겠습니다” — <b>슬로건을 읽는 동안 화면에 그 문장이 떠 있어야 한다.</b> 질의응답 내내 띄워 둔다</td></tr>
+    <tr><td class="번호">01</td><td>표지 · 슬로건</td><td class="c">입장~시작 전</td><td>청중 착석 동안 띄워 둔다. 첫 마디와 함께 02로.</td></tr>
+    <tr><td class="번호">02</td><td>약속 하나, 질문 하나</td><td class="c">▷ 1</td><td>“약속 하나와 질문 하나를 들고 이 자리에 섰습니다”</td></tr>
+    <tr><td class="번호">03</td><td>TOPIK은 확실하게</td><td class="c">▷ 2</td><td>“먼저 약속입니다”</td></tr>
+    <tr><td class="번호">04</td><td>그 다음에 우리 아이는?</td><td class="c">▷ 3</td><td>“그리고 질문입니다”</td></tr>
+    <tr><td class="번호">05</td><td>손안에 박사급 AI</td><td class="c">▷ 5–8</td><td>“지금 우리는 어떤 시대에 살고 있습니까”</td></tr>
+    <tr><td class="번호">06</td><td>점수는 이제 기본</td><td class="c">▷ 9–10</td><td>“그래서 여쭙고 싶습니다”</td></tr>
+    <tr><td class="번호">07</td><td>“나 이제 뭐 하지?”</td><td class="c">▷ 11–18</td><td>“한 장면을 상상해 보겠습니다”</td></tr>
+    <tr class="mark"><td class="번호">08</td><td>세 가지 힘 (3열)</td><td class="c">▷ 19–28</td><td>“저는 세 가지라고 확신합니다” — <b>이 장은 오래 머문다(10구간)</b></td></tr>
+    <tr><td class="번호">09</td><td>몸이 깨어날 때</td><td class="c">▷ 29–30</td><td>“하나. 뇌과학 학습법입니다”</td></tr>
+    <tr><td class="번호">10</td><td>팀으로 만든 진짜 경험</td><td class="c">▷ 31–32</td><td>“둘. 「싱크 크루」 프로젝트입니다”</td></tr>
+    <tr><td class="번호">11</td><td>“왜 배우는가”를 묻습니다</td><td class="c">▷ 33–34</td><td>“셋. 「나침반」 세션입니다”</td></tr>
+    <tr><td class="번호">12</td><td>한국어에 영어까지</td><td class="c">▷ 35</td><td>“넷. 한국어에 영어까지 더합니다”</td></tr>
+    <tr><td class="번호">13</td><td>졸업할 때 세 가지 (3열)</td><td class="c">▷ 36–40</td><td>“자격증 하나만 가지고 나가지 않습니다”</td></tr>
+    <tr class="mark"><td class="번호">14</td><td>저희는 새 학원입니다</td><td class="c">▷ 41–44</td><td>“정직하게 말씀드릴 것이 하나 있습니다” — <b>화면이 말을 멈추는 자리. 시선을 사람에게.</b></td></tr>
+    <tr><td class="번호">15</td><td>오늘 저녁, 물어봐 주세요</td><td class="c">▷ 45–47</td><td>“오늘 집에 돌아가시면”</td></tr>
+    <tr class="mark"><td class="번호">16</td><td>슬로건 + 상담 안내</td><td class="c">▷ 48 ~ 끝</td><td>“합격은 기본으로 챙기겠습니다” — <b>슬로건을 읽는 동안 화면에 그 문장이 떠 있어야 한다.</b> 질의응답 내내 띄워 둔다</td></tr>
   </table>
   <div class="note">
     <b>정본 §1 목록과 다른 점 2가지</b> — ① <b>14장(정직 고지) 신설.</b> 정본 목록엔 대본 §5
