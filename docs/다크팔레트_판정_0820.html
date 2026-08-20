@@ -1,0 +1,421 @@
+<meta charset="utf-8">
+<title>다크 팔레트 판정 — 2027 킷의 밤 (2026-08-20)</title>
+<style>
+ :root{ --지:#FBF7F0; --먹:#2B2320; --흐림:#8D857A; --선:#E3DCD0; --코랄:#F96859 }
+ *{ box-sizing:border-box }
+ body{ margin:0; padding:32px 20px 80px; background:var(--지); color:var(--먹);
+   font:16px/1.7 "SUIT","Pretendard",system-ui,-apple-system,sans-serif }
+ .판{ max-width:1180px; margin:0 auto }
+ h1{ font-size:30px; margin:0 0 6px; letter-spacing:-.02em }
+ .머리{ color:var(--흐림); margin:0 0 26px; font-size:15px }
+ .왜{ border:1px solid var(--선); border-left:4px solid var(--코랄); border-radius:10px;
+   padding:16px 20px; margin:0 0 30px; background:#fff8 }
+ .왜 b{ color:var(--먹) }
+ .왜 ul{ margin:10px 0 0; padding-left:20px } .왜 li{ margin:5px 0 }
+ h2{ font-size:23px; margin:0 0 2px; letter-spacing:-.01em }
+ .코드{ color:var(--코랄) }
+ .한줄{ color:var(--흐림); margin:0 0 16px; font-size:15px }
+ .후보{ border:1px solid var(--선); border-radius:14px; padding:22px 24px; margin:0 0 26px; background:#FFFDFA }
+ .본체{ display:flex; gap:26px; align-items:flex-start; flex-wrap:wrap }
+ .왼{ flex:0 0 300px } .오{ flex:1 1 380px; min-width:320px }
+ .오 h3{ font-size:14px; margin:16px 0 6px; color:var(--흐림); font-weight:700;
+   text-transform:none; letter-spacing:.02em }
+ .오 ul{ margin:0; padding-left:19px } .오 li{ margin:6px 0; font-size:14.5px }
+ .셈{ font-size:14px; color:var(--흐림) }
+ .새색줄{ display:flex; gap:12px; flex-wrap:wrap; margin:8px 0 10px }
+ .새색{ display:inline-flex; align-items:center; gap:6px; font-size:13px; background:#F3EDE3;
+   border-radius:20px; padding:4px 12px 4px 5px }
+ .새색 i{ width:16px; height:16px; border-radius:50%; display:inline-block; border:1px solid #0002 }
+ .새색없음{ font-size:13px; background:#E7F0DE; color:#3F6B2E; border-radius:20px; padding:4px 12px }
+ .판정줄{ font-size:14px; padding:8px 0; border-top:1px dashed var(--선) }
+ .ok{ color:#3F6B2E } .bad{ color:#AE322A }
+ /* ── 폰 목업 ── */
+ .폰{ border:1px solid; border-radius:26px; padding:14px 13px 18px; box-shadow:0 8px 26px #2b232014 }
+ .폰바{ font-size:11px; letter-spacing:.16em; padding:2px 4px 12px; font-weight:700 }
+ .카드{ border:1px solid; border-radius:16px; padding:15px 15px 13px }
+ .제목{ font-size:17px; font-weight:800; letter-spacing:-.01em }
+ .본문{ font-size:14px; margin:7px 0 0 }
+ .보조{ font-size:12.5px; margin:8px 0 0 }
+ .칩줄{ display:flex; gap:6px; flex-wrap:wrap; margin:13px 0 0 }
+ .칩{ font-size:11px; font-weight:700; border-radius:20px; padding:3px 10px; border:1px solid }
+ .태그{ font-size:13px; margin:13px 0 0; font-weight:600 }
+ .메타{ font-size:11px; margin:10px 0 0 }
+ .버튼{ margin:14px 4px 0; border-radius:14px; text-align:center; padding:11px;
+   font-weight:800; font-size:15px }
+ /* ── 표 ── */
+ details{ margin:16px 0 0; border-top:1px dashed var(--선); padding:12px 0 0 }
+ summary{ cursor:pointer; font-size:13.5px; color:var(--흐림) }
+ table{ border-collapse:collapse; width:100%; margin:12px 0 0; font-size:13.5px }
+ th,td{ text-align:left; padding:7px 9px; border-bottom:1px solid var(--선); vertical-align:middle }
+ th{ font-size:12px; color:var(--흐림); font-weight:700 }
+ .주{ display:block; font-size:11.5px; color:var(--흐림); font-weight:400 }
+ .스와치 i{ width:19px; height:19px; border-radius:5px; display:inline-block;
+   border:1px solid #0002; vertical-align:middle; margin-right:3px }
+ .수 b{ font-variant-numeric:tabular-nums }
+ tr.깨짐{ background:#FEF0E9 }
+ code{ font:12px/1 "DM Mono",ui-monospace,monospace; color:var(--흐림) }
+ .실판{ border:1px solid var(--선); border-radius:14px; padding:20px 24px; margin:0 0 26px; background:#FFFDFA }
+ .끝{ border:1px solid var(--선); border-radius:14px; padding:20px 24px; background:#F7F2E9 }
+ .끝 h2{ margin-bottom:10px }
+ .끝 ol{ padding-left:20px; margin:10px 0 0 } .끝 li{ margin:8px 0 }
+ @media (max-width:820px){ .왼{ flex:1 1 100% } }
+</style>
+<div class="판">
+<h1>다크 팔레트 판정 — 2027 킷의 «밤»</h1>
+<p class="머리">2026-08-20 · 유호님 눈 검수용 판정 재료 · 굽기 <code>node tools/다크팔레트굽기.js</code></p>
+
+<div class="왜">
+<b>무엇이 비어 있나</b> — 2027 킷(조항 ⓙ)이 <b>라이트 세계만</b> 갈아입혔습니다. 앱은 다크 단일인데(유호님 확정 08-14),
+다크 시맨틱 8칸은 아직 구 무채(Graphite·Chalk·Ash·Lime)에 물려 있고 2027 역할 어휘(안내·정답·보상·기념)가 <b>아예 없습니다.</b>
+<ul>
+<li><b>급소 하나 — 다크에 새 «실»은 필요 없습니다.</b> 원리 ①「색이 아니라 램프다」를 반대편에서 읽으면 됩니다:
+라이트는 면=몸통·글자=Deep, <b>다크는 면=Deep·글자=Soft.</b> 같은 램프가 낮과 밤을 모두 삽니다.</li>
+<li>그래서 <b>고르실 것은 실이 아니라 «바탕과 잉크» 몇 칸</b>이고, 아래 세 후보가 갈리는 자리도 정확히 거기뿐입니다.</li>
+</ul>
+</div>
+
+<div class="실판">
+<h2>세 후보가 공유하는 것 — 2027 실 넷의 밤 얼굴</h2>
+<p class="한줄">어느 후보를 고르셔도 이 표는 그대로입니다. 라이트에서 쓰던 램프를 반대편에서 읽은 것뿐입니다.</p>
+<table><tbody><tr>
+    <td><b>안내</b><span class="주">힌트·길잡이</span></td>
+    <td class="스와치"><i style="background:#24448C"></i><code>#24448C</code> <span class="주">면(Deep)</span></td>
+    <td class="스와치"><i style="background:#C5D6F5"></i><code>#C5D6F5</code> <span class="주">글자(Soft)</span></td>
+    <td class="스와치"><i style="background:#3D6BC9"></i><code>#3D6BC9</code> <span class="주">라이트 면(몸통)</span></td></tr><tr>
+    <td><b>정답</b><span class="주">맞았다·자람</span></td>
+    <td class="스와치"><i style="background:#3F6B2E"></i><code>#3F6B2E</code> <span class="주">면(Deep)</span></td>
+    <td class="스와치"><i style="background:#D3E8BE"></i><code>#D3E8BE</code> <span class="주">글자(Soft)</span></td>
+    <td class="스와치"><i style="background:#7DB45A"></i><code>#7DB45A</code> <span class="주">라이트 면(몸통)</span></td></tr><tr>
+    <td><b>보상</b><span class="주">별·포인트</span></td>
+    <td class="스와치"><i style="background:#7E5A10"></i><code>#7E5A10</code> <span class="주">면(Deep)</span></td>
+    <td class="스와치"><i style="background:#FFEBB0"></i><code>#FFEBB0</code> <span class="주">글자(Soft)</span></td>
+    <td class="스와치"><i style="background:#F5C445"></i><code>#F5C445</code> <span class="주">라이트 면(몸통)</span></td></tr><tr>
+    <td><b>기념</b><span class="주">희귀·기념일</span></td>
+    <td class="스와치"><i style="background:#99295D"></i><code>#99295D</code> <span class="주">면(Deep)</span></td>
+    <td class="스와치"><i style="background:#F8C7DE"></i><code>#F8C7DE</code> <span class="주">글자(Soft)</span></td>
+    <td class="스와치"><i style="background:#E05C97"></i><code>#E05C97</code> <span class="주">라이트 면(몸통)</span></td></tr></tbody></table>
+</div>
+
+
+    <section class="후보">
+      <h2><span class="코드">㉠</span> 양모 밤</h2>
+      <p class="한줄">펠트 세계에 불을 끈 판 — 낮의 글자가 밤의 면이 된다</p>
+      <div class="본체">
+        <div class="왼">
+  <div class="폰" style="background:#080605;border-color:#3A2F2A">
+    <div class="폰바" style="color:#C7BFB2">SYNK</div>
+    <div class="카드" style="background:#2B2320;border-color:#3A2F2A">
+      <div class="제목" style="color:#FBF7F0">오늘의 숙제</div>
+      <div class="본문" style="color:#FBF7F0">문장을 소리 내어 읽고 녹음해 보세요.</div>
+      <div class="보조" style="color:#EDE7DC">3분이면 끝나요 · 어제보다 2문장 늘었어요</div>
+      <div class="칩줄"><span class="칩" style="background:#24448C;color:#C5D6F5;border-color:#C5D6F533">안내</span><span class="칩" style="background:#3F6B2E;color:#D3E8BE;border-color:#D3E8BE33">정답</span><span class="칩" style="background:#7E5A10;color:#FFEBB0;border-color:#FFEBB033">보상</span><span class="칩" style="background:#99295D;color:#F8C7DE;border-color:#F8C7DE33">기념</span></div>
+      <div class="태그" style="color:#F96859">✕ 조사가 빠졌어요 — 「학교<u>에</u> 갑니다」</div>
+      <div class="메타" style="color:#C7BFB2">v9.253 · 2026-08-20</div>
+    </div>
+    <div class="버튼" style="background:#F96859;color:#2B2320">녹음 시작</div>
+  </div></div>
+        <div class="오">
+          <div class="셈">킷 이미 있는 색 4 + 새 색 1</div>
+          <div class="새색줄"><span class="새색"><i style="background:#080605"></i>바탕 · Ink Deep <code>#080605</code></span></div>
+          <div class="판정줄">전체 19칸 — 통과 19 · <b class="ok">깨짐 0</b> · 아슬 3</div>
+          <h3>좋은 점</h3><ul><li><b>펠트 정체성이 밤에도 안 끊긴다</b> — 카드가 곧 Ink(따뜻한 먹)라 라이트의 글자색이 다크의 면이 된다. 한 벌의 양모를 낮과 밤에서 뒤집어 쓰는 구조.</li><li>새로 만드는 색이 <b>하나</b>뿐 — 「실은 부품, 램프가 정본」(원리 ②)을 가장 적게 어긴다.</li><li>2027 실 넷이 따뜻한 바탕 위에서 전부 채도를 유지한다(차가운 바탕은 노랑·분홍을 탁하게 만든다).</li></ul>
+          <h3>대가</h3><ul><li><b>「차분하면 싫다」와 가장 가까이 스친다</b> — 갈색 계열 밤은 아늑한 쪽이라, 유호님이 원하신 트렌디한 쨍함은 실 넷(청금석·메도우·버터·팝)이 전부 져야 한다.</li><li>옛 무채 12색은 <b>전량 퇴역</b>한다 — 앱(SYNK-talk)의 다크 값을 다시 배선해야 한다(형제 저장소 작업 1건).</li></ul>
+        </div>
+      </div>
+      <details><summary>대비 실측 19칸 — 전량 펼쳐 보기</summary><table><thead><tr><th>재는 자리</th><th>색</th><th>대비</th><th></th></tr></thead><tbody><tr class="">
+      <td>카드가 바탕에서 뜨나<span class="주">면 2단(유호 확정 08-14) · 기각선 8.3</span></td>
+      <td class="스와치"><i style="background:#2B2320"></i><i style="background:#080605"></i></td>
+      <td class="수"><b>12.8</b> <span class="주">ΔL* / 12.7</span></td>
+      <td>🟡</td></tr><tr class="">
+      <td>본문 잉크 (카드 위)<span class="주">읽는 글자 대부분</span></td>
+      <td class="스와치"><i style="background:#FBF7F0"></i><i style="background:#2B2320"></i></td>
+      <td class="수"><b>14.42</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>본문 잉크 (바탕 위)</td>
+      <td class="스와치"><i style="background:#FBF7F0"></i><i style="background:#080605"></i></td>
+      <td class="수"><b>18.93</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>보조 잉크<span class="주">설명·캡션</span></td>
+      <td class="스와치"><i style="background:#EDE7DC"></i><i style="background:#2B2320"></i></td>
+      <td class="수"><b>12.51</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>보조 잉크 2<span class="주">3층 글자 — 크기 불문 통과가 하한(조항 ⓔ)</span></td>
+      <td class="스와치"><i style="background:#C7BFB2"></i><i style="background:#2B2320"></i></td>
+      <td class="수"><b>8.45</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>신호 코랄 13px 글자<span class="주">답장 화면 오류 태그 — 코랄이 «글자»로 서는 유일한 자리</span></td>
+      <td class="스와치"><i style="background:#F96859"></i><i style="background:#2B2320"></i></td>
+      <td class="수"><b>5.24</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>신호 코랄 면<span class="주">버튼·막대</span></td>
+      <td class="스와치"><i style="background:#F96859"></i><i style="background:#080605"></i></td>
+      <td class="수"><b>6.89</b> <span class="주">/ 3</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>안내 글자 (안내면 위)<span class="주">칩 안 글자 · 힌트·길잡이</span></td>
+      <td class="스와치"><i style="background:#C5D6F5"></i><i style="background:#24448C"></i></td>
+      <td class="수"><b>6.28</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>안내 면이 바탕에서 뜨나</td>
+      <td class="스와치"><i style="background:#24448C"></i><i style="background:#080605"></i></td>
+      <td class="수"><b>28.7</b> <span class="주">ΔL* / 12.7</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>안내 글자 (바탕 위)<span class="주">칩 없이 쓰는 자리</span></td>
+      <td class="스와치"><i style="background:#C5D6F5"></i><i style="background:#080605"></i></td>
+      <td class="수"><b>13.78</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>정답 글자 (정답면 위)<span class="주">칩 안 글자 · 맞았다·자람</span></td>
+      <td class="스와치"><i style="background:#D3E8BE"></i><i style="background:#3F6B2E"></i></td>
+      <td class="수"><b>4.79</b> <span class="주">/ 4.5</span></td>
+      <td>🟡</td></tr><tr class="">
+      <td>정답 면이 바탕에서 뜨나</td>
+      <td class="스와치"><i style="background:#3F6B2E"></i><i style="background:#080605"></i></td>
+      <td class="수"><b>39.1</b> <span class="주">ΔL* / 12.7</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>정답 글자 (바탕 위)<span class="주">칩 없이 쓰는 자리</span></td>
+      <td class="스와치"><i style="background:#D3E8BE"></i><i style="background:#080605"></i></td>
+      <td class="수"><b>15.46</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>보상 글자 (보상면 위)<span class="주">칩 안 글자 · 별·포인트</span></td>
+      <td class="스와치"><i style="background:#FFEBB0"></i><i style="background:#7E5A10"></i></td>
+      <td class="수"><b>5.29</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>보상 면이 바탕에서 뜨나</td>
+      <td class="스와치"><i style="background:#7E5A10"></i><i style="background:#080605"></i></td>
+      <td class="수"><b>39.1</b> <span class="주">ΔL* / 12.7</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>보상 글자 (바탕 위)<span class="주">칩 없이 쓰는 자리</span></td>
+      <td class="스와치"><i style="background:#FFEBB0"></i><i style="background:#080605"></i></td>
+      <td class="수"><b>17.10</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>기념 글자 (기념면 위)<span class="주">칩 안 글자 · 희귀·기념일</span></td>
+      <td class="스와치"><i style="background:#F8C7DE"></i><i style="background:#99295D"></i></td>
+      <td class="수"><b>5.02</b> <span class="주">/ 4.5</span></td>
+      <td>🟡</td></tr><tr class="">
+      <td>기념 면이 바탕에서 뜨나</td>
+      <td class="스와치"><i style="background:#99295D"></i><i style="background:#080605"></i></td>
+      <td class="수"><b>34.5</b> <span class="주">ΔL* / 12.7</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>기념 글자 (바탕 위)<span class="주">칩 없이 쓰는 자리</span></td>
+      <td class="스와치"><i style="background:#F8C7DE"></i><i style="background:#080605"></i></td>
+      <td class="수"><b>13.69</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr></tbody></table></details>
+    </section>
+    <section class="후보">
+      <h2><span class="코드">㉡</span> 청금석 밤</h2>
+      <p class="한줄">2027 올해의 색이 밤이 된다 — 검정이 아니라 하늘</p>
+      <div class="본체">
+        <div class="왼">
+  <div class="폰" style="background:#050812;border-color:#2A3A5C">
+    <div class="폰바" style="color:#8A98B6">SYNK</div>
+    <div class="카드" style="background:#1A2540;border-color:#2A3A5C">
+      <div class="제목" style="color:#FBF7F0">오늘의 숙제</div>
+      <div class="본문" style="color:#FBF7F0">문장을 소리 내어 읽고 녹음해 보세요.</div>
+      <div class="보조" style="color:#C5D6F5">3분이면 끝나요 · 어제보다 2문장 늘었어요</div>
+      <div class="칩줄"><span class="칩" style="background:#24448C;color:#C5D6F5;border-color:#C5D6F533">안내</span><span class="칩" style="background:#3F6B2E;color:#D3E8BE;border-color:#D3E8BE33">정답</span><span class="칩" style="background:#7E5A10;color:#FFEBB0;border-color:#FFEBB033">보상</span><span class="칩" style="background:#99295D;color:#F8C7DE;border-color:#F8C7DE33">기념</span></div>
+      <div class="태그" style="color:#F96859">✕ 조사가 빠졌어요 — 「학교<u>에</u> 갑니다」</div>
+      <div class="메타" style="color:#8A98B6">v9.253 · 2026-08-20</div>
+    </div>
+    <div class="버튼" style="background:#F96859;color:#2B2320">녹음 시작</div>
+  </div></div>
+        <div class="오">
+          <div class="셈">킷 이미 있는 색 2 + 새 색 3</div>
+          <div class="새색줄"><span class="새색"><i style="background:#050812"></i>바탕 · Lapis Night <code>#050812</code></span><span class="새색"><i style="background:#1A2540"></i>카드 · Lapis Deep 면 <code>#1A2540</code></span><span class="새색"><i style="background:#8A98B6"></i>보조잉크2 · 흐린 청금석 <code>#8A98B6</code></span></div>
+          <div class="판정줄">전체 19칸 — 통과 19 · <b class="ok">깨짐 0</b> · 아슬 4</div>
+          <h3>좋은 점</h3><ul><li><b>2027 올해의 색(청금석)을 세계의 바닥으로 쓴다</b> — 트렌드 반영이 가장 직접적이고, 구 Navy 시절의 「검정이 아니라 밤」 서사가 그대로 이어진다.</li><li>차가운 밤 위에서 코랄이 가장 세게 튄다 — 신호 1점 문법이 제일 잘 산다.</li></ul>
+          <h3>대가</h3><ul><li>🔴 <b>안내(청금석)가 바탕과 같은 계열이라 색상 분리에 실패할 위험</b> — 이건 추측이 아니라 이 저장소의 선례다: 쿨블루를 성장색 후보로 올렸다가 「Navy 바닥과 같은 파랑이라 색상 분리 실패」로 기각한 기록이 있다(컨셉 정본 §12). 채택하면 안내 역할을 다른 실로 옮겨야 할 수 있다.</li><li>새 색 <b>셋</b> — 후보 중 킷을 가장 많이 늘린다.</li><li>펠트(양모) 재질감과 가장 먼 바탕이다 — 파란 양모는 염색한 티가 난다.</li></ul>
+        </div>
+      </div>
+      <details><summary>대비 실측 19칸 — 전량 펼쳐 보기</summary><table><thead><tr><th>재는 자리</th><th>색</th><th>대비</th><th></th></tr></thead><tbody><tr class="">
+      <td>카드가 바탕에서 뜨나<span class="주">면 2단(유호 확정 08-14) · 기각선 8.3</span></td>
+      <td class="스와치"><i style="background:#1A2540"></i><i style="background:#050812"></i></td>
+      <td class="수"><b>12.8</b> <span class="주">ΔL* / 12.7</span></td>
+      <td>🟡</td></tr><tr class="">
+      <td>본문 잉크 (카드 위)<span class="주">읽는 글자 대부분</span></td>
+      <td class="스와치"><i style="background:#FBF7F0"></i><i style="background:#1A2540"></i></td>
+      <td class="수"><b>14.22</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>본문 잉크 (바탕 위)</td>
+      <td class="스와치"><i style="background:#FBF7F0"></i><i style="background:#050812"></i></td>
+      <td class="수"><b>18.73</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>보조 잉크<span class="주">설명·캡션</span></td>
+      <td class="스와치"><i style="background:#C5D6F5"></i><i style="background:#1A2540"></i></td>
+      <td class="수"><b>10.35</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>보조 잉크 2<span class="주">3층 글자 — 크기 불문 통과가 하한(조항 ⓔ)</span></td>
+      <td class="스와치"><i style="background:#8A98B6"></i><i style="background:#1A2540"></i></td>
+      <td class="수"><b>5.24</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>신호 코랄 13px 글자<span class="주">답장 화면 오류 태그 — 코랄이 «글자»로 서는 유일한 자리</span></td>
+      <td class="스와치"><i style="background:#F96859"></i><i style="background:#1A2540"></i></td>
+      <td class="수"><b>5.17</b> <span class="주">/ 4.5</span></td>
+      <td>🟡</td></tr><tr class="">
+      <td>신호 코랄 면<span class="주">버튼·막대</span></td>
+      <td class="스와치"><i style="background:#F96859"></i><i style="background:#050812"></i></td>
+      <td class="수"><b>6.81</b> <span class="주">/ 3</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>안내 글자 (안내면 위)<span class="주">칩 안 글자 · 힌트·길잡이</span></td>
+      <td class="스와치"><i style="background:#C5D6F5"></i><i style="background:#24448C"></i></td>
+      <td class="수"><b>6.28</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>안내 면이 바탕에서 뜨나</td>
+      <td class="스와치"><i style="background:#24448C"></i><i style="background:#050812"></i></td>
+      <td class="수"><b>28.2</b> <span class="주">ΔL* / 12.7</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>안내 글자 (바탕 위)<span class="주">칩 없이 쓰는 자리</span></td>
+      <td class="스와치"><i style="background:#C5D6F5"></i><i style="background:#050812"></i></td>
+      <td class="수"><b>13.63</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>정답 글자 (정답면 위)<span class="주">칩 안 글자 · 맞았다·자람</span></td>
+      <td class="스와치"><i style="background:#D3E8BE"></i><i style="background:#3F6B2E"></i></td>
+      <td class="수"><b>4.79</b> <span class="주">/ 4.5</span></td>
+      <td>🟡</td></tr><tr class="">
+      <td>정답 면이 바탕에서 뜨나</td>
+      <td class="스와치"><i style="background:#3F6B2E"></i><i style="background:#050812"></i></td>
+      <td class="수"><b>38.6</b> <span class="주">ΔL* / 12.7</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>정답 글자 (바탕 위)<span class="주">칩 없이 쓰는 자리</span></td>
+      <td class="스와치"><i style="background:#D3E8BE"></i><i style="background:#050812"></i></td>
+      <td class="수"><b>15.29</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>보상 글자 (보상면 위)<span class="주">칩 안 글자 · 별·포인트</span></td>
+      <td class="스와치"><i style="background:#FFEBB0"></i><i style="background:#7E5A10"></i></td>
+      <td class="수"><b>5.29</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>보상 면이 바탕에서 뜨나</td>
+      <td class="스와치"><i style="background:#7E5A10"></i><i style="background:#050812"></i></td>
+      <td class="수"><b>38.6</b> <span class="주">ΔL* / 12.7</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>보상 글자 (바탕 위)<span class="주">칩 없이 쓰는 자리</span></td>
+      <td class="스와치"><i style="background:#FFEBB0"></i><i style="background:#050812"></i></td>
+      <td class="수"><b>16.92</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>기념 글자 (기념면 위)<span class="주">칩 안 글자 · 희귀·기념일</span></td>
+      <td class="스와치"><i style="background:#F8C7DE"></i><i style="background:#99295D"></i></td>
+      <td class="수"><b>5.02</b> <span class="주">/ 4.5</span></td>
+      <td>🟡</td></tr><tr class="">
+      <td>기념 면이 바탕에서 뜨나</td>
+      <td class="스와치"><i style="background:#99295D"></i><i style="background:#050812"></i></td>
+      <td class="수"><b>34.0</b> <span class="주">ΔL* / 12.7</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>기념 글자 (바탕 위)<span class="주">칩 없이 쓰는 자리</span></td>
+      <td class="스와치"><i style="background:#F8C7DE"></i><i style="background:#050812"></i></td>
+      <td class="수"><b>13.54</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr></tbody></table></details>
+    </section>
+    <section class="후보">
+      <h2><span class="코드">㉢</span> 무채 유지</h2>
+      <p class="한줄">바닥은 무채로 두고, 색은 실 넷에게만 시킨다</p>
+      <div class="본체">
+        <div class="왼">
+  <div class="폰" style="background:#08090C;border-color:#3A3A3A">
+    <div class="폰바" style="color:#8C8C8C">SYNK</div>
+    <div class="카드" style="background:#262626;border-color:#3A3A3A">
+      <div class="제목" style="color:#E4E4E7">오늘의 숙제</div>
+      <div class="본문" style="color:#E4E4E7">문장을 소리 내어 읽고 녹음해 보세요.</div>
+      <div class="보조" style="color:#D1D2D4">3분이면 끝나요 · 어제보다 2문장 늘었어요</div>
+      <div class="칩줄"><span class="칩" style="background:#24448C;color:#C5D6F5;border-color:#C5D6F533">안내</span><span class="칩" style="background:#3F6B2E;color:#D3E8BE;border-color:#D3E8BE33">정답</span><span class="칩" style="background:#7E5A10;color:#FFEBB0;border-color:#FFEBB033">보상</span><span class="칩" style="background:#99295D;color:#F8C7DE;border-color:#F8C7DE33">기념</span></div>
+      <div class="태그" style="color:#F96859">✕ 조사가 빠졌어요 — 「학교<u>에</u> 갑니다」</div>
+      <div class="메타" style="color:#8C8C8C">v9.253 · 2026-08-20</div>
+    </div>
+    <div class="버튼" style="background:#F96859;color:#2B2320">녹음 시작</div>
+  </div></div>
+        <div class="오">
+          <div class="셈">새 색 0 — 킷에 이미 있는 무채 그대로</div>
+          <div class="새색줄"><span class="새색없음">새로 만드는 색 없음</span></div>
+          <div class="판정줄">전체 19칸 — 통과 19 · <b class="ok">깨짐 0</b> · 아슬 5</div>
+          <h3>좋은 점</h3><ul><li><b>새 색 0개</b> · 앱 재배선도 0곳 — 오늘 당장 끝난다.</li><li>2일 전 유호님이 확정한 중성축(조항 ⓗ)의 취지 그대로다: 바닥을 무채로 비워 <b>색이 노래하게</b> 한다. 실 넷이 가장 정확한 색으로 읽힌다.</li><li>어느 실을 나중에 갈아끼워도 바닥이 안 흔들린다(원리 ② 「실은 부품」의 가장 순한 판).</li></ul>
+          <h3>대가</h3><ul><li><b>앱만 2027 킷의 «재질»에서 빠진다</b> — 문서·인쇄물은 양모 종이 위에 살고 앱은 무채 위에 산다. 한 브랜드가 두 바닥을 갖는다.</li><li>「차분하면 싫다」에 가장 정면으로 걸린다 — 무채 바닥은 정의상 차분하다(색은 실이 지지만 면적의 대부분은 바닥이다).</li><li>퇴역 대기 12색 중 <b>무채 9색이 「확정」으로 되살아난다</b>(초록 3색만 퇴역). 킷은 41색에서 32색으로만 줄어든다.</li></ul>
+        </div>
+      </div>
+      <details><summary>대비 실측 19칸 — 전량 펼쳐 보기</summary><table><thead><tr><th>재는 자리</th><th>색</th><th>대비</th><th></th></tr></thead><tbody><tr class="">
+      <td>카드가 바탕에서 뜨나<span class="주">면 2단(유호 확정 08-14) · 기각선 8.3</span></td>
+      <td class="스와치"><i style="background:#262626"></i><i style="background:#08090C"></i></td>
+      <td class="수"><b>12.7</b> <span class="주">ΔL* / 12.7</span></td>
+      <td>🟡</td></tr><tr class="">
+      <td>본문 잉크 (카드 위)<span class="주">읽는 글자 대부분</span></td>
+      <td class="스와치"><i style="background:#E4E4E7"></i><i style="background:#262626"></i></td>
+      <td class="수"><b>11.93</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>본문 잉크 (바탕 위)</td>
+      <td class="스와치"><i style="background:#E4E4E7"></i><i style="background:#08090C"></i></td>
+      <td class="수"><b>15.69</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>보조 잉크<span class="주">설명·캡션</span></td>
+      <td class="스와치"><i style="background:#D1D2D4"></i><i style="background:#262626"></i></td>
+      <td class="수"><b>10.00</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>보조 잉크 2<span class="주">3층 글자 — 크기 불문 통과가 하한(조항 ⓔ)</span></td>
+      <td class="스와치"><i style="background:#8C8C8C"></i><i style="background:#262626"></i></td>
+      <td class="수"><b>4.50</b> <span class="주">/ 4.5</span></td>
+      <td>🟡</td></tr><tr class="">
+      <td>신호 코랄 13px 글자<span class="주">답장 화면 오류 태그 — 코랄이 «글자»로 서는 유일한 자리</span></td>
+      <td class="스와치"><i style="background:#F96859"></i><i style="background:#262626"></i></td>
+      <td class="수"><b>5.15</b> <span class="주">/ 4.5</span></td>
+      <td>🟡</td></tr><tr class="">
+      <td>신호 코랄 면<span class="주">버튼·막대</span></td>
+      <td class="스와치"><i style="background:#F96859"></i><i style="background:#08090C"></i></td>
+      <td class="수"><b>6.78</b> <span class="주">/ 3</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>안내 글자 (안내면 위)<span class="주">칩 안 글자 · 힌트·길잡이</span></td>
+      <td class="스와치"><i style="background:#C5D6F5"></i><i style="background:#24448C"></i></td>
+      <td class="수"><b>6.28</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>안내 면이 바탕에서 뜨나</td>
+      <td class="스와치"><i style="background:#24448C"></i><i style="background:#08090C"></i></td>
+      <td class="수"><b>27.9</b> <span class="주">ΔL* / 12.7</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>안내 글자 (바탕 위)<span class="주">칩 없이 쓰는 자리</span></td>
+      <td class="스와치"><i style="background:#C5D6F5"></i><i style="background:#08090C"></i></td>
+      <td class="수"><b>13.57</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>정답 글자 (정답면 위)<span class="주">칩 안 글자 · 맞았다·자람</span></td>
+      <td class="스와치"><i style="background:#D3E8BE"></i><i style="background:#3F6B2E"></i></td>
+      <td class="수"><b>4.79</b> <span class="주">/ 4.5</span></td>
+      <td>🟡</td></tr><tr class="">
+      <td>정답 면이 바탕에서 뜨나</td>
+      <td class="스와치"><i style="background:#3F6B2E"></i><i style="background:#08090C"></i></td>
+      <td class="수"><b>38.4</b> <span class="주">ΔL* / 12.7</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>정답 글자 (바탕 위)<span class="주">칩 없이 쓰는 자리</span></td>
+      <td class="스와치"><i style="background:#D3E8BE"></i><i style="background:#08090C"></i></td>
+      <td class="수"><b>15.22</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>보상 글자 (보상면 위)<span class="주">칩 안 글자 · 별·포인트</span></td>
+      <td class="스와치"><i style="background:#FFEBB0"></i><i style="background:#7E5A10"></i></td>
+      <td class="수"><b>5.29</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>보상 면이 바탕에서 뜨나</td>
+      <td class="스와치"><i style="background:#7E5A10"></i><i style="background:#08090C"></i></td>
+      <td class="수"><b>38.4</b> <span class="주">ΔL* / 12.7</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>보상 글자 (바탕 위)<span class="주">칩 없이 쓰는 자리</span></td>
+      <td class="스와치"><i style="background:#FFEBB0"></i><i style="background:#08090C"></i></td>
+      <td class="수"><b>16.84</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>기념 글자 (기념면 위)<span class="주">칩 안 글자 · 희귀·기념일</span></td>
+      <td class="스와치"><i style="background:#F8C7DE"></i><i style="background:#99295D"></i></td>
+      <td class="수"><b>5.02</b> <span class="주">/ 4.5</span></td>
+      <td>🟡</td></tr><tr class="">
+      <td>기념 면이 바탕에서 뜨나</td>
+      <td class="스와치"><i style="background:#99295D"></i><i style="background:#08090C"></i></td>
+      <td class="수"><b>33.8</b> <span class="주">ΔL* / 12.7</span></td>
+      <td>✅</td></tr><tr class="">
+      <td>기념 글자 (바탕 위)<span class="주">칩 없이 쓰는 자리</span></td>
+      <td class="스와치"><i style="background:#F8C7DE"></i><i style="background:#08090C"></i></td>
+      <td class="수"><b>13.48</b> <span class="주">/ 4.5</span></td>
+      <td>✅</td></tr></tbody></table></details>
+    </section>
+
+<div class="끝">
+<h2>제 권고 — ㉠ 양모 밤</h2>
+<ol>
+<li><b>펠트가 브랜드의 «재질»이기 때문입니다.</b> 유호님 지시는 「모든 UI·UX를 펠트 재질로」였는데, ㉢을 고르면 문서는 양모 종이 위에·앱은 무채 위에 살아 <b>한 브랜드가 바닥을 둘 갖게 됩니다.</b> ㉠은 카드가 곧 Ink(따뜻한 먹)라 <b>라이트의 글자색이 다크의 면</b>이 됩니다 — 한 벌의 양모를 뒤집어 입는 구조입니다.</li>
+<li><b>새로 만드는 색이 하나뿐</b>이라 「실은 부품, 램프가 정본」을 가장 적게 어깁니다.</li>
+<li>「차분하면 싫다」는 <b>실 넷이 집니다</b> — 따뜻한 바탕은 노랑·분홍의 채도를 지켜 주고, 차가운 바탕은 그 둘을 탁하게 만듭니다.</li>
+</ol>
+<p style="margin:14px 0 0"><b>㉡을 고르실 경우</b> 안내(청금석)를 다른 실로 옮기는 후속 판정이 함께 필요합니다 —
+바닥과 같은 파랑이라 색상 분리에 실패한 선례가 이 저장소에 있습니다(쿨블루 기각, 컨셉 정본 §12).</p>
+<p style="margin:10px 0 0"><b>고르시면</b> 토큰 다크 시맨틱 재배선 + 퇴역 색 삭제 + 앱(SYNK-talk) 테마 반영까지 한 트랙으로 집행합니다.</p>
+</div>
+</div>
