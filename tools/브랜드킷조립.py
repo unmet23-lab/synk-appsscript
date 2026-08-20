@@ -25,7 +25,7 @@ except ImportError:
 토큰경로 = os.path.join(뿌리, 'docs', '디자인_토큰.json')
 패치뿌리 = os.path.join(뿌리, 'docs', '캐릭터', '펠트패치_0815')
 # 마스코트 그림 = «지금 정본» — 토큰 정본사진.평상복(펠트 코랄 · 유호 픽 08-15 ㉠재염색)을 그대로 싣는다.
-# ⚠구판(마스코트_렌더/본체.png 체리 젤리 · 그 누끼)을 쓰지 않는다 — 유호 교정 08-15 「적용 제대로」.
+# ⚠구판(펠트코랄_0815/재염색_본체.png 체리 젤리 · 그 누끼)을 쓰지 않는다 — 유호 교정 08-15 「적용 제대로」.
 #   경로를 하드코딩하지 않고 토큰에서 읽으므로 정본이 갈리면 재조립이 따라간다(F472 문법).
 펠트표정 = ['재염색_눈웃음.png', '재염색_눈감음.png']   # 평상복 정본 사진과 같은 폴더의 표정판
 출력 = os.path.join(뿌리, 'docs', '브랜드킷.html')
@@ -125,14 +125,14 @@ def main():
 <!-- 로고 도형 = 위 _브랜드킷.md §3 복사 · 조립: python tools/브랜드킷조립.py — 손 편집 금지(재조립이 덮는다) -->
 <style>
 :root {{ --paper:#FAFAF9; --ink:#1B1B1A; --navy:#262626; --navy2:#08090C; --navy3:#373737;
-  --cream:#E4E4E7; --coral:#FF6B5C; --coral3:#E8543F; --wash:#FFE9E4; --slate2:#666666; }}
+  --cream:#E4E4E7; --coral:#FF6B5C; --coral3:#E8543F; --wash:#FFE9E4; --slate2:#676767; }}
 * {{ box-sizing:border-box; margin:0 }}
 body {{ background:var(--paper); color:var(--ink); line-height:1.6;
   font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }}
 .band {{ background:var(--navy2); color:var(--cream); padding:56px 8% 48px; }}
 .band svg {{ width:200px; display:block }}
 .band h1 {{ font-size:30px; font-weight:800; margin-top:20px }}
-.band p {{ color:#8C8C8C; font-size:13px; margin-top:6px }}
+.band p {{ color:#8A8A8A; font-size:13px; margin-top:6px }}
 section {{ padding:44px 8% }}
 section+section {{ border-top:1px solid #D1D2D4 }}
 h2 {{ font-size:21px; font-weight:800; margin-bottom:4px }}
@@ -153,7 +153,7 @@ td,th {{ border:1px solid #D1D2D4; padding:7px 12px; text-align:left }}
 th {{ background:var(--wash); font-weight:800 }}
 code {{ font-family:'DM Mono',ui-monospace,Consolas,monospace; font-size:.92em }}
 .dark {{ background:var(--navy2); color:var(--cream) }}
-.dark h3 {{ color:#8C8C8C }} .dark .lead {{ color:#8C8C8C }}
+.dark h3 {{ color:#8A8A8A }} .dark .lead {{ color:#8A8A8A }}
 .dark td,.dark th {{ border-color:var(--navy3) }} .dark th {{ background:var(--navy3) }}
 .mascotrow {{ display:flex; gap:36px; align-items:center; flex-wrap:wrap; margin-top:14px }}
 .patchrow {{ display:flex; flex-wrap:wrap; gap:14px; margin-top:12px }}
@@ -184,12 +184,12 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 </div>
 
 <section>
-  <h2>1 · 이름 체계 <em>확정 08-15</em></h2>
+  <h2><span class="번호">1</span> 이름 체계 <em>확정 08-15</em></h2>
   <p class="lead">브랜드 = <b>SYNK LAB</b> · 학습 엔진 = <b>SYNK Core</b> · 그래픽 엔진 = <b>Loom</b> · 마스코트 = <b>몽글</b></p>
 </section>
 
 <section>
-  <h2>2 · 로고</h2>
+  <h2><span class="번호">2</span> 로고</h2>
   <p class="lead">로고는 그림이 아니라 글자다 — <code>syn&lt;</code> 넉 자. <b>&lt; 는 언제나 Coral</b>(유일한 신호) ·
   <code>//</code> 는 세 번째 색이 아니라 잉크의 저채도. 도형 정본 = 발표물 브랜드킷 §3(복사해 쓰고 재작도 금지).</p>
   <div class="logogrid">
@@ -223,7 +223,7 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 </section>
 
 <section>
-  <h2>3 · 색 — 23색 킷</h2>
+  <h2><span class="번호">3</span> 색 — 23색 킷</h2>
   <p class="lead"><b>철칙 4</b> — ①순백·순검정 금지 ②라이트 배경에 Coral 글자 금지(글자는 Coral 3)
   ③코랄 면 위 글자는 Ink·Navy 2만 ④한 지면 = 바탕+잉크+<b>신호 1점</b>(Lime·KC 는 전용 구역 밖 반입 금지).
   오류에 빨강을 새로 만들지 않는다 — Coral 3+아이콘+문구가 진다.</p>
@@ -231,14 +231,14 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 </section>
 
 <section class="dark">
-  <h2 style="color:var(--cream)">4 · 마스코트 — 몽글 <em style="color:var(--coral)">킷 밖 IP 색</em></h2>
+  <h2 style="color:var(--cream)"><span class="번호">4</span> 마스코트 — 몽글 <em style="color:var(--coral)">킷 밖 IP 색</em></h2>
   <p class="lead">체리는 브랜드 킷 색이 아니라 <b>몽글의 고유색</b>이다(마리오 빨강이 닌텐도 UI 색이 아닌 문법).
   의상이 둘 — 평소 = 코랄(평상복) · 특별한 순간 = 체리. 다크가 주 무대다.</p>
   <div class="mascotrow">
     <div>
       {f'<img src="{마컷}" alt="몽글 — 펠트 정본(평상복)" style="width:250px;border-radius:16px;display:block">' if 마컷 else ''}
       <div style="display:flex;gap:8px;margin-top:8px">{표정컷}</div>
-      <div class="cap" style="color:#8C8C8C">정본 = 펠트 코랄(평상복) · 유호 픽 08-15 ㉠재염색</div>
+      <div class="cap" style="color:#8A8A8A">정본 = 펠트 코랄(평상복) · 유호 픽 08-15 ㉠재염색</div>
     </div>
     <div>
       <h3>평상복 램프 (코랄 · 킷 계열 — 기본 모습)</h3><div class="swrow">{평상복램프}</div>
@@ -254,7 +254,7 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 </section>
 
 <section class="dark" style="border-top:1px solid var(--navy3)">
-  <h2 style="color:var(--cream)">5 · 재질 — 펠트 <em style="color:var(--coral)">SYNK 전용 재질</em></h2>
+  <h2 style="color:var(--cream)"><span class="번호">5</span> 재질 — 펠트 <em style="color:var(--coral)">SYNK 전용 재질</em></h2>
   <p class="lead">니들펠트 양모가 회사 전용 재질이다 — 좌표는 <b>수공 리얼리즘</b>(잔섬유·크림 스티치·미세 불균일 —
   CGI 완벽주의는 흡수하지 않는다). 결은 정본 사진에서만 오고, 색은 재염색 연산이 0원에 낸다.</p>
   <h3>천 팔레트 (실물 패치 — 재염색 파생)</h3>
@@ -266,7 +266,7 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 </section>
 
 <section>
-  <h2>6 · 타이포 — 3종 배타</h2>
+  <h2><span class="번호">6</span> 타이포 — 3종 배타</h2>
   <table><tr><th>용도</th><th>서체</th><th>규칙</th></tr>
   <tr><td>한글</td><td>SUIT Variable</td><td>본문 500 · 헤드 800</td></tr>
   <tr><td>라틴·키릴(몽골어)</td><td>Inter Tight — 스택에서 SUIT 보다 <b>앞</b></td><td>순서 불변(글리프 폴백이 3언어를 가른다) · 몽골어 병기 1.04배</td></tr>
@@ -276,50 +276,45 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 </section>
 
 <section>
-  <h2>7 · 사운드</h2>
+  <h2><span class="번호">7</span> 사운드</h2>
   <p class="lead">이벤트: {이벤트칸 or '토큰 「사운드」 참조'}</p>
   <ul>{사운드li}</ul>
 </section>
 
 <section>
-  <h2>8 · 감각 — 모서리·그림자·모션</h2>
+  <h2><span class="번호">8</span> 감각 — 모서리·그림자·모션</h2>
   <ul>{감각li}</ul>
 </section>
 
 <footer>정본 사슬 — 색·서체·감각·사운드·재질 값: docs/디자인_토큰.json · 규칙 전문: DESIGN.md · 컨셉: docs/디자인_컨셉_정본_v1.md ·
 로고 도형: docs/발표물/_브랜드킷.md §3 · 재질 역할 장부: docs/캐릭터/펠트패치_0815/라이브러리.json ·
-마스코트 렌더 정본: docs/캐릭터/마스코트_렌더</footer>
+마스코트 렌더 정본: docs/캐릭터/펠트코랄_0815</footer>
 </body></html>'''
 
     with open(출력, 'w', encoding='utf-8') as f:
         f.write(html)
     print(f'■ 조립  {os.path.relpath(출력, 뿌리)}  ({len(html)//1024} KB · 킷 {len(킷)}색 · 패치 {len(장부)}장)')
-    얹기()
+    _룸입히기(출력)
 
 
-def 얹기():
-    """Loom 부품 CSS 를 얹는다 — **이 함수가 없으면 재조립할 때마다 킷이 Loom 을 잃는다.**
+def _룸입히기(경로):
+    """Loom 부품을 얹는다 — 판정도 절차도 `tools/lib/loom얹기.js` 하나가 진다.
 
-    파이썬이 CSS 를 만들지 않는다: 부품 값의 정본은 `tools/lib/loom.js` 하나이고, 여기서 베끼면
-    두 벌이 되어 갈라진다(갈라지는 방향은 늘 「통과」). 그래서 판정도 조립도 노드 통로에 맡기고
-    이 자리는 **부르기만** 한다. 얹기는 멱등이라 두 번 돌려도 블록이 안 쌓인다.
-
-    ⚠ 조용히 실패하지 않는다 — 노드가 없거나 통로가 죽으면 그 사실을 찍는다.
-      말 없는 폴백은 「초록 얼굴의 오류」다(F630 계보).
+    🔑 파이썬이라 그 모듈을 require 할 수 없다. 그렇다고 여기서 «얹는 법»을 다시 적으면
+       그 순간 통로가 둘이 되고, 갈라지는 방향은 늘 「통과」다(한쪽만 훅 게이트를 빠뜨리면
+       그 지면은 부품 0 인 채 마커만 켜진 초록이 된다 · F517②).
+       ⇒ 베끼지 않고 **그 통로의 CLI 를 부른다.** 재는 자는 하나로 남는다.
+    ⚠node 가 없거나 실패하면 «조용히» 넘기지 않는다 — 안 얹힌 것이 초록으로 보이면 안 된다.
     """
     import subprocess
-    통로 = os.path.join(뿌리, 'tools', '지면얹기.js')
-    try:
-        r = subprocess.run(['node', 통로, '--적용'], cwd=뿌리,
-                           capture_output=True, text=True, encoding='utf-8', errors='replace')
-    except OSError as e:
-        print(f'🔴 Loom 얹기를 못 돌렸다 — {e}. 손으로: node tools/지면얹기.js --적용')
-        return
+    통로 = os.path.join(뿌리, 'tools', 'lib', 'loom얹기.js')
+    r = subprocess.run(['node', 통로, 경로], capture_output=True, text=True)
+    출 = (r.stdout or '') + (r.stderr or '')
+    for 줄 in 출.strip().splitlines():
+        if 줄.strip():
+            print('   ' + 줄.strip())
     if r.returncode != 0:
-        print(f'🔴 Loom 얹기 실패(exit {r.returncode}) — 킷은 Loom 없이 남았다')
-        print((r.stdout or '') + (r.stderr or ''))
-        return
-    print('■ Loom  node tools/지면얹기.js --적용 (멱등)')
+        raise SystemExit(f'🔴 Loom 얹기 실패(rc={r.returncode}) — 부품 없이 굽힌 판을 남기지 않는다')
 
 
 if __name__ == '__main__':

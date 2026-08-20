@@ -41,11 +41,11 @@
 
 :root{
   /* 01 Core */
-  --cream:#E4E4E7; --coral:#FF6B5C; --navy:#262626; --ink:#1B1B1A;
+  --cream:#E4E4E7; --coral:#F96859; --navy:#262626; --ink:#2B2320;
   /* 02 Cream family */
-  --paper:#FAFAF9; --cream-2:#EAEAEA; --cream-3:#D1D2D4;
+  --paper:#FBF7F0; --cream-2:#EAEAEA; --cream-3:#D1D2D4;
   /* 03 Coral family */
-  --coral-wash:#FFE9E4; --coral-soft:#FFCFC6; --coral-3:#E8543F;
+  --coral-wash:#FEF0E9; --coral-soft:#FBB7A3; --coral-3:#AE322A;
   /* 04 Navy family */
   --navy-3:#373737; --navy-2:#08090C;
   --hair:rgba(55,55,55,.25);
@@ -113,12 +113,15 @@ h1.sm + .mn{ font-size:18mm; }
 .symbol svg{ width:100%; height:100%; display:block; }
 .symbol.sm{ width:34mm; height:22mm; }
 
-.rule{ height:1.4mm; background:linear-gradient(90deg,var(--coral) 0 24%, rgba(255,107,92,.2) 24% 100%); margin:6mm 0; }
+.rule{ height:1.4mm; background:linear-gradient(90deg,var(--coral) 0 24%, rgba(249,104,89,.2) 24% 100%); margin:6mm 0; }
 
 /* 3열 (세 가지 힘) — 좌→우 순서 고정 */
 .col3{ display:flex; gap:9mm; margin-top:11mm; }
 .col3 .c{ flex:1 1 0; border:.6mm solid var(--hair); border-radius:5mm; padding:9mm 7mm; background:#fff; }
-.col3 .c .n{ font-size:5mm; font-weight:700; color:var(--navy-3); letter-spacing:.18em; }
+/* 번호는 Loom 부품(유리 원판)이 그린다 — 원고는 «크기»만 정하고 색·재질은 안 건드린다.
+   ⚠옛 규칙(`.n`)처럼 color 를 여기서 잡으면 원판 위 잉크가 어두워져 **숫자가 안 보인다**
+   (2026-08-19 렌더로 잡았다 — 전파는 초록인데 화면은 나빠진 자리). */
+.col3 .c .번호{ font-size:4.4mm; margin-bottom:1.5mm; }
 .col3 .c .t{ font-size:13mm; font-weight:800; margin-top:4mm; line-height:1.2; letter-spacing:-.03em; }
 .col3 .c .mn{ font-size:13mm; margin-top:4mm; }   /* 위 .t 와 같은 크기(정본 §1) */
 /* ⚠ 투사면 글자는 32pt(≈11.3mm) 아래로 내리지 않는다 — 설명회장은 조명이 밝고 뒷줄이 멀다.
@@ -165,9 +168,9 @@ h1.sm + .mn{ font-size:18mm; }
   .sl{ box-shadow:0 4mm 14mm rgba(8,9,12,.25); margin:0 auto 8mm; }
 }
 </style>
-<style data-loom="밝은부품">
-/* ── Loom 밝은부품 지면 — 조립 산출물(손 편집 금지) ──────────────────────────
-   통로: node tools/lib/loom.js --css 밝은부품
+<style data-loom="인쇄부품">
+/* ── Loom 인쇄부품 지면 — 조립 산출물(손 편집 금지) ──────────────────────────
+   통로: node tools/lib/loom.js --css 인쇄부품
    값:   docs/디자인_토큰.json (색·율·재질·부품) — 이 CSS 에 hex·px 원본은 없다
    물성 사다리: 펠트(먹는다) → 유리(통과시킨다) → 레진(가둔다) · 림 무채
    ⚠번호는 CSS counter 가 «자동»으로 세운다 — 원고가 번호를 안 적어도 된다.
@@ -176,16 +179,15 @@ h1.sm + .mn{ font-size:18mm; }
    ──────────────────────────────────────────────────────────────────────── */
   /* 색 — 이 CSS 가 «실제로 참조하는» 것만. 안 쓰는 색은 남의 지면에 안 들인다. */
   :root{
-    --chalk:#E4E4E7; --chalk-rgb:228,228,231;
-    --chalk2:#EAEAEA; --chalk2-rgb:234,234,234;
-    --chalk3:#D1D2D4; --chalk3-rgb:209,210,212;
-    --paper:#FAFAF9; --paper-rgb:250,250,249;
-    --ink:#1B1B1A; --ink-rgb:27,27,26;
-    --coral:#FF6B5C; --coral-rgb:255,107,92;
-    --coral3:#E8543F; --coral3-rgb:232,84,63;
-    --ash:#8C8C8C; --ash-rgb:140,140,140;
-    --ash2:#666666; --ash2-rgb:102,102,102;
-    --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --룸-chalk:#E4E4E7; --룸-chalk-rgb:228,228,231;
+    --룸-chalk2:#EAEAEA; --룸-chalk2-rgb:234,234,234;
+    --룸-chalk3:#D1D2D4; --룸-chalk3-rgb:209,210,212;
+    --룸-paper:#FBF7F0; --룸-paper-rgb:250,250,249;
+    --룸-ink:#2B2320; --룸-ink-rgb:27,27,26;
+    --룸-coral:#F96859; --룸-coral-rgb:255,107,92;
+    --룸-coral3:#AE322A; --룸-coral3-rgb:232,84,63;
+    --룸-ash2:#676767; --룸-ash2-rgb:103,103,103;
+    --룸-font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   }
   /* ── 율 — 모든 간격이 여기서 나온다. 이름 없는 px 을 지면에 적지 않는다.
      4px 기반 ×1.5 근사 — 인접 두 단이 눈에 갈려야 «고른» 것이 된다. */
@@ -223,13 +225,13 @@ h1.sm + .mn{ font-size:18mm; }
   .유리::before{
     content:'';position:absolute;inset:0;border-radius:inherit;
     padding:1.2px;pointer-events:none;z-index:1;
-    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     opacity:.95;
     filter:saturate(1.5)
-           drop-shadow(0 0 10px rgba(255,107,92,0.2));
+           drop-shadow(0 0 10px rgba(249,104,89,0.2));
   }
   .유리>*{position:relative;z-index:2;}
   .유리.잔잔{--깃:16px;padding:var(--칸) var(--단);}
@@ -242,13 +244,13 @@ h1.sm + .mn{ font-size:18mm; }
      display:flex;align-items:center;gap:calc(var(--숨) * 2.5);flex-wrap:wrap;
      margin:var(--제목위) 0 var(--제목아래);
      font-size:clamp(1.32rem,2.5vw,1.72rem);font-weight:800;
-     letter-spacing:-.038em;line-height:var(--줄제목);color:var(--chalk);}
+     letter-spacing:-.038em;line-height:var(--줄제목);}
   .룸 h2>span:not(.번호){flex:0 1 auto;min-width:0;}
   .룸 h2:not(:has(.번호))::before{content:counter(절,decimal-leading-zero);position:relative;
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -263,25 +265,22 @@ h1.sm + .mn{ font-size:18mm; }
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
   .번호::before{position:absolute;inset:0;
     content:'';border-radius:50%;padding:1.4px;pointer-events:none;
-    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6)
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:순번*/
-  /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리).
-     🔴 «.민» 은 빠진다 — 번호를 **원고가 손으로 적은** 목록이다(«<li><span>1.</span>…»).
-        counter 를 그런 목록에 씌우면 «① 1. …» 두 번 번호가 되고, 그 사고는 남의 지면에서만 난다
-        (우리 원고는 번호를 안 적으니까). 실물 = 발표물 01 덱의 «ol.q3» (2026-08-19). */
+  /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리). */
   .룸 ol{list-style:none;counter-reset:순번;padding-left:0;margin:var(--단) 0;}
   .룸 ol>li{counter-increment:순번;position:relative;
         padding-left:calc(1.55em + var(--칸));margin:var(--참) 0;min-height:1.55em;}
@@ -289,7 +288,7 @@ h1.sm + .mn{ font-size:18mm; }
     flex:none;width:1.55em;height:1.55em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.72em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -299,26 +298,19 @@ h1.sm + .mn{ font-size:18mm; }
   .룸 ol>li::after{position:absolute;left:0;top:.06em;font-size:.72em;
     width:1.55em;height:1.55em;
     content:'';border-radius:50%;padding:1.1px;pointer-events:none;
-    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6)
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
-  /* 🔴 «.민» — 번호를 **원고가 손으로 적은** 목록에서 원판만 걷는다(«<li><span>1.</span>…»).
-     counter 를 그런 목록에 씌우면 «① 1. …» 로 두 번 번호가 되고, 그 사고는 **남의 지면에서만** 난다
-     (우리 원고는 번호를 안 적는다). 실물 = 발표물 01 덱의 «ol.q3» (2026-08-19).
-     ⚠기본 규칙(위)은 안 건드린다 — 그 모양을 «흠 검사»가 재고 있어서, 선택자를 고치면
-     가드가 「순번 원판이 없다」로 거짓 적색을 낸다(실측). 규칙을 바꾸려면 가드부터 바꾼다. */
-  .룸 ol.민>li{counter-increment:none;padding-left:0;min-height:0;}
-  .룸 ol.민>li::before,.룸 ol.민>li::after{content:none;display:none;}
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:차례번호*/
   .잔번호{position:relative;
     flex:none;width:1.35em;height:1.35em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.66em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -329,7 +321,7 @@ h1.sm + .mn{ font-size:18mm; }
     flex:none;width:1.25em;height:1.25em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -361,7 +353,7 @@ h1.sm + .mn{ font-size:18mm; }
   /*loom부품:체크*/
   .체크{display:inline-grid;place-items:center;position:relative;
     width:1.3em;height:1.3em;border-radius:50%;flex:none;padding-bottom:.025em;
-    font-size:.72em;font-weight:800;color:var(--chalk);
+    font-size:.72em;font-weight:800;color:var(--룸-chalk);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
         rgba(228,228,231,0.58) 0%, rgba(228,228,231,0.12) 62%, rgba(228,228,231,0) 78%),
@@ -382,16 +374,16 @@ h1.sm + .mn{ font-size:18mm; }
   .히어로수{display:inline-grid;place-items:center;position:relative;
     min-width:2.6em;height:2.6em;padding:0 var(--참) .025em;border-radius:999px;
     font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;letter-spacing:-.04em;
-    font-variant-numeric:tabular-nums;color:var(--chalk);
+    font-variant-numeric:tabular-nums;color:var(--룸-chalk);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
-        rgba(255,107,92,0.58) 0%, rgba(255,107,92,0.12) 62%, rgba(255,107,92,0) 78%),
+        rgba(249,104,89,0.58) 0%, rgba(249,104,89,0.12) 62%, rgba(249,104,89,0) 78%),
       rgba(29,29,28,0.62);
     box-shadow:
       inset 0 0 0 1px rgba(228,228,231,0.1),
-      inset 0 3px 10px -3px rgba(255,107,92,0.45),
+      inset 0 3px 10px -3px rgba(249,104,89,0.45),
       inset 0 -3px 10px -2px rgba(0,0,0,.58),
-      0 6px 14px -4px rgba(255,107,92,0.38);}
+      0 6px 14px -4px rgba(249,104,89,0.38);}
   .히어로수::before{
     content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
     background:radial-gradient(30% 22% at 38% 16%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);}
@@ -399,12 +391,12 @@ h1.sm + .mn{ font-size:18mm; }
   /*loom부품:태그*/
   .칩{display:inline-flex;align-items:center;gap:var(--숨);
     padding:calc(var(--숨) + 1px) var(--참);border-radius:999px;position:relative;
-    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--chalk);
+    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--룸-chalk);
     background:linear-gradient(170deg, rgba(228,228,231,0.12), rgba(228,228,231,0.03) 60%),
                rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.18),0 8px 16px -10px rgba(0,0,0,.9);}
   .칩::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
-    pointer-events:none;background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
+    pointer-events:none;background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;opacity:.8;}
@@ -417,23 +409,23 @@ h1.sm + .mn{ font-size:18mm; }
 
   /*loom부품:인용부호*/
   .룸 blockquote{position:relative;margin:var(--켜) 0;padding:var(--단) var(--단) var(--단) calc(var(--켜) + var(--참));
-    font-size:.97rem;color:var(--ash);}
+    font-size:.97rem;}
   .룸 blockquote::before{content:'\201C';position:absolute;left:var(--칸);top:calc(var(--칸) - var(--숨));
     display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;
-    font-size:1.5em;line-height:1;font-weight:800;color:var(--chalk);
+    font-size:1.5em;line-height:1;font-weight:800;color:var(--룸-chalk);
     padding-top:.28em;   /* 광학 — 여는 따옴표는 글리프가 위쪽에 몰려 있다 */
     background:linear-gradient(170deg, rgba(228,228,231,0.13), rgba(228,228,231,0.02) 58%),
                rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 10px 20px -12px rgba(0,0,0,.9);}
-  .룸 blockquote i,.룸 blockquote em{color:var(--chalk);font-style:italic;}
+  .룸 blockquote i,.룸 blockquote em{;font-style:italic;}
 
   /*loom부품:표지오브*/
   /* 펠트 오브 — 이 지면에서 «부피»를 가진 유일한 물건이라 하나뿐이어야 한다.
      빛을 먹는 재질(roughness .95)이라 유리·레진 옆에서 «사람이 만든 것»으로 읽힌다. */
   .오브{width:112px;height:112px;border-radius:31px;flex:none;position:relative;overflow:hidden;
-    background-color:var(--chalk);
+    background-color:var(--룸-chalk);
     display:grid;place-items:center;
-    color:var(--ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
+    color:var(--룸-ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
     box-shadow:
       inset 0 3px 4px rgba(255,255,255,.62),
       inset 0 -14px 24px -6px rgba(8,9,12,0.5),
@@ -449,13 +441,13 @@ h1.sm + .mn{ font-size:18mm; }
   /*loom부품:링크점*/
   /* 링크 — 40~50대가 읽는다는 것을 셈에 넣으면 밑선 알파만으로는 링크가 아니다.
      셋을 겹친다: 밑선 .62 · 굵기 한 단 · 앞에 코랄 점(3px 이라 신호 1점을 안 넘는다). */
-  .룸 a{color:var(--chalk);text-decoration:none;font-weight:560;
+  .룸 a{;text-decoration:none;font-weight:560;
     box-shadow:inset 0 -1px 0 rgba(228,228,231,0.62);
     transition:box-shadow 180ms ease,color 180ms ease;}
   .룸 a:not(.민):not(.레일 a)::before{content:'';display:inline-block;width:3px;height:3px;
     border-radius:50%;vertical-align:.32em;margin-right:var(--숨);
-    background:var(--coral);box-shadow:0 0 6px rgba(255,107,92,0.7);}
-  .룸 a:hover{box-shadow:inset 0 -1px 0 rgba(255,107,92,0.9);}
+    background:var(--룸-coral);box-shadow:0 0 6px rgba(249,104,89,0.7);}
+  .룸 a:hover{box-shadow:inset 0 -1px 0 rgba(249,104,89,0.9);}
 
   /*loom부품:쪽번호*/
   /* 쪽번호 — 낮 지면에서만 산다. 화면에는 «쪽»이라는 것이 없다. */
@@ -464,7 +456,7 @@ h1.sm + .mn{ font-size:18mm; }
   /*loom부품:본문타이포*/
   /* 🚫본문 타이포 — 불가침. 글자에 재질을 입히지 않는다(DESIGN.md §1 「타이포는 안 건드린다」).
      여기 있는 것은 «재질을 안 입힌다»는 선언이고, 그래서 분모에 든다(빠뜨린 것과 갈리게). */
-  .룸 p,.룸 li,.룸 td,.룸 th{font-family:var(--font);}
+  .룸 p,.룸 li,.룸 td,.룸 th{font-family:var(--룸-font);}
 
   /* ══ 구운 재질 (Blender Cycles · tools/룸굽기.js) ══ */
   /* 번호 원판 — 지면에서 가장 많이 도는 «각진» 부품이라 모따기가 여기서 값을 한다.
@@ -501,20 +493,6 @@ h1.sm + .mn{ font-size:18mm; }
     background-size:contain;background-position:center;background-repeat:no-repeat;
     background-color:transparent;box-shadow:none;}
 
-  /* ── 밝은 화면 — 바탕이 Paper 인 남의 지면에 얹을 때 (2026-08-19)
-     «낮» 과 **같은 값**을 쓰되 «@media print» 밖에 둔다. 위 «밝은글자()» 주석이 사유를 진다. */
-    .룸 h2{color:var(--ink);}
-    .흐린{color:var(--ash2);}
-    .룸 a{color:var(--ink);font-weight:640;box-shadow:none;border-bottom:1px solid var(--coral3);}
-    .룸 a:not(.민)::before{background:var(--coral3);box-shadow:none;}
-    .룸 blockquote i,.룸 blockquote em{color:var(--ink);}
-    /* 🔴 인용은 «안 흐린다» — 통짜 지면과 갈리는 유일한 값이고, 사유가 있다.
-       남의 지면에서 blockquote 는 «판» 위에 앉아 있을 수 있다(실측 2026-08-19: 개인정보 게시본은
-       blockquote 바탕이 Chalk 다). 거기에 Ash 2 를 얹으면 **4.46:1** — 기준 4.5 를 아슬하게
-       못 넘고 렌더린트가 문다. 우리는 그 판의 색을 모르므로 «흐림»으로는 대비를 보장할 수 없다.
-       ⇒ 남의 지면에서 인용의 신호는 색이 아니라 **따옴 부품과 레일**이 진다. */
-    .룸 blockquote{color:var(--ink);}
-
   /* ── 낮 지면 ────────────────────────────────────────────────────────────
      ⚠검은 무대를 종이에 그대로 두면 안 되는 이유는 취향이 아니라 실패 모드다:
        크롬 인쇄의 「배경 그래픽」은 **기본이 꺼짐**이라 바탕만 흰 종이가 되고 글자는 Cream 으로
@@ -525,60 +503,55 @@ h1.sm + .mn{ font-size:18mm; }
        레진 → glow 가 종이에 안 실린다 → 코어를 «면»으로, 굴절밴드를 «선»으로 굳힌다
        못 옮기는 것 = 코스틱(샌 빛). 종이의 한계라 억지로 흉내내지 않는다. */
   @media print{
-    .룸{background:var(--paper);color-scheme:light;}
-    .룸{background:var(--paper);background-attachment:initial;color:var(--ink);
+    .룸{background:var(--룸-paper);color-scheme:light;}
+    .룸{background:var(--룸-paper);background-attachment:initial;
          font-size:10.6pt;line-height:1.62;}
 
-    .유리{background:var(--chalk2);border:1px solid var(--chalk3);
+    .유리{background:var(--룸-chalk2);border:1px solid var(--룸-chalk3);
       -webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;
       break-inside:avoid;padding:var(--칸) calc(var(--칸) + var(--숨));}
     .유리::before{content:none;}
 
     /* 번호 — 유리 원판이 «찍힌 원판»이 된다. 분산 림은 선 하나로 굳는다. */
-    .룸 h2{margin:calc(var(--켜) * .6) 0 var(--참);font-size:14pt;break-after:avoid;}
+    .룸 h2{;margin:calc(var(--켜) * .6) 0 var(--참);font-size:14pt;break-after:avoid;}
     .룸 h2:not(:has(.번호))::before,.번호,.잔번호,.각주{
-      background:var(--chalk3);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ash2);}
-    .룸 h2:not(:has(.번호))::after{background:var(--chalk3);}
+      background:var(--룸-chalk3);color:var(--룸-ink);box-shadow:inset 0 0 0 1px var(--룸-ash2);}
+    .룸 h2:not(:has(.번호))::after{background:var(--룸-chalk3);}
     .번호::before{content:none;}
-    .룸 ol>li::before{background:var(--chalk3);color:var(--ink);
-      box-shadow:inset 0 0 0 1px var(--ash2);}
+    .룸 ol>li::before{background:var(--룸-chalk3);color:var(--룸-ink);
+      box-shadow:inset 0 0 0 1px var(--룸-ash2);}
     .룸 ol>li::after{content:none;}
 
     /* 레진 — 코어를 면으로, 굴절밴드를 선으로. 구슬로 읽히되 종이에서 뜨지 않는다. */
-    .룸 ul>li::before{background:rgba(232,84,63,0.22);
-      box-shadow:inset 0 0 0 1px rgba(232,84,63,0.55);}
+    .룸 ul>li::before{background:rgba(174,50,42,0.22);
+      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.55);}
     .룸 ul>li::after{background:none;}
-    .체크,.히어로수{color:var(--ink);
-      background:radial-gradient(58% 58% at 50% 44%, rgba(232,84,63,0.26), rgba(232,84,63,0.07) 70%),
-                 var(--chalk2);
-      box-shadow:inset 0 0 0 1px rgba(232,84,63,0.5);}
+    .체크,.히어로수{color:var(--룸-ink);
+      background:radial-gradient(58% 58% at 50% 44%, rgba(174,50,42,0.26), rgba(174,50,42,0.07) 70%),
+                 var(--룸-chalk2);
+      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.5);}
     .체크::before,.히어로수::before{content:none;}
 
-    .칩{background:var(--chalk2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--chalk3);}
+    .칩{background:var(--룸-chalk2);color:var(--룸-ink);box-shadow:inset 0 0 0 1px var(--룸-chalk3);}
     .칩::before{content:none;}
-    .실금{background:var(--chalk3);}
-    .룸 blockquote::before{background:var(--chalk3);color:var(--ink);box-shadow:none;}
-    .오브{width:74px;height:74px;border-radius:20px;color:var(--ink);font-size:1.7rem;
-      box-shadow:none;border:1px solid var(--chalk3);}   /* 배경을 끄면 천이 사라지니 테두리가 형태를 진다 */
+    .실금{background:var(--룸-chalk3);}
+    .룸 blockquote{;}
+    .룸 blockquote::before{background:var(--룸-chalk3);color:var(--룸-ink);box-shadow:none;}
+    .룸 blockquote i,.룸 blockquote em{;}
+    .오브{width:74px;height:74px;border-radius:20px;color:var(--룸-ink);font-size:1.7rem;
+      box-shadow:none;border:1px solid var(--룸-chalk3);}   /* 배경을 끄면 천이 사라지니 테두리가 형태를 진다 */
     .오브::before,.오브::after{content:none;}
 
-    .룸 h2{color:var(--ink);}
-    .흐린{color:var(--ash2);}
-    .룸 a{color:var(--ink);font-weight:640;box-shadow:none;border-bottom:1px solid var(--coral3);}
-    .룸 a:not(.민)::before{background:var(--coral3);box-shadow:none;}
-    .룸 blockquote i,.룸 blockquote em{color:var(--ink);}
-    /* 🔴 여기서부터는 **남의 지면의 글**까지 검게 만든다 — 종이에서는 Loom 이 판 전체를 가지므로 맞다.
-       화면(«밝은글»)에는 안 준다: 밝은 지면 «안»의 어두운 섬(header 같은 것)의 글까지 검어져
-       그 자리가 통째로 사라진다(2026-08-19 실측 · 엔진 지도 머리말). */
-    .룸 p,.룸 li,.룸 b,.룸 strong,.룸 td,.룸 th,.룸 h3{color:var(--ink);}
-    .룸 li::marker{color:var(--ash2);}
-    .룸 blockquote{color:var(--ash2);}
-    .룸 footer{color:var(--ash2);}
-    .룸 code{color:var(--ink);background:var(--chalk2);box-shadow:inset 0 0 0 1px var(--chalk3);}
+    .룸 p,.룸 li,.룸 b,.룸 strong,.룸 td,.룸 th,.룸 h3{;}
+    .룸 li::marker{color:var(--룸-ash2);}
+    .흐린,.룸 footer{color:var(--룸-ash2);}
+    .룸 a{;font-weight:640;box-shadow:none;border-bottom:1px solid var(--룸-coral3);}
+    .룸 a:not(.민)::before{background:var(--룸-coral3);box-shadow:none;}
+    .룸 code{;background:var(--룸-chalk2);box-shadow:inset 0 0 0 1px var(--룸-chalk3);}
 
     /* 쪽번호 — 낮에만 산다. @page 여백 안에 앉힌다. */
     .쪽번호{display:block;position:fixed;bottom:4mm;right:0;
-      font-size:8.5pt;color:var(--ash2);font-variant-numeric:tabular-nums;}
+      font-size:8.5pt;color:var(--룸-ash2);font-variant-numeric:tabular-nums;}
     .룸 thead{display:table-header-group;}
     .룸 tr,.수치{break-inside:avoid;}
     .룸 *{print-color-adjust:exact;-webkit-print-color-adjust:exact;}
@@ -595,7 +568,7 @@ h1.sm + .mn{ font-size:18mm; }
     <div class="symbol">
       <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
             <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#E4E4E7">syn</text>
-            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
+            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#F96859"/>
           </svg>
     </div>
     <div class="rule"></div>
@@ -610,7 +583,7 @@ h1.sm + .mn{ font-size:18mm; }
 </section>
 
 <!-- ════════ 02 · 약속 하나, 질문 하나 ════════ -->
-<section class="sl 룸">
+<section class="sl">
   <div class="tag mono">OPENING</div>
   <h1>약속 하나,<br><em>질문 하나</em></h1>
   <div class="mn">____________</div>
@@ -618,7 +591,7 @@ h1.sm + .mn{ font-size:18mm; }
 </section>
 
 <!-- ════════ 03 · 약속 ════════ -->
-<section class="sl 룸">
+<section class="sl">
   <div class="tag mono">THE PROMISE</div>
   <h1 class="sm">TOPIK은 확실하게<br><em>준비시킵니다</em></h1>
   <div class="mn">____________</div>
@@ -635,7 +608,7 @@ h1.sm + .mn{ font-size:18mm; }
 </section>
 
 <!-- ════════ 05 · AI 시대 ════════ -->
-<section class="sl 룸">
+<section class="sl">
   <div class="tag mono">THE ERA</div>
   <h1>손안에 <em>박사급 AI</em></h1>
   <div class="mn">____________</div>
@@ -644,7 +617,7 @@ h1.sm + .mn{ font-size:18mm; }
 </section>
 
 <!-- ════════ 06 · 점수는 기본 ════════ -->
-<section class="sl 룸">
+<section class="sl">
   <div class="tag mono">SO WHAT</div>
   <h1 class="sm">점수는 이제<br><em>기본입니다</em></h1>
   <div class="mn">____________</div>
@@ -662,24 +635,24 @@ h1.sm + .mn{ font-size:18mm; }
 </section>
 
 <!-- ════════ 08 · 세 가지 힘 ════════ -->
-<section class="sl 룸">
+<section class="sl">
   <div class="tag mono">THREE POWERS</div>
   <h1 class="sm" style="font-size:15mm">AI가 대신하기 어려운 <em>세 가지 힘</em></h1>
   <div class="col3">
     <div class="c">
-      <div class="n mono">01</div>
+      <div class="번호">01</div>
       <div class="t">질문하는 힘</div>
       <div class="mn">______</div>
       <div class="real">「나침반」 세션</div>
     </div>
     <div class="c">
-      <div class="n mono">02</div>
+      <div class="번호">02</div>
       <div class="t">스스로 하는 힘</div>
       <div class="mn">______</div>
       <div class="real">「싱크 크루」</div>
     </div>
     <div class="c">
-      <div class="n mono">03</div>
+      <div class="번호">03</div>
       <div class="t">마음을 얻는 힘</div>
       <div class="mn">______</div>
       <div class="real">반 레이드 · 발표</div>
@@ -689,7 +662,7 @@ h1.sm + .mn{ font-size:18mm; }
 </section>
 
 <!-- ════════ 09 · 뇌과학 학습법 ════════ -->
-<section class="sl 룸">
+<section class="sl">
   <div class="tag mono">SYNK DOES · 01</div>
   <h1 class="sm">몸이 깨어날 때<br><em>뇌는 깊이 배웁니다</em></h1>
   <div class="mn">____________</div>
@@ -705,7 +678,7 @@ h1.sm + .mn{ font-size:18mm; }
 </section>
 
 <!-- ════════ 10 · 싱크 크루 ════════ -->
-<section class="sl 룸">
+<section class="sl">
   <div class="tag mono">SYNK DOES · 02</div>
   <h1 class="sm">팀으로 만든<br><em>진짜 경험</em></h1>
   <div class="mn">____________</div>
@@ -715,7 +688,7 @@ h1.sm + .mn{ font-size:18mm; }
 </section>
 
 <!-- ════════ 11 · 나침반 ════════ -->
-<section class="sl 룸">
+<section class="sl">
   <div class="tag mono">SYNK DOES · 03</div>
   <h1 class="sm">“왜 배우는가”를<br><em>계속 묻습니다</em></h1>
   <div class="mn">____________</div>
@@ -725,7 +698,7 @@ h1.sm + .mn{ font-size:18mm; }
 </section>
 
 <!-- ════════ 12 · 한국어 + 영어 ════════ -->
-<section class="sl 룸">
+<section class="sl">
   <div class="tag mono">SYNK DOES · 04</div>
   <h1 class="sm">한국어에<br><em>영어까지</em></h1>
   <div class="mn">____________</div>
@@ -735,24 +708,24 @@ h1.sm + .mn{ font-size:18mm; }
 </section>
 
 <!-- ════════ 13 · 졸업할 때 3가지 ════════ -->
-<section class="sl 룸">
+<section class="sl">
   <div class="tag mono">WHAT THEY TAKE</div>
   <h1 class="sm" style="font-size:16mm">졸업할 때 <em>들고 나가는 세 가지</em></h1>
   <div class="col3">
     <div class="c">
-      <div class="n mono">01</div>
+      <div class="번호">01</div>
       <div class="t">TOPIK 급수</div>
       <div class="mn">______</div>
       <div class="real">준비 과정의 기록까지</div>
     </div>
     <div class="c">
-      <div class="n mono">02</div>
+      <div class="번호">02</div>
       <div class="t">팀으로 만든<br>결과물</div>
       <div class="mn">______</div>
       <div class="real">「싱크 포트폴리오」</div>
     </div>
     <div class="c">
-      <div class="n mono">03</div>
+      <div class="번호">03</div>
       <div class="t">자기만의<br>5년 로드맵</div>
       <div class="mn">______</div>
       <div class="real">아이가 직접 그린다</div>
@@ -774,10 +747,10 @@ h1.sm + .mn{ font-size:18mm; }
 </section>
 
 <!-- ════════ 15 · 오늘 저녁 세 질문 ════════ -->
-<section class="sl 룸">
+<section class="sl">
   <div class="tag mono">TONIGHT</div>
   <h1 class="sm" style="font-size:16mm">오늘 저녁, <em>물어봐 주세요</em></h1>
-  <ol class="q3 민">
+  <ol class="q3">
     <li><span>1.</span> “너는 왜 이 공부를 하고 있다고 생각해?”</li>
     <li><span>2.</span> “TOPIK을 따서, 결국 무엇을 해 보고 싶어?”</li>
     <li><span>3.</span> “네가 진짜 좋아하고 잘하는 건 뭐야?”</li>
@@ -802,7 +775,7 @@ h1.sm + .mn{ font-size:18mm; }
 </section>
 
 <!-- ════════ 리허설표 (투사용 아님 · 인쇄해 손에 든다) ════════ -->
-<section class="sl reh 룸">
+<section class="sl reh">
   <h2>원장 리허설표 — 어느 ▷ 구간에 어느 장을 띄우는가</h2>
   <div class="sub">
     대본 = <b>08_설명회_원장_스피치.txt</b> v6 · ▷ = 통역이 끊기는 지점(본문 50개) ·
@@ -810,22 +783,22 @@ h1.sm + .mn{ font-size:18mm; }
   </div>
   <table>
     <tr><th style="width:14mm">장</th><th style="width:48mm">화면</th><th style="width:34mm">대본 구간</th><th>넘기는 신호 — 이 말을 하기 직전에 넘긴다</th></tr>
-    <tr><td class="n mono">01</td><td>표지 · 슬로건</td><td class="c">입장~시작 전</td><td>청중 착석 동안 띄워 둔다. 첫 마디와 함께 02로.</td></tr>
-    <tr><td class="n mono">02</td><td>약속 하나, 질문 하나</td><td class="c">▷ 1</td><td>“약속 하나와 질문 하나를 들고 이 자리에 섰습니다”</td></tr>
-    <tr><td class="n mono">03</td><td>TOPIK은 확실하게</td><td class="c">▷ 2</td><td>“먼저 약속입니다”</td></tr>
-    <tr><td class="n mono">04</td><td>그 다음에 우리 아이는?</td><td class="c">▷ 3</td><td>“그리고 질문입니다”</td></tr>
-    <tr><td class="n mono">05</td><td>손안에 박사급 AI</td><td class="c">▷ 5–8</td><td>“지금 우리는 어떤 시대에 살고 있습니까”</td></tr>
-    <tr><td class="n mono">06</td><td>점수는 이제 기본</td><td class="c">▷ 9–10</td><td>“그래서 여쭙고 싶습니다”</td></tr>
-    <tr><td class="n mono">07</td><td>“나 이제 뭐 하지?”</td><td class="c">▷ 11–18</td><td>“한 장면을 상상해 보겠습니다”</td></tr>
-    <tr class="mark"><td class="n mono">08</td><td>세 가지 힘 (3열)</td><td class="c">▷ 19–28</td><td>“저는 세 가지라고 확신합니다” — <b>이 장은 오래 머문다(10구간)</b></td></tr>
-    <tr><td class="n mono">09</td><td>몸이 깨어날 때</td><td class="c">▷ 29–30</td><td>“하나. 뇌과학 학습법입니다”</td></tr>
-    <tr><td class="n mono">10</td><td>팀으로 만든 진짜 경험</td><td class="c">▷ 31–32</td><td>“둘. 「싱크 크루」 프로젝트입니다”</td></tr>
-    <tr><td class="n mono">11</td><td>“왜 배우는가”를 묻습니다</td><td class="c">▷ 33–34</td><td>“셋. 「나침반」 세션입니다”</td></tr>
-    <tr><td class="n mono">12</td><td>한국어에 영어까지</td><td class="c">▷ 35</td><td>“넷. 한국어에 영어까지 더합니다”</td></tr>
-    <tr><td class="n mono">13</td><td>졸업할 때 세 가지 (3열)</td><td class="c">▷ 36–40</td><td>“자격증 하나만 가지고 나가지 않습니다”</td></tr>
-    <tr class="mark"><td class="n mono">14</td><td>저희는 새 학원입니다</td><td class="c">▷ 41–44</td><td>“정직하게 말씀드릴 것이 하나 있습니다” — <b>화면이 말을 멈추는 자리. 시선을 사람에게.</b></td></tr>
-    <tr><td class="n mono">15</td><td>오늘 저녁, 물어봐 주세요</td><td class="c">▷ 45–47</td><td>“오늘 집에 돌아가시면”</td></tr>
-    <tr class="mark"><td class="n mono">16</td><td>슬로건 + 상담 안내</td><td class="c">▷ 48 ~ 끝</td><td>“합격은 기본으로 챙기겠습니다” — <b>슬로건을 읽는 동안 화면에 그 문장이 떠 있어야 한다.</b> 질의응답 내내 띄워 둔다</td></tr>
+    <tr><td class="번호">01</td><td>표지 · 슬로건</td><td class="c">입장~시작 전</td><td>청중 착석 동안 띄워 둔다. 첫 마디와 함께 02로.</td></tr>
+    <tr><td class="번호">02</td><td>약속 하나, 질문 하나</td><td class="c">▷ 1</td><td>“약속 하나와 질문 하나를 들고 이 자리에 섰습니다”</td></tr>
+    <tr><td class="번호">03</td><td>TOPIK은 확실하게</td><td class="c">▷ 2</td><td>“먼저 약속입니다”</td></tr>
+    <tr><td class="번호">04</td><td>그 다음에 우리 아이는?</td><td class="c">▷ 3</td><td>“그리고 질문입니다”</td></tr>
+    <tr><td class="번호">05</td><td>손안에 박사급 AI</td><td class="c">▷ 5–8</td><td>“지금 우리는 어떤 시대에 살고 있습니까”</td></tr>
+    <tr><td class="번호">06</td><td>점수는 이제 기본</td><td class="c">▷ 9–10</td><td>“그래서 여쭙고 싶습니다”</td></tr>
+    <tr><td class="번호">07</td><td>“나 이제 뭐 하지?”</td><td class="c">▷ 11–18</td><td>“한 장면을 상상해 보겠습니다”</td></tr>
+    <tr class="mark"><td class="번호">08</td><td>세 가지 힘 (3열)</td><td class="c">▷ 19–28</td><td>“저는 세 가지라고 확신합니다” — <b>이 장은 오래 머문다(10구간)</b></td></tr>
+    <tr><td class="번호">09</td><td>몸이 깨어날 때</td><td class="c">▷ 29–30</td><td>“하나. 뇌과학 학습법입니다”</td></tr>
+    <tr><td class="번호">10</td><td>팀으로 만든 진짜 경험</td><td class="c">▷ 31–32</td><td>“둘. 「싱크 크루」 프로젝트입니다”</td></tr>
+    <tr><td class="번호">11</td><td>“왜 배우는가”를 묻습니다</td><td class="c">▷ 33–34</td><td>“셋. 「나침반」 세션입니다”</td></tr>
+    <tr><td class="번호">12</td><td>한국어에 영어까지</td><td class="c">▷ 35</td><td>“넷. 한국어에 영어까지 더합니다”</td></tr>
+    <tr><td class="번호">13</td><td>졸업할 때 세 가지 (3열)</td><td class="c">▷ 36–40</td><td>“자격증 하나만 가지고 나가지 않습니다”</td></tr>
+    <tr class="mark"><td class="번호">14</td><td>저희는 새 학원입니다</td><td class="c">▷ 41–44</td><td>“정직하게 말씀드릴 것이 하나 있습니다” — <b>화면이 말을 멈추는 자리. 시선을 사람에게.</b></td></tr>
+    <tr><td class="번호">15</td><td>오늘 저녁, 물어봐 주세요</td><td class="c">▷ 45–47</td><td>“오늘 집에 돌아가시면”</td></tr>
+    <tr class="mark"><td class="번호">16</td><td>슬로건 + 상담 안내</td><td class="c">▷ 48 ~ 끝</td><td>“합격은 기본으로 챙기겠습니다” — <b>슬로건을 읽는 동안 화면에 그 문장이 떠 있어야 한다.</b> 질의응답 내내 띄워 둔다</td></tr>
   </table>
   <div class="note">
     <b>정본 §1 목록과 다른 점 2가지</b> — ① <b>14장(정직 고지) 신설.</b> 정본 목록엔 대본 §5

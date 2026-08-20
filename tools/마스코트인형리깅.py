@@ -351,7 +351,7 @@ def build_scene(glb, img_paths, hybrid=False, textured=False):
     scn.world = w
     w.use_nodes = True
     bg = w.node_tree.nodes["Background"]
-    bg.inputs[0].default_value = (0.00303, 0.00674, 0.0319, 1.0)  # Navy 2 #0F1730 (sRGB→linear 근사)
+    bg.inputs[0].default_value = (0.00303, 0.00674, 0.0319, 1.0)  # Navy 2 #08090C (sRGB→linear 근사)
     bg.inputs[1].default_value = 1.0
 
     mat, mixes = (None, []) if textured else make_material(obj, img_paths, hybrid=hybrid)
