@@ -896,7 +896,7 @@ function 본체() {
      * 그 「옆」이 2026-08-17 재편으로 **「SYNK 코어」**가 됐다 — 갈래를 명시해야 따라간다.
      * ⚠ 옛 `--링크` 는 운영자료가 모르는 플래그였다 — 조용히 무시되고 기본 갈래로 떨어졌다. */
     execFileSync(process.execPath,
-      [path.join(ROOT, 'tools', '운영자료.js'), 산출경로, '--갈래', '코어'], { stdio: 'inherit' });
+      [path.join(ROOT, 'tools', '운영자료.js'), 산출경로, '--갈래', '방향'], { stdio: 'inherit' });
   }
   console.log(`✅ [작동대장] ${path.relative(ROOT, 산출경로)} (${html.length}자) · 수렴 ${x === y ? '✅' : '🔴'}`);
   console.log(`   장치 ${d.장치들.length} = 🟠${d.통.깨짐.length} + 🔴${d.통.맨몸.length} + ⚫${d.통.안불림.length} + 🟢${d.통.괜찮음.length}`);

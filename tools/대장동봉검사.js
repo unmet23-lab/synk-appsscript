@@ -187,7 +187,11 @@ function main() {
        *   경로**를 대야 하기 때문이다. 생성기 커밋에 「정본을 담아라」고 시키면 그대로 따를 때
        *   생성기가 그 커밋에서 빠져 트랙이 두 커밋으로 갈린다(F302 · F103). 처방 문장 자체는
        *   판정기 한 곳에서만 찍고 여기서는 «경로만» 준다. */
-      env: { ...process.env, SYNK_대장_정본: 정본tmp, SYNK_대장_산출: 산출tmp, SYNK_대장_방아쇠: 방아쇠.join('\n') },
+      /* ☠️ CLAUDE_PROJECT_DIR 는 **벗겨서** 넘긴다 (F403 계열 · 2026-08-20 실측) — 판정기(이해대장.js:48)가
+       *   그 변수를 뿌리로 얹는다. 상속하면 워크트리 커밋의 게이트가 «주 저장소 작업본»(남의 미커밋 포함)
+       *   으로 그려서, 스테이징된 화면과 영원히 안 맞는 차단이 된다(실측: Loom 부품 19종 vs 22종).
+       *   이 게이트의 ROOT 원칙(위 36행 「이 파일이 속한 저장소」)을 spawn 한 겹까지 관철하는 것이다. */
+      env: (() => { const e = { ...process.env, SYNK_대장_정본: 정본tmp, SYNK_대장_산출: 산출tmp, SYNK_대장_방아쇠: 방아쇠.join('\n') }; delete e.CLAUDE_PROJECT_DIR; return e; })(),
     });
     if (r.stdout) process.stdout.write(r.stdout);
     if (r.stderr) process.stderr.write(r.stderr);
