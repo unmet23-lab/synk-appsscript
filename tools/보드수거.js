@@ -55,11 +55,12 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const 보드lib = require(path.join(__dirname, 'lib', '보드.js'));
-/* 커밋 가능 상태 판정은 `인계문수거` 것을 그대로 쓴다 — rebase·merge·분리 HEAD 를 여기 다시
- * 적으면 두 수거 도구가 서로 다른 「지금 커밋해도 되나」를 보게 된다(그쪽 머리말과 같은 축). */
-const { 커밋못하는이유 } = require(path.join(__dirname, '인계문수거.js'));
-/* 잠금 나이 판정도 같은 이유로 한 통로다 — 두 수거기가 서로 다른 「고아인가」를 보면 갈라진다. */
+/* 커밋 가능 상태·잠금 나이 판정은 한 통로에서 온다 — 여기 다시 적으면 수거 도구들이
+ * 서로 다른 「지금 커밋해도 되나」를 보게 된다.
+ * ⚠ `커밋못하는이유` 는 `인계문수거.js` 에 살았는데, 인계문 층을 하네스에 위임하며(08-20)
+ *   그 파일이 사라져 같은 식구인 `git잠금` 으로 옮겨 왔다(바이트 동일). */
 const 잠금lib = require(path.join(__dirname, 'lib', 'git잠금.js'));
+const { 커밋못하는이유 } = 잠금lib;
 
 /* `SYNK_BOARD_ROOT` 는 `tools/board.js`·`tools/board-move.js` 와 **같은 이름의 이음매**다.
  * 이름이 갈리면 조사와 실행이 서로 다른 저장소를 보고, 그 방향은 「거둘 게 없다」(=침묵)다. */
