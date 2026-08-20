@@ -715,7 +715,7 @@ function report(mode) {
   }
 
   if (open.length) {
-    console.log('\n  ⚠ 열림 — 아직 아무도 판정하지 않았다 (/evolve 의 개정 재료):');
+    console.log('\n  ⚠ 열림 — 아직 아무도 판정하지 않았다 (지침 개정 제안의 재료):');
     for (const r of open) console.log(`    ${r.id}  ${r.date}  [${r.kind}]  ${r.signal}`);
   }
 

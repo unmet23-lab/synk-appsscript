@@ -92,7 +92,7 @@ function docSection() {
   };
 }
 
-/* 지침의 마지막 개정 날짜 — `/evolve` 가 말하는 「마찰 신호 2건」의 **기준점**이다.
+/* 지침의 마지막 개정 날짜 — 개정 제안 문턱(마찰 2건)의 **기준점**이다.
  * 지침은 「굵직한 마찰 신호 2건이면 개정을 제안한다」고 하는데, 그 2건은 **새로 난** 둘이지
  * 누적 열림 둘이 아니다. 기준점 없이 누적을 세면 40건이 쌓인 지금 알림이 영구히 켜지고,
  * 켜져 있는 알림은 안 읽힌다(F386 · F370 과 같은 병). 날짜는 기계가 정확히 안다. */
@@ -109,7 +109,9 @@ function 마지막개정(파일) {
 
 function frictionSection() {
   const F = require('./friction.js');
-  if (!fs.existsSync(F.LEDGER)) throw new Error(`장부가 없다: ${F.LEDGER}`);
+  /* 정본은 조각 폴더다 — 옛 단일 아카이브(마찰신호.md)는 압축 08-20 은퇴. 그 파일을 요구하면
+   * 장부 26벌이 멀쩡히 있는데도 영구 「검사기 고장」이 된다(실측 08-20 — 이 줄이 그랬다). */
+  if (!fs.existsSync(F.FOLDER)) throw new Error(`장부가 없다: ${F.FOLDER}`);
   const { rows } = F.read();
   /* 판정 술어는 friction.js 하나에서 온다 — 여기서 `!r.resolved` 를 다시 적으면 보류가
    * 「열림」으로 새고, 새는 방향은 언제나 「통과」가 아니라 여기선 «영구 알림»이다. */
@@ -411,7 +413,7 @@ function toilSection() {
 /* ── 판정 ────────────────────────────────────────────────────────────────── */
 // 🔴 = 무언가가 이미 거짓을 말하고 있다(고치기 전엔 그래프·문서가 거짓말한다)
 // ⚠  = 아직 거짓은 아니지만 방치하면 🔴이 된다
-const EVOLVE_THRESHOLD = 2; // 지침: 마찰 신호 2건이면 /evolve 실행을 **제안**한다
+const EVOLVE_THRESHOLD = 2; // 지침: 마찰 신호 2건이면 지침 개정을 **제안**한다(/evolve 스킬은 08-20 은퇴 · 문턱은 산다)
 
 function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false } = {}) {
   const mem = attempt('memory', memorySection);
@@ -575,11 +577,13 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
     });
   }
 
+  /* /evolve 스킬은 08-20 은퇴(유호 픽 — 개정은 마찰이 쌓이면 그 자리에서 제안한다).
+   * 알림 자체는 산다 — 「지침 개정을 제안할 때」의 신호는 스킬이 아니라 이 문턱이었다. */
   if (fri.ok && fri.value.새로.length >= EVOLVE_THRESHOLD) {
     notes.push({
-      kind: '/evolve 발동 조건 도달',
+      kind: '지침 개정 제안 조건 도달',
       text: `마지막 개정(${fri.value.기준 || '기준점 못 읽음 — 전량으로 센다'}) 뒤에 난 마찰 신호 ` +
-        `${fri.value.새로.length}건(기준 ${EVOLVE_THRESHOLD}건) — ${fri.value.새로.map((r) => r.id).join(', ')}`,
+        `${fri.value.새로.length}건(기준 ${EVOLVE_THRESHOLD}건) — ${fri.value.새로.map((r) => r.id).join(', ')} · 유호님 승인 자리다`,
     });
   }
 
