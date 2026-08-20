@@ -437,7 +437,21 @@
     ]
   },
   "permissions": {
+    "defaultMode": "bypassPermissions",
     "allow": [
+      "Bash",
+      "PowerShell",
+      "Read",
+      "Edit",
+      "Write",
+      "MultiEdit",
+      "NotebookEdit",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch",
+      "Task",
+      "Agent",
       "Bash(\"/c/Program Files/nodejs/node.exe\" --check *)",
       "PowerShell(git -C \"C:\\\\Users\\\\q1212\\\\Documents\\\\SYNK-appsscript\" status *)",
       "PowerShell(git -C \"C:\\\\Users\\\\q1212\\\\Documents\\\\SYNK-appsscript\" log *)",
@@ -511,5 +525,6 @@
       "Read(**/.clasprc.json)",
       "Read(secrets/**)"
     ]
-  }
+  },
+  "askUserQuestionTimeout": "never"
 }
