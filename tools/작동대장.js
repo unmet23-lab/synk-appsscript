@@ -338,14 +338,9 @@ function 적체읽기() {
    * ⚠ 여기서 gh 를 부르지 않는다 — 이 도구는 **네트워크 0**이 규약이다. 열린 트랙 수는 `gh pr list` 로 따로 본다. */
   결과.일감 = null;
 
-  const j = 읽기(path.join(ROOT, 'docs/_ops/엔진점수.jsonl'));
-  if (j == null) 못읽음.push('엔진점수 — 읽다 실패');
-  else {
-    const 줄 = j.split(/\r?\n/).filter((l) => l.trim());
-    const 마지막 = 줄.length ? (() => { try { return JSON.parse(줄[줄.length - 1]); } catch { return null; } })() : null;
-    if (마지막) 결과.점수 = 마지막;
-    else if (줄.length) 못읽음.push('엔진점수 — 마지막 줄 파싱 실패');
-  }
+  /* 엔진점수.jsonl 도 같은 자리다 — e75fc7fc(08-19 자기검증 층 철거)가 자료를 지웠는데 읽는 쪽이
+   * 남아 매 실행 「읽다 실패」를 냈다(거짓 못읽음 · F207 의 역방향). 성능 축이 되살아나면 그때 새로 단다. */
+  결과.점수 = null;
   return 결과;
 }
 
