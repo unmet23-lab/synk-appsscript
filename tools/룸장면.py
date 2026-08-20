@@ -561,7 +561,7 @@ def 봉입_글자(중심=(0, 0, 0), 문자=None, 폰트=None):
         o.data.materials.append(파)
 
 
-def 펠트재질(색=None, 스케일=2.4, 돌림=0.0, 염색보정=False, 결흩기=0.0, 채도=1.22, 밝기=0.86):
+def 펠트재질(색=None, 스케일=2.4, 돌림=0.0, 염색보정=False, 결흩기=0.0, 채도=1.22, 밝기=0.86, 염색혼합=None):
     """헌법 ① — 결은 사진 픽셀에서만. 펠트는 실물이 있으니 «찍은 것»을 쓴다.
     색 = 펠트패치_0815 타일 이름(Coral·Oat·Paper·Stitch…). 안 주면 구판 그대로 Cream3 —
     기존 호출은 전부 무인자라 이 확장은 더하는 층이다(F503).
@@ -610,6 +610,13 @@ def 펠트재질(색=None, 스케일=2.4, 돌림=0.0, 염색보정=False, 결흩
             hsv.inputs["Value"].default_value = 밝기
             nt.links.new(색끝, hsv.inputs["Color"])
             색끝 = hsv.outputs["Color"]
+        if 염색혼합:
+            # 🔴 4판 실측: Oat 타일은 거의 무채라 채도 곱으로는 안 물든다 — 염색은 «혼합»이어야 한다.
+            혼 = nt.nodes.new("ShaderNodeMixRGB"); 혼.blend_type = 'MULTIPLY'
+            혼.inputs["Fac"].default_value = 염색혼합[3]
+            혼.inputs["Color2"].default_value = (염색혼합[0], 염색혼합[1], 염색혼합[2], 1.0)
+            nt.links.new(색끝, 혼.inputs["Color1"])
+            색끝 = 혼.outputs["Color"]
         nt.links.new(색끝, p.inputs["Base Color"])
         bump = nt.nodes.new("ShaderNodeBump")
         bump.inputs["Strength"].default_value = 0.34
@@ -658,7 +665,7 @@ def 결층(경로, 그레인=0.014):
 # ── 세우기 ───────────────────────────────────────────────────
 def 치우기():
     보호 = {floor.name} | {o.name for o in 세트} | ({안개덩이.name} if 안개덩이 else set())
-    for o in [o for o in bpy.data.objects if o.type in ('MESH', 'FONT') and o.name not in 보호]:
+    for o in [o for o in bpy.data.objects if o.type in ('MESH', 'FONT', 'CURVE') and o.name not in 보호]:
         bpy.data.objects.remove(o, do_unlink=True)
 
 
@@ -767,6 +774,82 @@ def 구슬재질(이름="구슬"):
     return m
 
 
+def 실재질():
+    """실땀의 실 — 방적사(꼬인 실)라 펠트보다 매끈하고 살짝 광이 돈다. 색 = Stitch(리니어)."""
+    m, nt, out = 새재질("Loom_실")
+    p = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    p.inputs["Base Color"].default_value = (0.871, 0.768, 0.577, 1.0)
+    p.inputs["Roughness"].default_value = 0.5
+    if "Sheen Weight" in p.inputs:
+        p.inputs["Sheen Weight"].default_value = 0.25
+    nt.links.new(p.outputs[0], out.inputs["Surface"])
+    return m
+
+
+def 땀하나(이름, 부모, 중심, 방향, 표면z, 길이=0.11, 굵기=0.014, 솟음=0.032, 잠김=0.024, 재질=None):
+    """실땀 한 개 — 실이 천을 «뚫고 나와» 봉긋 솟았다가 다시 «들어간다»(양끝은 표면 아래).
+    납작한 원기둥을 얹으면 인쇄로 읽힌다 — 손바느질의 서명은 이 아치다."""
+    ux, uy = 방향
+    cu = bpy.data.curves.new(이름, 'CURVE')
+    cu.dimensions = '3D'; cu.bevel_depth = 굵기; cu.bevel_resolution = 3; cu.use_fill_caps = True
+    sp = cu.splines.new('NURBS')
+    sp.points.add(2)
+    좌 = (중심[0] - ux * 길이 / 2, 중심[1] - uy * 길이 / 2, 표면z - 잠김, 1.0)
+    마루 = (중심[0], 중심[1], 표면z + 솟음, 1.0)
+    우 = (중심[0] + ux * 길이 / 2, 중심[1] + uy * 길이 / 2, 표면z - 잠김, 1.0)
+    for pt, v in zip(sp.points, (좌, 마루, 우)):
+        pt.co = v
+    sp.use_endpoint_u = True; sp.order_u = 3
+    o = bpy.data.objects.new(이름, cu)
+    bpy.context.scene.collection.objects.link(o)
+    if 재질:
+        o.data.materials.append(재질)
+    if 부모:
+        o.parent = 부모
+    return o
+
+
+def _안인가(pts2, px, py):
+    """짝홀 판정 — 오목 꺾쇠에서 «안쪽 법선»을 고르는 데 쓴다."""
+    안 = False
+    n = len(pts2)
+    for i in range(n):
+        x1, y1 = pts2[i]; x2, y2 = pts2[(i + 1) % n]
+        if (y1 > py) != (y2 > py):
+            xc = x1 + (py - y1) * (x2 - x1) / (y2 - y1)
+            if xc > px:
+                안 = not 안
+    return 안
+
+
+def 꺾쇠실땀(부모, 크기=1.0, 안쪽=0.10, 표면z=0.16, 간격=0.17, 굵기=0.014, 길이=0.11, 재질=None, 이름앞="땀"):
+    """꺾쇠 외곽을 따라 실땀을 두른다 — 확정 시안의 점선 실땀을 3D 로 옮긴 것.
+    변마다 안쪽 법선을 짝홀 판정으로 고르므로 오목 다각형에서도 밖으로 안 샌다."""
+    pts2 = [((x - 135.5) / 24.0 * 크기, (66.35 - y) / 24.0 * 크기) for x, y in
+            [(146, 46.7), (112, 66.35), (146, 86), (159, 86), (125, 66.35), (159, 46.7)]]
+    n = len(pts2); 번 = 0
+    for i in range(n):
+        ax, ay = pts2[i]; bx, by = pts2[(i + 1) % n]
+        ex, ey = bx - ax, by - ay
+        L = math.hypot(ex, ey)
+        ux, uy = ex / L, ey / L
+        nx, ny = -uy, ux
+        mx, my = (ax + bx) / 2 + nx * 0.03, (ay + by) / 2 + ny * 0.03
+        if not _안인가(pts2, mx, my):
+            nx, ny = uy, -ux
+        여백 = 0.15 * 크기 + 안쪽
+        가용 = L - 2 * 여백
+        if 가용 < 길이 * 0.6:
+            continue                                   # 꼭짓점 근처 짧은 변은 비운다(손바느질도 그렇다)
+        개수 = max(1, int(가용 // 간격))
+        for k in range(개수):
+            t = 여백 + 가용 * (k + 0.5) / 개수
+            땀하나("%s%d" % (이름앞, 번), 부모,
+                  (ax + ux * t + nx * 안쪽, ay + uy * t + ny * 안쪽), (ux, uy),
+                  표면z, 길이=길이, 굵기=굵기, 재질=재질)
+            번 += 1
+
+
 def 꺾쇠몸(이름="꺾쇠", 크기=1.0, 두께=0.32, 모폭=0.07, 평면="XZ"):
     """로고 v2 꺾쇠 — 정본 좌표(벌림 60° · x-height 정렬)를 그대로 세운다.
     🚫자리마다 눈대중으로 다시 그리지 않는다(DESIGN.md §4) — 좌표의 주인은 로고 정본이다."""
@@ -793,9 +876,11 @@ def 로고꺾쇠세우기():
     벡터 정본은 그대로 살고, 이 판은 그 위에 앉는 «표현층»이다.
     🔴 1판 실측: XZ 평면에 지으면 Object 매핑이 이미지의 (x,y)만 써서 y=상수 → 결이
     **1차원 줄무늬**로 뽑혔다(직물처럼 보임). XY 평면에 짓고 몸을 세워야 (x,y)가 다 산다."""
-    o = 꺾쇠몸("로고꺾쇠", 평면="XY")
+    o = 꺾쇠몸("로고꺾쇠", 모폭=0.085, 평면="XY")
     o.rotation_euler = (math.radians(90.0), 0, 0)      # 정면 직교 카메라와 한 벌 — 원근 0
     o.data.materials.append(펠트재질(펠트색 or "Coral", 스케일=2.6, 돌림=9.0, 염색보정=True, 결흩기=0.45))
+    # 🔴 5판 실측: 굵기 0.015·간격 0.18 두 줄이 좁은 팔(폭 0.47)에서 «철길»로 읽혔다 — 가늘고 성기게.
+    꺾쇠실땀(o, 크기=1.0, 안쪽=0.08, 표면z=0.16, 간격=0.21, 굵기=0.0095, 길이=0.082, 재질=실재질())
 
 
 def 로고배지세우기():
@@ -804,16 +889,19 @@ def 로고배지세우기():
     bpy.ops.mesh.primitive_cylinder_add(radius=1.0, depth=0.30, vertices=192, location=(0, 0, 0))
     판 = bpy.context.object; 판.name = "배지판"
     모따기(판, 폭=0.09, 단=5)
-    # 🔴 3판 실측: Oat 가 조명·AgX 에 씻겨 백색으로 떴다 — 원판만 염색을 진하게 건다(양모 오트의 따뜻함).
-    판.data.materials.append(펠트재질("Oat", 스케일=2.8, 돌림=9.0, 염색보정=True, 결흩기=0.45, 채도=1.5, 밝기=0.72))
+    # 🔴 3·4판 실측: Oat 는 거의 무채라 채도로는 안 물든다 — Stone(리니어) 혼합으로 «염색»한다.
+    판.data.materials.append(펠트재질("Oat", 스케일=2.8, 돌림=9.0, 염색보정=True, 결흩기=0.45,
+                                   채도=1.25, 밝기=0.85, 염색혼합=(0.571, 0.521, 0.445, 0.62)))
 
     def 붙이기(o, 위치):
         o.parent = 판          # matrix_parent_inverse 는 항등 그대로 — location 이 판-로컬 좌표가 된다
         o.location = 위치
 
-    입 = 꺾쇠몸("입", 크기=0.453, 두께=0.10, 모폭=0.030, 평면="XY")   # 시안: scale2 꺾쇠 폭 94 / 지름 212
+    실 = 실재질()
+    입 = 꺾쇠몸("입", 크기=0.453, 두께=0.10, 모폭=0.042, 평면="XY")   # 시안: scale2 꺾쇠 폭 94 / 지름 212
     입.data.materials.append(펠트재질("Coral", 스케일=2.6, 돌림=9.0, 염색보정=True, 결흩기=0.45))
     붙이기(입, (-0.038, -0.236, 0.20))
+    # 🔴 5판 실측: 입에 실땀을 두르니 과밀해 신호(코랄 1점)를 잡아먹었다 — 입은 민 코랄이 정답.
 
     눈 = 구("눈", 0.099, (0, 0, 0), 세그=96)                          # 1~2시 방향(유호 픽 08-20)
     눈.data.materials.append(구슬재질())
@@ -828,19 +916,18 @@ def 로고배지세우기():
     # 🔴 1판 실측: z=0.02(원판 중간면)에 두니 뿔이 원판 실루엣 «뒤»에 숨어 겨우 비쳤다.
     #   앞면 쪽(z 0.10)으로 당기고 조금 키워야 「반 이상 걸침」(시안 검산 기준)이 렌더에서도 산다.
     뿔펠트 = 펠트재질("Coral", 스케일=3.5, 돌림=9.0, 염색보정=True, 결흩기=0.45)
+    뿔모양 = [(1.0, 0.93, 0.87), (0.95, 1.0, 0.9), (0.9, 0.87, 1.0)]   # 완전 구는 공장 티 — 뭉친 양모는 부정형
     for i, (x, y, r) in enumerate([(-0.075, 1.0, 0.082), (0.009, 1.005, 0.092), (0.094, 0.99, 0.070)]):
         뿔 = 구("뿔%d" % i, r, (0, 0, 0), 세그=64)                     # 양모 뿔 — 원판 윗단에 걸친다
+        뿔.scale = 뿔모양[i]
+        뿔.rotation_euler = (0.3, 0.2 * i, 0.4 + 0.5 * i)
         뿔.data.materials.append(뿔펠트)
         붙이기(뿔, (x, y, 0.10))
 
-    실 = 펠트재질("Stitch")
-    for i in range(24):                                               # 실땀 링 r0.868 — 끊긴 땀 24개
+    for i in range(24):                                               # 실땀 링 r0.868 — 3D 아치 24땀
         a = i / 24.0 * math.tau
-        bpy.ops.mesh.primitive_cylinder_add(radius=0.013, depth=0.12, vertices=24, location=(0, 0, 0))
-        땀 = bpy.context.object; 땀.name = "땀%d" % i
-        땀.rotation_euler = (math.radians(90), 0, a)
-        땀.data.materials.append(실)
-        붙이기(땀, (0.868 * math.cos(a), 0.868 * math.sin(a), 0.158))
+        땀하나("링땀%d" % i, 판, (0.868 * math.cos(a), 0.868 * math.sin(a)),
+              (-math.sin(a), math.cos(a)), 0.15, 길이=0.13, 굵기=0.016, 재질=실)
 
     판.rotation_euler = (math.radians(84.0), math.radians(-4.0), 0)   # 원판과 같은 «들어 보인» 각
 
@@ -867,7 +954,7 @@ def 굽기(이름, 만들기):
     #   배경이 바뀔 때마다 다시 구워야 한다. 두 장으로 가르면 지면이 그림자를 곱하기로 얹어
     #   **배경마다 다시 굽지 않아도 접지가 맞는다**(굴절에 비친 «뒤»는 여전히 무대의 것이라
     #   충돌이 사라지진 않는다 — 절반이 열린 것이고, 그 절반이 지면 수를 곱하던 쪽이다).
-    몸들 = [o for o in bpy.data.objects if o.type in ('MESH', 'FONT') and o.name not in
+    몸들 = [o for o in bpy.data.objects if o.type in ('MESH', 'FONT', 'CURVE') and o.name not in
             ({floor.name} | {s.name for s in 세트} | ({안개덩이.name} if 안개덩이 else set()))]
 
     if 그림자층:
