@@ -1750,7 +1750,7 @@ function todayBoard_(ss) {
         const cur6 = rowsL.filter(rr => (rr[0] ? dstr(rr[0], tz) : '') === wMax && rr[1] && rr[2]).slice(0, 3);
         if (cur6.length) lgB = '<div style="font-size:13px;opacity:.8;padding:12px 0 2px;">🏆 이번 주 리그</div>' + cur6.map(rr => '<div style="font-size:15px;padding:2px 0;">' + rr[1] + ' <span style="opacity:.55;">vs</span> ' + rr[2] + '</div>').join('');
       }
-      const scrHtml = CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#0F1730,#1A2340 60%,#2A3358);border-radius:20px;padding:22px 24px;color:#fff;">' +
+      const scrHtml = CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#08090C,#262626 60%,#373737);border-radius:20px;padding:22px 24px;color:#fff;">' +
         '<div style="display:flex;justify-content:space-between;align-items:baseline;"><div style="font-size:22px;font-weight:800;">📺 SYNK LIVE</div><div style="font-size:15px;opacity:.85;">' + (now.getMonth() + 1) + '월 ' + now.getDate() + '일 (' + dowNm + ')</div></div>' +
         (stageTxt ? '<div style="font-size:14px;opacity:.9;padding-top:4px;">🎪 ' + stageTxt + '</div>' : '') +
         '<div style="background:rgba(255,255,255,.12);border-radius:14px;padding:10px 14px;margin-top:12px;font-size:17px;font-weight:700;">🕐 ' + nextTxt + ' · 오늘 등원 ' + Object.keys(arr).length + '명</div>' +
