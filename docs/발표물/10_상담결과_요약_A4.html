@@ -35,11 +35,11 @@
 @page { size: A4 portrait; margin: 0; }
 
 :root{
-  --coral:#FF6B5C; --coral-wash:#FFE9E4; --coral-soft:#FFCFC6;
-  --coral-3:#E8543F; /* 라이트 강조 글자 전용 — 24px↑ 또는 18.7px↑ bold */
-  --paper:#FAFAF9; --navy:#262626; --navy-2:#08090C; --navy-3:#373737;
+  --coral:#F96859; --coral-wash:#FEF0E9; --coral-soft:#FBB7A3;
+  --coral-3:#AE322A; /* 라이트 강조 글자 전용 — 24px↑ 또는 18.7px↑ bold */
+  --paper:#FBF7F0; --navy:#262626; --navy-2:#08090C; --navy-3:#373737;
   --cream:#E4E4E7; --cream-2:#EAEAEA; --cream-3:#D1D2D4;
-  --ink:#1B1B1A; /* 코랄 면 위 글자 전용 — 본문 잉크는 --navy */
+  --ink:#2B2320; /* 코랄 면 위 글자 전용 — 본문 잉크는 --navy */
   --hair:rgba(55,55,55,.25);
 }
 *{ box-sizing:border-box; margin:0; padding:0; }
@@ -179,16 +179,15 @@ html,body{
    ──────────────────────────────────────────────────────────────────────── */
   /* 색 — 이 CSS 가 «실제로 참조하는» 것만. 안 쓰는 색은 남의 지면에 안 들인다. */
   :root{
-    --chalk:#E4E4E7; --chalk-rgb:228,228,231;
-    --chalk2:#EAEAEA; --chalk2-rgb:234,234,234;
-    --chalk3:#D1D2D4; --chalk3-rgb:209,210,212;
-    --paper:#FAFAF9; --paper-rgb:250,250,249;
-    --ink:#1B1B1A; --ink-rgb:27,27,26;
-    --coral:#FF6B5C; --coral-rgb:255,107,92;
-    --coral3:#E8543F; --coral3-rgb:232,84,63;
-    --ash:#8A8A8A; --ash-rgb:138,138,138;
-    --ash2:#676767; --ash2-rgb:103,103,103;
-    --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --룸-chalk:#E4E4E7; --룸-chalk-rgb:228,228,231;
+    --룸-chalk2:#EAEAEA; --룸-chalk2-rgb:234,234,234;
+    --룸-chalk3:#D1D2D4; --룸-chalk3-rgb:209,210,212;
+    --룸-paper:#FBF7F0; --룸-paper-rgb:250,250,249;
+    --룸-ink:#2B2320; --룸-ink-rgb:27,27,26;
+    --룸-coral:#F96859; --룸-coral-rgb:255,107,92;
+    --룸-coral3:#AE322A; --룸-coral3-rgb:232,84,63;
+    --룸-ash2:#676767; --룸-ash2-rgb:103,103,103;
+    --룸-font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   }
   /* ── 율 — 모든 간격이 여기서 나온다. 이름 없는 px 을 지면에 적지 않는다.
      4px 기반 ×1.5 근사 — 인접 두 단이 눈에 갈려야 «고른» 것이 된다. */
@@ -232,7 +231,7 @@ html,body{
     -webkit-mask-composite:xor;mask-composite:exclude;
     opacity:.95;
     filter:saturate(1.5)
-           drop-shadow(0 0 10px rgba(255,107,92,0.2));
+           drop-shadow(0 0 10px rgba(249,104,89,0.2));
   }
   .유리>*{position:relative;z-index:2;}
   .유리.잔잔{--깃:16px;padding:var(--칸) var(--단);}
@@ -245,13 +244,13 @@ html,body{
      display:flex;align-items:center;gap:calc(var(--숨) * 2.5);flex-wrap:wrap;
      margin:var(--제목위) 0 var(--제목아래);
      font-size:clamp(1.32rem,2.5vw,1.72rem);font-weight:800;
-     letter-spacing:-.038em;line-height:var(--줄제목);color:var(--chalk);}
+     letter-spacing:-.038em;line-height:var(--줄제목);}
   .룸 h2>span:not(.번호){flex:0 1 auto;min-width:0;}
   .룸 h2:not(:has(.번호))::before{content:counter(절,decimal-leading-zero);position:relative;
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -266,7 +265,7 @@ html,body{
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -278,7 +277,7 @@ html,body{
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6)
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:순번*/
   /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리). */
@@ -289,7 +288,7 @@ html,body{
     flex:none;width:1.55em;height:1.55em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.72em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -304,14 +303,14 @@ html,body{
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6)
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:차례번호*/
   .잔번호{position:relative;
     flex:none;width:1.35em;height:1.35em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.66em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -322,7 +321,7 @@ html,body{
     flex:none;width:1.25em;height:1.25em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -354,7 +353,7 @@ html,body{
   /*loom부품:체크*/
   .체크{display:inline-grid;place-items:center;position:relative;
     width:1.3em;height:1.3em;border-radius:50%;flex:none;padding-bottom:.025em;
-    font-size:.72em;font-weight:800;color:var(--chalk);
+    font-size:.72em;font-weight:800;color:var(--룸-chalk);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
         rgba(228,228,231,0.58) 0%, rgba(228,228,231,0.12) 62%, rgba(228,228,231,0) 78%),
@@ -375,16 +374,16 @@ html,body{
   .히어로수{display:inline-grid;place-items:center;position:relative;
     min-width:2.6em;height:2.6em;padding:0 var(--참) .025em;border-radius:999px;
     font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;letter-spacing:-.04em;
-    font-variant-numeric:tabular-nums;color:var(--chalk);
+    font-variant-numeric:tabular-nums;color:var(--룸-chalk);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
-        rgba(255,107,92,0.58) 0%, rgba(255,107,92,0.12) 62%, rgba(255,107,92,0) 78%),
+        rgba(249,104,89,0.58) 0%, rgba(249,104,89,0.12) 62%, rgba(249,104,89,0) 78%),
       rgba(29,29,28,0.62);
     box-shadow:
       inset 0 0 0 1px rgba(228,228,231,0.1),
-      inset 0 3px 10px -3px rgba(255,107,92,0.45),
+      inset 0 3px 10px -3px rgba(249,104,89,0.45),
       inset 0 -3px 10px -2px rgba(0,0,0,.58),
-      0 6px 14px -4px rgba(255,107,92,0.38);}
+      0 6px 14px -4px rgba(249,104,89,0.38);}
   .히어로수::before{
     content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
     background:radial-gradient(30% 22% at 38% 16%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);}
@@ -392,7 +391,7 @@ html,body{
   /*loom부품:태그*/
   .칩{display:inline-flex;align-items:center;gap:var(--숨);
     padding:calc(var(--숨) + 1px) var(--참);border-radius:999px;position:relative;
-    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--chalk);
+    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--룸-chalk);
     background:linear-gradient(170deg, rgba(228,228,231,0.12), rgba(228,228,231,0.03) 60%),
                rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.18),0 8px 16px -10px rgba(0,0,0,.9);}
@@ -410,23 +409,23 @@ html,body{
 
   /*loom부품:인용부호*/
   .룸 blockquote{position:relative;margin:var(--켜) 0;padding:var(--단) var(--단) var(--단) calc(var(--켜) + var(--참));
-    font-size:.97rem;color:var(--ash);}
+    font-size:.97rem;}
   .룸 blockquote::before{content:'\201C';position:absolute;left:var(--칸);top:calc(var(--칸) - var(--숨));
     display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;
-    font-size:1.5em;line-height:1;font-weight:800;color:var(--chalk);
+    font-size:1.5em;line-height:1;font-weight:800;color:var(--룸-chalk);
     padding-top:.28em;   /* 광학 — 여는 따옴표는 글리프가 위쪽에 몰려 있다 */
     background:linear-gradient(170deg, rgba(228,228,231,0.13), rgba(228,228,231,0.02) 58%),
                rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 10px 20px -12px rgba(0,0,0,.9);}
-  .룸 blockquote i,.룸 blockquote em{color:var(--chalk);font-style:italic;}
+  .룸 blockquote i,.룸 blockquote em{;font-style:italic;}
 
   /*loom부품:표지오브*/
   /* 펠트 오브 — 이 지면에서 «부피»를 가진 유일한 물건이라 하나뿐이어야 한다.
      빛을 먹는 재질(roughness .95)이라 유리·레진 옆에서 «사람이 만든 것»으로 읽힌다. */
   .오브{width:112px;height:112px;border-radius:31px;flex:none;position:relative;overflow:hidden;
-    background-color:var(--chalk);
+    background-color:var(--룸-chalk);
     display:grid;place-items:center;
-    color:var(--ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
+    color:var(--룸-ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
     box-shadow:
       inset 0 3px 4px rgba(255,255,255,.62),
       inset 0 -14px 24px -6px rgba(8,9,12,0.5),
@@ -442,13 +441,13 @@ html,body{
   /*loom부품:링크점*/
   /* 링크 — 40~50대가 읽는다는 것을 셈에 넣으면 밑선 알파만으로는 링크가 아니다.
      셋을 겹친다: 밑선 .62 · 굵기 한 단 · 앞에 코랄 점(3px 이라 신호 1점을 안 넘는다). */
-  .룸 a{color:var(--chalk);text-decoration:none;font-weight:560;
+  .룸 a{;text-decoration:none;font-weight:560;
     box-shadow:inset 0 -1px 0 rgba(228,228,231,0.62);
     transition:box-shadow 180ms ease,color 180ms ease;}
   .룸 a:not(.민):not(.레일 a)::before{content:'';display:inline-block;width:3px;height:3px;
     border-radius:50%;vertical-align:.32em;margin-right:var(--숨);
-    background:var(--coral);box-shadow:0 0 6px rgba(255,107,92,0.7);}
-  .룸 a:hover{box-shadow:inset 0 -1px 0 rgba(255,107,92,0.9);}
+    background:var(--룸-coral);box-shadow:0 0 6px rgba(249,104,89,0.7);}
+  .룸 a:hover{box-shadow:inset 0 -1px 0 rgba(249,104,89,0.9);}
 
   /*loom부품:쪽번호*/
   /* 쪽번호 — 낮 지면에서만 산다. 화면에는 «쪽»이라는 것이 없다. */
@@ -457,7 +456,7 @@ html,body{
   /*loom부품:본문타이포*/
   /* 🚫본문 타이포 — 불가침. 글자에 재질을 입히지 않는다(DESIGN.md §1 「타이포는 안 건드린다」).
      여기 있는 것은 «재질을 안 입힌다»는 선언이고, 그래서 분모에 든다(빠뜨린 것과 갈리게). */
-  .룸 p,.룸 li,.룸 td,.룸 th{font-family:var(--font);}
+  .룸 p,.룸 li,.룸 td,.룸 th{font-family:var(--룸-font);}
 
   /* ══ 구운 재질 (Blender Cycles · tools/룸굽기.js) ══ */
   /* 번호 원판 — 지면에서 가장 많이 도는 «각진» 부품이라 모따기가 여기서 값을 한다.
@@ -504,55 +503,55 @@ html,body{
        레진 → glow 가 종이에 안 실린다 → 코어를 «면»으로, 굴절밴드를 «선»으로 굳힌다
        못 옮기는 것 = 코스틱(샌 빛). 종이의 한계라 억지로 흉내내지 않는다. */
   @media print{
-    .룸{background:var(--paper);color-scheme:light;}
-    .룸{background:var(--paper);background-attachment:initial;color:var(--ink);
+    .룸{background:var(--룸-paper);color-scheme:light;}
+    .룸{background:var(--룸-paper);background-attachment:initial;
          font-size:10.6pt;line-height:1.62;}
 
-    .유리{background:var(--chalk2);border:1px solid var(--chalk3);
+    .유리{background:var(--룸-chalk2);border:1px solid var(--룸-chalk3);
       -webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;
       break-inside:avoid;padding:var(--칸) calc(var(--칸) + var(--숨));}
     .유리::before{content:none;}
 
     /* 번호 — 유리 원판이 «찍힌 원판»이 된다. 분산 림은 선 하나로 굳는다. */
-    .룸 h2{color:var(--ink);margin:calc(var(--켜) * .6) 0 var(--참);font-size:14pt;break-after:avoid;}
+    .룸 h2{;margin:calc(var(--켜) * .6) 0 var(--참);font-size:14pt;break-after:avoid;}
     .룸 h2:not(:has(.번호))::before,.번호,.잔번호,.각주{
-      background:var(--chalk3);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ash2);}
-    .룸 h2:not(:has(.번호))::after{background:var(--chalk3);}
+      background:var(--룸-chalk3);color:var(--룸-ink);box-shadow:inset 0 0 0 1px var(--룸-ash2);}
+    .룸 h2:not(:has(.번호))::after{background:var(--룸-chalk3);}
     .번호::before{content:none;}
-    .룸 ol>li::before{background:var(--chalk3);color:var(--ink);
-      box-shadow:inset 0 0 0 1px var(--ash2);}
+    .룸 ol>li::before{background:var(--룸-chalk3);color:var(--룸-ink);
+      box-shadow:inset 0 0 0 1px var(--룸-ash2);}
     .룸 ol>li::after{content:none;}
 
     /* 레진 — 코어를 면으로, 굴절밴드를 선으로. 구슬로 읽히되 종이에서 뜨지 않는다. */
-    .룸 ul>li::before{background:rgba(232,84,63,0.22);
-      box-shadow:inset 0 0 0 1px rgba(232,84,63,0.55);}
+    .룸 ul>li::before{background:rgba(174,50,42,0.22);
+      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.55);}
     .룸 ul>li::after{background:none;}
-    .체크,.히어로수{color:var(--ink);
-      background:radial-gradient(58% 58% at 50% 44%, rgba(232,84,63,0.26), rgba(232,84,63,0.07) 70%),
-                 var(--chalk2);
-      box-shadow:inset 0 0 0 1px rgba(232,84,63,0.5);}
+    .체크,.히어로수{color:var(--룸-ink);
+      background:radial-gradient(58% 58% at 50% 44%, rgba(174,50,42,0.26), rgba(174,50,42,0.07) 70%),
+                 var(--룸-chalk2);
+      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.5);}
     .체크::before,.히어로수::before{content:none;}
 
-    .칩{background:var(--chalk2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--chalk3);}
+    .칩{background:var(--룸-chalk2);color:var(--룸-ink);box-shadow:inset 0 0 0 1px var(--룸-chalk3);}
     .칩::before{content:none;}
-    .실금{background:var(--chalk3);}
-    .룸 blockquote{color:var(--ash2);}
-    .룸 blockquote::before{background:var(--chalk3);color:var(--ink);box-shadow:none;}
-    .룸 blockquote i,.룸 blockquote em{color:var(--ink);}
-    .오브{width:74px;height:74px;border-radius:20px;color:var(--ink);font-size:1.7rem;
-      box-shadow:none;border:1px solid var(--chalk3);}   /* 배경을 끄면 천이 사라지니 테두리가 형태를 진다 */
+    .실금{background:var(--룸-chalk3);}
+    .룸 blockquote{;}
+    .룸 blockquote::before{background:var(--룸-chalk3);color:var(--룸-ink);box-shadow:none;}
+    .룸 blockquote i,.룸 blockquote em{;}
+    .오브{width:74px;height:74px;border-radius:20px;color:var(--룸-ink);font-size:1.7rem;
+      box-shadow:none;border:1px solid var(--룸-chalk3);}   /* 배경을 끄면 천이 사라지니 테두리가 형태를 진다 */
     .오브::before,.오브::after{content:none;}
 
-    .룸 p,.룸 li,.룸 b,.룸 strong,.룸 td,.룸 th,.룸 h3{color:var(--ink);}
-    .룸 li::marker{color:var(--ash2);}
-    .흐린,.룸 footer{color:var(--ash2);}
-    .룸 a{color:var(--ink);font-weight:640;box-shadow:none;border-bottom:1px solid var(--coral3);}
-    .룸 a:not(.민)::before{background:var(--coral3);box-shadow:none;}
-    .룸 code{color:var(--ink);background:var(--chalk2);box-shadow:inset 0 0 0 1px var(--chalk3);}
+    .룸 p,.룸 li,.룸 b,.룸 strong,.룸 td,.룸 th,.룸 h3{;}
+    .룸 li::marker{color:var(--룸-ash2);}
+    .흐린,.룸 footer{color:var(--룸-ash2);}
+    .룸 a{;font-weight:640;box-shadow:none;border-bottom:1px solid var(--룸-coral3);}
+    .룸 a:not(.민)::before{background:var(--룸-coral3);box-shadow:none;}
+    .룸 code{;background:var(--룸-chalk2);box-shadow:inset 0 0 0 1px var(--룸-chalk3);}
 
     /* 쪽번호 — 낮에만 산다. @page 여백 안에 앉힌다. */
     .쪽번호{display:block;position:fixed;bottom:4mm;right:0;
-      font-size:8.5pt;color:var(--ash2);font-variant-numeric:tabular-nums;}
+      font-size:8.5pt;color:var(--룸-ash2);font-variant-numeric:tabular-nums;}
     .룸 thead{display:table-header-group;}
     .룸 tr,.수치{break-inside:avoid;}
     .룸 *{print-color-adjust:exact;-webkit-print-color-adjust:exact;}
@@ -575,7 +574,7 @@ html,body{
         <div class="symbol">
           <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
             <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#E4E4E7">syn</text>
-            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
+            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#F96859"/>
           </svg>
         </div>
         <div>
