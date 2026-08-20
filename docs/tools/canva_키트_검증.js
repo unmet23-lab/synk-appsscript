@@ -23,17 +23,50 @@
 (() => {
   'use strict';
 
-  // 정본 23색 — 19색의 hex 원천 = docs/_archive/브랜드_색상키트_원본_CrewDossier_2026-08-01.html
-  //             06 Slate 2색은 2026-08-07 유호님 확정 추가 (컨셉 정본 조항 ⓔ)
-  //             07 Lime Family = Lime 2(조항 ⓕ) + Emerald(조항 ⓖ) — 둘 다 2026-08-07 유호님 확정
+  // 정본 41색 — 2027 킷 「내일 꾸러미」(2026-08-20 유호님 확정 · 컨셉 정본 조항 ⓙ). 값 원천 = docs/디자인_토큰.json 파생.
+      // ⚠ Canva 실물이 이 41색을 아직 안 받았으면 빨간불이 정상이다 — 정본이 앞서간 것이니 Canva 키트를 갱신한다(유호님 몫).
   const KIT = {
-    '#e4e4e7': 'Chalk', '#ff6b5c': 'Coral', '#262626': 'Graphite 3', '#c8ff3d': 'Lime', '#1b1b1a': 'Ink',
-    '#fafaf9': 'Paper', '#eaeaea': 'Chalk 2', '#d1d2d4': 'Chalk 3',
-    '#ffe9e4': 'Coral Wash', '#ffcfc6': 'Coral Soft', '#ff8877': 'Coral 2', '#e8543f': 'Coral 3',
-    '#373737': 'Graphite 4', '#1d1d1c': 'Graphite 2', '#08090c': 'Graphite',
-    '#ff3e88': 'KC Hot Pink', '#ff6ba8': 'KC Pink 2', '#ffd447': 'KC Sun', '#4e7cff': 'KC Cool Blue',
-    '#8a8a8a': 'Ash', '#676767': 'Ash 2',
-    '#b8e836': 'Lime 2', '#13724a': 'Emerald',
+    '#fbb7a3': 'Coral Soft',
+    '#fd9c87': 'Coral 2',
+    '#f96859': 'Coral',
+    '#ae322a': 'Coral 3',
+    '#941f19': 'Coral Rim',
+    '#fef0e9': 'Coral Wash',
+    '#fbf7f0': 'Paper',
+    '#2b2320': 'Ink',
+    '#f0e3c8': 'Stitch',
+    '#ede7dc': 'Oat',
+    '#c7bfb2': 'Stone',
+    '#8d857a': 'Ash Wool',
+    '#575046': 'Deep Wool',
+    '#c5d6f5': 'Lapis Soft',
+    '#3d6bc9': 'Lapis',
+    '#24448c': 'Lapis Deep',
+    '#d3e8be': 'Meadow Soft',
+    '#7db45a': 'Meadow',
+    '#3f6b2e': 'Meadow Deep',
+    '#ffebb0': 'Butter Soft',
+    '#f5c445': 'Butter',
+    '#7e5a10': 'Butter Deep',
+    '#f8c7de': 'Pop Soft',
+    '#e05c97': 'Pop',
+    '#99295d': 'Pop Deep',
+    '#ff3e88': 'KC Hot Pink',
+    '#ff6ba8': 'KC Pink 2',
+    '#ffd447': 'KC Sun',
+    '#4e7cff': 'KC Cool Blue',
+    '#e4e4e7': 'Chalk',
+    '#eaeaea': 'Chalk 2',
+    '#d1d2d4': 'Chalk 3',
+    '#08090c': 'Graphite',
+    '#1d1d1c': 'Graphite 2',
+    '#262626': 'Graphite 3',
+    '#373737': 'Graphite 4',
+    '#8a8a8a': 'Ash',
+    '#676767': 'Ash 2',
+    '#c8ff3d': 'Lime',
+    '#b8e836': 'Lime 2',
+    '#13724a': 'Emerald',
   };
 
   // 팔레트 이름은 「오용 차단 장치」다 — 이름에 제한을 박아 두면 쓰는 사람이 규칙을 안 찾아봐도 걸린다.

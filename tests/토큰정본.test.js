@@ -19,8 +19,11 @@ const { spawnSync } = require('node:child_process');
 const ROOT = path.resolve(__dirname, '..');
 const 토큰 = require('../docs/디자인_토큰.json');
 
-/* 킷 개수 — 19(v10 Crew Dossier 08-01) + Slate 2색(08-07 유호님 확정) = 21 */
-const 킷개수 = 23;
+/* 킷 개수 — 2027 킷(내일 꾸러미 · 08-20 유호님 확정) 41색:
+ *   코랄 램프 5+Wash · 바탕 3+양모 회색 4 · 2027 실 4꾸러미×3단 · KC 4 · ⏳퇴역 대기 12(구 무채·Lime·Emerald).
+ *   퇴역 12색은 시맨틱 다크·소비처가 이름을 참조 중이라 살아 있다 — 다크 팔레트 트랙이 재배선 후 지우며
+ *   이 수를 41→29 로 내린다(그때 이 주석도 같이 진다). */
+const 킷개수 = 41;
 
 test(`① 킷은 정확히 ${킷개수}색 — hex 형식·이름·hex 전부 유일하다`, () => {
   const 킷 = 토큰.색.킷;
