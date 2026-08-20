@@ -2311,7 +2311,7 @@ function calcAll() {
     }
     if (ym === thisMonth && isEarn) {
       monthly[sid] = (monthly[sid] || 0) + pts;
-      if ((String(r[3]).indexOf('칭찬') > -1 || String(r[3]).indexOf('시냅스') > -1) && String(r[3]).indexOf('정정') === -1) praise[sid] = (praise[sid] || 0) + 1; // [v7.6]
+      if ((String(r[3]).indexOf('칭찬') > -1 || String(r[3]).indexOf('시냅스') > -1 || String(r[3]).indexOf('성장') > -1) && String(r[3]).indexOf('정정') === -1) praise[sid] = (praise[sid] || 0) + 1; // [v7.6]
     }
   });
 

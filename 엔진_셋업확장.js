@@ -491,14 +491,14 @@ function seedDemoData() {
   const T = '김재헌';
   // 지난달: 01 챔피언(인정 몰림 — 편중 시연)·07 숙제왕
   for (let i = 0; i < 8; i++) pushPl('DEMO-01', 10, '숙제완료', T, day(28 + i * 0.9 | 0));
-  pushPl('DEMO-01', 10, '오늘의 도전', T, day(30)); pushPl('DEMO-01', 10, '오늘의 도전', T, day(26));
-  pushPl('DEMO-01', 10, '오늘의 성장', T, day(33));
+  pushPl('DEMO-01', 5, '오늘의 도전', T, day(30)); pushPl('DEMO-01', 5, '오늘의 도전', T, day(26));
+  pushPl('DEMO-01', 5, '오늘의 성장', T, day(33));
   for (let i = 0; i < 9; i++) pushPl('DEMO-07', 10, '숙제완료', T, day(27 + (i * 0.8 | 0)));
-  pushPl('DEMO-02', 10, '숙제완료', T, day(29)); pushPl('DEMO-02', 10, '오늘의 성장', T, day(27));
+  pushPl('DEMO-02', 10, '숙제완료', T, day(29)); pushPl('DEMO-02', 5, '오늘의 성장', T, day(27));
   pushPl('DEMO-08', 10, '숙제완료', T, day(28)); // [검증 반영] DEMO-03 지난달 기록 0 — 정산·칭호 변수 원천 차단
   // 이번달: 진행 중 스토리 — 03 진화 임박(95P대), 04 무포인트(사각), 05 정지
   for (let i = 0; i < 6; i++) pushPl('DEMO-01', 10, '숙제완료', T, day(2 + i * 2));
-  pushPl('DEMO-01', 10, '오늘의 도전', T, day(0)); // 오늘 도전 — 축하 배너·알림 시연
+  pushPl('DEMO-01', 5, '오늘의 도전', T, day(0)); // 오늘 도전 — 축하 배너·알림 시연
   pushPl('DEMO-01', 3, '칭찬·집중력', T, day(1)); pushPl('DEMO-02', 3, '칭찬·친구도움', T, day(4)); // [v9.51] 💝 '크루의 눈' 시연 재료 — 태그=사유 접미
   for (let i = 0; i < 5; i++) pushPl('DEMO-02', 10, '숙제완료', T, day(3 + i * 3));
   for (let i = 0; i < 9; i++) pushPl('DEMO-03', 10, '숙제완료', T, day(1 + i * 2)); // [검증 반영] 6월 기록·출석·생일 전부 0인 설계라 90+5=95P '고정' → 진화까지 5P(임박 브리핑·한마디 확정 발화)
