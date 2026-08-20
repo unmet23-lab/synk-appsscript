@@ -715,17 +715,17 @@ body{background:#FAFAF9;color:#1B1B1A;font-family:'SUIT','Inter Tight','Apple SD
      line-height:1.7;max-width:1040px;margin:0 auto;padding:44px 26px;word-break:keep-all;}
 header{background:#08090C;color:#E4E4E7;margin:-44px -26px 32px;padding:32px 26px 24px;}
 header h1{margin:0;font-size:1.45em;color:#E4E4E7;}
-header .cap{color:#8A8A8A;font-size:.86em;margin-top:6px;}
+header .cap{color:#8C8C8C;font-size:.86em;margin-top:6px;}
 h2{font-size:1.1em;margin:2em 0 .5em;padding-bottom:.25em;border-bottom:3px solid #FF6B5C;}
 table{border-collapse:collapse;width:100%;font-size:.87em;}
 th,td{border:1px solid #373737;padding:.4em .55em;text-align:left;vertical-align:top;}
 th{background:#08090C;color:#E4E4E7;font-weight:600;}
-td.s{white-space:nowrap;}td.p{font-size:.92em;color:#676767;}
-/* 🔴 흐린 회색은 #676767 다 — #8A8A8A 는 종이(#FAFAF9) 위에서 대비 2.86 이라 린트가 문다.
- *    #8A8A8A 는 남색 띠(#08090C) 위에서만 쓴다(header .cap). */
-.q{color:#676767;}
+td.s{white-space:nowrap;}td.p{font-size:.92em;color:#666666;}
+/* 🔴 흐린 회색은 #666666 다 — #8C8C8C 는 종이(#FAFAF9) 위에서 대비 2.86 이라 린트가 문다.
+ *    #8C8C8C 는 남색 띠(#08090C) 위에서만 쓴다(header .cap). */
+.q{color:#666666;}
 .tally{background:#FFE9E4;border-left:4px solid #FF6B5C;padding:.7em 1em;margin:1.2em 0;font-size:.93em;}
-footer{margin-top:2.6em;color:#676767;font-size:.8em;}
+footer{margin-top:2.6em;color:#666666;font-size:.8em;}
 </style>
 <header><h1>SYNK 자료 — 지금 상태</h1>
 <div class="cap">이 표는 열기 전에 「낡았는지」를 말해 준다. 굽는 명령 = <code>node tools/운영자료.js --지금상태</code></div></header>
