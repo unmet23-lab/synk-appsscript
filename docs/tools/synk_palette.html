@@ -6,9 +6,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&family=DM+Mono:wght@300;400;500&display=swap">
 <style>
-  :root{ --ink:#171820; --sub:#7A7566; --line:#E7DDC7; }
+  :root{ --ink:#1B1B1A; --sub:#7A7566; --line:#D1D2D4; }
   *{ box-sizing:border-box; }
-  body{ margin:0; padding:38px 40px 60px; background:#FBF7EE; color:var(--ink);
+  body{ margin:0; padding:38px 40px 60px; background:#FAFAF9; color:var(--ink);
         font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
   .wrap{ max-width:1000px; margin:0 auto; }
   h1{ font-size:19px; font-weight:600; letter-spacing:-.01em; margin:0 0 5px; }
@@ -41,9 +41,9 @@
   .bar{ height:34px; border-radius:8px; }
   .note{ background:#FFE9E4; border-radius:10px; padding:14px 16px; font-size:12.5px;
          line-height:1.75; color:#3F4650; margin-top:14px; }
-  .note b{ color:#171820; }
+  .note b{ color:#1B1B1A; }
   .toast{ position:fixed; left:50%; bottom:34px; transform:translateX(-50%) translateY(20px);
-          background:#0F1730; color:#F6F1E8; font-size:12.5px; padding:9px 18px; border-radius:99px;
+          background:#08090C; color:#E4E4E7; font-size:12.5px; padding:9px 18px; border-radius:99px;
           font-family:'DM Mono',ui-monospace,monospace;
           opacity:0; transition:all .18s ease; pointer-events:none; }
   .toast.on{ opacity:1; transform:translateX(-50%) translateY(0); }
@@ -65,21 +65,21 @@
   <div class="sec">① 핵심 3색 <span>— 다크 화면(모드 A 디더)에서 쓰는 전부</span></div>
   <div class="row">
     <div>
-      <div class="chip" style="background:#0F1730;color:#F6F1E8" data-hex="#0F1730">
+      <div class="chip" style="background:#08090C;color:#E4E4E7" data-hex="#08090C">
         <div class="role">바탕 · 다크</div>
-        <div><div class="nm">Navy 2</div><div class="hx">#0F1730</div></div>
+        <div><div class="nm">Navy 2</div><div class="hx">#08090C</div></div>
       </div>
       <div class="use">모드 A 디더 바탕 · 225° · 키트 Navy 4단 중 최암부</div>
     </div>
     <div>
-      <div class="chip" style="background:#F6F1E8;color:#0F1730" data-hex="#F6F1E8">
+      <div class="chip" style="background:#E4E4E7;color:#08090C" data-hex="#E4E4E7">
         <div class="role">잉크 · 다크 위</div>
-        <div><div class="nm">Cream</div><div class="hx">#F6F1E8</div></div>
+        <div><div class="nm">Cream</div><div class="hx">#E4E4E7</div></div>
       </div>
       <div class="use">디더 점 · 바탕 대비 16.1 · 순백으로 바꾸지 말 것</div>
     </div>
     <div>
-      <div class="chip" style="background:#FF6B5C;color:#0F1730" data-hex="#FF6B5C">
+      <div class="chip" style="background:#FF6B5C;color:#08090C" data-hex="#FF6B5C">
         <div class="role">신호 · 주 액센트</div>
         <div><div class="nm">Coral</div><div class="hx">#FF6B5C</div></div>
       </div>
@@ -90,16 +90,16 @@
   <div class="sec">② 보조 3색 <span>— 라이트 화면(모드 B 타이포 · 모드 C 겹침)</span></div>
   <div class="row">
     <div>
-      <div class="chip" style="background:#FBF7EE;color:#171820" data-hex="#FBF7EE">
+      <div class="chip" style="background:#FAFAF9;color:#1B1B1A" data-hex="#FAFAF9">
         <div class="role">바탕 · 라이트</div>
-        <div><div class="nm">Paper</div><div class="hx">#FBF7EE</div></div>
+        <div><div class="nm">Paper</div><div class="hx">#FAFAF9</div></div>
       </div>
       <div class="use">모드 B·C 공용 바탕</div>
     </div>
     <div>
-      <div class="chip" style="background:#171820;color:#FBF7EE" data-hex="#171820">
+      <div class="chip" style="background:#1B1B1A;color:#FAFAF9" data-hex="#1B1B1A">
         <div class="role">잉크 · 라이트 위</div>
-        <div><div class="nm">Ink</div><div class="hx">#171820</div></div>
+        <div><div class="nm">Ink</div><div class="hx">#1B1B1A</div></div>
       </div>
       <div class="use">모드 B 대형 타이포 · 대비 17.0</div>
     </div>
@@ -118,24 +118,24 @@
       <div class="mp"><canvas id="pv"></canvas>
         <div style="position:absolute;left:15px;bottom:14px">
           <div style="width:22px;height:3px;background:#FF6B5C;margin-bottom:9px"></div>
-          <div style="font-size:16px;font-weight:600;color:#F6F1E8;line-height:1.3">말이<br>트입니다</div>
+          <div style="font-size:16px;font-weight:600;color:#E4E4E7;line-height:1.3">말이<br>트입니다</div>
         </div>
       </div>
       <div class="use">A 디더 — 바탕·잉크·신호 한 점</div>
     </div>
     <div>
-      <div class="mp" style="background:#FBF7EE;padding:16px">
+      <div class="mp" style="background:#FAFAF9;padding:16px">
         <div style="font-size:11.5px;letter-spacing:.16em;color:#7A7566;font-family:'DM Mono',monospace">02</div>
-        <div style="font-size:38px;font-weight:600;color:#E8543F;line-height:1;margin-top:13px">8<span style="font-size:17px;color:#171820">주</span></div>
-        <div style="font-size:13px;color:#171820;margin-top:11px;line-height:1.5">한 시즌에 한 권</div>
+        <div style="font-size:38px;font-weight:600;color:#E8543F;line-height:1;margin-top:13px">8<span style="font-size:17px;color:#1B1B1A">주</span></div>
+        <div style="font-size:13px;color:#1B1B1A;margin-top:11px;line-height:1.5">한 시즌에 한 권</div>
       </div>
       <div class="use">B 타이포 — 숫자 하나만 강조. 라이트 배경이라 Coral이 아니라 <b>Coral 3</b>(3.40)</div>
     </div>
     <div>
-      <div class="mp" style="background:#FBF7EE;isolation:isolate">
+      <div class="mp" style="background:#FAFAF9;isolation:isolate">
         <div style="position:absolute;left:13%;top:11%;width:56%;height:56%;border-radius:50%;background:#FFD447;mix-blend-mode:multiply;opacity:.8"></div>
         <div style="position:absolute;left:20%;top:17%;width:56%;height:56%;border-radius:50%;background:#FF6B5C;mix-blend-mode:multiply;opacity:.72"></div>
-        <div style="position:absolute;left:15px;bottom:14px;font-size:16px;font-weight:600;color:#171820">모집 시작</div>
+        <div style="position:absolute;left:15px;bottom:14px;font-size:16px;font-weight:600;color:#1B1B1A">모집 시작</div>
       </div>
       <div class="use">C 겹침 — 2도 잉크가 주인공</div>
     </div>
@@ -160,43 +160,43 @@
 
   <p class="sub" style="margin:14px 0 9px">01 Core</p>
   <div class="row5">
-    <div><div class="chip sm" style="background:#F6F1E8;color:#0F1730" data-hex="#F6F1E8"><div class="nm">Cream</div><div class="hx">#F6F1E8</div></div></div>
-    <div><div class="chip sm" style="background:#FF6B5C;color:#0F1730" data-hex="#FF6B5C"><div class="nm">Coral</div><div class="hx">#FF6B5C</div></div></div>
-    <div><div class="chip sm" style="background:#1A2340;color:#F6F1E8" data-hex="#1A2340"><div class="nm">Navy</div><div class="hx">#1A2340</div></div></div>
-    <div><div class="chip sm" style="background:#C8FF3D;color:#171820" data-hex="#C8FF3D"><div class="nm">Lime</div><div class="hx">#C8FF3D</div></div></div>
-    <div><div class="chip sm" style="background:#171820;color:#F6F1E8" data-hex="#171820"><div class="nm">Ink</div><div class="hx">#171820</div></div></div>
+    <div><div class="chip sm" style="background:#E4E4E7;color:#08090C" data-hex="#E4E4E7"><div class="nm">Cream</div><div class="hx">#E4E4E7</div></div></div>
+    <div><div class="chip sm" style="background:#FF6B5C;color:#08090C" data-hex="#FF6B5C"><div class="nm">Coral</div><div class="hx">#FF6B5C</div></div></div>
+    <div><div class="chip sm" style="background:#262626;color:#E4E4E7" data-hex="#262626"><div class="nm">Navy</div><div class="hx">#262626</div></div></div>
+    <div><div class="chip sm" style="background:#C8FF3D;color:#1B1B1A" data-hex="#C8FF3D"><div class="nm">Lime</div><div class="hx">#C8FF3D</div></div></div>
+    <div><div class="chip sm" style="background:#1B1B1A;color:#E4E4E7" data-hex="#1B1B1A"><div class="nm">Ink</div><div class="hx">#1B1B1A</div></div></div>
   </div>
 
   <p class="sub" style="margin:18px 0 9px">02 Cream Family</p>
   <div class="row5">
-    <div><div class="chip sm" style="background:#FBF7EE;color:#171820" data-hex="#FBF7EE"><div class="nm">Paper</div><div class="hx">#FBF7EE</div></div></div>
-    <div><div class="chip sm" style="background:#EFE7D7;color:#171820" data-hex="#EFE7D7"><div class="nm">Cream 2</div><div class="hx">#EFE7D7</div></div></div>
-    <div><div class="chip sm" style="background:#E7DDC7;color:#171820" data-hex="#E7DDC7"><div class="nm">Cream 3</div><div class="hx">#E7DDC7</div></div></div>
+    <div><div class="chip sm" style="background:#FAFAF9;color:#1B1B1A" data-hex="#FAFAF9"><div class="nm">Paper</div><div class="hx">#FAFAF9</div></div></div>
+    <div><div class="chip sm" style="background:#EAEAEA;color:#1B1B1A" data-hex="#EAEAEA"><div class="nm">Cream 2</div><div class="hx">#EAEAEA</div></div></div>
+    <div><div class="chip sm" style="background:#D1D2D4;color:#1B1B1A" data-hex="#D1D2D4"><div class="nm">Cream 3</div><div class="hx">#D1D2D4</div></div></div>
     <div></div><div></div>
   </div>
 
   <p class="sub" style="margin:18px 0 9px">03 Coral Family</p>
   <div class="row5">
-    <div><div class="chip sm" style="background:#FFE9E4;color:#171820" data-hex="#FFE9E4"><div class="nm">Coral Wash</div><div class="hx">#FFE9E4</div></div></div>
-    <div><div class="chip sm" style="background:#FFCFC6;color:#171820" data-hex="#FFCFC6"><div class="nm">Coral Soft</div><div class="hx">#FFCFC6</div></div></div>
-    <div><div class="chip sm" style="background:#FF8877;color:#171820" data-hex="#FF8877"><div class="nm">Coral 2</div><div class="hx">#FF8877</div></div></div>
+    <div><div class="chip sm" style="background:#FFE9E4;color:#1B1B1A" data-hex="#FFE9E4"><div class="nm">Coral Wash</div><div class="hx">#FFE9E4</div></div></div>
+    <div><div class="chip sm" style="background:#FFCFC6;color:#1B1B1A" data-hex="#FFCFC6"><div class="nm">Coral Soft</div><div class="hx">#FFCFC6</div></div></div>
+    <div><div class="chip sm" style="background:#FF8877;color:#1B1B1A" data-hex="#FF8877"><div class="nm">Coral 2</div><div class="hx">#FF8877</div></div></div>
     <div><div class="chip sm" style="background:#E8543F;color:#FFE9E4" data-hex="#E8543F"><div class="nm">Coral 3 ★</div><div class="hx">#E8543F</div></div><div class="use">★ SYNK FIELD 사용 — 라이트 배경 대형 강조 글자(3.40)</div></div>
     <div></div>
   </div>
 
   <p class="sub" style="margin:18px 0 9px">04 Navy Family</p>
   <div class="row5">
-    <div><div class="chip sm" style="background:#2A3358;color:#F6F1E8" data-hex="#2A3358"><div class="nm">Navy 3</div><div class="hx">#2A3358</div></div></div>
-    <div><div class="chip sm" style="background:#131A32;color:#F6F1E8" data-hex="#131A32"><div class="nm">Navy Ink</div><div class="hx">#131A32</div></div></div>
-    <div><div class="chip sm" style="background:#0F1730;color:#F6F1E8" data-hex="#0F1730"><div class="nm">Navy 2</div><div class="hx">#0F1730</div></div></div>
+    <div><div class="chip sm" style="background:#373737;color:#E4E4E7" data-hex="#373737"><div class="nm">Navy 3</div><div class="hx">#373737</div></div></div>
+    <div><div class="chip sm" style="background:#1D1D1C;color:#E4E4E7" data-hex="#1D1D1C"><div class="nm">Navy Ink</div><div class="hx">#1D1D1C</div></div></div>
+    <div><div class="chip sm" style="background:#08090C;color:#E4E4E7" data-hex="#08090C"><div class="nm">Navy 2</div><div class="hx">#08090C</div></div></div>
     <div></div><div></div>
   </div>
 
   <p class="sub" style="margin:18px 0 9px">05 K-Culture <b>(Part 6 콘텐츠 전용 — Cool Blue만 모드 C에서 씀)</b></p>
   <div class="row5">
     <div><div class="chip sm" style="background:#FF3E88;color:#FFE9E4" data-hex="#FF3E88"><div class="nm">KC Hot Pink</div><div class="hx">#FF3E88</div></div></div>
-    <div><div class="chip sm" style="background:#FF6BA8;color:#171820" data-hex="#FF6BA8"><div class="nm">KC Pink 2</div><div class="hx">#FF6BA8</div></div></div>
-    <div><div class="chip sm" style="background:#FFD447;color:#171820" data-hex="#FFD447"><div class="nm">KC Sun</div><div class="hx">#FFD447</div></div></div>
+    <div><div class="chip sm" style="background:#FF6BA8;color:#1B1B1A" data-hex="#FF6BA8"><div class="nm">KC Pink 2</div><div class="hx">#FF6BA8</div></div></div>
+    <div><div class="chip sm" style="background:#FFD447;color:#1B1B1A" data-hex="#FFD447"><div class="nm">KC Sun</div><div class="hx">#FFD447</div></div></div>
     <div><div class="chip sm" style="background:#4E7CFF;color:#EAF0FF" data-hex="#4E7CFF"><div class="nm">KC Cool Blue</div><div class="hx">#4E7CFF</div></div></div>
     <div></div>
   </div>
@@ -241,9 +241,9 @@
   var w=Math.max(140,cv.clientWidth), h=170, dpr=Math.min(2,window.devicePixelRatio||1);
   cv.width=w*dpr; cv.height=h*dpr;
   var x=cv.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0);
-  x.fillStyle='#0F1730'; x.fillRect(0,0,w,h);
+  x.fillStyle='#08090C'; x.fillRect(0,0,w,h);
   var R=prng(17), cx=w*0.79, cy=h*0.2, rr=w*0.52, px, py, k, s;
-  x.fillStyle='#F6F1E8';
+  x.fillStyle='#E4E4E7';
   for(py=0;py<h;py++){ for(px=0;px<w;px++){
     var dx=(px-cx)/rr, dy=(py-cy)/rr, r=Math.sqrt(dx*dx+dy*dy); if(r>1.04) continue;
     var den=Math.max(0,1-r*0.72)*0.6, cl=(((px/5)|0)+((py/5)|0))%2;
