@@ -25,9 +25,7 @@ description: 놓친 작업 회수 — 지금까지 시야에 들어왔다가 처
 node tools/board.js                          # ① 🎫 놓인 일감 · 🔴 잔여
 node tools/friction.js                       # ② 살아있는 마찰 F0NN (신고됐는데 미해소)
 node tools/rot-check.js                      # ③ 수리 필요 · 낡음 · 인덱스 누락
-node tools/decision-queue.js --버려진        # ④ 필터가 걸렀는데 진짜 미결일 수 있는 ⏳
-node tools/decision-queue.js --절            # ⑤ 절 제목만 걸고 배달 0건 — 유호님께 안 가는 결정
-node tools/원격ci.js                         # ⑥ 미검증·적색으로 남은 커밋
+node tools/원격ci.js                         # ④ 미검증·적색으로 남은 커밋 (옛 ④⑤ 결정 큐 갈래는 08-20 소멸)
 ```
 
 🚫 **새 일감을 찾지 않는다.** 코드를 읽다 발견한 개선점·리팩터 기회는 이 스킬의 대상이 아니다(그건 큐에 기름을 붓는 쪽이다 · `loop-trigger-layer` 기각분).
