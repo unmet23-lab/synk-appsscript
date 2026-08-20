@@ -82,9 +82,17 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+      # 🔴 **로컬과 같은 판을 쓴다** (2026-08-20 실측 · F670 트랙에서 드러났다).
+      #    20 이던 것을 22 로 올린다 — 개발 기계(클라우드 컨테이너 v22.22 · 유호님 노트북)가 22 인데
+      #    CI 만 20 이라, **로컬 fail 0 인 판이 CI 에서 깨지는** 자리가 실재했다. 같은 저장소를
+      #    전체 이력까지 맞춰 놓고 재현하니 갈린 것은 판 하나였다: node22 = fail 0 · **node20 = fail 2**
+      #    (`인쇄면의 이모지를 잡는다` · `게이트 — 이모지 폴백은 통과, 모르는 글자는 잡는다` —
+      #     유니코드 속성 정규식이 ICU 판을 타는 자리다).
+      #    ⚠ 틀릴 때의 모습: 개발 기계가 24 로 올라가면 이 줄이 **다시 낡는다** — 그때 갈리는 것은
+      #      또 조용하다(로컬 초록 · CI 적색). 판을 올릴 땐 여기부터 맞춘다.
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
       - name: node --check all .js files
         run: |
           set -e
@@ -95,5 +103,25 @@ jobs:
           done
       - name: validate appsscript.json
         run: node -e "JSON.parse(require('fs').readFileSync('appsscript.json','utf8')); console.log('appsscript.json OK')"
+      # 🔴 **실패를 로그 «끝»에 다시 적는다** (2026-08-20 실측 · F670 트랙).
+      #    왜 있나 — TAP 은 `not ok` 를 그 검사가 도는 «순간» 찍는데, 스위트가 4,700건이라 그 줄이
+      #    로그 한복판에 묻힌다. 원격에서 로그를 읽는 통로(MCP `get_job_logs`)는 **끝에서 N줄**만
+      #    주므로, 앞쪽에서 깨진 검사는 **이름조차 못 읽는다** — 실측: fail 21 인 run 에서 `not ok`
+      #    를 5,000줄 받아도 0건이었다. 그래서 「무엇이 깨졌나」를 물으려면 매번 로컬 재현이 필요했다.
+      #    ⚠ 이 줄이 검증을 바꾸지는 않는다 — 판정은 그대로 `node --test` 의 종료코드다(`pipefail`).
+      #      여기서 하는 일은 **이미 난 실패를 한 번 더 적는 것**뿐이라, 새는 방향이 「통과」가 아니다.
       - name: run SYNK safety tests
-        run: node --test tests/*.test.js
+        run: |
+          set -o pipefail
+          # ⚠ 변수명은 ASCII 로만 둔다 — bash 는 한글 식별자를 «구문 오류»로 죽인다(2026-08-20 실측).
+          if node --test tests/*.test.js 2>&1 | tee /tmp/synk-test.txt; then
+            exit 0
+          fi
+          rc=$?
+          echo "::group::🔴 깨진 검사만 다시 — 분모와 함께 읽는다(F207)"
+          grep -E "^# (tests|pass|fail|skipped|todo) " /tmp/synk-test.txt || true
+          echo "--- not ok ---"
+          grep -E "^not ok " /tmp/synk-test.txt \
+            || echo "(not ok 0건 — 실패가 TAP 밖에서 났다: 스폰 실패·구문 오류 쪽을 본다)"
+          echo "::endgroup::"
+          exit "$rc"

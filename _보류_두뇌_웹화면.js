@@ -80,13 +80,13 @@ function 두뇌_웹페이지_(p) {
 }
 
 /* 화면 — 강사가 수업 사이에 폰으로 연다는 전제(모바일 우선·큰 입력창·한 손 조작).
- * 브랜드: 크림 배경 #FBF7EE · 잉크 #1A2340 · 액센트 Coral 3 #E8543F(라이트 배경 위 글자용 정본). */
+ * 브랜드: 크림 배경 #FAFAF9 · 잉크 #262626 · 액센트 Coral 3 #E8543F(라이트 배경 위 글자용 정본). */
 function 두뇌_HTML_(키, 이름) {
   const 인사 = 이름 ? (이름 + ' 선생님, 무엇이 궁금하세요?') : '무엇이 궁금하세요?';
   return '' +
 '<style>' +
 '*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}' +
-'body{margin:0;background:#FBF7EE;color:#1A2340;font-family:"SUIT","Inter Tight",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.6}' +
+'body{margin:0;background:#FAFAF9;color:#262626;font-family:"SUIT","Inter Tight",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.6}' +
 '.wrap{max-width:640px;margin:0 auto;padding:16px 14px 120px}' +
 '.hd{display:flex;align-items:baseline;gap:8px;padding:6px 2px 14px}' +
 '.hd b{font-size:17px;font-weight:800;letter-spacing:-.2px}' +
@@ -94,11 +94,11 @@ function 두뇌_HTML_(키, 이름) {
 '.msg{margin:10px 0;display:flex}' +
 '.msg.me{justify-content:flex-end}' +
 '.bub{max-width:86%;padding:11px 14px;border-radius:16px;white-space:pre-wrap;word-break:break-word}' +
-'.me .bub{background:#1A2340;color:#fff;border-bottom-right-radius:5px}' +
-'.bot .bub{background:#fff;border:1px solid #EFE7D7;border-bottom-left-radius:5px}' +
+'.me .bub{background:#262626;color:#fff;border-bottom-right-radius:5px}' +
+'.bot .bub{background:#fff;border:1px solid #EAEAEA;border-bottom-left-radius:5px}' +
 '.src{margin:4px 0 0 2px;font-size:11px;color:#8A8578;line-height:1.5}' +
 '.hand{margin:6px 0 0 2px;font-size:12px;color:#E8543F;font-weight:700}' +
-'.ask{position:fixed;left:0;right:0;bottom:0;background:#FBF7EE;border-top:1px solid #EFE7D7;padding:10px 12px calc(10px + env(safe-area-inset-bottom))}' +
+'.ask{position:fixed;left:0;right:0;bottom:0;background:#FAFAF9;border-top:1px solid #EAEAEA;padding:10px 12px calc(10px + env(safe-area-inset-bottom))}' +
 '.ask .in{max-width:640px;margin:0 auto;display:flex;gap:8px;align-items:flex-end}' +
 'textarea{flex:1;resize:none;border:1px solid #E3DACA;border-radius:14px;padding:11px 13px;font:inherit;background:#fff;max-height:120px;min-height:44px}' +
 'textarea:focus{outline:2px solid rgba(232,84,63,.35);border-color:#E8543F}' +
@@ -177,14 +177,14 @@ function menuBrainLink() {
   const m = 안내.match(/https?:\/\/[^\s]+/);
   const url = m ? m[0] : '';
   const html = HtmlService.createHtmlOutput(
-    '<div style="font-family:-apple-system,sans-serif;font-size:13px;color:#1A2340;line-height:1.7">' +
+    '<div style="font-family:-apple-system,sans-serif;font-size:13px;color:#262626;line-height:1.7">' +
     (url
       ? '<p style="margin:0 0 8px">강사에게 보낼 링크입니다. <b>복사</b>를 누르고 메신저로 보내세요.</p>' +
         '<input id="u" readonly value="' + 두뇌_esc_(url) + '" style="width:100%;padding:9px;border:1px solid #E3DACA;border-radius:8px;font-size:12px"/>' +
         '<button onclick="var i=document.getElementById(\'u\');i.select();document.execCommand(\'copy\');this.textContent=\'복사됨 ✓\'" ' +
         'style="margin-top:10px;border:0;background:#E8543F;color:#fff;font-weight:700;padding:9px 16px;border-radius:8px;cursor:pointer">복사</button>'
       : '<p style="margin:0 0 8px;color:#E8543F"><b>웹앱이 아직 배포되지 않았습니다.</b><br/>배포 후 이 메뉴를 다시 누르면 링크가 나옵니다.</p>') +
-    '<pre style="white-space:pre-wrap;background:#FBF7EE;border-radius:8px;padding:10px;margin-top:12px;font-size:11.5px;color:#5A5648">'
+    '<pre style="white-space:pre-wrap;background:#FAFAF9;border-radius:8px;padding:10px;margin-top:12px;font-size:11.5px;color:#5A5648">'
     + 두뇌_esc_(안내.replace(/https?:\/\/[^\s]+/, '(위 상자에 있습니다)')) + '</pre></div>'
   ).setWidth(520).setHeight(340);
   SpreadsheetApp.getUi().showModalDialog(html, '🧠 강사용 두뇌 링크');
