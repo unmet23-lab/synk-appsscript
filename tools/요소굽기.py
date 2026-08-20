@@ -2,7 +2,7 @@
 # 퍼프로브.py 의 승격판. 형태별로 몸을 짓고 짧은 퍼를 심어 Cycles 로 찍는다.
 #   python3 -c "import sys; sys.argv=['x','--','형태=오브','색=Coral','샘플=96','너비=900','출력=/tmp/판.png']; exec(open('tools/요소굽기.py').read())"
 # 형태: 오브 · 알약 · 아이콘 · 스티치 · 털실진행바(진행=0~1) · 단추토글 · 밑그림 · 페이지점 · 폼폼 · 시침핀 · 와펜 · 블랭킷 · 실패스피너 · 직조라벨
-#      · 패턴지판 · 다린천판 · 유리판 · 단춧구멍필드 · 스냅 · 조각보타일 · 매듭
+#      · 패턴지판 · 다린천판 · 유리판 · 단춧구멍필드 · 스냅 · 조각보타일 · 매듭 · 앱판(재질=패턴지|유리|다린천)
 # 규율: 염료는 토큰 킷 「이름」 참조(hex 하드코딩 금지) · 글자는 굽지 않는다(타이포 불가침 — HTML 층 몫)
 # 2027 킷 배선(08-20): 실땀=Stitch · 무채=양모 회색(Oat·Stone·Ash Wool·Deep Wool) — 퇴역 대기 12색 사용 0
 # ⚠룸굽기.js 합류 전의 독립 통로다 — 룸굽기는 blender.exe(윈도)를 부르고 이건 bpy 모듈(클라우드)로 돈다.
@@ -473,39 +473,66 @@ def 판뒤구():
     뒤구 = 베개몸((0.6, 0.4, 0.6), 위치=(1.42, 0.50, 0.34), 크리스=0.62)
     짧은퍼(뒤구, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]))
 
+def 판재질(종류):
+    """판 3종의 재질 — **여기 한 곳에서만 정의한다.** 스튜디오 대조판과 앱판이 각자 값을 지니면
+    대조가 거짓이 된다(같은 재질이라 믿고 나란히 놓는데 값이 갈려 있는 형태). 두께도 함께 낸다."""
+    if 종류 == '패턴지':
+        m = bpy.data.materials.new('패턴지')
+        m.use_nodes = True
+        p = m.node_tree.nodes['Principled BSDF']
+        p.inputs['Base Color'].default_value = 리니어(색['Paper'])
+        p.inputs['Roughness'].default_value = 0.80   # 0.92 는 투과가 다 씻겨 불투명으로 읽혔다(시안2027)
+        if 'Transmission Weight' in p.inputs:
+            p.inputs['Transmission Weight'].default_value = 0.7   # 반투명 — 서리 낀 종이(유리 광 없음)
+        직물결(m, 규모=260.0, 세기=0.03)   # 종이 이빨 — 매끈하면 아크릴로 읽힌다
+        return m, 0.028
+    if 종류 == '유리':
+        m = bpy.data.materials.new('서리유리')
+        m.use_nodes = True
+        p = m.node_tree.nodes['Principled BSDF']
+        p.inputs['Base Color'].default_value = 리니어(색['Paper'])
+        p.inputs['Roughness'].default_value = 0.3    # 서리 — 맑은 유리는 창문이지 판이 아니다
+        if 'Transmission Weight' in p.inputs:
+            p.inputs['Transmission Weight'].default_value = 1.0
+        p.inputs['IOR'].default_value = 1.45
+        return m, 0.028
+    if 종류 == '다린천':
+        m = bpy.data.materials.new('다린천')
+        m.use_nodes = True
+        p = m.node_tree.nodes['Principled BSDF']
+        p.inputs['Base Color'].default_value = 리니어(색['Oat'])
+        p.inputs['Roughness'].default_value = 0.96
+        if 'Specular IOR Level' in p.inputs:
+            p.inputs['Specular IOR Level'].default_value = 0.12   # 광을 거의 죽인다 — 무광 숙청과 정합
+        직물결(m, 규모=200.0, 세기=0.045)   # 눌린 부직포 알갱이 — 민무늬는 도자기로 읽혔다
+        return m, 0.055
+    raise SystemExit('모르는 판 재질: ' + 종류)
+
+
+def 시접선(y앞=-0.055):
+    """패턴지 고유 장식 — 재단지의 시접 표시. 유리엔 못 얹는 것이라 후보의 «값»에 포함된다."""
+    분필 = 분필재질('시접', 색['Ash Wool'])
+    for i in range(7):
+        땀하나(-0.94, y앞, -0.55 + i * 0.185, 0.08, 0.024, 분필, 회전y=90, 납작=True)
+
+
 def 패턴지판():
     """패턴지(재단지) 판 — 정보 판 후보 ①(⏳판정 보류 08-20 — 유리와 실물 대조 후 확정).
     반투명 «도면 종이» — 빛을 «통과»시키되 차갑지 않다. 분필 시접선 1곳 한정(745ffc93 제안 #3)."""
     판뒤구()
-    판 = 베개몸((1.35, 0.028, 0.95), 크리스=0.38, 레벨=4)
-    종이 = bpy.data.materials.new('패턴지')
-    종이.use_nodes = True
-    p = 종이.node_tree.nodes['Principled BSDF']
-    p.inputs['Base Color'].default_value = 리니어(색['Paper'])
-    p.inputs['Roughness'].default_value = 0.80   # 0.92 는 투과가 다 씻겨 불투명으로 읽혔다(시안2027)
-    if 'Transmission Weight' in p.inputs:
-        p.inputs['Transmission Weight'].default_value = 0.7   # 반투명 — 서리 낀 종이(유리 광 없음 · 드래프트 실측 0.55 는 불투명으로 읽혔다)
-    직물결(종이, 규모=260.0, 세기=0.03)   # 종이 이빨 — 매끈하면 아크릴로 읽힌다
-    판.data.materials.append(종이)
-    분필 = 분필재질('시접', 색['Ash Wool'])
-    for i in range(7):                        # 시접선 — 왼 가장자리 «안쪽» 한 줄 한정(제안 3차 #3)
-        땀하나(-0.94, -0.055, -0.55 + i * 0.185, 0.08, 0.024, 분필, 회전y=90, 납작=True)
+    재질, 두께 = 판재질('패턴지')
+    판 = 베개몸((1.35, 두께, 0.95), 크리스=0.38, 레벨=4)
+    판.data.materials.append(재질)
+    시접선()                                  # 시접선 — 왼 가장자리 «안쪽» 한 줄 한정(제안 3차 #3)
     return (0, -6.8, 0.0), 90
 
 def 다린천판():
     """다린 무광 천 판 — 카드·판 바닥(⏳판정 보류 08-20 — 실물 대조 후 확정): 결을 눕힌 무채 천.
     광택 0 · 결 최소 — 다림질 자국의 «눌린» 면이다. 뒤구가 «막혀» 보이는 것이 이 판의 답이다."""
     판뒤구()
-    판 = 베개몸((1.35, 0.055, 0.95), 크리스=0.34, 레벨=4)
-    천 = bpy.data.materials.new('다린천')
-    천.use_nodes = True
-    p = 천.node_tree.nodes['Principled BSDF']
-    p.inputs['Base Color'].default_value = 리니어(색['Oat'])
-    p.inputs['Roughness'].default_value = 0.96
-    if 'Specular IOR Level' in p.inputs:
-        p.inputs['Specular IOR Level'].default_value = 0.12   # 광을 거의 죽인다 — 무광 숙청과 정합
-    직물결(천, 규모=200.0, 세기=0.045)   # 눌린 부직포 알갱이 — 민무늬는 도자기로 읽혔다(시안2027)
-    판.data.materials.append(천)
+    재질, 두께 = 판재질('다린천')
+    판 = 베개몸((1.35, 두께, 0.95), 크리스=0.34, 레벨=4)
+    판.data.materials.append(재질)
     return (0, -6.8, 0.0), 90
 
 def 유리판():
@@ -513,16 +540,9 @@ def 유리판():
     전부 제대로 만들고 나중에 결정»). 패턴지판과 같은 구도·조명·크기, 재질만 유리.
     시접선은 재단지 고유 장식이라 없다 — 유리는 민면이 정체성이다."""
     판뒤구()
-    판 = 베개몸((1.35, 0.028, 0.95), 크리스=0.38, 레벨=4)
-    유리 = bpy.data.materials.new('서리유리')
-    유리.use_nodes = True
-    p = 유리.node_tree.nodes['Principled BSDF']
-    p.inputs['Base Color'].default_value = 리니어(색['Paper'])
-    p.inputs['Roughness'].default_value = 0.3    # 서리 — 글라스모피즘의 «흐린 비침»(맑은 유리는 창문이지 판이 아니다)
-    if 'Transmission Weight' in p.inputs:
-        p.inputs['Transmission Weight'].default_value = 1.0
-    p.inputs['IOR'].default_value = 1.45
-    판.data.materials.append(유리)
+    재질, 두께 = 판재질('유리')
+    판 = 베개몸((1.35, 두께, 0.95), 크리스=0.38, 레벨=4)
+    판.data.materials.append(재질)
     return (0, -6.8, 0.0), 90
 
 def 단춧구멍필드():
@@ -738,11 +758,41 @@ def 매듭():
         꼬임로프(꼬리, False, 0.045, 0.04, 1400)
     return (0, -12.4, 0.0), 90
 
+
+def 앱판():
+    """앱 화면 위의 판 — 재질을 «앱 상황에서» 잰다(유호 요청 08-20 「앱 화면 위에서도 재봐줘」).
+    스튜디오 대조판은 검은 무대에 판만 띄운 그림이라 「앱에서 어떻게 읽히는가」는 안 재본 값이었다.
+    여기서는 앱 다크(양모 밤)의 층을 실제로 쌓는다:
+      바탕(무대가 검다 = Ink Deep #080605 와 사실상 같다) ← 카드(Ink) ← 카드 위 콘텐츠 ← 판.
+    🔑 콘텐츠가 **판 가장자리를 가로지른다** — 한 장 안에서 「판 밖의 그것」과 「판 뒤의 그것」이
+      나란히 잡힌다. 눈이 두 장을 오갈 필요가 없다(대조의 공정성).
+    ⚠ 패턴지에는 시접선이 함께 선다 — 유리엔 못 얹는 장식이라 «후보의 값»에 포함해 재는 것이 맞다.
+    재질 인자: 재질=패턴지|유리|다린천."""
+    종류 = 인자.get('재질', '패턴지')
+    카드 = 베개몸((2.25, 0.1, 1.5), 위치=(0, 0.62, 0), 크리스=0.5)      # 앱 카드 = 낮의 잉크가 밤의 면이 된다
+    카드.data.materials.append(직물결(매끈재질('앱카드', 색['Ink'], 거칠기=0.95), 규모=180.0, 세기=0.04))
+    실재 = 매끈재질('글줄', 색['Stitch'], 거칠기=0.4)
+    for (z, 폭) in ((0.34, 2.05), (-0.02, 2.05), (-0.38, 1.55)):        # 글줄 — 판 좌우 밖까지 이어진다
+        n = max(2, int(2 * 폭 / 0.24))
+        for i in range(n):
+            땀하나(-폭 + 2 * 폭 * (i + 0.5) / n, 0.5, z, 0.075, 0.026, 실재, 회전y=0)
+    for cx in (0.62, 1.8):                                             # 같은 알약 둘 — 하나는 판 뒤, 하나는 판 밖
+        알약 = 베개몸((0.38, 0.14, 0.17), 위치=(cx, 0.4, -0.78), 크리스=0.58)
+        짧은퍼(알약, 염료이름, 살재질(염료이름, 색[염료이름]),
+              털재질(염료이름, 색[염료이름]), 길이=0.045, 개수=7000)
+    재질, 두께 = 판재질(종류)
+    판 = 베개몸((1.35, 두께, 0.95), 크리스=0.38, 레벨=4)
+    판.data.materials.append(재질)
+    if 종류 == '패턴지':
+        시접선(y앞=-두께 - 0.027)
+    return (0, -11.3, 0.0), 90
+
 형태들 = {'오브': 오브, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치, '털실진행바': 털실진행바,
         '단추토글': 단추토글, '밑그림': 밑그림, '페이지점': 페이지점, '폼폼': 폼폼, '시침핀': 시침핀,
         '와펜': 와펜, '블랭킷': 블랭킷, '실패스피너': 실패스피너, '직조라벨': 직조라벨,
         '패턴지판': 패턴지판, '다린천판': 다린천판, '유리판': 유리판,
-        '단춧구멍필드': 단춧구멍필드, '스냅': 스냅, '조각보타일': 조각보타일, '매듭': 매듭}
+        '단춧구멍필드': 단춧구멍필드, '스냅': 스냅, '조각보타일': 조각보타일, '매듭': 매듭,
+        '앱판': 앱판}
 if 형태 not in 형태들:
     raise SystemExit('모르는 형태: ' + 형태 + ' — 아는 것은 ' + '·'.join(형태들))
 카메라위치, 카메라피치 = 형태들[형태]()
