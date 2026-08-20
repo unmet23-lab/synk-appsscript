@@ -1737,7 +1737,7 @@ function todayBoard_(ss) {
         });
         const items = Object.keys(byCls).sort().slice(0, 4).map(cn6 => {
           const b6 = byCls[cn6]; const pct = b6.goal > 0 ? Math.min(Math.round(b6.dmg / b6.goal * 100), 100) : 0;
-          return '<div style="padding:5px 0;"><div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;"><span>' + cn6 + '</span><span>' + b6.dmg + '/' + b6.goal + (b6.stt.indexOf('격파') > -1 ? ' 🏆' : '') + '</span></div><div style="height:10px;border-radius:5px;background:rgba(255,255,255,.18);"><div style="width:' + pct + '%;height:10px;border-radius:5px;background:linear-gradient(90deg,#FFD447,#FF6B5C);"></div></div></div>';
+          return '<div style="padding:5px 0;"><div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;"><span>' + cn6 + '</span><span>' + b6.dmg + '/' + b6.goal + (b6.stt.indexOf('격파') > -1 ? ' 🏆' : '') + '</span></div><div style="height:10px;border-radius:5px;background:rgba(255,255,255,.18);"><div style="width:' + pct + '%;height:10px;border-radius:5px;background:linear-gradient(90deg,#FFD447,#F96859);"></div></div></div>';
         });
         if (items.length) raidB = '<div style="font-size:13px;opacity:.8;padding:12px 0 2px;">⚔️ 이번 주 보스 레이드</div>' + items.join('');
       }

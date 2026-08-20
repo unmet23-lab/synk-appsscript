@@ -582,9 +582,11 @@
  *      쿼터: 학생 1인당 수업일 1업데이트 — 재적 ~20명까지 Maker 500 안, 초과 시 Business 전환(가이드 §6-0).
  * 169. 2027 팔레트 시프트(44곳) — WGSN·Coloro 2027 올해의 컬러 Luminous Blue(테마 Interconnectedness =
  *      시냅스 세계관 정합)를 메인 축으로 썼다(구 인디고 체계 — 역사 기록). [v9.125] 브랜드 키트 「v10 Crew Dossier」로 전면 교체:
- *      신호=Coral #FF6B5C(면·다크 글자)/Coral 3 #E8543F(라이트 글자) · 다크=Navy #262626·Navy 2 #08090C ·
- *      워시=Paper #FAFAF9·Cream #E4E4E7 · 기능색(그린·앰버·레드·골드)과 액자 등급색은 불가침.
- *      게이지 #FF8877→#FF8877·카드 보더 라벤더→라이트블루 #FFCFC6·코랄 #FF7A6B→Energy Orange #FF6B5C·
+ *      신호=Coral(면·다크 글자)/Coral 3(라이트 글자) · 워시=Paper·Coral Wash ·
+ *      기능색(그린·앰버·레드·골드)과 액자 등급색은 불가침. 게이지·카드 보더·코랄 계열을 이때 킷으로 정렬했다.
+ *      🔴 [2026-08-20] 위 v9.125 hex 는 **구 값이다** — 2027 킷(조항 ⓙ)으로 이 파일 75곳이 교체됐다:
+ *      Coral #F96859 · Coral 3 #AE322A · Ink #2B2320 · Paper #FBF7F0 · Coral Soft #FBB7A3 ·
+ *      Coral 2 #FD9C87 · Coral Wash #FEF0E9. **값의 정본 = docs/디자인_토큰.json** (여기 적힌 것은 이력이다).
  *      진화 배너 발광 블루 그라디언트. 왕관 골드·학업 그린(Meadowland 축)·FRAME_CSS 단계 개성은 보존.
  *      [v9.136] 라임 #C8FF3D = 성장·획득 전용 시맨틱(정본 v1.6) — 다크 카드 소형 숫자 가능(Navy 2 위 15.0,
  *      키트 액센트 중 유일). 첫 적용 = 리그 포디움 P 숫자축. 라이트 배경 글자 금지(1.10 — 라이트 P는 Coral 3 유지).
@@ -1454,7 +1456,7 @@ function playStyleOf_(logs) {
   return PLAY_STYLES[rhythm + style] || PLAY_STYLES['꾸준성실'];
 }
 function playStyleHtml_(ps) {
-  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FAFAF9,#FFE9E4);border:2px solid #FFCFC6;border-radius:14px;padding:10px 12px;"><div style="font-size:11px;color:#6B7280;">🧭 이번 달 나의 플레이 스타일</div><div style="font-size:16px;font-weight:800;padding:2px 0;">' + ps[0] + ' ' + ps[1] + '</div><div style="font-size:12px;color:#1D1D1C;">' + ps[2] + '</div></div>';
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FBF7F0,#FEF0E9);border:2px solid #FBB7A3;border-radius:14px;padding:10px 12px;"><div style="font-size:11px;color:#6B7280;">🧭 이번 달 나의 플레이 스타일</div><div style="font-size:16px;font-weight:800;padding:2px 0;">' + ps[0] + ' ' + ps[1] + '</div><div style="font-size:12px;color:#1D1D1C;">' + ps[2] + '</div></div>';
 }
 
 // [v9.12] 🔮 오늘의 시냅스 운세 — 결정론(이름+날짜), 절반은 행동 유도를 운세로 포장
@@ -1582,15 +1584,15 @@ function buildMonsterFrame_(dispName, dispImg, apIdx, pct, rem) {
   const cap = '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px 2px;">' +
     '<div style="font-size:13px;font-weight:800;color:#1D1D1C;">' + ic + ' ' + dispName +
     ' <span style="font-weight:700;font-size:11px;color:' + f[3] + ';background:' + f[2] + ';border-radius:99px;padding:1px 8px;">' + f[0] + '</span></div>' +
-    (hasG ? '<div style="font-size:11.5px;font-weight:700;color:#E8543F;">' + (remN > 0 ? '진화까지 ' + remN + 'P' : 'MAX') + '</div>' : '') +
+    (hasG ? '<div style="font-size:11.5px;font-weight:700;color:#AE322A;">' + (remN > 0 ? '진화까지 ' + remN + 'P' : 'MAX') + '</div>' : '') +
     '</div>';
   const gauge = hasG
     ? '<div style="background:#EAEAEA;border-radius:99px;height:9px;margin:5px 4px 3px;overflow:hidden;">' +
-      '<div style="width:' + pctC + '%;height:100%;border-radius:99px;background:linear-gradient(90deg,#FF8877,#FF6B5C);"></div></div>' +
+      '<div style="width:' + pctC + '%;height:100%;border-radius:99px;background:linear-gradient(90deg,#FD9C87,#F96859);"></div></div>' +
       '<div style="font-size:11px;color:#6B7280;padding:0 4px 3px;">' +
       (remN > 0 ? '🧠 시냅스 게이지 ' + pctC + '% — 다음 진화까지 ' + remN + 'P!' : '👑 모든 진화 완료 — 전설의 영역!') + '</div>'
     : '';
-  return CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#FAFAF9,#E4E4E7 55%,#FFE9E4);padding:8px;border-radius:18px;border:2px solid ' + f[1] + ';box-shadow:0 6px 18px rgba(255,107,92,.14);">' +
+  return CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#FBF7F0,#E4E4E7 55%,#FEF0E9);padding:8px;border-radius:18px;border:2px solid ' + f[1] + ';box-shadow:0 6px 18px rgba(255,107,92,.14);">' +
     inner + cap + gauge + '</div>';
 }
 
@@ -1610,7 +1612,7 @@ function buildRaidCard_(clsName, goal, dmg, won, stuN) {
     const pctR = win ? 100 : Math.max(0, Math.min(100, Math.round(dmg / goal * 100)));
     body = '<div style="margin-top:10px;display:flex;justify-content:space-between;align-items:flex-end;">' +
       '<div><div style="' + HUD_LABEL + '">데미지</div>' +
-      '<div style="margin-top:2px;"><span style="font-size:24px;font-weight:800;color:#1B1B1A;line-height:1.2;">' + dmg + '</span><span style="font-size:13px;font-weight:700;color:#98A2B3;"> / ' + goal + '</span></div></div>' +
+      '<div style="margin-top:2px;"><span style="font-size:24px;font-weight:800;color:#2B2320;line-height:1.2;">' + dmg + '</span><span style="font-size:13px;font-weight:700;color:#98A2B3;"> / ' + goal + '</span></div></div>' +
       '<div style="text-align:right;"><div style="' + HUD_LABEL + '">' + (win ? '결과' : '남은 HP') + '</div>' +
       '<div style="margin-top:2px;font-size:24px;font-weight:800;color:' + (win ? '#12B76A' : '#F79009') + ';line-height:1.2;">' + (win ? '격파!' : left) + '</div></div></div>' +
       '<div style="margin-top:12px;">' + hudGauge_(pctR, win) + '</div>' +
@@ -1624,7 +1626,8 @@ function buildRaidCard_(clsName, goal, dmg, won, stuN) {
  * 뼈대 같은 느낌"(→v9.79 스킨). '뼈대' 원인 = 2px 유색 보더 나열·이모지 과다·요소별 제각각 색.
  * 처방(실렌더 A/B 판정 M2 다크 히어로 채택 — ban-hud-minimal-skin 워크플로): 보더 전면 폐지 →
  * 흰 카드+이중 소프트 섀도 / 타이포 3단(11px 그레이 라벨 → 20~24px 잉크 빅넘버 → 13px 본문) /
- * 색 3계 절제(코랄 #FF6B5C[라이트 글자는 Coral 3 #E8543F]·앰버 #F79009·그린 #12B76A — v9.125 브랜드 키트 승계) / 이모지 카드당 ≤1 / 상세 헤더만 다크 히어로(Navy). */
+ * 색 3계 절제(코랄[라이트 글자는 Coral 3]·앰버 #F79009·그린 #12B76A) / 이모지 카드당 ≤1 / 상세 헤더만 다크 히어로.
+ * ⚠코랄 값은 2027 킷 기준 Coral #F96859 · Coral 3 #AE322A — 정본 = docs/디자인_토큰.json. */
 const HUD_CARD = 'background:#fff;border-radius:20px;padding:16px 18px;box-shadow:0 1px 2px rgba(16,24,40,.05),0 10px 24px -6px rgba(16,24,40,.08);'; // 카드 공통(보더 0)
 const HUD_LABEL = 'font-size:11px;font-weight:700;letter-spacing:.02em;color:#98A2B3;'; // 섹션 라벨 공통
 function hudChip_(txt) { // [v9.79] 유색 칩 → 그레이 반명 라벨(낱장 카드 우측 식별용) — 이스케이프는 이 안에서
@@ -1632,7 +1635,7 @@ function hudChip_(txt) { // [v9.79] 유색 칩 → 그레이 반명 라벨(낱�
 }
 function hudGauge_(pct, doneAll) { // 6px 미니멀 게이지 — doneAll=달성(그린 풀필)
   const p = Math.max(0, Math.min(100, Math.round(Number(pct) || 0)));
-  return '<div style="background:#EAEAEA;border-radius:99px;height:6px;overflow:hidden;"><div style="width:' + p + '%;height:100%;border-radius:99px;background:' + (doneAll ? '#12B76A' : '#FF6B5C') + ';"></div></div>';
+  return '<div style="background:#EAEAEA;border-radius:99px;height:6px;overflow:hidden;"><div style="width:' + p + '%;height:100%;border-radius:99px;background:' + (doneAll ? '#12B76A' : '#F96859') + ';"></div></div>';
 }
 // 미션 행 재료 → [유형 라벨(도트+텍스트), 본문HTML][]. 브리핑 카드와 HUD 헤더(미션 n건)가 공유 — 카운트·본문 불일치 불가.
 // ⚠ mats.errs 계약: calcAll errByCls에서 이미 escHtml_ 완료된 HTML 조각만 통과(원문 문자열 금지).
@@ -1641,14 +1644,14 @@ function hudGauge_(pct, doneAll) { // 6px 미니멀 게이지 — doneAll=달성
 function hudBriefRows_(mats) {
   mats = mats || {};
   const dot = (color, label) => '<span style="display:inline-block;width:8px;height:8px;border-radius:99px;background:' + color + ';vertical-align:middle;margin:-1px 6px 0 0;"></span><span style="' + HUD_LABEL + 'vertical-align:middle;">' + label + '</span>';
-  const nm = s => '<b style="font-weight:700;color:#1B1B1A;">' + s + '</b>';
+  const nm = s => '<b style="font-weight:700;color:#2B2320;">' + s + '</b>';
   const esc = arr => (arr || []).map(n => escHtml_(n)).join(', ');
   const cap = (arr, k) => (arr || []).length > k ? esc(arr.slice(0, k)) + ' 외 ' + (arr.length - k) + '명' : esc(arr);
   const rows = [];
   if ((mats.bday || []).length) rows.push([dot('#F79009', '생일'), nm(esc(mats.bday)) + ' — 수업 시작 때 축하 한 번! 🎂']);
   if ((mats.preAbs || []).length) rows.push([dot('#CBD2DC', '결석 예정'), nm(cap(mats.preAbs, 5)) + ' — 학부모 사전신고']); // [v9.86·A] 메일에만 있던 사전신고를 HUD로
   if ((mats.absent || []).length) rows.push([dot('#CBD2DC', '어제 결석'), nm(cap(mats.absent, 5)) + ' — 오면 한마디 챙겨주세요']);
-  (mats.evo || []).forEach(e => rows.push([dot('#FF6B5C', '진화 임박'), nm(escHtml_(e.n)) + ' 오늘 왕관(10P)이면 <b style="font-weight:700;color:#E8543F;">진화</b>! (남은 ' + (Number(e.need) || 0) + 'P)']));
+  (mats.evo || []).forEach(e => rows.push([dot('#F96859', '진화 임박'), nm(escHtml_(e.n)) + ' 오늘 왕관(10P)이면 <b style="font-weight:700;color:#AE322A;">진화</b>! (남은 ' + (Number(e.need) || 0) + 'P)']));
   if ((mats.blind || []).length) rows.push([dot('#F79009', '케어 사각'), nm(cap(mats.blind, 6)) + ' — 2주째 포인트 0, 오늘 작게라도 하나']);
   if ((mats.errs || []).length) rows.push([dot('#CBD2DC', '연습 포인트'), mats.errs.join(' · ')]);
   return rows;
@@ -1658,7 +1661,7 @@ function buildBriefHud_(clsName, mats) {
   const rows = hudBriefRows_(mats);
   const chip = clsName ? hudChip_(clsName) + '<span style="display:inline-block;width:10px;"></span>' : '';
   const badge = rows.length
-    ? '<span><span style="font-size:22px;font-weight:800;color:#E8543F;line-height:1;">' + rows.length + '</span><span style="font-size:12px;font-weight:700;color:#98A2B3;">건</span></span>'
+    ? '<span><span style="font-size:22px;font-weight:800;color:#AE322A;line-height:1;">' + rows.length + '</span><span style="font-size:12px;font-weight:700;color:#98A2B3;">건</span></span>'
     : '<span style="font-size:13px;font-weight:800;color:#12B76A;">클리어</span>';
   const head = '<div style="display:flex;justify-content:space-between;align-items:center;">' +
     '<span style="' + HUD_LABEL + '">오늘의 미션</span><span>' + chip + badge + '</span></div>';
@@ -1673,7 +1676,7 @@ function buildBriefHud_(clsName, mats) {
     body = '<div style="margin-top:12px;background:#F8F9FB;border-radius:14px;padding:18px 14px;text-align:center;"><div style="font-size:13px;font-weight:700;line-height:1.7;color:#667085;">특이사항 없음 — 평화로운 교실 ✨</div><div style="font-size:12px;line-height:1.7;color:#98A2B3;">아래 루틴 4가지만 챙기면 완벽한 하루</div></div>';
   }
   const ai = mats && mats.ai
-    ? '<div style="margin-top:14px;background:#F8F9FB;border-radius:14px;padding:10px 12px;font-size:12px;line-height:1.7;color:#475467;"><b style="color:#1B1B1A;">AI 브리핑</b> — ' + escHtml_(mats.ai) + '</div>' : '';
+    ? '<div style="margin-top:14px;background:#F8F9FB;border-radius:14px;padding:10px 12px;font-size:12px;line-height:1.7;color:#475467;"><b style="color:#2B2320;">AI 브리핑</b> — ' + escHtml_(mats.ai) + '</div>' : '';
   const foot = (mats && (mats.errs || []).length) // [리뷰 P1-2] 강사가 실행 가능한 안내만
     ? '<div style="margin-top:14px;font-size:11px;line-height:1.6;color:#98A2B3;">연습 포인트는 수업 중 한 번만 짚어주면 충분해요 — 14일 지나면 자동으로 내려갑니다</div>' : '';
   return CARD_WEBFONT + '<div style="' + CARD_FONT + HUD_CARD + '">' + head + body + ai + foot + '</div>';
@@ -1687,11 +1690,11 @@ function buildRoutineHud_(clsName, ta, topicDone) {
   const chip = clsName ? hudChip_(clsName) + '<span style="display:inline-block;width:10px;"></span>' : '';
   const head = '<div style="display:flex;justify-content:space-between;align-items:center;">' +
     '<span style="' + HUD_LABEL + '">오늘 루틴</span><span>' + chip +
-    '<span style="font-size:22px;font-weight:800;color:' + (all ? '#12B76A' : '#1B1B1A') + ';line-height:1;">' + done + '</span><span style="font-size:12px;font-weight:700;color:#98A2B3;">/' + items.length + '</span></span></div>';
+    '<span style="font-size:22px;font-weight:800;color:' + (all ? '#12B76A' : '#2B2320') + ';line-height:1;">' + done + '</span><span style="font-size:12px;font-weight:700;color:#98A2B3;">/' + items.length + '</span></span></div>';
   const grid = '<div style="overflow:hidden;margin-top:10px;">' + items.map(it => {
     const cell = it[1]
       ? '<span style="color:#12B76A;font-weight:700;">✓</span> <span style="color:#98A2B3;">' + it[0] + '</span>'
-      : '<span style="color:#D0D5DD;">○</span> <span style="color:#1B1B1A;font-weight:700;">' + it[0] + '</span>';
+      : '<span style="color:#D0D5DD;">○</span> <span style="color:#2B2320;font-weight:700;">' + it[0] + '</span>';
     return '<div style="float:left;width:50%;font-size:13px;line-height:2.2;">' + cell + '</div>';
   }).join('') + '<div style="clear:both;"></div></div>';
   const foot = all
@@ -1733,7 +1736,7 @@ function buildClassHudDetail_(clsName, mats, ta, topicDone, crown, raid, dateStr
   const dimW = 'rgba(255,255,255,.35)', midW = 'rgba(255,255,255,.45)';
   const boss = !goal ? ['<span style="font-size:14px;font-weight:700;color:rgba(255,255,255,.5);">휴식주</span>']
     : (raid.won || dmg >= goal) ? ['<span style="font-size:14px;font-weight:800;color:#6CE9A6;">격파 🏆</span>']
-      : ['<span style="font-size:15px;font-weight:800;color:' + ((left > 0 && stuN > 0 && left <= stuN * 10) ? '#FDB022' : '#FFCFC6') + ';">HP ' + left + '</span>'];
+      : ['<span style="font-size:15px;font-weight:800;color:' + ((left > 0 && stuN > 0 && left <= stuN * 10) ? '#FDB022' : '#FBB7A3') + ';">HP ' + left + '</span>'];
   const cellH = (label, valHtml) =>
     '<div style="float:left;width:33.33%;text-align:center;">' +
     '<div style="font-size:10px;font-weight:700;letter-spacing:.05em;color:' + midW + ';">' + label + '</div>' +
@@ -1748,7 +1751,7 @@ function buildClassHudDetail_(clsName, mats, ta, topicDone, crown, raid, dateStr
     '<div style="position:absolute;top:-70px;right:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,107,92,.38),rgba(255,107,92,0));"></div>' +
     '<div style="position:absolute;bottom:-90px;left:-60px;width:190px;height:190px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,107,92,.16),rgba(255,107,92,0));"></div>' +
     '<div style="position:relative;"><div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
-    '<div><div style="font-size:10px;font-weight:800;letter-spacing:.14em;color:#FFCFC6;">SYNK CLASS HUD</div>' +
+    '<div><div style="font-size:10px;font-weight:800;letter-spacing:.14em;color:#FBB7A3;">SYNK CLASS HUD</div>' +
     '<div style="font-size:20px;font-weight:800;color:#FFFFFF;line-height:1.4;margin-top:2px;">' + escHtml_(clsName) + '</div></div>' +
     // [v9.81] 총원 필 — 유호 07-31 "반에 들어가면 총원이 한눈에". 반명과 같은 시선 높이의 우측 앵커.
     '<div style="text-align:right;flex-shrink:0;padding-top:2px;">' +
@@ -1775,11 +1778,11 @@ function buildGroupHud_(clsName, b) {
     '<span style="' + HUD_LABEL + '">조 편성</span><span>' + chip +
     (String(b.confirmed) === '임시' ? '<span style="font-size:10px;font-weight:800;color:#B54708;background:#FFFAEB;border-radius:99px;padding:2px 8px;margin-right:8px;">임시 조</span>' : '') +
     '<span style="font-size:12px;font-weight:700;color:#98A2B3;">' + (Number(b.week) || 0) + '주차 · </span>' +
-    '<span style="font-size:18px;font-weight:800;color:#1B1B1A;line-height:1;">' + b.lessonNo + '</span><span style="font-size:12px;font-weight:700;color:#98A2B3;">차시</span></span></div>';
+    '<span style="font-size:18px;font-weight:800;color:#2B2320;line-height:1;">' + b.lessonNo + '</span><span style="font-size:12px;font-weight:700;color:#98A2B3;">차시</span></span></div>';
   const rows = b.groups.map((arr, g) => {
     const mem = arr.map(m => {
       const pres = m.role === '발표';
-      return '<span style="white-space:nowrap;' + (pres ? 'color:#B54708;font-weight:800;' : 'color:#1B1B1A;font-weight:700;') + '">' +
+      return '<span style="white-space:nowrap;' + (pres ? 'color:#B54708;font-weight:800;' : 'color:#2B2320;font-weight:700;') + '">' +
         (m.icon ? m.icon + ' ' : '') + escHtml_(m.name) + '<span style="font-weight:600;color:#98A2B3;">(' + escHtml_(m.role || '') + ')</span></span>';
     }).join('<span style="color:#D0D5DD;"> · </span>');
     // [v9.99] 3라운드 짝 — 교실에서 폰으로 보는 화면이라 여기서는 이름이 실제로 필요하다(메일과 동일 원천)
@@ -1795,8 +1798,8 @@ function buildGroupHud_(clsName, b) {
     }
     const focused = Number(b.focus) === g + 1; // [v9.99] 오늘 정밀 청취 조
     return '<div style="margin-top:10px;display:flex;gap:10px;align-items:baseline;' +
-      (focused ? 'background:#FAFAF9;border-radius:10px;padding:6px 8px;margin-left:-8px;margin-right:-8px;' : '') + '">' +
-      '<span style="flex-shrink:0;width:34px;font-size:12px;font-weight:800;color:#E8543F;">' + (g + 1) + '조' + (focused ? '🎧' : '') + '</span>' +
+      (focused ? 'background:#FBF7F0;border-radius:10px;padding:6px 8px;margin-left:-8px;margin-right:-8px;' : '') + '">' +
+      '<span style="flex-shrink:0;width:34px;font-size:12px;font-weight:800;color:#AE322A;">' + (g + 1) + '조' + (focused ? '🎧' : '') + '</span>' +
       '<div style="font-size:12.5px;line-height:1.9;">' + mem +
       (rd.length ? '<div style="font-size:10.5px;color:#98A2B3;line-height:1.7;font-weight:600;">' + rd.join('<span style="color:#D0D5DD;"> · </span>') + '</div>' : '') +
       '</div></div>';
@@ -1907,9 +1910,9 @@ function buildRankBoardHtml_(myId, rows, meta) {
     const pct = top1 > 0 ? Math.max(6, Math.round(x.pts / top1 * 100)) : 0;
     return '<div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:10px;' + (isMe ? 'background:#FFFAEB;' : '') + '">' +
       '<div style="width:24px;height:24px;border-radius:50%;flex-shrink:0;text-align:center;line-height:24px;font-size:11.5px;font-weight:800;' + (isMe ? 'background:#FDB022;color:#fff;' : 'background:#F2F4F7;color:#475569;') + '">' + x.rank + '</div>' +
-      '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:#1B1B1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml_(x.name) + (isMe ? meChip : '') + '</div>' +
-      '<div style="margin-top:3px;height:4px;border-radius:99px;background:#FAFAF9;overflow:hidden;"><div style="width:' + pct + '%;height:100%;border-radius:99px;background:linear-gradient(90deg,#FF8877,#FF6B5C);"></div></div></div>' +
-      '<div style="flex-shrink:0;font-size:12.5px;font-weight:800;color:' + (dim ? '#98A2B3' : '#E8543F') + ';">' + x.pts + 'P</div></div>';
+      '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:#2B2320;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml_(x.name) + (isMe ? meChip : '') + '</div>' +
+      '<div style="margin-top:3px;height:4px;border-radius:99px;background:#FBF7F0;overflow:hidden;"><div style="width:' + pct + '%;height:100%;border-radius:99px;background:linear-gradient(90deg,#FD9C87,#F96859);"></div></div></div>' +
+      '<div style="flex-shrink:0;font-size:12.5px;font-weight:800;color:' + (dim ? '#98A2B3' : '#AE322A') + ';">' + x.pts + 'P</div></div>';
   };
   let listRows = rows.slice(3, 10).map(x => row(x)).join('');
   if (mine && mineIdx >= 10) listRows += '<div style="text-align:center;font-size:12px;font-weight:800;color:#D0D5DD;padding:1px 0;">⋯</div>' + row(mine);
@@ -2054,7 +2057,7 @@ function buildDexHtml_(stages, t, curIdx) {
     const im = String(s.img || '');
     if (reached) {
       const br = cur ? ANIM_BREATH : ''; // 현재 파트너만 숨쉬기 — 전부 움직이면 조잡, 하나만 살아있으면 시선이 간다
-      cells += '<div style="width:23%;margin:1%;background:linear-gradient(135deg,#FAFAF9,#E4E4E7);border:2px solid ' + (cur ? '#FF6B5C' : '#FFCFC6') + ';border-radius:12px;text-align:center;padding:7px 0 5px;float:left;' + (cur ? 'box-shadow:0 0 0 3px rgba(255,107,92,.16);' : '') + '">' +
+      cells += '<div style="width:23%;margin:1%;background:linear-gradient(135deg,#FBF7F0,#E4E4E7);border:2px solid ' + (cur ? '#F96859' : '#FBB7A3') + ';border-radius:12px;text-align:center;padding:7px 0 5px;float:left;' + (cur ? 'box-shadow:0 0 0 3px rgba(255,107,92,.16);' : '') + '">' +
         (im.indexOf('http') === 0
           ? '<img class="skBr" src="' + im + '" style="display:block;margin:0 auto;width:40px;height:40px;border-radius:9px;background:#fff;' + br + '"/>' // [v9.48] 도감 셀도 중앙 고정
           : '<div class="skBr" style="font-size:26px;line-height:40px;' + br + '">' + (FRAME_ICON[Math.min(i, 6)] || '🐣') + '</div>') +
@@ -2066,7 +2069,7 @@ function buildDexHtml_(stages, t, curIdx) {
     }
   });
   return CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #D1D2D4;border-radius:16px;padding:11px 12px;">' +
-    '<div style="font-size:13.5px;font-weight:800;padding-bottom:5px;">🗂️ 몬스터 도감 <span style="color:#E8543F;">' + met + '/' + stages.length + ' 만남</span></div>' +
+    '<div style="font-size:13.5px;font-weight:800;padding-bottom:5px;">🗂️ 몬스터 도감 <span style="color:#AE322A;">' + met + '/' + stages.length + ' 만남</span></div>' +
     '<div style="overflow:hidden;">' + cells + '</div>' +
     '<div style="clear:both;font-size:10.5px;color:#9CA3AF;padding-top:5px;">포인트를 모으면 다음 친구가 모습을 드러내요 ✨</div></div>';
 }
@@ -2079,7 +2082,7 @@ function buildAttCalHtml_(attSet, now, tz, clsType) {
   const todayD = now.getDate();
   const WD = ['일', '월', '화', '수', '목', '금', '토'];
   let head = '', cells = '';
-  WD.forEach((w, i) => { head += '<div style="width:13.6%;margin:0 .3%;float:left;text-align:center;font-size:9.5px;color:' + (i === 0 ? '#E8543F' : '#9CA3AF') + ';font-weight:700;">' + w + '</div>'; });
+  WD.forEach((w, i) => { head += '<div style="width:13.6%;margin:0 .3%;float:left;text-align:center;font-size:9.5px;color:' + (i === 0 ? '#AE322A' : '#9CA3AF') + ';font-weight:700;">' + w + '</div>'; });
   for (let b = 0; b < first.getDay(); b++) cells += '<div style="width:13.6%;margin:1px .3%;float:left;height:26px;"></div>';
   let attN = 0;
   for (let d = 1; d <= daysN; d++) {
@@ -2091,7 +2094,7 @@ function buildAttCalHtml_(attSet, now, tz, clsType) {
     if (came) attN++;
     const isToday = d === todayD, isFuture = d > todayD;
     let cell;
-    if (came) cell = '<div style="background:linear-gradient(135deg,#FF6B5C,#FF8877);color:#fff;border-radius:8px;height:26px;line-height:26px;font-size:11px;font-weight:800;' + (isToday ? 'box-shadow:0 0 0 2px rgba(255,107,92,.3);' : '') + '">✓</div>';
+    if (came) cell = '<div style="background:linear-gradient(135deg,#F96859,#FD9C87);color:#fff;border-radius:8px;height:26px;line-height:26px;font-size:11px;font-weight:800;' + (isToday ? 'box-shadow:0 0 0 2px rgba(255,107,92,.3);' : '') + '">✓</div>';
     else if (isFuture) cell = '<div style="background:#F9FAFB;border-radius:8px;height:26px;line-height:26px;font-size:10px;color:#D1D5DB;">' + d + '</div>';
     else if (isClassDay) cell = '<div style="background:#F3F4F6;border:1px dashed #E5E7EB;border-radius:8px;height:24px;line-height:24px;font-size:10px;color:#9CA3AF;' + (isToday ? 'box-shadow:0 0 0 2px rgba(255,107,92,.3);' : '') + '">' + d + '</div>';
     else cell = '<div style="height:26px;line-height:26px;font-size:9px;color:#E5E7EB;text-align:center;">·</div>';
@@ -2100,7 +2103,7 @@ function buildAttCalHtml_(attSet, now, tz, clsType) {
   return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #D1D2D4;border-radius:16px;padding:12px 11px;">' +
     '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 2px 7px;">' +
     '<span style="font-size:13.5px;font-weight:800;">🗓️ ' + (m + 1) + '월 출석 달력</span>' +
-    '<span style="font-size:12px;font-weight:800;color:#E8543F;">' + attN + '일 출석 <span style="color:#9CA3AF;font-weight:400;font-size:10px;">· Ирц</span></span></div>' +
+    '<span style="font-size:12px;font-weight:800;color:#AE322A;">' + attN + '일 출석 <span style="color:#9CA3AF;font-weight:400;font-size:10px;">· Ирц</span></span></div>' +
     '<div style="overflow:hidden;">' + head + '</div><div style="overflow:hidden;clear:both;">' + cells + '</div>' +
     '<div style="clear:both;font-size:10px;color:#9CA3AF;padding-top:6px;">✓ 등원한 날 — 도장이 쌓일수록 성장 파트너가 자라요</div></div>'; // [v9.74] 학부모 미러(CT98) 공용 캡션 — "몬스터"가 자녀 지칭으로 오독될 여지 제거(유호 07-28)
 }
@@ -2120,21 +2123,21 @@ function myJourneyHtml_(o) {
       if (n > idxJ) return; // 미도달은 아래 🔒로
       const cur = n === idxJ;
       const sz = cur ? 44 : 34, rd = cur ? 11 : 9;
-      const bd = cur ? '2.5px solid #FF6B5C' : '2px solid #FF8877';
+      const bd = cur ? '2.5px solid #F96859' : '2px solid #FD9C87';
       const ring = cur ? 'box-shadow:0 0 0 3px rgba(255,107,92,.18);' : '';
       const brJ = cur ? ANIM_BREATH : ''; // [v9.43] 여정 스트립의 현재 파트너도 숨쉰다
       cells.push(im.indexOf('http') === 0
         ? '<img class="skBr" src="' + im + '" style="width:' + sz + 'px;height:' + sz + 'px;border-radius:' + rd + 'px;background:#fff;border:' + bd + ';' + ring + brJ + '"/>'
         : '<div class="skBr" style="width:' + sz + 'px;height:' + sz + 'px;border-radius:' + rd + 'px;background:#fff;border:' + bd + ';' + ring + brJ + 'text-align:center;line-height:' + sz + 'px;font-size:' + (cur ? 20 : 15) + 'px;">' + (FRAME_ICON[Math.min(i, 6)] || '🐣') + '</div>');
     });
-    cells.push('<div style="flex:1;height:3px;background:repeating-linear-gradient(90deg,#FFCFC6 0 6px,transparent 6px 11px);"></div>');
+    cells.push('<div style="flex:1;height:3px;background:repeating-linear-gradient(90deg,#FBB7A3 0 6px,transparent 6px 11px);"></div>');
     for (let k = 0; k < Math.min(stagesJ.length - idxJ, 2); k++)
-      cells.push('<div style="width:34px;height:34px;border-radius:9px;background:#EAEAEA;border:2px dashed #FFCFC6;text-align:center;line-height:34px;font-size:15px;">🔒</div>');
+      cells.push('<div style="width:34px;height:34px;border-radius:9px;background:#EAEAEA;border:2px dashed #FBB7A3;text-align:center;line-height:34px;font-size:15px;">🔒</div>');
     stripJ = '<div style="display:flex;gap:4px;align-items:center;padding:9px 0 10px;">' + cells.join('') + '</div>';
   } else {
     const journey = stagesJ.map((s, i) => {
       const cur = (i + 1) === idxJ, past = (i + 1) < idxJ;
-      return '<span style="color:' + (cur ? '#E8543F;font-weight:800' : (past ? '#9CA3AF' : '#D1D5DB')) + ';">' + s.name + '</span>';
+      return '<span style="color:' + (cur ? '#AE322A;font-weight:800' : (past ? '#9CA3AF' : '#D1D5DB')) + ';">' + s.name + '</span>';
     }).join(' <span style="color:#D1D5DB;">›</span> ');
     stripJ = '<div style="font-size:12px;padding:6px 0 9px;">🐣 ' + journey + '</div>';
   }
@@ -2154,7 +2157,7 @@ function myJourneyHtml_(o) {
   // [v9.29] 🌟 나의 목표 — 학생이 직접 쓴 드림 한 줄(CB 80)을 카드 최상단에 노출. 비어있으면 작성 유도. 이스케이프 필수(사용자 입력).
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const goalTxt = o.dream || o.cGoal; // [v9.84] 학생 자기선언 우선 — 비면 입학 상담 목표(첫날부터 빈 카드 대신 자기 목표)
-  const dreamLine = '<div style="background:#FAFAF9;border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;color:#1D1D1C;margin-bottom:9px;">' +
+  const dreamLine = '<div style="background:#FBF7F0;border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;color:#1D1D1C;margin-bottom:9px;">' +
     (goalTxt ? '🌟 나의 목표: ' + esc(goalTxt) : '🌟 나의 목표를 적어보세요') + '</div>' +
     // [v9.84·도전안] 페이스라인 — 목표 기한 역산 "남은 주" 한 줄(판정·보장 없음, syncProfiles가 매일 재계산·기한 경과 시 자동 소멸)
     (o.pace ? '<div style="background:#FFF7ED;border-radius:10px;padding:6px 11px;font-size:11.5px;font-weight:700;color:#C2410C;margin-bottom:9px;">' + esc(o.pace) + '</div>' : '');
@@ -2165,12 +2168,12 @@ function myJourneyHtml_(o) {
     const segs = [];
     for (let si = 1; si <= 8; si++) {
       const done8 = inRun && si < sw, cur8 = inRun && si === sw;
-      segs.push('<div style="flex:1;height:9px;border-radius:5px;background:' + (cur8 ? 'linear-gradient(90deg,#FF6B5C,#FF8877);box-shadow:0 0 0 2px rgba(255,107,92,.22)' : (done8 || sw > 8) ? '#FF6B5C' : '#E5E7EB') + ';"></div>');
+      segs.push('<div style="flex:1;height:9px;border-radius:5px;background:' + (cur8 ? 'linear-gradient(90deg,#F96859,#FD9C87);box-shadow:0 0 0 2px rgba(255,107,92,.22)' : (done8 || sw > 8) ? '#F96859' : '#E5E7EB') + ';"></div>');
     }
     const rightLb = inRun ? sw + '/8주' : (sw > 8 ? '완주 🎉' : '개막 전');
     const phase = sw < 1 ? '곧 개막! 준비됐지?' : sw > 8 ? '시즌 종료 — 다음 시즌 준비 중' : sw === 8 ? '🏁 승급 도전 주간 — 도달했을 때 올라간다!' : '도달 게이지를 채우는 중 — 8주차에 승급 도전!';
     seasonB = '<div style="background:#fff;border-radius:12px;padding:8px 11px;margin-bottom:9px;">' +
-      '<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;"><span>🎫 시즌' + esc(String(o.seasonT.n)) + ' 「' + esc(String(o.seasonT.name)) + '」</span><span style="color:#E8543F;">' + rightLb + '</span></div>' +
+      '<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;"><span>🎫 시즌' + esc(String(o.seasonT.n)) + ' 「' + esc(String(o.seasonT.name)) + '」</span><span style="color:#AE322A;">' + rightLb + '</span></div>' +
       '<div style="display:flex;gap:3px;padding:7px 0 4px;">' + segs.join('') + '</div>' +
       '<div style="font-size:11px;color:#6B7280;">' + phase + '</div></div>';
     if (sw >= 8) {
@@ -2180,7 +2183,7 @@ function myJourneyHtml_(o) {
   const refLine = (o.refN || 0) > 0 ? '🤝 내 추천으로 온 친구 <b>' + o.refN + '명</b><br/>' : ''; // [v9.56] 추천 루프(개원 후 leads 데이터부터 자동 표시)
   // [v9.50·A5] 주간 퀘스트 결산 — 주간 발행물 신설 대신 여정 카드에 통합(채널 피로 방지)
   const wkB = o.wk && (o.wk.p > 0 || o.wk.a > 0)
-    ? '<div style="background:#FAFAF9;border-radius:11px;padding:8px 11px;font-size:12px;margin-top:10px;line-height:1.9;">🗡️ <b>이번 주 퀘스트 결산</b><br/>출석 <b>' + o.wk.a + '일</b> · 경험치 <b>+' + o.wk.p + 'P</b>' + (o.wk.c ? ' · 왕관 <b>' + o.wk.c + '회</b>' : '') + '</div>'
+    ? '<div style="background:#FBF7F0;border-radius:11px;padding:8px 11px;font-size:12px;margin-top:10px;line-height:1.9;">🗡️ <b>이번 주 퀘스트 결산</b><br/>출석 <b>' + o.wk.a + '일</b> · 경험치 <b>+' + o.wk.p + 'P</b>' + (o.wk.c ? ' · 왕관 <b>' + o.wk.c + '회</b>' : '') + '</div>'
     : '';
   // [v9.50·A7] 성장 전/후 — 첨삭 데이터 재활용(한 달 전 내 문장 vs 지금), 재등록 시점의 가장 반박 불가능한 증거
   const gwB = o.growth
@@ -2188,11 +2191,11 @@ function myJourneyHtml_(o) {
     : '';
   // [v9.35] 소프트 글로우 축 — 헤더 행(제목+우측 코랄 '진화까지 nP'), 토큰(그라디언트·라운드 18/12·섀도)
   const remJ = mon.rem || 0;
-  return CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#FAFAF9,#E4E4E7 55%,#FFE9E4);border:2px solid #FFCFC6;border-radius:18px;padding:13px 15px;box-shadow:0 6px 18px rgba(255,107,92,.14);">' +
+  return CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#FBF7F0,#E4E4E7 55%,#FEF0E9);border:2px solid #FBB7A3;border-radius:18px;padding:13px 15px;box-shadow:0 6px 18px rgba(255,107,92,.14);">' +
     dreamLine + seasonB +
     '<div style="display:flex;justify-content:space-between;align-items:baseline;">' +
       '<div style="font-size:15px;font-weight:800;color:#1D1D1C;">📖 ' + o.nm + '의 여정</div>' +
-      '<div style="font-size:11px;font-weight:700;color:#E8543F;">' + (remJ > 0 ? '진화까지 ' + remJ + 'P' : ((o.grem || 0) > 0 ? '📖 문법 ' + o.grem + '개만!' : '👑 최종 진화')) + '</div>' + // [v9.36] 게이트 대기(rem=0·grem>0)는 최종 진화가 아니다
+      '<div style="font-size:11px;font-weight:700;color:#AE322A;">' + (remJ > 0 ? '진화까지 ' + remJ + 'P' : ((o.grem || 0) > 0 ? '📖 문법 ' + o.grem + '개만!' : '👑 최종 진화')) + '</div>' + // [v9.36] 게이트 대기(rem=0·grem>0)는 최종 진화가 아니다
     '</div>' +
     stripJ +
     '<div style="background:#fff;border-radius:12px;padding:9px 11px;font-size:12.5px;line-height:2;">' +
@@ -2856,7 +2859,7 @@ function calcAll() {
             });
           }
         }
-        speakOut.push([CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FFE9E4;border:2px solid #FFCFC6;border-radius:14px;padding:9px 12px;font-size:13px;">💬 ' + line + (mnSpk9 ? '<br/><span style="font-size:11px;opacity:.78;">' + mnSpk9 + '</span>' : '') + '</div>']); // [v9.70] 초급 병기
+        speakOut.push([CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FEF0E9;border:2px solid #FBB7A3;border-radius:14px;padding:9px 12px;font-size:13px;">💬 ' + line + (mnSpk9 ? '<br/><span style="font-size:11px;opacity:.78;">' + mnSpk9 + '</span>' : '') + '</div>']); // [v9.70] 초급 병기
         // [v9.147] 기능 압축 — 카드 3종 off(계산 스킵·열 보존). 빈 문자열을 한 번 쓰면 writeIfChanged가
         //   다음 회차부터 동기화 0이라 Glide update도 안 먹는다. 되살리려면 CARD_OFF 항목을 false로.
         styleOut.push([CARD_OFF.플레이스타일 ? '' : playStyleHtml_(playStyleOf_(styleLogs[id] || []))]);
@@ -2912,7 +2915,7 @@ function calcAll() {
           bannerOut.push([crownToday2
             ? CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FDE68A,#F5A623);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;">🎉 ' + (r[1] || id) + ' өнөөдөр титэм авлаа! Гэртээ магтаж өгөөрэй 💛<br/><span style="font-weight:400;font-size:11px;">오늘 왕관을 받았어요! 집에서 칭찬해 주세요</span></div>'
             : (evoRecent
-              ? CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FF8877,#FF6B5C);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;color:#fff;">⚡ ' + (r[1] || id) + '-ийн хамтрагч шинэ шатанд хувьслаа! Түүхэн мөч 📸<br/><span style="font-weight:400;font-size:11px;">성장 파트너가 진화했어요!' + (gEvoForm ? ' \'' + gEvoForm + '\' 문법까지 익히고 진화!' : ' 역사적인 순간') + '</span></div>' // [v9.74] 학부모 배너 — 몬스터→성장 파트너(хамтрагч)
+              ? CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FD9C87,#F96859);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;color:#fff;">⚡ ' + (r[1] || id) + '-ийн хамтрагч шинэ шатанд хувьслаа! Түүхэн мөч 📸<br/><span style="font-weight:400;font-size:11px;">성장 파트너가 진화했어요!' + (gEvoForm ? ' \'' + gEvoForm + '\' 문법까지 익히고 진화!' : ' 역사적인 순간') + '</span></div>' // [v9.74] 학부모 배너 — 몬스터→성장 파트너(хамтрагч)
               : '')]);
           // [v9.20] 오늘의알림 — 푸시/인앱배너용, "하루짜리 결정적 순간"만 (왕관·진화·생일).
           //  [v9.20 최적화] 진화임박(rem) 분기 제거: 매일 값 변동→시트 churn + 푸시 시 매일 알림 피로.
@@ -2959,7 +2962,7 @@ function calcAll() {
           if (!eta) return '<div style="font-size:11.5px;color:#98A2B3;margin-top:3px;">📅 며칠 더 모으면 도착 예정일이 계산돼요</div>';
           const faster = etaOf(need, PT.숙제); // 숙제 1회 = 하루 PT.숙제P — 조건부 약속이 아니라 산수 그대로
           return '<div style="font-size:11.5px;color:#98A2B3;margin-top:3px;">📅 지금 페이스(하루 ' +
-            (Math.round(perDay * 10) / 10) + 'P)면 <b style="color:#E8543F;">' + eta + '</b> 도착' +
+            (Math.round(perDay * 10) / 10) + 'P)면 <b style="color:#AE322A;">' + eta + '</b> 도착' +
             (faster && faster !== eta ? ' · ⚡ 하루 ' + PT.숙제 + 'P만 더 모으면 <b>' + faster + '</b>' : '') + '</div>';
         };
         // [v9.83·리뷰 B2] 과잠을 찜해 둔 학생 흡수 — AR(찜)은 학생 소유 열이라 스크립트가 지우지 않고,
@@ -2991,7 +2994,7 @@ function calcAll() {
               const tenureStr = Utilities.formatDate(tenureDate, tz, 'yyyy년 M월 d일');
               goalOut.push([head + (needP > 0
                 ? paceLine(needP) + '<div style="font-size:11.5px;color:#98A2B3;">🗓️ 재원 ' + JACKET_TENURE_MONTHS + '개월은 ' + tenureStr + '</div>'
-                : '<div style="font-size:11.5px;color:#98A2B3;margin-top:3px;">포인트 조건은 이미 충족 — 남은 건 시간이에요. <b style="color:#E8543F;">' + tenureStr + '</b>에 자격 도달</div>')]);
+                : '<div style="font-size:11.5px;color:#98A2B3;margin-top:3px;">포인트 조건은 이미 충족 — 남은 건 시간이에요. <b style="color:#AE322A;">' + tenureStr + '</b>에 자격 도달</div>')]);
             }
           }
         }
@@ -3383,15 +3386,15 @@ function calcAll() {
       if (bz) {
         const bImg = (ctData.find(r => r[1] === 'boss' && String(r[2]) === bz.name) || [])[4] || '';
         const bHero = String(bImg).indexOf('http') === 0
-          ? '<img class="skBo" src="' + bImg + '" style="display:block;margin:0 auto;width:110px;height:110px;border-radius:16px;background:#373737;border:2.5px solid #FF6B5C;' + ANIM_BOSS + '"/>' // [v9.48] 중앙 고정(Glide img=block 교정)
+          ? '<img class="skBo" src="' + bImg + '" style="display:block;margin:0 auto;width:110px;height:110px;border-radius:16px;background:#373737;border:2.5px solid #F96859;' + ANIM_BOSS + '"/>' // [v9.48] 중앙 고정(Glide img=block 교정)
           : '<span class="skBo" style="display:inline-block;font-size:64px;' + ANIM_BOSS + '">👾</span>';
         setState(st, '이달의보스HTML', CARD_ANIM +
-          CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(165deg,#08090C,#373737 60%,#08090C);border:2px solid #FF6B5C;border-radius:18px;padding:14px;text-align:center;color:#E4E4E7;">' +
+          CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(165deg,#08090C,#373737 60%,#08090C);border:2px solid #F96859;border-radius:18px;padding:14px;text-align:center;color:#E4E4E7;">' +
           '<div style="font-size:10px;letter-spacing:.25em;color:#D1D2D4;">' + Utilities.formatDate(now, tz, 'M') + '월의 보스</div>' +
           '<div style="padding:8px 0 9px;">' + bHero + '</div>' +
           '<div style="font-size:17px;font-weight:900;color:#fff;">' + escHtml_(bz.name) + '</div>' + // [v9.44] 시트 커스텀 대사 이스케이프(카드 파손 차단)
           (bz.entry ? '<div style="font-size:12px;font-style:italic;color:#D1D2D4;padding-top:7px;line-height:1.8;">“' + escHtml_(bz.entry) + '”</div>' : '') +
-          '<div style="font-size:11px;color:#FF8877;padding-top:8px;">이번 주 레이드에서 우리 반의 힘을 보여주자 ⚔️</div></div>');
+          '<div style="font-size:11px;color:#FD9C87;padding-top:8px;">이번 주 레이드에서 우리 반의 힘을 보여주자 ⚔️</div></div>');
       }
     }
     if (quizPool.length) props.setProperty('기준일', todayStr);
@@ -3510,21 +3513,21 @@ const SHARED4_COL_HEADERS = ['대화폼URL']; // DZ130(학생 — 한국어로 �
 // [v9.87] mnTask·mnQ = 문항 본문 몽골어 병기(초급 학생만·MN_CONTENTS_G) — 유형·검사포인트만 병기되고 정작 "무엇을 하라"는 한국어뿐이던 것 해소
 function hwCardHtml_(ty, mnTy, task, mnTask, tip, mnTip) {
   if (!task) return '';
-  const chip = ty ? '<span style="font-size:10.5px;font-weight:800;color:#E8543F;background:#FFE9E4;border-radius:99px;padding:3px 9px;white-space:nowrap;">' + escHtml_(ty) + (mnTy ? ' · ' + escHtml_(mnTy) : '') + '</span>' : '';
+  const chip = ty ? '<span style="font-size:10.5px;font-weight:800;color:#AE322A;background:#FEF0E9;border-radius:99px;padding:3px 9px;white-space:nowrap;">' + escHtml_(ty) + (mnTy ? ' · ' + escHtml_(mnTy) : '') + '</span>' : '';
   return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #D1D2D4;border-radius:16px;padding:13px 12px;">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding-bottom:8px;">' +
     '<span style="font-size:14px;font-weight:800;">📚 오늘의 숙제</span>' + chip + '</div>' +
     '<div style="font-size:14.5px;font-weight:700;line-height:1.75;">' + escHtml_(task) + '</div>' +
     (mnTask ? '<div style="font-size:12px;color:#94A3B8;line-height:1.7;padding-top:3px;">' + escHtml_(mnTask) + '</div>' : '') +
-    (tip ? '<div style="margin-top:9px;background:#F8FAFC;border-left:3px solid #FF6B5C;border-radius:0 10px 10px 0;padding:7px 10px;font-size:11.5px;color:#475569;line-height:1.7;">👀 <b>선생님이 이걸 봐요</b> — ' + escHtml_(tip) +
+    (tip ? '<div style="margin-top:9px;background:#F8FAFC;border-left:3px solid #F96859;border-radius:0 10px 10px 0;padding:7px 10px;font-size:11.5px;color:#475569;line-height:1.7;">👀 <b>선생님이 이걸 봐요</b> — ' + escHtml_(tip) +
       (mnTip ? '<br/><span style="color:#94A3B8;">' + escHtml_(mnTip) + '</span>' : '') + '</div>' : '') +
     '<div style="margin-top:9px;font-size:11px;color:#9CA3AF;">다 했으면 ✏️ <b>숙제</b> 버튼으로 제출 — +' + PT.숙제 + 'P · AI 선생님 피드백 🤖</div></div>'; // [v9.87] 버튼 라벨 정합(✏️ 숙제 — 07-31 한 줄 정렬로 라벨 압축)
 }
 function quizCardHtml_(q, mnQ, personal) {
   if (!q) return '';
-  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#FAFAF9,#FFFFFF 55%);border:2px solid #D1D2D4;border-radius:16px;padding:13px 12px;">' +
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#FBF7F0,#FFFFFF 55%);border:2px solid #D1D2D4;border-radius:16px;padding:13px 12px;">' +
     '<div style="font-size:14px;font-weight:800;padding-bottom:7px;">🧠 오늘의 퀴즈' +
-    (personal ? ' <span style="font-size:10.5px;font-weight:800;color:#E8543F;">나를 위한 맞춤 문제 🎯</span>' : '') + '</div>' +
+    (personal ? ' <span style="font-size:10.5px;font-weight:800;color:#AE322A;">나를 위한 맞춤 문제 🎯</span>' : '') + '</div>' +
     '<div style="font-size:14px;font-weight:700;line-height:1.75;">' + escHtml_(q) + '</div>' +
     (mnQ ? '<div style="font-size:12px;color:#94A3B8;line-height:1.7;padding-top:3px;">' + escHtml_(mnQ) + '</div>' : '') +
     // [v9.138] 동선 교정 — 「답하기」를 정답 공개보다 **앞**에 안내한다. 정답을 먼저 열면 그 뒤의 답은
@@ -3545,7 +3548,7 @@ function prepCardHtml_(hwTy, hw, tip, quiz, quizAns, subs) {
     : '';
   return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #D1D2D4;border-radius:16px;padding:13px 12px;">' +
     '<div style="font-size:14px;font-weight:800;">🎬 오늘 수업 준비 — 1분 브리핑</div>' +
-    '<div style="' + sec + '"><b>📚 오늘 검사할 숙제</b>' + (hwTy ? ' <span style="color:#E8543F;font-weight:800;">' + escHtml_(hwTy) + '</span>' : '') + '<br/>' +
+    '<div style="' + sec + '"><b>📚 오늘 검사할 숙제</b>' + (hwTy ? ' <span style="color:#AE322A;font-weight:800;">' + escHtml_(hwTy) + '</span>' : '') + '<br/>' +
     (hw ? escHtml_(hw) : '게시된 숙제 없음') +
     (tip ? '<br/><span style="color:#64748B;">👀 검사 포인트 — ' + escHtml_(tip) + '</span>' : '') + '</div>' +
     subsSec +
@@ -3566,8 +3569,8 @@ function ioCardHtml_(dateLabel, io, weekCells, weekN, cheer) {
   const st = offI ? 2 : (onI ? 1 : 0); // 0 출근 전 · 1 근무 중 · 2 퇴근 완료
   const pill = st === 1 ? '<span style="font-size:11px;font-weight:700;color:#12B76A;background:#ECFDF3;border-radius:99px;padding:3px 10px;">근무 중</span>'
     : st === 2 ? '<span style="font-size:11px;font-weight:700;color:#475467;background:#F2F4F7;border-radius:99px;padding:3px 10px;">퇴근 완료</span>'
-      : '<span style="font-size:11px;font-weight:700;color:#E8543F;background:#FFE9E4;border-radius:99px;padding:3px 10px;">출근 전</span>';
-  const big = (v, on) => '<div style="margin-top:2px;font-size:26px;font-weight:800;line-height:1.2;color:' + (on ? '#1B1B1A' : '#D0D5DD') + ';">' + (v || '—') + '</div>';
+      : '<span style="font-size:11px;font-weight:700;color:#AE322A;background:#FEF0E9;border-radius:99px;padding:3px 10px;">출근 전</span>';
+  const big = (v, on) => '<div style="margin-top:2px;font-size:26px;font-weight:800;line-height:1.2;color:' + (on ? '#2B2320' : '#D0D5DD') + ';">' + (v || '—') + '</div>';
   const head = '<div style="display:flex;justify-content:space-between;align-items:center;">' +
     '<span style="' + HUD_LABEL + '">오늘의 근무</span><span>' +
     '<span style="font-size:12px;font-weight:600;color:#98A2B3;">' + escHtml_(dateLabel || '') + '</span>' +
@@ -3591,15 +3594,15 @@ function ioCardHtml_(dateLabel, io, weekCells, weekN, cheer) {
       const done = c.s === 'done' || c.s === 'todayDone';
       const today = c.s === 'today' || c.s === 'todayDone';
       const circle = done
-        ? '<div style="width:24px;height:24px;margin:3px auto 0;border-radius:99px;background:#FF6B5C;color:#fff;text-align:center;line-height:24px;font-size:11px;font-weight:800;' + (today ? 'box-shadow:0 0 0 3px rgba(255,107,92,.18);' : '') + '">✓</div>'
+        ? '<div style="width:24px;height:24px;margin:3px auto 0;border-radius:99px;background:#F96859;color:#fff;text-align:center;line-height:24px;font-size:11px;font-weight:800;' + (today ? 'box-shadow:0 0 0 3px rgba(255,107,92,.18);' : '') + '">✓</div>'
         : today
-          ? '<div style="width:24px;height:24px;margin:3px auto 0;border-radius:99px;background:#fff;border:1.5px dashed #FFCFC6;box-shadow:0 0 0 3px rgba(255,107,92,.10);"></div>'
+          ? '<div style="width:24px;height:24px;margin:3px auto 0;border-radius:99px;background:#fff;border:1.5px dashed #FBB7A3;box-shadow:0 0 0 3px rgba(255,107,92,.10);"></div>'
           : '<div style="width:24px;height:24px;margin:3px auto 0;border-radius:99px;background:#F2F4F7;"></div>';
       return '<div style="flex:1;text-align:center;"><div style="font-size:9.5px;font-weight:700;color:#98A2B3;">' + c.d + '</div>' + circle + '</div>';
     }).join('');
     strip = '<div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;">' +
       '<span style="' + HUD_LABEL + '">이번 주</span>' +
-      '<span><span style="font-size:18px;font-weight:800;color:#1B1B1A;line-height:1;">' + (Number(weekN) || 0) + '</span><span style="font-size:11px;font-weight:700;color:#98A2B3;">일 근무</span></span></div>' +
+      '<span><span style="font-size:18px;font-weight:800;color:#2B2320;line-height:1;">' + (Number(weekN) || 0) + '</span><span style="font-size:11px;font-weight:700;color:#98A2B3;">일 근무</span></span></div>' +
       '<div style="margin-top:6px;display:flex;gap:4px;">' + cells + '</div>';
   }
   const cheerRow = cheer ? '<div style="margin-top:12px;font-size:11.5px;line-height:1.7;color:#98A2B3;">' + escHtml_(cheer) + '</div>' : '';
@@ -3618,7 +3621,7 @@ function absenceCardHtml_(kidName, items, nextDays) {
       const pill = it.state === 'today'
         ? '<span style="font-size:10px;font-weight:800;color:#12B76A;background:#ECFDF3;border-radius:99px;padding:2px 8px;white-space:nowrap;">✅ 오늘 — 선생님이 알아요</span>'
         : it.state === 'future'
-          ? '<span style="font-size:10px;font-weight:800;color:#E8543F;background:#FFE9E4;border-radius:99px;padding:2px 8px;white-space:nowrap;">✅ 접수됨 · Бүртгэгдсэн</span>'
+          ? '<span style="font-size:10px;font-weight:800;color:#AE322A;background:#FEF0E9;border-radius:99px;padding:2px 8px;white-space:nowrap;">✅ 접수됨 · Бүртгэгдсэн</span>'
           : '<span style="font-size:10px;font-weight:700;color:#9CA3AF;background:#F3F4F6;border-radius:99px;padding:2px 8px;white-space:nowrap;">지난 신고</span>';
       const rs = it.reason ? '<div style="font-size:10.5px;color:#9CA3AF;padding-top:2px;">' + escHtml_(String(it.reason).slice(0, 40)) + '</div>' : '';
       return '<div style="' + (it.state === 'past' ? 'opacity:.55;' : '') + 'display:flex;justify-content:space-between;align-items:center;gap:8px;background:#F8FAFC;border-radius:12px;padding:9px 11px;margin-top:6px;">' +
@@ -3629,7 +3632,7 @@ function absenceCardHtml_(kidName, items, nextDays) {
   }
   const nextRow = nextDays.length
     ? '<div style="margin-top:10px;font-size:11px;color:#6B7280;">🗓️ 다음 수업일 · Дараагийн хичээл — <b>' + nextDays.map(d => escHtml_(d)).join(' · ') + '</b></div>' : '';
-  const steps = '<div style="margin-top:10px;background:#F8FAFC;border-left:3px solid #FF6B5C;border-radius:0 10px 10px 0;padding:8px 11px;font-size:10.5px;color:#475569;line-height:1.9;">' +
+  const steps = '<div style="margin-top:10px;background:#F8FAFC;border-left:3px solid #F96859;border-radius:0 10px 10px 0;padding:8px 11px;font-size:10.5px;color:#475569;line-height:1.9;">' +
     '① 그날 「안 왔어요」 알림이 가지 않아요 <span style="color:#9CA3AF;">Тухайн өдөр сануулга илгээгдэхгүй</span><br/>' +
     '② 담당 선생님 수업 브리핑에 자동 전달 <span style="color:#9CA3AF;">Багшид автоматаар дамжина</span><br/>' +
     '③ 제출하면 10분 안에 여기 ✅ 표시 <span style="color:#9CA3AF;">10 минутын дотор энд харагдана</span></div>';
