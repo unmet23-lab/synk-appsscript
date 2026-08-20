@@ -25,32 +25,32 @@
 
 :root{
   /* Palette --------------------------------------------------------- */
-  --cream:#F6F1E8;
-  --cream-2:#EFE7D7;
-  --cream-3:#E7DDC7;
-  --paper:#FBF7EE;
+  --cream:#EDE7DC;
+  --cream-2:#F0E3C8;
+  --cream-3:#F0E3C8;
+  --paper:#FBF7F0;
 
-  --coral:#FF6B5C;
-  --coral-2:#FF8877;
-  --coral-3:#E8543F;
-  --coral-soft:#FFCFC6;
-  --coral-wash:#FFE9E4;
+  --coral:#F96859;
+  --coral-2:#FD9C87;
+  --coral-3:#AE322A;
+  --coral-soft:#FBB7A3;
+  --coral-wash:#FEF0E9;
 
-  --navy:#1A2340;
-  --navy-2:#0F1730;
-  --navy-3:#2A3358;
-  --navy-ink:#131A32;
+  --navy:#262626;
+  --navy-2:#08090C;
+  --navy-3:#373737;
+  --navy-ink:#1D1D1C;
 
   --lime:#C8FF3D;
   --lime-2:#B8E836;
 
-  --ink:#171820;
+  --ink:#2B2320;
   /* 2026-08-05 · 키트 밖 회색 174곳을 이 두 줄로 잡는다(호출부는 안 만진다).
-     구값 --muted:#7A7566 은 Cream 위 대비 4.09 로 본문 기준 4.5 에 **아깝게** 미달했고,
-     --muted-2:#3d3a30 은 대비는 통과하지만 키트 19색 밖이었다. 둘 다 조용히 새던 자리다.
+     구값 --muted:#8D857A 은 Cream 위 대비 4.09 로 본문 기준 4.5 에 **아깝게** 미달했고,
+     --muted-2:#575046 은 대비는 통과하지만 키트 19색 밖이었다. 둘 다 조용히 새던 자리다.
      대체값은 DESIGN.md §2 표 그대로다 — 보조 잉크 = Navy 3 · 본문 잉크 = Navy. */
-  --muted:#2A3358;    /* Navy 3 — 보조 라벨(9~11px 대문자). Cream 위 10.9 */
-  --muted-2:#1A2340;  /* Navy   — 본문(12.5~14px).        Cream 위 13.4 */
+  --muted:#373737;    /* Navy 3 — 보조 라벨(9~11px 대문자). Cream 위 10.9 */
+  --muted-2:#262626;  /* Navy   — 본문(12.5~14px).        Cream 위 13.4 */
 
   /* K-culture accent (Part 6 폭발용) — 팔레트 안에서 톤 유지 */
   --kc-hot:#FF3E88;
@@ -81,7 +81,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
-  background:var(--cream-3);  /* 구값 #DFD6C4 — 키트 밖. 지면 바깥 바탕은 Cream 3 가 정본값 */
+  background:var(--cream-3);  /* 구값 #F0E3C8 — 키트 밖. 지면 바깥 바탕은 Cream 3 가 정본값 */
   font-family:var(--sans);
   color:var(--ink);
   -webkit-font-smoothing:antialiased;
@@ -112,7 +112,7 @@ section.page{
 
 /* Reusable label / eyebrow / kicker ------------------------------------- */
 /* ⚠ 라이트 배경 위 코랄 **글자**는 크기 불문 금지다(DESIGN.md 철칙 4 ②).
-   10px 짜리 라벨은 Coral 3(#E8543F)로 낮춰도 3.23 이라 본문 기준 4.5 에 여전히 미달한다 —
+   10px 짜리 라벨은 Coral 3(#AE322A)로 낮춰도 3.23 이라 본문 기준 4.5 에 여전히 미달한다 —
    「코랄을 한 단계 어둡게」로 끝나지 않는 자리라 유호님이 Navy 3 으로 확정했다(2026-08-05).
    신호로서의 코랄은 사라지지 않는다 — **면**(버튼·칩·카드 배경)에 그대로 남는다. */
 .kicker{
@@ -351,12 +351,12 @@ section.page{
   }
   @media print{ #synkSubmitBar, #synkSubmitSpacer{display:none !important} }
 </style>
-</head><body><div id="__splash" style="position:fixed;inset:0;background:#F6F1E8;display:flex;align-items:center;justify-content:center;z-index:2147483647;transition:opacity .25s ease">
+</head><body><div id="__splash" style="position:fixed;inset:0;background:#EDE7DC;display:flex;align-items:center;justify-content:center;z-index:2147483647;transition:opacity .25s ease">
   <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
-    <rect width="1200" height="800" fill="#F6F1E8"></rect>
-    <rect x="120" y="180" width="960" height="500" rx="28" fill="#FF6B5C"></rect>
+    <rect width="1200" height="800" fill="#EDE7DC"></rect>
+    <rect x="120" y="180" width="960" height="500" rx="28" fill="#F96859"></rect>
     <circle cx="1020" cy="240" r="90" fill="#C8FF3D"></circle>
-    <text x="600" y="112" text-anchor="middle" font-family="'Inter Tight','SUIT Variable',SUIT,sans-serif" font-style="italic" font-size="44" fill="#1A2340" font-weight="700">SYNK LAB · Крю карт</text>
+    <text x="600" y="112" text-anchor="middle" font-family="'Inter Tight','SUIT Variable',SUIT,sans-serif" font-style="italic" font-size="44" fill="#262626" font-weight="700">SYNK LAB · Крю карт</text>
   </svg>
 </div><script>(function(){var s=document.getElementById("__splash");if(!s)return;function hide(){s.style.opacity="0";setTimeout(function(){if(s&&s.parentNode)s.parentNode.removeChild(s);},300);}if(document.readyState==="complete")hide();else window.addEventListener("load",hide);})();</script>
 <style>
@@ -509,7 +509,7 @@ section.page{
     position:absolute;right:14px;top:24px;
     width:36px;height:24px;border-radius:4px;
     background:
-      linear-gradient(135deg,#f6dc7a 0%, #d9ab48 55%, #b58527 100%);
+      linear-gradient(135deg,#FFEBB0 0%, #F5C445 55%, #7E5A10 100%);
     box-shadow:
       inset 0 0 0 1px rgba(255,255,255,.4),
       inset 0 -4px 6px -3px rgba(0,0,0,.22);
@@ -934,7 +934,7 @@ section.page{
   /* accent-color per track (drives the gradient + period + marker) */
   .kc-card.pop{--kc-accent:var(--kc-hot)}
   .kc-card.dance{--kc-accent:var(--kc-cool)}
-  /* 구값 #E9A611(골드)은 키트 19색 밖이었다 — KC Sun 은 애초에 「글자 금지」(DESIGN.md §2)라
+  /* 구값 #F5C445(골드)은 키트 19색 밖이었다 — KC Sun 은 애초에 「글자 금지」(DESIGN.md §2)라
      이 자리에 올 수 없었다. KC 4색 중 아직 트랙에 안 배정된 Pink 2 로 간다. */
   .kc-card.beauty{--kc-accent:var(--kc-hot-2)} /* darker sun so on-white is readable */
 
@@ -1083,7 +1083,7 @@ section.page{
   .imx .steps b:hover{background:rgba(255,107,92,.35)}
   .imx .steps b.on{background:var(--coral)}
   .imx .steps b.on:nth-child(1){background:var(--coral-soft)}
-  .imx .steps b.on:nth-child(2){background:#FFB0A2}
+  .imx .steps b.on:nth-child(2){background:#FBB7A3}
   .imx .steps b.on:nth-child(3){background:var(--coral-2)}
   .imx .steps b.on:nth-child(4){background:var(--coral)}
   .imx .steps b.on:nth-child(5){background:var(--coral-3)}
@@ -2779,7 +2779,7 @@ section.page{
       cv.width = r.width*dpr; cv.height = r.height*dpr;
       ctx.setTransform(dpr,0,0,dpr,0,0);
       ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth=1.8;
-      ctx.strokeStyle = '#1A2340';
+      ctx.strokeStyle = '#262626';
       if(saved && saved.length>200){
         const img = new Image(); img.onload=()=>ctx.drawImage(img,0,0,r.width,r.height); img.src=saved;
       }
@@ -3410,7 +3410,7 @@ section.page{
 
 
 <input type="text" id="synkHp" name="company_website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;height:1px;width:1px;opacity:0;background:transparent">
-<div id="synkSubmitBar" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 16px;background:#1A2340;color:#FBF7EE;font-family:var(--sans);box-shadow:0 -8px 24px rgba(15,23,48,.35)">
+<div id="synkSubmitBar" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 16px;background:#262626;color:#FBF7F0;font-family:var(--sans);box-shadow:0 -8px 24px rgba(15,23,48,.35)">
   <span id="synkSaveState" style="font-size:11px;opacity:.75;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
   <div style="display:flex;gap:10px;align-items:center;flex:0 0 auto">
     <span id="synkSerialOut" style="font-family:var(--mono);font-size:12px;color:#C8FF3D"></span>

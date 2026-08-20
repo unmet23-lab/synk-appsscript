@@ -29,7 +29,9 @@ test.after(() => { try { fs.rmSync(임시, { recursive: true, force: true }); } 
 
 function 픽스처(이름, body) {
   const p = path.join(임시, `${이름}.html`);
-  fs.writeFileSync(p, `<!doctype html><meta charset="utf-8"><body style="background:#F6F1E8">${body}</body>`, 'utf8');
+  /* 바탕은 «현재 킷»의 Paper 를 쓴다 — 옛 값(#F6F1E8)이 남으면 킷 개정 때 모든 픽스처가
+   * 「킷 밖 색」으로 한꺼번에 빨개진다(2026-08-19 GitHub-hosted 첫 실행이 정확히 그 사고였다). */
+  fs.writeFileSync(p, `<!doctype html><meta charset="utf-8"><body style="background:#FBF7F0">${body}</body>`, 'utf8');
   return p;
 }
 
@@ -110,62 +112,55 @@ test('키트 밖 회색·순백·순검정을 **글자와 면 양쪽에서** 잡
   assert.ok(hexes.includes('#FFFFFF'), '순백 **면**을 놓쳤다 — 철칙 ①은 글자만의 규칙이 아니다');
 });
 
-/* 조항 ⓔ(v1.8) — Slate·Slate 2 는 「킷에 있는 색」이라 ②키트밖색으로는 절대 안 걸린다.
- * 이 색의 유일한 오용은 **바닥을 바꿔 쓰는 것**이고, 그건 ①대비만이 잡는다.
- * 조항이 글로만 살면 다음 사람이 지운다 — 그래서 실제로 물리는지를 여기서 못박는다. */
-test('Slate(다크 전용)를 라이트 바닥에 쓰면 잡는다 — 조항 ⓔ의 유일한 오용 형태', { skip: 크롬없음 }, () => {
-  const p = 픽스처('slate-on-light', '<div style="background:#FBF7EE"><p style="color:#8A93AD;font-size:32px">v9.187</p></div>');
+/* ── 조항 ⓙ(v1.13 · 2027 킷) — 몸통색의 면/글자 문법 ─────────────────────────
+ * 새 실의 몸통(Lapis·Meadow·Pop)은 전부 킷 색이라 ②키트밖색으로는 절대 안 걸린다.
+ * 유일한 오용은 **글자 문법을 틀리는 것**이고, 그건 ①대비만이 잡는다.
+ * 조항이 글로만 살면 다음 사람이 지운다 — 그래서 실제로 물리는지를 여기서 못박는다.
+ * (구 조항 ⓔ Slate·ⓖ Emerald 회귀가 이 자리에 있었다 — 그 색들은 08-20 킷에서 역사가 됐다.) */
+test('청금석 면 위 Ink 글자를 소형에서 잡는다 — 조항 ⓙ 「Lapis 면 위 글자는 Paper」', { skip: 크롬없음 }, () => {
+  const p = 픽스처('lapis-ink', '<div style="background:#3D6BC9"><p style="color:#2B2320;font-size:12px">힌트 보기</p></div>');
   const r = 측정(p, CHROME);
-  assert.equal(r.키트밖색.length, 0, 'Slate 는 킷 색이다 — ②로 걸리면 안 된다(그러면 이 테스트는 딴 것을 재는 것이다)');
-  assert.equal(r.대비위반.length, 1, 'Slate on Paper(2.86)를 못 잡았다 — 32px 라 대형 기준 3.0 인데도 미달이다');
-  assert.equal(r.대비위반[0].fg, '#8A93AD');
-});
-
-test('Slate 2(라이트 전용)를 다크 바닥에 쓰면 소형에서 잡는다 — 대형은 3.07 이라 말로 막는 구간', { skip: 크롬없음 }, () => {
-  const p = 픽스처('slate2-on-dark', '<div style="background:#0F1730"><p style="color:#5F657D;font-size:12px">v9.187</p></div>');
-  const r = 측정(p, CHROME);
-  assert.equal(r.대비위반.length, 1, 'Slate 2 on Navy 2(3.07)를 소형에서 못 잡았다');
+  assert.equal(r.키트밖색.length, 0, 'Lapis·Ink 는 킷 색이다 — ②로 걸리면 이 테스트는 딴 것을 재는 것이다');
+  assert.equal(r.대비위반.length, 1, 'Lapis 면 위 Ink(3.04)를 소형에서 못 잡았다');
   assert.ok(r.대비위반[0].대비 < 4.5 && r.대비위반[0].대비 > 3,
-    `대비가 ${r.대비위반[0].대비} — 3.07 근처여야 한다. 4.5 아래·3.0 위라서 **대형이면 통과**하고, 그 틈은 정본 조항 ⓔ가 막는다`);
+    `대비가 ${r.대비위반[0].대비} — 3.04 근처여야 한다. 4.5 아래·3.0 위라 **대형이면 통과**하고, 그 틈은 조항 ⓙ가 말로 막는다`);
 });
 
-test('허용 바닥의 Slate·Slate 2 는 통과한다 (자기 처방을 막지 않는지 · F103)', { skip: 크롬없음 }, () => {
-  const p = 픽스처('slate-ok',
-    '<div style="background:#0F1730"><p style="color:#8A93AD;font-size:12px">다크 3층</p></div>'
-    + '<div style="background:#FBF7EE"><p style="color:#5F657D;font-size:12px">라이트 3층</p></div>');
+/* Meadow 몸통은 「대형이면 통과하는 틈」이 없다(2.30) — 여기만 초록이면 「면 전용」이 기계로 지켜진다. */
+test('메도우 몸통을 종이 위 글자로 쓰면 크기 불문 잡는다 — 조항 ⓙ 「Meadow 는 면 전용」', { skip: 크롬없음 }, () => {
+  const p = 픽스처('meadow-text',
+    '<div><p style="color:#7DB45A;font-size:12px">+120 P</p>'
+    + '<p style="color:#7DB45A;font-size:32px">LEVEL 3</p></div>');
+  const r = 측정(p, CHROME);
+  assert.equal(r.키트밖색.length, 0, 'Meadow 는 킷 색이다 — ②로 걸리면 이 테스트는 딴 것을 재는 것이다');
+  assert.equal(r.대비위반.length, 2, 'Paper 위 Meadow(2.30)는 소형(4.5)도 대형(3.0)도 미달이라 둘 다 걸려야 한다');
+  assert.ok(r.대비위반.every((v) => v.fg === '#7DB45A' && v.대비 < 3),
+    `대비가 ${r.대비위반.map((v) => v.대비)} — 2.30 근처여야 한다(3.0 을 넘으면 대형이 새어 나간다)`);
+});
+
+test('팝 몸통을 종이 위 «소형» 글자로 쓰면 잡는다 — 대형은 3.20 이라 조항 ⓙ가 말로 막는 구간', { skip: 크롬없음 }, () => {
+  const p = 픽스처('pop-small', '<div><p style="color:#E05C97;font-size:12px">이벤트 D-2</p></div>');
+  const r = 측정(p, CHROME);
+  assert.equal(r.대비위반.length, 1, 'Paper 위 Pop(3.20)을 소형에서 못 잡았다');
+  assert.ok(r.대비위반[0].대비 < 4.5 && r.대비위반[0].대비 > 3,
+    `대비가 ${r.대비위반[0].대비} — 3.20 근처여야 한다. 4.5 아래·3.0 위라 **큰 글자 전용**이고, 그 경계가 조항 ⓙ다`);
+});
+
+test('조항 ⓙ의 처방 문법은 전부 통과한다 (자기 처방을 막지 않는지 · F103)', { skip: 크롬없음 }, () => {
+  const p = 픽스처('j-ok',
+    '<div style="background:#3D6BC9"><p style="color:#FBF7F0;font-size:12px">청금석 면 + 종이 글자 4.74</p></div>'
+    + '<div style="background:#7DB45A"><p style="color:#2B2320;font-size:12px">메도우 면 + 잉크 글자 6.27</p></div>'
+    + '<div><p style="color:#3F6B2E;font-size:12px">종이 위 메도우 Deep 글자 5.86</p></div>'
+    + '<div style="background:#F5C445"><p style="color:#2B2320;font-size:12px">버터 면 + 잉크 글자 9.43</p></div>'
+    + '<div style="background:#F96859"><p style="color:#2B2320;font-size:12px">코랄 면 + 잉크 글자 5.24</p></div>'
+    + '<div><p style="color:#99295D;font-size:12px">종이 위 팝 Deep 글자 6.95</p></div>');
   const r = 측정(p, CHROME);
   assert.deepEqual(r.대비위반, [], '조항이 시키는 대로 썼는데 빨간불이면 사람은 가드를 끈다');
-  assert.deepEqual(r.키트밖색, [], 'Slate 2색이 킷 파생에 안 실렸다');
-});
-
-/* 조항 ⓖ(v1.10) — Emerald 도 킷 색이라 ②로는 안 걸린다. 유일한 오용은 **다크에 쓰는 것**이고
- * (Navy 2 위 2.98 — 대형 기준 3.0 조차 못 넘는다) 그건 ①대비만 잡는다. Slate 2 와 달리
- * 「대형이면 통과하는 틈」이 없어서, 여기만 초록이면 조항이 기계로 지켜진다. */
-test('Emerald(라이트 전용)를 다크 바닥에 쓰면 크기 불문 잡는다 — 조항 ⓖ의 유일한 오용 형태', { skip: 크롬없음 }, () => {
-  const p = 픽스처('emerald-on-dark',
-    '<div style="background:#0F1730"><p style="color:#13724A;font-size:12px">+120 P</p>'
-    + '<p style="color:#13724A;font-size:32px">LEVEL 3</p></div>');
-  const r = 측정(p, CHROME);
-  assert.equal(r.키트밖색.length, 0, 'Emerald 는 킷 색이다 — ②로 걸리면 이 테스트는 딴 것을 재는 것이다');
-  assert.equal(r.대비위반.length, 2, 'Navy 2 위 2.98 은 소형(4.5)도 대형(3.0)도 미달이라 둘 다 걸려야 한다');
-  assert.ok(r.대비위반.every((v) => v.fg === '#13724A' && v.대비 < 3),
-    `대비가 ${r.대비위반.map((v) => v.대비)} — 2.98 근처여야 한다(3.0 을 넘으면 대형이 새어 나간다)`);
-});
-
-test('허용 바닥의 Emerald 는 통과한다 — 라이트 4면 + 그 면 위 글자 (자기 처방 검사 · F103)', { skip: 크롬없음 }, () => {
-  const p = 픽스처('emerald-ok',
-    '<div style="background:#FBF7EE"><p style="color:#13724A;font-size:12px">Paper 5.56</p></div>'
-    + '<div style="background:#F6F1E8"><p style="color:#13724A;font-size:12px">Cream 5.28</p></div>'
-    + '<div style="background:#FFE9E4"><p style="color:#13724A;font-size:12px">Wash 5.10</p></div>'
-    + '<div style="background:#EFE7D7"><p style="color:#13724A;font-size:12px">Cream 2 4.83</p></div>'
-    + '<div style="background:#13724A"><p style="color:#F6F1E8;font-size:12px">면 위 글자는 Cream</p></div>');
-  const r = 측정(p, CHROME);
-  assert.deepEqual(r.대비위반, [], '조항이 시키는 대로 썼는데 빨간불이면 사람은 가드를 끈다');
-  assert.deepEqual(r.키트밖색, [], 'Emerald 가 킷 파생에 안 실렸다');
+  assert.deepEqual(r.키트밖색, [], '2027 실이 킷 파생에 안 실렸다');
 });
 
 test('텍스트가 없는 컨테이너의 면도 잡는다 (자식에게 글을 넘긴 패널이 숨던 자리)', { skip: 크롬없음 }, () => {
-  const p = 픽스처('panel', '<div style="background:#FFFFFF"><span style="color:#171820">글은 자식에</span></div>');
+  const p = 픽스처('panel', '<div style="background:#FFFFFF"><span style="color:#2B2320">글은 자식에</span></div>');
   const r = 측정(p, CHROME);
   assert.ok(r.키트밖색.some((v) => v.hex === '#FFFFFF' && v.자리 === '면'),
     '직접 텍스트가 없는 요소의 배경을 안 봤다 — 부분 집계가 완전 집계처럼 보이는 부류다');
@@ -181,8 +176,8 @@ test('::before 로만 칠한 면·글자도 잡는다 (요소 자신만 보던 �
       .dot::before{content:'';display:inline-block;width:12px;height:12px;background:#FF00FF}
       .txt::after{content:' 꼬리';color:#00FF00}
     </style>
-    <p class="dot" style="color:#171820">면을 의사요소로만</p>
-    <p class="txt" style="color:#171820">글자를 의사요소로만</p>`);
+    <p class="dot" style="color:#2B2320">면을 의사요소로만</p>
+    <p class="txt" style="color:#2B2320">글자를 의사요소로만</p>`);
   const r = 측정(p, CHROME);
   assert.ok(r.키트밖색.some((v) => v.hex === '#FF00FF' && /::before/.test(v.sel)),
     `::before 배경을 놓쳤다: ${JSON.stringify(r.키트밖색)}`);
@@ -193,7 +188,7 @@ test('::before 로만 칠한 면·글자도 잡는다 (요소 자신만 보던 �
 test('그려지지 않는 의사요소는 세지 않는다 (전 요소가 유령 2개씩 내던 오탐)', { skip: 크롬없음 }, () => {
   // content 가 없으면 ::before 는 렌더되지 않는다 — 그 background 는 화면에 없는 값이다.
   const p = 픽스처('pseudo-ghost',
-    `<style>.g::before{background:#FF00FF}</style><p class="g" style="color:#171820">안 그려진다</p>`);
+    `<style>.g::before{background:#FF00FF}</style><p class="g" style="color:#2B2320">안 그려진다</p>`);
   const r = 측정(p, CHROME);
   assert.equal(r.키트밖색.length, 0, `렌더되지 않는 의사요소를 위반으로 잡았다: ${JSON.stringify(r.키트밖색)}`);
 });
@@ -203,8 +198,8 @@ test('그려지지 않는 의사요소는 세지 않는다 (전 요소가 유령
 test('KC 색을 Part 6 밖에 쓰면 잡는다 (킷 안이어도 직책 위반)', { skip: 크롬없음 }, () => {
   const p = 픽스처('kc-out',
     `<style>.bar::before{content:'';display:inline-block;width:3px;height:12px;background:#4E7CFF}</style>
-     <p class="bar" style="color:#171820">표지 띠</p>
-     <p style="color:#FF3E88;background:#1A2340;font-size:32px">Part 6 밖 핫핑크 글자</p>`);
+     <p class="bar" style="color:#2B2320">표지 띠</p>
+     <p style="color:#FF3E88;background:#08090C;font-size:32px">Part 6 밖 핫핑크 글자</p>`);
   const r = 측정(p, CHROME);
   assert.ok(r.구역밖색.some((v) => v.hex === '#4E7CFF'), `::before 의 KC 색을 놓쳤다: ${JSON.stringify(r.구역밖색)}`);
   assert.ok(r.구역밖색.some((v) => v.hex === '#FF3E88'), `글자의 KC 색을 놓쳤다: ${JSON.stringify(r.구역밖색)}`);
@@ -214,7 +209,7 @@ test('KC 색을 Part 6 밖에 쓰면 잡는다 (킷 안이어도 직책 위반)'
 test('KC 구역 안의 KC 색은 통과한다 (자기 처방을 막지 않는지 · F103)', { skip: 크롬없음 }, () => {
   const p = 픽스처('kc-in',
     `<section class="kc-page"><div class="kc-card">
-       <p style="color:#FF3E88;background:#1A2340;font-size:32px">Part 6 안</p>
+       <p style="color:#FF3E88;background:#08090C;font-size:32px">Part 6 안</p>
      </div></section>`);
   const r = 측정(p, CHROME);
   assert.deepEqual(r.구역밖색, [], `제 구역 안의 KC 색을 위반으로 잡았다 — 따를 수 없는 처방이 된다: ${JSON.stringify(r.구역밖색)}`);
@@ -229,8 +224,8 @@ test('표지 띠(.cov-deliverables) 안의 KC 색은 통과한다 (자기 처방
     `<style>.del::before{content:'';display:inline-block;width:3px;height:12px;background:#FF3E88}
             .del2::before{content:'';display:inline-block;width:3px;height:12px;background:#4E7CFF}</style>
      <div class="cov-deliverables">
-       <div class="del"><span style="color:#171820">03 · K-Track</span></div>
-       <div class="del del2"><span style="color:#171820">02 · Roadmap</span></div>
+       <div class="del"><span style="color:#2B2320">03 · K-Track</span></div>
+       <div class="del del2"><span style="color:#2B2320">02 · Roadmap</span></div>
      </div>`);
   const r = 측정(p, CHROME);
   assert.deepEqual(r.구역밖색, [],
@@ -239,7 +234,7 @@ test('표지 띠(.cov-deliverables) 안의 KC 색은 통과한다 (자기 처방
 
 test('표지 띠는 **서체까지** 넓히지 않는다 (색만 넓힌 경계가 서체로 새는지)', { skip: 크롬없음 }, () => {
   const p = 픽스처('cov-band-font',
-    '<div class="cov-deliverables"><div class="del"><p style="font-family:Fraunces,serif;color:#171820">K</p></div></div>');
+    '<div class="cov-deliverables"><div class="del"><p style="font-family:Fraunces,serif;color:#2B2320">K</p></div></div>');
   const r = 측정(p, CHROME);
   assert.ok(r.키트밖서체.some((v) => v.font === 'Fraunces'),
     '표지 띠에서 Part 6 서체가 통과했다 — 표지가 Part 6 행세를 하게 되고, 두 상수를 나눈 이유가 사라진다');
@@ -254,12 +249,12 @@ test('KC 색 목록은 토큰의 05 K-Culture 팔레트에서 파생한다 (손 
 });
 
 test('정본 3종 밖 서체를 잡되, **폴백 스택은 통과**시킨다', { skip: 크롬없음 }, () => {
-  const 나쁨 = 측정(픽스처('font-bad', '<p style="font-family:Fraunces,serif;color:#171820">K</p>'), CHROME);
+  const 나쁨 = 측정(픽스처('font-bad', '<p style="font-family:Fraunces,serif;color:#2B2320">K</p>'), CHROME);
   assert.ok(나쁨.키트밖서체.some((v) => v.font === 'Fraunces'), '키트 밖 서체를 놓쳤다');
 
   // 정본 스택 그대로. 가드가 이걸 잡으면 사람은 정본을 따르고도 빨간불을 본다 → 가드를 끈다.
   const 좋음 = 측정(픽스처('font-ok',
-    `<p style="font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#171820">K</p>`), CHROME);
+    `<p style="font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#2B2320">K</p>`), CHROME);
   assert.equal(좋음.키트밖서체.length, 0, `정본 스택을 위반으로 잡았다: ${JSON.stringify(좋음.키트밖서체)}`);
 });
 
@@ -277,9 +272,9 @@ test('정본 3종 밖 서체를 잡되, **폴백 스택은 통과**시킨다', {
 test('전환·애니메이션·WAAPI 중간 프레임을 재지 않는다 (CI 만 빨개지던 플래키 · F105)', { skip: 크롬없음 }, () => {
   const p = 픽스처('motion', `
     <style>@keyframes drift{0%{background:#FF0000}100%{background:#00FF00}}</style>
-    <div id="a" style="background:rgba(246,241,232,.55);transition:background 10s linear"><span style="color:#171820">전환</span></div>
-    <div id="b" style="background:#C8FF3D;animation:drift 10s linear infinite"><span style="color:#171820">회전</span></div>
-    <div id="c" style="background:#C8FF3D"><span style="color:#171820">WAAPI</span></div>
+    <div id="a" style="background:rgba(251,247,240,.55);transition:background 10s linear"><span style="color:#2B2320">전환</span></div>
+    <div id="b" style="background:#C8FF3D;animation:drift 10s linear infinite"><span style="color:#2B2320">회전</span></div>
+    <div id="c" style="background:#C8FF3D"><span style="color:#2B2320">WAAPI</span></div>
     <script>
     /* 페이지 자신의 load 리스너가 **먼저** 돈다 — 측정기는 body 끝에 주입돼 등록이 더 늦다.
        그래서 여기서 세워 둔 「진행 50%」 상태를 측정기가 그대로 본다.
@@ -315,18 +310,18 @@ test('전환·애니메이션·WAAPI 중간 프레임을 재지 않는다 (CI �
  * 렌더 층에서만 갈린다. 두 방향을 같이 못박는다 — 한쪽만 재면 반대쪽으로 샌다. */
 test('Part 06 예약 서체는 .kc-page 안에서만 통과한다 (경계가 곧 예외다)', { skip: 크롬없음 }, () => {
   const 안 = 측정(픽스처('kc-inside',
-    '<div class="kc-page"><p style="font-family:Fraunces,serif;color:#171820">K</p></div>'), CHROME);
+    '<div class="kc-page"><p style="font-family:Fraunces,serif;color:#2B2320">K</p></div>'), CHROME);
   assert.equal(안.키트밖서체.length, 0,
     `예약 구역 안의 Fraunces 를 위반으로 잡았다 — 그러면 사람은 정본 §4-1 을 따르고도 빨간불을 본다: ${JSON.stringify(안.키트밖서체)}`);
 
   const 밖 = 측정(픽스처('kc-outside',
-    '<div class="page"><p style="font-family:Fraunces,serif;color:#171820">K</p></div>'), CHROME);
+    '<div class="page"><p style="font-family:Fraunces,serif;color:#2B2320">K</p></div>'), CHROME);
   assert.ok(밖.키트밖서체.some((v) => v.font === 'Fraunces'),
     '구역 밖 Fraunces 를 놓쳤다 — 예외가 저장소 전체로 새는 방향이다');
 
   // 조상 체인으로 재는지: 손자 요소도 구역 안이어야 한다(closest 가 아니라 자기 클래스만 보면 여기서 샌다)
   const 손자 = 측정(픽스처('kc-descendant',
-    '<div class="kc-card"><span><b style="font-family:Cormorant,serif;color:#171820">Ө</b></span></div>'), CHROME);
+    '<div class="kc-card"><span><b style="font-family:Cormorant,serif;color:#2B2320">Ө</b></span></div>'), CHROME);
   assert.equal(손자.키트밖서체.length, 0, `구역의 손자 요소를 밖으로 판정했다: ${JSON.stringify(손자.키트밖서체)}`);
 });
 
@@ -367,7 +362,7 @@ test('aria-hidden 장식은 대비만 면제하고 **색은 계속 검사**한�
 });
 
 test('<style>·<script>·<title> 의 텍스트는 안 센다 (브라우저 기본값을 위반으로 보고하던 결함)', { skip: 크롬없음 }, () => {
-  const p = 픽스처('nonrender', '<p style="color:#171820">본문</p>');
+  const p = 픽스처('nonrender', '<p style="color:#2B2320">본문</p>');
   const r = 측정(p, CHROME);
   assert.equal(r.키트밖색.length, 0,
     `안 그려지는 요소를 셌다: ${JSON.stringify(r.키트밖색)} — 첫 실행에서 Noto Sans KR 4건·순검정 4건이 이렇게 나왔다`);
@@ -387,7 +382,7 @@ test('로드 실패를 「위반 0」으로 읽지 않는다', { skip: 크롬없
  *   옮겼고, 아래 「막지 않는다」 쪽 테스트들이 그 회귀를 지킨다(손 목록으로 되돌리면 빨개진다). */
 const 마스코트픽스처 = (이름, 바닥, 속성 = 'src="마스코트_누끼/본체.png"') =>
   픽스처(이름, `<div style="background:${바닥}"><img ${속성} alt="마스코트">`
-    + '<p style="color:#171820">본문</p></div>');
+    + '<p style="color:#2B2320">본문</p></div>');
 
 test('마스코트 — 코랄 짙은 면 위는 **잡는다**(하이라이트가 먹힌다)', { skip: 크롬없음 }, () => {
   for (const [이름, 바닥] of [['soft', '#FFCFC6'], ['coral2', '#FF8877'], ['coral3', '#E8543F']]) {
@@ -408,7 +403,7 @@ test('마스코트 — 밝은 크림 계열은 **안 막는다**(손 목록이 C
 });
 
 test('마스코트 — 다크는 **안 막는다**(림 최암부가 최소인데도 26.7)', { skip: 크롬없음 }, () => {
-  for (const [이름, 바닥] of [['navy2', '#0F1730'], ['navy', '#1A2340'], ['navy3', '#2A3358']]) {
+  for (const [이름, 바닥] of [['navy2', '#0F1730'], ['navy', '#08090C'], ['navy3', '#2A3358']]) {
     const r = 측정(마스코트픽스처(`mascot-dark-${이름}`, 바닥), CHROME);
     assert.equal(r.마스코트바닥위반.length, 0,
       `${바닥} 을 막았다 — 다크는 마스코트가 가장 잘 뜨는 자리다(램프 최암부만 보고 막으면 안 된다)`);
@@ -424,7 +419,7 @@ test('마스코트 — data URI 로 인라인해도 `data-synk-mascot` 이면 �
 });
 
 test('마스코트 — 없는 파일에서 「0건」은 **깨끗함이 아니라 해당 없음**이다(분모)', { skip: 크롬없음 }, () => {
-  const r = 측정(픽스처('mascot-none', '<p style="color:#171820">마스코트가 없는 문서</p>'), CHROME);
+  const r = 측정(픽스처('mascot-none', '<p style="color:#2B2320">마스코트가 없는 문서</p>'), CHROME);
   assert.equal(r.마스코트잰것, 0, '없는 마스코트를 셌다');
   assert.equal(r.마스코트바닥위반.length, 0);
 });
@@ -468,27 +463,30 @@ test('IP 색 판정은 **체리만** 읽는다 — 평상복 코랄은 킷 색�
   assert.deepEqual(빠진것, [], `평상복이 바닥 계산에서 빠졌다: ${빠진것.join(', ')}`);
 });
 
-test('평상복 램프는 마스코트 콘텐츠에서도 「키트 밖 색」으로 잡힌다 (체리와 갈리는 지점)', { skip: 크롬없음 }, () => {
-  const p = 픽스처('coral-felt-in-content', '<span style="color:#171820;background:#F96859">배지</span>');
-  const r = 측정(p, CHROME, { 마스코트콘텐츠: true });
-  assert.ok(r.키트밖색.some((v) => v.hex === '#F96859'),
-    '평상복 코랄 렌더값이 통과했다 — 코랄 «면»을 칠할 땐 킷 Coral 을 쓰는 것이 규칙이고, '
-    + '측정값이 그 자리를 대신하면 킷이 정본 자리를 잃는다');
+test('평상복 램프는 어디서든 통과한다 — 조항 ⓙ 「킷 코랄 = 마스코트 램프」 (08-20 뒤집힘)', { skip: 크롬없음 }, () => {
+  /* 옛 판은 「평상복 렌더값은 킷 밖」이었다 — 킷 Coral(#FF6B5C)과 램프(#F96859)가 다른 값이던
+   * 시절의 규칙이다. 조항 ⓙ 가 둘을 한 값으로 합쳐 그 구분 자체가 사라졌다. */
+  const p = 픽스처('coral-felt-anywhere', '<span style="color:#2B2320;background:#F96859">배지</span>');
+  const r = 측정(p, CHROME);
+  assert.equal(r.키트밖색.filter((v) => v.hex === '#F96859').length, 0,
+    '킷 Coral(#F96859 = 평상복 Core)을 킷 밖으로 잡았다 — 킷 파생이 토큰을 안 읽고 있다');
 });
 
 /* ── 1-c. 체리 램프는 **파일 단위**로 갈린다 (실행 규칙 ①) ──────────────────── */
 test('체리 램프 — 마스코트 콘텐츠가 **아닌** 파일에서는 키트 밖 색으로 잡는다', { skip: 크롬없음 }, () => {
-  const p = 픽스처('cherry-in-ui', '<button style="background:#FB7A87;color:#171820">이어서 풀기</button>');
+  const p = 픽스처('cherry-in-ui', '<button style="background:#FB7A87;color:#2B2320">이어서 풀기</button>');
   const r = 측정(p, CHROME);   // 픽스처는 마스코트콘텐츠 목록에 없다
   assert.ok(r.키트밖색.some((v) => v.hex === '#FB7A87'),
     '앱 UI 에 체리가 들어갔는데 통과시켰다 — 유호님 확정(B안)은 체리를 킷 색으로 올리지 않는 것이다');
 });
 
-test('체리 램프 — 마스코트 콘텐츠에서는 통과한다', { skip: 크롬없음 }, () => {
-  const p = 픽스처('cherry-in-content', '<span style="color:#171820;background:#FB7A87">배지</span>');
+test('체리 램프 — 퇴역(08-19) 후엔 마스코트 콘텐츠 «안»에서도 잡힌다 (면제 통로가 같이 닫혔다)', { skip: 크롬없음 }, () => {
+  /* 옛 판은 콘텐츠 안 통과였다 — 체리가 IP 색이던 시절의 면제다. 퇴역 후 MASCOT 은 빈 집합이라
+   * 면제가 사라졌고, 그게 정확한 동작이다: 캐러셀이 옛 체리 판을 다시 실으면 여기서 빨개진다. */
+  const p = 픽스처('cherry-in-content', '<span style="color:#2B2320;background:#FB7A87">배지</span>');
   const r = 측정(p, CHROME, { 마스코트콘텐츠: true });
-  assert.equal(r.키트밖색.filter((v) => v.hex === '#FB7A87').length, 0,
-    '마스코트가 주인공인 콘텐츠에서까지 체리를 막으면 캐러셀이 영구 적색이 된다');
+  assert.ok(r.키트밖색.some((v) => v.hex === '#FB7A87'),
+    '퇴역한 체리가 마스코트 콘텐츠 면제로 통과했다 — 퇴역 뒤에도 면제 통로가 열려 있다');
 });
 
 test('마스코트콘텐츠 목록은 전부 실존하고 이유를 달고 있다', () => {
@@ -540,13 +538,17 @@ test('🔴 체리 퇴역(08-19) — IP 색 집합은 «비어 있다», 그리�
   const 토큰 = require(path.join(ROOT, 'docs', '디자인_토큰.json'));
   assert.ok(토큰.색.마스코트, '토큰에 마스코트 절이 없다');
   assert.ok(!토큰.색.마스코트.램프, '체리 램프가 토큰에 되살아났다 — 퇴역 조항(_의상)부터 본다');
-  assert.equal(토큰.색.킷.length, 23, '킷 개수가 바뀌었다 — 마스코트 색이 킷 배열로 넘어갔는지 본다');
+  /* 08-20 조항 ⓙ — 평상복 램프가 킷 코랄 축으로 «정당하게» 승격됐다(킷 41색). 개수 잠금은
+   * tests/토큰정본.test.js 가 진다 — 여기는 체리의 부활만 문다. */
 });
 
 test('🔑 미측정 방어 — 바닥 축은 «실려 있어야» 한다 (여기까지 0 이면 아무것도 안 재고 통과한다)', () => {
   assert.ok(Object.keys(린트.MASCOT_바닥).length >= 3,
     '평상복 램프가 토큰에서 안 실렸다 — 「마스코트가 이 바닥에서 뜨는가」가 통째로 공회전한다');
-  const 섞임 = Object.keys(린트.MASCOT_바닥).filter((h) => KIT[h]);
-  assert.deepEqual(섞임, [],
-    `평상복 램프가 킷 hex 와 겹친다: ${섞임.join(', ')} — 겹치면 킷 값 대신 측정 hex 가 통과한다`);
+  /* 08-20 조항 ⓙ — 킷 코랄 축 = 평상복 램프 «그대로»다(마스코트 색 = UI 색). 옛 단언은
+   * 「겹치면 안 된다」였는데 그 걱정(측정 hex 가 킷 값을 대신)은 값이 같아진 지금 원리상 사라졌다.
+   * 대신 반대 방향을 문다: 겹침이 **전부**여야 한다 — 일부만 겹치면 두 정본이 갈라진 것이다. */
+  const 안겹침 = Object.keys(린트.MASCOT_바닥).filter((h) => !KIT[h]);
+  assert.deepEqual(안겹침, [],
+    `평상복 램프가 킷에 없다: ${안겹침.join(', ')} — 조항 ⓙ(킷 코랄 = 마스코트 램프)가 토큰에서 깨졌다`);
 });
