@@ -51,9 +51,6 @@ const ROOT = path.resolve(__dirname, '..');
 const 점검 = require(path.join(ROOT, 'tools', '배포판점검.js'));
 const 프로젝트 = require(path.join(ROOT, '.claude', 'hooks', 'lib', 'clasp-project.js'));
 const 런 = require(path.join(ROOT, 'tools', 'lib', '검수런.js'));
-/* 표 칸은 **날 `.split('|')` 로 가르지 않는다** — 보드 줄은 백틱 코드가 가득해서 그 안의 파이프에
- * 칸이 밀린다. 공용 통로 하나가 지고, `tests/표칸.test.js` 가 옛 통로를 기계로 금지한다. */
-const 표 = require(path.join(ROOT, 'tools', 'lib', '표.js'));
 // 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
 const 보드id = require('../.claude/hooks/lib/board-id.js');
 
@@ -945,23 +942,19 @@ ${diff텍스트}`;
 function 아는미완줄들(상한 = 24, 칸상한 = 100) {
   const 자르기 = (s, n) => (s.length > n ? s.slice(0, n) + '…' : s);
   try {
-    const 방 = path.join(ROOT, 'docs', '_ops', '보드');
-    const 줄들 = [];
-    for (const 이름 of fs.readdirSync(방).filter((n) => n.endsWith('.md'))) {
-      for (const 줄 of fs.readFileSync(path.join(방, 이름), 'utf8').split(/\r?\n/)) {
-        if (!줄.trimStart().startsWith('|')) continue;
-        /* 칸 계약은 `tests/표칸.test.js` 가 진다 — [0]날짜 [1]트랙 [2]만질파일 [3]상태. */
-        const 칸 = 표.칸나누기(줄);
-        if (칸.length < 4) continue;
-        const 트랙 = (칸[1] || '').replace(/\*\*/g, '');
-        const 상태 = (칸[3] || '').replace(/\*\*/g, '');
-        if (!트랙 || /^-+$/.test(트랙)) continue;      // 표 구분선
-        줄들.push(`  · ${자르기(트랙, 칸상한)}\n      상태: ${자르기(상태, 칸상한)}`);
-      }
-    }
+    /* 🔑 2026-08-20 위임 2단계 — 재료가 **보드 파일에서 열린 PR 로** 바뀌었다.
+     *   보드 층을 걷었고, 「지금 열린 트랙」의 정본은 이제 PR 이다(유호 확정 08-15 「PR = 작업 목록」). */
+    const 원 = execFileSync('gh', ['pr', 'list', '--state', 'open', '--json', 'number,title,body'],
+      자식옵션({ cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 30000 }));
+    const 목록 = JSON.parse(String(원 || '[]').trim() || '[]');
+    const 줄들 = 목록.map((p) => {
+      const 첫줄 = String(p.body || '').split(/\r?\n/).map((l) => l.trim()).find((l) => l && !l.startsWith('**지문**')) || '(본문 없음)';
+      return `  · #${p.number} ${자르기(String(p.title || ''), 칸상한)}\n      상태: ${자르기(첫줄, 칸상한)}`;
+    });
     return { 줄들: 줄들.slice(-상한), 전체: 줄들.length };
   } catch (e) {
-    /* 재료를 못 읽는 것이 검수를 막을 이유는 아니다 — 없으면 블록이 안 실릴 뿐이다(안전한 방향). */
+    /* 재료를 못 읽는 것이 검수를 막을 이유는 아니다 — 없으면 블록이 안 실릴 뿐이다(안전한 방향).
+     * ⚠ `gh` 인증이 끊겨도 여기로 온다 — 「열린 트랙 0」이 아니라 **못 읽었다**이고, 그 사유는 아래로 나간다. */
     return { 줄들: [], 전체: 0, 오류: String((e && e.message) || e) };
   }
 }
@@ -969,13 +962,14 @@ function 아는미완줄들(상한 = 24, 칸상한 = 100) {
 function 아는미완블록(미완) {
   if (!미완 || !미완.줄들.length) return '';
   const 잘림 = 미완.전체 > 미완.줄들.length
-    ? `\n(전체 ${미완.전체}줄 중 최근 ${미완.줄들.length}줄만 실었다 — 나머지는 docs/_ops/보드/ 에 있다)` : '';
+    ? `
+(열린 트랙 ${미완.전체}개 중 최근 ${미완.줄들.length}개만 실었다 — 나머지는 gh pr list 로 본다)` : '';
   return `이 저장소는 **미완을 장부에 정직하게 적어 둔다** — 아래는 지금 열려 있는 트랙과 그 상태다.
 그리고 \`docs/이해대장.html\` 은 「이해 12칸 중 무엇이 비었나」를 **드러내려고** 만든 계기판이고,
 설계 문서들은 머리글에 스스로 「N/M 착지」·완결 3칸(모였나/닿았나/늘었나 = ✓/✗)을 적는다.
 ⚠ **거기 이미 적힌 미완을 «새로 발견한 결함»으로 올리지 마라.** 그건 발견이 아니라 옮겨 적기다.
    그래도 올릴 값이 있다고 보면 근거에 **아래 어느 줄과 어떻게 다른지** 한 줄로 대라
-   (예: 「보드는 A 를 미완이라 적었는데, 이번 diff 는 B 를 이미 도는 것처럼 배선했다」).
+   (예: 「열린 PR 은 A 를 미완이라 적었는데, 이번 diff 는 B 를 이미 도는 것처럼 배선했다」).
 ⚠ 반대로, 이번 diff 가 **실제로 깨뜨린 것**이면 장부에 뭐라 적혀 있든 그대로 올려라 — 이 블록은
    면죄부가 아니다.
 ${미완.줄들.join('\n')}${잘림}
@@ -2491,7 +2485,7 @@ function main(argv) {
    * 재료 때문인지 못 가른다(F045 — 조건은 하나씩 바꾼다). */
   const 미완 = argv.includes('--버그만') ? null : 아는미완줄들();
   if (미완 && 미완.오류) console.error(`⚠ 「아는 미완」 재료를 못 읽었다(${미완.오류}) — 그 블록 없이 돈다.`);
-  else if (미완) console.log(`아는 미완 ${미완.줄들.length}줄을 기능체크에 동봉한다(보드 전체 ${미완.전체}줄).`);
+  else if (미완) console.log(`아는 미완 ${미완.줄들.length}줄을 기능체크에 동봉한다(열린 트랙 ${미완.전체}개).`);
   const 채택제안 = argv.includes('--버그만') ? [] : 채택제안줄들();
   const 기능프롬프트들 = argv.includes('--버그만') ? null
     : Array.from({ length: 회차 }, (_, i) =>
@@ -2599,7 +2593,7 @@ function main(argv) {
      * `--버그만` 이면 기능체크 자체가 없으므로 null 이고, 그건 「렌즈 0」과 다른 상태다. */
     기능렌즈: 기능프롬프트들 ? Array.from({ length: 회차 }, (_, i) => 기능렌즈(i + 1).이름) : null,
     // ② 그 런이 「아는 미완」을 몇 줄 동봉했나 — 0 과 「재료를 못 읽었다」가 같은 모양이면 안 된다
-    아는미완: 미완 ? { 실은줄: 미완.줄들.length, 보드전체: 미완.전체, ...(미완.오류 ? { 오류: 미완.오류 } : {}) } : null,
+    아는미완: 미완 ? { 실은줄: 미완.줄들.length, 열린PR전체: 미완.전체, ...(미완.오류 ? { 오류: 미완.오류 } : {}) } : null,
     // 같은 이유로 **어느 방향 아래서** 봤는지도 남긴다(방향 정본은 유호님 지시로 개정된다)
     방향: 방향지문(),
     // 그리고 **어느 판단 기준 아래서** — 철학 정본은 방향보다 자주 개정된다(하루 세 번 실측)
