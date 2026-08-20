@@ -71,7 +71,12 @@ const 함께볼것 = [
 ];
 
 function 함께볼것구역() {
-  const 폴더 = path.dirname(산출경로);
+  /* 🔴 [2026-08-20] 카드 실재 검사는 **docs/ 고정**이다 — `path.dirname(산출경로)` 로 잡으면
+   *   `--검사` 모드(산출경로 = 게이트의 임시방)에서 카드 4장이 언제나 「없다」로 그려져,
+   *   생성기를 만진 모든 커밋이 «스테이징 화면과 다르다»로 거짓 차단된다(실측: 게이트가 선 뒤
+   *   생성기+검사기를 함께 담은 첫 커밋에서 발화 — 임시방에 카드가 있을 리 없다).
+   *   카드가 실제로 사는 자리는 화면이 배포되는 자리(docs/)이지 산출 파일의 옆이 아니다. */
+  const 폴더 = path.join(ROOT, 'docs');
   const 줄 = 함께볼것.map((d) => {
     if (!fs.existsSync(path.join(폴더, d.파일))) {
       return `  <div style="padding:11px 14px;border:2px dashed ${킷.coral3};border-radius:10px;color:${킷.coral3};font-size:12.5px;line-height:1.6">`
@@ -741,7 +746,7 @@ function 폴백(말, 끝) {
      * 갈래 = **코어**(유호 지시 2026-08-17 재편에서 이해 대장을 「SYNK 코어」의 예시로 직접 들었다).
      * ⚠ 옛 `--링크` 는 운영자료가 모르는 플래그였다 — 조용히 무시되고 기본 갈래로 떨어졌다. */
     execFileSync(process.execPath,
-      [path.join(ROOT, 'tools', '운영자료.js'), 산출경로, '--갈래', '코어'], { stdio: 'inherit' });
+      [path.join(ROOT, 'tools', '운영자료.js'), 산출경로, '--갈래', '방향'], { stdio: 'inherit' });
   }
 }
 
