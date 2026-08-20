@@ -1,0 +1,529 @@
+<title>이길 수 있는 자리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400..800;1,400&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* ── SYNK 킷 23색 중 이 지면이 쓰는 것 · DESIGN.md 철칙 4 준수 ───────────────
+   ① 순백·순검정 없음 ② 라이트에서 Coral 은 «면»만, 글자는 Coral 3
+   ③ 코랄 면 위 글자는 Ink·Navy 2 만 ④ 신호 1점(Coral) · Lime·KC 반입 안 함
+   위계는 색이 아니라 밀도로 낸다 — 그래서 「이길 축」에만 코랄이 있다. */
+:root{
+  --paper:#FBF7EE; --ink:#171820; --navy:#1A2340; --navy2:#0F1730; --navy3:#2A3358;
+  --slate2:#5F657D; --slate:#8A93AD; --cream:#F6F1E8; --cream3:#E7DDC7;
+  --coral:#FF6B5C; --coral3:#E8543F; --coralwash:#FFE9E4;
+
+  --bg:var(--paper);
+  --surface:#FFFCF6;
+  --fg:var(--ink);
+  --fg2:var(--slate2);
+  --rule:#E4DCCB;
+  --rule-soft:#EFE8DA;
+  --sig-text:var(--coral3);
+  --sig-fill:var(--coral);
+  --on-sig:var(--ink);
+  --panel:var(--coralwash);
+  --panel-edge:#F6CFC7;
+  --quiet-fill:#F2EDE1;
+  --shadow:0 1px 2px rgba(23,24,32,.05), 0 8px 24px -12px rgba(23,24,32,.14);
+
+  --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:var(--navy2);
+    --surface:#141D38;
+    --fg:var(--cream);
+    --fg2:var(--slate);
+    --rule:#26305200;
+    --rule:#263052;
+    --rule-soft:#1C2647;
+    --sig-text:var(--coral);
+    --sig-fill:var(--coral);
+    --on-sig:var(--navy2);
+    --panel:#2A1F2C;
+    --panel-edge:#5A3A38;
+    --quiet-fill:#18213E;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:var(--navy2);
+  --surface:#141D38;
+  --fg:var(--cream);
+  --fg2:var(--slate);
+  --rule:#263052;
+  --rule-soft:#1C2647;
+  --sig-text:var(--coral);
+  --sig-fill:var(--coral);
+  --on-sig:var(--navy2);
+  --panel:#2A1F2C;
+  --panel-edge:#5A3A38;
+  --quiet-fill:#18213E;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font-family:var(--font); font-weight:450; font-size:16.5px; line-height:1.78;
+  letter-spacing:-.011em;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:820px; margin:0 auto; padding:0 24px 96px}
+
+/* ── 머리 ─────────────────────────────────────────────── */
+header{padding:64px 0 0}
+.eyebrow{
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--fg2); display:flex; gap:14px; flex-wrap:wrap; align-items:center;
+}
+.eyebrow .dot{width:4px;height:4px;border-radius:50%;background:var(--sig-fill);display:inline-block}
+h1{
+  font-size:clamp(38px,6.4vw,60px); line-height:1.06; font-weight:800; letter-spacing:-.035em;
+  margin:20px 0 0; text-wrap:balance;
+}
+h1 em{font-style:normal; color:var(--sig-text)}
+.deck{
+  margin:18px 0 0; font-size:19px; line-height:1.62; color:var(--fg2); max-width:62ch;
+  text-wrap:pretty;
+}
+.meta{
+  margin-top:30px; padding-top:16px; border-top:1px solid var(--rule);
+  font-family:var(--mono); font-size:12px; color:var(--fg2);
+  display:flex; gap:8px 22px; flex-wrap:wrap; font-variant-numeric:tabular-nums;
+}
+
+/* ── 판정 블록 — 이 지면의 논지 ───────────────────────── */
+.verdict{
+  margin:44px 0 0; background:var(--sig-fill); color:var(--on-sig);
+  border-radius:4px; padding:30px 32px;
+}
+.verdict .label{
+  font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+  opacity:.62; margin-bottom:10px;
+}
+.verdict p{margin:0; font-size:23px; line-height:1.42; font-weight:700; letter-spacing:-.024em; text-wrap:balance}
+.verdict p + p{margin-top:12px; font-size:16.5px; font-weight:500; line-height:1.66; opacity:.84; letter-spacing:-.011em}
+
+/* ── 절 ───────────────────────────────────────────────── */
+section{margin-top:64px}
+h2{
+  font-size:13px; font-family:var(--mono); font-weight:500;
+  letter-spacing:.15em; text-transform:uppercase; color:var(--fg2);
+  margin:0 0 8px; padding-bottom:14px; border-bottom:1px solid var(--rule);
+}
+h3{
+  font-size:25px; font-weight:800; letter-spacing:-.03em; line-height:1.24;
+  margin:28px 0 0; text-wrap:balance;
+}
+h3:first-of-type{margin-top:22px}
+h4{font-size:17px; font-weight:700; letter-spacing:-.018em; margin:26px 0 0}
+p{margin:12px 0 0; max-width:66ch}
+strong{font-weight:700}
+.sig{color:var(--sig-text); font-weight:700}
+code,.n{font-family:var(--mono); font-size:.88em; font-variant-numeric:tabular-nums}
+code{background:var(--quiet-fill); padding:.12em .38em; border-radius:3px; color:var(--fg)}
+a{color:var(--sig-text); text-underline-offset:3px; text-decoration-thickness:1px}
+
+/* ── 표 ───────────────────────────────────────────────── */
+.scroll{overflow-x:auto; margin-top:20px; -webkit-overflow-scrolling:touch}
+table{border-collapse:collapse; width:100%; min-width:520px; font-size:15px}
+th,td{text-align:left; padding:13px 16px 13px 0; border-bottom:1px solid var(--rule-soft); vertical-align:top}
+th{
+  font-family:var(--mono); font-size:11px; letter-spacing:.11em; text-transform:uppercase;
+  color:var(--fg2); font-weight:500; border-bottom:1px solid var(--rule); padding-bottom:9px;
+}
+td:last-child,th:last-child{padding-right:0}
+tbody tr:last-child td{border-bottom:none}
+.num{font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+/* ── 두 축 대비 — 밀도로 가른다 ──────────────────────── */
+.axes{display:grid; gap:18px; margin-top:24px}
+@media(min-width:680px){.axes{grid-template-columns:1fr 1fr; gap:20px}}
+.axis{
+  border:1px solid var(--rule); border-radius:4px; padding:24px 24px 26px;
+  background:var(--surface);
+}
+.axis.win{
+  background:var(--panel); border-color:var(--panel-edge);
+}
+.axis .tag{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--fg2); display:block; margin-bottom:10px;
+}
+.axis.win .tag{color:var(--sig-text)}
+.axis h4{margin:0; font-size:19px; letter-spacing:-.024em; line-height:1.3}
+.axis ul{margin:14px 0 0; padding-left:0; list-style:none}
+.axis li{
+  position:relative; padding-left:16px; margin-top:9px; font-size:15px; line-height:1.6; color:var(--fg2);
+}
+.axis li::before{
+  content:""; position:absolute; left:0; top:.66em; width:5px; height:1px; background:currentColor; opacity:.5;
+}
+.axis.win li{color:var(--fg)}
+.axis .close{
+  margin-top:16px; padding-top:14px; border-top:1px solid var(--rule-soft);
+  font-size:14.5px; line-height:1.6; color:var(--fg2);
+}
+.axis.win .close{border-top-color:var(--panel-edge); color:var(--fg)}
+
+/* ── 인용 ─────────────────────────────────────────────── */
+blockquote{
+  margin:20px 0 0; padding:16px 20px; background:var(--quiet-fill);
+  border-left:2px solid var(--sig-fill); border-radius:0 3px 3px 0;
+  font-size:15.5px; line-height:1.66; color:var(--fg);
+}
+blockquote p{margin:0; max-width:none}
+blockquote p + p{margin-top:9px}
+blockquote cite{
+  display:block; margin-top:10px; font-style:normal;
+  font-family:var(--mono); font-size:11.5px; color:var(--fg2); letter-spacing:.02em;
+}
+
+/* ── 구멍 3개 ─────────────────────────────────────────── */
+.hole{margin-top:26px; padding-left:22px; border-left:1px solid var(--rule); position:relative}
+.hole::before{
+  content:attr(data-n); position:absolute; left:-8px; top:2px;
+  width:16px; height:16px; border-radius:50%; background:var(--bg);
+  font-family:var(--mono); font-size:10px; line-height:16px; text-align:center;
+  color:var(--fg2);
+}
+.hole h4{margin:0}
+.hole .verdict-line{
+  margin-top:8px; font-size:15px; color:var(--fg2);
+}
+.hole .fix{
+  margin-top:12px; padding:13px 16px; background:var(--quiet-fill); border-radius:3px;
+  font-size:15px; line-height:1.62;
+}
+.hole .fix b{color:var(--sig-text)}
+
+/* ── 실행 순서 — 진짜 순서라 번호를 준다 ─────────────── */
+ol.steps{margin:22px 0 0; padding:0; list-style:none; counter-reset:s}
+ol.steps li{
+  counter-increment:s; position:relative; padding:0 0 22px 46px; margin:0;
+  border-left:1px solid var(--rule); margin-left:11px;
+}
+ol.steps li:last-child{border-left-color:transparent; padding-bottom:0}
+ol.steps li::before{
+  content:counter(s); position:absolute; left:-11.5px; top:0;
+  width:23px; height:23px; border-radius:50%;
+  background:var(--sig-fill); color:var(--on-sig);
+  font-family:var(--mono); font-size:11.5px; font-weight:500; line-height:23px; text-align:center;
+}
+ol.steps b{display:block; font-size:17.5px; letter-spacing:-.02em; margin-bottom:4px}
+ol.steps span{color:var(--fg2); font-size:15px; line-height:1.62; display:block; max-width:60ch}
+ol.steps .when{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--sig-text); display:block; margin-top:6px;
+}
+
+footer{
+  margin-top:72px; padding-top:22px; border-top:1px solid var(--rule);
+  font-family:var(--mono); font-size:11.5px; line-height:1.9; color:var(--fg2);
+}
+footer .sep{margin:0 8px; opacity:.45}
+::selection{background:var(--sig-fill); color:var(--on-sig)}
+:focus-visible{outline:2px solid var(--sig-text); outline-offset:3px; border-radius:2px}
+@media (prefers-reduced-motion:no-preference){
+  a{transition:opacity .15s ease}
+  a:hover{opacity:.72}
+}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">
+    <span>경쟁 판정</span><span class="dot"></span><span>2026-08-18</span><span class="dot"></span><span>SYNK LAB</span>
+  </div>
+  <h1>이길 수 있는 자리는 <em>세 개</em>고,<br>전부 지금 0행이다</h1>
+  <p class="deck">
+    「우리와 비슷한 시스템을 다른 곳에서 만들고 있다」는 관측에서 출발해,
+    원문·연구 원저·우리 코드를 직접 열어 대조한 판정이다.
+  </p>
+  <div class="meta">
+    <span>재료 = 원문 1 · 논문 1 · 경쟁 제품 5 · 저장소 실측</span>
+    <span>검증 = 분리 반박 1패스</span>
+  </div>
+</header>
+
+<div class="verdict">
+  <div class="label">판정</div>
+  <p>지금 방식으로는 「AI 튜터」 판에서 못 이긴다. 그런데 이겨야 할 판이 그 판이 아니다.</p>
+  <p>진짜 문제는 투입의 무게중심이 우리가 못 이길 판 쪽에 가 있다는 것이다.
+     그리고 이길 수 있는 세 자리는 실물이 다 있는데 <strong>축적된 행이 전부 0</strong>이다 —
+     그 창이 <strong>5~6개월</strong>뿐이다.</p>
+</div>
+
+<section>
+  <h2>0 · 전제 정정</h2>
+  <h3>그 링크는 경쟁 시스템 발표가 아니었다</h3>
+  <p>
+    출처는 <a href="https://www.filamentgames.com/blog/the-latest-findings-in-ai-and-learning---august-2026">교육게임 스튜디오 Filament Games 의 월간 뉴스 큐레이션</a>(2026-08-05)이다.
+    맺음말이 「이런 거 만들고 싶으면 연락 주세요」인, <strong>자사 마케팅 콘텐츠</strong>다.
+    받은 요약과 원문이 세 자리에서 갈린다.
+  </p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th style="width:38%">요약이 말한 것</th><th>원문이 말하는 것</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>분산형 AI 튜터 <b>아키텍처</b> 연구 발표</td>
+          <td><b>그런 항목이 없다.</b> “Distributed AI Models” 절은 <i>대학이 CS 학과 독점에서 벗어나 생물정보학·공학·농업 전공에 AI 리터러시를 분산 배치한다</i>는 <b>커리큘럼 행정</b> 얘기다(워싱턴대 2027 봄 부전공, 시러큐스 신입생 부트캠프).</td>
+        </tr>
+        <tr>
+          <td>인지 루프를 보호하는 시스템</td>
+          <td>Wharton 연구 <b>소개</b>다. 게다가 <span class="n">2025</span>년 PNAS 게재라 신규 발표도 아니다.</td>
+        </tr>
+        <tr>
+          <td>맞춤형 에이전트 <b>프레임워크 수립</b></td>
+          <td>StarSpark AI 창업자 <b>인터뷰 인용</b>이다(Tom’s Guide).</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    별개의 세 항목이 하나로 합쳐져, <strong>존재하지 않는 「경쟁 시스템」</strong>이 만들어진 요약이었다.
+    다만 원문 안에 <strong>진짜 경쟁자는 있다.</strong>
+  </p>
+</section>
+
+<section>
+  <h2>1 · 경쟁 지형</h2>
+  <h3>세 층으로 갈린다</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th style="width:20%">층</th><th style="width:34%">누구</th><th>지금 상태</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>같은 걸 만드는 곳</b></td>
+          <td><a href="https://www.tomsguide.com/ai/used-right-ai-is-a-patient-tutor-used-wrong-its-a-shortcut-around-the-learning-we-spoke-to-the-creator-behind-an-ai-tool-thats-changing-the-way-students-learn">StarSpark AI</a><br><span class="n">구글 Gemini 팀 출신 2인 · 캘리포니아</span></td>
+          <td>이미 <b>수천 명</b>이 월 <span class="n">$25</span>씩 내고 쓴다. 설계 = 「가장 작은 넛지부터, 막힌 지점을 감지해 그 오개념만 짧게 재교육」. <b>과목은 수학, 시장은 미국 D2C.</b></td>
+        </tr>
+        <tr>
+          <td><b>우리 ③단계 자리</b></td>
+          <td>TopikIQ · TOPIKly · 나래 한국어 · MyTOPIK</td>
+          <td><b>가장 아픈 지점.</b> 우리 정본은 「개원+<span class="n">6</span>개월(<span class="n">2027-08</span>)에 회화 챗봇」인데, 그 자리는 지금 이미 붐빈다. TOPIK II 작문 AI 채점·오류 분석까지 나와 있다.</td>
+        </tr>
+        <tr>
+          <td><b>기상 조건</b></td>
+          <td>OpenAI 교육 플러그인</td>
+          <td>주간 <span class="n">2</span>억 명. 이건 이길 대상이 아니라 날씨다.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>2 · 승패</h2>
+  <h3>축이 갈린다 — 한쪽은 이미 졌고, 한쪽은 그들이 들어올 수 없다</h3>
+
+  <div class="axes">
+    <div class="axis">
+      <span class="tag">못 이길 축</span>
+      <h4>「AI 튜터 성능」 자체</h4>
+      <ul>
+        <li>학생 <b>0명</b> · 파일럿 <span class="n">2027-02-11</span> — <b>6개월 뒤</b></li>
+        <li>운영 개입 <b>0</b> · 관측 <b>0</b>(리허설 개입 <span class="n">1,225</span> 대 관측 <span class="n">1</span> · <span class="n">08-16</span> 실측)</li>
+        <li>이해 <span class="n">12</span>칸 중 <span class="n">3</span>칸 공백 · <span class="n">3</span>층 중 <b>1층만</b> 엔진 도달</li>
+        <li>첨삭·대화·퀴즈 <b>기능 자체</b>는 Claude API + 프롬프트 4벌 — 경쟁사가 일주일이면 만든다</li>
+      </ul>
+      <div class="close">
+        StarSpark 는 지금 이 순간 수천 명의 피드백 루프가 <b>돌고 있다.</b>
+        우리는 그 루프가 6개월 뒤에 시작된다. 이 격차는 코드로 못 메운다.
+      </div>
+    </div>
+
+    <div class="axis win">
+      <span class="tag">이길 축</span>
+      <h4>그들의 데이터에 없는 세 자리</h4>
+      <ul>
+        <li><b>몽골어 화자 오류 축</b> — 태그 <span class="n">24</span>종이 <b>enum</b> 이다(<code>엔진_수집.js:107</code>). 「조사:주격(이/가·은/는)」「어미:불규칙활용」「화용:공손성」. 자유 문자열이 아니라 enum 이라 <span class="n">3</span>만 건 집계가 된다</li>
+        <li><b>㉡ 사람 이해</b> — 결석 패턴, 집중이 오르는 시간대, 강사가 눈으로 본 것. D2C 앱은 구조적으로 못 닿는다</li>
+        <li><b>㉢ 삶 이해</b> — 드림맵·나침반·시즌 회고. 파운데이션 모델이 영원히 못 갖는 종류</li>
+      </ul>
+      <div class="close">
+        StarSpark 도 TopikIQ 도 이걸 못 베낀다 — 실력이 아니라 <b>구조</b> 때문이다.
+        D2C 앱은 결석 이유를 모르고, 강사 관찰이 없고, 학부모와 통화하지 않고, 유학 서류를 대신 떼주지 않는다.
+      </div>
+    </div>
+  </div>
+
+  <p>
+    여기에 <b>몽골 × 한국어 × 유학</b>의 삼중 니치가 겹친다. TOPIK <span class="n">4</span>급이 한국 대학 입학 요건이라
+    <strong>목표가 단일하고 성과 측정이 쉽다.</strong> 그리고 이 시장 크기로는 StarSpark 도 OpenAI 도 안 들어온다.
+  </p>
+  <p>
+    <span class="sig">단, 세 자리 전부 현재 행 수가 0이다.</span> 실물(라벨 체계·그릇·화면)은 다 서 있는데 재료가 없다.
+  </p>
+</section>
+
+<section>
+  <h2>3 · 실측</h2>
+  <h3>가장 아픈 숫자 넷</h3>
+
+  <h4>㉮ 첨삭이 Wharton 연구의 실패 그룹 구조다</h4>
+  <p>
+    <a href="https://www.pnas.org/doi/10.1073/pnas.2422633122">PNAS 2025, Bastani 외</a> — 고교생 약 <span class="n">1,000</span>명 대상.
+    AI 접근 중에는 성적이 GPT Base <span class="n">+48%</span> / GPT Tutor <span class="n">+127%</span>로 <b>둘 다 올랐지만,
+    접근을 뺏자 Base 그룹만 원래보다 못했다.</b> 즉 「학생이 좋아하고 점수도 오른다」가 학습의 증거가 아니라는 것이 요지다.
+  </p>
+  <p>
+    우리 첨삭 프롬프트(<code>엔진_콘텐츠AI.js:1873</code>)의 산출 4칸은
+    <code>corrected</code>·<code>point_mn</code>·<code>praise</code>·<code>mission</code> —
+    <strong>완성된 교정문을 그대로 건넨다.</strong> 그리고 코드가 그 문제를 스스로 적고 있다.
+  </p>
+  <blockquote>
+    <p>무인 발행이라 <b>학생은 교정문을 먼저 본다</b> — 제출 자체에 포인트를 걸면 합리적 학생은 교정문을 그대로 에코한다</p>
+    <cite>엔진_수집.js:948</cite>
+  </blockquote>
+  <p>
+    그래서 <code>재작성에코_</code>(유사도 임계 <span class="n">0.7</span>)라는 <b>복붙 차단 게이트</b>가 붙어 있다.
+    <span class="sig">우리는 이미 크러치 행동을 실제로 만났고, 기전이 아니라 증상을 막았다.</span>
+  </p>
+  <p>
+    반대로 <b>자유 대화는 이미 맞게 서 있다</b> — <code>TALK_SYSTEM_PROMPT</code>:
+    「먼저 학생이 쓴 내용에 사람처럼 반응한다(<b>교정부터 하지 않는다</b>) · 틀린 표현은 답장 맨 끝에 한 줄로만 · 반드시 질문 하나로 끝낸다」.
+    <strong>같은 저장소 안에서 두 통로가 서로 반대 철학으로 서 있고, 어느 쪽이 옳은지 판정한 문서가 없다.</strong>
+  </p>
+
+  <h4>㉯ 배포가 세 판 밀렸다</h4>
+  <div class="scroll">
+    <table>
+      <thead><tr><th style="width:30%">층</th><th>값</th></tr></thead>
+      <tbody>
+        <tr><td>저장소 <code>Code.js</code></td><td class="num">v9.256</td></tr>
+        <tr><td>라이브 (오늘 실측)</td><td class="num">v9.253</td></tr>
+        <tr><td>선행 배포 트랙</td><td><span class="n">2</span>개 모두 게이트 차단·정지</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    우리 정본이 스스로 정한 기준이 <i>「배선을 짜놓고 안 배포하면 그 배관은 없는 것과 같다」</i>이다.
+    그 기준으로 재면 <span class="n">v9.254~256</span>은 <strong>아직 없는 것</strong>이다.
+  </p>
+
+  <h4>㉰ 음성이 0인데 창이 5~6개월이다</h4>
+  <p>
+    <code>GCP_SA_JSON</code> 미설정 → <b>STT 403</b> → 목소리 전사 <span class="n">0</span>건.
+    <code>voice_log</code>·<code>audio_ref</code>·<code>voiceSweep_</code>·<code>sttOne_</code> 코드는 전부 서 있는데 자격증명 하나가 없어 안 돈다.
+  </p>
+  <p>
+    몽골 학생의 한국어 <b>발화 음성</b>은 우리 자산 중 가장 못 베끼는 것이다.
+    그리고 <code>docs/제품방향.md</code>가 <i>「급소는 개원 전이다」</i>라고 적었는데, 챗봇 목표까지 수집 창이 <b>5~6개월</b>이다.
+    <span class="sig">설계 문제가 아니라 설정 한 칸이라 지금 열 수 있다.</span>
+  </p>
+
+  <h4>㉱ 문서가 코드보다 앞서 말한 자리</h4>
+  <div class="scroll">
+    <table>
+      <thead><tr><th style="width:34%">어디</th><th>무엇이라 적혔나</th></tr></thead>
+      <tbody>
+        <tr><td>철학 정본 <code>:204</code></td><td>미니게임 G1~G4 <b>「네 벌 모두 코드·화면까지 섰다」</b></td></tr>
+        <tr><td>작업 대기열 <code>#Q31</code></td><td><b>「G3 알바 변명 · G4 서류 관문 구현」</b> — 아직 안 섰다</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    <b>커밋 해시가 붙은 대기열 쪽이 실물이다</b> — G1·G2만 섰다.
+    이 저장소는 그런 낡음을 잡으려고 시제 규약·도달 래칫을 직접 만들어 뒀는데,
+    <strong>그 장치가 아직 못 잡은 실사례</strong>다.
+  </p>
+</section>
+
+<section>
+  <h2>4 · 도전안 재검증</h2>
+  <h3>「㉡㉢을 개원 첫날 1순위로」 — 방향은 맞고, 구멍이 셋이다</h3>
+  <p>
+    원안: <i>오류↔교정 말뭉치는 2년을 쌓아도 파운데이션 모델을 못 이긴다.
+    영원히 못 갖는 데이터는 ㉡·㉢이다. 첫 시즌 답은 소급이 안 되니 개원 첫날 1순위여야 한다.</i>
+    스스로 반박 패스를 돌린 결과, 세 자리가 틀렸다.
+  </p>
+
+  <div class="hole" data-n="1">
+    <h4>㉠을 통째로 평가절하한 것이 과했다</h4>
+    <p class="verdict-line">
+      맞는 부분 — 범용 한국어 <b>교정 능력</b>은 파운데이션 모델이 이긴다.
+      틀린 부분 — 우리 자산의 가치는 교정 능력이 아니라 <b>「몽골어 화자가 어디서 무너지는가의 분포」</b>다.
+      그건 학습 데이터에 몽골인 한국어 학습자 코퍼스가 거의 없어서 그들이 못 갖는다.
+    </p>
+    <div class="fix">
+      <b>수정 →</b> <code>hw_feedback</code> 안에서 <b>「교정문 쌍」과 「오류 태그 분포」를 갈라라.</b>
+      앞은 시간이 갈수록 감가상각되고, 뒤는 안 된다.
+      지금 둘이 한 시트에 섞여 있어 <b>같은 값으로 취급된다</b> — 이게 진짜 결함이다.
+    </div>
+  </div>
+
+  <div class="hole" data-n="2">
+    <h4>㉡의 차단자는 우선순위가 아니라 사람이다</h4>
+    <p class="verdict-line">
+      ㉡(성향)의 수집 자리는 미니게임인데, G3·G4 는 미구현이고 G1·G2 도 몽골어 검수 대기다.
+      대기열 실측 = 재료0 <span class="n">7</span>건 중 <b>몽골어 검수자 부재가 3건</b>.
+      <b>우선순위를 올려도 안 뚫린다</b> — 따를 수 없는 처방이었다.
+    </p>
+    <div class="fix">
+      <b>수정 →</b> ㉡의 실제 1순위는 순위 재배치가 아니라 <b>몽골어 검수자 확보</b>다.
+      그게 안 풀리면 미니게임 네 벌이 다 서도 학생에게 못 나간다.
+      단 대기열이 스스로 적듯 <b>G3·G4 코드 자체는 지금 지을 수 있다</b> — 검수 표식이 「지을 수 있는 몫」까지 가리고 있었다.
+    </div>
+  </div>
+
+  <div class="hole" data-n="3">
+    <h4>㉡과 ㉢을 한 덩어리로 묶은 게 부정확하다</h4>
+    <p class="verdict-line">
+      소급 불가는 <b>㉢ 쪽이 진짜다</b> — 첫 시즌 목표·나침반은 그 시점에만 물을 수 있다.
+      ㉡의 행동 신호(출석·제출 시각·이탈 패턴)는 시스템이 자동으로 남기니 나중에 읽어도 된다.
+      실제로 수집 <span class="n">22</span>종 중 <span class="n">21</span>종이 이미 소비자를 갖는다.
+    </p>
+    <div class="fix">
+      <b>수정 →</b> <b>㉢만 시한부다.</b> 개원 첫날 1순위는 ㉢ 하나로 좁힌다.
+      ㉡은 시한이 아니라 <b>배선 문제</b>라 개원 후에 채워도 손실이 작다 —
+      이 구분을 안 하면 급하지 않은 것에 급한 자원을 쓰게 된다.
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>5 · 처방</h2>
+  <h3>실행 순서 — 앞의 것이 뒤의 것을 막는다</h3>
+  <ol class="steps">
+    <li>
+      <b>STT 자격증명 한 칸</b>
+      <span><code>GCP_SA_JSON</code> 설정. 가장 못 베끼는 자산(발화 음성)이 자격증명 하나로 <span class="n">0</span>건에 묶여 있다. 설계가 아니라 설정이다.</span>
+      <span class="when">오늘 · 막는 것 없음</span>
+    </li>
+    <li>
+      <b>밀린 세 판 배포</b>
+      <span>라이브 <span class="n">v9.253</span> → <span class="n">v9.256</span>. 우리 기준으로 그 셋은 지금 「없는 것」이다. 선행 트랙 <span class="n">2</span>개의 게이트 차단부터 푼다.</span>
+      <span class="when">이번 주 · 게이트 해소 선행</span>
+    </li>
+    <li>
+      <b>첨삭 힌트판 한 벌 + 파일럿 A/B 설계</b>
+      <span>같은 저장소 안에서 갈려 있는 두 철학(첨삭=정답 직행 / 대화=교정 나중)을 <b>판정한다.</b>
+      2주 무료 파일럿에서 ⓐ교정문 직행 ⓑ힌트 먼저·재제출 후 교정문을 갈라 돌리고, 2주 뒤 AI 없이 같은 유형을 쓰게 한다.
+      표본 수십 명이면 통계적 확정은 못 해도 <b>방향은 잡힌다.</b></span>
+      <span class="when">개원 전 · 코드는 프롬프트 한 벌 + 배정 스위치</span>
+    </li>
+    <li>
+      <b>㉢을 개원 첫날 1순위로 · 몽골어 검수자 확보</b>
+      <span>㉢(나침반·드림맵·시즌 회고)은 <b>소급이 안 되는 유일한 층</b>이라 첫날에 걸어야 한다.
+      ㉡은 그 뒤 — 단 검수자가 없으면 미니게임이 못 나가므로 그 확보가 ㉡의 실제 착수선이다.</span>
+      <span class="when">개원 <span class="n">2027-02-11</span> 전까지</span>
+    </li>
+  </ol>
+  <p>
+    파일럿 A/B 가 얻는 것이 셋이다 — ①우리 첫 자체 근거 ②「몽골 학생·한국어 작문에서 재현/반박했다」는
+    <b>남이 못 가진 종류의 마케팅 자산</b> ③철학 8이 「미뤄 뒀다」고 적은 효율 눈금을 개원 첫 2주에 켜는 방법.
+  </p>
+</section>
+
+<footer>
+  근거 = 원문 직접 열람 · PNAS <span class="n">2025</span> 원저 · 저장소 코드 실측 · Explore 전수 대조<span class="sep">·</span>검증 = 분리 반박 1패스<br>
+  <b>안 잰 것</b> — 형제 저장소 <code>SYNK-talk</code>(학생 접점 정본)는 이 환경에 없어 실측 못 했다. 위 판정은 <b>이 저장소 층</b>에서만 참이다.<span class="sep">·</span>
+  경쟁사 규모는 공개 기사 인용값이고 직접 검증한 값이 아니다.
+</footer>
+
+</div>

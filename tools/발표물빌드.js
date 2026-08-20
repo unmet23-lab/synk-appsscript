@@ -346,6 +346,13 @@ function main() {
       const 얹힘 = LOOM_뜯기.test(normalize(html));
       if (얹을까(훅) && !얹힘) stale.push(`${outNameOf(s)} — 훅 ${훅.length}개(${훅.join('·')})인데 Loom 이 안 얹혔다`);
       else if (!얹을까(훅) && 얹힘) stale.push(`${outNameOf(s)} — 훅 0개인데 Loom 이 얹혔다(부품 0인 채 마커만 켜진다)`);
+      else if (얹힘) {
+        /* 불리언만 보면 loom 이 바뀐 날 구세대 CSS 를 영원히 초록으로 읽는다(반박 패스 H-2 실측:
+         * 08-19 기본천 배선 뒤 옛 블록 3벌이 「전부 최신」으로 나왔다) — 블록 «내용»까지 대조한다. */
+        const 지금블록 = (normalize(loom얹기모듈.강제얹기(html, LOOM_지면)).match(LOOM_뜯기) || [''])[0];
+        const 실린블록 = (normalize(html).match(LOOM_뜯기) || [''])[0];
+        if (지금블록 !== 실린블록) stale.push(`${outNameOf(s)} — 얹힌 Loom CSS 가 지금 세대와 다르다(loom 이 바뀐 뒤 안 구웠다)`);
+      }
     }
     if (stale.length) {
       console.log(`🔴 발표물 빌드 필요 ${stale.length}건 — \`node tools/발표물빌드.js --pdf\` 를 돌려라`);

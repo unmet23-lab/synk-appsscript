@@ -33,10 +33,10 @@
 -->
 <style>
   :root{
-    --paper:#FAFAF9; --ink:#1B1B1A; --navy:#08090C; --navy2:#262626;
-    --cream:#E4E4E7; --cream2:#D1D2D4; --coral:#FF6B5C; --coral-soft:#FFE9E4;
+    --paper:#FBF7F0; --ink:#2B2320; --navy:#08090C; --navy2:#262626;
+    --cream:#EDE7DC; --cream2:#D1D2D4; --coral:#F96859; --coral-soft:#FEF0E9;
     --rule:#D1D2D4;
-    /* 2026-08-05 신설 — 키트 밖 회색(#5C5850 9곳·#8A8578 1곳)의 대체 잉크.
+    /* 2026-08-05 신설 — 키트 밖 회색(#575046 9곳·#8D857A 1곳)의 대체 잉크.
        ⚠ 이 파일의 이름표는 키트와 **뒤집혀 있다**: 여기 `--navy`(#08090C)가 키트의 Navy 2 이고,
          `--navy2`(#262626)가 키트의 Navy 다. 값은 전부 키트 안이라 렌더는 옳다 —
          이름만 헷갈리니 새로 넣는 것은 키트 이름을 그대로 쓴다(--navy-3 = Navy 3). */
@@ -94,7 +94,7 @@
   /* 호버도 라이트 배경 위 코랄 글자다(2.62) — 색을 밝히는 대신 **잉크를 진하게** 해서
      상태 변화를 준다. 정본이 「본문 크기 강조는 색이 아니라 웨이트」라고 한 것과 같은 축이다. */
   nav.jump a:hover{color:var(--navy); text-decoration:underline}
-  nav.jump span{color:var(--navy-3)}   /* 구 #8A8578 — 키트 밖 회색, 대비 3.44 미달 */
+  nav.jump span{color:var(--navy-3)}   /* 구 #8D857A — 키트 밖 회색, 대비 3.44 미달 */
 
   section.doc{padding-top:44px}
   h2.doc-title{
@@ -107,12 +107,13 @@
     font-size:18px; margin:40px 0 12px; letter-spacing:-0.015em; line-height:1.4;
     display:flex; gap:10px; align-items:baseline;
   }
-  h3 .num{
-    /* 조항 번호 22곳 — 라이트 위 코랄 글자였다(2.62). 15px 라 Coral 3(3.23)로도 미달이고,
-       대형 기준(3.0)을 노리려면 18.7px bold 로 키워야 하는데 그건 본문 h3(18px)보다 커진다.
-       번호는 이미 모노 서체 + 700 웨이트로 구별되니 색까지 쓸 필요가 없다(정본 §87). */
-    color:var(--navy-3); font-weight:700; font-size:15px;
-    font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace; flex:none;
+  h3 .번호{
+    /* 조항 번호 22곳 — 이제 Loom 유리 원판이 그린다. 원고는 «크기»만 정한다.
+       ⚠옛 규칙은 여기서 `color:var(--navy-3)` 를 잡았다(라이트 바탕 위 대비를 맞추려던 값).
+         원판이 깔리면서 바탕이 어두워졌는데 잉크는 그대로 남아 **숫자가 안 보였다**
+         (2026-08-19 렌더로 잡음 · 덱·브로셔에 이어 같은 원인 3번째 → `tests/룸잉크.test.js` 가 막는다).
+         대비는 이제 Loom 이 진다: 원판 바탕 + `color:var(--cream)`. */
+    font-size:15px; flex:none;
   }
   h4{font-size:15.5px; margin:24px 0 8px; color:var(--navy)}
   p{margin:0 0 14px}
@@ -166,9 +167,9 @@
     body{font-size:11pt}
   }
 </style>
-<style data-loom="밝은부품">
-/* ── Loom 밝은부품 지면 — 조립 산출물(손 편집 금지) ──────────────────────────
-   통로: node tools/lib/loom.js --css 밝은부품
+<style data-loom="부품만">
+/* ── Loom 부품만 지면 — 조립 산출물(손 편집 금지) ──────────────────────────
+   통로: node tools/lib/loom.js --css 부품만
    값:   docs/디자인_토큰.json (색·율·재질·부품) — 이 CSS 에 hex·px 원본은 없다
    물성 사다리: 펠트(먹는다) → 유리(통과시킨다) → 레진(가둔다) · 림 무채
    ⚠번호는 CSS counter 가 «자동»으로 세운다 — 원고가 번호를 안 적어도 된다.
@@ -177,16 +178,10 @@
    ──────────────────────────────────────────────────────────────────────── */
   /* 색 — 이 CSS 가 «실제로 참조하는» 것만. 안 쓰는 색은 남의 지면에 안 들인다. */
   :root{
-    --chalk:#E4E4E7; --chalk-rgb:228,228,231;
-    --chalk2:#EAEAEA; --chalk2-rgb:234,234,234;
-    --chalk3:#D1D2D4; --chalk3-rgb:209,210,212;
-    --paper:#FAFAF9; --paper-rgb:250,250,249;
-    --ink:#1B1B1A; --ink-rgb:27,27,26;
-    --coral:#FF6B5C; --coral-rgb:255,107,92;
-    --coral3:#E8543F; --coral3-rgb:232,84,63;
-    --ash:#8C8C8C; --ash-rgb:140,140,140;
-    --ash2:#666666; --ash2-rgb:102,102,102;
-    --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --룸-chalk:#E4E4E7; --룸-chalk-rgb:228,228,231;
+    --룸-ink:#2B2320; --룸-ink-rgb:43,35,32;
+    --룸-coral:#F96859; --룸-coral-rgb:249,104,89;
+    --룸-font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   }
   /* ── 율 — 모든 간격이 여기서 나온다. 이름 없는 px 을 지면에 적지 않는다.
      4px 기반 ×1.5 근사 — 인접 두 단이 눈에 갈려야 «고른» 것이 된다. */
@@ -224,13 +219,13 @@
   .유리::before{
     content:'';position:absolute;inset:0;border-radius:inherit;
     padding:1.2px;pointer-events:none;z-index:1;
-    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     opacity:.95;
-    filter:saturate(1.5)
-           drop-shadow(0 0 10px rgba(255,107,92,0.2));
+    filter:saturate(1.5) drop-shadow(0 0 5px rgba(78,124,255,0.34))
+           drop-shadow(0 0 10px rgba(249,104,89,0.2));
   }
   .유리>*{position:relative;z-index:2;}
   .유리.잔잔{--깃:16px;padding:var(--칸) var(--단);}
@@ -243,13 +238,13 @@
      display:flex;align-items:center;gap:calc(var(--숨) * 2.5);flex-wrap:wrap;
      margin:var(--제목위) 0 var(--제목아래);
      font-size:clamp(1.32rem,2.5vw,1.72rem);font-weight:800;
-     letter-spacing:-.038em;line-height:var(--줄제목);color:var(--chalk);}
+     letter-spacing:-.038em;line-height:var(--줄제목);}
   .룸 h2>span:not(.번호){flex:0 1 auto;min-width:0;}
   .룸 h2:not(:has(.번호))::before{content:counter(절,decimal-leading-zero);position:relative;
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -264,25 +259,22 @@
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
   .번호::before{position:absolute;inset:0;
     content:'';border-radius:50%;padding:1.4px;pointer-events:none;
-    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
-    filter:saturate(1.6)
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
+    filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:순번*/
-  /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리).
-     🔴 «.민» 은 빠진다 — 번호를 **원고가 손으로 적은** 목록이다(«<li><span>1.</span>…»).
-        counter 를 그런 목록에 씌우면 «① 1. …» 두 번 번호가 되고, 그 사고는 남의 지면에서만 난다
-        (우리 원고는 번호를 안 적으니까). 실물 = 발표물 01 덱의 «ol.q3» (2026-08-19). */
+  /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리). */
   .룸 ol{list-style:none;counter-reset:순번;padding-left:0;margin:var(--단) 0;}
   .룸 ol>li{counter-increment:순번;position:relative;
         padding-left:calc(1.55em + var(--칸));margin:var(--참) 0;min-height:1.55em;}
@@ -290,7 +282,7 @@
     flex:none;width:1.55em;height:1.55em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.72em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -300,26 +292,19 @@
   .룸 ol>li::after{position:absolute;left:0;top:.06em;font-size:.72em;
     width:1.55em;height:1.55em;
     content:'';border-radius:50%;padding:1.1px;pointer-events:none;
-    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
-    filter:saturate(1.6)
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
-  /* 🔴 «.민» — 번호를 **원고가 손으로 적은** 목록에서 원판만 걷는다(«<li><span>1.</span>…»).
-     counter 를 그런 목록에 씌우면 «① 1. …» 로 두 번 번호가 되고, 그 사고는 **남의 지면에서만** 난다
-     (우리 원고는 번호를 안 적는다). 실물 = 발표물 01 덱의 «ol.q3» (2026-08-19).
-     ⚠기본 규칙(위)은 안 건드린다 — 그 모양을 «흠 검사»가 재고 있어서, 선택자를 고치면
-     가드가 「순번 원판이 없다」로 거짓 적색을 낸다(실측). 규칙을 바꾸려면 가드부터 바꾼다. */
-  .룸 ol.민>li{counter-increment:none;padding-left:0;min-height:0;}
-  .룸 ol.민>li::before,.룸 ol.민>li::after{content:none;display:none;}
+    filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:차례번호*/
   .잔번호{position:relative;
     flex:none;width:1.35em;height:1.35em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.66em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -330,7 +315,7 @@
     flex:none;width:1.25em;height:1.25em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -362,7 +347,7 @@
   /*loom부품:체크*/
   .체크{display:inline-grid;place-items:center;position:relative;
     width:1.3em;height:1.3em;border-radius:50%;flex:none;padding-bottom:.025em;
-    font-size:.72em;font-weight:800;color:var(--chalk);
+    font-size:.72em;font-weight:800;color:var(--룸-chalk);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
         rgba(228,228,231,0.58) 0%, rgba(228,228,231,0.12) 62%, rgba(228,228,231,0) 78%),
@@ -383,16 +368,16 @@
   .히어로수{display:inline-grid;place-items:center;position:relative;
     min-width:2.6em;height:2.6em;padding:0 var(--참) .025em;border-radius:999px;
     font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;letter-spacing:-.04em;
-    font-variant-numeric:tabular-nums;color:var(--chalk);
+    font-variant-numeric:tabular-nums;color:var(--룸-chalk);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
-        rgba(255,107,92,0.58) 0%, rgba(255,107,92,0.12) 62%, rgba(255,107,92,0) 78%),
+        rgba(249,104,89,0.58) 0%, rgba(249,104,89,0.12) 62%, rgba(249,104,89,0) 78%),
       rgba(29,29,28,0.62);
     box-shadow:
       inset 0 0 0 1px rgba(228,228,231,0.1),
-      inset 0 3px 10px -3px rgba(255,107,92,0.45),
+      inset 0 3px 10px -3px rgba(249,104,89,0.45),
       inset 0 -3px 10px -2px rgba(0,0,0,.58),
-      0 6px 14px -4px rgba(255,107,92,0.38);}
+      0 6px 14px -4px rgba(249,104,89,0.38);}
   .히어로수::before{
     content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
     background:radial-gradient(30% 22% at 38% 16%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);}
@@ -400,12 +385,12 @@
   /*loom부품:태그*/
   .칩{display:inline-flex;align-items:center;gap:var(--숨);
     padding:calc(var(--숨) + 1px) var(--참);border-radius:999px;position:relative;
-    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--chalk);
+    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--룸-chalk);
     background:linear-gradient(170deg, rgba(228,228,231,0.12), rgba(228,228,231,0.03) 60%),
                rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.18),0 8px 16px -10px rgba(0,0,0,.9);}
   .칩::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
-    pointer-events:none;background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
+    pointer-events:none;background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;opacity:.8;}
@@ -418,23 +403,23 @@
 
   /*loom부품:인용부호*/
   .룸 blockquote{position:relative;margin:var(--켜) 0;padding:var(--단) var(--단) var(--단) calc(var(--켜) + var(--참));
-    font-size:.97rem;color:var(--ash);}
+    font-size:.97rem;}
   .룸 blockquote::before{content:'\201C';position:absolute;left:var(--칸);top:calc(var(--칸) - var(--숨));
     display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;
-    font-size:1.5em;line-height:1;font-weight:800;color:var(--chalk);
+    font-size:1.5em;line-height:1;font-weight:800;color:var(--룸-chalk);
     padding-top:.28em;   /* 광학 — 여는 따옴표는 글리프가 위쪽에 몰려 있다 */
     background:linear-gradient(170deg, rgba(228,228,231,0.13), rgba(228,228,231,0.02) 58%),
                rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 10px 20px -12px rgba(0,0,0,.9);}
-  .룸 blockquote i,.룸 blockquote em{color:var(--chalk);font-style:italic;}
+  .룸 blockquote i,.룸 blockquote em{;font-style:italic;}
 
   /*loom부품:표지오브*/
   /* 펠트 오브 — 이 지면에서 «부피»를 가진 유일한 물건이라 하나뿐이어야 한다.
      빛을 먹는 재질(roughness .95)이라 유리·레진 옆에서 «사람이 만든 것»으로 읽힌다. */
   .오브{width:112px;height:112px;border-radius:31px;flex:none;position:relative;overflow:hidden;
-    background-color:var(--chalk);
+    background-color:var(--룸-chalk);
     display:grid;place-items:center;
-    color:var(--ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
+    color:var(--룸-ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
     box-shadow:
       inset 0 3px 4px rgba(255,255,255,.62),
       inset 0 -14px 24px -6px rgba(8,9,12,0.5),
@@ -450,13 +435,13 @@
   /*loom부품:링크점*/
   /* 링크 — 40~50대가 읽는다는 것을 셈에 넣으면 밑선 알파만으로는 링크가 아니다.
      셋을 겹친다: 밑선 .62 · 굵기 한 단 · 앞에 코랄 점(3px 이라 신호 1점을 안 넘는다). */
-  .룸 a{color:var(--chalk);text-decoration:none;font-weight:560;
+  .룸 a{;text-decoration:none;font-weight:560;
     box-shadow:inset 0 -1px 0 rgba(228,228,231,0.62);
     transition:box-shadow 180ms ease,color 180ms ease;}
   .룸 a:not(.민):not(.레일 a)::before{content:'';display:inline-block;width:3px;height:3px;
     border-radius:50%;vertical-align:.32em;margin-right:var(--숨);
-    background:var(--coral);box-shadow:0 0 6px rgba(255,107,92,0.7);}
-  .룸 a:hover{box-shadow:inset 0 -1px 0 rgba(255,107,92,0.9);}
+    background:var(--룸-coral);box-shadow:0 0 6px rgba(249,104,89,0.7);}
+  .룸 a:hover{box-shadow:inset 0 -1px 0 rgba(249,104,89,0.9);}
 
   /*loom부품:쪽번호*/
   /* 쪽번호 — 낮 지면에서만 산다. 화면에는 «쪽»이라는 것이 없다. */
@@ -465,7 +450,7 @@
   /*loom부품:본문타이포*/
   /* 🚫본문 타이포 — 불가침. 글자에 재질을 입히지 않는다(DESIGN.md §1 「타이포는 안 건드린다」).
      여기 있는 것은 «재질을 안 입힌다»는 선언이고, 그래서 분모에 든다(빠뜨린 것과 갈리게). */
-  .룸 p,.룸 li,.룸 td,.룸 th{font-family:var(--font);}
+  .룸 p,.룸 li,.룸 td,.룸 th{font-family:var(--룸-font);}
 
   /* ══ 구운 재질 (Blender Cycles · tools/룸굽기.js) ══ */
   /* 번호 원판 — 지면에서 가장 많이 도는 «각진» 부품이라 모따기가 여기서 값을 한다.
@@ -501,89 +486,6 @@
   .룸 a .점,.링크점{background-image:url("data:image/webp;base64,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");
     background-size:contain;background-position:center;background-repeat:no-repeat;
     background-color:transparent;box-shadow:none;}
-
-  /* ── 밝은 화면 — 바탕이 Paper 인 남의 지면에 얹을 때 (2026-08-19)
-     «낮» 과 **같은 값**을 쓰되 «@media print» 밖에 둔다. 위 «밝은글자()» 주석이 사유를 진다. */
-    .룸 h2{color:var(--ink);}
-    .흐린{color:var(--ash2);}
-    .룸 a{color:var(--ink);font-weight:640;box-shadow:none;border-bottom:1px solid var(--coral3);}
-    .룸 a:not(.민)::before{background:var(--coral3);box-shadow:none;}
-    .룸 blockquote i,.룸 blockquote em{color:var(--ink);}
-    /* 🔴 인용은 «안 흐린다» — 통짜 지면과 갈리는 유일한 값이고, 사유가 있다.
-       남의 지면에서 blockquote 는 «판» 위에 앉아 있을 수 있다(실측 2026-08-19: 개인정보 게시본은
-       blockquote 바탕이 Chalk 다). 거기에 Ash 2 를 얹으면 **4.46:1** — 기준 4.5 를 아슬하게
-       못 넘고 렌더린트가 문다. 우리는 그 판의 색을 모르므로 «흐림»으로는 대비를 보장할 수 없다.
-       ⇒ 남의 지면에서 인용의 신호는 색이 아니라 **따옴 부품과 레일**이 진다. */
-    .룸 blockquote{color:var(--ink);}
-
-  /* ── 낮 지면 ────────────────────────────────────────────────────────────
-     ⚠검은 무대를 종이에 그대로 두면 안 되는 이유는 취향이 아니라 실패 모드다:
-       크롬 인쇄의 「배경 그래픽」은 **기본이 꺼짐**이라 바탕만 흰 종이가 되고 글자는 Cream 으로
-       남는다 — **Cream on 흰 종이 = 1.13:1**(본문이 통째로 사라진다).
-     «다른 디자인»이 아니라 **같은 골격에 다른 빛**이다 — 부품 구조가 그대로다.
-     재질도 죽이지 않고 «굳힌다»: 유리는 판이 되고, 레진은 구슬이 된다.
-       유리 → 뒤가 비치는 것이 유리인데 종이엔 뒤가 없다 → 면 + 실선
-       레진 → glow 가 종이에 안 실린다 → 코어를 «면»으로, 굴절밴드를 «선»으로 굳힌다
-       못 옮기는 것 = 코스틱(샌 빛). 종이의 한계라 억지로 흉내내지 않는다. */
-  @media print{
-    .룸{background:var(--paper);color-scheme:light;}
-    .룸{background:var(--paper);background-attachment:initial;color:var(--ink);
-         font-size:10.6pt;line-height:1.62;}
-
-    .유리{background:var(--chalk2);border:1px solid var(--chalk3);
-      -webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;
-      break-inside:avoid;padding:var(--칸) calc(var(--칸) + var(--숨));}
-    .유리::before{content:none;}
-
-    /* 번호 — 유리 원판이 «찍힌 원판»이 된다. 분산 림은 선 하나로 굳는다. */
-    .룸 h2{margin:calc(var(--켜) * .6) 0 var(--참);font-size:14pt;break-after:avoid;}
-    .룸 h2:not(:has(.번호))::before,.번호,.잔번호,.각주{
-      background:var(--chalk3);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ash2);}
-    .룸 h2:not(:has(.번호))::after{background:var(--chalk3);}
-    .번호::before{content:none;}
-    .룸 ol>li::before{background:var(--chalk3);color:var(--ink);
-      box-shadow:inset 0 0 0 1px var(--ash2);}
-    .룸 ol>li::after{content:none;}
-
-    /* 레진 — 코어를 면으로, 굴절밴드를 선으로. 구슬로 읽히되 종이에서 뜨지 않는다. */
-    .룸 ul>li::before{background:rgba(232,84,63,0.22);
-      box-shadow:inset 0 0 0 1px rgba(232,84,63,0.55);}
-    .룸 ul>li::after{background:none;}
-    .체크,.히어로수{color:var(--ink);
-      background:radial-gradient(58% 58% at 50% 44%, rgba(232,84,63,0.26), rgba(232,84,63,0.07) 70%),
-                 var(--chalk2);
-      box-shadow:inset 0 0 0 1px rgba(232,84,63,0.5);}
-    .체크::before,.히어로수::before{content:none;}
-
-    .칩{background:var(--chalk2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--chalk3);}
-    .칩::before{content:none;}
-    .실금{background:var(--chalk3);}
-    .룸 blockquote::before{background:var(--chalk3);color:var(--ink);box-shadow:none;}
-    .오브{width:74px;height:74px;border-radius:20px;color:var(--ink);font-size:1.7rem;
-      box-shadow:none;border:1px solid var(--chalk3);}   /* 배경을 끄면 천이 사라지니 테두리가 형태를 진다 */
-    .오브::before,.오브::after{content:none;}
-
-    .룸 h2{color:var(--ink);}
-    .흐린{color:var(--ash2);}
-    .룸 a{color:var(--ink);font-weight:640;box-shadow:none;border-bottom:1px solid var(--coral3);}
-    .룸 a:not(.민)::before{background:var(--coral3);box-shadow:none;}
-    .룸 blockquote i,.룸 blockquote em{color:var(--ink);}
-    /* 🔴 여기서부터는 **남의 지면의 글**까지 검게 만든다 — 종이에서는 Loom 이 판 전체를 가지므로 맞다.
-       화면(«밝은글»)에는 안 준다: 밝은 지면 «안»의 어두운 섬(header 같은 것)의 글까지 검어져
-       그 자리가 통째로 사라진다(2026-08-19 실측 · 엔진 지도 머리말). */
-    .룸 p,.룸 li,.룸 b,.룸 strong,.룸 td,.룸 th,.룸 h3{color:var(--ink);}
-    .룸 li::marker{color:var(--ash2);}
-    .룸 blockquote{color:var(--ash2);}
-    .룸 footer{color:var(--ash2);}
-    .룸 code{color:var(--ink);background:var(--chalk2);box-shadow:inset 0 0 0 1px var(--chalk3);}
-
-    /* 쪽번호 — 낮에만 산다. @page 여백 안에 앉힌다. */
-    .쪽번호{display:block;position:fixed;bottom:4mm;right:0;
-      font-size:8.5pt;color:var(--ash2);font-variant-numeric:tabular-nums;}
-    .룸 thead{display:table-header-group;}
-    .룸 tr,.수치{break-inside:avoid;}
-    .룸 *{print-color-adjust:exact;-webkit-print-color-adjust:exact;}
-  }
 </style>
 </head>
 <body>
@@ -613,7 +515,7 @@
   </div>
 </header>
 
-<main class="룸">
+<main>
 <div class="wrap">
 
   <nav class="jump">
@@ -629,7 +531,7 @@
       밝힙니다. 좋게 보이기 위해 실제와 다르게 적지 않았습니다.
     </p>
 
-    <h3><span class="num">1</span> 수집하는 정보</h3>
+    <h3><span class="번호">1</span> 수집하는 정보</h3>
 
     <h4>① 상담·등록 신청서 (크루카드 등록 페이지 · 광고 리드폼)</h4>
     <ul>
@@ -679,7 +581,7 @@
     <blockquote><p>아이의 얼굴과 이야기는 학원의 홍보 재료이기 전에 아이의 것입니다.
       이 순서는 바뀌지 않습니다.</p></blockquote>
 
-    <h3><span class="num">2</span> 이용 목적</h3>
+    <h3><span class="번호">2</span> 이용 목적</h3>
     <ul>
       <li>상담과 반 배정, 수업 운영, 출결·진도 관리</li>
       <li><strong>학습 개인화</strong> — 응원 문장, 퀴즈, 성장 리포트의 소재</li>
@@ -694,7 +596,7 @@
     </ul>
     <p>학원은 개인정보를 <strong>광고 목적으로 판매하거나 제3자에게 넘기지 않습니다.</strong></p>
 
-    <h3><span class="num">3</span> 자동화된 응대와 판단</h3>
+    <h3><span class="번호">3</span> 자동화된 응대와 판단</h3>
     <ul>
       <li>페이스북 페이지의 상담은 <strong>자동 응답 봇</strong>이 먼저 답합니다. 봇은 대화 시작
         시 자동화임을 밝히고, 확정되지 않은 정보(수강료 등)는 답하지 않고 담당 선생님에게
@@ -703,7 +605,7 @@
         <em>그 등급만으로 학생에 대한 결정을 내리지 않습니다</em> — 사람이 확인하고 판단합니다.</li>
     </ul>
 
-    <h3><span class="num">4</span> 처리를 맡기는 곳 (수탁자)</h3>
+    <h3><span class="번호">4</span> 처리를 맡기는 곳 (수탁자)</h3>
     <p>아래 회사의 시스템을 사용합니다. 이들은 우리를 대신해 저장·처리할 뿐, 자기 목적으로
       쓰지 않습니다.</p>
     <div class="tbl-scroll">
@@ -727,7 +629,7 @@
     <div class="note"><strong>국외 이전</strong> — 위 회사들의 서버는 몽골 밖(주로 미국)에
       있습니다. 학원 서비스를 이용하시면 이 이전에 동의하시는 것이 됩니다.</div>
 
-    <h3><span class="num">5</span> 보관 기간</h3>
+    <h3><span class="번호">5</span> 보관 기간</h3>
     <div class="tbl-scroll">
     <table>
       <thead><tr><th>정보</th><th>보관 기간</th></tr></thead>
@@ -748,7 +650,7 @@
     <blockquote><p>삭제 요청 시에도 <strong>휴지통 보관 기간(약 30일)</strong> 동안은 복구
       가능한 상태로 남았다가 완전히 지워집니다.</p></blockquote>
 
-    <h3><span class="num">6</span> 자녀 자료를 받아보시는 방법</h3>
+    <h3><span class="번호">6</span> 자녀 자료를 받아보시는 방법</h3>
     <p>학생의 <strong>녹음 파일</strong>과 <strong>성장 리포트 카드</strong>는
       <em>인터넷에 공개하지 않습니다.</em> 학원 계정으로 로그인해야만 열 수 있습니다.</p>
     <ul>
@@ -763,7 +665,7 @@
     <blockquote><p>보호자 이메일이 등록되어 있지 않으면 리포트 카드를 보내드릴 수 없습니다 —
       상담 시 이메일을 꼭 알려주세요.</p></blockquote>
 
-    <h3><span class="num">7</span> 여러분의 권리 — 열람·정정·삭제·철회</h3>
+    <h3><span class="번호">7</span> 여러분의 권리 — 열람·정정·삭제·철회</h3>
     <p>위 <strong>hello@synk.im</strong>로 연락 주시면 처리합니다.</p>
     <ul>
       <li>어떤 정보를 갖고 있는지 <strong>열람</strong></li>
@@ -780,7 +682,7 @@
     <p>처리 기간: 요청하신 날로부터 <strong>7일 이내</strong>에 처리하고 결과를 알려드립니다
       (백업 사본은 위 5항의 보관 주기에 따라 지워집니다).</p>
 
-    <h3><span class="num">8</span> 미성년자</h3>
+    <h3><span class="번호">8</span> 미성년자</h3>
     <ul>
       <li>미성년 학생의 개인정보는 <strong>보호자 동의</strong>를 전제로 수집합니다.</li>
       <li>상담 봇은 학생 본인으로 보이는 경우 <strong>연락처를 요청하지 않고</strong> 보호자
@@ -788,17 +690,17 @@
       <li>보호자께서는 언제든 자녀의 정보에 대해 위 7항의 권리를 행사하실 수 있습니다.</li>
     </ul>
 
-    <h3><span class="num">9</span> 안전조치</h3>
+    <h3><span class="번호">9</span> 안전조치</h3>
     <ul>
       <li>자료는 학원 계정으로 접근이 제한된 저장소에 보관합니다.</li>
       <li>시스템 접근 권한은 필요한 담당자에게만 부여합니다.</li>
       <li>외부에서 받은 글이 시스템에 명령으로 실행되지 않도록 처리합니다.</li>
     </ul>
 
-    <h3><span class="num">10</span> 방침 변경</h3>
+    <h3><span class="번호">10</span> 방침 변경</h3>
     <p>이 방침을 바꿀 때는 이 페이지에 변경 내용과 시행일을 함께 게시합니다.</p>
 
-    <h3><span class="num">11</span> 문의 · 삭제 요청 창구</h3>
+    <h3><span class="번호">11</span> 문의 · 삭제 요청 창구</h3>
     <div class="tbl-scroll">
     <table>
       <tbody>
@@ -824,7 +726,7 @@
       Page "SYNK LAB", and the SYNK LAB learning app.
     </p>
 
-    <h3><span class="num">1</span> Information we collect</h3>
+    <h3><span class="번호">1</span> Information we collect</h3>
     <ul>
       <li><strong>(a) Enquiry / enrolment form.</strong> Student name, <strong>date of
         birth</strong>, contact details; guardian name, phone and email; learning background and
@@ -854,7 +756,7 @@
         enrolment.</li>
     </ul>
 
-    <h3><span class="num">2</span> How we use it</h3>
+    <h3><span class="번호">2</span> How we use it</h3>
     <p>Consultation and class placement; running lessons and tracking attendance and progress;
       personalising learning content; sending weekly progress reports to guardians in Mongolian;
       <strong>assessing drop-out risk</strong> so we can reach out and help — this rating is not
@@ -864,7 +766,7 @@
       data is exported for that development purpose, <strong>names and contact details are
       removed</strong>. We do not sell personal data or share it for advertising.</p>
 
-    <h3><span class="num">3</span> Automated processing</h3>
+    <h3><span class="번호">3</span> Automated processing</h3>
     <p>Consultations on our Facebook Page are first answered by an <strong>automated
       bot</strong>, which <strong>discloses that it is automated at the start of every
       conversation</strong>. It does not answer questions outside its approved knowledge base
@@ -873,7 +775,7 @@
       calculated automatically but <em>no decision about a student is made on that rating
       alone</em> — a person reviews it.</p>
 
-    <h3><span class="num">4</span> Processors</h3>
+    <h3><span class="번호">4</span> Processors</h3>
     <p>Google (Workspace, Sheets, Drive, Forms, Gmail, Apps Script) for storage, form collection
       and email; <strong>Google Cloud Speech-to-Text for transcription — the audio file itself is
       sent</strong>; Glide for the student/guardian app; <strong>Anthropic (Claude AI) to generate
@@ -882,14 +784,14 @@
       <strong>These providers' servers are located outside Mongolia (primarily in the United
       States).</strong></p>
 
-    <h3><span class="num">5</span> Retention</h3>
+    <h3><span class="번호">5</span> Retention</h3>
     <p>Voice recordings and transcripts, and enrolled students' learning and progress records:
       <strong>retained without a fixed time limit</strong>, to support multi-year progress
       records. Consultation conversations and contact details (including from people who do not
       enrol): kept for consultation history and <strong>deleted on request</strong>. System
       backups: 30 days, plus up to 30 further days in trash before permanent deletion.</p>
 
-    <h3><span class="num">6</span> How guardians receive their child's material</h3>
+    <h3><span class="번호">6</span> How guardians receive their child's material</h3>
     <p>Student <strong>voice recordings</strong> and <strong>progress report cards</strong> are
       <em>not published on the internet</em> — they can only be opened by an authenticated
       academy account. Report cards are delivered to the guardian's email <strong>as an image
@@ -898,7 +800,7 @@
       recordings. All other student data (contact details, consultation content, source records)
       is likewise restricted to academy accounts.</p>
 
-    <h3><span class="num">7</span> Your rights — access, correction, deletion, withdrawal</h3>
+    <h3><span class="번호">7</span> Your rights — access, correction, deletion, withdrawal</h3>
     <p>Contact us using the details in section 11 to request access, correction,
       <strong>deletion</strong> (of recordings, learning records and consultation conversations),
       or <strong>withdrawal of consent</strong>. On withdrawal we stop using the data immediately
@@ -907,20 +809,20 @@
       voice from a model after training; we do not use it after withdrawal. We respond within
       <strong>7 days</strong>; backup copies are erased on the cycle in section 5.</p>
 
-    <h3><span class="num">8</span> Minors</h3>
+    <h3><span class="번호">8</span> Minors</h3>
     <p>Personal data of minors is collected on the basis of guardian consent. Our assistant does
       not request contact details from users who appear to be minors. Guardians may exercise all
       rights in section 7 on their child's behalf.</p>
 
-    <h3><span class="num">9</span> Security</h3>
+    <h3><span class="번호">9</span> Security</h3>
     <p>Data is held in storage restricted to academy accounts. Access is granted only to staff
       who need it. Text received from outside is handled so that it cannot execute as a command
       in our systems.</p>
 
-    <h3><span class="num">10</span> Changes</h3>
+    <h3><span class="번호">10</span> Changes</h3>
     <p>Changes to this policy will be posted on this page with their effective date.</p>
 
-    <h3><span class="num">11</span> Contact and data-deletion requests</h3>
+    <h3><span class="번호">11</span> Contact and data-deletion requests</h3>
     <div class="tbl-scroll">
     <table>
       <tbody>

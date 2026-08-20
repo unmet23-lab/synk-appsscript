@@ -4,7 +4,7 @@
 <style>
   :root{color-scheme:light;
     --paper:#FAFAF9;--ink:#1B1B1A;--navy:#262626;--navy2:#08090C;--navy3:#373737;
-    --cream:#E4E4E7;--cream3:#D1D2D4;--slate2:#666666;
+    --cream:#E4E4E7;--cream3:#D1D2D4;--slate2:#676767;
     --coral:#FF6B5C;--coral3:#E8543F;--wash:#FFE9E4;--sun:#FFD447;--emerald:#13724A}
   *{box-sizing:border-box}
   body{margin:0;padding:clamp(20px,4vw,44px);background:var(--paper);color:var(--ink);
@@ -90,11 +90,10 @@
    ──────────────────────────────────────────────────────────────────────── */
   /* 색 — 이 CSS 가 «실제로 참조하는» 것만. 안 쓰는 색은 남의 지면에 안 들인다. */
   :root{
-    --chalk:#E4E4E7; --chalk-rgb:228,228,231;
-    --ink:#1B1B1A; --ink-rgb:27,27,26;
-    --coral:#FF6B5C; --coral-rgb:255,107,92;
-    --ash:#8C8C8C; --ash-rgb:140,140,140;
-    --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --룸-chalk:#E4E4E7; --룸-chalk-rgb:228,228,231;
+    --룸-ink:#2B2320; --룸-ink-rgb:43,35,32;
+    --룸-coral:#F96859; --룸-coral-rgb:249,104,89;
+    --룸-font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   }
   /* ── 율 — 모든 간격이 여기서 나온다. 이름 없는 px 을 지면에 적지 않는다.
      4px 기반 ×1.5 근사 — 인접 두 단이 눈에 갈려야 «고른» 것이 된다. */
@@ -132,13 +131,13 @@
   .유리::before{
     content:'';position:absolute;inset:0;border-radius:inherit;
     padding:1.2px;pointer-events:none;z-index:1;
-    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     opacity:.95;
     filter:saturate(1.5) drop-shadow(0 0 5px rgba(78,124,255,0.34))
-           drop-shadow(0 0 10px rgba(255,107,92,0.2));
+           drop-shadow(0 0 10px rgba(249,104,89,0.2));
   }
   .유리>*{position:relative;z-index:2;}
   .유리.잔잔{--깃:16px;padding:var(--칸) var(--단);}
@@ -151,13 +150,13 @@
      display:flex;align-items:center;gap:calc(var(--숨) * 2.5);flex-wrap:wrap;
      margin:var(--제목위) 0 var(--제목아래);
      font-size:clamp(1.32rem,2.5vw,1.72rem);font-weight:800;
-     letter-spacing:-.038em;line-height:var(--줄제목);color:var(--chalk);}
+     letter-spacing:-.038em;line-height:var(--줄제목);}
   .룸 h2>span:not(.번호){flex:0 1 auto;min-width:0;}
   .룸 h2:not(:has(.번호))::before{content:counter(절,decimal-leading-zero);position:relative;
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -172,25 +171,22 @@
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
   .번호::before{position:absolute;inset:0;
     content:'';border-radius:50%;padding:1.4px;pointer-events:none;
-    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:순번*/
-  /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리).
-     🔴 «.민» 은 빠진다 — 번호를 **원고가 손으로 적은** 목록이다(«<li><span>1.</span>…»).
-        counter 를 그런 목록에 씌우면 «① 1. …» 두 번 번호가 되고, 그 사고는 남의 지면에서만 난다
-        (우리 원고는 번호를 안 적으니까). 실물 = 발표물 01 덱의 «ol.q3» (2026-08-19). */
+  /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리). */
   .룸 ol{list-style:none;counter-reset:순번;padding-left:0;margin:var(--단) 0;}
   .룸 ol>li{counter-increment:순번;position:relative;
         padding-left:calc(1.55em + var(--칸));margin:var(--참) 0;min-height:1.55em;}
@@ -198,7 +194,7 @@
     flex:none;width:1.55em;height:1.55em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.72em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -208,26 +204,19 @@
   .룸 ol>li::after{position:absolute;left:0;top:.06em;font-size:.72em;
     width:1.55em;height:1.55em;
     content:'';border-radius:50%;padding:1.1px;pointer-events:none;
-    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
-  /* 🔴 «.민» — 번호를 **원고가 손으로 적은** 목록에서 원판만 걷는다(«<li><span>1.</span>…»).
-     counter 를 그런 목록에 씌우면 «① 1. …» 로 두 번 번호가 되고, 그 사고는 **남의 지면에서만** 난다
-     (우리 원고는 번호를 안 적는다). 실물 = 발표물 01 덱의 «ol.q3» (2026-08-19).
-     ⚠기본 규칙(위)은 안 건드린다 — 그 모양을 «흠 검사»가 재고 있어서, 선택자를 고치면
-     가드가 「순번 원판이 없다」로 거짓 적색을 낸다(실측). 규칙을 바꾸려면 가드부터 바꾼다. */
-  .룸 ol.민>li{counter-increment:none;padding-left:0;min-height:0;}
-  .룸 ol.민>li::before,.룸 ol.민>li::after{content:none;display:none;}
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:차례번호*/
   .잔번호{position:relative;
     flex:none;width:1.35em;height:1.35em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.66em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -238,7 +227,7 @@
     flex:none;width:1.25em;height:1.25em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--chalk);
+    color:var(--룸-chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -270,7 +259,7 @@
   /*loom부품:체크*/
   .체크{display:inline-grid;place-items:center;position:relative;
     width:1.3em;height:1.3em;border-radius:50%;flex:none;padding-bottom:.025em;
-    font-size:.72em;font-weight:800;color:var(--chalk);
+    font-size:.72em;font-weight:800;color:var(--룸-chalk);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
         rgba(228,228,231,0.58) 0%, rgba(228,228,231,0.12) 62%, rgba(228,228,231,0) 78%),
@@ -291,16 +280,16 @@
   .히어로수{display:inline-grid;place-items:center;position:relative;
     min-width:2.6em;height:2.6em;padding:0 var(--참) .025em;border-radius:999px;
     font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;letter-spacing:-.04em;
-    font-variant-numeric:tabular-nums;color:var(--chalk);
+    font-variant-numeric:tabular-nums;color:var(--룸-chalk);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
-        rgba(255,107,92,0.58) 0%, rgba(255,107,92,0.12) 62%, rgba(255,107,92,0) 78%),
+        rgba(249,104,89,0.58) 0%, rgba(249,104,89,0.12) 62%, rgba(249,104,89,0) 78%),
       rgba(29,29,28,0.62);
     box-shadow:
       inset 0 0 0 1px rgba(228,228,231,0.1),
-      inset 0 3px 10px -3px rgba(255,107,92,0.45),
+      inset 0 3px 10px -3px rgba(249,104,89,0.45),
       inset 0 -3px 10px -2px rgba(0,0,0,.58),
-      0 6px 14px -4px rgba(255,107,92,0.38);}
+      0 6px 14px -4px rgba(249,104,89,0.38);}
   .히어로수::before{
     content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
     background:radial-gradient(30% 22% at 38% 16%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);}
@@ -308,12 +297,12 @@
   /*loom부품:태그*/
   .칩{display:inline-flex;align-items:center;gap:var(--숨);
     padding:calc(var(--숨) + 1px) var(--참);border-radius:999px;position:relative;
-    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--chalk);
+    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--룸-chalk);
     background:linear-gradient(170deg, rgba(228,228,231,0.12), rgba(228,228,231,0.03) 60%),
                rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.18),0 8px 16px -10px rgba(0,0,0,.9);}
   .칩::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
-    pointer-events:none;background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
+    pointer-events:none;background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;opacity:.8;}
@@ -326,23 +315,23 @@
 
   /*loom부품:인용부호*/
   .룸 blockquote{position:relative;margin:var(--켜) 0;padding:var(--단) var(--단) var(--단) calc(var(--켜) + var(--참));
-    font-size:.97rem;color:var(--ash);}
+    font-size:.97rem;}
   .룸 blockquote::before{content:'\201C';position:absolute;left:var(--칸);top:calc(var(--칸) - var(--숨));
     display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;
-    font-size:1.5em;line-height:1;font-weight:800;color:var(--chalk);
+    font-size:1.5em;line-height:1;font-weight:800;color:var(--룸-chalk);
     padding-top:.28em;   /* 광학 — 여는 따옴표는 글리프가 위쪽에 몰려 있다 */
     background:linear-gradient(170deg, rgba(228,228,231,0.13), rgba(228,228,231,0.02) 58%),
                rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 10px 20px -12px rgba(0,0,0,.9);}
-  .룸 blockquote i,.룸 blockquote em{color:var(--chalk);font-style:italic;}
+  .룸 blockquote i,.룸 blockquote em{;font-style:italic;}
 
   /*loom부품:표지오브*/
   /* 펠트 오브 — 이 지면에서 «부피»를 가진 유일한 물건이라 하나뿐이어야 한다.
      빛을 먹는 재질(roughness .95)이라 유리·레진 옆에서 «사람이 만든 것»으로 읽힌다. */
   .오브{width:112px;height:112px;border-radius:31px;flex:none;position:relative;overflow:hidden;
-    background-color:var(--chalk);
+    background-color:var(--룸-chalk);
     display:grid;place-items:center;
-    color:var(--ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
+    color:var(--룸-ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
     box-shadow:
       inset 0 3px 4px rgba(255,255,255,.62),
       inset 0 -14px 24px -6px rgba(8,9,12,0.5),
@@ -358,13 +347,13 @@
   /*loom부품:링크점*/
   /* 링크 — 40~50대가 읽는다는 것을 셈에 넣으면 밑선 알파만으로는 링크가 아니다.
      셋을 겹친다: 밑선 .62 · 굵기 한 단 · 앞에 코랄 점(3px 이라 신호 1점을 안 넘는다). */
-  .룸 a{color:var(--chalk);text-decoration:none;font-weight:560;
+  .룸 a{;text-decoration:none;font-weight:560;
     box-shadow:inset 0 -1px 0 rgba(228,228,231,0.62);
     transition:box-shadow 180ms ease,color 180ms ease;}
   .룸 a:not(.민):not(.레일 a)::before{content:'';display:inline-block;width:3px;height:3px;
     border-radius:50%;vertical-align:.32em;margin-right:var(--숨);
-    background:var(--coral);box-shadow:0 0 6px rgba(255,107,92,0.7);}
-  .룸 a:hover{box-shadow:inset 0 -1px 0 rgba(255,107,92,0.9);}
+    background:var(--룸-coral);box-shadow:0 0 6px rgba(249,104,89,0.7);}
+  .룸 a:hover{box-shadow:inset 0 -1px 0 rgba(249,104,89,0.9);}
 
   /*loom부품:쪽번호*/
   /* 쪽번호 — 낮 지면에서만 산다. 화면에는 «쪽»이라는 것이 없다. */
@@ -373,7 +362,7 @@
   /*loom부품:본문타이포*/
   /* 🚫본문 타이포 — 불가침. 글자에 재질을 입히지 않는다(DESIGN.md §1 「타이포는 안 건드린다」).
      여기 있는 것은 «재질을 안 입힌다»는 선언이고, 그래서 분모에 든다(빠뜨린 것과 갈리게). */
-  .룸 p,.룸 li,.룸 td,.룸 th{font-family:var(--font);}
+  .룸 p,.룸 li,.룸 td,.룸 th{font-family:var(--룸-font);}
 
   /* ══ 구운 재질 (Blender Cycles · tools/룸굽기.js) ══ */
   /* 번호 원판 — 지면에서 가장 많이 도는 «각진» 부품이라 모따기가 여기서 값을 한다.
@@ -418,7 +407,7 @@
   <div class="수치 경고"><b>3 / 12</b>칸이 비었다</div>
   <div class="수치 경고"><b>1 / 3</b>층만 엔진에 닿는다</div>
   <div class="수치"><b>3</b>개 이해 층</div>
-  <div class="수치"><b>79 / 102</b>엔진 점수 · v2(맥락) (2026-08-12) · 같은 판 첫 회차</div>
+  <div class="수치 경고"><b>?</b>엔진 점수 — 아직 안 쟀다</div>
 </div>
 
 <div class="먼저">
@@ -453,7 +442,7 @@
         <div class="블록머리"><span class="열이름">돈다</span><button class="복사" data-말="㉡1 다시 검토해줘 — 「㉡ 사람」의 「돈다」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">㉡1</button></div>
         <div class="빔">비었다</div></div><div class="블록" style="background:#FFD447;color:#1B1B1A;border:1px solid rgba(0,0,0,.07)">
         <div class="블록머리"><span class="열이름">짓고 있다</span><button class="복사" data-말="㉡2 다시 검토해줘 — 「㉡ 사람」의 「짓고 있다」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">㉡2</button></div>
-        <ul><li>미니게임 4모듈(성향 신호가 나올 자리 — 네 벌 모두 코드·화면까지 섰다 08-13(배정까지는 G1·G2</li><li>관찰 돌려주기는 G1)·몽골어 검수확정 전)</li><li>상태 기반 과제 선택(설계 v5.5·8회차 ①판정+②집행 종결 08-14·구현 0줄·⛔전건 처분 게이트 — 9회차 심문 전 착수 차단)</li><li>강사 관찰 태그(배선 전 임시 다리 — Ⅰ-4)</li></ul></div><div class="블록" style="background:#666666;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)">
+        <ul><li>미니게임 4모듈(성향 신호가 나올 자리 — 네 벌 모두 코드·화면까지 섰다 08-13(배정까지는 G1·G2</li><li>관찰 돌려주기는 G1)·몽골어 검수확정 전)</li><li>상태 기반 과제 선택(설계 v5.5·8회차 ①판정+②집행 종결 08-14·구현 0줄·⛔전건 처분 게이트 — 9회차 심문 전 착수 차단)</li><li>강사 관찰 태그(배선 전 임시 다리 — Ⅰ-4)</li></ul></div><div class="블록" style="background:#676767;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)">
         <div class="블록머리"><span class="열이름">🔴 아직 없다</span><button class="복사" data-말="㉡3 다시 검토해줘 — 「㉡ 사람」의 「🔴 아직 없다」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">㉡3</button></div>
         <ul><li>🔴 읽은 성향으로 «다음에 할 일»을 바꾸는 자리 — 모으는 층도 읽는 층도 섰는데 그 결과가 배정을 못 바꾼다. 「자동으로 모으는 배선이 없다」(v1.4 초판)는 실측으로 틀렸다</li></ul></div><div class="블록 결론" style="background:#FF6B5C;color:#08090C;border:1px solid rgba(0,0,0,.07)">
         <div class="블록머리"><span class="열이름">🔗 엔진에 닿는가</span><button class="복사" data-말="㉡4 다시 검토해줘 — 「㉡ 사람」의 「🔗 엔진에 닿는가」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">㉡4</button></div>
@@ -467,7 +456,7 @@
         <div class="블록머리"><span class="열이름">돈다</span><button class="복사" data-말="㉢1 다시 검토해줘 — 「㉢ 삶」의 「돈다」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">㉢1</button></div>
         <div class="빔">비었다</div></div><div class="블록" style="background:#FFD447;color:#1B1B1A;border:1px solid rgba(0,0,0,.07)">
         <div class="블록머리"><span class="열이름">짓고 있다</span><button class="복사" data-말="㉢2 다시 검토해줘 — 「㉢ 삶」의 「짓고 있다」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">㉢2</button></div>
-        <ul><li>나침반 3문항 + 이번 시즌 목표</li><li>드림맵 카드</li><li>시즌 회고 그릇(표·통로·화면은 섰고 원격 붓기 전·첫 답은 아직 0)</li></ul></div><div class="블록" style="background:#666666;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)">
+        <ul><li>나침반 3문항 + 이번 시즌 목표</li><li>드림맵 카드</li><li>시즌 회고 그릇(표·통로·화면은 섰고 원격 붓기 전·첫 답은 아직 0)</li></ul></div><div class="블록" style="background:#676767;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)">
         <div class="블록머리"><span class="열이름">🔴 아직 없다</span><button class="복사" data-말="㉢3 다시 검토해줘 — 「㉢ 삶」의 「🔴 아직 없다」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">㉢3</button></div>
         <ul><li>싱크 포트폴리오 자동 수집</li></ul></div><div class="블록 결론" style="background:#FF6B5C;color:#08090C;border:1px solid rgba(0,0,0,.07)">
         <div class="블록머리"><span class="열이름">🔗 엔진에 닿는가</span><button class="복사" data-말="㉢4 다시 검토해줘 — 「㉢ 삶」의 「🔗 엔진에 닿는가」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">㉢4</button></div>
@@ -478,17 +467,26 @@
 </div>
 <div class="실측 시트층">🗂 시트층 도달 실측 <span class="잔글">(오늘 실제로 쌓이는 곳 — 위 래칫이 원리상 못 보는 층)</span> — 수집 <b>22종</b> = 제품층 17 + 자산층 4 + <b>도달 0 이 1종</b> <span class="잔글">· 도달 21종 중 1종(teacher_gold)은 «사람이 눌러야만» 돈다 — 도달 0 과 다른 병이다(저쪽은 「안 읽는다」, 이쪽은 「읽는데 저절로 안 돈다」)</span><br><span class="잔글">도달 0: self_declare_log — 「읽는 코드가 있다」가 아니라 「읽어서 «다음에 줄 것»이 바뀐다」가 도달이다(주간 리포트 꼬리처럼 <b>끝이 사람 화면</b>이면 도달이 아니다) · 실값 정본 = 엔진_셋업확장.js `수집도달_()`</span></div>
 
-<h2 class="절">A-2. 실물 대장 — 무엇을 만들었나 <span style="font-weight:400;color:#666666;font-size:14px">(왼쪽 띠 = 조직 층)</span></h2>
+<h2 class="절">A-2. 실물 대장 — 무엇을 만들었나 <span style="font-weight:400;color:#676767;font-size:14px">(왼쪽 띠 = 조직 층)</span></h2>
 <p class="설명">시제는 이 표가 정한다 — <b>「이미 돌아간다」 칸에 없는 것을 현재형으로 쓰지 않는다</b>(정본 §0).</p>
-<table><thead><tr><th></th><th>이미 돌아간다 (현재형 허용)</th><th>짓고 있다 (진행형으로만)</th><th>개원과 함께 연다 (미래형으로만 · v1.4 신설)</th></tr></thead><tbody><tr><th class="행이름" style="border-left:8px solid #E8543F">학습·앱</th><td style="background:#666666;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="앱1 다시 검토해줘 — 「학습·앱」의 「이미 돌아간다 (현재형 허용)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">앱1</button></div><ul><li>게임화(캐릭터 7단계 진화(내부 기능명=몬스터 — 유호 확정: 학부모 접점·문서 표기는 「캐릭터」, 앱 전면 개명은 기각 유지)·도전 배지(구명 「왕관」 — 유호 확정 08-09 ⓐ채택</li><li>앱 화면·리포트 문구 교체=별도 실행 트랙)·스트릭·반 레이드)</li><li>포인트 상점 22종(가족·체험 포함 — 사업계획서 「9종 배선·라이브」는 그중 실물 보상 부분집합(의류 3·굿즈 5·과잠 자격)이라 모순 아님</li><li>코드 씨앗 19종, 정본=라이브 시트</li><li>⚠학생 보상이지 제품 라인이 아니다 — 의류·굿즈·식품 «제품 라인»은 2026-08-16 유호 확정으로 철회됐다)</li><li>커리큘럼 6레벨</li><li>AI 첨삭 레일</li><li>발화 퀄리티 엔진(측정 라이브 — 결과 저장=talk_index_log 주간 적재→주간 리포트 꼬리 소비</li><li>표시면=Glide 접점, 이관 예정)</li><li>면접 경험 회수 폼(면접 시뮬레이터의 0단계 — 폼 생성·궤적 자동 수확 실재, 시뮬레이터 본체 미착수)</li></ul></td><td style="background:#666666;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="앱2 다시 검토해줘 — 「학습·앱」의 「짓고 있다 (진행형으로만)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">앱2</button></div><ul><li>학생 앱(말하기 숙제·녹음·자동 전사·AI 교정 답장 — 실기기 관통 완료·파일럿 전)</li><li>미니게임 G1~G4(네 벌 모두 코드·화면까지 섰다 08-13</li><li>배정까지는 G1·G2</li><li>몽골어 검수확정 전)</li><li>「나만의 선생님」 개인화 접점</li><li>3축 캐릭터(크기×맑기×빛 — 본체 확정 08-13</li><li>7단계의 후속)</li><li>나침반·시즌 회고·드림맵 카드(㉢ — 나침반·회고는 화면·통로까지 섰고 원격 붓기 전)</li><li>싱크 포트폴리오 자동 수집(v1.4 등재·아직 짓기 전)</li></ul></td><td style="background:#666666;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="앱3 다시 검토해줘 — 「학습·앱」의 「개원과 함께 연다 (미래형으로만 · v1.4 신설)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">앱3</button></div><ul><li>— (앱은 개원 전 출시가 목표</li><li>수업 활동은 아래 「수업·현장」 행으로 옮겼다)</li></ul></td></tr><tr><th class="행이름" style="border-left:8px solid #13724A">데이터·엔진</th><td style="background:#666666;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="엔진1 다시 검토해줘 — 「데이터·엔진」의 「이미 돌아간다 (현재형 허용)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">엔진1</button></div><ul><li>수집층(오류 태그 23종</li><li>매일 숙제=학습 데이터)</li><li>모델 교체 판정 시험지(실학생 오류 유형 기반)</li></ul></td><td style="background:#666666;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="엔진2 다시 검토해줘 — 「데이터·엔진」의 「짓고 있다 (진행형으로만)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">엔진2</button></div><ul><li>수집→엔진 자동 도달 배선</li><li>코어 엔진</li><li>㉡ 성향 자동 수집 배선(축 계산기 학습자상태 v8 은 섰다 — A-1 의 빈 칸은 재료 행 0)</li></ul></td><td style="background:transparent;color:#E8543F;border:2px dashed #E8543F"><div class="칸머리"><button class="복사" data-말="엔진3 다시 검토해줘 — 「데이터·엔진」의 「개원과 함께 연다 (미래형으로만 · v1.4 신설)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">엔진3</button></div><span class="빔">비었다</span></td></tr><tr><th class="행이름" style="border-left:8px solid #373737">운영</th><td style="background:#666666;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="운영1 다시 검토해줘 — 「운영」의 「이미 돌아간다 (현재형 허용)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">운영1</button></div><ul><li>학부모 주간 리포트(자동 — 몽골어 실물=칭찬 태그 4종 병기+꼬리 요약 1줄, 본문 몽골어판=짓는 중</li><li>Glide 접점, 이관 예정)</li><li>월간 리포트카드</li><li>KPI 계기판</li><li>크루카드 접수 웹앱</li></ul></td><td style="background:#666666;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="운영2 다시 검토해줘 — 「운영」의 「짓고 있다 (진행형으로만)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">운영2</button></div><ul><li>몽골어 상담봇 개통(코드 완성</li><li>인계=번역+초안 3개+클릭 1회</li><li>Meta 심사 대기)</li><li>주간 리포트 몽골어 본문(지금 몽골어로 나가는 것은 칭찬 태그 4종 + 꼬리 요약 1줄뿐 — 본문은 한국어다)</li></ul></td><td style="background:#666666;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="운영3 다시 검토해줘 — 「운영」의 「개원과 함께 연다 (미래형으로만 · v1.4 신설)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">운영3</button></div><ul><li>학부모 상담·설명회 운영</li></ul></td></tr><tr><th class="행이름" style="border-left:8px solid #FFD447">브랜드</th><td style="background:#666666;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="브랜드1 다시 검토해줘 — 「브랜드」의 「이미 돌아간다 (현재형 허용)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">브랜드1</button></div><ul><li>킷 23색</li><li>폰트 3종</li><li>발표물 6종·인쇄본 16종(⚠v1.3 판의 틀린 시제를 싣고 있다 — 몽골어 리포트·드림맵·포트폴리오</li><li>다음 갱신 때 §0 으로 교정)</li></ul></td><td style="background:#666666;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="브랜드2 다시 검토해줘 — 「브랜드」의 「짓고 있다 (진행형으로만)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">브랜드2</button></div><ul><li>홈페이지(시안 v5·마스코트 교체 후 게시)</li></ul></td><td style="background:transparent;color:#E8543F;border:2px dashed #E8543F"><div class="칸머리"><button class="복사" data-말="브랜드3 다시 검토해줘 — 「브랜드」의 「개원과 함께 연다 (미래형으로만 · v1.4 신설)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">브랜드3</button></div><span class="빔">비었다</span></td></tr><tr><th class="행이름" style="border-left:8px solid #666666">수업·현장 (v1.4 신설</th><td style="background:transparent;color:#E8543F;border:2px dashed #E8543F"><div class="칸머리"><button class="복사" data-말="수업1 다시 검토해줘 — 「수업·현장 (v1.4 신설」의 「이미 돌아간다 (현재형 허용)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">수업1</button></div><span class="빔">비었다</span></td><td style="background:#666666;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="수업2 다시 검토해줘 — 「수업·현장 (v1.4 신설」의 「짓고 있다 (진행형으로만)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">수업2</button></div><ul><li>강사 교수법 매뉴얼</li><li>커리큘럼 6레벨 교안</li></ul></td><td style="background:#666666;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="수업3 다시 검토해줘 — 「수업·현장 (v1.4 신설」의 「개원과 함께 연다 (미래형으로만 · v1.4 신설)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">수업3</button></div><ul><li>K-컬처 워밍업(설계 확정)</li><li>싱크 크루 프로젝트</li><li>반 레이드</li><li>무대와 발표</li><li>가족 발표회</li><li>주말 참관</li><li>방학마다 K-POP 댄스 촬영·메이크업 프로필 촬영</li></ul></td></tr></tbody></table>
+<table><thead><tr><th></th><th>이미 돌아간다 (현재형 허용)</th><th>짓고 있다 (진행형으로만)</th><th>개원과 함께 연다 (미래형으로만 · v1.4 신설)</th></tr></thead><tbody><tr><th class="행이름" style="border-left:8px solid #E8543F">학습·앱</th><td style="background:#676767;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="앱1 다시 검토해줘 — 「학습·앱」의 「이미 돌아간다 (현재형 허용)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">앱1</button></div><ul><li>게임화(캐릭터 7단계 진화(내부 기능명=몬스터 — 유호 확정: 학부모 접점·문서 표기는 「캐릭터」, 앱 전면 개명은 기각 유지)·도전 배지(구명 「왕관」 — 유호 확정 08-09 ⓐ채택</li><li>앱 화면·리포트 문구 교체=별도 실행 트랙)·스트릭·반 레이드)</li><li>포인트 상점 22종(가족·체험 포함 — 사업계획서 「9종 배선·라이브」는 그중 실물 보상 부분집합(의류 3·굿즈 5·과잠 자격)이라 모순 아님</li><li>코드 씨앗 19종, 정본=라이브 시트</li><li>⚠학생 보상이지 제품 라인이 아니다 — 의류·굿즈·식품 «제품 라인»은 2026-08-16 유호 확정으로 철회됐다)</li><li>커리큘럼 6레벨</li><li>AI 첨삭 레일</li><li>발화 퀄리티 엔진(측정 라이브 — 결과 저장=talk_index_log 주간 적재→주간 리포트 꼬리 소비</li><li>표시면=Glide 접점, 이관 예정)</li><li>면접 경험 회수 폼(면접 시뮬레이터의 0단계 — 폼 생성·궤적 자동 수확 실재, 시뮬레이터 본체 미착수)</li></ul></td><td style="background:#676767;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="앱2 다시 검토해줘 — 「학습·앱」의 「짓고 있다 (진행형으로만)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">앱2</button></div><ul><li>학생 앱(말하기 숙제·녹음·자동 전사·AI 교정 답장 — 실기기 관통 완료·파일럿 전)</li><li>미니게임 G1~G4(네 벌 모두 코드·화면까지 섰다 08-13</li><li>배정까지는 G1·G2</li><li>몽골어 검수확정 전)</li><li>「나만의 선생님」 개인화 접점</li><li>3축 캐릭터(크기×맑기×빛 — 본체 확정 08-13</li><li>7단계의 후속)</li><li>나침반·시즌 회고·드림맵 카드(㉢ — 나침반·회고는 화면·통로까지 섰고 원격 붓기 전)</li><li>싱크 포트폴리오 자동 수집(v1.4 등재·아직 짓기 전)</li></ul></td><td style="background:#676767;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="앱3 다시 검토해줘 — 「학습·앱」의 「개원과 함께 연다 (미래형으로만 · v1.4 신설)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">앱3</button></div><ul><li>— (앱은 개원 전 출시가 목표</li><li>수업 활동은 아래 「수업·현장」 행으로 옮겼다)</li></ul></td></tr><tr><th class="행이름" style="border-left:8px solid #13724A">데이터·엔진</th><td style="background:#676767;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="엔진1 다시 검토해줘 — 「데이터·엔진」의 「이미 돌아간다 (현재형 허용)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">엔진1</button></div><ul><li>수집층(오류 태그 23종</li><li>매일 숙제=학습 데이터)</li><li>모델 교체 판정 시험지(실학생 오류 유형 기반)</li></ul></td><td style="background:#676767;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="엔진2 다시 검토해줘 — 「데이터·엔진」의 「짓고 있다 (진행형으로만)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">엔진2</button></div><ul><li>수집→엔진 자동 도달 배선</li><li>코어 엔진</li><li>㉡ 성향 자동 수집 배선(축 계산기 학습자상태 v8 은 섰다 — A-1 의 빈 칸은 재료 행 0)</li></ul></td><td style="background:transparent;color:#E8543F;border:2px dashed #E8543F"><div class="칸머리"><button class="복사" data-말="엔진3 다시 검토해줘 — 「데이터·엔진」의 「개원과 함께 연다 (미래형으로만 · v1.4 신설)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">엔진3</button></div><span class="빔">비었다</span></td></tr><tr><th class="행이름" style="border-left:8px solid #373737">운영</th><td style="background:#676767;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="운영1 다시 검토해줘 — 「운영」의 「이미 돌아간다 (현재형 허용)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">운영1</button></div><ul><li>학부모 주간 리포트(자동 — 몽골어 실물=칭찬 태그 4종 병기+꼬리 요약 1줄, 본문 몽골어판=짓는 중</li><li>Glide 접점, 이관 예정)</li><li>월간 리포트카드</li><li>KPI 계기판</li><li>크루카드 접수 웹앱</li></ul></td><td style="background:#676767;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="운영2 다시 검토해줘 — 「운영」의 「짓고 있다 (진행형으로만)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">운영2</button></div><ul><li>몽골어 상담봇 개통(코드 완성</li><li>인계=번역+초안 3개+클릭 1회</li><li>Meta 심사 대기)</li><li>주간 리포트 몽골어 본문(지금 몽골어로 나가는 것은 칭찬 태그 4종 + 꼬리 요약 1줄뿐 — 본문은 한국어다)</li></ul></td><td style="background:#676767;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="운영3 다시 검토해줘 — 「운영」의 「개원과 함께 연다 (미래형으로만 · v1.4 신설)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">운영3</button></div><ul><li>학부모 상담·설명회 운영</li></ul></td></tr><tr><th class="행이름" style="border-left:8px solid #FFD447">브랜드</th><td style="background:#676767;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="브랜드1 다시 검토해줘 — 「브랜드」의 「이미 돌아간다 (현재형 허용)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">브랜드1</button></div><ul><li>킷 23색</li><li>폰트 3종</li><li>발표물 6종·인쇄본 16종(⚠v1.3 판의 틀린 시제를 싣고 있다 — 몽골어 리포트·드림맵·포트폴리오</li><li>다음 갱신 때 §0 으로 교정)</li></ul></td><td style="background:#676767;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="브랜드2 다시 검토해줘 — 「브랜드」의 「짓고 있다 (진행형으로만)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">브랜드2</button></div><ul><li>홈페이지(시안 v5·마스코트 교체 후 게시)</li></ul></td><td style="background:transparent;color:#E8543F;border:2px dashed #E8543F"><div class="칸머리"><button class="복사" data-말="브랜드3 다시 검토해줘 — 「브랜드」의 「개원과 함께 연다 (미래형으로만 · v1.4 신설)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">브랜드3</button></div><span class="빔">비었다</span></td></tr><tr><th class="행이름" style="border-left:8px solid #676767">수업·현장 (v1.4 신설</th><td style="background:transparent;color:#E8543F;border:2px dashed #E8543F"><div class="칸머리"><button class="복사" data-말="수업1 다시 검토해줘 — 「수업·현장 (v1.4 신설」의 「이미 돌아간다 (현재형 허용)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">수업1</button></div><span class="빔">비었다</span></td><td style="background:#676767;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="수업2 다시 검토해줘 — 「수업·현장 (v1.4 신설」의 「짓고 있다 (진행형으로만)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">수업2</button></div><ul><li>강사 교수법 매뉴얼</li><li>커리큘럼 6레벨 교안</li></ul></td><td style="background:#676767;color:#E4E4E7;border:1px solid rgba(0,0,0,.07)"><div class="칸머리"><button class="복사" data-말="수업3 다시 검토해줘 — 「수업·현장 (v1.4 신설」의 「개원과 함께 연다 (미래형으로만 · v1.4 신설)」 칸을 철학 정본에 비추어 발전시킬 부분이 있는지 봐줘." title="지시문 복사">수업3</button></div><ul><li>K-컬처 워밍업(설계 확정)</li><li>싱크 크루 프로젝트</li><li>반 레이드</li><li>무대와 발표</li><li>가족 발표회</li><li>주말 참관</li><li>방학마다 K-POP 댄스 촬영·메이크업 프로필 촬영</li></ul></td></tr></tbody></table>
 
 <div class="범례">
   <span class="칩" style="background:#13724A;color:#E4E4E7">돈다 · 닿는다</span>
   <span class="칩" style="background:#FFD447;color:#1B1B1A">짓고 있다</span>
-  <span class="칩" style="background:#666666;color:#E4E4E7">개원과 함께</span>
+  <span class="칩" style="background:#676767;color:#E4E4E7">개원과 함께</span>
   <span class="칩" style="background:#FF6B5C;color:#08090C">아직 없다 · 끊겼다</span>
   <span class="칩" style="background:transparent;color:#E8543F;border:2px dashed #E8543F">비었다</span>
   <div style="margin-top:10px">색은 브랜드 킷 23색에서만 뽑는다(유호님 확정) · KC Sun 은 면으로만 쓰고 글자로 쓰지 않는다.</div>
+</div>
+<div style="margin-top:22px">
+  <div style="font-size:12.5px;font-weight:800;color:#5F657D;letter-spacing:.04em;margin-bottom:9px">📎 함께 볼 것 — 판정·설계 화면</div>
+  <div style="display:grid;gap:8px">
+  <a href="%EC%95%B1_%EB%B0%A9%ED%96%A5%EC%84%A4%EA%B3%84_2026-08-18.html" style="display:block;padding:11px 14px;border:1px solid #E7DDC7;border-radius:10px;text-decoration:none;background:#FBF7EE"><div style="font-weight:800;font-size:13.5px;color:#171820;letter-spacing:-.02em">AI를 껐을 때 남는 한국어</div><div style="margin-top:3px;font-size:12px;color:#5F657D;line-height:1.55">앱이 가는 한 방향 — TOPIK 급수와 회화는 같은 능력의 앞뒤다</div></a>
+  <a href="%EC%98%A4%EB%8B%B5%EC%9D%B4_%EB%AA%BB%EB%B3%B4%EB%8A%94%EA%B2%83_2026-08-18.html" style="display:block;padding:11px 14px;border:1px solid #E7DDC7;border-radius:10px;text-decoration:none;background:#FBF7EE"><div style="font-weight:800;font-size:13.5px;color:#171820;letter-spacing:-.02em">오답이 못 보는 것</div><div style="margin-top:3px;font-size:12px;color:#5F657D;line-height:1.55">엔진 축 여섯 — 데이터에 있는데 아무도 안 읽는 자리 (대기열 #Q116~#Q121)</div></a>
+  <a href="%EA%B2%BD%EC%9F%81%ED%8C%90%EC%A0%95_2026-08-18.html" style="display:block;padding:11px 14px;border:1px solid #E7DDC7;border-radius:10px;text-decoration:none;background:#FBF7EE"><div style="font-weight:800;font-size:13.5px;color:#171820;letter-spacing:-.02em">이길 수 있는 자리</div><div style="margin-top:3px;font-size:12px;color:#5F657D;line-height:1.55">경쟁 지형과, 그들이 구조적으로 못 들어오는 세 자리</div></a>
+  <a href="%EC%84%A4%EA%B3%84%EB%8C%80%EC%A1%B0_2026-08-18.html" style="display:block;padding:11px 14px;border:1px solid #E7DDC7;border-radius:10px;text-decoration:none;background:#FBF7EE"><div style="font-weight:800;font-size:13.5px;color:#171820;letter-spacing:-.02em">바뀐 것과 그대로인 것</div><div style="margin-top:3px;font-size:12px;color:#5F657D;line-height:1.55">전 설계 대비 무엇이 바뀌었나 — 그리고 정본과 어긋난 자리 둘</div></a>
+  </div>
 </div>
 <footer>
   생성: <code>node tools/이해대장.js</code> — 정본이 바뀌면 다시 돌린다(사본을 두지 않는다).<br>

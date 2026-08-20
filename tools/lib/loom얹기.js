@@ -35,10 +35,15 @@ const loom훅 = require('./loom훅.js');
 const 뜯기정규식 = /\n?<style data-loom="[^"]*">[\s\S]*?<\/style>/g;
 
 const CSS캐시 = new Map();
-/** 프리셋 CSS 는 한 번만 만든다 — 지면 12벌을 도는 루프에서 매번 조립하면 그게 빌드 시간의 전부가 된다. */
-function css(지면) {
-  if (!CSS캐시.has(지면)) CSS캐시.set(지면, loom.css({ 지면 }));
-  return CSS캐시.get(지면);
+/** 프리셋 CSS 는 한 번만 만든다 — 지면 12벌을 도는 루프에서 매번 조립하면 그게 빌드 시간의 전부가 된다.
+ * 천쓸까 — 이 지면에 `.오브` 가 없으면 기본색 천 data URI(실측 +17.4KB)는 그리지도 않을 짐이다
+ * (실측 08-19: 이해대장·작동대장 `.오브` 0 인데 부품만 오버레이가 통째로 물었다). 오브 있는 지면만
+ * 기본천을 문다 — 조항 ⓘ 「지정 없는 펠트 = 기본색」은 **펠트가 있는 자리**의 규정이지,
+ * 펠트 없는 지면에 짐을 싣는 규정이 아니다. */
+function css(지면, 천쓸까 = true) {
+  const 키 = 천쓸까 ? 지면 : 지면 + '|맨';
+  if (!CSS캐시.has(키)) CSS캐시.set(키, loom.css(천쓸까 ? { 지면 } : { 지면, 천: null }));
+  return CSS캐시.get(키);
 }
 
 /**
@@ -130,7 +135,7 @@ function 강제얹기(html, 지면) {
   const 벗은판 = 뜯기(html);
   const 자리 = 끼울자리(벗은판);
   if (!자리) throw new Error('`</style>` 도 `</head>` 도 없다 — 지면 CSS 뒤에 둘 자리가 없다');
-  const 블록 = `\n<style data-loom="${지면}">\n${css(지면)}\n</style>`;
+  const 블록 = `\n<style data-loom="${지면}">\n${css(지면, 클래스있나(벗은판, '오브'))}\n</style>`;
   return 벗은판.slice(0, 자리.위치) + 블록 + 벗은판.slice(자리.위치);
 }
 
@@ -161,3 +166,45 @@ function 얹기(html, { 지면 }) {
 }
 
 module.exports = { 얹기, 강제얹기, 뜯기, 얹힘, 내가얹음, 클래스있나, 훅들, 얹을까, 범위진단, 끼울자리, css, 뜯기정규식 };
+
+/* ── CLI ───────────────────────────────────────────────────────────────────
+   node tools/lib/loom얹기.js <파일...> [--지면 부품만] [--확인]
+
+   왜 붙나: 생성물은 생성기가 이 모듈을 부르지만, **손파일 지면은 부를 사람이 없다.**
+   그런데 손파일도 「한 번 얹고 끝」이 아니다 — 토큰·프리셋이 바뀌면 CSS 가 바뀌므로 다시
+   얹어야 한다. 손으로 N 벌을 얹으면 언젠가 N-1 벌만 얹고, **빠진 한 벌은 초록으로 보인다**
+   (파일이 그대로 있으니까). `--확인` 이 그 낡음을 fail 로 드러내는 게이트다.
+   ⚠생성물에는 쓰지 않는다 — 생성기가 다음 실행에 통째로 덮는다(같은 통로, 다른 호출부).
+   ────────────────────────────────────────────────────────────────────────── */
+if (require.main === module) {
+  const fs = require('node:fs');
+  const 인자 = process.argv.slice(2);
+  const 확인만 = 인자.includes('--확인');
+  const i지면 = 인자.indexOf('--지면');
+  const 지면 = i지면 >= 0 ? 인자[i지면 + 1] : '부품만';
+  const 파일들 = 인자.filter((a, i) => !a.startsWith('--') && !(i지면 >= 0 && i === i지면 + 1));
+
+  if (!파일들.length) {
+    console.error('용법: node tools/lib/loom얹기.js <파일...> [--지면 부품만] [--확인]');
+    process.exit(2);
+  }
+
+  let 낡음 = 0, 입음 = 0, 못입음 = 0;
+  for (const f of 파일들) {
+    const 원본 = fs.readFileSync(f, 'utf8');
+    let r;
+    try { r = 얹기(원본, { 지면 }); }
+    catch (e) { console.error(`🔴 ${f} — ${e.message}`); process.exitCode = 1; continue; }
+
+    if (!r.얹힘) { 못입음++; console.log(`·  ${f} — 안 얹었다: ${r.사유}`); continue; }
+    입음++;
+    if (r.html === 원본) { console.log(`✅ ${f} — 이미 최신 (훅 ${r.훅.length})`); continue; }
+    낡음++;
+    if (확인만) console.log(`🔴 ${f} — 낡았다(다시 얹어야 한다)`);
+    else { fs.writeFileSync(f, r.html, 'utf8'); console.log(`✅ ${f} — 얹었다 (훅 ${r.훅.length}: ${r.훅.slice(0, 6).join('·')}${r.훅.length > 6 ? '…' : ''})`); }
+  }
+
+  /* 0 은 분모와 함께 쓴다(F207) — 몇 벌을 봤는지 안 밝히면 미실행이 통과와 같은 모양이다. */
+  console.log(`\n${확인만 && 낡음 ? '🔴' : '✅'} 지면 ${파일들.length}벌 · 입음 ${입음} + 못입음 ${못입음} · ${확인만 ? `낡음 ${낡음}` : `새로 얹음 ${낡음}`}`);
+  if (확인만 && 낡음) process.exitCode = 1;
+}
