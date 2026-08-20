@@ -34,6 +34,8 @@ const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('../.claude/hooks/lib/board-id.js');
 
 const ROOT = path.join(__dirname, '..');
 const 장부경로 = path.join(ROOT, 'docs', '_ops', '게이트장부.jsonl');
@@ -71,7 +73,7 @@ function 죽기(사유, 처방) {
 }
 
 function 장부쓰기(줄) {
-  const 기록 = { 때: new Date().toISOString(), 지문: (process.env.CLAUDE_CODE_HOST_SESSION_ID || '').replace(/^local_/, '').slice(0, 8) || null, ...줄 };
+  const 기록 = { 때: new Date().toISOString(), 지문: 보드id.보드지문() || null, ...줄 };
   fs.mkdirSync(path.dirname(장부경로), { recursive: true });
   fs.appendFileSync(장부경로, `${JSON.stringify(기록)}\n`, 'utf8');
   return 기록;

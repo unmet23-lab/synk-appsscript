@@ -299,7 +299,9 @@ test('🔴 [F165] 상태 칸 갱신은 지문 없이도 통과 — 트랙 칸이
 
 test('🔴 [F165] 세션 id 를 모르는 환경(클라우드·CI)에는 요구하지 않는다', () => {
   assert.strictEqual(
-    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: row(10), new_string: `${row(10)}\n${이름없는줄}` } }, { CLAUDE_CODE_HOST_SESSION_ID: '' }),
+    // 세 변수를 **다** 비운다 — `board-id` 통로가 HOST→(REMOTE|SESSION) 로 폴백하므로(F634), 하나만 비우면 이 검사가 «도는 기계»에 따라 갈린다(클라우드엔 나머지 둘이 실재한다 · F296·F628 그 자리).
+    decide({ tool_name: 'Edit', tool_input: { file_path: BOARD, old_string: row(10), new_string: `${row(10)}\n${이름없는줄}` } },
+      { CLAUDE_CODE_HOST_SESSION_ID: '', CLAUDE_CODE_REMOTE_SESSION_ID: '', CLAUDE_CODE_SESSION_ID: '' }),
     'allow', '내 지문을 알 수 없는 세션에 지문을 요구했다 — 따를 수 없는 처방이다(F103)'
   );
 });

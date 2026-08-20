@@ -118,6 +118,20 @@ function mkRepo(초기 = 큐파일('- [ ] 〖지금〗 #Q1 **처음부터 있던
     fs.copyFileSync(path.join(라이브뿌리, 이름), path.join(dir, 'tools', 'lib', 이름));
   }
 
+  /* 🔴 `.claude/hooks/lib/` 도 **통째로** 싣는다 (2026-08-18 · F634 이관에서 다시 터졌다).
+   *   바로 위 주석이 「lib 는 손으로 세면 조용히 낡는다」고 적어 놓고도 과녁을 `tools/lib` 하나로
+   *   좁혀 두었다. F634 가 `대기열.js` 에 `../.claude/hooks/lib/board-id.js` require 를 더하자
+   *   이 픽스처가 다시 MODULE_NOT_FOUND 로 죽었다 — **같은 병이 옆 폴더에서 재발한 것**이다.
+   *   `tools/*` 가 그쪽 lib 를 부르는 것은 이미 관행이었다(`board.js`·`board-move.js`·`작업본소유자.js`
+   *   가 그전부터 그랬다). 그러니 「부품이 사는 곳」은 두 폴더이고, 둘 다 통째로 실어야 한다. */
+  const 훅라이브뿌리 = path.join(ROOT, '.claude', 'hooks', 'lib');
+  fs.mkdirSync(path.join(dir, '.claude', 'hooks', 'lib'), { recursive: true });
+  const 훅lib들 = fs.readdirSync(훅라이브뿌리).filter((n) => n.endsWith('.js'));
+  assert.ok(훅lib들.length > 0, '.claude/hooks/lib 를 하나도 못 실었다 — 빈 복사는 「없는 파일」과 같은 모양이다');
+  for (const 이름 of 훅lib들) {
+    fs.copyFileSync(path.join(훅라이브뿌리, 이름), path.join(dir, '.claude', 'hooks', 'lib', 이름));
+  }
+
   fs.mkdirSync(path.join(dir, path.dirname(좌표)), { recursive: true });
   fs.writeFileSync(path.join(dir, 좌표), 초기, 'utf8');
   fs.writeFileSync(path.join(dir, 'README.md'), '대기열과 무관한 파일\n', 'utf8');

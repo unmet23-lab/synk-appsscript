@@ -36,6 +36,8 @@
 const path = require('path');
 const fs = require('fs');
 const { execFileSync } = require('child_process');
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('./lib/board-id.js');
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..', '..');
 const 기준 = 'origin/master';
@@ -104,7 +106,10 @@ function 본문(r) {
     + '뒤처진 판 위의 공유 문서 편집은 반입될 때 남의 줄을 **삭제로** 싣는다(F187·F192).\n\n'
     + '→ 트랙을 고르기 전에:\n'
     + `   git fetch origin master && git log --oneline HEAD..${기준} -- ${보드}\n`
-    + '→ 클라우드(폰) 세션이면 `claude/*` 브랜치라 master 로 직접 못 민다 — 코드보다 **판정·읽기**에 쓴다.';
+    /* ⚠ [2026-08-18 유호 교정] 「클라우드(폰) 세션」이라 부르던 자리 — 폰으로 작업하는 것이 없다.
+     *   이 처방이 실제로 겨누는 것은 `claude/*` 로 push 하는 **클라우드(웹) 세션**이다(F623).
+     *   위 머리말의 08-07 역사 서술은 사실이라 그대로 둔다. */
+    + '→ 클라우드 세션이면 `claude/*` 브랜치라 master 로 직접 못 민다 — 코드보다 **판정·읽기**에 쓴다.';
 }
 
 /** 진행 중 git 작업 — F208 의 사고 통로. 상태 파일은 **per-worktree** git-dir 에 있다
@@ -218,7 +223,7 @@ process.stdin.on('end', () => {
   try {
     const store = require(path.join(__dirname, 'lib', 'handoff-store.js'));
     표 = path.join(store.stateDir(),
-      `staleness-${store.projectKey(cwd)}-${store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || 'nosid')}.json`);
+      `staleness-${store.projectKey(cwd)}-${store.safeId(보드id.세션id() || 'nosid')}.json`);
     try { 지난 = JSON.parse(fs.readFileSync(표, 'utf8')) || {}; } catch (_) { 지난 = {}; }
     const 최근 = Number(지난.at);
     if (Number.isFinite(최근) && Date.now() - 최근 < 조용한간격_MS) process.exit(0);

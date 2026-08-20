@@ -26,6 +26,8 @@
 const fs = require('fs');
 const path = require('path');
 const { stripNonExecutedText } = require(path.join(__dirname, 'lib', 'shell-text.js'));
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('./lib/board-id.js');
 
 let input;
 try { input = JSON.parse(fs.readFileSync(0, 'utf8')); } catch (_) { process.exit(0); }
@@ -105,7 +107,7 @@ const 본문 =
   + '뱉고 정상 종료한다. 그래서 **「커밋했다」고 보고하면 그 보고가 거짓이 된다.**\n\n'
   + '→ 보고하기 전에:\n'
   + '   1) `git log -3 --format="%h %(trailers:key=Session-Id,valueonly) %s"` — **주인이 나인지** 본다.\n'
-  + `      ⚠ 내 id 는 **$CLAUDE_CODE_HOST_SESSION_ID**(지금 이 세션 = ${process.env.CLAUDE_CODE_HOST_SESSION_ID || '미설정'})다.\n`
+  + `      ⚠ 내 id 는 **$CLAUDE_CODE_HOST_SESSION_ID**(지금 이 세션 = ${보드id.세션id() || '미설정'})다.\n`
   + '      스크래치패드·트랜스크립트 경로의 UUID 와 **다른 식별자**라, 그걸로 대조하면 내 커밋이\n'
   + '      「남의 것」으로 뒤집힌다(실측 1회). author 는 전 세션 공통이라 애초에 구분자가 아니다(F041).\n'
   + '   2) 내 변경이 아직 남아 있으면(`git status`) 경로 지정을 고쳐 다시 커밋한다.\n'

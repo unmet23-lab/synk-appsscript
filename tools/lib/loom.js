@@ -102,14 +102,14 @@ function 유리몸(색, 유 , 림줄, 분산 = true) {
   .유리{
     position:relative;border-radius:var(--깃);
     background:
-      linear-gradient(176deg, ${알파(색, 'Cream', .11)} 0%, ${알파(색, 'Cream', .022)} 26%,
+      linear-gradient(176deg, ${알파(색, 'Chalk', .11)} 0%, ${알파(색, 'Chalk', .022)} 26%,
                      rgba(0,0,0,.06) 62%, rgba(0,0,0,.14) 100%),
-      ${알파(색, 'Navy Ink', 유['몸알파'])};
+      ${알파(색, 'Graphite 2', 유['몸알파'])};
     -webkit-backdrop-filter:blur(${유['흐림px']}px) saturate(${유['채도배'] * 100}%);
     backdrop-filter:blur(${유['흐림px']}px) saturate(${유['채도배'] * 100}%);
     box-shadow:
-      inset 0 1px 0 ${알파(색, 'Cream', 유['윤'])},
-      inset 0 -1px 0 ${알파(색, 'Cream', 유['윤약'])},
+      inset 0 1px 0 ${알파(색, 'Chalk', 유['윤'])},
+      inset 0 -1px 0 ${알파(색, 'Chalk', 유['윤약'])},
       0 1px 2px rgba(0,0,0,.6),
       0 30px 60px -28px rgba(0,0,0,1);
     padding:var(--단) calc(var(--단) + var(--숨));
@@ -138,15 +138,15 @@ function 유리몸(색, 유 , 림줄, 분산 = true) {
  *   ④표면스펙(코어와 «따로» 있는 바깥 광원의 상) ⑤코스틱(바닥으로 샌 유채 빛)
  * @param 빛 갇힌 빛의 색 «이름» — 몸에는 안료를 안 칠하므로 색은 여기서만 나온다.
  */
-function 레진몸(색, 레, 빛 = 'Cream') {
+function 레진몸(색, 레, 빛 = 'Chalk') {
   const [r1, r2] = 레['굴절밴드px'];
   return `
     background:
       radial-gradient(${레['코어반경비'] * 100}% ${레['코어반경비'] * 100}% at 50% ${50 - 레['코어상향비'] * 100}%,
         ${알파(색, 빛, .58)} 0%, ${알파(색, 빛, .12)} 62%, ${알파(색, 빛, 0)} 78%),
-      ${알파(색, 'Navy Ink', 레['몸알파'])};
+      ${알파(색, 'Graphite 2', 레['몸알파'])};
     box-shadow:
-      inset 0 0 0 1px ${알파(색, 'Cream', .1)},
+      inset 0 0 0 1px ${알파(색, 'Chalk', .1)},
       inset 0 ${r1}px ${r2}px -${r1}px ${알파(색, 빛, .45)},
       inset 0 -${r1}px ${r2}px -${Math.round(r1 * 0.7)}px rgba(0,0,0,.58),
       0 ${Math.round(레['코스틱퍼짐px'] * 0.43)}px ${레['코스틱퍼짐px']}px -${r1 + 1}px ${알파(색, 빛, 레['코스틱알파'])};`;
@@ -180,11 +180,11 @@ function 번호들(색, 유, 림줄, 분산 = true) {
     flex:none;width:${크기};height:${크기};border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:${글자};font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--cream);
+    color:var(--chalk);
     background:
-      linear-gradient(170deg, ${알파(색, 'Cream', .14)}, ${알파(색, 'Cream', .02)} 58%),
-      ${알파(색, 'Navy Ink', 유['몸알파'])};
-    box-shadow:${그늘 || `inset 0 1px 0 ${알파(색, 'Cream', .2)},0 12px 22px -12px rgba(0,0,0,.95)`};`;
+      linear-gradient(170deg, ${알파(색, 'Chalk', .14)}, ${알파(색, 'Chalk', .02)} 58%),
+      ${알파(색, 'Graphite 2', 유['몸알파'])};
+    box-shadow:${그늘 || `inset 0 1px 0 ${알파(색, 'Chalk', .2)},0 12px 22px -12px rgba(0,0,0,.95)`};`;
   const 원판림 = (두께) => `
     content:'';border-radius:50%;padding:${두께}px;pointer-events:none;
     background:conic-gradient(from 208deg,${림줄});
@@ -202,7 +202,7 @@ function 번호들(색, 유, 림줄, 분산 = true) {
      display:flex;align-items:center;gap:calc(var(--숨) * 2.5);flex-wrap:wrap;
      margin:var(--제목위) 0 var(--제목아래);
      font-size:clamp(1.32rem,2.5vw,1.72rem);font-weight:800;
-     letter-spacing:-.038em;line-height:var(--줄제목);color:var(--cream);}
+     letter-spacing:-.038em;line-height:var(--줄제목);color:var(--chalk);}
   h2>span:not(.번호){flex:0 1 auto;min-width:0;}
   h2:not(:has(.번호))::before{content:counter(절,decimal-leading-zero);position:relative;${원판('2.05em', '.62em')}}
   /* ⚠사라지는 실금은 «번호와 무관»하다 — :has(.번호) 로 함께 가두면 옛 원고(번호를 손으로 적은
@@ -210,7 +210,7 @@ function 번호들(색, 유, 림줄, 분산 = true) {
      ::before(번호)만 갈리고 ::after(실금)는 어느 쪽이든 선다.
      ⚠이 주석에 백틱을 쓰지 않는다 — 여기는 템플릿 리터럴 «안»이라 하나로 CSS 가 통째로 끊긴다. */
   h2::after{content:'';flex:1 1 3em;min-width:2em;height:var(--실);
-     background:linear-gradient(90deg,${알파(색, 'Cream', .24)},${알파(색, 'Cream', 0)});}
+     background:linear-gradient(90deg,${알파(색, 'Chalk', .24)},${알파(색, 'Chalk', 0)});}
   .번호{position:relative;${원판('2.05em', '.62em')}}
   .번호::before{position:absolute;inset:0;${원판림(유['림원판두께px'])}}
 
@@ -226,10 +226,10 @@ function 번호들(색, 유, 림줄, 분산 = true) {
     width:1.55em;height:1.55em;${원판림(1.1)}}
 
   ${마커('차례번호')}
-  .잔번호{position:relative;${원판('1.35em', '.66em', `inset 0 1px 0 ${알파(색, 'Cream', .16)}`)}}
+  .잔번호{position:relative;${원판('1.35em', '.66em', `inset 0 1px 0 ${알파(색, 'Chalk', .16)}`)}}
 
   ${마커('각주번호')}
-  .각주{position:relative;${원판('1.25em', '.62em', `inset 0 1px 0 ${알파(색, 'Cream', .16)}`)}
+  .각주{position:relative;${원판('1.25em', '.62em', `inset 0 1px 0 ${알파(색, 'Chalk', .16)}`)}
     vertical-align:super;}`;
 }
 
@@ -243,7 +243,7 @@ function 레진부품(색, 레) {
   ul>li{position:relative;padding-left:calc(var(--칸) + var(--참));margin:var(--숨) 0;}
   ul>li::before{
     content:'';position:absolute;left:var(--숨);top:.62em;   /* x-height 중앙 — 행 중앙이 아니다 */
-    width:7px;height:7px;border-radius:50%;${레진몸(색, 레, 'Cream')}
+    width:7px;height:7px;border-radius:50%;${레진몸(색, 레, 'Chalk')}
   }
   ul>li::after{content:'';position:absolute;left:var(--숨);top:.62em;width:7px;height:7px;
     border-radius:50%;pointer-events:none;
@@ -252,7 +252,7 @@ function 레진부품(색, 레) {
   ${마커('체크')}
   .체크{display:inline-grid;place-items:center;position:relative;
     width:1.3em;height:1.3em;border-radius:50%;flex:none;padding-bottom:.025em;
-    font-size:.72em;font-weight:800;color:var(--cream);${레진몸(색, 레, 'Cream')}}
+    font-size:.72em;font-weight:800;color:var(--chalk);${레진몸(색, 레, 'Chalk')}}
   .체크::before{${레진스펙}}
 
   ${마커('히어로수')}
@@ -262,7 +262,7 @@ function 레진부품(색, 레) {
   .히어로수{display:inline-grid;place-items:center;position:relative;
     min-width:2.6em;height:2.6em;padding:0 var(--참) .025em;border-radius:999px;
     font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;letter-spacing:-.04em;
-    font-variant-numeric:tabular-nums;color:var(--cream);${레진몸(색, 레, 'Coral')}}
+    font-variant-numeric:tabular-nums;color:var(--chalk);${레진몸(색, 레, 'Coral')}}
   .히어로수::before{${레진스펙}}`;
 }
 
@@ -403,10 +403,10 @@ function 잔부품(색, 유, 림줄, 천) {
   ${마커('태그')}
   .칩{display:inline-flex;align-items:center;gap:var(--숨);
     padding:calc(var(--숨) + 1px) var(--참);border-radius:999px;position:relative;
-    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--cream);
-    background:linear-gradient(170deg, ${알파(색, 'Cream', .12)}, ${알파(색, 'Cream', .03)} 60%),
-               ${알파(색, 'Navy Ink', 유['몸알파'])};
-    box-shadow:inset 0 1px 0 ${알파(색, 'Cream', .18)},0 8px 16px -10px rgba(0,0,0,.9);}
+    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--chalk);
+    background:linear-gradient(170deg, ${알파(색, 'Chalk', .12)}, ${알파(색, 'Chalk', .03)} 60%),
+               ${알파(색, 'Graphite 2', 유['몸알파'])};
+    box-shadow:inset 0 1px 0 ${알파(색, 'Chalk', .18)},0 8px 16px -10px rgba(0,0,0,.9);}
   .칩::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
     pointer-events:none;background:conic-gradient(from 208deg,${림줄});
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
@@ -416,33 +416,33 @@ function 잔부품(색, 유, 림줄, 천) {
   ${마커('구분선')}
   /* 실금 — 선은 재질을 «안» 입는다. 획이라 두께가 없고, 두께가 없으면 물성이 없다. */
   .실금{height:var(--실);border:0;margin:var(--켜) 0;
-    background:linear-gradient(90deg,${알파(색, 'Cream', 0)},${알파(색, 'Cream', .22)} 18%,
-      ${알파(색, 'Cream', .22)} 82%,${알파(색, 'Cream', 0)});}
+    background:linear-gradient(90deg,${알파(색, 'Chalk', 0)},${알파(색, 'Chalk', .22)} 18%,
+      ${알파(색, 'Chalk', .22)} 82%,${알파(색, 'Chalk', 0)});}
 
   ${마커('인용부호')}
   blockquote{position:relative;margin:var(--켜) 0;padding:var(--단) var(--단) var(--단) calc(var(--켜) + var(--참));
-    font-size:.97rem;color:var(--slate);}
+    font-size:.97rem;color:var(--ash);}
   blockquote::before{content:'\\201C';position:absolute;left:var(--칸);top:calc(var(--칸) - var(--숨));
     display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;
-    font-size:1.5em;line-height:1;font-weight:800;color:var(--cream);
+    font-size:1.5em;line-height:1;font-weight:800;color:var(--chalk);
     padding-top:.28em;   /* 광학 — 여는 따옴표는 글리프가 위쪽에 몰려 있다 */
-    background:linear-gradient(170deg, ${알파(색, 'Cream', .13)}, ${알파(색, 'Cream', .02)} 58%),
-               ${알파(색, 'Navy Ink', 유['몸알파'])};
-    box-shadow:inset 0 1px 0 ${알파(색, 'Cream', .2)},0 10px 20px -12px rgba(0,0,0,.9);}
-  blockquote i,blockquote em{color:var(--cream);font-style:italic;}
+    background:linear-gradient(170deg, ${알파(색, 'Chalk', .13)}, ${알파(색, 'Chalk', .02)} 58%),
+               ${알파(색, 'Graphite 2', 유['몸알파'])};
+    box-shadow:inset 0 1px 0 ${알파(색, 'Chalk', .2)},0 10px 20px -12px rgba(0,0,0,.9);}
+  blockquote i,blockquote em{color:var(--chalk);font-style:italic;}
 
   ${마커('표지오브')}
   /* 펠트 오브 — 이 지면에서 «부피»를 가진 유일한 물건이라 하나뿐이어야 한다.
      빛을 먹는 재질(roughness .95)이라 유리·레진 옆에서 «사람이 만든 것»으로 읽힌다. */
   .오브{width:112px;height:112px;border-radius:31px;flex:none;position:relative;overflow:hidden;
-    background-color:var(--cream);${천줄}
+    background-color:var(--chalk);${천줄}
     display:grid;place-items:center;
     color:var(--ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
     box-shadow:
       inset 0 3px 4px rgba(255,255,255,.62),
-      inset 0 -14px 24px -6px ${알파(색, 'Navy 2', .5)},
-      inset 8px 0 20px -10px ${알파(색, 'Navy 2', .35)},
-      inset -8px 0 20px -10px ${알파(색, 'Navy 2', .35)},
+      inset 0 -14px 24px -6px ${알파(색, 'Graphite', .5)},
+      inset 8px 0 20px -10px ${알파(색, 'Graphite', .35)},
+      inset -8px 0 20px -10px ${알파(색, 'Graphite', .35)},
       0 2px 0 rgba(0,0,0,.6), 0 38px 60px -20px rgba(0,0,0,1);}
   /* 잔털 림라이트 — 위 가장자리에서 빛이 섬유 «끝»을 태운다(펠트의 서명) */
   .오브::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
@@ -453,8 +453,8 @@ function 잔부품(색, 유, 림줄, 천) {
   ${마커('링크점')}
   /* 링크 — 40~50대가 읽는다는 것을 셈에 넣으면 밑선 알파만으로는 링크가 아니다.
      셋을 겹친다: 밑선 .62 · 굵기 한 단 · 앞에 코랄 점(3px 이라 신호 1점을 안 넘는다). */
-  a{color:var(--cream);text-decoration:none;font-weight:560;
-    box-shadow:inset 0 -1px 0 ${알파(색, 'Cream', .62)};
+  a{color:var(--chalk);text-decoration:none;font-weight:560;
+    box-shadow:inset 0 -1px 0 ${알파(색, 'Chalk', .62)};
     transition:box-shadow 180ms ease,color 180ms ease;}
   a:not(.민):not(.레일 a)::before{content:'';display:inline-block;width:3px;height:3px;
     border-radius:50%;vertical-align:.32em;margin-right:var(--숨);
@@ -490,7 +490,7 @@ function 낮(색, 레) {
     body{background:var(--paper);background-attachment:initial;color:var(--ink);
          font-size:10.6pt;line-height:1.62;}
 
-    .유리{background:var(--cream2);border:1px solid var(--cream3);
+    .유리{background:var(--chalk2);border:1px solid var(--chalk3);
       -webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;
       break-inside:avoid;padding:var(--칸) calc(var(--칸) + var(--숨));}
     .유리::before{content:none;}
@@ -498,11 +498,11 @@ function 낮(색, 레) {
     /* 번호 — 유리 원판이 «찍힌 원판»이 된다. 분산 림은 선 하나로 굳는다. */
     h2{color:var(--ink);margin:calc(var(--켜) * .6) 0 var(--참);font-size:14pt;break-after:avoid;}
     h2:not(:has(.번호))::before,.번호,.잔번호,.각주{
-      background:var(--cream3);color:var(--ink);box-shadow:inset 0 0 0 1px var(--slate2);}
-    h2:not(:has(.번호))::after{background:var(--cream3);}
+      background:var(--chalk3);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ash2);}
+    h2:not(:has(.번호))::after{background:var(--chalk3);}
     .번호::before{content:none;}
-    ol>li::before{background:var(--cream3);color:var(--ink);
-      box-shadow:inset 0 0 0 1px var(--slate2);}
+    ol>li::before{background:var(--chalk3);color:var(--ink);
+      box-shadow:inset 0 0 0 1px var(--ash2);}
     ol>li::after{content:none;}
 
     /* 레진 — 코어를 면으로, 굴절밴드를 선으로. 구슬로 읽히되 종이에서 뜨지 않는다. */
@@ -511,30 +511,30 @@ function 낮(색, 레) {
     ul>li::after{background:none;}
     .체크,.히어로수{color:var(--ink);
       background:radial-gradient(58% 58% at 50% 44%, ${알파(색, 'Coral 3', .26)}, ${알파(색, 'Coral 3', .07)} 70%),
-                 var(--cream2);
+                 var(--chalk2);
       box-shadow:inset 0 0 0 1px ${알파(색, 'Coral 3', .5)};}
     .체크::before,.히어로수::before{content:none;}
 
-    .칩{background:var(--cream2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--cream3);}
+    .칩{background:var(--chalk2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--chalk3);}
     .칩::before{content:none;}
-    .실금{background:var(--cream3);}
-    blockquote{color:var(--slate2);}
-    blockquote::before{background:var(--cream3);color:var(--ink);box-shadow:none;}
+    .실금{background:var(--chalk3);}
+    blockquote{color:var(--ash2);}
+    blockquote::before{background:var(--chalk3);color:var(--ink);box-shadow:none;}
     blockquote i,blockquote em{color:var(--ink);}
     .오브{width:74px;height:74px;border-radius:20px;color:var(--ink);font-size:1.7rem;
-      box-shadow:none;border:1px solid var(--cream3);}   /* 배경을 끄면 천이 사라지니 테두리가 형태를 진다 */
+      box-shadow:none;border:1px solid var(--chalk3);}   /* 배경을 끄면 천이 사라지니 테두리가 형태를 진다 */
     .오브::before,.오브::after{content:none;}
 
     p,li,b,strong,td,th,h3{color:var(--ink);}
-    li::marker{color:var(--slate2);}
-    .흐린,footer{color:var(--slate2);}
+    li::marker{color:var(--ash2);}
+    .흐린,footer{color:var(--ash2);}
     a{color:var(--ink);font-weight:640;box-shadow:none;border-bottom:1px solid var(--coral3);}
     a:not(.민)::before{background:var(--coral3);box-shadow:none;}
-    code{color:var(--ink);background:var(--cream2);box-shadow:inset 0 0 0 1px var(--cream3);}
+    code{color:var(--ink);background:var(--chalk2);box-shadow:inset 0 0 0 1px var(--chalk3);}
 
     /* 쪽번호 — 낮에만 산다. @page 여백 안에 앉힌다. */
     .쪽번호{display:block;position:fixed;bottom:4mm;right:0;
-      font-size:8.5pt;color:var(--slate2);font-variant-numeric:tabular-nums;}
+      font-size:8.5pt;color:var(--ash2);font-variant-numeric:tabular-nums;}
     thead{display:table-header-group;}
     tr,.수치{break-inside:avoid;}
     @page{margin:14mm;}
@@ -548,9 +548,9 @@ function 낮(색, 레) {
 
 /** 림 레시피 — 기본 무채(유호 픽 3 · 08-15). 스펙트럼은 «오브 1점»짜리 지면 전용. */
 const 림레시피 = {
-  무채: [['Slate', .45, 25], ['Cream', .60, 120], ['Slate', .35, 210], ['Cream', .42, 300], ['Slate', .5, 350]],
+  무채: [['Ash', .45, 25], ['Chalk', .60, 120], ['Ash', .35, 210], ['Chalk', .42, 300], ['Ash', .5, 350]],
   스펙트럼: [['KC Cool Blue', .55, 25], ['Lime', .30, 80], ['KC Sun', .40, 130], ['Coral', .45, 185],
-    ['KC Hot Pink', .34, 232], ['KC Cool Blue', .50, 290], ['Cream', .55, 338]],
+    ['KC Hot Pink', .34, 232], ['KC Cool Blue', .50, 290], ['Chalk', .55, 338]],
 };
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -566,7 +566,7 @@ const 림레시피 = {
      · 맨요소(`h2`·`ol`·…)      → **가둔다.** 남의 지면이 반드시 쓰는 이름이다.
      · 한글 부품 클래스(`.번호`·`.칩`·…) → **안 가둔다.** 라틴 이름 판과 서로 소라 안 부딪고,
        가두면 부품 하나 쓰려고 조상에 클래스를 달아야 해서 «안 쓰이는 부품»이 된다.
-     · `:root` 변수(`--단`·`--켜`·…)  → **안 가둔다.** 실측상 발표물의 `--navy`·`--ink` 와
+     · `:root` 변수(`--단`·`--켜`·…)  → **안 가둔다.** 실측상 발표물의 `--graphite3`·`--ink` 와
        이름이 서로 소다. 덮어쓰기는 «선택자가 같다»가 아니라 «선언하는 속성이 같다»에서 난다.
 
    🔑 컨테이너(`body`·`html`·`article`)는 범위 **자신**으로 접는다 — `.룸 body` 는 영영 안 맞는다.
@@ -605,6 +605,115 @@ const 머리아닌at = /^@(-[a-z]+-)?(keyframes|counter-style|font-feature-value
  *    가둘 수 없는 것은 조용히 통과시키지 말고 **버린다**(통과가 곧 침범이라서).
  */
 const 버리는at = /^@page\b/i;
+
+/**
+ * 이름 가두기 — **가두는 프리셋의 CSS 변수에 우리 이름표를 붙인다.**
+ *
+ * 🔴 왜 (2026-08-19 실측 · F652 와 같은 계열, 다른 문):
+ *   가두는 프리셋은 `바탕` 을 안 실으므로 «쓰는 색만» `:root` 에 채운다. 그런데 그 이름이
+ *   `--ink`·`--coral`·`--font` 처럼 **흔한 낱말**이라, 같은 이름을 쓰는 남의 지면에 얹으면
+ *   Loom 블록이 뒤에 오므로 **그 지면의 변수를 통째로 덮어쓴다.**
+ *   실측: 어두운 캐러셀(무대판)에 얹자 `--ink:#1B1B1A`(라이트용 잉크)가 그 지면의
+ *   `--ink:#E4E4E7`(Chalk)을 덮어, **제목과 인용이 어두운 판 위에서 사라졌다.**
+ *   22벌에서 여태 안 터진 이유는 «값이 우연히 같아서»다 — 안 터진 것이 안전의 증거가 아니다.
+ *
+ *   범위(`.룸`)는 **선택자**를 가뒀지만 **변수 이름**은 안 가뒀다. 이 함수가 그 나머지 반이다.
+ *
+ * ══ 무엇만 바꾸나 ═════════════════════════════════════════════════════════
+ *   **라틴 이름만** 바꾼다(`--ink` → `--룸-ink`). 한글 이름(`--실`·`--숨`·`--깃`)은 그대로 둔다 —
+ *   이미 사실상 이름표가 붙어 있고, 남의 지면이 `--실` 을 쓸 일은 없다. 안 건드리면 그만큼 안 깨진다.
+ *   선언부와 `var()` 참조를 **함께** 바꾼다. 한쪽만 바꾸면 그 순간 전부 미정의가 된다.
+ *
+ * ⚠ 안전한 이유를 재서 확인했다 — 가두는 프리셋이 참조하는 라틴 변수는 **전부 자기가 선언한다**
+ *   (부품만 4/4 · 인쇄부품 9/9 · 「선언 안 된 참조」 0). 즉 남의 지면이 채워 주기를 기대하는
+ *   변수가 하나도 없어서, 양쪽을 같이 바꾸면 끊기는 고리가 없다.
+ *   통짜 프리셋(문서·캐러셀·웹)은 **안 바꾼다** — 그건 자기가 곧 판이라 `:root` 가 제 것이다.
+ */
+function 이름가두기(css) {
+  return String(css).replace(/--([a-zA-Z][a-zA-Z0-9-]*)/g, '--룸-$1');
+}
+
+/**
+ * 남의 글자를 안 건드린다 — **가두는 프리셋에서 «호스트 요소»의 `color` 선언을 뺀다.**
+ *
+ * 🔴 왜 (2026-08-19 실측 · 이 파일 머리말이 이미 약속하고 있던 것):
+ *   범위 주석은 「맨요소 규칙은 «.룸» 안에서만 산다 — **남의 지면을 안 때린다**」고 적혀 있다.
+ *   그런데 범위는 «어느 요소»만 가둘 뿐 «무엇을 하는가»는 안 가뒀다. `.룸 h2{color:var(--chalk)}`
+ *   가 남의 h2 를 **자기 색으로 다시 칠했다.** chalk 는 어두운 바탕 전제의 잉크(#E4E4E7)라,
+ *   라이트 지면(--paper #FAFAF9)에 얹히자 제목이 **1.21:1** 로 사라졌다.
+ *   실측 3벌 — `이해대장`·`작동대장`·`자율주행_결정록` 전부 같은 값이었다.
+ *
+ *   🔑 이 실패의 모양이 나쁘다: **전파 술어는 초록이다.** 훅도 마커도 있으니 「입었다」로 센다.
+ *      진척 지표가 좋아졌다고 말하는 동안 화면은 나빠진다(「맞는 얼굴로 틀린 값」).
+ *
+ * ══ 무엇을 빼고 무엇을 남기나 ══════════════════════════════════════════════
+ *   뺀다  = 선택자의 «끝»이 맨요소인 규칙(`h2` · `a` · `blockquote` · `blockquote i,em`) — 4벌.
+ *           남의 글자다. 색은 그 지면이 이미 정했고, 우리가 이길 이유가 없다.
+ *   남긴다 = 부품 클래스(`.번호`·`.칩`…)와 의사요소(`::before`) — 10벌.
+ *           **제 바탕을 깔고 그 위에 얹는 잉크**라 chalk 가 맞다(원판은 어둡다).
+ *   ⚠섞인 머리(`.칩,h2`)는 지금 0벌이다. 생기면 통째로 남긴다 — 빼는 쪽이 부품을 망가뜨리므로
+ *     **안전한 방향은 「안 뺀다」**이고, 그 자리는 `tests/룸잉크.test.js` 가 이름째 낸다.
+ *
+ * ══ 대가 ═══════════════════════════════════════════════════════════════════
+ *   가두는 프리셋을 «어두운» 지면에 얹으면 이제 제목이 그 지면의 잉크를 쓴다 — 원래 그래야 한다
+ *   (그 지면이 자기 바탕을 안다). 잃는 것은 「Loom 이 제목 색까지 통일해 준다」인데, 그건
+ *   애초에 통짜 프리셋(문서·캐러셀·웹)의 몫이지 얹는 프리셋의 몫이 아니었다.
+ */
+function 남의글자안건드리기(css) {
+  const 한글클래스 = /\.[가-힣]/, 의사요소 = /::/;
+  /** 이 머리가 «남의 글자»인가 — 선택자 «전부»의 끝이 맨요소일 때만 참(섞이면 안 뺀다). */
+  const 남의글자인가 = (머리) => {
+    const 본 = 머리.replace(/\/\*[\s\S]*?\*\//g, '').trim();
+    if (!본 || 본.startsWith('@')) return false;
+    const sels = 본.split(',').map((x) => x.trim()).filter(Boolean);
+    if (!sels.length) return false;
+    return sels.every((s) => {
+      const 끝 = s.split(/[\s>+~]+/).pop() || '';
+      return !한글클래스.test(끝) && !의사요소.test(s);
+    });
+  };
+  /** 선언부에서 `color` 만 걷어낸다. 다른 선언은 한 글자도 안 건드린다. */
+  const 색빼기 = (몸) => 몸
+    .replace(/(^|;)\s*color\s*:[^;}]*(;|$)/g, (m, a, b) => (a === ';' && b === ';' ? ';' : a || b || ''))
+    .replace(/;\s*;/g, ';');
+
+  let 결과 = '', 머리 = '', i = 0;
+  while (i < css.length) {
+    if (css.startsWith('/*', i)) {                    // 주석 — 통째로 흘린다
+      const 끝 = css.indexOf('*/', i + 2);
+      const 조각 = 끝 < 0 ? css.slice(i) : css.slice(i, 끝 + 2);
+      머리 += 조각; i += 조각.length; continue;
+    }
+    const c = css[i];
+    if (c === '"' || c === "'") {                     // 문자열 — content:"{" 가 깊이를 못 속이게
+      let j = i + 1;
+      while (j < css.length && css[j] !== c) j += (css[j] === '\\' ? 2 : 1);
+      머리 += css.slice(i, j + 1); i = j + 1; continue;
+    }
+    if (c === '{') {
+      const 본 = 머리.replace(/\/\*[\s\S]*?\*\//g, '').trim();
+      if (본.startsWith('@')) {                        // @media 등 — 안쪽을 계속 훑는다
+        결과 += 머리 + '{'; 머리 = ''; i++; continue;
+      }
+      /* 잎 규칙 — 짝 `}` 까지가 선언부다(문자열 안의 중괄호는 안 센다). */
+      let j = i + 1, 몸 = '';
+      while (j < css.length && css[j] !== '}') {
+        const d = css[j];
+        if (d === '"' || d === "'") {
+          let k = j + 1;
+          while (k < css.length && css[k] !== d) k += (css[k] === '\\' ? 2 : 1);
+          몸 += css.slice(j, k + 1); j = k + 1; continue;
+        }
+        몸 += d; j++;
+      }
+      결과 += 머리 + '{' + (남의글자인가(머리) ? 색빼기(몸) : 몸) + '}';
+      머리 = ''; i = j + 1; continue;
+    }
+    if (c === '}') { 결과 += 머리 + '}'; 머리 = ''; i++; continue; }
+    머리 += c; i++;
+  }
+  return 결과 + 머리;
+}
 
 /**
  * 범위 씌우기 — 규칙 «머리»만 고친다. 선언부·주석·문자열은 한 글자도 안 건드린다.
@@ -711,8 +820,8 @@ function css(옵션 = {}) {
   const 유 = t.재질['유리'], 레 = t.재질['레진'];
   const 림줄 = 림레시피[림이름].map(([이름, a, deg]) => `${알파(색, 이름, a)} ${deg}deg`).join(',');
 
-  const 쓰는색 = ['Navy 2', 'Navy Ink', 'Navy', 'Navy 3', 'Cream', 'Cream 2', 'Cream 3', 'Paper',
-    'Ink', 'Coral', 'Coral 2', 'Coral 3', 'Slate', 'Slate 2', 'KC Cool Blue'];
+  const 쓰는색 = ['Graphite', 'Graphite 2', 'Graphite 3', 'Graphite 4', 'Chalk', 'Chalk 2', 'Chalk 3', 'Paper',
+    'Ink', 'Coral', 'Coral 2', 'Coral 3', 'Ash', 'Ash 2', 'KC Cool Blue'];
   const 색줄 = 쓰는색.filter((n) => 색[n])
     .map((n) => `    ${변수이름(n)}:${색[n]}; ${변수이름(n)}-rgb:${rgb(색[n]).join(',')};`).join('\n');
 
@@ -723,33 +832,33 @@ ${색줄}
     --font:${t.서체['본문스택']};
   }
   *{box-sizing:border-box;}
-  html{scroll-padding-top:96px;background:var(--navy2);color-scheme:dark;}
-  ::selection{background:${알파(색, 'Coral', .28)};color:var(--cream);}
+  html{scroll-padding-top:96px;background:var(--graphite);color-scheme:dark;}
+  ::selection{background:${알파(색, 'Coral', .28)};color:var(--chalk);}
   :focus-visible{outline:2px solid var(--coral);outline-offset:3px;border-radius:6px;
-    box-shadow:0 0 0 1px ${알파(색, 'Cream', .55)},0 0 14px 2px ${알파(색, 'Coral', .45)};}
+    box-shadow:0 0 0 1px ${알파(색, 'Chalk', .55)},0 0 14px 2px ${알파(색, 'Coral', .45)};}
   body{margin:0;min-height:100vh;
     background:
-      radial-gradient(105% 62% at 50% -14%, ${알파(색, 'Navy 3', .62)} 0%, ${알파(색, 'Navy 3', 0)} 58%),
+      radial-gradient(105% 62% at 50% -14%, ${알파(색, 'Graphite 4', .62)} 0%, ${알파(색, 'Graphite 4', 0)} 58%),
       radial-gradient(120% 88% at 50% 34%, rgba(0,0,0,0) 8%, rgba(0,0,0,.66) 100%),
       linear-gradient(180deg, rgba(0,0,0,.34), rgba(0,0,0,.52)),
-      var(--navy2);
-    background-attachment:fixed;color:var(--cream);
+      var(--graphite);
+    background-attachment:fixed;color:var(--chalk);
     font-family:var(--font);font-weight:450;font-size:17px;line-height:var(--줄본문);
     letter-spacing:-.021em;word-break:keep-all;
     -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
-  p{margin:var(--참) 0;color:var(--cream);}
+  p{margin:var(--참) 0;color:var(--chalk);}
   h3{margin:var(--켜) 0 var(--숨);font-size:1.02rem;font-weight:800;
-     letter-spacing:-.028em;color:var(--cream);}
-  b,strong{font-weight:750;color:var(--cream);}
-  .흐린{color:var(--slate);} .작게{font-size:.9rem;}
-  code{font-family:${t.서체['모노스택']};font-size:.93em;font-weight:600;color:var(--cream);
-    background:${알파(색, 'Cream', .085)};padding:.1em .45em;border-radius:7px;
-    box-shadow:inset 0 0 0 1px ${알파(색, 'Cream', .09)};}
+     letter-spacing:-.028em;color:var(--chalk);}
+  b,strong{font-weight:750;color:var(--chalk);}
+  .흐린{color:var(--ash);} .작게{font-size:.9rem;}
+  code{font-family:${t.서체['모노스택']};font-size:.93em;font-weight:600;color:var(--chalk);
+    background:${알파(색, 'Chalk', .085)};padding:.1em .45em;border-radius:7px;
+    box-shadow:inset 0 0 0 1px ${알파(색, 'Chalk', .09)};}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}`;
 
   /* 색 변수만 — 「남의 지면에 얹는」 프리셋용.
    * 🔴 왜 필요한가(실측 F517): `부품만`·`인쇄부품` 은 `바탕` 을 빼는데, 색 정의가 **거기 있었다.**
-   *   그래서 얹은 CSS 가 `var(--ink)`·`var(--cream2)`·`var(--slate2)` 등 **10개를 정의 없이 참조**했다.
+   *   그래서 얹은 CSS 가 `var(--ink)`·`var(--chalk2)`·`var(--ash2)` 등 **10개를 정의 없이 참조**했다.
    *   정의 없는 var 은 선언 자체를 무효로 만든다 — 즉 `낮` 층의 색 보정이 **통째로 안 걸린다.**
    *   그러면 부품이 종이에서 밤 색으로 남고, 그게 정확히 1.13:1 로 사라지는 자리다.
    *   ⚠**조용히** 그렇게 된다 — 화면(밤)은 멀쩡하고 종이에서만 틀린다.
@@ -789,7 +898,15 @@ ${색줄}
 
   const 몸 = 조각들.map((n) => 만들기[n]()).join('\n');
   /* 가두는 프리셋은 `바탕` 을 안 실으므로 색 정의도 없다 — 여기서 «쓰는 것만» 채운다. */
-  const 완 = 범위 ? [색변수(몸), 범위씌우기(몸, 범위)].join('\n') : 몸;
+  /* 🔴 가두는 프리셋은 «남의 지면»에 얹힌다 — 그 지면의 글자색까지 뺏지 않는다.
+   *   범위는 «어느 요소»만 가둘 뿐 «무엇을 하는가»는 안 가둔다(`남의글자안건드리기` 머리말). */
+  const 안전한몸 = 범위 ? 남의글자안건드리기(몸) : 몸;
+  /* 🔑 이름표는 **맨 마지막에** 붙인다 — `색변수()` 는 원래 이름으로 «쓰는 것만» 골라야 하고
+   *   (`변수이름()` 이 내는 이름과 맞춰야 한다), 범위씌우기는 선택자만 본다. 둘 다 끝난 뒤
+   *   선언과 참조를 «함께» 갈아야 끊기는 고리가 없다. */
+  const 완 = 범위
+    ? 이름가두기([색변수(안전한몸), 범위씌우기(안전한몸, 범위)].join('\n'))
+    : 몸;
   return [머리, 완].join('\n');
 }
 
@@ -865,7 +982,7 @@ function 시연(옵션 = {}) {
   let 천 = null;
   try {
     const j = JSON.parse(fs.readFileSync(path.join(루트, 'docs', 'tools', '펠트천.json'), 'utf8'));
-    if (j['천'] && j['천']['Cream']) 천 = `url(${j['천']['Cream'].uri})`;
+    if (j['천'] && j['천']['Chalk']) 천 = `url(${j['천']['Chalk'].uri})`;
   } catch { /* 천이 없으면 오브는 민 크림으로 선다 — 시연은 그래도 나온다 */ }
 
   const 스타일 = css({ 지면: '문서', 림: 옵션.림, 천 });
@@ -876,18 +993,18 @@ function 시연(옵션 = {}) {
   .사다리{display:flex;gap:var(--켜);flex-wrap:wrap;margin:var(--단) 0;}
   .물성{text-align:center;flex:0 0 auto;}
   .물성 .알{width:92px;height:92px;border-radius:50%;margin:0 auto var(--참);position:relative;}
-  .물성 .름{font-weight:800;font-size:.95rem;color:var(--cream);}
-  .물성 .뜻{font-size:.8rem;color:var(--slate);margin-top:2px;max-width:15ch;}
-  .알.펠{background-color:var(--cream);${천 ? `background-image:${천};background-size:46px;` : ''}
+  .물성 .름{font-weight:800;font-size:.95rem;color:var(--chalk);}
+  .물성 .뜻{font-size:.8rem;color:var(--ash);margin-top:2px;max-width:15ch;}
+  .알.펠{background-color:var(--chalk);${천 ? `background-image:${천};background-size:46px;` : ''}
     box-shadow:inset 0 3px 4px rgba(255,255,255,.62),
-      inset 0 -14px 24px -6px ${알파(색, 'Navy 2', .5)},
+      inset 0 -14px 24px -6px ${알파(색, 'Graphite', .5)},
       0 2px 0 rgba(0,0,0,.6),0 38px 60px -20px rgba(0,0,0,1);}
   .알.펠::before{content:'';position:absolute;inset:0;border-radius:inherit;
     background:radial-gradient(78% 52% at 42% -6%, rgba(255,255,255,.72), rgba(255,255,255,0) 62%);}
-  .알.유{background:linear-gradient(176deg, ${알파(색, 'Cream', .11)} 0%, ${알파(색, 'Cream', .022)} 26%,
-      rgba(0,0,0,.06) 62%, rgba(0,0,0,.14) 100%), ${알파(색, 'Navy Ink', 유['몸알파'])};
+  .알.유{background:linear-gradient(176deg, ${알파(색, 'Chalk', .11)} 0%, ${알파(색, 'Chalk', .022)} 26%,
+      rgba(0,0,0,.06) 62%, rgba(0,0,0,.14) 100%), ${알파(색, 'Graphite 2', 유['몸알파'])};
     -webkit-backdrop-filter:blur(${유['흐림px']}px);backdrop-filter:blur(${유['흐림px']}px);
-    box-shadow:inset 0 1px 0 ${알파(색, 'Cream', 유['윤'])},0 30px 60px -28px rgba(0,0,0,1);}
+    box-shadow:inset 0 1px 0 ${알파(색, 'Chalk', 유['윤'])},0 30px 60px -28px rgba(0,0,0,1);}
   .알.유::before{content:'';position:absolute;inset:0;border-radius:50%;padding:${유['림두께px']}px;
     background:conic-gradient(from 208deg,${림레시피[옵션.림 || '무채'].map(([n, a, d]) => `${알파(색, n, a)} ${d}deg`).join(',')});
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
@@ -899,9 +1016,9 @@ function 시연(옵션 = {}) {
   /* 율 — 여백을 «눈에 보이는 막대»로. 숫자만 적으면 4와 8의 차이가 안 보인다. */
   .율표{display:grid;gap:var(--틈);margin:var(--단) 0;}
   .율줄{display:grid;grid-template-columns:2.2em 4.2em 1fr;align-items:center;gap:var(--칸);}
-  .율줄 .름{font-weight:800;color:var(--cream);}
-  .율줄 .막{height:10px;border-radius:99px;${레진몸(색, 레, 'Cream')}}
-  .율줄 .설{font-size:.82rem;color:var(--slate);}
+  .율줄 .름{font-weight:800;color:var(--chalk);}
+  .율줄 .막{height:10px;border-radius:99px;${레진몸(색, 레, 'Chalk')}}
+  .율줄 .설{font-size:.82rem;color:var(--ash);}
 
   /* 광학 — 켜고 끈 대조.
      ⚠실물 차이는 0.5px 이라 «그냥 나란히 두면 안 보인다» — 시연이 아무것도 증명하지 못한다.
@@ -911,7 +1028,7 @@ function 시연(옵션 = {}) {
   .확대{position:relative;zoom:3;width:fit-content;margin:0 auto;}
   .확대::after{content:'';position:absolute;left:-5px;right:-5px;top:50%;height:.4px;
     background:var(--coral);opacity:.85;pointer-events:none;z-index:5;}
-  .대조 .짝 .cap{font-size:.78rem;color:var(--slate);margin-top:var(--칸);max-width:20ch;}
+  .대조 .짝 .cap{font-size:.78rem;color:var(--ash);margin-top:var(--칸);max-width:20ch;}
   .생번호{padding-bottom:0!important;}
 
   .틀{max-width:min(1120px,100%);margin:0 auto;padding:0 var(--단) var(--막);}
@@ -920,13 +1037,13 @@ function 시연(옵션 = {}) {
   .표지막{padding:var(--막) 0 var(--장);display:grid;gap:var(--단);}
   .표지막 h1{margin:0;font-size:clamp(3rem,9vw,5.6rem);font-weight:800;
     letter-spacing:-.052em;line-height:var(--줄히어로);
-    background:linear-gradient(174deg,var(--cream) 0%,var(--cream) 44%,var(--slate) 118%);
+    background:linear-gradient(174deg,var(--chalk) 0%,var(--chalk) 44%,var(--ash) 118%);
     -webkit-background-clip:text;background-clip:text;color:transparent;}
   .꼭지{display:inline-flex;align-items:center;gap:var(--틈);margin:0;
-    font-size:.7rem;font-weight:700;letter-spacing:.2em;color:var(--slate);text-transform:uppercase;}
+    font-size:.7rem;font-weight:700;letter-spacing:.2em;color:var(--ash);text-transform:uppercase;}
   .꼭지::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--coral);
     box-shadow:0 0 10px 1px ${알파(색, 'Coral', .75)};}
-  @media print{ .알.유,.알.레{box-shadow:inset 0 0 0 1px var(--slate2);} }`;
+  @media print{ .알.유,.알.레{box-shadow:inset 0 0 0 1px var(--ash2);} }`;
 
   const 율줄들 = Object.entries(t.율['단계']).map(([이름, v]) =>
     `<div class="율줄"><span class="름">${이름}</span><span class="흐린 작게">${v.px}px</span>` +
@@ -943,7 +1060,7 @@ function 시연(옵션 = {}) {
 
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="${색['Navy 2']}">
+<meta name="theme-color" content="${색['Graphite']}">
 <title>Loom 부품 시연 — 물성 사다리·율·광학</title>
 <style>
 ${스타일}

@@ -54,6 +54,8 @@ const 런 = require(path.join(ROOT, 'tools', 'lib', '검수런.js'));
 /* 표 칸은 **날 `.split('|')` 로 가르지 않는다** — 보드 줄은 백틱 코드가 가득해서 그 안의 파이프에
  * 칸이 밀린다. 공용 통로 하나가 지고, `tests/표칸.test.js` 가 옛 통로를 기계로 금지한다. */
 const 표 = require(path.join(ROOT, 'tools', 'lib', '표.js'));
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('../.claude/hooks/lib/board-id.js');
 
 /* 동기 대기 — 이벤트 루프를 안 돌리고 잔다.
  * 왜 이 모양인가: 이 파일의 실행 사슬은 **전부 동기**(`execFileSync`)다. 회차 병렬을 위해
@@ -226,7 +228,7 @@ function 진행파일() {
   /* 지연 require — 이 모듈은 clasp-guard 훅도 부른다. 위(모델설정) 주석과 같은 축으로,
    * 훅 로드 경로에 새 require 사슬을 얹지 않는다(등록층에서 새면 방향은 언제나 「통과」다). */
   const store = require(path.join(ROOT, '.claude', 'hooks', 'lib', 'handoff-store.js'));
-  const 세션 = store.safeId(process.env.CLAUDE_CODE_HOST_SESSION_ID || '');
+  const 세션 = store.safeId(보드id.세션id() || '');
   return path.join(os.tmpdir(), 'synk-검수진행', `${store.projectKey(ROOT)}-${세션}.json`);
 }
 
@@ -2114,7 +2116,7 @@ function 던지기(argv) {
     런ID, 종류, 인자, 로그, pid: child.pid, HEAD: head,
     시작: new Date().toISOString(), 상태: '진행',
     대상: 인자.join(' ') || '(기본)',
-    세션: process.env.CLAUDE_CODE_HOST_SESSION_ID || '',
+    세션: 보드id.세션id() || '',
   });
 
   console.log(`🚀 던졌다 — 이 세션이 끝나도 계속 돈다(pid ${child.pid}).`);
