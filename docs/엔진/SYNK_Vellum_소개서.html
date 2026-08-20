@@ -7,11 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap">
 <!-- 소개서 정본 v1.0 · 2026-08-15 · 내부 문서(운영자료 「엔진」 갈래) -->
 <!-- 행동·발화의 정본은 이 문서가 아니다 — docs/캐릭터/마스코트_말할순간_설계.md(v1.1) · 마스코트_배선_설계.md(v1) · 캐릭터_생명감_설계.md · memory mascot-companion-layer가 이긴다. -->
-<!-- v1.1→v1.2 · 2026-08-18 · 여섯 엔진 이름에 회사명을 결합했다(유호 지시 08-18 「모든 엔진 이름 앞에 SYNK」) —
-     이 문서의 엔진 이름은 08-17 에 이미 「SYNK Vellum」이었고, 이번엔 **본문에 맨몸으로 남아 있던 자리**와
-     형제 이름(SYNK Loom·SYNK Temper…)을 함께 맞췄다. 규약 정본 = SYNK_엔진_지도.html 「작명 규약」.
-     형제 파일명도 옮겼다: Loom_소개서.html → SYNK_Loom_소개서.html 꼴(이 파일 = SYNK_Vellum_소개서.html) -->
-<meta name="theme-color" content="#0F1730">
+<meta name="theme-color" content="#08090C">
 <style>
 /* ── SYNK 지면 「검은 무대」 v0.2 — 조립 산출물(손 편집 금지) ────────────────────
    통로: python tools/펠트천굽기.py → node tools/펠트문서.js --굽기
@@ -61,32 +57,32 @@
   }
 
   :root{
-    --navy2:#0F1730; --navy2-rgb:15,23,48;
-    --navyink:#131A32; --navyink-rgb:19,26,50;
-    --navy:#1A2340; --navy-rgb:26,35,64;
-    --navy3:#2A3358; --navy3-rgb:42,51,88;
-    --cream:#F6F1E8; --cream-rgb:246,241,232;
-    --cream2:#EFE7D7; --cream2-rgb:239,231,215;
-    --cream3:#E7DDC7; --cream3-rgb:231,221,199;
-    --paper:#FBF7EE; --paper-rgb:251,247,238;
-    --ink:#171820; --ink-rgb:23,24,32;
-    --coral:#FF6B5C; --coral-rgb:255,107,92;
-    --coral2:#FF8877; --coral2-rgb:255,136,119;
-    --coral3:#E8543F; --coral3-rgb:232,84,63;
-    --slate:#8A93AD; --slate-rgb:138,147,173;
-    --slate2:#5F657D; --slate2-rgb:95,101,125;
+    --navy2:#08090C; --navy2-rgb:8,9,12;
+    --navyink:#1D1D1C; --navyink-rgb:19,26,50;
+    --navy:#262626; --navy-rgb:38,38,38;
+    --navy3:#373737; --navy3-rgb:42,51,88;
+    --cream:#EDE7DC; --cream-rgb:237,231,220;
+    --cream2:#EAEAEA; --cream2-rgb:239,231,215;
+    --cream3:#D1D2D4; --cream3-rgb:231,221,199;
+    --paper:#FBF7F0; --paper-rgb:251,247,238;
+    --ink:#2B2320; --ink-rgb:43,35,32;
+    --coral:#F96859; --coral-rgb:249,104,89;
+    --coral2:#FD9C87; --coral2-rgb:255,136,119;
+    --coral3:#AE322A; --coral3-rgb:174,50,42;
+    --slate:#8A8A8A; --slate-rgb:138,147,173;
+    --slate2:#676767; --slate2-rgb:95,101,125;
     --kccoolblue:#4E7CFF; --kccoolblue-rgb:78,124,255;
     --깃:22px; --깃속:12px;                /* 동심원 — 바깥 = 안쪽 + 패딩 */
     --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   }
   *{box-sizing:border-box;}
   html{scroll-padding-top:96px;background:var(--navy2);color-scheme:dark;}
-  ::selection{background:rgba(255,107,92,0.28);color:var(--cream);}
+  ::selection{background:rgba(249,104,89,0.28);color:var(--cream);}
   :focus-visible{outline:2px solid var(--coral);outline-offset:3px;border-radius:6px;
-    box-shadow:0 0 0 1px rgba(246,241,232,0.55),0 0 14px 2px rgba(255,107,92,0.45);}
+    box-shadow:0 0 0 1px rgba(228,228,231,0.55),0 0 14px 2px rgba(249,104,89,0.45);}
   body{margin:0;min-height:100vh;
     background:
-      radial-gradient(105% 62% at 50% -14%, rgba(42,51,88,0.62) 0%, rgba(42,51,88,0) 58%),
+      radial-gradient(105% 62% at 50% -14%, rgba(55,55,55,0.62) 0%, rgba(55,55,55,0) 58%),
       radial-gradient(120% 88% at 50% 34%, rgba(0,0,0,0) 8%, rgba(0,0,0,.66) 100%),
       linear-gradient(180deg, rgba(0,0,0,.34), rgba(0,0,0,.52)),
       var(--navy2);
@@ -100,21 +96,21 @@
   b,strong{font-weight:750;color:var(--cream);}
   .흐린{color:var(--slate);} .작게{font-size:.9rem;}
   code{font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.93em;font-weight:600;color:var(--cream);
-    background:rgba(246,241,232,0.085);padding:.1em .45em;border-radius:7px;
-    box-shadow:inset 0 0 0 1px rgba(246,241,232,0.09);}
+    background:rgba(228,228,231,0.085);padding:.1em .45em;border-radius:7px;
+    box-shadow:inset 0 0 0 1px rgba(228,228,231,0.09);}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 
   .유리{
     position:relative;border-radius:var(--깃);
     background:
-      linear-gradient(176deg, rgba(246,241,232,0.11) 0%, rgba(246,241,232,0.022) 26%,
+      linear-gradient(176deg, rgba(228,228,231,0.11) 0%, rgba(228,228,231,0.022) 26%,
                      rgba(0,0,0,.06) 62%, rgba(0,0,0,.14) 100%),
-      rgba(19,26,50,0.55);
+      rgba(29,29,28,0.55);
     -webkit-backdrop-filter:blur(30px) saturate(165%);
     backdrop-filter:blur(30px) saturate(165%);
     box-shadow:
-      inset 0 1px 0 rgba(246,241,232,0.16),
-      inset 0 -1px 0 rgba(246,241,232,0.07),
+      inset 0 1px 0 rgba(228,228,231,0.16),
+      inset 0 -1px 0 rgba(228,228,231,0.07),
       0 1px 2px rgba(0,0,0,.6),
       0 30px 60px -28px rgba(0,0,0,1);
     padding:var(--단) calc(var(--단) + var(--숨));
@@ -123,13 +119,13 @@
   .유리::before{
     content:'';position:absolute;inset:0;border-radius:inherit;
     padding:1.2px;pointer-events:none;z-index:1;
-    background:conic-gradient(from 208deg,rgba(138,147,173,0.45) 25deg,rgba(246,241,232,0.6) 120deg,rgba(138,147,173,0.35) 210deg,rgba(246,241,232,0.42) 300deg,rgba(138,147,173,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     opacity:.95;
     filter:saturate(1.5) drop-shadow(0 0 5px rgba(78,124,255,0.34))
-           drop-shadow(0 0 10px rgba(255,107,92,0.2));
+           drop-shadow(0 0 10px rgba(249,104,89,0.2));
   }
   .유리>*{position:relative;z-index:2;}
   .유리.잔잔{--깃:16px;padding:var(--칸) var(--단);}
@@ -150,32 +146,32 @@
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
     color:var(--cream);
     background:
-      linear-gradient(170deg, rgba(246,241,232,0.14), rgba(246,241,232,0.02) 58%),
-      rgba(19,26,50,0.55);
-    box-shadow:inset 0 1px 0 rgba(246,241,232,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
+      linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
+      rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
   /* ⚠사라지는 실금은 «번호와 무관»하다 — :has(.번호) 로 함께 가두면 옛 원고(번호를 손으로 적은
      지면)에서 절 실금이 통째로 사라진다. 실측 08-16: 소개서 6벌이 전부 그 모양이었다.
      ::before(번호)만 갈리고 ::after(실금)는 어느 쪽이든 선다.
      ⚠이 주석에 백틱을 쓰지 않는다 — 여기는 템플릿 리터럴 «안»이라 하나로 CSS 가 통째로 끊긴다. */
   h2::after{content:'';flex:1 1 3em;min-width:2em;height:var(--실);
-     background:linear-gradient(90deg,rgba(246,241,232,0.24),rgba(246,241,232,0));}
+     background:linear-gradient(90deg,rgba(228,228,231,0.24),rgba(228,228,231,0));}
   .번호{position:relative;
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
     color:var(--cream);
     background:
-      linear-gradient(170deg, rgba(246,241,232,0.14), rgba(246,241,232,0.02) 58%),
-      rgba(19,26,50,0.55);
-    box-shadow:inset 0 1px 0 rgba(246,241,232,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
+      linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
+      rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
   .번호::before{position:absolute;inset:0;
     content:'';border-radius:50%;padding:1.4px;pointer-events:none;
-    background:conic-gradient(from 208deg,rgba(138,147,173,0.45) 25deg,rgba(246,241,232,0.6) 120deg,rgba(138,147,173,0.35) 210deg,rgba(246,241,232,0.42) 300deg,rgba(138,147,173,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:순번*/
   /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리). */
@@ -188,20 +184,20 @@
     font-size:.72em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
     color:var(--cream);
     background:
-      linear-gradient(170deg, rgba(246,241,232,0.14), rgba(246,241,232,0.02) 58%),
-      rgba(19,26,50,0.55);
-    box-shadow:inset 0 1px 0 rgba(246,241,232,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
+      linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
+      rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
   /* ⚠림에도 «같은» font-size 를 준다 — em 은 자기 font-size 기준이라, .72em 이 걸린 ::before 는
      1.55em=18.97px 인데 안 걸린 ::after 는 1.55em=26.34px 이었다(실측 08-16). 림이 원판보다 컸다. */
   ol>li::after{position:absolute;left:0;top:.06em;font-size:.72em;
     width:1.55em;height:1.55em;
     content:'';border-radius:50%;padding:1.1px;pointer-events:none;
-    background:conic-gradient(from 208deg,rgba(138,147,173,0.45) 25deg,rgba(246,241,232,0.6) 120deg,rgba(138,147,173,0.35) 210deg,rgba(246,241,232,0.42) 300deg,rgba(138,147,173,0.5) 350deg);
+    background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:차례번호*/
   .잔번호{position:relative;
@@ -210,9 +206,9 @@
     font-size:.66em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
     color:var(--cream);
     background:
-      linear-gradient(170deg, rgba(246,241,232,0.14), rgba(246,241,232,0.02) 58%),
-      rgba(19,26,50,0.55);
-    box-shadow:inset 0 1px 0 rgba(246,241,232,0.16);}
+      linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
+      rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.16);}
 
   /*loom부품:각주번호*/
   .각주{position:relative;
@@ -221,9 +217,9 @@
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
     color:var(--cream);
     background:
-      linear-gradient(170deg, rgba(246,241,232,0.14), rgba(246,241,232,0.02) 58%),
-      rgba(19,26,50,0.55);
-    box-shadow:inset 0 1px 0 rgba(246,241,232,0.16);
+      linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
+      rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.16);
     vertical-align:super;}
 
   /*loom부품:불릿*/
@@ -236,13 +232,13 @@
     width:7px;height:7px;border-radius:50%;
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
-        rgba(246,241,232,0.58) 0%, rgba(246,241,232,0.12) 62%, rgba(246,241,232,0) 78%),
-      rgba(19,26,50,0.62);
+        rgba(228,228,231,0.58) 0%, rgba(228,228,231,0.12) 62%, rgba(228,228,231,0) 78%),
+      rgba(29,29,28,0.62);
     box-shadow:
-      inset 0 0 0 1px rgba(246,241,232,0.1),
-      inset 0 3px 10px -3px rgba(246,241,232,0.45),
+      inset 0 0 0 1px rgba(228,228,231,0.1),
+      inset 0 3px 10px -3px rgba(228,228,231,0.45),
       inset 0 -3px 10px -2px rgba(0,0,0,.58),
-      0 6px 14px -4px rgba(246,241,232,0.38);
+      0 6px 14px -4px rgba(228,228,231,0.38);
   }
   ul>li::after{content:'';position:absolute;left:var(--숨);top:.62em;width:7px;height:7px;
     border-radius:50%;pointer-events:none;
@@ -254,13 +250,13 @@
     font-size:.72em;font-weight:800;color:var(--cream);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
-        rgba(246,241,232,0.58) 0%, rgba(246,241,232,0.12) 62%, rgba(246,241,232,0) 78%),
-      rgba(19,26,50,0.62);
+        rgba(228,228,231,0.58) 0%, rgba(228,228,231,0.12) 62%, rgba(228,228,231,0) 78%),
+      rgba(29,29,28,0.62);
     box-shadow:
-      inset 0 0 0 1px rgba(246,241,232,0.1),
-      inset 0 3px 10px -3px rgba(246,241,232,0.45),
+      inset 0 0 0 1px rgba(228,228,231,0.1),
+      inset 0 3px 10px -3px rgba(228,228,231,0.45),
       inset 0 -3px 10px -2px rgba(0,0,0,.58),
-      0 6px 14px -4px rgba(246,241,232,0.38);}
+      0 6px 14px -4px rgba(228,228,231,0.38);}
   .체크::before{
     content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
     background:radial-gradient(30% 22% at 38% 16%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);}
@@ -275,13 +271,13 @@
     font-variant-numeric:tabular-nums;color:var(--cream);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
-        rgba(255,107,92,0.58) 0%, rgba(255,107,92,0.12) 62%, rgba(255,107,92,0) 78%),
-      rgba(19,26,50,0.62);
+        rgba(249,104,89,0.58) 0%, rgba(249,104,89,0.12) 62%, rgba(249,104,89,0) 78%),
+      rgba(29,29,28,0.62);
     box-shadow:
-      inset 0 0 0 1px rgba(246,241,232,0.1),
-      inset 0 3px 10px -3px rgba(255,107,92,0.45),
+      inset 0 0 0 1px rgba(228,228,231,0.1),
+      inset 0 3px 10px -3px rgba(249,104,89,0.45),
       inset 0 -3px 10px -2px rgba(0,0,0,.58),
-      0 6px 14px -4px rgba(255,107,92,0.38);}
+      0 6px 14px -4px rgba(249,104,89,0.38);}
   .히어로수::before{
     content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
     background:radial-gradient(30% 22% at 38% 16%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);}
@@ -290,11 +286,11 @@
   .칩{display:inline-flex;align-items:center;gap:var(--숨);
     padding:calc(var(--숨) + 1px) var(--참);border-radius:999px;position:relative;
     font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--cream);
-    background:linear-gradient(170deg, rgba(246,241,232,0.12), rgba(246,241,232,0.03) 60%),
-               rgba(19,26,50,0.55);
-    box-shadow:inset 0 1px 0 rgba(246,241,232,0.18),0 8px 16px -10px rgba(0,0,0,.9);}
+    background:linear-gradient(170deg, rgba(228,228,231,0.12), rgba(228,228,231,0.03) 60%),
+               rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.18),0 8px 16px -10px rgba(0,0,0,.9);}
   .칩::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
-    pointer-events:none;background:conic-gradient(from 208deg,rgba(138,147,173,0.45) 25deg,rgba(246,241,232,0.6) 120deg,rgba(138,147,173,0.35) 210deg,rgba(246,241,232,0.42) 300deg,rgba(138,147,173,0.5) 350deg);
+    pointer-events:none;background:conic-gradient(from 208deg,rgba(138,138,138,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(138,138,138,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(138,138,138,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;opacity:.8;}
@@ -302,8 +298,8 @@
   /*loom부품:구분선*/
   /* 실금 — 선은 재질을 «안» 입는다. 획이라 두께가 없고, 두께가 없으면 물성이 없다. */
   .실금{height:var(--실);border:0;margin:var(--켜) 0;
-    background:linear-gradient(90deg,rgba(246,241,232,0),rgba(246,241,232,0.22) 18%,
-      rgba(246,241,232,0.22) 82%,rgba(246,241,232,0));}
+    background:linear-gradient(90deg,rgba(228,228,231,0),rgba(228,228,231,0.22) 18%,
+      rgba(228,228,231,0.22) 82%,rgba(228,228,231,0));}
 
   /*loom부품:인용부호*/
   blockquote{position:relative;margin:var(--켜) 0;padding:var(--단) var(--단) var(--단) calc(var(--켜) + var(--참));
@@ -312,9 +308,9 @@
     display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;
     font-size:1.5em;line-height:1;font-weight:800;color:var(--cream);
     padding-top:.28em;   /* 광학 — 여는 따옴표는 글리프가 위쪽에 몰려 있다 */
-    background:linear-gradient(170deg, rgba(246,241,232,0.13), rgba(246,241,232,0.02) 58%),
-               rgba(19,26,50,0.55);
-    box-shadow:inset 0 1px 0 rgba(246,241,232,0.2),0 10px 20px -12px rgba(0,0,0,.9);}
+    background:linear-gradient(170deg, rgba(228,228,231,0.13), rgba(228,228,231,0.02) 58%),
+               rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 10px 20px -12px rgba(0,0,0,.9);}
   blockquote i,blockquote em{color:var(--cream);font-style:italic;}
 
   /*loom부품:표지오브*/
@@ -326,9 +322,9 @@
     color:var(--ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
     box-shadow:
       inset 0 3px 4px rgba(255,255,255,.62),
-      inset 0 -14px 24px -6px rgba(15,23,48,0.5),
-      inset 8px 0 20px -10px rgba(15,23,48,0.35),
-      inset -8px 0 20px -10px rgba(15,23,48,0.35),
+      inset 0 -14px 24px -6px rgba(8,9,12,0.5),
+      inset 8px 0 20px -10px rgba(8,9,12,0.35),
+      inset -8px 0 20px -10px rgba(8,9,12,0.35),
       0 2px 0 rgba(0,0,0,.6), 0 38px 60px -20px rgba(0,0,0,1);}
   /* 잔털 림라이트 — 위 가장자리에서 빛이 섬유 «끝»을 태운다(펠트의 서명) */
   .오브::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
@@ -340,12 +336,12 @@
   /* 링크 — 40~50대가 읽는다는 것을 셈에 넣으면 밑선 알파만으로는 링크가 아니다.
      셋을 겹친다: 밑선 .62 · 굵기 한 단 · 앞에 코랄 점(3px 이라 신호 1점을 안 넘는다). */
   a{color:var(--cream);text-decoration:none;font-weight:560;
-    box-shadow:inset 0 -1px 0 rgba(246,241,232,0.62);
+    box-shadow:inset 0 -1px 0 rgba(228,228,231,0.62);
     transition:box-shadow 180ms ease,color 180ms ease;}
   a:not(.민):not(.레일 a)::before{content:'';display:inline-block;width:3px;height:3px;
     border-radius:50%;vertical-align:.32em;margin-right:var(--숨);
-    background:var(--coral);box-shadow:0 0 6px rgba(255,107,92,0.7);}
-  a:hover{box-shadow:inset 0 -1px 0 rgba(255,107,92,0.9);}
+    background:var(--coral);box-shadow:0 0 6px rgba(249,104,89,0.7);}
+  a:hover{box-shadow:inset 0 -1px 0 rgba(249,104,89,0.9);}
 
   /*loom부품:쪽번호*/
   /* 쪽번호 — 낮 지면에서만 산다. 화면에는 «쪽»이라는 것이 없다. */
@@ -386,13 +382,13 @@
     ol>li::after{content:none;}
 
     /* 레진 — 코어를 면으로, 굴절밴드를 선으로. 구슬로 읽히되 종이에서 뜨지 않는다. */
-    ul>li::before{background:rgba(232,84,63,0.22);
-      box-shadow:inset 0 0 0 1px rgba(232,84,63,0.55);}
+    ul>li::before{background:rgba(174,50,42,0.22);
+      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.55);}
     ul>li::after{background:none;}
     .체크,.히어로수{color:var(--ink);
-      background:radial-gradient(58% 58% at 50% 44%, rgba(232,84,63,0.26), rgba(232,84,63,0.07) 70%),
+      background:radial-gradient(58% 58% at 50% 44%, rgba(174,50,42,0.26), rgba(174,50,42,0.07) 70%),
                  var(--cream2);
-      box-shadow:inset 0 0 0 1px rgba(232,84,63,0.5);}
+      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.5);}
     .체크::before,.히어로수::before{content:none;}
 
     .칩{background:var(--cream2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--cream3);}
@@ -632,7 +628,7 @@
      v0.2 는 종이에도 검은 무대를 그대로 깔았다. 그게 왜 결함인지는 취향이 아니라 두 수치다:
        ① 크롬 인쇄의 「배경 그래픽」은 **기본이 꺼짐**이다 → 바탕만 흰 종이가 되고 글자는 Cream 그대로
           남는다. **Cream on 흰 종이 = 1.13:1** — 소개서 본문이 통째로 사라진다(Slate 3.06 · Paper 1.07).
-       ② 체크가 켜져 있어도 실측 A4 한 장의 **89.7%가 진남색 면**이다(바탕 rgb(15,23,48)).
+       ② 체크가 켜져 있어도 실측 A4 한 장의 **89.7%가 진남색 면**이다(바탕 rgb(8,9,12)).
      낮 지면은 잉크가 어두워서 그 체크가 켜지든 꺼지든 읽힌다(Ink on 흰 종이 17.68:1).
      ⚠«다른 디자인»이 아니라 **같은 골격에 다른 빛**이다 — 판·레일·오브·번호·표 구조가 그대로다.
      색은 킷 직책의 허용 바닥을 탄다: Slate 는 다크 전용이라 종이에선 Slate 2,
@@ -730,7 +726,7 @@
   <ol>
     <li><a href="#s1"><span class="n">01</span> 한눈에</a></li>
     <li><a href="#s2"><span class="n">02</span> 왜 얼굴이 필요한가</a></li>
-    <li><a href="#s3"><span class="n">03</span> 이름 — SYNK Vellum 과 몽글</a></li>
+    <li><a href="#s3"><span class="n">03</span> 이름 — Vellum 과 몽글</a></li>
     <li><a href="#s4"><span class="n">04</span> 성격과 규율(행동 정본)</a></li>
     <li><a href="#s5"><span class="n">05</span> 구조 — 두뇌 하나·창구 다섯</a></li>
     <li><a href="#s6"><span class="n">06</span> 역할별 가치</a></li>
@@ -748,10 +744,10 @@
   <div>
     <p class="꼭지">SYNK 고유 IP · 닿는 엔진 3호 (제품층)</p>
     <h1>SYNK Vellum</h1>
-    <p class="한줄">SYNK Core(두뇌)와 SYNK Loom(몸)이 <b>학생에게 닿는 면</b>.
+    <p class="한줄">SYNK Core(두뇌)와 Loom(몸)이 <b>학생에게 닿는 면</b>.
   벨럼은 오래 쓸수록 좋아지는 필기면의 이름이다 — 한 학생에 대해 계속 적혀 나가는 그 면이 이 엔진이고,
   그 면 위에 앉아 학생·강사·학부모 앞에 서는 얼굴이 <b>몽글</b>이다.</p>
-    <p class="메타">소개서 v1.2 · 2026-08-18(회사명 결합 = 여섯 전부 · 유호 지시 08-18) · v1.1 2026-08-17 · 정본 = 마스코트_말할순간_설계.md(v1.1) · 마스코트_배선_설계.md · 캐릭터_생명감_설계.md · SYNK_철학.md Ⅱ-8</p>
+    <p class="메타">소개서 v1.1 · 2026-08-17 · 정본 = 마스코트_말할순간_설계.md(v1.1) · 마스코트_배선_설계.md · 캐릭터_생명감_설계.md · SYNK_철학.md Ⅱ-8</p>
   </div>
 </header>
 <div class="유리 알림 듦"><b>시제 안내(철학 §0)</b> — 학생 0명 · 개원 2027-02-25 전. 몽글은 지금 <b>설계와 1단계(강사판) 착지</b>까지 왔고,
@@ -759,20 +755,20 @@
 <div class="유리 알림 조용 듦"><b>이름 게이트</b> — 이름이 <b>둘로 갈렸다</b>(유호 확정 2026-08-17): 엔진은 <b>SYNK Vellum</b>, 마스코트는 <b>몽글</b>.
 그전까지는 엔진 이름도 「몽글 엔진」이었는데, 대외 문서(대학 협상·투자자)에서 인격 이름이 엔진 이름을 겸하면 브랜딩이 약해진다는 유호님 판단이다.
 「몽글」의 잔여 게이트는 그대로다 — 코드·대본·인쇄물 20곳의 일괄 교체는 말가이(원어민) 검수를 지나 <b>한 커밋으로</b> 한다(상표 41류 검색은 통과 · 09류는 미측정).
-Vellum 은 몽골어 대사전 미등재(현지 오염 0) 실측을 지났고, 엔진 이름의 상표·현지 검수는 SYNK Trail·SYNK Prism·SYNK Temper 와 같은 순서로 병행한다.</div>
+Vellum 은 몽골어 대사전 미등재(현지 오염 0) 실측을 지났고, 엔진 이름의 상표·현지 검수는 Trail·Prism·Temper 와 같은 순서로 병행한다.</div>
 
 <details class="듦 유리 잔잔 접이차례">
   <summary>차례</summary>
-  <p style="margin:.7em 0 0"><a href="#s1">①한눈에</a> · <a href="#s2">②왜 얼굴이 필요한가</a> · <a href="#s3">③이름 — SYNK Vellum 과 몽글</a> ·
+  <p style="margin:.7em 0 0"><a href="#s1">①한눈에</a> · <a href="#s2">②왜 얼굴이 필요한가</a> · <a href="#s3">③이름 — Vellum 과 몽글</a> ·
 <a href="#s4">④성격과 규율(행동 정본)</a> · <a href="#s5">⑤구조 — 두뇌 하나·창구 다섯</a> · <a href="#s6">⑥역할별 가치</a> ·
 <a href="#s7">⑦지금 상태(대장)</a> · <a href="#s8">⑧AI 시대의 차별점</a> · <a href="#s9">⑨목적지</a> · <a href="#s10">⑩닫히는 문</a></p>
 </details>
 
 <h2 id="s1" class="듦"><span class="번호">01</span><span>한눈에 — 이것이 SYNK Vellum 이다</span></h2>
-<p class="듦">SYNK Vellum 은 마스코트 그림 한 장이 아니다. <b>세 엔진이 합쳐지는 자리</b>다 —
+<p class="듦">Vellum 은 마스코트 그림 한 장이 아니다. <b>세 엔진이 합쳐지는 자리</b>다 —
 SYNK Core가 학생을 이해하고(무엇을 틀리는지·어떤 사람인지·어디로 가고 싶은지),
-SYNK Loom이 살아 있는 몸을 만들고(펠트의 결·폭신한 눌림·사각사각 소리·옹알이),
-SYNK Vellum 이 그 둘을 <b>관계</b>로 바꾼다: 언제 다가가고, 언제 조용히 있고, 무엇을 어떤 낯빛으로 건넬지.
+Loom이 살아 있는 몸을 만들고(펠트의 결·폭신한 눌림·사각사각 소리·옹알이),
+Vellum 이 그 둘을 <b>관계</b>로 바꾼다: 언제 다가가고, 언제 조용히 있고, 무엇을 어떤 낯빛으로 건넬지.
 우리 앱의 메인 기능들(숙제·출석·리포트·게임)의 실용성을 끌어올리는 <b>보조 장치</b>이면서,
 앞으로 회사가 제공하는 모든 「개인화」의 <b>얼굴</b>이 될 자산이다.</p>
 <ul class="듦">
@@ -791,7 +787,7 @@ SYNK Vellum 이 그 둘을 <b>관계</b>로 바꾼다: 언제 다가가고, 언�
 그 답은 새 통로 없이 기존 수집 계약(<code>preference.stated</code>)으로 합류한다. 무응답에 재촉 0, 답의 낙인 0.
 관심은 <b>좋았던 순간에만</b> 표현한다 — 그것이 관심과 감시를 가르는 선이다.</p>
 
-<h2 id="s3" class="듦"><span class="번호">03</span><span>이름 — SYNK Vellum 과 몽글</span></h2>
+<h2 id="s3" class="듦"><span class="번호">03</span><span>이름 — Vellum 과 몽글</span></h2>
 <p class="듦"><b>이름이 둘인 이유</b>(유호 확정 2026-08-17). <b>Vellum</b>(벨럼)은 송아지 피지 — <b>오래 쓸수록 좋아지는 필기면</b>이다.
 한 학생에 대해 3년치가 겹쳐 적히는 그 면이 이 엔진이고, 뜻이 하는 일과 정확히 겹친다.
 <b>몽글</b>은 그 면 위에 앉아 사람 앞에 서는 <b>얼굴</b>이다 — 인격의 이름이지 엔진의 이름이 아니다.
@@ -802,13 +798,13 @@ SYNK Vellum 이 그 둘을 <b>관계</b>로 바꾼다: 언제 다가가고, 언�
 <p class="듦">이름은 여러 후보를 자로 재서 골랐다(귀여움을 다섯 칸의 자로 세웠다 — 양성모음·비음, 된소리 0, 2음절, 가벼운 받침, 의태어 뿌리). 몽글이 이긴 이유 넷:</p>
 <ul class="듦">
 <li><b>형상</b> — 마스코트의 아랫자락 물결이 그대로 「몽글몽글」이다. 이름이 그림을 부른다 — 아무 캐릭터에나 붙는 이름은 우리 아이를 안 그린다.</li>
-<li><b>재질</b> — 펠트의 촉감과 같은 낱말. 이름·몸·소리(옹알이의 «몽»·되튐의 «몽»)가 한 낱말 가족이다 — SYNK Loom 감각층 설계와 한 몸.</li>
+<li><b>재질</b> — 펠트의 촉감과 같은 낱말. 이름·몸·소리(옹알이의 «몽»·되튐의 «몽»)가 한 낱말 가족이다 — Loom 감각층 설계와 한 몸.</li>
 <li><b>현지</b> — 몽골 학생에게 소리가 친근하고(Монгол과 닮은 그 한 끗이 발음 쉬움의 이유이기도 하다), 성별이 굳지 않는다.</li>
 <li><b>호격이 수업이 된다</b> — 받침 있는 이름이라 「몽글아!」·「몽글이」 두 부름이 다 자연스럽다. 받침에 따라 갈리는 호격조사(-아/-야)는 한국어 초급 문법 그 자체 — 한국어 학원의 마스코트 이름이 학생의 첫 한국어 문법 연습이 된다.</li>
 </ul>
 <p class="듦 작게 흐린">서사 하나 더 — 몽글 = 몽골 + 글(한국어 글). 학생의 나라와 배우는 언어가 이름 안에서 만난다.
 잔여 게이트: 말가이 원어민 검수(몽골어 연상 최종 확인) → 통과 시 코드 5 · SNS 대본 10+캐러셀 1 · 발표물 4 = 20곳을 <b>한 커밋에</b> 교체한다(집계 정본 = 작명·전파 메모리).
-⚠08-17 이름이 갈리면서 이 「엔진」 갈래 문서는 그 분모에서 빠졌다 — 여기 쓰이는 이름은 <b>SYNK Vellum</b>이고, 몽글은 얼굴을 가리킬 때만 남는다.</p>
+⚠08-17 이름이 갈리면서 이 「엔진」 갈래 문서는 그 분모에서 빠졌다 — 여기 쓰이는 이름은 <b>Vellum</b>이고, 몽글은 얼굴을 가리킬 때만 남는다.</p>
 
 <h2 id="s4" class="듦"><span class="번호">04</span><span>성격과 규율 — 행동은 전부 정본으로 묶여 있다</span></h2>
 <p class="듦">「살아있는 캐릭터」는 감성 선언이 아니라 규격이다. 아래가 몽글의 행동 헌법이다.</p>
@@ -846,7 +842,7 @@ SYNK Vellum 이 그 둘을 <b>관계</b>로 바꾼다: 언제 다가가고, 언�
 </ul>
 
 <h3 class="듦">Amber — 남길 순간을 고르는 층 (신설 2026-08-17)</h3>
-<p class="듦"><b>호박</b>은 나무 진이 굳어 그 순간을 그대로 가둔 것이다. Amber 는 SYNK Vellum 위에서 벌어진 일 가운데
+<p class="듦"><b>호박</b>은 나무 진이 굳어 그 순간을 그대로 가둔 것이다. Amber 는 Vellum 위에서 벌어진 일 가운데
 <b>남길 것</b>을 골라 <b>SYNK Atlas</b>(그 학생 한 명분의 축적된 이해 — 회사가 만드는 제품의 이름)에 박아 넣는 층이다.
 처음으로 문장을 완성한 순간, 처음 3급을 딴 순간 — 지나가면 재구성할 수 없어서, ⑩ 「닫히는 문」의 성격을 그대로 갖는다.</p>
 <ul class="듦">
@@ -860,7 +856,7 @@ SYNK Vellum 이 그 둘을 <b>관계</b>로 바꾼다: 언제 다가가고, 언�
 <div class="유리 표틀 듦"><table>
 <thead><tr><th style="width:14%">누구</th><th>몽글이 하는 일 (설계 기준)</th></tr></thead>
 <tbody>
-<tr><td><b>학생</b></td><td>숙제를 안 했으면 다그침이 아니라 <b>관심</b>으로 알려 주고(「어제 말한 그 얘기, 이어서 듣고 싶은데」), 잘한 순간을 알아봐 주고, 재도전을 응원한다. 매일 보는 홈에서 살아 숨쉬며(SYNK Loom 생명감 12 어휘), 학생의 상태를 세 축(크기×맑기×빛)으로 조용히 비춘다. 커스터마이징(표정 10·모자 7)으로 «내 몽글»이 된다.</td></tr>
+<tr><td><b>학생</b></td><td>숙제를 안 했으면 다그침이 아니라 <b>관심</b>으로 알려 주고(「어제 말한 그 얘기, 이어서 듣고 싶은데」), 잘한 순간을 알아봐 주고, 재도전을 응원한다. 매일 보는 홈에서 살아 숨쉬며(Loom 생명감 12 어휘), 학생의 상태를 세 축(크기×맑기×빛)으로 조용히 비춘다. 커스터마이징(표정 10·모자 7)으로 «내 몽글»이 된다.</td></tr>
 <tr><td><b>강사</b></td><td>시스템 사용법을 문서 근거로 즉답하고(교육 비용 절감), 학생의 신호(반복 오류·이탈 조짐)를 관찰 태그 배선과 한 벌로 전달한다 — 강사가 화면을 뒤지는 시간을 줄여 <b>사람이어야만 하는 일</b>에 쓰게 한다.</td></tr>
 <tr><td><b>원장(유호님)</b></td><td>한눈 관리의 보조 — 시스템 곳곳의 빈칸·대기를 읽어 주는 통로(2단계 이후). 운영 질문의 1차 응대를 맡아 원장의 클릭을 「판단이 필요한 자리 하나」로 줄인다.</td></tr>
 <tr><td><b>학부모</b></td><td>신뢰를 쌓는 같은 얼굴 — 매주 자동으로 도착하는 성장 기록(주간 리포트)과 한 지붕에서, 궁금한 것에 몽골어로 답한다(상담봇). 아이가 집에서 「몽글이가~」라고 말하는 그 존재가 학부모 창구에도 같은 얼굴로 서 있는 것 — 그것이 신뢰의 설계다.</td></tr>
@@ -879,11 +875,11 @@ SYNK Vellum 이 그 둘을 <b>관계</b>로 바꾼다: 언제 다가가고, 언�
 <tr><td>2단계 · 학생판</td><td>📐</td><td>착수 눈금(부트캠프) 대기 — 강사판 다음 순서</td></tr>
 <tr><td>3단계 · 학부모판</td><td>📐</td><td>⏳유호 선행 2 = 학부모 계정 정책 · 출결 입력 방식</td></tr>
 <tr><td>상담봇(페북·인스타 몽골어)</td><td>🔨</td><td>Meta 심사 대기 — 개통 뒤 두뇌 물리 이관(웹훅은 그때까지 안 흔든다)</td></tr>
-<tr><td>몸(3D LIVE v4 · 표정 10 · 커스터마이징 v4)</td><td>✅정본</td><td>앱 실시간 탑재는 SYNK Loom·앱 화면 트랙의 몫 · 현재 talk 탑재는 답장 화면 컷</td></tr>
-<tr><td>감각 반응(터치·소리·생명감 12)</td><td>✅v3 시제품</td><td>⏳유호 귀검수 · 앱 코드 0줄(SYNK Loom §6과 같은 줄)</td></tr>
+<tr><td>몸(3D LIVE v4 · 표정 10 · 커스터마이징 v4)</td><td>✅정본</td><td>앱 실시간 탑재는 Loom·앱 화면 트랙의 몫 · 현재 talk 탑재는 답장 화면 컷</td></tr>
+<tr><td>감각 반응(터치·소리·생명감 12)</td><td>✅v3 시제품</td><td>⏳유호 귀검수 · 앱 코드 0줄(Loom §6과 같은 줄)</td></tr>
 <tr><td>숙제 결과 성취감 꼬리(재발화·무오류 효과음·그자리 재도전)</td><td>✅</td><td>— 라이브 왕복 검증 완료(몽글 반응 문법의 첫 실물)</td></tr>
 <tr><td>이름 「몽글」(마스코트 전용)</td><td>✅확정</td><td>말가이 검수 → 20곳 한 커밋 전파(그 전 전파 0)</td></tr>
-<tr><td>엔진 이름 「SYNK Vellum」 · 층 「Amber」(층은 접두 없음 — 규약)</td><td>✅확정 08-17</td><td>Amber 는 이름·자리만 섰다(코드 0줄) — 발동 조건이 감각층 ⏳와 한 물음</td></tr>
+<tr><td>엔진 이름 「SYNK Vellum」 · 층 「Amber」</td><td>✅확정 08-17</td><td>Amber 는 이름·자리만 섰다(코드 0줄) — 발동 조건이 감각층 ⏳와 한 물음</td></tr>
 </tbody>
 </table></div>
 <p class="듦 작게"><b>솔직한 빈칸</b> — 학생이 실제로 만나 본 적은 0회다(학생 0명). 「케어받는 느낌」이 설계대로 나는지는
@@ -900,12 +896,12 @@ SYNK Vellum 이 그 둘을 <b>관계</b>로 바꾼다: 언제 다가가고, 언�
 </ol>
 
 <h2 id="s9" class="듦"><span class="번호">09</span><span>목적지 — 개인화의 얼굴</span></h2>
-<p class="듦">SYNK Vellum 의 종착은 앱 마스코트가 아니다. <b>회사가 하는 모든 「개인화」의 얼굴</b>이다 —
+<p class="듦">Vellum 의 종착은 앱 마스코트가 아니다. <b>회사가 하는 모든 「개인화」의 얼굴</b>이다 —
 학원 앱의 동반자 → 상담의 얼굴 → 홈페이지의 안내자 → 그리고 평생 계획의 그 지점:
 엔진이 학생과 직접 대화하게 되는 날(세계 1위 개인화 챗봇 · 2027-08 목표), 그 챗봇의 몸과 인격이 몽글이다.
 철학 Ⅱ-8이 [제안] 라벨로 적어 둔 문장 그대로(제안 = AI가 세운 해석 · 유호님 채택 전) — <i>「언젠가 우리 엔진이 학생과 직접 대화하게 되면, 그 상대는 강사도 학부모도 아닌 학생 본인이다.」</i></p>
 <p class="듦">그날의 몽글은 세 엔진의 합이다 — <a href="./SYNK_Core_소개서.html">SYNK Core</a>가 그 학생의 3년치 궤적을 알고,
-<a href="./SYNK_Loom_소개서.html">SYNK Loom</a>이 만져질 듯한 몸과 소리를 주고, SYNK Vellum 이 「언제 어떻게」의 절제를 지킨다.
+<a href="./SYNK_Loom_소개서.html">Loom</a>이 만져질 듯한 몸과 소리를 주고, Vellum 이 「언제 어떻게」의 절제를 지킨다.
 베낄 수 있는 것은 어느 하나이고, 가치는 셋의 결합에서만 난다. 여섯 엔진의 관계는 <a href="./SYNK_엔진_지도.html">SYNK 엔진 지도</a>에 있다.</p>
 
 <h2 id="s10" class="듦"><span class="번호">10</span><span>지금 안 하면 영영 못 갖는 것 — 닫히는 문</span></h2>
@@ -917,7 +913,7 @@ SYNK Vellum 이 그 둘을 <b>관계</b>로 바꾼다: 언제 다가가고, 언�
 그 순간이 지나면 재구성할 수 없다. 관계 엔진의 원료가 이것이다.</td>
 <td>✅ 배선 v1의 <code>intervention.delivered</code>가 그 그릇 — 지킬 것: 학생판·학부모판 확장 때 이 기록층을 승계하는 것.</td></tr>
 <tr><td><b>말이 통했는지의 짝</b></td><td>발화하는 매 순간 — 「어떤 순간의 어떤 말이 실제로 행동을 바꿨나」는 발화 시점의 상태를 함께 적어야만 나중에 짝이 맺어진다.</td>
-<td>개입 로그 규격(<a href="./SYNK_Temper_소개서.html">SYNK Temper</a> ⑩)에 몽글 발화가 포함되게 — 별도 공사 없이 그 규격에 합류한다.</td></tr>
+<td>개입 로그 규격(<a href="./SYNK_Temper_소개서.html">Temper</a> ⑩)에 몽글 발화가 포함되게 — 별도 공사 없이 그 규격에 합류한다.</td></tr>
 </tbody>
 </table></div>
 
