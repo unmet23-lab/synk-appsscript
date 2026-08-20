@@ -3171,7 +3171,7 @@ function buildMonthlyCards_() {
     const normPts = Math.round(pts / sch * schWeekday); // [v9.28] 수업일당 환산 — 주말반도 같은 기준으로 티어 판정
     const tier = CARD_TIERS.find(tt => normPts >= tt[0]);
     const stat = pts > 0
-      ? '⚡ ' + pts + 'P · 👑 ' + (crowns[s.id] || 0) + ' · ⚔️ ' + (raids[s.id] || 0)
+      ? '⚡ ' + pts + 'P · 🔥 ' + (crowns[s.id] || 0) + ' · ⚔️ ' + (raids[s.id] || 0)
       : '🌟 다음 달 주인공 예약';
     const mi = String(monMapC[s.mon] || ''); // [v9.35]
     // [v9.35] 골격을 소프트 글로우 축으로 정렬(보더 #C4B5FD 2px·라운드 18/12·섀도) — 티어 그라디언트는 유지

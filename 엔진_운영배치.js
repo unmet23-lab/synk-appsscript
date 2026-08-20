@@ -1426,7 +1426,7 @@ function leagueStoryDaily_() {
       dayDmg[c] = (dayDmg[c] || 0) + pts;
       perD[c] = perD[c] || {}; perD[c][sid] = (perD[c][sid] || 0) + pts;
       if (pts > 0 && rs === '숙제완료') hwCnt[c] = (hwCnt[c] || 0) + 1;
-      if (pts > 0 && (rs.indexOf('MVP') > -1 || rs.indexOf('시냅스') > -1))
+      if (pts > 0 && (rs.indexOf('MVP') > -1 || rs.indexOf('도전') > -1 || rs.indexOf('시냅스') > -1 || rs.indexOf('성장') > -1))
         crownD[c] = nmD[sid] + josa(nmD[sid], '이', '가') + ' ' + (rs.indexOf('MVP') > -1 || rs.indexOf('도전') > -1 ? '🔥 오늘의 도전' : '🌱 오늘의 성장') + '을 해냈다';
     }
   });
@@ -2121,8 +2121,8 @@ function parentWeeklyDigestCore_(holdRaw) {
       if (dd < monday || dd >= weekEnd) return; // [v9.34] 주 창 상한
       const isE = pts > 0 || rs.indexOf('정정') > -1;
       if (isE && pts !== 0) ptsW[sid] = (ptsW[sid] || 0) + pts;
-      if (rs.indexOf('MVP') > -1) mvpW[sid] = (mvpW[sid] || 0) + (pts > 0 ? 1 : (rs.indexOf('정정') > -1 ? -1 : 0)); // [v9.0] 건수 — 금액 독립
-      else if (rs.indexOf('시냅스') > -1) synW[sid] = (synW[sid] || 0) + (pts > 0 ? 1 : (rs.indexOf('정정') > -1 ? -1 : 0));
+      if (rs.indexOf('MVP') > -1 || rs.indexOf('도전') > -1) mvpW[sid] = (mvpW[sid] || 0) + (pts > 0 ? 1 : (rs.indexOf('정정') > -1 ? -1 : 0)); // [v9.0] 건수 — 금액 독립
+      else if (rs.indexOf('시냅스') > -1 || rs.indexOf('성장') > -1) synW[sid] = (synW[sid] || 0) + (pts > 0 ? 1 : (rs.indexOf('정정') > -1 ? -1 : 0));
       if (pts > 0 && rs.indexOf('칭찬·') === 0) { // [v9.51·B4] 💝 태그=사유 접미 — Glide 버튼은 reason='칭찬·발음↑' 등 4종 고정값으로 기록
         const tg = rs.slice(3).trim();
         if (tg) (tagW[sid] = tagW[sid] || []).push(tg);
@@ -2357,8 +2357,8 @@ function notifyDailyAwards() {
     if (!sid || !d || !info[sid]) return;
     const dd = asDate_(d);
     if (Utilities.formatDate(dd, tz, 'yyyy-MM-dd') !== today) return;
-    if (rs.indexOf('MVP') > -1) netM[sid] = (netM[sid] || 0) + pts;
-    else if (rs.indexOf('시냅스') > -1) netS[sid] = (netS[sid] || 0) + pts;
+    if (rs.indexOf('MVP') > -1 || rs.indexOf('도전') > -1) netM[sid] = (netM[sid] || 0) + pts;
+    else if (rs.indexOf('시냅스') > -1 || rs.indexOf('성장') > -1) netS[sid] = (netS[sid] || 0) + pts;
   });
   let sent = 0;
   const sids = {};
@@ -2431,8 +2431,8 @@ function raidStoryDaily() {
       dayD[cls][sid] = (dayD[cls][sid] || 0) + pts;
       if (!topReason[sid]) topReason[sid] = String(r[3] || '');
       const rsC = String(r[3] || ''); // [v7.7] 오늘의 도전·성장 순계(정정 자동 상쇄)
-      if (rsC.indexOf('MVP') > -1) { if (!crM[cls]) crM[cls] = {}; crM[cls][sid] = (crM[cls][sid] || 0) + pts; }
-      else if (rsC.indexOf('시냅스') > -1) { if (!crS[cls]) crS[cls] = {}; crS[cls][sid] = (crS[cls][sid] || 0) + pts; }
+      if (rsC.indexOf('MVP') > -1 || rsC.indexOf('도전') > -1) { if (!crM[cls]) crM[cls] = {}; crM[cls][sid] = (crM[cls][sid] || 0) + pts; }
+      else if (rsC.indexOf('시냅스') > -1 || rsC.indexOf('성장') > -1) { if (!crS[cls]) crS[cls] = {}; crS[cls][sid] = (crS[cls][sid] || 0) + pts; }
     }
   });
   // 연료 (주간 게이지 + 오늘 합동 공격)
@@ -2458,7 +2458,7 @@ function raidStoryDaily() {
   const boss = bossOfMonth(ss, Number(Utilities.formatDate(now, tz, 'M')));
   const bN = boss ? boss.name : '이달의 보스';
   const PARTS = ['왼쪽 눈', '오른쪽 뿔', '꼬리', '왼팔', '코어', '등딱지', '오른발'];
-  const VERB = { '숙제': '숙제 완검으로', 'MVP': '오늘의 도전의 힘으로', '시냅스': '반짝이는 시냅스 스파크로', '칭찬': '빛나는 태도 광선으로',
+  const VERB = { '숙제': '숙제 완검으로', '도전': '오늘의 도전의 힘으로', 'MVP': '오늘의 도전의 힘으로', '성장': '한 뼘 성장의 기세로', '시냅스': '반짝이는 시냅스 스파크로', '칭찬': '빛나는 태도 광선으로',
                  '생일': '생일 축포로', '출석': '출석 러시로', '레이드': '승리의 기세로' };
   function verbOf(rs) { for (var k in VERB) { if (rs.indexOf(k) > -1) return VERB[k]; } return '기습 공격으로'; }
   function pick(arr, seed) {
@@ -3199,7 +3199,7 @@ function calcTeacherStats() {
   readPointLogs_(ss, 7).forEach(r => { // 병합 읽기(monthlyReport와 동일 패턴) — G열(연월) 기준 전월 필터
     const rs = String(r[3] || ''), pts = Number(r[2]) || 0;
     if (pts <= 0 || rs.indexOf('정정') > -1) return;
-    if (rs.indexOf('MVP') === -1 && rs.indexOf('시냅스') === -1) return;
+    if (rs.indexOf('MVP') === -1 && rs.indexOf('도전') === -1 && rs.indexOf('시냅스') === -1 && rs.indexOf('성장') === -1) return;
     if (String(r[6]) !== ym8) return;
     const cl = clsOfT[r[1]];
     if (!cl) return;
@@ -3572,9 +3572,9 @@ function monthlyGameBatch() {
     const sid = r[1], p = Number(r[2]) || 0;
     const rs = String(r[3]);
     if (p > 0 || rs.indexOf('정정') > -1) mPts[sid] = (mPts[sid] || 0) + p; // [v7.1] 획득 기준
-    if (rs.indexOf('시냅스') > -1 && rs.indexOf('정정') === -1) praiseCnt[sid] = (praiseCnt[sid] || 0) + 1; // [v7.6] 오늘의 시냅스 최다
+    if ((rs.indexOf('시냅스') > -1 || rs.indexOf('성장') > -1) && rs.indexOf('정정') === -1) praiseCnt[sid] = (praiseCnt[sid] || 0) + 1; // [v7.6] 오늘의 시냅스 최다
     if (rs.indexOf('숙제') > -1 && rs.indexOf('정정') === -1) hwCnt[sid] = (hwCnt[sid] || 0) + 1; // [v7.5]
-    if (rs.indexOf('MVP') > -1 && rs.indexOf('정정') === -1) spkCnt[sid] = (spkCnt[sid] || 0) + 1; // [v7.4] 정정 제외
+    if ((rs.indexOf('MVP') > -1 || rs.indexOf('도전') > -1) && rs.indexOf('정정') === -1) spkCnt[sid] = (spkCnt[sid] || 0) + 1; // [v7.4] 정정 제외
   });
 
   const pf = ss.getSheetByName('profiles');
@@ -3919,8 +3919,8 @@ function checkAchievements() {
     const rs0 = String(r[3]);
     if (rs0 === '레이드보상') raidWins[sid0] = (raidWins[sid0] || 0) + 1;
     if (rs0.indexOf('숙제') > -1 && rs0.indexOf('정정') === -1) hwAll[sid0] = (hwAll[sid0] || 0) + 1; // [v7.5]
-    if (rs0.indexOf('MVP') > -1 && rs0.indexOf('정정') === -1) spkAll[sid0] = (spkAll[sid0] || 0) + 1; // [v7.4]
-    if (rs0.indexOf('시냅스') > -1 && rs0.indexOf('정정') === -1) praiseAll[sid0] = (praiseAll[sid0] || 0) + 1; // [v7.6]
+    if ((rs0.indexOf('MVP') > -1 || rs0.indexOf('도전') > -1) && rs0.indexOf('정정') === -1) spkAll[sid0] = (spkAll[sid0] || 0) + 1; // [v7.4]
+    if ((rs0.indexOf('시냅스') > -1 || rs0.indexOf('성장') > -1) && rs0.indexOf('정정') === -1) praiseAll[sid0] = (praiseAll[sid0] || 0) + 1; // [v7.6]
   };
   const plH = ss.getSheetByName('point_logs');
   if (plH && plH.getLastRow() >= 2) {
