@@ -68,6 +68,22 @@ const 판들 = [
   },
 ];
 
+
+/* ── 앱 화면 위에서 잰 값 (유호 요청 08-20 「앱 화면 위에서도 재봐줘」) ─────────────
+   장면 = `형태=앱판 재질=…` — 앱 다크의 층을 실제로 쌓았다(바탕 ← 카드 Ink ← 콘텐츠 ← 판).
+   콘텐츠(글줄 땀·코랄 알약)가 판 가장자리를 가로지르므로 「판 밖의 그것 / 판 뒤의 그것」이 한 장에 잡힌다.
+   측정: 밝기 = 0.2126R+0.7152G+0.0722B 평균 · 생존율 = (판 안 땀대비)/(판 밖 땀대비).
+   땀대비 = 그 띠에서 밝은 15% 평균 − 어두운 15% 평균. */
+const 앱 = [
+  { 이름: '패턴지 판', 그림: '퍼프로브_0819/앱판_패턴지_v1.png', 밝기: 208.2, 생존: 7,
+    한줄: '앱 카드 위에서 <b>불투명한 밝은 덩어리</b>가 된다. 뒤 글줄이 판 안에서 사라진다.' },
+  { 이름: '유리 판', 그림: '퍼프로브_0819/앱판_유리_v1.png', 밝기: 110.0, 생존: 43,
+    한줄: '판 밝기가 <b>앱 카드와 거의 같다</b>(110 vs 112) — 다크 화면에 «면»으로 앉는다. 뒤 글줄이 읽힌다.' },
+  { 이름: '다린 천 판', 그림: '퍼프로브_0819/앱판_다린천_v1.png', 밝기: 223.3, 생존: 5,
+    한줄: '패턴지와 <b>거의 구분되지 않는다</b> — 시접선 점 몇 개 차이뿐이다.' },
+];
+const 카드밝기 = 112.0;
+
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 const 카드 = (p) => `
@@ -84,6 +100,22 @@ const 카드 = (p) => `
             <dt>대가</dt><dd>${esc(p.대가)}</dd>
           </dl>
           <ul class="값">${p.값.map((v) => `<li>${esc(v)}</li>`).join('')}</ul>
+        </figcaption>
+      </figure>`;
+
+
+const 앱칸 = (a) => `
+      <figure class="앱">
+        <img src="${a.그림}" alt="${esc(a.이름)} — 앱 카드 위에 놓고 구운 판" loading="lazy">
+        <figcaption>
+          <h3>${esc(a.이름)}</h3>
+          <p class="한줄">${a.한줄}</p>
+          <table class="잰표">
+            <tr><th>판 밝기</th><td><b class="잰값">${a.밝기.toFixed(1)}</b>
+              <span class="곁">앱 카드 ${카드밝기.toFixed(1)} 대비 ${(a.밝기 / 카드밝기).toFixed(1)}배</span></td></tr>
+            <tr><th>뒤 글줄 생존율</th><td><b class="잰값">${a.생존}%</b>
+              <span class="막대"><i style="width:${a.생존 * 2}%"></i></span></td></tr>
+          </table>
         </figcaption>
       </figure>`;
 
@@ -139,6 +171,16 @@ const html = `<!doctype html>
   .값 li{font-size:11.5px;color:var(--보조2);border:1px solid ${킷['Deep Wool']};
          border-radius:999px;padding:2px var(--틈)}
 
+  .앱들{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--단)}
+  .앱{margin:0;background:var(--카드);border-radius:var(--참);overflow:hidden;
+      border:1px solid ${킷['Deep Wool']}}
+  .앱 img{display:block;width:100%;height:auto;background:${킷['Ink Deep']}}
+  .잰표{width:100%;border-collapse:collapse;font-size:13px;margin-top:var(--참)}
+  .잰표 th{text-align:left;font-weight:500;color:var(--보조2);font-size:11.5px;letter-spacing:.05em;
+           padding:var(--숨) 0;white-space:nowrap;vertical-align:middle}
+  .잰표 td{padding:var(--숨) 0 var(--숨) var(--참);vertical-align:middle}
+  .곁{font-size:11.5px;color:var(--보조2);margin-left:var(--틈)}
+  .결론{max-width:none;margin-top:var(--단)}
   section{margin-top:var(--막)}
   h2{font-size:19px;font-weight:800;letter-spacing:-.015em;margin:0 0 var(--칸);
      padding-bottom:var(--틈);border-bottom:1px dashed ${킷['Deep Wool']}}
@@ -177,6 +219,30 @@ const html = `<!doctype html>
   </div>
 
   <section>
+    <h2>앱 화면 위에서는 그림이 달라진다</h2>
+    <p class="질문" style="margin-bottom:var(--단)">위 셋은 검은 무대에 판만 띄운 <b>스튜디오</b> 그림입니다.
+      앱 다크의 층을 실제로 쌓아 다시 구웠습니다 — 바탕 위에 <b>앱 카드(Ink)</b>, 그 위에 콘텐츠(글줄·코랄 알약),
+      그 위를 판이 덮습니다. 콘텐츠가 <b>판 가장자리를 가로지르게</b> 놓아서, 한 장 안에서
+      「판 밖의 그것」과 「판 뒤의 그것」을 바로 견주실 수 있습니다.</p>
+    <div class="앱들">${앱.map(앱칸).join('')}
+    </div>
+    <div class="급소 결론">
+      <p><b>둘이 갈렸습니다.</b> ① <b>뒤가 살아남는 정도</b> — 유리 43%에 패턴지 7%·다린천 5%입니다.
+        패턴지의 비침은 스튜디오에선 보였지만(+12.3) 어두운 카드 위 콘텐츠에는 <b>거의 아무 일도 못 합니다</b>.
+        ② <b>판의 밝기</b> — 유리는 앱 카드와 사실상 같은 밝기(110 vs 112)라 다크 화면에 앉지만,
+        패턴지·다린천은 카드의 <b>약 2배</b>라 어두운 화면 위의 밝은 덩어리가 됩니다.</p>
+      <p class="잰법" style="margin-top:var(--참)"><b>정직하게 하나 덧붙입니다</b> — ②의 밝기는 재질이 아니라
+        <b>색</b>이 냅니다(패턴지=Paper · 다린천=Oat). 어두운 종이·천으로 물들이면 밝기는 내려갑니다.
+        다만 그러면 「재단지」라는 그림이 달라집니다. ①의 생존율은 색으로 못 바꿉니다 — 그건 투과의 몫입니다.</p>
+    </div>
+
+    <h2 style="margin-top:var(--막)">그래서 질문이 좁혀집니다</h2>
+    <p class="질문">셋 중 하나가 아니라 <b>반투명 판이 필요한가 아닌가</b>입니다.
+      필요하면 후보는 <b>유리 하나</b>뿐이고(패턴지는 앱에서 불투명하게 굽니다),
+      필요 없다면 패턴지·다린천은 같은 부류라 <b>은유</b>로 고르시면 됩니다 — 재단실의 도면 종이냐, 다린 천이냐.</p>
+  </section>
+
+  <section>
     <h2>고르면 따라오는 것</h2>
     <div class="고름">
       <article>
@@ -204,8 +270,9 @@ const html = `<!doctype html>
       </article>
     </div>
 
-    <p class="안잰것"><b>안 잰 것</b> — 이 셋은 스튜디오 렌더입니다. ① 실제 앱 화면 위에서, ② 그 위에 글자를 얹었을 때의
-      가독은 <b>안 재봤습니다</b>. 유호님이 재질을 고르시면 그 두 가지를 이어서 재겠습니다.</p>
+    <p class="안잰것"><b>아직 안 잰 것</b> — 판 위에 <b>실제 글자를 얹었을 때의 가독</b>입니다.
+      글자는 HTML 층이 지는 것이라(타이포 불가침) 렌더가 아니라 앱 화면에서 재야 합니다.
+      재질이 정해지면 그 자리에서 재겠습니다.</p>
   </section>
 
   <footer>
