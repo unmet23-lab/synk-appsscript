@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&family=DM+Mono:wght@300;400;500&display=swap">
 <style>
-  :root{ --ink:#171820; --sub:#7A7566; --line:#E7DDC7; --paper:#FBF7EE; }
+  :root{ --ink:#1B1B1A; --sub:#7A7566; --line:#D1D2D4; --paper:#FAFAF9; }
   *{ box-sizing:border-box; }
   body{ margin:0; background:var(--paper); color:var(--ink);
         font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
@@ -44,7 +44,7 @@
 <div class="wrap">
   <div class="panel">
     <h1>SYNK FIELD 생성기</h1>
-    <p class="hint">정본 v1.5 · 다크 표지 기본은 <b>플랫</b>(그림 0 — 2026-08-02 유호님 시험 채택). 디더는 시즌 오프닝·수료 같은 의식 순간 전용. 바탕·잉크 2색과 신호색 1점은 자동으로 지켜집니다. 다크 = Navy 2 #0F1730 · 신호 = Coral #FF6B5C.</p>
+    <p class="hint">정본 v1.5 · 다크 표지 기본은 <b>플랫</b>(그림 0 — 2026-08-02 유호님 시험 채택). 디더는 시즌 오프닝·수료 같은 의식 순간 전용. 바탕·잉크 2색과 신호색 1점은 자동으로 지켜집니다. 다크 = Navy 2 #08090C · 신호 = Coral #FF6B5C.</p>
 
     <div class="fld">
       <label>모드</label>
@@ -324,7 +324,7 @@ var OBJECTS = { toono:objToono, ignition:objIgnition, wave:objWave,
                 orbit:objOrbit, horizon:objHorizon, lattice:objLattice };
 
 function drawObject(ctx, W, H, u, R){
-  var img = ctx.getImageData(0,0,W,H), d = img.data, ink = rgb('#F6F1E8'), k;
+  var img = ctx.getImageData(0,0,W,H), d = img.data, ink = rgb('#E4E4E7'), k;
   function put(px, py){
     px = px|0; py = py|0;
     if(px<0||py<0||px>=W||py>=H) return;
@@ -347,8 +347,8 @@ function render(){
   var sig = SIG[S.sig];
   var copyArr = S.copy.split('\n');
   var isDark = (S.mode === 'dither' || S.mode === 'dark');
-  var bg = isDark ? '#0F1730' : '#FBF7EE';
-  var ink = isDark ? '#F6F1E8' : '#171820';
+  var bg = isDark ? '#08090C' : '#FAFAF9';
+  var ink = isDark ? '#E4E4E7' : '#1B1B1A';
   var dim = isDark ? '#8A8A94' : '#98A2B3';
 
   ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);

@@ -65,8 +65,15 @@ const 천길 = path.join(루트, 'docs', 'tools', '펠트천.json');
 const 토큰길 = path.join(루트, 'docs', '디자인_토큰.json');
 
 const 표식 = '<!--펠트스킨-->';
-// 검은 무대에서 실물 오브로 쓰는 천 — 밝은 것만(다크 펠트는 결이 죽는다).
-const 기본천 = ['Cream', 'Paper'];
+// 검은 무대에서 실물 오브로 쓰는 천 — 첫째가 «기본 염료»다(유호 확정 08-19 · 조항 ⓘ:
+// 기본색 · 결 98.7% 라 굽기 가드 통과). 뒤는 무채 후퇴(다크 펠트는 결이 죽어 애초에 밝은 천만).
+// 🔑이름을 여기 적지 않고 토큰 색.기본색 에서 파생한다 — 사본이 생기면 유호님이 기본색을 바꾸는 날
+// loom 만 따라가고 스킨·대비 심판은 옛 천을 잰다(반박 패스 M-2 · 「같은 판정을 두 곳에 적으면 갈라진다」).
+const 기본색이름 = (() => {
+  try { return JSON.parse(fs.readFileSync(토큰길, 'utf8')).색.기본색.이름 || 'Chalk'; }
+  catch { return 'Chalk'; }   // 토큰이 없으면 정본읽기()가 어차피 던진다 — 여기선 무채 후퇴만
+})();
+const 기본천 = [기본색이름, 'Chalk', 'Paper'];
 
 function 정본읽기() {
   if (!fs.existsSync(천길)) {
@@ -96,11 +103,11 @@ const 림레시피 = {
   스펙트럼: [
     ['KC Cool Blue', 0.55, 25], ['Lime', 0.30, 80], ['KC Sun', 0.40, 130],
     ['Coral', 0.45, 185], ['KC Hot Pink', 0.34, 232], ['KC Cool Blue', 0.50, 290],
-    ['Cream', 0.55, 338],
+    ['Chalk', 0.55, 338],
   ],
   무채: [
-    ['Slate', 0.45, 25], ['Cream', 0.60, 120], ['Slate', 0.35, 210],
-    ['Cream', 0.42, 300], ['Slate', 0.5, 350],
+    ['Ash', 0.45, 25], ['Chalk', 0.60, 120], ['Ash', 0.35, 210],
+    ['Chalk', 0.42, 300], ['Ash', 0.5, 350],
   ],
 };
 
@@ -108,16 +115,16 @@ const 림레시피 = {
    유리는 «합성»이다(무대 위에 반투명 층이 겹친다) — 그래서 대비를 잴 때
    평면 hex 가 아니라 층을 실제로 합성한 값으로 잰다. 눈이 보는 것이 그 값이다. */
 const 면들 = {
-  무대: { 바탕: 'Navy 2', 층: [] },
-  유리: { 바탕: 'Navy 2', 층: [['Navy Ink', 0.55], ['Cream', 0.035]] },
-  유리밝은: { 바탕: 'Navy 2', 층: [['Navy Ink', 0.55], ['Cream', 0.085]] },
-  펠트오브: { 천: 'Cream' },
+  무대: { 바탕: 'Graphite', 층: [] },
+  유리: { 바탕: 'Graphite', 층: [['Graphite 2', 0.55], ['Chalk', 0.035]] },
+  유리밝은: { 바탕: 'Graphite', 층: [['Graphite 2', 0.55], ['Chalk', 0.085]] },
+  펠트오브: { 천: 기본색이름 },   /* 기본 염료 = 토큰 색.기본색 파생(조항 ⓘ) — 아래 짝 「Ink 글자」가 이 천 휘도로 재판정된다 */
   /* 낮 지면(인쇄·PDF) — 종이 위엔 합성이 없다. 전부 킷의 평면 hex 그대로다.
      ⚠이 셋을 «잰다»는 것이 요점이다: 지면을 하나 더 지어놓고 자를 안 대면
        안 재는 면이 하나 늘 뿐이다(장치가 새는 방향은 언제나 통과다). */
   종이: { 바탕: 'Paper', 층: [] },
-  종이판: { 바탕: 'Cream 2', 층: [] },
-  종이줄: { 바탕: 'Cream 3', 층: [] },
+  종이판: { 바탕: 'Chalk 2', 층: [] },
+  종이줄: { 바탕: 'Chalk 3', 층: [] },
 };
 
 /** sRGB 알파 합성 — CSS 가 실제로 하는 계산(기본 색공간 sRGB). */
@@ -136,25 +143,25 @@ const 대비비 = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 
 /** 스킨이 실제로 쓰는 «글자 × 면» 짝 — 스킨 CSS 가 바뀌면 여기도 같이 옮긴다. */
 const 짝들 = [
-  { 글자: 'Cream', 면: '무대', 자리: '본문 — 이 문서에서 글자가 가장 많이 앉는 자리' },
-  { 글자: 'Slate', 면: '무대', 자리: '보조 문장·메타·푸터·레일 비활성' },
-  { 글자: 'Cream', 면: '유리', 자리: '유리 패널 본문·표 본문' },
-  { 글자: 'Slate', 면: '유리', 자리: '유리 패널 보조·표 주석' },
-  { 글자: 'Cream', 면: '유리밝은', 자리: '표 머리·레일 활성·코드 조각' },
+  { 글자: 'Chalk', 면: '무대', 자리: '본문 — 이 문서에서 글자가 가장 많이 앉는 자리' },
+  { 글자: 'Ash', 면: '무대', 자리: '보조 문장·메타·푸터·레일 비활성' },
+  { 글자: 'Chalk', 면: '유리', 자리: '유리 패널 본문·표 본문' },
+  { 글자: 'Ash', 면: '유리', 자리: '유리 패널 보조·표 주석' },
+  { 글자: 'Chalk', 면: '유리밝은', 자리: '표 머리·레일 활성·코드 조각' },
   { 글자: 'Coral 2', 면: '유리', 자리: '다크 보조 강조 글자(킷 직책 그대로)' },
   { 글자: 'Coral', 면: '무대', 자리: '신호 — 절 번호 옆 점·활성 표식' },
-  { 글자: 'Ink', 면: '펠트오브', 자리: '펠트 오브 위 글자(표지 명패)' },
-  { 글자: 'Slate', 면: '무대', 큰가: true, 자리: '히어로 그러데이션의 어두운 끝(대형 타이포)' },
+  { 글자: 'Ink', 면: '펠트오브', 큰가: true, 자리: '펠트 오브 위 글자(표지 명패 — .오브 가 2.6rem·800 고정이라 대형 기준. 코랄 천(조항 ⓘ)에선 결 p1 이 4.5 를 못 넘고 3.71 — 본문 크기 글자를 이 천에 올리지 않는다)' },
+  { 글자: 'Ash', 면: '무대', 큰가: true, 자리: '히어로 그러데이션의 어두운 끝(대형 타이포)' },
   /* ── 낮 지면(인쇄·PDF) ── 화면과 «같은 골격, 다른 빛». 킷 직책의 허용 바닥을 그대로 탄다:
      Slate 는 다크 전용이라 종이에선 Slate 2 로 바뀌고, Coral 은 라이트에서 글자 금지라
      강조 글자는 Coral 3(24px↑)만 쓴다. 그래서 짝 목록이 밤·낮으로 갈리는 것이 정상이다. */
   { 글자: 'Ink', 면: '종이', 지면: '낮', 자리: '본문 — 종이에서 글자가 가장 많이 앉는 자리' },
-  { 글자: 'Slate 2', 면: '종이', 지면: '낮', 자리: '보조 문장·메타·푸터' },
+  { 글자: 'Ash 2', 면: '종이', 지면: '낮', 자리: '보조 문장·메타·푸터' },
   { 글자: 'Ink', 면: '종이판', 지면: '낮', 자리: '패널 본문(화면의 «유리»가 종이에선 콜아웃 바닥)' },
-  { 글자: 'Slate 2', 면: '종이판', 지면: '낮', 자리: '패널 보조·인용' },
+  { 글자: 'Ash 2', 면: '종이판', 지면: '낮', 자리: '패널 보조·인용' },
   { 글자: 'Ink', 면: '종이줄', 지면: '낮', 자리: '표 머리·절 번호 원판' },
   { 글자: 'Coral 3', 면: '종이', 지면: '낮', 큰가: true, 자리: '신호 — 종이에서는 Coral 이 글자로 못 서서 Coral 3(24px↑)' },
-  { 글자: 'Ink', 면: '펠트오브', 지면: '낮', 자리: '펠트 오브는 낮에도 그대로 선다(밝은 양모)' },
+  { 글자: 'Ink', 면: '펠트오브', 지면: '낮', 큰가: true, 자리: '펠트 오브는 낮에도 그대로 선다(명패 2.6rem·800 고정 — 대형 기준 · 밤 짝과 같은 근거)' },
 ];
 
 function 대비판정() {
@@ -188,8 +195,8 @@ function 스킨(쓸천, 림 = '무채') {
   if (없는것.length) throw new Error('구운 적 없는 천: ' + 없는것.join(', '));
   if (!림레시피[림]) throw new Error('림 레시피는 스펙트럼·무채 둘뿐이다 — 받은 값: ' + 림);
 
-  const 쓰는색 = ['Navy 2', 'Navy Ink', 'Navy', 'Navy 3', 'Cream', 'Cream 2', 'Cream 3', 'Paper',
-    'Ink', 'Coral', 'Coral 2', 'Coral 3', 'Slate', 'Slate 2', 'KC Cool Blue'];
+  const 쓰는색 = ['Graphite', 'Graphite 2', 'Graphite 3', 'Graphite 4', 'Chalk', 'Chalk 2', 'Chalk 3', 'Paper',
+    'Ink', 'Coral', 'Coral 2', 'Coral 3', 'Ash', 'Ash 2', 'KC Cool Blue'];
   const 색줄 = 쓰는색.filter((n) => 색[n])
     .map((n) => `    ${변수이름(n)}:${색[n]}; ${변수이름(n)}-rgb:${rgb분해(색[n]).join(',')};`).join('\n');
   const 천줄 = 목록.map((n) => `    --천-${n.toLowerCase()}:url(${천[n].uri});`).join('\n');
@@ -199,7 +206,7 @@ function 스킨(쓸천, 림 = '무채') {
 
   /* 모바일 브라우저의 «상단 띠» — 안 정하면 흰색으로 남아 검은 무대 위에 흰 띠가 한 줄 선다.
      원고의 <meta> 에 맡기지 않고 스킨이 진다(전파 대상 문서마다 빠질 한 줄이라 F472 와 같은 자리). */
-  return `<meta name="theme-color" content="${색['Navy 2']}">
+  return `<meta name="theme-color" content="${색['Graphite']}">
 <style>
 /* ── SYNK 지면 「검은 무대」 v0.2 — 조립 산출물(손 편집 금지) ────────────────────
    통로: python tools/펠트천굽기.py → node tools/펠트문서.js --굽기
@@ -225,7 +232,7 @@ function 스킨(쓸천, 림 = '무채') {
    ⚠순서가 규율이다 — loom 이 «먼저», 골격이 «뒤». 뒤가 이기므로 골격은 고의로 덮을 수 있고,
      덮은 자리는 아래 §② 에 이유가 한 줄씩 붙어 있다(이유 없는 덮기는 중복 정본의 재발이다).
    ══════════════════════════════════════════════════════════════════════════ */
-${loom.css({ 지면: '문서', 림, 천: 천[기본천[0]] ? `url(${천[기본천[0]].uri})` : null })}
+${loom.css({ 지면: '문서', 림, 천: 천[목록[0]] ? `url(${천[목록[0]].uri})` : null })}
 
 /* ══════════════════════════════════════════════════════════════════════════
    ② 지면 골격 — Loom 부품이 «안 다루는» 층: 판·레일·표지·표·수치·콜아웃·모션.
@@ -233,10 +240,10 @@ ${loom.css({ 지면: '문서', 림, 천: 천[기본천[0]] ? `url(${천[기본�
    ══════════════════════════════════════════════════════════════════════════ */
   :root{
 ${천줄}
-    --유리막: rgba(var(--navyink-rgb),.55);
-    --윤: rgba(var(--cream-rgb),.16);      /* 위 스펙큘러 */
-    --윤약: rgba(var(--cream-rgb),.07);
-    --금: rgba(var(--cream-rgb),.10);      /* 괘선 — 유리에 그은 실금 */
+    --유리막: rgba(var(--graphite2-rgb),.55);
+    --윤: rgba(var(--chalk-rgb),.16);      /* 위 스펙큘러 */
+    --윤약: rgba(var(--chalk-rgb),.07);
+    --금: rgba(var(--chalk-rgb),.10);      /* 괘선 — 유리에 그은 실금 */
     --그늘: 0,0,0;                          /* 무대는 순흑 그림자를 쓴다(면이 아니라 빛의 부재) */
   }
   /* ⚠scroll-behavior 를 html 에 상시로 걸지 않는다 — 링크로 들어올 때 «먼 거리 자동 스크롤»이
@@ -250,7 +257,7 @@ ${천줄}
   /* ── 유리 = Loom §② 가 진다(위임). 여기 남는 것은 «이 지면만의 변주» 하나뿐 ──── */
   .유리.깊은{
     box-shadow:
-      inset 0 1px 0 rgba(var(--cream-rgb),.22),
+      inset 0 1px 0 rgba(var(--chalk-rgb),.22),
       inset 0 -1px 0 var(--윤약),
       0 2px 3px rgba(var(--그늘),.55),
       0 48px 90px -40px rgba(var(--그늘),1);
@@ -262,12 +269,12 @@ ${천줄}
      이 지면에서 «부피»를 가진 유일한 물건이고, 그래서 하나뿐이어야 한다. */
   .오브{
     width:112px;height:112px;border-radius:31px;flex:none;position:relative;overflow:hidden;
-    background-color:var(--cream);background-image:var(--천-cream);background-size:46px;
+    background-color:var(--chalk);background-image:var(--천-${목록[0].toLowerCase()});background-size:46px;
     box-shadow:
       inset 0 3px 4px rgba(255,255,255,.62),
-      inset 0 -14px 24px -6px rgba(var(--navy2-rgb),.5),
-      inset 8px 0 20px -10px rgba(var(--navy2-rgb),.35),
-      inset -8px 0 20px -10px rgba(var(--navy2-rgb),.35),
+      inset 0 -14px 24px -6px rgba(var(--graphite-rgb),.5),
+      inset 8px 0 20px -10px rgba(var(--graphite-rgb),.35),
+      inset -8px 0 20px -10px rgba(var(--graphite-rgb),.35),
       0 2px 0 rgba(var(--그늘),.6),
       0 38px 60px -20px rgba(var(--그늘),1);
     display:grid;place-items:center;
@@ -284,7 +291,7 @@ ${천줄}
   }
   .표지 .꼭지{
     display:inline-flex;align-items:center;gap:.55em;
-    font-size:.7rem;font-weight:700;letter-spacing:.2em;color:var(--slate);
+    font-size:.7rem;font-weight:700;letter-spacing:.2em;color:var(--ash);
     text-transform:uppercase;margin:0;
   }
   .표지 .꼭지::before{
@@ -294,14 +301,14 @@ ${천줄}
   .표지 h1{
     margin:.18em 0 0;font-size:clamp(3.2rem,10vw,6.6rem);font-weight:800;
     letter-spacing:-.052em;line-height:.93;
-    background:linear-gradient(174deg,var(--cream) 0%,var(--cream) 44%,var(--slate) 118%);
+    background:linear-gradient(174deg,var(--chalk) 0%,var(--chalk) 44%,var(--ash) 118%);
     -webkit-background-clip:text;background-clip:text;color:transparent;
   }
   .표지 .한줄{
     margin:.7em 0 0;font-size:clamp(1.06rem,2.1vw,1.32rem);line-height:1.62;
-    color:var(--cream);max-width:30ch;font-weight:450;letter-spacing:-.025em;
+    color:var(--chalk);max-width:30ch;font-weight:450;letter-spacing:-.025em;
   }
-  .표지 .메타{margin:0;font-size:.83rem;color:var(--slate);letter-spacing:-.012em;}
+  .표지 .메타{margin:0;font-size:.83rem;color:var(--ash);letter-spacing:-.012em;}
   @media (min-width:760px){
     .표지{grid-template-columns:112px minmax(0,1fr);align-items:start;gap:34px;}
   }
@@ -322,15 +329,15 @@ ${천줄}
   .알림::after{content:'';position:absolute;left:0;top:14%;bottom:14%;width:2px;border-radius:2px;
     background:linear-gradient(180deg,rgba(var(--coral-rgb),0),rgba(var(--coral-rgb),.95),rgba(var(--coral-rgb),0));
     box-shadow:0 0 14px 1px rgba(var(--coral-rgb),.5);}
-  .알림.조용::after{background:linear-gradient(180deg,rgba(var(--slate-rgb),0),rgba(var(--slate-rgb),.8),rgba(var(--slate-rgb),0));
+  .알림.조용::after{background:linear-gradient(180deg,rgba(var(--ash-rgb),0),rgba(var(--ash-rgb),.8),rgba(var(--ash-rgb),0));
     box-shadow:none;}
 
   /* 수치 타일 — 「12칸 중 3칸」처럼 숫자 하나가 문장을 대신하는 자리(.유리 와 함께 쓴다).
      ⚠.n 은 레일도 쓰는 이름이라 반드시 «.수치 안에서만» 잡는다 — 안 그러면 레일 번호가 커진다. */
   .수치들{display:flex;flex-wrap:wrap;gap:12px;margin:1.25em 0;}
   .수치{flex:1 1 190px;min-width:0;padding:15px 17px;}
-  .수치 .n{font-size:1.3rem;font-weight:800;letter-spacing:-.032em;line-height:1.22;color:var(--cream);}
-  .수치 .l{margin-top:4px;font-size:.85rem;line-height:1.5;color:var(--slate);}
+  .수치 .n{font-size:1.3rem;font-weight:800;letter-spacing:-.032em;line-height:1.22;color:var(--chalk);}
+  .수치 .l{margin-top:4px;font-size:.85rem;line-height:1.5;color:var(--ash);}
 
   /* 인용 = Loom 부품 «인용부호»가 진다(위임) — 여기서는 유리 판과 겹쳐 쓰므로 안여백만 준다. */
   blockquote.유리{padding:var(--단) calc(var(--단) + var(--숨));}
@@ -338,34 +345,34 @@ ${천줄}
   /* ── 표 = 유리판 위의 실금 ───────────────────────────────────────────────── */
   .표틀{margin:1.5em 0;padding:6px;overflow-x:auto;}
   table{border-collapse:separate;border-spacing:0;width:100%;font-size:.93rem;}
-  th,td{padding:.78em .9em;text-align:left;vertical-align:top;color:var(--cream);}
+  th,td{padding:.78em .9em;text-align:left;vertical-align:top;color:var(--chalk);}
   thead th{
-    font-weight:800;letter-spacing:-.02em;font-size:.8rem;text-transform:none;color:var(--cream);
-    background:rgba(var(--cream-rgb),.055);
+    font-weight:800;letter-spacing:-.02em;font-size:.8rem;text-transform:none;color:var(--chalk);
+    background:rgba(var(--chalk-rgb),.055);
   }
   thead th:first-child{border-radius:var(--깃속) 0 0 var(--깃속);}
   thead th:last-child{border-radius:0 var(--깃속) var(--깃속) 0;}
   tbody td{border-top:1px solid var(--금);}
   tbody tr:first-child td{border-top:0;}
-  tbody tr:hover td{background:rgba(var(--cream-rgb),.028);}
+  tbody tr:hover td{background:rgba(var(--chalk-rgb),.028);}
 
   /* ── 레일 = 유리 알약 메뉴 ───────────────────────────────────────────────── */
   .레일{display:none;}
-  .레일 .꼭지{font-size:.66rem;font-weight:700;letter-spacing:.2em;color:var(--slate);
+  .레일 .꼭지{font-size:.66rem;font-weight:700;letter-spacing:.2em;color:var(--ash);
     text-transform:uppercase;margin:0 0 14px;padding-left:14px;}
   .레일 ol{list-style:none;margin:0;padding:0;display:grid;gap:2px;}
   .레일 a{
     display:flex;align-items:center;gap:.6em;position:relative;
     padding:.44em .8em .44em .78em;border-radius:11px;
-    font-size:.845rem;line-height:1.35;color:var(--slate);box-shadow:none;
+    font-size:.845rem;line-height:1.35;color:var(--ash);box-shadow:none;
     transition:color 190ms ease,background 190ms ease;
   }
   .레일 a .n{font-size:.78em;opacity:.75;flex:none;width:1.5em;}
-  .레일 a:hover{color:var(--cream);background:rgba(var(--cream-rgb),.05);}
+  .레일 a:hover{color:var(--chalk);background:rgba(var(--chalk-rgb),.05);}
   .레일 a.여기{
-    color:var(--cream);font-weight:700;
-    background:linear-gradient(170deg,rgba(var(--cream-rgb),.13),rgba(var(--cream-rgb),.03)),var(--유리막);
-    box-shadow:inset 0 1px 0 rgba(var(--cream-rgb),.18),0 10px 20px -12px rgba(var(--그늘),.9);
+    color:var(--chalk);font-weight:700;
+    background:linear-gradient(170deg,rgba(var(--chalk-rgb),.13),rgba(var(--chalk-rgb),.03)),var(--유리막);
+    box-shadow:inset 0 1px 0 rgba(var(--chalk-rgb),.18),0 10px 20px -12px rgba(var(--그늘),.9);
   }
   .레일 a.여기::after{
     content:'';position:absolute;left:-9px;top:50%;transform:translateY(-50%);
@@ -374,7 +381,7 @@ ${천줄}
   }
 
   .접이차례{margin:24px 0;font-size:.92rem;}
-  .접이차례 summary{cursor:pointer;font-weight:800;letter-spacing:-.02em;color:var(--cream);}
+  .접이차례 summary{cursor:pointer;font-weight:800;letter-spacing:-.02em;color:var(--chalk);}
   .접이차례 a{margin-right:.15em;}
 
   @media (min-width:1060px){
@@ -383,7 +390,7 @@ ${천줄}
     .접이차례{display:none;}
   }
 
-  footer{margin:5em 0 0;padding:26px 0 0;color:var(--slate);font-size:.87rem;
+  footer{margin:5em 0 0;padding:26px 0 0;color:var(--ash);font-size:.87rem;
     border-top:1px solid var(--금);}
 
   /* ── 모션 — 절제(DESIGN.md 감각 규칙: transform/opacity만·300ms 상한·reduced-motion 존중) */
@@ -430,20 +437,20 @@ ${천줄}
       color:var(--ink);-webkit-text-fill-color:var(--ink);   /* ⚠이 줄이 없으면 제목이 투명하게 인쇄된다 */
     }
     .표지 .한줄{color:var(--ink);font-size:12pt;max-width:46ch;}
-    .표지 .꼭지,.표지 .메타{color:var(--slate2);}
+    .표지 .꼭지,.표지 .메타{color:var(--ash2);}
 
     .표틀{overflow:visible;padding:0;}
     table{break-inside:auto;}
-    thead th{background:var(--cream3);color:var(--ink);}
-    tbody td{border-top:1px solid var(--cream3);}
+    thead th{background:var(--chalk3);color:var(--ink);}
+    tbody td{border-top:1px solid var(--chalk3);}
     tbody tr:hover td{background:none;}
 
     .수치들{gap:8px;}
     .수치 .n{color:var(--ink);}
-    .수치 .l{color:var(--slate2);}
+    .수치 .l{color:var(--ash2);}
     .알림::after{background:var(--coral3);box-shadow:none;}
-    .알림.조용::after{background:var(--slate2);}
-    footer{border-top:1px solid var(--cream3);}
+    .알림.조용::after{background:var(--ash2);}
+    footer{border-top:1px solid var(--chalk3);}
   }
 </style>`;
 }
@@ -805,7 +812,7 @@ if (require.main === module) {
          이 줄이 없으면 낮 지면이 왜 있어야 하는지가 커밋 메시지에만 남고 기계엔 안 남는다. */
       const { 색: 색표 } = 정본읽기();
       console.log('\n   ── 배경 그래픽을 «끈» 인쇄 (크롬 인쇄 대화상자 기본값) — 바탕이 흰 종이가 된다');
-      for (const [글, 지면] of [['Cream', '밤'], ['Ink', '낮']]) {
+      for (const [글, 지면] of [['Chalk', '밤'], ['Ink', '낮']]) {
         const c = 대비비(휘도(색표[글]), 1);
         const ok = c >= 4.5;
         console.log('   ' + (ok ? '✅' : '🔴') + ' ' + 채움(글, 8) + ' on 흰 종이  ' + 채움(c.toFixed(2), 5)

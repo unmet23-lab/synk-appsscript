@@ -20,6 +20,8 @@ const { spawnSync } = require('child_process');
 
 const 확정 = require(path.join(__dirname, 'lib', '확정대조.js'));
 const { 인자게이트 } = require(path.join(__dirname, 'lib', '인자게이트.js'));
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('../.claude/hooks/lib/board-id.js');
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
 const 대기열경로 = path.join(ROOT, 'docs', '_ops', '작업대기열.md');
@@ -1036,7 +1038,7 @@ function 주인생사(지문, 옵션) {
 }
 
 /** `--집기 #Qnn --파일 "…"` → Write 할 보드 파일 **전문**을 조립한다. 디스크는 안 만진다. */
-function 집기(id, 파일칸, sid = process.env.CLAUDE_CODE_HOST_SESSION_ID, 옵션) {
+function 집기(id, 파일칸, sid = 보드id.보드id(), 옵션) {
   const 목록 = 항목들();
   if (!목록) return { 오류: `대기열 파일이 없다 — ${대기열좌표}` };
   const 항목 = 목록.find((x) => x.id === id);
