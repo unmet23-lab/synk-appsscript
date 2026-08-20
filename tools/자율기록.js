@@ -43,6 +43,19 @@
  */
 'use strict';
 const fs = require('node:fs');
+
+/* ── Loom — 이 지면이 부품을 «입는» 통로 (2026-08-18 · ④ 지면 배선) ──────────────
+ * 판정(훅 게이트·얹을 자리·멱등·범위진단)은 전부 `tools/lib/loom얹기.js` 하나가 진다.
+ * 여기서 고르는 것은 프리셋 하나뿐 — `부품만` = 지면이 자기 디자인을 지고 부품만 얹는 판.
+ * 🔴 훅이 0 이면 통로가 «안 얹는다». 그래야 「마커만 켜진 초록」이 안 생긴다(F517②). */
+const loom얹기모듈 = require('./lib/loom얹기.js');
+function loom태우기(html) {
+  const r = loom얹기모듈.얹기(html, { 지면: '부품만' });
+  if (!r.얹힘 && r.범위흠) console.error('   ⚠ Loom 미적용 — ' + r.범위흠);
+  else if (r.얹힘) console.error(`   ✅ Loom 부품 ${r.훅.length}종 — ${r.훅.join('·')}`);
+  return r.html;
+}
+
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 
@@ -218,8 +231,8 @@ function HTML(접힌것, 지금 = '') {
   src:url('https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.woff2') format('woff2-variations');
 }
 :root{
-  --paper:#FBF7EE; --ink:#171820; --navy:#1A2340; --navy2:#0F1730; --navy3:#2A3358;
-  --slate:#8A93AD; --slate2:#5F657D; --cream:#F6F1E8; --cream2:#EFE7D7; --cream3:#E7DDC7;
+  --paper:#FAFAF9; --ink:#1B1B1A; --navy:#262626; --navy2:#08090C; --navy3:#373737;
+  --slate:#8A8A8A; --slate2:#676767; --cream:#E4E4E7; --cream2:#EAEAEA; --cream3:#D1D2D4;
   --coral:#FF6B5C; --wash:#FFE9E4; --forest:#13724A;
   --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
   --gut:clamp(20px,4.5vw,56px);
@@ -297,7 +310,7 @@ footer b{color:var(--navy);font-weight:500}
 footer code{font-family:var(--mono);font-size:11.5px}
 </style>
 </head>
-<body>
+<body class="룸">
 <header><div class="inner">
   <div class="eyebrow">SYNK · Autonomous Build Log</div>
   <h1>자율주행 결정 기록</h1>
@@ -411,7 +424,7 @@ function 굽기(등재할까 = true) {
   const 접힌 = 접기(읽기());
   fs.mkdirSync(path.dirname(파생), { recursive: true });
   /* 날짜까지만 — 시:분을 넣으면 내용이 같은 재굽기에도 git diff 가 나서 노이즈가 된다. */
-  fs.writeFileSync(파생, HTML(접힌, 오늘()), 'utf8');
+  fs.writeFileSync(파생, loom태우기(HTML(접힌, 오늘())), 'utf8');
   console.log(`✅ 구움  ${path.relative(ROOT, 파생)} — 결정 ${접힌.목록.length}건(대기 ${접힌.목록.filter((d) => d.결과 === '대기').length})`);
   if (접힌.중복.length) console.error(`⚠ 번호 중복: ${접힌.중복.join(', ')}`);
   if (접힌.깨짐.length) console.error(`⚠ 읽지 못한 줄 ${접힌.깨짐.length}개`);
