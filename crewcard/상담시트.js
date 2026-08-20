@@ -395,7 +395,7 @@ function 상담_첫빈행_(sh, nameCol) {
  *   ③ 「처리상태」 드롭다운  ④ 헤더·틀고정·조건부 서식(브랜드 키트)
  * 실행: 일회성으로 doGet에서 호출 → 로그 확인 → 호출 제거·push (러너를 상시로 두지 않는다)
  * ═══════════════════════════════════════════════════════════════════ */
-const 브랜드_ = { navy: '#1A2340', coral: '#FF6B5C', lime: '#C8FF3D', cream: '#F6F1E8', paper: '#FBF7EE', ink: '#171820' };
+const 브랜드_ = { navy: '#262626', coral: '#FF6B5C', lime: '#C8FF3D', cream: '#E4E4E7', paper: '#FAFAF9', ink: '#1B1B1A' };
 
 function 상담시트_업그레이드_() {
   const ss = SpreadsheetApp.openById(CONSULT_SHEET_ID);
