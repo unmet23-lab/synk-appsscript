@@ -11,6 +11,28 @@
 #   **바로 그 sessionId**다. 즉 트레일러를 읽으면 그 세션에 곧바로 메시지를 보낼 수 있다.
 #   (`CLAUDE_CODE_SESSION_ID`는 내부 에이전트 id라 메시지를 못 보낸다 — 쓰지 말 것.)
 #
+# 🔴 폴백이 왜 붙었나 (마찰 F628 · 2026-08-18 실측 · 유호 픽 「폴백 넣고 머지층은 포기」):
+#   **클라우드 컨테이너엔 `CLAUDE_CODE_HOST_SESSION_ID` 가 아예 없다.** 그러면 아래 가드가
+#   조용히 `exit 0` 해서 트레일러가 안 박힌다. 실측(기준 `origin/master@ef6b0a41` · 07:39:59Z):
+#   최신 **194커밋 연속** 트레일러 없음 · 그중 클라우드가 163(비머지 133)이고, 있는 126건은
+#   **전부 `local_` 접두**였다 — 클라우드가 박은 적이 한 번도 없다. 그래서 CLAUDE.md 가
+#   「커밋 주인은 이걸로 읽는다(F041)」고 못박은 재료가 주 통로에서 통째로 비어 있었다.
+#   → 클라우드가 대신 주는 `CLAUDE_CODE_REMOTE_SESSION_ID` 로 폴백한다.
+#
+#   ⚠ 값의 모양이 다르다(실측 1건): 그 변수는 `cse_01Fi49nN7q4mpXF7RsLDkqeZ` 인데
+#     `get_session` 이 말하는 이 세션의 id 는 `session_01Fi49nN7q4mpXF7RsLDkqeZ` 다 —
+#     **본문은 같고 접두만 다르다.** 그러므로 이 트레일러를 들고 메시지를 보낼 때는
+#     `cse_` 를 `session_` 으로 바꿔 부른다. 접두를 훅에서 갈아 끼우지 않는 이유:
+#     그 대응은 표본 1건에서 관측한 것이라, 관측을 규칙으로 승격시키면 틀렸을 때 조용히 샌다.
+#     (보드 지문은 어느 쪽이든 같다 — `board-id.지문()` 이 `^[a-z]+_` 를 벗긴다.)
+#   ⚠ `CLAUDE_CODE_SESSION_ID` 로는 **안 내려간다.** 그건 메시지를 못 보내는 내부 id 라,
+#     거기까지 폴백하면 트레일러의 뜻이 「연락 가능한 id」에서 「그냥 구분자」로 내려앉는다.
+#
+# ⛔ 이 훅이 **원리상 못 잡는 층**을 이름 대어 적는다(유호 픽 「머지층은 포기」):
+#   GitHub 웹에서 PR 을 머지해 생기는 커밋에는 로컬 훅이 닿지 않는다. 위 194건 중 31건이
+#   그것이고(전부 머지 · 비머지 0), 그 층은 여기서 영원히 비어 있다 — 그 커밋의 주인은
+#   트레일러가 아니라 **PR** 이 말한다. 「트레일러가 없다 = 주인 불명」으로 읽지 말 것.
+#
 # 설계 원칙:
 #   · 환경변수가 없으면 **아무것도 하지 않는다**(유호님 손커밋·CI·다른 도구를 방해하지 않는다).
 #   · 이미 트레일러가 있으면 덧붙이지 않는다(amend·rebase에서 중복 방지).
@@ -24,7 +46,10 @@ MSG_FILE="$1"
 
 [ -n "$MSG_FILE" ] || exit 0
 [ -f "$MSG_FILE" ] || exit 0
-[ -n "$CLAUDE_CODE_HOST_SESSION_ID" ] || exit 0
+# 박을 값 — 첫 번째로 «있는» 것을 쓴다. 둘 다 없으면 아무것도 안 한다(손커밋·CI 를 안 건드린다).
+SID="$CLAUDE_CODE_HOST_SESSION_ID"
+[ -n "$SID" ] || SID="$CLAUDE_CODE_REMOTE_SESSION_ID"
+[ -n "$SID" ] || exit 0
 
 # 손으로 적어 둔 값이 **내 id 의 축약형**이면 교체한다 (마찰 F300, 2026-08-09 실사고).
 #   `--if-exists doNothing` 은 틀린 값도 그대로 둔다. 실측: 커밋 메시지 파일 끝에
@@ -40,8 +65,8 @@ EXISTING=$(git interpret-trailers --parse "$MSG_FILE" 2>/dev/null \
   | sed -n 's/^Session-Id:[[:space:]]*//p' | tail -1)
 
 MODE=doNothing
-if [ -n "$EXISTING" ] && [ "$EXISTING" != "$CLAUDE_CODE_HOST_SESSION_ID" ] \
-   && [ "${CLAUDE_CODE_HOST_SESSION_ID#"$EXISTING"}" != "$CLAUDE_CODE_HOST_SESSION_ID" ]; then
+if [ -n "$EXISTING" ] && [ "$EXISTING" != "$SID" ] \
+   && [ "${SID#"$EXISTING"}" != "$SID" ]; then
   MODE=replace
 fi
 
@@ -49,7 +74,7 @@ fi
 # 갈라져 `%(trailers)`로 안 읽힌다(그러면 박아도 못 찾는 셈이라 목적이 통째로 무너진다).
 git interpret-trailers --in-place \
   --if-exists "$MODE" \
-  --trailer "Session-Id: $CLAUDE_CODE_HOST_SESSION_ID" \
+  --trailer "Session-Id: $SID" \
   "$MSG_FILE" 2>/dev/null
 
 exit 0

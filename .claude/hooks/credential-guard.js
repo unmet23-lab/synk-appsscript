@@ -25,6 +25,8 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+// 세션 id 는 한 통로에서만 뽑는다 — 축이 셋이라 직독하면 갈라진다(F634).
+const 보드id = require('./lib/board-id.js');
 
 const DIR = process.env.SYNK_CRED_DIR || path.join(os.tmpdir(), 'synk-credential-guard');
 const TTL = 12 * 60 * 60 * 1000; // 반나절 지난 URL 기록은 남의(또는 옛) 세션 잔재로 본다
@@ -163,7 +165,7 @@ try {
 const tool = String(input.tool_name || '');
 const 이름 = 끝이름(tool);
 const ti = input.tool_input || {};
-const sid = String(input.session_id || process.env.CLAUDE_CODE_HOST_SESSION_ID || 'unknown');
+const sid = String(input.session_id || 보드id.세션id() || 'unknown');
 
 /* ── 규칙② 먼저 — 값이 자격증명이면 URL 을 몰라도 막는다 ────────────────────
  * 도구를 가리지 않는다: 타이핑이든 붙여넣기든 업로드든, 비밀이 페이지로 나가는 건 같은 사고다. */
