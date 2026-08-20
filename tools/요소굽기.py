@@ -2,15 +2,36 @@
 # 퍼프로브.py 의 승격판. 형태별로 몸을 짓고 짧은 퍼를 심어 Cycles 로 찍는다.
 #   python3 -c "import sys; sys.argv=['x','--','형태=오브','색=Coral','샘플=96','너비=900','출력=/tmp/판.png']; exec(open('tools/요소굽기.py').read())"
 # 형태: 오브 · 알약 · 아이콘 · 스티치 · 털실진행바(진행=0~1) · 단추토글 · 밑그림 · 페이지점 · 폼폼 · 시침핀 · 와펜 · 블랭킷 · 실패스피너 · 직조라벨
-#      · 패턴지판 · 다린천판 · 유리판 · 자수글자 · 레터프레스(등힘=90) · 라벨태그(등힘=80)
+#      · 패턴지판 · 다린천판 · 유리판 · 단춧구멍필드 · 스냅 · 조각보타일 · 매듭 · 앱판(재질=패턴지|유리|다린천)
+#      · 자수글자 · 레터프레스(등힘=90) · 라벨태그(등힘=80)
 # 규율: 염료는 토큰 킷 「이름」 참조(hex 하드코딩 금지) · **본문** 글자는 굽지 않는다(타이포 불가침 — HTML 층 몫)
 #      — 오브제 글자(고정 라벨 · 화면당 한 점)는 별도 항이다(글자공방 채택 08-20 · 옛 「글자는 굽지 않는다」는 본문 한정을 떨어뜨린 과대 일반화)
 # 2027 킷 배선(08-20): 실땀=Stitch · 무채=양모 회색(Oat·Stone·Ash Wool·Deep Wool) — 퇴역 대기 12색 사용 0
 # 조명: 원본(기본) · 결광2(자수 글자) · 스침(압인·라벨) — 인자 「조명=」로 덮어쓴다 · 글자 보조광 힘은 「등힘=」
 # ⚠룸굽기.js 합류 전의 독립 통로다 — 룸굽기는 blender.exe(윈도)를 부르고 이건 bpy 모듈(클라우드)로 돈다.
-import bpy, json, math, sys, random
+import bpy, json, math, os, sys, random
 
-토큰길 = '/home/user/synk-appsscript/docs/디자인_토큰.json'
+인자 = {k: v for k, v in (a.split('=', 1) for a in sys.argv[sys.argv.index('--') + 1:])} if '--' in sys.argv else {}
+
+def 토큰찾기():
+    """정본 토큰의 자리 — 클라우드(bpy 모듈)와 노트북(blender.exe)이 같은 스크립트를 쓴다.
+    순서: 인자 「토큰=」 > 클라우드 정본 경로 > 현재 폴더에서 위로 올라가며 docs/디자인_토큰.json."""
+    if 인자.get('토큰'):
+        return 인자['토큰']
+    클라우드 = '/home/user/synk-appsscript/docs/디자인_토큰.json'
+    if os.path.exists(클라우드):
+        return 클라우드
+    d = os.path.abspath(os.getcwd())
+    while True:
+        p = os.path.join(d, 'docs', '디자인_토큰.json')
+        if os.path.exists(p):
+            return p
+        위 = os.path.dirname(d)
+        if 위 == d:
+            raise SystemExit('디자인_토큰.json 을 못 찾았다 — 「토큰=경로」 로 준다')
+        d = 위
+
+토큰길 = 토큰찾기()
 색 = {c['이름']: c['hex'] for c in json.load(open(토큰길, encoding='utf-8'))['색']['킷']}
 
 def 리니어(hex_):
@@ -20,7 +41,6 @@ def 리니어(hex_):
         return v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4
     return tuple(ch(int(h[i:i+2], 16)) for i in (0, 2, 4)) + (1.0,)
 
-인자 = {k: v for k, v in (a.split('=', 1) for a in sys.argv[sys.argv.index('--') + 1:])} if '--' in sys.argv else {}
 형태 = 인자.get('형태', '오브')
 염료이름 = 인자.get('색', 'Coral')
 출력 = 인자.get('출력', '/tmp/요소.png')
@@ -457,8 +477,8 @@ def 판뒤구():
     짧은퍼(뒤구, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]))
 
 def 판재질(종류):
-    """판 3종의 재질 — **여기 한 곳에서만 정의한다.** 소비자마다 값을 지니면 대조가 거짓이 된다
-    (같은 재질이라 믿고 나란히 놓는데 값이 갈려 있는 형태). 두께도 함께 낸다."""
+    """판 3종의 재질 — **여기 한 곳에서만 정의한다.** 스튜디오 대조판과 앱판이 각자 값을 지니면
+    대조가 거짓이 된다(같은 재질이라 믿고 나란히 놓는데 값이 갈려 있는 형태). 두께도 함께 낸다."""
     if 종류 == '패턴지':
         m = bpy.data.materials.new('패턴지')
         m.use_nodes = True
@@ -505,7 +525,7 @@ def 패턴지판():
     재질, 두께 = 판재질('패턴지')
     판 = 베개몸((1.35, 두께, 0.95), 크리스=0.38, 레벨=4)
     판.data.materials.append(재질)
-    시접선()
+    시접선()                                  # 시접선 — 왼 가장자리 «안쪽» 한 줄 한정(제안 3차 #3)
     return (0, -6.8, 0.0), 90
 
 def 다린천판():
@@ -721,12 +741,254 @@ def 라벨태그():
             매끈재질('보조실', 색['Ash Wool'], 거칠기=0.72), 돌출=0.008, 베벨=0.003)
     글자등([라벨], 위치=(0, -2.4, 0.0), 크기=2.0, 힘=float(인자.get('등힘', '80')))
     return (0, -9.2, 0.0), 90
+def 단춧구멍필드():
+    """단춧구멍 슬롯 — 텍스트 필드(사전 1-a). 입력칸은 «천에 낸 구멍»이다:
+    감침질 땀이 슬롯의 긴 변을 비스듬히 물고 넘어가고, 양 끝은 빗장 땀이 막는다(안 막으면 째진 천이다).
+    위 = 포커스(코랄 실 한 줄이 슬롯을 두른다 — 신호 1점) · 아래 = 기본(초크 힌트 — 「아직 확정 아님」).
+    실측 교정 2벌: ① 어두운 판을 천 «위»에 얹으니 구멍이 아니라 «검은 판때기»로 읽혔다.
+    ② 천 조각 여럿을 이어 틈을 내니 이음선이 가로로 길게 드러나 «여러 장»으로 읽혔다.
+    → 천은 한 장으로 두고 구멍을 실제로 «잘라낸다»(불리언). 잘린 살에서도 털이 자라 — 절단면이 보풀진다."""
+    안감 = 베개몸((2.7, 0.07, 1.6), 위치=(0, 0.17, 0), 크리스=0.4)   # 틈 너머의 어둠 — 앱 다크 바닥의 실물
+    안감.data.materials.append(직물결(매끈재질('안감', 색['Deep Wool'], 거칠기=0.98, 배율=0.3)))
+    실재 = 매끈재질('실', 색['Stitch'], 거칠기=0.4)
+    코랄실 = 매끈재질('포커스실', 색[염료이름], 거칠기=0.42)
+    초크 = 분필재질('초크', 색['Ash Wool'])
+    앞, w, 반높이 = -0.2, 1.15, 0.26          # 반높이 = 틈의 반높이(땀이 0.11 을 물고 들어온다)
+
+    판 = 베개몸((2.6, 0.18, 1.5), 크리스=0.8)
+    bpy.context.view_layer.objects.active = 판
+    bpy.ops.object.modifier_apply(modifier='sub')   # 털을 심기 «전»에 살을 확정한다 — 뒤에 자르면 털이 안 따라온다
+    for cz in (0.68, -0.68):
+        칼 = 베개몸((w + 0.05, 0.6, 반높이), 위치=(0, 0, cz), 크리스=0.95)   # 둥근 사각 칼 — 재단가위 자리
+        bpy.context.view_layer.objects.active = 판
+        자름 = 판.modifiers.new('자름%d' % int(cz * 100), 'BOOLEAN')
+        자름.object = 칼
+        자름.operation = 'DIFFERENCE'
+        bpy.ops.object.modifier_apply(modifier=자름.name)
+        bpy.data.objects.remove(칼, do_unlink=True)
+    판.data.materials.clear()                 # 불리언이 남긴 빈 재질 칸을 치운다 — 안 치우면 살이 기본 흰색이 된다
+    짧은퍼(판, 'Deep Wool', 살재질('Deep Wool', 색['Deep Wool']),
+          털재질('Deep Wool', 색['Deep Wool']), 길이=0.05, 개수=24000)
+
+    def 슬롯(cz, 포커스, 힌트):
+        n = 21                                # 감침질 — 곧게 세우면 사다리다: 비스듬히 물고 넘어가는 땀
+        for i in range(n):                    # 위·아래 기울기는 «같은» 쪽이다 — 실 한 오리가 감아 도니까
+            x = -w + 2 * w * (i + 0.5) / n    # (어긋내면 밀 이삭 무늬가 된다 — 시안2 실측)
+            for 쪽 in (1, -1):
+                땀하나(x, 앞 - 0.02, cz + 쪽 * 0.27, 0.115, 0.021, 실재, 회전y=72)
+        for sx in (-w - 0.06, w + 0.06):      # 빗장 땀 — 구멍의 양 끝을 막는다
+            땀하나(sx, 앞 - 0.02, cz, 0.3, 0.034, 실재, 회전y=90)
+        if 힌트:                               # 초크 마킹 — 틈 «안»(안감 위)에 자리만 잡은 «가루»
+            for i in range(4):                 # 안에 있으니 어둡다 — 힌트는 원래 흐리다(③꿰맴이 아니다)
+                땀하나(-0.86 + i * 0.29, 0.09, cz, 0.1, 0.022, 초크, 회전y=0, 납작=True)
+        if 포커스:                             # 포커스 링 — 슬롯을 두르는 연속 코랄 실 한 줄
+            링 = bpy.data.curves.new('포커스', 'CURVE')
+            링.dimensions = '3D'
+            링.bevel_depth = 0.026
+            링.bevel_resolution = 4
+            sp = 링.splines.new('POLY')
+            둘레, rw, rh, r = [], w + 0.2, 반높이 + 0.22, 0.16   # 필드를 «감싸는» 링이지 액자가 아니다
+            for (dx, dz, a0) in ((rw - r, rh - r, 0), (-rw + r, rh - r, 90),
+                                 (-rw + r, -rh + r, 180), (rw - r, -rh + r, 270)):
+                for d in range(0, 91, 15):
+                    a = math.radians(a0 + d)
+                    둘레.append((dx + r * math.cos(a), 앞 - 0.035, cz + dz + r * math.sin(a)))
+            sp.points.add(len(둘레) - 1)
+            for i, (x, y, z) in enumerate(둘레):
+                sp.points[i].co = (x, y, z, 1)
+            sp.use_cyclic_u = True
+            obj = bpy.data.objects.new('포커스', 링)
+            bpy.context.collection.objects.link(obj)
+            obj.data.materials.append(코랄실)
+
+    슬롯(0.68, True, False)
+    슬롯(-0.68, False, True)
+    return (0, -8.1, 0.0), 90   # 천은 프레임을 넘긴다(밑그림 판의 구도 규율)
+
+def 스냅():
+    """스냅 단추(똑딱이) — 체크박스(사전 1-a): 체크 = «눌려 잠김».
+    왼쪽 = 잠김(수 단추가 암 링에 앉고 코랄 실로 달렸다 — 신호 1점) · 오른쪽 = 열림(빈 링 · ⓪빈 구멍).
+    다중 선택이 스냅인 까닭: 똑딱이는 몇 개든 각자 잠긴다 — 단일 확정은 꿰맨 단추다.
+    시안1 실측 교정: 달림 땀이 링 밖에 떠 있어 «햇살»로 읽혔다 — 링 위를 가로지르게 옮겼다."""
+    띠 = 베개몸((2.6, 0.3, 1.75), 크리스=0.66)
+    짧은퍼(띠, 'Deep Wool', 살재질('Deep Wool', 색['Deep Wool']),
+          털재질('Deep Wool', 색['Deep Wool']), 길이=0.05, 개수=24000)
+    링재 = 매끈재질('링', 색['Stone'], 거칠기=0.42, 배율=0.92)
+    수재 = 매끈재질('수단추', 색['Oat'], 거칠기=0.35)
+    구멍재 = 매끈재질('구멍', 색['Deep Wool'], 거칠기=0.98, 배율=0.28)
+    코랄실 = 매끈재질('코랄실', 색[염료이름], 거칠기=0.42)
+    크림실 = 매끈재질('크림실', 색['Stitch'], 거칠기=0.4)
+    앞 = -0.31
+
+    def 스냅하나(cx, 잠김, 실재):
+        bpy.ops.mesh.primitive_torus_add(major_radius=0.52, minor_radius=0.09,
+                                         location=(cx, 앞, 0), rotation=(math.radians(90), 0, 0),
+                                         major_segments=56, minor_segments=14)
+        링 = bpy.context.object
+        bpy.ops.object.shade_smooth()
+        링.data.materials.append(링재)
+        if 잠김:
+            bpy.ops.mesh.primitive_uv_sphere_add(radius=0.43, location=(cx, 앞 - 0.02, 0))
+            돔 = bpy.context.object            # 링 «안»을 꽉 채워 앉는다 — 틈이 남으면 렌즈로 읽힌다(품질판 실측)
+            돔.scale = (1, 0.62, 1)            # 봉긋해야 «끼워 잠긴 수 단추»다(납작하면 흰 원판이다)
+            bpy.ops.object.shade_smooth()
+            돔.data.materials.append(수재)
+        else:
+            bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(cx, 앞 + 0.02, 0))
+            구멍 = bpy.context.object
+            구멍.scale = (0.44, 0.02, 0.44)   # 빈 가운데 — 잠기지 않은 스냅은 «구멍»이다
+            bpy.ops.object.shade_smooth()
+            구멍.data.materials.append(구멍재)
+        for a in (38, 142, 218, 322):         # 달림 땀 — 링 «위»를 방사로 가로지른다(꿰매 달았다)
+            r = math.radians(a)
+            땀하나(cx + 0.52 * math.cos(r), 앞 - 0.115, 0.52 * math.sin(r), 0.17, 0.034, 실재, 회전y=-a)
+
+    스냅하나(-1.15, True, 코랄실)
+    스냅하나(1.15, False, 크림실)
+    return (0, -9.0, 0.0), 90
+
+def 조각보타일():
+    """조각보(패치워크) 타일 — 대시보드 그리드(사전 1-b). 그리드는 «선»이 아니라 «솔기»다.
+    무채 조각 셋(Oat·Ash Wool·Deep Wool — 밝기 사다리)에 기본색 조각 하나 — 오늘의 카드가 신호 1점이다.
+    조각들은 떠 있지 않고 이어 붙어 있다: 솔기마다 러닝 스티치가 지나간다(몽골·한국 서사).
+    품질판 실측 교정: 털이 길고 조각이 두꺼워 «앙고라 방석 넷»으로 읽혔다 — 조각보는 얇고 납작하다.
+    털 0.06→0.035 · 두께 0.26→0.18 · 크리스 0.5→0.75 · 틈을 거의 닫아 «솔기»는 땀이 긋게 했다."""
+    바닥 = 베개몸((2.9, 0.12, 2.2), 위치=(0, 0.3, 0), 크리스=0.4)
+    바닥.data.materials.append(직물결(매끈재질('바닥', 색['Deep Wool'], 거칠기=0.96, 배율=0.6)))
+    for (cx, cz, 이름, 개수) in ((-1.13, 0.86, 염료이름, 13000), (1.13, 0.86, 'Oat', 11000),
+                               (-1.13, -0.86, 'Ash Wool', 11000), (1.13, -0.86, 'Deep Wool', 11000)):
+        # 무채는 «사다리»로 고른다 — Oat·Stone·Ash 는 털이 빛을 먹어 셋 다 흰 조각으로 읽혔다(시안3 실측)
+        조각 = 베개몸((1.12, 0.18, 0.84), 위치=(cx, 0, cz), 크리스=0.75)
+        짧은퍼(조각, 이름, 살재질(이름, 색[이름]), 털재질(이름, 색[이름]), 길이=0.035, 개수=개수)
+    실재 = 매끈재질('실', 색['Stitch'], 거칠기=0.4)
+    for i in range(21):                       # 세로 솔기 — 두 열 사이를 지나는 러닝 스티치
+        z = -2.0 + i * 0.2
+        if abs(z) > 0.14:                     # 솔기 교차점은 비운다 — 땀 둘이 겹치면 매듭으로 읽힌다
+            땀하나(0, -0.21, z, 0.062, 0.024, 실재, 회전y=90)
+    for i in range(25):                       # 가로 솔기
+        x = -2.4 + i * 0.2
+        if abs(x) > 0.14:
+            땀하나(x, -0.21, 0, 0.062, 0.024, 실재, 회전y=0)
+    return (0, -10.9, 0.0), 90
+
+def 매듭():
+    """매듭 오너먼트 — 챕터·시즌 구분의 큰 자리 1점(사전 1-c · 한국적 표현 트랙 접점).
+    다섯 잎 로제트: 잎 수는 매화매듭(5잎)을 따르되 짜임은 «반 바퀴 어긋나게 두 바퀴 도는» 경로로 지었다
+    — 실제 매화매듭 매는 법의 고증판이 아니다(공예 고증 미실시 · 그림으로서의 매듭이다).
+    난도 최상인 까닭: 겹침 한 자리라도 같은 쪽으로 지나가면 매듭이 아니라 «무늬»가 된다.
+    두 바퀴의 깊이를 서로 반대로 흔들어(sin 부호가 뒤집힌다) 다섯 자리 모두 위·아래가 엇갈린다.
+    실은 **3가닥 꼬임 로프**다 — 이 세트의 「실」 문법(털실진행바)을 그대로 쓴다.
+    품질판 실측: 민 튜브에 보풀만 심으니 꼬임이 없어 «파이프클리너»로 읽혔다 — 꼬임이 보여야 털실이다.
+    검산 둘: ①겹침 자리 깊이차 0.30 > 로프 지름 0.206(보풀 포함 0.25) — 다섯 자리 모두 엇갈린다.
+    ②닫힌 고리라 꼬임 위상이 한 바퀴 뒤 맞아떨어져야 한다 — 피치를 총길이(22.08)의 약수로 맞춘다.
+    꼬리 끝은 프레임 밖에 둔다(잘린 끝이 보이면 «다리»가 된다)."""
+    실몸 = 매끈재질('매듭실', 색[염료이름], 거칠기=0.86, 배율=0.82)
+    털 = 털재질(염료이름, 색[염료이름])
+
+    def 빼기(p, q): return (p[0] - q[0], p[1] - q[1], p[2] - q[2])
+    def 외적(u, v): return (u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0])
+
+    def 정규(u):
+        길이 = math.sqrt(u[0] ** 2 + u[1] ** 2 + u[2] ** 2) or 1.0
+        return (u[0] / 길이, u[1] / 길이, u[2] / 길이)
+
+    def 거리(p, q): return math.sqrt(sum((x - y) ** 2 for x, y in zip(p, q)))
+
+    def 실가닥(점들, 굵기, 털수, 닫힘=False):
+        곡선 = bpy.data.curves.new('매듭실', 'CURVE')
+        곡선.dimensions = '3D'
+        곡선.bevel_depth = 굵기
+        곡선.bevel_resolution = 5
+        곡선.use_fill_caps = True
+        sp = 곡선.splines.new('POLY')
+        sp.points.add(len(점들) - 1)
+        for i, (x, y, z) in enumerate(점들):
+            sp.points[i].co = (x, y, z, 1)
+        sp.use_cyclic_u = 닫힘
+        obj = bpy.data.objects.new('매듭실', 곡선)
+        bpy.context.collection.objects.link(obj)
+        bpy.ops.object.select_all(action='DESELECT')
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.convert(target='MESH')   # 곡선엔 털이 안 심겨 — 메쉬로 바꿔 보풀을 심는다
+        몸 = bpy.context.object
+        bpy.ops.object.shade_smooth()
+        짧은퍼(몸, 염료이름, 실몸, 털, 길이=0.022, 개수=털수)
+        return 몸
+
+    def 꼬임로프(길, 닫힘, 벌림, 굵기, 털수):
+        """가운데 심을 따라 세 가닥이 서로를 감는다 — 꼬임이 보여야 «털실»로 읽힌다."""
+        n = len(길)
+        누적, 자리 = 0.0, [0.0]
+        for i in range(1, n):
+            누적 += 거리(길[i], 길[i - 1])
+            자리.append(누적)
+        총 = 누적 + (거리(길[0], 길[-1]) if 닫힘 else 0.0)
+        피치 = 총 / max(1, round(총 / 0.42))     # 닫힌 고리는 위상이 맞아떨어져야 이음매가 없다
+        for k in range(3):
+            점들 = []
+            for i in range(n):
+                앞 = 길[(i + 1) % n] if (닫힘 or i + 1 < n) else 길[i]
+                뒤 = 길[(i - 1) % n] if (닫힘 or i > 0) else 길[i]
+                접선 = 정규(빼기(앞, 뒤))
+                법선 = 정규(외적(접선, (0.0, 1.0, 0.0)))   # 길이 거의 평면이라 위축을 기준틀로 쓴다
+                종선 = 정규(외적(접선, 법선))
+                각 = 2 * math.pi * 자리[i] / 피치 + k * 2 * math.pi / 3
+                c, s = math.cos(각), math.sin(각)
+                점들.append(tuple(길[i][축] + 벌림 * (c * 법선[축] + s * 종선[축]) for 축 in (0, 1, 2)))
+            실가닥(점들, 굵기, 털수, 닫힘=닫힘)
+
+    잎, R, a, 깊이, N = 5, 1.10, 0.78, 0.15, 800   # 가운데(R-a)를 0.32 로 조여야 «엮인 매듭»이다
+    고리 = []
+    돌림 = math.radians(18)                     # 아래 한가운데를 «잎 사이 골»로 돌린다 — 꼬리가 나올 문이다
+    for i in range(N):
+        각 = 4 * math.pi * i / N
+        반 = R + a * math.cos(잎 * 각 / 2)
+        고리.append((반 * math.cos(각 + 돌림), 깊이 * math.sin(잎 * 각 / 2), 반 * math.sin(각 + 돌림)))
+    꼬임로프(고리, True, 0.055, 0.048, 10000)
+    for 쪽 in (-1, 1):                          # 아래로 흘러내려 프레임을 넘는 두 가닥 — 술이 달릴 자리
+        꼬리 = []                                # 끝을 안 보여야 «이어진다»: 잘린 끝은 프레임 밖에 둔다
+        for i in range(34):
+            t = i / 33
+            꼬리.append((쪽 * (0.3 + 0.22 * t), 0.02, -0.55 - 1.9 * t))   # 둘이 붙으면 «줄기»가 된다 — 벌린다
+        꼬임로프(꼬리, False, 0.045, 0.04, 1400)
+    return (0, -12.4, 0.0), 90
+
+
+def 앱판():
+    """앱 화면 위의 판 — 재질을 «앱 상황에서» 잰다(유호 요청 08-20 「앱 화면 위에서도 재봐줘」).
+    스튜디오 대조판은 검은 무대에 판만 띄운 그림이라 「앱에서 어떻게 읽히는가」는 안 재본 값이었다.
+    여기서는 앱 다크(양모 밤)의 층을 실제로 쌓는다:
+      바탕(무대가 검다 = Ink Deep #080605 와 사실상 같다) ← 카드(Ink) ← 카드 위 콘텐츠 ← 판.
+    🔑 콘텐츠가 **판 가장자리를 가로지른다** — 한 장 안에서 「판 밖의 그것」과 「판 뒤의 그것」이
+      나란히 잡힌다. 눈이 두 장을 오갈 필요가 없다(대조의 공정성).
+    ⚠ 패턴지에는 시접선이 함께 선다 — 유리엔 못 얹는 장식이라 «후보의 값»에 포함해 재는 것이 맞다.
+    재질 인자: 재질=패턴지|유리|다린천."""
+    종류 = 인자.get('재질', '패턴지')
+    카드 = 베개몸((2.25, 0.1, 1.5), 위치=(0, 0.62, 0), 크리스=0.5)      # 앱 카드 = 낮의 잉크가 밤의 면이 된다
+    카드.data.materials.append(직물결(매끈재질('앱카드', 색['Ink'], 거칠기=0.95), 규모=180.0, 세기=0.04))
+    실재 = 매끈재질('글줄', 색['Stitch'], 거칠기=0.4)
+    for (z, 폭) in ((0.34, 2.05), (-0.02, 2.05), (-0.38, 1.55)):        # 글줄 — 판 좌우 밖까지 이어진다
+        n = max(2, int(2 * 폭 / 0.24))
+        for i in range(n):
+            땀하나(-폭 + 2 * 폭 * (i + 0.5) / n, 0.5, z, 0.075, 0.026, 실재, 회전y=0)
+    for cx in (0.62, 1.8):                                             # 같은 알약 둘 — 하나는 판 뒤, 하나는 판 밖
+        알약 = 베개몸((0.38, 0.14, 0.17), 위치=(cx, 0.4, -0.78), 크리스=0.58)
+        짧은퍼(알약, 염료이름, 살재질(염료이름, 색[염료이름]),
+              털재질(염료이름, 색[염료이름]), 길이=0.045, 개수=7000)
+    재질, 두께 = 판재질(종류)
+    판 = 베개몸((1.35, 두께, 0.95), 크리스=0.38, 레벨=4)
+    판.data.materials.append(재질)
+    if 종류 == '패턴지':
+        시접선(y앞=-두께 - 0.027)
+    return (0, -11.3, 0.0), 90
 
 형태들 = {'오브': 오브, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치, '털실진행바': 털실진행바,
         '단추토글': 단추토글, '밑그림': 밑그림, '페이지점': 페이지점, '폼폼': 폼폼, '시침핀': 시침핀,
         '와펜': 와펜, '블랭킷': 블랭킷, '실패스피너': 실패스피너, '직조라벨': 직조라벨,
         '패턴지판': 패턴지판, '다린천판': 다린천판, '유리판': 유리판,
-        '자수글자': 자수글자, '레터프레스': 레터프레스, '라벨태그': 라벨태그}
+        '단춧구멍필드': 단춧구멍필드, '스냅': 스냅, '조각보타일': 조각보타일, '매듭': 매듭,
+        '앱판': 앱판, '자수글자': 자수글자, '레터프레스': 레터프레스, '라벨태그': 라벨태그}
 if 형태 not in 형태들:
     raise SystemExit('모르는 형태: ' + 형태 + ' — 아는 것은 ' + '·'.join(형태들))
 카메라위치, 카메라피치 = 형태들[형태]()
@@ -770,11 +1032,54 @@ bpy.ops.object.camera_add(location=카메라위치, rotation=(math.radians(카�
 씬.camera.data.lens = 85
 
 씬.render.engine = 'CYCLES'
-씬.cycles.device = 'CPU'
 씬.cycles.samples = 견본
 씬.cycles.use_denoising = True
 씬.render.resolution_x = 너비
 씬.render.resolution_y = int(너비 * 0.82)
 씬.render.filepath = 출력
-bpy.ops.render.render(write_still=True)
-print('구움:', 형태, 출력, '샘플', 견본, '염료', 염료이름, 색.get(염료이름))
+
+
+def GPU켜기():
+    """있는 GPU 백엔드 하나를 켜고 이름을 낸다 — 없으면 False(클라우드 bpy 통로가 이 갈래다)."""
+    try:
+        사전 = bpy.context.preferences.addons['cycles'].preferences
+    except (KeyError, AttributeError):
+        return False
+    for 종류 in ('OPTIX', 'CUDA', 'HIP', 'ONEAPI', 'METAL'):
+        try:
+            사전.compute_device_type = 종류
+            사전.get_devices()
+        except Exception:
+            continue
+        if any(d.type == 종류 for d in 사전.devices):
+            for d in 사전.devices:
+                d.use = (d.type == 종류)
+            return 종류
+    return False
+
+
+# ── 굽는 장치 — **GPU 먼저 · 죽으면 그 자리에서 CPU 로 되문다** (유호 확정 08-20) ──────────
+# 왜 되물림이 필요한가 (실측 08-20 · 노트북 Arc B390):
+#   · GPU 가 2.1배 빠르고(스냅 1152px/128샘플 76초 vs 160초) **출력은 픽셀 동일**하다
+#     (표본 106,097 · 평균 차이 0.10/255 · 최대 3) — 세트 일관성 위험은 0이다.
+#   · 그런데 털이 무거운 형태는 OUT_OF_RESOURCES 로 **죽는다**(매듭 2회 재현). 내장 GPU라
+#     수백만 가닥이 어차피 같은 시스템 RAM 을 쓴다 — 「GPU 로 옮기면 메모리가 는다」가 아니다.
+#   ⇒ 그래서 장치를 고르는 게 아니라 **순서**를 박는다. 되는 형태는 GPU 가 빠르게, 안 되는
+#     형태는 CPU 가 조용히 완주한다. 「장치=CPU」로 부르면 GPU 를 아예 안 건드린다.
+장치 = 인자.get('장치', 'GPU').upper()
+켠것 = GPU켜기() if 장치 == 'GPU' else False
+if 켠것:
+    print('GPU:', 켠것)
+    씬.cycles.device = 'GPU'
+    try:
+        bpy.ops.render.render(write_still=True)
+    except RuntimeError as 왜:      # OUT_OF_RESOURCES 류 — 판정하지 않고 되문다(장면마다 한계가 다르다)
+        print('GPU 가 죽어 CPU 로 되문다:', 왜)
+        씬.cycles.device = 'CPU'
+        bpy.ops.render.render(write_still=True)
+        켠것 = False
+else:
+    씬.cycles.device = 'CPU'
+    bpy.ops.render.render(write_still=True)
+print('구움:', 형태, 출력, '샘플', 견본, '염료', 염료이름, 색.get(염료이름),
+      '장치', 켠것 or 'CPU')
