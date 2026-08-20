@@ -333,9 +333,10 @@ function 손댐지도() {
 
 function 적체읽기() {
   const 결과 = { 일감: null, 점수: null };
-  const q = 읽기(path.join(ROOT, 'docs/_ops/작업대기열.md'));
-  if (q == null) 못읽음.push('작업대기열 — 읽다 실패');
-  else 결과.일감 = (q.match(/^\s*\|\s*#Q\d+/gm) || []).length || (q.match(/#Q\d+/g) || []).length;
+  /* 🔑 2026-08-20 위임 2단계 — 열린 일감의 정본이 `docs/_ops/작업대기열.md` 에서 **열린 PR** 로 옮겼다.
+   *   그 파일은 08-19 철거 때 이미 지워졌고, 여기만 남아 매 실행마다 「읽다 실패」를 냈다(거짓 못읽음).
+   * ⚠ 여기서 gh 를 부르지 않는다 — 이 도구는 **네트워크 0**이 규약이다. 열린 트랙 수는 `gh pr list` 로 따로 본다. */
+  결과.일감 = null;
 
   const j = 읽기(path.join(ROOT, 'docs/_ops/엔진점수.jsonl'));
   if (j == null) 못읽음.push('엔진점수 — 읽다 실패');

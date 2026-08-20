@@ -9,7 +9,7 @@ tools: Read, Glob, Grep, Bash
 ## 입력
 - 보통 "방금 커밋/변경 리뷰해줘" 형태로 호출된다.
 - 대상 파악: `git -C "C:/Users/q1212/Documents/SYNK-appsscript" diff`, `... log --oneline -5`, `... show <해시>` 로 변경 범위를 먼저 읽는다.
-- 요구사항 맥락이 필요하면 `docs/세션보드.md` 선언 줄과 거기 링크된 memory/docs 정본·해당 작업 지시를 읽는다.
+- 요구사항 맥락이 필요하면 그 트랙의 **PR 본문·커밋 메시지**와 거기 링크된 memory/docs 정본·해당 작업 지시를 읽는다.
 
 ## 검토 관점 (Apps Script 특화)
 1. **정확성** — 로직·경계조건·null/빈값 처리. 특히 시트 읽기 결과 공백/빈 행 처리(과거 syncProfiles 로스터 갱신 중단 전례).

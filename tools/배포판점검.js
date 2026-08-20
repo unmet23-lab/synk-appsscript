@@ -271,7 +271,7 @@ function 판정({ 이름, 경로, fp, deployments, 대조, 미커밋 }) {
       if (미커밋 && 미커밋.length) {
         lines.push(`⚠ 배포집합에 **미커밋 ${미커밋.length}건** — push 는 HEAD 가 아니라 작업본을 민다(F310): 직전 push 가 이 내용을 실었을 수 있다`);
         for (const f of 미커밋) lines.push(`   미커밋: ${f}`);
-        lines.push('   → 실렸는지는 바이트로 잰다: node tools/배포판점검.js --라이브 · 주인 가르기: node tools/작업본소유자.js');
+        lines.push('   → 실렸는지는 바이트로 잰다: node tools/배포판점검.js --라이브 · 주인 가르기: list_sessions(하네스)');
         return { level: 'warn', 이름, 측정: false, 미커밋, lines };
       }
       return { level: 'ok', 이름, 측정: false, 미커밋: 미커밋 || null, lines };
@@ -287,7 +287,7 @@ function 판정({ 이름, 경로, fp, deployments, 대조, 미커밋 }) {
           lines: [
             `🔴 ${이름}: 배포집합 ${총}개 바이트 동일 — 그러나 그 중 **미커밋 ${미커밋.length}건**: 라이브 = 작업본 ≠ HEAD (미커밋 유출 · F310)`,
             ...미커밋.map((f) => `   미커밋: ${f}`),
-            '   → 주인부터 가른다: node tools/작업본소유자.js — 내 것이면 즉시 커밋해 이력에 들인다(그래야 라이브 = HEAD) · 남의 것이면 두고 보고만 한다(F073)',
+            '   → 주인부터 가른다: list_sessions(하네스) — 내 것이면 즉시 커밋해 이력에 들인다(그래야 라이브 = HEAD) · 남의 것이면 두고 보고만 한다(F073)',
           ],
         };
       }
@@ -321,7 +321,7 @@ function 판정({ 이름, 경로, fp, deployments, 대조, 미커밋 }) {
       const 겹침 = 미커밋.filter((f) => 다름.includes(f) || 라이브없음.includes(f));
       const 유출 = 미커밋.filter((f) => !다름.includes(f) && !라이브없음.includes(f) && !저장소없음.includes(f));
       if (유출.length) lines.push(`   🔴 미커밋인데 라이브와 **바이트 동일** ${유출.length}건 — 이미 실려 나갔다(F310): ${유출.join(' · ')}`);
-      if (겹침.length) lines.push(`   ⚠ 위 목록 중 미커밋 ${겹침.length}건(${겹침.join(' · ')}) — 지금 누가 고치는 중일 수 있다: 밀기 전에 node tools/작업본소유자.js 로 주인을 가른다(남의 미커밋을 밀면 그게 F310 이다)`);
+      if (겹침.length) lines.push(`   ⚠ 위 목록 중 미커밋 ${겹침.length}건(${겹침.join(' · ')}) — 지금 누가 고치는 중일 수 있다: 밀기 전에 list_sessions(하네스) 로 주인을 가른다(남의 미커밋을 밀면 그게 F310 이다)`);
     }
     /* 못 가른 파일이 있으면 처방을 **밀기 전 확인**으로 한 칸 앞당긴다 — 그냥 /deploy 를 주면
      * 이 경고는 읽히지 않고 넘어간다(경고가 처방과 어긋나면 사람은 처방만 따른다). */
@@ -358,7 +358,7 @@ function 판정({ 이름, 경로, fp, deployments, 대조, 미커밋 }) {
         lines: [
           `🔴 ${이름}: 배포 지문 일치(${지문표기(fp)}) — 그러나 배포집합에 **미커밋 ${미커밋.length}건**: 그 스냅샷은 작업본이지 HEAD 가 아니다(미커밋 유출 · F310)`,
           ...미커밋.map((f) => `   미커밋: ${f}`),
-          '   → 주인부터 가른다: node tools/작업본소유자.js — 내 것이면 즉시 커밋해 이력에 들인다 · 남의 것이면 두고 보고만 한다(F073)',
+          '   → 주인부터 가른다: list_sessions(하네스) — 내 것이면 즉시 커밋해 이력에 들인다 · 남의 것이면 두고 보고만 한다(F073)',
         ],
       };
     }
@@ -389,7 +389,7 @@ function 판정({ 이름, 경로, fp, deployments, 대조, 미커밋 }) {
   /* 갱신 처방(clasp deploy)은 **지금 작업본**을 스냅샷한다 — 미커밋이 있는 채로 따르면 그
    * 미커밋까지 실린다. 경고가 처방보다 뒤에 서면 사람은 처방만 따르므로 여기서 같이 적는다. */
   if (미커밋 && 미커밋.length) {
-    lines.push(`   ⚠ 배포집합에 미커밋 ${미커밋.length}건(${미커밋.join(' · ')}) — 지금 위 명령으로 갱신하면 **그 미커밋까지 실린다**(F310): 먼저 node tools/작업본소유자.js 로 주인을 가른다`);
+    lines.push(`   ⚠ 배포집합에 미커밋 ${미커밋.length}건(${미커밋.join(' · ')}) — 지금 위 명령으로 갱신하면 **그 미커밋까지 실린다**(F310): 먼저 list_sessions(하네스) 로 주인을 가른다`);
   }
   return { level: 낡음.length ? 'stale' : 'unknown', 이름, 미커밋: 미커밋 || null, lines };
 }
