@@ -52,6 +52,43 @@ const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
 const 정본경로 = process.env.SYNK_대장_정본 || path.join(ROOT, 'docs', 'SYNK_철학.md');
 const 산출경로 = process.env.SYNK_대장_산출 || path.join(ROOT, 'docs', '이해대장.html');
 
+/* 「함께 볼 것」 — 이해 대장 «옆»에 두는 판정·설계 화면들 (유호 지시 2026-08-18 「이해대장 옆에 파일을 만들어줘」).
+ * 왜 여기냐: 바탕화면 「SYNK 코어」에 화면마다 바로가기를 늘리면 그때마다 유호님 손이 든다
+ *   (철학 ㉡ — 사람 손을 늘리는 해법을 쓰지 않는다). 이미 있는 바로가기 «하나»가 나머지로 가는
+ *   입구가 되면 새 화면이 늘어도 유호님이 할 일은 0 이다.
+ * 🔑 목록은 여기 **한 곳**에만 산다 — 화면과 상수 두 벌로 두면 반드시 갈린다.
+ * ⚠ 실재를 검사한다(설계 ③): 파일이 없으면 조용히 빼지 않고 **빨갛게 드러낸다.** 링크만 지우면
+ *   유호님은 그 화면이 «원래 없다»고 읽지, 목록이 낡았다고 읽지 않는다. */
+const 함께볼것 = [
+  { 파일: '앱_방향설계_2026-08-18.html', 제목: 'AI를 껐을 때 남는 한국어',
+    한줄: '앱이 가는 한 방향 — TOPIK 급수와 회화는 같은 능력의 앞뒤다' },
+  { 파일: '오답이_못보는것_2026-08-18.html', 제목: '오답이 못 보는 것',
+    한줄: '엔진 축 여섯 — 데이터에 있는데 아무도 안 읽는 자리 (대기열 #Q116~#Q121)' },
+  { 파일: '경쟁판정_2026-08-18.html', 제목: '이길 수 있는 자리',
+    한줄: '경쟁 지형과, 그들이 구조적으로 못 들어오는 세 자리' },
+  { 파일: '설계대조_2026-08-18.html', 제목: '바뀐 것과 그대로인 것',
+    한줄: '전 설계 대비 무엇이 바뀌었나 — 그리고 정본과 어긋난 자리 둘' },
+];
+
+function 함께볼것구역() {
+  const 폴더 = path.dirname(산출경로);
+  const 줄 = 함께볼것.map((d) => {
+    if (!fs.existsSync(path.join(폴더, d.파일))) {
+      return `  <div style="padding:11px 14px;border:2px dashed ${킷.coral3};border-radius:10px;color:${킷.coral3};font-size:12.5px;line-height:1.6">`
+        + `🔴 <b>${d.제목}</b> — 파일이 없다(<code>${d.파일}</code>). 이 목록이 낡았다는 뜻이다 — <code>tools/이해대장.js</code> 의 <code>함께볼것</code> 을 고친다.</div>`;
+    }
+    return `  <a href="${encodeURI(d.파일)}" style="display:block;padding:11px 14px;border:1px solid ${킷.cream3};border-radius:10px;text-decoration:none;background:${킷.paper}">`
+      + `<div style="font-weight:800;font-size:13.5px;color:${킷.ink};letter-spacing:-.02em">${d.제목}</div>`
+      + `<div style="margin-top:3px;font-size:12px;color:${킷.slate2};line-height:1.55">${d.한줄}</div></a>`;
+  }).join('\n');
+  return `<div style="margin-top:22px">
+  <div style="font-size:12.5px;font-weight:800;color:${킷.slate2};letter-spacing:.04em;margin-bottom:9px">📎 함께 볼 것 — 판정·설계 화면</div>
+  <div style="display:grid;gap:8px">
+${줄}
+  </div>
+</div>`;
+}
+
 /** 브랜드 킷 — DESIGN.md §1 이 정본. 여기 있는 것은 «인용»이고, 새 색을 만들지 않는다. */
 const 킷 = {
   paper: '#FAFAF9', ink: '#1B1B1A', navy: '#262626', navy2: '#08090C', navy3: '#373737',
@@ -604,6 +641,7 @@ ${실물표(실물)}
   <span class="칩" style="background:transparent;color:${킷.coral3};border:2px dashed ${킷.coral3}">비었다</span>
   <div style="margin-top:10px">색은 브랜드 킷 23색에서만 뽑는다(유호님 확정) · KC Sun 은 면으로만 쓰고 글자로 쓰지 않는다.</div>
 </div>
+${함께볼것구역()}
 <footer>
   생성: <code>node tools/이해대장.js</code> — 정본이 바뀌면 다시 돌린다(사본을 두지 않는다).<br>
   검토를 부르는 말: <b>「㉡2 다시 검토해줘」</b> 처럼 코드만 말해도 된다 — 그 칸만 철학 정본에 비추어 다시 본다.
