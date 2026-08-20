@@ -50,22 +50,37 @@ test('🔴 경로 필터가 없다 — 「안 돌아서 초록」을 만든 2026
 /** 스위치 변수 이름은 **한 곳에서만** 산다 — 세 파일에 적혀 있어서 갈라지면 처방이 틀린다(F063). */
 const 스위치이름 = 'SYNK_SELFHOSTED';
 
-test('🔴 job 에 러너 스위치가 걸려 있다 — 없으면 러너가 없을 때 job 이 큐에 쌓이고 분을 태운다', () => {
-  assert.match(실행판, new RegExp(`^\\s{4}if:\\s*vars\\.${스위치이름}\\s*==\\s*'on'\\s*$`, 'm'),
-    `job 의 \`if: vars.${스위치이름} == 'on'\` 게이트가 사라졌다.\n`
+/* 🔑 두 갈래를 **둘 다** 센다(2026-08-19 · 유호 확정 「저장소 공개」).
+ *   private 갈래만 세면 공개 뒤 러너를 계속 켜 둬야 하고, public 갈래만 세면 공개 전에 분이 청구된다.
+ *   갈래를 가르는 조건(`repository.private`)까지 세는 이유는 ③ 등록층과 같다 — 갈래가 둘인데
+ *   가르는 식이 사라지면 **한쪽만 영원히 도는** 상태가 「통과」의 얼굴로 앉는다. */
+test('🔴 job 게이트 — private 은 스위치로 막고, public 은 스위치 없이 돈다', () => {
+  const m = /^\s{4}if:\s*(.+)$/m.exec(실행판);
+  assert.ok(m, 'job 의 `if:` 게이트가 통째로 사라졌다');
+  const 값 = m[1];
+  assert.match(값, new RegExp(`vars\\.${스위치이름}\\s*==\\s*'on'`),
+    `private 갈래의 \`vars.${스위치이름}\` 게이트가 사라졌다: ${값}\n`
     + '  이 게이트가 없으면 ①러너가 없을 때 PR 이 영원히 pending 이고 ②GitHub-hosted 로 떨어지면\n'
     + '  하루 792커밋 × 2.7분이 그대로 청구된다(무료 3,000분은 1.4일이면 끝난다).');
+  assert.match(값, /repository\.private/,
+    `public 갈래가 없다: ${값}\n`
+    + '  공개해도 스위치를 켜야 도는 상태가 되고, 그러면 러너를 계속 켜 둬야 한다 —\n'
+    + '  public + self-hosted 는 남이 fork·PR 로 그 기계에서 코드를 돌릴 수 있는 조합이다.');
 });
 
-test('🔴 `runs-on` 이 self-hosted 와 linux 를 **함께** 요구한다 — 윈도우 러너에 잡히면 리눅스 축을 잃는다', () => {
+test('🔴 `runs-on` — private 은 self-hosted+linux, public 은 GitHub-hosted', () => {
   const m = /^\s{4}runs-on:\s*(.+)$/m.exec(실행판);
   assert.ok(m, 'runs-on 을 못 찾았다');
   const 값 = m[1];
-  assert.match(값, /self-hosted/, `runs-on 이 self-hosted 가 아니다: ${값} — GitHub-hosted 면 분이 청구된다`);
+  assert.match(값, /self-hosted/, `private 갈래가 self-hosted 가 아니다: ${값} — 그 판에서는 분이 청구된다`);
   assert.match(값, /\blinux\b/,
-    `runs-on 이 linux 를 안 requires 한다: ${값}\n`
+    `runs-on 이 linux 를 안 요구한다: ${값}\n`
     + '  유호님 노트북은 win32 다. 라벨을 안 걸면 윈도우 러너에 잡혀 **로컬 모사와 같은 축**을 재게 되고,\n'
     + '  그러면 F617 이 잡은 「윈도우 초록 3건이 리눅스에서 무너진다」를 다시는 못 잡는다.');
+  assert.match(값, /ubuntu-latest/,
+    `public 갈래가 없다: ${값} — 공개해도 러너를 계속 켜 둬야 하는 상태가 된다`);
+  assert.match(값, /repository\.private/,
+    `두 갈래를 가르는 조건이 없다: ${값} — 한쪽만 영원히 도는 것이 「통과」로 보인다`);
 });
 
 test('🔑 스위치 이름이 처방 문구와 갈라지지 않는다 — 같은 판정을 두 곳에 적으면 갈라진다(F063)', () => {
