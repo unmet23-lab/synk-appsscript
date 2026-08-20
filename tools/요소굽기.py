@@ -176,6 +176,18 @@ def 매끈재질(이름, hex_, 거칠기=0.5, 배율=1.0):
     p.inputs['Roughness'].default_value = 거칠기
     return m
 
+def 분필재질(이름, hex_):
+    """무광 분필 가루 — 하이라이트가 서면 분필이 아니라 실로 읽힌다(유호 지시 08-20 무광화).
+    거칠기 1.0 + 스펙큘러 0: 빛을 먹기만 하는 면 — 펠트 헌법 「빛을 먹는다」의 가루판."""
+    m = bpy.data.materials.new('분필_' + 이름)
+    m.use_nodes = True
+    p = m.node_tree.nodes['Principled BSDF']
+    p.inputs['Base Color'].default_value = 리니어(hex_)
+    p.inputs['Roughness'].default_value = 1.0
+    if 'Specular IOR Level' in p.inputs:
+        p.inputs['Specular IOR Level'].default_value = 0.0
+    return m
+
 def 땀하나(x, y, z, 길이, 굵기, 재질, 회전y=11, 회전z=0, 납작=False):
     bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(x, y, z))
     땀 = bpy.context.object
@@ -223,7 +235,7 @@ def 밑그림():
     판 = 베개몸((1.9, 0.3, 1.25), 크리스=0.66)
     짧은퍼(판, 'Graphite 4', 살재질('Graphite 4', 색['Graphite 4']),
           털재질('Graphite 4', 색['Graphite 4']), 길이=0.05, 개수=18000)
-    분필 = 매끈재질('분필', 색['Chalk'], 거칠기=0.5)
+    분필 = 분필재질('분필', 색['Chalk'])   # 무광 가루 — 광택이 서면 ③꿰맴(실)과 안 갈린다
     앞 = -0.33
     w, h, r = 1.15, 0.62, 0.26          # 카드 윤곽 — 둥근 사각 경로를 따라 점선을 놓는다
     경로 = []
