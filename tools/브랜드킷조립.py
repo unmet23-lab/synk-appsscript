@@ -170,7 +170,7 @@ code {{ font-family:'DM Mono',ui-monospace,Consolas,monospace; font-size:.92em }
 .cap {{ font-size:11.5px; color:var(--slate2); margin-top:6px; text-align:center }}
 footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 @media print {{ @page {{ margin:0 }} body {{ print-color-adjust:exact; -webkit-print-color-adjust:exact }} }}
-</style></head><body>
+</style></head><body class="룸">
 
 <div class="band">
   <svg viewBox="-8 -2 296 116" role="img" aria-label="SYNK">
@@ -184,12 +184,12 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 </div>
 
 <section>
-  <h2>1 · 이름 체계 <em>확정 08-15</em></h2>
+  <h2><span class="번호">1</span> 이름 체계 <em>확정 08-15</em></h2>
   <p class="lead">브랜드 = <b>SYNK LAB</b> · 학습 엔진 = <b>SYNK Core</b> · 그래픽 엔진 = <b>Loom</b> · 마스코트 = <b>몽글</b></p>
 </section>
 
 <section>
-  <h2>2 · 로고</h2>
+  <h2><span class="번호">2</span> 로고</h2>
   <p class="lead">로고는 그림이 아니라 글자다 — <code>syn&lt;</code> 넉 자. <b>&lt; 는 언제나 Coral</b>(유일한 신호) ·
   <code>//</code> 는 세 번째 색이 아니라 잉크의 저채도. 도형 정본 = 발표물 브랜드킷 §3(복사해 쓰고 재작도 금지).</p>
   <div class="logogrid">
@@ -223,7 +223,7 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 </section>
 
 <section>
-  <h2>3 · 색 — 23색 킷</h2>
+  <h2><span class="번호">3</span> 색 — 23색 킷</h2>
   <p class="lead"><b>철칙 4</b> — ①순백·순검정 금지 ②라이트 배경에 Coral 글자 금지(글자는 Coral 3)
   ③코랄 면 위 글자는 Ink·Navy 2만 ④한 지면 = 바탕+잉크+<b>신호 1점</b>(Lime·KC 는 전용 구역 밖 반입 금지).
   오류에 빨강을 새로 만들지 않는다 — Coral 3+아이콘+문구가 진다.</p>
@@ -231,7 +231,7 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 </section>
 
 <section class="dark">
-  <h2 style="color:var(--cream)">4 · 마스코트 — 몽글 <em style="color:var(--coral)">킷 밖 IP 색</em></h2>
+  <h2 style="color:var(--cream)"><span class="번호">4</span> 마스코트 — 몽글 <em style="color:var(--coral)">킷 밖 IP 색</em></h2>
   <p class="lead">체리는 브랜드 킷 색이 아니라 <b>몽글의 고유색</b>이다(마리오 빨강이 닌텐도 UI 색이 아닌 문법).
   의상이 둘 — 평소 = 코랄(평상복) · 특별한 순간 = 체리. 다크가 주 무대다.</p>
   <div class="mascotrow">
@@ -254,7 +254,7 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 </section>
 
 <section class="dark" style="border-top:1px solid var(--navy3)">
-  <h2 style="color:var(--cream)">5 · 재질 — 펠트 <em style="color:var(--coral)">SYNK 전용 재질</em></h2>
+  <h2 style="color:var(--cream)"><span class="번호">5</span> 재질 — 펠트 <em style="color:var(--coral)">SYNK 전용 재질</em></h2>
   <p class="lead">니들펠트 양모가 회사 전용 재질이다 — 좌표는 <b>수공 리얼리즘</b>(잔섬유·크림 스티치·미세 불균일 —
   CGI 완벽주의는 흡수하지 않는다). 결은 정본 사진에서만 오고, 색은 재염색 연산이 0원에 낸다.</p>
   <h3>천 팔레트 (실물 패치 — 재염색 파생)</h3>
@@ -266,7 +266,7 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 </section>
 
 <section>
-  <h2>6 · 타이포 — 3종 배타</h2>
+  <h2><span class="번호">6</span> 타이포 — 3종 배타</h2>
   <table><tr><th>용도</th><th>서체</th><th>규칙</th></tr>
   <tr><td>한글</td><td>SUIT Variable</td><td>본문 500 · 헤드 800</td></tr>
   <tr><td>라틴·키릴(몽골어)</td><td>Inter Tight — 스택에서 SUIT 보다 <b>앞</b></td><td>순서 불변(글리프 폴백이 3언어를 가른다) · 몽골어 병기 1.04배</td></tr>
@@ -276,13 +276,13 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 </section>
 
 <section>
-  <h2>7 · 사운드</h2>
+  <h2><span class="번호">7</span> 사운드</h2>
   <p class="lead">이벤트: {이벤트칸 or '토큰 「사운드」 참조'}</p>
   <ul>{사운드li}</ul>
 </section>
 
 <section>
-  <h2>8 · 감각 — 모서리·그림자·모션</h2>
+  <h2><span class="번호">8</span> 감각 — 모서리·그림자·모션</h2>
   <ul>{감각li}</ul>
 </section>
 
@@ -294,6 +294,27 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
     with open(출력, 'w', encoding='utf-8') as f:
         f.write(html)
     print(f'■ 조립  {os.path.relpath(출력, 뿌리)}  ({len(html)//1024} KB · 킷 {len(킷)}색 · 패치 {len(장부)}장)')
+    _룸입히기(출력)
+
+
+def _룸입히기(경로):
+    """Loom 부품을 얹는다 — 판정도 절차도 `tools/lib/loom얹기.js` 하나가 진다.
+
+    🔑 파이썬이라 그 모듈을 require 할 수 없다. 그렇다고 여기서 «얹는 법»을 다시 적으면
+       그 순간 통로가 둘이 되고, 갈라지는 방향은 늘 「통과」다(한쪽만 훅 게이트를 빠뜨리면
+       그 지면은 부품 0 인 채 마커만 켜진 초록이 된다 · F517②).
+       ⇒ 베끼지 않고 **그 통로의 CLI 를 부른다.** 재는 자는 하나로 남는다.
+    ⚠node 가 없거나 실패하면 «조용히» 넘기지 않는다 — 안 얹힌 것이 초록으로 보이면 안 된다.
+    """
+    import subprocess
+    통로 = os.path.join(뿌리, 'tools', 'lib', 'loom얹기.js')
+    r = subprocess.run(['node', 통로, 경로], capture_output=True, text=True)
+    출 = (r.stdout or '') + (r.stderr or '')
+    for 줄 in 출.strip().splitlines():
+        if 줄.strip():
+            print('   ' + 줄.strip())
+    if r.returncode != 0:
+        raise SystemExit(f'🔴 Loom 얹기 실패(rc={r.returncode}) — 부품 없이 굽힌 판을 남기지 않는다')
 
 
 if __name__ == '__main__':
