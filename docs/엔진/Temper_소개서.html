@@ -61,18 +61,18 @@
   }
 
   :root{
-    --navy2:#08090C; --navy2-rgb:15,23,48;
+    --navy2:#08090C; --navy2-rgb:8,9,12;
     --navyink:#1D1D1C; --navyink-rgb:19,26,50;
-    --navy:#262626; --navy-rgb:26,35,64;
+    --navy:#262626; --navy-rgb:38,38,38;
     --navy3:#373737; --navy3-rgb:42,51,88;
-    --cream:#E4E4E7; --cream-rgb:246,241,232;
+    --cream:#EDE7DC; --cream-rgb:237,231,220;
     --cream2:#EAEAEA; --cream2-rgb:239,231,215;
     --cream3:#D1D2D4; --cream3-rgb:231,221,199;
     --paper:#FBF7F0; --paper-rgb:251,247,238;
-    --ink:#2B2320; --ink-rgb:23,24,32;
-    --coral:#F96859; --coral-rgb:255,107,92;
+    --ink:#2B2320; --ink-rgb:43,35,32;
+    --coral:#F96859; --coral-rgb:249,104,89;
     --coral2:#FD9C87; --coral2-rgb:255,136,119;
-    --coral3:#AE322A; --coral3-rgb:232,84,63;
+    --coral3:#AE322A; --coral3-rgb:174,50,42;
     --slate:#8A8A8A; --slate-rgb:138,147,173;
     --slate2:#676767; --slate2-rgb:95,101,125;
     --kccoolblue:#4E7CFF; --kccoolblue-rgb:78,124,255;
@@ -81,9 +81,9 @@
   }
   *{box-sizing:border-box;}
   html{scroll-padding-top:96px;background:var(--navy2);color-scheme:dark;}
-  ::selection{background:rgba(255,107,92,0.28);color:var(--cream);}
+  ::selection{background:rgba(249,104,89,0.28);color:var(--cream);}
   :focus-visible{outline:2px solid var(--coral);outline-offset:3px;border-radius:6px;
-    box-shadow:0 0 0 1px rgba(228,228,231,0.55),0 0 14px 2px rgba(255,107,92,0.45);}
+    box-shadow:0 0 0 1px rgba(228,228,231,0.55),0 0 14px 2px rgba(249,104,89,0.45);}
   body{margin:0;min-height:100vh;
     background:
       radial-gradient(105% 62% at 50% -14%, rgba(55,55,55,0.62) 0%, rgba(55,55,55,0) 58%),
@@ -129,7 +129,7 @@
     -webkit-mask-composite:xor;mask-composite:exclude;
     opacity:.95;
     filter:saturate(1.5) drop-shadow(0 0 5px rgba(78,124,255,0.34))
-           drop-shadow(0 0 10px rgba(255,107,92,0.2));
+           drop-shadow(0 0 10px rgba(249,104,89,0.2));
   }
   .유리>*{position:relative;z-index:2;}
   .유리.잔잔{--깃:16px;padding:var(--칸) var(--단);}
@@ -175,7 +175,7 @@
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:순번*/
   /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리). */
@@ -201,7 +201,7 @@
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
-           drop-shadow(0 0 8px rgba(255,107,92,0.28));}
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:차례번호*/
   .잔번호{position:relative;
@@ -275,13 +275,13 @@
     font-variant-numeric:tabular-nums;color:var(--cream);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
-        rgba(255,107,92,0.58) 0%, rgba(255,107,92,0.12) 62%, rgba(255,107,92,0) 78%),
+        rgba(249,104,89,0.58) 0%, rgba(249,104,89,0.12) 62%, rgba(249,104,89,0) 78%),
       rgba(29,29,28,0.62);
     box-shadow:
       inset 0 0 0 1px rgba(228,228,231,0.1),
-      inset 0 3px 10px -3px rgba(255,107,92,0.45),
+      inset 0 3px 10px -3px rgba(249,104,89,0.45),
       inset 0 -3px 10px -2px rgba(0,0,0,.58),
-      0 6px 14px -4px rgba(255,107,92,0.38);}
+      0 6px 14px -4px rgba(249,104,89,0.38);}
   .히어로수::before{
     content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
     background:radial-gradient(30% 22% at 38% 16%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);}
@@ -344,8 +344,8 @@
     transition:box-shadow 180ms ease,color 180ms ease;}
   a:not(.민):not(.레일 a)::before{content:'';display:inline-block;width:3px;height:3px;
     border-radius:50%;vertical-align:.32em;margin-right:var(--숨);
-    background:var(--coral);box-shadow:0 0 6px rgba(255,107,92,0.7);}
-  a:hover{box-shadow:inset 0 -1px 0 rgba(255,107,92,0.9);}
+    background:var(--coral);box-shadow:0 0 6px rgba(249,104,89,0.7);}
+  a:hover{box-shadow:inset 0 -1px 0 rgba(249,104,89,0.9);}
 
   /*loom부품:쪽번호*/
   /* 쪽번호 — 낮 지면에서만 산다. 화면에는 «쪽»이라는 것이 없다. */
@@ -386,13 +386,13 @@
     ol>li::after{content:none;}
 
     /* 레진 — 코어를 면으로, 굴절밴드를 선으로. 구슬로 읽히되 종이에서 뜨지 않는다. */
-    ul>li::before{background:rgba(232,84,63,0.22);
-      box-shadow:inset 0 0 0 1px rgba(232,84,63,0.55);}
+    ul>li::before{background:rgba(174,50,42,0.22);
+      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.55);}
     ul>li::after{background:none;}
     .체크,.히어로수{color:var(--ink);
-      background:radial-gradient(58% 58% at 50% 44%, rgba(232,84,63,0.26), rgba(232,84,63,0.07) 70%),
+      background:radial-gradient(58% 58% at 50% 44%, rgba(174,50,42,0.26), rgba(174,50,42,0.07) 70%),
                  var(--cream2);
-      box-shadow:inset 0 0 0 1px rgba(232,84,63,0.5);}
+      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.5);}
     .체크::before,.히어로수::before{content:none;}
 
     .칩{background:var(--cream2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--cream3);}
