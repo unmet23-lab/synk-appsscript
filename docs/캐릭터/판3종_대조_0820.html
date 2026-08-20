@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>판 3종 대조 — 정보를 담는 판을 무엇으로 할 것인가 (2026-08-20)</title>
+<style>
+  :root{
+    --바탕:#080605; --카드:#2B2320; --잉크:#FBF7F0;
+    --보조:#EDE7DC; --보조2:#C7BFB2; --실땀:#F0E3C8; --신호:#F96859;
+    --실2:2px; --숨:4px; --틈:8px; --참:12px; --칸:16px; --단:24px; --켜:40px; --장:64px; --막:104px;
+    --글:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--바탕);color:var(--잉크);font-family:var(--글);font-weight:500;
+       line-height:1.65;letter-spacing:-.011em;padding:var(--켜) var(--단) var(--막)}
+  .품{max-width:1180px;margin:0 auto}
+  header{border-bottom:1px solid #2B2320;padding-bottom:var(--단);margin-bottom:var(--켜)}
+  .눈{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--보조2);margin:0 0 var(--틈)}
+  h1{font-size:clamp(22px,3.4vw,32px);font-weight:800;letter-spacing:-.02em;margin:0 0 var(--참);line-height:1.25}
+  .질문{font-size:clamp(15px,1.7vw,18px);color:var(--보조);max-width:70ch;margin:0}
+  .질문 b{color:var(--잉크);font-weight:800}
+
+  .급소{background:var(--카드);border-left:3px solid var(--신호);border-radius:var(--숨);
+        padding:var(--칸) var(--단);margin:var(--단) 0 var(--켜);max-width:74ch}
+  .급소 p{margin:0;color:var(--보조)}
+  .급소 b{color:var(--잉크)}
+  .잰법{margin:var(--참) 0 0;font-size:12.5px;color:var(--보조2);line-height:1.6}
+  .잰법 b{color:var(--보조)}
+
+  .판들{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:var(--단)}
+  .판{margin:0;background:var(--카드);border-radius:var(--참);overflow:hidden;
+      border:1px solid #575046}
+  .판.대조군{opacity:.86}
+  .판 img{display:block;width:100%;height:auto;background:#080605}
+  figcaption{padding:var(--칸) var(--칸) var(--단)}
+  h3{margin:0 0 var(--숨);font-size:17px;font-weight:800;letter-spacing:-.015em}
+  .꼬리{font-size:11px;font-weight:500;color:var(--보조2);letter-spacing:.04em;
+        border:1px solid var(--보조2);border-radius:999px;padding:1px 7px;vertical-align:2px}
+  .한줄{margin:0 0 var(--참);color:var(--보조);font-size:14px}
+  dl{margin:0;font-size:13.5px}
+  dt{color:var(--보조2);font-size:11.5px;letter-spacing:.06em;margin-top:var(--참)}
+  dd{margin:2px 0 0;color:var(--보조)}
+  dd b{color:var(--잉크)}
+  .잰값{font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;font-size:15px;
+        color:var(--잉크);letter-spacing:.01em}
+  .막대{display:inline-block;vertical-align:middle;width:120px;height:6px;margin-left:var(--틈);
+        background:#575046;border-radius:999px;overflow:hidden}
+  .막대 i{display:block;height:100%;background:var(--실땀)}
+  .값{list-style:none;display:flex;flex-wrap:wrap;gap:var(--숨);padding:0;margin:var(--칸) 0 0}
+  .값 li{font-size:11.5px;color:var(--보조2);border:1px solid #575046;
+         border-radius:999px;padding:2px var(--틈)}
+
+  section{margin-top:var(--막)}
+  h2{font-size:19px;font-weight:800;letter-spacing:-.015em;margin:0 0 var(--칸);
+     padding-bottom:var(--틈);border-bottom:1px dashed #575046}
+  .고름{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--칸)}
+  .고름 article{background:var(--카드);border-radius:var(--참);padding:var(--칸) var(--단);
+                border:1px solid #575046}
+  .고름 h4{margin:0 0 var(--틈);font-size:15px;font-weight:800}
+  .고름 ul{margin:0;padding-left:1.1em;font-size:13.5px;color:var(--보조)}
+  .고름 li{margin:var(--숨) 0}
+  .안잰것{margin-top:var(--켜);font-size:13px;color:var(--보조2);max-width:74ch}
+  .안잰것 b{color:var(--보조)}
+  footer{margin-top:var(--막);padding-top:var(--칸);border-top:1px solid var(--카드);
+         font-size:12px;color:var(--보조2)}
+  code{font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.92em}
+</style>
+<body>
+<div class="품">
+  <header>
+    <p class="눈">판정 재료 · 2026-08-20 · 양모 공방 요소 사전 §1-b</p>
+    <h1>정보를 담는 판을 무엇으로 할 것인가</h1>
+    <p class="질문">학습·숙제 화면의 <b>문제 판</b>, 그리고 정보가 앉는 <b>카드 바닥</b>의 재질을 정하는 자리입니다.
+      08-20 교정 「CSS 시안으론 똑같아 보인다 — 전부 제대로 만들고 나중에 결정」에 따라, 셋을 <b>같은 구도·조명·크기</b>로
+      실물 렌더까지 구워 놓았습니다(1152px · 128샘플).</p>
+  </header>
+
+  <div class="급소">
+    <p><b>무엇을 보시면 됩니다</b> — 세 판 뒤에는 <b>같은 코랄 퍼 구슬</b>이 오른쪽으로 반쯤 나와 있습니다.
+      재질을 가르는 것은 판의 표면이 아니라 <b>그 구슬이 비치는가 / 막히는가</b>입니다.
+      판 오른쪽 뒤를 보십시오.</p>
+    <p class="잰법">아래 <b>붉은기</b>는 눈이 아니라 픽셀로 잰 값입니다 — 구슬이 판 «뒤로 들어간» 자리(가로 904~1110px ·
+      세로 250~420px)의 R−G 평균에서, 같은 판의 빈 자리(가로 300~500px) R−G 평균을 뺐습니다.
+      숫자가 클수록 뒤가 비칩니다.</p>
+  </div>
+
+  <div class="판들">
+      <figure class="판">
+        <img src="퍼프로브_0819/패턴지판_v1.png" alt="패턴지 판 렌더 — 판 뒤에 코랄 퍼 구슬이 반쯤 나와 있다" loading="lazy">
+        <figcaption>
+          <h3>패턴지 판</h3>
+          <p class="한줄">재단실의 도면 종이. 빛을 통과시키되 차갑지 않다.</p>
+          <dl>
+            <dt>뒤 구슬</dt><dd>오른쪽에서 은은하게 비친다 — 종이가 빛을 산란시켜 «형체만» 남는다</dd>
+            <dt>재보니 (붉은기)</dt><dd><b class="잰값">+12.3</b>
+              <span class="막대"><i style="width:17%"></i></span></dd>
+            <dt>뜻</dt><dd>공방 안의 물건이라 은유가 억지가 아니다. 판에 시접선(초크) 같은 재단실 표식을 얹을 수 있다 — 유리엔 못 얹는다.</dd>
+            <dt>대가</dt><dd>유리보다 덜 투명해 뒤 정보가 «있다»는 것만 알리고 «무엇인지»는 안 알린다.</dd>
+          </dl>
+          <ul class="값"><li>투과 0.7</li><li>거칠기 0.80</li><li>바탕 Paper</li><li>종이 이빨(노이즈 범프 260)</li></ul>
+        </figcaption>
+      </figure>
+      <figure class="판">
+        <img src="퍼프로브_0819/유리판_v1.png" alt="유리 판 렌더 — 판 뒤에 코랄 퍼 구슬이 반쯤 나와 있다" loading="lazy">
+        <figcaption>
+          <h3>유리 판</h3>
+          <p class="한줄">서리 유리. 흐리게 비치는 유리 — 맑은 유리는 창문이지 판이 아니다.</p>
+          <dl>
+            <dt>뒤 구슬</dt><dd>또렷하게 비친다 — 뒤에 무엇이 있는지 «읽힌다»</dd>
+            <dt>재보니 (붉은기)</dt><dd><b class="잰값">+74.5</b>
+              <span class="막대"><i style="width:100%"></i></span></dd>
+            <dt>뜻</dt><dd>Loom 재질 3종(펠트=빛을 먹는다 · 유리=통과시킨다 · 레진=가둔다)의 가운데 항이다. 유리를 살리면 그 3항 체계가 그대로 산다.</dd>
+            <dt>대가</dt><dd>공방 은유 밖의 재질이다 — 양모 공방에 유리가 왜 있나에 답해야 한다. 그리고 민면이 정체성이라 장식을 못 얹는다.</dd>
+          </dl>
+          <ul class="값"><li>투과 1.0</li><li>거칠기 0.30</li><li>IOR 1.45</li><li>민면(장식 없음)</li></ul>
+        </figcaption>
+      </figure>
+      <figure class="판 대조군">
+        <img src="퍼프로브_0819/다린천판_v1.png" alt="다린 천 판 렌더 — 판 뒤에 코랄 퍼 구슬이 반쯤 나와 있다" loading="lazy">
+        <figcaption>
+          <h3>다린 천 판 <span class="꼬리">대조군</span></h3>
+          <p class="한줄">결을 눕힌 무채 천. 광택 0 — 다림질로 눌린 면이다.</p>
+          <dl>
+            <dt>뒤 구슬</dt><dd>완전히 막힌다 — 뒤가 있다는 것조차 안 보인다</dd>
+            <dt>재보니 (붉은기)</dt><dd><b class="잰값">+2.7</b>
+              <span class="막대"><i style="width:4%"></i></span></dd>
+            <dt>뜻</dt><dd>반투명 후보가 아니라 <b>대조군</b>이다. 비침의 반대 끝을 보여 준다. 사전에서 이 천의 자리는 «대면적 카드 바닥»이고, 위 둘 중 무엇이 이기든 그 자리는 그대로다.</dd>
+            <dt>대가</dt><dd>정보가 앉는 바닥으로는 옳지만, 뒤를 비추는 «판»의 일은 못 한다.</dd>
+          </dl>
+          <ul class="값"><li>투과 없음</li><li>거칠기 0.96</li><li>반사 0.12</li><li>바탕 Oat</li></ul>
+        </figcaption>
+      </figure>
+  </div>
+
+  <section>
+    <h2>고르면 따라오는 것</h2>
+    <div class="고름">
+      <article>
+        <h4>㉠ 패턴지 — 유리 은퇴를 확정</h4>
+        <ul>
+          <li>요소 사전 5자리의 「판정 보류」 표식을 걷고 「반투명 판 = 패턴지」로 못박는다</li>
+          <li>DESIGN.md 재질 3종 문장(펠트·유리·레진)에서 유리 항을 갈아야 한다 — 이게 제일 큰 파장이다</li>
+          <li>Loom 부품 중 유리를 쓰는 자리(판·번호·태그)를 재배선</li>
+        </ul>
+      </article>
+      <article>
+        <h4>㉡ 유리 — 은퇴를 철회</h4>
+        <ul>
+          <li>요소 사전의 「판정 보류」 표식만 걷으면 끝난다 — 재질 3종 체계가 그대로 산다</li>
+          <li>대신 「양모 공방에 유리가 왜 있나」에 한 줄로 답해 둔다(나중에 다시 흔들리지 않게)</li>
+          <li>패턴지 형태는 굽는 자에 남겨 둔다 — 지운 뒤 다시 짓는 값이 아니다</li>
+        </ul>
+      </article>
+      <article>
+        <h4>다린 천 — 어느 쪽이든 남는다</h4>
+        <ul>
+          <li>이건 반투명 후보가 아니라 <b>대면적 카드 바닥</b>이다(사전 §1-b)</li>
+          <li>㉠·㉡ 어느 쪽이 이겨도 바닥의 자리는 안 바뀐다 — 확인만 받으면 된다</li>
+        </ul>
+      </article>
+    </div>
+
+    <p class="안잰것"><b>안 잰 것</b> — 이 셋은 스튜디오 렌더입니다. ① 실제 앱 화면 위에서, ② 그 위에 글자를 얹었을 때의
+      가독은 <b>안 재봤습니다</b>. 유호님이 재질을 고르시면 그 두 가지를 이어서 재겠습니다.</p>
+  </section>
+
+  <footer>
+    굽는 자 <code>node tools/판3종대조굽기.js</code> · 렌더 <code>tools/요소굽기.py</code> ·
+    색 정본 <code>docs/디자인_토큰.json</code>(앱 다크 「양모 밤」) · 판 두께만 다릅니다(천 0.055 / 종이·유리 0.028 — 실물이 그렇습니다).
+  </footer>
+</div>
+</body>
+</html>
