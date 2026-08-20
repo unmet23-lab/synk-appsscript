@@ -355,7 +355,7 @@ function buildMonsterDetailCards() {
       const i = monIdx[String(r[0])] || 0;
       const f = FRAME_CSS[Math.min(i, 6)], ic = FRAME_ICON[Math.min(i, 6)];
       const hero = img.indexOf('http') === 0
-        ? '<img class="skBr" src="' + img + '" style="display:block;margin:0 auto;width:150px;height:150px;border-radius:20px;background:#fff;border:3px solid ' + f[1] + ';box-shadow:0 10px 26px rgba(255,107,92,.2);' + ANIM_BREATH + '"/>' // [v9.48] display:block+margin:auto — Glide Rich Text가 img를 block 처리해 text-align 중앙이 풀리던 것(왼쪽 치우침) 교정
+        ? '<img class="skBr" src="' + img + '" style="display:block;margin:0 auto;width:150px;height:150px;border-radius:20px;background:#fff;border:3px solid ' + f[1] + ';box-shadow:0 10px 26px rgba(249,104,89,.2);' + ANIM_BREATH + '"/>' // [v9.48] display:block+margin:auto — Glide Rich Text가 img를 block 처리해 text-align 중앙이 풀리던 것(왼쪽 치우침) 교정
         : '<span class="skBr" style="display:inline-block;font-size:90px;' + ANIM_BREATH + '">' + ic + '</span>';
       return [CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(160deg,' + f[2] + ',#FFFFFF 45%,' + f[2] + ');border:2px solid ' + f[1] + ';border-radius:20px;padding:18px 16px;text-align:center;">' +
         '<div style="padding:6px 0 12px;">' + hero + '</div>' +
@@ -369,14 +369,14 @@ function buildMonsterDetailCards() {
       const isW = type === 'worldboss';
       const entry = esc(String(r[3] || '').split('|')[0]);
       const hero = img.indexOf('http') === 0
-        ? '<img class="skBo" src="' + img + '" style="display:block;margin:0 auto;width:150px;height:150px;border-radius:20px;background:#373737;border:3px solid #FF6B5C;box-shadow:0 12px 30px rgba(30,27,75,.55);' + ANIM_BOSS + '"/>' // [v9.48] 중앙 고정(위와 동일 사유)
+        ? '<img class="skBo" src="' + img + '" style="display:block;margin:0 auto;width:150px;height:150px;border-radius:20px;background:#373737;border:3px solid #F96859;box-shadow:0 12px 30px rgba(30,27,75,.55);' + ANIM_BOSS + '"/>' // [v9.48] 중앙 고정(위와 동일 사유)
         : '<span class="skBo" style="display:inline-block;font-size:90px;' + ANIM_BOSS + '">👾</span>';
-      return [CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(165deg,#08090C,#373737 60%,#08090C);border:2px solid #FF6B5C;border-radius:20px;padding:18px 16px;text-align:center;color:#E4E4E7;">' +
+      return [CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(165deg,#08090C,#373737 60%,#08090C);border:2px solid #F96859;border-radius:20px;padding:18px 16px;text-align:center;color:#E4E4E7;">' +
         '<div style="font-size:10.5px;letter-spacing:.25em;color:#D1D2D4;padding-bottom:8px;">' + (isW ? 'WORLD BOSS' : 'MONTHLY BOSS ' + (th || '') ) + '</div>' +
         '<div style="padding:2px 0 12px;">' + hero + '</div>' +
         '<div style="font-size:20px;font-weight:900;color:#FFFFFF;">' + nm + '</div>' +
         (entry ? '<div style="background:rgba(224,231,255,.10);border:1px dashed rgba(165,180,252,.5);border-radius:14px;padding:11px 13px;font-size:13px;line-height:1.85;color:#D1D2D4;margin-top:11px;font-style:italic;">“' + entry + '”</div>' : '') +
-        '<div style="font-size:11.5px;color:#FF8877;padding-top:10px;">' + (isW ? '전교 크루의 힘을 합쳐야 봉인할 수 있다' : '격파의 대사는… 쓰러뜨린 크루만 듣게 된다 🤫') + '</div>' +
+        '<div style="font-size:11.5px;color:#FD9C87;padding-top:10px;">' + (isW ? '전교 크루의 힘을 합쳐야 봉인할 수 있다' : '격파의 대사는… 쓰러뜨린 크루만 듣게 된다 🤫') + '</div>' +
         '</div>'];
     }
     return null; // 대상 외 유형 — 기존 값 보존

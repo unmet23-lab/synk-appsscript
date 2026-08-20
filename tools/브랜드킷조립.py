@@ -8,6 +8,7 @@
 사용법:  python tools/브랜드킷조립.py          → docs/브랜드킷.html
 """
 import base64
+import datetime
 import io
 import json
 import os
@@ -38,9 +39,19 @@ def 럼(hexv):
     return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
 
 
-def 글자색(hexv):
-    """스와치 위 라벨 색 — 순백·순검정 금지라 킷의 Cream/Ink 로만 가른다."""
-    return '#E4E4E7' if 럼(hexv) < 0.35 else '#1B1B1A'
+def 대비(a, b):
+    x, y = sorted((럼(a), 럼(b)), reverse=True)
+    return (x + 0.05) / (y + 0.05)
+
+
+def 글자색(hexv, 잉크, 종이):
+    """스와치 위 라벨 색 — 순백·순검정 금지라 킷의 잉크/종이 둘로만 가른다.
+
+    밝기 문턱이 아니라 «대비가 큰 쪽»을 고른다. 문턱(구판 0.35)은 코랄 면에서 틀렸다 —
+    Coral 은 휘도상 어두운 쪽에 떨어져 종이색 라벨을 골랐는데 대비 2.31 로 미달이었다.
+    철칙 ③(코랄 면 위 글자는 Ink)이 이미 그 답을 적어 뒀고, 대비로 고르면 그것과 일치한다.
+    """
+    return 잉크 if 대비(hexv, 잉크) >= 대비(hexv, 종이) else 종이
 
 
 def png_uri(경로, 최대변=None):
@@ -61,32 +72,47 @@ def main():
     with open(토큰경로, encoding='utf-8') as f:
         토큰 = json.load(f)
     킷 = 토큰['색']['킷']
+    이름값 = {c['이름']: c['hex'] for c in 킷}
+    오늘 = datetime.date.today().isoformat()
+    # 역할은 내가 고르지 않는다 — 토큰 시맨틱이 정본이다(내 눈대중 매핑이 대비 위반을 만들었다).
+    라 = {k: 이름값[v] for k, v in 토큰['색']['시맨틱']['라이트'].items() if not k.startswith('_')}
+    다 = {k: 이름값[v] for k, v in 토큰['색']['시맨틱']['다크'].items() if not k.startswith('_')}
+    잉크, 종이 = 라['잉크'], 라['바탕']
     마 = 토큰['색']['마스코트']
     펠트 = 토큰['재질']['펠트']
     with open(os.path.join(패치뿌리, '라이브러리.json'), encoding='utf-8') as f:
         장부 = json.load(f)['패치']
 
-    # ── 색 스와치 (팔레트별 묶음 — 순서는 토큰 그대로) ──────────────────────
-    팔레트들 = {}
-    for c in 킷:
-        팔레트들.setdefault(c.get('팔레트', '기타'), []).append(c)
-    색절 = []
-    for 팔, 줄 in 팔레트들.items():
-        칸 = ''.join(
-            f'<div class="sw" style="background:{c["hex"]};color:{글자색(c["hex"])}">'
+    # ── 색 스와치 — «현행만» 싣는다 ─────────────────────────────────────────
+    # 🔴 퇴역 대기 색(⏳)은 이 킷 문서에 **아예 안 나온다**(유호 확정 2026-08-20 「아예 빼줘」).
+    #    접어 두는 것으로도 부족하다 — 남겨두면 반드시 다시 참조된다(CLAUDE.md 「낡은 것은 남기지 않는다」).
+    #    ⚠토큰에서 못 지우는 이유는 따로다: Loom 지면 층(tools/lib/loom.js)이 아직 그 무채를 쓴다.
+    #      그 층이 양모로 옮겨지면 토큰에서도 사라지고, 그때 이 필터는 저절로 빈 집합이 된다.
+    #    판정은 손 목록이 아니라 토큰 직책의 ⏳ 표식이다 — 목록으로 적으면 색이 늘 때 조용히 갈라진다.
+    def 퇴역대기(c):
+        return c.get('직책', '').lstrip().startswith('⏳')
+
+    현행 = [c for c in 킷 if not 퇴역대기(c)]
+
+    def 칸들(줄):
+        return ''.join(
+            f'<div class="sw" style="background:{c["hex"]};color:{글자색(c["hex"], 잉크, 종이)}">'
             f'<b>{esc(c["이름"])}</b><code>{c["hex"]}</code>'
             f'<span>{esc(c.get("직책", ""))}</span></div>'
             for c in 줄)
-        색절.append(f'<h3>{esc(팔)}</h3><div class="swrow">{칸}</div>')
 
-    # ── 마스코트 램프 (킷 밖 IP — 두 의상) ─────────────────────────────────
-    def 램프줄(단들):
-        return ''.join(
-            f'<div class="sw sm" style="background:{d["hex"]};color:{글자색(d["hex"])}">'
-            f'<b>{esc(d["이름"])}</b><code>{d["hex"]}</code></div>'
-            for d in 단들)
-    체리램프 = 램프줄(마['램프'])
-    평상복램프 = 램프줄(마.get('평상복램프', []))
+    팔레트들 = {}
+    for c in 현행:
+        팔레트들.setdefault(c.get('팔레트', '기타'), []).append(c)
+    색절 = [f'<h3>{esc(팔)}</h3><div class="swrow">{칸들(줄)}</div>'
+            for 팔, 줄 in 팔레트들.items()]
+
+    # ── 마스코트 램프 — 의상은 «코랄 하나»다 (체리 퇴역 · 유호 확정 2026-08-19) ──
+    # 🚫 체리 램프를 여기 다시 싣지 않는다. 08-15 의 «상태 의상 2벌»은 끝났다.
+    평상복램프 = ''.join(
+        f'<div class="sw sm" style="background:{d["hex"]};color:{글자색(d["hex"], 잉크, 종이)}">'
+        f'<b>{esc(d["이름"])}</b><code>{d["hex"]}</code></div>'
+        for d in 마.get('평상복램프', []))
     정본사진 = os.path.join(뿌리, 펠트['정본사진']['평상복'].replace('/', os.sep))
     마컷 = png_uri(정본사진, 최대변=460) if os.path.exists(정본사진) else None
     표정컷 = ''.join(
@@ -95,17 +121,42 @@ def main():
         for n in 펠트표정 if os.path.exists(os.path.join(os.path.dirname(정본사진), n)))
 
     # ── 펠트 패치 (역할 장부에서 — 노출층/무대 뒤를 갈라서) ────────────────
+    # 🔴 천은 «구운 실물»이라 색표처럼 걷어낼 수 없다 — 감추면 「천이 다 있다」로 읽힌다.
+    #    그래서 지우는 대신 **낡음을 얼굴에 붙인다**: 목표색을 현행 토큰에 대고 자동 판정한다.
+    #    (실측 08-20: 공용 9벌 중 현행 킷 색은 KCSun·KCCoolBlue 둘뿐 — 그 둘도 Part 6 전용이다.)
+    현행hex = {c['hex'].upper() for c in 현행}
+    퇴역hex = {c['hex'].upper() for c in 킷 if 퇴역대기(c)}
+
+    def 천판정(항):
+        h = str(항.get('목표', '')).upper()
+        if not h:
+            return '', ''
+        if h in 현행hex:
+            return '', ''
+        if h in 퇴역hex:
+            return ' stale', '<b class="badge">⏳ 퇴역 대기 색 — 재염색 대상</b>'
+        return ' stale', '<b class="badge">🔴 구 킷 색 — 재염색 필요</b>'
+
     def 패치칸(이름, 항, 작게=False):
         p = os.path.join(패치뿌리, f'{이름}.png')
         if not os.path.exists(p):
             return ''
-        태그 = {'공용': '', '마스코트전용': ' · 마스코트 전용', '원료': ' · 무대 뒤(노출 금지)'}[항['역할']]
+        태그 = {'공용': '', '마스코트전용': ' · 마스코트 전용', '원료': ' · 무대 뒤(노출 금지)',
+              '정본사진': ' · 원천 사진'}.get(항['역할'], '')
         목표 = f'<code>{항["목표"]}</code>' if '목표' in 항 else ''
-        return (f'<div class="patch{" dim" if 작게 else ""}">'
+        낡음, 배지 = 천판정(항)
+        return (f'<div class="patch{" dim" if 작게 else ""}{낡음}">'
                 f'<img src="{png_uri(p, 최대변=144)}" alt="{esc(이름)}">'
-                f'<b>{esc(이름)}{esc(태그)}</b>{목표}</div>')
+                f'<b>{esc(이름)}{esc(태그)}</b>{목표}{배지}</div>')
     노출패치 = ''.join(패치칸(n, e) for n, e in 장부.items() if e['역할'] in ('공용', '마스코트전용'))
     원료패치 = ''.join(패치칸(n, e, 작게=True) for n, e in 장부.items() if e['역할'] == '원료')
+    # 2027 실 천이 아예 없다는 사실을 «빈칸»으로 두지 않는다 — 없는 것은 없다고 적는다.
+    실이름 = ['Lapis', 'Meadow', 'Butter', 'Pop', 'Stitch', 'Oat', 'Stone', 'Ink']
+    없는천 = [n for n in 실이름 if n not in 장부]
+    천결손 = (f'<p class="lead" style="margin-top:12px"><b>🔴 2027 킷 천 {len(없는천)}벌이 없다</b> — '
+              f'{esc(" · ".join(없는천))}. 펠트는 SYNK 전용 재질인데 2027 실(청금석·메도우·버터·팝)과 '
+              '양모 밤 축의 천이 아직 한 벌도 안 구워졌다. 굽는 통로 = <code>tools/펠트색굽기.js</code>.</p>'
+              ) if 없는천 else ''
     헌법 = ''.join(f'<li>{esc(x)}</li>' for x in 펠트.get('_헌법', []))
 
     # ── 감각·사운드 (토큰 규칙을 그대로 인용) ──────────────────────────────
@@ -124,17 +175,19 @@ def main():
 <!-- 파생: docs/디자인_토큰.json · docs/캐릭터/펠트패치_0815/라이브러리.json · docs/발표물/_브랜드킷.md -->
 <!-- 로고 도형 = 위 _브랜드킷.md §3 복사 · 조립: python tools/브랜드킷조립.py — 손 편집 금지(재조립이 덮는다) -->
 <style>
-:root {{ --paper:#FAFAF9; --ink:#1B1B1A; --navy:#262626; --navy2:#08090C; --navy3:#373737;
-  --cream:#E4E4E7; --coral:#FF6B5C; --coral3:#E8543F; --wash:#FFE9E4; --slate2:#676767; }}
+/* 값은 전부 토큰 «시맨틱»에서 온다 — 어느 색을 어디 쓸지는 이 파일이 정하지 않는다. */
+:root {{ --paper:{라["바탕"]}; --ink:{라["잉크"]}; --navy2:{다["바탕"]}; --navy3:{라["보조잉크"]};
+  --cream:{다["잉크"]}; --darkmute:{다["보조잉크2"]}; --line:{이름값["Stone"]};
+  --coral:{라["신호_면"]}; --coral3:{라["신호_글자_대형"]}; --wash:{라["신호_바닥"]}; --slate2:{라["보조잉크"]}; }}
 * {{ box-sizing:border-box; margin:0 }}
 body {{ background:var(--paper); color:var(--ink); line-height:1.6;
   font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }}
 .band {{ background:var(--navy2); color:var(--cream); padding:56px 8% 48px; }}
 .band svg {{ width:200px; display:block }}
 .band h1 {{ font-size:30px; font-weight:800; margin-top:20px }}
-.band p {{ color:#8A8A8A; font-size:13px; margin-top:6px }}
+.band p {{ color:var(--darkmute); font-size:13px; margin-top:6px }}
 section {{ padding:44px 8% }}
-section+section {{ border-top:1px solid #D1D2D4 }}
+section+section {{ border-top:1px solid var(--line) }}
 h2 {{ font-size:21px; font-weight:800; margin-bottom:4px }}
 h2 em {{ font-style:normal; color:var(--coral3); }}
 h3 {{ font-size:13px; font-weight:800; color:var(--slate2); margin:22px 0 8px; text-transform:uppercase; letter-spacing:.06em }}
@@ -149,11 +202,11 @@ h3 {{ font-size:13px; font-weight:800; color:var(--slate2); margin:22px 0 8px; t
 .rulebox b {{ color:var(--coral3) }}
 ul {{ padding-left:1.2em; font-size:13.5px; max-width:80ch }} li {{ margin:4px 0 }}
 table {{ border-collapse:collapse; font-size:13.5px; margin-top:10px }}
-td,th {{ border:1px solid #D1D2D4; padding:7px 12px; text-align:left }}
+td,th {{ border:1px solid var(--line); padding:7px 12px; text-align:left }}
 th {{ background:var(--wash); font-weight:800 }}
 code {{ font-family:'DM Mono',ui-monospace,Consolas,monospace; font-size:.92em }}
 .dark {{ background:var(--navy2); color:var(--cream) }}
-.dark h3 {{ color:#8A8A8A }} .dark .lead {{ color:#8A8A8A }}
+.dark h3 {{ color:var(--darkmute) }} .dark .lead {{ color:var(--darkmute) }}
 .dark td,.dark th {{ border-color:var(--navy3) }} .dark th {{ background:var(--navy3) }}
 .mascotrow {{ display:flex; gap:36px; align-items:center; flex-wrap:wrap; margin-top:14px }}
 .patchrow {{ display:flex; flex-wrap:wrap; gap:14px; margin-top:12px }}
@@ -162,6 +215,8 @@ code {{ font-family:'DM Mono',ui-monospace,Consolas,monospace; font-size:.92em }
   outline:1px solid rgba(255,255,255,.1); outline-offset:-1px }}
 .patch b {{ display:block; margin-top:6px; font-weight:600 }}
 .patch.dim {{ opacity:.62; width:110px }} .patch.dim img {{ width:104px; height:104px }}
+.patch.stale img {{ opacity:.45; filter:grayscale(.5) }}
+.badge {{ display:block; margin-top:4px; font-size:10.5px; font-weight:700; color:var(--coral) }}
 .chip {{ display:inline-block; background:var(--navy3); color:var(--cream); border-radius:999px;
   padding:3px 12px; font-size:12px; margin:3px 4px 0 0 }}
 .logogrid {{ display:flex; gap:22px; flex-wrap:wrap; align-items:stretch; margin-top:14px }}
@@ -173,14 +228,14 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 </style></head><body class="룸">
 
 <div class="band">
-  <svg viewBox="-8 -2 296 116" role="img" aria-label="SYNK">
-    <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#E4E4E7">syn</text>
-    <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
-    <path d="M196 92 L216 40 L228 40 L208 92 Z" fill="#E4E4E7" opacity=".5"/>
-    <path d="M234 92 L254 40 L266 40 L246 92 Z" fill="#E4E4E7" opacity=".5"/>
+  <svg viewBox="-8 -2 296 116" role="img" aria-label="SYNK" style="color:{다["잉크"]}">
+    <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="currentColor">syn</text>
+    <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="{이름값["Coral"]}"/>
+    <path d="M196 92 L216 40 L228 40 L208 92 Z" fill="{다["잉크"]}" opacity=".5"/>
+    <path d="M234 92 L254 40 L266 40 L246 92 Z" fill="{다["잉크"]}" opacity=".5"/>
   </svg>
   <h1>SYNK 브랜드 킷 — 완성본</h1>
-  <p>2026-08-15 · 값 원천 = 디자인_토큰.json(23색+마스코트+재질+사운드+감각) · 이 문서는 조립 산출물 — 고칠 땐 토큰을 고치고 <code>python tools/브랜드킷조립.py</code></p>
+  <p>값 원천 = 디자인_토큰.json({len(현행)}색+마스코트+재질+사운드+감각) · 이 문서는 조립 산출물(마지막 조립 {오늘}) — 고칠 땐 토큰을 고치고 <code>python tools/브랜드킷조립.py</code></p>
 </div>
 
 <section>
@@ -194,20 +249,20 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
   <code>//</code> 는 세 번째 색이 아니라 잉크의 저채도. 도형 정본 = 발표물 브랜드킷 §3(복사해 쓰고 재작도 금지).</p>
   <div class="logogrid">
     <div class="logocard" style="background:var(--navy2)">
-      <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-        <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#E4E4E7">syn</text>
-        <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
+      <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK" style="color:{다["잉크"]}">
+        <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="currentColor">syn</text>
+        <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="{이름값["Coral"]}"/>
       </svg>
     </div>
-    <div class="logocard" style="background:var(--paper); outline:1px solid #D1D2D4">
-      <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-        <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#262626">syn</text>
-        <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#FF6B5C"/>
+    <div class="logocard" style="background:var(--paper); outline:1px solid var(--line)">
+      <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK" style="color:{이름값["Ink"]}">
+        <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="currentColor">syn</text>
+        <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="{이름값["Coral"]}"/>
       </svg>
     </div>
     <div class="logocard" style="background:var(--navy2)">
       <svg viewBox="0 0 240 110" role="img" aria-label="SYNK">
-        <g fill="none" stroke="#FAFAF9" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter">
+        <g fill="none" stroke="{다["잉크"]}" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter">
           <path d="M10 62 C17 50, 29 50, 36 60 C41 67, 48 67, 52 58"/>
           <path d="M68 68 L88 34 L108 68"/>
           <path d="M124 68 L144 34 L164 68"/>
@@ -223,33 +278,36 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 </section>
 
 <section>
-  <h2><span class="번호">3</span> 색 — 23색 킷</h2>
-  <p class="lead"><b>철칙 4</b> — ①순백·순검정 금지 ②라이트 배경에 Coral 글자 금지(글자는 Coral 3)
-  ③코랄 면 위 글자는 Ink·Navy 2만 ④한 지면 = 바탕+잉크+<b>신호 1점</b>(Lime·KC 는 전용 구역 밖 반입 금지).
+  <h2><span class="번호">3</span> 색 — {len(현행)}색 킷</h2>
+  <p class="lead"><b>두 원리</b> — ①<b>색이 아니라 램프다</b>(유채색은 전부 3단: 보풀 빛 Soft·몸통·그늘 Deep)
+  ②<b>실은 부품, 램프가 정본</b>(2027 실은 유행이 지나면 그 실만 갈아끼운다).</p>
+  <p class="lead"><b>철칙 4</b> — ①순백·순검정 금지(라이트 하한 = Paper·Ink)
+  ②라이트 배경에 <b>몸통색 글자 금지</b> — Coral·Meadow 는 면이고 글자는 그 실의 Deep
+  ③몸통 면 위 글자는 실마다 정해져 있다: 코랄·버터 = <b>Ink</b> / 청금석 = <b>Paper</b> / 팝 = Ink(큰 글자)
+  ④<b>주연 1실 + 조연 1실</b> — 한 화면의 유채 실은 둘까지, 나머지 실은 그 화면에서 쉰다(KC 4색은 Part 6 전용).
   오류에 빨강을 새로 만들지 않는다 — Coral 3+아이콘+문구가 진다.</p>
   {''.join(색절)}
 </section>
 
 <section class="dark">
-  <h2 style="color:var(--cream)"><span class="번호">4</span> 마스코트 — 몽글 <em style="color:var(--coral)">킷 밖 IP 색</em></h2>
-  <p class="lead">체리는 브랜드 킷 색이 아니라 <b>몽글의 고유색</b>이다(마리오 빨강이 닌텐도 UI 색이 아닌 문법).
-  의상이 둘 — 평소 = 코랄(평상복) · 특별한 순간 = 체리. 다크가 주 무대다.</p>
+  <h2 style="color:var(--cream)"><span class="번호">4</span> 마스코트 — 몽글 <em style="color:var(--coral)">펠트 코랄</em></h2>
+  <p class="lead">의상은 <b>펠트 코랄 하나</b>다 — 체리(빨간 구판)는 퇴역했다(유호 확정 2026-08-19).
+  평상복 램프와 킷 <b>Coral Soft~Rim 이 같은 값</b>이다: 마스코트 색이 곧 UI 색이다. 다크가 주 무대다.</p>
   <div class="mascotrow">
     <div>
       {f'<img src="{마컷}" alt="몽글 — 펠트 정본(평상복)" style="width:250px;border-radius:16px;display:block">' if 마컷 else ''}
       <div style="display:flex;gap:8px;margin-top:8px">{표정컷}</div>
-      <div class="cap" style="color:#8A8A8A">정본 = 펠트 코랄(평상복) · 유호 픽 08-15 ㉠재염색</div>
+      <div class="cap" style="color:var(--darkmute)">정본 = 펠트 코랄(평상복) · 유호 픽 08-15 ㉠재염색</div>
     </div>
     <div>
-      <h3>평상복 램프 (코랄 · 킷 계열 — 기본 모습)</h3><div class="swrow">{평상복램프}</div>
-      <h3>체리 램프 (특별한 순간 의상)</h3><div class="swrow">{체리램프}</div>
+      <h3>평상복 램프 (코랄 — 유일한 의상 · 킷 코랄 축과 같은 값)</h3><div class="swrow">{평상복램프}</div>
     </div>
   </div>
   <ul style="margin-top:16px">
-    <li>체리는 버튼·알약·진행바·링크·강조 글자에 안 쓴다 — 화면 속 체리는 <b>몽글 그림 + 몽글이 직접 내는 것</b>뿐.</li>
-    <li>체리 딥은 UI 어디에도 안 쓴다(오류 빨강으로 읽힌다 — 그림 안의 음영은 무관).</li>
+    <li>🚫 체리(구판)는 자산·토큰·배선에서 걷혔다 — 경로 정본은 <code>tools/lib/마스코트자산.js</code> 하나가 안다.</li>
+    <li>Coral Felt Deep 은 UI 어디에도 안 쓴다(오류 빨강으로 읽힌다 — 그림 안의 음영은 무관).</li>
     <li>바닥은 목록이 아니라 계산(ΔE 임계 12) — 코랄 짙은 면 위에만 못 올린다. 다크에서 가장 잘 뜬다.</li>
-    <li>코랄 UI 와 체리 몽글이 한 화면에서 만나면 색상이 아니라 <b>명도 단</b>으로 가른다.</li>
+    <li>인라인하면 <code>data-synk-mascot</code> — 린트는 <code>src</code> 경로로 그림을 찾는다.</li>
   </ul>
 </section>
 
@@ -259,6 +317,7 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
   CGI 완벽주의는 흡수하지 않는다). 결은 정본 사진에서만 오고, 색은 재염색 연산이 0원에 낸다.</p>
   <h3>천 팔레트 (실물 패치 — 재염색 파생)</h3>
   <div class="patchrow">{노출패치}</div>
+  {천결손}
   <h3>무대 뒤 — 파생 원료 (산출물 노출 금지)</h3>
   <div class="patchrow">{원료패치}</div>
   <h3>헌법 (재론 금지 · 실측 근거는 각 정본)</h3>
@@ -293,7 +352,7 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 
     with open(출력, 'w', encoding='utf-8') as f:
         f.write(html)
-    print(f'■ 조립  {os.path.relpath(출력, 뿌리)}  ({len(html)//1024} KB · 킷 {len(킷)}색 · 패치 {len(장부)}장)')
+    print(f'■ 조립  {os.path.relpath(출력, 뿌리)}  ({len(html)//1024} KB · 현행 {len(현행)}색(퇴역 {len(킷)-len(현행)} 제외) · 패치 {len(장부)}장)')
     _룸입히기(출력)
 
 
@@ -308,7 +367,10 @@ def _룸입히기(경로):
     """
     import subprocess
     통로 = os.path.join(뿌리, 'tools', 'lib', 'loom얹기.js')
-    r = subprocess.run(['node', 통로, 경로], capture_output=True, text=True)
+    # Windows 기본 인코딩(cp949)으로 읽으면 node 의 UTF-8 출력이 리더 스레드에서 죽는다 —
+    # 그러면 「얹혔는지」를 아무도 못 읽는 채로 rc 만 보고 넘어간다.
+    r = subprocess.run(['node', 통로, 경로], capture_output=True,
+                       text=True, encoding='utf-8', errors='replace')
     출 = (r.stdout or '') + (r.stderr or '')
     for 줄 in 출.strip().splitlines():
         if 줄.strip():
