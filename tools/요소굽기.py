@@ -50,13 +50,13 @@ def 털재질(이름, hex_):
     m.node_tree.links.new(램프.outputs['Color'], tp.inputs['Base Color'])
     return m
 
-def 베개몸(크기, 위치=(0, 0, 0), 회전z=0.0, 크리스=0.62):
+def 베개몸(크기, 위치=(0, 0, 0), 회전z=0.0, 크리스=0.62, 레벨=3):
     bpy.ops.mesh.primitive_cube_add(size=2, location=위치)
     몸 = bpy.context.object
     몸.scale = 크기
     몸.rotation_euler = (0, 0, math.radians(회전z))
     sub = 몸.modifiers.new('sub', 'SUBSURF')     # 큐브+서브서프+크리스 = 연속 곡률 스쿼클
-    sub.levels = sub.render_levels = 3
+    sub.levels = sub.render_levels = 레벨
     층 = 몸.data.edge_creases_ensure()
     for d in 층.data:
         d.value = 크리스
@@ -347,7 +347,7 @@ def 블랭킷():
     for (sx, sz, ex, ez, 법x, 법z) in ((-w + 0.2, h, w - 0.2, h, 0, -1), (w, h - 0.2, w, -h + 0.2, -1, 0),
                                        (w - 0.2, -h, -w + 0.2, -h, 0, 1), (-w, -h + 0.2, -w, h - 0.2, 1, 0)):
         길이 = math.hypot(ex - sx, ez - sz)
-        n = max(2, int(길이 / 0.42))
+        n = max(3, int(길이 / 0.3))
         변각 = math.degrees(math.atan2(ez - sz, ex - sx))
         for i in range(1, n):                # 끝점 제외 — 모서리에서 두 변의 땀이 겹쳐 ⌐ 가 된다(시안5 실측)
             t = i / n
@@ -435,26 +435,26 @@ def 패턴지판():
     """패턴지(재단지) 판 — 유리 은퇴의 후계(유호 확정 08-20): 반투명 «판»은 이제 유리가 아니라
     재단 도면 종이다. 공방 은유 안의 종이 — 빛을 «통과»시키되 차갑지 않다.
     분필 시접선 1곳 한정(745ffc93 제안 #3)."""
-    뒤구 = 베개몸((0.62, 0.4, 0.62), 위치=(0.72, 0.85, 0.28), 크리스=0.62)   # 뒤 코랄 퍼 — 반투명이 «보이게» + 겹침=깊이 문법(제안 3차 #1)
+    뒤구 = 베개몸((0.6, 0.4, 0.6), 위치=(1.42, 0.75, 0.34), 크리스=0.62)   # 오른쪽 밖으로 반쯤 — 판 뒤로 들어간 반이 «비쳐» 보인다   # 뒤 코랄 퍼 — 반투명이 «보이게» + 겹침=깊이 문법(제안 3차 #1)
     짧은퍼(뒤구, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]))
-    판 = 베개몸((1.35, 0.028, 0.95), 크리스=0.22)
+    판 = 베개몸((1.35, 0.028, 0.95), 크리스=0.38, 레벨=4)
     종이 = bpy.data.materials.new('패턴지')
     종이.use_nodes = True
     p = 종이.node_tree.nodes['Principled BSDF']
     p.inputs['Base Color'].default_value = 리니어(색['Paper'])
     p.inputs['Roughness'].default_value = 0.92
     if 'Transmission Weight' in p.inputs:
-        p.inputs['Transmission Weight'].default_value = 0.3   # 반투명 — 서리 낀 종이(유리 광 없음)
+        p.inputs['Transmission Weight'].default_value = 0.55   # 반투명 — 서리 낀 종이(유리 광 없음)
     판.data.materials.append(종이)
     분필 = 분필재질('시접', 색['Ash 2'])
-    for i in range(9):                        # 시접선 — 왼 가장자리 한 곳 한정(제안 3차 #3)
-        땀하나(-1.06, -0.055, -0.64 + i * 0.16, 0.095, 0.03, 분필, 회전y=90, 납작=True)
+    for i in range(7):                        # 시접선 — 왼 가장자리 «안쪽» 한 줄 한정(제안 3차 #3)
+        땀하나(-0.94, -0.055, -0.55 + i * 0.185, 0.08, 0.024, 분필, 회전y=90, 납작=True)
     return (0, -6.8, 0.0), 90
 
 def 다린천판():
     """다린 무광 천 판 — 카드·판 바닥의 새 기본(유호 확정 08-20): 결을 눕힌 무채 천.
     광택 0 · 결 최소 — 다림질 자국의 «눌린» 면이다."""
-    판 = 베개몸((1.35, 0.055, 0.95), 크리스=0.3)
+    판 = 베개몸((1.35, 0.055, 0.95), 크리스=0.34, 레벨=4)
     천 = bpy.data.materials.new('다린천')
     천.use_nodes = True
     p = 천.node_tree.nodes['Principled BSDF']
