@@ -444,7 +444,7 @@ def 패턴지판():
     p.inputs['Base Color'].default_value = 리니어(색['Paper'])
     p.inputs['Roughness'].default_value = 0.92
     if 'Transmission Weight' in p.inputs:
-        p.inputs['Transmission Weight'].default_value = 0.55   # 반투명 — 서리 낀 종이(유리 광 없음)
+        p.inputs['Transmission Weight'].default_value = 0.7   # 반투명 — 서리 낀 종이(유리 광 없음 · 드래프트 실측 0.55 는 불투명으로 읽혔다)
     판.data.materials.append(종이)
     분필 = 분필재질('시접', 색['Ash 2'])
     for i in range(7):                        # 시접선 — 왼 가장자리 «안쪽» 한 줄 한정(제안 3차 #3)
