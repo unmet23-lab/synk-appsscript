@@ -168,6 +168,8 @@ function 굽기(칸, 옵션 = {}) {
   if (당김) args.push('--당김', String(당김));
   const 눈높이 = 옵션.눈높이 || 칸.눈높이;
   if (눈높이) args.push('--눈높이', String(눈높이));
+  if (옵션.진행 !== undefined) args.push('--진행', String(옵션.진행));
+  if (옵션.시퀀스) args.push('--시퀀스', String(옵션.시퀀스));
   // HDRI 는 «켬/끔»이 대조 눈금이라 옵션으로 뺀다(기본 = 켬). 이름만 줘도 받는다.
   let hdri = 옵션.hdri === false ? null : (옵션.hdri || 기본HDRI());
   if (hdri && !path.isAbsolute(hdri)) hdri = path.join(HDRI폴더, hdri + '_1k.hdr');
@@ -189,6 +191,11 @@ function 굽기(칸, 옵션 = {}) {
    *    「▶ 원판 … ⏱ 1.8초」를 찍고 다음으로 넘어갔다 — «맞는 얼굴로 틀린 값»의 교과서다.
    *    시간으로 재지 않는다(빠른 판이 정상일 수도 있다). **판이 디스크에 있는지**로 잰다.
    *    ⚠exit code 도 stderr 도 근거가 못 된다 — Blender 는 둘 다 정상으로 낸다. */
+  if (옵션.시퀀스) {                       // 시퀀스는 판이 여럿이라 아래 «한 판» 회귀검사가 안 맞는다
+    const 첫판 = path.join(출력, 이름 + '_000.png');
+    if (!fs.existsSync(첫판)) { console.error('🔴 시퀀스 첫 판이 없다:', 첫판); process.exit(4); }
+    return;
+  }
   const 나올것 = (옵션.그림자층 && 칸.두층) ? [이름 + '_몸', 이름 + '_접지'] : [이름];
   const 없는판 = 나올것.filter((n) => !fs.existsSync(path.join(출력, n + '.png')));
   if (없는판.length) {
@@ -266,6 +273,8 @@ async function main() {
     변주: 집('--변주') || undefined,   // 실험 부품의 색 갈래(행 기본값을 덮는다)
     당김: 집('--당김') || undefined,   // 플레이팅 카메라 당김(1.0 전체 · 0.6 클로즈업)
     눈높이: 집('--눈높이') || undefined, // 카메라 고도(1.0 = 32.4° · 0.82 = 눕힌 27.5°)
+    진행: 집('--진행') || undefined,   // 모션 한 컷의 시각(0.0~1.0 · 1.0 = 확정 정지 화면)
+    시퀀스: 집('--시퀀스') || undefined, // n 장을 한 실행으로 (프레임마다 블렌더를 새로 띄우지 않는다)
     이름: 집('--이름') || undefined,   // 변주 판을 딴 이름으로 굽는다(기본 = 행 이름)
   };
   if (!fs.existsSync(기본HDRI())) {
