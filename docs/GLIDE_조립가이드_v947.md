@@ -357,7 +357,7 @@ Glide가 **텍스트 열을 Image에 멋대로 매핑**해 빈 회색 박스를 
 ### 6-5. 탭 「랭킹」 (profiles, Filter role=student)
 - **🏆 리그 보드(최상단, ★v9.81)**: Rich Text ← **랭킹보드HTML(DO119, User's row)** — SYNK LEAGUE 다크 포디움(TOP3)+4~10위 게이지 리스트+내 순위 하이라이트+추격 넛지+정산 D-n. 순위 소스는 R열과 동일(rankMap)이라 아래 컬렉션과 어긋나지 않는다. 절차=`조립후_리그반카드_v981.md` ①.
 - Collection(Compact, 리그 보드 아래 "전체 상세" 역할): 이름 · 월간포인트(Q) 내림차순 · 월간랭킹(R). 부지표: 출석일당포인트(CA79 — 주말반 공정).
-- **업적·칭호 섹션**: achievements(Filter me) · 현재칭호(AC)·대표칭호(AH)+칭호등급(AI) · **착용칭호(AK)** Choice(소스 contents type=lore의 value_ko) → relation→Lookup으로 로어 표시 · 왕관 컬렉션 "🌟 ×n · ⚡ ×n"(AW·AX Template).
+- **업적·칭호 섹션**: achievements(Filter me) · 현재칭호(AC)·대표칭호(AH)+칭호등급(AI) · **착용칭호(AK)** Choice(소스 contents type=lore의 value_ko) → relation→Lookup으로 로어 표시 · 도전 기록·성장 기록 "🔥 ×n · 🌱 ×n"(AW·AX Template · 따로 셈).
 > 탭이 많으면 랭킹은 소식 하위 섹션으로 합쳐도 됨 — 기능을 빼지 말고 배치만 조정.
 
 ---

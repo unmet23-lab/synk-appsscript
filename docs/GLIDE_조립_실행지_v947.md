@@ -128,7 +128,7 @@ Layout → **+ New tab** → 이름 `홈` → Source: **profiles** (스타일: D
 - [ ] 새 탭 `랭킹` → **Collection**(Compact) — profiles / Filter: role is `student` / 정렬: 월간포인트(Q) 내림차순 / 표시: 이름·Q·월간랭킹(R)·출석일당포인트(CA)
 - [ ] 아래 섹션: **achievements** Collection(Filter: student_id=User's user_id) — 업적·등급·달성일
 - [ ] 내 칭호 카드: 현재칭호(AC)·대표칭호(AH)·칭호등급(AI) Text + **착용칭호(AK)** = **Choice**(Source: contents Filter type=`lore` / display·value=value_ko)
-- [ ] 왕관 컬렉션 Template: `🌟 ×{AW} · ⚡ ×{AX}`
+- [ ] 도전·성장 기록 Template: `🔥 ×{AW} · 🌱 ×{AX}`
 - **✅ 검증**: 바야르 1위 · 업적 여러 개 · 칭호 배지.
 
 **✅ STEP 3 완료 판정**: 학생 탭 5개·홈 13개 컴포넌트·상세 4장 전부 체크.
@@ -162,11 +162,11 @@ Layout → **+ New tab** → 이름 `홈` → Source: **profiles** (스타일: D
 
 ### 5-A. 탭 「반」
 - [ ] 새 탭 `반` → **Collection** — **class_stats** / 표시: class_name·학생수·반몬스터 (Filter 없음 — 선택형)
-- [ ] 반 상세 화면: **Rich Text 5장 순서대로** — 수업전브리핑(9열) → 오늘체크(11열) → 격파찬스(10열·Visibility not empty) → 레이드카드HTML(13열) → 왕관밸런스(12열)
+- [ ] 반 상세 화면: **Rich Text 5장 순서대로** — 수업전브리핑(9열) → 오늘체크(11열) → 격파찬스(10열·Visibility not empty) → 레이드카드HTML(13열) → 기회밸런스(12열)
 - [ ] 상세에 **학생 리스트**(Inline collection) — Source: profiles / Filter: class_name is **This item → class_name** AND role is `student` / 표시: 이름·한국어수준(AY)·몬스터단계(S)·진화진행률(T는 미표시 원칙이므로 단계만 권장)
 - [ ] **학생 상세 화면**에 버튼 3종:
-  - `🌟 오늘의 MVP 왕관` → Add row → point_logs: student_id=**This item → user_id** · points=**10** · reason=**`오늘의 MVP`** · given_by=User's 이름 · created_at=현재
-  - `⚡ 오늘의 시냅스 왕관` → 동일하되 reason=**`오늘의 시냅스`**
+  - `🔥 오늘의 도전` → Add row → point_logs: student_id=**This item → user_id** · points=**5**(★v9.83 10→5) · reason=**`오늘의 도전`**(구 `오늘의 MVP` — 겸용 판독) · given_by=User's 이름 · created_at=현재
+  - `🌱 오늘의 성장` → 동일하되 reason=**`오늘의 성장`**(구 `오늘의 시냅스`)
   - **`💝 반짝 칭찬`(★v9.51 방식 확정 — 태그별 버튼 4개)**: 라이브 point_logs 8열은 Glide 🔒 Row ID라 태그 열이 없음 → 태그를 **reason 접미로 고정**한 Add row 버튼 4개(Button Block 하나에 묶기): 라벨 `🗣 발음↑` `🔥 열정` `🤝 친구도움` `🎯 집중력` — 각각 student_id=This item→user_id · points=**3** · reason=고정 텍스트 **`칭찬·발음↑`** / **`칭찬·열정`** / **`칭찬·친구도움`** / **`칭찬·집중력`**(가운뎃점 `·` 복사-붙여넣기!) · given_by=User profile→이름 · created_at=현재 시각. 학생당 하루 1회(태그 무관 합산 — 초과분 야간 자동 정정)이며, 태그는 일요일 학부모 다이제스트 '크루의 눈'에 한·몽 병기로 전달
   - (선택) `📚 숙제완료` → Add row: points=10 · reason=`숙제완료`
 - [ ] 반 상세에 **폼 버튼 3개**:
@@ -178,7 +178,7 @@ Layout → **+ New tab** → 이름 `홈` → Source: **profiles** (스타일: D
 ### 5-C. 탭 「출퇴근」 — Form: **teacher_checkins** (이름=User's 이름 · 구분=Choice `출근`/`퇴근` · 시각=제출 시각)
 ### 5-D. 탭 「수업 준비」(선택) — 숙제 카드(3-A ⑧ 재사용)+퀴즈+onboarding(teacher)+안내 카드 2개(academic_log 월1회 입력법 · student_errors 메모법: "해결"이라 쓰면 브리핑에서 사라짐)
 
-**✅ 검증(Preview as SYNK-T01 → 데모정규반)**: 브리핑에 🎂 사라 생일·⚡ 테무진 진화 임박 / 왕관 눌러 +10 행 생성 / 💝 칭찬 폼에서 태그 고르고 제출 → point_logs에 +3·reason=칭찬·태그 저장.
+**✅ 검증(Preview as SYNK-T01 → 데모정규반)**: 브리핑에 🎂 사라 생일·⚡ 테무진 진화 임박 / 🔥 오늘의 도전 눌러 +5 행 생성 / 💝 칭찬 폼에서 태그 고르고 제출 → point_logs에 +3·reason=칭찬·태그 저장.
 
 ---
 
@@ -207,14 +207,14 @@ Layout → **+ New tab** → 이름 `홈` → Source: **profiles** (스타일: D
 - [ ] 7-3. **최종 감사표** — 아래 전 항목이 어딘가에 배치돼 있어야 함(§10 매트릭스 압축):
   - 학생: 시냅스ON · 온보딩 · BX76 · 전당CM91/시즌CN92 · BY77 · BD56 · BF58 · BW75 · 숙제CG~CI · 퀴즈CJ/CK · CB80 · BE57/팁CL90 · 내기록4(BG59/BH60/BI61/BJ62) · 도감(CE83+Collection+상세카드+BC55+AO41) · 스토어(AQ43+찜AR44+교환+잔액게이트) · 소식(보스CO93·**여행지도CP94**·공지·전투·스토리북·카드·전당·리그역사) · 랭킹(Q17/R18/CA79·업적·칭호AC/AH/AI·AK37·AW49/AX50)
   - 학부모: 온보딩 · 자녀이름CQ95 · 축하배너CR96 · 주간리포트CS97 · **출석달력CT98** · 대화카드CU99 · 학업추세CV100 · report_cards · 결석폼 · 문의폼 · 공지MN
-  - 강사: class_stats 목록 · 5카드(브리핑에 🧩연습 포인트 자동) · 학생 리스트(AY) · 🌟/⚡왕관 · **💝칭찬 4버튼(reason=`칭찬·태그`)** · 출석폼 · 마감폼(F=content_id!) · hw_batch · 보드 · 출퇴근
+  - 강사: class_stats 목록 · 5카드(브리핑에 🧩연습 포인트 자동) · 학생 리스트(AY) · 🔥/🌱 도전·성장 · **💝칭찬 4버튼(reason=`칭찬·태그`)** · 출석폼 · 마감폼(F=content_id!) · hw_batch · 보드 · 출퇴근
   - 원장: 리텐션 · 케어사각 · **경영월보** · 보드 · 리그(A/B만) · raid/world · 특별칭호 · 공지폼 · 전당폼 · 크루폼 · teacher_stats · 문의함 · exit_log · (경영 4종)
 
 ---
 
 ## STEP 8 · 검증 시나리오 (가이드 v947 §11 그대로 — 순서 요약)
 
-1. [ ] 학생(바야르) 홈~랭킹 전 화면 → 2. [ ] 도감 잠금(졸자야) → 3. [ ] 스토어 잔액 게이트 → 4. [ ] 강사 왕관 2연타(밤 자동 정정+메일은 22시 후 확인) → 5. [ ] 💝 칭찬 → 일요일 다이제스트 "크루의 눈" → 6. [ ] 출석폼 저장 후 `parentSweep` ▶로 즉시 전개 확인 → 7. [ ] 마감폼 저장 후 `runLessonExpandNow` ▶ → 여정 카드 "문법 n/12" → 8. [ ] **`demoRaidClearNow` ▶** → 학생 홈 레이드카드 "🏆 격파 달성!"+격파 공지 → 9. [ ] `seedConsultDemo` ▶ → 상담→앱 유입 확인 → `clearConsultDemo` → 10. [ ] 학부모 결석 신고→미출석 메일 미발송 → 11. [ ] 원장 공지→10분 몽골어.
+1. [ ] 학생(바야르) 홈~랭킹 전 화면 → 2. [ ] 도감 잠금(졸자야) → 3. [ ] 스토어 잔액 게이트 → 4. [ ] 강사 도전·성장 2연타(밤 자동 정정+메일은 22시 후 확인) → 5. [ ] 💝 칭찬 → 일요일 다이제스트 "크루의 눈" → 6. [ ] 출석폼 저장 후 `parentSweep` ▶로 즉시 전개 확인 → 7. [ ] 마감폼 저장 후 `runLessonExpandNow` ▶ → 여정 카드 "문법 n/12" → 8. [ ] **`demoRaidClearNow` ▶** → 학생 홈 레이드카드 "🏆 격파 달성!"+격파 공지 → 9. [ ] `seedConsultDemo` ▶ → 상담→앱 유입 확인 → `clearConsultDemo` → 10. [ ] 학부모 결석 신고→미출석 메일 미발송 → 11. [ ] 원장 공지→10분 몽골어.
 
 ## STEP 9 · 운영 전환 (조립·검증 끝난 뒤)
 
