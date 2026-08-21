@@ -4,9 +4,25 @@
 # 형태: 오브 · 알약 · 아이콘 · 스티치 · 털실진행바(진행=0~1) · 단추토글 · 밑그림 · 페이지점 · 폼폼 · 시침핀 · 와펜 · 블랭킷 · 실패스피너 · 직조라벨
 # 규율: 염료는 토큰 킷 「이름」 참조(hex 하드코딩 금지) · 글자는 굽지 않는다(타이포 불가침 — HTML 층 몫)
 # ⚠룸굽기.js 합류 전의 독립 통로다 — 룸굽기는 blender.exe(윈도)를 부르고 이건 bpy 모듈(클라우드)로 돈다.
-import bpy, json, math, sys
+import bpy, json, math, os, sys
 
-토큰길 = '/home/user/synk-appsscript/docs/디자인_토큰.json'
+# 토큰 경로 — 이 도구는 두 환경에서 돈다(클라우드 bpy 모듈 · 로컬 blender.exe -b -P).
+# 🔴 리눅스 절대경로를 박아 두면 **로컬에서 통째로 못 돈다**(실측 08-21: 오브 굽기가 여기서 막혔다).
+#   찾는 순서 = 스크립트 옆 → cwd → 옛 클라우드 경로. 못 찾으면 «조용히» 넘기지 않고 죽는다.
+def _토큰찾기():
+    후보 = []
+    try:
+        후보.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'docs', '디자인_토큰.json'))
+    except NameError:
+        pass                      # exec(open(...).read()) 로 부르면 __file__ 이 없다
+    후보 += [os.path.join(os.getcwd(), 'docs', '디자인_토큰.json'),
+             '/home/user/synk-appsscript/docs/디자인_토큰.json']
+    for c in 후보:
+        if os.path.exists(c):
+            return c
+    raise SystemExit('🔴 디자인_토큰.json 을 못 찾았다 — 찾은 곳: ' + ' · '.join(후보))
+
+토큰길 = _토큰찾기()
 색 = {c['이름']: c['hex'] for c in json.load(open(토큰길, encoding='utf-8'))['색']['킷']}
 
 def 리니어(hex_):
@@ -90,9 +106,28 @@ def 짧은퍼(몸, 털이름, 살, 털, 길이=0.10, 개수=16000):
 
 # ── 형태들 ──────────────────────────────────────────────────────────────────
 def 오브():
-    몸 = 베개몸((1.2, 0.55, 1.0))
+    """표지·카드의 실물 오브 — 지면 `.오브`(정사각 112px · 모서리 31px)의 실물판.
+
+    🔑 **정사각이다.** 첫 판은 (1.2, …, 1.0) 이라 가로로 눌려 있었는데, 지면의 오브는 정사각이라
+      «같은 물건»으로 안 읽혔다. 실물과 CSS 자리가 어긋나면 합성했을 때 그 칸만 튄다.
+    🔑 **카메라를 뒤로 뺀다(8.6 → 12.6).** 첫 굽기 실측(08-21): 털이 프레임 밖까지 뻗어 오브가
+      «물건»이 아니라 «털 텍스처 클로즈업»으로 찍혔다 — 형태(모서리·부피)가 통째로 안 보였다.
+      명품 렌더 4계 ③ 「어둠을 두려워하지 않는다」의 자리다: 여백이 있어야 물건이 놓인 것으로 읽힌다.
+    """
+    if 인자.get('받침', '1') != '0':
+        # 받침 — 물건은 «놓여야» 부피가 생긴다. 그림자가 질 데가 없으면 오브가 공중에 뜬다
+        # (첫 굽기 실측 08-21). 자수글자 판과 같은 문법이고, 부품으로 뽑을 땐 `받침=0`.
+        # 🔑 크기는 눈대중이 아니라 **계산**이다(4계 ④). 85mm·센서 36 → 화각 23.9°,
+        #   거리 11.7 에서 보이는 폭 = 2·11.7·tan(11.95°) = 4.95. 판을 그 «90%»(4.45 = 스케일 2.23)로
+        #   두면 네 모서리가 다 들어오고 바깥에 어둠이 남는다 — 3.4 는 화면을 넘어 어둠을 지웠다.
+        판 = 베개몸((2.23, 0.16, 1.72), 위치=(0, 0.95, 0), 크리스=0.22, 레벨=3)
+        판.data.materials.append(매끈재질('받침', 색['Deep Wool'], 거칠기=0.92))
+    # 오브는 판의 «절반쯤»이어야 판이 무대로 읽힌다 — 1.0 은 판을 꽉 채워 오브 아래가 밖으로 걸쳤다.
+    몸 = 베개몸((0.82, 0.5, 0.82), 위치=(0, 0, 0.06))
     짧은퍼(몸, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]))
-    return (0, -8.6, 0.45), 86
+    # 카메라 높이도 계산이다 — 광축이 원점을 지나려면 z = 거리·tan(90°−피치).
+    #   피치 84 에서 12.6·tan(6°) = 1.32. 첫 판의 0.5 는 오브를 화면 위로 밀어 올렸다.
+    return (0, -12.6, 1.32), 84
 
 def 알약():
     몸 = 베개몸((2.0, 0.5, 0.66), 크리스=0.58)
@@ -494,7 +529,27 @@ bpy.ops.object.camera_add(location=카메라위치, rotation=(math.radians(카�
 씬.camera.data.lens = 85
 
 씬.render.engine = 'CYCLES'
+# ── 장치 — 기본 CPU, `장치=GPU` 면 가속기를 «한 종류만» 켠다 ────────────────────
+# 🔑 CPU 를 함께 켜지 않는다: 실측(08-20 · Arc B390) 15.5초(GPU만) vs 58.5초(CPU만) vs
+#   **41.1초(둘 다)** — 섞으면 느린 쪽이 타일을 물고 늘어져 오히려 손해다.
 씬.cycles.device = 'CPU'
+if 인자.get('장치', '').upper() == 'GPU':
+    try:
+        prefs = bpy.context.preferences.addons['cycles'].preferences
+        for 종류 in ('OPTIX', 'CUDA', 'HIP', 'ONEAPI'):
+            try:
+                prefs.compute_device_type = 종류
+                prefs.get_devices()
+                if any(d.type == 종류 for d in prefs.devices):
+                    for d in prefs.devices:
+                        d.use = (d.type == 종류)     # 그 종류«만» — CPU 는 끈다(위 실측)
+                    씬.cycles.device = 'GPU'
+                    print('[요소굽기] GPU =', 종류)
+                    break
+            except Exception:
+                continue
+    except Exception as e:
+        print('[요소굽기] CPU 로 간다:', e)
 씬.cycles.samples = 견본
 씬.cycles.use_denoising = True
 씬.render.resolution_x = 너비
