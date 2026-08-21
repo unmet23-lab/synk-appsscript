@@ -1024,7 +1024,88 @@ def 앱판():
         시접선(y앞=-두께 - 0.027)
     return (0, -11.3, 0.0), 90
 
-형태들 = {'오브': 오브, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치, '털실진행바': 털실진행바,
+
+# ── 플레이팅 시험 2종 (유호 승인 08-21 「요리 컨셉 시험 — 맛있고 정성스럽게」) ──────────
+# 규율: 요리는 «재질»이 아니라 «차림새»다 — 재료는 전부 펠트·실(킷 색)이고, 접시는 오브와
+# 같은 받침 문법이다. 세계(양모)를 안 깨고 미각 연상만 들인다. 채택 판정 전의 시험 형태.
+
+def 음식접시(천색='Ink'):
+    """음식이 놓이는 접시 — 직물결 천을 «눕힌» 바닥판. 플레이팅의 접시 그 자체.
+    ⚠오브 받침은 84° 수평 카메라용 «세운 판»이라 내려보기(59°)에서 벽처럼 기운다(1차 렌더 실측)
+    — 음식 접시는 z 가 얇은 바닥판이어야 한다."""
+    판 = 베개몸((1.75, 1.35, 0.10), 위치=(0, 0.1, -0.12), 크리스=0.30, 레벨=3)
+    판.data.materials.append(직물결(매끈재질('접시천', 색[천색], 거칠기=0.96), 규모=200.0, 세기=0.045))
+    return 판
+
+def 귤():
+    """펠트 귤 — 플레이팅 1호. 몽골의 겨울 선물 과일이자 제주의 얼굴 — 보상·기념 자리 후보.
+    껍질 딤플은 짧은 보풀의 클럼프가 대신하고(귤답게), 꼭지·잎은 Meadow 램프가 진다."""
+    음식접시('Ink')
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.66, location=(0, 0, 0.44), segments=48, ring_count=24)
+    몸 = bpy.context.object
+    몸.scale = (1.0, 1.0, 0.86)                     # 귤은 눌린 구
+    bpy.ops.object.shade_smooth()
+    # ⚠1차 렌더: 길이 0.05·클럼프 0.55 는 «복숭아 폼폼»이 됐다 — 안개처럼 부풀고 딤플이 안 보였다.
+    #   귤 껍질은 «아주 짧고 촘촘한» 보풀이다: 길이를 반으로, 뿌리를 굵게, 클럼프를 세게.
+    짧은퍼(몸, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]),
+          길이=0.028, 개수=42000)
+    ps = 몸.particle_systems[-1].settings
+    ps.clump_factor = 0.72
+    ps.roughness_1 = 0.02
+    ps.root_radius = 0.022
+    # 꼭지 — 위 중앙의 짧은 초록 그루터기
+    bpy.ops.mesh.primitive_cylinder_add(radius=0.08, depth=0.1, location=(0, 0, 1.04))
+    꼭지 = bpy.context.object
+    bpy.ops.object.shade_smooth()
+    꼭지.data.materials.append(직물결(매끈재질('꼭지', 색['Meadow Deep'], 거칠기=0.95), 규모=150.0, 세기=0.06))
+    # 잎 하나 — 납작 눌린 구를 비스듬히. 둘이면 산만하다(주인공은 귤이다).
+    #   ⚠1차: 작은 매끈 구가 결광 키를 정면으로 받아 «발광 알약»으로 읽혔다 — 키우고 거칠기·결로 죽인다.
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.30, location=(0.30, -0.02, 1.04))
+    잎 = bpy.context.object
+    잎.scale = (1.0, 0.36, 0.07)
+    잎.rotation_euler = (math.radians(18), math.radians(-32), math.radians(34))
+    bpy.ops.object.shade_smooth()
+    # ⚠2차: 매끈 구는 «초록 캡슐»로 읽혔다 — 펠트 잎은 보풀이 있어야 이 세계 물건이다.
+    짧은퍼(잎, 'Meadow', 살재질('잎', 색['Meadow']), 털재질('잎', 색['Meadow']),
+          길이=0.018, 개수=5200)
+    잎.particle_systems[-1].settings.clump_factor = 0.6
+    return (0, -8.8, 5.6), 59                       # 식탁 내려보기 — 음식은 위에서 봐야 맛있다
+
+def 도넛():
+    """펠트 도넛 — 플레이팅 2호. 도우(Butter Soft 털) 위에 글레이즈 «아플리케»(자수 글자와
+    같은 눌린 펠트 문법 · 염료이름이 글레이즈 색)와 실 조각 스프링클(Soft 단 셋 순환).
+    스프링클이 «실»이라는 것 — 그게 이 세계 안의 미각이다."""
+    음식접시('Ink')
+    bpy.ops.mesh.primitive_torus_add(major_radius=0.60, minor_radius=0.30, location=(0, 0, 0.28),
+                                     major_segments=64, minor_segments=32)
+    도우 = bpy.context.object
+    bpy.ops.object.shade_smooth()
+    짧은퍼(도우, 'Butter Soft', 살재질('도우', 색['Butter Soft']), 털재질('도우', 색['Butter Soft']),
+          길이=0.045, 개수=28000)
+    ps = 도우.particle_systems[-1].settings
+    ps.clump_factor = 0.5
+    # 글레이즈 — 위에 얹힌 눌린 펠트 링(털 없음 = 다린 아플리케). 염료이름이 이 색이다.
+    # ⚠2차: 글레이즈가 도우 털에 통째로 묻혔다 — 도우 겉면(0.28+0.30+털 0.045 ≈ 0.63)을
+    #   계산해 그 «위»에 얹는다(눈보다 계산 · 4계 ④). 상단 = 0.50+0.27×0.72 ≈ 0.69 > 0.63 ✓
+    bpy.ops.mesh.primitive_torus_add(major_radius=0.60, minor_radius=0.27, location=(0, 0, 0.50),
+                                     major_segments=64, minor_segments=32)
+    글레이즈 = bpy.context.object
+    글레이즈.scale = (1.0, 1.0, 0.72)               # 납작 — 도우를 덮은 막
+    bpy.ops.object.shade_smooth()
+    글레이즈.data.materials.append(직물결(매끈재질('글레이즈', 색[염료이름], 거칠기=0.88), 규모=170.0, 세기=0.05))
+    # 스프링클 — 실 조각. Soft 단 셋 순환(신호 1점을 안 넘는 여린 단들).
+    실색들 = ['Stitch', 'Lapis Soft', 'Meadow Soft']
+    손 = random.Random(20260821)
+    for i in range(14):
+        a = 2 * math.pi * i / 14 + 손.uniform(-0.16, 0.16)
+        r = 0.60 + 손.uniform(-0.13, 0.13)
+        재 = 매끈재질('실' + str(i), 색[실색들[i % 3]], 거칠기=0.55)
+        땀하나(r * math.cos(a), r * math.sin(a), 0.695 + 손.uniform(-0.012, 0.012),
+              0.085 * (1 + 손.uniform(-0.12, 0.12)), 0.026, 재,
+              회전y=손.uniform(0, 180), 회전z=손.uniform(-24, 24))
+    return (0, -8.8, 5.6), 59
+
+형태들 = {'오브': 오브, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치, '털실진행바': 털실진행바, '귤': 귤, '도넛': 도넛,
         '단추토글': 단추토글, '밑그림': 밑그림, '페이지점': 페이지점, '폼폼': 폼폼, '시침핀': 시침핀,
         '와펜': 와펜, '블랭킷': 블랭킷, '실패스피너': 실패스피너, '직조라벨': 직조라벨,
         '패턴지판': 패턴지판, '다린천판': 다린천판, '유리판': 유리판,
