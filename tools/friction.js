@@ -16,7 +16,7 @@
 //   node tools/friction.js defer F006 "왜 지금 안 닫나 · 어디서 판정했나"   보류(F386)
 //   node tools/friction.js --open                   열림만(아직 아무도 판정 안 함)
 //   node tools/friction.js --보류                    보류만(판정하고 열어둔 것)
-//   node tools/friction.js --이세션                  내 커밋이 만진 파일을 지목한 살아있는 행(F496 · /close 5-c)
+//   node tools/friction.js --이세션                  내 커밋이 만진 파일을 지목한 살아있는 행(F496 · /close 5)
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -942,7 +942,7 @@ function main() {
     }
     defer(args[1], 셸이바꾼말(본문또는파일(조각, 파일, '보류 사유'), '보류 사유'));
   } else if (args.includes('--이세션')) {
-    /* `/close` 5-c 가 부르는 자리 — 종료코드로 갈린다: 0=겹치는 행 없음 · 1=판정할 행 있음 · 2=못 쟀다.
+    /* `/close` 5 가 부르는 자리 — 종료코드로 갈린다: 0=겹치는 행 없음 · 1=판정할 행 있음 · 2=못 쟀다.
      * 셋을 갈라야 「안 걸렸다」와 「안 쟀다」가 같은 모양이 되지 않는다(F207). */
     /* 🔴 **연락 축**이다 — 보드 축이 아니다 (2026-08-18 · F634 이관의 오분류를 `/close` 가 잡았다).
      *   `이세션분` 은 `내커밋파일` 을 통해 `git log --grep="Session-Id: <sid>"` 로 내 커밋을 찾는다.
