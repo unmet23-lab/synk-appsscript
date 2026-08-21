@@ -98,7 +98,7 @@ function 색풀기(v) {
 function 라이트카드고르기(다크바탕, 다크카드) {
   const 목표 = Math.abs(Lstar(다크카드) - Lstar(다크바탕));
   const 바탕 = 킷[토큰.색.시맨틱.라이트.바탕];
-  const 슬레이트2바닥 = ['Paper', 'Cream', 'Cream 2', 'Coral Wash']; // 토큰 Slate 2 직책의 허용 바닥
+  const 슬레이트2바닥 = ['Paper', 'Oat', 'Coral Wash']; // 양모 킷의 여린 면들 — 구 Slate 2 허용 바닥(Cream·Cream 2)은 2027 킷 이관(v9.257)으로 소멸, 후계 = Oat(칩 바닥·가라앉은 면). 죽은 이름이 남아 계측 전체가 크래시하던 것(08-21)
   let 최선 = null;
   for (const 이름 of 슬레이트2바닥) {
     const hex = 킷[이름];
@@ -328,6 +328,7 @@ function main(argv) {
   if (argv.includes('--json')) { console.log(JSON.stringify(r, null, 1)); return 0; }
   if (argv.includes('--쓰기')) {
     const 페이지 = path.join(ROOT, 'docs', '앱_모드판정_라이트vs다크.html');
+    if (!fs.existsSync(페이지)) { console.error('판정 페이지는 압축 08-20으로 삭제됐다(원문=git 이력) — --쓰기 는 은퇴, 계측은 인자 없이 본다.'); return 2; }
     const 원문 = fs.readFileSync(페이지, 'utf8');
     const i = 원문.indexOf(시작표식), j = 원문.indexOf(끝표식);
     if (i < 0 || j < 0) throw new Error(`계측 표식을 못 찾았다 — ${페이지} 에 시작/끝 주석이 있어야 한다`);

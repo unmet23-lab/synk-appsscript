@@ -546,7 +546,7 @@ function main() {
   } else if (g.mapGaps.missing.length) {
     console.log(`\n  ⚠ 지도 누락 — ${g.mapGaps.missing.length}건(최상위 docs/*.md 인데 ${DOC_MAP} 색인에 없다)`);
     for (const m of g.mapGaps.missing) console.log(`    ${m}`);
-    console.log('    → 지도에 한 줄 넣거나, 끝난 문서면 docs/_archive/ 로 옮긴다.');
+    console.log('    → 지도에 한 줄 넣거나, 끝난 문서면 그 자리에서 지운다(보존은 git 이력 — CLAUDE.md v10 「낡은 것은 남기지 않는다」 · _archive 에 새로 넣지 않는다).');
   }
 
   if (g.canonUnknown.length) {
