@@ -2169,7 +2169,7 @@ function parentWeeklyDigestCore_(holdRaw) {
     const body = k.n + ' 학생의 한 주 소식입니다.\n\n' + lines.join('\n') +
       '\n\n자세한 내용은 SYNK 앱에서 확인하실 수 있어요 😊\n\n' +
       'Долоо хоногийн тойм — ирц ' + att + ' · оноо +' + pts + 'P' +
-      ((mvpN + synN) > 0 ? ' · титэм ' + (mvpN + synN) + 'ш 👑' : '') + ' 🎉';
+      ((mvpN + synN) > 0 ? ' · 🔥 Сорилт·Өсөлт ' + (mvpN + synN) + ' удаа' : '') + ' 🎉';
     // [v9.125] 관문 단일화 — v9.120의 이중 quotaOk(루프 첫 줄+여기)는 뒤쪽이 도달 불가 코드였고 학생당 조회만 2배였다.
     //   발송 직전 1곳만 남긴다. 실패 시 sent·sentIds를 안 건드려 마킹은 성공분만(재시도가 그 학생을 다시 잡는다).
     if (!quotaOk(1)) { unsent++; return; }

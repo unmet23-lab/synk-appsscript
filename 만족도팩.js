@@ -285,7 +285,7 @@ function MJ_messengerDigest_() {
     if (d < monday || d >= weekEnd) return;
     const sid = String(r[1]).trim(), pts = Number(r[2]) || 0, rs = String(r[3] || '');
     if (pts > 0) ptsW[sid] = (ptsW[sid] || 0) + pts;
-    if (pts > 0 && (rs.indexOf('MVP') > -1 || rs.indexOf('시냅스') > -1)) crownW[sid] = (crownW[sid] || 0) + 1;
+    if (pts > 0 && (rs.indexOf('MVP') > -1 || rs.indexOf('도전') > -1 || rs.indexOf('시냅스') > -1 || rs.indexOf('성장') > -1)) crownW[sid] = (crownW[sid] || 0) + 1; // [08-21] 새 사유(오늘의 도전·오늘의 성장)를 못 세어 다이제스트가 0으로 나가던 것 — 엔진_운영배치 2124행과 같은 규약
   });
 
   let sent = 0, skipped = 0, failed = 0;
@@ -295,8 +295,8 @@ function MJ_messengerDigest_() {
     const att = attW[sid] || 0, pts = ptsW[sid] || 0, cr = crownW[sid] || 0;
     const nm = names[sid] || sid;
     const txt = '📮 ' + nm + '\n' +
-      'Долоо хоногийн тойм — ирц ' + att + ' · оноо +' + pts + 'P' + (cr > 0 ? ' · титэм ' + cr + 'ш 👑' : '') + ' 🎉\n' +
-      '(이번 주 등원 ' + att + '회 · 포인트 +' + pts + 'P' + (cr > 0 ? ' · 왕관 ' + cr + '회' : '') + ')';
+      'Долоо хоногийн тойм — ирц ' + att + ' · оноо +' + pts + 'P' + (cr > 0 ? ' · 🔥 Сорилт·Өсөлт ' + cr + ' удаа' : '') + ' 🎉\n' +
+      '(이번 주 등원 ' + att + '회 · 포인트 +' + pts + 'P' + (cr > 0 ? ' · 도전·성장 ' + cr + '회' : '') + ')';
     const r = MJ_send_(lk.psid, txt);
     if (r.ok) { sent++; try { links.sh.getRange(lk.row, 7).setValue(now); } catch (e) {} }
     else if (r.skip) skipped++;
