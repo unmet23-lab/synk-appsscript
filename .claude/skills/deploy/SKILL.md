@@ -14,7 +14,7 @@ description: SYNK 배포 파이프라인 — 구문검사(node --check) → 안�
 
 ## 절차 (순서 엄수 — 하나라도 실패하면 다음 단계 진행 금지)
 
-1. **오염 확인**: `git status --short` — 내 작업이 아닌 변경(다른 세션 흔적)이 섞여 있으면 멈추고 유호님께 보고. `list_sessions` 로 지금 도는 세션(`isRunning`)이 같은 파일을 잡고 있으면 조율 먼저.
+1. **오염 확인**: `git status` **전문**(`--short` 금지 — rebase·merge 진행 중을 감춘다 · F035, /close 1단계와 같은 규칙) — 내 작업이 아닌 변경(다른 세션 흔적)이 섞여 있으면 멈추고 유호님께 보고. `list_sessions` 로 지금 도는 세션(`isRunning`)이 같은 파일을 잡고 있으면 조율 먼저.
 2. **구문 검사**: 저장소 루트의 모든 `.js` 파일에 `node --check` 실행. **하나라도 실패 → 배포 중단**, 원인 수정 먼저.
    ```bash
    for f in *.js; do "/c/Program Files/nodejs/node.exe" --check "$f" || exit 1; done
