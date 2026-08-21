@@ -1,0 +1,173 @@
+#!/usr/bin/env node
+/**
+ * 세트굽기 — 요소를 «세트 단위»로 굽는다 (Blender Cycles · `tools/요소굽기.py`).
+ *
+ * 왜 있나 (유호 08-22 「전부 해줘 · 디테일 전부 챙기고싶어」):
+ *   요소가 하나씩 늘 때는 손 명령으로 됐는데, 숫자 26 · 자모 31 · 기호 8 …로 늘자 **굽기 시간이
+ *   병목**이 됐다(장당 1~10분). 손으로 87번 부르면 반드시 하나가 빠지고, 빠진 줄 모른다.
+ *   ⇒ 무엇을 굽는지가 «표»로 서고, 결과는 파일로 판정하고, 못 구운 것은 이름으로 남는다.
+ *
+ * 🔑 **순차로만 돈다.** 블렌더 둘을 함께 띄우면 내장 GPU 하나를 나눠 쓰다 둘 다 10분을 넘긴다
+ *   (실측 08-21). 병렬은 빠름이 아니라 «둘 다 느림»이다.
+ * 🔑 블렌더는 스크립트가 죽어도 exit 0 을 낼 수 있다 — 성패는 **출력 파일**로 판정한다.
+ *
+ * 사용:
+ *   node tools/세트굽기.js --세트 기호            (한 세트)
+ *   node tools/세트굽기.js --세트 기호,음식,살림   (여러 세트)
+ *   node tools/세트굽기.js --세트 전부 --샘플 128 --너비 1000
+ *   node tools/세트굽기.js --세트 전부 --샘플 24 --너비 420 --장치 CPU --밖 /tmp/시험
+ *        └ 싼 시험판: 도안·자리·가림이 말이 되는지만 본다(GPU 를 옆 세션에 양보한다)
+ *   [--다시]  이미 있는 파일도 다시 굽는다(기본은 건너뛴다 — 중간에 끊겨도 이어 굽는다)
+ */
+'use strict';
+const { spawnSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+
+const 루트 = path.resolve(__dirname, '..');
+const 인자 = (() => {
+  const a = {}; const v = process.argv.slice(2);
+  for (let i = 0; i < v.length; i += 1) {
+    if (!v[i].startsWith('--')) continue;
+    const k = v[i].slice(2);
+    a[k] = (v[i + 1] && !v[i + 1].startsWith('--')) ? v[i += 1] : '1';
+  }
+  return a;
+})();
+
+/** 블렌더 찾기 — 룸굽기·오브굽기와 같은 순서(환경변수 → 표준 설치 경로). */
+function 블렌더() {
+  if (process.env.BLENDER_EXE && fs.existsSync(process.env.BLENDER_EXE)) return process.env.BLENDER_EXE;
+  for (const b of ['C:\\Program Files\\Blender Foundation', 'C:\\Program Files (x86)\\Blender Foundation']) {
+    if (!fs.existsSync(b)) continue;
+    for (const d of fs.readdirSync(b).sort().reverse()) {
+      const p = path.join(b, d, 'blender.exe');
+      if (fs.existsSync(p)) return p;
+    }
+  }
+  return null;
+}
+
+/* 파일 이름으로 못 쓰는 글자 — 윈도가 막는 것과 뜻이 흐려지는 것.
+ * 「/」는 경로가 되고 「·」는 눈으로 안 갈린다 — 이름을 뜻으로 적는다. */
+const 안전이름 = { '/': '슬래시', '·': '가운뎃점', '%': '퍼센트', '+': '더하기', '?': '물음표', '!': '느낌표' };
+const 안전 = (t) => 안전이름[t] || t;
+
+const 낱자 = (s) => Array.from(s);
+
+/* 한 글자짜리 교보재 타일은 채택판 「가」(1.28)보다 크게 — 판을 꽉 채워야 카드가 된다.
+ * 두 글자(01·12)는 가로로 늘어나니 조금만 키운다. */
+const 글자칸 = (t) => ({ 형태: '자수글자', 본문: t, 글자크기: Array.from(t).length === 1 ? '1.86' : '1.44' });
+
+/* ── 세트 표 — «무엇을 굽는가»의 정본 ─────────────────────────────────────────
+ * 조명배: 조명 변주는 글자 판(폭 1.35)을 기준으로 조율됐다. 판이 큰 형태는 배를 올려야
+ *   결이 안 씻긴다(역제곱 보상은 요소굽기.py 가 진다 — 오브 채택값 1.55 와 같은 갈래).
+ * 비율: 세로/가로. 기호·게이지는 정사각(1), 나머지는 기본 0.82. */
+const 세트들 = {
+  // ① 숫자 — 0~9 낱장(조합용) + 01~12 통짜(단락 머리·월 표기) + 기호 넷(3/10 · 85% 같은 진행 표기).
+  //    낱장만으로도 어떤 수든 나열로 되지만, 자주 쓰는 자리는 통짜라야 자간에 손맛이 산다.
+  숫자: () => [
+    ...낱자('0123456789').map(글자칸),
+    ...['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'].map(글자칸),
+    ...['/', '·', '%', '+'].map(글자칸),
+  ],
+  // ② 넘버 쿠키 — 번호의 «요리 플레이팅»판(유호 08-21 아이디어). 절 머리·표지의 한 점용.
+  넘버쿠키: () => ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
+    .map((t) => ({ 형태: '넘버쿠키', 본문: t })),
+  // ③ 한글 낱자 — 우리는 한국어 학원이다. 자모가 실물이면 그 자체가 교보재다.
+  자모: () => [
+    ...낱자('ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎㄲㄸㅃㅆㅉ'),
+    ...낱자('ㅏㅑㅓㅕㅗㅛㅜㅠㅡㅣㅐㅔ'),
+  ].map(글자칸),
+  // ④ 기호 — 정답 체크·보상 별·좋아요 하트·하단 탭 넷(집·책·차트·사람)·힌트 말풍선.
+  //    학생이 «가장 자주 보는 픽셀»이라 우선순위가 높다.
+  기호: () => ['체크', '별', '하트', '집', '책', '차트', '사람', '말풍선']
+    .map((s) => ({ 형태: '기호', 기호: s, 이름: s, 비율: '1' })),
+  // ⑤ 요일 — 출석 달력·시간표. 반복 노출이 많은 자리다.
+  요일: () => 낱자('월화수목금토일').map(글자칸),
+  // ⑥ 살림 — 출석 도장(찍힘 자체가 보상) · 원형 게이지(레벨 링). 게이지는 네 칸으로 굽는다.
+  살림: () => [
+    { 형태: '도장', 본문: '참', 이름: '도장_참', 비율: '1' },
+    { 형태: '도장', 본문: '잘', 이름: '도장_잘', 비율: '1' },
+    ...['0.25', '0.50', '0.75', '1.00'].map((p) => ({
+      형태: '게이지고리', 진행: p, 이름: `게이지_${p.replace('.', '')}`, 비율: '1',
+    })),
+  ],
+  // ⑦ 음식 — 플레이팅 갈래. 만두(몽·한이 겹치는 음식) · 김밥(단면) · 붕어빵(겨울 낱말).
+  음식: () => [{ 형태: '만두' }, { 형태: '김밥' }, { 형태: '붕어빵' }],
+  // ⑧ 음식되굽기 — 그릇(림) 도입 뒤의 1호·2호. 옛 v1 은 «평평한 원반» 판이라 세계가 갈린다.
+  음식되굽기: () => [{ 형태: '귤' }, { 형태: '도넛' }],
+};
+
+function 항목들(고른) {
+  const 이름들 = 고른 === '전부' ? Object.keys(세트들) : 고른.split(',').map((s) => s.trim());
+  const 낸다 = [];
+  for (const s of 이름들) {
+    if (!세트들[s]) {
+      console.error(`🔴 모르는 세트: ${s} — 아는 것은 ${Object.keys(세트들).join('·')}·전부`);
+      process.exit(1);
+    }
+    for (const it of 세트들[s]()) {
+      낸다.push({ 세트: s, ...it, 이름: it.이름 || 안전(it.본문 || it.형태) });
+    }
+  }
+  return 낸다;
+}
+
+function main() {
+  const BL = 블렌더();
+  if (!BL) { console.error('🔴 blender.exe 를 못 찾았다 — BLENDER_EXE 로 경로를 준다.'); process.exit(1); }
+
+  const 고른 = 인자['세트'] || '전부';
+  const 견본 = 인자['샘플'] || '128';
+  const 너비 = 인자['너비'] || '1000';
+  const 장치 = (인자['장치'] || 'GPU').toUpperCase();
+  const 밖뿌리 = path.resolve(루트, 인자['밖'] || path.join('docs', '캐릭터', '요소공방_0822'));
+  const 다시 = !!인자['다시'];
+  const 목록 = 항목들(고른);
+
+  console.log(`■ 세트 굽기 — ${목록.length}장 · 샘플 ${견본} · ${너비}px · ${장치} · → ${밖뿌리}`);
+  console.log(`  세트: ${[...new Set(목록.map((i) => i.세트))].join(' · ')}${다시 ? ' · 다시굽기' : ''}`);
+  const 시작 = Date.now();
+  const 실패 = [];
+  let 건너 = 0;
+
+  목록.forEach((it, i) => {
+    const 방 = path.join(밖뿌리, it.세트);
+    fs.mkdirSync(방, { recursive: true });
+    const 파일 = path.join(방, `${it.이름}.png`);
+    const 머리 = `  [${String(i + 1).padStart(3)}/${목록.length}] ${it.세트}/${it.이름}`.padEnd(38);
+    if (!다시 && fs.existsSync(파일) && fs.statSync(파일).size > 2048) {
+      건너 += 1;
+      console.log(`${머리} ⏭  있음`);
+      return;
+    }
+    const 옵션 = ['형태', '본문', '기호', '진행', '비율', '조명', '조명배', '등힘', '색', '글자크기']
+      .filter((k) => it[k] !== undefined).map((k) => `${k}=${it[k]}`);
+    const 하나 = Date.now();
+    const r = spawnSync(BL, [
+      '-b', '-P', path.join(루트, 'tools', '요소굽기.py'), '--',
+      ...옵션, `샘플=${견본}`, `너비=${너비}`, `장치=${장치}`, `출력=${파일}`,
+    ], { cwd: 루트, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+    const 초 = Math.round((Date.now() - 하나) / 1000);
+    // ⚠블렌더는 스크립트가 죽어도 exit 0 을 낼 수 있다 — 파일로 판정한다(룸굽기 주석의 실사고).
+    const 됐나 = fs.existsSync(파일) && fs.statSync(파일).size > 2048;
+    if (됐나) {
+      console.log(`${머리} ✅ ${String(초).padStart(3)}초 · ${Math.round(fs.statSync(파일).size / 1024)}KB`);
+    } else {
+      실패.push(it);
+      const 끝말 = String(r.stderr || r.stdout || '').trim().split('\n').slice(-2).join(' / ');
+      console.log(`${머리} 🔴 ${초}초\n       ${끝말.slice(0, 300)}`);
+    }
+  });
+
+  const 초 = Math.round((Date.now() - 시작) / 1000);
+  const 구운 = 목록.length - 건너 - 실패.length;
+  console.log(`■ 끝 — 구움 ${구운} · 건너뜀 ${건너} · 실패 ${실패.length} / 전체 ${목록.length}` +
+    ` · ${Math.floor(초 / 3600)}시간 ${Math.floor(초 / 60) % 60}분 ${초 % 60}초`);
+  if (실패.length) console.log(`  실패한 것: ${실패.map((f) => `${f.세트}/${f.이름}`).join(' · ')}`);
+  process.exit(실패.length ? 1 : 0);
+}
+
+if (require.main === module) main();
+module.exports = { 세트들, 항목들, 블렌더 };
