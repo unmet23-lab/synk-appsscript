@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNK 앱 스플래시 — 잉크 카드(양모 밤) 합성판</title>
+<!--
+  로고 한 벌 확정(유호 2026-08-21 · docs/_ops/결정.md) 중 «앱 스플래시(다크) = 잉크 카드»의 합성 정의.
+  D2 시안(양모 밤 명품판)의 문법 그대로: Ink Deep 바탕 위 달빛 웅덩이 → Ink 카드가 실그림자로 뜨고,
+  syn 은 Paper 펠트(벡터 표현층), 꺾쇠는 **블렌더 실굽기 렌더판**을 벡터 자리에 그대로 얹는다.
+  ⚠렌더판(../../Loom_자산/구움/로고꺾쇠_몸.png)은 git 밖 — 없으면 재현:
+    node tools/룸굽기.js --굽기 로고꺾쇠   (씨앗 고정 · 같은 판이 다시 나온다)
+  겹침 계산: 직교 카메라 ortho_scale 2.5 ↔ 꺾쇠 월드 폭 1.958(= 벡터 47단위/24) →
+  렌더 정사각 = 벡터 60×60 단위, 중심 = 꺾쇠 중심 (135.5, 66.35). 눈대중 0.
+-->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;700;800&display=swap">
+<style>
+  :root {
+    --ink-deep:#080605; --ink:#2B2320; --paper:#FBF7F0; --stitch:#F0E3C8;
+    --stone:#C7BFB2; --ash-wool:#8D857A; --coral-soft:#FBB7A3;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; min-height:100vh; background:#141110; color:var(--paper);
+    font-family:'Inter Tight','SUIT Variable',system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    display:flex; flex-direction:column; align-items:center; gap:22px; padding:34px 16px 26px;
+  }
+  .phone {
+    width:min(390px, 92vw); aspect-ratio:390/844; border-radius:46px; overflow:hidden;
+    background:radial-gradient(ellipse at 50% 42%, rgba(43,35,32,.5) 0%, rgba(43,35,32,0) 64%), var(--ink-deep);
+    box-shadow:0 22px 60px rgba(0,0,0,.55), inset 0 0 0 1.5px rgba(251,247,240,.07);
+    position:relative;
+  }
+  .card-slot {
+    position:absolute; left:0; right:0; top:38%; transform:translateY(-50%);
+    display:flex; justify-content:center;
+  }
+  .card-slot svg { width:84.6%; height:auto; display:block; }
+  .brand {
+    position:absolute; left:0; right:0; bottom:58px; text-align:center;
+    font-size:11px; font-weight:700; letter-spacing:.26em; color:var(--stone); opacity:.6;
+  }
+  footer {
+    width:min(660px,92vw); display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+    padding:13px 4px 0; border-top:1px solid #2B2320;
+  }
+  footer .tag { font-size:11px; font-weight:800; letter-spacing:.08em; color:var(--coral-soft); }
+  footer .name { font-size:13px; font-weight:700; color:var(--paper); }
+  footer .note { font-size:11px; font-weight:500; color:var(--stone); }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <path id="syn" d="M35.8 57.9 25.9 58.5Q25.5 56.6 23.8 55.3Q22.1 53.9 19.3 53.9Q16.7 53.9 15.0 55.0Q13.3 56.0 13.3 57.8Q13.3 59.2 14.4 60.2Q15.5 61.2 18.2 61.8L25.4 63.2Q31.1 64.3 33.9 66.9Q36.7 69.5 36.7 73.8Q36.7 77.7 34.5 80.6Q32.2 83.5 28.3 85.1Q24.4 86.8 19.3 86.8Q11.5 86.8 6.8 83.5Q2.2 80.2 1.4 74.6L12.1 74.1Q12.6 76.5 14.5 77.7Q16.3 78.9 19.3 78.9Q22.1 78.9 23.9 77.8Q25.7 76.7 25.7 75.0Q25.7 72.0 20.6 71.0L13.8 69.6Q8.1 68.5 5.3 65.6Q2.5 62.8 2.5 58.4Q2.5 54.6 4.5 51.9Q6.6 49.2 10.4 47.7Q14.1 46.2 19.1 46.2Q26.6 46.2 30.8 49.3Q35.1 52.5 35.8 57.9Z M44.0 100.7Q41.9 100.7 40.1 100.4Q38.3 100.1 37.1 99.6L39.6 91.5L39.9 91.6Q42.7 92.4 44.6 91.9Q46.6 91.5 47.6 88.8L48.2 87.1L34.1 46.7H45.6L53.7 75.6H54.1L62.3 46.7H73.8L58.6 90.3Q57.5 93.4 55.6 95.8Q53.7 98.1 50.9 99.4Q48.0 100.7 44.0 100.7Z M84.0 63.3V86.0H73.1V46.7H83.8V53.7H84.2Q85.5 50.2 88.4 48.2Q91.4 46.2 95.7 46.2Q99.8 46.2 102.9 48.0Q105.9 49.8 107.6 53.1Q109.3 56.4 109.3 61.0V86.0H98.4V62.9Q98.4 59.4 96.6 57.3Q94.7 55.2 91.4 55.2Q89.2 55.2 87.6 56.2Q85.9 57.2 84.9 59.0Q84.0 60.8 84.0 63.3Z"/>
+  <path id="chev" d="M146 46.7 L112 66.35 L146 86 L159 86 L125 66.35 L159 46.7 Z"/>
+
+  <filter id="feltPaper2" x="-12%" y="-18%" width="124%" height="136%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.16" numOctaves="3" seed="7" result="w"/>
+    <feDisplacementMap in="SourceGraphic" in2="w" scale="2.2" result="shape"/>
+    <feTurbulence type="fractalNoise" baseFrequency="1.15 0.5" numOctaves="2" seed="13" result="n1"/>
+    <feColorMatrix in="n1" type="matrix" values="0 0 0 0 1  0 0 0 0 0.99  0 0 0 0 0.97  0 0 0 0.8 -0.46" result="lf"/>
+    <feComposite in="lf" in2="shape" operator="in" result="lfc"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.8 0.45" numOctaves="3" seed="29" result="n2"/>
+    <feColorMatrix in="n2" type="matrix" values="0 0 0 0 0.780  0 0 0 0 0.749  0 0 0 0 0.698  0 0 0 0.8 -0.37" result="df"/>
+    <feComposite in="df" in2="shape" operator="in" result="dfc"/>
+    <feMerge><feMergeNode in="shape"/><feMergeNode in="dfc"/><feMergeNode in="lfc"/></feMerge>
+  </filter>
+  <filter id="cutStone" x="-10%" y="-15%" width="120%" height="130%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.16" numOctaves="3" seed="7" result="w"/>
+    <feDisplacementMap in="SourceGraphic" in2="w" scale="2.2"/>
+  </filter>
+  <filter id="feltSoft" x="-10%" y="-15%" width="120%" height="130%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.2" numOctaves="2" seed="5" result="w"/>
+    <feDisplacementMap in="SourceGraphic" in2="w" scale="1.2"/>
+  </filter>
+  <filter id="cardShadow" x="-20%" y="-25%" width="140%" height="150%"><feGaussianBlur stdDeviation="9"/></filter>
+  <filter id="contact" x="-20%" y="-25%" width="140%" height="150%"><feGaussianBlur stdDeviation="1.2"/></filter>
+  <linearGradient id="paperCore" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#C7BFB2" stop-opacity="0.32"/>
+    <stop offset="0.5" stop-color="#C7BFB2" stop-opacity="0"/>
+  </linearGradient>
+</defs></svg>
+
+<main class="phone" role="img" aria-label="SYNK 앱 스플래시 — 양모 밤 위 잉크 카드">
+  <div class="card-slot">
+    <svg viewBox="-300 -178 600 356">
+      <!-- 카드 — 실그림자(부유) + 접촉 그림자, Ink 면, 헤어라인, 스티치 안둘레 -->
+      <rect x="-280" y="-150" width="560" height="300" rx="20" transform="translate(0,8)" fill="#080605" opacity="0.9" filter="url(#cardShadow)"/>
+      <rect x="-280" y="-150" width="560" height="300" rx="20" transform="translate(0,2.5)" fill="#080605" opacity="0.95" filter="url(#contact)"/>
+      <rect x="-280" y="-150" width="560" height="300" rx="20" fill="#2B2320"/>
+      <rect x="-279.2" y="-149.2" width="558.4" height="298.4" rx="19.2" fill="none" stroke="#FBF7F0" stroke-width="1.4" opacity="0.045"/>
+      <rect x="-266" y="-136" width="532" height="272" rx="13" fill="none" stroke="#F0E3C8" stroke-width="1.6" stroke-dasharray="6 5" stroke-linecap="round" opacity="0.45"/>
+      <g transform="translate(-120.3,-114) scale(1.5)">
+        <!-- syn — Paper 펠트 글자(벡터 표현층): 그림자 → 두께(Stone 절단면) → 펠트 → 실땀 -->
+        <use href="#syn" fill="#080605" opacity="0.5" transform="translate(0.8,1.6)" filter="url(#contact)"/>
+        <g filter="url(#cutStone)"><use href="#syn" fill="#C7BFB2" transform="translate(0,1.6)"/></g>
+        <g filter="url(#feltPaper2)">
+          <use href="#syn" fill="#FBF7F0"/>
+          <use href="#syn" fill="url(#paperCore)"/>
+        </g>
+        <use href="#syn" fill="none" stroke="#080605" stroke-width="1.1" stroke-dasharray="3.2 2.6" stroke-linecap="round" opacity="0.4" transform="translate(0.5,0.8)" filter="url(#feltSoft)"/>
+        <use href="#syn" fill="none" stroke="#F0E3C8" stroke-width="1.0" stroke-dasharray="3.2 2.6" stroke-linecap="round" opacity="0.55" filter="url(#feltSoft)"/>
+        <!-- 꺾쇠 — 벡터 외곽으로 그림자를 깔고(렌더와 같은 외곽), 그 위에 실굽기 렌더판 -->
+        <use href="#chev" fill="#080605" opacity="0.55" transform="translate(0.9,1.8)" filter="url(#contact)"/>
+        <image href="../../Loom_자산/구움/로고꺾쇠_몸.png" x="105.5" y="36.35" width="60" height="60"/>
+      </g>
+    </svg>
+  </div>
+  <div class="brand">SYNK&nbsp;LAB</div>
+</main>
+
+<footer>
+  <span class="tag">앱 스플래시(다크) · 확정 08-21</span>
+  <span class="name">잉크 카드 — 양모 밤, 벡터+렌더판 합성</span>
+  <span class="note">syn = Paper 펠트(벡터 표현층) · &lt; = 블렌더 실굽기 렌더판(직교 굽기라 벡터 자리에 그대로 앉는다) · 카드 = Ink, 바탕 = Ink Deep + 달빛 웅덩이</span>
+</footer>
+
+</body>
+</html>
