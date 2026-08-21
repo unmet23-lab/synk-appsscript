@@ -157,7 +157,7 @@ Ink 에서 결 36.8%·Ink Deep 6.3% 로 죽었는데, 3D 털은 그 색으로 <b
 <li>퇴역 대기 12색·KC 4색은 <b>아예 굽지 않았다</b> — 못 고르는 것은 선택지에 안 올린다(토큰 직책이 판정).</li>
 </ul>
 
-<footer class="메타">렌더 = <code>docs/캐릭터/오브공방_0821/</code>(원본 900px PNG) ·
+<footer class="메타">렌더 = <code>docs/캐릭터/오브공방_0821/</code>(원본 1800px PNG) ·
 굽기 = <code>node tools/오브굽기.js</code>(Blender 5.2 · Cycles · GPU) ·
 지면 = <code>tools/펠트문서.js</code>(Loom L4) · 색 = <code>docs/디자인_토큰.json</code>.</footer>
 
