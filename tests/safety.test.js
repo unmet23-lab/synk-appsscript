@@ -1500,8 +1500,10 @@ test('[v9.75] 만족도팩 켜기 큐 — 설문 폼 미생성·수강 등록 �
 test('[v9.71] 메신저 연결 스위프가 상담로그 실제 열 순서(시각·세션·발신·내용)와 맞는다', () => {
   // 상담AI.js가 쓰는 헤더와 만족도팩이 읽는 인덱스가 어긋나면 연결 요청이 영원히 접수되지 않는다(양쪽 파일 교차 계약).
   const ai = fs.readFileSync(path.join(ROOT, '상담AI.js'), 'utf8');
-  const head = ai.match(/const 상담AI_로그헤더 = \[([^\]]+)\]/);
-  assert.ok(head, '상담AI_로그헤더 선언을 찾지 못함');
+  // [v9.259 · Ⅰ-④] 헤더 정본이 골격 파일로 이관됐다 — 선언을 그쪽에서 읽는다(사본 검사 금지).
+  const 골격Src = fs.readFileSync(path.join(ROOT, '엔진_셋업확장.js'), 'utf8');
+  const head = 골격Src.match(/const 상담로그_HEADERS = \[([^\]]+)\]/);
+  assert.ok(head, '상담로그_HEADERS 선언(엔진_셋업확장.js)을 찾지 못함');
   const cols = head[1].split(',').map(s => s.trim().replace(/'/g, ''));
   assert.deepEqual(cols.slice(0, 4), ['시각', '세션', '발신', '내용'], '상담로그 앞 4열이 바뀌면 MJ_msgLinkSweep_의 psid/발신/내용 인덱스가 어긋난다');
   const mj = fs.readFileSync(path.join(ROOT, '만족도팩.js'), 'utf8');
