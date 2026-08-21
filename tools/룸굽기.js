@@ -164,6 +164,8 @@ function 굽기(칸, 옵션 = {}) {
   if (변주) args.push('--변주', 변주);
   const 당김 = 옵션.당김 || 칸.당김;
   if (당김) args.push('--당김', String(당김));
+  const 눈높이 = 옵션.눈높이 || 칸.눈높이;
+  if (눈높이) args.push('--눈높이', String(눈높이));
   // HDRI 는 «켬/끔»이 대조 눈금이라 옵션으로 뺀다(기본 = 켬). 이름만 줘도 받는다.
   let hdri = 옵션.hdri === false ? null : (옵션.hdri || 기본HDRI());
   if (hdri && !path.isAbsolute(hdri)) hdri = path.join(HDRI폴더, hdri + '_1k.hdr');
@@ -261,6 +263,7 @@ async function main() {
     그림자층: !a.includes('--한장'),   // 기본이 두 장이다 — 지면 배경마다 다시 굽지 않기 위해
     변주: 집('--변주') || undefined,   // 실험 부품의 색 갈래(행 기본값을 덮는다)
     당김: 집('--당김') || undefined,   // 플레이팅 카메라 당김(1.0 전체 · 0.6 클로즈업)
+    눈높이: 집('--눈높이') || undefined, // 카메라 고도(1.0 = 32.4° · 0.82 = 눕힌 27.5°)
     이름: 집('--이름') || undefined,   // 변주 판을 딴 이름으로 굽는다(기본 = 행 이름)
   };
   if (!fs.existsSync(기본HDRI())) {
