@@ -68,7 +68,9 @@ function main() {
     process.stdout.write(`  [${String(i + 1).padStart(2)}/${색들.length}] ${c.padEnd(12)} `);
     const r = spawnSync(BL, [
       '-b', '-P', path.join(루트, 'tools', '요소굽기.py'), '--',
-      '형태=오브', `색=${c}`, `샘플=${견본}`, `너비=${너비}`, '장치=GPU', `출력=${파일}`,
+      // 조명 = 결광2(자수 글자 채택 조명) · 조명배 1.55 = 오브 씬/글자 씬 크기비(역제곱 보상 포함).
+      '형태=오브', `색=${c}`, `샘플=${견본}`, `너비=${너비}`, '장치=GPU',
+      '조명=결광2', '조명배=1.55', `출력=${파일}`,
     ], { cwd: 루트, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
     // ⚠blender 는 스크립트가 죽어도 exit 0 을 낼 수 있다(룸굽기 주석의 실사고) — 파일로 판정한다.
     const 됐나 = r.status === 0 && fs.existsSync(파일) && fs.statSync(파일).size > 2048;
