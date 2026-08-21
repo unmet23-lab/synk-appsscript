@@ -1362,7 +1362,7 @@ function leagueSettle_() {
       memberCls[winner].forEach(sid => winRows.push([sid, PT.리그, '리그승리', 'SYSTEM']));
       noticeRows.push([
         '🏆 주간 리그 결과: ' + a + ' × ' + b,
-        '이번 주 리듬 챔피언은 ' + winner + ' (1인 평균 ' + hi + ' : ' + lo + ')! 승리 반 전원 +' + PT.리그 + 'P. 양 반 모두의 데미지는 각자의 몬스터에게 그대로 쌓였습니다 🌱',
+        '이번 주 리듬 챔피언은 ' + winner + ' (1인 평균 ' + hi + ' : ' + lo + ')! 승리 반 전원 +' + PT.리그 + 'P. 양 반 모두의 데미지는 각자의 캐릭터에게 그대로 쌓였습니다 🌱',
         new Date()]);
       noticed++;
     }
