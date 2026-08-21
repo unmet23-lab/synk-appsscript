@@ -1279,6 +1279,7 @@ def 귤():
     ps.clump_factor = 0.72
     ps.roughness_1 = 0.02
     ps.root_radius = 0.022
+    ps.tip_radius = 0.009                           # 끝이 뾰족하면 서브픽셀로 사라져 디노이저 먹이가 된다
     # 꼭지 — 위 중앙의 짧은 초록 그루터기
     bpy.ops.mesh.primitive_cylinder_add(radius=0.08, depth=0.1, location=(0, 0, 1.04))
     꼭지 = bpy.context.object
@@ -1295,7 +1296,7 @@ def 귤():
     짧은퍼(잎, 'Meadow', 살재질('잎', 색['Meadow']), 털재질('잎', 색['Meadow']),
           길이=0.018, 개수=5200)
     잎.particle_systems[-1].settings.clump_factor = 0.6
-    return (0, -8.8, 5.6), 59                       # 식탁 내려보기 — 음식은 위에서 봐야 맛있다
+    return (0, -7.4, 4.7), 59                       # 식탁 내려보기 — 당길수록 픽셀 밀도가 선명을 산다
 
 def 도넛():
     """펠트 도넛 — 플레이팅 2호. 도우(Butter Soft 털) 위에 글레이즈 «아플리케»(자수 글자와
@@ -1329,7 +1330,7 @@ def 도넛():
         땀하나(r * math.cos(a), r * math.sin(a), 0.695 + 손.uniform(-0.012, 0.012),
               0.085 * (1 + 손.uniform(-0.12, 0.12)), 0.026, 재,
               회전y=손.uniform(0, 180), 회전z=손.uniform(-24, 24))
-    return (0, -8.8, 5.6), 59
+    return (0, -7.4, 4.7), 59
 
 
 def 조합판():
@@ -1441,7 +1442,59 @@ def 조합판():
         키제외.append(알)    # 실측: 가운데 알약에 키 하이라이트가 앉아 3.65:1 — 셋 다 가라앉힌다
     return (0, -12.0, 0.35), 90
 
-형태들 = {'오브': 오브, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치, '털실진행바': 털실진행바, '귤': 귤, '도넛': 도넛,
+
+def 넘버쿠키():
+    """넘버 쿠키 — 번호의 플레이팅판(유호 아이디어 08-21 「번호도 음식 플레이팅 방식으로」).
+    접시 위 펠트 쿠키에 자수 숫자 — 절번호·단락 머리·페이지 표식이 서는 자리의 «음식» 변주.
+    숫자는 자수글자와 같은 통로(리메시 + 퍼 + 새틴 땀 · 함정 ① 그대로) — 「본문=」 으로 01~10.
+    쿠키 도우 = Butter Soft(기쁨·보상의 실) · 숫자 = 염료이름(기본 Coral · 신호 1점)."""
+    음식접시('Ink')
+    bpy.ops.mesh.primitive_cylinder_add(radius=0.80, depth=0.26, location=(0, 0, 0.14), vertices=48)
+    쿠키 = bpy.context.object
+    bv = 쿠키.modifiers.new('bv', 'BEVEL')
+    bv.width = 0.11
+    bv.segments = 4
+    bpy.ops.object.modifier_apply(modifier='bv')
+    bpy.ops.object.shade_smooth()
+    짧은퍼(쿠키, 'Butter Soft', 살재질('쿠키', 색['Butter Soft']), 털재질('쿠키', 색['Butter Soft']),
+          길이=0.03, 개수=22000)
+    ps = 쿠키.particle_systems[-1].settings
+    ps.clump_factor = 0.6
+    ps.tip_radius = 0.009
+    # 숫자 몸 — 눕혀서 쿠키 윗면에(음식 카메라는 내려보므로 글자가 하늘을 본다)
+    본문 = 인자.get('본문', '01')
+    bpy.ops.object.text_add()
+    t = bpy.context.object
+    t.data.body = 본문
+    글자체(t)
+    t.data.size = 0.66
+    t.data.extrude = 0.016
+    t.data.bevel_depth = 0.005
+    t.data.bevel_resolution = 3
+    t.data.align_x = 'CENTER'
+    t.data.align_y = 'CENTER'
+    t.location = (0, 0.0, 0.305)
+    bpy.ops.object.convert(target='MESH')
+    rm = t.modifiers.new('리메시', 'REMESH')
+    rm.mode = 'VOXEL'
+    rm.voxel_size = 0.018                            # 함정 ① — 텍스트 메시에 바로 퍼를 심지 않는다
+    bpy.ops.object.modifier_apply(modifier='리메시')
+    bpy.ops.object.shade_smooth()
+    짧은퍼(t, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]),
+          길이=0.02, 개수=8000)
+    tps = t.particle_systems[-1].settings
+    tps.clump_factor = 0.4
+    tps.tip_radius = 0.007
+    # 새틴 땀 — 글리프 평면 (px,py) 을 눕는 평면 (x, y, z고정) 으로. 진행각은 회전z 가 진다.
+    실재 = 매끈재질('테두리실', 색['Stitch'], 거칠기=0.5)
+    손 = random.Random(20260821)
+    for (px, py, 각) in 글자곡선표본(본문, 0.66, 간격=0.085):
+        땀하나(px + 손.uniform(-0.003, 0.003), py + 손.uniform(-0.003, 0.003),
+              0.335, 0.036 * 손.uniform(0.88, 1.12), 0.014, 실재,
+              회전y=0, 회전z=각 + 손.uniform(-8, 8))
+    return (0, -7.4, 4.7), 59
+
+형태들 = {'오브': 오브, '넘버쿠키': 넘버쿠키, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치, '털실진행바': 털실진행바, '귤': 귤, '도넛': 도넛,
         '단추토글': 단추토글, '밑그림': 밑그림, '페이지점': 페이지점, '폼폼': 폼폼, '시침핀': 시침핀,
         '와펜': 와펜, '블랭킷': 블랭킷, '실패스피너': 실패스피너, '직조라벨': 직조라벨,
         '패턴지판': 패턴지판, '다린천판': 다린천판, '유리판': 유리판,
@@ -1510,6 +1563,13 @@ bpy.ops.object.camera_add(location=카메라위치, rotation=(math.radians(카�
 씬.render.engine = 'CYCLES'
 씬.cycles.samples = 견본
 씬.cycles.use_denoising = True
+# 🔑 디노이저에 «가이드»를 준다 — 맨 RGB 디노이즈는 가는 털을 페인팅으로 뭉갠다(선명도 실측 08-21).
+#   albedo·normal 패스가 있으면 디노이저가 결의 자리를 알아 털을 «지우지 않고» 노이즈만 걷는다.
+try:
+    씬.cycles.denoising_input_passes = 'RGB_ALBEDO_NORMAL'
+    씬.cycles.denoising_prefilter = 'ACCURATE'
+except (AttributeError, TypeError) as 왜:
+    print('디노이즈 가이드 실패(기본으로 간다):', 왜)
 씬.render.resolution_x = 너비
 씬.render.resolution_y = int(너비 * float(인자.get('비율', '0.82')))   # 조합판 = 1.9(폰 세로)
 씬.render.filepath = 출력
