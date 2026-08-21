@@ -1320,31 +1320,35 @@ def 넘버쿠키():
     숫자는 자수글자와 같은 통로(리메시 + 퍼 + 새틴 땀 · 함정 ① 그대로) — 「본문=」 으로 01~10.
     쿠키 도우 = Butter Soft(기쁨·보상의 실) · 숫자 = 염료이름(기본 Coral · 신호 1점)."""
     음식접시('Ink')
-    bpy.ops.mesh.primitive_cylinder_add(radius=0.80, depth=0.26, location=(0, 0, 0.14), vertices=48)
+    bpy.ops.mesh.primitive_cylinder_add(radius=0.74, depth=0.26, location=(0, 0, 0.14), vertices=96)
     쿠키 = bpy.context.object
     bv = 쿠키.modifiers.new('bv', 'BEVEL')
     bv.width = 0.11
     bv.segments = 4
     bpy.ops.object.modifier_apply(modifier='bv')
     bpy.ops.object.shade_smooth()
-    짧은퍼(쿠키, 'Butter Soft', 살재질('쿠키', 색['Butter Soft']), 털재질('쿠키', 색['Butter Soft']),
-          길이=0.03, 개수=22000)
-    ps = 쿠키.particle_systems[-1].settings
-    ps.clump_factor = 0.6
-    ps.tip_radius = 0.009
+    # 🔑 **털 위에 털을 올리면 뭉갠다** — 이 공방에서 세 번 겪은 같은 병이다(만두 도우 · 김밥 밥 ·
+    #    그리고 여기). 밀도(22000→8000)도 높이(여유 0.096)도 맞췄는데 숫자가 여전히 «분홍 얼룩»이었다:
+    #    까닭은 계산이 아니라 **대비**다. 채택판 자수글자가 사는 것은 «매끈한 밤천 위의 털»이라서다.
+    #    ⇒ 쿠키는 무광 펠트 면으로 두고, 털은 숫자에만 남긴다. 대비가 서면 글자가 산다.
+    쿠키.data.materials.append(직물결(분필재질('쿠키', 색['Butter Soft']), 규모=26.0, 세기=0.12))
     # 숫자 몸 — 눕혀서 쿠키 윗면에(음식 카메라는 내려보므로 글자가 하늘을 본다)
     본문 = 인자.get('본문', '01')
     bpy.ops.object.text_add()
     t = bpy.context.object
     t.data.body = 본문
     글자체(t)
-    t.data.size = 0.66
-    t.data.extrude = 0.016
+    t.data.size = 0.98                   # 0.66·0.86 은 «얼룩»이었다 — 숫자가 쿠키를 거의 채워야 읽힌다
+    t.data.extrude = 0.026
     t.data.bevel_depth = 0.005
     t.data.bevel_resolution = 3
     t.data.align_x = 'CENTER'
     t.data.align_y = 'CENTER'
-    t.location = (0, 0.0, 0.305)
+    # 🔴 «투영 기어듦» — 내려보는 카메라에서 띄운 물건은 먼 쪽으로 밀려 보인다(룸장면 6판이 배지
+    #    가림에서 겪은 그 셈). 숫자는 쿠키 중심면(0.14)보다 0.152 높으니 화면에서 0.152 ×
+    #    (sin40/cos40) = 0.127 만큼 위로 밀린다 — 그만큼 카메라 쪽으로 당겨 앉힌다.
+    민 = 0.127
+    t.location = (0, -민, 0.292)          # 앞면 = 0.292+0.026+0.005 = 0.323 (매끈 쿠키 윗면 0.27 위)
     bpy.ops.object.convert(target='MESH')
     rm = t.modifiers.new('리메시', 'REMESH')
     rm.mode = 'VOXEL'
@@ -1352,18 +1356,24 @@ def 넘버쿠키():
     bpy.ops.object.modifier_apply(modifier='리메시')
     bpy.ops.object.shade_smooth()
     짧은퍼(t, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]),
-          길이=0.02, 개수=8000)
+          길이=0.009, 개수=3000)
     tps = t.particle_systems[-1].settings
-    tps.clump_factor = 0.4
+    tps.clump_factor = 0.5
+    tps.roughness_1 = 0.03
+    tps.roughness_2 = 0.04
     tps.tip_radius = 0.007
     # 새틴 땀 — 글리프 평면 (px,py) 을 눕는 평면 (x, y, z고정) 으로. 진행각은 회전z 가 진다.
     실재 = 매끈재질('테두리실', 색['Stitch'], 거칠기=0.5)
     손 = random.Random(20260821)
-    for (px, py, 각) in 글자곡선표본(본문, 0.66, 간격=0.085):
-        땀하나(px + 손.uniform(-0.003, 0.003), py + 손.uniform(-0.003, 0.003),
-              0.335, 0.036 * 손.uniform(0.88, 1.12), 0.014, 실재,
+    for (px, py, 각) in 글자곡선표본(본문, 0.98, 간격=0.095):
+        땀하나(px + 손.uniform(-0.003, 0.003), py - 민 + 손.uniform(-0.003, 0.003),
+              0.327, 0.046 * 손.uniform(0.88, 1.12), 0.017, 실재,   # 숫자 앞면 0.323 에 걸터앉는다
               회전y=0, 회전z=각 + 손.uniform(-8, 8))
-    return (0, -7.4, 4.7), 59
+    # 🔴 본판 실측 08-22 둘: ①59°(수평에서 31° 위)는 털 «테두리»가 가운데를 가려 숫자가 안 보였다
+    #    — 만두·김밥·붕어빵은 40°로 올렸는데 이 형태만 남아 있었다. ②거리 8.8 에서 0.86 짜리 숫자는
+    #    화면에서 백 몇 픽셀뿐이라 자수 땀이 뭉갠다. 채택판 자수글자는 글자가 화면의 절반을 먹는다
+    #    — 접시 테가 조금 잘려도 «당기는» 쪽이 맞다(귤 주석의 「당길수록 픽셀 밀도가 선명을 산다」).
+    return (0, -4.37, 5.21), 40
 
 # ── 도안 공방 — «점 목록»이 곧 형태다 (08-22 · 유호 「전부 해줘」) ─────────────────
 # 왜 형태 함수를 하나씩 안 짓나: 체크·별·하트·집·책·차트·사람·말풍선·붕어빵은 전부 «오려 붙인
@@ -1590,7 +1600,7 @@ def 도장():
     # 잉크는 «깊은» 코랄이다 — 「색=」을 주면 그 색, 안 주면 Coral 3(라벨태그 강조실과 같은 실).
     인장색 = 염료이름 if '색' in 인자 else 'Coral 3'
     바닥 = 베개몸((0.98, 0.055, 0.98), 크리스=0.34, 레벨=4)
-    바닥.data.materials.append(직물결(매끈재질('다린천', 색['Oat'], 거칠기=0.98), 규모=95.0, 세기=0.16))
+    바닥.data.materials.append(직물결(매끈재질('다린천', 색['Stone'], 거칠기=0.98), 규모=48.0, 세기=0.45))
     # 손으로 판 인장 — 반지름을 미세하게 흔든다(완벽한 원은 기계 도장이다).
     손 = random.Random(20260822)
     흔 = lambda r, n: [(math.cos(2 * math.pi * i / n) * (r + 손.uniform(-0.006, 0.006)),
@@ -1608,7 +1618,7 @@ def 게이지고리():
     진행 = min(1.0, max(0.03, float(인자.get('진행', '0.68'))))
     바닥 = 베개몸((0.98, 0.055, 0.98), 크리스=0.34, 레벨=4)     # 검은 데 뜨지 않게 — 기호와 같은 판
     바닥.data.materials.append(직물결(매끈재질('밤천', 색['Ink'], 거칠기=0.96), 규모=200.0, 세기=0.045))
-    큰, 살 = 0.62, 0.092                       # 바깥 = 0.62+0.142+0.055 = 0.817 → 지름 1.63 (판 1.96)
+    큰, 살 = 0.55, 0.085                       # 바깥 = 0.55+0.133+0.052 = 0.735 → 지름 1.47 (판 1.96)
     bpy.ops.mesh.primitive_torus_add(major_radius=큰, minor_radius=살, location=(0, -0.16, 0),
                                      rotation=(math.radians(90), 0, 0),
                                      major_segments=112, minor_segments=20)
@@ -1622,16 +1632,16 @@ def 게이지고리():
     for st in range(3):                        # 3가닥 꼬임 — 나선 위상 120°씩(털실진행바와 같은 문법)
         curve = bpy.data.curves.new('가닥%d' % st, 'CURVE')
         curve.dimensions = '3D'
-        curve.bevel_depth = 0.055
+        curve.bevel_depth = 0.052
         curve.bevel_resolution = 6
         curve.use_fill_caps = True
         sp = curve.splines.new('POLY')
         sp.points.add(N - 1)
-        감 = 살 + 0.050                       # 🔑 실은 트랙 «겉»을 감는다 — 살보다 안쪽이면 파묻힌다
+        감 = 살 + 0.048                       # 🔑 실은 트랙 «겉»을 감는다 — 살보다 안쪽이면 파묻힌다
         for i in range(N):
             진각 = 2 * math.pi * 진행 * i / (N - 1)
             a = math.pi / 2 - 진각                                  # 12시 → 시계 방향
-            꼬 = 2 * math.pi * (큰 * 진각) / 0.42 + st * 2 * math.pi / 3
+            꼬 = 2 * math.pi * (큰 * 진각) / 0.38 + st * 2 * math.pi / 3
             r = 큰 + 감 * math.cos(꼬)                               # 단면 = 반경 방향 × y
             sp.points[i].co = (r * math.cos(a), -0.16 + 감 * math.sin(꼬), r * math.sin(a), 1)
         obj = bpy.data.objects.new('가닥%d' % st, curve)
@@ -1705,7 +1715,7 @@ def 김밥():
     속색 = ['Coral', 'Meadow', 'Butter']
     손 = random.Random(20260822)
 
-    def 통(반, 깊, 자리, 재, 면=64):
+    def 통(반, 깊, 자리, 재, 면=128):
         """굵은 통만 원기둥으로 세운다(⚠규율 ② — 작은 것은 구로). 캡은 «평평하게» 둔다:
         n-gon 캡을 스무딩하면 뚜껑 법선이 옆면과 섞인다. 자른 단면은 원래 평평한 것이 맞다."""
         bpy.ops.mesh.primitive_cylinder_add(radius=반, depth=깊, location=자리, vertices=면)
@@ -1727,7 +1737,8 @@ def 김밥():
         for _ in range(9):                                   # 밥알 몇 톨 — 무광 면만으로는 «찰흙»이다
             a = 손.uniform(0, 2 * math.pi)
             r = 손.uniform(0.05, 0.31)
-            땀하나(cx + r * math.cos(a), cy + r * math.sin(a), 0.292, 0.030, 0.019,
+            땀하나(cx + r * math.cos(a), cy + r * math.sin(a),
+                  0.292, 0.030, 0.019,
                   매끈재질('밥알', 색['Paper'], 거칠기=0.92), 회전y=0, 회전z=손.uniform(0, 180))
     return (0, -5.66, 6.74), 40      # 단면이 주인공이라 더 위에서 — 59°는 세운 뚜껑을 거의 못 본다
 
@@ -1930,7 +1941,7 @@ def 등(이름, 위치, 회전, 크기, 힘):
 
 # 조명 변주(글자공방 08-20 이식) — 형태별 채택 조명이 기본값, 「조명=」 인자로 덮어쓴다.
 조명 = 인자.get('조명', {'자수글자': '결광2', '레터프레스': '스침', '라벨태그': '스침',
-                                '도장': '스침', '기호': '결광2'}.get(형태, '원본'))
+                                '도장': '결광2', '기호': '결광2'}.get(형태, '원본'))
 if 조명 == '원본':
     등('키', (-2.8, -2.2, 3.4), (math.radians(46), math.radians(-30), 0), 4.0, 1400)
     등('필', (2.6, -2.2, 0.6), (math.radians(78), math.radians(28), 0), 4.0, 80)
