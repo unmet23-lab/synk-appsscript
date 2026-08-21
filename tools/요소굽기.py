@@ -276,6 +276,232 @@ def 땀하나(x, y, z, 길이, 굵기, 재질, 회전y=11, 회전z=0, 납작=Fal
     땀.data.materials.append(재질)
     return 땀
 
+시접 = 0.05   # 실땀이 천 가장자리에서 물러나 앉는 거리(월드).
+              # 2차의 0.13 은 실땀선 밖에 화면 50px 짜리 «맨 천»을 남겼다 — 판이 스티치보다 한참 커
+              # 뭉툭해 보인 진짜 까닭이다(유호 08-21). 실땀 자리는 그대로 두고 **몸을 줄여** 0.05 로.
+              # 몸 = 실땀 + 시접이라, 이 상수 하나가 카드·라벨의 «맨 테두리 두께»를 정한다.
+
+def 상자(o):
+    """몸의 월드 상자 — 서브서프 «수축»은 없다(실측 08-21: 크리스 0.34·0.62·0.80 전부 반폭 1.2500
+    · 굳혀도 같음). 크리스는 모서리만 말지 최대 폭은 scale 그대로다. 그래서 큐브 8꼭짓점이 곧 답."""
+    꼭 = [o.matrix_world @ v.co for v in o.data.vertices]
+    return 꼭
+
+def 베개몸(크기, 위치=(0, 0, 0), 회전z=0.0, 크리스=0.62, 레벨=3):
+    bpy.ops.mesh.primitive_cube_add(size=2, location=위치)
+    몸 = bpy.context.object
+    몸.scale = 크기
+    몸.rotation_euler = (0, 0, math.radians(회전z))
+    sub = 몸.modifiers.new('sub', 'SUBSURF')     # 큐브+서브서프+크리스 = 연속 곡률 스쿼클
+    sub.levels = sub.render_levels = 레벨
+    층 = 몸.data.edge_creases_ensure()
+    for d in 층.data:
+        d.value = 크리스
+    bpy.ops.object.shade_smooth()
+    return 몸
+
+def 짧은퍼(몸, 털이름, 살, 털, 길이=0.10, 개수=16000):
+    """유호 확정 08-19 «짧은 퍼» — 깨끗함과 부피를 함께 내는 길이. 긴 갈기는 요소용이 아니다."""
+    몸.data.materials.append(살)
+    bpy.context.view_layer.objects.active = 몸
+    bpy.ops.object.particle_system_add()
+    ps = 몸.particle_systems[-1].settings
+    ps.type = 'HAIR'
+    ps.count = 개수
+    ps.hair_length = 길이
+    ps.hair_step = 5
+    ps.child_type = 'INTERPOLATED'
+    ps.rendered_child_count = ps.child_percent = 70
+    ps.clump_factor = 0.28
+    ps.roughness_1 = 0.06
+    ps.roughness_2 = 0.08
+    ps.roughness_endpoint = 0.03
+    ps.factor_random = 0.06
+    ps.length_random = 0.12
+    ps.use_hair_bspline = True
+    ps.render_step = 4
+    ps.root_radius = 0.011
+    ps.tip_radius = 0.0015
+    몸.data.materials.append(털)
+    ps.material = len(몸.data.materials)
+
+# ── 형태들 ──────────────────────────────────────────────────────────────────
+def 오브():
+    몸 = 베개몸((1.2, 0.55, 1.0))
+    짧은퍼(몸, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]))
+    return (0, -8.6, 0.45), 86
+
+def 알약():
+    몸 = 베개몸((2.0, 0.5, 0.66), 크리스=0.58)
+    짧은퍼(몸, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]))
+    return (0, -11.8, 0.0), 90   # 본굽기 2판 실측: 86° 내려봄이 위 치우침의 원인 — 알약은 수평이 맞다
+
+def 아이콘():
+    """참조 ② 문법 — 겹친 두 스쿼클. 뒤판은 무채(Deep Wool — 따뜻한 심회색 털 · 2027 킷),
+    앞판이 기본색. 겹침의 그림자·빛이 «실물»의 깊이를 낸다."""
+    뒤 = 베개몸((1.04, 0.5, 1.04), 위치=(0.52, 0.62, 0.56), 회전z=-8)
+    짧은퍼(뒤, 'Deep Wool', 살재질('Deep Wool', 색['Deep Wool']), 털재질('Deep Wool', 색['Deep Wool']))
+    앞 = 베개몸((1.0, 0.5, 1.0), 위치=(-0.16, 0, -0.18), 회전z=3)
+    짧은퍼(앞, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]))
+    return (0.16, -8.8, 0.3), 86
+
+def 스티치():
+    """자수(러닝 스티치) 실금 시안 — 코랄 펠트 띠 위에 분필색(Chalk) 땀이 지나간다.
+    구분선·테두리·뱃지의 «실» 후보를 그림으로 낸다(아이디어 층 · 확정 아님)."""
+    띠 = 베개몸((2.4, 0.35, 0.42), 크리스=0.7)
+    짧은퍼(띠, 염료이름, 살재질(염료이름, 색[염료이름]), 털재질(염료이름, 색[염료이름]), 길이=0.05, 개수=22000)
+    실 = bpy.data.materials.new('실')
+    실.use_nodes = True
+    p = 실.node_tree.nodes['Principled BSDF']
+    p.inputs['Base Color'].default_value = 리니어(색['Stitch'])
+    p.inputs['Roughness'].default_value = 0.38
+    for i in range(9):                       # 러닝 스티치 — 땀은 천을 «파고들되» 한 줄로 고르게 간다
+        x = -1.92 + i * 0.48                 # (기울기를 번갈면 흩뿌린 지그재그로 읽힌다 — 시안2 실측)
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(x, -0.335, 0))
+        땀 = bpy.context.object
+        땀.scale = (0.2, 0.032, 0.032)
+        땀.rotation_euler = (0, math.radians(11), 0)
+        bpy.ops.object.shade_smooth()
+        땀.data.materials.append(실)
+    return (0, -6.4, 0.2), 86
+
+def 털실진행바():
+    """털실 진행바 — 「실이 감긴다」(재질가족 제안 #1 · 유호 픽 08-19 실물화).
+    어두운 무채 펠트 홈 트랙 위에 코랄 털실(3가닥 꼬임 로프)이 진행분만큼 놓인다.
+    진행 인자(0~1): 진행=0.62 — 감아온 길이가 곧 진행률이다."""
+    진행 = min(1.0, max(0.05, float(인자.get('진행', '0.62'))))
+    트랙 = 베개몸((2.5, 0.28, 0.3), 크리스=0.7)
+    짧은퍼(트랙, 'Deep Wool', 살재질('Deep Wool', 색['Deep Wool']),
+          털재질('Deep Wool', 색['Deep Wool']), 길이=0.04, 개수=15000)
+    실몸 = bpy.data.materials.new('실몸')
+    실몸.use_nodes = True
+    p = 실몸.node_tree.nodes['Principled BSDF']
+    기본 = 리니어(색[염료이름])
+    p.inputs['Base Color'].default_value = tuple(v * 0.82 for v in 기본[:3]) + (1.0,)
+    p.inputs['Roughness'].default_value = 0.85
+    시작, 끝 = -2.5, -2.5 + 5.0 * 진행
+    N = 160
+    for st in range(3):                       # 3가닥 꼬임 — 나선 위상 120°씩
+        curve = bpy.data.curves.new('가닥%d' % st, 'CURVE')
+        curve.dimensions = '3D'
+        curve.bevel_depth = 0.062
+        curve.bevel_resolution = 6
+        curve.use_fill_caps = True
+        sp = curve.splines.new('POLY')
+        sp.points.add(N - 1)
+        for i in range(N):
+            x = 시작 + (끝 - 시작) * i / (N - 1)
+            θ = 2 * math.pi * (x / 0.62) + st * 2 * math.pi / 3
+            sp.points[i].co = (x, -0.30 - 0.075 * math.cos(θ), 0.075 * math.sin(θ), 1)
+        obj = bpy.data.objects.new('가닥%d' % st, curve)
+        bpy.context.collection.objects.link(obj)
+        bpy.ops.object.select_all(action='DESELECT')
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.convert(target='MESH')   # 곡선엔 털이 안 심겨 — 메쉬로 바꿔 보풀을 심는다
+        가닥 = bpy.context.object
+        bpy.ops.object.shade_smooth()
+        짧은퍼(가닥, 염료이름, 실몸, 털재질(염료이름, 색[염료이름]), 길이=0.03, 개수=3500)
+    return (0, -11.8, 0.0), 90
+
+def 매끈재질(이름, hex_, 거칠기=0.5, 배율=1.0):
+    m = bpy.data.materials.new('매끈_' + 이름)
+    m.use_nodes = True
+    p = m.node_tree.nodes['Principled BSDF']
+    기본 = 리니어(hex_)
+    p.inputs['Base Color'].default_value = tuple(min(1.0, v * 배율) for v in 기본[:3]) + (1.0,)
+    p.inputs['Roughness'].default_value = 거칠기
+    return m
+
+def 직물결(m, 규모=200.0, 세기=0.05):
+    """민무늬 살 위에 미세 결 — 매끈 슬라브는 도자기로 읽힌다(시안2027 실측).
+    펠트·다린 천은 부직포라 짜임이 아니라 «알갱이 결»이 맞다 — 노이즈 범프."""
+    nt = m.node_tree
+    p = nt.nodes['Principled BSDF']
+    noise = nt.nodes.new('ShaderNodeTexNoise')
+    noise.inputs['Scale'].default_value = 규모
+    noise.inputs['Detail'].default_value = 6.0
+    bump = nt.nodes.new('ShaderNodeBump')
+    bump.inputs['Strength'].default_value = 세기
+    nt.links.new(noise.outputs['Fac'], bump.inputs['Height'])
+    nt.links.new(bump.outputs['Normal'], p.inputs['Normal'])
+    return m
+
+def 분필재질(이름, hex_):
+    """무광 분필 가루 — 하이라이트가 서면 분필이 아니라 실로 읽힌다(유호 지시 08-20 무광화).
+    거칠기 1.0 + 스펙큘러 0: 빛을 먹기만 하는 면 — 펠트 헌법 「빛을 먹는다」의 가루판."""
+    m = bpy.data.materials.new('분필_' + 이름)
+    m.use_nodes = True
+    p = m.node_tree.nodes['Principled BSDF']
+    p.inputs['Base Color'].default_value = 리니어(hex_)
+    p.inputs['Roughness'].default_value = 1.0
+    if 'Specular IOR Level' in p.inputs:
+        p.inputs['Specular IOR Level'].default_value = 0.0
+    return m
+
+def 땀하나(x, y, z, 길이, 굵기, 재질, 회전y=11, 회전z=0, 납작=False):
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(x, y, z))
+    땀 = bpy.context.object
+    땀.scale = (길이, 0.006 if 납작 else 굵기, 굵기)   # 납작 = 분필 «가루선»(밑그림 ①단계 — 실이 아니다)
+    땀.rotation_euler = (0, math.radians(회전y), math.radians(회전z))
+    bpy.ops.object.shade_smooth()
+    땀.data.materials.append(재질)
+    return 땀
+
+def 둥근사각걷기(반폭, 반높, 라운드, 간격):
+    """둥근 사각 둘레를 «한 줄로» 균일하게 걷는다 → [(x, z, 진행각도°), ...].
+    3차 명품화(유호 08-21 「테두리가 너무 뚝뚝 끊겨보여」)의 진범이 여기 있었다:
+      2차까지 실땀은 **네 직선 변을 따로** 돌았다. 몸의 모서리는 서브서프로 둥근데 실땀 경로만
+      각져서, ①모서리마다 땀이 몸 밖으로 벗어나고 ②변마다 `max(3, 길이/간격)` 이 따로 반올림돼
+      짧은 변은 **3~4땀**밖에 안 놓였다(라벨 가로 4땀 — 그래서 점선이 뚝뚝 끊겼다).
+    한 줄로 걸으면 모서리가 이어지고 간격이 전 둘레에서 같아진다 — 손바느질의 서명은 «균일한 밀도»다."""
+    r = max(0.0, min(라운드, 반폭, 반높))
+    가로, 세로 = (반폭 - r) * 2, (반높 - r) * 2
+    호 = math.pi * r / 2
+    구간 = [('직', 가로, 0.0), ('호', 호, 0.0), ('직', 세로, -90.0), ('호', 호, -90.0),
+           ('직', 가로, 180.0), ('호', 호, 180.0), ('직', 세로, 90.0), ('호', 호, 90.0)]
+    총 = sum(길 for _, 길, _ in 구간)
+    n = max(8, int(round(총 / 간격)))
+    걸음 = 총 / n
+    # 구간 시작점(위변 왼끝에서 시계방향: 위 → 오른 → 아래 → 왼)
+    꼭 = [(-(반폭 - r), 반높), (반폭 - r, 반높), (반폭, 반높 - r), (반폭, -(반높 - r)),
+         (반폭 - r, -반높), (-(반폭 - r), -반높), (-반폭, -(반높 - r)), (-반폭, 반높 - r)]
+    중심 = [(반폭 - r, 반높 - r), (반폭 - r, -(반높 - r)), (-(반폭 - r), -(반높 - r)), (-(반폭 - r), 반높 - r)]
+    점 = []
+    for i in range(n):
+        t = (i + 0.5) * 걸음
+        for k, (종, 길, 각) in enumerate(구간):
+            if t > 길 and k < len(구간) - 1:
+                t -= 길
+                continue
+            if 종 == '직':
+                sx, sz = 꼭[k]
+                ex, ez = 꼭[(k + 1) % 8]
+                u = min(1.0, t / 길) if 길 > 0 else 0.0
+                점.append((sx + (ex - sx) * u, sz + (ez - sz) * u, 각))
+            else:
+                cx, cz = 중심[k // 2]
+                u = min(1.0, t / 길) if 길 > 0 else 0.0
+                시작각 = 90.0 - 90.0 * (k // 2)          # 오른위 90→0 · 오른아래 0→-90 · …
+                a = math.radians(시작각 - 90.0 * u)
+                점.append((cx + r * math.cos(a), cz + r * math.sin(a), 각 - 90.0 * u))
+            break
+    return 점
+
+def 러닝스티치(자리들, 깊이, 중심xz, 재질, 땀, 굵기, 손, 흔들=0.004, 각흔들=5.0, 기울fn=None):
+    """걸은 자리에 땀을 하나씩 놓는다 — 손 지터는 남기되(사람 손) 밀도는 고르게(솜씨).
+    ⚠각흔들이 크면 땀이 «제각각 누운 조각»으로 읽힌다(2차 ±7°: 좌우 변 땀이 사선으로 누워
+      끊긴 인상의 절반을 만들었다). 손의 흔적은 ±4° 안쪽에서 충분하다."""
+    cx, cz = 중심xz
+    for (x, z, 각) in 자리들:
+        px, pz = (x + 손.uniform(-흔들, 흔들), z + 손.uniform(-흔들, 흔들))
+        더 = 0.0
+        if 기울fn:
+            px, pz, 더 = 기울fn(px, pz)
+        땀하나(cx + px, 깊이, cz + pz, 땀 * 손.uniform(0.92, 1.08), 굵기, 재질,
+              회전y=-(각 + 더) + 손.uniform(-각흔들, 각흔들))
+
+
 def 단추토글():
     """꿰맨 단추 토글 — 켬 = 실이 X 로 꿰매짐 / 끔 = 빈 구멍(제안 #2 실물화 · 유호 픽 08-19).
     두 단추의 몸은 같고 «실»만 다르다 — 상태가 재질 차이가 아니라 바느질 유무로 읽힌다.
@@ -1105,14 +1331,127 @@ def 도넛():
               회전y=손.uniform(0, 180), 회전z=손.uniform(-24, 24))
     return (0, -8.8, 5.6), 59
 
+
+def 조합판():
+    """앱 카드 조합판 — 채택된 부품들이 «한 화면»에서 성립하는지의 실물 검증(판정 재료 · 세션 06168e3f).
+    양모 밤 퀴즈 화면: 무대 검정 = Ink Deep(#080605 와 사실상 동일) 위에
+      ① 미니 라벨 태그(오브제 글자 1점 — 「신호는 하나」: 코랄은 이 「3」뿐)
+      ② 문제 카드(Ink 펠트 + 글줄 실땀 = 산 글자 자리 표시 — 본문은 HTML 층 몫이라 «자리»만 굽는다)
+      ③ 보기 알약 3(Deep Wool 펠트 — 상태 표시는 HTML 층 몫이라 중립으로)
+    글자·본문의 실물 검증은 굽기 뒤 PIL 덧씌움(정밀 본문 규칙)이 잇는다."""
+    손 = random.Random(20260820)
+    # ⓪ 배경천 — 2차 명품화 ①: 무대가 «죽은 검정 픽셀»이면 위의 펠트가 스티커로 뜬다.
+    #    Ink Deep 펠트를 화면 뒤에 깔아 «전 픽셀이 재질»이 되게 한다(카드가 놓인 작업대).
+    #    ⚠배경 노출은 양끝이 다 틀렸다(시험 2회): 키제외 = 죽은 검정(결이 0) · 키 전량 = 회색으로 뜸
+    #      (#080605 라도 1400W 정면광엔 뜬다). → 키에서 빼고 «배경등» 전용 약광을 준다:
+    #      결이 서는 최소치만. 글자가 앉지 않는 면이라 대비 예산과 무관하다.
+    배경 = 베개몸((2.6, 0.06, 5.2), 위치=(0, 1.05, 0.2), 크리스=0.12, 레벨=3)
+    배경.data.materials.append(직물결(매끈재질('배경천', 색['Ink Deep'], 거칠기=0.97), 규모=90.0, 세기=0.085))
+    키제외.append(배경)
+    글자등([배경], 위치=(-1.2, -3.2, 2.6), 크기=3.0, 힘=90).name = '배경등'
+    # ② 문제 카드 — 위쪽. 글줄 자리표시 없이 «빈 그릇»으로 굽는다:
+    #    본문은 HTML 층이 붓는다(규율 「본문 글자는 굽지 않는다」의 실물 형태).
+    #    2차 명품화 ②: 크리스 0.5→0.34 — 각진 모서리는 «판때기», 펠트는 눌린 곡률을 갖는다.
+    # ⚠3차(유호 08-21 「유리판 크기가 부자연스럽다 — 직사각형으로 하면?」): 카드의 «판다움»을 인자로 뺀다.
+    #   크리스는 «모서리 날카로움»이다 — 2차가 0.5→0.34 로 **내려** 둥글게 만든 값이라, 직사각형은 **올려서** 낸다.
+    #   세로는 내용(문제 2줄 + 키릴 1줄)에 대해 과했다: 글이 위 1/3 에만 앉고 아래 2/3 가 빈 채로 굽혔다.
+    # 4차b: 줄일 것은 «실땀선 밖 맨 천»이지 실땀 사각형이 아니다(4차a 는 둘 다 줄여 본문이 카드에 꽉 찼다).
+    #   실땀선을 3차 값(1.12 × 0.47)에 고정하고 몸을 «실땀 + 시접 0.09»로 = 1.21 × 0.56.
+    카드세로 = float(인자.get('카드세로', '0.60'))     # 3차 몸으로 복귀(유호 08-21 「3차가 더 좋다」)
+    카드각 = float(인자.get('카드각', '0.80'))          # 3차 크리스 — 원호 반경(5차)은 너무 둥글었다
+    핀 = 인자.get('핀', '개선') != '없음'              # 시침핀 갈래 — 개선판 / 아예 안 꽂는 판
+    알약각 = float(인자.get('알약각', '0.66'))          # 3차 크리스
+    카드 = 베개몸((1.25, 0.09, 카드세로), 위치=(0, 0.5, 0.9), 크리스=카드각, 레벨=4)
+    카드.data.materials.append(직물결(매끈재질('밤카드', 색['Ink'], 거칠기=0.95), 규모=180.0, 세기=0.04))
+    키제외.append(카드)      # 실측: 키를 받으면 Ink 가 떠서 Paper 본문이 4.4:1 로 추락 — 그릇은 가라앉힌다
+    # 2차 명품화 ④: 킷 운용 ② 「실땀 = 모든 펠트 오브젝트의 테두리」 — 카드에 손 지터 러닝 스티치.
+    #    ⚠명품 렌더 4계 ②(가장 밝은 것은 하나): Stitch 실은 카드보다 밝아 «테두리가 주인공»이 된다
+    #      (시험 실측 — 흰 점선이 화면을 먹었다). 카드 테두리는 Deep Wool 로 한 단 낮춘다:
+    #      실땀의 «자리»는 지키되 밝기 서열은 라벨(Oat)·코랄에 넘긴다.
+    카드실 = 매끈재질('카드실', 색['Deep Wool'], 거칠기=0.78)
+    칸들['카드'] = 카드
+    # ⚠카드는 두께(0.09)가 라벨의 두 배라 옆면 곡률도 그만큼 넓다 — 시접 0.05 로는 실땀이
+    #   그 곡면에 «올라타» 좌우 변 땀이 서 버린다(4차 시험 실측). 카드만 0.09 로 물러앉힌다.
+    카드시접 = 0.13
+    cw, ch = 1.25 - 카드시접, 카드세로 - 카드시접   # 손좌표(1.12/0.72) 를 걷는다 — 세로를 줄이면 실땀이 따라온다
+    # 3차: 네 변 따로 → «한 줄로» 걷는다. 간격 0.2 → 0.115 (세로 변이 4땀이던 것이 8땀으로).
+    러닝스티치(둥근사각걷기(cw, ch, 0.10, 0.115), 0.40, (0, 0.9),
+             카드실, 0.040, 0.0085, 손, 흔들=0.004, 각흔들=4.0)
+    # ① 미니 라벨 태그 — 오른 위 (화면의 유일한 오브제 글자·유일한 코랄 = 신호 1점).
+    #    2차 명품화 ③: 반듯하게 놓인 라벨은 «붙인 스티커»다 — 공방에서는 시침핀으로 «매단다».
+    #    3° 기울이고 위 가운데를 핀이 꿴다(시침핀 부품 문법 재사용).
+    #   ⚠라벨을 프레임 위끝에 붙이면 핀머리가 화면 밖으로 나간다(시험 실측) — 매단 것은 «매단 자리»가
+    #     보여야 매단 것이다. 2.5 → 2.15 로 내려 핀머리·바늘이 온전히 든다.
+    lx, lz = 0.92, 2.15
+    기울 = math.radians(-3)
+    코, 사 = math.cos(기울), math.sin(기울)
+
+    def 라벨자리(dx, dz):
+        """라벨 로컬(dx,dz) → 세계. y축(깊이) 둘레 회전이라 x-z 평면에서 돈다.
+        ⚠mathutils.Matrix.Rotation(각, 2, 'Y') 는 2×2 라 3D 벡터에 못 곱한다(시험 실측) — 손으로 돈다."""
+        return lx + dx * 코 + dz * 사, lz - dx * 사 + dz * 코
+
+    # 3차: 세로 0.44 → 0.38 («3 / 10» 한 줄에 맞춘 태그) · 크리스 0.42 → 0.55 (모서리 부정형 완화)
+    #      깊이 0.32 → 0.44 (배경천에 가까이 = 매달린 것이 천에 «닿아» 있다)
+    라벨 = 베개몸((0.26, 0.05, 0.30), 위치=(lx, 0.44, lz), 크리스=0.55, 레벨=4)
+    라벨.rotation_euler = (0, 기울, 0)
+    라벨.data.materials.append(직물결(매끈재질('라벨천', 색['Oat'], 거칠기=0.88)))
+    라벨실 = 매끈재질('라벨실', 색['Deep Wool'], 거칠기=0.68)   # 실의 광을 살린다 — 0.72 는 «눌린 자국»으로 읽혔다
+    lw, lh = 0.175, 0.215
+
+    def 라벨기울(px, pz):
+        wx, wz = 라벨자리(px, pz)
+        return wx, wz, math.degrees(기울)
+
+    # 간격 0.1 → 0.058: 가로 변이 4땀이던 것이 8땀으로. 「뚝뚝 끊김」의 절반은 여기에 있었다.
+    러닝스티치(둥근사각걷기(lw, lh, 0.070, 0.046), 0.39, (0, 0), 라벨실, 0.021, 0.0085,
+             손, 흔들=0.0025, 각흔들=3.5, 기울fn=라벨기울)
+    강조 = 매끈재질('진행실', 색['Coral 3'], 거칠기=0.6)
+    gx, gz = 라벨자리(-0.072, 0.01)
+    유리글자('3', 0.145, (gx, 0.385, gz), 강조, 돌출=0.006, 베벨=0.002).rotation_euler = (math.radians(90), 0, 기울)
+    bx, bz = 라벨자리(0.060, 0.0)
+    유리글자('/ 10', 0.078, (bx, 0.388, bz), 라벨실, 돌출=0.005, 베벨=0.002).rotation_euler = (math.radians(90), 0, 기울)
+    # 시침핀 — 3차 재설계(유호 08-21 「사탕인지 핀인지 뭔지 너무 부자연스럽다」).
+    #   2차가 사탕으로 읽힌 세 까닭: ①머리가 크고(r 0.062 = 라벨 반폭의 18%) ②염료색 + 거칠기 0.14 라
+    #   **화면에서 가장 밝은 점**이 됐고(4계 ② 위반 — 신호 코랄은 「3」 하나여야 한다) ③바늘이 라벨을
+    #   «관통»하지 않고 앞면에 얹혀 막대사탕의 막대가 됐다.
+    #   → 머리를 절반 아래로 줄이고 무채(Stone)로 내리고, 꽂는 자리를 라벨 «가장자리»로 옮겨
+    #     바늘이 천으로 들어가는 지점이 보이게 한다. 중앙이 아니라 살짝 왼쪽 = 손으로 꽂은 자리.
+    if 핀:
+        핀x, 핀z = 라벨자리(-0.05, 0.30)
+        # ⚠2차·3차 시험 모두 바늘이 라벨 «앞»에 떠 막대사탕이 됐다. 깊이(y)를 라벨 뒷면 너머로 보내고
+        #   화면 평면에 눕혀야(x회전 68° → 20°) 아래끝이 천에 숨고 «꽂힌 길이»가 보인다.
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.008, depth=0.19, location=(핀x, 0.47, 핀z - 0.02),
+                                            rotation=(math.radians(20), 0, math.radians(-15)))
+        바늘 = bpy.context.object
+        bpy.ops.object.shade_smooth()
+        바늘.data.materials.append(매끈재질('핀바늘', 색['Stone'], 거칠기=0.25))
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.027, location=(핀x - 0.0084, 0.439, 핀z + 0.069))
+        핀머리 = bpy.context.object
+        bpy.ops.object.shade_smooth()
+        핀머리.data.materials.append(매끈재질('핀머리', 색['Stone'], 거칠기=0.30))
+    # ③ 보기 알약 3 — 무광 펠트 버튼(털 없음 — 버튼은 조용해야 한다 · 상태 표시는 HTML 층).
+    #    Deep Wool 은 이 키 아래서 카드보다 밝게 떠 위계가 뒤집혔다(시험 실측) — 카드와 같은 Ink 로.
+    # 3차: 카드가 낮아지자 카드-알약 틈(0.41)이 알약끼리의 틈(0.22)의 두 배가 돼 리듬이 끊겼다.
+    #   틈을 하나로 맞춰 올린다 — 덤으로 마지막 알약이 화면 바닥의 힌트를 밀치던 것도 풀린다.
+    for 번, z in enumerate((-0.16, -0.86, -1.56)):
+        알 = 베개몸((0.95, 0.1, 0.24), 위치=(0, 0.55, z), 크리스=알약각)
+        칸들['알약%d' % (번 + 1)] = 알     # 보기 글자도 자기 그릇에 묻는다 — 알약을 옮기면 글이 따라온다
+        알.data.materials.append(직물결(매끈재질('알약천', 색['Ink'], 거칠기=0.95), 규모=160.0, 세기=0.04))
+        키제외.append(알)    # 실측: 가운데 알약에 키 하이라이트가 앉아 3.65:1 — 셋 다 가라앉힌다
+    return (0, -12.0, 0.35), 90
+
 형태들 = {'오브': 오브, '알약': 알약, '아이콘': 아이콘, '스티치': 스티치, '털실진행바': 털실진행바, '귤': 귤, '도넛': 도넛,
         '단추토글': 단추토글, '밑그림': 밑그림, '페이지점': 페이지점, '폼폼': 폼폼, '시침핀': 시침핀,
         '와펜': 와펜, '블랭킷': 블랭킷, '실패스피너': 실패스피너, '직조라벨': 직조라벨,
         '패턴지판': 패턴지판, '다린천판': 다린천판, '유리판': 유리판,
         '단춧구멍필드': 단춧구멍필드, '스냅': 스냅, '조각보타일': 조각보타일, '매듭': 매듭,
-        '앱판': 앱판, '자수글자': 자수글자, '레터프레스': 레터프레스, '라벨태그': 라벨태그}
+        '앱판': 앱판, '자수글자': 자수글자, '레터프레스': 레터프레스, '라벨태그': 라벨태그,
+        '조합판': 조합판}
 if 형태 not in 형태들:
     raise SystemExit('모르는 형태: ' + 형태 + ' — 아는 것은 ' + '·'.join(형태들))
+키제외 = []          # 형태가 채우면 키 라이트에서 빠진다 — 밝은 글자가 앉을 그릇을 가라앉히는 «가림» 문법
+칸들 = {}            # 형태가 채우면 «그릇의 화면 픽셀 자리»가 굽기 뒤 JSON 으로 나온다 — 본문 층이 손좌표를 안 쓰게
 카메라위치, 카메라피치 = 형태들[형태]()
 
 # ── 무대·광 — 검은 무대 · 큰 소프트 키 · 여린 필 · 위 림 ────────────────────
@@ -1154,6 +1493,16 @@ elif 조명 == '스침':
 else:
     raise SystemExit('모르는 조명: ' + 조명 + ' — 아는 것은 원본·결광2·스침')
 
+if 키제외:
+    # «가림» 문법 — 키제외 목록의 그릇들은 키를 안 받는다(필·림만) → 밝은 글자의 땅으로 가라앉는다.
+    받는 = bpy.data.collections.new('키_받는것')
+    씬.collection.children.link(받는)
+    빠질 = set(o.name for o in 키제외)
+    for o in bpy.data.objects:
+        if o.type in ('MESH', 'CURVE', 'FONT', 'SURFACE') and o.name not in 빠질:
+            받는.objects.link(o)
+    bpy.data.objects['키'].light_linking.receiver_collection = 받는
+
 bpy.ops.object.camera_add(location=카메라위치, rotation=(math.radians(카메라피치), 0, 0))
 씬.camera = bpy.context.object
 씬.camera.data.lens = 85
@@ -1162,8 +1511,23 @@ bpy.ops.object.camera_add(location=카메라위치, rotation=(math.radians(카�
 씬.cycles.samples = 견본
 씬.cycles.use_denoising = True
 씬.render.resolution_x = 너비
-씬.render.resolution_y = int(너비 * 0.82)
+씬.render.resolution_y = int(너비 * float(인자.get('비율', '0.82')))   # 조합판 = 1.9(폰 세로)
 씬.render.filepath = 출력
+
+# ── 그릇의 «화면 자리»를 함께 낸다 — 본문 층(PIL)이 손좌표를 짚지 않게 ──────────────
+#   까닭: 본문 좌표(150/596/692…)는 2차 카드의 크기에 손으로 맞춘 값이라, 카드를 줄이면
+#   글이 카드 밖으로 새거나 위로 쏠린다. 그릇이 자기 자리를 말하게 하면 판마다 다시 안 잰다.
+if 칸들:
+    from bpy_extras.object_utils import world_to_camera_view
+    표 = {}
+    for 이름, o in 칸들.items():
+        점 = [world_to_camera_view(씬, 씬.camera, v) for v in 상자(o)]
+        xs = [p.x * 씬.render.resolution_x for p in 점]
+        ys = [(1 - p.y) * 씬.render.resolution_y for p in 점]
+        표[이름] = {'좌': min(xs), '우': max(xs), '위': min(ys), '아래': max(ys)}
+    with open(출력 + '.칸.json', 'w', encoding='utf-8') as f:
+        json.dump(표, f, ensure_ascii=False, indent=1)
+    print('칸:', 표)
 
 
 def GPU켜기():
