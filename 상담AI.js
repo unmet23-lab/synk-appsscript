@@ -36,7 +36,8 @@ const 상담AI_사고 = false;               // 메신저는 응답속도가 전
 const 상담AI_기본상한 = 300;             // 하루 호출 상한 기본값
 /* ⚠ 칸은 **끝에만** 늘린다 — 읽는 쪽이 전부 열 번호로 집는다(`r[8]`·`setValue(draftRow, 9)`).
  *   중간에 끼우면 발송 표식이 엉뚱한 칸에 찍히고, 그 증상은 「조용함」이다. */
-const 상담AI_로그헤더 = ['시각', '세션', '발신', '내용', '인계', '입력토큰', '캐시읽기', '출력토큰', '비고', '채널', '모델'];
+/* [v9.259 · Ⅰ-④] 헤더 정본은 골격 파일로 이관 — `상담로그_HEADERS`(엔진_셋업확장.js). 골격 편입으로
+ * 두 곳이 되는 순간 갈라지므로 여기 사본을 걷었다. 아래 사용처는 전부 함수 몸이라 로드 순서 무관. */
 /* '모델' 칸은 [v9.201] 신설 — 모델을 Sonnet→Opus 로 올리면서 **행마다 어느 모델이었는지**를 남긴다.
  * 왜 필요한가: 비용 집계가 단가를 하나로 고정하고 있었는데, 한 달 안에 옛 모델 행과 새 모델 행이
  * 섞이면 그 달의 지출은 **영영 못 가른다**(토큰 수만 남고 단가를 되짚을 근거가 없다 — 소급 불가).
@@ -48,7 +49,7 @@ const 상담AI_단가 = {                     // USD per MTok — **문서값이
 };
 const 상담AI_캐시배수 = 0.1;              // 캐시 읽기는 입력가의 0.1배
 const 상담AI_환율 = 3500;                 // ₮/$1
-const 상담AI_리드헤더 = ['날짜', '이름', '연락처', '유입경로', '추천인', '체험참석', '등록', '등록권종', '등록일', '미등록사유', '메모', '캠페인'];
+// [v9.259 · Ⅰ-④] 리드 헤더 정본도 골격으로 — `상담리드_HEADERS`(엔진_셋업확장.js · 위와 같은 사유).
 
 /* ── 웹훅 입구 ─────────────────────────────────────────────
  * 매니챗 External Request / 자체 폼 → POST {token, session, text}
@@ -319,10 +320,10 @@ function 셀안전_(v) {
  * 엔진에서 쓰는 자리: 학부모/학생 말뭉치를 나누는 라벨 — 섞이면 톤·질문 분포가 한 덩어리가 된다. */
 function 상담_기록_(세션, 발신, 내용, 인계, usage, 비고, 채널) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sh = ensureSheet(ss, '상담로그', 상담AI_로그헤더);
+  const sh = ensureSheet(ss, '상담로그', 상담로그_HEADERS);
   // ensureSheet 는 **만들 때만** 머리글을 쓴다 — 이미 서 있는 시트는 옛 폭 그대로라 새 칸이 이름 없이 쌓인다.
-  if (sh.getLastColumn() < 상담AI_로그헤더.length) {
-    sh.getRange(1, 1, 1, 상담AI_로그헤더.length).setValues([상담AI_로그헤더]);
+  if (sh.getLastColumn() < 상담로그_HEADERS.length) {
+    sh.getRange(1, 1, 1, 상담로그_HEADERS.length).setValues([상담로그_HEADERS]);
   }
   const u = usage || {};
   sh.appendRow([new Date(), 셀안전_(세션), 발신, 셀안전_(String(내용).slice(0, 2000)), 인계 ? 'Y' : '',
@@ -335,7 +336,7 @@ function 상담_기록_(세션, 발신, 내용, 인계, usage, 비고, 채널) {
 // 이름 또는 연락처가 잡히면 leads에 적재. 같은 세션은 한 번만(중복 리드 방지)
 function 상담_리드적재_(세션, d) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const ld = ensureSheet(ss, 'leads', 상담AI_리드헤더);
+  const ld = ensureSheet(ss, 'leads', 상담리드_HEADERS);
   const 표식 = '[상담AI:' + 세션 + ']';
   if (ld.getLastRow() > 1) {
     const memo = ld.getRange(2, 11, ld.getLastRow() - 1, 1).getValues();
