@@ -212,6 +212,16 @@ area("key",  (-2.4, -2.8, 2.6), (math.radians(42), 0, math.radians(-40)), 5.2, 3
 area("fill", ( 3.0, -1.4, 0.9), (math.radians(78), 0, math.radians(60)),  3.4,  26 * 램프배)
 area("rim",  ( 0.0,  3.4, 1.7), (math.radians(-56), 0, 0),                3.0, 175 * 램프배)
 
+# ── 로고 부품 전용 «스침» 키 — 글자공방 인계 08-20 의 명품 렌더 4계 이식 ──
+#   ① 대비는 재료가 낸다: 잔털·범프의 요철을 세우는 것은 «저각 빛»이다 ② 가장 밝은 것은 하나(이 키)
+#   함정 ⑤: 스침광은 33°가 하한(14°는 코사인 소멸) — 아래 자리는 면 기준 33.1°.
+#   함정 ④: 역제곱 — key 380W@4.51 과 같은 조도가 이 거리(6.59)면 811W. 900 은 «가장 밝은 하나» 몫.
+if 부품 in ("로고꺾쇠", "로고배지"):
+    import mathutils as _mu
+    스침위치 = (-4.0, -3.6, 3.8)
+    _d = _mu.Vector((0, 0, 0)) - _mu.Vector(스침위치)
+    area("스침", 스침위치, _d.to_track_quat('-Z', 'Y').to_euler(), 3.8, 900 * 램프배)
+
 세트 = []
 
 
@@ -775,15 +785,29 @@ def 구슬재질(이름="구슬"):
 
 
 def 실재질():
-    """실땀의 실 — 방적사(꼬인 실)라 펠트보다 매끈하고 살짝 광이 돈다. 색 = Stitch(리니어)."""
+    """실땀의 실 — 방적사(꼬인 실)라 펠트보다 매끈하고 살짝 광이 돈다. 색 = Stitch(리니어).
+    7판: 꼬임 범프 — 매끈한 튜브는 «플라스틱 끈»으로 읽힌다. 잔 노이즈가 방적의 서명."""
     m, nt, out = 새재질("Loom_실")
     p = nt.nodes.new("ShaderNodeBsdfPrincipled")
     p.inputs["Base Color"].default_value = (0.871, 0.768, 0.577, 1.0)
     p.inputs["Roughness"].default_value = 0.5
     if "Sheen Weight" in p.inputs:
         p.inputs["Sheen Weight"].default_value = 0.25
+    nz = nt.nodes.new("ShaderNodeTexNoise")
+    nz.inputs["Scale"].default_value = 42.0
+    nz.inputs["Detail"].default_value = 3.0
+    bump = nt.nodes.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.2
+    nt.links.new(nz.outputs["Fac"], bump.inputs["Height"])
+    nt.links.new(bump.outputs["Normal"], p.inputs["Normal"])
     nt.links.new(p.outputs[0], out.inputs["Surface"])
     return m
+
+
+# 🔴 7판 실측 — 「잔털(파티클)」 방향은 이 부품들에서 철회했다. 두 겹으로 실패:
+#   ① 이 스케일의 판판한 아플리케에서 겉털이 형태·«사진 결»을 통째로 덮어 회색 카펫이 됐다
+#      (룸섬유 축 ① 「길면 털이 형태를 먹는다」 그대로) ② 이 블렌더 판에서 털재질의 색 입력이
+#      조용히 무시돼 코랄이 회색으로 떴다(넣기가 없는 키를 조용히 넘김). 펠트의 결은 사진이 정본.
 
 
 def 땀하나(이름, 부모, 중심, 방향, 표면z, 길이=0.11, 굵기=0.014, 솟음=0.032, 잠김=0.024, 재질=None):
