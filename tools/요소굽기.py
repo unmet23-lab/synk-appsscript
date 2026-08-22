@@ -2654,11 +2654,11 @@ def 초밥():
 
     # ── 종류 가르기 ──────────────────────────────────────────────────────────────
     if 종류 in 니기리:
-        for k, (cx, cy, 각) in enumerate(((-0.34, 0.20, 14), (0.36, -0.16, -22))):
-            니기리하나(종류, cx, cy, 각, 1.0 if k == 0 else 0.94)
+        for k, (cx, cy, 각) in enumerate(((-0.40, 0.24, 14), (0.42, -0.20, -22))):
+            니기리하나(종류, cx, cy, 각, 1.20 if k == 0 else 1.12)
     elif 종류 == '계란':
-        for k, (cx, cy, 각) in enumerate(((-0.34, 0.20, 14), (0.36, -0.16, -22))):
-            s = 1.0 if k == 0 else 0.94
+        for k, (cx, cy, 각) in enumerate(((-0.40, 0.24, 14), (0.42, -0.20, -22))):
+            s = 1.20 if k == 0 else 1.12
             윗 = 샤리(cx, cy, 각, s)
             # 계란은 «자른 블록»이라 안 처진다 — 처짐 0.012 는 모서리만 눅인다.
             면 = 네타('Butter', 윗, cx, cy, 각, s, 두께=0.085, 거칠기=0.58, 폭=0.45, 높=0.26, 처짐=0.012)
@@ -2670,20 +2670,20 @@ def 초밥():
                                     ('장어', 0.36, -0.42, -20, 0.80)):
             니기리하나(이름, cx, cy, 각, s)
     elif 종류 == '연어알':
-        for k, (cx, cy) in enumerate(((-0.34, 0.18), (0.36, -0.18))):
-            군함(cx, cy, 1.0 if k == 0 else 0.94, 'Coral 2', 알수=17, 알크기=0.055)
+        for k, (cx, cy) in enumerate(((-0.40, 0.22), (0.42, -0.22))):
+            군함(cx, cy, 1.18 if k == 0 else 1.10, 'Coral 2', 알수=17, 알크기=0.055)
     elif 종류 == '성게':
-        for k, (cx, cy) in enumerate(((-0.34, 0.18), (0.36, -0.18))):
-            군함(cx, cy, 1.0 if k == 0 else 0.94, 'Butter', 알수=7, 알크기=0.085, 덩이=True)
+        for k, (cx, cy) in enumerate(((-0.40, 0.22), (0.42, -0.22))):
+            군함(cx, cy, 1.18 if k == 0 else 1.10, 'Butter', 알수=7, 알크기=0.085, 덩이=True)
     elif 종류 == '오이롤':
-        for cx, cy, s in ((-0.40, 0.22, 1.00), (0.30, 0.30, 0.94), (0.10, -0.34, 1.04)):
+        for cx, cy, s in ((-0.48, 0.26, 1.18), (0.36, 0.36, 1.10), (0.12, -0.42, 1.22)):
             마키(cx, cy, s, [('Meadow', 0.105, 0, 0)])
     elif 종류 == '참치롤':
-        for cx, cy, s in ((-0.40, 0.22, 1.00), (0.30, 0.30, 0.94), (0.10, -0.34, 1.04)):
+        for cx, cy, s in ((-0.48, 0.26, 1.18), (0.36, 0.36, 1.10), (0.12, -0.42, 1.22)):
             마키(cx, cy, s, [('Coral 3', 0.105, 0, 0)])
     elif 종류 == '후토마키':
         # 후토마키 — 속이 여럿이라 단면이 «그림»이 된다. 굵기로도 마키와 갈린다.
-        for cx, cy, s in ((-0.36, 0.24, 1.00), (0.38, -0.20, 0.94)):
+        for cx, cy, s in ((-0.42, 0.28, 1.16), (0.44, -0.24, 1.08)):
             마키(cx, cy, s, [('Butter', 0.095, -0.10, 0.09), ('Meadow', 0.075, 0.11, 0.08),
                             ('Coral 2', 0.080, 0.02, -0.11), ('Stitch', 0.060, -0.13, -0.07)],
                 겉반=0.46)
@@ -2692,7 +2692,7 @@ def 초밥():
         #   꼬리가 없으면 그냥 «굵은 롤»이고, 두 겹이 없으면 «노란 점»이다. 둘 다 있어야 이 롤이다.
         옷재 = 직물결(매끈재질('튀김옷', 색['Butter Deep'], 거칠기=0.80), 지름=0.11, 세기=0.95)
         살재 = 직물결(매끈재질('새우살', 색['Coral Soft'], 거칠기=0.46), 지름=0.20, 세기=0.5)
-        for k, (cx, cy, s) in enumerate(((-0.40, 0.26, 1.00), (0.36, 0.28, 0.94), (0.04, -0.36, 1.04))):
+        for k, (cx, cy, s) in enumerate(((-0.46, 0.30, 1.16), (0.42, 0.32, 1.08), (0.06, -0.42, 1.20))):
             마키(cx, cy, s, [('Meadow', 0.068, 0.15, 0.08), ('Butter', 0.052, -0.16, -0.05)], 겉반=0.46)
             for r, 재 in ((0.150, 옷재), (0.092, 살재)):     # 두 겹 — 바깥이 옷, 안이 살
                 bpy.ops.mesh.primitive_cylinder_add(radius=r * s, depth=0.40 * s,
@@ -2725,8 +2725,8 @@ def 초밥():
                 밑.data.materials.append(옷재)
 
     elif 종류 == '유부':
-        for k, (cx, cy, 각) in enumerate(((-0.34, 0.18, 12), (0.36, -0.18, -20))):
-            s = 1.0 if k == 0 else 0.94
+        for k, (cx, cy, 각) in enumerate(((-0.40, 0.22, 12), (0.42, -0.22, -20))):
+            s = 1.18 if k == 0 else 1.10
             # 🔴1판은 `베개몸`이라 «상자»였다 — 유부는 **눌린 주머니**다: 배가 부르고 위가 벌어진다.
             R = 0.46 * s
             bpy.ops.mesh.primitive_uv_sphere_add(radius=R, location=(0, 0, 0), segments=56, ring_count=28)
@@ -2758,7 +2758,17 @@ def 초밥():
                          '·'.join(list(니기리) + ['계란', '모둠', '연어알', '성게',
                                                  '오이롤', '참치롤', '후토마키', '유부']))
 
-    # ── 곁들이 — 초밥«집»의 접시로 만드는 두 점 ──────────────────────────────────
+    # ── 곁들이 — **낱개는 주인공 하나 · 모둠은 한 상** ─────────────────────────────
+    # 🔴 유호 판정 08-22 「너무 많이 있어서 조잡한지 판단해줘」 — **조잡한 게 맞았다.**
+    #    낱개 접시의 쓸모는 「이게 연어초밥이다」 하나인데, 곁들이 여섯(생강·간장·젓가락·받침·
+    #    레몬·차)이 초밥 두 점보다 화면 면적을 더 먹고 있었다. 주인공을 안 가리키는 물건이
+    #    주인공보다 크면 그건 «차림»이 아니라 «소음»이다.
+    # ⇒ 규칙: **낱개 = 초밥 + 생강 하나** · **모둠 = 한 상 전부**(간장·젓가락·레몬·차·물수건).
+    #    모둠은 「초밥집에 앉았다」를 그리는 자리라 차림이 곧 내용이다 — 거기서만 다 편다.
+    # ⚠「군침 돌게」의 첫 손잡이는 소품이 아니라 **주인공의 크기**다. 낱개는 초밥을 키웠다
+    #    (s 1.00/0.94 → 1.20/1.12) — 접시를 채우는 만큼 맛있어 보인다.
+    한상 = (종류 == '모둠') if 인자.get('곁들이', '자동') == '자동' else (인자['곁들이'] == '전부')
+
     # 생강(가리) — 얇은 분홍 조각 넷을 겹쳐 «주름진 더미»로. 초밥 접시의 서명이다.
     # 🔴생강도 `베개몸`이라 «분홍 카드»였다 — 절인 생강은 얇아서 **주름진다.**
     생강재 = 직물결(매끈재질('생강', 색['Coral Soft'], 거칠기=0.34), 지름=0.24, 세기=0.6)
@@ -2779,88 +2789,124 @@ def 초밥():
                       0.04 + 0.028 * i)
         조.rotation_euler = (0, 0, 손.uniform(0, 3.14))
         조.data.materials.append(생강재)
-    # 젓가락 한 벌 — 접시 앞에 «놓인» 것(유호 08-22 「젓가락도 하나 놔줘」).
-    #   🔑 밝은 나무색(Stitch)으로 둔다 — 옻칠 검정은 이 어두운 접시에서 통째로 사라진다.
-    #     «색은 hex 가 아니라 그 바탕에서의 결과»로 고른다(장어 소스에서 배운 그대로).
-    #   ⚠젓가락은 «가늘어지는» 막대다 — 굵기가 같으면 나무젓가락이 아니라 «빨대 둘»이다.
-    #   ⚠축을 조심한다: `Rx(90°)` 는 원뿔의 +Z 를 **−Y**(카메라 쪽)로 보낸다 — 1판이 그래서
-    #     «막대사탕»처럼 화면 앞으로 튀어나왔다. 접시를 «가로질러» 눕히려면 `Ry(90°)` 다(+Z → +X).
-    막재 = 직물결(매끈재질('젓가락', 색['Stitch'], 거칠기=0.40), 지름=0.14, 세기=0.50)
-    젓각, 젓길 = 7.0, 2.16
-    코ㅈ, 사ㅈ = math.cos(math.radians(젓각)), math.sin(math.radians(젓각))
-    for j in (-1, 1):
-        bpy.ops.mesh.primitive_cone_add(radius1=0.050, radius2=0.019, depth=젓길, vertices=28,
-                                        location=(0.02 - 사ㅈ * j * 0.082,
-                                                  -1.08 + 코ㅈ * j * 0.082, 0.028),
-                                        rotation=(0, math.radians(90), math.radians(젓각)))
-        막 = bpy.context.object
-        bev = 막.modifiers.new('bev', 'BEVEL'); bev.width = 0.012; bev.segments = 3
+    if 한상:
+        # 젓가락 한 벌 — 접시 앞에 «놓인» 것(유호 08-22 「젓가락도 하나 놔줘」).
+        #   🔑 밝은 나무색(Stitch)으로 둔다 — 옻칠 검정은 이 어두운 접시에서 통째로 사라진다.
+        #     «색은 hex 가 아니라 그 바탕에서의 결과»로 고른다(장어 소스에서 배운 그대로).
+        #   ⚠젓가락은 «가늘어지는» 막대다 — 굵기가 같으면 나무젓가락이 아니라 «빨대 둘»이다.
+        #   ⚠축을 조심한다: `Rx(90°)` 는 원뿔의 +Z 를 **−Y**(카메라 쪽)로 보낸다 — 1판이 그래서
+        #     «막대사탕»처럼 화면 앞으로 튀어나왔다. 접시를 «가로질러» 눕히려면 `Ry(90°)` 다(+Z → +X).
+        막재 = 직물결(매끈재질('젓가락', 색['Stitch'], 거칠기=0.40), 지름=0.14, 세기=0.50)
+        젓각, 젓길 = 7.0, 2.16
+        코ㅈ, 사ㅈ = math.cos(math.radians(젓각)), math.sin(math.radians(젓각))
+        for j in (-1, 1):
+            bpy.ops.mesh.primitive_cone_add(radius1=0.050, radius2=0.019, depth=젓길, vertices=28,
+                                            location=(0.02 - 사ㅈ * j * 0.082,
+                                                      -1.08 + 코ㅈ * j * 0.082, 0.028),
+                                            rotation=(0, math.radians(90), math.radians(젓각)))
+            막 = bpy.context.object
+            bev = 막.modifiers.new('bev', 'BEVEL'); bev.width = 0.012; bev.segments = 3
+            bpy.ops.object.shade_smooth()
+            막.data.materials.append(막재)
+        # 젓가락 받침 — 끝이 상에 안 닿게 괴는 작은 등. 이 한 점이 «놓인 것»과 «떨어뜨린 것»을 가른다.
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.20,
+                                             location=(0.02 + 코ㅈ * 0.68, -1.08 + 사ㅈ * 0.68, 0.00),
+                                             segments=28, ring_count=14)
+        받침 = bpy.context.object
+        받침.scale = (0.42, 1.05, 0.30)
+        받침.rotation_euler = (0, 0, math.radians(젓각))
         bpy.ops.object.shade_smooth()
-        막.data.materials.append(막재)
-    # 젓가락 받침 — 끝이 상에 안 닿게 괴는 작은 등. 이 한 점이 «놓인 것»과 «떨어뜨린 것»을 가른다.
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.20,
-                                         location=(0.02 + 코ㅈ * 0.68, -1.08 + 사ㅈ * 0.68, 0.00),
-                                         segments=28, ring_count=14)
-    받침 = bpy.context.object
-    받침.scale = (0.42, 1.05, 0.30)
-    받침.rotation_euler = (0, 0, math.radians(젓각))
-    bpy.ops.object.shade_smooth()
-    받침.data.materials.append(직물결(매끈재질('젓받침', 색['Stone'], 거칠기=0.52), 지름=0.42))
+        받침.data.materials.append(직물결(매끈재질('젓받침', 색['Stone'], 거칠기=0.52), 지름=0.42))
 
-    # 레몬 반달 — 이름표는 «단면»이다: 껍질 테 + 과육 + 가운데에서 뻗는 결.
-    #   ⚠통째 레몬(노란 타원)은 «달걀»과 안 갈린다. 잘린 면이 보여야 레몬이다.
-    렘x, 렘y = -1.02, -0.02          # ⚠1판은 (−0.88, 0.42)라 초밥에 절반이 가렸다 — 앞으로 뺀다
-    def 반달(r, n=26):
-        점 = [(0.0, 0.0)]
-        for i in range(n + 1):
-            a2 = math.pi * i / n
-            점.append((r * math.cos(a2), r * math.sin(a2)))
-        return 점
-    아플리케([옮김(반달(0.32), 렘x, 렘y + 0.06)], 'Butter', 두께=0.030, 베벨=0.010,
-           높이=0.030, 눕힘=True, 털수=0, 리메시=0)                    # 껍질
-    아플리케([옮김(반달(0.265), 렘x, 렘y + 0.06)], 'Butter Soft', 두께=0.016, 베벨=0.006,
-           높이=0.078, 눕힘=True, 털수=0, 리메시=0)                    # 과육
-    결재 = 매끈재질('레몬결', 색['Paper'], 거칠기=0.44)
-    for i in range(5):                                                # 결 다섯 — 가운데서 뻗는다
-        a2 = math.pi * (i + 0.5) / 5
-        땀하나(렘x + 0.145 * math.cos(a2), 렘y + 0.06 + 0.145 * math.sin(a2), 0.098,
-              0.115, 0.011, 결재, 회전y=0, 회전z=math.degrees(a2))
+        # 레몬 반달 — 이름표는 «단면»이다: 껍질 테 + 과육 + 가운데에서 뻗는 결.
+        #   ⚠통째 레몬(노란 타원)은 «달걀»과 안 갈린다. 잘린 면이 보여야 레몬이다.
+        렘x, 렘y = -1.02, -0.02          # ⚠1판은 (−0.88, 0.42)라 초밥에 절반이 가렸다 — 앞으로 뺀다
+        def 반달(r, n=26):
+            점 = [(0.0, 0.0)]
+            for i in range(n + 1):
+                a2 = math.pi * i / n
+                점.append((r * math.cos(a2), r * math.sin(a2)))
+            return 점
+        아플리케([옮김(반달(0.32), 렘x, 렘y + 0.06)], 'Butter', 두께=0.030, 베벨=0.010,
+               높이=0.030, 눕힘=True, 털수=0, 리메시=0)                    # 껍질
+        아플리케([옮김(반달(0.265), 렘x, 렘y + 0.06)], 'Butter Soft', 두께=0.016, 베벨=0.006,
+               높이=0.078, 눕힘=True, 털수=0, 리메시=0)                    # 과육
+        결재 = 매끈재질('레몬결', 색['Paper'], 거칠기=0.44)
+        for i in range(5):                                                # 결 다섯 — 가운데서 뻗는다
+            a2 = math.pi * (i + 0.5) / 5
+            땀하나(렘x + 0.145 * math.cos(a2), 렘y + 0.06 + 0.145 * math.sin(a2), 0.098,
+                  0.115, 0.011, 결재, 회전y=0, 회전z=math.degrees(a2))
 
-    # 차 한 잔 — 손잡이 없는 유노미. 접시 «옆»에 선다(위에 올리면 상이 아니라 쟁반이 된다).
-    #   ⚠잔은 아래가 좁고 위가 조금 벌어진다 — 곧은 원통은 잔이 아니라 «깡통»이다.
-    잔x, 잔y = 1.28, 0.92
-    bpy.ops.mesh.primitive_cylinder_add(radius=0.31, depth=0.46, location=(잔x, 잔y, 0.21), vertices=56)
-    잔 = bpy.context.object
-    for v in 잔.data.vertices:
-        # ⚠부동소수 오차로 t 가 −0.0001 만 돼도 `t ** 1.35` 가 **복소수**를 낸다(파이썬은 음수의
-        #   분수 거듭제곱을 복소수로 준다) → 블렌더가 «숫자가 아니다»로 죽는다. 잘라 넣는다.
-        t = max(0.0, min(1.0, (v.co.z + 0.23) / 0.46))   # 0 = 바닥, 1 = 아가리
-        k = 0.78 + 0.28 * t ** 1.35
-        v.co.x *= k
-        v.co.y *= k
-    bev = 잔.modifiers.new('bev', 'BEVEL'); bev.width = 0.018; bev.segments = 4
-    bpy.ops.object.shade_smooth()
-    # ⚠1판은 Oat(#EDE7DC)라 **화면에서 가장 밝은 것**이 찻잔이 됐다 — 4계 ②(가장 밝은 것은 하나)를
-    #   깨고 눈이 음식이 아니라 잔으로 간다. Stone 은 간장 종지와 같은 도자기 톤이라 한 벌로도 읽힌다.
-    잔.data.materials.append(직물결(매끈재질('찻잔', 색['Stone'], 거칠기=0.44), 지름=0.62, 세기=0.45))
-    # 차 — 아가리 «높이»의 한 겹. 아주 젖어 있다(거칠기 0.22)라 «액체»로 읽힌다.
-    #   ⚠1판은 z 0.395 였는데 잔이 «속 없는 통짜»라 차가 몸통 안에 묻혀 한 픽셀도 안 보였다.
-    #     빈 속을 파는 대신 **아가리 높이에 수면을 얹는다** — 가득 찬 잔은 그렇게 보인다.
-    bpy.ops.mesh.primitive_cylinder_add(radius=0.296, depth=0.02, location=(잔x, 잔y, 0.432), vertices=48)
-    차 = bpy.context.object
-    bpy.ops.object.shade_smooth()
-    차.data.materials.append(매끈재질('녹차', 색['Meadow Deep'], 거칠기=0.34))   # 0.22 는 초록이 튄다 — 「젖음의 눈금」은 0.34
+        # 차 한 잔 — 손잡이 없는 유노미. 접시 «옆»에 선다(위에 올리면 상이 아니라 쟁반이 된다).
+        #   ⚠잔은 아래가 좁고 위가 조금 벌어진다 — 곧은 원통은 잔이 아니라 «깡통»이다.
+        잔x, 잔y = 1.28, 0.92
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.31, depth=0.46, location=(잔x, 잔y, 0.21), vertices=56)
+        잔 = bpy.context.object
+        for v in 잔.data.vertices:
+            # ⚠부동소수 오차로 t 가 −0.0001 만 돼도 `t ** 1.35` 가 **복소수**를 낸다(파이썬은 음수의
+            #   분수 거듭제곱을 복소수로 준다) → 블렌더가 «숫자가 아니다»로 죽는다. 잘라 넣는다.
+            t = max(0.0, min(1.0, (v.co.z + 0.23) / 0.46))   # 0 = 바닥, 1 = 아가리
+            k = 0.78 + 0.28 * t ** 1.35
+            v.co.x *= k
+            v.co.y *= k
+        bev = 잔.modifiers.new('bev', 'BEVEL'); bev.width = 0.018; bev.segments = 4
+        bpy.ops.object.shade_smooth()
+        # ⚠1판은 Oat(#EDE7DC)라 **화면에서 가장 밝은 것**이 찻잔이 됐다 — 4계 ②(가장 밝은 것은 하나)를
+        #   깨고 눈이 음식이 아니라 잔으로 간다. Stone 은 간장 종지와 같은 도자기 톤이라 한 벌로도 읽힌다.
+        잔.data.materials.append(직물결(매끈재질('찻잔', 색['Stone'], 거칠기=0.44), 지름=0.62, 세기=0.45))
+        # 차 — 아가리 «높이»의 한 겹. 아주 젖어 있다(거칠기 0.22)라 «액체»로 읽힌다.
+        #   ⚠1판은 z 0.395 였는데 잔이 «속 없는 통짜»라 차가 몸통 안에 묻혀 한 픽셀도 안 보였다.
+        #     빈 속을 파는 대신 **아가리 높이에 수면을 얹는다** — 가득 찬 잔은 그렇게 보인다.
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.296, depth=0.02, location=(잔x, 잔y, 0.432), vertices=48)
+        차 = bpy.context.object
+        bpy.ops.object.shade_smooth()
+        차.data.materials.append(매끈재질('녹차', 색['Meadow Deep'], 거칠기=0.34))   # 0.22 는 초록이 튄다 — 「젖음의 눈금」은 0.34
 
-    # 간장 종지 + 와사비 한 점
-    bpy.ops.mesh.primitive_cylinder_add(radius=0.30, depth=0.10, location=(0.78, 0.50, 0.03), vertices=40)
-    종지 = bpy.context.object
-    bev = 종지.modifiers.new('bev', 'BEVEL'); bev.width = 0.025; bev.segments = 3
-    bpy.ops.object.shade_smooth()
-    종지.data.materials.append(직물결(매끈재질('종지', 색['Stone'], 거칠기=0.86), 지름=0.52))
-    bpy.ops.mesh.primitive_cylinder_add(radius=0.235, depth=0.03, location=(0.78, 0.50, 0.088), vertices=40)
-    간장 = bpy.context.object
-    bpy.ops.object.shade_smooth()
-    간장.data.materials.append(매끈재질('간장', 색['Graphite'], 거칠기=0.34))
+        # 간장 종지 + 와사비 한 점
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.30, depth=0.10, location=(0.78, 0.50, 0.03), vertices=40)
+        종지 = bpy.context.object
+        bev = 종지.modifiers.new('bev', 'BEVEL'); bev.width = 0.025; bev.segments = 3
+        bpy.ops.object.shade_smooth()
+        종지.data.materials.append(직물결(매끈재질('종지', 색['Stone'], 거칠기=0.86), 지름=0.52))
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.235, depth=0.03, location=(0.78, 0.50, 0.088), vertices=40)
+        간장 = bpy.context.object
+        bpy.ops.object.shade_smooth()
+        간장.data.materials.append(매끈재질('간장', 색['Graphite'], 거칠기=0.34))
+
+        # 물수건(오시보리) — 접시 «옆»의 말아 둔 흰 수건(유호 08-22 「물수건도 놔줘」).
+        #   🔑 이 상에서 유일하게 «먹는 것이 아닌» 물건이라 자리를 낮게, 앞쪽 구석에 둔다.
+        #     음식과 겨루면 안 된다 — 있는 줄만 알면 되는 물건이다.
+        #   ⚠말아 둔 수건은 «원기둥»이 아니라 **양끝이 조금 더 굵은 두루마리**다(가운데가 눌린다).
+        #   ⚠1판은 Chalk(#E4E4E7)로 크게, 화면 왼쪽 끝에 뒀더니 **잘린 채로 가장 밝은 것**이
+        #     됐다(4계 ② 위반 · 찻잔에서 이미 한 번 겪은 자리다). 톤을 Oat 로 내리고 작게 줄이고,
+        #     **찻잔 맞은편**(왼쪽 뒤)에 세워 좌우 무게를 맞춘다 — 앞쪽은 젓가락 자리다.
+        수건x, 수건y, 수건각 = -1.20, 0.90, -14.0
+        수건재 = 직물결(매끈재질('물수건', 색['Oat'], 거칠기=0.70), 지름=0.26, 세기=0.55)
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.155, depth=0.54, vertices=40,
+                                            location=(수건x, 수건y, 0.13),
+                                            rotation=(0, math.radians(90), math.radians(수건각)))
+        수건 = bpy.context.object
+        for v in 수건.data.vertices:
+            t = max(0.0, min(1.0, abs(v.co.z) / 0.27))
+            k = 0.90 + 0.12 * t ** 2
+            v.co.x *= k
+            v.co.y *= k
+        b수 = 수건.modifiers.new('bev', 'BEVEL'); b수.width = 0.05; b수.segments = 5
+        bpy.ops.object.shade_smooth()
+        수건.data.materials.append(수건재)
+        # 말린 자리 — 두루마리의 «끝단» 한 줄. 이게 없으면 그냥 흰 통나무다.
+        땀하나(수건x + 0.24 * math.cos(math.radians(수건각)), 수건y + 0.24 * math.sin(math.radians(수건각)),
+              0.285, 0.135, 0.012, 매끈재질('수건단', 색['Stone'], 거칠기=0.7),
+              회전y=0, 회전z=수건각 + 90)
+        # 받침 — 작고 어두운 종지. 흰 수건이 밤천 위에 그냥 놓이면 «떨어진 휴지»가 된다.
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.36, depth=0.07, vertices=44,
+                                            location=(수건x, 수건y, 0.005))
+        수받 = bpy.context.object
+        수받.scale = (1.0, 0.62, 1.0)
+        수받.rotation_euler = (0, 0, math.radians(수건각))
+        b받 = 수받.modifiers.new('bev', 'BEVEL'); b받.width = 0.02; b받.segments = 3
+        bpy.ops.object.shade_smooth()
+        수받.data.materials.append(직물결(매끈재질('수건받침', 색['Graphite 3'], 거칠기=0.84), 지름=0.9))
     return (0, -7.4, 4.7), 59
 
 
