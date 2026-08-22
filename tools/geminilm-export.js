@@ -11,7 +11,7 @@
  *   → 다시 돌리면 폴더 전체가 새로 만들어진다(harness-export.js와 같은 정신).
  *
  * 사용:
- *   node tools/geminilm-export.js           # 바탕화면\SYNK_노트북LM 에 생성
+ *   node tools/geminilm-export.js           # 바탕화면\SYNK_제미나이LM 에 생성
  *   node tools/geminilm-export.js --out <경로>
  *   node tools/geminilm-export.js --dry     # 무엇을 쓸지·무엇이 막히는지만 출력
  *
@@ -30,9 +30,11 @@ const os = require('os');
 const REPO = path.resolve(__dirname, '..');
 // 하네스 경로는 손으로 조립하지 않는다 — 이 자리엔 이 기계 이름이 박혀 있었다(F206).
 const MEM = require('./memory-graph.js').memoryDir();
-// 폴더 이름은 「SYNK_노트북LM」 그대로 둔다 — geminilm-drive.js 의 같은 주석 참고
-// (제미나이LM 쪽이 이미 이 이름을 소스로 물고 있을 수 있어, 여기서 바꾸면 조용히 갱신이 끊긴다).
-const DEFAULT_OUT = path.join(os.homedir(), 'OneDrive', 'Desktop', 'SYNK_노트북LM');
+// 폴더 이름도 2026-08-22 갈아탔다(geminilm-drive.js 의 같은 주석 참고) — 단 이 폴더는
+// 위험이 다르다: 매번 통째로 지우고 새로 만드는 «생성기 산출물»이라 살아있는 소스
+// 바인딩이 없다(README 안내대로 이미 업로드된 노트북은 그 시점의 정적 사본을 갖고
+// 있을 뿐, 이 폴더를 계속 지켜보지 않는다). 그래서 실물 웹 폴더 순서를 안 기다려도 된다.
+const DEFAULT_OUT = path.join(os.homedir(), 'OneDrive', 'Desktop', 'SYNK_제미나이LM');
 
 // ── 담지 않을 폴더 (경로 단위) ──────────────────────────────────────────
 // _archive·_구본 = 낡은 판. 제미나이LM이 낡은 판을 출처로 찍어 답하는 것이
@@ -210,7 +212,7 @@ ${blocked.length === 0 ? '| — | (없음) | — | — |' :
 1. 크롬에서 **notebooklm.google.com** 접속 → 구글 계정(Google AI Pro) 로그인
 2. 왼쪽 위 **「새로 만들기(Create new)」** 클릭
 3. 자료 추가 창이 뜨면 **「파일 업로드」** 선택
-4. 이 폴더(\`SYNK_노트북LM\`)를 열고 **Ctrl+A**로 전부 선택 → **열기**
+4. 이 폴더(\`SYNK_제미나이LM\`)를 열고 **Ctrl+A**로 전부 선택 → **열기**
    - 자료 ${written}개 (Plus 상한 300개 이내)
 5. 왼쪽 위 노트북 이름을 **\`SYNK 판정이력 ${today}\`** 로 바꾼다
    - 🔑 **이름에 날짜를 넣는 게 핵심이다.** 다음에 다시 만들면 노트북이 2개가 되는데,
