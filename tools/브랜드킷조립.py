@@ -230,7 +230,7 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 <div class="band">
   <svg viewBox="-8 -2 296 116" role="img" aria-label="SYNK" style="color:{다["잉크"]}">
     <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="currentColor">syn</text>
-    <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="{이름값["Coral"]}"/>
+    <path d="M146 46.7 L112 66.35 L146 86 L159 86 L125 66.35 L159 46.7 Z" fill="{이름값["Coral"]}"/>
     <path d="M196 92 L216 40 L228 40 L208 92 Z" fill="{다["잉크"]}" opacity=".5"/>
     <path d="M234 92 L254 40 L266 40 L246 92 Z" fill="{다["잉크"]}" opacity=".5"/>
   </svg>
@@ -251,13 +251,13 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
     <div class="logocard" style="background:var(--navy2)">
       <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK" style="color:{다["잉크"]}">
         <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="currentColor">syn</text>
-        <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="{이름값["Coral"]}"/>
+        <path d="M146 46.7 L112 66.35 L146 86 L159 86 L125 66.35 L159 46.7 Z" fill="{이름값["Coral"]}"/>
       </svg>
     </div>
     <div class="logocard" style="background:var(--paper); outline:1px solid var(--line)">
       <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK" style="color:{이름값["Ink"]}">
         <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="currentColor">syn</text>
-        <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="{이름값["Coral"]}"/>
+        <path d="M146 46.7 L112 66.35 L146 86 L159 86 L125 66.35 L159 46.7 Z" fill="{이름값["Coral"]}"/>
       </svg>
     </div>
     <div class="logocard" style="background:var(--navy2)">
