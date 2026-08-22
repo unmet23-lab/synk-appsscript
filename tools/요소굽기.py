@@ -2807,6 +2807,50 @@ def 초밥():
     bpy.ops.object.shade_smooth()
     받침.data.materials.append(직물결(매끈재질('젓받침', 색['Stone'], 거칠기=0.52), 지름=0.42))
 
+    # 레몬 반달 — 이름표는 «단면»이다: 껍질 테 + 과육 + 가운데에서 뻗는 결.
+    #   ⚠통째 레몬(노란 타원)은 «달걀»과 안 갈린다. 잘린 면이 보여야 레몬이다.
+    렘x, 렘y = -1.02, -0.02          # ⚠1판은 (−0.88, 0.42)라 초밥에 절반이 가렸다 — 앞으로 뺀다
+    def 반달(r, n=26):
+        점 = [(0.0, 0.0)]
+        for i in range(n + 1):
+            a2 = math.pi * i / n
+            점.append((r * math.cos(a2), r * math.sin(a2)))
+        return 점
+    아플리케([옮김(반달(0.32), 렘x, 렘y + 0.06)], 'Butter', 두께=0.030, 베벨=0.010,
+           높이=0.030, 눕힘=True, 털수=0, 리메시=0)                    # 껍질
+    아플리케([옮김(반달(0.265), 렘x, 렘y + 0.06)], 'Butter Soft', 두께=0.016, 베벨=0.006,
+           높이=0.078, 눕힘=True, 털수=0, 리메시=0)                    # 과육
+    결재 = 매끈재질('레몬결', 색['Paper'], 거칠기=0.44)
+    for i in range(5):                                                # 결 다섯 — 가운데서 뻗는다
+        a2 = math.pi * (i + 0.5) / 5
+        땀하나(렘x + 0.145 * math.cos(a2), 렘y + 0.06 + 0.145 * math.sin(a2), 0.098,
+              0.115, 0.011, 결재, 회전y=0, 회전z=math.degrees(a2))
+
+    # 차 한 잔 — 손잡이 없는 유노미. 접시 «옆»에 선다(위에 올리면 상이 아니라 쟁반이 된다).
+    #   ⚠잔은 아래가 좁고 위가 조금 벌어진다 — 곧은 원통은 잔이 아니라 «깡통»이다.
+    잔x, 잔y = 1.28, 0.92
+    bpy.ops.mesh.primitive_cylinder_add(radius=0.31, depth=0.46, location=(잔x, 잔y, 0.21), vertices=56)
+    잔 = bpy.context.object
+    for v in 잔.data.vertices:
+        # ⚠부동소수 오차로 t 가 −0.0001 만 돼도 `t ** 1.35` 가 **복소수**를 낸다(파이썬은 음수의
+        #   분수 거듭제곱을 복소수로 준다) → 블렌더가 «숫자가 아니다»로 죽는다. 잘라 넣는다.
+        t = max(0.0, min(1.0, (v.co.z + 0.23) / 0.46))   # 0 = 바닥, 1 = 아가리
+        k = 0.78 + 0.28 * t ** 1.35
+        v.co.x *= k
+        v.co.y *= k
+    bev = 잔.modifiers.new('bev', 'BEVEL'); bev.width = 0.018; bev.segments = 4
+    bpy.ops.object.shade_smooth()
+    # ⚠1판은 Oat(#EDE7DC)라 **화면에서 가장 밝은 것**이 찻잔이 됐다 — 4계 ②(가장 밝은 것은 하나)를
+    #   깨고 눈이 음식이 아니라 잔으로 간다. Stone 은 간장 종지와 같은 도자기 톤이라 한 벌로도 읽힌다.
+    잔.data.materials.append(직물결(매끈재질('찻잔', 색['Stone'], 거칠기=0.44), 지름=0.62, 세기=0.45))
+    # 차 — 아가리 «높이»의 한 겹. 아주 젖어 있다(거칠기 0.22)라 «액체»로 읽힌다.
+    #   ⚠1판은 z 0.395 였는데 잔이 «속 없는 통짜»라 차가 몸통 안에 묻혀 한 픽셀도 안 보였다.
+    #     빈 속을 파는 대신 **아가리 높이에 수면을 얹는다** — 가득 찬 잔은 그렇게 보인다.
+    bpy.ops.mesh.primitive_cylinder_add(radius=0.296, depth=0.02, location=(잔x, 잔y, 0.432), vertices=48)
+    차 = bpy.context.object
+    bpy.ops.object.shade_smooth()
+    차.data.materials.append(매끈재질('녹차', 색['Meadow Deep'], 거칠기=0.34))   # 0.22 는 초록이 튄다 — 「젖음의 눈금」은 0.34
+
     # 간장 종지 + 와사비 한 점
     bpy.ops.mesh.primitive_cylinder_add(radius=0.30, depth=0.10, location=(0.78, 0.50, 0.03), vertices=40)
     종지 = bpy.context.object
