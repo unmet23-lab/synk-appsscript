@@ -2779,6 +2779,34 @@ def 초밥():
                       0.04 + 0.028 * i)
         조.rotation_euler = (0, 0, 손.uniform(0, 3.14))
         조.data.materials.append(생강재)
+    # 젓가락 한 벌 — 접시 앞에 «놓인» 것(유호 08-22 「젓가락도 하나 놔줘」).
+    #   🔑 밝은 나무색(Stitch)으로 둔다 — 옻칠 검정은 이 어두운 접시에서 통째로 사라진다.
+    #     «색은 hex 가 아니라 그 바탕에서의 결과»로 고른다(장어 소스에서 배운 그대로).
+    #   ⚠젓가락은 «가늘어지는» 막대다 — 굵기가 같으면 나무젓가락이 아니라 «빨대 둘»이다.
+    #   ⚠축을 조심한다: `Rx(90°)` 는 원뿔의 +Z 를 **−Y**(카메라 쪽)로 보낸다 — 1판이 그래서
+    #     «막대사탕»처럼 화면 앞으로 튀어나왔다. 접시를 «가로질러» 눕히려면 `Ry(90°)` 다(+Z → +X).
+    막재 = 직물결(매끈재질('젓가락', 색['Stitch'], 거칠기=0.40), 지름=0.14, 세기=0.50)
+    젓각, 젓길 = 7.0, 2.16
+    코ㅈ, 사ㅈ = math.cos(math.radians(젓각)), math.sin(math.radians(젓각))
+    for j in (-1, 1):
+        bpy.ops.mesh.primitive_cone_add(radius1=0.050, radius2=0.019, depth=젓길, vertices=28,
+                                        location=(0.02 - 사ㅈ * j * 0.082,
+                                                  -1.08 + 코ㅈ * j * 0.082, 0.028),
+                                        rotation=(0, math.radians(90), math.radians(젓각)))
+        막 = bpy.context.object
+        bev = 막.modifiers.new('bev', 'BEVEL'); bev.width = 0.012; bev.segments = 3
+        bpy.ops.object.shade_smooth()
+        막.data.materials.append(막재)
+    # 젓가락 받침 — 끝이 상에 안 닿게 괴는 작은 등. 이 한 점이 «놓인 것»과 «떨어뜨린 것»을 가른다.
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.20,
+                                         location=(0.02 + 코ㅈ * 0.68, -1.08 + 사ㅈ * 0.68, 0.00),
+                                         segments=28, ring_count=14)
+    받침 = bpy.context.object
+    받침.scale = (0.42, 1.05, 0.30)
+    받침.rotation_euler = (0, 0, math.radians(젓각))
+    bpy.ops.object.shade_smooth()
+    받침.data.materials.append(직물결(매끈재질('젓받침', 색['Stone'], 거칠기=0.52), 지름=0.42))
+
     # 간장 종지 + 와사비 한 점
     bpy.ops.mesh.primitive_cylinder_add(radius=0.30, depth=0.10, location=(0.78, 0.50, 0.03), vertices=40)
     종지 = bpy.context.object
