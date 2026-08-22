@@ -80,11 +80,16 @@ function 날짜값(s) {
   return Date.UTC(+m[1], +m[2] - 1, +m[3]);
 }
 
-/** 오늘(UTC 0시). 테스트가 얼릴 수 있게 손잡이를 둔다 — 시각 의존 검사는 CI 에서 깨진다(F296). */
+/** 오늘 0시 — **여기 사는 사람의 오늘**이다. 테스트가 얼릴 수 있게 손잡이를 둔다
+ *  (시각 의존 검사는 CI 에서 깨진다 · F296).
+ *  🔴 **UTC 를 쓰면 새벽 작업이 하루 전으로 찍힌다**(실측 08-23 06:12 KST → 표에 08-22).
+ *     유호님은 UTC+9(한국)·UTC+8(몽골)에서 일하고 **새벽 작업이 흔하다** — UTC 기준이면
+ *     오전 9시(한국) 이전의 모든 결정이 전날로 들어가고, 재제안 금지 14일도 그만큼 어긋난다.
+ *     표에 적히는 날짜가 「그날 유호님이 정한 날」과 달라지면 이 표는 근거로 못 쓴다. */
 function 오늘값(기준) {
   if (기준 != null) return 날짜값(기준) ?? Date.parse(기준);
   const d = new Date();
-  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());   // 현지 달력의 날짜를 UTC 0시로 못박는다
 }
 
 /**
@@ -145,9 +150,9 @@ function 칸청소(s) {
 }
 
 function 오늘문자() {
-  const d = new Date();
+  const d = new Date();                              // 현지 달력 — 위 `오늘값` 과 같은 기준이어야 한다
   const p = (n) => String(n).padStart(2, '0');
-  return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}`;
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
 /** 결정 한 줄을 표 «맨 위»에 넣는다(최신순). 정본이 없거나 표식이 없으면 쓰지 않고 알린다. */
