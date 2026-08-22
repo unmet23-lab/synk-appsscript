@@ -2420,20 +2420,18 @@ def 불고기():
 
 
 def 초밥():
-    """펠트 초밥 — 「초밥=」 으로 열 가지(유호 지시 08-22 「초밥도 많이 넣어줄수있어?」).
+    """펠트 초밥 — 「초밥=」 으로 열일곱 가지(유호 08-22 「초밥도 많이」 → 「디테일을 더 살려줘 아니면 종류를 추가」).
 
     🔑 **이 재료가 가장 잘하는 음식이다.** 김치가 안 읽히는 것과 정확히 반대 까닭이다 —
-       초밥은 «기하»다: 둥근 사각 밥덩이 + 그 위에 얹힌 색 판 하나 + (가끔) 검은 띠.
-       펠트는 마르고 각이 살아 있는 재료라 이런 «단정한 형태»를 그대로 낸다.
+       초밥은 «기하»다: 쥔 밥덩이 + 그 위에 덮인 색 판 하나 + (가끔) 검은 띠.
+       펠트는 마르고 각이 살아 있어 이런 «단정한 형태»를 그대로 낸다.
        김치처럼 «구겨지고 젖고 뭉친 것»은 이 재료가 원리적으로 흉내내기 어렵다.
 
-    🔑 그래서 이 갈래는 **네타(얹는 것) 한 줄로 는다** — 기호의 「도안들」과 같은 구조다.
-       밥·비례·조명은 안 갈리고 색과 무늬만 바뀐다. 새 초밥을 더하는 값이 «표 한 줄»이다.
+    🔑 그래서 이 갈래는 **표 한 줄로 는다** — 밥·비례·조명·와사비·생강은 안 갈리고
+       네타의 «색·두께·광택·결줄»만 바뀐다. 「모둠」도 같은 표에서 다섯 줄을 뽑아 세운다.
 
-    🔴**밥에도 털을 안 심는다 — 1판에서 «솜뭉치»가 됐다.** 비빔밥 밥(구 반지름 1.04)에서는 통했는데
-      여기서는 터졌고, 까닭이 있다: `베개몸` 은 크기를 «스케일»로 주는데 (0.40, 0.23, 0.125) 같은
-      **비균등 스케일이 털을 늘린다.** 같은 길이 값이 물건마다 다른 길이가 되는 것이다.
-      ⇒ 밥알은 **잔 범프**(직물결 지름 0.14)로 낸다. 이 공방에서 다섯 번째 같은 처방이다."""
+    ⚠밥에 털을 심지 않는다 — `베개몸`의 비균등 스케일이 털을 늘려 «솜뭉치»가 된다(실측 08-22).
+      밥알은 «잔 범프 + 가장자리로 흘러나온 알갱이»가 낸다."""
     종류 = 인자.get('초밥', '연어')
     손 = random.Random(20260822)
     음식접시('Ink')
@@ -2441,15 +2439,14 @@ def 초밥():
     김재 = 직물결(매끈재질('김', 색['Graphite 2'], 거칠기=0.88), 지름=0.5, 세기=0.75)
 
     def 밥재질():
-        """밥알 — 잔 범프. 지름 0.10 = 알갱이 하나가 밥알만 하다(세기 0.88 = 깊게 파여 그림자가 진다)."""
+        """밥알 — 잔 범프. 지름 0.10 = 알갱이 하나가 밥알만 하다."""
         return 직물결(매끈재질('샤리', 색['Paper'], 거칠기=0.84), 지름=0.10, 세기=0.88)
 
     def 샤리(cx=0.0, cy=0.0, 각=0.0, s=1.0, z=0.0):
-        """샤리(밥덩이) — **둥근 덩이**다(유호 지적 08-22 「초밥이 사각형이면 안되잖아」).
-        🔴 1판은 `베개몸`(스케일 큐브)이라 «모서리만 둥근 블록»이었다 — 밥은 손으로 «쥐어서» 만드는
-           것이라 사각일 수가 없다. 각진 밥덩이는 초밥이 아니라 떡이다.
-        ⇒ 타원체로 짓는다: **바닥은 평평하고**(접시에 앉는다) **위는 봉긋하고** 양끝이 둥글다.
-          곁들여 폭을 길이축을 따라 미세하게 흔든다 — 완벽한 타원은 손이 아니라 기계가 쥔 것이다."""
+        """샤리(밥덩이) — **쥔 덩이**다(유호 지적 08-22 「초밥이 사각형이면 안되잖아」).
+        🔴 1판은 `베개몸`(스케일 큐브)이라 «모서리만 둥근 블록»이었다 — 밥은 손으로 «쥐어서»
+           만드는 것이라 사각일 수가 없다. 각진 밥덩이는 초밥이 아니라 떡이다.
+        ⇒ 타원체로 짓는다: **바닥은 평평하고**(접시에 앉는다) **위는 봉긋하고** 양끝이 둥글다."""
         R = 0.44 * s
         bpy.ops.mesh.primitive_uv_sphere_add(radius=R, location=(0, 0, 0), segments=64, ring_count=32)
         몸 = bpy.context.object
@@ -2464,135 +2461,179 @@ def 초밥():
         몸.location = (cx, cy + 0.06, z + 바닥)
         몸.rotation_euler = (0, 0, math.radians(각))
         몸.data.materials.append(밥재질())
-        # 흘러나온 밥알 몇 — 실루엣 가장자리에 «알갱이»가 보여야 덩이가 «밥»으로 읽힌다.
+        # 흘러나온 밥알 — 실루엣 가장자리에 «알갱이»가 보여야 덩이가 «밥»으로 읽힌다.
+        #   범프만으로는 «흰 돌»과 안 갈린다(유호 지적 「밥 재질 표현을 자연스럽게」의 자리).
         알재 = 매끈재질('밥알', 색['Paper'], 거칠기=0.80)
         코, 사 = math.cos(math.radians(각)), math.sin(math.radians(각))
-        for i in range(7):
-            lu = 손.uniform(-0.86, 0.86) * R
-            lv = (0.60 * R) * (1 if i % 2 else -1) * 손.uniform(0.86, 1.0)
+        for i in range(11):
+            lu = 손.uniform(-0.88, 0.88) * R
+            lv = (0.58 * R) * (1 if i % 2 else -1) * 손.uniform(0.84, 1.02)
             땀하나(cx + lu * 코 - lv * 사, cy + 0.06 + lu * 사 + lv * 코,
-                  z + 바닥 * 0.9 + 손.uniform(0.01, 0.05) * s,
+                  z + 바닥 * 0.9 + 손.uniform(0.005, 0.055) * s,
                   0.026 * s, 0.014 * s, 알재,
-                  회전y=손.uniform(0, 180), 회전z=각 + 손.uniform(-40, 40))
+                  회전y=손.uniform(0, 180), 회전z=각 + 손.uniform(-45, 45))
         return z + R * 0.44                       # 밥 윗면(봉긋한 꼭대기)
 
-    def 네타(색이름, 윗면, cx=0.0, cy=0.0, 각=0.0, s=1.0, 두께=0.040, 거칠기=0.62,
+    def 와사비(윗면, cx=0.0, cy=0.0, 각=0.0, s=1.0):
+        """와사비 — 밥과 네타 «사이»에 낀 초록 한 점. 옆으로 조금 삐져나와야 보인다.
+        초밥집 초밥과 마트 초밥을 가르는 디테일이 이것이다."""
+        코, 사 = math.cos(math.radians(각)), math.sin(math.radians(각))
+        lv = -0.20 * s
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.075 * s,
+                                             location=(cx - lv * 사, cy + 0.06 + lv * 코, 윗면 - 0.010 * s),
+                                             segments=18, ring_count=9)
+        w = bpy.context.object
+        w.scale = (1.5, 0.75, 0.55)
+        w.rotation_euler = (0, 0, math.radians(각))
+        bpy.ops.object.shade_smooth()
+        w.data.materials.append(매끈재질('와사비', 색['Meadow'], 거칠기=0.62))
+
+    def 네타(색이름, 윗면, cx=0.0, cy=0.0, 각=0.0, s=1.0, 두께=0.040, 거칠기=0.52,
             폭=0.475, 높=0.275, 처짐=0.085):
         """네타 — 밥 위에 «덮은» 한 판. **양끝이 처져야** 얹힌 것이지 올려둔 판이 아니다.
-        🔴 1판은 각진 판이라 밥덩이와 함께 «샌드위치»로 읽혔다. 생선은 휜다."""
+        ⚠처짐이 과하면 네타가 밥을 «감싸» 초밥이 아니라 조개가 된다(0.16 은 과했다).
+        ⚠거칠기 기본을 0.52 로 둔다 — 생선은 밥보다 «젖어» 있고, 그 광택 차이가 재료를 가른다."""
         R = 폭 * s
         bpy.ops.mesh.primitive_uv_sphere_add(radius=R, location=(0, 0, 0), segments=56, ring_count=28)
         n = bpy.context.object
-        # ⚠처짐이 과하면 네타가 밥을 «감싸» 초밥이 아니라 조개가 된다(1판 실측 · 0.16 은 과했다).
-        #   밥 옆구리가 길이 방향으로 보여야 «얹은 것»이다. 계란처럼 원래 각진 네타는 0 에 가깝게 준다.
         for v in n.data.vertices:
             u = v.co.x / R
-            v.co.y *= (높 / 폭) * (0.98 - 0.06 * u * u)
+            v.co.y *= (높 / 폭) * (0.98 - 0.06 * u * u + 0.035 * math.sin(4.1 * u))  # 자른 가장자리
             v.co.z = v.co.z * (두께 * s / R) - 처짐 * s * (u * u)
         bpy.ops.object.shade_smooth()
         n.location = (cx, cy + 0.06, 윗면 + 두께 * s * 0.55)
         n.rotation_euler = (math.radians(-4), math.radians(2), math.radians(각))
-        n.data.materials.append(직물결(매끈재질('네타', 색[색이름], 거칠기=거칠기), 지름=0.9, 세기=0.62))
-        # 🔑 **자기 윗면을 돌려준다.** 1판은 결줄을 «윗면 + 두께»에 놓았는데 그건 네타 «속»이라
-        #   연어 지방줄도 새우 마디도 렌더에 한 픽셀도 안 나왔다(호떡 구운자국·딸기 씨와 같은 사고).
-        #   네타 중심 = 윗면 + 두께·0.92 이고 반두께가 두께이므로 **윗면 + 두께·1.92** 가 실제 윗면이다.
+        n.data.materials.append(직물결(매끈재질('네타', 색[색이름], 거칠기=거칠기), 지름=0.9, 세기=0.55))
+        # 🔑 자기 윗면을 돌려준다 — 결줄을 «윗면 + 두께»에 놓으면 네타 «속»이라 안 보인다(실측).
         return 윗면 + 두께 * s * 1.55
 
     def 띠(윗면, cx=0.0, cy=0.0, 각=0.0, s=1.0):
         """김 띠 — 계란·군함을 묶는 검은 한 줄. 초밥에서 «검정»은 늘 김이다."""
-        b = 베개몸((0.085 * s, 0.26 * s, 0.145 * s), 위치=(cx, cy + 0.06, 윗면 - 0.055 * s),
+        b = 베개몸((0.085 * s, 0.28 * s, 0.155 * s), 위치=(cx, cy + 0.06, 윗면 - 0.060 * s),
                  회전z=각, 크리스=0.55)
         b.data.materials.append(김재)
-        return b
 
     def 결줄(윗면, 색이름, n=3, 폭=0.30, 간격=0.085, cx=0.0, cy=0.0, 각=0.0, 굵기=0.014):
         """네타 위의 «결» — 연어 지방줄·참치 힘줄·장어 소스. 한 줄이 그 생선의 이름표다."""
-        재 = 매끈재질('결' + 색이름, 색[색이름], 거칠기=0.45)
+        재 = 매끈재질('결' + 색이름, 색[색이름], 거칠기=0.42)
+        코, 사 = math.cos(math.radians(각)), math.sin(math.radians(각))
         for i in range(n):
-            땀하나(cx + (i - (n - 1) / 2) * 간격, cy + 0.06, 윗면 + 0.006, 폭 / 2, 굵기, 재,
+            d = (i - (n - 1) / 2) * 간격
+            땀하나(cx + d * 코, cy + 0.06 + d * 사, 윗면 + 0.005, 폭 / 2, 굵기, 재,
                   회전y=0, 회전z=각 + 90)
 
-    # ── 표 — «무엇을 얹는가»의 정본. 새 초밥은 여기 한 줄이면 는다 ────────────────────
-    if 종류 in ('연어', '참치', '광어', '새우', '문어', '장어', '계란'):
-        # 니기리 — 두 점을 나란히(하나면 «표본»이고 둘이면 «한 접시»다)
+    # ── 니기리 표 — «무엇을 얹는가»의 정본. 새 초밥은 여기 한 줄이면 는다 ──────────────
+    #    (색, 두께, 거칠기, 처짐, 폭, 높, 결=(색, 개수, 폭, 간격, 굵기))
+    니기리 = {
+        '연어':   ('Coral 2',    0.040, 0.46, 0.085, 0.475, 0.275, ('Paper', 3, 0.30, 0.075, 0.014)),
+        '참치':   ('Coral 3',    0.040, 0.44, 0.085, 0.475, 0.275, ('Coral Rim', 2, 0.26, 0.095, 0.011)),
+        '광어':   ('Paper',      0.034, 0.56, 0.095, 0.470, 0.270, ('Stone', 2, 0.24, 0.100, 0.010)),
+        '새우':   ('Coral Soft', 0.040, 0.50, 0.080, 0.480, 0.270, ('Coral 3', 4, 0.23, 0.078, 0.019)),
+        '문어':   ('Paper',      0.034, 0.40, 0.090, 0.470, 0.265, ('Coral 2', 2, 0.40, 0.200, 0.020)),
+        '장어':   ('Butter Deep', 0.042, 0.34, 0.080, 0.475, 0.275, ('Coral Rim', 3, 0.32, 0.080, 0.013)),
+        '오징어': ('Paper',      0.030, 0.30, 0.075, 0.470, 0.265, ('Chalk 3', 3, 0.28, 0.085, 0.009)),
+        '가리비': ('Paper',      0.070, 0.48, 0.030, 0.430, 0.310, ('Stone', 3, 0.34, 0.070, 0.010)),
+        '아보카도': ('Meadow Soft', 0.038, 0.44, 0.070, 0.470, 0.270, ('Meadow', 4, 0.26, 0.070, 0.012)),
+    }
+    띠붙는것 = ('장어',)
+
+    def 니기리하나(이름, cx, cy, 각, s):
+        색이름, 두께, 거칠, 처짐, 폭, 높, 결 = 니기리[이름]
+        윗 = 샤리(cx, cy, 각, s)
+        와사비(윗, cx, cy, 각, s)
+        면 = 네타(색이름, 윗, cx, cy, 각, s, 두께=두께, 거칠기=거칠, 처짐=처짐, 폭=폭, 높=높)
+        결줄(면, 결[0], 결[1], 결[2] * s, 결[3] * s, cx, cy, 각, 굵기=결[4])
+        if 이름 in 띠붙는것:
+            띠(면 + 0.030, cx, cy, 각, s * 0.86)
+
+    def 군함(cx, cy, s, 알색, 알수=16, 알크기=0.055, 덩이=False):
+        """군함 — 김이 밥을 «둘러싼다». 위가 열려 있고 거기 알(또는 살)이 담긴다."""
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.36 * s, depth=0.32 * s,
+                                            location=(cx, cy + 0.06, 0.16 * s), vertices=48)
+        벽 = bpy.context.object
+        bev = 벽.modifiers.new('bev', 'BEVEL'); bev.width = 0.02; bev.segments = 3
+        bpy.ops.object.shade_smooth()
+        벽.data.materials.append(김재)
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.31 * s, location=(cx, cy + 0.06, 0.20 * s),
+                                             segments=32, ring_count=16)
+        밥 = bpy.context.object
+        for v in 밥.data.vertices:
+            v.co.z *= 0.36
+        bpy.ops.object.shade_smooth()
+        밥.data.materials.append(밥재질())
+        알재 = 직물결(매끈재질('알', 색[알색], 거칠기=0.26), 지름=0.10, 세기=0.4)
+        for i in range(알수):
+            a, r = 손.uniform(0, 6.28), 손.uniform(0, 0.20) * s
+            bpy.ops.mesh.primitive_uv_sphere_add(radius=알크기 * s,
+                                                 location=(cx + r * math.cos(a), cy + 0.06 + r * math.sin(a),
+                                                           0.30 * s + 손.uniform(-0.01, 0.02)),
+                                                 segments=16, ring_count=8)
+            덩 = bpy.context.object
+            if 덩이:                                   # 우니 = 알이 아니라 «갈라진 살»이다
+                덩.scale = (1.9, 0.72, 0.62)
+                덩.rotation_euler = (0, 0, 손.uniform(0, 3.14))
+            bpy.ops.object.shade_smooth()
+            덩.data.materials.append(알재)
+
+    def 마키(cx, cy, s, 속들, 겉반=0.34):
+        """마키 — 세워 놓아 «단면»이 위를 본다. 김(겉) → 밥(켜) → 속(가운데) 세 겹.
+        ⚠속 밥도 «원기둥»이어야 한다 — 네모로 넣으면 김이 감긴 것으로 안 읽힌다."""
+        bpy.ops.mesh.primitive_cylinder_add(radius=겉반 * s, depth=0.34 * s,
+                                            location=(cx, cy + 0.06, 0.16 * s), vertices=56)
+        겉 = bpy.context.object
+        bpy.ops.object.shade_smooth()
+        겉.data.materials.append(김재)
+        bpy.ops.mesh.primitive_cylinder_add(radius=(겉반 - 0.045) * s, depth=0.36 * s,
+                                            location=(cx, cy + 0.06, 0.163 * s), vertices=48)
+        밥 = bpy.context.object
+        bpy.ops.object.shade_smooth()
+        밥.data.materials.append(밥재질())
+        for (색이름, r, dx, dy) in 속들:
+            bpy.ops.mesh.primitive_cylinder_add(radius=r * s, depth=0.38 * s,
+                                                location=(cx + dx * s, cy + 0.06 + dy * s, 0.172 * s),
+                                                vertices=28)
+            속 = bpy.context.object
+            bpy.ops.object.shade_smooth()
+            속.data.materials.append(직물결(매끈재질('속' + 색이름, 색[색이름], 거칠기=0.56), 지름=0.21))
+
+    # ── 종류 가르기 ──────────────────────────────────────────────────────────────
+    if 종류 in 니기리:
+        for k, (cx, cy, 각) in enumerate(((-0.34, 0.20, 14), (0.36, -0.16, -22))):
+            니기리하나(종류, cx, cy, 각, 1.0 if k == 0 else 0.94)
+    elif 종류 == '계란':
         for k, (cx, cy, 각) in enumerate(((-0.34, 0.20, 14), (0.36, -0.16, -22))):
             s = 1.0 if k == 0 else 0.94
             윗 = 샤리(cx, cy, 각, s)
-            if 종류 == '연어':
-                네타면 = 네타('Coral 2', 윗, cx, cy, 각, s)
-                결줄(네타면 + 0.005, 'Paper', 3, 0.30 * s, 0.075 * s, cx, cy, 각)
-            elif 종류 == '참치':
-                네타면 = 네타('Coral 3', 윗, cx, cy, 각, s)
-                결줄(네타면 + 0.005, 'Coral Rim', 2, 0.26 * s, 0.095 * s, cx, cy, 각, 굵기=0.011)
-            elif 종류 == '광어':
-                네타면 = 네타('Paper', 윗, cx, cy, 각, s, 거칠기=0.74)
-                결줄(네타면 + 0.005, 'Stone', 2, 0.24 * s, 0.10 * s, cx, cy, 각, 굵기=0.010)
-            elif 종류 == '새우':
-                # ⚠1판은 줄무늬를 Coral 2 로 놨는데 바탕(Coral Soft)과 너무 가까워 안 보였다.
-                #   새우의 이름표는 «붉은 마디»라 그게 안 보이면 연어와 구별이 안 된다.
-                네타면 = 네타('Coral Soft', 윗, cx, cy, 각, s, 폭=0.46, 높=0.24)
-                결줄(네타면 + 0.005, 'Coral 3', 4, 0.23 * s, 0.078 * s, cx, cy, 각, 굵기=0.019)
-            elif 종류 == '문어':
-                네타면 = 네타('Paper', 윗, cx, cy, 각, s, 두께=0.034, 거칠기=0.70)
-                결줄(네타면 + 0.005, 'Coral 2', 2, 0.40 * s, 0.20 * s, cx, cy, 각 + 90, 굵기=0.020)
-            elif 종류 == '장어':
-                네타면 = 네타('Butter Deep', 윗, cx, cy, 각, s, 거칠기=0.40)
-                결줄(네타면 + 0.005, 'Coral Rim', 3, 0.32 * s, 0.080 * s, cx, cy, 각, 굵기=0.013)
-                띠(네타면 + 0.030, cx, cy, 각, s * 0.86)
-            elif 종류 == '계란':
-                # 계란은 «자른 블록»이라 안 처진다 — 처짐 0.012 는 모서리만 눅인다.
-                네타('Butter', 윗, cx, cy, 각, s, 두께=0.085, 거칠기=0.78, 폭=0.45, 높=0.26,
-                   처짐=0.012)
-                띠(윗 + 0.17 * s, cx, cy, 각, s)
-
+            # 계란은 «자른 블록»이라 안 처진다 — 처짐 0.012 는 모서리만 눅인다.
+            면 = 네타('Butter', 윗, cx, cy, 각, s, 두께=0.085, 거칠기=0.74, 폭=0.45, 높=0.26, 처짐=0.012)
+            띠(면 + 0.030, cx, cy, 각, s)
+    elif 종류 == '모둠':
+        # 모둠 — 다섯 가지를 한 접시에. **초밥이라는 낱말의 대표 그림**이라 하나는 있어야 한다.
+        for 이름, cx, cy, 각, s in (('연어', -0.52, 0.30, 22, 0.82), ('참치', 0.10, 0.44, -8, 0.82),
+                                    ('광어', 0.62, 0.14, -32, 0.80), ('새우', -0.30, -0.30, 8, 0.80),
+                                    ('장어', 0.36, -0.42, -20, 0.80)):
+            니기리하나(이름, cx, cy, 각, s)
     elif 종류 == '연어알':
-        # 군함 — 김이 밥을 «둘러싼다». 위가 열려 있고 거기 알이 담긴다.
         for k, (cx, cy) in enumerate(((-0.34, 0.18), (0.36, -0.18))):
-            s = 1.0 if k == 0 else 0.94
-            bpy.ops.mesh.primitive_cylinder_add(radius=0.34 * s, depth=0.30 * s,
-                                                location=(cx, cy + 0.06, 0.15 * s), vertices=48)
-            벽 = bpy.context.object
-            bev = 벽.modifiers.new('bev', 'BEVEL'); bev.width = 0.02; bev.segments = 3
-            bpy.ops.object.shade_smooth()
-            벽.data.materials.append(김재)
-            밥 = 베개몸((0.29 * s, 0.29 * s, 0.115 * s), 위치=(cx, cy + 0.06, 0.135 * s), 크리스=0.95)
-            밥.data.materials.append(밥재질())
-            알재 = 직물결(매끈재질('연어알%d' % k, 색['Coral 2'], 거칠기=0.28), 지름=0.10, 세기=0.4)
-            for i in range(16):
-                a, r = 손.uniform(0, 6.28), 손.uniform(0, 0.21) * s
-                bpy.ops.mesh.primitive_uv_sphere_add(radius=0.055 * s,
-                                                     location=(cx + r * math.cos(a),
-                                                               cy + 0.06 + r * math.sin(a),
-                                                               0.27 * s + 손.uniform(-0.01, 0.02)),
-                                                     segments=16, ring_count=8)
-                bpy.ops.object.shade_smooth()
-                bpy.context.object.data.materials.append(알재)
-
-    elif 종류 in ('오이롤', '참치롤'):
-        # 마키 — 세워 놓아 «단면»이 위를 본다. 김(겉) → 밥(켜) → 속(가운데) 세 겹.
-        속색 = 'Meadow' if 종류 == '오이롤' else 'Coral 3'
-        for k, (cx, cy, s) in enumerate(((-0.40, 0.22, 1.00), (0.30, 0.30, 0.94), (0.10, -0.34, 1.04))):
-            bpy.ops.mesh.primitive_cylinder_add(radius=0.34 * s, depth=0.34 * s,
-                                                location=(cx, cy + 0.06, 0.16 * s), vertices=56)
-            겉 = bpy.context.object
-            bpy.ops.object.shade_smooth()
-            겉.data.materials.append(김재)
-            # ⚠1판은 속 밥을 «네모»로 넣었다 — 김은 둥근데 속이 각지니 «감긴 것»으로 안 읽혔다.
-            #   마키의 정체는 «켜가 동심원»이라는 것이라, 밥도 원기둥이어야 한다.
-            bpy.ops.mesh.primitive_cylinder_add(radius=0.295 * s, depth=0.36 * s,
-                                                location=(cx, cy + 0.06, 0.163 * s), vertices=48)
-            밥 = bpy.context.object
-            bpy.ops.object.shade_smooth()
-            밥.data.materials.append(밥재질())
-            bpy.ops.mesh.primitive_cylinder_add(radius=0.105 * s, depth=0.38 * s,
-                                                location=(cx, cy + 0.06, 0.172 * s), vertices=28)
-            속 = bpy.context.object
-            bpy.ops.object.shade_smooth()
-            속.data.materials.append(직물결(매끈재질('속%d' % k, 색[속색], 거칠기=0.58), 지름=0.21))
-
+            군함(cx, cy, 1.0 if k == 0 else 0.94, 'Coral 2', 알수=17, 알크기=0.055)
+    elif 종류 == '성게':
+        for k, (cx, cy) in enumerate(((-0.34, 0.18), (0.36, -0.18))):
+            군함(cx, cy, 1.0 if k == 0 else 0.94, 'Butter', 알수=7, 알크기=0.085, 덩이=True)
+    elif 종류 == '오이롤':
+        for cx, cy, s in ((-0.40, 0.22, 1.00), (0.30, 0.30, 0.94), (0.10, -0.34, 1.04)):
+            마키(cx, cy, s, [('Meadow', 0.105, 0, 0)])
+    elif 종류 == '참치롤':
+        for cx, cy, s in ((-0.40, 0.22, 1.00), (0.30, 0.30, 0.94), (0.10, -0.34, 1.04)):
+            마키(cx, cy, s, [('Coral 3', 0.105, 0, 0)])
+    elif 종류 == '후토마키':
+        # 후토마키 — 속이 여럿이라 단면이 «그림»이 된다. 굵기로도 마키와 갈린다.
+        for cx, cy, s in ((-0.36, 0.24, 1.00), (0.38, -0.20, 0.94)):
+            마키(cx, cy, s, [('Butter', 0.095, -0.10, 0.09), ('Meadow', 0.075, 0.11, 0.08),
+                            ('Coral 2', 0.080, 0.02, -0.11), ('Stitch', 0.060, -0.13, -0.07)],
+                겉반=0.46)
     elif 종류 == '유부':
-        # 유부초밥 — 네타가 없다. 주머니 자체가 이 초밥의 얼굴이고, 벌어진 위로 밥이 보인다.
-        for k, (cx, cy, 각, s) in enumerate(((-0.34, 0.18, 12, 1.00), (0.36, -0.18, -20, 0.94))):
+        for k, (cx, cy, 각) in enumerate(((-0.34, 0.18, 12), (0.36, -0.18, -20))):
+            s = 1.0 if k == 0 else 0.94
             주 = 베개몸((0.42 * s, 0.27 * s, 0.165 * s), 위치=(cx, cy + 0.06, 0.17 * s),
                      회전z=각, 크리스=0.72, 레벨=4)
             주.data.materials.append(직물결(매끈재질('유부%d' % k, 색['Butter Deep'], 거칠기=0.78),
@@ -2607,10 +2648,20 @@ def 초밥():
             밥.rotation_euler = (0, 0, math.radians(각))
             밥.data.materials.append(밥재질())
     else:
-        raise SystemExit('모르는 초밥: ' + 종류 +
-                         ' — 아는 것은 연어·참치·광어·새우·문어·장어·계란·연어알·오이롤·참치롤·유부')
+        raise SystemExit('모르는 초밥: ' + 종류 + ' — 아는 것은 ' +
+                         '·'.join(list(니기리) + ['계란', '모둠', '연어알', '성게',
+                                                 '오이롤', '참치롤', '후토마키', '유부']))
 
-    # 간장 종지 한 점 — 접시의 «마지막 한 점». 초밥이 둘뿐이라 여백이 크다.
+    # ── 곁들이 — 초밥«집»의 접시로 만드는 두 점 ──────────────────────────────────
+    # 생강(가리) — 얇은 분홍 조각 넷을 겹쳐 «주름진 더미»로. 초밥 접시의 서명이다.
+    생강재 = 직물결(매끈재질('생강', 색['Coral Soft'], 거칠기=0.62), 지름=0.30, 세기=0.7)
+    for i in range(4):
+        조 = 베개몸((0.155, 0.115, 0.012), 위치=(-0.74 + 손.uniform(-0.05, 0.05),
+                                             -0.50 + 0.045 * i + 손.uniform(-0.04, 0.04),
+                                             0.03 + 0.026 * i),
+                  회전z=손.uniform(0, 180), 크리스=0.95)
+        조.data.materials.append(생강재)
+    # 간장 종지 + 와사비 한 점
     bpy.ops.mesh.primitive_cylinder_add(radius=0.30, depth=0.10, location=(0.78, 0.50, 0.03), vertices=40)
     종지 = bpy.context.object
     bev = 종지.modifiers.new('bev', 'BEVEL'); bev.width = 0.025; bev.segments = 3
@@ -2619,7 +2670,74 @@ def 초밥():
     bpy.ops.mesh.primitive_cylinder_add(radius=0.235, depth=0.03, location=(0.78, 0.50, 0.088), vertices=40)
     간장 = bpy.context.object
     bpy.ops.object.shade_smooth()
-    간장.data.materials.append(매끈재질('간장', 색['Graphite 2'], 거칠기=0.24))
+    간장.data.materials.append(매끈재질('간장', 색['Graphite'], 거칠기=0.34))
+    return (0, -7.4, 4.7), 59
+
+
+def 계란찜():
+    """펠트 계란찜 — 유호 지시 08-22 「계란찜도 있으면 너무 좋겠는데?」.
+
+    🔑 계란찜의 정체는 **«부풀어 넘친 것»**이다 — 뚝배기 «위로» 봉긋하게 솟아야 계란찜이고,
+       그릇 안에 얌전히 담기면 그냥 노란 죽이다. 그래서 돔의 꼭대기를 림보다 높게 못 박는다.
+    ⚠표면은 매끈하지 않다 — 김이 빠져나간 자리가 얽은 자국으로 남는다(잔 범프 + 오목 셋).
+    ⚠뚝배기는 검은 흙그릇이라 접시천을 Graphite 로 내린다 — 노란 돔과의 대비가 이 그림의 전부다."""
+    음식접시('Graphite 3', 반경=1.38)
+    손 = random.Random(20260822)
+    뚝재 = 직물결(매끈재질('뚝배기', 색['Graphite 4'], 거칠기=0.92), 지름=2.2, 세기=0.6)
+
+    # 뚝배기 — 바닥판 + 도톰한 림(림이 바닥보다 높아야 «그릇»이다 · 김치 8판에서 배운 것)
+    bpy.ops.mesh.primitive_cylinder_add(radius=1.00, depth=0.30, location=(0, 0.06, 0.02), vertices=80)
+    몸 = bpy.context.object
+    b = 몸.modifiers.new('bev', 'BEVEL'); b.width = 0.06; b.segments = 4
+    bpy.ops.object.shade_smooth()
+    몸.data.materials.append(뚝재)
+    # ⚠림이 두꺼우면 그릇이 «타이어»가 되고 계란 자리가 줄어든다 — 얇게 두른다.
+    bpy.ops.mesh.primitive_torus_add(major_radius=0.97, minor_radius=0.082, location=(0, 0.06, 0.165),
+                                     major_segments=96, minor_segments=18)
+    림 = bpy.context.object
+    림.scale = (1.0, 1.0, 0.78)
+    bpy.ops.object.shade_smooth()
+    림.data.materials.append(뚝재)
+    for 쪽 in (-1, 1):                              # 손잡이 둘 — 뚝배기의 이름표
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.20, location=(쪽 * 1.06, 0.06, 0.13),
+                                             segments=24, ring_count=12)
+        손잡 = bpy.context.object
+        손잡.scale = (0.72, 0.42, 0.34)
+        bpy.ops.object.shade_smooth()
+        손잡.data.materials.append(뚝재)
+
+    # 계란 — 림(0.26)보다 «조금» 높이 부푼 돔. 이것이 «찜»이다.
+    #   🔴1판은 반지름 0.94·높이 0.53 이라 **뚝배기를 통째로 덮어** 「냄비에 담긴 거품」이 됐다.
+    #     부푼 것으로 읽히려면 그릇이 «보이는 채로» 그 위로 조금 솟아야 한다 — 덮으면 그릇이 사라진다.
+    #   🔴색도 틀렸다: Butter Soft(#FFEBB0)는 이 노출에서 «흰색»으로 찍힌다. 계란은 Butter 다.
+    # ⚠1판은 돔 꼭대기(0.347)가 림(0.26)보다 겨우 높아 «잠긴» 것으로 보였다.
+    #   계란찜은 **넘쳐야** 계란찜이다 — 림보다 확실히 솟게 올린다(0.46).
+    Rd, Zd, 납작 = 0.90, 0.05, 0.455
+    오목들 = ((0.26, -0.28, 0.14, 0.075), (0.17, 0.30, -0.12, 0.055), (0.12, 0.06, 0.34, 0.042))
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=Rd, location=(0, 0.06, Zd), segments=72, ring_count=36)
+    찜 = bpy.context.object
+    for v in 찜.data.vertices:
+        v.co.z *= 납작
+        if v.co.z < 0:
+            v.co.z *= 0.24
+        r = math.hypot(v.co.x, v.co.y) / Rd
+        v.co.z += 0.040 * math.sin(3.1 * math.atan2(v.co.y, v.co.x)) * r ** 2   # 넘칠 때 생긴 봉우리
+        # 🔑 김 빠진 자국은 **파는 것**이다. 1판은 «공을 위에 얹어» 계란찜이 아니라 사탕이 됐다.
+        for (오r, ox, oy, 깊이) in 오목들:
+            d = math.hypot(v.co.x - ox, v.co.y - oy)
+            if d < 오r:
+                v.co.z -= 깊이 * (1.0 - d / 오r) ** 2
+    bpy.ops.object.shade_smooth()
+    찜.data.materials.append(직물결(매끈재질('계란찜', 색['Butter'], 거칠기=0.76), 지름=0.30, 세기=0.66))
+    돔면 = Zd + Rd * 납작                              # = 0.347 (림 0.26 보다 조금 높다)
+
+    # 파 — 노란 돔 위 초록 여섯. 계란찜의 «마지막 한 점»이다.
+    for i in range(7):
+        a, r = 손.uniform(0, 6.28), 손.uniform(0.08, 0.56)
+        땀하나(r * math.cos(a), r * math.sin(a) + 0.06,
+              돔면 - 0.010 - 0.12 * (r / 0.62) ** 2,
+              0.095, 0.034, 매끈재질('찜파%d' % i, 색['Meadow'], 거칠기=0.6),
+              회전y=손.uniform(0, 180), 회전z=손.uniform(0, 180))
     return (0, -7.4, 4.7), 59
 
 
@@ -3215,7 +3333,7 @@ def 읽음표시():
         '떡볶이': 떡볶이, '호떡': 호떡, '라면': 라면, '김치': 김치, '딸기': 딸기, '바나나우유': 바나나우유,
         '삼겹살': 삼겹살, '비빔밥': 비빔밥, '치킨': 치킨, '잡채': 잡채,
         '파전': 파전, '김치찌개': 김치찌개, '송편': 송편, '불고기': 불고기,
-        '초밥': 초밥, '게장': 게장,
+        '초밥': 초밥, '게장': 게장, '계란찜': 계란찜,
         '슬라이더': 슬라이더, '스테퍼': 스테퍼, '토스트': 토스트,
         '모달': 모달, '탭전환': 탭전환, '읽음표시': 읽음표시}
 if 형태 not in 형태들:
