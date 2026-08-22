@@ -21,7 +21,7 @@ const DIR = path.resolve(__dirname, '..', 'docs', '발표물');
 // ⚠ viewBox 여백을 깎지 말 것 — 획 두께 절반과 글자 사이드베어링이 여기 들어간다.
 const W5_DARK = `<svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
             <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#E4E4E7">syn</text>
-            <path d="M138 44 L112 66 L138 88 L150 88 L124 66 L150 44 Z" fill="#F96859"/>
+            <path d="M146 46.7 L112 66.35 L146 86 L159 86 L125 66.35 L159 46.7 Z" fill="#F96859"/>
           </svg>`;
 
 /**
@@ -33,8 +33,14 @@ const W5_DARK = `<svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
  */
 function inject(html) {
   const re = /(<!--\s*LOGO SLOT[\s\S]*?-->\s*(?:<div class="symbol[^"]*">\s*)?)<svg[\s\S]*?<\/svg>/g;
+  /* 🔴 실측 08-22: 발표물은 CRLF 로 저장되는데 이 상수는 소스 그대로 LF 라,
+   *    **내용이 같아도 매번 «어긋남»** 으로 보고됐다(슬롯 14 중 10). 늘 빨간불인 가드는
+   *    신호로서 죽는다 — 사람이 보고도 「또 그거겠지」 하고 넘긴다.
+   *    ⇒ 파일이 쓰는 줄끝에 상수를 맞춘 뒤 비교한다(내용 비교이지 서식 비교가 아니다). */
+  const 줄끝 = html.includes('\r\n') ? '\r\n' : '\n';
+  const 정본 = W5_DARK.replace(/\r?\n/g, 줄끝);
   let hits = 0;
-  const out = html.replace(re, (m, head) => { hits++; return head + W5_DARK; });
+  const out = html.replace(re, (m, head) => { hits++; return head + 정본; });
   return { out, hits };
 }
 
