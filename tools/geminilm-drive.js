@@ -19,7 +19,7 @@
  *   묶음은 개수가 고정이라 새 판정이 **기존 파일 안으로** 들어간다.
  *
  * 사용:
- *   node tools/geminilm-drive.js --out "G:\\내 드라이브\\SYNK_노트북LM"
+ *   node tools/geminilm-drive.js --out "G:\\내 드라이브\\SYNK_제미나이LM"
  *   node tools/geminilm-drive.js --dry
  *
  * ⛔ 개인정보 게이트는 geminilm-export.js의 것을 **그대로 쓴다**(사본 금지 —
@@ -46,12 +46,17 @@ function findDriveRoot() {
   return 후보.find((p) => { try { return fs.statSync(p).isDirectory(); } catch (e) { return false; } }) || null;
 }
 const DRIVE_ROOT = findDriveRoot();
-/* 폴더 이름은 「SYNK_노트북LM」 그대로 둔다(도구·안내문은 제미나이LM으로 개명했어도 여기는 아니다) —
- * 제미나이LM 쪽 노트북이 이미 이 폴더를 «소스»로 물고 있을 수 있어서다. 여기서 이름을 바꾸면
- * 다음 실행이 새 폴더에 쓰고 그 노트북은 조용히 갱신을 멈춘다 — 이 도구 전체가 막으려는 바로 그
- * 조용한 낡음이다. 폴더까지 바꾸려면 노트북 쪽 소스도 다시 골라야 하니 유호님 판정 자리로 남긴다. */
-const DEFAULT_OUT = DRIVE_ROOT ? path.join(DRIVE_ROOT, 'SYNK_노트북LM')
-                               : path.join('G:', '내 드라이브', 'SYNK_노트북LM'); // 안내 메시지용
+/* 폴더 이름도 2026-08-22 유호님 확정으로 갈아탔다(「폴더명도 바꿔줘」). 조건부였다 —
+ * 드라이브 폴더 **자체를 웹에서 in-place 이름만 바꾸는 것**은 안전하다고 판단했다:
+ * 드라이브는 폴더를 이름이 아니라 내부 ID로 물기 때문에(공유 링크가 이름을 바꿔도
+ * 안 깨지는 것과 같은 성질), 이미 걸린 노트북 소스는 그대로 산다. 위험한 쪽은 오히려
+ * **이 코드만 새 이름으로 바꾸고 실물 폴더는 안 바꾸는 것**이었다 — 그러면 다음 실행이
+ * (구 이름 폴더가 이미 있는데도) 새 이름으로 된 «빈 폴더»를 새로 만들어 버린다.
+ * 그래서 순서를 지킨다: 실물 폴더를 먼저 바꾸고(유호님이 drive.google.com 에서 직접),
+ * 그 뒤에야 이 상수가 새 이름을 가리킨다. 드라이브가 꺼져 있는 지금은 아무 코드도
+ * 폴더를 못 건드리니 순서가 어긋나도 사고는 안 난다 — 다음 실행 전에만 실물이 맞으면 된다. */
+const DEFAULT_OUT = DRIVE_ROOT ? path.join(DRIVE_ROOT, 'SYNK_제미나이LM')
+                               : path.join('G:', '내 드라이브', 'SYNK_제미나이LM'); // 안내 메시지용
 const CHROME = [
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
   'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
