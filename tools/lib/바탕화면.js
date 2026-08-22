@@ -6,7 +6,7 @@
  *   `운영자료` 는 PowerShell `[Environment]::GetFolderPath('Desktop')` 로 **다른 방식**.
  *   회귀는 운영자료 쪽만 물어서, OneDrive 리디렉션이 바뀌는 날 셋이 서로 다른 폴더를
  *   가리켜도 아무 데도 빨갛지 않았다. 그래서 호출부마다 고치지 않고 **옛 통로를 못 쓰게** 만든다
- *   (`tests/바탕화면통로.test.js` 가 tools/ 안의 직접 조회를 금지한다).
+ *   (`tests/바탕화면통로.test.js(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다)` 가 tools/ 안의 직접 조회를 금지한다).
  *
  * 방식 판정 (2026-08-10 실측 — 유호님 지시대로 「갈리는 케이스」를 먼저 쟀다):
  *   레지스트리와 GetFolderPath 는 이 기계에서 **같은 값**을 낸다(둘 다 `C:\Users\q1212\OneDrive\Desktop`).

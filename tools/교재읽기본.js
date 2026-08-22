@@ -25,7 +25,7 @@
 const fs = require('fs');
 const path = require('path');
 const { esc, 렌더 } = require('./lib/마크다운.js');
-// 바탕화면을 찾는 **단 하나의 통로**(파일 안 사본 금지 — `tests/바탕화면통로.test.js` 가 문다).
+// 바탕화면을 찾는 **단 하나의 통로**(파일 안 사본 금지 — `tests/바탕화면통로.test.js(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다)` 가 문다).
 const { 경로: 바탕화면 } = require('./lib/바탕화면.js');
 
 const ROOT = path.join(__dirname, '..');
