@@ -295,6 +295,15 @@ footer code{font-family:var(--mono);font-size:11.5px}
     content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
     background:radial-gradient(30% 22% at 38% 16%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);}
 
+  /*loom부품:별*//*loom부품:하트*//*loom부품:도장*//*loom부품:말풍선*/
+  /* 자수 표식 넷 — 요소 공방(08-22). 별=보상 · 하트=응원 · 도장=확인 · 말풍선=힌트.
+     구운 자산이 있으면 아래 구움층이 덮는다. 없으면 이 흉내가 산다 — «자리와 크기»는 맞고
+     «무엇인지»만 흐린 판이다(빈 칸으로 두면 지면이 무너지고, 글자로 두면 타이포 불가침을 깬다). */
+  .별,.하트,.도장,.말풍선{display:inline-block;vertical-align:-.3em;flex:none;
+    width:1.62em;height:1.62em;border-radius:34%;background:rgba(249,104,89,0.88);}
+  .도장{width:2.3em;height:2.3em;border-radius:50%;vertical-align:-.55em;}
+  .말풍선{width:2.0em;height:1.62em;border-radius:26%;}
+
   /*loom부품:히어로수*/
   /* 히어로수 — 지면당 «1점». 가장 센 물성이라 둘이면 서로를 죽인다.
      여기서만 갇힌 빛이 코랄이다 — 면이 아니라 «속의 빛»이라 신호 1점 규율 안에 든다.
@@ -397,15 +406,13 @@ footer code{font-family:var(--mono);font-size:11.5px}
   /* 분산 림은 이제 **렌더 안**에 산다 — conic-gradient 흉내를 끈다(둘이 겹치면 테가 두 겹이 된다). */
   .번호::before,.룸 ol>li::after{display:none;}
 
-  /* 불릿·체크 — 헌법 「반복 부품의 갇힌 빛은 무채」. 코랄이 갇히는 것은 히어로 1점뿐이다. */
+  /* 불릿 — 헌법 「반복 부품의 갇힌 빛은 무채」. 코랄이 갇히는 것은 히어로 1점뿐이다.
+     ⚠«체크»는 08-22 에 이 줄에서 나갔다 — 요소사전 §3 「완료·체크 목록 = 자수 체크」의 집행이다.
+       불릿은 여기 남는다: 7px 자리에 보풀을 깔면 «얼룩»으로만 읽힌다(요소 굽기 실측의 밀도 규율). */
   .룸 ul>li::before{background-image:url("data:image/webp;base64,UklGRiwKAABXRUJQVlA4WAoAAAAQAAAAXwAAXwAAQUxQSGEGAAABz6e4bdsocvZf+077jog0UvEBEQlE6NxJMGgkSdH1HizcvH/B/A4i+j8B7V+OBwAnj9Y7MEazvfeVmcEVewNmdiE9SG3wMYDuEpJqgbv71Bm8XAwFbdtIMX/Yu5dBRExAfx22P0JbOrfDB0WZBcMTbdumbVvbVmrrY/Gcc23btm0GjdhNN2Q7dGO2bYRs27732Nj2wpyj91YDc6511hxjh2+KiAnwJEm2bFuSJCGdJ9ORGcqwpSuXG3vf80SLAUTEBPB/ZKZS+r8U4cYuVcg8nURUIG5w4+tfczU3j+3bdxQIpU8ToQb3eOSD73qzM5l/+MJ//epXl0FJnwYUjds+6xn3BrBtpADY+PU3vnmMksOoo3+nNO7z0meuQ5Uk5hqnClz++Q/vpwxC5d5RXxTc4i3PK9QIrraTwoH3vp9uGP7lAi9523VoIfbWreNvDyM0gGvoXcd1vzqhdizQrdt6E8QwEuoNN70rtbDgdNz9TAaZI6+uc30QC1flJquL6Nv30k0riCEK1hbxvgjKDycaYqBishVeTFRWKTxdcRwzWLNvIxZDzijVz3M+ZtD/AC8kpb74w18M2/JPF5PX9ePPv+VB4e7sv0TuXeuFmH3HUjLwvPPLM3aRXuW3pT7tUY2hO195w4ydtHqx+kXG683w85ovd4Bu8jK/LfWx988yvOIXXbsGphoUyb/5YifDV7vusyiovM1vA9UbP15lBMjPpolrtyiMLmfhiWe0UYTuf7uMea8/EKIj9ESbMap2j+dqVFw7W8vmNDtuxwMUowAeiWc0Y8Tsq1u22dpqX1tf26lb3ZSRBPdYqZ0BzI5WoB0JIcX2nZQjETe/zlXsXkITdpRBUDaCscrLz/5TTGrt+9r6VrO1bNnvBAiI6VmjwTzhf2vG2M5srdXWam/ACDM3JqvjgcmVZ1lSoPlI03mAsUDTbkyxsTkjIQFCnoJ3AWjCmHNjMxUSkoSENAWM5xjT7TYe029uabRgUb2bmX6yOR7YnEws16XRgzFsjPWT43gs4ng/zbTmbDXPscu0/jCjFQdcYTlHqwZjbIyaV6LRtP1qBybXZgxmc4tLHCOxDh+I9uzCtG+GGazGZQfxSLjo+Jmp27KsnVymxZGzybH8t4rryLL2zxiDIbP+FY0idC8nMrJS6DNsriPryh+2wmOw7nCsGLFQimPYF+fSpX8gR6C8zpmnArScCT52zJfM5HtoDLrjEQEtZ6J8BoNx1LXf/jdyeLm0fmjJgkYk6pXBNttfZPjmVvvSZn5WRBuDYWRmPfPHf44cWutyX5e2RZO6mLGbcWba7694WKnrnU1tmUa0lJt9m4HJlYvXOmtIkTd4+7/WEkNSS0NjgzFmrlf/cC8Gbe718WtVDNLiIVgMOwwIiZI3uBkajrhdt5pm/gO1xAzDvswGK+2GZzHg66yf6tK2IXh8rZlzDAQIObhGGYpZWt7qm5kfTUSzuQ9zlxQSPR4Ekzrtp+AZmZzPkI/7tIuZr4iTx8CLSrHvRGu1x3OQa0vWXhgYG6QopVs7fgnFC3HrOPuQap0Bz5w5W+02WUcreZDqtfa963rX6GTtWStc8sr3ri01zAy67MJmO7DHiiIEaqtLX/rhwbNi79j8wvv+em1SYMg57Is38UyFdZHjesf+cHYua2984ief+fvqWQ0JyDlmzbCxD0QtQa6Soiwt3fEeN1sn0b+QGz//wZUbx1NIQrqMMcaYMzUhWrcoS6tnnnmXO9zkLLW+0ZttmUwv/9vfL2bXgzFjY85KIasFqZTl1XVvn1lAyNlmY2Yw4si//0UazxnMOYMZ8iiymqiKsrKirVNbEmAQdnw1RpvnL9Na2hjmHGN70VOaJvLUT9eVfnNbhMC2nbOOBjCwvda5tkzPMPNybuVrIEQppdP2doLnvtiz5PWsL0f2tWXMzNe5b1pYzjAR6kpOe8CMtc1nUj3dWkNZDrVp3wTDLte1O1kHCkWo9RnISZvP9ima9TzPg9xdOmc/mcZm8+tNZqsRggi1Zskg9tkHDxlSz08vIKK1yfTJOfYbNmHhMUVkIyzA/syzGgsreX4edLHCdTrpMubsWMtoIkshk4mQZTI9+TrkqOcJubr22zfDjiHXokYikbYAjIEXGFF6nr7YZJ3+sM2MyLkO5ezwjJhrWzVZO9Yi0fN0A+d0+mOGEfkOAFZQOCCkAwAAkBMAnQEqYABgAD49GotDIiGhGAx05CADxLSAaSrkWwzXmfieHg3G9vSDd6nmhN6s9gv9V/+BwG/7GI3WSj4UUSnFPCmzm7/1z9mvlkylsFlBRWVTWcGclSBewBFdPGKcvjJw5lOwgQlOz4bwRFmnNRhAJOksNSEpmPNRJFoDGF47yaUcZk2uG1wBo0lTyrI6rgpo5Ve//VrB5UYUCGOyalQvbsEAAP7+pTYACa/T2pYdzrdz9ak/0aw1tt8pbb//2RqXYZyYpj9pbE2UoPpfn/pVOx2/xX9fx4VWX7VzTv9p5t8OdA0ISCd2v818TBFTqV16//oUrN4sDl3iaRhop2pxeeNrZdxM+uNoNJqZS8vtY5JynhB6JB8xv/HH2eMBcJi/nCS/6XatRmJzAF2XBR1dH/wXhLXOoqjQ1mht4livcaR1pzrBy4OqXfZZnQkJyrjX/s2gcNqkecUkSzj0R0PdftxQwc2CpQE7fAEqkY/Y/aq4bTg/vgVAz40O6s0SaPVZqXGeo2kzoxf0pt84ALmAKFVNxjJNJD/WA+8+QJxv/i8PRpem1oQKMOjHyk0gvIMU3FGQ4aIbsZ+BfqOqGT6ggQjuYQbpDexljBYs2H+GYV8uDdVsPC+2tgqi6Zed2YZubvJrmh1tUd+6eYqrIhzgerlbj+vozYH/sLV/Lu5xwzLVX0EV5DaKSZyhzAsUqFeAyyjKpBpO0DXdvrzveKoZR/d2WjpECMyI9ZPV3+Wi8NviNS0fKzLQp9lFAxwRybQnsnG5i8pE2Cec8k5TKoBOwVAmY0lvIZX9Oyn8AGzCpM9X1gBqgRaKdfLFW3TrgVdugQmr3crDr6RrN6P6VaYjwtYmOIzWPT/Aj83mZNcWY3e9D6EP8XQRDkx5uaukxYuuEs6s/g6IuRc/xNWFsicweKtlEZD+xhWabH2xj4As7DsSul2o++cCbeVENtjqbdGagvcJWE0Msn/J3dLq5lMY/HIZeBleeJYeHrKwG/CwkdIuvjBz05y/XeokLf7bVeZuheUPQwqvAdndZ7gzEihXZtuQ3586g8EOjXL+jG5f4Q7+q7PkuLqOKXjE5pgUMnl4kmRcvGGV7c7IfRXuwDz93FJqz/yfP40ZFxAUjmR0iavyOHc9AU/lWbZ21yAvKfGblLCt/XElbtfvEjgPxnh0a6DfeiuDM8gh9B1or49bvE4SAtszxL67cTn3Y5h8BUo/CD20qUZN0EFGiMx3yfWoAAA=");
     background-size:contain;background-position:center;background-repeat:no-repeat;
     background-color:transparent;box-shadow:none;}
   .룸 ul>li::after{display:none;}          /* 표면스펙도 렌더 안에 있다 */
-  .체크{background-image:url("data:image/webp;base64,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");
-    background-size:contain;background-position:center;background-repeat:no-repeat;
-    background-color:transparent;box-shadow:none;}
-  .체크::before{display:none;}
 
   /* 히어로수 — 지면당 1점. 여기서만 갇힌 빛이 코랄이다.
      ⚠자릿수가 늘면 상자가 가로로 길어지는데 구운 것은 «구»라 함께 늘어난다.
@@ -430,15 +437,15 @@ footer code{font-family:var(--mono);font-size:11.5px}
      다 만든 뒤 번호를 부르시면 그 자리에서 바꿉니다 — 「바꾸려면」 칸이 그 비용입니다.</p>
   
   <div class="counts">
-    <div class="lead">판정 <b>0</b></div>
-    <div>대기<b>0</b></div>
+    <div class="lead">판정 <b>9</b></div>
+    <div class="hot">대기<b>9</b></div>
     <div>유지<b>0</b></div>
     <div>바꿈<b>0</b></div>
     <div>보류<b>0</b></div>
   </div>
   <div class="counts second">
-    <div class="lead">그 뒤 <b>0</b></div>
-    <div>아직<b>0</b></div>
+    <div class="lead">그 뒤 <b>9</b></div>
+    <div class="hot">아직<b>9</b></div>
     <div>섰다<b>0</b></div>
     <div>뒤집힘<b>0</b></div>
     <div>무효<b>0</b></div>
@@ -458,18 +465,150 @@ footer code{font-family:var(--mono);font-size:11.5px}
   <button class="f" data-k="e" data-v="섰다" aria-pressed="false" title="지금도 살아 있고 그 위에 더 쌓였다">섰다</button>
   <button class="f" data-k="e" data-v="뒤집힘" aria-pressed="false" title="나중에 반대로 갔다 — 가장 값진 학습 재료">뒤집힘</button>
   <button class="f" data-k="e" data-v="무효" aria-pressed="false" title="그 자리가 통째로 없어졌다(기능 폐기·트랙 종료)">무효</button>
-  
+  <span class="sep"></span><span class="lbl">영역</span>
+  <button class="f" data-k="a" data-v="" aria-pressed="true">전체</button>
+  <button class="f" data-k="a" data-v="앱 화면" aria-pressed="false">앱 화면</button>
+  <button class="f" data-k="a" data-v="엔진 배선" aria-pressed="false">엔진 배선</button>
+  <button class="f" data-k="a" data-v="엔진 설계" aria-pressed="false">엔진 설계</button>
+  <button class="f" data-k="a" data-v="운영 도구" aria-pressed="false">운영 도구</button>
+  <button class="f" data-k="a" data-v="평가" aria-pressed="false">평가</button>
+  <button class="f" data-k="a" data-v="평가 게이트" aria-pressed="false">평가 게이트</button>
 </div></nav>
 
 <div class="wrap">
 
-<p class="empty">아직 기록된 결정이 없습니다.</p>
+<article class="card" data-r="대기" data-a="엔진 배선" data-e="아직">
+  <div class="head">
+    <span class="num">#01</span>
+    <h3>활성 조각을 «가드는 정규 마이그 지금 · 활성 함수+cron+감시는 대기 파일(마이그 폴더 밖)»로 갈랐다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-22 &nbsp;·&nbsp; 엔진 배선 &nbsp;·&nbsp; talk · <code>819187f</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">jobs_load 활성일 가드는 to_regprocedure 존재 판별로 감싸 정규 마이그(talk 20260822090000)로 지금 적용(활성 함수 없는 동안 행동 불변 · B6 픽스처), gen_active_from·cron 4잡·감시 7항은 supabase/활성조각_c12.sql(자리표 3종·착지 절차 6단계)에 두고 스토어 커밋 날 이동·적용</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">전부 대기 파일에 두고 착지 날 한 번에(가드의 jobs_load 사본이 정규 마이그와 두 정본이 되어 표류)</span><span class="chip">전부 정규 마이그로 지금 적용(cron 이 리허설 왕복시험을 흔들고 활성 함수가 게이트를 갈라 설계 C5 「활성 시작일부터만 등록」 위반)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">설계 v5.13-b ⑤ 「활성 조각이 이 이름으로 세운다」와 C5 를 지키면서 표류(duplicate-def-shadows-canon)를 없애는 유일한 조합 — 실측: A1 이 마이그 하나만 재적용해 가드 판을 덮은 사고를 같은 밤에 잡았다</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">가드 마이그는 20260821120000 의 jobs_load 정의를 다시 부으면 옛 몸 · 대기 파일은 삭제 한 줄(아직 어디에도 적용 0) — 비용 낮음</span></div>
+  
+  
+</article>
+<article class="card" data-r="대기" data-a="평가 게이트" data-e="아직">
+  <div class="head">
+    <span class="num">#02</span>
+    <h3>§8-B 차단기의 «미실행»을 빨강이 아니라 node:test todo 로 낸다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-22 &nbsp;·&nbsp; 평가 게이트 &nbsp;·&nbsp; talk · <code>09b7bfa</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">활성인데 결과 정본 0벌 = todo(요약에 남는다 · 초록 아님) · 정본이 서면 같은 테스트가 빨강 게이트로 돈다</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">설계 I2 문언대로 빨강(전 스위트가 #6 전까지 상시 적색 — 「주인 없는 적색은 남의 배포를 막는다」 위반 · 칩 세션 배포가 막힌다)</span><span class="chip">초록(F207 — 미실행이 통과의 얼굴)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">ⓔ-19 가 이미 「실행 게이트는 #6 전엔 없다 — 사람 도장이 진다」로 정직화했고 왕복시험 A7 이 n/4 로 센다 · 설계 v5.13-e ④에 명문</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">tests/과제생성게이트.test.js 의 todo 한 줄을 test 로 바꾸면 즉시 빨강 — 비용 0</span></div>
+  
+  
+</article>
+<article class="card" data-r="대기" data-a="평가 게이트" data-e="아직">
+  <div class="head">
+    <span class="num">#03</span>
+    <h3>§8-B 시험지 산술의 빈 값 셋을 스스로 정했다 — 분포 재료 0 → 균등 · 시험지 해시는 파일 밖 · 회전 시작점은 가상 날짜 탐욕</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-22 &nbsp;·&nbsp; 평가 게이트 &nbsp;·&nbsp; talk+appsscript · <code>09b7bfa / 91c985a1</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">pᵢ=1/4(학생 0명 · 첫 시험지) · 해시 값은 결과 동봉 칸에만(순환 회피) · 정본 기술선택() 그대로 호출하되 사례별 assign_date 를 결정적 탐욕으로 골라 18기술 ≥2회 층화(시작위치·날짜를 파일에 박음)</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">배분 함수를 분포가 생길 때까지 안 돌린다(시험지 0 — #6 준비 불가)</span><span class="chip">회전 로직을 시험지 조립기에 재구현(두 정본)</span><span class="chip">해시를 파일 안에 적는다(적는 순간 파일이 바뀜)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">값·형식·원천이 산문에 없던 자리라 v5.13-a~c 처분 형태대로 설계 증보(v5.13-e)를 먼저 적고 물리와 한 커밋 계열로 냈다 · 시험지 첫 판 실측: 18기술 ≥2 ✅ · 커버리지 71/72</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">tools/과제생성시험지.js 재실행으로 시험지 재생성(풀은 불변) · 판정이 다르면 lib/과제생성평가.js 의 배분·탐욕 함수만 갈고 시험지 해시가 바뀐다(결과 재채점 대가)</span></div>
+  
+  
+</article>
+<article class="card" data-r="대기" data-a="앱 화면" data-e="아직">
+  <div class="head">
+    <span class="num">#04</span>
+    <h3>어댑터 문구 칸을 빈 칸이 아니라 «임시 문구 + 카피확정=false 표식»으로 채웠다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-22 &nbsp;·&nbsp; 앱 화면 &nbsp;·&nbsp; talk · <code>ffb57f1</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">contents/문구_생성.js 에 synk-brand 를 지킨 임시 ko 문구(생성중=「오늘 문장을 준비하는 중이에요 / 조금 뒤에 다시 열어 보세요」 · 오류=「오늘 과제를 불러오지 못했어요 / 선생님께 이 화면을 보여 주시면 바로 챙겨 드릴게요」) · mn 빈 칸 · 표식 boolean 이 회귀에 남는다</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">빈 문자열로 두고 유호 카피를 기다린다(§12-11 「칸이 비어 있지 않다」 픽스처가 빨강 · 학생 화면이 빈 카드)</span><span class="chip">문구 없이 기존 빈 과제 폴백만(설계 C3 — 「곧 온다」와 「없다」가 같은 화면)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">설계 §3-1 「문구는 카피 정본 소관」은 최종값의 소관이고 자리·임시값은 엔진 몫으로 읽었다 · 문구의 질은 synk-brand 게이트(학생 접점)를 따랐다</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">파일의 ko 두 벌을 바꾸고 카피확정=true 로 — 비용 0(화면 코드 무접촉)</span></div>
+  
+  
+</article>
+<article class="card" data-r="대기" data-a="운영 도구" data-e="아직">
+  <div class="head">
+    <span class="num">#05</span>
+    <h3>talk CI push 트리거는 지금 복원하지 않고 9/1 하네스 예약으로 넘겼다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-22 &nbsp;·&nbsp; 운영 도구 &nbsp;·&nbsp; talk · <code>e9186bb</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">scheduled-tasks talk-ci-push-restore-0901(분 잔량 확인 → push 복원 + supabase job 경로 조건 → run 기동 확인 → 안 뜨면 되돌림) + ci.yml 주석 현행화(죽은 #Q77 포인터 걷음)</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">지금 복원(분 잔량을 못 쟀다 — billing API 가 user 스코프 요구 · 소진 상태면 실패 알림 하루 ~16통 재발)</span><span class="chip">appsscript 의 08-18 「셀프호스티드로 간다」를 그대로 옮긴다(그건 public 전환 사정 — talk 은 private 이고 러너 실물 0)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">실측: talk private · appsscript public(ubuntu-latest 무료) · 러너 0 — 두 저장소 사정이 다르고, 복원을 잊으면 「push 해도 CI 0건」이 정상 얼굴로 굳는 자리라 하네스 예약이 기존 장치(새 도구 0)</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">예약 삭제 한 번 · ci.yml 주석 원복 — 비용 0</span></div>
+  
+  
+</article>
+<article class="card" data-r="대기" data-a="엔진 설계" data-e="아직">
+  <div class="head">
+    <span class="num">#06</span>
+    <h3>Ⅲ ⑤ FSRS-6 는 설계서(초안 v0.1)까지만 — 구현 0 · 유호 판정 4자리를 비워 뒀다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-22 &nbsp;·&nbsp; 엔진 설계 &nbsp;·&nbsp; appsscript · <code>51395487</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">docs/복습스케줄러_설계.md: 카드 단위(태그23/skills30/문항/어휘)·저장/retention·확신도 2값+null→4등급 매핑·배선만 vs 돌리기 + ts-fsrs 의존 — 권고는 적되 채택 아님 표기 · 생성 기술선택(회전)은 E2 자리라 안 만진다</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">ts-fsrs 를 바로 붙여 순수 lib 까지 짓는다(저장 위치·카드 단위가 계약 면적이라 임의 결정)</span><span class="chip">⑥⑦도 새 설계 문서로(정본 코어엔진_설계 §10 도전안과 두 정본)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">08-20 제안문 스스로 「채택하시면 설계서부터」 · 08-22 실측: 「확신도 3택」 전제가 실물(2값+null)과 어긋났다 — 설계 전 실측이 먼저였던 자리</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">문서 1벌 — 판정이 나면 그 절을 고친다 · 비용 0</span></div>
+  
+  
+</article>
+<article class="card" data-r="대기" data-a="운영 도구" data-e="아직">
+  <div class="head">
+    <span class="num">#07</span>
+    <h3>08-19 대청소가 남긴 죽은 포인터를 «기계 표식(주석)·손 현행화(안내문)·무접촉(코드 자리)·칩 분리(docs)» 넷으로 갈라 처분했다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-22 &nbsp;·&nbsp; 운영 도구 &nbsp;·&nbsp; appsscript · <code>55fd1d19 / 60333e26</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">tools 주석 96자리엔 삭제 커밋·날짜가 박힌 사실 표식을 기계로 붙이고(뜻 불변), 사용자에게 찍히는 안내문 8줄은 손으로 현행화, 삭제된 «정본 jsonl»(엔진점수·작동대장 기록)을 가리키는 코드 8자리는 무접촉(대청소 결정 vs 08-12 계기판 확정의 충돌 — 유호 판정), docs 살아있는 문서 26벌 42자리는 문맥 판단이 필요해 칩(별도 세션)으로 분리</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">전부 손으로(47+26 파일 — 밤에 못 끝나고 문맥 오기록 위험)</span><span class="chip">전부 기계로(docs 정본에 괄호 표식이 96개 들어가 유호님이 읽는 글이 망가진다 · 정본 jsonl 삭제 건을 덮는다)</span><span class="chip">방치(「낡은 것은 남기지 않는다」 위반 · 따를 수 없는 처방 F103 이 안내문에 그대로)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">재측정(확장자 경계·삭제 이력 대조·형제 저장소 실재 제외)으로 거짓양성을 걷어낸 뒤 — 주석은 뜻을 안 바꾸는 표식이 정직하고 안전, 안내문은 사람이 따라 하는 처방이라 사실로, 코드 자리는 행동 변경이라 판정 뒤, docs 는 «여는 세션이 고친다»가 읽는 사람 품질에 맞다</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">표식은 정규식 한 줄로 일괄 제거 가능(기계 부착의 역) · 안내문 8줄은 커밋 55fd1d19 되돌리기 · 칩은 dismiss — 비용 낮음</span></div>
+  
+  
+</article>
+<article class="card" data-r="대기" data-a="운영 도구" data-e="아직">
+  <div class="head">
+    <span class="num">#08</span>
+    <h3>대청소가 함께 걷어간 «엔진 점수 계기판»의 데이터 정본을 되살렸다 — 화면이 거짓말하고 있었다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-22 &nbsp;·&nbsp; 운영 도구 &nbsp;·&nbsp; appsscript · <code>29b6b4a0</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">docs/_ops/엔진점수.jsonl 을 git 이력(e75fc7fc^)에서 2줄 복구하고 실측 3줄(v6 89/102 · v7 88/102 · v7 무응답 61) 추가 · 이해대장 렌더는 «무응답 있는 회차»를 머리 숫자에서 빼고 경고로 내리도록 수리</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">그대로 둔다(유호님 화면이 「엔진 점수 아직 안 쟀다」라고 계속 거짓말 — 실제로는 v7 까지 갔다)</span><span class="chip">복구는 하되 렌더는 그대로(마지막 회차가 r2 라 화면이 「36/102 ▼52 폭락」으로 그린다 — 반대 방향의 거짓)</span><span class="chip">계기판 문구를 철학 정본에서 걷는다(08-12 유호 확정을 AI 가 지우는 것 — 확정 충돌)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">대청소(08-19)는 «자기검증 층»을 걷으라는 지시였고 이 파일은 자기검증 장치가 아니라 08-12 유호 확정 계기판의 데이터라 부수 피해다 · 복구는 사실 데이터를 되돌리는 것이고 되돌리기 비용이 0 · 「알고도 두지 마라」와 「장치가 조용히 거짓을 말하지 않게」가 같은 방향을 가리켰다</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">파일 1개 삭제 + 렌더 커밋 29b6b4a0 되돌리기 — 비용 0</span></div>
+  
+  
+</article>
+<article class="card" data-r="대기" data-a="평가" data-e="아직">
+  <div class="head">
+    <span class="num">#09</span>
+    <h3>돈을 쓴 3연 다수결 2회차가 벤더 400 61건으로 죽은 사실을 eval 정본에 적었다(재실행은 승인 자리로 남김)</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-08-22 &nbsp;·&nbsp; 평가 &nbsp;·&nbsp; talk · <code>083a0ac</code></div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">evals/결과.md 에 절 신설 — 36/102 는 품질이 아니라 도달률이고(답이 온 41건은 93%/93%) 재실행은 돈이 드니 유호님 승인 자리라고 명시 · 지금 다시 돌리지 않았다</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">조용히 재실행(돈 드는 API 실행은 승인 자리 — 확정 위반)</span><span class="chip">안 적는다(돈을 쓴 실행의 실패가 두 층 모두에서 사라진 채로 남는다)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">「돈·비가역은 묻는다」와 「실제로 한 것만 했다고 말한다」가 둘 다 걸린 자리 — 사실은 적고 실행은 승인 뒤로</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">문서 절 1개 — 비용 0</span></div>
+  
+  
+</article>
 <footer>
   정본은 <code>docs/_ops/자율주행_결정록.jsonl</code> — 이 화면은 그걸 읽어 그린 것이라 <b>정본이 바뀌면 여기도 바뀝니다</b>.<br>
   판정 반영 = <code>node tools/자율기록.js 판정 --번호 N --결과 유지|바꿈|보류</code> · 굽기 = <code>node tools/자율기록.js --굽기</code><br>
   <b>「그 뒤」는 다른 축입니다</b> — 판정은 <b>유호님이 승인했나</b>, 그 뒤는 <b>그 판단이 실제로 어떻게 됐나</b>입니다.
   뒤집힌 결정이 가장 값진 재료라 따로 셉니다 — <code>node tools/자율기록.js 효과 --스캔</code><br>
-  마지막 굽기 <b>2026-08-20</b>
+  마지막 굽기 <b>2026-08-22</b>
 </footer>
 </div>
 

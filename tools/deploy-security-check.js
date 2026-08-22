@@ -191,7 +191,7 @@ function claspProjects() {
   return out;
 }
 
-// 오탐/미탐이 갈리는 지점은 테스트가 직접 잡는다(tests/배포표면.test.js)
+// 오탐/미탐이 갈리는 지점은 테스트가 직접 잡는다(tests/배포표면.test.js(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다))
 module.exports = { check, checkCode, checkDeployments, claspProjects, looksSecret, topLevelFunctions, parseDeploymentLine };
 
 if (require.main === module) {
