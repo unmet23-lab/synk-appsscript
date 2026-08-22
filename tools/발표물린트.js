@@ -77,7 +77,11 @@ function lint(file) {
   if (dead.length) bad.push(`폐기 표기: ${dead.join(', ')}`);
 
   // 자립형 1파일 — 외부 자원이 하나라도 있으면 유호님 환경에서 깨진다
-  const ext = [...body.matchAll(/(?:src|href)\s*=\s*"([^"]+)"/g)].map((m) => m[1]).filter((u) => !u.startsWith('#'));
+  // ⚠`data:` 는 **외부가 아니라 인라인**이다. 규칙이 지키려는 것은 「파일 하나로 열린다」이고
+  //   data URI 는 그 규칙을 어기는 게 아니라 지키는 방법이다 — 08-22 B2 «신호만 펠트»
+  //   (워드마크 꺾쇠를 렌더판으로 인라인)를 넣자 여기서 거짓 위반이 났다. 규칙이 아니라 자가 틀렸다.
+  const ext = [...body.matchAll(/(?:src|href)\s*=\s*"([^"]+)"/g)].map((m) => m[1])
+    .filter((u) => !u.startsWith('#') && !u.startsWith('data:'));
   if (ext.length) bad.push(`외부 자원: ${ext.join(', ')}`);
   if (/@import/.test(html) || /url\(\s*['"]?https?:/.test(html)) bad.push('@import 또는 CDN url()');
 
