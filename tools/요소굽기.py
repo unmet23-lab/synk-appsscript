@@ -49,6 +49,11 @@ def 리니어(hex_):
 출력 = 인자.get('출력', '/tmp/요소.png')
 견본 = int(인자.get('샘플', '96'))
 너비 = int(인자.get('너비', '900'))
+# 「투명=1」 — 판(밤천)을 걷고 **알파 두 층(몸+접지)** 으로 뽑는다. 지면·앱에 꽂을 «부품» 통로다.
+#   왜 두 층인가(룸장면 §3-4 의 배움): 그림자가 몸에 구워져 있으면 배경이 바뀔 때마다 다시 구워야
+#   한다. 가르면 지면이 접지를 따로 얹어 **배경마다 다시 안 굽는다.**
+#   판은 사라지는 게 아니라 «그림자 받이»가 된다 — 접지가 실제 판 위에 진 그림자라야 맞는다.
+투명 = 인자.get('투명', '') in ('1', '켬', 'on')
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 씬 = bpy.context.scene
@@ -1604,8 +1609,7 @@ def 기호():
     if 이름 not in 도안들:
         raise SystemExit('모르는 기호: ' + 이름 + ' — 아는 것은 ' + '·'.join(도안들))
     고리들 = 자리맞춤(도안들[이름](), 1.28, 1.28)
-    바닥 = 베개몸((0.98, 0.055, 0.98), 크리스=0.34, 레벨=4)
-    바닥.data.materials.append(직물결(매끈재질('밤천', 색['Ink'], 거칠기=0.96), 지름=1.96))
+    밤판()
     # 두께·높이·땀은 채택판 자수글자의 «같은 수»다(글자 앞면 0.099 · 땀 0.101 — 표면에 걸터앉음).
     # 조각 앞면 = 0.075 + 0.022 + 0.008 = 0.105 → 땀 0.109 로 같은 관계를 만든다(눈보다 계산 · 4계 ④).
     아플리케(고리들, 염료이름, 두께=0.022, 베벨=0.008, 높이=0.075)
@@ -1621,7 +1625,8 @@ def 도장():
     본문 = 인자.get('본문', '참')
     # 잉크는 «깊은» 코랄이다 — 「색=」을 주면 그 색, 안 주면 Coral 3(라벨태그 강조실과 같은 실).
     인장색 = 염료이름 if '색' in 인자 else 'Coral 3'
-    바닥 = 베개몸((0.98, 0.055, 0.98), 크리스=0.34, 레벨=4)
+    바닥 = 밤판()          # 도장만 천 색이 다르다 — 다린 천(Stone) 위의 인장
+    바닥.data.materials.clear()
     바닥.data.materials.append(직물결(매끈재질('다린천', 색['Stone'], 거칠기=0.98), 지름=1.96, 촘촘=72.0))
     # 손으로 판 인장 — 반지름을 미세하게 흔든다(완벽한 원은 기계 도장이다).
     손 = random.Random(20260822)
@@ -1638,8 +1643,7 @@ def 게이지고리():
     12시에서 출발해 시계 방향으로 감긴다 — 채움은 위에서 시작해야 «차오른다»로 읽힌다.
     「진행=0~1」. 트랙은 Deep Wool 펠트 홈, 감긴 실은 기본색 3가닥 꼬임(털실진행바와 같은 실)."""
     진행 = min(1.0, max(0.03, float(인자.get('진행', '0.68'))))
-    바닥 = 베개몸((0.98, 0.055, 0.98), 크리스=0.34, 레벨=4)     # 검은 데 뜨지 않게 — 기호와 같은 판
-    바닥.data.materials.append(직물결(매끈재질('밤천', 색['Ink'], 거칠기=0.96), 지름=1.96))
+    밤판()                                       # 검은 데 뜨지 않게 — 기호와 같은 판
     큰, 살 = 0.55, 0.085                       # 바깥 = 0.55+0.133+0.052 = 0.735 → 지름 1.47 (판 1.96)
     bpy.ops.mesh.primitive_torus_add(major_radius=큰, minor_radius=살, location=(0, -0.16, 0),
                                      rotation=(math.radians(90), 0, 0),
@@ -1942,10 +1946,14 @@ def 성장판():
 
 def 밤판(반폭=0.98, 반높=None):
     """모든 «세운 요소»가 서는 밤천 판 — 기호·도장·게이지·조작 부품이 **같은 땅** 위에 선다.
-    판이 형태마다 갈리면, 세트로 늘어놨을 때 물건마다 다른 방에서 온 것으로 읽힌다."""
+    판이 형태마다 갈리면, 세트로 늘어놨을 때 물건마다 다른 방에서 온 것으로 읽힌다.
+    「투명=1」 이면 같은 자리에 **그림자 받이**로 선다 — 몸에서는 사라지고 접지에만 남는다."""
     반높 = 반폭 if 반높 is None else 반높
     판 = 베개몸((반폭, 0.055, 반높), 크리스=0.34, 레벨=4)
     판.data.materials.append(직물결(매끈재질('밤천', 색['Ink'], 거칠기=0.96), 지름=반폭 * 2))
+    if 투명:
+        판.is_shadow_catcher = True
+        그림자받이.append(판)
     return 판
 
 def 실가닥(점들, 굵기, 재질, 이름='가닥'):
@@ -2162,6 +2170,7 @@ def 읽음표시():
         '모달': 모달, '탭전환': 탭전환, '읽음표시': 읽음표시}
 if 형태 not in 형태들:
     raise SystemExit('모르는 형태: ' + 형태 + ' — 아는 것은 ' + '·'.join(형태들))
+그림자받이 = []      # 「투명=1」에서 몸 패스에는 숨고 접지 패스에만 남는 판(밤판이 채운다)
 키제외 = []          # 형태가 채우면 키 라이트에서 빠진다 — 밝은 글자가 앉을 그릇을 가라앉히는 «가림» 문법
 칸들 = {}            # 형태가 채우면 «그릇의 화면 픽셀 자리»가 굽기 뒤 JSON 으로 나온다 — 본문 층이 손좌표를 안 쓰게
 카메라위치, 카메라피치 = 형태들[형태]()
@@ -2250,6 +2259,7 @@ try:
     씬.cycles.denoising_prefilter = 'ACCURATE'
 except (AttributeError, TypeError) as 왜:
     print('디노이즈 가이드 실패(기본으로 간다):', 왜)
+씬.render.film_transparent = 투명      # 「투명=1」 — 배경을 알파로 비운다(부품 통로)
 씬.render.resolution_x = 너비
 씬.render.resolution_y = int(너비 * float(인자.get('비율', '0.82')))   # 조합판 = 1.9(폰 세로)
 씬.render.filepath = 출력
@@ -2302,15 +2312,39 @@ def GPU켜기():
 if 켠것:
     print('GPU:', 켠것)
     씬.cycles.device = 'GPU'
+else:
+    씬.cycles.device = 'CPU'
+
+def 그리기(경로):
+    """한 장 찍는다 — GPU 먼저, 죽으면 그 자리에서 CPU 로 되문다(유호 확정 08-20).
+    ⚠되물린 뒤에도 다음 장을 GPU 로 되돌리지 않는다 — 한 세트 안에서 장치가 오락가락하면
+      «왜 이 장만 다른가»를 나중에 못 푼다(픽셀은 같지만 실패 자리는 같지 않다)."""
+    global 켠것
+    씬.render.filepath = 경로
     try:
         bpy.ops.render.render(write_still=True)
     except RuntimeError as 왜:      # OUT_OF_RESOURCES 류 — 판정하지 않고 되문다(장면마다 한계가 다르다)
         print('GPU 가 죽어 CPU 로 되문다:', 왜)
         씬.cycles.device = 'CPU'
-        bpy.ops.render.render(write_still=True)
         켠것 = False
+        bpy.ops.render.render(write_still=True)
+
+if 투명:
+    # 두 패스 — 몸(받이 숨김)과 접지(몸을 «카메라에서만» 숨김: 그림자는 계속 진다).
+    바탕 = 출력[:-4] if 출력.lower().endswith('.png') else 출력
+    몸들 = [o for o in bpy.data.objects
+           if o.type in ('MESH', 'CURVE', 'FONT', 'SURFACE') and o not in 그림자받이]
+    for 받이 in 그림자받이:
+        받이.hide_render = True
+    그리기(바탕 + '_몸')
+    for 받이 in 그림자받이:
+        받이.hide_render = False
+    for o in 몸들:
+        o.visible_camera = False
+    그리기(바탕 + '_접지')
+    for o in 몸들:
+        o.visible_camera = True
 else:
-    씬.cycles.device = 'CPU'
-    bpy.ops.render.render(write_still=True)
+    그리기(출력)
 print('구움:', 형태, 출력, '샘플', 견본, '염료', 염료이름, 색.get(염료이름),
       '장치', 켠것 or 'CPU')
