@@ -4,7 +4,7 @@
  *
  * ■ 왜 통로가 하나여야 하나
  *   Apps Script 는 JSON 을 import 못 해 뱅크는 **소스 안 배열 리터럴**로만 존재한다
- *   (`tests/계약.test.js` 의 SCHEMA_VER 절이 적어 둔 같은 제약). 그래서 값을 쓰려는 쪽은
+ *   (`tests/계약.test.js(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다)` 의 SCHEMA_VER 절이 적어 둔 같은 제약). 그래서 값을 쓰려는 쪽은
  *   전부 소스를 잘라 `new Function` 으로 편다 — 그 자르는 규칙이 두 곳에 적히는 순간
  *   한쪽만 낡고, **낡은 쪽은 「표식을 못 찾음」이 아니라 「엉뚱한 구간을 조용히 통과」로 샌다**
  *   (`tests/_engine-source.js` 머리말이 실측한 그 실패 모양). 회귀와 생성기가 같은 자를
@@ -22,7 +22,7 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const 엔진파일 = '엔진_콘텐츠AI.js';
 
 /* 끝 표식은 주석 문구가 아니라 **코드 심볼**로 잡는다 — 문구 앵커는 그 문구를 다듬는
- * 순간 죽는다(`tests/문법급수.test.js` 가 먼저 적어 둔 규칙 · 여기가 그 규칙의 집이다). */
+ * 순간 죽는다(`tests/문법급수.test.js(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다)` 가 먼저 적어 둔 규칙 · 여기가 그 규칙의 집이다). */
 const 시작표식 = 'const GRAMMAR_BANK = [';
 const 끝표식 = 'function grammarStageOf_';
 
