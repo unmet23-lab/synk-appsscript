@@ -17,8 +17,12 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 보조갈래 = sys.argv[2] if len(sys.argv) > 2 else "없음"   # 없음 | 층별 | 전면
                                                         # ⚠이름을 「보조」로 두면 색 상수를 덮는다
 키릴 = r"C:\Windows\Fonts\segoeui.ttf"   # ⚠맑은고딕엔 몽골 키릴 ө·ү 글리프가 없다(두부 실측)
-꼬리 = "" if 보조갈래 == "없음" else "_" + 보조갈래
-바탕길 = os.path.join(여기, "렌더", 이름 + ".png")
+# ⚠**채택판은 꼬리가 없다** — 오늘·소식·학부모 공방과 같은 규약으로 통일했다(08-23).
+#   세 공방이 서로 다른 이름 규약을 쓰면 「어느 게 현행인가」를 파일 이름이 못 말한다.
+꼬리 = "" if 보조갈래 == "층별" else "_" + 보조갈래
+# ⚠**낡은 경로였다** — `렌더/` 하위 폴더는 없어졌는데(08-23 실측) 이 두 줄이 그대로 남아
+#   스크립트가 통째로 안 돌고 있었다. 옆 세 공방(오늘·소식·학부모)과 같게 «여기» 바로 아래를 본다.
+바탕길 = os.path.join(여기, 이름 + ".png")
 칸들 = json.load(io.open(바탕길 + ".칸.json", encoding="utf-8"))
 
 im = Image.open(바탕길).convert("RGB")
@@ -121,7 +125,7 @@ if "탭0" in 칸들:
         지금 = (번 == 1)
         기록.append(("탭%d" % 번, 글(가, 중 - 22, 이름표, 34, 보조 if 지금 else 보조2, 지금, 가운데=True)))
 
-낸것 = os.path.join(여기, "렌더", 이름 + "_본문" + 꼬리 + ".png")
+낸것 = os.path.join(여기, "성장판_v1" + 꼬리 + ".png")   # 채택판 이름은 «_그릇만» 을 뗀 것이다
 im.save(낸것)
 print("구움:", os.path.basename(낸것))
 
