@@ -333,13 +333,13 @@ function 장부Section(잰다, 형제들) {
   return { 측정: true, 결과, 섰던적: !!상태().장부섰나 };
 }
 
-function notebooklmSection() {
-  // 하네스 폴더와 결정적으로 다른 점: 노트북LM 묶음은 **올린 뒤 손이 닿지 않는다.**
+function geminilmSection() {
+  // 하네스 폴더와 결정적으로 다른 점: 제미나이LM 묶음은 **올린 뒤 손이 닿지 않는다.**
   // 자료는 구글 계정 안으로 복사돼 버려서, 저장소가 아무리 바뀌어도 그쪽은 그대로다.
   // 즉 「스스로 낡음을 말하는」 배너조차 올라간 사본에는 만든 날짜로 굳어 있다 —
   // 낡음을 알려야 할 상대는 폴더가 아니라 **올린 사람**이다. 그래서 주간 점검이 진다.
-  const N = require('./notebooklm-export.js'); // require는 생성기를 실행하지 않는다
-  const dir = process.env.SYNK_NOTEBOOKLM_OUT || N.DEFAULT_OUT;
+  const N = require('./geminilm-export.js'); // require는 생성기를 실행하지 않는다
+  const dir = process.env.SYNK_GEMINILM_OUT || N.DEFAULT_OUT;
   const readme = path.join(dir, 'README_먼저읽기.md');
   if (!fs.existsSync(readme)) return { present: false }; // 아직 안 쓰는 것 = 부패 아님
   const madeAt = fs.statSync(readme).mtimeMs;
@@ -356,8 +356,8 @@ function notebooklmSection() {
   return { present: true, made: m ? m[1] : '(날짜 미검출)', changed };
 }
 
-function nblmDriveSection() {
-  /* 노트북LM **자동 갱신** 배선(예약 작업 SYNK_NotebookLM)의 감시.
+function geminilmDriveSection() {
+  /* 제미나이LM **자동 갱신** 배선(예약 작업 SYNK_GeminiLM · 구 SYNK_NotebookLM)의 감시.
    *
    * 왜 필요한가 — 자동화를 붙이면 「안 도는 것」이 「아무 일도 안 일어남」으로 나타난다.
    * 드라이브가 꺼져 있거나 크롬이 실패하면 생성기는 정직하게 멈추고 로그만 남기는데,
@@ -365,7 +365,7 @@ function nblmDriveSection() {
    * 여기서 읽는다 — 「자동이니까 되겠지」가 정확히 조용한 실패의 모양이다.
    *
    * 로그가 없으면 부패가 아니다(아직 한 번도 안 돌았거나 이 기계가 아니다). */
-  const log = path.join(__dirname, 'notebooklm-drive.log');
+  const log = path.join(__dirname, 'geminilm-drive.log');
   if (!fs.existsSync(log)) return { present: false };
   const lines = fs.readFileSync(log, 'utf8').split(/\r?\n/).filter((l) => /\bOK\b|FAILED/.test(l));
   if (!lines.length) return { present: true, unknown: true };
@@ -377,12 +377,12 @@ function nblmDriveSection() {
   const 성공일 = 날짜(마지막성공);
   const 지난날 = 성공일 ? Math.floor((Date.now() - new Date(성공일 + 'T00:00:00').getTime()) / 86400000) : null;
   /* 「왜 실패했나」와 **「지금 고칠 수 있나」는 다른 질문이다.** 로그만 읽으면 앞의 것만 안다.
-   * F318 실측: 처방(`node tools/notebooklm-drive.js`)을 그대로 따라 돌렸다가 같은 자리에서
+   * F318 실측: 처방(`node tools/geminilm-drive.js`)을 그대로 따라 돌렸다가 같은 자리에서
    * 막혔다 — 마운트가 없으면 그 도구는 정지하도록 설계돼 있고, 마운트를 켜는 건 유호님
    * 몫이라 세션이 몇 번을 돌려도 안 된다. 그래서 지금 상태를 같이 재서 처방을 가른다.
    * 판정은 생성기의 것을 그대로 부른다(사본을 만들면 드라이브 문자 목록이 갈라진다). */
   let 마운트 = null;
-  try { 마운트 = !!require('./notebooklm-drive.js').findDriveRoot(); } catch (_) { 마운트 = null; }
+  try { 마운트 = !!require('./geminilm-drive.js').findDriveRoot(); } catch (_) { 마운트 = null; }
   return { present: true, failed, last, 성공일, 지난날, 마운트 };
 }
 
@@ -433,8 +433,8 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
   const doc = attempt('doc', docSection);
   const fri = attempt('friction', frictionSection);
   const har = attempt('harness', harnessSection);
-  const nbl = attempt('notebooklm', notebooklmSection);
-  const nbd = attempt('notebooklm-drive', nblmDriveSection);
+  const nbl = attempt('geminilm', geminilmSection);
+  const nbd = attempt('geminilm-drive', geminilmDriveSection);
   const toi = attempt('toil', toilSection);
   const map = attempt('지도', mapSection);
   const 절단 = attempt('절단문서', () => 절단문서Section());
@@ -541,20 +541,20 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
   if (nbl.ok && nbl.value.present && nbl.value.changed.length) {
     const n = nbl.value.changed.length;
     warn.push({
-      kind: '노트북LM 묶음 낡음',
+      kind: '제미나이LM 묶음 낡음',
       text: `묶음(만든 날 ${nbl.value.made}) 이후 원천 ${n}개가 바뀌었다 — ` +
         `${nbl.value.changed.slice(0, 3).join(', ')}${n > 3 ? ` 외 ${n - 3}건` : ''}. ` +
         '올라간 사본은 저장소가 만질 수 없으므로 스스로 안 낫는다. ' +
-        '수리: node tools/notebooklm-export.js → 노트북LM에서 옛 노트북을 지우고 새로 올린다',
+        '수리: node tools/geminilm-export.js → 제미나이LM에서 옛 노트북을 지우고 새로 올린다',
     });
   }
 
   if (nbd.ok && nbd.value.present && !nbd.value.unknown) {
     if (nbd.value.failed) {
       red.push({
-        kind: '노트북LM 자동 갱신 실패',
-        text: `예약 작업 SYNK_NotebookLM 마지막 실행이 실패했다 — ${nbd.value.last.trim()}\n` +
-          '     드라이브 데스크톱이 꺼졌거나 크롬 실패. 노트북LM 소스는 그 시점에서 멈춰 있다' +
+        kind: '제미나이LM 자동 갱신 실패',
+        text: `예약 작업 SYNK_GeminiLM 마지막 실행이 실패했다 — ${nbd.value.last.trim()}\n` +
+          '     드라이브 데스크톱이 꺼졌거나 크롬 실패. 제미나이LM 소스는 그 시점에서 멈춰 있다' +
           '(화면상으론 「있는 것」처럼 보이므로 조용한 낡음이다).\n' +
           (nbd.value.마운트 === false
             // 처방을 갈라 준다 — 마운트가 없는데 도구를 돌리라고 하면 세션은 같은 자리에서
@@ -562,13 +562,13 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
             ? '     🔴 지금도 드라이브 마운트가 없다(G:~K: 전부 훑음) — **도구를 돌려도 같은 자리에서 멈춘다.**\n' +
               '     유호님만 풀 수 있다: 구글 드라이브 데스크톱을 켜고 「내 드라이브」가 보이면 그때 재실행된다' +
               '(예약 작업이 매일 돌므로 켜 두기만 하면 손은 안 간다).'
-            : '     수리: node tools/notebooklm-drive.js  (마운트는 지금 잡힌다)'),
+            : '     수리: node tools/geminilm-drive.js  (마운트는 지금 잡힌다)'),
       });
     } else if (nbd.value.지난날 !== null && nbd.value.지난날 >= 3) {
       warn.push({
-        kind: '노트북LM 자동 갱신 멈춤',
+        kind: '제미나이LM 자동 갱신 멈춤',
         text: `마지막 성공이 ${nbd.value.성공일}(${nbd.value.지난날}일 전) — 매일 도는 배선인데 안 돌고 있다. ` +
-          'PC가 꺼져 있었다면 정상이지만, 켜져 있었다면 예약 작업을 확인하라(schtasks /query /tn SYNK_NotebookLM).',
+          'PC가 꺼져 있었다면 정상이지만, 켜져 있었다면 예약 작업을 확인하라(schtasks /query /tn SYNK_GeminiLM).',
       });
     }
   }
