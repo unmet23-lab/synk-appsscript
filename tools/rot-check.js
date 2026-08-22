@@ -97,13 +97,26 @@ function docSection() {
  * 누적 열림 둘이 아니다. 기준점 없이 누적을 세면 40건이 쌓인 지금 알림이 영구히 켜지고,
  * 켜져 있는 알림은 안 읽힌다(F386 · F370 과 같은 병). 날짜는 기계가 정확히 안다. */
 function 마지막개정(파일) {
-  const p = 파일 || path.join(ROOT, 'docs', '지침_이력.md');
-  let text;
-  try { text = fs.readFileSync(p, 'utf8'); } catch (_) { return null; }   // 없으면 기준점 없음 = 옛 동작
   let 최대 = null;
-  for (const m of text.matchAll(/^##\s+v[\d.]+[^\n]*?(\d{4}-\d{2}-\d{2})/gm)) {
-    if (!최대 || m[1] > 최대) 최대 = m[1];
-  }
+  const p = 파일 || path.join(ROOT, 'docs', '지침_이력.md');
+  try {
+    const text = fs.readFileSync(p, 'utf8');
+    for (const m of text.matchAll(/^##\s+v[\d.]+[^\n]*?(\d{4}-\d{2}-\d{2})/gm)) {
+      if (!최대 || m[1] > 최대) 최대 = m[1];
+    }
+  } catch (_) { /* 이력이 없으면 정본만으로 판정한다 */ }
+
+  /* 정본 자신의 머리도 본다 — 08-22 실측: v10.0 개편(08-19)이 이력에 «등재만» 안 됐는데,
+   * 그 하나로 기준점이 08-13 에 얼어붙어 그 뒤 마찰 14건이 전부 「새로 난 것」으로 세졌고
+   * 매 세션 「지침 개정 제안 조건 도달」이 떴다. 개편을 해도 시스템은 개편 전으로 안다 —
+   * 유호님이 「개편이 체감 안 된다」고 하신 자리의 기계적 뿌리다.
+   * 이력 등재는 사람이 잊지만 정본은 자기 개정일을 머리에 이고 다닌다(둘 중 늦은 쪽을 쓴다). */
+  try {
+    const 머리 = fs.readFileSync(path.join(ROOT, 'CLAUDE.md'), 'utf8').slice(0, 600);
+    const m = 머리.match(/v[\d.]+\s*·\s*(\d{4}-\d{2}-\d{2})/);
+    if (m && (!최대 || m[1] > 최대)) 최대 = m[1];
+  } catch (_) { /* 정본이 없으면 이력 값만 쓴다 */ }
+
   return 최대;
 }
 
