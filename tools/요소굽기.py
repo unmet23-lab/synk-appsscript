@@ -247,6 +247,10 @@ def 매끈재질(이름, hex_, 거칠기=0.5, 배율=1.0):
     p.inputs['Roughness'].default_value = 거칠기
     return m
 
+결깊이배 = 0.44   # 「세기」(호출자 눈금) → Bump Distance(월드 깊이) 환산.
+                  # 눈금 = 다린천 실측 08-22: 세기 0.045 → 깊이 0.02 → 상대 대비 2.8%(눈 문턱 ≈1%).
+                  # 0.006(1.2%)은 아직 종이 · 0.06(4.2%)은 스터코로 읽혀 기각 — 0.02 가 눌린 부직포다.
+
 def 직물결(m, 규모=200.0, 세기=0.05):
     """민무늬 살 위에 미세 결 — 매끈 슬라브는 도자기로 읽힌다(시안2027 실측).
     펠트·다린 천은 부직포라 짜임이 아니라 «알갱이 결»이 맞다 — 노이즈 범프."""
@@ -256,7 +260,14 @@ def 직물결(m, 규모=200.0, 세기=0.05):
     noise.inputs['Scale'].default_value = 규모
     noise.inputs['Detail'].default_value = 6.0
     bump = nt.nodes.new('ShaderNodeBump')
-    bump.inputs['Strength'].default_value = 세기
+    # 🔑 **Distance 를 안 주면 이 함수는 통째로 무동작이다** (실측 08-22).
+    #   Bump 의 실효 왜곡 = Strength × Distance × 기울기인데, 블렌더가 Distance 를 0.001 로
+    #   두고 시작한다. 그래서 세기를 8배(0.045→0.36) 올리고 규모를 25배(200→8) 바꿔도
+    #   판 안 평균차가 0.0145/255 — 렌더 잡음과 구분이 안 됐다. 「민무늬는 도자기로 읽힌다」며
+    #   만든 결이 16곳 전부에서 한 번도 안 나오고 있었다.
+    #   ⇒ Strength 는 1.0 으로 열고, 호출자 눈금 「세기」를 실제 깊이(Distance)로 옮긴다.
+    bump.inputs['Strength'].default_value = 1.0
+    bump.inputs['Distance'].default_value = 세기 * 결깊이배
     nt.links.new(noise.outputs['Fac'], bump.inputs['Height'])
     nt.links.new(bump.outputs['Normal'], p.inputs['Normal'])
     return m
