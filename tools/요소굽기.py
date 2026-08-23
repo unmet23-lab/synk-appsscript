@@ -39,6 +39,53 @@ _토큰 = json.load(open(토큰길, encoding='utf-8'))
 색 = {c['이름']: c['hex'] for c in _토큰['색']['킷']}
 _시맨틱 = _토큰['색']['시맨틱']['다크']
 
+# ── 현실감 (유호 08-23 「조금 더 현실감있게」) ───────────────────────────────────────
+#   셋을 «따로» 켜서 재고(실감=속살|섬유|심도|전부·없음) 이긴 둘만 기본으로 올렸다.
+#   한꺼번에 켰으면 무엇이 값을 했는지 못 갈랐을 것이고, 되돌릴 때도 못 되돌렸을 것이다.
+#
+#   ✅ **속살**(서브서피스) — 채택. 이 저장소에는 08-23 까지 서브서피스가 **한 건도 없었다**:
+#      재질이 순수 확산이라 물리적으로 «무광 플라스틱»이었고, 「도자기 같다」의 남은 절반이 거기였다.
+#      실측 — 실루엣 띠의 밝기가 세 부품에서 한결같이 올랐다(35→40 · 35→43 · 97→102).
+#      양모는 빛을 얕게 먹었다 뱉는다: 폼폼 «안»에 빛이 고여 부피가 생긴다.
+#   ✅ **심도** f/0.9 — 채택. f/2.2 는 85mm·7m 에서 심도가 물체(깊이 0.5)보다 깊어 **무효**였다(1판).
+#      열어서 재니 «깊이가 있는 부품에서만» 값을 한다 — 폼폼 바깥띠 결 698→621, 평평한 단추위계는
+#      441→439. 그게 옳은 거동이다: 평평한 물건은 실제 접사에서도 고르게 선명하다.
+#   🔴 **섬유**(Principled Hair BSDF) — **기각.** 물리적으로는 더 옳다(겉반사 R · 투과 TT · 되튐 TRT).
+#      그런데 이 조명에서 **코랄이 하얗게 씻겼다**(단추위계 최대차 123 · 뱃지 106/평균 15.1 — 폼폼이
+#      거의 흰 공이 됐다). 신호 1점이 깨지면 킷의 근간이 무너진다. 되살리려면 조명·램프를 통째로
+#      다시 조율해야 하는데 그건 구운 156장을 전부 다시 판정하는 값이다 — **지금 치를 값이 아니다.**
+#      «더 옳은 물리»가 «더 나은 그림»이 아닐 수 있다는 것이 이 판의 배움이다. 손잡이는 남겨 둔다.
+_기본실감 = {'속살', '심도'}
+_실감 = set(_기본실감)
+_준것 = 인자.get('실감', '').replace('·', ',').strip()
+if _준것:
+    _실감 = set()
+    for _조각 in _준것.split(','):
+        _조각 = _조각.strip()
+        if _조각 in ('속살', '섬유', '심도'):
+            _실감.add(_조각)
+        elif _조각 in ('전부', '1'):
+            _실감 |= {'속살', '섬유', '심도'}
+        elif _조각 in ('없음', '0'):
+            pass                      # 옛 판과 대조할 때 쓴다 — 회귀의 기준선이 있어야 판정이 된다
+        else:
+            raise SystemExit('모르는 실감: ' + _조각 + ' — 속살·섬유·심도·전부·없음')
+
+
+def 속살(p, 세기=0.22, 규모=0.030):
+    """양모 펠트의 «속살» — 빛이 표면에서 멈추지 않고 얕게 들어갔다 나온다.
+
+    🔑 **이 저장소에는 08-23 까지 서브서피스가 한 건도 없었다.** 재질이 순수 확산이라
+      물리적으로는 «무광 플라스틱»이었다 — 「도자기 같다」의 남은 절반이 여기 있다.
+    ⚠피부가 아니다: 펠트는 촘촘해 깊이 안 들어간다. 세기 0.22 · 규모 0.030(월드) 이 상한이고,
+      올리면 가장자리가 물러 «젤리»가 된다. 빨강이 가장 깊이 들어가는 것은 실제 산란 그대로다.
+    """
+    if 'Subsurface Weight' not in p.inputs:
+        return                                   # 옛 블렌더 — 조용히 지나간다(없으면 없는 대로)
+    p.inputs['Subsurface Weight'].default_value = 세기
+    p.inputs['Subsurface Radius'].default_value = (1.0, 0.55, 0.35)
+    p.inputs['Subsurface Scale'].default_value = 규모
+
 
 def 뜻색(이름):
     """**시맨틱 색** — 「어디에 무슨 색」의 정본(`디자인_토큰.json` · 유호 확정 08-20 조항 ⓚ).
@@ -82,20 +129,42 @@ def 살재질(이름, hex_):
     기본 = 리니어(hex_)
     p.inputs['Base Color'].default_value = tuple(v * 0.55 for v in 기본[:3]) + (1.0,)
     p.inputs['Roughness'].default_value = 1.0
+    if '속살' in _실감:
+        속살(p)
     return m
 
 def 털재질(이름, hex_):
+    """털 한 오리의 재질 — 뿌리에서 끝으로 밝아지는 램프가 «부피»를 만든다.
+
+    🔑 「실감=섬유」 면 **Principled Hair BSDF** 로 간다. 보통 Principled BSDF 는 섬유를 «가는 면»
+      으로 다뤄 확산만 낸다 — 실제 털은 겉면 반사(R) · 속을 지나 나오는 빛(TT) · 속에서 한 번
+      되튀는 빛(TRT) 셋이 축을 따라 다르게 나고, 역광에서 «속이 비치는» 것이 그 TT 다.
+      털 뭉치가 사진처럼 보이는 까닭의 태반이 그것이라, 확산만으로는 늘 «펠트 모형»에서 멈춘다.
+    ⚠양모는 사람 머리카락보다 거칠고 광이 적다 — Roughness 0.45 · Coat 0.05 가 상한이다.
+    """
     기본 = 리니어(hex_)
     m = bpy.data.materials.new('털_' + 이름)
     m.use_nodes = True
-    tp = m.node_tree.nodes['Principled BSDF']
-    tp.inputs['Roughness'].default_value = 0.62
-    정보 = m.node_tree.nodes.new('ShaderNodeHairInfo')
-    램프 = m.node_tree.nodes.new('ShaderNodeValToRGB')
+    nt = m.node_tree
+    정보 = nt.nodes.new('ShaderNodeHairInfo')
+    램프 = nt.nodes.new('ShaderNodeValToRGB')
     램프.color_ramp.elements[0].color = tuple(v * 0.72 for v in 기본[:3]) + (1.0,)
     램프.color_ramp.elements[1].color = tuple(min(1.0, v * 1.18) for v in 기본[:3]) + (1.0,)
-    m.node_tree.links.new(정보.outputs['Intercept'], 램프.inputs['Fac'])
-    m.node_tree.links.new(램프.outputs['Color'], tp.inputs['Base Color'])
+    nt.links.new(정보.outputs['Intercept'], 램프.inputs['Fac'])
+    if '섬유' in _실감:
+        털 = nt.nodes.new('ShaderNodeBsdfHairPrincipled')
+        털.parametrization = 'COLOR'          # 색을 직접 준다 — 멜라닌 축은 머리카락용이다
+        털.inputs['Roughness'].default_value = 0.45
+        털.inputs['Radial Roughness'].default_value = 0.60
+        털.inputs['Coat'].default_value = 0.05
+        털.inputs['Random Roughness'].default_value = 0.35
+        nt.links.new(램프.outputs['Color'], 털.inputs['Color'])
+        nt.links.new(털.outputs[0], nt.nodes['Material Output'].inputs['Surface'])
+        nt.nodes.remove(nt.nodes['Principled BSDF'])
+        return m
+    tp = nt.nodes['Principled BSDF']
+    tp.inputs['Roughness'].default_value = 0.62
+    nt.links.new(램프.outputs['Color'], tp.inputs['Base Color'])
     return m
 
 def 베개몸(크기, 위치=(0, 0, 0), 회전z=0.0, 크리스=0.62, 레벨=3):
@@ -277,6 +346,8 @@ def 매끈재질(이름, hex_, 거칠기=0.5, 배율=1.0, 반사=None):
     p.inputs['Roughness'].default_value = 거칠기
     if 반사 is not None:
         p.inputs['Specular IOR Level'].default_value = 반사
+    if '속살' in _실감 and 거칠기 >= 0.85:      # 천·펠트 면만 — 매끈한 실·바늘·유리는 속살이 없다
+        속살(p, 세기=0.18)
     return m
 
 def 직물결(m, 규모=200.0, 세기=0.9, 지름=None, 촘촘=58.0, 깊이=1.0):
@@ -4993,6 +5064,15 @@ if 키제외:
 bpy.ops.object.camera_add(location=카메라위치, rotation=(math.radians(카메라피치), 0, 0))
 씬.camera = bpy.context.object
 씬.camera.data.lens = 85
+if '심도' in _실감:
+    # 🔑 작은 물건을 85mm 로 가까이 찍으면 «뒤가 눕는다» — 이 저장소 렌더가 도면처럼 보이던
+    #   마지막 까닭이 무한 심도였다. 초점은 물건 면(원점보다 카메라 쪽 0.28)이라 판이 살짝 물러난다.
+    # ⚠조리개를 더 열면(수 작게) 실땀까지 뭉갠다 — 부품은 «쓰이는 그림»이라 주인공은 또렷해야 한다.
+    _몸길이 = math.hypot(카메라위치[1], 카메라위치[2])
+    씬.camera.data.dof.use_dof = True
+    씬.camera.data.dof.focus_distance = max(0.5, _몸길이 - 0.28)
+    씬.camera.data.dof.aperture_fstop = float(인자.get('조리개', '0.9'))
+    씬.camera.data.dof.aperture_blades = 7        # 홀수 날 — 짝수면 하이라이트가 겹쳐 «별»이 된다
 
 씬.render.engine = 'CYCLES'
 씬.cycles.samples = 견본
