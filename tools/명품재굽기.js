@@ -132,7 +132,68 @@ function 덧씌우기() {
   return 실패;
 }
 
+/* ── 빠진 것 잡기 — 「✅ 라고 적혔는데 실물은 옛 판」을 잡는 유일한 방법 ──────────────
+ * 🔴 08-24 실사고: 재굽기 중 `숫자/2` 가 68초 만에 죽었는데 어제 판이 그 자리에 남아 있어
+ *    로그에 「✅ 68초 · 3547KB」로 찍혔다. 세트굽기의 판정이 «있나»였기 때문이다(그 줄도 같이 고쳤다).
+ *    ⇒ 배치가 끝나면 **언제나 이것을 돌린다.** 판정 기준은 파일 수도 크기도 아니고 **시각**이다.
+ *    「전부 끝」이라는 한글 표지로는 판정할 수 없다(로그가 CP949 라 grep 이 원리상 안 된다 · 트랙 §0).
+ * 쓰기: node tools/명품재굽기.js --검사 "2026-08-24 07:12"
+ *       node tools/명품재굽기.js --빠진것 "2026-08-24 07:12"      ← 낡은 것만 다시 굽는다
+ */
+function 낡은것(기준) {
+  const { 항목들 } = require('./세트굽기.js');
+  const 뿌리 = path.join(루트, 'docs', '캐릭터', '요소공방_0822');
+  const 낡 = [];
+  for (const it of 항목들('전부')) {
+    const p = path.join(뿌리, it.세트, `${it.이름}.png`);
+    let t = 0;
+    try { t = fs.statSync(p).mtimeMs; } catch (_) { t = 0; }
+    if (t < 기준) 낡.push({ 갈래: '요소', 이름: `${it.세트}/${it.이름}`, 항목: it, 파일: p, 때: t });
+  }
+  for (const s of 화면들) {
+    const p = path.join(루트, 'docs', '캐릭터', s.공방, `${s.그릇}.png`);
+    let t = 0;
+    try { t = fs.statSync(p).mtimeMs; } catch (_) { t = 0; }
+    if (t < 기준) 낡.push({ 갈래: '화면', 이름: s.형태, 화면: s, 파일: p, 때: t });
+  }
+  return 낡;
+}
+
+function 때글(t) { return t ? new Date(t).toLocaleString('ko-KR') : '없음'; }
+
+function 검사(기준) {
+  const 낡 = 낡은것(기준);
+  console.log(`\n■ 검사 — 기준 ${new Date(기준).toLocaleString('ko-KR')} 보다 «옛» 파일`);
+  if (!낡.length) { console.log('  ✅ 빠진 것 없다 — 전량이 이 기준 뒤에 새로 났다.'); return 낡; }
+  console.log(`  🔴 ${낡.length}장이 안 구워졌다(로그가 ✅ 라 적었어도 실물은 옛 판이다):`);
+  for (const x of 낡) console.log(`     ${x.갈래} ${x.이름}  — ${때글(x.때)}`);
+  return 낡;
+}
+
+function 빠진것다시(기준) {
+  const 낡 = 검사(기준);
+  if (!낡.length) return;
+  console.log(`\n■ 빠진 것 다시 굽기 — ${낡.length}장 · ${시각()}`);
+  const 열쇠 = ['형태', '본문', '기호', '초밥', '진행', '비율', '조명', '조명배', '등힘', '색',
+    '글자크기', '수량', '빛배', '상태', '실감', '조리개'];
+  낡.forEach((x, i) => {
+    process.stdout.write(`  [${String(i + 1).padStart(2)}/${낡.length}] ${x.이름}`.padEnd(30));
+    const 하나 = Date.now();
+    const 옵션 = x.갈래 === '요소'
+      ? 열쇠.filter((k) => x.항목[k] !== undefined).map((k) => `${k}=${x.항목[k]}`)
+      : [`형태=${x.화면.형태}`, '비율=1.9'];
+    spawnSync(블렌더, ['-b', '-P', path.join(루트, 'tools', '요소굽기.py'), '--',
+      ...옵션, `샘플=${견본}`, `너비=${너비}`, `장치=${장치}`, `출력=${x.파일}`],
+    { cwd: 루트, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+    let 됐나 = false;
+    try { 됐나 = fs.statSync(x.파일).mtimeMs >= 하나 - 1000; } catch (_) { 됐나 = false; }
+    console.log(`${됐나 ? '✅' : '🔴'} ${분(Date.now() - 하나)}분`);
+  });
+}
+
 const 시작 = Date.now();
+if (인자['검사']) { 검사(new Date(인자['검사']).getTime()); process.exit(0); }
+if (인자['빠진것']) { 빠진것다시(new Date(인자['빠진것']).getTime()); process.exit(0); }
 console.log(`■ 명품 재굽기 — 색관리 PBR중립 · 노출 +0.25 · 샘플 ${견본} · ${너비}px · 시작 ${시각()}`);
 const 요소만 = 깃발.has('요소만');
 const 화면만 = 깃발.has('화면만');
@@ -141,5 +202,9 @@ const 전부 = !요소만 && !화면만 && !덧만;
 
 if (전부 || 요소만) 요소굽기();
 if (전부 || 화면만) 화면굽기();
+/* 검사를 덧씌움 «앞»에 둔다 — 옛 그릇 위에 새 본문을 부으면 두 판이 섞인 그림이 나오고,
+ * 그건 나중에 「왜 이 화면만 다른가」로 나타난다(가장 비싼 형태의 사고). */
+if (전부 || 요소만 || 화면만) 빠진것다시(시작);
 if (전부 || 화면만 || 덧만) 덧씌우기();
+if (전부 || 요소만 || 화면만) 검사(시작);      // 다시 구운 뒤에도 남았나 — 마지막 말은 파일이 한다
 console.log(`\n■ 전체 끝 — ${분(Date.now() - 시작)}분 · ${시각()}`);
