@@ -291,10 +291,13 @@ function 편집중인가(파일들, projRoot, 미커밋) {
  * 비용 실측(2026-08-15 · 판 미적용 상태 = HTTP 1회): 828ms. 판이 서면 2회라 ~1.7초로 본다.
  *   6시간 스로틀이라 세션 시작 평균 비용은 그 1/N 이다. */
 const 장부_시간제한 = 10000;
-/* 그쪽(`회차장부.js --json`)이 낼 수 있는 «판정» 전부. 1=이상 있음 · 2=판을 못 봤다.
+/* 그쪽(`회차장부.js --json`)이 낼 수 있는 «판정» 전부. 0=이상 없음 · 1=이상 있음 · 2=판을 못 봤다.
  * 🔑 목록으로 두는 이유는 아래 문에서 **모르는 값을 닫기** 위해서다 — 그쪽이 상태를 늘리면
- *   여기부터 열어야 하고, 안 열면 그 상태는 「못 잼」으로 드러난다(조용한 통과가 아니라). */
-const 아는판정 = new Set([1, 2]);
+ *   여기부터 열어야 하고, 안 열면 그 상태는 「못 잼」으로 드러난다(조용한 통과가 아니라).
+ * 🔴 08-24 까지 0 이 빠져 있었다 — 장부가 «건강해지는 순간» 다리가 «못 잼»을 내는 결함인데,
+ *   다리가 태어난 뒤 리허설 장부가 건강했던 적이 없어서(잔존 cron 침묵 9일) 한 번도 안 튀었다.
+ *   리허설 잔존을 걷어 처음으로 판정 0 이 나온 날 그 자리에서 드러났다. */
+const 아는판정 = new Set([0, 1, 2]);
 
 function 장부Section(잰다, 형제들) {
   if (!잰다) return { 측정: false, 사유: '차례 아님' };
@@ -306,8 +309,20 @@ function 장부Section(잰다, 형제들) {
   for (const { 뿌리, 저장소 } of 목록) {
     const 도구 = path.join(뿌리, 'tools', '회차장부.js');
     if (!fs.existsSync(도구)) continue;                       // 해당 없음 — 0건도 모름도 아니다
+    /* 과녁 둘 — 기본(.env = 리허설)과 운영(08-24). 리허설만 보던 9일 동안 운영 장부는 reader 0
+     * 이었고, 그 사이 운영 대조 뷰의 영구 오탐(ops-harvest 288/일)도 아무에게도 안 보였다.
+     * ref 는 그쪽 정본(lib/자격증명.js)에서 읽는다 — 여기 박아 두면 두 정본이 된다. */
+    const 과녁들 = [{ 이름: '', env: undefined }];
+    try {
+      const { 운영REF } = require(path.join(뿌리, 'lib', '자격증명.js'));
+      if (운영REF) 과녁들.push({ 이름: '운영', env: { ...process.env, SUPABASE_PROJECT_REF: 운영REF } });
+    } catch (e) {
+      결과.push({ 저장소, 과녁이름: '운영', 못잼: true,
+        사유: `운영 ref 를 못 읽었다(lib/자격증명.js): ${String((e && e.message) || e).slice(0, 80)}` });
+    }
+    for (const 과 of 과녁들) {
     const r = spawnSync(process.execPath, [도구, '--json'], {
-      cwd: 뿌리, encoding: 'utf8', timeout: 장부_시간제한, windowsHide: true,
+      cwd: 뿌리, encoding: 'utf8', timeout: 장부_시간제한, windowsHide: true, env: 과.env,
     });
     /* 마지막 줄만 읽는다 — 그쪽이 stdout 을 JSON 한 줄로 지키지만, 옛 체크아웃(`--json` 을 모르는
      * 판)은 **사람글**을 낸다. 그때 `JSON.parse` 가 던지고 아래가 «못 잼»으로 받는다 — 그게 옳다. */
@@ -325,10 +340,11 @@ function 장부Section(잰다, 형제들) {
       const 사유 = r.error ? String(r.error.message || r.error).slice(0, 120)
         : 모르는판정 ? `모르는 판정 ${o.판정} — 아는 값은 ${[...아는판정].join('·')} 뿐이다(그쪽이 상태를 늘렸으면 rot-check 의 \`아는판정\` 을 연다)`
           : `stdout 에 판정이 없다(exit ${r.status})`;
-      결과.push({ 저장소, 못잼: true, 사유 });
+      결과.push({ 저장소, 과녁이름: 과.이름, 못잼: true, 사유 });
       continue;
     }
-    결과.push({ 저장소, 판정: o.판정, 판: o.판, 과녁: o.과녁 || null, 안적힘: Number(o.안적힘) || 0, 이상: Number(o.이상) || 0, 사유: o.사유 || null, 최근이상: Array.isArray(o.최근이상) ? o.최근이상 : [] });
+    결과.push({ 저장소, 과녁이름: 과.이름, 판정: o.판정, 판: o.판, 과녁: o.과녁 || null, 안적힘: Number(o.안적힘) || 0, 이상: Number(o.이상) || 0, 사유: o.사유 || null, 최근이상: Array.isArray(o.최근이상) ? o.최근이상 : [] });
+    }
   }
   return { 측정: true, 결과, 섰던적: !!상태().장부섰나 };
 }
@@ -736,7 +752,9 @@ function 장부판정(v) {
   const red = [];
   const notes = [];
   for (const g of (v && v.결과) || []) {
-    const 이름 = `${g.저장소} 회차 장부`;
+    const 이름 = `${g.저장소}${g.과녁이름 ? `(${g.과녁이름})` : ''} 회차 장부`;
+    /* 처방은 «그대로 돌아야» 처방이다 — 운영 항목의 cd 명령에 과녁 덮어쓰기를 함께 싣는다(F462 정본 통로). */
+    const 전량 = `cd ../${g.저장소} && ${g.과녁이름 === '운영' && g.과녁 ? `SUPABASE_PROJECT_REF=${g.과녁} ` : ''}node tools/회차장부.js --자세히`;
     if (g.못잼) {
       // 미측정은 통과가 아니다 — 다만 적색도 아니다(네트워크가 한 번 끊긴 것과 cron 이 죽은 것은 다르다).
       notes.push({ kind: '회차 장부 미측정', text: `${이름} — ${g.사유}. 그쪽에서 직접: node tools/회차장부.js`, 장부: true });
@@ -770,7 +788,7 @@ function 장부판정(v) {
         kind: g.안적힘 > 0 ? '회차 장부가 침묵했다' : 'cron 이 이상을 냈다',
         text: `${이름}(${g.과녁 || '과녁 모름'}) — ${g.안적힘 > 0
           ? `cron 은 돌았는데 안 적힌 회차 ${g.안적힘}건(장부가 안 불렸다 · 요약만 보면 안 보인다)`
-          : `이상 ${g.이상}건${꼬리 ? ` — ${꼬리}` : ''}`}. 전량: cd ../${g.저장소} && node tools/회차장부.js --자세히`,
+          : `이상 ${g.이상}건${꼬리 ? ` — ${꼬리}` : ''}`}. 전량: ${전량}`,
         장부: true,
       });
     }
