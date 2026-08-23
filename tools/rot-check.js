@@ -228,6 +228,36 @@ function harnessSection() {
   return { present: true, canonical: H.VER, stamp, stale: !stamp || stamp !== H.VER };
 }
 
+function 바탕화면Section() {
+  /* 유호님이 실제로 여는 화면은 저장소가 아니라 **바탕화면 두 폴더**다(「SYNK 방향」·「SYNK 자산」).
+   * 거기 링크가 무덤(`docs/_archive`)이나 죽은 자리를 가리키면 저장소가 아무리 최신이어도
+   * 유호님 눈에는 영원히 옛판만 온다 — 그리고 그 실패는 에러가 아니라 **침묵**이다.
+   *
+   * 실측 08-24: 「오프라인 신규 등록서」 바로가기가 08-04 판 `_archive` PDF 를 가리킨 채
+   *   `--지금상태` 표에서 «✅ 낡을 수 없다»로 스무 날을 서 있었다(바로가기이기만 하면 초록이었다).
+   *   잡아낸 것은 그물이 아니라 유호님이었다 — 「왜 새 로고가 반영이 안 되지」.
+   *
+   * 판정을 여기 다시 적지 않는다 — `운영자료.js --지금상태` 를 부르고 **결과만** 읽는다.
+   * 두 곳에 적으면 한쪽만 고치는 날 판정이 갈린다(가드 맹점 ④). 곁들여 이 호출은
+   * `_지금상태.html` 을 다시 굽는다 = 유호님 화면도 같이 최신이 된다(부작용이 아니라 목적).
+   * 바탕화면이 없는 기계(CI·다른 노트북)면 부패가 아니라 **없음**이다. */
+  const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', '운영자료.js'), '--지금상태'],
+    { encoding: 'utf8', timeout: 30000, windowsHide: true });
+  if (r.error || r.status !== 0) {
+    return { present: false, 사유: r.error ? String(r.error.message) : `종료코드 ${r.status}` };
+  }
+  const out = String(r.stdout || '');
+  const 요약 = out.match(/🔴\s*(\d+)\s*·/);
+  if (!요약) return { present: false, 사유: '바탕화면 폴더를 못 찾았다(요약줄 없음)' };
+  /* 요약줄(「🔴 1 · ❔ 7 …」)이 아니라 «항목» 줄만 걷는다.
+   * ⚠「가운뎃점이 있으면 요약」으로 가르지 말 것 — 이 폴더의 이름들이 바로 그 모양이다
+   *   (「급여·인센티브 정본」·「사업·운영」). 요약은 **숫자가 먼저 오는 것**으로만 가른다. */
+  const 줄 = out.split('\n').map((x) => x.trim())
+    .filter((x) => x.startsWith('🔴') && !/^🔴\s*\d+\s*·/.test(x))
+    .map((x) => x.replace(/^🔴\s*/, ''));
+  return { present: true, 건수: Number(요약[1]), 줄 };
+}
+
 function 배포Section(라이브, 시간제한) {
   /* 「커밋은 했는데 `clasp push` 를 안 했다」 — 루트(유호님이 매일 쓰는 라이브 학원 시스템)는
    * @HEAD 를 서빙해서 배포 설명에 심는 **지문이 원리상 안 선다**(배포판점검 머리말). 그래서
@@ -457,12 +487,13 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
   const dep = attempt('배포판', () => 배포Section(라이브, 시간제한));
   const 재질 = attempt('재질의금지', 재질의Section);
   const 장부 = attempt('회차장부', () => 장부Section(장부잰다));
+  const 바탕 = attempt('바탕화면', 바탕화면Section);
 
   const red = [];
   const warn = [];
   const notes = [];
 
-  for (const s of [mem, doc, fri, har, nbl, nbd, toi, map, 절단, dep, 재질, 장부]) {
+  for (const s of [mem, doc, fri, har, nbl, nbd, toi, map, 절단, dep, 재질, 장부, 바탕]) {
     // `배포:true`·`장부:true` = 각자 스로틀로 따로 도는 항목(F244). 문구가 아니라 이 표식으로
     // 고른다 — 앵커는 문구가 바뀌면 죽고, 죽으면 그 절만 조용히 리포트에서 빠진다.
     if (!s.ok) red.push({ kind: '검사기 고장', text: `${s.name} 검사가 실패했다 — ${s.error}`, 배포: s === dep, 장부: s === 장부 });
@@ -544,6 +575,15 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
           ' · 색인이 갈라지면 정본 지목이 두 갈래가 된다(08-07 실측) · 전량: node tools/doc-graph.js',
       });
     }
+  }
+
+  if (바탕.ok && 바탕.value.present && 바탕.value.건수 > 0) {
+    // 빨강이다 — 유호님이 **지금 눈으로 보는** 물건이 틀렸다는 뜻이라 「나중에」가 없다.
+    red.push({
+      kind: '바탕화면이 옛판을 연다',
+      text: `${바탕.value.건수}건 — ${바탕.value.줄.join(' / ') || '(항목 줄 미검출)'}` +
+        '\n      수리: 링크를 정본으로 돌린다(무덤 `docs/_archive` 를 가리키면 안 된다) · 표 = node tools/운영자료.js --지금상태',
+    });
   }
 
   if (har.ok && har.value.present && har.value.stale) {
