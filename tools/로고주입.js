@@ -11,6 +11,7 @@
 // 사용법:
 //   node tools/로고주입.js                     전 발표물에 주입(변경분만)
 //   node tools/로고주입.js --check             주입 없이 어긋난 파일만 보고(CI용)
+//   node tools/로고주입.js --벡터             펠트 없이 벡터 꺾쇠로(예외용)
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -78,7 +79,12 @@ function inject(html, 쓸것) {
 }
 
 const check = process.argv.includes('--check');
-const 펠트 = process.argv.includes('--펠트');
+/* 확정표(브랜드킷 §3 렌더판)가 「지면·인쇄 워드마크 = B2 신호만 펠트」라 **기본이 펠트**다.
+ * 🔴 실측 08-24: 기본이 벡터이던 동안 `--check` 는 14 중 10 을 늘 빨간불로 찍었고(내용이 아니라
+ *    모드가 달라서다), 그 빨간불을 보고 무심코 `node tools/로고주입.js` 를 돌리면 지면의 펠트가
+ *    조용히 벡터로 **되돌아간다**. 정본과 기본값이 어긋나면 가드는 신호가 아니라 함정이 된다.
+ *    옛 동작은 `--벡터` 로만 낸다(`--펠트` 는 하위호환으로 계속 받되 이제 기본과 같다). */
+const 펠트 = !process.argv.includes('--벡터');
 if (!fs.existsSync(DIR)) { console.log('[로고주입] docs/발표물 없음 — 할 일 없음'); process.exit(0); }
 
 /* 확정표(브랜드킷 §3 렌더판)의 지면·인쇄 워드마크는 B2 «신호만 펠트»다. 다만 렌더판은 git 밖이라
