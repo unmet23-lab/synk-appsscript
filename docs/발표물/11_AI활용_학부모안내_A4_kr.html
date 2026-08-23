@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK LAB 학부모 안내문 — A4 양면 (한국어판)</title>
+<!--
+  SYNK LAB 발표물 2번 — 학부모 안내문 리플렛 (A4 양면 · 한국어판)
+  브랜드 키트 = docs/발표물/_브랜드킷.md
+  산출물 사양 = docs/정본/SYNK/SYNK 발표물 제작 프롬프트 v1.txt v1.4 §2
+  원고(불변) = docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/09_학부모_안내문.txt v6
+  철학(정본) = docs/SYNK_철학.md v1.0 — 슬로건·화법·실물 게이트가 여기서 온다
+
+  ▶ 정본 §2의 핵심 제약: **글을 새로 쓰지 않는다.** 원고 문장을 바꾸지 않고
+     줄바꿈·강조·배치만 설계한다. 아래 본문은 원고 v6과 문장 단위로 같다.
+
+  ▶ v6 정합(2026-08-10) — 원고가 늘어난 만큼 **뒷면이 아니라 앞면에** 실었다.
+     뒷면은 이미 조판을 조여 놓은 면이라(아래 「뒷면 밀도 조정」 주석) 한 블록만 더해도 넘친다.
+     앞면 = 슬로건 설명 + 그 이해가 눈에 보이는 실물 3개 → TOPIK → 합격 너머.
+
+  ▶ 몽골어판 = 02_학부모_안내문_A4_mn.html (같은 레이아웃 · 번역 대기 칸 + 글자 수 한도)
+
+  ▶ 인쇄 — Ctrl+P → "PDF로 저장" · A4 · 세로 · 여백 "없음" · "배경 그래픽" 켜기
+     A4 양면 4도 · 미색 계열(순백 금지) · 접지 없음 · 안쪽 여백 15mm 이상
+     흑백 복사로도 읽히도록 색으로만 구분되는 정보를 만들지 않았다
+     (몽골 현지에서 재복사될 것을 전제한다).
+-->
+<style>
+/*@FONTS@*/
+@page { size: A4 portrait; margin: 0; }
+
+:root{
+  --coral:#F96859; --coral-3:#AE322A; /* 라이트 강조 글자 전용 — 24px↑ 또는 18.7px↑ bold */ --coral-wash:#FEF0E9; --coral-soft:#FBB7A3;
+  --paper:#FBF7F0; --navy:#262626; --navy-2:#08090C; --navy-3:#373737;
+  --cream:#E4E4E7; --cream-2:#EAEAEA; --cream-3:#D1D2D4; --ink:#2B2320; /* 코랄 면 위 글자 전용 — 본문 잉크는 --navy */
+  --hair:rgba(55,55,55,.25);
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+html,body{
+  background:var(--paper); color:var(--navy);
+  font-family:'Inter Tight','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
+  font-weight:500; line-height:1.62;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+/* 🚫 한글·키릴 금지 */
+.mono{ font-family:'DM Mono',ui-monospace,'Cascadia Mono','Consolas',monospace; }
+
+.sheet{
+  width:210mm; height:297mm; display:flex; flex-direction:column;
+  overflow:hidden; background:var(--paper);
+  page-break-after:always; break-after:page;
+}
+.sheet:last-child{ page-break-after:auto; break-after:auto; }
+/* 여백 최소 15mm (정본 §2 인쇄 사양) */
+.pad{ padding:9mm 15mm 12mm; display:flex; flex-direction:column; flex:1 1 auto; min-height:0; }
+
+/* ══ 앞면 헤더 — 상단 약 25% 미드나잇 반전 ══════════════════ */
+.hero{
+  background:var(--navy-2); color:var(--cream);
+  height:74mm; padding:13mm 15mm 10mm;
+  position:relative; overflow:hidden; flex:0 0 auto;
+  display:flex; flex-direction:column; justify-content:space-between;
+}
+.hero::before{
+  content:''; position:absolute; inset:0;
+  background-image:
+    radial-gradient(circle at 5.5mm 5.5mm, rgba(228,228,231,.13) 0 .27mm, transparent .27mm);
+  background-size:9mm 9mm;
+}
+.hero::after{
+  content:''; position:absolute; left:0; right:0; bottom:0; height:.8mm;
+  background:linear-gradient(90deg,var(--cream-3) 0 30%, rgba(209,210,212,.18) 30% 100%);
+}
+.hero > *{ position:relative; }
+.hero h1{ font-size:11.4mm; font-weight:800; line-height:1.14; letter-spacing:-.035em; }
+.hero h1 em{ font-style:normal; color:var(--coral); }
+.hero .lead{ font-size:3.6mm; color:var(--cream-3); margin-top:4.4mm; line-height:1.55; }
+.hero .foot{ display:flex; align-items:flex-end; justify-content:space-between; gap:8mm; }
+.hero .note{ font-size:2.9mm; color:var(--cream-3); line-height:1.5; max-width:110mm; }
+/* ⚠ .symbol 은 정사각이 아니다 — W5 축약 워드마크 가로:세로 = 1.5:1. 주입은 tools/로고주입.js */
+.lockup{ display:flex; flex-direction:column; align-items:flex-end; gap:2mm; flex:0 0 auto; }
+.symbol{ width:24mm; height:15.4mm; flex:0 0 auto; }
+.symbol svg{ width:100%; height:100%; display:block; }
+.lockup .tag{ font-size:2.2mm; font-weight:700; color:var(--cream); }
+
+/* ══ 본문 블록 ═══════════════════════════════════════════════ */
+/* ⚠ 앞면 쪽1 은 A4 한 장에 정확히 맞춰져 있다 — 여백을 늘리면 마지막 블록이 잘린다
+     (2026-08-10 실측: 문장이 길어져 18px 넘쳤고, overflow:hidden 이라 화면에선 안 보였다).
+     문구를 늘릴 땐 `node tools/발표물린트.js --넘침` 을 같이 돌린다. */
+.blk{ margin-top:6.2mm; }
+.blk:first-child{ margin-top:4.4mm; }
+h2{
+  font-size:5.4mm; font-weight:800; letter-spacing:-.02em; line-height:1.3;
+  padding-bottom:2.4mm; border-bottom:.7mm solid var(--navy-3); display:inline-block;
+}
+.blk p{ font-size:3.5mm; margin-top:3.1mm; }
+.blk p.tight{ margin-top:1.6mm; }
+strong{ font-weight:800; }
+.hl{ font-weight:800; box-shadow:inset 0 -2.2mm 0 rgba(249,104,89,.20); }
+
+/* 세 가지 힘 — 아이콘 3개 가로 배치 (정본 §2 앞면 블록 2) */
+.powers{ display:flex; gap:4mm; margin-top:4.2mm; }
+.pw{ flex:1 1 0; border:.35mm solid var(--hair); border-radius:2.4mm; padding:3.4mm 3.6mm; background:#fff; }
+.pw .ic{ display:block; margin-bottom:2.8mm; }
+.pw .n{ font-size:2.6mm; font-weight:700; color:var(--navy-3); letter-spacing:.1em; }
+.pw .t{ font-size:4.2mm; font-weight:800; margin-top:1.4mm; line-height:1.25; letter-spacing:-.015em; }
+.pw .d{ font-size:2.9mm; color:var(--navy-3); margin-top:2mm; line-height:1.5; }
+
+.after{ font-size:3.3mm; margin-top:3.6mm; color:var(--navy-3); }
+
+/* ══ 뒷면 ════════════════════════════════════════════════════ */
+.four{ display:flex; flex-direction:column; gap:3.4mm; margin-top:4.4mm; }
+.card{ display:flex; gap:4mm; border:.35mm solid var(--hair); border-radius:2.4mm; padding:3.6mm 4mm; background:#fff; }
+.card .num{
+  flex:0 0 auto; width:8mm; height:8mm; border-radius:50%;
+  background:var(--navy-2); color:var(--cream); font-weight:800; font-size:4.2mm;
+  display:flex; align-items:center; justify-content:center;
+}
+.card .bd .t{ font-size:4mm; font-weight:800; letter-spacing:-.015em; }
+.card .bd .d{ font-size:3.1mm; margin-top:1.6mm; line-height:1.52; color:var(--navy-3); }
+
+.three{ display:flex; gap:3.4mm; margin-top:4.4mm; }
+.tri{ flex:1 1 0; border-radius:2.4mm; padding:3.6mm 3.4mm; background:var(--cream-2); border:.35mm solid var(--hair); }
+.tri .k{ font-size:2.6mm; font-weight:700; color:var(--navy-3); letter-spacing:.1em; }
+.tri .t{ font-size:3.5mm; font-weight:800; margin-top:1.4mm; line-height:1.34; }
+
+/* 오늘 저녁 질문 — 강조 패널(Coral Wash) + 절취선 (원고가 "잘라서 보관"을 명시) */
+.cut{
+  margin-top:5.4mm; border:.6mm dashed var(--coral-soft); border-radius:2.6mm;
+  background:var(--coral-wash); padding:5mm 5.4mm; position:relative;
+}
+.cut .scissors{ position:absolute; top:-2.4mm; left:5mm; background:var(--paper); padding:0 1.6mm; font-size:3.4mm; color:var(--navy-3); }
+.cut h3{ font-size:4.6mm; font-weight:800; letter-spacing:-.015em; }
+.cut ol{ margin:3.4mm 0 0 5mm; }
+.cut li{ font-size:3.6mm; font-weight:800; margin-top:2mm; line-height:1.44; }
+.cut .tail{ font-size:2.9mm; color:var(--navy-3); margin-top:3.2mm; line-height:1.5; }
+
+.promise{ margin-top:5mm; border-left:1.6mm solid var(--navy-3); padding:2.6mm 0 2.6mm 5mm; }
+.promise .k{ font-size:3mm; font-weight:800; color:var(--navy-3); letter-spacing:.1em; }
+.promise p{ font-size:3.4mm; margin-top:2mm; line-height:1.56; }
+
+.contact{ margin-top:auto; padding-top:4.4mm; border-top:.5mm solid var(--hair); display:flex; gap:6mm; align-items:flex-start; }
+.contact .rows{ flex:1 1 auto; }
+.contact h3{ font-size:2.7mm; font-weight:700; color:var(--navy-3); letter-spacing:.14em; }
+.contact .r{ display:flex; align-items:baseline; gap:3.4mm; margin-top:2.8mm; }
+.contact .r .k{ flex:0 0 24mm; font-size:3mm; font-weight:800; }
+/* ⚠ 여기는 손으로 채우는 칸이 아니라 **인쇄되는 값**이다. 그래서 밑줄이 아니라
+   「____」로 미기입 상태가 눈에 보이게 둔다 — 안 그러면 빈 줄인 채로 수천 장이 찍힌다.
+   (10번 상담 결과 요약의 밑줄 칸과 성격이 다르다. 거기는 상담 테이블에서 손으로 채운다.) */
+.contact .r .v{
+  flex:1 1 auto; border-bottom:.4mm solid var(--navy-3); height:5.4mm;
+  font-size:3mm; color:var(--navy-3); letter-spacing:.04em; padding-bottom:.6mm;
+}
+.contact .r .hint{ font-size:2.5mm; color:var(--navy-3); }
+.qr{
+  flex:0 0 30mm; height:30mm; border:.5mm dashed var(--navy-3); border-radius:2mm;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; color:var(--navy-3); font-size:2.5mm; line-height:1.4; background:#fff;
+}
+
+.slogan{
+  margin-top:5mm; padding-top:3.4mm; border-top:.35mm solid var(--hair);
+  display:flex; justify-content:space-between; align-items:flex-end;
+}
+.slogan .s{ font-size:4.6mm; font-weight:800; letter-spacing:-.02em; }
+/* 슬로건 부연 — 「17」은 부연 없이 나가지 않는다(문서_지도 조건). 두 줄이 한 벌이다. */
+.slogan .sub{ font-size:2.7mm; font-weight:500; color:var(--navy-3); margin-top:1.2mm; line-height:1.45; max-width:150mm; }
+.slogan .v{ font-size:2.4mm; color:var(--navy-3); flex:0 0 auto; }
+
+.fn{ font-size:2.6mm; color:var(--navy-3); margin-top:2.2mm; line-height:1.45; }
+
+/* 실물 띠 — 「말」이 아니라 학부모가 손에 받는 물건 셋을 한 줄로 세운다(철학 부록 A).
+   ⚠ 카드(.three)로 만들었다가 되돌렸다: 앞면이 46px 넘쳐 잘렸다(실측). 카드 104px → 띠 44px.
+   신호 예산 밖이라 색은 안 쓴다 — 위계는 웨이트와 헤어라인이 진다(DESIGN.md 3규칙). */
+.proof{
+  display:flex; gap:5mm; margin-top:4mm; padding:2.8mm 0;
+  border-top:.35mm solid var(--hair); border-bottom:.35mm solid var(--hair);
+}
+.proof > div{ flex:1 1 0; font-size:2.9mm; color:var(--navy-3); line-height:1.42; }
+.proof b{ display:block; font-size:3.3mm; font-weight:800; color:var(--navy); letter-spacing:-.015em; }
+
+/* ── 앞면 밀도 조정 ─────────────────────────────────────────
+   뒷면과 같은 처방을 앞면에도 쓴다(아래 「뒷면 밀도 조정」 주석 참조) — v6 정합으로
+   앞면 블록이 2개에서 3개로 늘었다. **문장을 자르는 대신 조판을 조인다.**
+   ⚠ 이 값들은 취향이 아니라 실측이다: 조이기 전 앞면은 46px 넘쳐 `overflow:hidden` 에
+   조용히 잘렸다(`node tools/발표물린트.js --넘침` 이 그 자리를 잡는다). */
+.sheet:not(.back) .blk{ margin-top:5mm; }
+.sheet:not(.back) h2{ font-size:5mm; padding-bottom:1.9mm; }
+.sheet:not(.back) .blk p{ margin-top:2.6mm; }
+.sheet:not(.back) .powers{ margin-top:4mm; gap:3.4mm; }
+.sheet:not(.back) .pw{ padding:3.4mm 3.2mm; }
+.sheet:not(.back) .after{ margin-top:3.4mm; }
+
+/* ── 뒷면 밀도 조정 ─────────────────────────────────────────
+   정본 §2는 "글을 새로 쓰지 않는다 — 줄바꿈·강조·배치만 설계한다"라고 못박는다.
+   그래서 뒷면이 넘쳤을 때 **문장을 자르는 대신 조판을 조였다.**
+   앞면은 그대로 두고 뒷면에만 적용한다(앞면은 감성면이라 여백이 일한다). */
+.back{ line-height:1.46; }
+.back .pad{ padding:15mm 15mm 15mm; }   /* 인쇄 안전 여백 15mm — 사방 유지(정본 §2) */
+.back .blk{ margin-top:3.6mm; }
+.back h2{ font-size:4.6mm; padding-bottom:1.8mm; }
+.back .four{ gap:1.9mm; margin-top:3mm; }
+.back .card{ padding:2.4mm 3.2mm; gap:3mm; }
+.back .card .num{ width:6.4mm; height:6.4mm; font-size:3.5mm; }
+.back .card .bd .t{ font-size:3.5mm; }
+.back .card .bd .d{ font-size:3mm; margin-top:1mm; line-height:1.44; }
+.back .three{ gap:2.4mm; margin-top:2.8mm; }
+.back .tri{ padding:2.6mm 2.8mm; }
+.back .tri .t{ font-size:3.3mm; }
+.back .after{ font-size:3mm; margin-top:2.6mm; }
+.back .cut{ margin-top:3.6mm; padding:3.4mm 4.2mm; }
+.back .cut h3{ font-size:4mm; }
+.back .cut ol{ margin-top:2.2mm; }
+.back .cut li{ font-size:3.3mm; margin-top:1.2mm; }
+.back .cut .tail{ font-size:2.7mm; margin-top:2.2mm; }
+.back .promise{ margin-top:3.2mm; padding:1.6mm 0 1.6mm 4mm; }
+.back .promise p{ font-size:3.1mm; margin-top:1.4mm; }
+.back .fn{ margin-top:1.8mm; font-size:2.5mm; }
+/* 연락처 4칸을 2×2로 접는다 — 세로로 4줄 쌓으면 그만큼을 본문 글자에서 빼야 한다.
+   학부모가 손에 들고 읽는 인쇄물이라 본문이 8pt 아래로 내려가면 안 된다. */
+.back .contact{ padding-top:3mm; gap:5mm; }
+.back .contact .rows{ display:grid; grid-template-columns:1fr 1fr; column-gap:6mm; row-gap:0; }
+.back .contact h3{ grid-column:1 / -1; }
+.back .contact .r{ margin-top:2.2mm; display:block; }
+.back .contact .r .k{ font-size:2.9mm; }
+.back .contact .r .v{ height:5mm; margin-top:1.2mm; }
+.back .qr{ flex-basis:26mm; height:26mm; font-size:2.4mm; }
+.back .slogan{ margin-top:3mm; padding-top:2.4mm; }
+.back .slogan .s{ font-size:4mm; }
+
+@media screen{
+  body{ background:var(--cream-2); padding:8mm; }
+  .sheet{ box-shadow:0 3mm 12mm rgba(8,9,12,.22); margin:0 auto 8mm; }
+}
+</style>
+</head>
+<body>
+
+<body>
+
+<!-- ═══════════════ AI 활용 안내 · A4 한 장 (유호 확정 08-23 §C) ═══════════════ -->
+<section class="sheet">
+
+  <header class="hero">
+    <div>
+      <!-- ⚠ 시제 규약(철학 §0): 수업·지도는 개원과 함께 열린다 — 「가르칩니다」 단정 대신 「준비했습니다」. -->
+      <h1>AI가 대신 말하면,<br><em>아이 실력은 늘지 않습니다</em></h1>
+      <div class="lead">그래서 저희는 금지하는 대신, AI를 <b>어떻게 쓰면 실력이 남는지</b>부터 가르치도록 준비했습니다.</div>
+    </div>
+    <div class="foot">
+      <div class="note">SYNK LAB은 2027년 2월 개원을 준비하고 있습니다.<br>이 안내문은 개원 전에 미리 보내드리는 소개입니다.</div>
+      <div class="lockup">
+        <!-- LOGO SLOT ▸ 로고 파일이 오면 이 svg 만 교체 (브랜드킷 §3) — 02와 동일 슬롯 -->
+      </div>
+    </div>
+  </header>
+
+  <main class="body">
+
+    <!-- ① 왜 이 안내문인가 — 불리한 것을 먼저(N1) -->
+    <div class="blk">
+      <div class="t">숙제가 30초 만에 끝나는 시대입니다</div>
+      <div class="d">요즘 아이들은 번역기·채팅 AI로 숙제를 통째로 끝낼 수 있습니다. 화면에는 「제출 완료」가 뜨지만, 그때 늘어난 것은 아이의 실력이 아니라 AI의 실력입니다. 막을 방법은 없습니다 — 휴대폰은 아이 손에 있으니까요. 저희가 고른 길은 하나입니다: <b>아이가 스스로 바르게 쓰도록, 쓰는 법을 가르치는 것.</b></div>
+    </div>
+
+    <!-- ② 두 칸 — 학원 AI / 아이 -->
+    <div class="blk">
+      <div class="t">학원의 AI가 하는 일 · 아이가 직접 하는 일</div>
+      <table>
+        <tr><th>학원의 AI가 하는 일</th><th>아이가 직접 하는 일</th></tr>
+        <tr><td>아이가 틀린 자리를 기억하고, <b>아이에게 맞는 다음 과제</b>를 만듭니다</td><td>자기 목소리로 말하고, 자기 손으로 문장을 만듭니다</td></tr>
+        <tr><td>매주 성장 기록을 자동으로 정리해 보내드리도록 준비했습니다</td><td>AI의 답이 맞는지 책과 선생님으로 확인합니다</td></tr>
+        <tr><td>아이를 다른 아이와 비교하지 않습니다 — 비교 대상은 <b>어제의 그 아이</b>뿐입니다</td><td>제출하는 것은 언제나 아이 자신입니다 — 시험장에는 AI가 함께 들어가지 않으니까요</td></tr>
+      </table>
+    </div>
+
+    <!-- ③ 네 낱말 — 아이가 배우는 것 -->
+    <div class="blk">
+      <div class="t">아이가 배우게 될 네 낱말</div>
+      <div class="d"><b>맡기기</b> — 무엇을 AI에게 맡기고 무엇은 내가 하나 · <b>부탁하기</b> — 원하는 것을 구체적으로 말하기 · <b>가려보기</b> — AI의 답을 내 눈으로 확인하기 · <b>책임지기</b> — 제출하는 것은 언제나 나. 입학 첫 주 수업에서 금지가 아니라 <b>직접 실험</b>으로 익히도록 준비했습니다.</div>
+    </div>
+
+    <!-- ④ 집에서 — 같은 편 어조(감시자로 만들지 않는다) -->
+    <div class="blk">
+      <div class="t">집에서 이것 하나만 봐 주세요</div>
+      <div class="d">숙제가 너무 빨리 끝난 날, 혼내지 마시고 한 번만 물어봐 주세요 — <b>「네 목소리로 한 거야?」</b> 그 한마디면 충분합니다. 나머지는 저희 시스템이 함께 챙기겠습니다.</div>
+    </div>
+
+  </main>
+
+</section>
+</body>
+</html>
