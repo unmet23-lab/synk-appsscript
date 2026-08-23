@@ -66,7 +66,8 @@ const execCmd = stripNonExecutedText(cmd);
  *   그래서 못 찾으면 ROOT 로 떨어진다. 폴백은 언제나 '더 많이 검사하는' 쪽이다.
  *
  * 판별·매칭의 알맹이는 lib/clasp-project.js 에 있다 — 훅 본문에 두면 **테스트가 불가능하다**
- * (훅을 한 번 실행하면 테스트 48개와 clasp 네트워크 조회까지 돈다). 회귀 tests/clasp프로젝트.test.js. */
+ * (훅을 한 번 실행하면 테스트 48개와 clasp 네트워크 조회까지 돈다). ⚰회귀 tests/clasp프로젝트.test.js
+ * 는 삭제됐다(08-23 실측 · 실존 회귀는 tests/clasp풀차단.test.js — 풀 차단 축만 잰다). */
 const 프로젝트 = require(path.join(__dirname, 'lib', 'clasp-project.js'));
 const PROJ = 프로젝트.resolveProject(cmd, callerCwd, ROOT);
 const 서브 = path.resolve(PROJ) !== path.resolve(ROOT);
