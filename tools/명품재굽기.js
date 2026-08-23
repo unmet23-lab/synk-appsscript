@@ -191,7 +191,30 @@ function 빠진것다시(기준) {
   });
 }
 
+/* ── 판정 지면 다시 그리기 ────────────────────────────────────────────────────
+ * 🔴 안 그리면 «옛 그림으로 새 판을 판정»하게 된다. 08-24 실측: 요소_시안.html 이 08-23 23:11 생성인데
+ *    그 뒤 03:44 까지 156장이 다시 구워져, 지면과 실물이 네 시간 반 어긋난 채였다.
+ *    굽기와 지면은 **한 벌**이다 — 굽고 안 그리면 아무도 그 굽기를 못 본다. */
+function 지면그리기() {
+  console.log(`\n■ ④ 판정 지면 — ${시각()}`);
+  for (const [이름, 도구, 난것] of [
+    ['요소 시안', '요소시안.js', 'docs/요소_시안.html'],
+    ['화면 시안', '화면시안.js', 'docs/화면_시안.html'],
+  ]) {
+    process.stdout.write(`  ${이름}`.padEnd(24));
+    const 전 = (() => { try { return fs.statSync(path.join(루트, 난것)).mtimeMs; } catch (_) { return 0; } })();
+    const t0 = Date.now();
+    const r = spawnSync(process.execPath, [path.join(루트, 'tools', 도구)],
+      { cwd: 루트, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+    let 새로 = false; let KB = 0;
+    try { const s = fs.statSync(path.join(루트, 난것)); 새로 = s.mtimeMs > 전; KB = Math.round(s.size / 1024); } catch (_) { /* 없음 */ }
+    console.log(`${새로 ? '✅' : '🔴'} ${KB}KB · ${분(Date.now() - t0)}분`);
+    if (!새로) console.log('       ', String(r.stderr || r.stdout || '').trim().split('\n').slice(-3).join(' | '));
+  }
+}
+
 const 시작 = Date.now();
+if (깃발.has('지면만')) { 지면그리기(); process.exit(0); }
 if (인자['검사']) { 검사(new Date(인자['검사']).getTime()); process.exit(0); }
 if (인자['빠진것']) { 빠진것다시(new Date(인자['빠진것']).getTime()); process.exit(0); }
 console.log(`■ 명품 재굽기 — 색관리 PBR중립 · 노출 +0.25 · 샘플 ${견본} · ${너비}px · 시작 ${시각()}`);
@@ -206,5 +229,6 @@ if (전부 || 화면만) 화면굽기();
  * 그건 나중에 「왜 이 화면만 다른가」로 나타난다(가장 비싼 형태의 사고). */
 if (전부 || 요소만 || 화면만) 빠진것다시(시작);
 if (전부 || 화면만 || 덧만) 덧씌우기();
+if (전부 || 요소만 || 화면만) 지면그리기();    // 굽기와 지면은 한 벌 — 안 그리면 옛 그림으로 판정하게 된다
 if (전부 || 요소만 || 화면만) 검사(시작);      // 다시 구운 뒤에도 남았나 — 마지막 말은 파일이 한다
 console.log(`\n■ 전체 끝 — ${분(Date.now() - 시작)}분 · ${시각()}`);
