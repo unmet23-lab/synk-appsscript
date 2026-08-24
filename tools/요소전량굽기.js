@@ -50,6 +50,10 @@ const 인자 = (() => {
   return a;
 })();
 const 너비 = 인자['너비'] || '1800';
+/* --샘플 은 부품표의 판별 값을 «전부» 덮는다. 08-24 명품 재굽기가 세트 표준을 256 으로 옮겼는데
+ * (색관리 PBR 중립과 한 벌 · 또렷함 +25.8%) 이 표는 96/128 에 머물러 있어 그대로 두면 세트가 갈린다.
+ * 안 주면 옛 동작 그대로다 — 「해상도 하나만 바꾼다」던 08-22 대조는 그 값으로 재현된다. */
+const 견본덮 = 인자['샘플'];
 
 const 퍼 = path.join('docs', '캐릭터', '퍼프로브_0819');
 const 글 = path.join('docs', '캐릭터', '글자공방_0820');
@@ -146,13 +150,18 @@ function main() {
     const 파일 = path.join(루트, k.밖, k.파일);
     fs.mkdirSync(path.dirname(파일), { recursive: true });
     process.stdout.write(`  [${String(i + 1).padStart(2)}/${대상.length}] ${k.이름.padEnd(13)} `);
+    const 하나 = Date.now();
     const r = spawnSync(BL, [
       '-b', '-P', path.join(루트, 'tools', '요소굽기.py'), '--',
-      `형태=${k.형태}`, `샘플=${k.샘플 || '96'}`, `너비=${너비}`, '장치=GPU',
+      `형태=${k.형태}`, `샘플=${견본덮 || k.샘플 || '96'}`, `너비=${너비}`, '장치=GPU',
       ...(k.더 || []), `출력=${파일}`,
     ], { cwd: 루트, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
-    // ⚠blender 는 스크립트가 죽어도 exit 0 을 낼 수 있다 — 파일로 판정한다(오브굽기.js 와 같은 규율).
-    const 됐나 = r.status === 0 && fs.existsSync(파일) && fs.statSync(파일).size > 2048;
+    /* ⚠blender 는 스크립트가 죽어도 exit 0 을 낼 수 있다 — 파일로 판정한다(오브굽기.js 와 같은 규율).
+     * 🔴 「있나」로는 못 잡는다 — 재굽기에서는 옛 판이 늘 그 자리에 있어 죽은 굽기도 ✅ 로 찍힌다
+     *    (08-24 실사고 644716a4). **이 굽기가 새로 썼나**를 시각으로 묻는다. */
+    let 새로 = false;
+    try { 새로 = fs.statSync(파일).mtimeMs >= 하나 - 1000; } catch (_) { 새로 = false; }
+    const 됐나 = r.status === 0 && 새로 && fs.statSync(파일).size > 2048;
     if (됐나) console.log(`✅ ${Math.round(fs.statSync(파일).size / 1024)}KB`);
     else { console.log('🔴 실패'); 실패++; if (r.stderr) console.log('     ' + String(r.stderr).trim().split('\n').slice(-2).join(' / ')); }
   });

@@ -73,14 +73,20 @@ function main() {
   색들.forEach((c, i) => {
     const 파일 = path.join(밖, c.replace(/\s+/g, '_') + '.png');
     process.stdout.write(`  [${String(i + 1).padStart(2)}/${색들.length}] ${c.padEnd(12)} `);
+    const 하나 = Date.now();
     const r = spawnSync(BL, [
       '-b', '-P', path.join(루트, 'tools', '요소굽기.py'), '--',
       // 조명 = 결광2(자수 글자 채택 조명) · 조명배 1.55 = 오브 씬/글자 씬 크기비(역제곱 보상 포함).
       '형태=오브', `색=${c}`, `샘플=${견본}`, `너비=${너비}`, '장치=GPU',
       '조명=결광2', '조명배=1.55', `출력=${파일}`,
     ], { cwd: 루트, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
-    // ⚠blender 는 스크립트가 죽어도 exit 0 을 낼 수 있다(룸굽기 주석의 실사고) — 파일로 판정한다.
-    const 됐나 = r.status === 0 && fs.existsSync(파일) && fs.statSync(파일).size > 2048;
+    /* ⚠blender 는 스크립트가 죽어도 exit 0 을 낼 수 있다(룸굽기 주석의 실사고) — 파일로 판정한다.
+     * 🔴 그런데 「있나」로 물으면 **재굽기에서는 늘 참이다** — 옛 판이 그 자리에 그대로 있기 때문이다
+     *    (08-24 실사고: 68초 만에 죽은 굽기가 「✅ 3547KB」로 찍혔다 · 644716a4). **이 굽기가 새로
+     *    썼나**를 시각으로 묻는다. */
+    let 새로 = false;
+    try { 새로 = fs.statSync(파일).mtimeMs >= 하나 - 1000; } catch (_) { 새로 = false; }
+    const 됐나 = r.status === 0 && 새로 && fs.statSync(파일).size > 2048;
     if (됐나) console.log(`✅ ${Math.round(fs.statSync(파일).size / 1024)}KB`);
     else { console.log('🔴 실패'); 실패++; if (r.stderr) console.log('     ' + String(r.stderr).trim().split('\n').slice(-2).join(' / ')); }
   });
