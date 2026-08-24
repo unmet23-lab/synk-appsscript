@@ -110,6 +110,18 @@ function main() {
 
   console.log(`\n■ 끝 — 성공 ${대상.length - 실패.length} · 실패 ${실패.length} · ${분(Date.now() - 시작)}분 · ${시각()}`);
   if (실패.length) console.log(`  🔴 ${실패.join(' · ')}`);
+
+  /* 🔑 굽기와 «판정 지면»은 한 벌이다(트랙 §0) — 굽고 안 그리면 아무도 그 굽기를 못 본다.
+   * 단 «검증 판»(--밖 으로 딴 폴더에 900px 로 굽는 것)은 정본 지면을 덮으면 안 된다. */
+  const 정본방 = 밖 === path.join(루트, 'docs', '캐릭터', 'NPC공방_0824');
+  if (정본방 && !인자['지면없이']) {
+    console.log(`\n■ 판정 지면 — ${시각()}`);
+    const r = spawnSync(process.execPath, [path.join(루트, 'tools', 'NPC시트.js'), '--방', 밖],
+      { cwd: 루트, stdio: 'inherit' });
+    if (r.status !== 0) console.log('  🔴 지면 그리기 실패 — node tools/NPC시트.js 를 따로 돌려 본다.');
+  } else if (!정본방) {
+    console.log('  ↪ 검증 판이라 정본 지면(docs/NPC_시안.html)은 안 건드린다.');
+  }
   process.exit(실패.length ? 1 : 0);
 }
 
