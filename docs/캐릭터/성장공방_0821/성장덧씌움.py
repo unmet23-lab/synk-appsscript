@@ -14,7 +14,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 보조2 = (0xC7, 0xBF, 0xB2)     # Stone
 
 이름 = sys.argv[1]
-보조갈래 = sys.argv[2] if len(sys.argv) > 2 else "없음"   # 없음 | 층별 | 전면
+보조갈래 = sys.argv[2] if len(sys.argv) > 2 else "층별"   # 없음 | 층별 | 전면
                                                         # ⚠이름을 「보조」로 두면 색 상수를 덮는다
 키릴 = r"C:\Windows\Fonts\segoeui.ttf"   # ⚠맑은고딕엔 몽골 키릴 ө·ү 글리프가 없다(두부 실측)
 # ⚠**채택판은 꼬리가 없다** — 오늘·소식·학부모 공방과 같은 규약으로 통일했다(08-23).
