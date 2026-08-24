@@ -178,11 +178,11 @@ const 밝은짝 = () => ({
   [색['Stitch']]: 색['Paper'], [색['Paper']]: 색['Paper'],
 });
 
-/** 알록 신호 한 벌 — 하얀 펠트 몸(단색 문법) 위에 색실 다섯이 돈다. */
-function 알록글자(참조, 실들, { 라이트 = false } = {}) {
-  const [몸색, 그늘색, 필터] = 라이트
-    ? [색['Ink'], 색['Ink Deep'], '#sl-felt-ink'] : [색['Paper'], 색['Stone'], '#sl-felt-paper'];
-  const 눌림 = 라이트 ? 색['Ink Deep'] : 색['Stone'];
+/** 알록 신호 한 벌 — 펠트 몸 위에 색실 다섯이 돈다. 몸스펙 없으면 단색 문법(하양/잉크). */
+function 알록글자(참조, 실들, { 라이트 = false, 몸스펙 = null } = {}) {
+  const { 몸색, 그늘색, 필터, 눌림, 심 } = 몸스펙 || (라이트
+    ? { 몸색: 색['Ink'], 그늘색: 색['Ink Deep'], 필터: '#sl-felt-ink', 눌림: 색['Ink Deep'], 심: false }
+    : { 몸색: 색['Paper'], 그늘색: 색['Stone'], 필터: '#sl-felt-paper', 눌림: 색['Stone'], 심: true });
   const 짝 = 밝은짝();
   const dash = (i) => `stroke-dasharray="${알록땀들[i]} ${(알록주기 - 알록땀들[i]).toFixed(1)}" stroke-dashoffset="${-알록시작[i].toFixed(1)}"`;
   const 땀 = 실들.map((c, i) => `
@@ -198,7 +198,7 @@ function 알록글자(참조, 실들, { 라이트 = false } = {}) {
     <use href="${참조}" fill="${몸색}" opacity="0.28" filter="url(#sl-fuzz1)"/>
     <g filter="url(#sl-cut)"><use href="${참조}" fill="${그늘색}" transform="translate(0.4,2.0)"/></g>
     <g filter="url(#sl-cut)"><use href="${참조}" fill="${그늘색}" opacity="0.55" transform="translate(0,1.2)"/></g>
-    <g filter="url(${필터})"><use href="${참조}" fill="${몸색}"/>${라이트 ? '' : `<use href="${참조}" fill="url(#sl-core)"/>`}</g>
+    <g filter="url(${필터})"><use href="${참조}" fill="${몸색}"/>${심 ? `<use href="${참조}" fill="url(#sl-core)"/>` : ''}</g>
     <g filter="url(#sl-soft)">${땀}</g>`;
 }
 
@@ -209,6 +209,56 @@ const 알록실 = {
   k: [색['Lapis Soft'], 색['Meadow Soft'], 색['Butter'], 색['Pop Soft'], 색['Coral Soft']],   // S2
   꺾쇠: [색['Coral'], 색['Coral'], 색['Butter'], 색['Coral'], 색['Lapis']],                    // J2
 };
+
+/* ── 알록 «대안 서랍» — 유채 펠트 몸 × 실 두 벌 (유호 08-25 「버리지 말고 저장 · 가끔 대안으로」) ──
+ * 기본 알록(위 알록실 · 하얀 몸)이 정본이고, 여기는 가끔 꺼내 쓰는 서랍이다 — 몸이 유채인 판:
+ * 코랄(= 원 S1·J1) · 버터 · 메도우 · 팝. 실은 몸과 겹치는 색만 치환한다(버터 몸 위 버터 실은
+ * 사라진다 — 그래서 표가 몸마다 다르다). 밝은 몸(버터·메도우) 위 Stitch 는 명도가 가까워
+ * 흐리므로 기본 실을 Paper 로 바꾼다. 알록 공통 규율(110px↑ 전용 · 상시 금지)이 그대로 걸린다. */
+const 대안몸들 = () => ({
+  코랄: { 몸색: 색['Coral'], 그늘색: 색['Coral 3'], 보풀: 색['Coral Soft'], 눌림: 색['Coral Rim'] },
+  버터: { 몸색: 색['Butter'], 그늘색: 색['Butter Deep'], 보풀: 색['Butter Soft'], 눌림: 색['Butter Deep'] },
+  메도우: { 몸색: 색['Meadow'], 그늘색: 색['Meadow Deep'], 보풀: 색['Meadow Soft'], 눌림: 색['Meadow Deep'] },
+  팝: { 몸색: 색['Pop'], 그늘색: 색['Pop Deep'], 보풀: 색['Pop Soft'], 눌림: 색['Pop Deep'] },
+});
+const 대안실들 = () => ({
+  소프트: {
+    코랄: [색['Lapis Soft'], 색['Meadow Soft'], 색['Butter Soft'], 색['Paper'], 색['Pop Soft']],   // 원 S1
+    버터: [색['Lapis Soft'], 색['Meadow Soft'], 색['Coral Soft'], 색['Paper'], 색['Pop Soft']],
+    메도우: [색['Lapis Soft'], 색['Butter Soft'], 색['Coral Soft'], 색['Paper'], 색['Pop Soft']],
+    팝: [색['Lapis Soft'], 색['Meadow Soft'], 색['Butter Soft'], 색['Paper'], 색['Coral Soft']],
+  },
+  절제: {
+    코랄: [색['Stitch'], 색['Stitch'], 색['Butter'], 색['Stitch'], 색['Lapis Soft']],              // 원 J1
+    버터: [색['Paper'], 색['Paper'], 색['Coral'], 색['Paper'], 색['Lapis']],
+    메도우: [색['Paper'], 색['Paper'], 색['Butter'], 색['Paper'], 색['Coral']],
+    팝: [색['Stitch'], 색['Stitch'], 색['Butter'], 색['Stitch'], 색['Lapis Soft']],
+  },
+});
+
+/**
+ * 알록 대안판 — 완결 SVG (다크 전용 · 라이트 시안 없음).
+ * 신호 'k'|'꺾쇠' × 몸 '코랄'|'버터'|'메도우'|'팝' × 실 '소프트'|'절제' — 16조합 전부 서랍이다.
+ * 코랄 밖 몸의 펠트 필터(sl-felt-alt)는 여기서 defs 에 끼워 넣는다(정본 defs 는 3색만 굽는다).
+ */
+function 알록대안({ 신호 = 'k', 몸 = '코랄', 실 = '소프트', 클래스 = '' } = {}) {
+  const m = 대안몸들()[몸];
+  const 실들 = 대안실들()[실][몸];
+  if (!m || !실들) throw new Error(`알록대안: 모르는 몸/실 — ${몸}/${실}`);
+  const 참조 = 신호 === '꺾쇠' ? '#sl-chev' : '#sl-k';
+  const 필터id = 몸 === '코랄' ? '#sl-felt-coral' : '#sl-felt-alt';
+  const defs그대로 = defs();
+  const defs빌드 = 몸 === '코랄' ? defs그대로
+    : defs그대로.replace('</defs>', `${펠트필터('sl-felt-alt', m.보풀, m.그늘색)}</defs>`);
+  const syn = 글자펠트('#sl-syn', 색['Paper'], 색['Stone'], '#sl-felt-paper', { 심: true });
+  const 신호몸 = 알록글자(참조, 실들, { 몸스펙: { 몸색: m.몸색, 그늘색: m.그늘색, 필터: 필터id, 눌림: m.눌림, 심: false } });
+  const cls = 클래스 ? ` class="${클래스}"` : '';
+  const 밀기 = 신호끝(신호) - 153;
+  return `<svg${cls} viewBox="-14 -8 ${181 + 밀기} 128" role="img" aria-label="SYNK">
+${defs빌드}
+  <g>${syn}${신호몸}</g>
+</svg>`;
+}
 
 /**
  * 워드마크 안쪽(그룹 내용물만) — 스플래시 같은 합성 지면이 자기 무대에 얹을 때 쓴다.
@@ -352,7 +402,7 @@ ${defs()}
 </svg>`;
 }
 
-module.exports = { SYN, K, CHEV, 기호선, 색, defs, 워드마크, 워드마크안쪽, 기호, 도장 };
+module.exports = { SYN, K, CHEV, 기호선, 색, defs, 워드마크, 워드마크안쪽, 기호, 도장, 알록대안 };
 
 /* ── CLI — 파이썬 소비자(브랜드킷조립·로고시트)용 ── */
 if (require.main === module) {
