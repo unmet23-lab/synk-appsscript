@@ -61,6 +61,27 @@ function engineParts() {
   }));
 }
 
+/** 라이브에 «실제로 올라가는» .js 전수 — `.claspignore` 허용목록에서 파생한다(손 목록 0).
+ *
+ * 왜 (심문 0822 G8 · 08-24): ENGINE_FILES 는 「엔진 표식 합본 + filePushOrder 선두」의 정본이라
+ *   교재연동(8번째 뒤)·엔진_두뇌(마지막)를 «구조상» 못 담고, 그 결과 라이브 탑재 + AI 키 취급
+ *   코드(엔진_두뇌 419줄)가 구문 검사조차 분모 밖이었다 — 「검사 대상」과 「합본 순서」는 다른
+ *   개념인데 한 목록이 둘을 겸하다 생긴 구멍이다. 이 함수가 «검사 대상» 쪽 정본이다.
+ * 선례: clasp-guard 회귀가 이미 「목록을 다시 베끼지 않는다 — .claspignore(배포 집합의 정본)에서
+ *   읽는다」로 같은 파생을 한다. 새 파일이 허용목록에 오르면 아무도 안 고쳐도 여기 분모가 는다.
+ * @returns {string[]} 존재하는 라이브 .js 파일명(ENGINE_FILES 순서 우선 · 나머지는 이름순)
+ */
+function liveFiles() {
+  const 허용 = fs.readFileSync(path.join(ROOT, '.claspignore'), 'utf8')
+    .split(/\r?\n/).filter((l) => l.startsWith('!')).map((l) => l.slice(1).trim())
+    .filter((p) => p.endsWith('.js'));
+  const 패턴들 = 허용.map((p) => new RegExp('^' + p.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$'));
+  const 실물 = fs.readdirSync(ROOT).filter((f) => f.endsWith('.js') && 패턴들.some((re) => re.test(f)));
+  // 순서: 엔진 로드 순 먼저(사람이 읽는 실패 메시지의 안정성) · 나머지는 이름순
+  const 뒤 = 실물.filter((f) => !ENGINE_FILES.includes(f)).sort();
+  return [...ENGINE_FILES.filter((f) => 실물.includes(f)), ...뒤];
+}
+
 /** profiles 공유 블록 전량 — `SHARED*_COL_START` 를 **소스에서 훑어** 낸다.
  *
  * 왜 손 목록이 아닌가 (F080): 같은 목록이 두 곳에 손으로 적혀 있었고, 이미 갈라져 있었다 —
@@ -86,4 +107,4 @@ function sharedBlocks(code) {
 
 /* `표기접기` 는 회귀가 **픽스처로** 탐지력을 못박으려고 내보낸다 — 실저장소만 보면
  * 「접혔다」와 「원래 깨끗했다」가 같은 모양이라 못 가른다. 검사 쪽은 `tests/엔진소스표기.test.js`. */
-module.exports = { ROOT, ENGINE_FILES, engineSource, engineParts, sharedBlocks, 표기접기 };
+module.exports = { ROOT, ENGINE_FILES, engineSource, engineParts, liveFiles, sharedBlocks, 표기접기 };

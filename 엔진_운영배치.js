@@ -449,6 +449,18 @@ function 명부스윕_() {
     if (마지막행 < 1) throw new Error('profiles 시트가 통째로 비었다(머리글조차 없다)');
     const 표 = pf.getRange(1, 1, 마지막행, 8).getDisplayValues();   // A:H — user_id·이름·이름_몽골·role·class_name·생일·email·연락처
     if (!표[0].some(c => String(c == null ? '' : c).trim() !== '')) throw new Error('profiles 머리글 행이 비었다');
+    /* 급수 동봉(심문 S7 · 08-24) — 「현재급수」(BO 부근 · academic_log 실측 · calcAcademic_ 산출)를
+     *   이름으로 찾아 **아홉째 칸**으로 싣는다. A:H 창은 그 열에 구조상 안 닿아 talk
+     *   `learners.level_current` 가 전원 영구 NULL 이었다 — 생성 모드가 켜지면 전원 «비대상/미정»
+     *   (경보 0) · 게임 전원 G2 · 강사 콘솔 급수 빈칸. 위치 상수 금지는 PROFILE_LEVEL_HEADER 규율
+     *   그대로(같은 자리에서 두 번 틀렸다) — 이름으로 찾고, 없으면 열을 **아예 안 싣는다**(서버는
+     *   급수 열 부재 = 무동작 · 옛 판 호환). 변환(정수→Lv{n})·검증은 서버 `급수정규화` 가 정본이다. */
+    const 전머리 = pf.getRange(1, 1, 1, pf.getLastColumn()).getDisplayValues()[0];
+    const 급수칸 = 전머리.indexOf('현재급수') + 1;   // 1-기반 · 0 = 열 없음
+    if (급수칸 > 0) {
+      const 급수들 = pf.getRange(1, 급수칸, 마지막행, 1).getDisplayValues();
+      표.forEach((r, i) => r.push(String(급수들[i][0] == null ? '' : 급수들[i][0])));   // 머리행엔 '현재급수' 가 그대로 실린다
+    }
     if (마지막행 >= 2) {
       머리 = 표[0];
       표.slice(1).forEach(r => {

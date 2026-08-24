@@ -5,7 +5,7 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-const { ENGINE_FILES, engineSource, sharedBlocks } = require('./_engine-source');
+const { ENGINE_FILES, engineSource, liveFiles, sharedBlocks } = require('./_engine-source');
 /* 주석 제거 통로는 공용 하나다 — `tests/lib/소스검사.js` (F401 계열 · 대기열 P3 줄73). */
 const { 코드만 } = require('./lib/소스검사.js');
 const MANIFEST_PATH = path.join(ROOT, 'appsscript.json');
@@ -55,9 +55,13 @@ function loadFunction(startMarker, endMarker, functionName, dependencies) {
   return new Function(...names, `${source}\nreturn ${functionName};`)(...values);
 }
 
-test('엔진 파일 구문이 정상이다', () => {
+test('라이브 탑재 .js 전수의 구문이 정상이다 (.claspignore 파생 — 엔진 7종만 보던 옛 분모는 G8 의 구멍)', () => {
   // 파일별로 검사한다 — 합친 문자열로 검사하면 어느 파일이 깨졌는지 못 가리킨다.
-  ENGINE_FILES.forEach((f) => {
+  const 전수 = liveFiles();
+  assert.ok(전수.length >= ENGINE_FILES.length + 3,
+    '라이브 파일 파생이 엔진 7종보다 얇다(' + 전수.join(',') + ') — .claspignore 파싱이 깨졌으면 분모가 조용히 준다');
+  ENGINE_FILES.forEach((f) => assert.ok(전수.includes(f), 'ENGINE_FILES 의 ' + f + ' 가 라이브 파생에 없다 — .claspignore 와 어긋났다'));
+  전수.forEach((f) => {
     execFileSync(process.execPath, ['--check', path.join(ROOT, f)], { stdio: 'pipe' });
   });
 });
