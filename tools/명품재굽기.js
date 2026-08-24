@@ -117,11 +117,18 @@ function 덧씌우기() {
   화면들.forEach((s, i) => {
     const 방 = path.join(루트, 'docs', '캐릭터', s.공방);
     process.stdout.write(`  [${String(i + 1).padStart(2)}/14] ${s.형태}`.padEnd(24));
+    /* ⚠08-24 실사고: 성장덧씌움.py 만 둘째 인자 기본값이 «없음»(다른 열셋은 «층별»)이라
+     * `성장판_v1_없음.png` 라는 다른 이름으로 저장됐다 — 어제 판 `성장판_v1.png` 가 그 자리에
+     * 그대로 남아 이 검증(존재만 확인)을 «✅ 1080x2052»로 통과시켰다. 근본 수정(스크립트 기본값)은
+     * 했지만, 이 검증 자체도 같은 병에 걸리는 구조라 여기도 고친다 — 시각과 해상도를 같이 본다. */
+    const t0 = Date.now();
     const r = spawnSync('python', [path.join(방, s.덧), s.그릇],
       { cwd: 방, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
     const 난것 = path.join(방, `${s.그릇.replace('_그릇만', '')}.png`);
     const 크기 = 해상도(난것);
-    const 됐나 = r.status === 0 && 크기;
+    let 새로 = false;
+    try { 새로 = fs.statSync(난것).mtimeMs >= t0 - 1000; } catch (_) { 새로 = false; }
+    const 됐나 = r.status === 0 && 크기 && 새로;
     console.log(`${됐나 ? '✅' : '🔴'} ${크기 ? `${크기[0]}x${크기[1]}` : '없음'}`);
     if (!됐나) {
       실패.push(s.형태);
