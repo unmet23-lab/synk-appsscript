@@ -68,6 +68,21 @@ def esc(s):
     return str(s).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
 
+
+def 로고표준형():
+    """로고 SVG 는 실행 정본(tools/lib/로고정본.js) 하나에서만 온다 — 유호 확정 08-24 «synk 승격».
+
+    파이썬이라 require 를 못 하므로 CLI 로 받는다(_룸입히기와 같은 이유 — 베끼면 통로가 둘이 된다).
+    실패는 조용히 넘기지 않는다: 로고 없는 브랜드킷을 «성공»으로 내면 안 된다.
+    """
+    import subprocess
+    r = subprocess.run(['node', os.path.join(뿌리, 'tools', 'lib', '로고정본.js'), '--json'],
+                       capture_output=True, text=True, encoding='utf-8', errors='replace')
+    if r.returncode != 0:
+        raise SystemExit(f'로고정본 CLI 실패(rc={r.returncode}): {(r.stderr or "")[:300]}')
+    return json.loads(r.stdout)
+
+
 def main():
     with open(토큰경로, encoding='utf-8') as f:
         토큰 = json.load(f)
@@ -79,6 +94,7 @@ def main():
     다 = {k: 이름값[v] for k, v in 토큰['색']['시맨틱']['다크'].items() if not k.startswith('_')}
     잉크, 종이 = 라['잉크'], 라['바탕']
     마 = 토큰['색']['마스코트']
+    로고 = 로고표준형()
     펠트 = 토큰['재질']['펠트']
     with open(os.path.join(패치뿌리, '라이브러리.json'), encoding='utf-8') as f:
         장부 = json.load(f)['패치']
@@ -228,12 +244,7 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 </style></head><body class="룸">
 
 <div class="band">
-  <svg viewBox="-8 -2 296 116" role="img" aria-label="SYNK" style="color:{다["잉크"]}">
-    <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="currentColor">syn</text>
-    <path d="M146 46.7 L112 66.35 L146 86 L159 86 L125 66.35 L159 46.7 Z" fill="{이름값["Coral"]}"/>
-    <path d="M196 92 L216 40 L228 40 L208 92 Z" fill="{다["잉크"]}" opacity=".5"/>
-    <path d="M234 92 L254 40 L266 40 L246 92 Z" fill="{다["잉크"]}" opacity=".5"/>
-  </svg>
+  {로고['펠트다크_슬래시']}
   <h1>SYNK 브랜드 킷 — 완성본</h1>
   <p>값 원천 = 디자인_토큰.json({len(현행)}색+마스코트+재질+사운드+감각) · 이 문서는 조립 산출물(마지막 조립 {오늘}) — 고칠 땐 토큰을 고치고 <code>python tools/브랜드킷조립.py</code></p>
 </div>
@@ -245,20 +256,15 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 
 <section>
   <h2><span class="번호">2</span> 로고</h2>
-  <p class="lead">로고는 그림이 아니라 글자다 — <code>syn&lt;</code> 넉 자. <b>&lt; 는 언제나 Coral</b>(유일한 신호) ·
-  <code>//</code> 는 세 번째 색이 아니라 잉크의 저채도. 도형 정본 = 발표물 브랜드킷 §3(복사해 쓰고 재작도 금지).</p>
+  <p class="lead">로고는 그림이 아니라 글자다 — <code>synk</code> 넉 자(k = Inter Tight 실제 글리프 · <b>언제나 Coral</b>).
+  기호 <code>&lt;</code> 는 워드마크에서 독립한 표식이다(상단바·진행·도장·워터마크 — 이름을 반복하지 않는 자리).
+  <code>//</code> 는 세 번째 색이 아니라 잉크의 저채도. 실행 정본 = <code>tools/lib/로고정본.js</code>(재작도·복붙 금지).</p>
   <div class="logogrid">
     <div class="logocard" style="background:var(--navy2)">
-      <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK" style="color:{다["잉크"]}">
-        <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="currentColor">syn</text>
-        <path d="M146 46.7 L112 66.35 L146 86 L159 86 L125 66.35 L159 46.7 Z" fill="{이름값["Coral"]}"/>
-      </svg>
+      {로고['펠트다크']}
     </div>
     <div class="logocard" style="background:var(--paper); outline:1px solid var(--line)">
-      <svg viewBox="-8 -2 181 116" role="img" aria-label="SYNK" style="color:{이름값["Ink"]}">
-        <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="currentColor">syn</text>
-        <path d="M146 46.7 L112 66.35 L146 86 L159 86 L125 66.35 L159 46.7 Z" fill="{이름값["Coral"]}"/>
-      </svg>
+      {로고['펠트라이트']}
     </div>
     <div class="logocard" style="background:var(--navy2)">
       <svg viewBox="0 0 240 110" role="img" aria-label="SYNK">
@@ -272,8 +278,8 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
     </div>
   </div>
   <table><tr><th>자리</th><th>쓰는 것</th></tr>
-  <tr><td>인쇄물 머리 띠 · 명함 · 앱 상단</td><td>W5 <code>syn&lt;</code> (기본값)</td></tr>
-  <tr><td>표지 · 배너 (가로 넉넉)</td><td>W1 <code>syn&lt; //</code></td></tr>
+  <tr><td>인쇄물 머리 띠 · 명함 · 표지</td><td>워드마크 <code>synk</code> — 벡터 펠트(기본) · 소형은 민판</td></tr>
+  <tr><td>앱 상단바 · 진행 · 로딩 · 도장 · 워터마크</td><td>기호 <code>&lt;</code> 자수판 — 이름을 반복하지 않는 자리</td></tr>
   <tr><td>정사각 · 워터마크 · 앱 아이콘</td><td>심볼 <code>~ ^ ^ &lt;</code> (= s·y·n·k)</td></tr></table>
 </section>
 

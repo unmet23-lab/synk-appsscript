@@ -1,32 +1,46 @@
 # -*- coding: utf-8 -*-
-"""로고 실물 시트 — 확정된 다섯 자리의 «실물»을 한 장에 모은 자립형 HTML.
+"""로고 실물 시트 — 확정된 자리의 «실물»을 한 장에 모은 자립형 HTML.
 
 왜 필요한가: 정본(_브랜드킷.md §3)에는 표와 규율이 있지만 **실물을 한눈에 보는 자리**가 없다.
 로고를 쓸 때 사람이 여는 것은 규율 문서가 아니라 «어떻게 생겼더라»를 보는 화면이다.
 그 자리가 없으면 각자 기억으로 쓰고, 기억은 갈린다.
 
+2026-08-24 유호 확정 «승격» 반영:
+ · 워드마크 = synk(벡터 펠트 · k Coral) — 예전 syn<(벡터+꺾쇠 렌더판 B2)는 은퇴.
+ · 기호 < 자수판·도장(배지 문법)이 새 자리로 들어왔다 — 도장·워터마크는 기호가 승계.
+ · 벡터 자리들은 tools/lib/로고정본.js 가 그 자리에서 그린다(사본 아님 — CLI 소비).
+
 규율:
- · 자립형 1파일 — 이미지는 전부 base64 인라인(발표물 규칙과 같다).
- · **정본은 여전히 md 다.** 이 시트는 «보여주는 층»이고, 값(자리·쓰임)은 여기서 새로 정하지 않는다.
+ · 자립형 1파일 — 이미지는 전부 base64 인라인, 벡터는 SVG 그대로.
+ · **정본은 여전히 md(§3 판정) + 로고정본.js(도형·표현)다.** 이 시트는 «보여주는 층»이다.
  · 없는 실물은 «없다»고 적는다 — 빈칸을 그럴듯하게 채우지 않는다.
 
 통로: python tools/로고시트.py    → docs/발표물/로고/실물시트.html
 """
 import base64
 import io
+import json
 import os
+import subprocess
 import sys
 
 루트 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 구움 = os.path.join(루트, "docs", "Loom_자산", "구움")
 나갈곳 = os.path.join(루트, "docs", "발표물", "로고", "실물시트.html")
 
-# 자리 = (제목, 쓰임, 파일, 통로, 메모)  — 파일이 없으면 «아직 없음» 칸으로 낸다.
+
+def 로고표준형():
+    """벡터 자리의 SVG 는 실행 정본 하나에서만 온다(브랜드킷조립.py 로고표준형과 같은 문법)."""
+    r = subprocess.run(["node", os.path.join(루트, "tools", "lib", "로고정본.js"), "--json"],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if r.returncode != 0:
+        raise SystemExit("로고정본 CLI 실패(rc=%s): %s" % (r.returncode, (r.stderr or "")[:300]))
+    return json.loads(r.stdout)
+
+
+# 렌더판(PNG) 자리 = (제목, 쓰임, 파일, 통로, 메모) — 파일이 없으면 «아직 없음» 칸으로 낸다.
 자리들 = [
-    ("지면·인쇄 워드마크", "B2 «신호만 펠트» — 벡터 syn 옆에 이 꺾쇠가 앉는다",
-     "로고꺾쇠_몸.png", "--굽기 로고꺾쇠",
-     "정면 직교로 굽는다 — 벡터 정본과 외곽이 자리 그대로 맞아야 하는 합성 부품이라 원근을 못 준다."),
-    ("심볼·도장·워터마크", "고리 — 양모 실 두 가닥이 서로를 꿴다",
+    ("심볼·워터마크(락업)", "고리 — 양모 실 두 가닥이 서로를 꿴다",
      "로고고리_몸.png", "--굽기 로고고리",
      "각 가닥은 두 겹이 꼬인 플라이드 얀이다. 꼬임이 없으면 실이 아니라 고무로 읽힌다."),
     ("앱 아이콘", "몽글 배지 — 꺾쇠가 입이 되는 옆모습",
@@ -36,11 +50,6 @@ import sys
      "고리모션_039.png", "--굽기 로고고리 --시퀀스 40",
      "진행 1.0 이 확정 정지 화면이라 마지막 컷이 곧 심볼이다 — 영상 끝에 로고를 겹쳐 넣지 않는다."),
 ]
-
-스플래시메모 = ("앱 스플래시(다크)", "잉크 카드 — 양모 밤",
-                "합성판 `로고/스플래시_잉크카드.html`",
-                "벡터 syn(Paper 펠트) + 꺾쇠 렌더판을 양모 밤 카드 위에 얹은 HTML 합성이라 "
-                "낱장 렌더가 아니다 — 그 파일을 열어서 본다.")
 
 
 def b64(경로):
@@ -80,8 +89,36 @@ def 칸(제목, 쓰임, 파일, 통로, 메모):
     </figure>""" % (몸, 제목, 쓰임, 메모, 통로)
 
 
+def 벡터칸(제목, 쓰임, 몸html, 메모, 밝게=False):
+    return """
+    <figure class="card">
+      <div class="stage vec%s">%s</div>
+      <figcaption>
+        <span class="tag">%s</span>
+        <strong>%s</strong>
+        <span class="desc">%s</span>
+        <code>tools/lib/로고정본.js</code>
+      </figcaption>
+    </figure>""" % (" light" if 밝게 else "", 몸html, 제목, 쓰임, 메모)
+
+
 def main():
-    칸들 = "".join(칸(*자) for 자 in 자리들)
+    로고 = 로고표준형()
+    벡터칸들 = "".join([
+        벡터칸("워드마크 · 다크", "synk — 벡터 펠트(보풀·손땀·두께 2톤) · k = Coral",
+              로고["펠트다크"],
+              "이름을 «보여주는» 순간의 얼굴이다(스플래시·대외·간판). 예전 syn&lt; 는 은퇴 — 이름은 읽혀야 한다."),
+        벡터칸("워드마크 · 라이트", "synk — 밝은 지면(인쇄물·수료증)용. syn 이 Ink 펠트가 된다",
+              로고["펠트라이트"],
+              "소형(머리띠·명함 작은 판)은 민판을 쓴다 — 필터 없는 순수 벡터가 300dpi 에서 정직하다.", 밝게=True),
+        벡터칸("기호 &lt; · 자수판", "이미 «안에 들어온» 자리의 표식 — 상단바·진행·로딩·불릿",
+              '<div class="row">%s%s%s</div>' % (로고["기호_큰"], 로고["기호_중"], 로고["기호_작"]),
+              "28px 이상에서 실땀이 보이고, 작아지면 스스로 접혀 둥근 끝만 남는다 — 한 기호의 두 크기다."),
+        벡터칸("도장 — 배지 문법", "출석·칭찬 도장 · 워터마크는 이 기호가 승계",
+              로고["도장"],
+              "펠트 원 + 쿠션 볼록 + 실땀 링 + 광학 중심(꼭짓점 쏠림 보정). 찍힌 자국 자체가 보상이다."),
+    ])
+    칸들 = 벡터칸들 + "".join(칸(*자) for 자 in 자리들)
     있는것 = sum(1 for _, _, f, _, _ in 자리들 if os.path.exists(os.path.join(구움, f)))
     html = """<!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -104,6 +141,9 @@ def main():
   .stage { aspect-ratio:1; border-radius:12px; display:grid; place-items:center;
            background:radial-gradient(ellipse at 50% 44%, rgba(199,191,178,.07) 0%, rgba(199,191,178,0) 70%); }
   .stage img { width:100%; height:100%; object-fit:contain; display:block; }
+  .stage.vec > svg { width:88%; height:auto; }
+  .stage.vec.light { background:var(--paper); }
+  .stage.vec .row { display:flex; align-items:center; gap:18px; }
   .stage.none { font-size:12px; font-weight:700; color:var(--ash-wool); text-align:center; line-height:1.9; }
   .stage.none span { font-family:'DM Mono',ui-monospace,Consolas,monospace; font-size:10px; color:var(--stone); }
   figcaption { display:flex; flex-direction:column; gap:5px; margin-top:13px; }
@@ -122,26 +162,27 @@ def main():
 <header>
   <h1>SYNK 로고 — 실물 시트</h1>
   <p>확정된 자리마다 <span class="hi">지금 쓰는 실물</span>이 무엇인지 한눈에 봅니다.
-     값과 규율의 정본은 여전히 <b>docs/발표물/_브랜드킷.md §3</b>이고, 이 시트는 보여주는 층입니다 —
+     판정의 정본은 <b>docs/발표물/_브랜드킷.md §3</b>, 도형·표현의 실행 정본은
+     <b>tools/lib/로고정본.js</b>입니다(유호 확정 08-24 «synk 승격») — 이 시트는 보여주는 층이고,
      여기서 새로 정하지 않습니다.<br>
-     실물 __있는것__/4점 · 재질은 CSS 흉내가 아니라 펠트 실물 사진 타일로 굽습니다.</p>
+     벡터 4자리 + 렌더판 __있는것__/3점. 예전 <b>syn&lt; 워드마크는 은퇴</b>했습니다 — 새 산출물에 쓰지 않습니다.</p>
 </header>
 <div class="grid">__칸들__</div>
 <div class="note">
   <b>앱 스플래시(다크) — 잉크 카드</b>는 낱장 렌더가 아니라 <b>합성판</b>입니다:
-  벡터 syn(Paper 펠트) 옆에 꺾쇠 렌더판을 얹어 양모 밤 카드 위에 세운 HTML이라,
-  <code>docs/발표물/로고/스플래시_잉크카드.html</code>을 열어서 봅니다.
+  벡터 펠트 synk 를 양모 밤 카드 위에 세운 HTML이라
+  <code>docs/발표물/로고/스플래시_잉크카드.html</code>을 열어서 봅니다(렌더판 의존 0 — 어느 기계에서나 섭니다).
 </div>
 <footer>
-  통로는 하나입니다 — <code>node tools/룸굽기.js --굽기 &lt;부품&gt;</code>. 구움 폴더는 git 밖이지만
+  렌더판 통로 — <code>node tools/룸굽기.js --굽기 &lt;부품&gt;</code>. 구움 폴더는 git 밖이지만
   씨앗이 고정이라 언제든 같은 판이 다시 나옵니다. 앱 아이콘 13종은 <code>python tools/아이콘굽기.py</code>.<br>
-  이 시트도 산출물입니다 — 로고를 다시 구우면 <code>python tools/로고시트.py</code>로 다시 냅니다.
+  이 시트도 산출물입니다 — 로고가 바뀌면 <code>python tools/로고시트.py</code>로 다시 냅니다.
 </footer>
 </body></html>"""
     html = html.replace("__칸들__", 칸들).replace("__있는것__", str(있는것))
     os.makedirs(os.path.dirname(나갈곳), exist_ok=True)
     io.open(나갈곳, "w", encoding="utf-8").write(html)
-    print("wrote %s · %d KB · 실물 %d/4" % (나갈곳, len(html) // 1024, 있는것))
+    print("wrote %s · %d KB · 벡터 4 + 렌더판 %d/3" % (나갈곳, len(html) // 1024, 있는것))
     if 있는것 < len(자리들):
         print("⚠아직 없는 실물이 있다 — 그 칸은 «없다»로 냈다(빈칸을 그럴듯하게 채우지 않는다)")
 

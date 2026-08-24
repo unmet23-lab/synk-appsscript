@@ -80,11 +80,8 @@ function 목차만들기(md) {
 
 /* ── ③ 껍데기 ────────────────────────────────────────────────────────────── */
 
-// W5 로고 — docs/발표물/_브랜드킷.md §3 SVG 도형 정본 복사(좌표 재작도 금지)
-const LOGO_W5 = `<svg class="logo" viewBox="-8 -2 181 116" role="img" aria-label="SYNK">
-  <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="#E4E4E7">syn</text>
-  <path d="M146 46.7 L112 66.35 L146 86 L159 86 L125 66.35 L159 46.7 Z" fill="#F96859"/>
-</svg>`;
+// 로고 — 실행 정본 tools/lib/로고정본.js (유호 확정 08-24 «synk 벡터 펠트» · 사본 금지)
+const LOGO_W5 = require('./lib/로고정본.js').워드마크({ 판: '다크', 클래스: 'logo' });
 
 const CSS = `
 /* 지면 목업용 고정폭 — 한글까지 한 가족으로 잡아야 2:1 폭이 유지된다(파일 머리 주석 참조) */
