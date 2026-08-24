@@ -92,6 +92,89 @@ function docSection() {
   };
 }
 
+/* ── 엔진 소개서 대조 — 「상태는 도구가 안다」를 소개서 층까지 (2026-08-24 신설) ──────
+ * 왜 이 검사인가(실측 08-24): 소개서 7벌(6 소개서 + 지도)의 상태 절이 전부 08-15 사진에 얼어
+ * 있었고, 하필 그 9일이 가장 많이 움직인 구간이라 — Temper 는 자기 존재 이유(§10 규격)가
+ * 완료된 것을 몰랐고, Core 는 엔진 점수를 아홉 점 낮게 싣고 있었다. 다른 층은 전부 기계가
+ * 지키는데(래칫·왕복·부품대조) 소개서 층만 사람 기억이 지켰다 — 지도 footer 가 낡음 감시를
+ * «바탕화면 _지금상태»에 위임했지만 그건 경로 생사만 보지 내용 낡음은 못 본다.
+ * 검사는 좁고 정확하게 — 날짜 도장은 검사하지 않는다(날짜가 낡아도 값이 참이면 소음이다).
+ * 재는 것은 «기계로 판정 가능한 값» 넷뿐이다. */
+function 소개서Section() {
+  const os = require('os');
+  const 펠트 = require('./펠트문서.js');
+  const r = { 갈라짐: [], 판모순: [], 점수낡음: [], 철학낡음: [], 지도판모순: null, 잰벌: 0 };
+
+  // ① 원고↔산출물 재현 — 원고가 정본인가(갈라지면 재굽기가 손 수정을 삼킨다 · F544)
+  const 임시방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-소개서대조-'));
+  for (const p of 펠트.재현대조(임시방)) {
+    r.잰벌++;
+    if (p.상태 !== '재현') r.갈라짐.push(`${p.이름}(${p.상태})`);
+  }
+
+  // ② 표지 메타 판 vs footer 판 — 한 파일 안에서 판이 갈리면 어느 쪽도 못 믿는다
+  //    (실측 08-24: 3벌이 footer 갱신을 세 번 연속 빠뜨렸다)
+  const 판 = (s, 자리) => {
+    const m = 자리.exec(s);
+    return m ? (/소개서 v([\d.]+)/.exec(m[0]) || [])[1] : null;
+  };
+  for (const p of 펠트.지면짝들()) {
+    const s = fs.readFileSync(p.원고, 'utf8');
+    const 메타판 = 판(s, /<p class="메타">[\s\S]*?<\/p>/);
+    const 발판 = 판(s, /<footer>[\s\S]*?<\/footer>/);
+    if (메타판 && 발판 && 메타판 !== 발판) r.판모순.push(`${p.이름} 메타 v${메타판} ≠ footer v${발판}`);
+
+    // ③ 엔진 점수 사진 vs 실값(엔진점수.jsonl 마지막 유효 회차 — 무응답 과반 회차는 제외)
+    //    ⚠전량을 본다(matchAll) — 첫 매치만 보면 한 문서 안에서 §6은 맞고 §7만 낡은 경우를
+    //    맞은 쪽이 가려 준다(신설 당일 반대 시험이 실제로 이 맹점을 잡았다).
+    //    분모 표기(「시험지 102문항」)는 점수가 아니므로 건너뛴다.
+    if (실점수) {
+      for (const 점수 of s.matchAll(/(\d+)\s*\/\s*102(?!\s*문항)/g)) {
+        // 「직전 v6 판은 89/102」 같은 **이력 언급**은 낡음이 아니다 — 앞 문맥의 「직전」이 표지다
+        // (이력을 적을 땐 「직전」을 붙이는 것이 표기 규약이 된다 · 신설 당일 거짓 양성 실측).
+        if (/직전[^.]{0,25}$/.test(s.slice(Math.max(0, 점수.index - 30), 점수.index))) continue;
+        if (Number(점수[1]) !== 실점수.전체) {
+          r.점수낡음.push(`${p.이름} ${점수[1]}/102 → 실값 ${실점수.전체}/102(${실점수.판} · ${실점수.날짜})`);
+        }
+      }
+    }
+
+    // ④ 철학 판 인용 vs 정본 선언 — doc-graph 의 인용 패턴(vX.Y 단독)과 달라 여기서 잰다
+    const 철 = /SYNK_철학\.md\(v([\d.]+)\)/.exec(s);
+    if (철 && 철학판 && 철[1] !== 철학판) r.철학낡음.push(`${p.이름} 철학 v${철[1]} 인용 → 정본 v${철학판}`);
+  }
+
+  // ⑤ 지도 판 — meta 와 footer 가 갈리면(실측 08-24: v2.3 vs v2.1) 판 자체가 자기모순
+  try {
+    const 지도 = fs.readFileSync(path.join(ROOT, 'docs', '엔진', 'SYNK_엔진_지도.html'), 'utf8');
+    const meta = /class="meta">지도 v([\d.]+)/.exec(지도);
+    const foot = /지도 v([\d.]+)[^<]*<\/footer>/.exec(지도) || /·\s*지도 v([\d.]+)\s*·\s*\d{4}-\d{2}-\d{2}/.exec(지도.slice(지도.lastIndexOf('<footer')));
+    if (meta && foot && meta[1] !== foot[1]) r.지도판모순 = `지도 meta v${meta[1]} ≠ footer v${foot[1]}`;
+  } catch (_) { /* 지도가 없으면 doc-graph 깨진 참조가 따로 운다 */ }
+
+  return r;
+}
+
+// 소개서Section 이 쓰는 실값 둘 — 모듈 로드시 1회만 읽는다(검사마다 파일을 다시 열지 않는다)
+const 실점수 = (() => {
+  try {
+    const 줄들 = fs.readFileSync(path.join(ROOT, 'docs', '_ops', '엔진점수.jsonl'), 'utf8')
+      .trim().split('\n').map((l) => JSON.parse(l));
+    for (let i = 줄들.length - 1; i >= 0; i--) {
+      const x = 줄들[i];
+      if ((x.무응답 || 0) < (x.분모 || 102) / 2) return x; // 무응답 과반 회차는 「점수 없음」 — 이해대장.js 와 같은 판정
+    }
+  } catch (_) { /* 이력이 없으면 ③은 조용히 쉰다 */ }
+  return null;
+})();
+const 철학판 = (() => {
+  try {
+    const m = /<!--\s*정본:\s*v([\d.]+)\s*-->/.exec(
+      fs.readFileSync(path.join(ROOT, 'docs', 'SYNK_철학.md'), 'utf8').slice(0, 300));
+    return m ? m[1] : null;
+  } catch (_) { return null; }
+})();
+
 /* 지침의 마지막 개정 날짜 — 개정 제안 문턱(마찰 2건)의 **기준점**이다.
  * 지침은 「굵직한 마찰 신호 2건이면 개정을 제안한다」고 하는데, 그 2건은 **새로 난** 둘이지
  * 누적 열림 둘이 아니다. 기준점 없이 누적을 세면 40건이 쌓인 지금 알림이 영구히 켜지고,
@@ -488,6 +571,7 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
   const 재질 = attempt('재질의금지', 재질의Section);
   const 장부 = attempt('회차장부', () => 장부Section(장부잰다));
   const 바탕 = attempt('바탕화면', 바탕화면Section);
+  const 소개 = attempt('소개서', 소개서Section);
 
   const red = [];
   const warn = [];
@@ -545,7 +629,17 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
 
   if (mem.ok) {
     const d = mem.value.diagnose;
-    for (const b of d.broken) red.push({ kind: '깨진 링크', text: `${b.from} --${b.type}> ${b.target}` });
+    /* 깨진 링크는 **한 줄로 접는다**(08-24) — 08-20 압축이 토픽을 대량 삭제하며 남긴 잔해가
+     * 223건이라, 개별 나열이 진짜 신호(그날 기준 29건)를 세 화면 밑으로 밀어냈다(운영 cron
+     * 이상이 목록 한가운데 묻혀 있었다 — T12 늑대소년 병이 감시 도구 자신에게 난 것).
+     * 건수는 red 로 남는다: 새 깨진 링크가 «늘면» 숫자로 보인다. 전량은 memory-graph 가 낸다. */
+    if (d.broken.length) {
+      red.push({
+        kind: '깨진 링크',
+        text: `${d.broken.length}건(접힘 — 대부분 08-20 압축 때 삭제된 토픽을 가리키는 잔해)` +
+          ' · 전량: node tools/memory-graph.js',
+      });
+    }
     for (const g of d.ghostInIndex) red.push({ kind: '인덱스 유령', text: `MEMORY.md가 없는 파일을 가리킨다: ${g}` });
     for (const u of d.unknown) warn.push({ kind: '미지 링크 타입', text: `${u.from}: ${u.type}>${u.target}` });
     /* 「인덱스 누락」·「고아 노드」 검사는 08-20 은퇴 — 옛 규약(토픽 전수를 MEMORY.md 에 등재)의
@@ -575,6 +669,20 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
           ' · 색인이 갈라지면 정본 지목이 두 갈래가 된다(08-07 실측) · 전량: node tools/doc-graph.js',
       });
     }
+  }
+
+  if (소개.ok) {
+    const s = 소개.value;
+    for (const g of s.갈라짐) {
+      red.push({
+        kind: '소개서 원고↔산출물 갈라짐',
+        text: `${g} — 지금 재굽기하면 산출물의 손 수정이 사라진다. 수리: node tools/펠트문서.js --재현 (안내를 따른다)`,
+      });
+    }
+    for (const x of s.판모순) red.push({ kind: '소개서 판 자기모순', text: `${x} — footer 갱신이 빠졌다(같은 커밋에서 둘을 같이 올린다)` });
+    for (const x of s.점수낡음) red.push({ kind: '소개서 점수 낡음', text: `${x} — 사진이 낡으면 읽는 사람이 틀린 그림을 본다(철학 ⑤)` });
+    for (const x of s.철학낡음) red.push({ kind: '소개서 철학판 낡음', text: x });
+    if (s.지도판모순) red.push({ kind: '지도 판 자기모순', text: s.지도판모순 });
   }
 
   if (바탕.ok && 바탕.value.present && 바탕.value.건수 > 0) {
