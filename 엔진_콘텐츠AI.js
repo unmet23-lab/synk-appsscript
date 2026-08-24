@@ -639,6 +639,11 @@ function systemWatchdog(asText) {
   const recommended = triggerManifest_(textbookLinkOn_(ss)).filter(f => 필수.indexOf(f) < 0);
   const missing = recommended.filter(f => !alive(f));
   add(missing.length === 0, '권장 트리거: ' + (missing.length ? missing.join(', ') + ' 미등록 (의도적이면 무시)' : '전부 등록됨'));
+  // [심문 G9 · 08-24] 미개통은 «침묵»이 아니라 **정보**로 낸다 — 종전엔 감시가 요구 자체를 접어
+  //   「전부 등록됨」이 됐고, 그 초록 아래에서 mastery 판정관 4종(첨삭·음성·대화·적용)이 실행 0회였다.
+  //   미개통 자체는 의도된 상태(유령 트리거 금지)라 적색이 아니다 — 상태를 이름으로 부르기만 한다
+  //   (T12 동의격리 «정보 채널»과 같은 가름: 적색도 침묵도 아닌 세 번째 칸).
+  if (!textbookLinkOn_(ss)) add(true, 'ⓘ 교재연동 미개통 — mastery 판정관 4종·야간 트리거 실행 0회(의도된 상태 · 개통 = setupTextbookLink ▶ 1회)');
 
   // [v9.19] 1-b) 백업 실제 생성 여부 — 트리거는 살아있어도 makeCopy가 조용히 실패할 수 있어 최신 백업 나이 점검
   try {
