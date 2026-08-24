@@ -22,25 +22,33 @@
 - **실패 허용** = deliver 선례 그대로: 상태 계산이 실패해도 **개입은 나간다**(스탬프는 부속, 과제가 본체) — null 로 남기되 조용히 잦아지면 안 되므로 ③의 측정이 짝이다.
 - **새 수집 0** — 쌓는 엔진 공통 규칙 그대로. 다섯 칸 전부 이미 있는 열이고, 이 규격은 「어느 생산자든 이 다섯을 채운다」는 약속이다.
 
-## ② 이행표 — 2026-08-24 실측 (숨기지 않는다)
+## ② 이행표 — 2026-08-24 코드 착수 세션이 전건 닫았다 (같은 날 밤 실측)
+
+운영 층에서 `engine.learning_events` 에 insert 하는 통로는 **3파일 5벌이 전부**다(functions·lib·src 전수 스캔 — talk `tests/개입스탬프.test.js` ① 이 이 수를 상시 못박는다).
 
 | 개입 생산자 | 스탬프 5칸 | 근거 |
 |---|---|---|
-| `deliver` (야간 배달) | ✅ 전부 | index.ts — 3열+policy_ver+intervention_id 를 insert 에 직접 실음 · 실패 시 null+로그 |
-| `deliver/생성모드` · `deliver-one` | ✅ (estimator 사용처 실측) | grep 실측 08-24 — 세부 칸 대조는 코드 착수 세션 몫 |
-| `radio-promote` (라디오 승격) | 🔴 **insert 에 다섯 칸 자체가 없다** | index.ts L235 insert 열 목록 — 동적 `event_type` 통로라 개입 사건이 이 길을 타면 **스탬프 없이 남는다** |
-| 몽글(companion · 학생판) | 📐 코드 0 — 설계에 이 규격 승계를 명시하는 것이 지금 몫 | Vellum 소개서 §5 배선(delivered 합류)에 이 문서를 링크 |
-| 교정 답장(corrections) | ❔ **미측정** — delivered 생산 여부부터 실측 필요 | retry_of 는 확인됨 · 스탬프는 안 봤다 |
+| `deliver` 말하기 개입(`intervention.delivered`) | ✅ 전부 | index.ts :883 insert 열 목록 — 유일한 개입 insert · 실패 시 null+로그 |
+| `deliver` 말하기 배정(`task.assigned`) | ✅ **고리가 정본** — `intervention_id`+`retry_of` 를 싣고, estimator 넷은 고리 너머 개입 행이 정본 | 복제 금지 원칙(corrections 가 learner_id 복제를 기각한 축) — 같은 값을 두 행에 적으면 정본이 둘이 된다. 규격 ①의 「다섯 칸」은 배정 행에선 이 고리로 충족된다 |
+| `deliver` 게임 배정(`task.assigned`) | ✅ 정직한 null — **개입 행 없음이 설계**(발주 §8: v1 답장은 대본·학습 신호 0·성과회수 닻 오염 방지) · `retry_of` 는 싣는다 | 개입스탬프 ③ 이 「intervention_id 없는 배정 = 이 1벌뿐」 상한으로 잠근다 |
+| `deliver/생성모드` · `deliver-one` | ✅ 착지가 같은 문 | 생성 통로는 `event_draft`(판 정본 테이블의 policy_ver·estimator_version)를 굳힐 뿐, 개입 행 착지는 deliver :883 그 insert 하나다 |
+| `radio-promote` (라디오 승격) | ✅ **다섯 칸 불요 — 개입 사건이 0** | 승격표 여섯 명령 전부 학생 사건(quiz.answered·preference.stated·affect.reported·submission.created) + `actor_kind: 'learner'` 고정. 「다섯 칸 추가」(옛 §③ⓐ)는 항상-null 죽은 배선이라 기각 — 대신 **진입 자체를 잠갔다**(개입스탬프 ④: 승격표 ⊆ 앱사건 · 서버사건이 들어오는 날 빨강+처방) |
+| 앱 문(`functions/events`) | ✅ 진입 불가 | 개입 사건은 `서버사건` 목록이라 앱 문이 거절한다(talk `tests/사건위조.test.js` 가 지킴) |
+| 몽글(companion · 학생판) | ✅ 승계 명시 완료 | Vellum 소개서 「받은 숙제」에 이 규격 링크 + 「몽글 층 코드 착수 때 다섯 칸 동봉이 설계 조건」 등재(08-24) · 현행 companion 코드는 learning_events 미접촉 |
+| 교정 답장(corrections) | ✅ 실측 완료 — **delivered 생산 없음** | `functions/corrections`(GET 조회 전용·「읽기는 사건을 만들지 않는다」)·`functions/correct`(교정배치 — learning_events 는 join 읽기뿐)·`functions/teach`(강사 — 읽기뿐) 전부 insert 0 |
 
-## ③ 기계로 지키는 층 — 지금은 없다 (정직)
+## ③ 기계로 지키는 층 — 섰다 (08-24 코드 착수 · 「약속」에서 「장치」로)
 
-- 이벤트검증.js 는 **앱 문**(functions/events) 검증이라 서버 내부 생산자(deliver·radio-promote)를 안 지난다. 즉 오늘 이 규격은 **약속이지 장치가 아니다.**
-- 다음 걸음(코드 착수 세션): ⓐ radio-promote insert 에 다섯 칸 추가(개입 성격 사건에 한정) ⓑ talk CI 에 「delivered 행 중 스탬프 null 비율」 래칫 1개 — 래칫 어휘(내려가면 통과·올라가면 빨강)는 `lib/이벤트검증.js` 의 기존 형식을 승계. ⓒ corrections 실측 후 이행표 갱신.
-- ⚠ 이 걸음들은 talk 저장소 규약(`docs/이_저장소_규약.md`) 정독 + 스위트 실행이 선행이다 — 이 문서는 규격 확정까지고, 코드는 그 절차 위에서.
+- **코드 층(talk CI)** = `tests/개입스탬프.test.js` 5검사: ①통로 장부 3파일(늘면 등재+배선 강제) ②개입 insert 의 스탬프 미탑재 **상한 0**(래칫 — `lib/이벤트검증.js` 어휘 승계) ③배정 insert 의 retry_of 전수 + 고리 없는 벌 **상한 1**(게임) ④승격표 개입 사건 진입 잠금. 변이 검증 완료(policy_ver 제거 사본이 빨개진다).
+- **실행 층(운영 계수)** = `tools/성과계기판.js` 「개입 스탬프」 절(누적 · 기간 밖): delivered 전체 = 완비 + 미비. 규격 ①이 「계산이 실패해도 개입은 나간다」를 허용한 대가를 재는 자리 — 배선이 멀쩡해도 런타임 폴백(null)이 잦아지는 것은 코드 층이 원리상 못 보고 실행 행만이 안다. 미비 > 0 이면 🔴 + deliver 로그 「학습자 상태 계산 실패」 지목.
+- 옛 ⓐ(radio-promote 다섯 칸)는 위 이행표의 재판정으로 **기각**, ⓑ는 코드/실행 두 층으로 **이행**, ⓒ는 **실측 완료**.
 
-## ④ retry_of — 같은 날 실측 (Temper 첫 코드 일감의 현재)
+## ④ retry_of — 전수 실측 완료 (08-24 코드 착수 세션 · 끊김 0)
 
-08-15 소개서가 「끊긴 데가 있다(실측 빨강)」고 적은 뒤 배선이 진행됐다: 08-24 실측 = 사용처 14곳(radio-promote 는 부모 라운드로 재도전을 잇고 · corrections · 게임제출·각종 제출 lib 전반). **「어디가 아직 끊겼나」는 개별 파일 정독이 필요해 이 문서는 판정하지 않는다** — 코드 착수 세션의 첫 실측 항목으로 넘긴다(끊김을 세는 자 자체가 없다는 것까지가 오늘의 실측이다).
+생산 통로 4곳 전부 잇는다: `functions/events` :451(앱이 idempotency_key 로 가리켜도 event_id 로 **푼 값**을 넣는다) · `deliver` 말하기 배정 :919(교정문 출처일 때 원 제출 사건) · `deliver` 게임 배정 :754 · `radio-promote` :243(부모 라운드를 방금-Map→DB 순서로 푼다). 앱 조립은 `lib/오늘과제.js` :781 「있을 때만」 싣기(첫 제출 null 과 「모른다」를 안 섞는다 · `session.abandoned` 는 의도적 미탑재 — 안 낸 것은 재제출이 아니다).
+
+- **끊김 = 0.** 남은 것은 끊김이 아니라 **과잉 1**: 오늘과제 제출사건이 step 분기 없이 실어 ③자유발화·쓰기 트랙 제출에도 붙는다 — 이미 소비층 게이트가 해소했다(corrections :211 재발화 3중 게이트 = `낭독`×`submission.created`×보여줄행 · progress 는 원신호 그대로 — 그건 갈라짐이 아니라 그릇 차이라고 그 자리가 명문화). 생산을 좁히는 쪽은 «오프라인 사흘 밀린 발화도 그날의 고리를 들고 온다»는 설계와 충돌해 기각.
+- **세는 자** = 개입스탬프 ③(배정 insert 의 retry_of 전수) + ①(새 통로가 서면 장부가 잡아 재판정 강제). 「재도전인데 안 이었다」는 행 층에선 원리상 못 재고(재도전 여부를 행 스스로 말해야 한다), 통로 층에서 세는 것이 정본이다.
 
 ## ⑤ 계약 반영 — 판올림 불필요 판정
 
