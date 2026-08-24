@@ -17,6 +17,7 @@
   python tools/NPC형상대조.py --방 <폴더>                       (한 판을 잰다)
   python tools/NPC형상대조.py --방 <새폴더> --옛방 <옛폴더>       (두 판을 나란히 + 지면 PNG)
   python tools/NPC형상대조.py --방 … --뒤 -calm                  (파일명이 boss-calm.png 식일 때)
+  python tools/NPC형상대조.py --방 … --json 잰것.json            (기계가 읽을 판정값 — 문턱 게이트용)
 """
 import os
 import sys
@@ -123,7 +124,8 @@ def 재기(방, 뒤, 이름):
           f'   (' + ' · '.join(f'{r} {len(실[r])}' for r in 역들) + ')')
     print('    → 몸 평균 채도: ' + '  '.join(f'{r} {채[r]:.3f}' for r in 역들)
           + f'   (평균 {sum(채.values()) / 4:.3f})')
-    return {'그림': 그림, '겹침': 겹침, '화소': 화소, '채': 채, '크기비': 큰 / 작}
+    return {'그림': 그림, '겹침': 겹침, '화소': 화소, '채': 채, '크기비': 큰 / 작,
+            '실화소': {r: len(실[r]) for r in 역들}}   # 역별 실루엣 화소 — 쌍끼리의 크기비를 밖에서 잰다
 
 
 방 = 인자.get('방')
@@ -141,6 +143,22 @@ if 옛:
     print(f'  평균 겹침            {sum(옛["겹침"].values()) / 6:.1f}% → {sum(새["겹침"].values()) / 6:.1f}%')
     print(f'  실루엣 크기비        {옛["크기비"]:.2f}배 → {새["크기비"]:.2f}배')
     print(f'  몸 채도 평균         {sum(옛["채"].values()) / 4:.3f} → {sum(새["채"].values()) / 4:.3f}')
+
+# ── 기계가 읽을 판정값 — 사람이 없을 때도 「통과인가」를 값이 답해야 이어붙는다 ──
+낼json = 인자.get('json')
+if isinstance(낼json, str):
+    import json
+    실 = {'최대겹침': max(새['겹침'].values()),
+          '평균겹침': sum(새['겹침'].values()) / 6,
+          '크기비': 새['크기비'],
+          '채도평균': sum(새['채'].values()) / 4,
+          '실루엣화소': 새['실화소'],
+          '쌍': {f'{a}-{b}': round(v, 2) for (a, b), v in 새['겹침'].items()},
+          '다른화소': {f'{a}-{b}': round(v, 2) for (a, b), v in 새['화소'].items()}}
+    os.makedirs(os.path.dirname(os.path.abspath(낼json)), exist_ok=True)
+    with open(낼json, 'w', encoding='utf-8') as f:
+        json.dump(실, f, ensure_ascii=False, indent=2)
+    print(f'\n■ 판정값 → {낼json}')
 
 # ── 지면 — 숫자만으로는 무엇이 이상해졌는지 못 본다(굽기대조.py 의 규율) ──
 낼곳 = 인자.get('낼곳')
