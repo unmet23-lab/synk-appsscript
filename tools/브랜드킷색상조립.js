@@ -10,7 +10,7 @@
  *   · hex·직책 = docs/디자인_토큰.json (⏳퇴역 대기는 **아예 안 싣는다** — 유호 확정 08-20 「아예 빼줘」,
  *     판정은 손 목록이 아니라 직책의 ⏳ 표식 — 브랜드킷조립.py 와 같은 규칙)
  *   · 지면 CSS = tools/lib/loom.js 인쇄 프리셋 (조립 단계에서 품는 ⓑ 경로 — 소개서 6벌과 같은 문법)
- *   · 로고 도형 = docs/발표물/_브랜드킷.md §3 사본(재작도 금지 — 브랜드킷조립.py 의 그 복사본)
+ *   · 로고 = tools/lib/로고정본.js 소비(유호 확정 08-24 «synk 승격» — 사본을 두지 않는다)
  *   · 폰트 = docs/tools/브랜드폰트_임베드.py 가 서브셋 임베드하고 PDF 까지 굽는다(크롬 헤드리스)
  *
  * 등록: 지면방(tools/lib/지면방.js) 「입는다」 등재 · 브랜드렌더린트 등록 ✗ — 색표 문서라
@@ -33,6 +33,7 @@ const { spawnSync } = require('child_process');
 
 const 루트 = path.resolve(__dirname, '..');
 const loom = require(path.join(루트, 'tools', 'lib', 'loom.js'));
+const 로고정본 = require(path.join(루트, 'tools', 'lib', '로고정본.js'));
 const 토큰 = JSON.parse(fs.readFileSync(path.join(루트, 'docs', '디자인_토큰.json'), 'utf8'));
 
 const 킷 = 토큰['색']['킷'];
@@ -111,7 +112,8 @@ const 오늘 = new Date().toISOString().slice(0, 10);
 const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SYNK 브랜드 킷 — 색</title>
-<!-- 파생: docs/디자인_토큰.json (2027 킷 「내일 꾸러미」) · 지면 = Loom 인쇄 프리셋 · 조립 ${오늘} -->
+<!-- 파생: docs/디자인_토큰.json -->
+<!-- 2027 킷 「내일 꾸러미」 · 지면 = Loom 인쇄 프리셋 · 조립 ${오늘} — 파생 주석에 ·로 잇지 않는다(doc-graph 가 조각을 경로로 오독 · 조직계보 08-24 같은 병) -->
 <!-- 조립: node tools/브랜드킷색상조립.js — 손 편집 금지(재조립이 덮는다) · PDF 짝과 한 벌 -->
 <style>
 /*@FONTS@*/
@@ -155,12 +157,8 @@ footer{margin-top:var(--장);font-size:.74rem;}
 <div class="글">
 
 <header class="표지머리">
-  <svg viewBox="-8 -2 296 116" role="img" aria-label="SYNK">
-    <text x="0" y="86" font-family="Inter Tight, system-ui, sans-serif" font-size="72" font-weight="600" letter-spacing="-1" fill="currentColor">syn</text>
-    <path d="M146 46.7 L112 66.35 L146 86 L159 86 L125 66.35 L159 46.7 Z" fill="${이름값['Coral']}"/>
-    <path d="M196 92 L216 40 L228 40 L208 92 Z" fill="currentColor" opacity=".5"/>
-    <path d="M234 92 L254 40 L266 40 L246 92 Z" fill="currentColor" opacity=".5"/>
-  </svg>
+  <!-- 로고 = 실행 정본(tools/lib/로고정본.js · 유호 확정 08-24 synk 승격) — 인쇄 지면이라 라이트 민판(필터 없는 순수 벡터가 300dpi 에서 정직하다) -->
+  ${로고정본.워드마크({ 판: '라이트', 표현: '민', 슬래시: true })}
   <h1>SYNK 브랜드 킷 — 색</h1>
   <p class="메타 흐린">2027 킷 「내일 꾸러미」 · 현행 ${총수}색 · 값 원천 = 디자인_토큰.json · ${오늘}</p>
 </header>
