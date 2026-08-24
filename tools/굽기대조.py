@@ -104,6 +104,11 @@ def 옛판(rel):
 세트들 = sorted([d for d in os.listdir(뿌리) if os.path.isdir(os.path.join(뿌리, d))])
 if 고른세트:
     세트들 = [s for s in 세트들 if s in 고른세트]
+# 🔑 «납작한 방»도 받는다 — 오브공방·퍼프로브·글자공방은 하위 세트 없이 PNG 가 바로 있다.
+#   08-24 에 이 도구로 그 52장을 대조하려다 「세트가 없다」로 막혔다. 이 도구가 요소공방(하위 폴더식)에만
+#   맞춰져 있었던 것이지, 그 방들이 대조할 값이 없어서가 아니다. 세트 이름 '' = 「방 자체가 한 세트」.
+if not 세트들 and any(f.lower().endswith('.png') for f in os.listdir(뿌리)):
+    세트들 = ['']
 if not 세트들:
     print('🔴 대조할 세트가 없다:', 뿌리); raise SystemExit(1)
 
@@ -113,10 +118,13 @@ print('■ 굽기 대조 — 옛 %s vs 지금 · 세트 %d개' % (옛, len(세�
 
 for 세트 in 세트들:
     방길 = os.path.join(뿌리, 세트)
-    장들 = sorted([f for f in os.listdir(방길) if f.lower().endswith('.png')])
+    # ⚠자기 산출은 뺀다 — 납작한 방은 대조판이 «같은 폴더»에 떨어져, 안 빼면 다음 실행이
+    #   자기가 만든 대조판을 한 줄로 또 싣는다(하위 폴더식에서는 원리상 안 생기던 일이다).
+    장들 = sorted([f for f in os.listdir(방길)
+                  if f.lower().endswith('.png') and not f.startswith('_대조_')])
     쌍 = []
     for fn in 장들:
-        rel = '%s/%s/%s' % (방, 세트, fn)
+        rel = '/'.join(x for x in (방, 세트, fn) if x)
         새길 = os.path.join(방길, fn)
         옛길 = 옛판(rel)
         try:
@@ -133,7 +141,7 @@ for 세트 in 세트들:
                 옛im = 옛값 = None
         쌍.append((fn, 옛im, 새im, 옛값, 새값, 옛길))
         if 옛값 and 새값:
-            표.append((세트 + '/' + fn[:-4], 옛값, 새값))
+            표.append(('/'.join(x for x in (세트, fn[:-4]) if x), 옛값, 새값))
 
     if not 쌍:
         continue
@@ -170,10 +178,11 @@ for 세트 in 세트들:
                 os.unlink(옛길)
             except OSError:
                 pass
-    저장 = os.path.join(루트, *낼곳.split('/'), '_대조_%s.png' % 세트)
+    이름표 = 세트 or os.path.basename(뿌리)   # 납작한 방은 방 이름이 곧 세트 이름이다
+    저장 = os.path.join(루트, *낼곳.split('/'), '_대조_%s.png' % 이름표)
     판.save(저장)
     난것.append(저장)
-    print('  %-10s %2d장 → %s' % (세트, len(쌍), os.path.relpath(저장, 루트)))
+    print('  %-12s %2d장 → %s' % (이름표, len(쌍), os.path.relpath(저장, 루트)))
 
 # ── 숫자 — 눈으로 못 가르는 것을 여기가 가른다 ─────────────────────────────
 if 표:
