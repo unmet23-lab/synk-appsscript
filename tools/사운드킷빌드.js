@@ -24,6 +24,48 @@ const TAIL = 0.02;         // 시청 코드의 o.stop(t+dur+.02) 재현
 const FLOOR = 0.0008;      // 시청 코드의 감쇠 바닥
 const PEAK_TARGET = Math.pow(10, -3 / 20); // -3dBFS ≈ 0.708
 
+/* 목소리 음절 — «맑은판» 어휘 (유호 확정 2026-08-25).
+ *
+ * ■ 왜 두 번째 경로인가 — UI 음과 목소리는 문법이 다르다
+ *   위 `단음()`(감쇠 봉투 · 순사인 · 직선 스윕)은 «삑»의 문법이다. 그 수식으로 만든 몽글
+ *   목소리는 유호님께 **「시스템 음」으로 읽혔다**(08-25 실측 — 듣고도 캐릭터 소리인 줄 모르셨다).
+ *   생명체의 문법 셋을 더해야 목소리가 된다:
+ *     ① **떨림**(비브라토 5~5.5Hz) — 고른 음고가 곧 기계다. smoothstep 으로 «스며들게» 넣는다
+ *        (툭 켜지면 기울기가 꺾여 «깨짐»으로 들린다 — 08-25 그 자리다).
+ *     ② **숨**(음절 봉우리 sin^지수) — 차오르고 진다. 즉시 최대인 감쇠 봉투와 반대다.
+ *     ③ **둥근 배음** — 사인 부분음의 합(규칙 ③ 안). 🚫 서브 옥타브(0.5x)는 기본으로 쓰지
+ *        않는다: 165~196Hz 까지 내려가 작은 스피커가 왜곡한다(그게 유호님이 들으신 「깨짐」).
+ *
+ * ■ 🔴 기존 3종은 이 경로를 **안 지난다** — `봉우리` 필드가 있는 음만 여기로 온다.
+ *   그래서 획득·성취·알림 바이트는 이 확장으로 한 톨도 안 흔들린다(`--check` 가 지킨다).
+ */
+function 음절(buf, n) {
+  const 배음 = n.배음 || [[1, 1], [2, 0.28], [3, 0.08]];
+  const 지수 = n.봉우리;
+  const t0 = Math.round((n.시작ms / 1000) * SR);
+  const N = Math.round((n.길이ms / 1000) * SR);
+  const 합계 = 배음.reduce((a, x) => a + x[1], 0);
+  const 위상 = 배음.map(() => 0);
+  const 비율 = n.스윕f ? n.스윕f / n.f : 1;
+  for (let i = 0; i < N && t0 + i < buf.length; i++) {
+    const u = i / N;
+    const 미끄럼 = 1 - (1 - u) * (1 - u);              // ease-out — 앞이 빠르고 끝이 살랑
+    let f = n.f * Math.pow(비율, 미끄럼);
+    if (n.떨림 && u > n.떨림.부터) {
+      let v = (u - n.떨림.부터) / (1 - n.떨림.부터);
+      v = v * v * (3 - 2 * v);                          // smoothstep — 떨림이 스며든다
+      f *= 1 + n.떨림.깊이 * v * Math.sin(2 * Math.PI * n.떨림.속도 * (i / SR));
+    }
+    const 창 = Math.pow(Math.sin(Math.PI * u), 지수);
+    let 합 = 0;
+    for (let k = 0; k < 배음.length; k++) {
+      위상[k] += (2 * Math.PI * f * 배음[k][0]) / SR;
+      합 += 배음[k][1] * Math.sin(위상[k]);
+    }
+    buf[t0 + i] += n.g * 창 * 합 / 합계;
+  }
+}
+
 /* 한 이벤트를 float 버퍼로 렌더 — 시청 페이지 tone()과 같은 수식 */
 function renderEvent(ev) {
   const 음들 = ev.렌더.음;
@@ -36,6 +78,7 @@ function renderEvent(ev) {
   const totalSec = Math.max(...음들.map((n) => n.시작ms + n.길이ms)) / 1000 + TAIL;
   const buf = new Float64Array(Math.round(totalSec * SR));
   for (const n of 음들) {
+    if (n.봉우리) { 음절(buf, n); continue; }   // 목소리 음절 — 위 머리말
     const t0 = Math.round((n.시작ms / 1000) * SR);
     const durS = n.길이ms / 1000;
     const durN = Math.round(durS * SR);
@@ -96,7 +139,10 @@ if (require.main === module) {
         }
       }
     }
-    console.log('[사운드킷] 정합 OK (3파일 · 샘플 ±1 LSB)');
+    /* 🔴 개수를 «세어서» 말한다 — 옛 판은 `3파일`이 문구로 박혀 있어, 킷이 4종이 된 뒤에도
+       「3파일 정합 OK」를 냈다(08-25 실측). 검사는 다 돌고 보고만 틀린 형태라 증상이 없다:
+       숫자를 지어 말하는 자리는 언젠가 「안 잰 것을 잰 것처럼」 보고한다. */
+    console.log(`[사운드킷] 정합 OK (${files.length}파일 · 샘플 ±1 LSB)`);
   } else {
     fs.mkdirSync(OUT_DIR, { recursive: true });
     for (const f of files) {
