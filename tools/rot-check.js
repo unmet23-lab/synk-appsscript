@@ -139,9 +139,13 @@ function 소개서Section() {
       }
     }
 
-    // ④ 철학 판 인용 vs 정본 선언 — doc-graph 의 인용 패턴(vX.Y 단독)과 달라 여기서 잰다
-    const 철 = /SYNK_철학\.md\(v([\d.]+)\)/.exec(s);
-    if (철 && 철학판 && 철[1] !== 철학판) r.철학낡음.push(`${p.이름} 철학 v${철[1]} 인용 → 정본 v${철학판}`);
+    // ④ 철학 판 인용 vs 정본 선언 — doc-graph 의 인용 패턴(vX.Y 단독)과 달라 여기서 잰다.
+    //    footer 는 `</code>(v1.12 · 판단 정본)` 꼴이라 태그 닫힘을 허용한다(첫 판의 사각 — 08-24 실측).
+    if (철학판) {
+      for (const 철 of s.matchAll(/SYNK_철학\.md(?:<\/code>)?\(v([\d.]+)[)\s·]/g)) {
+        if (철[1] !== 철학판) r.철학낡음.push(`${p.이름} 철학 v${철[1]} 인용 → 정본 v${철학판}`);
+      }
+    }
   }
 
   // ⑤ 지도 판 — meta 와 footer 가 갈리면(실측 08-24: v2.3 vs v2.1) 판 자체가 자기모순
@@ -650,8 +654,27 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
 
   if (doc.ok) {
     for (const b of doc.value.broken) red.push({ kind: '깨진 참조', text: `${b.from} → ${b.target}` });
+    /* 낡은 인용은 **같은 정본을 가리키는 4건부터 묶는다**(08-24 · 유호 「발전 가능성이 높은 방향」) —
+     * 철학 파생 27건이 개별 나열로 진짜 빨강을 세 화면 밑으로 밀어냈다. 범주는 red 그대로(08-12
+     * 유호 확정 「파생은 틀린 것을 싣고 있다 → 🔴가 정확한 표시」 — 뭉개는 건 «표시»가 아니라 «나열»이다).
+     * 다른 정본의 «새» 낡음은 3건 이하라 계속 개별로 뜬다 — 접기가 새 신호를 삼키지 않는다. */
+    const 정본별 = new Map();
     for (const s of doc.value.stale) {
-      red.push({ kind: '낡은 인용', text: `${s.from} — ${path.basename(s.target)} 인용 ${s.cited} → 현재 ${s.now}` });
+      const k = s.target;
+      if (!정본별.has(k)) 정본별.set(k, []);
+      정본별.get(k).push(s);
+    }
+    for (const [target, 벌] of 정본별) {
+      if (벌.length <= 3) {
+        for (const s of 벌) red.push({ kind: '낡은 인용', text: `${s.from} — ${path.basename(target)} 인용 ${s.cited} → 현재 ${s.now}` });
+      } else {
+        const 판들 = [...new Set(벌.map((s) => s.cited))].join('·');
+        red.push({
+          kind: '낡은 인용',
+          text: `${path.basename(target)} 파생 ${벌.length}건(인용 ${판들} → 현재 ${벌[0].now} · 접힘)` +
+            ' — 처방: 그 문서를 손댈 때 밀린 판 몫을 같이 반영하고 도장(--stamp)한다 · 전량: node tools/doc-graph.js',
+        });
+      }
     }
     for (const c of doc.value.canonUnknown) {
       warn.push({ kind: '정본 버전 미상', text: `${c.target}(${c.from}이 ${c.cited} 인용)` });
