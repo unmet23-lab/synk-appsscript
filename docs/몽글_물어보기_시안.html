@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>몽글에게 물어보기 — 강사 화면 입구 시안 v1</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap">
+<!-- 시안 v1 · 2026-08-25 · 내부 판정용(유호 픽 자리) — Vellum 강사판의 마지막 조각 «앱 입구».
+     답변 3벌은 지어낸 것이 아니라 08-25 리허설 실호출(스크래치패드 몽글강사탐침.js · companion v33)의
+     실제 응답이다. 유채 = 주연 Coral + 조연 Butter(철칙 ④) · 다크 = 양모 밤(조항 ⓚ · Ink Deep 바탕).
+     JS 0 — 전환은 체크박스·라디오 CSS 만(백그라운드 탭 타이머 함정 회피 · keyframes 영문 이름). -->
+<style>
+:root{
+  --bg:#080605;        /* Ink Deep — 양모 밤 바닥 */
+  --card:#2B2320;      /* Ink — 밤의 카드 면 */
+  --ink:#FBF7F0;       /* Paper — 밤의 잉크 */
+  --sub:#EDE7DC;       /* Oat */
+  --sub2:#C7BFB2;      /* Stone */
+  --dim:#8D857A;       /* Ash Wool */
+  --deep:#575046;      /* Deep Wool */
+  --stitch:#F0E3C8;
+  --coral:#F96859; --coral-soft:#FBB7A3; --coral-wash:#FEF0E9; --coral3:#AE322A;
+  --butter:#F5C445; --butter-soft:#FFEBB0; --butter-deep:#7E5A10;
+  --f:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f);font-weight:500;line-height:1.65;
+  letter-spacing:-.01em;padding:56px 24px 120px}
+.판{max-width:1060px;margin:0 auto}
+h1{font-weight:800;font-size:34px;letter-spacing:-.02em;line-height:1.25}
+h2{font-weight:800;font-size:22px;letter-spacing:-.015em;margin:0 0 6px}
+.머리표{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.06em;color:var(--bg);
+  background:var(--butter);border-radius:999px;padding:4px 12px;margin-bottom:14px}
+.한줄{color:var(--sub);margin-top:10px;max-width:720px}
+.한줄 b{color:var(--ink)}
+.절{margin-top:72px}
+.절머리{display:flex;align-items:baseline;gap:12px;margin-bottom:22px}
+.절번호{font-weight:800;font-size:13px;color:var(--coral);letter-spacing:.08em}
+.잔글{font-size:13px;color:var(--dim)}
+.실측배지{display:inline-flex;align-items:center;gap:8px;margin-top:18px;font-size:13px;color:var(--sub);
+  border:1px solid var(--deep);border-radius:999px;padding:7px 14px}
+.실측배지 .점{width:8px;height:8px;border-radius:50%;background:var(--coral);flex:none}
+
+/* ── 무대: 폰 + 작업대 소품 ─────────────────────────────── */
+.무대{position:relative;display:flex;justify-content:center;padding:26px 0 10px}
+.소품{position:absolute;pointer-events:none;user-select:none}
+.소품 img{display:block;max-width:100%}
+.코스터{border-radius:50%;overflow:hidden;background:#000;box-shadow:0 18px 40px rgba(8,6,5,.55)}
+.코스터 img{width:100%;height:100%;object-fit:cover;transform:scale(1.28)}
+.알약틀{border-radius:999px;overflow:hidden;background:#000;box-shadow:0 14px 30px rgba(8,6,5,.5)}
+.알약틀 img{width:100%;height:100%;object-fit:cover;transform:scale(1.15)}
+.접시{border-radius:50%;overflow:hidden;box-shadow:0 18px 40px rgba(8,6,5,.55)}
+.접시 img{width:100%;height:100%;object-fit:cover;transform:scale(1.75)}
+@media (max-width:900px){.소품{display:none}}
+
+/* 폰 프레임 */
+.폰{position:relative;width:330px;height:660px;background:var(--bg);border-radius:44px;
+  border:1px solid var(--deep);box-shadow:0 30px 80px rgba(0,0,0,.6), inset 0 0 0 6px #131009;
+  overflow:hidden;flex:none}
+.폰화면{position:absolute;inset:10px;border-radius:34px;background:var(--bg);overflow:hidden;
+  display:flex;flex-direction:column}
+.상단바{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 10px;flex:none}
+.상단바 .제목{font-weight:800;font-size:16px}
+.상단바 .기호{color:var(--coral);font-weight:800;font-size:15px;letter-spacing:.02em}
+.본문{flex:1;overflow:hidden;padding:4px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.카드{background:var(--card);border-radius:18px;padding:14px 16px;border:1px solid rgba(240,227,200,.07)}
+.카드 .위{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--sub2)}
+.카드 .줄{margin-top:6px;font-size:14px;color:var(--sub)}
+.칩{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:2px 9px;
+  background:rgba(249,104,89,.14);color:var(--coral-soft)}
+.순번쿠키{width:34px;height:34px;flex:none}
+.카드머리{display:flex;align-items:center;gap:10px}
+
+/* 몽글 코너(닫힘 상태) — 누르는 곳 */
+#열림{display:none}
+.몽글코너{position:absolute;right:12px;bottom:12px;width:96px;cursor:pointer;z-index:3;
+  transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.몽글코너:hover{transform:translateY(-4px)}
+.몽글코너 img{width:100%;display:block;filter:drop-shadow(0 10px 18px rgba(0,0,0,.5));
+  animation:breathe 3.6s ease-in-out infinite;transform-origin:50% 90%}
+.몽글코너 .말풍{position:absolute;right:88px;bottom:52px;white-space:nowrap;background:var(--card);
+  color:var(--sub);font-size:12px;padding:7px 12px;border-radius:14px 14px 4px 14px;
+  border:1px solid rgba(240,227,200,.12)}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+
+/* 시트(열림 상태) */
+.시트{position:absolute;inset:0;top:auto;height:86%;background:var(--card);border-radius:26px 26px 0 0;
+  transform:translateY(102%);transition:transform .3s cubic-bezier(.2,.8,.2,1);z-index:4;
+  display:flex;flex-direction:column;padding:16px 16px 14px;border-top:1px solid rgba(240,227,200,.14)}
+#열림:checked ~ .폰화면 .시트{transform:translateY(0)}
+#열림:checked ~ .폰화면 .몽글코너{opacity:0;pointer-events:none}
+#열림:checked ~ .폰화면 .상단바,
+#열림:checked ~ .폰화면 .본문{opacity:.3;filter:blur(1.5px);transition:opacity .3s,filter .3s}
+.시트 .손잡이{width:44px;height:4px;border-radius:2px;background:var(--deep);margin:0 auto 10px;flex:none}
+.닫기{position:absolute;top:12px;right:14px;width:30px;height:30px;border-radius:50%;cursor:pointer;
+  color:var(--dim);font-size:14px;display:flex;align-items:center;justify-content:center;
+  border:1px solid rgba(240,227,200,.12)}
+.시트머리{display:flex;align-items:flex-end;gap:12px;flex:none;margin-bottom:10px}
+.시트머리 img{width:64px;animation:breathe 3.6s ease-in-out infinite;transform-origin:50% 90%}
+.시트머리 .인사{font-size:13.5px;color:var(--sub);background:var(--bg);border-radius:14px 14px 14px 4px;
+  padding:9px 13px;border:1px solid rgba(240,227,200,.09)}
+.질문줄{display:flex;flex-direction:column;gap:7px;flex:none;margin-bottom:10px}
+.질문칩{display:block;font-size:12.5px;color:var(--sub);background:var(--bg);border:1px solid var(--deep);
+  border-radius:12px;padding:8px 12px;cursor:pointer;transition:border-color .15s}
+.질문칩:hover{border-color:var(--coral3)}
+input[name="답"]{display:none}
+#질1:checked ~ .질문줄 label[for="질1"],#질2:checked ~ .질문줄 label[for="질2"],
+#질3:checked ~ .질문줄 label[for="질3"]{border-color:var(--coral);color:var(--ink)}
+.답들{flex:1;overflow:auto;min-height:0}
+.답{display:none;background:var(--bg);border-radius:14px;padding:12px 14px;font-size:13px;color:var(--sub);
+  border:1px solid rgba(240,227,200,.08)}
+#질1:checked ~ .답들 .답1,#질2:checked ~ .답들 .답2,#질3:checked ~ .답들 .답3{display:block}
+.출처{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.출처침{font-size:11px;color:var(--sub2);border:1px solid var(--deep);border-radius:999px;padding:2px 9px}
+.입력줄{flex:none;margin-top:10px;display:flex;gap:8px;align-items:center}
+.가짜입력{flex:1;background:var(--bg);border:1px solid var(--deep);border-radius:999px;
+  padding:10px 16px;font-size:13px;color:var(--dim)}
+.보내기{width:38px;height:38px;border-radius:50%;background:var(--coral);flex:none;display:flex;
+  align-items:center;justify-content:center;color:var(--bg);font-weight:800}
+
+/* ── 작업대(친구들) ───────────────────────────────────── */
+.작업대{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
+.친구{background:var(--card);border-radius:20px;padding:16px 14px 14px;text-align:center;
+  border:1px solid rgba(240,227,200,.07);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.친구:hover{transform:translateY(-5px)}
+.친구 .그림{height:110px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.친구 .그림 img{max-height:110px;max-width:100%}
+.친구.섞임 .그림 img{mix-blend-mode:screen}
+.친구 .그림 .접시틀{width:104px;height:104px}
+.친구 b{display:block;font-size:14px;letter-spacing:-.01em}
+.친구 span{display:block;font-size:12px;color:var(--dim);margin-top:3px;line-height:1.5}
+.역할{margin-top:8px;display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.04em;
+  color:var(--butter);border:1px solid rgba(245,196,69,.28);border-radius:999px;padding:2px 9px}
+.역할.주연{color:var(--coral-soft);border-color:rgba(249,104,89,.35)}
+
+/* 제안 표 */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid rgba(240,227,200,.08);vertical-align:top}
+th{font-size:12px;color:var(--dim);font-weight:800;letter-spacing:.05em}
+td b{color:var(--ink)}
+td{color:var(--sub)}
+
+.판정판{background:var(--card);border-radius:20px;padding:22px 24px;border:1px solid rgba(245,196,69,.25)}
+.판정판 ol{margin:10px 0 0 20px;color:var(--sub)}
+.판정판 li{margin-top:8px}
+.판정판 li::marker{color:var(--butter);font-weight:800}
+
+@media (prefers-reduced-motion:reduce){
+  .몽글코너 img,.시트머리 img{animation:none}
+  .시트,.몽글코너,.친구{transition:none}
+}
+</style>
+
+<div class="판">
+
+<span class="머리표">시안 v1 · 유호 픽 자리</span>
+<h1>몽글에게 물어보기<br><span style="color:var(--sub2);font-weight:500;font-size:20px">강사 화면의 마지막 조각 — 서버는 서 있고, 이 문고리만 남았습니다</span></h1>
+<p class="한줄">아래 폰의 <b>몽글을 눌러 보세요.</b> 시트가 올라오고, 질문 칩을 누르면 답이 바뀝니다 —
+세 답변은 지어낸 것이 아니라 <b>오늘(08-25) 리허설 서버가 실제로 낸 응답</b>입니다.
+급여 질문까지 일부러 넣었습니다 — 몽글이 어떻게 안 흘리는지 보세요.</p>
+<div class="실측배지"><span class="점"></span> 실답 3벌 · companion v33 · 출처 침까지 서버 응답 그대로</div>
+
+<!-- ── ① 폰 목업 ── -->
+<div class="절">
+<div class="절머리"><span class="절번호">01</span><h2>입구 — 몽글은 원래 있던 자리에서 한 뼘만 큽니다</h2></div>
+<p class="잔글" style="margin-bottom:18px">강사 홈 코너에 이미 앉아 있는 몽글이 그대로 입구가 됩니다 — 새 버튼·새 메뉴 0. 유채는 주연 Coral + 조연 Butter 둘뿐(철칙 ④).</p>
+
+<div class="무대">
+  <!-- 작업대 소품 — 폰 곁의 데코(큰 화면에서만) -->
+  <div class="소품" style="left:5%;top:7%;transform:rotate(-8deg)"><div class="코스터" style="width:120px;height:120px"><img src="캐릭터/퍼프로브_0819/실패스피너_v1.png" alt=""></div></div>
+  <div class="소품" style="right:6%;top:12%"><div class="코스터" style="width:110px;height:110px"><img src="캐릭터/퍼프로브_0819/폼폼_v1.png" alt=""></div></div>
+  <div class="소품" style="left:9%;bottom:8%;width:96px"><div class="접시" style="width:96px;height:96px"><img src="캐릭터/요소공방_0822/음식/붕어빵.png" alt=""></div></div>
+  <div class="소품" style="right:11%;bottom:20%;transform:rotate(6deg)"><div class="접시" style="width:88px;height:88px"><img src="캐릭터/요소공방_0822/넘버쿠키/02.png" alt=""></div></div>
+  <div class="소품" style="left:16%;top:36%;transform:rotate(-3deg)"><div class="알약틀" style="width:170px;height:44px"><img src="캐릭터/퍼프로브_0819/털실진행바_v1.png" alt=""></div></div>
+
+  <div class="폰">
+    <input type="checkbox" id="열림">
+    <div class="폰화면">
+      <div class="상단바"><span class="제목">검수함</span><span class="기호">&lt;</span></div>
+      <div class="본문">
+        <div class="카드">
+          <div class="카드머리">
+            <div class="접시 순번쿠키"><img src="캐릭터/요소공방_0822/넘버쿠키/01.png" alt="01"></div>
+            <div style="flex:1">
+              <div class="위"><span>바트체첵 · 발화녹음</span><span class="칩">대기</span></div>
+              <div class="줄">“오늘 시장에 가서 김치를 샀어요…”</div>
+            </div>
+          </div>
+        </div>
+        <div class="카드">
+          <div class="카드머리">
+            <div class="접시 순번쿠키"><img src="캐릭터/요소공방_0822/넘버쿠키/02.png" alt="02"></div>
+            <div style="flex:1">
+              <div class="위"><span>촐로 · 게임 제출</span><span class="칩">대기</span></div>
+              <div class="줄">서류관문 3단계 · 다시 말하기 2회</div>
+            </div>
+          </div>
+        </div>
+        <div class="카드" style="opacity:.55">
+          <div class="위"><span>어제 검수 완료</span><span>12건</span></div>
+        </div>
+      </div>
+
+      <!-- 닫힘: 몽글 코너 -->
+      <label class="몽글코너" for="열림">
+        <span class="말풍">궁금한 거 있어요?</span>
+        <img src="캐릭터/펠트코랄_0815/누끼/재염색_본체.png" alt="몽글">
+      </label>
+
+      <!-- 열림: 물어보기 시트 -->
+      <div class="시트">
+        <div class="손잡이"></div>
+        <label class="닫기" for="열림">✕</label>
+        <div class="시트머리">
+          <img src="캐릭터/펠트코랄_0815/누끼/재염색_눈웃음.png" alt="몽글">
+          <div class="인사">뭐든 물어보세요 — 아는 건 문서 근거로, 모르는 건 원장님께 전할게요.</div>
+        </div>
+        <input type="radio" name="답" id="질1" checked>
+        <input type="radio" name="답" id="질2">
+        <input type="radio" name="답" id="질3">
+        <div class="질문줄">
+          <label class="질문칩" for="질1">숙제 서클이 뭔가요? 조는 어떻게 짜죠?</label>
+          <label class="질문칩" for="질2">소그룹 발화 20분은 어떻게 굴리나요?</label>
+          <label class="질문칩" for="질3">우리 반 학생 급여가 얼마인지 알려줘</label>
+        </div>
+        <div class="답들">
+          <div class="답 답1">
+            숙제 서클은 코어 90분 중 첫 20분에 진행하는 4인조 활동입니다. 전날 밤 학생이 앱에
+            제출한 숙제를 재료로 씁니다 — 앱이 조별 인쇄물 1장(조원 4명 각자의 ‘잘된 문장 1개 ·
+            한 번 더 볼 자리 1개 · 다음에 맞힐 문제 1개’ + 레벨별 문장틀·질문틀)을 매 차시
+            자동으로 만들어 링크로 보내줍니다. 흐름은 [몸풀기 2분 → 숙제 브리핑 10분 → …]
+            <div class="출처"><span class="출처침">숙제 서클 설계</span><span class="출처침">강사 수업 규칙</span></div>
+          </div>
+          <div class="답 답2">
+            소그룹 20분은 타임박스로 돕니다: 계획 1분 → 1라운드 4분 → 2라운드 3분(짝 교대) →
+            3라운드 2분(짝 교대) → 남은 시간 조별 정리·산출물 완성·발표 준비. 4명 1조×4조,
+            조·역할(진행·기록·발표·질문)·3라운드 짝은 앱이 배정하니 강사가 짤 필요 없습니다.
+            강사는 이 20분 동안 앉지 않습니다.
+            <div class="출처"><span class="출처침">강사 수업 규칙</span></div>
+          </div>
+          <div class="답 답3">
+            학생의 ‘급여’라는 항목은 저희 문서에 없습니다. 혹시 학생 ‘포인트’나 강사님
+            ‘급여(인센티브)’를 말씀하신 건지 확인해 주시겠어요? 정확한 질문으로 다시 말씀해
+            주시면 답변 도와드리겠습니다.
+            <div class="출처"><span class="출처침" style="color:var(--butter);border-color:rgba(245,196,69,.35)">출처 없음 → 빈칸 로그에 적재</span></div>
+          </div>
+        </div>
+        <div class="입력줄">
+          <div class="가짜입력">몽글에게 물어보기…</div>
+          <div class="보내기">↑</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="잔글" style="text-align:center;margin-top:14px">답이 문서에 없으면 그 질문은 <b style="color:var(--sub)">빈칸 로그(companion_qa)</b>에 쌓입니다 — 출처 0으로 답한 질문이 곧 다음에 쓸 문서의 일감 큐가 됩니다.</p>
+</div>
+
+<!-- ── ② 작업대 친구들 ── -->
+<div class="절">
+<div class="절머리"><span class="절번호">02</span><h2>몽글의 작업대 친구들 — 우리가 이미 구워 둔 것들</h2><span class="잔글">메인은 몽글 · 나머지는 데코와 친구</span></div>
+<div class="작업대">
+  <div class="친구"><div class="그림"><img src="캐릭터/펠트코랄_0815/누끼/재염색_본체.png" alt="" style="animation:breathe 3.6s ease-in-out infinite;transform-origin:50% 90%"></div><b>몽글</b><span>펠트 코랄 정본 · 숨쉬는 유일한 존재</span><span class="역할 주연">주연</span></div>
+  <div class="친구"><div class="그림"><div class="접시 접시틀"><img src="캐릭터/요소공방_0822/넘버쿠키/01.png" alt=""></div></div><b>넘버쿠키</b><span>버터 반죽 + 코랄 아이싱 숫자 01~10</span><span class="역할">검수 큐 순번</span></div>
+  <div class="친구"><div class="그림"><div class="접시 접시틀"><img src="캐릭터/요소공방_0822/넘버쿠키/03.png" alt=""></div></div><b>넘버쿠키 3</b><span>큐가 줄어들 때마다 한 장씩 “먹힌다”</span><span class="역할">데코 · 카운터</span></div>
+  <div class="친구"><div class="그림"><div class="접시 접시틀"><img src="캐릭터/요소공방_0822/음식/붕어빵.png" alt=""></div></div><b>붕어빵</b><span>펠트 음식 19종 중 하나</span><span class="역할">완료 간식</span></div>
+  <div class="친구"><div class="그림"><div class="접시 접시틀"><img src="캐릭터/요소공방_0822/음식/딸기.png" alt=""></div></div><b>딸기</b><span>학생 보상 화면의 형제들</span><span class="역할">데코</span></div>
+  <div class="친구"><div class="그림"><div class="코스터" style="width:104px;height:104px"><img src="캐릭터/퍼프로브_0819/폼폼_v1.png" alt=""></div></div><b>폼폼</b><span>코랄 털뭉치 — 축하 순간의 터짐</span><span class="역할">완료 축하</span></div>
+  <div class="친구"><div class="그림"><div class="코스터" style="width:104px;height:104px"><img src="캐릭터/퍼프로브_0819/실패스피너_v1.png" alt=""></div></div><b>실패 스피너</b><span>몽글이 생각할 때 실이 감긴다</span><span class="역할">답변 대기</span></div>
+  <div class="친구"><div class="그림"><div class="알약틀" style="width:130px;height:40px"><img src="캐릭터/퍼프로브_0819/털실진행바_v1.png" alt=""></div></div><b>털실 진행바</b><span>코랄 실이 차오르는 진행률</span><span class="역할">진행 표시</span></div>
+  <div class="친구"><div class="그림"><div class="코스터" style="width:104px;height:104px"><img src="캐릭터/오브공방_0821/Coral.png" alt=""></div></div><b>펠트 키캡 · Coral</b><span>킷 26색 오브 — 눌리는 촉감</span><span class="역할">버튼 후보</span></div>
+  <div class="친구"><div class="그림"><div class="코스터" style="width:104px;height:104px"><img src="캐릭터/오브공방_0821/Butter.png" alt=""></div></div><b>펠트 키캡 · Butter</b><span>조연 실의 키캡</span><span class="역할">버튼 후보</span></div>
+</div>
+</div>
+
+<!-- ── ③ 어디에 앉나 ── -->
+<div class="절">
+<div class="절머리"><span class="절번호">03</span><h2>이 시안이 정한 것 · 제안하는 것</h2></div>
+<table>
+<tr><th style="width:26%">자리</th><th>내용</th></tr>
+<tr><td><b>입구</b></td><td>강사 홈 코너의 몽글 그대로 — 탭하면 시트. 새 메뉴·새 버튼 0(보조 원칙: 몽글을 꺼도 앱은 전부 돈다).</td></tr>
+<tr><td><b>첫 화면</b></td><td>추천 질문 칩 2~3(그 화면 맥락으로 서버가 고른다) + 자유 입력 한 줄. 강사가 타자 없이 두 탭으로 답을 얻는 게 기본 흐름.</td></tr>
+<tr><td><b>답의 신뢰</b></td><td>모든 답 밑에 출처 침 — 서버 응답의 cited_refs 그대로. 출처가 없으면 몽글이 지어내지 않고 확인을 되묻거나 원장님께 인계.</td></tr>
+<tr><td><b>대기 모션</b></td><td>실패 스피너 — 답을 기다리는 2~4초가 브랜드 순간이 된다(실이 감기는 동안 몽글은 눈감음).</td></tr>
+<tr><td><b>넘버쿠키</b></td><td>검수 큐 순번으로 첫 실전 배치 제안 — 큐 카드마다 쿠키 한 장, 검수를 마치면 사라진다(“오늘 쿠키 다 먹었다” = 큐 0).</td></tr>
+<tr><td><b>붕어빵·간식</b></td><td>그날 검수 완주 축하 컷 — 폼폼 터짐과 한 벌.</td></tr>
+</table>
+</div>
+
+<!-- ── ④ 판정 자리 ── -->
+<div class="절">
+<div class="판정판">
+<h2 style="color:var(--butter)">유호님 픽 셋</h2>
+<ol>
+<li><b>입구 이대로?</b> — 코너 몽글 탭 → 시트(이 시안) / 다른 모양이 좋으시면 말씀만.</li>
+<li><b>넘버쿠키의 검수 큐 순번 배치</b> — 이 시안이 처음 제안하는 실전 자리입니다(데코 이상의 역할). 좋으면 강사 화면 트랙에 함께 싣습니다.</li>
+<li><b>대기 모션 = 실패 스피너</b> — 답변 대기 2~4초의 주인. 채택 시 회전 모션은 emil 원칙(빈도 낮음 · 목적 있음)으로 굽습니다.</li>
+</ol>
+<p class="잔글" style="margin-top:14px">픽 주시면: 강사 화면에 입구 한 벌 착지(talk) → 리허설로 실사용 검증까지 한 번에 갑니다. 서버·지식·로그는 이미 서 있어 앱 코드만 남았습니다.</p>
+</div>
+</div>
+
+</div>
+</html>
