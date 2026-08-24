@@ -42,7 +42,11 @@ for (let i = 2; i < process.argv.length; i += 1) {
 }
 const 너비 = String(인자['너비'] || '1800');
 const 견본 = String(인자['샘플'] || '256');
-const 밖 = path.join(루트, 'docs', '캐릭터', 'NPC공방_0824');
+/* --밖 은 «검증 판»을 정본 폴더에서 떼어 놓으려고 있다 — 900px 시험 4장이 1800px 정본과 한 폴더에
+ * 섞이면 다음 사람이 「왜 넷만 작지?」로 읽는다(세트가 갈리는 그 병의 작은 얼굴). */
+const 밖 = 인자['밖'] && 인자['밖'] !== true
+  ? path.resolve(루트, String(인자['밖']))
+  : path.join(루트, 'docs', '캐릭터', 'NPC공방_0824');
 
 /** 블렌더 찾기 — 오브굽기.js·요소전량굽기.js 와 같은 순서. */
 function 블렌더() {
