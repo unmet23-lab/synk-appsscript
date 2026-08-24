@@ -97,6 +97,9 @@ function defs() {
   ${펠트필터('sl-felt-paper', 색['Paper'], 색['Stone'])}
   ${펠트필터('sl-felt-ink', 색['Deep Wool'], 색['Ink Deep'])}
   ${펠트필터('sl-felt-coral', 색['Coral Soft'], 색['Coral 3'])}
+  ${펠트필터('sl-felt-butter', 색['Butter Soft'], 색['Butter Deep'])}
+  ${펠트필터('sl-felt-meadow', 색['Meadow Soft'], 색['Meadow Deep'])}
+  ${펠트필터('sl-felt-pop', 색['Pop Soft'], 색['Pop Deep'])}
   <filter id="sl-cut" x="-14%" y="-18%" width="128%" height="136%">
     <feTurbulence type="fractalNoise" baseFrequency="0.16" numOctaves="3" seed="7" result="w"/>
     <feDisplacementMap in="SourceGraphic" in2="w" scale="2.2"/>
@@ -216,10 +219,10 @@ const 알록실 = {
  * 사라진다 — 그래서 표가 몸마다 다르다). 밝은 몸(버터·메도우) 위 Stitch 는 명도가 가까워
  * 흐리므로 기본 실을 Paper 로 바꾼다. 알록 공통 규율(110px↑ 전용 · 상시 금지)이 그대로 걸린다. */
 const 대안몸들 = () => ({
-  코랄: { 몸색: 색['Coral'], 그늘색: 색['Coral 3'], 보풀: 색['Coral Soft'], 눌림: 색['Coral Rim'] },
-  버터: { 몸색: 색['Butter'], 그늘색: 색['Butter Deep'], 보풀: 색['Butter Soft'], 눌림: 색['Butter Deep'] },
-  메도우: { 몸색: 색['Meadow'], 그늘색: 색['Meadow Deep'], 보풀: 색['Meadow Soft'], 눌림: 색['Meadow Deep'] },
-  팝: { 몸색: 색['Pop'], 그늘색: 색['Pop Deep'], 보풀: 색['Pop Soft'], 눌림: 색['Pop Deep'] },
+  코랄: { 몸색: 색['Coral'], 그늘색: 색['Coral 3'], 필터: '#sl-felt-coral', 눌림: 색['Coral Rim'] },
+  버터: { 몸색: 색['Butter'], 그늘색: 색['Butter Deep'], 필터: '#sl-felt-butter', 눌림: 색['Butter Deep'] },
+  메도우: { 몸색: 색['Meadow'], 그늘색: 색['Meadow Deep'], 필터: '#sl-felt-meadow', 눌림: 색['Meadow Deep'] },
+  팝: { 몸색: 색['Pop'], 그늘색: 색['Pop Deep'], 필터: '#sl-felt-pop', 눌림: 색['Pop Deep'] },
 });
 const 대안실들 = () => ({
   소프트: {
@@ -246,16 +249,12 @@ function 알록대안({ 신호 = 'k', 몸 = '코랄', 실 = '소프트', 클래�
   const 실들 = 대안실들()[실][몸];
   if (!m || !실들) throw new Error(`알록대안: 모르는 몸/실 — ${몸}/${실}`);
   const 참조 = 신호 === '꺾쇠' ? '#sl-chev' : '#sl-k';
-  const 필터id = 몸 === '코랄' ? '#sl-felt-coral' : '#sl-felt-alt';
-  const defs그대로 = defs();
-  const defs빌드 = 몸 === '코랄' ? defs그대로
-    : defs그대로.replace('</defs>', `${펠트필터('sl-felt-alt', m.보풀, m.그늘색)}</defs>`);
   const syn = 글자펠트('#sl-syn', 색['Paper'], 색['Stone'], '#sl-felt-paper', { 심: true });
-  const 신호몸 = 알록글자(참조, 실들, { 몸스펙: { 몸색: m.몸색, 그늘색: m.그늘색, 필터: 필터id, 눌림: m.눌림, 심: false } });
+  const 신호몸 = 알록글자(참조, 실들, { 몸스펙: { 몸색: m.몸색, 그늘색: m.그늘색, 필터: m.필터, 눌림: m.눌림, 심: false } });
   const cls = 클래스 ? ` class="${클래스}"` : '';
   const 밀기 = 신호끝(신호) - 153;
   return `<svg${cls} viewBox="-14 -8 ${181 + 밀기} 128" role="img" aria-label="SYNK">
-${defs빌드}
+${defs()}
   <g>${syn}${신호몸}</g>
 </svg>`;
 }
@@ -286,18 +285,29 @@ ${defs빌드}
  * ■ 신호 실땀 = 기호급(유호 확정 08-25) — syn 은 «보통»으로 조용히, 신호는 한 땀 한 땀
  *   보이게. 둘 다 올리면 와펜 전체가 시끄러워진다(눈 판정) — 이 비대칭이 의도다.
  */
+/* 신호 유채색 넷 — 코랄이 기본이고 나머지 셋은 «자리를 골라 쓰는» 갈래다(유호 08-25).
+ * 램프(보풀·그늘)는 각 색의 Soft/Deep 을 쓴다 — 몸만 갈고 결을 코랄 램프로 두면 색이 탁해진다. */
+const 신호색들 = () => ({
+  코랄: { 몸: 색['Coral'], 그늘: 색['Coral 3'], 필터: '#sl-felt-coral' },
+  버터: { 몸: 색['Butter'], 그늘: 색['Butter Deep'], 필터: '#sl-felt-butter' },
+  메도우: { 몸: 색['Meadow'], 그늘: 색['Meadow Deep'], 필터: '#sl-felt-meadow' },
+  팝: { 몸: 색['Pop'], 그늘: 색['Pop Deep'], 필터: '#sl-felt-pop' },
+});
+
 function 워드마크안쪽({ 판 = '다크', 신호 = 'k', 색갈래 = '코랄' } = {}) {
   const 라 = 판 === '라이트';
   const syn = 라
     ? 글자펠트('#sl-syn', 색['Ink'], 색['Ink Deep'], '#sl-felt-ink', { 땀보조색: 색['Deep Wool'] })
     : 글자펠트('#sl-syn', 색['Paper'], 색['Stone'], '#sl-felt-paper', { 심: true });
   const 참조 = 신호 === '꺾쇠' ? '#sl-chev' : '#sl-k';
+  const 유채 = 신호색들()[색갈래];
+  if (!유채 && 색갈래 !== '단색' && 색갈래 !== '알록') throw new Error(`워드마크안쪽: 모르는 색갈래 — ${색갈래}`);
   const 몸 = 색갈래 === '알록'
     ? 알록글자(참조, 알록실[신호 === '꺾쇠' ? '꺾쇠' : 'k'], { 라이트: 라 })
     : 색갈래 === '단색'
       ? (라 ? 글자펠트(참조, 색['Ink'], 색['Ink Deep'], '#sl-felt-ink', { 땀보조색: 색['Deep Wool'], 땀세기: '기호급' })
             : 글자펠트(참조, 색['Paper'], 색['Stone'], '#sl-felt-paper', { 심: true, 땀세기: '기호급' }))
-      : 글자펠트(참조, 색['Coral'], 색['Coral 3'], '#sl-felt-coral', { 땀세기: '기호급' });
+      : 글자펠트(참조, 유채.몸, 유채.그늘, 유채.필터, { 땀세기: '기호급' });
   return syn + 몸;
 }
 
@@ -323,7 +333,7 @@ function 워드마크({ 판 = '다크', 표현 = '펠트', 신호 = 'k', 색갈�
   const 라벨 = 'SYNK';                          // 기호 락업도 읽히는 이름은 브랜드명이다
   const 밀기 = 신호끝(신호) - 153;              // 꺾쇠면 13 만큼 뒤가 밀린다
   /* 민판엔 실땀이 없다 — 알록의 정체는 실땀이므로 민판 알록 = 단색과 같다(하얀/잉크 몸만 남는다) */
-  const 신호색 = 색갈래 === '코랄' ? 색['Coral'] : 잉크;
+  const 신호색 = (신호색들()[색갈래] || {}).몸 || 잉크;
   if (표현 === '민') {
     const vb = 슬래시 ? `-8 -2 ${284 + 밀기} 116` : `-8 -2 ${169 + 밀기} 116`;
     return `<svg${cls} viewBox="${vb}" role="img" aria-label="${라벨}">
