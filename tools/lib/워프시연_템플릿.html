@@ -90,6 +90,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   <h1>살아 움직이는 몽글</h1>
   <p class="lede">3D로 다시 만들지 않았습니다. <b>정본 사진 그대로</b>를 격자로 나눠 정점만 움직입니다 — 픽셀은 한 점도 새로 그리지 않았습니다.</p>
   <p class="lede">그래서 <b>재질이 100% 사진</b>입니다. 펠트 털도, 색도, 실땀도 전부 원본 그대로입니다.</p>
+  <p class="lede">그 위에 <b>깊이</b>를 얹었습니다. 몽글은 회전체라 사진 실루엣에서 z를 <b>역산</b>할 수 있습니다 — 지어낸 값이 아니라 형태에서 따라 나온 값입니다. 시점이 움직이면 앞뒤가 다르게 밀리고, <b>눈이 몸보다 먼저</b> 움직입니다.</p>
 
   <div class="board">
     <div class="stage" id="stage">
@@ -114,6 +115,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         <button data-act="sleep">잠들기</button>
         <button data-act="wake">기지개</button>
         <button class="wide" data-act="reset">평상으로</button>
+        <button class="wide" id="dimBtn" data-act="dim">입체 끄기 (지금 4D)</button>
       </div>
 
       <div class="legend">
@@ -122,6 +124,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
           <dt>사건</dt><dd>크고 짧게 + 감쇠 — 일정 진폭 반복이 «기계»로 읽히는 진범</dd>
           <dt>바닥</dt><dd>아래는 고정, 위로 갈수록 크게 — 천 인형이 바닥에 앉은 결</dd>
           <dt>그림자</dt><dd>몸이 눌리면 넓어진다 — 무게가 여기서 온다</dd>
+          <dt>깊이</dt><dd>알파 실루엣에서 z 역산(회전체) · 눈은 어두운 픽셀로 찾아 앞으로</dd>
+          <dt>시점</dt><dd>손이 지나가면 따라오고 · 폰은 기울임(자이로) · 아무도 없으면 아주 느린 원운동</dd>
+          <dt>빛</dt><dd>시점이 움직일 때만 변한다 — 정지하면 곱이 1, 즉 사진 그대로</dd>
         </dl>
       </div>
     </div>
@@ -133,6 +138,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <li><b>재질 문제가 통째로 사라집니다.</b> 3D로 옮기면 매번 「고무·왁스」로 읽혔는데, 사진을 그대로 쓰면 그 병이 원리적으로 안 생깁니다.</li>
       <li><b>표정은 컷 교체입니다.</b> 눈감음·눈웃음이 이미 정본에 있어 그대로 씁니다 — 새로 굽지 않습니다.</li>
       <li><b>실시간입니다.</b> 미리 구운 영상이 아니라 그 자리에서 반응합니다. 앱에서 학생 행동에 즉시 응답할 수 있습니다.</li>
+      <li><b>깊이는 지어낸 게 아닙니다.</b> 회전체라는 형태에서 역산한 값이라, 3D 모델을 새로 짓는 것과 달리 «틀릴 여지»가 없습니다. 오른쪽 버튼으로 <b>입체를 껐다 켜</b> 보시면 차이가 바로 보입니다.</li>
       <li><b>까몽·마린도 같은 방식</b>으로 붙습니다. 컷만 있으면 됩니다.</li>
     </ul>
     <p class="warn"><b>정직하게 — 이 통로의 한계</b> : 옆·뒤로 크게 도는 것은 이 방식으로 안 됩니다(정면 ±40° 안). 홍조처럼 «색을 덧칠하는» 어휘도 뺐습니다 — 사진을 건드리지 않는 것이 이 통로의 값이라서요. 360°가 꼭 필요한 자리가 생기면 그때만 다른 통로를 꺼냅니다.</p>
@@ -152,16 +158,20 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ── 셰이더 ─────────────────────────────────────────────── */
-  const vs = `attribute vec2 aPos; attribute vec2 aUV; varying vec2 vUV;
-    void main(){ vUV = aUV; gl_Position = vec4(aPos, 0.0, 1.0); }`;
-  const fs = `precision mediump float; varying vec2 vUV; uniform sampler2D uTex; uniform float uAlpha;
-    void main(){ vec4 c = texture2D(uTex, vUV); gl_FragColor = vec4(c.rgb, c.a * uAlpha); }`;
+  /* aShade = 정점의 «빛» — 깊이에서 뽑은 법선과 광원의 내적. 사진에 곱하기만 한다(색을 안 바꾼다). */
+  const vs = `attribute vec2 aPos; attribute vec2 aUV; attribute float aShade;
+    varying vec2 vUV; varying float vShade;
+    void main(){ vUV = aUV; vShade = aShade; gl_Position = vec4(aPos, 0.0, 1.0); }`;
+  const fs = `precision mediump float; varying vec2 vUV; varying float vShade;
+    uniform sampler2D uTex; uniform float uAlpha;
+    void main(){ vec4 c = texture2D(uTex, vUV); gl_FragColor = vec4(c.rgb * vShade, c.a * uAlpha); }`;
   const sh = (t, src) => { const s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s); return s; };
   const prog = gl.createProgram();
   gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs));
   gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs));
   gl.linkProgram(prog); gl.useProgram(prog);
   const aPos = gl.getAttribLocation(prog, 'aPos'), aUV = gl.getAttribLocation(prog, 'aUV');
+  const aShade = gl.getAttribLocation(prog, 'aShade');
   const uAlpha = gl.getUniformLocation(prog, 'uAlpha');
 
   /* 격자 — uv 와 인덱스는 고정, 위치만 매 프레임 다시 쓴다 */
@@ -171,8 +181,14 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     const a = j * (N + 1) + i, b = a + 1, c = a + N + 1, d = c + 1;
     idx.push(a, b, c, b, d, c);
   }
-  const posArr = new Float32Array((N + 1) * (N + 1) * 2);
-  const posBuf = gl.createBuffer(), uvBuf = gl.createBuffer(), idxBuf = gl.createBuffer();
+  const 정점수 = (N + 1) * (N + 1);
+  const posArr = new Float32Array(정점수 * 2);
+  const zArr = new Float32Array(정점수);      // 깊이 — 사진 알파에서 역산
+  const gxArr = new Float32Array(정점수);     // 깊이 기울기 x
+  const gyArr = new Float32Array(정점수);     // 깊이 기울기 y
+  const shArr = new Float32Array(정점수);     // 정점 빛
+  let 깊이있음 = false;
+  const posBuf = gl.createBuffer(), uvBuf = gl.createBuffer(), idxBuf = gl.createBuffer(), shBuf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvArr), gl.STATIC_DRAW);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
@@ -192,17 +208,57 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       tex[k] = t; ready++;
-      if (ready >= 3) 그리기(0);   // 첫 정지 프레임 — 숨은 탭에서도 빈 화면이 안 되게
+      if (k === '본체') 깊이재기(im);          // 🔑 깊이는 «본체» 한 장에서만 뽑는다(표정이 바뀌어도 몸은 같다)
       if (ready >= 3) 그리기(0);   // 첫 정지 프레임 — 숨은 탭에서도 빈 화면이 안 되게
     };
     im.src = src;
+  }
+
+  /* ── 깊이 — 사진 알파에서 «역산»한다 ──────────────────────────
+     몽글 몸은 회전체(돔)라, 어느 행이든 가로 반폭 hw 를 알면 그 행의 단면은 반지름 hw 인 원이다.
+     ⇒ z = √(1 − (dx/hw)²). 지어내는 게 아니라 형태에서 «따라 나오는» 값이다.
+     눈은 검은 유리 구슬이라 어두운 픽셀로 찾아 앞으로 끌어낸다 — 고개를 돌릴 때 눈이 먼저 움직인다. */
+  function 깊이재기(img) {
+    const P = 256, c = document.createElement('canvas');
+    c.width = c.height = P;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0, P, P);
+    const d = ctx.getImageData(0, 0, P, P).data;
+    let k = 0;
+    for (let j = 0; j <= N; j++) {
+      const py = Math.min(P - 1, Math.round((1 - j / N) * (P - 1)));   // v=0 이 바닥
+      let L = -1, R = -1;
+      for (let x = 0; x < P; x++) if (d[(py * P + x) * 4 + 3] > 60) { if (L < 0) L = x; R = x; }
+      const cx = (L + R) / 2, hw = Math.max(1, (R - L) / 2);
+      for (let i = 0; i <= N; i++) {
+        const px = Math.min(P - 1, Math.round((i / N) * (P - 1)));
+        const o = (py * P + px) * 4;
+        let z = 0;
+        if (L >= 0 && d[o + 3] > 60) {
+          const s = (px - cx) / hw;
+          z = Math.sqrt(Math.max(0, 1 - s * s));
+          const lum = (d[o] + d[o + 1] + d[o + 2]) / 3;
+          if (lum < 70) z += 0.30;                                     // 눈 = 몸보다 앞
+        }
+        zArr[k++] = z;
+      }
+    }
+    // 법선 대신 «기울기»를 미리 잰다 — 시점이 움직일 때만 음영이 변하게 쓴다(정지하면 사진 그대로).
+    for (let j = 0; j <= N; j++) for (let i = 0; i <= N; i++) {
+      const a = j * (N + 1) + i;
+      const zx = (zArr[j * (N + 1) + Math.min(N, i + 1)] - zArr[j * (N + 1) + Math.max(0, i - 1)]) * 0.5;
+      const zy = (zArr[Math.min(N, j + 1) * (N + 1) + i] - zArr[Math.max(0, j - 1) * (N + 1) + i]) * 0.5;
+      gxArr[a] = zx; gyArr[a] = zy;
+    }
+    깊이있음 = true;
   }
 
   /* ── 상태 — «생명감 상태 기계에 rAF 금지»(감각층 v2 실측). 상태는 타이머, 그림은 rAF. ── */
   const S = {
     컷: '본체', 눈감은동안: 0,
     숨: 0, 기울임: 0, 목표기울임: 0, 눌림: 0, 되튐속도: 0, 살랑: 0, 갸웃: 0, 도리: 0,
-    잠: 0, 커짐: 0, 마지막접촉: 0, 연타: [], 라벨: '평상'
+    잠: 0, 커짐: 0, 마지막접촉: 0, 연타: [], 라벨: '평상',
+    입체: 1, 시점x: 0, 시점y: 0, 목표시점x: 0, 목표시점y: 0, 자동시점: 1
   };
   const now = () => performance.now();
   S.마지막접촉 = now();
@@ -226,10 +282,17 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     sleep:    () => { S.잠 = 1; S.컷 = '눈감음'; S.눈감은동안 = 1e9; 라벨('잠'); },
     wake:     () => 깨움(),
     reset:    () => { S.잠 = 0; S.살랑 = 0; S.갸웃 = 0; S.도리 = 0; S.눌림 = 0; S.되튐속도 = 0;
-                      S.목표기울임 = 0; S.커짐 = 0; S.컷 = '본체'; S.눈감은동안 = 0; 라벨('평상'); }
+                      S.목표기울임 = 0; S.커짐 = 0; S.컷 = '본체'; S.눈감은동안 = 0; 라벨('평상'); },
+    dim:      () => { S.입체 = S.입체 ? 0 : 1;
+                      document.getElementById('dimBtn').textContent =
+                        S.입체 ? '입체 끄기 (지금 4D)' : '입체 켜기 (지금 평면)';
+                      라벨(S.입체 ? '입체 켬' : '평면'); }
   };
   document.querySelectorAll('button[data-act]').forEach(b =>
-    b.addEventListener('click', () => { 만짐(); 동작[b.dataset.act](); }));
+    b.addEventListener('click', () => {
+      만짐(); 동작[b.dataset.act]();
+      그리기((now() - t0) / 1000);   // 숨은 탭에서도 누른 결과가 화면에 남게(rAF 가 안 도는 자리)
+    }));
 
   /* 직접 만지기 */
   let 누름 = false;
@@ -238,11 +301,30 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     const cx = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
     return (cx / r.width) * 2 - 1;
   };
+  const 좌표세로 = (e) => {
+    const r = stageEl.getBoundingClientRect();
+    const cy = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+    return 1 - (cy / r.height) * 2;
+  };
+  /* 폰 기울임 — 「거기 있다」는 느낌의 본체. 권한이 필요한 기기(iOS 13+)는 조용히 건너뛴다. */
+  addEventListener('deviceorientation', (e) => {
+    if (e.gamma == null && e.beta == null) return;
+    S.자동시점 = 0;
+    S.목표시점x = Math.max(-1, Math.min(1, (e.gamma || 0) / 32));
+    S.목표시점y = Math.max(-1, Math.min(1, ((e.beta || 0) - 45) / 32));
+  });
   const 시작 = (e) => { 누름 = true; 만짐(); S.눌림 = Math.max(S.눌림, 0.26); S.목표기울임 = 좌표(e) * 0.16;
     const t = now(); S.연타 = S.연타.filter(x => t - x < 1600); S.연타.push(t);
     if (S.연타.length >= 3) { S.도리 = 1; S.연타 = []; 라벨('간지럼'); } else 라벨('톡');
     if (Math.random() < .35) S.갸웃 = 0.12; };
-  const 이동 = (e) => { if (!누름) return; S.목표기울임 = 좌표(e) * 0.20; 만짐(); };
+  /* 손이 «닿으면» 몸이 기울고, 손이 «지나가면» 시점이 따라온다 — 둘을 가른다.
+     시점은 만짐으로 안 친다(지나가는 손에 잠이 깨면 방치 어휘가 죽는다). */
+  const 이동 = (e) => {
+    const p = 좌표(e);
+    if (누름) { S.목표기울임 = p * 0.20; 만짐(); return; }
+    S.자동시점 = 0; S.목표시점x = p; S.목표시점y = 좌표세로(e);
+  };
+  stageEl.addEventListener('pointerleave', () => { S.자동시점 = 1; });
   const 끝 = () => { if (!누름) return; 누름 = false; S.목표기울임 = 0; S.되튐속도 = 0.03; 라벨('평상'); };
   stageEl.addEventListener('pointerdown', 시작);
   stageEl.addEventListener('pointermove', 이동);
@@ -274,7 +356,19 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     const 각 = S.갸웃 * Math.sin(t * 9) + 도리각;
     const 커짐 = 1 + S.커짐;
 
-    let k = 0;
+    /* ── 4D 층 — 깊이 · 시점 · 빛 ────────────────────────────
+       아무도 안 건드리면 아주 느린 원운동(자동시점)이 돈다 — «거기 있다»는 느낌은 정지가 아니라
+       미세한 시차에서 온다. 손이 오면 그쪽이 이긴다. */
+    if (S.자동시점 && !reduce) {
+      S.목표시점x = Math.cos(t / 11 * Math.PI * 2) * 0.30;
+      S.목표시점y = Math.sin(t / 14 * Math.PI * 2) * 0.18;
+    }
+    S.시점x += (S.목표시점x - S.시점x) * 0.06;
+    S.시점y += (S.목표시점y - S.시점y) * 0.06;
+    const 시차 = 0.055 * S.입체;           // 패럴랙스 세기 — 넘기면 사진이 «고무»로 읽힌다
+    const 빛세기 = 0.42 * S.입체;          // 정지(시점 0)면 곱이 1 = 사진 그대로
+
+    let k = 0, s = 0;
     for (let j = 0; j <= N; j++) {
       const v = j / N;                     // 0 = 바닥, 1 = 머리
       const h = Math.pow(v, 1.45);         // 🔑 높이 가중치 — 아래는 고정, 위로 갈수록 크게
@@ -300,6 +394,16 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
         // 놀람 — 전체 확대
         x *= 커짐; y = -1 + (y + 1) * 커짐;
+
+        /* 4D — 깊이만큼 시점 반대로 민다. 눈은 z 가 커서 «먼저» 움직인다(그게 입체로 읽히는 자리).
+           빛은 시점이 움직일 때만 변한다 — 사진에 이미 구워진 조명을 덮어쓰지 않으려는 절제다. */
+        const a = j * (N + 1) + i;
+        if (깊이있음 && S.입체) {
+          const z = zArr[a];
+          x += S.시점x * z * 시차;
+          y += S.시점y * z * 시차;
+          shArr[s++] = 1 + (gxArr[a] * S.시점x + gyArr[a] * S.시점y) * 빛세기;
+        } else shArr[s++] = 1;
 
         posArr[k++] = x * 0.86;            // 무대 여백
         posArr[k++] = y * 0.86 - 0.04;
@@ -339,6 +443,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       gl.enableVertexAttribArray(aPos); gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
       gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
       gl.enableVertexAttribArray(aUV); gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, shBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, shArr, gl.DYNAMIC_DRAW);
+      gl.enableVertexAttribArray(aShade); gl.vertexAttribPointer(aShade, 1, gl.FLOAT, false, 0, 0);
       gl.bindTexture(gl.TEXTURE_2D, tex[S.컷] || tex['본체']);
       gl.uniform1f(uAlpha, 1.0);
       gl.clear(gl.COLOR_BUFFER_BIT);

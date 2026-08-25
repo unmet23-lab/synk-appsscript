@@ -68,6 +68,8 @@ const 검사 = {
   '한글 keyframes 없음': () => !/@keyframes\s+[^\x00-\x7F]/.test(html),  // 08-24 실측: 한글이면 애니메이션이 «생성되지 않는다»
   '정지 프레임 보강': () => /visibilitychange/.test(html) && /ready >= 3\) 그리기\(0\)/.test(html),
   '상태는 타이머': () => /setInterval\(/.test(html),
+  '4D 깊이층': () => /function 깊이재기/.test(html) && /zArr\[/.test(html) && /S\.시점x \* z/.test(html),
+  '빛은 시점에만 반응': () => /빛세기 = [\d.]+ \* S\.입체/.test(html),   // 정지하면 곱이 1 = 사진 그대로
   '16MB 이내': () => html.length <= 16 * 1024 * 1024,
 };
 const 실패 = [];
