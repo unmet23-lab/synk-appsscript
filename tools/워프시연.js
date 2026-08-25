@@ -38,24 +38,60 @@ const 인자 = Object.fromEntries(
 
 const 뿌리 = path.join(__dirname, '..');
 const 템플릿경로 = path.join(__dirname, 'lib', '워프시연_템플릿.html');
-const 출력 = path.resolve(뿌리, 인자['출력'] || 'docs/캐릭터/생명공방_0826/살아움직이는몽글.html');
+const 기본출력 = (c) => `docs/캐릭터/생명공방_0826/살아움직이는${c}.html`;
 
-/* 자리 이름 → 정본 표정. 값을 늘리려면 템플릿의 IMGS 키도 같이 는다. */
+/* 자리 이름 → 표정. 값을 늘리려면 템플릿의 IMGS 키도 같이 는다. */
 const 쓰는컷 = { __IMG_BODY__: '본체', __IMG_SHUT__: '눈감음', __IMG_SMILE__: '눈웃음' };
+const 캐릭터 = 인자['캐릭터'] || '몽글';
+const 출력 = path.resolve(뿌리, 인자['출력'] || 기본출력(캐릭터));
+
+/* 🔴 경로의 «주인» — 몽글만 정본 창구가 있다.
+ *   까몽·마린은 아직 주인이 없어서(마스코트자산.js 는 몽글 전용) 여기 한 곳에 둔다.
+ *   ⚠ 이것은 «사본»이다 — 주인이 서는 날 이 표를 지우고 그 창구를 부른다. 두 곳에 적힌 채로
+ *     오래 두면 그것이 마스코트 10벌 공존을 만든 병이다. 지금은 한 곳이라 아직 갈리지 않았다.
+ *   🔑 «누끼» 여부는 폴더 규약으로 판정한다 — `누끼/` 아래 있는 것만 쓴다.
+ *     배경이 박힌 컷을 쓰면 실루엣이 프레임 전체가 되어 깊이 역산이 통째로 거짓이 된다
+ *     (08-26 실측: 까몽 본체는 알파가 전부 255 이고, 털 (31,25,23) 과 그림자 (32,25,23) 이
+ *      같은 색이라 색으로는 원리상 못 가른다 — 자동 누끼로 메울 수 없는 자리다). */
+const 친구경로 = {
+  까몽: { 폴더: 'docs/캐릭터/친구공방_0825/누끼', 접두: '까몽_' },
+};
+
+function 컷경로(표정) {
+  if (캐릭터 === '몽글') return 자산.절대경로(표정, { 누끼: true });   // 정본 창구
+  const c = 친구경로[캐릭터];
+  if (!c) throw new Error(`모르는 캐릭터 「${캐릭터}」 — 있는 것: 몽글 · ${Object.keys(친구경로).join(' · ')}`);
+  return path.join(뿌리, c.폴더, `${c.접두}${표정}.png`);
+}
 
 let html = fs.readFileSync(템플릿경로, 'utf8');
 const 잰것 = [];
+const 없는컷 = [];
 
 for (const [자리, 표정] of Object.entries(쓰는컷)) {
-  const 절대 = 자산.절대경로(표정, { 누끼: true });   // 🔑 경로의 주인은 마스코트자산.js 하나
-  if (!fs.existsSync(절대)) throw new Error(`정본 컷이 없다: ${표정} → ${절대}`);
+  const 절대 = 컷경로(표정);
+  if (!fs.existsSync(절대)) {
+    없는컷.push(`${표정} (${path.relative(뿌리, 절대).replace(/\\/g, '/')})`);
+    continue;
+  }
   const buf = fs.readFileSync(절대);
   html = html.replace(자리, 'data:image/png;base64,' + buf.toString('base64'));
   잰것.push(`${표정} ${(buf.length / 1024).toFixed(0)}KB`);
 }
 
-const 남은자리 = html.match(/__IMG_[A-Z]+__/g);
-if (남은자리) throw new Error(`치환 안 된 자리가 남았다: ${남은자리.join(', ')}`);
+/* 본체가 없으면 굽지 않는다 — 조용한 폴백이 옛 그림을 살려 내는 자리다. */
+if (!잰것.length) {
+  console.error(`🔴 ${캐릭터}: 쓸 수 있는 «누끼» 컷이 하나도 없다.\n   찾은 자리: ${없는컷.join('\n              ')}`);
+  console.error(`\n   까몽·마린은 굽기 때 배경판을 뺀 «누끼»가 서야 이 통로에 붙는다 —\n   배경이 박힌 컷은 실루엣이 프레임 전체가 되어 깊이가 거짓이 된다.`);
+  process.exit(1);
+}
+/* 빠진 표정은 본체로 접는다 — 어휘 하나가 조용히 죽는 것보다 낫고, 무엇이 접혔는지 로그에 남는다. */
+if (없는컷.length) {
+  const 첫 = html.indexOf('data:image/png;base64,');
+  const 본체값 = html.slice(첫, html.indexOf('"', 첫));
+  html = html.replace(/__IMG_[A-Z]+__/g, 본체값);
+  console.log(`⚠ 없는 컷 ${없는컷.length}종은 본체로 접었다: ${없는컷.join(' · ')}`);
+}
 
 /* 조용한 실패를 막는 자 — 통과 못 하면 굽지 않는다. */
 const 검사 = {
@@ -66,7 +102,7 @@ const 검사 = {
   },
   '셀렉터 안 @media 없음': () => !/,\s*@media/.test(html),
   '한글 keyframes 없음': () => !/@keyframes\s+[^\x00-\x7F]/.test(html),  // 08-24 실측: 한글이면 애니메이션이 «생성되지 않는다»
-  '정지 프레임 보강': () => /visibilitychange/.test(html) && /ready >= 3\) 그리기\(0\)/.test(html),
+  '정지 프레임 보강': () => /visibilitychange/.test(html) && /ready >= 컷수\) 그리기\(0\)/.test(html),
   '상태는 타이머': () => /setInterval\(/.test(html),
   '4D 깊이층': () => /function 깊이재기/.test(html) && /zArr\[/.test(html) && /S\.시점x \* z/.test(html),
   '빛은 시점에만 반응': () => /빛세기 = [\d.]+ \* S\.입체/.test(html),   // 정지하면 곱이 1 = 사진 그대로
