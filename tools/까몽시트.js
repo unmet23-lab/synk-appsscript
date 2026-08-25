@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * 친구 시트 — `tools/몽글친구굽기.py` 가 구운 표정 다섯을 **한 지면**에 세운다.
+ * 까몽 시트 — `tools/몽글친구굽기.py` 가 구운 표정 다섯을 **한 지면**에 세운다.
+ *   이름 = 까몽(까맣다 + 몽글의 「몽」 · 유호 확정 2026-08-25).
  *
  * ■ 왜 있나
  *   🔑 **굽기와 «판정 지면»은 한 벌이다**(트랙 §0 · 08-24 에 세 번 값을 치르고 얻은 규율).
@@ -15,8 +16,8 @@
  *     칸마다 파일 mtime 을 싣고, 다섯 중 가장 오래된 것과 새 것의 간격을 머리에 띄운다 —
  *     간격이 벌어져 있으면 «옛 컷과 새 컷이 섞인 격자»를 보고 계신 것이다.
  *
- * 사용:  node tools/친구시트.js [--방 docs/캐릭터/친구공방_0825] [--폭 340]
- *        → docs/친구_시안.html
+ * 사용:  node tools/까몽시트.js [--방 docs/캐릭터/친구공방_0825] [--폭 340]
+ *        → docs/까몽_시안.html
  */
 'use strict';
 const { execFileSync } = require('node:child_process');
@@ -34,8 +35,9 @@ const 인자 = (() => {
   return a;
 })();
 const 방 = path.resolve(루트, 인자['방'] || path.join('docs', '캐릭터', '친구공방_0825'));
-const 출력 = path.join(루트, 'docs', '친구_시안.html');
+const 출력 = path.join(루트, 'docs', '까몽_시안.html');
 const 미리폭 = parseInt(인자['폭'] || '340', 10);
+const 접두 = '까몽';        // 이름 = 까몽(유호 확정 08-25) · 파일 문법 = <접두>_<표정>.png (마스코트 정본과 같은 자)
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -50,7 +52,7 @@ const 표정들 = [
 
 /** 렌더 한 장 → webp data URI. 실패는 던진다 — 빈 값으로 물러서면 그림 없는 칸이 조용히 나간다. */
 function 인라인(파일, 폭) {
-  const 임시 = path.join(os.tmpdir(), `친구시트-${process.pid}-${path.basename(파일, '.png')}.webp`);
+  const 임시 = path.join(os.tmpdir(), `까몽시트-${process.pid}-${path.basename(파일, '.png')}.webp`);
   try {
     execFileSync('ffmpeg', ['-y', '-i', 파일, '-vf', `scale=${폭}:-1`, '-quality', '86', 임시], { stdio: 'ignore' });
     return 'data:image/webp;base64,' + fs.readFileSync(임시).toString('base64');
@@ -59,7 +61,7 @@ function 인라인(파일, 폭) {
 
 /** 눈 자리만 잘라 크게 — 「표정이 갈리나」는 얼굴 크기로는 안 보인다. */
 function 눈확대(파일, 폭) {
-  const 임시 = path.join(os.tmpdir(), `친구눈-${process.pid}-${path.basename(파일, '.png')}.webp`);
+  const 임시 = path.join(os.tmpdir(), `까몽눈-${process.pid}-${path.basename(파일, '.png')}.webp`);
   try {
     /* 눈은 화면 가로 24~76% · 세로 20~44% 자리에 선다(카메라 고정이라 판마다 같다). */
     execFileSync('ffmpeg', ['-y', '-i', 파일,
@@ -75,11 +77,11 @@ function main() {
     console.error(`🔴 렌더 방이 없다 — 굽기부터.\n   ${방}`);
     process.exit(1);
   }
-  const 파일 = (이름) => path.join(방, `친구_${이름}.png`);
+  const 파일 = (이름) => path.join(방, `${접두}_${이름}.png`);
   const 있나 = (이름) => fs.existsSync(파일(이름));
   const 없는것 = 표정들.map(([n]) => n).filter((n) => !있나(n));
   /* 「합계 = 있다 + 없다」로 찍는다 — 조용한 0 을 막는다(유호 지시 「합계 = 갈래+갈래」). */
-  console.log(`■ 친구 시트 — 합계 ${표정들.length} = 있다 ${표정들.length - 없는것.length} + 없다 ${없는것.length}`
+  console.log(`■ 까몽 시트 — 합계 ${표정들.length} = 있다 ${표정들.length - 없는것.length} + 없다 ${없는것.length}`
     + (없는것.length ? ` (${없는것.join(', ')})` : ''));
   if (없는것.length === 표정들.length) { console.error('🔴 한 장도 없다 — 굽기부터.'); process.exit(1); }
 
@@ -109,10 +111,10 @@ function main() {
 <html lang="ko">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>몽글 친구 — 표정 다섯</title>
+<title>까몽 — 표정 다섯</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap">
-<!-- 자동 생성: node tools/친구시트.js — 손 편집 금지(재생성이 덮는다) -->
+<!-- 자동 생성: node tools/까몽시트.js — 손 편집 금지(재생성이 덮는다) -->
 <!-- 렌더 = ${path.relative(루트, 방).replace(/\\/g, '/')} (Blender Cycles · tools/몽글친구굽기.py) · 지면 = tools/펠트문서.js -->
 <!--펠트스킨-->
 <style>
@@ -129,7 +131,7 @@ function main() {
 <div class="판">
 
 <nav class="레일" aria-label="차례">
-  <p class="꼭지">몽글 친구</p>
+  <p class="꼭지">까몽</p>
   <ol>
     <li><a href="#s1"><span class="n">01</span> 표정 다섯</a></li>
     <li><a href="#s2"><span class="n">02</span> 눈만 크게 — 갈리나</a></li>
@@ -144,10 +146,10 @@ function main() {
   <img src="${인라인(파일(첫이름), 160)}" alt="" style="width:150px;border-radius:18px" aria-hidden="true">
   <div>
     <p class="꼭지">SYNK Loom · Blender Cycles 실굽기</p>
-    <h1>몽글 친구 — 표정 다섯</h1>
-    <p class="한줄">몽글이 곁의 <b>밤빛 친구</b>. 꼬리 지느러미 한쪽은 <b>몽글이가 코랄 펠트로 기워 준 것</b>이다 —
+    <h1>까몽 — 몽글이의 밤빛 친구</h1>
+    <p class="한줄">몽글이 곁의 <b>밤빛 친구 까몽</b>. 꼬리 지느러미 한쪽은 <b>몽글이가 코랄 펠트로 기워 준 것</b>이다 —
     「부족한 반쪽을 친구가 채운다」를 공방 문법(바느질)으로 말한다.</p>
-    <p class="메타">자동 생성 · <code>node tools/친구시트.js</code> ·
+    <p class="메타">자동 생성 · <code>node tools/까몽시트.js</code> ·
     렌더 ${표정들.length - 없는것.length}/${표정들.length}장 · 재질·조명·무대는 <code>요소굽기.py</code> 정본을 런타임으로 빌린다</p>
   </div>
 </header>
@@ -184,8 +186,8 @@ ${벌어짐분 > 90 ? `<div class="유리 알림 듦"><b>⚠ 이 격자는 «섞
 
 <h2 id="s4" class="듦"><span class="번호">04</span><span>유호님 판정 자리</span></h2>
 <ol class="듦">
-  <li><b>이름</b> — 아직 없다. 후보: <b>몽돌</b>(몽글의 «몽» 을 물려받은 실제 낱말 · 검고 둥근 갯돌) ·
-      <b>까몽</b>(까맣다 + 몽) · 밤이 · 먹물이 · 까뭉이.</li>
+  <li><b>이름</b> — ✅ <b>까몽</b>으로 정해졌다(유호 확정 08-25). 까맣다 + 몽글의 «몽» —
+      형제 이름이면서 몽골 학생이 발음하기 쉽다. 파일·코드 접두는 <code>까몽_</code>.</li>
   <li><b>꼬리가 안 보인다</b> — 마디 다섯이 몸 털에 묻혀, 지느러미 둘만 «천 위에 놓인 두 조각»으로 읽힌다.
       서사의 핵(기워 준 지느러미)이 꼬리에 안 붙어 있다. 고치려면 꼬리를 몸 밖으로 빼거나 올려야 하는데,
       그건 유호님이 「이대로」 하신 실루엣을 건드리는 일이라 <b>손대지 않고 여쭙는다</b>.</li>
@@ -200,7 +202,7 @@ ${벌어짐분 > 90 ? `<div class="유리 알림 듦"><b>⚠ 이 격자는 «섞
 </div><!--/판-->
 </html>`;
 
-  const 임시 = path.join(os.tmpdir(), `친구-${process.pid}.html`);
+  const 임시 = path.join(os.tmpdir(), `까몽-${process.pid}.html`);
   fs.writeFileSync(임시, 원고, 'utf8');
   try {
     execFileSync(process.execPath, [path.join(루트, 'tools', '펠트문서.js'), '--굽기', 임시, 출력],
@@ -208,7 +210,7 @@ ${벌어짐분 > 90 ? `<div class="유리 알림 듦"><b>⚠ 이 격자는 «섞
   } finally { try { fs.unlinkSync(임시); } catch { /* */ } }
 
   const html = fs.readFileSync(출력, 'utf8');
-  console.log(`■ 친구 시안  ${path.relative(루트, 출력)}  `
+  console.log(`■ 까몽 시안  ${path.relative(루트, 출력)}  `
     + `(${Math.round(Buffer.byteLength(html) / 1024)}KB · 렌더 ${표정들.length - 없는것.length}/${표정들.length})`);
 }
 
