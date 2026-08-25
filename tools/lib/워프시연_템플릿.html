@@ -1,0 +1,354 @@
+<meta charset="utf-8">
+<title>살아 움직이는 몽글</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800&family=DM+Mono:wght@400;500&display=swap">
+
+<style>
+/* SYNK 킷 2027 · 값 정본 = docs/디자인_토큰.json
+   ⚠ 마스코트 바닥 규칙 — 코랄 짙은 면 위에 마스코트를 놓지 않는다(여린 단이 먹혀 윤곽이 뭉갠다). */
+:root{
+  --paper:#FBF7F0; --ink:#2B2320; --stitch:#F0E3C8;
+  --oat:#EDE7DC; --stone:#C7BFB2; --ash:#8D857A; --deepwool:#575046;
+  --coral:#F96859; --coral-3:#AE322A; --coral-wash:#FEF0E9;
+  --bg:var(--paper); --surface:#FFFDF9; --stage:var(--oat); --line:var(--stitch);
+  --fg:var(--ink); --fg-dim:var(--ash); --fg-mid:var(--deepwool);
+  --accent:var(--coral-3); --chip:var(--oat);
+  --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#1C1714; --surface:#241E1A; --stage:#2A2521; --line:#3A322C;
+    --fg:#F2EBE0; --fg-dim:#A69C8F; --fg-mid:#C7BFB2;
+    --accent:#FBB7A3; --chip:#302925; --coral-wash:#33211E;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1C1714; --surface:#241E1A; --stage:#2A2521; --line:#3A322C;
+  --fg:#F2EBE0; --fg-dim:#A69C8F; --fg-mid:#C7BFB2;
+  --accent:#FBB7A3; --chip:#302925; --coral-wash:#33211E;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-weight:500;
+     font-size:16px;line-height:1.6;letter-spacing:-0.011em;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:clamp(24px,4vw,48px) clamp(16px,3vw,32px) 72px}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+         color:var(--fg-dim);margin:0 0 12px}
+h1{font-size:clamp(26px,4.4vw,42px);font-weight:800;letter-spacing:-0.03em;line-height:1.12;
+   margin:0 0 14px;text-wrap:balance}
+.lede{font-size:clamp(15px,1.8vw,17.5px);color:var(--fg-mid);max-width:62ch;margin:0 0 8px}
+.lede b{color:var(--fg);font-weight:600}
+
+.board{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(260px,0.85fr);gap:18px;margin-top:30px}
+@media (max-width:820px){.board{grid-template-columns:1fr}}
+
+.stage{position:relative;background:var(--stage);border:1px solid var(--line);border-radius:16px;
+       overflow:hidden;aspect-ratio:1/1;touch-action:none;cursor:grab}
+.stage:active{cursor:grabbing}
+#gl{display:block;width:100%;height:100%;position:relative;z-index:1}
+/* 바닥 그림자 — 몸이 눌리면 넓어진다. 무게는 여기서 온다. */
+#shadow{position:absolute;left:50%;bottom:9.5%;transform:translateX(-50%);
+        width:42%;aspect-ratio:5/1;border-radius:50%;background:var(--ink);
+        opacity:.16;filter:blur(9px);z-index:0;transition:width .09s linear,opacity .09s linear}
+.hint{position:absolute;left:14px;bottom:12px;font-family:var(--mono);font-size:11px;
+      color:var(--fg-dim);pointer-events:none;letter-spacing:.03em}
+.state{position:absolute;right:14px;top:12px;font-family:var(--mono);font-size:11px;
+       color:var(--fg-dim);pointer-events:none;letter-spacing:.05em;text-align:right}
+.state b{color:var(--accent);font-weight:500}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+.panel h2{font-size:14px;font-weight:800;letter-spacing:-0.01em;margin:0 0 4px}
+.panel p.sub{font-size:12.5px;color:var(--fg-dim);margin:0 0 14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{font:inherit;font-size:13px;font-weight:600;color:var(--fg);background:var(--chip);
+       border:1px solid var(--line);border-radius:10px;padding:9px 6px;cursor:pointer;
+       transition:transform .12s ease,background .12s ease}
+button:hover{background:var(--coral-wash);color:var(--accent)}
+button:active{transform:scale(.96)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wide{grid-column:1 / -1}
+
+.legend{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.legend dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:12.5px}
+.legend dt{font-family:var(--mono);font-size:11px;color:var(--fg-dim);letter-spacing:.04em;padding-top:2px}
+.legend dd{margin:0;color:var(--fg-mid)}
+
+.note{margin-top:28px;background:var(--surface);border:1px solid var(--line);
+      border-left:3px solid var(--coral);border-radius:12px;padding:20px 22px}
+.note h3{font-size:15.5px;font-weight:800;margin:0 0 10px;letter-spacing:-0.015em}
+.note ul{margin:0;padding-left:1.1em;display:grid;gap:7px}
+.note li{font-size:14.5px;color:var(--fg-mid)}
+.note li b{color:var(--fg);font-weight:600}
+.warn{margin-top:18px;font-size:13px;color:var(--fg-dim);border-top:1px solid var(--line);padding-top:12px}
+.warn b{color:var(--accent);font-weight:600}
+@media (prefers-reduced-motion:reduce){button{transition:none}}
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">SYNK · 정본 사진 그대로 · 새 자산 0</p>
+  <h1>살아 움직이는 몽글</h1>
+  <p class="lede">3D로 다시 만들지 않았습니다. <b>정본 사진 그대로</b>를 격자로 나눠 정점만 움직입니다 — 픽셀은 한 점도 새로 그리지 않았습니다.</p>
+  <p class="lede">그래서 <b>재질이 100% 사진</b>입니다. 펠트 털도, 색도, 실땀도 전부 원본 그대로입니다.</p>
+
+  <div class="board">
+    <div class="stage" id="stage">
+      <div id="shadow"></div>
+      <canvas id="gl"></canvas>
+      <div class="state" id="state">평상</div>
+      <div class="hint">직접 만져 보세요 — 누르기 · 끌기 · 연달아 톡톡</div>
+    </div>
+
+    <div class="panel">
+      <h2>바로 보기</h2>
+      <p class="sub">확률·기다림으로는 검수가 안 됩니다 — 버튼으로 그 자리에서 발동합니다.</p>
+      <div class="grid">
+        <button data-act="tap">톡 (눌림)</button>
+        <button data-act="boing">꾹 → 되튐</button>
+        <button data-act="tilt">갸웃</button>
+        <button data-act="shake">도리도리</button>
+        <button data-act="sway">살랑</button>
+        <button data-act="blink">깜빡임</button>
+        <button data-act="joy">기쁨</button>
+        <button data-act="surprise">놀람</button>
+        <button data-act="sleep">잠들기</button>
+        <button data-act="wake">기지개</button>
+        <button class="wide" data-act="reset">평상으로</button>
+      </div>
+
+      <div class="legend">
+        <dl>
+          <dt>상시</dt><dd>숨쉬기 5.4초 · 깜빡임 3.5~7초 무작위 — 느리고 작게</dd>
+          <dt>사건</dt><dd>크고 짧게 + 감쇠 — 일정 진폭 반복이 «기계»로 읽히는 진범</dd>
+          <dt>바닥</dt><dd>아래는 고정, 위로 갈수록 크게 — 천 인형이 바닥에 앉은 결</dd>
+          <dt>그림자</dt><dd>몸이 눌리면 넓어진다 — 무게가 여기서 온다</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <h3>이 시연이 증명하는 것</h3>
+    <ul>
+      <li><b>재질 문제가 통째로 사라집니다.</b> 3D로 옮기면 매번 「고무·왁스」로 읽혔는데, 사진을 그대로 쓰면 그 병이 원리적으로 안 생깁니다.</li>
+      <li><b>표정은 컷 교체입니다.</b> 눈감음·눈웃음이 이미 정본에 있어 그대로 씁니다 — 새로 굽지 않습니다.</li>
+      <li><b>실시간입니다.</b> 미리 구운 영상이 아니라 그 자리에서 반응합니다. 앱에서 학생 행동에 즉시 응답할 수 있습니다.</li>
+      <li><b>까몽·마린도 같은 방식</b>으로 붙습니다. 컷만 있으면 됩니다.</li>
+    </ul>
+    <p class="warn"><b>정직하게 — 이 통로의 한계</b> : 옆·뒤로 크게 도는 것은 이 방식으로 안 됩니다(정면 ±40° 안). 홍조처럼 «색을 덧칠하는» 어휘도 뺐습니다 — 사진을 건드리지 않는 것이 이 통로의 값이라서요. 360°가 꼭 필요한 자리가 생기면 그때만 다른 통로를 꺼냅니다.</p>
+  </div>
+</div>
+
+<script>
+(() => {
+  const IMGS = { 본체: "__IMG_BODY__", 눈감음: "__IMG_SHUT__", 눈웃음: "__IMG_SMILE__" };
+  const cv = document.getElementById('gl');
+  const stageEl = document.getElementById('stage');
+  const stateEl = document.getElementById('state');
+  const gl = cv.getContext('webgl', { alpha: true, premultipliedAlpha: false, antialias: true });
+  if (!gl) { stateEl.textContent = 'WebGL 없음'; return; }
+
+  const N = 28;                       // 격자 칸 수 — Live2D 의 «메시»에 해당
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── 셰이더 ─────────────────────────────────────────────── */
+  const vs = `attribute vec2 aPos; attribute vec2 aUV; varying vec2 vUV;
+    void main(){ vUV = aUV; gl_Position = vec4(aPos, 0.0, 1.0); }`;
+  const fs = `precision mediump float; varying vec2 vUV; uniform sampler2D uTex; uniform float uAlpha;
+    void main(){ vec4 c = texture2D(uTex, vUV); gl_FragColor = vec4(c.rgb, c.a * uAlpha); }`;
+  const sh = (t, src) => { const s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s); return s; };
+  const prog = gl.createProgram();
+  gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog); gl.useProgram(prog);
+  const aPos = gl.getAttribLocation(prog, 'aPos'), aUV = gl.getAttribLocation(prog, 'aUV');
+  const uAlpha = gl.getUniformLocation(prog, 'uAlpha');
+
+  /* 격자 — uv 와 인덱스는 고정, 위치만 매 프레임 다시 쓴다 */
+  const uvArr = [], idx = [];
+  for (let j = 0; j <= N; j++) for (let i = 0; i <= N; i++) uvArr.push(i / N, j / N);
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+    const a = j * (N + 1) + i, b = a + 1, c = a + N + 1, d = c + 1;
+    idx.push(a, b, c, b, d, c);
+  }
+  const posArr = new Float32Array((N + 1) * (N + 1) * 2);
+  const posBuf = gl.createBuffer(), uvBuf = gl.createBuffer(), idxBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvArr), gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(idx), gl.STATIC_DRAW);
+
+  /* ── 텍스처 ─────────────────────────────────────────────── */
+  const tex = {}; let ready = 0;
+  for (const [k, src] of Object.entries(IMGS)) {
+    const im = new Image();
+    im.onload = () => {
+      const t = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, im);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      tex[k] = t; ready++;
+      if (ready >= 3) 그리기(0);   // 첫 정지 프레임 — 숨은 탭에서도 빈 화면이 안 되게
+      if (ready >= 3) 그리기(0);   // 첫 정지 프레임 — 숨은 탭에서도 빈 화면이 안 되게
+    };
+    im.src = src;
+  }
+
+  /* ── 상태 — «생명감 상태 기계에 rAF 금지»(감각층 v2 실측). 상태는 타이머, 그림은 rAF. ── */
+  const S = {
+    컷: '본체', 눈감은동안: 0,
+    숨: 0, 기울임: 0, 목표기울임: 0, 눌림: 0, 되튐속도: 0, 살랑: 0, 갸웃: 0, 도리: 0,
+    잠: 0, 커짐: 0, 마지막접촉: 0, 연타: [], 라벨: '평상'
+  };
+  const now = () => performance.now();
+  S.마지막접촉 = now();
+  let 다음깜빡 = now() + 3500 + Math.random() * 3500;
+
+  const 만짐 = () => { S.마지막접촉 = now(); if (S.잠 > 0) 깨움(); };  // ⚠ v4 교훈 ①: 모든 접촉이 방치 타이머를 리셋
+  const 라벨 = (t) => { S.라벨 = t; stateEl.innerHTML = t === '평상' ? '평상' : '<b>' + t + '</b>'; };
+
+  function 깜빡(ms = 130) { S.컷 = '눈감음'; S.눈감은동안 = ms; }
+  function 깨움() { S.잠 = 0; S.커짐 = 0.10; S.컷 = '본체'; 라벨('기지개'); setTimeout(() => 라벨('평상'), 1400); }
+
+  const 동작 = {
+    tap:      () => { S.눌림 = 0.30; 깜빡(); 라벨('톡'); if (Math.random() < .35) S.갸웃 = 0.13; },
+    boing:    () => { S.눌림 = 0.42; S.되튐속도 = 0; 라벨('되튐'); },
+    tilt:     () => { S.갸웃 = 0.17; 라벨('갸웃'); },
+    shake:    () => { S.도리 = 1; 라벨('도리도리'); },
+    sway:     () => { S.살랑 = S.살랑 > 0.05 ? 0 : 1; 라벨(S.살랑 ? '살랑' : '평상'); },
+    blink:    () => { 깜빡(150); 라벨('깜빡'); },
+    joy:      () => { S.컷 = '눈웃음'; S.눈감은동안 = 1500; S.눌림 = -0.22; S.되튐속도 = 0.055; 라벨('기쁨'); },
+    surprise: () => { S.커짐 = 0.16; S.눌림 = -0.14; 깜빡(90); 라벨('놀람'); },
+    sleep:    () => { S.잠 = 1; S.컷 = '눈감음'; S.눈감은동안 = 1e9; 라벨('잠'); },
+    wake:     () => 깨움(),
+    reset:    () => { S.잠 = 0; S.살랑 = 0; S.갸웃 = 0; S.도리 = 0; S.눌림 = 0; S.되튐속도 = 0;
+                      S.목표기울임 = 0; S.커짐 = 0; S.컷 = '본체'; S.눈감은동안 = 0; 라벨('평상'); }
+  };
+  document.querySelectorAll('button[data-act]').forEach(b =>
+    b.addEventListener('click', () => { 만짐(); 동작[b.dataset.act](); }));
+
+  /* 직접 만지기 */
+  let 누름 = false;
+  const 좌표 = (e) => {
+    const r = stageEl.getBoundingClientRect();
+    const cx = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+    return (cx / r.width) * 2 - 1;
+  };
+  const 시작 = (e) => { 누름 = true; 만짐(); S.눌림 = Math.max(S.눌림, 0.26); S.목표기울임 = 좌표(e) * 0.16;
+    const t = now(); S.연타 = S.연타.filter(x => t - x < 1600); S.연타.push(t);
+    if (S.연타.length >= 3) { S.도리 = 1; S.연타 = []; 라벨('간지럼'); } else 라벨('톡');
+    if (Math.random() < .35) S.갸웃 = 0.12; };
+  const 이동 = (e) => { if (!누름) return; S.목표기울임 = 좌표(e) * 0.20; 만짐(); };
+  const 끝 = () => { if (!누름) return; 누름 = false; S.목표기울임 = 0; S.되튐속도 = 0.03; 라벨('평상'); };
+  stageEl.addEventListener('pointerdown', 시작);
+  stageEl.addEventListener('pointermove', 이동);
+  addEventListener('pointerup', 끝);
+  addEventListener('pointercancel', 끝);
+
+  /* 상태 tick — 100ms 타이머(rAF 아님) */
+  setInterval(() => {
+    const t = now();
+    if (S.눈감은동안 > 0 && S.눈감은동안 < 1e8) { S.눈감은동안 -= 100; if (S.눈감은동안 <= 0) S.컷 = '본체'; }
+    if (!S.잠 && S.컷 === '본체' && t > 다음깜빡) { 깜빡(); 다음깜빡 = t + 3500 + Math.random() * 3500; }
+    if (!S.잠 && t - S.마지막접촉 > 22000) { S.잠 = 1; S.컷 = '눈감음'; S.눈감은동안 = 1e9; 라벨('잠'); }
+  }, 100);
+
+  /* ── 그림 — 여기만 rAF ───────────────────────────────────── */
+  function 격자(t) {
+    // 감쇠 — 사건 동작은 «크고 짧게 + 감쇠»(v4 멀미 축)
+    S.기울임 += (S.목표기울임 - S.기울임) * 0.14;
+    S.갸웃 *= 0.90; S.도리 *= 0.90; S.커짐 *= 0.90;
+    S.되튐속도 += -S.눌림 * 0.22; S.되튐속도 *= 0.86; S.눌림 += S.되튐속도;
+    if (Math.abs(S.눌림) < 0.0015 && Math.abs(S.되튐속도) < 0.0015) { S.눌림 = 0; S.되튐속도 = 0; }
+
+    const 잠깊이 = S.잠 ? 1 : 0;
+    const 숨주기 = 5.4 * (잠깊이 ? 1.7 : 1);           // 잘 때 숨이 느려진다
+    const 숨 = reduce ? 0 : 0.022 * (잠깊이 ? 0.6 : 1) * Math.sin(t / 숨주기 * Math.PI * 2);
+    const 살랑량 = reduce ? 0 : S.살랑 * 0.035 * Math.sin(t / 4.6 * Math.PI * 2);
+    const 도리각 = S.도리 * 0.13 * Math.sin(t * 22);
+    const 기울 = S.기울임 + 살랑량;
+    const 각 = S.갸웃 * Math.sin(t * 9) + 도리각;
+    const 커짐 = 1 + S.커짐;
+
+    let k = 0;
+    for (let j = 0; j <= N; j++) {
+      const v = j / N;                     // 0 = 바닥, 1 = 머리
+      const h = Math.pow(v, 1.45);         // 🔑 높이 가중치 — 아래는 고정, 위로 갈수록 크게
+      for (let i = 0; i <= N; i++) {
+        const u = i / N;
+        let x = (u - 0.5) * 2, y = (v - 0.5) * 2;
+
+        // 숨쉬기 · 눌림 — 세로는 줄고 가로는 늘어난다(부피 보존의 흉내 = 젤리)
+        const 세로 = (1 + 숨) * (1 - S.눌림 * 0.30);
+        const 가로 = (1 - 숨 * 0.5) * (1 + S.눌림 * 0.34);
+        y = -1 + (y + 1) * 세로;
+        x *= 가로;
+
+        // 기울임 · 살랑 — 위쪽만
+        x += 기울 * h;
+
+        // 갸웃 · 도리도리 — 바닥을 축으로 회전
+        if (각) {
+          const a = 각 * h, s = Math.sin(a), c = Math.cos(a), y0 = y + 1;
+          const nx = x * c - y0 * s, ny = x * s + y0 * c;
+          x = nx; y = ny - 1;
+        }
+
+        // 놀람 — 전체 확대
+        x *= 커짐; y = -1 + (y + 1) * 커짐;
+
+        posArr[k++] = x * 0.86;            // 무대 여백
+        posArr[k++] = y * 0.86 - 0.04;
+      }
+    }
+    return { 눌림: S.눌림, 기울: 기울 };
+  }
+
+  function 그림자(눌림) {
+    // 바닥 타원 — 몸이 눌리면 넓어지고 진해진다(무게가 여기서 온다)
+    const c = document.getElementById('shadow');
+    if (!c) return;
+    const w = 42 + 눌림 * 26, o = 0.16 + Math.max(0, 눌림) * 0.10;
+    c.style.width = w + '%'; c.style.opacity = o;
+  }
+
+  function 크기맞춤() {
+    const r = stageEl.getBoundingClientRect();
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+    gl.viewport(0, 0, cv.width, cv.height);
+  }
+  addEventListener('resize', 크기맞춤); 크기맞춤();
+
+  gl.clearColor(0, 0, 0, 0);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+  const t0 = now();
+  /* 🔑 그리기를 rAF 에서 «떼어» 둔다 — rAF 는 숨은 탭에서 아예 안 돈다(08-24 실측).
+     떼어 두면 ①로드 직후 ②탭이 다시 보일 때 정지 화면 한 장을 남길 수 있다. */
+  function 그리기(t) {
+    if (ready >= 3) {
+      const r = 격자(t); 그림자(r.눌림);
+      gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, posArr, gl.DYNAMIC_DRAW);
+      gl.enableVertexAttribArray(aPos); gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
+      gl.enableVertexAttribArray(aUV); gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 0, 0);
+      gl.bindTexture(gl.TEXTURE_2D, tex[S.컷] || tex['본체']);
+      gl.uniform1f(uAlpha, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
+      gl.drawElements(gl.TRIANGLES, idx.length, gl.UNSIGNED_SHORT, 0);
+    }
+  }
+  function 프레임() { 그리기((now() - t0) / 1000); requestAnimationFrame(프레임); }
+  requestAnimationFrame(프레임);
+  // 탭이 다시 보이면 즉시 한 장 — rAF 가 재개되기 전의 빈 틈을 없앤다
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) 그리기((now() - t0) / 1000); });
+})();
+</script>
