@@ -29,7 +29,7 @@ const MJ_ENROLL_HEADERS = ['student_id', '이름', '시작일', '개월수', '�
 /* ===================== ② [v9.70] 한·몽 병기 헬퍼 ===================== */
 
 // hashPick_(Code.js L1112)와 같은 해시 — 같은 seed면 같은 인덱스가 나와 한국어·몽골어가 반드시 같은 문장 쌍이 된다.
-// ⚠ 알고리즘을 바꾸면 tests/만족도팩.test.js의 동조 테스트가 깨진다(의도된 회귀 장치).
+// ⚠ 알고리즘을 바꾸면 tests/만족도팩.test.js(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다) 의 동조 테스트가 깨졌다 — 그 장치가 걷혀서, 지금 바꾸면 한국어·몽골어 쌍이 조용히 갈린다.
 function MJ_hashIdx_(arr, seedStr) {
   let h = 0;
   for (let i = 0; i < seedStr.length; i++) h = (h * 31 + seedStr.charCodeAt(i)) % 100000;
