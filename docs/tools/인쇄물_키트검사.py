@@ -16,7 +16,7 @@ SYNK 인쇄물 검사 — 만들어진 PDF 를 직접 열어 브랜드 키트 �
    `/Pattern cs /P117 scn … re f` 를 「초기 상태 검정 페인트」로 오인했다 — 크롬은 CSS
    radial-gradient 도트를 타일링 패턴으로 낸다. 이번엔 「실패」 쪽으로 샜지만(안전한 방향)
    가드가 실작업을 벌주면 사람이 가드를 끈다. 지금은 패턴 정의를 열어 **패턴이 실제로 칠할
-   색**을 센다. 회귀 = `--selftest` (tests/인쇄물키트검사.test.js 가 CI 에서 발화).
+   색**을 센다. 회귀 = `--selftest` — 그걸 CI 에서 발화시키던 tests/인쇄물키트검사.test.js(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다) 는 걷혔다: 지금은 손으로 부른다.
 
 판정 3축:
   ① 쪽수  — 정해진 쪽수와 정확히 일치하는가
@@ -352,7 +352,7 @@ class _FakeStream(dict):
 
 def selftest():
     """3번째 결함(Pattern → 검정 오인) 회귀 픽스처. 탐지력은 여기가 지고,
-    tests/인쇄물키트검사.test.js 가 CI 에서 이걸 발화시킨다(python 없으면 skip 으로 드러남)."""
+    이걸 CI 에서 발화시키던 tests/인쇄물키트검사.test.js(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다) 는 걷혔다 — 지금 이 픽스처를 돌리는 것은 손 `--selftest` 하나다."""
     fonts, fills, strokes = {}, Counter(), Counter()
     tile = _FakeStream({"/PatternType": 1, "/Resources": {}}, "1 0 0 rg 0 0 5 5 re f")
     res = {"/Pattern": {"/P1": tile}, "/Font": {}, "/XObject": {}}
