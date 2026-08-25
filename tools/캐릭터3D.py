@@ -691,7 +691,8 @@ def 미리보기(접두, 각도들=(0, 90, 180, 270), 너비=560):
     반높 = (zmax - zmin) * 0.5
     여백 = float(_인자.get('여백', '1.16'))
     필요 = max(반높, rmax) * 여백
-    거리 = 필요 / math.tan(math.radians(cam_d.angle_y * 0.5 * 180 / math.pi)) if False else            필요 / math.tan(cam_d.angle_y * 0.5)
+    #   ⚠ `angle_y` 는 **이미 라디안**이다 — `math.radians()` 를 한 번 더 씌우면 안 된다.
+    거리 = 필요 / math.tan(cam_d.angle_y * 0.5)
     피벗 = bpy.data.objects.new('피벗', None)
     bpy.context.collection.objects.link(피벗)
     피벗.location = (0, 0, 중심z)
