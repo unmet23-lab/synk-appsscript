@@ -316,7 +316,9 @@ def 펠트칠(nt, bsdf, 펠트, 법, 타일, 밝기=1.0):
     nt.links.new(좌표.outputs['UV'], 맵핑.inputs['Vector'])
     색텍 = nt.nodes.new('ShaderNodeTexImage')
     색텍.image = 펠트
-    색텍.extension = 'REPEAT'
+    # 🔑 REPEAT 이면 타일 경계가 «가로 띠»로 보인다(08-26 몸통 중앙). MIRROR 는 경계에서
+    #   무늬가 접히므로 이음매가 사라진다 — 패치가 이미 미러 처리라 결이 어긋나지 않는다.
+    색텍.extension = _인자.get('타일방식', 'MIRROR')
     nt.links.new(맵핑.outputs['Vector'], 색텍.inputs['Vector'])
     if 밝기 == 1.0:
         nt.links.new(색텍.outputs['Color'], bsdf.inputs['Base Color'])
@@ -329,7 +331,7 @@ def 펠트칠(nt, bsdf, 펠트, 법, 타일, 밝기=1.0):
         nt.links.new(곱.outputs['Color'], bsdf.inputs['Base Color'])
     법텍 = nt.nodes.new('ShaderNodeTexImage')
     법텍.image = 법
-    법텍.extension = 'REPEAT'
+    법텍.extension = _인자.get('타일방식', 'MIRROR')
     nt.links.new(맵핑.outputs['Vector'], 법텍.inputs['Vector'])
     법노드 = nt.nodes.new('ShaderNodeNormalMap')
     법노드.inputs['Strength'].default_value = 0.55
@@ -629,7 +631,9 @@ def 미리보기(접두, 각도들=(0, 90, 180, 270), 너비=560):
 
     씬 = bpy.context.scene
     씬.render.engine = 'BLENDER_EEVEE_NEXT' if 'BLENDER_EEVEE_NEXT' in         bpy.types.RenderSettings.bl_rna.properties['engine'].enum_items else 'BLENDER_EEVEE'
-    씬.render.film_transparent = False
+    # 🔑 배경을 «투명»으로 굽는다 — world 는 환경광 전용이 되고, 무대 회색은 합성 때 깐다.
+    #   안 그러면 환경광을 낮출 때 배경까지 어두워져 정본과 같은 조건에서 못 잰다(08-26).
+    씬.render.film_transparent = _인자.get('투명배경', '1') != '0'
     # 🔴 08-26 실측 — **AgX 는 이 캐릭터의 색을 죽인다.** 몸 채도 0.29 (#C39991) 로 뭉개져
     #   「바랜 분홍」이 나왔다. Standard 는 0.88 (정본 펠트패치 0.90) 로 정본을 재현한다.
     #   요소굽기.py 는 AgX 를 쓰지만 그쪽 정본은 «렌더로 태어난» 색이고, 몽글이의 정본은
@@ -644,13 +648,24 @@ def 미리보기(접두, 각도들=(0, 90, 180, 270), 너비=560):
         pass
     씬.render.resolution_x = 너비
     씬.render.resolution_y = 너비
+    씬.render.image_settings.color_mode = 'RGBA'
     씬.world = bpy.data.worlds.new('무대')
     씬.world.use_nodes = True
-    씬.world.node_tree.nodes['Background'].inputs['Color'].default_value = (*s리니어(색['Paper']), 1.0)
-    씬.world.node_tree.nodes['Background'].inputs['Strength'].default_value = 0.55
+    # 🔴 흰 환경광이 코랄의 «채도»를 씻는다 — 사방에서 흰빛이 더해지면 G·B 가 올라가
+    #   바랜 분홍이 된다(08-26 실측 3D 0.58 대 정본 0.64). 텍스처 자체는 정확했다
+    #   (조명 없이 Emission 단독 렌더 #F66A5B 대 파일 #F6695A · 채도 0.90).
+    #   ⇒ 세기를 낮추고, 색도 «양모가 서로 반사한 빛»에 가깝게 코랄로 물들인다.
+    #   ⚠ world 는 «배경»과 «환경광»을 겸한다 — 색을 코랄로 물들이면 무대까지 빨개진다(08-26).
+    #     그래서 색은 정본 사진과 같은 «회색 무대»로 두고 **세기만** 낮춘다.
+    무대 = (0.588, 0.588, 0.588)     # 정본 누끼가 놓인 회색과 같은 값
+    씬.world.node_tree.nodes['Background'].inputs['Color'].default_value = (*s리니어(무대), 1.0)
+    씬.world.node_tree.nodes['Background'].inputs['Strength'].default_value = float(_인자.get('환경광', '0.30'))
 
-    for 이름, 위치, 힘 in (('키', (2.6, -3.4, 2.9), 250), ('필', (-3.2, -1.8, 1.1), 88),
-                          ('림', (0.4, 3.6, 2.4), 135)):
+    # 조명 총량이 곧 «채도»다 — 어두우면 회색으로 죽고, 과하면 흰빛으로 바랜다.
+    #   정본 몸 평균 #D96355(채도 0.64)에 맞춰 배수를 잰다.
+    빛배 = float(_인자.get('빛', '1.15'))   # 08-26 실측: 정본 #D96355 채도 0.64 밝기 134 에 맞춘 값(3D #DE6254 · 0.68 · 135)
+    for 이름, 위치, 힘 in (('키', (2.6, -3.4, 2.9), 250 * 빛배), ('필', (-3.2, -1.8, 1.1), 88 * 빛배),
+                          ('림', (0.4, 3.6, 2.4), 135 * 빛배)):
         d = bpy.data.lights.new(이름, 'AREA')
         d.energy = 힘
         d.size = 3.4
@@ -666,12 +681,24 @@ def 미리보기(접두, 각도들=(0, 90, 180, 270), 너비=560):
     bpy.context.collection.objects.link(cam)
     씬.camera = cam
 
+    # 🔴 몸 크기에 맞춰 카메라를 «자동»으로 뺀다. 고정 거리면 물결·털을 키울 때마다 밑단이
+    #   프레임 밖으로 잘려 「깊이를 키워도 안 변한다」는 오독이 난다(08-26 실측 그 자리).
+    쟤 = [o for o in bpy.data.objects if o.type == 'MESH']
+    zs = [(o.matrix_world @ v.co) for o in 쟤 for v in o.data.vertices]
+    zmin = min(p.z for p in zs); zmax = max(p.z for p in zs)
+    rmax = max(math.hypot(p.x, p.y) for p in zs)
+    중심z = (zmin + zmax) * 0.5
+    반높 = (zmax - zmin) * 0.5
+    여백 = float(_인자.get('여백', '1.16'))
+    필요 = max(반높, rmax) * 여백
+    거리 = 필요 / math.tan(math.radians(cam_d.angle_y * 0.5 * 180 / math.pi)) if False else            필요 / math.tan(cam_d.angle_y * 0.5)
     피벗 = bpy.data.objects.new('피벗', None)
     bpy.context.collection.objects.link(피벗)
-    피벗.location = (0, 0, 0.16)
+    피벗.location = (0, 0, 중심z)
     cam.parent = 피벗
-    cam.location = (0, -6.2, 0.9)
-    cam.rotation_euler = (math.radians(82), 0, 0)
+    기울 = math.radians(float(_인자.get('카메라피치', '86')))
+    cam.location = (0, -거리 * math.sin(기울), 거리 * math.cos(기울))
+    cam.rotation_euler = (기울, 0, 0)
 
     잰값 = []
     for a in 각도들:
