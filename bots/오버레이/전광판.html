@@ -29,27 +29,31 @@
 -->
 <style>
   :root {
-    /* 브랜드 킷(DESIGN.md) — 다크 반전면 팔레트. 신호는 Coral 1점 · Lime·KC 반입 0. */
-    --navy2:  #08090C;
-    --cream:  #E4E4E7;
-    --cream3: #D1D2D4;
-    --slate:  #8A8A8A;
-    --coral:  #FF6B5C;
-    --카드바닥: rgba(15, 23, 48, .82);
-    --테두리: rgba(231, 221, 199, .16);
+    /* 브랜드 킷(정본 = docs/디자인_토큰.json) — 다크 「양모 밤」(조항 ⓚ · 유호 확정 2026-08-20).
+       신호는 Coral 1점 · Lime·KC 반입 0. ⚠이름은 킷 이름만 쓴다 — 08-25 까지 여기 살던
+       `--navy2`·`--cream`·`--slate` 는 무채축(0039209e · 08-18)에서 «퇴역한 이름»이었고,
+       `--테두리` 의 rgba(231,221,199) 은 퇴역 크림 #E7DDC7 그 자체였다(rgba 로 적혀 있어
+       tests/브랜드값.test.js 의 hex 회귀가 원리상 못 봤다 · 그 검사는 값 자리 두 파일만 본다). */
+    --잉크밤: #080605;   /* Ink Deep — 무대(방송 검수용 바닥) */
+    --종이:   #FBF7F0;   /* Paper — 본문 글자 */
+    --귀리:   #EDE7DC;   /* Oat — 보조 글자 */
+    --돌:     #C7BFB2;   /* Stone — 가장 흐린 라벨 */
+    --코랄:   #F96859;   /* Coral — 신호 1점 */
+    --카드바닥: rgba(43, 35, 32, .82);    /* Ink #2B2320 · 무대 위 합성 = #251E1B */
+    --테두리:   rgba(240, 227, 200, .16); /* Stitch #F0E3C8(실땀) */
   }
   html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
   body {
     /* 브랜드 폰트 정본(DESIGN.md:90) 그대로 — 송출 PC 에 파일이 없으면 스택이 알아서 내려간다. */
     font-family: 'Inter Tight', 'SUIT Variable', system-ui, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
-    color: var(--cream);
+    color: var(--종이);
     -webkit-font-smoothing: antialiased;
   }
   /* 무대 모드(?무대=1) — 마스코트.html 과 같은 무대(방송 없이 눈으로 검수). */
   body.무대 {
     background:
-      radial-gradient(120% 70% at 10% 5%, rgba(255,214,170,.30), rgba(255,214,170,0) 60%),
-      var(--navy2);
+      radial-gradient(120% 70% at 10% 5%, rgba(255,235,176,.30), rgba(255,235,176,0) 60%),
+      var(--잉크밤);
   }
 
   /* ── 기본 화면 = 학원 합산 전광판 (§8) ─────────────────────────── */
@@ -59,15 +63,15 @@
     padding: 18px 22px 16px;
     background: var(--카드바닥); border: 1px solid var(--테두리); border-radius: 14px;
   }
-  #합산 .제목 { font-size: 13px; letter-spacing: .12em; color: var(--slate); margin-bottom: 2px; }
+  #합산 .제목 { font-size: 13px; letter-spacing: .12em; color: var(--돌); margin-bottom: 2px; }
   #합산 .줄 { display: grid; grid-template-columns: auto auto; align-items: baseline; gap: 14px; }
-  #합산 .이름 { font-size: 15px; color: var(--cream3); }
+  #합산 .이름 { font-size: 15px; color: var(--귀리); }
   #합산 .값 {
     justify-self: end;
     font-size: 30px; font-weight: 700; line-height: 1;
     font-variant-numeric: tabular-nums; /* 숫자가 바뀌어도 폭이 안 흔들린다 */
   }
-  #합산 .값.모름 { font-size: 18px; color: var(--slate); font-weight: 500; }
+  #합산 .값.모름 { font-size: 18px; color: var(--돌); font-weight: 500; }
 
   /* ── 라운드 카드 (동심원 모서리: 바깥 16 = 안쪽 10 + 패딩) ─────── */
   #라운드 {
@@ -80,8 +84,8 @@
   }
   #라운드.보임 { opacity: 1; transform: translateX(-50%) translateY(0); }
   #라운드 .머리 { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-  #라운드 .꼬리표 { font-size: 12px; letter-spacing: .14em; color: var(--slate); }
-  #라운드 .남은 { font-size: 13px; color: var(--cream3); font-variant-numeric: tabular-nums; }
+  #라운드 .꼬리표 { font-size: 12px; letter-spacing: .14em; color: var(--돌); }
+  #라운드 .남은 { font-size: 13px; color: var(--귀리); font-variant-numeric: tabular-nums; }
   #라운드 .지시문 { margin: 12px 0 14px; font-size: 26px; font-weight: 700; line-height: 1.35; }
   #라운드 .보기목록 { display: grid; gap: 8px; }
   #라운드 .보기 {
@@ -89,16 +93,16 @@
     padding: 9px 12px; border: 1px solid var(--테두리); border-radius: 10px;
     font-size: 18px;
   }
-  #라운드 .보기 .번호 { color: var(--slate); font-weight: 700; font-variant-numeric: tabular-nums; }
-  #라운드 .보기 .몫 { font-size: 14px; color: var(--slate); font-variant-numeric: tabular-nums; opacity: 0; }
+  #라운드 .보기 .번호 { color: var(--돌); font-weight: 700; font-variant-numeric: tabular-nums; }
+  #라운드 .보기 .몫 { font-size: 14px; color: var(--돌); font-variant-numeric: tabular-nums; opacity: 0; }
   #라운드.공개 .보기 .몫 { opacity: 1; }
   /* 정답 = 신호 1점(Coral · 다크 위 글자 허용). 나머지는 가라앉힌다 — 「틀렸다」를 칠하지 않는다. */
-  #라운드 .보기.정답 { border-color: var(--coral); }
-  #라운드 .보기.정답 .번호 { color: var(--coral); }
-  #라운드.공개 .보기:not(.정답) { color: var(--slate); }
-  #라운드 .시계 { height: 3px; margin-top: 14px; background: rgba(231,221,199,.14); border-radius: 2px; overflow: hidden; }
-  #라운드 .시계 i { display: block; height: 100%; width: 100%; background: var(--coral); transform-origin: left center; }
-  #라운드 .꼬리 { margin-top: 12px; font-size: 13px; color: var(--slate); min-height: 1em; }
+  #라운드 .보기.정답 { border-color: var(--코랄); }
+  #라운드 .보기.정답 .번호 { color: var(--코랄); }
+  #라운드.공개 .보기:not(.정답) { color: var(--돌); }
+  #라운드 .시계 { height: 3px; margin-top: 14px; background: rgba(240,227,200,.14); border-radius: 2px; overflow: hidden; }
+  #라운드 .시계 i { display: block; height: 100%; width: 100%; background: var(--코랄); transform-origin: left center; }
+  #라운드 .꼬리 { margin-top: 12px; font-size: 13px; color: var(--돌); min-height: 1em; }
 
   /* ── 명령 피드백 토스트 (설계 §5 P3 — 채팅 답글이 아니라 오버레이로) ── */
   #토스트 {
@@ -112,7 +116,7 @@
     font-size: 16px;
     animation: 뜸 .3s ease both;
   }
-  #토스트 .알림 .무엇 { color: var(--cream3); font-size: 13px; letter-spacing: .06em; }
+  #토스트 .알림 .무엇 { color: var(--귀리); font-size: 13px; letter-spacing: .06em; }
   #토스트 .알림 .누구 { font-weight: 700; }
   #토스트 .알림.끝 { animation: 짐 .3s ease both; }
   @keyframes 뜸 { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -120,14 +124,14 @@
 
   .경고 {
     position: absolute; right: 12px; top: 12px; max-width: 44ch;
-    font: 13px/1.5 system-ui, sans-serif; color: var(--cream);
-    background: rgba(15,23,48,.9); border: 1px solid var(--coral);
+    font: 13px/1.5 system-ui, sans-serif; color: var(--종이);
+    background: rgba(43,35,32,.9); border: 1px solid var(--코랄);
     padding: 10px 12px; border-radius: 8px; white-space: pre-wrap;
   }
   #데모판 {
     position: absolute; left: 12px; top: 12px;
     font: 12px/1.6 ui-monospace, monospace; font-variant-numeric: tabular-nums;
-    color: var(--cream); background: rgba(15,23,48,.72);
+    color: var(--종이); background: rgba(43,35,32,.72);
     padding: 8px 10px; border-radius: 8px; display: none; white-space: pre-wrap;
   }
   body.데모 #데모판 { display: block; }
