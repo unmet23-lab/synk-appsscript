@@ -52,7 +52,7 @@ body{
   --castc:rgba(15,23,48,.15); --haloc:rgba(255,107,92,.16);
 }
 body.dark{
-  /* 다크 = Navy 2 무대 (v3 통과 세트 그대로).
+  /* 다크 = Graphite 무대 (v3 통과 세트 그대로 · 08-26 이름 현행화: 「Navy 2」는 무채축 08-18 에서 퇴역한 이름이고 값 #08090C 는 그대로 킷 Graphite 다).
      08-09부터 토글이 아니라 「질문 메뉴 hover 동안」 내려오는 무대다 —
      들어갈 땐 조금 빠르게(의도에 반응), 나올 땐 본래 속도로 풀린다. */
   --bg:#08090C; --ink:#E4E4E7; --sub:#8A8A8A; --line:#373737;
@@ -150,7 +150,7 @@ header>*{pointer-events:auto}
   position:fixed;left:0;top:0;height:2px;z-index:10;transform-origin:0 50%;pointer-events:none;
   opacity:0;transition:opacity .32s var(--ease);display:none;
   background:linear-gradient(90deg,
-    rgba(246,241,232,.95) 0%, rgba(255,107,92,.85) 12%,
+    rgba(250,250,249,.95) 0%, rgba(255,107,92,.85) 12%,   /* 08-26: 퇴역 크림 #F6F1E8 → 무채축 근사 흰색 #FAFAF9 */
     rgba(255,107,92,.42) 55%, rgba(255,107,92,0) 100%);
   filter:drop-shadow(0 0 6px rgba(255,107,92,.9)) drop-shadow(0 0 18px rgba(255,107,92,.5));
 }
