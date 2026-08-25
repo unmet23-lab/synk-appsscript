@@ -195,6 +195,8 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(idx), gl.STATIC_DRAW);
 
   /* ── 텍스처 ─────────────────────────────────────────────── */
+  /* 컷 수는 캐릭터마다 다르다 — 까몽은 눈웃음이 아직 없다. 없으면 그 어휘가 조용히 본체로 접힌다. */
+  const 컷수 = Object.keys(IMGS).length;
   const tex = {}; let ready = 0;
   for (const [k, src] of Object.entries(IMGS)) {
     const im = new Image();
@@ -209,7 +211,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       tex[k] = t; ready++;
       if (k === '본체') 깊이재기(im);          // 🔑 깊이는 «본체» 한 장에서만 뽑는다(표정이 바뀌어도 몸은 같다)
-      if (ready >= 3) 그리기(0);   // 첫 정지 프레임 — 숨은 탭에서도 빈 화면이 안 되게
+      if (ready >= 컷수) 그리기(0);   // 첫 정지 프레임 — 숨은 탭에서도 빈 화면이 안 되게
     };
     im.src = src;
   }
@@ -224,6 +226,17 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     const ctx = c.getContext('2d', { willReadFrequently: true });
     ctx.drawImage(img, 0, 0, P, P);
     const d = ctx.getImageData(0, 0, P, P).data;
+
+    /* 몸 색 = 알파 안쪽 픽셀의 «중앙값». 평균이 아니라 중앙값인 것은 눈·지느러미 같은
+       튀는 색이 평균을 끌고 가기 때문이다. 이 한 값이 캐릭터마다 눈 검출을 자동으로 맞춘다. */
+    const rs = [], gs = [], bs = [];
+    for (let i = 3; i < d.length; i += 4 * 7) {
+      if (d[i] > 60) { rs.push(d[i - 3]); gs.push(d[i - 2]); bs.push(d[i - 1]); }
+    }
+    const 중앙 = (arr) => { if (!arr.length) return 128; arr.sort((a, b) => a - b); return arr[arr.length >> 1]; };
+    const 몸색 = [중앙(rs), 중앙(gs), 중앙(bs)];
+    const 눈문턱 = 78;   // 몸 색과의 RGB 거리 — 넘으면 «눈» 후보
+
     let k = 0;
     for (let j = 0; j <= N; j++) {
       const py = Math.min(P - 1, Math.round((1 - j / N) * (P - 1)));   // v=0 이 바닥
@@ -237,8 +250,13 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         if (L >= 0 && d[o + 3] > 60) {
           const s = (px - cx) / hw;
           z = Math.sqrt(Math.max(0, 1 - s * s));
-          const lum = (d[o] + d[o + 1] + d[o + 2]) / 3;
-          if (lum < 70) z += 0.30;                                     // 눈 = 몸보다 앞
+          /* 눈 = «몸 색에서 가장 멀리 떨어진 작은 영역». 색을 박아 두면 캐릭터마다 갈린다 —
+             몽글은 밝은 몸 + 검은 눈이고 까몽은 어두운 몸 + 초록 구슬이라 반대다.
+             얼굴 높이(v 0.50~0.92)로 좁혀 지느러미·꼬리 같은 «몸의 다른 색»을 거른다. */
+          if (v >= 0.50 && v <= 0.92) {
+            const dr = d[o] - 몸색[0], dg = d[o + 1] - 몸색[1], db = d[o + 2] - 몸색[2];
+            if (Math.sqrt(dr * dr + dg * dg + db * db) > 눈문턱) z += 0.30;
+          }
         }
         zArr[k++] = z;
       }
@@ -436,7 +454,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   /* 🔑 그리기를 rAF 에서 «떼어» 둔다 — rAF 는 숨은 탭에서 아예 안 돈다(08-24 실측).
      떼어 두면 ①로드 직후 ②탭이 다시 보일 때 정지 화면 한 장을 남길 수 있다. */
   function 그리기(t) {
-    if (ready >= 3) {
+    if (ready >= 컷수) {
       const r = 격자(t); 그림자(r.눌림);
       gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
       gl.bufferData(gl.ARRAY_BUFFER, posArr, gl.DYNAMIC_DRAW);
