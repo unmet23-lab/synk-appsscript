@@ -41,8 +41,10 @@ if '--' in sys.argv:
 
 출력 = _인자.get('출력') or sys.exit('출력=<경로.glb> 가 필요하다')
 캐릭터 = _인자.get('캐릭터', '몽글')
-겹수 = int(_인자.get('겹', '5'))
-털길이 = float(_인자.get('털길이', '0.075'))
+겹수 = int(_인자.get('겹', '10'))
+# 🔴 털길이는 «눈 반경(몸폭의 4.3%)»보다 작아야 한다 — 크면 구슬이 털에 반쯤 묻히고
+#   캐치라이트만 솟아 「눈이 두 개」로 보인다(08-26 실측: 털 0.09 대 눈 반경 0.086).
+털길이 = float(_인자.get('털길이', '0.052'))
 해상도 = int(_인자.get('해상도', '1024'))
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -167,17 +169,39 @@ def 몽글몸(고리=64, 물결산=6, 물결깊이=None, 높이=None):
     def idx(i, j):
         return j * 고리 + (i % 고리)
 
+    # 🔑 «사진을 몸에 감는» UV (유호 확정 「2D 사진 정본의 재질을 지키면서 360도」).
+    #   패치를 타일링하면 288px 조각이 반복돼 섬유가 굵거나 무늬가 보인다 — 세 판을 그렇게 잃었다.
+    #   대신 정본 사진 자체를 원통 투영으로 붙인다: 각 높이의 링 반지름이 그 행의 반폭과 «같으므로»
+    #   u = 0.5 + 0.5·sin(정면기준각) 이면 **정면이 사진과 픽셀 단위로 겹친다.**
+    #   뒤쪽은 sin 이 같은 값을 두 번 지나 자동으로 미러된다(양모라 이음매가 안 읽힌다).
+    #   ⚠ 사진의 눈은 지운 판을 쓴다 — 안 그러면 뒤통수에도 눈이 그려진다.
+    사진세로 = float(_인자.get('사진세로', '1.0'))
+    uv여유 = float(_인자.get('uv여유', '0.86'))
+
+    최대반폭 = max(반폭[:쓸칸])
+
+    def 사진uv(i, jj_):
+        # ⚠ u 를 «전체 상자»로 정규화하면 옆면에 몸 밖 채움(회색)이 붙어 띠가 돈다(08-26).
+        #   각 행의 몸 좌우 끝이 ±반폭[j] 이므로 **그 행의 반폭으로** 정규화해야 겹친다.
+        t_ = 2 * math.pi * (i % 고리) / 고리
+        x_ = jj_ / 잘게
+        rw = 보간(x_)
+        # ⚠ u 를 끝(0·1)까지 쓰면 «실루엣 경계 픽셀»이 옆면 한가운데 와서 밝은 세로 띠가 된다.
+        #   가장자리는 누끼·채움이 번진 자리라 결이 없다 ⇒ 안쪽만 쓴다(여유).
+        u_ = 0.5 + math.sin(t_ - math.pi * 1.5) * (rw / (2.0 * 최대반폭)) * uv여유
+        v_ = x_ / (N - 1) * 사진세로
+        return (min(1.0, max(0.0, u_)), 1.0 - v_)
+
     for j in range(М - 1):
         for i in range(고리):
             a, b2, c, d = idx(i, j), idx(i + 1, j), idx(i + 1, j + 1), idx(i, j + 1)
             # ⚠ winding — 뒤집히면 노멀이 안쪽을 향해 셸이 몸 속으로 파고든다(08-26 실측 dot=−0.999).
             if j == 0:
                 면.append((a, d, c))
-                uv면.append(((i / 고리, 0.0), (i / 고리, 1 / (М - 1)), ((i + 1) / 고리, 1 / (М - 1))))
+                uv면.append((사진uv(i, 0), 사진uv(i, 1), 사진uv(i + 1, 1)))
             else:
                 면.append((a, d, c, b2))
-                uv면.append(((i / 고리, j / (М - 1)), (i / 고리, (j + 1) / (М - 1)),
-                            ((i + 1) / 고리, (j + 1) / (М - 1)), ((i + 1) / 고리, j / (М - 1))))
+                uv면.append((사진uv(i, j), 사진uv(i, j + 1), 사진uv(i + 1, j + 1), 사진uv(i + 1, j)))
     # 말이 링들을 잇는다
     for j in range(М - 1, М전체 - 1):
         for i in range(고리):
@@ -281,7 +305,7 @@ def 펠트타일(패치경로, 세기=None):
     """
     import numpy as np
     if 세기 is None:
-        세기 = float(_인자.get('노멀세기', '1.5'))
+        세기 = float(_인자.get('노멀세기', '0.5'))
     tex = bpy.data.images.load(패치경로)
     # 🔴 08-26 실측 — 색공간을 «명시»한다. 안 하면 블렌더가 이 PNG 의 sRGB 값을 선형으로
     #   취급해 통째로 밝아진다(읽힌 평균 #FBAA9F vs 파일 #F6695A). 렌더가 「바랜 분홍」이 된
@@ -294,6 +318,28 @@ def 펠트타일(패치경로, 세기=None):
     if float(rgb.max()) > 0.0 and float(np.percentile(rgb, 99.5)) > 0.95:
         # 값이 sRGB 로 들어온 판(빌드에 따라 다르다) — 선형으로 되돌려 기울기를 잰다
         rgb = np.where(rgb <= 0.04045, rgb / 12.92, ((rgb + 0.055) / 1.055) ** 2.4)
+    # 🔴 08-26 — 사진에는 «이미 음영이 구워져» 있다. 그걸 albedo 로 쓰면 3D 조명이 음영을
+    #   한 번 더 얹어 **이중**이 되고, 어두운 골이 새까맣게 눌려 «검은 얼룩»으로 읽힌다
+    #   (노멀을 끄고 겹을 1로 줄여도 남던 그 얼룩의 정체다 — 셸도 노멀도 타일도 아니었다).
+    #   ⇒ 저주파(음영)를 나눠 걷고 **고주파(결)만** 남긴다. 음영은 조명이 만들게 둔다.
+    평탄 = float(_인자.get('음영걷기', '0'))
+    if 평탄 > 0:
+        저 = rgb.copy()
+        칸 = max(2, int(min(W, H) / 14))
+        for _ in range(3):                      # 박스 블러 3회 ≈ 가우시안
+            누 = np.cumsum(np.pad(저, ((칸, 칸), (0, 0), (0, 0)), mode='wrap'), axis=0)
+            저 = (누[2 * 칸:] - 누[:-2 * 칸]) / (2 * 칸)
+            누 = np.cumsum(np.pad(저, ((0, 0), (칸, 칸), (0, 0)), mode='wrap'), axis=1)
+            저 = (누[:, 2 * 칸:] - 누[:, :-2 * 칸]) / (2 * 칸)
+        걷힘 = rgb / np.maximum(저, 1e-4) * float(rgb.mean())
+        rgb = rgb * (1.0 - 평탄) + np.clip(걷힘, 0.0, 1.0) * 평탄
+        벽 = np.clip(rgb, 0.0, 1.0)
+        srgb = np.where(벽 <= 0.0031308, 벽 * 12.92, 1.055 * 벽 ** (1 / 2.4) - 0.055)
+        평평 = bpy.data.images.new('펠트평탄', W, H, alpha=False)
+        나감 = np.ones((H, W, 4), dtype=np.float32)
+        나감[:, :, :3] = srgb
+        평평.pixels.foreach_set(나감.ravel())
+        tex = 평평
     Y = rgb @ np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)
     gx = np.roll(Y, -1, 1) - np.roll(Y, 1, 1)
     gy = np.roll(Y, -1, 0) - np.roll(Y, 1, 0)
@@ -340,8 +386,25 @@ def 펠트칠(nt, bsdf, 펠트, 법, 타일, 밝기=1.0):
     return 색텍
 
 # ── ③ 셸 — 겹을 «진짜 지오메트리»로 굽는다 ───────────────────────────────────
-def 셸입히기(몸, tex, 겹수, 길이, 몸색, 타일=3.0, 펠트=None, 법=None, 펠트타일수=(5.2, 1.6)):
-    """몸을 N 겹 복제해 노멀 방향으로 밀고, 겹마다 alphaCutoff 를 높인다."""
+def 셸입히기(몸, tex, 겹수, 길이, 몸색, 타일=3.0, 펠트=None, 법=None, 펠트타일수=None):
+    # 타일 배율 = «섬유가 화면에서 얼마나 크게 보이나». 조밀하면 텍셀이 화면 화소보다 작아져
+    #   섬유가 «날카로운 검은 선»으로 앨리어싱된다(08-26 가장자리 확대의 그 얼룩).
+    if 펠트타일수 is None:
+        펠트타일수 = (float(_인자.get('타일가로', '1.0')), float(_인자.get('타일세로', '1.0')))
+    """몸을 N 겹 복제해 노멀 방향으로 밀고, 겹마다 alphaCutoff 를 높인다.
+
+    컷상한 = 가장 바깥 겹의 문턱. 0.92 면 그 겹이 3.5% 만 남아 **실루엣에 털이 안 선다**
+      (08-26: 가장자리가 «깔끔한 선»으로 렌더돼 펠트가 아니라 고무로 읽혔다).
+      낮출수록 바깥 겹이 많이 남아 보송해지지만, 너무 낮으면 겹이 통째로 덮여 매끈해진다.
+    """
+    컷상한 = float(_인자.get('컷상한', '0.95'))
+    # 🔑 컷오프를 «선형»으로 나누면 표면과 실루엣이 서로를 잡아먹는다(08-26 실측):
+    #   상한을 높이면 바깥 겹이 3.5% 만 남아 실루엣은 보송하지만 «표면에 검은 구멍»이 뚫리고,
+    #   낮추면 구멍은 메워지지만 실루엣이 «깔끔한 선»이 되어 고무로 읽힌다.
+    #   ⇒ 곡선으로 나눈다: 안쪽 겹은 문턱을 낮게(촘촘히 덮어 속을 가린다),
+    #     바깥 겹만 급격히 높게(드문드문 남아 보풀이 선다). 곡률>1 이 그 모양이다.
+    컷곡률 = float(_인자.get('컷곡률', '2.2'))
+    그늘바닥 = float(_인자.get('겹그늘', '0.88'))
     안쪽 = s리니어(몸색)
     껍질들 = []
     for i in range(1, 겹수 + 1):
@@ -374,7 +437,10 @@ def 셸입히기(몸, tex, 겹수, 길이, 몸색, 타일=3.0, 펠트=None, 법=
         #   털이 보이는 것은 가닥이 아니라 **뿌리 그늘**이므로 t 를 비선형으로 눌러 폭을 4배로 연다.
         # 08-26 실측: 표면 결을 펠트 타일이 맡게 된 뒤로는 겹의 밝기 곱이 «누적»되어 흰빛으로 떴다.
         #   겹은 이제 실루엣 보풀만 맡으므로 1.0 을 넘지 않는다(위로 밝히지 않고 아래로만 어둡게).
-        밝기 = 0.62 + 0.38 * (t ** 1.4)
+        # ⚠ 겹 사이 그늘을 세게 주면 «검은 얼룩»이 된다 — 안쪽 겹(어두움)이 바깥 겹의 구멍으로
+        #   비치기 때문이다(08-26 가장자리 확대에서 자갈처럼 보인 것의 실체).
+        #   펠트 텍스처가 이미 골 그늘을 갖고 있으므로(L* 29~85) 여기서 또 깎을 이유가 없다.
+        밝기 = 그늘바닥 + (1.0 - 그늘바닥) * (t ** 1.4)
         if 펠트 is not None:
             펠트칠(nt, bsdf, 펠트, 법, 펠트타일수, 밝기)      # 결은 사진에서, 그늘은 겹 깊이에서
         else:
@@ -395,12 +461,12 @@ def 셸입히기(몸, tex, 겹수, 길이, 몸색, 타일=3.0, 펠트=None, 법=
         #   Greater Than 은 렌더러·내보내기와 무관하게 «셰이더가» 자르므로 어디서나 같은 그림이 나온다.
         자르기 = nt.nodes.new('ShaderNodeMath')
         자르기.operation = 'GREATER_THAN'
-        자르기.inputs[1].default_value = t * 0.92
+        자르기.inputs[1].default_value = (t ** 컷곡률) * 컷상한
         nt.links.new(텍노드.outputs['Alpha'], 자르기.inputs[0])
         nt.links.new(자르기.outputs['Value'], bsdf.inputs['Alpha'])
         # 🔑 glTF exporter 는 이 둘을 읽어 alphaMode=MASK · alphaCutoff 를 쓴다.
         #   5.x 에서 이름이 바뀐 자리가 있어 있는 것만 세팅한다(없으면 후처리가 GLB JSON 에 직접 박는다).
-        for 키, 값 in (('blend_method', 'CLIP'), ('alpha_threshold', t * 0.92),
+        for 키, 값 in (('blend_method', 'CLIP'), ('alpha_threshold', (t ** 컷곡률) * 컷상한),
                       ('surface_render_method', 'DITHERED')):
             try:
                 setattr(m, 키, 값)
@@ -408,7 +474,7 @@ def 셸입히기(몸, tex, 겹수, 길이, 몸색, 타일=3.0, 펠트=None, 법=
                 pass
         새.data.materials.clear()
         새.data.materials.append(m)
-        껍질들.append((새, t * 0.92))
+        껍질들.append((새, (t ** 컷곡률) * 컷상한))
         if i == 겹수:
             print(f'[캐릭터3D] 진단 · 바깥겹 재질: '
                   f"surface_render_method={getattr(m, 'surface_render_method', '없음')} "
@@ -451,7 +517,7 @@ def 구슬눈(반경=None, 눈v=None, 지름몫=None, 간격몫=None, 털두께=
     털 = 털두께 if 털두께 is not None else 털길이
     # 🔴 셸이 몸을 털길이만큼 덮는다 — 눈 중심을 «털 표면»에 두어야 절반이 솟는다.
     #   몸 표면에 두면 08-26 처럼 통째로 묻힌다(같은 함정 두 번째).
-    r표면 = r몸 + 털
+    r표면 = r몸 + 털 + 반경 * 0.34 if False else r몸 + 털
     몸폭 = 2.0                                   # 몽글몸() 이 max 반폭을 1.0 으로 정규화한다
     반경 = 반경 if 반경 else 몸폭 * 지름몫 * 0.5
     간격 = 몸폭 * 간격몫
@@ -462,17 +528,14 @@ def 구슬눈(반경=None, 눈v=None, 지름몫=None, 간격몫=None, 털두께=
     검정.use_nodes = True
     b = 검정.node_tree.nodes['Principled BSDF']
     b.inputs['Base Color'].default_value = (*s리니어(색['Ink']), 1.0)
-    b.inputs['Roughness'].default_value = 0.14
+    b.inputs['Roughness'].default_value = 0.085     # 정본의 «광 나는 구슬» — 반사로 캐치라이트를 낸다
     if 'Metallic' in b.inputs:
         b.inputs['Metallic'].default_value = 0.0
-    흰 = bpy.data.materials.new('캐치라이트')
-    흰.use_nodes = True
-    w = 흰.node_tree.nodes['Principled BSDF']
-    w.inputs['Base Color'].default_value = (*s리니어(색['Paper']), 1.0)
-    w.inputs['Roughness'].default_value = 0.08
-    if 'Emission Color' in w.inputs:
-        w.inputs['Emission Color'].default_value = (*s리니어(색['Paper']), 1.0)
-        w.inputs['Emission Strength'].default_value = 0.45
+    if 'Specular IOR Level' in b.inputs:
+        b.inputs['Specular IOR Level'].default_value = 0.72
+    if 'Coat Weight' in b.inputs:
+        b.inputs['Coat Weight'].default_value = 0.55
+        b.inputs['Coat Roughness'].default_value = 0.06
     for 쪽 in (-1, 1):
         x = 쪽 * r표면 * math.sin(각)
         y = -r표면 * math.cos(각)
@@ -484,13 +547,9 @@ def 구슬눈(반경=None, 눈v=None, 지름몫=None, 간격몫=None, 털두께=
         for p in 눈.data.polygons:
             p.use_smooth = True
         눈들.append(눈)
-        bpy.ops.mesh.primitive_uv_sphere_add(radius=반경 * 0.27, segments=16, ring_count=10)
-        빛 = bpy.context.object
-        빛.name = f'캐치_{"좌" if 쪽 < 0 else "우"}'
-        빛.location = (x - 쪽 * 반경 * 0.30, y - 반경 * 0.62, z + 반경 * 0.34)
-        빛.data.materials.append(흰)
-        for p in 빛.data.polygons:
-            p.use_smooth = True
+        # 🔴 캐치라이트를 «별도 구»로 두던 것을 걷었다 — 눈이 옆으로 벌어지면 구슬 밖으로
+        #   떨어져 「눈이 두 개·세 조각」으로 보였다(08-26 얼굴 확대). 정본의 반짝임은
+        #   물체가 아니라 **재질 반사**다 ⇒ 거칠기·반사로 낸다(아래 눈구슬 재질).
     return 눈들
 
 
@@ -547,7 +606,8 @@ def 굽기():
     판갈이()
     os.makedirs(os.path.dirname(출력), exist_ok=True)
     맵 = 털맵(os.path.join(os.path.dirname(출력), '털밀도.png'), 해상도)
-    패치 = _인자.get('펠트') or os.path.join(REPO, 'docs', '캐릭터', '펠트패치_0815', 'Coral.png')
+    # 🔑 기본 텍스처 = 정본 사진에서 «눈만 지우고 몸만 잘라낸» 판. 원통 UV 로 그대로 감는다.
+    패치 = _인자.get('펠트') or os.path.join(REPO, 'docs', '캐릭터', '생명공방_0826', '몽글_몸텍스처.png')
     펠트, 법 = (펠트타일(패치) if os.path.exists(패치) else (None, None))
     if 펠트 is None:
         print('⚠ 펠트 패치를 못 찾았다 — 단색으로 굽는다:', 패치)
@@ -622,7 +682,8 @@ def GLB알파고치기(경로, 컷오프들):
 
 
 # ── ⑦ 미리보기 — EEVEE 로 360° 를 «네 각도»에서 본다 ─────────────────────────
-def 미리보기(접두, 각도들=(0, 90, 180, 270), 너비=560):
+def 미리보기(접두, 각도들=(0, 90, 180, 270), 너비=None):
+    너비 = 너비 or int(_인자.get('너비', '560'))
     """🔑 셸은 헤어 파티클이 «아니라» 그냥 메시다 — 그래서 EEVEE 가 정상 속도로 돈다.
     (헤어 파티클에서 EEVEE Next 가 레거시보다 40배 느린 함정 #114752 을 원리적으로 비켜간다.)
     이 렌더 시간이 곧 «영화형을 EEVEE 로 굽는 비용»의 실측이다.
