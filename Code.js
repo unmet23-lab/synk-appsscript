@@ -2925,7 +2925,7 @@ function calcAll() {
           // [v9.50·B1] 세계관 내레이터 — 진화 순간 배너를 그 학생의 실데이터(이름·몬스터·문법·기록)로 개인화(결정론 템플릿 6종)
           alertOut.push([crownToday2 ? '🔥 오늘 도전·성장을 인정받았어요! 최고예요 🎉'
             : evoRecent ? hashPick_(NARRATE_EVO, id + todayYmd0)
-                .replace('{n}', r[1] || id).replace('{m}', String(mon.stage || '몬스터')) // [v9.54] pfData는 15열(0~14)만 읽는다 — 범위 밖 인덱스(18) 참조로 항상 '몬스터'가 나오던 것을 현 단계명으로 교정
+                .replace('{n}', r[1] || id).replace('{m}', String(mon.stage || '캐릭터')) // [v9.54] pfData는 15열(0~14)만 읽는다 — 범위 밖 인덱스(18) 참조로 항상 폴백이 나오던 것을 현 단계명으로 교정 · [08-26] 폴백 낱말을 '캐릭터'로(③ 청소 인계 · 이 자리는 학생에게 보이는 «표시»지 시트 열 이름이 아니다)
                 .replace('{g}', gEvoForm ? '\'' + gEvoForm + '\' 문법을 익히고 ' : '')
                 .replace('{t}', String(t || 0))
             : isBday6 ? '🎂 생일 축하해요! 오늘의 주인공이에요 🎉'
