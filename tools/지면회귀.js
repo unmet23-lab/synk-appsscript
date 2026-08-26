@@ -57,6 +57,36 @@ function 크롬찾기() {
 
 function fileURL(p) { return 'file:///' + encodeURI(p.replace(/\\/g, '/')); }
 
+/** 페이지의 «전체» 높이를 먼저 묻는다 — 못 물으면 null(그러면 기본 높이로 굽는다).
+ *  왜 필요한가(08-27 실측): --screenshot 은 **뷰포트만** 찍는다. 지면 31벌은 대개 긴 문서라
+ *  첫 화면만 재면 아래쪽 변화가 통째로 «0.000% 통과»로 샌다 — 새는 방향은 언제나 통과다. */
+function 전체높이(chrome, htmlPath, 너비, 방) {
+  // 원본에 스크립트를 심지 않는다(지면을 건드리면 그 지면을 잰 게 아니다).
+  // 대신 같은 너비의 iframe 에 실어 안쪽 scrollHeight 를 되묻는다.
+  const 자 = `<!doctype html><meta charset="utf-8"><style>html,body{margin:0}iframe{width:${너비}px;height:${기본높이}px;border:0}</style>
+<iframe id="f" src="${fileURL(htmlPath)}"></iframe><pre id="SYNK_H_OUT">SYNK_H=0</pre>
+<script>
+ const f=document.getElementById('f'), o=document.getElementById('SYNK_H_OUT');
+ const 재기=()=>{try{const d=f.contentDocument;
+   o.textContent='SYNK_H='+Math.max(d.documentElement.scrollHeight,d.body?d.body.scrollHeight:0);
+ }catch(e){o.textContent='SYNK_H=0';}};
+ f.addEventListener('load',()=>{재기();setTimeout(재기,400);});
+</script>`;
+  const p = path.join(방, '자.html');
+  try {
+    fs.writeFileSync(p, 자, 'utf8');
+    const out = execFileSync(chrome, [
+      '--headless=new', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
+      '--allow-file-access-from-files', '--virtual-time-budget=8000',
+      `--window-size=${너비},${기본높이}`, '--dump-dom', fileURL(p),
+    ], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'], timeout: 60000 });
+    const m = out.match(/SYNK_H=(\d+)/);
+    const h = m ? parseInt(m[1], 10) : 0;
+    // 터무니없이 긴 지면은 자른다 — 메모리도, 비교 시간도 여기서 터진다.
+    return h > 0 ? Math.min(h, 20000) : null;
+  } catch { return null; }
+}
+
 /** 한 벌을 굽는다. 실패하면 null. */
 function 굽기(chrome, htmlPath, outPng, 너비, 높이) {
   try {
@@ -188,7 +218,7 @@ function main(argv) {
   };
   const ref = 값('--기준', 'HEAD');
   const 너비 = parseInt(값('--너비', String(기본너비)), 10) || 기본너비;
-  const 높이 = parseInt(값('--높이', String(기본높이)), 10) || 기본높이;
+  const 높이지정 = parseInt(값('--높이', '0'), 10) || 0;   // 0 = 전체 지면을 자동으로 잰다
   const 허용 = parseFloat(값('--허용', String(기본허용)));
 
   const 먹는인자 = new Set(['--기준', '--너비', '--높이', '--허용']);
@@ -222,8 +252,19 @@ function main(argv) {
       const 옛 = 옛판꺼내기(ref, 이름, 작업방);
       if (!옛) { console.log(`  신규  ${이름} — «${ref}» 에 없던 지면이라 견줄 상대가 없다`); continue; }
 
-      const pngA = 굽기(chrome, 옛, path.join(방, 'a.png'), 너비, 높이);
-      const pngB = 굽기(chrome, path.resolve(이름), path.join(방, 'b.png'), 너비, 높이);
+      // 전체 지면을 잰다 — 뷰포트만 찍으면 첫 화면 아래 변화가 「0.000% 통과」로 샌다.
+      // 두 판의 높이가 다르면 «큰 쪽»에 맞춰 찍는다(그래야 늘어난 자리도 그림에 보인다).
+      let 잴높이 = 높이지정;
+      let 높이알림 = '';
+      if (!잴높이) {
+        const hA = 전체높이(chrome, 옛, 너비, 방);
+        const hB = 전체높이(chrome, path.resolve(이름), 너비, 방);
+        잴높이 = Math.max(hA || 기본높이, hB || 기본높이);
+        if (hA && hB && hA !== hB) 높이알림 = ` · 길이 ${hA}→${hB}px`;
+      }
+
+      const pngA = 굽기(chrome, 옛, path.join(방, 'a.png'), 너비, 잴높이);
+      const pngB = 굽기(chrome, path.resolve(이름), path.join(방, 'b.png'), 너비, 잴높이);
       if (!pngA || !pngB) {
         console.error(`  ⚠못잼  ${이름} — 굽기 실패(${!pngA ? '옛 판' : '현재 판'})`);
         못잰것++; continue;
@@ -241,9 +282,9 @@ function main(argv) {
       const 통과 = r.비율 <= 허용;
       결과들.push({ 파일: 이름, ...r });
       if (통과) {
-        console.log(`  통과   ${이름} — ${r.비율.toFixed(3)}%`);
+        console.log(`  통과   ${이름} — ${r.비율.toFixed(3)}%${높이알림}`);
       } else {
-        console.log(`  🔴다름 ${이름} — ${r.비율.toFixed(3)}% (${r.다른픽셀.toLocaleString()}px · 최대차 ${r.최대차})`);
+        console.log(`  🔴다름 ${이름} — ${r.비율.toFixed(3)}% (${r.다른픽셀.toLocaleString()}px · 최대차 ${r.최대차})${높이알림}`);
         달라짐++;
       }
     }
@@ -265,4 +306,4 @@ function main(argv) {
 }
 
 if (require.main === module) process.exit(main(process.argv.slice(2)));
-module.exports = { 굽기, 견주기, 크롬찾기 };
+module.exports = { 굽기, 견주기, 크롬찾기, 전체높이 };
