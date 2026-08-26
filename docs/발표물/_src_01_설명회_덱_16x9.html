@@ -140,16 +140,16 @@ h1.sm + .mn{ font-size:18mm; }
 .dark .cts .c .v{ color:var(--cream-3); }
 
 /* ══ 리허설표(마지막 장 · 투사용 아님) ══ */
-.reh{ background:var(--paper); justify-content:flex-start; padding:5mm 16mm; } /* 08-24 ▷ 53개·행 늘어 14→5mm — 투사 안 하는 쪽이라 여백보다 잘리지 않는 것이 먼저 */
-.reh h2{ font-size:8mm; font-weight:800; letter-spacing:-.025em; }
-.reh .sub{ font-size:3.8mm; color:var(--navy-3); margin-top:1.6mm; line-height:1.45; }
-.reh table{ width:100%; border-collapse:collapse; margin-top:2.6mm; font-size:3mm; line-height:1.28; }
-.reh th,.reh td{ text-align:left; padding:1mm 2.2mm; border-bottom:.25mm solid var(--hair); vertical-align:top; }
+.reh{ background:var(--paper); justify-content:flex-start; padding:4mm 14mm; } /* 08-24 ▷ 53개·행 늘어 14→5mm · 08-26 v7(▷77·행 20)로 다시 조여 4mm — 투사 안 하는 쪽이라 여백보다 잘리지 않는 것이 먼저 */
+.reh h2{ font-size:7mm; font-weight:800; letter-spacing:-.025em; }
+.reh .sub{ font-size:3.3mm; color:var(--navy-3); margin-top:1.2mm; line-height:1.36; }
+.reh table{ width:100%; border-collapse:collapse; margin-top:1.6mm; font-size:2.65mm; line-height:1.2; }
+.reh th,.reh td{ text-align:left; padding:.75mm 2mm; border-bottom:.25mm solid var(--hair); vertical-align:top; }
 .reh th{ font-size:2.9mm; color:var(--navy-3); font-weight:800; letter-spacing:.08em; background:var(--cream-2); }
 .reh td.n{ font-weight:800; white-space:nowrap; color:var(--navy-3); }
 .reh td.c{ white-space:nowrap; color:var(--navy-3); }
 .reh tr.mark td{ background:var(--coral-wash); }
-.reh .note{ margin-top:3mm; border-left:1mm solid var(--navy-3); padding:1.6mm 0 1.6mm 4mm; font-size:3.2mm; line-height:1.45; color:var(--navy-3); }
+.reh .note{ margin-top:2.2mm; border-left:1mm solid var(--navy-3); padding:1.2mm 0 1.2mm 3.4mm; font-size:2.95mm; line-height:1.38; color:var(--navy-3); }
 .reh .note b{ color:var(--navy); font-weight:800; }
 
 @media screen{
@@ -382,33 +382,41 @@ h1.sm + .mn{ font-size:18mm; }
 <section class="sl reh">
   <h2>원장 리허설표 — 어느 ▷ 구간에 어느 장을 띄우는가</h2>
   <div class="sub">
-    대본 = <b>08_설명회_원장_스피치.txt</b> v6·08-24수리 · ▷ = 통역이 끊기는 지점(본문 53개) ·
-    <b>이 장은 투사하지 않습니다</b>(인쇄해 손에 들거나 발표자 화면에만) · 낭독 약 7분 · 통역 포함 실소요 14분 안팎.
+    대본 = <b>08_설명회_원장_스피치.txt</b> <b>v7 · 2026-08-26</b> · ▷ = 통역이 끊기는 지점(<b>본문 77개</b> · 낭독자에게 절의 2개는 안 셈) ·
+    <b>이 장은 투사하지 않습니다</b>(인쇄해 손에 들거나 발표자 화면에만) · 낭독 약 7분 · 통역 포함 실소요 14분 안팎.<br>
+    <b>주의 — v7 은 원고 순서를 바꿨습니다.</b> 「저희는 새 학원입니다」가 §1 로 맨 앞에 왔고(옛 판은 뒤쪽),
+    §5 「개원 첫날」·§7 「부모님께 보여드리는 것」이 새로 섰습니다. 아래 표는 <b>v7 순서</b>로 적었습니다 —
+    화면 번호가 뛰는 자리가 그래서 생깁니다. 대응 장이 없는 세 자리는 <b>「새 장 필요」</b>로 적어 두었습니다.
   </div>
   <table>
     <tr><th style="width:14mm">장</th><th style="width:48mm">화면</th><th style="width:34mm">대본 구간</th><th>넘기는 신호 — 이 말을 하기 직전에 넘긴다</th></tr>
-    <tr><td class="번호">01</td><td>표지 · 슬로건</td><td class="c">입장~시작 전</td><td>청중 착석 동안 띄워 둔다. 첫 마디와 함께 02로.</td></tr>
-    <tr><td class="번호">02</td><td>약속 하나, 질문 하나</td><td class="c">▷ 1</td><td>“약속 하나와 질문 하나를 들고 이 자리에 섰습니다”</td></tr>
-    <tr><td class="번호">03</td><td>TOPIK은 확실하게</td><td class="c">▷ 2–3</td><td>“먼저 약속입니다”</td></tr>
-    <tr><td class="번호">04</td><td>그 다음에 우리 아이는?</td><td class="c">▷ 4</td><td>“그리고 질문입니다”</td></tr>
-    <tr><td class="번호">05</td><td>손안에 박사급 AI</td><td class="c">▷ 5–8</td><td>“지금 우리는 어떤 시대에 살고 있습니까”</td></tr>
-    <tr><td class="번호">06</td><td>점수는 이제 기본</td><td class="c">▷ 9–10</td><td>“그래서 여쭙고 싶습니다”</td></tr>
-    <tr><td class="번호">07</td><td>“나 이제 뭐 하지?”</td><td class="c">▷ 11–18</td><td>“한 장면을 상상해 보겠습니다”</td></tr>
-    <tr class="mark"><td class="번호">08</td><td>세 가지 힘 (3열)</td><td class="c">▷ 19–28</td><td>“저는 세 가지라고 확신합니다” — <b>이 장은 오래 머문다(10구간)</b></td></tr>
-    <tr><td class="번호">09</td><td>몸이 깨어날 때</td><td class="c">▷ 29–30</td><td>“하나. 뇌과학 학습법입니다”</td></tr>
-    <tr><td class="번호">10</td><td>팀으로 만든 진짜 경험</td><td class="c">▷ 31–32</td><td>“둘. 「싱크 크루」 프로젝트입니다”</td></tr>
-    <tr><td class="번호">11</td><td>“왜 배우는가”를 묻습니다</td><td class="c">▷ 33–34</td><td>“셋. 「나침반」 세션입니다”</td></tr>
-    <tr><td class="번호">12</td><td>한국어에 영어까지</td><td class="c">▷ 35</td><td>“넷. 한국어에 영어까지 더합니다”</td></tr>
-    <tr><td class="번호">13</td><td>졸업할 때 세 가지 (3열)</td><td class="c">▷ 36–40</td><td>“자격증 하나만 가지고 나가지 않습니다”</td></tr>
-    <tr class="mark"><td class="번호">14</td><td>저희는 새 학원입니다</td><td class="c">▷ 41–47</td><td>“정직하게 말씀드릴 것이 하나 있습니다” — <b>화면이 말을 멈추는 자리. 시선을 사람에게.</b> AI 대목(▷44–46)도 이 화면으로(7구간 머묾)</td></tr>
-    <tr><td class="번호">15</td><td>오늘 저녁, 물어봐 주세요</td><td class="c">▷ 48–50</td><td>“오늘 집에 돌아가시면”</td></tr>
-    <tr class="mark"><td class="번호">16</td><td>슬로건 + 상담 안내</td><td class="c">▷ 51 ~ 끝</td><td>“합격은 기본으로 챙기겠습니다” — <b>슬로건을 읽는 동안 화면에 그 문장이 떠 있어야 한다.</b> 질의응답 내내 띄워 둔다</td></tr>
+    <tr><td class="번호">01</td><td>표지 · 슬로건</td><td class="c">입장~시작 전</td><td>청중 착석 동안 띄워 둔다. 첫 마디 「안녕하십니까」와 함께 넘긴다.</td></tr>
+    <tr class="mark"><td class="번호">14</td><td>저희는 새 학원입니다</td><td class="c">▷ 1–5</td><td>“가장 먼저 말씀드릴 것은, SYNK LAB에 «없는» 것입니다” — <b>주의 — v7 에서 이 장이 «맨 앞»으로 왔다.</b> 화면이 말을 멈추는 자리, 시선을 사람에게.</td></tr>
+    <tr><td class="번호">02</td><td>약속 하나, 질문 하나</td><td class="c">▷ 6</td><td>“약속 하나와 질문 하나를 들고 이 자리에 섰습니다”</td></tr>
+    <tr><td class="번호">03</td><td>TOPIK은 확실하게</td><td class="c">▷ 7–8</td><td>“먼저 약속입니다”</td></tr>
+    <tr><td class="번호">04</td><td>그 다음에 우리 아이는?</td><td class="c">▷ 9</td><td>“그리고 질문입니다”</td></tr>
+    <tr><td class="번호">05</td><td>손안에 박사급 AI</td><td class="c">▷ 10–11</td><td>“요즘 AI가 해내는 일은 정말 많습니다” — ▷10 뒤 <b>반 박자 쉬고 미소</b>(원고 지시)</td></tr>
+    <tr><td class="번호">06</td><td>점수는 이제 기본</td><td class="c">▷ 12–13</td><td>“그런 세상에서, TOPIK 몇 급을 땄다는 것 하나로”</td></tr>
+    <tr><td class="번호">07</td><td>“나 이제 뭐 하지?”</td><td class="c">▷ 14–20</td><td>“온 가족이 기뻐합니다” — 7구간 머문다</td></tr>
+    <tr class="mark"><td class="번호">08</td><td>세 가지 힘 (3열)</td><td class="c">▷ 21–29</td><td>“AI 시대에 우리 아이에게 남는 힘은 무엇일까요” — <b>이 장은 오래 머문다(9구간)</b></td></tr>
+    <tr class="mark"><td class="번호">—</td><td><b>새 장 필요</b> · 개원 첫날 — 이름 없는 땅</td><td class="c">▷ 30–36</td><td>“2027년 2월 25일, 문을 열면서 시작됩니다” — v7 §5 앞머리. <b>대응 화면이 없다.</b> 없으면 08장을 그대로 두고 말로만 간다</td></tr>
+    <tr class="mark"><td class="번호">—</td><td><b>새 장 필요</b> · 자기 가이드 셋 (몽글·까몽·마린)</td><td class="c">▷ 37–44</td><td>“첫 주에 아이는 두 가지를 정합니다” — 한국어 이름 + 가이드. <b>대응 화면이 없다</b></td></tr>
+    <tr><td class="번호">09</td><td>몸이 깨어날 때</td><td class="c">▷ 45–47</td><td>“매 수업은 100% 한국어로 몸을 움직이는 K컬처 활동으로 엽니다”</td></tr>
+    <tr><td class="번호">10</td><td>팀으로 만든 진짜 경험</td><td class="c">▷ 48–49</td><td>“크루는 함께 배우는 우리 반 팀의 이름입니다”</td></tr>
+    <tr><td class="번호">11</td><td>“왜 배우는가”를 묻습니다</td><td class="c">▷ 50–51</td><td>“시즌마다 「나침반」 세션도 엽니다”</td></tr>
+    <tr><td class="번호">12</td><td>한국어에 영어까지</td><td class="c">▷ 52</td><td>“한국어 옆에는 글로벌 영어를 둡니다”</td></tr>
+    <tr><td class="번호">13</td><td>졸업할 때 세 가지 (3열)</td><td class="c">▷ 53–55</td><td>“자격증 하나만 들고 나가지 않습니다” — 싱크 포트폴리오</td></tr>
+    <tr class="mark"><td class="번호">—</td><td><b>새 장 필요</b> · 부모님께 보여드리는 것</td><td class="c">▷ 56–61</td><td>주간 리포트 · <b>학부모 화면 셋(리포트·소식·우리 아이)</b> · 캐릭터 7단계. v7 §7 전체. <b>대응 화면이 없다</b></td></tr>
+    <tr><td class="번호">—</td><td>AI를 막지 않습니다 — 네 낱말</td><td class="c">▷ 62–66</td><td>“막지 않습니다. 대신 가르칩니다” — 맡기기·부탁하기·가려보기·책임지기. 14장이 맨 앞으로 갔으므로 <b>이 대목을 받을 화면이 비었다</b></td></tr>
+    <tr><td class="번호">15</td><td>오늘 저녁, 물어봐 주세요</td><td class="c">▷ 67–74</td><td>“오늘 집에 돌아가시면” — 질문 셋</td></tr>
+    <tr class="mark"><td class="번호">16</td><td>슬로건 + 상담 안내</td><td class="c">▷ 75–77</td><td>“정원은 16명, 선생님은 17명입니다” — <b>슬로건을 읽는 동안 화면에 그 문장이 떠 있어야 한다.</b> 질의응답 내내 띄워 둔다</td></tr>
   </table>
   <div class="note">
-    <b>정본 프롬프트 1 목록과 다른 점 3가지</b> — ① <b>14장(정직 고지) 신설</b> — 정본 목록에 대응 화면이 없어,
-    <b>한 줄만 남겨 시선을 사람에게 돌리는</b> 장으로 만들었습니다.
-    ② <b>상담 안내를 마무리 장에 합침</b> — 질의응답 동안 슬로건과 연락처가 함께 떠 있는 편이 쓸모 있습니다.
-    ③ <b>AI 대목(신설 ▷44–46)은 새 장 없이 14장이 받습니다</b> — 16장 상한 + 정직 고지의 연장(근거 = 14장 주석).<br>
+    <b>주의 — 이 덱은 아직 v7 을 못 따라갔습니다</b>(2026-08-26 실측). 대본이 v6 53구간에서 <b>v7 77구간</b>으로 늘고
+    순서가 바뀌었는데 화면 16장은 그대로입니다. 위 표는 <b>v7 기준으로 다시 매긴 것</b>이라 리허설에는 이대로 쓰실 수 있습니다.
+    다만 <b>화면 넷이 비어 있습니다</b> — 개원 첫날 · 가이드 셋 · 부모님께 보여드리는 것 · AI 네 낱말.
+    새 장을 넣으려면 정본 프롬프트 1 의 <b>「구성 12~16장」 상한</b>을 고쳐야 하고, 그건 유호님 판정 자리입니다.<br>
+    <b>상담 안내는 마무리 장에 합쳐 두었습니다</b> — 질의응답 동안 슬로건과 연락처가 함께 떠 있는 편이 쓸모 있습니다.<br>
     <b>슬로건 아래 한 줄은 장식이 아닙니다</b>(01·16장) — 「17」은 부연 없이 나가면 숫자로만 읽힙니다.
     지우지 마시고, 몽골어 번역에도 <b>두 줄을 한 벌로</b> 넘기세요.<br>
     <b>몽골어는 전부 비어 있습니다</b>(검수자 확정 전 금지 · 요청 = 몽골어검수_요청_큐). 자리는 한국어와 <b>같은 크기</b>로 잡아 뒀습니다 —
