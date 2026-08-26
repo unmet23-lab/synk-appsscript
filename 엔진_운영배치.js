@@ -1860,45 +1860,6 @@ function expandAttendanceBatch_(ss) {
   Logger.log('출석 일괄 전개: +' + newRows.length + '명 / 행 ' + doneIdx.length);
 }
 
-// [v9.36] 수동 1회 — 재학생 소급 인정: 현 단계번호(AP)까지의 게이트 문법을 '도달(소급인정)' upsert.
-//   실행 순서: setupGrammarBank() → seedMasteryForExisting() → 다음 calcAll부터 게이트 활성.
-//   왜: 시드 없이는 링커 재학생의 여정 카드가 "이 단계 문법 0/12"로 표시되는 서사 모순. 신규생은 시드 불필요(무데이터=포인트 진화).
-function seedMasteryForExisting() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const tz = ss.getSpreadsheetTimeZone();
-  const now = new Date();
-  const today = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
-  const pf = ss.getSheetByName('profiles');
-  if (!pf || pf.getLastRow() < 2 || pf.getMaxColumns() < 42) { Logger.log('seedMastery: profiles/AP열 없음 — calcAll 먼저 실행'); return; }
-  const pfData = pf.getRange(2, 1, pf.getLastRow() - 1, 42).getValues();
-  const ml = ensureSheet(ss, 'mastery_log', MASTERY_LOG_HEADERS); // [v9.240] 헤더 정본 공유(엔진_셋업확장)
-  const mkey = {};
-  if (ml.getLastRow() >= 2) {
-    ml.getRange(2, 1, ml.getLastRow() - 1, 3).getValues().forEach((r, i) => {
-      if (r[0] && r[1]) mkey[String(r[0]).trim() + '|' + String(r[1]).trim()] = { row: i + 2, st: String(r[2] || '') };
-    });
-  }
-  const newRows = [], upRows = [];
-  pfData.forEach(r => {
-    if (!r[0] || r[3] !== 'student') return;
-    const sid = String(r[0]).trim();
-    const curIdx = Number(r[41]) || 1; // AP 단계번호
-    GRAMMAR_BANK.forEach(g => {
-      const stg = grammarStageOf_(g[0]);
-      if (!stg || stg > curIdx) return; // 현 단계까지의 게이트 문법 전부(도착 단계 포함)
-      const k = sid + '|' + g[0], cur = mkey[k];
-      if (!cur) { mkey[k] = { row: 0, st: '도달' }; newRows.push([sid, g[0], '도달', today, today, '소급인정', now]); }
-      else if (cur.st === '연습' && cur.row > 0) { cur.st = '도달'; upRows.push(cur.row); }
-    });
-  });
-  if (newRows.length) ml.getRange(ml.getLastRow() + 1, 1, newRows.length, 7).setValues(newRows);
-  upRows.forEach(row => { ml.getRange(row, 3).setValue('도달'); ml.getRange(row, 5).setValue(today); ml.getRange(row, 7).setValue(now); });
-  Logger.log('소급 인정 시드: 신규 ' + newRows.length + ' · 상향 ' + upRows.length + '행');
-}
-
-// [v9.54] masteryNewCountByYm_ 제거 — v9.36에서 리포트카드용으로 만들었으나 이후 개편에서 호출부가
-//   사라져 참조 0건(죽은 코드)임을 전수 스캔으로 확인. 필요해지면 git 이력(v9.52 이전)에서 복원.
-
 /* ===================== [v7.9] 학부모 주간 다이제스트 ===================== */
 // 일요일 22시 — 등원·포인트·도전·성장·레이드·배운 것을 학부모에게 한 통으로 (등원 즉시 메일 대체)
 function parentWeeklyDigest() { parentWeeklyDigestCore_(''); } // 일요일 밤 본발송
@@ -2688,82 +2649,6 @@ function absenceSection_(wantText) {
       (o.pending ? ' · 보류 ' + o.pending : '') + (o.late ? ' · 지각정정 ' + o.late : ''));
   });
   return L.join('\n');
-}
-
-/* ===================== 진화 감지 + 임박 알림 ===================== */
-
-function checkEvolution() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const pf = ss.getSheetByName('profiles');
-  const last = pf.getLastRow();
-  if (last < 2) return;
-  if (pf.getRange('AA1').getValue() !== '이전몬스터') pf.getRange('AA1').setValue('이전몬스터');
-  if (pf.getRange('AD1').getValue() !== '진화임박알림') pf.getRange('AD1').setValue('진화임박알림');
-
-  const data = pf.getRange(2, 1, last - 1, 30).getValues();
-  const order = monsterOrder_(ss); // [v9.22] 헬퍼로 단일화 (checkAchievements와 공유)
-
-  const newAA = [], newAD = [], evolved = [], imminent = [];
-  data.forEach(r => {
-    const cur = String(r[18] || '');   // S 몬스터단계
-    const prev = String(r[26] || '');  // AA 이전몬스터
-    const pct = Number(r[19]) || 0;    // T 진화진행률
-    const adPrev = String(r[29] || '');// AD 진화임박알림(단계)
-    newAA.push([cur]);
-    let ad = adPrev;
-    if (r[0] && r[3] === 'student') {
-      if (prev && cur !== prev && (order[cur] || 0) > (order[prev] || 0)) {
-        evolved.push({ id: r[0], name: r[1], from: prev, to: cur,
-                       pEmail: String(r[25] || '').trim() });
-      }
-      if (pct >= 90 && cur && adPrev !== cur) {
-        imminent.push({ id: r[0], name: r[1], cls: String(r[4] || ''), adIdx: newAD.length, adPrev: adPrev, line: '· ' + r[0] + ' ' + r[1] + ' — ' + cur + ' ' + pct + '%' }); // [v9.28] cls 추가(강사 라우팅용) · [v9.34] adIdx/adPrev — 발송 성공 시에만 AD 확정
-        ad = cur;
-      }
-    }
-    newAD.push([ad]);
-  });
-
-  if (evolved.length) {
-    const withEmail = PARENT_MAIL_EVOLUTION ? evolved.filter(e => e.pEmail.indexOf('@') > -1) : []; // [v5.4] 진화는 인앱 전용
-    if (withEmail.length && quotaOk(withEmail.length)) {
-      withEmail.forEach(e => {
-        MailApp.sendEmail(e.pEmail,
-          '[SYNK] 🐣→🐲 ' + e.name + ' 학생의 성장 파트너가 진화했어요!', // [v9.74] 학부모 메일 — 몬스터→성장 파트너
-          e.name + ' 학생의 SYNK 성장 파트너가 [' + e.from + '] 에서 [' + e.to +
-          '] (으)로 진화했습니다!\n꾸준한 노력의 결과예요. 많이 칭찬해주세요 🎉\n\n- SYNK 학원');
-      });
-    }
-    adminMail('[SYNK] 🐲 캐릭터 진화 ' + evolved.length + '명',
-      evolved.map(e => '· ' + e.id + ' ' + e.name + ': ' + e.from + ' → ' + e.to).join('\n')); // [v5.4] 브리핑 통합 · [v9.34] quotaOk 게이트 밖으로 — DIGEST_MODE 큐라 쿼터 무관, 쿼터 부족 밤 원장 브리핑 증발 수정
-  }
-  if (imminent.length) { // [v5.4] 브리핑 통합
-    adminMail('[SYNK] ✨ 진화 임박 ' + imminent.length + '명 (90%+)',
-      '조금만 더 하면 진화하는 학생들입니다. 수업에서 살짝 응원해주세요!\n\n' +
-      imminent.map(x => x.line).join('\n'));
-    // [v9.28] 담당 강사에게도 라우팅 — 응원할 사람이 정작 못 받던 정보를 원장 전용에서 공유로
-    const emapEv = teacherEmailMap_(ss);
-    const byClsEv = {};
-    const sentClsEv = {}; // [v9.34] 발송 성공 반만 기록
-    imminent.forEach(x => { if (x.cls) (byClsEv[x.cls] = byClsEv[x.cls] || []).push(x.line); });
-    Object.keys(byClsEv).forEach(cls => {
-      (emapEv.byClass[cls] || []).forEach(t => {
-        if (quotaOk(1)) {
-          MailApp.sendEmail(t.email, '[SYNK] ✨ ' + cls + ' 진화 임박 ' + byClsEv[cls].length + '명',
-            '수업에서 살짝 응원해주세요! 조금만 더 하면 진화해요 🐲\n\n' + byClsEv[cls].join('\n'));
-          sentClsEv[cls] = 1;
-        }
-      });
-    });
-    // [v9.34] 강사 메일이 쿼터로 못 나간 반은 AD를 되돌려 다음 실행에 재알림 (강사 없는 반은 원장 브리핑 큐가 담당하므로 확정)
-    imminent.forEach(x => {
-      if (x.cls && (emapEv.byClass[x.cls] || []).length && !sentClsEv[x.cls]) newAD[x.adIdx][0] = x.adPrev;
-    });
-  }
-  // [v9.34] AA/AD 갱신을 발송 뒤로 — 발송 전 상태 갱신은 메일 실패(크래시·쿼터) 시 알림 영구 유실이던 순서 교정
-  writeIfChanged(pf, 2, 27, newAA);
-  writeIfChanged(pf, 2, 30, newAD);
-  Logger.log('진화 ' + evolved.length + ' / 임박 ' + imminent.length);
 }
 
 /* ===================== [함께한날 막5] 장면 감지 + 원장 네 블록 + 강사 D-1 =====================

@@ -1490,27 +1490,12 @@ const FORTUNES = [
   '평소 안 쓰던 표현 하나에 도전하면 대박이 나는 날 🎲','캐릭터가 "오늘 주인님 멋질 예정"이라고 예언했어요 🔮',
   '물 한 잔 마시고 시작하면 집중력 만렙이 되는 날 💧','오늘의 한 걸음이 스토리북의 한 문장이 되는 날 📖'];
 
-// [v9.12] 🌱 몬스터의 한마디 — 상태 × 성장 단계 말투(1-2 아기말 · 3-5 친구말 · 6-7 현자말)
+/* [함께한날 막6] 🌱 한마디 공용 뱅크 — 구 몬스터 말투 축(today/miss3/miss7/evosoon/idle · 단계 3톤)을
+ * 소각했다. miss 계열은 결석 재촉이라 발화표 S19(「끊김 절대 언급 ✗」)가 금지하는 축이고, 나머지는
+ * 가이드 대사(GUIDE_SPEAK)가 잇는다. 남긴 둘(생일·도전인정)은 sceneSpeak_ 와 몽골어 미러가 같이 쓴다. */
 const SPEAK = {
-  today: [
-    ['왔다! 왔다! 오늘도 가치(같이) 크는 거야? 🐣','주인님 냄새다! 오늘도 붙어 있을래 🥚','헤헤, 기다렸어! 오늘은 뭐 배워? 🍼'],
-    ['왔구나! 네 발소리만 듣고도 알았어 😊','기다렸어 — 오늘도 같이 자라자 🌱','네가 오면 교실이 2도쯤 밝아지는 거 알아? ✨'],
-    ['왔구나. 오늘도 같이 할 생각에 아침부터 좋았어 ✨','기다리고 있었어 — 오늘은 뭘 배워 볼까? 📜','네가 문을 여는 순간, 내 하루도 시작돼']], // [08-27] 왕정 말투(그대·~라네·👑) 걷음
-  miss3: [
-    ['창밖만 보고 이떠(있어)… 주인님 자리는 내가 지키는 중! 🐣','오늘도 문 소리마다 고개를 들었어… 보고 시퍼(싶어) 🥺','주인님 책상에 먼지 못 앉게 후후 불고 있어!'],
-    ['창밖만 보고 있어… 네 자리는 늘 여기 있어 🌱','네 목소리가 그리운 날이야 — 돌아오면 제일 먼저 반겨 줄게','괜찮아, 천천히 와도 돼. 나 여기서 튼튼하게 기다릴게 💪'],
-    ['네 자리에 불 하나 켜 두고 있어 🕯️','기다리는 것도 나쁘지 않지만 — 네가 오면 훨씬 좋아','돌아올 길은 밝혀 뒀어. 서두르지 않아도 돼 ✨']], // [08-27] 왕정 말투 걷음
-  miss7: [ // [v9.69] 톤당 2→4문장 — 장기 미출석 학생이 같은 문장을 즉시 재노출당하던 최박 버킷 보강
-    ['주인님이 준 포인트 꼭 안고 씩씩하게 기다리는 중! 돌아오면 제일 먼저 안아 줄 거야 🤗','알 속에서도 주인님 응원해! 언제든 돌아와 🥚','주인님 자리에서 매일 아침 인사 연습하고 이떠(있어)! 🐣','보고 싶은 만큼 씩씩하게 자라는 중! 돌아오면 깜짝 놀랄걸? 🌟'],
-    ['네가 쌓아 둔 포인트, 하나도 안 사라지고 여기 있어 — 언제든 이어서 가자 🌱','오래 못 봐도 우린 한 팀이야. 문은 항상 열려 있어 🚪','네가 없는 동안 배운 거 복습하면서 기다렸어 — 같이 이어서 하자 📖','돌아오는 날이 우리의 새 챕터 첫 페이지야 ✨'],
-    ['돌아오는 데 걸린 시간도 네 시간이야 — 네 기록은 그대로 여기 있어 📜','별은 구름에 가려도 빛을 잃지 않아 ⭐','쉼표는 문장의 끝이 아니야 — 네 이야기는 계속되고 있어 ✒️','씨앗은 안 보이는 데서도 뿌리를 내려 🌳']], // [08-27] 왕정 말투 걷음
-  evosoon: ['몸이 근질근질… 곧 뭔가 일어날 것 같아! (다음 진화까지 {n}P) ⚡','껍질이(몸이) 간지러워! 조금만 더! (진화까지 {n}P) 🔥','변화의 기운이 차오르고 있네… 앞으로 {n}P라네 ✨','심장이 두근두근! 새로운 내가 되기까지 {n}P! 💓','다음 모습, 살짝 보여 주고 싶은데… {n}P만 더 모아 줄래? 👀','진화의 문이 열리기 직전이야 — 마지막 {n}P, 같이 가자! 🚪'], // [v9.69] 3→6 — 임박 구간(며칠 지속)에 매일 같은 문장이 반복되던 것 보강
-  crown: ['오늘 도전하는 모습, 세상에서 제일 멋졌어 🔥 밤새 자랑할 거야','어제의 너를 넘었어 — 눈부셨어 🌱','네가 손 드는 순간, 내가 제일 먼저 봤다! ✨','오늘의 도전, 도감에 있는 친구들한테 다 자랑했어! 🔥✨','인정은 하루지만 그 기억은 평생 남아 ✨','도전하는 주인님 그리는 중 — 완성되면 제일 잘 보이는 곳에 걸어 둘게 🎨🔥'], // [v9.69→08-20] 도전·성장 인정 반응(옛 왕관 세계관 은퇴 — 결정 08-20)
-  bday: ['오늘은 주인공의 날! 내가 세상에서 제일 먼저 축하해 🎂🎉','생일 축하해 — 네가 태어나서 나도 태어날 수 있었어 🎂','일 년 중 제일 반짝이는 날! 오늘은 공부보다 축하가 먼저야 🎈','태어나 줘서 고마워 — 덕분에 나의 세계가 생겼어 🎁'], // [v9.69] 2→4 — 내년 같은 날 같은 문장 확률 50%→25%
-  idle: [
-    ['오늘은 구름 구경 중 ☁️ 주인님은 뭐 해?','시냅스 씨앗 심는 연습 하고 이떠(있어) 🌱','하품 크게 하고 기지개! 오늘도 화이팅 🐣'],
-    ['월요일은 캐릭터도 살짝 졸려… 같이 힘내 보자 ☀️','오늘 급식(간식) 뭐야? 나도 궁금해 🍙','네 필통 속에서 낮잠 자는 상상했어 😴'],
-    ['고요한 날에도 시냅스는 자라는 법이라네 🍃','오늘의 바람에서 가을 냄새가 나는군 — 배움하기 좋은 날씨야','천천히 가도 괜찮네. 방향이 맞다면 말일세 🧭']]
+  crown: ['오늘 도전하는 모습, 세상에서 제일 멋졌어 🔥 밤새 자랑할 거야','어제의 너를 넘었어 — 눈부셨어 🌱','네가 손 드는 순간, 내가 제일 먼저 봤다! ✨','오늘의 도전, 친구들한테 다 자랑했어! 🔥✨','인정은 하루지만 그 기억은 평생 남아 ✨','도전하는 주인님 그리는 중 — 완성되면 제일 잘 보이는 곳에 걸어 둘게 🎨🔥'], // [v9.69→08-20] 도전·성장 인정 반응(옛 왕관 세계관 은퇴 — 결정 08-20)
+  bday: ['오늘은 주인공의 날! 내가 세상에서 제일 먼저 축하해 🎂🎉','생일 축하해 — 네가 태어나서 나도 태어날 수 있었어 🎂','일 년 중 제일 반짝이는 날! 오늘은 공부보다 축하가 먼저야 🎈','태어나 줘서 고마워 — 덕분에 나의 세계가 생겼어 🎁'] // [v9.69] 2→4 — 내년 같은 날 같은 문장 확률 50%→25%
 };
 // [v9.16] 💬 학부모 대화 카드 — 몽골어 질문 로테이션 (아이에게 이렇게 물어보세요)
 // [v9.69] 4→12문항 확장 — 4개 로테이션은 평균 4일 주기 재노출(전 뱅크 중 최박)로 "매일 같은 카드" 체감의
@@ -1530,7 +1515,6 @@ const PARENT_Q = [
   '«Багшийгаа солонгосоор юу гэж дууддаг вэ?» (선생님을 한국어로 뭐라고 불러?)'
 ];
 
-function speakTone_(idx) { return idx <= 2 ? 0 : (idx <= 5 ? 1 : 2); }
 function hashPick_(arr, seedStr) { let h = 0; for (let i = 0; i < seedStr.length; i++) h = (h * 31 + seedStr.charCodeAt(i)) % 100000; return arr[h % arr.length]; }
 
 // [v9.40] 카드 타이포 토큰 — 전 HTML 카드 루트에 삽입되는 공통 폰트 스택. Glide Rich Text는 WebView라
@@ -1581,34 +1565,6 @@ const FRAME_CSS = [
 ];
 const FRAME_ICON = ['🌱','⚡','🔗','💡','🕯️','✨','🌟']; // [08-27] 마지막 칸 👑 → 🌟 (왕관 폐지)
 // [v9.35] pct·rem 선택 인자 — 값이 있으면(홈 액자 BD열) 게이지 바(9px·99px 라운드)+한 줄 문구 렌더, 없으면 생략
-function buildMonsterFrame_(dispName, dispImg, apIdx, pct, rem) {
-  const fi = Math.min(Math.max(apIdx - 1, 0), 6);
-  const f = FRAME_CSS[fi], ic = FRAME_ICON[fi];
-  // [v9.43] 홈 액자의 몬스터가 숨을 쉰다 — 살아있는 파트너 (미지원 기기는 정적 폴백)
-  const inner = dispImg && dispImg.indexOf('http') === 0
-    ? '<div style="background:#fff;border-radius:12px;overflow:hidden;"><img class="skBr" src="' + dispImg + '" style="width:100%;display:block;' + ANIM_BREATH + '"/></div>'
-    : '<div style="background:#fff;border-radius:12px;text-align:center;padding:28px 0;"><span class="skBr" style="display:inline-block;font-size:64px;' + ANIM_BREATH + '">' + ic + '</span></div>';
-  const hasG = typeof pct === 'number' && !isNaN(pct);
-  const pctC = hasG ? Math.max(0, Math.min(100, pct)) : 0;
-  const remN = Number(rem) || 0;
-  const cap = '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px 2px;">' +
-    '<div style="font-size:13px;font-weight:800;color:#1D1D1C;">' + ic + ' ' + dispName +
-    ' <span style="font-weight:700;font-size:11px;color:' + f[3] + ';background:' + f[2] + ';border-radius:99px;padding:1px 8px;">' + f[0] + '</span></div>' +
-    (hasG ? '<div style="font-size:11.5px;font-weight:700;color:#AE322A;">' + (remN > 0 ? '진화까지 ' + remN + 'P' : 'MAX') + '</div>' : '') +
-    '</div>';
-  const gauge = hasG
-    ? '<div style="background:#EAEAEA;border-radius:99px;height:9px;margin:5px 4px 3px;overflow:hidden;">' +
-      '<div style="width:' + pctC + '%;height:100%;border-radius:99px;background:linear-gradient(90deg,#FD9C87,#F96859);"></div></div>' +
-      '<div style="font-size:11px;color:#6B7280;padding:0 4px 3px;">' +
-      (remN > 0 ? '🧠 시냅스 게이지 ' + pctC + '% — 다음 진화까지 ' + remN + 'P!' : '🌟 모든 진화 완료') + '</div>'
-    : '';
-  return CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#FBF7F0,#E4E4E7 55%,#FEF0E9);padding:8px;border-radius:18px;border:2px solid ' + f[1] + ';box-shadow:0 6px 18px rgba(249,104,89,.14);">' +
-    inner + cap + gauge + '</div>';
-}
-
-// [v9.35] ⚔️ 레이드 카드 · [v9.78] stuN=사정권 콜아웃 흡수 · [v9.79] 미니멀 스킨(유호 "훨씬 트렌디하고 미니멀하게"
-//   — 실렌더 A/B 판정 M2 다크 히어로 채택): 유색 보더 폐지 → 흰 카드+이중 소프트 섀도, 라벨/빅넘버 타이포 위계.
-//   goal 0 = 휴식주(보스휴식주·신규 반). won = raid 시트 '격파' 마킹(정산 전이라도 dmg≥goal이면 달성 표기).
 function buildRaidCard_(clsName, goal, dmg, won, stuN) {
   const head = '<div style="display:flex;justify-content:space-between;align-items:center;">' +
     '<span style="' + HUD_LABEL + '">이번 주 레이드</span>' + (clsName ? hudChip_(clsName) : '') + '</div>';
@@ -2133,41 +2089,18 @@ function buildWalkedRoadHtml_(o) {
   const season = o.seasonT
     ? '<div style="font-size:12px;padding-top:8px;color:#8D857A;">🎫 시즌 ' + escHtml_(String(o.seasonT.n)) + ' «' + escHtml_(o.seasonT.name) + '» · ' + o.seasonT.week + '주차 — 만난 날 <b style="color:#2B2320;">' + o.seasonT.a + '</b></div>'
     : '';
+  // [v9.84 승계] 목표줄 폴백 사슬(드림‖상담목표) + 페이스라인 — 여정 카드에서 걸어온길로 이사(콜드스타트에도 ㉢ 삶 축이 빈 칸이 안 되게)
+  const goalTxt = o.dream || o.cGoal || '';
+  const goalLine = goalTxt ? '<div style="font-size:12px;padding-top:8px;">🧭 나의 한 줄 — 「' + escHtml_(goalTxt) + '」' + (o.pace ? '<div style="font-size:11px;color:#8D857A;">' + escHtml_(o.pace) + '</div>' : '') + '</div>' : '';
+  // [v9.56 승계] 추천 현황 — 내 추천으로 온 친구 수(0명이면 줄 자체 생략)
+  const refLine = (o.refN || 0) > 0 ? '<div style="font-size:12px;padding-top:6px;color:#8D857A;">🤝 내 추천으로 온 친구 <b style="color:#2B2320;">' + o.refN + '</b>명</div>' : '';
   return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FBF7F0;border:2px solid #F0E3C8;border-radius:16px;padding:12px 14px;color:#2B2320;line-height:1.8;">' +
     '<div style="font-size:13px;font-weight:800;">' + escHtml_(o.guideName || '몽글') + '와 걸어온 길</div>' +
     '<div style="font-size:12.5px;padding-top:4px;">함께한 날 <b>' + o.days + '</b> · 내가 맞힌 말 <b>' + o.mastered + '</b>' + (o.bank ? ' / ' + o.bank : '') + '</div>' +
     (bars ? '<div style="padding-top:8px;"><div style="font-size:11.5px;color:#8D857A;">달마다 만난 날</div><div style="height:46px;">' + bars + '</div></div>' : '') +
-    growth + dream + season + '</div>';
+    growth + dream + goalLine + season + refLine + '</div>';
 }
 
-function buildDexHtml_(stages, t, curIdx) {
-  let cells = '', met = 0;
-  stages.forEach((s, i) => {
-    const reached = t >= s.th;
-    if (reached) met++;
-    const cur = (i + 1) === curIdx;
-    const im = String(s.img || '');
-    if (reached) {
-      const br = cur ? ANIM_BREATH : ''; // 현재 파트너만 숨쉬기 — 전부 움직이면 조잡, 하나만 살아있으면 시선이 간다
-      cells += '<div style="width:23%;margin:1%;background:linear-gradient(135deg,#FBF7F0,#E4E4E7);border:2px solid ' + (cur ? '#F96859' : '#FBB7A3') + ';border-radius:12px;text-align:center;padding:7px 0 5px;float:left;' + (cur ? 'box-shadow:0 0 0 3px rgba(249,104,89,.16);' : '') + '">' +
-        (im.indexOf('http') === 0
-          ? '<img class="skBr" src="' + im + '" style="display:block;margin:0 auto;width:40px;height:40px;border-radius:9px;background:#fff;' + br + '"/>' // [v9.48] 도감 셀도 중앙 고정
-          : '<div class="skBr" style="font-size:26px;line-height:40px;' + br + '">' + (FRAME_ICON[Math.min(i, 6)] || '🐣') + '</div>') +
-        '<div style="font-size:10.5px;font-weight:800;color:#1D1D1C;padding-top:2px;">' + escHtml_(s.name) + (cur ? ' ✦' : '') + '</div></div>';
-    } else {
-      cells += '<div style="width:23%;margin:1%;background:#F3F4F6;border:2px dashed #D1D5DB;border-radius:12px;text-align:center;padding:7px 0 5px;float:left;opacity:.8;">' +
-        '<div style="font-size:26px;line-height:40px;">🌫️</div>' +
-        '<div style="font-size:10px;color:#9CA3AF;padding-top:2px;">??? · ' + s.th + 'P</div></div>';
-    }
-  });
-  return CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #D1D2D4;border-radius:16px;padding:11px 12px;">' +
-    '<div style="font-size:13.5px;font-weight:800;padding-bottom:5px;">🗂️ 캐릭터 도감 <span style="color:#AE322A;">' + met + '/' + stages.length + ' 만남</span></div>' +
-    '<div style="overflow:hidden;">' + cells + '</div>' +
-    '<div style="clear:both;font-size:10.5px;color:#9CA3AF;padding-top:5px;">포인트를 모으면 다음 친구가 모습을 드러내요 ✨</div></div>';
-}
-
-// [v9.44] 🗓️ 출석 달력 카드 — "출석을 잘 하는지"를 한눈에(학부모 시인성 핵심). 이번 달 7열 그리드:
-//   출석일=블루 도장 ✓ · 수업일인데 안 온 과거일=옅은 빈 칸 · 수업일 아님=점 · 오늘=링 강조 · 미래=흐림.
 function buildAttCalHtml_(attSet, now, tz, clsType) {
   const y = now.getFullYear(), m = now.getMonth();
   const first = new Date(y, m, 1), daysN = new Date(y, m + 1, 0).getDate();
@@ -2202,109 +2135,6 @@ function buildAttCalHtml_(attSet, now, tz, clsType) {
 
 // [v9.20] 📖 나의 여정 — 개인 스토리 센터피스. 몬스터 여정 + 개인 마일스톤 + 실력 성장을 한 카드로.
 //   "개개인 스토리가 가장 중요" 철학의 홈: 모든 학생이(조용한 학생도) 자기 이야기의 주인공.
-function myJourneyHtml_(o) {
-  const mon = o.mon || {}, rec = o.rec || {}, acad = o.acad;
-  const idxJ = mon.idx || 1, stagesJ = o.stages || [];
-  // [v9.35] 진화 스트립 — 이미지 있으면 썸네일(이전 34px·현재 44px 강조 링·미도달 🔒 dashed), 없으면 텍스트 체인 폴백(재건 안전)
-  const hasImgs = stagesJ.some(s => String(s.img || '').indexOf('http') === 0);
-  let stripJ;
-  if (hasImgs) {
-    const cells = [];
-    stagesJ.forEach((s, i) => {
-      const n = i + 1, im = String(s.img || '');
-      if (n > idxJ) return; // 미도달은 아래 🔒로
-      const cur = n === idxJ;
-      const sz = cur ? 44 : 34, rd = cur ? 11 : 9;
-      const bd = cur ? '2.5px solid #F96859' : '2px solid #FD9C87';
-      const ring = cur ? 'box-shadow:0 0 0 3px rgba(249,104,89,.18);' : '';
-      const brJ = cur ? ANIM_BREATH : ''; // [v9.43] 여정 스트립의 현재 파트너도 숨쉰다
-      cells.push(im.indexOf('http') === 0
-        ? '<img class="skBr" src="' + im + '" style="width:' + sz + 'px;height:' + sz + 'px;border-radius:' + rd + 'px;background:#fff;border:' + bd + ';' + ring + brJ + '"/>'
-        : '<div class="skBr" style="width:' + sz + 'px;height:' + sz + 'px;border-radius:' + rd + 'px;background:#fff;border:' + bd + ';' + ring + brJ + 'text-align:center;line-height:' + sz + 'px;font-size:' + (cur ? 20 : 15) + 'px;">' + (FRAME_ICON[Math.min(i, 6)] || '🐣') + '</div>');
-    });
-    cells.push('<div style="flex:1;height:3px;background:repeating-linear-gradient(90deg,#FBB7A3 0 6px,transparent 6px 11px);"></div>');
-    for (let k = 0; k < Math.min(stagesJ.length - idxJ, 2); k++)
-      cells.push('<div style="width:34px;height:34px;border-radius:9px;background:#EAEAEA;border:2px dashed #FBB7A3;text-align:center;line-height:34px;font-size:15px;">🔒</div>');
-    stripJ = '<div style="display:flex;gap:4px;align-items:center;padding:9px 0 10px;">' + cells.join('') + '</div>';
-  } else {
-    const journey = stagesJ.map((s, i) => {
-      const cur = (i + 1) === idxJ, past = (i + 1) < idxJ;
-      return '<span style="color:' + (cur ? '#AE322A;font-weight:800' : (past ? '#9CA3AF' : '#D1D5DB')) + ';">' + s.name + '</span>';
-    }).join(' <span style="color:#D1D5DB;">›</span> ');
-    stripJ = '<div style="font-size:12px;padding:6px 0 9px;">🐣 ' + journey + '</div>';
-  }
-  const evoLine = o.evoDate ? '⚡ 진화한 날 <b>' + o.evoDate + '</b><br/>' : '';
-  const titles = (o.titles || []).filter(String);
-  const titleLine = titles.length ? '🏅 칭호 <b>' + titles.slice(0, 4).join(' · ') + '</b><br/>' : '';
-  const aiTitleLine = o.aiTitle ? '🎖️ 이달의 칭호 <b>' + o.aiTitle + '</b><br/>' : ''; // [v9.50·B3] AI 유니크 칭호
-  const chemLine = (o.chem && o.chem.n) ? '🤝 이 달의 단짝 <b>' + o.chem.n + '</b> (' + o.chem.c + '일 동행)<br/>' : '';
-  const hasLv = acad && acad.curLevel != null && acad.curLevel !== '';
-  const hasMk = acad && acad.curMock != null && acad.curMock !== '';
-  const acadLine = (hasLv || hasMk)
-    ? '📈 ' + (hasLv ? '지금 <b>' + acad.curLevel + '급</b>' : '') + (hasLv && hasMk ? ' · ' : '') + (hasMk ? '모의 <b>' + acad.curMock + '점</b>' : '') + ' — 실력이 자라는 중'
-    : '📈 첫 평가를 향해 한 걸음씩';
-  const storyBlock = o.story
-    ? '<div style="background:#FFFBEB;border:1px dashed #FCD34D;border-radius:11px;padding:9px 12px;font-size:12px;color:#92400E;margin-top:10px;line-height:1.7;">💬 <b>지난 이야기</b><br/>' + o.story + '</div>'
-    : '';
-  // [v9.29] 🌟 나의 목표 — 학생이 직접 쓴 드림 한 줄(CB 80)을 카드 최상단에 노출. 비어있으면 작성 유도. 이스케이프 필수(사용자 입력).
-  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  const goalTxt = o.dream || o.cGoal; // [v9.84] 학생 자기선언 우선 — 비면 입학 상담 목표(첫날부터 빈 카드 대신 자기 목표)
-  const dreamLine = '<div style="background:#FBF7F0;border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;color:#1D1D1C;margin-bottom:9px;">' +
-    (goalTxt ? '🌟 나의 목표: ' + esc(goalTxt) : '🌟 나의 목표를 적어보세요') + '</div>' +
-    // [v9.84·도전안] 페이스라인 — 목표 기한 역산 "남은 주" 한 줄(판정·보장 없음, syncProfiles가 매일 재계산·기한 경과 시 자동 소멸)
-    (o.pace ? '<div style="background:#FFF7ED;border-radius:10px;padding:6px 11px;font-size:11.5px;font-weight:700;color:#C2410C;margin-bottom:9px;">' + esc(o.pace) + '</div>' : '');
-  // [v9.56] 🎫 시즌 패스 트랙 — 커리큘럼 8주 도달제의 앱 표면(seasonT 없으면 통째 생략). 8주차부터 랩업(공유용) 동반
-  let seasonB = '', wrapB = '';
-  if (o.seasonT) {
-    const sw = o.seasonT.week, inRun = sw >= 1 && sw <= 8;
-    const segs = [];
-    for (let si = 1; si <= 8; si++) {
-      const done8 = inRun && si < sw, cur8 = inRun && si === sw;
-      segs.push('<div style="flex:1;height:9px;border-radius:5px;background:' + (cur8 ? 'linear-gradient(90deg,#F96859,#FD9C87);box-shadow:0 0 0 2px rgba(249,104,89,.22)' : (done8 || sw > 8) ? '#F96859' : '#E5E7EB') + ';"></div>');
-    }
-    const rightLb = inRun ? sw + '/8주' : (sw > 8 ? '완주 🎉' : '개막 전');
-    const phase = sw < 1 ? '곧 개막! 준비됐지?' : sw > 8 ? '시즌 종료 — 다음 시즌 준비 중' : sw === 8 ? '🏁 승급 도전 주간 — 도달했을 때 올라간다!' : '도달 게이지를 채우는 중 — 8주차에 승급 도전!';
-    seasonB = '<div style="background:#fff;border-radius:12px;padding:8px 11px;margin-bottom:9px;">' +
-      '<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;"><span>🎫 시즌' + esc(String(o.seasonT.n)) + ' 「' + esc(String(o.seasonT.name)) + '」</span><span style="color:#AE322A;">' + rightLb + '</span></div>' +
-      '<div style="display:flex;gap:3px;padding:7px 0 4px;">' + segs.join('') + '</div>' +
-      '<div style="font-size:11px;color:#6B7280;">' + phase + '</div></div>';
-    if (sw >= 8) {
-      wrapB = '<div style="background:linear-gradient(135deg,#FDE68A,#FCD34D);border-radius:11px;padding:9px 12px;font-size:12px;margin-top:10px;line-height:1.9;color:#78350F;">🎉 <b>시즌' + esc(String(o.seasonT.n)) + ' 나의 기록</b><br/>출석 <b>' + (o.seasonT.a || 0) + '일</b> · 경험치 <b>+' + (o.seasonT.p || 0) + 'P</b>' + (o.seasonT.c ? ' · 🔥 도전·성장 <b>' + o.seasonT.c + '회</b>' : '') + '<br/><span style="font-size:11px;">📸 이 카드를 캡처해 가족·친구에게 자랑해요!</span></div>';
-    }
-  }
-  const refLine = (o.refN || 0) > 0 ? '🤝 내 추천으로 온 친구 <b>' + o.refN + '명</b><br/>' : ''; // [v9.56] 추천 루프(개원 후 leads 데이터부터 자동 표시)
-  // [v9.50·A5] 주간 퀘스트 결산 — 주간 발행물 신설 대신 여정 카드에 통합(채널 피로 방지)
-  const wkB = o.wk && (o.wk.p > 0 || o.wk.a > 0)
-    ? '<div style="background:#FBF7F0;border-radius:11px;padding:8px 11px;font-size:12px;margin-top:10px;line-height:1.9;">🗡️ <b>이번 주 퀘스트 결산</b><br/>출석 <b>' + o.wk.a + '일</b> · 경험치 <b>+' + o.wk.p + 'P</b>' + (o.wk.c ? ' · 🔥 도전·성장 <b>' + o.wk.c + '회</b>' : '') + '</div>'
-    : '';
-  // [v9.50·A7] 성장 전/후 — 첨삭 데이터 재활용(한 달 전 내 문장 vs 지금), 재등록 시점의 가장 반박 불가능한 증거
-  const gwB = o.growth
-    ? '<div style="background:#F0FDF4;border:1px dashed #86EFAC;border-radius:11px;padding:8px 11px;font-size:12px;margin-top:10px;line-height:1.8;">🌱 <b>성장 전/후</b><br/><span style="color:#9CA3AF;">' + esc(String(o.growth.d1)) + '</span> ' + esc(String(o.growth.a).slice(0, 42)) + '<br/><span style="color:#16A34A;font-weight:700;">' + esc(String(o.growth.d2)) + '</span> ' + esc(String(o.growth.b).slice(0, 42)) + '</div>'
-    : '';
-  // [v9.35] 소프트 글로우 축 — 헤더 행(제목+우측 코랄 '진화까지 nP'), 토큰(그라디언트·라운드 18/12·섀도)
-  const remJ = mon.rem || 0;
-  return CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#FBF7F0,#E4E4E7 55%,#FEF0E9);border:2px solid #FBB7A3;border-radius:18px;padding:13px 15px;box-shadow:0 6px 18px rgba(249,104,89,.14);">' +
-    dreamLine + seasonB +
-    '<div style="display:flex;justify-content:space-between;align-items:baseline;">' +
-      '<div style="font-size:15px;font-weight:800;color:#1D1D1C;">📖 ' + o.nm + '의 여정</div>' +
-      '<div style="font-size:11px;font-weight:700;color:#AE322A;">' + (remJ > 0 ? '진화까지 ' + remJ + 'P' : ((o.grem || 0) > 0 ? '📖 문법 ' + o.grem + '개만!' : '🌟 최종 진화')) + '</div>' + // [v9.36] 게이트 대기(rem=0·grem>0)는 최종 진화가 아니다
-    '</div>' +
-    stripJ +
-    '<div style="background:#fff;border-radius:12px;padding:9px 11px;font-size:12.5px;line-height:2;">' +
-      '🔥 최장 연속출석 <b>' + (rec.maxStreak || o.stk || 0) + '일</b><br/>' +
-      '🔥 첫 도전·성장 <b>' + (rec.firstCrown || '이번 달이 기회!') + '</b><br/>' +
-      evoLine + titleLine + aiTitleLine + chemLine + refLine +
-      '⚔️ 보스와 함께 <b>' + (rec.raids || 0) + '회</b><br/>' +
-      '🏔️ 최고 월간 <b>' + (rec.bestMonth || o.mPts || 0) + 'P</b> · 📚 지금까지 <b>' + (o.t || 0) + 'P</b>' +
-    '</div>' +
-    '<div style="font-size:12.5px;color:#1D1D1C;padding-top:9px;">' + acadLine + '</div>' +
-    // [v9.36] 학습추적(W3) — 이 단계 문법 도달 진행(게이트 없는 단계·무데이터면 상위에서 '' 전달 → 생략)
-    (o.gline ? '<div style="font-size:12px;color:#6D28D9;padding-top:4px;">' + o.gline + '</div>' : '') +
-    wkB + wrapB + gwB + storyBlock +
-    '<div style="font-size:11px;color:#9CA3AF;padding-top:8px;">너의 이야기는 계속돼 ✨</div>' +
-    '</div>';
-}
-
 function calcAll() {
   // [v9.15] 프로필·반통계 양쪽에서 쓰는 공유 집계 — 함수 최상단 선언
   const clsDaysSum = {}; // [함께한날 막3] 반 → 함께한 날 합 — profiles 블록이 채우고 class_stats 카드가 읽는다
@@ -2414,58 +2244,30 @@ function calcAll() {
     }
   });
 
-  // --- 몬스터 ---
-  const stages = [];
-  ctData.forEach(r => {
-    if (r[1] === 'monster') stages.push({ name: r[2], th: Number(r[5]) || 0, img: String(r[4] || '') }); // [v9.11] 이미지
-  });
-  stages.sort((a, b) => a.th - b.th);
+  /* [함께한날 막6] 구 몬스터 축 소각 — stages 배열·monsterOf(포인트→단계 판정)를 걷었다.
+   * contents type='monster' 7행은 시트에 남아 있어도 이제 어떤 계산도 안 읽는다(물리 처분 = 막7 · 운영 삭제라 유호님 승인 자리). */
   const storePriceByName_ = {}; // [v9.28] 목표아이템 진행 카드용 — contents store 이름→가격(F열)
   ctData.forEach(r => { if (r[1] === 'store' && r[2]) storePriceByName_[String(r[2]).trim()] = Number(r[5]) || 0; });
   // [함께한날 막1] 가이드 목록 — BC55 화이트리스트의 정본. 임계 없음(선택제 · 자격 축 자체가 없다).
   const guides = [];
   ctData.forEach(r => { if (r[1] === 'guide' && r[2]) guides.push({ name: String(r[2]).trim(), img: String(r[4] || '') }); });
-  function monsterOf(pts) {
-    let cur = stages[0] || { name: '', th: 0 }, next = null, curIdx = 0; // [v6.6] idx
-    for (let i = 0; i < stages.length; i++) {
-      if (pts >= stages[i].th) { cur = stages[i]; curIdx = i; }
-      else { next = stages[i]; break; }
-    }
-    let pct = 100, rem = 0; // [v5] rem: 다음 진화까지 남은 포인트
-    if (next) {
-      const span = next.th - cur.th;
-      pct = span > 0 ? Math.max(0, Math.min(100, Math.floor(((pts - cur.th) / span) * 100))) : 0;
-      rem = Math.max(next.th - pts, 0);
-    }
-    return { stage: cur.name, pct: pct, rem: rem, idx: curIdx + 1 }; // [v6.6] 1~7단계 번호
-  }
 
-  // --- [v9.36] 진화 게이트 재료 — mastery_log 1패스(calcAll에서 여기 1회만 읽는다) ---
-  const masteryCnt = {};      // sid → {단계: '도달' 수}
-  const hasMastery = {};      // sid → mastery 기록 1건이라도 존재(신규생 보호 판별)
-  const masteryTopForm = {};  // sid → {단계: 최근(최고 순번) 도달 문형명} — 진화 축하 문구용
-  // [함께한날 막2] «내가 맞힌 말» — 학생이 직접 쓰거나 말해서 맞힌 것만 센다(설계 §4-3 처방 ②).
-  //   출처 화이트리스트 = AI첨삭·AI음성·AI대화(교재연동 masteryApply_ 호출 3곳의 이름 그대로).
-  //   'lesson'(수업 일괄)·'소급인정' 단독 도달은 여기 안 든다 — 막0 실측: lesson발 '도달' 61행 vs AI발 0행.
+  /* --- [함께한날 막2·막6] «내가 맞힌 말» — mastery_log 1패스(calcAll에서 여기 1회만 읽는다) ---
+   * 학생이 직접 쓰거나 말해서 맞힌 것만 센다(설계 §4-3 처방 ②). 출처 화이트리스트 = AI첨삭·AI음성·AI대화
+   * (교재연동 masteryApply_ 호출 3곳의 이름 그대로). 'lesson'(수업 일괄)·'소급인정' 단독 도달은 안 든다 —
+   * 막0 실측: lesson발 '도달' 61행 vs AI발 0행. 구 진화 게이트 재료(단계별 도달 수·클램프 gatedIdx_·
+   * 반 태깅 신선도)는 막6 소각 — 새 게이트는 사다리(sceneOf)의 «누계» 하나다(층 6 vs 장면 12 불일치 해소 · §4-3). */
   const masteredAI = {};      // sid → 맞힌 말 누계
   const masteredAIToday = {}; // sid → 오늘(도달일=오늘) 맞힌 문형명 배열 — 「어제 넘은 것」 문구 재료(설계 §8-⑫)
   const masteredAILast = {};  // sid → 마지막 AI 도달일(yyyy-MM-dd) — 60일 게이트 해제 판정 재료(설계 §4-3 ③)
-  const bankCnt = grammarBankCounts_();
   const gNameOf = grammarNameMap_();
   {
     const ml = ss.getSheetByName('mastery_log');
     if (ml && ml.getLastRow() >= 2) {
-      // [함께한날 막2] 3열 → 6열 — 도달일(5열)·출처(6열)를 안 읽으면 「어제 넘은 문형」이 원리상 안 나온다(설계 §8-⑫)
+      // 3열 → 6열 — 도달일(5열)·출처(6열)를 안 읽으면 「어제 넘은 문형」이 원리상 안 나온다(설계 §8-⑫)
       ml.getRange(2, 1, ml.getLastRow() - 1, 6).getValues().forEach(r => {
         const sid = String(r[0] || '').trim();
-        if (!sid) return;
-        hasMastery[sid] = true;
-        const g = grammarStageOf_(r[1]);
-        if (!g || String(r[2]) !== '도달') return;
-        (masteryCnt[sid] = masteryCnt[sid] || {})[g] = ((masteryCnt[sid] || {})[g] || 0) + 1;
-        const seq = Number(String(r[1]).trim().slice(2)) || 0;
-        const tf = masteryTopForm[sid] = masteryTopForm[sid] || {};
-        if (!tf[g] || seq >= tf[g].seq) tf[g] = { seq: seq, nm: gNameOf[String(r[1]).trim()] || '' };
+        if (!sid || String(r[2]) !== '도달') return;
         const srcM = String(r[5] || '');
         if (srcM === 'AI첨삭' || srcM === 'AI음성' || srcM === 'AI대화') {
           masteredAI[sid] = (masteredAI[sid] || 0) + 1;
@@ -2477,18 +2279,6 @@ function calcAll() {
         }
       });
     }
-  }
-  const classTagFresh = {}; // [v9.36] 반별 최근 60일 문법태그 입력 존재 — 강사 태깅 중단 시 게이트 자동 해제(아래 weekly_topics 루프에서 채움)
-  // [v9.36] 게이트 클램프 — 3중 안전장치: ①무데이터 학생 미적용(신규생 보호) ②prevIdx(전회 단계) 아래 강등 금지 ③반 태깅 60일 중단 시 해제
-  function gatedIdx_(sid, pointIdx, prevIdx, cls2) {
-    if (!hasMastery[sid] || !classTagFresh[cls2]) return pointIdx;
-    let gi = pointIdx;
-    while (gi > 1 && gi > prevIdx) {
-      const need = Math.min(GRAMMAR_GATE_NEED[gi] || 0, bankCnt[gi] || 0);
-      if (!need || ((masteryCnt[sid] || {})[gi] || 0) >= need) break;
-      gi--;
-    }
-    return gi;
   }
 
   // --- 출석 ---
@@ -2708,7 +2498,7 @@ function calcAll() {
       const d6t = dstr(rr[3], tz);
       if (d6t === todayYmd0) tdTopic[String(rr[0])] = 1;
       const gapT = Math.floor((new Date(todayYmd0) - new Date(d6t)) / msPerDay);
-      if (wTpT >= 6 && rr[5] && gapT >= 0 && gapT <= 60) classTagFresh[String(rr[0])] = 1; // [v9.36] 문법태그 신선도(60일)
+      // [함께한날 막6] 구 classTagFresh(반 단위 60일 신선도)는 소각 — 판정 축이 개인으로 옮겨 갔다(§4-3 ③ · calcAll 60일 안전핀)
       if (gapT >= 0 && gapT <= 7) {
         const cur = topicRecent[String(rr[0])];
         if (!cur || d6t > cur.d) topicRecent[String(rr[0])] = { d: d6t, ko: String(rr[1] || ''), mn: String(rr[4] || ''), today: d6t === todayYmd0 };
@@ -3176,6 +2966,10 @@ function calcAll() {
         growth: growthMap[id] || null, // 성장 전/후 — 학생 «원문» 최초 vs 최근(21일+ 간격일 때만 · rG[3])
         dreamFirst: dreamFirstOf[id] || '', // 처음 적은 드림 한 줄(self_declare_log 첫 기록)
         dreamNow: String((prevDream[idx] && prevDream[idx][0]) || '').trim(),
+        dream: String((prevDream[idx] && prevDream[idx][0]) || '').trim(), // [v9.84 승계] 목표줄 폴백 사슬 입력
+        cGoal: String((prevCGoal[idx] && prevCGoal[idx][0]) || '').trim(),
+        pace: String((prevPace[idx] && prevPace[idx][0]) || '').trim(),
+        refN: refCntByName[String(r[1] || '').trim()] || 0, // [v9.56 승계] 추천 현황
         seasonT: seasonCfg ? { n: seasonCfg.n, name: seasonCfg.name, week: seasonWeek, a: Object.keys(seasonAtt[id] || {}).length } : null // [v9.56 승계] 시즌 패스(8주 도달제) — 시즌 사이 빈 화면 방지(설계 §2-㉢)
       }) : '']);
       { // [v9.28] 출석일당포인트 — 반유형 보정(주말반 불리 완화), 랭킹 참고용 별도 열(기존 월간랭킹은 무변경)
