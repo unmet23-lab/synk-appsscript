@@ -95,19 +95,24 @@ if (r.out === '') {
 // 5) 워크트리에서의 push → 워크트리 사유로 차단(08-01: 메인 상태를 보고 엉뚱한 진단을 내던 결함)
 //    라이브 타깃이 하나라 미병합 브랜치를 밀면 master의 최신 코드가 라이브에서 사라진다 → 허용이 아니라 정확한 차단.
 {
-  const fs = require('fs');
-  // 워크트리는 **메인** 아래에만 생긴다 — 이 체크아웃에서 찾으면 워크트리 세션에서 늘 0건이고,
-  // 그 skip 문구가 「정상: 전부 정리된 상태」라 **미실행이 통과처럼** 보인다(F207 축).
-  const wtDir = path.join(메인, '.claude', 'worktrees');
+  // 워크트리는 **메인** 아래에만 생긴다 — 이 체크아웃에서 찾으면 워크트리 세션에서 늘 0건이다.
+  /* 🔴 자리를 «폴더 모양»으로 찾지 않는다(08-26 실측·수리). 옛 판은 `.claude/worktrees/<한 마디>`
+   *   밑에서 `.git` 을 찾았는데, 하네스가 허용하는 **두 마디 이름**(`엔진/두마디점검`)은 한 칸 더
+   *   깊어서 **못 찾고 skip** 했다 — 그리고 그 skip 문구가 「정상」이라 미실행이 통과처럼 보였다.
+   * 🔑 목록은 git 이 이미 안다 — `git worktree list --porcelain` 이 깊이와 무관하게 답한다. */
   let wt = '';
   try {
-    wt = (fs.readdirSync(wtDir, { withFileTypes: true }).find((d) => d.isDirectory() &&
-      fs.existsSync(path.join(wtDir, d.name, '.git'))) || {}).name || '';
+    const 줄들 = require('child_process')
+      .execFileSync('git', ['worktree', 'list', '--porcelain'], { cwd: 메인, encoding: 'utf8' })
+      .split(String.fromCharCode(10)).filter((l) => l.startsWith('worktree '))
+      .map((l) => l.slice('worktree '.length).trim());
+    wt = 줄들.find((d) => path.resolve(d) !== path.resolve(메인)) || '';
   } catch (_) {}
   if (!wt) {
-    console.log('skip 워크트리 차단 — 검사할 워크트리가 없음(정상: 전부 정리된 상태)');
+    /* ⚠ 통과가 아니라 **미실행**이다(F207) — 문구가 그렇게 말해야 다음 사람이 초록으로 안 읽는다. */
+    console.log('skip 워크트리 차단 — **이 검사는 안 돌았다**(작업 트리가 메인 하나뿐이라 잴 자리가 없다 · 통과 아님)');
   } else {
-    const reason = denyReason(feed(PUSH, path.join(wtDir, wt)));
+    const reason = denyReason(feed(PUSH, wt));
     check('워크트리 push 차단', /워크트리에서는 clasp push/.test(reason));
     check('워크트리 차단 사유에 복구 절차 포함', /메인 저장소.*\/deploy/s.test(reason));
   }
