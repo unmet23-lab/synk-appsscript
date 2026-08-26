@@ -3,7 +3,7 @@
 # (누락 시 라이브에서 ReferenceError). 파일이 아직 없어도 미리 허용해 둬도 무해.
 # 상담AI.js = 메신저 상담 엔진(v9.53). 허용 누락 시 매니페스트 webapp·contents만 올라가고
 # doPost 핸들러가 빠져 반쪽 배포가 된다 — v9.54 점검에서 발견·허용 추가.
-# 교재연동.js = 목소리 타임랩스+필살기 노트 엔진(v9.58). 누락 시 setupTextbookLink·야간 트리거가
+# 교재연동.js = 목소리 타임랩스+내 연습 노트 엔진(v9.58 · 구 「필살기 노트」). 누락 시 setupTextbookLink·야간 트리거가
 # 라이브에 없어 반쪽 배포가 된다.
 **/*
 !appsscript.json
