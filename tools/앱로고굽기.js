@@ -31,7 +31,10 @@ const { execFileSync } = require('child_process');
 const 로고 = require('./lib/로고정본.js');
 
 const 크롬 = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-const talk = path.resolve(__dirname, '..', '..', 'SYNK-talk');
+/* 🔴 워크트리에서 `__dirname/../..` 은 `.claude/worktrees/` 를 가리킨다 — 거기엔 형제가 없고
+ *   증상은 「talk 에 못 썼다」가 아니라 **엉뚱한 자리에 조용히 굽는 것**이다(08-26 실측:
+ *   `…/.claude/worktrees/SYNK-talk` · 존재 false). 자리는 통로 하나가 답한다. */
+const talk = require('../.claude/hooks/lib/형제저장소.js').형제경로(path.resolve(__dirname, '..'));
 const 확인만 = process.argv.includes('--확인');
 const 너비인자 = process.argv.indexOf('--너비');
 const 기본너비 = 너비인자 > -1 ? Number(process.argv[너비인자 + 1]) : 1024;
