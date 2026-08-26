@@ -1481,7 +1481,6 @@ function weeklyJobs() {    // 매주 월 07시
   if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 주간 통합 리포트', body);
   else Logger.log('주간 통합 리포트: 쿼터 부족으로 미발송');
 
-  safeRun('syncToNotion', syncToNotion_); // [v9.21] 앱→노션 크루 DB 동기화 (NOTION_TOKEN 없으면 자동 스킵)
   safeRun('calcTeacherStats', calcTeacherStats); // [v9.41·자동화] 강사 지표(케어지수·인정편중) 주간 자동 갱신 — 월 1회(monthlyReport)만 갱신돼 원장 뷰가 한 달 낡던 것 해소(멱등·전월 왕관 기준이라 주중 재실행 무해)
   safeRun('systemManifest', buildSystemManifest); // [v9.37] 주간 실측 스냅샷 — 시트·콘텐츠·트리거·의존성 드리프트를 system_manifest 시트에 갱신
   // [v7.0] pruneAppState 제거 — 인자(ss, 월)가 필요한 archiveMonthly 내부 헬퍼였음 (무인자 호출 시 매주 실패)
