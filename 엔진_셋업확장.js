@@ -1347,7 +1347,7 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   if (dyN === 0) safeRun('messengerDigest', function () { MJ_messengerDigest_(); }); // [v9.71] 이메일 다이제스트의 메신저 미러 — 연결된 학부모만·창 밖 스킵(클로저 = 만족도팩 누락에도 nightJobs 생존)
   safeRun('notifyParents', notifyParents);
   // [v9.34] checkNoShow는 parentSweep(10분) 편승으로 이동 — 판정 창(수업 시작+30~90분)이 22시엔 구조적으로 안 걸려 죽은 안전장치였음
-  safeRun('checkEvolution', checkEvolution);
+  safeRun('checkScene', checkScene); // [함께한날 막5] checkEvolution 의 그 줄을 그대로 물려받는다 — calcAll 뒤 = 그날 도달이 그날 밤 장면
   safeRun('checkAchievements', checkAchievements);
   safeRun('absenceFollowup', absenceFollowupNightly_); // [v9.89] 결석 복귀 자동 판정 + 24시간 경과 미연락 강사 알림(창 D+1~D+3) — attendance가 그날치까지 채워진 뒤라야 판정이 맞으므로 calcAll·출석 전개 뒤
   safeRun('checkUnknownReasonsNightly', checkUnknownReasonsNightly_); // [v9.28] 미인식 reason 발각 지연 7일→1일

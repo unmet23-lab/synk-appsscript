@@ -2766,6 +2766,143 @@ function checkEvolution() {
   Logger.log('진화 ' + evolved.length + ' / 임박 ' + imminent.length);
 }
 
+/* ===================== [함께한날 막5] 장면 감지 + 원장 네 블록 + 강사 D-1 =====================
+ * checkEvolution 의 자리를 잇는다(nightJobs 같은 줄 · calcAll 뒤 = 그날 만남·도달이 그날 밤 장면이 된다).
+ * 중복 방지 세 겹(설계 §4-4): ① scene_log 멱등키 sid|장면번호(본진 — 「어제 값과 비교」 한 칸 덮어쓰기 병의 처방)
+ * ② AD30 마지막발화장면 마커 ③ 하루 1회 상한(여럿 동시 성립 시 가장 높은 장면 하나만 발화).
+ * 실사고 교정 승계: 마커 갱신은 기입·발송 «뒤»(v9.34 — 앞이면 실패 시 알림 영구 유실). 원장 알림은
+ * DIGEST 큐(쿼터 무관)고 학부모 발송은 없다(인앱 배너 BN66 몫) — 쿼터 되돌림이 필요한 발송은 강사 D-1 뿐인데
+ * 그건 마커와 무관한 «그날의 상태»(AG33=1)라 되돌릴 마커 자체가 없다. */
+function checkScene() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const pf = ss.getSheetByName('profiles');
+  const last = pf.getLastRow();
+  if (last < 2) return;
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const thisMonth = today.slice(0, 7);
+  // 전환 판독은 헤더 개명 «앞» — AA27 에 구 몬스터 이름이 남은 첫 회는 발화 없이 원장만 맞춘다
+  const aaIsScene = String(pf.getRange('AA1').getValue()) === '이전장면';
+  if (pf.getRange('AA1').getValue() !== '이전장면') pf.getRange('AA1').setValue('이전장면');
+  if (pf.getRange('AD1').getValue() !== '마지막발화장면') pf.getRange('AD1').setValue('마지막발화장면');
+
+  const w = Math.min(pf.getMaxColumns(), 55);
+  const data = pf.getRange(2, 1, last - 1, w).getValues();
+  const log = ensureSheet(ss, 'scene_log', SCENE_LOG_HEADERS);
+  const has = {};
+  if (log.getLastRow() >= 2) log.getRange(2, 1, log.getLastRow() - 1, 2).getValues().forEach(r => {
+    if (r[0]) has[String(r[0]).trim() + '|' + (Number(r[1]) || 0)] = 1;
+  });
+  // 재료 — 오늘 «직접» 맞힌 문형(조건문형 칸) · 오늘 제출문(그날의문장 칸) · 60일 게이트 해제 판정(마지막 AI 도달일)
+  const todayForm = {}, lastAIDone = {};
+  {
+    const ml = ss.getSheetByName('mastery_log');
+    if (ml && ml.getLastRow() >= 2) {
+      const nameOfG = (typeof grammarNameMap_ === 'function') ? grammarNameMap_() : {};
+      ml.getRange(2, 1, ml.getLastRow() - 1, 6).getValues().forEach(r => {
+        const sid = String(r[0] || '').trim(), srcM = String(r[5] || '');
+        if (!sid || String(r[2]) !== '도달') return;
+        if (!(srcM === 'AI첨삭' || srcM === 'AI음성' || srcM === 'AI대화')) return;
+        const dn = r[4] ? dstr(r[4], tz) : '';
+        if (!dn) return;
+        if (dn === today && !todayForm[sid]) todayForm[sid] = nameOfG[String(r[1]).trim()] || String(r[1]).trim();
+        if (dn > (lastAIDone[sid] || '')) lastAIDone[sid] = dn;
+      });
+    }
+  }
+  const todaySent = {};
+  {
+    const fb = ss.getSheetByName('hw_feedback');
+    if (fb && fb.getLastRow() >= 2) {
+      const from = Math.max(2, fb.getLastRow() - 199);
+      fb.getRange(from, 1, fb.getLastRow() - from + 1, 4).getValues().forEach(r => {
+        const sid = String(r[1] || '').trim();
+        if (sid && r[2] && dstr(r[2], tz) === today && !todaySent[sid]) todaySent[sid] = String(r[3] || '').slice(0, 120);
+      });
+    }
+  }
+  const newAA = [], newAD = [], opened = [], quiet14 = [], gateFreeL = [], addRows = [];
+  const d1ByCls = {};
+  let monthMastered = 0; // 「이번 달 우리 학생들이 새로 맞힌 말」 — AI 출처 도달의 이달 합(설계 §3 마지막 줄)
+  {
+    const ml2 = ss.getSheetByName('mastery_log');
+    if (ml2 && ml2.getLastRow() >= 2) ml2.getRange(2, 1, ml2.getLastRow() - 1, 6).getValues().forEach(r => {
+      const srcM = String(r[5] || '');
+      if (String(r[2]) === '도달' && (srcM === 'AI첨삭' || srcM === 'AI음성' || srcM === 'AI대화') && r[4] && dstr(r[4], tz).indexOf(thisMonth) === 0) monthMastered++;
+    });
+  }
+  data.forEach(r => {
+    const sid = String(r[0] || '').trim();
+    const isStu = sid && r[3] === 'student';
+    const nSc = Number(r[41]) || 0;          // AP 지나온장면수
+    const prevRaw = r[26];                   // AA 이전장면(전환 첫 회 = 구 몬스터 이름)
+    const adPrev = Number(r[29]) || 0;       // AD 마지막발화장면
+    let aaNext = isStu ? nSc : '';
+    let adNext = adPrev;
+    if (isStu) {
+      const prevN = aaIsScene ? (Number(prevRaw) || 0) : nSc; // 전환 첫 회 — 발화 없이 원장만 맞춘다
+      let top = 0;
+      for (let k = prevN + 1; k <= nSc; k++) {
+        if (has[sid + '|' + k]) continue;
+        has[sid + '|' + k] = 1;
+        addRows.push([sid, k, today, todayForm[sid] || '', todaySent[sid] || '', new Date()]);
+        if (k > top) top = k;
+      }
+      if (top > 0 && top > adPrev) { // 하루 1회 상한 — 가장 높은 장면 하나만 발화
+        opened.push({ id: sid, name: r[1] || sid, n: top, form: todayForm[sid] || '' });
+        adNext = top;
+      }
+      // 원장 네 블록 재료(설계 §3 — 「이 체계의 안전핀」)
+      const afRaw = r[31]; // AF 마지막만남일
+      const afYmd = afRaw instanceof Date ? dstr(afRaw, tz) : String(afRaw || '').slice(0, 10);
+      if (afYmd && Math.floor((new Date(today) - new Date(afYmd)) / 86400000) >= 14) quiet14.push({ name: r[1] || sid, d: afYmd });
+      const daysT = Number(r[30]) || 0; // AE 함께한날
+      const lastD = lastAIDone[sid] || '';
+      if (daysT >= 60 && (!lastD || Math.floor((new Date(today) - new Date(lastD)) / 86400000) >= 60)) gateFreeL.push(r[1] || sid);
+      if ((Number(r[32]) || 0) === 1) (d1ByCls[String(r[4] || '')] = d1ByCls[String(r[4] || '')] || []).push('· ' + sid + ' ' + (r[1] || sid) + ' — 내일 새 장면'); // AG 다음장면까지
+    }
+    newAA.push([aaNext]);
+    newAD.push([isStu ? adNext : '']);
+  });
+  // 기입(소독 채널 — 그날의문장은 학생이 친 글이다) → 알림 → 마커. 이 순서가 v9.34 의 교훈이다.
+  if (addRows.length) writeIfChanged(log, log.getLastRow() + 1, 1, addRows);
+  // 반 태깅 14일 끊긴 반(weekly_topics 최근 입력일)
+  const staleCls = [];
+  {
+    const tp = ss.getSheetByName('weekly_topics');
+    const lastByCls = {};
+    if (tp && tp.getLastRow() >= 2) tp.getRange(2, 1, tp.getLastRow() - 1, 4).getValues().forEach(r => {
+      if (r[0] && r[3]) { const d6 = dstr(r[3], tz); if (d6 > (lastByCls[String(r[0])] || '')) lastByCls[String(r[0])] = d6; }
+    });
+    Object.keys(lastByCls).forEach(c => {
+      if (Math.floor((new Date(today) - new Date(lastByCls[c])) / 86400000) >= 14) staleCls.push(c + ' (마지막 ' + lastByCls[c] + ')');
+    });
+  }
+  if (opened.length || quiet14.length || gateFreeL.length || staleCls.length) {
+    const L = [];
+    if (opened.length) L.push('🧶 새 장면이 열린 크루 ' + opened.length + '명\n' + opened.map(o => '· ' + o.name + ' — 장면 ' + o.n + (o.form ? ' (' + o.form + ')' : '')).join('\n'));
+    if (quiet14.length) L.push('🕯️ 2주째 만남이 없는 크루 ' + quiet14.length + '명\n' + quiet14.map(q => '· ' + q.name + ' (마지막 ' + q.d + ')').join('\n'));
+    if (gateFreeL.length) L.push('🔴 문법 도달이 60일 끊겨 게이트가 해제된 크루 ' + gateFreeL.length + '명 — 학생 잘못이 아닌 이유(채점 통로·수업)를 먼저 보세요\n' + gateFreeL.map(n => '· ' + n).join('\n'));
+    if (staleCls.length) L.push('📋 반 태깅이 14일 끊긴 반 ' + staleCls.length + '개\n' + staleCls.map(c => '· ' + c).join('\n'));
+    L.push('이번 달 우리 학생들이 새로 맞힌 말 ' + monthMastered + '개');
+    adminMail('[SYNK] 🧶 함께한 날 — 새 장면 ' + opened.length + '명', L.join('\n\n'));
+  }
+  // 강사 D-1 — 반별 «상위 3명»까지만(알림 물량 방어 · 설계 §4-4). 쿼터로 못 나가면 내일 상태가 다시 알린다.
+  {
+    const emap = teacherEmailMap_(ss);
+    Object.keys(d1ByCls).forEach(cls => {
+      const lines = d1ByCls[cls].slice(0, 3);
+      (emap.byClass[cls] || []).forEach(t => {
+        if (quotaOk(1)) MailApp.sendEmail(t.email, '[SYNK] 🧶 ' + cls + ' — 내일 새 장면 ' + lines.length + '명',
+          '내일 가이드가 한 걸음 다가가는 크루입니다. 수업에서 살짝 반겨 주세요.\n\n' + lines.join('\n'));
+      });
+    });
+  }
+  writeIfChanged(pf, 2, 27, newAA);
+  writeIfChanged(pf, 2, 30, newAD);
+  Logger.log('장면: 새 기입 ' + addRows.length + '행 · 발화 ' + opened.length + '명 · D-1 반 ' + Object.keys(d1ByCls).length);
+}
+
 /* ===================== 강사 케어 지수 ===================== */
 
 // [v9.87] teacher_stats 헤더 정본 — SHEET_SKELETON(골격)과 calcTeacherStats(실사용)가 이 상수 하나를 함께 쓴다.

@@ -2449,6 +2449,7 @@ function calcAll() {
   //   'lesson'(수업 일괄)·'소급인정' 단독 도달은 여기 안 든다 — 막0 실측: lesson발 '도달' 61행 vs AI발 0행.
   const masteredAI = {};      // sid → 맞힌 말 누계
   const masteredAIToday = {}; // sid → 오늘(도달일=오늘) 맞힌 문형명 배열 — 「어제 넘은 것」 문구 재료(설계 §8-⑫)
+  const masteredAILast = {};  // sid → 마지막 AI 도달일(yyyy-MM-dd) — 60일 게이트 해제 판정 재료(설계 §4-3 ③)
   const bankCnt = grammarBankCounts_();
   const gNameOf = grammarNameMap_();
   {
@@ -2468,9 +2469,11 @@ function calcAll() {
         const srcM = String(r[5] || '');
         if (srcM === 'AI첨삭' || srcM === 'AI음성' || srcM === 'AI대화') {
           masteredAI[sid] = (masteredAI[sid] || 0) + 1;
-          if (r[4] && dstr(r[4], tz) === todayYmd0) {
+          const dnM = r[4] ? dstr(r[4], tz) : '';
+          if (dnM === todayYmd0) {
             (masteredAIToday[sid] = masteredAIToday[sid] || []).push(gNameOf[String(r[1]).trim()] || String(r[1]).trim());
           }
+          if (dnM && dnM > (masteredAILast[sid] || '')) masteredAILast[sid] = dnM;
         }
       });
     }
@@ -2946,7 +2949,13 @@ function calcAll() {
         if (isStu9 && r[4]) clsDaysSum[String(r[4])] = (clsDaysSum[String(r[4])] || 0) + daysNow; // [막3] 반 카드 재료
       }
       const mastANow = masteredAI[id] || 0;
-      let sceneNow = sceneOf(daysNow, mastANow);
+      /* [함께한날 막5] 60일 안전핀(설계 §4-3 ③ — 판정 축을 반에서 «개인»으로) — 그 학생에게 최근 60일
+       * 도달 승격이 1건도 없으면 «맞힌 말» 게이트를 해제한다(날 문턱만 남는다). 반이 바뀌어도, 강사가
+       * 안 눌러도, 아파서 쉬어도 학생이 벌을 안 받는다. 해제된 학생은 원장 브리핑 셋째 블록에 뜬다(checkScene). */
+      const lastAI9 = masteredAILast[id] || '';
+      const gateFree9 = isStu9 && daysNow >= 60 &&
+        (!lastAI9 || Math.floor((new Date(todayYmd0) - new Date(lastAI9)) / msPerDay) >= 60);
+      let sceneNow = sceneOf(daysNow, gateFree9 ? 9999 : mastANow);
       const scenePrevN = apIsScene ? (Number(prevAP[idx] && prevAP[idx][0]) || 0) : 0; // 전환 첫 회 = 구 몬스터 단계 값이라 무시
       if (scenePrevN > sceneNow.idx) { // 강등 금지 — 원장(AP42)이 앞서 있으면 러닝맥스
         const nth9 = sceneLadderAt_(scenePrevN + 1);
