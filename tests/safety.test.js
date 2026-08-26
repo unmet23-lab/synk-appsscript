@@ -739,7 +739,7 @@ test('[v9.54] AI 스튜디오는 학생·약점 로더를 1회만 read한다(①
 });
 
 test('[v9.54] 미등원 판정은 attendance 부재 시 열리지 않는다(전원 미등원 오경보 방지)', () => {
-  const body = section('function checkNoShow()', 'function checkEvolution');
+  const body = section('function checkNoShow()', 'function checkScene');
   assertOrder(body, ["ss.getSheetByName('attendance')", 'if (!at) return;', 'at.getLastRow()']);
 });
 
@@ -967,18 +967,18 @@ test('[v9.56] 시즌 패스 트랙 — 입력 셀 정본·형식 검증·미설�
   const calc = section('function calcAll()', 'function writeSharedCols_');
   assert.ok(calc.includes("'시즌트랙입력'"), 'app_state 입력 셀이 정본');
   assert.ok(calc.includes('/^\\d{4}-\\d{2}-\\d{2}$/'), '시작일 형식 검증 없이 파싱하면 깨진 날짜로 주차가 NaN');
-  assert.ok(calc.includes('seasonT: seasonCfg ?'), '여정 카드 주입은 설정 있을 때만(null이면 카드에서 생략)');
-  const journey = section('function myJourneyHtml_(', 'function calcAll()');
-  assert.ok(journey.includes("let seasonB = '', wrapB = '';"), '미설정 폴백(빈 문자열) 고정');
-  assert.ok(journey.includes('🎫 시즌'), '트랙 블록 렌더');
-  assert.ok(journey.includes('나의 기록'), '8주차 랩업(공유 카드) 렌더');
+  assert.ok(calc.includes('seasonT: seasonCfg ?'), '걸어온길 주입은 설정 있을 때만(null이면 카드에서 생략)');
+  // [함께한날 막6] 여정 카드 은퇴 — 시즌 트랙 줄은 걸어온길(BY77)이 잇는다(설계 §2-㉢ 「시즌 사이 빈 화면 방지」)
+  const road = section('function buildWalkedRoadHtml_(', 'function buildAttCalHtml_(');
+  assert.ok(road.includes('o.seasonT'), '미설정(null) 생략 분기 고정');
+  assert.ok(road.includes('🎫 시즌'), '트랙 블록 렌더');
 });
 
 test('[v9.56] 추천 현황 — leads 추천인 집계가 여정 카드 한 줄로 흐른다(0명이면 비표시)', () => {
   const calc = section('function calcAll()', 'function writeSharedCols_');
   assert.ok(calc.includes('refCntByName'), 'leads 추천인(E열) 집계');
-  const journey = section('function myJourneyHtml_(', 'function calcAll()');
-  assert.ok(journey.includes("(o.refN || 0) > 0 ?"), '0명일 땐 줄 자체가 생략돼야 한다');
+  const road = section('function buildWalkedRoadHtml_(', 'function buildAttCalHtml_(');
+  assert.ok(road.includes("(o.refN || 0) > 0 ?"), '0명일 땐 줄 자체가 생략돼야 한다');
 });
 
 test('[v9.56] 교실 스크린 — 10분 보드에 편승하되 실패 격리·분 단위 시계 금지(업데이트 예산 보호)', () => {
@@ -1342,12 +1342,12 @@ test('[v9.69] 번역 대상에 grammar가 있고, 반복 체감 뱅크는 확장
     'translateContents targets에 grammar 누락 — setupGrammarBank 주석(자동 복원)과 코드가 다시 어긋난다');
   const pq = section('const PARENT_Q = [', '];');
   assert.ok((pq.match(/«/g) || []).length >= 12, '학부모 대화 카드 12문항 미만 — 4일 주기 반복 체감으로 회귀');
+  // [함께한날 막6] 구 뱅크(miss7·evosoon·idle·today) 하한 검사는 뱅크와 함께 은퇴 — miss 계열은 발화표 S19
+  //   (「끊김 절대 언급 ✗」)가 금지하는 축이라 «되살아나지 않는 것»이 새 회귀다.
   const sp = section('const SPEAK = {', 'const PARENT_Q');
-  const m7 = sp.slice(sp.indexOf('miss7:'), sp.indexOf('evosoon:'));
-  assert.ok((m7.match(/'/g) || []).length / 2 >= 12, 'miss7 톤당 4문장(계 12) 미만 — 장기 미출석 반복 체감 회귀');
-  const evo = sp.slice(sp.indexOf('evosoon:'), sp.indexOf('crown:'));
-  assert.ok((evo.match(/\{n\}/g) || []).length >= 6, 'evosoon 6문장 미만');
-  const bd = sp.slice(sp.indexOf('bday:'), sp.indexOf('idle:'));
+  ['miss3:', 'miss7:', 'evosoon:', 'today:', 'idle:'].forEach(k =>
+    assert.ok(sp.indexOf(k) === -1, 'SPEAK에 은퇴 뱅크 ' + k + ' 가 되살아났다(결석 재촉·진화 임박 축)'));
+  const bd = sp.slice(sp.indexOf('bday:'));
   assert.ok((bd.match(/'/g) || []).length / 2 >= 4, 'bday 4문장 미만');
 });
 
@@ -1472,7 +1472,8 @@ test('[v9.82] 결석 신고 카드 — 접수 확인 3태·빈 상태·사유 �
 test('[v9.74] 학부모 접점에서 몬스터 호칭 제거 — 성장 파트너(хамтрагч), 학생 세계관은 유지', () => {
   assert.ok(code.includes('도장이 쌓일수록 성장 파트너가 자라요'), '출석달력 캡션 교체 누락');
   assert.ok(!코드정제.includes('도장이 채워질수록 몬스터가 자라요'), '구 캡션 잔존');
-  assert.ok(code.includes('학생의 성장 파트너가 진화했어요') && !code.includes('학생의 몬스터가 진화했어요'), '진화 학부모 메일 교체 누락');
+  // [함께한날 막6] 진화 학부모 메일은 checkEvolution 과 함께 소각 — 장면 소식은 인앱 배너(BN66)가 진다
+  assert.ok(!코드정제.includes('학생의 성장 파트너가 진화했어요') && !코드정제.includes('학생의 몬스터가 진화했어요'), '소각된 진화 학부모 메일이 되살아났다');
   assert.ok(!코드정제.includes('-ийн монстр'), '학부모 몽골어 배너·하이라이트에 монстр 잔존'); // 학생용(운세 "дараагийн монстр"·onboarding "таны монстр")은 세계관 유지로 남는다
   const pq = section('const PARENT_Q = [', '];');
   assert.ok(pq.indexOf('монстр') === -1 && pq.indexOf('네 몬스터') === -1, '학부모 대화 카드에 몬스터 잔존');
@@ -1897,8 +1898,9 @@ test('[v9.83] 포인트 경제 — 월간 소득 시뮬이 과잠·진화 앵커
   assert.ok(hard <= 310, '열심히 월 소득 ' + Math.round(hard) + 'P — 상한 310P 초과(포인트가 다시 후해졌다)');
   assert.ok(hard >= 250, '열심히 월 소득 ' + Math.round(hard) + 'P — 하한 250P 미달(모으는 재미가 죽는다)');
   assert.ok(1700 / hard >= 5, '과잠 도달 ' + (1700 / hard).toFixed(1) + '개월 — 5개월 미만이면 인플레 재발');
-  // ② 진화 최종(싱크마스터 2,400P) = 성실 9개월이라는 설계 의도(docs/몬스터_진화_임계값_v1.md)
-  assert.ok(2400 / hard >= 7, '싱크마스터 도달 ' + (2400 / hard).toFixed(1) + '개월 — 7개월 미만이면 진화가 너무 빠르다');
+  // ② [함께한날 막6] 구 앵커(싱크마스터 2,400P ≥ 7개월)는 은퇴 — 성장 축이 포인트에서 «함께한 날·맞힌 말»로
+  //    옮겨 가 이 산수의 과녁이 사라졌다(설계 §4-8 ⑨). 장면 사다리의 완급은 tests/함께한날.test.js 가 잰다
+  //    (첫 4주 4장면 · 간격 확대 · 30/60/100 회피 · 말 문턱 ≤ 뱅크 72).
   // ③ 과잠 성실 하한은 "12개월 다녔지만 거의 안 나온 학생"만 걸러야 한다 — 보통 학생(열심히의 60%)은 통과
   const JMIN = Number(code.match(/const JACKET_MIN_POINTS = (\d+)/)[1]);
   const JMON = Number(code.match(/const JACKET_TENURE_MONTHS = (\d+)/)[1]);
@@ -2413,7 +2415,7 @@ test('[v9.100] 「담당 강사」는 한 축 — 결석 복귀율과 케어지�
   // 결함의 성질: 두 지표가 각자 반→강사 변환을 구현하면, 같은 반이 지표마다 다른 강사에게 귀속된다.
   // 급여 정본 §7은 이 둘을 강사별로 합산하므로 축이 갈리면 인센티브 산정이 조용히 틀어진다.
   // v9.87이 teacher_stats를 teachersOfClass_로 옮겼는데 결석 추적(v9.89) 적재부만 옛 방식으로 남아 있었다.
-  const ns = section('function checkNoShow()', 'function checkEvolution');
+  const ns = section('function checkNoShow()', 'function checkScene');
   assert.ok(ns.includes('teachersOfClass_(emapNS, num)'),
     '결석 적재부가 공용 헬퍼를 안 쓴다 — teacher_stats와 담당 강사가 갈린다');
   assert.equal(/const tNames = \(emapNS\.byClass\[num\]/.test(코드만(ns)), false,

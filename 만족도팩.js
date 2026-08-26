@@ -123,26 +123,6 @@ function MJ_sceneSpeakMirror_(guide, ctx) {
   } catch (e) { return ''; }
 }
 
-// [구] 몬스터 한마디 몽골어 미러 — Code.js 구 speak 분기(v9.36)와 1:1이던 것. [함께한날 막4]에서 호출부가
-// 사라졌다(위 MJ_sceneSpeakMirror_ 가 잇는다) — 함수 소각은 막6 에서 SPEAK 구 뱅크와 같이 걷는다.
-function MJ_speakMirror_(ctx) {
-  try {
-    if (typeof MN_SPEAK === 'undefined' || typeof SPEAK === 'undefined') return '';
-    const seed = ctx.seed;
-    if (ctx.isBday) return MJ_pairPick_(SPEAK.bday, MN_SPEAK.bday, seed);
-    if (ctx.crownToday) return MJ_pairPick_(SPEAK.crown, MN_SPEAK.crown, seed);
-    if (ctx.gateWait) return ''; // 게이트 문구는 한국어 리터럴 — 뱅크에 없음
-    if (ctx.toNext > 0 && ctx.toNext <= 30) return MJ_pairPick_(SPEAK.evosoon, MN_SPEAK.evosoon, seed).replace('{n}', ctx.toNext);
-    if (ctx.attended) return MJ_pairPick_(SPEAK.today[ctx.tone], MN_SPEAK.today[ctx.tone], seed);
-    if (ctx.daysSince >= 7 && ctx.daysSince < 999) {
-      const t7 = Math.min(ctx.tone, SPEAK.miss7.length - 1); // 버킷 선택도 한국어 기준(Code.js와 동일)
-      return MJ_pairPick_(SPEAK.miss7[t7], MN_SPEAK.miss7[t7], seed);
-    }
-    if (ctx.daysSince >= 3 && ctx.daysSince < 7) return MJ_pairPick_(SPEAK.miss3[ctx.tone], MN_SPEAK.miss3[ctx.tone], seed);
-    return MJ_pairPick_(SPEAK.idle[ctx.tone], MN_SPEAK.idle[ctx.tone], seed);
-  } catch (e) { return ''; }
-}
-
 /* ===================== ① [v9.71] 학부모 메신저 이중화 ===================== */
 
 /* 연결 방식(2단계 — 자동 접수 + 유호님 승인):
