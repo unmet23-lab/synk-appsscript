@@ -18,6 +18,7 @@ import { 본문스택, 웨이트, 트래킹, 몽골어보정 } from "../킷/폰�
 import {
   연출,
   로고,
+  배경음악,
   그늘,
   그레인,
   비네트,
@@ -193,14 +194,18 @@ export const 리드크루클립: React.FC<{ 클립: 클립 }> = ({ 클립 }) => 
           🔑 `loopVolumeCurveBehavior="extend"` 가 없으면 볼륨 함수의 f 가 루프마다 0 으로 되감겨
              끝 페이드아웃이 «영원히 안 온다». 산출물은 나고 종료코드도 0 이라 조용히 새는 자리다. */}
       <Audio
-        src={staticFile("소리/BGM_깔림.wav")}
+        src={staticFile(배경음악.파일)}
+        /* 30.00초를 통째로 내므로 이음매가 없다. `loop` 는 남겨 둔다 —
+           길이가 다른 곡을 나중에 물려도 끝이 무음이 되지 않게 하는 안전핀이다. */
         loop
         loopVolumeCurveBehavior="extend"
         volume={(f) =>
-          interpolate(f, [0, 20, durationInFrames - 60, durationInFrames], [0, 0.55, 0.55, 0], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-          })
+          interpolate(
+            f,
+            [0, 20, durationInFrames - 60, durationInFrames],
+            [0, 배경음악.볼륨, 배경음악.볼륨, 0],
+            { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+          )
         }
       />
 
