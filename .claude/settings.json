@@ -39,6 +39,13 @@
         "hooks": [
           {
             "type": "command",
+            "command": "H=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/기억데려오기.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then node \"$H\" --훅; fi",
+            "shell": "bash",
+            "timeout": 100,
+            "statusMessage": "기억 데려오기"
+          },
+          {
+            "type": "command",
             "command": "H=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/결정.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then node \"$H\" --훅; else echo \"📌 유호님 확정 요약을 못 냈다(도구·node 부재) — node tools/결정.js 로 직접 본다\"; fi",
             "shell": "bash",
             "timeout": 20,
