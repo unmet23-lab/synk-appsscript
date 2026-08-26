@@ -77,7 +77,11 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { 칸나누기 } = require('./lib/표.js');   // 날 split 은 백틱 안 파이프에서 칸을 민다(F119·F253)
 
-const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
+/* 🔴 뿌리는 **이 스크립트가 사는 체크아웃**이다 — `CLAUDE_PROJECT_DIR` 을 앞에 두지 않는다.
+ *   [08-26 실측] 워크트리 세션에서 그 env 는 워크트리를 가리키는데 스크립트는 다른 트리의 것일 수
+ *   있어, 「어느 체크아웃이 정본인가」가 호출 방식마다 갈렸다. 자리를 아는 것은 스크립트 자신이다
+ *   (`tools/인용검사.js:43`·`tools/대장동봉검사.js:36` 이 이미 쓰는 규약). */
+const ROOT = path.resolve(__dirname, '..');
 const 산출경로 = process.env.SYNK_작동대장_산출 || path.join(ROOT, 'docs', '작동대장.html');
 
 /** 기록 장부 — **append-only**. 유호 지시 08-17(「도전안 좋다 · 기록용으로 쓰면 너무 좋겠다」).

@@ -32,7 +32,8 @@ git commit -F <메시지파일> -- 경로1 경로2
 ### 3-b. SYNK-talk 배포와 갈렸나 — 「종결」을 적기 전에
 이 세션이 `supabase/functions/**`나 동봉으로 나가는 것(`lib/*.js`·`계약/*.json`)을 커밋했으면:
 ```bash
-cd ../SYNK-talk && node tools/배포빚.js    # 두 판(리허설·운영)을 장부로 · 네트워크 0
+node -e "const p=require('./.claude/hooks/lib/형제저장소.js').형제경로(process.cwd()); require('child_process').execFileSync(process.execPath,[p+'/tools/배포빚.js'],{stdio:'inherit',cwd:p})"
+# ⚠ `cd ../SYNK-talk` 로 적지 않는다 — 워크트리에서는 `..` 이 `.claude/worktrees/` 라 «없는 폴더»로 죽는다(08-26 실측)
 ```
 - **「낡음 0」은 그 판 하나의 0이다** — `⚠ 이 실행이 안 본 판` 줄까지 읽는다(F207: 한 판의 초록을 두 판의 초록으로 읽으면 그 「종결」이 거짓이 된다).
 - 낡은 판이 **있을 때만** `node tools/배포대조.js`로 바이트 실측한다(운영은 `SUPABASE_PROJECT_REF=<운영REF>` — 읽기에 `--운영`(쓰기 승인 키)을 붙이지 않는다 · F462). 종료코드 0=같다 · 1=낡았다 · 2=미측정. 「모름」 중 「라이브에 없다」(404)는 다시 재도 같다 — 처방은 대조가 아니라 배포다(F579).

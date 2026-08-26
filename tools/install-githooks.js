@@ -48,6 +48,27 @@ function hooksDir(뿌리) {
   return path.resolve(뿌리, dir);
 }
 
+/* 🔴 **워크트리에서는 «설치»를 안 한다**(08-26 실측·신설).
+ *   `hooksDir()` 이 `--git-common-dir` 로 풀기 때문에 dest 는 **어느 트리에서 불러도 메인의
+ *   공용 `.git/hooks`** 다(실측: 메인·한 마디·두 마디 셋의 dest 가 바이트로 같았다).
+ *   그런데 SRC 는 그 트리의 `tools/githooks` 라 갈린다 — 즉 가지의 훅 판이 **모든 세션의 훅**을
+ *   조용히 덮는다. `.git/hooks` 는 git 밖이라 되돌릴 이력도 없다.
+ * 🔑 `--check` 는 막지 않는다 — 「지금 무엇이 설치돼 있나」는 어느 트리에서 물어도 같은 사실이다. */
+const 쓰기모드 = !process.argv.includes('--check');
+if (쓰기모드) {
+  try {
+    const 절대 = execFileSync('git', ['rev-parse', '--absolute-git-dir'], { cwd: ROOT, encoding: 'utf8' }).trim();
+    const 공용 = execFileSync('git', ['rev-parse', '--git-common-dir'], { cwd: ROOT, encoding: 'utf8' }).trim();
+    if (path.resolve(ROOT, 절대) !== path.resolve(ROOT, 공용)) {
+      console.error('[install-githooks] 워크트리에서는 설치하지 않는다 — `.git/hooks` 는 모든 트리가 함께 쓴다.');
+      console.error(`  여기: ${ROOT}`);
+      console.error(`  훅 자리(공용): ${path.join(path.resolve(ROOT, 공용), 'hooks')}`);
+      console.error('  → 메인 트리에서 `node tools/install-githooks.js` 를 돌린다. (`--check` 는 여기서도 된다)');
+      process.exit(1);
+    }
+  } catch (_) { /* git 밖·판정 불가 — 가드가 판단할 자리가 아니다(폴백은 기존 동작) */ }
+}
+
 const dest = hooksDir(ROOT);
 const names = fs.existsSync(SRC_DIR) ? fs.readdirSync(SRC_DIR) : [];
 if (!names.length) {

@@ -130,7 +130,6 @@ if (!/clasp(\.cmd|\.ps1)?["']?\s+(--?\S+\s+)*(push|deploy)\b/i.test(execCmd)) pr
   }
 }
 
-if (cmd.includes('CLASP_GUARD_BYPASS=1')) process.exit(0);
 
 function run(bin, args) {
   return execFileSync(bin, args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
@@ -172,6 +171,16 @@ if (callerCwd) {
     // 워크트리 판정 실패(git 없음·저장소 밖 등) → 아래 기존 검사로 계속 진행한다(폴백은 항상 검사 쪽)
   }
 }
+
+/* 🔴 **BYPASS 는 0번 «아래»다**(08-26 실측·수리). 예전엔 이 줄이 0번보다 18줄 «앞»에 있어서,
+ *   `CLASP_GUARD_BYPASS=1 clasp push` 한 줄이면 **워크트리에서 라이브로 밀 수 있었다** —
+ *   실측: probe1·probe2 둘 다 맨 `clasp push` 는 DENY, BYPASS 를 붙이면 통과(무출력).
+ *   이 파일 머리말이 「아래 0번이 워크트리 배포 자체를 막으므로 닿지 않는다」고 적어 뒀는데,
+ *   bypass 경로에서는 0번이 **아예 실행되지 않았다**(guard-blind-to-its-own-claim 무늬).
+ * 🔑 0번은 절차가 아니라 **사실**이다 — 라이브 Apps Script 는 하나뿐이고, 그건 우회로 바꿀 수
+ *   있는 것이 아니다. 5-A 보안검사와 같은 급으로 BYPASS 밖에 둔다.
+ *   (임시 러너의 「언제나 bypass 로 push」 규약은 **메인 트리**에서만 뜻이 있다.) */
+if (cmd.includes('CLASP_GUARD_BYPASS=1')) process.exit(0);
 
 const problems = [];
 let 게이트알림 = ''; // 재는 층이 평소와 달라졌을 때만 채운다 — 「안 돌린 것」이 조용히 통과와 같은 모양이면 안 된다

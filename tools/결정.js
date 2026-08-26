@@ -42,6 +42,11 @@ const { 인자게이트 } = require('./lib/인자게이트.js');
  * 이 정본은 백틱 인용이 빽빽해서(`안전`·`node tools/…`) 정확히 그 함정 위에 있다. */
 const { 칸나누기, 칸안전 } = require('./lib/표.js');
 
+/* ⚠ `CLAUDE_PROJECT_DIR` 을 앞에 두는 것은 **결함이 아니라 시험 이음매**다 —
+ *   `tests/결정정본.test.js` ⑥ 이 그 env 로 임시 뿌리를 갈아끼워 쓰기 경로를 통째로 태운다
+ *   (08-26 에 이 줄을 `__dirname` 고정으로 바꿨다가 그 시험이 반박했다).
+ * 🔴 워크트리에서 이 값이 «가지 사본»을 가리키는 것은 사실이고, 그건 자리를 바꿔서가 아니라
+ *   **낡음을 드러내서** 고친다 — 아래 훅 출력의 「뒤처졌다」 한 줄이 그 자리다. */
 const 루트 = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
 const 정본 = path.join(루트, 'docs', '_ops', '결정.md');
 
@@ -211,6 +216,19 @@ function 훅화면() {
 
   const 줄 = [];
   줄.push(`📌 **유호님 확정 ${r.목록.length}건** — 구속 중 ${구속.length}(안전 ${안전.length} · 14일 내 ${한시.length}) · 재제안 열림 ${풀림.length}`);
+  /* 🔴 **이 결정표가 «지금»인가** — 워크트리 시대의 새 급소(08-26 실측).
+   *   가지 체크아웃의 `결정.md` 는 그 가지가 갈라진 시점의 사본이다. 실측에서 메인 178건 대
+   *   워크트리 175건이었고, **낡았다는 표시가 어디에도 없었다** — 세션이 첫 화면부터 잘못된
+   *   지도로 출발한다. 뒤처짐을 재서 «있으면» 한 줄 더한다(0이면 아무 말도 안 한다).
+   * 🔑 origin 을 «건드리지 않는다» — 이미 받아 둔 `origin/master` 와만 견준다(네트워크 0). */
+  try {
+    const { execFileSync } = require('child_process');
+    const 뒤 = execFileSync('git', ['rev-list', '--count', 'HEAD..origin/master'],
+      { cwd: 루트, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    if (뒤 && 뒤 !== '0') {
+      줄.push(`   ⚠ 이 결정표는 **이 체크아웃 기준**이다 — \`origin/master\` 보다 ${뒤}커밋 뒤처졌다(그만큼 최신 확정이 안 보인다). 최신은 \`git fetch && git rebase origin/master\` 뒤.`);
+    }
+  } catch (_) { /* git 밖·원격 없음 — 모름을 경고로 번역하지 않는다 */ }
 
   const 실을것 = [...안전, ...한시].slice(0, 상한);
   for (const d of 실을것) {

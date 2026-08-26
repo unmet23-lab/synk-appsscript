@@ -36,9 +36,16 @@ function out(decision, reason) {
 const deny = (reason) => out('deny', reason);
 
 let cmd = '';
+/* 🔴 **명령이 실제로 도는 자리** — 워크트리 세션이면 워크트리 경로다(clasp-guard.js:29 와 같은 칸).
+ *   [08-26 실측] 이 값을 안 읽고 `process.cwd()` 만 보던 동안 판정이 **뒤집혔다**:
+ *     같은 `git reset --hard HEAD` 가 process.cwd=메인이면 DENY(「미커밋이 있다」), 워크트리면 ALLOW.
+ *   즉 «남의 트리 더러움»으로 내 명령을 막거나(→ BYPASS 손버릇), 반대로 내 트리가 더러운데
+ *   메인이 깨끗해 **조용히 통과**시킨다. 두 가드가 「이 저장소」를 서로 다르게 정의하고 있었다. */
+let callerCwd = '';
 try {
   const input = JSON.parse(fs.readFileSync(0, 'utf8'));
   cmd = String((input.tool_input && input.tool_input.command) || '');
+  callerCwd = String(input.cwd || '').trim();
 } catch (_) {
   process.exit(0);
 }
@@ -102,7 +109,8 @@ const cdir = /\bgit\s+(?:[^&|;]*?\s)?-C\s+(['"]?)([^'"\s]+)\1/.exec(exec);
 function 셸이간곳() {
   const path = require('path');
   const 폴더인가 = (p) => { try { return fs.statSync(p).isDirectory(); } catch { return false; } };
-  let 곳 = process.cwd();
+  /* 시작점은 **명령이 도는 자리**다 — 훅 프로세스의 cwd 가 아니다(위 `callerCwd` 머리말). */
+  let 곳 = (callerCwd && 폴더인가(callerCwd)) ? callerCwd : process.cwd();
   for (const seg of exec.split(/&&|\|\||[;\n]/)) {
     const m = /^\s*(?:cd|Set-Location|sl)\s+(?:-Path\s+)?(?:"([^"]+)"|'([^']+)'|(\S+))\s*$/.exec(seg);
     if (m) {
@@ -450,9 +458,32 @@ if (되감기조각) {
     }
   }
 
-  /* ⑦-b 쏟기 — pop·apply 는 공유 트리에 **쓴다**. 깨끗하면 정당한 복구라 조용히 지나간다. */
+  /* ⑦-b 쏟기 — pop·apply 는 공유 트리에 **쓴다**. 깨끗하면 정당한 복구라 조용히 지나간다.
+   * 🔴 **다만 stash 스택은 «트리별»이 아니다**(08-26 실측): `git rev-parse --git-path refs/stash` 가
+   *   메인·워크트리 둘에서 **같은 절대경로**를 답한다(대조군 HEAD 는 갈린다 —
+   *   `.git/HEAD` vs `.git/worktrees/<이름>/HEAD`). 즉 트리는 여섯으로 갈려도 **스택은 하나**다.
+   *   그래서 「내 트리가 깨끗한가」만 재면, 남이 담아 둔 조각을 **내 트리에 쏟는** 길이 열린다 —
+   *   내 트리가 깨끗할수록 조용히 통과한다(새는 방향이 「통과」다). 트리가 둘 이상이면 그 자체로 묻는다. */
   if (조각((v) => 쏟기.test(v))) {
     const 더러운 = 미커밋().slice(0, 12);
+    const 트리수 = (() => {
+      /* ⚠ `execFileSync` 는 위 ⑤ 블록 «안»에서만 구조분해돼 있다 — 여기서 다시 부른다
+       *   (밖으로 끌어올리면 그 블록의 지연 로드 규율이 깨진다). */
+      try {
+        const { execFileSync } = require('child_process');
+        return (execFileSync('git', ['worktree', 'list', '--porcelain'], { cwd: gitCwd, encoding: 'utf8' })
+          .match(/^worktree /gm) || []).length;
+      } catch (_) { return 1; }   // 못 세면 안 막는다 — git 사정으로 작업을 세우지 않는다
+    })();
+    if (!더러운.length && 트리수 > 1) {
+      deny('[git-scope-guard] `git stash pop`·`apply` 차단 — **stash 스택은 워크트리 공용이다.**'
+        + `\n지금 이 저장소에 작업 트리가 ${트리수}개다. 트리는 갈려도 \`refs/stash\` 는 한 곳이라,`
+        + '\n**남의 세션이 담아 둔 조각**을 내 트리에 쏟게 된다 — 내 트리가 깨끗할수록 조용히 지나간다.'
+        + '\n(08-26 실측: `git rev-parse --git-path refs/stash` 가 모든 트리에서 같은 경로를 답한다.)'
+        + '\n\n→ 먼저 무엇인지 본다:  git stash show -p stash@{0}'
+        + '\n   내 조각만 살린다:   git checkout stash@{0} -- 경로A 경로B'
+        + '\n   내가 담은 것이 확실하면 명령 앞에 GIT_SCOPE_BYPASS=1 을 붙인다.');
+    }
     if (더러운.length) {
       deny('[git-scope-guard] `git stash pop`·`apply` 차단 — 지금 트리에 **미커밋 수정**이 있다.'
         + '\n이건 ⑦이 막는 것의 역방향이다: 담는 대신 쏟는다. 겹치면 merge 가 돌고, 충돌하면'

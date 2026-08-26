@@ -91,7 +91,11 @@ function snapshot(앞판 = null, 루트 = ROOT) {
     try { ents = fs.readdirSync(dir, { withFileTypes: true }); } catch (_) { return; }
     for (const e of ents) {
       // `.claude/state` 는 훅이 매 턴 갱신하는 런타임 상태라 늘 바뀐다 — 세면 경고에 노이즈만 는다.
-      if (e.name === 'node_modules' || e.name === '.git' || e.name === 'state') continue;
+      /* 🔴 `worktrees` — `.claude/worktrees/` 밑은 **이 체크아웃의 파일이 아니다**(다른 가지의 사본).
+       *   [08-26 실측] 안 빼면 스냅샷이 614개를 세고 그중 21개가 워크트리 사본이었다 —
+       *   CLAUDE.md·Code.js·엔진_*.js 가 «두 벌»로 잡혀 「안 바뀐 파일이 바뀌었다」로 뜬다.
+       *   (`tools/인용검사.js:241` 이 이미 쓰는 규칙과 같다.) */
+      if (e.name === 'node_modules' || e.name === '.git' || e.name === 'state' || e.name === 'worktrees') continue;
       const p = path.join(dir, e.name);
       if (e.isDirectory()) { if (depth > 0) walk(p, depth - 1); continue; }
       if (!/\.(js|json|md|html|txt)$/i.test(e.name)) continue;
