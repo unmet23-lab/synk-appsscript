@@ -796,11 +796,12 @@ const SYNK_VERSION = 'v9.267'; // 전체 이력 = docs/버전_이력.md (새 버
 const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 4, fuel: 6, boss: 12, // [08-27] lore 11→4 (1등 시상 상장 일곱 폐지) // [v7.8] 시즌 보스 12
   season: 12, label: 15, reason: 9, cheer: 7, cheermail: 30, braintip: 30, worldboss: 1, // [v9.9] · [v9.34] reason 8→9 — setupParentLabels R01~R09(v9.28 R09 추가) 실측 정합
   grammar: 72, // [v9.37] W3 문법뱅크(GRAMMAR_BANK 72종) 추가 — 미설치 시 'grammar 0/72' 정당 경보
+  guide: 3, // [함께한날 막1] 가이드 셋(몽글·까몽·마린) — 7단계 캐릭터를 대신한다(유호 확정 08-26 · 설계 = docs/함께한날_설계_v1.md)
   reach: 2 }; // [v9.40] 마감폼 '전체도달도' Choice 소스(도달/더연습) — setupGrammarBank(v9.38d)가 함께 재건. 실측 0이라 워치독·preflight 감시 대상 편입
 // [v9.40] 콘텐츠 유형 → 셋업 함수 매핑 — preflightGlide 자동 복구·워치독 안내 공용 정본.
 //   함수명을 문자열이 아닌 참조로 들고 있어 이름 변경 시 구문 오류로 즉시 발각된다.
 function contentSetupOf_(type) {
-  const m = { monster: setupMonsters, store: setupStore, grammar: setupGrammarBank, reach: setupGrammarBank,
+  const m = { monster: setupMonsters, guide: setupGuides, store: setupStore, grammar: setupGrammarBank, reach: setupGrammarBank,
     quiz: setupQuiz, homework: setupHomework, braintip: setupBrainTips, fuel: setupFuelMissions,
     season: setupSeasons, boss: setupBosses, worldboss: setupBosses, lore: setupTitleLore,
     label: setupParentLabels, reason: setupParentLabels, cheer: setupTeacherCheers, cheermail: setupTeacherCheers };
@@ -810,7 +811,7 @@ function contentSetupOf_(type) {
 //   사람이 채운 값이 정본의 일부다. replaceContentType 재설치는 그 커스텀(E열 이미지 등)을 코드 기본값으로 되돌리므로,
 //   이 유형들은 "0개(전멸 = 안전 재건)"일 때만 자동 복구하고, 0이 아닌 불일치는 ⚠ 경고로 사람 판단에 맡긴다.
 //   나머지(grammar·quiz·homework·label 등)는 코드 상수가 유일 정본 + 번역은 inject/translate가 복원 → 불일치 시 자동.
-const CONTENT_CUSTOM_TYPES = { monster: 1, store: 1, boss: 1, worldboss: 1 };
+const CONTENT_CUSTOM_TYPES = { monster: 1, store: 1, boss: 1, worldboss: 1, guide: 1 }; // [함께한날 막1] guide E열 이미지도 시트 커스텀 — 0개일 때만 자동 재건
 
 /* ── [v5] 신규 설정 ─────────────────────────────────── */
 const REPORT_TEMPLATE_ID = '1XDhZPMjd17fbxmqGGEjq-kRks2Y3tJc9Ntrp90XV4pE';   // [v9.19] 리포트카드 Slides 템플릿 (비우면 스킵)
@@ -2186,6 +2187,13 @@ function calcAll() {
   const atData = atLast >= 2 ? at.getRange(2, 1, atLast - 1, 4).getValues() : [];
   const ctLast = ct.getLastRow();
   const ctData = ctLast >= 2 ? ct.getRange(2, 1, ctLast - 1, 6).getValues() : [];
+  // [함께한날 막1] 가이드 씨앗 자가 보장 — 배포 직후 첫 계산이 시트 상태와 무관하게 선다(수동 실행 0 · Ⅰ-3③).
+  //   preflight 자동 복구(0개 재건)와 같은 방향이고, 여기서는 그 회차의 ctData 에도 바로 태워 아래
+  //   화이트리스트가 «이번 계산부터» 가이드를 안다 — 안 태우면 첫 회차가 유효 픽을 한 번 지운다.
+  if (!ctData.some(r => r[1] === 'guide')) {
+    setupGuides();
+    GUIDE_ROWS_().forEach(g => ctData.push(g.slice()));
+  }
 
   // --- point_logs 빈칸 보정 (Glide 버튼 대비) [v9.22] 변경 행의 A(id)·F(일시)만 기록, Glide 소유열(B~E) 미접촉 ---
   const needId = [];
@@ -2265,6 +2273,9 @@ function calcAll() {
   stages.sort((a, b) => a.th - b.th);
   const storePriceByName_ = {}; // [v9.28] 목표아이템 진행 카드용 — contents store 이름→가격(F열)
   ctData.forEach(r => { if (r[1] === 'store' && r[2]) storePriceByName_[String(r[2]).trim()] = Number(r[5]) || 0; });
+  // [함께한날 막1] 가이드 목록 — BC55 화이트리스트의 정본. 임계 없음(선택제 · 자격 축 자체가 없다).
+  const guides = [];
+  ctData.forEach(r => { if (r[1] === 'guide' && r[2]) guides.push({ name: String(r[2]).trim(), img: String(r[4] || '') }); });
   function monsterOf(pts) {
     let cur = stages[0] || { name: '', th: 0 }, next = null, curIdx = 0; // [v6.6] idx
     for (let i = 0; i < stages.length; i++) {
@@ -2707,16 +2718,14 @@ function calcAll() {
       // [v5] 시냅스 게이지: 연속출석 30% + 월간포인트 40% + 월출석 30%
       evoRemOut.push([mon.rem]);
       stageNumOut.push([mon.idx || 1]); // [v6.6] 단계번호 — 강사 대시보드 진화 카운트용
-      { // [v9.11] 대표몬스터 스킨(BC=55) — 도달한 단계만 유효, 초과 선택은 자동 무효화
+      { // [함께한날 막1] 고른가이드(BC=55) — 화이트리스트 = contents type='guide'(몽글·까몽·마린).
+        //   구 검증(도달 단계 스킨만 유효)은 «자격»의 축이었다 — 가이드는 선택제라 자격이 없다(설계 §2).
+        //   목록 밖 값(옛 몬스터 이름 포함)은 비운다 — 계속 비워 써야 라이브에 굳은 옛 픽이 지워진다.
         const iE2 = stageNumOut.length - 1;
         const pick = String((prevBC[iE2] && prevBC[iE2][0]) || '').trim();
-        let disp = { name: mon.stage, img: (stages.find(s2 => s2.name === mon.stage) || {}).img || '' };
-        let bcOut = '';
-        if (pick) {
-          const pk = stages.find(s2 => s2.name === pick);
-          if (pk && t >= pk.th) { disp = { name: pk.name, img: pk.img }; bcOut = pick; } // 유효 — 유지
-        }
-        skinOut.push([bcOut]);
+        skinOut.push([guides.some(g2 => g2.name === pick) ? pick : '']);
+        // 액자(BD56)는 막4 전까지 몬스터 축 그대로 — 가이드 픽을 액자에 아직 안 얹는다(한 화면 두 체계 금지).
+        const disp = { name: mon.stage, img: (stages.find(s2 => s2.name === mon.stage) || {}).img || '' };
         frameOut.push([buildMonsterFrame_(disp.name, disp.img, mon.idx || 1, mon.pct, mon.rem)]); // [v9.35] 홈 액자만 진행 게이지 연결 (호출처 전수 확인: 이곳 1곳)
       }
       { // [v9.12] 운세·몬스터의 한마디·기록실
@@ -2930,7 +2939,7 @@ function calcAll() {
     writeIfChanged(pf, 2, 16, out);
     if (pf.getMaxColumns() < 66) pf.insertColumnsAfter(pf.getMaxColumns(), 66 - pf.getMaxColumns()); // [v9.16]
     if (String(pf.getRange('BB1').getValue()) !== '진화일') pf.getRange('BB1').setValue('진화일');
-    if (String(pf.getRange('BC1').getValue()) !== '대표몬스터') pf.getRange('BC1').setValue('대표몬스터');
+    if (String(pf.getRange('BC1').getValue()) !== '고른가이드') pf.getRange('BC1').setValue('고른가이드'); // [함께한날 막1] 열 뜻이 이 커밋에서 바뀌었다(스킨→가이드 선택)
     if (String(pf.getRange('BD1').getValue()) !== '액자HTML') pf.getRange('BD1').setValue('액자HTML');
     if (String(pf.getRange('BE1').getValue()) !== '오늘의운세') pf.getRange('BE1').setValue('오늘의운세');
     if (String(pf.getRange('BF1').getValue()) !== '몬스터한마디') pf.getRange('BF1').setValue('몬스터한마디');

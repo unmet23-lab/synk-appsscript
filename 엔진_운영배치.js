@@ -293,11 +293,25 @@ function syncProfiles() {
   if (removedRows.length) {
     const snapSh = ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'exit_snapshot', ['보관일', 'student_id', '이름', 'row_json']);
     const wide = dst.getMaxColumns();
-    const todaySnap = Utilities.formatDate(now, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd');
+    const tzSnap = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+    const todaySnap = Utilities.formatDate(now, tzSnap, 'yyyy-MM-dd');
+    /* [함께한날 막1] 절단 수리 — 구판은 전 열 JSON.slice(49500)이라 카드 HTML(BD·BY 수만 자)이 낀 행은
+     * **깨진 JSON**으로 잘려 「재설계」 판정을 받았다. 재계산 가능한 열을 버리고, 재계산 «불가» 열만
+     * {열번호: 값} 으로 저장한다(수백 자 — 상한과 원리상 안 만난다). '{' 시작 = 신판 표식(구판은 '[').
+     * 목록 근거 = [v9.34] 「지워지는 열」 주석 + 래칫·자기선언·함께한날 열. */
+    const EXIT_KEEP_COLS_ = [27, 28, 30, 31, 32, 37, 41, 44, 45, 46, 49, 50, 54, 55, 80, 105];
+    //                      AA  AB  AD  AE  AF  AK  AO  AR  AS  AT  AW  AX  BB  BC  CB  DA
     const snaps = removedRows.map(rn => {
       const v = dst.getRange(rn, 1, 1, wide).getValues()[0];
       removedInfo.push({ id: String(v[0] || ''), name: String(v[1] || '').trim() });
-      return [todaySnap, String(v[0] || ''), String(v[1] || ''), JSON.stringify(v).slice(0, 49500)]; // 50k 셀 상한 안전판
+      const keepJ = {};
+      EXIT_KEEP_COLS_.forEach(c3 => {
+        if (c3 > wide) return;
+        const val3 = v[c3 - 1];
+        if (val3 === '' || val3 == null) return;
+        keepJ[String(c3)] = (val3 instanceof Date) ? Utilities.formatDate(val3, tzSnap, 'yyyy-MM-dd') : val3;
+      });
+      return [todaySnap, String(v[0] || ''), String(v[1] || ''), JSON.stringify(keepJ)];
     });
     writeIfChanged(snapSh, snapSh.getLastRow() + 1, 1, snaps); // [v9.153] 소독 채널로 append(통로 통일) — 이름 칸은 원문 왕복값, row_json은 '[' 시작이라 소독 미적용=JSON.parse 복원 무해
     const addedNew = newSeq.filter(e => !e.used).map(e => ({ id: String(e.id), name: String(e.main[1] || '').trim() }));
@@ -331,6 +345,34 @@ function syncProfiles() {
     if (oTail > 0) dst.getRange(out.length + 2, 1, oTail, dst.getMaxColumns()).clearContent(); // [v9.34] 전 열 tail-clear(구 15열 — Z 등 잔존 개인정보 포함 제거)
     const zOut = out.map(r => [keep[r[0]] ? keep[r[0]].pEmail : '']);
     writeIfChanged(dst, 2, 26, zOut);                                     // Z(pEmail)
+    /* [함께한날 막1] 퇴소→재등록 승계 복원 — exit_snapshot 은 그동안 «쓰는 자리만 있고 읽는 자리가 0»
+     * 이었다(설계 §8-⑭: 「승계 열은 1회 백필하면 된다」가 기각된 이유 — 퇴소·재등록이 매일 지운다).
+     * 신규 append 행의 id 가 스냅샷에 있으면(같은 id 재등록 — id 불변 규율 위) 승계 열을 되살린다.
+     * 구판 '[' 배열 JSON 은 절단으로 깨졌을 수 있어 복원하지 않는다 — 반쪽 복원이 침묵 오염보다 나쁘다. */
+    if (apCnt > 0) {
+      const snapR = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('exit_snapshot');
+      if (snapR && snapR.getLastRow() >= 2) {
+        const snapById = {};
+        snapR.getRange(2, 1, snapR.getLastRow() - 1, 4).getValues().forEach(sr => {
+          const sid3 = String(sr[1] || '').trim();
+          if (sid3) snapById[sid3] = String(sr[3] || ''); // 아래 행이 최신 — 마지막 승자
+        });
+        ordered.slice(survCnt).forEach((e3, k3) => {
+          const raw3 = snapById[String(e3.id)];
+          if (!raw3 || raw3.charAt(0) !== '{') return;
+          let keep3 = null;
+          try { keep3 = JSON.parse(raw3); } catch (ePs) { return; }
+          const rowN3 = survCnt + 2 + k3; // 헤더 1행 + 기존 학생 survCnt + k3번째 신규
+          Object.keys(keep3 || {}).forEach(cK => {
+            const c4 = Number(cK) || 0;
+            if (c4 < 16 || c4 > dst.getMaxColumns()) return; // 로스터(A~O)는 상담시트가 정본 — 안 만진다
+            const v4 = keep3[cK];
+            if (v4 === '' || v4 == null) return;
+            writeIfChanged(dst, rowN3, c4, [[v4]]); // 소독 채널 — 스냅샷 값에 학생이 친 글(드림한줄 등)이 실려 있다
+          });
+        });
+      }
+    }
 
     // [v8.5] 디테일 3종 → AY·AZ·BA (계산열 50 이후 안전 지대)
     if (dst.getMaxColumns() < 53) dst.insertColumnsAfter(dst.getMaxColumns(), 53 - dst.getMaxColumns());
