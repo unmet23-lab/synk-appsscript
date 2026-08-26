@@ -21,6 +21,7 @@ const path = require('path');
 const 방 = __dirname;
 const 산출방 = path.join(방, 'out');
 const 생성경로 = path.join(방, 'src', '클립', '생성', '대본클립들.ts');
+const 카운트다운경로 = path.join(방, 'src', '클립', '생성', '카운트다운들.ts');
 const 이름 = process.argv[2];
 const 장수인자 = process.argv[3] ? Number(process.argv[3]) : null;
 
@@ -82,16 +83,31 @@ const 훅프레임 = FPS * 3;
 let 자리 = [];
 let 이름표 = [];
 
+function 읽기(경로) {
+  if (!fs.existsSync(경로)) return [];
+  const m = fs.readFileSync(경로, 'utf8').match(/= (\[[\s\S]*\]);/);
+  return m ? JSON.parse(m[1]) : [];
+}
+
 const 클립 = (() => {
   if (장수인자) return null; /* 장수를 직접 준 것은 「옛 방식으로 가라」는 뜻이다 */
-  if (!fs.existsSync(생성경로)) return null;
-  const m = fs.readFileSync(생성경로, 'utf8').match(/= (\[[\s\S]*\]);/);
-  if (!m) return null;
   const id = path.parse(이름).name;
-  return JSON.parse(m[1]).find((c) => c.id === id) || null;
+  return 읽기(생성경로).find((c) => c.id === id) || 읽기(카운트다운경로).find((c) => c.id === id) || null;
 })();
 
-if (클립) {
+if (클립 && 클립.순위들) {
+  /* 카운트다운 릴 — 훅 + 순위 다섯 + 마무리 = 일곱 칸. 리드크루 클립과 칸 이름만 다르다. */
+  자리.push(훅프레임 / 2 / FPS);
+  이름표.push('훅');
+  let ㄱ = 훅프레임;
+  for (const r of 클립.순위들) {
+    자리.push((ㄱ + r.프레임 / 2) / FPS);
+    이름표.push(`${r.순}위`);
+    ㄱ += r.프레임;
+  }
+  자리.push((ㄱ + 클립.마무리프레임 / 2) / FPS);
+  이름표.push('마무리');
+} else if (클립) {
   자리.push(훅프레임 / 2 / FPS);
   이름표.push('훅');
   let ㄱ = 훅프레임;

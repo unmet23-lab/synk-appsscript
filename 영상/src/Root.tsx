@@ -3,7 +3,10 @@ import { Composition } from "remotion";
 import { 폰트시험 } from "./시험/폰트시험";
 import { 리드크루클립 } from "./클립/리드크루클립";
 import { 커버 } from "./클립/커버";
+import { 카운트다운 } from "./클립/카운트다운";
+import { 카운트다운커버 } from "./클립/카운트다운커버";
 import { 대본클립들 } from "./클립/생성/대본클립들";
+import { 카운트다운들 } from "./클립/생성/카운트다운들";
 import "./킷/폰트"; /* 부수효과로 폰트를 등록한다 — delayRender 가 렌더를 기다리게 한다 */
 
 /** 세로 릴 규격 — 인스타/틱톡 공통. */
@@ -38,6 +41,26 @@ export const Root: React.FC = () => {
           <Composition
             id={`cover-${클립.편}-${클립.화}`}
             component={커버}
+            durationInFrames={1}
+            {...세로}
+            defaultProps={{ 클립 }}
+          />
+        </React.Fragment>
+      ))}
+
+      {/* 카운트다운 릴 — 릴 A 포맷(유호 확정 08-26). 대본 폴더가 다르므로 목록도 따로 온다. */}
+      {카운트다운들.map((클립) => (
+        <React.Fragment key={클립.id}>
+          <Composition
+            id={클립.id}
+            component={카운트다운}
+            durationInFrames={클립.전체프레임}
+            {...세로}
+            defaultProps={{ 클립 }}
+          />
+          <Composition
+            id={`${클립.id}-cover`}
+            component={카운트다운커버}
             durationInFrames={1}
             {...세로}
             defaultProps={{ 클립 }}
