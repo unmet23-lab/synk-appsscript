@@ -1992,6 +1992,154 @@ function setAppState_(ss, key, val) {
 // [v9.42] 🗂️ 도감 진행 카드 — 도달한 몬스터만 공개, 미도달은 🔒 ??? 실루엣(스포일러 차단).
 //   구 조립에서 도감이 전부 오픈돼 보이던 문제의 코드 측 봉인: Glide Collection 필터와 별개로,
 //   이 카드가 "몇 마리 만났고 다음은 몇 P인지"를 한 장으로 보여준다(여행지도 12칸 그리드 패턴).
+/* ===================== [함께한날 막4] 장면 사다리 · 가이드 대사 · 카드 셋 =====================
+ * 정본 = docs/함께한날_설계_v1.md. 축 둘 = 함께한 날(시간·매일) + 내가 맞힌 말(학습·중간).
+ * 단계도 등급도 진화도 없다 — 쌓이는 것 하나, 열리는 조건 하나. 둘 다 남과 견줄 수 없다.
+ * 색은 킷만(DESIGN.md): Paper #FBF7F0 · Ink #2B2320 · Stitch #F0E3C8 · 신호 1점 = Coral(글자는 Coral 3
+ * #AE322A) · Oat/Stone/Ash. 순백 금지 · 라이트 위 코랄 «글자» 금지(강조는 Coral 3) · 이모지 절제. */
+
+// 장면 사다리 — [장면, 함께한 날 문턱, 맞힌 말 누계 문턱(0=게이트 없음)]. 간격은 매번 커진다(설계 §2).
+// 30·60·100 을 일부러 피했다 — 스트릭 업적(한 달의 약속/두 달의 전설/100일의 기적)과 같은 날 두 번 축하 방지.
+const SCENE_LADDER_ = [
+  [1, 1, 0], [2, 3, 0], [3, 7, 0], [4, 14, 2], [5, 25, 5], [6, 41, 9], [7, 63, 14],
+  [8, 92, 20], [9, 129, 27], [10, 175, 35], [11, 231, 44], [12, 300, 54], [13, 380, 65]
+];
+// 13 이후: 날 간격은 직전 간격+10, 말 문턱은 +12·+13…(뱅크 72 상한) — 문턱은 끝나지 않는다(설계 §2).
+function sceneLadderAt_(k) { // k = 1부터. 표 밖은 규칙으로 잇는다
+  if (k <= SCENE_LADDER_.length) return SCENE_LADDER_[k - 1];
+  let prev = SCENE_LADDER_[SCENE_LADDER_.length - 1].slice();
+  let gap = prev[1] - SCENE_LADDER_[SCENE_LADDER_.length - 2][1]; // 마지막 간격(80)
+  let mGap = 12;
+  for (let i = SCENE_LADDER_.length + 1; i <= k; i++) {
+    gap += 10;
+    prev = [i, prev[1] + gap, Math.min(prev[2] + mGap, 72)];
+    mGap++;
+  }
+  return prev;
+}
+/* sceneOf(days, mastered) — 지금 «지나온» 장면 수와 다음 장면까지의 남은 조건.
+ * 장면 k 를 지나려면 두 문턱을 «다» 넘어야 한다(함께한 날 AND 맞힌 말 누계).
+ * 반환: { idx(지나온 장면 수·최소 0), next(다음 장면 번호), toDays(남은 날), toMastered(남은 맞힌 말),
+ *         pct(다음 장면까지 «날» 진행 0~100), need(다음 장면의 문턱 [일, 말]) } */
+function sceneOf(days, mastered) {
+  const d = Math.max(Number(days) || 0, 0), m = Math.max(Number(mastered) || 0, 0);
+  let idx = 0;
+  while (true) {
+    const th = sceneLadderAt_(idx + 1);
+    if (d >= th[1] && m >= th[2]) idx++; else break;
+    if (idx > 999) break; // 방어 — 사다리는 끝이 없지만 계산은 끝나야 한다
+  }
+  const nextTh = sceneLadderAt_(idx + 1);
+  const prevDays = idx > 0 ? sceneLadderAt_(idx)[1] : 0;
+  const span = Math.max(nextTh[1] - prevDays, 1);
+  const pct = Math.max(0, Math.min(100, Math.floor(((d - prevDays) / span) * 100)));
+  return { idx: idx, next: idx + 1, toDays: Math.max(nextTh[1] - d, 0),
+           toMastered: Math.max(nextTh[2] - m, 0), pct: pct, need: [nextTh[1], nextTh[2]] };
+}
+
+/* 가이드 대사 — 발화표 규격(설계 §0-㉢): 궤적의 사실만 · 평가어 절제 · 비교는 어제의 그 학생과만 ·
+ * 🔴 끊김·결석은 «절대 언급 ✗»(S19) — 구 miss3/miss7 축은 이 체계에 없다(재촉 장치를 만들지 않는다 · 철학 Ⅲ-2).
+ * 성격 규격(가이드_정본 §2): 몽글 = 말을 건다 · 까몽 = 거의 안 함, 한 낱말·몸짓 · 마린 = 시작과 끝에만. */
+const GUIDE_SPEAK = {
+  장면: ['오늘, 한 뼘 가까워졌어. 여기까지 같이 왔네', '새 장면이야 — 여기까지 온 날들, 내가 다 봤어', '한 걸음 더 왔어. 다음 자리에서 기다릴게'],
+  맞힘: ['방금 그거, 처음부터 끝까지 네 문장이었어', '{f} — 오늘 네 손으로 맞혔어', '어제는 없던 문장이 오늘 생겼네'],
+  만남: ['오늘도 왔네.', '기다렸어 — 오늘은 뭐부터 할까?', '네가 오면 나도 하루가 시작돼'],
+  고요: ['여기 있을게.', '나는 오늘도 네 문장들을 다시 읽었어', '별일 없어도 좋아. 나 여기 있어'],
+  까몽장면: ['…가까이.', '(한 걸음)', '왔다.'],
+  까몽맞힘: ['오.', '멋져.', '(반짝)'],
+  까몽만남: ['왔네.', '좋다.', '(끄덕)'],
+  마린장면: ['여기까지의 항해, 기록해 두었다.', '한 구간이 끝났다. 다음 구간이 열렸다.']
+};
+function sceneSpeak_(guide, ctx) {
+  const seed = ctx.seed;
+  if (guide === '마린') return ctx.sceneToday ? hashPick_(GUIDE_SPEAK.마린장면, seed) : ''; // 시작과 끝에만
+  if (guide === '까몽') { // 한 낱말·몸짓
+    if (ctx.sceneToday) return hashPick_(GUIDE_SPEAK.까몽장면, seed);
+    if (ctx.masteredToday) return hashPick_(GUIDE_SPEAK.까몽맞힘, seed);
+    if (ctx.metToday) return hashPick_(GUIDE_SPEAK.까몽만남, seed);
+    return '';
+  }
+  // 몽글(기본 — 미선택 학생도 몽글 목소리)
+  if (ctx.isBday) return hashPick_(SPEAK.bday, seed);
+  if (ctx.crownToday) return hashPick_(SPEAK.crown, seed);
+  if (ctx.sceneToday) return hashPick_(GUIDE_SPEAK.장면, seed);
+  if (ctx.masteredToday) return hashPick_(GUIDE_SPEAK.맞힘, seed).replace('{f}', ctx.form || '오늘의 문장');
+  if (ctx.metToday) return hashPick_(GUIDE_SPEAK.만남, seed);
+  return hashPick_(GUIDE_SPEAK.고요, seed);
+}
+
+// 가이드 그림 자리 — E열 URL 이 오면 사진, 아직이면 펠트 코랄 점(램프 그라디언트)이 선다(자산 트랙과 독립).
+function guideDotHtml_(img, size, nm) {
+  if (String(img || '').indexOf('http') === 0) {
+    return '<img src="' + img + '" style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;object-fit:cover;border:2px solid #F0E3C8;" alt="' + (nm || '가이드') + '"/>';
+  }
+  return '<div style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#FBB7A3,#F96859 68%,#AE322A);border:2px solid #F0E3C8;"></div>';
+}
+
+/* 「우리」 카드(BD56) — 학생 홈. 몽글이가 오른쪽 끝에서 시작해 장면마다 왼쪽(학생 쪽)으로 온다(설계 §1).
+ * 화면의 유일한 코랄 = «다음 만남까지 N일» 숫자(글자라 Coral 3). 오늘 한 것은 0이면 줄 자체를 안 낸다. */
+function buildTogetherCard_(o) {
+  const idx = o.scene.idx, near = Math.min(idx / 13, 1);
+  const leftPct = Math.round(78 - near * 66); // 장면 0 = 78%(멀리) → 장면 13 = 12%(곁)
+  const gate = o.scene.toDays <= 0 && o.scene.toMastered > 0; // 날은 찼고 «맞힌 말»이 열쇠인 상태
+  const headLine = gate
+    ? '다음 만남의 열쇠는 <b style="color:#AE322A;">맞힌 말 ' + o.scene.toMastered + '개</b>'
+    : '다음 만남까지 <b style="color:#AE322A;font-size:16px;">' + o.scene.toDays + '일</b>';
+  const meetsLine = o.meets > 0 ? ' · 오늘 ' + escHtml_(o.guideName) + '와 한 것 <b>' + o.meets + '</b>' : '';
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FBF7F0;border:2px solid #F0E3C8;border-radius:16px;padding:12px 14px;color:#2B2320;">' +
+    '<div style="position:relative;height:52px;">' +
+      '<div style="position:absolute;left:6px;right:6px;top:38px;border-top:2px dashed #F0E3C8;"></div>' +
+      '<div style="position:absolute;top:0;left:' + leftPct + '%;transition:left .3s;">' + guideDotHtml_(o.guideImg, 40, o.guideName) + '</div>' +
+      '<div style="position:absolute;top:26px;left:0;width:10px;height:10px;border-radius:50%;background:#EDE7DC;border:2px solid #F0E3C8;"></div>' +
+    '</div>' +
+    '<div style="font-size:13.5px;padding-top:6px;">' + headLine + '</div>' +
+    '<div style="font-size:12px;color:#8D857A;padding-top:3px;">함께한 날 <b style="color:#2B2320;">' + o.days + '</b>' + meetsLine + '</div>' +
+    '</div>';
+}
+
+/* 필름스트립(CE83) — 도감(끝이 정해진 수집)의 자리를 잇는 «끝없는» 장면 줄. 지나온 장면 = 꿰맨 단추. */
+function buildFilmStripHtml_(o) {
+  const idx = o.scene.idx;
+  const dots = [];
+  const upto = Math.max(idx + 3, 5);
+  for (let i = 1; i <= upto; i++) {
+    dots.push(i <= idx
+      ? '<span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#FEF0E9;border:2px solid #F96859;margin:0 3px;"></span>'
+      : '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#EDE7DC;border:2px dashed #C7BFB2;margin:0 3px;"></span>');
+  }
+  const lastRow = (o.sceneRows && o.sceneRows.length) ? o.sceneRows[o.sceneRows.length - 1] : null;
+  const lastLine = lastRow
+    ? '<div style="font-size:11.5px;color:#8D857A;padding-top:6px;">최근 장면 ' + lastRow.n + ' · ' + escHtml_(String(lastRow.d || '')) + (lastRow.form ? ' · ' + escHtml_(lastRow.form) : '') + '</div>'
+    : '';
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FBF7F0;border:2px solid #F0E3C8;border-radius:16px;padding:11px 13px;color:#2B2320;">' +
+    '<div style="font-size:12.5px;font-weight:700;padding-bottom:6px;">' + escHtml_(o.guideName || '몽글') + '와 걸어온 장면 · ' + idx + '</div>' +
+    '<div style="white-space:nowrap;overflow-x:auto;">' + dots.join('') + '</div>' + lastLine + '</div>';
+}
+
+/* 걸어온 길(BY77) — 되돌아보기. 사실만 나란히 — 「자랐어요」라고 단정하지 않는다(설계 §2-㉣ ①).
+ * 달마다 만난 날 막대는 «출석 원장»에서 직접 센다(설계 §2-㉣ — point_logs 당월 함정·스냅샷 소급 불가 회피). */
+function buildWalkedRoadHtml_(o) {
+  const bars = (o.monthBars || []).map(b =>
+    '<div style="display:inline-block;width:12px;margin:0 2px;vertical-align:bottom;height:' + (4 + Math.min(b.c, 20) * 2) + 'px;background:' + (b.c > 0 ? '#FD9C87' : '#EDE7DC') + ';border-radius:3px 3px 0 0;" title="' + b.ym + '"></div>').join('');
+  const growth = o.growth
+    ? '<div style="font-size:12px;padding-top:8px;line-height:1.9;"><b>내가 쓴 문장</b><br/>' +
+      '<span style="color:#8D857A;">' + escHtml_(String(o.growth.d1 || '').slice(0, 7)) + '</span> 「' + escHtml_(o.growth.a) + '」<br/>' +
+      '<span style="color:#8D857A;">' + escHtml_(String(o.growth.d2 || '').slice(0, 7)) + '</span> 「' + escHtml_(o.growth.b) + '」' +
+      '<div style="font-size:11px;color:#8D857A;">둘 다 네가 직접 쓴 문장이야</div></div>'
+    : '';
+  const dream = (o.dreamFirst && o.dreamNow && o.dreamFirst !== o.dreamNow)
+    ? '<div style="font-size:12px;padding-top:8px;"><b>처음의 너는 이렇게 썼어</b><br/>「' + escHtml_(o.dreamFirst) + '」 → 「' + escHtml_(o.dreamNow) + '」</div>'
+    : '';
+  const season = o.seasonT
+    ? '<div style="font-size:12px;padding-top:8px;color:#8D857A;">🎫 시즌 ' + escHtml_(String(o.seasonT.n)) + ' «' + escHtml_(o.seasonT.name) + '» · ' + o.seasonT.week + '주차 — 만난 날 <b style="color:#2B2320;">' + o.seasonT.a + '</b></div>'
+    : '';
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FBF7F0;border:2px solid #F0E3C8;border-radius:16px;padding:12px 14px;color:#2B2320;line-height:1.8;">' +
+    '<div style="font-size:13px;font-weight:800;">' + escHtml_(o.guideName || '몽글') + '와 걸어온 길</div>' +
+    '<div style="font-size:12.5px;padding-top:4px;">함께한 날 <b>' + o.days + '</b> · 내가 맞힌 말 <b>' + o.mastered + '</b>' + (o.bank ? ' / ' + o.bank : '') + '</div>' +
+    (bars ? '<div style="padding-top:8px;"><div style="font-size:11.5px;color:#8D857A;">달마다 만난 날</div><div style="height:46px;">' + bars + '</div></div>' : '') +
+    growth + dream + season + '</div>';
+}
+
 function buildDexHtml_(stages, t, curIdx) {
   let cells = '', met = 0;
   stages.forEach((s, i) => {
@@ -2416,8 +2564,11 @@ function calcAll() {
 
   // --- profiles P~Y + AB(최고스트릭) + AC(현재칭호) + [v5] AE~AG ---
   if (pfData.length) {
+    // [함께한날 막4] 축 전환 판독 — AP1 헤더가 아직 구 이름이면 이번이 «전환 첫 회»다.
+    //   그 회차의 AP42·BB54 값은 몬스터 축(1~7 단계·진화일)이라 장면 러닝맥스·최근장면일에 섞으면 안 된다.
+    const apIsScene = String(pf.getRange('AP1').getValue()) === '지나온장면수';
     writeIfChanged(pf, 1, 16, [[
-      '누적잔액','월간포인트','월간랭킹','몬스터단계','진화진행률',
+      '누적잔액','월간포인트','월간랭킹','현재장면','다음장면진행률',
       '연속출석','이번달출석','마지막출석일','이번달칭찬','이탈위험'
     ]]);
     if (pf.getRange('AB1').getValue() !== '최고스트릭') pf.getRange('AB1').setValue('최고스트릭');
@@ -2426,7 +2577,7 @@ function calcAll() {
     //   ⚠ AF32 '마지막만남일'과 CD82 '게이트문구'(구 '게이지문구'와 한 글자 차) 혼동 금지.
     if (pf.getRange('AE1').getValue() !== '함께한날') pf.getRange('AE1').setValue('함께한날');
     if (pf.getRange('AF1').getValue() !== '마지막만남일') pf.getRange('AF1').setValue('마지막만남일');
-    if (pf.getRange('AG1').getValue() !== '다음진화까지') pf.getRange('AG1').setValue('다음진화까지');
+    if (pf.getRange('AG1').getValue() !== '다음장면까지') pf.getRange('AG1').setValue('다음장면까지'); // [함께한날 막4] 남은 «날»(구: 남은 P)
     // [v5.1] 대표칭호·칭호등급 헤더
     if (pf.getRange('AH1').getValue() !== '대표칭호') pf.getRange('AH1').setValue('대표칭호');
     if (pf.getRange('AI1').getValue() !== '칭호등급') pf.getRange('AI1').setValue('칭호등급');
@@ -2438,8 +2589,8 @@ function calcAll() {
     //   쓰고 있었다 — 설계 §4-1 ★확인). AE31·AF32 는 이제 함께한날 원장으로 «재사용»한다. AL38~AN40 은
     //   여전히 은퇴 열(인덱스 고정이라 물리 삭제 불가 — 삭제 시 AO~BX 전부 밀림 · 숨기기만 안전).
     if (pf.getRange('AK1').getValue() !== '착용칭호') pf.getRange('AK1').setValue('착용칭호');
-    if (pf.getRange('AO1').getValue() !== '몬스터이름') pf.getRange('AO1').setValue('몬스터이름');
-    if (pf.getRange('AP1').getValue() !== '단계번호') pf.getRange('AP1').setValue('단계번호'); // [v6.6]
+    if (pf.getRange('AO1').getValue() !== '애칭') pf.getRange('AO1').setValue('애칭'); // [함께한날 막4] 학생이 지은 이름 — 가이드 애칭으로 «승계»한다(설계 §4-1)
+    if (pf.getRange('AP1').getValue() !== '지나온장면수') pf.getRange('AP1').setValue('지나온장면수'); // [함께한날 막4] 구 단계번호 — 위 apIsScene 판독 «뒤»에 갈아야 전환 회차가 잡힌다
     if (pf.getRange('AQ1').getValue() !== '잔액') pf.getRange('AQ1').setValue('잔액'); // [v7.1] P열=획득 누계(진화), AQ=잔액(스토어)
     // [v7.3] AR = 사용자 기록 전용(스토어 목표 찜 — Glide Set Column, 스크립트는 값 안 씀)
     if (pf.getRange('AR1').getValue() !== '목표아이템') pf.getRange('AR1').setValue('목표아이템');
@@ -2731,34 +2882,85 @@ function calcAll() {
       tail9('talk_log', 1, 6);    // 7열 제출일
       tail9('quiz_log', 1, 9);    // 10열 제출일 — point_logs 사유 대신 원장을 직접 본다(응답이 포인트를 안 낳아도 만남은 만남이다)
     }
+    /* [함께한날 막4] 되돌아보기 재료 셋 — 장면 원장·달마다 만난 날·처음의 드림 한 줄 */
+    const sceneRowsBySid = {}; // sid → [{n, d, form, sent}] — scene_log 원장(막5 checkScene 가 쓴다 · 여기가 «읽는 자리»)
+    {
+      const scH = ss.getSheetByName('scene_log');
+      if (scH && scH.getLastRow() >= 2) {
+        scH.getRange(2, 1, scH.getLastRow() - 1, 5).getValues().forEach(r9 => {
+          const sid9 = String(r9[0] || '').trim();
+          if (!sid9) return;
+          (sceneRowsBySid[sid9] = sceneRowsBySid[sid9] || []).push({ n: Number(r9[1]) || 0, d: r9[2] ? dstr(r9[2], tz) : '', form: String(r9[3] || ''), sent: String(r9[4] || '') });
+        });
+        Object.keys(sceneRowsBySid).forEach(k9 => sceneRowsBySid[k9].sort((a9, b9) => a9.n - b9.n));
+      }
+    }
+    const attYmBySid = {}; // sid → {yyyy-MM: 만난 날 수} — «출석 원장»에서 직접 센다(설계 §2-㉣ · §8-⑦ 스냅샷 함정 회피)
+    atData.forEach(r9 => {
+      const m9 = String(r9[3] || '');
+      if (!r9[1] || !r9[2] || !(m9 === '출석(폼)' || m9 === '출석(일괄)')) return;
+      const ym9 = dstr(r9[2], tz).slice(0, 7);
+      const b9 = attYmBySid[r9[1]] = attYmBySid[r9[1]] || {};
+      b9[ym9] = (b9[ym9] || 0) + 1;
+    });
+    const last9Months = [];
+    { const d9 = new Date(now); d9.setDate(1); for (let i9 = 8; i9 >= 0; i9--) { const m9 = new Date(d9.getFullYear(), d9.getMonth() - i9, 1); last9Months.push(Utilities.formatDate(m9, tz, 'yyyy-MM')); } }
+    const monthBarsOf9_ = sid9 => last9Months.map(ym9 => ({ ym: ym9, c: (attYmBySid[sid9] || {})[ym9] || 0 }));
+    const dreamFirstOf = {}; // sid → 드림한줄 «첫» 기록 — 「처음의 너는 이렇게 썼어」(설계 §2-㉣ · 재료 = self_declare_log)
+    {
+      const sdH = ss.getSheetByName('self_declare_log');
+      if (sdH && sdH.getLastRow() >= 2) {
+        sdH.getRange(2, 1, sdH.getLastRow() - 1, 3).getValues().forEach(r9 => {
+          const sid9 = String(r9[0] || '').trim();
+          if (!sid9 || String(r9[1]) !== '드림한줄') return;
+          if (dreamFirstOf[sid9] === undefined && String(r9[2] || '').trim()) dreamFirstOf[sid9] = String(r9[2]).trim(); // append 순서라 첫 행이 첫 선언
+        });
+      }
+    }
     const out = pfData.map((r, idx) => {
       const id = r[0], t = total[id] || 0;
       meetOut.push([(r[3] === 'student' && meetMap[String(id)]) || '']); // 행 수 정합 — 비학생·미편성은 공란
-      let mon = monsterOf(t); // [v9.36] let — 아래 게이트가 클램프할 수 있음
-      // [v9.36] 진화 게이트 — 포인트 도달(T=100)이어도 해당 단계 문법 도달 수 미달이면 단계 진입 보류.
-      //   S/T/AP/AG·여정·액자·진화일이 전부 클램프값을 따라 자동 일관(삽입점 단일화).
-      let gateBlocked = false, gateCC = 0, gateCD = '';
-      {
-        const cnG = String(r[4] || '');
-        const prevApN = Number(prevAP[idx] && prevAP[idx][0]) || 0;
-        if (r[3] === 'student') {
-          const gi = gatedIdx_(id, mon.idx, prevApN, cnG);
-          if (gi < mon.idx) {
-            gateBlocked = true;
-            mon = { stage: (stages[gi - 1] || {}).name || mon.stage, pct: 100, rem: 0, idx: gi }; // 게이지 가득 + 남은 P 0 = "에너지 충전 완료"
-          }
-          const nx = mon.idx + 1;
-          const needNx = Math.min(GRAMMAR_GATE_NEED[nx] || 0, bankCnt[nx] || 0);
-          if (hasMastery[id] && classTagFresh[cnG] && needNx > 0 && nx <= stages.length) {
-            const gotNx = (masteryCnt[id] || {})[nx] || 0;
-            gateCC = Math.max(needNx - gotNx, 0);
-            gateCD = gateBlocked
-              ? '📖 문법 ' + gateCC + '개만 익히면 ' + ((stages[nx - 1] || {}).name || '다음 단계') + ' 진화! (' + gotNx + '/' + (bankCnt[nx] || 0) + ')' // 긍정형 — '부족·실패' 금칙
-              : (gotNx > 0 ? '📖 다음 진화 문법 ' + gotNx + '/' + (bankCnt[nx] || 0) : '');
-          }
+      /* [함께한날 막4] 이 학생의 오늘 — 함께한 날·맞힌 말·장면. 아래 카드 전부가 이 값들을 읽는다.
+       * 구 몬스터 축(monsterOf·진화 게이트 클램프)은 이 커밋에서 화면 소비자를 전부 잃었다 — 막6이 함수를 걷는다. */
+      const isStu9 = r[3] === 'student';
+      let daysNow = 0, metCnt = 0, guideNm = '몽글', guideImg = '';
+      { // AE31·AF32 증분 — 하루 최대 +1 · 끊겨도 «안 줄어든다»(단조 · 결석은 벌이 아니다 — 철학 Ⅲ-2)
+        const prevDays9 = Number(prevAE[idx] && prevAE[idx][0]) || 0;
+        const rawAF9 = (prevAF[idx] && prevAF[idx][0]) || '';
+        const lastYmd9 = rawAF9 instanceof Date ? dstr(rawAF9, tz) : String(rawAF9 || '').slice(0, 10);
+        let add9 = 0, max9 = lastYmd9;
+        if (isStu9 && meetDays[id]) {
+          meetDays[id].forEach(ds9 => {
+            if (ds9 > todayYmd0) return; // 미래 날짜 방어
+            if (!lastYmd9) { // 원장 개시 — 오늘부터 센다(소급 안 한다 · 설계 §5 막0 「개원 전이라 백필 비용 0」)
+              if (ds9 === todayYmd0) { add9 = 1; if (ds9 > max9) max9 = ds9; }
+              return;
+            }
+            if (ds9 > lastYmd9) { add9++; if (ds9 > max9) max9 = ds9; } // 늦게 착지한 어제 행도 여기서 주워 담는다
+          });
         }
-        ccOut.push([gateCC]);
-        cdOut.push([gateCD]);
+        daysNow = prevDays9 + add9;
+        metCnt = meetToday[id] || 0;
+        aeOut.push([isStu9 ? daysNow : '']);
+        afOut.push([isStu9 ? (max9 || '') : '']);
+        if (isStu9 && r[4]) clsDaysSum[String(r[4])] = (clsDaysSum[String(r[4])] || 0) + daysNow; // [막3] 반 카드 재료
+      }
+      const mastANow = masteredAI[id] || 0;
+      let sceneNow = sceneOf(daysNow, mastANow);
+      const scenePrevN = apIsScene ? (Number(prevAP[idx] && prevAP[idx][0]) || 0) : 0; // 전환 첫 회 = 구 몬스터 단계 값이라 무시
+      if (scenePrevN > sceneNow.idx) { // 강등 금지 — 원장(AP42)이 앞서 있으면 러닝맥스
+        const nth9 = sceneLadderAt_(scenePrevN + 1);
+        sceneNow = { idx: scenePrevN, next: scenePrevN + 1, toDays: Math.max(nth9[1] - daysNow, 0),
+                     toMastered: Math.max(nth9[2] - mastANow, 0), pct: 0, need: nth9 };
+      }
+      const sceneIdx = sceneNow.idx;
+      const sceneToday9 = apIsScene && sceneIdx > scenePrevN;
+      { // [함께한날 막4] CC81 맞힌말수 · CD82 다음장면조건 — 긍정형('부족·실패' 금칙 그대로)
+        const condBits = [];
+        if (sceneNow.toDays > 0) condBits.push('함께한 날 ' + sceneNow.toDays + '일');
+        if (sceneNow.toMastered > 0) condBits.push('내가 맞힌 말 ' + sceneNow.toMastered + '개');
+        ccOut.push([isStu9 ? mastANow : '']);
+        cdOut.push([isStu9 && condBits.length ? '다음 장면까지 — ' + condBits.join(' · ') : '']);
       }
       const la = lastAtt[id] || '';
       const daysSince = la ? Math.floor((now - new Date(la)) / msPerDay) : 999;
@@ -2769,18 +2971,16 @@ function calcAll() {
       else if (lastPtD[id] && Math.floor((now - lastPtD[id]) / msPerDay) >= QUIET_DAYS)
         risk = '중 (' + Math.floor((now - lastPtD[id]) / msPerDay) + '일 무포인트)'; // [v7.7]
       else if (p === 0 && mPts <= 0) risk = '중 (인정 0회·포인트 정체)'; // [v7.6]
-      // [v5] 시냅스 게이지: 연속출석 30% + 월간포인트 40% + 월출석 30%
-      evoRemOut.push([mon.rem]);
-      stageNumOut.push([mon.idx || 1]); // [v6.6] 단계번호 — 강사 대시보드 진화 카운트용
-      { // [함께한날 막1] 고른가이드(BC=55) — 화이트리스트 = contents type='guide'(몽글·까몽·마린).
-        //   구 검증(도달 단계 스킨만 유효)은 «자격»의 축이었다 — 가이드는 선택제라 자격이 없다(설계 §2).
+      evoRemOut.push([isStu9 ? sceneNow.toDays : '']); // [함께한날 막4] AG33 다음장면까지 — 남은 «날»(구 남은 P)
+      stageNumOut.push([isStu9 ? sceneIdx : '']);      // [함께한날 막4] AP42 지나온장면수(러닝맥스 — 위에서 강등 금지)
+      { // [함께한날 막1·4] 고른가이드(BC=55) 화이트리스트 + BD56 「우리」 카드(구 액자 자리)
         //   목록 밖 값(옛 몬스터 이름 포함)은 비운다 — 계속 비워 써야 라이브에 굳은 옛 픽이 지워진다.
         const iE2 = stageNumOut.length - 1;
         const pick = String((prevBC[iE2] && prevBC[iE2][0]) || '').trim();
+        const gk = guides.find(g2 => g2.name === pick) || guides[0] || null; // 미선택 = 몽글(기본 가이드)
         skinOut.push([guides.some(g2 => g2.name === pick) ? pick : '']);
-        // 액자(BD56)는 막4 전까지 몬스터 축 그대로 — 가이드 픽을 액자에 아직 안 얹는다(한 화면 두 체계 금지).
-        const disp = { name: mon.stage, img: (stages.find(s2 => s2.name === mon.stage) || {}).img || '' };
-        frameOut.push([buildMonsterFrame_(disp.name, disp.img, mon.idx || 1, mon.pct, mon.rem)]); // [v9.35] 홈 액자만 진행 게이지 연결 (호출처 전수 확인: 이곳 1곳)
+        if (gk) { guideNm = gk.name; guideImg = gk.img; }
+        frameOut.push([isStu9 ? buildTogetherCard_({ guideName: guideNm, guideImg: guideImg, days: daysNow, meets: metCnt, scene: sceneNow }) : '']);
       }
       { // [v9.12] 운세·몬스터의 한마디·기록실
         // [v9.50·H1] 오늘의 한 문장 — AI 개인화(약점·관심사 기반)가 있으면 운세 슬롯(BE) 대체, 없으면 기존 운세 폴백(키 미설정에도 카드는 산다)
@@ -2790,22 +2990,18 @@ function calcAll() {
         // [v9.70] 운세 한·몽 병기 — AI 한 문장(개인화)엔 붙이지 않고, 뱅크 운세일 때만 같은 seed 쌍(MJ_pickMn_=hashPick_ 동조)을 아랫줄로
         const fortMn9 = (biOn6 && !(aiD6 && aiD6.s) && typeof MJ_pairPick_ === 'function' && typeof MN_FORTUNES !== 'undefined') ? MJ_pairPick_(FORTUNES, MN_FORTUNES, id + todayYmd) : '';
         fortuneOut.push([fortMn9 ? fort9 + '\n' + fortMn9 : fort9]);
-        const tone = speakTone_(mon.idx || 1);
-        const isBday = bdayMMDD_(r[5], tz) === todayYmd.slice(5, 10); // [v9.34] Date 셀 생일도 인식 — 원시 slice는 Date면 전멸(생일 한마디·브리핑 반쪽 연출)
+        /* [함께한날 막4] 가이드 한마디 — 구 몬스터 말투 3분기(speakTone_)·진화 임박·결석 재촉(miss3/miss7)을
+         * 전부 걷었다. 규격 = 발화표(설계 §0-㉢): 사실만 · 평가어 절제 · 🔴 끊김·결석 «절대 언급 ✗»(S19 —
+         * 재촉 장치를 만들지 않는다, 철학 Ⅲ-2). 분기 = 생일 > 도전·성장 > 새 장면 > 오늘 맞힌 말 > 만남 > 고요. */
+        const isBday = bdayMMDD_(r[5], tz) === todayYmd.slice(5, 10); // [v9.34] Date 셀 생일도 인식
         const crownToday = (crownDates[id] || '') === todayYmd;
-        const toNext = mon.rem || 0; // [v9.15] rem = 다음 진화까지 남은 P (next는 객체 — 잠복버그 수리)
-        let line;
-        if (isBday) line = hashPick_(SPEAK.bday, id + todayYmd);
-        else if (crownToday) line = hashPick_(SPEAK.crown, id + todayYmd);
-        else if (gateBlocked && gateCC > 0) line = '⚡ 진화 에너지 100%! 문법 ' + gateCC + '개만 익히면 바로 진화해!'; // [v9.36] 게이트 대기 — 임박 분기보다 위(긍정형)
-        else if (toNext > 0 && toNext <= 30) line = hashPick_(SPEAK.evosoon, id + todayYmd).replace('{n}', toNext);
-        else if (la && lastAtt[id] === todayYmd) line = hashPick_(SPEAK.today[tone], id + todayYmd);
-        else if (daysSince >= 7 && daysSince < 999) line = hashPick_(SPEAK.miss7[Math.min(tone, SPEAK.miss7.length - 1)], id + todayYmd);
-        else if (daysSince >= 3 && daysSince < 7) line = hashPick_(SPEAK.miss3[tone], id + todayYmd);
-        else line = hashPick_(SPEAK.idle[tone], id + todayYmd);
-        // [v9.70] 몬스터 한마디 몽골어 미러(초급만) — 분기 순서는 위와 1:1(만족도팩 MJ_speakMirror_), 게이트 분기만 대응 없음('')
-        const mnSpk9 = (biOn6 && typeof MJ_speakMirror_ === 'function')
-          ? MJ_speakMirror_({ isBday: isBday, crownToday: crownToday, gateWait: (gateBlocked && gateCC > 0), toNext: toNext, attended: (la && lastAtt[id] === todayYmd), daysSince: daysSince, tone: tone, seed: id + todayYmd })
+        const spkCtx = { seed: id + todayYmd, isBday: isBday, crownToday: crownToday, sceneToday: sceneToday9,
+          masteredToday: !!(masteredAIToday[id] || []).length, metToday: metCnt > 0,
+          form: (masteredAIToday[id] || [])[0] || '' };
+        const line = sceneSpeak_(guideNm, spkCtx);
+        // [v9.70→막4] 몽골어 미러(초급만) — 분기 1:1 은 만족도팩 MJ_sceneSpeakMirror_ 가 진다(뱅크는 검수 전 '' 자리)
+        const mnSpk9 = (biOn6 && typeof MJ_sceneSpeakMirror_ === 'function')
+          ? MJ_sceneSpeakMirror_(guideNm, spkCtx)
           : '';
         { // [v9.15] 강사 팩 반별 수집
           const cn5 = String(r[4] || '');
@@ -2813,7 +3009,7 @@ function calcAll() {
             if (isBday) (clsBday[cn5] = clsBday[cn5] || []).push(r[1] || id);
             if (yAttSid[id]) yAttCls[cn5] = 1;
             else if (daysSince < 999) (clsAbsent[cn5] = clsAbsent[cn5] || []).push(r[1] || id);
-            if (toNext > 0 && toNext <= 10) (clsEvoSoon[cn5] = clsEvoSoon[cn5] || []).push({ n: r[1] || id, need: toNext });
+            if (isStu9 && sceneNow.toDays === 1 && sceneNow.toMastered <= 0) (clsEvoSoon[cn5] = clsEvoSoon[cn5] || []).push({ n: r[1] || id, need: 1 }); // [함께한날 막4] 임박 = 내일 새 장면(D-1) — 구 «남은 P ≤10» 축 은퇴
             (styleLogs[id] || []).forEach(l => {
               if (l.d !== parseInt(todayYmd0.slice(8), 10)) return;
               const ta = tdActs[cn5] = tdActs[cn5] || {};
@@ -2823,7 +3019,8 @@ function calcAll() {
             });
           }
         }
-        speakOut.push([CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FEF0E9;border:2px solid #FBB7A3;border-radius:14px;padding:9px 12px;font-size:13px;">💬 ' + line + (mnSpk9 ? '<br/><span style="font-size:11px;opacity:.78;">' + mnSpk9 + '</span>' : '') + '</div>']); // [v9.70] 초급 병기
+        // [함께한날 막4] 침묵은 빈 카드다 — 까몽의 조용함·마린의 「시작과 끝에만」은 성격이지 결함이 아니다(가이드_정본 §2)
+        speakOut.push([line ? CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FEF0E9;border:2px solid #FBB7A3;border-radius:14px;padding:9px 12px;font-size:13px;">💬 ' + line + (mnSpk9 ? '<br/><span style="font-size:11px;opacity:.78;">' + mnSpk9 + '</span>' : '') + '</div>' : '']); // [v9.70] 초급 병기
         // [v9.147] 기능 압축 — 카드 3종 off(계산 스킵·열 보존). 빈 문자열을 한 번 쓰면 writeIfChanged가
         //   다음 회차부터 동기화 0이라 Glide update도 안 먹는다. 되살리려면 CARD_OFF 항목을 false로.
         styleOut.push([CARD_OFF.플레이스타일 ? '' : playStyleHtml_(playStyleOf_(styleLogs[id] || []))]);
@@ -2873,13 +3070,13 @@ function calcAll() {
             talkOut.push([CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#F9FAFB;border:2px dashed #E5E7EB;border-radius:14px;padding:10px 12px;font-size:12px;color:#6B7280;">💬 Дараагийн хичээлийн дараа энд ярианы сэдэв гарч ирнэ (다음 수업 후 대화 주제가 여기에)</div>']);
           }
           const evoStr6 = (prevBB[idx] && String(prevBB[idx][0] || '')) || '';
-          const evoRecent = evoStr6 && (new Date(todayYmd0) - new Date(evoStr6.slice(0, 10))) / msPerDay <= 3;
+          const sceneRecent = sceneToday9 || (apIsScene && evoStr6 && (new Date(todayYmd0) - new Date(String(evoStr6).slice(0, 10))) / msPerDay <= 3); // [함께한날 막4] BB54 = 최근장면일(전환 첫 회의 구 진화일은 위 apIsScene 가드가 거른다)
           const crownToday2 = (crownDates[id] || '') === todayYmd0;
-          const gEvoForm = ((masteryTopForm[id] || {})[mon.idx] || {}).nm || ''; // [v9.36] 이번 단계 대표 도달 문형 — "무엇을 배워 진화했는지"
+          const gTodayForm = (masteredAIToday[id] || [])[0] || ''; // [함께한날 막4] 오늘 «직접 맞힌» 문형 — 수업 일괄이 아니라 그 아이 손의 것
           bannerOut.push([crownToday2
-            ? CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FDE68A,#F5A623);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;">🎉 ' + (r[1] || id) + ' өнөөдөр сорилт хийж өсөлтөө батлууллаа! Гэртээ магтаж өгөөрэй 💛<br/><span style="font-weight:400;font-size:11px;">오늘 도전·성장을 인정받았어요! 집에서 칭찬해 주세요</span></div>'
-            : (evoRecent
-              ? CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FD9C87,#F96859);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;color:#fff;">⚡ ' + (r[1] || id) + '-ийн хамтрагч шинэ шатанд хувьслаа! Түүхэн мөч 📸<br/><span style="font-weight:400;font-size:11px;">성장 파트너가 진화했어요!' + (gEvoForm ? ' \'' + gEvoForm + '\' 문법까지 익히고 진화!' : ' 역사적인 순간') + '</span></div>' // [v9.74] 학부모 배너 — 몬스터→성장 파트너(хамтрагч)
+            ? CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FDE68A,#F5C445);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;">🎉 ' + (r[1] || id) + ' өнөөдөр сорилт хийж өсөлтөө батлууллаа! Гэртээ магтаж өгөөрэй 💛<br/><span style="font-weight:400;font-size:11px;">오늘 도전·성장을 인정받았어요! 집에서 칭찬해 주세요</span></div>'
+            : (sceneRecent
+              ? CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FD9C87,#F96859);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;color:#FBF7F0;">🧶 ' + (r[1] || id) + '-ийн хамтрагч нэг алхам ойртлоо!<br/><span style="font-weight:400;font-size:11px;">함께한 날 ' + daysNow + '일 — 가이드가 한 걸음 가까이 왔어요' + (gTodayForm ? ' · \'' + gTodayForm + '\'을(를) 직접 맞혔어요' : '') + '</span></div>' // [함께한날 막4] 몽골어 한 줄은 검수 전(몽골어 감수 큐 Q) — хамтрагч(파트너) 어휘는 v9.74 기존분 재사용
               : '')]);
           // [v9.20] 오늘의알림 — 푸시/인앱배너용, "하루짜리 결정적 순간"만 (도전·성장·진화·생일).
           //  [v9.20 최적화] 진화임박(rem) 분기 제거: 매일 값 변동→시트 churn + 푸시 시 매일 알림 피로.
@@ -2887,10 +3084,10 @@ function calcAll() {
           const isBday6 = bdayMMDD_(r[5], tz) === todayYmd0.slice(5, 10); // [v9.34] Date 셀 생일도 인식(1451과 동일 통일)
           // [v9.50·B1] 세계관 내레이터 — 진화 순간 배너를 그 학생의 실데이터(이름·몬스터·문법·기록)로 개인화(결정론 템플릿 6종)
           alertOut.push([crownToday2 ? '🔥 오늘 도전·성장을 인정받았어요! 최고예요 🎉'
-            : evoRecent ? hashPick_(NARRATE_EVO, id + todayYmd0)
-                .replace('{n}', r[1] || id).replace('{m}', String(mon.stage || '캐릭터')) // [v9.54] pfData는 15열(0~14)만 읽는다 — 범위 밖 인덱스(18) 참조로 항상 폴백이 나오던 것을 현 단계명으로 교정 · [08-26] 폴백 낱말을 '캐릭터'로(③ 청소 인계 · 이 자리는 학생에게 보이는 «표시»지 시트 열 이름이 아니다)
-                .replace('{g}', gEvoForm ? '\'' + gEvoForm + '\' 문법을 익히고 ' : '')
-                .replace('{t}', String(t || 0))
+            : sceneRecent ? hashPick_(NARRATE_SCENE, id + todayYmd0) // [함께한날 막4] 진화 내레이터 → 장면 내레이터
+                .replace('{n}', r[1] || id).replace('{s}', String(sceneIdx || 1))
+                .replace('{g}', gTodayForm ? '\'' + gTodayForm + '\'을 직접 맞히고 ' : '')
+                .replace('{d}', String(daysNow || 0))
             : isBday6 ? '🎂 생일 축하해요! 오늘의 주인공이에요 🎉'
             : '']);
         }
@@ -2899,33 +3096,12 @@ function calcAll() {
         //   리텐션신호 BK·목표진행 BZ가 함께 읽는 공유 재료다 — 여기서 버리는 것은 카드 HTML뿐).
         recordOut.push(CARD_OFF.기록실 ? [''] : [CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #D1D2D4;border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.9;">📊 <b>나의 기록실</b><br/>🔥 최장 연속출석 <b>' + (rec.maxStreak || stk) + '일</b><br/>🏔️ 최고 월간 포인트 <b>' + (rec.bestMonth || mPts) + 'P</b><br/>🔥 첫 도전·성장 <b>' + (rec.firstCrown || '이번 달이 기회!') + '</b><br/>⚔️ 보스 토벌 참여 <b>' + (rec.raids || 0) + '회</b><br/>📚 총 누적 <b>' + t + 'P</b></div>']);
       }
-      { // [v9.0] 진화 순간 감지 → BB(54) 진화일 (상승만, 신규생 첫 계산 제외)
-        const iE = stageNumOut.length - 1;
-        const prevN = Number(prevAP[iE] && prevAP[iE][0]) || 0;
-        const newN = mon.idx || 1;
-        evoDateOut.push([(prevN >= 1 && newN > prevN) ? todayYmd : ((prevBB[iE] && prevBB[iE][0]) || '')]);
+      { // [함께한날 막4] 장면이 «늘어난» 날 → BB(54) 최근장면일. 전환 첫 회(구 진화일 잔존)는 비운다 —
+        //   구 축의 날짜를 새 축 이름으로 두면 「최근 장면」이 거짓이 된다. 원장 이력은 scene_log 가 진다(막5).
+        evoDateOut.push([sceneToday9 ? todayYmd
+          : (apIsScene ? ((prevBB[idx] && prevBB[idx][0]) || '') : '')]);
       }
-      balOut.push([bal[id] || 0]); // [v7.1] 잔액(AQ) — 스토어 결제 기준
-      { // [함께한날 막2] AE31·AF32 증분 — 하루 최대 +1 · 끊겨도 «안 줄어든다»(단조 · 결석은 벌이 아니다 — 철학 Ⅲ-2 「셋 다 내려가지 않습니다」)
-        const isStu9 = r[3] === 'student';
-        const prevDays9 = Number(prevAE[idx] && prevAE[idx][0]) || 0;
-        const rawAF9 = (prevAF[idx] && prevAF[idx][0]) || '';
-        const lastYmd9 = rawAF9 instanceof Date ? dstr(rawAF9, tz) : String(rawAF9 || '').slice(0, 10);
-        let add9 = 0, max9 = lastYmd9;
-        if (isStu9 && meetDays[id]) {
-          meetDays[id].forEach(ds9 => {
-            if (ds9 > todayYmd0) return; // 미래 날짜 방어
-            if (!lastYmd9) { // 원장 개시 — 오늘부터 센다(소급 안 한다 · 설계 §5 막0 「개원 전이라 백필 비용 0」)
-              if (ds9 === todayYmd0) { add9 = 1; if (ds9 > max9) max9 = ds9; }
-              return;
-            }
-            if (ds9 > lastYmd9) { add9++; if (ds9 > max9) max9 = ds9; } // 늦게 착지한 어제 행도 여기서 주워 담는다
-          });
-        }
-        aeOut.push([isStu9 ? prevDays9 + add9 : '']);
-        afOut.push([isStu9 ? (max9 || '') : '']);
-        if (isStu9 && r[4]) clsDaysSum[String(r[4])] = (clsDaysSum[String(r[4])] || 0) + prevDays9 + add9; // [막3] 반 카드 재료
-      }
+      balOut.push([bal[id] || 0]); // [v7.1] 잔액(AQ) — 스토어 결제 기준 · [막4] AE31·AF32 증분은 맵 머리로 옮겼다(카드들이 그 값을 읽는다)
       { // [v9.28] 🎯 목표아이템 진행 카드 — AR(찜) × AQ(잔액) × store 가격
         // [v9.83] 남은 P를 **도착 예정일**로 바꾼다. 지급을 절반으로 낮추면 학생 체감은 "멀어졌다"인데,
         //   날짜로 보여주면 멀어진 게 아니라 도착일이 생긴 것이 된다 — 하락을 서사로 전환.
@@ -2983,40 +3159,33 @@ function calcAll() {
           }
         }
       }
-      // [v9.20] 📖 나의 여정 — 개인 스토리 카드 (진화일은 방금 push한 evoDateOut 마지막 값)
-      journeyOut.push([myJourneyHtml_({
-        nm: r[1] || id, stages: stages, mon: mon, rec: records[id], stk: stk, mPts: mPts, t: t,
-        acad: academicSnapshot_(acadById[id]), evoDate: (evoDateOut[evoDateOut.length - 1] || [''])[0],
-        titles: titleOf[id], chem: chemi[id], story: (prevAU[idx] && prevAU[idx][0]) || '', // [v9.20] 칭호·단짝·이달의 이야기
-        dream: String((prevDream[idx] && prevDream[idx][0]) || '').trim(), // [v9.29] 드림 한 줄(학생 자기선언)
-        cGoal: String((prevCGoal[idx] && prevCGoal[idx][0]) || '').trim(), // [v9.84] 상담목표 — 드림 폴백
-        pace: String((prevPace[idx] && prevPace[idx][0]) || '').trim(),    // [v9.84] 페이스라인
-        aiTitle: aiTitleMap[id] || '', // [v9.50·B3] 이달의 AI 유니크 칭호
-        wk: { a: Object.keys(weekAtt[id] || {}).length, p: weekPts[id] || 0, c: weekCrown[id] || 0 }, // [v9.50·A5] 주간 퀘스트 결산(별도 발행물 대신 여정 카드에 통합)
-        growth: growthMap[id] || null, // [v9.50·A7] 성장 전/후 — 첨삭 최초 vs 최근(21일+ 간격일 때만)
-        seasonT: seasonCfg ? { n: seasonCfg.n, name: seasonCfg.name, week: seasonWeek, a: Object.keys(seasonAtt[id] || {}).length, p: seasonPts[id] || 0, c: seasonCrown[id] || 0 } : null, // [v9.56] 시즌 패스 트랙(8주 도달제)+랩업 재료
-        refN: refCntByName[String(r[1] || '').trim()] || 0, // [v9.56] 내 추천으로 온 친구 수(leads 추천인 이름 매칭)
-        // [v9.36] 학습추적(W3) — 이 단계 문법 도달 진행(뱅크 없는 단계·무데이터면 '' → 카드에서 생략) + 게이트 대기 헤더 문구
-        gline: ((bankCnt[mon.idx] || 0) > 0 && hasMastery[id]) ? '📖 이 단계 문법 ' + ((masteryCnt[id] || {})[mon.idx] || 0) + '/' + bankCnt[mon.idx] : '',
-        grem: gateBlocked ? gateCC : 0
-      })]);
+      // [함께한날 막4] 📖 걸어온 길(BY77) — 구 나의여정(몬스터 축)을 잇는다. 사실만 나란히 · 단정 없음(설계 §2-㉣)
+      journeyOut.push([isStu9 ? buildWalkedRoadHtml_({
+        nm: r[1] || id, guideName: guideNm, days: daysNow, mastered: mastANow, bank: CONTENT_EXPECT.grammar,
+        sceneRows: sceneRowsBySid[id] || [],
+        monthBars: monthBarsOf9_(id),
+        growth: growthMap[id] || null, // 성장 전/후 — 학생 «원문» 최초 vs 최근(21일+ 간격일 때만 · rG[3])
+        dreamFirst: dreamFirstOf[id] || '', // 처음 적은 드림 한 줄(self_declare_log 첫 기록)
+        dreamNow: String((prevDream[idx] && prevDream[idx][0]) || '').trim(),
+        seasonT: seasonCfg ? { n: seasonCfg.n, name: seasonCfg.name, week: seasonWeek, a: Object.keys(seasonAtt[id] || {}).length } : null // [v9.56 승계] 시즌 패스(8주 도달제) — 시즌 사이 빈 화면 방지(설계 §2-㉢)
+      }) : '']);
       { // [v9.28] 출석일당포인트 — 반유형 보정(주말반 불리 완화), 랭킹 참고용 별도 열(기존 월간랭킹은 무변경)
         const schSoFar = classTypeOf[id] ? scheduledSoFar_(classTypeOf[id], now) : 0;
         perDayOut.push([schSoFar > 0 ? Math.round((mPts / schSoFar) * 10) / 10 : 0]);
       }
-      dexOut.push([r[3] === 'student' ? buildDexHtml_(stages, t, mon.idx || 1) : '']); // [v9.42] 도감 진행 카드
+      dexOut.push([isStu9 ? buildFilmStripHtml_({ guideName: guideNm, scene: sceneNow, sceneRows: sceneRowsBySid[id] || [] }) : '']); // [함께한날 막4] 도감(끝이 정해진 수집) → 필름스트립(끝없는 장면 줄)
       calOut.push([r[3] === 'student' ? buildAttCalHtml_(attDates[id], now, tz, classTypeOf[id] || '평일') : '']); // [v9.44] 출석 달력
       rankBoardOut.push(['']); // [08-27] 순위표 폐지 — 빈 칸을 «계속 써야» 라이브에 굳은 옛 카드가 지워진다
-      return [t, mPts, '', mon.stage, mon.pct, // [08-27] R열 월간랭킹 = 빈 칸(순위 폐지)
+      return [t, mPts, '', isStu9 ? sceneIdx : '', isStu9 ? sceneNow.pct : '', // [08-27] R열 = 빈 칸(순위 폐지) · [함께한날 막4] S19 현재장면 · T20 다음장면진행률(날 기준)
               stk, matt, la, p, risk];
     });
     writeIfChanged(pf, 2, 16, out);
     if (pf.getMaxColumns() < 66) pf.insertColumnsAfter(pf.getMaxColumns(), 66 - pf.getMaxColumns()); // [v9.16]
-    if (String(pf.getRange('BB1').getValue()) !== '진화일') pf.getRange('BB1').setValue('진화일');
+    if (String(pf.getRange('BB1').getValue()) !== '최근장면일') pf.getRange('BB1').setValue('최근장면일'); // [함께한날 막4]
     if (String(pf.getRange('BC1').getValue()) !== '고른가이드') pf.getRange('BC1').setValue('고른가이드'); // [함께한날 막1] 열 뜻이 이 커밋에서 바뀌었다(스킨→가이드 선택)
-    if (String(pf.getRange('BD1').getValue()) !== '액자HTML') pf.getRange('BD1').setValue('액자HTML');
+    if (String(pf.getRange('BD1').getValue()) !== '우리카드HTML') pf.getRange('BD1').setValue('우리카드HTML'); // [함께한날 막4] 「우리」 탭 홈 카드(구 액자)
     if (String(pf.getRange('BE1').getValue()) !== '오늘의운세') pf.getRange('BE1').setValue('오늘의운세');
-    if (String(pf.getRange('BF1').getValue()) !== '몬스터한마디') pf.getRange('BF1').setValue('몬스터한마디');
+    if (String(pf.getRange('BF1').getValue()) !== '가이드한마디') pf.getRange('BF1').setValue('가이드한마디'); // [함께한날 막4]
     if (String(pf.getRange('BG1').getValue()) !== '기록실HTML') pf.getRange('BG1').setValue('기록실HTML');
     writeIfChanged(pf, 2, 54, evoDateOut);
     writeIfChanged(pf, 2, 55, skinOut);   // 무효 선택 자동 클리어 · 유효는 유지
@@ -3041,7 +3210,7 @@ function calcAll() {
     // [v9.20] 오늘의알림(BX 76) · 나의여정(BY 77) — Glide 인앱 배너/개인 스토리 카드
     if (pf.getMaxColumns() < 77) pf.insertColumnsAfter(pf.getMaxColumns(), 77 - pf.getMaxColumns());
     if (String(pf.getRange('BX1').getValue()) !== '오늘의알림') pf.getRange('BX1').setValue('오늘의알림');
-    if (String(pf.getRange('BY1').getValue()) !== '나의여정') pf.getRange('BY1').setValue('나의여정');
+    if (String(pf.getRange('BY1').getValue()) !== '걸어온길') pf.getRange('BY1').setValue('걸어온길'); // [함께한날 막4]
     writeIfChanged(pf, 2, 76, alertOut);
     writeIfChanged(pf, 2, 77, journeyOut);
     // [v9.28] 목표진행(BZ 78) — Glide Visibility "is not empty"로 숨김 처리 권장 · 출석일당포인트(CA 79) — 랭킹 참고 지표
@@ -3056,13 +3225,13 @@ function calcAll() {
     if (String(pf.getRange('CB1').getValue()) !== '드림한줄') pf.getRange('CB1').setValue('드림한줄');
     // [v9.36] 게이트 2열 — CC(81) 남은문법수(number) · CD(82) 게이트문구(text). writeIfChanged라 수업이 있어야 값이 변함(sync churn 낮음)
     if (pf.getMaxColumns() < 82) pf.insertColumnsAfter(pf.getMaxColumns(), 82 - pf.getMaxColumns());
-    if (String(pf.getRange('CC1').getValue()) !== '남은문법수') pf.getRange('CC1').setValue('남은문법수');
-    if (String(pf.getRange('CD1').getValue()) !== '게이트문구') pf.getRange('CD1').setValue('게이트문구');
+    if (String(pf.getRange('CC1').getValue()) !== '맞힌말수') pf.getRange('CC1').setValue('맞힌말수'); // [함께한날 막4] AI 출처 도달 누계
+    if (String(pf.getRange('CD1').getValue()) !== '다음장면조건') pf.getRange('CD1').setValue('다음장면조건'); // [함께한날 막4]
     writeIfChanged(pf, 2, 81, ccOut);
     writeIfChanged(pf, 2, 82, cdOut);
     // [v9.42] 도감HTML(CE 83) — 도달 공개·미도달 ??? 실루엣. 도감 탭 상단 카드(Collection 필터와 이중 봉인)
     if (pf.getMaxColumns() < 84) pf.insertColumnsAfter(pf.getMaxColumns(), 84 - pf.getMaxColumns());
-    if (String(pf.getRange('CE1').getValue()) !== '도감HTML') pf.getRange('CE1').setValue('도감HTML');
+    if (String(pf.getRange('CE1').getValue()) !== '필름스트립HTML') pf.getRange('CE1').setValue('필름스트립HTML'); // [함께한날 막4]
     writeIfChanged(pf, 2, 83, dexOut);
     // [v9.44] 출석달력HTML(CF 84) — 학부모 우리아이·학생 내 기록의 출석 시인성 카드
     if (String(pf.getRange('CF1').getValue()) !== '출석달력HTML') pf.getRange('CF1').setValue('출석달력HTML');
