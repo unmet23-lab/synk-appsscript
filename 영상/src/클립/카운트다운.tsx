@@ -31,7 +31,7 @@ import {
 import type { 카운트다운 as 카운트다운형, 순위 } from "./타입";
 import { 지면, 율, 색 } from "../킷/색";
 import { 본문스택, 웨이트, 트래킹, 몽골어보정 } from "../킷/폰트";
-import { 연출, 로고, 그늘, 그레인, 비네트, 마스코트, 들임, 어절드러내기, type 경계 } from "./연출";
+import { 연출, 로고, 배경음악, 그늘, 그레인, 비네트, 마스코트, 들임, 어절드러내기, type 경계 } from "./연출";
 
 /** 나감 커브 — 자막·훅·마무리가 같이 쓴다. 세 번째 복붙 직전에 함수로 뺐다. */
 const 나감값 = (frame: number, fps: number, durationInFrames: number) => {
@@ -238,14 +238,18 @@ export const 카운트다운: React.FC<{ 클립: 카운트다운형 }> = ({ 클�
       {/* 깔림 — `loop` + `loopVolumeCurveBehavior="extend"` 가 없으면 끝 페이드가 «영원히 안 온다»
           (볼륨 함수의 f 가 루프마다 0 으로 되감긴다 · 08-26 실측). */}
       <Audio
-        src={staticFile("소리/BGM_깔림.wav")}
+        src={staticFile(배경음악.파일)}
+        /* 30.00초를 통째로 내므로 이음매가 없다. `loop` 는 남겨 둔다 —
+           길이가 다른 곡을 나중에 물려도 끝이 무음이 되지 않게 하는 안전핀이다. */
         loop
         loopVolumeCurveBehavior="extend"
         volume={(f) =>
-          interpolate(f, [0, 20, durationInFrames - 60, durationInFrames], [0, 0.5, 0.5, 0], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-          })
+          interpolate(
+            f,
+            [0, 20, durationInFrames - 60, durationInFrames],
+            [0, 배경음악.볼륨, 배경음악.볼륨, 0],
+            { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+          )
         }
       />
 

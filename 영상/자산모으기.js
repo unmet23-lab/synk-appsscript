@@ -129,6 +129,31 @@ if (fs.existsSync(소리방)) {
 }
 복사(path.join(저장소, 'docs', '홍보물', 'BGM_개정판_깔림만.wav'), '소리/BGM_깔림.wav');
 
+/* ── ③-c 배경음악 — «구워서» 가져온다(옹알이와 같은 규율) ──────────────────
+   🔴 옛 `BGM_깔림.wav` 는 저장소가 **다시 못 만드는** 물건이고(커밋 2c06e7a8), 실측하니
+   곡이 아니라 패드였다(변동계수 0.308 · 온셋 1.13개/초). 유호님이 「영상에 배경음악이 없다」고
+   하신 것이 그 뜻이다 — 레벨은 정상인데 «음악»으로 안 들린다.
+   그래서 릴이 쓸 곡은 저장소가 **짓는다**: `영상/BGM만들기.js` · 씨앗 고정 · 의존성 0 ·
+   C 펜타토닉·사인/트라이앵글(토큰 사운드.규칙 ③④). 커밋할 산출물은 안 만든다. */
+{
+  const 임시 = path.join(__dirname, '.BGM굽기');
+  const r = require('child_process').spawnSync(
+    process.execPath,
+    [path.join(__dirname, 'BGM만들기.js'), '--out', 임시],
+    { encoding: 'utf8' },
+  );
+  if (r.status !== 0) {
+    빠진것.push('BGM 합성 실패 — ' + String(r.stderr || '').slice(0, 200));
+  } else {
+    for (const 결 of ['경쾌', '산뜻']) {
+      const 원 = path.join(임시, `BGM_${결}.wav`);
+      if (fs.existsSync(원)) 복사(원, `소리/BGM_${결}.wav`);
+      else 빠진것.push(`BGM_${결}.wav`);
+    }
+    fs.rmSync(임시, { recursive: true, force: true });
+  }
+}
+
 /* ── ③-b 옹알이 — «구워서» 가져온다(사본이 아니라 재생성) ──────────────────
    🔑 옹알이 7종은 이 저장소에 wav 로 «한 번도» 커밋된 적이 없다. `tools/감각층소리합성.js` 가
    `--out` 인자로만 쓰였고 고정 산출 자리가 없었기 때문이다. 그런데 그 도구는 **씨앗이 고정**
