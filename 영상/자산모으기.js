@@ -61,6 +61,55 @@ for (const [갈래, 파일들] of 폰트벌) {
   for (const f of 파일들) 복사(path.join(저장소, 'docs', '브랜드_폰트', 갈래, f), `폰트/${f}`);
 }
 
+/* ── ②-b 로고 ───────────────────────────────────────────────────────────────
+   🔑 로고는 PNG 가 아니라 «실행되는 SVG» 다 — `tools/lib/로고정본.js` 가 런타임에 만든다.
+   그 파일 머리말이 이유를 적어 뒀다: 「왜 렌더판 PNG 를 버렸나: 구움/ 은 git 밖이라
+   남의 기계에서 로고가 «사라졌다»」. 여기서도 PNG 를 만들지 않고 SVG 를 그대로 떨군다 —
+   해상도 무제한이라 1080 폭에서도 안 깨진다. */
+/* ⚠ `표준형()` 은 module.exports 에 «없다»(exports = SYN·K·CHEV·기호선·색·defs·워드마크·
+   워드마크안쪽·기호·도장·알록대안). 표준형 21종을 통째로 내는 통로는 **CLI `--json` 하나**다 —
+   그 파일 32줄이 그렇게 적어 뒀다. 그래서 require 가 아니라 CLI 를 부른다. */
+let 로고표준형 = null;
+try {
+  const 냄 = require('child_process').execFileSync(
+    process.execPath,
+    [path.join(저장소, 'tools', 'lib', '로고정본.js'), '--json'],
+    { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 },
+  );
+  로고표준형 = JSON.parse(냄);
+} catch (e) {
+  빠진것.push(`로고정본 --json 실행 실패: ${String(e).slice(0, 120)}`);
+}
+if (로고표준형) {
+  /* 라이트 지면(Paper 바탕)에 얹을 것만 — 다크판은 이 영상에 쓸 자리가 없다 */
+  for (const 이름 of ['펠트라이트', '민라이트', '단색라이트', '꺾쇠라이트']) {
+    const svg = 로고표준형[이름];
+    if (!svg) {
+      빠진것.push(`로고정본 표준형 「${이름}」`);
+      continue;
+    }
+    /* 🔴 `xmlns` 를 여기서 «넣어준다» — 정본이 내는 SVG 에는 그게 없다.
+       인라인(HTML 안에 그대로 박는 길)에서는 없어도 브라우저가 읽지만, **standalone .svg 파일**로
+       두면 xmlns 없이는 못 읽는다. 실측: Remotion 이 「Error loading image with src: …민라이트.svg」로
+       렌더를 통째로 취소했다. 정본을 고치지 않고 이 통로에서만 채운다 —
+       인라인으로 쓰는 다른 소비자(발표물·인쇄물)는 지금 그대로 잘 돌고 있다. */
+    const 파일용 = svg.replace(
+      /^<svg /,
+      '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ',
+    );
+    const 목적 = path.join(공개, '로고', `${이름}.svg`);
+    fs.mkdirSync(path.dirname(목적), { recursive: true });
+    const 옛 = fs.existsSync(목적) ? fs.readFileSync(목적, 'utf8') : null;
+    if (옛 === 파일용) 건너뜀 += 1;
+    else {
+      fs.writeFileSync(목적, 파일용, 'utf8');
+      옮김 += 1;
+    }
+  }
+} else {
+  빠진것.push('로고정본 --json 이 아무 것도 안 냈다');
+}
+
 /* ── ③ 소리 ────────────────────────────────────────────────────────────────
    사운드킷 정본 규칙 넷(토큰 `사운드.규칙`)이 이 파일들에 이미 구워져 있다:
    400ms 이하 · **실패음 없음** · 사인·트라이앵글만 · C 펜타토닉 안.

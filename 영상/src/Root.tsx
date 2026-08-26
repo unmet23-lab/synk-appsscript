@@ -2,6 +2,7 @@ import React from "react";
 import { Composition } from "remotion";
 import { 폰트시험 } from "./시험/폰트시험";
 import { 리드크루클립 } from "./클립/리드크루클립";
+import { 커버 } from "./클립/커버";
 import { 클립01 } from "./클립/01_안녕하세요";
 import "./킷/폰트"; /* 부수효과로 폰트를 등록한다 — delayRender 가 렌더를 기다리게 한다 */
 
@@ -22,6 +23,15 @@ export const Root: React.FC = () => {
         id="clip-01-annyeong"
         component={리드크루클립}
         durationInFrames={클립01.전체프레임}
+        {...세로}
+        defaultProps={{ 클립: 클립01 }}
+      />
+
+      {/* 표지 — 릴에 «직접 지정»하는 썸네일. 플랫폼에 맡기면 첫 프레임(거의 빈 화면)이 표지가 된다 */}
+      <Composition
+        id="cover-01-annyeong"
+        component={커버}
+        durationInFrames={1}
         {...세로}
         defaultProps={{ 클립: 클립01 }}
       />
