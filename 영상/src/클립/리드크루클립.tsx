@@ -178,7 +178,11 @@ export const 리드크루클립: React.FC<{ 클립: 클립 }> = ({ 클립 }) => 
   /* 🔑 타이밍은 전부 fps 에서 파생한다 — 매직 프레임 번호를 쓰지 않는다(비협상 규칙 ⑧).
      fps 를 24 로 바꿔도 연출이 그대로 따라온다. */
   const 훅프레임 = Math.round(fps * 3);
-  const 몽글폭 = Math.round(width * 연출.가이드폭비);
+  /* 🔑 폭·가이드·곡은 **데이터가 쥔다**(대본읽기의 `가이드결`). 전엔 여기에 몽글이 박혀 있었고
+     연출의 기본 폭비를 봤다 — 그러면 「까몽 판」이 원리상 안 난다(유호 지시 08-27). */
+  const 가이드폭 = Math.round(width * 클립.폭비);
+  /* 곡 — 가이드가 들고 있으면 그것을, 없으면 연출 기본값을. 카운트다운과 같은 규율이다. */
+  const 곡 = 클립.배경음악 ?? 배경음악;
   const 겹침 = Math.round(fps * 연출.겹침초);
 
   /* 장면 경계 표 — 몽글이 «절대프레임»에서 지금 어느 장면인지 찾는 데 쓴다 */
@@ -200,18 +204,18 @@ export const 리드크루클립: React.FC<{ 클립: 클립 }> = ({ 클립 }) => 
           🔑 `loopVolumeCurveBehavior="extend"` 가 없으면 볼륨 함수의 f 가 루프마다 0 으로 되감겨
              끝 페이드아웃이 «영원히 안 온다». 산출물은 나고 종료코드도 0 이라 조용히 새는 자리다. */}
       <Audio
-        src={staticFile(배경음악.파일)}
+        src={staticFile(곡.파일)}
         /* 지은 곡은 30.00초를 통째로 내므로 이음매가 없다. `loop` 는 남겨 둔다 —
            «받아 온» 곡은 길이가 제각각이라, 짧으면 이어 붙고 길면 앞에서 잘린다. */
         loop
         loopVolumeCurveBehavior="extend"
-        /* 곡의 어느 지점부터 쓸지 — 받은 곡의 인트로를 건너뛰는 손잡이(연출.배경음악.시작초) */
-        startFrom={Math.round(fps * 배경음악.시작초)}
+        /* 곡의 어느 지점부터 쓸지 — 받은 곡의 인트로를 건너뛰는 손잡이(가이드결이 쥔다) */
+        startFrom={Math.round(fps * 곡.시작초)}
         volume={(f) =>
           interpolate(
             f,
             [0, 20, durationInFrames - 60, durationInFrames],
-            [0, 배경음악.볼륨, 배경음악.볼륨, 0],
+            [0, 곡.볼륨, 곡.볼륨, 0],
             { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
           )
         }
@@ -254,12 +258,13 @@ export const 리드크루클립: React.FC<{ 클립: 클립 }> = ({ 클립 }) => 
       {클립.장면들.map((장면, i) =>
         장면.소리 ? (
           <Sequence key={`s${i}`} from={Math.max(0, 경계표[i].시작 - 3)} durationInFrames={30}>
-            <Audio src={staticFile(`소리/${장면.소리}`)} volume={0.75} />
+            {/* 소리는 «public 아래 상대경로»다 — 몽글은 `소리/…`(사운드킷), 까몽은 `옹알이_까몽/…` */}
+            <Audio src={staticFile(장면.소리)} volume={0.75} />
           </Sequence>
         ) : null,
       )}
 
-      {/* ── 몽글 — Sequence «밖» 고정층. 30초 내내 한 사람이 옆에 있다 ── */}
+      {/* ── 가이드 — Sequence «밖» 고정층. 30초 내내 한 사람이 옆에 있다 ── */}
       <AbsoluteFill
         style={{
           justifyContent: "flex-end",
@@ -267,7 +272,7 @@ export const 리드크루클립: React.FC<{ 클립: 클립 }> = ({ 클립 }) => 
           paddingBottom: 연출.안전여백아래,
         }}
       >
-        <살아있는마스코트 가이드="몽글" 경계표={경계표} 폭={몽글폭} />
+        <살아있는마스코트 가이드={클립.가이드} 경계표={경계표} 폭={가이드폭} />
       </AbsoluteFill>
 
       {/* ── 로고 — 30초 브랜드 영상에 브랜드 마크가 0회였다 ────────────
