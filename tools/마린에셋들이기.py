@@ -58,10 +58,14 @@ def _시안(bpy, math, random, g):
     매끈재질, 색, 리니어 = g['매끈재질'], g['색'], g['리니어']
     베개몸, 직물결 = g['베개몸'], g['직물결']
 
-    파일 = _인자.get('파일')
-    assert 파일, '파일= 이 없다 — 들여올 3D 파일 경로를 준다(stl·obj·fbx·glb·gltf·ply)'
-    파일 = os.path.abspath(파일)
-    assert os.path.exists(파일), '없는 파일: ' + 파일
+    #   🔑 여러 파일을 «같이» 들일 수 있다(쉼표) — 이것이 방향을 재는 자이기도 하다.
+    #     받침대처럼 «누가 봐도 바른 방향인» 조각을 함께 놓으면, 본체가 어느 쪽으로 누웠는지가
+    #     추측이 아니라 눈으로 갈린다(08-27 실측: 회전 일곱 판을 추측으로 태우고서야 이 길로 왔다).
+    파일들 = [os.path.abspath(p.strip()) for p in (_인자.get('파일') or '').split(',') if p.strip()]
+    assert 파일들, '파일= 이 없다 — 들여올 3D 파일 경로를 준다(stl·obj·fbx·glb·gltf·ply · 쉼표로 여럿)'
+    for _p in 파일들:
+        assert os.path.exists(_p), '없는 파일: ' + _p
+    파일 = 파일들[0]
 
     갑옷색 = _인자.get('갑옷', 'Lapis Deep')
     렌즈색 = _인자.get('렌즈', 'Coral Rim')
@@ -104,21 +108,32 @@ def _시안(bpy, math, random, g):
 
     # ── 들이기 ────────────────────────────────────────────────────────────────
     있던것 = set(bpy.data.objects)
-    확장 = os.path.splitext(파일)[1].lower()
-    가져오기 = {
-        '.stl': lambda: bpy.ops.wm.stl_import(filepath=파일),
-        '.obj': lambda: bpy.ops.wm.obj_import(filepath=파일),
-        '.fbx': lambda: bpy.ops.import_scene.fbx(filepath=파일),
-        '.glb': lambda: bpy.ops.import_scene.gltf(filepath=파일),
-        '.gltf': lambda: bpy.ops.import_scene.gltf(filepath=파일),
-        '.ply': lambda: bpy.ops.wm.ply_import(filepath=파일),
-        '.blend': None,
-    }.get(확장)
-    assert 가져오기, '모르는 확장자: ' + 확장 + ' — stl·obj·fbx·glb·gltf·ply 를 준다'
-    가져오기()
+    for _p in 파일들:
+        확장 = os.path.splitext(_p)[1].lower()
+        가져오기 = {
+            '.stl': lambda f=_p: bpy.ops.wm.stl_import(filepath=f),
+            '.obj': lambda f=_p: bpy.ops.wm.obj_import(filepath=f),
+            '.fbx': lambda f=_p: bpy.ops.import_scene.fbx(filepath=f),
+            '.glb': lambda f=_p: bpy.ops.import_scene.gltf(filepath=f),
+            '.gltf': lambda f=_p: bpy.ops.import_scene.gltf(filepath=f),
+            '.ply': lambda f=_p: bpy.ops.wm.ply_import(filepath=f),
+        }.get(확장)
+        assert 가져오기, '모르는 확장자: ' + 확장 + ' — stl·obj·fbx·glb·gltf·ply 를 준다'
+        가져오기()
     들인것 = [o for o in bpy.data.objects if o not in 있던것 and o.type == 'MESH']
     assert 들인것, '파일은 열렸는데 «메시가 0개»다 — 빈 파일이거나 이 통로가 못 읽는 구조다'
     print('들임: %d 파츠 — %s' % (len(들인것), ', '.join(o.name for o in 들인것[:8])))
+
+    # 🔴 **바깥 에셋은 «어느 쪽이 위인지»가 제각각이다.** 첫 타이투스 판은 통째로 누워서 나왔다 —
+    #   Z-up 으로 저장된 것을 임포터가 Y-up 으로 읽은 탓이다. 포맷마다 다른 임포트 인자를 외우는
+    #   대신, 들인 «뒤에» 돌린다(모든 포맷에 같은 방식이 통한다).
+    #   돌리기=x90 · x-90 · z180 처럼 준다(여러 개면 쉼표).
+    for _돌 in (s.strip() for s in _인자.get('돌리기', '').split(',') if s.strip()):
+        축, 각 = _돌[0].upper(), float(_돌[1:])
+        R = mathutils.Matrix.Rotation(math.radians(각), 4, 축)
+        for o in 들인것:
+            o.matrix_world = R @ o.matrix_world
+        print('돌림: %s 축 %.0f°' % (축, 각))
 
     # ── 앉히기: 어떤 스케일·어떤 자리로 나왔든 무대 한가운데 정해진 키로 ─────────
     #   🔑 바깥 에셋은 단위가 제각각이다(밀리미터·인치·임의). «재서 맞추는» 것이 유일하게 안전하다.
