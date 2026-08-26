@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>판정 대기 한 자리 — 2026-08-26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FBF7F0; --ink:#2B2320; --stitch:#F0E3C8;
+  --oat:#EDE7DC; --stone:#C7BFB2; --ash:#8D857A; --deepwool:#575046;
+  --coral:#F96859; --coral3:#AE322A; --coralsoft:#FBB7A3; --wash:#FEF0E9;
+  --lapis:#3D6BC9; --lapisdeep:#24448C; --lapissoft:#C5D6F5;
+  --meadow:#7DB45A; --meadowdeep:#3F6B2E; --meadowsoft:#D3E8BE;
+  --butter:#F5C445; --butterdeep:#7E5A10; --buttersoft:#FFEBB0;
+  --pop:#E05C97; --popdeep:#99295D; --popsoft:#F8C7DE;
+  --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--font); font-weight:500; line-height:1.72;
+  letter-spacing:-0.011em; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1020px; margin:0 auto; padding:56px 28px 120px}
+header{border-bottom:2px solid var(--stitch); padding-bottom:28px; margin-bottom:40px}
+.kicker{font-family:var(--mono); font-size:12px; letter-spacing:.10em; color:var(--ash); text-transform:uppercase}
+h1{font-size:40px; font-weight:800; letter-spacing:-0.03em; line-height:1.18; margin:12px 0 14px}
+.sub{font-size:16px; color:var(--deepwool); max-width:66ch}
+h2{font-size:25px; font-weight:800; letter-spacing:-0.025em; margin:64px 0 6px; line-height:1.3}
+h2 .num{font-family:var(--mono); font-size:13px; font-weight:500; color:var(--coral); display:block; letter-spacing:.08em; margin-bottom:8px}
+h3{font-size:18px; font-weight:800; letter-spacing:-0.02em; margin:34px 0 8px}
+p{margin:12px 0; max-width:72ch}
+.lead{font-size:18px; max-width:68ch}
+strong{font-weight:800}
+em{font-style:normal; background:var(--wash); padding:1px 5px; border-radius:4px; font-weight:800; color:var(--coral3)}
+a{color:var(--lapisdeep); text-decoration:none; border-bottom:1.5px solid var(--lapissoft)}
+a:hover{border-bottom-color:var(--lapis)}
+code{font-family:var(--mono); font-size:.88em; background:var(--oat); padding:1.5px 5px; border-radius:4px}
+.hr{height:1px; background:var(--stitch); margin:56px 0; border:0}
+
+.verdict{
+  background:#fff; border:2px solid var(--stitch); border-radius:18px;
+  padding:30px 32px; margin:34px 0 8px;
+  box-shadow:0 1px 0 var(--stitch), 0 14px 34px -26px rgba(43,35,32,.42);
+}
+.verdict .tag{
+  display:inline-block; font-family:var(--mono); font-size:11px; letter-spacing:.10em;
+  background:var(--coral); color:var(--paper); padding:4px 10px; border-radius:99px; margin-bottom:14px;
+}
+.verdict .big{font-size:26px; font-weight:800; letter-spacing:-0.03em; line-height:1.42; margin:0}
+.verdict .note{font-size:14.5px; color:var(--deepwool); margin:16px 0 0}
+
+/* 카운트 띠 */
+.counts{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:26px 0 0}
+.count{background:#fff; border:2px solid var(--stitch); border-radius:14px; padding:16px 18px}
+.count .n{font-family:var(--mono); font-size:30px; font-weight:500; letter-spacing:-.03em; line-height:1}
+.count .l{font-size:12.5px; color:var(--ash); margin-top:7px; line-height:1.45}
+.count.now{border-color:var(--coralsoft); background:var(--wash)}
+.count.now .n{color:var(--coral3)}
+
+/* 이번 주 카드 */
+.week{background:#fff; border:2px solid var(--coralsoft); border-radius:18px; padding:8px 0 4px; margin:26px 0}
+.q{display:grid; grid-template-columns:44px 1fr 210px; gap:18px; padding:20px 26px; border-bottom:1px solid var(--stitch); align-items:start}
+.q:last-child{border-bottom:0}
+.q .id{font-family:var(--mono); font-size:14px; font-weight:500; color:var(--coral3); background:var(--wash); border-radius:9px; text-align:center; padding:6px 0; line-height:1.3}
+.q .body .t{font-size:16.5px; font-weight:800; letter-spacing:-.02em; line-height:1.45}
+.q .body .w{font-size:13.5px; color:var(--deepwool); margin-top:6px; line-height:1.6}
+.q .body .src{font-size:12px; color:var(--ash); font-family:var(--mono); margin-top:8px}
+.q .opts{font-size:13px; color:var(--deepwool); line-height:1.62}
+.q .opts b{display:block; font-family:var(--mono); font-size:11px; letter-spacing:.08em; color:var(--ash); font-weight:500; margin-bottom:5px}
+.opt{display:block; padding:3px 0 3px 15px; position:relative}
+.opt::before{content:''; position:absolute; left:2px; top:12px; width:6px; height:6px; border-radius:50%; background:var(--stone)}
+.opt.rec::before{background:var(--meadow)}
+.opt.rec{font-weight:800; color:var(--meadowdeep)}
+
+/* 열쇠 */
+.keys{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:30px 0 8px}
+.key{background:#fff; border:2px solid var(--stitch); border-radius:16px; padding:22px 20px; display:flex; flex-direction:column}
+.key .h{font-family:var(--mono); font-size:11px; letter-spacing:.09em; color:var(--ash); margin-bottom:7px}
+.key .t{font-size:19px; font-weight:800; letter-spacing:-.02em; line-height:1.34}
+.key .u{font-size:13px; color:var(--deepwool); margin:11px 0 0; line-height:1.6; flex:1}
+.key .unlocks{margin-top:14px; padding-top:13px; border-top:1px solid var(--stitch); font-size:12.5px; line-height:1.62; color:var(--deepwool)}
+.key .unlocks b{font-family:var(--mono); font-size:11px; letter-spacing:.07em; color:var(--ash); font-weight:500; display:block; margin-bottom:5px}
+.key.k1{border-color:var(--coralsoft)} .key.k1 .t{color:var(--coral3)}
+.key.k2{border-color:var(--lapissoft)} .key.k2 .t{color:var(--lapisdeep)}
+.key.k3{border-color:var(--meadowsoft)} .key.k3 .t{color:var(--meadowdeep)}
+
+/* 표 */
+table{width:100%; border-collapse:collapse; margin:22px 0; font-size:13.5px}
+th{text-align:left; font-family:var(--mono); font-size:11px; letter-spacing:.08em; color:var(--ash);
+   font-weight:500; border-bottom:2px solid var(--stitch); padding:9px 10px; text-transform:uppercase}
+td{border-bottom:1px solid var(--stitch); padding:11px 10px; vertical-align:top; line-height:1.6}
+tr:hover td{background:#fff}
+td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--deepwool)}
+.pill{display:inline-block; font-family:var(--mono); font-size:10.5px; letter-spacing:.06em;
+      padding:2.5px 8px; border-radius:99px; border:1.5px solid var(--stitch); color:var(--deepwool); white-space:nowrap}
+.pill.money{border-color:var(--butter); background:var(--buttersoft); color:var(--butterdeep)}
+.pill.gone{border-color:var(--coralsoft); background:var(--wash); color:var(--coral3)}
+.pill.person{border-color:var(--popsoft); background:var(--popsoft); color:var(--popdeep)}
+.pill.way{border-color:var(--lapissoft); background:var(--lapissoft); color:var(--lapisdeep)}
+
+/* 지금 하실 것 */
+.dothis{background:var(--wash); border:2px solid var(--coralsoft); border-radius:16px; padding:24px 26px; margin:28px 0}
+.dothis h3{margin-top:0}
+.dothis ol{margin:12px 0 0; padding-left:20px; font-size:14.5px; line-height:1.75}
+.dothis li{margin:9px 0}
+
+.later{background:var(--oat); border-radius:16px; padding:22px 26px; margin:26px 0; font-size:14px; line-height:1.72}
+.later b{font-weight:800}
+.foot{margin-top:80px; padding-top:22px; border-top:2px solid var(--stitch); font-family:var(--mono); font-size:12px; color:var(--ash); line-height:1.9}
+
+@media (max-width:840px){
+  .counts{grid-template-columns:repeat(2,1fr)}
+  .keys{grid-template-columns:1fr}
+  .q{grid-template-columns:38px 1fr; }
+  .q .opts{grid-column:2}
+  h1{font-size:31px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">SYNK LAB · 판정 대기 한 자리 · 2026-08-26</div>
+  <h1>유호님이 정하실 것 — 전량</h1>
+  <p class="sub">
+    설계 문서 여섯이 각자 「판정 대기」 절을 갖고 있어 <strong>여섯 군데를 열어야 했습니다.</strong>
+    여기 한 자리로 모았습니다. 내용은 복제하지 않고 <strong>질문 한 줄 + 갈래 + 원문 링크</strong>만 둡니다 —
+    답을 정하시면 고칠 곳은 원문 하나입니다.
+  </p>
+</header>
+
+<div class="verdict">
+  <span class="tag">판정</span>
+  <p class="big">
+    쉰일곱 건인데 <em>지금 답하실 것은 여섯</em>입니다.<br>
+    나머지 쉰하나 중 <strong>스물넷은 열쇠 셋이 풀고</strong>, 스물일곱은 제가 재료를 더 내야 여쭐 수 있습니다.
+  </p>
+  <p class="note">
+    ⚠ <strong>여섯의 마감은 09-01 — 엿새 뒤입니다.</strong> 강사 채용 공고가 그 위에 서 있고,
+    공고가 늦으면 11월 부트캠프가 밀리고, 부트캠프가 밀리면 12월 파일럿이 사라집니다.
+    파일럿은 개원 전 <strong>유일한 실전 리허설</strong>이라 대체물이 없습니다.
+  </p>
+</div>
+
+<div class="counts">
+  <div class="count now"><div class="n">6</div><div class="l">엿새 안 (09-01)<br>채팅 한 줄이면 됩니다</div></div>
+  <div class="count"><div class="n">14</div><div class="l">9월 안<br>대부분 갈래 한 글자</div></div>
+  <div class="count"><div class="n">10</div><div class="l">계약·발주 전<br>미루면 못 고칩니다</div></div>
+  <div class="count"><div class="n">27</div><div class="l">제가 더 재서<br>다시 여쭙습니다</div></div>
+</div>
+
+<div class="hr"></div>
+
+<h2><span class="num">01 / 엿새 안</span>지금 답하실 여섯</h2>
+
+<p class="lead">
+  전부 <strong>강사 채용</strong> 한 문서에서 나옵니다(<a href="강사채용_부트캠프_v1.md">강사채용_부트캠프_v1.md</a> §13-1).
+  공고를 09월 초에 내려면 이 여섯이 공고문에 들어가야 합니다. <strong>「갈래 한 글자」로 답하시면 됩니다.</strong>
+</p>
+
+<div class="week">
+
+  <div class="q">
+    <div class="id">ⓐ</div>
+    <div class="body">
+      <div class="t">주간 교안(주 1회 · 14칸 · 30분)을 유지하나요?</div>
+      <div class="w">지금 <strong>두 정본이 정면으로 어긋나 있습니다</strong> — 크루 핸드북은 「서면 제출물 없습니다」,
+        주간 교안 양식 v2.2는 매주 14칸. 어느 쪽으로도 못 쓰는 상태라 공고의 「수업 외에 하실 일」 표가 안 잠깁니다.</div>
+      <div class="src">강사 §13-1 ⓐ</div>
+    </div>
+    <div class="opts"><b>갈래</b>
+      <span class="opt">유지 — 핸드북 문구를 고친다</span>
+      <span class="opt">폐지 — 교안 양식을 내린다</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="id">ⓑ</div>
+    <div class="body">
+      <div class="t">90분 여섯 블록의 재배분표, 제가 안을 낼까요?</div>
+      <div class="w">서클 20분이 맨 앞으로 이사한 뒤 <strong>가운데 60~65분의 배분이 어느 정본에도 없습니다.</strong>
+        부트캠프 Day 2의 한 블록 전체가 여기 걸려 있습니다.</div>
+      <div class="src">강사 §13-1 ⓑ</div>
+    </div>
+    <div class="opts"><b>갈래</b>
+      <span class="opt rec">네가 안을 내라 (권고)</span>
+      <span class="opt">내가 정한다</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="id">ⓒ</div>
+    <div class="body">
+      <div class="t">💰 계약 발효일과 「개원 전 넉 달」의 처우</div>
+      <div class="w">11월 부트캠프에 온 강사가 <strong>개원(02-25)까지 넉 달을 무급으로 기다리는지</strong>가 여기서 갈립니다.
+        계약서·공고 마지막 줄·재무 선행 번이 전부 여기 걸려 있고, 규모가 <strong>0 ~ 4,032만₮</strong>로 벌어집니다.</div>
+      <div class="src">강사 §13-1 ⓒ · 돈</div>
+    </div>
+    <div class="opts"><b>갈래</b>
+      <span class="opt">㉠ 내정통지 10-31 + 계약 02-01 발효</span>
+      <span class="opt">㉡ 11-01 발효 + 대기 최저임금 X%</span>
+      <span class="opt">㉢ 12월 파일럿부터 발효 + 부트캠프 30시간 지급</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="id">ⓓ</div>
+    <div class="body">
+      <div class="t">부트캠프에 불합격이 있나요? 있으면 계약은?</div>
+      <div class="w">계약서 조항이라 <strong>계약 «전»에</strong> 정해야 합니다.
+        11월에 사람을 잃으면 12월 파일럿이 그 자리에서 깨집니다.</div>
+      <div class="src">강사 §13-1 ⓓ</div>
+    </div>
+    <div class="opts"><b>갈래</b>
+      <span class="opt rec">㉠ 탈락 없음 + 재시연 무제한</span>
+      <span class="opt rec">㉡ 재시연 2회 뒤 반 배정 보류</span>
+      <span class="opt">㉢ 계약 해지</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="id">ⓔ</div>
+    <div class="body">
+      <div class="t">💰 개원일에 몽골쌤 몇 명을 「계약 발효」시키나요?</div>
+      <div class="w">채용·부트캠프는 어느 쪽이든 8명입니다. 갈리는 것은 <strong>개원일에 몇 명이 급여를 받기 시작하는가</strong>입니다.
+        8명 전원 즉시 발효면 유휴 인건비가 <strong>월 504만₮</strong>. 토요일 3층이 첫 시즌에 열리는지도 여기서 갈립니다.</div>
+      <div class="src">강사 §13-1 ⓔ · 돈</div>
+    </div>
+    <div class="opts"><b>갈래</b>
+      <span class="opt">4명 (급여 정본 단계 1)</span>
+      <span class="opt">6명 (단계 2)</span>
+      <span class="opt">8명 (단계 3)</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="id">#2</div>
+    <div class="body">
+      <div class="t">채용 기준 한 줄을 「확정」해 주세요</div>
+      <div class="w">「<strong>학생을 보고 한 줄로 적을 수 있는 사람</strong>」 — 트랙에 유호님 몫으로 열려 있던 줄입니다.
+        면접 과제(20점)가 이 뜻과 같은지만 봐 주시면 되고, <strong>확정돼야 절대 관문이 발효됩니다.</strong></div>
+      <div class="src">강사 §13-2 #2</div>
+    </div>
+    <div class="opts"><b>갈래</b>
+      <span class="opt rec">이 줄로 확정</span>
+      <span class="opt">문구를 이렇게 바꾼다</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="dothis">
+  <h3>그리고 판정이 «아니라» 그냥 하실 것 둘 — 이번 주</h3>
+  <ol>
+    <li><strong>법무법인 3곳에 견적 메일.</strong> 몽골 법인 사슬이 2~3개월인데 오늘까지 <strong>0단계 미착수</strong>입니다.
+      공간·파일럿·Meta 인증이 전부 이 뒤에 서 있습니다. <span class="pill gone">늦으면 못 되돌림</span></li>
+    <li><strong>몽골어 5줄 유상 단건 검수 의뢰.</strong> 검수자 채용을 기다리면 <strong>간판이 「가장 먼저」인데 「가장 나중」 뒤에 서는 순환</strong>이 안 풀립니다.
+      다섯 줄만 먼저 사면 그 고리가 끊깁니다.</li>
+  </ol>
+</div>
+
+<div class="hr"></div>
+
+<h2><span class="num">02 / 열쇠</span>하나가 여럿을 푼다 — 셋</h2>
+
+<p class="lead">
+  남은 쉰하나를 하나씩 보면 마비됩니다. <strong>스물넷은 아래 셋 뒤에 줄 서 있습니다.</strong>
+  셋을 먼저 풀면 나머지는 저절로 답이 정해지거나, 제가 답을 만들어 올 수 있게 됩니다.
+</p>
+
+<div class="keys">
+
+  <div class="key k1">
+    <div class="h">열쇠 1 · 사람 하나</div>
+    <div class="t">몽골어 검수자</div>
+    <div class="u">발주서·금액·접촉처는 이미 서 있습니다. <strong>사람만 정하시면 그날 요청 전량이 나갑니다.</strong>
+      요청은 <code>docs/몽골어검수_요청_큐.md</code> 한 자리에 모여 있습니다.</div>
+    <div class="unlocks"><b>이것이 풀리면</b>
+      간판(키릴 의무) · 채용 공고 · 근로계약서 · 학부모 인쇄물 · 미니게임 4모듈 · 동의 문구 · 앱 문구 ·
+      <strong>위기의 말(사과·환불·배웅) 각본</strong> — <strong>여덟 자리</strong>가 동시에 움직입니다</div>
+  </div>
+
+  <div class="key k2">
+    <div class="h">열쇠 2 · 숫자 하나</div>
+    <div class="t">수강료</div>
+    <div class="u">등록 갈래는 <strong>이미 확정</strong>입니다(2티어 + 애드온 · 08-26).
+      남은 것은 <strong>실제 값</strong>과 얼리버드입니다.
+      <strong>가격은 명품의 선언</strong>이라 낮게 잡으면 지어 놓은 것이 값을 못 받습니다.</div>
+    <div class="unlocks"><b>이것이 풀리면</b>
+      상담 봇 잠금 첫 셋 · 환불 3구간(금액이 있어야 비율이 뜻을 가집니다) · 얼리버드 카드 ·
+      12월 파일럿의 세 목적 중 하나 · 인쇄 문안 · 하이라이트·고정 게시물 — <strong>일곱 자리</strong></div>
+  </div>
+
+  <div class="key k3">
+    <div class="h">열쇠 3 · 조건 하나</div>
+    <div class="t">매물을 무엇으로 고르나</div>
+    <div class="u">동선이 0㎡라 실제 필요 면적이 <strong>317~347㎡</strong>인데 재무 정본은 「300㎡+ 회피」를 확정으로 뒀습니다.
+      <strong>돈이 안 드는 갈래가 하나 있습니다</strong> — 공용부가 «별도»로 붙은 매물만 보는 것.</div>
+    <div class="unlocks"><b>이것이 풀리면</b>
+      개원 시 몇 실을 여나 · 크루 광장 처방 · 시공 견적 · <strong>11월 부트캠프가 설 자리</strong> ·
+      12월 파일럿 장소 · 인테리어 발주 시점 — <strong>아홉 자리</strong></div>
+  </div>
+
+</div>
+
+<div class="hr"></div>
+
+<h2><span class="num">03 / 달력</span>전부 — 마감이 이른 순서로</h2>
+
+<table>
+  <thead>
+    <tr><th>마감</th><th>무엇</th><th>갈래 / 값</th><th>성질</th><th>원문</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="d">09-01<br>D+6</td><td><strong>강사 여섯</strong> — 교안 유지 · 블록 배분 · 계약 발효일 · 불합격 · 개원일 인원 · 채용 기준 한 줄</td><td>§01 참조</td><td><span class="pill money">돈 2</span> <span class="pill way">방향 4</span></td><td><a href="강사채용_부트캠프_v1.md">강사채용</a></td></tr>
+    <tr><td class="d">09-05</td><td>자격 요건 갈래</td><td>느슨 / <strong>TOPIK 4급+레벨 인증(권고)</strong> / 빡빡</td><td><span class="pill way">방향</span></td><td><a href="강사채용_부트캠프_v1.md">강사채용</a></td></tr>
+    <tr><td class="d">09-08</td><td>지원 접수 통로 개설</td><td>구글 설문지 + 텔레그램</td><td><span class="pill">실행</span></td><td><a href="강사채용_부트캠프_v1.md">강사채용</a></td></tr>
+    <tr><td class="d">09-10</td><td><strong>몽골어 검수자 채용 집행</strong> — 열쇠 1</td><td>사람 결정 + 발주</td><td><span class="pill person">사람</span> <span class="pill money">돈</span></td><td><a href="몽골어검수_요청_큐.md">검수 큐</a></td></tr>
+    <tr><td class="d">09-10</td><td>검수 큐에서 채용 4종의 순서 + 검수자 채용 실패 시 갈래(지금 0건)</td><td>앞에 세운다 / 뒤에 붙인다</td><td><span class="pill way">방향</span></td><td><a href="강사채용_부트캠프_v1.md">강사채용</a></td></tr>
+    <tr><td class="d">09-15</td><td><strong>면접·부트캠프를 어디서 하나</strong> — 11월에 교실이 없습니다</td><td>가계약 후 A실만 선시공 / 대학 강의실 / 호텔·코워킹</td><td><span class="pill gone">늦으면 못 되돌림</span></td><td><a href="강사채용_부트캠프_v1.md">강사채용</a></td></tr>
+    <tr><td class="d">09-15</td><td><strong>Meta 비즈니스 인증을 어느 법인으로</strong> — 반려되면 01-05 광고에 못 댑니다</td><td>한국 개인사업자 / ㈜싱크시프트 / 몽골 LLC</td><td><span class="pill gone">늦으면 못 되돌림</span></td><td><a href="파일럿_체험2주_설계_v1.md">파일럿</a></td></tr>
+    <tr><td class="d">09-20</td><td>💰 모의수업 학생역 4명 유급 모집</td><td>[추정] 72만₮ · 모집에 3주 필요</td><td><span class="pill money">돈</span></td><td><a href="강사채용_부트캠프_v1.md">강사채용</a></td></tr>
+    <tr><td class="d">09-30</td><td><strong>파일럿 여덟</strong> — 장소 · 프린터 · 누구를 부르나 · 연령/부 · 체험 정원 N · 예산 · 얼리버드 당기기 · 시즌 기계 갈래</td><td>대부분 갈래 한 글자</td><td><span class="pill money">돈 3</span> <span class="pill way">방향 5</span></td><td><a href="파일럿_체험2주_설계_v1.md">파일럿</a></td></tr>
+    <tr><td class="d">09-30</td><td>숙제 체크·약점 메모·반 한 마디의 주기</td><td>매 차시 / 주 1회 / 월 1회 / 안 쓴다</td><td><span class="pill way">방향</span></td><td><a href="강사채용_부트캠프_v1.md">강사채용</a></td></tr>
+    <tr><td class="d">09월</td><td><strong>01-05 사전등록을 무엇으로 여나</strong> — 법인 사슬 때문에 그날 로비가 원리적으로 못 섭니다</td><td><strong>전면 온라인·앱(권고)</strong> / 대여 공간 상담 / 계약 앞당기기</td><td><span class="pill way">방향</span></td><td><a href="공간설계_v1.md">공간</a></td></tr>
+    <tr><td class="d">10월<br>답사 전</td><td><strong>면적 갈래</strong> — 열쇠 3</td><td>254.5㎡ 안에서 축소 / 면적 확대(+월 450~660만₮) / <strong>공용부 별도 매물만 본다</strong></td><td><span class="pill money">돈</span> <span class="pill gone">답사 전</span></td><td><a href="공간설계_v1.md">공간</a></td></tr>
+    <tr><td class="d">10-31</td><td>1기 8명의 멘토는 누구인가 — 11월엔 선배 강사가 0명입니다</td><td>원장 2인이 4명씩 / <strong>1기는 동기 짝, 정식 멘토는 2기부터</strong></td><td><span class="pill person">사람</span></td><td><a href="강사채용_부트캠프_v1.md">강사채용</a></td></tr>
+    <tr><td class="d">12월 초</td><td><strong>수강료 · 주소 · 체험 절차</strong> — 열쇠 2 · 광고 켜는 날의 실질 마감</td><td>값 셋</td><td><span class="pill money">돈</span></td><td>—</td></tr>
+    <tr><td class="d">12월 초</td><td><strong>환불 3구간 숫자</strong> — 돈 받는 규정 없이 광고를 못 켭니다</td><td>1/3 전 2/3 · 1/2 전 1/2 · 이후 0 <em>(초안)</em></td><td><span class="pill money">돈</span></td><td><a href="끝의설계_v1.md">끝의 설계</a></td></tr>
+    <tr><td class="d">12월 초</td><td>몽골 법정 환불 기준을 법무에 물을지 — <strong>안 재봤습니다</strong></td><td>묻는다 / 초안으로 시작</td><td><span class="pill way">방향</span></td><td><a href="끝의설계_v1.md">끝의 설계</a></td></tr>
+    <tr><td class="d">12월 초</td><td>결제 수수료·웰컴 키트를 환불에서 <strong>안 뺀다</strong>(명품 조항 둘)</td><td>채택 / 뺀다</td><td><span class="pill money">돈</span></td><td><a href="끝의설계_v1.md">끝의 설계</a></td></tr>
+    <tr><td class="d">12월 초</td><td>접점 12개 목록에 빠진 것 — <strong>유호님 머릿속·오프라인은 제가 못 봅니다</strong></td><td>목록 보완</td><td><span class="pill way">방향</span></td><td><a href="명품눈금_v1.md">눈금</a></td></tr>
+    <tr><td class="d">12월 초</td><td>밀도 점수를 «최저값»으로 낼지 — <strong>최저값이면 오늘 우리 점수는 0입니다</strong></td><td><strong>최저값(권고)</strong> / 평균</td><td><span class="pill way">방향</span></td><td><a href="명품눈금_v1.md">눈금</a></td></tr>
+    <tr><td class="d">D-132</td><td>대외 인쇄물의 「자기만의 5년 로드맵」 약속</td><td>이행 / 문구 하향 / 다년 보존 신설</td><td><span class="pill way">방향</span></td><td><a href="가져가는것_설계_v1.md">가져가는것</a></td></tr>
+    <tr><td class="d">D-107</td><td>💰 이 트랙 인쇄 상한 (월 256만₮ 중)</td><td>금액 한 줄</td><td><span class="pill money">돈</span></td><td><a href="가져가는것_설계_v1.md">가져가는것</a></td></tr>
+    <tr><td class="d">발주 전</td><td><strong>공간 여섯</strong> — 로비 가이드 수 · 「명예의 전당」 교체 · 크루 광장 · 방별 조연색 · 별자리와 세계관 · 개원 시 개방 실수</td><td>각 2~4갈래</td><td><span class="pill gone">벽에 새기면 되돌림이 가장 비쌉니다</span></td><td><a href="공간설계_v1.md">공간</a></td></tr>
+    <tr><td class="d">사인 발주 전</td><td><strong>교실의 매개 언어</strong> — 100% 한국어인가, 초급만 몽골어 허용인가</td><td>블랭킷 한국어 / 초급만 허용</td><td><span class="pill gone">뒤집히면 사인 발주가 통째로 다시</span></td><td><a href="공간설계_v1.md">공간</a></td></tr>
+    <tr><td class="d">걸음 1 전</td><td>💰 <strong>순간 폴더의 소유자</strong> — 강사가 올린 사진은 소유자가 그 강사(개인 Gmail)입니다</td><td>Workspace 좌석 / <strong>배치가 학원 계정으로 복사</strong></td><td><span class="pill gone">퇴사 때 소급 불가 자산이 사라집니다</span></td><td><a href="가져가는것_설계_v1.md">가져가는것</a></td></tr>
+    <tr><td class="d">개원 전</td><td>수료 기준 — 몇 시즌 이수하면 수료증인가 <em>(저장소 확정 0건)</em></td><td>6시즌? 그 미만도?</td><td><span class="pill way">방향</span></td><td><a href="가져가는것_설계_v1.md">가져가는것</a></td></tr>
+    <tr><td class="d">개원 전</td><td>💰 배상책임보험 — 드나 / 안 드나 / 얼마짜리 <em>(저장소 0건)</em></td><td>금액</td><td><span class="pill money">돈</span></td><td><a href="끝의설계_v1.md">끝의 설계</a></td></tr>
+    <tr><td class="d">개원 전</td><td><strong>떠나는 아이에게도 기록장·사진을 드릴지</strong></td><td><strong>드린다(권고)</strong> / 안 드린다</td><td><span class="pill way">방향</span></td><td><a href="끝의설계_v1.md">끝의 설계</a></td></tr>
+    <tr><td class="d">부트캠프 전</td><td>🚫 <strong>최저점을 급여 등급과 절대 연결하지 않는다</strong> — 연결하면 아무도 보고하지 않습니다</td><td>이 금지를 확정</td><td><span class="pill way">방향</span></td><td><a href="명품눈금_v1.md">눈금</a></td></tr>
+    <tr><td class="d">시행일 전</td><td>레드라인 대체 접수처 — <strong>원장이 당사자일 때 어디로 신고하나</strong> <em>(핸드북이 비워 둔 칸)</em></td><td>사람/기관 하나</td><td><span class="pill person">사람</span></td><td><a href="끝의설계_v1.md">끝의 설계</a></td></tr>
+  </tbody>
+</table>
+
+<p style="font-size:13.5px;color:var(--ash)">
+  ※ 위 표는 <strong>마감이 있거나 되돌릴 수 없는 것만</strong> 실었습니다.
+  나머지(기록장 vs 졸업 포토북 · 시즌 컬러 로테이션 · Glide 손 기입 폼 · 앱 층 기각 재검토 · 눈금 목표치 다섯 등)는
+  원문 문서의 판정 절에 그대로 있고, <strong>지금 답 안 하셔도 아무것도 안 멈춥니다.</strong>
+</p>
+
+<div class="hr"></div>
+
+<h2><span class="num">04 / 안 여쭙는 것</span>제가 더 재서 다시 오겠습니다</h2>
+
+<div class="later">
+  <p><b>스물일곱 건은 「유호님만 아신다」가 아니라 「제가 아직 안 재봤다」입니다.</b>
+  되던지면 유호님 시간만 쓰고 답이 안 나옵니다. 제가 재서 갈래를 만들어 오는 것들 —</p>
+  <p>
+  · <strong>몽골 법정 환불 기준</strong>(법무 견적이 오면 같이 묻습니다) ·
+  <strong>QPay 환불 통로</strong>(수동 이체로 시작해도 되는지) ·
+  <strong>현지 구전이 실제로 어디서 도는지</strong>(리뷰 플랫폼인지 학부모 페북 그룹인지) ·
+  <strong>경쟁 학원의 접점 밀도</strong>(우리 눈금 Ⅱ의 상대 좌표) ·
+  <strong>지금 검사들이 접점 축을 다 덮는지</strong> ·
+  <strong>90분 블록 재배분 초안</strong>(ⓑ에서 「네가 내라」를 고르시면 그날 냅니다) ·
+  구인 채널 문안 · 장소 견적 문안 · 라이브 폼 실측.
+  </p>
+  <p style="margin-bottom:0">⚠ 다만 <b>유호님 머릿속·바탕화면·오프라인에 있는 것은 제가 원리상 못 봅니다.</b>
+  접점 목록(§03 「접점 12개」)에 빠진 게 있으면 그건 여쭙는 수밖에 없습니다.</p>
+</div>
+
+<div class="hr"></div>
+
+<h2><span class="num">05 / 한 줄</span>줄이면</h2>
+
+<div class="verdict">
+  <span class="tag">한 줄</span>
+  <p class="big">
+    설계는 여덟 중 여덟이 섰습니다. <strong>이제 막는 것은 문서가 아니라 답입니다.</strong><br>
+    <em>엿새 안에 여섯</em>, 그리고 <em>열쇠 셋</em> — 그 아홉이 나머지 마흔여덟을 끕니다.
+  </p>
+</div>
+
+<div class="foot">
+  지면 · docs/판정대기_한자리_2026-08-26.html<br>
+  모은 곳 · 공간설계_v1 §11(9) · 강사채용_부트캠프_v1 §13(14) · 파일럿_체험2주_설계_v1 §D(9) · 가져가는것_설계_v1 §16(10) · 끝의설계_v1 §12(8) · 명품눈금_v1 §9(7) = 57건<br>
+  판정의 뿌리 · docs/명품갭_판정_2026-08-26.html · 남은 일 · docs/_ops/트랙.md §4-F · 확정 · docs/_ops/결정.md<br>
+  ⚠ 이 지면은 <b>사본이 아니라 색인</b>입니다 — 답이 정해지면 고칠 곳은 원문 문서 하나이고, 여기는 그 줄을 지웁니다.
+</div>
+
+</div>
+</body>
+</html>
