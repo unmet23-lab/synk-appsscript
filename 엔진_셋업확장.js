@@ -643,9 +643,9 @@ function runSeedChain_(ss, st, tz, L, t0, startIdx) {
       if (!haveR[CLS_A]) addR.push([wk, CLS_A, 4 * 28, 0, '진행중', '']);
       if (!haveR[CLS_B]) addR.push([wk, CLS_B, 4 * 18, 0, '진행중', '']);
       if (addR.length) rd.getRange(rd.getLastRow() + 1, 1, addR.length, 6).setValues(addR);
-      const lg = ensureSheet(ss, 'league_pairs', ['week', '반A', '반B', '상태', '결과']);
-      const haveL = lg.getLastRow() >= 2 && lg.getRange(2, 1, lg.getLastRow() - 1, 3).getValues().some(r => String(r[0]) === wk && String(r[1]).indexOf('데모') === 0);
-      if (!haveL) lg.getRange(lg.getLastRow() + 1, 1, 1, 5).setValues([[wk, CLS_A, CLS_B, '제안', '']]);
+      /* [08-27 · codex ①검수 7f9197670a82] 🚫 데모 리그 대진 생성을 걷었다 — 리그 폐지(유호 픽 A).
+       *   여기 남겨 두면 «데모 초기화 한 번»으로 폐지된 대진표가 되살아난다. 지우는 쪽이 아니라
+       *   «되살리는 쪽»이 남아 있던 자리다 — 폐지에서 가장 놓치기 쉬운 갈래. */
       const wrN = ss.getSheetByName('world_raid');
       const ymN = Utilities.formatDate(nowR, tz, 'yyyy-MM');
       const pfR = ss.getSheetByName('profiles');

@@ -2680,16 +2680,16 @@ function buildMonthlyStorybook_() {
     IMG('sunset group photo at ' + SEn + ', arms over shoulders, tired happy smiles') + ' || MOT: still-photo freeze with gentle zoom, lens flare',
     IMG('empty classroom at night, faint shadow whispering outside the window, a single desk lamp on') + ' || MOT: slow creep toward window, curtain swaying'
   ] : [
-    IMG('poster cover: two rival class groups facing each other at ' + SEn + ', playful tension') + ' || MOT: split-screen slide-in, spark between them',
-    IMG('two rival student groups spotting each other across ' + SEn + ', surprised faces') + ' || MOT: whip-pan between the two groups',
-    IMG('rivals sharing snacks at one table, awkward then warming up, ' + SEn + ' background') + ' || MOT: slow push-in as smiles appear',
+    IMG('poster cover: two class groups meeting at ' + SEn + ', curious and friendly') + ' || MOT: split-screen slide-in, warm light between them', // [08-27] rival → meeting (리그 폐지)
+    IMG('two student groups spotting each other across ' + SEn + ', surprised then smiling') + ' || MOT: whip-pan between the two groups', // [08-27] rival 걷음
+    IMG('both classes sharing snacks at one table, awkward then warming up, ' + SEn + ' background') + ' || MOT: slow push-in as smiles appear', // [08-27] rivals 걷음
     IMG(BEn + ' erupting between the two groups, splitting them apart, dark energy wall') + ' || MOT: shockwave burst, camera shake',
-    IMG('the hero student reaching a hand across the divide toward the rival class') + ' || MOT: intimate close-up, hand meeting hand, light igniting',
+    IMG('the hero student reaching a hand toward the other class') + ' || MOT: intimate close-up, hand meeting hand, light igniting', // [08-27] rival 걷음
     IMG('two class monsters roaring side by side above joined hands') + ' || MOT: twin energy auras merging into one new color',
     IMG('the sky splitting open, ' + WB_EN + ', both classes standing together below') + ' || MOT: massive slow reveal, dust swirling',
     IMG('combined chant of both classes, glowing letter-chains from two directions binding the overlord') + ' || MOT: dual spiral camera, chains crossing',
     IMG('crown-wearing students leading the final chant, all monsters glowing') + ' || MOT: heroic slow push through the front line',
-    IMG('the overlord falling, rivals high-fiving in golden light rain') + ' || MOT: slow-motion high-five, sparkles',
+    IMG('the overlord falling, both classes high-fiving in golden light rain') + ' || MOT: slow-motion high-five, sparkles', // [08-27] rivals 걷음
     IMG('sunset group photo of both classes together at ' + SEn) + ' || MOT: freeze-frame with camera flash white-out',
     IMG('empty classroom at night, faint shadow at the window, distant whisper') + ' || MOT: slow creep, single light flickering'
   ];
@@ -2773,7 +2773,7 @@ function buildMonthlyStorybook_() {
     MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🎬 싱크 스토리 제' + issue + '호 영상팩 — 씬 프롬프트 12',
       '「' + title + '」 발간과 함께 영상 제작용 프롬프트가 준비됐습니다.\n\n사용법: ① IMG 부분을 Recraft(또는 이미지 AI)에 넣어 씬 일러스트 생성 → ② 그 이미지를 Kling 등 영상 AI에 올리고 MOT 부분만 프롬프트로 입력.\n\n' + pLines +
       '\n\n════ ✍️ 집필 브리프 (수기 각색용 — 원할 때만) ════' + // [v9.34] '\\n' 이스케이프 화석 → 실제 개행(브리프가 한 덩어리+리터럴 \n 노출로 발송되던 결함)
-      '\n무대: ' + SC[0] + ' | 아크: ' + (arcA ? '원정 편' : '라이벌 편') + ' | 문법: ' + G.map(g => g[0]).join(', ') +
+      '\n무대: ' + SC[0] + ' | 아크: ' + (arcA ? '원정 편' : '만남 편') + ' | 문법: ' + G.map(g => g[0]).join(', ') +
       '\n주연: ' + (pick[0] ? nmB[pick[0]] + ' (' + (perM[pick[0]] || 0) + 'P)' : '-') + (rookie ? ' | 🌟 이달의 신인: ' + nmB[rookie.s] : '') +
       '\n조연: ' + pick.slice(1).map(s => nmB[s]).join(', ') +
       // [08-27] 「명승부 A vs B」를 걷었다 — 리그 폐지로 duel 이 없어졌다
@@ -2951,6 +2951,22 @@ function sheetSelfHeal_() {
       비운수++;
     });
     if (비운수) Logger.log('자기치유: 옛 리그 공지 ' + 비운수 + '건을 비웠다(08-27 리그 폐지)');
+  }
+
+  /* [08-27 · codex ①검수 df9ce0ed0dc4] 옛 raid_story 의 「리그」·「리그중계」 행도 같은 처방.
+   *   생산 함수를 지우면 «새 쓰기»만 멈춘다 — 이미 쌓인 행은 학생 스토리 소비 경로가 계속 읽는다.
+   *   C열(구분)이 정확히 그 둘인 행만 과녁으로 잡는다(레이드 행은 안 건드린다). */
+  const rsH = ss.getSheetByName('raid_story');
+  if (rsH && rsH.getLastRow() >= 2 && rsH.getLastColumn() >= 5) {
+    const rsV = rsH.getRange(2, 1, rsH.getLastRow() - 1, 5).getValues();
+    let 지운수 = 0;
+    rsV.forEach((r, i) => {
+      const 구분 = String(r[2] || '');
+      if (구분 !== '리그' && 구분 !== '리그중계') return;
+      rsH.getRange(i + 2, 4, 1, 2).setValues([['', '']]); // 제목·본문만 비운다(행은 남긴다 — 삭제는 비가역)
+      지운수++;
+    });
+    if (지운수) Logger.log('자기치유: 옛 리그 서사 ' + 지운수 + '건을 비웠다(08-27 리그 폐지)');
   }
 
   // ①+② 스토리북
