@@ -114,6 +114,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         <button data-act="surprise">놀람</button>
         <button data-act="sleep">잠들기</button>
         <button data-act="wake">기지개</button>
+        <button data-act="focus">집중</button>
+        <button data-act="sleepy">졸림</button>
+        <button data-act="curious">궁금함</button>
+        <button data-act="proud">뿌듯함</button>
+        <button data-act="relief">안도</button>
         <button class="wide" data-act="reset">평상으로</button>
         <button class="wide" id="dimBtn" data-act="dim">입체 끄기 (지금 4D)</button>
       </div>
@@ -136,7 +141,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <h3>이 시연이 증명하는 것</h3>
     <ul>
       <li><b>재질 문제가 통째로 사라집니다.</b> 3D로 옮기면 매번 「고무·왁스」로 읽혔는데, 사진을 그대로 쓰면 그 병이 원리적으로 안 생깁니다.</li>
-      <li><b>표정은 컷 교체입니다.</b> 눈감음·눈웃음이 이미 정본에 있어 그대로 씁니다 — 새로 굽지 않습니다.</li>
+      <li><b>표정은 컷 넷 × 눈 변형입니다.</b> 정본 컷(본체·눈감음·눈웃음·놀람)을 그대로 쓰고, 그 위에서 <b>눈 부위만</b> 국소로 늘이고 줄입니다 — 놀람 컷이 「자기 구슬을 1.35배로 키워 얹은」 합성이듯, 그 키우기를 격자가 실시간으로 합니다. <b>새로 그린 그림은 한 장도 없습니다.</b></li>
       <li><b>실시간입니다.</b> 미리 구운 영상이 아니라 그 자리에서 반응합니다. 앱에서 학생 행동에 즉시 응답할 수 있습니다.</li>
       <li><b>깊이는 지어낸 게 아닙니다.</b> 회전체라는 형태에서 역산한 값이라, 3D 모델을 새로 짓는 것과 달리 «틀릴 여지»가 없습니다. 오른쪽 버튼으로 <b>입체를 껐다 켜</b> 보시면 차이가 바로 보입니다.</li>
       <li><b>까몽·마린도 같은 방식</b>으로 붙습니다. 컷만 있으면 됩니다.</li>
@@ -147,7 +152,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 <script>
 (() => {
-  const IMGS = { 본체: "__IMG_BODY__", 눈감음: "__IMG_SHUT__", 눈웃음: "__IMG_SMILE__" };
+  const IMGS = { 본체: "__IMG_BODY__", 눈감음: "__IMG_SHUT__", 눈웃음: "__IMG_SMILE__", 놀람: "__IMG_WOW__" };
   const cv = document.getElementById('gl');
   const stageEl = document.getElementById('stage');
   const stateEl = document.getElementById('state');
@@ -184,6 +189,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   const 정점수 = (N + 1) * (N + 1);
   const posArr = new Float32Array(정점수 * 2);
   const zArr = new Float32Array(정점수);      // 깊이 — 사진 알파에서 역산
+  /* 🔑 눈 «자리»를 잡아 둔다 — 깊이재기가 눈을 이미 찾는데 z 에만 쓰고 버렸다.
+     그 좌표를 남기는 순간 표정이 열린다(Live2D 가 표정을 만드는 바로 그 자리). */
+  const 눈중심 = []; let 눈반경 = 0.10;
   const gxArr = new Float32Array(정점수);     // 깊이 기울기 x
   const gyArr = new Float32Array(정점수);     // 깊이 기울기 y
   const shArr = new Float32Array(정점수);     // 정점 빛
@@ -238,6 +246,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     const 중앙 = (arr) => { if (!arr.length) return 128; arr.sort((a, b) => a - b); return arr[arr.length >> 1]; };
     const 몸색 = [중앙(rs), 중앙(gs), 중앙(bs)];
     const 눈문턱 = 78;   // 몸 색과의 RGB 거리 — 넘으면 «눈» 후보
+    const 눈점 = [];   // 이 판에서 모은 눈 정점 (u, v)
 
     let k = 0;
     for (let j = 0; j <= N; j++) {
@@ -263,7 +272,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
              얼굴 높이(v 0.50~0.92)로 좁혀 지느러미·꼬리 같은 «몸의 다른 색»을 거른다. */
           if (v >= 0.50 && v <= 0.92) {
             const dr = d[o] - 몸색[0], dg = d[o + 1] - 몸색[1], db = d[o + 2] - 몸색[2];
-            if (Math.sqrt(dr * dr + dg * dg + db * db) > 눈문턱) z += 0.30;
+            if (Math.sqrt(dr * dr + dg * dg + db * db) > 눈문턱) { z += 0.30; 눈점.push([i / N, v]); }
           }
         }
         zArr[k++] = z;
@@ -276,6 +285,16 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       const zy = (zArr[Math.min(N, j + 1) * (N + 1) + i] - zArr[Math.max(0, j - 1) * (N + 1) + i]) * 0.5;
       gxArr[a] = zx; gyArr[a] = zy;
     }
+    /* 눈 중심을 «좌·우»로 갈라 낸다 — 한 덩어리로 잡으면 미간이 늘어나 얼굴이 뭉개진다.
+       가르는 축은 얼굴 중앙(u=0.5)이면 충분하다(몽글·까몽 둘 다 정면 대칭). */
+    눈중심.length = 0;
+    if (눈점.length >= 2) {
+      const 평균 = (a) => [a.reduce((t, q) => t + q[0], 0) / a.length, a.reduce((t, q) => t + q[1], 0) / a.length];
+      const 좌 = 눈점.filter((q) => q[0] < 0.5), 우 = 눈점.filter((q) => q[0] >= 0.5);
+      if (좌.length) 눈중심.push(평균(좌));
+      if (우.length) 눈중심.push(평균(우));
+      눈반경 = Math.max(0.07, Math.min(0.17, Math.sqrt(눈점.length / 눈중심.length) / N * 1.5));
+    }
     깊이있음 = true;
   }
 
@@ -284,7 +303,21 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     컷: '본체', 눈감은동안: 0,
     숨: 0, 기울임: 0, 목표기울임: 0, 눌림: 0, 되튐속도: 0, 살랑: 0, 갸웃: 0, 도리: 0,
     잠: 0, 커짐: 0, 마지막접촉: 0, 연타: [], 라벨: '평상',
+    표정: '평상', ex: 1, ey: 1, edy: 0,   // 눈 국소 변형 — 지금 값(목표로 매 프레임 다가간다)
     입체: 1, 시점x: 0, 시점y: 0, 목표시점x: 0, 목표시점y: 0, 자동시점: 1
+  };
+
+  /* ── 표정표 — 컷 × 눈 변형 × 자세. 그림은 한 장도 안 는다 (유호 확정 08-26)
+     ex·ey = 눈 부위 가로·세로 배율 · edy = 눈 위아래 밀기(정규화 좌표).
+     🔑 «세로만» 줄이면 반쯤 감긴 눈이 된다 — 졸림이 그 자리다(컷을 안 바꾸고도 는다).
+     🚫 홍조·색 덧칠은 없다 — 사진을 안 건드리는 것이 이 통로의 값이다(부끄가 자세로만 서는 까닭). */
+  const 표정표 = {
+    평상:   { ex: 1.00, ey: 1.00, edy: 0.000 },
+    집중:   { ex: 0.90, ey: 0.84, edy: 0.000 },
+    졸림:   { ex: 1.00, ey: 0.50, edy: -0.014 },
+    궁금함: { ex: 1.16, ey: 1.16, edy: 0.010 },
+    뿌듯함: { ex: 1.04, ey: 1.04, edy: 0.004 },
+    안도:   { ex: 0.96, ey: 0.90, edy: -0.006 },
   };
   const now = () => performance.now();
   S.마지막접촉 = now();
@@ -304,9 +337,14 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     sway:     () => { S.살랑 = S.살랑 > 0.05 ? 0 : 1; 라벨(S.살랑 ? '살랑' : '평상'); },
     blink:    () => { 깜빡(150); 라벨('깜빡'); },
     joy:      () => { S.컷 = '눈웃음'; S.눈감은동안 = 1500; S.눌림 = -0.22; S.되튐속도 = 0.055; 라벨('기쁨'); },
-    surprise: () => { S.커짐 = 0.16; S.눌림 = -0.14; 깜빡(90); 라벨('놀람'); },
+    surprise: () => { S.컷 = '놀람'; S.눈감은동안 = 1500; S.표정 = '궁금함'; S.커짐 = 0.16; S.눌림 = -0.14; 깜빡(90); 라벨('놀람'); },
     sleep:    () => { S.잠 = 1; S.컷 = '눈감음'; S.눈감은동안 = 1e9; 라벨('잠'); },
     wake:     () => 깨움(),
+    focus:    () => { S.표정 = '집중';   S.컷 = '본체'; S.눈감은동안 = 0; 라벨('집중'); },
+    sleepy:   () => { S.표정 = '졸림';   S.컷 = '본체'; S.눈감은동안 = 0; S.눌림 = 0.10; 라벨('졸림'); },
+    curious:  () => { S.표정 = '궁금함'; S.컷 = '본체'; S.눈감은동안 = 0; S.갸웃 = 0.15; 라벨('궁금함'); },
+    proud:    () => { S.표정 = '뿌듯함'; S.컷 = '눈웃음'; S.눈감은동안 = 2600; S.눌림 = -0.20; S.되튐속도 = 0.04; 라벨('뿌듯함'); },
+    relief:   () => { S.표정 = '안도';   S.컷 = '눈웃음'; S.눈감은동안 = 2200; S.눌림 = 0.12; S.되튐속도 = 0.03; 라벨('안도'); },
     reset:    () => { S.잠 = 0; S.살랑 = 0; S.갸웃 = 0; S.도리 = 0; S.눌림 = 0; S.되튐속도 = 0;
                       S.목표기울임 = 0; S.커짐 = 0; S.컷 = '본체'; S.눈감은동안 = 0; 라벨('평상'); },
     dim:      () => { S.입체 = S.입체 ? 0 : 1;
@@ -437,6 +475,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     const 시차 = 0.055 * S.입체;           // 패럴랙스 세기 — 넘기면 사진이 «고무»로 읽힌다
     const 빛세기 = 0.42 * S.입체;          // 정지(시점 0)면 곱이 1 = 사진 그대로
 
+    /* 표정은 «천천히» 바뀐다 — 한 프레임에 갈아 끼우면 인형이 아니라 슬라이드가 된다. */
+    const 목 = 표정표[S.표정] || 표정표.평상;
+    S.ex += (목.ex - S.ex) * 0.16;
+    S.ey += (목.ey - S.ey) * 0.16;
+    S.edy += (목.edy - S.edy) * 0.16;
     let k = 0, s = 0;
     for (let j = 0; j <= N; j++) {
       const v = j / N;                     // 0 = 바닥, 1 = 머리
@@ -444,6 +487,23 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       for (let i = 0; i <= N; i++) {
         const u = i / N;
         let x = (u - 0.5) * 2, y = (v - 0.5) * 2;
+
+        /* ── 표정 — 눈 «부위»만 국소로 늘이고 줄인다 (유호 08-26 「표정이 다양해야해」)
+           🔑 새 그림을 한 장도 안 그린다. 놀람 컷이 「자기 구슬을 1.35배로 키워 얹은」 합성이듯
+              (누끼/README 08-19), 그 키우기를 여기서는 «격자»가 실시간으로 한다.
+              그래서 하이라이트·펠트 올이 전부 원본 픽셀이고 재질이 안 갈린다.
+           ⚠ 급하게 꺾으면 사진이 찢어져 보인다 — 중심에서 멀어질수록 가우시안으로 감쇠. */
+        if (눈중심.length) {
+          for (let e = 0; e < 눈중심.length; e++) {
+            const du = u - 눈중심[e][0], dv = v - 눈중심[e][1];
+            const r2 = (du * du + dv * dv) / (눈반경 * 눈반경);
+            if (r2 > 6) continue;
+            const w = Math.exp(-r2 * 0.8);
+            x += du * 2 * (S.ex - 1) * w;
+            y += dv * 2 * (S.ey - 1) * w;
+            y += S.edy * w;
+          }
+        }
 
         // 숨쉬기 · 눌림 — 세로는 줄고 가로는 늘어난다(부피 보존의 흉내 = 젤리)
         const 세로 = (1 + 숨) * (1 - S.눌림 * 0.30);
