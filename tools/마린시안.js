@@ -64,8 +64,9 @@ function main() {
   const 미니회색 = 집기((f) => /^(primey|hell)_미니_프라이머_z\d+\.png$/.test(f));
   const 세기들 = 집기((f) => /^primey_미니_세기_\d+\.png$/.test(f));
   const 정면들 = 집기((f) => /^(primey|hell)_미니_정면\.png$/.test(f));
+  const 해석들 = 집기((f) => /^primey_해석_(몽글|까몽)\.png$/.test(f));
   const 전부 = [...턴, ...회색, ...(얼굴 ? [얼굴] : []), ...(헬 ? [헬] : []),
-    ...미니P, ...미니H, ...미니회색, ...세기들, ...정면들];
+    ...미니P, ...미니H, ...미니회색, ...세기들, ...정면들, ...해석들];
   if (턴.length < 4) { console.error(`🔴 턴테이블 렌더가 ${턴.length}장뿐이다 — 굽기부터.`); process.exit(1); }
 
   console.log(`렌더 ${전부.length}장 인라인 중…`);
@@ -108,11 +109,12 @@ function main() {
   <ol>
     <li><a href="#s0"><span class="n">01</span> 미니어처 — 둘 다</a></li>
     <li><a href="#s0b"><span class="n">02</span> 얼마나 앙증맞게</a></li>
-    <li><a href="#s1"><span class="n">03</span> 원본 비례 여덟 각</a></li>
-    <li><a href="#s2"><span class="n">04</span> 색 갈래 둘</a></li>
-    <li><a href="#s3"><span class="n">05</span> 얼굴</a></li>
-    <li><a href="#s4"><span class="n">06</span> 서전트 둘</a></li>
-    <li><a href="#s5"><span class="n">07</span> 정할 것 넷</a></li>
+    <li><a href="#s0c"><span class="n">03</span> 몽글·까몽 해석</a></li>
+    <li><a href="#s1"><span class="n">04</span> 원본 비례 여덟 각</a></li>
+    <li><a href="#s2"><span class="n">05</span> 색 갈래 둘</a></li>
+    <li><a href="#s3"><span class="n">06</span> 얼굴</a></li>
+    <li><a href="#s4"><span class="n">07</span> 서전트 둘</a></li>
+    <li><a href="#s5"><span class="n">08</span> 정할 것 넷</a></li>
   </ol>
 </nav>
 
@@ -162,13 +164,22 @@ ${세기들.length ? `<h2 id="s0b" class="듦"><span class="번호">02</span><sp
 ⚠ 세게 갈수록 팔이 몸에 붙어 «곰인형» 쪽으로 간다(그 선을 넘기 직전이 1.00 이다).</p>
 <div class="마린줄">${세기들.map((r) => 칸(r, '세기 ' + 세기값(r))).join('')}</div>` : ''}
 
-<h2 id="s1" class="듦"><span class="번호">03</span><span>원본 비례 여덟 각 — 이 피규어의 «얼굴»은 어디인가</span></h2>
+${해석들.length ? `<h2 id="s0c" class="듦"><span class="번호">03</span><span>몽글·까몽 해석 — 재질이 세계를 바꾼다</span></h2>
+<p class="듦">유호님 지시 그대로 «몽글·까몽의 재질»로 다시 읽었다 — 쇠를 걷고 <b>양모 펠트</b>를 입혔다
+(결은 약하게 · 속살은 얕게 · 벨벳 시인). 조형 밀도는 그대로 산다. <b>얼굴과 위엄은 눈이 진다</b>:
+통짜 메시의 바이저를 기하로 갈라 — <b>몽글판</b>은 코랄 펠트에 <b>버터 등불 눈</b>(따뜻한 지휘관),
+<b>까몽판</b>은 먹 펠트에 <b>코랄 발광 눈</b>(밤의 감시자). 무대도 명도로 갈랐다(밝은 몸 = 밤천 · 어두운 몸 = 다린천).</p>
+<p class="듦">⚠장식 후보 중 <b>목도리는 죽였다</b> — 마린은 목이 없어 어깨판까지 감기며 튜브가 됐다(1차 실측).
+남긴 해석은 재질·눈·무대 셋이다. 배지·오브 같은 «더하는» 장식은 원하시면 그 자리에서 실험해 붙인다.</p>
+<div class="짝">${해석들.map((r) => 칸(r, r.이름.includes('몽글') ? '몽글 해석 · 코랄 펠트 + 버터 눈' : '까몽 해석 · 먹 펠트 + 코랄 눈')).join('')}</div>` : ''}
+
+<h2 id="s1" class="듦"><span class="번호">04</span><span>원본 비례 여덟 각 — 이 피규어의 «얼굴»은 어디인가</span></h2>
 <p class="듦">같은 물건·같은 거리·같은 눈높이로 <b>제자리에서 돌렸다</b>. 미니어처는 각마다 다른 물건처럼
 보인다 — 정면(0°)은 뻗은 팔이 앞을 가리고, 옆(90°)은 총과 등짐이 실루엣을 만든다.
 <b>대외물에 쓸 한 각</b>을 여기서 고른다.</p>
 <div class="마린줄">${턴.map((r) => 칸(r)).join('')}</div>
 
-<h2 id="s2" class="듦"><span class="번호">04</span><span>색 갈래 둘 — 우리 색과 프라이머 회색</span></h2>
+<h2 id="s2" class="듦"><span class="번호">05</span><span>색 갈래 둘 — 우리 색과 프라이머 회색</span></h2>
 <p class="듦"><b>우리 색</b>(Lapis Deep · 금속 0.18)은 브랜드를 입힌 판이고,
 <b>프라이머 회색</b>(Stone · 금속 0)은 도색 전 «진짜 미니어처»로 읽히는 판이다.
 08-27 실측 — <b>광택 금속은 장난감이 된다.</b> 금속기를 죽인 회색이 「50만원짜리」 쪽에 가깝다.</p>
@@ -177,18 +188,18 @@ ${세기들.length ? `<h2 id="s0b" class="듦"><span class="번호">02</span><sp
   return [짝 && 칸(짝, `우리 색 · ${각(r)}°`), 칸(r, `프라이머 · ${각(r)}°`)].filter(Boolean).join('');
 }).join('')}</div>
 
-${얼굴 ? `<h2 id="s3" class="듦"><span class="번호">05</span><span>얼굴 — 인상을 지는 둘</span></h2>
+${얼굴 ? `<h2 id="s3" class="듦"><span class="번호">06</span><span>얼굴 — 인상을 지는 둘</span></h2>
 <p class="듦">울트라맨과 마린을 가르는 것은 <b>면의 개수</b>다(08-27 실측). 인상을 지는 둘은
 렌즈 위 <b>차양</b>(그 그림자가 「노려봄」)과 앞으로 나온 <b>턱 그릴</b>.
 들여온 조형은 그 둘을 이미 갖고 있다 — 코드로는 하루를 태우고도 못 냈던 자리다.</p>
 <div class="마린줄">${칸(얼굴, '얼굴 클로즈업')}</div>` : ''}
 
-${헬 ? `<h2 id="s4" class="듦"><span class="번호">06</span><span>서전트 둘 — 어느 몸으로 갈까</span></h2>
+${헬 ? `<h2 id="s4" class="듦"><span class="번호">07</span><span>서전트 둘 — 어느 몸으로 갈까</span></h2>
 <p class="듦">받아 둔 후보는 둘이다. <b>오프라이미</b>(26.7k 내려받음 · ★4.9)는 흉갑 독수리·해골·순결 인장이
 유호님 참조 사진과 거의 같고, <b>오헬</b>(★5.0)은 서 있는 자세지만 헬블래스터가 커서 실루엣이 총으로 쏠린다.</p>
 <div class="짝">${칸(표지, '오프라이미 · 45°')}${칸(헬, '오헬 · 45°')}</div>` : ''}
 
-<h2 id="s5" class="듦"><span class="번호">07</span><span>정할 것 넷</span></h2>
+<h2 id="s5" class="듦"><span class="번호">08</span><span>정할 것 넷</span></h2>
 <blockquote class="유리 듦"><b>①어느 비례</b> — 미니어처(앙증맞음) / 원본(사실적) / 둘 다 ·
 <b>②어느 몸</b> — 오프라이미 / 오헬 / 둘 다 ·
 <b>③어느 색</b> — 우리 색(Lapis Deep) / 프라이머 회색 / 둘 다(용도를 갈라서) ·
