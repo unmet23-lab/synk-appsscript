@@ -618,6 +618,8 @@
             <td>음성을 글로 옮기기</td><td><strong>녹음 파일 원본</strong></td></tr>
         <tr><td><strong>Glide</strong></td>
             <td>학생·보호자용 앱 화면</td><td>학습 기록, 이름, 반</td></tr>
+        <tr><td><strong>Supabase</strong><br>(Postgres·Auth·Edge Functions)</td>
+            <td>SYNK-talk 앱의 데이터 원본·로그인</td><td>학생 식별번호, 이름, 반, 학습·발화 기록</td></tr>
         <tr><td><strong>Anthropic</strong><br>(Claude AI)</td>
             <td>상담 답변·과제 첨삭·학습 피드백 생성</td>
             <td>보내신 <strong>메시지 내용</strong>, 과제·연습 문장</td></tr>
@@ -778,7 +780,7 @@
     <h3><span class="번호">4</span> Processors</h3>
     <p>Google (Workspace, Sheets, Drive, Forms, Gmail, Apps Script) for storage, form collection
       and email; <strong>Google Cloud Speech-to-Text for transcription — the audio file itself is
-      sent</strong>; Glide for the student/guardian app; <strong>Anthropic (Claude AI) to generate
+      sent</strong>; Glide for the student/guardian app; <strong>Supabase (Postgres, Auth, Edge Functions) as the data store and login for the SYNK-talk app</strong>; <strong>Anthropic (Claude AI) to generate
       replies, homework feedback and learning feedback — message and practice text is
       sent</strong>; and Meta (Facebook/Messenger) as the consultation channel.
       <strong>These providers' servers are located outside Mongolia (primarily in the United
