@@ -1,0 +1,20 @@
+{
+  "name": "synk-video",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SYNK 영상 통로 (Remotion). 색·폰트의 정본은 docs/디자인_토큰.json 하나다 — 여기에 hex 를 다시 적지 않는다.",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.517",
+    "@remotion/fonts": "^4.0.517",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "remotion": "^4.0.517",
+    "typescript": "^7.0.2"
+  }
+}
