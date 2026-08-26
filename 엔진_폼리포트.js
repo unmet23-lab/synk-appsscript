@@ -2016,17 +2016,7 @@ function monsterImgMap_(ss) { // [함께한날 막4] 이름은 그대로(소비�
   return map;
 }
 
-// [v9.22] contents(type=monster) 단계명 → 등장순서 인덱스 (진화 판정·업적 티어 단일 소스)
-function monsterOrder_(ss) {
-  const ct = ss.getSheetByName('contents'), order = {};
-  if (ct && ct.getLastRow() >= 2) {
-    let i = 0;
-    ct.getRange(2, 1, ct.getLastRow() - 1, 6).getValues().forEach(r => {
-      if (r[1] === 'monster') order[r[2]] = i++;
-    });
-  }
-  return order;
-}
+// [함께한날 막7] 구 monsterOrder_(단계명→순서) 소각 — 마지막 소비자(진화 업적 티어)가 «맞힌 말» 문턱으로 갈렸다.
 
 // [v9.22] point_logs + point_logs_archive 병합 읽기 (cols 열까지) — 아카이브 병합 규칙 단일 소스
 function readPointLogs_(ss, cols) {
@@ -2547,7 +2537,20 @@ function buildMonthlyStorybook_() {
     pf.getRange(2, 1, pf.getLastRow() - 1, wide).getValues().forEach(r => {
       if (!r[0] || r[3] !== 'student') return;
       stuCnt++; nmB[r[0]] = r[1] || r[0]; clsB[r[0]] = String(r[4] || '');
-      if (wide >= 54 && String(r[53] || '').indexOf(ym) === 0) evolvedMap[r[0]] = r[18] || '캐릭터';
+      // [함께한날 막7] BB54 = 최근장면일 · S19 = 현재장면(숫자) — 그 달 새 장면이 열린 크루를 캐스팅 재료로
+      if (wide >= 54 && String(r[53] || '').indexOf(ym) === 0) evolvedMap[r[0]] = '장면 ' + (Number(r[18]) || 1);
+    });
+  }
+  // [함께한날 막7] 주연 축 = 「지난달 «처음» 넘은 문형 수」 상위(설계 §4-6) — 월간 P 정렬(ranked)을 주연
+  //   선정에서 뺐다. 이것이 「조용한 학생도 주인공」의 기계 장치다: 포인트가 적어도 제 손으로 맞힌 달이면 주연이 된다.
+  const newMastered = {};
+  {
+    const mlS = ss.getSheetByName('mastery_log');
+    if (mlS && mlS.getLastRow() >= 2) mlS.getRange(2, 1, mlS.getLastRow() - 1, 6).getValues().forEach(r => {
+      const sidS = String(r[0] || '').trim(), srcS = String(r[5] || '');
+      if (!sidS || String(r[2]) !== '도달') return;
+      if (!(srcS === 'AI첨삭' || srcS === 'AI음성' || srcS === 'AI대화')) return;
+      if (r[4] && dstr(r[4], tz).indexOf(ym) === 0) newMastered[sidS] = (newMastered[sidS] || 0) + 1;
     });
   }
   const perM = {}; let raidWins = 0;
@@ -2567,7 +2570,8 @@ function buildMonthlyStorybook_() {
     if (['🌟 하루도 안 빠진 달', '🤝 레이드 개근', '🔥 불꽃 출석러', '⏰ 지각 제로']
         .some(n => String(r[2]).indexOf(n) > -1)) crownSid[r[1]] = String(r[2]);
   });
-  const ranked = Object.keys(perM).filter(s => nmB[s]).sort((a, b) => perM[b] - perM[a]);
+  const ranked = Object.keys(nmB).filter(s => (newMastered[s] || 0) > 0 || (perM[s] || 0) > 0)
+    .sort((a, b) => ((newMastered[b] || 0) - (newMastered[a] || 0)) || ((perM[b] || 0) - (perM[a] || 0)) || (nmB[a] < nmB[b] ? -1 : 1)); // [함께한날 막7] 1축 = 새로 맞힌 문형 수 · 동점만 월간 P · 그다음 이름순
   const stH = ensureSheet(ss, 'app_state', ['key','value']);
   const stHData = stH.getLastRow() < 2 ? [] : stH.getRange(2, 1, stH.getLastRow() - 1, 2).getValues();
   let prevLead = '';
@@ -2722,8 +2726,8 @@ function buildMonthlyStorybook_() {
   // ═══ 전 ═══
   push(6, '제6화 — 대군주', '하늘이 갈라졌다. "' + (wb.open || '...') + '" ' + wN + '. 매달의 보스들을 뒤에서 부리던 존재가 처음으로 모습을 드러냈다. 한 반의 힘으로 어찌할 상대가 아니라는 것은, 그 그림자의 크기만으로 알 수 있었다.', gB(2));
   push(7, '제7화 — 집결', '멀리서 발소리가 들려왔다. ' + rvA + '이(가) 오고 있었다. 평일반이, 주말반이, ' + stuCnt + '명의 크루 전원이 한 전장에 모이고 있었다. ' + (evoActor
-    ? '그 한가운데서 빛이 터졌다. ' + evoActor.n + '의 캐릭터가 ' + evoActor.evo + '(으)로 진화하는 순간이었다. 한 달의 포인트가 가장 필요한 순간에 형태를 바꾼 것이다.'
-    : '크루들의 캐릭터가 일제히 낮게 울었다. 대군주의 그림자가 처음으로 흔들렸다.') + cameo() + cameo(), eB(3));
+    ? '그 한가운데서 빛이 터졌다. ' + evoActor.n + '의 가이드가 한 걸음 성큼 다가온 순간이었다 — ' + evoActor.evo + '까지 함께 걸어온 날들이 가장 필요한 순간에 형태를 갖춘 것이다.'
+    : '크루들의 가이드가 일제히 몸을 낮췄다. 대군주의 그림자가 처음으로 흔들렸다.') + cameo() + cameo(), eB(3));
   push(8, '제8화 — 총공세', (C1 ? C1.n + '이(가) 앞으로 나섰다. ' + 칭호말of_(C1.t) + '가 첫 문장을 열었다.' : M.n + '이(가) 첫 문장을 열었다.') + ' 다음 크루가 이어받고, 또 다음 크루가 이어받았다. ' + stuCnt + '명의 한국어가 하나의 사슬이 되어 대군주를 감았다. ' + (world ? '이번 달 전교의 기록, ' + world.dmg + '. 그 전부가 지금 한 점을 향하고 있었다.' : '한 달의 기록 전부가 한 점을 향하고 있었다.') + cameo() + cameo(), gB(3));
 
   // ═══ 결 ═══

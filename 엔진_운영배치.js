@@ -3748,7 +3748,7 @@ function checkAchievements() {
   const pf = ss.getSheetByName('profiles');
   const pfLast = pf.getLastRow();
   if (pfLast < 2) return;
-  const pfData = pf.getRange(2, 1, pfLast - 1, 28).getValues();
+  const pfData = pf.getRange(2, 1, pfLast - 1, Math.min(81, pf.getMaxColumns())).getValues(); // [함께한날 막7] CC81(맞힌말수)까지 — 맞힌 말 업적 셋의 재료
 
   const ach = ensureSheet(ss, 'achievements', ['student_id', '업적', '등급', '달성일']);
   const has = new Set();
@@ -3808,8 +3808,6 @@ function checkAchievements() {
     if (hidRows.length) ach.getRange(ach.getLastRow() + 1, 1, hidRows.length, 4).setValues(hidRows);
   }
 
-  const order = monsterOrder_(ss); // [v9.22] 헬퍼로 단일화 (checkEvolution과 공유)
-
   const snap = ss.getSheetByName('monthly_snapshot');
   const bySid = {};
   if (snap && snap.getLastRow() >= 2) {
@@ -3843,18 +3841,18 @@ function checkAchievements() {
     if (!sid || r[3] !== 'student') return;
     const best = Math.max(Number(r[20]) || 0, Number(r[27]) || 0);
     const attended = r[22];
-    const so = order[String(r[18] || '')] !== undefined ? order[String(r[18])] : -1;
 
     if (attended) award(sid, '첫 발걸음', '🥉');
     if (best >= 30) award(sid, '한 달의 약속', '🥈');
     if (best >= 60) award(sid, '두 달의 전설', '🥇');
     if (best >= 100) award(sid, '100일의 기적', '🌟'); // [08-27] 👑 → 🌟
-    if (so >= 1) award(sid, '알 깨고 나왔다!', '🥉');
-    if (so >= 2) award(sid, '폭풍 성장기', '🥈');
-    if (so >= 3) award(sid, '회로의 완성', '🥈');       // [v5.1] 서킷 도달
-    if (so >= 4) award(sid, '거인의 증표', '🥇');
-    if (so >= 5) award(sid, '몰입의 경지', '🥇');       // [v5.1] 플로우 도달
-    if (so >= 6) award(sid, 'SYNK 마스터의 탄생', '🌟'); // [08-27] 👑 → 🌟
+    /* [함께한날 막7] 구 진화 업적 6종(알 깨고 나왔다!·폭풍 성장기·회로의 완성·거인의 증표·몰입의 경지·
+     * SYNK 마스터의 탄생)은 단계 축과 함께 은퇴 — 이미 준 행은 achievements 에 남는다(막0 실측: 상위 4종 수여 0 ·
+     * 「알 깨고」 4건·「첫 발걸음」 11건뿐). 빈 자리 = «내가 맞힌 말» 누계 문턱 셋(설계 §4-6 업적 행). */
+    const mastA = Number(r[80]) || 0; // CC81 맞힌말수(AI 출처 도달 누계)
+    if (mastA >= 10) award(sid, '내 손으로 열 마디', '🥉');
+    if (mastA >= 30) award(sid, '내 손으로 서른 마디', '🥈');
+    if (mastA >= 60) award(sid, '내 손으로 예순 마디', '🥇');
 
     const hist = (bySid[sid] || []);
     /* [08-27 유호 지시] 🚫 «순위» 업적 둘을 걷었다 — 명예의전당(전교 3위 안)·TOP10 단골(전교 10위 안 3개월).
