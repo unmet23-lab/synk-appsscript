@@ -2937,8 +2937,12 @@ function sheetSelfHeal_() {
   if (ntH && ntH.getLastRow() >= 2) {
     const lcH = Math.max(ntH.getLastColumn(), 3);
     const hdH = ntH.getRange(1, 1, 1, lcH).getValues()[0].map(h => String(h).trim().toLowerCase());
-    const iTH = Math.max(hdH.indexOf('title'), hdH.indexOf('title_ko'), hdH.indexOf('제목'), 0);
-    const iBH = Math.max(hdH.indexOf('body'), hdH.indexOf('body_ko'), hdH.indexOf('content'), hdH.indexOf('본문'), 1);
+    /* 🔴 [08-27] 열 찾기는 addNotice 와 «같은 규약»이어야 한다 — 거긴 first-match(find 가 첫 일치를 낸다)다.
+     *   Math.max 를 쓰면 title 과 title_ko 가 둘 다 있는 시트에서 «뒤쪽»을 골라, 쓰는 쪽과 비우는 쪽이
+     *   서로 다른 열을 잡는다 — 그러면 옛 공지가 안 지워지고 멀쩡한 열이 비워진다. */
+    const 첫열_ = (cands, fb) => { for (let i = 0; i < hdH.length; i++) if (cands.indexOf(hdH[i]) > -1) return i; return fb; };
+    const iTH = 첫열_(['title', 'title_ko', '제목'], 0);
+    const iBH = 첫열_(['body', 'body_ko', 'content', '내용', '본문'], 1);
     const 옛리그제목_ = ['🏆 주간 리그 결과', '🎙️ 리그 중계석', '🏆 이번 주 리듬왕', '리그 결과!', '주간 반 활동'];
     const ntV = ntH.getRange(2, 1, ntH.getLastRow() - 1, lcH).getValues();
     let 비운수 = 0;
