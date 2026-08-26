@@ -1374,8 +1374,11 @@ function leagueSettle_() {
     if (winner && memberCls[winner]) {
       memberCls[winner].forEach(sid => winRows.push([sid, PT.리그, '리그승리', 'SYSTEM']));
       noticeRows.push([
-        '주간 반 활동: ' + a + ' × ' + b, // [08-27] 🏆·챔피언 걷음
-        '이번 주 ' + winner + ' 이(가) 1인 평균 ' + hi + '. ' + winner + ' 크루 전원 +' + PT.리그 + 'P. 두 반이 쌓은 것은 각자에게 그대로 남았습니다 🌱',
+        /* [08-27 · codex ①검수 caafe42048a9] 🏆·챔피언은 걷었는데 «두 반을 나란히 놓고 평균을 견주는 것»은
+         *   그대로였다 — 낱말만 갈고 구조를 두고 온 자리다. 반 이름 둘·평균·승패를 전부 걷는다.
+         *   포인트는 그대로 나간다(그건 «한 일»이지 «이긴 것»이 아니다). */
+        '이번 주 우리 반이 쌓은 것',
+        winner + ' 크루 전원 +' + PT.리그 + 'P. 이번 주에 쌓은 것은 각자에게 그대로 남았습니다 🌱',
         new Date()]);
       noticed++;
     }

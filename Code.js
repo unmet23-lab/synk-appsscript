@@ -3849,7 +3849,7 @@ function writeSharedCols_(ss, pf, st) {
       const mnQRaw9 = (!pq && biW9 && begQ9 && quizRaw === begQ9 && typeof MN_CONTENTS_G !== 'undefined' && (MN_CONTENTS_G[kv['오늘의퀴즈ID_초급'] || ''] || '')) || '';
       const mnQ9 = mnQRaw9 ? splitQuiz(mnQRaw9)[0] : ''; // "문제|정답" 미러 형식 — 문제부만(정답 평문 노출 금지는 몽골어에도 동일)
       return [mnTy9 ? hwTy9 + ' · ' + mnTy9 : hwTy9, kv[pre + '숙제'] || '', mnTip9 ? hwTip9 + '\n' + mnTip9 : hwTip9,
-        pq ? pq.q : q[0], pq ? pq.a : q[1], kv['오늘의팁'] || '', kv['지난달의전당'] || '', kv['이달의시즌'] || '',
+        pq ? pq.q : q[0], pq ? pq.a : q[1], kv['오늘의팁'] || '', '', kv['이달의시즌'] || '', // [08-27] 「지난달의전당」 소비 중단 — 순위표를 걷을 때 이 자리를 두고 갔다(codex ①검수가 잡음). setter 만 끄면 시트에 «이미 굳은» 값이 영영 배너로 나간다
         kv['이달의보스HTML'] || '', kv['여행지도HTML'] || '',
         '', '', '', '', '', '', '',
         // [v9.138] 숙제 링크에 오늘 게시된 숙제ID를 함께 프리필 — 구 링크는 학생ID만 박혀 210문항과 끊겨 있었다.
