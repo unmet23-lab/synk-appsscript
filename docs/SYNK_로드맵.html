@@ -3,145 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>판정 대기 한 자리 — 2026-08-26</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>SYNK 로드맵 — 세 이름의 역할과 시간표</title>
+<!--
+  ⚠ 조립 규약: 이 파일의 CSS 뼈대는 통로(node tools/lib/loom.js --css 문서)에서 왔다.
+  내용 정본 = docs/_ops/결정.md · docs/SHIFT/설계_v1.md · docs/제품방향.md · docs/SYNK_철학.md ·
+  docs/시스템_대장.md · docs/엔진/SYNK_엔진_지도.html · docs/정본/SYNK 보안/SYNK_사업계획서.txt —
+  이 지면은 그 종합 «뷰»다. 어긋나면 정본이 이긴다.
+  갱신 규약: 유호님 확정이 바뀌면 그 세션이 이 지면의 해당 칸을 같이 갱신한다(트랙 §9-SHIFT 등재).
+-->
 <style>
-:root{
-  --paper:#FBF7F0; --ink:#2B2320; --stitch:#F0E3C8;
-  --oat:#EDE7DC; --stone:#C7BFB2; --ash:#8D857A; --deepwool:#575046;
-  --coral:#F96859; --coral3:#AE322A; --coralsoft:#FBB7A3; --wash:#FEF0E9;
-  --lapis:#3D6BC9; --lapisdeep:#24448C; --lapissoft:#C5D6F5;
-  --meadow:#7DB45A; --meadowdeep:#3F6B2E; --meadowsoft:#D3E8BE;
-  --butter:#F5C445; --butterdeep:#7E5A10; --buttersoft:#FFEBB0;
-  --pop:#E05C97; --popdeep:#99295D; --popsoft:#F8C7DE;
-  --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
-  --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
-}
-*{box-sizing:border-box}
-body{
-  margin:0; background:var(--paper); color:var(--ink);
-  font-family:var(--font); font-weight:500; line-height:1.72;
-  letter-spacing:-0.011em; -webkit-font-smoothing:antialiased;
-}
-.wrap{max-width:1020px; margin:0 auto; padding:56px 28px 120px}
-header{border-bottom:2px solid var(--stitch); padding-bottom:28px; margin-bottom:40px}
-.kicker{font-family:var(--mono); font-size:12px; letter-spacing:.10em; color:var(--ash); text-transform:uppercase}
-h1{font-size:40px; font-weight:800; letter-spacing:-0.03em; line-height:1.18; margin:12px 0 14px}
-.sub{font-size:16px; color:var(--deepwool); max-width:66ch}
-h2{font-size:25px; font-weight:800; letter-spacing:-0.025em; margin:64px 0 6px; line-height:1.3}
-/* 절 번호는 Loom 부품(.번호)이 진다 — 손 kicker(.num)는 08-27 에 걷었다(겹번호 방지). */
-h3{font-size:18px; font-weight:800; letter-spacing:-0.02em; margin:34px 0 8px}
-p{margin:12px 0; max-width:72ch}
-.lead{font-size:18px; max-width:68ch}
-strong{font-weight:800}
-em{font-style:normal; background:var(--wash); padding:1px 5px; border-radius:4px; font-weight:800; color:var(--coral3)}
-a{color:var(--lapisdeep); text-decoration:none; border-bottom:1.5px solid var(--lapissoft)}
-a:hover{border-bottom-color:var(--lapis)}
-code{font-family:var(--mono); font-size:.88em; background:var(--oat); padding:1.5px 5px; border-radius:4px}
-.hr{height:1px; background:var(--stitch); margin:56px 0; border:0}
-
-.verdict{
-  background:#fff; border:2px solid var(--stitch); border-radius:18px;
-  padding:30px 32px; margin:34px 0 8px;
-  box-shadow:0 1px 0 var(--stitch), 0 14px 34px -26px rgba(43,35,32,.42);
-}
-.verdict .tag{
-  display:inline-block; font-family:var(--mono); font-size:11px; letter-spacing:.10em;
-  background:var(--coral); color:var(--paper); padding:4px 10px; border-radius:99px; margin-bottom:14px;
-}
-.verdict .big{font-size:26px; font-weight:800; letter-spacing:-0.03em; line-height:1.42; margin:0}
-.verdict .note{font-size:14.5px; color:var(--deepwool); margin:16px 0 0}
-
-/* 카운트 띠 */
-.counts{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:26px 0 0}
-.count{background:#fff; border:2px solid var(--stitch); border-radius:14px; padding:16px 18px}
-.count .n{font-family:var(--mono); font-size:30px; font-weight:500; letter-spacing:-.03em; line-height:1}
-.count .l{font-size:12.5px; color:var(--ash); margin-top:7px; line-height:1.45}
-.count.now{border-color:var(--coralsoft); background:var(--wash)}
-.count.now .n{color:var(--coral3)}
-
-/* 이번 주 카드 */
-.week{background:#fff; border:2px solid var(--coralsoft); border-radius:18px; padding:8px 0 4px; margin:26px 0}
-.q{display:grid; grid-template-columns:44px 1fr 210px; gap:18px; padding:20px 26px; border-bottom:1px solid var(--stitch); align-items:start}
-.q:last-child{border-bottom:0}
-.q .id{font-family:var(--mono); font-size:14px; font-weight:500; color:var(--coral3); background:var(--wash); border-radius:9px; text-align:center; padding:6px 0; line-height:1.3}
-.q .body .t{font-size:16.5px; font-weight:800; letter-spacing:-.02em; line-height:1.45}
-.q .body .w{font-size:13.5px; color:var(--deepwool); margin-top:6px; line-height:1.6}
-.q .body .src{font-size:12px; color:var(--ash); font-family:var(--mono); margin-top:8px}
-.q .opts{font-size:13px; color:var(--deepwool); line-height:1.62}
-.q .opts b{display:block; font-family:var(--mono); font-size:11px; letter-spacing:.08em; color:var(--ash); font-weight:500; margin-bottom:5px}
-.opt{display:block; padding:3px 0 3px 15px; position:relative}
-.opt::before{content:''; position:absolute; left:2px; top:12px; width:6px; height:6px; border-radius:50%; background:var(--stone)}
-.opt.rec::before{background:var(--meadow)}
-.opt.rec{font-weight:800; color:var(--meadowdeep)}
-
-/* 열쇠 */
-.keys{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:30px 0 8px}
-.key{background:#fff; border:2px solid var(--stitch); border-radius:16px; padding:22px 20px; display:flex; flex-direction:column}
-.key .h{font-family:var(--mono); font-size:11px; letter-spacing:.09em; color:var(--ash); margin-bottom:7px}
-.key .t{font-size:19px; font-weight:800; letter-spacing:-.02em; line-height:1.34}
-.key .u{font-size:13px; color:var(--deepwool); margin:11px 0 0; line-height:1.6; flex:1}
-.key .unlocks{margin-top:14px; padding-top:13px; border-top:1px solid var(--stitch); font-size:12.5px; line-height:1.62; color:var(--deepwool)}
-.key .unlocks b{font-family:var(--mono); font-size:11px; letter-spacing:.07em; color:var(--ash); font-weight:500; display:block; margin-bottom:5px}
-.key.k1{border-color:var(--coralsoft)} .key.k1 .t{color:var(--coral3)}
-.key.k2{border-color:var(--lapissoft)} .key.k2 .t{color:var(--lapisdeep)}
-.key.k3{border-color:var(--meadowsoft)} .key.k3 .t{color:var(--meadowdeep)}
-
-/* 표 */
-table{width:100%; border-collapse:collapse; margin:22px 0; font-size:13.5px}
-th{text-align:left; font-family:var(--mono); font-size:11px; letter-spacing:.08em; color:var(--ash);
-   font-weight:500; border-bottom:2px solid var(--stitch); padding:9px 10px; text-transform:uppercase}
-td{border-bottom:1px solid var(--stitch); padding:11px 10px; vertical-align:top; line-height:1.6}
-tr:hover td{background:#fff}
-td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--deepwool)}
-.pill{display:inline-block; font-family:var(--mono); font-size:10.5px; letter-spacing:.06em;
-      padding:2.5px 8px; border-radius:99px; border:1.5px solid var(--stitch); color:var(--deepwool); white-space:nowrap}
-.pill.money{border-color:var(--butter); background:var(--buttersoft); color:var(--butterdeep)}
-.pill.gone{border-color:var(--coralsoft); background:var(--wash); color:var(--coral3)}
-.pill.person{border-color:var(--popsoft); background:var(--popsoft); color:var(--popdeep)}
-.pill.way{border-color:var(--lapissoft); background:var(--lapissoft); color:var(--lapisdeep)}
-
-/* 지금 하실 것 */
-.dothis{background:var(--wash); border:2px solid var(--coralsoft); border-radius:16px; padding:24px 26px; margin:28px 0}
-.dothis h3{margin-top:0}
-.dothis ol{margin:12px 0 0; padding-left:20px; font-size:14.5px; line-height:1.75}
-.dothis li{margin:9px 0}
-
-.later{background:var(--oat); border-radius:16px; padding:22px 26px; margin:26px 0; font-size:14px; line-height:1.72}
-.later b{font-weight:800}
-.foot{margin-top:80px; padding-top:22px; border-top:2px solid var(--stitch); font-family:var(--mono); font-size:12px; color:var(--ash); line-height:1.9}
-
-@media (max-width:840px){
-  .counts{grid-template-columns:repeat(2,1fr)}
-  .keys{grid-template-columns:1fr}
-  .q{grid-template-columns:38px 1fr; }
-  .q .opts{grid-column:2}
-  h1{font-size:31px}
-}
-</style>
-<style data-loom="밝은부품">
-/* ── Loom 밝은부품 지면 — 조립 산출물(손 편집 금지) ──────────────────────────
-   통로: node tools/lib/loom.js --css 밝은부품
+/* ── Loom 문서 지면 — 조립 산출물(손 편집 금지) ──────────────────────────
+   통로: node tools/lib/loom.js --css 문서
    값:   docs/디자인_토큰.json (색·율·재질·부품) — 이 CSS 에 hex·px 원본은 없다
    물성 사다리: 펠트(먹는다) → 유리(통과시킨다) → 레진(가둔다) · 림 무채
    ⚠번호는 CSS counter 가 «자동»으로 세운다 — 원고가 번호를 안 적어도 된다.
-   범위: 맨요소 규칙은 «.룸» 안에서만 산다 — 남의 지면을 안 때린다(F517).
-         한글 부품 클래스(.번호·.칩·…)와 :root 변수는 전역이다(이름이 서로 소).
    ──────────────────────────────────────────────────────────────────────── */
-  /* 색 — 이 CSS 가 «실제로 참조하는» 것만. 안 쓰는 색은 남의 지면에 안 들인다. */
-  :root{
-    --룸-chalk:#E4E4E7; --룸-chalk-rgb:228,228,231;
-    --룸-chalk2:#EAEAEA; --룸-chalk2-rgb:234,234,234;
-    --룸-chalk3:#D1D2D4; --룸-chalk3-rgb:209,210,212;
-    --룸-paper:#FBF7F0; --룸-paper-rgb:251,247,240;
-    --룸-ink:#2B2320; --룸-ink-rgb:43,35,32;
-    --룸-coral:#F96859; --룸-coral-rgb:249,104,89;
-    --룸-coral3:#AE322A; --룸-coral3-rgb:174,50,42;
-    --룸-ash2:#666666; --룸-ash2-rgb:102,102,102;
-    --룸-font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
-  }
   /* ── 율 — 모든 간격이 여기서 나온다. 이름 없는 px 을 지면에 적지 않는다.
      4px 기반 ×1.5 근사 — 인접 두 단이 눈에 갈려야 «고른» 것이 된다. */
   :root{
@@ -158,6 +34,50 @@ td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--
     --제목위:3.5em; --제목아래:.85em;      /* 위>아래 3:1 — 제목은 «다음 것»에 붙는다 */
     --줄본문:1.72; --줄제목:1.24; --줄히어로:.93;
   }
+
+  :root{
+    --graphite:#08090C; --graphite-rgb:8,9,12;
+    --graphite2:#1D1D1C; --graphite2-rgb:29,29,28;
+    --graphite3:#262626; --graphite3-rgb:38,38,38;
+    --graphite4:#373737; --graphite4-rgb:55,55,55;
+    --chalk:#E4E4E7; --chalk-rgb:228,228,231;
+    --chalk2:#EAEAEA; --chalk2-rgb:234,234,234;
+    --chalk3:#D1D2D4; --chalk3-rgb:209,210,212;
+    --paper:#FBF7F0; --paper-rgb:251,247,240;
+    --ink:#2B2320; --ink-rgb:43,35,32;
+    --coral:#F96859; --coral-rgb:249,104,89;
+    --coral2:#FD9C87; --coral2-rgb:253,156,135;
+    --coral3:#AE322A; --coral3-rgb:174,50,42;
+    --ash:#8C8C8C; --ash-rgb:140,140,140;
+    --ash2:#666666; --ash2-rgb:102,102,102;
+    --kccoolblue:#4E7CFF; --kccoolblue-rgb:78,124,255;
+    --깃:22px; --깃속:12px;                /* 동심원 — 바깥 = 안쪽 + 패딩 */
+    --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-padding-top:96px;background:var(--graphite);color-scheme:dark;}
+  ::selection{background:rgba(249,104,89,0.28);color:var(--chalk);}
+  :focus-visible{outline:2px solid var(--coral);outline-offset:3px;border-radius:6px;
+    box-shadow:0 0 0 1px rgba(228,228,231,0.55),0 0 14px 2px rgba(249,104,89,0.45);}
+  body{margin:0;min-height:100vh;
+    background:
+      radial-gradient(105% 62% at 50% -14%, rgba(55,55,55,0.62) 0%, rgba(55,55,55,0) 58%),
+      radial-gradient(120% 88% at 50% 34%, rgba(0,0,0,0) 8%, rgba(0,0,0,.66) 100%),
+      linear-gradient(180deg, rgba(0,0,0,.34), rgba(0,0,0,.52)),
+      var(--graphite);
+    background-attachment:fixed;color:var(--chalk);
+    font-family:var(--font);font-weight:450;font-size:17px;line-height:var(--줄본문);
+    letter-spacing:-.021em;word-break:keep-all;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  p{margin:var(--참) 0;color:var(--chalk);}
+  h3{margin:var(--켜) 0 var(--숨);font-size:1.02rem;font-weight:800;
+     letter-spacing:-.028em;color:var(--chalk);}
+  b,strong{font-weight:750;color:var(--chalk);}
+  .흐린{color:var(--ash);} .작게{font-size:.9rem;}
+  code{font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.93em;font-weight:600;color:var(--chalk);
+    background:rgba(228,228,231,0.085);padding:.1em .45em;border-radius:7px;
+    box-shadow:inset 0 0 0 1px rgba(228,228,231,0.09);}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 
   .유리{
     position:relative;border-radius:var(--깃);
@@ -183,7 +103,7 @@ td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     opacity:.95;
-    filter:saturate(1.5)
+    filter:saturate(1.5) drop-shadow(0 0 5px rgba(78,124,255,0.34))
            drop-shadow(0 0 10px rgba(249,104,89,0.2));
   }
   .유리>*{position:relative;z-index:2;}
@@ -192,18 +112,18 @@ td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--
 
   /*loom부품:절번호*/
   /* 절번호 — 원고가 번호를 안 적어도 counter 가 세운다. .번호 span 이 있으면 그것이 이긴다. */
-  .글,.룸{counter-reset:절;}
-  .룸 h2{counter-increment:절;
+  .글,article,body{counter-reset:절;}
+  h2{counter-increment:절;
      display:flex;align-items:center;gap:calc(var(--숨) * 2.5);flex-wrap:wrap;
      margin:var(--제목위) 0 var(--제목아래);
      font-size:clamp(1.32rem,2.5vw,1.72rem);font-weight:800;
-     letter-spacing:-.038em;line-height:var(--줄제목);}
-  .룸 h2>span:not(.번호){flex:0 1 auto;min-width:0;}
-  .룸 h2:not(:has(.번호))::before{content:counter(절,decimal-leading-zero);position:relative;
+     letter-spacing:-.038em;line-height:var(--줄제목);color:var(--chalk);}
+  h2>span:not(.번호){flex:0 1 auto;min-width:0;}
+  h2:not(:has(.번호))::before{content:counter(절,decimal-leading-zero);position:relative;
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--룸-chalk);
+    color:var(--chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -212,13 +132,13 @@ td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--
      지면)에서 절 실금이 통째로 사라진다. 실측 08-16: 소개서 6벌이 전부 그 모양이었다.
      ::before(번호)만 갈리고 ::after(실금)는 어느 쪽이든 선다.
      ⚠이 주석에 백틱을 쓰지 않는다 — 여기는 템플릿 리터럴 «안»이라 하나로 CSS 가 통째로 끊긴다. */
-  .룸 h2::after{content:'';flex:1 1 3em;min-width:2em;height:var(--실);
+  h2::after{content:'';flex:1 1 3em;min-width:2em;height:var(--실);
      background:linear-gradient(90deg,rgba(228,228,231,0.24),rgba(228,228,231,0));}
   .번호{position:relative;
     flex:none;width:2.05em;height:2.05em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--룸-chalk);
+    color:var(--chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -229,7 +149,7 @@ td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
-    filter:saturate(1.6)
+    filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
            drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:순번*/
@@ -237,43 +157,43 @@ td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--
      🔴 «.민» 은 빠진다 — 번호를 **원고가 손으로 적은** 목록이다(«<li><span>1.</span>…»).
         counter 를 그런 목록에 씌우면 «① 1. …» 두 번 번호가 되고, 그 사고는 남의 지면에서만 난다
         (우리 원고는 번호를 안 적으니까). 실물 = 발표물 01 덱의 «ol.q3» (2026-08-19). */
-  .룸 ol{list-style:none;counter-reset:순번;padding-left:0;margin:var(--단) 0;}
-  .룸 ol>li{counter-increment:순번;position:relative;
+  ol{list-style:none;counter-reset:순번;padding-left:0;margin:var(--단) 0;}
+  ol>li{counter-increment:순번;position:relative;
         padding-left:calc(1.55em + var(--칸));margin:var(--참) 0;min-height:1.55em;}
-  .룸 ol>li::before{content:counter(순번);position:absolute;left:0;top:.06em;
+  ol>li::before{content:counter(순번);position:absolute;left:0;top:.06em;
     flex:none;width:1.55em;height:1.55em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.72em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--룸-chalk);
+    color:var(--chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
   /* ⚠림에도 «같은» font-size 를 준다 — em 은 자기 font-size 기준이라, .72em 이 걸린 ::before 는
      1.55em=18.97px 인데 안 걸린 ::after 는 1.55em=26.34px 이었다(실측 08-16). 림이 원판보다 컸다. */
-  .룸 ol>li::after{position:absolute;left:0;top:.06em;font-size:.72em;
+  ol>li::after{position:absolute;left:0;top:.06em;font-size:.72em;
     width:1.55em;height:1.55em;
     content:'';border-radius:50%;padding:1.1px;pointer-events:none;
     background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
-    filter:saturate(1.6)
+    filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
            drop-shadow(0 0 8px rgba(249,104,89,0.28));}
   /* 🔴 «.민» — 번호를 **원고가 손으로 적은** 목록에서 원판만 걷는다(«<li><span>1.</span>…»).
      counter 를 그런 목록에 씌우면 «① 1. …» 로 두 번 번호가 되고, 그 사고는 **남의 지면에서만** 난다
      (우리 원고는 번호를 안 적는다). 실물 = 발표물 01 덱의 «ol.q3» (2026-08-19).
      ⚠기본 규칙(위)은 안 건드린다 — 그 모양을 «흠 검사»가 재고 있어서, 선택자를 고치면
      가드가 「순번 원판이 없다」로 거짓 적색을 낸다(실측). 규칙을 바꾸려면 가드부터 바꾼다. */
-  .룸 ol.민>li{counter-increment:none;padding-left:0;min-height:0;}
-  .룸 ol.민>li::before,.룸 ol.민>li::after{content:none;display:none;}
+  ol.민>li{counter-increment:none;padding-left:0;min-height:0;}
+  ol.민>li::before,ol.민>li::after{content:none;display:none;}
 
   /*loom부품:차례번호*/
   .잔번호{position:relative;
     flex:none;width:1.35em;height:1.35em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.66em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--룸-chalk);
+    color:var(--chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -284,7 +204,7 @@ td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--
     flex:none;width:1.25em;height:1.25em;border-radius:50%;
     display:inline-grid;place-items:center;padding-bottom:.025em;
     font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
-    color:var(--룸-chalk);
+    color:var(--chalk);
     background:
       linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
       rgba(29,29,28,0.55);
@@ -294,9 +214,9 @@ td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--
   /*loom부품:불릿*/
   /* 불릿 — 지면에서 가장 많이 반복되는 부품이라 가장 작게(7px) 쓴다.
      ⚠갇힌 빛이 무채인 이유: 수십 개가 코랄이면 «신호 1점»이 죽는다(철칙 ④). */
-  .룸 ul{list-style:none;padding-left:0;margin:var(--단) 0;}
-  .룸 ul>li{position:relative;padding-left:calc(var(--칸) + var(--참));margin:var(--숨) 0;}
-  .룸 ul>li::before{
+  ul{list-style:none;padding-left:0;margin:var(--단) 0;}
+  ul>li{position:relative;padding-left:calc(var(--칸) + var(--참));margin:var(--숨) 0;}
+  ul>li::before{
     content:'';position:absolute;left:var(--숨);top:.62em;   /* x-height 중앙 — 행 중앙이 아니다 */
     width:7px;height:7px;border-radius:50%;
     background:
@@ -309,14 +229,14 @@ td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--
       inset 0 -3px 10px -2px rgba(0,0,0,.58),
       0 6px 14px -4px rgba(228,228,231,0.38);
   }
-  .룸 ul>li::after{content:'';position:absolute;left:var(--숨);top:.62em;width:7px;height:7px;
+  ul>li::after{content:'';position:absolute;left:var(--숨);top:.62em;width:7px;height:7px;
     border-radius:50%;pointer-events:none;
     background:radial-gradient(34% 26% at 36% 18%, rgba(255,255,255,.9), rgba(255,255,255,0) 70%);}
 
   /*loom부품:체크*/
   .체크{display:inline-grid;place-items:center;position:relative;
     width:1.3em;height:1.3em;border-radius:50%;flex:none;padding-bottom:.025em;
-    font-size:.72em;font-weight:800;color:var(--룸-chalk);
+    font-size:.72em;font-weight:800;color:var(--chalk);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
         rgba(228,228,231,0.58) 0%, rgba(228,228,231,0.12) 62%, rgba(228,228,231,0) 78%),
@@ -346,7 +266,7 @@ td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--
   .히어로수{display:inline-grid;place-items:center;position:relative;
     min-width:2.6em;height:2.6em;padding:0 var(--참) .025em;border-radius:999px;
     font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;letter-spacing:-.04em;
-    font-variant-numeric:tabular-nums;color:var(--룸-chalk);
+    font-variant-numeric:tabular-nums;color:var(--chalk);
     background:
       radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
         rgba(249,104,89,0.58) 0%, rgba(249,104,89,0.12) 62%, rgba(249,104,89,0) 78%),
@@ -363,7 +283,7 @@ td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--
   /*loom부품:태그*/
   .칩{display:inline-flex;align-items:center;gap:var(--숨);
     padding:calc(var(--숨) + 1px) var(--참);border-radius:999px;position:relative;
-    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--룸-chalk);
+    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--chalk);
     background:linear-gradient(170deg, rgba(228,228,231,0.12), rgba(228,228,231,0.03) 60%),
                rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.18),0 8px 16px -10px rgba(0,0,0,.9);}
@@ -380,24 +300,24 @@ td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--
       rgba(228,228,231,0.22) 82%,rgba(228,228,231,0));}
 
   /*loom부품:인용부호*/
-  .룸 blockquote{position:relative;margin:var(--켜) 0;padding:var(--단) var(--단) var(--단) calc(var(--켜) + var(--참));
-    font-size:.97rem;}
-  .룸 blockquote::before{content:'\201C';position:absolute;left:var(--칸);top:calc(var(--칸) - var(--숨));
+  blockquote{position:relative;margin:var(--켜) 0;padding:var(--단) var(--단) var(--단) calc(var(--켜) + var(--참));
+    font-size:.97rem;color:var(--ash);}
+  blockquote::before{content:'\201C';position:absolute;left:var(--칸);top:calc(var(--칸) - var(--숨));
     display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;
-    font-size:1.5em;line-height:1;font-weight:800;color:var(--룸-chalk);
+    font-size:1.5em;line-height:1;font-weight:800;color:var(--chalk);
     padding-top:.28em;   /* 광학 — 여는 따옴표는 글리프가 위쪽에 몰려 있다 */
     background:linear-gradient(170deg, rgba(228,228,231,0.13), rgba(228,228,231,0.02) 58%),
                rgba(29,29,28,0.55);
     box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 10px 20px -12px rgba(0,0,0,.9);}
-  .룸 blockquote i,.룸 blockquote em{;font-style:italic;}
+  blockquote i,blockquote em{color:var(--chalk);font-style:italic;}
 
   /*loom부품:표지오브*/
   /* 펠트 오브 — 이 지면에서 «부피»를 가진 유일한 물건이라 하나뿐이어야 한다.
      빛을 먹는 재질(roughness .95)이라 유리·레진 옆에서 «사람이 만든 것»으로 읽힌다. */
   .오브{width:112px;height:112px;border-radius:31px;flex:none;position:relative;overflow:hidden;
-    background-color:var(--룸-chalk);
+    background-color:var(--chalk);background-image:url(data:image/webp;base64,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);background-size:46px;
     display:grid;place-items:center;
-    color:var(--룸-ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
+    color:var(--ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
     box-shadow:
       inset 0 3px 4px rgba(255,255,255,.62),
       inset 0 -14px 24px -6px rgba(8,9,12,0.5),
@@ -413,13 +333,13 @@ td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--
   /*loom부품:링크점*/
   /* 링크 — 40~50대가 읽는다는 것을 셈에 넣으면 밑선 알파만으로는 링크가 아니다.
      셋을 겹친다: 밑선 .62 · 굵기 한 단 · 앞에 코랄 점(3px 이라 신호 1점을 안 넘는다). */
-  .룸 a{;text-decoration:none;font-weight:560;
+  a{color:var(--chalk);text-decoration:none;font-weight:560;
     box-shadow:inset 0 -1px 0 rgba(228,228,231,0.62);
     transition:box-shadow 180ms ease,color 180ms ease;}
-  .룸 a:not(.민):not(.레일 a)::before{content:'';display:inline-block;width:3px;height:3px;
+  a:not(.민):not(.레일 a)::before{content:'';display:inline-block;width:3px;height:3px;
     border-radius:50%;vertical-align:.32em;margin-right:var(--숨);
-    background:var(--룸-coral);box-shadow:0 0 6px rgba(249,104,89,0.7);}
-  .룸 a:hover{box-shadow:inset 0 -1px 0 rgba(249,104,89,0.9);}
+    background:var(--coral);box-shadow:0 0 6px rgba(249,104,89,0.7);}
+  a:hover{box-shadow:inset 0 -1px 0 rgba(249,104,89,0.9);}
 
   /*loom부품:쪽번호*/
   /* 쪽번호 — 낮 지면에서만 산다. 화면에는 «쪽»이라는 것이 없다. */
@@ -428,26 +348,96 @@ td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--
   /*loom부품:본문타이포*/
   /* 🚫본문 타이포 — 불가침. 글자에 재질을 입히지 않는다(DESIGN.md §1 「타이포는 안 건드린다」).
      여기 있는 것은 «재질을 안 입힌다»는 선언이고, 그래서 분모에 든다(빠뜨린 것과 갈리게). */
-  .룸 p,.룸 li,.룸 td,.룸 th{font-family:var(--룸-font);}
+  p,li,td,th{font-family:var(--font);}
+
+  /* ── 낮 지면 ────────────────────────────────────────────────────────────
+     ⚠검은 무대를 종이에 그대로 두면 안 되는 이유는 취향이 아니라 실패 모드다:
+       크롬 인쇄의 「배경 그래픽」은 **기본이 꺼짐**이라 바탕만 흰 종이가 되고 글자는 Cream 으로
+       남는다 — **Cream on 흰 종이 = 1.13:1**(본문이 통째로 사라진다).
+     «다른 디자인»이 아니라 **같은 골격에 다른 빛**이다 — 부품 구조가 그대로다.
+     재질도 죽이지 않고 «굳힌다»: 유리는 판이 되고, 레진은 구슬이 된다.
+       유리 → 뒤가 비치는 것이 유리인데 종이엔 뒤가 없다 → 면 + 실선
+       레진 → glow 가 종이에 안 실린다 → 코어를 «면»으로, 굴절밴드를 «선»으로 굳힌다
+       못 옮기는 것 = 코스틱(샌 빛). 종이의 한계라 억지로 흉내내지 않는다. */
+  @media print{
+    html{background:var(--paper);color-scheme:light;}
+    body{background:var(--paper);background-attachment:initial;color:var(--ink);
+         font-size:10.6pt;line-height:1.62;}
+
+    .유리{background:var(--chalk2);border:1px solid var(--chalk3);
+      -webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;
+      break-inside:avoid;padding:var(--칸) calc(var(--칸) + var(--숨));}
+    .유리::before{content:none;}
+
+    /* 번호 — 유리 원판이 «찍힌 원판»이 된다. 분산 림은 선 하나로 굳는다. */
+    h2{margin:calc(var(--켜) * .6) 0 var(--참);font-size:14pt;break-after:avoid;}
+    h2:not(:has(.번호))::before,.번호,.잔번호,.각주{
+      background:var(--chalk3);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ash2);}
+    h2:not(:has(.번호))::after{background:var(--chalk3);}
+    .번호::before{content:none;}
+    ol>li::before{background:var(--chalk3);color:var(--ink);
+      box-shadow:inset 0 0 0 1px var(--ash2);}
+    ol>li::after{content:none;}
+
+    /* 레진 — 코어를 면으로, 굴절밴드를 선으로. 구슬로 읽히되 종이에서 뜨지 않는다. */
+    ul>li::before{background:rgba(174,50,42,0.22);
+      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.55);}
+    ul>li::after{background:none;}
+    .체크,.히어로수{color:var(--ink);
+      background:radial-gradient(58% 58% at 50% 44%, rgba(174,50,42,0.26), rgba(174,50,42,0.07) 70%),
+                 var(--chalk2);
+      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.5);}
+    .체크::before,.히어로수::before{content:none;}
+
+    .칩{background:var(--chalk2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--chalk3);}
+    .칩::before{content:none;}
+    .실금{background:var(--chalk3);}
+    blockquote::before{background:var(--chalk3);color:var(--ink);box-shadow:none;}
+    .오브{width:74px;height:74px;border-radius:20px;color:var(--ink);font-size:1.7rem;
+      box-shadow:none;border:1px solid var(--chalk3);}   /* 배경을 끄면 천이 사라지니 테두리가 형태를 진다 */
+    .오브::before,.오브::after{content:none;}
+
+    h2{color:var(--ink);}
+    .흐린{color:var(--ash2);}
+    a{color:var(--ink);font-weight:640;box-shadow:none;border-bottom:1px solid var(--coral3);}
+    a:not(.민)::before{background:var(--coral3);box-shadow:none;}
+    blockquote i,blockquote em{color:var(--ink);}
+    /* 🔴 여기서부터는 **남의 지면의 글**까지 검게 만든다 — 종이에서는 Loom 이 판 전체를 가지므로 맞다.
+       화면(«밝은글»)에는 안 준다: 밝은 지면 «안»의 어두운 섬(header 같은 것)의 글까지 검어져
+       그 자리가 통째로 사라진다(2026-08-19 실측 · 엔진 지도 머리말). */
+    p,li,b,strong,td,th,h3{color:var(--ink);}
+    li::marker{color:var(--ash2);}
+    blockquote{color:var(--ash2);}
+    footer{color:var(--ash2);}
+    code{color:var(--ink);background:var(--chalk2);box-shadow:inset 0 0 0 1px var(--chalk3);}
+
+    /* 쪽번호 — 낮에만 산다. @page 여백 안에 앉힌다. */
+    .쪽번호{display:block;position:fixed;bottom:4mm;right:0;
+      font-size:8.5pt;color:var(--ash2);font-variant-numeric:tabular-nums;}
+    thead{display:table-header-group;}
+    tr,.수치{break-inside:avoid;}
+    @page{margin:14mm;}
+    *{print-color-adjust:exact;-webkit-print-color-adjust:exact;}
+  }
 
   /* ══ 구운 재질 (Blender Cycles · tools/룸굽기.js) ══ */
   /* 번호 원판 — 지면에서 가장 많이 도는 «각진» 부품이라 모따기가 여기서 값을 한다.
      날카로운 모서리는 CG 티의 1순위인데, 35px 로 줄여도 모따기 하이라이트의 실선은 살아남는다. */
-  .룸 h2:not(:has(.번호))::before,.번호,.룸 ol>li::before,.잔번호,.각주{
+  h2:not(:has(.번호))::before,.번호,ol>li::before,.잔번호,.각주{
     background-image:url("data:image/webp;base64,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");
     background-size:contain;background-position:center;background-repeat:no-repeat;
     background-color:transparent;
     box-shadow:0 12px 22px -12px rgba(0,0,0,.95);}
   /* 분산 림은 이제 **렌더 안**에 산다 — conic-gradient 흉내를 끈다(둘이 겹치면 테가 두 겹이 된다). */
-  .번호::before,.룸 ol>li::after{display:none;}
+  .번호::before,ol>li::after{display:none;}
 
   /* 불릿 — 헌법 「반복 부품의 갇힌 빛은 무채」. 코랄이 갇히는 것은 히어로 1점뿐이다.
      ⚠«체크»는 08-22 에 이 줄에서 나갔다 — 요소사전 §3 「완료·체크 목록 = 자수 체크」의 집행이다.
        불릿은 여기 남는다: 7px 자리에 보풀을 깔면 «얼룩»으로만 읽힌다(요소 굽기 실측의 밀도 규율). */
-  .룸 ul>li::before{background-image:url("data:image/webp;base64,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");
+  ul>li::before{background-image:url("data:image/webp;base64,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");
     background-size:contain;background-position:center;background-repeat:no-repeat;
     background-color:transparent;box-shadow:none;}
-  .룸 ul>li::after{display:none;}          /* 표면스펙도 렌더 안에 있다 */
+  ul>li::after{display:none;}          /* 표면스펙도 렌더 안에 있다 */
 
   .체크{background-image:url("data:image/webp;base64,UklGRkIMAABXRUJQVlA4WAoAAAAQAAAAXwAAXwAAQUxQSLUFAAANsG3btttGzj7nBmSQyup2zjk/9df71X+QXaGTAlUSKWTg3ns6CkUSj/YYETEB+L+PBGGEBWMBgSQsFTGRCNsQvJcFIlJg7VyWTFMnIrIwRKLBKvLhZAo7Ei9BlgWsfYS4bG3ZbVzi3BCwsCHWSJNi8Fc3m9Pg6kFkSYhF+otEaf3R+q+vLk6HTQVxC0LCFmP9wyvTrvP77Y+6u52RRsiFxYiczdV284tCT+H6z7f9M08tMl8NsgzMUdYnZ/pm86sAyGVZSYFY+ufGeVkEnSRZ3MfXGACAKM0vxD6N/kFTvwQsYpMsVlDrHkIAJLuqn09Pt2F6YApydGTE+dXpbrzIAQIAgvleVmzddE++Exw7cWykHy7OW4IQvvX0B7ddqLLQCY6diZLSuMqdXAKEbxd8oDZZ30IhHBlpM0XnBd9pwYsJ+szUNXuHoyYFr0zi4zhSmM+oYiMiB0SAECAvAUc8JVoNpYfQrK26GHoQDpMFBJAwIQT5JiIijqxQZIMOIMwcX6Wd/+6KycshsBjPIMWBePAQ+RprIonLKFJOBcwe282rv6RNmXuI7I0YxkdjTNZJ3FakfPiaqERhuDjVpneYLa+ff9n9/TdlozVh7wyrdCRCsR7yeqP0pJwTIYbOxftLNwnmCj1Udf0HublOPGPfBLYSu/VV/1xwvv2M485QNzkRUXR+7R89T5hN1U0RtuoyHXIV9scSW1H0wfcfWIV/mmRg8xS8916rxF/8QN/3mN/WTX+unwtJWJPszSqfJ5OuLn9bhVeRYW8/71QYEQdNY6cKg/muq+Kdv1QSTYS9a/I6ku/mfXP7A+A7ie/U05D1NXSUtmAfhjBv6vrhtLxBxsxhb6wVjWLM97ImgiD+ThOpkLZNHWdIy9a1Bea3W+CJf7RuApNgz6Q1CtZbUcg0QAB/J0JcPdYrroo8inoFoTl+0/X6pOaz3BP2r6yl6yR9N5qAbzZp3HZ8Fj+SUonWHoSZ4+cJPTbXkU8Sxv5JOBK6PD15F/DtxHZdqp3R3AUWzJaNHrFV4SzSig5ABHym3cAJXmrKOBdlpXE15oe6f8rIimGtCIcYPHBxypipoihJVPrcD7OE3uxOTJucBMM4VPFTc/LrOYgixdGAgNn0pnLNRSppiUNhjUCFmYhmgGLtkGKuUN28ypPJFrFhHCYj2PXp/d/kx2YOjBkTzKbx7VX2Oo4mVUSHAti4f/PuB0BBcxAlmD/dEp0OTWoDFA7VSFvjquooSmaB50n91A5XiRLLgoP16AbaVuUKUUpz5oeu6qdxfcUSCAcr0jtq23ho4nUe7auph5V3UiaCQ3ZBi+jnRuNZn+V76e8y18WnPMDyIQlICBVFm6dMonVC703o9l/gTK9OEhIceHCjpc83JzSZVRa/N+rR34xTXlrDOHAJXvnH7nR6N5Sr2Oj31e7S6EkDEeEIZewpaTb9qurO0zP1fsbbx+QHg4kd4SiDUD+Am62PT6kw70M23j+U55JrOQ6IRxilJ8nvp/MkmjftWmRhULHVdCQAJpCo+PXz98awMrPebNeSRYp8QjhWEYiPwkP1naayRaReJvfRPa8mw6XyxwNAdOieVFcjD+tCv6jd5dmty8hqi6Om0Ddu5LtWFau81C+oq12f2CkuIs18VDI5wN3xmeUhJMp8S1c9NmGdZSFlYhy5hK7JTsapIlvFK/6G4dPViakFFs4Qjt6Ldp32VN0na3duIDQ0b++/c8GJIUV+AQR+Yhnv6zhpdtVHBbkHSv8xXmdSGoVFDA7SPk5JtPsM6fV3+7HqfxTdh1yYiBYB4oceynWf0FX28FmxTt9lP3TMrLCYwYl3w1aV5mHLUxwn3Tohq7CgwUsYJHXPY2VbWoWVxKRoSSDBBw7cSD3YrtQqVkawrOIReHKqbrMR6ylWWF5BEPL9BOVS8BJ9Xbyj4MUQllvgRBSWXAQii/a/uwEAVlA4IGYGAABwHQCdASpgAGAAPj0cikOiIaEVyd3oIAPEsgBq2qC/YNTKM/wZuZIUj0kYjbVeYD9jPWV/pv63e6X/I+oB/YP8z1h/oAfsR6cf7VfA7+3X7d/AB/Kv7X/484A/gHVm8GfGMEnP5ji3rpq09Rf8V4iEdP+m9kT+t/73lN/Nf8//1PcC/kn9L/2/AWfrWijnOc5zigOqJaMALB8TfVXaJWWhfcLNhae5arPfJwzGA9mE/eJMhGIjC99T83docxbcV9p2ANQTuoRKrf7uapvtpZbKPo75s21CwOT00JuDQ4pgT1MarXUQ40RvyCFf40oM9EnYhwKIAP7+0BwBc/95s5fKW+AdZ/CX/yZlMA0k2JpM/mlErtYXT/qfwgOxVune+CBt5AIZohIEwD9ECYLLQAZzjiOwQS1+bNnV1y149l677cgIXCDvP/omcHq8x/lnVc4L6mD8dkO/MRrYa+84puElB5z5WOjzifu3x1aO7YDL35NocrHFPxbwmKTQWy5Q6izWOI3R7uDP8Y7SP/1D5jTkJLMpfxGJmln8Qb392JOfkxN8s9YLztCSmgDMUS0ztIvGvjGYldSJ7/rsdyOX3/yimScRhmPFG2Mx259rp95FW6WsdhHy3wE0zX5Gbzlr2PH85nch284fq7G78XyGp6rC2+TgHkzf+71uH9kBeBXr2nkJ9gLz98JfzCoIIGV1D/ZdcMrWS+Qr//DtYtsTf3BkR06Wz39vvyGkZPkU94gr8yPd8/PQzKAY2MPxmZlFB9mBX93DF8J/oaT3PTB04C4BVhDwmY0CR2r3nlLARa9LWak55DuLm1hqOzSytow8Eu69XOH9nREEujO0tfcVabvL7PF+AvCKzyFC6dipzIXPnxP9BEWV+ON9i6B/gC1hSPkB9xdrn4e8Cqxm4IWTbPqmZ8GrQQZsmtcuP/F6UmiM+ukRtT7zfqMvvy00AHm5b4xpQCRNgSjOMOJXaoZSyJKdNgUbkjbbGpZLGk/uBPUOiozbyAfzX/b+9p+lU35dSnQa9rYzJtBixwJHqfJe0b1uRrPMbvwl0+6bcQ6fWagcClc+uVC6pSiqB6UKOHfwD5VP3JMfHZkrsDPx6T5/ksGOuDmoLiUgHb9ZnNXZ+DWCPxyx8ohYNoV+S3uUSaRjpGf6wDKdg0icCSB2kxXMlJofmZ3vE8tW10cWrbQ9M1htQEfOdKu7MkuX6aTSDY4E4wXwJoPlSxNVwC6sf/87veMKzQ3evE6v9w09dMuXCjjkbOV9bMeipBpygWt5D/wo/xIZ8eY+Iy1So2xDqIniLS16hL3kmUP0PJj9P3S3gA0kmcEcl63rrv9+LUqXBb/nKPUe6v7ns3SvduieVeYq0i7A4nI5M5jAaMnITN+I/ZZQU18T5DZMegY19qV8jV0eyYEAQFZQ+Yy1nwz5uSRKWGUqBA7EsXagTkUDrhiKQ6Bz/jcuJ9nvYqrLuvJSCL8EZurLLCw2HhTdVmMg4L1Qbqfdda5LI20Gib0mo2fWO28xLT4Hpc6toH79zT9YSVaUm8Bvx799iTz64o5AfIkjSEVts86hZ6CcgD5aloT8x9pedieLHDUXp97Kd0ivrmbj8Kp3mLMaVSeiIF2LtodPnloR6jTpkyAG2S0JnZHotp021mJJm4Qb0ABnR7V2oX2s0AxrwsYzcoPLqZ6MLLDsx+ipeQG2nSsa7Shk/+T1//+MPehDRH9vOxAJMLkJrqRdVI+rf9Hz+94P/5c/maP73pH4m5/P/9XPsAixerZLkoSd+T4rJwD53vl0ZAd827xammjU03iUiK+2qv/xoUmQX/7y/Z/bHGOyToOFfBgY+y8Lyl1SfUohvm4JdsWxhnLv+WDA/h6TD8v5kw9BNWCxSqOEAvhEDIBokTSlutEIfJueCXto7g6C/nVHn1M/S1CXgEnnfDZFjRoPg4MsRnpuhm7WVl4VamxsvhoyrQUqBEB7FwxmOBI139zPhHpT7WCrs9xszh2o6b96n1ajQexnHuegF3NASNgDz7h0/Ogwsmde0Q20DOZ/4h8UaGY/DXrjGEfdV1OfoO9AEEe7Lv4m8bOCJ0s3tfX/EuzvcAMpXajcFWoD464q5KFi2Y6cQMKfr3XfEP/dIwcQteZeSPmzNChf31EwKp87gUW6vfiFAkYeWMXdabrJB2rcHZx/v/y0QRwW4AAAAAA="),url("data:image/webp;base64,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");
     background-size:contain,contain;background-position:center;background-repeat:no-repeat;
@@ -481,366 +471,350 @@ td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--
   .히어로수::before{display:none;}
 
   /* 링크점 — 본문 링크 뒤의 작은 표식 구슬. 유리(통과시킨다)라 «가리키는 것»이 비쳐 보인다. */
-  .룸 a .점,.링크점{background-image:url("data:image/webp;base64,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");
+  a .점,.링크점{background-image:url("data:image/webp;base64,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");
     background-size:contain;background-position:center;background-repeat:no-repeat;
     background-color:transparent;box-shadow:none;}
 
-  /* ── 밝은 화면 — 바탕이 Paper 인 남의 지면에 얹을 때 (2026-08-19)
-     «낮» 과 **같은 값**을 쓰되 «@media print» 밖에 둔다. 위 «밝은글자()» 주석이 사유를 진다. */
-    .룸 h2{;}
-    .흐린{color:var(--룸-ash2);}
-    .룸 a{;font-weight:640;box-shadow:none;border-bottom:1px solid var(--룸-coral3);}
-    .룸 a:not(.민)::before{background:var(--룸-coral3);box-shadow:none;}
-    .룸 blockquote i,.룸 blockquote em{;}
-    /* 🔴 인용은 «안 흐린다» — 통짜 지면과 갈리는 유일한 값이고, 사유가 있다.
-       남의 지면에서 blockquote 는 «판» 위에 앉아 있을 수 있다(실측 2026-08-19: 개인정보 게시본은
-       blockquote 바탕이 Chalk 다). 거기에 Ash 2 를 얹으면 **4.46:1** — 기준 4.5 를 아슬하게
-       못 넘고 렌더린트가 문다. 우리는 그 판의 색을 모르므로 «흐림»으로는 대비를 보장할 수 없다.
-       ⇒ 남의 지면에서 인용의 신호는 색이 아니라 **따옴 부품과 레일**이 진다. */
-    .룸 blockquote{;}
 
-  /* ── 낮 지면 ────────────────────────────────────────────────────────────
-     ⚠검은 무대를 종이에 그대로 두면 안 되는 이유는 취향이 아니라 실패 모드다:
-       크롬 인쇄의 「배경 그래픽」은 **기본이 꺼짐**이라 바탕만 흰 종이가 되고 글자는 Cream 으로
-       남는다 — **Cream on 흰 종이 = 1.13:1**(본문이 통째로 사라진다).
-     «다른 디자인»이 아니라 **같은 골격에 다른 빛**이다 — 부품 구조가 그대로다.
-     재질도 죽이지 않고 «굳힌다»: 유리는 판이 되고, 레진은 구슬이 된다.
-       유리 → 뒤가 비치는 것이 유리인데 종이엔 뒤가 없다 → 면 + 실선
-       레진 → glow 가 종이에 안 실린다 → 코어를 «면»으로, 굴절밴드를 «선»으로 굳힌다
-       못 옮기는 것 = 코스틱(샌 빛). 종이의 한계라 억지로 흉내내지 않는다. */
-  @media print{
-    .룸{background:var(--룸-paper);color-scheme:light;}
-    .룸{background:var(--룸-paper);background-attachment:initial;
-         font-size:10.6pt;line-height:1.62;}
+/* ── 이 지면만의 보충 — Loom 이 침묵하는 부품만, 값은 전부 Loom 변수 소비 ── */
+.지면{max-width:1060px;margin:0 auto;padding:var(--장) var(--단) var(--막);}
+.표지{padding:var(--막) 0 var(--장);}
+.표지 .로고{font-weight:900;letter-spacing:-.04em;font-size:1.05rem;color:var(--coral);}
+.표지 h1{margin:var(--칸) 0 var(--참);font-size:2.35rem;font-weight:800;letter-spacing:-.035em;line-height:var(--줄제목);color:var(--chalk);}
+.표지 .한줄{font-size:1.12rem;color:var(--chalk);max-width:44em;}
+.표지 .메타{margin-top:var(--단);font-size:.86rem;color:var(--ash);}
+.차례{display:flex;flex-wrap:wrap;gap:var(--틈);margin:var(--단) 0 0;padding:0;list-style:none;}
+.차례 a{color:var(--chalk);text-decoration:none;font-size:.88rem;font-weight:600;
+  padding:.35em .9em;border-radius:99px;background:rgba(228,228,231,.07);
+  box-shadow:inset 0 0 0 1px rgba(228,228,231,.13);}
+.차례 a:hover{background:rgba(249,104,89,.14);box-shadow:inset 0 0 0 1px rgba(249,104,89,.4);}
+h2{scroll-margin-top:32px;}
 
-    .유리{background:var(--룸-chalk2);border:1px solid var(--룸-chalk3);
-      -webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;
-      break-inside:avoid;padding:var(--칸) calc(var(--칸) + var(--숨));}
-    .유리::before{content:none;}
+table.표{width:100%;border-collapse:collapse;font-size:.925rem;line-height:1.55;}
+.표 th{text-align:left;padding:var(--참) var(--칸);color:var(--ash);font-weight:750;font-size:.83rem;
+  letter-spacing:.02em;border-bottom:1px solid rgba(228,228,231,.22);white-space:nowrap;}
+.표 td{padding:var(--참) var(--칸);border-bottom:1px solid rgba(228,228,231,.09);vertical-align:top;}
+.표 tr:last-child td{border-bottom:0;}
+.표.빽빽 td,.표.빽빽 th{padding:var(--틈) var(--참);}
+.표스크롤{overflow-x:auto;}
 
-    /* 번호 — 유리 원판이 «찍힌 원판»이 된다. 분산 림은 선 하나로 굳는다. */
-    .룸 h2{margin:calc(var(--켜) * .6) 0 var(--참);font-size:14pt;break-after:avoid;}
-    .룸 h2:not(:has(.번호))::before,.번호,.잔번호,.각주{
-      background:var(--룸-chalk3);color:var(--룸-ink);box-shadow:inset 0 0 0 1px var(--룸-ash2);}
-    .룸 h2:not(:has(.번호))::after{background:var(--룸-chalk3);}
-    .번호::before{content:none;}
-    .룸 ol>li::before{background:var(--룸-chalk3);color:var(--룸-ink);
-      box-shadow:inset 0 0 0 1px var(--룸-ash2);}
-    .룸 ol>li::after{content:none;}
+.상태{display:inline-block;font-size:.78rem;font-weight:750;padding:.14em .62em;border-radius:99px;
+  white-space:nowrap;background:rgba(228,228,231,.08);box-shadow:inset 0 0 0 1px rgba(228,228,231,.16);color:var(--chalk);}
+.상태.돈다{box-shadow:inset 0 0 0 1px rgba(228,228,231,.42);}
+.상태.짓는{color:var(--chalk);}
+.상태.대기{color:var(--ash);}
+.상태.유호{background:rgba(249,104,89,.15);box-shadow:inset 0 0 0 1px rgba(249,104,89,.5);color:var(--coral2);}
 
-    /* 레진 — 코어를 면으로, 굴절밴드를 선으로. 구슬로 읽히되 종이에서 뜨지 않는다. */
-    .룸 ul>li::before{background:rgba(174,50,42,0.22);
-      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.55);}
-    .룸 ul>li::after{background:none;}
-    .체크,.히어로수{color:var(--룸-ink);
-      background:radial-gradient(58% 58% at 50% 44%, rgba(174,50,42,0.26), rgba(174,50,42,0.07) 70%),
-                 var(--룸-chalk2);
-      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.5);}
-    .체크::before,.히어로수::before{content:none;}
+.축{display:inline-block;font-size:.74rem;font-weight:800;letter-spacing:.03em;padding:.1em .5em;
+  border-radius:7px;background:rgba(228,228,231,.09);color:var(--ash);white-space:nowrap;}
+.축.신호{background:rgba(249,104,89,.16);color:var(--coral2);}
 
-    .칩{background:var(--룸-chalk2);color:var(--룸-ink);box-shadow:inset 0 0 0 1px var(--룸-chalk3);}
-    .칩::before{content:none;}
-    .실금{background:var(--룸-chalk3);}
-    .룸 blockquote::before{background:var(--룸-chalk3);color:var(--룸-ink);box-shadow:none;}
-    .오브{width:74px;height:74px;border-radius:20px;color:var(--룸-ink);font-size:1.7rem;
-      box-shadow:none;border:1px solid var(--룸-chalk3);}   /* 배경을 끄면 천이 사라지니 테두리가 형태를 진다 */
-    .오브::before,.오브::after{content:none;}
+.두기둥{display:grid;grid-template-columns:1fr 1fr;gap:var(--칸);margin:var(--단) 0;}
+.기둥{border-radius:var(--깃속);padding:var(--칸) var(--단);
+  background:rgba(228,228,231,.045);box-shadow:inset 0 0 0 1px rgba(228,228,231,.12);}
+.기둥 .머리{font-weight:800;font-size:1.0rem;color:var(--chalk);margin-bottom:var(--틈);}
+.기둥 .부제{font-size:.82rem;color:var(--ash);margin-bottom:var(--참);}
+.기둥 ol{margin:0;padding-left:1.15em;font-size:.9rem;}
+.기둥 li{margin:.3em 0;}
+.합류{margin:var(--칸) auto 0;max-width:640px;text-align:center;}
+.합류 .살{width:var(--실);height:26px;margin:0 auto;background:linear-gradient(180deg,rgba(228,228,231,.4),rgba(249,104,89,.75));}
+.과녁{border-radius:var(--깃속);padding:var(--칸) var(--단);
+  background:rgba(249,104,89,.1);box-shadow:inset 0 0 0 1px rgba(249,104,89,.45);}
+.과녁 .큰{font-size:1.18rem;font-weight:800;color:var(--chalk);}
+.과녁 .작은{font-size:.86rem;color:var(--chalk);opacity:.85;margin-top:var(--숨);}
 
-    .룸 h2{;}
-    .흐린{color:var(--룸-ash2);}
-    .룸 a{;font-weight:640;box-shadow:none;border-bottom:1px solid var(--룸-coral3);}
-    .룸 a:not(.민)::before{background:var(--룸-coral3);box-shadow:none;}
-    .룸 blockquote i,.룸 blockquote em{;}
-    /* 🔴 여기서부터는 **남의 지면의 글**까지 검게 만든다 — 종이에서는 Loom 이 판 전체를 가지므로 맞다.
-       화면(«밝은글»)에는 안 준다: 밝은 지면 «안»의 어두운 섬(header 같은 것)의 글까지 검어져
-       그 자리가 통째로 사라진다(2026-08-19 실측 · 엔진 지도 머리말). */
-    .룸 p,.룸 li,.룸 b,.룸 strong,.룸 td,.룸 th,.룸 h3{;}
-    .룸 li::marker{color:var(--룸-ash2);}
-    .룸 blockquote{;}
-    .룸 footer{;}
-    .룸 code{;background:var(--룸-chalk2);box-shadow:inset 0 0 0 1px var(--룸-chalk3);}
+.시계{display:flex;flex-wrap:wrap;align-items:stretch;gap:var(--틈);margin:var(--칸) 0;}
+.시계 .단계{flex:1 1 150px;border-radius:var(--깃속);padding:var(--참) var(--칸);
+  background:rgba(228,228,231,.05);box-shadow:inset 0 0 0 1px rgba(228,228,231,.14);}
+.시계 .단계 .이름{font-weight:800;font-size:.95rem;color:var(--chalk);}
+.시계 .단계 .걸림{font-size:.8rem;color:var(--ash);margin-top:.2em;}
+.시계 .사이{align-self:center;color:var(--ash);font-weight:800;}
+.시계 .단계.신호{background:rgba(249,104,89,.1);box-shadow:inset 0 0 0 1px rgba(249,104,89,.45);}
 
-    /* 쪽번호 — 낮에만 산다. @page 여백 안에 앉힌다. */
-    .쪽번호{display:block;position:fixed;bottom:4mm;right:0;
-      font-size:8.5pt;color:var(--룸-ash2);font-variant-numeric:tabular-nums;}
-    .룸 thead{display:table-header-group;}
-    .룸 tr,.수치{break-inside:avoid;}
-    .룸 *{print-color-adjust:exact;-webkit-print-color-adjust:exact;}
-  }
+.정직{border-radius:var(--깃속);padding:var(--참) var(--칸);margin:var(--칸) 0;
+  background:rgba(228,228,231,.05);box-shadow:inset 0 0 0 1px rgba(228,228,231,.18);
+  font-size:.9rem;color:var(--chalk);}
+.정직 b{color:var(--chalk);}
+@media (max-width:760px){.두기둥{grid-template-columns:1fr;}}
+@media print{
+  .지면{max-width:none;padding:0;}
+  .차례{display:none;}
+}
 </style>
 </head>
 <body>
-<div class="wrap 룸">
+<div class="지면 글">
 
-<header>
-  <div class="kicker">SYNK LAB · 판정 대기 한 자리 · 2026-08-26</div>
-  <h1>유호님이 정하실 것 — 전량</h1>
-  <p class="sub">
-    설계 문서 여섯이 각자 「판정 대기」 절을 갖고 있어 <strong>여섯 군데를 열어야 했습니다.</strong>
-    여기 한 자리로 모았습니다. 내용은 복제하지 않고 <strong>질문 한 줄 + 갈래 + 원문 링크</strong>만 둡니다 —
-    답을 정하시면 고칠 곳은 원문 하나입니다.
-  </p>
+<!-- ══════════════ 표지 ══════════════ -->
+<header class="표지">
+  <div class="로고">SYNK</div>
+  <h1>SYNK 로드맵<br>— 세 이름의 역할과 시간표</h1>
+  <p class="한줄">이야기는 하나다 — <b>「AI로 교육 회사를 짓고 있는 사람」</b>.
+  <b>SYNK LAB</b> 은 그가 짓는 첫 실물이고, <b>SYNK SHIFT</b> 는 그 방법을 파는 곳이며,
+  둘이 쌓는 것이 <b>정부 공인 자격증</b>에서 만난다. 브랜드 한 줄 = <b>「멀리서도 돌아가게 만듭니다」</b>.</p>
+  <p class="메타">2026-08-27 조립 · 정본 = 결정.md(확정 214건) · SHIFT/설계_v1 · 제품방향 · SYNK_철학 · 시스템_대장 · 엔진_지도 · 사업계획서 v5 — 이 지면은 그 <b>종합 뷰</b>이고, 어긋나면 정본이 이긴다. 확정이 바뀌면 그 세션이 이 지면을 같이 갱신한다.</p>
+  <ul class="차례">
+    <li><a href="#한눈에">한눈에</a></li>
+    <li><a href="#synk">SYNK</a></li>
+    <li><a href="#lab">SYNK LAB</a></li>
+    <li><a href="#shift">SYNK SHIFT</a></li>
+    <li><a href="#로드맵">로드맵 총표</a></li>
+    <li><a href="#자격시계">자격증 시계</a></li>
+    <li><a href="#유호몫">유호님 앞</a></li>
+    <li><a href="#급소">급소·보완</a></li>
+  </ul>
 </header>
 
-<div class="verdict">
-  <span class="tag">판정</span>
-  <p class="big">
-    쉰일곱 건이었고, <em>08-26 에 셋이 닫혔습니다.</em><br>
-    엿새 안에 답하실 것이 <strong>여섯에서 0으로 줄었습니다.</strong>
-  </p>
-  <p class="note">
-    ✅ <strong>08-26 유호님 확정 넷</strong> — ①<strong>채용 기준 한 줄</strong>(면접 과제 20점과 절대 관문 ㉡ 발효)
-    ②<strong>공고에서 「수업 외에 하실 일」 표를 뺀다</strong>(⇒ 주간 교안 존폐가 공고를 막던 고리가 끊겨 <strong>ⓐ 마감이 09-01 → 10월</strong>)
-    ③<strong>본수업 3블록 = 교재로 TOPIK 수업</strong> + 배분 [제안] 20·25·20 과 <strong>버리는 순서</strong> 착지
-    ④<strong>부트캠프 불합격 = 재시연 2회 뒤 담당 반 배정 보류</strong>(계약은 지킨다).
-  </p>
-  <p class="note">
-    ⑤<strong>계약 발효 = 개원일 · 11월 부트캠프 5일 유급을 폐기</strong>하고 <strong>온라인 숙지 + 12월 파일럿 시연 1시간</strong>(시간당 15,000₮)으로 대체
-    ⑥<strong>개원일 계약 발효 = 4명</strong>(유휴 인건비 0).
-  </p>
-  <p class="note">
-    💰 <strong>돈으로 3,480,000₮ 가 빠졌고</strong>(부트캠프 360만 → 시연 12만), 개원 전 정규 급여가 <strong>0</strong>이 되어
-    재무 정본의 「선행 번」이 <strong>오히려 줄어듭니다</strong>(3,000~4,000만 → 2,640~3,640만₮).
-    <br>⚠ 대신 <strong>「진짜 마감」이 12월 파일럿 하나로 좁혀졌습니다</strong> — 리허설이자 훈련장이자 관문이라 <strong>실패하면 대체물이 없습니다.</strong>
-  </p>
-</div>
+<!-- ══════════════ §1 한눈에 ══════════════ -->
+<h2 id="한눈에"><span>한눈에 — 두 기반이 자격증에서 만난다</span></h2>
 
-<div class="counts">
-  <div class="count now" style="border-color:var(--meadowsoft);background:var(--meadowsoft)"><div class="n" style="color:var(--meadowdeep)">0</div><div class="l" style="color:var(--meadowdeep)">엿새 안 (09-01)<br>여섯 다 닫혔습니다</div></div>
-  <div class="count"><div class="n">13</div><div class="l">9월 안<br>대부분 갈래 한 글자</div></div>
-  <div class="count"><div class="n">10</div><div class="l">계약·발주 전<br>미루면 못 고칩니다</div></div>
-  <div class="count"><div class="n">28</div><div class="l">제가 더 재서<br>다시 여쭙습니다</div></div>
-</div>
-
-<div class="hr"></div>
-
-<h2><span class="번호">01</span><span>엿새 안 — 여섯 다 닫혔습니다 (08-26)</span></h2>
-
-<p class="lead">
-  09-01 마감이던 여섯이 <strong>08-26 하루에 전부 닫혔습니다</strong>(<a href="강사채용_부트캠프_v1.md">강사채용_부트캠프_v1.md</a> §13-1).
-  아래는 그 기록이고, <strong>이제 가장 이른 마감은 09-05</strong>(자격 요건 갈래)입니다.
-</p>
-
-<div class="week">
-
-  <div class="q">
-    <div class="id" style="background:var(--meadowsoft);color:var(--meadowdeep)">✅</div>
-    <div class="body">
-      <div class="t" style="color:var(--meadowdeep)">계약 발효일 + 부트캠프 — 08-26 확정 · 닫혔습니다</div>
-      <div class="w" style="font-size:15px;color:var(--ink)">
-        <strong>계약 발효 = 개원일(02-25).</strong> 그리고 <strong>11월 부트캠프 5일 30시간 유급을 폐기</strong>하고
-        <strong>온라인 숙지 + 12월 파일럿 시연 1시간</strong>(시간당 15,000₮)으로 대체합니다.</div>
-      <div class="w">💰 <strong>3,600,000₮ → 120,000₮</strong>(−348만₮) · 개원 전 정규 급여 <strong>0</strong> ·
-        재무 「선행 번」이 <strong>오히려 줄어듭니다</strong>(그 추정에 부트캠프 인건비가 들어 있었기 때문 · 3,000~4,000만 → <strong>2,640~3,640만₮</strong>).<br>
-        ⚠ <strong>「진짜 마감」이 12월 파일럿 하나로 좁혀졌습니다</strong> — 리허설이자 훈련장이자 관문이라 실패하면 대체물이 없습니다.<br>
-        🔑 <strong>시연 1시간은 붙여 쓰지 않습니다</strong> — 30분 × 2회, 1주차와 2주차로 나눕니다(관문의 축이 「1회차 지적 → 2회차 개선폭」이라 사이가 비어야 합니다).</div>
-      <div class="src">강사 §5-00 · §5-01 · §9-3b · 결정.md 08-26</div>
+<div class="유리">
+  <div class="두기둥">
+    <div class="기둥">
+      <div class="머리">SYNK LAB — 실물·송출 기반</div>
+      <div class="부제">몽골 학원 · 학생과 데이터가 실제로 쌓이는 곳</div>
+      <ol>
+        <li>몽골 개원 <b>2027-02 중순 목표</b> <span class="흐린">(구 02-25 · 날짜 못 박기 대기)</span></li>
+        <li>운영 1년 → 지점 <b>위임</b></li>
+        <li><b>베트남</b> 테라포밍 → 위임 <span class="흐린">(여기까지 확정)</span></li>
+        <li>다음 나라 — 베트남에서 정보 수집 후 결정</li>
+        <li>전 지점이 한국으로 <b>«송출»</b> = 신뢰·실력</li>
+      </ol>
     </div>
-    <div class="opts"><b>새로 연 구멍 셋 — 막는 법까지 §5-02</b>
-      <span class="opt">온라인은 «안 하면 안 한 채로» 온다 ⇒ 시험 통과를 시연 참가 조건으로</span>
-      <span class="opt">파일럿엔 진짜 학생이 있다 ⇒ 시연은 별도 시간에</span>
-      <span class="opt">12월에 「학원」이 있나 ⇒ 파일럿 장소 판정이 선행이 됐다</span>
+    <div class="기둥">
+      <div class="머리">SYNK SHIFT — 영향력·신뢰 기반</div>
+      <div class="부제">한국 법인(아직 없다) · 방법을 파는 곳</div>
+      <ol>
+        <li>새 <b>«개인» 계정</b> → <b>AI 인플루언서</b> <span class="흐린">← 첫 번째 목적 · 지금부터</span></li>
+        <li><b>AI 강사 에이전시</b> 운영 <span class="흐린">(법인·영업은 개원 후)</span></li>
+        <li>첫 고객 = <b>대학 어학원·국제처</b> — TO 협상의 입장권</li>
+        <li>고객사 명단 = 채용처 명단 (수요 채널)</li>
+      </ol>
     </div>
   </div>
-
-  <div class="q" style="background:#fff;border-radius:14px">
-    <div class="id" style="background:var(--meadowsoft);color:var(--meadowdeep)">✅</div>
-    <div class="body">
-      <div class="t" style="color:var(--meadowdeep)">부트캠프 불합격 — 08-26 확정 · 닫혔습니다</div>
-      <div class="w" style="font-size:15px;color:var(--ink)"><strong>㉡ 재시연 2회 뒤 담당 반 배정 보류.</strong>
-        계약은 지키고 <strong>미루는 것은 담당 반 하나뿐</strong>입니다.</div>
-      <div class="w">보류된 사람은 <strong>보조·순회 역할</strong>로 현장에 남고 <strong>다음 시즌에 다시</strong> 잽니다.
-        핸드북의 「미달은 벌이 아니라 신호」와도 어긋나지 않습니다 — 보류는 벌이 아니라 <em>아직 신호가 안 켜졌다</em>는 뜻입니다.<br>
-        ⚠ <strong>보류가 「조용한 해고」가 되지 않게</strong> 사유·재시연 일정·다음 심사일을 서면으로 줍니다.</div>
-      <div class="src">강사 §6-3 · §13-1 ⓓ · 결정.md 08-26</div>
-    </div>
-    <div class="opts"><b>계약서에 들어갑니다</b>
-      <span class="opt">「보류 기간에도 계약과 급여는 유지된다」</span>
+  <div class="합류">
+    <div class="살"></div>
+    <div class="과녁">
+      <div class="큰">🎯 최종 목표 — 국가공인 자격증 발급 기관</div>
+      <div class="작은">「SYNK SHIFT 의 최종 목표는 국가 차원에서 SYNK 인증을 받는 공인 자격증 발급 기관이 되는 것」 — 유호님 확정 08-27<br>
+      제도의 길 = 법인 설립 → 민간자격 등록(3~4개월) → 1년 + 검정 3회 → 국가공인 <span style="opacity:.8">(가속이 안 먹히는 유일한 축 — 출발선 = 법인 설립일)</span></div>
     </div>
   </div>
-
-  <div class="q">
-    <div class="id" style="background:var(--meadowsoft);color:var(--meadowdeep)">✅</div>
-    <div class="body">
-      <div class="t" style="color:var(--meadowdeep)">개원일 계약 발효 인원 — 08-26 확정 = <strong>4명</strong></div>
-      <div class="w" style="font-size:15px;color:var(--ink)">급여 정본 단계 1(2실 · 코어 강사 4명 · 192석)과 정확히 맞습니다.
-        <strong>담당 반 없는 유휴 인건비 0</strong> — 8명 전원이면 월 504만₮가 나갔을 자리입니다.</div>
-      <div class="w">채용·훈련은 <strong>8명 그대로</strong>입니다. 나머지 4명은 <strong>발효 사다리</strong>를 숫자로 적은 확약서로 대기합니다
-        (제안 = 재적 <strong>96명</strong> 넘으면 5·6번, <strong>144명</strong> 넘으면 7·8번).<br>
-        🔑 <strong>숫자가 없으면</strong> 나머지 넷은 「기다리라」는 말만 듣고 다른 데로 갑니다.</div>
-      <div class="src">강사 §9-3b · §13-1 ⓔ · 결정.md 08-26</div>
-    </div>
-    <div class="opts"><b>아직 안 잰 것</b>
-      <span class="opt">개원 후 재적 램프 곡선 — 사다리의 96·144 는 «제안»이지 실측이 아닙니다</span>
-      <span class="opt">사회보험 사용자 부담분 — 위 금액은 전부 급여 액면입니다</span>
-    </div>
-  </div>
-
-  <div class="q" style="background:#fff;border-radius:14px">
-    <div class="id" style="background:var(--meadowsoft);color:var(--meadowdeep)">✅</div>
-    <div class="body">
-      <div class="t" style="color:var(--meadowdeep)">채용 기준 한 줄 — 08-26 확정 · 닫혔습니다</div>
-      <div class="w" style="font-size:15px;color:var(--ink)">
-        「<strong>학생 한 명을 떠올렸을 때, 그 학생이 어떤 학생인지 이야기해 줄 수 있는 사람</strong>」<br>
-        <span style="color:var(--deepwool)">부연 — 「오늘 유난히 조용했던 학생이 누구였는지 아는 사람」</span>
-      </div>
-      <div class="w">구판 「학생을 보고 한 줄로 적을 수 있는 사람」은 <strong>행정 작업처럼 읽혀</strong> 다시 썼습니다.
-        이로써 면접 과제 20점과 <strong>절대 관문 ㉡이 발효</strong>했습니다.<br>
-        ⚠ <strong>「크루」를 안 쓴 까닭</strong> — 그 낱말이 <strong>학생</strong>(소개서 106줄 「SYNK LAB의 학생은 크루라고 부릅니다」)과
-        <strong>직원</strong>(크루 핸드북 3줄 「전 크루에게 같은 기준으로 적용」) <strong>두 뜻으로 쓰이고 있습니다.</strong>
-        강사 공고에서 쓰면 지원자가 동료를 말하는지 학생을 말하는지 모릅니다.
-        <em>낱말 갈래 자체는 아직 안 풀렸습니다 — 별건입니다.</em></div>
-      <div class="src">강사 §13-2 #2 · 결정.md 08-26</div>
-    </div>
-    <div class="opts"><b>반영된 곳</b>
-      <span class="opt">① 판정 한 줄 · ② 채용 기준</span>
-      <span class="opt">②-5 면접 과제 20점</span>
-      <span class="opt">④-0 절대 관문 ㉡</span>
-      <span class="opt">공고 · 달력 · 트랙 §4-F</span>
-    </div>
-  </div>
-
+  <p class="작게 흐린" style="margin-top:var(--참)">테라포밍 순서(유호님 구술 08-27) = <b>한국 &gt; 몽골 &gt; 베트남 «까지 확정»</b> — 한국(SHIFT 법인을 직원 1명에게 위임)이 첫 테라포밍이다. 카자흐스탄·우즈베키스탄·중국·일본은 후보군. 구 「+24개월 VR·+28개월 타국」 절대 날짜는 폐기 — 「전부 2배 이상 앞당겨졌다」(유호님). 날짜는 사건(출시·위임)이 정한다.</p>
 </div>
 
-<div class="dothis">
-  <h3>그리고 판정이 «아니라» 그냥 하실 것 둘 — 이번 주</h3>
-  <ol>
-    <li><strong>법무법인 3곳에 견적 메일.</strong> 몽골 법인 사슬이 2~3개월인데 오늘까지 <strong>0단계 미착수</strong>입니다.
-      공간·파일럿·Meta 인증이 전부 이 뒤에 서 있습니다. <span class="pill gone">늦으면 못 되돌림</span></li>
-    <li><strong>몽골어 5줄 유상 단건 검수 의뢰.</strong> 검수자 채용을 기다리면 <strong>간판이 「가장 먼저」인데 「가장 나중」 뒤에 서는 순환</strong>이 안 풀립니다.
-      다섯 줄만 먼저 사면 그 고리가 끊깁니다.</li>
-  </ol>
+<!-- ══════════════ §2 SYNK ══════════════ -->
+<h2 id="synk"><span>SYNK — 모브랜드 · 뿌리</span></h2>
+
+<p><b>SYNK 는 한국어를 가르치는 회사가 아니다.</b> 한 사람을 깊이 이해하는 교육 시스템을 구축해, 그 한 사람만을 위한 — AI 시대 가장 효율적인 — 학습을 만들어 내는 회사다(철학 Ⅰ 한 문장 · 유호님 채택). 이름의 뜻 = 학습과 목적 발견의 <b>동기화(synchronize)</b>. 학생 여정과 사업 구조가 같은 사이클을 돈다: <b>Learn → Plan → Experience → Record</b>.</p>
+
+<div class="유리 잔잔">
+  <h3>하지 않는 것 — 영구 안전선</h3>
+  <p class="작게">㉡ 사람 손을 늘리는 해법 금지 · ㉢ 학생끼리 비교 금지(비교는 「어제의 그 학생」과만) · ㉣ <b>학생 식별 데이터 반출 금지</b> — 편의·시연 이유로도. 그리고 운영 안전 5: 비가역 외부 실행은 직전 승인 · 자격증명은 git 밖 · 학생 식별 반출 금지 · 배포는 /deploy 하나 · (도구) 팔레트 지어내는 플래그 금지.</p>
 </div>
 
-<div class="hr"></div>
+<h3>자산 ① — 상표·법무</h3>
+<div class="표스크롤"><table class="표 빽빽">
+  <tr><th>무엇</th><th>내용</th><th>상태</th></tr>
+  <tr><td><b>SYNK 문자상표 단독</b></td><td>출원번호 <code>40-2026-0165300</code> · 2026-08-11 한국 출원 · 류 = 41(교육)+16(교재)+42(SW)+9(앱) — 단독이라 LAB·SHIFT·talk·Core 전부를 한 우산이 덮는다 · 35류는 선등록 충돌로 보류</td><td><span class="상태 돈다">✅ 출원 접수</span></td></tr>
+  <tr><td>보유 구조</td><td><b>유호님 개인 보유</b> → 한국·몽골 두 법인에 사용허락(리스크 격리 — 한쪽 사고가 상표를 못 삼킨다)</td><td><span class="상태 돈다">✅ 판정</span></td></tr>
+  <tr><td>몽골 출원</td><td>직접출원(마드리드 뒤집음) · 대리인 7통 발송 완료 · ATS 견적 $578.42(4류 · 표 기준 잠정 — 확인 질의 2건 열림) · <b>기한 = 2027-02-11</b>(파리협약 우선권 6개월) · 간판은 키릴 표기 의무 · 키릴 <code>СИНК</code> — 양쪽 출원 «권고» 수신 · 채택(예산↑) 판정 대기</td><td><span class="상태 유호">⏳ 대리인 선정</span></td></tr>
+</table></div>
 
-<h2><span class="번호">02</span><span>열쇠 — 하나가 여럿을 푼다 · 셋</span></h2>
+<h3>자산 ② — 브랜드</h3>
+<div class="표스크롤"><table class="표 빽빽">
+  <tr><th>무엇</th><th>내용</th><th>상태</th></tr>
+  <tr><td>슬로건</td><td><b>「정원은 16명, 선생님은 17명입니다」</b> — 나만의 AI 선생님 16 + 진짜 선생님 1(대외 집행 시 17의 정체 부연 1줄 필수)</td><td><span class="상태 돈다">✅ 확정</span></td></tr>
+  <tr><td>로고</td><td>두 락업 — 대외 <b>synk</b>(어센더 k) · 앱/내부 <b>syn&lt;</b>(꺾쇠) · 색갈래 셋(코랄·단색·알록) · 실행 정본 = <code>tools/lib/로고정본.js</code> 하나 · 다섯 자리에 돈다</td><td><span class="상태 돈다">✅ 돈다</span></td></tr>
+  <tr><td>디자인 킷</td><td>2027 「내일 꾸러미」 42색(코랄 램프 = 주인공) · 타이포 3종(SUIT·Inter Tight·DM Mono) · 재질 = <b>펠트</b>(명품 하한) · 지면 CSS 통로 = Loom 하나 · 앱은 다크 「양모 밤」 단일 · 사운드킷 실음원 4종(08-25 몽글 반응음 등재)</td><td><span class="상태 돈다">✅ 확정</span></td></tr>
+  <tr><td>마스코트·가이드</td><td><b>학생이 가이드를 고른다</b> — 몽글(같이 한다)·까몽(지켜본다)·마린(임무를 준다) · 전원 무언 · 몽글 목소리 12종 정본 · 넷째 가이드는 개원 후 판정 · 3D 는 기각(4D=2D live 워프가 살아 움직임을 진다)</td><td><span class="상태 짓는">🔨 자산 굽는 중</span></td></tr>
+  <tr><td>앱 세계관</td><td><b>「이름 없는 땅」</b> — 한국어로 부르면 또렷해지는 세계 · 말이 세계의 동력 · 단계·등급·숫자 없음 · 성장 표현 = 「함께한 날」(함께한 날·내가 맞힌 말·급수 여행 게이지 — 구 7단계 진화는 은퇴)</td><td><span class="상태 짓는">🔨 짓는 중</span></td></tr>
+</table></div>
 
-<p class="lead">
-  남은 쉰하나를 하나씩 보면 마비됩니다. <strong>스물넷은 아래 셋 뒤에 줄 서 있습니다.</strong>
-  셋을 먼저 풀면 나머지는 저절로 답이 정해지거나, 제가 답을 만들어 올 수 있게 됩니다.
-</p>
+<h3>자산 ③ — 엔진 일곱 (회사의 심장 · 비출시 고유 IP)</h3>
+<p class="작게">닿는 셋 + 쌓는 셋 + 자리를 만드는 하나. 앞의 여섯이 만드는 것은 하나 — <b>SYNK Atlas</b>(학생 한 명분의 축적된 이해 · 학생마다 하나씩). 핵심 등식(유호님 원문): <b>「매일 제공하는 숙제를 전부 학습용으로 데이터화」</b> — 숙제·게임·말하기가 사람 손 없이 데이터가 되어 엔진에 닿는다.</p>
+<div class="표스크롤"><table class="표 빽빽">
+  <tr><th>엔진</th><th>한 줄 역할</th><th>지금 (08-26 실측)</th></tr>
+  <tr><td><b>Core</b> <span class="흐린">두뇌</span></td><td>실력(㉠)·사람(㉡)·삶(㉢)을 점점 깊이 알아 다음에 줄 것을 바꾼다</td><td>수집층 라이브 · 도달 사슬 7칸 중 6칸 코드 완주 · ㉡㉢은 첫 학생의 행 대기 · 점수 88/102</td></tr>
+  <tr><td><b>Loom</b> <span class="흐린">몸·감각</span></td><td>회사 전용 재질(펠트)을 어느 지면에서든 같은 색·결·빛·소리로 재현</td><td>앱 화면 14벌 굽기 완주 · 학생 4 채택 · 감각층 유호님 귀검수 왕복 중</td></tr>
+  <tr><td><b>Vellum</b> <span class="흐린">닿는 면</span></td><td>Core 의 이해와 Loom 의 몸이 사람 앞에 서는 면 — 그 위의 얼굴이 몽글</td><td>행동 정본 확정 · 강사판 착지·붓기 운영 실측 완료 · Amber 초안 v1 · 남은 유호님 자리 = 몽글 «물어보기» 입구 재체크(보류)</td></tr>
+  <tr><td><b>Trail</b> <span class="흐린">발자취</span></td><td>「무엇을 목표했고 어디에 도착했는가」를 한 사람으로 잇는다 — 한국행 인프라의 유일한 전제</td><td>코드 라이브(outcome_log·trajectory) · 데이터 0행(졸업생 0 = 정상)</td></tr>
+  <tr><td><b>Prism</b> <span class="흐린">지도</span></td><td>학생 하나의 교정을 「몽골어 화자 일반의 무늬」로 승격하는 비식별 집계 — 시장에 없는 말뭉치</td><td>재료 생산자 전부 라이브 · 집계층은 개원 직후 세운다</td></tr>
+  <tr><td><b>Temper</b> <span class="흐린">의술</span></td><td>「이 학생에게 이 개입을 줬더니 30일 뒤 이렇게 됐다」의 짝 — 마지막까지 남는 자산</td><td>개입 로그 규격 v1 확정 · 생산자(과제선택 v5.13-e) 종결 · 본체는 의도된 순서 대기</td></tr>
+  <tr><td><b>Reed</b> <span class="흐린">떨림판</span></td><td>24시간 라디오·자습 소리의 층 — 곡이 늘수록 방송이 좋아지게(Atlas 에는 기여하지 않는 셋째 줄)</td><td>설계 v0.1 · 곡 제작은 AI 생성으로(합성 통로 하차) · 송출 미개시</td></tr>
+</table></div>
+<p class="작게 흐린">엔진 로드맵(유호님 확정): 1년차(2026-08~2027-08) 과녁은 개수가 아니라 <b>「㉡ 사람·㉢ 삶이 엔진에 닿는다 + 학생 한 명분 세로줄 1회 관통」</b>. 설계 불변식 = 모델은 부품·엔진이 제품 / 수집은 사람 손 없이 엔진 도달 / 개입-효과 짝이 최상위 자산 / 명품과 속도를 맞바꾸지 않는다.</p>
 
-<div class="keys">
+<p class="작게 흐린">🗄 <b>SYNK PATH</b>(유학·취업 연계) — 회사도 계정도 아닌 «상품 이름 하나»로 서랍에 있다. 꺼내는 날 = 유학·취업 연계로 학생 1명이 실제로 한국 대학·기업에 간 날.</p>
 
-  <div class="key k1">
-    <div class="h">열쇠 1 · 사람 하나</div>
-    <div class="t">몽골어 검수자</div>
-    <div class="u">발주서·금액·접촉처는 이미 서 있습니다. <strong>사람만 정하시면 그날 요청 전량이 나갑니다.</strong>
-      요청은 <code>docs/몽골어검수_요청_큐.md</code> 한 자리에 모여 있습니다.</div>
-    <div class="unlocks"><b>이것이 풀리면</b>
-      간판(키릴 의무) · 채용 공고 · 근로계약서 · 학부모 인쇄물 · 미니게임 4모듈 · 동의 문구 · 앱 문구 ·
-      <strong>위기의 말(사과·환불·배웅) 각본</strong> — <strong>여덟 자리</strong>가 동시에 움직입니다</div>
-  </div>
+<!-- ══════════════ §3 SYNK LAB ══════════════ -->
+<h2 id="lab"><span>SYNK LAB — 몽골 학원 · 첫 실물</span></h2>
 
-  <div class="key k2">
-    <div class="h">열쇠 2 · 숫자 하나</div>
-    <div class="t">수강료</div>
-    <div class="u">등록 갈래는 <strong>이미 확정</strong>입니다(2티어 + 애드온 · 08-26).
-      남은 것은 <strong>실제 값</strong>과 얼리버드입니다.
-      <strong>가격은 명품의 선언</strong>이라 낮게 잡으면 지어 놓은 것이 값을 못 받습니다.</div>
-    <div class="unlocks"><b>이것이 풀리면</b>
-      상담 봇 잠금 첫 셋 · 환불 3구간(금액이 있어야 비율이 뜻을 가집니다) · 얼리버드 카드 ·
-      12월 파일럿의 세 목적 중 하나 · 인쇄 문안 · 하이라이트·고정 게시물 — <strong>일곱 자리</strong></div>
-  </div>
+<p><b>역할 넷</b>: ① 현금흐름의 원천 ② 엔진의 데이터 수집처(빅테크가 못 하는 수집) ③ SHIFT 영상의 실물 증명(「자기 회사를 AI 로 짓는다」) ④ 테라포밍의 원형(몽골에서 완성한 시스템을 나라마다 복제). 교육 철학 = 앉아서 듣는 교육은 끝 — <b>몸으로 겪고, 나에게 맞고, 기록으로 남는 교육</b>. 목표 둘 = 실제로 사용할 수 있는 한국어 + 원하는 삶의 방향(합격은 기본으로 챙긴다).</p>
 
-  <div class="key k3">
-    <div class="h">열쇠 3 · 조건 하나</div>
-    <div class="t">매물을 무엇으로 고르나</div>
-    <div class="u">동선이 0㎡라 실제 필요 면적이 <strong>317~347㎡</strong>인데 재무 정본은 「300㎡+ 회피」를 확정으로 뒀습니다.
-      <strong>돈이 안 드는 갈래가 하나 있습니다</strong> — 공용부가 «별도»로 붙은 매물만 보는 것.</div>
-    <div class="unlocks"><b>이것이 풀리면</b>
-      개원 시 몇 실을 여나 · 크루 광장 처방 · 시공 견적 · <strong>11월 부트캠프가 설 자리</strong> ·
-      12월 파일럿 장소 · 인테리어 발주 시점 — <strong>아홉 자리</strong></div>
-  </div>
+<div class="정직">⚖ <b>시제</b> — 오늘 학생은 <b>0명</b>이다. 아래 «돈다»는 시스템이 라이브라는 뜻이고, 학생 지표는 전부 개원 뒤에 처음 생긴다. 「문을 열기 전에 여기까지 지어 놓았다」가 이 회사의 자랑이다.</p></div>
 
+<h3>포지션·숫자 한 벌 <span class="흐린 작게">(수치 정본 = 급여·인센티브 정본 · 사업계획서 v5 사본 기준)</span></h3>
+<div class="표스크롤"><table class="표 빽빽">
+  <tr><th>축</th><th>값</th></tr>
+  <tr><td>포지션</td><td>울란바토르 <b>시장 최고가</b> 한국어 학원(로컬 13~28만₮ 대 42~69만₮) — 가격이 아니라 속도·성과·시스템으로 싸운다 · 타겟 = 상위 20~25% 소득 가구 청소년 + 목적 확실한 성인</td></tr>
+  <tr><td>규모</td><td><b>4실 24반 384석</b>(평일 256 + 주말 128) · 전 반 16명 · 직원 13명(원장 2 · 몽골 강사 8 · 댄스·뷰티·보컬 각 1) · 임대 1,500만₮/월 · 254.5㎡</td></tr>
+  <tr><td>가격</td><td>2티어 — 스탠다드 <b>55/47/42만₮</b>(1·3·6개월 월가) · 올액세스 <b>69/61/55만₮</b>(평일 전용) · 주말 트랙 = 스탠다드 값</td></tr>
+  <tr><td>손익</td><td>실효 ARPU <b>42.7만₮</b> · 손익분기 = 개원 2실 101명 → 3실 109명 → 만석 편제 <b>117명(30%)</b> · 만석 매출 월 16,395만₮ · 준비 현금 <b>2.4억₮ 확보</b> · ⚠ 사회보험·외국인 고용부담금 서면 확인이 개원 전 최우선 미결</td></tr>
+</table></div>
+
+<h3>수업 — 무엇을 가르치나</h3>
+<div class="표스크롤"><table class="표 빽빽">
+  <tr><th>층</th><th>내용</th><th>상태</th></tr>
+  <tr><td>코어(정규 한국어)</td><td>1회 90분 · 평일 주 5일 대면 / 주말 토 대면+녹화 블렌디드 · 6레벨 × 8주 시즌 · 연 6시즌 = 12개월 1회전(학원 제공 최대 1년) · 승급은 도달제 · 상한 = <b>TOPIK 5급</b>(6급 반은 열지 않는다)</td><td><span class="상태 대기">⏳ 개원과 함께</span></td></tr>
+  <tr><td>수업의 질</td><td><b>발화 퀄리티 엔진</b> — 소그룹 20분 타임박스(3라운드 짝 교대) · 역할 발화 의무 · 학생별 발화 지수 · 4인 조 편성 자동화</td><td><span class="상태 돈다">✅ 시스템 돈다</span></td></tr>
+  <tr><td>곁수업(위성)</td><td>K컬처 <b>무료</b>·자유 참여 — 개원 1단계는 <b>댄스 1종</b>(보컬·뷰티는 등록 데이터 보고 확장) · 원어민 회화(유호님)·글로벌 영어(재헌님)는 <b>유료 애드온·올액세스 구성품</b></td><td><span class="상태 대기">⏳ 개원과 함께</span></td></tr>
+  <tr><td>교재(자체 IP)</td><td>시냅스 코어 1~6권 + 시냅스 톡 1~4권(총 ≈1,020p 설계) · 권1 원고 완료(원어민 검수 대기) · 교재는 재헌님 전면 담당</td><td><span class="상태 짓는">🔨 집필 중</span></td></tr>
+  <tr><td>철학 4기둥 프로그램</td><td>① 나침반 세션(드림맵 — 목적이 먼저) ② K컬처 곁수업 ③ 싱크 크루 프로젝트(반년 캡스톤) ④ 싱크 포트폴리오(기록 자산)</td><td><span class="상태 대기">⏳ 개원과 함께</span></td></tr>
+  <tr><td>AI 활용 교육</td><td>바깥 AI 는 금지가 아니라 <b>판단을 가르친다</b> — 네 낱말 「맡기기·부탁하기·가려보기·책임지기」 · 학부모 A4 · 교안 v1</td><td><span class="상태 짓는">🔨 몽골어 검수 대기</span></td></tr>
+</table></div>
+
+<h3>강사 — 8명 체계</h3>
+<p class="작게">채용·훈련 <b>8명</b>, 개원일 계약 발효 <b>4명</b>(확정) · 발효 사다리 96명→5·6 / 144명→7·8은 [제안 수치] · 자격 = TOPIK 4급 이상 + 내부 레벨 인증 3단 · 채용 기준 한 줄 = <b>「학생 한 명을 떠올렸을 때 그 학생이 어떤 학생인지 이야기해 줄 수 있는 사람」</b> · 훈련 자료는 앱 안 「훈련」 탭 · 기본 시급 15,000₮ 단일(최저임금의 3.18배) · 강사 = 「AI 가 못 하는 일」이 아니라 <b>「사람이어야만 하는 일」</b>(공감·마음·같은 시간).</p>
+
+<h3>앱 — SYNK-talk (학생·학부모·강사·원장 4역할)</h3>
+<div class="표스크롤"><table class="표 빽빽">
+  <tr><th>축</th><th>내용</th><th>상태</th></tr>
+  <tr><td>스택</td><td>원본 데이터 = <b>Supabase+Postgres 하나</b> · Sheets 는 운영·리포트 파생층 · 앱 = <b>Expo</b> 네이티브(Glide 폐기) · 모션 = Skia(+Lottie 자리 미정)</td><td><span class="상태 돈다">✅ 확정</span></td></tr>
+  <tr><td>출시의 정의</td><td>출시 = <b>스토어 정식 등재</b>(App Store·Google Play) · 개원 «전» · 조건 = 기능 완성이 아니라 <b>「하루 루프(숙제→제출→교정→답장)가 안 끊기는 것」</b> · 이후 EAS Update 로 심사 없이 배포</td><td><span class="상태 짓는">🔨 짓는 중</span></td></tr>
+  <tr><td>수집 설계</td><td>숙제 = 미니게임 = 데이터 수집(한 물건) · 게임 규칙 셋 = TOPIK 문법 활용·심리 암묵 수집·99% 자동화 · 콘텐츠 뱅크 = 숙제 210·퀴즈 100·문법 게이트 72·시즌 보스 12</td><td><span class="상태 돈다">✅ 설계 확정</span></td></tr>
+  <tr><td>계정</td><td>학원 발급 <code>student_code</code> 만 로그인(공개가입 없음 — 학원 밖 일반인은 2027-08 게임 앱의 자리) · 🔴 <b>학생 ID 졸업 후 영속</b> 설계가 미착수 — SHIFT ⑥⑦이 전부 여기 걸려 있고, 이것만 나중에 하면 앱을 다시 짓는다</td><td><span class="상태 유호">🔴 영속 설계 미착수</span></td></tr>
+  <tr><td>학부모</td><td>학부모는 앱에 «들어온다» — 리포트판·부모소식판·우리아이판 3벌</td><td><span class="상태 대기">⏳ 구현</span></td></tr>
+</table></div>
+
+<h3>운영 자동화 — 이미 돌고 있는 것 <span class="흐린 작게">(시스템 대장 46줄 = 🟢 라이브 41 · 🟡 반영 대기 5)</span></h3>
+<p class="작게">접수(크루카드·Meta 자동응답·자동 반배정·학생 ID 자동 발급 — 상담 AI 챗봇은 🟡 Meta 검수 대기) · 수업(출석 레일·조 편성 로테이션·강사 HUD) · 학부모(AI 첨삭 무인 발행 — 품질 게이트 통과분만 · 주간 통합 리포트 · 성장 리포트 카드 · 만족도 설문) · 게임화(포인트 경제·명예의 전당) · 감시(무결성 감시망·야간 자가치유·리텐션 레이더) · 원장석(강사 3지표 · <b>배치 리허설 모드</b> — 실메일·비용 없이 배치 41종 예행) · 개발(CI 회귀 <b>1,600+ 테스트</b> · 배포 게이트 5층 · 이종 AI 검수). 데이터·AI 자산: 학습 데이터 수집층 · 음성 수집+STT(동의 게이트) · <b>면접 질문은행</b>(VR 면접의 원천) · <b>직장 경험 광산</b>(VR 직업체험 = 실기 검정의 원천) · 궤적 레일.</p>
+
+<h3>몽골 행정 — 지금 열려 있는 것</h3>
+<p class="작게">허가 갈래 = <b>「비형식 교육 등록」 확정</b>(특별허가 불필요 · 광고에 「인가」 표현 금지) · 법인·비자·등록 문의 = 법무법인 4곳 + 교육부 직접 질의 <b>회신 대기</b> · 임대 계약 창 = 2026-10-05~11-09(「개인 선계약 → 법인 이전 가능?」 답이 법인 착수 시점을 정한다 · ⚠ 사업계획서 v5 의 「08-01 실계약」 표기와 갈린다 — 유호님 확인 자리) · 몽골어 감수자 확보 = 9~10월(마지노선 11월 · 확보 전 몽골어 유료 광고 금지) · 마케팅 = 하루 $5 고정(6개월 ≈$905) + 0원 채널 주력.</p>
+
+<!-- ══════════════ §4 SYNK SHIFT ══════════════ -->
+<h2 id="shift"><span>SYNK SHIFT — 한국 법인 · 방법을 파는 곳</span></h2>
+
+<div class="정직">⚖ <b>시제</b> — 이 회사는 <b>아직 없다.</b> 법인 0 · 직원 0 · 고객 0 · 매출 0. 이 절의 거의 전부가 미래형이고, 지금 도는 것은 <b>영상 준비와 설계</b>뿐이다. 구조(유호님 확정): 유호님은 몽골에서 <b>영상만 촬영</b>하고, 한국 법인은 <b>직원 1명에게 거의 위임</b>한다.</div>
+
+<h3>목적의 사다리</h3>
+<div class="표스크롤"><table class="표 빽빽">
+  <tr><th>층</th><th>무엇</th><th>왜</th></tr>
+  <tr><td><b>첫 번째 목적</b></td><td>새 «개인» 계정으로 <b>AI 인플루언서</b>가 된다(계정 이름은 회사가 아니라 유호님 개인 — 법인이 아직 없다)</td><td>신뢰·구독자는 리드타임이 가장 긴 자산 — 유일하게 돈으로 못 사고 시간만 만든다</td></tr>
+  <tr><td>운영</td><td><b>AI 강사 에이전시</b> — 유호님 방식(1인이 회사를 AI 로 짓는 것)을 판다</td><td>남들은 남의 회사에 AI 를 붙이고, 유호님은 자기 회사를 짓고 있다 — 문 열기 전부터</td></tr>
+  <tr><td><b>최종 목표</b></td><td><b>국가공인 자격증 발급 기관</b> — 「SYNK 인증」이 한국 기업의 외국인 채용 기준이 되는 것</td><td>TOPIK 이 못 재는 것 = 「이 사람이 한국 회사에서 일할 수 있는가」 · 학습기록×취업결과의 짝 5년을 가진 곳이 우리뿐</td></tr>
+</table></div>
+
+<h3>설계 일곱 <span class="흐린 작게">(유호님 채택 08-27 · 정본 = docs/SHIFT/설계_v1.md)</span></h3>
+<div class="표스크롤"><table class="표 빽빽">
+  <tr><th>#</th><th>설계</th><th>요지</th></tr>
+  <tr><td>①</td><td>직원 = <b>시스템을 돌리는 사람</b></td><td>회사의 상한이 사람이 아니라 유호님이 짓는 시스템 — 그가 나가도 0이 안 된다 · 시스템 자체가 최고의 영업 자료(회의록 5분·제안서 3시간)</td></tr>
+  <tr><td>②</td><td>직원을 <b>«첫 제자»</b>로 뽑는다</td><td>「몽골의 대표가 한국 직원에게 원격으로 가르친다」 — 교육이 곧 마케팅이고 상품 시연 · 고객이 영상에서 본 사람을 실제로 만난다 · ⚠ 촬영 동의·초상권·퇴사 후 영상 처리를 계약서에</td></tr>
+  <tr><td>③</td><td>영상 <b>공개선</b></td><td>유호님 «자신의» 업무 자동화 ○ / 학생 데이터가 흐르는 층 전부 ✗ · 🔴 첫 10편의 톤이 20년 브랜드의 톤(「월 천만원」 톤 금지 — 그 관객은 대학·교육청 담당자가 아니다)</td></tr>
+  <tr><td>④</td><td>첫 고객 = <b>대학 어학원·국제처</b></td><td>그들의 고통(유학생 서류·상담·이탈률) = 정확히 우리가 학원에서 푸는 문제 · 그 계약이 <b>TO 협상 테이블의 입장권</b>(벤더는 매년 만난다)</td></tr>
+  <tr><td>⑤</td><td>SHIFT = 취업의 <b>수요 채널</b></td><td>기업이 궁금한 건 「이 회사 유명한가」가 아니라 「이 사람이 일할 수 있는가」 · 고객사 명단 = 채용처 명단 · 외국인 채용의 진짜 장벽(관리 비용)을 AI 로 덜면 에이전시 상품과 학원 출구가 같은 물건</td></tr>
+  <tr><td>⑥</td><td>졸업생 = <b>10년 뒤 고객사 명단</b></td><td>졸업생이 입사한 순간 SYNK 의 영업망 — 5년 뒤 그가 팀장이 되면 SYNK 가 벤더 · 레일은 이미 있다(outcome_log·trajectory)</td></tr>
+  <tr><td>⑦</td><td>🔥 <b>국가공인 자격증 발급 기관</b></td><td>인증이 서는 날 학원=준비 과정 · 에이전시=파트너 · 대학=TO — 셋이 하나로 닫힌다 · 🔴 그 데이터(학생 ID 영속)가 오늘부터 쌓여야 한다</td></tr>
+</table></div>
+
+<h3>VR — 훈련장이자 실기 검정장</h3>
+<p class="작게"><b>VR 면접</b>(들어가는 문 · 채점 축 = 모순 탐지) — 0단계 실물 = <b>면접 질문은행 🟢 라이브</b>(실제 면접 질문·채점 기준을 지금부터 수집) + 직장 경험 회수 폼(v9.268 · 🟡). <b>VR 직업체험</b>(들어가서 «할 수 있는가» · 08-27 신설) — 설계 v1 채택: 채점 축 넷(지시 수용·보고·안전·관계 언어) · 회차 = 장면→과업→방해→보고 · 등급 셋 · 코드 0. 🔑 <b>VR 채점 기준 = SYNK 인증의 실기 검정 기준 — 같은 물건이라 두 번 만들지 않는다.</b> 등록 신청서의 검정방법은 「컴퓨터 기반 실기」로 적는다(VR 로 못 박으면 「3회」 시계가 장비를 기다린다) — 훈련은 무헤드셋, 검정 장비는 검정 방식을 정하는 날.</p>
+
+<h3>영상 — 지금 도는 유일한 SHIFT 트랙</h3>
+<p class="작게">✅ 확정: 새 <b>개인 계정</b>을 만든다(LAB 계정과 분리 — 몽골어/학생·학부모 대 한국어/업계) · 톤 정본 = 「AI 로 교육 회사를 짓고 있는 사람」. ⏳ 유호님 확정 대기: 공개선 12칸(재료 = <code>docs/SHIFT/영상_공개선.md</code> — 한 줄 자 「내 일은 보여준다 · 내 돈과 남의 것은 안 보여준다」) · 플랫폼·계정 이름·업로드 주기. 소재 초안 10편은 서 있다(대본 0편 · 기존 45편은 관객이 달라 재사용 불가).</p>
+
+<!-- ══════════════ §5 로드맵 총표 ══════════════ -->
+<h2 id="로드맵"><span>로드맵 총표 — 시간축</span></h2>
+
+<p class="작게 흐린">축 표기: <span class="축">SYNK</span> 브랜드·상표 · <span class="축">LAB</span> 학원 · <span class="축">앱</span> 제품 · <span class="축">SHIFT</span> 법인·자격증 · <span class="축 신호">유호님</span> = 유호님만 여는 자리. 날짜 원칙(유호님 08-27): 구 「+24개월·+28개월」류 절대 표기는 폐기 — <b>사건 앵커</b>(출시·위임·등록)가 시간을 정한다.</p>
+
+<div class="표스크롤"><table class="표">
+  <tr><th>언제</th><th>축</th><th>무슨 일</th></tr>
+  <tr><td><b>지금<br>2026-08</b></td><td><span class="축">SHIFT</span><span class="축">앱</span></td><td>
+    · AI 인플루언서 <b>개인 계정·첫 10편</b> 준비 — <span class="상태 유호">공개선·플랫폼·주기 확정 대기</span><br>
+    · talk 앱 개발(하루 루프) + 🔴 <b>학생 ID 영속 설계</b>(미착수 — 지금 자리) + «전세계 B2C 로 열 수 있게» 전제<br>
+    · SHIFT 설계·제도 실측 완료 · 관리운영규정 v0.1 초안</td></tr>
+  <tr><td><b>2026-09~10</b></td><td><span class="축">LAB</span></td><td>
+    · 강사 채용 착수(8명 체계) · 몽골어 감수자 확보(마지노선 11월)<br>
+    · SNS 계정 워밍업 두 달(9월을 잃으면 11월 광고가 없다) · 연재 「열여섯 번의 공개」는 가이드 셋이 서는 날<br>
+    · 임대 계약 창 10-05~11-09 — 「개인 선계약→법인 이전?」 회신이 몽골 법인 착수 시점을 정한다</td></tr>
+  <tr><td><b>2026-11~12</b></td><td><span class="축">LAB</span><span class="축">SYNK</span></td><td>
+    · 11월 유료 광고 개시(몽골어 감수 뒤) · 강사 온라인 훈련(부트캠프 유급판은 폐기 — 온라인 숙지 + 파일럿 시연)<br>
+    · 몽골 상표 대리인 선정 → 출원 준비</td></tr>
+  <tr><td><b>2027-01말<br>~02초</b></td><td><span class="축">LAB</span></td><td>
+    · <b>파일럿 2~3주</b>(구 12월안 폐기) — 전환율 25% «가정»을 실측하는 자리(계획에서 가장 비싼 미실측 값) — <span class="상태 유호">날짜 충돌 셋(차강사르 02-06~09·광고 순서·연간 달력) 못 박기 대기</span></td></tr>
+  <tr><td><b>2027-02-11</b></td><td><span class="축">SYNK</span></td><td>· 🔴 <b>몽골 상표 출원 기한</b>(파리협약 우선권 6개월 — 넘기면 한국 권리만 남는다)</td></tr>
+  <tr><td><b>2027-02</b></td><td><span class="축">앱</span><span class="축">LAB</span></td><td>
+    · <b>학원 앱 스토어 정식 출시</b>(개원 «전» · App Store+Google Play) · talk 저장소 비공개 복귀<br>
+    · 🏫 <b>SYNK LAB 개원</b> — 2월 중순 목표(구 02-25 · <span class="상태 유호">날짜 못 박기 대기</span>) · 개원과 함께: K컬처 워밍업·크루·나침반 세션·학부모 설명회 · 첫 학생의 첫 답(소급 불가)이 이날 처음 적힌다</td></tr>
+  <tr><td><b>2027-03</b></td><td><span class="축">LAB</span><span class="축">SHIFT</span></td><td>
+    · 성수기 본격(M1~3 재적 30~55 가정) · Prism 집계층 착수(개원 직후)<br>
+    · <b>SHIFT 법인 설립</b>(개원 후 안 기준 — <span class="상태 유호">앞당길지 = 유호님 판정 ⑧</span>) → <b>자격증 시계가 이날 출발</b></td></tr>
+  <tr><td><b>법인+3~4개월</b></td><td><span class="축">SHIFT</span></td><td>· <b>민간자격 «등록»</b>(법정 3개월 + 부처 걸침 자문위) — 관리운영규정·검정 기준을 그전에 완성 · 종목명·검정 과목·응시 자격은 신청서 쓰는 날 확정</td></tr>
+  <tr><td><b>2027-08<br>(개원+6개월)</b></td><td><span class="축">앱</span></td><td>
+    · 🎮 <b>한국어 TOPIK 게임 앱</b> — 학원 앱을 «커스텀»해 전환·출시 · 자연스러운 회화(비서형 챗봇)+재밌는 TOPIK 게임이 <b>한 앱</b> · 관객 = 몽골 → <b>전세계</b><br>
+    · 엔진 1년차 과녁 마감 — 학생 한 명분 세로줄 1회 관통(데이터가 쌓이는 기간은 개원~여기 5~6개월뿐 — ㉡㉢ 배선은 개원 «전»에)</td></tr>
+  <tr><td><b>2027-09~11</b></td><td><span class="축">LAB</span></td><td>· 신학년 성수기 — <b>손익분기(2실 101명) 통과 창</b> + 6개월권 선수취(계획 최대 단일 이벤트)</td></tr>
+  <tr><td><b>2027-12~<br>2028-02</b></td><td><span class="축">LAB</span></td><td>· 첫 겨울 — 계획상 흑자 아님(선수취+버퍼 3,500만₮ 방어·하이브리드 모드) · <b>2028-02 = 1기 졸업</b> → Trail 데이터 시작 · 선배 모드 코드 착지 시한</td></tr>
+  <tr><td><b>게임 앱<br>+6개월쯤</b></td><td><span class="축">앱</span><span class="축">SHIFT</span></td><td>· 🥽 <b>VR 면접 대비·직무 체험</b> — 게임 앱에 기능 추가 <b>또는</b> VR 특화 앱 별도 출시(두 갈래 열림) · VR 채점 기준 = 검정 기준이라 자격 트랙과 한 물건</td></tr>
+  <tr><td><b>등록+1년<br>+검정 3회</b></td><td><span class="축">SHIFT</span></td><td>· 검정 3회 실시(응시자는 우리 학생을 기다리지 않는다 — 한국 내 외국인 유학생·근로자 + 고객사의 외국인 직원 · <b>명단 설계 미착수</b>) → <b>공인 신청 자격 발생</b>(법인 2027-03 기준 ≈2028-08)</td></tr>
+  <tr><td><b>LAB 운영<br>1년 뒤</b></td><td><span class="축">LAB</span></td><td>· 몽골 지점 <b>위임</b> → 🌏 <b>베트남 테라포밍</b>(여기까지 확정) · 다음 나라는 베트남에서 정보 수집 후 결정 · 위임 모델 = 설계 ①(시스템을 돌리는 사람)의 지점판</td></tr>
+  <tr><td><b>≈2029</b></td><td><span class="축">SHIFT</span></td><td>· 🎓 <b>국가공인</b>(자격정책심의회 · 법인 2027-03 기준 — 설립을 당기면 같이 당겨진다) · 이후 5년마다 갱신(한 번 받고 끝이 아니라 계속 운영하는 물건)</td></tr>
+  <tr><td><b>셋째~넷째 해</b></td><td><span class="축">LAB</span></td><td>· 2호점 게이트 3조건(재등록 70%·월 흑자 6개월 연속·이탈 ≤5% — 전부) · 유학 100~180명</td></tr>
+  <tr><td><b>20년</b></td><td><span class="축">SYNK</span></td><td>· 졸업생 = 고객사 명단 · <b>SYNK 인증 = 한국 기업의 외국인 채용 기준</b> · 전 지점이 한국으로 송출 — 「AI 로 교육 회사를 짓고 있는 사람」의 이야기가 완성된다</td></tr>
+</table></div>
+
+<p class="작게 흐린">진로별 AI 비서 1호(유학 집약 봇)는 연차가 아니라 <b>«선행 = ㉢(삶 이해) 엔진 도달»</b>이 자리를 연다 — 날짜를 안 적는 것이 정확한 상태다(제품방향 확정).</p>
+
+<!-- ══════════════ §6 자격증 시계 ══════════════ -->
+<h2 id="자격시계"><span>자격증 시계 — 최종 목표의 제도적 길</span></h2>
+
+<div class="시계">
+  <div class="단계 신호"><div class="이름">① 법인 설립</div><div class="걸림">유일한 손잡이 — 여기가 밀리면 전부 밀린다 (유호님 판정 ⑧)</div></div>
+  <div class="사이">→</div>
+  <div class="단계"><div class="이름">② 민간자격 등록</div><div class="걸림">3~4개월 · 관리운영규정 등 구비 · 부처는 하나로 정해진다(교육부/고용부 후보)</div></div>
+  <div class="사이">→</div>
+  <div class="단계"><div class="이름">③ 1년 + 검정 3회</div><div class="걸림">법정 최소 시간 — 「2배 가속」이 안 먹히는 유일한 축</div></div>
+  <div class="사이">→</div>
+  <div class="단계"><div class="이름">④ 공인 심의</div><div class="걸림">자격정책심의회 · 기준 셋(운영능력·실적·검정수준)</div></div>
+  <div class="사이">→</div>
+  <div class="단계 신호"><div class="이름">🎓 국가공인</div><div class="걸림">법인 2027-03 기준 ≈2029 전후 · 5년마다 갱신</div></div>
 </div>
 
-<div class="hr"></div>
+<p class="작게"><b>전략(확정)</b>: 자격은 <b>«하나»로 시작</b> — 자격 하나에 부처 둘은 제도가 안 준다. 두 축(한국어·직무)은 한 종목 안 <b>등급</b>으로 가른다(아래 등급 = 한국어 비중 · 위 등급 = 직무 비중). 「둘 다」는 포기가 아니라 순서 — 첫 공인 뒤 둘째를 다른 부처에. 제도의 빈칸이 정확히 우리 자리다: EPS-TOPIK(E-9 저숙련)의 <b>위</b>(유학 후 취업·E-7)를 재는 자가 국가에 없다. 「SYNK 인증」 명칭은 안전(⚠ 종목명에 TOPIK 금지). <b>기대치는 정직하게</b> — 공인 도장이 취업을 만들지 않는다. 진짜 값은 가는 길에 쌓인다: 검정 3회 = 데이터 · 능력 심사 = 시스템 정비 · 부처 접촉 = 관계.</p>
+<p class="작게 흐린">🔴 안 재본 것(지어내지 않는다) — 대표 해외 거주 시 설립 실무 제약 · 상호 「싱크시프트」 등기 실측(07시 이후 재측) · 도메인 · 직원 1명 고용 실무 · 관리운영규정 ⬜ 남은 칸(그중 장애·질병 대체 검정방법은 🔴 필수 미설계).</p>
 
-<h2><span class="번호">03</span><span>달력 — 전부, 마감이 이른 순서로</span></h2>
+<!-- ══════════════ §7 유호님 앞 ══════════════ -->
+<h2 id="유호몫"><span>유호님 앞에 걸린 것 — 유호님만 열 수 있는 자리</span></h2>
 
-<table>
-  <thead>
-    <tr><th>마감</th><th>무엇</th><th>갈래 / 값</th><th>성질</th><th>원문</th></tr>
-  </thead>
-  <tbody>
-    <tr><td class="d">~~09-01~~<br>✅</td><td>✅ <strong>여섯 다 08-26 에 닫혔습니다</strong> — 채용 기준 한 줄 · 공고에서 「수업 외에 하실 일」 빼기 · 블록 배분 · 관문 미통과 처리 · <strong>부트캠프 폐기 → 온라인 + 시연</strong> · <strong>개원일 4명</strong></td><td>—</td><td><span class="pill" style="border-color:var(--meadow);background:var(--meadowsoft);color:var(--meadowdeep)">닫힘</span></td><td><a href="강사채용_부트캠프_v1.md">강사채용</a></td></tr>
-    <tr style="opacity:.62"><td class="d">09-05 ✅</td><td>✅ <strong>자격 요건 — 08-26 확정 = TOPIK 4급 + 레벨 인증</strong> <em>(입사 4급 → 초급반 · 상위는 내부 인증으로 연다)</em></td><td>—</td><td><span class="pill" style="border-color:var(--meadow);background:var(--meadowsoft);color:var(--meadowdeep)">닫힘</span></td><td><a href="강사채용_부트캠프_v1.md">강사채용</a></td></tr>
-    <tr><td class="d">09-08</td><td>지원 접수 통로 개설</td><td>구글 설문지 + 텔레그램</td><td><span class="pill">실행</span></td><td><a href="강사채용_부트캠프_v1.md">강사채용</a></td></tr>
-    <tr><td class="d">09-10</td><td><strong>몽골어 검수자 채용 집행</strong> — 열쇠 1</td><td>사람 결정 + 발주</td><td><span class="pill person">사람</span> <span class="pill money">돈</span></td><td><a href="몽골어검수_요청_큐.md">검수 큐</a></td></tr>
-    <tr><td class="d">09-10</td><td>검수 큐에서 채용 4종의 순서 + 검수자 채용 실패 시 갈래(지금 0건)</td><td>앞에 세운다 / 뒤에 붙인다</td><td><span class="pill way">방향</span></td><td><a href="강사채용_부트캠프_v1.md">강사채용</a></td></tr>
-    <tr><td class="d">09-15</td><td><strong>면접·부트캠프를 어디서 하나</strong> — 11월에 교실이 없습니다</td><td>가계약 후 A실만 선시공 / 대학 강의실 / 호텔·코워킹</td><td><span class="pill gone">늦으면 못 되돌림</span></td><td><a href="강사채용_부트캠프_v1.md">강사채용</a></td></tr>
-    <tr><td class="d">09-15</td><td><strong>Meta 비즈니스 인증을 어느 법인으로</strong> — 반려되면 01-05 광고에 못 댑니다</td><td>한국 개인사업자 / ㈜싱크시프트 / 몽골 LLC</td><td><span class="pill gone">늦으면 못 되돌림</span></td><td><a href="파일럿_체험2주_설계_v1.md">파일럿</a></td></tr>
-    <tr><td class="d">09-20</td><td>💰 모의수업 학생역 4명 유급 모집</td><td>[추정] 72만₮ · 모집에 3주 필요</td><td><span class="pill money">돈</span></td><td><a href="강사채용_부트캠프_v1.md">강사채용</a></td></tr>
-    <tr><td class="d">09-30</td><td><strong>파일럿 여덟</strong> — 장소 · 프린터 · 누구를 부르나 · 연령/부 · 체험 정원 N · 예산 · 얼리버드 당기기 · 시즌 기계 갈래</td><td>대부분 갈래 한 글자</td><td><span class="pill money">돈 3</span> <span class="pill way">방향 5</span></td><td><a href="파일럿_체험2주_설계_v1.md">파일럿</a></td></tr>
-    <tr><td class="d">09-30</td><td>숙제 체크·약점 메모·반 한 마디의 주기</td><td>매 차시 / 주 1회 / 월 1회 / 안 쓴다</td><td><span class="pill way">방향</span></td><td><a href="강사채용_부트캠프_v1.md">강사채용</a></td></tr>
-    <tr><td class="d">09월</td><td><strong>01-05 사전등록을 무엇으로 여나</strong> — 법인 사슬 때문에 그날 로비가 원리적으로 못 섭니다</td><td><strong>전면 온라인·앱(권고)</strong> / 대여 공간 상담 / 계약 앞당기기</td><td><span class="pill way">방향</span></td><td><a href="공간설계_v1.md">공간</a></td></tr>
-    <tr><td class="d">10월<br>답사 전</td><td><strong>면적 갈래</strong> — 열쇠 3</td><td>254.5㎡ 안에서 축소 / 면적 확대(+월 450~660만₮) / <strong>공용부 별도 매물만 본다</strong></td><td><span class="pill money">돈</span> <span class="pill gone">답사 전</span></td><td><a href="공간설계_v1.md">공간</a></td></tr>
-    <tr><td class="d">10-31</td><td>1기 8명의 멘토는 누구인가 — 11월엔 선배 강사가 0명입니다</td><td>원장 2인이 4명씩 / <strong>1기는 동기 짝, 정식 멘토는 2기부터</strong></td><td><span class="pill person">사람</span></td><td><a href="강사채용_부트캠프_v1.md">강사채용</a></td></tr>
-    <tr><td class="d">12월 초</td><td><strong>수강료 · 주소 · 체험 절차</strong> — 열쇠 2 · 광고 켜는 날의 실질 마감</td><td>값 셋</td><td><span class="pill money">돈</span></td><td>—</td></tr>
-    <tr><td class="d">12월 초</td><td><strong>환불 3구간 숫자</strong> — 돈 받는 규정 없이 광고를 못 켭니다</td><td>1/3 전 2/3 · 1/2 전 1/2 · 이후 0 <em>(초안)</em></td><td><span class="pill money">돈</span></td><td><a href="끝의설계_v1.md">끝의 설계</a></td></tr>
-    <tr><td class="d">12월 초</td><td>몽골 법정 환불 기준을 법무에 물을지 — <strong>안 재봤습니다</strong></td><td>묻는다 / 초안으로 시작</td><td><span class="pill way">방향</span></td><td><a href="끝의설계_v1.md">끝의 설계</a></td></tr>
-    <tr><td class="d">12월 초</td><td>결제 수수료·웰컴 키트를 환불에서 <strong>안 뺀다</strong>(명품 조항 둘)</td><td>채택 / 뺀다</td><td><span class="pill money">돈</span></td><td><a href="끝의설계_v1.md">끝의 설계</a></td></tr>
-    <tr><td class="d">12월 초</td><td>접점 12개 목록에 빠진 것 — <strong>유호님 머릿속·오프라인은 제가 못 봅니다</strong></td><td>목록 보완</td><td><span class="pill way">방향</span></td><td><a href="명품눈금_v1.md">눈금</a></td></tr>
-    <tr><td class="d">12월 초</td><td>밀도 점수를 «최저값»으로 낼지 — <strong>최저값이면 오늘 우리 점수는 0입니다</strong></td><td><strong>최저값(권고)</strong> / 평균</td><td><span class="pill way">방향</span></td><td><a href="명품눈금_v1.md">눈금</a></td></tr>
-    <tr><td class="d">D-132</td><td>대외 인쇄물의 「자기만의 5년 로드맵」 약속</td><td>이행 / 문구 하향 / 다년 보존 신설</td><td><span class="pill way">방향</span></td><td><a href="가져가는것_설계_v1.md">가져가는것</a></td></tr>
-    <tr><td class="d">D-107</td><td>💰 이 트랙 인쇄 상한 (월 256만₮ 중)</td><td>금액 한 줄</td><td><span class="pill money">돈</span></td><td><a href="가져가는것_설계_v1.md">가져가는것</a></td></tr>
-    <tr><td class="d">발주 전</td><td><strong>공간 여섯</strong> — 로비 가이드 수 · 「명예의 전당」 교체 · 크루 광장 · 방별 조연색 · 별자리와 세계관 · 개원 시 개방 실수</td><td>각 2~4갈래</td><td><span class="pill gone">벽에 새기면 되돌림이 가장 비쌉니다</span></td><td><a href="공간설계_v1.md">공간</a></td></tr>
-    <tr><td class="d">사인 발주 전</td><td><strong>교실의 매개 언어</strong> — 100% 한국어인가, 초급만 몽골어 허용인가</td><td>블랭킷 한국어 / 초급만 허용</td><td><span class="pill gone">뒤집히면 사인 발주가 통째로 다시</span></td><td><a href="공간설계_v1.md">공간</a></td></tr>
-    <tr><td class="d">걸음 1 전</td><td>💰 <strong>순간 폴더의 소유자</strong> — 강사가 올린 사진은 소유자가 그 강사(개인 Gmail)입니다</td><td>Workspace 좌석 / <strong>배치가 학원 계정으로 복사</strong></td><td><span class="pill gone">퇴사 때 소급 불가 자산이 사라집니다</span></td><td><a href="가져가는것_설계_v1.md">가져가는것</a></td></tr>
-    <tr><td class="d">개원 전</td><td>수료 기준 — 몇 시즌 이수하면 수료증인가 <em>(저장소 확정 0건)</em></td><td>6시즌? 그 미만도?</td><td><span class="pill way">방향</span></td><td><a href="가져가는것_설계_v1.md">가져가는것</a></td></tr>
-    <tr><td class="d">개원 전</td><td>💰 배상책임보험 — 드나 / 안 드나 / 얼마짜리 <em>(저장소 0건)</em></td><td>금액</td><td><span class="pill money">돈</span></td><td><a href="끝의설계_v1.md">끝의 설계</a></td></tr>
-    <tr><td class="d">개원 전</td><td><strong>떠나는 아이에게도 기록장·사진을 드릴지</strong></td><td><strong>드린다(권고)</strong> / 안 드린다</td><td><span class="pill way">방향</span></td><td><a href="끝의설계_v1.md">끝의 설계</a></td></tr>
-    <tr><td class="d">부트캠프 전</td><td>🚫 <strong>최저점을 급여 등급과 절대 연결하지 않는다</strong> — 연결하면 아무도 보고하지 않습니다</td><td>이 금지를 확정</td><td><span class="pill way">방향</span></td><td><a href="명품눈금_v1.md">눈금</a></td></tr>
-    <tr><td class="d">시행일 전</td><td>레드라인 대체 접수처 — <strong>원장이 당사자일 때 어디로 신고하나</strong> <em>(핸드북이 비워 둔 칸)</em></td><td>사람/기관 하나</td><td><span class="pill person">사람</span></td><td><a href="끝의설계_v1.md">끝의 설계</a></td></tr>
-  </tbody>
-</table>
+<div class="표스크롤"><table class="표 빽빽">
+  <tr><th>급</th><th>자리</th><th>왜 유호님인가</th></tr>
+  <tr><td><span class="상태 유호">🔴 로드맵을 연다</span></td><td><b>⑧ 법인 설립일을 앞당길지</b></td><td>자격증 시계 전부의 출발선 · 선행 = 대표 해외 거주 시 설립 실무 제약(미측정 · 법무 문의에 한 줄 얹기)</td></tr>
+  <tr><td><span class="상태 유호">🔴 로드맵을 연다</span></td><td><b>개원·파일럿 날짜 못 박기</b></td><td>2월 중순«쯤»은 아직 «쯤» — 충돌 셋(차강사르 한복판·광고 01-05 순서·연간 달력 재편) 판정</td></tr>
+  <tr><td><span class="상태 유호">🔴 찍기 전</span></td><td><b>⑥ 영상 공개선 12칸 + 계정 픽</b></td><td>첫 10편의 톤 = 20년 브랜드의 톤 — 되돌릴 수 없다 · 플랫폼·계정 이름·업로드 주기</td></tr>
+  <tr><td><span class="상태 유호">⏳ 판정</span></td><td>⑦ 멀티테넌시 금지선의 범위</td><td>「다른 학원에 안 판다」인가 「어디에도 안 판다」인가 — 첫 고객(대학 어학원)이 이 답에 걸려 있다</td></tr>
+  <tr><td><span class="상태 유호">⏳ 돈</span></td><td>① 4회전 크레딧 ≈$2.25 · ② 초급 예비 회전 ≈$1.13~ · 사람 채점 80행</td><td>과제 생성 품질 판정(정확성 축 하나 남음) — 채점은 한국어 교육 축이라 유호님 눈</td></tr>
+  <tr><td><span class="상태 유호">⏳ 행정</span></td><td>사회보험·외국인 고용부담금 <b>서면 확인</b> · 몽골 상표 대리인 선정(기한 2027-02-11) · 특허고객번호 영문성명 정정 · 스토어 출시 차단자 넷(개발자 계정 Apple $99/Play $25 · 방침 공개 URL · 등재물 · 심사용 데모 계정 — 코드가 아니라 유호님 계정·결제가 막는 자리)</td><td>계획 전체의 최대 미결(손익분기 117→130명 갈림) · 유호님 명의·계정</td></tr>
+  <tr><td><span class="상태 유호">⏳ 품질 픽</span></td><td>Loom 앱 화면 판정(학부모 3·강사 4·원장 3) · ⑨ 마린 피규어 픽 셋(몸·색·각 — <code>docs/마린_시안.html</code>) · Amber 3칸 · 감각층 귀검수 · 모델 픽(Opus↔Fable) · 캐싱 켜는 날(4회전 뒤) · ⑤ 동봉 이름충돌 검사 신설 여부</td><td>눈·귀·모델은 유호님이 고른다</td></tr>
+</table></div>
 
-<p style="font-size:13.5px;color:var(--ash)">
-  ※ 위 표는 <strong>마감이 있거나 되돌릴 수 없는 것만</strong> 실었습니다.
-  나머지(기록장 vs 졸업 포토북 · 시즌 컬러 로테이션 · Glide 손 기입 폼 · 앱 층 기각 재검토 · 눈금 목표치 다섯 등)는
-  원문 문서의 판정 절에 그대로 있고, <strong>지금 답 안 하셔도 아무것도 안 멈춥니다.</strong>
-</p>
+<!-- ══════════════ §8 급소·보완 ══════════════ -->
+<h2 id="급소"><span>급소 여섯 — 로드맵과 함께 보는 것</span></h2>
 
-<div class="hr"></div>
+<div class="표스크롤"><table class="표 빽빽">
+  <tr><th>#</th><th>급소 (이대로 가면)</th><th>보완 (설 자리)</th></tr>
+  <tr><td>1</td><td>2028년, 서류는 완벽한데 <b>검정 응시자 명단이 비어 있다</b></td><td>고객사·대학 계약에 「검정 응시」를 상품으로 묶는다 — 등록 «전»에 명단 설계</td></tr>
+  <tr><td>2</td><td>2027년 상반기, <b>4개 트랙이 유호님 한 몸에</b> 겹친다(개원+법인+게임 앱+영상)</td><td>우선순위 규칙 하나 — <b>충돌하면 시즌1이 항상 이긴다</b>(시즌1이 흔들리면 나머지 전부의 실물이 사라진다)</td></tr>
+  <tr><td>3</td><td>게임 앱 첫 주 1만 명 — <b>AI 청구서 폭탄</b>(호출당 ₩41 실측)</td><td>층 구조 — 게임(정적·비용≈0) 무료 / AI 회화 일일 제한+유료 · BM 칸 신설</td></tr>
+  <tr><td>4</td><td>전세계 사용자가 「나만의 선생님」을 기대하는데 <b>엔진이 아는 학생은 16명</b></td><td>v1 은 TOPIK 특화 게임성으로 승부 · 앱 수집 설계를 처음부터 — 전세계 사용자가 역으로 엔진의 먹이가 된다</td></tr>
+  <tr><td>5</td><td>2028년 초, 몽골을 떠날 날인데 <b>맡길 사람이 없다</b></td><td>시즌1부터 «미래 지점장» 후보를 심는다(「직원=첫 제자」의 몽골판) · 위임 게이트 = 「유호님 없이 N주 무사고」</td></tr>
+  <tr><td>6</td><td>하노이 한 골목에 <b>한국어 학원이 다섯</b> — 인가·신뢰 0부터</td><td>몽골 운영 중 「테라포밍 킷」을 부산물로 · 베트남은 학원 복제가 아니라 앱·VR·자격증이 앞서 가는 시장일 수 있다 · 규제 조사는 위임 6개월 전</td></tr>
+</table></div>
+<p class="작게 흐린">공격해도 안 뚫린 것 셋 — 두 축 분리(자격증=법인 시계 / 인플루언서=개인 계정·오늘 시작 가능) · VR=검정장 일체화(채점 기준을 두 번 안 만든다) · 게임 앱 커스텀 전환 전제를 talk 설계에 미리 박은 것.</p>
 
-<h2><span class="번호">04</span><span>안 여쭙는 것 — 제가 더 재서 다시 오겠습니다</span></h2>
-
-<div class="later">
-  <p><b>스물일곱 건은 「유호님만 아신다」가 아니라 「제가 아직 안 재봤다」입니다.</b>
-  되던지면 유호님 시간만 쓰고 답이 안 나옵니다. 제가 재서 갈래를 만들어 오는 것들 —</p>
-  <p>
-  · <strong>몽골 법정 환불 기준</strong>(법무 견적이 오면 같이 묻습니다) ·
-  <strong>QPay 환불 통로</strong>(수동 이체로 시작해도 되는지) ·
-  <strong>현지 구전이 실제로 어디서 도는지</strong>(리뷰 플랫폼인지 학부모 페북 그룹인지) ·
-  <strong>경쟁 학원의 접점 밀도</strong>(우리 눈금 Ⅱ의 상대 좌표) ·
-  <strong>지금 검사들이 접점 축을 다 덮는지</strong> ·
-  <strong>90분 블록 재배분 초안</strong>(ⓑ에서 「네가 내라」를 고르시면 그날 냅니다) ·
-  구인 채널 문안 · 장소 견적 문안 · 라이브 폼 실측.
-  </p>
-  <p style="margin-bottom:0">⚠ 다만 <b>유호님 머릿속·바탕화면·오프라인에 있는 것은 제가 원리상 못 봅니다.</b>
-  접점 목록(§03 「접점 12개」)에 빠진 게 있으면 그건 여쭙는 수밖에 없습니다.</p>
-</div>
-
-<div class="hr"></div>
-
-<h2><span class="번호">05</span><span>한 줄로 줄이면</span></h2>
-
-<div class="verdict">
-  <span class="tag">한 줄</span>
-  <p class="big">
-    설계는 여덟 중 여덟이 섰습니다. <strong>이제 막는 것은 문서가 아니라 답입니다.</strong><br>
-    <em>엿새 안에 여섯</em>, 그리고 <em>열쇠 셋</em> — 그 아홉이 나머지 마흔여덟을 끕니다.
-  </p>
-</div>
-
-<div class="foot">
-  지면 · docs/판정대기_한자리_2026-08-26.html<br>
-  모은 곳 · 공간설계_v1 §11(9) · 강사채용_부트캠프_v1 §13(14) · 파일럿_체험2주_설계_v1 §D(9) · 가져가는것_설계_v1 §16(10) · 끝의설계_v1 §12(8) · 명품눈금_v1 §9(7) = 57건<br>
-  판정의 뿌리 · docs/명품갭_판정_2026-08-26.html · 남은 일 · docs/_ops/트랙.md §4-F · 확정 · docs/_ops/결정.md<br>
-  ⚠ 이 지면은 <b>사본이 아니라 색인</b>입니다 — 답이 정해지면 고칠 곳은 원문 문서 하나이고, 여기는 그 줄을 지웁니다.
-</div>
+<hr class="실금">
+<p class="작게 흐린">이 지면의 갱신 규약 — 유호님 확정이 바뀌면 <b>그 세션이 이 지면의 해당 칸을 같이 갱신</b>한다(색인: 트랙 §9-SHIFT). 세부의 정본: 결정 전량 = <code>node tools/결정.js</code> · SHIFT = <code>docs/SHIFT/설계_v1.md</code> · 제품 = <code>docs/제품방향.md</code> · 철학 = <code>docs/SYNK_철학.md</code> · 실물 상태 = <code>docs/시스템_대장.md</code> · 엔진 = <code>docs/엔진/SYNK_엔진_지도.html</code> · 사업 수치 = 사업계획서 v5(재무 정본은 급여·인센티브 정본).</p>
 
 </div>
 </body>
