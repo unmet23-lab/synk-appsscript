@@ -11,7 +11,9 @@ description: SYNK 배포 파이프라인 — 구문검사(node --check) → 안�
 
 ## 도구 경로 (PATH에 없음 — 전체 경로)
 - node: `"/c/Program Files/nodejs/node.exe"` (Bash) / `& "C:\Program Files\nodejs\node.exe"` (PowerShell)
-- clasp: `"/c/Users/q1212/AppData/Roaming/npm/clasp.cmd"` · 작업 디렉토리: `C:\Users\q1212\Documents\SYNK-appsscript`
+- clasp: `"/c/Users/q1212/AppData/Roaming/npm/clasp.cmd"` · 작업 디렉토리: **지금 이 저장소**(`$CLAUDE_PROJECT_DIR`)
+  🔴 절대경로를 박지 않는다 — 워크트리 세션이 그 지시를 따르면 2·3·4단계가 **남의 트리 바이트**를 재고,
+  그 초록으로 자기 코드를 민다(08-26 실측). 배포 자체는 **메인 트리에서만** 한다(clasp-guard 0번이 막는다).
 
 ## 절차 (순서 엄수 — 하나라도 실패하면 다음 단계 금지)
 
@@ -67,7 +69,9 @@ description: SYNK 배포 파이프라인 — 구문검사(node --check) → 안�
    - `git diff --stat`으로 내 작업만인지 확인 후 커밋. 메시지: `[v9.xx] 제목 — 요약` + `Co-Authored-By: Claude <모델명> <noreply@anthropic.com>`.
    - `docs/버전_이력.md` 맨 아래에 같은 번호로 한 줄.
 
-6. **GitHub 백업**: `git push origin master`.
+6. **GitHub 백업**: `git push origin HEAD:master`.
+   🔴 `push origin master` 로 적지 않는다 — 워크트리에서는 로컬 `master` 가 안 움직여 **"Everything up-to-date"**
+   로 조용히 통과한다(08-26 실측 · 백업이 안 된 채 초록). `HEAD:master` 는 지금 가지를 민다.
 
 7. **라이브 배포**: `clasp push --force`.
    - ⚠ **push가 라이브를 안 바꾸는 프로젝트가 있다** — 고정 버전 배포를 서빙하면 push는 프로젝트 파일만 갱신한다(08-05 실사고: crewcard `@16`이 옛 스냅샷을 계속 서빙). 루트는 `@HEAD`라 push가 곧 라이브 — **프로젝트마다 다르다.**

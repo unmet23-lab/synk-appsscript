@@ -25,7 +25,11 @@ const fs = require('fs');
 const path = require('path');
 const { 인자게이트 } = require('./lib/인자게이트.js');
 
-const 루트 = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+/* 🔴 뿌리는 **이 스크립트가 사는 체크아웃**이다 — `CLAUDE_PROJECT_DIR` 을 앞에 두지 않는다.
+ *   [08-26 실측] 워크트리 세션에서 그 env 는 워크트리를 가리키는데 스크립트는 다른 트리의 것일 수
+ *   있어, 「어느 체크아웃이 정본인가」가 호출 방식마다 갈렸다. 자리를 아는 것은 스크립트 자신이다
+ *   (`tools/인용검사.js:43`·`tools/대장동봉검사.js:36` 이 이미 쓰는 규약). */
+const 루트 = path.resolve(__dirname, '..');
 const 설정경로 = path.join(루트, '.claude', 'settings.json');
 const 개원경로 = path.join(루트, '.claude', '개원.json');
 
