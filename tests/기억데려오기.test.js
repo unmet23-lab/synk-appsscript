@@ -4,31 +4,32 @@
  *
  * 🔴 이 시험이 있는 까닭(08-26 실사고): 첫 판은 경로의 «역슬래시»를 안 지웠다.
  *   그러면 path.join 이 그것을 구분자로 먹어, 기억 296벌이 제자리가 아니라
- *   `projects/C-/Users/q1212/Documents/...` 라는 «폴더 트리»로 클론됐다.
- *   그런데 `node --check` 는 통과했다 — 정규식이 여전히 «유효»했기 때문이다.
+ *   projects/C-/Users/q1212/Documents/... 라는 «폴더 트리»로 클론됐다.
+ *   그런데 node --check 는 통과했다 — 정규식이 여전히 «유효»했기 때문이다.
  *   즉 구문검사가 원리상 못 보는 자리라, 세는 시험이 따로 있어야 한다.
  */
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 
-const 역슬래시 = String.fromCharCode(92);      // 이 파일도 정규식에 그 글자를 직접 안 쓴다
+const 역슬래시 = String.fromCharCode(92);      // 이 파일도 그 글자를 직접 안 쓴다
 const 도구 = path.join(__dirname, '..', 'tools', '기억데려오기.js');
-const { 폴더이름 } = require(도구);
+const { 폴더이름, 형제기억 } = require(도구);
 
 test('폴더이름 은 경로 구분자를 한 글자도 남기지 않는다 — 남으면 기억이 폴더 트리로 흩어진다', () => {
   const 후보 = [
     'C:/Users/q1212/Documents/SYNK-appsscript',
     'C:/Users/q1212/Documents/SYNK-appsscript/.claude/worktrees/foo',
-    '/home/runner/work/synk-appsscript/synk-appsscript',   // CI(리눅스) 갈래
+    '/home/user/synk-appsscript',                 // 원격 세션(claude.ai/code) 무늬
   ];
   for (const p of 후보) {
     const 이름 = 폴더이름(p);
     for (const 금지 of [':', '.', '/', 역슬래시]) {
-      assert.ok(!이름.includes(금지), `${p} → ${이름} 에 «${금지}» 가 남았다`);
+      assert.ok(!이름.includes(금지), p + ' -> ' + 이름 + ' 에 «' + 금지 + '» 가 남았다');
     }
-    assert.ok(이름.length > 0, `${p} 가 빈 이름이 됐다`);
+    assert.ok(이름.length > 0, p + ' 가 빈 이름이 됐다');
   }
 });
 
@@ -41,12 +42,32 @@ test('폴더이름 이 이 기계의 «실물» 폴더 이름과 맞는다 (08-2
     'C--Users-q1212-Documents-SYNK-appsscript--claude-worktrees-angry-raman-d891af');
 });
 
-test('변환 정규식에 역슬래시가 돌아오지 않았다 — 이스케이프에 조용히 먹히는 글자다', () => {
+test('🔴 도구 파일에 역슬래시가 한 글자도 없다 — 그 글자가 조용히 사라지는 게 첫 사고였다', () => {
   const 원문 = fs.readFileSync(도구, 'utf8');
-  const 정규식줄 = 원문.split('\n').filter(l => l.includes('replace(/'));
-  assert.ok(정규식줄.length > 0, '변환 정규식을 못 찾았다 — 시험이 과녁을 잃었다');
-  for (const 줄 of 정규식줄) {
-    assert.ok(!줄.includes(역슬래시), `정규식에 역슬래시가 돌아왔다: ${줄.trim()}`);
+  const 개수 = 원문.split(역슬래시).length - 1;
+  assert.strictEqual(개수, 0,
+    '역슬래시 ' + 개수 + '개가 돌아왔다 — 이스케이프에 먹혀도 구문검사는 통과하는 자리다');
+});
+
+test('형제 폴더에 synk-memory 가 있으면 그것을 찾는다 — 원격 세션의 유일한 길', () => {
+  const 임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-형제-'));
+  const 옛 = process.env.CLAUDE_PROJECT_DIR;
+  try {
+    const 기억 = path.join(임시, 'synk-memory');
+    fs.mkdirSync(기억);
+    fs.writeFileSync(path.join(기억, 'MEMORY.md'), '# 시늉');
+    const 작업 = path.join(임시, 'synk-appsscript');
+    fs.mkdirSync(작업);
+
+    process.env.CLAUDE_PROJECT_DIR = 작업;
+    assert.strictEqual(형제기억(), 기억, '형제 폴더를 못 찾았다');
+
+    // MEMORY.md 가 없으면 «기억 저장소가 아니다» — 아무 폴더나 집으면 안 된다
+    fs.rmSync(path.join(기억, 'MEMORY.md'));
+    assert.strictEqual(형제기억(), null, 'MEMORY.md 없는 폴더를 기억으로 오인했다');
+  } finally {
+    if (옛 === undefined) { delete process.env.CLAUDE_PROJECT_DIR; } else { process.env.CLAUDE_PROJECT_DIR = 옛; }
+    fs.rmSync(임시, { recursive: true, force: true });
   }
 });
 
