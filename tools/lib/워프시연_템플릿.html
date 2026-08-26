@@ -119,6 +119,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         <button data-act="curious">궁금함</button>
         <button data-act="proud">뿌듯함</button>
         <button data-act="relief">안도</button>
+        <button data-act="cheer">응원</button>
+        <button data-act="moved">감동</button>
+        <button data-act="shy">부끄</button>
+        <button data-act="wink">윙크</button>
+        <button data-act="pout">뾰로통</button>
         <button class="wide" data-act="reset">평상으로</button>
         <button class="wide" id="dimBtn" data-act="dim">입체 끄기 (지금 4D)</button>
       </div>
@@ -303,7 +308,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     컷: '본체', 눈감은동안: 0,
     숨: 0, 기울임: 0, 목표기울임: 0, 눌림: 0, 되튐속도: 0, 살랑: 0, 갸웃: 0, 도리: 0,
     잠: 0, 커짐: 0, 마지막접촉: 0, 연타: [], 라벨: '평상',
-    표정: '평상', ex: 1, ey: 1, edy: 0,   // 눈 국소 변형 — 지금 값(목표로 매 프레임 다가간다)
+    표정: '평상', ex: 1, ey: 1, ey2: 1, edy: 0,   // 눈 국소 변형 — 지금 값(목표로 매 프레임 다가간다)
     입체: 1, 시점x: 0, 시점y: 0, 목표시점x: 0, 목표시점y: 0, 자동시점: 1
   };
 
@@ -318,6 +323,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     궁금함: { ex: 1.16, ey: 1.16, edy: 0.010 },
     뿌듯함: { ex: 1.04, ey: 1.04, edy: 0.004 },
     안도:   { ex: 0.96, ey: 0.90, edy: -0.006 },
+    응원:   { ex: 1.06, ey: 1.06, edy: 0.006 },
+    감동:   { ex: 0.94, ey: 0.72, edy: -0.008 },
+    부끄:   { ex: 0.92, ey: 0.78, edy: -0.010 },
+    윙크:   { ex: 1.02, ey: 1.02, ey2: 0.14, edy: 0.004 },   // 🔑 좌우가 «다른» 유일한 표정
+    뾰로통: { ex: 0.96, ey: 0.86, edy: -0.016 },
   };
   const now = () => performance.now();
   S.마지막접촉 = now();
@@ -345,6 +355,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     curious:  () => { S.표정 = '궁금함'; S.컷 = '본체'; S.눈감은동안 = 0; S.갸웃 = 0.15; 라벨('궁금함'); },
     proud:    () => { S.표정 = '뿌듯함'; S.컷 = '눈웃음'; S.눈감은동안 = 2600; S.눌림 = -0.20; S.되튐속도 = 0.04; 라벨('뿌듯함'); },
     relief:   () => { S.표정 = '안도';   S.컷 = '눈웃음'; S.눈감은동안 = 2200; S.눌림 = 0.12; S.되튐속도 = 0.03; 라벨('안도'); },
+    cheer:    () => { S.표정 = '응원';   S.컷 = '눈웃음'; S.눈감은동안 = 2000; S.눌림 = -0.16; S.되튐속도 = 0.05; S.갸웃 = 0.08; 라벨('응원'); },
+    moved:    () => { S.표정 = '감동';   S.컷 = '본체'; S.눈감은동안 = 0; S.눌림 = 0.14; S.되튐속도 = 0.02; 라벨('감동'); },
+    shy:      () => { S.표정 = '부끄';   S.컷 = '눈웃음'; S.눈감은동안 = 2400; S.갸웃 = -0.16; 라벨('부끄'); },
+    wink:     () => { S.표정 = '윙크';   S.컷 = '본체'; S.눈감은동안 = 0; S.갸웃 = 0.10; 라벨('윙크'); },
+    pout:     () => { S.표정 = '뾰로통'; S.컷 = '본체'; S.눈감은동안 = 0; S.도리 = 1; 라벨('뾰로통'); },
     reset:    () => { S.잠 = 0; S.살랑 = 0; S.갸웃 = 0; S.도리 = 0; S.눌림 = 0; S.되튐속도 = 0;
                       S.목표기울임 = 0; S.커짐 = 0; S.컷 = '본체'; S.눈감은동안 = 0; 라벨('평상'); },
     dim:      () => { S.입체 = S.입체 ? 0 : 1;
@@ -479,6 +494,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     const 목 = 표정표[S.표정] || 표정표.평상;
     S.ex += (목.ex - S.ex) * 0.16;
     S.ey += (목.ey - S.ey) * 0.16;
+    S.ey2 += (((목.ey2 == null) ? 목.ey : 목.ey2) - S.ey2) * 0.16;   // 안 적은 표정은 좌우 대칭
     S.edy += (목.edy - S.edy) * 0.16;
     let k = 0, s = 0;
     for (let j = 0; j <= N; j++) {
@@ -500,7 +516,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
             if (r2 > 6) continue;
             const w = Math.exp(-r2 * 0.8);
             x += du * 2 * (S.ex - 1) * w;
-            y += dv * 2 * (S.ey - 1) * w;
+            y += dv * 2 * ((e === 1 ? S.ey2 : S.ey) - 1) * w;   // e=0 왼눈 · e=1 오른눈(윙크가 여기서 갈린다)
             y += S.edy * w;
           }
         }
