@@ -37,6 +37,12 @@ REPO = _인자.get('저장소') or (
 
 if not any(a.startswith('실감=') for a in sys.argv):
     sys.argv.append('실감=속살,섬유')      # 들여온 갑옷에 털·잔털은 안 심는다
+if _인자.get('출력') and not os.path.isabs(_인자['출력']):
+    # 🔴 상대 「출력=」은 블렌더가 «자기 기준»으로 풀어 파일이 엉뚱한 곳에 떨어진다 — 로그는
+    #   「구움 ✅」인데 겨눈 폴더는 빈다(08-27 실측 · 정면판 두 장이 그렇게 증발했다). 여기서 못 박는다.
+    _절대 = os.path.abspath(_인자['출력'])
+    sys.argv = [_절대.join(a.rsplit(_인자['출력'], 1)) if a.startswith('출력=') else a for a in sys.argv]
+    _인자['출력'] = _절대
 if not any(a.startswith('토큰=') for a in sys.argv):
     # 🔴 요소굽기는 색 토큰을 «현재 폴더에서 위로» 찾는다 — 저장소 밖에서 부르면 통째로 죽는다.
     #   배치에서 그 죽음은 «종료코드 0 + 산출 0장»으로 조용히 찍힌다(08-27 실측 14판 전멸).
