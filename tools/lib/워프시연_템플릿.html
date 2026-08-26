@@ -339,19 +339,62 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     S.목표시점x = Math.max(-1, Math.min(1, (e.gamma || 0) / 32));
     S.목표시점y = Math.max(-1, Math.min(1, ((e.beta || 0) - 45) / 32));
   });
+  /* ── 소리층 — 08-15 감각층 정본을 이 통로에 붙인다 (유호 08-26 「쓱싹쓱싹 소리는 왜 구현이 안 되?」)
+     정본 = docs/펠트엔진_감각층_설계.md §2 「탭=톡 · 쓰다듬기=사각사각 · 꾹=뭉」.
+     소리는 tools/감각층소리합성.js 가 굽기 때 그 자리에서 만든다(씨앗 고정 · 유호 귀검수 4회 통과판 A).
+     ⚠ 자동재생 정책: 첫 제스처 전에는 AudioContext 가 suspended 다 — 첫 터치에서 깨운다.
+     ⚠ 소리가 «일정 간격»으로 나면 기계로 읽힌다 — 사건 어휘와 같은 규율로 변주를 무작위로 고른다. */
+  const SND = __SOUNDS__;
+  let AC = null; const 버퍼 = {}; let 소리끔 = false; let 마지막소리 = 0;
+  function 소리깨움() {
+    if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
+    try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+    for (const k of Object.keys(SND)) {
+      버퍼[k] = SND[k].map((b64) => {
+        const bin = atob(b64); const u = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+        return AC.decodeAudioData(u.buffer).catch(() => null);
+      });
+    }
+  }
+  function 소리(종류, 음량, 최소간격) {
+    if (소리끔 || !AC || !버퍼[종류] || !버퍼[종류].length) return;
+    const t = now(); if (t - 마지막소리 < (최소간격 || 0)) return; 마지막소리 = t;
+    const 고른 = 버퍼[종류][Math.floor(Math.random() * 버퍼[종류].length)];
+    Promise.resolve(고른).then((buf) => {
+      if (!buf) return;
+      const src = AC.createBufferSource(); src.buffer = buf;
+      const g = AC.createGain(); g.gain.value = 음량;
+      src.connect(g); g.connect(AC.destination); src.start();
+    }).catch(() => {});
+  }
+  /* 쓰다듬기 = «누른 채 지나간 거리»다. 시간이 아니라 거리로 세야 손이 멈추면 소리도 멈춘다. */
+  let 쓴거리 = 0, 앞점 = null;
+
   const 시작 = (e) => { 누름 = true; 만짐(); S.눌림 = Math.max(S.눌림, 0.26); S.목표기울임 = 좌표(e) * 0.16;
     const t = now(); S.연타 = S.연타.filter(x => t - x < 1600); S.연타.push(t);
-    if (S.연타.length >= 3) { S.도리 = 1; S.연타 = []; 라벨('간지럼'); } else 라벨('톡');
+    소리깨움();
+    if (S.연타.length >= 3) { S.도리 = 1; S.연타 = []; 라벨('간지럼'); 소리('tap', 0.55); }
+    else { 라벨('톡'); 소리('tap', 0.5); }
+    앞점 = null; 쓴거리 = 0;
     if (Math.random() < .35) S.갸웃 = 0.12; };
   /* 손이 «닿으면» 몸이 기울고, 손이 «지나가면» 시점이 따라온다 — 둘을 가른다.
      시점은 만짐으로 안 친다(지나가는 손에 잠이 깨면 방치 어휘가 죽는다). */
   const 이동 = (e) => {
     const p = 좌표(e);
-    if (누름) { S.목표기울임 = p * 0.20; 만짐(); return; }
+    if (누름) {
+      S.목표기울임 = p * 0.20; 만짐();
+      const q = 좌표세로(e);
+      if (앞점) { 쓴거리 += Math.hypot(p - 앞점[0], q - 앞점[1]); }
+      앞점 = [p, q];
+      if (쓴거리 > 0.34) { 쓴거리 = 0; 소리('grain', 0.30, 70); }
+      return;
+    }
     S.자동시점 = 0; S.목표시점x = p; S.목표시점y = 좌표세로(e);
   };
   stageEl.addEventListener('pointerleave', () => { S.자동시점 = 1; });
-  const 끝 = () => { if (!누름) return; 누름 = false; S.목표기울임 = 0; S.되튐속도 = 0.03; 라벨('평상'); };
+  const 끝 = () => { if (!누름) return; 누름 = false; S.목표기울임 = 0; S.되튐속도 = 0.03; 라벨('평상');
+    소리(S.눌림 > 0.4 ? 'press' : 'boing', 0.45); 앞점 = null; 쓴거리 = 0; };
   stageEl.addEventListener('pointerdown', 시작);
   stageEl.addEventListener('pointermove', 이동);
   addEventListener('pointerup', 끝);
