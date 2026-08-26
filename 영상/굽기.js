@@ -1,0 +1,114 @@
+#!/usr/bin/env node
+/**
+ * 영상 굽기 — **조용한 실패를 종료코드로 바꾸는** 통로.
+ *
+ * 🔴 왜 `npx remotion render` 를 그냥 부르지 않나 — 그 명령은 이 질문에 답하지 못한다.
+ *   실측: 없는 호스트의 웹폰트를 걸었더니 노란 «경고»만 뜨고 **종료코드 0** 으로 그림이 나왔다.
+ *   없는 폰트 «이름» 을 쓴 경우엔 경고조차 없었다. 즉 산출물은 「에러」가 아니라
+ *   **「서체가 틀린 영상」** 이고, 사람이 눈으로 안 보면 못 잡는다.
+ *   이 저장소가 이미 같은 병을 여러 번 앓았다(트랙 §0: 「끊긴 굽기는 성공처럼 보인다」).
+ *
+ * 🔴 판정은 파일 «시각»으로 한다 — 수나 존재로는 못 잡는다.
+ *   옛 산출물이 그 자리에 남아 있으면 `existsSync && size>0` 도 「몇 개인가」도 전부 성공으로 읽는다.
+ *   그래서 굽기 시작 시각을 기억해 두고, 산출물이 그보다 «새로운지» 본다.
+ *
+ * 쓰기:  node 영상/굽기.js <컴포지션id> [출력파일명]
+ * 보기:  node 영상/굽기.js --목록
+ */
+const { spawnSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+
+const 방 = __dirname;
+const 산출방 = path.join(방, 'out');
+
+/** 로그에 이 중 하나라도 뜨면 «그림이 나와도» 실패로 친다. */
+const 실패신호 = [
+  'Failed to load resource',
+  'Browser failed to load',
+  'Failed to fetch',
+  'net::ERR_',
+  'Could not load font',
+  'Font failed',
+  'delayRender',
+];
+
+function 실행(인자들, { 조용히 = false } = {}) {
+  const r = spawnSync('npx', ['remotion', ...인자들], {
+    cwd: 방,
+    encoding: 'utf8',
+    shell: true,
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  const 로그 = `${r.stdout || ''}\n${r.stderr || ''}`;
+  if (!조용히) process.stdout.write(로그);
+  return { 종료: r.status, 로그 };
+}
+
+const 인자 = process.argv.slice(2);
+
+if (인자.includes('--목록')) {
+  const { 종료 } = 실행(['compositions', 'src/index.ts']);
+  process.exit(종료 === 0 ? 0 : 1);
+}
+
+const 컴포지션 = 인자[0];
+if (!컴포지션) {
+  console.error('쓰기: node 영상/굽기.js <컴포지션id> [출력파일명]');
+  console.error('  ⚠ 컴포지션 id 는 한글을 못 쓴다(Remotion 규약) — `node 영상/굽기.js --목록` 으로 본다.');
+  process.exit(2);
+}
+const 출력 = 인자[1] || `${컴포지션}.mp4`;
+const 출력경로 = path.join(산출방, 출력);
+
+/* ── ① 자산을 «먼저» 다시 모은다 ─────────────────────────────────────────
+   public/ 은 사본이라 정본을 고치면 낡는다. 굽기 직전에 항상 새로 맞춘다. */
+const 모으기 = spawnSync(process.execPath, [path.join(방, '자산모으기.js')], {
+  encoding: 'utf8',
+  shell: false,
+});
+process.stdout.write(모으기.stdout || '');
+if (모으기.status !== 0) {
+  process.stderr.write(모으기.stderr || '');
+  console.error('🔴 자산이 모자라 굽기를 시작하지 않는다.');
+  process.exit(1);
+}
+
+/* ── ② 시작 시각을 기억한다(파일 «시각» 판정용) ───────────────────────── */
+const 시작 = Date.now();
+
+/* ── ③ 굽는다 ────────────────────────────────────────────────────────── */
+console.log(`\n굽는다 — ${컴포지션} → out/${출력}`);
+const { 종료, 로그 } = 실행(['render', 'src/index.ts', 컴포지션, `out/${출력}`]);
+
+/* ── ④ 세 겹으로 판정한다 ────────────────────────────────────────────── */
+const 문제 = [];
+
+if (종료 !== 0) 문제.push(`종료코드 ${종료}`);
+
+for (const 신호 of 실패신호) {
+  if (로그.includes(신호)) 문제.push(`로그에 「${신호}」 — 자원이 안 실렸다(그래도 그림은 나온다)`);
+}
+
+if (!fs.existsSync(출력경로)) {
+  문제.push('산출물이 없다');
+} else {
+  const st = fs.statSync(출력경로);
+  if (st.mtimeMs < 시작 - 1000) {
+    문제.push(`산출물이 «이번 굽기 것이 아니다» — ${new Date(st.mtimeMs).toLocaleString('ko-KR')} 판이 그대로 남았다`);
+  }
+  if (st.size < 10 * 1024) 문제.push(`산출물이 ${st.size}B 로 너무 작다`);
+}
+
+if (문제.length) {
+  console.error('\n🔴 굽기 실패로 판정한다 — 「그림이 나왔다」는 통과의 근거가 아니다:');
+  for (const p of 문제) console.error('   · ' + p);
+  process.exit(1);
+}
+
+const st = fs.statSync(출력경로);
+console.log(
+  `\n✅ ${출력} — ${(st.size / 1024 / 1024).toFixed(2)}MB · ${((Date.now() - 시작) / 1000).toFixed(1)}초`,
+);
+console.log('   ⚠ 여기까지는 «기계가 볼 수 있는 것»만 통과했다. 두부(□□□)와 서체는 눈으로 본다:');
+console.log(`      node 영상/프레임뽑기.js ${출력}`);

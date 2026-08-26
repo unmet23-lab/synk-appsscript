@@ -1,0 +1,82 @@
+#!/usr/bin/env node
+/**
+ * Remotion 이 삼킬 자산을 «정본에서 파생해» `영상/public/` 에 모은다.
+ *
+ * 🔑 왜 스크립트인가 — 경로를 손으로 적으면 정본이 둘이 된다.
+ *   마스코트 그림의 경로는 `tools/lib/마스코트자산.js` 가 알고(그것도 스스로 안 알고
+ *   `docs/디자인_토큰.json` 에서 파생한다), 폰트·소리는 `docs/브랜드_폰트/`·`docs/브랜드_사운드킷/`
+ *   이 쥔다. 이 파일은 «옮기기»만 하고 아무 것도 새로 정하지 않는다.
+ *
+ * 🔑 왜 `영상/public/` 이 git 밖인가 — 여기 있는 것은 전부 사본이다. 사본은 낡는다.
+ *   정본을 고치고 이걸 다시 안 돌리면 영상만 옛 그림을 문다. 그래서 추적하지 않고,
+ *   대신 굽기 전에 «항상» 다시 돌린다(`node 영상/자산모으기.js`).
+ *   같은 판단이 `docs/인쇄본/`·`docs/Loom_자산/구움/` 에 이미 서 있다.
+ *
+ * 쓰기: node 영상/자산모으기.js
+ */
+const fs = require('fs');
+const path = require('path');
+
+const 저장소 = path.resolve(__dirname, '..');
+const 공개 = path.join(__dirname, 'public');
+
+const 마스코트 = require(path.join(저장소, 'tools', 'lib', '마스코트자산.js'));
+
+let 옮김 = 0;
+let 건너뜀 = 0;
+const 빠진것 = [];
+
+function 복사(원본절대, 목적상대) {
+  const 목적 = path.join(공개, 목적상대);
+  if (!fs.existsSync(원본절대)) {
+    빠진것.push(원본절대.replace(저장소 + path.sep, ''));
+    return;
+  }
+  fs.mkdirSync(path.dirname(목적), { recursive: true });
+  const 새것 = fs.statSync(원본절대);
+  if (fs.existsSync(목적) && fs.statSync(목적).mtimeMs >= 새것.mtimeMs) {
+    건너뜀 += 1;
+    return;
+  }
+  fs.copyFileSync(원본절대, 목적);
+  옮김 += 1;
+}
+
+/* ── ① 몽글 누끼 ────────────────────────────────────────────────────────────
+   ⚠ «있는 것만» 옮긴다. 감정 어휘는 11인데 그림은 3뿐이고, 모듈은 없는 표정을
+   부르면 조용히 폴백하지 않고 **던진다**(의도된 설계). 그래서 먼저 물어본다. */
+const 쓸수있는표정 = ['본체', '눈감음', '눈웃음'];
+for (const 표정 of 쓸수있는표정) {
+  복사(path.join(저장소, 마스코트.경로(표정, { 누끼: true })), `몽글/${표정}.png`);
+}
+
+/* ── ② 브랜드 폰트 ──────────────────────────────────────────────────────────
+   🔴 SUIT 는 한글만(키릴 0/7) · Inter Tight 는 키릴만(한글 0/4)이다.
+   한·몽 병기 자막은 한 줄 안에 둘이 섞이므로 **둘 다** 있어야 한다. */
+const 폰트벌 = [
+  ['SUIT', ['SUIT-Regular.otf', 'SUIT-Medium.otf', 'SUIT-SemiBold.otf', 'SUIT-ExtraBold.otf', 'SUIT-Heavy.otf']],
+  ['InterTight', ['InterTight-Regular.ttf', 'InterTight-Medium.ttf', 'InterTight-SemiBold.ttf', 'InterTight-Bold.ttf']],
+];
+for (const [갈래, 파일들] of 폰트벌) {
+  for (const f of 파일들) 복사(path.join(저장소, 'docs', '브랜드_폰트', 갈래, f), `폰트/${f}`);
+}
+
+/* ── ③ 소리 ────────────────────────────────────────────────────────────────
+   사운드킷 정본 규칙 넷(토큰 `사운드.규칙`)이 이 파일들에 이미 구워져 있다:
+   400ms 이하 · **실패음 없음** · 사인·트라이앵글만 · C 펜타토닉 안.
+   영상이 새 소리를 만들지 않는다 — 있는 것을 고를 뿐이다. */
+const 소리방 = path.join(저장소, 'docs', '브랜드_사운드킷');
+if (fs.existsSync(소리방)) {
+  for (const f of fs.readdirSync(소리방)) {
+    if (f.toLowerCase().endsWith('.wav')) 복사(path.join(소리방, f), `소리/${f}`);
+  }
+}
+복사(path.join(저장소, 'docs', '홍보물', 'BGM_개정판_깔림만.wav'), '소리/BGM_깔림.wav');
+
+/* ── 보고 — 「합계 = 갈래 + 갈래」로 센다 ───────────────────────────────── */
+console.log(`자산 모으기 — 합계 ${옮김 + 건너뜀 + 빠진것.length} = 옮김 ${옮김} + 최신이라 건너뜀 ${건너뜀} + 빠짐 ${빠진것.length}`);
+if (빠진것.length) {
+  console.error('🔴 정본에 없는 파일 — 영상이 그 자리에서 죽는다(조용한 폴백 없음):');
+  for (const p of 빠진것) console.error('   · ' + p);
+  process.exit(1);
+}
