@@ -969,7 +969,7 @@ function bootstrapSynk() {
   sheetSkeleton_().forEach(k => ensureSheet(ss, k[0], k[1]));
   const steps = [
     ['시간표·반 구조', setupSchedule], ['스토어', setupStore],
-    ['캐릭터 7', setupMonsters], ['보스 12 + 대군주', setupBosses], ['시즌 12', setupSeasons],
+    ['가이드 3', setupGuides], ['보스 12 + 대군주', setupBosses], ['시즌 12', setupSeasons], // [함께한날 막7 후속] setupMonsters 소각의 «만드는 쪽» 잔재 — codex P1(05de9521)이 잡았다: 배열 평가 자체가 ReferenceError 라 bootstrap 전체가 죽던 자리
     ['브레인팁 30', setupBrainTips], ['학부모 라벨', setupParentLabels], ['크루 응원', setupTeacherCheers],
     ['연료 미션', setupFuelMissions], ['칭호 설화', setupTitleLore], ['워밍업 퀴즈', setupQuiz],
     ['숙제 210', setupHomework], ['학업 로그', setupAcademic], // [v9.18] 학업 성장 축 시트 재건 편입
@@ -1347,7 +1347,9 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   if (dyN === 0) safeRun('messengerDigest', function () { MJ_messengerDigest_(); }); // [v9.71] 이메일 다이제스트의 메신저 미러 — 연결된 학부모만·창 밖 스킵(클로저 = 만족도팩 누락에도 nightJobs 생존)
   safeRun('notifyParents', notifyParents);
   // [v9.34] checkNoShow는 parentSweep(10분) 편승으로 이동 — 판정 창(수업 시작+30~90분)이 22시엔 구조적으로 안 걸려 죽은 안전장치였음
-  safeRun('checkScene', checkScene); // [함께한날 막5] checkEvolution 의 그 줄을 그대로 물려받는다 — calcAll 뒤 = 그날 도달이 그날 밤 장면
+  // [함께한날 막5 → codex P2 51c5bdf2] checkScene 은 이 줄이 아니라 AI 배치 «뒤»(아래)로 옮겼다 —
+  //   장면 «개방» 자체는 calcAll 산출(AP42)이라 순서 이동으로 안 당겨지지만(그날 밤 새 도달은 다음 낮
+  //   calcAll 몫 — 구조), scene_log 에 적는 「조건문형·그날의문장」 재료는 첨삭·대화 배치 뒤가 더 온전하다.
   safeRun('checkAchievements', checkAchievements);
   safeRun('absenceFollowup', absenceFollowupNightly_); // [v9.89] 결석 복귀 자동 판정 + 24시간 경과 미연락 강사 알림(창 D+1~D+3) — attendance가 그날치까지 채워진 뒤라야 판정이 맞으므로 calcAll·출석 전개 뒤
   safeRun('checkUnknownReasonsNightly', checkUnknownReasonsNightly_); // [v9.28] 미인식 reason 발각 지연 7일→1일
@@ -1358,6 +1360,7 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   safeRun('aiFeedbackBatch', aiFeedbackBatch_); // [v9.49] 숙제폼 제출분 AI 첨삭 생성 — CLAUDE_API_KEY 없으면 0초 스킵
   safeRun('talkBatch', talkBatch_); // [v9.138] 한국어 대화 답장 — 회화 앱 1세대이자 「다회차 대화」 데이터의 유일한 원천(키 없으면 0초 스킵)
   safeRun('aiStudioBatch', aiStudioBatch_); // [v9.50] AI 스튜디오 — 오늘의 한 문장·개인 퀴즈(H1/A1/A2/A4)·오류사전(G)·반 브리핑(H5)·리텐션 멘트(E5). 키 없으면 0초 스킵
+  safeRun('checkScene', checkScene); // [함께한날 막5·순서는 codex P2] 장면 원장 기입·원장 네 블록·강사 D-1 — 첨삭·대화 배치 «뒤»라 그날의문장·조건문형 재료가 온전하다
   safeRun('sweepLevelTest', sweepLevelTest_); // [v9.50·F1] 레벨 테스트 응답 채점→AI 진단 리포트 발송→leads 편입(폼 미생성이면 0초 스킵)
   safeRun('demoMonthEndGuard', function () { // [v9.44] 데모 모드가 월말(28일~)까지 살아 있으면 경고 — 다음 달 1일 실배치가 데모 재적으로 지난달을 정산하는 사고 예방
     const ssD = SpreadsheetApp.getActiveSpreadsheet();
@@ -4218,6 +4221,7 @@ function menuMigrateConsent() { menuRun_(migrateConsentV186); }
  *   ▶1회짜리라도 **비개발자가 눌러야 하는 함수면 메뉴가 실행 경로다**(편집기는 경로가 아니다). */
 function menuCreateInterviewLogForm() { menuRun_(createInterviewLogForm); }
 function menuCreateWorkLogForm() { menuRun_(createWorkLogForm); }
+function menuMigrateWorkFormMn() { menuRun_(migrateWorkFormMn); }
 /* 같은 자리 3번째라 개별로 안 고치고 회귀로 못박았다(`tests/수집.test.js` 「▶ 표기는 메뉴가 실행 경로다」):
  *   Code.js 가 `(▶…)` 로 적은 함수는 **정의가 살아 있는 한 전부** 여기 있어야 한다. */
 function menuCreateTeacherMemoForm() { menuRun_(createTeacherMemoForm); }
@@ -4704,6 +4708,7 @@ function onOpen() {
       .addItem('🔏 동의 문항 갱신(수집 0단계·문구 바뀔 때마다)', 'menuMigrateConsent')
       .addItem('🎤 면접 기록 회수 폼 만들기(VR 0단계·1회)', 'menuCreateInterviewLogForm')
       .addItem('🧰 직장 경험 회수 폼 만들기(VR 직업체험 0단계·1회)', 'menuCreateWorkLogForm')
+      .addItem('🇲🇳 직장 경험 폼에 몽골어 안내 넣기(문구 바뀔 때마다)', 'menuMigrateWorkFormMn')
       .addItem('🗒 강사 메모 폼 만들기(1회)', 'menuCreateTeacherMemoForm')
       .addItem('🧠 퀴즈 응답 폼 만들기(수집 1단계)', 'menuCreateQuizForm')
       .addItem('📝 숙제 폼에 수집 문항 넣기(수집 2단계)', 'menuMigrateHwForm')
