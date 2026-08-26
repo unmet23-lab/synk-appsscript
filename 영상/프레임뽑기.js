@@ -20,6 +20,8 @@ const path = require('path');
 
 const 방 = __dirname;
 const 산출방 = path.join(방, 'out');
+/* 「무엇으로 구웠나」의 계산은 `씨앗.js` 한 곳 — 여기서 다시 짜지 않는다(복제가 곧 갈림이다) */
+const { 씨앗해시, 씨앗파일 } = require('./씨앗.js');
 const 생성경로 = path.join(방, 'src', '클립', '생성', '대본클립들.ts');
 const 카운트다운경로 = path.join(방, 'src', '클립', '생성', '카운트다운들.ts');
 const 이름 = process.argv[2];
@@ -48,25 +50,30 @@ function ffmpeg(인자들) {
   }
 }
 
-/* ── 산출물이 «소스보다 낡았나» ────────────────────────────────────────────
-   눈으로 보고 판정했는데 그게 옛 판이면 판정 전체가 헛것이다. 저장소 상습 함정의 영상판. */
-function 최신mtime(뿌리) {
-  let 값 = 0;
-  for (const e of fs.readdirSync(뿌리, { withFileTypes: true })) {
-    const p = path.join(뿌리, e.name);
-    값 = Math.max(값, e.isDirectory() ? 최신mtime(p) : fs.statSync(p).mtimeMs);
+/* ── 산출물이 «지금 소스로 구운 것인가» ────────────────────────────────────
+   눈으로 보고 판정했는데 그게 옛 판이면 판정 전체가 헛것이다. 저장소 상습 함정의 영상판.
+
+   🔴 첫 판은 **파일 시각**으로 쟀는데, 그러면 내용이 하나도 안 바뀌어도 빨개진다 — 되돌린 편집,
+   체크아웃, A/B 로 잠깐 뒤집었다 원복(08-26 실측: 로고 두 판 대조 뒤 영상 12편 전량이 «낡음»으로
+   찍혔는데 `git status` 는 깨끗했다). 이 저장소가 이미 배운 자리다: 로고주입 `--check` 가
+   CRLF/LF 때문에 늘 빨간불이었고 「**늘 실패하는 가드는 신호로서 죽는다**」로 고쳤다(결정.md 08-22).
+   그래서 이제 **내용 해시**를 본다 — 굽기가 `<영상>.씨앗` 에 적어 둔다. */
+const 씨앗쪽지 = 씨앗파일(영상);
+if (fs.existsSync(씨앗쪽지)) {
+  const 구운씨앗 = fs.readFileSync(씨앗쪽지, 'utf8').trim();
+  const 지금씨앗 = 씨앗해시();
+  if (구운씨앗 !== 지금씨앗) {
+    console.error(
+      `🔴 소스가 바뀐 뒤로 안 구웠다 — 이 그림으로 판정하면 옛 판을 판정하는 것이다.\n` +
+        `   구울 때 ${구운씨앗.slice(0, 12)} · 지금 ${지금씨앗.slice(0, 12)}\n` +
+        `   먼저: node 영상/굽기.js ${path.parse(이름).name}`,
+    );
+    process.exit(1);
   }
-  return 값;
-}
-const 영상시각 = fs.statSync(영상).mtimeMs;
-const 소스시각 = 최신mtime(path.join(방, 'src'));
-if (소스시각 > 영상시각 + 1000) {
-  console.error(
-    `🔴 소스가 영상보다 새롭다 — 이 그림으로 판정하면 옛 판을 판정하는 것이다.\n` +
-      `   영상 ${new Date(영상시각).toLocaleString('ko-KR')} · 소스 ${new Date(소스시각).toLocaleString('ko-KR')}\n` +
-      `   먼저: node 영상/굽기.js ${path.parse(이름).name}`,
-  );
-  process.exit(1);
+} else {
+  /* 씨앗이 없는 것은 «이 가드가 서기 전에» 구운 영상이다. 조용히 통과시키지 않고 한 줄 남긴다 —
+     못 잰 것을 「괜찮다」로 적으면 그게 바로 이 저장소가 반복해 앓는 무늬다. */
+  console.warn(`⚠ ${path.basename(영상)}.씨앗 이 없다 — 「지금 소스로 구운 것인지」를 **안 재봤다**(다시 구우면 선다).`);
 }
 
 const 길이 = Number(
