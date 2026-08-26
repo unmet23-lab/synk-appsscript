@@ -137,13 +137,22 @@ export type 경계 = { 시작: number; 끝: number; 표정: 표정; 몸짓?: 몸
  * 자막 가독성이 언제나 이긴다 — 그래서 값을 라이트 테마 권장 하한보다 더 낮춰 잡았다. */
 export const 그레인: React.FC = () => {
   const frame = useCurrentFrame();
+  /* 🔴 08-26 유호님 「약간 멀미나는 느낌」— 재 보니 **화면에서 가장 크게 움직이는 것**이 여기였다.
+   *   ⚠ 「멀미의 가장 큰 몫」이라고는 못 쓴다 — 나는 «움직임의 크기»를 쟀지 «멀미»를 안 재봤다.
+   *   전엔 `(frame*7)%220 · (frame*13)%220` 이었다: 1080×1920 «전체»가 가로 초당 210px ·
+   *   세로 **초당 390px** 로 한 방향으로 흘렀고, 220px 마다 튀어 되돌아왔다.
+   *   불투명도 0.035 라 «보이지»는 않는다. 그런데 주변시는 방향 있는 흐름을 «움직이는 바닥»으로
+   *   읽는다(vection) — 의식이 못 본 것이 멀미를 만든다. 마스코트보다 이쪽이 화면을 다 덮으니 크다.
+   * 🔑 진짜 필름 그레인은 프레임마다 **무작위**지 흐르지 않는다. 그래서 «방향»을 없앤다 —
+   *   프레임을 해시해 아무 데나 튀게 한다. 해시라 다시 구워도 늘 같은 그림이 난다(재현 가능). */
+  const 흔들 = (frame * 2654435761) >>> 0;
   return (
     <AbsoluteFill
       style={{
         pointerEvents: "none",
         backgroundImage: 노이즈결,
         backgroundSize: "220px",
-        backgroundPosition: `${(frame * 7) % 220}px ${(frame * 13) % 220}px`,
+        backgroundPosition: `${흔들 % 220}px ${(흔들 >>> 11) % 220}px`,
         opacity: 0.035,
         mixBlendMode: "multiply",
       }}
