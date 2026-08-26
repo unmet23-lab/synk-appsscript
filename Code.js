@@ -2536,7 +2536,13 @@ function calcAll() {
     if (fbG && fbG.getLastRow() >= 2) {
       const perG = {};
       fbG.getRange(2, 1, fbG.getLastRow() - 1, 9).getValues().forEach(rG => {
-        const sidG = String(rG[1] || '').trim(), sentG = String(rG[4] || '').trim();
+        // [08-26] 🔴 rG[4]=고친문장(AI 교정문)을 읽고 있었다 — 「성장 전/후」가 학생 글이 아니라
+        //   AI 출력 두 개를 나란히 놓던 자리. 헤더 정본 = 엔진_수집.js HW_FEEDBACK_HEADERS
+        //   ['id','student_id','제출일','제출문','고친문장',…] → 학생이 쓴 것은 rG[3]=제출문이다.
+        //   같은 저장소가 다른 곳에서는 이미 그렇게 읽는다(엔진_셋업확장.js:2983 「제출문: r[3]」 ·
+        //   :3010 이 그것을 「학생 원문」이라 부른다). 교정문끼리 견주면 둘 다 맞는 문장이라
+        //   성장이 원리상 안 보인다 — 카드가 이름과 반대로 일하고 있었다.
+        const sidG = String(rG[1] || '').trim(), sentG = String(rG[3] || '').trim();
         if (!sidG || !sentG || !노출카드_(rG[8])) return; // [v9.63→v9.210] 게이트 미달분은 성장카드 짝에서 제외 · 판정 정본=노출카드_
         const dG = String(rG[2] || '');
         if (!perG[sidG]) perG[sidG] = { a: sentG, d1: dG, b: sentG, d2: dG };
