@@ -1,0 +1,128 @@
+#!/usr/bin/env node
+/**
+ * 마스터 — 구운 릴의 «소리 크기»를 마지막에 한 번 맞춘다.
+ *
+ * 🔴 왜 필요했나: 구운 릴이 전부 −18~−20 LUFS 였다. 피드에서 다른 릴과 나란히 놓이면
+ *   **혼자 조용한 영상**이 된다. 그런데 층(옹알이·BGM)마다 볼륨을 올려 고치면 안 된다 —
+ *   유호님이 귀로 잡으신 «둘의 균형»이 그때 깨진다(BGM 볼륨은 실측으로 잡은 값이다).
+ *   ⇒ 층은 그대로 두고 **완성본에 게인 한 번**을 건다. 그것이 마스터 단이다.
+ *
+ * 🔑 압축(리미터·컴프)을 안 쓴다. 실측이 그럴 필요가 없다고 말했다 —
+ *   `clip-01-1-kamong`: I −20.2 LUFS · 트루피크 **−6.0 dBFS** · LRA 1.5 LU.
+ *   머리 공간이 6dB 나 남아 있고 다이내믹이 이미 아주 고르다. 순수 게인 +5dB 을 걸었더니
+ *   I −15.3 · 트루피크 −1.4 · **LRA 1.5 그대로**였다(= 다이내믹이 안 눌렸다는 증거).
+ *   압축을 걸면 옹알이와 BGM 의 관계가 바뀐다 — 그건 유호님 판정을 뒤집는 일이다.
+ *
+ * 🔑 두 문턱 중 «먼저 걸리는 것»이 이긴다:
+ *     게인 = min(목표I − 잰I,  목표피크 − 잰피크)
+ *   여기서는 늘 트루피크가 먼저 걸린다(그래서 −14 에 정확히 못 닿고 −15 언저리에 선다).
+ *   ⚠ −14 LUFS 는 «널리 쓰이는 기준선»이지 내가 확인한 플랫폼 규격이 아니다.
+ *     어차피 묶는 것은 피크이므로 이 수를 더 다듬는 것은 뜻이 없다.
+ *
+ * 🔑 두 번 돌려도 안전하다 — 재고 나서 결정하므로 이미 맞은 것은 게인이 0 이 되어 건너뛴다.
+ *   (`--전량` 이 중간에 죽어도 다시 돌리면 되는 성질이다.)
+ *
+ * 쓰기: node 영상/마스터.js [파일이름 …]      (안 주면 out/ 의 mp4 전부)
+ */
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const { spawnSync } = require('child_process');
+
+const 방 = __dirname;
+const 나온방 = path.join(방, 'out');
+
+/** 목표. 피크가 거의 언제나 먼저 걸린다(위 머리말). */
+const 목표I = -14;
+const 목표피크 = -1;
+/** 이보다 작은 손질은 안 한다 — 들리지도 않는데 파일만 다시 쓴다(그리고 씨앗이 낡는다). */
+const 최소손질 = 0.3;
+
+function ffmpeg(인자들) {
+  return spawnSync('ffmpeg', ['-hide_banner', '-nostats', ...인자들], { encoding: 'utf8' });
+}
+
+/**
+ * 완성본의 «통합 라우드니스»와 «트루피크»를 잰다. 못 재면 null — 조용히 0 으로 안 친다.
+ *
+ * 🔴 `I:` 를 그냥 찾으면 안 된다. ebur128 은 **프레임마다 한 줄씩** 찍고 그 줄에도 `I:` 가 있다:
+ *     t: 0.4 TARGET:-23 LUFS M: -70 S: -70 I: -70 LUFS LRA: 0 LU FTPK: … TPK: …
+ *   첫 매치를 집으면 «영상이 시작도 안 한 시점»의 −70 을 요약값으로 읽는다(08-27 실측으로 잡았다).
+ *   여기서는 피크가 먼저 걸려 게인이 우연히 맞았지만, **너무 큰 영상이 오면 못 줄인다.**
+ *   ⇒ 마지막 줄의 «요약» 블록만 본다.
+ */
+function 재기(파일) {
+  const r = ffmpeg(['-i', 파일, '-af', 'ebur128=peak=true', '-f', 'null', '-']);
+  const 글 = `${r.stdout || ''}${r.stderr || ''}`;
+  const 요약 = 글.slice(글.lastIndexOf('Integrated loudness:'));
+  if (!요약 || 요약 === 글) return null; /* 요약 블록이 아예 없으면 못 잰 것이다 */
+  const i = 요약.match(/I:\s+(-?[\d.]+) LUFS/);
+  const p = 요약.match(/Peak:\s+(-?[\d.]+) dBFS/);
+  if (!i || !p) return null;
+  return { I: Number(i[1]), 피크: Number(p[1]) };
+}
+
+const 고른것 = process.argv.slice(2).filter((a) => !a.startsWith('--'));
+const 파일들 = (고른것.length ? 고른것 : fs.readdirSync(나온방))
+  .filter((f) => f.endsWith('.mp4'))
+  .sort();
+
+let 손질 = 0;
+let 그대로 = 0;
+const 못잰것 = [];
+
+for (const 이름 of 파일들) {
+  const 파일 = path.join(나온방, 이름);
+  if (!fs.existsSync(파일)) {
+    못잰것.push(`${이름} (파일이 없다)`);
+    continue;
+  }
+  const 전 = 재기(파일);
+  if (!전) {
+    못잰것.push(`${이름} (라우드니스를 못 쟀다)`);
+    continue;
+  }
+  const 게인 = Math.min(목표I - 전.I, 목표피크 - 전.피크);
+  if (Math.abs(게인) < 최소손질) {
+    그대로 += 1;
+    console.log(`   ${이름} — ${전.I} LUFS · 피크 ${전.피크} dBFS · 그대로 둔다`);
+    continue;
+  }
+  /* 영상은 복사한다 — 다시 인코딩하면 화질이 깎이고 시간도 든다. 소리만 다시 쓴다.
+     비트레이트는 원본(≈317kbps)보다 넉넉히 잡는다. */
+  const 임시 = `${파일}.마스터.tmp.mp4`;
+  const r = ffmpeg([
+    '-y', '-i', 파일,
+    '-af', `volume=${게인.toFixed(2)}dB`,
+    '-c:v', 'copy', '-c:a', 'aac', '-b:a', '320k', '-ar', '48000',
+    '-movflags', '+faststart',
+    임시,
+  ]);
+  if (r.status !== 0 || !fs.existsSync(임시)) {
+    못잰것.push(`${이름} (ffmpeg 실패)`);
+    if (fs.existsSync(임시)) fs.unlinkSync(임시);
+    continue;
+  }
+  const 후 = 재기(임시);
+  /* 🔴 결과를 «믿지 않고» 다시 잰다. 피크가 0 을 넘으면 그건 깨진 소리다 —
+     그때는 원본을 지키고 손질을 버린다(조용히 나쁜 것으로 갈아치우지 않는다). */
+  if (!후 || 후.피크 > -0.2) {
+    fs.unlinkSync(임시);
+    못잰것.push(`${이름} (손질 뒤 피크 ${후 ? 후.피크 : '?'} dBFS — 되돌렸다)`);
+    continue;
+  }
+  fs.renameSync(임시, 파일);
+  손질 += 1;
+  console.log(
+    `   ${이름} — ${전.I} → ${후.I} LUFS · 피크 ${전.피크} → ${후.피크} dBFS  (${게인 > 0 ? '+' : ''}${게인.toFixed(1)}dB)`,
+  );
+}
+
+console.log(
+  `마스터 — 합계 ${파일들.length} = 손질 ${손질} + 이미 맞음 ${그대로} + 못함 ${못잰것.length}`,
+);
+if (못잰것.length) {
+  console.log(`   ⛔ ${못잰것.join(' · ')}`);
+  process.exitCode = 1;
+}
