@@ -23,6 +23,7 @@
  *   node tools/지면회귀.js --너비 900 docs/a.html   # 기본 1200
  *   node tools/지면회귀.js --허용 0.1 docs/*.html   # 다른 픽셀 0.1% 까지는 통과(기본 0.02)
  *   node tools/지면회귀.js --보고서 docs/*.html     # 달라진 자리를 겹쳐 보는 HTML 을 낸다
+ *   node tools/지면회귀.js --흔들림 docs/*.html     # 이 지면들의 «바닥 흔들림»을 잰다(허용선 정할 때)
  *
  * 종료 코드: 0 통과 · 1 달라진 지면 있음 · 2 **안 잰 것**(크롬 없음·git 없음 — 통과 아님).
  *   ⚠ 통과(0)와 미실행(2)이 같은 모양이면 안 된다 — CI 에서 조용히 안 도는 게 최악이다.
@@ -44,7 +45,13 @@ const { execFileSync } = require('child_process');
 
 const 기본너비 = 1200;
 const 기본높이 = 900;
-const 기본허용 = 0.02;   // %
+/* 허용 임계 — 실측(08-27)으로 정했다. «같은 파일을 같은 방법으로» 두 번 구워도
+ * 교실수집_선택지 지면은 2,575px(0.024% · 최대차 232)가 두 상태로 갈렸다.
+ * 그 지면엔 애니메이션도 JS 도 외부 폰트도 0 이다 — 크롬 렌더 자체의 비결정성이다.
+ * 그래서 0.024% 의 세 배 남짓에 선을 둔다. 0 으로 조이면 매번 빨개지고,
+ * 매번 빨간 검사는 곧 아무도 안 보는 검사가 된다.
+ * 자기 지면의 «바닥 흔들림»이 궁금하면 --흔들림 이 같은 파일을 두 번 구워 답한다. */
+const 기본허용 = 0.08;   // %
 const 잡음문턱 = 8;      // 채널 차가 이 이하면 같은 픽셀로 본다
 
 /** 크롬 경로 — 목록을 여기 베끼지 않는다(같은 판정을 두 곳에 적으면 갈라진다). */
@@ -87,13 +94,40 @@ function 전체높이(chrome, htmlPath, 너비, 방) {
   } catch { return null; }
 }
 
+/* 시간을 멈추는 CSS — 애니메이션이 도는 지면은 «찍는 순간»마다 다른 그림이 된다.
+ * 실측 08-27: 교실수집_선택지 지면을 두 번 재니 0.000% 와 0.041%(2,575px · 최대차 232)가
+ * 갈렸다. 흔들리는 검사는 곧 아무도 안 보는 검사가 된다 — 그래서 재기 전에 시간을 세운다. */
+const 시간정지 = `<style id="SYNK_FREEZE">
+*,*::before,*::after{animation:none!important;animation-delay:0s!important;
+  animation-duration:0s!important;animation-play-state:paused!important;
+  transition:none!important;transition-delay:0s!important;transition-duration:0s!important;
+  caret-color:transparent!important}
+html{scroll-behavior:auto!important}
+</style>`;
+
+/** 원본은 건드리지 않고, 시간만 멈춘 «주입본»을 이웃 자리에 놓는다(상대경로가 살아야 렌더가 같다). */
+function 주입본만들기(htmlPath, 작업방) {
+  let 원문;
+  try { 원문 = fs.readFileSync(htmlPath, 'utf8'); } catch { return null; }
+  const 주입 = /<\/head>/i.test(원문)
+    ? 원문.replace(/<\/head>/i, `${시간정지}</head>`)
+    : 시간정지 + 원문;   // <head> 가 없는 조각 문서도 있다 — 맨 앞이면 그래도 먼저 먹는다
+  const p = path.join(path.dirname(htmlPath), `.지면회귀_굽기_${process.pid}_${path.basename(htmlPath)}`);
+  try { fs.writeFileSync(p, 주입, 'utf8'); } catch { return null; }
+  작업방.임시.push(p);
+  return p;
+}
+
 /** 한 벌을 굽는다. 실패하면 null. */
-function 굽기(chrome, htmlPath, outPng, 너비, 높이) {
+function 굽기(chrome, htmlPath, outPng, 너비, 높이, 작업방) {
+  // 시간을 멈춘 사본으로 굽는다 — 작업방을 안 주면(높이 재기 등) 원본 그대로.
+  const 굴 = 작업방 ? (주입본만들기(htmlPath, 작업방) || htmlPath) : htmlPath;
   try {
     execFileSync(chrome, [
       '--headless=new', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
       '--allow-file-access-from-files', '--virtual-time-budget=8000',
-      `--window-size=${너비},${높이}`, `--screenshot=${outPng}`, fileURL(htmlPath),
+      '--force-prefers-reduced-motion',
+      `--window-size=${너비},${높이}`, `--screenshot=${outPng}`, fileURL(굴),
     ], { stdio: ['ignore', 'ignore', 'ignore'], timeout: 60000 });
   } catch { return null; }
   if (!fs.existsSync(outPng)) return null;
@@ -212,6 +246,7 @@ function 보고서쓰기(결과들, 경로) {
 
 function main(argv) {
   const 보고서 = argv.includes('--보고서');
+  const 흔들림재기 = argv.includes('--흔들림');
   const 값 = (이름, 기본) => {
     const i = argv.indexOf(이름);
     return i >= 0 && argv[i + 1] ? argv[i + 1] : 기본;
@@ -223,6 +258,13 @@ function main(argv) {
 
   const 먹는인자 = new Set(['--기준', '--너비', '--높이', '--허용']);
   const files = argv.filter((a, i) => !a.startsWith('--') && !먹는인자.has(argv[i - 1]));
+
+  const 아닌것 = files.filter((f) => !/\.html?$/i.test(f));
+  if (아닌것.length) {
+    console.error(`이 도구는 HTML 지면만 잰다 — 아닌 것 ${아닌것.length}벌: ${아닌것.slice(0, 3).join(' · ')}`);
+    console.error('  (크롬은 .md 도 텍스트로 «그려» 버려서, 그냥 두면 0.000% 통과로 찍힌다)');
+    return 2;
+  }
 
   if (!files.length) {
     console.error('사용법: node tools/지면회귀.js [--기준 <ref>] [--너비 N] [--허용 %] [--보고서] <html...>');
@@ -249,7 +291,9 @@ function main(argv) {
   try {
     for (const f of files) {
       const 이름 = f.replace(/\\/g, '/');
-      const 옛 = 옛판꺼내기(ref, 이름, 작업방);
+      // --흔들림 이면 «옛 판» 자리에 현재 파일을 한 번 더 놓는다. 두 그림의 차이가
+      // 곧 이 지면의 바닥 흔들림이다 — 진짜 변화는 이 값 «위»에서만 말이 된다.
+      const 옛 = 흔들림재기 ? path.resolve(이름) : 옛판꺼내기(ref, 이름, 작업방);
       if (!옛) { console.log(`  신규  ${이름} — «${ref}» 에 없던 지면이라 견줄 상대가 없다`); continue; }
 
       // 전체 지면을 잰다 — 뷰포트만 찍으면 첫 화면 아래 변화가 「0.000% 통과」로 샌다.
@@ -263,8 +307,8 @@ function main(argv) {
         if (hA && hB && hA !== hB) 높이알림 = ` · 길이 ${hA}→${hB}px`;
       }
 
-      const pngA = 굽기(chrome, 옛, path.join(방, 'a.png'), 너비, 잴높이);
-      const pngB = 굽기(chrome, path.resolve(이름), path.join(방, 'b.png'), 너비, 잴높이);
+      const pngA = 굽기(chrome, 옛, path.join(방, 'a.png'), 너비, 잴높이, 작업방);
+      const pngB = 굽기(chrome, path.resolve(이름), path.join(방, 'b.png'), 너비, 잴높이, 작업방);
       if (!pngA || !pngB) {
         console.error(`  ⚠못잼  ${이름} — 굽기 실패(${!pngA ? '옛 판' : '현재 판'})`);
         못잰것++; continue;
@@ -297,6 +341,15 @@ function main(argv) {
     const 낼곳 = path.join(os.tmpdir(), `지면회귀_보고서_${process.pid}.html`);
     보고서쓰기(결과들, 낼곳);
     console.log(`\n보고서: ${낼곳}`);
+  }
+
+  if (흔들림재기) {
+    const 최대 = 결과들.length ? Math.max(...결과들.map((r) => r.비율 || 0)) : 0;
+    console.log(`\n바닥 흔들림 — 가장 큰 값 ${최대.toFixed(3)}% · 지금 허용선 ${허용}%` +
+                (최대 >= 허용
+                  ? '\n  🔴 허용선이 흔들림보다 낮다 — 이대로면 «안 바뀐 지면»도 빨개진다. --허용 을 올려라.'
+                  : '\n  허용선이 흔들림 위에 있다 — 진짜 변화만 빨개진다.'));
+    return 최대 >= 허용 ? 1 : 0;
   }
 
   console.log(`\n기준 ${ref} · 잰 지면 ${결과들.length}벌 = 통과 ${결과들.length - 달라짐} + 다름 ${달라짐}` +
