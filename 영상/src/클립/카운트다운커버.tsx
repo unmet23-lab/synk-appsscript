@@ -13,7 +13,7 @@ import { AbsoluteFill, Img, staticFile } from "remotion";
 import type { 카운트다운 as 카운트다운형 } from "./타입";
 import { 지면, 율, 색 } from "../킷/색";
 import { 본문스택, 웨이트, 트래킹 } from "../킷/폰트";
-import { 그늘 } from "./연출";
+import { 로고, 그늘 } from "./연출";
 
 export const 카운트다운커버: React.FC<{ 클립: 카운트다운형 }> = ({ 클립 }) => {
   /* 훅에서 이모지를 뗀다 — 표지는 정지화라 이모지가 «움직이지 않는 장식»으로 남는다.
@@ -91,7 +91,7 @@ export const 카운트다운커버: React.FC<{ 클립: 카운트다운형 }> = (
       </AbsoluteFill>
 
       <AbsoluteFill style={{ justifyContent: "flex-start", alignItems: "center", paddingTop: 150 }}>
-        <Img src={staticFile("로고/민라이트.svg")} style={{ width: 220 }} />
+        <Img src={staticFile(로고.파일)} style={{ width: 220 }} />
       </AbsoluteFill>
 
       <AbsoluteFill

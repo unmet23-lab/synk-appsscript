@@ -31,7 +31,7 @@ import {
 import type { 카운트다운 as 카운트다운형, 순위 } from "./타입";
 import { 지면, 율, 색 } from "../킷/색";
 import { 본문스택, 웨이트, 트래킹, 몽골어보정 } from "../킷/폰트";
-import { 연출, 그늘, 그레인, 비네트, 마스코트, 들임, 어절드러내기, type 경계 } from "./연출";
+import { 연출, 로고, 그늘, 그레인, 비네트, 마스코트, 들임, 어절드러내기, type 경계 } from "./연출";
 
 /** 나감 커브 — 자막·훅·마무리가 같이 쓴다. 세 번째 복붙 직전에 함수로 뺐다. */
 const 나감값 = (frame: number, fps: number, durationInFrames: number) => {
@@ -263,7 +263,7 @@ export const 카운트다운: React.FC<{ 클립: 카운트다운형 }> = ({ 클�
       {클립.순위들.map((r, i) => (
         <Sequence key={r.순} from={칸경계[i].시작} durationInFrames={r.프레임 + 겹침}>
           <AbsoluteFill
-            style={{ justifyContent: "flex-start", alignItems: "center", paddingTop: 연출.자막앵커위 - 170 }}
+            style={{ justifyContent: "flex-start", alignItems: "center", paddingTop: 연출.자막앵커위 - 150 }}
           >
             <순위칸 칸={r} />
           </AbsoluteFill>
@@ -283,7 +283,7 @@ export const 카운트다운: React.FC<{ 클립: 카운트다운형 }> = ({ 클�
       ))}
 
       {/* ── 진행 점 — 위 띠(실측으로 비어 있던 자리). 「몇 개 남았나」가 보이면 끝까지 본다 ── */}
-      <AbsoluteFill style={{ justifyContent: "flex-start", alignItems: "center", paddingTop: 208 }}>
+      <AbsoluteFill style={{ justifyContent: "flex-start", alignItems: "center", paddingTop: 268 }}>
         <진행점표 칸경계={칸경계} 총={클립.순위들.length} 마무리시작={마무리시작} />
       </AbsoluteFill>
 
@@ -303,9 +303,9 @@ export const 카운트다운: React.FC<{ 클립: 카운트다운형 }> = ({ 클�
         />
       </AbsoluteFill>
 
-      {/* 로고 — 반드시 «민라이트». DESIGN.md §4「크기가 표현을 정한다 — 문턱 180px, 그 아래는 민판」 */}
-      <AbsoluteFill style={{ justifyContent: "flex-start", alignItems: "center", paddingTop: 128 }}>
-        <Img src={staticFile("로고/민라이트.svg")} style={{ width: 120 }} />
+      {/* 로고 — 판과 크기의 정본은 `연출.로고` 하나다. 여기서 이름을 손으로 적지 않는다. */}
+      <AbsoluteFill style={{ justifyContent: "flex-start", alignItems: "center", paddingTop: 96 }}>
+        <Img src={staticFile(로고.파일)} style={{ width: 로고.폭 }} />
       </AbsoluteFill>
 
       <AbsoluteFill style={{ justifyContent: "flex-end" }}>
