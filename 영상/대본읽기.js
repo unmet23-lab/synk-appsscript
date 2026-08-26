@@ -125,8 +125,19 @@ function 머리제목(머리) {
   return { 화: Number(n[1]), 이름 };
 }
 
+/* 🔴 **줄끝을 여기서 고른다 — 안 고르면 «새로 받은 사람»에게만 45편이 0편이 된다.**
+ *   git 이 Windows 체크아웃에서 LF→CRLF 로 내려주므로(이 저장소가 종일 내던 그 경고),
+ *   갓 클론한 작업본의 md 는 머리가 `1편 — "안녕하세요" (부제)\r` 로 끝난다.
+ *   그러면 `머리제목()` 의 `(.*)$` 가 **모든 머리에서 null** 을 낸다 — JS 의 `.` 는 `\r` 을
+ *   안 먹고 `$` 도 `\r` 앞에 안 서기 때문이다.
+ *   더 고약한 것은 **터지지 않는다**는 점이다: 화가 0개로 세어지고 「스키마 미달」도 0 이라,
+ *   로그가 「대본 9편 · 화 0개 = 선 것 0 + 미달 0」으로 조용히 성공처럼 찍힌다.
+ *   08-26 실측 — 워크트리(=새 체크아웃)에서 45화가 통째로 사라졌다. 메인 작업본은 md 가 아직
+ *   LF 라 멀쩡해서, **고치는 사람 자리에서만 안 보이는** 무늬였다. */
+const 줄끝고르기 = (t) => t.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
 function 편읽기(파일) {
-  const 원문 = fs.readFileSync(path.join(대본방, 파일), 'utf8');
+  const 원문 = 줄끝고르기(fs.readFileSync(path.join(대본방, 파일), 'utf8'));
   const 편 = 파일.slice(0, 2);
   const 출처 = `.claude/skills/synk-content/references/리드크루클립/${파일}`;
   const 덩이 = 원문.split(/^## /m).slice(1);
@@ -254,7 +265,7 @@ const 가이드결 = {
 };
 
 function 카운트다운읽기(파일) {
-  const 원문 = fs.readFileSync(path.join(카운트다운방, 파일), 'utf8');
+  const 원문 = 줄끝고르기(fs.readFileSync(path.join(카운트다운방, 파일), 'utf8'));
   const 번호 = 파일.slice(0, 2);
   const 출처 = `.claude/skills/synk-content/references/카운트다운/${파일}`;
 
