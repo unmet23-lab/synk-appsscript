@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>명품 갭 판정 — 2026-08-26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FBF7F0; --ink:#2B2320; --stitch:#F0E3C8;
+  --oat:#EDE7DC; --stone:#C7BFB2; --ash:#8D857A; --deepwool:#575046;
+  --coral:#F96859; --coral3:#AE322A; --coralsoft:#FBB7A3; --wash:#FEF0E9;
+  --lapis:#3D6BC9; --lapisdeep:#24448C; --lapissoft:#C5D6F5;
+  --meadow:#7DB45A; --meadowdeep:#3F6B2E; --meadowsoft:#D3E8BE;
+  --butter:#F5C445; --butterdeep:#7E5A10; --buttersoft:#FFEBB0;
+  --pop:#E05C97; --popdeep:#99295D; --popsoft:#F8C7DE;
+  --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--font); font-weight:500; line-height:1.72;
+  letter-spacing:-0.011em; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:980px; margin:0 auto; padding:56px 28px 120px}
+header{border-bottom:2px solid var(--stitch); padding-bottom:28px; margin-bottom:44px}
+.kicker{font-family:var(--mono); font-size:12px; letter-spacing:.10em; color:var(--ash); text-transform:uppercase}
+h1{font-size:40px; font-weight:800; letter-spacing:-0.03em; line-height:1.18; margin:12px 0 14px}
+.sub{font-size:16px; color:var(--deepwool); max-width:64ch}
+h2{font-size:25px; font-weight:800; letter-spacing:-0.025em; margin:64px 0 6px; line-height:1.3}
+h2 .num{font-family:var(--mono); font-size:13px; font-weight:500; color:var(--coral); display:block; letter-spacing:.08em; margin-bottom:8px}
+h3{font-size:18px; font-weight:800; letter-spacing:-0.02em; margin:34px 0 8px}
+p{margin:12px 0; max-width:70ch}
+.lead{font-size:18px; max-width:66ch}
+strong{font-weight:800}
+em{font-style:normal; background:var(--wash); padding:1px 5px; border-radius:4px; font-weight:800; color:var(--coral3)}
+.hr{height:1px; background:var(--stitch); margin:56px 0; border:0}
+
+/* 판정 카드 */
+.verdict{
+  background:#fff; border:2px solid var(--stitch); border-radius:18px;
+  padding:30px 32px; margin:34px 0 8px;
+  box-shadow:0 1px 0 var(--stitch), 0 14px 34px -26px rgba(43,35,32,.42);
+}
+.verdict .tag{
+  display:inline-block; font-family:var(--mono); font-size:11px; letter-spacing:.10em;
+  background:var(--coral); color:var(--paper); padding:4px 10px; border-radius:99px; margin-bottom:14px;
+}
+.verdict .big{font-size:27px; font-weight:800; letter-spacing:-0.03em; line-height:1.4; margin:0}
+
+/* 세 축 */
+.axes{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:30px 0 8px}
+.axis{background:#fff; border:2px solid var(--stitch); border-radius:16px; padding:22px 20px; display:flex; flex-direction:column}
+.axis .h{font-family:var(--mono); font-size:11px; letter-spacing:.09em; color:var(--ash); margin-bottom:6px}
+.axis .t{font-size:19px; font-weight:800; letter-spacing:-0.02em; line-height:1.32}
+.axis ul{margin:14px 0 0; padding-left:0; list-style:none; font-size:13.5px; color:var(--deepwool); line-height:1.66; flex:1}
+.axis ul li{padding:4px 0 4px 14px; position:relative}
+.axis ul li::before{content:''; position:absolute; left:0; top:13px; width:5px; height:5px; border-radius:99px; background:var(--stone)}
+.meter{margin-top:16px; height:9px; border-radius:99px; background:var(--oat); overflow:hidden}
+.meter i{display:block; height:100%; border-radius:99px}
+.axis .verd{font-size:13px; font-weight:800; margin-top:9px; letter-spacing:-0.01em}
+.a1 .meter i{width:94%; background:var(--meadow)} .a1 .verd{color:var(--meadowdeep)}
+.a2 .meter i{width:31%; background:var(--butter)} .a2 .verd{color:var(--butterdeep)}
+.a3 .meter i{width:9%;  background:var(--coral)}  .a3 .verd{color:var(--coral3)}
+
+/* 표 */
+.tblwrap{overflow-x:auto; -webkit-overflow-scrolling:touch; margin:22px 0}
+.tbl{width:100%; min-width:520px; border-collapse:collapse; font-size:14.5px}
+.tbl th{
+  text-align:left; font-size:11.5px; font-family:var(--mono); letter-spacing:.08em;
+  color:var(--ash); font-weight:500; padding:0 12px 9px; border-bottom:2px solid var(--stitch); white-space:nowrap;
+}
+.tbl td{padding:13px 12px; border-bottom:1px solid var(--stitch); vertical-align:top; line-height:1.6}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td.n{font-family:var(--mono); font-size:13px; color:var(--ash); white-space:nowrap}
+.zero{font-family:var(--mono); font-weight:500; color:var(--coral3); background:var(--wash); padding:1px 6px; border-radius:4px}
+.ok{font-family:var(--mono); font-weight:500; color:var(--meadowdeep); background:var(--meadowsoft); padding:1px 6px; border-radius:4px}
+
+/* 최저점 */
+.low{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:26px 0}
+.low .c{border:2px solid var(--coralsoft); background:var(--wash); border-radius:16px; padding:20px}
+.low .c .n{font-family:var(--mono); font-size:11px; color:var(--coral3); letter-spacing:.09em}
+.low .c .t{font-size:17px; font-weight:800; margin:6px 0 8px; letter-spacing:-0.02em; line-height:1.34}
+.low .c p{font-size:13.5px; color:var(--deepwool); margin:0; line-height:1.62}
+
+/* 달력 */
+.cal{margin:28px 0; border-left:2px solid var(--stitch); padding-left:0}
+.cal .row{display:grid; grid-template-columns:96px 1fr; gap:20px; padding:0 0 26px 24px; position:relative; margin-left:-1px; border-left:2px solid transparent}
+.cal .row::before{
+  content:''; position:absolute; left:-8px; top:7px; width:14px; height:14px;
+  border-radius:99px; background:var(--paper); border:3px solid var(--stone);
+}
+.cal .row.hot::before{border-color:var(--coral); background:var(--coral)}
+.cal .d{font-family:var(--mono); font-size:13px; color:var(--ash); padding-top:2px; white-space:nowrap}
+.cal .d b{display:block; color:var(--ink); font-size:15px; font-weight:800; letter-spacing:-0.01em}
+.cal .row.hot .d b{color:var(--coral3)}
+.cal .t{font-size:16.5px; font-weight:800; letter-spacing:-0.02em; line-height:1.4}
+.cal .w{font-size:14px; color:var(--deepwool); margin-top:3px; line-height:1.62}
+
+/* 준비 항목 */
+.item{border:2px solid var(--stitch); border-radius:16px; background:#fff; padding:24px 26px; margin:16px 0}
+.item .head{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+.item .no{font-family:var(--mono); font-size:12px; color:var(--paper); background:var(--ink); border-radius:99px; padding:3px 9px; letter-spacing:.06em}
+.item h3{margin:0; font-size:20px}
+.item .who{
+  font-family:var(--mono); font-size:11px; letter-spacing:.07em; padding:3px 9px; border-radius:99px; margin-left:auto;
+}
+.who.y{background:var(--coral); color:var(--paper)}
+.who.a{background:var(--lapissoft); color:var(--lapisdeep)}
+.who.b{background:var(--oat); color:var(--deepwool)}
+.item .why{font-size:14.5px; color:var(--deepwool); margin:12px 0 0; line-height:1.68}
+.item .do{
+  margin-top:14px; padding-top:14px; border-top:1px dashed var(--stone);
+  font-size:14px; line-height:1.66;
+}
+.item .do b{font-family:var(--mono); font-size:11px; letter-spacing:.07em; color:var(--ash); font-weight:500; display:block; margin-bottom:4px}
+.due{font-family:var(--mono); font-size:12px; color:var(--coral3); font-weight:500}
+
+.note{background:var(--oat); border-radius:14px; padding:20px 24px; margin:26px 0; font-size:14.5px; color:var(--deepwool); line-height:1.7}
+.note b{color:var(--ink)}
+footer{margin-top:80px; padding-top:26px; border-top:2px solid var(--stitch); font-size:12.5px; color:var(--ash); font-family:var(--mono); line-height:1.9}
+
+@media (max-width:820px){
+  .axes,.low{grid-template-columns:1fr}
+  .tbl th{white-space:normal}
+  h1{font-size:31px}
+  .verdict .big{font-size:22px}
+  .cal .row{grid-template-columns:1fr; gap:4px}
+  .wrap{padding:36px 18px 80px}
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#1B1613; --ink:#F3ECE1; --stitch:#3A312B;
+    --oat:#241E1A; --stone:#5A5049; --ash:#9C9288; --deepwool:#C4B9AC;
+    --wash:#3A211D; --coralsoft:#8B4038;
+    --meadowsoft:#2B3E22; --meadowdeep:#A9D189; --lapissoft:#22345C; --lapisdeep:#A8C3F0;
+    --butterdeep:#E8C97A;
+  }
+  :root:not([data-theme="light"]) .verdict,
+  :root:not([data-theme="light"]) .axis,
+  :root:not([data-theme="light"]) .item{background:#221C18}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">SYNK LAB · 판정 지면 · 2026-08-26</div>
+  <h1>명품 갭 판정 — 개원 D-183</h1>
+  <p class="sub">유호님 질문 「우리 사업이 명품이 되려면 어떤 걸 더 준비해야 할지」에 대한 답.
+  저장소 실물을 세어서 냈고, 안 재본 것은 「안 재봤다」로 적었다.</p>
+</header>
+
+<div class="verdict">
+  <span class="tag">판정</span>
+  <p class="big">우리 명품은 지금 <em>「만드는 것」 한 축</em>에만 서 있다.<br>
+  학생이 <strong>만나는 것</strong>과 학생이 <strong>가져가는 것</strong>은 아직 명품이 아니다.</p>
+</div>
+<p class="lead">명품은 제품이 좋아서 명품이 아니다 — <strong>접점 전부가 같은 밀도</strong>여서 명품이다.
+우리는 앱 속 몽글이 통 튀어올라 인사하는 <strong>0.3초</strong>까지 챙기면서,
+학부모가 우리를 처음 만나는 자리에서는 <strong>「얼마예요?」에 답을 못 한다.</strong>
+이 대비가 오늘의 전부다.</p>
+
+<h2><span class="num">01 / 세어 본 것</span>세 축의 밀도가 갈려 있다</h2>
+
+<div class="axes">
+  <div class="axis a1">
+    <div class="h">AXIS 1</div>
+    <div class="t">만드는 것<br>제품 · 시스템</div>
+    <ul>
+      <li>엔진 6종 + Reed</li>
+      <li>앱 화면 14벌 · 요소 156장</li>
+      <li>부품 26종 · 킷 42색 · 폰트 3종</li>
+      <li>철학 v1.12 (시제 규약까지)</li>
+      <li>로고 5자리 · 마스코트 정본</li>
+      <li>발표물 6종 · 상표 · 법인 · 지분헌장</li>
+    </ul>
+    <div class="meter"><i></i></div>
+    <div class="verd">압도적 — 여기는 이미 명품</div>
+  </div>
+  <div class="axis a2">
+    <div class="h">AXIS 2</div>
+    <div class="t">만나는 것<br>사람 · 공간 · 첫 5분</div>
+    <ul>
+      <li>강사 매뉴얼 「골격」 1벌 — 채용 기준 <span class="zero">0</span></li>
+      <li>공간·인테리어 브랜드 설계 <span class="zero">0건</span></li>
+      <li>체험 절차 <span class="zero">미확정</span></li>
+      <li>상담 봇이 못 답하는 것 <span class="zero">8건</span></li>
+      <li>홈페이지 — 시안 v5, 트랙 <span class="zero">0건</span></li>
+    </ul>
+    <div class="meter"><i></i></div>
+    <div class="verd">얇다 — 여기서 명품이 깨진다</div>
+  </div>
+  <div class="axis a3">
+    <div class="h">AXIS 3</div>
+    <div class="t">가져가는 것<br>증거 · 기억</div>
+    <ul>
+      <li>싱크 포트폴리오 — 주인 <span class="zero">없음</span></li>
+      <li>학생·학부모 손에 남는 인쇄물 <span class="zero">0</span></li>
+      <li>수료·졸업 물건 <span class="zero">0</span></li>
+      <li>월간 리포트카드 · 촬영 <span class="ok">설계 있음</span></li>
+    </ul>
+    <div class="meter"><i></i></div>
+    <div class="verd">거의 없다 — 닫히는 문</div>
+  </div>
+</div>
+
+<div class="note">
+  <b>「0」의 분모를 밝힌다.</b> 위 숫자는 이 저장소 실측이다 —
+  <span class="zero">인테리어</span> 전용 문서 0(돈 항목으로만 4곳 언급) ·
+  <span class="zero">홈페이지</span> 트랙·결정 둘 다 0건 ·
+  <span class="zero">체험수업</span> 절차 문서 0(상담 봇 잠금 목록에 「체험 절차」로 등재) ·
+  <code>docs/인쇄본</code> 11종은 <b>전부 내부 문서</b>(강사 매뉴얼·발주서·런북)라 학생·학부모용은 0.
+  다만 <b>유호님 머릿속·바탕화면·오프라인에 있는 것은 내가 못 본다</b> — 위 0 은 「저장소에 없다」이지 「세상에 없다」가 아니다.
+</div>
+
+<h2><span class="num">02 / 원리</span>명품은 평균이 아니라 <em>최저점</em>으로 판정된다</h2>
+<p>학부모는 우리 엔진 6종을 세지 않는다. <strong>가장 허술했던 한 순간</strong>을 기억한다.
+지금 우리 최저점 후보는 셋이고, 셋 다 「시스템을 더 잘 만들기」로는 안 풀린다.</p>
+
+<div class="low">
+  <div class="c">
+    <div class="n">LOW POINT 1</div>
+    <div class="t">어색한 몽골어 한 줄</div>
+    <p>검수자 <b>0명</b>. 미니게임 4종·동의 문구·talk 앱·교재가 <b>동시에</b> 여기 묶여 있다.
+    명품에서 번역투 한 문장은 나머지 전부를 깎는다. 로드맵이 스스로 「최대 차단자」로 적어 둔 자리다.</p>
+  </div>
+  <div class="c">
+    <div class="n">LOW POINT 2</div>
+    <div class="t">교실 문을 열었을 때</div>
+    <p>앱은 「이름 없는 땅」 펠트 세계다(08-26 확정). 그런데 <b>그 세계가 물리 공간으로 넘어간 설계는 0</b>.
+    간판·벽·조명·소리·자리·냄새 — 아이가 실제로 <b>몸으로 들어가는</b> 유일한 접점인데 킷이 아직 안 닿았다.</p>
+  </div>
+  <div class="c">
+    <div class="n">LOW POINT 3</div>
+    <div class="t">「얼마예요?」</div>
+    <p>상담 봇이 못 답하는 8건 중 첫 셋 —— <b>수강료·주소·체험 절차</b> —— 이 정확히 학부모의 첫 세 질문이다.
+    답을 못 하면 명품이 아니라 <b>준비 안 된 곳</b>으로 읽힌다. 광고를 켜기 전에 서야 한다.</p>
+  </div>
+</div>
+
+<h2><span class="num">03 / 달력</span>닫히는 문 — 이 순서로 닫힌다</h2>
+<p>아래 다섯은 전부 <strong>다시 오지 않는</strong> 자리다. 늦으면 「나중에 하기」가 아니라 <strong>그 기간이 통째로 빈다.</strong></p>
+
+<div class="cal">
+  <div class="row hot">
+    <div class="d">D-67<b>11월</b></div>
+    <div>
+      <div class="t">강사 부트캠프</div>
+      <div class="w">여기서 안 가르치면 강사는 개원 후에도 시스템을 안 쓴다. 강사가 안 쓰면 엔진에 데이터가 안 들어오고, 「나만의 선생님」은 재료 없이 시작한다.</div>
+    </div>
+  </div>
+  <div class="row hot">
+    <div class="d">D-97<b>12월</b></div>
+    <div>
+      <div class="t">파일럿 코호트</div>
+      <div class="w">개원 전 <b>유일한 실전 리허설</b>. 여기서 안 깨지면 개원 첫 주에 깨진다 — 그때는 실제 학부모가 보고 있다.</div>
+    </div>
+  </div>
+  <div class="row hot">
+    <div class="d">D-132<b>01-05</b></div>
+    <div>
+      <div class="t">사전등록 시작</div>
+      <div class="w">광고를 켜는 날. 이 전에 <b>가격·주소·체험 절차</b>가 서 있어야 하고, Meta 검수(약 20일)·공개 홈페이지가 그 앞에 또 있다 — 즉 실질 마감은 <b>12월 초</b>다.</div>
+    </div>
+  </div>
+  <div class="row hot">
+    <div class="d">D-169<b>02-11</b></div>
+    <div>
+      <div class="t">2주 무료 체험</div>
+      <div class="w">우리 브랜드의 <b>첫인상</b>이 여기서 한 번에 결정된다. 2주 뒤 등록률이 그대로 첫 해 재무가 된다. 그런데 그 2주의 설계가 아직 없다.</div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="d">D-183<b>02-25</b></div>
+    <div>
+      <div class="t">정식 개원</div>
+      <div class="w">첫 학생의 첫 나침반 답·첫 드림맵·첫 사진은 <b>그날 안 담으면 영영 없다</b>(소급 불가).</div>
+    </div>
+  </div>
+</div>
+
+<h2><span class="num">04 / 준비할 것</span>여덟 — 닫히는 순서대로</h2>
+
+<div class="item">
+  <div class="head"><span class="no">01</span><h3>몽골어 검수자 1명</h3><span class="who y">유호님만</span></div>
+  <p class="why">이 한 사람이 <b>동시에</b> 푸는 것: 미니게임 G1~G4 · 동의 문구 법적 효력 · talk 앱 문구 · 교재 · 만족도 설문 · 주간 리포트.
+  명품의 최저점이 여기다 — 우리 글이 「외국인이 쓴 한국어」처럼 읽히면 나머지 전부가 같이 내려간다. 발주서·금액은 이미 서 있고, <b>집행만 남았다</b>.</p>
+  <div class="do"><b>다음 한 걸음</b><span class="due">지금 주</span> — 요청 전량이 <code>docs/몽골어검수_요청_큐.md</code> 한 자리에 모여 있다. 유호님이 사람만 정하시면 그날 전량이 나간다.</div>
+</div>
+
+<div class="item">
+  <div class="head"><span class="no">02</span><h3>첫 5분 셋 — 수강료 · 주소 · 체험 절차</h3><span class="who y">유호님만</span></div>
+  <p class="why">가격은 <b>명품의 선언</b>이다. 싸면 「그 정도 학원」이 되고, 비싸면 그 값을 증명할 재료가 있어야 한다 —
+  우리는 그 재료(엔진·리포트·캐릭터·포트폴리오)를 이미 가진 몇 안 되는 학원이라, <b>가격을 낮게 잡으면 지어 놓은 것이 값을 못 받는다.</b>
+  주소·체험 절차는 그 가격을 뒷받침하는 첫 경험이다.</p>
+  <div class="do"><b>다음 한 걸음</b><span class="due">D-132 · 실질은 12월 초</span> — 값 셋만 주시면 상담 봇 잠금 8건 중 첫 셋이 그날 풀리고, 하이라이트·고정 게시물·링크인바이오까지 자동으로 따라간다.</div>
+</div>
+
+<div class="item">
+  <div class="head"><span class="no">03</span><h3>강사 — 채용 기준과 부트캠프</h3><span class="who b">유호님 + 나</span></div>
+  <p class="why">철학이 「사람이어야만 하는 일」을 강사에게 맡겼다. 그러면 <b>그 사람을 어떻게 고르고 기르는가가 곧 제품 사양</b>이다.
+  지금 있는 것은 교수법 매뉴얼 <b>골격 1벌</b>이고, 채용 기준·부트캠프 커리큘럼·모의수업 채점표는 아직 없다.
+  명품 브랜드가 무너지는 자리는 대부분 제품이 아니라 <b>매장의 사람</b>이다.</p>
+  <div class="do"><b>다음 한 걸음</b><span class="due">D-67</span> — 채용 기준 초안(「학생을 보고 한 줄로 적을 수 있는 사람」 포함)과 5일치 부트캠프 커리큘럼은 <b>내가 이번 주에 낼 수 있다</b>. 유호님은 확정만.</div>
+</div>
+
+<div class="item">
+  <div class="head"><span class="no">04</span><h3>공간 — 「이름 없는 땅」이 문을 통과하게</h3><span class="who a">내가 시작</span></div>
+  <p class="why"><b>이번 판정에서 새로 찾은 가장 큰 빈자리다.</b> 세계관은 08-26에 확정됐는데 <b>앱 첫 화면에만</b> 산다.
+  아이는 앱보다 <b>교실 문</b>을 먼저 연다 — 간판(키릴 의무) · 벽 · 조명 · 자리 · 소리 · 냄새 · 신발장 · 화장실 · 학부모 대기석.
+  펠트 킷 42색과 요소 156장을 가지고도 <b>물리 공간에 쓴 적이 0</b>이다. 임대 계약 후에 시작하면 이미 늦다(인테리어는 되돌리기가 비싸다).</p>
+  <div class="do"><b>다음 한 걸음</b><span class="due">임대 계약 전</span> — 공간 브랜드 설계 v1(존 구획 · 킷 적용 · 시공 발주용 사양 · 예산 구간)을 내가 짓는다. 유호님은 평면도가 나오는 시점만 알려주시면 된다.</div>
+</div>
+
+<div class="item">
+  <div class="head"><span class="no">05</span><h3>리허설 — 12월 파일럿 + 2월 체험 2주</h3><span class="who b">유호님 + 나</span></div>
+  <p class="why">우리 시스템은 <b>학생 0명 위에서</b> 지어졌다. 지금까지 한 번도 진짜 아이가 만진 적이 없다.
+  명품은 「완벽하게 만든 것」이 아니라 <b>「실전에서 한 번 깨지고 고친 것」</b>이다.
+  12월 파일럿이 그 유일한 기회이고, 2월 2주 체험은 이미 <b>고객이 보는 무대</b>라 리허설이 아니다.</p>
+  <div class="do"><b>다음 한 걸음</b><span class="due">D-97</span> — 파일럿 설계(몇 명 · 무엇을 잴 것 · 무엇이 깨지면 개원을 미룰 것인가)를 내가 초안 낸다. <b>「무엇이 깨지면 미룬다」를 미리 정해 두는 것이 핵심</b>이다 — 그날 정하면 못 미룬다.</div>
+</div>
+
+<div class="item">
+  <div class="head"><span class="no">06</span><h3>가져가는 것 — 포트폴리오와 손에 남는 물건</h3><span class="who a">내가 시작</span></div>
+  <p class="why">철학이 두 번(Ⅱ-7 · Ⅲ-5) 약속한 <b>싱크 포트폴리오</b>가 어느 트랙에도 0건 — <b>주인이 없다.</b>
+  게다가 무대·작품·촬영은 <b>그날 안 담으면 영영 없다</b>. 그리고 지금 우리 인쇄물 11종은 <b>전부 내부용</b>이라,
+  학부모 손에 쥐여 줄 물건이 하나도 없다. 명품은 <b>집에 가져가는 것</b>에서 완성된다 —
+  포장지·태그·수료증·과잠·첫날 웰컴 키트.</p>
+  <div class="do"><b>다음 한 걸음</b><span class="due">개원 첫날 전</span> — ①포트폴리오 자동 수집 배선(새 수집면 안 만들고 있는 신호만 모은다) ②학부모·학생용 인쇄물 세트를 내가 짓는다. 굿즈 실물 발주만 유호님 몫(돈).</div>
+</div>
+
+<div class="item">
+  <div class="head"><span class="no">07</span><h3>끝의 설계 — 환불 · 이탈 · 사고가 났을 때</h3><span class="who b">유호님 + 나</span></div>
+  <p class="why">이 저장소에 <b>「컴플레인」 0건</b>이다. 우리는 <b>잘 되는 경우만</b> 설계해 뒀다.
+  그런데 명품과 아닌 것이 갈리는 자리는 정확히 반대다 — <b>환불을 요구할 때 · 아이가 그만둘 때 · 우리가 실수했을 때</b>.
+  그 순간의 응대가 곧 입소문이 되고, 몽골처럼 구전이 강한 시장에서는 그 한 건이 열 건을 데려오거나 데려간다.</p>
+  <div class="do"><b>다음 한 걸음</b><span class="due">체험 시작 전</span> — 환불 규정(법무 축)·이탈 인터뷰·사고 응대 각본을 한 벌로 짓는다. 규정의 <b>숫자</b>만 유호님이 정하시면 나머지는 내가 쓴다.</div>
+</div>
+
+<div class="item">
+  <div class="head"><span class="no">08</span><h3>명품을 재는 자 — 무엇으로 명품임을 아는가</h3><span class="who a">내가 시작</span></div>
+  <p class="why">지금 우리가 재는 것은 <b>시스템이 도는가</b>이지 <b>명품인가</b>가 아니다.
+  명품 지표는 매출이 아니라 셋이다 — <b>재등록률 · 자발적 추천률 · 첫 3개월 이탈률</b>.
+  목표치를 <b>지금</b> 못 박아야 개원 후에 「이 정도면 괜찮다」로 미끄러지지 않는다.
+  만족도 설문 폼은 이미 있으니 새로 지을 것은 적다.</p>
+  <div class="do"><b>다음 한 걸음</b><span class="due">개원 전</span> — 명품 눈금 3종의 목표치 초안과 자동 집계 배선을 내가 낸다. 목표 숫자만 유호님이 확정.</div>
+</div>
+
+<hr class="hr">
+
+<h2><span class="num">05 / 가름</span>유호님만 vs 내가</h2>
+
+<div class="tblwrap"><table class="tbl">
+  <thead><tr><th>유호님만 풀 수 있는 것</th><th>왜</th><th>언제까지</th></tr></thead>
+  <tbody>
+    <tr><td><b>몽골어 검수자 채용 집행</b></td><td>사람 결정 · 돈</td><td class="n">지금 주</td></tr>
+    <tr><td><b>수강료 · 주소 · 체험 절차</b></td><td>사업 방향 확정</td><td class="n">12월 초</td></tr>
+    <tr><td>강사 채용 기준 확정 · 면접</td><td>사람 결정</td><td class="n">9~10월</td></tr>
+    <tr><td>임대 계약 · 평면도 · 인테리어 발주</td><td>돈 · 계약</td><td class="n">2027-01 전</td></tr>
+    <tr><td>환불 규정의 숫자 · 명품 눈금 목표치</td><td>사업 방향 확정</td><td class="n">체험 전</td></tr>
+    <tr><td>Meta 앱 검수 신청 · 공개 홈페이지 게시</td><td>계정 · 대외 발행</td><td class="n">12월 초</td></tr>
+  </tbody>
+</table></div>
+
+<div class="tblwrap"><table class="tbl">
+  <thead><tr><th>내가 지금 시작할 수 있는 것 (지시만 주시면)</th><th>산출</th></tr></thead>
+  <tbody>
+    <tr><td><b>공간 브랜드 설계 v1</b> — 「이름 없는 땅」을 교실로</td><td>시공 발주용 사양 + 시안 지면</td></tr>
+    <tr><td><b>강사 채용 기준 + 5일 부트캠프 커리큘럼</b></td><td>채용 공고 · 면접 채점표 · 부트캠프 교안</td></tr>
+    <tr><td><b>12월 파일럿 설계</b> — 무엇을 재고 무엇이 깨지면 미루나</td><td>실행지 1벌</td></tr>
+    <tr><td><b>2월 체험 2주 시나리오</b> — 첫날부터 등록까지 분 단위</td><td>운영 각본 + 학부모 접점 물건</td></tr>
+    <tr><td><b>포트폴리오 자동 수집 배선</b> + 학부모·학생 인쇄물 세트</td><td>코드 + 인쇄 정본</td></tr>
+    <tr><td><b>끝의 설계</b> — 환불 · 이탈 인터뷰 · 사고 응대 각본</td><td>문서 1벌</td></tr>
+    <tr><td><b>명품 눈금 3종</b> 목표치 + 자동 집계</td><td>지표 정본 + 배선</td></tr>
+  </tbody>
+</table></div>
+
+<div class="note">
+  <b>한 줄로 줄이면.</b> 지금까지 6개월은 <b>「만드는 것」</b>에 썼고 그건 옳았다 —
+  그 덕에 문을 열기 전에 여기까지 왔다. 남은 6개월은 <b>「만나는 것」과 「가져가는 것」</b>에 써야
+  세 축이 같은 밀도가 된다. <b>명품은 마지막에 얹는 광택이 아니라, 세 축이 같은 날 같은 높이로 서는 것이다.</b>
+</div>
+
+<footer>
+  지면 · docs/명품갭_판정_2026-08-26.html<br>
+  근거 · docs/SYNK_철학.md v1.12 · docs/_ops/트랙.md §4·§4-E·§5 · docs/생태계_갭_리포트_2026-07.md · docs/DM상담_자동화_로드맵.md §6 · docs/개원재무_2027_재산정_v1.md · 저장소 실측(발표물 6 · 인쇄본 11 · 인테리어 0 · 홈페이지 트랙 0)<br>
+  안 재본 것 · 유호님 손에 있는 오프라인 자료 · 몽골 현지 견적 · 경쟁 학원 실물
+</footer>
+
+</div>
+</body>
+</html>
