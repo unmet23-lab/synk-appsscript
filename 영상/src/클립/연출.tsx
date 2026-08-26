@@ -17,6 +17,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import type { 가이드, 표정 } from "./타입";
+import type { 몸짓 } from "./몸짓";
 
 /* ────────────────────────────────────────────────────────────────────────────
  * 연출 값. 🔴 토큰 `감각.가안` 을 **인용하지 않는다** — DESIGN.md §8 이
@@ -126,8 +127,10 @@ export const 그늘 = (a: number) => `rgba(8, 9, 12, ${a})`;
 const 노이즈결 =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E\")";
 
-/** 마스코트가 «지금 어느 장면에 있나»를 절대프레임으로 찾기 위한 표. */
-export type 경계 = { 시작: number; 끝: number; 표정: 표정 };
+/** 마스코트가 «지금 어느 장면에 있나»를 절대프레임으로 찾기 위한 표.
+ *  🔑 `몸짓` 은 그 장면의 «말»에서 온다 — 자막이 「매워요」면 몸이 바르르 떨린다(`몸짓.ts`).
+ *     계산은 컴포넌트가 «자막을 들고 있는 자리»에서 한 번만 한다 — 파서에도 두면 정본이 둘이 된다. */
+export type 경계 = { 시작: number; 끝: number; 표정: 표정; 몸짓?: 몸짓 };
 
 /* ── 층: 그레인 · 비네트 ──────────────────────────────────────────────────
  * 「평평한 단색 배경 금지」(모션 스킬 비협상 규칙 ⑤). 다만 이건 **학습 콘텐츠**라
