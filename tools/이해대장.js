@@ -44,6 +44,8 @@ function loom태우기(html) {
 const path = require('node:path');
 const { 칸나누기 } = require('./lib/표.js');
 const 시트도달 = require('./lib/시트도달.js');
+/* 형제 저장소의 «자리»는 통로 하나가 답한다 — 경로 모양을 짚지 않는다(08-26 이전). */
+const 형제저장소 = require('../.claude/hooks/lib/형제저장소.js');
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..');
 /* ⚠ 두 경로는 갈아끼울 수 있다 — `--검사` 가 **작업본이 아니라 커밋될 내용**을 재야 하기 때문이다.
@@ -213,10 +215,18 @@ function esc(s) {
  *   후보를 순서대로 본다: ①옆(평소) ②워크트리면 본체의 옆. 둘 다 없으면 null 그대로다
  *   — 「못 읽었다」와 「빚이 0」을 같은 모양으로 두지 않는 규칙은 안 건드린다. */
 function 형제경로들(root) {
-  const 후보 = [path.resolve(root, '..', 'SYNK-talk')];
-  const m = /^(.*)[\\/]\.claude[\\/]worktrees[\\/][^\\/]+$/.exec(path.resolve(root));
-  if (m) 후보.push(path.resolve(m[1], '..', 'SYNK-talk'));
-  return 후보;
+  const 옆 = path.resolve(root, '..', 'SYNK-talk');
+  /* 🔑 **경로 «모양»을 더는 안 짚는다**(08-26 이전 · 이 파일이 스스로 예고한 그 수리).
+   *   옛 판은 `<본체>/.claude/worktrees/<한 마디>` 정규식이었고, 실측으로 두 자리에서 샜다:
+   *   ①가지 이름이 «두 마디»면(`엔진/저작신뢰` — 하네스가 허용하는 꼴) 못 알아본다
+   *   ②`.claude/worktrees/` 밖의 워크트리는 아예 못 본다(그런 트리가 실제로 살았던 적이 있다).
+   *   둘 다 증상이 「⚠ 못 쟀다」로 조용히 열화하는 형태다.
+   * 🔑 짐작할 필요가 없었다 — 워크트리는 `.git` 을 공유하고 그 파일의 `gitdir:` 한 줄이
+   *   본체를 가리킨다. `형제저장소.형제경로()` 가 그걸 이미 읽는다(F079 가 남긴 모듈).
+   * ⚠ 못 풀면 그 함수는 `root` 를 그대로 돌려주므로 후보가 «옆» 하나로 접힌다 = 고치기 전 동작.
+   *   「모름」을 새 동작으로 번역하지 않는 그 성질을 그대로 물려받는다. */
+  const 본체옆 = 형제저장소.형제경로(root);
+  return 옆 === 본체옆 ? [옆] : [옆, 본체옆];
 }
 
 function 도달실측(root) {

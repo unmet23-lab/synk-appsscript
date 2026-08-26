@@ -25,6 +25,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const os = require('node:os');
 
 const { 검사, 읽다, 층들 } = require('../tools/lib/시트도달.js');
 
@@ -325,44 +326,44 @@ test('🔴 워크트리에서도 형제 저장소를 찾는다 — 이 저장소
   assert.equal(본체.length, 1, '평소 경로에서 후보가 둘이면 엉뚱한 곳을 먼저 볼 수 있다');
   assert.match(본체[0].replace(/\\/g, '/'), /\/repo\/SYNK-talk$/);
 
-  /* 🔴 [2026-08-18] 백슬래시 갈래는 **윈도우 문법의 `path` 에서만** 성립한다 — 리눅스 CI 에서
-   *   영구 적색이던 자리다(실측: 4496개 중 이 줄 포함 fail 3). 구현은 `path.resolve(root)` 를
-   *   먼저 거치는데, posix resolve 는 `\repo\…\트랙이름` 을 **한 개의 파일명**으로 보고 cwd 를
-   *   앞에 붙인다. 그래서 워크트리 후보 둘이 같은 경로로 무너진다 — 정규식이 `[\\/]` 로 두
-   *   구분자를 다 받아도 그 앞에서 재료가 이미 뭉개져 있다.
-   * 🔑 여기서 **구현을 안 고친다.** 진짜 수리는 표기 감지가 아니라 `형제저장소.형제경로()` 로
-   *   갈아타는 것이고(짐작 대신 `.git` 의 `gitdir:` 를 읽는다 · `tests/형제경로통로.test.js`),
-   *   `tools/이해대장.js` 의 그 자리는 지금 **남의 활성 트랙이 잠갔다**(래칫 목록 `이해대장.js:140·142`
-   *   = 가지 `worktree-ledger-blocker-split`). 잠긴 자리를 우회로 손보면 그 통로 이전이 늦어진다.
-   * ⚠ 그래서 fail 대신 **미실행을 드러낸다** — 통과로 바꾸는 게 아니다(F296 · F207).
-   *   윈도우(유호님 실사용 기계)에서는 그대로 돈다. */
-  const 갈래 = [
-    { 워크: '/repo/SYNK-appsscript/.claude/worktrees/트랙이름', 언제나: true },
-    { 워크: '\\repo\\SYNK-appsscript\\.claude\\worktrees\\트랙이름', 언제나: false },
-  ];
-  let 잰것 = 0;
-  for (const { 워크, 언제나 } of 갈래) {
-    if (!언제나 && path.sep !== '\\') {
-      console.log(`  ⚠ 미실행 — 백슬래시 표기 갈래는 이 기계(${process.platform})의 path 문법으로 파싱되지 않는다.`
-        + ' 통과가 아니라 못 잰 것이다 — 진짜 수리는 `형제저장소.형제경로()` 이전이고 그 자리는 지금 잠겨 있다.');
-      continue;
-    }
-    const 후보 = 형제경로들(워크).map((p) => p.replace(/\\/g, '/'));
-    assert.ok(후보.some((p) => /\/repo\/SYNK-talk$/.test(p)),
-      `워크트리 경로에서 본체 옆 형제를 후보에 안 넣는다 — 실측이 조용히 열화한다 (${워크} → ${후보.join(' · ')})`);
-    assert.ok(후보.length >= 2, '워크트리인데 후보가 하나다 — 평소 경로와 같은 판정이 된다');
-    잰것 += 1;
-  }
-  assert.ok(잰것 >= 1, '두 갈래를 다 건너뛰었다 — 분모 0 은 통과가 아니다(F207)');
+  /* 🔴 [2026-08-26] **구현을 갈아탔다 — 그래서 시험도 «재는 것»이 바뀐다.**
+   *   옛 판은 경로 «모양» 정규식(`<본체>/.claude/worktrees/<한 마디>`)이었고, 이 시험은 그
+   *   문자열 꼴을 재고 있었다. 08-26 실측이 그 방식의 구멍 둘을 실물로 잡았다:
+   *     ① 가지 이름이 **두 마디**면(`엔진/두마디` — 하네스가 허용하는 꼴) 못 알아본다
+   *     ② `.claude/worktrees/` **밖**의 워크트리는 아예 못 본다
+   *   둘 다 증상이 「⚠ 못 쟀다」로 조용히 열화하는 형태다. 그리고 이 주석이 예고했던 차단자
+   *   (가지 `worktree-ledger-blocker-split`)는 **이미 죽었다**(08-26 `git branch -a` 실측) —
+   *   그래서 예고대로 `형제저장소.형제경로()` 로 이전했다.
+   * 🔑 이제 재는 것은 «문자열 꼴»이 아니라 **`.git` 의 `gitdir:` 를 실제로 읽는가**다. 그래서
+   *   합성 경로로는 못 잰다(그건 git 배치가 아니다) — **픽스처**를 만들어 잰다. `gitCommonDir`
+   *   이 순수 fs 라 git 실행 없이 성립한다(실측 <1ms).
+   * ⚠ 옛 판이 재던 「백슬래시/슬래시 두 표기」는 이제 판정 축이 아니다 — 경로를 파싱하지 않으니
+   *   표기가 판정에 안 들어간다. 리눅스에서 영구 미실행이던 그 skip 이 **원인째 사라진다.** */
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-형제경로-'));
+  try {
+    const 본체 = path.join(방, 'SYNK-appsscript');
+    const 공통 = path.join(본체, '.git');
+    fs.mkdirSync(path.join(공통, 'worktrees', '두마디'), { recursive: true });
+    fs.writeFileSync(path.join(공통, 'HEAD'), 'ref: refs/heads/master\n');
+    /* 하네스가 허용하는 **두 마디** 이름 — 옛 정규식이 정확히 여기서 샜다. */
+    const 워크 = path.join(본체, '.claude', 'worktrees', '엔진', '두마디');
+    fs.mkdirSync(워크, { recursive: true });
+    fs.writeFileSync(path.join(워크, '.git'), `gitdir: ${path.join(공통, 'worktrees', '두마디')}\n`);
 
-  /* 🔑 위 skip 이 리눅스에서 **영구 미실행**으로 굳는 것을 그만큼 덜어 낸다(F617 델타).
-   *   posix 에서 못 재는 것은 «경로 값»이지 «워크트리 꼴을 알아보는가»가 아니다 —
-   *   후보가 하나 늘었는지는 두 표기 모두 어느 기계에서나 성립한다(백슬래시 판은 값이 같은 두 벌로
-   *   접히지만 개수는 2다). 이 줄이 없으면 정규식을 `[\\/]` 에서 한쪽으로 좁혀도 리눅스 CI 는
-   *   조용히 초록이고, 유호님 윈도우에서만 나중에 터진다 — 잡히는 자리와 나는 자리가 갈린다. */
-  for (const 꼴 of 갈래.map((g) => g.워크)) {
-    assert.equal(형제경로들(꼴).length, 2,
-      `워크트리 «꼴»을 못 알아봤다(${꼴}) — 표기 하나만 받는 정규식으로 좁아지면 반대쪽 기계에서만 열화한다`);
+    const 후보 = 형제경로들(워크).map((p) => p.replace(/\\/g, '/'));
+    const 바라는것 = path.join(방, 'SYNK-talk').replace(/\\/g, '/');
+    assert.ok(후보.includes(바라는것),
+      `워크트리에서 **본체 옆** 형제를 후보에 안 넣는다 — 실측이 조용히 열화한다 (${후보.join(' · ')})`);
+    assert.equal(후보.length, 2, '워크트리인데 후보가 하나다 — 평소 경로와 같은 판정이 된다');
+
+    /* 🔴 반대 시험 — 픽스처가 «워크트리가 아니면» 후보가 하나여야 한다. 이게 없으면 위 통과가
+     *   「무조건 둘을 낸다」로도 성립하고, 그러면 평소 경로에서 엉뚱한 곳을 먼저 볼 수 있다. */
+    const 그냥방 = path.join(방, '남의폴더');
+    fs.mkdirSync(그냥방, { recursive: true });
+    assert.equal(형제경로들(그냥방).length, 1,
+      'git 배치가 아닌 자리에서 후보가 늘었다 — 「모름」을 새 동작으로 번역하고 있다');
+  } finally {
+    fs.rmSync(방, { recursive: true, force: true });
   }
 });
 
