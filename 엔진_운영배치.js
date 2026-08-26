@@ -1337,7 +1337,7 @@ function leagueSettle_() {
   function topLine(c) { const t = topOf[c]; return t ? t.n + josa(t.n, '이', '가') + ' ' + t.d + ' 데미지로 반을 이끌었다' : '모두가 조용히 힘을 모은 한 주'; }
 
   const data = lg.getRange(2, 1, lg.getLastRow() - 1, 5).getValues();
-  const winRows = []; let noticed = 0;
+  const winRows = []; const noticed = 0; // [08-27] 리그 전교 공지 폐지 — 언제나 0이다(로그 줄이 「안 났다」를 말하게 남긴다)
   const resUpd = [], noticeRows = []; // [v9.34] E열 마킹·공지를 지급 뒤로 지연 — 마킹 선행 시 크래시로 +5P 영구 유실(멱등 게이트가 재시도 차단)되던 결함
   data.forEach((r, i) => {
     if (String(r[0]) !== weekKey || String(r[3]) === '부전' || String(r[4] || '')) return; // 이번 주 · 미정산만 (멱등)
@@ -1373,14 +1373,14 @@ function leagueSettle_() {
     }
     if (winner && memberCls[winner]) {
       memberCls[winner].forEach(sid => winRows.push([sid, PT.리그, '리그승리', 'SYSTEM']));
-      noticeRows.push([
-        /* [08-27 · codex ①검수 caafe42048a9] 🏆·챔피언은 걷었는데 «두 반을 나란히 놓고 평균을 견주는 것»은
-         *   그대로였다 — 낱말만 갈고 구조를 두고 온 자리다. 반 이름 둘·평균·승패를 전부 걷는다.
-         *   포인트는 그대로 나간다(그건 «한 일»이지 «이긴 것»이 아니다). */
-        '이번 주 우리 반이 쌓은 것',
-        winner + ' 크루 전원 +' + PT.리그 + 'P. 이번 주에 쌓은 것은 각자에게 그대로 남았습니다 🌱',
-        new Date()]);
-      noticed++;
+      /* [08-27 · codex ①검수 caafe42048a9·225db83a4b2b] 🚫 «전교 공지»를 걷었다.
+       * 1차 수리에서 반 이름 둘·평균·승패 수치를 걷었는데, codex 2회전이 더 깊은 자리를 짚었다 —
+       *   공지가 승리 반 «이름 하나»만 불러도 전교가 누가 이겼는지 안다. 수치를 지운 것은
+       *   비교를 지운 게 아니라 «비교의 눈금»만 지운 것이었다(유호 08-27 「비교하는거 최대한 없애자」).
+       * ⇒ 전교 공지는 없앤다. 남는 둘은 비교가 아니다:
+       *   ㉠ 포인트 지급 — 「한 일」이지 「이긴 것」이 아니다(옆자리 값이 안 보인다)
+       *   ㉡ raid_story 반별 서사 — 각 반이 «자기 것»만 본다(양 반 모두 받는다 · v9.2)
+       * ⏳ 반 대항 리그 «자체»를 없앨지는 유호님 자리다. 지금은 LEAGUE_ON=false 로 꺼져 있다. */
     }
   });
   // [v9.34] ① 지급(멱등: 이번 주 '리그승리' 기지급자 point_logs 재조회 제외) → ② E열 결과 마킹 → ③ 서사·공지.
