@@ -2590,6 +2590,12 @@ function buildMonthlyStorybook_() {
   const M  = pick[0] ? { n: nmB[pick[0]], d: perM[pick[0]] || 0, c: clsB[pick[0]], evo: evolvedMap[pick[0]] } : { n: '유나', d: 0, c: '우리 반', evo: null };
   const S1 = pick[1] ? { n: nmB[pick[1]], evo: evolvedMap[pick[1]] } : { n: '민호', evo: null };
   const S2 = pick[2] ? { n: nmB[pick[2]], evo: evolvedMap[pick[2]] } : null;
+  /* [08-27] 칭호가 바뀌면 «그 칭호를 말로 옮기는 자리»도 같이 바뀐다 — 안 따라가면 조용히 틀린 문장이 난다.
+   *   구판은 `t.indexOf('스타')` 하나로 갈랐고, 새 넷에는 「스타」가 없어 전부 「가장 많이 성장한」이 됐다
+   *   (codex ①검수가 잡았다 — 지각 제로 보유자가 성장 최다로 서술되던 자리). */
+  const 칭호말_ = { '하루도 안 빠진 달': '이달 하루도 빠지지 않은 목소리', '레이드 개근': '레이드마다 자리를 지킨 목소리',
+    '불꽃 출석러': '끊기지 않고 이어 온 목소리', '지각 제로': '한 번도 늦지 않은 목소리' };
+  const 칭호말of_ = (t) => { const k = Object.keys(칭호말_).find(n => String(t || '').indexOf(n) > -1); return k ? 칭호말_[k] : '이달을 함께 걸어온 목소리'; };
   const C1 = cameoPool[0] ? { n: nmB[cameoPool[0]], t: crownSid[cameoPool[0]] } : null;
   const evoActor = M.evo ? M : (S1.evo ? S1 : (S2 && S2.evo ? S2 : null));
   let duel = null;
@@ -2716,7 +2722,7 @@ function buildMonthlyStorybook_() {
   push(7, '제7화 — 집결', '멀리서 발소리가 들려왔다. ' + rvA + '이(가) 오고 있었다. 평일반이, 주말반이, ' + stuCnt + '명의 크루 전원이 한 전장에 모이고 있었다. ' + (evoActor
     ? '그 한가운데서 빛이 터졌다. ' + evoActor.n + '의 캐릭터가 ' + evoActor.evo + '(으)로 진화하는 순간이었다. 한 달의 포인트가 가장 필요한 순간에 형태를 바꾼 것이다.'
     : '크루들의 캐릭터가 일제히 낮게 울었다. 대군주의 그림자가 처음으로 흔들렸다.') + cameo() + cameo(), eB(3));
-  push(8, '제8화 — 총공세', (C1 ? C1.n + '이(가) 앞으로 나섰다. ' + (C1.t.indexOf('스타') > -1 ? '이달의 무대를 가장 많이 가졌던 목소리' : '이달 가장 많이 성장한 목소리') + '가 첫 문장을 열었다.' : M.n + '이(가) 첫 문장을 열었다.') + ' 다음 크루가 이어받고, 또 다음 크루가 이어받았다. ' + stuCnt + '명의 한국어가 하나의 사슬이 되어 대군주를 감았다. ' + (world ? '이번 달 전교의 기록, ' + world.dmg + '. 그 전부가 지금 한 점을 향하고 있었다.' : '한 달의 기록 전부가 한 점을 향하고 있었다.') + cameo() + cameo(), gB(3));
+  push(8, '제8화 — 총공세', (C1 ? C1.n + '이(가) 앞으로 나섰다. ' + 칭호말of_(C1.t) + '가 첫 문장을 열었다.' : M.n + '이(가) 첫 문장을 열었다.') + ' 다음 크루가 이어받고, 또 다음 크루가 이어받았다. ' + stuCnt + '명의 한국어가 하나의 사슬이 되어 대군주를 감았다. ' + (world ? '이번 달 전교의 기록, ' + world.dmg + '. 그 전부가 지금 한 점을 향하고 있었다.' : '한 달의 기록 전부가 한 점을 향하고 있었다.') + cameo() + cameo(), gB(3));
 
   // ═══ 결 ═══
   if (world && world.win) {
