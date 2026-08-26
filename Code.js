@@ -793,7 +793,7 @@ const CONSULT_SHEET_ID = '1Ze_8IHOzmtAV-PHt12cUfRn5_LwRZwt8pcWsnjQ19FY'; // [v9.
 const SYNK_VERSION = 'v9.264'; // 전체 이력 = docs/버전_이력.md (새 버전은 그 파일 맨 아래에 추가) · 최신 [v9.264] 죽은 검사를 살아 있는 것처럼 말하던 주석 14자리 정직화 — 배포집합 6벌 포함 · [v9.263] 워치독 미인식 사유 수리 — 사유 정본 R07 리그승리가 분류 목록에 없어 매주 늑대소년 · [v9.262] 심문 잔여 4건 소화 — 스윕 급수 동봉·워치독 미개통 정보·두뇌 검사 부활·거짓 참조 정정 · [v9.261] 계약 손사본 SCHEMA_VER c11→c13 — 두 판 뒤처짐 수리 · 시트 형상 무변 기계 대조 동행 · [v9.260] 왕관 재구성 잔재 소각 마감 — 다이제스트 정정 순계·새 사유 편입 + 리그 공지 캐릭터 표기 · [v9.259] 시트층 도달 분모 22→23 — 상담로그 편입(입학 전 대화 원문·E1 재료·Ⅰ-④) + leads 골격 존재감시 + 헤더 정본 골격 이관 · [v9.258] 왕관 제도 재구성 ㉯ — 반당 1명 정원 폐지·기준 충족 전원, 이름은 오늘의 도전·오늘의 성장(따로 셈) · 몬스터·필살기 접점 표기 직관화 · [v9.257] 2027 킷 색 이관 — 라이브 카드 hex 84곳 + rgba 삼중값 17곳 · [v9.256] 재료 게이트에 상담 축 — 다른 스프레드시트에 사는 재료가 안 보여 fail-closed 로 샜다 (①배포 검수 P2) · [v9.255] H7 주간 해설 재료 게이트가 안 닫혔다 — 렌더된 서식 말고 원본 행을 센다 (①배포 검수 P1) · [v9.254] 주간 리포트 AI 해설에 재료 게이트 — 집계가 전부 비면 안 부른다(개원 전 매주 나가던 Opus 호출 1회) · [v9.253] 문법 판정 벽에 «만료» — 영구 실패한 학생 하나가 대화·말하기 판정 큐를 영영 막던 자리 (#Q106) · [v9.252] 시트층 도달 빚 6/6 — 「해낸 것」이 오늘의 한 문장의 근거가 된다 (대기열 P1 #Q104) · [v9.251] 문법 판정 커서를 시트 쓰기 «뒤»로 — 삼켜진 예외 뒤로 학생 재료가 영구 미판정이 되던 것 (①배포 검수 P1) · [v9.250] 시트층 도달 5/5 — 돌아온 학생의 재료 창을 되돌린다 (exit_log → aiStudioBatch_ · #Q99 · 래칫 도달0 3→2) · [v9.249] talk_log 도달 — 자유 대화 문법 판정(masteryFromTalk_) · 래칫 도달0 4→3 · [v9.248] 시트층 도달 3/5 — 말한 것이 문법 판정에 닿는다 (voice_log → masteryFromVoice_ · #Q99) · [v9.247] 시트층 도달 2/5 — 지난 퀴즈의 오답·「찍어서 맞힘」이 다음 개인 퀴즈를 고른다 (#Q99) · [v9.246] 두 릴리스가 «같은 분모»에서 만난 판 — 도달 래칫을 실측으로 재정한다 (#Q100 분모 9→22 · #Q99 빚 1 갚음 → 도달0 6) · [v9.245] 시트층 도달 빚 1/5 — 주간 발화 지수가 조 편성 침묵 축이 된다 (대기열 P1 #Q99 · 래칫 도달0 5→4) · [v9.244] 수집 표식 범위 판정 — 골격 57종 전건 · 분모 9→22 · 도달 래칫 5→7 (#Q100) · [v9.243] 시트층 도달 장부 — 수집 9종 중 5종이 도달 0인데 세는 래칫이 0이었다 · [v9.242] 철회된 제품 라인 이름 제거 — 금칙 목록을 이름에서 범주로 · [v9.241] 워치독 필수 시트 목록을 골격 정본에서 도출 + 수집 장부 «줄었나» 축 신설 (대기열 P3 #Q89) · [v9.240] 시트 헤더 손사본 4벌 절단 + 리터럴 0 회귀 · [v9.239] 수집면 출생 단일화 — 골격 3탭 등재 + 헤더 정본 공유(손사본 드리프트 차단) · [v9.238] 반 키 접기 공용 통로 확대 — 엔진_운영배치 2곳 이관 + 회귀 과녁을 엔진 전량으로 (#Q79) · [v9.237] 재검수 처분 — 실패 원인 지문을 dedup 서명 앞쪽에 (120자 절단 밖을 닫는다) · [v9.236] 발화 지수 스냅샷 재검수 처분 — 실패 서명에 원인 보존 + assignGroups 입력 반키_ 접기 (검수 758bae69853f·48599e195c0f) · [v9.235] 발화 지수 스냅샷 — 반 키 접기 공용 통로(반키_) + 실패 반 safeRun 전파 (재검수 차단급 2건 · 대기열 P1 #Q78) · [v9.234] 발화 지수 저장·리포트 P1 6건 처분 — 시트 날짜 삼킴·미래 차시 분모·낡은 주차·락·실패 침묵 · [v9.233] 발화 유창함 결과 저장 — talk_index_log 주간 스냅샷 + 주간 리포트 꼬리 소비 · [v9.232] 명부스윕 조편성 — 「모른다」와 「편성 없음」을 가른다 · 대량 조 해제 알림 · [v9.231] 「골든셋」→「강사 정답 모음」 개명 — 뜻이 안 서는 낱말 (유호 지시 08-14) · [v9.230] 숙제 서클 배포 검수 차단 3건 수리 — 레벨 모름 접힘·굽기 전 칸 측정·출석 확정 뒤 자동 인쇄 · [v9.229] 카피 교체 집행 — 유호 확정 08-13 ㉠ 층 C 10곳(구 표기·오철자 「훌슝」·「마약김밥」 역번역 사고 후보·전쟁 은유) + 「필살기 노트」→「내 연습 노트」 개명(시트 열 자기치유 마이그레이션) · [v9.228] 숙제 서클 조 단위 인쇄 조립자 + 질문 카드 풀 + A4 조판 실측 · [v9.227] 숙제 뱅크 v9.225 적대리뷰 수리 — P1 4(HW410 시즌·HW115 스코프·HW501/703 E열·HW519 필살기 프레임) + P2 9 + 회귀 신설(tests/숙제뱅크.test.js · 변이 6/6) · [v9.226] 옛글자 리뷰 P2 4건 처분 — 역번역 위장 링크 게이트·프롬프트 문자 규칙·탐지 클래스 확장·오류사전 포이즌 필 · [v9.225] 숙제 뱅크 품질 패스 — 24문항 D·E 개선 + 몽골어 병기 34건 동기(철학 ㉢ 수리 HW721 · E열 이중 청중 정리) · [v9.224] 옛글자 게이트 처분 수리 — aiCall_ throw 에 permanent·청크 배치 break 가름·격리 메일 옛글자 예외(리뷰 P1-1·P1-2) · [v9.223] 모델이 내는 글에 「쓰는 문자 셋뿐」 게이트 — 깔때기 8자리 전수 · [v9.222] AIQ 프롬프트 금지 마커 목록이 자기 괄호를 닫아 「금지」가 「예시」로 뒤집힌 것 수리 + 보기 포함 길이 못박기 · [v9.221] AI 개인퀴즈 보기 마커 규약 — 프롬프트가 못박고 회귀가 채점기와 묶는다(갈린 마커는 판정보류 아닌 «오답»으로 굳는다) · [v9.220] 골든 픽스처에 계약 필드 「대안태그」 빈 칸 — test-ci 적색 1건 해소 · [v9.219] STORY_GRAMMAR 96문형 급수 태그 + 출제 풀 — 4~5급 재료 7→68 · [v9.218] TOPIK 급수 태그 — GRAMMAR_BANK 72종에 도입급·재출현급·근거 3칸 · [v9.217] 명부 스윕 — 빈 profiles 탭 오류화·실패 서명 안정화 (검수 P1·P2) · [v9.216] 명부 스윕 fail-closed — 200 봉투 검증·시트 부재·서명 접기 (검수 P1 3키·P2 1키) · [v9.215] 명부 스윕 — profiles 가 사람 손 없이 engine.learners 에 닿는다(E²) · [v9.214] c11 계약 판올림 동행 — SCHEMA_VER 손사본 c10→c11 + 잠금 검사 핀 정합(task_type 9·event_type 14·추가분 이름 못박기) · [v9.213] 격리 복구 창 마감 수리 — Invalid Date 영구 정지 가드 + 커서 회귀의 LF 체크아웃 파손(P1) 수리 · [v9.212] 격리 오탐 복구 창 — 오류뱅크 커서가 창 안의 격리 앞에서 기다린다(재검수 P1 4키 수리) · [v9.211] hw_feedback 오류뱅크 커서 수리 — 대기 카드 영구 누락(재검수 P1) 차단: 커서는 판정 전 행 앞에서 멈춘다 · [v9.210] hw_feedback 상태 판정 단일화 — 미승인 '대기' 카드가 학생 출력(약점맵·오류사전·성장카드)으로 새던 문 3곳 차단 · [v9.209] 첨삭 오류태그를 약점맵에 빈도 합류 — 태그가 처음으로 학생 출력(개인 퀴즈·필살기노트)에 되돌아간다 (철학정합 §3-B 유호 채택) · [v9.208] voice_log에 schema_ver — A-8 2단계·계약 정합 · [v9.207] 수집 3시트에 schema_ver 열 — 행이 자기 계약 규격(c10)을 들고 있게 (코어엔진 A-8 유호 확정 · 소급 불가) · [v9.206] P0 학생 이름 외부 유출 — 도는 6자리 봉쇄(갈래③+② · 인덱스 매칭·H7 집계 화이트리스트) + 회귀 이름유출.test.js · [v9.205] aiText_ 태그 누출을 프롬프트가 아니라 코드로 막는다 — 검출 시 응답 폐기(①배포 검수 P1) · [v9.204] aiText_ 사고 OFF 대가 — Opus 5 내부 태그 누출 가드 + 회귀 · [v9.203] 상담AI 원어민 회화 답변 — 2티어 사실 반영(유호 확정 08-10) · [v9.202] 트리거 매니페스트 단일화 — 거짓경보 1 + 거짓 초록 2 동시 수리 · [v9.201] AI 첨삭·상담·두뇌 모델 Sonnet→Opus 5 (유호 확정) + 리터럴 일치 회귀 · [v9.200] 교실 스크린 푸터의 구 슬로건 은퇴 — 대외 집행면에 남아 있던 마지막 자리 · [v9.199] 강의 한줄요약 행이 숙제 제출로 세어져 강사 인센티브를 부풀리던 것 — 배포 검수 P1 · [v9.198] 강의 한줄요약 읽기 배선 — write-only 이던 칸이 첨삭 통로로 들어간다(전수감사 (2)) · [v9.197] 자기선언 3칸 이력 — 학생이 덮어쓰는 드림한줄·최애·몬스터이름의 «바뀐 것만» 야간 append(전수감사 ㉠ 미집행 처방) · [v9.196] 강사 인센티브 앱자동 90점 완결 — 숙제 제출률·근태 위반 집계(분모를 반 시간표에서 유도·새 입력 0) · [v9.195] v9.193·v9.194 라이브 반영 — 밀려 있던 clasp push 하나 (코드 변경 0) · [v9.194] 정본 §7 앱자동 5지표 완성(숙제·근태) + 등급 판정(재정규화·미측정 스킵·필수 관문) · [v9.193] 강사 인센티브 재등록 배점을 급여 정본 §7 v1.6 으로 맞춤(30/24/18/10) · 총점 분모를 채점 함수에서 도출 · [v9.192] 상담 대화 채널 칸 라이브 반영 — 학부모/학생 말뭉치 라벨 수집 시작 · [v9.191] 쓰는 문자를 한글·몽골어·영어 셋으로 강제 — 옛 글자 전량 제거 + 회귀 가드 신설(유호님 확정) · [v9.190] 목소리 폼 미션ID — 발음 데이터 과업 축(야간 배치 자기적용) · [v9.189] 계약 c5 — 오류태그 화용:공손성 추가(높임 등급과 다른 축) · [v9.188] 개인 퀴즈ID 날짜화 + ai_daily 아카이브 — 매일 버려지던 수집 데이터 2건 · [v9.187] 학습데이터 스키마 감사 — 수집 4시트 급수 스냅샷·talk 급수 실전달·첨삭 출처(model/prompt_ver)+문항 스냅샷·픽스처 어휘 동봉·헤더 치유 공용화 · [v9.186] 크루카드 doPost 오류 감시 — 웹앱이 삼킨 실패를 crew_errors에 적고 10분 스위프가 묶어 1통 알림 · [v9.185] DM 상담 인계 회로 + 인스타 분기 — 인계 메일에 번역·초안3·클릭발송, IG 웹훅 수신·퀵리플라이/카드 전송층·팔로우 게이트 · [v9.184] 궤적 레일 잔여 — 워치독에 outcome_log·trajectory 등록 + 활용동의 드롭다운 · [v9.183] 궤적 레일 적대 리뷰 수리 — 멱등 키·월키 서식·미정 판정 · [v9.182] 면접폼 자리 이동 moveItem 시그니처 수리 — 라이브 실행이 잡은 결함 · [v9.181] 궤적 레일 — 의도(크루카드 5문항 강제)와 결과(면접폼 자동 수확)를 한 사람으로 대조 · [v9.180] 면접폼 링크 둘로 — 공개는 익명 그대로, 아는 사람에게만 학생ID가 채워진 개인 링크 · [v9.179] 설치 확인을 편집기에서도 — 확인 수단이 하나면 그날 막힌다 · [v9.178] 면접폼 학생ID 칸(선택) — 의도와 결과를 잇는 궤적 조인 키 · [v9.177] 전송 연결 점검 — 설치한 날 확인된다 · [v9.176] 통로 미개통을 월간 계기판이 말한다 · [v9.175] 골든 픽스처 자동 전송 — 손으로 옮기던 절차 제거 · [v9.174] 픽스처 채점불가 건수 표기 — 표본 부족이 점수로 위장되지 않게 · [v9.173] 픽스처 정상 표본에 불변 플래그 — 채점기의 거짓양성 스위치 · [v9.172] 크루카드 인지채널 수복 + 유입경로·추천인 칸 · [v9.171] 크루카드 접수 감시 — 신규·재제출·이관유실·상한을 10분 스위프가 알린다 · [v9.170] Glide 강사 정답 모음 조립 + 픽스처 정답을 「판정」이 정하게 · [v9.169] 크루카드 이력 칸 길이 고정 — 재제출 횟수에 비례해 자라던 결함 · [v9.168] 크루카드 재제출 정책 — 사람 1명 = 상담시트 1행(미착수면 갱신·착수 후엔 잠금) · [v9.167] 구글폼 접수도 학생ID 게이트를 지난다 — 정책 통일 · [v9.166] 학습 데이터 파이프라인 되먹임 — 커버리지 월간 자동 발화 + 강사 정답 모음을 회화 앱 평가 픽스처로 내보내기(비식별) · [v9.165] 대외 FAQ 정본에서 챗봇 지식 9건 승격 + 사진 동의 3자 정합 · [v9.164] 학생ID 자동 발급 — 처리상태 반배정/앱편입 시 채번, 채번 통로 단일화 · [v9.163] 크루카드 상담시트 2차 증분 18열 + 등록일 자동입력 + 날짜 TZ 단일화 · [v9.162] 상담 운영 흐름 — 접수 현황판(수식 자동)·절차 안내 6단계 · [v9.161] 크루카드→상담데이터입력 이관 + 상담시트 업그레이드(24반 정본·처리상태·증분 15열) · [v9.160] 크루카드 제출 스크립트 부활 — </script> 조기종료로 버튼이 죽어 있던 것 + 동의 수집 누락 · [v9.159] voiceSweep_ 수식 인젝션 소독 — 폼 직기입 8번째 경로 (하드닝 세션 인계) · [v9.158] 크루카드 수식 인젝션 차단(셀안전_) — 익명 POST→상담시트 유출 경로 · [v9.157] 폼 응답 수식 인젝션 차단 — 소독을 직기입 통로(행소독_)로 일반화 · [v9.156] 학생 파일 공개 링크 폐지 — 음성·리포트카드 (유호 B 결정) · [v9.155] 크루카드 웹앱 — 카드 HTML 베이크·수리 + 별도 웹앱 배선 + 회귀 8건 · [v9.154] Meta 정책 요건 반영 — 봇 공개 배선·개원일 전파·검수 문서 실측 개정 · [v9.152] 상담AI 개통 1차 — FAQ 파생 지식 정합·미성년 연락처 차단 · [v9.151] 소급 불가 5건 수리 — 동의 행단위·퇴소 스냅샷·ID 가드·audio_ref·전당 조인 · [v9.150] CI 시간대·shallow 수리 — ymTextOf_/seasonKeyOf_ tz 존중 · [v9.149] 동의 v18.9 — 음성·AI 학습 동의를 필수로(거부 선택지 제거) · [v9.148] 동의 문구 v18.8 — 철회의 한계 명시(학습에 들어간 데이터는 되돌릴 수 없다) · [v9.147] 기능 압축 — 연출 4종 off·리그/월드 시즌오프·재작성/퀴즈 보상·강사 정답 모음 · [v9.146] 대화 수집 점검 메뉴 — 밤 배치 확인·머리글 치유 · [v9.145] talk_log에 model·prompt_ver 2열 — 대화 출처 기록(소급 불가) · [v9.144] 월키 Date 오염 원인 차단 — 키 열 목록을 골격에서 도출(손 목록이 재발 4회의 원인) · [v9.143] 공유 실패 알림이 폴더 상태를 읽어 원인 지목 · [v9.142] 학부모 카드 링크 복구 — 폴더 잠금 뒤 화면 되살리기 · [v9.141] 동의 문항 갱신을 시트 메뉴로 — 편집기에서만 돌던 migrateConsentV186 승격 · · [v9.140] 리포트카드 폴더 잠금 실측 반영 — 배치 공유 실패 알림 · [v9.139] 학습 데이터 수집층 — 퀴즈 응답 로그·숙제 문항 연결·재작성 3단·오류 태그 23종·AI 대화·커버리지 계기판 + 동의 범위 v18.7(회화 앱 대비·소급 불가) · [v9.138] 리포트카드 프리뷰 공개 링크 차단 + 프리뷰 정리 함수 · [v9.137] 회사 두뇌 1·3층 — 지식 시트·벤더중립 어댑터·수식 인젝션 차단(강사 웹화면은 보안 사유로 보류) · [v9.136] 라임 시맨틱 실장 — 리그 포디움 P 숫자축 = Lime(성장·획득, 정본 v1.6) · [v9.135] 분할 후속 부채 상환 — SHEET_SKELETON 지연 평가·v9.57 strict 복원·GAS 로드 시뮬 회귀 · [v9.134] Code.js 5분할 — 엔진 4부 신설(운영배치·폼리포트·콘텐츠AI·셋업확장) · [v9.133] teacher_checkins 시각 열 표시 형식 보증 + 테스트 잔재 정리 · [v9.132] 시즌 키 Date 오염 — 조 편성이 성공해도 편성표가 영원히 비던 결함 · [v9.131] 시즌 시작일 프롬프트 — 인자 필요 함수의 실행 경로 신설 · [v9.130] 개원 시뮬 — 조 편성표의 침묵을 원인·처방 안내로 · [v9.129] String(Date) 텍스트 오염 형태 추가 정규화 — 라이브가 세 번째 형태를 드러냈다 · [v9.128] 월키 정상화 순서 최종 교정 — 읽기→서식→쓰기(라이브가 v9.125 실패를 증명) · [v9.127] 원격 실행 경로 신설 + 경영 정본 v1.3 동기화 + 출퇴근 연타 정리 · [v9.126] Glide 라이브 전수 점검 — 월키 Date 오염 미보호 시트 2종·상담값 원시 Date·출결 백지 · [v9.125] 앱 전면 최적화 — 5구역 적대 리뷰 결함 26건 수리 + 브랜드 키트 색 전환 · [v9.124] 메뉴 결과 가시화 + 이수율 조인 진단 · [v9.123] 낡은 강의 자리 안전 정리 — 조준을 행 번호에서 내용으로 · [v9.122] 브랜드 폰트 3종을 앱 카드에 적용 — 스택 교체 + 웹폰트 로더 신설(이름만 바꾸면 전 카드가 폴백된다) · [v9.121] 강의 폼 선택지 동기화 — 카탈로그를 갈아엎어도 폼이 따라가지 않던 것 · [v9.120] 배치 리허설 모드 — 메일·AI를 막고 배치를 돌려보는 개원 전 검증 장치 · [v9.119] 레벨 열을 이름으로 찾는다 — 위치 상수가 같은 자리에서 두 번 틀렸다 · [v9.119] 온라인 강의 이수율 조인 결함 3겹 수리 — 라이브 실측으로 발각 · [v9.117] 시트 메뉴에 언더바 함수 1개 등재 — 'private 함수는 메뉴에서 도는가' 실측 준비(sheetSelfHeal_) · [v9.116] 버전 자동 채번 — git push 원자성을 채번 락으로 · 이력 체인 보존 수리 · [v9.115] 버전 자동 채번(tools/bump-version.js) — git push 원자성을 채번 락으로, 동시 발번 원천 차단 · [v9.114] 주간 리포트 2중 결함 수리(sections 쉼표·ss 스코프) · [v9.113] 주간 리포트 부활 — sections 쉼표 누락으로 매주 통째 미발송이던 것 수리 · [v9.111] 강의 카탈로그 시딩 setupLectures — 이수율 분모를 시즌 첫날에 확정 · [v9.110] 시트 메뉴(onOpen) 신설 — 수동 실행이 편집기 드롭다운뿐이던 것을 안전 항목만 시트 메뉴로 · [v9.113] 인센티브 배점 3지표 완성 — 승급·재등록 배점(임의 기준) 신설 + 인센티브점수 '획득/가능'
 // [v9.37] 콘텐츠 유형별 기대 수량 — systemWatchdog·buildSystemManifest 공용 정본(수동 숫자 단일화).
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
-const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 11, fuel: 6, boss: 12, // [v7.8] 시즌 보스 12
+const CONTENT_EXPECT = { monster: 7, homework: 210, quiz: 100, lore: 4, fuel: 6, boss: 12, // [08-27] lore 11→4 (1등 시상 상장 일곱 폐지) // [v7.8] 시즌 보스 12
   season: 12, label: 15, reason: 9, cheer: 7, cheermail: 30, braintip: 30, worldboss: 1, // [v9.9] · [v9.34] reason 8→9 — setupParentLabels R01~R09(v9.28 R09 추가) 실측 정합
   grammar: 72, // [v9.37] W3 문법뱅크(GRAMMAR_BANK 72종) 추가 — 미설치 시 'grammar 0/72' 정당 경보
   reach: 2 }; // [v9.40] 마감폼 '전체도달도' Choice 소스(도달/더연습) — setupGrammarBank(v9.38d)가 함께 재건. 실측 0이라 워치독·preflight 감시 대상 편입
@@ -898,12 +898,12 @@ const PT = {
    *     ('찍었어요'를 못 고르게 된다). 1일 1회 상한. */
   재작성: 3,      // [v9.147] 신설 · 주 1회 상한(재작성포인트_ 사유 '재작성')
   퀴즈응답: 1,    // [v9.147] 신설 · 1일 1회 상한(사유 '퀴즈응답') · 정답 무관
-  왕관: 5,        // [v9.83→08-20] 도전·성장 공통 5P (키 이름은 Glide 버튼 계약이라 유지). ⚠ Glide 버튼 값도 함께 5로 바꿔야 실제 반영(조립가이드 §8-1)
+  인정: 5,        // [08-27] 구 키 「왕관」 — 도전·성장 공통 5P. 시트 «사유» 키가 아니라 코드 상수라 개명이 안전하다(실측: point_logs 사유 정본은 '오늘의 도전'·'오늘의 성장' — 엔진_운영배치:2241). Glide 는 08-05 폐기라 버튼 계약도 죽었다
   칭찬: 2,        // [v9.83] 3→2. ⚠ 실지급은 Glide Add row 버튼 4종이라 여기 값은 문서·시뮬용 — Glide도 함께 2로
   레이드: 10,     // [v9.83] 20→10. 주 1회 반 전원
   리그: 3,        // [v9.83] 5→3. 주 1회 승리 반 전원
   월드: 5,        // [v9.83] 10→5. 월 1회 격파 시 전교
-  개근왕: 15,     // [v9.83] 30→15
+  개근: 15,       // [v9.83] 30→15 · [08-27] 구 키 「개근왕」
   레이드영웅: 10, // [v9.83] 20→10
   생일: 10        // [v9.83] 20→10. 연 1회
 };
@@ -944,14 +944,17 @@ const RAID_HP_PER = { 평일: 28, 주말: 8 };
 const NOTIFY_PARENT_ATTENDANCE = true; // 등원 시 학부모 메일 푸시 (false = 끔)
 // 메일 쿼터: 일반 Gmail 100통/일 · Workspace 1,500통/일 → 운영 전환 시 founder@synk.im 계정으로 실행 권장
 
-// [v5.1] 칭호 등급 (4 레전드 · 3 에픽 · 2 레어 · 1 일반) — 대표칭호/등급 표시용
+// [08-27] 구 「칭호 등급(레전드·에픽·레어·일반)」 — 등급 표시는 폐지했다. 아래 수는 정렬 가중치뿐.
+/* [08-27 유호 지시] 등급 라벨(레전드·에픽·레어·일반)을 폐지했다 — 「왕관이 뭐야 쪽팔리고 역겨워
+ *   뭔가. 이해도 안갈뿐더러 · 비교하는거 최대한 없애자」. 희소도 등급은 «서열»이고, 게임 가챠 낱말이라
+ *   몽골 학생·학부모에게 뜻이 안 선다. 아래 수는 «대표 칭호 하나를 고르는 정렬 가중치»로만 남는다 —
+ *   학생 자기 것끼리의 정렬이라 남과 안 견준다. 화면에는 이 수도 등급명도 안 나간다. */
 const TITLE_RARITY = {
-  '👑 개근왕': 4, '🧠 시냅스 챔피언': 4,
-  '🚀 로켓 성장': 3, '⚔️ 레이드 영웅': 3, '🐎 다크호스': 3,
-  '🔥 불꽃 출석러': 2, '🏋️ 우리 반 캐리': 2, '📚 숙제왕': 2, '🌟 이달의 스타': 2, '💝 정성왕': 2,
+  '🌟 하루도 안 빠진 달': 4,
+  '🤝 레이드 개근': 3,
+  '🔥 불꽃 출석러': 2,
   '⏰ 지각 제로': 1
 };
-const TIER_LABEL = { 4: '👑 레전드', 3: '🟣 에픽', 2: '🔵 레어', 1: '⚪ 일반' };
 function rarityOf(t) { return TITLE_RARITY[t] || 1; }
 
 /* profiles 열 지도 (1-base)
@@ -1266,7 +1269,7 @@ function scheduleMap(ss) { // [v8.3] 키 = 반명(정확 일치) · 번호 키�
 }
 function schedOf(map, cls) { return map[String(cls)] || map[classNumOf(cls)]; } // [v8.3] 반명 우선 조회
 // [v9.46] 수업일 판정 단일 소스 — 주말반 = "토요일만"(2026-07-19 유호 확정). 일요일은 어느 반도 수업일이 아니다.
-//   스트릭·개근왕·출석달력·수업일 환산·미등원·브리핑이 전부 이 함수를 따른다(일요일 끊김·오경보 원천 차단).
+//   스트릭·개근·출석달력·수업일 환산·미등원·브리핑이 전부 이 함수를 따른다(일요일 끊김·오경보 원천 차단).
 function classDowOk_(type, dow) { return String(type) === '주말' ? dow === 6 : (dow >= 1 && dow <= 5); }
 function hasClassToday(ss, classStr, schMap) { // [v9.22] schMap 전달 시 재읽기 생략
   const s = schedOf(schMap || scheduleMap(ss), classStr); // [v8.3]
@@ -1431,11 +1434,11 @@ const PLAY_STYLES = {
   '스타터무대': ['🌅','오프닝 스타','달이 시작되자마자 무대를 여는 개막의 아이콘'],
   '스타터성실': ['🌄','아침형 성실러','남들이 시동 걸 때 이미 반환점을 도는 부지런쟁이'],
   '스타터성장': ['🌱','새벽의 스파크','새 달의 첫 시냅스는 언제나 이 크루의 것'],
-  '꾸준무대': ['👑','무대 체질','언제 어디서든 스포트라이트가 따라다니는 타고난 주인공'],
+  '꾸준무대': ['✨','무대 체질','언제 어디서든 스포트라이트가 따라다니는 타고난 주인공'], // [08-27] 👑 걷음
   '꾸준성실': ['🧠','꾸준함의 화신','비가 오나 눈이 오나 — 매일이 쌓여 산이 되는 유형'],
   '꾸준성장': ['🌿','매일 자라는 나무','하루하루는 조용하지만 한 달 뒤엔 훌쩍 커 있는 성장형'],
   '피니셔무대': ['🔥','클라이맥스 메이커','결정적 순간에 가장 빛나는 대미의 승부사'],
-  '피니셔성실': ['🌙','막판 스퍼트의 제왕','몰입이 시작되면 아무도 못 말리는 폭발형 집중러'],
+  '피니셔성실': ['🌙','막판 몰입러','몰입이 시작되면 아무도 못 말리는 집중형'], // [08-27] 「제왕」 걷음
   '피니셔성장': ['⚡','라스트 스파크','마지막 주에 시냅스가 폭발하는 저력의 소유자'],
   '분석중': ['🔬','분석 중…','시냅스 연구소가 너의 플레이 데이터를 모으는 중이야 (조금만 더!)']
 };
@@ -1485,18 +1488,18 @@ const SPEAK = {
   today: [
     ['왔다! 왔다! 오늘도 가치(같이) 크는 거야? 🐣','주인님 냄새다! 오늘도 붙어 있을래 🥚','헤헤, 기다렸어! 오늘은 뭐 배워? 🍼'],
     ['왔구나! 네 발소리만 듣고도 알았어 😊','기다렸어 — 오늘도 같이 자라자 🌱','네가 오면 교실이 2도쯤 밝아지는 거 알아? ✨'],
-    ['어서 오게. 오늘의 배움도 그대와 함께라면 축제라네 ✨','기다리고 있었네 — 오늘은 어떤 지혜를 모아 볼까 📜','그대가 문을 여는 순간, 나의 하루도 시작된다네 👑']],
+    ['왔구나. 오늘도 같이 할 생각에 아침부터 좋았어 ✨','기다리고 있었어 — 오늘은 뭘 배워 볼까? 📜','네가 문을 여는 순간, 내 하루도 시작돼']], // [08-27] 왕정 말투(그대·~라네·👑) 걷음
   miss3: [
     ['창밖만 보고 이떠(있어)… 주인님 자리는 내가 지키는 중! 🐣','오늘도 문 소리마다 고개를 들었어… 보고 시퍼(싶어) 🥺','주인님 책상에 먼지 못 앉게 후후 불고 있어!'],
     ['창밖만 보고 있어… 네 자리는 늘 여기 있어 🌱','네 목소리가 그리운 날이야 — 돌아오면 제일 먼저 반겨 줄게','괜찮아, 천천히 와도 돼. 나 여기서 튼튼하게 기다릴게 💪'],
-    ['그대의 빈자리에도 배움의 불씨는 꺼지지 않게 지키고 있네 🕯️','기다림도 수행이라네 — 하지만 그대가 오면 더 좋겠군','그대가 돌아올 길을 밝혀 두었네. 서두르지 않아도 좋아 ✨']],
+    ['네 자리에 불 하나 켜 두고 있어 🕯️','기다리는 것도 나쁘지 않지만 — 네가 오면 훨씬 좋아','돌아올 길은 밝혀 뒀어. 서두르지 않아도 돼 ✨']], // [08-27] 왕정 말투 걷음
   miss7: [ // [v9.69] 톤당 2→4문장 — 장기 미출석 학생이 같은 문장을 즉시 재노출당하던 최박 버킷 보강
     ['주인님이 준 포인트 꼭 안고 씩씩하게 기다리는 중! 돌아오면 제일 먼저 안아 줄 거야 🤗','알 속에서도 주인님 응원해! 언제든 돌아와 🥚','주인님 자리에서 매일 아침 인사 연습하고 이떠(있어)! 🐣','보고 싶은 만큼 씩씩하게 자라는 중! 돌아오면 깜짝 놀랄걸? 🌟'],
     ['네가 쌓아 둔 포인트, 하나도 안 사라지고 여기 있어 — 언제든 이어서 가자 🌱','오래 못 봐도 우린 한 팀이야. 문은 항상 열려 있어 🚪','네가 없는 동안 배운 거 복습하면서 기다렸어 — 같이 이어서 하자 📖','돌아오는 날이 우리의 새 챕터 첫 페이지야 ✨'],
-    ['먼 길을 돌아오는 것도 여정의 일부라네 — 그대의 기록은 영원히 이곳에 있네 📜','별은 잠시 구름에 가려도 빛을 잃지 않는 법이지 ⭐','쉼표는 문장의 끝이 아니라네 — 그대의 이야기는 계속되고 있어 ✒️','씨앗은 보이지 않는 곳에서도 뿌리를 내린다네 🌳']],
+    ['돌아오는 데 걸린 시간도 네 시간이야 — 네 기록은 그대로 여기 있어 📜','별은 구름에 가려도 빛을 잃지 않아 ⭐','쉼표는 문장의 끝이 아니야 — 네 이야기는 계속되고 있어 ✒️','씨앗은 안 보이는 데서도 뿌리를 내려 🌳']], // [08-27] 왕정 말투 걷음
   evosoon: ['몸이 근질근질… 곧 뭔가 일어날 것 같아! (다음 진화까지 {n}P) ⚡','껍질이(몸이) 간지러워! 조금만 더! (진화까지 {n}P) 🔥','변화의 기운이 차오르고 있네… 앞으로 {n}P라네 ✨','심장이 두근두근! 새로운 내가 되기까지 {n}P! 💓','다음 모습, 살짝 보여 주고 싶은데… {n}P만 더 모아 줄래? 👀','진화의 문이 열리기 직전이야 — 마지막 {n}P, 같이 가자! 🚪'], // [v9.69] 3→6 — 임박 구간(며칠 지속)에 매일 같은 문장이 반복되던 것 보강
-  crown: ['오늘 도전하는 모습, 세상에서 제일 멋졌어 🔥 밤새 자랑할 거야','어제의 너를 넘었네 — 눈부셨다네 🌱','네가 손 드는 순간, 내가 제일 먼저 봤다! ✨','오늘의 도전, 도감에 있는 친구들한테 다 자랑했어! 🔥✨','인정은 하루지만 그 기억은 평생 남는다네 ✨','도전하는 주인님 그리는 중 — 완성되면 제일 잘 보이는 곳에 걸어 둘게 🎨🔥'], // [v9.69→08-20] 도전·성장 인정 반응(옛 왕관 세계관 은퇴 — 결정 08-20)
-  bday: ['오늘은 주인공의 날! 내가 세상에서 제일 먼저 축하해 🎂🎉','생일 축하하네 — 그대가 태어나 나도 태어날 수 있었지 🎂','일 년 중 제일 반짝이는 날! 오늘은 공부보다 축하가 먼저야 🎈','태어나 줘서 고마워 — 덕분에 나의 세계가 생겼어 🎁'], // [v9.69] 2→4 — 내년 같은 날 같은 문장 확률 50%→25%
+  crown: ['오늘 도전하는 모습, 세상에서 제일 멋졌어 🔥 밤새 자랑할 거야','어제의 너를 넘었어 — 눈부셨어 🌱','네가 손 드는 순간, 내가 제일 먼저 봤다! ✨','오늘의 도전, 도감에 있는 친구들한테 다 자랑했어! 🔥✨','인정은 하루지만 그 기억은 평생 남아 ✨','도전하는 주인님 그리는 중 — 완성되면 제일 잘 보이는 곳에 걸어 둘게 🎨🔥'], // [v9.69→08-20] 도전·성장 인정 반응(옛 왕관 세계관 은퇴 — 결정 08-20)
+  bday: ['오늘은 주인공의 날! 내가 세상에서 제일 먼저 축하해 🎂🎉','생일 축하해 — 네가 태어나서 나도 태어날 수 있었어 🎂','일 년 중 제일 반짝이는 날! 오늘은 공부보다 축하가 먼저야 🎈','태어나 줘서 고마워 — 덕분에 나의 세계가 생겼어 🎁'], // [v9.69] 2→4 — 내년 같은 날 같은 문장 확률 50%→25%
   idle: [
     ['오늘은 구름 구경 중 ☁️ 주인님은 뭐 해?','시냅스 씨앗 심는 연습 하고 이떠(있어) 🌱','하품 크게 하고 기지개! 오늘도 화이팅 🐣'],
     ['월요일은 캐릭터도 살짝 졸려… 같이 힘내 보자 ☀️','오늘 급식(간식) 뭐야? 나도 궁금해 🍙','네 필통 속에서 낮잠 자는 상상했어 😴'],
@@ -1569,7 +1572,7 @@ const FRAME_CSS = [
   ['빛의 액자','#A78BFA','#FEF9C3','#A16207'],
   ['금빛 액자','#F5A623','#FEF3C7','#B45309']
 ];
-const FRAME_ICON = ['🌱','⚡','🔗','💡','🕯️','✨','👑'];
+const FRAME_ICON = ['🌱','⚡','🔗','💡','🕯️','✨','🌟']; // [08-27] 마지막 칸 👑 → 🌟 (왕관 폐지)
 // [v9.35] pct·rem 선택 인자 — 값이 있으면(홈 액자 BD열) 게이지 바(9px·99px 라운드)+한 줄 문구 렌더, 없으면 생략
 function buildMonsterFrame_(dispName, dispImg, apIdx, pct, rem) {
   const fi = Math.min(Math.max(apIdx - 1, 0), 6);
@@ -1590,7 +1593,7 @@ function buildMonsterFrame_(dispName, dispImg, apIdx, pct, rem) {
     ? '<div style="background:#EAEAEA;border-radius:99px;height:9px;margin:5px 4px 3px;overflow:hidden;">' +
       '<div style="width:' + pctC + '%;height:100%;border-radius:99px;background:linear-gradient(90deg,#FD9C87,#F96859);"></div></div>' +
       '<div style="font-size:11px;color:#6B7280;padding:0 4px 3px;">' +
-      (remN > 0 ? '🧠 시냅스 게이지 ' + pctC + '% — 다음 진화까지 ' + remN + 'P!' : '👑 모든 진화 완료 — 전설의 영역!') + '</div>'
+      (remN > 0 ? '🧠 시냅스 게이지 ' + pctC + '% — 다음 진화까지 ' + remN + 'P!' : '🌟 모든 진화 완료') + '</div>'
     : '';
   return CARD_ANIM + CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#FBF7F0,#E4E4E7 55%,#FEF0E9);padding:8px;border-radius:18px;border:2px solid ' + f[1] + ';box-shadow:0 6px 18px rgba(249,104,89,.14);">' +
     inner + cap + gauge + '</div>';
@@ -1863,82 +1866,15 @@ function groupHudsByClass_(ss, tz, when) {
   return out;
 }
 
-/* [v9.81] 🏆 SYNK LEAGUE 카드(profiles DO119) — 유호 07-31 "랭킹 탭이 데이터만 띡 올려놓은 느낌".
- * 낱개 Collection(이름·Q·R)을 리그 보드 1장으로 격상: 다크 히어로(포디움 TOP3) + 흰 순위 리스트 + 내 순위
- * 하이라이트 + 추격 넛지(포인트 차를 숙제 횟수로 환산 — 숙제 +10P 재사용). v9.79 미니멀 스킨 축:
- * 이모지 히어로 👑 1·리스트 🔥 1, 유색 보더 0, 타이포 3단. 색 축: 앰버=왕관·지위 / 라임=P 숫자(성장) / 코랄=격차 게이지.
- * rows = 이번 달 양수 포인트 학생 [{id, rank, name, pts}] (월간포인트 내림차순 = rankMap과 동일 소스).
- * 전원이 같은 보드를 보되 내 행만 다르게 — 개인화는 하이라이트와 넛지 두 곳뿐(공용 부분 캐시 없이도 안전). */
-function buildRankBoardHtml_(myId, rows, meta) {
-  rows = rows || []; meta = meta || {};
-  const mineIdx = (function () { for (let i = 0; i < rows.length; i++) if (rows[i].id === myId) return i; return -1; })();
-  const mine = mineIdx > -1 ? rows[mineIdx] : null;
-  const top1 = rows[0] ? rows[0].pts : 0;
-  const meChip = '<span style="font-size:9px;font-weight:800;color:#fff;background:#FDB022;border-radius:99px;padding:2px 6px;margin-left:5px;vertical-align:1px;">나</span>';
-  // ── 히어로: 포디움(2·1·3 하단 정렬). 빈 자리는 점선 도전석 — 참가 1명이어도 무대가 무대답게.
-  const pod = (x, place) => {
-    const first = place === 1;
-    const h = first ? 48 : place === 2 ? 32 : 24;
-    const isMe = x && mine && x.id === mine.id;
-    const nameHtml = x
-      ? '<div style="font-size:' + (first ? 13 : 12) + 'px;font-weight:800;color:' + (first ? '#FFFFFF' : 'rgba(255,255,255,.85)') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml_(x.name) + (isMe ? meChip : '') + '</div>' +
-        '<div style="margin-top:1px;font-size:' + (first ? 15 : 12) + 'px;font-weight:800;color:#C8FF3D;">' + x.pts + 'P</div>' // [v9.136] P 숫자축=라임(성장·획득 시맨틱, 정본 v1.6) — 위계는 크기·아이콘이 담당
-      : '<div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.35);">도전석</div><div style="font-size:12px;color:rgba(255,255,255,.25);">—</div>';
-    const stand = x
-      ? 'background:linear-gradient(180deg,' + (first ? 'rgba(253,176,34,.32)' : 'rgba(255,255,255,.14)') + ',rgba(255,255,255,.02));border-top:2px solid ' + (first ? 'rgba(253,176,34,.85)' : 'rgba(255,255,255,.3)') + ';'
-      : 'background:rgba(255,255,255,.04);border-top:2px dashed rgba(255,255,255,.18);';
-    return '<div style="flex:1;min-width:0;text-align:center;padding:0 3px;">' +
-      (first ? '<div class="skBr" style="font-size:22px;line-height:1;margin-bottom:5px;' + (x ? ANIM_BREATH : '') + '">👑</div>' : '') +
-      nameHtml +
-      '<div style="margin:7px 4px 0;height:' + h + 'px;border-radius:10px 10px 0 0;' + stand + 'font-size:' + (first ? 19 : 14) + 'px;font-weight:800;color:rgba(255,255,255,.3);line-height:' + h + 'px;">' + (x ? x.rank : place) + '</div></div>'; // [v9.85·리뷰 P1] 단상 숫자 = 실순위(rankMap 동점 동순위) — 자리(place)는 배치·높이만
-  };
-  const podium = rows.length
-    ? '<div style="display:flex;align-items:flex-end;margin-top:18px;">' + pod(rows[1], 2) + pod(rows[0], 1) + pod(rows[2], 3) + '</div>'
-    : '<div style="text-align:center;padding:20px 0 8px;"><div style="font-size:13.5px;font-weight:800;color:#FFFFFF;">리그 개막 전</div>' +
-      '<div style="margin-top:4px;font-size:11.5px;color:rgba(255,255,255,.55);">이번 달 첫 포인트가 곧 1위 — 출석 도장부터!</div></div>';
-  const hero = CARD_WEBFONT + '<div style="' + CARD_FONT + 'position:relative;overflow:hidden;background:linear-gradient(135deg,#08090C 0%,#262626 100%);border-radius:20px;padding:20px 18px 0;box-shadow:0 12px 28px -10px rgba(16,24,40,.4);">' +
-    '<div style="position:absolute;top:-70px;right:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(closest-side,rgba(253,176,34,.26),rgba(253,176,34,0));"></div>' +
-    '<div style="position:absolute;bottom:-90px;left:-60px;width:190px;height:190px;border-radius:50%;background:radial-gradient(closest-side,rgba(249,104,89,.20),rgba(249,104,89,0));"></div>' +
-    '<div style="position:relative;"><div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
-    '<div><div style="font-size:10px;font-weight:800;letter-spacing:.14em;color:#FDB022;">SYNK LEAGUE</div>' +
-    '<div style="font-size:20px;font-weight:800;color:#FFFFFF;line-height:1.4;margin-top:2px;">' + escHtml_(String(meta.label || '이번 달 리그')) + '</div></div>' +
-    (meta.dLeft ? '<span style="flex-shrink:0;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);border-radius:99px;padding:4px 11px;font-size:12px;font-weight:800;color:#FFFFFF;white-space:nowrap;">정산 D-' + meta.dLeft + '</span>' : '') +
-    '</div>' + podium + '</div></div>';
-  // ── 리스트: 4위~10위 + (11위 밖이면 ⋯ 내 행). 게이지는 1위 대비 — 막대 하나가 "격차"를 말한다.
-  const row = (x, dim) => {
-    const isMe = mine && x.id === mine.id;
-    const pct = top1 > 0 ? Math.max(6, Math.round(x.pts / top1 * 100)) : 0;
-    return '<div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:10px;' + (isMe ? 'background:#FFFAEB;' : '') + '">' +
-      '<div style="width:24px;height:24px;border-radius:50%;flex-shrink:0;text-align:center;line-height:24px;font-size:11.5px;font-weight:800;' + (isMe ? 'background:#FDB022;color:#fff;' : 'background:#F2F4F7;color:#475569;') + '">' + x.rank + '</div>' +
-      '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:#2B2320;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml_(x.name) + (isMe ? meChip : '') + '</div>' +
-      '<div style="margin-top:3px;height:4px;border-radius:99px;background:#FBF7F0;overflow:hidden;"><div style="width:' + pct + '%;height:100%;border-radius:99px;background:linear-gradient(90deg,#FD9C87,#F96859);"></div></div></div>' +
-      '<div style="flex-shrink:0;font-size:12.5px;font-weight:800;color:' + (dim ? '#98A2B3' : '#AE322A') + ';">' + x.pts + 'P</div></div>';
-  };
-  let listRows = rows.slice(3, 10).map(x => row(x)).join('');
-  if (mine && mineIdx >= 10) listRows += '<div style="text-align:center;font-size:12px;font-weight:800;color:#D0D5DD;padding:1px 0;">⋯</div>' + row(mine);
-  if (!listRows) listRows = rows.length
-    ? '<div style="text-align:center;font-size:12px;color:#98A2B3;padding:10px 0 6px;">TOP3 아래 자리가 비어 있어요 — 다음 주인공은?</div>'
-    : '<div style="text-align:center;font-size:12px;color:#98A2B3;padding:10px 0 6px;">첫 포인트가 이 순위표의 첫 줄이 됩니다</div>'; // [v9.85·리뷰 P2-5] 콜드 문구 — 없는 TOP3를 전제하지 않기
-  // 넛지 — 내 다음 목표 한 줄: 격차를 "숙제 몇 번"으로 번역해야 행동이 된다.
-  //   [v9.85] 환산 단가는 meta.hwP(호출부가 PT.숙제 주입 — v9.83 단가 개정에 자동 추종, 빌더 순수성 유지)
-  let nudge = '';
-  const hwP = Number(meta.hwP) || 5;
-  if (mine && mine.rank === 1) nudge = '왕좌 수성 중 — 매월 1일 정산, 이 순위가 명예의 전당에 남아요'; // [v9.85·리뷰 P1] 동점 1위도 왕좌(구 mineIdx===0은 공동 1위를 추격 문구로 보냄)
-  else if (mine) {
-    const diff = rows[mineIdx - 1].pts - mine.pts;
-    const hwN = Math.ceil(diff / hwP);
-    nudge = diff > 0
-      ? '🔥 ' + rows[mineIdx - 1].rank + '위까지 <b>' + diff + 'P</b> — ' + (hwN <= 5 ? '숙제 ' + hwN + '번이면 추월!' : '이번 주 숙제·출석을 다 모으면 사정권!')
-      : '🔥 「' + escHtml_(rows[mineIdx - 1].name) + '」와 동점 — 다음 1P가 순위를 가른다!'; // [v9.85] 같은 순위끼리 "n위와 동점"은 자기 언급 — 이름으로
-  } else if (rows.length) nudge = '아직 순위표 밖 — 오늘 출석 도장 하나로 입장!';
-  const list = CARD_WEBFONT + '<div style="' + CARD_FONT + HUD_CARD + '">' +
-    '<div style="display:flex;justify-content:space-between;align-items:center;padding:0 2px 6px;">' +
-    '<span style="font-size:10px;font-weight:800;letter-spacing:.12em;color:#98A2B3;">이번 달 순위</span>' +
-    '<span style="font-size:11px;font-weight:700;color:#98A2B3;">' + rows.length + '명 참가</span></div>' + listRows +
-    (nudge ? '<div style="margin-top:9px;background:#FFFAEB;border-radius:12px;padding:10px 12px;font-size:12.5px;font-weight:600;line-height:1.6;color:#B54708;">' + nudge + '</div>' : '') +
-    '<div style="margin-top:9px;font-size:10.5px;color:#98A2B3;text-align:center;">순위는 이번 달 포인트 · 매월 1일 시상 후 새 리그</div></div>';
-  return CARD_ANIM + hero + '<div style="height:12px"></div>' + list;
-}
+/* [08-27 유호 지시] 🚫 전교 순위표를 걷었다 — 「전교 실명 순위표 이거 없애자. 비교하는거 최대한 없애자.
+ *   일반적으로 과제 점수로 분류하는 랭킹 시스템은 전부 삭제해줘.」
+ * 걷어낸 것 = buildRankBoardHtml_(v9.81 SYNK LEAGUE 카드): 다른 학생 «실명» 포디움(2·1·3) ·
+ *   1위 대비 «격차 게이지» · 「왕좌 수성 중」·「「(실명)」와 동점 — 다음 1P가 순위를 가른다」 넛지.
+ * 🔑 DO119 쓰기는 «남겼다» — 빈 문자열로 덮어써야 라이브 시트에 이미 굳은 카드가 지워진다.
+ *   열 예약도 유지한다(점거 가드 · 열 충돌 사고 2건의 회귀 장치).
+ * 🔑 R열 「월간랭킹」도 빈 칸으로 간다. 이 카드가 그 열의 유일한 소비자였다(실측 08-27).
+ * ⚠ 되살릴 일이 있으면 새로 짓는다 — 되살리는 축은 «학생끼리»가 아니라 «어제의 나»다
+ *   (08-20 확정 · 앱기능_역할별_전수분석:104 「랭킹 미이식 — 자기 종단 비교가 승계」). */
 
 // [v9.14] 📊 월간 경영 리포트 — 숫자로 보는 SYNK (매월 1일, 원장 메일 즉발 + 원장 탭 상설)
 /* [v9.47·C9] 📊 경영 월보 단일화 — 구 monthlyReport(1일 07시 메일)와 이 함수(1일 05시 콕핏 카드+메일)가
@@ -2196,7 +2132,7 @@ function myJourneyHtml_(o) {
     dreamLine + seasonB +
     '<div style="display:flex;justify-content:space-between;align-items:baseline;">' +
       '<div style="font-size:15px;font-weight:800;color:#1D1D1C;">📖 ' + o.nm + '의 여정</div>' +
-      '<div style="font-size:11px;font-weight:700;color:#AE322A;">' + (remJ > 0 ? '진화까지 ' + remJ + 'P' : ((o.grem || 0) > 0 ? '📖 문법 ' + o.grem + '개만!' : '👑 최종 진화')) + '</div>' + // [v9.36] 게이트 대기(rem=0·grem>0)는 최종 진화가 아니다
+      '<div style="font-size:11px;font-weight:700;color:#AE322A;">' + (remJ > 0 ? '진화까지 ' + remJ + 'P' : ((o.grem || 0) > 0 ? '📖 문법 ' + o.grem + '개만!' : '🌟 최종 진화')) + '</div>' + // [v9.36] 게이트 대기(rem=0·grem>0)는 최종 진화가 아니다
     '</div>' +
     stripJ +
     '<div style="background:#fff;border-radius:12px;padding:9px 11px;font-size:12.5px;line-height:2;">' +
@@ -2484,19 +2420,8 @@ function calcAll() {
 
     const sorted = pfData.map(r => ({ id: r[0], m: monthly[r[0]] || 0 }))
                          .sort((a, b) => b.m - a.m);
-    const rankMap = {};
-    sorted.forEach((s, i) => {
-      if (s.m <= 0) { rankMap[s.id] = 999; return; }
-      rankMap[s.id] = (i > 0 && s.m === sorted[i-1].m) ? rankMap[sorted[i-1].id] : i + 1;
-    });
-    // [v9.81] 리그 카드 재료 — 순위 스냅샷(학생·양수 포인트만, rankMap과 동일 소스라 R열과 어긋날 수 없다).
-    //   카드 생성은 아래 학생 루프(rankBoardOut), 기록은 DO119.
-    const leagueRows = [], nameLg = {};
-    pfData.forEach(r => { if (r[0] && r[3] === 'student') nameLg[r[0]] = String(r[1] || '').trim() || '이름 미등록'; }); // [v9.85·리뷰 P2-6] 전교 노출면이라 user_id 폴백 대신 라벨
-    sorted.forEach(s => { if (s.m > 0 && nameLg[s.id]) leagueRows.push({ id: s.id, rank: rankMap[s.id], name: nameLg[s.id], pts: s.m }); });
-    const leagueMeta = { label: Utilities.formatDate(now, tz, 'M') + '월 리그', // [v9.85·리뷰 P2-7] 시트 tz 통일 — 집계(thisMonth)와 라벨이 같은 달을 가리키게
-      dLeft: Math.max(1, Math.ceil((new Date(now.getFullYear(), now.getMonth() + 1, 1) - now) / 86400000)),
-      hwP: PT.숙제 }; // [v9.85] 넛지 환산 단가 — v9.83 PT 단일 소스 추종(숫자 직접 쓰기 금지 조항)
+    // [08-27 유호 지시] 순위 산출을 걷었다 — rankMap·leagueRows·leagueMeta 전부.
+    //   sorted 는 남는다(월간포인트 집계 자체는 스토어·리포트가 쓴다). «줄 세우기»만 없앤다.
 
     const prevAB = pf.getRange(2, 28, pfData.length, 1).getValues();
     const evoRemOut = [], stageNumOut = [], balOut = []; // [v7.9] 게이지 2열 은퇴(진행바 T열로 단일화)
@@ -3029,8 +2954,8 @@ function calcAll() {
       }
       dexOut.push([r[3] === 'student' ? buildDexHtml_(stages, t, mon.idx || 1) : '']); // [v9.42] 도감 진행 카드
       calOut.push([r[3] === 'student' ? buildAttCalHtml_(attDates[id], now, tz, classTypeOf[id] || '평일') : '']); // [v9.44] 출석 달력
-      rankBoardOut.push([r[3] === 'student' ? buildRankBoardHtml_(id, leagueRows, leagueMeta) : '']); // [v9.81] 리그 카드
-      return [t, mPts, rankMap[id] === 999 ? '' : (rankMap[id] || ''), mon.stage, mon.pct,
+      rankBoardOut.push(['']); // [08-27] 순위표 폐지 — 빈 칸을 «계속 써야» 라이브에 굳은 옛 카드가 지워진다
+      return [t, mPts, '', mon.stage, mon.pct, // [08-27] R열 월간랭킹 = 빈 칸(순위 폐지)
               stk, matt, la, p, risk];
     });
     writeIfChanged(pf, 2, 16, out);
@@ -3125,10 +3050,11 @@ function calcAll() {
     //   개인화 예문·한 문장·퀴즈의 재료로 aiStudioBatch_가 읽기만 한다. 비면 개인화는 약점 기반으로만.
     if (pf.getMaxColumns() < 105) pf.insertColumnsAfter(pf.getMaxColumns(), 105 - pf.getMaxColumns());
     if (String(pf.getRange('DA1').getValue()) !== '최애') pf.getRange('DA1').setValue('최애');
-    // [v9.81] 랭킹보드HTML(DO 119) — 리그 카드. 선점 구간(DA105~DG111)·2차 공유 블록(DH112~DN118)을 피한
-    //   calcAll 소유 독립 열 — tests 열 레지스트리(reserved)에 등록해 후속 블록 확장이 기계적으로 막힌다.
+    // [08-27] DO 119 — 구 랭킹보드 자리. 카드는 폐지됐지만 «열은 그대로 예약한다»:
+    //   비우기만 하고 열을 놓으면 뒤 블록이 이 자리를 점거한다(열 충돌 사고 2건의 재발).
+    //   그리고 빈 문자열을 계속 써야 라이브 시트에 이미 굳은 옛 카드가 실제로 지워진다.
     if (pf.getMaxColumns() < 119) pf.insertColumnsAfter(pf.getMaxColumns(), 119 - pf.getMaxColumns());
-    if (String(pf.getRange('DO1').getValue()) !== '랭킹보드HTML') pf.getRange('DO1').setValue('랭킹보드HTML');
+    if (String(pf.getRange('DO1').getValue()) !== '구랭킹보드_비움') pf.getRange('DO1').setValue('구랭킹보드_비움');
     writeIfChanged(pf, 2, 119, rankBoardOut);
     { // 원장 홈 카드 2종
       radarList.sort((a2, b2) => a2.s === b2.s ? 0 : (a2.s === '🔴' ? -1 : 1));
@@ -3156,7 +3082,7 @@ function calcAll() {
       const ts = (titleOf[r[0]] || []).slice().sort((a, b) => rarityOf(b) - rarityOf(a));
       acOut.push([ts.join(' · ')]);
       badgeOut.push([ts[0] || '']);
-      tierOut.push([ts.length ? TIER_LABEL[rarityOf(ts[0])] : '']);
+      tierOut.push(['']); // [08-27] 칭호 등급 폐지 — 빈 칸을 «계속 써야» 라이브에 굳은 옛 등급이 지워진다
     });
     writeIfChanged(pf, 2, 29, acOut);
 

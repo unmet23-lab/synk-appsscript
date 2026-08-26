@@ -1356,9 +1356,10 @@ function leagueSettle_() {
       storyRows.push([todayL, b, '리그', '⚖️ 무승부 — 쌍둥이 반', tie]);
     } else {
       const loser = (winner === a) ? b : a;
-      storyRows.push([todayL, winner, '리그', '👑 이번 주 리듬왕',
-        '⚔️ ' + winner + ', 1인 평균 ' + hi + '로 이번 주 리듬왕에 올랐다! ' + topLine(winner) +
-        '. 왕좌는 달콤하지만 짧다 — 다음 주, 방어전이 기다린다 👑']);
+      // [08-27 유호 지시] 왕관·왕좌를 걷었다 — 「왕관 이런거 제발 없애줘 · 비교하는거 최대한 없애자」
+      storyRows.push([todayL, winner, '리그', '이번 주 가장 꾸준했던 반',
+        winner + ', 1인 평균 ' + hi + '. ' + topLine(winner) +
+        '. 다음 주도 우리 페이스대로.']);
       const close = hi > 0 && (hi - lo) / hi <= 0.25;
       if (close) {
         storyRows.push([todayL, loser, '리그', '🔥 명승부 — 다음 주를 예약하다',
@@ -1427,7 +1428,7 @@ function leagueStoryDaily_() {
     if (r[0] && r[3] === 'student' && r[4]) { clsD[r[0]] = String(r[4]); nmD[r[0]] = r[1] || r[0]; }
   });
   const pl = ss.getSheetByName('point_logs');
-  const dayDmg = {}, perD = {}, hwCnt = {}, crownD = {};
+  const dayDmg = {}, perD = {}, hwCnt = {}, 인정D = {}; // [08-27] crownD → 인정D (왕관 낱말 폐지 · 내용은 08-20에 이미 도전·성장으로 갔다)
   if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
     const sid = r[1], pts = Number(r[2]) || 0, rs = String(r[3] || ''), d = r[5];
     if (!sid || !d || !clsD[sid] || !rivalOf[clsD[sid]]) return;
@@ -1439,7 +1440,7 @@ function leagueStoryDaily_() {
       perD[c] = perD[c] || {}; perD[c][sid] = (perD[c][sid] || 0) + pts;
       if (pts > 0 && rs === '숙제완료') hwCnt[c] = (hwCnt[c] || 0) + 1;
       if (pts > 0 && (rs.indexOf('MVP') > -1 || rs.indexOf('도전') > -1 || rs.indexOf('시냅스') > -1 || rs.indexOf('성장') > -1))
-        crownD[c] = nmD[sid] + josa(nmD[sid], '이', '가') + ' ' + (rs.indexOf('MVP') > -1 || rs.indexOf('도전') > -1 ? '🔥 오늘의 도전' : '🌱 오늘의 성장') + '을 해냈다';
+        인정D[c] = nmD[sid] + josa(nmD[sid], '이', '가') + ' ' + (rs.indexOf('MVP') > -1 || rs.indexOf('도전') > -1 ? '🔥 오늘의 도전' : '🌱 오늘의 성장') + '을 해냈다';
     }
   });
   const rsS = ensureSheet(ss, 'raid_story', ['date','class_name','유형','제목','스토리']);
@@ -1457,10 +1458,10 @@ function leagueStoryDaily_() {
       Object.keys(perD[c]).forEach(s => { if (perD[c][s] > bd) { bd = perD[c][s]; bs = s; } });
       if (bs) topLn = '오늘의 캐리 ' + nmD[bs] + ' (' + bd + ' 데미지)';
     }
-    const detail = crownD[c] ? crownD[c] : (hwCnt[c] ? '숙제 완료 ' + hwCnt[c] + '명 — 성실의 벽돌이 차곡차곡' : '조용하지만 단단한 하루');
+    const detail = 인정D[c] ? 인정D[c] : (hwCnt[c] ? '숙제 완료 ' + hwCnt[c] + '명 — 성실의 벽돌이 차곡차곡' : '조용하지만 단단한 하루');
     let head, tail;
     const gap = Math.round(Math.abs(my - op) * 10) / 10;
-    if (my > op) { head = '📣 ' + c + ', 평균 ' + my + '로 ' + rv + '(' + op + ')를 ' + gap + ' 리드 중!'; tail = '리드를 지키는 자가 왕좌를 가져간다 👑'; }
+    if (my > op) { head = '📣 ' + c + ', 평균 ' + my + '로 ' + rv + '(' + op + ')를 ' + gap + ' 리드 중!'; tail = '우리 반 페이스가 좋다 — 내일도 이대로.'; } // [08-27] 왕좌·👑 걷음
     else if (my === op) { head = '📣 ' + c + ' × ' + rv + ', 평균 ' + my + ' 완벽한 동점!'; tail = '내일 첫 데미지가 균형을 깨뜨린다 ⚖️'; }
     else if (op > 0 && gap / op <= 0.3) { head = '📣 ' + c + ', ' + rv + '까지 단 ' + gap + '! 숨막히는 추격전!'; tail = '내일 아침, 뒤집힌 스코어를 보게 될지도 🔥'; }
     else { head = '📣 ' + c + ', 오늘 +' + dToday + ' 적립 — 우리 페이스대로!'; tail = '스코어는 숫자일 뿐, 매일의 데미지가 진짜 근육이다 💪'; }
@@ -3704,52 +3705,23 @@ function monthlyGameBatch() {
     const eG2 = schedOf(schMap, clsOf[sid]); // [v8.3]
     const type = eG2 ? eG2.type : '평일';
 
-    if (list.length >= 4 && days >= list.length) give(sid, '👑 개근왕');
+    if (list.length >= 4 && days >= list.length) give(sid, '🌟 하루도 안 빠진 달'); // [08-27] 구 「개근왕」
     if (anyLate && days > 0 && !(lateCnt[sid] > 0)) give(sid, '⏰ 지각 제로'); // [v5.1]
     if (run >= (type === '주말' ? 4 : 5)) give(sid, '🔥 불꽃 출석러');
     if (raidWeeks.size > 0 && weekPos[sid] &&
-        [...raidWeeks].every(wk => weekPos[sid].has(wk))) give(sid, '⚔️ 레이드 영웅');
+        [...raidWeeks].every(wk => weekPos[sid].has(wk))) give(sid, '🤝 레이드 개근'); // [08-27] 구 「⚔️ 레이드 영웅」
   });
-  function giveTop(map, title) {
-    let best = 0;
-    Object.keys(map).forEach(k => best = Math.max(best, map[k]));
-    if (best >= 1) Object.keys(map).forEach(k => { if (map[k] === best) give(k, title); });
-  }
-  giveTop(praiseCnt, '💝 정성왕');
-  // [v5.1] '💰 칭찬 부자' 제거 — 칭찬이 고정액이라 정성왕과 항상 동일 순위(완전 중복)
-  giveTop(hwCnt, '📚 숙제왕');           // [v5.1] 숙제 최다
-  giveTop(spkCnt, '🌟 이달의 스타');     // [v7.2] MVP 최다 (명예 전용)
-  // [v5.2] '🛍️ 포인트 플렉스' 제거 — 포인트 소비 경쟁 유도 배제 (양도·도박성 메커니즘 없음 정책)
-  ranked.forEach(s => { if (s.m > 0 && rank[s.id] === 1) give(s.id, '🧠 시냅스 챔피언'); }); // [v5.1] 월간 1위
-  if (Object.keys(prevPts).length) {
-    let bestRate = -Infinity, bestSid = '';
-    students.forEach(r => {
-      const sid = r[0], cur = mPts[sid] || 0, prev = prevPts[sid];
-      if (prev === undefined || cur <= prev) return;
-      const rate = (cur - prev) / Math.max(prev, 1);
-      if (rate > bestRate) { bestRate = rate; bestSid = sid; }
-    });
-    if (bestSid) give(bestSid, '🚀 로켓 성장');
-    students.forEach(r => {
-      const sid = r[0];
-      if (prevRank[sid] && rank[sid] && rank[sid] < 999 &&
-          prevRank[sid] - rank[sid] >= 5) give(sid, '🐎 다크호스');
-    });
-  }
-  const byCls = {};
-  students.forEach(r => {
-    const c = clsOf[r[0]];
-    if (!byCls[c]) byCls[c] = [];
-    byCls[c].push(r[0]);
-  });
-  Object.keys(byCls).forEach(c => {
-    if (byCls[c].length < 2) return;
-    let best = 0, bestSid = '';
-    byCls[c].forEach(sid => {
-      if ((mPts[sid] || 0) > best) { best = mPts[sid]; bestSid = sid; }
-    });
-    if (bestSid && best > 0) give(bestSid, '🏋️ 우리 반 캐리');
-  });
+  /* [08-27 유호 지시] 🚫 «1등 시상» 칭호 일곱을 걷었다 — 「비교하는거 최대한 없애자 ·
+   *   일반적으로 과제 점수로 분류하는 랭킹 시스템은 전부 삭제해줘」.
+   * 걷어낸 것(전부 «남을 이겨야» 받는 것이었다):
+   *   💝 정성왕(칭찬 최다 1등) · 📚 숙제왕(숙제 최다 1등) · 🌟 이달의 스타(MVP 최다 1등)
+   *   🧠 시냅스 챔피언(월간 포인트 «전교 1위») · 🚀 로켓 성장(성장률 1등)
+   *   🐎 다크호스(순위 5계단 상승 — 순위를 없앴으니 계산 자체가 불가) · 🏋️ 우리 반 캐리(반 1등)
+   * 🔑 남긴 넷은 전부 «자기 기준»이다 — 하루도 안 빠진 달 · 지각 제로 · 불꽃 출석러 · 레이드 개근.
+   *   남이 어떻든 내가 해내면 받는다. 08-20 확정(「기준 충족 전원」)과 같은 결이다.
+   * ⏳ 유호님이 「숙제를 열심히 해서 점수가 높은 랭킹은 이해 된다」고 하셨다 — 그것은 «1등»이 아니라
+   *   «그 달 낼 숙제를 다 낸 전원»이어야 하고 분모(그 달 숙제 수)를 새로 세야 하므로 별개 설계다.
+   *   지금 짓지 않는다 — 없는 것을 있는 척하지 않는다. */
 
   // ---- 기록 ----
   const tt = ensureSheet(ss, 'titles', ['월', 'student_id', '칭호']);
@@ -3783,7 +3755,7 @@ function monthlyGameBatch() {
   }
 
   // [v7.1] 월간 정산 — ① 칭호보너스: 조건형만 포인트(경쟁형 1위류는 명예만) ② 출석 1회당 +3P
-  const TITLE_BONUS = { '👑 개근왕': [PT.개근왕, '칭호보너스·개근왕'], '⚔️ 레이드 영웅': [PT.레이드영웅, '칭호보너스·영웅'] };
+  const TITLE_BONUS = { '🌟 하루도 안 빠진 달': [PT.개근, '칭호보너스·개근'], '🤝 레이드 개근': [PT.레이드영웅, '칭호보너스·레이드개근'] }; // [08-27] 칭호 개명과 «같은 커밋»에서 따라간다 — 안 따라가면 보너스가 조용히 0이 된다
   const settleRows = [];
   Object.keys(won).forEach(sid => won[sid].forEach(t => {
     if (TITLE_BONUS[t]) settleRows.push([sid, TITLE_BONUS[t][0], TITLE_BONUS[t][1], '시스템']);
@@ -3806,8 +3778,11 @@ function monthlyGameBatch() {
     const mp = mPts[sid] || 0;
     if (mp !== 0) parts.push('월간 ' + (mp > 0 ? '+' : '') + mp + 'P');
     if (runBySid[sid] >= 3) parts.push('최고 연속 출석 ' + runBySid[sid] + '일(수업일)');
-    if (prevRank[sid] && rank[sid] < 999 && prevRank[sid] < 999 && rank[sid] < prevRank[sid])
-      parts.push('랭킹 ' + prevRank[sid] + '위→' + rank[sid] + '위');
+    // [08-27 유호 지시] 「랭킹 5위→2위」를 걷었다 — 순위는 «남이 어디 있나»로만 움직인다.
+    //   내가 그대로여도 남이 빠지면 오르고, 내가 늘어도 남이 더 늘면 떨어진다.
+    //   그 자리에 «나 자신의 지난달 대비»를 놓는다 — 이건 남이 없어도 성립한다.
+    if (prevPts[sid] !== undefined && mp > prevPts[sid])
+      parts.push('지난달보다 +' + (mp - prevPts[sid]) + 'P');
     if (!parts.length) parts.push('꾸준히 함께한 한 달');
     stRows.push([ym, sid, nameOf[sid], ym.replace('-', '년 ') + '월 — ' + parts.join(' · ')]);
   });
@@ -3874,6 +3849,9 @@ function monthlyGameBatch() {
  *   거름망이 조용히 빈다 — 그때 새는 방향은 「비교로 얻은 업적이 학생에게 가는 글의 근거로
  *   실린다」이고, 그건 철학 「하지 않는 것 ㉢」(학생끼리 비교하지 않는다) 위반이 **초록으로
  *   도는** 모양이다. 회귀 `tests/성취도달.test.js` 가 두 파일이 같은 값을 보는지 직접 잰다. */
+/* 🔴 [08-27 유호 지시] 이 둘은 이제 «수여되지 않는다» — checkAchievements 의 부여 줄을 걷었다.
+ *   그런데 이름과 거름망은 «남긴다»: 옛 시트에 이미 박힌 배지가 학생 글로 새는 것을 막는 것이
+ *   이 목록의 일이라, 부여를 멈췄다고 거름망까지 걷으면 그 순간 옛 데이터가 샌다. */
 const ACH_명예의전당_ = '명예의 전당 입성';
 const ACH_TOP10단골_ = 'TOP10 단골';
 /** 남과의 비교가 조건인 업적 목록 — 학생 산출의 근거로 쓰지 않는다(철학 ㉢).
@@ -4011,18 +3989,20 @@ function checkAchievements() {
     if (attended) award(sid, '첫 발걸음', '🥉');
     if (best >= 30) award(sid, '한 달의 약속', '🥈');
     if (best >= 60) award(sid, '두 달의 전설', '🥇');
-    if (best >= 100) award(sid, '100일의 기적', '👑');
+    if (best >= 100) award(sid, '100일의 기적', '🌟'); // [08-27] 👑 → 🌟
     if (so >= 1) award(sid, '알 깨고 나왔다!', '🥉');
     if (so >= 2) award(sid, '폭풍 성장기', '🥈');
     if (so >= 3) award(sid, '회로의 완성', '🥈');       // [v5.1] 서킷 도달
     if (so >= 4) award(sid, '거인의 증표', '🥇');
     if (so >= 5) award(sid, '몰입의 경지', '🥇');       // [v5.1] 플로우 도달
-    if (so >= 6) award(sid, 'SYNK 마스터의 탄생', '👑');
+    if (so >= 6) award(sid, 'SYNK 마스터의 탄생', '🌟'); // [08-27] 👑 → 🌟
 
     const hist = (bySid[sid] || []);
-    if (hist.some(h => h.rank <= 3)) award(sid, ACH_명예의전당_, '🥇');
+    /* [08-27 유호 지시] 🚫 «순위» 업적 둘을 걷었다 — 명예의전당(전교 3위 안)·TOP10 단골(전교 10위 안 3개월).
+     *   유호 「비교하는거 최대한 없애자」. 그리고 순위 자체를 없앴으므로(R열 빈 칸) 남겨 두면
+     *   «영영 안 뜨는 업적»이 되어 조용히 죽는다 — 지우는 것이 정직하다. */
 
-    // [v5.1] 신규 업적: 레이드·TOP10 단골
+    // [v5.1] 신규 업적: 레이드
     if ((raidWins[sid] || 0) >= 1) award(sid, '레이드 첫 승', '🥉');
     if ((raidWins[sid] || 0) >= 5) award(sid, '레이드 5승 클럽', '🥇');
 
@@ -4032,14 +4012,11 @@ function checkAchievements() {
     if ((spkAll[sid] || 0) >= 8) award(sid, '무대 체질', '🥈'); // [v7.2] MVP 8회
     if ((praiseAll[sid] || 0) >= 10) award(sid, '시냅스 컬렉터', '🥈'); // [v7.6] 오늘의 시냅스 10회
     if (firstAtt[sid] && (Date.now() - firstAtt[sid]) >= 365 * 86400000) award(sid, '시냅스 1주년', '🥇');
-    if (firstAtt[sid] && (Date.now() - firstAtt[sid]) >= 730 * 86400000) award(sid, '싱크 베테랑', '👑');
-    let streak10 = 0, best10 = 0;
-    hist.forEach(h => { if (h.rank <= 10) { streak10++; best10 = Math.max(best10, streak10); } else streak10 = 0; });
-    if (best10 >= 3) award(sid, ACH_TOP10단골_, '🥇');
+    if (firstAtt[sid] && (Date.now() - firstAtt[sid]) >= 730 * 86400000) award(sid, '싱크 베테랑', '🌟'); // [08-27] 👑 → 🌟
     const pos = hist.filter(h => h.pts > 0);
     for (let i = 2; i < pos.length; i++) {
       if (pos[i].pts > pos[i-1].pts && pos[i-1].pts > pos[i-2].pts) {
-        award(sid, '진짜 주인공', '👑'); break;
+        award(sid, '진짜 주인공', '🌟'); break; // [08-27] 👑 → 🌟
       }
     }
   });

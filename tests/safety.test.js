@@ -445,7 +445,7 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
     'SHARED*_COL_START 개수와 파생된 블록 수가 다르다 — 헤더 상수를 못 찾은 블록이 검사 밖에 있다');
   const reserved = {
     105: '최애(v9.50·A4, 학생 Set Column)', 106: '목소리폼URL(교재연동)', 107: '목소리성장카드(교재연동)',
-    108: '연습노트(교재연동)', 119: '랭킹보드HTML(v9.81, calcAll 리그 카드)', 129: '오늘의만남(v9.99, calcAll 소그룹 3라운드 짝)',
+    108: '연습노트(교재연동)', 119: '구랭킹보드_비움(08-27 순위표 폐지 · 열 예약만 유지)', 129: '오늘의만남(v9.99, calcAll 소그룹 3라운드 짝)',
     /* 🔴 아래 둘은 **코드가 만든 열이 아니다** — `langColOf_`가 이름으로 여는 열이라 자리는 라이브에서만 정해진다.
      *   08-04 라이브 실측에서 131·132에 앉아 있었고, 진로 4열을 131로 박았다가 그 위를 덮을 뻔했다(F080).
      *   레지스트리에 없으면 「비었다」로 읽히므로, 실측한 자리를 여기 적어 다음 블록이 못 밟게 한다. */
@@ -467,7 +467,7 @@ test('[v9.74] profiles 열 레지스트리 — 공유 블록이 선점 열(DA105
     a.name + '(' + a.start + '~' + a.end + ')과 ' + b.name + '(' + b.start + '~' + b.end + ')이 겹친다')));
   // 선점 주인들이 실제로 그 열을 쓰는지(레지스트리의 근거) — 코드가 바뀌면 이 목록도 갱신해야 한다
   assert.ok(code.includes("pf.getRange('DA1').getValue()) !== '최애'"), 'DA105 최애 보장 코드가 사라짐 — 레지스트리 갱신 필요');
-  assert.ok(code.includes("pf.getRange('DO1').getValue()) !== '랭킹보드HTML'"), 'DO119 랭킹보드 보장 코드가 사라짐 — 레지스트리 갱신 필요');
+  assert.ok(code.includes("pf.getRange('DO1').getValue()) !== '구랭킹보드_비움'"), 'DO119 열 예약 보장 코드가 사라짐 — 레지스트리 갱신 필요');
   assert.ok(code.includes("pf.getRange('DY1').setValue('오늘의만남')"), 'DY129 오늘의만남 보장 코드가 사라짐 — 레지스트리 갱신 필요'); // [v9.99]
   /* 🔴 진로 4열은 **번호를 박지 않는다.** 두 번 연속 틀렸다 — ①「DT128 다음이니 129」로 셌는데
    *   129·130이 주인 있는 열이었다(tests/수집.test.js 선점 검사가 잡음) ②131로 옮겼더니
@@ -1635,56 +1635,27 @@ test('[v9.78·리뷰 반영] HUD 보강 — AI 이스케이프·모순 억제·a
   assert.ok(!코드정제.includes("'해결'로 바꾸면 다음 브리핑부터"), '강사가 수행할 수 없는 풋노트 안내가 남아 있다');
 });
 
-test('[v9.81] 리그 카드 — 포디움·내 순위 하이라이트·넛지 환산·콜드·이스케이프·DO119 배선', () => {
-  // 유호 07-31 "랭킹 탭이 데이터만 띡". 원칙: 전원 같은 보드, 개인화는 하이라이트·넛지 두 곳뿐.
-  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  // HUD_CARD는 로드 범위(buildRaidCard_~) 안에 실선언이 있어 주입하면 중복 선언 — 나머지 상수만 주입
-  const deps = { escHtml_: esc, CARD_FONT: 'font-family:test;', CARD_WEBFONT: '', CARD_ANIM: '<style>a</style>', ANIM_BREATH: 'animation:b;' };
-  const board = loadFunction('function buildRaidCard_', '\n// [v9.14] 📊 월간 경영 리포트', 'buildRankBoardHtml_', deps);
-  const rows = [];
-  for (let i = 0; i < 12; i++) rows.push({ id: 'S' + (i + 1), rank: i + 1, name: '학생' + (i + 1), pts: (12 - i) * 10 });
-  // ① 히어로(라벨·D-n)와 포디움 — 1위 왕관 + 내(2위) 칩
-  const p = board('S2', rows, { label: '7월 리그', dLeft: 3 });
-  assert.ok(p.includes('SYNK LEAGUE') && p.includes('정산 D-3'), '히어로 헤더(라벨·D-n)가 없다');
-  assert.ok(p.includes('학생1') && p.includes('👑'), '1위 포디움(왕관)이 없다');
-  assert.ok(p.includes('>나<'), '내 순위 하이라이트 칩(포디움)이 없다');
-  // ② 11위 밖 내 행 점프(⋯) + 추격 넛지의 숙제 환산
-  //    [v9.83] diff 10P를 "숙제 몇 번"으로 옮기는 값은 PT.숙제다 — 상수를 읽어 기대값을 만든다.
-  //    숫자를 적어두면 단가가 바뀔 때마다 이 테스트가 무고하게 깨지거나(지금 겪음) 조용히 거짓말한다.
-  const hwPt = constObj_('const PT = {').숙제;
-  const far = board('S12', rows, { label: '7월 리그', dLeft: 3, hwP: hwPt });
-  assert.ok(far.includes('⋯'), '리스트 밖 내 행 점프(⋯)가 없다');
-  assert.ok(far.includes('11위까지') && far.includes('숙제 ' + Math.ceil(10 / hwPt) + '번이면'), '추격 넛지(포인트→숙제 환산)가 없다');
-  // ③ 동점(diff 0) — "숙제 0번" 대신 동점 문구.
-  //    [v9.85 반영] 공동 1위는 이제 왕좌 문구로 가므로(mine.rank === 1 분기), 동점 검사는 1위가 아닌 자리에서 해야 한다.
-  //    구 픽스처는 S2를 rank 1로 만들어 두 분기를 겹쳐 놨었다 — 왕좌 우선 변경이 들어오자 이 단언이 무고하게 깨졌다.
-  const tie = rows.map(x => ({ id: x.id, rank: x.rank, name: x.name, pts: x.pts }));
-  tie[2] = { id: 'S3', rank: 2, name: '학생3', pts: tie[1].pts }; // 2위와 동점인 공동 2위
-  assert.ok(board('S3', tie, { label: '7월', dLeft: 1 }).includes('동점'), '동점 넛지가 없다');
-  // 공동 1위는 추격이 아니라 왕좌 — v9.85 판정을 고정한다
-  const co1 = rows.map(x => ({ id: x.id, rank: x.rank, name: x.name, pts: x.pts }));
-  co1[1] = { id: 'S2', rank: 1, name: '학생2', pts: co1[0].pts };
-  assert.ok(board('S2', co1, { label: '7월', dLeft: 1 }).includes('왕좌'), '공동 1위가 추격 문구로 샌다');
-  // 단상 숫자 = 실순위(rankMap 동순위) — 공동 1위 픽스처에선 "1" 단상이 두 개여야 한다(P1: 배열 위치 2·1·3을 찍던 회귀 차단)
-  assert.equal((board('S2', co1, { label: '7월', dLeft: 1 }).match(/>1<\/div>/g) || []).length, 2, '공동 1위 단상 숫자가 실순위가 아니다(P1 회귀)');
-  // 대격차(6번+)는 횟수 대신 사정권 문구 — "숙제 16번" 같은 비현실 숫자 금지
-  const cap = board('B', [{ id: 'A', rank: 1, name: '가', pts: 100 }, { id: 'B', rank: 2, name: '나', pts: 20 }], { hwP: hwPt });
-  assert.ok(cap.includes('사정권'), '대격차 넛지 캡(사정권 문구)이 없다');
-  // ④ 리그 밖(0P) 입장 넛지 · 참가 0 콜드 상태 카드([v9.85] 리스트도 "없는 TOP3" 전제 금지)
-  assert.ok(board('GHOST', rows, {}).includes('순위표 밖'), '리그 밖 학생 넛지가 없다');
-  const cold = board('S1', [], {});
-  assert.ok(cold.includes('리그 개막 전'), '참가 0 콜드 상태 카드가 없다');
-  assert.ok(cold.includes('첫 포인트가 이 순위표') && !cold.includes('TOP3 아래'), '콜드 리스트가 없는 TOP3를 전제한다');
-  // ⑤ 이름 이스케이프 (랭킹은 전교 노출면 — 몬스터이름과 달리 학생 자기입력이 아니어도 방어)
-  const x = board('S1', [{ id: 'S1', rank: 1, name: '<b>x', pts: 10 }], {});
-  assert.ok(x.includes('&lt;b&gt;x') && !x.includes('<b>x'), '이름이 이스케이프 없이 침투한다');
-  // ⑥ 배선 — 학생 루프에서 생성, DO119에 기록, rankMap과 동일 소스(leagueRows)
-  assert.ok(code.includes("rankBoardOut.push([r[3] === 'student' ? buildRankBoardHtml_(id, leagueRows, leagueMeta)"), '리그 카드가 학생 루프 밖에서 생성된다');
-  assert.ok(code.includes('writeIfChanged(pf, 2, 119, rankBoardOut)'), 'DO119 기록이 없다');
-  assert.ok(code.includes('leagueRows.push({ id: s.id, rank: rankMap[s.id]'), 'leagueRows가 rankMap과 다른 소스다(R열과 분열 위험)');
-  // ⑦ [v9.85] 단가·이름·폭 가드 배선 — PT 단일 소스 추종 + 전교 노출면 user_id 차단 + 유령 클리어 크래시 경로
-  assert.ok(code.includes('hwP: PT.숙제'), '넛지 단가가 PT 상수를 따르지 않는다(v9.83 인플레 재발 경로)');
-  assert.ok(code.includes("|| '이름 미등록'"), '리그 이름 폴백이 user_id를 전교 보드에 노출한다');
+test('[08-27 유호 지시] 🚫 전교 순위표가 되살아나지 않는다 — 비교 장치 폐지', () => {
+  // 유호 08-27 「전교 실명 순위표 이거 없애자. 비교하는거 최대한 없애자.
+  //   일반적으로 과제 점수로 분류하는 랭킹 시스템은 전부 삭제해줘.」
+  // 구 v9.81 카드가 하던 것: 다른 학생 «실명» 포디움 · 1위 대비 «격차 게이지» · 「왕좌 수성 중」 넛지.
+  // 🔑 이 검사는 «없음»을 지킨다. 되살리려면 여기부터 지워야 하므로 실수로는 못 되살린다.
+  // 🔑 «주석을 뺀» 코드로 잰다 — 안 그러면 위의 은퇴 선언 자체가 병으로 잡힌다(같은 날 정본검사에서 겪은 무늬).
+  assert.ok(!코드정제.includes('function buildRankBoardHtml_'), '전교 순위표 빌더가 되살아났다');
+  assert.ok(!코드정제.includes('leagueRows'), '리그 순위 스냅샷(leagueRows)이 되살아났다');
+  assert.ok(!코드정제.includes('rankMap'), '학생 줄 세우기(rankMap)가 되살아났다');
+  assert.ok(!코드정제.includes('왕좌'), '「왕좌」 문구가 되살아났다');
+  assert.ok(!코드정제.includes('SYNK LEAGUE'), 'SYNK LEAGUE 보드가 되살아났다');
+
+  // 🔑 열은 «예약을 유지»한다 — 비우고 놓으면 뒤 블록이 점거한다(열 충돌 사고 2건의 재발 경로).
+  //   그리고 빈 문자열을 «계속 써야» 라이브 시트에 이미 굳은 옛 카드가 실제로 지워진다.
+  assert.ok(code.includes("rankBoardOut.push([''])"), '빈 칸 쓰기가 없다 — 라이브에 굳은 옛 카드가 영영 남는다');
+  assert.ok(code.includes('writeIfChanged(pf, 2, 119, rankBoardOut)'), 'DO119 쓰기가 사라졌다 — 옛 카드가 안 지워진다');
+  assert.ok(code.includes("'구랭킹보드_비움'"), 'DO119 열 예약이 사라졌다 — 뒤 블록이 이 자리를 점거한다');
+
+  // R열 「월간랭킹」도 빈 칸으로 간다 — 이 카드가 그 열의 유일한 소비자였다(08-27 실측).
+  assert.ok(code.includes("return [t, mPts, '', mon.stage"), 'R열에 순위가 다시 쓰인다');
+
   assertOrder(section('const csLast = cs.getLastRow()', 'writeIfChanged(cs, 2, 1, csOut)'),
     ['cs.getMaxColumns() < 16', 'clearContent()']); // 폭 보장이 유령 클리어보다 먼저
 });
@@ -1903,8 +1874,8 @@ test('[v9.83] 포인트 경제 — 월간 소득 시뮬이 과잠·진화 앵커
   // 지급 경로 전수 — Code.js가 실제로 발행하는 사유와 1:1. 새 경로가 생기면 여기에 반드시 추가할 것.
   const paths = {
     숙제: PT.숙제 * D, 출석: PT.출석 * D, 첨삭확인: PT.첨삭확인 * D,
-    칭찬: PT.칭찬 * 8.7, 왕관: PT.왕관 * 2.2, 레이드: PT.레이드 * W,
-    리그: PT.리그 * W * 0.5, 월드: PT.월드 * 0.5, 개근왕: PT.개근왕, 생일: PT.생일 / 12,
+    칭찬: PT.칭찬 * 8.7, 인정: PT.인정 * 2.2, 레이드: PT.레이드 * W, // [08-27] 키 왕관 → 인정
+    리그: PT.리그 * W * 0.5, 월드: PT.월드 * 0.5, 개근: PT.개근, 생일: PT.생일 / 12, // [08-27] 키 개근왕 → 개근
     // [v9.147] 기능 압축 — 데이터를 낳는 행동으로 옮긴 두 경로. 상한이 코드에 실제로 걸려 있다:
     //   재작성 = 주 1회(REWRITE_COOLDOWN_DAYS) · 퀴즈응답 = 1일 1회(DAILY_LIMIT)
     재작성: PT.재작성 * W, 퀴즈응답: PT.퀴즈응답 * D
@@ -1935,7 +1906,14 @@ test('[v9.83] 포인트 경제 — 월간 소득 시뮬이 과잠·진화 앵커
   assert.deepEqual(bypass, [], '숫자를 직접 쓴 지급 지점이 남아 있다: ' + bypass.join(', '));
   assert.ok(code.includes('const AI_FEEDBACK_ACK_POINTS = PT.첨삭확인'), '첨삭확인 보상이 PT에서 분리됐다');
   assert.ok(code.includes('d * PT.출석'), '출석 정산이 PT를 안 쓴다');
-  assert.ok(code.includes('[PT.개근왕,') && code.includes('[PT.레이드영웅,'), '칭호 보너스가 PT를 안 쓴다');
+  assert.ok(code.includes('[PT.개근,') && code.includes('[PT.레이드영웅,'), '칭호 보너스가 PT를 안 쓴다');
+  // 🔴 [08-27] 칭호 이름을 갈면 보너스표도 «같은 커밋»에서 따라가야 한다 — 안 따라가면 보너스가 조용히 0이 된다(이번에 실제로 냈다).
+  assert.ok(code.includes("'🌟 하루도 안 빠진 달': [PT.개근"), '칭호 개명이 보너스표에 안 따라갔다 — 개근 보너스가 죽는다');
+  assert.ok(code.includes("'🤝 레이드 개근': [PT.레이드영웅"), '칭호 개명이 보너스표에 안 따라갔다 — 레이드 보너스가 죽는다');
+  // 🚫 1등 시상 칭호 일곱이 되살아나지 않는다(유호 08-27 「비교하는거 최대한 없애자」)
+  // 🔑 칭호 «문자열 그대로»로 잰다 — 낱말만 재면 리그 시트 열 「챔피언반」 같은 것이 오탐으로 걸린다.
+  ['🧠 시냅스 챔피언', '🚀 로켓 성장', '🐎 다크호스', '🏋️ 우리 반 캐리', '📚 숙제왕', '💝 정성왕', '🌟 이달의 스타']
+    .forEach(t => assert.ok(!코드정제.includes(t), '1등 시상 칭호 「' + t + '」가 되살아났다'));
 
   // ⑤ [리뷰 B1] **표기가 실지급의 2배를 약속하던 사고의 재발 방지.** 상수만 모으고 화면·메일 문자열 8곳을
   //    옛 숫자로 남겨 학생에게 "+10P"라고 말하면서 5P를 주고 있었다. 지급 지점보다 오히려 이쪽이 눈에 띈다.
@@ -1989,7 +1967,7 @@ test('[v9.83] 보스 HP는 지급 단가의 종속 변수 — 상수화 + 만실
    *   만드는 데미지라 레이드 보상과 달리 순환 가정이 아니다. 이 항을 빼면 첨삭확인 인하(2→1)만 반영돼
    *   보스가 만실에도 안 죽는 것으로 오판된다(실제로 이 테스트가 그렇게 빨간불이 났고, 그게 이 테스트의 일이다). */
   const perDay = PT.숙제 + PT.첨삭확인 + PT.퀴즈응답;  // 수업일마다 자기 힘으로 얻는 몫
-  const weeklyOf = (classDays) => perDay * classDays + PT.칭찬 * Math.min(classDays, 2) + PT.왕관 * 0.5 + PT.재작성;
+  const weeklyOf = (classDays) => perDay * classDays + PT.칭찬 * Math.min(classDays, 2) + PT.인정 * 0.5 + PT.재작성;
   const mix = (w) => w * 0.7;                          // 반 평균은 성실 학생보다 낮다(보통 학생 혼재)
 
   [['평일', 5.05], ['주말', 1]].forEach(([type, classDays]) => {

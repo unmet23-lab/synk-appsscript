@@ -456,7 +456,7 @@ function seedDemoData() {
   }
   L.push('✓ 시간표: 데모 반 2개');
 
-  // ② profiles 8명 — 시나리오: 01 에이스·02 성실+오늘 생일·03 진화 임박(95P 고정)·04 케어 사각·05 리텐션 🔴·06 신입·07 숙제왕·08 스킨 선택
+  // ② profiles 8명 — 시나리오: 01 에이스·02 성실+오늘 생일·03 진화 임박(95P 고정)·04 케어 사각·05 리텐션 🔴·06 신입·07 숙제 성실·08 스킨 선택
   //   [검증 반영] 생일(+20P)과 임박(95P)을 같은 학생에 두면 생일 지급이 임박 밴드를 깨뜨림 — 역할 분리.
   const bday2 = Utilities.formatDate(now, tz, 'MM-dd'); // DEMO-02 사라 = 오늘 생일
   const P = ADMIN_EMAIL;
@@ -512,7 +512,7 @@ function seedDemoData() {
   const plRows = [];
   const pushPl = (sid, pts, rs, by, d) => { const dd = (d instanceof Date && d.getHours() === 0) ? new Date(d.getTime() + 15 * 3600000) : d; plRows.push(['PLD' + (++seq), sid, pts, rs, by, dd, Utilities.formatDate(dd, tz, 'yyyy-MM')]); }; // [v9.51] 7열만 기록 — 라이브 8열은 Glide 🔒 Row ID(충돌 지뢰). 태그는 사유 접미('칭찬·태그') 방식
   const T = '김재헌';
-  // 지난달: 01 챔피언(인정 몰림 — 편중 시연)·07 숙제왕
+  // 지난달: 01 인정 몰림(편중 시연)·07 숙제 성실
   for (let i = 0; i < 8; i++) pushPl('DEMO-01', 10, '숙제완료', T, day(28 + i * 0.9 | 0));
   pushPl('DEMO-01', 5, '오늘의 도전', T, day(30)); pushPl('DEMO-01', 5, '오늘의 도전', T, day(26));
   pushPl('DEMO-01', 5, '오늘의 성장', T, day(33));
@@ -583,7 +583,7 @@ function seedDemoData() {
   ensureSheet(ss, 'crew_projects', ['시즌', '반', '프로젝트명', '한줄소개', '결과물링크', '사진URL', '공개일', '참여크루', '비고'])
     .appendRow(['여름 시즌', CLS_A, 'K-POP 커버 무대', '나담 축제 무대에서 한국어 노래 완창', '', 'https://placehold.co/400x300/FF6B35/FFFFFF/png?text=CREW', d8(day(15)), '바야르, 사라, 테무진', '[DEMO]']);
   const rc = ensureSheet(ss, 'report_cards', ['card_id', 'student_id', '월', 'image_url', '칭호', '코멘트', 'created_at']);
-  rc.appendRow(['RCD-01', 'DEMO-01', ymLast, 'https://placehold.co/600x800/3D5AFE/FFFFFF/png?text=REPORT+' + ymLast, '🧠 시냅스 챔피언', '[DEMO] 이번 달 가장 많은 연결을 만든 크루', now]);
+  rc.appendRow(['RCD-01', 'DEMO-01', ymLast, 'https://placehold.co/600x800/3D5AFE/FFFFFF/png?text=REPORT+' + ymLast, '🌟 하루도 안 빠진 달', '[DEMO] 이번 달 수업일에 한 번도 안 빠진 크루', now]);
   L.push('✓ 운영 시트 7종(문의·결석·매출·리드·전당·크루·리포트)');
   // 데모모드 마커 = 시드시각|스토리북 사전존재|월간배치 사전완료 — clear가 "데모가 만든 것"만 회수하기 위한 판별값
   const sbSheet = ss.getSheetByName('synk_stories');
