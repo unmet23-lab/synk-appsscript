@@ -1890,8 +1890,8 @@ test('[v9.268] 🧰 직장 경험 폼 — 재실행 안전·익명 회수·활�
   assert.ok(body.includes("para('말투·호칭 때문에 곤란했던 일'"), '채점 축 ④(관계 언어) 칸이 없다');
   // 학생ID 는 면접 폼과 같은 상수 — 조인 키라 리터럴로 따로 적으면 두 폼이 한 사람으로 안 묶인다
   // 제목은 면접폼과 «같은 상수»(조인 키) · 안내는 이 폼 전용 — 배포처에 학부모·지인이 있어 자녀 ID를 적을 여지가 있다(①배포 검수 41a05e993ae4)
-  assert.ok(body.includes('txt(INTERVIEW_SID_TITLE, false, WORK_SID_HELP)'), '학생ID 제목이 면접폼과 같은 상수가 아니거나 이 폼 전용 안내를 안 쓴다');
-  assert.ok(/const WORK_SID_HELP = '[^']*자녀·지인의 번호는 적지 마세요/.test(code), '학생ID 안내에 「자녀·지인 번호를 적지 마라」가 없다 — 남의 경험이 그 학생 궤적으로 조인된다');
+  assert.ok(body.includes("txt(INTERVIEW_SID_TITLE, false, WORK_HELP['학생ID'])"), '학생ID 제목이 면접폼과 같은 상수가 아니거나 안내문 정본을 안 쓴다');
+  assert.ok(/자녀·지인의 번호는 적지 마세요/.test(code), '학생ID 안내에 「자녀·지인 번호를 적지 마라」가 없다 — 남의 경험이 그 학생 궤적으로 조인된다');
   assert.ok(body.includes('linkFormTab_(ss, before, WORK_TAB)'), '응답 탭 연결이 없다');
   // 「ID가 읽힌다」를 완료로 취급하지 않는다 — setDestination 이 실패했으면 폼은 사는데 제출이 어디에도 안 쌓인다(①배포 검수 257ac0b6fe00)
   assert.ok(/if \(!shT\)[\s\S]{0,400}exForm\.setDestination\(/.test(body), '기존 폼 경로에 응답 라우팅 복구가 없다 — 탭이 없으면 제출이 영영 안 쌓인다');
@@ -1916,13 +1916,51 @@ test('[v9.268] 🧰 직장 경험 폼 — 재실행 안전·익명 회수·활�
   // create 에 «체이닝을 붙이지 않는다» — 체인 안에서 실패하면 ID 저장 줄에 도달하지 못해 폼이 고아가 된다(①배포 검수 e21f3cec0b41)
   assert.ok(/FormApp\.create\(WORK_FORM_TITLE\);\s/.test(body), 'FormApp.create 에 설정 체인이 붙어 있다 — 체인 실패 시 폼 ID 를 못 적는다');
   // 제목은 고유하지 않다 — 복사본·동명 폼을 거르려면 «이 폼을 이 폼이게 하는» 필수 두 칸까지 본다(①배포 검수 728e50c7d939)
-  assert.ok(/indexOf\('시킨 일 그대로'\) !== -1 && t0\.indexOf\('예정에 없던 일이 생긴 적'\) !== -1/.test(body), '복구 경로가 문항 서명을 검증하지 않는다 — 제목만 같은 남의 폼이 데이터 소스가 된다');
+  /* 제목은 고유하지 않다 — 복사본·동명 폼을 거르려면 «이 폼을 이 폼이게 하는» 필수 두 칸까지 본다(①배포 검수 728e50c7d939).
+   * 🔑 그 자는 «하나»여야 한다(①배포 검수 550ba898c5dd) — 찾는 자리와 고치는 자리가 다른 자를 쓰면
+   * 느슨한 쪽 문으로 남의 폼이 들어온다(실제로 마이그레이션이 제목만 보고 있었다). */
+  assert.ok(/function 직장폼서명_\(form\)[\s\S]{0,400}indexOf\('시킨 일 그대로'\) !== -1 && t\.indexOf\('예정에 없던 일이 생긴 적'\) !== -1/.test(code),
+    '폼 서명 공용 자(직장폼서명_)가 없거나 필수 두 칸을 안 본다');
+  assert.ok(/if \(직장폼서명_\(f0\)\)/.test(body), '복구 경로가 공용 서명 자를 쓰지 않는다 — 제목만 같은 남의 폼이 데이터 소스가 된다');
   const 생성끝 = body.slice(body.indexOf('FormApp.create('));
   assertOrder(생성끝, ['linkFormTab_(ss, before, WORK_TAB)', "setState(st, '직장폼완료', 'y')"]);
   // 워치독 — 폼 생존 + 회수량(설계 준비도)
   assert.ok(code.includes("['직장폼ID', '직장 경험 폼(VR 직업체험 0단계)'"), '워치독 폼 생존 큐에 직장폼이 없다');
   assert.ok(code.includes("ss.getSheetByName('직장기록_응답')"), '워치독 회수 건수 표기가 없다');
 });
+
+test('[v9.270] 🇲🇳 직장 경험 폼 몽골어 — 안내문 정본 하나 · 라이브 폼에 닿는 통로 · 제목 불변', () => {
+  const 정본 = section('const WORK_DESC =', 'function createWorkLogForm()');
+  /* 🔑 진짜 급소는 «읽기»가 아니라 «쓰기»다 — 한국어로 써야 한다고 생각하면 「혼났던 일」이 한 줄로 줄어든다.
+   * 폼 설명 끝의 이 한 줄이 병기 전체보다 회수 «품질»을 더 바꾼다. */
+  assert.ok(/Монголоор хариулж болно/.test(정본), '폼 설명에 「몽골어로 답해도 된다」가 없다 — 병기만으로는 답변 길이가 안 바뀐다');
+  // 채점 축 넷의 칸은 전부 몽골어를 갖는다 — 축 하나가 한국어로 남으면 그 축의 재료만 얕게 걷힌다
+  ['시킨 일 그대로', '못 알아들었을 때 어떻게 했나요', '예정에 없던 일이 생긴 적', '그때 누구에게 어떻게 알렸나요',
+    '하지 말라고 들은 것', '말투·호칭 때문에 곤란했던 일', '자료활용동의'].forEach(k => {
+    const m = new RegExp("'" + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "':([\\s\\S]{0,900}?)(\\n  '|\\n\\};)");
+    const seg = 정본.match(m);
+    assert.ok(seg, `WORK_HELP 에 「${k}」 항목이 없다`);
+    assert.ok(/[Ѐ-ӿ]/.test(seg[1]), `「${k}」 안내에 몽골어(키릴)가 없다`);
+  });
+  // 생성부와 마이그레이션이 «같은 상수»를 본다 — 두 곳에 적으면 「새로 만든 폼」과 「고친 폼」이 갈린다
+  assert.ok(/form\.setDescription\(WORK_DESC\)/.test(code), '생성부가 폼 설명 정본(WORK_DESC)을 쓰지 않는다');
+  const mig = section('function migrateWorkFormMn()', '/* ── [v9.89]');
+  assert.ok(/form\.setDescription\(WORK_DESC\)/.test(mig) && /it\.setHelpText\(WORK_HELP\[title\]\)/.test(mig),
+    '마이그레이션이 안내문 정본을 쓰지 않는다');
+  /* 「이미 있으면 스킵」이 아니라 «정본과 다르면 갱신» — v9.103 이 그 구멍이었다(스킵이라 문구 개정이
+   * 라이브에 영영 안 닿았고 학생이 읽는 문장은 옛것으로 남았다). */
+  assert.ok(/!==\s*WORK_DESC/.test(mig) && /!==\s*WORK_HELP\[title\]/.test(mig),
+    '마이그레이션이 정본 대조 없이 스킵한다 — 문구를 고쳐도 라이브 폼에 안 닿는다');
+  // 제목·선택지는 건드리지 않는다 — 제목은 응답 시트 헤더이자 폼 서명이자 궤적 조인 키다
+  assert.ok(!/setTitle\(/.test(mig) && !/setChoiceValues\(/.test(mig), '마이그레이션이 제목·선택지를 건드린다 — 헤더·서명·조인 키가 갈린다');
+  // 엉뚱한 폼을 고치지 않는다 + 못 찾은 문항을 조용히 넘기지 않는다
+  assert.ok(/if \(!직장폼서명_\(form\)\)/.test(mig), '마이그레이션이 «찾는 자리»와 같은 서명 자를 쓰지 않는다 — 동명 복사본의 안내를 통째로 덮어쓴다');
+  assert.ok(/못찾음\.push\(title\)/.test(mig) && /못 찾은 문항/.test(mig), '제목이 갈린 문항을 조용히 넘긴다 — 그 문항만 한국어로 남는다');
+  // 발동 조건이 같은 커밋에 있어야 한다(CLAUDE.md) — 시트 메뉴가 없으면 유호님이 부를 길이 없다
+  assert.ok(code.includes("function menuMigrateWorkFormMn()") && code.includes("'menuMigrateWorkFormMn'"),
+    '몽골어 반영을 부르는 시트 메뉴가 없다 — 라이브 폼에 닿을 길이 없다');
+});
+
 
 // ── [v9.83] 💰 포인트 경제 ─────────────────────────────────────────────────────
 // 이 세 테스트가 존재하는 이유: v9.83 이전의 결함은 "누가 숫자를 잘못 썼다"가 아니라
