@@ -329,6 +329,12 @@ function main() {
     for (const s of srcs) {
       const out = path.join(DIR, outNameOf(s));
       if (!fs.existsSync(out)) { stale.push(`${outNameOf(s)} — 산출물 없음`); continue; }
+      /* 🔴 PDF 는 «있나»만 잰다 — «낡았나»는 원리상 못 잰다(아래 사각 고지 참조).
+       * 08-26 실측: 11_AI활용_학부모안내 가 _src_ 밖에 있어 PDF 가 아예 없었는데,
+       * 이 검사는 그것을 「6종 전부 최신」으로 읽고 초록을 냈다. 존재는 시각과 달리
+       * 클론에서도 결정적이라 CI 에서 안 깨진다. */
+      const pdf = out.replace(/\.html$/, '.pdf');
+      if (!fs.existsSync(pdf)) stale.push(`${path.basename(pdf)} — PDF 가 없다(인쇄물인데 종이가 없다 · --pdf 로 굽는다)`);
       const html = fs.readFileSync(out, 'utf8');
       if (!/@font-face/.test(html)) { stale.push(`${outNameOf(s)} — 산출물에 @font-face 가 없다(임베드 안 된 사본)`); continue; }
       if (html.includes(MARKER)) { stale.push(`${outNameOf(s)} — 마커가 그대로 남았다(치환 실패본)`); continue; }
@@ -360,6 +366,14 @@ function main() {
       return 1;
     }
     console.log(`✅ 발표물 ${srcs.length}종 전부 최신 (임베드본 확인)`);
+    /* 🚫 이 검사가 «못 보는 것»을 스스로 적는다 — 초록이 무엇을 뜻하는지 오해하지 않게.
+     * 08-26 실측: HTML 은 17:24 인데 PDF 6벌이 08-24 22:21 이었고, 이 검사는 그때도
+     * 「6종 전부 최신」이라고 답했다. 오늘 고친 것이 종이에는 하나도 안 들어가 있었다.
+     * mtime 으로는 못 잰다 — 위 주석대로 git 이 시각을 안 보존해 CI 에서 매번 깨진다. */
+    console.log('   🚫 이 초록은 «HTML» 에 대한 것이다 — PDF 가 그 HTML 로 구워졌는지는 못 잰다.');
+    console.log('      (시각으로 재면 CI 에서 깨지고, 내용으로 재려면 PDF 를 해독해야 한다)');
+    console.log('      ⇒ 인쇄·배포 전에는 --pdf 로 한 번 굽고,');
+    console.log('        docs/tools/인쇄물_키트검사.py 가 그 PDF 를 열어 실물로 판정한다.');
     return 0;
   }
 
