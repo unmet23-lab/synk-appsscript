@@ -280,7 +280,8 @@ function setupBrainTips() { // [v8.6] 오늘의 시냅스 팁 — 홈 최하단 
 }
 
 function setupSeasons() {
-  // 리그 시즌명 12종 (K-컬처 테마 · 창작명) — 명예의 전당/공지에 자동 사용
+  // 시즌명 12종 (K-컬처 테마 · 창작명) — 「N월의 무대」 배너가 쓴다.
+  //   [08-27] 구 「리그 시즌명」 — 반 대항 리그는 폐지됐지만(유호 지시 A) 이 이름들은 «무대» 쪽에서 산다.
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   replaceContentType(ss, 'season', [
     ['SE01','season','첫눈의 시냅스','새해 첫 연결을 만드는 달','',1],

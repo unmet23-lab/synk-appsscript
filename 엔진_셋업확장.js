@@ -59,6 +59,10 @@ function sheetSkeleton_() {
     ['today_board', ['유형','이름','반','시각','퇴근']],
     ['teacher_stats', TEACHER_STATS_HEADERS], // [v9.40] 구 3열(teacher·지급수·편중률)이 실사용 8열과 불일치하던 드리프트 정정 · [v9.87] 정본 상수 공유로 드리프트 재발 자체를 차단(+담당반 9열)
     ['report_cards', ['card_id','student_id','월','image_url','칭호','코멘트','created_at']], // [v9.28] 실사용 7열로 정정(구 3열은 setupV5Triggers·runReportCards_와 불일치하던 결함)
+    /* ⚰ [08-27 유호 지시 A] league_history·league_pairs 는 반 대항 리그 폐지로 «쓰는 코드가 0»이다.
+     *   그런데 골격에서 «빼지는» 않는다 — 골격이 워치독 감시 목록의 정본이라, 여기서 빼면 시트가
+     *   감시 밖으로 조용히 나간다. 그걸 막으려고 회귀가 「옛 손 목록 35종을 하나도 안 흘렸나」를 잰다.
+     *   ⇒ 시트는 라이브에 빈 채로 남고, 골격도 남고, 다만 «아무도 안 쓴다». 지우는 것은 유호님 자리. */
     ['league_history', ['월','시즌','챔피언반','챔피언포인트','준우승','준우승포인트','MVP_id','MVP이름','MVP포인트','created_at']], ['hall_of_fame', ['연도','이름','반','업적','한마디','사진URL']],
     ['raid_story', ['date','class_name','유형','제목','스토리']],
     [KPI_SHEET_NAME, KPI_HEADERS], // [v9.26] 이탈률·전환율 계측 시트
@@ -91,7 +95,7 @@ function sheetSkeleton_() {
     ['synk_stories', ['월','호수','제목','챕터','챕터제목','본문','문법포인트','씬프롬프트']],
     ['synk_cards', ['월','student_id','카드HTML']],
     ['world_raid', ['월','보스명','HP','누적데미지','상태']],
-    ['league_pairs', ['week','반A','반B','상태','결과']],
+    ['league_pairs', ['week','반A','반B','상태','결과']], // ⚰ [08-27] 리그 폐지 — 쓰는 코드 0. 골격은 위 사유로 남긴다
     ['academic_log', ACADEMIC_LOG_HEADERS, 수집표식_], // [v9.239] 헤더 정본 공유(손사본 3벌 → 1벌) · [v9.244] 학업 사건 원장 — append 전용
     ['jacket_grants', ['student_id','이름','자격도달일','재원개월','누적P','지급상태']], // [v9.83] 🧥 과잠 자격 대장
     // [v9.138] 📊 학습 데이터 축적층 — 「2년 축적 → AI 회화 앱」의 원본. 운영 시트가 아니라 **수집기**다.
@@ -525,7 +529,6 @@ function seedDemoData() {
   pushPl('DEMO-01', 3, '칭찬·집중력', T, day(1)); pushPl('DEMO-02', 3, '칭찬·친구도움', T, day(4)); // [v9.51] 💝 '크루의 눈' 시연 재료 — 태그=사유 접미
   for (let i = 0; i < 5; i++) pushPl('DEMO-02', 10, '숙제완료', T, day(3 + i * 3));
   for (let i = 0; i < 9; i++) pushPl('DEMO-03', 10, '숙제완료', T, day(1 + i * 2)); // [검증 반영] 6월 기록·출석·생일 전부 0인 설계라 90+5=95P '고정' → 진화까지 5P(임박 브리핑·한마디 확정 발화)
-  pushPl('DEMO-03', 5, '리그승리', 'SYSTEM', day(7));
   pushPl('DEMO-04', 10, '숙제완료', T, day(16)); // 마지막 포인트 16일 전 — 케어 사각 발화
   for (let i = 0; i < 7; i++) pushPl('DEMO-07', 10, '숙제완료', T, day(2 + i * 2));
   for (let i = 0; i < 4; i++) pushPl('DEMO-06', 10, '숙제완료', T, day(1 + i * 3));
@@ -627,7 +630,7 @@ function runSeedChain_(ss, st, tz, L, t0, startIdx) {
     ['이달의 카드', function () { buildMonthlyCards_(); }],
     ['여행 지도', function () { updateTravelMap_(); }],
     ['경영 월보', function () { buildExecReport_(); }],
-    ['레이드·리그 생성(데모 반 직접)', function () {
+    ['레이드 생성(데모 반 직접)', function () { // [08-27] 리그 폐지 — 이름에서 걷음
       // [검증 반영] raidMonday는 "이번 주 행 존재 시 전체 스킵" 멱등 — 실반 레이드가 이미 있는 주엔 데모 반이 못 생기므로
       //   데모 반 2행을 직접 생성(실반 행 불간섭·주 키·HP=인원×28/18 동일 산식). 이번 달 월드 HP도 재적 기준으로 정합화.
       const nowR = new Date();
@@ -654,7 +657,6 @@ function runSeedChain_(ss, st, tz, L, t0, startIdx) {
       }
     }],
     ['일일 전투 리포트', function () { raidStoryDaily(); }],
-    ['리그 중계석', function () { if (LEAGUE_DAILY_CAST) leagueStoryDaily_(); else L.push('ℹ 리그 일일 중계는 OFF(일요일 결산만 — LEAGUE_DAILY_CAST)'); }],
     ['재계산(시상 반영)', function () { calcAll(); }],
     ['강사 지표', function () { calcTeacherStats(); }],
     ['출결 보드', function () { todayBoard_(ss); }]
@@ -1330,8 +1332,9 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   const dyN = new Date().getDay(); // [v7.3] 금=평일반 정산 · 일=주말반 정산(주말 수업 데미지 미집계 결함 수정)
   if (dyN === 5 || dyN === 0) safeRun('raidSettle', raidFriday);
   else safeRun('raidStoryDaily', raidStoryDaily); // 월~목·토 일일 전투 리포트
-  if (dyN !== 0) safeRun('leagueStoryDaily', leagueStoryDaily_); // [v9.3] 월~토 리그 중계석
-  if (dyN === 0) safeRun('leagueSettle', leagueSettle_); // [v9.1] 반 대항 리그 — 주간데미지 확정 후·다이제스트 전
+  // [08-27 유호 지시 A] 리그 배선 둘(leagueStoryDaily·leagueSettle)을 걷었다 — 함수를 지웠으니
+  //   부르면 ReferenceError 로 밤 배치가 통째로 죽는다. 「스위치는 함수 안 조기 반환으로」 관례는
+  //   «끄는» 것에 대한 규약이고, 여기는 «없애는» 것이라 호출부까지 간다.
   if (dyN === 0) safeRun('parentWeeklyDigest', parentWeeklyDigest); // [v7.9] 일요일 밤 — 학부모 주간 소식 1통
   if (dyN === 0) safeRun('messengerDigest', function () { MJ_messengerDigest_(); }); // [v9.71] 이메일 다이제스트의 메신저 미러 — 연결된 학부모만·창 밖 스킵(클로저 = 만족도팩 누락에도 nightJobs 생존)
   safeRun('notifyParents', notifyParents);

@@ -2598,21 +2598,15 @@ function buildMonthlyStorybook_() {
   const 칭호말of_ = (t) => { const k = Object.keys(칭호말_).find(n => String(t || '').indexOf(n) > -1); return k ? 칭호말_[k] : '이달을 함께 걸어온 목소리'; };
   const C1 = cameoPool[0] ? { n: nmB[cameoPool[0]], t: crownSid[cameoPool[0]] } : null;
   const evoActor = M.evo ? M : (S1.evo ? S1 : (S2 && S2.evo ? S2 : null));
-  let duel = null;
-  const lgB = ss.getSheetByName('league_pairs');
-  if (lgB && lgB.getLastRow() >= 2) lgB.getRange(2, 1, lgB.getLastRow() - 1, 5).getValues().forEach(r => {
-    if (String(r[0]).indexOf(ym) !== 0) return;
-    const m2 = String(r[4] || '').match(/\((\d+(?:\.\d+)?) : (\d+(?:\.\d+)?)\)/);
-    if (!m2) return;
-    const hi = Number(m2[1]), lo = Number(m2[2]);
-    if (!duel || (hi - lo) < duel.gap) duel = { a: String(r[1]), b: String(r[2]), gap: hi - lo };
-  });
+  /* [08-27 유호 지시 A] 리그 폐지 — league_pairs 를 읽어 「명승부(duel)」를 뽑던 블록을 통째로 걷었다.
+   *   그 재료가 제1·2화의 «라이벌 서사»와 사건 요약의 「명승부 A vs B」를 채웠다.
+   *   ⚠ 껍데기만 남기면(빈 변수 + 죽은 if) 다음 손이 되살리기 쉽고 const 재대입 같은 잔재가 남는다. */
   let world = null;
   const wrS = ss.getSheetByName('world_raid');
   if (wrS && wrS.getLastRow() >= 2) wrS.getRange(2, 1, wrS.getLastRow() - 1, 5).getValues().forEach(r => {
     if (String(r[0]) === ym) world = { hp: Number(r[2]) || 0, dmg: Number(r[3]) || 0, win: String(r[4]) === '격파' };
   });
-  const rvA = duel ? duel.a : '옆 반';
+  const rvA = '옆 반'; // [08-27] 구판은 리그 명승부 상대 반 이름을 썼다 — 리그 폐지로 «옆 반» 하나로 선다
   // [v9.69] 변형 선택자(U+FE0E/FE0F)·ZWJ(U+200D)까지 함께 제거 — 🕳️처럼 "이모지+FE0F" 조합에서 FE0F만 남아
   //   제목이 "제로 ️와"로 렌더되던 고아 문자 결함 수리(기발간 행은 sheetSelfHeal_이 청소)
   const bN = boss.name.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0E\uFE0F\u200D]/gu, '').trim();
@@ -2708,8 +2702,11 @@ function buildMonthlyStorybook_() {
     push(1, '제1화 — 아침', '약속 장소에 가장 먼저 나온 사람은 ' + M.n + '였다. 가방 안에는 어젯밤 미리 사 둔 간식이 들어 있었다. 하나둘 모여드는 크루들의 얼굴에는 같은 표정이 떠 있었다. 오늘만큼은 공부가 아니라는 표정. 버스가 출발하자 누군가 창문을 열었고, ' + S1.n + '이(가) 이어폰 한쪽을 ' + M.n + '에게 건넸다. 창밖의 간판들이 빠르게 지나갔다. ' + M.n + '은(는) 그것들을 하나씩 소리 내지 않고 읽어 보았다. 전부 읽을 수 있었다.', gB(0));
     push(2, '제2화 — ' + SC[0], SC[1] + ' ' + SC[2] + ' ' + M.n + '이(가) 주문을 맡았다. 조금 떨렸지만, 점원은 한 번에 알아들었다. 돌아서는 ' + M.n + '의 입꼬리가 *슬며시 올라갔다*. ' + S1.n + '이(가) 그걸 보고 웃었다. "잘하네." "당연하지."', eB(0));
   } else {
-    push(1, '제1화 — 마주침', SC[1] + ' 먼저 알아본 쪽은 ' + M.n + '였다. 길 건너편, 낯익은 얼굴들. 매주 리그에서 겨루던 ' + rvA + ' 크루들이었다. 잠깐 어색한 정적이 흘렀다. 그 정적을 깬 것은 양쪽의 막내들이었다. "안녕!" 아이들의 인사는 언제나 스코어보다 빠르다.', gB(0));
-    push(2, '제2화 — 같은 테이블', SC[2] + ' 간식을 나누다 보니 자리가 섞였다. ' + M.n + '은(는) ' + rvA + ' 크루와 지난주 승부 이야기를 했다. ' + (duel ? '단 ' + Math.round(duel.gap * 10) / 10 + ' 차이였던 그 승부.' : '매주 이어진 접전들.') + ' 서로의 기록을 서로가 외우고 있었다. 라이벌이란 그런 것이었다.' + cameo(), eB(0));
+    /* [08-27 유호 지시 A] 구판은 「매주 리그에서 겨루던 라이벌」·「지난주 승부」·「스코어」로 열었다 —
+     *   리그가 폐지됐으므로 없는 일이 되고, 애초에 「학생끼리 비교하지 않는다」(철학 §48)와도 어긋났다.
+     *   같은 자리를 «옆 반과 같이 걷는» 서사로 바꾼다. 만나는 장면은 그대로 살린다. */
+    push(1, '제1화 — 마주침', SC[1] + ' 먼저 알아본 쪽은 ' + M.n + '였다. 길 건너편, 낯익은 얼굴들. 같은 보스를 같은 주에 두드리던 ' + rvA + ' 크루들이었다. 잠깐 어색한 정적이 흘렀다. 그 정적을 깬 것은 양쪽의 막내들이었다. "안녕!" 아이들의 인사는 언제나 소개보다 빠르다.', gB(0));
+    push(2, '제2화 — 같은 테이블', SC[2] + ' 간식을 나누다 보니 자리가 섞였다. ' + M.n + '은(는) ' + rvA + ' 크루와 지난주 이야기를 했다. 어디서 막혔고 어떻게 넘었는지. 같은 자리에서 막혔다는 걸 알고 둘 다 웃었다.' + cameo(), eB(0));
   }
 
   // ═══ 승 ═══
@@ -2779,7 +2776,8 @@ function buildMonthlyStorybook_() {
       '\n무대: ' + SC[0] + ' | 아크: ' + (arcA ? '원정 편' : '라이벌 편') + ' | 문법: ' + G.map(g => g[0]).join(', ') +
       '\n주연: ' + (pick[0] ? nmB[pick[0]] + ' (' + (perM[pick[0]] || 0) + 'P)' : '-') + (rookie ? ' | 🌟 이달의 신인: ' + nmB[rookie.s] : '') +
       '\n조연: ' + pick.slice(1).map(s => nmB[s]).join(', ') +
-      '\n사건: 격파 ' + raidWins + '회 | ' + (duel ? '명승부 ' + duel.a + ' vs ' + duel.b : '명승부 없음') + ' | ' + (world ? (world.win ? '월드 격파' : '월드 봉인') : '월드 진행중') +
+      // [08-27] 「명승부 A vs B」를 걷었다 — 리그 폐지로 duel 이 없어졌다
+      '\n사건: 격파 ' + raidWins + '회 | ' + (world ? (world.win ? '월드 격파' : '월드 봉인') : '월드 진행중') +
       '\n카메오 본문 출연(' + Math.min(cameoIdx, cameoCand.length) + '명): ' + cameoCand.slice(0, cameoIdx).map(c => c.n).join(', ') +
       '\n\n✍️ 수기 각색법: 위 브리프를 Claude에 붙여넣고 "싱크 스토리를 이 사실 그대로 12장 기승전결·해피엔딩으로 다시 써줘" → 나온 챕터를 synk_stories 해당 월 행의 F열(본문)에 붙여넣기. 자동 재발간은 월키 멱등이라 수기본을 절대 덮어쓰지 않습니다.');
   }
@@ -2927,6 +2925,34 @@ function sheetSelfHeal_() {
    *   아래 개별 ymTextColFix_ 호출은 남겨 둔다: 멱등이라 여기서 치유됐으면 무비용이고,
    *   그 자리에서 「이 열은 키다」를 읽는 사람에게 알려 준다. */
   healTextKeyCols_(ss);
+
+  /* [08-27 유호 지시 A · codex ①검수 26bf3dcbbe9a] 🚫 옛 «리그 공지»를 빈 칸으로 덮는다.
+   * 왜 필요한가: 리그를 걷으면 «쓰는 쪽»은 멈추지만 notices 에 이미 쌓인 행은 그대로 남고,
+   *   그 시트를 앱이 «직접» 읽는다(코드 쪽 소비 필터가 없다). 그러면 폐지한 비교 공지가
+   *   소식탭에 계속 뜬다 — 순위표·「지난달의전당」에서 겪은 것과 같은 무늬다.
+   * 왜 «지우지» 않고 비우나: 행 삭제는 비가역이고 뒤 행이 밀려 다른 멱등 가드가 흔들린다.
+   *   제목·본문만 비우면 카드가 사라지고 구조는 그대로다(순위표 DO119 와 같은 처방).
+   * 과녁은 «옛 리그 공지가 실제로 쓰던 제목» 셋뿐이다 — 넓게 잡으면 멀쩡한 공지를 지운다. */
+  const ntH = ss.getSheetByName('notices');
+  if (ntH && ntH.getLastRow() >= 2) {
+    const lcH = Math.max(ntH.getLastColumn(), 3);
+    const hdH = ntH.getRange(1, 1, 1, lcH).getValues()[0].map(h => String(h).trim().toLowerCase());
+    const iTH = Math.max(hdH.indexOf('title'), hdH.indexOf('title_ko'), hdH.indexOf('제목'), 0);
+    const iBH = Math.max(hdH.indexOf('body'), hdH.indexOf('body_ko'), hdH.indexOf('content'), hdH.indexOf('본문'), 1);
+    const 옛리그제목_ = ['🏆 주간 리그 결과', '🎙️ 리그 중계석', '🏆 이번 주 리듬왕', '리그 결과!', '주간 반 활동'];
+    const ntV = ntH.getRange(2, 1, ntH.getLastRow() - 1, lcH).getValues();
+    let 비운수 = 0;
+    ntV.forEach((r, i) => {
+      const ti = String(r[iTH] || '');
+      if (!ti) return;
+      if (!옛리그제목_.some(k => ti.indexOf(k) > -1)) return;
+      ntH.getRange(i + 2, iTH + 1).setValue('');
+      ntH.getRange(i + 2, iBH + 1).setValue('');
+      비운수++;
+    });
+    if (비운수) Logger.log('자기치유: 옛 리그 공지 ' + 비운수 + '건을 비웠다(08-27 리그 폐지)');
+  }
+
   // ①+② 스토리북
   const sb = ss.getSheetByName('synk_stories');
   if (sb && sb.getLastRow() >= 2) {
@@ -3278,55 +3304,11 @@ function seasonNameOf(ss, monthNum) {
   return name;
 }
 
-/* 🚫 [08-27 유호 지시] 은퇴 — 아무도 안 부른다(엔진_운영배치:3736 에서 주석 처리).
- *   되살리려면 «학생 실명이 전교 공지로 나가는 것»부터 다시 판정해야 한다. */
-function writeLeagueHistory(ss, tz, ym, mPts, rank, clsOf, nameOf) {
-  Logger.log('writeLeagueHistory: 08-27 유호 지시로 은퇴 — 아무것도 안 한다'); return;
-  const lh = ensureSheet(ss, 'league_history',
-    ['월', '시즌', '챔피언반', '챔피언포인트', '준우승', '준우승포인트',
-     'MVP_id', 'MVP이름', 'MVP포인트', 'created_at']);
-  ymTextColFix_(lh, 1, tz); // [v9.97]
-  if (lh.getLastRow() >= 2) {
-    const exists = lh.getRange(2, 1, lh.getLastRow() - 1, 1).getValues()
-      .some(r => ymTextOf_(r[0], tz) === ym);
-    if (exists) { Logger.log(ym + ' 리그 기록 이미 존재 — 스킵'); return; }
-  }
-  const cls = {};
-  Object.keys(mPts).forEach(sid => {
-    const c = clsOf[sid];
-    if (!c) return;
-    cls[c] = (cls[c] || 0) + (mPts[sid] || 0);
-  });
-  const ranked = Object.keys(cls).map(c => ({ name: c, pts: cls[c] }))
-    .sort((a, b) => b.pts - a.pts);
-  if (!ranked.length || ranked[0].pts <= 0) { Logger.log('리그: 유효 데이터 없음'); return; }
-
-  let mvpId = '';
-  Object.keys(rank).forEach(sid => { if (rank[sid] === 1 && !mvpId) mvpId = sid; });
-  const champ = ranked[0], runner = ranked[1] || { name: '', pts: '' };
-  const season = seasonNameOf(ss, Number(ym.substring(5, 7)));
-
-  lh.getRange(lh.getLastRow() + 1, 1, 1, 10).setValues([[
-    ym, season, champ.name, champ.pts, runner.name, runner.pts,
-    mvpId, mvpId ? (nameOf[mvpId] || '') : '', mvpId ? (mPts[mvpId] || 0) : '', new Date()
-  ]]);
-
-  // [v6.6] 지난달의 전당 — 학생 홈 고정 배너용 app_state 키 (Glide는 키 하나만 바인딩)
-  const stH = ss.getSheetByName('app_state');
-  if (stH) {
-    setState(stH, '지난달의전당',
-      '🏛 ' + Number(ym.substring(5, 7)) + '월의 전당 — 챔피언 ' + champ.name +
-      ' (' + champ.pts + 'P)' + (mvpId ? ' · MVP ' + (nameOf[mvpId] || '') : ''));
-  }
-
-  const label = Number(ym.substring(0, 4)) + '년 ' + Number(ym.substring(5, 7)) + '월';
-  addNotice(ss,
-    '🏆 ' + label + (season ? " '" + season + "' 무대" : '') + ' 리그 결과!', // [v9.56] 월 테마 개명 — 여행지도의 "N월의 무대"와 표현 통일
-    '챔피언: ' + champ.name + ' (' + champ.pts + 'P) 🎉' +
-    (mvpId ? ' · 이달의 MVP: ' + (nameOf[mvpId] || mvpId) + ' (' + (mPts[mvpId] || 0) + 'P)' : '') +
-    ' — 명예의 전당에 기록되었습니다!');
-  Logger.log('리그 기록: ' + champ.name);
-}
+/* [08-27 유호 지시 A] 🚫 writeLeagueHistory 를 통째로 걷었다 — 반 대항 리그 폐지.
+ *   이것이 내던 것: league_history 행(챔피언반·준우승) · 학생 홈 고정 배너 「🏛 N월의 전당 —
+ *   챔피언 (반) · MVP (실명)」 · 전교 공지 「챔피언: (반) (N P) — 명예의 전당에 기록되었습니다!」.
+ *   1차에서는 «호출만» 껐는데 codex ①검수가 「배너 값이 시트에 굳어 무기한 노출된다」를 잡았다 —
+ *   소비도 끊었고(Code.js), 이제 함수 자체도 없앤다. 껍데기를 남기면 다음 손이 되살린다. */
 
 /* ===================== [v5] 자동 공지 (notices 시트 → 앱 공지 탭) =====================
  * notices 헤더를 자동 인식 (title/제목, body·content/내용·본문, created_at/날짜)
