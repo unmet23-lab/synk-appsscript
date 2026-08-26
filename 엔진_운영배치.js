@@ -139,6 +139,14 @@ function profilesBlockWrite_(dst, start, heads, rows, stateKey, label, lastNow, 
   return true;
 }
 
+/* [함께한날 막1] 퇴소 스냅샷의 승계 열 목록 — 절단 수리의 심장. 구판은 전 열 JSON.slice(49500)이라 카드
+ * HTML(BD·BY 수만 자)이 낀 행은 **깨진 JSON**으로 잘렸다. 재계산 가능한 열은 버리고 재계산 «불가» 열만
+ * {열번호: 값}으로 저장한다(수백 자 — 상한과 원리상 안 만난다). '{' 시작 = 신판 표식(구판은 '[').
+ * 목록 근거 = [v9.34] 「지워지는 열」 주석 + 래칫·자기선언·함께한날 열. 저장(스냅샷)과 복원(재등록)이
+ * **같은 목록**을 봐야 손으로 고친 스냅샷이 다른 열을 침범 못 한다(보안 검토 08-27) — 그래서 모듈 상수다. */
+const EXIT_KEEP_COLS_ = [27, 28, 30, 31, 32, 37, 41, 44, 45, 46, 49, 50, 54, 55, 80, 105];
+//                      AA  AB  AD  AE  AF  AK  AO  AR  AS  AT  AW  AX  BB  BC  CB  DA
+
 function syncProfiles() {
   try { // [v8.2] 상담시트 미연결·권한 오류에도 앱 본체는 무사
   const book = SpreadsheetApp.openById(CONSULT_SHEET_ID);
@@ -295,12 +303,6 @@ function syncProfiles() {
     const wide = dst.getMaxColumns();
     const tzSnap = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
     const todaySnap = Utilities.formatDate(now, tzSnap, 'yyyy-MM-dd');
-    /* [함께한날 막1] 절단 수리 — 구판은 전 열 JSON.slice(49500)이라 카드 HTML(BD·BY 수만 자)이 낀 행은
-     * **깨진 JSON**으로 잘려 「재설계」 판정을 받았다. 재계산 가능한 열을 버리고, 재계산 «불가» 열만
-     * {열번호: 값} 으로 저장한다(수백 자 — 상한과 원리상 안 만난다). '{' 시작 = 신판 표식(구판은 '[').
-     * 목록 근거 = [v9.34] 「지워지는 열」 주석 + 래칫·자기선언·함께한날 열. */
-    const EXIT_KEEP_COLS_ = [27, 28, 30, 31, 32, 37, 41, 44, 45, 46, 49, 50, 54, 55, 80, 105];
-    //                      AA  AB  AD  AE  AF  AK  AO  AR  AS  AT  AW  AX  BB  BC  CB  DA
     const snaps = removedRows.map(rn => {
       const v = dst.getRange(rn, 1, 1, wide).getValues()[0];
       removedInfo.push({ id: String(v[0] || ''), name: String(v[1] || '').trim() });
@@ -365,7 +367,7 @@ function syncProfiles() {
           const rowN3 = survCnt + 2 + k3; // 헤더 1행 + 기존 학생 survCnt + k3번째 신규
           Object.keys(keep3 || {}).forEach(cK => {
             const c4 = Number(cK) || 0;
-            if (c4 < 16 || c4 > dst.getMaxColumns()) return; // 로스터(A~O)는 상담시트가 정본 — 안 만진다
+            if (EXIT_KEEP_COLS_.indexOf(c4) === -1) return; // 승계 목록에 없는 키는 버린다 — 손으로 고친 스냅샷이 계산·카드 열을 침범하지 못하게(보안 검토 08-27 심층방어 · 로스터 A~O 불가침 포함)
             const v4 = keep3[cK];
             if (v4 === '' || v4 == null) return;
             writeIfChanged(dst, rowN3, c4, [[v4]]); // 소독 채널 — 스냅샷 값에 학생이 친 글(드림한줄 등)이 실려 있다

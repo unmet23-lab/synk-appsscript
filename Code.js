@@ -2019,7 +2019,7 @@ function sceneSpeak_(guide, ctx) {
   if (ctx.isBday) return hashPick_(SPEAK.bday, seed);
   if (ctx.crownToday) return hashPick_(SPEAK.crown, seed);
   if (ctx.sceneToday) return hashPick_(GUIDE_SPEAK.장면, seed);
-  if (ctx.masteredToday) return hashPick_(GUIDE_SPEAK.맞힘, seed).replace('{f}', ctx.form || '오늘의 문장');
+  if (ctx.masteredToday) return hashPick_(GUIDE_SPEAK.맞힘, seed).replace('{f}', escHtml_(ctx.form || '오늘의 문장')); // {f}는 문법뱅크 파생값 — HTML 카드 싱크라 이스케이프 겹(심층방어)
   if (ctx.metToday) return hashPick_(GUIDE_SPEAK.만남, seed);
   return hashPick_(GUIDE_SPEAK.고요, seed);
 }
@@ -2871,7 +2871,7 @@ function calcAll() {
           const evoStr6 = (prevBB[idx] && String(prevBB[idx][0] || '')) || '';
           const sceneRecent = sceneToday9 || (apIsScene && evoStr6 && (new Date(todayYmd0) - new Date(String(evoStr6).slice(0, 10))) / msPerDay <= 3); // [함께한날 막4] BB54 = 최근장면일(전환 첫 회의 구 진화일은 위 apIsScene 가드가 거른다)
           const crownToday2 = (crownDates[id] || '') === todayYmd0;
-          const gTodayForm = (masteredAIToday[id] || [])[0] || ''; // [함께한날 막4] 오늘 «직접 맞힌» 문형 — 수업 일괄이 아니라 그 아이 손의 것
+          const gTodayForm = escHtml_((masteredAIToday[id] || [])[0] || ''); // [함께한날 막4] 오늘 «직접 맞힌» 문형 — 값은 문법뱅크 화이트리스트 파생이지만 HTML 싱크라 이스케이프를 겹으로(보안 검토 08-27 심층방어)
           bannerOut.push([crownToday2
             ? CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(135deg,#FDE68A,#F5C445);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;">🎉 ' + (r[1] || id) + ' өнөөдөр сорилт хийж өсөлтөө батлууллаа! Гэртээ магтаж өгөөрэй 💛<br/><span style="font-weight:400;font-size:11px;">오늘 도전·성장을 인정받았어요! 집에서 칭찬해 주세요</span></div>'
             : (sceneRecent
