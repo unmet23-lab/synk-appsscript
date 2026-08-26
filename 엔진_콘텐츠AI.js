@@ -911,7 +911,8 @@ function systemWatchdog(asText) {
     const stF = ss.getSheetByName('app_state');
     [['상담폼ID', '상담폼(입학 퍼널)', 'createConsultForm 재실행 또는 app_state 키 교정'],
      ['리드폼ID', '리드폼(광고 유입)', 'createLeadForm 재실행'],
-     ['면접폼ID', '면접 기록 폼(비자·취업)', 'createInterviewLogForm 재실행']].forEach(p => {
+     ['면접폼ID', '면접 기록 폼(비자·취업)', 'createInterviewLogForm 재실행'],
+     ['직장폼ID', '직장 경험 폼(VR 직업체험 0단계)', 'createWorkLogForm 재실행']].forEach(p => {
       const fid = stF ? String(getState(stF, p[0]).val || '') : '';
       if (!fid) { add(true, p[1] + ': 미연결 — ID 없음(도입 전이면 정상)'); return; }
       try { FormApp.openById(fid); add(true, p[1] + ' 생존: 정상'); }
@@ -921,6 +922,26 @@ function systemWatchdog(asText) {
     //   0건이어도 경보가 아니다(배포 직후가 정상) — 상태만 상시 노출해 회수 활동을 잊지 않게 한다.
     const shIv = ss.getSheetByName('면접기록_응답');
     if (shIv) add(true, '면접 기록 회수: ' + Math.max(0, shIv.getLastRow() - 1) + '건 (질문 은행 원천 · 배포처는 졸업생 그룹·상담 자리)');
+    // [v9.268] 직장 경험 회수량 — VR 직업체험(SYNK 인증 실기)의 장면·과업·«방해»가 여기서 나온다.
+    //   면접 회수량과 같은 계급: 0건도 경보가 아니고(배포 직후가 정상) 상태만 상시 노출해 회수를 잊지 않게 한다.
+    /* 🔑 「이름이 같은 탭」을 그 폼의 탭으로 믿지 않는다(①배포 검수 b073a11c3a3e) — 탭이 다른 폼으로
+     *   갈아 끼워지면 폼 생존 검사는 초록인 채로 «무관한 행»을 직장 경험으로 세게 된다.
+     *   그래서 탭의 연결 폼 URL 에 직장폼ID 가 들어 있는지 대조하고, 셋을 갈라서 말한다. */
+    const shWk = ss.getSheetByName('직장기록_응답');
+    const wkId = stF ? String(getState(stF, '직장폼ID').val || '') : '';
+    if (shWk && !wkId) {
+      // 🔑 ID 가 없으면 «검증 못 한 것»이지 정상이 아니다(①배포 검수 12f7d19f598f) — 옛 탭·손으로 만든 탭의
+      //   행이 그럴듯한 회수량으로 찍히면 「모으고 있다」는 거짓 초록이 된다. 세지 말고 그렇게 말한다.
+      add(false, '직장 경험 회수: 탭 「직장기록_응답」은 있는데 app_state 에 직장폼ID 가 없어 «이 탭이 우리 폼의 것인지 확인하지 못했습니다» — 행 수를 세지 않았습니다. 시트 메뉴에서 「🧰 직장 경험 회수 폼 만들기」를 눌러 연결을 세우세요');
+    } else if (shWk) {
+      let 소속 = false;
+      try { 소속 = String(shWk.getFormUrl() || '').indexOf(wkId) !== -1; } catch (eW) { 소속 = false; }
+      if (소속) add(true, '직장 경험 회수: ' + Math.max(0, shWk.getLastRow() - 1) + '건 (실기 장면·과업·방해의 원천 · 배포처는 한국 근무 경험자)');
+      else add(false, '직장 경험 회수: 탭 「직장기록_응답」이 app_state 의 직장폼ID 와 «다른 폼»에 붙어 있습니다 — 지금 세는 행이 직장 경험이 아닐 수 있습니다. 탭의 「양식」 메뉴로 어느 폼인지 확인하세요');
+    } else if (wkId) {
+      // 폼은 사는데 탭이 없으면 «회수량 줄 자체»가 사라져 조용한 초록이 된다(①배포 검수 76f9a4508be9)
+      add(false, '직장 경험 회수: 응답 탭 「직장기록_응답」이 없습니다 — 폼은 살아 있는데 시트 연결이 끊겼거나 탭 이름이 갈렸습니다(회수량이 조용히 사라집니다). 시트 메뉴에서 「🧰 직장 경험 회수 폼 만들기」를 다시 누르면 라우팅을 되겁니다');
+    }
   } catch (e) { add(false, '폼 생존 점검 실패: ' + e); }
 
   // [v9.67] 8) AI 첨삭 파이프라인 — CLAUDE_API_KEY 휴면·적체가 어디에도 안 뜨던 결함 해소(2026-07-26 진단 ②).

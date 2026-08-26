@@ -1104,6 +1104,224 @@ function interviewPersonalLink() {
     + '· 여러 사람에게 뿌릴 때는 공개 링크를 쓰세요 — 개인 링크를 단톡에 올리면 남의 ID로 제출됩니다.';
 }
 
+/* ── [v9.268] 🧰 한국 직장 경험 회수 폼 — VR 직업체험(SYNK 인증 실기)의 0단계 ──
+ * 설계 정본 = docs/SHIFT/VR직업체험_설계_v1.md (유호 채택 08-27) · 상위 = docs/SHIFT/설계_v1.md §3-⑧
+ *
+ * 왜 면접 폼과 «따로»인가: 면접은 「들어가는가」를 묻고 직업체험은 「들어가서 할 수 있는가」를 묻는다.
+ *   질문지가 다르고 응답자도 다르다(면접 = 본 사람 / 직장 = 일해 본 사람). 한 폼에 합치면 둘 다
+ *   길어져 회수율이 죽고, 면접 폼의 1순위 자산(질문 은행)까지 같이 깎인다.
+ *
+ * 이 폼이 파는 광산 = 실기 회차의 «과업·방해·감점 기준»(설계 §5):
+ *   · 「시킨 일 그대로」   → 과업
+ *   · 「예정에 없던 일」   → 🔑 방해 — 회차의 급소다. 지시대로만 하면 만점인 시험은 「할 수 있는가」를 못 잰다
+ *   · 「지적받은 일」      → 감점 기준(채점 축이 실제로 어디서 깨지는가)
+ *   셋 다 검색으로 안 나온다. 일해 본 사람에게서만 나오고, 그 사람들을 가진 곳은 학원뿐이다 — 복제 불가 자산.
+ *
+ * 문항은 설계 §3 의 채점 축 넷과 1:1이다 — ①지시 수용(못 알아들었을 때 되묻는가) ②보고 ③안전·규칙 ④관계 언어.
+ *   문항을 늘리거나 줄일 때 이 대응을 먼저 본다. 축에 안 닿는 문항은 회수율만 먹는다.
+ *
+ * 🔒 지금 `직장기록_응답` 을 읽는 곳은 워치독의 `getLastRow()` 하나뿐이라 **값이 다른 시트로 옮겨 가지 않는다.**
+ *   ⚠ 훗날 궤적 수확기(엔진_궤적.js 가 면접기록_응답에 하듯) 이 탭을 읽어 다른 시트에 쓰게 되면
+ *   그 쓰기는 반드시 `행소독_`/`셀안전_` 를 지나야 한다 — 폼은 누구나 열 수 있어 응답이 남의 글이다(v9.157 계보).
+ *
+ * ⚠ 익명·동의는 면접 폼과 «같은 계급»이다 — 이름·연락처는 선택(혼난 경험일수록 밝히기 싫다),
+ *   자료활용동의는 필수·거부 가능(없으면 모은 기록을 연습 자료로도 AI 학습으로도 못 쓴다 · 소급 불가).
+ * 학생ID 는 면접 폼과 «같은 상수»를 쓴다(INTERVIEW_SID_*) — 조인 키라 두 곳에 적으면 갈라진다. */
+const WORK_KINDS = ['편의점·마트', '카페·식당', '물류·상하차·택배', '공장·제조 라인', '건설·현장', '농장·축산', '매장 판매·서비스', '사무·서무 보조', '통역·번역', '기타'];
+const WORK_PLACES = ['한국에서', '몽골의 한국 회사·한국 사람과 함께', '둘 다 있음'];
+const WORK_STATUSES = ['유학 중 아르바이트(D-2·D-4)', '고용허가제(E-9)', '유학 후 취업(E-7 등)', '기타·잘 모르겠음'];
+/* 학생ID 안내는 «이 폼 전용»이다 — 제목(조인 키)은 면접 폼과 같은 상수를 쓰되 안내만 갈라진다.
+ * 까닭(①배포 검수 41a05e993ae4): 이 폼의 배포처에 **한국 근무 경험이 있는 학부모·지인**이 들어 있다.
+ *   면접 폼은 「본인이 면접 본 경험」이라 응답자가 곧 학생이지만, 여기서는 학부모가 «자기» 직장 경험을
+ *   적으면서 «자녀의» 학생ID를 적을 여지가 있다 — 그러면 남의 경험이 그 학생의 궤적으로 조인된다.
+ *   조인 키를 없애는 대신(그러면 궤적이 끊긴다) 안내에서 못을 박는다. */
+/* 폼 제목과 응답 탭 이름은 «식별자»다 — 복구 경로가 제목으로 「이게 그 폼인가」를 판정하고,
+ * 워치독은 탭 이름으로 회수량을 읽는다. 리터럴로 흩뿌리면 한쪽만 바뀌어 조용히 갈린다. */
+const WORK_FORM_TITLE = 'SYNK 한국 직장 경험 기록';
+const WORK_TAB = '직장기록_응답';
+const WORK_SID_HELP = '본인이 SYNK 크루(학생)일 때만 적어주세요 — SYNK-001 형식입니다. 자녀·지인의 번호는 적지 마세요(다른 사람의 기록으로 섞입니다). 모르거나 밝히고 싶지 않으면 비워두세요 — 익명 그대로 접수되고, 자료로도 똑같이 쓰입니다.';
+/* ⚠ 잠금이 «이 폼에만» 있고 면접 폼에 없는 것은 갈린 게 아니라 위험 창이 다른 자리다(①배포 검수 c2e5cccfcc26):
+ *   면접 폼은 이미 라이브에 서 있어 재실행이 「기존 폼 반환」으로 끝나지만, 이 폼은 아직 «첫 생성»이 남아
+ *   빈 ID 를 둘이 동시에 읽는 창이 실제로 열려 있다. 첫 생성이 끝나면 이 락은 사실상 무해한 통과 지점이 된다. */
+function createWorkLogForm() {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    const mL = '⚠️ 다른 실행이 직장 경험 폼을 만들고 있어 30초 기다리다 멈췄습니다 — 중복 폼이 생기지 않도록 일부러 멈춥니다. 잠시 뒤 다시 실행하세요.';
+    Logger.log(mL);
+    return mL;
+  }
+  try { return createWorkLogForm_(); } finally { lock.releaseLock(); }
+}
+function createWorkLogForm_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  // 재실행 안전 — 배포된 링크·QR가 미아가 되지 않도록 살아 있는 폼은 절대 새로 만들지 않는다(createInterviewLogForm 과 같은 계급).
+  let exId = String(getState(st, '직장폼ID').val || '');
+  if (!exId) { // ID만 유실된 경우(시트 수기 편집·app_state 정리) 응답 탭의 연결 폼에서 복구 — 없으면 중복 폼이 생기고 회수가 두 곳으로 갈린다
+    try {
+      const shR = ss.getSheetByName(WORK_TAB);
+      const editUrl = shR && shR.getFormUrl();
+      if (editUrl) {
+        const f0 = FormApp.openByUrl(editUrl);
+        /* 🔑 제목을 «검증하고» 채택한다(①배포 검수 695480e24333) — 탭 이름은 사람이 바꿀 수 있어서
+         *   엉뚱한 폼이 이 이름 아래 붙어 있을 수 있다. 검증 없이 채택하면 그 뒤의 모든 실행과 워치독이
+         *   «남의 폼»을 직장 폼으로 취급한다. 어긋나면 고치지 말고 멈춘다 — 사람이 볼 자리다. */
+        /* 제목은 «고유하지 않다»(①배포 검수 728e50c7d939) — 복사본이나 손으로 만든 동명 폼이 붙어 있을 수
+         *   있다. 그래서 이 폼을 이 폼이게 하는 «필수 두 칸»의 존재까지 본다(과업과 방해 — 설계 §5). */
+        const t0 = f0.getItems().map(function (i) { return String(i.getTitle()).trim(); });
+        const 서명 = t0.indexOf('시킨 일 그대로') !== -1 && t0.indexOf('예정에 없던 일이 생긴 적') !== -1;
+        if (String(f0.getTitle()).trim() === WORK_FORM_TITLE && 서명) {
+          exId = f0.getId();
+          setState(st, '직장폼ID', exId);
+          setState(st, '직장폼URL', f0.getPublishedUrl());
+          // 제목이 맞고 응답 탭까지 붙어 있는 폼 = 한 번 완성됐던 것이다. 표식이 없으면 아래 「만들다 만 상태」로 오진한다.
+          setState(st, '직장폼완료', 'y');
+          Logger.log('직장 경험 폼 — ID가 없어 응답 탭의 연결 폼에서 복구했습니다.');
+        } else {
+          const mX = '⚠️ 탭 「' + WORK_TAB + '」에 연결된 폼이 직장 경험 폼이 아닙니다(제목 「' + f0.getTitle() + '」'
+            + (String(f0.getTitle()).trim() === WORK_FORM_TITLE ? ' · 제목은 같지만 필수 문항 「시킨 일 그대로」·「예정에 없던 일이 생긴 적」이 없습니다' : '') + ').\n'
+            + '엉뚱한 폼을 채택하지 않으려고 멈췄습니다. 탭 이름을 바꾸거나(예: ' + WORK_TAB + '_옛것) 올바른 폼 ID를 app_state 「직장폼ID」에 넣은 뒤 다시 실행하세요.';
+          Logger.log(mX);
+          return mX;
+        }
+      }
+    } catch (eR) { /* 복구 실패 → 아래 정상 생성 경로 */ }
+  }
+  if (exId) {
+    try {
+      const exForm = FormApp.openById(exId);
+      /* 🔑 «ID 가 읽힌다»를 완료로 취급하지 않는다(①배포 검수 257ac0b6fe00·0b240aac65cc) — 폼 생성 뒤
+       *   setDestination 이 실패했으면 폼은 사는데 제출이 어디에도 안 쌓인다. 그리고 탭이 «있어도»
+       *   그게 이 폼의 탭이라는 보장이 없다(옛 탭·재생성된 탭). 그래서 탭의 연결 폼 URL 로 대조한다. */
+      /* 🔑 순서가 곧 판정이다(①배포 검수 9675a3471a43·132ede0b00a2) — ①이게 그 폼인가 ②완성됐나 ③탭이 붙었나.
+       *   완성 여부를 먼저 보지 않고 라우팅부터 고치면 «문항이 빠진 폼»에 응답 탭만 예쁘게 달아 놓고
+       *   「복구했습니다」로 보고하게 된다. 그리고 저장된 ID 도 늙는다 — 제목으로 한 번 대조한다. */
+      if (String(exForm.getTitle()).trim() !== WORK_FORM_TITLE) {
+        const mI = '⚠️ app_state 의 「직장폼ID」가 가리키는 폼의 제목이 「' + exForm.getTitle() + '」입니다 — 직장 경험 폼이 아닙니다.\n'
+          + '낡은 ID 이거나 다른 폼을 가리키고 있습니다. 그 행을 지운 뒤 다시 실행하면 새로 만들거나 응답 탭에서 복구합니다.';
+        Logger.log(mI);
+        return mI;
+      }
+      if (String(getState(st, '직장폼완료').val || '') !== 'y') {
+        const mP = '⚠️ 직장 경험 폼이 «만들다 만 상태»일 수 있습니다 — 폼은 있는데 완료 표식이 없습니다(문항을 붙이는 도중에 실행이 끊긴 자리).\n'
+          + '폼을 열어 섹션 7개(누구·어떤 일·시킨 일·예정에 없던 일·지적받은 것·끝으로·동의)가 다 있는지 보세요.\n'
+          + '· 다 있으면: app_state 의 「직장폼완료」 값을 y 로 적으면 됩니다.\n'
+          + '· 비어 있으면: 그 폼을 휴지통에 넣고 app_state 의 「직장폼ID」 행을 지운 뒤 다시 실행하세요.\n배포 링크: ' + exForm.getPublishedUrl();
+        Logger.log(mP);
+        return mP;
+      }
+      const shT = ss.getSheetByName(WORK_TAB);
+      let tabOk = false;
+      if (shT) { try { tabOk = String(shT.getFormUrl() || '').indexOf(exForm.getId()) !== -1; } catch (eU) { tabOk = false; } }
+      if (!shT) {
+        const before0 = ss.getSheets().map(s => s.getName());
+        exForm.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+        linkFormTab_(ss, before0, WORK_TAB);
+        setState(st, '직장폼URL', exForm.getPublishedUrl());
+        const mR = '🔧 직장 경험 폼은 있었지만 응답 탭이 없어 «응답 라우팅을 다시 걸었습니다».\n배포 링크: ' + exForm.getPublishedUrl();
+        Logger.log(mR);
+        return mR;
+      }
+      if (!tabOk) {
+        const mM = '⚠️ 탭 「' + WORK_TAB + '」이 직장폼ID 와 «다른 폼»에 연결돼 있습니다 — 제출이 쌓이는 곳과 워치독이 세는 곳이 갈라져 있습니다.\n'
+          + '자동으로 고치면 어느 쪽 응답이든 잃을 수 있어 멈췄습니다. 탭의 「양식」 메뉴로 어느 폼인지 확인하신 뒤, 옛 탭 이름을 바꾸고(예: ' + WORK_TAB + '_옛것) 다시 실행하세요.';
+        Logger.log(mM);
+        return mM;
+      }
+      const msg0 = '✅ 직장 경험 폼이 이미 있어 새로 만들지 않았습니다.\n배포 링크: ' + exForm.getPublishedUrl();
+      Logger.log(msg0);
+      return msg0;
+    } catch (eG) {
+      const msgG = '⚠️ 연결된 직장폼ID를 열지 못했습니다(' + eG + ').\n일시 오류일 수 있어 새 폼을 만들지 않았습니다 — 폼이 정말 삭제됐으면 app_state에서 직장폼ID 행을 지운 뒤 재실행하세요.';
+      Logger.log(msgG);
+      return msgG;
+    }
+  }
+  /* 🔑 여기 도달 = 폼 ID 도 없고 복구도 못 했다. 그런데 탭 이름이 이미 차 있으면 새 폼의 응답 탭에
+   *   날짜 접미사가 붙고(linkFormTab_), 워치독은 «표준 이름»만 읽으므로 새 제출이 통째로 안 보이게 된다
+   *   (①배포 검수 10a5f2f323f0). 이름을 자동으로 밀지 않고 멈춘다 — 남의 데이터를 옮기는 판단은 사람 몫이다. */
+  if (ss.getSheetByName(WORK_TAB)) {
+    const mT = '⚠️ 탭 「' + WORK_TAB + '」이 이미 있는데 연결된 직장 경험 폼을 찾지 못했습니다.\n'
+      + '이대로 새 폼을 만들면 응답 탭에 날짜 접미사가 붙어 «회수량이 워치독에서 사라집니다».\n'
+      + '옛 탭의 이름을 바꾸신 뒤(예: ' + WORK_TAB + '_옛것) 다시 실행하세요 — 옛 응답은 그대로 보존됩니다.';
+    Logger.log(mT);
+    return mT;
+  }
+  const before = ss.getSheets().map(s => s.getName());
+  const form = FormApp.create(WORK_FORM_TITLE);
+  /* 🔑 ID 를 «만든 그 다음 줄에서» 저장한다(①배포 검수 ec3700ebc0eb·e21f3cec0b41) — 설명·문항·라우팅 중
+   *   어디서 끊겨도, ID 를 안 적어 둔 폼은 아무도 그 존재를 모르는 고아가 되고 다음 실행이 또 만든다.
+   *   ⚠ 그래서 create 에 «체이닝을 붙이지 않는다» — 체인 안에서 실패하면 이 줄에 도달하지 못한다. */
+  setState(st, '직장폼ID', form.getId());
+  form.setDescription('한국에서, 또는 한국 회사에서 일해 본 경험을 남겨주세요.\n'
+    + '여기 쌓인 이야기가 다음 크루가 미리 겪어볼 실제 상황이 됩니다 — 잘한 일보다 혼났던 일이 더 큰 도움이 됩니다.\n'
+    + '이름은 적지 않으셔도 됩니다. 10분이면 충분합니다 🙂')
+    .setCollectEmail(false);
+
+  function txt(t, req, help) { const i = form.addTextItem().setTitle(t); if (req) i.setRequired(true); if (help) i.setHelpText(help); return i; }
+  function para(t, req, help) { const i = form.addParagraphTextItem().setTitle(t); if (req) i.setRequired(true); if (help) i.setHelpText(help); return i; }
+  function mc(t, opts, req, help) { const i = form.addMultipleChoiceItem().setTitle(t).setChoiceValues(opts); if (req) i.setRequired(true); if (help) i.setHelpText(help); return i; }
+
+  form.addSectionHeaderItem().setTitle('1. 누구의 경험인가요').setHelpText('이 부분은 전부 선택입니다 — 익명으로 남기셔도 자료로 잘 쓰입니다.');
+  txt('이름', false, '익명을 원하시면 비워두세요');
+  txt(INTERVIEW_SID_TITLE, false, WORK_SID_HELP); // 제목 = 궤적 조인 키(면접폼과 같은 상수라야 한 사람으로 대조된다) · 안내는 이 폼 전용
+  mc('지금 신분', ['재학생', '졸업생', '학부모·지인', '기타'], false);
+  txt('연락처', false, '내용을 더 여쭤봐도 될 때만 남겨주세요');
+
+  form.addSectionHeaderItem().setTitle('2. 어떤 일이었나요');
+  mc('일한 곳', WORK_PLACES, true);
+  mc('무슨 일', WORK_KINDS, true);
+  mc('어떤 자격으로', WORK_STATUSES, false, '모르시면 "기타·잘 모르겠음"을 고르세요');
+  mc('일한 기간', ['하루~일주일', '1개월 미만', '1~6개월', '6개월~1년', '1년 이상'], false);
+  txt('시기', false, '예: 2025-06 (연-월만 적어주세요)');
+
+  form.addSectionHeaderItem().setTitle('3. 무슨 일을 시켰나요')
+    .setHelpText('여기가 가장 중요합니다. 문장이 어색해도 괜찮으니 기억나는 대로 많이 적어주세요.');
+  para('시킨 일 그대로', true, '첫날, 그리고 평소에 시킨 일을 순서대로 적어주세요. 이 칸이 다음 크루가 연습할 실제 과제가 됩니다.');
+  mc('지시를 어떻게 받았나요', ['말로', '문자·메모로', '보여주면서', '섞어서'], false);
+  para('못 알아들었을 때 어떻게 했나요', false, '다시 물어봤는지 · 그냥 했는지 · 옆 사람에게 물었는지 — 있는 그대로 적어주세요. 틀린 답이 없는 질문입니다.');
+
+  form.addSectionHeaderItem().setTitle('4. 예정에 없던 일')
+    .setHelpText('시킨 일만 하면 되는 날은 거의 없습니다. 그런 순간이 이 기록의 핵심입니다.');
+  para('예정에 없던 일이 생긴 적', true, '물건이 없거나 · 기계가 멈추거나 · 손님이 화를 내거나 · 알려줄 사람이 자리에 없거나. 없었으면 "없었음"이라고 적어주세요.');
+  para('그때 누구에게 어떻게 알렸나요', false, '바로 말했는지 · 혼자 해결하려 했는지 · 퇴근할 때 말했는지');
+
+  form.addSectionHeaderItem().setTitle('5. 지적받은 것')
+    .setHelpText('창피한 이야기가 아닙니다 — 이 칸이 다음 크루를 가장 많이 구합니다.');
+  para('혼나거나 지적받은 일', false, '무엇 때문이었는지 그대로');
+  para('하지 말라고 들은 것', false, '안전·규칙 — "이건 절대 하지 마라"고 들은 것');
+  para('말투·호칭 때문에 곤란했던 일', false, '존댓말 · 부르는 말 · 거절하거나 부탁할 때 — 한국어는 맞는데 분위기가 이상해졌던 순간');
+
+  form.addSectionHeaderItem().setTitle('6. 끝으로');
+  para('가장 힘들었던 것', false);
+  para('그만둔 사람을 봤다면, 왜 그만뒀나요', false, '본인 이야기여도 괜찮습니다');
+  para('다음 사람에게 한마디', false);
+
+  form.addSectionHeaderItem().setTitle('7. 자료 활용 동의');
+  mc('자료활용동의', ['네, 동의합니다', '아니요, 원하지 않습니다'], true,
+    '이 기록을 ① 후배 크루의 직업 체험 연습 자료 ② 그 연습을 만드는 AI의 학습 자료로 쓰는 것에 동의하시나요?\n'
+    + '이름·연락처·회사 이름은 연습 자료에 절대 포함하지 않습니다(상황과 일만 씁니다). '
+    + '"아니요"를 고르셔도 기록은 감사히 받고, 연습 자료로는 쓰지 않습니다 · 철회는 언제든 학원으로 연락 주세요.');
+
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  linkFormTab_(ss, before, WORK_TAB);
+  setState(st, '직장폼URL', form.getPublishedUrl());
+  // 🔑 완료 표식은 «맨 마지막»에 찍는다 — 이 줄에 도달했다는 것만이 「문항·라우팅이 다 섰다」의 증거다.
+  setState(st, '직장폼완료', 'y');
+  adminMail('[SYNK] 🧰 직장 경험 기록 폼 생성 완료',
+    '배포 링크(공개·익명):\n' + form.getPublishedUrl() +
+    '\n\n무엇에 쓰나: VR 직업체험(= SYNK 인증의 실기 검정)의 장면·과업·«방해»가 전부 여기서 나옵니다.\n' +
+    '설계 = docs/SHIFT/VR직업체험_설계_v1.md\n' +
+    '\n어디에 뿌리면 좋은지:\n' +
+    '① 한국에서 일해 본 졸업생·수료생 — 가장 회수율이 높은 곳\n' +
+    '② 몽골의 한국 회사에 다니는 지인 — 관계 언어·보고 문화는 여기서도 똑같이 나옵니다\n' +
+    '③ 학부모 중 한국 근무 경험자 — 상담 자리에서 QR로\n\n' +
+    '⚠️ 몽골어 병기는 아직 없습니다 — 졸업생·학부모 대상이면 원어민 검수 후 병기하는 것이 회수율에 직결됩니다.\n' +
+    '편집용: ' + form.getEditUrl());
+  Logger.log('✅ 직장 경험 기록 폼 생성 완료: ' + form.getPublishedUrl());
+  return '✅ 직장 경험 기록 폼 생성 완료: ' + form.getPublishedUrl();
+}
+
 /* ── [v9.89] 🔁 결석 연락 기록 폼 — 「결석 복귀율」의 입력 레일(약점 메모 폼 v9.55·v9.64 계보) ──
  * 왜 폼인가: Glide에서 입력받으면 update를 소비한다(Maker 월 500 제약). 폼은 0.
  * ⚠ 항목 수는 여기서 확정이다 — 나중에 추가·삭제하면 응답 시트에 새 열이 생기거나 밀려

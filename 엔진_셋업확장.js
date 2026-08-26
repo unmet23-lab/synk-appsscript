@@ -4217,6 +4217,7 @@ function menuMigrateConsent() { menuRun_(migrateConsentV186); }
  *   이 함수는 그때 같이 안 올려서 08-07 유호님이 다시 "아무리 찾아도 없더라고" 하셨다.
  *   ▶1회짜리라도 **비개발자가 눌러야 하는 함수면 메뉴가 실행 경로다**(편집기는 경로가 아니다). */
 function menuCreateInterviewLogForm() { menuRun_(createInterviewLogForm); }
+function menuCreateWorkLogForm() { menuRun_(createWorkLogForm); }
 /* 같은 자리 3번째라 개별로 안 고치고 회귀로 못박았다(`tests/수집.test.js` 「▶ 표기는 메뉴가 실행 경로다」):
  *   Code.js 가 `(▶…)` 로 적은 함수는 **정의가 살아 있는 한 전부** 여기 있어야 한다. */
 function menuCreateTeacherMemoForm() { menuRun_(createTeacherMemoForm); }
@@ -4702,6 +4703,7 @@ function onOpen() {
        *   "어디 있냐"고 물으신 함수다 — 두 번 쓸 것을 메뉴에 올린다. */
       .addItem('🔏 동의 문항 갱신(수집 0단계·문구 바뀔 때마다)', 'menuMigrateConsent')
       .addItem('🎤 면접 기록 회수 폼 만들기(VR 0단계·1회)', 'menuCreateInterviewLogForm')
+      .addItem('🧰 직장 경험 회수 폼 만들기(VR 직업체험 0단계·1회)', 'menuCreateWorkLogForm')
       .addItem('🗒 강사 메모 폼 만들기(1회)', 'menuCreateTeacherMemoForm')
       .addItem('🧠 퀴즈 응답 폼 만들기(수집 1단계)', 'menuCreateQuizForm')
       .addItem('📝 숙제 폼에 수집 문항 넣기(수집 2단계)', 'menuMigrateHwForm')
