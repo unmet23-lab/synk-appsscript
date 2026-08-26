@@ -1374,8 +1374,8 @@ function leagueSettle_() {
     if (winner && memberCls[winner]) {
       memberCls[winner].forEach(sid => winRows.push([sid, PT.리그, '리그승리', 'SYSTEM']));
       noticeRows.push([
-        '🏆 주간 리그 결과: ' + a + ' × ' + b,
-        '이번 주 리듬 챔피언은 ' + winner + ' (1인 평균 ' + hi + ' : ' + lo + ')! 승리 반 전원 +' + PT.리그 + 'P. 양 반 모두의 데미지는 각자의 캐릭터에게 그대로 쌓였습니다 🌱',
+        '주간 반 활동: ' + a + ' × ' + b, // [08-27] 🏆·챔피언 걷음
+        '이번 주 ' + winner + ' 이(가) 1인 평균 ' + hi + '. ' + winner + ' 크루 전원 +' + PT.리그 + 'P. 두 반이 쌓은 것은 각자에게 그대로 남았습니다 🌱',
         new Date()]);
       noticed++;
     }
@@ -3732,8 +3732,13 @@ function monthlyGameBatch() {
   const snapRows = students.map(r => [ym, r[0], mPts[r[0]] || 0, rank[r[0]] || 999]);
   snap.getRange(snap.getLastRow() + 1, 1, snapRows.length, 4).setValues(snapRows);
 
-  // [v5] 클래스 리그 명예의 전당 + 챔피언 자동 공지 (이미 계산된 값 재사용)
-  writeLeagueHistory(ss, tz, ym, mPts, rank, clsOf, nameOf);
+  /* [08-27 유호 지시] 🚫 월간 「명예의 전당 · 챔피언 공지」를 껐다 — 「비교하는거 최대한 없애자」.
+   *   이것이 내던 것: 학생 홈 고정 배너 「🏛 8월의 전당 — 챔피언 (반) · MVP (실명)」 +
+   *   전교 공지 「챔피언: (반) · 이달의 MVP: (실명) (N P) — 명예의 전당에 기록되었습니다!」.
+   *   순위표보다 더 넓게 나가던 자리다(공지 탭은 전원이 본다).
+   * 🔑 함수는 남긴다 — 지우면 되살릴 때 통째로 다시 짜야 하고, 지금은 «부르지 않는 것»으로 충분하다.
+   *   함수 안에도 은퇴 표시를 박아 실수로 다시 부르면 바로 보이게 했다. */
+  // writeLeagueHistory(ss, tz, ym, mPts, rank, clsOf, nameOf);  ← 08-27 폐지
 
   // [v5.7] 새 달 세계관 오프닝 — 이달의 보스 등장 공지 + 시즌 인트로 배너
   const nowMonth = Number(Utilities.formatDate(new Date(), tz, 'M'));

@@ -2557,7 +2557,10 @@ function buildMonthlyStorybook_() {
   const tl = ss.getSheetByName('titles');
   if (tl && tl.getLastRow() >= 2) tl.getRange(2, 1, tl.getLastRow() - 1, 3).getValues().forEach(r => {
     if (String(r[0]) !== ym) return;
-    if (String(r[2]).indexOf('이달의 스타') > -1 || String(r[2]).indexOf('시냅스 챔피언') > -1) crownSid[r[1]] = String(r[2]);
+    // [08-27] 「이달의 스타」·「시냅스 챔피언」은 1등 시상이라 폐지됐다. 남은 넷은 전부 자기 기준이라
+    //   스토리북 재료로 그대로 쓴다 — 안 바꾸면 이 칸이 «영영 비어» 스토리북 한 축이 조용히 죽는다.
+    if (['🌟 하루도 안 빠진 달', '🤝 레이드 개근', '🔥 불꽃 출석러', '⏰ 지각 제로']
+        .some(n => String(r[2]).indexOf(n) > -1)) crownSid[r[1]] = String(r[2]);
   });
   const ranked = Object.keys(perM).filter(s => nmB[s]).sort((a, b) => perM[b] - perM[a]);
   const stH = ensureSheet(ss, 'app_state', ['key','value']);
@@ -3269,7 +3272,10 @@ function seasonNameOf(ss, monthNum) {
   return name;
 }
 
+/* 🚫 [08-27 유호 지시] 은퇴 — 아무도 안 부른다(엔진_운영배치:3736 에서 주석 처리).
+ *   되살리려면 «학생 실명이 전교 공지로 나가는 것»부터 다시 판정해야 한다. */
 function writeLeagueHistory(ss, tz, ym, mPts, rank, clsOf, nameOf) {
+  Logger.log('writeLeagueHistory: 08-27 유호 지시로 은퇴 — 아무것도 안 한다'); return;
   const lh = ensureSheet(ss, 'league_history',
     ['월', '시즌', '챔피언반', '챔피언포인트', '준우승', '준우승포인트',
      'MVP_id', 'MVP이름', 'MVP포인트', 'created_at']);
