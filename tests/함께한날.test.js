@@ -104,6 +104,21 @@ test('막4 배선 — 장면 축이 화면 여덟 자리를 실제로 잡았다(
   });
 });
 
+test('⑤ 막5 checkScene — 멱등키·하루 1회 상한·기입→알림→마커 순서·밤 배치 편입', () => {
+  const s = code.indexOf('function checkScene()');
+  assert.ok(s > -1, 'checkScene 없음');
+  const body = code.slice(s, code.indexOf('/* ===================== 강사 케어 지수', s));
+  assert.ok(body.includes("has[sid + '|' + k]"), '장면 멱등키(sid|장면번호)가 본진이 아니다 — 한 칸 덮어쓰기 병 재발 경로');
+  assert.ok(body.includes('top > adPrev'), '하루 1회 상한(가장 높은 장면 하나만 발화)이 없다');
+  // v9.34 교훈 — 마커(AA/AD) 갱신은 기입·발송 «뒤». 앞이면 메일 실패 시 알림 영구 유실.
+  const iLog = body.indexOf('writeIfChanged(log, log.getLastRow()');
+  const iMail = body.indexOf('adminMail(');
+  const iMark = body.indexOf('writeIfChanged(pf, 2, 27');
+  assert.ok(iLog > -1 && iMail > iLog && iMark > iMail, '순서가 기입→알림→마커가 아니다(v9.34 재발)');
+  assert.ok(code.includes("safeRun('checkScene', checkScene)"), '밤 배치에 checkScene 이 없다');
+  assert.ok(!code.includes("safeRun('checkEvolution'"), '밤 배치가 아직 checkEvolution 을 부른다 — 한 밤 두 체계');
+});
+
 test('한마디 규격 — 결석·끊김 언급 분기 0(발화표 S19 · 재촉 장치 금지)', () => {
   const s = code.indexOf('function sceneSpeak_');
   const body = code.slice(s, code.indexOf('\nfunction', s + 10));
