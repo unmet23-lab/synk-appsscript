@@ -2159,6 +2159,7 @@ function myJourneyHtml_(o) {
 
 function calcAll() {
   // [v9.15] 프로필·반통계 양쪽에서 쓰는 공유 집계 — 함수 최상단 선언
+  const clsDaysSum = {}; // [함께한날 막3] 반 → 함께한 날 합 — profiles 블록이 채우고 class_stats 카드가 읽는다
   const blindList = [], crownSetM = {}, clsBday = {}, clsAbsent = {}, clsEvoSoon = {};
   const raidLeft = {}, yAttCls = {}, yAttSid = {}, tdActs = {}, tdTopic = {};
   const raidGoal = {}, raidWin = {}; // [v9.35] 레이드 카드(class_stats 13열) 재료 — 이번 주 목표·격파 여부
@@ -2923,6 +2924,7 @@ function calcAll() {
         }
         aeOut.push([isStu9 ? prevDays9 + add9 : '']);
         afOut.push([isStu9 ? (max9 || '') : '']);
+        if (isStu9 && r[4]) clsDaysSum[String(r[4])] = (clsDaysSum[String(r[4])] || 0) + prevDays9 + add9; // [막3] 반 카드 재료
       }
       { // [v9.28] 🎯 목표아이템 진행 카드 — AR(찜) × AQ(잔액) × store 가격
         // [v9.83] 남은 P를 **도착 예정일**로 바꾼다. 지급을 절반으로 낮추면 학생 체감은 "멀어졌다"인데,
@@ -3167,11 +3169,13 @@ function calcAll() {
     cls[c].monthly += monthly[r[0]] || 0;
     cls[c].att += monthAttOf(r[0]);
   });
-  function classMonster(pts, n) { // [v9.81] name만 → {name, img} — 15·16열(반 목록 카드)이 같은 판정식을 공유
-    let cur = stages[0] ? { name: stages[0].name, img: String(stages[0].img || '') } : { name: '', img: '' };
-    stages.forEach(s => { if (pts >= s.th * Math.max(n, 1)) cur = { name: s.name, img: String(s.img || '') }; });
-    return cur;
-  }
+  // [함께한날 막3] 구 classMonster 소각 — 반 누적P를 stages 임계×인원으로 판정하던 그 식은 contents
+  //   monster 행이 사라지는 날(막7) 전 반이 한꺼번에 무너질 배선이었다(설계 §8-⑬ · 막3 처분).
+  //   반 카드 첫 토큰은 이제 «우리 반이 함께한 날의 합» — 비교 축이 아니라 시간 축이다.
+  //   (문법 도달 합계는 반 카드에 안 올린다 — §8-⑨ 「반 합계는 강사 성적표가 된다」)
+  //   ⚠ 열 «키»(반몬스터·반몬스터이미지 헤더)는 그대로 둔다 — Glide 가 헤더 이름으로 토큰을 무는데
+  //   개명하면 라이브 카드가 끊긴다(철학 A-2 「내부 기능명·시트 열 키는 몬스터로 남는다」).
+  const classDaysToken_ = c9 => '🤝 함께한 날 ' + (clsDaysSum[c9] || 0);
   // [v7.3] 반주간데미지 = 학생 주간 양수 포인트 + 연료 (raidFriday와 동일 산식, 14·22시 갱신)
   const mondayW = new Date(now);
   mondayW.setDate(now.getDate() - ((now.getDay() + 6) % 7));
@@ -3203,7 +3207,7 @@ function calcAll() {
   const csOut = Object.keys(cls).sort().map(c => {
     const v = cls[c];
     const wdC = weekDmg[c] || 0;
-    return [c, v.n, v.total, v.monthly, classMonster(v.total, v.n).name, v.att, wdC, v.n ? Math.round(wdC / v.n * 10) / 10 : 0]; // [v9.1] 8열 주간평균 · [v9.81] classMonster {name,img}화
+    return [c, v.n, v.total, v.monthly, classDaysToken_(c), v.att, wdC, v.n ? Math.round(wdC / v.n * 10) / 10 : 0]; // [v9.1] 8열 주간평균 · [함께한날 막3] E열 = 함께한 날 합(구 반몬스터 판정 소각)
   });
   const csLast = cs.getLastRow();
   if (csLast - 1 > csOut.length) {
@@ -3330,13 +3334,12 @@ function calcAll() {
       const v = cls[c];
       const goal = raidGoal[c] || 0, left = Math.max(goal - (weekDmg[c] || 0), 0);
       const boss = !goal ? '🏖️ 보스 휴식주' : (raidWin[c] || left <= 0) ? '🏆 이번 주 보스 격파!' : '⚔️ 보스 HP ' + left;
-      const m = classMonster(v.total, v.n);
       // [v9.87] 라이브 조립 실측 반영 — Glide Card의 Description은 **「반몬스터」 + 「반카드요약」 2토큰**이다
       //   (Glide 토큰 필드는 개별 토큰 제거 UI가 없어 기존 반몬스터를 뺄 수 없었다 · 07-31 원격 조립).
-      //   그래서 요약에서 몬스터 이름을 빼고 앞에 구분자를 붙여 "스파키 · 👥 4명 · ⚔️ 보스 HP 214"로 이어지게 한다.
-      //   Glide는 토큰을 공백 없이 잇는다 — 접두 ' · '가 없으면 "스파키👥 4명"으로 붙는다(실측).
-      return [' · ' + ['👥 ' + v.n + '명', boss].filter(String).join(' · '),
-        m.img.indexOf('http') === 0 ? m.img : ''];
+      //   [함께한날 막3] 그 첫 토큰(E열)이 이제 「🤝 함께한 날 N」이다 — "🤝 함께한 날 12 · 👥 4명 · ⚔️ …"로 읽힌다.
+      //   Glide는 토큰을 공백 없이 잇는다 — 접두 ' · '가 없으면 붙어 버린다(실측). 이미지 토큰(16열)은
+      //   몬스터 그림 은퇴로 빈 값을 «계속» 쓴다 — 계속 써야 라이브에 굳은 옛 그림이 지워진다.
+      return [' · ' + ['👥 ' + v.n + '명', boss].filter(String).join(' · '), ''];
     });
     if (listCards.length) writeIfChanged(cs, 2, 15, listCards);
   }

@@ -1675,15 +1675,17 @@ test('[v9.81] 반 목록 카드 2열 + HUD 총원 필 — 유호 07-31 반 리�
   assert.ok(code.includes("cs.getRange(1, 15).getValue()) !== '반카드요약'") && code.includes("cs.getRange(1, 16).getValue()) !== '반몬스터이미지'"), '15·16열 헤더 보장이 없다');
   assert.ok(code.includes('writeIfChanged(cs, 2, 15, listCards)'), '반 목록 카드 기록이 없다');
   assert.ok(code.includes('csLast - 1 - csOut.length, 16).clearContent()'), '유령 행 클리어가 16열로 확장되지 않았다');
-  // ③ 요약 구성 — 총원(8번 지적과 호응)·보스 3상태, 몬스터 판정은 csOut 5열과 같은 classMonster 공유
+  // ③ 요약 구성 — 총원(8번 지적과 호응)·보스 3상태. [함께한날 막3] 첫 토큰(E열)은 classMonster 가 아니라
+  //   «함께한 날 합»(classDaysToken_) — 같은 판정을 csOut 5열이 공유한다(판정 분열 방지 축은 그대로).
   const blk = section("cs.getRange(1, 15).getValue()) !== '반카드요약'", 'writeIfChanged(cs, 2, 15, listCards)');
   assert.ok(blk.includes("'👥 ' + v.n + '명'") && blk.includes('🏖️ 보스 휴식주') && blk.includes('🏆 이번 주 보스 격파!'), '요약 구성(총원·보스 상태)이 빠졌다');
-  // [v9.87] 라이브 조립 계약 — Description = 「반몬스터」+「반카드요약」 2토큰(Glide가 공백 없이 잇는다).
-  //   요약은 몬스터를 빼고 ' · '로 시작해야 "스파키 · 👥 4명 · ⚔️…"로 이어진다. 몬스터를 다시 넣으면 카드에 두 번 나온다.
-  assert.ok(blk.includes("' · ' + ['👥 ' + v.n + '명'"), '요약이 구분자로 시작하지 않는다 — 반몬스터 토큰과 붙어 "스파키👥 4명"이 된다');
-  assert.ok(!코드만(blk).includes('m.name, boss'), '요약에 몬스터 이름이 다시 들어갔다 — Description 2토큰이라 카드에 중복 표기된다');
-  assert.ok(code.includes('classMonster(v.total, v.n).name'), 'csOut 5열이 classMonster.name을 쓰지 않는다(15열과 판정 분열)');
-  assert.ok(blk.includes("m.img.indexOf('http') === 0"), '몬스터 이미지가 URL 검증 없이 Image 열에 들어간다');
+  // [v9.87] 라이브 조립 계약 — Description = 「반몬스터(E열)」+「반카드요약」 2토큰(Glide가 공백 없이 잇는다).
+  //   요약은 ' · '로 시작해야 "🤝 함께한 날 12 · 👥 4명 · ⚔️…"로 이어진다. E열 값을 다시 넣으면 카드에 두 번 나온다.
+  assert.ok(blk.includes("' · ' + ['👥 ' + v.n + '명'"), '요약이 구분자로 시작하지 않는다 — E열 토큰과 붙어 버린다');
+  assert.ok(code.includes('classDaysToken_(c)'), 'csOut 5열이 함께한 날 토큰을 쓰지 않는다(15열 카드와 판정 분열)');
+  assert.ok(!코드만(code).includes('function classMonster'), '구 classMonster(반 몬스터 판정)가 되살아났다 — contents monster 행이 사라지면 전 반이 무너지는 배선(설계 §8-⑬)');
+  // [함께한날 막3] 이미지 토큰(16열)은 빈 값을 «계속» 써야 라이브에 굳은 옛 몬스터 그림이 지워진다
+  assert.ok(blk.includes("filter(String).join(' · '), '']"), '16열 이미지 자리가 빈 값 지속 쓰기가 아니다');
 });
 
 test('[v9.84] 상담 배선 — 읽기 폭 동적·이름 해석·DT124~DX128 기입·점거 가드', () => {
