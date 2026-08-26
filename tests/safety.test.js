@@ -1777,34 +1777,31 @@ test('[v9.84] 콜드스타트 폴백 사슬 — 소비층 4곳 통일·학생 �
   assert.ok(code.includes('o.pace ?'), '여정카드 페이스라인 렌더가 없다');
 });
 
-test('[v9.84] 노션 상담서술 이관 — 동의 게이트→속성 보장→조인·1900자·장애 격리', () => {
-  const body = section('function syncToNotion_()', 'function syncNotionNow()');
-  // [리뷰 H2] 동의 게이트가 맵 로드보다 앞 — migrateConsentV186(상담동의=v18.6) 전에는 자유서술이 노션으로 나가지 않는다(데이터 접촉 0)
-  assertOrder(body, ["'상담동의'", 'consultNarrativeMap_()', "notionEnsureProp_('상담서술')", "properties['상담서술']"]);
-  // [v9.90→v9.138] 마이그레이션 판 번호와 이 게이트는 **같은 상수**를 봐야 한다. 구 검사는 'v18.6' 리터럴을
-  //   요구했는데, 그러면 개정 때마다 테스트까지 세 곳을 손으로 맞춰야 하고 한 곳을 빠뜨리면 이관이 영영 안 열린 채 침묵한다.
-  //   → 리터럴이 아니라 **단일 소스를 쓰는가**를 검사한다(다음 개정에서 저절로 따라온다).
-  assert.ok(body.includes('=== CONSENT_VERSION'), '동의 게이트가 CONSENT_VERSION 단일 소스를 쓰지 않는다 — 판 번호 하드코딩은 개정 때 어긋나 상담서술이 영구 보류된다');
-  assert.ok(body.includes('상담서술 이관 보류'), '동의 미적용 시 보류 로그가 없다(침묵 금지)');
-  assert.ok(body.includes('상담서술 로드 실패(정량만 동기화)'), '상담시트 장애가 정량 동기화까지 끊는다(격리 부재)');
-  const nm = section('function consultNarrativeMap_', 'function notionEnsureProp_');
-  assert.ok(nm.includes("hdr.indexOf('📝자유서술→노션')") && nm.includes('r[59]'), '서술 맵이 blob 열 이름 해석·학생ID(BH)를 쓰지 않는다');
-  // [v9.98] 행 단위 동의 — 버전 게이트(v18.6)는 "폼에 문항이 생겼는가"만 보증한다. 문항 신설 전 접수분·종이 상담 이기 행은
-  //   마커가 없으므로 내보내지 않는다(08-01 실측: SYNK-001이 마커 없이 서술을 가진 채 이관 대기 중이던 것을 발견).
-  assert.ok(nm.includes("t.indexOf('[' + CONSENT_Q_TITLE + ']') === -1"), '행 단위 동의 마커 검사가 없다 — 미동의 행이 노션으로 나간다');
-  assert.ok(nm.includes('skipped++'), '마커 없는 행을 세지 않는다(원장이 조치할 근거가 사라진다)');
-  assert.ok(code.includes("const CONSENT_Q_TITLE = '개인정보·학습데이터 활용 동의'"), '동의 마커 제목 상수가 없다/변형됨 — migrateConsentV186의 문항 A 제목과 한 벌');
+test('[v9.98→08-26] 동의 마커 단일 소스 — 노션 소각 뒤에도 살아야 하는 셋', () => {
+  // 08-26 노션 동기화 179줄 소각으로 구 시험 「[v9.84] 노션 상담서술 이관」이 과녁을 잃었다.
+  //   그 시험이 «노션 밖»에서도 지키던 것 셋만 여기로 옮긴다 — 통째로 지우면 동의 게이트가 무방비가 된다.
+  //   ⚠ 지운 것 = syncToNotion_ 순서 검사·notionEnsureProp_ 타입 충돌·consultNarrativeMap_ blob 조인.
+  //     그 함수들이 이제 없다(유호 기결정 삭제 확정 · 노션 워크스페이스는 2026-08-04 전량 삭제).
+
+  // ① 동의 마커 제목이 단일 소스인가 — 두 곳에 적히면 한쪽만 바뀌어 전 행이 조용히 미동의로 분류된다
+  assert.ok(code.includes("const CONSENT_Q_TITLE = '개인정보·학습데이터 활용 동의'"),
+    '동의 마커 제목 상수가 없다/변형됨');
+  assert.equal((code.match(/'개인정보·학습데이터 활용 동의'/g) || []).length, 1,
+    '동의 제목 리터럴이 2곳 이상 — 단일 소스가 깨졌다');
+
+  // ② 마이그레이션 문항 A 제목이 그 상수를 «쓰는가»(하드코딩 금지)
   assert.ok(code.includes('const A = CONSENT_Q_TITLE'),
-    'V186 문항 A 제목이 마커 상수를 쓰지 않는다(하드코딩 2곳) — 한쪽만 바뀌면 모든 행이 조용히 미동의로 분류된다');
-  assert.equal((code.match(/'개인정보·학습데이터 활용 동의'/g) || []).length, 1, '동의 제목 리터럴이 2곳 이상 — 단일 소스가 깨졌다');
-  assert.ok(body.includes('서술동의보류'), '보류 건수 통지(dedup)가 없다 — 종이 동의서 학생이 영구히 누락된다');
-  const ep = section('function notionEnsureProp_', 'function syncToNotion_');
-  // [리뷰 M3] GET 선확인이 PATCH보다 앞 + 타입 다르면 덮지 않는다(사람이 만든 노션 구조 불가침)
-  assertOrder(ep, ["method: 'get'", "cur.type === 'rich_text'", "method: 'patch'"]);
-  assert.ok(ep.includes('노션 속성 타입 충돌'), '타입 충돌 시 생략 로그가 없다');
-  assert.ok(ep.includes('muteHttpExceptions: true'), '속성 보장이 mute가 아니다(실패가 주간 배치를 죽인다)');
-  // [리뷰 H3] 소스 헤더 6종 워치독 — 이름 개명이 "조용한 전부 빈칸"으로 착지하는 것을 주간 발각
-  assert.ok(code.includes("['TOPIK목표', 'TOPIK목표기한', 'TOPIK급수', 'TOPIK점수', '학습가능시간', '📝자유서술→노션']"), '워치독 소스 헤더 검사 배열이 없다/변형됨');
+    'V186 문항 A 제목이 마커 상수를 안 쓴다 — 한쪽만 바뀌면 모든 행이 조용히 미동의가 된다');
+
+  // ③ 상담 소스 헤더 6종 워치독 — 이름 개명이 「조용한 전부 빈칸」으로 착지하는 것을 주간 발각한다.
+  //   ⚠ '📝자유서술→노션' 은 **시트 열 이름**이라 노션이 죽어도 그대로다 —
+  //     엔진_운영배치.js 가 강사 뷰 「한국어고충」을, 엔진_폼리포트 가 서술형 문항 착지를 이 열에 건다.
+  assert.ok(code.includes("['TOPIK목표', 'TOPIK목표기한', 'TOPIK급수', 'TOPIK점수', '학습가능시간', '📝자유서술→노션']"),
+    '워치독 소스 헤더 검사 배열이 없다/변형됨');
+
+  // ④ 소각이 실제로 끝났는가 — 되살아나면 여기서 잡힌다(🚫부활 금지 · 전수분석 시11)
+  assert.ok(!code.includes('function syncToNotion_'), '노션 동기화가 되살아났다 — 유호 기결정 삭제 확정이다');
+  assert.ok(!code.includes('NOTION_DB_ID'), '노션 DB 상수가 되살아났다');
 });
 
 test('[v9.84] KPI 인지채널 분해 — 이름 해석·집계·리포트 1줄·시트 스키마 불변 + 정렬 실행 검증', () => {
