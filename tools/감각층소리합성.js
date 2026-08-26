@@ -237,7 +237,7 @@ const MAKERS = { tap: makeTap, grain: makeGrain, press: makePress };
 function main() {
   const outIdx = process.argv.indexOf('--out');
   if (outIdx === -1 || !process.argv[outIdx + 1]) {
-    console.error('사용: node tools/감각층소리합성.js --out <디렉터리>');
+    console.error('사용: node tools/감각층소리합성.js --out <디렉터리> [--가이드 몽글|까몽]');
     process.exit(1);
   }
   const outRoot = process.argv[outIdx + 1];
@@ -256,11 +256,37 @@ function main() {
       }
     }
   }
+  /* ── 가이드 결 (2026-08-26 신설) ────────────────────────────────────────
+   * `--가이드 까몽` 을 주면 옹알이만 «까몽의 결»로 낸다. 인자를 안 주면 **바이트가 안 바뀐다**
+   *   (아래 결 표의 몽글 줄이 전부 1배 · 대조로 확인함).
+   * 🔑 값의 근거는 이 파일이 아니라 `docs/캐릭터/가이드_정본.md` §2 다 —
+   *   「소리 결: 몽글 = 높고 둥근 / 까몽 = 낮고 짧은」. 여기는 그 한 줄의 합성 번역이다.
+   * 🔴 이것은 **시안**이다. 같은 문서 §12 짓는 순서 6번 「소리 3벌」의 판정자가
+   *   «유호님 귀 검수»로 지정돼 있다 — 확정이 아니라 들어 보시라고 내는 판이다. */
+  const 가이드결 = {
+    몽글: { 피치: 1, 길이: 1, lp: 1, peak: 1 },
+    /* 낮고(0.72×) 짧게(0.82×) · 밝기를 내려 «헬멧 안» 쪽으로(lp 0.72×) · 조금 작게(peak 0.88×) */
+    까몽: { 피치: 0.72, 길이: 0.82, lp: 0.72, peak: 0.88 },
+  };
+  const gIdx = process.argv.indexOf('--가이드');
+  const 가이드 = gIdx === -1 ? '몽글' : process.argv[gIdx + 1];
+  const 결 = 가이드결[가이드];
+  if (!결) {
+    console.error(`알 수 없는 가이드 「${가이드}」. 있는 것: ${Object.keys(가이드결).join(', ')}`);
+    process.exit(1);
+  }
+
   const mDir = path.join(outRoot, 'M');
   fs.mkdirSync(mDir, { recursive: true });
   MURMURS.forEach((m, i) => {
     const rnd = mulberry32(SEED_BASE + 77000 + i);
-    const x = makeMurmur(rnd, m.syl, m.opt);
+    const syl = 결.피치 === 1 && 결.길이 === 1
+      ? m.syl
+      : m.syl.map((y) => ({ ...y, ms: Math.round(y.ms * 결.길이), f0: y.f0 * 결.피치, f1: y.f1 * 결.피치 }));
+    const opt = 결.lp === 1 && 결.peak === 1
+      ? m.opt
+      : { ...(m.opt || {}), lp: Math.round((m.opt?.lp || 3400) * 결.lp), peak: (m.opt?.peak || 0.6) * 결.peak };
+    const x = makeMurmur(rnd, syl, opt);
     const file = path.join(mDir, `murmur_${i + 1}.wav`);
     const info = writeWav(file, x);
     rows.push({ 파일: `M/murmur_${i + 1}.wav (${m.이름})`, ms: info.ms, bytes: info.bytes });

@@ -63,8 +63,18 @@ if (인자.includes('--전량')) {
     console.error('🔴 대본 검사가 막았다 — 한 편도 굽지 않는다.');
     process.exit(1);
   }
-  const 생성 = path.join(방, 'src', '클립', '생성', '대본클립들.ts');
-  const 목록 = JSON.parse(fs.readFileSync(생성, 'utf8').match(/= (\[[\s\S]*\]);/)[1]);
+  /* 🔴 통로가 둘이면 한쪽이 조용히 뒤처진다 — 리드크루 클립과 카운트다운을 «같이» 센다.
+     여기서 카운트다운을 빼면 「전량 구웠다」가 참인 채로 카운트다운만 옛 판이 된다. */
+  const 목록읽기 = (f) => {
+    const p = path.join(방, 'src', '클립', '생성', f);
+    if (!fs.existsSync(p)) return [];
+    const m = fs.readFileSync(p, 'utf8').match(/= (\[[\s\S]*\]);/);
+    return m ? JSON.parse(m[1]) : [];
+  };
+  const 목록 = [
+    ...목록읽기('대본클립들.ts').map((c) => ({ ...c, 표지: `cover-${c.편}-${c.화}` })),
+    ...목록읽기('카운트다운들.ts').map((c) => ({ ...c, 표지: `${c.id}-cover` })),
+  ];
   const 실패 = [];
   for (const [i, c] of 목록.entries()) {
     console.log(`\n── [${i + 1}/${목록.length}] ${c.id} — ${c.제목}`);
@@ -74,11 +84,10 @@ if (인자.includes('--전량')) {
   /* 표지도 같이 — 릴에 «직접 지정»하는 썸네일이라 없으면 플랫폼이 첫 프레임(거의 빈 화면)을 쓴다.
      정지화라 편당 몇 초다. 여기서 안 구우면 「영상은 열 편인데 표지는 한 편」이 조용히 선다. */
   for (const c of 목록) {
-    const 표지 = `cover-${c.편}-${c.화}`;
-    const r = spawnSync('npx', ['remotion', 'still', 'src/index.ts', 표지, `out/${표지}.png`], {
+    const r = spawnSync('npx', ['remotion', 'still', 'src/index.ts', c.표지, `out/${c.표지}.png`], {
       cwd: 방, encoding: 'utf8', shell: true, maxBuffer: 64 * 1024 * 1024,
     });
-    if (r.status !== 0 || !fs.existsSync(path.join(산출방, `${표지}.png`))) 실패.push(표지);
+    if (r.status !== 0 || !fs.existsSync(path.join(산출방, `${c.표지}.png`))) 실패.push(c.표지);
   }
   console.log(
     `\n전량 굽기 끝 — 영상 ${목록.length} + 표지 ${목록.length} = ${목록.length * 2}개 중 ` +
