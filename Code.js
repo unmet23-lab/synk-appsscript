@@ -2295,12 +2295,18 @@ function calcAll() {
   const masteryCnt = {};      // sid → {단계: '도달' 수}
   const hasMastery = {};      // sid → mastery 기록 1건이라도 존재(신규생 보호 판별)
   const masteryTopForm = {};  // sid → {단계: 최근(최고 순번) 도달 문형명} — 진화 축하 문구용
+  // [함께한날 막2] «내가 맞힌 말» — 학생이 직접 쓰거나 말해서 맞힌 것만 센다(설계 §4-3 처방 ②).
+  //   출처 화이트리스트 = AI첨삭·AI음성·AI대화(교재연동 masteryApply_ 호출 3곳의 이름 그대로).
+  //   'lesson'(수업 일괄)·'소급인정' 단독 도달은 여기 안 든다 — 막0 실측: lesson발 '도달' 61행 vs AI발 0행.
+  const masteredAI = {};      // sid → 맞힌 말 누계
+  const masteredAIToday = {}; // sid → 오늘(도달일=오늘) 맞힌 문형명 배열 — 「어제 넘은 것」 문구 재료(설계 §8-⑫)
   const bankCnt = grammarBankCounts_();
   const gNameOf = grammarNameMap_();
   {
     const ml = ss.getSheetByName('mastery_log');
     if (ml && ml.getLastRow() >= 2) {
-      ml.getRange(2, 1, ml.getLastRow() - 1, 3).getValues().forEach(r => {
+      // [함께한날 막2] 3열 → 6열 — 도달일(5열)·출처(6열)를 안 읽으면 「어제 넘은 문형」이 원리상 안 나온다(설계 §8-⑫)
+      ml.getRange(2, 1, ml.getLastRow() - 1, 6).getValues().forEach(r => {
         const sid = String(r[0] || '').trim();
         if (!sid) return;
         hasMastery[sid] = true;
@@ -2310,6 +2316,13 @@ function calcAll() {
         const seq = Number(String(r[1]).trim().slice(2)) || 0;
         const tf = masteryTopForm[sid] = masteryTopForm[sid] || {};
         if (!tf[g] || seq >= tf[g].seq) tf[g] = { seq: seq, nm: gNameOf[String(r[1]).trim()] || '' };
+        const srcM = String(r[5] || '');
+        if (srcM === 'AI첨삭' || srcM === 'AI음성' || srcM === 'AI대화') {
+          masteredAI[sid] = (masteredAI[sid] || 0) + 1;
+          if (r[4] && dstr(r[4], tz) === todayYmd0) {
+            (masteredAIToday[sid] = masteredAIToday[sid] || []).push(gNameOf[String(r[1]).trim()] || String(r[1]).trim());
+          }
+        }
       });
     }
   }
@@ -2408,9 +2421,10 @@ function calcAll() {
     ]]);
     if (pf.getRange('AB1').getValue() !== '최고스트릭') pf.getRange('AB1').setValue('최고스트릭');
     if (pf.getRange('AC1').getValue() !== '현재칭호') pf.getRange('AC1').setValue('현재칭호');
-    // [v5] 게이지 헤더 3종
-    if (pf.getRange('AE1').getValue() !== '시냅스게이지') pf.getRange('AE1').setValue('시냅스게이지');
-    if (pf.getRange('AF1').getValue() !== '게이지문구') pf.getRange('AF1').setValue('게이지문구');
+    // [함께한날 막2] AE31·AF32 — v9.20 이래 값 쓰기 0이던 죽은 열을 «함께한 날» 원장으로 되쓴다(설계 §4-1).
+    //   ⚠ AF32 '마지막만남일'과 CD82 '게이트문구'(구 '게이지문구'와 한 글자 차) 혼동 금지.
+    if (pf.getRange('AE1').getValue() !== '함께한날') pf.getRange('AE1').setValue('함께한날');
+    if (pf.getRange('AF1').getValue() !== '마지막만남일') pf.getRange('AF1').setValue('마지막만남일');
     if (pf.getRange('AG1').getValue() !== '다음진화까지') pf.getRange('AG1').setValue('다음진화까지');
     // [v5.1] 대표칭호·칭호등급 헤더
     if (pf.getRange('AH1').getValue() !== '대표칭호') pf.getRange('AH1').setValue('대표칭호');
@@ -2419,9 +2433,9 @@ function calcAll() {
     // [v6.6] 열 부족 자동 확장 (AP=42열까지) — 좁은 시트에서 헤더 쓰기 오류 방지
     if (pf.getMaxColumns() < 50) pf.insertColumnsAfter(pf.getMaxColumns(), 50 - pf.getMaxColumns()); // [v7.7] AX까지
     // [v6.5] 사용자 기록 전용 열 — 스크립트는 값을 절대 안 쓰고 헤더만 보장 (Glide 오타 방지)
-    // [v9.20] 죽은 코드 정리: AE·AF·AL(구 은퇴열) 헤더 유지 코드 제거.
-    //   이 열들(AE31·AF32·AL38·AM39·AN40)은 인덱스 고정이라 물리 삭제 불가(삭제 시 AO~BX 전부 밀림).
-    //   → 시트에서 "열 숨기기"로 시야에서만 치우면 됨(숨김은 인덱스 안 바뀜·안전). Glide 바인딩 금지.
+    // [v9.20 → 함께한날 막2 정정] 구 주석 「AE·AF 헤더 유지 코드 제거」는 사실과 어긋났다(위에서 계속
+    //   쓰고 있었다 — 설계 §4-1 ★확인). AE31·AF32 는 이제 함께한날 원장으로 «재사용»한다. AL38~AN40 은
+    //   여전히 은퇴 열(인덱스 고정이라 물리 삭제 불가 — 삭제 시 AO~BX 전부 밀림 · 숨기기만 안전).
     if (pf.getRange('AK1').getValue() !== '착용칭호') pf.getRange('AK1').setValue('착용칭호');
     if (pf.getRange('AO1').getValue() !== '몬스터이름') pf.getRange('AO1').setValue('몬스터이름');
     if (pf.getRange('AP1').getValue() !== '단계번호') pf.getRange('AP1').setValue('단계번호'); // [v6.6]
@@ -2441,6 +2455,8 @@ function calcAll() {
     //   sorted 는 남는다(월간포인트 집계 자체는 스토어·리포트가 쓴다). «줄 세우기»만 없앤다.
 
     const prevAB = pf.getRange(2, 28, pfData.length, 1).getValues();
+    const prevAE = pf.getRange(2, 31, pfData.length, 1).getValues(); // [함께한날 막2] 함께한날 원장(증분 기준)
+    const prevAF = pf.getRange(2, 32, pfData.length, 1).getValues(); // [함께한날 막2] 마지막만남일(하루 +1 래칫)
     const evoRemOut = [], stageNumOut = [], balOut = []; // [v7.9] 게이지 2열 은퇴(진행바 T열로 단일화)
     const evoDateOut = []; // [v9.0]
     const rankBoardOut = []; // [v9.81] 리그 카드(DO119)
@@ -2504,6 +2520,7 @@ function calcAll() {
   const weeklyOut = [], talkOut = [], bannerOut = []; // [v9.16]
   const alertOut = []; // [v9.20] 오늘의알림(BX 76) — 결정적 순간 1건(도전·성장/진화/생일/임박), 없으면 ''
   const ccOut = [], cdOut = []; // [v9.36] 게이트 2열 — CC(81) 남은문법수 · CD(82) 게이트문구
+  const aeOut = [], afOut = []; // [함께한날 막2] AE31 함께한날 · AF32 마지막만남일
   const dexOut = []; // [v9.42] CE(83) 도감HTML — 도달만 공개·미도달 ??? (도감 스포일러 차단)
   const calOut = []; // [v9.44] CF(84) 출석달력HTML — 학부모·학생 출석 시인성(도장 그리드)
   const journeyOut = []; // [v9.20] 나의여정(BY 77) — 개인 스토리 카드
@@ -2677,6 +2694,42 @@ function calcAll() {
     // [v9.99] 오늘의 3라운드 짝 — 편성·역할과 같은 순수 계산(groups 1회 읽기). 편성 전·수업 없는 날은 빈 맵
     let meetMap = {};
     try { meetMap = todayPairsBySid_(ss, tz, now); } catch (e) { Logger.log('오늘의만남 스킵: ' + e); }
+    /* [함께한날 막2] «서버가 본 만남» 수집 — 함께한 날의 유일한 재료(설계 §4-2).
+     *   세는 것 = 등원(폼·일괄) · 숙제 제출 · 녹음 · 대화 · 첨삭 확인 · 퀴즈 응답.
+     *   안 세는 것 = GPS 셀프 출석(위치 검증 코드 0 — §7-③ 기본값 ㉮) · 앱 열기 · 포인트 지급만 받은 날.
+     *   구현은 전수 재계산이 아니라 «증분»(AE31 이 원장 · AF32 가 래칫) — calcAll 은 RUN_BUDGET_MS 를
+     *   안 쓰므로 append 시트는 «꼬리»만 읽는다. 밤에 늦게 착지하는 행(숙제 첨삭은 calcAll 뒤에 생성된다)도
+     *   다음 회차가 「마지막만남일보다 뒤의 날」로 주워 담는다 — 그래서 '오늘'이 아니라 '날짜'로 잰다. */
+    const meetDays = {};  // sid → Set('yyyy-MM-dd') — 만남이 있던 날(증분 판정 재료)
+    const meetToday = {}; // sid → 오늘 사건 «건수» — 「오늘 몽글이와 한 것」 재료(상한 없음 · §4-2)
+    {
+      const seen9 = (sid, ds) => {
+        const k9 = String(sid || '').trim();
+        if (!k9 || !ds) return;
+        (meetDays[k9] = meetDays[k9] || new Set()).add(ds);
+        if (ds === todayYmd0) meetToday[k9] = (meetToday[k9] || 0) + 1;
+      };
+      atData.forEach(r9 => { // 등원 — method 화이트리스트(GPS 셀프 출석은 «집에서 눌러도 들어» 뺀다)
+        const m9 = String(r9[3] || '');
+        if (r9[1] && r9[2] && (m9 === '출석(폼)' || m9 === '출석(일괄)')) seen9(r9[1], dstr(r9[2], tz));
+      });
+      plData.forEach(r9 => { // 첨삭 확인 — 학생이 첨삭을 «열어 확인»한 행위(포인트가 아니라 사유로 가른다)
+        if (r9[1] && r9[5] && String(r9[3] || '') === '첨삭확인') seen9(r9[1], dstr(r9[5], tz));
+      });
+      const tail9 = (name9, sidIdx9, dateIdx9) => { // append 전용 시트 — 꼬리 1200행이면 최근 며칠은 항상 안에 있다
+        const sh9 = ss.getSheetByName(name9);
+        if (!sh9 || sh9.getLastRow() < 2) return;
+        const last9 = sh9.getLastRow();
+        const from9 = Math.max(2, last9 - 1199);
+        sh9.getRange(from9, 1, last9 - from9 + 1, Math.max(sidIdx9, dateIdx9) + 1).getValues().forEach(r9 => {
+          if (r9[sidIdx9] && r9[dateIdx9]) seen9(r9[sidIdx9], dstr(r9[dateIdx9], tz));
+        });
+      };
+      tail9('hw_feedback', 1, 2); // 3열 제출일 — ⚠ «문장 열»이 아니라 날짜 열(설계 §4-2 함정)
+      tail9('voice_log', 0, 1);   // 2열 제출일
+      tail9('talk_log', 1, 6);    // 7열 제출일
+      tail9('quiz_log', 1, 9);    // 10열 제출일 — point_logs 사유 대신 원장을 직접 본다(응답이 포인트를 안 낳아도 만남은 만남이다)
+    }
     const out = pfData.map((r, idx) => {
       const id = r[0], t = total[id] || 0;
       meetOut.push([(r[3] === 'student' && meetMap[String(id)]) || '']); // 행 수 정합 — 비학생·미편성은 공란
@@ -2852,6 +2905,25 @@ function calcAll() {
         evoDateOut.push([(prevN >= 1 && newN > prevN) ? todayYmd : ((prevBB[iE] && prevBB[iE][0]) || '')]);
       }
       balOut.push([bal[id] || 0]); // [v7.1] 잔액(AQ) — 스토어 결제 기준
+      { // [함께한날 막2] AE31·AF32 증분 — 하루 최대 +1 · 끊겨도 «안 줄어든다»(단조 · 결석은 벌이 아니다 — 철학 Ⅲ-2 「셋 다 내려가지 않습니다」)
+        const isStu9 = r[3] === 'student';
+        const prevDays9 = Number(prevAE[idx] && prevAE[idx][0]) || 0;
+        const rawAF9 = (prevAF[idx] && prevAF[idx][0]) || '';
+        const lastYmd9 = rawAF9 instanceof Date ? dstr(rawAF9, tz) : String(rawAF9 || '').slice(0, 10);
+        let add9 = 0, max9 = lastYmd9;
+        if (isStu9 && meetDays[id]) {
+          meetDays[id].forEach(ds9 => {
+            if (ds9 > todayYmd0) return; // 미래 날짜 방어
+            if (!lastYmd9) { // 원장 개시 — 오늘부터 센다(소급 안 한다 · 설계 §5 막0 「개원 전이라 백필 비용 0」)
+              if (ds9 === todayYmd0) { add9 = 1; if (ds9 > max9) max9 = ds9; }
+              return;
+            }
+            if (ds9 > lastYmd9) { add9++; if (ds9 > max9) max9 = ds9; } // 늦게 착지한 어제 행도 여기서 주워 담는다
+          });
+        }
+        aeOut.push([isStu9 ? prevDays9 + add9 : '']);
+        afOut.push([isStu9 ? (max9 || '') : '']);
+      }
       { // [v9.28] 🎯 목표아이템 진행 카드 — AR(찜) × AQ(잔액) × store 가격
         // [v9.83] 남은 P를 **도착 예정일**로 바꾼다. 지급을 절반으로 낮추면 학생 체감은 "멀어졌다"인데,
         //   날짜로 보여주면 멀어진 게 아니라 도착일이 생긴 것이 된다 — 하락을 서사로 전환.
@@ -3053,6 +3125,8 @@ function calcAll() {
     const abOut = pfData.map((r, i) =>
       [Math.max(out[i][5], Number(prevAB[i][0]) || 0)]);
     writeIfChanged(pf, 2, 28, abOut);
+    writeIfChanged(pf, 2, 31, aeOut); // [함께한날 막2] 함께한날 — 원장 자체가 시트라 증분이 곧 저장이다
+    writeIfChanged(pf, 2, 32, afOut); // [함께한날 막2] 마지막만남일 — 하루 +1 래칫의 기준점
 
     // [v5.1] 칭호를 등급 높은 순으로 정렬 → 제일 화려한 칭호가 앞에
     const acOut = [], badgeOut = [], tierOut = [];

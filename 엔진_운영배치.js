@@ -1741,9 +1741,12 @@ function expandLessonLog_() {
   Logger.log('수업 로그 전개: 숙제 +' + outRows.length + '명 (중복 스킵 ' + skip + ') · 연료 ' + fuelRows.length + '건');
 }
 
-// [v9.36] 문법 도달 전개 — 당일 문법태그 행 × (출석자−예외학생) → mastery_log upsert. 상태는 '연습'→'도달' 단방향 상향(강등 없음).
-//   도달도='도달'이면 예외학생만 '연습', '더연습'이면 전원 '연습'. 결석자는 미전개(다음 태깅 때 자연 커버). 처리 후 L열 마킹.
-//   nightJobs에서 expandLessonLog_ 다음 · calcAll 앞 — 그날 밤 게이트가 즉시 반영되고 checkEvolution이 당일 진화를 감지한다.
+// [v9.36 → 함께한날 막2] 문법 «연습» 전개 — 당일 문법태그 행 × 출석자 → mastery_log upsert('연습'까지만).
+//   구 동작(G열 '도달'이면 출석 전원에게 '도달')은 「앉아만 있던 학생도 최대 12개를 받는」 병이었다
+//   (설계 §4-3 · 막0 실측: lesson발 '도달' 61행 vs AI발 0행). 처방 ① = 수업 경로는 '연습'으로 낮춘다.
+//   승격(도달)은 masteryApply_(교재연동 · 「서로 다른 날 2회 올바름」 · 출처 AI첨삭/AI음성/AI대화) 한 문뿐이다.
+//   G열(전체도달도)·H열(예외학생)은 수업 «보고»로 시트에 그대로 남는다 — mastery 상태에만 안 얹는다.
+//   결석자는 미전개(다음 태깅 때 자연 커버). 처리 후 L열 마킹. nightJobs에서 expandLessonLog_ 다음 · calcAll 앞.
 function expandMasteryLog_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
@@ -1785,35 +1788,29 @@ function expandMasteryLog_() {
       if (r[0] && r[1]) mkey[String(r[0]).trim() + '|' + String(r[1]).trim()] = { row: i + 2, st: String(r[2] || '') };
     });
   }
-  const newRows = [], upgrades = [], doneIdx = [];
+  const newRows = [], doneIdx = [];
   targets.forEach(t => {
     const r = t.r;
     const tags = String(r[5]).split(',').map(s => s.trim()).filter(g => grammarStageOf_(g) > 0); // ID(G3xx) 검증 — 문자열 연성 결합 회피
     if (!tags.length) { doneIdx.push(t.i); return; }
-    const except = new Set(String(r[7] || '').split(',').map(s => s.trim()).filter(String)); // H 예외학생("아직")
-    const clsReached = String(r[6] || '').replace(/\s/g, '').indexOf('도달') === 0;           // G '도달'/'도달함' 허용
+    // [함께한날 막2] 수업 경로는 '연습'까지만 — G열 '도달'·H열 예외 명단이 상태를 못 바꾼다(위 머리말).
+    //   '도달' 기존 행 불변(강등 없음)·'연습' 기존 행도 그대로 — 이 경로가 만드는 것은 «새 연습 행»뿐이다.
     (roster[String(r[0])] || []).forEach(sid => {
       if (!attendedToday.has(sid)) return;
-      const st = (clsReached && !except.has(sid)) ? '도달' : '연습';
       tags.forEach(gid => {
-        const k = sid + '|' + gid, cur = mkey[k];
-        if (!cur) {
-          mkey[k] = { row: 0, st: st }; // 같은 실행 내 중복 태그 방지
-          newRows.push([sid, gid, st, today, st === '도달' ? today : '', 'lesson', now]);
-        } else if (cur.st === '연습' && st === '도달') {
-          cur.st = '도달';
-          if (cur.row > 0) upgrades.push(cur.row);
-          else { const nr = newRows.find(x => x[0] === sid && x[1] === gid); if (nr) { nr[2] = '도달'; nr[4] = today; } }
-        } // '도달' 기존 행은 불변 — 강등 없음
+        const k = sid + '|' + gid;
+        if (mkey[k]) return; // 이미 기록 있음(연습이든 도달이든) — 수업 경로는 안 만진다
+        mkey[k] = { row: 0, st: '연습' }; // 같은 실행 내 중복 태그 방지
+        newRows.push([sid, gid, '연습', today, '', 'lesson', now]);
       });
     });
     doneIdx.push(t.i);
   });
   if (newRows.length) ml.getRange(ml.getLastRow() + 1, 1, newRows.length, 7).setValues(newRows);
-  upgrades.forEach(row => ml.getRange(row, 3, 1, 3).setValues([['도달', ml.getRange(row, 4).getValue() || today, today]])); // 상태·(첫기록일 보존)·도달일
-  upgrades.forEach(row => ml.getRange(row, 7).setValue(now));
+  // [함께한날 막2] 구 상향(upgrades — '연습'→'도달') 적용부는 걷었다 — 수업 경로에 '도달' 쓰기 통로를 남기면
+  //   「막는 척만 하는」 강등이 된다(문이 둘인데 하나만 잠근 꼴). 승격 통로는 masteryApply_ 하나다.
   doneIdx.forEach(i => tp.getRange(i + 2, 12).setValue('전개완료')); // 전개(쓰기) 성공 후 마킹
-  Logger.log('문법 도달 전개: 신규 ' + newRows.length + ' · 상향 ' + upgrades.length + ' · 행 ' + doneIdx.length);
+  Logger.log('문법 연습 전개: 신규 ' + newRows.length + ' · 행 ' + doneIdx.length);
 }
 
 // [v9.36] 수업 시작 출석 1탭(B안) 착지 — attendance_batch 미처리 행의 출석자를 attendance로 전개(parentSweep 편승, 10분).
