@@ -15,6 +15,7 @@
 //   VOICE_LOG_HEADERS 가 여기 사는 이유: 쓰는 쪽(교재연동.js)은 ENGINE_FILES 밖이라, 골격이 참조하는
 //   정본은 엔진 쪽에 있어야 테스트 하네스·filePushOrder 선두 고정과 안 부딪친다(08-15 실측).
 const MASTERY_LOG_HEADERS = ['student_id', 'grammar_id', '상태', '첫기록일', '도달일', '출처', 'updated_at'];
+const SCENE_LOG_HEADERS = ['student_id', '장면번호', '열린날', '조건문형', '그날의문장', 'created_at']; // [함께한날 막1] 장면 원장 — append 전용 · 멱등키 sid|장면번호(설계 §4-4 · BB54 한 칸 덮어쓰기 병의 처방)
 const ACADEMIC_LOG_HEADERS = ['log_id', 'student_id', '날짜', '유형', '값', '비고', '입력자'];
 const VOICE_LOG_HEADERS = ['student_id', '제출일', '미션', '파일URL', 'file_id', 'created_at', '전사', '전사상태', '전사일시', '급수', '미션ID', 'schema_ver']; // [v9.208] schema_ver — A-8 2단계(수집 4시트 중 마지막) · 끝에만 붙인다
 // [v9.241] 골격 밖에 살던 필수 탭 4종의 헤더 정본. 이 넷은 setup·재건이 만들거나(contents·class_stats·
@@ -80,6 +81,7 @@ function sheetSkeleton_() {
     ['상담로그', 상담로그_HEADERS, 수집표식_],
     ['leads', 상담리드_HEADERS],
     ['mastery_log', MASTERY_LOG_HEADERS, 수집표식_], // [v9.36] 문법 도달 로그 — expandMasteryLog_ upsert, 진화 게이트 재료(Glide 비바인딩) · [v9.239] 헤더 정본 공유(손사본 3벌 → 1벌)
+    ['scene_log', SCENE_LOG_HEADERS, 수집표식_], // [함께한날 막1] 장면 원장 — 어느 날 몇째 장면이 열렸나는 그 시점 기록이라 재계산으로 못 되살린다(BB54는 한 칸이라 덮어쓴다)
     [SELF_DECLARE_TAB_, SELF_DECLARE_HEADERS, 수집표식_], // [v9.197] 자기선언 이력 — 학생이 덮어쓰는 3칸(드림한줄·최애·몬스터이름)의 변경만 append(selfDeclareLogNightly_)
     ['attendance_batch', ['날짜','class_name','출석자목록','입력자','created_at','처리상태'], 수집표식_], // [v9.36] 수업 시작 출석 1탭(B안) → expandAttendanceBatch_가 attendance로 전개 · [v9.244] 전개돼도 입력 원본은 여기다
     ['groups', GROUPS_HEADERS], // [v9.80] 조 편성(시즌×반 1벌) — assignGroupsAll이 채운다. 역할·짝·발표자는 여기서 계산만 하고 저장하지 않는다(매 차시 쓰기 0)
@@ -311,6 +313,9 @@ function 수집도달_() {
      * 읽는 자리가 0이라 A-1 ㉢ 행의 「끊겼다」가 여기서도 참이다. 🔑 무엇이 서면 닿는가 =
      * 드림맵·시즌 회고가 이 이력을 맥락으로 읽는 날(지금은 최신 3칸만 profiles 에서 본다). */
     [SELF_DECLARE_TAB_]: { 사유: '읽는 자리가 0이다 — 탭 축소 감시만 이 이름을 안다. 드림맵·시즌 회고가 선언의 «변화»를 맥락으로 읽는 날 닿는다(㉢ 삶 이해의 첫 재료).' },
+    /* [함께한날 막1] 장면 원장 — 신설 시점엔 쓰는 자(밤 장면 판정 · 막5)도 읽는 자(걸어온길 카드 · 막4)도
+     * 아직 안 섰다. 막4·막5 커밋이 이 사유를 소비자로 갈아 적는다(설계 §5 착수 순서 그대로). */
+    'scene_log': { 사유: '막1 신설 — 걸어온길 카드와 밤 장면 판정이 이 원장을 읽는 날 닿는다(막4·막5 · docs/함께한날_설계_v1.md §5). 그 커밋이 이 줄을 소비자로 바꾼다.' },
   };
 }
 
@@ -357,7 +362,9 @@ function 수집도달_() {
  *      리드 원장이라 존재 감시만 받는다. 잔여 도달0 = 상담로그(E1 서는 날) + self_declare_log(재료 0).)
  *   📉 1 (2026-08-16 · 신설 · teacher_gold = 의도된 사람 게이트 · 🚫자동 배치 편입 재제안) */
 function 시트도달상한_() {
-  return { 도달0: 2, 손: 1 };
+  /* 📈 3 (2026-08-27 · 함께한날 막1 — **분모 확대**: `scene_log` 신설. 정당 사유는 분모 확대뿐이라는
+   *    위 규율 그대로다(같은 분모에서 오르면 결함). 막4·막5 에서 소비자가 서면 다시 2 로 내린다.) */
+  return { 도달0: 3, 손: 1 };
 }
 
 /* ===================== [v9.43] 🎴 몬스터·보스 상세 카드 — "눌렀을 때 우와" =====================
