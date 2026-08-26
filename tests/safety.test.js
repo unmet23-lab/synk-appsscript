@@ -1863,6 +1863,67 @@ test('[v9.90] 🛂 면접 기록 폼 — 재실행 안전·익명 회수·활용
   assert.ok(code.includes("ss.getSheetByName('면접기록_응답')"), '워치독 회수 건수 표기가 없다');
 });
 
+test('[v9.268] 🧰 직장 경험 폼 — 재실행 안전·익명 회수·활용 동의·«방해» 칸·워치독 편입', () => {
+  const body = section('function createWorkLogForm()', 'function absenceFormSpec_(');
+  // 재실행 안전 — 면접 폼과 같은 계급(살아 있는 폼은 절대 새로 만들지 않는다 · 배포된 링크·QR 미아 방지)
+  assertOrder(body, ["getState(st, '직장폼ID')", 'shR.getFormUrl()', 'FormApp.openById(exId)', 'FormApp.create(']);
+  assert.ok(body.includes("setState(st, '직장폼ID'") && body.includes("setState(st, '직장폼URL'"), '생성 후 폼 ID·URL 저장이 없다');
+  // 첫 생성의 동시 실행 창 — 둘이 빈 ID를 동시에 읽으면 폼이 둘 생기고 한쪽이 고아가 된다(①배포 검수 c2e5cccfcc26)
+  assert.ok(/LockService\.getScriptLock\(\)/.test(body) && /tryLock\(/.test(body) && /releaseLock\(\)/.test(body), '첫 생성 경합을 막는 스크립트 락이 없다');
+  // ID는 «만든 그 자리에서» 저장한다 — 뒤로 미루면 그 사이 실패가 「폼은 있는데 아무도 모르는」 상태를 남긴다.
+  //   ⚠ 첫 등장으로 재면 안 된다 — 복구 경로에도 같은 setState 가 있어 언제나 앞선다. 생성 블록만 잘라서 본다.
+  const 생성부 = body.slice(body.indexOf('FormApp.create('));
+  assertOrder(생성부, ["setState(st, '직장폼ID'", 'form.setDestination(']);
+  assert.ok(body.includes('새 폼을 만들지 않았습니다'), '폼 열기 실패 시 재생성 차단 경로가 없다');
+  assert.ok(body.includes('연결 폼에서 복구'), 'ID 유실 시 응답 탭에서 복구하는 경로가 없다 — 중복 폼이 생겨 회수가 두 곳으로 갈린다');
+  // 익명 회수 — 이름·연락처가 필수면 「혼났던 경험」(가장 값진 자료)이 안 들어온다
+  assert.ok(!/txt\('이름', true/.test(body) && !/txt\('연락처', true/.test(body), '이름·연락처가 필수다 — 익명 회수가 막힌다');
+  // 자료 활용 동의 = 필수 + 거부 가능. 없으면 모은 기록을 연습 자료로도 AI 학습으로도 못 쓴다(소급 불가)
+  assert.ok(/mc\('자료활용동의', \['네, 동의합니다', '아니요, 원하지 않습니다'\], true/.test(body), '자료 활용 동의가 필수·거부 가능 형태가 아니다');
+  // 핵심 칸 2개 — 실기 회차의 과업과 «방해»의 유일한 원천(설계 §5)
+  assert.ok(/para\('시킨 일 그대로', true/.test(body), "'시킨 일 그대로'가 필수 문항이 아니다(과업의 원천)");
+  assert.ok(/para\('예정에 없던 일이 생긴 적', true/.test(body), "'예정에 없던 일'이 필수 문항이 아니다 — 방해가 없으면 「할 수 있는가」를 못 잰다(설계 §5)");
+  // 채점 축 넷과 1:1 — 축에 안 닿는 문항은 회수율만 먹고, 축이 빠지면 그 축의 채점 기준을 만들 재료가 없다
+  assert.ok(body.includes("para('못 알아들었을 때 어떻게 했나요'"), '채점 축 ①(지시 수용) 칸이 없다');
+  assert.ok(body.includes("para('그때 누구에게 어떻게 알렸나요'"), '채점 축 ②(보고) 칸이 없다');
+  assert.ok(body.includes("para('하지 말라고 들은 것'"), '채점 축 ③(안전·규칙) 칸이 없다');
+  assert.ok(body.includes("para('말투·호칭 때문에 곤란했던 일'"), '채점 축 ④(관계 언어) 칸이 없다');
+  // 학생ID 는 면접 폼과 같은 상수 — 조인 키라 리터럴로 따로 적으면 두 폼이 한 사람으로 안 묶인다
+  // 제목은 면접폼과 «같은 상수»(조인 키) · 안내는 이 폼 전용 — 배포처에 학부모·지인이 있어 자녀 ID를 적을 여지가 있다(①배포 검수 41a05e993ae4)
+  assert.ok(body.includes('txt(INTERVIEW_SID_TITLE, false, WORK_SID_HELP)'), '학생ID 제목이 면접폼과 같은 상수가 아니거나 이 폼 전용 안내를 안 쓴다');
+  assert.ok(/const WORK_SID_HELP = '[^']*자녀·지인의 번호는 적지 마세요/.test(code), '학생ID 안내에 「자녀·지인 번호를 적지 마라」가 없다 — 남의 경험이 그 학생 궤적으로 조인된다');
+  assert.ok(body.includes('linkFormTab_(ss, before, WORK_TAB)'), '응답 탭 연결이 없다');
+  // 「ID가 읽힌다」를 완료로 취급하지 않는다 — setDestination 이 실패했으면 폼은 사는데 제출이 어디에도 안 쌓인다(①배포 검수 257ac0b6fe00)
+  assert.ok(/if \(!shT\)[\s\S]{0,400}exForm\.setDestination\(/.test(body), '기존 폼 경로에 응답 라우팅 복구가 없다 — 탭이 없으면 제출이 영영 안 쌓인다');
+  // 복구한 폼은 제목으로 검증한다 — 탭 이름은 사람이 바꿀 수 있어 엉뚱한 폼이 붙어 있을 수 있다(①배포 검수 695480e24333)
+  assert.ok(/f0\.getTitle\(\)\)\.trim\(\) === WORK_FORM_TITLE/.test(body), '응답 탭에서 복구한 폼을 제목으로 검증하지 않는다');
+  // 표준 탭 이름이 이미 차 있으면 새 폼을 만들지 않고 멈춘다 — 접미사 탭이 되면 회수량이 워치독에서 사라진다(①배포 검수 10a5f2f323f0)
+  assert.ok(/if \(ss\.getSheetByName\(WORK_TAB\)\)[\s\S]{0,600}return mT;/.test(body), '탭 이름 충돌 시 생성을 멈추는 가드가 없다');
+  // 탭이 «이 폼의» 탭인지 대조한다 — 옛 탭·재생성된 탭이면 제출처와 워치독이 갈라진다(①배포 검수 0b240aac65cc)
+  assert.ok(/shT\.getFormUrl\(\)[\s\S]{0,60}indexOf\(exForm\.getId\(\)\)/.test(body), '응답 탭이 그 폼의 것인지 대조하지 않는다');
+  /* 「만들다 만 폼」을 완성으로 보고하지 않는다(①배포 검수 d9047521dc41) — ID 는 폼을 만든 다음 줄에서
+   * 적으므로(고아 방지) 문항을 붙이는 도중 끊기면 「ID 는 있는데 문항이 빠진 폼」이 남는다.
+   * 그래서 완료 표식이 «맨 마지막»에 찍히고, 기존 폼 경로가 그 표식을 확인한다. 둘 다 있어야 짝이 산다. */
+  assert.ok(/getState\(st, '직장폼완료'\)\.val \|\| ''\) !== 'y'/.test(body), '기존 폼 경로가 완료 표식을 확인하지 않는다 — 문항이 빠진 폼을 완성으로 보고한다');
+  /* 검증 «순서»가 곧 판정이다(①배포 검수 9675a3471a43·132ede0b00a2): ①이게 그 폼인가(제목) ②완성됐나(표식)
+   * ③탭이 붙었나(라우팅). 완성을 먼저 안 보면 «문항이 빠진 폼»에 탭만 달아 놓고 「복구했다」고 보고한다. */
+  const 기존경로 = body.slice(body.indexOf('const exForm = FormApp.openById(exId);'));
+  assertOrder(기존경로, ['exForm.getTitle()).trim() !== WORK_FORM_TITLE', "getState(st, '직장폼완료')", 'const shT = ss.getSheetByName(WORK_TAB)']);
+  // 워치독도 「이름이 같은 탭」을 그 폼의 탭으로 믿지 않는다(①배포 검수 b073a11c3a3e)
+  assert.ok(/shWk\.getFormUrl\(\)[\s\S]{0,40}indexOf\(wkId\)/.test(code), '워치독이 응답 탭과 폼의 연결을 대조하지 않는다 — 갈아 끼워진 탭의 행을 직장 경험으로 센다');
+  // ID 가 없으면 «검증 못 한 것»이지 정상이 아니다 — 세면 옛 탭의 행이 그럴듯한 회수량으로 찍힌다(①배포 검수 12f7d19f598f)
+  assert.ok(/if \(shWk && !wkId\)[\s\S]{0,400}행 수를 세지 않았습니다/.test(code), '직장폼ID 가 없을 때 워치독이 미검증으로 표시하지 않는다');
+  // create 에 «체이닝을 붙이지 않는다» — 체인 안에서 실패하면 ID 저장 줄에 도달하지 못해 폼이 고아가 된다(①배포 검수 e21f3cec0b41)
+  assert.ok(/FormApp\.create\(WORK_FORM_TITLE\);\s/.test(body), 'FormApp.create 에 설정 체인이 붙어 있다 — 체인 실패 시 폼 ID 를 못 적는다');
+  // 제목은 고유하지 않다 — 복사본·동명 폼을 거르려면 «이 폼을 이 폼이게 하는» 필수 두 칸까지 본다(①배포 검수 728e50c7d939)
+  assert.ok(/indexOf\('시킨 일 그대로'\) !== -1 && t0\.indexOf\('예정에 없던 일이 생긴 적'\) !== -1/.test(body), '복구 경로가 문항 서명을 검증하지 않는다 — 제목만 같은 남의 폼이 데이터 소스가 된다');
+  const 생성끝 = body.slice(body.indexOf('FormApp.create('));
+  assertOrder(생성끝, ['linkFormTab_(ss, before, WORK_TAB)', "setState(st, '직장폼완료', 'y')"]);
+  // 워치독 — 폼 생존 + 회수량(설계 준비도)
+  assert.ok(code.includes("['직장폼ID', '직장 경험 폼(VR 직업체험 0단계)'"), '워치독 폼 생존 큐에 직장폼이 없다');
+  assert.ok(code.includes("ss.getSheetByName('직장기록_응답')"), '워치독 회수 건수 표기가 없다');
+});
+
 // ── [v9.83] 💰 포인트 경제 ─────────────────────────────────────────────────────
 // 이 세 테스트가 존재하는 이유: v9.83 이전의 결함은 "누가 숫자를 잘못 썼다"가 아니라
 //   **지급 단가가 10곳에 흩어져 있어 아무도 총합을 볼 수 없었다**는 것이다(경로 6개가 늘도록 실측 2배 인플레).
