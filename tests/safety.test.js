@@ -661,12 +661,12 @@ test('[v9.54] 학부모 하이라이트는 쿼터 소진 시 월 마커를 미�
   assert.ok(morning.includes("safeRun('parentHighlightsRetry', parentHighlightsMail_)"), '아침 배치 재시도 편입 누락');
 });
 
-test('[v9.54] 진화 배너 내레이터는 실제 단계명(mon.stage)을 쓴다 — 범위 밖 r[18] 금지', () => {
-  const idx = code.indexOf('NARRATE_EVO, id + todayYmd0');
-  assert.notEqual(idx, -1, '진화 배너 내레이터 호출부를 찾지 못함');
+test('[함께한날 막4] 장면 내레이터(구 진화 배너)는 실데이터를 쓴다 — 범위 밖 r[18] 금지', () => {
+  const idx = code.indexOf('NARRATE_SCENE, id + todayYmd0');
+  assert.notEqual(idx, -1, '장면 내레이터 호출부를 찾지 못함');
   const seg = code.slice(idx, idx + 400);
-  assert.ok(seg.includes('mon.stage'), '{m} 슬롯은 mon.stage여야 한다');
-  // pfData는 15열(인덱스 0~14)만 읽는다 — r[18]은 상시 undefined라 항상 "몬스터"로 나오던 v9.50·B1 결함
+  assert.ok(seg.includes('daysNow'), '{d} 슬롯은 함께한 날 실값(daysNow)이어야 한다');
+  // pfData는 15열(인덱스 0~14)만 읽는다 — r[18]은 상시 undefined라 항상 폴백이 나오던 v9.50·B1 결함
   assert.equal(코드만(seg).includes('r[18]'), false);
 });
 
@@ -1658,7 +1658,7 @@ test('[08-27 유호 지시] 🚫 전교 순위표가 되살아나지 않는다 �
   assert.ok(code.includes("'구랭킹보드_비움'"), 'DO119 열 예약이 사라졌다 — 뒤 블록이 이 자리를 점거한다');
 
   // R열 「월간랭킹」도 빈 칸으로 간다 — 이 카드가 그 열의 유일한 소비자였다(08-27 실측).
-  assert.ok(code.includes("return [t, mPts, '', mon.stage"), 'R열에 순위가 다시 쓰인다');
+  assert.ok(code.includes("return [t, mPts, '', isStu9 ? sceneIdx"), 'R열에 순위가 다시 쓰인다(셋째 원소가 빈 칸이 아니다)');
 
   assertOrder(section('const csLast = cs.getLastRow()', 'writeIfChanged(cs, 2, 1, csOut)'),
     ['cs.getMaxColumns() < 16', 'clearContent()']); // 폭 보장이 유령 클리어보다 먼저

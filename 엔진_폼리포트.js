@@ -1830,7 +1830,7 @@ function runReportCards_() {
 
   const pf = ss.getSheetByName('profiles');
   if (!pf || pf.getLastRow() < 2) return; // [v8.2]
-  const w = Math.min(pf.getLastColumn(), 74); // [v9.19] BQ(69)까지 필요 · 열 부족 시 안전 클램프
+  const w = Math.min(pf.getLastColumn(), 81); // [v9.19→함께한날 막4] CC81(맞힌말수)까지 — 카드가 「함께한 날·맞힌 말」을 싣는다
   const pfData = pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues();
   const students = pfData.filter(r => r[0] && r[3] === 'student');
   const logsById = readAcademicLogs_(ss, tz); // [v9.19] academic_log — 급수변화·모의 점수 차트
@@ -2008,10 +2008,10 @@ function exportSlidePng(presId, pageId) {
  * 메시지·코멘트는 항상 따뜻·희망(하락/유지도 '다지는 시간'으로 리프레이밍). */
 
 // contents(type=monster) 단계명 → 이미지URL
-function monsterImgMap_(ss) {
+function monsterImgMap_(ss) { // [함께한날 막4] 이름은 그대로(소비자 둘) — 내용은 «가이드» 이름→이미지다
   const ct = ss.getSheetByName('contents'), map = {};
   if (ct && ct.getLastRow() >= 2) ct.getRange(2, 1, ct.getLastRow() - 1, 6).getValues().forEach(r => {
-    if (r[1] === 'monster' && r[2]) map[String(r[2])] = String(r[4] || '');
+    if (r[1] === 'guide' && r[2]) map[String(r[2])] = String(r[4] || '');
   });
   return map;
 }
@@ -2079,18 +2079,23 @@ function reportCardData_(r, logs, monMap, now) {
   const schSoFar = scheduledSoFar_(type, now);
   const attendCount = Number(r[21]) || 0; // V 이번달출석
   const gaegeun = schSoFar >= 1 && attendCount >= schSoFar;
-  const stage = String(r[18] || '뉴로'), stageNum = Number(r[41]) || 1; // S 단계 · AP 단계번호
+  // [함께한날 막4] 카드의 성장 줄 = 함께한 날 + 내가 맞힌 말(설계 §4-6 — 「스파키 · 2단계」의 자리).
+  //   🔴 「함께한 날」은 성취 블록이 아니라 «사실 눈금»으로만 싣는다 — 시간의 흐름을 성취처럼 배치하면
+  //   학부모가 과장으로 읽는다(설계 §3). 여기 stageText 는 눈금 줄이라 그 금지에 안 걸린다.
+  const guideNm = String(r[54] || '') || '몽글'; // BC 고른가이드(미선택 = 몽글)
+  const daysTogether = Number(r[30]) || 0;       // AE 함께한날
+  const mastered = Number(r[80]) || 0;           // CC 맞힌말수(AI 출처 도달)
   const d = {
     sid: r[0], name: r[1] || r[0], cls: String(r[4] || 'SYNK'), pEmail: String(r[25] || '').trim(),
-    nickname: String(r[40] || '') || stage, // AO 별명 (없으면 단계명)
+    nickname: String(r[40] || '') || guideNm, // AO 애칭 (없으면 고른 가이드 이름)
     levelText: levelText, levelUp: levelUp, fromLv: prevLv, toLv: curLv,
     mockText: (bp != null && !isNaN(bp)) ? String(bp) : '—', hasMock: mocks.length > 0,
     scoreText: (delta == null) ? '—' : (delta > 0 ? '+' + delta : String(delta)), delta: delta,
     attendText: attendCount + '일' + (gaegeun ? ' · 개근' : ''), attendCount: attendCount, gaegeun: gaegeun,
-    stageText: stage + ' · ' + stageNum + '단계',
+    stageText: '함께한 날 ' + daysTogether + ' · 맞힌 말 ' + mastered, // {{몬스터단계}} 마커 이름은 코드 밖(Slides 템플릿)이라 유지 — 라벨 갱신은 유호님 몫(Code.js 「남은 빚」)
     title: String(r[33] || '') || '이달도 화이팅 💪', // AH 대표칭호
     pointsText: (Number(r[16]) || 0) + 'P', // Q 월간포인트
-    monImg: monMap[stage] || '',
+    monImg: monMap[guideNm] || '',
     mockScores: mocks.slice(-5).map(m => Number(m.val) || 0) // 시간순 최근 5개
   };
   d.comment = reportCardComment_(d);

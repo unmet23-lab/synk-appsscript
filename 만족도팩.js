@@ -100,9 +100,31 @@ function MJ_pairPick_(koArr, mnArr, seed) {
   return (mnArr && i < mnArr.length && mnArr[i]) ? mnArr[i] : '';
 }
 
-// 몬스터 한마디 몽골어 미러 — Code.js speak 분기(v9.36 순서)와 1:1로, 한국어(SPEAK)가 고른 것과 같은 인덱스의
-// 몽골어(MN_SPEAK)를 붙인다. 진화 게이트 분기(리터럴 한국어)는 뱅크에 대응이 없어 '' 반환.
-// ⚠ Code.js 분기 순서가 바뀌면 이 함수도 같이 바꿔야 한다 — tests의 분기 순서 동조 테스트가 지킨다.
+/* [함께한날 막4] 가이드 한마디 몽골어 미러 — Code.js sceneSpeak_ 분기와 1:1. 한국어가 고른 것과 같은
+ * 인덱스의 몽골어(MN_GUIDE_SPEAK — 검수 전 '' 자리)를 붙인다. 빈 칸이면 병기를 조용히 생략한다.
+ * ⚠ Code.js sceneSpeak_ 분기 순서가 바뀌면 이 함수도 같은 커밋에서 바꾼다. */
+function MJ_sceneSpeakMirror_(guide, ctx) {
+  try {
+    if (typeof GUIDE_SPEAK === 'undefined' || typeof MN_GUIDE_SPEAK === 'undefined') return '';
+    const seed = ctx.seed;
+    if (guide === '마린') return ctx.sceneToday ? MJ_pairPick_(GUIDE_SPEAK.마린장면, MN_GUIDE_SPEAK.마린장면, seed) : '';
+    if (guide === '까몽') {
+      if (ctx.sceneToday) return MJ_pairPick_(GUIDE_SPEAK.까몽장면, MN_GUIDE_SPEAK.까몽장면, seed);
+      if (ctx.masteredToday) return MJ_pairPick_(GUIDE_SPEAK.까몽맞힘, MN_GUIDE_SPEAK.까몽맞힘, seed);
+      if (ctx.metToday) return MJ_pairPick_(GUIDE_SPEAK.까몽만남, MN_GUIDE_SPEAK.까몽만남, seed);
+      return '';
+    }
+    if (ctx.isBday) return MJ_pairPick_(SPEAK.bday, MN_SPEAK.bday, seed);
+    if (ctx.crownToday) return MJ_pairPick_(SPEAK.crown, MN_SPEAK.crown, seed);
+    if (ctx.sceneToday) return MJ_pairPick_(GUIDE_SPEAK.장면, MN_GUIDE_SPEAK.장면, seed);
+    if (ctx.masteredToday) return MJ_pairPick_(GUIDE_SPEAK.맞힘, MN_GUIDE_SPEAK.맞힘, seed).replace('{f}', ctx.form || '');
+    if (ctx.metToday) return MJ_pairPick_(GUIDE_SPEAK.만남, MN_GUIDE_SPEAK.만남, seed);
+    return MJ_pairPick_(GUIDE_SPEAK.고요, MN_GUIDE_SPEAK.고요, seed);
+  } catch (e) { return ''; }
+}
+
+// [구] 몬스터 한마디 몽골어 미러 — Code.js 구 speak 분기(v9.36)와 1:1이던 것. [함께한날 막4]에서 호출부가
+// 사라졌다(위 MJ_sceneSpeakMirror_ 가 잇는다) — 함수 소각은 막6 에서 SPEAK 구 뱅크와 같이 걷는다.
 function MJ_speakMirror_(ctx) {
   try {
     if (typeof MN_SPEAK === 'undefined' || typeof SPEAK === 'undefined') return '';
