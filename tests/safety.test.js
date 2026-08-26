@@ -265,10 +265,8 @@ test('[v9.40] 공지 헬퍼는 라이브 구 스키마(title_ko/body_ko)를 인�
   assert.ok(noticeBody.includes("'body_ko'"));
   const trBody = section('function translateNotices_(', 'function langColOf_');
   assert.ok(trBody.includes("'title_ko'"));
-  // 리그·월드 정산이 notices 1~3열에 직접 쓰면 구 스키마에서 열이 어긋난다 — addNotice 경유 강제
-  const settle = section('function leagueSettle_()', 'function leagueStoryDaily_()');
-  assert.equal(코드만(settle).includes("ensureSheet(ss, 'notices'"), false);
-  assert.ok(settle.includes('addNotice(ss, nr[0], nr[1])'));
+  // [08-27] 구 「리그 정산이 notices 1~3열에 직접 쓰면…」 검사는 리그 폐지로 과녁이 사라졌다.
+  //   월드 레이드 쪽 같은 규약은 아래 자기 시험이 재고, 여기서는 헬퍼 자체만 본다.
 });
 
 test('[v9.40] calcAll은 숙제·퀴즈·팁 키가 없으면 게이트를 기다리지 않고 즉시 게시한다', () => {
@@ -277,12 +275,17 @@ test('[v9.40] calcAll은 숙제·퀴즈·팁 키가 없으면 게이트를 기�
   assert.ok(body.includes("getState(st, pair[0] + '숙제').row > 0"));
 });
 
-test('[v9.47] 리그 일일 중계는 상수로 꺼져 있고 일요일 결산 경로는 그대로다', () => {
-  assert.ok(code.includes('const LEAGUE_DAILY_CAST = false'));
-  const daily = section('function leagueStoryDaily_()', 'function weeklyFuel_');
-  assert.ok(daily.includes('if (!LEAGUE_DAILY_CAST) return'));
-  const night = section('function nightJobs()', 'function dailyBackupJob()');
-  assert.ok(night.includes("safeRun('leagueSettle', leagueSettle_)")); // 결산(일요일)은 게이트 무관 유지
+test('[08-27 유호 지시 A] 🚫 반 대항 리그가 되살아나지 않는다 — 통째 폐지', () => {
+  // 유호 08-27 「랭킹 시스템은 전부 삭제해줘」 + 「A(리그 통째로 걷는다)」.
+  // 근거 정본: docs/SYNK_철학.md §48(등수·평균 금지) · §177(학부모께 「반 평균도 아이 화면에 두지 않았다」).
+  //   리그 승패 판정이 «반 1인 평균»이라 정본을 정면으로 어기고 있었다.
+  ['function leagueSettle_', 'function leagueStoryDaily_', 'LEAGUE_ON', 'LEAGUE_DAILY_CAST', 'matchupByCls']
+    .forEach(n => assert.ok(!코드정제.includes(n), '리그 조각 「' + n + '」이 되살아났다'));
+  // 🔴 함수를 지우면 «호출부»도 같이 가야 한다 — 안 그러면 밤 배치가 ReferenceError 로 통째로 죽는다.
+  assert.ok(!코드정제.includes("safeRun('leagueSettle'"), '리그 정산 배선이 남았다 — 함수가 없으니 밤 배치가 죽는다');
+  assert.ok(!코드정제.includes("safeRun('leagueStoryDaily'"), '리그 중계 배선이 남았다 — 함수가 없으니 밤 배치가 죽는다');
+  // 레이드는 «남는다» — 같이 하는 재미를 지지 않고 주는 쪽이다. 이 줄이 리그와 함께 걷히는 것을 막는다.
+  assert.ok(code.includes("safeRun('raidFriday'") || code.includes('function raidFriday'), '레이드까지 함께 걷혔다');
 });
 
 test('[v9.47] 영상팩 메일은 SEND_SCENE_PACK 게이트 뒤에서만 발송된다(발간·공지는 게이트 밖)', () => {
@@ -956,7 +959,8 @@ test('[v9.55] 약점 메모 스위프는 수업 전 메일보다 먼저 돈다(�
 test('[v9.56] 월 테마는 「이달의 무대」 — 구 "월 시즌" 표기가 학생 화면에 되살아나지 않는다', () => {
   assert.ok(code.includes("'월의 무대 · '"), '이달의시즌 배너 값은 「N월의 무대 · 이름」 형식');
   assert.equal(코드정제.includes("'월 시즌 · '"), false, '구 표기 부활 금지 — "시즌"은 커리큘럼 8주 트랙 전용(유호 07-24)');
-  assert.ok(code.includes('+ season + "\' 무대"'), '리그 결과 공지도 무대 표기');
+  // [08-27] 구 「리그 결과 공지도 무대 표기」 검사는 과녁이 사라졌다 — 반 대항 리그 폐지(유호 지시 A).
+  //   남은 자리(이달의시즌 배너)는 위 두 줄이 그대로 지킨다.
 });
 
 test('[v9.56] 시즌 패스 트랙 — 입력 셀 정본·형식 검증·미설정 시 통째 생략', () => {
@@ -1875,16 +1879,17 @@ test('[v9.83] 포인트 경제 — 월간 소득 시뮬이 과잠·진화 앵커
   const paths = {
     숙제: PT.숙제 * D, 출석: PT.출석 * D, 첨삭확인: PT.첨삭확인 * D,
     칭찬: PT.칭찬 * 8.7, 인정: PT.인정 * 2.2, 레이드: PT.레이드 * W, // [08-27] 키 왕관 → 인정
-    리그: PT.리그 * W * 0.5, 월드: PT.월드 * 0.5, 개근: PT.개근, 생일: PT.생일 / 12, // [08-27] 키 개근왕 → 개근
+    월드: PT.월드 * 0.5, 개근: PT.개근, 생일: PT.생일 / 12, // [08-27] 키 개근왕 → 개근 · 리그 경로 «삭제»(유호 지시 A · 반 대항 리그 폐지)
     // [v9.147] 기능 압축 — 데이터를 낳는 행동으로 옮긴 두 경로. 상한이 코드에 실제로 걸려 있다:
     //   재작성 = 주 1회(REWRITE_COOLDOWN_DAYS) · 퀴즈응답 = 1일 1회(DAILY_LIMIT)
     재작성: PT.재작성 * W, 퀴즈응답: PT.퀴즈응답 * D
   };
   const hard = Object.keys(paths).reduce((a, k) => a + paths[k], 0); // 열심히 = 전 경로 만점
-  assert.equal(Object.keys(PT).length, 13, 'PT 항목 수가 바뀌었다 — 새 지급 경로를 이 시뮬에 넣고 상한을 다시 판정할 것');
-  /* [v9.147] ⚠ 리그·월드는 시즌 오프(LEAGUE_ON·WORLD_RAID_ON=false)라 **지금은 0P**지만 시뮬에서 빼지 않는다.
+  assert.equal(Object.keys(PT).length, 12, 'PT 항목 수가 바뀌었다 — 새 지급 경로를 이 시뮬에 넣고 상한을 다시 판정할 것'); // [08-27] 13→12 (리그 폐지)
+  /* [v9.147→08-27] ⚠ 월드는 시즌 오프(WORLD_RAID_ON=false)라 지금은 0P 지만 시뮬에서 빼지 않는다 —
    *   상수 한 줄로 되살아나는 경로이고, 그때 상한을 다시 재는 사람이 없으면 인플레가 조용히 복귀한다.
-   *   즉 아래 hard는 「리그·월드를 되살렸을 때」의 보수적 상한이다(실효 소득은 여기서 약 9P 낮다). */
+   *   🔑 리그는 다르다: 08-27 유호 지시 A 로 «통째로 걷혔다»(상수·함수·배선 전부). 되살아날 한 줄이
+   *      없으므로 시뮬에서도 뺀다 — 없는 경로를 상한에 넣으면 상한이 실제보다 후해진다. */
 
   // ① 유호 07-31 기준: 성실한 학생이 과잠(1,700P)에 6개월 안에 닿으면 안 된다
   assert.ok(hard <= 310, '열심히 월 소득 ' + Math.round(hard) + 'P — 상한 310P 초과(포인트가 다시 후해졌다)');
@@ -2385,8 +2390,10 @@ test('[v9.97] 스토리북 월 키 — Date 오염이 멱등 가드를 깨지 �
   assert.ok(heal.includes('ymTextOf_(r[0]'), '중복 그룹핑이 Date 셀을 다른 달로 오인한다');
 
   // 같은 결함이 월키 멱등을 쓰는 시트 전부에 있었다(07-31 실측: 5곳) — 한 곳이라도 구 패턴이면 그 배치가 매달 재실행된다.
-  //   monthly_snapshot=포인트 재지급 경로 · synk_cards=카드 중복 · league_history=기록 중복 · 스토리초안=Claude API 중복 과금.
-  ['monthly_snapshot', 'synk_cards', 'league_history', '스토리초안'].forEach((sheet) => {
+  //   monthly_snapshot=포인트 재지급 경로 · synk_cards=카드 중복 · 스토리초안=Claude API 중복 과금.
+  //   [08-27] league_history 는 뺐다 — 반 대항 리그 폐지로 그 시트에 «쓰는 코드»가 없어졌다(유호 지시 A).
+  //     쓰는 곳이 없으면 월키 오염도 안 난다. 시트 자체는 라이브에 빈 채로 남아 있다.
+  ['monthly_snapshot', 'synk_cards', '스토리초안'].forEach((sheet) => {
     const anchor = code.indexOf("ensureSheet(ss, '" + sheet + "'");
     assert.notEqual(anchor, -1, sheet + ' ensureSheet 호출부를 찾지 못함');
     const near = code.slice(anchor, anchor + 700);

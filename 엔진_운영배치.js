@@ -1262,217 +1262,14 @@ function raidMonday() {
     });
   if (rows.length) rd.getRange(rd.getLastRow() + 1, 1, rows.length, 6).setValues(rows);
 
-  // [v9.1] 반 대항 리그 — 인원 비슷한 반끼리 자동 '제안' (원장이 Glide에서 반만 바꾸면 오버라이드)
-  // [v9.147] 시즌 오프 — LEAGUE_ON=false면 매칭 자체를 만들지 않는다(빈 대진표가 화면에 남으면
-  //   "고장난 리그"로 보인다 — 끄는 것과 고장난 것은 학생 눈에 같아 보이므로 흔적을 안 남긴다).
-  //   레이드 생성(위)은 그대로 — 집단 이벤트 3종 중 레이드만 남기는 것이 이번 압축의 결정이다.
-  if (!LEAGUE_ON) { Logger.log('레이드 생성: ' + rows.length + '개 반 · 리그=시즌 오프'); return; }
-  const lg = ensureSheet(ss, 'league_pairs', ['week','반A','반B','상태','결과']);
-  const hasWk = lg.getLastRow() >= 2 && lg.getRange(2, 1, lg.getLastRow() - 1, 1).getValues()
-    .some(r => String(r[0]) === weekKey);
-  if (!hasWk) {
-    const roster = (cs.getLastRow() < 2 ? [] : cs.getRange(2, 1, cs.getLastRow() - 1, 2).getValues())
-      .filter(r => r[0] && Number(r[1]) >= 1)
-      .sort((a, b) => Number(b[1]) - Number(a[1])); // 인원 내림차순 → 인접 = 규모 유사
-    const pairRows = [];
-    for (let i = 0; i + 1 < roster.length; i += 2) {
-      pairRows.push([weekKey, String(roster[i][0]), String(roster[i + 1][0]), '제안', '']);
-    }
-    if (roster.length % 2 === 1) {
-      pairRows.push([weekKey, String(roster[roster.length - 1][0]), '', '부전', '이번 주 휴식 🏖️']);
-    }
-    if (pairRows.length) lg.getRange(lg.getLastRow() + 1, 1, pairRows.length, 5).setValues(pairRows);
-    Logger.log('리그 매칭 제안: ' + pairRows.length + '건');
-  }
+  /* [08-27 유호 지시 A] 🚫 반 대항 리그를 통째로 걷었다 — 「랭킹 시스템은 전부 삭제해줘」.
+   *   여기 있던 것 = 인원 비슷한 반끼리 자동 짝짓기(league_pairs 제안 행 생성).
+   * 🔑 레이드는 그대로다. 리그와 레이드는 «같이 하는 재미»를 주는 방식이 반대다 —
+   *   리그는 옆 반을 이겨서, 레이드는 옆 반과 «같이» 아직 이름 없는 것에 닿아서.
+   *   그래서 리그를 걷어도 소속감·주간 리듬은 하나도 안 잃는다(레이드가 이미 주간이다).
+   * 근거: 철학 정본 §48 「등수·평균을 어느 화면에도 두지 않는다」 · §177 학부모께
+   *   「반 평균도 아이 화면에 두지 않았습니다」 — 그런데 리그 승패 판정이 «반 평균»이었다. */
   Logger.log('레이드 생성: ' + rows.length + '개 반');
-}
-
-// [v9.1] 반 대항 리그 정산 — 일요일 밤, 1인당 주간평균으로 승패 (인원차 공정 보정)
-function leagueSettle_() {
-  if (!LEAGUE_ON) return; // [v9.147] 리그 시즌 오프 — 호출부(nightJobs safeRun)는 유지하고 여기서 조기 반환(LEAGUE_DAILY_CAST 관례)
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const tz = ss.getSpreadsheetTimeZone();
-  const now = new Date();
-  const mon = new Date(now); mon.setDate(mon.getDate() - ((mon.getDay() + 6) % 7)); // 이번 주 월요일
-  mon.setHours(0, 0, 0, 0); // [v9.34] 일 22시 실행 시 mon이 월요일 22:0x가 되어 월요일 낮 포인트가 최다기여 집계에서 빠지던 결함(raidFriday 2751과 동일 처리)
-  const weekKey = Utilities.formatDate(mon, tz, 'yyyy-MM-dd');
-  const lg = ss.getSheetByName('league_pairs');
-  if (!lg || lg.getLastRow() < 2) return;
-  const cs = ss.getSheetByName('class_stats');
-  const avgOf = {}, memberCls = {};
-  if (cs && cs.getLastRow() >= 2) {
-    cs.getRange(2, 1, cs.getLastRow() - 1, 8).getValues().forEach(r => { if (r[0]) avgOf[String(r[0])] = Number(r[7]) || 0; });
-  }
-  const pf = ss.getSheetByName('profiles');
-  const nameOfL = {}; // [v9.22] profiles 1회 읽기로 memberCls + nameOfL 동시 구축 (중복 읽기 제거)
-  if (pf && pf.getLastRow() >= 2) {
-    pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
-      if (!r[0]) return;
-      nameOfL[r[0]] = r[1] || r[0];
-      if (r[3] === 'student' && r[4]) (memberCls[String(r[4])] = memberCls[String(r[4])] || []).push(r[0]);
-    });
-  }
-  // [v9.2] 반별 최다 기여자 — 양 반 모두 스토리에서 실명 호명 (진 반 배려의 핵심)
-  const clsOfL = {};
-  Object.keys(memberCls).forEach(c => memberCls[c].forEach(sid => clsOfL[sid] = c));
-  const topOf = {};
-  const plL = ss.getSheetByName('point_logs');
-  if (plL && plL.getLastRow() >= 2) {
-    const perSid = {};
-    plL.getRange(2, 1, plL.getLastRow() - 1, 6).getValues().forEach(r => {
-      const sid = r[1], pts = Number(r[2]) || 0, d = r[5];
-      if (!sid || !d || !clsOfL[sid]) return;
-      const dd = asDate_(d);
-      if (dd < mon) return;
-      if (pts > 0 || String(r[3] || '').indexOf('정정') > -1) perSid[sid] = (perSid[sid] || 0) + pts;
-    });
-    Object.keys(perSid).forEach(sid => {
-      const c = clsOfL[sid];
-      if (!topOf[c] || perSid[sid] > topOf[c].d) topOf[c] = { n: nameOfL[sid] || sid, d: perSid[sid] };
-    });
-  }
-  const rsL = ensureSheet(ss, 'raid_story', ['date','class_name','유형','제목','스토리']);
-  const todayL = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
-  const storyRows = [];
-  function topLine(c) { const t = topOf[c]; return t ? t.n + josa(t.n, '이', '가') + ' ' + t.d + ' 데미지로 반을 이끌었다' : '모두가 조용히 힘을 모은 한 주'; }
-
-  const data = lg.getRange(2, 1, lg.getLastRow() - 1, 5).getValues();
-  const winRows = []; const noticed = 0; // [08-27] 리그 전교 공지 폐지 — 언제나 0이다(로그 줄이 「안 났다」를 말하게 남긴다)
-  const resUpd = [], noticeRows = []; // [v9.34] E열 마킹·공지를 지급 뒤로 지연 — 마킹 선행 시 크래시로 +5P 영구 유실(멱등 게이트가 재시도 차단)되던 결함
-  data.forEach((r, i) => {
-    if (String(r[0]) !== weekKey || String(r[3]) === '부전' || String(r[4] || '')) return; // 이번 주 · 미정산만 (멱등)
-    const a = String(r[1] || ''), b = String(r[2] || '');
-    if (!a || !b) return;
-    const av = avgOf[a] || 0, bv = avgOf[b] || 0;
-    let res, winner = '';
-    if (av === bv) res = '무승부 ' + av + ' : ' + bv;
-    else { winner = av > bv ? a : b; res = winner + ' 승 (' + Math.max(av, bv) + ' : ' + Math.min(av, bv) + ')'; }
-    resUpd.push([i, res]);
-    // [v9.2] 양 반 모두에게 서사 — '패배'라는 단어는 이 시스템에 존재하지 않는다
-    const hi = Math.max(av, bv), lo = Math.min(av, bv);
-    if (!winner) {
-      const tie = '⚖️ ' + a + ' × ' + b + ', 완벽한 균형 ' + av + ' : ' + bv + ' — 시냅스 쌍둥이 반 탄생! 다음 주, 이 균형이 깨지는 순간을 지켜보라.';
-      storyRows.push([todayL, a, '리그', '⚖️ 무승부 — 쌍둥이 반', tie]);
-      storyRows.push([todayL, b, '리그', '⚖️ 무승부 — 쌍둥이 반', tie]);
-    } else {
-      const loser = (winner === a) ? b : a;
-      // [08-27 유호 지시] 왕관·왕좌를 걷었다 — 「왕관 이런거 제발 없애줘 · 비교하는거 최대한 없애자」
-      storyRows.push([todayL, winner, '리그', '이번 주 가장 꾸준했던 반',
-        winner + ', 1인 평균 ' + hi + '. ' + topLine(winner) +
-        '. 다음 주도 우리 페이스대로.']);
-      const close = hi > 0 && (hi - lo) / hi <= 0.25;
-      if (close) {
-        storyRows.push([todayL, loser, '리그', '🔥 명승부 — 다음 주를 예약하다',
-          '🔥 ' + loser + ', 단 ' + Math.round((hi - lo) * 10) / 10 + ' 차이의 명승부를 만들었다! ' + topLine(loser) +
-          '. 이 리듬이면 다음 주 결과는 아무도 모른다 — 리벤지 매치, 이미 예약됐다 ⏳']);
-      } else {
-        storyRows.push([todayL, loser, '리그', '🌱 사라지지 않는 데미지',
-          '🌱 ' + loser + '의 이번 주 성장은 어디로도 사라지지 않는다 — 전부 우리 캐릭터의 양분이 됐다. ' + topLine(loser) +
-          '. 불씨는 살아있다, 다음 주에 더 크게 타오른다 🔥']);
-      }
-    }
-    if (winner && memberCls[winner]) {
-      memberCls[winner].forEach(sid => winRows.push([sid, PT.리그, '리그승리', 'SYSTEM']));
-      /* [08-27 · codex ①검수 caafe42048a9·225db83a4b2b] 🚫 «전교 공지»를 걷었다.
-       * 1차 수리에서 반 이름 둘·평균·승패 수치를 걷었는데, codex 2회전이 더 깊은 자리를 짚었다 —
-       *   공지가 승리 반 «이름 하나»만 불러도 전교가 누가 이겼는지 안다. 수치를 지운 것은
-       *   비교를 지운 게 아니라 «비교의 눈금»만 지운 것이었다(유호 08-27 「비교하는거 최대한 없애자」).
-       * ⇒ 전교 공지는 없앤다. 남는 둘은 비교가 아니다:
-       *   ㉠ 포인트 지급 — 「한 일」이지 「이긴 것」이 아니다(옆자리 값이 안 보인다)
-       *   ㉡ raid_story 반별 서사 — 각 반이 «자기 것»만 본다(양 반 모두 받는다 · v9.2)
-       * ⏳ 반 대항 리그 «자체»를 없앨지는 유호님 자리다. 지금은 LEAGUE_ON=false 로 꺼져 있다. */
-    }
-  });
-  // [v9.34] ① 지급(멱등: 이번 주 '리그승리' 기지급자 point_logs 재조회 제외) → ② E열 결과 마킹 → ③ 서사·공지.
-  //   크래시 시 재실행이 안전하게 이어받는 순서 — 지급 전 죽으면 전부 재시도, 지급 후 죽으면 멱등 게이트가 중복 차단.
-  if (winRows.length) {
-    const paidL = {};
-    if (plL && plL.getLastRow() >= 2) {
-      plL.getRange(2, 1, plL.getLastRow() - 1, 6).getValues().forEach(r => {
-        if (String(r[3]) === '리그승리' && r[1] && r[5] && asDate_(r[5]) >= mon) paidL[String(r[1])] = 1;
-      });
-    }
-    const toPayL = winRows.filter(w => !paidL[String(w[0])]);
-    if (toPayL.length) appendPoints(ss, toPayL);
-  }
-  resUpd.forEach(u => lg.getRange(u[0] + 2, 5).setValue(u[1]));
-  if (storyRows.length) rsL.getRange(rsL.getLastRow() + 1, 1, storyRows.length, 5).setValues(storyRows); // [v9.2]
-  // [v9.40] 직접 쓰기 → addNotice — 라이브 notices가 구 스키마(notice_id·title_ko…)면 1~3열 강제 기입이 열을 어긋내던 결함.
-  //   addNotice는 헤더 자동 인식(title/title_ko)이라 어떤 스키마에서도 제자리에 기록되고 번역 스위프도 정상 작동.
-  noticeRows.forEach(nr => addNotice(ss, nr[0], nr[1]));
-  Logger.log('리그 정산: 승리 지급 ' + winRows.length + '명 · 서사 ' + storyRows.length + '건 · 공지 ' + noticed + '건');
-}
-
-// [v9.3] 리그 일일 중계 — 월~토 밤, 각 반의 오늘을 캐스터 톤으로 (아기자기 · 지치지 않게)
-function leagueStoryDaily_() {
-  if (!LEAGUE_DAILY_CAST) return; // [v9.47·A1] 일일 중계 OFF — 일일 전투 리포트와 도배가 겹침(리그는 일요일 결산만). 상수로 재개 가능
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const tz = ss.getSpreadsheetTimeZone();
-  const now = new Date();
-  const mon = new Date(now); mon.setDate(mon.getDate() - ((mon.getDay() + 6) % 7));
-  const weekKey = Utilities.formatDate(mon, tz, 'yyyy-MM-dd');
-  const todayD = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
-  const lg = ss.getSheetByName('league_pairs');
-  if (!lg || lg.getLastRow() < 2) return;
-  const rivalOf = {};
-  lg.getRange(2, 1, lg.getLastRow() - 1, 5).getValues().forEach(r => {
-    if (String(r[0]) !== weekKey || String(r[3]) === '부전') return;
-    const a = String(r[1] || ''), b = String(r[2] || '');
-    if (a && b) { rivalOf[a] = b; rivalOf[b] = a; }
-  });
-  if (!Object.keys(rivalOf).length) return;
-  const cs = ss.getSheetByName('class_stats');
-  const avgD = {};
-  if (cs && cs.getLastRow() >= 2) cs.getRange(2, 1, cs.getLastRow() - 1, 8).getValues()
-    .forEach(r => { if (r[0]) avgD[String(r[0])] = Number(r[7]) || 0; });
-  const pf = ss.getSheetByName('profiles');
-  const clsD = {}, nmD = {};
-  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
-    if (r[0] && r[3] === 'student' && r[4]) { clsD[r[0]] = String(r[4]); nmD[r[0]] = r[1] || r[0]; }
-  });
-  const pl = ss.getSheetByName('point_logs');
-  const dayDmg = {}, perD = {}, hwCnt = {}, 인정D = {}; // [08-27] crownD → 인정D (왕관 낱말 폐지 · 내용은 08-20에 이미 도전·성장으로 갔다)
-  if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
-    const sid = r[1], pts = Number(r[2]) || 0, rs = String(r[3] || ''), d = r[5];
-    if (!sid || !d || !clsD[sid] || !rivalOf[clsD[sid]]) return;
-    const dd = asDate_(d);
-    if (dstr(dd, tz) !== todayD) return;
-    if (pts > 0 || rs.indexOf('정정') > -1) {
-      const c = clsD[sid];
-      dayDmg[c] = (dayDmg[c] || 0) + pts;
-      perD[c] = perD[c] || {}; perD[c][sid] = (perD[c][sid] || 0) + pts;
-      if (pts > 0 && rs === '숙제완료') hwCnt[c] = (hwCnt[c] || 0) + 1;
-      if (pts > 0 && (rs.indexOf('MVP') > -1 || rs.indexOf('도전') > -1 || rs.indexOf('시냅스') > -1 || rs.indexOf('성장') > -1))
-        인정D[c] = nmD[sid] + josa(nmD[sid], '이', '가') + ' ' + (rs.indexOf('MVP') > -1 || rs.indexOf('도전') > -1 ? '🔥 오늘의 도전' : '🌱 오늘의 성장') + '을 해냈다';
-    }
-  });
-  const rsS = ensureSheet(ss, 'raid_story', ['date','class_name','유형','제목','스토리']);
-  const dup = new Set();
-  if (rsS.getLastRow() >= 2) rsS.getRange(2, 1, rsS.getLastRow() - 1, 3).getValues()
-    .forEach(r => { if (String(r[2]) === '리그중계') dup.add(dstr(r[0], tz) + '|' + r[1]); });
-  const outS = [];
-  Object.keys(rivalOf).forEach(c => {
-    if (dup.has(todayD + '|' + c)) return;
-    const rv = rivalOf[c];
-    const my = avgD[c] || 0, op = avgD[rv] || 0, dToday = dayDmg[c] || 0;
-    let topLn = '오늘은 전원이 숨을 고른 날';
-    if (perD[c]) {
-      let bs = '', bd = 0;
-      Object.keys(perD[c]).forEach(s => { if (perD[c][s] > bd) { bd = perD[c][s]; bs = s; } });
-      if (bs) topLn = '오늘의 캐리 ' + nmD[bs] + ' (' + bd + ' 데미지)';
-    }
-    const detail = 인정D[c] ? 인정D[c] : (hwCnt[c] ? '숙제 완료 ' + hwCnt[c] + '명 — 성실의 벽돌이 차곡차곡' : '조용하지만 단단한 하루');
-    let head, tail;
-    const gap = Math.round(Math.abs(my - op) * 10) / 10;
-    if (my > op) { head = '📣 ' + c + ', 평균 ' + my + '로 ' + rv + '(' + op + ')를 ' + gap + ' 리드 중!'; tail = '우리 반 페이스가 좋다 — 내일도 이대로.'; } // [08-27] 왕좌·👑 걷음
-    else if (my === op) { head = '📣 ' + c + ' × ' + rv + ', 평균 ' + my + ' 완벽한 동점!'; tail = '내일 첫 데미지가 균형을 깨뜨린다 ⚖️'; }
-    else if (op > 0 && gap / op <= 0.3) { head = '📣 ' + c + ', ' + rv + '까지 단 ' + gap + '! 숨막히는 추격전!'; tail = '내일 아침, 뒤집힌 스코어를 보게 될지도 🔥'; }
-    else { head = '📣 ' + c + ', 오늘 +' + dToday + ' 적립 — 우리 페이스대로!'; tail = '스코어는 숫자일 뿐, 매일의 데미지가 진짜 근육이다 💪'; }
-    outS.push([todayD, c, '리그중계', '🎙️ 리그 중계석 D' + (Math.floor((now - mon) / 86400000) + 1),
-      head + ' ' + topLn + '. ' + detail + '. ' + tail]);
-  });
-  if (outS.length) rsS.getRange(rsS.getLastRow() + 1, 1, outS.length, 5).setValues(outS);
-  Logger.log('리그 중계: ' + outS.length + '건');
 }
 
 /* [v9.25] 연료 주간집계 헬퍼 — class_fuel을 (반|미션) 주 1회 dedup 합산 (calcAll·raidFriday·raidStoryDaily 3곳 공통).
@@ -1757,20 +1554,13 @@ function todayBoard_(ss) {
         });
         if (items.length) raidB = '<div style="font-size:13px;opacity:.8;padding:12px 0 2px;">⚔️ 이번 주 보스 레이드</div>' + items.join('');
       }
-      let lgB = '';
-      const lgScr = ss.getSheetByName('league_pairs');
-      if (lgScr && lgScr.getLastRow() >= 2) {
-        const rowsL = lgScr.getRange(2, 1, lgScr.getLastRow() - 1, 4).getValues();
-        let wMax = '';
-        rowsL.forEach(rr => { const w6 = rr[0] ? dstr(rr[0], tz) : ''; if (w6 > wMax) wMax = w6; });
-        const cur6 = rowsL.filter(rr => (rr[0] ? dstr(rr[0], tz) : '') === wMax && rr[1] && rr[2]).slice(0, 3);
-        if (cur6.length) lgB = '<div style="font-size:13px;opacity:.8;padding:12px 0 2px;">🏆 이번 주 리그</div>' + cur6.map(rr => '<div style="font-size:15px;padding:2px 0;">' + rr[1] + ' <span style="opacity:.55;">vs</span> ' + rr[2] + '</div>').join('');
-      }
+      /* [08-27 유호 지시 A] 교실 스크린의 「🏆 이번 주 리그」 대진표를 걷었다 — 리그 폐지 동행.
+       *   raid 블록(위)은 그대로 — 레이드는 옆 반과 «겨루는» 게 아니라 «같이» 하는 것이다. */
       const scrHtml = CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:linear-gradient(150deg,#08090C,#262626 60%,#373737);border-radius:20px;padding:22px 24px;color:#fff;">' +
         '<div style="display:flex;justify-content:space-between;align-items:baseline;"><div style="font-size:22px;font-weight:800;">📺 SYNK LIVE</div><div style="font-size:15px;opacity:.85;">' + (now.getMonth() + 1) + '월 ' + now.getDate() + '일 (' + dowNm + ')</div></div>' +
         (stageTxt ? '<div style="font-size:14px;opacity:.9;padding-top:4px;">🎪 ' + stageTxt + '</div>' : '') +
         '<div style="background:rgba(255,255,255,.12);border-radius:14px;padding:10px 14px;margin-top:12px;font-size:17px;font-weight:700;">🕐 ' + nextTxt + ' · 오늘 등원 ' + Object.keys(arr).length + '명</div>' +
-        raidB + lgB +
+        raidB +
         // [v9.200] 교실 스크린 = 대외 집행면 — 구 슬로건 은퇴(철학_리라이팅_장부 §1). 「17」은 부연 없이 내보내지 않는다(문서_지도 §113 조건).
         '<div style="font-size:12px;opacity:.6;padding-top:12px;">SYNK LAB · 정원은 16명, 선생님은 17명입니다</div>' +
         '<div style="font-size:11px;opacity:.45;padding-top:2px;">한 명 한 명에게 나만의 선생님, 교실엔 진짜 선생님</div></div>';
