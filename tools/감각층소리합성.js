@@ -133,7 +133,11 @@ function makePress(rnd, p) {
 //   · 비정수 배음(2.01×·3.02×) — 은은한 맥놀이(생물의 미세 흔들림 · 기계음 아님).
 function makeMurmur(rnd, syllables, opt) {
   opt = opt || {};
-  const GAP = 0.1, TAIL = 0.13; // v4: 음절 사이 숨 고르기 2배 — 재잘거림이 아니라 나긋한 옹알이
+  /* 🔑 간격·치켜·굴림은 «가이드 결»이 바꾸는 손잡이다(기본값은 v5 그대로 = 몽글 판이 안 흔들린다).
+     · 간격 — 음절 사이 숨. 좁히면 재잘거림이 된다
+     · 치켜 — 말끝을 올리는 정도. 크면 장난스러운 물음표가 붙는다
+     · 굴림 — 음절 안에서 음이 한 번 출렁인다. 「삐딱함」이 여기서 난다 */
+  const GAP = (opt.간격 ?? 1) * 0.1, TAIL = 0.13; // v4: 음절 사이 숨 고르기 2배 — 재잘거림이 아니라 나긋한 옹알이
   const segs = [];
   let total = 0;
   for (let si = 0; si < syllables.length; si++) {
@@ -152,7 +156,9 @@ function makeMurmur(rnd, syllables, opt) {
       const t = i / sn;
       let f = s.y.f0 + (s.y.f1 - s.y.f0) * t;
       if (i < grace) f = s.y.f0 * (0.78 + 0.22 * i / grace);
-      if (s.y.flick && t > 0.85) f *= 1 + 0.08 * ((t - 0.85) / 0.15); // v5: 말끝 살짝 치켜 — 상승 억양=상큼
+      if (s.y.flick && t > 0.85) f *= 1 + 0.08 * (opt.치켜 ?? 1) * ((t - 0.85) / 0.15); // v5: 말끝 살짝 치켜 — 상승 억양=상큼
+      /* 굴림 — 음절 한가운데서 음이 한 번 출렁인다. 0 이면 v5 원판과 «바이트가 같다» */
+      if (opt.굴림) f *= 1 + opt.굴림 * Math.sin(2 * Math.PI * 1.6 * t) * Math.min(1, t * 4);
       target[s0 + i] = f;
       const atk = opt.atk || 0.22, relS = 0.44; // v5: 첫입은 톡(크리스프), 꼬리는 둥글게(v4) — 상큼의 절반은 어택이다
       let e = 1;
@@ -265,8 +271,16 @@ function main() {
    *   «유호님 귀 검수»로 지정돼 있다 — 확정이 아니라 들어 보시라고 내는 판이다. */
   const 가이드결 = {
     몽글: { 피치: 1, 길이: 1, lp: 1, peak: 1 },
-    /* 낮고(0.72×) 짧게(0.82×) · 밝기를 내려 «헬멧 안» 쪽으로(lp 0.72×) · 조금 작게(peak 0.88×) */
-    까몽: { 피치: 0.72, 길이: 0.82, lp: 0.72, peak: 0.88 },
+    /* 🔴 까몽 = **개구쟁이**(유호 지시 08-26 「까망이 목소리는 옹알이보다 개구쟁이 느낌으로」).
+     *
+     * 첫 판(피치 0.72 · lp 0.72)은 가이드 정본의 「낮고 짧은」을 글자 그대로 옮긴 것이었는데,
+     * **낮추고 어둡게 하면 장난기가 아니라 «시무룩»이 난다.** 장난기는 낮은 데서 오지 않는다:
+     *   · 짧고 빠르게(길이 0.70 · 간격 0.5) — 재잘거리듯
+     *   · 말끝을 확 치켜(치켜 2.6) — 물음표가 붙은 것처럼 삐딱하게
+     *   · 음절 안에서 한 번 출렁(굴림 0.045) — 「히히」 하는 그 흔들림
+     *   · 밝기는 **안 내린다**(lp 1.0) — 어두워지면 장난기가 먼저 죽는다
+     *   · 피치는 살짝만 낮춘다(0.86) — 몽글과 다른 몸이되 우울하지 않을 만큼 */
+    까몽: { 피치: 0.86, 길이: 0.7, lp: 1, peak: 0.92, 간격: 0.5, 치켜: 2.6, 굴림: 0.045 },
   };
   const gIdx = process.argv.indexOf('--가이드');
   const 가이드 = gIdx === -1 ? '몽글' : process.argv[gIdx + 1];
@@ -283,9 +297,17 @@ function main() {
     const syl = 결.피치 === 1 && 결.길이 === 1
       ? m.syl
       : m.syl.map((y) => ({ ...y, ms: Math.round(y.ms * 결.길이), f0: y.f0 * 결.피치, f1: y.f1 * 결.피치 }));
-    const opt = 결.lp === 1 && 결.peak === 1
+    const 기본결 = 결.lp === 1 && 결.peak === 1 && !결.간격 && !결.치켜 && !결.굴림;
+    const opt = 기본결
       ? m.opt
-      : { ...(m.opt || {}), lp: Math.round((m.opt?.lp || 3400) * 결.lp), peak: (m.opt?.peak || 0.6) * 결.peak };
+      : {
+          ...(m.opt || {}),
+          lp: Math.round((m.opt?.lp || 3400) * 결.lp),
+          peak: (m.opt?.peak || 0.6) * 결.peak,
+          간격: 결.간격,
+          치켜: 결.치켜,
+          굴림: 결.굴림,
+        };
     const x = makeMurmur(rnd, syl, opt);
     const file = path.join(mDir, `murmur_${i + 1}.wav`);
     const info = writeWav(file, x);
