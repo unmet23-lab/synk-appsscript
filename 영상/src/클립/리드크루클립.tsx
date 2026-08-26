@@ -17,6 +17,7 @@ import { 본문스택, 웨이트, 트래킹, 몽골어보정 } from "../킷/폰�
    (카운트다운 릴이 서면서 같은 값을 두 번 적을 뻔했다 · 08-26). */
 import {
   연출,
+  로고,
   그늘,
   그레인,
   비네트,
@@ -257,12 +258,12 @@ export const 리드크루클립: React.FC<{ 클립: 클립 }> = ({ 클립 }) => 
       </AbsoluteFill>
 
       {/* ── 로고 — 30초 브랜드 영상에 브랜드 마크가 0회였다 ────────────
-          🔑 반드시 «민라이트»다. DESIGN.md §4「크기가 표현을 정한다 — 문턱 180px,
-             그 아래는 민판(필터 0)」. 150px 에서 펠트판은 규율 위반이고, 펠트 예산
-             (한 지면 1~2점)은 몽글이 이미 쓰고 있다.
+          🔴 08-26 까지 이 자리가 «민라이트 150px» 였다. 그건 킷이 「예전 민벡터 표현은 기본에서
+             은퇴」로 닫은 판이고, 유호님이 화면에서 잡아 주셨다. 판과 크기의 정본은 `연출.로고`
+             하나이고 까닭은 거기 적혀 있다(자리가 먼저고 크기는 거기서 나온다).
           🔑 자리는 실측으로 비어 있는 위 띠다 — 자막 앵커가 y470 부터라 안 겹친다. */}
-      <AbsoluteFill style={{ justifyContent: "flex-start", alignItems: "center", paddingTop: 300 }}>
-        <Img src={staticFile("로고/민라이트.svg")} style={{ width: 150 }} />
+      <AbsoluteFill style={{ justifyContent: "flex-start", alignItems: "center", paddingTop: 236 }}>
+        <Img src={staticFile(로고.파일)} style={{ width: 로고.폭 }} />
       </AbsoluteFill>
 
       {/* 실땀 — 모든 펠트 오브젝트의 테두리. 지면 아래를 한 줄로 여민다 */}

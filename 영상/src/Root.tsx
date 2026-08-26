@@ -1,6 +1,7 @@
 import React from "react";
 import { Composition } from "remotion";
 import { 폰트시험 } from "./시험/폰트시험";
+import { 로고시험 } from "./시험/로고시험";
 import { 리드크루클립 } from "./클립/리드크루클립";
 import { 커버 } from "./클립/커버";
 import { 카운트다운 } from "./클립/카운트다운";
@@ -67,6 +68,9 @@ export const Root: React.FC = () => {
           />
         </React.Fragment>
       ))}
+
+      {/* 로고 갈래 눈검사 — 「어느 판을 쓰나」를 화면에서 고른다(폰트시험과 같은 성격의 상시 검사판) */}
+      <Composition id="logo-check" component={로고시험} durationInFrames={1} {...세로} />
 
       <Composition
         id="font-check-loaded"
