@@ -38,9 +38,24 @@ C:\Users\q1212\Documents\SYNK-appsscript\docs\홍보물\BGM\
 
 ## 지금 들어 있는 것
 
+유호님이 후보 목록에서 **①과 ⑤를 지목**하셔서 받아 왔습니다(08-26).
+
 | 파일 | 곡·만든 이 | 받은 곳 | 쓰는 조건 |
 |---|---|---|---|
-| _(비어 있음)_ | | | |
+| `01_Joyful-Happy-Upbeat_alex-morgan.mp3` | Joyful Happy Upbeat Background Music · alex-morgan | [Pixabay](https://pixabay.com/music/pop-joyful-happy-upbeat-background-music-587376/) | Pixabay Content License · 표기 요구 없음 |
+| `05_Toddler-Kids_alex-morgan.mp3` | Toddler Kids Background Music · alex-morgan | [Pixabay](https://pixabay.com/music/happy-childrens-tunes-toddler-kids-background-music-583241/) | Pixabay Content License · 표기 요구 없음 |
+
+**실측(08-26)** — 옛 깔림·지은 곡과 «같은 잣대»로 잰 것:
+
+| | 길이 | 라우드니스 | 레벨 변동계수 | 온셋 | 가장 꽉 찬 30초 |
+|---|---|---|---|---|---|
+| 옛 `BGM_개정판_깔림만.wav` | 26.7초 | −15.7 LUFS | 0.308 | 1.13개/초 | — |
+| 지은 곡 `BGM_경쾌` | 30.0초 | −15.5 LUFS | 0.640 | 3.00개/초 | 0초(처음부터 다 나온다) |
+| **① Joyful** | 39.8초 | **−8.9 LUFS** | 0.503 | **3.46개/초** | **6.0초부터** |
+| **⑤ Toddler** | 54.9초 | **−9.8 LUFS** | **0.620** | **3.62개/초** | **21.0초부터** |
+
+⚠ 받은 둘은 지은 곡보다 **6~7dB 크다.** 그대로 얹으면 몽글 옹알이를 덮으므로 볼륨을 낮춰 맞춘다 —
+①은 0.26 · ⑤는 0.28 에서 옹알이가 음악보다 8.2dB 위에 선다(실측). 그 값이 `연출.배경음악.볼륨` 이다.
 
 ---
 
