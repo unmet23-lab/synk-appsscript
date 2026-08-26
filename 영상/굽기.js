@@ -52,14 +52,65 @@ if (인자.includes('--목록')) {
   process.exit(종료 === 0 ? 0 : 1);
 }
 
+/* ── `--전량` — 대본이 세운 편을 «전부» 굽는다 ────────────────────────────
+   45편이면 45번 손으로 치던 자리다. 한 편이 실패해도 멈추지 않고 끝까지 굽고 마지막에 센다 —
+   중간에 죽으면 「몇 편이 됐나」를 아무도 모르고, 그 침묵이 성공처럼 읽힌다. */
+if (인자.includes('--전량')) {
+  const 읽기 = spawnSync(process.execPath, [path.join(방, '대본읽기.js')], { encoding: 'utf8', shell: false });
+  process.stdout.write(읽기.stdout || '');
+  if (읽기.status !== 0) {
+    process.stderr.write(읽기.stderr || '');
+    console.error('🔴 대본 검사가 막았다 — 한 편도 굽지 않는다.');
+    process.exit(1);
+  }
+  const 생성 = path.join(방, 'src', '클립', '생성', '대본클립들.ts');
+  const 목록 = JSON.parse(fs.readFileSync(생성, 'utf8').match(/= (\[[\s\S]*\]);/)[1]);
+  const 실패 = [];
+  for (const [i, c] of 목록.entries()) {
+    console.log(`\n── [${i + 1}/${목록.length}] ${c.id} — ${c.제목}`);
+    const r = spawnSync(process.execPath, [__filename, c.id], { encoding: 'utf8', shell: false, stdio: 'inherit' });
+    if (r.status !== 0) 실패.push(c.id);
+  }
+  /* 표지도 같이 — 릴에 «직접 지정»하는 썸네일이라 없으면 플랫폼이 첫 프레임(거의 빈 화면)을 쓴다.
+     정지화라 편당 몇 초다. 여기서 안 구우면 「영상은 열 편인데 표지는 한 편」이 조용히 선다. */
+  for (const c of 목록) {
+    const 표지 = `cover-${c.편}-${c.화}`;
+    const r = spawnSync('npx', ['remotion', 'still', 'src/index.ts', 표지, `out/${표지}.png`], {
+      cwd: 방, encoding: 'utf8', shell: true, maxBuffer: 64 * 1024 * 1024,
+    });
+    if (r.status !== 0 || !fs.existsSync(path.join(산출방, `${표지}.png`))) 실패.push(표지);
+  }
+  console.log(
+    `\n전량 굽기 끝 — 영상 ${목록.length} + 표지 ${목록.length} = ${목록.length * 2}개 중 ` +
+      `성공 ${목록.length * 2 - 실패.length} · 실패 ${실패.length}${실패.length ? ' (' + 실패.join(' ') + ')' : ''}`,
+  );
+  process.exit(실패.length ? 1 : 0);
+}
+
 const 컴포지션 = 인자[0];
 if (!컴포지션) {
   console.error('쓰기: node 영상/굽기.js <컴포지션id> [출력파일명]');
+  console.error('       node 영상/굽기.js --전량      — 대본이 세운 편 전부');
   console.error('  ⚠ 컴포지션 id 는 한글을 못 쓴다(Remotion 규약) — `node 영상/굽기.js --목록` 으로 본다.');
   process.exit(2);
 }
 const 출력 = 인자[1] || `${컴포지션}.mp4`;
 const 출력경로 = path.join(산출방, 출력);
+
+/* ── ⓪ 대본을 «먼저» 다시 읽는다 ─────────────────────────────────────────
+   `src/클립/생성/` 은 산출물이라 대본 md 를 고치면 낡는다. 사람이 「다시 읽기」를 기억할 필요가
+   없게 굽기가 매번 부른다(저장소 상습 함정: 「정본은 고쳤는데 산출물을 안 구웠다」).
+   자막 글 검사(이모지 수·키릴/한글 섞임·소리 배치)도 여기서 같이 돈다 — 실패면 굽지 않는다. */
+const 읽기 = spawnSync(process.execPath, [path.join(방, '대본읽기.js')], {
+  encoding: 'utf8',
+  shell: false,
+});
+process.stdout.write(읽기.stdout || '');
+if (읽기.status !== 0) {
+  process.stderr.write(읽기.stderr || '');
+  console.error('🔴 대본 검사가 막았다 — 굽기를 시작하지 않는다.');
+  process.exit(1);
+}
 
 /* ── ① 자산을 «먼저» 다시 모은다 ─────────────────────────────────────────
    public/ 은 사본이라 정본을 고치면 낡는다. 굽기 직전에 항상 새로 맞춘다. */

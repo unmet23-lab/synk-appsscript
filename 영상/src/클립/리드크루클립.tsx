@@ -11,7 +11,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import type { 클립, 장면 } from "./01_안녕하세요";
+import type { 클립, 장면 } from "./타입";
 import { 지면, 율, 색 } from "../킷/색";
 import { 본문스택, 웨이트, 트래킹, 몽골어보정 } from "../킷/폰트";
 
