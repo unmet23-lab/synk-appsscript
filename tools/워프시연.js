@@ -43,7 +43,7 @@ const 템플릿경로 = path.join(__dirname, 'lib', '워프시연_템플릿.html
 const 기본출력 = (c) => `docs/캐릭터/생명공방_0826/살아움직이는${c}.html`;
 
 /* 자리 이름 → 표정. 값을 늘리려면 템플릿의 IMGS 키도 같이 는다. */
-const 쓰는컷 = { __IMG_BODY__: '본체', __IMG_SHUT__: '눈감음', __IMG_SMILE__: '눈웃음' };
+const 쓰는컷 = { __IMG_BODY__: '본체', __IMG_SHUT__: '눈감음', __IMG_SMILE__: '눈웃음', __IMG_WOW__: '놀람' };
 const 캐릭터 = 인자['캐릭터'] || '몽글';
 const 출력 = path.resolve(뿌리, 인자['출력'] || 기본출력(캐릭터));
 
@@ -161,6 +161,7 @@ const 검사 = {
   '상태는 타이머': () => /setInterval\(/.test(html),
   '4D 깊이층': () => /function 깊이재기/.test(html) && /zArr\[/.test(html) && /S\.시점x \* z/.test(html),
   '빛은 시점에만 반응': () => /빛세기 = [\d.]+ \* S\.입체/.test(html),   // 정지하면 곱이 1 = 사진 그대로
+  '표정층': () => /눈중심/.test(html) && /표정표/.test(html) && /S.ex/.test(html),
   '16MB 이내': () => html.length <= 16 * 1024 * 1024,
   /* 🔴 자리표시자가 하나도 안 남았나 — 08-26 에 값을 치렀다(제목이 「살아 움직이는 몽글」인
    *   까몽 지면). 안 갈린 자리는 «파일이 나고 종료코드 0» 이라 원리상 조용하다. 여기서 센다.
