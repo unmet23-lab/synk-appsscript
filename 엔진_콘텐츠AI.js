@@ -75,6 +75,22 @@ function setupGuides() {
 }
 
 
+/* [함께한날 막7 마감] 구 몬스터 씨앗 «행» 물리 삭제 — setupMonsters 소각(함수)의 짝(데이터).
+ * 코드는 이미 monster type 을 안 읽는다(막6·막7 · 진단 monThr·상세카드는 0행에 안전 — 전수 확인 08-27).
+ * 멱등: 이미 0행이면 0행 삭제. 삭제 전 스냅샷(id:E열이미지)을 반환·로그로 남긴다(설계 문서 끝에도 박혀 있다).
+ * 왜 함수인가: 「비가역 운영 삭제」라 유호님 승인 자리였고, 08-27 유호 「직접 지워줘」로 실행 — 이력에 남긴다. */
+function purgeLegacyMonsterRows_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ct = ss.getSheetByName('contents');
+  if (!ct || ct.getLastRow() < 2) return 'contents 비어 있음 — 삭제 0';
+  const before = ct.getRange(2, 1, ct.getLastRow() - 1, 6).getValues().filter(r => String(r[1]) === 'monster');
+  const snap = before.map(r => String(r[0]) + ':' + String(r[4] || '')).join(' · ');
+  replaceContentType(ss, 'monster', []); // monster type 만 제거 · 나머지 type·번역열 보존(replaceContentType 규약)
+  const msg = 'monster 행 ' + before.length + '개 삭제(스냅샷 ' + before.length + ': ' + snap + ')';
+  Logger.log('[purgeLegacyMonsterRows_] ' + msg);
+  return msg;
+}
+
 /* ===================== [v9.36] 학습추적(W3) — 문법 커리큘럼 정본 (진화 게이트) =====================
  * ⚠️ 유호님·강사 검수 대상 초안 — 문형·설명은 교육 전문 영역, 코드 반영 후에도 교체 자유.
  *    (구 표기 「TOPIK 1~2급 기준 선정」은 낡았다 — 08-12 급수 태그 실측 결과 1~5급에 걸친다. ↓ 태그 절)
