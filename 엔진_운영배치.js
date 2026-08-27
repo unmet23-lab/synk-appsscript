@@ -2661,16 +2661,6 @@ function absenceSection_(wantText) {
  * DIGEST 큐(쿼터 무관)고 학부모 발송은 없다(인앱 배너 BN66 몫) — 쿼터 되돌림이 필요한 발송은 강사 D-1 뿐인데
  * 그건 마커와 무관한 «그날의 상태»(AG33=1)라 되돌릴 마커 자체가 없다. */
 function checkScene() {
-  /* 잠금 — 예약 실행과 손 실행이 겹치면 둘이 같은 「멱등맵→append」 창을 지나 scene_log 에 같은
-   * sid|장면 행이 둘 선다(codex P2 7694bee6 — 시트에는 저장소급 고유키가 없다). selfDeclare 규약 그대로:
-   * 못 잡으면 조용히 0이 아니라 던진다 — safeRun 이 「안 돌았다」를 소리내게. */
-  const lock = LockService.getScriptLock();
-  if (!lock.tryLock(30000)) throw new Error('장면 판정 — 스크립트 잠금 획득 실패(이 밤의 판정을 건너뛴다)');
-  try {
-    checkSceneBody_();
-  } finally { lock.releaseLock(); }
-}
-function checkSceneBody_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const pf = ss.getSheetByName('profiles');
@@ -2678,18 +2668,13 @@ function checkSceneBody_() {
   if (last < 2) return;
   const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
   const thisMonth = today.slice(0, 7);
-  // 전환 판독은 헤더 개명 «앞» — AA27 에 구 몬스터 이름이 남은 첫 회는 발화 없이 원장만 맞춘다
+  /* 전환 판독만 여기서 — 헤더 «개명»은 마커 기록 직전으로 미뤘다(codex P2 fedb767e: 개명 뒤 중간 사망이면
+   * 다음 회차가 구 몬스터 이름을 새 축 값으로 읽는다. 값이 먼저, 이름은 마지막 — calcAll AP1 과 같은 규약). */
   const aaIsScene = String(pf.getRange('AA1').getValue()) === '이전장면';
-  if (pf.getRange('AA1').getValue() !== '이전장면') pf.getRange('AA1').setValue('이전장면');
-  if (pf.getRange('AD1').getValue() !== '마지막발화장면') pf.getRange('AD1').setValue('마지막발화장면');
 
   const w = Math.min(pf.getMaxColumns(), 55);
   const data = pf.getRange(2, 1, last - 1, w).getValues();
   const log = ensureSheet(ss, 'scene_log', SCENE_LOG_HEADERS);
-  const has = {};
-  if (log.getLastRow() >= 2) log.getRange(2, 1, log.getLastRow() - 1, 2).getValues().forEach(r => {
-    if (r[0]) has[String(r[0]).trim() + '|' + (Number(r[1]) || 0)] = 1;
-  });
   // 재료 — 오늘 «직접» 맞힌 문형(조건문형 칸) · 오늘 제출문(그날의문장 칸) · 60일 게이트 해제 판정(마지막 AI 도달일)
   const todayForm = {}, lastAIDone = {};
   {
@@ -2718,7 +2703,7 @@ function checkSceneBody_() {
       });
     }
   }
-  const newAA = [], newAD = [], opened = [], quiet14 = [], gateFreeL = [], addRows = [];
+  const newAA = [], newAD = [], opened = [], quiet14 = [], gateFreeL = [], 후보들 = [];
   const d1ByCls = {};
   let monthMastered = 0; // 「이번 달 우리 학생들이 새로 맞힌 말」 — AI 출처 도달의 이달 합(설계 §3 마지막 줄)
   {
@@ -2738,17 +2723,15 @@ function checkSceneBody_() {
     let adNext = adPrev;
     if (isStu) {
       const prevN = aaIsScene ? (Number(prevRaw) || 0) : nSc; // 전환 첫 회 — 발화 없이 원장만 맞춘다
-      let top = 0;
-      for (let k = prevN + 1; k <= nSc; k++) {
-        if (has[sid + '|' + k]) continue;
-        has[sid + '|' + k] = 1;
-        addRows.push([sid, k, today, todayForm[sid] || '', todaySent[sid] || '', new Date()]);
-        if (k > top) top = k;
+      if (nSc > prevN) 후보들.push({ sid: sid, from: prevN, to: nSc }); // scene_log 기입 후보 — 실제 append 는 아래 잠금 창에서
+      /* 발화 판정은 scene_log «존재»가 아니라 **AD 마커**다(codex P2 004e4ddf) — 기입 뒤 알림 전에 죽으면
+       * 다음 실행이 has 에서 그 장면을 「끝난 것」으로 읽어 알림이 영구 유실되던 자리. 마커는 발송 «뒤»에만
+       * 오르므로(v9.34) 재실행이 알림을 되살린다. 하루 1회 상한 = 가장 높은 장면 하나만. */
+      if (aaIsScene && nSc > adPrev) {
+        opened.push({ id: sid, name: r[1] || sid, n: nSc, form: todayForm[sid] || '' });
+        adNext = nSc;
       }
-      if (top > 0 && top > adPrev) { // 하루 1회 상한 — 가장 높은 장면 하나만 발화
-        opened.push({ id: sid, name: r[1] || sid, n: top, form: todayForm[sid] || '' });
-        adNext = top;
-      }
+      if (!aaIsScene) adNext = nSc; // 전환 회차 — 마커 개시(구 몬스터 이름 잔값을 수로 안 읽는다)
       // 원장 네 블록 재료(설계 §3 — 「이 체계의 안전핀」)
       const afRaw = r[31]; // AF 마지막만남일
       const afYmd = afRaw instanceof Date ? dstr(afRaw, tz) : String(afRaw || '').slice(0, 10);
@@ -2761,8 +2744,30 @@ function checkSceneBody_() {
     newAA.push([aaNext]);
     newAD.push([isStu ? adNext : '']);
   });
-  // 기입(소독 채널 — 그날의문장은 학생이 친 글이다) → 알림 → 마커. 이 순서가 v9.34 의 교훈이다.
-  if (addRows.length) writeIfChanged(log, log.getLastRow() + 1, 1, addRows);
+  /* 기입 → 알림 → 마커(v9.34). 잠금은 **기입 창만** 감싼다 — 넓게 잡으면 그 안의 adminMail 이 같은
+   * 비재진입 잠금을 재획득하다 죽는다(codex P1 ebee661a·1c371cb8 — selfDeclare 주석이 경고한 그 함정).
+   * 멱등맵(has) 로드와 append 가 같은 잠금 안이라 동시 실행 중복 append 도 막힌다(P2 7694bee6). */
+  {
+    const lock = LockService.getScriptLock();
+    if (!lock.tryLock(30000)) throw new Error('장면 원장 기입 — 스크립트 잠금 획득 실패(이 밤의 기입을 건너뛴다 · 알림·마커도 안 나간다)');
+    try {
+      const has = {};
+      if (log.getLastRow() >= 2) log.getRange(2, 1, log.getLastRow() - 1, 2).getValues().forEach(r => {
+        if (r[0]) has[String(r[0]).trim() + '|' + (Number(r[1]) || 0)] = 1;
+      });
+      const addRows = [];
+      후보들.forEach(c => {
+        for (let k = c.from + 1; k <= c.to; k++) {
+          if (has[c.sid + '|' + k]) continue;
+          has[c.sid + '|' + k] = 1;
+          addRows.push([c.sid, k, today, todayForm[c.sid] || '', todaySent[c.sid] || '', new Date()]);
+        }
+      });
+      // 소독 채널 — 그날의문장은 학생이 친 글이다
+      if (addRows.length) writeIfChanged(log, log.getLastRow() + 1, 1, addRows);
+      Logger.log('장면 원장: 새 기입 ' + addRows.length + '행');
+    } finally { lock.releaseLock(); }
+  }
   // 반 태깅 14일 끊긴 반(weekly_topics 최근 입력일)
   const staleCls = [];
   {
@@ -2775,16 +2780,10 @@ function checkSceneBody_() {
       if (Math.floor((new Date(today) - new Date(lastByCls[c])) / 86400000) >= 14) staleCls.push(c + ' (마지막 ' + lastByCls[c] + ')');
     });
   }
-  if (opened.length || quiet14.length || gateFreeL.length || staleCls.length) {
-    const L = [];
-    if (opened.length) L.push('🧶 새 장면이 열린 크루 ' + opened.length + '명\n' + opened.map(o => '· ' + o.name + ' — 장면 ' + o.n + (o.form ? ' (' + o.form + ')' : '')).join('\n'));
-    if (quiet14.length) L.push('🕯️ 2주째 만남이 없는 크루 ' + quiet14.length + '명\n' + quiet14.map(q => '· ' + q.name + ' (마지막 ' + q.d + ')').join('\n'));
-    if (gateFreeL.length) L.push('🔴 문법 도달이 60일 끊겨 게이트가 해제된 크루 ' + gateFreeL.length + '명 — 학생 잘못이 아닌 이유(채점 통로·수업)를 먼저 보세요\n' + gateFreeL.map(n => '· ' + n).join('\n'));
-    if (staleCls.length) L.push('📋 반 태깅이 14일 끊긴 반 ' + staleCls.length + '개\n' + staleCls.map(c => '· ' + c).join('\n'));
-    L.push('이번 달 우리 학생들이 새로 맞힌 말 ' + monthMastered + '개');
-    adminMail('[SYNK] 🧶 함께한 날 — 새 장면 ' + opened.length + '명', L.join('\n\n'));
-  }
-  // 강사 D-1 — 반별 «상위 3명»까지만(알림 물량 방어 · 설계 §4-4). 쿼터로 못 나가면 내일 상태가 다시 알린다.
+  /* 강사 D-1 — 반별 «상위 3명»까지만(알림 물량 방어 · 설계 §4-4). 원장 메일보다 «먼저» 돈다 —
+   * 쿼터로 못 나간 반은 AG33 이 내일 0 이 되어 재시도 자리가 없으므로(codex P2 e7787886) 그 목록을
+   * 원장 다이제스트(DIGEST 큐 — 쿼터 무관)에 실어 정보만은 사람에게 닿게 한다. */
+  const d1Missed = [];
   {
     const emap = teacherEmailMap_(ss);
     Object.keys(d1ByCls).forEach(cls => {
@@ -2792,12 +2791,26 @@ function checkSceneBody_() {
       (emap.byClass[cls] || []).forEach(t => {
         if (quotaOk(1)) MailApp.sendEmail(t.email, '[SYNK] 🧶 ' + cls + ' — 내일 새 장면 ' + lines.length + '명',
           '내일 가이드가 한 걸음 다가가는 크루입니다. 수업에서 살짝 반겨 주세요.\n\n' + lines.join('\n'));
+        else d1Missed.push(cls + '(' + lines.length + '명)');
       });
     });
   }
+  if (opened.length || quiet14.length || gateFreeL.length || staleCls.length || d1Missed.length) {
+    const L = [];
+    if (opened.length) L.push('🧶 새 장면이 열린 크루 ' + opened.length + '명\n' + opened.map(o => '· ' + o.name + ' — 장면 ' + o.n + (o.form ? ' (' + o.form + ')' : '')).join('\n'));
+    if (quiet14.length) L.push('🕯️ 2주째 만남이 없는 크루 ' + quiet14.length + '명\n' + quiet14.map(q => '· ' + q.name + ' (마지막 ' + q.d + ')').join('\n'));
+    if (gateFreeL.length) L.push('🔴 문법 도달이 60일 끊겨 게이트가 해제된 크루 ' + gateFreeL.length + '명 — 학생 잘못이 아닌 이유(채점 통로·수업)를 먼저 보세요\n' + gateFreeL.map(n => '· ' + n).join('\n'));
+    if (staleCls.length) L.push('📋 반 태깅이 14일 끊긴 반 ' + staleCls.length + '개\n' + staleCls.map(c => '· ' + c).join('\n'));
+    if (d1Missed.length) L.push('⚠ 강사 D-1 알림이 메일 쿼터로 못 나간 반 ' + d1Missed.length + '개 — 내일 아침 그 반 강사에게 한마디 전해 주세요\n· ' + d1Missed.join(' · '));
+    L.push('이번 달 우리 학생들이 새로 맞힌 말 ' + monthMastered + '개');
+    adminMail('[SYNK] 🧶 함께한 날 — 새 장면 ' + opened.length + '명', L.join('\n\n'));
+  }
+  /* 헤더 개명은 마커 «직전» — 값(마커·원장)이 다 선 뒤에야 이름을 바꾼다(위 fedb767e 원자성). */
+  if (pf.getRange('AA1').getValue() !== '이전장면') pf.getRange('AA1').setValue('이전장면');
+  if (pf.getRange('AD1').getValue() !== '마지막발화장면') pf.getRange('AD1').setValue('마지막발화장면');
   writeIfChanged(pf, 2, 27, newAA);
   writeIfChanged(pf, 2, 30, newAD);
-  Logger.log('장면: 새 기입 ' + addRows.length + '행 · 발화 ' + opened.length + '명 · D-1 반 ' + Object.keys(d1ByCls).length);
+  Logger.log('장면: 발화 ' + opened.length + '명 · D-1 반 ' + Object.keys(d1ByCls).length + (d1Missed.length ? ' · 쿼터 유실 ' + d1Missed.length + '반(다이제스트 합류)' : ''));
 }
 
 /* ===================== 강사 케어 지수 ===================== */

@@ -48,8 +48,30 @@ function GUIDE_ROWS_() {
   ];
 }
 function setupGuides() {
+  /* 보존 병합(codex P1 600dc085·9e34ff3d) — replaceContentType 은 그 type 을 «통째 교체»라, 유호님이
+   * 채운 E열 이미지·G/H 번역이 재실행마다 '' 로 덮이던 자리(CONTENT_CUSTOM_TYPES 에 guide 를 넣은
+   * 보존 «의도»와 실행 경로가 모순). 이름 기준으로 기존 커스텀 셋(E·G·H)을 씨앗 위에 얹고 교체한다 —
+   * bootstrapSynk 의 무조건 호출도 이제 무해하다. */
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  replaceContentType(ss, 'guide', GUIDE_ROWS_());
+  const keep = {};
+  const ct0 = ss.getSheetByName('contents');
+  if (ct0 && ct0.getLastRow() >= 2) {
+    const w0 = Math.min(ct0.getLastColumn(), 8);
+    ct0.getRange(2, 1, ct0.getLastRow() - 1, w0).getValues().forEach(r => {
+      if (r[1] === 'guide' && r[2]) keep[String(r[2]).trim()] = { img: String(r[4] || ''), mn: String(r[6] || ''), en: String(r[7] || '') };
+    });
+  }
+  const rows = GUIDE_ROWS_().map(r => {
+    const k = keep[String(r[2]).trim()];
+    if (!k) return r;
+    const m = r.slice();
+    while (m.length < 8) m.push('');
+    if (k.img) m[4] = k.img;
+    if (k.mn) m[6] = k.mn;
+    if (k.en) m[7] = k.en;
+    return m;
+  });
+  replaceContentType(ss, 'guide', rows);
 }
 
 
@@ -912,10 +934,16 @@ function systemWatchdog(asText) {
     [['상담폼ID', '상담폼(입학 퍼널)', 'createConsultForm 재실행 또는 app_state 키 교정'],
      ['리드폼ID', '리드폼(광고 유입)', 'createLeadForm 재실행'],
      ['면접폼ID', '면접 기록 폼(비자·취업)', 'createInterviewLogForm 재실행'],
-     ['직장폼ID', '직장 경험 폼(VR 직업체험 0단계)', 'createWorkLogForm 재실행']].forEach(p => {
+     // 직장폼만 서명(제목+필수 두 문항)까지 — ID 가 «다른 폼»으로 바뀌어도 openById 는 성공이라
+     // 생존 검사가 초록인 채 무관 응답을 직장 경험으로 세던 구멍(codex P2 5b85e75e).
+     ['직장폼ID', '직장 경험 폼(VR 직업체험 0단계)', 'createWorkLogForm 재실행', function (f) { return (typeof 직장폼서명_ !== 'function') || 직장폼서명_(f); }]].forEach(p => {
       const fid = stF ? String(getState(stF, p[0]).val || '') : '';
       if (!fid) { add(true, p[1] + ': 미연결 — ID 없음(도입 전이면 정상)'); return; }
-      try { FormApp.openById(fid); add(true, p[1] + ' 생존: 정상'); }
+      try {
+        const f = FormApp.openById(fid);
+        if (p[3] && !p[3](f)) { add(false, p[1] + ' ID가 «다른 폼»을 가리킨다(서명 불일치 — 제목·필수 문항이 아니다) — app_state ' + p[0] + ' 교정 필요'); return; }
+        add(true, p[1] + ' 생존: 정상');
+      }
       catch (e) { add(false, p[1] + ' 열기 실패 — 폼 삭제/권한 상실 의심! ' + p[2]); }
     });
     // [v9.90] 면접 기록 회수량 — 시뮬레이터 질문 은행의 원천이라 "몇 건 모였나"가 곧 개발 준비도.

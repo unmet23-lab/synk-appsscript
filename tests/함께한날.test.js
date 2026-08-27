@@ -104,17 +104,27 @@ test('막4 배선 — 장면 축이 화면 여덟 자리를 실제로 잡았다(
   });
 });
 
-test('⑤ 막5 checkScene — 멱등키·하루 1회 상한·기입→알림→마커 순서·밤 배치 편입', () => {
+test('⑤ 막5 checkScene — 멱등키(잠금 창)·마커 발화·기입→알림→마커→개명 순서·밤 배치 편입', () => {
   const s = code.indexOf('function checkScene()');
   assert.ok(s > -1, 'checkScene 없음');
   const body = code.slice(s, code.indexOf('/* ===================== 강사 케어 지수', s));
-  assert.ok(body.includes("has[sid + '|' + k]"), '장면 멱등키(sid|장면번호)가 본진이 아니다 — 한 칸 덮어쓰기 병 재발 경로');
-  assert.ok(body.includes('top > adPrev'), '하루 1회 상한(가장 높은 장면 하나만 발화)이 없다');
-  // v9.34 교훈 — 마커(AA/AD) 갱신은 기입·발송 «뒤». 앞이면 메일 실패 시 알림 영구 유실.
+  assert.ok(body.includes("has[c.sid + '|' + k]"), '장면 멱등키(sid|장면번호)가 본진이 아니다 — 한 칸 덮어쓰기 병 재발 경로');
+  // 멱등맵 로드와 append 는 «같은 잠금 창» — 넓히면 안의 adminMail 이 비재진입 잠금을 재획득하다 죽는다(codex P1 ebee661a)
+  const iLock = body.indexOf('lock.tryLock');
+  const iHas = body.indexOf("has[c.sid + '|' + k]");
+  const iRel = body.indexOf('lock.releaseLock()');
+  assert.ok(iLock > -1 && iHas > iLock && iRel > iHas, '멱등맵→append 가 잠금 창 밖이다(동시 실행 중복 append)');
+  assert.ok(body.indexOf('adminMail(') > iRel, 'adminMail 이 잠금 안이다 — DIGEST_MODE 재진입 교착(codex P1)');
+  // 발화는 scene_log «존재»가 아니라 AD 마커 기준 — 기입 뒤 죽어도 재실행이 알림을 되살린다(codex P2 004e4ddf)
+  assert.ok(body.includes('nSc > adPrev'), '발화 판정이 마커 기준이 아니다(기입 후 크래시 = 알림 영구 유실)');
+  // v9.34 교훈 — 마커(AA/AD) 갱신은 기입·발송 «뒤» · 헤더 개명은 마커 직전(전환 원자성 fedb767e)
   const iLog = body.indexOf('writeIfChanged(log, log.getLastRow()');
   const iMail = body.indexOf('adminMail(');
+  const iRename = body.indexOf("pf.getRange('AA1').setValue('이전장면')");
   const iMark = body.indexOf('writeIfChanged(pf, 2, 27');
-  assert.ok(iLog > -1 && iMail > iLog && iMark > iMail, '순서가 기입→알림→마커가 아니다(v9.34 재발)');
+  assert.ok(iLog > -1 && iMail > iLog && iRename > iMail && iMark > iRename, '순서가 기입→알림→개명→마커가 아니다');
+  // D-1 쿼터 유실 보존 — 못 나간 반은 원장 다이제스트로(codex P2 e7787886)
+  assert.ok(body.includes('d1Missed'), 'D-1 쿼터 유실 반이 어디에도 안 남는다');
   assert.ok(code.includes("safeRun('checkScene', checkScene)"), '밤 배치에 checkScene 이 없다');
   assert.ok(!code.includes("safeRun('checkEvolution'"), '밤 배치가 아직 checkEvolution 을 부른다 — 한 밤 두 체계');
 });
