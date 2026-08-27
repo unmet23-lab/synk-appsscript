@@ -84,7 +84,13 @@ function setupGuides() {
     if (!k) return r;
     const m = r.slice();
     while (m.length < 8) m.push('');
-    if (k.img) m[4] = k.img;
+    /* 🔑 보존하는 값은 «렌더 가능한» 것만이다(codex P2 1eb51d89 · 자가 둘이면 반드시 갈린다).
+     *   「비어 있지 않으면 보존」이던 때, E열에 오타 URL 같은 렌더 불가 값이 들어가면 그것이 커스텀으로
+     *   보존돼 **시트에 영영 남았다** — 화면은 http 로 시작하는 것만 그리니 그 가이드는 계속 점으로 뜨고,
+     *   자가보장은 「그림 있음」으로 세어 복구를 건너뛴다. 판정자는 guideDotHtml_ 과 «같은 함수»다.
+     *   ⚠ 렌더 불가 값은 씨앗으로 되돌아간다(씨앗이 비었으면 빈 채로) — E열은 image_url 자리라
+     *     URL 아닌 값은 어차피 쓰이지 않는다. */
+    if (guideImgOk_(k.img)) m[4] = k.img;
     if (k.mn) m[6] = k.mn;
     if (k.en) m[7] = k.en;
     return m;
@@ -92,7 +98,7 @@ function setupGuides() {
   replaceContentType(ss, 'guide', rows);
   /* 무엇이 실제로 섰는지 돌려준다 — 메뉴가 이 문자열을 alert 로 띄운다(bootstrapSynk 은 안 읽는다).
    * 「눌렀는데 뭐가 됐는지 모른다」를 없애는 자리다: 그림이 붙은 이름과 빈 이름이 갈려 보인다. */
-  const 요약 = rows.map(r => String(r[2]) + (String(r[4] || '') ? ' 🖼' : ' (그림 없음)')).join(' · ');
+  const 요약 = rows.map(r => String(r[2]) + (guideImgOk_(r[4]) ? ' 🖼' : ' (그림 없음)')).join(' · ');
   return '가이드 ' + rows.length + '행 세움 — ' + 요약;
 }
 
