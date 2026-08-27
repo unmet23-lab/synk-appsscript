@@ -2661,6 +2661,16 @@ function absenceSection_(wantText) {
  * DIGEST 큐(쿼터 무관)고 학부모 발송은 없다(인앱 배너 BN66 몫) — 쿼터 되돌림이 필요한 발송은 강사 D-1 뿐인데
  * 그건 마커와 무관한 «그날의 상태»(AG33=1)라 되돌릴 마커 자체가 없다. */
 function checkScene() {
+  /* 잠금 — 예약 실행과 손 실행이 겹치면 둘이 같은 「멱등맵→append」 창을 지나 scene_log 에 같은
+   * sid|장면 행이 둘 선다(codex P2 7694bee6 — 시트에는 저장소급 고유키가 없다). selfDeclare 규약 그대로:
+   * 못 잡으면 조용히 0이 아니라 던진다 — safeRun 이 「안 돌았다」를 소리내게. */
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) throw new Error('장면 판정 — 스크립트 잠금 획득 실패(이 밤의 판정을 건너뛴다)');
+  try {
+    checkSceneBody_();
+  } finally { lock.releaseLock(); }
+}
+function checkSceneBody_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const pf = ss.getSheetByName('profiles');
