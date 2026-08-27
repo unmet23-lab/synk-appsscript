@@ -381,6 +381,54 @@ def _시안(bpy, math, random, g):
     # 무대 좌표로 옮겨 둔 정점 — 아래 가방·카메라가 «실물»을 보고 정한다(다시 안 잰다).
     무대P = (P - _np.array([중심.x, 중심.y, 0.0])) * 배 + _np.array([0.0, 0.0, -최소.z * 배])
 
+    # ── 부속 삭제 — 군장 장신구를 «진짜로» 지운다 (유호 08-27 「겹쳐서 어색 · 아예 삭제」) ──
+    #   통짜여도 면은 지울 수 있다. 프린트용 조형은 부품이 서로 «관통 겹침»이라, 매달린 인장·
+    #   치마·파우치를 지우면 그 밑의 몸 표면이 드러난다(구멍이 아니라 살이 나온다).
+    #   상자는 무대 좌표(카메라 프레임과 같은 자) — 렌더에서 픽셀로 조준해 잰 값이다.
+    #   ⚠삭제는 «눈 분할·장식 측정보다 먼저» — 뒤에 하면 폴리곤 인덱스가 밀려 눈이 엉뚱한 면을 잡는다.
+    삭제글 = _인자.get('부속삭제', '')
+    if 삭제글 and 삭제글 not in ('0', '끔'):
+        import bmesh
+        상자들 = []
+        for 토막 in 삭제글.split(';'):
+            v = [float(x) for x in 토막.split(',')]
+            assert len(v) == 6, '부속삭제 상자는 x0,x1,y0,y1,z0,z1 여섯 수: ' + 토막
+            상자들.append(v)
+        지운총 = 0
+        for o in 들인것:
+            수 = len(o.data.vertices)
+            a2 = _np.empty(수 * 3, dtype=_np.float32)
+            o.data.vertices.foreach_get('co', a2)
+            M2 = _np.array(o.matrix_world)
+            # 🔑 이 시점의 행렬은 «이미 무대 좌표»다(앉히기가 앞서 갔다) — 무대 공식을 한 번 더
+            #   곱하면 자가 두 번 접혀 상자가 0점을 잡는다(1차 실측 · 눈 분할까지 무너뜨렸다).
+            S2 = a2.reshape(수, 3).astype(_np.float64) @ M2[:3, :3].T + M2[:3, 3]
+            골2 = _np.zeros(수, dtype=bool)
+            for bi, (x0, x1, y0, y1, z0, z1) in enumerate(상자들):
+                안2 = ((S2[:, 0] > x0) & (S2[:, 0] < x1) & (S2[:, 1] > y0) & (S2[:, 1] < y1) &
+                      (S2[:, 2] > z0) & (S2[:, 2] < z1))
+                if _인자.get('켜보기'):
+                    ys = S2[안2][:, 1]
+                    print('상자%d %s점 · y 십분위 %s' % (bi, f'{int(안2.sum()):,}',
+                          _np.round(_np.percentile(ys, range(0, 101, 10)), 2) if len(ys) else '—'))
+                골2 |= 안2
+            if _인자.get('켜보기'):
+                continue
+            if not 골2.any():
+                continue
+            bm = bmesh.new()
+            bm.from_mesh(o.data)
+            bm.verts.ensure_lookup_table()
+            죽일 = [bm.verts[i] for i in _np.nonzero(골2)[0]]
+            bmesh.ops.delete(bm, geom=죽일, context='VERTS')
+            bm.to_mesh(o.data)
+            bm.free()
+            o.data.update()
+            지운총 += int(골2.sum())
+        print('부속 삭제: 상자 %d개 · 정점 %s개' % (len(상자들), f'{지운총:,}'))
+        # 지운 뒤의 실물로 다시 잰다 — 행렬이 이미 무대 좌표라 그대로 모으면 된다.
+        무대P = 점모으기()
+
     # ── 실땀 부품 — «사람이 만든 것»을 가르는 그 한 줄(운용 규칙 ② · 오브 명품화 ④) ────
     실재 = 매끈재질('실', 색[_인자.get('실색', 'Stitch')], 거칠기=0.5)
     손 = random.Random(20260827)                  # 고정 씨앗 — 재현 가능
@@ -706,8 +754,20 @@ def _시안(bpy, math, random, g):
             cx3 = float(_np.median(허리[:, 0]))
             cz3 = (bz0 + bz1) * 0.5
             책((cx3, 앞y3 - 0.055, cz3), 겉색=_인자.get('책색', 'Lapis Deep'),
-              기울기=(6, 0, -9), 반=(0.15, 0.055, 0.115))
-            print('허리책: 파우치 앞 (%.2f, %.2f, %.2f)' % (cx3, 앞y3, cz3))
+              기울기=(6, 0, -9), 반=(0.175, 0.06, 0.135))
+            # 지우개 블록 — 책 밑에 겹쳐 앉는다. 인장을 걷어낸 굴(고관절 틈)을 이것이 덮는다 —
+            # 지운 자리는 «다른 학용품»이 잇는다(유호 08-27).
+            지몸재 = 펠트재질('지우개몸', 색['Oat'], 배율=1.06, 지름=0.25) if 펠트로 else 매끈재질('지우개몸', 색['Oat'], 거칠기=0.85)
+            지소매재 = 펠트재질('지우개소매', 색['Lapis Deep'], 배율=1.0, 지름=0.25) if 펠트로 else 매끈재질('지우개소매', 색['Lapis Deep'], 거칠기=0.85)
+            지몸 = 베개몸((0.135, 0.055, 0.075), 위치=(cx3 - 0.045, 앞y3 - 0.035, cz3 - 0.205), 크리스=0.5, 레벨=2)
+            지몸.rotation_euler = (0, 0, math.radians(13))
+            지몸.data.materials.append(지몸재)
+            붙인것.append(지몸)
+            지소매 = 베개몸((0.065, 0.058, 0.079), 위치=(cx3 - 0.118, 앞y3 - 0.035, cz3 - 0.215), 크리스=0.5, 레벨=2)
+            지소매.rotation_euler = (0, 0, math.radians(13))
+            지소매.data.materials.append(지소매재)
+            붙인것.append(지소매)
+            print('허리책+지우개: 파우치 앞 (%.2f, %.2f, %.2f)' % (cx3, 앞y3, cz3))
 
     if '총연필' in 장식들:
         # 총 → 큰 연필. 지울 수 없으니 총의 «축»을 재서 같은 축의 더 굵은 연필로 앞에서 덮는다.
