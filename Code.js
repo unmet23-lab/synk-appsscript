@@ -2205,7 +2205,10 @@ function calcAll() {
   const 씨앗9 = GUIDE_ROWS_();
   const 이름9 = r => String(r[2] || '').trim();   // setupGuides 가 trim 으로 대조한다 — «같은 자»로 잰다(codex 320b5e10)
   const 가이드행9 = ctData.filter(r => r[1] === 'guide');
-  const 짝9 = g => 가이드행9.find(r => 이름9(r) === 이름9(g));
+  /* 이름이 겹치는 행이 있으면 **마지막이 이긴다** — setupGuides 의 keep 맵이 그렇게 덮어쓰므로
+   * (엔진_콘텐츠AI.js) 여기서 first 를 고르면 시트와 메모리가 «서로 다른 그림»을 갖는다.
+   * 승자 규칙이 두 곳에서 갈리면 그 회차 카드가 시트에 없는 얼굴을 그린다(codex P1 60bfad69). */
+  const 짝9 = g => { let 찾9 = null; 가이드행9.forEach(r => { if (이름9(r) === 이름9(g)) 찾9 = r; }); return 찾9; };
   const 씨앗이름9 = {};
   씨앗9.forEach(g => { 씨앗이름9[이름9(g)] = 1; });
   /* 조건은 「무엇이 틀렸나」를 갈래로 세는 게 아니라 **「시트가 정본과 다른가」 하나**다.
