@@ -4191,6 +4191,7 @@ function menuPruneStaleLectures() { menuRun_(pruneStaleLectures); }
 function menuSyncLectureForm() { menuRun_(syncLectureFormChoices); }
 function menuLectureJoinDiag() { menuRun_(lectureJoinDiag); }
 function menuSelfHeal() { menuRun_(sheetSelfHealNow); } // [v9.127] 자기치유 결과 가시화
+function menuPurgeMonster() { menuRun_(purgeLegacyMonsterRows_); } // [함께한날 막7 마감] 구 몬스터 씨앗 7행 삭제 — 결과(삭제 수·스냅샷)가 alert 로 뜬다 · 멱등(재클릭 무해)
 function menuCreateQuizForm() { menuRun_(createQuizForm); } // [v9.138] 퀴즈 응답 폼 — 수집층 입구(재실행 안전)
 function menuMigrateHwForm() { menuRun_(migrateHwFormV9138); } // [v9.138] 숙제 폼 증분 — 문항 연결·재작성 경로(멱등)
 function menuMigrateVoiceForm() { menuRun_(migrateVoiceFormMissionId); } // [v9.190] 목소리 폼 미션ID 증분(멱등 — 야간 배치도 부른다)
@@ -4677,6 +4678,8 @@ function onOpen() {
       .addItem('　└ 아직 모르는 질문 보기', 'menuBrainGaps')
       // [v9.123] 레벨 어휘가 바뀌면 구 자리가 유령으로 남는다 — 4중 잠금이라 잘못 눌러도 손실 0(함수 주석 참조).
       .addItem('🧹 낡은 강의 자리 걷어내기', 'menuPruneStaleLectures')
+      // [함께한날 막7 마감] 구 몬스터 씨앗 7행 삭제 — 확인 1단계 · 멱등(이미 없으면 0) · 이미지 스냅샷은 설계 문서에
+      .addItem('🗑 구 몬스터 씨앗 행 정리(함께한 날 전환·1회)', 'menuPurgeMonster')
       // [v9.121] 시즌이 바뀌어 1단계를 다시 깔면 폼 선택지가 낡는다 — 2단계는 문항이 있으면 건너뛰므로 따라가지 않는다.
       .addItem('🔄 폼 선택지 카탈로그와 맞추기(시즌 갱신)', 'menuSyncLectureForm')
       // [v9.124] 읽기 전용 — 조인이 깨져도 에러가 안 나므로 물어볼 곳이 필요하다.
