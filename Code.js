@@ -2032,22 +2032,29 @@ function sceneSpeak_(guide, ctx) {
  *   public 이라서**다. 저장소를 비공개로 돌리는 판정이 나면 URL 은 그대로인데 전부 404 가 된다
  *   (드라이브 lh3 도 공유 설정이 닫히면 같은 일이 난다 — 통로가 무엇이든 «남의 공개 상태»에 묶인다).
  *   스크립트 없는 순수 CSS 폴백이라 앱이 인라인 이벤트를 막아도 산다.
- *   ⚠ alt 는 «빈 문자열»이다 — 이름을 넣으면 그림이 죽었을 때 점 위에 글자가 뜬다. */
+ *   ⚠ alt 는 «빈 문자열»이다 — 이름을 넣으면 그림이 죽었을 때 점 위에 글자가 뜬다. 이름은 바깥 상자가
+ *   role+aria-label 로 진다(codex ae112bda) — 그림이 있든 없든 «읽어 주는 화면»이 누구인지 안다. */
+
+/* 「이 값으로 그림이 실제로 뜨는가」의 **유일한 자**. 자가보장이 자기 자를 따로 들면
+ * 「비었지만 안 빈 값」(공백 · not-a-url)에서 판정이 갈린다 — 렌더러는 안 그리는데 보장은
+ * 「그림 있음」으로 세어 복구를 건너뛴다(codex 9b75ae17). 그래서 «같은 함수»를 둘이 쓴다. */
+function guideImgOk_(v) { return String(v || '').trim().indexOf('http') === 0; }
+
 function guideDotHtml_(img, size, nm) {
   const 점 = 'width:' + size + 'px;height:' + size + 'px;border-radius:50%;'
     + 'background:radial-gradient(circle at 32% 30%,#FBB7A3,#F96859 68%,#AE322A);border:2px solid #F0E3C8;';
-  if (String(img || '').indexOf('http') === 0) {
+  const 이름표 = ' role="img" aria-label="' + escHtml_(nm || '가이드') + '" title="' + escHtml_(nm || '가이드') + '"';
+  if (guideImgOk_(img)) {
     /* 심층방어(08-27) — img·nm 은 contents 시트 E열·C열에서 온다. 지금은 씨앗 상수가 채우지만
      * 시트는 «사람이 고치는 자리»라, 따옴표 하나면 속성을 빠져나가 onerror 를 붙일 수 있다.
      * URL 의 & 는 &amp; 가 돼도 속성 안에서 & 로 파싱되니 그림이 깨지지 않는다. */
-    /* 이름은 «바깥 상자»가 진다 — role+aria-label(codex ae112bda). img 의 alt 를 쓰면 그림이 죽었을 때
-     * 점 위에 글자가 뜨고, 반대로 alt 만 비우면 읽어 주는 화면에서 누구인지가 사라진다. 둘 다 피한다. */
-    return '<div role="img" aria-label="' + escHtml_(nm || '가이드') + '" title="' + escHtml_(nm || '가이드')
-      + '" style="' + 점 + 'overflow:hidden;">'
-      + '<img src="' + escHtml_(img) + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"/>'
+    return '<div' + 이름표 + ' style="' + 점 + 'overflow:hidden;">'
+      + '<img src="' + escHtml_(String(img).trim()) + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"/>'
       + '</div>';
   }
-  return '<div style="' + 점 + '"></div>';
+  /* 그림 없는 폴백에도 이름표를 단다 — 마린처럼 씨앗이 «일부러» 빈 가이드를 고른 학생의 카드에서
+   * 읽어 주는 화면이 대상을 식별할 수 있어야 한다(codex P1 7a6f4d17). */
+  return '<div' + 이름표 + ' style="' + 점 + '"></div>';
 }
 
 /* 「우리」 카드(BD56) — 학생 홈. 몽글이가 오른쪽 끝에서 시작해 장면마다 왼쪽(학생 쪽)으로 온다(설계 §1).
@@ -2196,8 +2203,12 @@ function calcAll() {
   const 씨앗9 = GUIDE_ROWS_();
   const 이름9 = r => String(r[2] || '').trim();   // setupGuides 가 trim 으로 대조한다 — «같은 자»로 잰다(codex 320b5e10)
   const 가이드행9 = ctData.filter(r => r[1] === 'guide');
-  const 모자람9 = 가이드행9.length < 씨앗9.length;                       // 행이 «일부만» 있는 경우까지 (codex 0646d119·82c0be6a)
-  const 그림전멸9 = 씨앗9.some(r => String(r[4] || '')) && !가이드행9.some(r => String(r[4] || ''));
+  /* 개수가 아니라 «이름»으로 센다 — 낡은 행(G99 같은 것)이 섞이면 개수가 맞아 버려서, 정작 빠진
+   * 가이드가 있는데도 복구를 건너뛴다(codex bb579d99). 그 가이드를 고른 학생은 픽이 지워진다. */
+  const 있는이름9 = {};
+  가이드행9.forEach(r => { 있는이름9[이름9(r)] = 1; });
+  const 모자람9 = 씨앗9.some(g => !있는이름9[이름9(g)]);
+  const 그림전멸9 = 씨앗9.some(g => guideImgOk_(g[4])) && !가이드행9.some(r => guideImgOk_(r[4]));
   if (모자람9 || 그림전멸9) {
     try {
       setupGuides();
@@ -2208,7 +2219,12 @@ function calcAll() {
        *   빠진 가이드를 고른 학생은 기본 가이드로 대체되며 «픽이 지워진다» — 막1 머리말이 경계한 사고다. */
       씨앗9.forEach(g => {
         const 있 = 가이드행9.find(r => 이름9(r) === 이름9(g));
-        if (있) 있[4] = g[4]; else ctData.push(g.slice());
+        if (!있) { ctData.push(g.slice()); return; }
+        /* 🔴 사람이 채운 그림이 정본이다 — 씨앗은 «빈 자리»만 채운다(codex P2 aed6ba71·3528e11d).
+         *   setupGuides 는 시트에서 커스텀 URL 을 보존하는데 여기서 메모리를 씨앗으로 덮으면,
+         *   그 회차 카드가 시트에 있는 커스텀 대신 씨앗 그림을 그린다 — 보존의 «의도»와 실행이 갈린다
+         *   (막1 setupGuides 가 고쳤던 바로 그 병을 메모리 쪽에서 되풀이하던 자리). */
+        if (!guideImgOk_(있[4])) 있[4] = g[4];
       });
       const 산이름9 = {};
       씨앗9.forEach(g => { 산이름9[이름9(g)] = 1; });
