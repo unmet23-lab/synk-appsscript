@@ -5096,6 +5096,11 @@ function setupOnboarding() {
   ];
   sh.getRange(2, 1, rows.length, 5).setValues(rows);
   Logger.log('온보딩 콘텐츠 ' + rows.length + '역할 세팅 완료 (onboarding 시트)');
+  /* 🔴 이 함수는 bootstrapSynk·preflightGlide 에서만 돈다 — **코드를 고쳐 배포해도 라이브 시트의
+   *   기존 행은 안 바뀐다**(codex P1 1033b065). 08-28 에 몽골어 결함 셋을 고치고 「고쳤다」고 적었는데
+   *   실제로는 학생이 옛 문구를 계속 볼 뻔했다: 소스가 아니라 «저장된 행»이 화면에 간다.
+   *   ⇒ 메뉴 통로(menuSetupOnboarding)를 세우고, 무엇이 섰는지 돌려준다. */
+  return '온보딩 안내 ' + rows.length + '역할 세움 — ' + rows.map(r => String(r[0]) + (String(r[3] || '') ? ' (몽골어 있음)' : '')).join(' · ');
 }
 
 /* ===================== [v9.38] 🏫 수업 입력 시트·열 물리 생성 (Glide 폼 바인딩 선행) =====================

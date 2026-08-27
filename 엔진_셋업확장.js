@@ -4193,6 +4193,7 @@ function menuLectureJoinDiag() { menuRun_(lectureJoinDiag); }
 function menuSelfHeal() { menuRun_(sheetSelfHealNow); } // [v9.127] 자기치유 결과 가시화
 function menuPurgeMonster() { menuRun_(purgeLegacyMonsterRows_); } // [함께한날 막7 마감] 구 몬스터 씨앗 7행 삭제 — 결과(삭제 수·스냅샷)가 alert 로 뜬다 · 멱등(재클릭 무해)
 function menuSetupGuides() { menuRun_(setupGuides); } // [함께한날 자산] 가이드 셋 재수립 — 어느 이름이 그림을 얻었는지 alert 로 뜬다 · 멱등(보존 병합)
+function menuSetupOnboarding() { menuRun_(setupOnboarding); } // [08-28] 온보딩 안내 재수립 — 코드를 고쳐 배포해도 시트의 «저장된 행»은 안 바뀐다(codex P1) · 멱등
 function menuCreateQuizForm() { menuRun_(createQuizForm); } // [v9.138] 퀴즈 응답 폼 — 수집층 입구(재실행 안전)
 function menuMigrateHwForm() { menuRun_(migrateHwFormV9138); } // [v9.138] 숙제 폼 증분 — 문항 연결·재작성 경로(멱등)
 function menuMigrateVoiceForm() { menuRun_(migrateVoiceFormMissionId); } // [v9.190] 목소리 폼 미션ID 증분(멱등 — 야간 배치도 부른다)
@@ -4685,6 +4686,10 @@ function onOpen() {
       // [함께한날 자산] 가이드 셋의 «얼굴»(E열 그림 URL)을 씨앗 값으로 다시 세운다. 멱등 · 보존 병합이라
       //   시트에 이미 채워진 URL 은 안 덮는다(그래서 「새 그림을 씨앗에 넣었는데 안 바뀐다」면 시트 값을 비우고 누른다).
       .addItem('🧶 가이드 셋 다시 세우기(얼굴 그림 포함)', 'menuSetupGuides')
+      // [08-28] 온보딩 안내(역할별 첫 화면)를 코드 정본으로 다시 쓴다. 멱등.
+      //   🔴 왜 메뉴가 필요한가: setupOnboarding 은 bootstrap·preflight 에서만 돌아서, 문구를 고쳐
+      //   배포해도 라이브 시트의 «저장된 행»은 그대로다 — 학생은 옛 문구를 계속 본다(codex P1).
+      .addItem('🚪 온보딩 안내 다시 세우기(첫 화면 문구)', 'menuSetupOnboarding')
       // [v9.121] 시즌이 바뀌어 1단계를 다시 깔면 폼 선택지가 낡는다 — 2단계는 문항이 있으면 건너뛰므로 따라가지 않는다.
       .addItem('🔄 폼 선택지 카탈로그와 맞추기(시즌 갱신)', 'menuSyncLectureForm')
       // [v9.124] 읽기 전용 — 조인이 깨져도 에러가 안 나므로 물어볼 곳이 필요하다.
