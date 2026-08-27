@@ -1226,9 +1226,18 @@ function createWorkLogForm_() {
           exId = f0.getId();
           setState(st, '직장폼ID', exId);
           setState(st, '직장폼URL', f0.getPublishedUrl());
-          // 제목이 맞고 응답 탭까지 붙어 있는 폼 = 한 번 완성됐던 것이다. 표식이 없으면 아래 「만들다 만 상태」로 오진한다.
-          setState(st, '직장폼완료', 'y');
-          Logger.log('직장 경험 폼 — ID가 없어 응답 탭의 연결 폼에서 복구했습니다.');
+          /* 🔑 «서명 통과 = 완성»이 아니다(codex P1 3898bacd) — 서명은 두 문항이라, 문항을 붙이다
+           * 끊긴 폼(동의 섹션 없음)도 지난다. 완료 도장은 **필수 문항 전수**가 있어야 찍는다 —
+           * 특히 「자료활용동의」가 빠진 채 y 를 찍으면 동의 없는 응답이 조용히 쌓인다.
+           * 빠졌으면 ID·URL 만 복구하고 완료는 안 찍는다 → 아래 「만들다 만 상태」 안내가 그대로 받는다. */
+          const 있는문항 = f0.getItems().map(function (i) { return String(i.getTitle()).trim(); });
+          const 빠진필수 = Object.keys(WORK_HELP).filter(function (t) { return 있는문항.indexOf(t) === -1; });
+          if (빠진필수.length === 0) {
+            setState(st, '직장폼완료', 'y');
+            Logger.log('직장 경험 폼 — ID가 없어 응답 탭의 연결 폼에서 복구했습니다(필수 문항 전수 확인).');
+          } else {
+            Logger.log('직장 경험 폼 — ID는 복구했지만 필수 문항이 빠져 완료 도장은 안 찍었습니다: ' + 빠진필수.join(' · '));
+          }
         } else {
           const mX = '⚠️ 탭 「' + WORK_TAB + '」에 연결된 폼이 직장 경험 폼이 아닙니다(제목 「' + f0.getTitle() + '」'
             + (String(f0.getTitle()).trim() === WORK_FORM_TITLE ? ' · 제목은 같지만 필수 문항 「시킨 일 그대로」·「예정에 없던 일이 생긴 적」이 없습니다' : '') + ').\n'
