@@ -884,7 +884,7 @@ table.표{width:100%;border-collapse:collapse;font-size:.925rem;line-height:1.55
   <tr><td>스택</td><td>원본 데이터 = <b>Supabase+Postgres 하나</b> · Sheets 는 운영·리포트 파생층 · 앱 = <b>Expo</b> 네이티브(Glide 폐기) · 모션 = Skia(+Lottie 자리 미정)</td><td><span class="상태 돈다">✅ 확정</span></td></tr>
   <tr><td>출시의 정의</td><td>출시 = <b>스토어 정식 등재</b>(App Store·Google Play) · 개원 «전» · 조건 = 기능 완성이 아니라 <b>「하루 루프(숙제→제출→교정→답장)가 안 끊기는 것」</b> · 이후 EAS Update 로 심사 없이 배포</td><td><span class="상태 짓는">🔨 짓는 중</span></td></tr>
   <tr><td>수집 설계</td><td>숙제 = 미니게임 = 데이터 수집(한 물건) · 게임 규칙 셋 = TOPIK 문법 활용·심리 암묵 수집·99% 자동화 · 콘텐츠 뱅크 = 숙제 210·퀴즈 100·문법 게이트 72·시즌 보스 12</td><td><span class="상태 돈다">✅ 설계 확정</span></td></tr>
-  <tr><td>계정</td><td>학원 발급 <code>student_code</code> 만 로그인(공개가입 없음 — 학원 밖 일반인은 2027-08 게임 앱의 자리) · 🔴 <b>학생 ID 졸업 후 영속</b> 설계가 미착수 — SHIFT ⑥⑦이 전부 여기 걸려 있고, 이것만 나중에 하면 앱을 다시 짓는다</td><td><span class="상태 유호">🔴 영속 설계 미착수</span></td></tr>
+  <tr><td>계정</td><td>학원 발급 <code>student_code</code> 만 로그인(공개가입 없음 — 학원 밖 일반인은 2027-08 게임 앱의 자리) · <b>학생 ID 졸업 후 영속</b> — ✅설계가 섰다(정본 <code>docs/학생ID_종단_설계_v1.md</code> · 08-27): 신원을 셋으로 뗀다 = 원장 못(<code>learner_id</code>)·이름표(<code>SYNK-042</code>)·문(계정). ⛔구현은 0이고, 그중 <b>소급 불가 셋</b>(채번 바닥·종료사유·시간 세 칸)은 학생이 오기 «전»에 서야 한다</td><td><span class="상태 유호">✅설계 · ⛔구현 0 · 유호 판정 3</span></td></tr>
   <tr><td>학부모</td><td>학부모는 앱에 «들어온다» — 리포트판·부모소식판·우리아이판 3벌</td><td><span class="상태 대기">⏳ 구현</span></td></tr>
 </table></div>
 
@@ -945,7 +945,7 @@ table.표{width:100%;border-collapse:collapse;font-size:.925rem;line-height:1.55
   <tr><td>④</td><td>첫 고객 = <b>대학 어학원·국제처</b></td><td>그들의 고통(유학생 서류·상담·이탈률) = 정확히 우리가 학원에서 푸는 문제 · 그 계약이 <b>TO 협상 테이블의 입장권</b>(벤더는 매년 만난다)</td></tr>
   <tr><td>⑤</td><td>SHIFT = 취업의 <b>수요 채널</b></td><td>기업이 궁금한 건 「이 회사 유명한가」가 아니라 「이 사람이 일할 수 있는가」 · 고객사 명단 = 채용처 명단 · 외국인 채용의 진짜 장벽(관리 비용)을 AI 로 덜면 에이전시 상품과 학원 출구가 같은 물건</td></tr>
   <tr><td>⑥</td><td>졸업생 = <b>10년 뒤 고객사 명단</b></td><td>졸업생이 입사한 순간 SYNK 의 영업망 — 5년 뒤 그가 팀장이 되면 SYNK 가 벤더 · 레일은 이미 있다(outcome_log·trajectory)</td></tr>
-  <tr><td>⑦</td><td>🔥 <b>국가공인 자격증 발급 기관</b></td><td>인증이 서는 날 학원=준비 과정 · 에이전시=파트너 · 대학=TO — 셋이 하나로 닫힌다 · 🔴 그 데이터(학생 ID 영속)가 오늘부터 쌓여야 한다</td></tr>
+  <tr><td>⑦</td><td>🔥 <b>국가공인 자격증 발급 기관</b></td><td>인증이 서는 날 학원=준비 과정 · 에이전시=파트너 · 대학=TO — 셋이 하나로 닫힌다 · 🔴 그 데이터(학생 ID 영속)가 오늘부터 쌓여야 한다 — 설계는 08-27 에 섰다(<code>docs/학생ID_종단_설계_v1.md</code>), 쌓는 칸은 아직 0</td></tr>
 </table></div>
 
 <h3>VR — 훈련장이자 실기 검정장</h3>
@@ -963,7 +963,7 @@ table.표{width:100%;border-collapse:collapse;font-size:.925rem;line-height:1.55
   <tr><th>언제</th><th>축</th><th>무슨 일</th></tr>
   <tr><td><b>지금<br>2026-08</b></td><td><span class="축">SHIFT</span><span class="축">앱</span></td><td>
     · AI 인플루언서 <b>개인 계정·첫 10편</b> 준비 — <span class="상태 유호">공개선·플랫폼·주기 확정 대기</span><br>
-    · talk 앱 개발(하루 루프) + 🔴 <b>학생 ID 영속 설계</b>(미착수 — 지금 자리) + «전세계 B2C 로 열 수 있게» 전제<br>
+    · talk 앱 개발(하루 루프) + <b>학생 ID 영속</b>(✅설계 08-27 · ⛔구현 0 — 소급 불가 셋이 지금 자리) + «전세계 B2C 로 열 수 있게» 전제<br>
     · SHIFT 설계·제도 실측 완료 · 관리운영규정 v0.1 초안</td></tr>
   <tr><td><b>2026-09~10</b></td><td><span class="축">LAB</span></td><td>
     · 강사 채용 착수(8명 체계) · 몽골어 감수자 확보(마지노선 11월)<br>
