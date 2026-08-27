@@ -1205,9 +1205,16 @@ function createWorkLogForm() {
     Logger.log(mL);
     return mL;
   }
-  try { return createWorkLogForm_(); } finally { lock.releaseLock(); }
+  /* 알림은 잠금 «해제 뒤» — adminMail 은 DIGEST_MODE 에서 같은 비재진입 ScriptLock 을 다시 잡는다
+   * (codex P1 34a174bc — 첫 생성이 쓰기를 다 마치고도 30초 대기 끝 실패로 «보고»되던 자리). */
+  let 지연알림 = null;
+  try { return createWorkLogForm_(m => { 지연알림 = m; }); }
+  finally {
+    lock.releaseLock();
+    if (지연알림) adminMail(지연알림.제목, 지연알림.본문);
+  }
 }
-function createWorkLogForm_() {
+function createWorkLogForm_(알림기록) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
   // 재실행 안전 — 배포된 링크·QR가 미아가 되지 않도록 살아 있는 폼은 절대 새로 만들지 않는다(createInterviewLogForm 과 같은 계급).
@@ -1363,8 +1370,10 @@ function createWorkLogForm_() {
   setState(st, '직장폼URL', form.getPublishedUrl());
   // 🔑 완료 표식은 «맨 마지막»에 찍는다 — 이 줄에 도달했다는 것만이 「문항·라우팅이 다 섰다」의 증거다.
   setState(st, '직장폼완료', 'y');
-  adminMail('[SYNK] 🧰 직장 경험 기록 폼 생성 완료',
-    '배포 링크(공개·익명):\n' + form.getPublishedUrl() +
+  // 알림은 래퍼가 잠금 해제 «뒤» 발송한다(P1 34a174bc) — 이 함수의 유일 호출자가 그 래퍼다.
+  알림기록({
+    제목: '[SYNK] 🧰 직장 경험 기록 폼 생성 완료',
+    본문: '배포 링크(공개·익명):\n' + form.getPublishedUrl() +
     '\n\n무엇에 쓰나: VR 직업체험(= SYNK 인증의 실기 검정)의 장면·과업·«방해»가 전부 여기서 나옵니다.\n' +
     '설계 = docs/SHIFT/VR직업체험_설계_v1.md\n' +
     '\n어디에 뿌리면 좋은지:\n' +
@@ -1372,7 +1381,7 @@ function createWorkLogForm_() {
     '② 몽골의 한국 회사에 다니는 지인 — 관계 언어·보고 문화는 여기서도 똑같이 나옵니다\n' +
     '③ 학부모 중 한국 근무 경험자 — 상담 자리에서 QR로\n\n' +
     '⚠️ 몽골어 병기는 아직 없습니다 — 졸업생·학부모 대상이면 원어민 검수 후 병기하는 것이 회수율에 직결됩니다.\n' +
-    '편집용: ' + form.getEditUrl());
+    '편집용: ' + form.getEditUrl() });
   Logger.log('✅ 직장 경험 기록 폼 생성 완료: ' + form.getPublishedUrl());
   return '✅ 직장 경험 기록 폼 생성 완료: ' + form.getPublishedUrl();
 }

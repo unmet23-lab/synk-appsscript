@@ -2383,7 +2383,8 @@ function calcAll() {
     //   여전히 은퇴 열(인덱스 고정이라 물리 삭제 불가 — 삭제 시 AO~BX 전부 밀림 · 숨기기만 안전).
     if (pf.getRange('AK1').getValue() !== '착용칭호') pf.getRange('AK1').setValue('착용칭호');
     if (pf.getRange('AO1').getValue() !== '애칭') pf.getRange('AO1').setValue('애칭'); // [함께한날 막4] 학생이 지은 이름 — 가이드 애칭으로 «승계»한다(설계 §4-1)
-    if (pf.getRange('AP1').getValue() !== '지나온장면수') pf.getRange('AP1').setValue('지나온장면수'); // [함께한날 막4] 구 단계번호 — 위 apIsScene 판독 «뒤»에 갈아야 전환 회차가 잡힌다
+    // AP1 개명은 여기가 아니라 **AP42 값 기록 «뒤»**다(codex P2 fedb767e) — 개명 후 값 전에 죽으면
+    // 다음 회차 apIsScene 이 구 몬스터 값(1~7)을 장면 러닝맥스로 읽는다. 값이 먼저, 이름은 마지막.
     if (pf.getRange('AQ1').getValue() !== '잔액') pf.getRange('AQ1').setValue('잔액'); // [v7.1] P열=획득 누계(진화), AQ=잔액(스토어)
     // [v7.3] AR = 사용자 기록 전용(스토어 목표 찜 — Glide Set Column, 스크립트는 값 안 씀)
     if (pf.getRange('AR1').getValue() !== '목표아이템') pf.getRange('AR1').setValue('목표아이템');
@@ -3137,6 +3138,7 @@ function calcAll() {
     writeIfChanged(pf, 2, 36, pfData.map(r => [classTypeOf[r[0]] || '평일']));
     // [v6.6] 단계번호(AP) — Glide Rollup(단계번호−1 합)으로 "우리 반 누적 진화 🐲" 계산
     writeIfChanged(pf, 2, 42, stageNumOut);
+    if (pf.getRange('AP1').getValue() !== '지나온장면수') pf.getRange('AP1').setValue('지나온장면수'); // [함께한날] 전환 원자성 — 값(윗줄) 뒤에만 개명(codex P2 fedb767e)
     writeIfChanged(pf, 2, 43, balOut); // [v7.1] AQ 잔액
     // [v7.7] AV 마지막포인트일 (무포인트 경보용)
     const lastPtOut = pfData.map(r => {
