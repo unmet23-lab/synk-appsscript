@@ -53,10 +53,10 @@ const GUIDE_IMG_BASE_ = 'https://raw.githubusercontent.com/unmet23-lab/synk-apps
 const GUIDE_IMG_ = {
   몽글: GUIDE_IMG_BASE_ + '%EB%AA%BD%EA%B8%80_%EC%95%84%EB%B0%94%ED%83%80_%EB%B0%B0%ED%8F%AC.jpg',
   까몽: GUIDE_IMG_BASE_ + '%EA%B9%8C%EB%AA%BD_%EC%95%84%EB%B0%94%ED%83%80_%EB%B0%B0%ED%8F%AC.jpg',
-  /* 마린은 «일부러» 비었다 — 지금 서 있는 렌더 전량이 총과 해골 문장을 정면에 든다(펠트 해석판도
-   * 가슴 독수리+해골은 그대로다). 한국어 학원 학생 홈의 얼굴로는 자산이 아직 준비가 안 됐고,
-   * 유호님 판정 셋(몸·색·각)도 열려 있다. 빈 값이면 카드가 펠트 코랄 점으로 서니 화면은 안 깨진다. */
-  마린: ''
+  /* 마린도 08-28 에 섰다(유호 「해골 빼고 아바타까지」). 08-27 에 비워 뒀던 까닭 — 렌더 전량이
+   * 총과 해골을 정면에 들었다 — 은 두 갈래로 풀렸다: ①우주복판이 갑옷을 통째로 대신해 가슴
+   * 독수리+해골이 사라졌고 ②헬멧 해골은 «조각째» 걷었다(tools/마린에셋들이기.py 의 빼기=상자). */
+  마린: GUIDE_IMG_BASE_ + '%EB%A7%88%EB%A6%B0_%EC%95%84%EB%B0%94%ED%83%80_%EB%B0%B0%ED%8F%AC.jpg'
 };
 function GUIDE_ROWS_() {
   return [
