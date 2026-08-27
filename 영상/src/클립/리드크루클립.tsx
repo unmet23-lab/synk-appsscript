@@ -213,7 +213,7 @@ const 자막: React.FC<{ 장면: 장면 }> = ({ 장면 }) => {
 };
 
 /** 훅 — 첫 2~3초. 궁금·공감을 여는 자리(synk-content §2). */
-const 훅자막: React.FC<{ 글: string }> = ({ 글 }) => {
+const 훅자막: React.FC<{ 글: string; 몽골어?: string }> = ({ 글, 몽골어 }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
@@ -256,6 +256,32 @@ const 훅자막: React.FC<{ 글: string }> = ({ 글 }) => {
           display: "inline-block",
         }}
       />
+
+      {/* 훅의 몽골어 병기(유호 지시 08-28 — 그전엔 첫 2.5초가 한국어로만 떴다).
+          🔑 장면 칸과 **지연이 다르다.** 거기서는 한국어가 «다 드러난 뒤에» 몽골어가 와야 한다 —
+             읽는 순서가 곧 학습 순서라서다. 훅은 배우는 자리가 아니라 «붙잡는» 자리이고, 보는 사람은
+             자기 언어 한 줄만 읽는다. 몽골 학생을 2초 기다리게 하면 그 2초가 훅의 전부다.
+             ⇒ 거의 같이 띄운다(0.12초 — 두 줄이 «동시에 툭» 나타나 겹쳐 읽히지 않을 만큼만).
+          🔑 크기 52 — 한국어 74 보다 작지만 장면 칸의 48 보다 크다. 훅에서는 이것이 누군가에겐
+             유일하게 읽히는 줄이라, 곁다리로 보이면 안 된다. */}
+      {몽골어 ? (
+        <들임 지연={Math.round(fps * 0.12)} 바닥={0.35}>
+          <div
+            style={{
+              fontFamily: 본문스택,
+              fontSize: Math.round(52 * 몽골어보정),
+              fontWeight: 웨이트.본문_UI,
+              color: 지면.보조글자,
+              letterSpacing: 트래킹.본문,
+              lineHeight: 1.45,
+              marginTop: 율.칸,
+              wordBreak: "keep-all",
+            }}
+          >
+            {몽골어}
+          </div>
+        </들임>
+      ) : null}
     </AbsoluteFill>
   );
 };
@@ -338,7 +364,7 @@ export const 리드크루클립: React.FC<{ 클립: 클립 }> = ({ 클립 }) => 
 
       {/* ── 훅 (0~3초) ─────────────────────────────────────────────── */}
       <Sequence durationInFrames={훅프레임 + 겹침}>
-        <훅자막 글={클립.훅} />
+        <훅자막 글={클립.훅} 몽골어={클립.훅몽골어} />
       </Sequence>
 
       {/* ── 본문 6장면 — 자막층만 Sequence 안에 산다 ───────────────── */}
