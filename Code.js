@@ -2040,7 +2040,10 @@ function guideDotHtml_(img, size, nm) {
     /* 심층방어(08-27) — img·nm 은 contents 시트 E열·C열에서 온다. 지금은 씨앗 상수가 채우지만
      * 시트는 «사람이 고치는 자리»라, 따옴표 하나면 속성을 빠져나가 onerror 를 붙일 수 있다.
      * URL 의 & 는 &amp; 가 돼도 속성 안에서 & 로 파싱되니 그림이 깨지지 않는다. */
-    return '<div title="' + escHtml_(nm || '가이드') + '" style="' + 점 + 'overflow:hidden;">'
+    /* 이름은 «바깥 상자»가 진다 — role+aria-label(codex ae112bda). img 의 alt 를 쓰면 그림이 죽었을 때
+     * 점 위에 글자가 뜨고, 반대로 alt 만 비우면 읽어 주는 화면에서 누구인지가 사라진다. 둘 다 피한다. */
+    return '<div role="img" aria-label="' + escHtml_(nm || '가이드') + '" title="' + escHtml_(nm || '가이드')
+      + '" style="' + 점 + 'overflow:hidden;">'
       + '<img src="' + escHtml_(img) + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"/>'
       + '</div>';
   }
@@ -2190,19 +2193,33 @@ function calcAll() {
    *   기다리게 된다(「수동 실행 0」이라 적어 놓고 수동을 요구하는 자리였다).
    *   ⇒ **씨앗엔 그림이 있는데 시트엔 한 장도 없으면** 그때도 다시 세운다. setupGuides 는 보존 병합이라
    *   사람이 채운 URL 은 그대로 살고, 한 번 들어가면 다음 회차부터 이 갈래는 거짓이 된다(멱등). */
+  const 씨앗9 = GUIDE_ROWS_();
+  const 이름9 = r => String(r[2] || '').trim();   // setupGuides 가 trim 으로 대조한다 — «같은 자»로 잰다(codex 320b5e10)
   const 가이드행9 = ctData.filter(r => r[1] === 'guide');
-  const 씨앗그림9 = GUIDE_ROWS_().some(r => String(r[4] || ''));
-  if (!가이드행9.length || (씨앗그림9 && !가이드행9.some(r => String(r[4] || '')))) {
-    setupGuides();
-    /* 시트는 이제 씨앗 «전부»(3행)다. 메모리의 ctData 도 거기 맞춘다 — 이름으로 대조해 있는 행은
-     * 그림을 갱신하고 «없는 이름은 새로 태운다».
-     * 🔑 codex P3(5e98f297) — 갈래를 둘로 가르면서 「행이 일부만 있는」 경우가 사이로 샜다: 2행만
-     *   있으면 시트는 3행이 되는데 ctData 엔 2행만 남아, 그 회차 화이트리스트가 셋째 가이드를 몰라
-     *   그 가이드를 고른 학생의 픽을 «한 번» 지운다(막1 머리말이 경계한 바로 그 사고). */
-    GUIDE_ROWS_().forEach(g => {
-      const 있 = 가이드행9.find(r => String(r[2]) === String(g[2]));
-      if (있) 있[4] = g[4]; else ctData.push(g.slice());
-    });
+  const 모자람9 = 가이드행9.length < 씨앗9.length;                       // 행이 «일부만» 있는 경우까지 (codex 0646d119·82c0be6a)
+  const 그림전멸9 = 씨앗9.some(r => String(r[4] || '')) && !가이드행9.some(r => String(r[4] || ''));
+  if (모자람9 || 그림전멸9) {
+    try {
+      setupGuides();
+      /* 시트는 이제 씨앗 «전부»다. 메모리의 ctData 도 거기 맞춘다 — 갱신·추가·«낡은 이름 제거» 셋.
+       * 🔑 셋으로 늘어난 내력(codex 3연타): ①갈래를 둘로 가르며 「행이 일부만」이 사이로 샜고
+       *   ②그중 하나라도 그림이 있으면 조건이 거짓이라 빠진 가이드가 영영 안 생겼고
+       *   ③시트는 씨앗으로 «통째 교체»되는데 메모리엔 옛 이름 행이 남아 화이트리스트가 시트와 갈렸다.
+       *   빠진 가이드를 고른 학생은 기본 가이드로 대체되며 «픽이 지워진다» — 막1 머리말이 경계한 사고다. */
+      씨앗9.forEach(g => {
+        const 있 = 가이드행9.find(r => 이름9(r) === 이름9(g));
+        if (있) 있[4] = g[4]; else ctData.push(g.slice());
+      });
+      const 산이름9 = {};
+      씨앗9.forEach(g => { 산이름9[이름9(g)] = 1; });
+      for (let i9 = ctData.length - 1; i9 >= 0; i9--) {
+        if (ctData[i9][1] === 'guide' && !산이름9[이름9(ctData[i9])]) ctData.splice(i9, 1);
+      }
+    } catch (e9) {
+      /* 씨앗 복구는 «곁일»이다 — 여기서 던지면 calcAll 이 통째로 죽어 학생 카드 갱신 «전체»가 멈춘다.
+       * 그림 없는 카드보다 그게 훨씬 나쁘다(codex b3b38029). 시트가 안 바뀌었으면 메모리도 안 건드린다. */
+      Logger.log('[calcAll] 가이드 씨앗 자가보장 실패 — 계속 진행한다: ' + String(e9 && e9.message || e9));
+    }
   }
 
   // --- point_logs 빈칸 보정 (Glide 버튼 대비) [v9.22] 변경 행의 A(id)·F(일시)만 기록, Glide 소유열(B~E) 미접촉 ---
