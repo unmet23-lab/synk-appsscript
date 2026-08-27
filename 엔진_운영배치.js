@@ -2672,7 +2672,7 @@ function checkScene() {
    * 다음 회차가 구 몬스터 이름을 새 축 값으로 읽는다. 값이 먼저, 이름은 마지막 — calcAll AP1 과 같은 규약). */
   const aaIsScene = String(pf.getRange('AA1').getValue()) === '이전장면';
 
-  const w = Math.min(pf.getMaxColumns(), 55);
+  const w = Math.min(pf.getMaxColumns(), 82); // CD82(다음장면조건)까지 — D-1 판정의 말 게이트 재료
   const data = pf.getRange(2, 1, last - 1, w).getValues();
   const log = ensureSheet(ss, 'scene_log', SCENE_LOG_HEADERS);
   // 재료 — 오늘 «직접» 맞힌 문형(조건문형 칸) · 오늘 제출문(그날의문장 칸) · 60일 게이트 해제 판정(마지막 AI 도달일)
@@ -2739,7 +2739,10 @@ function checkScene() {
       const daysT = Number(r[30]) || 0; // AE 함께한날
       const lastD = lastAIDone[sid] || '';
       if (daysT >= 60 && (!lastD || Math.floor((new Date(today) - new Date(lastD)) / 86400000) >= 60)) gateFreeL.push(r[1] || sid);
-      if ((Number(r[32]) || 0) === 1) (d1ByCls[String(r[4] || '')] = d1ByCls[String(r[4] || '')] || []).push('· ' + sid + ' ' + (r[1] || sid) + ' — 내일 새 장면'); // AG 다음장면까지
+      /* D-1 = 「내일 «정말» 새 장면」 — 날(AG33=1)만으로는 부족하다(codex P2 ca2c813e): 말 게이트가 남은
+       * 학생은 내일 안 열린다. CD82(다음장면조건)는 같은 calcAll 이 결정론으로 쓴 문구라('내가 맞힌 말 N개'
+       * 조각은 toMastered>0 일 때만 실린다) 그 부재가 곧 게이트 통과다 — calcAll 의 clsEvoSoon 과 같은 판정. */
+      if ((Number(r[32]) || 0) === 1 && String(r[81] || '').indexOf('내가 맞힌 말') === -1) (d1ByCls[String(r[4] || '')] = d1ByCls[String(r[4] || '')] || []).push('· ' + sid + ' ' + (r[1] || sid) + ' — 내일 새 장면'); // AG 다음장면까지 × CD 조건
     }
     newAA.push([aaNext]);
     newAD.push([isStu ? adNext : '']);
