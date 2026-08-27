@@ -24,6 +24,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { 색, defs, 도장, 기호, 워드마크 } = require('./lib/로고정본.js');
+const 마스코트자산 = require('./lib/마스코트자산.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const 낼곳 = path.join(ROOT, 'docs/SHIFT/프로필');
@@ -69,7 +70,53 @@ const 안들 = {
     속: (px) => 워드마크({ 판: '다크', 표현: '펠트', 색갈래: '코랄' }),
     폭: 0.62,
   },
+  도장꽉: {
+    이름: '⑤ 도장 · 꽉 채움 — ✅ 확정 (08-28)',
+    설명: '①의 흰 링을 없앤 판. 배지 자체가 프로필이 된다 · 업로드본 = synkbrief_프로필.png',
+    바탕: 색['Paper'],
+    속: (px) => 도장({ px: Math.round(px * 1.02) }),
+    밀기: `translateY(${도장세로보정})`,
+    확정: 'synkbrief_프로필',
+  },
+  몽글양모: {
+    이름: '⑥ 몽글 · 양모 바탕',
+    설명: '학생이 아는 얼굴. 코랄 몽글이 양모 위에서 또렷하다',
+    바탕: 색['Paper'],
+    속: (px) => 마스코트(),
+    배율: 1.22,
+  },
+  몽글밤: {
+    이름: '⑦ 몽글 · 밤 바탕',
+    설명: '같은 얼굴, 대비가 가장 크다',
+    바탕: 색['Ink Deep'],
+    속: (px) => 마스코트(),
+    배율: 1.22,
+  },
+  몽글크게: {
+    이름: '⑧ 몽글 · 최대로 키운 판 <한계 시험>',
+    설명: '32px 에서 살리려고 1.45배까지 키웠다 — 치맛단이 원 밖으로 나간다',
+    바탕: 색['Paper'],
+    속: (px) => 마스코트(),
+    배율: 1.45,
+    한계: true,
+  },
+  몽글코랄: {
+    이름: '⑨ 몽글 · 코랄 바탕 <반례>',
+    설명: '🚫 킷이 막는 자리 — 몽글이 코랄 펠트라 같은 코랄 면 위에서 윤곽이 먹힌다',
+    바탕: 색['Coral'],
+    속: (px) => 마스코트(),
+    배율: 1.22,
+    반례: true,
+  },
 };
+
+/** 몽글 누끼 — 경로는 `lib/마스코트자산.js` 한 창구에서만 온다(마스코트 10벌 공존의 교훈).
+ *  표정은 «눈웃음» — 프로필은 인사하는 얼굴이다. */
+function 마스코트() {
+  const p = 마스코트자산.절대경로('눈웃음', { 누끼: true });
+  const b64 = fs.readFileSync(p).toString('base64');
+  return `<img src="data:image/png;base64,${b64}" alt="몽글" data-synk-mascot style="width:100%;height:auto;display:block">`;
+}
 
 /** 한 안의 자립형 HTML. 원형 크롭 안내선은 굽지 않는다(시안 지면에서만 그린다). */
 function 지면(안, px) {
@@ -79,8 +126,12 @@ function 지면(안, px) {
       <circle cx="60" cy="60" r="50" fill="none" stroke="${색['Stitch']}" stroke-width="1.6"
         stroke-dasharray="4.6 3.8 4.1 4.3 3.7 4.4" stroke-linecap="round" opacity="0.72"/>
     </g></svg>` : '';
+  /* 🔑 키우기는 «폭»이 아니라 «배율»로 한다 — width:130% 를 주면 요소가 판을 넘어
+   *    grid 중앙 정렬이 넘친 쪽으로 밀린다(08-28 실측: 몽글이 오른쪽 아래로 빠졌다).
+   *    transform:scale 은 «중심»을 기준으로 커져서 정렬이 그대로 남는다. */
   const 폭 = a.폭 ? `width:${Math.round(px * a.폭)}px;` : '';
-  const 밀기 = a.밀기 ? `transform:${a.밀기};` : '';
+  const 변형 = [a.배율 ? `scale(${a.배율})` : '', a.밀기 || ''].filter(Boolean).join(' ');
+  const 밀기 = 변형 ? `transform:${변형};` : '';
   return `<!doctype html><meta charset="utf-8">
 <style>
   html,body{margin:0;padding:0;background:${a.바탕};}
@@ -216,10 +267,20 @@ function main() {
     return r;
   });
 
+  /* 확정된 안은 «업로드본» 이름으로 한 벌 더 남긴다 — 유호님이 다섯 자리에 올리실 파일이
+   * 후보 이름(`도장꽉.png`)이면 어느 것이 확정인지 파일 이름이 말하지 않는다.
+   * 이 한 벌만 git 이 쥔다(나머지 후보는 .gitignore · 시안이 품고 있다). */
+  const 확정안 = 굽힌것.find(({ 안 }) => 안들[안].확정);
+  if (확정안) {
+    const 업로드본 = path.join(낼곳, `${안들[확정안.안].확정}.png`);
+    fs.copyFileSync(확정안.png, 업로드본);
+    console.log(`\n🏷  확정 = ${path.relative(ROOT, 업로드본)} (← ${확정안.안})`);
+  }
+
   if (!하나) {
     const s = path.join(낼곳, '시안.html');
     fs.writeFileSync(s, 시안(굽힌것), 'utf8');
-    console.log(`\n📄 시안 = ${path.relative(ROOT, s)} — 32px 로 고르십시오`);
+    console.log(`📄 시안 = ${path.relative(ROOT, s)} — 32px 로 고르십시오`);
   }
   console.log(`\n[프로필굽기] ${굽힌것.length}벌 · ${path.relative(ROOT, 낼곳)}`);
 }
