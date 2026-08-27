@@ -6,9 +6,13 @@
 <title>SYNK LAB</title>
 <!-- 파생: docs/SYNK_철학.md@v1.12 -->
 <!-- v1.12 대조 1층(걷기) 08-24 · 유호 「전부 진행해」: 학부모 면 «사실오류» 3줄만 수리(몽골어 리포트 본문=마무리 중 ·
-     포트폴리오=짓는 중 · 「길을 보여드립니다」→철학 Ⅲ 닫는 문장 그대로). 「마스코트 교체 전 재작업 금지」 동결은
-     그대로다 — 이것은 다듬기가 아니라 틀린 사실 걷기. 남은 몫 = 마스코트 교체(펠트코랄 · webp 갈아끼우고 빌드.js
-     재실행) · 엔진명(Atlas·Vellum) 반영 여부 · Ⅱ-9 카피(별도 배치 · 유호 카피 확인) → 그때 스탬프 올림. -->
+     포트폴리오=짓는 중 · 「길을 보여드립니다」→철학 Ⅲ 닫는 문장 그대로).
+     ✅ 08-28 «동결 해제» — 3주를 막고 있던 「마스코트 교체 전 재작업 금지」의 그 교체가 끝났다.
+        퇴역 레진 3장(08-07 손복사) → 정본 펠트코랄(`docs/캐릭터/펠트코랄_0815`). 다시 손으로 복사하지
+        않게 «복사»를 «굽기»로 바꿨다 — `마스코트굽기.py` 가 `tools/lib/마스코트자산.js` 에 경로를 묻고,
+        `빌드.js` 가 굽기까지 몰아 한 명령으로 끝난다. 다음 마스코트 교체는 이 동결이 다시 안 선다.
+        같은 날 색도 킷으로 맞췄다(킷 밖 11색 중 7색 → **0색** · 정본 = `docs/디자인_토큰.json`).
+     남은 몫 = 엔진명(Atlas·Vellum) 반영 여부 · Ⅱ-9 카피(별도 배치 · 유호 카피 확인) → 그때 스탬프 올림. -->
 <meta name="description" content="SYNK LAB — 정원은 16명, 선생님은 17명입니다. 몽골 학생을 위한 한국어 학원.">
 <!-- 구조화 데이터(JSON-LD) — 대화층 소유 원칙(유호 확정 08-10): 읽히는 층은 열고 대화층은 우리 챗봇이 받는다.
      4칸 확정 = 유호님 08-10(주소·전화·수강료·인스타). 주소 = 사업자 등록지(서울 · synk.im/privacy 와 동일 층).
@@ -46,18 +50,23 @@
 }
 :root{ --heat:0 }
 body{
-  /* 라이트 = Paper 편집 모드 (킷 라이트 규칙: 신호 글자는 Coral 3) */
-  --bg:#FAFAF9; --ink:#1B1B1A; --sub:#676767; --line:#D1D2D4;
-  --sig:#E8543F; --selink:#1B1B1A;
-  --castc:rgba(15,23,48,.15); --haloc:rgba(255,107,92,.16);
+  /* 라이트 = Paper 편집 모드 (킷 라이트 규칙: 신호 글자는 Coral 3)
+     08-27 배선: 이 주석이 적어 둔 규칙을 «값»이 안 지키고 있었다 — 11색 중 7색이 킷 밖이었고
+     그중 --sig 는 퇴역 코랄 #E8543F, --castc 는 퇴역 네이비(15,23,48 = #0F1730)였다.
+     킷 정본 = docs/디자인_토큰.json 색.킷 42색. 종이 위 코랄 «글자»는 2.75 라 금지이고 Coral 3 가 5.98 이다. */
+  --bg:#FBF7F0; --ink:#2B2320; --sub:#666666; --line:#D1D2D4;
+  --sig:#AE322A; --selink:#2B2320;
+  --castc:rgba(43,35,32,.15); --haloc:rgba(249,104,89,.16);
 }
 body.dark{
   /* 다크 = Graphite 무대 (v3 통과 세트 그대로 · 08-26 이름 현행화: 「Navy 2」는 무채축 08-18 에서 퇴역한 이름이고 값 #08090C 는 그대로 킷 Graphite 다).
      08-09부터 토글이 아니라 「질문 메뉴 hover 동안」 내려오는 무대다 —
-     들어갈 땐 조금 빠르게(의도에 반응), 나올 땐 본래 속도로 풀린다. */
-  --bg:#08090C; --ink:#E4E4E7; --sub:#8A8A8A; --line:#373737;
-  --sig:#FF6B5C; --selink:#08090C;
-  --castc:rgba(255,107,92,.28); --haloc:rgba(255,107,92,.26);
+     들어갈 땐 조금 빠르게(의도에 반응), 나올 땐 본래 속도로 풀린다.
+     08-27 배선: --sub #8A8A8A → 킷 Ash #8C8C8C · --sig 퇴역 코랄 #FF6B5C → 킷 Coral #F96859.
+     다크 바탕이라 여기서는 Coral «몸통»이 글자로 허용된다(라이트 쪽만 Coral 3 로 내린다). */
+  --bg:#08090C; --ink:#E4E4E7; --sub:#8C8C8C; --line:#373737;
+  --sig:#F96859; --selink:#08090C;
+  --castc:rgba(249,104,89,.28); --haloc:rgba(249,104,89,.26);
   transition:background .35s ease,color .35s ease;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -94,50 +103,31 @@ header>*{pointer-events:auto}
 .orb{display:grid;place-items:center;perspective:1200px;position:relative}
 .halo{
   position:absolute;width:min(70vw,520px);aspect-ratio:1;border-radius:50%;pointer-events:none;
-  background:radial-gradient(circle, var(--haloc), rgba(255,107,92,0) 66%);
+  background:radial-gradient(circle, var(--haloc), rgba(249,104,89,0) 66%);
   opacity:calc(.25 + var(--heat) * .75);transition:opacity .5s var(--ease);
 }
 .orb-float{animation:float 8s ease-in-out infinite}
 .orb-nod.nod{animation:nod .55s var(--ease)}
 .orb-tilt{transform-style:preserve-3d;transition:transform 1s var(--ease);animation:breathe 6s ease-in-out infinite}
-/* isolation = K 볼마크의 곱하기를 이 안(마스코트 두 판)으로 가둔다. 없으면 페이지 배경까지 섞여
-   다크에서 그 자리가 깨진다. */
-.orb-img{position:relative;width:min(56vw,420px);isolation:isolate}
-.orb-img img{
-  width:100%;height:auto;display:block;user-select:none;-webkit-user-drag:none;
-  -webkit-mask-image:radial-gradient(circle closest-side, #000 76%, transparent 99%);
-          mask-image:radial-gradient(circle closest-side, #000 76%, transparent 99%);
-}
+.orb-img{position:relative;width:min(56vw,420px)}
+/* 08-28 마스코트 교체(레진 → 펠트코랄 정본)로 «두 줄이 사라졌다» — 지운 것이 아니라 필요가 없어졌다:
+   ① 원형 마스크 — 옛 판은 크림 «바탕이 박힌» 불투명 사각이라 가장자리를 원으로 지워야 했다.
+      정본은 누끼(알파)라 몸 밖이 이미 투명이다. 마스크를 그대로 뒀으면 반지름 76% 밖으로 나가는
+      펠트 치맛단 양끝이 잘렸을 자리다.
+   ② isolation:isolate — K 볼마크의 곱하기를 가두던 울타리였다. 그 레이어가 없으니 가둘 것도 없다. */
+.orb-img img{width:100%;height:auto;display:block;user-select:none;-webkit-user-drag:none}
 .orb-img img.smile{position:absolute;inset:0;opacity:0;transition:opacity .18s ease}
 .orb-img.smiling img.smile{opacity:1}
-/* K 볼마크 = 표정 두 판의 **공용** 레이어. 이미지에 굽지 않으므로 깜빡임(^^ 판을 150ms 얹는 방식)에도
-   명멸하지 않는다 — 한 판에만 마크가 있을 때 생기던 문제를 자리로 없앤 것이다.
-   좌표: 원본 1024² 의 K 각인(606,494 · 42×56 · 차분 임계 60 실측)을 96² 로 잘라
-   크롭(139,142 · 740²) 좌표계에 앉힌다 — 중심 (488,380) → 65.9% / 51.4%.
-   🔑 스프라이트는 「흰 바탕 + 어두운 K」(원판↔K판 차분의 반전)이고 곱하기로 얹는다.
-   각인의 본질은 색이 아니라 **어두워짐**이라, 알파로 덮으면 몸통색과 같아 사라지고
-   불투명 조각으로 얹으면 국소 밝기차 때문에 사각 패치가 뜬다. 흰색은 곱하기의 항등원이라
-   경계가 원리적으로 안 생긴다(마스크가 필요 없는 이유). */
-.orb-img img.mark{
-  position:absolute;left:65.9%;top:51.4%;width:12.97%;height:auto;
-  transform:translate(-50%,-50%);
-  mix-blend-mode:multiply;
-  /* 마우스가 가까울수록 각인이 미세하게 깊어진다 — 빔 두께·후광을 굴리는 --heat 를 그대로 태운다
-     (실제 레진도 조명이 세지면 각인 그림자가 깊어진다).
-     🔑 곱하기 레이어에서 「흰 바탕은 그대로, 어두운 K 만 더 내리는」 축은 opacity 하나뿐이다.
-     · contrast 는 반대로 간다 — 0.5 **위**의 값을 밀어 올리는데 K 픽셀이 마침 그 위라 각인이 연해진다(실측).
-     · brightness 는 흰 바탕까지 내려 사각 패치를 부활시킨다.
-     그래서 스프라이트를 진하게 구워 두고(gamma 1.05) opacity 로 그 안에서 움직인다 — 여유를 만들어
-     두지 않으면(=확정 진하기를 최대로 두면) 폭이 YAVG 2 밖에 안 나와 눈에 안 보인다(실측).
-     범위는 유호님 확정 진하기(K 영역 YAVG 158.0)를 **중간**에 둔다:
-     heat 0 → 161.6 · 0.5 → 157.5 · 1 → 153.2 (폭 3.3%). */
-  opacity:calc(.25 + var(--heat) * .30);
-  transition:opacity .4s var(--ease);
-}
+/* 🪦 K 볼마크 레이어는 08-28 에 은퇴했다(그 자리 CSS 40줄 삭제).
+   그것은 «레진 각인»의 물리였다 — 「각인의 본질은 색이 아니라 어두워짐」이라 흰 바탕 스프라이트를
+   곱하기로 얹고 --heat 로 깊이를 굴렸다. 정본이 펠트가 되면서 각인이라는 사건 자체가 없어졌다
+   (펠트는 파이지 않는다). 정본 펠트코랄에 K 표식은 없고, 저장소 전수로도 「마스코트 볼의 K」는
+   이 지면에만 있었다(브랜드킷 §각인은 «로고»를 1도 인쇄·각인에 쓰는 이야기지 마스코트가 아니다).
+   ⇒ 되살릴 일이 있다면 그건 복구가 아니라 «펠트에 자수 K를 놓을까»라는 새 판정이다. */
 .eye{position:absolute;width:0;height:0;pointer-events:none}
 .cast{
   position:absolute;bottom:clamp(6px,2vh,22px);width:min(34vw,230px);height:26px;pointer-events:none;
-  background:radial-gradient(ellipse at center, var(--castc), rgba(255,107,92,0) 70%);
+  background:radial-gradient(ellipse at center, var(--castc), rgba(249,104,89,0) 70%);
   animation:cast 8s ease-in-out infinite;
 }
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
@@ -150,9 +140,9 @@ header>*{pointer-events:auto}
   position:fixed;left:0;top:0;height:2px;z-index:10;transform-origin:0 50%;pointer-events:none;
   opacity:0;transition:opacity .32s var(--ease);display:none;
   background:linear-gradient(90deg,
-    rgba(250,250,249,.95) 0%, rgba(255,107,92,.85) 12%,   /* 08-26: 퇴역 크림 #F6F1E8 → 무채축 근사 흰색 #FAFAF9 */
-    rgba(255,107,92,.42) 55%, rgba(255,107,92,0) 100%);
-  filter:drop-shadow(0 0 6px rgba(255,107,92,.9)) drop-shadow(0 0 18px rgba(255,107,92,.5));
+    rgba(251,247,240,.95) 0%, rgba(249,104,89,.85) 12%,   /* 08-27: 08-26 수리가 퇴역 크림 #F6F1E8 을 «또 다른 킷 밖 색» #FAFAF9 로 옮겨 놓았었다 → 킷 Paper #FBF7F0 */
+    rgba(249,104,89,.42) 55%, rgba(249,104,89,0) 100%);
+  filter:drop-shadow(0 0 6px rgba(249,104,89,.9)) drop-shadow(0 0 18px rgba(249,104,89,.5));
 }
 body.dark .beam{display:block}
 .beam.on{opacity:calc(.35 + var(--heat) * .65)}
@@ -238,10 +228,11 @@ footer a:hover{color:var(--ink);border-color:var(--sub)}
           <div class="orb-img" id="orbImg">
             <img src="__DOT__" alt="SYNK 마스코트">
             <img src="__SMILE__" alt="" class="smile" aria-hidden="true">
-            <img src="__MARK__" alt="" class="mark" aria-hidden="true">
-            <!-- 눈 좌표 = 픽셀 실측 (441,440)·(579,439) → 크롭(139,142·740²) 백분율 -->
-            <i class="eye" id="eyeL" style="left:40.8%;top:40.3%"></i>
-            <i class="eye" id="eyeR" style="left:59.5%;top:40.1%"></i>
+            <!-- 눈 좌표 = 손으로 안 적는다. `마스코트굽기.py` 가 정본에서 구슬 중심을 재고
+                 `빌드.js` 가 여기 넣는다 — 마스코트가 바뀌면 좌표도 같이 따라온다.
+                 (손으로 적으면 몸만 바뀌고 좌표가 안 따라와 다크 모드 «눈빔»이 뺨에서 나간다.) -->
+            <i class="eye" id="eyeL" style="left:__EYE_LX__%;top:__EYE_LY__%"></i>
+            <i class="eye" id="eyeR" style="left:__EYE_RX__%;top:__EYE_RY__%"></i>
           </div>
         </div>
       </div>
