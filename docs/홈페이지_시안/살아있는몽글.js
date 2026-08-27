@@ -23,13 +23,20 @@
 (function () {
   'use strict';
 
-  var 방 = document.querySelector('[data-살아있음]');
-  if (!방) return;
+  /* 🔑 08-28 — 한 지면에 «여러 벌»이 설 수 있게 열었다(유호 「시선 세기 두 배 판 나란히 구워줘」).
+   *   세기는 눈으로만 갈리는데, 세기가 다른 두 몸이 **같은 손짓에 동시에** 반응해야 비교가 된다
+   *   (따로 열어 번갈아 보면 손짓이 달라져서 무엇이 세기 탓인지 알 수 없다 — 색 판정과 같은 축).
+   *   ⇒ 마운트마다 `data-시차`·`data-빛세기` 로 값을 받는다. 안 주면 승인값(0.055/0.42)이다. */
+  function 살리기(방) {
   var 컷들 = {};
   Array.prototype.forEach.call(방.querySelectorAll('[data-컷]'), function (el) {
     컷들[el.getAttribute('data-컷')] = el;
   });
   if (!컷들['본체']) return;
+
+  /* 승인값 = 생명공방 지면 그대로(유호 08-27 「과하지는 않아」). 지면이 값을 주면 그쪽이 이긴다. */
+  var 시차세기 = parseFloat(방.getAttribute('data-시차') || '') || 0.055;
+  var 빛세기값 = parseFloat(방.getAttribute('data-빛세기') || '') || 0.42;
 
   var 바탕 = 컷들['본체'];                       // WebGL 이 서면 숨고, 안 서면 이게 남는다
   var cv = document.createElement('canvas');
@@ -212,7 +219,7 @@
                컷: Object.keys(tex), 지금컷: S.컷, 프레임: 그린프레임, 잠: !!S.잠 };
     }
   };
-  window.몽글 = 어휘;
+  어휘.시차 = 시차세기;                            // 어느 세기의 몸인지 스스로 말한다(대조 지면이 읽는다)
 
   /* 만지기 — 마스코트 자체를 누르는 자리 */
   var 누름 = false;
@@ -265,8 +272,8 @@
     }
     S.시점x += (S.목표시점x - S.시점x) * 0.06;
     S.시점y += (S.목표시점y - S.시점y) * 0.06;
-    var 시차 = reduce ? 0 : 0.055;                  // 넘기면 사진이 «고무»로 읽힌다
-    var 빛세기 = reduce ? 0 : 0.42;                 // 정지(시점 0)면 곱이 1 = 사진 그대로
+    var 시차 = reduce ? 0 : 시차세기;               // 넘기면 사진이 «고무»로 읽힌다
+    var 빛세기 = reduce ? 0 : 빛세기값;             // 정지(시점 0)면 곱이 1 = 사진 그대로
 
     var k = 0, s = 0, jj, ii;
     for (jj = 0; jj <= N; jj++) {
@@ -354,4 +361,16 @@
   /* 🔑 여기가 «시동»이다 — 위의 모든 선언이 끝난 뒤라야 켜기()가 안전하게 돈다.
    *   (자립형의 data URI 는 즉시 complete 라 이 줄이 그 자리에서 첫 프레임까지 그린다.) */
   컷싣기();
+  return 어휘;
+  }
+
+  /* 마운트 전부를 살린다. `window.몽글` 은 첫 벌(지면 하나짜리의 통로 그대로) ·
+     `window.몽글들` 은 전부(대조 지면이 「같은 손짓을 둘에게」 보낼 때 쓴다). */
+  var 방들 = document.querySelectorAll('[data-살아있음]');
+  window.몽글들 = [];
+  for (var n = 0; n < 방들.length; n++) {
+    var 산것 = 살리기(방들[n]);
+    if (산것) window.몽글들.push(산것);
+  }
+  window.몽글 = window.몽글들[0] || null;
 })();
