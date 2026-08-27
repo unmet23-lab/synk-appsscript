@@ -66,6 +66,103 @@ function 음절(buf, n) {
   }
 }
 
+/* 가이드 «악기» 음절 — 까몽·마린 목소리 (유호 확정 2026-08-28 「까몽 2·5·9, 마린 1·2·5」).
+ *
+ * ■ 왜 세 번째 경로인가 — 「목소리를 가르는 것은 값이 아니라 악기다」
+ *   1차(위 음절()의 파라미터 변주)는 유호님께 「몽글이 성대모사한 느낌」으로 반려됐고(08-27),
+ *   2차(매끈한 버즈)도 「아직 몽글이랑 비슷해」로 반려됐다(08-28). 같은 수식에서 음높이·속도·
+ *   배음만 바꾸면 원리상 «같은 목소리의 흉내»가 된다. 그래서 악기 갈래를 벌렸다:
+ *     까몽 = 버즈(배음 10겹) + 각 그로울(스퍼터) + 피치 지터 + 숨노이즈 + 디튠 + 드라이브
+ *     마린 = 사각(홀수 배음) + 링모드(금속 울림) + 무전 노이즈 + 게이트 봉투(숨 없음 · 떨림 0)
+ *   판정 지면(판정장 아티팩트)과 «같은 수식»이라 들은 것과 배포된 것이 갈라질 수 없다.
+ *   ⚠ g 에는 판정장의 RMS 균형 배율(몽글×0.9 · 0.5~3 클램프)이 이미 접혀 있다 —
+ *     여기서 다시 균형을 잡지 않는다(잡으면 유호님이 들은 밸런스가 깨진다).
+ * ■ 🔴 기존 경로 둘(단음·음절)은 이 확장으로 한 톨도 안 흔들린다 — 새 필드(파형·게이트·그로울·
+ *   링모드·지터·숨노이즈·디튠·드라이브)가 있는 음만 여기로 온다. 난수(지터·노이즈)는 음의
+ *   (f·시작ms·길이ms)에서 씨앗을 파생해 언제 구워도 바이트 동일(--check 가 그대로 지킨다).
+ */
+function 씨앗난수(씨) { let a = 씨 >>> 0; return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function 악기배음(n) {
+  if (n.배음) return n.배음;
+  if (n.파형 === '버즈') { const 수 = n.배음수 || 10, 표 = []; for (let k = 1; k <= 수; k++) 표.push([k, Math.pow(k, -.8)]); return 표; }
+  if (n.파형 === '사각') { const 수 = n.배음수 || 6, 표 = []; for (let k = 0; k < 수; k++) { const h = 2 * k + 1; 표.push([h, 1 / h]); } return 표; }
+  return [[1, 1], [2, .28], [3, .08]];
+}
+function 악기봉투(u, n, N) {
+  if (n.게이트) { const att = Math.round(.004 * SR), rel = Math.round(.010 * SR), i = u * N; return Math.min(1, i / att, (N - i) / rel); }
+  return Math.pow(Math.sin(Math.PI * u), n.봉우리 ?? 1);
+}
+function 악기음(buf, n) {
+  const t0 = Math.round((n.시작ms / 1000) * SR), N = Math.round((n.길이ms / 1000) * SR);
+  if (n.파형 === '노이즈') {
+    const 난수 = 씨앗난수((n.f * 7919 + n.시작ms * 31 + n.길이ms) | 0);
+    const w0 = 2 * Math.PI * n.f / SR, alpha = Math.sin(w0) / (2 * (n.Q || 1));
+    const a0 = 1 + alpha, b0 = alpha / a0, b2 = -alpha / a0, a1 = -2 * Math.cos(w0) / a0, a2 = (1 - alpha) / a0;
+    let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+    for (let i = 0; i < N && t0 + i < buf.length; i++) {
+      const x = 난수() * 2 - 1;
+      const y = b0 * x + b2 * x2 - a1 * y1 - a2 * y2;
+      x2 = x1; x1 = x; y2 = y1; y1 = y;
+      buf[t0 + i] += n.g * 악기봉투(i / N, n, N) * y * 2.5;
+    }
+    return;
+  }
+  const 배음 = 악기배음(n);
+  const 합계 = 배음.reduce((a, x) => a + x[1], 0);
+  const 위상 = 배음.map(() => 0);
+  const 위상B = n.디튠 ? 배음.map(() => 0) : null;   // 디튠 겹 — 맥놀이로 지저분해진다
+  const 비율 = n.스윕f ? n.스윕f / n.f : 1;
+  let 노즈 = null;                                    // 숨 노이즈 — 허스키한 목
+  if (n.숨노이즈) {
+    const 난수 = 씨앗난수((n.f * 7919 + n.시작ms * 31 + n.길이ms * 7) | 0);
+    const w0 = 2 * Math.PI * n.숨노이즈.f / SR, alpha = Math.sin(w0) / (2 * (n.숨노이즈.Q || 1));
+    const a0 = 1 + alpha;
+    노즈 = { 난수, b0: alpha / a0, b2: -alpha / a0, a1: -2 * Math.cos(w0) / a0, a2: (1 - alpha) / a0, x1: 0, x2: 0, y1: 0, y2: 0 };
+  }
+  let 짓 = null;                                      // 피치 지터 — 매끈한 떨림 대신 긁힘
+  if (n.지터) {
+    짓 = { 난수: 씨앗난수((n.f * 104729 + n.길이ms * 13) | 0), N: Math.max(1, Math.round(n.지터.주기ms / 1000 * SR)), i: 0, 이전: 0, 다음: 0 };
+    짓.다음 = (짓.난수() * 2 - 1) * n.지터.폭;
+  }
+  for (let i = 0; i < N && t0 + i < buf.length; i++) {
+    const u = i / N, t = i / SR;
+    const 미끄럼 = 1 - (1 - u) * (1 - u);
+    let f = n.f * Math.pow(비율, 미끄럼);
+    if (n.떨림 && u > n.떨림.부터) {
+      let v = (u - n.떨림.부터) / (1 - n.떨림.부터); v = v * v * (3 - 2 * v);
+      f *= 1 + n.떨림.깊이 * v * Math.sin(2 * Math.PI * n.떨림.속도 * t);
+    }
+    if (짓) {
+      if (짓.i <= 0) { 짓.이전 = 짓.다음; 짓.다음 = (짓.난수() * 2 - 1) * n.지터.폭; 짓.i = 짓.N; }
+      짓.i--; const w = 1 - 짓.i / 짓.N;
+      f *= 1 + (짓.이전 + (짓.다음 - 짓.이전) * w);
+    }
+    let 합 = 0;
+    for (let k = 0; k < 배음.length; k++) { 위상[k] += (2 * Math.PI * f * 배음[k][0]) / SR; 합 += 배음[k][1] * Math.sin(위상[k]); }
+    if (위상B) {
+      let 합B = 0; const fB = f * n.디튠.비율;
+      for (let k = 0; k < 배음.length; k++) { 위상B[k] += (2 * Math.PI * fB * 배음[k][0]) / SR; 합B += 배음[k][1] * Math.sin(위상B[k]); }
+      합 = (합 + n.디튠.양 * 합B) / (1 + n.디튠.양);
+    }
+    let x = 합 / 합계;
+    if (노즈) {
+      const xr = 노즈.난수() * 2 - 1;
+      const y = 노즈.b0 * xr + 노즈.b2 * 노즈.x2 - 노즈.a1 * 노즈.y1 - 노즈.a2 * 노즈.y2;
+      노즈.x2 = 노즈.x1; 노즈.x1 = xr; 노즈.y2 = 노즈.y1; 노즈.y1 = y;
+      x += n.숨노이즈.비율 * y * 2.5;
+    }
+    if (n.그로울) {
+      const m = Math.sin(2 * Math.PI * n.그로울.속도 * t);
+      const 모 = n.그로울.모양 === '각' ? Math.tanh(3 * m) : m;   // 각 = 스퍼터
+      x *= 1 - n.그로울.깊이 * (0.5 + 0.5 * 모);
+    }
+    if (n.드라이브) x = Math.tanh(n.드라이브 * x) / Math.tanh(n.드라이브);  // 찌그러뜨림
+    let s = n.g * 악기봉투(u, n, N) * x;
+    if (n.링모드) s *= (1 - n.링모드.깊이) + n.링모드.깊이 * Math.sin(2 * Math.PI * n.링모드.f * t);
+    buf[t0 + i] += s;
+  }
+}
+
 /* 한 이벤트를 float 버퍼로 렌더 — 시청 페이지 tone()과 같은 수식 */
 function renderEvent(ev) {
   const 음들 = ev.렌더.음;
@@ -78,6 +175,7 @@ function renderEvent(ev) {
   const totalSec = Math.max(...음들.map((n) => n.시작ms + n.길이ms)) / 1000 + TAIL;
   const buf = new Float64Array(Math.round(totalSec * SR));
   for (const n of 음들) {
+    if (n.파형 || n.게이트 || n.그로울 || n.링모드 || n.지터 || n.숨노이즈 || n.디튠 || n.드라이브) { 악기음(buf, n); continue; }   // 가이드 악기 — 위 머리말
     if (n.봉우리) { 음절(buf, n); continue; }   // 목소리 음절 — 위 머리말
     const t0 = Math.round((n.시작ms / 1000) * SR);
     const durS = n.길이ms / 1000;
