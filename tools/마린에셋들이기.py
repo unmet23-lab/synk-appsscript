@@ -571,6 +571,65 @@ def _시안(bpy, math, random, g):
             붙인것.append(판2)
         print('배지: 방석 위 발 앞 (%.2f, %.2f) · %s/%s' % (fx, 배y, 배지색, 배지심))
 
+    # ── 학용품 부품 — 연필·책 (유호 08-27 「군장을 학용품으로 · 귀엽게」) ─────────────
+    def 연필(밑점, 방향, 길이=0.9, 반지름=0.11):
+        """큰 연필 — 육각 몸(버터) + 깎은 나무(오트) + 심(잉크딥) + 지우개(코랄).
+        통짜 몸의 군장은 못 지우니 «덮는» 것이 이 통로의 문법이다 — 굴뚝·총이 이걸로 학용품이 된다."""
+        D3 = mathutils.Vector(방향).normalized()
+        쿼 = D3.to_track_quat('Z', 'Y')
+        조각들 = []
+
+        def 원통(중심t, 길, r, 재, 꼭짓점=6):
+            bpy.ops.mesh.primitive_cylinder_add(vertices=꼭짓점, radius=r, depth=길,
+                                                location=tuple(mathutils.Vector(밑점) + D3 * 중심t))
+            c = bpy.context.object
+            c.rotation_mode = 'QUATERNION'
+            c.rotation_quaternion = 쿼
+            if 꼭짓점 > 8:
+                bpy.ops.object.shade_smooth()
+            c.data.materials.append(재)
+            조각들.append(c)
+            붙인것.append(c)
+            return c
+
+        def 뿔(중심t, 길, r, 재):
+            bpy.ops.mesh.primitive_cone_add(vertices=24, radius1=r, radius2=0.0, depth=길,
+                                            location=tuple(mathutils.Vector(밑점) + D3 * 중심t))
+            c = bpy.context.object
+            c.rotation_mode = 'QUATERNION'
+            c.rotation_quaternion = 쿼
+            bpy.ops.object.shade_smooth()
+            c.data.materials.append(재)
+            조각들.append(c)
+            붙인것.append(c)
+            return c
+
+        몸재 = 펠트재질('연필몸', 색['Butter'], 배율=1.0, 지름=0.5) if 펠트로 else 매끈재질('연필몸', 색['Butter'], 거칠기=0.9)
+        나무재 = 펠트재질('연필나무', 색['Oat'], 배율=1.0, 지름=0.3) if 펠트로 else 매끈재질('연필나무', 색['Oat'], 거칠기=0.9)
+        심재 = 매끈재질('연필심', 색['Ink Deep'], 거칠기=0.5)
+        고무재 = 펠트재질('지우개', 색['Coral'], 배율=1.0, 지름=0.2) if 펠트로 else 매끈재질('지우개', 색['Coral'], 거칠기=0.85)
+        원통(길이 * 0.5, 길이, 반지름, 몸재, 꼭짓점=6)                       # 육각 몸
+        뿔(길이 + 반지름 * 1.15, 반지름 * 2.3, 반지름 * 1.02, 나무재)        # 깎은 나무
+        뿔(길이 + 반지름 * 2.75, 반지름 * 1.1, 반지름 * 0.34, 심재)          # 심
+        원통(-반지름 * 0.55, 반지름 * 1.1, 반지름 * 0.92, 고무재, 꼭짓점=24)  # 지우개 꽁지
+        return 조각들
+
+    def 책(중심, 겉색='Lapis Deep', 기울기=(0, 0, 0), 반=(0.16, 0.05, 0.12)):
+        """작은 책 — 겉표지(킷색) + 옆으로 살짝 삐져나온 속지(오트). 수류탄의 자리를 이것이 잇는다."""
+        겉재 = 펠트재질('책겉' + 겉색, 색[겉색], 배율=1.0, 지름=0.3) if 펠트로 else 매끈재질('책겉', 색[겉색], 거칠기=0.9)
+        속재 = 매끈재질('책속', 색['Oat'], 거칠기=0.85)
+        겉 = 베개몸(반, 위치=중심, 크리스=0.55, 레벨=2)
+        겉.rotation_euler = tuple(math.radians(v) for v in 기울기)
+        겉.data.materials.append(겉재)
+        붙인것.append(겉)
+        속 = 베개몸((반[0] * 0.94, 반[1] * 0.62, 반[2] * 0.94),
+                  위치=(중심[0], 중심[1], 중심[2]), 크리스=0.7, 레벨=2)
+        속.rotation_euler = tuple(math.radians(v) for v in 기울기)
+        # 속지는 표지 «옆»으로 삐져나온다 — 책의 서명은 페이지 단면이다.
+        속.location = 겉.location + (겉.rotation_euler.to_matrix() @ mathutils.Vector((반[0] * 0.10, 0, 0)))
+        속.data.materials.append(속재)
+        붙인것.append(속)
+
     if '어깨땀' in 장식들:
         # 어깨판 돔 위도선 — 돔 표면 점을 실측해 한 줄 두른다(털이 못 사는 자리에 실땀이 산다).
         # 🔴 위도선(2차)은 돔 «뒤»를 돌아 카메라에서 안 보였다 — 보이는 자리는 앞면이다.
@@ -601,8 +660,8 @@ def _시안(bpy, math, random, g):
         # 가슴 날개 «밑선»을 받치는 완만한 호 — 날개 윤곽 자동 추적은 원리상 무리(부조 릴리프),
         # 호를 긋고 각 땀의 y 만 실제 가슴 표면에 «스냅»한다. 높이·반경은 눈으로 맞춘 값.
         중zc = float(_인자.get('가슴땀높이', '1.40'))
-        폭c = float(_인자.get('가슴땀폭', '0.44'))
-        몸xc = float(_np.median(무대P[(무대P[:, 2] > 목표키 * 0.4) & (무대P[:, 2] < 목표키 * 0.6)][:, 0]))
+        폭c = float(_인자.get('가슴땀폭', '0.37'))
+        몸xc = float(_np.median(무대P[(무대P[:, 2] > 목표키 * 0.4) & (무대P[:, 2] < 목표키 * 0.6)][:, 0])) - 0.05
         땀수 = 7
         for i in range(땀수):
             t = i / (땀수 - 1)
@@ -616,6 +675,61 @@ def _시안(bpy, math, random, g):
             접 = (1.0, 0.0, -0.20 * math.cos(math.pi * t))       # 호의 기울기를 따라 눕는다
             붙인것.append(표면땀((xa, ya, za), 접, (0.0, -1.0, 0.0), 길이=0.040, 굵기=0.009))
         print('가슴 땀: 날개 밑 호 %d땀 (z %.2f · 반폭 %.2f)' % (땀수, 중zc, 폭c))
+
+    if '연필가방' in 장식들:
+        # 배낭 굴뚝 둘 → «가방에 꽂힌 큰 연필 둘». 굴뚝의 실좌표를 재서 그 위에 세워 덮는다.
+        몸축3 = _np.median(무대P[(무대P[:, 2] > 목표키 * 0.4) & (무대P[:, 2] < 목표키 * 0.6)][:, :2], axis=0)
+        꼭3 = 무대P[무대P[:, 2] > 목표키 * 0.90]
+        D3v = 꼭3[:, :2].mean(0) - 몸축3
+        D3v = D3v / max(1e-9, _np.linalg.norm(D3v))
+        뒤것 = 꼭3[(꼭3[:, :2] - 몸축3) @ D3v > 0.05]
+        Pp3 = _np.array([-D3v[1], D3v[0]])
+        곁좌 = (뒤것[:, :2] - 몸축3) @ Pp3
+        for 부호 in (-1, 1):
+            무리 = 뒤것[곁좌 * 부호 > 0.02]
+            if len(무리) < 30:
+                continue
+            cx, cy = float(_np.median(무리[:, 0])), float(_np.median(무리[:, 1]))
+            꼭z = float(무리[:, 2].max())
+            방 = (float(Pp3[0]) * 부호 * 0.14 + float(D3v[0]) * 0.05,
+                 float(Pp3[1]) * 부호 * 0.14 + float(D3v[1]) * 0.05, 1.0)
+            연필((cx, cy, 꼭z - 0.66), 방, 길이=0.60, 반지름=0.105)
+        print('연필가방: 굴뚝 둘을 큰 연필로 덮었다')
+
+    if '허리책' in 장식들:
+        # 허리 수류탄·파우치 자리 → 작은 책. 파우치 앞면을 재서 그 위에 얹는다.
+        bx0, bx1, bz0, bz1 = (float(v) for v in _인자.get('허리책상자', '-0.5,-0.1,0.92,1.16').split(','))
+        허리 = 무대P[(무대P[:, 0] > bx0) & (무대P[:, 0] < bx1) &
+                   (무대P[:, 2] > bz0) & (무대P[:, 2] < bz1) & (무대P[:, 1] < 0.2)]
+        if len(허리) > 100:
+            앞y3 = float(_np.percentile(허리[:, 1], 4))
+            cx3 = float(_np.median(허리[:, 0]))
+            cz3 = (bz0 + bz1) * 0.5
+            책((cx3, 앞y3 - 0.055, cz3), 겉색=_인자.get('책색', 'Lapis Deep'),
+              기울기=(6, 0, -9), 반=(0.15, 0.055, 0.115))
+            print('허리책: 파우치 앞 (%.2f, %.2f, %.2f)' % (cx3, 앞y3, cz3))
+
+    if '총연필' in 장식들:
+        # 총 → 큰 연필. 지울 수 없으니 총의 «축»을 재서 같은 축의 더 굵은 연필로 앞에서 덮는다.
+        총 = 무대P[(무대P[:, 0] > 0.5) & (무대P[:, 2] > 1.05) & (무대P[:, 2] < 2.05) &
+                  (무대P[:, 1] < 0.30)]
+        if len(총) > 500:
+            중4 = 총.mean(0)
+            # 🔴 3D PCA 는 «앞으로 뻗은 팔» 성분을 주축으로 잡았다(1차: 달걀). 총의 긴 축은
+            #   화면 평면(xz)에 산다 — 거기서 재고 y 는 0 으로 못 박는다.
+            평면 = 총[:, [0, 2]] - 중4[[0, 2]]
+            _, _, Vt = _np.linalg.svd(평면, full_matrices=False)
+            축4 = _np.array([Vt[0][0], 0.0, Vt[0][1]])
+            if 축4[2] < 0:
+                축4 = -축4                                   # 심은 위(총구 쪽)로
+            뻗 = (총 - 중4) @ 축4
+            길4 = float(_np.percentile(뻗, 97) - _np.percentile(뻗, 3))
+            앞면4 = float(_np.percentile(총[:, 1], 6))
+            밑4 = 중4 + 축4 * float(_np.percentile(뻗, 4))
+            밑4[1] = 앞면4 - 0.02                            # 총 «앞»에 서야 총을 가린다
+            연필(tuple(밑4), tuple(축4), 길이=길4 * 0.99,
+               반지름=float(_인자.get('총연필굵기', '0.24')))
+            print('총연필: 축 %s · 길이 %.2f · 앞 y %.2f' % (_np.round(축4, 2), 길4, 앞면4))
 
     # 프린팅용으로 나갈 것을 «가진 쪽»이 못 박는다 — 내보내기가 이름으로 무대 소품을 거르다
     #   받침천을 통째로 실어 보내던 자리를 이것이 막는다(08-27 실측).
