@@ -562,6 +562,48 @@ def _시안(bpy, math, random, g):
                 남길h.append(o)
             else:
                 bpy.data.objects.remove(o, do_unlink=True)
+        # ── 해골 빼기 (유호 08-28 「마린 해골 빼고」) ────────────────────────────────
+        #   갑옷은 우주복이 통째로 대신했지만 **헬멧에 붙은 해골 장식은 그대로 남는다** — 학생 홈에
+        #   매일 뜨는 얼굴이라 그것만 걷어야 했다. 다행히 이 조형은 «서로 관통하는 별개 셸»이라
+        #   (위 주석) 해골도 제 조각이다: 베거나 녹이지 않고 **그 조각을 안 남기면** 끝난다.
+        #   `조각표=1` 로 남은 조각의 주소를 눈으로 보고, `빼기=x0,x1,y0,y1,z0,z1` 로 상자를 준다.
+        #   상자는 «여럿» 받는다(세미콜론으로) — 해골과 얼굴 앞 부품이 헬멧 본체를 사이에 두고
+        #   떨어져 있어 한 상자로는 본체까지 물어 간다.
+        빼기글 = _인자.get('빼기', '')
+        빼상자들 = [[float(v) for v in 한.split(',')] for 한 in 빼기글.split(';') if 한.strip()]
+        if _인자.get('조각표'):
+            print('── 머리로 남은 조각 표 (빼기= 상자를 고를 자) ──')
+            for i4, o in enumerate(sorted(남길h, key=lambda o: -len(o.data.vertices))):
+                수4 = len(o.data.vertices)
+                a4 = _np.empty(수4 * 3, dtype=_np.float32)
+                o.data.vertices.foreach_get('co', a4)
+                M4 = _np.array(o.matrix_world)
+                S4 = a4.reshape(수4, 3).astype(_np.float64) @ M4[:3, :3].T + M4[:3, 3]
+                c4 = (S4.min(0) + S4.max(0)) * 0.5
+                # ⚠ ndarray.ptp() 는 NumPy 2.0 에서 «사라졌다» — 모듈 함수로 부른다.
+                크4 = S4.max(0) - S4.min(0)
+                print('  #%02d %7d점 · 중심 %+.3f,%+.3f,%+.3f · 크기 %.3f x %.3f x %.3f'
+                      % (i4, 수4, c4[0], c4[1], c4[2], 크4[0], 크4[1], 크4[2]))
+        if 빼상자들:
+            뺀것4 = []
+            for o in list(남길h):
+                수4 = len(o.data.vertices)
+                a4 = _np.empty(수4 * 3, dtype=_np.float32)
+                o.data.vertices.foreach_get('co', a4)
+                M4 = _np.array(o.matrix_world)
+                S4 = a4.reshape(수4, 3).astype(_np.float64) @ M4[:3, :3].T + M4[:3, 3]
+                c4 = (S4.min(0) + S4.max(0)) * 0.5
+                for bx0, bx1, by0, by1, bz0, bz1 in 빼상자들:
+                    if (bx0 < c4[0] < bx1) and (by0 < c4[1] < by1) and (bz0 < c4[2] < bz1):
+                        뺀것4.append(수4)
+                        남길h.remove(o)
+                        bpy.data.objects.remove(o, do_unlink=True)
+                        break
+            print('빼기: 조각 %d개 제거(%s점) · 상자 %d개' % (len(뺀것4), 뺀것4, len(빼상자들)))
+            # 🔴 조용히 0개를 지나가면 해골이 그대로 나간다 — 이 저장소가 아는 「0건이 성공 얼굴」이다.
+            assert len(뺀것4) == len(빼상자들), (
+                '빼기: 상자 %d개인데 제거는 %d개다 — 조각표=1 로 주소를 다시 본다'
+                % (len(빼상자들), len(뺀것4)))
         들인것[:] = 남길h
         assert 들인것, ('우주복: 머리 상자 안에 앉는 통짜 조각이 0개다 — 통짜 메시(느슨 조각 1개)면'
                       ' 이 길이 원리상 안 통한다. 머리상자를 넓히거나 조각 수를 본다')
