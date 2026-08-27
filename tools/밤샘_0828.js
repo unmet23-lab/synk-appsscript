@@ -31,6 +31,16 @@
  *   $cls = [wmiclass]'Win32_Process'
  *   $cls.Create('"C:\Program Files\nodejs\node.exe" "…\tools\밤샘_0828.js" > "…\밤샘.log" 2>&1', 'C:\…\SYNK-appsscript')
  *   ⇒ 그리고 트랙.md 에 「돌고 있음 + 로그 절대경로」를 적고 옆 세션에 알린다.
+ *
+ * 🔴 **`cmd.exe /c` 로 감싸야 한다**(08-28 실측 사고 · 내가 밟았다). 위 줄을 그대로 쓰면 안 된다:
+ *   WMI `Win32_Process.Create` 는 **셸을 안 거친다** — `>` 와 로그 경로와 `2>&1` 이 리디렉션이
+ *   아니라 **node 의 argv 로 그대로** 들어간다. 증상이 고약하다: 굽기는 «멀쩡히 돌고»
+ *   (이 파일이 남는 argv 를 안 보니까) **로그 파일만 아예 안 생긴다.**
+ *   나는 그 경로를 트랙과 옆 세션에 「여기 있다」고 알린 «뒤에» 알았다 —
+ *   **없는 파일을 가리키는 안내는 없느니만 못하다.**
+ *   ⇒ 바른 꼴: `cmd.exe /c ""<node>" "<이 파일>" > "<로그>" 2>&1"` (바깥 따옴표 두 겹 = cmd 규칙)
+ *   🔑 그래도 밤을 버리지는 않는다: **판정은 로그가 아니라 파일이다**(이 저장소의 오랜 규율).
+ *      「끝났나」는 `node tools/명품재굽기.js --검사 …` 와 산출 폴더가 답한다.
  */
 'use strict';
 const { spawnSync, execFileSync } = require('node:child_process');
