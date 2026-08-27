@@ -450,10 +450,262 @@ def _시안(bpy, math, random, g):
         땀.data.materials.append(실재)
         return 땀
 
+    붙인것 = []                                   # 우리가 «더한» 것 — 프린팅에 같이 나가야 하는 몫
+
+    # ── 학용품 부품 — 연필·책 (유호 08-27 「군장을 학용품으로 · 귀엽게」) ─────────────
+    def 연필(밑점, 방향, 길이=0.9, 반지름=0.11):
+        """큰 연필 — 육각 몸(버터) + 깎은 나무(오트) + 심(잉크딥) + 지우개(코랄).
+        통짜 몸의 군장은 못 지우니 «덮는» 것이 이 통로의 문법이다 — 굴뚝·총이 이걸로 학용품이 된다."""
+        D3 = mathutils.Vector(방향).normalized()
+        쿼 = D3.to_track_quat('Z', 'Y')
+        조각들 = []
+
+        def 원통(중심t, 길, r, 재, 꼭짓점=6):
+            bpy.ops.mesh.primitive_cylinder_add(vertices=꼭짓점, radius=r, depth=길,
+                                                location=tuple(mathutils.Vector(밑점) + D3 * 중심t))
+            c = bpy.context.object
+            c.rotation_mode = 'QUATERNION'
+            c.rotation_quaternion = 쿼
+            if 꼭짓점 > 8:
+                bpy.ops.object.shade_smooth()
+            c.data.materials.append(재)
+            조각들.append(c)
+            붙인것.append(c)
+            return c
+
+        def 뿔(중심t, 길, r, 재):
+            bpy.ops.mesh.primitive_cone_add(vertices=24, radius1=r, radius2=0.0, depth=길,
+                                            location=tuple(mathutils.Vector(밑점) + D3 * 중심t))
+            c = bpy.context.object
+            c.rotation_mode = 'QUATERNION'
+            c.rotation_quaternion = 쿼
+            bpy.ops.object.shade_smooth()
+            c.data.materials.append(재)
+            조각들.append(c)
+            붙인것.append(c)
+            return c
+
+        몸재 = 펠트재질('연필몸', 색['Butter'], 배율=1.0, 지름=0.5) if 펠트로 else 매끈재질('연필몸', 색['Butter'], 거칠기=0.9)
+        나무재 = 펠트재질('연필나무', 색['Oat'], 배율=1.0, 지름=0.3) if 펠트로 else 매끈재질('연필나무', 색['Oat'], 거칠기=0.9)
+        심재 = 매끈재질('연필심', 색['Ink Deep'], 거칠기=0.5)
+        고무재 = 펠트재질('지우개', 색['Coral'], 배율=1.0, 지름=0.2) if 펠트로 else 매끈재질('지우개', 색['Coral'], 거칠기=0.85)
+        원통(길이 * 0.5, 길이, 반지름, 몸재, 꼭짓점=6)                       # 육각 몸
+        뿔(길이 + 반지름 * 1.15, 반지름 * 2.3, 반지름 * 1.02, 나무재)        # 깎은 나무
+        뿔(길이 + 반지름 * 2.75, 반지름 * 1.1, 반지름 * 0.34, 심재)          # 심
+        원통(-반지름 * 0.55, 반지름 * 1.1, 반지름 * 0.92, 고무재, 꼭짓점=24)  # 지우개 꽁지
+        return 조각들
+
+    def 책(중심, 겉색='Lapis Deep', 기울기=(0, 0, 0), 반=(0.16, 0.05, 0.12)):
+        """작은 책 — 겉표지(킷색) + 옆으로 살짝 삐져나온 속지(오트). 수류탄의 자리를 이것이 잇는다."""
+        겉재 = 펠트재질('책겉' + 겉색, 색[겉색], 배율=1.0, 지름=0.3) if 펠트로 else 매끈재질('책겉', 색[겉색], 거칠기=0.9)
+        속재 = 매끈재질('책속', 색['Oat'], 거칠기=0.85)
+        겉 = 베개몸(반, 위치=중심, 크리스=0.55, 레벨=2)
+        겉.rotation_euler = tuple(math.radians(v) for v in 기울기)
+        겉.data.materials.append(겉재)
+        붙인것.append(겉)
+        속 = 베개몸((반[0] * 0.94, 반[1] * 0.62, 반[2] * 0.94),
+                  위치=(중심[0], 중심[1], 중심[2]), 크리스=0.7, 레벨=2)
+        속.rotation_euler = tuple(math.radians(v) for v in 기울기)
+        # 속지는 표지 «옆»으로 삐져나온다 — 책의 서명은 페이지 단면이다.
+        속.location = 겉.location + (겉.rotation_euler.to_matrix() @ mathutils.Vector((반[0] * 0.10, 0, 0)))
+        속.data.materials.append(속재)
+        붙인것.append(속)
+
+    # ── 우주복 — 갑옷을 «전부 벗기고» 우리 손으로 다시 입힌다 (유호 08-27 「우주복 입힐수는 없나」) ──
+    #   1·2차는 갑옷을 복셀 리메시로 «녹여» 봤다 — 마시멜로 덩어리가 됐다(경계는 찢기고 위엄은
+    #   죽었다). 답은 반대였다: 이 조형에서 살릴 것은 «얼굴» 하나다. 헬멧만 잰 공으로 오려 내고,
+    #   몸은 우리 형태 언어(베개몸 · 펠트 · 실땀)로 처음부터 짓는다 — 우주복의 형태 언어가
+    #   정확히 «통통한 봉제 볼륨»이라, 갑옷에선 코스프레였던 그 문법(08-27 하루의 실패)이
+    #   여기선 정답이 된다. ⚠눈띠(절대 z 주소)를 지키려고 머리는 xy 만 옮기고 z 는 안 건드린다.
+    우주복글 = _인자.get('우주복', '')
+    if 우주복글 and 우주복글 not in ('0', '끔'):
+        import bmesh
+        # 헬멧 주소 — 머리 풍선과 같은 자: 꼭대기 띠의 근축·«앞» 무리(뒤는 배낭 굴뚝).
+        u4 = 무대P[:, 2] / 목표키
+        몸축4 = _np.median(무대P[(u4 > 0.40) & (u4 < 0.60)][:, :2], axis=0)
+        후보h = 무대P[(u4 > 0.80) & (abs(무대P[:, 0] - 몸축4[0]) < 목표키 * 0.20)]
+        assert len(후보h) > 500, '우주복: 머리 띠가 비었다(%d점) — u 0.80 위 근축이 이 몸에 안 맞는다' % len(후보h)
+        if _인자.get('우주복탐침'):
+            # 슬라이스 표 — 헬멧이 «어디에» 사는지 추측 대신 눈으로 가른다(5·6차: 공을 네 번 헛짚었다).
+            for i in range(16):
+                up = 0.68 + 0.02 * i
+                띠p = 무대P[(무대P[:, 2] > 목표키 * up) & (무대P[:, 2] < 목표키 * (up + 0.02))]
+                근p = 띠p[abs(띠p[:, 0] - 몸축4[0]) < 목표키 * 0.30]
+                if len(근p):
+                    print('u %.2f z %.2f · %7d점 · x %+.2f~%+.2f · y %+.2f~%+.2f (중 %+.2f)'
+                          % (up, 목표키 * up, len(근p), 근p[:, 0].min(), 근p[:, 0].max(),
+                             근p[:, 1].min(), 근p[:, 1].max(), float(_np.median(근p[:, 1]))))
+        # 🔑 상자로 «베는» 다섯 판이 전부 찢긴 파편을 낳았다(가른 단면이 그대로 보인다).
+        #   이 프린트 조형은 부품이 «서로 관통하는 별개 셸»이다 — 그러면 답은 베기가 아니라
+        #   **통짜 조각 고르기**다: 느슨한 조각으로 분리해, 무게중심이 머리 상자 안에 앉는 조각만
+        #   통째로 남긴다. 단면이 없으니 파편도 없다. 상자 기본값 = primey · z30,x-8 · 풍선 2.35 실측.
+        상자h = [float(v) for v in _인자.get('머리상자', '-0.48,0.28,-0.42,0.50,1.80,2.30').split(',')]
+        x0h, x1h, y0h, y1h, z0h, z1h = 상자h
+        bpy.ops.object.select_all(action='DESELECT')
+        for o in 들인것:
+            o.select_set(True)
+        bpy.context.view_layer.objects.active = 들인것[0]
+        bpy.ops.mesh.separate(type='LOOSE')
+        조각전부 = [o for o in bpy.context.selected_objects if o.type == 'MESH']
+        남길h = []
+        for o in 조각전부:
+            수h = len(o.data.vertices)
+            if 수h < 40:                                   # 부스러기
+                bpy.data.objects.remove(o, do_unlink=True)
+                continue
+            ah = _np.empty(수h * 3, dtype=_np.float32)
+            o.data.vertices.foreach_get('co', ah)
+            Mh = _np.array(o.matrix_world)
+            Sh = ah.reshape(수h, 3).astype(_np.float64) @ Mh[:3, :3].T + Mh[:3, 3]
+            ch = (Sh.min(0) + Sh.max(0)) * 0.5
+            if (x0h < ch[0] < x1h) and (y0h < ch[1] < y1h) and (z0h < ch[2] < z1h):
+                남길h.append(o)
+            else:
+                bpy.data.objects.remove(o, do_unlink=True)
+        들인것[:] = 남길h
+        assert 들인것, ('우주복: 머리 상자 안에 앉는 통짜 조각이 0개다 — 통짜 메시(느슨 조각 1개)면'
+                      ' 이 길이 원리상 안 통한다. 머리상자를 넓히거나 조각 수를 본다')
+        print('우주복: 통짜 조각 %d개가 머리로 남았다(전체 %d개 중)' % (len(남길h), len(조각전부)))
+        머리P0 = 점모으기()
+        중xy = (머리P0[:, :2].min(0) + 머리P0[:, :2].max(0)) * 0.5
+        이동h = mathutils.Matrix.Translation((-float(중xy[0]), 0.06 - float(중xy[1]), 0.0))
+        for o in 들인것:
+            o.matrix_world = 이동h @ o.matrix_world
+        # 고개 들기 — 숙인 포즈의 시선을 살짝 든다. 피벗 = 상자 밑면(목). 몸 기울이기(x-20)로
+        # 들면 가슴 독수리가 머리에 딸려 온다(4차 실측). ⚠눈띠도 이만큼 위로 이사한다 — 레시피 몫.
+        축점h = mathutils.Vector((0.0, 0.06, z0h))
+        들기 = float(_인자.get('머리들기', '8'))
+        if 들기:
+            R들 = (mathutils.Matrix.Translation(축점h)
+                  @ mathutils.Matrix.Rotation(-math.radians(들기), 4, 'X')
+                  @ mathutils.Matrix.Translation(-축점h))
+            for o in 들인것:
+                o.matrix_world = R들 @ o.matrix_world
+        # 머리 크기 — 오린 헬멧은 몸에 비해 작아 «게딱지 모자»가 된다(7차 실측). 치비 문법은
+        # 머리가 키의 3할 — 목 피벗 강체 확대로 채운다(형태는 안 깨진다 · 풍선과 같은 문법).
+        배h = float(_인자.get('머리크기', '1.45'))
+        if abs(배h - 1.0) > 1e-3:
+            S확 = (mathutils.Matrix.Translation(축점h)
+                  @ mathutils.Matrix.Scale(배h, 4)
+                  @ mathutils.Matrix.Translation(-축점h))
+            for o in 들인것:
+                o.matrix_world = S확 @ o.matrix_world
+        # 머리 올림 — 그대로 얹으면 턱이 몸통에 파묻혀 목이 없다(9차 실측). 링이 이 틈에 산다.
+        올림h = float(_인자.get('머리올림', '0.10'))
+        if 올림h:
+            for o in 들인것:
+                o.matrix_world = mathutils.Matrix.Translation((0, 0, 올림h)) @ o.matrix_world
+        # 속빛 — 바이저 격자에 눈을 «칠하면» 돌아간 얼굴 위에서 번진다(9차 실측: 뺨·이마까지).
+        # 칠 대신 헬멧 «속»에 발광 구를 넣는다 — 빛이 틈으로만 새니 번짐이 원리상 없다.
+        # 프린팅에는 안 나간다(내보낼것 = 들인것+붙인것 — 여기 안 넣는 것으로 갈린다).
+        속빛 = float(_인자.get('속빛', '0'))
+        if 속빛 > 0:
+            머리Pn = 점모으기()
+            cn = (머리Pn.min(0) + 머리Pn.max(0)) * 0.5
+            # 반 0.19 · 앞 −0.16 은 이마 틈으로 구가 «전구»처럼 비쳤다(11차) — 틈 뒤에 물러앉는다.
+            bpy.ops.mesh.primitive_uv_sphere_add(radius=float(_인자.get('속빛반', '0.16')),
+                                                 location=(float(cn[0]), float(cn[1]) - 0.10,
+                                                           float(cn[2])))
+            속구 = bpy.context.object
+            bpy.ops.object.shade_smooth()
+            속구.data.materials.append(발광재질('속빛', 색[_인자.get('눈색', 'Butter')], 속빛))
+            print('속빛: (%.2f, %.2f, %.2f) 세기 %.1f' % (cn[0], cn[1] - 0.10, cn[2], 속빛))
+
+        # ── 몸 조립 — 좌표를 «아는» 몸이라 재지 않고 짓는다 ──
+        bx, by = 0.0, 0.02
+        복장색 = _인자.get('우주복색', 'Oat')
+        장갑색 = _인자.get('장갑색', 'Coral')
+        복재 = 펠트재질('우주복', 색[복장색]) if 펠트로 else 매끈재질('에셋_우주복', 색[복장색], 거칠기=0.92)
+        장갑재 = 펠트재질('장갑', 색[장갑색], 배율=1.0) if 펠트로 else 매끈재질('에셋_장갑', 색[장갑색], 거칠기=0.9)
+        상자들h = []                                   # (중심, 반경) — 카메라·받침이 잴 합성 점의 재료
+
+        def 조각h(반, 위치, 재, 크리스=0.26, 돌기=None):
+            c = 베개몸(반, 위치=위치, 크리스=크리스, 레벨=3)
+            if 돌기:
+                c.rotation_euler = tuple(math.radians(v) for v in 돌기)
+            c.data.materials.append(재)
+            붙인것.append(c)
+            상자들h.append((위치, 반))
+            return c
+
+        조각h((0.42, 0.36, 0.46), (bx, by + 0.02, 1.36), 복재, 크리스=0.22)            # 몸통
+        for 부 in (-1, 1):
+            조각h((0.16, 0.16, 0.28), (bx + 0.20 * 부, by + 0.01, 0.55), 복재)          # 다리
+            조각h((0.19, 0.25, 0.14), (bx + 0.21 * 부, by - 0.07, 0.15), 장갑재, 크리스=0.30)  # 부츠
+        조각h((0.14, 0.14, 0.32), (bx - 0.50, by, 1.30), 복재, 돌기=(0, 22, 0))          # 왼팔(내림)
+        조각h((0.16, 0.15, 0.16), (bx - 0.63, by - 0.02, 0.96), 장갑재)                  # 왼장갑
+        조각h((0.14, 0.14, 0.32), (bx + 0.50, by - 0.02, 1.46), 복재, 돌기=(0, 38, 0))   # 오른팔(올림)
+        조각h((0.16, 0.15, 0.16), (bx + 0.71, by - 0.05, 1.72), 장갑재)                  # 오른장갑
+        # 목 링 — 우주복의 서명이자, 오려 낸 헬멧의 단면을 덮는 자리.
+        링재 = 매끈재질('에셋_링', 색[_인자.get('링색', 'Butter')], 거칠기=0.55)
+        bpy.ops.mesh.primitive_torus_add(major_radius=0.37, minor_radius=0.08,
+                                         location=(bx, by + 0.04, z0h + 올림h - 0.04))
+        링 = bpy.context.object
+        bpy.ops.object.shade_smooth()
+        링.data.materials.append(링재)
+        붙인것.append(링)
+        상자들h.append(((bx, by + 0.04, z0h + 올림h - 0.04), (0.45, 0.45, 0.09)))
+        # 등 가방 — 생명유지장치 겸 학생 책가방(몸통·플랩·주머니).
+        가방색h = _인자.get('가방색', 'Coral')
+        가방재h = (펠트재질('가방', 색[가방색h], 배율=1.0) if 펠트로
+                 else 매끈재질('에셋_가방', 색[가방색h], 거칠기=0.92))
+        for 반g, 위g, 크g in (((0.28, 0.12, 0.32), (bx, by + 0.42, 1.38), 0.26),
+                            ((0.24, 0.05, 0.11), (bx, by + 0.53, 1.58), 0.30),
+                            ((0.16, 0.05, 0.12), (bx, by + 0.53, 1.20), 0.34)):
+            cg = 베개몸(반g, 위치=위g, 크리스=크g, 레벨=3)
+            cg.data.materials.append(가방재h)
+            붙인것.append(cg)
+            상자들h.append((위g, 반g))
+        # 가슴 패널 — 생명유지 제어판 + 단추 셋(우주복을 우주복으로 읽게 하는 서명).
+        패널색h = _인자.get('패널색', 'Ink Deep')
+        판재h = 펠트재질('패널', 색[패널색h], 배율=1.0) if 펠트로 else 매끈재질('에셋_패널', 색[패널색h], 거칠기=0.9)
+        판h = 베개몸((0.14, 0.042, 0.10), 위치=(bx, by - 0.375, 1.40), 크리스=0.45, 레벨=2)
+        판h.rotation_euler = (math.radians(6), 0, 0)
+        판h.data.materials.append(판재h)
+        붙인것.append(판h)
+        for i, 단색 in enumerate(('Coral', 'Butter', 'Lapis Deep')):
+            단재 = 매끈재질('에셋_단추' + 단색, 색[단색], 거칠기=0.35)
+            단h = 베개몸((0.030, 0.024, 0.030),
+                      위치=(bx - 0.080 + 0.080 * i, by - 0.405, 1.42), 크리스=0.6, 레벨=2)
+            단h.data.materials.append(단재)
+            붙인것.append(단h)
+        # 큰 연필 — 오른장갑이 쥔다(서전트의 «든 무기»를 학용품이 잇는다).
+        연필((bx + 0.60, by - 0.10, 1.34), (0.28, -0.10, 1.0), 길이=0.92, 반지름=0.12)
+        상자들h.append(((bx + 0.88, by - 0.16, 2.20), (0.15, 0.15, 0.40)))
+        # 실땀 — 몸통 앞 세로 솔기 둘 + 부츠 윗단(봉제 우주복의 서명).
+        for 쪽 in (-1, 1):
+            xs = bx + 0.19 * 쪽
+            for i in range(5):
+                zs = 1.12 + 0.12 * i
+                남 = max(0.0, 1.0 - abs((xs - bx) / 0.42) ** 2.4 - abs((zs - 1.36) / 0.46) ** 2.4)
+                ys = (by + 0.02) - 0.36 * (남 ** 0.42) - 0.004
+                붙인것.append(표면땀((xs, ys, zs), (0.15 * 쪽, 0.0, 1.0), (0.0, -1.0, 0.0),
+                                 길이=0.045, 굵기=0.009))
+        for 부 in (-1, 1):
+            for i in range(3):
+                붙인것.append(표면땀((bx + 0.21 * 부 + (i - 1) * 0.085, by - 0.29, 0.26),
+                                 (1.0, 0.0, 0.0), (0.0, -0.8, 0.6), 길이=0.040, 굵기=0.009))
+        # 합성 무대P — 카메라·받침·배지·눈이 잴 자. 머리 실점 + 지은 조각들의 상자 여덟 귀.
+        귀들h = [(cx + rx * sx, cy + ry * sy, cz + rz * sz)
+                for (cx, cy, cz), (rx, ry, rz) in 상자들h
+                for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)]
+        무대P = _np.vstack([점모으기(), _np.array(귀들h)])
+        # 몸돌리기 — 조립 몸은 «돌리기=z»를 안 탄다(그건 들여온 메시 몫이라 머리만 돈다).
+        # 뒷태 컷은 이걸로 통째로 돈다. 받침·배지는 돌린 «뒤» 무대P 로 재니 그대로 맞는다.
+        몸돌 = float(_인자.get('몸돌리기', '0'))
+        if 몸돌:
+            Rz몸 = mathutils.Matrix.Rotation(math.radians(몸돌), 4, 'Z')
+            for o in 들인것 + 붙인것:
+                o.matrix_world = Rz몸 @ o.matrix_world
+            c몸, s몸 = math.cos(math.radians(몸돌)), math.sin(math.radians(몸돌))
+            무대P = _np.column_stack([무대P[:, 0] * c몸 - 무대P[:, 1] * s몸,
+                                    무대P[:, 0] * s몸 + 무대P[:, 1] * c몸, 무대P[:, 2]])
+        print('우주복: 머리 상자 오림(%s점) · 들기 %.0f° · 조각 %d벌 · 몸 %s · 장갑 %s'
+              % (f'{len(머리P0):,}', 들기, len(상자들h), 복장색, 장갑색))
+
     # ── SYNK 표식 — 등짐 위 «학생 책가방» (유호 08-27 「뒤에 달고있는걸 학생 가방으로」) ──
     #   통짜라 원래 배낭을 «지울» 수는 없다 — 그것을 덮는 책가방을 씌운다. 굴뚝 둘이 위로
     #   삐져나오는 것은 «가방에서 삐져나온 연필 두 자루»로 읽힌다(엉뚱함은 유호님이 열어 두셨다).
-    붙인것 = []                                   # 우리가 «더한» 것 — 프린팅에 같이 나가야 하는 몫
     if _인자.get('가방', '0') not in ('0', '끔'):
         가방색 = _인자.get('가방색', 'Butter')
         가방재 = (펠트재질('가방', 색[가방색], 배율=1.0, 지름=0.8) if 펠트로
@@ -618,65 +870,6 @@ def _시안(bpy, math, random, g):
             판2.data.materials.append(재)
             붙인것.append(판2)
         print('배지: 방석 위 발 앞 (%.2f, %.2f) · %s/%s' % (fx, 배y, 배지색, 배지심))
-
-    # ── 학용품 부품 — 연필·책 (유호 08-27 「군장을 학용품으로 · 귀엽게」) ─────────────
-    def 연필(밑점, 방향, 길이=0.9, 반지름=0.11):
-        """큰 연필 — 육각 몸(버터) + 깎은 나무(오트) + 심(잉크딥) + 지우개(코랄).
-        통짜 몸의 군장은 못 지우니 «덮는» 것이 이 통로의 문법이다 — 굴뚝·총이 이걸로 학용품이 된다."""
-        D3 = mathutils.Vector(방향).normalized()
-        쿼 = D3.to_track_quat('Z', 'Y')
-        조각들 = []
-
-        def 원통(중심t, 길, r, 재, 꼭짓점=6):
-            bpy.ops.mesh.primitive_cylinder_add(vertices=꼭짓점, radius=r, depth=길,
-                                                location=tuple(mathutils.Vector(밑점) + D3 * 중심t))
-            c = bpy.context.object
-            c.rotation_mode = 'QUATERNION'
-            c.rotation_quaternion = 쿼
-            if 꼭짓점 > 8:
-                bpy.ops.object.shade_smooth()
-            c.data.materials.append(재)
-            조각들.append(c)
-            붙인것.append(c)
-            return c
-
-        def 뿔(중심t, 길, r, 재):
-            bpy.ops.mesh.primitive_cone_add(vertices=24, radius1=r, radius2=0.0, depth=길,
-                                            location=tuple(mathutils.Vector(밑점) + D3 * 중심t))
-            c = bpy.context.object
-            c.rotation_mode = 'QUATERNION'
-            c.rotation_quaternion = 쿼
-            bpy.ops.object.shade_smooth()
-            c.data.materials.append(재)
-            조각들.append(c)
-            붙인것.append(c)
-            return c
-
-        몸재 = 펠트재질('연필몸', 색['Butter'], 배율=1.0, 지름=0.5) if 펠트로 else 매끈재질('연필몸', 색['Butter'], 거칠기=0.9)
-        나무재 = 펠트재질('연필나무', 색['Oat'], 배율=1.0, 지름=0.3) if 펠트로 else 매끈재질('연필나무', 색['Oat'], 거칠기=0.9)
-        심재 = 매끈재질('연필심', 색['Ink Deep'], 거칠기=0.5)
-        고무재 = 펠트재질('지우개', 색['Coral'], 배율=1.0, 지름=0.2) if 펠트로 else 매끈재질('지우개', 색['Coral'], 거칠기=0.85)
-        원통(길이 * 0.5, 길이, 반지름, 몸재, 꼭짓점=6)                       # 육각 몸
-        뿔(길이 + 반지름 * 1.15, 반지름 * 2.3, 반지름 * 1.02, 나무재)        # 깎은 나무
-        뿔(길이 + 반지름 * 2.75, 반지름 * 1.1, 반지름 * 0.34, 심재)          # 심
-        원통(-반지름 * 0.55, 반지름 * 1.1, 반지름 * 0.92, 고무재, 꼭짓점=24)  # 지우개 꽁지
-        return 조각들
-
-    def 책(중심, 겉색='Lapis Deep', 기울기=(0, 0, 0), 반=(0.16, 0.05, 0.12)):
-        """작은 책 — 겉표지(킷색) + 옆으로 살짝 삐져나온 속지(오트). 수류탄의 자리를 이것이 잇는다."""
-        겉재 = 펠트재질('책겉' + 겉색, 색[겉색], 배율=1.0, 지름=0.3) if 펠트로 else 매끈재질('책겉', 색[겉색], 거칠기=0.9)
-        속재 = 매끈재질('책속', 색['Oat'], 거칠기=0.85)
-        겉 = 베개몸(반, 위치=중심, 크리스=0.55, 레벨=2)
-        겉.rotation_euler = tuple(math.radians(v) for v in 기울기)
-        겉.data.materials.append(겉재)
-        붙인것.append(겉)
-        속 = 베개몸((반[0] * 0.94, 반[1] * 0.62, 반[2] * 0.94),
-                  위치=(중심[0], 중심[1], 중심[2]), 크리스=0.7, 레벨=2)
-        속.rotation_euler = tuple(math.radians(v) for v in 기울기)
-        # 속지는 표지 «옆»으로 삐져나온다 — 책의 서명은 페이지 단면이다.
-        속.location = 겉.location + (겉.rotation_euler.to_matrix() @ mathutils.Vector((반[0] * 0.10, 0, 0)))
-        속.data.materials.append(속재)
-        붙인것.append(속)
 
     if '어깨땀' in 장식들:
         # 어깨판 돔 위도선 — 돔 표면 점을 실측해 한 줄 두른다(털이 못 사는 자리에 실땀이 산다).
