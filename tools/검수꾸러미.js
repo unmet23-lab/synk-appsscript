@@ -110,6 +110,28 @@ const 묶음들 = Object.freeze([
       '§7': ['Сэтгэгдэл бичихийг урих асуулт — хөнгөн, найрсаг', 'a question inviting comments — light and friendly'],
     },
   },
+  {
+    코드: 'O',
+    이름: '가이드 셋의 목소리',
+    이름mn: 'Гурван хөтчийн дуу хоолой',
+    파일: 'docs/함께한날_몽골어_검수표.md',
+    /* 🔑 32 = 가이드 한마디 23 + 장면 배너 4 + 조건문 3조각 + 첫 화면 안내 2.
+     *   앞 셋은 아직 코드에 «안» 들어갔다(`MN_GUIDE_SPEAK` 이 `''` — 채우면 그 순간 학생 화면에
+     *   뜨므로 「검수 전 침묵」이 설계다). 넷째만 이미 라이브에 서 있고 검수는 «확인»에 가깝다 —
+     *   그래도 칸을 준다: 검수자가 더 나은 판을 주면 그날 고친다(성격 차이는 시트 `Хэсэг` 열이 가른다). */
+    선언: 32,
+    /* 2회차다. 1차(A·L·M)는 「없으면 학생이 막히는」 것들인데, 이 묶음은 **막지 않는다** —
+       비어 있으면 가이드가 한국어로 말할 뿐 화면이 깨지지 않는다(빈 칸이면 병기를 조용히 생략한다). */
+    회차: 2,
+    비고mn: 'AI ноорог бий (зөвхөн дүрмийн шалгалт давсан). Гурван хөтөч ӨӨР ӨӨР дуутай байх ёстой: Мунгыл — найз шиг ярина · Ккамон — нэг ҮГ эсвэл дохио, урт байвал Ккамон биш · Марин — албан ёсны, тэмдэглэж буй мэт.',
+    비고en: 'An AI draft is provided (it passed a grammar check only). The three guides must sound DIFFERENT: Mongle speaks like a friend · Kkamong uses ONE word or a gesture (if it gets long it is not Kkamong) · Marine is formal, as if recording.',
+    섹션뜻: {
+      '§1': ['Өдөрт нэг мөр — сурагчийн сонгосон хөтөч ярина', 'one line a day, spoken by the guide the student chose'],
+      '§2': ['Шинэ дүр зураг нээгдсэн өдрийн дэлгэцийн мөр', 'the banner line on the day a new scene opens'],
+      '§3': ['«Дараагийн дүр зураг хүртэл» гэсэн байнга харагдах мөр', 'the always-visible "until the next scene" line'],
+      '§4': ['Аппыг анх нээхэд гарах танилцуулга — ЭНЭ ХЭСЭГ АЛЬ ХЭДИЙН ажиллаж байгаа', 'the first-open intro — THIS SECTION IS ALREADY LIVE'],
+    },
+  },
 ]);
 
 /* ── 어느 표가 «검수 대상»인가 — 첫 판이 여기서 샜다 (2026-08-12 실측) ──────────────────
