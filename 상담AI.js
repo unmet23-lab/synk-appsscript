@@ -189,7 +189,8 @@ function 상담응답_(세션, 사용자말, 플랫폼) {
     out = 상담_호출_(key, 세션, 사용자말);
   } catch (err) {
     상담_기록_(세션, 'user', 사용자말, false, null, '', 플랫폼);
-    상담_기록_(세션, 'bot', 상담_인계문, true, null, 'API 오류: ' + String(err && err.message || err).slice(0, 160), 플랫폼);
+    // 실패해도 과금된 호출이면 토큰이 예외에 실려 온다(상담_호출_ 의 과금실패9) — 그대로 장부에 넣는다
+    상담_기록_(세션, 'bot', 상담_인계문, true, (err && err.usage) || null, 'API 오류: ' + String(err && err.message || err).slice(0, 160), 플랫폼);
     상담_인계알림_(세션, 사용자말, 'API 오류 — ' + String(err && err.message || err).slice(0, 160), 플랫폼);
     return { reply: 공개 + 상담_인계문, handoff: true };
   }
@@ -234,10 +235,15 @@ function 상담_호출_(apiKey, 세션, 사용자말) {
   });
   if (res.getResponseCode() !== 200) throw new Error('Claude ' + res.getResponseCode() + ': ' + res.getContentText().slice(0, 160));
   const j = JSON.parse(res.getContentText());
-  if (j.stop_reason === 'refusal') throw new Error('거부(refusal)');
-  if (j.stop_reason === 'max_tokens') throw new Error('출력 잘림(max_tokens)');
+  /* [08-28] 200 을 받은 «뒤»의 실패는 **이미 과금된 호출**이다 — 토큰을 예외에 실어 보낸다(codex P2 d4ad639e).
+   *   그전엔 여기서 죽으면 usage 가 그 자리에서 사라져 상담로그에 `null` 이 적혔고, 그만큼 비용 집계가
+   *   실제 지출보다 «적게» 나왔다. 무음 누수라 「0 이 좋은 값」처럼 보이는 무늬다.
+   *   ⚠ 비200(위 줄)은 다르다 — 응답 본문에 usage 가 없어 실을 것이 없다. */
+  const 과금실패9 = msg => { const e = new Error(msg); e.usage = j.usage || null; return e; };
+  if (j.stop_reason === 'refusal') throw 과금실패9('거부(refusal)');
+  if (j.stop_reason === 'max_tokens') throw 과금실패9('출력 잘림(max_tokens)');
   const tb = (j.content || []).filter(b => b.type === 'text')[0];
-  if (!tb || !tb.text) throw new Error('text 블록 없음');
+  if (!tb || !tb.text) throw 과금실패9('text 블록 없음');
   const data = JSON.parse(tb.text);
   /* [v9.223] 옛 글자(한자·가나) — 유호님 확정 「쓰는 문자 셋뿐」. 이 답은 **학부모·예비 학생이 그대로 읽는** 첫 인상이다.
    *   🔑 판정을 «깔때기 안»에 두는 이유: 소비자(상담응답_)에 두면 그 소비자가 하나 더 생기는 날 조용히 샌다.
@@ -246,7 +252,7 @@ function 상담_호출_(apiKey, 세션, 사용자말) {
    *   🔑 정제(그 글자만 지우기)가 아니라 폐기인 이유는 태그 누출(v9.205)과 같다 — 글자만 빼면 뜻이 조용히
    *      어긋난 문장이 남고, 그 실패는 아무도 못 알아챈다. 인계는 손실이 눈에 보이고 사람이 이어받는다. */
   const 옛 = 옛글자걸림_(data);
-  if (옛) throw new Error('옛 글자 감지(' + 옛.칸 + ':' + 옛.짚음 + ') — 응답 폐기, 사람에게 인계');
+  if (옛) throw 과금실패9('옛 글자 감지(' + 옛.칸 + ':' + 옛.짚음 + ') — 응답 폐기, 사람에게 인계');
   return { data: data, usage: j.usage || null };
 }
 
@@ -734,17 +740,26 @@ function 상담_확인화면본_(텍스트, 역, n, 발송주소) {
  *   한쪽만 리셋되고, 그 증상은 언제나 「통과」다(오늘 하루 이 병으로 검수를 여섯 회전 돌았다). */
 function 상담_상한통과_(props, 갈래) {
   const 진단9 = 갈래 === '진단';
-  const tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
-  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
-  const 상한 = Number(props.getProperty(진단9 ? '상담AI_진단상한' : '상담AI_일일상한'))
-    || (진단9 ? 상담AI_진단기본상한 : 상담AI_기본상한);
-  const 카운터키 = 진단9 ? '상담AI_진단카운터' : '상담AI_카운터';
-  const cur = String(props.getProperty(카운터키) || '');
-  const [d, n] = cur.split('|');
-  const cnt = (d === today) ? (Number(n) || 0) : 0;
-  if (cnt >= 상한) return false;
-  props.setProperty(카운터키, today + '|' + (cnt + 1));
-  return true;
+  /* 🔒 읽고-더하고-쓰기를 잠근다 — 안 잠그면 동시에 들어온 호출들이 «같은 수»를 읽고 모두 통과한다
+   *   (codex P2 06944513). 메신저 웹훅은 원래 동시에 들어오므로 이 경합은 학부모 쪽이 더 잦다 —
+   *   진단만 잠그면 정작 잦은 쪽이 뚫린 채 남으니 **함수 하나를 잠가 둘 다 닫는다**.
+   *   못 잡으면 통과시키지 않는다(fail-closed) — 돈이 나가는 자리의 기본값은 「거부」다.
+   *   거부돼도 사고가 아니다: 부르는 쪽이 이미 «사람에게 인계»로 흐른다. */
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(3000)) return false;
+  try {
+    const tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+    const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+    const 상한 = Number(props.getProperty(진단9 ? '상담AI_진단상한' : '상담AI_일일상한'))
+      || (진단9 ? 상담AI_진단기본상한 : 상담AI_기본상한);
+    const 카운터키 = 진단9 ? '상담AI_진단카운터' : '상담AI_카운터';
+    const cur = String(props.getProperty(카운터키) || '');
+    const [d, n] = cur.split('|');
+    const cnt = (d === today) ? (Number(n) || 0) : 0;
+    if (cnt >= 상한) return false;
+    props.setProperty(카운터키, today + '|' + (cnt + 1));
+    return true;
+  } finally { lock.releaseLock(); }   // 예외가 나도 반드시 푼다 — 안 풀면 그날 상담이 통째로 멎는다
 }
 
 /* ── 유호님이 직접 돌리는 점검 함수 ────────────────────────
@@ -841,6 +856,9 @@ function 상담AI_점검() {
       어긋남9 += 1;
       Logger.log('\n❓ ' + q + '\n❌ 오류: ' + e.message);
       요약9.push('❌ ' + q + '\n   오류: ' + String(e.message).slice(0, 160));
+      // 실패도 과금됐을 수 있다 — 성공한 진단만 장부에 넣으면 진단 지출이 실제보다 적게 잡힌다(codex P2)
+      try { 상담_기록_(점검표9, '점검', q + ' → ❌ ' + String(e.message).slice(0, 300), true, (e && e.usage) || null, '상담AI_점검 실패'); }
+      catch (e3) { Logger.log('   ⚠ 실패 기록도 실패: ' + e3.message); }
     }
   });
   /* 🔑 판정을 «세 갈래»로 낸다 — 안 물어본 것을 통과에 섞으면 상한에 걸린 날 점검이 초록으로 거짓말한다.
