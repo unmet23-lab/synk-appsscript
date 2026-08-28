@@ -12,13 +12,14 @@ import React from "react";
 import { AbsoluteFill, Img, staticFile } from "remotion";
 import type { 카운트다운 as 카운트다운형 } from "./타입";
 import { 지면, 율, 색 } from "../킷/색";
-import { 본문스택, 웨이트, 트래킹 } from "../킷/폰트";
+import { 본문스택, 웨이트, 트래킹, 몽골어보정 } from "../킷/폰트";
 import { 로고, 그늘 } from "./연출";
 
 export const 카운트다운커버: React.FC<{ 클립: 카운트다운형 }> = ({ 클립 }) => {
   /* 훅에서 이모지를 뗀다 — 표지는 정지화라 이모지가 «움직이지 않는 장식»으로 남는다.
      그리고 브랜드 폰트 아홉 벌 어디에도 이모지가 없어 기계마다 다른 그림이 난다(cmap 실측). */
   const 훅글 = 클립.훅.replace(/\p{Extended_Pictographic}/gu, "").trim();
+  const 몽골어 = 클립.훅몽골어.replace(/\p{Extended_Pictographic}/gu, "").trim();
   const 크기 = 훅글.length <= 14 ? 96 : 훅글.length <= 22 ? 78 : 66;
 
   return (
@@ -75,6 +76,27 @@ export const 카운트다운커버: React.FC<{ 클립: 카운트다운형 }> = (
         >
           {훅글}
         </div>
+
+        {/* 훅의 몽골어 — 리드크루 표지가 이미 하는 것과 «같은 자리·같은 크기»다(`커버.tsx` 52px).
+            🔴 표지는 피드에서 «릴을 열지 말지»를 정하는 한 장이다. 여기가 한국어뿐이면 몽골 학생은
+               열지 않고 지나간다 — 본편 안에 몽골어가 있어도 못 본다. 비면 안 그린다(지어내지 않는다). */}
+        {몽골어 ? (
+          <div
+            style={{
+              fontFamily: 본문스택,
+              fontSize: Math.round(52 * 몽골어보정),
+              fontWeight: 웨이트.본문_UI,
+              color: 지면.보조글자,
+              letterSpacing: 트래킹.본문,
+              lineHeight: 1.4,
+              wordBreak: "keep-all",
+              textWrap: "balance",
+              maxWidth: 820,
+            }}
+          >
+            {몽골어}
+          </div>
+        ) : null}
       </AbsoluteFill>
 
       {/* ③ 가이드 — 폭은 릴 본편과 «같은 비율»이라 표지와 첫 프레임이 안 어긋난다 */}

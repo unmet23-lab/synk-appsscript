@@ -168,7 +168,11 @@ const 순위칸: React.FC<{ 칸: 순위 }> = ({ 칸 }) => {
 };
 
 /** 훅·마무리 — 한 줄짜리 큰 글. 코랄 글자는 Coral 3 로만 쓴다. */
-const 한줄자막: React.FC<{ 글: string; 크기?: number }> = ({ 글, 크기 = 74 }) => {
+const 한줄자막: React.FC<{ 글: string; 크기?: number; 몽골어?: string }> = ({
+  글,
+  크기 = 74,
+  몽골어,
+}) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const 나감 = 나감값(frame, fps, durationInFrames);
@@ -197,13 +201,43 @@ const 한줄자막: React.FC<{ 글: string; 크기?: number }> = ({ 글, 크기 
           display: "inline-block",
         }}
       />
+
+      {/* 훅·마무리의 몽골어 병기(유호 지시 08-28 — 그전엔 릴이 «몽골어로 열려 한국어로 닫혔다»).
+          🔑 순위 칸과 **지연이 다르다.** 거기서는 뜻이 다 드러난 뒤 0.3초를 더 기다렸다가 몽골어가
+             온다 — 읽는 순서가 곧 학습 순서라서다. 훅과 마무리는 배우는 자리가 아니라 «붙잡고·
+             부르는» 자리이고, 보는 사람은 자기 언어 한 줄만 읽는다. ⇒ 0.12초로 거의 같이 띄운다.
+          🔑 크기는 한국어의 0.7 배다(74→52 · 64→45). 둘째 언어로 보이되 곁다리로는 안 보이는 선. */}
+      {몽골어 ? (
+        <들임 지연={Math.round(fps * 0.12)} 바닥={0.35}>
+          <div
+            style={{
+              fontFamily: 본문스택,
+              fontSize: Math.round(크기 * 0.7 * 몽골어보정),
+              fontWeight: 웨이트.본문_UI,
+              color: 지면.보조글자,
+              letterSpacing: 트래킹.본문,
+              lineHeight: 1.45,
+              marginTop: 율.칸,
+              textAlign: "center",
+              wordBreak: "keep-all",
+            }}
+          >
+            {몽골어}
+          </div>
+        </들임>
+      ) : null}
     </AbsoluteFill>
   );
 };
 
 export const 카운트다운: React.FC<{ 클립: 카운트다운형 }> = ({ 클립 }) => {
   const { fps, width, durationInFrames } = useVideoConfig();
-  const 훅프레임 = Math.round(fps * 3);
+  /* 🔴 훅 길이를 `fps * 3` 으로 박아 두지 않는다. 몽골어가 붙으면 파서가 훅을 늘리는데, 여기가
+     90f 로 굳어 있으면 **모든 순위 칸이 밀린 자리에서 시작하고 마지막 칸이 화면 밖으로 넘친다.**
+     리드크루에서 실제로 났던 사고다(08-28 · 프레임 띠는 칸 «가운데»를 뽑아서 안 보였다).
+     ⇒ 파서와 같은 식으로 되찾는다: 전체 − 순위 합 − 마무리. */
+  const 순위합 = 클립.순위들.reduce((a, r) => a + r.프레임, 0);
+  const 훅프레임 = 클립.전체프레임 - 순위합 - 클립.마무리프레임;
   const 가이드폭 = Math.round(width * 클립.폭비);
   const 겹침 = Math.round(fps * 연출.겹침초);
 
@@ -282,7 +316,7 @@ export const 카운트다운: React.FC<{ 클립: 카운트다운형 }> = ({ 클�
 
       {/* ── 훅 (0~3초) ─────────────────────────────────────────────── */}
       <Sequence durationInFrames={훅프레임 + 겹침}>
-        <한줄자막 글={클립.훅} />
+        <한줄자막 글={클립.훅} 몽골어={클립.훅몽골어} />
       </Sequence>
 
       {/* ── 순위 다섯 ──────────────────────────────────────────────── */}
@@ -298,7 +332,7 @@ export const 카운트다운: React.FC<{ 클립: 카운트다운형 }> = ({ 클�
 
       {/* ── 마무리 = 댓글 유도. 릴 A 가 댓글 912개를 만든 자리다 ────── */}
       <Sequence from={마무리시작} durationInFrames={durationInFrames - 마무리시작}>
-        <한줄자막 글={클립.마무리} 크기={64} />
+        <한줄자막 글={클립.마무리} 크기={64} 몽골어={클립.마무리몽골어} />
       </Sequence>
 
       {/* ── 옹알이 — 그림보다 3프레임 «먼저» 오면 붙어 들린다 ────────── */}
