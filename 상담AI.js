@@ -765,9 +765,18 @@ function 상담AI_점검() {
    * (실제로 그랬다: 08-28 에 수강료를 확정했더니 「인계=true 여야 정상」이 오판이 됐다 · codex P1).
    * 그리고 **찍기만 하지 않고 대조한다** — 로그를 읽는 사람이 판정을 대신하면 그건 장치가 아니다
    * (codex P1 27f72133). 어긋나면 그 자리에서 🔴 로 세운다. */
-  const 확정된주제9 = t => 상담_지식.some(k => k.주제 === t && k.확정 && String(k.내용 || '').trim().length > 0);
+  /* ⚠ 주제 이름은 여기서 «손으로» 적을 수밖에 없다(질문 → 주제 매핑을 지식이 모른다).
+   *   그래서 **실재를 검증한다** — 이름이 바뀌면 조용히 기대값이 뒤집히는 대신 그 자리에서 깨진다.
+   *   실제로 그랬다: 첫 판이 「개원일」·「개원 시점」을 봤는데 진짜 이름은 **「개원 시기」**라
+   *   첫 시험의 기대가 «늘 인계» 로 굳었다(codex P1 452cd713). 조용한 오판이 이 층의 병이다. */
+  const 확정된주제9 = t => {
+    if (!상담_지식.some(k => k.주제 === t)) {
+      throw new Error('상담AI_점검: 지식에 「' + t + '」 주제가 없다 — 이름이 바뀌었으면 여기도 고친다');
+    }
+    return 상담_지식.some(k => k.주제 === t && k.확정 && String(k.내용 || '').trim().length > 0);
+  };
   const 시험 = [
-    { q: '수업이 언제 시작하나요?', 기대인계: !확정된주제9('개원일') && !확정된주제9('개원 시점') },
+    { q: '수업이 언제 시작하나요?', 기대인계: !확정된주제9('개원 시기') },
     { q: '한 달에 얼마인가요?', 기대인계: !확정된주제9('수강료') }
   ];
   let 어긋남9 = 0;
@@ -775,10 +784,14 @@ function 상담AI_점검() {
     try {
       const r = 상담_호출_(props.getProperty('CLAUDE_API_KEY'), '점검-' + new Date().getTime(), q);
       const u = r.usage || {};
-      const 맞나 = r.data.handoff === 기대인계;
+      /* 생산 경로와 «같은 식»으로 판정한다 — 위 상담_답하기_ 가 쓰는 것이 이 줄이다
+       * (빈 답변도 인계로 친다). 원시 handoff 만 보면 「답은 비었는데 인계=false」가 통과한다
+       * (codex P3 6e39d0cd). 판정이 두 곳에서 다르면 점검이 생산을 못 대변한다. */
+      const 인계9 = !!r.data.handoff || !r.data.reply;
+      const 맞나 = 인계9 === 기대인계;
       if (!맞나) 어긋남9 += 1;
       Logger.log('\n❓ ' + q + '\n💬 ' + (r.data.reply || '(빈 답변)') +
-        '\n   인계=' + r.data.handoff + (r.data.handoff_reason ? ' — ' + r.data.handoff_reason : '') +
+        '\n   인계=' + 인계9 + (r.data.handoff_reason ? ' — ' + r.data.handoff_reason : '') +
         '\n   ' + (맞나 ? '✅ 기대와 같다' : '🔴 기대는 인계=' + 기대인계 + ' 였다 — 지식·금칙·프롬프트 중 하나가 어긋났다') +
         '\n   토큰: 입력 ' + (u.input_tokens || 0) + ' · 캐시읽기 ' + (u.cache_read_input_tokens || 0) +
         ' · 캐시생성 ' + (u.cache_creation_input_tokens || 0) + ' · 출력 ' + (u.output_tokens || 0));
