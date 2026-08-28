@@ -152,3 +152,7 @@ docs/캐릭터/생명공방_0826/살아움직이는*.html
 #   `node tools/프로필굽기.js`. 🔑 유호님이 «고르신 하나»는 그날 실물 자산이 되므로
 #   그때 `git add -f docs/SHIFT/프로필/<픽>.png` 로 그것만 들인다.
 docs/SHIFT/프로필/*.png
+
+# 배너 후보·검수용 안내선 판 — 시안(docs/SHIFT/배너/시안.html)이 후보를 data URI 로 품는다.
+#   다시 구우려면 `node tools/배너굽기.js [--안내선]`. 확정본은 그날 `git add -f` 로 그것만 들인다.
+docs/SHIFT/배너/*.png
