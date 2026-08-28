@@ -176,10 +176,11 @@ function 상담응답_(세션, 사용자말, 플랫폼) {
     상담_인계알림_(세션, 사용자말, key ? '봇 정지 상태' : 'API 키 미설정', 플랫폼);
     return { reply: 공개 + 상담_인계문, handoff: true };
   }
-  if (!상담_상한통과_(props)) {
+  const 막힘9 = 상담_상한막힘_(props);
+  if (막힘9) {
     상담_기록_(세션, 'user', 사용자말, true, null, '', 플랫폼);
-    상담_기록_(세션, 'bot', 상담_인계문, true, null, '일일 상한 초과', 플랫폼);
-    상담_인계알림_(세션, 사용자말, '일일 호출 상한 초과 — 오늘은 사람이 받아야 합니다', 플랫폼);
+    상담_기록_(세션, 'bot', 상담_인계문, true, null, 막힘9, 플랫폼);
+    상담_인계알림_(세션, 사용자말, 막힘9 + ' — 지금은 사람이 받아야 합니다', 플랫폼);
     return { reply: 공개 + 상담_인계문, handoff: true };
   }
 
@@ -244,7 +245,13 @@ function 상담_호출_(apiKey, 세션, 사용자말) {
   if (j.stop_reason === 'max_tokens') throw 과금실패9('출력 잘림(max_tokens)');
   const tb = (j.content || []).filter(b => b.type === 'text')[0];
   if (!tb || !tb.text) throw 과금실패9('text 블록 없음');
-  const data = JSON.parse(tb.text);
+  /* 모델이 스키마를 어겨 JSON 이 아닌 것을 뱉어도 그 호출은 «이미 과금됐다» — 날 JSON.parse 는
+   * 토큰을 못 실어 보내므로 감싼다(codex P3 9c20d666).
+   * ⚠ 위 237줄(응답 본문 자체의 파싱)은 못 감싼다 — 거기서 실패했다는 건 응답이 JSON 이 아니라는
+   *   뜻이라 usage 를 «알 길이 없다». 그 갈래의 null 은 누락이 아니라 「모른다」가 맞다. */
+  let data;
+  try { data = JSON.parse(tb.text); }
+  catch (e) { throw 과금실패9('응답이 JSON 이 아니다: ' + String(e.message).slice(0, 80)); }
   /* [v9.223] 옛 글자(한자·가나) — 유호님 확정 「쓰는 문자 셋뿐」. 이 답은 **학부모·예비 학생이 그대로 읽는** 첫 인상이다.
    *   🔑 판정을 «깔때기 안»에 두는 이유: 소비자(상담응답_)에 두면 그 소비자가 하나 더 생기는 날 조용히 샌다.
    *      처분은 여기서 안 정한다 — throw 는 상담응답_ 의 **이미 서 있는 인계 경로**로 그대로 흐른다
@@ -738,7 +745,11 @@ function 상담_확인화면본_(텍스트, 역, n, 발송주소) {
 /* 갈래 = '진단' 이면 진단 전용 통(상한·카운터 둘 다)을 쓴다. 인자 없이 부르면 예전 그대로 학부모 통.
  * 🔑 **한 함수가 두 갈래를 안다** — 복붙한 쌍둥이를 두면 「오늘」의 정의(시간대·날짜 꼴)가 갈리는 날
  *   한쪽만 리셋되고, 그 증상은 언제나 「통과」다(오늘 하루 이 병으로 검수를 여섯 회전 돌았다). */
-function 상담_상한통과_(props, 갈래) {
+/* 반환 = **막힌 사유**(빈 문자열이면 통과). 「통과했나」가 아니라 「왜 막혔나」를 돌려주는 이유 둘:
+ *   ① 락 경합을 상한 초과로 적으면 유호님이 «상한을 올려도» 안 고쳐진다 — 원인이 오표기된 경보는
+ *      따를 수 없는 처방이 되고, 그 자리는 다음에 무시당한다(codex P3 31897414).
+ *   ② 이름이 반환의 뜻을 말하므로 `if (!통과)` 를 `if (막힘)` 으로 뒤집는 부호 실수가 구조적으로 안 난다. */
+function 상담_상한막힘_(props, 갈래) {
   const 진단9 = 갈래 === '진단';
   /* 🔒 읽고-더하고-쓰기를 잠근다 — 안 잠그면 동시에 들어온 호출들이 «같은 수»를 읽고 모두 통과한다
    *   (codex P2 06944513). 메신저 웹훅은 원래 동시에 들어오므로 이 경합은 학부모 쪽이 더 잦다 —
@@ -746,7 +757,7 @@ function 상담_상한통과_(props, 갈래) {
    *   못 잡으면 통과시키지 않는다(fail-closed) — 돈이 나가는 자리의 기본값은 「거부」다.
    *   거부돼도 사고가 아니다: 부르는 쪽이 이미 «사람에게 인계»로 흐른다. */
   const lock = LockService.getScriptLock();
-  if (!lock.tryLock(3000)) return false;
+  if (!lock.tryLock(3000)) return '동시 요청이 몰려 잠금을 못 잡았습니다(상한과 무관 — 다시 시도하면 됩니다)';
   try {
     const tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
     const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
@@ -756,9 +767,9 @@ function 상담_상한통과_(props, 갈래) {
     const cur = String(props.getProperty(카운터키) || '');
     const [d, n] = cur.split('|');
     const cnt = (d === today) ? (Number(n) || 0) : 0;
-    if (cnt >= 상한) return false;
+    if (cnt >= 상한) return (진단9 ? '진단' : '일일') + ' 호출 상한 ' + 상한 + '회를 다 썼습니다';
     props.setProperty(카운터키, today + '|' + (cnt + 1));
-    return true;
+    return '';
   } finally { lock.releaseLock(); }   // 예외가 나도 반드시 푼다 — 안 풀면 그날 상담이 통째로 멎는다
 }
 
@@ -821,10 +832,11 @@ function 상담AI_점검() {
   시험.forEach(({ q, 기대인계 }) => {
     /* 🔴 진단도 상한 안에서 쓴다 — 이 검사가 없으면 메뉴를 연타하는 만큼 돈이 나간다(codex P1).
      *   막혔을 때 «조용히 넘어가지 않는다»: 안 잰 것과 통과한 것이 같은 모양이면 점검이 거짓말을 한다. */
-    if (!상담_상한통과_(props, '진단')) {
+    const 왜9 = 상담_상한막힘_(props, '진단');
+    if (왜9) {
       막힘9 += 1;
-      Logger.log('\n❓ ' + q + '\n⛔ 진단 일일 상한에 걸려 실호출을 건너뛰었다(안 잰 것이지 통과가 아니다).');
-      요약9.push('⛔ ' + q + '\n   진단 상한에 걸려 «안 물어봤습니다»');
+      Logger.log('\n❓ ' + q + '\n⛔ ' + 왜9 + ' — 실호출을 건너뛰었다(안 잰 것이지 통과가 아니다).');
+      요약9.push('⛔ ' + q + '\n   ' + 왜9 + ' → «안 물어봤습니다»');
       return;
     }
     try {
