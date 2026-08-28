@@ -4194,7 +4194,25 @@ function menuSelfHeal() { menuRun_(sheetSelfHealNow); } // [v9.127] 자기치유
 function menuPurgeMonster() { menuRun_(purgeLegacyMonsterRows_); } // [함께한날 막7 마감] 구 몬스터 씨앗 7행 삭제 — 결과(삭제 수·스냅샷)가 alert 로 뜬다 · 멱등(재클릭 무해)
 function menuSetupGuides() { menuRun_(setupGuides); } // [함께한날 자산] 가이드 셋 재수립 — 어느 이름이 그림을 얻었는지 alert 로 뜬다 · 멱등(보존 병합)
 function menuSetupOnboarding() { menuRun_(setupOnboarding); } // [08-28] 온보딩 안내 재수립 — 코드를 고쳐 배포해도 시트의 «저장된 행»은 안 바뀐다(codex P1) · 멱등
-function menuConsultProbe() { menuRun_(상담AI_점검); }        // [08-28] 상담 봇에 실제로 물어본다 — ⚠ API 실호출 2회(소액 과금)
+/* [08-28] 상담 봇에 실제로 물어본다 — ⚠ API 실호출 2회(소액 과금).
+ * 누르기 «전»에 묻는다: 돈이 나가는 항목은 실수 클릭 한 번과 의도한 클릭 한 번이 같은 모양이면 안 된다.
+ * 봇이 꺼져 있으면(상담AI_OFF) 그 사실을 먼저 보여준다 — 「껐는데 왜 돈이 나가지」를 미리 없앤다.
+ * 🔴 이 대화상자가 유일한 방어선은 아니다: 진짜 게이트는 상담AI_점검 안의 진단 상한이라 편집기에서
+ *   직접 실행해도 똑같이 걸린다(통로 하나만 막으면 다른 통로가 그대로 뚫린다). */
+function menuConsultProbe() {
+  const ui = SpreadsheetApp.getUi();
+  const off = PropertiesService.getScriptProperties().getProperty('상담AI_OFF') === '1';
+  const 답 = ui.alert('🧪 상담 봇에 실제로 물어보기',
+    '학부모가 묻는 것과 «같은 경로»로 봇에게 두 가지를 물어봅니다.\n' +
+    '  · 수업이 언제 시작하나요?\n  · 한 달에 얼마인가요?\n\n' +
+    '봇이 답하는지 사람에게 넘기는지를 잽니다.\n\n' +
+    '⚠ 진짜 API 호출이라 소액이지만 «돈이 나갑니다»(질문 2건).\n' +
+    '   하루 한도가 있어 무한정 눌러도 계속 나가지는 않습니다.' +
+    (off ? '\n\n⚠ 지금 봇은 «정지»(상담AI_OFF=1) 상태입니다 — 학부모에게는 안 나가지만 이 점검은 호출합니다.' : '') +
+    '\n\n진행할까요?', ui.ButtonSet.YES_NO);
+  if (답 !== ui.Button.YES) { ui.alert('취소했습니다 — 호출하지 않았습니다(돈이 나가지 않았습니다).'); return; }
+  menuRun_(상담AI_점검);
+}
 function menuCreateQuizForm() { menuRun_(createQuizForm); } // [v9.138] 퀴즈 응답 폼 — 수집층 입구(재실행 안전)
 function menuMigrateHwForm() { menuRun_(migrateHwFormV9138); } // [v9.138] 숙제 폼 증분 — 문항 연결·재작성 경로(멱등)
 function menuMigrateVoiceForm() { menuRun_(migrateVoiceFormMissionId); } // [v9.190] 목소리 폼 미션ID 증분(멱등 — 야간 배치도 부른다)
