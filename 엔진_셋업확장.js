@@ -4194,6 +4194,7 @@ function menuSelfHeal() { menuRun_(sheetSelfHealNow); } // [v9.127] 자기치유
 function menuPurgeMonster() { menuRun_(purgeLegacyMonsterRows_); } // [함께한날 막7 마감] 구 몬스터 씨앗 7행 삭제 — 결과(삭제 수·스냅샷)가 alert 로 뜬다 · 멱등(재클릭 무해)
 function menuSetupGuides() { menuRun_(setupGuides); } // [함께한날 자산] 가이드 셋 재수립 — 어느 이름이 그림을 얻었는지 alert 로 뜬다 · 멱등(보존 병합)
 function menuSetupOnboarding() { menuRun_(setupOnboarding); } // [08-28] 온보딩 안내 재수립 — 코드를 고쳐 배포해도 시트의 «저장된 행»은 안 바뀐다(codex P1) · 멱등
+function menuConsultProbe() { menuRun_(상담AI_점검); }        // [08-28] 상담 봇에 실제로 물어본다 — ⚠ API 실호출 2회(소액 과금)
 function menuCreateQuizForm() { menuRun_(createQuizForm); } // [v9.138] 퀴즈 응답 폼 — 수집층 입구(재실행 안전)
 function menuMigrateHwForm() { menuRun_(migrateHwFormV9138); } // [v9.138] 숙제 폼 증분 — 문항 연결·재작성 경로(멱등)
 function menuMigrateVoiceForm() { menuRun_(migrateVoiceFormMissionId); } // [v9.190] 목소리 폼 미션ID 증분(멱등 — 야간 배치도 부른다)
@@ -4676,6 +4677,13 @@ function onOpen() {
       //   지금 단계에서 답변 품질은 아래 '시험 삼아 물어보기'로 확인한다.
       .addItem('🧠 두뇌 지식 만들기(1단계)', 'menuBrainSetup')
       .addItem('💬 시험 삼아 물어보기', 'menuBrainTry')
+      /* [08-28] 상담 봇(학부모 접점)에 «실제로» 물어본다. 두뇌 봇과 다른 통로다 —
+       *   저쪽은 강사용이고 이쪽은 금칙·지식이 함께 실리는 학부모 프롬프트다.
+       *   🔴 왜 메뉴에 올렸나: 이 점검은 「고쳤다」와 「봇이 그렇게 말한다」를 가르는 **유일한 자**인데
+       *   Logger.log 만 해서 편집기를 열 수 있는 사람만 읽을 수 있었다 — 수강료를 고쳐 놓고도
+       *   답을 못 재던 자리다(08-28 실측). 고쳐 놓고 부를 수 없는 장치는 장치가 아니다.
+       *   ⚠ 이름에 「API 호출」을 박아 둔다 — 누르면 실제로 돈이 든다(질문 2건 · 소액). */
+      .addItem('🧪 상담 봇에 실제로 물어보기(API 호출 2회)', 'menuConsultProbe')
       .addItem('　└ 두뇌 점검', 'menuBrainCheck')
       .addItem('　└ 아직 모르는 질문 보기', 'menuBrainGaps')
       // [v9.123] 레벨 어휘가 바뀌면 구 자리가 유령으로 남는다 — 4중 잠금이라 잘못 눌러도 손실 0(함수 주석 참조).
