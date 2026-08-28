@@ -615,6 +615,22 @@ def _시안(bpy, math, random, g):
         # 목둘레 판 자르기 — 본체 셸에 «목 칼라 띠»(z 1.58~1.8)가 한 통으로 붙어 있어 입 밑에서
         # 테두리로 비친다(유호 08-28 「입 부분 테두리 어색 · 지워줘」). 조각째는 못 떼니 띠만 벤다 —
         # 단면은 목 깃·몸통이 가린다. 0 이면 끔.
+        # 볏 홀더 걷기 — 투구 꼭대기의 «그래프같이 생긴» 홈 판(유호 08-28 「없애줘 · 짜치는 느낌」).
+        # 본체(7만+점)와 달리 «작고 높이 앉은» 느슨 조각이라 크기·자리로 가른다. 윗조각=남김 이면 둔다.
+        if _인자.get('윗조각', '빼기') not in ('0', '남김'):
+            for o in list(들인것):
+                수h = len(o.data.vertices)
+                if 수h > 30000:
+                    continue
+                ah = _np.empty(수h * 3, dtype=_np.float32)
+                o.data.vertices.foreach_get('co', ah)
+                Mh = _np.array(o.matrix_world)
+                Sh = ah.reshape(수h, 3).astype(_np.float64) @ Mh[:3, :3].T + Mh[:3, 3]
+                ch = (Sh.min(0) + Sh.max(0)) * 0.5
+                if ch[2] > 1.98:
+                    들인것.remove(o)
+                    bpy.data.objects.remove(o, do_unlink=True)
+                    print('윗조각 걷음: %s점 (중심 z %.2f)' % (f'{수h:,}', ch[2]))
         머리밑 = float(_인자.get('머리밑', '0'))    # 🔴 1.84 일괄 벰은 마스크 턱까지 베었다(20차)
         if 머리밑 > 0:
             벤h = 0
@@ -779,21 +795,20 @@ def _시안(bpy, math, random, g):
             if len(띠f) > 40:
                 깊f = 띠f[:, :2] @ 수직m
                 앞f = float(_np.percentile(깊f, 97))
-                cf = 중m + 수직m * (앞f - float(중m @ 수직m) - 0.02)
-                # 네모 코인은 유호 반려(08-28 「네모 마크 안 어울려」) — 펠트의 정석 «털 방울(폼폼)»로.
-                # 작고 둥근 단독 물체라 털이 안전하게 사는 자리다(갑옷 털=안개 실측과 안 부딪힌다).
-                이마색 = _인자.get('이마색', 'Butter')
-                bpy.ops.mesh.primitive_uv_sphere_add(radius=float(_인자.get('이마반', '0.06')),
-                                                     location=(float(cf[0]), float(cf[1]), 이마z + 0.015))
-                방울f = bpy.context.object
-                bpy.ops.object.shade_smooth()
-                방울f.data.materials.append(
-                    펠트재질('이마방울', 색[이마색], 배율=1.0) if 펠트로
-                    else 매끈재질('에셋_이마방울', 색[이마색], 거칠기=0.9))
-                짧은퍼(방울f, 이마색, 살재질(이마색, 색[이마색]), 털재질(이마색, 색[이마색]),
-                     길이=0.015, 개수=2400)   # 0.035/5200 은 털구름 · 0.075/0.02 는 눈을 덮었다(유호 반려 08-28)
-                붙인것.append(방울f)
-                print('이마 방울: z %.2f · %s' % (이마z, 이마색))
+                cf = 중m + 수직m * (앞f - float(중m @ 수직m) - 0.035)
+                # 네모 코인도 솜털 방울도 유호 반려(08-28 「짜치는 느낌」) — 표식을 «더하지» 않고
+                # 지운다: 헬멧색 매끈 펠트 패드가 해골 부조 위에 앉아 맨 돔으로 읽히게.
+                이마색 = _인자.get('이마색', 갑옷색)
+                Df = mathutils.Vector((float(수직m[0]), float(수직m[1]), 0.50)).normalized()
+                패f = 베개몸((0.125, 0.042, 0.11), 위치=(float(cf[0]), float(cf[1]), 이마z - 0.01),
+                          크리스=0.3, 레벨=3)   # 두껍게 얹으면 실루엣 위로 솟아 «또 하나의 마크»가 된다(27차)
+                패f.rotation_mode = 'QUATERNION'
+                패f.rotation_quaternion = Df.to_track_quat('Y', 'Z')
+                패f.data.materials.append(
+                    펠트재질('이마패드', 색[이마색], 배율=1.0) if 펠트로
+                    else 매끈재질('에셋_이마패드', 색[이마색], 거칠기=0.9))
+                붙인것.append(패f)
+                print('이마 패드: z %.2f · %s (민무늬 — 해골을 지운다)' % (이마z, 이마색))
         # 방패 — 왼팔이 든다(창은 이미 연필이 진다). 라피스 면 + 버터 뒤테 + 코랄 보스 + 테두리 실땀.
         if _인자.get('방패', '0') not in ('0', '끔'):
             방패색 = _인자.get('방패색', 'Lapis Deep')
