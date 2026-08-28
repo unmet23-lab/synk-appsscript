@@ -761,25 +761,32 @@ function 상담AI_점검() {
   Logger.log('■ 시스템 프롬프트 길이: ' + 상담_시스템_().length + '자');
   if (준비.length) { Logger.log('※ 준비물부터 채워주세요. 실호출은 건너뜁니다.'); return; }
 
-  const 시험 = ['수업이 언제 시작하나요?', '한 달에 얼마인가요?'];
-  시험.forEach(q => {
+  /* 기대 인계값을 «지식에서» 읽는다 — 손으로 적어 두면 확정이 바뀌는 날 이 점검이 거짓이 된다
+   * (실제로 그랬다: 08-28 에 수강료를 확정했더니 「인계=true 여야 정상」이 오판이 됐다 · codex P1).
+   * 그리고 **찍기만 하지 않고 대조한다** — 로그를 읽는 사람이 판정을 대신하면 그건 장치가 아니다
+   * (codex P1 27f72133). 어긋나면 그 자리에서 🔴 로 세운다. */
+  const 확정된주제9 = t => 상담_지식.some(k => k.주제 === t && k.확정 && String(k.내용 || '').trim().length > 0);
+  const 시험 = [
+    { q: '수업이 언제 시작하나요?', 기대인계: !확정된주제9('개원일') && !확정된주제9('개원 시점') },
+    { q: '한 달에 얼마인가요?', 기대인계: !확정된주제9('수강료') }
+  ];
+  let 어긋남9 = 0;
+  시험.forEach(({ q, 기대인계 }) => {
     try {
       const r = 상담_호출_(props.getProperty('CLAUDE_API_KEY'), '점검-' + new Date().getTime(), q);
       const u = r.usage || {};
+      const 맞나 = r.data.handoff === 기대인계;
+      if (!맞나) 어긋남9 += 1;
       Logger.log('\n❓ ' + q + '\n💬 ' + (r.data.reply || '(빈 답변)') +
         '\n   인계=' + r.data.handoff + (r.data.handoff_reason ? ' — ' + r.data.handoff_reason : '') +
+        '\n   ' + (맞나 ? '✅ 기대와 같다' : '🔴 기대는 인계=' + 기대인계 + ' 였다 — 지식·금칙·프롬프트 중 하나가 어긋났다') +
         '\n   토큰: 입력 ' + (u.input_tokens || 0) + ' · 캐시읽기 ' + (u.cache_read_input_tokens || 0) +
         ' · 캐시생성 ' + (u.cache_creation_input_tokens || 0) + ' · 출력 ' + (u.output_tokens || 0));
-    } catch (e) { Logger.log('\n❓ ' + q + '\n❌ 오류: ' + e.message); }
+    } catch (e) { 어긋남9 += 1; Logger.log('\n❓ ' + q + '\n❌ 오류: ' + e.message); }
   });
-  /* 기대값을 «지식에서» 읽는다 — 손으로 적어 두면 확정이 바뀌는 날 이 안내가 거짓이 된다
-   * (실제로 그랬다: 08-28 에 수강료를 확정했더니 「인계=true 여야 정상」이 오판이 됐다 · codex P1).
-   * 같은 판정을 두 곳이 알면 반드시 갈린다 — 여기선 «묻는다». */
-  const 수강료확정9 = typeof 상담_지식 !== 'undefined'
-    && 상담_지식.some(k => k.주제 === '수강료' && k.확정 && String(k.내용 || '').trim().length > 0);
-  Logger.log('\n※ "한 달에 얼마인가요?"는 '
-    + (수강료확정9 ? '인계=false(봇이 범위를 직접 답한다 — FAQ 정본 Q1)' : '인계=true(수강료 미확정)')
-    + ' 가 정상입니다.');
+  Logger.log(어긋남9
+    ? '\n🔴 기대와 어긋난 자리 ' + 어긋남9 + '건 — 위 🔴 줄을 본다(로그가 아니라 이 줄이 판정이다).'
+    : '\n✅ 시험 ' + 시험.length + '건이 전부 기대와 같다.');
 }
 
 // 실측 비용 집계 — 상담로그에 쌓인 토큰으로 이번 달 실제 비용을 계산한다(추정 아님)
