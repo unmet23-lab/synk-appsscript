@@ -810,6 +810,122 @@ def _시안(bpy, math, random, g):
                     else 매끈재질('에셋_이마패드', 색[이마색], 거칠기=0.9))
                 붙인것.append(패f)
                 print('이마 패드: z %.2f · %s (민무늬 — 해골을 지운다)' % (이마z, 이마색))
+        # 얼굴판 — 마스크만 다른 색으로 가른다(유호 08-28 「얼굴 파랑이면?」 — 실물 까몽과 투구가
+        # 같은 먹이라 얼굴의 제 정체가 없다). 통짜 셸이라 조각으론 못 가른다 — 눈 분할과 같은
+        # 문법: «앞을 보는» 면만 높이 띠로 갈라 재질을 바꾼다. 돔·옆볼은 그대로라 검정 정체가 산다.
+        if _인자.get('얼굴색'):
+            얼굴재h = (펠트재질('얼굴판', 색[_인자['얼굴색']]) if 펠트로
+                     else 매끈재질('에셋_얼굴판', 색[_인자['얼굴색']], 거칠기=0.92))
+            꼭f2 = float(머리Pn[:, 2].max())
+            z0f = 꼭f2 - float(_인자.get('얼굴아래', '0.80'))
+            z1f = 꼭f2 - float(_인자.get('얼굴위', '0.30'))
+            for o in 들인것:
+                me = o.data
+                n = len(me.polygons)
+                cf3 = _np.empty(n * 3)
+                me.polygons.foreach_get('center', cf3)
+                법f = _np.empty(n * 3)
+                me.polygons.foreach_get('normal', 법f)
+                Mf = _np.array(o.matrix_world)
+                Wf = cf3.reshape(n, 3) @ Mf[:3, :3].T + Mf[:3, 3]
+                Rf = Mf[:3, :3] / _np.cbrt(max(1e-12, abs(_np.linalg.det(Mf[:3, :3]))))
+                Nf = 법f.reshape(n, 3) @ Rf.T
+                골라f = ((Wf[:, 2] > z0f) & (Wf[:, 2] < z1f) &
+                       (abs(Wf[:, 0] - float(중m[0])) < 0.36) & (Nf[:, 1] < -0.30))
+                if not 골라f.any():
+                    continue
+                me.materials.append(얼굴재h)
+                idxf = _np.empty(n, dtype=_np.int32)
+                me.polygons.foreach_get('material_index', idxf)
+                idxf[골라f] = len(me.materials) - 1
+                me.polygons.foreach_set('material_index', idxf)
+                me.update()
+                print('얼굴판: 면 %s개 · %s (z %.2f~%.2f)' % (f'{int(골라f.sum()):,}', _인자['얼굴색'], z0f, z1f))
+        # 눈판 — 눈«만» 다른 색·재질로(유호 08-28). 🔴 손 z띠 두 판이 연속 빗나갔다
+        # (눈썹뼈 → 다크서클 · 유호 「구조를 파악해봐」). 이 마스크의 눈은 «진짜 구멍»이다 —
+        # 속빛이 새던 그 틈. 경계 모서리(면이 한쪽뿐인 모서리)를 눈 구역에서 모아 좌/우로
+        # 무리 지으면 눈굴의 실좌표가 나오고, 색은 그 구멍을 «두르는» 면에만 앉는다.
+        if _인자.get('눈지도'):
+            # 켜 지도 — 얼굴 앞면을 0.05 z띠로 갈라 여섯 색을 번갈아 입힌다. 렌더에서 눈이
+            # 몇 번 띠에 사는지 «읽는» 자다(굽기 전용 · 확정엔 안 쓴다).
+            꼭m2 = float(머리Pn[:, 2].max())
+            띠폭m = 0.05
+            지도색들 = ['Coral', 'Butter', 'Meadow', 'Lapis', 'Pop', 'Paper']
+            지도재들 = [매끈재질('에셋_지도' + c, 색[c], 거칠기=0.9) for c in 지도색들]
+            for i2 in range(12):
+                print('  지도띠 %d = 꼭-%.2f~-%.2f (%s)' % (i2, 0.2 + 띠폭m * (i2 + 1), 0.2 + 띠폭m * i2,
+                      지도색들[i2 % 6]))
+            for o in 들인것:
+                me = o.data
+                n = len(me.polygons)
+                ce = _np.empty(n * 3)
+                me.polygons.foreach_get('center', ce)
+                법e = _np.empty(n * 3)
+                me.polygons.foreach_get('normal', 법e)
+                Me = _np.array(o.matrix_world)
+                We = ce.reshape(n, 3) @ Me[:3, :3].T + Me[:3, 3]
+                Re = Me[:3, :3] / _np.cbrt(max(1e-12, abs(_np.linalg.det(Me[:3, :3]))))
+                Ne = 법e.reshape(n, 3) @ Re.T
+                기준 = len(me.materials)
+                for 재m in 지도재들:
+                    me.materials.append(재m)
+                idxe = _np.empty(n, dtype=_np.int32)
+                me.polygons.foreach_get('material_index', idxe)
+                띠번호 = _np.floor((꼭m2 - 0.2 - We[:, 2]) / 띠폭m).astype(int)
+                앞면m = (Ne[:, 1] < -0.15) & (abs(We[:, 0] - float(중m[0])) < 0.42) & (띠번호 >= 0) & (띠번호 < 12)
+                idxe[앞면m] = 기준 + (띠번호[앞면m] % 6)
+                me.polygons.foreach_set('material_index', idxe)
+                me.update()
+        if _인자.get('눈판색'):
+            # 켜 지도 실측(08-28)이 가른 구조: 브라우 처마(꼭-0.50 위) → «물러앉은 평면»의
+            # 아몬드 눈굴(꼭-0.50~-0.65 · 처마보다 0.02~0.12 뒤) → 코 옆 슬릿 구멍(더 깊음 · 다크서클 오판)
+            # → 볼 능선. 눈 = z띠 × 깊이 «창»(물러앉되 구멍만큼 깊지 않은 층) × 코 능선 제외.
+            눈판색v = _인자['눈판색']
+            눈발v = float(_인자.get('눈판발광', '0'))
+            눈재v = (발광재질('눈판', 색[눈판색v], 눈발v) if 눈발v > 0
+                    else 매끈재질('에셋_눈판', 색[눈판색v], 거칠기=float(_인자.get('눈판거칠', '0.15')), 반사=0.5)
+                    if _인자.get('눈판재질', '유리') == '유리'
+                    else 펠트재질('눈판', 색[눈판색v]))
+            꼭e = float(머리Pn[:, 2].max())
+            z0e, z1e = 꼭e - float(_인자.get('눈판아래', '0.62')), 꼭e - float(_인자.get('눈판위', '0.50'))
+            깊0, 깊1 = (float(v) for v in _인자.get('눈판깊이창', '0.02,0.12').split(','))
+            for o in 들인것:
+                me = o.data
+                n = len(me.polygons)
+                ce = _np.empty(n * 3)
+                me.polygons.foreach_get('center', ce)
+                법e = _np.empty(n * 3)
+                me.polygons.foreach_get('normal', 법e)
+                Me = _np.array(o.matrix_world)
+                We = ce.reshape(n, 3) @ Me[:3, :3].T + Me[:3, 3]
+                Re = Me[:3, :3] / _np.cbrt(max(1e-12, abs(_np.linalg.det(Me[:3, :3]))))
+                Ne = 법e.reshape(n, 3) @ Re.T
+                dx = We[:, 0] - float(중m[0])
+                띠e = ((We[:, 2] > z0e) & (We[:, 2] < z1e) &
+                      (abs(dx) > float(_인자.get('눈판안', '0.06'))) & (abs(dx) < 0.30) &
+                      (Ne[:, 1] < float(_인자.get('눈판법선', '-0.15'))))
+                if not 띠e.any():
+                    continue
+                앞b = float(_np.percentile(We[띠e][:, 1], 2))
+                골라e = 띠e & (We[:, 1] > 앞b + 깊0) & (We[:, 1] < 앞b + 깊1)
+                # 🔴 눈썹뼈의 «아래 비탈»(위를 보는 면)이 깊이창 안에 같이 든다(유호 4반려 「눈썹뼈까지
+                #   색칠」) — 위를 보는 면은 눈이 아니다. 법선 z 로 걸러낸다.
+                골라e &= (Ne[:, 2] < float(_인자.get('눈판윗각', '0.25')))
+                if _인자.get('눈판사선'):
+                    # 🔴 수평 윗경계는 코 근처에서 눈썹뼈 비탈까지 올라붙는다(유호 3반려) — 윗경계를
+                    #   «사선»으로: 코 옆은 낮게, 바깥으로 갈수록 치켜 올라간다(위0 - 기울*|dx| 만큼 아래).
+                    위0s, 기울s = (float(v) for v in _인자['눈판사선'].split(','))
+                    골라e &= (We[:, 2] < 꼭e - 위0s + 기울s * abs(dx))
+                if not 골라e.any():
+                    continue
+                me.materials.append(눈재v)
+                idxe = _np.empty(n, dtype=_np.int32)
+                me.polygons.foreach_get('material_index', idxe)
+                idxe[골라e] = len(me.materials) - 1
+                me.polygons.foreach_set('material_index', idxe)
+                me.update()
+                print('눈판: 면 %s개 · %s (%s · z %.2f~%.2f · 깊이창 %.2f~%.2f)'
+                      % (f'{int(골라e.sum()):,}', 눈판색v, _인자.get('눈판재질', '유리'), z0e, z1e, 깊0, 깊1))
         # LED 눈줄 — «단호함»의 자리(유호 08-28 명품화). 바이저 «속»의 가로 발광 막대 —
         # 빛이 격자 틈으로만 새 나와 스턴한 한 줄이 된다(칠이 아니라 번짐이 원리상 없다).
         # 붙인것에 안 넣는다 = STL 로 안 나간다(속빛과 같은 규약).
