@@ -42,7 +42,11 @@ const isDecision = (t) => t.startsWith(DECISION_PREFIX);
 const MARK_START = '<!-- memory-graph:역링크 시작 · 이 구간은 자동 생성이다. 손으로 고치지 말 것 -->';
 const MARK_END = '<!-- memory-graph:역링크 끝 -->';
 /* 인덱스는 **두 파일**이다(2026-08-07 쪼개기 · 장부 F184).
- * 상한이 「줄」이라 지도(어느 토픽 파일을 열까)를 상주분 밖으로 내보냈다 — MEMORY.md 에는
+ * MEMORY.md 가 커져 지도(어느 토픽 파일을 열까)를 상주분 밖으로 내보냈다 — MEMORY.md 에는
+ * ⚠ 여기 「상한이 «줄»이라」고 적혀 있었다. **그 상한은 08-30 에 반증됐다** — 28.6KB 판이 세션 첫
+ *   컨텍스트에 끝줄까지 들어온 것을 두 세션이 각각 실측했다. 같은 주장이 이 주석(「줄」)과
+ *   지도.md(「24.4KB」)에 **다른 단위로** 살아 있었고 둘 다 틀렸다. 진짜 한도는 아직 아무도 안 쟀다.
+ *   쪼갠 것 자체는 옳았다(색인이 커졌다) — 틀린 것은 «까닭에 붙인 수»다.
  * 🚫·⏳ 조각만 남고 원문 줄은 지도.md 에 있다. 한 파일만 인덱스로 세면 옮긴 98건이
  * 「인덱스 누락」으로 뜬다 — 옮긴 것과 잃은 것이 같은 모양이 되는 자리다.
  * ⚠ 목록은 여기 하나에서만 파생시킨다(두 곳에 적으면 갈라진다). */
@@ -82,13 +86,52 @@ function memoryDir() {
 }
 
 /* ── 읽기 ────────────────────────────────────────────────────────────────── */
+/* 🔴 표식이 «반쪽»인 파일 — 시작 표식은 있는데 끝 표식이 없다.
+ * 예전 이 함수는 그때 `text.slice(0, s)` 로 **그 지점부터 파일 끝까지 통째로 버렸다.**
+ * 읽기만 하는 자리에선 링크 몇 개를 놓치는 정도지만, `writeBacklinks` 가 그 결과를
+ * `base` 로 삼아 다시 쓰므로 **뒷부분이 파일에서 영영 사라지고 도구는 「1개 파일 변경」으로
+ * 성공을 보고한다.** 자동 쓰기를 켜기 전에 닫아야 하는 유일한 파괴 경로였다(08-30 실측 0벌 —
+ * 즉 지금이 «아직 아무도 안 다친 채» 닫을 수 있는 창이다). */
+function 표식깨짐(text) {
+  const s = text.indexOf(MARK_START);
+  return s !== -1 && text.indexOf(MARK_END, s) === -1;
+}
+
 function stripBacklinks(text) {
   // 역링크 섹션은 파싱에서 제외한다 — 넣지 않으면 자기가 만든 엣지를 다시 읽어
   // a→b→a 왕복이 매 실행마다 증식한다(자기증식 방지).
   const s = text.indexOf(MARK_START);
   if (s === -1) return text;
   const e = text.indexOf(MARK_END, s);
-  return e === -1 ? text.slice(0, s) : text.slice(0, s) + text.slice(e + MARK_END.length);
+  // 끝 표식이 없으면 **아무것도 안 자른다.** 자르면 뒤가 사라진다(위 주석). 대신 표식깨짐()이 운다.
+  if (e === -1) return text;
+  return text.slice(0, s) + text.slice(e + MARK_END.length);
+}
+
+/* ── 프론트매터 ──────────────────────────────────────────────────────────────
+ * 이 저장소에서 «기억 파일의 프론트매터를 읽는 코드는 여기 하나»다(08-30 신설).
+ * 그전까지 0줄이었고, 그래서 08-29 에 `name:` 이 파일명과 어긋난 70벌을 기계가 **원리상**
+ * 못 봤다 — 노드 키를 파일명으로만 만들었기 때문이다. 사람이 손으로 찾아 손으로 고쳤고,
+ * 그것이 정본 Ⅰ-4 「같은 일이 사람 손을 두 번 거쳤다면 그것은 이미 시스템이 할 일이다」의 자리다.
+ * ⚠ YAML 파서가 아니다 — 우리 기억 파일이 쓰는 평평한 `키: 값` 두 층만 읽는다.
+ *   못 읽으면 «없다»가 아니라 `있나:false` 로 내서 미실행과 통과가 같은 얼굴이 안 되게 한다. */
+function 프론트매터(text) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(\r?\n|$)/.exec(text);
+  if (!m) return { 있나: false };
+  const 블록 = m[1];
+  const 뽑기 = (키, 들여쓰기) => {
+    const re = new RegExp('^' + (들여쓰기 ? '[ \\t]+' : '') + 키 + ':[ \\t]*(.*)$', 'm');
+    const r = re.exec(블록);
+    return r ? r[1].trim() : null;
+  };
+  return {
+    있나: true,
+    name: 뽑기('name', false),
+    description: 뽑기('description', false),
+    type: 뽑기('type', true),
+    node_type: 뽑기('node_type', true),
+    여러절: (뽑기('위생', false) || 뽑기('위생', true)) === '여러절',
+  };
 }
 
 // 코드 스팬·펜스 제외. 첫 실행에서 바로 물린 함정이다 — 표기법을 **설명하는** 문서가
@@ -145,6 +188,11 @@ function load(dir) {
       isIndex: INDEX_FILES.includes(file),
       links: parseLinks(stripCode(stripBacklinks(text))),
       incoming: [],
+      // 위생 자가 쓰는 것들 — 원문을 여기서 이미 읽었으므로 다시 안 읽는다(재읽기 0회).
+      fm: 프론트매터(text),
+      본문: stripBacklinks(text),
+      표식깨짐: 표식깨짐(text),
+      바이트: Buffer.byteLength(text, 'utf8'),
     });
   }
   // 역방향 채우기
@@ -284,10 +332,270 @@ function writeBacklinks(nodes) {
   return changed;
 }
 
+/* ══ 기억 위생 ══════════════════════════════════════════════════════════════
+ * 왜 여기 있나 (2026-08-30 · 유호 지시 「철학정본에 빗댄 완벽히 자동화로 구동되는 결과」):
+ *   08-29 에 내가 «손으로» 기억 332벌을 감사해 `name` 불일치 70벌·`type` 없음 1벌·색인 중복 1벌을
+ *   찾아 손으로 고쳤다. 그 셋을 기계는 **원리상 못 봤다** — 이 파일이 프론트매터를 한 줄도 안 읽었다.
+ *   정본 Ⅰ-4 「반복되는 손일은 성실함이 아니라 시스템 결함이다 — 같은 일이 사람 손을 두 번
+ *   거쳤다면 그것은 이미 시스템이 할 일이다」가 정확히 그 자리를 가리킨다.
+ *
+ * ■ 🔴 이 자가 지키는 «경계» — 넘으면 자동화가 아니라 판정 소실이다
+ *   그 칸이 사람 앞에 있는 까닭이 **«기계가 아직 못 해서»면 기계 몫**이고,
+ *                              **«기계가 하면 판정이 소실돼서»면 사람 몫**이다.
+ *   앞엣것을 사람에게 넘기면 ㉡ 위반이고, 뒤엣것을 기계가 삼키면 자동화가 아니다.
+ *   ⚠ 이 한 문장은 정본 :47 과 :106 을 겹쳐 만든 **조립**이고 정본에 그 형태로는 없다.
+ *   ⚠ 정본 ㉡ 은 사람 칸을 **0 으로 만들라가 아니다** — 「판단이 필요한 자리 **하나**만 남긴다」이다.
+ *     합격 모양은 :104 가 그린다: 「초안 3개를 붙여 넘기면 원장은 **고르고 클릭 한 번**」.
+ *     ⇒ 그래서 이 자는 판정을 **한 건**만, 그러나 **후보를 달아서** 내민다(답이 한 낱말이 되게).
+ *
+ * ■ 무엇을 «고치나» — 하나뿐이다
+ *   소비자가 실재하는 결함만 고친다. `name:`·`node_type` 은 이 저장소 안에 **읽는 코드가 0줄**이라
+ *   「고쳤다」는 참이 되지만 「나아졌다」가 미측정이다 — 그래서 **판정거리로 올린다**(고치지 않는다).
+ *
+ * ■ 이 자가 «안 재는» 것 — 이미 재는 자가 있다(한 판정을 둘이 재면 갈린다)
+ *   ⓐ `⏳` ↔ `[[막힘>]]` 어긋남 = rot-check `memorySection().unwired`
+ *   ⓑ 색인 유령·누락 = 이 파일 `diagnose()`
+ *   ⓒ 압축 후보(낡음×크기) = `tools/메모리실측.js`
+ *   ⓓ MEMORY.md **바이트** = rot-check 상주 총량 절(옆 세션 c2 소유 · 08-29 합의)
+ *
+ * ■ 🔴 자를 «지어서는 안 되는» 자리 넷 — 전부 정상인데 운다(실측)
+ *   연도 없는 MM-DD 표기 265벌 · 「재제안 금지」류 154벌 · `⏳` 91벌 · 12KB 초과 60벌.
+ *   우는 검사는 꺼진다. 안 짓는 것이 부품이다.
+ */
+
+/** 자는 «한 곳»에만 산다 — 자가 흔들리면 「줄었다/늘었다」가 거짓이 된다. */
+const 위생자판 = Object.freeze({
+  판: 1,                    // 자를 고치면 이 수를 올린다 — 래칫이 «폴더가 변한 것»과 «자가 변한 것»을 가른다
+  시각지문절: 4,             // 이만큼이면 「한 파일 = 한 사실」이 아니라 «세션 일지»다
+  description최대: 200,
+});
+
+/* 절 제목에 박힌 «시각 지문» — 날짜·세션id·커밋해시·회차. 이게 여럿이면 일지다.
+ * 해시는 «숫자를 하나라도 낀» 것만 센다(순수 알파벳 낱말이 걸리는 것을 막는다). */
+const 시각지문 = /\d{4}-\d{2}-\d{2}|\b\d{2}-\d{2}\b|local_[0-9a-f]{6,}|\b(?=[0-9a-f]*\d)[0-9a-f]{7,40}\b|\d+\s*회[전차]/;
+
+const 래칫경로 = () => path.resolve(__dirname, '..', 'docs', '_ops', '기억래칫.json');
+
+/**
+ * 기억 폴더의 위생을 «잰다». 아무것도 안 고친다.
+ * 🔑 반환은 «언제나 같은 모양»이다 — 못 쟀으면 `확인불가` 에 사유가 들고 나머지는 빈다.
+ *    소비자(rot-check 한 줄)는 이 필드가 **아예 없으면** 「위생 자가 죽었다」로 울어야 한다.
+ *    「0건」과 「미실행」이 같은 얼굴이면 그건 자가 아니다.
+ */
+function 위생(nodes, dir) {
+  const 틀 = {
+    자판: 위생자판.판, 대상폴더: dir || null, 잰시각: new Date().toISOString(),
+    분모: 0, 확인불가: null,
+    고칠것: { 역링크뒤처짐: [] },
+    판정거리: { name불일치: [], node_type없음: [], type없음: [], description과길기: [], 일지형: [], 표식깨짐: [] },
+  };
+  if (!nodes) return { ...틀, 확인불가: '기억 폴더를 못 읽었다' };
+
+  const 토픽 = [...nodes.values()].filter((n) => !n.isIndex);
+  틀.분모 = 토픽.length;
+  // 🔴 분모 0 은 «깨끗»이 아니다. 워크트리에서 딴 폴더를 가리키면 지금까지 이 얼굴이 「초록」이었다.
+  if (!토픽.length) return { ...틀, 확인불가: '토픽 0벌을 읽었다 — 폴더가 비었거나 딴 곳을 가리킨다' };
+
+  for (const n of 토픽) {
+    if (n.표식깨짐) { 틀.판정거리.표식깨짐.push(n.slug); continue; }  // 이 파일은 «아무것도» 안 만진다
+    const fm = n.fm || { 있나: false };
+    if (!fm.있나) { 틀.판정거리.name불일치.push({ 파일: n.slug, name: null, 사유: '프론트매터 없음' }); continue; }
+    if (fm.name !== n.slug) 틀.판정거리.name불일치.push({ 파일: n.slug, name: fm.name });
+    if (!fm.node_type) 틀.판정거리.node_type없음.push(n.slug);
+    if (!fm.type) 틀.판정거리.type없음.push(n.slug);
+    if (fm.description && fm.description.length > 위생자판.description최대) {
+      틀.판정거리.description과길기.push({ 파일: n.slug, 자: fm.description.length });
+    }
+    if (!fm.여러절) {                                   // «여러 절이 정상»이라고 파일 자신이 선언했으면 뺀다
+      const 절 = (n.본문 || '').split('\n').filter((l) => /^#{2,3} /.test(l));
+      const 지문절 = 절.filter((l) => 시각지문.test(l)).length;
+      if (지문절 >= 위생자판.시각지문절) 틀.판정거리.일지형.push({ 파일: n.slug, 절: 지문절, 바이트: n.바이트 });
+    }
+    const 지금 = 역링크블록(n);
+    if (지금.바뀌나) 틀.고칠것.역링크뒤처짐.push({ 파일: n.slug, 중복: 지금.중복 });
+  }
+  틀.판정거리.일지형.sort((a, b) => b.바이트 - a.바이트);
+  return 틀;
+}
+
+/** 그 노드가 «지금 가져야 할» 역링크 블록과, 실제와 다른지. 쓰기는 안 한다(순수). */
+function 역링크블록(n) {
+  const 원문 = fs.readFileSync(n.full, 'utf8');
+  /* 🔴 줄끝은 «이미 있는 블록의 것»을 그대로 쓴다. 블록이 없을 때만 파일의 우세한 줄끝을 따른다.
+   *   두 번 좁혔다(둘 다 쓰기 «직전» 검산으로 잡았다 · 08-30):
+   *     ①`includes('\r\n')` → CRLF 가 한 줄만 섞인 LF 파일까지 통째로 뒤집었다(247벌).
+   *     ②「파일의 우세한 줄끝」 → 본문은 CRLF 인데 블록만 LF 인 파일 **74벌**이 여전히 뒤집혔다.
+   *       그 74벌은 뜻이 하나도 안 바뀌는 쓰기고, git 이 커밋 때 되돌리면 **매 실행 진동**이 된다.
+   *   ⇒ 「블록을 건드리는 목적」은 목록을 맞추는 것이지 줄끝을 통일하는 것이 아니다. */
+  const s0 = 원문.indexOf(MARK_START);
+  const 블록줄끝 = s0 === -1 ? null
+    : (원문.slice(s0, 원문.indexOf(MARK_END, s0) + 1).includes('\r\n') ? '\r\n' : '\n');
+  const crlf = (원문.match(/\r\n/g) || []).length;
+  const lf = (원문.match(/\n/g) || []).length;
+  const 줄끝 = 블록줄끝 || (crlf > 0 && crlf * 2 >= lf ? '\r\n' : '\n');
+  const base = stripBacklinks(원문).replace(/\s+$/, '');
+  // 🔴 `type|from` 으로 접는다 — 접지 않으면 같은 엣지가 여러 번 실리고 헤더 수까지 부푼다.
+  const 본 = new Map();
+  for (const i of n.incoming) 본.set(i.type + '|' + i.from, i);
+  const 목록 = [...본.values()].sort((a, b) => a.from.localeCompare(b.from));
+  const 절 = 목록.length
+    ? `${줄끝}${줄끝}${MARK_START}${줄끝}## ← 역링크 (${목록.length})${줄끝}`
+      + 목록.map((i) => `- ${i.type} ← [[${i.from}]]`).join(줄끝) + `${줄끝}${MARK_END}${줄끝}`
+    : 줄끝;
+  const 새것 = base + 절;
+  return { 원문, 새것, 바뀌나: 새것 !== 원문, 중복: n.incoming.length - 목록.length };
+}
+
+/**
+ * 안전 쓰기 — 임시 파일에 쓰고 갈아 끼운다. 검산에 실패하면 원문을 되돌린다.
+ * 🔴 `open(p,'w')` 로 «먼저 0바이트로 만드는» 통로는 안 쓴다(08-28 에 기억 파일 하나를 그렇게 날렸다).
+ * 🔴 rename 은 «시도»다 — 다른 프로세스가 그 파일을 읽기로 열고 있으면 윈도우에서 EPERM 이 난다.
+ *    그때는 writeFileSync 로 떨어진다(원자성은 잃지만 파일은 산다). 잔해는 finally 가 지운다.
+ */
+function 안전쓰기(파일, 새것, 원문) {
+  const tmp = `${파일}.${process.pid}.tmp`;
+  try {
+    fs.writeFileSync(tmp, 새것, 'utf8');
+    let 옮김 = false;
+    for (let i = 0; i < 3 && !옮김; i++) {
+      try { fs.renameSync(tmp, 파일); 옮김 = true; } catch (e) {
+        if (i === 2) { fs.writeFileSync(파일, 새것, 'utf8'); 옮김 = true; }   // 폴백
+      }
+    }
+    const 다시 = fs.readFileSync(파일, 'utf8');
+    const 성함 = 다시.startsWith('---') === 원문.startsWith('---')
+      && 다시.length >= stripBacklinks(원문).replace(/\s+$/, '').length
+      && (!/^name:/m.test(원문) || /^name:/m.test(다시));
+    if (!성함) { fs.writeFileSync(파일, 원문, 'utf8'); return { 됐나: false, 사유: '쓰기 뒤 검산 실패 — 되돌렸다' }; }
+    return { 됐나: true };
+  } catch (e) {
+    return { 됐나: false, 사유: String(e.message || e).slice(0, 160) };
+  } finally {
+    try { if (fs.existsSync(tmp)) fs.unlinkSync(tmp); } catch { /* 잔해는 .gitignore 가 둘째 겹 */ }
+  }
+}
+
+/** 무판정 교정 «하나»만 한다 — 역링크 블록 동기화. 그 밖엔 손대지 않는다. */
+function 위생고치기(nodes) {
+  const 고친것 = []; const 못고친것 = [];
+  for (const n of nodes.values()) {
+    if (n.isIndex || n.표식깨짐) continue;
+    const b = 역링크블록(n);
+    if (!b.바뀌나) continue;
+    const r = 안전쓰기(n.full, b.새것, b.원문);
+    (r.됐나 ? 고친것 : 못고친것).push({ 파일: n.slug, 중복: b.중복, 사유: r.사유 });
+  }
+  return { 고친것, 못고친것, 직전동기화커밋: 직전커밋() };
+}
+
+function 직전커밋() {
+  try {
+    return require('child_process')
+      .execFileSync('git', ['-C', memoryDir(), 'rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim();
+  } catch { return null; }
+}
+
+/* ── 래칫 — 오늘 값을 상한으로 삼되, «빚»은 따로 센다 ──────────────────────────
+ * 🔴 상한만 두면 오늘의 일지형 46벌이 곧 «통과선»이 되어 사람 앞에 **영원히 0번** 온다.
+ *   그래서 값을 둘로 가른다: `신규상한`(늘면 빨강) + `잔고`(줄여야 할 빚 · 0 이 될 때까지 판정 자리를 차지).
+ * 🔴 조이기엔 유예를 건다 — 연속 두 번 같은 값일 때만 내린다. 동기화 중에 잠깐 낮게 읽힌
+ *   세션 하나로 바닥이 박히면 그 뒤 모든 세션이 빨개지고, 그게 「검사를 끄는」 방아쇠다.
+ * 값을 사람이 적는 칸은 없다(정본 :149 「값도 상태도 손으로 적지 않는다」). */
+function 래칫(현재, 폴더) {
+  const p = 래칫경로();
+  /* 🔴 상한은 «폴더마다» 따로 산다. 안 가르면 사본(SYNK_MEMORY_DIR)에 대고 한 번 돌린 값이
+   *   진짜 폴더의 상한이 되어 거짓 경보가 난다 — 08-30 에 실제로 「0→198 늘었다」가 났다.
+   *   자를 짓다가 자기가 «자가 둘» 병에 걸린 자리다. 워크트리 포크(312벌)도 같은 이유로 갈린다. */
+  const 칸 = String(폴더 || memoryDir());
+  let 전체 = {};
+  try { 전체 = JSON.parse(fs.readFileSync(p, 'utf8')) || {}; } catch { /* 없으면 오늘이 첫 판이다 */ }
+  let 옛 = 전체[칸];
+  if (!옛 || 옛.자판 !== 위생자판.판) 옛 = { 자판: 위생자판.판, 상한: {}, 잔고: {}, 대기: {} };
+  const 넘음 = [];
+  const 새 = { 자판: 위생자판.판, 갱신: new Date().toISOString(), 상한: {}, 잔고: {}, 대기: {} };
+  for (const [갈래, 수] of Object.entries(현재)) {
+    const 상 = Object.prototype.hasOwnProperty.call(옛.상한, 갈래) ? 옛.상한[갈래] : 수;
+    if (수 > 상) 넘음.push({ 갈래, 수, 상한: 상 });
+    // 조이기 유예 — 같은 값이 연속 두 번 나와야 상한을 내린다.
+    const 대기 = 옛.대기 && 옛.대기[갈래] === 수 ? 수 : null;
+    새.상한[갈래] = 수 < 상 ? (대기 === 수 ? 수 : 상) : 상;
+    새.대기[갈래] = 수 < 상 ? 수 : null;
+    새.잔고[갈래] = 수;
+  }
+  전체[칸] = 새;
+  try { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, JSON.stringify(전체, null, 2) + '\n', 'utf8'); }
+  catch { /* 못 써도 재는 것은 됐다 — 조용히 넘어가되 넘음은 그대로 낸다 */ }
+  return { 넘음, 잔고: 새.잔고 };
+}
+
+/* ── 훅이 부르는 «한 줄» ─────────────────────────────────────────────────────
+ * 평시엔 가장 짧은 한 줄. 판정거리가 있으면 **한 건만**, 후보를 달아서.
+ * 던지지 않는다 — 세션을 막으면 다음 사람이 이 훅을 끈다. */
+function 위생훅줄() {
+  const 줄 = [];
+  try {
+    const dir = memoryDir();
+    const nodes = load(dir);
+    const w = 위생(nodes, dir);
+    const 짧폴더 = String(dir).replace(/^.*[\\/]projects[\\/]/, '…/');
+    const 때 = new Date().toLocaleTimeString('ko-KR', { hour12: false });
+
+    if (w.확인불가) return `🧠 기억 위생 — 확인 불가: ${w.확인불가} (${짧폴더})`;
+    // 🔴 자가 둘인 얼굴 — 잰 폴더와 이 세션이 읽는 폴더가 다르면 그건 «깨끗»이 아니다.
+    if (w.대상폴더 && w.대상폴더 !== memoryDir()) {
+      return `🧠 🔴 기억 자가 둘이다 — ${w.대상폴더} 를 쟀고 이 세션은 ${memoryDir()} 를 읽는다`;
+    }
+
+    const 판정 = [
+      ['표식깨짐', w.판정거리.표식깨짐, (x) => `${x.length}벌 — 역링크 표식이 반쪽이다(자동 교정에서 뺀다)`],
+      ['name 불일치', w.판정거리.name불일치, (x) => `${x.length}벌 — ${x[0].파일} 의 name=${x[0].name} · ⓐ파일명으로 ⓑname 으로 ⓒ둔다`],
+      ['일지형', w.판정거리.일지형, (x) => `${x[0].파일}(${(x[0].바이트 / 1024).toFixed(0)}KB · 지문절 ${x[0].절}) — ⓐ닫힌 회차 걷기 ⓑ지도.md 로 ⓒ그대로`],
+      ['node_type 없음', w.판정거리.node_type없음, (x) => `${x.length}벌 — 이 저장소 소비자 0건(하네스가 읽는지 안 재봤다) · ⓐ채운다 ⓑ먼저 잰다 ⓒ둔다`],
+      ['type 없음', w.판정거리.type없음, (x) => `${x.length}벌`],
+      ['description 과길기', w.판정거리.description과길기, (x) => `${x.length}벌 — ${x[0].파일} ${x[0].자}자`],
+    ].filter(([, x]) => x.length);
+
+    const r = 래칫(Object.fromEntries([
+      ...판정.map(([이름, x]) => [이름, x.length]),
+      ['역링크뒤처짐', w.고칠것.역링크뒤처짐.length],
+    ]), dir);
+
+    const 고칠 = w.고칠것.역링크뒤처짐.length;
+    const 머리 = `🧠 기억 ${w.분모}벌`;
+    if (!판정.length && !고칠) return `${머리} · 위생 깨끗 (${때} · ${짧폴더})`;
+
+    if (판정.length) {
+      const [이름, 것, 문구] = 판정[0];
+      줄.push(`${머리} · 판정 1건 — ${이름}: ${문구(것)}  ← 답은 한 낱말`);
+      const 나머지 = 판정.slice(1);
+      if (나머지.length) 줄.push(`   다음 차례: ${나머지.map(([n, x]) => `${n} ${x.length}`).join(' · ')}`);
+    } else {
+      줄.push(머리);
+    }
+    if (고칠) 줄.push(`   고칠 것 ${고칠}벌(역링크) — node tools/memory-graph.js --위생고침`);
+    if (r.넘음.length) 줄.push(`   🔴 늘었다: ${r.넘음.map((x) => `${x.갈래} ${x.상한}→${x.수}`).join(' · ')}`);
+    return 줄.join('\n');
+  } catch (e) {
+    return `🧠 기억 위생 — 확인 불가(자가 스스로 넘어졌다): ${String(e.message || e).slice(0, 120)}`;
+  }
+}
+
 /* ── 출력 ────────────────────────────────────────────────────────────────── */
 function main() {
   const args = process.argv.slice(2);
+  /* 모르는 낱말을 삼키지 않는다 — 지금까지 `--바나나` 가 EXIT 0 으로 통과해
+   * 「딴 과녁을 재고 초록」이 됐다(08-30 실행 확인). 도구 스물 남짓이 이미 쓰는 공용 판정을 건다. */
+  const { 인자게이트 } = require('./lib/인자게이트.js');
+  const 막을말 = 인자게이트('memory-graph', args,
+    ['--decisions', '--write', '--json', '--위생', '--위생고침', '--훅줄']);
+  if (막을말) { console.error(막을말); process.exit(2); }
+
   const dir = memoryDir();
+  /* 🔴 `--훅줄` 은 조기 종료 «앞»에 둔다 — 폴더를 못 읽는 것이야말로 이 줄이 말해야 하는 사건이다.
+   *   아래로 두면 CLI 는 일반 오류로 빠지고 훅(require 경로)만 「확인 불가」를 내서 **두 통로가
+   *   다른 얼굴**이 된다. 그러면 「자가 죽었을 때 무엇이 보이나」의 답이 부르는 자리마다 달라진다. */
+  if (args.includes('--훅줄')) { console.log(위생훅줄()); return; }
+
   const nodes = load(dir);
   if (!nodes) {
     console.error(`[memory-graph] 메모리 디렉터리를 못 찾음: ${dir}`);
@@ -298,6 +606,43 @@ function main() {
   const totalLinks = [...nodes.values()].reduce((a, n) => a + n.links.length, 0);
   const typed = [...nodes.values()].reduce(
     (a, n) => a + n.links.filter((l) => l.type !== DEFAULT_TYPE).length, 0);
+
+  if (args.includes('--위생') || args.includes('--위생고침')) {
+    const w = 위생(nodes, dir);
+    if (w.확인불가) { console.error(`[기억 위생] 확인 불가 — ${w.확인불가} (${dir})`); process.exit(1); }
+    console.log(`\n[기억 위생] ${dir}\n  토픽 ${w.분모}벌 · 자판 v${w.자판} · ${new Date(w.잰시각).toLocaleString('ko-KR', { hour12: false })}\n`);
+    const 표 = (제목, 것, 줄) => {
+      if (!것.length) { console.log(`  ✅ ${제목} — 없음`); return; }
+      console.log(`  ⚠ ${제목} — ${것.length}건`);
+      for (const x of 것.slice(0, 12)) console.log(`     ${줄(x)}`);
+      if (것.length > 12) console.log(`     … 외 ${것.length - 12}건`);
+    };
+    console.log('  ── 기계 몫(정답이 하나) ──');
+    표('역링크 뒤처짐', w.고칠것.역링크뒤처짐, (x) => `${x.파일}${x.중복 ? ` (중복 ${x.중복}건)` : ''}`);
+    console.log('\n  ── 사람 몫(정답이 여럿 · 기계가 삼키면 판정 소실) ──');
+    표('표식깨짐(고치지 않는다)', w.판정거리.표식깨짐, (x) => x);
+    표('name ↔ 파일명 불일치', w.판정거리.name불일치, (x) => `${x.파일} · name=${x.name}${x.사유 ? ` (${x.사유})` : ''}`);
+    표('node_type 없음', w.판정거리.node_type없음, (x) => x);
+    표('type 없음', w.판정거리.type없음, (x) => x);
+    표('description 과길기', w.판정거리.description과길기, (x) => `${x.파일} ${x.자}자`);
+    표(`일지형(지문절 ${위생자판.시각지문절}+)`, w.판정거리.일지형, (x) => `${x.파일} · 지문절 ${x.절} · ${(x.바이트 / 1024).toFixed(0)}KB`);
+
+    if (args.includes('--위생고침')) {
+      const r = 위생고치기(nodes);
+      console.log(`\n  고쳤다 — 역링크 ${r.고친것.length}벌${r.못고친것.length ? ` · 못 고침 ${r.못고친것.length}벌` : ''}`);
+      for (const x of r.못고친것) console.log(`     🔴 ${x.파일} — ${x.사유}`);
+      if (r.고친것.length && r.직전동기화커밋) {
+        /* 🔴 되돌리기는 `checkout -- 파일` 이 아니다 — 기억 폴더는 **10분마다** 자동 커밋·푸시된다
+         *   (SYNK_MemoryPush 트리거 PT10M). 그 창이 지나면 그 명령은 아무것도 안 되돌린다.
+         *   그래서 «실행 직전 해시»를 박아 낸다. */
+        console.log(`     되돌리려면: git -C "${dir}" checkout ${r.직전동기화커밋} -- <파일>`);
+      }
+    } else if (w.고칠것.역링크뒤처짐.length) {
+      console.log(`\n  고치려면: node tools/memory-graph.js --위생고침`);
+    }
+    console.log('');
+    return;
+  }
 
   if (args.includes('--write')) {
     const changed = writeBacklinks(nodes);
@@ -351,4 +696,9 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { parseLinks, stripBacklinks, load, diagnose, decisions, writeBacklinks, projectDir, memoryDir, TYPES, MARK_START, MARK_END, INDEX_FILES };
+module.exports = {
+  parseLinks, stripBacklinks, load, diagnose, decisions, writeBacklinks,
+  projectDir, memoryDir, TYPES, MARK_START, MARK_END, INDEX_FILES,
+  // 기억 위생(2026-08-30) — 자는 여기 하나뿐이다.
+  프론트매터, 표식깨짐, 위생, 위생고치기, 역링크블록, 안전쓰기, 위생훅줄, 위생자판,
+};
