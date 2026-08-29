@@ -24,6 +24,8 @@ const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+/* 컷 목록의 주인은 여기가 아니다 — 창구 하나에서 온다(주인이 둘이면 반드시 갈린다). */
+const 자산 = require('./lib/마스코트자산.js');
 
 const 루트 = path.resolve(__dirname, '..');
 const 인자 = (() => {
@@ -133,14 +135,27 @@ function main() {
   /* 누끼 세트 — «있다고 적지 말고 센다»(트랙 §2-J 「세어지지 않는 목록은 관리되지 않는다」).
    *   여기 손으로 「아직 없다」를 적어 두었더니 굽고 난 아침에도 지면이 그대로 「없다」라고 말했다.
    *   폴더 규약은 소비자(`tools/워프시연.js`·`tools/lib/마스코트자산.js`)와 같은 자리다. */
+  /* 🔴 08-29 — 위 고침이 «세는 법»만 고치고 «목록»은 손으로 둔 채였다: `['본체','눈감음','눈웃음']`
+   *   세 이름이 박혀 있어서, 시안 다섯의 누끼를 굽더라도 이 지면은 영영 「셋」만 말한다.
+   *   같은 병의 한 겹 위다 — 「구웠는데 아무도 모르는 그림」(정본 §10). ⇒ **목록도 창구에서 온다.**
+   * 🔑 그리고 등급을 갈라 센다: 영상 통로(`까몽누끼컷`)는 «정본 규격»만 집으므로, 둘을 한 수로
+   *   뭉개면 「다 있다」가 거짓이 된다(합계 = 갈래 + 갈래). */
   const 누끼방 = path.join(방, '누끼');
-  const 누끼셋 = ['본체', '눈감음', '눈웃음'];
-  const 누끼있 = 누끼셋.filter((n) => fs.existsSync(path.join(누끼방, `${접두}_${n}.png`)));
-  const 누끼줄 = 누끼있.length === 누끼셋.length
-    ? `✅ <b>셋 다 섰다</b> — <code>누끼/${접두}_{${누끼셋.join(',')}}.png</code> ·
-       가장 새것 ${esc(시각(Math.max(...누끼있.map((n) => fs.statSync(path.join(누끼방, `${접두}_${n}.png`)).mtimeMs))))}`
-    : `합계 ${누끼셋.length} = 있다 ${누끼있.length} + 없다 ${누끼셋.length - 누끼있.length}` +
-      (누끼있.length ? ` (없는 것: ${esc(누끼셋.filter((n) => !누끼있.includes(n)).join(', '))})` : ' — 아직 한 장도 없다');
+  const 있누끼 = (n) => fs.existsSync(path.join(누끼방, `${접두}_${n}.png`));
+  const 등급별 = {};
+  for (const n of 자산.까몽컷) (등급별[자산.까몽컷규격[n]] ||= []).push(n);
+  const 갈래 = (등급) => {
+    const 전 = 등급별[등급] || [];
+    const 있 = 전.filter(있누끼);
+    return `${등급} ${있.length}/${전.length}`
+      + (있.length < 전.length ? ` (없는 것: ${esc(전.filter((n) => !있누끼(n)).join(', '))})` : '');
+  };
+  const 누끼있 = 자산.까몽컷.filter(있누끼);
+  const 누끼줄 = `합계 ${누끼있.length}/${자산.까몽컷.length} = ${갈래('정본')} + ${갈래('시안')}`
+    + (누끼있.length
+      ? ` · 가장 새것 ${esc(시각(Math.max(...누끼있.map((n) => fs.statSync(path.join(누끼방, `${접두}_${n}.png`)).mtimeMs))))}`
+      : ' — 아직 한 장도 없다')
+    + `<br><small>영상이 집는 것은 «정본 규격»뿐이다(<code>까몽누끼컷</code>) — 시안 누끼는 이 지면에서 «눈»을 보시라고 굽는다.</small>`;
 
   const 원고 = `<!doctype html>
 <html lang="ko">
