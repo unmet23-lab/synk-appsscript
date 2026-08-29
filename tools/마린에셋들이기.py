@@ -841,6 +841,50 @@ def _시안(bpy, math, random, g):
                 me.polygons.foreach_set('material_index', idxf)
                 me.update()
                 print('얼굴판: 면 %s개 · %s (z %.2f~%.2f)' % (f'{int(골라f.sum()):,}', _인자['얼굴색'], z0f, z1f))
+        # 눈알 — 칠이 아니라 «기하»다(유호 08-29 레퍼런스 「내가 원한 건 이런 느낌」): 눈굴에
+        # 파란 홍채 구 + 검은 동공 + 흰 하이라이트 구슬을 박는다. 브라우 처마가 위를 눌러
+        # 단호한 눈매가 되고, 구슬 하이라이트는 봉제 인형 눈의 문법이라 프린팅에도 그대로 나간다.
+        if _인자.get('눈알', '0') not in ('0', '끔'):
+            꼭a = float(머리Pn[:, 2].max())
+            눈az = 꼭a - float(_인자.get('눈알높이', '0.56'))
+            반a = float(_인자.get('눈알반', '0.155'))
+            홍채색 = _인자.get('눈알색', 'Lapis')
+            홍채재 = 매끈재질('에셋_홍채', 색[홍채색], 거칠기=0.10, 반사=0.6)
+            동공재 = 매끈재질('에셋_동공', 색['Ink Deep'], 거칠기=0.08, 반사=0.6)
+            빛재a = 매끈재질('에셋_눈빛알', 색['Paper'], 거칠기=0.4)
+            for 부a in (-1, 1):
+                띠a = 머리Pn[(abs(머리Pn[:, 2] - 눈az) < 0.08) &
+                           ((머리Pn[:, 0] - float(중m[0])) * 부a > 0.06) &
+                           ((머리Pn[:, 0] - float(중m[0])) * 부a < 0.30)]
+                if len(띠a) < 40:
+                    continue
+                xs = float(중m[0]) + 부a * float(_인자.get('눈알간격', '0.17'))
+                앞s = float(_np.percentile(띠a[:, 1], 3))
+                중y = 앞s + float(_인자.get('눈알묻기', '0.06'))
+                납작 = float(_인자.get('눈알납작', '0.5'))   # 구를 y로 눌러 «렌즈»로 — 구는 브라우 앞으로 튄다(3차)
+                bpy.ops.mesh.primitive_uv_sphere_add(radius=반a, location=(xs, 중y, 눈az))
+                홍채 = bpy.context.object
+                홍채.scale = (1.0, 납작, 1.0)
+                bpy.ops.object.shade_smooth()
+                홍채.data.materials.append(홍채재)
+                붙인것.append(홍채)
+                동공비 = float(_인자.get('눈알동공', '0.42'))
+                bpy.ops.mesh.primitive_uv_sphere_add(radius=반a * 동공비,
+                                                     location=(xs, 중y - 반a * 납작 * 0.80, 눈az))
+                동공 = bpy.context.object
+                동공.scale = (1.0, 납작, 1.0)
+                bpy.ops.object.shade_smooth()
+                동공.data.materials.append(동공재)
+                붙인것.append(동공)
+                for 하이r, 하이dx, 하이dz, 하이dy in ((0.026, -0.048, 0.050, -0.97), (0.014, 0.040, -0.030, -0.98)):
+                    bpy.ops.mesh.primitive_uv_sphere_add(radius=하이r,
+                        location=(xs + 하이dx, 중y + 반a * 납작 * 하이dy, 눈az + 하이dz))
+                    빛알 = bpy.context.object
+                    bpy.ops.object.shade_smooth()
+                    빛알.data.materials.append(빛재a)
+                    붙인것.append(빛알)
+                print('눈알(%s): 중심 (%.2f, %.2f, %.2f) · 반 %.2f' % ('좌' if 부a < 0 else '우',
+                      xs, 중y, 눈az, 반a))
         # 눈판 — 눈«만» 다른 색·재질로(유호 08-28). 🔴 손 z띠 두 판이 연속 빗나갔다
         # (눈썹뼈 → 다크서클 · 유호 「구조를 파악해봐」). 이 마스크의 눈은 «진짜 구멍»이다 —
         # 속빛이 새던 그 틈. 경계 모서리(면이 한쪽뿐인 모서리)를 눈 구역에서 모아 좌/우로
@@ -916,6 +960,20 @@ def _시안(bpy, math, random, g):
                     #   «사선»으로: 코 옆은 낮게, 바깥으로 갈수록 치켜 올라간다(위0 - 기울*|dx| 만큼 아래).
                     위0s, 기울s = (float(v) for v in _인자['눈판사선'].split(','))
                     골라e &= (We[:, 2] < 꼭e - 위0s + 기울s * abs(dx))
+                if _인자.get('눈판밑사선'):
+                    # 아랫경계 사선 — 바깥쪽 아래 «날개»(볼 그늘 = 다크서클)를 걷는다: 코 쪽은 깊게,
+                    # 바깥으로 갈수록 얕게(아래0 - 기울*|dx| 만큼 아래까지만).
+                    아래0s, 밑기울s = (float(v) for v in _인자['눈판밑사선'].split(','))
+                    골라e &= (We[:, 2] > 꼭e - 아래0s + 밑기울s * abs(dx))
+                if 골라e.any():
+                    # 외딴 점 걷기 — 조건을 빠져나간 낱조각이 눈썹뼈에 점으로 남는다(유호 5반려).
+                    # 주변 0.045 안에 동료 선택면이 적으면 눈 본체가 아니다.
+                    선xz = We[골라e][:, [0, 2]]
+                    이웃 = ((abs(선xz[:, None, 0] - 선xz[None, :, 0]) < 0.045) &
+                          (abs(선xz[:, None, 1] - 선xz[None, :, 1]) < 0.045)).sum(1)
+                    본체 = _np.nonzero(골라e)[0][이웃 >= int(_인자.get('눈판이웃', '12'))]
+                    골라e = _np.zeros(n, dtype=bool)
+                    골라e[본체] = True
                 if not 골라e.any():
                     continue
                 me.materials.append(눈재v)
