@@ -99,6 +99,31 @@ test('서수 변형(1st·2nd·3rd·21st)도 전부 파싱된다', () => {
     '시각이 없는데 지어냈다 — 지어낸 차단은 멀쩡한 리셋 뒤에도 막는다');
 });
 
+/* 🔴 2026-08-29 실측 — 벤더가 **날짜 없이 시각만** 주는 판이 있다(그날 실물 그대로):
+ *   `ERROR: You've hit your usage limit. … or try again at 9:37 PM.`
+ *   이걸 못 읽으면 마커가 「리셋 시각을 못 읽었다」로 남고, 그러면 게이트가 **태우기 전에 못 막는다**
+ *   (리셋을 모르는 차단은 따를 수 없는 처방이라 설계상 안 막는다) — 못 읽는 순간 방어가 통째로 꺼진다. */
+test('날짜 없이 «시각만» 주는 판도 읽는다 — 가장 가까운 미래로 (2026-08-29 실물)', () => {
+  const 런 = 런모듈();
+  const 실물 = "ERROR: You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), "
+    + 'visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 9:37 PM.';
+  // 같은 날 20:22 에 감지 → 21:37 은 아직 안 지났으니 **오늘**이다
+  const 오늘 = new Date('2026-08-29T20:22:00');
+  assert.strictEqual(런.한도리셋파싱(실물, 오늘), new Date('2026-08-29T21:37:00').toISOString(),
+    '시각만 있는 판을 못 읽었다 — 그러면 한도 게이트가 꺼진 채로 돈다');
+  // 이미 지난 시각이면 **내일**로 — 지난 시각을 그대로 두면 마커가 즉시 「지남」이 돼 방어가 헛돈다
+  const 늦은밤 = new Date('2026-08-29T23:50:00');
+  assert.strictEqual(런.한도리셋파싱(실물, 늦은밤), new Date('2026-08-30T21:37:00').toISOString(),
+    '지난 시각을 오늘로 읽으면 마커가 태어나자마자 만료된다');
+  // 12시간제 경계 — 12 AM = 0시 · 12 PM = 12시
+  assert.strictEqual(런.한도리셋파싱('try again at 12:00 AM', new Date('2026-08-29T10:00:00')),
+    new Date('2026-08-30T00:00:00').toISOString(), '12 AM 을 12시로 읽었다');
+  assert.strictEqual(런.한도리셋파싱('try again at 12:30 PM', new Date('2026-08-29T10:00:00')),
+    new Date('2026-08-29T12:30:00').toISOString(), '12 PM 을 0시로 읽었다');
+  // 형식이 아예 다르면 여전히 null — 「안 읽혔다」가 보여야 한다(지어내지 않는 선)
+  assert.strictEqual(런.한도리셋파싱('try again later', new Date('2026-08-29T10:00:00')), null);
+});
+
 test('실전 모양: 오류 조각들이 「 / 」로 한 줄에 이어 붙어도 리셋 시각이 선다(첫 실심기가 잡음)', () => {
   /* 실측 87f15a 로그의 실제 모양 — 「확인 불가 …」 요약이 ERROR 조각 둘을 한 줄로 이었다.
    * 줄끝 앵커 파싱은 여기서 첫 「try again at」부터 줄끝까지 삼켜 null 이 됐다. */

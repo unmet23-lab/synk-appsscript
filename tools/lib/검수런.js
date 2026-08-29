@@ -501,11 +501,33 @@ function 한도경로() { return path.join(런뿌리(), '한도.json'); }
  *   (실측 87f15a: 「확인 불가 … / ERROR: … / ERROR: …」), 앵커 매칭이 첫 「try again at」부터
  *   줄끝까지 통째로 삼켜 Date 가 죽는다. **날짜 모양 자체**를 잡는다 — 모양이 바뀌면 null 로
  *   접혀 차단 없는 알림만 남는다(새는 방향이 「멀쩡한 통로를 막음」이 아니라 「알림」이다). */
-function 한도리셋파싱(줄) {
-  const m = /try again at ([A-Za-z]{3,9} \d{1,2}(?:st|nd|rd|th)?,? \d{4},? \d{1,2}:\d{2}\s?[AP]M)/i.exec(String(줄 || ''));
-  if (!m) return null;
-  const d = new Date(m[1].replace(/(\d{1,2})(st|nd|rd|th)\b/i, '$1'));
-  return Number.isFinite(d.getTime()) ? d.toISOString() : null;
+function 한도리셋파싱(줄, 지금) {
+  const s = String(줄 || '');
+  const m = /try again at ([A-Za-z]{3,9} \d{1,2}(?:st|nd|rd|th)?,? \d{4},? \d{1,2}:\d{2}\s?[AP]M)/i.exec(s);
+  if (m) {
+    const d = new Date(m[1].replace(/(\d{1,2})(st|nd|rd|th)\b/i, '$1'));
+    return Number.isFinite(d.getTime()) ? d.toISOString() : null;
+  }
+  /* 🔴 2026-08-29 실측 — 벤더가 **날짜 없이 시각만** 주는 판이 있다:
+   *   `ERROR: You've hit your usage limit. … or try again at 9:37 PM.`
+   *   위 정규식은 연·월·일을 요구해서 이걸 못 읽었고, 마커는 「리셋 시각을 못 읽었다」로 남았다.
+   *   그러면 게이트가 **태우기 전에 못 막는다**(리셋을 모르는 차단은 따를 수 없는 처방이라 설계상
+   *   안 막는다) — 즉 못 읽는 순간 그 방어가 통째로 꺼진다.
+   * 🔑 날짜가 없으면 **가장 가까운 미래**로 읽는다: 오늘 그 시각이 이미 지났으면 내일이다.
+   *   벤더 문구가 로컬 시간대로 오므로 로컬 기준으로 세운다.
+   * ⚠ 지어내지 않는 선을 지킨다 — 형식이 아예 다르면 여전히 null 이다(「안 읽혔다」가 보여야 한다). */
+  const t = /try again at (\d{1,2}):(\d{2})\s?([AP])M/i.exec(s);
+  if (!t) return null;
+  const 분 = Number(t[2]);
+  let 시 = Number(t[1]) % 12;
+  if (/p/i.test(t[3])) 시 += 12;
+  if (!(시 >= 0 && 시 <= 23 && 분 >= 0 && 분 <= 59)) return null;
+  const 기준 = new Date(지금 || Date.now());
+  if (!Number.isFinite(기준.getTime())) return null;
+  const d = new Date(기준);
+  d.setHours(시, 분, 0, 0);
+  if (d.getTime() <= 기준.getTime()) d.setDate(d.getDate() + 1);
+  return d.toISOString();
 }
 
 /** 출력에서 한도 오류를 발견하면 마커를 적는다. 패턴이 없으면 null — 아무것도 안 쓴다. */
@@ -515,7 +537,7 @@ function 한도기록(텍스트, 지금) {
   const 줄 = (s.split('\n').find((l) => 한도패턴.test(l)) || '').trim();
   const 기록 = {
     감지시각: new Date(지금 || Date.now()).toISOString(),
-    리셋시각: 한도리셋파싱(줄),
+    리셋시각: 한도리셋파싱(줄, 지금),
     원문: 줄.slice(0, 500),
     출처런: process.env[런ID키] || '',
   };
