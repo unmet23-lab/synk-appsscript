@@ -1,8 +1,13 @@
 @echo off
 rem memory-push: sync local memory canon to synk-memory (cloud copy),
 rem and pull down decision answers (_kyu/decision replies) committed by Actions.
-rem Runs hourly via Task Scheduler (SYNK_MemoryPush). If the PC is off, only this
-rem sync pauses - the cloud queue keeps running on the last pushed copy.
+rem Driven by the SYNK_MemoryPush trigger in Task Scheduler. THAT TRIGGER IS THE
+rem CANON for the interval, so the interval is not restated here: this line read
+rem "hourly" while the real trigger had long since become PT10M, and several
+rem other docs repeated the same stale number (all fixed 2026-08-29).
+rem To measure:  Get-ScheduledTask SYNK_MemoryPush ^| Get-ScheduledTaskInfo
+rem If the PC is off, only this sync pauses - the cloud queue keeps running on
+rem the last pushed copy.
 rem
 rem WHY ASCII ONLY: cmd.exe parses batch files in the OEM codepage (CP949 here),
 rem so Korean text in EXECUTABLE lines gets mangled and breaks parsing - the

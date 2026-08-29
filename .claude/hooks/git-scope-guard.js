@@ -219,7 +219,9 @@ if (걸린조각(
     }
   }
   /* ⑨-b 처방문 되먹임 구멍(가드 맹점 ③): 위 사유의 「push 는 자동화 몫」을 읽은 세션이 그
-   * 자동화 스크립트(tools/memory-push.cmd — Task Scheduler 가 매시 돌린다)를 **손으로 당기면**
+   * 자동화 스크립트(tools/memory-push.cmd — Task Scheduler 가 주기로 돌린다 · 주기 값은 사유에
+   * 안 적는다: 「매시」로 적힌 채 실물 트리거는 PT10M 이었고 여러 문서가 그 값을 같이 들고 낡았다
+   * · 2026-08-29 에 「다음 정시가 싣는다」가 오답으로 나갔다)를 **손으로 당기면**
    * 같은 push 가 이 가드 시야 밖에서 재현된다(.cmd 안의 git 은 훅을 안 지난다). 호출만 막고
    * 읽기는 자유다 — 조각의 **첫 낱말**이 그 스크립트일 때만 호출이다(cat·type 등 읽개가 첫
    * 낱말이면 언급일 뿐이다). 스케줄러 자신은 세션 훅 밖에서 돌므로 이 규칙에 안 닿는다. */
@@ -227,7 +229,9 @@ if (걸린조각(
     /^\s*(?:(?:call|start|cmd(?:\.exe)?\s+\/[ck]|&|\.)\s+)?["']?(?:[A-Za-z]:)?[\w.\/\\~-]*memory-push(?:\.cmd)?["']?(?:\s|$)/i.test(s));
   if (메모리푸시호출) {
     deny('[git-scope-guard] 스케줄러의 push 스크립트(tools/memory-push.cmd)를 세션이 직접 호출 — synk-memory push 와 같은 통로 위반이다(F392).'
-      + '\n그 스크립트는 Task Scheduler(SYNK_MemoryPush)가 매시 돌린다 — 남긴 커밋은 다음 정시가 싣는다.'
+      + '\n그 스크립트는 Task Scheduler(SYNK_MemoryPush)가 주기로 돌린다 — 남긴 커밋은 다음 회차가 싣는다.'
+      + '\n주기·다음 시각은 여기 안 적는다(낡는다) — 재려면:'
+      + '\n  Get-ScheduledTask SYNK_MemoryPush | Get-ScheduledTaskInfo'
       + '\n→ 커밋에서 멈춘다. 자동화가 죽은 것을 **확인한** 경우에만 GIT_SCOPE_BYPASS=1 을 붙인다.');
   }
 }
