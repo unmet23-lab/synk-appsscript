@@ -149,3 +149,49 @@ test('자판은 한 곳에만 산다 — 자가 바뀌면 수가 바뀐다는 �
   // 자를 고치면서 판을 안 올리면, 래칫이 «폴더가 변한 것»과 «자가 변한 것»을 못 가른다.
   assert.ok(Object.isFrozen(M.위생자판), '자판은 얼려 둔다 — 실행 중에 흔들리면 안 된다');
 });
+
+test('훅이 «스스로» 고친다 — 작은 표류는 사람 손을 안 부른다', () => {
+  const d = 임시폴더({ '가.md': 토픽('가', '[[나]]'), '나.md': 토픽('나', '몸통') });
+  const 옛 = process.env.SYNK_MEMORY_DIR;
+  try {
+    process.env.SYNK_MEMORY_DIR = d;
+    const 줄1 = M.위생훅줄();
+    assert.match(줄1, /스스로 고침/, '보고만 하면 미완성이다 — 그 자리에서 고쳐야 한다');
+    // 두 번째는 고칠 것이 없으니 조용하다(멱등).
+    assert.ok(!/스스로 고침/.test(M.위생훅줄()));
+  } finally {
+    if (옛 === undefined) delete process.env.SYNK_MEMORY_DIR; else process.env.SYNK_MEMORY_DIR = 옛;
+  }
+});
+
+test('🔴 잠금을 못 잡으면 «고치지 않고 말한다» — 남의 것을 죽이지 않는다', () => {
+  const d = 임시폴더({ '가.md': 토픽('가', '[[나]]'), '나.md': 토픽('나', '몸통') });
+  fs.writeFileSync(path.join(d, '.위생잠금'), '{"pid":999999}', 'utf8');   // 남이 잡고 있는 척
+  const 옛 = process.env.SYNK_MEMORY_DIR;
+  try {
+    process.env.SYNK_MEMORY_DIR = d;
+    const 줄 = M.위생훅줄();
+    assert.match(줄, /잠금 못 잡음/, '왜 안 고쳤는지 말해야 한다 — 침묵은 「고쳤다」와 같은 얼굴이 된다');
+    assert.ok(!/스스로 고침/.test(줄));
+  } finally {
+    if (옛 === undefined) delete process.env.SYNK_MEMORY_DIR; else process.env.SYNK_MEMORY_DIR = 옛;
+  }
+});
+
+test('🔴 뭉텅이는 훅이 «안» 건드린다 — 제 커밋으로 설 자리다', () => {
+  const 파일들 = {};
+  // 상한을 넘기려면 역링크가 뒤처진 파일이 상한보다 많아야 한다.
+  const n = M.훅자동교정_상한 + 5;
+  파일들['허브.md'] = 토픽('허브', Array.from({ length: n }, (_, i) => `[[t${i}]]`).join(' '));
+  for (let i = 0; i < n; i++) 파일들[`t${i}.md`] = 토픽(`t${i}`, '몸통');
+  const d = 임시폴더(파일들);
+  const 옛 = process.env.SYNK_MEMORY_DIR;
+  try {
+    process.env.SYNK_MEMORY_DIR = d;
+    const 줄 = M.위생훅줄();
+    assert.match(줄, /뭉텅이라 안 건드린다/);
+    assert.ok(!/스스로 고침/.test(줄), '뭉텅이를 훅이 삼키면 그날의 진짜 변경이 그 안에 묻힌다');
+  } finally {
+    if (옛 === undefined) delete process.env.SYNK_MEMORY_DIR; else process.env.SYNK_MEMORY_DIR = 옛;
+  }
+});
