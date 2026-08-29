@@ -454,6 +454,7 @@ function callClaudeTalk_(apiKey, stu, history, text) {
     throw e;
   }
   const j = JSON.parse(res.getContentText());
+  AI사용_기록_('대화', j.usage);   // [T4] 아래 게이트들이 답장을 버려도 이 호출은 이미 과금됐다(정본 = 엔진_콘텐츠AI.js AI 토큰 장부)
   if (j.stop_reason === 'refusal') throw permErr('Claude 거부(refusal)');
   if (j.stop_reason === 'max_tokens') throw permErr('출력 잘림(max_tokens)');
   const tb = (j.content || []).filter(b => b.type === 'text')[0];

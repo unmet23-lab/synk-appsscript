@@ -57,6 +57,13 @@
             "shell": "bash",
             "timeout": 20,
             "statusMessage": "검수·심문 런 회수"
+          },
+          {
+            "type": "command",
+            "command": "H=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/rot-check.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then node \"$H\" --hook; else echo \"🩺 부패 점검을 못 돌렸다(도구·node 부재) — 이건 「부패 없음」이 아니라 «확인 불가»다. node tools/rot-check.js 로 직접 본다\"; fi",
+            "shell": "bash",
+            "timeout": 100,
+            "statusMessage": "조용한 부패 점검"
           }
         ]
       }

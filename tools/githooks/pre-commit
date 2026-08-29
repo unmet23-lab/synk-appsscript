@@ -19,9 +19,79 @@ set -e
 
 ROOT=$(git rev-parse --show-toplevel)
 
+# ── 게이트 «초» 기록 ────────────────────────────────────────────────────────
+# 무엇을 — 아래 게이트 일곱이 각각 몇 ms 걸렸는지를 `docs/_ops/게이트초.jsonl` 에 한 줄 남긴다.
+# 왜 — 「커밋 게이트가 사람을 얼마나 기다리게 하나」를 판정하려면 재료가 있어야 하는데 지금은
+#   아무도 안 잰다. **읽는 자리는 `tools/rot-check.js` 가 진다 — 여기는 기록만 한다**
+#   (같은 것을 두 곳에서 재면 반드시 갈린다).
+# 형식 — {"시각":ISO,"커밋":"pending","게이트":{"이름":ms 또는 사유문자열,…},"합":ms}
+#   · 수 = 실제로 돌아서 잰 값 / 문자열 = 안 돌았다("검사기없음" · "해당없음")
+#   · 키가 아예 없다 = 거기까지 못 갔다(앞 게이트가 막았다). 0ms 로 위장시키지 않는다.
+#   · `합` 은 **수인 것만** 더한다. 안 돈 게이트를 0으로 세면 「빨랐다」로 읽힌다.
+#   · 커밋 sha 는 pre-commit 시점엔 아직 없다 — 그래서 언제나 "pending" 이다(지어내지 않는다).
+#
+# ☠️ **시간 재기가 커밋을 늦추면 본말전도다.** 그래서 `date` 를 안 부른다 — 이 기계에서
+#    `date +%s%3N` 는 한 번에 ≈20ms(10회 197ms 실측)라 8번이면 게이트 바닥값 692ms 에
+#    160ms 를 얹는다. bash 내장 `$EPOCHREALTIME` 은 포크가 0이라 10회에 0.16ms 였다(실측).
+# ⚠ 그 대가로 **bash 전용**이다. sh 가 dash 인 기계에선 못 잰다 — 그때는 조용히 0을 쓰지 않고
+#    「못 쟀다」를 stderr 로 말하고 줄을 안 남긴다(통과와 미실행이 같은 모양이면 안 된다).
+# ☠️ **여기 이름만 로마자인 까닭** — 이 저장소는 함수·변수에도 한글을 쓰지만 **bash 변수 이름은
+#    ASCII 만 된다**. `게이트초_켬=1` 은 파싱은 통과하고 실행 때 `command not found`(종료 127)로
+#    죽는다 — 즉 훅이 **첫 게이트도 못 돌고** 커밋을 막는다(08-29 실측 · 그래서 로마자다).
+#    함수 이름은 한글이 되지만, 절반만 한글이면 다음 사람이 규칙을 오해한다 — 이 블록은 통째 로마자.
+if [ -n "${EPOCHREALTIME-}" ]; then GATE_MS_ON=1; else GATE_MS_ON=''; fi
+GATE_MS_ITEMS=''
+GATE_MS_SUM=0
+
+gate_now_ms() {  # 결과는 $GATE_MS_NOW 에 넣는다 — echo 로 돌려주면 서브셸 포크라 비싸다
+  _gsec=${EPOCHREALTIME%%.*}
+  _gfrac=${EPOCHREALTIME#*.}000
+  _gmil=${_gfrac%"${_gfrac#???}"}
+  GATE_MS_NOW=$(( _gsec * 1000 + 10#$_gmil ))   # 10# 없으면 「062」가 8진수로 읽힌다
+}
+
+gate_record() {  # $1=이름 $2=ms 또는 사유
+  case "$2" in
+    ''|*[!0-9]*) _gval="\"$2\"" ;;
+    *) _gval="$2"; GATE_MS_SUM=$(( GATE_MS_SUM + $2 )) ;;
+  esac
+  GATE_MS_ITEMS="${GATE_MS_ITEMS:+$GATE_MS_ITEMS,}\"$1\":$_gval"
+}
+
+gate_run() {  # $1=이름, 나머지=실행할 명령
+  _gname=$1; shift
+  if [ -z "$GATE_MS_ON" ]; then "$@"; return $?; fi
+  gate_now_ms; _gstart=$GATE_MS_NOW
+  _gcode=0
+  "$@" || _gcode=$?          # `||` 가 set -e 를 여기서만 눌러, 실패해도 끝시각을 잰다
+  gate_now_ms
+  gate_record "$_gname" $(( GATE_MS_NOW - _gstart ))
+  return $_gcode             # 0 이 아니면 바깥 set -e 가 커밋을 막는다(원래 동작 그대로)
+}
+
+# 실패로 중단돼도 여기까지 잰 것은 남긴다 — 「느려서 죽었나」를 나중에 못 보면 잰 뜻이 없다.
+gate_flush() {
+  [ -n "$GATE_MS_ON" ] || return 0
+  _gledger="$ROOT/docs/_ops/게이트초.jsonl"
+  _gtz=${TZ-}; _gtzset=${TZ+set}
+  TZ=UTC; printf -v _gnow '%(%Y-%m-%dT%H:%M:%SZ)T' -1
+  if [ -n "$_gtzset" ]; then TZ=$_gtz; else unset TZ; fi
+  # 한 줄을 통째로 만들어 **한 번에** 쓴다 — 다섯 세션이 동시에 커밋해도 줄이 섞이지 않게.
+  printf '%s
+' "{\"시각\":\"$_gnow\",\"커밋\":\"pending\",\"게이트\":{$GATE_MS_ITEMS},\"합\":$GATE_MS_SUM}"     >> "$_gledger" 2>/dev/null || echo "[게이트초] 장부에 못 적었다 — $_gledger" >&2
+}
+if [ -n "$GATE_MS_ON" ]; then
+  trap gate_flush EXIT
+else
+  echo "[게이트초] 이 셸엔 밀리초 시계가 없어 게이트 초를 **못 쟀다** — 줄을 남기지 않는다(bash 필요)" >&2
+fi
+# ────────────────────────────────────────────────────────────────────────────
+
 if git diff --cached --name-only -z --diff-filter=ACMR \
    | tr '\0' '\n' | grep -qx '계약/수집_교정_계약.json'; then
-  node "$ROOT/tools/계약동기화.js" --check
+  gate_run 계약동기화 node "$ROOT/tools/계약동기화.js" --check
+else
+  gate_record 계약동기화 해당없음
 fi
 
 # 계약이 픽스처 조립부를 **두고 가는 것**을 막는다. (자율주행 판정 0814 #26 · 거부권 열림)
@@ -37,9 +107,10 @@ fi
 #   곧 구멍이 되고, 같은 판정이 두 곳에 갈려 적힌다(가드 맹점 ③④).
 # ⚠ 없으면 막지 않고 말한다 / 있는데 0 아닌 값이면 set -e 가 막는다 — 위 게이트들과 같은 규약.
 if [ -f "$ROOT/tools/계약동봉검사.js" ]; then
-  node "$ROOT/tools/계약동봉검사.js" --cached
+  gate_run 계약동봉검사 node "$ROOT/tools/계약동봉검사.js" --cached
 else
   echo "[계약동봉] 검사기가 없어 동봉 대조를 **못 했다** — $ROOT/tools/계약동봉검사.js" >&2
+  gate_record 계약동봉검사 검사기없음
 fi
 
 # 정본 개정이 **이해대장 화면을 두고 가는 것**을 막는다. (유호 지시 2026-08-14)
@@ -53,9 +124,10 @@ fi
 #   가 맡는다(작업본이 아니라 **커밋될 내용**을 세운다 · F302). 여기는 부르기만 한다.
 # ⚠ 없으면 막지 않고 말한다 / 있는데 0 아닌 값이면 set -e 가 막는다 — 위 게이트들과 같은 규약.
 if [ -f "$ROOT/tools/대장동봉검사.js" ]; then
-  node "$ROOT/tools/대장동봉검사.js" --cached
+  gate_run 대장동봉검사 node "$ROOT/tools/대장동봉검사.js" --cached
 else
   echo "[이해대장] 게이트가 없어 동기 대조를 **못 했다** — $ROOT/tools/대장동봉검사.js" >&2
+  gate_record 대장동봉검사 검사기없음
 fi
 
 # 「쓰는 문자는 한글·몽골어·영어 셋뿐」(유호님 확정 2026-08-07)을 **커밋 때** 발동시킨다.
@@ -76,9 +148,10 @@ fi
 #   게이트가 같은 이유로 같은 규약을 쓴다). 대신 통과와 미실행이 같은 모양이 되지 않게 찍는다.
 #   반대로 있는데 0 아닌 값으로 끝나면(위반이든 크래시든) `set -e` 가 커밋을 막는다.
 if [ -f "$ROOT/tools/옛글자검사.js" ]; then
-  node "$ROOT/tools/옛글자검사.js" --cached
+  gate_run 옛글자검사 node "$ROOT/tools/옛글자검사.js" --cached
 else
   echo "[옛글자] 검사기가 없어 옛 글자 대조를 **못 했다** — $ROOT/tools/옛글자검사.js" >&2
+  gate_record 옛글자검사 검사기없음
 fi
 
 # 문서가 **이번에 새로 대는** `파일:줄` 인용이 실제로 그것을 가리키는지 본다. (F350 처방 · 2026-08-12)
@@ -93,9 +166,10 @@ fi
 #   남의 낡은 인용으로 내 커밋이 막힌다. 따를 수 없는 처방은 우회를 정상 통로로 만든다(F103).
 # ⚠ 없으면 막지 않고 말한다 / 있는데 0 아닌 값이면 set -e 가 막는다 — 위 두 게이트와 같은 규약.
 if [ -f "$ROOT/tools/인용검사.js" ]; then
-  node "$ROOT/tools/인용검사.js" --스테이징
+  gate_run 인용검사 node "$ROOT/tools/인용검사.js" --스테이징
 else
   echo "[인용검사] 검사기가 없어 인용 대조를 **못 했다** — $ROOT/tools/인용검사.js" >&2
+  gate_record 인용검사 검사기없음
 fi
 
 # 확정 안 된 `[vNEXT]` 자리표가 **커밋되는 것**을 막는다. (F450 처방 · 2026-08-15)
@@ -112,9 +186,10 @@ fi
 # 🔑 경로 조건을 안 건다 — 범위(배포 집합)는 도구 안에 있다. 여기 손으로 적으면 두 곳에 갈린다.
 # ⚠ 없으면 막지 않고 말한다 / 있는데 0 아닌 값이면 set -e 가 막는다 — 위 게이트들과 같은 규약.
 if [ -f "$ROOT/tools/자리표검사.js" ]; then
-  node "$ROOT/tools/자리표검사.js" --cached
+  gate_run 자리표검사 node "$ROOT/tools/자리표검사.js" --cached
 else
   echo "[자리표] 검사기가 없어 자리표 대조를 **못 했다** — $ROOT/tools/자리표검사.js" >&2
+  gate_record 자리표검사 검사기없음
 fi
 
 # 원시 제어문자(C0·DEL)가 **커밋되는 것**을 막는다. (F454 처방 · 2026-08-15)
@@ -132,7 +207,8 @@ fi
 #   안 넘어온다. 물려받았으면 사고가 난 그 자리가 영영 안 잡힌다(회귀가 이걸 못박는다).
 # ⚠ 없으면 막지 않고 말한다 / 있는데 0 아닌 값이면 set -e 가 막는다 — 위 게이트들과 같은 규약.
 if [ -f "$ROOT/tools/제어문자검사.js" ]; then
-  node "$ROOT/tools/제어문자검사.js" --cached
+  gate_run 제어문자검사 node "$ROOT/tools/제어문자검사.js" --cached
 else
   echo "[제어문자] 검사기가 없어 제어문자 대조를 **못 했다** — $ROOT/tools/제어문자검사.js" >&2
+  gate_record 제어문자검사 검사기없음
 fi

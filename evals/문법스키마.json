@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "properties": {
+    "판정": {
+      "type": "string",
+      "enum": [
+        "정상",
+        "어색",
+        "파손"
+      ]
+    },
+    "이유": {
+      "type": "string"
+    },
+    "문제문장": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "판정",
+    "이유"
+  ]
+}

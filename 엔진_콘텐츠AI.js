@@ -2235,6 +2235,7 @@ function callClaudeFeedback_(apiKey, stu, text) {
     throw e;
   }
   const j = JSON.parse(res.getContentText());
+  AI사용_기록_('첨삭', j.usage);   // [T4] 아래 게이트들이 카드를 버려도 이 호출은 이미 과금됐다
   if (j.stop_reason === 'refusal') throw permErr('Claude 거부(refusal)');
   if (j.stop_reason === 'max_tokens') throw permErr('출력 잘림(max_tokens) — 사고 토큰 포함 한도 초과');
   const tb = (j.content || []).filter(b => b.type === 'text')[0]; // thinking 블록이 앞설 수 있어 type으로 선별
@@ -2271,6 +2272,106 @@ const MN_GUIDE_SPEAK = {
   마린장면: ['', '']
 };
 
+/* ══════════════════════════════════════════════════════════════════════════════════════
+ * [T4] AI 토큰 장부 — 밤 배치가 «실제로» 몇 토큰을 보내고 캐시가 도는가
+ *
+ * 무엇: 배치가 Claude 를 부를 때마다 응답의 `usage` 를 한 실행 동안 모아, 그 실행 끝에 한 줄로 남긴다.
+ *
+ * 왜 만들었나 — 재는 자리가 없어서 «판정을 못 했다»:
+ *   ① 프롬프트 캐싱을 켤 수 있는지는 「공통 앞부분이 몇 토큰인가」가 정한다. 그 선(아래 AI캐시선_)을
+ *      못 넘으면 `cache_control` 을 붙여도 캐시가 **조용히 안 만들어진다** — 오류 0, 증상 0, 청구서만 그대로다.
+ *      그래서 「캐싱 적용 완료」라고 적어 놓고 실제로는 한 푼도 안 아끼는 상태가 가능하다.
+ *   ② 켠 뒤에도 캐시는 조용히 깨진다 — 프롬프트 «앞머리»에 값 하나(날짜·학생 이름)가 끼는 날 히트가 0이 되고
+ *      아무 신호도 안 난다. 안 재면 「샌다/안 샌다」를 영영 모른다.
+ *
+ * 어떻게: 200 을 받아 본문을 읽은 **직후**에 기록한다 — 그 뒤의 게이트(옛글자·스키마·파싱)가 응답을 버려도
+ *   그 호출은 **이미 과금됐다**(상담AI `과금실패9` 가 08-28 에 배운 자리와 같은 축). 버린 응답의 토큰을
+ *   장부에서 빼면 장부가 실제 지출보다 «적게» 나온다.
+ *
+ * 🔑 0 을 세 갈래로 가른다 — 셋이 같은 얼굴이면 그 0 은 아무 말도 못 한다:
+ *      「호출 자체가 없었다」(호출 0 · 학생 0명인 지금이 여기다) ·
+ *      「usage 가 안 실려 왔다」(무계측 — 자가 눈이 먼 것) ·
+ *      「정말로 캐시가 0이다」(캐시읽기 0 — 지금의 «정상» 값).
+ *
+ * ⚠ 한 «실행» 안에서만 모인다(Apps Script 전역은 실행마다 새로 난다). 그래서 보고를 배치 함수가 아니라
+ *   실행 진입점(nightJobs·morningJobs·weeklyJobs·monthlyJobs) 끝에 건다.
+ *   **새 진입점을 만드는 손이 이 줄도 같이 건다** — 안 걸면 그 실행의 호출은 장부에 「없는 것」이 된다.
+ * ⚠ 상담AI·두뇌는 여기 안 든다 — 그 둘은 이미 제 로그(상담로그·두뇌로그)에 토큰을 적는다. 사본 금지.
+ * ══════════════════════════════════════════════════════════════════════════════════════ */
+
+/* 모델별 «최소 캐시 프리픽스»(토큰). 정본 = `claude-api` 스킬 shared/prompt-caching.md 「API reference」 표
+ *   (2026-08-29 확인). 이 수를 못 넘는 프리픽스는 cache_control 이 붙어도 캐시가 안 생긴다.
+ * ⚠ 세대가 올라간다고 내려가지 않는다 — Opus 5 = 512 인데 Opus 4.6 = 4096 이다. 그래서 **모르는 모델의
+ *   기본값은 가장 큰 4096**: 모르면 「못 넘는다」로 접혀야 한다(fail-closed). 반대로 접히면 켰다고 착각한다. */
+const AI_캐시최소토큰_ = {
+  'claude-opus-5': 512, 'claude-fable-5': 512, 'claude-mythos-5': 512,
+  'claude-opus-4-8': 1024, 'claude-sonnet-5': 1024, 'claude-sonnet-4-6': 1024,
+  'claude-opus-4-7': 2048, 'claude-haiku-3-5': 2048,
+  'claude-opus-4-6': 4096, 'claude-opus-4-5': 4096, 'claude-haiku-4-5': 4096
+};
+// 톱레벨에서 AI_FEEDBACK_MODEL(Code.js)을 안 읽는다 — 라이브 로드 순서가 보장되지 않는다(v9.57 규칙).
+function AI캐시선_() {
+  const m = (typeof AI_FEEDBACK_MODEL === 'undefined' ? '' : String(AI_FEEDBACK_MODEL));
+  return AI_캐시최소토큰_[m] || 4096;
+}
+
+const AI사용_장부_ = { 통: {}, 기록실패: 0 };
+
+/* 호출 한 건을 장부에 더한다. **절대 throw 하지 않는다** — 계측이 배치를 죽이면 안 된다.
+ * 다만 조용히 삼키지도 않는다: 실패는 `기록실패`로 세어 보고에 그대로 뜬다(안 재본 것을 0으로 접지 않는다). */
+function AI사용_기록_(구분, usage) {
+  try {
+    const 통 = AI사용_장부_.통;
+    const t = 통[구분] || (통[구분] = { 호출: 0, 무계측: 0, 입력: 0, 캐시생성: 0, 캐시읽기: 0, 출력: 0 });
+    t.호출++;
+    if (!usage) { t.무계측++; return; }   // 200 인데 usage 가 없다 = 자가 눈이 먼 것. 0 이 아니라 「모름」이다
+    t.입력 += Number(usage.input_tokens) || 0;
+    t.캐시생성 += Number(usage.cache_creation_input_tokens) || 0;
+    t.캐시읽기 += Number(usage.cache_read_input_tokens) || 0;
+    t.출력 += Number(usage.output_tokens) || 0;
+  } catch (e) { AI사용_장부_.기록실패++; }
+}
+
+/* 실행 끝 보고 — 진입점(nightJobs 등)이 safeRun 으로 부른다.
+ * 📮 **평소엔 메일을 안 보낸다**(Logger 만). 매일 밤 토큰 메일이 오면 그 메일은 곧 안 읽힌다.
+ *    사람이 «움직여야 하는» 세 경우에만 메일이 뜬다:
+ *      ㉠ 무계측·기록실패 > 0 — 자가 눈이 멀었다(이 장부의 다른 0 을 못 믿는다)
+ *      ㉡ 캐시 토큰이 0이 아니다 — 지금 이 저장소엔 cache_control 이 배치 네 자리에 «없다».
+ *         0 이 아니면 누가 붙였거나 벤더 쪽이 바뀐 것이라, 어느 쪽이든 알아야 한다
+ *      ㉢ 평균 입력이 캐시선을 넘었다 — **「캐싱 못 켠다」는 판정이 뒤집힌 날이다.**
+ *         이 줄이 그 판정을 «되돌아오는 자리»에 묶는다(사람 암기 0). 프롬프트가 길어지거나 모델이
+ *         바뀌면 저절로 여기서 알린다.
+ * 반환값은 문자열(빈 문자열 = 이 실행에서 AI 호출 0). 호출부가 로그로 쓴다. */
+function AI사용_보고_() {
+  const 통 = AI사용_장부_.통;
+  const 구분들 = Object.keys(통);
+  if (!구분들.length && !AI사용_장부_.기록실패) return '';  // 진짜 0 — 이 실행에서 AI 를 한 번도 안 불렀다
+  const 선 = AI캐시선_();
+  const 모델 = (typeof AI_FEEDBACK_MODEL === 'undefined' ? '?' : AI_FEEDBACK_MODEL);
+  let 눈멂 = AI사용_장부_.기록실패 > 0, 캐시움직임 = false, 선넘음 = [];
+  const 줄들 = 구분들.map(k => {
+    const t = 통[k];
+    const 평균 = t.호출 ? Math.round(t.입력 / t.호출) : 0;
+    if (t.무계측) 눈멂 = true;
+    if (t.캐시생성 || t.캐시읽기) 캐시움직임 = true;
+    if (평균 >= 선) 선넘음.push(k + ' 평균 ' + 평균 + '토큰');
+    return '· ' + k + ': 호출 ' + t.호출 + '건(무계측 ' + t.무계측 + ') · 입력 ' + t.입력 +
+      '(평균 ' + 평균 + ') · 캐시생성 ' + t.캐시생성 + ' · 캐시읽기 ' + t.캐시읽기 + ' · 출력 ' + t.출력;
+  });
+  const 본문 = 'AI 토큰 장부 (' + 모델 + ' · 캐시 최소선 ' + 선 + '토큰)\n' + 줄들.join('\n') +
+    (AI사용_장부_.기록실패 ? '\n⚠ 장부 기록 자체가 ' + AI사용_장부_.기록실패 + '건 실패 — 위 수는 실제보다 적다' : '');
+  Logger.log(본문);
+  if (눈멂 || 캐시움직임 || 선넘음.length) {
+    adminMail('[SYNK] 🧮 AI 토큰 장부 — 확인이 필요합니다',
+      본문 + '\n\n─────\n왜 이 메일이 왔나:\n' +
+      (눈멂 ? '· 응답에 usage 가 안 실려 온 호출이 있습니다 — 위의 다른 0 들도 못 믿습니다(계측이 먼 것).\n' : '') +
+      (캐시움직임 ? '· 캐시 토큰이 0이 아닙니다. 지금 이 저장소의 배치 네 자리에는 cache_control 이 «없습니다» — 누가 붙였거나 벤더 동작이 바뀐 것입니다.\n' : '') +
+      (선넘음.length ? '· 평균 입력이 캐시 최소선(' + 선 + '토큰)을 넘었습니다: ' + 선넘음.join(' · ') +
+        '\n  ⇒ 「프롬프트가 짧아서 캐싱을 못 켠다」는 판정이 뒤집혔습니다. 공통 앞부분에 cache_control 을 다시 검토할 때입니다.\n' : ''));
+  }
+  return 본문;
+}
+
 // 공통 API 헬퍼 — callClaudeFeedback_와 동일 규약(구조화 출력·오류 분류). 실패는 throw — 호출부가 폴백 결정
 function aiCall_(apiKey, system, user, schema, maxTok) {
   // [v9.125] 리허설 게이트를 이 관문으로 하강 — 구 게이트(aiText_·callClaudeFeedback_)만으론 aiCall_ 직호출
@@ -2288,6 +2389,7 @@ function aiCall_(apiKey, system, user, schema, maxTok) {
   });
   if (res.getResponseCode() !== 200) throw new Error('Claude API ' + res.getResponseCode() + ': ' + res.getContentText().slice(0, 160));
   const j = JSON.parse(res.getContentText());
+  AI사용_기록_('스튜디오', j.usage);   // [T4] 아래 게이트들이 응답을 버려도 이 호출은 이미 과금됐다
   if (j.stop_reason === 'refusal' || j.stop_reason === 'max_tokens') throw new Error('응답 불가(' + j.stop_reason + ')');
   const tb = (j.content || []).filter(b => b.type === 'text')[0];
   if (!tb || !tb.text) throw new Error('text 블록 없음');
@@ -2398,6 +2500,7 @@ function aiText_(prompt, maxTok) {
     });
     if (res.getResponseCode() !== 200) return null;
     const j = JSON.parse(res.getContentText());
+    AI사용_기록_('자유텍스트', j.usage);   // [T4] 아래 폐기(태그누출·옛글자)로 가도 이 호출은 이미 과금됐다
     const tb = (j.content || []).filter(b => b.type === 'text')[0];
     const out = tb && tb.text ? String(tb.text).trim() : null;
     // [v9.205] 가드 문구를 안 지킨 응답은 통째로 못 믿는다 — 폐기하고 호출부 폴백으로 보낸다.
