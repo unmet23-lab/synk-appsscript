@@ -50,6 +50,13 @@
             "shell": "bash",
             "timeout": 20,
             "statusMessage": "유호님 확정 요약"
+          },
+          {
+            "type": "command",
+            "command": "H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/review-runs.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then node \"$H\"; fi",
+            "shell": "bash",
+            "timeout": 20,
+            "statusMessage": "검수·심문 런 회수"
           }
         ]
       }
