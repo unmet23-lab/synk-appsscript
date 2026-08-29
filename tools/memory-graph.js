@@ -43,13 +43,13 @@ const MARK_START = '<!-- memory-graph:역링크 시작 · 이 구간은 자동 �
 const MARK_END = '<!-- memory-graph:역링크 끝 -->';
 /* 인덱스는 **두 파일**이다(2026-08-07 쪼개기 · 장부 F184).
  * MEMORY.md 가 커져 지도(어느 토픽 파일을 열까)를 상주분 밖으로 내보냈다 — MEMORY.md 에는
- * ⚠ 여기 「상한이 «줄»이라」고 적혀 있었다. **그 상한은 08-30 에 반증됐다** — 28.6KB 판이 세션 첫
- *   컨텍스트에 끝줄까지 들어온 것을 두 세션이 각각 실측했다. 같은 주장이 이 주석(「줄」)과
- *   지도.md(「24.4KB」)에 **다른 단위로** 살아 있었고 둘 다 틀렸다. 진짜 한도는 아직 아무도 안 쟀다.
- *   쪼갠 것 자체는 옳았다(색인이 커졌다) — 틀린 것은 «까닭에 붙인 수»다.
  * 🚫·⏳ 조각만 남고 원문 줄은 지도.md 에 있다. 한 파일만 인덱스로 세면 옮긴 98건이
  * 「인덱스 누락」으로 뜬다 — 옮긴 것과 잃은 것이 같은 모양이 되는 자리다.
- * ⚠ 목록은 여기 하나에서만 파생시킨다(두 곳에 적으면 갈라진다). */
+ * ⚠ 목록은 여기 하나에서만 파생시킨다(두 곳에 적으면 갈라진다).
+ * ⚠ 여기 「상한이 «줄»이라」고 적혀 있었다 — **08-30 에 반증됐다.** 28.6KB 판이 세션 첫 컨텍스트에
+ *   끝줄까지 들어온 것을 두 세션이 각각 실측했다. 같은 주장이 이 주석(「줄」)과 지도.md(「24.4KB」)에
+ *   **다른 단위로** 살아 있었고 둘 다 틀렸다. 진짜 한도는 아직 아무도 안 쟀다.
+ *   쪼갠 것 자체는 옳았다(색인이 커졌다) — 틀린 것은 «까닭에 붙인 수»다. */
 const INDEX_FILES = ['MEMORY.md', '지도.md'];
 const INDEX_FILE = INDEX_FILES[0];   // 보고 문구의 대표 이름
 const INDEX_SLUGS = new Set(INDEX_FILES.map((f) => f.replace(/\.md$/, '')));
@@ -475,6 +475,36 @@ function 안전쓰기(파일, 새것, 원문) {
   }
 }
 
+/* ── 폴더 잠금 — 여섯 세션이 같이 도는 기계다 ────────────────────────────────
+ * 🔴 둘이 동시에 고치면 파일이 깨지는 게 아니라(안전쓰기가 막는다) **「고쳤다 N」이 무작위**가 된다.
+ *   그리고 서로의 중간 상태를 base 로 읽어 같은 파일을 번갈아 다시 쓴다.
+ * 잠금은 «못 잡으면 물러난다» — 남의 것을 죽이지 않는다(이 저장소가 굽기에서 배운 그 규율).
+ * ⚠ 고아 잠금이 영원히 막지 않게 나이를 본다. 90초면 한 벌 고치기(실측 수 초)의 열 배가 넘는다. */
+const 잠금나이_ms = 90 * 1000;
+
+function 잠금잡기(dir) {
+  const p = path.join(dir, '.위생잠금');
+  try {
+    const 나 = JSON.stringify({ pid: process.pid, 때: new Date().toISOString() });
+    try { fs.writeFileSync(p, 나, { flag: 'wx' }); return { 잡았나: true, 놓기: () => { try { fs.unlinkSync(p); } catch { /* 이미 없다 */ } } }; }
+    catch (e) {
+      if (e.code !== 'EEXIST') return { 잡았나: false, 사유: String(e.code || e.message) };
+      const 나이 = Date.now() - fs.statSync(p).mtimeMs;
+      if (나이 < 잠금나이_ms) return { 잡았나: false, 사유: '다른 세션이 쓰는 중' };
+      fs.unlinkSync(p);                                   // 고아 잠금 — 걷고 다시 시도
+      fs.writeFileSync(p, 나, { flag: 'wx' });
+      return { 잡았나: true, 고아걷음: true, 놓기: () => { try { fs.unlinkSync(p); } catch { /* 이미 없다 */ } } };
+    }
+  } catch (e) { return { 잡았나: false, 사유: String(e.message || e).slice(0, 80) }; }
+}
+
+/* 🔴 훅이 «스스로» 고쳐도 되는 크기의 상한.
+ *   작은 표류(한둘)는 기계가 조용히 낫는 것이 옳다 — 그게 ㉡ 이 요구하는 모양이다.
+ *   그런데 **뭉텅이**는 다르다: 첫 정리 때 198벌이었고, 그런 사건은 «제 커밋»으로 서야
+ *   그날의 진짜 기억 변경이 그 안에 묻히지 않는다. 그래서 넘으면 고치지 않고 «말한다».
+ *   값의 근거: 평시 실측은 0~3벌이고 198벌이 뭉텅이였다. 20 은 그 사이에서 평시 쪽에 가깝게 잡았다. */
+const 훅자동교정_상한 = 20;
+
 /** 무판정 교정 «하나»만 한다 — 역링크 블록 동기화. 그 밖엔 손대지 않는다. */
 function 위생고치기(nodes) {
   const 고친것 = []; const 못고친것 = [];
@@ -490,8 +520,10 @@ function 위생고치기(nodes) {
 
 function 직전커밋() {
   try {
+    // stderr 를 삼킨다 — 기억 폴더가 git 이 아닐 수도 있고(시험용 사본), 그 소음이 훅 화면에 새면 안 된다.
     return require('child_process')
-      .execFileSync('git', ['-C', memoryDir(), 'rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim();
+      .execFileSync('git', ['-C', memoryDir(), 'rev-parse', '--short', 'HEAD'],
+        { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
   } catch { return null; }
 }
 
@@ -560,9 +592,21 @@ function 위생훅줄() {
       ['역링크뒤처짐', w.고칠것.역링크뒤처짐.length],
     ]), dir);
 
-    const 고칠 = w.고칠것.역링크뒤처짐.length;
+    /* 🔴 여기서 «고친다» — 보고만 하면 미완성이다(정본 ㉡: 「누가 매번 확인하면 된다」는 미룬 결함).
+     * 세 겹으로 좁혔다: ①정답이 하나인 것만(역링크) ②상한 안(뭉텅이는 제 커밋으로) ③잠금을 잡았을 때만. */
+    let 고침 = null;
+    const 고칠전 = w.고칠것.역링크뒤처짐.length;
+    if (고칠전 && 고칠전 <= 훅자동교정_상한) {
+      const L = 잠금잡기(dir);
+      if (L.잡았나) { try { 고침 = 위생고치기(nodes); } finally { L.놓기(); } }
+      else 고침 = { 미룸: L.사유 };
+    }
+
+    const 고칠 = 고침 && 고침.고친것 ? 고칠전 - 고침.고친것.length : 고칠전;
     const 머리 = `🧠 기억 ${w.분모}벌`;
-    if (!판정.length && !고칠) return `${머리} · 위생 깨끗 (${때} · ${짧폴더})`;
+    const 고쳤다 = 고침 && 고침.고친것 && 고침.고친것.length
+      ? ` · 스스로 고침 ${고침.고친것.length}벌(역링크)` : '';
+    if (!판정.length && !고칠) return `${머리}${고쳤다} · 위생 깨끗 (${때} · ${짧폴더})`;
 
     if (판정.length) {
       const [이름, 것, 문구] = 판정[0];
@@ -570,9 +614,16 @@ function 위생훅줄() {
       const 나머지 = 판정.slice(1);
       if (나머지.length) 줄.push(`   다음 차례: ${나머지.map(([n, x]) => `${n} ${x.length}`).join(' · ')}`);
     } else {
-      줄.push(머리);
+      줄.push(머리 + 고쳤다);
     }
-    if (고칠) 줄.push(`   고칠 것 ${고칠}벌(역링크) — node tools/memory-graph.js --위생고침`);
+    if (판정.length && 고쳤다) 줄.push(`  ${고쳤다.replace(/^ · /, '')}`);
+    if (고칠) {
+      /* 남은 것이 있는 세 가지 까닭을 «가려서» 말한다 — 뭉뚱그리면 왜 안 고쳤는지 모른다. */
+      const 왜 = 고침 && 고침.미룸 ? `잠금 못 잡음(${고침.미룸})`
+        : 고칠전 > 훅자동교정_상한 ? `뭉텅이라 안 건드린다(상한 ${훅자동교정_상한}) — 제 커밋으로 세울 자리다`
+          : '못 고친 것이 남았다';
+      줄.push(`   고칠 것 ${고칠}벌(역링크) · ${왜} — node tools/memory-graph.js --위생고침`);
+    }
     if (r.넘음.length) 줄.push(`   🔴 늘었다: ${r.넘음.map((x) => `${x.갈래} ${x.상한}→${x.수}`).join(' · ')}`);
     return 줄.join('\n');
   } catch (e) {
@@ -700,5 +751,5 @@ module.exports = {
   parseLinks, stripBacklinks, load, diagnose, decisions, writeBacklinks,
   projectDir, memoryDir, TYPES, MARK_START, MARK_END, INDEX_FILES,
   // 기억 위생(2026-08-30) — 자는 여기 하나뿐이다.
-  프론트매터, 표식깨짐, 위생, 위생고치기, 역링크블록, 안전쓰기, 위생훅줄, 위생자판,
+  프론트매터, 표식깨짐, 위생, 위생고치기, 역링크블록, 안전쓰기, 위생훅줄, 위생자판, 잠금잡기, 훅자동교정_상한,
 };
