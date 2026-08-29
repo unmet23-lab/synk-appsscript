@@ -60,10 +60,17 @@
           },
           {
             "type": "command",
-            "command": "H=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/rot-check.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then node \"$H\" --hook; else echo \"🩺 부패 점검을 못 돌렸다(도구·node 부재) — 이건 「부패 없음」이 아니라 «확인 불가»다. node tools/rot-check.js 로 직접 본다\"; fi",
+            "command": "H=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/rot-check.js\"; if [ ! -f \"$H\" ]; then echo \"🩺 부패 점검을 못 돌렸다(도구가 없다: $H) — 이건 「부패 없음」이 아니라 «확인 불가»다. node tools/rot-check.js --hook 로 직접 본다\"; elif ! command -v node >/dev/null; then echo \"🩺 부패 점검을 못 돌렸다(node 가 없다) — 이건 「부패 없음」이 아니라 «확인 불가»다. node tools/rot-check.js --hook 로 직접 본다\"; else exec 3>&1; E=$(node \"$H\" --hook 2>&1 1>&3); C=$?; exec 3>&-; if [ \"$C\" -ne 0 ]; then echo \"🩺 부패 점검이 죽었다(종료 $C) — 이건 「부패 없음」이 아니라 «확인 불가»다. node tools/rot-check.js --hook 로 직접 본다\"; if [ -n \"$E\" ]; then printf '%s' \"$E\"; echo; fi; fi; fi; exit 0",
             "shell": "bash",
             "timeout": 100,
             "statusMessage": "조용한 부패 점검"
+          },
+          {
+            "type": "command",
+            "command": "H=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/모델정찰.js\"; if [ ! -f \"$H\" ]; then echo \"🔭 모델정찰을 못 돌렸다(도구가 없다: $H) — 이건 「새 모델 소식 없음」이 아니라 «확인 불가»다. node tools/모델정찰.js 로 직접 본다\"; elif ! command -v node >/dev/null; then echo \"🔭 모델정찰을 못 돌렸다(node 가 없다) — 이건 「새 모델 소식 없음」이 아니라 «확인 불가»다. node tools/모델정찰.js 로 직접 본다\"; else exec 3>&1; E=$(node \"$H\" --훅 2>&1 1>&3); C=$?; exec 3>&-; if [ \"$C\" -ne 0 ]; then echo \"🔭 모델정찰이 죽었다(종료 $C) — 이건 「새 모델 소식 없음」이 아니라 «확인 불가»다. node tools/모델정찰.js 로 직접 본다\"; if [ -n \"$E\" ]; then printf '%s' \"$E\"; echo; fi; fi; fi; exit 0",
+            "shell": "bash",
+            "timeout": 45,
+            "statusMessage": "벤더 모델 폐기·신판 정찰"
           }
         ]
       }
