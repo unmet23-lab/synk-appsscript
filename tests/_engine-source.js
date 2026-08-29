@@ -106,5 +106,8 @@ function sharedBlocks(code) {
 }
 
 /* `표기접기` 는 회귀가 **픽스처로** 탐지력을 못박으려고 내보낸다 — 실저장소만 보면
- * 「접혔다」와 「원래 깨끗했다」가 같은 모양이라 못 가른다. 검사 쪽은 `tests/엔진소스표기.test.js`. */
+ * 「접혔다」와 「원래 깨끗했다」가 같은 모양이라 못 가른다.
+ * 🔴 그 검사 `tests/엔진소스표기.test.js` 는 ⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다.
+ *   즉 아래 `표기접기` 는 **부르는 검사를 잃은 export** 다(지우기 전에 다시 짓는 쪽부터 본다).
+ * 검사 쪽은 `tests/엔진소스표기.test.js`. */
 module.exports = { ROOT, ENGINE_FILES, engineSource, engineParts, liveFiles, sharedBlocks, 표기접기 };

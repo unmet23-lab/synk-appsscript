@@ -102,7 +102,8 @@ function 태우기(옵션) {
     Utilities: { formatDate: fmt },
     Logger: { log: (m) => 로그.push(String(m)) },
     adminMail: (제목, 몸) => 메일.push({ 제목, 몸 }),
-    /* 픽스처 시트는 이미 정본 폭이라 치유는 무동작이다 — 치유 자체는 `tests/수집.test.js` 몫. */
+    /* 픽스처 시트는 이미 정본 폭이라 치유는 무동작이다 — 치유 자체는 ⚰`tests/수집.test.js` 몫이었다(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다).
+       🔴 그래서 치유를 세는 자가 지금 없다. */
     헤더보정_: () => {},
     ensureSheet: (s, n) => (n === 'mastery_log' ? ml : 시트흉내({ 첫행: 1, 행들: [[]] })),
     aiCall_: (k, sys, usr) => {
