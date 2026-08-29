@@ -1,0 +1,7 @@
+# 시험 산출물 — 돌릴 때마다 새로 나온다. 커밋하지 않는다.
+#   ⚠ 결과 JSON 에는 몽골어 본문과 모델 답이 그대로 들어간다 — 저장소는 PUBLIC 이다.
+_결과/
+
+# promptfoo 가 남기는 로컬 부스러기
+.promptfoo/
+promptfoo-errors.log

@@ -1327,6 +1327,7 @@ function morningJobs() {   // 매일 07시
   safeRun('expiryDaily', function () { MJ_expiryDaily_(); }); // [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 비어 있으면 무비용(클로저 = 만족도팩 누락에도 morningJobs 생존)
   safeRun('jacketWatch', jacketWatch_); // [v9.83] 🧥 과잠 자격(재원 12개월+누계) 신규 도달자 감지 — 도달 0명이면 시트·메일 모두 무동작
   safeRun('lessonCloseGap', function () { const ssG = SpreadsheetApp.getActiveSpreadsheet(); lessonCloseGapAlert_(ssG, ssG.getSpreadsheetTimeZone()); }); // [v9.92] 어제 마감 미제출 반 → 담당 강사(하루 1통). 어제 출석 0건이면 휴강으로 보고 무동작
+  safeRun('aiUsageLedger', AI사용_보고_); // [T4] 이 실행이 쓴 AI 토큰·캐시를 남긴다 — 호출 0이면 로그도 메일도 0(정본 = 엔진_콘텐츠AI.js)
 }
 
 function nightJobs() {     // 매일 22시 — 수업 종료 후
@@ -1369,6 +1370,10 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
     const dD = Number(Utilities.formatDate(new Date(), ssD.getSpreadsheetTimeZone(), 'd'));
     if (dD >= 28) adminMail('[SYNK] ⚠️ 데모 모드가 아직 켜져 있습니다(월말)', '다음 달 1일 새벽 월간 배치 전에 clearDemoData()를 실행하세요 — 안 하면 데모 크루 8명이 실제 월간 시상·스토리북·랭킹에 섞여 발간됩니다.');
   });
+  // [T4] AI 토큰 장부 — 오늘 밤 배치가 실제로 몇 토큰을 보냈고 캐시가 돌았나(정본 = 엔진_콘텐츠AI.js).
+  //   AI 배치 셋(첨삭·대화·스튜디오) «뒤»여야 한다 — 앞에 두면 그 셋의 호출이 장부에 안 잡힌다.
+  //   호출 0이면 아무 일도 안 한다(학생 0명인 지금이 그 상태다 — 그 0은 「안 불렀다」이지 「안 샜다」가 아니다).
+  safeRun('aiUsageLedger', AI사용_보고_);
   // [v9.28] 완주 마커 — 반드시 맨 마지막 줄. 6분 타임아웃이면 이 줄 자체가 실행 안 되어 워치독이 증발을 감지
   try {
     const ssNJ = SpreadsheetApp.getActiveSpreadsheet();
@@ -1497,6 +1502,7 @@ function weeklyJobs() {    // 매주 월 07시
 
   safeRun('calcTeacherStats', calcTeacherStats); // [v9.41·자동화] 강사 지표(케어지수·인정편중) 주간 자동 갱신 — 월 1회(monthlyReport)만 갱신돼 원장 뷰가 한 달 낡던 것 해소(멱등·전월 왕관 기준이라 주중 재실행 무해)
   safeRun('systemManifest', buildSystemManifest); // [v9.37] 주간 실측 스냅샷 — 시트·콘텐츠·트리거·의존성 드리프트를 system_manifest 시트에 갱신
+  safeRun('aiUsageLedger', AI사용_보고_); // [T4] 이 실행이 쓴 AI 토큰·캐시(H7 주간 해설 1회) — 호출 0이면 무동작
   // [v7.0] pruneAppState 제거 — 인자(ss, 월)가 필요한 archiveMonthly 내부 헬퍼였음 (무인자 호출 시 매주 실패)
 }
 
@@ -1557,6 +1563,7 @@ function monthlyJobs() {   // 매월 1일 05시 — 순서 고정이 핵심
   //   아카이브 뒤에 둔 이유: archiveMonthly가 옮기는 것은 point_logs뿐이라 수집층 카운트에 영향이 없고,
   //   그달 배치가 전부 끝난 상태를 재는 편이 맞다. 정상이면 메일 0통(재원 0명이면 통째로 침묵).
   safeRun('dataCoverageMail', dataCoverageMonthly_);
+  safeRun('aiUsageLedger', AI사용_보고_); // [T4] 이 실행이 쓴 AI 토큰·캐시(칭호·미래편지·SNS 초안) — 호출 0이면 무동작
   // [v9.32] 완주 마커 — 반드시 맨 마지막 줄(nightJobs와 동일 패턴). 8개 직렬 체인이 6분 타임아웃으로
   //   중간 증발하면 이 줄이 실행되지 않아 워치독이 감지한다. archiveMonthly는 다음 달 소급 아카이브로
   //   자기치유되지만 스토리북·카드·경영리포트는 그달 치가 영구 증발하므로 마커 감지가 필요.
