@@ -445,8 +445,10 @@ function gcpAccessToken_() {
   return tok;
 }
 
-/* 파일 1개 전사 — 성공 시 {text}, 실패 시 {err} (throw하지 않는다: 한 건 실패가 배치를 멈추면 안 된다) */
-function sttOne_(fileId, token) {
+/* 파일 1개 전사 — 성공 시 {text}, 실패 시 {err} (throw하지 않는다: 한 건 실패가 배치를 멈추면 안 된다)
+ * [2026-08-29] 나가는 것은 **학생 음성 원본 바이트 전량**이라 sid 를 함께 받는다 — 아래 `stt요청_` 이
+ *   그 sid 로 동의를 **보내기 직전에** 다시 확인한다. sid 없이 부르면 그 통로가 던진다. */
+function sttOne_(fileId, token, sid) {
   let blob;
   try { blob = DriveApp.getFileById(fileId).getBlob(); }
   catch (e) { return { err: '파일 접근 불가: ' + String(e).slice(0, 80) }; }
@@ -454,16 +456,15 @@ function sttOne_(fileId, token) {
   if (mime && STT_OK_MIME.indexOf(mime) === -1) return { err: '미지원 포맷(' + mime + ') — m4a/AAC는 Speech-to-Text가 받지 않습니다' };
   const bytes = blob.getBytes();
   if (bytes.length > STT_MAX_BYTES) return { err: '파일 초과(' + Math.round(bytes.length / 1024 / 1024) + 'MB > 10MB) — 짧게 재녹음 필요' };
-  const res = UrlFetchApp.fetch('https://speech.googleapis.com/v1/speech:recognize', {
-    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
-    headers: { Authorization: 'Bearer ' + token },
-    payload: JSON.stringify({
-      // encoding·sampleRate는 지정하지 않는다 — 헤더가 있는 포맷은 API가 스스로 읽고,
-      // 잘못 지정하면 오히려 인식이 깨진다. 못 읽는 포맷은 그 사유가 응답에 그대로 온다.
-      config: { languageCode: STT_LANG, enableAutomaticPunctuation: true, model: 'default' },
-      audio: { content: Utilities.base64Encode(bytes) }
-    })
+  const 응답 = stt요청_({
+    token: token, sid: sid,
+    // encoding·sampleRate는 지정하지 않는다 — 헤더가 있는 포맷은 API가 스스로 읽고,
+    // 잘못 지정하면 오히려 인식이 깨진다. 못 읽는 포맷은 그 사유가 응답에 그대로 온다.
+    config: { languageCode: STT_LANG, enableAutomaticPunctuation: true, model: 'default' },
+    content: Utilities.base64Encode(bytes)
   });
+  if (!응답.res) return 응답;                              // 보류(동의 미확인·토큰 없음) — 아무것도 안 나갔다
+  const res = 응답.res;
   const code = res.getResponseCode();
   const body = res.getContentText();
   // [v9.125] systemic 플래그 — 401/403/429/5xx는 파일이 아니라 계정·설정·쿼터 문제라, 행에 낙인을 찍으면
@@ -474,6 +475,96 @@ function sttOne_(fileId, token) {
   const text = (j.results || []).map(r => ((r.alternatives || [])[0] || {}).transcript || '').join(' ').trim();
   if (!text) return { err: '인식 결과 없음(무음·잡음·언어 불일치 가능)' };
   return { text: text };
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+ * 🔒 STT 단일 통로 [2026-08-29] — 학생 음성이 학원 밖으로 나가는 **유일한 문**
+ * ══════════════════════════════════════════════════════════════════════
+ * ■ 왜 하나로 묶었나
+ *   `speech.googleapis.com` 호출이 이 파일에 **2자리**였다(실측 08-29): 실오디오(sttOne_)와
+ *   빈 오디오 진단(voiceSttStatus). 문이 둘이면 게이트를 «둘 다» 걸어야 하고, 실제로 둘 중
+ *   하나에만 걸린 채로 살았던 전례가 이 레일에 이미 두 번 있다(v9.104 적재 게이트 → v9.125 전사 게이트).
+ *   나가는 문을 하나로 모으면 **다음에 생기는 세 번째 소비자가 게이트를 우회할 방법이 없다.**
+ *
+ * ■ 이 문이 실제로 막는 것 — 「보내기 직전」 동의 재확인
+ *   구조상 적재(voiceSweep_ · 폼 제출 직후)와 전사(교재연동Nightly · 23시)는 **몇 시간 떨어져 있다.**
+ *   그 사이 철회(voiceWithdraw)가 있으면 적재 시점의 판정은 이미 낡았다.
+ *   ⚠ 정정 — 이 구멍은 v9.125 가 이미 절반 닫아 두었다: `voiceTranscribe_` 는 배치 «시작»에
+ *     동의 맵을 다시 읽는다. 남아 있던 것은 **배치 시작 ~ 그 학생 차례** 사이(파일 30개면 수 분)와,
+ *     「전사 함수를 안 거치고 sttOne_ 을 직접 부르는 새 소비자」다. 이 문이 그 둘을 닫는다.
+ *
+ * ■ fail-closed 세 겹 (기존 설계 결을 깨지 않는다)
+ *   ① 동의맵이 null(시트·열 접근 실패) → **전원 보류**. 판정 불가는 통과가 아니다(v9.104 원칙 그대로).
+ *   ② 'yes' 가 아니면(거부·미응답) 보류. 행에 실패 낙인을 **안 찍는다** — 동의가 확인되면 다음 밤 자동 재개.
+ *   ③ 🔴 **sid 없이 오디오를 못 보낸다.** 진단(빈 오디오)만 sid 없이 지날 수 있다.
+ *      그래서 「sid 를 안 넘기면 게이트가 조용히 꺼지는」 경로가 원리상 없다 — 던진다.
+ *
+ * ■ 대가(정직히)
+ *   동의맵을 매 파일마다 새로 읽으면 상담시트를 열흘 안에 30번 여는 셈이라 6분 실행 한도를 건드린다.
+ *   그래서 **60초 TTL 캐시**를 둔다 — 「직전」의 실제 뜻은 «60초 이내»다. 적재↔전사의 몇 시간을
+ *   60초로 줄인 것이지 0으로 만든 것이 아니다. 0이 필요하면 TTL 을 0으로 두면 되고, 그 대가는 시간이다.
+ *
+ * ⚠ 이 함수의 «자리»는 `sttOne_` 과 아래 A-2c 절 표식 사이여야 한다 — `tests/발화퀄리티.test.js`
+ *   의 「보낼 수 없는 파일은 API에 닿기 전에 거른다」가 그 구간을 잘라 `speech:recognize` 를 찾는다.
+ *   위로 옮기면 그 검사가 표식을 잃고 **오탐으로 죽는다**(구간 검사의 알려진 취약점 — tests/_engine-source.js 머리말).
+ *
+ * 🔴 [08-30 실측 · 이 주석이 스스로 낸 사고] 이 경고문이 처음엔 그 절 표식을 **글자 그대로** 인용했다.
+ *   그러자 그 인용이 파일에서 «첫 번째» 표식이 되어, 위 검사의 `indexOf` 가 진짜 절보다 2119자 앞에서
+ *   구간을 잘랐다 → `speech:recognize` 를 못 찾아 `call = -1`, 그런데 판정식이 `gate < call` 이라
+ *   **「게이트가 호출보다 뒤에 있다」는 엉뚱한 사유로 빨개졌다**(node --test 실측 · 917건 중 유일한 빨강).
+ *   ⇒ 구간 표식은 주석에서도 **글자 그대로 쓰지 않는다.** 표식을 말해야 하면 이 줄처럼 풀어서 쓴다.
+ *
+ * 🔴 [08-30 정정 — 위 사고를 진단한 첫 문장이 틀렸다] 여기엔 *"같은 구간을 `tests/반출통로.test.js`
+ *   도 자르는데 그쪽은 주석을 걷어낸 소스를 봐서 초록이었다"* 라고 적혀 있었다. **그게 아니다.**
+ *   그쪽이 초록이던 진짜 까닭은 「제대로 쟀다」가 아니라 **「끝 표식을 못 찾아 구간이 파일 끝까지
+ *   통째로 벌어져 있었다」**다 — 주석을 걷어낸 소스에는 그 절 표식 문자열이 «아예 없어서»
+ *   `indexOf` 가 -1 을 줬고, `slice(시작, -1)` 은 오류가 아니라 파일 끝까지를 준다.
+ *   실측: 이 함수 구간이라 믿던 것이 22,689자였다(진짜 본문은 920자). 그래서 그 파일의
+ *   `throw new Error` 단언은 **빈 단언**이었다. 08-30 에 그쪽 구간 자르기를 함수 선언 기준으로
+ *   바꾸고 «못 찾으면 던지게» 고쳤다. 교훈은 「자가 둘이면 갈린다」가 아니라
+ *   **「초록은 잰 것과 못 잰 것을 구별해 주지 않는다」**다. */
+const STT_동의TTL_ = 60 * 1000;   // ms — 위 「대가」 절 참조
+let _음성동의캐시_ = null;         // { at:number, map:Object|null } — 실행 1회 수명
+
+/** 동의 맵 — 이 파일에서 동의를 읽는 **유일한 통로**(같은 판정을 두 곳에서 읽으면 갈라진다).
+ *  @returns {Object|null} sid→'yes'|'no'|'' · null 이면 **확인 불가(보류)** */
+function stt동의맵_(강제) {
+  const now = Date.now();
+  if (강제 || !_음성동의캐시_ || (now - _음성동의캐시_.at) > STT_동의TTL_) {
+    _음성동의캐시_ = { at: now, map: (typeof voiceConsentMap_ === 'function') ? voiceConsentMap_() : null };
+  }
+  return _음성동의캐시_.map;
+}
+
+/** 한 학생의 동의 상태 — null 이면 확인 불가(보류). */
+function stt동의재확인_(sid) {
+  const m = stt동의맵_();
+  if (m === null) return null;
+  return String(m[String(sid).trim()] || '');
+}
+
+/** 🔒 Speech-to-Text 호출 — 이 저장소에서 학생 음성이 밖으로 나가는 유일한 자리.
+ *  @param {{token:string, config:Object, content:string, sid:string=}} opt
+ *  @returns {{res:Object}|{err:string, 보류:boolean}}  res 가 없으면 **아무것도 안 나갔다**
+ */
+function stt요청_(opt) {
+  const o = opt || {};
+  const 오디오 = String(o.content == null ? '' : o.content);
+  const sid = String(o.sid == null ? '' : o.sid).trim();
+  // ③ sid 없이 학생 오디오는 못 나간다. 진단(빈 오디오)만 예외 — 실을 학생 데이터가 없다.
+  if (오디오 && !sid) throw new Error('stt요청_: sid 없이 오디오를 보낼 수 없다 — 동의를 확인할 대상이 없는 호출이다');
+  if (sid) {
+    const 상태 = stt동의재확인_(sid);
+    if (상태 === null) return { err: '음성 동의 확인 불가 — 보류(전송 0)', 보류: true };   // ①
+    if (상태 !== 'yes') return { err: '음성 동의 ' + (상태 === 'no' ? '거부' : '미응답') + ' — 보류(전송 0)', 보류: true }; // ②
+  }
+  if (!o.token) return { err: 'STT 토큰 없음 — 보류(전송 0)', 보류: true };
+  const res = UrlFetchApp.fetch('https://speech.googleapis.com/v1/speech:recognize', {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    headers: { Authorization: 'Bearer ' + o.token },
+    payload: JSON.stringify({ config: o.config || { languageCode: STT_LANG }, audio: { content: 오디오 } })
+  });
+  return { res: res };
 }
 
 // ── A-2c. voice_log 미전사 행 → STT (교재연동Nightly 편승) ──────────────
@@ -494,7 +585,9 @@ function voiceTranscribe_(ss) {
   // [v9.125] 🔒 동의 게이트 — 동의 문구가 보호하는 대상은 "목소리와 **그것을 글로 옮긴 기록**"인데,
   //   전사(외부 GCP 전송)만 게이트 밖이었다(v9.104 게이트 뒤에 생긴 소비자가 자동으로 구멍이 되는 구조).
   //   v9.104 이전에 무동의로 적재된 행도 여기서 걸러진다. 맵 실패(null)는 배치 전체 보류 — 판정 불가는 통과가 아니다.
-  const consent = (typeof voiceConsentMap_ === 'function') ? voiceConsentMap_() : null;
+  //   [2026-08-29] 읽는 통로를 `stt동의맵_` 하나로 모았다 — 같은 판정을 두 곳이 각자 읽으면 갈라진다.
+  //   여기 것은 **예산 절약용 사전 거르기**이고, 못 넘는 최종 게이트는 `stt요청_` 이다(보내기 직전 재확인).
+  const consent = stt동의맵_(true);   // 배치 시작 = 새로 읽는다
   if (consent === null) { Logger.log('🎧 전사 보류 — 음성 동의 맵을 읽지 못했다(판정 불가는 보류)'); return; }
 
   const n = vl.getLastRow() - 1;
@@ -528,12 +621,22 @@ function voiceTranscribe_(ss) {
   }
 
   let ok = 0, fail = 0, aborted = '';
+  let 보류 = 0;                                              // [08-29] 문 앞에서 되돌아온 건수(전송 0)
   const errSample = [];
+  /* 🔴 [08-30] 보류 표본을 실패 표본과 **가른다.** 첫 판은 둘을 같은 `errSample` 에 담았는데,
+   *   그 칸은 메일에서 「실패 사유」로 찍히고 그 아래에 *"실패 행은 자동 재시도하지 않습니다 —
+   *   「전사상태」 칸을 비우면 다시 시도합니다"* 가 붙는다. 보류 행은 **정반대**다(상태칸이 '대기'
+   *   그대로라 다음 밤 자동 재개 · 비울 칸이 애초에 없다). 유호님을 없는 칸으로 보내는 안내였다.
+   *   덤으로 보류 다섯이 표본을 채우면 **진짜 실패 사유가 메일에서 사라진다** — 5칸을 나눠 갖는다. */
+  const 보류표본 = [];
   const batch = todo.slice(0, budget);
   for (let bi = 0; bi < batch.length; bi++) {
     const t = batch[bi];
-    const r = sttOne_(t.fid, token);
+    const r = sttOne_(t.fid, token, t.sid);
     const stamp = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm');
+    /* [2026-08-29] 보류 = 「보내기 직전 동의 재확인」이 되돌린 건. 행에 실패 낙인을 **안 찍는다** —
+     *   찍으면 동의를 되찾아도 사람이 손으로 칸을 비워야 재개된다(v9.125 가 systemic 에서 배운 것과 같은 축). */
+    if (r.보류) { 보류++; if (보류표본.length < 5) 보류표본.push(t.sid + ' — ' + r.err); continue; }
     if (r.text) { vl.getRange(t.row, 7, 1, 3).setValues([[r.text, '완료', stamp]]); ok++; }
     else if (r.systemic) {
       // [v9.125] 계정·설정·쿼터 오류(401/403/429/5xx) — 행에 낙인을 찍지 않고('대기' 유지) 배치를 즉시 중단.
@@ -550,8 +653,12 @@ function voiceTranscribe_(ss) {
        'voiceSttStatus() ▶ 로 원인을 확인해 고치면 다음 밤에 자동 재개됩니다(수기 복구 불필요).');
     return;
   }
-  if (ok || fail) adminMail('[SYNK] 🎧 목소리 전사 ' + ok + '건' + (fail ? ' · 실패 ' + fail + '건' : ''),
-    '전사 완료 ' + ok + '건, 실패 ' + fail + '건 (오늘 사용 ' + (used + ok + fail) + '/' + STT_DAILY_CAP + ')\n' +
+  if (보류) Logger.log('🎧 전사 보류 ' + 보류 + '건 — 보내기 직전 동의 재확인에서 되돌아왔다(전송 0 · 행은 대기 유지)');
+  if (ok || fail || 보류) adminMail('[SYNK] 🎧 목소리 전사 ' + ok + '건' + (fail ? ' · 실패 ' + fail + '건' : '') + (보류 ? ' · 보류 ' + 보류 + '건' : ''),
+    '전사 완료 ' + ok + '건, 실패 ' + fail + '건, 보류 ' + 보류 + '건 (오늘 사용 ' + (used + ok + fail) + '/' + STT_DAILY_CAP + ')\n' +
+    (보류 ? '\n※ 보류 = 보내기 «직전» 동의 재확인에서 되돌린 건입니다(외부로 나간 것 0 · 행은 대기 유지 — 동의가 확인되면 다음 밤 자동 재개).\n' +
+      '   손댈 것이 없습니다 — 실패와 달리 「전사상태」 칸을 비울 필요가 없습니다(칸이 이미 대기입니다).\n' +
+      (보류표본.length ? '   보류 사유(최대 5건):\n' + 보류표본.map(function (s) { return '   · ' + s; }).join('\n') + '\n' : '') : '') +
     (errSample.length ? '\n실패 사유(최대 5건):\n' + errSample.join('\n') +
       '\n\n※ 실패 행은 자동 재시도하지 않습니다(같은 오류로 과금이 반복되므로). 원인을 고친 뒤 voice_log의 「전사상태」 칸을 비우면 다음 밤에 다시 시도합니다.' : ''));
 }
@@ -566,12 +673,11 @@ function voiceSttStatus() {
   try { token = gcpAccessToken_(); L.push('2) 액세스 토큰: ' + (token ? '발급 성공' : '발급 실패(null)')); }
   catch (e) { L.push('2) 액세스 토큰: ❌ ' + String(e).slice(0, 200)); }
   if (token) {
-    // 빈 오디오로 호출 — 400이면 인증·API는 정상(요청 내용만 문제), 403이면 권한·활성화 문제
-    const res = UrlFetchApp.fetch('https://speech.googleapis.com/v1/speech:recognize', {
-      method: 'post', contentType: 'application/json', muteHttpExceptions: true,
-      headers: { Authorization: 'Bearer ' + token },
-      payload: JSON.stringify({ config: { languageCode: STT_LANG }, audio: { content: '' } })
-    });
+    /* 빈 오디오로 호출 — 400이면 인증·API는 정상(요청 내용만 문제), 403이면 권한·활성화 문제.
+     * [2026-08-29] 이 진단도 **같은 문**(stt요청_)으로 나간다 — 문이 둘이면 다음 게이트가 한쪽에만 걸린다.
+     *   sid 를 안 넘기므로 그 문은 `content` 가 빈 값일 때만 이 호출을 통과시킨다(학생 데이터 0의 기계적 보증). */
+    const 응답 = stt요청_({ token: token, config: { languageCode: STT_LANG }, content: '' });
+    const res = 응답.res;
     const c = res.getResponseCode();
     L.push('3) Speech API 응답: ' + c + (c === 400 ? ' ✅ (인증·API 정상 — 빈 오디오라 400이 정상 응답)'
       : c === 403 ? ' ❌ API 미활성화이거나 서비스 계정에 권한이 없습니다'
