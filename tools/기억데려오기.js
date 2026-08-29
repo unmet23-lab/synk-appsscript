@@ -55,6 +55,44 @@ function 이미있나(dir) {
   try { return fs.existsSync(path.join(dir, 'MEMORY.md')); } catch { return false; }
 }
 
+/**
+ * 워크트리 세션의 «기억 사본»을 따라잡힌다 (2026-08-30 신설).
+ *
+ * 🔴 왜: 이 도구는 기억을 «한 번 데려오고» 끝난다(규율① — 덮지 않는다). 그런데 워크트리 세션은
+ *   프로젝트 폴더 이름이 달라 제 사본을 따로 갖는다. 본체는 10분마다 자동으로 밀리고 당겨지는데
+ *   사본은 아무도 안 당겨서 **그 자리에 멈춘다.**
+ *   08-30 실측: 사본이 08-27 04:14 에 멈춰 있었다 — 본문이 옛 판인 것 95벌(그중 하나가 MEMORY.md
+ *   자신), 본체엔 있는데 사본엔 없는 것 24벌. 그 워크트리 세션은 «낡은 색인»으로 판단하고 있었다.
+ *
+ * 🔑 지우지 않고 «따라잡힌다» — 지우는 것은 「하네스가 그 폴더를 읽는가」라는 안 잰 위험을 지지만,
+ *   따라잡기는 위험이 0 이고 낡음만 사라진다. 잃는 것도 없다(사본에만 있는 파일 0벌 · 실측).
+ *
+ * ⚠ 안 건드리는 자리 넷 — 하나라도 걸리면 **손대지 않고 까닭을 돌려준다**:
+ *   ①이 세션이 쓰는 폴더가 «정본 폴더»면(= 워크트리가 아니면) 할 일이 없다. 본체는 예약 작업이 민다.
+ *   ②git 이 아니면 ③미커밋이 있으면 ④원격에 없는 제 커밋이 있으면 — 셋 다 «남의 것»일 수 있다.
+ *   그래서 `--ff-only` 다. 되감기도 병합도 안 한다.
+ */
+function 따라잡기(자리) {
+  try {
+    const 정본 = require('./memory-graph.js').memoryDir();
+    if (path.resolve(자리) === path.resolve(정본)) return null;          // ① 본체 — 예약 작업의 몫
+    const git = (...a) => execFileSync('git', ['-C', 자리, ...a],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 20000 }).trim();
+    git('rev-parse', '--git-dir');                                       // ② git 이 아니면 여기서 던진다
+    if (git('status', '--porcelain')) return { 안함: '미커밋이 있다' };   // ③
+    git('fetch', '--quiet', 'origin');
+    if (git('rev-list', '--count', 'origin/master..HEAD') !== '0') return { 안함: '원격에 없는 커밋이 있다' };  // ④
+    const 뒤 = Number(git('rev-list', '--count', 'HEAD..origin/master'));
+    if (!뒤) return null;                                                // 이미 같다 — 조용하다
+    git('merge', '--ff-only', 'origin/master');
+    return { 따라잡음: 뒤 };
+  } catch (e) {
+    // 줄바꿈으로 자른다 — 이 파일엔 역슬래시를 한 글자도 못 쓰므로(회귀가 0개를 센다)
+    // 이스케이프 대신 글자 코드로 적는다. 내가 방금 이 규율을 주석에 쓰고 바로 어겼던 자리다.
+    return { 안함: String(e.message || e).split(String.fromCharCode(10))[0].slice(0, 90) };
+  }
+}
+
 /** 이 기계 어딘가에 synk-memory 가 «이미» 내려와 있나.
  *  원격 세션의 유일한 길이다 — 거기엔 gh 도 private 인증도 없다.
  *  실측 08-26: 원격 세션의 작업 폴더는 /home/user/synk-appsscript 무늬였다. */
@@ -99,6 +137,11 @@ function main() {
      *   (rot-check.js 가 열리면 그쪽으로 옮기는 것이 정본 Ⅰ-9 문면에 더 맞다 — 트랙에 남겼다.)
      * ⚠ 이 파일엔 역슬래시를 한 글자도 못 쓴다(회귀가 0개를 센다) — 그래서 정규식·경로 조립은
      *   전부 memory-graph 안에 두고 여기서는 require 와 출력만 한다. */
+    /* 워크트리 사본이면 «따라잡힌다» — 본체는 예약 작업이 민다(위 함수 머리말).
+     * 위생을 재기 «전»에 한다: 낡은 사본을 재면 「옛 판이 깨끗하다」는 답이 나온다. */
+    const 따 = 따라잡기(자리);
+    if (따 && 따.따라잡음) console.log('🧠 이 워크트리의 기억 사본을 ' + 따.따라잡음 + '커밋 따라잡혔다.');
+    if (따 && 따.안함) console.log('🧠 기억 사본을 못 따라잡혔다(' + 따.안함 + ') — 이 세션은 옛 판을 읽고 있을 수 있다.');
     try {
       console.log(require('./memory-graph.js').위생훅줄());
     } catch (e) {
