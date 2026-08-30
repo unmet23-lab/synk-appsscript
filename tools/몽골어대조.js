@@ -33,7 +33,7 @@ try { ({ 위반찾기: 말투위반 } = require('../.claude/hooks/voice-guard.js
 catch { 말투위반 = null; }
 
 const 기본키경로 = 'C:/Users/q1212/SYNK_보안/제미나이.txt';
-const 제미나이픽 = 정책.제미나이설정(); // 기본 = gemini-3.6-flash / thinking_level=high
+const 제미나이픽 = 정책.제미나이설정(); // 기본 = gemini-3.7-flash / thinking_level=high (유호 지시 08-31)
 const 기본모델 = 제미나이픽.model;
 const BASE = 'https://generativelanguage.googleapis.com/v1beta';
 const 호출타임아웃 = 60_000;
