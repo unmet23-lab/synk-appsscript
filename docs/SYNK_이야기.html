@@ -479,6 +479,26 @@ body{background-attachment:scroll;} /* fixed 는 모바일(iOS) 미지원·헤�
   .지면{padding:0 var(--칸) var(--장);}
   .히어로{min-height:min(72vh,600px);}
 }
+/* ── 어학당 대결 개편 (08-31) ── */
+.둘길{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--칸);}
+.집.흐린길{border:1px solid #3A3D45;}
+.집.코랄길{border:2px solid var(--coral);}
+.두달력{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--단);align-items:start;}
+.달력머리{font-weight:800;margin-bottom:var(--칸);padding:6px 14px;border-radius:999px;display:inline-block;font-size:.95em;}
+.흐린길머리{background:#2A2D34;color:var(--chalk);}
+.코랄길머리{background:var(--coral);color:#fff;}
+.견적판{border:2px solid var(--coral);border-radius:16px;padding:var(--단);margin:var(--단) 0;}
+.견적물음{display:flex;gap:var(--칸);align-items:center;flex-wrap:wrap;font-weight:700;margin-bottom:var(--단);}
+.견적물음 label{font-weight:600;cursor:pointer;display:inline-flex;gap:6px;align-items:center;}
+.견적결과{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--칸);}
+.견적칸{border-radius:12px;padding:var(--칸);border:1px solid #3A3D45;}
+.견적칸.코랄쪽{border:2px solid var(--coral);}
+.견적이름{font-size:.88em;opacity:.75;font-weight:700;}
+.견적수{font-size:1.65em;font-weight:900;margin:.25em 0;letter-spacing:-.02em;}
+.견적칸.코랄쪽 .견적수{color:var(--coral);}
+.견적풀이{font-size:.87em;opacity:.75;line-height:1.55;}
+.견적차{margin-top:var(--단);padding:var(--칸);border-radius:12px;background:rgba(249,104,89,.12);font-weight:700;line-height:1.6;}
+.보장판{border-left:4px solid var(--coral);padding-left:var(--단);}
 </style>
 </head>
 <body>
@@ -615,29 +635,112 @@ body{background-attachment:scroll;} /* fixed 는 모바일(iOS) 미지원·헤�
         stroke-dasharray="2.9 3.2 3.3 2.6 3.0 2.8" stroke-dashoffset="1.5" stroke-linecap="round" opacity="0.4"/>
     </g></g>
 </svg></div>
-  <h1>몽골에서 한국어 학원을<br>짓고 있습니다.<br><b>혼자서, AI와 함께.</b></h1>
-  <p class="부제">교재도, 앱도, 자동화도, 디자인도, 영상도 — 한 사람이 AI와 함께 만듭니다.
-  목표는 하나 — <b>학생마다 자기를 깊이 이해하는 «나만의 선생님»을 주고, 게임처럼 배운 한국어가 유학과 취업까지 이어지게 하는 것.</b>
-  그 끝은 국가가 인정하는 SYNK 인증입니다.</p>
+  <h1>한국행에는<br>길이 둘 있습니다.<br><b>값이 8~11배 다릅니다.</b></h1>
+  <p class="부제">목적지는 같습니다 — 대학도, 아르바이트도, 구직비자도 여는 열쇠, <b>TOPIK 4급</b>.
+  다른 것은 하나 — <b>서울 어학당에서 1년 4,100만₮</b>을 쓰느냐, <b>몽골 집에서 1년 504만₮</b>으로 같은 급수를 «보장»받느냐.
+  SYNK LAB · 2027년 2월, 울란바토르에 문을 엽니다.</p>
   <div class="내림">↓ 3분이면 다 읽습니다</div>
 </header>
 
-<!-- ═══════ 이야기 ═══════ -->
-<h2><span>무슨 일을 하고 있나</span></h2>
-<div class="이야기">
-  <p>2027년 2월, 몽골 울란바토르에 한국어 학원 <b>SYNK LAB</b> 이 문을 엽니다.
-  몽골의 젊은 사람들에게 한국어는 유학과 취업으로 가는 문인데,
-  그 문 앞의 교육은 아직 「앉아서 외우는」 방식에 머물러 있습니다.</p>
-  <p>SYNK 는 그걸 바꿉니다 — <b>게임처럼 배우고, 몸으로 겪고, 기록으로 남는 한국어.</b>
-  숙제는 미니게임이고, 학생마다 AI 선생님이 하나씩 붙고, K-POP 과 함께 추억이 쌓입니다.</p>
-  <p>그리고 학원은 시작일 뿐입니다. 목적지는 —
-  <b>「이 사람이 한국 회사에서 일할 수 있는가」를 증명하는 국가공인 자격</b>을 만드는 것.
-  한국어 시험은 이미 있지만, 그것을 재는 자는 아직 없습니다.</p>
+<!-- ═══════ 두 길 ═══════ -->
+<h2><span>같은 목적지, 값이 다른 두 길</span></h2>
+<p>아이가 한국 대학으로 가는 길은 사실상 둘입니다. 목적지는 같습니다 — <b>TOPIK 4급.</b> 대학 입학과 졸업, 아르바이트 시간, 졸업 후 구직비자까지 전부 이 급수 하나에 묶여 있습니다. 다른 것은 <b>어디서, 얼마에, 무엇을 받으며</b> 가느냐입니다.</p>
+
+<div class="셋 둘길">
+  <div class="집 흐린길">
+    <div class="이름표"><span class="큰">길 A — 서울 어학당</span><span class="잔">대학 부설 한국어 연수 · 1년</span></div>
+    <p><b>1년 4,100만~5,580만₮.</b> 학비 400~744만원에 서울 생활비 월 약 120만원 — <b>수업료보다 서울에서 «사는 값»이 더 큽니다.</b> 몽골 국적은 1년 4학기 등록이 의무라, 반년만 다녀 보는 선택지도 없습니다.</p>
+    <p>그리고 그 돈을 다 내도 받는 것은 <b>「4급 과정 수료증」</b>입니다 — TOPIK 이 아닙니다. 어학당엔 급수를 발급할 권한이 없고, 그 종이는 그 대학의 입학 심사에서만 통합니다. 못 따도 돌려주는 것은 없습니다.</p>
+  </div>
+  <div class="집 코랄길">
+    <div class="이름표"><span class="큰">길 B — 몽골에서 SYNK</span><span class="잔">울란바토르 · 집에서 다니는 1년</span></div>
+    <p><b>1년 504만₮.</b> 길 A 의 8~11배 아래 — <b>차액 약 3,600만~5,080만₮이 가족 주머니에 남습니다.</b> 서울 월세도, 낯선 도시에 혼자 보내는 걱정도 없습니다.</p>
+    <p>받는 것은 <b>TOPIK 실물 4급</b> — 국가가 발급하고, 모든 대학과 출입국(아르바이트·구직비자)에서 통하는 증서입니다. 그리고 SYNK 는 이 급수를 <b>«보장»합니다.</b></p>
+  </div>
+</div>
+<p class="작게 흐린">어학당 학비 표본 3개 기관(연세 186만 · 고려 180만 · 소규모 100만 / 학기) · 생활비 출처는 서울대 장학 안내 — 그래서 점이 아니라 폭으로 적습니다.</p>
+
+<!-- ═══════ 두 학생의 3년 ═══════ -->
+<h2><span>같은 꿈, 두 학생의 3년</span></h2>
+<p>같은 해에 출발한 두 학생을 나란히 놓으면, 차이가 달력에 그대로 보입니다. <span class="흐린">(두 학생은 가상입니다 — 규정과 가격은 전부 실제입니다.)</span></p>
+
+<div class="두달력">
+  <div class="달력한벌">
+    <div class="달력머리 흐린길머리">길 A — 서울 어학당으로 간 바타</div>
+    <ul class="길">
+      <li><div class="언제">1년째 · 서울</div><div class="일">어학당 (D-4 어학연수 비자)</div><div class="풀이">비자부터 문턱입니다 — 몽골은 법무부 지정 21개국이라 잔고 증명 같은 추가 서류를 요구받습니다. 입국 후 6개월은 아르바이트 <b>신청 자체가 불가</b>이고, 그 뒤에도 TOPIK 2급이 있어야 합니다. 1년에 4,100만₮ 이상이 나갑니다.</div></li>
+      <li><div class="언제">2년째 · 서울</div><div class="일">대학 1학년 (D-2 로 비자 변경 — 심사 한 번 더)</div><div class="풀이">수료증은 이 대학 입학엔 통했습니다. 하지만 TOPIK 이 없으면 아르바이트는 <b>주중 10시간</b>입니다 — 수료증은 출입국에서 안 통하니까요.</div></li>
+      <li><div class="언제">3년째 · 서울</div><div class="일">대학 2학년</div><div class="풀이">동갑 친구보다 1년 뒤에서 달립니다. TOPIK 은 결국 따로 준비합니다.</div></li>
+    </ul>
+  </div>
+  <div class="달력한벌">
+    <div class="달력머리 코랄길머리">길 B — 몽골 SYNK 에서 시작한 노밍</div>
+    <ul class="길">
+      <li class="지금점"><div class="언제">1년째 · 울란바토르</div><div class="일">집에서 학원 (비자 없음)</div><div class="풀이">1년 504만₮. 게임처럼 배우고, AI 선생님이 매일 붙습니다. 연말에 <b>TOPIK 4급</b> — SYNK 가 보장하는 그 급수입니다.</div></li>
+      <li><div class="언제">2년째 · 서울</div><div class="일">대학 1학년 (D-2 비자 — 관문 한 번)</div><div class="풀이">어학연수 없이 바로 학부입니다. 4급이 있으니 첫 학기부터 아르바이트 <b>주중 30시간 + 주말·방학 무제한</b> — 최저시급 주중분만 월 약 134만원입니다.</div></li>
+      <li><div class="언제">3년째 · 서울</div><div class="일">대학 2학년</div><div class="풀이">바타보다 1년 앞에 있고, 어학당에 냈을 4,100만₮이 통장에 남아 있습니다. <b>벌면서 다닙니다.</b></div></li>
+    </ul>
+  </div>
 </div>
 
-<!-- ═══════ 일의 숫자 ═══════ -->
-<h2><span>문을 열기 전에, 여기까지 지었습니다</span></h2>
-<p class="작게 흐린">전부 한 사람 + AI 가 만든 것들입니다. 부풀린 수는 없습니다.</p>
+<!-- ═══════ 견적 ═══════ -->
+<h2><span>우리 아이 한국행, 숫자로 보기</span></h2>
+<p>공시 가격과 법무부 규정만으로 만든 견적입니다. 아르바이트 계획만 골라 보세요 —</p>
+<div class="견적판">
+  <div class="견적물음"><span>대학에 가면 아르바이트를 할 계획인가요?</span>
+    <label><input type="radio" name="알바계획" value="한다" checked> 한다</label>
+    <label><input type="radio" name="알바계획" value="안한다"> 안 한다</label>
+  </div>
+  <div class="견적결과">
+    <div class="견적칸 흐린쪽">
+      <div class="견적이름">길 A — 서울 어학당 1년</div>
+      <div class="견적수">−4,100만~5,580만₮</div>
+      <div class="견적풀이">학비 400~744만원 + 서울 생활비 월 약 120만원 · 첫 6개월은 아르바이트 불가 · 받는 것은 「과정 수료증」</div>
+    </div>
+    <div class="견적칸 코랄쪽">
+      <div class="견적이름">길 B — SYNK 1년</div>
+      <div class="견적수">−504만₮</div>
+      <div class="견적풀이">6개월권 월 42만₮ 기준 · 집에서 다니고, 연말에 TOPIK 4급 «보장» — 못 지키면 배상</div>
+    </div>
+  </div>
+  <div class="견적차" id="견적차"></div>
+</div>
+<p class="작게 흐린">환율 1원 = 2.56₮ · 아르바이트 환산 = 2026 최저시급 10,320원 × 주중 허용시간(주휴수당 등 제외한 보수적 계산) · 어학당 1년째의 아르바이트 = 입국 후 6개월 신청 불가(D-4 규정), 이후에도 TOPIK 2급 필요.</p>
+
+<!-- ═══════ 네 관문 ═══════ -->
+<h2><span>왜 하필 4급인가 — 돈이 되는 네 관문</span></h2>
+<p>4급은 시험 점수가 아니라 <b>문을 여는 열쇠</b>입니다. 법무부와 대학 규정에 그렇게 적혀 있습니다.</p>
+<div class="왜">
+  <div class="칸">
+    <div class="머리">① 입학</div>
+    <p>연세대·고려대 일반학과는 <b>입학 요건이 4급</b>입니다. 서울대·고려대는 3급으로 들어가도 <b>졸업에 4급</b>을 요구합니다. 3급은 입학표일 뿐입니다.</p>
+  </div>
+  <div class="칸">
+    <div class="머리">② 아르바이트</div>
+    <p>학부 3~4학년은 4급이 있어야 주중 30시간(주말·방학 무제한). 없으면 <b>주중 10시간</b> — 최저시급으로 다달이 <b>약 90만원(≈ 230만₮)</b> 차이입니다.</p>
+  </div>
+  <div class="칸">
+    <div class="머리">③ 구직비자 (D-10)</div>
+    <p>졸업 3년 안에 4급이 있으면 <b>190점 점수제 심사와 체재비 입증이 둘 다 면제</b>됩니다. 없으면 점수제 심사대에 섭니다.</p>
+  </div>
+  <div class="칸">
+    <div class="머리">④ 취업 (E-7)</div>
+    <p>D-10 으로 체류하며 일자리를 잡아 취업비자로 바꿉니다 — <b>「한국에서 돈 번다」는 최종 목적지까지 이 사슬 하나</b>로 이어집니다.</p>
+  </div>
+</div>
+
+<!-- ═══════ 보장 ═══════ -->
+<h2><span>SYNK 의 약속 — 보장, 그리고 배상</span></h2>
+<div class="보장판">
+  <p class="한줄인용">"1년에 TOPIK 3~4급을 보장합니다.<br>못 지키면 — 게임 앱의 유료 수강 기능을, 취득할 때까지 무료로 엽니다."</p>
+  <p>울란바토르에는 「6개월이면 3급」 같은 근거 없는 약속이 돕니다. 약속이 진짜인지 가르는 방법은 하나입니다 — <b>못 지켰을 때 내줄 것을 미리 걸어 두었는가.</b> 1년에 5천만₮을 받는 어학당도 급수를 보장하지 않습니다. 우리는 「과정」이 아니라 <b>«급수»를 팔고, 배상을 미리 겁니다.</b></p>
+</div>
+
+<!-- ═══════ 어떻게 ═══════ -->
+<h2><span>어떻게 1년에 4급을 만드나</span></h2>
+<p>정신력으로 하는 게 아닙니다. <b>시스템이 합니다.</b> 숙제는 미니게임이고, 학생마다 AI 선생님이 하나씩 붙어 무엇을 틀리는지·언제 집중하는지 매일 기록하고, 그 이해만큼 다음 숙제가 실제로 달라집니다. 그리고 매일의 공부가 기록으로 남아 「이렇게 가르쳤더니 정말 늘었는가」를 30일 뒤 다시 확인합니다.</p>
+<p class="한줄인용">"정원은 16명, 선생님은 17명입니다"<br><span class="흐린" style="font-size:.85em">— 학생 16명 각자의 AI 선생님 16 + 진짜 선생님 1</span></p>
+<p class="작게 흐린">문을 열기 전에 먼저 지어 놓은 것들 — 부풀린 수는 없습니다.</p>
 <div class="숫자판">
   <div class="숫자칸"><div class="수">41<small>가지</small></div><div class="뜻">아침마다 사람 손 없이 도는 운영 자동화</div></div>
   <div class="숫자칸"><div class="수">1,600<small>+</small></div><div class="뜻">코드를 지키는 자동 테스트</div></div>
@@ -647,106 +750,29 @@ body{background-attachment:scroll;} /* fixed 는 모바일(iOS) 미지원·헤�
   <div class="숫자칸"><div class="수">384<small>석</small></div><div class="뜻">울란바토르 4개 교실 — 공간 준비</div></div>
 </div>
 
-<!-- ═══════ 세 이름 ═══════ -->
-<h2><span>이름은 셋, 이야기는 하나</span></h2>
-<div class="셋">
-  <div class="집">
-    <div class="이름표"><span class="큰">SYNK</span><span class="잔">뿌리 · 철학과 기술</span></div>
-    <p>한국어를 가르치는 회사가 아니라, <b>한 사람을 깊이 이해하는 교육 시스템</b>을 만드는 회사.
-    학생이 무엇을 틀리고, 언제 집중하고, 어떤 삶을 원하는지 — 그 이해가 이 회사의 기술입니다.</p>
-  </div>
-  <div class="집">
-    <div class="이름표"><span class="큰">SYNK LAB</span><span class="잔">몽골 학원 · 2027-02 개원 목표</span></div>
-    <p>첫 실물. 게임처럼 배우는 한국어 학원 — 수업은 사람이, 관리와 개인화는 시스템이 맡습니다.</p>
-    <p class="한줄인용">"정원은 16명, 선생님은 17명입니다"<br><span class="흐린" style="font-weight:500;font-size:.82rem">— 학생 16명 각자의 AI 선생님 16 + 진짜 선생님 1</span></p>
-  </div>
-  <div class="집">
-    <div class="이름표"><span class="큰">SYNK SHIFT</span><span class="잔">한국 · 준비 중</span></div>
-    <p>방법을 파는 곳. 「한 사람이 AI 로 회사를 짓는 법」을 콘텐츠와 교육으로 팔고,
-    최종적으로는 <b>자격증을 발급하는 기관</b>이 되는 것이 목표입니다.</p>
-  </div>
-</div>
+<p class="작게 흐린">이 페이지의 규정 출처 — 법무부 「체류자격별 통합 안내매뉴얼」 원문(2026-01-30 판) · 외교부 재외공관 비자 안내 · 각 대학 모집요강 · 고용노동부 2026 최저임금 고시. 지어낸 숫자는 없습니다.</p>
 
-<!-- ═══════ 가이드 ═══════ -->
-<h2><span>학생이 자기 «선생님»을 고릅니다</span></h2>
-<div class="가이드판">
-  <div class="가이드그림"><img src="data:image/webp;base64,UklGRrxQAABXRUJQVlA4WAoAAAAQAAAAowEAowEAQUxQSAIOAAAB8Idt27G52f/tx3FOJradp09c46nNoLZt23ab1LZt27ZtJA2rNE2TOY9j/2OCyWRyHvfLiYgJQKP/G/3f6P9G/zf6v9H/jf5v9H+j///PRFEVEfkvBwFENSXVpCqYuaiqSu3/AhBVQBWz26Vvz+4dmzfFbKpU7gQiqgIAClQN/M+GewwbsddF1z/61Y9jfvj2wxePW3XldZYcsMQ6SwuQUlKpwIlAULvd0N1Hn3f0hS/+WkOacbZnTJs69p1X3vrorMGC2kmlciYiKSnQAh2G7XH69e//zlm6kZZztlly1j/dddIOa/ZXAKoqlS9RVcy0z8nXXf7yr6zt5pbNnXTnbLu7m7k5Sdq4R3bth9qaVCpZklBbem2842nvsbbnbM65bzk7Sf708Kh9F64GANHKlIgmQBfZ5ZSbnh5Dku5mznrsnp0k//zgpp37CyBJK08CAO0PeOEP1nYz47xo2Ywkx993ydoANKlUlASp7QKHf07Sc87GedktG8nfb9z5XwCgUikSVYy4+LFfSMvOBtGzkRx3686LtgFUKkEiADb/gaQZG1DPRnLqR4e3BbTiIwloP/Tcv+jmbGg9G8kX1khQlYpOAnoc8/EfpLNhdjPOuGMgAKnYSBJU7f8LSXM23EaOu3BxQCszogCWf5g0czbonslfbxkI1QqMAtXr3z2d2dnweya/2RTQSosq2o18wEjj/NEzp9+0OFQrKgJs88Z0Mjvnm0b+uQegFRTF4AtmkOacn3qmje4FkUqJYvEnSXPOb538ZG2IVEYSujzGGud82DN/20EhlZCEpT6icT6d+cfRbaGVj4Tlv6Nxvm2cevkCkAqHJqw1kZnzcScfXxBSyRAF1vuTmfN1N77UF6lyIUC/Y/6gcX6feW8rJKlQCFod8hnpnP8bX18MkApFv0dJc5Zg5tfb90MlUqTlnczGQjTyzWEilQfFSn+YsRjd+PVykEqDYODjNBakZ769AKSykLDY6zSWZeaNzVUqCYqO99BYmG62DbSCIFjoEZqXBp1j1xapFIhiy4/oLFDjQ1UiFYKE7f9kZom6/bYFUmVAsdqfNJapcUx/aCVAMfhnGks186l2kEpA9fXMLFfjnV1EwqfYxs0LxjNPQIqeSJ/XaCxZtylrIEUPp9NYtsYxy0FDJ9j6D/fCofGHJaGBU+n7PY3Fm/l2b0jgcDAzCzjziS5xU+n1tVsJuf82XCRsOIPGInY7DlFT9B1XTPx5UWjIRPVcGgvZeJVKyBQbTHMvJfdpg6EBE+n7OY3FbNwxZIq96SznzEeqRMIl6PGsW0E5py0FjZZATqhxlrTxaogES7HQj7Sick5eHBquPeksa+MVkHCd7bm4xvSHxgrpFZYWjUchhSphiX/opZV5FyRUiouYWdrG71uLBEql7y+04qJxG2ikcCiNJfZJZ5EwCRb6qchoPBYaJQGuZGaJZ3+/EyRMVQ+4FZlzxs4pTNLybZYZne8PhMZIsb07C914pkiIBJ3fp5XbM00hEVJsT2e5fdgtRqI3MBeb8/dFoQESdP6UVnB5tSAtMKng6NwqRIpVa9zLzXhdCwnRGcwsd+fYJSHhUfT7iFZwdN8jRFvU0EvOeGGCxOcoOkve+cEi0OgAl9IKLw+Pjza5g7n01guPpP6P0IqOxiurIMHB0p+X32uto6PY0N1Lb8zA6AhGMbPsnTN2ktgI0gO0wmPmVYhO1aPMpWf8ujskNtWP0EqPbttAY9P2/QBkHosUGcWK0+gBOC42gn3pDMBZ0MgAp9EicH9TkcAILmMuP+fkRaBxEeCBGIxfGhKau2IwZgloZOSeCBg/7RoZCB6IQOaTLSFxEXT4gFZ+xq+WjIximd/o5eectmNsNvEI0Hh5bLaIQebVkUkYZkG4KzKKY2gMwd2BEbR8KQpnQ8OiWPjLKByAFBbB4NeicEhoWt8Rhf1D0/zOKBwVmqYPRuFsaGBavxGFJxIC0+WrGDjH9oPGpfMXUfh9aFwUC3wfA+PYHpHpH4Yf+0VmwE8xcE4ZFplVptMjQONoSFwOpzEItyGsCcfH4dE2kLCcFIdnmoRFcTlzDDLvQFgE90bBeH1YBOlFWhRGS1yq3wsEBFHpOi4Ol4RF8a8p9CicBw3L0jPicEpghjMOuyIFRbBujsMBYVHs6s4YZl4HCUrC5oyC8SaBxETQ52daDDJvE0FUWjwfBeNZ1ZCotH4tCpn3ioSl5StRMD7cDGFp/2YczoMgKh3ei4JzP2hYmj0dh13DAsXRUTCeD4nLpuZReLMtJCzL/UIPgfO3laFhWWZCGH5fPjBbmTEI3/cIi+BS5hgYX2gDCcsjcfioZ1QE1c/RovBpi7h0fC0KmfdDgqIY8kEUangtFDEVLPxhFDKvCAt0g7H0GNTwEqSYCKoOYBSMrzaHROV8d0bh8+7QoMgJjMNXS0BCAsiJYXBOWT0oAj08ENOWhIYEil0DwfXicgVzEOjcHikmggfC4PRh0JAI9MlA5NXCkl6hhcE3C0urDwPx16pBUfQeE4jpG4RlwfH0INC5S1j6h+LsKkhEBCtPjoPxrrZRWeePSDzcMSbQrcbGwfnFEGhABNVn/BGJP1aCBASCy2kMo9sxgITk/EgY3xgKDcntzHFwvre8SEBUHo6E8cNlERBB1auRcI4LiWKFv+iR+HuoaDhEcDszA+E8DPFQLDeVHggaf+gDicfRNIbSeHW7gJzLHAvPdiBSLATN3ooGMx9LIqFIGGnuwXD+2BcaCZHqp5kZTeMokUgoRtAZD/+4FSQOgiZPMMfD/c/1Q6F7Zvd40PhQW0gUBN3eozGiPmM3aBQUW2X3kGQ+l0RiINr6RRpD6pyyCjQGCXvQGFTn9a1FIiBYZKzHxafvhAioLPwpnWE1frl0kgDgVtYwsMazq7T4BE0/cQuNvzkoFV/CJuYMrfPajpCyE8FDzMExOwpadoplprrHhpmftYIUneBaZgbX/Z+VoCUnaPMJLTrMPFxSySUsMZ0eoFuhZXcEM8Nr/LILpNxEWn1Ciw+N20sqN8UmdAY48w5IsYk0fYkWIfdfN4CUmmIjc4bY+F5zSJmJNL2PFiQf27PY0ObdKDlnrAwtM8WQCfQwLVFqCZvTGSUbjlRmijOYg8TMK6FlJs3ujpPx2eaQEhP8+1ValDIfrC61bi9H6naUWodv4mR8pV+ZKRb6kx4l599HSKGdxswwG59oAikvQbtvaHFyjh8MLS/FMIbauTtSeSUcQItU9ush5SW4nLlgzOnesBi/agcpLUHT92kNh5mbm9MbBjcj6aSZNyDOvxaDllfrHxoOy5xNbwhI2kfj+fc0ktm84fhn9fIC5DHPDYM7+e2FJz/763uH3PA7aT6vWZ760uNnHfXUJTuNPOnBqSTdGwbjTwMKTHE8rSEwI999cGW06r10N2nR++CpdLd5yTN5Yzs0W7IfALQfedOD35Hm9cqz1U3m3UlQYIMnmNeB1zNz8pvdq9t3E8FMO2/6DEmfd4wcN3o5JAAiqgCqVrhnCmn1iaRZHTinj4CWFxSXMM+RkfT6lMnX9h2CmYqKiFaj9RbHvMo8rxjzfUMAgagAgKSEPmsNu30cvd44p1z7AWl14GN7FZlI789ZM3vm5CTS640b39usDaAiglkLgK5PMfs8kfnmagJVzLYo0HXTh9zM64f5/dpx5++Ys89BDe9pASkwKFZ25mw+CyM/OXaji36j1w/PztvaAaqYw2ZJqgfcTfd5wPhUX4hijiWh/ahpTmavF9wFwCI/kHSfmVs243t9RVDkii0+Isls5p4zf9y3DdD64Glmc8/MSD+lKaoEdSlIF8xwq29Ww3u7IaEuRToctve+L9eQ2eea8YW2ogkDd75vIpktW3bWfmdpCApd0ObgR3/kLJ9fBBBBn5dJn0uWSU69YZuWUNRxQptbyGxej9zIl1sioY6bKyBrXPozmX3uZBu/PBRQAAsdNIUznfT2WTuv1hmCYk8AOq496o0fJ499cr82SAIIep82hT43LJM/PffiHgAEdS7oeMIUklZvMvnthYOQUPdJAfQ8ZAzp2evMjDxGBAA0CbDGqAefffDmbfu2AgBBwUsSAFWd+vcAoJjl6j+41Zll8rvT+zRpBUmCuSjAIge+RuZs9cGcvx3cFRDMVVEF/n3r7yTNvC7MyDHPLQWtBUAFs9akgsKXlFA7CWYuCZvnbHXjTn5z5EAAEMxlEaDtTt+TNJ87lmucvH0woIK5LlXAoLVun8E5dndz8rO91+rdRDCbKgAkqSCGIiqC2ZTU9G6SOdscuBn51rG9AVURzH1NwNCdLvmWzFZ32UnyxQ2qkAT1UgXAXve89Z3XZMtmlnM2Z+2X9u6JJphTEUFcBX3PnUySnnPOZkZ3J8lxF3YHkqK+igLocuhY0rOT9Nlzd3PykwtOHiaAot5qEjQdPNo427/+Oe7Fw3oBApmT4Aqw6GbXPPUlZ3/yC8cMaQoV1GdJCeh12sckPRuZs9E9ZzNj7de2bQ4ASVDfF151n+s/eO6Jj7+4/cR9tthgsaX7VAEqiLYIALRdc9Szjz1x/5G7rbzOlusPW6sNAEG9FwWab3b3OJJGks6Z27SJ3+yvQEpJUN9FAKBds05D2mHWIoi4JhEACS1aYtaqgnlREoDeO1132eqbHHvcm/QfTtxv+41XXGxwj/ZAEsybolWC2pKqUlIVQdwlJQDQVFtVMM9KEgDVALDEsZutiFmrYB4WEVFBZVBEBA2iKqCqmgBoSimpquC/HkVQW1TR6P9G/zf6v9H/jf5v9H+j/xv93+j//yMRVlA4IJRCAAAw2ACdASqkAaQBPkkijkUioiET3ARcKASEsrdwu7CGLI4jURPLPev7f8l8NJaHlF9H/971zf8f1X/2f/Q+wd+qX7C/3Xsjful6nv2k/a/3ivSb/hPUU/qP+u9br/y+yf/kf+v7HP66+nh+6Hwh/2X/j/u18BP83/vf/w9gD//+oB/7vYL/gHqX9E/4X+C36peNn9t/ov7H/td6j+PD6j/B+hDgb9R/tfMn+bfmTGgyEeaGoRh1/w+xX3r/d+gX78YH+pZ8D/tfYC/pPnB/4fB9/E/7v2Bv6h/k/+l9xv01/6P/y8un2X7A36+f9bsrfup7Gf7G/9Mi6NFpBZF6F+CPjnFcUaLSCyL0L8EfHOK4o0WkFkXoX4I+OcVxRotILIvQvwR8c4rijRaQWRehfgj45xXFGi0gsi9C/BHxziuIkf7FSRl+26n6rFKwOsUaLSCyL0L8Edzcrk/lc05SFEgFaOoaVntvvH4zF20u/JeEh8rPTfe0RfFMfy6PLBirCphN6yNimHlnC0L8EfHOK4oVB4oLyDc+cRvUOJPTQHHgTaBRSdlg7OdA5PnN9vY1kwIiDNf2i/4qRz++RX5kiiUJmS/ob55RX3jHmgPgr66C6i7uApewgmi0gsi9C+/6Q1KD2xKoFqI6HrDvmp0//wV///82YS1It8vjC55aeswlokQm58WjqwkP/B+HYw0QN8vwaVhxXzSigyR9ytqGEedl8GGZ1a1ILIvQvwQdqBw1X+QVGFZZRHgRP0OF8hbs1D5I0jACLuqvVWJDZaMsoZYoA+EsXFJA5ydWZtKsC0SHZiz9xG3OcWJ/O5YhnMGv4BQA80pphPmTphqA9bWsEfHOK4oacgsLePEndqZuVp4sI8ydznybU5jc+IZuAMKv5bKODTgNkT8jveM0ZKjLbYS8teQLxEsDvBdt6g47NkJcA7BjevQUZCbTzDWh/mmofRyez6xXFGi0gokkm8T40VWMcU10wANL557k1CRCA7n/0pOXOqm1gigSAhoTPMEFqcmT6WnfX6T8Ha1h24x5GTHhHAogLL99wevN9ADKxC1YcSBJuN/N5hCbWeE7cQdG6mjMTkkFkXoX3/LRm97jF0mRsS+myyZg5i8K9+rNu+SrN+7Sj1kKmNtDZ4tMADO4BvQWG58agsO6cI0eqdNpoMQckFxtb6rn6O4E17kQKZD9J5K+UPSmdlg1c8CwlkXoX3/TNUk6/EUa56a77Ff5Si0ad1vdxMuCoEtrtoMhCL67Gz02/sxb1lNuHbaAuteBYFQucH9/SvP2MqO2sX+H3SFoGspOSnseiOHkiB3QOrq+YJzSTDtHYpxixXFGi0fv72ywRZ4RmeEVpFzbayhSagZdt7/6IVo/cU/4Fi07nj60hq4SuKjt+hbtpj9PEsKE5rWZMy9Kz2W/gXlDQiKHlUCkBtsT7X1JLbzsFJXLw7afFsjisVxRotH73qq1CRZvbruEcIsnbSzuqFYJAKF0CsEJei2ITdKH/l9tfmvaTDsuFijoXII9THWzAIkwvcfDjh4Klr375nTnp0V61JoH4yZyFLG4+N5gxCPjnFcUKjpiTUq2H1Cq43oSUV5gRiEFB+pW6Ib30A77SCII/9stTdCpg4S4Gy7J0fuCzFxIam2c/Ne9Fpa4tNmIxKY9kLBhGOlk6Z2wQNS2NEBHNGJ6XN8Tja4h0L8EfBv4CzIlgabxSzVDL0ZZSsGRaybdRcJ/N3Sjui8+q7KLwuzGdiFD7sPMB7EVNFfjCFNkyYEnPuVZYSFCWwjIp6ybuRY3GpNkNUB5rxwSvKgAAvG5zzH4/5XubeBPjnFcUZUNZHGcrZVP//QIuVMWDJbYBiftyfmWnB24f2EcuNcOnLnthjx7a0h3Fl3QYdyV5ZKswJ3cCzJoG1zX2jVp3l32E8G/vgsD2Bkg1YoxM4qxyJNjrbzJk1phHI28DgMc+ASRnYSyfqEJ+esUaLSCfq4YebdtiLckrW2QAw7iRH9dmVnonzOsx/MaRbFeYCyc5vHx8KjFy7SItKILS2CAUrm9REOvRcIhaonwt1UeySi3s+SIeTpcgPOcFPvzJ3ebvklX8KNIf9JM8h8KlNxWtqr2Ji2DWKNFpBR4jhyjwLtblW7tsx9JmX3b2T/zOPHYQDhUBomlVZyiOh+MFTG+ubWaK+mttV6piIF6M5LeG76pH1T44ayN8v0wR5/4ZhwBZF6F+CPjnFRWlBjBHxziuKNFpBZF6F+CPjnFcUaLSCyL0L8EfHOK4o0WkFkXoX4I+OcVxRotILIvQvwR8c4rijRaQWRehfgj45xXFGi0gsi9C+/QAP7/9hkAAAAAAAAAIT6m1vHu9+kHHRpzBvvZQTCda1sHhH7tsg46gnBryz5+lEYToXFFx/Ykd0gtcxHctlC3HyWc76bzyCMsqCz1am0pl5AsqMi8L+51cmrIL6bprkfqc6acaPBQ52VK+8wC7HBg7/tH2oTD0Ma1a13N79Ppu7iBwTVNGV6hs2zNmcn+o2JrdkEoB/pQNT3v6WtszMKsWyo5XhNBN23F2VUT1wi/84/n0nqO+iKQSKkZEwP4NZIfh+gswDpALXH3RU+d66fVrSHv8vjqmEDONG2L02kYPKND7voICIKvpAvoIB5ZlGvIcYNBD/JQk81+Wgu+mTCl9ld3N2SuRcRFoh3kB9JZk9kZmBHQDCezzwBYQetcoymieThTqZjBgb/UGZfwxE+Zh3ET7jA+pR+1Lkefd81WNWKOWjtJm+qiEqtvnwgj+6a58IjBvWA+bFDqKUD6H+Z3NJyFaOsbYq00OW7l9LQh2gXiMORGcj+KE16mjTY5E+LRbMG64mERnmXYLoIq/CrwSuVSTaaLH5bbq13s9mELtAg79TQUpxiJ7G9d+IxUWZKtir4A26IASQctrTllMHBMVG0qhbcOMPFxDuVW/2CKLZKz3K+Y4sd8jfcDbCKKGOHKQXWCTmZ88vdTf8g+HFazn/F8xseD6i7sydgPfu2gi0IFzbocswhKwNZnQF4P3d5nuQrGSWVs6MmPLagKKJievKf+yS4MpBSGTvsCsiAnW1CEMRD72DEGO6NFczS2jbfukwappkc3mbC0X6IZSwjHYe8jtjlxpE9djxvEqu5F9/ZvKDPpx7SyLwUERkMpzBwrbvXdhbOqhvLeWWcWvrLvgNifEWunfxuiaz470L2MXWdI1KeTb15KMHwU6ZI8qDDuEvWFkRKDywfBOif8/P3B0O6fbNU9FAnD1+GubL4wWngAlzpWDX2zwU9jgSGX2Bfsf9uNUNUjWuU2pvYoTCcjJyLzknHIc6bA8NZGh/P3km0Q7V+fXoHe6ecJkr4jgoOYEhAVEeVkZGr2e8XsPXPxYvQltK9l+biGlTpXz5UFTtzI5KA5qEwDRlUYF00OX3SH5TPfniVSH7N70ODvgINlODieCshV0gSnni1d+rtsxV+X3SC34LPhHTcwmcNEPcy8YspTE7Zfn/79tEGSgnOW4nUf7cKjI4868qz0Lj4V2xK+kkUeX+yNJ0HjYEgnhIkjxQDJ78++LZ6l0GtoFVYEsyS2IWwzo4VJC3Uk1ps4eMNdIM5zNEAQlRdDyr0ihF8a5fc/6Gxc572yZ7vAxyxRWUfUlmUOx39WxljiaiC4oNq1DTqPc5DAxDzLBvlM5bft1oj8K6vGWxOqhV+Fby37VUMgsp9c73Z+5y7/v4ByQpvN2YuNTFHnfBPH7wl3ruD3Gb/9g9JtqIdRBATZT1JPGSQiCsNK1qHM1cacXLz4REYHRPYEfMXziGk8aNSB5qy440Mbv3RUZZZrxDwmqSl857A4B3hGTtw2NXpO8S/6XWtRbGS2HXLhChdprLwVW+xaWaYWZXGljbGTY2SXiBmdqEfaYdOfC6/oicy5SvRc1t4+1REccDATBybYA1oCGsL9sTxEfmEZ+fucepuXf8g8/LEnYd0CatZ/FYx9rx7lNcourhW0BYEkqYMbvUyPWhViQeaAdcr9ZMf7wc+0BqjhfcE+zrPiZP51dDq5Sl1mw6xO2NHkVxhXrJUkhXpEjYKGO2AzhWKxN3ZT9P4onqQASN9XLUqa8qVBpA6DQRlYPhESMdVAxhSIUKlJY+JkGXZ3y8wGW9/hv9JSZFd6LKV0+CFpzDO0MOqZKGTZKShmBgfXP58k7y5BJ+9IBl+NkSmlC7C5IxGy5w0o0ytsUSWdm4bPbVGbvPeg1ozFlJbiOS7Dm+/N/CwXEkt31h4WzcezPer1hfNypdOQVo5m+mRUAEKnDw3EKzYHzAnJj0UkZSiX8vTMWTbWsSf0Uah+oJRwLf6XITBdQeEilCOQhrwLTr89BLi5igv35fecv8JXWizIxTovecY+n5LnIANT3VhuuPlez8rLTYvXMsM3TNfyYq8Xua1aFW7zctkyApJzWPf9xj7NrFRNV//4K7ulRTfay+I//hy2caIGM1S0vaHZfmwpUW5k6E0PAk2OQIv7Yj7DBSXM2FFTt0X4U88Cz/olGvnQD0nCZuliC1Nh2DVQSzkMfxrqASnf8uzlrwU3e5ZvNNTBpa9Rn+BBV5Ey8p4HnaIW5JxQDC8y11tkqvHYZJe7Tbif21YDop5aNbQwOX74jpBtpO/DsCZG1MS2riHKzwuJOcY0Ed+ZC5sYt8jRmAhVgdBl6un0t5SZDzHl4FQGfVnXji9quddBykIO6ETag9KODziYU+F7RU5cEmegtBtNyR1bIhCBi9B6JEXBRhGLuAHPti5zvVTJSqNZaDFhoU48qQk4kq3826YlY2hBjk6vzlNQ9vwYsLMw7vqPmK2O9tb+H4V8Z3sPQkfdN4B52mS5R7vu25taONpT0KNbJr9Rq5Y0P/Q5872a7X2YRR/r9K2yb6ZTYd6DfZm6oT/KLJ1HBf/FLcjp7zhxhrDDMeh9hyVXfi7tcTJFUuB/iVsByx2+Hw6g4vxG7VTxJNpRKutZD/RKyS1BRyC3RGKDZY/FNYFGALbm8QyDIULDNFt/68SEQoDWw7ATQUWRf6sw0zouE7QI6BKv+GbSOP8VAMJk4RbV3Im7E7mKzl9asOzVeBNsGp44HvRmZ8EQeXXVzDHUDICXxtagqDlvkNo05hbq4DcGLcs+RzFGfmsDcRszmgXLAsLGg+lGyPMZ6sSMN5QUkzxIi+U2wzT3EdMDDP2ZvjHZklYwtseHWxcVPR/hdHsXeXUKX8TbnNFUnnAJ4ShnlcbGzM4S4dPYwRj1zZZLi6JY1voqX5Fee2G9HEdDj3kXiTV0z5uRT4WtgG56Jd32nCW022a2u2zNK1aT2MmBTQkBO/ftRFDtWgLa7wQGTN1h6g6X56QebdRBvbgEBBNeLXIa5sxTPduzgSUIwlCqX+o0Mth/mWwmofDz2ekBZ9Sy8zBAk4t555m8mLY7cmRPdlOtJsf1t9u9UI0dGrlQcq4fC0F8sXTbNz7NpH2ZZ5yLq/6FwinNxUDWkWBp+hxCT/Bwg2f04yumuHpZBmzSAbOTYPH48DyO8YC8R0oG40/zygZXpZwI5PHeZo8Jhn8iPOKYdR7Fs0+QrNKhf5EVBKPehYzCbEzGOstyxAr2w5Fv+BGo9XoO5M+C7WqRDmfRaOJ48DwrQXGEqFS/LWAjHDgGSFAc0j4rHLE8/MDSmy+/VrBVB23AMKxBNWG7L7E6LT1pZCb1VXn3oUGhGRu5IKBunfiI3MTqrsyIOW9HdLPo74w1yCCCroKhM/yyeYBwsAqE074lzM3DXMVDUeJP2uGJQpOEz2jlFUsIMfcKtnW4M3Rab7KWpeyI4NkXARO6wOV1dkMmgx8CRPo7QsH3W/k3go3pg+Q/8oaxKYA5QtK1Uo6HoKs7p669PwR+aVnBqs/NC+/l3957klu61eaVGE9m4Yg4iXs/9Xe5yrFF+3iISiK6tp1prPJMCztCGhQ0CxrVgbl5gTc25lokvFqDhZe2U6ovfJg9VSILSi/lx9ty86fF6JoF2c2oS86Qlwj/7rf1nAMTMnSdWSbv4CoAC25b0ZXJ2COih3NmrQwzwUejoTRVF67KEfjWKKdAd6dffaK3mVnsGoWyJ+vsvR1dd9Mq2GfTJZa93TKRld3NWYJX8B3FcFObU1vU7DToeFqYsqTCiv9pGtLnWbecd18AjLthdtLBHvEcBJHiqbAmZGSHGQ5tJpQgpdq0Ui8vYoCSlKvRlkL1x2td2ylPbP11e/worBG4fGd3rm2sNscvwZ+x2MjuE9u5H9G0Xvv+j/0/xxiHOjUB+AB0JKP4zUE+m/fxBGtHw9IPlKCImFFERgjskR/TMjL21iP4thE/ieLdKy9H9gj2XpK97ooNxq3v3QjIWbOE+JcVbmWvwYp8YsTVlOb8YRXPcIku1VdqJmkIzJjTW5z6A6wWEebYDEKA6MwVbi2QFQ/K89h6ZTmYnTmG22edvI+MGr8ncMjMehTi8NBl2Ne3LqzKXai0ZsYwThv3C3xLG/xwYGKvxddoJBoecl6wg1Oz4/hEzFJBt2a9bdESTdNHxbzax7Zxt6IU3bSiGg9Z0eZQ6VwmKX/dcRYf+zjcnAk1RuQllLtlXuT07ZpCEzkUv+hrDHmJ8pEg/5qPjHJm6+eLjRk6fhg7a5IEsl6TyLJuBtyZL8Qpl9YTln5tpo5KfFJU8vnYwhrDrrO5Eh2eWUp5SxGwgDJDKRhvELte+oBk2Bo0CH6NQqg5PsY6Q9M8vCLEaBV/QgRLrLCBwDBu5tJCOMqcBIS7w6VlRllx2gy9GtHmltzQqBuYnLuq8ybRNnvvOlry/jFk1y2Om1YNqckvUAf/ycbUxsz/S5Ayh5KSpCYxK/qVqyNLabB2xtyulm1rmdkpmEsmIXlWStt6aIVpDhTloRRncnBoSunfCkmzuMEACZcVNWM59yvyQh65yK3ScBte3gwklx5rL32zzyk7+IglDaAhrMZDuhm6jtmUNx0EXsdPyr7ci508JQ5PweeJYsFXTVNa9fwvK+3Zi/PbRmy+qNnnsYlCpRR87UbpPWd1NJ2D0EckAoKauo6LVmTjmM6tz7nYOnNV2m4D3eHAYXnmYqBGqLzrpcl4UxmpuQQwoAYxo8EBDPU4tlNoQFXe1dXzpgcZrEVuUMyze2845bY6RcWyNF3jAUgoNX9A6s/rfhgYqHBJG1sVF8fDWItbL9OLi7iD1nVRsr9K7gFD754Hw0fFS9QXBSacg1EzlW3RpB0oWdn7U77IgzP6Tc+9vDmjx765uMOB3jiLbDk1Hg1w0ZfKtDLMGRbt4MxVXi5Hmb8HuJdNSf6qow/VzxBQeMd+2KTYdr7emKHVebjThP5q7ha+XeWWqwbkvcUXjaf9DI9aj9NyDEpGvNtGBHuIdq12p5g6F1M7kWaFuHIOs3RxZtsZSZ2YhWDcQn7loXyWjAk02kINe3bvfBbr2PdCPueJQOs06AFIuYJqfAuc7FjmwWgaswSz3HpzUQygdCK0rq1Qbl16XyiZTUko0GXuxmZbIQVHFEuwXm0nv4krY3a7EGcBXcy9amh4HcPXPXudJtngTmx4uvvU5AI1x6eU2Ej+06y7jGjH8zrwt1uu2qc6xEBGYWvwHEA0fx9zfZRmQZF9Egs7dmjZ5C8dxOG7+1SjQhQC+9OEsw7lARafm4KXj+wO3uHsFEOF+vfUi77I7Kx0yOlvwfC3WpaRfKzYEckyzqV0wZGNAkudxKZ08JJHcJpH4OJy+ER5V4HERqp3Q6L9T6zwYKqZBYL4+0GoiyDAbsOppMG8SLS0Df1+QKjgYekufcuIE1ncURoS984A0ZkDskYx+7ldEQ9kaMkNhn4TcRCGcUtb6IVK1uOKzm0YgdwA9bVfNW+rxAaaQSgi97CwsT2VGrAK1nMPkkHH53TNQmqFgZEKGzPA/kvl7uf3FC/CAqhSrxIp6T1GWm1eIyWQ4uYR6Rmci0VOxNWKMNcASlqKvfKviQfBApNhL6wrjURjW51KYV70YrKOJn+jF497LB4KcL07Ibo/D/8dlsLwMxAEBsnSc8zh1+XPXwAlajStwF19YwPD2bom6H62FwS1IN9vDWOqBPN51/9elbj83ChTDP0zdHpPgPvtrjPpWaT5GCUwDYYN+O3RaHpl6n9O7aByvYxu742Jisw+iXC8RQu2lOIDoTmtHmLTJRweycSWqQY5LGLdsIlp7mqumrLQwugY9Khw8qv+j44i8ySiusdhX1bmHHXfqJn2Pf3JLxAjaKmAKAMqkvhRdCv/Uz4DFNaXrw8aLrnMSLEdMy2jtTjgnAEL6pDnoRbazWEImVAf02how56e+VR9yEYC7DnKHmwyqOxdLjclZSAL6miQW5PLoXuKCS2/1pyZ3uvBFlEit+lNtT8IXplPfkPW/Zl/sNScTSzys7yqxwB2vjWNqko+oP8jyyAyaiMd82e4lyQ1QFUBQxzsUQt+HRcikNtUooMDqKfRFbuNSP5L26vYHyxYWHN2BwmFGgTjQBfSUveqotqt8CPTH+Ysox1UGFsakfsd0lytTNll/S9e87A71X4VGaHTC29SwJGR3vgKMke8BzsaodP7E2giFagxwmJtB0X94Au7xzv/Vr+HcGvmsAo7xqOSVUZoWO6qUEUtR+phqoidAPRHnk5KDDAKHW8iiCfGYj6aOBu69oFvQhEt1ECYEfHn3/4M/vbUrtV4vXBjhdFrcMRwLie6JaEQlfn7Ian/AUY2gZMWklt01LW8dIO2CcRXXFgqTncc0ZsEKoC7DU/MHXfYK7h2icDqvY4EXiebMgHrynThzQwT3ujn/ZQvMp6wMshqgooRWdUz2i4/JuLVgthDMIGi+ze1ArWFz7OIZ9BK+IaLvlgbnTA/dps7CRLkd6QVhmDAwNQXaxhYPBZOZV3QWCS5Vc0OlAjMW384AXP5Gc4leipUn+okzfPhbjTH+wjNs+9allR6WDRvIcoRHs3tN5vvcKfeT8PJRcj6wWfbhsFoR6q8b23Xl481phnhLQcqNZtqgXmaTX23NLdh5SWb4/0zt9IIhXZPmMF3yGNI1cffjyaotLeIWk4HW+KaY2jml75v9R0oTLu5tkwmzTbLxCfNTm1+6RGQKb7d+27xDSGHv2cbeoHgvz/Sl4qoqwYTVxpztoNl3UXSrpPqVasK8qzyW95SPftTJbC8df0JMaxaodxOWLmK49+Anw80XlB2/ThQtkXEd7cPdYXFk/rxIJA5OIp0ByBmpAOx5k74S1kcKycLkmqfvtGNz63yakiyUls5SneOgOQZS45u+JUEtxcLVUP34YRinu5IbnKOXt0wqkVJcf4W0/TQJGYbqv1m9jt0XBZWH8W7m0hS1SoOcFQffiS/QHDTYc8o2TEqibRckCQJpjcMW/X5WcagIRKxEb/9R3Xe+iMlkYhanvtgQO8i66JsSHolx0CeqMvu+LlLVaoOpg2sgx4iraKs9/Tca2Nmncib3IUGQpHmpZKf1wk0eFbrW2Vzw82N7QNADIYXUoZpzpgo2P6gZRm++cTIUwKErYl6cDZxi0fi2SRSa6EH4Z390LZRVNdQzmNCPK92WosBpi8NXSlbmYM9JbKLYv6yJpFjOS1EUHbzEtGOf/F0QR8qubHKU0IDJCXZbzEwq2h0goFeVw0ndf9m88RT2Rs6tn1rXwGk7apWzVdeudFawVvaO+F/KYZ1QDxdC7KIXv9guyCY6cN9pGv+/+0CP158AhqF6lTFn0VptRCApmOpWy2vA1yRHxtPJF81KCr1MQ8O3+LGOe67OFj8c/IjeaDQexY9nkz06qx5W0kwYerZEZeKUCS3+kLnkb4pRpB9bKPYtFvjrMThJdkxif1RTYRbECLlGQhhF3N5eTC/vIavIUhOQ2HE3LdlLrHwCZY1NPL7vAm3Jhw04OTjkLAY0MVCUXJtZBQxHow6vqo3IKRMyIEWiaukgWO82dKYEyDlN0kO9W+dmGhQtUTLUXAWIZB7gvH2BAzdn3W5pdeXvobsvOBhc5YB0fBEihY8YJrPPznwwnPXW5bFsjGr2Iy1Y+A0IZidbdcpsuxpWNEa6N/Cv+1V9PDi35Cs2YkDMnU86pqKo7IuJknZytB/A6g1RdNqKynubDrEeiWcjv8x4kjGYtWqQ1mcFiFYJ6C1IFIg6BL/DanPLnEKWW7nFqVXeTYBSQrBf98lj5eW6/1KAf91V6ndrEljT/hOpms0YDyMDqJNz1NC/LS5oy5HjwU++GXa6diiMSwlI08W0Z6JEzU9GVNDbF1X1o4L9VPRdDLrv4Pt6FzK4yOXt9v1oW7OMSJN4onGhHe6gy76Pa5zYkLCYy6kRorrG2yJ2V2ZuT221x1Re73wrR3cGq9zalmnq90uJs7E/Qv6UvTMrgRJtkFCyE/nWot+BIVA1TinKRohmx3ujyd1moetkVl+cZIdK9682BgBgVfhp+eQD5httySFsIh0CkQsEMvARHgU1fbjm3Pa0bdLHeg3OXuIWGquXSh5jqeK64z2WZFiu/lOSf0G6b5BBVq2rU7M7QxxPqjgo2N2iQeNqh52LOW2x0R0Est9cW0Z28deHvkhUDHvGHyCYZCg+JZhAQCx5FdqIO3IlZqmaK1601FXNBK3+WjsheCb+MsdY+D6ZfzcBdBhmZtW0VH0auBoMCvgySl+XdNkmeoe+jijGZ2qz9SSZsszEW1E64nLXO+QTha+DUtOrG1vFe0/+3FTGAG1VxZ+JpGJsa83IC3kW2/vyJT4X5wi68PkHiH2Trsvej0gvdMo6/FuDB1Hy2+bQGce8IL01MN0PiFwiThZIeDKeGCXpYFvPUUOeqh1VpWOVWZ/lOz0g1vyzUhDkeL4ixcwlHWmrluigdq4ve8J5U0K3fKi6JUvIX868K9PxcD4kZgzp2Yy0CpYYaGS+oaN/oObs4OVdeXe84P05iHiZeqSawKHL8PK5cKZTWHvQ/UM3/caXUJNA+MaQiUM6Tf/6lV6BjPKQkQYutFsSUb13/MGO7jCLVPM4KLOJ+MDNW9Pp5KoJ6/7zJxq44lc+X1LUYVtLfxEatqj08ziqBLdlUSXKHv0BR6+KYmzTyN4Oaj0Pw9qAEv9XfAkyNPRH9kBI3v1roePCsXIWAmFQiyzMOx1rsHsCFiMIZDYVX0l+uEVzy5zE+WG7HXyWDj+hpzu7PRs8dJ63sLIgdmcnfZEwstTXjbsMUm12LkUtrq+1f1p15WFlaFKJu8qo7xw5/eY3MWSkn4UdjSUkTuCO4pGvkeIad7chacJJIda0qf1ehhhzYYBG/F4w6q7a+L0YWtoipT/dtcIvsISkNB2nNaTis6jhTNwkbCa2OjPHOo4DAr1F9DW7tBkG+UfN122SXxIzB37JOwhH04GlJuhTYDvw0bmy3CR8uHCxxd9eNYdnOtfdO7ks8bNrqCFMs5ZsN6Pv340FLiFcjyZmoaXk6f91JUd62eKxHXv3j8f8g6PObSWICyI0dAExIVkHnVATWzHslquwAb5AZeTsbKNXzzU3rXbNrLg+W8nLQOnZxpgJ2+gq9bB2Bcz7YXJVt1OEhxIWFve+Njxb55nffnxOlVLAtGIIWUxovwE582ctzMOnnmrxXuKiaWue7krp3BBW19myRWixaGILP9zl5DqIvVGf6b2MyBW/q+mQNenniufNeemp24DtAPDldaPzT9r/JP2mtRSBs61a6t65aNHGqANJ2sAzefYyTa9NistfXdfxiVpJ3MGv69iLo3ZK+cye5tCA/0m3zMABurmfI8uZ2IkbPrJ2Ujh1F/Cm99ZcmqGPBOD6V/Xi7CJItO6xTA8/X6t0P3tYRNhN7lp70NWaJCm2AGCkh1KhElgU7ZLjRNLTfLbBXUaCyjXvKN7xLte7bBbzcqtQ/Nh/YvlilD12+qRcKnaQjPu7k0ltl5EMrtAS6MmIAArgdoqHQ1yA3pF7I7QpXfwYoe68KPCf0Q9IKpuuRAN/GMyVlxBSBgJRgrnfU9s9uPHQ4v39tsTuok38RDzihU7qyMLhtBcStizNd3Jf9z+Umpo7OyvBTnrLcQISQOb9cox6I8iIj0AN6Ur0anUjc+qQkUNWHuW9EjpcnfJTTolEqRv/ap7SpvrVG/4+yc7LjUxsp2fkc4mFfMiFageWqvcauNIuW0iWY4Ve6PelODzh+7PHheTClgtF5vk2F+swX05n7q/ZTmD9JZMCT06jvEEfQnhBtBhAXlSrcbXfbg+wd4Zhik4l/Y1R52tb5FMplL+gkUiIfJ/SmQ+atG0VbZ2W9jaF96pynyO3B16USenVoHJNLEe9q+fa24PQmzq9Nh9Q8zbusvcWoENJbp3YZ84boUDr6lA/NgrInpX0Ray5jvfHcgzWc4x0tpYr4K/74fgVeRjQ8yDyh3ztpEZijUPQNWtT6KwnK/EhCwIECQmKR9oh6Iyhz4BtsrDIb2sOeArTBMuXoumsOuqzIqV/Jx580WgItdDV2NEtL3JzJvYBFgtmBl08xwCUSrepdzYd6vGPhpdMHDd1Qe50BVdlZc8JKYcjDFW3+W7dmSsWyy15FuxOib13v0H5J8goWJZW2mJCiKLnxMPl68wJi1l3BUE2mY1nyMF74anKbUe21r1/Vtnzp4qQsJDhlmS+DHcphQdcXaHkv5mv2GWxDzKQlIFZhpYxj0o/7WT1wYbTZeaEImg+c79ib6yqXOyCPaR69v54zgnzW6h2AdT5UliNYvIkzPflzXQ/s39BEaKHJWczspXu7NuFIxAWaLEmBWM4BJk5QFdq9x1xpuzhpOTJv4CZCHSFkTJrWOK8zgJivZmQzoBwz1nahzYIEAs0ygA7I5KRhgL2S/lamXrbG+HucztBzGfvYbzca/UrMvLGrS8BMT5Z8TbuB9Nua54dyEndoUTHZ5lvmvCX7HMg5RkMkyYy3hkQZGdvi+K3TsS4lrIEvNYrlN9ekRBntyDYrXNMjHdIHNqJ2YFTqNkwssRpShitD7In5DdWB09NcOGx358IbLYTc60ogBPPl2Ae3xtecc+zLI8PrADcntCnYcZbLlMn7zYiTzf/qeaYp7j3fFkVgwCiyA6aZfQDCbKQ1snnl8Fz8E78zbxQ1b1GlLSR9dkrzYwu3BG8x0QK6GFSW6rCRSSAEhYK9/nUKGyCTD0v5H+oZwr3QBkqMZ7YwSltVHRXvZHJWikaUF1k8MhzWroedCw85lu+HVJMsVV2RTbs0t4Fcr/GyeJ9Yj4jiru/ouUf4BHGnylWZGbUeNoQlrS1fST3Fu2LLUco22fCsPft611ylCfGqTzmrBIUHXqSo+Q2bj3IZp6iXbVqHKS/DrxA6zYpJWMRhm9MfC3LwgZuMo03DTGUWHp2mDRt/S3unlf15FQrF9bC72NRsiz/snJqOSrkAtTBEN8zxOW8yMkbI/d17CoYlEA1aAVp1dIB3Knek9t4DgFSIPHtlTUsX1xpMf/lvyAAilUvSI1evKSkyp2cvx4GRXqHzdAwhcGgPIBfGx8+bm9shQgUkjbkj2p24cDA/dbGPBwq5uNMNJEzOR+ZsnfGsVjYPKGw8arrnHP5FDJ3DtULMBENvwHk05cf8G8jss/Bo/mSE4kQN95Rvi5AP+j/kuiqxus98qC3nJ9n1xYNfzfxBBsV12pnMmxbwl32F3O9ASI1G7gahK1aYzXUW8PpiRRK979z7ikfvr4Wk95OYMEGi0vMx+FqnTLNY6l+GBroxzDaE3od6C+7m8rubCAEJ/A0sKlBViDNJ++DrF9jUQ4gM48o3I9mwmEoy+Wm5IzrSkifFgFB/LMpkxKQJw4s5jSlyjZ8DX4AN4H6VClwjHmalEN0wvA3Cy6U7NXTwlbLOZxar5vJyFBCMbRjvyicZ08DxGT5B/JHeU8RRP/pFLfj3t6dkfpro2YTLRKjJI7aLLx9sb6LAe026bG8xTXzsLYcwoA5yS8puLfQ3NFzyHac0gqERPDZyqXZPcNpt5iiVZBqpc181oPGnbd++UUkI3QMEpGdf5NhoHu4IxVcRvr1em52ZleUzl+Iy5zobMWOgshPfjmq7NsY3KESQYSQ6QCyPG/yPsJA9WAddOXxtnNK4ECgyfp7tJoW/zSXaahJaxnMnIH368Hw1FSENxLjiB9a+sekYWYKD0a584WiXuJ+Z3J10+zEs/nBMKFsr6oCxrAHR8tK4YRPuEA9xoa3nDQCzKUqD+SGo+gM4n4wHY4CJA1AaI812uVCj6MjMtbSfQoFrCSMY22UdjkrWMutQsaErdSIgLyk4t9BAuNj62UV+t5nrNy1El0OBqU3KGKII4DGWaNyDCI/Rsfmxm9SxM7XMeReQ5Eds2d7fqE1kUlxDnslO7QEUSZ7/+qPIcNBLIoVRVSGwxuPGWI+0gEirG6e1WQK2WXglukRi9s/Oo7qRZi4tmH22e7fx64vKaSWLk6S30rO8T9KKLJ6Jt9DEY/fSPrme8mTOO2FBTwSQRcQCuFI31Xga87jIY6Sv/HjaSKl0i+U9Cw4KckCr6TTxro76BO51O/2nE2JRKEUhwoJ3rAhp86Bd2Sn07vgXnnVJEcuDcEpgmvlsretWv43RDViW+5cmWSlPZS1Ng6IK8L66HXVjfKSAWjYYxzPFvry+9y8srijEfiJOFup2KQNIlFUyzwzqcnm1ya9AVhbFpEY3qskEFh5+bmeVEEt3ZWZCU5Ip6NrjTn4pTA76eSngkgSCoZOeU4UG1j3oP+gxFqNyJr1utISeJtcLMCFCESSKu4ZaSyOFeW3U9jybuipLJwviVSVoXShedo35X5KZ53WSGcOf2tJ2eXx9qDGbDf5KqPzag5OhaUXPATaZVEi3TPDr5o13DD/Gapf0AN/FXOqHWgV7Tlptbe52PqXiscVwYIZzJmJaMnUkoy2yzYIvGr84QdSPAPphJMQNpfkrSoboZ5is7uiJoi8WuAfUzG99Vum1yZjASt4wUuv+D2nUOHnx8/i+5v45VzPBP8ylfapXvVD5nFdVVAl2zOMBOvB8ydEthDasXj8T0R+jOGGTmqU9aVMgv2VgkJZlZBr6IgprD1rNmj8vrrjn+aPQt2HNHfUHOhwQSifv57tBOCeJdZjUDbD7xWYm3dhEtYxMM8EytvUnO4IBIoUohutAAMnUqeqGWXXHQOik8kZcY81Y7hF0Cgl/KEwWG2SaxhfmEeccwYRaQNVj7egb/hjhsp91hXwVonWW89JkjN1sKNMZi4Rfo/qo56rWWrHQN7DKBYXn+y58YV7MGRJrHFma1L4yZ/mYhnje8OrKmDhuCXDACaENDXNjVHQHFVdREb9Oq41PTnK9BzyISebVi2oF4F9yEHBSZJjSXGJnV0slWnfDaxXvOn85iNLNUn4ddKV9vOWV/DujOGQsq2xxDOPZrs6w1kHE+r88X88YZFeCva6NanHJ3nXImcdKOE2zsJEdMkk0g4E8bx3k9EfgET9a2sXxfCa3Xt29f/gXvEyw6dXOkCHr9MZo4dRBIpttPdF3f880G++qhohrWotH7/7ev8M7CHerkQK8aIdW4C5e22PsoWM/SdaWR16RiJ30A8CCLL7sdd7hz81KEyCAukkxMF5dVfAzhHiV1SErbCvTcSWuN1+q+4kJ6sRy7m9vzt+01h5G29E1MGmUEXvdffKkq1Rpn59oM8rcoYIKyqpSR6O5zk6xmK2U4NMmK+fhsPx9r+X096CAEwUiwaKyWfC5d/NJyR6s/VN+wYAQyQ6/i7U6WqiALthuEY0xy8ntuHSiyBLEsNKGWdCw3yZtJz6vKDs9OfZnH3L3RCh3Ytvjj3EcsZHO59XgW6SNfcG4lOKRpAIB/ZnV0YXzMpt2eC6t3nPQr5pRdgfv4EjfugR44O40nokuJ1oyBlg2ZZPjOlMwY/UKSwi4sNEQNRsJs97akP2Yv+xvLaeAOLQHFigfm/QD6oqNYGnGba4EM8Wbe9EMarZDlt3HBt0m2PPCwVwDq7IH6reAfCwGWmJT+1C6kMo7Q45lprF/eKpfAMmf8YUjktz4JvBvKSYhOV+O5F/ZDuJ5UFsfFjNGePfJ0zMRLwnlotPLnD+7qNBgvL/CjZ2XTBuf2m5JdlLuSYoxTRuki/Ur59LkgSC606dETZXnOXD40whIr31zbkLSpHTMpfmzByIIPZIMQFPSNukAgJHs4dABn0E1yLZS/qQe+TTKiQ8FEa6vQ9na8q90fPO+G5dk4K6j+ymX91oYISt+sknAlJJrv8IIwwtHOEP8/Ac9NFy94C3rkearbDXr8evAAH08GCHXUXMCJPZCfxy7cMjrJ74Eh62nw3GXZ+44svVTeNHMDr+DOvvsxHCmUW5llJ7UEjwR19Yn8CFdsGjQyQHTOc1tUO4S6F9Cr95IC5w4kcfvLZOq6vUDKxv3mGLkIGC20DX9plft+z3TMCiYnIaSElAEbBw5VtUshaFYB7dr7fIBbsSmsL3QW0sJqa+9VEwtYfiUZirLsY2cF2DPMQGT3ML5qs8AxRhD344jetvBTaEJARSoPC2WH1yNRqeFh5qZBo+WCmzus92E9wwaHvlRLXm9ckc4MviNfWWk5idR7VqXApvmBwsqWVjML6IfCRTak4Wj0B2lVMgncfbn6nsOnXeQssRQz363MzNOo9spqkCQb3dq5pi5+j3LLy1oMOGGpaB/pdAhhFwj65IlT+r0azIVvX0HEd11A7O7AIdLWPR0VopavnGw7Krwjs5tsmPVlU94YWh3xoNhMLgdenwu0e6MGouwTrd/5yVGLxmBtR4ODQQA+3gggz+V1NAxxLcPwHfDZcjxXbGv82tV3Ry+IMawBOtoSK5d5OQ/63iruPU2KWvuHJN73OI4Yq16gxZSOZV4jl4CVzxO7kjlajDDjhflQB8MHIFJ5tjwk2M5hXPbwNotSlZF2FyTlGNVUm/1wCvjHFQw5JvCMKxQd2uzWfyOGn1AgX4cGyhyoLxkaB46mDlfPAaSptPwVsdEJrSkAxDVgTQWbZ8j8cZfeUE6c4avfEeexFP+fOmwzihdiYMisFIPBo5KFUocwQG9LXD/JKdgCrrS424Wkn5gL4jdw8Gvv3T0cIXKx7ef0MUmmiDbtBaLqMJ6KGVpKcwn9r7Dx2KSfftFYYP92QsnYYwdwNJCfW/GenR6Nr1CPGH8u3VtSu5Wb8BwTecRDNVOH7a7ZpgBLPyYWhW4HLT5rYoFyY6yz6aHtw1HJHnrwhD/Xd6uc+OtpkMPGGBhOtQxonIynJgPkX40OqWn5d3Pc4/EPr4QaxVTaX4G3cBJ0/BygdEI9OPHK68lJKg0tUJJwi30keSiqZrla+5ar672RDreZDoXGfV18XWCNVdFG3FLS8hhzk2s7YELeWDDFfF2ueemNVD7C5+2Z54ilACQQNp8PdF7LzcZQxM5lFgyGM82d8ykndJUtdTIbQaBBbn2G1mi/E+pJvyM19lxXKjhuuixWcbreU6IcMLF93w52q2q22ZazCBn081kLmPEF+j2B+FFE813bgerjzMdraBQCukn8O1eJi4WdzXS5pWROOGgXcQsplBp5AMJXm/TnqM8OlAMriGHOMJgB6dydzBpu0DqWK8iKOh4ipCEVa/vSOMSyPHYIKF/mf1QI6FGCafFFf/Xw86eD6nYAdrN+p8TMdqY6fmVcWkF5H0/Y3s5fDkZ5tKjl6FBEBYz+LPckfz0rcyyIVgR8CU571sm5bEAe3jL/AYRZcfQ11P0RR8Wbaqt8XMCJ/TNI868BaSAKTU+Kvh0WlgFGP7GkhfwQLqidIhxX1aBQzZBtVtvqVUr99EG8T9YOEp3isPiAn+efGCElSWyMcigApSFlUpbmNe1qkwuY8Cmb4mfByo054ssSJOCkghAu9mzSLQ2yvnKd9/84K6BTTGI4Ka8UBR/1LNb+hD2GdtiUefCssxlpYGmjD4Ps5oWCqsfWBhdAJEHQSDnWfx12m6r7JwuJvSw0KHynEGn6FFgY0JjfEZOLqzTSYrOgdkgr2QIsW7v/mduCJPUlWexx92mAgkjqlwntkEf77wRaZCqKJlViRjpbpybu+c9iL/+JPtDcGIHNeQ/71/P7FkX6+kzS6S/ROfW0ChCxV1+0hVaMuDu7BU6nfdQzsZjKWHA2OZNsJfgjFcLDxNsM6TOVQlZ6OQDsiQPh7fVOz8MxH/jqGGjmThdGffQJlrQEv3GFnBnhp1bhmtnVufxYT0Vgqm8TMjc0SLB37mQBAUF8bzRZWPHlLgb2wcrNUCekZlYLd6sBSFSgbkAEA/fv76T8fPmHGsxQJ9UC1e/J29JvbhicyNnEgtuNfrhBkooFK1pNNokexJFPuU0x9UCoOsOtk6ipLE0qSyLKruBYx1OpSfWFuRStJMSqr6pGbHMk72k4naSMJU15HgZ89VYiLEycgXjZWN2R+y9+LMKeXSniZYzZS5ZC8ewt+oUvUH54HalZGvSoPadYXlOnLcbBiVp8opa34uFiyAWqejqhX1hFddwhMPxA7cHmD4Q7MIVmRi0OhogG6twanwRitBUFCDJDNHvgOl8GOcotLXy0veaQcmOLNntIB/I0GfoKUsepv5mfccN0Qg+ODrvn+rM6IOZSmfHxr0a81M9XpW68flNtuo8kn4r1Jbx7qU5u6eeYrvgWz6zTnLynx4vHldABf9i8/qem47psgqd7OSzNUDuxu1Cb/gJXhKVBOzK+0snInSm9HpiVBAJPeA+hB4YpU+udBDvSlB11jyBCOb0vMwE4Qrjsv7fm+gQA428vn5VeGr7V6J89W5u4H/FzWTWZAC1Ks/OtZuHTtpfq53OJCMdLtZRvrkp9m1OOAd/qoSP3gLFAlDqhlk+Wn9p+psq2dt5hnnRziKUNw+EBhPgBfRg0IcZDhRXraG27BEihtZw4DLZ/JqLwIb6TSNzueh5uhS/Wqx+dWO5dlNp2kXTJzhvaYAflB3/Fni9erEF2qJd1XI2K9Voi0Azzm0QjI56cGDFZHmVZXFLqE5KJGTkobR02X7A1i1ehgcmdv+iC3qXqStC1vQLNxbasSeZVYgc/aIFmLyC3uosvkEr6Be48/fBW/k+kJNiuoHpencgtzGLdsTshkZPwA/EbAOMrIaQ/StwZHYdxpnr9r8LP4FGnu7HgLXoCQ+Rjn/itPpMb6Kl89UyXyZsZCZILETmkA6KBadjSTqpBQNDV9ufhrXgG8GeQSUpMcnzdFy/EWo73RBUx8++R1GL76bb644rdp0p2L+yFHlzuaSIA5OwyhMDFmV3pijEVbEy6cKUNKcMs9dYKSJhFr2u9gfovPeBU2YUPOvwPEswtNhXmMWqeVesdsBDJXEnDiyL7UrNMeWIW/eg5qNNRvr81cP55cwirnUfGcxoFRxFAx255C+37wBTXzArL/kgx263W5KBwHhINJX4BbHyWCpcExMksVD/oKUj7lqwSykGdQhjaFzVCuI0OZJSwQg5C292TTquY+M45fGwhLZimC4oLxm5I5aCp2E5s+NHjR7NbXhrUDEVBZqqM7Thz84PGs3Vu9GihDW8Gd5Ca7PGLfCMAsZMjrNJeNMoZ2SfjxETMhVZmFWuzOiSksNK2wPW0T4c/rgjXYW/+FVgHyT4uYeXtjWPDMooTtam+ERhZA2+YHd/0JYftmJD369OSk5jP7jothUFhgXILRSKinAtEwUzO5Z5LJihZ/Gc9TKE+5UX9B6fQLLBNuLxfypD85q2Kyy6jwwlWOMLnNObfgbqda+3pP1aiY7VIlzX+ZVbvo/PwU2oukRv+bM1//DX+JULAeLL0SB2ErQkBdIdKhwr8eFzn9+VTAW/CTuJ9w0nPXwUqwCQ8BwW6I/A4nXCKOouJmH62OK+KVrVEWDU3hQujjtzdLmBvpYMsQov9NUY5f0MqRof6ZOXKtm2/lcOZSZ1Uk6yNcoRSfM+0hpvpPkbaldsvCxLRa50ZqM5FA5YEGQfrOxRDpHe+w15eckbsPs9DUQVXVyY2PssdD6NZIpBZwDzb4tv5NLbuqQkC43J65jo4ceupVXhGh7D3FT6xmiaogyJwrqRQbYGuz8XQOPwVvTGOewHTUl+4JL3lZnzmCtXm45pKiih1KOhpO1/+YRh54+y4khCSup5jqdLuPmHeHnFNTGc5QCDFKXqHgzrMKmGwDFmPAoZljkkXyDF3MkA0wR+DslGjyfXPn3yt4ab/wUX6VOHJLYPn9foT6j1ATk+5GpU+fkICZVmJb3uzXdlt9cZJ6dRZQztRYB7kTSQ319XGlNngLEorcIBlxKC9zdN4ATXVoJz18xUdLJ+sVvGKPE9OuTqPmhxnowhzKHhUkrJE0jDigVmQtgsL7lR4MG/C7DSBRTgfkGGjLGkO8gXmi6gVjQd06G2zWf5CKzQcGXW3l3OQ12In+GYL/jU6WUDtaf7ghfHpxfS0ggYYxke2NPWDJ6g3yxJORfwUfZae2vx8JXaX8mRZLnNu9sAaYfNG86TvEwwzh14Yh0NfkGL/Lcnd324FccFLnbHHQVWv3fcb97MeQe3eL1AkgD1K5shfRdeNZkQONfyRg4fYdAUXsVGPQswpK/ZPRWYi1lk2fLZmTV+BPhE+MCEA7lYtUji76LDiFt4I5Cjk5aJjltqIjazAbqdj32/EIA7Jua8qnfmBoSnGH633Q4lsV7CyW4mDkiEn3YjRQioapSa3MkR5WwdhNBeHSefWeL2V4x++FSOOuFplIm8XbP4meCmkN5Uim8ZSeOX7oygtlraOgB7TxElSYYb58rNHmHSvgu/428uHIRTsJSyHTH6eGdADauM/N7cRRdDzxptBI9Fv4+CyLD5OO88MWQCE0KZGIoK0akCpHhLeWI+s78mfM8fqenWWFkAjN0tF2mirdQTw/omWhjjxX4KvgO5OVvKD8r7YOP/VTXk9F51fodtuHUwP857lLWzhxSP5tVdaav3G2iyjU8oCLZ0mhu80HlTjcH7yOl7UllZqB0AlHiui/KQTYjGKs2CFpWWfDKuN1hOtdKS8p5dr3d0qxv5ca2nt84XAWaZK1uTbhzylvsgYuap+CMBw9tRJCnEQZ0WvZpfY8NH3cl5TaXDINaZm345Ug3rhtkhVAHkVH/HOX9W5XQ5WAe+dK4DsEAmLf9YRGncu0kN4xovQ7AjENABDsrp40sqbnhxwkDE6D4XsVsFG8VnFGiQVjAQgJxZOJN6hD1sA2EBst4w+aVd9oljwLwA17Meh0xpYIcQljwFyVsnSYMgC/LxKsTr4SchO4R+QGDw3HEGIE4YxVKhM5Z3c1+KxpE/JfjpeaSl1rekhhJVpyXWdeeGyGqguD5ZAfeQ6DdRLu6OXOiOrKCIEw6y7ZOncoKo6cfzoXJi80r30aUnkCXOPKz7vdo6Y/liBuZr/JQnlhpON9oJ277DUeGY+JmxWFZfahIZ5aCX3SNUg7YQjX9LFS5+252rCzwNVoqOQCpd1BfkgQxLDw0FTnuMubAXKzxnBs+SoR6KmTM4Nq6W0ZAWK13+LodTmD6ryq79zrI2nk5l0efRrLLfMeglW4MyQC3eQmGrCwibdF4C8z7Rocny43RMovkT1RNezbFeofk1ND/VEdgXLt/+g/nxVSuaQclqKl3MdslYN63M44NvkP2LjoE6JdPs02G/j0Xe2cyhgWEQradDHaNw6AXv92g5EA5RCIc9nYfMqxjBRVAnKsTUKc2anYwoyO+XTPv2iO1MJp1bQjK3tfQqUXOszXphib/84BHz0z0e0J0zfzi55ZcAAs/bcuTWwTrKHMzYV6PHHtVOI4Z9vWzTp1M9bxAICNrnsR3wqk3on3hA4lmWfgDEeocXsjA5lKeMjzVHIja2c6E/MlWZnyhcRL+HI+U/eekcI3R0cmt9p1g4+IXDwX+qXpQgiIAEL0WJ7dZcQ5NoAi6QIEdtAvK5RPAFh65wMg1FvKqXnKRG+m2HC61E4u3dl5Ev95jhLKRNuRr7/JFJw9Wir2wVz+1L8YsdS99LBi+nh2YC4kgojRrc0hj64laStQbJlx9Khz6UIR7jjS01iZZkyfpIOpzjEMqZZKtxhWy3x+7v+FAXaqfoHUORPq000DU9acxFxt7xFcXQ6dTXeG+wL1fcCeJHL3gVxrP0ahART+BAh/uB2hVQ6d0ZMAW3mXBmPx+jAKYABPQSDn+3/wM4jyxwP//xxWAvuO2B+9vO2a6eutP05eyyrVLLVKXrejYCwJwodvmqpPGd+89yJ1QOybhebwk1pE9HowYZ276lqwWKn6ASA1oH9wr7h6XaLl8+qIyEFcbQrJg1qXZolQpPoZfoelSv9e202/xyn5Ak7CH+4quQWK2XrP5ZjsusWtJsv/vCZjog63e15zXPNUeiqSFcnlY4IYju6OErYqJoR7MpUS/nUJ+Ob+ii+q6GJnOfG+L+/v7I2fr5MYxwf/32mAo+O8Ylbhxa63aU39Wn8Eg9u3+Z9EVXBgpRrm4f5jqv0Fcvi0tAl6ZZ7gE79KFlPL9fpZXyIIEC1uEUsOT5sABooDwaWxZOmKzFx0Zk/cx8mE/GwLqf/bCQEUX6vKSO+bnP/0HazCMQEvaj2HCQ3+6qQUw4CnER66RsDeHzYL4G42IQyHgvYs+beGA38L6CLt30B7Fir/cCjv6h5TnJXi/wx7//kVCz9hX+S6Z5LxGlIne1qsA8yEeJNRGOod3P8kmeI/nft0eoH2xr0Cy/V1e+Khp7Lxbtjq5MU0w6wbrIXCfe258XSzJRaiSsrZSkzl668FEm3zCtxBxouuzpjzSnFh/+leLn/7LMcK9//qnIXS7gXMZcIkG8fSU4o22tIyTEj2J+GGAYgxOSVh+IT8J70d4m1RXfQjBPC0+yYEW5SPN583RqZ//RSgMs8nNLbipgAAAAAAAAAAAAAAAAAA" alt="SYNK 마스코트 몽글 — 펠트 인형" data-synk-mascot></div>
-  <div class="가이드글">
-    <p>앱에는 성격이 다른 펠트 친구들이 삽니다. 학생은 그중 <b>자기에게 맞는 하나</b>를 고릅니다 —</p>
-    <ul class="가이드목록">
-      <li><b>몽글</b> — <b>같이 한다.</b> 옆에 붙어서 자주, 짧게 말을 건다. 혼자 하면 처지는 학생의 친구.</li>
-      <li><b>까몽</b> — <b>허세로 가르친다.</b> 「내가 다 알려주지」 — 잘난 척인데 실은 겁이 많다. 학생이 잘하면 「내 가르침 덕」이라며 제일 기뻐한다. 티격태격이 재밌는 학생의 친구.</li>
-      <li><b>마린</b> — <b>임무를 준다.</b> 시작과 끝에만 나타나 「이번 목표 셋」을 선언한다. 목표가 없으면 움직이지 않는 학생을 위해.</li>
-    </ul>
-    <p class="작게">외모가 아니라 <b>「학생을 대하는 방식」</b>으로 가른 것 — 그리고 무엇을 골랐는지 자체가 그 학생을 이해하는 첫 재료가 됩니다. 새 친구도 준비하고 있습니다.</p>
-  </div>
-</div>
-<p>이 친구들은 말을 하지 않습니다(말은 말풍선이, 소리는 효과음이 합니다). 대신 <b>매일의 공부가 그대로 학습 데이터가 되고</b> — 무엇을 틀리는지, 언제 집중이 오르는지, 어떤 삶을 원하는지 — 엔진이 학생을 이해할수록 <b>다음 숙제가 실제로 달라집니다.</b> 그리고 30일 뒤, 그 가르침이 정말 통했는지를 다시 확인합니다. 이렇게 쌓인 이해가 2027년 여름, 전세계로 여는 게임 앱의 <b>AI 회화 친구</b>로 이어집니다 — 캐릭터의 혼잣말 하나하나에도 시험 급수를 매겨, <b>놀면서 배우게</b> 만들고 있습니다.</p>
-
-<!-- ═══════ 가는 길 ═══════ -->
-<h2><span>가는 길</span></h2>
-<ul class="길">
-  <li class="지금점">
-    <div class="언제">지금 · 2026</div>
-    <div class="일">시스템을 먼저 짓는 중</div>
-    <div class="풀이">학생은 아직 0명입니다. 대신 문을 열기 전에 자동화·앱·교재·엔진을 먼저 지었습니다 — 순서가 이 회사의 방식입니다.</div>
-  </li>
-  <li>
-    <div class="언제">2027년 2월 (목표)</div>
-    <div class="일">몽골 학원 개원 + 학원 앱 출시</div>
-    <div class="풀이">숙제·게임·기록이 앱 하나로 도는 학원이 문을 엽니다.</div>
-  </li>
-  <li>
-    <div class="언제">2027년 여름 (목표)</div>
-    <div class="일">한국어 TOPIK 게임 앱 — 전세계로</div>
-    <div class="풀이">학원 앱을 키워, 재밌는 TOPIK 게임 + 자연스러운 AI 회화를 한 앱에 담아 전세계 사용자에게 엽니다.</div>
-  </li>
-  <li>
-    <div class="언제">그 다음</div>
-    <div class="일">VR 면접·직무 체험</div>
-    <div class="풀이">한국 회사 면접과 실무를 가상현실로 미리 겪게 합니다 — 훈련장이자, 나중엔 자격의 실기 시험장이 됩니다.</div>
-  </li>
-  <li class="과녁점">
-    <div class="언제">≈2029 (목표)</div>
-    <div class="일">국가공인 자격 — SYNK 인증</div>
-    <div class="풀이">「이 사람이 한국 회사에서 일할 수 있는가」를 재는 자격. 법이 정한 길(법인 → 등록 → 1년 + 검정 3회 → 공인 심의)을 지금 설계해 두었습니다.</div>
-  </li>
-  <li>
-    <div class="언제">그리고</div>
-    <div class="일">베트남으로 — 같은 시스템, 다음 나라</div>
-    <div class="풀이">몽골에서 완성한 시스템을 지점장에게 맡기고, 같은 것을 다음 나라에 짓습니다. 모든 지점이 한국으로 학생을 보냅니다.</div>
-  </li>
-  <li>
-    <div class="언제">20년 뒤</div>
-    <div class="일">SYNK 인증이 한국 기업의 외국인 채용 기준이 되는 것</div>
-    <div class="풀이">그날 학원은 준비 과정이 되고, 졸업생들은 곳곳의 회사에서 일하고 있을 겁니다.</div>
-  </li>
-</ul>
-
-<!-- ═══════ 왜 되나 ═══════ -->
-<h2><span>왜 이게 되나</span></h2>
-<div class="왜">
-  <div class="칸">
-    <div class="머리">거리가 증명입니다</div>
-    <p>대표가 5,000km 밖에 있는데 회사가 돕니다. 「AI 로 일한다」를 말이 아니라 사실로 보여주는 것 — 서울에 앉은 회사는 못 하는 말입니다.</p>
-  </div>
-  <div class="칸">
-    <div class="머리">데이터가 자산입니다</div>
-    <p>학원에서만 쌓이는 것이 있습니다 — 학생이 매일 무엇을 틀리고 어떻게 자라는지, 그리고 <b>「이렇게 가르쳤더니 정말 늘었는가」</b>의 기록. 큰 회사들도 이건 못 모읍니다 — 매일 가르치는 곳에만 생기는 데이터라서요.</p>
-  </div>
-  <div class="칸">
-    <div class="머리">제도에 빈칸이 있습니다</div>
-    <p>한국어 «시험»은 있지만, 「한국 회사에서 일할 수 있는가」를 재는 자격은 없습니다. 그 빈칸이 정확히 우리 자리입니다.</p>
-  </div>
-  <div class="칸">
-    <div class="머리">학원이 아니라 시스템을 팝니다</div>
-    <p>무료 강좌는 대기열이 길고, 보통 학원은 「몇 개월이면 몇 급」을 약속합니다. 우리는 「지금 시작」과 매일 돌아가는 시스템을 팝니다 — 겉모습은 사흘이면 베껴도, 수업이 콘텐츠와 데이터를 매일 만들어내는 구조는 베낄 수 없습니다.</p>
-  </div>
-</div>
+<script>
+(function () {
+  var 차 = document.getElementById("견적차");
+  var 글 = {
+    한다: "첫 1년 차액 약 3,600만~5,080만₮ — 그리고 대학에 가서도, 4급이 있는 쪽은 아르바이트로 다달이 약 90만원(≈ 230만₮)씩 더 법니다. 차이가 해마다 벌어집니다.",
+    안한다: "첫 1년 차액 약 3,600만~5,080만₮ — 어학당에 냈을 돈이 그대로 가족 통장에 남습니다."
+  };
+  function 갱신() {
+    var 픽 = document.querySelector('input[name="알바계획"]:checked');
+    차.textContent = 글[픽 ? 픽.value : "한다"];
+  }
+  var 들 = document.querySelectorAll('input[name="알바계획"]');
+  for (var i = 0; i < 들.length; i++) 들[i].addEventListener("change", 갱신);
+  갱신();
+})();
+</script>
 
 <!-- ═══════ 정직한 마무리 ═══════ -->
 <div class="정직끝">
   <p class="큰말">아직 학생은 0명이고, 매출도 0원입니다.</p>
+  <p><b>대신 숫자는 전부 실물입니다.</b> 어학당 가격은 공시에서, 아르바이트 시간과 비자 규정은 법무부 매뉴얼 원문에서, 최저시급은 고용노동부 고시에서 가져왔습니다. 지어낸 것이 하나라도 나오면, 그날 이 페이지를 내리겠습니다.</p>
   <p>그래서 이 페이지의 절반은 미래형입니다. 부끄러운 건 아직 없는 게 아니라, 없는 걸 있다고 말하는 것이라 믿습니다.</p>
   <p><b>대신 문을 열기 전에 여기까지 지어 놓았습니다.</b> 그게 이 회사가 일하는 방식이고, 앞으로 20년을 가는 방식입니다.</p>
 </div>
