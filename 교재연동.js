@@ -165,6 +165,36 @@ function 교재연동Nightly() {
   }
 }
 
+/* [v9.277] 🎙 낭독 미션 목록 — 「미션ID → 그날 무엇을 읽게 했나」 한 벌.
+ * 규격 정본 = `docs/발음데이터_규격.md`. 시트 이름 = `voice_missions` · 열 = [미션ID, 축, 목표발화, 비고].
+ *
+ * 🔑 **문장은 유호님이 쓰신다**(유호 확정 08-31 「내가 쓸게」). 그래서 이 함수는 목록을 **만들지 않고 읽기만** 한다 —
+ *   AI 초안을 깔아 두면 유호님이 「쓰는」 일이 「고치는」 일로 바뀐다. 시트가 없으면 조용히 빈 표를 낸다.
+ * ⚠ 없음과 못 읽음을 같은 모양으로 두지 않는다 — 시트가 없으면 `{}`(정상 · 아직 안 쓰심)이고,
+ *   시트는 있는데 열 이름이 안 맞으면 그건 결함이라 원장에게 말한다(조용히 빈 표를 내면 목표발화가
+ *   영원히 빈 채로 «정상처럼» 쌓인다 — 이 저장소가 여러 번 데인 「0건이 성공 얼굴」 그대로다). */
+function voiceMissionTexts_(ss) {
+  const sh = ss.getSheetByName('voice_missions');
+  if (!sh || sh.getLastRow() < 2) return {};              // 아직 안 쓰셨다 — 정상
+  const w = sh.getLastColumn();
+  const head = sh.getRange(1, 1, 1, w).getValues()[0].map(h => String(h || '').replace(/\s/g, ''));
+  const cId = head.indexOf('미션ID'), cTx = head.indexOf('목표발화');
+  if (cId < 0 || cTx < 0) {
+    adminMail('[SYNK] 🎙 낭독 미션 목록의 열 이름이 안 맞습니다',
+      'voice_missions 시트에 「미션ID」·「목표발화」 열이 필요한데 찾지 못했습니다.\n'
+      + '지금 머리글: ' + head.join(' · ') + '\n\n'
+      + '그대로 두면 voice_log 의 「목표발화」 칸이 계속 빈 채로 쌓이고, 그 소리는 나중에 못 씁니다.');
+    return {};
+  }
+  const out = {};
+  sh.getRange(2, 1, sh.getLastRow() - 1, w).getValues().forEach(r => {
+    const id = String(r[cId] || '').trim();
+    const tx = String(r[cTx] || '').trim();
+    if (id && tx) out[id] = tx;
+  });
+  return out;
+}
+
 // ── A-1. 폼 응답 → voice_log 전개(+포인트, 파일 공유 전환) ──────────────
 function voiceSweep_(ss) {
   const src = ss.getSheetByName('목소리폼_응답');
@@ -209,6 +239,16 @@ function voiceSweep_(ss) {
    *   보류분은 적재도, 공유 전환도, 포인트도 하지 않고 원장에게만 알린다. 파일 자동 삭제는 하지 않는다
    *   (오판이면 복구가 불가능하고, 종이 동의서 학생일 수도 있다 — 사람이 판단할 몫). */
   const consent = (typeof voiceConsentMap_ === 'function') ? voiceConsentMap_() : null;
+  /* [v9.277] 제출 «시점»에만 알 수 있는 둘을 여기서 박는다 — 규격 = docs/발음데이터_규격.md.
+   *   ㉠ 시즌 — Ⅰ-8 이 눈금을 「그 학생의 지난 시즌 대비」로 못 박았다. 시즌 시작일은 **사람이 정하고 바뀌므로**
+   *     제출일에서 나중에 유도할 수 없다(그 유도는 옛 시즌 행을 새 경계로 다시 갈라 조용히 틀린다).
+   *   ㉡ 목표발화 — 미션 목록은 개정된다. 참조(미션ID)만 남기면 2년 뒤 그 ID 가 무엇이었는지 모른다.
+   *     그래서 **그날의 값을 스냅샷**한다([[constant-known-in-two-places]] 와 같은 축).
+   *     ⚠ 목록 시트가 아직 없으면 빈 칸이다 — 그건 결함이 아니라 «아직 안 쓴 것»이고, 목록이 서는
+   *     날부터 그날 제출분에 붙는다. 이미 쌓인 행에 소급하지 않는다(소급하면 그날 실제로 시킨 것이
+   *     아니라 «지금 목록이 말하는 것»이 박혀, 이 칸의 존재 이유가 사라진다). */
+  const 시즌 = (typeof seasonLabelOf_ === 'function') ? seasonLabelOf_(ss, tz) : '';
+  const 목표문 = voiceMissionTexts_(ss);
   const rows = src.getRange(from + 1, 1, last - from, src.getLastColumn()).getValues();
   const vOut = [], pOut = [], badSid = [], held = []; // [v9.67] 무효 sid · [v9.104] 미동의 보류
   rows.forEach(r => {
@@ -232,9 +272,17 @@ function voiceSweep_(ss) {
      *   ▣ 원본은 지우지 않는다 — 학원 내부 자산(피드백·AI 학습)이고 동의 범위 안이다. 다만 **밖에서 열리지 않는다.** */
     // [v9.187] 전사 3칸은 빈칸으로 두고(야간 STT가 채운다) 맨 끝에 급수 스냅샷 — 헤더 정본과 같은 폭으로 쓴다
     // [v9.190] 미션ID는 프리필 링크로만 들어온다 — 학생이 손으로 채우는 칸이 아니라 비어도 정상이다
+    const mid = cMissionId >= 0 ? String(r[cMissionId] || '').trim() : '';
     vOut.push([sid, ts, mission, fileUrl, fid, new Date(), '', '', '', lvOf[sid] || 0,
-      cMissionId >= 0 ? String(r[cMissionId] || '').trim() : '',
-      SCHEMA_VER]); // [v9.208] 행이 자기 규격을 들고 있게(A-8) — 정의는 엔진_수집.js 하나(사본 금지 · 함수 안 참조라 파일 로드 순서 무관)
+      mid,
+      SCHEMA_VER, // [v9.208] 행이 자기 규격을 들고 있게(A-8) — 정의는 엔진_수집.js 하나(사본 금지 · 함수 안 참조라 파일 로드 순서 무관)
+      // [v9.277] 발음 6칸 — 지금 아는 둘만 채우고 나머지 넷은 각자의 채우는 자가 뒤에 붙인다
+      목표문[mid] || '',  // 목표발화 (목록 없으면 빈 칸 — 소급해 채우지 않는다)
+      시즌,               // 시즌     (Ⅰ-8 눈금의 전제)
+      '',                 // 전사신뢰도 ← sttSweep_
+      '',                 // 전사엔진판 ← sttSweep_
+      '',                 // 발음태그   ← 어휘 확정 뒤(규격 §3 의 의도된 유예)
+      '']);               // 돌려준날   ← buildVoiceGrowthCards_
     const key = dstr(ts, tz) + '|' + sid;
     if (!givenKey[key]) { // 하루 1회만 지급(여러 번 제출해도 기록은 전부, 포인트는 1회)
       givenKey[key] = 1;
@@ -402,6 +450,11 @@ function voiceWithdrawPrompt() {
  *      실제 어느 포맷이 들어오는지는 첫 실측 전엔 알 수 없으므로 **상태 열에 원문 오류를 남겨** 판단 재료로 쓴다.
  *   ④ 유료 API다. 일일 상한(STT_DAILY_CAP)으로 폭주를 막고, 초과분은 다음 날로 미룬다. */
 const STT_LANG = 'ko-KR';
+/* [v9.277] 요청 모델을 상수로 올린다 — 전에는 요청부에 `'default'` 리터럴로만 있었다.
+ * 왜 올렸나: 이 값이 이제 **두 곳에서 쓰인다**(요청 config · voice_log 「전사엔진판」 기록).
+ *   같은 값을 두 곳이 각자 알면 반드시 갈리고, 갈리면 «장부가 거짓말을 한다» — 모델을 바꿔도
+ *   기록엔 옛 이름이 남아, 「발음이 좋아졌다」와 「모델이 바뀌었다」를 가르려던 그 칸이 무용지물이 된다. */
+const STT_MODEL = 'default';
 const STT_DAILY_CAP = 30;                 // 하루 전사 상한 — 비용 폭주 방어(지출 2게이트 원칙)
 const STT_MAX_BYTES = 10 * 1024 * 1024;   // 인라인 요청 한도
 const STT_OK_MIME = ['audio/flac', 'audio/x-flac', 'audio/wav', 'audio/x-wav', 'audio/wave',
@@ -460,7 +513,7 @@ function sttOne_(fileId, token, sid) {
     token: token, sid: sid,
     // encoding·sampleRate는 지정하지 않는다 — 헤더가 있는 포맷은 API가 스스로 읽고,
     // 잘못 지정하면 오히려 인식이 깨진다. 못 읽는 포맷은 그 사유가 응답에 그대로 온다.
-    config: { languageCode: STT_LANG, enableAutomaticPunctuation: true, model: 'default' },
+    config: { languageCode: STT_LANG, enableAutomaticPunctuation: true, model: STT_MODEL },
     content: Utilities.base64Encode(bytes)
   });
   if (!응답.res) return 응답;                              // 보류(동의 미확인·토큰 없음) — 아무것도 안 나갔다
@@ -472,9 +525,23 @@ function sttOne_(fileId, token, sid) {
   if (code !== 200) return { err: 'API ' + code + ': ' + body.replace(/\s+/g, ' ').slice(0, 200), systemic: (code === 401 || code === 403 || code === 429 || code >= 500) };
   let j;
   try { j = JSON.parse(body); } catch (e) { return { err: '응답 파싱 실패' }; }
-  const text = (j.results || []).map(r => ((r.alternatives || [])[0] || {}).transcript || '').join(' ').trim();
+  const alts = (j.results || []).map(r => (r.alternatives || [])[0] || {});
+  const text = alts.map(a => a.transcript || '').join(' ').trim();
   if (!text) return { err: '인식 결과 없음(무음·잡음·언어 불일치 가능)' };
-  return { text: text };
+  /* [v9.277] 같은 응답에 이미 들어 있던 둘을 이제 버리지 않는다 — 규격 = docs/발음데이터_규격.md.
+   *   ㉠ conf — 구간이 여럿이면 **가장 낮은 값**을 쓴다. 평균은 잘 읽힌 구간이 못 읽힌 구간을 덮어
+   *     「전체적으로 괜찮았다」로 만드는데, 우리가 찾는 것은 정확히 그 «못 읽힌 구간»이다
+   *     (원어민 모델의 낮은 신뢰도 = 비원어민 발음의 싼 대리 신호).
+   *     값이 아예 안 오면 0 이 아니라 '' 다 — 0 은 「아주 나쁘게 인식됨」이고 '' 는 「안 왔다」다.
+   *   ㉡ engine — GCP 는 «실제로 서빙된» 모델 판을 안 돌려준다. 그래서 이것은 「우리가 무엇을 요청했나」의
+   *     기록이다. 우리가 모델을 바꾼 것은 잡지만, 구글이 같은 이름 뒤에서 조용히 갱신한 것은 **못 잡는다.**
+   *     그 한계를 여기 적어 둔다 — 안 적으면 다음 사람이 이 칸을 「서빙 판」으로 읽는다. */
+  const confs = alts.map(a => a.confidence).filter(c => typeof c === 'number' && isFinite(c));
+  return {
+    text: text,
+    conf: confs.length ? Math.min.apply(null, confs) : '',
+    engine: 'gcp-stt:' + STT_MODEL + ':' + STT_LANG
+  };
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -637,7 +704,19 @@ function voiceTranscribe_(ss) {
     /* [2026-08-29] 보류 = 「보내기 직전 동의 재확인」이 되돌린 건. 행에 실패 낙인을 **안 찍는다** —
      *   찍으면 동의를 되찾아도 사람이 손으로 칸을 비워야 재개된다(v9.125 가 systemic 에서 배운 것과 같은 축). */
     if (r.보류) { 보류++; if (보류표본.length < 5) 보류표본.push(t.sid + ' — ' + r.err); continue; }
-    if (r.text) { vl.getRange(t.row, 7, 1, 3).setValues([[r.text, '완료', stamp]]); ok++; }
+    if (r.text) {
+      vl.getRange(t.row, 7, 1, 3).setValues([[r.text, '완료', stamp]]);
+      /* [v9.277] 관측 장치를 전사와 «같은 순간에» 적는다 — 규격 = docs/발음데이터_규격.md.
+       * 두 칸은 정본에서 나란히 붙어 있어 한 번에 쓴다. 열 번호는 손으로 안 적는다(v9.119 교훈 — 위치 상수는 갈린다).
+       * ⚠ 정본에 칸이 없으면(옛 시트 폭) 조용히 건너뛴다 — 전사 자체를 실패로 만들지 않는다.
+       *   헤더보정_ 가 다음 스위프에서 폭을 맞추므로 그때부터 채워진다. */
+      const c신뢰 = (typeof voiceCol_ === 'function') ? voiceCol_('전사신뢰도') : 0;
+      const c엔진 = (typeof voiceCol_ === 'function') ? voiceCol_('전사엔진판') : 0;
+      if (c신뢰 && c엔진 === c신뢰 + 1 && vl.getLastColumn() >= c엔진) {
+        vl.getRange(t.row, c신뢰, 1, 2).setValues([[r.conf === undefined ? '' : r.conf, r.engine || '']]);
+      }
+      ok++;
+    }
     else if (r.systemic) {
       // [v9.125] 계정·설정·쿼터 오류(401/403/429/5xx) — 행에 낙인을 찍지 않고('대기' 유지) 배치를 즉시 중단.
       //   구 코드는 설정 실수 하나로 그날 대기 전 행이 '실패:'로 영구 낙인돼 수기 복구가 필요했다.
@@ -708,11 +787,12 @@ function buildVoiceGrowthCards_(ss) {
   const byStu = {}; // sid → {first:{t,url,mission,text}, last:{...}, cnt}
   // [v9.107] 폭을 전사 열까지 넓힌다 — 구 6열 시트도 살아야 하므로 실제 폭 기준(없는 칸은 undefined→'')
   const wV = Math.max(vl.getLastColumn(), 4);
-  vl.getRange(2, 1, vl.getLastRow() - 1, wV).getValues().forEach(r => {
+  vl.getRange(2, 1, vl.getLastRow() - 1, wV).getValues().forEach((r, i) => {
     const sid = String(r[0] || '').trim();
     if (!sid || !r[1] || !r[3]) return;
     const t = asDate_(r[1]).getTime();
-    const rec = { t: t, url: String(r[3]), mission: String(r[2] || ''), text: String(r[6] || '').trim() };
+    // [v9.277] 행 번호를 들고 간다 — 카드가 실제로 «어느 행»을 학생에게 보여줬는지 뒤에서 도장 찍는다(Ⅰ-5 넷째 칸)
+    const rec = { t: t, row: i + 2, url: String(r[3]), mission: String(r[2] || ''), text: String(r[6] || '').trim() };
     const s = byStu[sid] = byStu[sid] || { cnt: 0 };
     s.cnt++;
     if (!s.first || t < s.first.t) s.first = rec;
@@ -720,11 +800,13 @@ function buildVoiceGrowthCards_(ss) {
   });
   const n = pf.getLastRow() - 1;
   const ids = pf.getRange(2, 1, n, 1).getValues();
+  const 닿은행 = {};   // [v9.277] 카드에 실제로 실린 voice_log 행 — 아래에서 「돌려준날」 도장을 찍는다
   const out = ids.map(r => {
     const s = byStu[String(r[0] || '').trim()];
     if (!s || s.cnt < 2) return [''];
     const days = Math.round((s.last.t - s.first.t) / 86400000);
     if (days < TB_GROWTH_MIN_DAYS) return [''];
+    닿은행[s.first.row] = 1; 닿은행[s.last.row] = 1;
     const d1 = Utilities.formatDate(new Date(s.first.t), tz, 'M/d');
     const d2 = Utilities.formatDate(new Date(s.last.t), tz, 'M/d');
     /* [v9.107] 전사문 병기 — 목소리 타임랩스는 여태 "듣기 링크 두 개"였다. 링크는 눌러야 비교되고,
@@ -743,6 +825,27 @@ function buildVoiceGrowthCards_(ss) {
   });
   const col = tbProfileCol_(pf, '목소리성장카드');
   if (col) writeIfChanged(pf, 2, col, out);
+
+  /* [v9.277] 🎯 철학 Ⅰ-5 넷째 칸「누구에게」를 **처음으로 재는 자리**(유호 판정 08-31).
+   * 그 조항이 남긴 실측이 「자동 발송 53 자리 중 재학생 본인에게 가는 것 0」이었고, 조항 스스로
+   * 「이 칸을 세는 자는 아직 없다 · 자를 세울지는 유호님 판정거리」라고 적어 두었다.
+   *
+   * 여기서 찍는 도장의 뜻은 좁다 — **「이 녹음이 학생 본인이 보는 카드에 실렸다」** 하나뿐이다.
+   * 「학생이 그것을 읽었다」가 아니다. 넓혀 읽으면 이 칸이 곧 거짓이 된다.
+   * 🔑 카드에 실린 **그 두 행**(처음·오늘)만 찍는다 — 그 사이 행들은 학생에게 안 보였으므로 안 찍는다.
+   *   전부 찍으면 「돌려줬다」가 부풀고, 부푸는 방향은 언제나 통과다.
+   * ⚠ 한 번 찍힌 날짜는 안 덮는다 — 처음 닿은 날이 답이다(덮으면 「언제부터 돌아갔나」를 잃는다). */
+  const cRet = (typeof voiceCol_ === 'function') ? voiceCol_('돌려준날') : 0;
+  const 행수 = vl.getLastRow() - 1;
+  if (cRet && 행수 > 0 && vl.getLastColumn() >= cRet) {
+    const cur = vl.getRange(2, cRet, 행수, 1).getValues();
+    const 오늘 = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+    let 바뀜 = 0;
+    for (let i = 0; i < 행수; i++) {
+      if (닿은행[i + 2] && !String(cur[i][0] || '').trim()) { cur[i][0] = 오늘; 바뀜++; }
+    }
+    if (바뀜) vl.getRange(2, cRet, 행수, 1).setValues(cur);
+  }
 }
 
 // ── B. 연습 노트(주 1회) → profiles '연습노트' 열 ─────────────────────────
