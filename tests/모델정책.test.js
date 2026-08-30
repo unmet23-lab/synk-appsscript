@@ -172,7 +172,7 @@ test('코덱스효력 표가 벤더 실물(models_cache.json)과 같다 — 손�
 test('🔑 제미나이 기본 = flash/high — 유호 확정(2026-08-05 "flash high로 세팅해줘") 잠금', () => {
   assert.strictEqual(정책.제미나이.기본, '무료최상');
   const p = 정책.제미나이설정();
-  assert.strictEqual(p.model, 'gemini-3.6-flash', '플래시 최신 실측(2026-08-05 라이브 목록)과 다르다');
+  assert.strictEqual(p.model, 'gemini-3.7-flash', '유호 지시 2026-08-31 「제미나이는 3.7을 유지해줘」와 다르다');
   assert.strictEqual(p.thinking_level, 'high');
 });
 
