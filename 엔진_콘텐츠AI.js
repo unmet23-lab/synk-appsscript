@@ -279,6 +279,148 @@ function grammarGradeCounts_() {
   return c;
 }
 
+/* ═══════════════ [v9.279] 토픽 등반 — 급수 «좌표»를 학생에게 돌려준다 ═══════════════
+ *
+ * 유호 지시 2026-08-31 「철학정본에 빗대서 재밌고 자동화되게 TOPIK 시험에 꼭 도움이 되도록」.
+ *
+ * ■ 왜 이 자리인가 — **분모와 분자가 둘 다 이미 있었는데 «나누는 자»가 없었다.**
+ *   분모 = 바로 위 `grammarGradeCounts_`(급수별 문형 수) · 분자 = `mastery_log` 의 '도달' 행.
+ *   그런데 08-31 전수 실측에서 「급수 도달률」을 내는 자리는 저장소에 **0건**이었다. 학생이 듣던
+ *   말은 「내가 맞힌 말 12개」라는 **누계 하나뿐**이고, 그 12개가 **몇 급의 몇 %인지**는
+ *   한 번도 안 나왔다. 이 절이 그 나눗셈이고, 그래서 새 수집도 새 칸도 필요 없다.
+ *
+ * ■ 철학 정본에 대어 본 자리(유호 지시의 「빗대서」) — `docs/SYNK_철학.md`
+ *   · ①기본 셋 = 재미 · 실사용 도움 · 신선함. **TOPIK 트랙 콘텐츠는 여기에 「급수 직결」까지** 든다.
+ *     이 카드가 정확히 그 급수 직결이다 — 오늘 넘은 한 문형이 **몇 급의 몇 %p 인지**로 환산돼 보인다.
+ *   · Ⅱ-2 「재미는 합격의 반대말이 아니라 **합격으로 가는 가장 빠른 길**이다」 —
+ *     그래서 재미 층을 «따로» 얹지 않았다. 재미와 급수가 **같은 한 장**이다(봉우리·한 걸음의 무게).
+ *   · Ⅱ-2 발화 규격 = 사실만 · 평가어 안 얹기 · **비교 없음** · 없는 성공 없음.
+ *     ⇒ 이 절에 「합격」·「부족」·「남들보다」·「분발」이 **한 줄도 없다.** 남은 것은 «남은 문형의 이름»뿐이다.
+ *   · ③운영 = 사람 손이 거의 안 가는가 ⇒ **손 0.** 밤 배치가 이미 채우는 `mastery_log` 를 나누기만 한다.
+ *   · ⑤자기설명 = 처음 본 사람이 ①이게 뭔지 ②뭘 하면 되는지 아는가 ⇒ 카드가 **자기 자를 직접 말한다**(맨 아랫줄).
+ *
+ * ■ 자를 값과 같이 적는다 — 이 수는 **TOPIK 점수 예측이 아니다.** 재는 것은
+ *   「우리 문법 뱅크의 그 급 문형 중, 이 학생이 «서로 다른 날 두 번 스스로» 맞게 쓴/말한 것」이다.
+ *   분모가 TOPIK 전체가 아니라 **뱅크**라는 사실을 카드 맨 아랫줄이 말한다. 안 적으면 다음 사람이
+ *   이 %를 「합격 확률」로 읽는다 — 수는 자와 함께 적혀야 다음 사람에게 거짓말을 안 한다.
+ *
+ * ■ 출처 화이트리스트는 «함께한 날»과 **같은 것을 쓴다**(AI첨삭·AI음성·AI대화 — Code.js 막2·막6).
+ *   두 지면이 다른 자를 쓰면 학생이 한 화면에서 **서로 다른 두 수**를 보게 되고, 그 갈림은
+ *   오류를 안 낸다(조용히 어긋난다). 곁의 실익 하나 — 데모 씨앗이 'lesson' 출처로 '도달' 61행을
+ *   깔아 두는데(엔진_셋업확장 stg2) 화이트리스트가 그것을 **원리상 안 센다.**
+ *   ⚠ 운영에서 'lesson' 이 쓰는 것은 '연습'뿐이다(엔진_운영배치) — 지금 갈리는 것은 데모 층뿐이다.
+ */
+const TOPIK_PEAK_MAX = 5;      // 봉우리 수 = 뱅크 도입급 상한. 6급은 없다(자체 콘텐츠 상한이 5급 · 위 §급수 태그)
+const TOPIK_PEAK_GATE = 0.8;   // 「그 봉우리에 올랐다」로 부르는 비율
+const TOPIK_PEAK_TARGET = 4;   // 과녁 — 유호 확정 08-31 「몽골에서 TOPIK 4급까지 끌고 간다」(docs/_ops/결정.md)
+
+/* 순수 — 도달한 문법 ID 집합 → 급수 좌표. 시트를 안 읽는다(회귀가 직접 태운다).
+ *
+ * 🔑 «연속»으로 문턱을 넘은 최고 급만 「오른 봉우리」로 센다 — 5급 문형 하나를 우연히 맞혔다고
+ *   5급 봉우리에 세우면 그건 **없는 성공**이다(철학 Ⅱ-2). 중간이 비면 거기서 멈춘다.
+ *
+ * @param {Object} 도달 - { [grammar_id]: true } — `토픽등반_도달맵_` 이 낸다
+ * @param {number} [lv] - 학생 급수(Lv1~6) · 없으면 0. 교재 구간 표기에만 쓴다(판정엔 안 쓴다)
+ */
+function 토픽등반_(도달, lv) {
+  const 있음 = 도달 || {};
+  const 이름 = grammarNameMap_();
+  const 급수들 = [];
+  for (let g = 1; g <= TOPIK_PEAK_MAX; g++) {
+    const 그급 = GRAMMAR_BANK.filter(row => row[3] === g);
+    const 넘은 = 그급.filter(row => 있음[row[0]]);
+    급수들.push({
+      급: g,
+      분모: 그급.length,
+      분자: 넘은.length,
+      비율: 그급.length ? 넘은.length / 그급.length : 0,
+      남은: 그급.filter(row => !있음[row[0]]).map(row => ({ id: row[0], 이름: 이름[row[0]] || row[0] }))
+    });
+  }
+  let 오른 = 0;
+  for (let g = 1; g <= TOPIK_PEAK_MAX; g++) {
+    const s = 급수들[g - 1];
+    if (s.분모 > 0 && s.비율 >= TOPIK_PEAK_GATE) 오른 = g; else break;
+  }
+  const 다 = 오른 >= TOPIK_PEAK_MAX;
+  const 다음 = 다 ? TOPIK_PEAK_MAX : 오른 + 1;
+  const 지금 = 급수들[다음 - 1];
+  const band = LEVEL_TOPIK_BAND[Number(lv)] || [];
+  return {
+    급수들: 급수들, 오른봉우리: 오른, 다음봉우리: 다음, 다올랐나: 다,
+    지금: 지금, 남은문형: 지금.남은,
+    한걸음: 지금.분모 ? 1 / 지금.분모 : 0,   // 하나 더 넘으면 오르는 비율(소수)
+    과녁: TOPIK_PEAK_TARGET,
+    교재급: Number(lv) || 0, 교재밴드: band
+  };
+}
+
+/* mastery_log → 학생별 «스스로 넘은» 문법 집합. 시트 1패스(호출부가 학생마다 읽지 않게).
+ * 출처 화이트리스트의 근거는 위 머리말 §출처 — 함께한 날과 같은 자다. */
+function 토픽등반_도달맵_(ss) {
+  const out = {};
+  const ml = ss.getSheetByName('mastery_log');
+  if (!ml || ml.getLastRow() < 2) return out;
+  ml.getRange(2, 1, ml.getLastRow() - 1, 6).getValues().forEach(r => {
+    if (String(r[2]) !== '도달') return;
+    const src = String(r[5] || '');
+    if (src !== 'AI첨삭' && src !== 'AI음성' && src !== 'AI대화') return;
+    const sid = String(r[0] || '').trim(), gid = String(r[1] || '').trim();
+    if (!sid || !gid) return;
+    (out[sid] = out[sid] || {})[gid] = true;
+  });
+  return out;
+}
+
+/* 등반 카드(EA131) — 순수 함수. 회귀가 직접 로드한다.
+ * 색은 카드 계열 그대로(#FBF7F0 바탕 · #F96859 코랄 · #8D857A 잔글) — 새 색을 안 만든다. */
+function 등반카드HTML_(c) {
+  if (!c || !c.급수들) return '';
+  const s = c.지금;
+  const pct = Math.round(s.비율 * 100);
+  const stepP = Math.round(c.한걸음 * 100);
+  const peaks = c.급수들.map(p => {
+    const done = p.급 <= c.오른봉우리;
+    const here = !done && p.급 === c.다음봉우리;
+    const tgt = p.급 === c.과녁;
+    const dot = 'display:block;margin:0 auto;width:' + (here ? 15 : 12) + 'px;height:' + (here ? 15 : 12) + 'px;border-radius:50%;'
+      + 'background:' + (done ? '#F96859' : here ? '#FEF0E9' : '#EDE7DC') + ';'
+      + 'border:' + (tgt ? '3px solid #AE322A' : (done || here) ? '2px solid #F96859' : '2px dashed #C7BFB2') + ';';
+    return '<span style="display:inline-block;width:19.5%;text-align:center;vertical-align:top;">'
+      + '<span style="' + dot + '"></span>'
+      + '<span style="display:block;font-size:10px;padding-top:4px;color:' + ((done || here) ? '#2B2320' : '#8D857A') + ';">' + p.급 + '급</span>'
+      + '</span>';
+  }).join('');
+  /* 머리줄 — 사실만. 다 오른 학생에게는 「다음」이 없으므로 문장 자체를 갈아 끼운다
+   *   (남은 0개인데 「남은 것」 칸을 비워 두면 화면에 «빈 약속»이 남는다). */
+  const head = c.다올랐나
+    ? '다섯 봉우리를 다 올랐다'
+    : s.급 + '급 문형 <b style="color:#AE322A;">' + s.분자 + '</b> / ' + s.분모;
+  const stepLine = (!c.다올랐나 && stepP > 0)
+    ? '<div style="font-size:12px;color:#2B2320;padding-top:5px;">지금 한 개를 더 넘으면 <b style="color:#F96859;">' + pct + '% → ' + Math.min(pct + stepP, 100) + '%</b></div>'
+    : '';
+  /* 가까이 온 것 — 다음 봉우리에서 아직 안 넘은 문형의 «이름» 셋. 이 카드가 「도움」이 되는 자리는
+   *   %가 아니라 여기다: 학생이 **다음에 무엇을 써 보면 되는지**를 이름으로 안다. */
+  const near = (c.남은문형 || []).slice(0, 3).map(g => escHtml_(g.이름)).join(' · ');
+  const nearLine = near
+    ? '<div style="font-size:11.5px;color:#8D857A;padding-top:6px;">가까이 온 것 — <span style="color:#2B2320;">' + near + '</span></div>'
+    : '';
+  const bandLine = (c.교재급 && c.교재밴드.length)
+    ? '<div style="font-size:11px;color:#8D857A;padding-top:4px;">지금 교재 Lv' + c.교재급 + ' · ' + c.교재밴드.join('~') + '급 구간 · 함께 가는 곳 ' + c.과녁 + '급</div>'
+    : '<div style="font-size:11px;color:#8D857A;padding-top:4px;">함께 가는 곳 ' + c.과녁 + '급</div>';
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FBF7F0;border:2px solid #F0E3C8;border-radius:16px;padding:12px 14px;color:#2B2320;">'
+    + '<div style="font-size:12.5px;font-weight:800;padding-bottom:8px;">⛰ 토픽 등반</div>'
+    + '<div style="padding-bottom:9px;">' + peaks + '</div>'
+    + '<div style="height:9px;background:#EDE7DC;border-radius:99px;overflow:hidden;">'
+    + '<div style="height:9px;width:' + Math.max(pct, 2) + '%;background:#F96859;border-radius:99px;"></div></div>'
+    + '<div style="font-size:13.5px;padding-top:7px;">' + head + '<span style="color:#8D857A;font-size:12px;"> · ' + pct + '%</span></div>'
+    + stepLine + nearLine + bandLine
+    + '<div style="font-size:10.5px;color:#8D857A;padding-top:8px;line-height:1.6;border-top:1px dashed #F0E3C8;margin-top:8px;">'
+    + '이 줄이 세는 것 — 서로 다른 날 <b>두 번</b>, 내가 직접 쓰거나 말해서 맞은 문형.<br/>'
+    + '분모는 우리 교재의 그 급 문형 수다(시험 점수 예측이 아니다).</div>'
+    + '</div>';
+}
+
 /* 그 레벨이 실제로 **출제할 수 있는** 문형 풀 — 진화 게이트 뱅크(72) + 스토리 골격(96)을 합친다.
  *
  * 🔑 **게이트 판정에는 쓰지 않는다** — 그건 `grammarsForLevel_` 이고 뱅크만 본다. 여기 스토리
