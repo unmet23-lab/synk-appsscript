@@ -4323,6 +4323,20 @@ function menuRun_(fn) {
   ui.alert(out.length > 1400 ? out.slice(0, 1400) + '\n\n…(이하 생략 — 전체는 실행 로그)' : out);
 }
 function menuSetupVoiceMissions() { menuRun_(setupVoiceMissions); } // [v9.278] 낭독 미션 목록 세우기 — 멱등(재클릭 무해 · 아무것도 안 지운다)
+// [v9.280] 숙제 뱅크 재반영 — setupHomework 는 bootstrap·preflight(개수 «일치»면 스킵)에서만 돌아서,
+//   문항을 고쳐 배포해도 시트의 «저장된 행 210»은 옛 판 그대로다(menuSetupOnboarding 과 같은 결의 자리).
+//   순서 정본 = 뱅크 머리 주석: 재세움(다른 유형 보존) → 몽골어 큐레이션 재주입(멱등 upsert) → 잔여 초벌 번역(빈칸만).
+//   재클릭 무해 — 세 단계 전부 멱등이라 실패 지점부터 다시 눌러도 안전하다.
+function menuApplyHomeworkBank() {
+  menuRun_(function () {
+    const L = [];
+    setupHomework(); L.push('✓ 숙제 210행 재세움(코드 정본으로 교체 · 다른 유형 행 보존)');
+    injectMongolianContents(); L.push('✓ 몽골어 큐레이션 재주입(숙제·퀴즈·팁 — 멱등)');
+    try { translateContents(); L.push('✓ 잔여 초벌 번역 1회(빈칸만)'); }
+    catch (e) { L.push('⚠ 초벌 번역 스킵: ' + String(e && e.message || e) + ' — 매일 밤 자동 60행이 이어서 채운다'); }
+    return '📚 숙제 뱅크 반영 완료 (SYNK ' + SYNK_VERSION + ')\n' + L.join('\n');
+  });
+}
 function menuSetupLectures() { menuRun_(setupLectures); }
 function menuCreateLectureForm() { menuRun_(createLectureForm); }
 function menuPruneStaleLectures() { menuRun_(pruneStaleLectures); }
@@ -4854,6 +4868,8 @@ function onOpen() {
       //   🔴 왜 메뉴가 필요한가: setupOnboarding 은 bootstrap·preflight 에서만 돌아서, 문구를 고쳐
       //   배포해도 라이브 시트의 «저장된 행»은 그대로다 — 학생은 옛 문구를 계속 본다(codex P1).
       .addItem('🚪 온보딩 안내 다시 세우기(첫 화면 문구)', 'menuSetupOnboarding')
+      // [v9.280] 숙제 문항을 고쳐 배포한 날 누른다 — 안 누르면 시트의 «저장된 행 210»이 옛 판 그대로다(온보딩과 같은 자리).
+      .addItem('📚 숙제 뱅크 다시 세우기(210행 + 몽골어)', 'menuApplyHomeworkBank')
       // [v9.121] 시즌이 바뀌어 1단계를 다시 깔면 폼 선택지가 낡는다 — 2단계는 문항이 있으면 건너뛰므로 따라가지 않는다.
       .addItem('🔄 폼 선택지 카탈로그와 맞추기(시즌 갱신)', 'menuSyncLectureForm')
       // [v9.124] 읽기 전용 — 조인이 깨져도 에러가 안 나므로 물어볼 곳이 필요하다.
