@@ -36,7 +36,8 @@
  * ■ 🔴 08-30 개정 — 이 밤에 두 번 걸어 배운 것으로 과녁과 문지기를 고쳤다
  *   ①놀람은 06:16 에 났다(41.5분) — 목록에서 뺐다. `--다시` 라 두면 그대로 헛불이다.
  *   ②**몸 다섯은 안 굽는다** — 실측 41.5분 × ≈3배 × 5장 = 10.4시간. 유호 판정 자리로 올린다.
- *   ③램 문지기 2,600 → **6,000**. 이 값 하나가 성패를 갈랐다(아래 램바닥 상수 주석에 실측).
+ *   ③램 문지기 2,600 → **6,000**. 이 값 하나가 성패를 갈랐다
+ *     (실측 근거는 08-31 에 `tools/lib/램문지기.js` 로 옮겼다 — 값이 여기 없다).
  *
  * ■ 순서 = **싼 것 먼저** (누끼 → 몸). 08-26 실측이 그 값을 갈라 두었다
  *   같은 1024·96샘플·CPU 에서 누끼 9.7~16.5분 · 받침천 판(몸) 18.8~45.1분 — **몸이 ≈3배 비싸다**
@@ -58,42 +59,22 @@
  * 🔑 판정은 로그가 아니라 파일이다 — 아침에 볼 것은 `docs/캐릭터/친구공방_0825/` 와 `docs/까몽_시안.html`.
  */
 'use strict';
-const { spawnSync, execFileSync } = require('node:child_process');
+const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
 const 루트 = path.resolve(__dirname, '..');
 const 노드 = process.execPath;
-/* 🔴 **6,000MB.** 08-30 에 두 번 걸어 실측으로 정했다 — 이 값이 이 밤의 성패를 갈랐다.
- *   · 04:51 착수 · 여유 3,036MB → **38분에 0장.** 코어 점유 1코어의 80%(16코어 중 5%) ·
- *     Pages Input 169,737/초 로 스래싱이 안 풀렸다. 걷자 여유가 294MB → 7,435MB 로 돌아왔다.
- *   · 05:35 착수 · 여유 6,716MB → **41.5분에 1장.** 초반 코어 점유 223%.
- *   ⇒ 가른 것은 «장면»도 «해상도»도 아니고 **착수 시점 여유 램** 하나였다.
- *   🔑 왜 그렇게 예민한가: 이 장면은 **커밋 17.2GB 를 요구**하는데 이 기계 물리램은 15.4GB 다
- *     (08-30 실측 · 두 번 다 17,241~17,245MB 로 같았다 — 기계 상태와 무관한 «장면의 요구»다).
- *     즉 **어떻게 해도 일부는 스왑**된다. 그 스왑을 «감당»하느냐 «스래싱»에 빠지느냐가
- *     착수 시점에 물리램을 얼마나 쥘 수 있었나로 갈린다.
- *   ⚠ 그러니 2,600(내가 처음 쓴 값)도 1,800(08-29 값)도 **너무 낮다** — 둘 다 3.0GB 를 통과시킨다.
- *   ⚠ 반대로 이보다 높이면 세션이 여럿인 밤에 자리가 영영 안 난다. 6,000 은 그 사이의 실측선이다. */
-const 램바닥MB = 6000;
-/* 상한도 늘렸다 — 6,000MB 는 까다로워서 한 시간을 기다려야 날 수도 있다.
- * 그래도 무한은 안 한다: 아침에 「아무것도 안 됨」이 「좀 느림」보다 훨씬 나쁘다. */
-const 기다림상한분 = 150;
+/* 🔴 램 문지기 — **값과 재는 법은 `tools/lib/램문지기.js` 하나가 안다**(08-31 승격).
+ *   6,000MB 라는 값의 실측 근거(08-30 에 같은 장면을 두 번 걸어 얻은 것)도 그 파일이 이어받았다.
+ *   여기 사본을 두면 갈린다 — 실제로 0828·0829 는 1,800 인 채로 남아 있었다. */
+const 문지기 = require('./lib/램문지기');
 
 const 시각 = () => new Date().toLocaleTimeString('ko-KR');
 const 말 = (s) => { console.log(s); try { process.stdout.write(''); } catch (_) {} };
 
-/** PowerShell 한 줄 — 실패하면 빈 문자열(문지기는 «모르면 통과»여야 굽기를 안 막는다). */
-function ps(명령) {
-  try {
-    return String(execFileSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', 명령],
-      { encoding: 'utf8', timeout: 30000 })).trim();
-  } catch (_) { return ''; }
-}
 
-const 여유램MB = () => Number(ps('[int]((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1KB)')) || 0;
-const 블렌더수 = () => Number(ps("(Get-CimInstance Win32_Process -Filter \"Name='blender.exe'\").Count")) || 0;
 
 /* ── 완주 도장 ──────────────────────────────────────────────────────────────
  * 오늘 새벽 `밤굽기.js` 에 선 규약을 그대로 쓴다(새 원장을 안 만든다 — 이미 있는 자리에 얹는다).
@@ -129,45 +110,9 @@ for (const 신호 of ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGBREAK']) {
 }
 process.on('uncaughtException', (e) => { 도장('멈춤', `예외로 죽었다 — ${(e && e.message) || e} · 지나온 단계: ${단계기록.join(' · ') || '없음'}`); 도장끝 = true; process.exit(1); });
 
-/** 부모가 이미 없는 블렌더를 걷는다 (08-28 사고 — 부모만 죽으면 자식이 4.6GB를 물고 산다).
- *  성한 굽기의 부모는 살아 있으니 안 걸린다. 단계 «사이»에서만 부른다(내 자식이 없을 때). */
-function 고아걷기() {
-  const 죽인것 = ps([
-    "$live=(Get-CimInstance Win32_Process|%{$_.ProcessId});",
-    "$n=0; Get-CimInstance Win32_Process -Filter \"Name='blender.exe'\" | %{",
-    "  if($live -notcontains [int]$_.ParentProcessId){ Stop-Process -Id $_.ProcessId -Force -EA SilentlyContinue; $n++ } };",
-    '$n',
-  ].join(' '));
-  if (죽인것 && 죽인것 !== '0') 말(`  🧹 고아 블렌더 ${죽인것}개를 걷었다 — 램을 물고 있었다.`);
-}
-
-/** 남의 굽기가 돌면 «죽이지 않고 물러난다»(트랙 §0 겹침 규율). 램 바닥도 같이 지킨다. */
-function 자리비었나(라벨) {
-  const 끝시각 = Date.now() + 기다림상한분 * 60 * 1000;
-  let 알렸나 = false;
-  for (;;) {
-    고아걷기();
-    const 남 = 블렌더수();
-    const 램 = 여유램MB();
-    if (남 === 0 && 램 >= 램바닥MB) {
-      if (알렸나) 말(`  ▶ 자리가 났다 — 램 ${램}MB · ${시각()}`);
-      return true;
-    }
-    if (Date.now() > 끝시각) {
-      말(`  ⏭ ${기다림상한분}분을 기다려도 자리가 안 났다(블렌더 ${남} · 램 ${램}MB) — ${라벨} 건너뛴다.`);
-      return false;
-    }
-    if (!알렸나) {
-      말(`  ⏳ 기다린다 — 블렌더 ${남}개 · 여유 램 ${램}MB(바닥 ${램바닥MB}) · ${시각()}`);
-      알렸나 = true;
-    }
-    spawnSync(노드, ['-e', 'setTimeout(()=>{},60000)'], { timeout: 65000 });
-  }
-}
-
 function 단계(이름, 인자들) {
   말(`\n■ ${이름} — ${시각()}`);
-  if (!자리비었나(이름)) { 단계기록.push(`${이름.split(' ')[0]}=건너뜀`); return; }
+  if (!문지기.자리비었나(이름, 말)) { 단계기록.push(`${이름.split(' ')[0]}=건너뜀`); return; }
   const 시작 = Date.now();
   const r = spawnSync(노드, 인자들, { cwd: 루트, stdio: 'inherit' });
   말(`■ ${이름} 끝 — 종료코드 ${r.status} · ${Math.round((Date.now() - 시작) / 60000)}분 · ${시각()}`);
@@ -177,7 +122,7 @@ function 단계(이름, 인자들) {
 }
 
 말(`■■ 밤샘 0830 시작 — ${new Date().toLocaleString('ko-KR')} · pid ${process.pid}`);
-말(`   여유 램 ${여유램MB()}MB · 블렌더 ${블렌더수()}개 · 램바닥 ${램바닥MB}MB · 기다림 상한 ${기다림상한분}분`);
+말(`   ${문지기.상태줄()}`);
 말('   과녁 = 까몽 시안 누끼 «넷» 의 정본 승격 · 1024px · 샘플 96 · CPU (놀람은 06:16 에 41.5분으로 완료)');
 말('   몸 다섯은 이 밤에 안 굽는다 — 장당 ≈125분 × 5 = 10.4시간이고 값은 누끼에 있다(위 ② 절)');
 말(`   로그 ${path.join(os.tmpdir(), '밤샘0830.log')} (띄우개가 여기로 리디렉션했을 때)`);
