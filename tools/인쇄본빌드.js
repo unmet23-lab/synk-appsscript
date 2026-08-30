@@ -47,6 +47,11 @@ const MANIFEST = [
   { src: 'docs/원어민_검수지_v1.md',       title: '원어민 검수지',              sub: '몽골어 원어민 검수 게이트',              group: '전달용' },
   { src: 'docs/몽골어_검수_발주서.md',     title: '몽골어 검수 발주서',         sub: '검수 범위·기준·납품 형식',               group: '전달용' },
   { src: 'docs/자주묻는질문_정본.md',      title: '자주 묻는 질문 (FAQ)',       sub: '챗봇·상담 데스크 공용 단일 원천',        group: '전달용' },
+  /* 유호님이 «손으로 채우시는» 첫 종이다(08-31 「내가 쓸게」). 다른 항목과 성질이 다르다 —
+   * 읽는 문서가 아니라 **쓰는 문서**라 빈 표가 본문이고, 그 빈칸이 곧 산출물이다.
+   * 🔑 규격 전문(`발음데이터_규격.md`)은 일부러 안 굽는다 — 200줄 넘는 «왜»는 화면에서 읽는 것이고,
+   *    종이에 필요한 것은 채울 자리뿐이다. 둘을 한 장에 담으면 채우기가 어려워진다. */
+  { src: 'docs/발음_미션_작성지.md',       title: '발음 미션 작성지',           sub: '유호님이 손으로 채우는 종이 — 낭독 미션 11칸', group: '전달용' },
   /* C. 경영 정본 — **기본 굽기에서 뺀다**(유호 픽 08-17 「ㄹ」= 분모 축소).
    *   이 다섯은 «유호님 혼자 읽는» 문서다. 남에게 건네지도, 인쇄해 옆에 두지도 않는다.
    *   그러면 PDF 일 이유가 없고, 바탕화면은 **정본 바로가기**로 두는 편이 낫다 —
@@ -202,49 +207,49 @@ ${tokens}
 html { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 body {
   background: var(--synk-paper);
-  color: var(--synk-navy);                 /* 잉크(발표물 본문) — 순검정 금지 */
+  color: var(--synk-ink);                 /* 잉크(발표물 본문) — 순검정 금지 */
   font-family: 'Inter Tight','SUIT',system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   font-weight: 500; font-size: 10.3pt; line-height: 1.78;
   word-break: keep-all; overflow-wrap: break-word;
 }
 /* 표지 띠 — Navy 2 반전면. 크림 글자, 3층 라벨은 Slate(다크 허용 바닥) */
-.cover { background: var(--synk-navy-2); color: var(--synk-cream); padding: 11mm 12mm 9mm;
+.cover { background: var(--synk-ink-deep); color: var(--synk-paper); padding: 11mm 12mm 9mm;
          border-radius: 4px; margin-bottom: 9mm; page-break-inside: avoid; }
 .cover .logo { height: 9mm; display: block; margin-bottom: 7mm; }
-.cover .group { font-size: 8pt; font-weight: 600; letter-spacing: .14em; color: var(--synk-slate); text-transform: uppercase; }
+.cover .group { font-size: 8pt; font-weight: 600; letter-spacing: .14em; color: var(--synk-ash-wool); text-transform: uppercase; }
 .cover h1.doc { font-family: 'SUIT','Inter Tight',sans-serif; font-weight: 800; font-size: 21.5pt;
-                line-height: 1.3; letter-spacing: -0.015em; color: var(--synk-cream); margin: 2.5mm 0 2mm; }
-.cover .sub { font-size: 10.5pt; font-weight: 500; color: var(--synk-cream-3); }
-.cover .meta { margin-top: 6mm; padding-top: 3mm; border-top: 1px solid var(--synk-navy-3);
-               font-size: 7.5pt; line-height: 1.7; color: var(--synk-slate); }
-.cover .meta b { color: var(--synk-cream-3); font-weight: 600; }
+                line-height: 1.3; letter-spacing: -0.015em; color: var(--synk-paper); margin: 2.5mm 0 2mm; }
+.cover .sub { font-size: 10.5pt; font-weight: 500; color: var(--synk-oat); }
+.cover .meta { margin-top: 6mm; padding-top: 3mm; border-top: 1px solid var(--synk-deep-wool);
+               font-size: 7.5pt; line-height: 1.7; color: var(--synk-ash-wool); }
+.cover .meta b { color: var(--synk-oat); font-weight: 600; }
 /* 본문 위계 — 신호는 h2 코랄 바 하나. 강조는 색이 아니라 웨이트가 진다 */
-h1 { font-family:'SUIT','Inter Tight',sans-serif; font-weight: 800; font-size: 15pt; color: var(--synk-navy-ink);
+h1 { font-family:'SUIT','Inter Tight',sans-serif; font-weight: 800; font-size: 15pt; color: var(--synk-ink-deep);
      letter-spacing: -0.01em; margin: 8mm 0 3mm; }
-h2 { font-family:'SUIT','Inter Tight',sans-serif; font-weight: 800; font-size: 12.5pt; color: var(--synk-navy-ink);
+h2 { font-family:'SUIT','Inter Tight',sans-serif; font-weight: 800; font-size: 12.5pt; color: var(--synk-ink-deep);
      margin: 7mm 0 2.5mm; padding-left: 3mm; border-left: 2.2mm solid var(--synk-coral); }
-h3 { font-family:'SUIT','Inter Tight',sans-serif; font-weight: 700; font-size: 11pt; color: var(--synk-navy);
+h3 { font-family:'SUIT','Inter Tight',sans-serif; font-weight: 700; font-size: 11pt; color: var(--synk-ink);
      margin: 5mm 0 2mm; }
 h4 { font-weight: 700; font-size: 10.3pt; margin: 4mm 0 1.5mm; }
 p { margin: 0 0 2.6mm; }
-strong { font-weight: 700; color: var(--synk-navy-ink); }
-del { color: var(--synk-slate-2); }
+strong { font-weight: 700; color: var(--synk-ink-deep); }
+del { color: var(--synk-stone); }
 .lnk { font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
-hr { border: 0; border-top: 1px solid var(--synk-cream-3); margin: 5mm 0; }
+hr { border: 0; border-top: 1px solid var(--synk-oat); margin: 5mm 0; }
 ul, ol { margin: 0 0 2.8mm 5.5mm; } li { margin-bottom: 1.1mm; }
-blockquote { background: var(--synk-cream-2); border-left: 1.4mm solid var(--synk-navy-3);
+blockquote { background: var(--synk-oat); border-left: 1.4mm solid var(--synk-deep-wool);
              border-radius: 3px; padding: 2.6mm 3.4mm; margin: 0 0 3mm; font-size: 9.6pt; page-break-inside: avoid; }
 blockquote p { margin-bottom: 1.4mm; } blockquote :last-child { margin-bottom: 0; }
 code { font-family: 'DM Mono','Inter Tight','SUIT',monospace; font-size: .92em; letter-spacing: .01em;
-       background: var(--synk-cream-2); border-radius: 2px; padding: 0 .25em; }
-blockquote code, th code, td code { background: var(--synk-cream-3); }
+       background: var(--synk-oat); border-radius: 2px; padding: 0 .25em; }
+blockquote code, th code, td code { background: var(--synk-oat); }
 pre { font-family: 'DM Mono','Inter Tight','SUIT',monospace; font-size: 8.6pt; line-height: 1.6;
-      background: var(--synk-cream-2); border: 1px solid var(--synk-cream-3); border-radius: 3px;
+      background: var(--synk-oat); border: 1px solid var(--synk-oat); border-radius: 3px;
       padding: 3mm 3.5mm; margin: 0 0 3mm; white-space: pre-wrap; overflow-wrap: anywhere; letter-spacing: .02em; }
 table { width: 100%; border-collapse: collapse; margin: 0 0 3.5mm; font-size: 9.1pt; line-height: 1.6; }
-th { font-family:'SUIT','Inter Tight',sans-serif; font-weight: 700; text-align: left; color: var(--synk-navy-ink);
-     background: var(--synk-cream-2); border-bottom: 1.5px solid var(--synk-navy-3); padding: 1.6mm 2.2mm; }
-td { border-bottom: 1px solid var(--synk-cream-3); padding: 1.6mm 2.2mm; vertical-align: top; }
+th { font-family:'SUIT','Inter Tight',sans-serif; font-weight: 700; text-align: left; color: var(--synk-ink-deep);
+     background: var(--synk-oat); border-bottom: 1.5px solid var(--synk-deep-wool); padding: 1.6mm 2.2mm; }
+td { border-bottom: 1px solid var(--synk-oat); padding: 1.6mm 2.2mm; vertical-align: top; }
 tr { page-break-inside: avoid; }
 </style></head><body>
 <div class="cover">
