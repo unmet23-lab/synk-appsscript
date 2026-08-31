@@ -1137,6 +1137,10 @@ test('[v9.64] 유형 선택지에 말하기·읽기 포함(코어=문법·톡=�
   const m = code.match(/const TEACHER_MEMO_TYPES = \[([^\]]+)\]/);
   assert.ok(m, 'TEACHER_MEMO_TYPES 상수(폼 유형 정본)가 필요');
   ['문법', '말하기', '읽기', '기타'].forEach((t) => assert.ok(m[1].includes(`'${t}'`), `유형 '${t}' 누락`));
+  const 계약 = require('../계약/수집_교정_계약.json');
+  const 폼값 = m[1].split(',').map(s => s.trim().replace(/^'|'$/g, ''));
+  assert.deepStrictEqual(폼값, 계약.learning_events.값목록.관찰영역, 'c14 관찰영역 값록 = 라이브 폼 TEACHER_MEMO_TYPES 그대로(계약 c14 문안이 산문으로만 묶은 것을 기계로 — 순서까지 같아야 한다)');
+  assert.ok(code.includes("SCHEMA_VER = '" + 계약.버전 + "'"), '손사본 SCHEMA_VER 가 계약 버전과 갈라졌다(v9.261 전과)');
 });
 
 test('[v9.64] 반복 자동 감지 — 브리핑·수업 전 메일 ×N, AI 로더는 반복 우선 정렬(강사 기입 부담 0)', () => {
