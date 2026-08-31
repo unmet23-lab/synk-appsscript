@@ -296,3 +296,93 @@ for (const [갈래, 만들기] of [
       '처방이 없으면 다음 사람도 08-31 처럼 「도구가 고장났다」로 읽는다(F103)');
   });
 }
+
+// ───────────────────────────────── ⑥ 「아는 미완」 재료는 저장소마다 다르다 (08-31 · talk 첫 런이 낸 구멍)
+
+/* talk 첫 이종 검수(런 …0840-6b9bbf)의 지적 3건이 **전부** 「저장소가 스스로 미완이라 적어 둔 칸」
+ * 이었다. 재료가 `gh pr list` 하나였고 talk 은 열린 PR 이 0개라, 블록이 통째로 안 실린 채
+ * 로그만 「열린 트랙 0개」라고 적었다 — 없는 것과 «출처가 다른 것»이 같은 모양이었다. */
+
+/** 이름이 `SYNK-talk` 인 픽스처 저장소 — 규약형 갈래를 «실제로» 밟는다(표를 안 건드린다). */
+function 이름있는저장소(이름표, 파일들) {
+  const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-이름-'));
+  const d = path.join(뿌리, 이름표);
+  fs.mkdirSync(d);
+  const git = (...a) => execFileSync('git', ['-C', d, ...a],
+    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true }).trim();
+  git('init', '-q');
+  git('config', 'user.email', 'fixture@synk.test');
+  git('config', 'user.name', 'fixture');
+  for (const [f, 내용] of Object.entries(파일들 || {})) fs.writeFileSync(path.join(d, f), 내용, 'utf8');
+  return d;
+}
+
+test('🔑 출처 표 — 집은 목록(PR) · talk 은 규약 · **모르는 저장소는 null**(빈 목록이 아니다)', () => {
+  assert.strictEqual(검수.아는미완출처('').종류, '목록');
+  assert.strictEqual(검수.아는미완출처('SYNK-talk').종류, '규약');
+  assert.strictEqual(검수.아는미완출처('무슨-저장소'), null,
+    '모르는 저장소가 빈 목록을 받으면 그 침묵이 「미완 없음」으로 읽힌다 — 08-31 이 그 모양이었다');
+});
+
+test('☠️ 출처를 모르면 블록이 **침묵하지 않는다** — 침묵은 「이 저장소엔 미완이 없다」로 읽힌다', () => {
+  const b = 검수.아는미완블록({ 줄들: [], 전체: 0, 출처: null });
+  assert.notStrictEqual(b, '', '출처 없음인데 블록이 비었다 — 08-31 talk 런이 정확히 이 자리였다');
+  assert.match(b, /모른다/);
+  assert.match(b, /미완이 없다」로 읽지 마라/);
+  assert.match(b, /실제로 깨뜨린 것/, '면죄부가 되면 안 된다 — 억제와 안내를 가르는 줄이 빠졌다');
+});
+
+test('🔒 옛 계약은 그대로 — 출처 «칸이 없는» 호출은 여전히 빈 문자열이다', () => {
+  // 이 뜻은 지금도 옳다(없는 목록을 지어내지 않는다). 새 동작은 «출처를 명시한» 호출에만 붙는다.
+  assert.strictEqual(검수.아는미완블록({ 줄들: [], 전체: 0 }), '');
+  assert.strictEqual(검수.아는미완블록(null), '');
+});
+
+test('🔑 출처를 «읽었는데 정말 0건»과 «못 읽었다»가 다른 문장이다', () => {
+  const 진짜0 = 검수.아는미완블록({ 줄들: [], 전체: 0, 출처: { 종류: '목록', 이름: '열린 PR' } });
+  const 못읽음 = 검수.아는미완블록({ 줄들: [], 전체: 0, 출처: { 종류: '목록', 이름: '열린 PR' }, 오류: 'gh 인증 끊김' });
+  assert.match(진짜0, /정말 0건/);
+  assert.match(못읽음, /못 읽었다/);
+  assert.match(못읽음, /gh 인증 끊김/, '사유가 안 나가면 다음 사람이 0건과 못 읽음을 못 가른다');
+  assert.notStrictEqual(진짜0, 못읽음);
+});
+
+test('☠️ talk 규약형 — 목록이 아니라 «읽는 법»을 준다(취소선·추정값·빈 측정란)', () => {
+  const d = 이름있는저장소('SYNK-talk', {
+    'README.md': '# t\n\n## 다음 관문 (순서대로)\n\n1. ~~끝난 것~~ ✅\n2. 남은 것 — 학생 1명 실사용\n\n## 앱 실행\n\nnpm start\n',
+  });
+  저장소로(d, () => {
+    assert.strictEqual(검수.이저장소표(), 'SYNK-talk', '픽스처 이름이 안 잡혔다 — 이 검사는 그때 미실행이다');
+    const m = 검수.아는미완줄들();
+    assert.strictEqual(m.출처.종류, '규약');
+    assert.ok(!m.오류, `관문 절을 못 읽었다: ${m.오류}`);
+    assert.strictEqual(m.줄들.length, 2, '「다음 관문」 절만 떼어야 한다(다음 ## 앞까지)');
+
+    const b = 검수.아는미완블록(m);
+    assert.match(b, /취소선/, '해소된 것을 미완으로 읽는 «거꾸로 된 지적»을 막는 줄이 없다');
+    assert.match(b, /추정값/, '주석이 스스로 밝힌 추정값 — 08-31 지적 be7074b2 가 정확히 이것이었다');
+    assert.match(b, /빈 측정란|빈 표/, '08-31 지적 2ef9c6fb 가 정확히 이것이었다');
+    assert.match(b, /학생 1명 실사용/, '큐레이션된 관문이 안 실렸다');
+    assert.match(b, /실제로 깨뜨린 것/, '면죄부가 되면 안 된다');
+    assert.doesNotMatch(b, /gh pr list/, '이 저장소는 PR 을 안 쓴다 — 따를 수 없는 처방을 주면 안 된다(F103)');
+  });
+});
+
+test('🔴 재료 표가 낡으면 **크게 운다** — 관문 절이 사라지면 조용한 0건이 아니라 오류다', () => {
+  const d = 이름있는저장소('SYNK-talk', { 'README.md': '# t\n\n## 딴 절\n\n아무것도 없다\n' });
+  저장소로(d, () => {
+    const m = 검수.아는미완줄들();
+    assert.ok(m.오류, '절을 못 찾았는데 오류가 없다 — 이 표는 talk 이 바뀌는 날 조용히 낡는다');
+    assert.match(m.오류, /낡았다/);
+    assert.notStrictEqual(검수.아는미완블록(m), '', '못 읽었으면 그 사실이라도 말해야 한다');
+  });
+});
+
+test('🔑 장부가 «어느 자로 쟀나»를 적는다 — 옛 칸 이름 `열린PR전체` 가 분모를 거짓말했다', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'tools', 'codex-review.js'), 'utf8');
+  const i = src.indexOf('아는미완: 미완 ?');
+  assert.notStrictEqual(i, -1, '장부 칸을 못 찾았다 — 이 검사는 그때 「통과」가 아니라 미실행이다');
+  const 몸 = src.slice(i, i + 400);
+  assert.match(몸, /출처:/, '어느 출처로 쟀는지 안 적으면 talk 의 0 이 「열린 PR 0개」로 읽힌다');
+  assert.doesNotMatch(몸, /열린PR전체/, '한 값에 이름이 둘이면 갈린다 — 옛 이름이 되살아났다');
+});
