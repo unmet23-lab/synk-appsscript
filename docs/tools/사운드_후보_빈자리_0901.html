@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>가이드 빈 소리 자리 후보 — 유호님 귀검수 · 픽 전엔 앱에 안 실림</title>
+<!-- 감사 D4-7 (2026-09-01) · 값 원천 = docs/디자인_토큰.json 사운드.이벤트(후보 9안, 출처에 「귀검수 전」 명기)
+     소리 = ../브랜드_사운드킷/*.wav 그 바이트를 재생 — 시청한 것과 배포될 것이 갈라질 수 없다(합성 재현 아님) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&family=DM+Mono:wght@300;400;500&display=swap">
+<style>
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+
+*{box-sizing:border-box;margin:0}
+body{background:#FAFAF9;color:#1B1B1A;max-width:860px;margin:0 auto;padding:48px 28px 80px;
+  font-family:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  font-weight:500;letter-spacing:-0.02em}
+h1{font-weight:800;letter-spacing:-0.04em;font-size:30px;line-height:1.25}
+h2{font-weight:800;letter-spacing:-0.04em;font-size:19px;margin:40px 0 4px}
+p.sub{color:#373737;font-size:14px;margin-top:8px;line-height:1.65}
+.mono{font-family:'DM Mono',ui-monospace,Consolas,monospace;letter-spacing:.08em;font-size:11px;text-transform:uppercase;color:#373737}
+.gate{background:#1B1B1A;color:#FAFAF9;border-radius:14px;padding:14px 20px;margin-top:20px;font-size:14px;line-height:1.7}
+.gate b{font-weight:800;color:#FF6B5C}
+.rules{background:#FFE9E4;border-radius:14px;padding:18px 20px;margin-top:14px;font-size:14px;line-height:1.8}
+.rules b{font-weight:800}
+.ev{margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.card{background:#E4E4E7;border:1px solid #D1D2D4;border-radius:14px;padding:16px 14px}
+.card h3{font-size:14.5px;font-weight:800;letter-spacing:-0.02em}
+.card .d{font-size:12px;color:#373737;margin:4px 0 12px;line-height:1.55}
+button{display:block;width:100%;margin-top:8px;padding:11px 12px;border:0;border-radius:11px;
+  background:#FF6B5C;color:#1B1B1A;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer}
+button:active{background:#E8543F}
+button span{display:block;font-family:'DM Mono',ui-monospace,Consolas,monospace;font-weight:400;
+  font-size:9.5px;letter-spacing:.06em;margin-top:3px;color:#1B1B1A;opacity:.75}
+.refrow{margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.refrow button{display:inline-block;width:auto;margin:0;padding:7px 12px;background:#FAFAF9;
+  border:1px solid #D1D2D4;font-weight:500;font-size:12.5px;color:#373737}
+.refrow button:active{background:#E4E4E7}
+.pick{margin-top:36px;font-size:15px;line-height:1.7}
+@media (max-width:640px){.ev{grid-template-columns:1fr}}
+</style></head><body>
+
+<h1>까몽·마린 빈 소리 자리 — 후보 9안</h1>
+<div class="gate"><b>유호님 귀검수 — 픽 전엔 앱에 안 실림.</b> 여기 소리는 전부 후보다.
+줄마다 하나를 고르시거나(a/b/c) 전부 반려하셔도 된다 — 반려 한 마디가 다음 라운드 재료가 된다.</div>
+<p class="sub">버튼이 재생하는 것은 합성 재현이 아니라 <b>배포될 wav 그 바이트</b>(docs/브랜드_사운드킷/)다 —
+들은 것과 실리는 것이 갈라질 수 없다. 저장소 자리에서 열어야 소리가 난다(상대 경로).</p>
+
+<div class="rules"><b>악기 제약 (08-28 귀검수 교훈 — 후보 전부 이 안에서만 변주)</b><br>
+까몽 = <b>도톰 배음 + 그르렁</b> · 247~554Hz 대역만 (곤충 재료 금지) ·
+마린 = <b>홀로우 1.5배음 + 링모드 22Hz</b> (금속통 울림) ·
+<b>노이즈 성분 0</b> (밴드패스 노이즈 = «무전 잡음» 반려) ·
+«안심» 계열은 <b>하강 마감</b> — 끝이 내려앉아야 안심이다.</div>
+
+<h2>1 · 까몽 「안심」 <span class="mono">낮은 그르렁 «내려앉기» — 셋 다 하강 마감</span></h2>
+<div class="refrow"><span class="mono">귀 기준점(확정판 · 판정 대상 아님)</span>
+<button onclick="play('synk-voice-kkamong-bee.wav')">까몽_베에</button>
+<button onclick="play('synk-voice-kkamong-nyamnyam.wav')">까몽_냠냠</button></div>
+<div class="ev">
+<div class="card"><h3>a · 깊이</h3><div class="d">한 숨에 깊이 내려앉음. 그르렁을 느리고 얕게 — 셋 중 가장 깊은 착지감.</div>
+<button onclick="play('synk-voice-kkamong-ansim-a.wav')">듣기<span>294→262 · 그르렁 28Hz · 380ms</span></button></div>
+<div class="card"><h3>b · 두 번</h3><div class="d">두 번에 나눠 내려앉음. 둘째 음절이 더 느리고 깊은 그르렁 — 가장 낮은 착지(247Hz).</div>
+<button onclick="play('synk-voice-kkamong-ansim-b.wav')">듣기<span>294→277 · 277→247 · 410ms</span></button></div>
+<div class="card"><h3>c · 가볍게</h3><div class="d">짧고 가볍게 톡. 드라이브 없이 가장 둥근 목 — 셋 중 가장 짧다.</div>
+<button onclick="play('synk-voice-kkamong-ansim-c.wav')">듣기<span>277→262 · 그르렁 얕게 · 240ms</span></button></div>
+</div>
+
+<h2>2 · 까몽 「완료축하」 <span class="mono">허세 결 — 짧고 당당 · 상승 마감 허용</span></h2>
+<div class="refrow"><span class="mono">귀 기준점(확정판 · 판정 대상 아님)</span>
+<button onclick="play('synk-voice-kkamong-bee.wav')">까몽_베에</button>
+<button onclick="play('synk-voice-kkamong-hiik.wav')">까몽_히익</button></div>
+<div class="ev">
+<div class="card"><h3>a · 팡파르</h3><div class="d">세 발 상행 — 두 발 딛고 위로 마감. 셋 중 가장 화려.</div>
+<button onclick="play('synk-voice-kkamong-chukha-a.wav')">듣기<span>262 · 330 · 392→523 · 300ms</span></button></div>
+<div class="card"><h3>b · 콱</h3><div class="d">한 발에 콱. 그르렁 깊게·드라이브 세게 — 가장 짧고 당당(가슴 펴는 소리).</div>
+<button onclick="play('synk-voice-kkamong-chukha-b.wav')">듣기<span>294→392 · 한 음 · 160ms</span></button></div>
+<div class="card"><h3>c · 재다 탁</h3><div class="d">낮게 그르렁을 재다가 높이 탁 — 허세를 음미하는 결.</div>
+<button onclick="play('synk-voice-kkamong-chukha-c.wav')">듣기<span>262 그르렁 → 494 평음 · 270ms</span></button></div>
+</div>
+
+<h2>3 · 마린 「안심」 <span class="mono">링모드 감쇠 하강 — 금속 울림이 풀리며 가라앉는다</span></h2>
+<div class="refrow"><span class="mono">귀 기준점(확정판 · 판정 대상 아님)</span>
+<button onclick="play('synk-voice-marine-gidong.wav')">마린_기동</button>
+<button onclick="play('synk-voice-marine-mollae.wav')">마린_몰래기쁨</button></div>
+<div class="ev">
+<div class="card"><h3>a · 두 박</h3><div class="d">두 박 하강, 링이 풀린다(0.94→0.55). 기본형.</div>
+<button onclick="play('synk-voice-marine-ansim-a.wav')">듣기<span>196 → 175 · 링 풀림 · 390ms</span></button></div>
+<div class="card"><h3>b · 세 박 계단</h3><div class="d">세 박 계단 하강(링 0.94→0.75→0.45) — 완수의 메트로놈 결 · 가장 길다.</div>
+<button onclick="play('synk-voice-marine-ansim-b.wav')">듣기<span>220 → 196 → 175 · 560ms</span></button></div>
+<div class="card"><h3>c · 스르르</h3><div class="d">한 박에 스르르 가라앉음. 부드러운 링(0.7) — 가장 조용한 성격.</div>
+<button onclick="play('synk-voice-marine-ansim-c.wav')">듣기<span>196→175 스윕 · 320ms</span></button></div>
+</div>
+
+<p class="pick"><b>유호님 결정 3</b> — 각 줄에서 하나씩(예: <b>1a · 2b · 3a</b>) 또는 「이 줄 전부 반려 + 한 마디」.
+픽이 서면 그 항목만 확정으로 승격(출처 갱신)하고 talk 반입은 그 뒤다 — 반려된 후보는 토큰에서 걷어낸다.</p>
+
+<script>
+const play=(f)=>{ new Audio('../브랜드_사운드킷/'+f).play().catch((e)=>alert('재생 실패 — 저장소 자리(docs/tools/)에서 열었는지 확인: '+e.message)); };
+</script>
+</body></html>
