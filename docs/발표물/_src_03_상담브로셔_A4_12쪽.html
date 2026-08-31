@@ -22,6 +22,8 @@
      양면 인쇄하면 6장이 된다. 표지(p1)와 뒤표지(p12)가 바깥면이 되도록 묶는다.
 -->
 <style>
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+
 /*@FONTS@*/
 @page { size: A4 portrait; margin: 0; }
 
@@ -34,7 +36,7 @@
 *{ box-sizing:border-box; margin:0; padding:0; }
 html,body{
   background:var(--paper); color:var(--navy);
-  font-family:'Inter Tight','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
+  font-family:'SYNK Bracket','Inter Tight','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
   font-weight:500; line-height:1.72;
   -webkit-print-color-adjust:exact; print-color-adjust:exact;
 }

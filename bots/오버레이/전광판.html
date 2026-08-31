@@ -28,6 +28,8 @@
     · 몽골어 지어내기 — 검수 전까지 한국어만 그린다(문안표 mn 칸이 비어 있다).
 -->
 <style>
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+
   :root {
     /* 브랜드 킷(정본 = docs/디자인_토큰.json) — 다크 「양모 밤」(조항 ⓚ · 유호 확정 2026-08-20).
        신호는 Coral 1점 · Lime·KC 반입 0. ⚠이름은 킷 이름만 쓴다 — 08-25 까지 여기 살던
@@ -45,7 +47,7 @@
   html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
   body {
     /* 브랜드 폰트 정본(DESIGN.md:90) 그대로 — 송출 PC 에 파일이 없으면 스택이 알아서 내려간다. */
-    font-family: 'Inter Tight', 'SUIT Variable', system-ui, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    font-family: 'SYNK Bracket','Inter Tight', 'SUIT Variable', system-ui, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
     color: var(--종이);
     -webkit-font-smoothing: antialiased;
   }

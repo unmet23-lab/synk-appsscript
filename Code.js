@@ -1553,7 +1553,7 @@ function hashPick_(arr, seedStr) { let h = 0; for (let i = 0; i < seedStr.length
 //   라틴·몽골 키릴은 Inter Tight가, 한글은(Inter Tight에 한글이 없으므로) SUIT Variable이 잡는다.
 //   **순서를 뒤집지 말 것** — SUIT를 앞에 두면 SUIT의 라틴 자형이 먼저 잡혀 Inter Tight가 영영 안 쓰인다.
 //   뒤쪽 시스템 폰트는 웹폰트 로드가 실패했을 때의 그물이다(레이아웃은 유지되고 결만 약해진다).
-const CARD_FONT = "font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;letter-spacing:-0.02em;";
+const CARD_FONT = "font-family:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;letter-spacing:-0.02em;";
 
 /* [브랜드 폰트 정본 §9] 스택 이름만 바꾸면 아무 일도 일어나지 않는다 — 이 상수가 있어야 실제로 바뀐다.
  *   학생 휴대폰에 SUIT·Inter Tight가 설치돼 있을 리 없다. 로드가 없으면 전 카드가 시스템 폰트로 조용히
@@ -1563,9 +1563,14 @@ const CARD_FONT = "font-family:'Inter Tight','SUIT Variable',system-ui,-apple-sy
  *   CARD_ANIM이 같은 방식으로 라이브에서 작동 중이므로(v9.43~) 이 경로는 열려 있다.
  *   한 카드에 여러 번 들어가도 무해하다 — 같은 URL은 브라우저가 한 번만 받는다.
  *   ⚠ WebView가 <style> 안의 @import까지 통과시키는지는 라이브 실측 전이다(배포 후 자형 확인 필요). */
+// [08-31] 낫표 「 」 교정 — 유호 확정 「낫표 그거 킷에 박아줘」. 값의 정본 = docs/디자인_토큰.json 「서체.낫표교정」.
+//   까닭: Inter Tight 에 낫표 글리프가 없어 SUIT 가 그리는데 SUIT 의 낫표가 0.396em 이라 옆 글자에 붙어
+//   여는 따옴표·쉼표로 읽힌다. 'SYNK Bracket' 은 그 두 글자만 잡는 별칭이라 다른 글자에 영향이 0 이다.
+//   ⚠ @import 는 반드시 «맨 앞»에 남는다 — CSS 는 @import 앞에 다른 규칙이 오면 그 @import 를 버린다.
 const CARD_WEBFONT = '<style>' +
   '@import url("https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css");' +
   '@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&display=swap");' +
+  "@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}" +
   '</style>';
 
 // [v9.43] 🫁 숨쉬는 몬스터 — CSS keyframes 토큰. Glide Rich Text(WebView)는 <style> 블록을 렌더하므로 작동하고,
