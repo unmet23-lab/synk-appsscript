@@ -8,22 +8,31 @@ const { engineSource } = require('./_engine-source');
 
 const code = engineSource();
 
+/* 뱅크 크기는 여기 «적지» 않고 엔진에서 읽는다 — 08-31 에 72→91 로 자랐고(커리큘럼 요목 Lv1~5 전건 편입),
+ * 손으로 적어 둔 수는 그런 날 소리 없이 낡는다(같은 값을 두 곳이 알면 갈린다). */
+function 뱅크수_() {
+  const m = code.match(/grammar: (\d+),/);
+  assert.ok(m, 'CONTENT_EXPECT.grammar 앵커가 깨졌다 — 사다리 말 문턱 «상한»이 이 수를 읽는다(sceneLadderAt_)');
+  return Number(m[1]);
+}
+
 // ── 사다리(순수 함수) — 소스에서 그대로 실행한다 ──
 function ladderCtx() {
   const start = code.indexOf('const SCENE_LADDER_');
   const end = code.indexOf('/* 가이드 대사');
   assert.ok(start > -1 && end > start, '사다리 구간 표식을 못 찾았다');
   const ctx = {};
-  new Function('ctx', code.slice(start, end) +
-    '\nctx.sceneOf = sceneOf; ctx.sceneLadderAt_ = sceneLadderAt_; ctx.SCENE_LADDER_ = SCENE_LADDER_;')(ctx);
+  /* 사다리는 말 문턱 상한을 `CONTENT_EXPECT.grammar` 에서 읽는다(화면 분모와 «같은 자» · Code.js L3082).
+   * 그 전역은 잘라낸 구간 «밖»이라 여기서 넣어 준다 — 기본값으로 때우면 검사가 진짜 상한을 한 번도 안 밟고,
+   * 상한이 낡아도 초록이 뜬다(그게 08-31 에 실제로 일어난 일이다). */
+  new Function('ctx', 'CONTENT_EXPECT', code.slice(start, end) +
+    '\nctx.sceneOf = sceneOf; ctx.sceneLadderAt_ = sceneLadderAt_; ctx.SCENE_LADDER_ = SCENE_LADDER_;')(ctx, { grammar: 뱅크수_() });
   return ctx;
 }
 
 test('①⑨ 사다리 — 단조 증가·문턱 간격 확대·첫 4주 안 장면 4(주4 만남 가정)', () => {
   const { sceneOf, sceneLadderAt_, SCENE_LADDER_ } = ladderCtx();
-  /* 뱅크 크기는 여기 «적지» 않고 엔진에서 읽는다 — 08-31 에 72→75 로 자랐고(Lv4 대조·양보 셋),
-   * 손으로 적어 둔 수는 그런 날 소리 없이 낡는다(같은 값을 두 곳이 알면 갈린다). */
-  const 뱅크수 = Number(code.match(/grammar: (\d+),/)[1]);
+  const 뱅크수 = 뱅크수_();
   assert.ok(뱅크수 >= 60, `뱅크수를 ${뱅크수} 로 읽었다 — CONTENT_EXPECT.grammar 앵커가 깨졌다`);
   // 단조: 날이 늘면 장면은 절대 안 준다(같은 맞힌 말에서)
   let prev = 0;
