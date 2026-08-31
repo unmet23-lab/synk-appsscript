@@ -795,7 +795,7 @@ const SYNK_VERSION = 'v9.281'; // 전체 이력 = docs/버전_이력.md (새 버
 //   grammar:72는 setupGrammarBank(v9.36) 실행 전엔 0이라 '설치 전' 정당 경보가 뜬다(다른 콘텐츠와 동일 방식).
 const CONTENT_EXPECT = { homework: 210, quiz: 100, lore: 4, fuel: 6, boss: 12, // [함께한날 막7] monster:7 은퇴 — 시트 7행은 남되 기대·자동복구 대상에서 뺀다(소비자 0) // [08-27] lore 11→4 // [v7.8] 시즌 보스 12
   season: 12, label: 15, reason: 9, cheer: 7, cheermail: 30, braintip: 30, worldboss: 1, // [v9.9] · [v9.34] reason 8→9 — setupParentLabels R01~R09(v9.28 R09 추가) 실측 정합
-  grammar: 81, // [v9.37] W3 문법뱅크 — 미설치 시 'grammar 0/81' 정당 경보 // [08-31] 72→81 보장 경로(Lv3·Lv4) 요목 전건 편입(G613~G617 · G713~G716)
+  grammar: 91, // [v9.37] W3 문법뱅크 — 미설치 시 'grammar 0/91' 정당 경보 // [08-31] 72→91 커리큘럼 요목 Lv1~5 전건 편입(G313 · G613~G617 · G713~G725)
   guide: 3, // [함께한날 막1] 가이드 셋(몽글·까몽·마린) — 7단계 캐릭터를 대신한다(유호 확정 08-26 · 설계 = docs/함께한날_설계_v1.md)
   reach: 2 }; // [v9.40] 마감폼 '전체도달도' Choice 소스(도달/더연습) — setupGrammarBank(v9.38d)가 함께 재건. 실측 0이라 워치독·preflight 감시 대상 편입
 // [v9.40] 콘텐츠 유형 → 셋업 함수 매핑 — preflightGlide 자동 복구·워치독 안내 공용 정본.
