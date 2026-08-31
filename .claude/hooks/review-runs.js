@@ -30,13 +30,25 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
 
 /* ⚠ repo 밖 환경(git)에 기대는 조회다 — 못 돌면 **대조를 안 할 뿐** 알림 자체는 낸다.
- * 여기서 죽으면 던진 런이 통째로 안 보이게 되고, 그건 이 훅이 막으려던 바로 그것이다. */
-function 현재HEAD() {
+ * 여기서 죽으면 던진 런이 통째로 안 보이게 되고, 그건 이 훅이 막으려던 바로 그것이다.
+ *
+ * 🔑 경로를 받는다 (2026-08-31): 검수는 형제 저장소(SYNK-talk)도 대상으로 삼을 수 있고
+ *   (`codex-review.js --저장소`), 그 런의 `HEAD` 는 **그 저장소의** 것이다. 여기서 언제나 이 집의
+ *   HEAD 와 대조하면 그런 런마다 「던진 뒤 HEAD 가 움직였다」가 **매 세션 거짓으로** 뜬다 —
+ *   거짓 경보는 사람이 이 훅을 통째로 무시하게 만들고, 그때 진짜 F334 도 같이 안 보인다.
+ * ⚠ 경로별로 캐시한다 — 런이 여럿이면 같은 저장소에 git 을 여러 번 부른다(훅 예산은 120초다). */
+const HEAD캐시 = new Map();
+function 현재HEAD(경로) {
+  const p = 경로 || ROOT;
+  if (HEAD캐시.has(p)) return HEAD캐시.get(p);
+  let v = '';
   try {
-    return require('child_process')
-      .execFileSync('git', ['-C', ROOT, 'rev-parse', 'HEAD'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    v = require('child_process')
+      .execFileSync('git', ['-C', p, 'rev-parse', 'HEAD'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
       .trim();
-  } catch (_) { return ''; }
+  } catch (_) { v = ''; }
+  HEAD캐시.set(p, v);
+  return v;
 }
 
 function main() {
@@ -148,11 +160,12 @@ function main() {
   }
 
   if (s.진행.length) {
-    const head = 현재HEAD();
     줄.push('');
     줄.push(`⏳ 도는 중 ${s.진행.length}건 — 기다리지 말고 다른 일을 해라:`);
     for (const x of s.진행) {
-      줄.push(`   · ${x.런.런ID} (${x.런.종류} · ${x.판.분}분째) ${x.런.대상}`);
+      // 런마다 **그 런이 재는 저장소**의 HEAD 와 댄다(없으면 이 집 — 옛 런 행이 그 모양이다)
+      const head = 현재HEAD(x.런.저장소경로);
+      줄.push(`   · ${x.런.런ID} (${x.런.종류} · ${x.판.분}분째)${x.런.저장소 ? ` · ${x.런.저장소}` : ''} ${x.런.대상}`);
       /* F334 의 정면 — 「도는 사이 커밋이 나서 대상이 낡았는데 아무도 안 알려 계속 기다렸다」.
        * 낡음을 **판정하지 않는다**(대상 종류마다 조건이 다르다). 사실만 전하고 끄는 명령을 준다. */
       if (런.HEAD움직였나(x.런, head)) {
