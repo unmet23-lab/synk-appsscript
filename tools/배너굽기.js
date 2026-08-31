@@ -228,10 +228,12 @@ function 지면(안, 안내선) {
   const 어둡 = a.천 ? a.천.어둡나 : true;
   return `<!doctype html><meta charset="utf-8">
 <style>
+  /* 낫표 「 」 교정 — 값의 정본 = docs/디자인_토큰.json 「서체.낫표교정」(유호 확정 08-31). 스택보다 먼저 선다. */
+  @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
   html,body{margin:0;padding:0;background:${a.바탕};}
   .판{width:${W}px;height:${H}px;position:relative;overflow:hidden;background:${a.바탕};
     display:grid;place-items:center;
-    font-family:'Inter Tight','SUIT Variable',system-ui,'Malgun Gothic',sans-serif;}
+    font-family:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,'Malgun Gothic',sans-serif;}
   .천{position:absolute;inset:0;width:100%;height:100%;z-index:0;display:block;}
   /* 바깥 영역은 «분위기»만 — 글자도 로고도 두지 않는다. 키라이트가 위, 비네트가 가장자리. */
   .결{position:absolute;inset:0;z-index:1;
@@ -330,12 +332,14 @@ function 시안(굽힌것) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>yuhobuilds 유튜브 배너 — 세 안</title>
 <style>
+  /* 낫표 「 」 교정 — 값의 정본 = docs/디자인_토큰.json 「서체.낫표교정」(유호 확정 08-31). 스택보다 먼저 선다. */
+  @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
   :root{--paper:${색['Paper']};--inkdeep:${색['Ink Deep']};--coral:${색['Coral']};
     --stone:${색['Stone']};--ash:${색['Ash Wool']};
 ${변수}
   }
   body{margin:0;padding:40px 24px 72px;background:var(--inkdeep);color:var(--paper);
-    font-family:'Inter Tight','SUIT Variable',system-ui,'Malgun Gothic',sans-serif;}
+    font-family:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,'Malgun Gothic',sans-serif;}
   .지면{max-width:1000px;margin:0 auto;}
   h1{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;margin:0 0 8px;}
   .머리{color:var(--stone);font-size:.95rem;line-height:1.7;margin:0 0 36px;}

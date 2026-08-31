@@ -224,9 +224,11 @@ function 보고서쓰기(결과들, 경로) {
     </section>`).join('\n');
   const html = `<!doctype html><meta charset="utf-8"><title>지면 회귀 — 달라진 자리</title>
 <style>
+  /* 낫표 「 」 교정 — 값의 정본 = docs/디자인_토큰.json 「서체.낫표교정」(유호 확정 08-31). 스택보다 먼저 선다. */
+  @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
  :root{--paper:#FBF7F0;--ink:#2B2320;--coral:#AE322A;--stone:#C7BFB2;--oat:#EDE7DC}
  body{margin:0;background:var(--paper);color:var(--ink);
-      font-family:'Inter Tight','SUIT Variable',system-ui,'Malgun Gothic',sans-serif;line-height:1.7}
+      font-family:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,'Malgun Gothic',sans-serif;line-height:1.7}
  .wrap{max-width:70rem;margin:0 auto;padding:3rem 1.5rem 5rem}
  h1{font-size:2rem;letter-spacing:-.02em;margin:0 0 .3rem}
  .lede{color:#575046;margin:0 0 2.5rem}

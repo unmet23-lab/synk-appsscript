@@ -1,0 +1,45 @@
+<meta charset="utf-8">
+<title>bracket probe</title>
+<style>
+  /* 낫표 두 글자만 잡는 «새» 가족 — 이름은 ASCII */
+  @font-face{
+    font-family:'SYNK Bracket';
+    src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');
+    unicode-range:U+300C-300D;
+  }
+  body{background:#fff;color:#111;font:15px/1.6 system-ui;margin:14px;}
+  .r{font-size:34px;white-space:nowrap;margin:1px 0;}
+  .r i{display:inline-block;font-style:normal;}
+  table{border-collapse:collapse;margin-top:14px;font:13px ui-monospace,monospace;}
+  td,th{border:1px solid #ccc;padding:3px 9px;text-align:right;}
+  td:first-child{text-align:left;}
+</style>
+
+<div class="r"><i id="k_suit" style="font-family:'SUIT Variable'">「</i><i id="k_mg" style="font-family:'Malgun Gothic'">「</i><i id="k_new" style="font-family:'SYNK Bracket'">「</i><i id="k_gen" style="font-family:sans-serif">「</i><i id="k_kit" style="font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif">「</i><i id="k_fix" style="font-family:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif">「</i></div>
+
+<div class="r"><i id="L_kit" style="font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif">Handling ABC gjpq 0123</i></div>
+<div class="r"><i id="L_fix" style="font-family:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif">Handling ABC gjpq 0123</i></div>
+<div class="r"><i id="L_suit" style="font-family:'SUIT Variable'">Handling ABC gjpq 0123</i></div>
+<div class="r"><i id="L_gen" style="font-family:sans-serif">Handling ABC gjpq 0123</i></div>
+
+<div class="r"><i style="font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif">「이 사람 누구야?」</i> <span style="font-size:15px">현행</span></div>
+<div class="r"><i style="font-family:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif">「이 사람 누구야?」</i> <span style="font-size:15px">고침</span></div>
+
+<table id="t"><tr><th>잰 것<th>px<th>em<th>확인</tr></table>
+<script>
+  const w = (id) => Math.round(document.getElementById(id).getBoundingClientRect().width * 100) / 100;
+  const 잰다 = () => {
+    const 낫표 = { 'SUIT 단독': 'k_suit', 'Malgun 단독': 'k_mg', 'SYNK Bracket 단독': 'k_new', 'sans-serif 단독': 'k_gen', '킷 현행': 'k_kit', '킷 고침': 'k_fix' };
+    const 라틴 = { '킷 현행': 'L_kit', '킷 고침': 'L_fix', 'SUIT 단독': 'L_suit', 'sans-serif 단독': 'L_gen' };
+    const 값 = {};
+    for (const k in 낫표) 값['낫표 「 · ' + k] = w(낫표[k]);
+    for (const k in 라틴) 값['라틴줄 · ' + k] = w(라틴[k]);
+    값['SUIT 잡히나(fonts.check)'] = document.fonts.check('34px "SUIT Variable"') ? 1 : 0;
+    값['Malgun 잡히나'] = document.fonts.check('34px "Malgun Gothic"') ? 1 : 0;
+    값['Inter Tight 잡히나'] = document.fonts.check('34px "Inter Tight"') ? 1 : 0;
+    window.__잰값 = 값;
+    const t = document.getElementById('t');
+    for (const k in 값) t.insertAdjacentHTML('beforeend', '<tr><td>' + k + '<td>' + 값[k] + '<td>' + (Math.round(값[k] / 34 * 1000) / 1000) + '<td></tr>');
+  };
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(잰다); else 잰다();
+</script>

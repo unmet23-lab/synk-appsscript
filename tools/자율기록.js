@@ -226,6 +226,8 @@ function HTML(접힌것, 지금 = '') {
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;800&family=DM+Mono:wght@400;500&display=swap">
 <style>
+  /* 낫표 「 」 교정 — 값의 정본 = docs/디자인_토큰.json 「서체.낫표교정」(유호 확정 08-31). 스택보다 먼저 선다. */
+  @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
 @font-face{
   font-family:'SUIT Variable'; font-style:normal; font-weight:100 900; font-display:swap;
   src:url('https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.woff2') format('woff2-variations');
@@ -239,7 +241,7 @@ function HTML(접힌것, 지금 = '') {
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
-  font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  font-family:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
 .wrap{max-width:940px;margin:0 auto;padding:0 var(--gut) 96px}
 
