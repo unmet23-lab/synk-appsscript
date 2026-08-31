@@ -1,0 +1,2162 @@
+[
+ {
+  "id": "S3-4",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:package.json",
+   "talk:package-lock.json"
+  ],
+  "plan": "expo·RN 패치판 올리기. ① talk:package.json 21행 \"expo\": \"~57.0.9\" → \"~57.0.17\", 34행 \"react-native\": \"0.86.2\" → \"0.86.3\" — 명시 변경은 이 두 줄뿐(expo-updates ~57.0.11 등 나머지는 틸드 범위라 npm install 이 알아서 당긴다). ② npm install — postinstall(13행)이 스키아패치+BGM빌드를 스스로 돈다. 이 항목에서 skia 는 2.6.2 그대로라 스키아패치는 초록이어야 정상(빨강이면 중단하고 보고). ③ 설치판 실측: node -e 로 node_modules 의 expo·react-native version 을 찍어 57.0.17/0.86.3 확인 — 레지스트리에 그 판이 없으면 ~57.0.x 실존 최신으로 맞추고 판 번호를 커밋 본문에 남긴다. ④ npm test 전체(talk-full-suite-before-commit). ⑤ 커밋 범위 못박기: git commit -- package.json package-lock.json. ⚠ S3-3(skia 2.11.1)과 같은 파일을 만지므로 두 항목은 한 레인에서 순차로 — 병렬 금지.",
+  "evidence": "talk:package.json 21행 \"expo\": \"~57.0.9\", 34행 \"react-native\": \"0.86.2\" · 설치판 실측(node -e) expo 57.0.9 / rn 0.86.2 — bb904ab 이후에도 미반영(git log -2 -- package.json 은 f8f1916/3133621 뿐).",
+  "tests": "전용 시험 파일 없음(버전 핀 grep 0건) — npm test 전체가 회귀 자. 새 회귀 불필요(무파괴 패치 릴리스).",
+  "blockers": ""
+ },
+ {
+  "id": "S3-10",
+  "verdict": "doc_only",
+  "repo": "talk",
+  "files": [
+   "talk:docs/정찰_먼자리좌표.md"
+  ],
+  "plan": "채택이 아니라 좌표 기록이다. talk:docs/정찰_먼자리좌표.md 를 만들고(이미 있으면 절만 추가 — S3-11·S3-9 와 같은 파일을 쓴다) 「온디바이스 STT — react-native-executorch」 절을 세운다. 내용: ① 무엇 = Software Mansion react-native-executorch 의 useSpeechToText(Whisper·Moonshine 온디바이스 · v0.3.0 신설, 현행 0.4.x) + Expo 공식 블로그의 폰 마이크→로컬 Whisper 시연. ② 우리 자리 = 발음 데이터 트랙 낱말 11개의 기기 안 발음 대조 — 유일한 무거운 길 후보. ③ 문지기 = 모델 수십~수백MB · 몽골 저사양 기기 램(굽기 램 병목과 같은 축) · 실기기 실측 불가(에뮬 막힘). ④ 지금 앱 실물 = executorch 반입 0(grep 실측 날짜 명기). ⑤ 재개봉 = latest-ai-scouting-gate 정찰 때 이 절부터. 출처 링크 둘(expo.dev/blog · docs.swmansion.com 0.4.x useSpeechToText) 그대로 옮긴다. 머리말에 「이 파일은 채택 목록이 아니라 «지켜보는 좌표»다 — 채택은 별도 판정」 한 줄.",
+  "evidence": "grep 'executorch' talk:src/ lib/ package.json = 0건(실측) — 코드 반입도 좌표 기록도 현재 0. 발음 트랙 낱말 11개 확정은 기억 pronunciation-data-track(08-31).",
+  "tests": "해당없음 — 문서.",
+  "blockers": ""
+ },
+ {
+  "id": "S3-11",
+  "verdict": "doc_only",
+  "repo": "talk",
+  "files": [
+   "talk:docs/정찰_먼자리좌표.md"
+  ],
+  "plan": "talk:docs/정찰_먼자리좌표.md(없으면 생성 · S3-10 과 같은 파일)에 「Skia Graphite — 채택하지 않는다」 절을 세운다. 내용: ① 무엇 = Skia 의 Graphite 백엔드(WebGPU·자동 스레딩·2D/3D 합성 통합) — react-native-skia v2.10.1(07-29)·v2.12.0-next(08-06)에 이식 진행 중. ② 판정 = 채택하지 «않는다» 명시 — 2026-04 기준 프로덕션 비권장 + Android API 26+ 요구 + 저사양 실측 불가(에뮬 막힘)라 성숙 전 도입은 위험만 산다. 캐릭터 3D 금지(유호 기각 08-26)와는 무관한 «렌더 백엔드» 층임을 한 줄로 가른다. ③ 익으면 = 몽글 메시 변형 프레임이 자산 변경 0으로 빨라지는 자리. ④ 재개봉 조건 셋 = 상류 프로덕션 권장 선언 · react-native-skia 안정판 이식 완료 · Android API 26+ 하한이 우리 대상 기기와 맞는지 대조. ⑤ 우리 현행 = @shopify/react-native-skia 2.6.2(S3-3 이 오르면 그 판 기준으로 다시 본다). 출처 링크 둘(shopify.engineering · GitHub releases) 그대로.",
+  "evidence": "talk:package.json 20행 skia 2.6.2(실측) · grep 'Graphite' talk:src/·lib/·tools/ = 테마.js 색 주석뿐(렌더 백엔드 플래그 소비 0) — 기록할 문서 자리도 현재 0.",
+  "tests": "해당없음 — 문서.",
+  "blockers": ""
+ },
+ {
+  "id": "S3-3",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:package.json",
+   "talk:package-lock.json",
+   "talk:tools/스키아패치.js"
+  ],
+  "plan": "① talk:package.json 20행 \"@shopify/react-native-skia\": \"2.6.2\" → \"2.11.1\" 후 npm install. ② postinstall(13행)의 tools/스키아패치.js 가 판정한다(20~22행 설계: 병도 처방도 못 찾으면 빨강): (a) 초록 = 상류가 병(useVideoLoading 최상위 createWorkletRuntime)을 아직 안 고침 → 패치 유지, 그대로 진행. (b) 빨강 = node_modules/@shopify/react-native-skia/src/external/reanimated/useVideoLoading.ts 를 눈으로 열어 최상위 호출이 정말 사라졌는지 확인(상류 PR #3939 반영 추정) → 맞으면 package.json 13행에서 「node tools/스키아패치.js && 」만 걷고(BGM빌드는 남긴다) tools/스키아패치.js 삭제 + grep '스키아패치' 전수로 남은 참조 소탕(removal-needs-three-sweeps). ③ npm test 전체(talk-full-suite-before-commit) — 마스코트배선·마스코트생명·npc자산 시험이 마스코트 층을 덮는다. ④ 실렌더는 에뮬 통로 막힘이라 못 잰다 — 「안 재봤다」로 커밋 본문에 명기하고, 마스코트몸의 조용한 폴백(require 던지면 Animated.Image 강등) 위험은 스키아패치의 빨강 게이트+시험 초록으로 갈음. ⑤ 커밋 범위 못박기(package.json·package-lock.json·패치 걷은 갈래면 스키아패치 삭제 포함). ⚠ S3-4 와 같은 파일 — 한 레인 순차.",
+  "evidence": "talk:package.json 20행 \"2.6.2\"(실측 · 설치판도 2.6.2) · 13행 postinstall 에 스키아패치 상주 · tools/스키아패치.js 20~22행 「병도 처방도 못 찾으면 빨갛게 실패한다 … 이 스크립트와 postinstall 호출을 같이 걷어내면 된다」 — 항목 서술과 실물 일치, bb904ab 미반영.",
+  "tests": "tests/마스코트배선.test.js · 마스코트생명.test.js · npc자산.test.js(마스코트 층) + npm test 전체. 새 회귀 불필요 — postinstall 스키아패치 자체가 업그레이드 게이트다.",
+  "blockers": ""
+ },
+ {
+  "id": "S3-5",
+  "verdict": "blocked",
+  "repo": "talk",
+  "files": [
+   "talk:app.json",
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "배경 녹음 생존 개통 — 실측 선행이라 지금은 지시서만. ① 선언: talk:app.json ios 절에 infoPlist.UIBackgroundModes:[\"audio\"], expo-audio 플러그인 설정으로 Android 마이크 포그라운드 서비스 선언(SDK 55+ 정식 통로 — 우리는 57이라 탑재돼 있고 미사용). 선언만으론 안 산다 — 네이티브 재빌드(EAS build) 필요. ② 실측(이 항목의 심장): 우리 녹음 통로는 recorder 가 아니라 useAudioStream(PCM · 말하기화면.js 24행 — wav조립이 m4a 인코더를 피해 고른 길)이라, «스트림 콜백이 배경에서도 계속 오는가»를 실기기에서 재야 한다 — 문서가 보장하는 것은 recorder 갈래다. 홈 이탈→30초→복귀로 조각 연속성·wav 길이를 대조. ③ 실측이 초록일 때만: 말하기화면.js 1101~1103행 AppState 리스너의 set끊김(true) 를 「배경 생존 확인된 갈래」에서 접고, 1341~1343행 「여기까지만 담겼어요」 안내는 진짜 절단(스트림 죽음) 갈래에만 남긴다 — 끊김 UI 를 실측 전에 걷으면 절단이 숫자 뒤에 숨는다(1339행 주석의 규율 그대로). 시공 순서: 선언 커밋 → EAS 빌드 → 실기기 실측 → 화면 배선.",
+  "evidence": "말하기화면.js 24행 useAudioStream import · 933행 끊김 state(「배경으로 나가 녹음이 중간에 멈췄다」) · 1101~1103행 AppState→set끊김 · 1341~1343행 안내문 실재. app.json 에 UIBackgroundModes·포그라운드 서비스 선언 0(grep background = backgroundColor/backgroundImage 뿐).",
+  "tests": "tests/wav조립.test.js(녹음 조립 층) · 말하기화면 앵커 민감 시험 주의. 실측 후 배선 때 「끊김 갈래 가름」 회귀 1건 추가.",
+  "blockers": "실기기 실측(useAudioStream 배경 생존 — 안 재봤다) + 네이티브 재빌드(EAS)"
+ },
+ {
+  "id": "S3-6",
+  "verdict": "blocked",
+  "repo": "talk",
+  "files": [
+   "talk:docs/정찰_먼자리좌표.md"
+  ],
+  "plan": "확인 한 번이 전부인 항목. ① EAS 대시보드(또는 eas update:list / 업데이트 상세)에서 최근 EAS Update 의 다운로드가 Hermes 바이트코드 «디프»로 나가는지, 크기 절감(선언상 58~75%)이 실제 찍히는지 눈으로 1회 확인 — SDK 56부터 기본이라 원리상 이미 받고 있어야 하고, 설정 변경은 0이어야 정상. ② 함정 하나를 같이 본다: runtimeVersion policy 가 appVersion(app.json 30~32행)이라 디프는 «같은 앱 판 안» 업데이트 사이에서만 성립 — 앱 판이 바뀐 직후 첫 업데이트가 전체 다운로드로 찍히는 것은 병이 아니다. ③ 결과를 talk:docs/정찰_먼자리좌표.md 에 「OTA 디프 — 확인 결과」 한 절로 남긴다(확인 날짜 · 본 업데이트 id · 크기 — 자와 함께 적는다: measurement-needs-its-instrument). 디프가 안 나가는 것으로 보이면 그때만 원인 조사 항목을 새로 세운다 — 지금 코드·설정 수정은 0.",
+  "evidence": "talk:app.json 27~29행 updates 절 = fallbackToCacheTimeout 뿐(디핑은 서버 쪽 기본이라 로컬 설정 무관) · expo-updates 57.0.11 설치 실측 · 디프 배출 여부는 로컬에 자가 없다 — EAS 대시보드만 안다(안 재봤다).",
+  "tests": "해당없음 — 눈 확인 + 기록.",
+  "blockers": "EAS 계정 자격(대시보드 또는 eas CLI 로그인) 필요"
+ },
+ {
+  "id": "S3-7",
+  "verdict": "blocked",
+  "repo": "talk",
+  "files": [
+   "talk:docs/정찰_먼자리좌표.md"
+  ],
+  "plan": "라이브 DB 대조 자 세우기 — 실행은 배포 창에서. ① Supabase CLI 현행판(pg-delta 디핑 엔진 든 판)을 준비하고, 라이브 프로젝트에 링크된 상태에서 읽기 diff 1회: 라이브 스키마 vs repo(supabase/L0_스키마.sql 합본 + migrations 41조각). 알파라 «자(읽기 diff)»로만 쓴다 — 마이그레이션 생성·적용은 기존 합본 통로 유지(적용 금지). ② 과녁 = 파이프라인 감사가 「라이브와 repo 일치는 안 재봤다」로 남긴 자리 + registry-blind-to-live-columns(라이브엔 코드가 모르는 열이 자란다) — 어긋난 열·정책 목록이 나오면 그것이 산출물이다. ③ 결과를 talk:docs/정찰_먼자리좌표.md 「DB 디프 — pg-delta 첫 실측」 절에 남긴다(실행 날짜 · CLI 판 · 어긋남 목록 또는 「어긋남 0」 — 0 이면 분모(대조한 테이블 수)와 함께: report-zero-with-denominator). ④ 시점 = 다음 배포 창 «전»(deploy-source-diff 축의 DB판) — 다세션이면 얼린 트리에서. 코드 수정 0.",
+  "evidence": "talk:supabase/migrations 41조각(ls 실측 — 감사 시점 40에서 하나 늘었다: 20d4455 M2 관찰 커밋) + L0_스키마.sql 합본 실재 · grep 'pg-delta' talk:supabase/·docs/·tools/ = 0건(아직 아무도 안 세움).",
+  "tests": "해당없음 — 읽기 diff + 기록. 기존 확인_적용전상태.sql·확인_적용후상태.sql 통로와 겹치지 않게 «참고 층»으로만.",
+  "blockers": "라이브 DB 접속 자격(Supabase access token/링크) 필요 · pg-delta 는 알파"
+ },
+ {
+  "id": "S3-8",
+  "verdict": "peer_territory",
+  "repo": "talk",
+  "files": [
+   "talk:lib/과제검문.js",
+   "talk:supabase/functions/deliver-one/index.ts",
+   "talk:tests/과제검문.test.js"
+  ],
+  "plan": "중복창에 «뜻 유사도» 갈래 곁들이기(글자 완전일치는 그대로 두고 추가만). ① lib/과제검문.js: 순수 함수 코사인유사(벡터a,벡터b)와 유사임계 상수(초기 0.92 — 실측 전 참고값 표기)를 추가하고, 검문 재료에 선택 인자 후보벡터·최근벡터들 을 판다 — 안 주면 현행 완전일치만 도는 무해 기본값(94~99행 판정식은 한 글자도 안 바꾼다). 유사 판정 시 사유들.push('유사중복') — '중복'과 다른 낱말로 갈라 관측이 가려지게. ② deliver-one/index.ts: Supabase.ai.Session('gte-small')(Edge 붙박이 — 새 외부 의존 0)로 후보 문장과 최근문장들(이미 ②' 조인으로 손에 있다)을 임베딩해 검문에 주입. 첫 판은 요청 안 계산 — 임베딩 저장 열 추가는 registry 열 충돌 규율이라 별도 판정. ③ 임계 실측: evals 재료로 참/거짓 중복 쌍을 채점해 과잉 거름이 §6-4 강등 경로를 늘리는지 대조 후 임계 확정. ④ 회귀: tests/과제검문.test.js 에 유사중복 갈래 경계 시험(임계 ± 한 쌍 · 벡터 미주입 시 현행 동작 불변).",
+  "evidence": "lib/과제검문.js 94~99행 — 중복 판정 = 중복정규화 후 «완전 일치» 뿐(뜻 유사도 갈래 0 · grep '유사' 0건). lib/과제검문.js 는 과제에 명시된 엔진 레인 영토라 수정 금지 — evals/** 도 영토.",
+  "tests": "tests/과제검문.test.js(기존 커버) + 새 회귀 1건: 벡터 미주입이면 판정 불변 · 임계 경계 한 쌍.",
+  "blockers": "엔진 레인 영토(lib/과제검문.js·evals/**) 수정 필요 + 유사도 임계 실측 선행"
+ },
+ {
+  "id": "S3-9",
+  "verdict": "doc_only",
+  "repo": "talk",
+  "files": [
+   "talk:docs/정찰_먼자리좌표.md"
+  ],
+  "plan": "talk:docs/정찰_먼자리좌표.md(없으면 생성 · S3-10·S3-11 과 같은 파일)에 「Realtime Broadcast 바이너리 페이로드」 절을 세운다. 내용: ① 무엇 = Supabase Realtime Broadcast 가 bytea 를 WebSocket·REST·DB 경유로 나른다(2026-07) — base64 33% 세금 제거. ② 함정(이 절의 심장) = supabase-js 2.91.0+ 필요, 구판 클라이언트는 바이너리 메시지를 «조용히 버린다» — 들이는 날 판 하한을 계약으로 못 박을 것. ③ 우리 현행 = 신앱은 fetch 전용, supabase-js 의존 0(package.json 실측 — supabase-js 는 Edge Fn 서버 쪽 주석에만 등장) → 지금 들일 일 없음. ④ 쓰는 날 = radio 스키마(자막카드·퀴즈라운드)의 봇→시청 화면 실시간 푸시 · 장차 c14 강사 실시간 관찰 층 — 그날의 첫걸음은 «앱에 supabase-js 채택» 판정부터라 크기는 중간. ⑤ 출처 링크(supabase.com/changelog 47796) 그대로. 코드 수정 0.",
+  "evidence": "grep '@supabase|supabase-js' talk:package.json = 0건(실측 — 의존 없음) · supabase-js 언급은 functions/auth/index.ts 43행 등 서버 쪽 주석뿐 · radio 함수들(radio-ingest·radio-round 등) 실재 — 항목 서술과 실물 일치.",
+  "tests": "해당없음 — 문서.",
+  "blockers": ""
+ },
+ {
+  "id": "S1-5",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:tests/lib/화면세우기.js",
+   "talk:src/나침반화면.js",
+   "talk:tests/화면렌더.test.js"
+  ],
+  "plan": "① tests/lib/화면세우기.js 그리기(116~118행)에 셋째 인자 «내보냄»을 더한다: `function 그리기(상대경로, props = {}, 내보냄 = null)` · `const 화면 = 내보냄 ? 모듈[내보냄] : (모듈.default || 모듈);` — 기존 호출 전부 무수정. ② src/나침반화면.js `{세션 && 문항들.map((q) => (` 블록(169~215행)의 카드 JSX를 `export function 문항카드({ q, 시즌회차, 지난5년답, 값, 바꾸기, 바꿨나, on바꿨나 })` 순수 조각으로 뗀다(모듈 상수 s·색·몽골어폰트·그대로값만 소비 · 기본 화면은 상태를 prop 으로 넘긴다 — lib 로 판정을 떼 온 그 무늬). ③ tests/화면렌더.test.js 두 벌 추가: ㉮ ⑦-c 답장 무오류 갈래(코드 수정 0 — prop 만으로 그려진다): 그리기('src/답장화면.js', {토큰:'x', 막힘:null, 돌아가기(){}, 교정:{correction_id:'c', corrected_text:'고친 문장', error_tags:['오류없음'], actor_kind:'ai'}}) → '고친 문장' match · '오류없음' doesNotMatch(답장화면.js 207행이 무오류표식을 태그에서 거른다 — 성취의 날에 코랄 옷 금지) · '알겠어요' match. ㉯ 나침반 문항카드: 그리기('src/나침반화면.js', {q:{키:'goal', 라벨:'이번 교재 목표', 상한:80, 라벨_mn:null}, 시즌회차:false, 값:'', 바꾸기(){}}, '문항카드') → 라벨이 글자로 난다. 회고화면 조각(세션 카드)은 항목 자체 권고대로 «그 화면을 만지는 다음 판»에 잇는다 — 이번 시공 범위 밖으로 명시.",
+  "evidence": "화면렌더.test.js 의 그리기('src/…) 전수(grep): 회고화면 0회 · 나침반은 세션 null 로만(161행) · 답장 교정 채운 렌더는 막힘 동반(⑦-b 128~130행)뿐 — 무오류·문항카드 갈래는 실제로 안 그려진다. 화면세우기.js:118 이 모듈.default 만 세워 이름 내보냄을 못 그린다.",
+  "tests": "tests/화면렌더.test.js(직접 확장) · tests/나침반문항.test.js·tests/스폰통로.test.js 기존 초록 유지 확인. 새 회귀 = 위 ㉮㉯ 두 벌 자체.",
+  "blockers": ""
+ },
+ {
+  "id": "S1-6",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:lib/경과시계.js",
+   "talk:src/말하기화면.js",
+   "talk:src/교수멘탈화면.js",
+   "talk:src/보고서교정화면.js",
+   "talk:src/서류관문화면.js",
+   "talk:tests/경과시계.test.js"
+  ],
+  "plan": "한 커밋에 전부(서류관문 주석의 자백 「뗄 때 네 화면을 한 번에 걷을 것」 그대로 — 반쪽 전파 금지). ① lib/경과시계.js 신설: 말하기화면.js 855~859행 머리 주석(Date.now 금지 근거 — 시각 동기화·타임존이 음수·몇 시간짜리 값을 만들고 그 행이 «오래 망설인 학생»으로 읽힌다 · performance 없으면 null = 「안 쟀다」, 0 이면 «즉답» 거짓)을 통째로 옮겨 싣고 `export const 경과시계 = () => (typeof performance !== 'undefined' && performance && typeof performance.now === 'function' ? performance.now() : null);` (현 사본과 자구 동일). ② 네 화면에서 로컬 정의+딸린 주석을 지운다 — 말하기화면.js 855~862행 · 교수멘탈화면.js 69~71행 · 보고서교정화면.js 65~67행(각자 위 주석 줄 포함) · 서류관문화면.js 61~67행(자백 주석 포함). 각 화면 기존 lib import 줄 곁에 `import { 경과시계 } from '../lib/경과시계.js';` 추가. 호출부는 이름 그대로라 0줄 수정. ③ tests/경과시계.test.js 신설: ㉮ node 에서 typeof 경과시계() === 'number'(node 는 performance 를 가진다), ㉯ 소스 검사(tests/lib/소스검사.js 코드만) — 네 화면 파일에 /const 경과시계 =/ 재정의 0건(사본 부활 방지 — 이 회귀가 항목의 실값이다).",
+  "evidence": "네 사본 현존 실측(grep): 말하기화면.js:860 · 교수멘탈화면.js:69 · 보고서교정화면.js:65 · 서류관문화면.js:65 — 감사 행번호에서 bb904ab 로 2~5줄 밀렸고 본문은 자구 동일. lib/ 에 경과시계 0건. 서류관문화면.js 62~64행 주석이 「네 번째 사본 — 공용 통로로 뗄 자리」 자백 유지.",
+  "tests": "tests/서류관문화면.test.js:148·150 이 호출부 정규식(계측시작(경과시계()))으로 이미 덮는다 — 이름 유지라 그대로 초록. 새 회귀 = tests/경과시계.test.js ㉯ 사본 0건 검사.",
+  "blockers": ""
+ },
+ {
+  "id": "S1-8",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:tools/테마색.js",
+   "talk:tools/make-icons.js",
+   "talk:tests/아이콘.test.js",
+   "talk:tests/테마면.test.js",
+   "talk:tests/킷대조.test.js"
+  ],
+  "plan": "① tools/테마색.js 신설(CJS · tools/guard.js 처럼 test 가 require 하는 선례 있음): 테마면.test.js 63행 정규식(/export const 색 = \\{([\\s\\S]*?)\\n\\};/)을 이리로 옮겨 src/테마.js 를 fs 로 읽고 토큰이름→hex 지도를 주는 `킷색()` + 상수 `코랄소프트 = '#FBB7A3'`(⚠ 이 값은 테마.js 에 토큰이 없다 — grep 0건, 아이콘 전용이라 여기가 talk 쪽 유일 사본이 된다 · 주석에 명기). ② tools/make-icons.js 37~39행 하드코드 삭제 → `const { 킷색 } = require('./테마색.js'); const { 바탕: NAVY2, 잉크: CREAM, 신호: CORAL } = 킷색();` — 소비부(108~131행) 무수정. ③ tests/아이콘.test.js 23~26행 → 같은 킷색()·코랄소프트 소비로 교체. ④ tests/테마면.test.js 63~64행 파서도 킷색() 재사용(파서가 두 벌이면 constant-known-in-two-places 재발). ⑤ tests/킷대조.test.js 신설: 형제 경로 path.join(ROOT, '..', 'SYNK-appsscript', 'docs', '디자인_토큰.json') — fs.existsSync 거짓이면 조용히 통과(기억데려오기 「형제 없으면 침묵」 무늬 · CI 자동 침묵), 있으면 JSON 색.킷 배열을 이름→hex 지도로 접어 대조: Ink Deep=색.바탕 · Ink=색.바탕띄움 · Paper=색.잉크 · Coral=색.신호 · Coral 2=색.신호_보조 · Coral 3=색.눌림 · Coral Soft=코랄소프트.",
+  "evidence": "사본 현존 실측: make-icons.js:37~39 · 아이콘.test.js:23~26(#FBB7A3 넷째 줄 포함) 하드코드 그대로 · 테마.js:23·37·38 이 원천 · #FBB7A3 은 테마.js 에 없음(grep 0건 — 형제 json 14행·302행에만). 테마면.test.js:63 파서 실재. 형제 json 킷 배열에 위 일곱 이름 전부 실재 확인.",
+  "tests": "tests/아이콘.test.js·tests/테마면.test.js 가 기존 커버 — 교체 후 그대로 초록이어야 한다. 새 회귀 = tests/킷대조.test.js(형제 있을 때만 물고 없으면 침묵).",
+  "blockers": ""
+ },
+ {
+  "id": "S1-9",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:tools/오디오스트림문지기.js",
+   "talk:package.json",
+   "talk:tests/오디오스트림문지기.test.js"
+  ],
+  "plan": "스키아패치.js 선례(멱등 · 병도 처방도 못 찾으면 «빨갛게» 실패 — 조용히 넘어가면 업그레이드가 미패치로 성공처럼 찍힘) 그대로. ① tools/오디오스트림문지기.js 신설: `판정()` 을 내보내고 require.main 일 때 실행. ㉮ node_modules/expo-audio/build/AudioStream.js 가 실재하고 본문에 'export function useAudioStream' 이 있는가(ESM 컴파일본이라 require 말고 «본문 검사» — 현재 10행에 실재) — 아니면 exit 1 + 「expo-audio 가 build 구조를 바꿨다: src/말하기화면.js:24 직수입이 Metro 에서 죽는다 — 재판정하라」. ㉯ build/index.js 에 AudioStream «런타임» 재수출이 생겼는가 — /export\\s+(?!type)[^;\\n]*from\\s+'\\.\\/AudioStream'/ (현재는 5행 `export type * from './AudioStream.types'` 뿐) — 생겼으면 exit 1 + 「배럴이 고쳐졌다: 직수입을 걷고 이 문지기도 같이 걷어라」. ② package.json scripts.postinstall → `node tools/스키아패치.js && node tools/BGM빌드.js && node tools/오디오스트림문지기.js`. ③ tests/오디오스트림문지기.test.js: 판정() 을 현재 node_modules 에 돌려 초록 + package.json postinstall 문자열에 '오디오스트림문지기' 포함. S3-4(expo 패치 인상)와 순서 무관 — 문지기는 버전이 아니라 «구조»를 재므로 어느 쪽이 먼저든 옳게 운다.",
+  "evidence": "말하기화면.js:24 직수입 현존(`from 'expo-audio/build/AudioStream'`) · 설치본 expo-audio 57.0.3: build/index.js 의 AudioStream 재수출은 타입뿐(5행) — 병이 아직 산다. postinstall 현행 = 스키아패치+BGM빌드 둘(package.json 실측) · tools/ 와 tests/lib/화면세우기.js:94(가짜 치환 — 원리상 못 잡음 확인) 어디에도 이 문지기 없음(grep AudioStream 전수).",
+  "tests": "건드리는 파일을 덮는 기존 시험 없음(postinstall 은 무커버). 새 회귀 = tests/오디오스트림문지기.test.js(판정 초록 + postinstall 등재 확인).",
+  "blockers": ""
+ },
+ {
+  "id": "S1-10",
+  "verdict": "doc_only",
+  "repo": "appsscript",
+  "files": [
+   "apps:docs/_ops/트랙.md"
+  ],
+  "plan": "코드 0줄 — 산출물은 트랙 원장 한 불릿. docs/_ops/트랙.md §6 「기술 부채 — 알고 있고 안 고친 것」(현재 3742행 헤더) 절의 끝, §9-SHIFT 헤더(현재 3861행) 앞에 불릿 하나: 「🔵 **말하기화면.js 1,626줄 — 홈 셸과 발화 엔진의 동거**(감사 S1-10 · 08-31). 한 파일이 여섯 몫: 세 호흡 흐름 · PCM 녹음 엔진 · 게임 4종 라우팅 · 밀린 큐 3종의 유일 배출구 · 목표/확인 카드 머리 · 라디오 낭독. 지금은 안 뜯는다 — 구조 수리는 완성 후 규율이고, 게임 화면이 녹음카드·기록추가를 prop 으로 빌리는 설계는 명문 이유(새 통로 0 · 순환 import 회피)가 있다. ⇒ **다음에 이 파일을 키우는 판(G5 신설 · 녹음 엔진 교체)의 첫 줄** = 게임 라우팅+큐 배출구+카드 머리를 「오늘셸」 로 떼기.」 ⚠ 트랙.md 는 공용 원장 — 고치는 즉시 그 줄만 못 박아 커밋(`git commit -m … -- docs/_ops/트랙.md`).",
+  "evidence": "트랙.md 에 「오늘셸」 0건(grep — 말하기화면 언급은 2039행 게임 배선 건뿐)이라 미등재 확인. talk 실물 wc -l = 1,626줄(감사 때 1,620 → bb904ab 로 +6 · 동거 구조는 그대로).",
+  "tests": "해당 없음(문서 한 줄).",
+  "blockers": ""
+ },
+ {
+  "id": "S1-11",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/문구감수화면.js",
+   "talk:tests/문구감수화면.test.js"
+  ],
+  "plan": "① src/문구감수화면.js — 파일 상단 상수부에 `const 미확정상한 = 60;` (기본쪽크기 20 의 3쪽 · 주석에 근거와 한계를 명기: 「미확정 카드가 쌓이면 TextInput 수십 장이 ScrollView 에 동시 마운트된다 — FlatList 전환 대신 상한이 싼 처방. ⚠ 실기기 프레임은 안 재봤다(emulator-review-blocked) — 60 은 추정이다」). 117행 `{커서 && !도는중 ? (` → `{커서 && !도는중 && 목록.length < 미확정상한 ? (` 으로 조건 확장. 그 바로 뒤에 갈래 하나 추가: `{커서 && !도는중 && 목록.length >= 미확정상한 ? (<Text style={s.빈꼬리}>화면에 {목록.length}문장이 쌓였어요 — 판정을 끝내면 이어서 받을 수 있어요.</Text>) : null}` (기존 s.빈꼬리 스타일 재사용 · 존댓말 결 · 버튼이 사라진 까닭을 화면이 말한다). 끝냈다()(76행)가 목록에서 빼므로 상한 아래로 내려가면 «더 불러오기»가 저절로 돌아온다 — 새 state 0. ② tests/문구감수화면.test.js ⑧ 추가(기존 소스 검사 결 그대로): 화면 소스가 /목록\\.length\\s*<\\s*미확정상한/ 을 물고 있고 /const 미확정상한/ 정의가 1곳인가.",
+  "evidence": "현행 실물: 더받기가 누적(61행 `[...앞, ...r.목록]`) · 제거는 확정 시뿐(76행 filter) · 렌더는 ScrollView 안 목록.map(81·95행) · 더 불러오기 조건은 `커서 && !도는중` 뿐(117행) — bb904ab 이후에도 상한 0건(grep 미확정상한·FlatList = 0). 감사 proposal 의 두 안 중 상한 쪽이 실물과 맞아 그 안으로 적었다.",
+  "tests": "tests/문구감수화면.test.js(기존 ①~⑦ 소스 검사가 이 화면을 덮음) — 새 회귀 = 위 ⑧ 한 벌.",
+  "blockers": ""
+ },
+ {
+  "id": "D1-1",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:lib/제출로그.js",
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "①lib/제출로그.js 배달상태(290-297): 기기보관 칸 추가 = 오늘것.filter(e=>!e.event_id && e.send_final && !e.task_meta).length, 못보냄 필터에 && e.task_meta 를 더해 폴백 날을 «실패»에서 뺀다(항목추가:103이 task_meta를 항상 항목에 싣고, 끝:true+task_meta 없음 조합은 제출API.js:68 폴백 갈래뿐). ②src/말하기화면.js 완료카드(1479-1524): 다닿음(1486)을 보내는중===0 && 못보냄===0 && 배달.기기보관===0 으로 — 기기보관 날 「목소리가 도착했어요」(1503)와 답장 약속(1523)이 서지 않게. 배달.기기보관>0 이면 s.메모로 「오늘 목소리는 이 폰에 잘 담아 뒀어요」(⚠ 문구 초안 주석 — 확정은 유호님) 한 줄, 못보냄 오류줄(1511-1513)은 진짜 실패에만 현행 유지. ③보내기(269-291)의 278행: if (r.오류) { if (항목.task_meta) set오류(r.오류); return; } — 폴백 항목은 상단 오류를 안 세운다. 관측 보존: 발화보내기 오류문은 전송기록이 send_error 로 그대로 적고(제출로그.js:160-163) degraded 행이 이미 진다 — 화면 갈래만 바뀐다.",
+  "evidence": "제출API.js:68 「if (!항목.task_meta) return { 오류: '그날 서버 과제를 못 받아 기기에만 남겼어요', 끝: true }」· 배달상태(제출로그.js:295)가 이것을 못보냄에 합산 · 완료카드 1511-1512 「보내지 못했어요. 선생님께 알려 주세요」 현존 — 미해결.",
+  "tests": "tests/말하기로직.test.js(배달상태 기존 커버) — 회귀 1건: {send_final:true, task_meta:null, event_id:null} 항목이 기기보관 1·못보냄 0 으로 갈리는지",
+  "blockers": ""
+ },
+ {
+  "id": "D1-2",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:lib/마이크권한.js",
+   "talk:src/말하기화면.js",
+   "talk:contents/문구_오류.js",
+   "talk:contents/문구_1차.js"
+  ],
+  "plan": "①contents/문구_오류.js 문구 표에 3키 추가: 'err.mic_denied'(ko='마이크를 쓸 수 없어요 — 설정에서 마이크를 켜 주세요'), 'err.mic_check_failed'(ko='마이크를 확인하지 못했어요'), 'err.audio_setup_failed'(ko='소리를 준비하지 못했어요') · mn은 전부 ''(지어낸 번역 금지). contents/문구_1차.js 에 같은 string_id 3행(draft_mn:null · source_file:'lib/마이크권한.js') — tests/문구_오류.test.js 1:1 양방향 검사가 두 파일 동시 추가를 강제한다. ②lib/마이크권한.js: 19행 거절_메시지와 38·49행 하드코드를 require('../contents/문구_오류.js').말('err.…') 파생으로(둘 다 순수 CJS — node:test 그대로 돈다). e.message 사유 덧붙임은 현행 유지. ③src/말하기화면.js 시작(1012-1020): set막힘(null) 옆에 set설정필요(false) 리셋, 준비 실패 갈래에서 set설정필요(준비.재요청가능 === false) — 마이크준비가 이미 돌려주는 값(마이크권한.js:43). 대기 카드 1316 「{막힘 && …}」 아래에 {막힘 && 설정필요 && <Pressable style s.보조버튼 onPress={()=>Linking.openSettings()}>설정 열기</Pressable>} — import { Linking } from 'react-native'(RN 내장 — 새 외부 의존성 아님).",
+  "evidence": "grep Linking src/ lib/ = 0건(실측) · 마이크권한.js:19 하드코드 현존 · 말하기화면 1014-1020이 준비.메시지만 쓰고 재요청가능을 버림 — 미해결.",
+  "tests": "tests/마이크권한.test.js(문구 출처 갱신) + tests/문구_오류.test.js(1:1 자동 강제) — 새 회귀: 재요청가능=false 반환 케이스 1건",
+  "blockers": ""
+ },
+ {
+  "id": "D1-3",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "①439-441행 갈래를 셋으로: 결과.사유 = '오늘 과제를 다시 받아 볼게요!'(괄호 원문 제거), 결과.원인 = 토큰 ? String(e.message||e) : null, 결과.첫만남 = 기록.length === 0 — 기록은 383행에서 읽은 이 기기 전 생애 로그이고 catch(428) 스코프에 살아 있다. 과제 state 에 실려 세션 내내 안정(로그가 자라도 안 뒤집힘). ②646행: {과제 && 과제.출처==='고정' && !과제.첫만남 && <Text style={s.메모}>{과제.사유} · 오늘은 연습 문장으로 해요</Text>} 로 바꾸고, 바로 아래 {과제 && 과제.원인 ? <Text style={s.원인메타}>{과제.원인}</Text> : null} — s.원인메타는 막힘카드 s.메모 규격(폰트.모노 11 · 모노트래킹.라벨 · 색.잉크_보조 — 모노트래킹 import 는 26행에 이미 있다). ③lib/오늘과제.js 화면과제는 안 건드린다(엔진 레인 아님이지만 계약 불변이 값) — 원인·첫만남은 화면이 얹는 칸. 서버 무배정 날(사유='오늘 과제가 오는 중이에요!')은 원인 null 그대로. 폴백 관측은 degraded 행이 진다(오늘과제.js:463 주석) — 첫날 화면 메모가 질 필요 없음이 감사 논거.",
+  "evidence": "말하기화면 439-441 「오늘 과제를 다시 받아 볼게요! (${String(e.message || e)})」 raw 영어 오류 괄호 현존 · 646행 첫만남 무구분 「오늘은 연습 문장으로 해요」 현존 — 미해결.",
+  "tests": "tests/화면렌더.test.js(⑥이 말하기화면 첫 프레임 기존 커버) — 회귀 1건: 로그 0줄+과제 실패 fixture 에서 「연습 문장」 문구 부재",
+  "blockers": ""
+ },
+ {
+  "id": "D1-4",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "듣기카드(797-853) 위계 뒤집기. ①841-850행: !들었다면 재생 Pressable 을 s.주버튼(글 = 읽는중 ? '읽는 중…' : '♪ 들어보기')로 승격, 들었다면 그 자리에 다음 주버튼('다 들었어요'). ②!들었다일 때만 그 아래 글자층 Pressable 「듣지 않고 넘어가기」(onPress=다음 · 신규 s.건너뛰기글 = 폰트.본문 14 · 색.잉크_보조 · textAlign 'center' · hitSlop 10 — 킷 토큰만). ③testID '말하기-다들었어요'는 «지금 전진시키는 컨트롤»에 얹는다 — !들었다=건너뛰기 글자층, 들었다=주버튼(들었다 게이트로 동시 렌더 없음 · .maestro/01_인증.yaml:44 와 02_녹음제출.yaml:16 이 이 id 로 전진하므로 흐름 무수정 초록). ④s.주버튼_대기(1608 · 소비처 847 유일)를 삭제 — src 유일 킷 밖 색값 rgba(246,241,232,0.85)가 함께 사라져 별도 토큰 교체가 필요 없다. D1-15 와 같은 블록이라 한 커밋으로 함께 시공 권장(841-850 동일 구간).",
+  "evidence": "grep rgba src/: 말하기화면.js:1608 rgba(246,241,232,0.85) 현존(테마 밖 유일 리터럴 — 마스코트.js 438 실땀 rgba 는 별건) · 847행 !들었다 && s.주버튼_대기 · 849행 라벨 현행 — 미해결.",
+  "tests": "tests/화면렌더.test.js — 회귀 1건: 듣기 전 프레임에 '♪ 들어보기'와 '듣지 않고 넘어가기'가 함께 서는지",
+  "blockers": ""
+ },
+ {
+  "id": "D1-5",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/인증화면.js"
+  ],
+  "plan": "①곁길(211-217): 첫등록 곁길만 테두리 보조버튼으로 승격 — 신규 s.곁길버튼 {borderWidth:1, borderColor:색.잉크_희미, borderRadius:12, paddingVertical:12, paddingHorizontal:18, alignItems:'center', alignSelf:'stretch'} + s.곁길버튼글 {폰트.강조 15 · 색.잉크}. testID '곁길-첫등록' 유지(.maestro/01_인증.yaml 손잡이). 「비밀번호를 잊었어요」는 현행 글자층. ②버튼(196-209): disabled={도는중} 으로 좁히고 onPress 를 () => { if (!제출.쓸수있나) { set오류(빠진칸안내()); return; } 눌렀다(제출.실행); } — 시각 잠금 스타일 조건 (!제출.쓸수있나||도는중)&&s.버튼_잠김(opacity 0.35)은 유지. 빠진칸안내()는 화면 순서대로 첫 빠진 칸 하나만: 번호형식 미달 → '학생번호를 확인해 주세요' / 첫등록 뒷자리.length!==4 → '전화번호 뒤 4자리를 넣어 주세요' / 임시 임시번호.length!==6 → '학원에서 받은 6자리를 넣어 주세요' / 비번 빈칸 → '비밀번호를 넣어 주세요' / 새비번<최소비번 → 말('err.password_too_short',{채움:{n:최소비번}})(문구_오류.js:64 실존) / 첫등록 답검사(가입답) 실패 → 문항.find(q=>q.필드===검사.필드).라벨 로 「(라벨)을 골라 주세요」(⚠ 문구 초안 주석). 오류칸(194)의 등장 박자(오류줄 233-236)를 그대로 탄다 — 눌렀다 무늬처럼 set오류('') 선행으로 재마운트 보장.",
+  "evidence": "인증화면 196-209 disabled={!제출.쓸수있나 || 도는중} · 214행 곁길 흐린 글자층 · lib/가입문항.js:92-100 답검사가 {필드,사유} 반환 — 전부 실측, 미해결.",
+  "tests": "tests/화면렌더.test.js(85행이 인증화면 기존 렌더) — 회귀 1건: 빈 폼에서 버튼 press 후 오류 문구가 선다",
+  "blockers": ""
+ },
+ {
+  "id": "D1-6",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:contents/문구_인증.js",
+   "talk:src/인증화면.js",
+   "talk:tests/문구_인증.test.js"
+  ],
+  "plan": "①contents/문구_인증.js 신설(문구_오류.js 무늬 · CJS): const 문구 = { 'auth.title.login': {ko:'들어가기', mn:''}, … } — 키는 문구_1차.js 266-442행에 이미 서 있는 auth.* 23개(title 4 · button 4 · field 8 · hint 1 · contact 2 · link 3 + err 연동분) 전부, ko 는 그 source_ko 를 그대로, mn 은 전부 ''(지어낸 번역 금지). 줄배열 반환 헬퍼 줄들(id) → [{글, mn:false}, {글, mn:true}](mn 빈 값은 걸러 — 병기 규약: i===0 킷폰트, mn 줄은 몽골어폰트 · 인증화면 269-296 고르기 무늬 그대로). ②src/인증화면.js: 제목(137)·버튼글(208)·칸 라벨(139-167)·곁길 글(214-219)·연락처 머리/꼬리(179-184)를 문구_인증 조회로 교체, 칸(238-260)·곁길(298-304)에 라벨_mn 자리(라벨_mn && { fontFamily: 몽골어폰트.본문 } — 273행 무늬)를 판다. mn 이 '' 인 동안 화면은 현행과 동일 — 감수가 붙는 날 화면 코드 0줄. 가입문항 라벨은 lib/가입문항.js 소유 그대로(불변). ③tests/문구_인증.test.js: 문구_오류.test.js 무늬 — 문구_1차 auth.* 행과 1:1 양방향 + ko==source_ko + mn 전부 ''.",
+  "evidence": "grep 문구_인증 src/ contents/ tests/ = 0건(실측 — 파일 없음) · 문구_1차.js 에 auth.* string_id 23행 실존(266-442) — l10n 쪽은 이미 서 있고 앱 소비 파일만 빈다.",
+  "tests": "신설 tests/문구_인증.test.js(1:1 대조) + 기존 tests/화면렌더.test.js·몽골어폰트.test.js",
+  "blockers": ""
+ },
+ {
+  "id": "D1-10",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/서류관문화면.js",
+   "talk:tests/서류관문화면.test.js"
+  ],
+  "plan": "488행 한 문장을 G2 리듬으로 통일: 「바꿔 쓴 문장은 선생님이 보고 알려 줄 거예요. 알려줄 말이 생기면 「답장」에서 볼 수 있어요.」 — 보고서교정화면.js 369행(「선생님이 보고 알려 줄 거예요」)·372행(「알려줄 말이 생기면 「답장」에서 볼 수 있어요.」)과 같은 두 마디라 앱 결(존댓말)이 한 호흡에 선다. 줄 위에 ⚠ 문구 초안 — 확정은 유호님 몫 주석 한 줄. 같은 커밋에서 tests/서류관문화면.test.js:177 의 assert.match(글, /선생님이 보고 알려줄게/) 를 /선생님이 보고 알려 줄 거예요/ 로 갱신(안 하면 초록이 빨개진다).",
+  "evidence": "서류관문화면.js:488 「…알려줄게. …볼 수 있어요.」 반말→존댓말 혼재 현존(grep 실측) · tests/서류관문화면.test.js:177 이 옛 문구를 regex 로 문다.",
+  "tests": "tests/서류관문화면.test.js:177 regex 갱신이 곧 회귀",
+  "blockers": ""
+ },
+ {
+  "id": "D1-11",
+  "verdict": "peer_territory",
+  "repo": "talk",
+  "files": [
+   "talk:src/도착확인.js"
+  ],
+  "plan": "①순서 교체: 계정 card(99행대 「가기 && …」 View — 비밀번호 바꾸기 · 학생 비밀번호 초기화 · 이 기기에서 나가기)를 title 「배포 도착 확인」 바로 아래 첫 card 로 올리고, 배포 줄 표(줄 배열 70-79 를 그리는 card 85-93)와 note(95-97)를 그 아래로 내린다 — 「숨기지 않는다」 규율 유지, 위치만. title 도 화면 성격이 계정 우선이 되므로 「계정 · 배포 확인」류 재검토 여지는 주석으로만(카피는 유호님 몫). ②note 두 줄을 앱 결(존댓말)로: 「「업데이트 ID」가 바뀌면 새 코드가 도착한 거예요.\\n개발 중에는 (없음)이 떠도 괜찮아요.」(⚠ 문구 초안 주석). 다른 줄(나가기 알림 「나왔어요 — 앱을 껐다 켜 주세요.」)은 이미 존댓말 — 불변.",
+  "evidence": "도착확인.js 70-97 실측: 배포 줄 표가 먼저, note 「…도착한 것이다」·「…정상이다」 반말 문어체 현존, 계정 card 는 그 뒤. 단 src/도착확인.js 는 피어 미커밋 작업 중 파일(감사 지시문 명시) — 지금 수정 금지.",
+  "tests": "tests/화면렌더.test.js·기기비우기.test.js 기존 커버 — 순서 교체는 렌더 스냅샷류 없음이라 값싼 회귀 불요",
+  "blockers": "피어 세션의 src/도착확인.js 미커밋 작업 종료 후 시공"
+ },
+ {
+  "id": "D1-12",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/인증화면.js"
+  ],
+  "plan": "150행 뒷자리 칸에 도움말 prop 한 개: <칸 id=\"뒷자리\" 라벨=\"전화번호 뒤 4자리\" … 도움말=\"상담 때 알려주신 번호예요\" /> — 칸 컴포넌트가 이미 지원(238행 시그니처의 도움말, 243행 칸머리 오른쪽 s.칸도움말 자리 — 「6자 이상」(165행)이 쓰는 그 자리·같은 규격 색.잉크_보조 12px). 줄 위에 ⚠ 문구 초안 — 확정은 유호님 몫 주석. 코드 한 줄 + 주석 한 줄이 전부다.",
+  "evidence": "인증화면.js:150 뒷자리 칸에 도움말 prop 없음 · 243행 {도움말 ? <Text style={s.칸도움말}>…} 자리 실존 — 미해결(bb904ab 무관).",
+  "tests": "tests/화면렌더.test.js 기존 커버 — 문구 한 줄이라 새 회귀 불요",
+  "blockers": ""
+ },
+ {
+  "id": "D1-13",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/인증화면.js"
+  ],
+  "plan": "칸 컴포넌트(238-260) 한 곳 수정으로 네 걸음(로그인·첫등록·임시·변경) 전부 선다. ①const [보임, set보임] = useState(false) — useState import 는 1행에 이미 있다. ②비밀이면 TextInput 을 flexDirection 'row' View 로 감싸고(입력에 flex:1), 오른쪽에 Pressable 글자 토글 {보임 ? '가리기' : '보기'} — 스타일은 s.칸도움말 규격(폰트.캡션 12 · 색.잉크_보조 — 이 화면 신호 1점은 오류 메시지라 코랄 금지 · 머리말 23행 규율) + hitSlop 10. ③secureTextEntry={Boolean(비밀) && !보임}. 비밀 아닌 칸은 렌더 경로 불변(토글 미렌더). 행 높이 52 유지 — 토글은 입력 행 안 오른쪽 패딩 자리에 앉힌다(레이아웃 밀림 0).",
+  "evidence": "인증화면.js:251 secureTextEntry={Boolean(비밀)} 고정 · 보기/가리기 grep 0건(실측) — 미해결. 비밀 칸 소비처는 155-167 두 자리(로그인·변경/첫등록·임시 새비번)로 전부 칸 경유.",
+  "tests": "tests/화면렌더.test.js — 회귀 1건: 비밀 칸 렌더에 '보기' 글자 존재",
+  "blockers": ""
+ },
+ {
+  "id": "D1-14",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:lib/학생계정.js",
+   "talk:src/인증화면.js",
+   "talk:tests/학생계정.test.js"
+  ],
+  "plan": "①lib/학생계정.js 에 순수 함수 학생번호표기(입력) 추가: /^\\s*\\d{3,}\\s*$/ 에 맞으면 'SYNK-' + trim 값을 돌려주고, 아니면 입력 그대로 — 게이트 함수(학생번호맞나·계정번호맞나·정규형)는 한 글자도 안 바꾼다(서버 게이트·공유 함수 불변). 안전 근거를 주석으로: 직원 번호는 글자가 반드시 들어(직원번호입력 47행 /synk[-\\s]?[a-z]\\d{2,}/) 숫자만으로는 원리상 안 겹친다 — 채번기가 글자를 만들 수 없다(27-47행 구조). module.exports 에 등재. ②src/인증화면.js 143행: 바꾸기={(t) => set학생번호(학생번호표기(t))} — 표기는 화면 편의뿐, 제출 값도 이 표기(형식 검사 89-90이 그대로 통과). 타이핑 경로: '0'·'04' 불변 → '042' 에서 'SYNK-042' 로, 이후 입력·백스페이스는 숫자만이 아니라 재변환 안 됨(교착 없음). ③tests/학생계정.test.js 에 4줄: '042'→'SYNK-042' · 'SYNK-042' 불변 · 'L01' 불변(직원 원료) · '04' 불변.",
+  "evidence": "인증화면 139-147 학생번호 칸은 자리표시 'SYNK-042' 뿐, 접두 자동 채움 grep 0건 · 학생계정.js 25행 학생번호입력 정규식이 synk 접두를 요구(실측) — 미해결.",
+  "tests": "tests/학생계정.test.js(기존 커버 + 위 4줄)",
+  "blockers": ""
+ },
+ {
+  "id": "D1-15",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "듣기카드(797-853)에 state 하나: const [읽기실패, set읽기실패] = useState(false). ①onError(817-820)를 갈라 set읽는중(false); set읽기실패(true) — 들었다는 세우지 않는다(「들었다」 뜻 보존 · 812-814 주석의 그 축). ②재생 onDone(809-816)에 set읽기실패(false) 한 줄(재시도 성공 시 안내 걷힘). ③렌더: {읽기실패 && !들었다 && <Text style={s.녹음안내}>소리를 읽지 못했어요 — 글로 읽어 주세요</Text>}(⚠ 문구 초안 주석), 전진 버튼 글 = 들었다 ? '다 들었어요' : 읽기실패 ? '읽었어요' : '듣지 않고 넘어가기'. ④관측 불변: 들었음알리기(c9)는 onDone 에서만(815행 현행 유지) — 「띄웠다」가 「들었다」로 뜻 갈아타기 없음. D1-4(위계 뒤집기)와 같은 841-850 구간이라 한 커밋으로 함께 시공: 뒤집힌 판에서 읽기실패면 전진 컨트롤('읽었어요')을 주버튼으로 승격하고 '♪ 들어보기'는 보조 자리로 내려 재시도 문을 남긴다.",
+  "evidence": "말하기화면 817-820 onError 가 set들었다(true)로 접어 버튼이 「다 들었어요」로 서는 현행(실측) — 못 들은 학생에게 들은 것처럼 말한다. 미해결.",
+  "tests": "tests/화면렌더.test.js — 회귀 1건: onError 후 프레임에 '읽었어요' 라벨",
+  "blockers": ""
+ },
+ {
+  "id": "D1-17",
+  "verdict": "already_done",
+  "repo": "none",
+  "files": [],
+  "plan": "시공 없음 — «건드리지 않는다» 목록 여덟이 전부 현재 실물에 그대로 서 있음을 확인했다. 이후 D1 항목(특히 D1-3·D1-4가 만지는 말하기화면 구간)을 시공할 때 이 여덟을 회귀로 밟지 않는 것이 이 항목의 유일한 의무다: 마이크 권한은 버튼 누를 때만(1012-1014 · 454 주석), 무발화 카드 온기 문구(1389), 막힘카드 내려놓은바늘+학생번호(막힘카드.js:45·55), 첫편지(첫편지.js:21-22), 오류칸 상시 자리+등장 박자·흔들지 않기(인증화면 188-194), 녹음띠 대기 판 코랄 0점(유호 확정 08-28 — 되돌리지 말 것).",
+  "evidence": "말하기화면.js:1389 「말이 안 나오는 날도 있어요」 · 막힘카드.js:45 내려놓은바늘 · 첫편지.js:21-22 「만나서 반가워요」 · 말하기화면 1012-1014 권한 버튼시 요청 · 인증화면 194 오류칸 — 전부 grep/행 실측으로 현존.",
+  "tests": "기존 스위트가 이미 문다(화면렌더·마이크권한·막힘카드 소비처) — 신규 없음",
+  "blockers": ""
+ },
+ {
+  "id": "D2-1",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "src/말하기화면.js만 만진다. ①190행 막힘참조 곁에 `const 생성상태참조 = useRef(null);` ②412행 `if (살아있음) set서버생성상태(항목 ? null : (assignment_status || null));` 곁에 같은 값을 생성상태참조.current에 **살아있음 무관**으로 적는다(막힘참조와 같은 이유·403행 곁) · 434행 catch에도 `생성상태참조.current = null;` ③AppState 리스너(480~486) 안, `복귀행동(date, 몽골날짜()` 줄 **앞**에 `if (생성상태참조.current === '생성중') { set세대((n) => n + 1); return; }` — 세대 재초기화가 오늘과제받기 재호출+화면 되세움+밀린것보내기까지 한 벌로 돈다. 기존 복귀행동 줄은 한 글자도 안 바꾼다(tests/말하기로직.test.js:477 앵커). ④그 효과 아래 새 효과: `useEffect(() => { if (서버생성상태 !== '생성중') return undefined; const t = setInterval(() => set세대((n) => n + 1), 25000); return () => clearInterval(t); }, [서버생성상태]);` — 과제가 오면 412행이 상태를 null로 접어 스스로 멈춘다. ⑤211~213행 세대 주석을 「자정 복귀 + 생성중 재조회」로 갱신. 초기화 효과 deps `[폴백, 토큰, 세대]` 유지(테스트 483행 앵커). 생성카드·문구_생성.js 무접촉.",
+  "evidence": "grep setInterval src/말하기화면.js = 0건 · 복귀행동(lib/오늘과제.js:51-53)은 날짜 갈림만 재초기화 · 생성중 분기는 585-593행 조기 return이라 학생 흐름 교란 0 — 감사 전제 그대로 유효.",
+  "tests": "tests/말하기로직.test.js(475~483 복귀·세대 앵커 기존) + 새 앵커 1건: 화면원문에 생성중 폴링 효과(`서버생성상태 !== '생성중'`+setInterval)와 복귀 즉시 1회 분기가 있다",
+  "blockers": ""
+ },
+ {
+  "id": "D2-2",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "①704행 `<완료카드 로그={로그} date={date} 견줌={견줌} 견줌다시읽기={견줌다시읽기} />`에 `다시보내기={밀린것보내기}` 추가(밀린것보내기 343행 — 같은 스코프). ②1479행 시그니처에 `다시보내기 = null` 추가, 컴포넌트 안에 `const [다시보내는중, set다시보내는중] = useState(false);` ③1511-1513행 못보냄 오류 Text 바로 아래에 `{배달.못보냄 > 0 && 다시보내기 ? (<Pressable testID=\"완료-다시보내기\" disabled={다시보내는중} onPress={async () => { set다시보내는중(true); try { await 다시보내기(); } finally { set다시보내는중(false); } }} style={({ pressed }) => [s.보조버튼, pressed && s.눌림]}><Text style={s.보조버튼글}>{다시보내는중 ? '보내는 중…' : '다시 보내 볼래요'}</Text></Pressable>) : null}` — s.보조버튼/보조버튼글은 기존 스타일(1346행 소비) 재사용, 문구는 초안 표기. 배달 재계산은 밀린것보내기→보내기→로그갱신(254-262행 set로그)이 이미 한다. 발화·되듣기·선택·게임큐(370행 게임큐밀기)까지 같은 배출구로 나간다. 새 스타일·새 색 0.",
+  "evidence": "bb904ab 이후에도 재전송 통로는 마운트(465행)·복귀(484행) 둘뿐 — 완료카드(1479-1523행)에 버튼 0건(grep '다시 보내' 0건). 못보냄 오류줄은 1511-1513행에 그대로.",
+  "tests": "tests/말하기로직.test.js(322-341 큐 앵커 기존) + 새 앵커 1건: /다시보내기=\\{밀린것보내기\\}/ 와 testID 완료-다시보내기가 화면원문에 있다",
+  "blockers": ""
+ },
+ {
+  "id": "D2-12",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "①1256-1258행 playbackStatusUpdate 리스너에 한 줄 추가: `if (s && s.didJustFinish) set듣는중(false);`(되들은때 줄은 그대로 — 관측 뜻 불변). 1261행 setTimeout은 «재생이 시작조차 못한 기기»의 안전망으로 유지(주석이 이미 그렇게 말한다 — set듣는중(false) 중복은 무해). ②1441행 녹음버튼 곁에 소컴포넌트 신설: `function 맺음띠({ 숨 })` — 녹음버튼과 같은 Animated.loop(1→1.03·900ms·Easing quad·useNativeDriver)를 숨=true일 때만 돌리고 아니면 setValue(1), `<Animated.View style={{ transform: [{ scale: 맥박 }] }}><녹음띠 상태=\"맺음\" 폭={248} /></Animated.View>` 반환. ③1333-1335행 `<View style={{ alignItems: 'center' }}><녹음띠 상태=\"맺음\" 폭={248} /></View>`의 녹음띠를 `<맺음띠 숨={듣는중} />`으로 교체. 새 색·새 눈금 0 — 이미 있는 맥박 어휘 재사용.",
+  "evidence": "1256-1258행 리스너는 되들은때 기록만 하고 종료는 1261행 setTimeout 근사 그대로 · 맺음 띠(1334행)는 정적 View — 감사 전제 유효(bb904ab 무접촉).",
+  "tests": "tests/말하기로직.test.js 새 앵커 1건: didJustFinish 갈래가 set듣는중(false)를 함께 문다",
+  "blockers": ""
+ },
+ {
+  "id": "D2-13",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:lib/마스코트생명.js",
+   "talk:src/마스코트.js",
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "①lib/마스코트생명.js 연출대본(194-219행)에 `무발화위로` 추가: `[{표정:'기본',몸짓:'다가옴',지속:600},{표정:'기본',몸짓:'기울임',소리:'안심',지속:2200},{몸짓:'사라짐',지속:600}]` — 말 0·기쁨 0(§1-3 기죽는 반응 금지 · 오류남은답장 문법). 184행 걸음 규격 주석에 `소리?`(상황 이름) 추가. ②src/마스코트.js 연출 시퀀서 걸음 처리(245-250행 몸짓 갈래 곁)에 `if (걸음.소리) 목소리(걸음.소리);` 한 줄 — 값은 소리 이름이 아니라 «상황»이라 배치 정본(lib/가이드목소리) 규율 그대로고, 그 상황 소리가 없는 캐릭터(까몽 안심 0)는 목소리판정이 조용히 접는다. ③src/말하기화면.js: 녹음카드(901행)에 prop `무발화알림 = null` 추가, 끝()의 두 `set단계('무발화')` 자리(1054·1088행)에서 `if (무발화알림) 무발화알림();`. 부모에 `const [무발화연기, set무발화연기] = useState(false);`, ②따라(662행대)·③답하기 녹음카드 둘 다에 `무발화알림={() => set무발화연기(true)}`, 완료축하 마스코트(753-757행) 곁에 `{무발화연기 && <마스코트 잡담={false} 연출={{ 대본: 연출대본.무발화위로, 끝나면: () => set무발화연기(false) }} />}` — 한시 등장·끝나면 내림(기존 세 자리와 같은 무늬). 녹음은 이미 닫힌 뒤고 마스코트 자체 멈춤 게이트(줄임·지금녹음중)가 겹으로 지킨다.",
+  "evidence": "src/마스코트.js 사건 반응(280-286행)에 오류남은답장 = 기울이기(7)+목소리('안심')·말 0 문법 실재 · 연출대본(lib 194행)에 무발화 계열 0건 · 말하기화면 무발화 카드(1381-1410행)에 마스코트 0건.",
+  "tests": "tests/마스코트배선.test.js(연출 배선 기존) + 새 앵커: 무발화위로 배선·대본에 말 0 · tests/마스코트생명.test.js 대본 규격",
+  "blockers": ""
+ },
+ {
+  "id": "D2-14",
+  "verdict": "needs_yuho",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js",
+   "talk:package.json",
+   "talk:app.json"
+  ],
+  "plan": "판정 후 시공안: ①의존성 — expo-speech-recognition 설치 + app.json plugins(온디바이스전사.js 머리말 26-30행의 준비물 그대로 · 개발 빌드 재생성 필요). ②src/말하기화면.js 끝()(1043-1089행)에서 `r.발화있음 === false && 조립.바이트.length > 0`이면 `지원되나()`(온디바이스전사.js:51) 통과 기기 한정으로 `파일전사(uri, { requiresOnDeviceRecognition: true })`를 «참고»로만 비동기 발사 — 낱말 ≥1이면 새 state `참고귀`를 켜서 무발화설명(1386-1389행) 문구만 「목소리가 작게 담긴 것 같아요 — 들어 보고 정해요」(초안)로 낮춘다. 🔴 spoke 판정(threshold_db 축)·제출 행·abandoned 데이터는 한 톨도 안 바꾼다(한 판정 두 자 금지 — 바뀌는 것은 문구와 문뿐). 전사 결과는 화면 미표시·미전송(기기 안). 비동기 도착이 카드보다 늦으면 문구가 중간에 갈리는 문제가 있어 «도착 후 다음 렌더부터»로 접는 타이밍 설계 포함. D2-4의 「들어 보기」 문과 한 벌로 세우면 좋다.",
+  "evidence": "grep 'speech-recognition' package.json = 0건(모듈 미설치 · 어댑터는 개발 빌드 전용이라 자백 — 온디바이스전사.js 21-23행) · 감사 스스로 「유호님 판정 선행」 명기.",
+  "tests": "판정 후: tests/말하기로직.test.js에 참고귀가 spoke 판정을 안 무는 앵커 + 온디바이스전사 지원 게이트 시험",
+  "blockers": "유호님 판정 선행(문구 이중화·참고 귀 채택 여부) · 채택 시에도 새 외부 의존성 + 개발 빌드 + 실기기 검증 필요(에뮬레이터 통로 08-25 막힘)"
+ },
+ {
+  "id": "D2-15",
+  "verdict": "already_done",
+  "repo": "none",
+  "files": [],
+  "plan": "손대지 않기가 제안이고, 여섯 자리 전부 현행 소스에 그대로 서 있음을 실물 확인했다 — 시공할 것 0. 후속 항목(D2-4·D2-8 등)을 시공할 때 이 자리들을 안 건드리는 것이 유일한 의무다.",
+  "evidence": "끊김 정직 안내 1341-1345행 「여기까지만 담겼어요」 · 무발화 온기 1388행 「그것도 선생님께 신호가 돼요」 · 불러오는중 787-794행(스피너 0·카드 자리 유지) · 「듣지 않고 넘어가기」→「다 들었어요」 라벨 전환 849행 · 재시도 자동시작 사슬 동일 1107-1121행 주석+구현 · 어제넘음줄 90ms 지연 1530행 — 전부 bb904ab 이후에도 그대로.",
+  "tests": "불필요(변경 0)",
+  "blockers": ""
+ },
+ {
+  "id": "D2-3",
+  "verdict": "blocked",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "src/말하기화면.js만. ①녹음카드 상태부(948행대)에 `const 음량 = useRef(new Animated.Value(0)).current;` + `const 음량직전 = useRef(0);` ②onBuffer(960-968행)에서 `데시벨(조각)`을 const로 한 번만 재고(현재 967행 인라인 호출 교체) 추적 표본과 공유, 접기: `const 목표 = Math.max(0, Math.min(1, (db + 45) / 30));`(−45~−15dB→0~1 · 발화문턱_DB −35가 중간에 오게), 감쇠: `음량직전.current = 음량직전.current * 0.7 + 목표 * 0.3; 음량.setValue(음량직전.current);` — Animated.Value는 안정 객체라 낡은 클로저(1129행 주석)에서도 안전. ③녹음버튼(1441-1471행)에 `음량 = null` prop, lib/모션.js `use줄임()` 구독, 렌더의 scale을 `녹음중 && 음량 && !줄임 ? Animated.add(맥박, Animated.multiply(음량, 0.02)) : 맥박`으로 — 기본 1→1.03에 +0~0.02 = 1~1.05, transform만이라 네이티브 드라이버 규율 안, reduce-motion이면 기존 고정 맥박. ④1329행 렌더에서 녹음버튼에 `음량={음량}` 전달. 새 색 0. 감쇠 계수(0.7/0.3)·접기 구간(−45~−15)은 실기기에서 손맛 조율.",
+  "evidence": "onBuffer 데시벨 표본 967행·고정 900ms 맥박 1443-1457행 실측 그대로(bb904ab 무접촉) · lib/모션.js:21 use줄임 실재 — 코드는 지금 쓸 수 있으나 감쇠·눈금 손맛은 소리 없는 에뮬레이터로 원리상 못 잰다(1395행대 주석 「에뮬레이터에는 실제 소리가 없어」 · 08-16 실측).",
+  "tests": "tests/말하기로직.test.js 앵커(onBuffer가 음량.setValue를 문다·녹음버튼 줄임 폴백) — 손맛 판정은 실기기 몫",
+  "blockers": "실기기 검증 필수(감쇠·접기 구간 손맛 — 에뮬레이터 실소리 0 · 검수 통로 08-25 막힘)"
+ },
+ {
+  "id": "D2-4",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "src/말하기화면.js 무발화 카드(1381-1410행)만. 1386-1389행 무발화설명 Text와 1390행 `<View style={s.가로}>` 사이에: `{녹음 && 녹음.uri ? (<Pressable testID=\"말하기-무발화-듣기\" onPress={내목소리} style={({ pressed }) => [s.보조버튼, pressed && s.눌림]}><Text style={s.보조버튼글}>{듣는중 ? '재생 중…' : '들어 보기'}</Text></Pressable>) : null}` — 내목소리(1249행)·듣는중·녹음 전부 같은 녹음카드 스코프라 새 배선 0. 조각 0 무발화(1052행 uri:null 세팅)에는 원리상 안 뜬다 = 조건 하나로 두 갈래가 옳게 갈린다. 🚫 「그대로 보내기」는 이번에 안 연다 — spoke=false 제출의 데이터 축이라 유호님 판정 선행(그 사실을 버튼 곁 주석 한 줄로 남긴다). D2-12를 같이 시공하면 didJustFinish 종료가 이 재생에도 그대로 온다(내목소리 공유).",
+  "evidence": "무발화 카드(1381-1410행)에 재생 문 0건 — 버튼은 다시(1399)·넘어가기(1405)뿐 · 끝() 1087행이 무발화 갈래에도 uri 든 녹음을 세팅함을 실측(1052행 조각 0 갈래만 uri:null).",
+  "tests": "tests/말하기로직.test.js 새 앵커 1건: testID 말하기-무발화-듣기가 녹음?.uri 조건에 걸려 있다",
+  "blockers": ""
+ },
+ {
+  "id": "D2-5",
+  "verdict": "needs_yuho",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "선행 대조를 끝냈고 결론은 «미배선이 아니라 미확정»이다: 08-13 achieve 확정의 원문(docs/결과_성취감_설계.md v1.1)은 소리 자리를 **답장 무오류 첫 열람**으로 못박았고, 같은 문서 §2 표의 ①완료카드 행은 소리 칸이 「—」(교정 전이라 성과 데이터 없음 · 글이 진다)다. 어제넘음줄 주석(1525행)의 「achieve로 확정하신 그 순간의 **글자판**」은 「그 순간의 글 담당」이라는 뜻으로 보인다 — 소리 확정이 아니다. 따라서 여기에 achieve를 다는 것은 새 소리 자리 «추가»라 소리 희소가치 저울(결정.md:264 「earn·achieve가 사건으로 남게」)의 유호님 픽이 필요하다. 채택 시 시공: 어제넘음줄(1529-1532행)에 `useEffect(() => { try { 효과음('achieve'); } catch {} }, []);` — import는 90행에 이미 있고, 서버 재읽기로 늦게 마운트되는 컴포넌트라 「줄이 서는 그 순간」과 자동으로 붙으며, 다닿음&&늘었다 게이트(1518행)가 빈도를 이미 죄고 있어 인플레 없음. 게임층 설계 §3-1 achieve 자리 표(apps:docs/미니게임_게임층_설계.md:59)에 이 자리를 등재하는 문서 한 줄도 한 벌.",
+  "evidence": "talk:docs/결과_성취감_설계.md:20 ①완료카드 소리 칸 「—」 · §2-1 achieve = 무오류인가×첫 열람(답장) · apps:docs/미니게임_게임층_설계.md:59 achieve 자리 5곳에 완료카드 없음 · grep 효과음( src/말하기화면.js = 1119행 신호음 1건뿐(미배선 사실 자체는 맞음).",
+  "tests": "채택 시 tests/말하기로직.test.js 앵커 1건 + tests/소리.test.js는 무접촉(킷 achieve 재사용)",
+  "blockers": "유호님 픽 — 완료카드 어제넘음 순간을 achieve 소리 자리로 «추가»할 것인가(08-13 확정 범위 밖)"
+ },
+ {
+  "id": "D2-8",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "src/말하기화면.js 녹음카드만. ①948행 `const 상한처리 = useRef(false);` 곁에 `const [상한끊김, set상한끊김] = useState(false);` ②자동 종료 효과(1132-1139행) `상한처리.current = true;`(1135행) 곁에 `set상한끊김(true);` ③시작()의 `상한처리.current = false;`(1033행) 곁에 `set상한끊김(false);` — 「다시 말하기」→대기 재진입→자동시작 사슬이 이 리셋을 지나므로 다음 판에 안 남는다. ④확인 카드 끊김 조건(1341-1345행) 바로 아래에 `{!끊김 && 상한끊김 && (<Text style={s.무발화설명}>여기서 매듭을 지었어요 — 들어 보고 그대로 보내도, 다시 말해도 돼요.</Text>)}` — 숫자 0(G3 숫자숨김 규율과 정합) · 배경 끊김과 문구가 안 겹치게 !끊김 가드 · 문구는 초안 표기(확정 유호님 몫). 스타일은 기존 s.무발화설명 재사용 — 새 스타일 0.",
+  "evidence": "상한 자동 종료(1132-1138행)는 ref만 올리고 끝()을 불러, 확인 카드(1339-1377행)에는 끊김(배경 전환) 안내뿐 — 상한 종료를 말하는 줄 0건(grep 상한끊김 0건 · bb904ab 무접촉).",
+  "tests": "tests/말하기로직.test.js(486-497 끊김 앵커 기존) + 새 앵커 1건: 상한 종료가 state로 남아 확인 카드에 줄을 세운다",
+  "blockers": ""
+ },
+ {
+  "id": "D8-3",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/검수화면.js",
+   "talk:src/강사화면.js"
+  ],
+  "plan": "① 검수화면.js: import에 Animated 추가(행56 react-native), use등장 추가(`import { use등장 } from '../lib/모션.js';`). 파일 하단에 지역 컴포넌트 `function 등장카드({ style, children }) { const 등장 = use등장(); return <Animated.View style={[style, 등장]}>{children}</Animated.View>; }` 신설. 행627 항목 카드 `<View style={s.카드}>`를 `<등장카드 key={String(sid)} style={s.카드}>`로 교체(닫는 태그 행817). 컴포넌트 상단에 `const 말림참조 = useRef(null);`(행226 서명맵 곁), 행516 ScrollView에 `ref={말림참조}`, 효과 하나: `useEffect(() => { if (말림참조.current) 말림참조.current.scrollTo({ y: 0, animated: true }); }, [sid, 반 && 반.id, 조필터]);` — sid 변화(확정 뒤 다음 건)·반 전환·조 칩 전환 셋 다 이 하나로 덮인다. ② 강사화면.js: 같은 무늬 — import에 useRef(행37에 없음)·Animated 추가, use등장 import, 등장카드 신설, 행296 항목 카드를 `<등장카드 key={String(지금id)} style={s.카드}>`로, 행237 ScrollView에 ref, 효과 deps는 [지금id]. key 재마운트가 use등장의 «마운트당 1회» 규율과 맞물려 항목마다 한 박자가 새로 선다. 시험 하네스는 react-native-web 치환이라 Animated 사용 화면(인증·나침반)이 이미 지나간 길이다.",
+  "tests": "tests/검수화면.test.js · tests/강사화면.test.js · tests/화면렌더.test.js가 덮음. 회귀 1건: 코드만() 소스대조로 두 화면에 scrollTo({ y: 0 문자열 존재 확인",
+  "evidence": "두 파일 grep 실측 ScrollView ref·scrollTo 0건(검수 행516·856, 강사 행237·434가 전부). use등장 소비는 나침반·답장·말하기 등 7파일뿐 — 두 운영 화면 0건",
+  "blockers": ""
+ },
+ {
+  "id": "D8-1",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/보고서교정화면.js"
+  ],
+  "plan": "① 어절짚기(행195-203) 첫머리에 `const 칸 = 이번 && Array.isArray(이번.보기) ? 이번.보기.find((o) => o.option_id === option_id) : null; 입력참조.current = 칸 ? 칸.label : '';` — 화면이 defaultValue로 보여 주는 그 라벨을 ref도 같이 쥔다. 학생이 칸을 «지워서» 낸 삭제 교정은 그대로 산다(onChangeText('')가 ref를 비운다 — 행91 머리말 「빈 칸은 그 어절을 지우는 교정」 설계 불변). ② 「다른 데를 짚을래요」(행357) onPress에 `입력참조.current = ''; 상태참조.current = { ...상태참조.current, 단계: '짚기', 글: '' };` 추가 — A어절에 친 글이 B어절 제출에 실리는 길과, 이탈사건이 낡은 단계·글을 읽는 길을 같이 닫는다. ③ TextInput(행329-335)에 `key={짚은것}` 추가 — 고침 단계에서 다른 어절을 바로 짚으면 지금은 defaultValue가 안 갱신돼 화면이 A라벨을 보인 채 ref만 B가 된다. key 재마운트로 화면·ref가 같은 값에서 출발한다. 상태참조.글은 어절짚기에서 안 세운다(타이핑한 글만 이탈사건 재료 — 현행 의미 유지).",
+  "tests": "tests/보고서교정화면.test.js가 덮음. 회귀 1건: 소스대조 — 어절짚기 본문에 「입력참조.current」 대입 존재 + lib 조합으로 «짚고 무타이핑 제출 = 원문 보존»(교정문만들기(보기, 고른것, 라벨) === 원문)",
+  "evidence": "행195-203 어절짚기에 입력참조 대입 0건, 행357 다시고르기가 ref·상태참조 안 비움(현재 실물). lib/보고서교정.js:130 — 빈 입력이면 그 어절 자리에 ''가 실려 삭제 교정이 됨",
+  "blockers": ""
+ },
+ {
+  "id": "D8-10",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/문구감수화면.js"
+  ],
+  "plan": "문장카드의 판정미리 블록(행210-214)을 가로줄로 바꾼다: `{초벌.trim() ? (<View style={s.미리줄}><Text style={s.판정미리}>지금 확정하면 「{판정}」으로 기록됩니다.</Text>{번역.trim() !== 초벌.trim() ? (<Pressable onPress={() => set번역(초벌)} hitSlop={6}><Text style={s.초벌버튼글}>초벌로 되돌리기</Text></Pressable>) : null}</View>) : null}`. 비교는 trim 기준 — 행154의 판정 계산과 같은 자(공백만 달라도 버튼이 서면 눌러도 판정이 안 변해 거짓 문이 된다). 칸은 controlled(행197 value={번역})라 set번역(초벌) 한 줄로 칸·판정미리가 같이 되돌아온다. 스타일 둘 추가: `미리줄: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }`, `초벌버튼글: { fontFamily: 폰트.본문, fontSize: 12, color: 색.잉크_서브 }`(행306 곁버튼글과 같은 결 — 킷 토큰만). 초벌이 없는 줄(draft_mn 빈 것)엔 원리상 안 선다(바깥 게이트 초벌.trim()).",
+  "tests": "tests/문구감수화면.test.js가 덮음. 회귀는 소스대조 1건이면 충분 — set번역(초벌) 호출 존재",
+  "evidence": "행144-145 초벌=draft_mn·번역 useState(초벌), 행195-203 TextInput controlled 실측. 파일 내 「되돌리기」 grep 0건 — 초벌 복귀 통로 부재 확인",
+  "blockers": ""
+ },
+ {
+  "id": "D8-12",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:supabase/functions/l10n/index.ts",
+   "talk:src/문구감수API.js",
+   "talk:src/문구감수화면.js"
+  ],
+  "plan": "① 서버(l10n/index.ts 큐읽기 행196-217): 행 조회 곁에 `const 총 = await sql\\`select count(*)::int as n from engine.l10n_queue\\`;` 하나 더, 봉투(행209-216)에 `total: 총[0].n` 한 칸 추가 — 키는 ASCII(data·next와 같은 줄, 스키마 ASCII 키 규약). 판(engine.l10n_queue)만 읽으므로 「감수자가 봐도 되나」 판정 불변. ② API(문구감수API.js 큐받기, 행 return 블록): 반환에 `총대기: Number.isFinite(본문.total) ? 본문.total : null` 추가 — 옛 서버 응답(total 없음)엔 null로 접혀 하위호환. ③ 화면(문구감수화면.js): state `const [서버총, set서버총] = useState(null);` 추가, 더받기(행60-62)에서 `if (r.총대기 != null) set서버총(r.총대기);`, 끝냈다(행75-78)에서 `set끝낸수((n) => n + 1); set서버총((n) => (n == null ? n : Math.max(0, n - 1)));` — 확정 한 건은 서버 상태 전이가 이미 끝난 뒤라 화면 감산이 참이다. 행89를 `<셈 이름=\"남은 것\" 값={서버총 ?? 목록.length} />`로. 서버가 아직 옛 판이면 현행 수치 그대로라 라벨 거짓의 즉효 처방(라벨 교체)은 불필요해진다.",
+  "tests": "tests/문구감수화면.test.js가 덮음. 회귀 1건: 큐받기 응답 해석 — total 없으면 총대기 null(옛 서버 하위호환)",
+  "evidence": "화면 행89 값={목록.length} 실측 — 손에 든 쪽만 센다. 서버 큐읽기(행204-216)는 data·next만 내고 총계 0건. l10n은 피어 영토(teach/**) 밖",
+  "blockers": ""
+ },
+ {
+  "id": "D8-13",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/저장.js",
+   "talk:src/검수화면.js",
+   "talk:src/강사화면.js"
+  ],
+  "plan": "① 저장.js: 마스코트기록(행114-139)과 같은 무늬로 `let 메모리화면설정 = {};` + `화면설정읽기()`/`화면설정쓰기(설정)` 한 쌍 신설 — 파일 'ui_prefs.json', 깨지면 {}로 접고 쓰기 실패는 삼킨다(UI 편의라 최악이 「다시 펼쳐짐」뿐 — 큐 아님, 못보낸수 불변). 기기비우기(행270-285) 끝에 `await 화면설정쓰기({});` 한 줄(기기 공유 시 앞사람 취향 이월 방지). ② 검수화면.js: 행196 useState(true) 유지 + 마운트 효과 `useEffect(() => { let 살아있음 = true; 화면설정읽기().then((p) => { if (살아있음 && p && p.검수기준접힘) set기준펼침(false); }); return () => { 살아있음 = false; }; }, []);`. 행526 토글 onPress를 `set기준펼침((v) => { const 다음 = !v; 화면설정읽기().then((p) => 화면설정쓰기({ ...(p || {}), 검수기준접힘: !다음 })).catch(() => {}); return 다음; })`로. import에 저장.js 추가. ③ 강사화면.js: 행143·249에 같은 무늬, 키만 `강사기준접힘`(행45 import에 두 함수 추가). 처음 온 사람에겐 펼침(기본), 접은 사람에겐 접힘 — 접이머리 제목줄은 늘 보여 「기준이 화면 밖」 규칙 유지.",
+  "tests": "tests/검수화면.test.js · tests/강사화면.test.js가 덮음. 회귀 1건: 소스대조 — 두 화면이 화면설정읽기를 부른다(각자 제 키로)",
+  "evidence": "검수화면 행196·강사화면 행143 둘 다 `useState(true)` 실측 — 로컬 읽기 0건. 저장.js 행114-139 마스코트기록이 같은 모양의 선례(파일 JSON·오류 삼킴)",
+  "blockers": ""
+ },
+ {
+  "id": "D8-15",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/검수화면.js"
+  ],
+  "plan": "행715 `<Text style={s.작은버튼글}>되돌리기</Text>`의 낱말을 「AI 문장으로」로 교체하고 그 줄 위에 `{/* ⚠ 문구 초안 — 확정은 유호님 몫 */}` 표기를 남긴다. 실제 동작(행711 set교정문(항목.ai_corrected_text) — 교정문 칸 하나만 AI 값으로)과 이름이 맞아진다. 다른 파일의 「되돌리기」는 없음(단, D8-10이 문구감수화면에 «초벌로 되돌리기»를 새로 세우는데 그쪽은 「무엇으로」가 이름에 들어 있어 같은 병이 없다).",
+  "tests": "tests/검수화면.test.js가 덮음 — 낱말 하나라 새 회귀 불요",
+  "evidence": "행710-716 실측: onPress는 set교정문(String(항목.ai_corrected_text)) 하나뿐인데 라벨은 「되돌리기」 — 「내 편집 전체 취소」로 읽히는 갈림 현존. bb904ab 이후에도 그대로",
+  "blockers": ""
+ },
+ {
+  "id": "D8-4",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/검수화면.js",
+   "talk:src/강사화면.js"
+  ],
+  "plan": "① 검수화면.js: 행842 `{오류 ? <Text style={s.오류}>{오류}</Text> : null}`를 항목 카드 안 확정/폐기 가로줄(행763-778) 바로 아래로 옮기고, 원자리에는 `{!항목 && 오류 ? <Text style={s.오류}>{오류}</Text> : null}`를 남긴다 — 큐 조회·서명 실패(행295·360)는 항목이 없을 때도 나므로 문이 둘 다 있어야 한다(한 state·두 게이트, 동시에 겹치지 않음). 행941 스타일을 `오류: { fontFamily: 폰트.강조, fontSize: 14, lineHeight: 22, color: 색.잉크 }`로 — 코랄 금지(이 화면 신호 1점 = 확정 버튼), 자리와 밀도로만 세운다. ② 강사화면.js: 행429 `{오류 ? <Text style={s.오류글}>{오류}</Text> : null}`를 카드 안 저장 버튼(행417-425) 바로 아래(행426 </View> 앞)로 옮기고 원자리에 `{!항목 && 오류 ? …}` 유지, 행508 스타일을 `오류글: { fontFamily: 폰트.강조, fontSize: 14, lineHeight: 22, color: 색.잉크 }`로. 막힘문구(행415 s.막힘글)는 서버 검증기 문장 그대로 — 안 건드린다.",
+  "tests": "tests/검수화면.test.js · tests/강사화면.test.js가 덮음 — 위치·스타일이라 새 회귀 불요",
+  "evidence": "검수: 확정 실패 set오류(행471)가 그리는 자리는 행842 — 직전 확정 카드(행821-840) 아래, s.오류=캡션·잉크_서브(행941). 강사: 행429가 카드 밖, s.오류글=캡션·잉크_서브(행508). 둘 다 현행",
+  "blockers": ""
+ },
+ {
+  "id": "D8-5",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/교수멘탈화면.js"
+  ],
+  "plan": "쓰기 카드(행313-359) 머리에 상황문을 상주 캡션으로 얹는다: 행315 `<Text style={s.카드라벨}>받는 사람 · 교수님</Text>` 바로 아래, 고른전략라벨 줄(행317) 위에 `{문항.질문 ? <Text style={s.메모}>{문항.질문}</Text> : null}` 한 줄. s.메모(행434 — 캡션·잉크_보조)가 곧 제안의 「캡션 층(잉크_보조)」라 새 스타일 0. 이러면 쓰기 화면에 상황문(질문)·내가 고른 방법(행317)·지시문(행318)이 나란히 서서, G2(문장 상주)·G3(상황문 상주)와 같은 결이 된다. 접이식 안은 state가 하나 더 들어 캡션 상주안으로 간다 — 전략 단계의 큰 상황글(행287 s.상황글·헤드 21px)과 층이 갈려 위계도 안 겹친다.",
+  "tests": "tests/교수멘탈화면.test.js가 덮음. 회귀 1건: 시작단계='쓰기'로 그리기(화면세우기) 후 렌더 글자에 문항.질문 존재 — 화면이 시작단계 prop을 이미 받는다(행73)",
+  "evidence": "행279-311 전략 단계엔 문항.질문(행287)이 있으나 행313-359 쓰기 카드엔 grep 0건 — 고른전략라벨(행317)·지시문(행318)만 산다. 현행 실측",
+  "blockers": ""
+ },
+ {
+  "id": "D8-6",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/문구감수화면.js"
+  ],
+  "plan": "① 자동 이어받기 효과 하나(행71 초기 더받기 아래): `useEffect(() => { if (불러옴 && !도는중 && !오류 && !목록.length && 커서) 더받기(true); }, [불러옴, 도는중, 오류, 목록.length, 커서, 더받기]); // eslint-disable-line react-hooks/exhaustive-deps` — !오류 가드가 요다: 실패 시 오류가 서서 자동 재시도 무한루프가 원리상 막히고, 수동 「더 불러오기」(행117-121·더받기가 오류를 비우고 시작)가 폴백으로 남는다. ② 빈꼬리 문구(행107-111): 끝낸수>0 갈래를 커서로 가른다 — `{끝낸수 > 0 ? (커서 ? '다음 문장을 이어 받다가 멈췄어요 — 아래 「더 불러오기」를 눌러 주세요.' : '지금 받은 것은 여기까지예요.') : '문장이 아직 안 올라왔거나, …'}`. 감사 제안의 「이어 받는 중…」은 실물과 갈린다: 빈자리 블록은 !도는중일 때만 서므로(행102) «받는 중» 순간엔 스피너(행115)가 이미 그 말을 하고, 이 문구가 보이는 유일한 순간은 자동 받기가 «실패한 뒤»다 — 폴백 안내로 적는 쪽이 정직하다(⚠ 문구 초안 표기 — 확정은 유호님 몫).",
+  "tests": "tests/문구감수화면.test.js가 덮음. 회귀 1건: 소스대조 — 자동 이어받기 조건식에 「!오류」 가드 존재",
+  "evidence": "행71 초기 1회 더받기(false)뿐, 목록이 0이 된 순간의 자동 연결 0건(effect grep). 빈자리 게이트 행102 `불러옴 && !목록.length && !도는중` 실측 — 「받는 중」 문구가 보일 틈이 없다",
+  "blockers": ""
+ },
+ {
+  "id": "D8-7",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/검수화면.js"
+  ],
+  "plan": "① set직전(행455-465)에 만료 한 칸: `만료: (서명 && 서명.만료) || new Date(Date.now() + 10 * 60 * 1000).toISOString(),` — 서버가 expires_at을 주면 그 값(검수API.js:130), 없으면 §5-1 수명 10분. ② 순수 함수 하나를 만들어 export(기존 편집초기값·조번호처럼 시험이 집는다): `export function 재열기남은분(만료, 지금ms) { const t = Date.parse(만료); if (!Number.isFinite(t)) return null; return Math.max(0, Math.ceil((t - 지금ms) / 60000)); }`. ③ 분침 state: `const [지금분, set지금분] = useState(Date.now());` + 효과 `useEffect(() => { if (!직전) return undefined; set지금분(Date.now()); const t = setInterval(() => set지금분(Date.now()), 30000); return () => clearInterval(t); }, [직전]);`. ④ 직전 카드(행821-840): `const 남은분 = 직전 ? 재열기남은분(직전.만료, 지금분) : null; const 만료됨 = 남은분 === 0;` — 다시 열기 Pressable(행829-835) disabled에 `|| 만료됨` 추가·잠김 스타일 조건에도, 메모(행836-838)를 `{만료됨 ? '링크가 만료돼 다시 열 수 없어요.' : (남은분 != null ? `${남은분}분 안에 다시 열 수 있어요.` : '오디오 링크가 살아 있는 10분 안에만 다시 열 수 있어요.')}`로. ⑤ 재열기(행496-506) 첫 줄 가드에 만료 검사 추가(Z 단축키 통로까지 한 문으로 닫힘). 직원 화면이라 숫자 허용(행663 타이머가 이미 초를 그린다).",
+  "tests": "tests/검수화면.test.js가 덮음. 회귀 1건: 재열기남은분 경계 — 만료 직전 1분·지난 뒤 0·못 읽는 만료 null",
+  "evidence": "행455-465 set직전이 url만 쥐고 만료 0건, 행836-838 메모는 고정 문구(현행). 검수API.js:126-130 — 오디오서명받기가 {url, 만료: expires_at ?? null}을 이미 돌려준다",
+  "blockers": ""
+ },
+ {
+  "id": "D8-8",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/검수화면.js"
+  ],
+  "plan": "강사화면 마스코트자리 무늬(행236-438: 바깥 View + ScrollView + 스크롤 밖 형제)로 겉을 바꾼다. ① return(행515-857)을 `<View style={s.wrap}>` + `<ScrollView style={s.말림} …>`(기존 내용 그대로) + 스크롤 밖 형제 `{항목 ? (<View style={s.재생띠}>…</View>) : null}` + `</View>`로. 스타일: wrap은 현행(행876) 유지, `말림: { flex: 1 }` 신설, `재생띠: { position: 'absolute', top: 10, left: 20, right: 20, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 색.바탕띄움, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10 }` — inner paddingTop 76(행877)의 빈 띠 안이라 첫 화면과 안 겹친다. ② 카드 안 전체재생 가로줄(행653-666: 재생/멈춤 Pressable + 「{초(현재ms)}s · 들은 X / 필요 Y」 타이머)을 통째로 재생띠로 «이동»(복제 금지 — 한 벌만). 구간 칩(행668-693)은 카드에 그대로. 쓰는 재료(전체재생·서명·상태·현재ms·들은·문턱)는 전부 컴포넌트 최상위 state라 배선 추가 0, 새 판정 0. D8-3의 scrollTo와 무충돌(띠는 스크롤 밖).",
+  "tests": "tests/검수화면.test.js · tests/화면렌더.test.js가 덮음 — 상태 재사용 이동이라 새 회귀 불요",
+  "evidence": "행653-666 재생 버튼·청취 타이머가 ScrollView(행516) 안 카드에 산다 — 긴 카드를 내리면 게이트 진행이 화면 밖. 강사화면 행437 마스코트가 스크롤 밖 고정의 선례(마스코트자리 top:10·right:16, 행462)",
+  "blockers": ""
+ },
+ {
+  "id": "D8-9",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/검수화면.js",
+   "talk:src/교수멘탈화면.js"
+  ],
+  "plan": "① 검수화면.js: 스타일에 `확정_잠김: { backgroundColor: 색.잉크_희미 }` 신설(행935 잠김 곁 · 강사화면:515 s.잠김과 같은 실물 + 행510 「잠기면 색을 빼고 밝기로 낮춘다」 주석 계보). 행767의 확정 버튼만 `!확정가능 && s.확정_잠김`으로 교체 — 잠긴 확정이 코랄 면 대신 희미 면 + 글자(확정글 색.바탕) 유지. 🔴 s.잠김(opacity 0.35)은 지우지 않는다 — 행657(전체재생)·행832(다시 열기)의 테두리 작은버튼이 같은 스타일을 쓰는데, 거기에 잉크_희미 «면»을 깔면 투명 바탕 버튼이 채워진 버튼으로 변해 다른 병이 생긴다(감사 proposal은 코랄 버튼 통일이 과녁 — 그 폭만 민다). ② 교수멘탈화면.js: 행465 `보내기_대기: { opacity: 0.35 }`를 `보내기_대기: { backgroundColor: 색.잉크_희미 }`로 — 보내기버튼(행464)이 코랄 면이라 검수 확정과 같은 갈래다. 소비처는 행354 하나뿐(grep)이라 부수 효과 0.",
+  "tests": "tests/검수화면.test.js · tests/교수멘탈화면.test.js가 덮음 — 스타일 두 값이라 새 회귀 불요",
+  "evidence": "검수 행935 잠김:{opacity:0.35}가 코랄 확정(행767)에 그대로, 교수멘탈 행465 동일 무늬 — 둘 다 현행. 강사화면 행515 잠김:{backgroundColor:색.잉크_희미} + 행510 주석이 정본 무늬",
+  "blockers": ""
+ },
+ {
+  "id": "D3-1",
+  "verdict": "needs_yuho",
+  "repo": "talk",
+  "files": [
+   "talk:src/답장화면.js"
+  ],
+  "plan": "유호님이 「이 자리에 걸자」를 고르시면: ①src/답장화면.js import에 `import 반짝임 from './반짝임.js';` 추가(현 소비는 src/검수문.js:33뿐). ②상태 `const [반짝, set반짝] = useState(false);`. ③기존 게이트 156행 `if (새것 && 무오류인가(교정)) {`(효과음 'achieve' 157행·set캐릭터사건 159행과 같은 블록)에 `set반짝(true);` 한 줄. ④215행 `<교정카드틀>` 직후에 `{반짝 && (<View pointerEvents=\"none\" style={s.반짝자리}><반짝임 보임 크기={120} /></View>)}`. ⑤스타일에 `반짝자리: { position:'absolute', top:-28, right:-6, zIndex:1 }` 추가 — RN 기본 overflow visible이라 카드 위 모서리에 뜬다. 반짝임은 스스로 안 켜지고 1.30초 1회·reduce-motion 내장(반짝임.js 머리말)이라 추가 게이트 0. 새 자산·새 값 0.",
+  "evidence": "게이트 실물 = 답장화면.js:156-159 그대로 서 있고(HEAD 20d4455), grep 결과 반짝임 소비는 src/검수문.js뿐 — 실화면 배선 0 확인.",
+  "blockers": "유호님 「이 자리에 걸자」 자리 판정 선행 — 검수문.js:206 주석이 「아무 데도 자동으로 안 걸었다」고 못박은 자리다.",
+  "tests": "tests/화면렌더.test.js·tests/꼬리.test.js가 답장화면을 덮는다. 새 회귀: 무오류 아닌 교정에서 반짝임 미렌더 1건."
+ },
+ {
+  "id": "D3-2",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/답장화면.js"
+  ],
+  "plan": "제안의 「lib 추출」은 불필요 — 한국어음성()이 이미 말하기화면.js:158의 named export이고 알바변명화면.js:17이 같은 무늬로 빌려 쓴다(말하기화면은 답장화면을 import 안 해 순환 0). ①답장화면.js import에 `import * as Speech from 'expo-speech';` + `import { 한국어음성 } from './말하기화면.js';`. ②상태 `읽는중` 하나. ③재생 함수: `Speech.stop(); const voice = await 한국어음성(); Speech.speak(교정.corrected_text, { language:'ko-KR', rate:0.92, ...(voice?{voice}:{}), onDone/onError→set읽는중(false) })` — 말하기화면 993-998행 옵션 그대로(같은 목소리). ④corrected_text Text(218-220행) 바로 아래 Pressable 「♪ 이 문장 들어보기」/재생 중 「읽는 중…」 — 글자 층(폰트.강조 13·색.잉크_서브·hitSlop 8), 코랄 금지(이 화면 신호 1점 = 오류 태그 · 44행 머리말). corrected_text 없으면 안 그린다. ⑤언마운트 정지 `useEffect(() => () => Speech.stop(), [])`(말하기화면 824행 무늬).",
+  "evidence": "corrected_text 카드 = 답장화면.js:218-220 실물 · 재사용 무늬 = 알바변명화면.js:17 `import { 녹음카드, 한국어음성 } from './말하기화면.js'` — 제안이 걱정한 「앵커 민감 테스트를 건드리는 조심스러운 추출」이 원리상 필요 없다(이미 export).",
+  "blockers": "",
+  "tests": "tests/화면렌더.test.js·tests/교정로그.test.js가 덮는다. 새 회귀: corrected_text 없는 교정에서 듣기 버튼 미렌더 1건."
+ },
+ {
+  "id": "D3-3",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/나침반화면.js"
+  ],
+  "plan": "①222행 `{적힌시각 && <적혔어요줄 글={`적혔어요 — ${적힌시각}`} />}`의 원시 ISO를 회고화면 굳힌시각 무늬(회고화면.js:230 `String(...).slice(0, 16).replace('T', ' ')`)로 접는다: `글={`적혔어요 — ${String(적힌시각).slice(0, 16).replace('T', ' ')}`}`. ②문구 확장 「— 시즌이 끝나는 날, 이 말과 다시 만나요」는 초안 주석으로만 남기고 유호님 확정 뒤 잇는다. 약속 자체는 거짓이 아님을 확인함 — 회고화면.js:207-212가 나침반 questions+answers를 왼쪽 카드에 그대로 재등장시킨다.",
+  "evidence": "나침반화면.js:222 원시값 그대로(나침반API.js:85 `적힌시각: 본문.recorded_at`) — bb904ab 뒤에도 미해결.",
+  "blockers": "②문구 확정만 유호님 몫 — ①포맷 접기는 지금 시공.",
+  "tests": "tests/화면렌더.test.js·tests/나침반문항.test.js. 새 회귀 불필요(표기 한 줄)."
+ },
+ {
+  "id": "D3-4",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:lib/나침반문항.js",
+   "talk:src/회고화면.js"
+  ],
+  "plan": "제안의 「서버 응답에 표식 한 칸」은 응답 신설이 아니라 lib 정본 한 키로 된다. ①lib/나침반문항.js 문항 정본의 season_goal 항(84-93행 「이번 교재에서 하고 싶은 것 한 가지는?」)에 `역할: '목표'` 추가, 물을것(113-119행) 반환 객체에 `역할: q.역할 ?? null` 통과 — tests/나침반문항.test.js는 길이·라벨만 재서(45-62행) 안 깨진다. ②회고화면.js 확정 카드(349행 「확정됐어요」 카드 안, 갈림 안내 앞)에: `const 목표문항 = (나침반?.questions ?? []).find((q) => q.역할 === '목표'); const 목표답 = 목표문항 ? (나침반.answers || {})[목표문항.키] : null;` → `{목표답 ? <Text style={s.메모}>그때 스스로 말한 것 — “{목표답}”</Text> : null}`. 문항키 사본 0 규율 유지 — 화면은 역할 표식만 본다. 서버가 아직 옛 판이면 표식이 없어 줄이 조용히 빠진다(안전).",
+  "evidence": "회고 열기 응답에 compass.answers·questions가 이미 실린다(supabase/functions/teach/index.ts:1020-1027 · 회고API.js:53 `나침반: 본문.compass`) — 감사 제안과 달리 새 응답 칸이 불필요. teach 동봉.json이 나침반문항.mjs←lib/나침반문항.js 매핑이라 소스 수정은 peer 영토 밖.",
+  "blockers": "화면에 실제로 뜨려면 teach 재배포(동봉 재생성) 선행 — 피어가 teach/** 미커밋 작업 중이라 배포는 그 레인 정리 뒤.",
+  "tests": "tests/나침반문항.test.js·tests/회고.test.js. 새 회귀: 물을것 출력에서 season_goal만 역할='목표' 1건."
+ },
+ {
+  "id": "D3-5",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/회고화면.js",
+   "talk:src/나침반화면.js"
+  ],
+  "plan": "회고화면: ①콜백 `다음학생` — set세션(null)·set자기고름(null)·set자기저장됨(null)·set건너뜀(false)·set강사고름(null)·set사유('')·set확정(null)·set오류(null)·set학생번호입력('') (63-72행 상태 전부 — 열기누름 84-89행 초기화의 합집합). ②확정 카드(348-361행) 갈림 안내 뒤에 `<Pressable onPress={다음학생} hitSlop={8}><Text style={s.backText}>다음 학생 열기 →</Text></Pressable>`. 나침반화면: ①`다음학생` — set세션(null)·set답({})·set바꿨나(null)·set적힌시각(null)·set오류(null)·set학생번호입력('') (52-58행 상태). ②적혔어요줄(222행) 바로 아래 같은 링크. 두 화면 다 기존 s.backText 재사용 — 새 스타일 0, 킷 밖 값 0.",
+  "evidence": "두 화면 모두 성공 뒤 입력 단계로 되돌리는 통로 0 확인 — set세션(null)은 열기 실패 catch 갈래뿐이고, 화면 안 리셋 링크 grep 0건.",
+  "blockers": "",
+  "tests": "tests/화면렌더.test.js가 두 화면을 덮는다. 새 회귀 불필요(순수 상태 리셋)."
+ },
+ {
+  "id": "D3-7",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/회고화면.js"
+  ],
+  "plan": "축들.map 줄(회고화면.js:239-246, `{칸}  {값글(전)} → {값글(후)}`)에서: `const 오름 = typeof 전 === 'number' && typeof 후 === 'number' && 후 > 전;` → `<Text key={칸} style={[s.줄, 오름 && s.줄_오름]}>`. 스타일에 `줄_오름: { color: 색.잉크 }` 추가(s.줄 정의 396행 근처 — 현행 색.잉크_서브). 문자열 칸·null(값글이 '—'로 접는 것)은 typeof 가드로 원리상 제외. 어제의나 무늬 이식(어제의나.js:59-60 「늘어난 칸만 잉크 100% — 색을 더하지 않고 밀도로만」· s.수_오늘 140행). 색 추가 0.",
+  "evidence": "회고화면.js:242-245 — 지금 모든 줄이 일괄 s.줄(색.잉크_서브), 조건 스타일 0건. 축칸들(41-52행)이 {칸, 전, 후}를 이미 준다.",
+  "blockers": "",
+  "tests": "tests/회고.test.js·tests/몽골어폰트.test.js가 회고화면을 덮는다. 새 회귀 불필요(조건 스타일 한 줄)."
+ },
+ {
+  "id": "D3-8",
+  "verdict": "needs_yuho",
+  "repo": "talk",
+  "files": [
+   "talk:src/어제의나.js"
+  ],
+  "plan": "판정 재료를 만들어 올린다: 현행 = 어제의나.js:140 `수_오늘: { color: 색.잉크 }` · 후보 = `color: 색.성장`(테마.js:68 Meadow Soft #D3E8BE — 킷 주석 「면 없이 쓰는 성장 표시(바탕 위 15.46)」). 고리줄(142행 s.고리)도 같은 후보 자리. 채택 시 시공은 스타일 값 두 곳 교체뿐이나, 색·미학 채택은 유호님 눈이 판정 축(color-adoption-needs-eye-axis)이라 현행/후보 실렌더 대조 스크린샷 두 장을 먼저 마련해 올린다. 색.성장의 실화면 소비가 현재 0이라 이것이 첫 실전 자리다.",
+  "evidence": "어제의나.js:140·142 현행 색.잉크 그대로 · 테마.js:68 성장 토큰 존재 · grep 결과 색.성장 소비자는 src/기호.js 1파일뿐(그 진행눈금도 화면 소비 0) — 감사 실측과 일치.",
+  "blockers": "색 채택 = 유호님 눈 판정 + 실렌더 스크린샷 재료(에뮬레이터 통로 대안 필요).",
+  "tests": "tests/견줌.test.js·tests/화면렌더.test.js가 어제의나를 덮는다."
+ },
+ {
+  "id": "D3-9",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/회고화면.js"
+  ],
+  "plan": "①37행 react-native import에 `Animated` 추가 + `import { use등장 } from '../lib/모션.js';`. ②화면 함수 «밖»에 틀 둘(나침반 적혔어요줄 254행 무늬 — 「서버 왕복 뒤 마운트라 훅이 화면 최상위면 안 된다」): `function 확정카드틀({ children }) { const 등장 = use등장({ 올라옴: 6, 시간: 260 }); return <Animated.View style={[s.카드, 등장]}>{children}</Animated.View>; }` · `function 갈림안내({ children }) { const 등장 = use등장({ 올라옴: 4, 시간: 220, 지연: 220 }); return <Animated.Text style={[s.안내글, 등장]}>{children}</Animated.Text>; }`. ③확정 카드(347행 `{확정 && (<View style={s.카드}>` ~361행)를 확정카드틀로, 갈림 안내 Text(356-359행)를 갈림안내로 교체. 확정은 확정누름 응답에서만 선다(119행 set확정(r)) — 박자가 도착 순간에 붙는다. reduce-motion은 use등장이 접는다.",
+  "evidence": "회고화면.js 모션 import 0건(grep — use등장 소비는 나침반·어제의나·답장뿐) · 확정 카드 347-362행 즉각 팝 확인.",
+  "blockers": "",
+  "tests": "tests/몽골어폰트.test.js·tests/회고.test.js. 새 회귀 불필요(확정된 모션 어휘 재사용)."
+ },
+ {
+  "id": "D3-10",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/회고화면.js"
+  ],
+  "plan": "①스타일에 학생 전용 두 벌 추가(404-410행 아래): `판정칩_학생: { paddingHorizontal: 18, paddingVertical: 14, borderRadius: 16 }` · `판정칩글_학생: { fontSize: 16, lineHeight: 24 }`. ②학생 칩(263-284행 칩줄의 Pressable) style 배열에 s.판정칩_학생을, Text에 s.판정칩글_학생을 얹는다 — 강사 칩(312-325행)은 그대로. 보폭 근거 = 강사화면.js:493-497 「판정 칩은 오류 태그 칩보다 한 층 크다」의 한 단(글자 12→14 · 패딩 10/6→14/10)을 같은 비율로 한 번 더 위로(14→16 · 14/10→18/14). 색·폰트 토큰 불변 — 크기만.",
+  "evidence": "회고화면.js:270(학생)·317(강사)이 같은 s.판정칩/판정칩글(404-410행)을 공유함을 확인 — 감사 지적 그대로 미해결.",
+  "blockers": "",
+  "tests": "tests/몽골어폰트.test.js가 회고화면을 덮는다. 새 회귀 불필요(크기 한 단)."
+ },
+ {
+  "id": "D3-11",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/나침반화면.js"
+  ],
+  "plan": "문항 map(169행 `{세션 && 문항들.map((q) => (`) 콜백을 {return} 형태로 바꾸고 `const 길이 = (답[q.키] ?? '').length;` 계산. 두 TextInput(195-203행 바꿀래 갈래 · 206-213행 일반 갈래) 아래에 카운터: `{길이 >= Math.ceil(q.상한 * 0.85) && (<Text style={s.카운터}>{길이}/{q.상한}</Text>)}` — self_in_5y 갈래는 입력칸이 보일 때만(`바꿨나 === 그대로값.바꿀래 && …`). 스타일에 `카운터: { fontFamily: 폰트.모노, fontSize: 12, lineHeight: 20, color: 색.잉크_메타, alignSelf: 'flex-end' }` 추가 — 반피드백화면.js:208 `{글.length}/{본문상한}`(s.줄 모노) 무늬 재사용, 숫자·슬래시뿐이라 DM Mono 한글 글리프 문제 없음. 상한 85% 미만이면 아무것도 안 그린다(숫자 시계 금지 결과 존중).",
+  "evidence": "나침반화면.js:199·210 `t.slice(0, q.상한)` 소리 없는 자름 그대로 · 카운터 grep 0건 — 미해결 확인.",
+  "blockers": "",
+  "tests": "tests/화면렌더.test.js·tests/나침반문항.test.js. 새 회귀 불필요(조건부 표기 한 줄)."
+ },
+ {
+  "id": "D3-14",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/반피드백화면.js"
+  ],
+  "plan": "③한 마디 화면 메타 줄(반피드백화면.js:176-178 `{종류말[...]} · {나이글(항목.낸시각)} 기다렸어요`)에 조각 하나: 위에서 `const 남은 = Math.max(0, (반?.항목들?.length ?? 1) - 1);` — 항목은 보내기 성공 전까지 반.항목들에 남아 있으므로(122-125행 항목열기 · 147-149행 보내기 성공 후에야 filter) 자신을 빼는 −1이 맞다. 메타 줄 끝에 `{남은 > 0 ? ` · 이 반에 ${남은}건 더 기다려요` : ''}`. ⚠ 제안의 「N명」을 「N건」으로 고쳤다 — 항목들은 산출물 단위라 같은 학생이 두 건일 수 있어 «명»은 거짓이 될 수 있다(반 카드의 기다림 셈도 건 단위 · 152-155행 카드요약). 새 조회 0 — 이미 화면에 있는 배열 길이만.",
+  "evidence": "반피드백화면.js:177 현행 메타 줄에 대기 수 조각 0 확인 · 항목이 항목들의 원소로 남는 구조(148행 filter가 성공 뒤에만) 실물 확인 — «명» 표기가 실물과 갈려 «건»으로 고침.",
+  "blockers": "",
+  "tests": "tests/반피드백화면.test.js(이 화면 전용 시험 존재). 새 회귀: 남은 0일 때 조각 미출력 1건."
+ },
+ {
+  "id": "D3-15",
+  "verdict": "already_done",
+  "repo": "none",
+  "files": [],
+  "plan": "시공 없음 — 「손대지 않기」가 산출물이다. 어느 레인도 이 자리들을 «개선»하려 들지 말 것: ①답장 무시 버튼 없음·막힘이 버튼보다 앞서는 순서 ②회고 갈림 「귀한 기록」 문구 ③어제의나 늘었나만 세기·줄어든 날 침묵 ④나침반 [그대로]도 답 저장 ⑤반피드백 「들린 대로」 라벨 가름·오래 기다린 순 ⑥답장 무오류 표식 코랄 거름.",
+  "evidence": "여섯 자리 전부 HEAD 20d4455(bb904ab 이후)에 그대로 서 있음을 직접 열람: 답장화면.js:255-260(「막힘이 버튼보다 앞선다」)·회고화면.js:354-359(「귀한 기록」)·어제의나.js:49-60(늘었나만 세기·어제 출발)·반피드백화면.js:181-186(들린 대로 라벨+메모)·답장화면.js:203-207(무오류표식 filter).",
+  "blockers": "",
+  "tests": "해당 없음 — 변경 0."
+ },
+ {
+  "id": "S4-10",
+  "verdict": "todo",
+  "repo": "appsscript",
+  "files": [],
+  "plan": "코드 수정 0 — git 조작만. ① 걷기 전 확인: 다른 산 세션이 그 트리를 cwd 로 물고 있는지 본다(mcp list_sessions 또는 실행 중 claude 프로세스 cwd 대조) — 물고 있으면 중단하고 보고. ② appsscript 루트에서 `git worktree remove .claude/worktrees/content+hw-topik` 그리고 `git worktree remove .claude/worktrees/sharp-wescoff-9ee0c1` (더트 0 실측이라 -f 불요 — -f 를 요구하면 멈추고 status 를 본다). ③ `git worktree list` 로 본 트리 1벌만 남았는지 눈으로 확인 후 `git worktree prune`. ④ 지역 브랜치 `worktree-content+hw-topik`·`claude/vigilant-keller-687eb4` 는 둘 다 master 에 합쳐져 있으니 `git branch -d` 로 같이 걷어도 된다(검색 오염 해소는 트리 제거만으로 충분 — 선택). 커밋할 파일 없음(작업본 무변).",
+  "evidence": "08-31 재실측: git worktree list 에 두 벌 잔존 · 두 HEAD(5645f5e22·62315806e) 모두 `git merge-base --is-ancestor` 로 master 포함 확인 · 양쪽 status 더트 0",
+  "tests": "없음 — 코드 무변. 걷은 뒤 `git worktree list` 1벌 확인이 곧 검증",
+  "blockers": ""
+ },
+ {
+  "id": "S4-11",
+  "verdict": "already_done",
+  "repo": "none",
+  "files": [],
+  "plan": "행동 불요. 기억 engine-folder-canon.md 가 08-31 03:21 개정판으로 이미 서 있다 — Pilot 은 「확정」이 아니라 «탈락 기록»으로만 남았고(74행 「같은 잣대가 Pilot 도 떨어뜨렸다」), 처방 엔진 이름은 Temper 로 닫혔다(107행 「유호 픽(Almanac·Temper·Bellows·Mordant) → Temper 로 닫혔다 — 실물·렌더린트 대상 둘 다 그 이름」). 색인·docs·기억 세 곳의 이름 정본이 이미 한 벌이다. 항목의 나머지 절반(Trail 산다 / Prism·Temper 는 «낡음» 아닌 «예정»)은 판정 기록일 뿐 시공 대상이 아니다.",
+  "evidence": "기억 파일 머리 modified: 2026-08-31T03:21:43Z + 「⚖ 08-31 에 회차를 걷었다 … 이름은 다 확정됐고 파일이 그것을 쥔다(docs/엔진/ 소개서 7벌 실재)」 · grep 「Pilot 확정」 0건(Pilot 등장 3곳 전부 탈락 사유 절)",
+  "tests": "없음",
+  "blockers": ""
+ },
+ {
+  "id": "S4-12",
+  "verdict": "blocked",
+  "repo": "appsscript",
+  "files": [
+   "apps:엔진_수집.js"
+  ],
+  "plan": "본론 ①~③은 배포 창 체크리스트로 남긴다: ① v9.277~280 씨앗 4벌(발음 6칸·voice_missions 11행·토픽 등반·숙제뱅크 41문항)을 실행층점검·시트 메뉴 실행으로 «저장된 행»까지 눈 확인(seed-code-vs-stored-rows) ② /triggers 로 라이브 트리거 시각 실측 ③ tests/ 스위트 1회 완주. 곁가지(그 창의 커밋에 동봉): 엔진_수집.js 1125행 「두 저장소가 오류태그 23종 이름만 공유하고」와 1212행 「두 저장소는 오류태그 23종을 **이름만** 공유한다」의 「23종」을 수 없는 표현으로 고친다 — 「오류태그 전량(HW_ERROR_TAGS)」. 24로 갈아 적으면 25번째 태그가 태어나는 날 같은 병이 재발한다(constant-known-in-two-places) — 수 자체를 지우는 것이 처방이다. Code.js:793 의 「오류 태그 23종」(v9.139 항목)은 그 시점 역사 기록이라 안 건드린다.",
+  "evidence": "곁가지 재실측: 본 트리의 「23종」은 2곳(엔진_수집.js:1125·1212 — 감사의 「3곳」 중 하나는 워크트리 사본을 문 것으로 보인다) · 실제 24(엔진_수집.js:135 HW_ERROR_TAGS 24벌 = 계약 톱레벨 오류태그 24, node 자). ①~③은 이번 정찰에서도 원리상 못 쟀다(읽기 전용·라이브 밖)",
+  "tests": "주석만 — node --check 엔진_수집.js 로 충분. 이 파일을 직접 덮는 tests/수집.test.js 는 부재(ls 자 — 08-19 철거)",
+  "blockers": "라이브 시트 행·트리거·실행 확인은 배포 창(라이브 접근)이 있어야 한다 — 주석 2곳 수리는 그 창의 커밋에 동봉"
+ },
+ {
+  "id": "S4-2",
+  "verdict": "already_done",
+  "repo": "appsscript",
+  "files": [],
+  "plan": "본론은 닫혔다 — c14 를 커밋한 손이 관행대로 손사본을 같이 올렸고 형상 재측정 기록도 동행했다. 잔여 하나(비어 있는 SCHEMA_VER 대조 1줄)는 항목 스스로 유호 제안 자리로 배정했는데, 기억 self-audit-and-guard-tools-approved(「대조 장치는 묻지 말고 만든다」) 상비 승인이 있어 S4-4 시공 커밋에 1줄 동봉이 가능하다: tests/safety.test.js 에서 `const 계약 = require('../계약/수집_교정_계약.json')` 후 `assert.ok(code.includes(\"SCHEMA_VER = '\" + 계약.버전 + \"'\"), '손사본 SCHEMA_VER 가 계약 버전과 갈라졌다(v9.261 전과)')` — code 는 engineSource() 전체 연결이라 엔진_수집.js 를 이미 덮는다. S4-4 항목의 plan 이 이 동봉을 명시한다.",
+  "evidence": "엔진_수집.js:63 `const SCHEMA_VER = 'c14'; // [v9.281] c14 판올림 동행 — 시트 형상 무변은 위 ⚠ 대로 기계로 재고 올렸다` + 계약/수집_교정_계약.json:3 `\"버전\": \"c14\"` + 커밋 0c72fff08 「[v9.281] 계약 c14 판올림 동행 — 손사본 SCHEMA_VER + 정본 계약 파일 (talk 3c0bc71 짝)」. tests 의 SCHEMA_VER 언급은 여전히 0건(grep 재확인)",
+  "tests": "대조 1줄을 S4-4 커밋에 동봉하면 tests/safety.test.js 가 덮는다",
+  "blockers": ""
+ },
+ {
+  "id": "S4-3",
+  "verdict": "doc_only",
+  "repo": "appsscript",
+  "files": [
+   "apps:docs/글라이드_이관대장.md"
+  ],
+  "plan": "이관 대장 신설. 표 뼈대: 칸이름 | 사는 곳(파일:앵커 문자열) | Glide 시절 쓰는 손 | 판정(폐기/신앱 이관/끊김) | 신앱 착지(화면·사건, 있으면) | 근거 한 줄. 채우는 자 = 엔진 7파일 grep 'glide'(184줄) 중 «학생·학부모·강사 손이 쓰던 입력 칸» 전수 + 신앱 화면 13벌 지도 대조. 확정 후보 판정: ①hw_feedback J학생확인(엔진_셋업확장.js 「J학생확인=Glide 전용(스크립트 불가침)」) — 신앱 도감·확인 화면 부재 → 끊김 ②칭찬 실지급 Glide Add row 버튼 4종(Code.js 「버튼 계약도 죽었다」 자백) → 끊김 ③profiles 학생 Set Column 3칸 중 대표몬스터 → 폐기(v9.269 몬스터 축 소각), 드림한줄·최애 → 끊김(읽는 쪽은 dreamFirstOf 로 살아 있으나 «학생이 고치는 손»이 신앱에 없다) ④preflightGlide → 개원 점검으로 존치하되 이름·문구 판정. 주인 없는 칸은 「끊김」으로 정직하게 명시(talk-migration-tail-rule). S4-6 ①주석 스윕과 같은 세션에 묶으면 근거 조사가 한 번으로 끝난다. 선택: tools/lib/loom.js 문서 프리셋으로 HTML 지면 굽기(내부 문서 명품 지시)는 md 정본이 선 뒤 별도 커밋으로.",
+  "evidence": "앵커 전부 실물 확인: 엔진_셋업확장.js:165(J학생확인 불가침) · Code.js:939-940(버튼 계약 사망 자백) · 엔진_셋업확장.js:1085 preflightGlide · Code.js:542·2516(드림한줄 Set Column·스크립트는 읽기만). 이관 대장 문서는 docs/ grep 0건",
+  "tests": "없음 — 문서 산출물",
+  "blockers": "칸별 판정 일부(끊긴 칸을 신앱에 «다시 세울지»)는 대장이 선 뒤 유호님 픽 — 대장 작성 자체는 안 막힌다"
+ },
+ {
+  "id": "S4-4",
+  "verdict": "todo",
+  "repo": "appsscript",
+  "files": [
+   "apps:tests/safety.test.js"
+  ],
+  "plan": "tests/safety.test.js 의 기존 v9.64 테스트(앵커: `test('[v9.64] 유형 선택지에 말하기·읽기 포함`, 현재 1136~1140행) 끝에 대조 2줄을 잇는다: `const 계약 = require('../계약/수집_교정_계약.json');` `const 폼값 = m[1].split(',').map(s => s.trim().replace(/^'|'$/g, ''));` `assert.deepStrictEqual(폼값, 계약.learning_events.값목록.관찰영역, 'c14 관찰영역 값록 = 라이브 폼 TEACHER_MEMO_TYPES 그대로(계약 c14 문안이 산문으로만 묶은 것을 기계로 — 순서까지 같아야 한다)');` — m 은 그 테스트가 이미 쥔 TEACHER_MEMO_TYPES 매치라 새 파싱 불요, 상수가 한 줄 배열이라 split(',') 로 안전. 같은 커밋에 S4-2 잔여 1줄(SCHEMA_VER ↔ 계약.버전 — S4-2 plan 의 assert.ok 원문)을 동봉한다. 새 테스트 파일·새 의존성 0 — 기존 검사의 «존재만»을 «값 일치»로 올리는 확장이다.",
+  "evidence": "폼 상수(엔진_폼리포트.js:676) 9종 = 계약 learning_events.값목록.관찰영역 9종 — 지금은 일치(node 자). tests/·tools/ 「관찰영역」 grep 0건 재확인 · safety.test.js:1137-1140 은 존재+부분 포함만 잼. 항목은 유호 제안으로 돌렸으나 기억 self-audit-and-guard-tools-approved 「대조 장치는 묻지 말고 만든다」 상비 승인이 있어 todo 로 올린다 — 갈린 이유를 여기 남긴다",
+  "tests": "산출물 자체가 시험 — 추가 후 tests/safety.test.js 단독 실행 초록 + 전체 스위트 1회",
+  "blockers": ""
+ },
+ {
+  "id": "S4-5",
+  "verdict": "blocked",
+  "repo": "appsscript",
+  "files": [],
+  "plan": "코드 수정 0 — 배포 절차만. 진행 세션(엔진_콘텐츠AI.js 미커밋 M)의 트랙이 닫혀 커밋되면 /deploy 한 벌로 몰아 내보낸다 — 손 clasp push 금지(안전 규칙). 내보낸 뒤 rot-check 라이브대조 도장이 「일치」로 돌아섰는지 눈으로 확인해 닫는다. 감사 시점 「1커밋 뒤처짐」은 오늘 커밋들로 6커밋 뒤처짐으로 자랐다 — 갈라짐 자체는 도장이 경보 중이라 형태는 여전히 건강하고, S4-12 의 배포 창 체크리스트(씨앗 행 확인·/triggers)와 같은 창에서 한 번에 처리하면 창이 하나로 끝난다.",
+  "evidence": "git log 49e526b1..HEAD 배포집합 = 6커밋(d9349dfcb·0c72fff08·d4f261698·c8ca84735·677ac0bf4·89aef49a5) — 감사 시점 1건에서 증가 · 작업본에 엔진_콘텐츠AI.js M(진행 세션 미커밋, status 자)",
+  "tests": "없음 — /deploy 파이프라인 자체가 구문검사·안전 테스트를 순서 보장으로 돈다",
+  "blockers": "라이브 배포는 /deploy 전용 + 진행 세션 미커밋(엔진_콘텐츠AI.js)이 닫혀야 배포집합이 동결된다(deploy-gate-is-content-not-time)"
+ },
+ {
+  "id": "S4-6",
+  "verdict": "todo",
+  "repo": "appsscript",
+  "files": [
+   "apps:Code.js",
+   "apps:엔진_셋업확장.js",
+   "apps:엔진_콘텐츠AI.js",
+   "apps:엔진_폼리포트.js",
+   "apps:엔진_운영배치.js",
+   "apps:엔진_수집.js",
+   "apps:엔진_궤적.js"
+  ],
+  "plan": "① Glide 현재형 서술 스윕: 7파일 grep -i glide 184줄을 읽으며 «지금도 Glide 가 산다고 말하는» 기능 서술에만 「구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)」 표기를 단다. 불변 3종 — [vX.Y] 역사 주석 · Code.js:793 SYNK_VERSION 이력 줄 · 이미 폐기를 말하는 줄(예: Code.js:939). S4-3 대장과 같은 세션에 묶어 근거 조사를 한 번으로. 주석만 바꾸되 코드 토큰(preflightGlide 등 식별자)은 절대 개명하지 않는다 — 이름 개명은 별도 판정. ② SYNK_VERSION 줄 절단(최근 몇 판만 유지)은 유호 제안 자리로 남긴다 — 제안 전에 이 줄을 읽는 소비자 전수(tools/bump-version.js:73·134 는 선언 패턴만 확인됨, 배포판점검·자리표검사 등 나머지는 안 재봤다)를 센 표를 붙인다.",
+  "evidence": "grep -ic glide 본 트리: Code.js 82 · 엔진_셋업확장 35 · 엔진_콘텐츠AI 21 · 엔진_폼리포트 20 · 엔진_운영배치 14 · 엔진_수집 11 · 엔진_궤적 1 = 184줄(08-31 재실측 — 감사의 188과 근사) · bump-version.js 는 `const SYNK_VERSION = '…'` 선언 줄 패턴만 문다(73·134행)",
+  "tests": "주석 스윕이지만 tests/ 다수가 엔진 소스 문자열을 정규식으로 재므로(safety.test.js 등) 스윕 뒤 전체 스위트 재실행 + node --check 7파일 필수",
+  "blockers": "엔진_콘텐츠AI.js 는 진행 세션 미커밋(M) — 같은 파일 동시 쓰기 사고 무늬라 그 트랙이 커밋된 뒤 이 파일만 스윕"
+ },
+ {
+  "id": "S4-7",
+  "verdict": "todo",
+  "repo": "appsscript",
+  "files": [
+   "apps:Code.js"
+  ],
+  "plan": "Code.js:852 의 AI_FEEDBACK_MODEL 주석에서 「⚠ 폴백을 하드코딩한 소비자가 둘 더 있다(엔진_두뇌.js·상담AI.js) — 여기만 고치면 그쪽이 조용히 옛 값으로 남는다」 를 「⚠ 이 리터럴의 소비자가 셋 더 있다 — 엔진_두뇌.js 폴백 · 상담AI.js 폴백(상담AI_모델_) · 상담AI.js 상담AI_단가 표의 키. 여기만 고치면 폴백 둘은 조용히 옛 모델로 돌고, 단가 표는 새 모델 키가 없어 '' 옛 단가로 조용히 읽힌다(상담AI.js 51행 규약) — 모델 교체는 네 자리 한 벌이다」 로 갈아 끼운다(행번호는 주석에 안 적는다 — 파일명·이름으로만). 리터럴 일치 회귀 부활(v9.201 의 그 회귀 — e75fc7fc 철거로 소멸)은 유호 제안 자리로 남기되, 채택 시 tests/safety.test.js 에 「code 안 'claude-opus-5' 등장 4곳 전부 AI_FEEDBACK_MODEL 값과 일치」 한 줄이면 된다.",
+  "evidence": "Code.js:852 현행 주석은 폴백 둘만 적고 단가표 키 무언급(sed 인용) · 상담AI.js:53 `'claude-opus-5': { 입력: 5, 출력: 25 }` + :51 「빈 칸 = 옛 단가로 읽는다」 · tests 전수 grep 'claude-opus-5' 0건 재확인",
+  "tests": "없음 — 주석 1줄. 회귀 부활 채택 시 tests/safety.test.js 에 리터럴 사중 일치 1줄",
+  "blockers": ""
+ },
+ {
+  "id": "S4-8",
+  "verdict": "blocked",
+  "repo": "none",
+  "files": [],
+  "plan": "갈래 둘 중 하나는 소멸, 하나는 유호님 자격 대기. ①self_declare_log 「소비자 미착」 주장은 현 실물과 갈린다 — Code.js 의 dreamFirstOf(커밋 481b492d0 · 08-27 함께한날 막4)가 드림한줄 «첫» 기록을 걸어온길 카드로 학생에게 되돌려주고 있고, 도달 장부 스스로 「막4의 「처음의 드림 한 줄」이 읽기 시작했으나 «재료 0»(학생 0명)이라 승급은 실행 실측 뒤」(엔진_셋업확장.js:445-446)라 적어 뒀다 — 합류 설계 제안은 폐기, 개원 후 실행 실측에서 도달0 2→1 승급만 남는다. ②상담로그의 차단자 = 봇 개통 = Meta 토큰(유호님 자격 · 기한 2026-12-10 · 트랙.md:1256-1257). 유호 앞 목록(기억 yuho-open-decisions.md)엔 이 항목이 아예 없다(절 ①~⑱ 전수 — 봇 개통 부재) — 다음 기억 세션이 ⑲ 로 등재하고 기한을 명기한다(순번 조정이 아니라 «등재»가 실제 할 일).",
+  "evidence": "Code.js:2821-2831 dreamFirstOf 가 self_declare_log 를 실소비(「처음의 너는 이렇게 썼어」 · 설계 §2-㉣) — 감사 주장과 갈린 근거를 남긴다 · 트랙.md:1256-1257 「차단자는 코드가 아니라 봇 개통(Meta 토큰 = 유호님 몫 · 기한 2026-12-10)」 · yuho-open-decisions.md grep 「봇\\|Meta 토큰\\|개통」 해당 절 0건",
+  "tests": "없음 — 코드 무변(기억 파일 등재뿐)",
+  "blockers": "Meta 토큰 개통 = 유호님 자격증명 자리(기한 2026-12-10) · 유호 앞 목록 등재는 기억 파일이라 repo 밖 — 기억 세션 몫"
+ },
+ {
+  "id": "D7-2",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js",
+   "talk:src/답장화면.js",
+   "talk:tests/교정로그.test.js"
+  ],
+  "plan": "① 말하기화면.js:53 import 확장: 「로그읽기, 로그쓰기, 음성쓰기, 지속저장」에 교정로그읽기·교정로그쓰기 추가, 새 줄 import { 교정사건보내기 } from './교정API.js'. ② 밀린것보내기(현재 343-372) 안, 게임큐밀기(371행) «아래»에 교정 큐 쓸이 추가: try { const { 로그: 교정기록 } = await 교정로그읽기(); let 다음 = 교정기록; let 변했다 = false; for (const 항목 of 보낼것(교정기록, 막힘참조.current)) { if (!살아있나()) break; const 결과 = await 교정사건보내기(토큰, 항목.사건); 다음 = 전송기록(다음, 항목.id, 결과); 변했다 = true; } if (변했다) await 교정로그쓰기(다음).catch(() => {}); } catch { /* 읽기 실패는 조용히 — 답장화면과 같은 규칙 */ }. 보낼것·전송기록은 이미 33행에서 import돼 있고 교정로그.js:32가 같은 함수를 재수출하므로 그대로 쓴다. ⚠ 블록 안에 문자 「};」 시퀀스를 만들지 말 것 — tests/게임큐.test.js:164가 밀린것보내기 몸을 첫 「};」까지로 잘라 B2 검사가 깨진다. ③ 답장화면.js:121-123 주석의 「교정 큐에는 상시 배출구가 없다」를 「말하기화면 공용 배출구(밀린것보내기)에 합류했다(08-31)」로 갱신. ④ 화면 겹침 없음: App이 한 화면만 그리므로 두 화면이 동시에 교정로그를 쓰는 경합은 없다.",
+  "evidence": "말하기화면.js:343-372 실물에 선택·제출·되듣기·게임 네 큐만 있고 교정 큐 0(grep 교정 = 말하기화면 0건). 답장화면.js:121-123이 「상시 배출구 없음」을 자백. ⚠ 제안과 갈림: 원안의 「App의 교정막힘」 배선은 App.js(피어 영토) 수정을 요구해, 같은 동의 축인 말하기화면 자체의 막힘참조.current(405-410행, 오늘과제받기의 blocked)로 대체 — 제출·게임 큐가 이미 같은 값으로 멈추는 규약이라 새 갈래가 없다.",
+  "tests": "tests/교정로그.test.js(이미 답장화면 소스를 원문 정규식으로 봄 · 화면렌더.test.js:121 언급)에 게임큐 B2 무늬로 1건: 밀린것보내기 몸에 교정사건보내기·교정로그쓰기가 있는지 코드만()으로 확인",
+  "blockers": ""
+ },
+ {
+  "id": "D7-1",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/저장.js",
+   "talk:tests/나가기게이트.test.js"
+  ],
+  "plan": "저장.js 못보낸수(현재 150-154행)를 세 큐 합산으로: export async function 못보낸수() { const 제출 = await 로그읽기(); const 게임 = await 게임로그읽기(); const 교정 = await 교정로그읽기(); return 밀린것(제출.로그).length + 밀린것(게임.로그).length + 밀린것(교정.로그).length; }. 교정로그읽기는 같은 파일 60행에 이미 있고 실패 시 던지므로(69행) 「못 읽으면 던진다」(147행 주석) 규율이 자동으로 선다. 밀린것은 15행에서 이미 import(교정로그.js:32가 같은 함수를 재수출 — id·event_id·send_final만 봐서 교정 항목에도 그대로 맞는다). 145-146행 주석의 「새 큐 파일이 생기면 여기에 더하는 것이 착수 조건」 문장 옆에 교정 큐 합류(08-31) 한 줄 추가. 도착확인.js는 못보낸수() 하나만 부르므로(51행) 수정 불요 — 피어 영토를 안 건드린다.",
+  "evidence": "저장.js:153 실물 = 「밀린것(제출.로그).length + 밀린것(게임.로그).length」 — 교정 큐 누락 그대로. 저장.js:145-146 주석이 바로 이 자리를 예고. 기기비우기(272행)는 교정로그를 지우므로 게이트가 모르면 미전송 교정 사건이 소급 없이 소멸한다.",
+  "tests": "tests/나가기게이트.test.js가 못보낸수를 이미 덮는다(31-47행) — 같은 무늬로 1건 추가: 교정로그쓰기([미전송])만 있을 때 못보낸수()===1 (제출·게임 큐 비움 픽스처로 옛 셈과 가르기, 끝에 교정로그쓰기([]) 원복)",
+  "blockers": ""
+ },
+ {
+  "id": "D7-11",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "① 사유 조립(현재 437-441행 catch): 결과.사유 = '오늘 과제는 다시 받아 볼게요!'; 결과.사유원인 = 토큰 ? String(e.message || e) : null; 로 갈라 raw 오류문을 본문 괄호에서 뺀다(원인 보존 — 정보 삭제 아님, 439-441행의 괄호 삽입만 제거). lib/오늘과제.js 내려감 갈래들(481·487행)은 원인 없는 학생 문장이라 그대로. ② 렌더(현재 646행): {과제 && 과제.출처 === '고정' && ( <View> <Text style={s.메모}>오늘은 연습 문장으로 해요 — {과제.사유}</Text> {과제.사유원인 ? <Text style={s.사유원인}>{과제.사유원인}</Text> : null} </View> )} — 학생 문장을 앞세우고 기계 원인을 아래 줄로 내린다. ③ 스타일(1554행 메모 근처): 사유원인: { fontFamily: 폰트.모노, fontSize: 11, letterSpacing: 모노트래킹.라벨, color: 색.잉크_보조 } — 막힘카드.js:87 「모르는 코드 메모」 무늬 그대로(킷 토큰만). 문장은 초안 표기 유지 — 확정은 유호님 몫(주석에 「문구 초안」 명시).",
+  "evidence": "말하기화면.js:439-441 실물 = 「오늘 과제를 다시 받아 볼게요! (${e.message})」 괄호 박힘, 646행 = 「{과제.사유} · 오늘은 연습 문장으로 해요」 — 학생의 다음 걸음이 맨 뒤. tests grep(다시 받아 볼게요) 0건이라 앵커 시험 없음.",
+  "tests": "tests/화면렌더.test.js:103이 불러오는중 문구만 물므로 무접촉 — 필요하면 「사유원인이 s.메모 본문에 섞이지 않는다」 소스 정규식 1건(값싼 회귀)",
+  "blockers": ""
+ },
+ {
+  "id": "D7-12",
+  "verdict": "peer_territory",
+  "repo": "talk",
+  "files": [
+   "talk:App.js",
+   "talk:src/저장.js",
+   "talk:src/인증화면.js"
+  ],
+  "plan": "① 저장.js(208-250 세션 절): 새 함수 둘. export async function 만료시지우기() { if (웹) return; const s = await 세션읽기_원시(); await SecureStore.setItemAsync(세션키, JSON.stringify({ 학생번호: (s && s.학생번호) || '' })); } — refresh_token만 버리고 학생번호는 남긴다(기기 밖으로 안 나가는 값). export async function 학생번호읽기() — 세션키 JSON에서 학생번호만 돌려줌(refresh_token 유무 무관 · 세션읽기는 240행 규약대로 refresh_token 없으면 null 그대로라 로그인 폼으로 떨어지는 흐름 불변). 기기비우기(279행)는 현행 세션지우기() 유지 — 기기 넘김 정문은 전부 지운다. ② App.js:83 「if (e && !e.retryable) await 세션지우기()」 → await 만료시지우기(); 이어 const 남은번호 = await 학생번호읽기().catch(() => null); 를 상태(초기번호)로 들고 인증화면에 prop으로 내림. ③ 인증화면.js:43 서명에 초기학생번호 = null 추가, 45행 useState('') → useState(초기학생번호 || '') (로그인 단계 초기값일 뿐 — 40-42행 「토큰 prop 금지」 규율과 무관한 표시값).",
+  "evidence": "App.js:83 실물(bb904ab 반영 후) = 비-retryable이면 세션지우기() 전량 삭제, 인증화면.js:45 = 학생번호 useState('') 빈칸 시작 — 항목 미해결. App.js가 피어 영토(다른 세션 미커밋 작업 중)라 지금 시공 불가, 저장.js·인증화면.js 몫만 먼저 앉히면 반쪽이라 한 벌로 미룬다.",
+  "tests": "tests/기기비우기.test.js(저장.js 세션 함수 덮음) + 1건: 만료시지우기 뒤 세션읽기()===null 이면서 학생번호읽기()가 번호를 돌려준다",
+  "blockers": "App.js 피어 세션 미커밋 작업 종료 후 시공"
+ },
+ {
+  "id": "D7-13",
+  "verdict": "already_done",
+  "repo": "none",
+  "files": [],
+  "plan": "손대지 않는다 — 항목 자체가 「그대로 둔다」이고, 현재 실물이 그 상태다. 시공 0.",
+  "evidence": "막힘카드.js:45에 내려놓은바늘 부품이 배선돼 있고(2b603f7), 생성카드.js 존재·bb904ab(오늘)로 모노체 등 결함 수리까지 반영 — 「이미 좋다」 판정의 근거 실물이 그대로 서 있다.",
+  "tests": "",
+  "blockers": ""
+ },
+ {
+  "id": "D7-14",
+  "verdict": "already_done",
+  "repo": "none",
+  "files": [],
+  "plan": "손대지 않는다 — 항목 자체가 「그대로 둔다」이고, 세 근거 전부 현재 소스에 그대로 서 있다. 시공 0.",
+  "evidence": "저장.js:270-284 기기비우기 = 로그들 먼저·세션지우기(279)·세션잊기(284) 마지막 순서 유지. 사건통로.js:135-140 = 멱등 충돌 1회 재시도(새 키·둘째 충돌은 접음). 사건통로.js:58-60 = fetch 실패를 NETWORK(retryable:true)로 가르고 서버 오류는 봉투 코드로 갈라 던짐(84-93행).",
+  "tests": "",
+  "blockers": ""
+ },
+ {
+  "id": "D7-3",
+  "verdict": "peer_territory",
+  "repo": "talk",
+  "files": [
+   "talk:App.js",
+   "talk:src/오프라인카드.js"
+  ],
+  "plan": "① 신설 talk:src/오프라인카드.js — App.js 로딩 화면(162-167행)과 같은 문법: 빈 Navy 바탕(색.바탕) + <기호 크기={56}/>(src/기호.js · 폰트 안 탐) + 본문 「인터넷이 연결되면 자동으로 들어가요」(문구 초안 · 확정 유호님) + 「다른 계정으로 들어가기」 작은 글자 출구(잉크_보조 · 기기 넘김용, onPress는 prop 손으로가기). 색·폰트 전부 킷 토큰. ② App.js: 상태 한 칸 const [복원막힘, set복원막힘] = useState(false); 재시도용 const [복원세대, set복원세대] = useState(0); 복원 효과(64-89행) deps를 [복원세대]로, catch(78-83행)를 「if (e && !e.retryable) { await 세션지우기(); } else { set복원막힘(true); }」로, 효과 머리에서 set복원막힘(false). AppState 리스너 하나: 'active' && 복원막힘 && !세션 이면 set복원세대(n=>n+1) — 갱신 자동 재시도. 렌더: !세션 && 복원막힘 이면 인증화면 대신 <오프라인카드 손으로가기={() => set복원막힘(false)} /> (손으로가기가 로그인 폼으로 내려보냄 — 인증 로직 무변경). 세션읽기가 null인 첫 사용 기기는 복원막힘이 안 서므로 현행 그대로.",
+  "evidence": "App.js:78-85 실물 — retryable(NETWORK 포함) 실패는 토큰을 남기지만 세션 null·복원중 false로 빈 로그인 폼에 떨어진다(전용 카드·자동 재시도 0). App.js가 피어 영토라 지금 시공 불가 — 오프라인카드.js 신설만 먼저 두면 소비자 0 고아라 한 벌로 미룬다.",
+  "tests": "값싼 회귀 1건: 복원 catch가 retryable 갈래에서 세션지우기를 안 부른다는 소스 정규식(tests/기기비우기.test.js 곁)",
+  "blockers": "App.js 피어 세션 미커밋 작업 종료 후 시공"
+ },
+ {
+  "id": "D7-4",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:lib/오늘과제.js",
+   "talk:src/말하기화면.js",
+   "talk:tests/말하기로직.test.js"
+  ],
+  "plan": "① lib/오늘과제.js 복귀행동(현재 51-54행) 서명 확장: function 복귀행동(이전날짜, 지금날짜, 밀린수, 폴백 = null) { if (이전날짜 && 지금날짜 && 지금날짜 !== 이전날짜) return '재초기화'; if (폴백 && 폴백.고정폴백 && 폴백.오늘제출0 && 폴백.듣기중) return '재초기화'; return 밀린수 > 0 ? '밀린것' : null; } — 머리 주석(39-42행)에 갈래 ⓒ 추가: 「같은 날이라도 마운트 순간 회선이 삐끗해 고정 과제로 열렸고, 아직 아무것도 안 냈고(제출 0), 첫걸음(듣기)에 서 있으면 되세우는 것이 옳다 — 학생의 회복 수단이 앱 강제종료뿐인 하루를 막는다」. ② 말하기화면.js 복귀 효과(현재 479-487행): 호출을 복귀행동(date, 몽골날짜(), 보낼것(로그참조.current, 막힘참조.current).length, { 고정폴백: !!(과제 && 과제.출처 === '고정'), 오늘제출0: !학습출석(로그참조.current, date), 듣기중: 호흡 === '듣기' }) 로, deps를 [date, 토큰, 과제, 호흡] 로 확장(리스너 재생성은 값싸다). ⚠ 「복귀행동(date, 몽골날짜()」 접두를 바꾸지 말 것 — tests/말하기로직.test.js:477 정규식이 그 원문을 잰다.",
+  "evidence": "오늘과제.js:51-54 실물 = 날짜 갈림·밀린수 두 갈래뿐 — 고정 폴백 복구 갈래 0. 말하기화면.js:482 호출부 인자 셋 그대로. 기존 🚫(사전 찾고 온 학생 호흡 보존)는 오늘제출0·듣기중 조건이 그대로 지킨다 — ③답하기 중이거나 이미 낸 날은 원리상 안 걸린다.",
+  "tests": "tests/말하기로직.test.js:452-477이 복귀행동을 이미 덮는다 — 3건 추가: 같은 날+고정+제출0+듣기 → '재초기화' / 듣기 아님 → 밀린수 따라 '밀린것'|null / 제출 있음 → 현행 유지",
+  "blockers": ""
+ },
+ {
+  "id": "D7-5",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/사건통로.js",
+   "talk:tests/사건통로.test.js"
+  ],
+  "plan": "사건통로.js 한번(현재 51-61행)에 시한: 모듈 상수 const 왕복시한 = 15000; 을 헤더(35행) 근처에 두고, async function 한번(길, 토큰, 몸, 읽기) { const 중단 = new AbortController(); const 시한 = setTimeout(() => 중단.abort(), 왕복시한); try { return await fetch(`${URL_}/functions/v1/${길}`, { method: 읽기 ? 'GET' : 'POST', headers: 헤더(토큰, 읽기), signal: 중단.signal, ...(읽기 ? {} : { body: JSON.stringify(몸) }) }); } catch { throw new 인증오류('NETWORK', 말('err.network'), true); } finally { clearTimeout(시한); } } — abort가 기존 catch로 떨어져 NETWORK(retryable:true) 갈래에 그대로 접힌다(재시도 규약 무변경). 주석 한 줄: 「연결은 됐는데 바이트가 안 오는 회선에서 OS 기본 시한까지 매달리지 않게 — 통로가 하나라 부르기 소비자 전부(과제·교정·제출sign·몽글·events)가 자동 상속. WAV 업로드는 저장.js 별도 통로라 안 걸린다」. clearTimeout을 finally에 — 없으면 node 회귀가 열린 타이머로 매달린다. ⚠ 인증API.js 자체 fetch 4곳·과제API.js:84 deliver 점검은 이 항목 밖(G1-7 담당) — 상수 이름을 왕복시한으로 export해 두면 그쪽이 같은 자를 쓴다.",
+  "evidence": "grep 'AbortController|AbortSignal|signal:|timeout' src/ = 0건(재확인 08-31). 사건통로.js:51-61 실물에 시한 0. 부르기 소비자 = 과제API:19·교정API:37·제출API:24·몽글API:24 (grep) — 한 곳 수정으로 전부 닫힌다.",
+  "tests": "tests/사건통로.test.js(가짜 fetch 주입 · 45행)에 1건: 가짜가 받은 opt.signal이 존재(AbortSignal)하는지 + 즉시 abort된 signal로 fetch가 던질 때 NETWORK·retryable:true로 접히는지",
+  "blockers": ""
+ },
+ {
+  "id": "D7-6",
+  "verdict": "peer_territory",
+  "repo": "talk",
+  "files": [
+   "talk:src/도착확인.js"
+  ],
+  "plan": "도착확인.js 미전송 카드(현재 175-187행)의 「알겠어요」 Pressable(183-186행) «위»에 주 행동 버튼 하나: <Pressable onPress={돌아가기} hitSlop={6} style={({ pressed }) => [s.줄버튼, pressed && { opacity: 0.65 }]}><Text style={s.줄버튼글}>말하기 열어서 지금 보내기</Text></Pressable> — 이미 받는 돌아가기 prop(32행 서명 · 208행이 같은 prop 사용)을 그대로 부른다. 말하기화면 마운트가 곧 재전송(밀린것보내기)이라 탭 한 번이 곧 처방 — 42-46행 주석의 「재전송은 여기서 안 한다 · 둘째 통로 금지」 규율 그대로(길만 이어줌). 안내문(180행)은 「말하기 화면을 한 번 열어 주세요」 → 「아래 버튼으로 말하기 화면을 열면 밀린 것이 그때 올라가요」로 버튼을 가리키게 조정(문구 초안 · 확정 유호님). 스타일 신설 0 — s.줄버튼·줄버튼글 재사용.",
+  "evidence": "도착확인.js:175-187 실물 — 버튼이 「알겠어요」(닫기) 하나뿐, 돌아가기 prop은 208행에서만 소비. tests/나가기게이트.test.js:49-56이 이 파일 소스를 정규식으로 재는데(밀린것(·로그읽기 금지) 돌아가기 호출 추가는 안 걸린다. src/도착확인.js가 피어 영토라 지금 시공 불가.",
+  "tests": "tests/나가기게이트.test.js에 1건: 도착확인 소스에 「말하기 열어서 지금 보내기」 버튼이 돌아가기를 부르는지 코드만() 정규식",
+  "blockers": "src/도착확인.js 피어 세션 미커밋 작업 종료 후 시공"
+ },
+ {
+  "id": "D7-7",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "완료카드(현재 1501-1522행)에 어제넘음줄 무늬(1529-1532행)를 이식: ① 어제넘음줄 아래에 범용 틀 하나 — function 완료줄({ 스타일, 글 }) { const 등장 = use등장({ 올라옴: 4, 시간: 220, 지연: 90 }); return <Animated.Text style={[스타일, 등장]}>{글}</Animated.Text>; } (주석: 다닿음이 눈앞에서 뒤집히는 순간 글자만 툭 바뀌던 자리 — key 재마운트로 도착이 한 박자로 선다). ② 1504행 제목을 <완료줄 key={다닿음 ? '도착' : '끝'} 스타일={s.완료제목} 글={다닿음 ? '목소리가 도착했어요' : '오늘 말하기, 끝냈어요'} /> 로 — key가 바뀌는 재마운트에 박자가 붙는다. ③ 1520행 약속 줄을 {다닿음 && <완료줄 스타일={s.완료메타} 글=\"내일, 오늘 목소리에 대한 답장이 와요.\" />} 로 — 조건 마운트 자체가 박자를 준다. 글자·색 한 톨 안 바꿈, 모션은 lib/모션.use등장 재사용(reduce-motion 접힘 내장). 반짝임 배선은 안 한다 — 거는 판정이 유호님 몫(감사 원문 loom 칸 그대로).",
+  "evidence": "말하기화면.js:1504 실물 = 다닿음 삼항으로 글자 즉시 교체, 1520행 약속 줄도 조건부 Text 즉각 팝. 어제넘음줄(1529-1532)이 같은 파일에 무늬 정본으로 서 있음. tests grep(완료제목·목소리가 도착했어요) — 화면 소스 앵커 시험 0건(말하기로직.test.js:419는 주석 언급뿐).",
+  "tests": "tests/화면렌더.test.js가 말하기화면 렌더를 덮는다 — 문자열 불변이라 추가 회귀 불요",
+  "blockers": ""
+ },
+ {
+  "id": "D7-8",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "불러오는중(현재 787-794행)을 시한 있는 컴포넌트로: function 불러오는중() { const [오래됨, set오래됨] = useState(false); useEffect(() => { const t = setTimeout(() => set오래됨(true), 7500); return () => clearTimeout(t); }, []); return ( <View style={s.카드}> <Text style={s.카드라벨}>01</Text> <Text style={s.불러오는글}>오늘의 문장을 가져오는 중이에요…</Text> {오래됨 && <느린회선줄 />} </View> ); } 그리고 바로 아래 function 느린회선줄() { const 등장 = use등장({ 올라옴: 4, 시간: 220 }); return <Animated.Text style={[s.메모, 등장]}>회선이 느린가 봐요 — 조금만 더 기다려 주세요</Animated.Text>; } — 스피너·퍼센트 없이 글자 한 줄, 카드 자리 고정 문법(783-786행 주석) 그대로, 스타일은 기존 s.메모(잉크_보조) 재사용이라 신설 0. 문구는 초안 표기(주석 「문구 초안 · 확정은 유호님」). useState·useEffect·use등장·Animated 전부 이미 import돼 있다(1행·37행). D7-5 시한(15초)과 짝 — 7.5초 말 걸어줌 → 15초 폴백의 세 단이 선다는 한 줄을 주석에.",
+  "evidence": "말하기화면.js:787-794 실물 = 한 줄 카드·타이머 0. tests/화면렌더.test.js:103이 /가져오는 중/ 존재만 재므로 무접촉(문구 유지).",
+  "tests": "tests/화면렌더.test.js 현행 통과로 충분 — 필요시 「7500」 상수 존재 소스 검사 1건(값싼 회귀)",
+  "blockers": ""
+ },
+ {
+  "id": "D7-9",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/강사화면.js",
+   "talk:src/반피드백화면.js"
+  ],
+  "plan": "① 강사화면.js: 상태 한 칸 const [재조회, set재조회] = useState(0); 첫 조회 효과(현재 175-192행) deps [토큰] → [토큰, 재조회]. 빈 표본 카드(270행)를 !오류 && 로 가드 — 조회가 죽은 날 「이번 주는 판정할 것이 없어요」가 거짓으로 서는 것을 막는다(269행 주석의 「시스템 고장으로 읽는다」 그 축). 오류글(429행) 바로 아래: {오류 && 목록.length === 0 && !불러오는중 ? ( <Pressable onPress={() => { set오류(''); set불러오는중(true); set재조회((n) => n + 1); }} hitSlop={6} style={({ pressed }) => [s.back, pressed && { opacity: 0.7 }]}><Text style={s.backText}>다시 불러오기</Text></Pressable> ) : null} — 주석: NETWORK 실패는 서버에 안 닿은 갈래라 「조회 한 번 = 감사 1행」(172-174행) 분모를 안 흐린다. ② 반피드백화면.js: 반 목록 층 오류줄(349행) 아래 {오류 && !목록 ? ( <Pressable onPress={첫조회} style={({ pressed }) => [s.줄버튼, pressed && s.눌림]}><Text style={s.줄버튼글}>다시 불러오기</Text></Pressable> ) : null} — 첫조회는 이미 useCallback(98-105행)이라 그대로 다시 부르면 되고, s.줄버튼·줄버튼글(405-412행) 재사용. 새 스타일·새 통로 0.",
+  "evidence": "grep '다시 불러' src/ = 0건(재확인 08-31). 강사화면.js:185-186 첫 조회 실패 = set오류만, 재시도 손잡이 0 · 270행 빈 카드가 오류와 무관하게 선다. 반피드백화면.js:98-107 첫조회 실패 = set오류만·목록 null 그대로.",
+  "tests": "tests/강사화면.test.js·tests/반피드백화면.test.js가 두 화면을 덮는다 — 각 1건: 소스에 「다시 불러오기」가 재조회(또는 첫조회)를 부르는지 정규식",
+  "blockers": ""
+ },
+ {
+  "id": "D6-8",
+  "verdict": "peer_territory",
+  "repo": "talk",
+  "files": [
+   "talk:App.js",
+   "talk:src/답장화면.js",
+   "talk:src/어제의나.js",
+   "talk:src/나침반화면.js",
+   "talk:src/반피드백화면.js",
+   "talk:src/회고화면.js"
+  ],
+  "plan": "시각 불변, 터치 영역만 44px 이상으로. ①App.js:316·321(겉테 「답장」·「어제의 나」 Pressable): hitSlop={8} → hitSlop={{top:18,bottom:10,left:8,right:8}} — 글높이 ≈18+28=46px. bottom 을 10 에 묶는 까닭: 마스코트가 top 64 부터라(App.js 검수문링크 주석 · 08-23 탭 가로채기 실사고) 아래로 늘리면 탭 경쟁 — 위(상태바 쪽)는 터치물이 없어 위로 늘린다. ②App.js:294(SYSTEM)·329(검수문)·195(검수문_문앞): fontSize 10 이라 더 얇다 — hitSlop={{top:18,bottom:14,left:10,right:10}}(문앞은 bottom 34 절대배치라 bottom:18 로 뒤집어도 됨). ③답장화면.js:292 · 어제의나.js:115 의 back Pressable 에 hitSlop={{top:12,bottom:12,left:12,right:12}} 추가(s.back paddingTop 8 은 그대로). ④같은 무늬의 back(hitSlop 8 뿐): 나침반화면.js:234 · 반피드백화면.js:243·302·351 · 회고화면.js:366 도 {{top:12,bottom:12,left:12,right:12}} 로 통일. 시각·레이아웃 변경 0.",
+  "evidence": "App.js:316-321 hitSlop={8} + 겉테글 fontSize 13(346행) · 시스템글 fontSize 10(363행) · back: { paddingTop: 8 }(답장화면.js:348 · 어제의나.js:145) — bb904ab 이후에도 감사 그대로 실물 확인.",
+  "blockers": "App.js 가 피어 미커밋 영토라 ①② 는 지금 못 만진다 — ③④ 만 먼저 가고 ①② 는 피어 합류 후 시공",
+  "tests": "tests/화면렌더.test.js 가 답장·어제 렌더를 덮는다 — hitSlop 은 렌더 무해라 새 회귀 불요"
+ },
+ {
+  "id": "D6-10",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/답장화면.js"
+  ],
+  "plan": "①50행 import { 색, 폰트, 몽골어 } from './테마' 에 몽골어폰트 추가. ②318행 「해설: { ...몽골어, color: 색.잉크_서브 }」 → 「해설: { fontFamily: 몽골어폰트.본문, fontSize: 16, lineHeight: 26, color: 색.잉크_서브 }」 — InterTight-Medium 격상 + 15→16/25→26(토큰 몽골어보정 1.04 를 처음 기계로 잇는 자리). 색은 그대로. ③317행 주석을 「킷(한글) 폰트가 아니라 몽골어폰트를 지난다 — 해설은 병기가 아니라 학생이 실제로 이해하는 유일한 설명이라 본문급(Medium·16)이다(디자인_토큰 몽골어보정 1.04 · 감사 D6-10)」 로 갱신. ④329행 꼬리_몽골어는 한국어 꼬리(15/24)와 짝 맞춤이라 안 건드린다. InterTight-Medium 은 App.js 에 이미 등록돼 있고 tests/몽골어폰트.test.js 가 등록을 센다.",
+  "evidence": "현행 답장화면.js:318 「해설: { ...몽골어, color: 색.잉크_서브 }」 · 테마.js:115 몽골어 = InterTight-Regular 15/25, 몽골어폰트.본문 = 'InterTight-Medium'(테마.js:130) — 감사 그대로 미해결.",
+  "blockers": "조판 실렌더 눈확인은 잔여(코드 자체는 안전 — 기기 아닌 시연 지면으로도 가능)",
+  "tests": "tests/몽골어폰트.test.js(폰트 등록 자) + tests/화면렌더.test.js — 새 회귀 불요"
+ },
+ {
+  "id": "D6-11",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/보고서교정화면.js",
+   "talk:src/서류관문화면.js",
+   "talk:src/반피드백화면.js"
+  ],
+  "plan": "패딩 세 곳만 올린다 — 시각 밀도 미세 증가 외 변경 0. ①보고서교정화면.js:446 확신토글의 paddingVertical: 8 → 12(글 13px ≈18 + 24 = 42px). ②서류관문화면.js:575 확신토글 — 같은 줄, 같은 교체(두 파일이 「보고서교정화면과 같은 무늬」 주석으로 묶여 있으니 둘 다 한 커밋에). ③반피드백화면.js:425 칩(처분 칩)의 paddingVertical: 8 → 12. hitSlop 은 안 쓴다 — 칩줄·확신줄 gap 8 이라 슬롭이 이웃 칩과 겹쳐 오탭을 만든다. 패딩으로만 세운다.",
+  "evidence": "보고서교정화면.js:446 · 서류관문화면.js:575 「확신토글: { ... paddingVertical: 8 ... }」 · 반피드백화면.js:425 「paddingVertical: 8」 — grep 재확인, bb904ab 미반영.",
+  "blockers": "",
+  "tests": "tests/보고서교정화면.test.js · 서류관문화면.test.js · 반피드백화면.test.js 가 이미 덮는다 — 스타일 값 변경이라 새 회귀 불요"
+ },
+ {
+  "id": "D6-15",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/테마.js",
+   "talk:src/답장화면.js",
+   "talk:src/인증화면.js",
+   "talk:src/원장초기화.js",
+   "talk:src/어제의나.js"
+  ],
+  "plan": "감사의 「defaultProps 한 줄」은 이 판에서 원리상 안 선다(아래 evidence) — 상한 «값»은 한 곳, 적용은 고정 치수 자리로 좁힌다. ①테마.js 에 export const 글자배율상한 = 1.2; + 주석(「OS 글자 확대는 본문에선 살린다 — 고정 치수 상자 안 글자만 캡. RN 0.86+React 19 에서 Text.defaultProps 는 소비되지 않아 전역 한 줄이 불가(08-31 실측) — 자리별 prop 이 정본」). ②maxFontSizeMultiplier={글자배율상한} 을 고정 치수 상자 속 Text/TextInput 에: 답장화면 버튼글(버튼 height 52 · 336행) 두 곳, 인증화면 입력(height 52 · 323행)과 버튼글(355행 버튼), 원장초기화 버튼 글(115·123행 height 52), 어제의나 수 칸(width 52 · 132·136행 스타일을 쓰는 Text — 60행 등). 임포트에 글자배율상한 추가. ③App.js 겉테줄(절대배치)은 피어 영토라 제외 — 피어 합류 후 같은 상수로. ④자유 배율로 남는 본문은 1.3× 실기기 한 바퀴가 판정 자리(에뮬 통로 08-25 막힘).",
+  "evidence": "grep allowFontScaling|maxFontSizeMultiplier = 저장소 전체 0건(재확인). node_modules/react-native/Libraries/Text/Text.js 에 defaultProps 소비 0건 + react 19.2.3(package.json) — 함수 컴포넌트 defaultProps 는 React 19 에서 무시되므로 감사 proposal 의 전역 한 줄을 자리별 prop 으로 고쳐 적었다.",
+  "blockers": "1.3× 확대 실기기 검증 한 바퀴는 실기기 자리라 잔여(코드 반영은 지금 가능)",
+  "tests": "tests/테마면.test.js 에 단언 1 추가 — 테마.js 가 글자배율상한을 내보내고 위 네 화면 파일에 maxFontSizeMultiplier 문자열이 있다(fs-grep 무늬, 기존 가드 시험과 같은 결)"
+ },
+ {
+  "id": "D6-16",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/테마.js",
+   "talk:src/교수멘탈화면.js",
+   "talk:src/답장화면.js",
+   "talk:src/막힘카드.js",
+   "talk:src/말하기화면.js",
+   "talk:src/목표카드.js",
+   "talk:src/보고서교정화면.js",
+   "talk:src/생성카드.js",
+   "talk:src/서류관문화면.js",
+   "talk:src/알바변명화면.js",
+   "talk:src/어제의나.js"
+  ],
+  "plan": "값은 한 개도 안 바꾼다 — 같은 값만 상수로 걷는다(시각 리스크 0). ①테마.js 에 export const 판눈금 = Object.freeze({ 반경: 20, 여백: 22 }); + 주석(docs/디자인_토큰.json 율 축을 앱이 기계로 소비하는 첫 통로 후보 · 값은 현행 실측 그대로). ②열 파일의 「borderRadius: 20, padding: 22」 부분 문자열만 「borderRadius: 판눈금.반경, padding: 판눈금.여백」 으로 치환(꼬리의 gap 10/14/16·marginBottom 은 화면 결이라 그대로) + 각 파일 './테마' import 에 판눈금 추가. ③눌림 사다리는 이미 한 벌인 값만: opacity: 0.82(5곳 · 주버튼 눌림)·opacity: 0.35(7곳 · 잠김 흐림)를 export const 눌림층 = Object.freeze({ 버튼: 0.82, 잠김: 0.35 }) 로 걷되, 치환 전 각 자리가 그 역할인지 눈으로 확인하고 아닌 자리는 둔다. 0.7(19곳)/0.65(14곳)/0.75(5곳) 갈림은 값 통일이 눈 판정이라 이번엔 안 걷고 테마.js 주석에 표로만 남긴다(유호 픽 별도). ④도착확인(16/18)은 피어 영토 + 의도적 밀도 차 후보라 제외.",
+  "evidence": "grep 「borderRadius: 20, padding: 22」 = src 10파일 10건(위 목록 그대로) · 테마.js 에 간격/radius/눌림 토큰 0건 · 눌림 opacity 값 10가지 분포 실측(0.7×19 · 0.65×14 · 0.35×7 · 0.82×5 · 0.75×5 …).",
+  "blockers": "",
+  "tests": "tests/테마면.test.js 에 단언 1 추가 — src/*.js 에 「borderRadius: 20, padding: 22」 리터럴 0건(재발 방지 fs-grep)"
+ },
+ {
+  "id": "D6-3",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/나침반화면.js",
+   "talk:src/회고화면.js",
+   "talk:src/강사화면.js",
+   "talk:src/반피드백화면.js"
+  ],
+  "plan": "진행 상태를 잠김꼴에서 뗀다 — 「적는 중…」 이 살아 있는 코랄 면 위에서 읽히게(색.바탕 글자 대 신호 면 ≈ 6.9:1). disabled prop 은 전부 그대로(탭은 계속 막힌다). ①나침반화면.js:139 「도는중 && s.잠김」 삭제 · 228행 「(!채워짐 || 도는중) && s.잠김」 → 「!채워짐 && s.잠김」. ②회고화면.js:180 「도는중 && s.잠김」 삭제 · 290행 「(!자기고름 || 도는중) && s.잠김」 → 「!자기고름 && s.잠김」 · 339행 「(!강사고름 || !사유.trim() || 도는중) && s.잠김」 → 「(!강사고름 || !사유.trim()) && s.잠김」. ③강사화면.js:421 「(!!막힘문구 || 보내는중) && s.잠김」 → 「!!막힘문구 && s.잠김」. ④반피드백화면.js:234 「(!글.trim() || !처분 || 도는중) && s.잠김」 → 「(!글.trim() || !처분) && s.잠김」. ⑤네 파일 잠김 스타일 줄에 주석: 「잠김 = 미충족 전용. 진행 중(…는 중)은 disabled 만 걸고 면은 산 채로 둔다 — 잠김꼴 위 글자는 2.3:1 이라 진행 문구가 안 읽힌다(감사 D6-3)」. 미충족 잠김(잉크_희미 면)은 일부러 조용한 상태라 그대로.",
+  "evidence": "네 파일 모두 저장 = 색.신호 면 + 저장글 = 색.바탕 + 잠김 = { backgroundColor: 색.잉크_희미 }(나침반 293 · 회고 422 · 강사 515 · 반피드백 440) 로 진행 문구가 잠김꼴에 그려짐을 실측. 감사의 두 안(잠김에 잉크_메타 글자 / opacity 통일)은 합성 계산상 둘 다 3.2:1 미만이고 반피드백도 이제 opacity 방식이 아니라(440행), 「진행을 잠김에서 가르는」 쪽으로 고쳐 적었다.",
+  "blockers": "",
+  "tests": "tests/화면렌더.test.js · 회고.test.js · 강사화면.test.js · 반피드백화면.test.js 가 덮는다 — 조건 단순화라 새 회귀 불요"
+ },
+ {
+  "id": "D6-4",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/나침반화면.js",
+   "talk:src/회고화면.js",
+   "talk:src/반피드백화면.js"
+  ],
+  "plan": "강사화면의 자(실패 문구 = 잉크_서브 · 운영 안내 = 잉크_메타)로 세 화면의 색만 맞바꾼다. ①나침반화면.js:285~286 — 안내글 color: 색.잉크_서브 → 색.잉크_메타 · 오류글 color: 색.잉크_메타 → 색.잉크_서브. ②회고화면.js:413~414 동일 교환. ③반피드백화면.js:446~447 동일 교환. 폰트·크기·lineHeight 불변, 색 두 값만 서로 바꾼다. 강사화면.js:507~508 은 이미 바른 자라 불변(기준 인용 주석을 세 파일 오류글 줄에 한 줄: 「실패 ≥ 잉크_서브 · 운영 안내 = 잉크_메타 — 강사화면 자 · 감사 D6-4」). 부수효과 하나를 알고 간다: 회고화면 301·303·357행의 확인 문구(「학생 답이 적혔어요」 등)도 안내글이라 한 단 내려간다 — 운영 안내와 같은 층이라 강사화면 자와 정합.",
+  "evidence": "나침반 285~286 · 회고 413~414 · 반피드백 446~447 「안내글 …색.잉크_서브 / 오류글 …색.잉크_메타」, 강사화면 507~508 은 반대로 「막힘글=메타·오류글=서브」 — 감사 실측 그대로 현존(grep 인용).",
+  "blockers": "",
+  "tests": "tests/반피드백화면.test.js · 회고.test.js · 화면렌더.test.js 기존 — 색 교환이라 새 회귀 불요"
+ },
+ {
+  "id": "D6-5",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "말하기화면.js:1563 s.선택지 에 「backgroundColor: 색.바탕,」 한 줄을 더한다(첫 속성으로). 감사 원안의 색.바탕띄움이 아니라 색.바탕인 까닭을 주석으로 같은 자리에: 「면을 채워 표시한다(인증 보기칩 규칙의 확장) — 단 이 선택지는 바탕띄움 카드 «안»이라 같은 색이면 안 보인다. 카드 속 파인 면 = 색.바탕은 강사·검수·나침반 입력바탕과 판정칩_고름이 이미 쓰는 킷 안 무늬다(감사 D6-5)」. 선택지_고름(1573행 borderColor: 색.잉크)·borderWidth 1·신호 1점(녹음 버튼 코랄) 전부 불변 — 킷 밖 색 0.",
+  "evidence": "s.선택지(1563~1569행)는 테두리(잉크_희미 0.28)뿐이고 <View style={s.카드}>(1265행 · 카드 = 바탕띄움 1556행) 안에서 렌더됨을 실측 — 감사의 바탕띄움 채움은 같은 색 위 같은 색이라 무효여서 색.바탕으로 고쳐 적었다(카드 속 색.바탕 면 선례: 강사화면 455·490 · 검수화면 872 · 나침반 242 — grep).",
+  "blockers": "",
+  "tests": "tests/화면구문.test.js · 말하기로직.test.js 기존 — 스타일 한 줄이라 새 회귀 불요"
+ },
+ {
+  "id": "D6-9",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/NPC.js",
+   "talk:src/녹음띠.js",
+   "talk:src/마스코트.js"
+  ],
+  "plan": "상태 «교체»용 Image 세 곳에 fadeDuration={0} 을 단다(안드로이드 전용 prop — iOS·웹 무해·무시). ①NPC.js:62 <Image source={그림} …> 에 추가. ②녹음띠.js:63 <Image source={그것} …> 에 추가하고, 25행 머리말의 「안드로이드 Image 는 기본 페이드인이 있어…」 검수 절차 주석 끝에 「(08-31 fadeDuration 0 으로 껐다 — 이 함정은 다른 Image 자리에만 남는다)」 한 줄을 덧대 주석이 낡지 않게 한다. ③마스코트.js:377 Skia 부재 폴백의 <Animated.Image …> 에 추가 — 깜빡임이 눈감음 140ms 한 컷(50~54행 때 상수)이라 기본 300ms 페이드가 컷보다 길어 «번진 깜빡임»이 되는 자리다. 세 곳 다 prop 한 줄 외 변경 0.",
+  "evidence": "grep fadeDuration = src 실코드 0건(녹음띠.js:25 주석뿐 — 재확인) · NPC.js:62 · 녹음띠.js:63 · 마스코트.js:377 세 Image 모두 prop 없음 · 깜빡지속 140ms(마스코트.js 때 상수) 실측.",
+  "blockers": "안드로이드 실기기 눈확인은 잔여(변경 자체는 안전 — jest 렌더에 prop 추가는 무해)",
+  "tests": "tests/npc자산.test.js · npc배선.test.js · 마스코트배선.test.js · 화면렌더.test.js 기존 — 새 회귀 불요"
+ },
+ {
+  "id": "D5-2",
+  "verdict": "peer_territory",
+  "repo": "talk",
+  "files": [
+   "talk:App.js"
+  ],
+  "plan": "App.js 안에 화면틀 컴포넌트를 세운다: `function 화면틀({ children }) { const 등장 = use등장({ 시간: 240, 올라옴: 8 }); return <Animated.View style={[{ flex: 1 }, 등장]}>{children}</Animated.View>; }` — import는 react-native `Animated` 와 `./lib/모션.js` 의 use등장. 라우팅 조건부 렌더 묶음(현재 211행 <말하기화면 ~ 288행 어제의나)을 `<화면틀 key={화면}>…</화면틀>` 하나로 감싼다 — key={화면} 이라 화면이 바뀔 때마다 remount 되어 등장 한 박자가 돈다. 겉테(294행 SYSTEM 링크, 답장·어제 링크 등 상주 층)와 인증·로딩 분기(라우팅 앞 return)는 밖에 남긴다 — 테는 서 있고 내용만 자리 잡는다. reduce-motion 은 use등장이 스스로 접는다(lib/모션.js:53-58). 새 눈금·새 의존성 0.",
+  "evidence": "App.js 211~288행이 {화면 === '…' && <…화면 />} 즉시 교체 렌더(grep: App.js에 Animated·use등장 0건). App.js는 피어 세션 미커밋 영토라 지금 수정 금지.",
+  "tests": "tests/앱시작.test.js·tests/화면렌더.test.js가 App 골격을 덮는다. 회귀 1건: 소스층 — 라우팅 묶음이 화면틀(key={화면}) 안이고 SYSTEM 링크는 밖임을 assert.",
+  "blockers": "피어 세션이 App.js 미커밋 작업 중 — 그 커밋이 산 뒤에 시공"
+ },
+ {
+  "id": "D5-3",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/교수멘탈화면.js",
+   "talk:src/보고서교정화면.js",
+   "talk:src/서류관문화면.js",
+   "talk:src/말하기화면.js",
+   "talk:src/알바변명화면.js"
+  ],
+  "plan": "①교수멘탈화면.js:24 / 보고서교정화면.js:12 / 서류관문화면.js:19 의 `import { 효과음 } from './소리.js'` 를 `{ 효과음, 도장햅틱 }` 으로 넓힌다. ②각 achieve 자리 바로 다음 줄에 `try { 도장햅틱(); } catch { /* 무음 */ }` 한 줄 — 앵커: 교수멘탈 222행·보고서교정 173행·서류관문 248행의 `try { 효과음('achieve'); } catch …`. ③G3: 알바변명화면.js 안에는 금지(테스트 ⑪)라 D5-6 의 완주때 콜백(말하기화면 G3 갈래, 615~624행)에서 achieve 와 함께 도장햅틱()을 낸다 — 말하기화면.js:90 import에 도장햅틱 추가. 답장(결과) 화면에는 안 단다(감각층 경계 — 판 종료 문장부호 전용, 소리.js:85 머리말 그대로). 녹음 중이면 게이트가 무음으로 접는다(소리게이트.js:53).",
+  "evidence": "도장햅틱 정의 src/소리.js:86 · 호출부 0건(grep — tests/알바변명화면.test.js:229 금지문뿐). achieve 자리 셋(222·173·248행) 감사 당시와 동일. 게이트 회귀 실물: tests/소리.test.js:38 「녹음 중 햅틱이 지나갔다」.",
+  "tests": "tests/교수멘탈화면.test.js·보고서교정화면.test.js·서류관문화면.test.js·알바변명화면.test.js. 회귀 1건: 세 화면 소스에 도장햅틱( 이 achieve 곁에 정확히 1회씩 있고 알바변명화면 소스엔 여전히 0건임을 assert.",
+  "blockers": ""
+ },
+ {
+  "id": "D5-1",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/마스코트.js",
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "①말하기화면.js:756 `연출={{ 대본: 연출대본.완료축하, 끝나면: … }}` 에 `상황: '완료축하'` 한 칸을 얹는다. ②마스코트.js:258 `const 말표정 = 걸음.말 === '@질문' ? '물음' : (걸음.표정 === '기쁨' ? '기쁨' : '기본');` 를 `… '물음' : (연출.상황 || (걸음.표정 === '기쁨' ? '기쁨' : '기본'));` 로 — 연출 단위 상황이 걸음 유도보다 우선하되 @질문(물음)은 그대로. 주석에 「대본 정본 필드는 안 늘린다 — 연출 prop 이 상황을 진다」 한 줄. 완료축하 대본의 말 걸음은 하나('와아, 다 했다!' · 마스코트생명.js:215)라 목소리도 1회다. 배치는 그대로 산다: 몽글 모오옹·마린 완수·까몽 [](빈 풀 침묵 — 목소리판정이 낼까:false, 가이드목소리.js 95행). 겹침막기·녹음 게이트 불변.",
+  "evidence": "마스코트.js:258-259 실측 — 말표정 유도가 물음/기쁨/기본 셋만 알아 완료축하 연출에서 목소리('기쁨')이 난다. 가이드목소리.js:83 완료축하: ['모오옹'] · 104행 마린 ['완수'] · 95행 까몽 [] 확인. 연출.상황 grep 0건(미반영).",
+  "tests": "tests/마스코트배선.test.js(37행 연출= 앵커 이미 잼)·tests/가이드목소리.test.js. 회귀 1건: 소스층 — 완료축하 연출 갈래에 상황:'완료축하' 가 실리고 마스코트.js 말표정 유도가 연출.상황을 우선 읽음을 assert.",
+  "blockers": ""
+ },
+ {
+  "id": "D5-10",
+  "verdict": "needs_yuho",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "녹음카드(말하기화면.js:901 `function 녹음카드({`) 내부 첫머리에 `const 카드등장 = use등장();` 를 두고 카드의 최상위 반환 컨테이너를 `<Animated.View style={[…, 카드등장]}>` 로 감싼다(단계별 return 이 여럿이면 공통 래퍼 하나로). ⚠ 선언줄 `function 녹음카드(` 는 tests/오늘과제.test.js 되듣기배선의 앵커(897~899행 머리말 명문)라 한 글자도 안 바꾼다. 따라 카드는 문장마다 remount(663행 key={이번걸음})라 문장마다 박자가 돈다 — 「새 카드」 설계와 정합. G3 답하기 카드(알바변명화면이 같은 녹음카드를 씀, 알바변명화면.js:17)도 같은 박자를 얻는다. use등장이 reduce-motion 을 진다. 선행: 08-24 확정 여섯 자리(완료카드·어제의나·답장·서류관문·알바변명·나침반)에 «일곱째»를 얹는 유호님 판정 — 판정이 서면 위 그대로 시공.",
+  "evidence": "grep use등장 in 말하기화면.js = 37(import)·1500(완료카드)·1530(어제넘음줄)뿐 — 따라(663행)·답하기(686행) 카드 마운트 박자 0 현행 그대로. 감사 항목 스스로 「확정 목록에 얹는 판정과 한 벌」이라 적음.",
+  "tests": "tests/오늘과제.test.js(앵커 민감 — 녹음카드 줄머리 불변 확인)·tests/말하기로직.test.js. 회귀 1건: 녹음카드 반환부에 카드등장 적용 assert.",
+  "blockers": "등장 박자 확정 여섯 자리(유호 08-24)에 일곱째 자리를 등재하는 유호님 판정"
+ },
+ {
+  "id": "D5-11",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/알바변명화면.js"
+  ],
+  "plan": "①1행 import에 useRef 추가(Animated 는 2행에 이미 있음), 5행 `import { use등장 }` 을 `{ use등장, use줄임 }` 으로. ②컴포넌트 안에 `const 숨 = useRef(new Animated.Value(1)).current;` 와 `const 줄임 = use줄임();`. ③`useEffect(() => { if (읽는중 && !줄임) { const loop = Animated.loop(Animated.sequence([Animated.timing(숨, { toValue: 1.015, duration: 900, easing: Easing.out(Easing.quad), useNativeDriver: true }), Animated.timing(숨, { toValue: 1, duration: 900, easing: Easing.in(Easing.quad), useNativeDriver: true })])); loop.start(); return () => { loop.stop(); 숨.setValue(1); }; } 숨.setValue(1); return undefined; }, [읽는중, 줄임, 숨]);` — 눈금은 말하기화면 녹음 맥박(1448-1449행) 계보, 폭만 1.015. Easing import 를 react-native 줄에 추가. ④NPC 렌더(154~156행)를 `<Animated.View style={{ transform: [{ scale: 숨 }] }}>` 로 감싼다. TTS onDone/onError 가 읽는중을 끄는 순간(116·120행) effect 가 스스로 멈춘다. 숫자·게이지·상태 어휘 불변, transform 뿐이라 소리·햅틱 금지 회귀(⑪)와 무접촉.",
+  "evidence": "알바변명화면.js:107 재탭 가드(bb904ab)로 행 밀림 확인 — 읽는중 state 79행, NPC 렌더 154~156행 정지 그림 현행 그대로(Animated 소비는 233행 끝카드 등장뿐).",
+  "tests": "tests/알바변명화면.test.js·tests/NPC연출.test.js. 회귀 1건: 소스층 — 숨 루프가 읽는중 게이트 안에만 있고 transform 만 만짐을 assert.",
+  "blockers": ""
+ },
+ {
+  "id": "D5-12",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "머리 컴포넌트(764~783행) 밑에 진행점 컴포넌트를 새로 둔다: `function 진행점({ 상태 })` — 상태 = '지남'|'현재'|'남'. 두 겹: 바닥 View 는 `[s.점, 상태 === '지남' && s.점_지남]`, 그 안에 absoluteFill Animated 덮개(`{ backgroundColor: 색.잉크, borderRadius: 4 }` — s.점_현재의 잉크 100%가 이 덮개로 이사). 덮개 opacity 는 `useRef(new Animated.Value(상태 === '현재' ? 1 : 0)).current` 로 시작, `useEffect(() => { if (줄임) { 값.setValue(상태 === '현재' ? 1 : 0); return; } Animated.timing(값, { toValue: 상태 === '현재' ? 1 : 0, duration: 180, easing: Easing.out(Easing.quad), useNativeDriver: true }).start(); }, [상태])` — use줄임 import 확장(37행). 774행 잉여 조건 `i <= idx - 0 && i < idx` 는 `i < idx` 로 정리하고 렌더를 `<진행점 상태={i < idx ? '지남' : i === idx ? '현재' : '남'} />` 로 바꾼다. s.점_현재 스타일은 덮개로 흡수(1546행 정리).",
+  "evidence": "말하기화면.js:774 실측 — `i <= idx - 0 && i < idx` 잉여 조건과 스타일 즉시 교체 현행 그대로. 점 스타일 1544~1546행(잉크_희미/잉크_서브/잉크).",
+  "tests": "tests/말하기로직.test.js·tests/화면렌더.test.js. 회귀 1건: 진행점 세 상태 갈래(지남/현재/남)와 774행 잉여 조건 소멸 assert.",
+  "blockers": ""
+ },
+ {
+  "id": "D5-13",
+  "verdict": "peer_territory",
+  "repo": "talk",
+  "files": [
+   "talk:src/테마.js",
+   "talk:src/강사화면.js",
+   "talk:src/검수문.js",
+   "talk:src/검수화면.js",
+   "talk:src/교수멘탈화면.js",
+   "talk:src/나침반화면.js",
+   "talk:src/답장화면.js",
+   "talk:src/말하기화면.js",
+   "talk:src/목표카드.js",
+   "talk:src/문구감수화면.js",
+   "talk:src/반피드백화면.js",
+   "talk:src/보고서교정화면.js",
+   "talk:src/서류관문화면.js",
+   "talk:src/알바변명화면.js",
+   "talk:src/어제의나.js",
+   "talk:src/원장초기화.js",
+   "talk:src/인증화면.js",
+   "talk:src/회고화면.js",
+   "talk:src/도착확인.js",
+   "talk:src/관찰화면.js"
+  ],
+  "plan": "①테마.js 색.눌림(40행) 곁에 `export const 눌림감 = Object.freeze({ 면: 0.82, 글: 0.7 });` — 색.눌림에는 「소비 0 · 코랄 면 버튼 소멸로 유물 — 새 소비 금지」 봉인 주석. ②전 화면의 pressed 리터럴을 기계 치환: 면 버튼(주버튼·칩·저장·확정·표정칸 등) → `opacity: 눌림감.면`, 글자 링크(back·곁길·줄버튼·연한단추) → `opacity: 눌림감.글`. 현행 여섯 벌 실측(0.6 원장초기화97·인증300 / 0.65 도착확인×14·반피드백441 / 0.7 다수 / 0.75 게임·말하기 다섯 / 0.8 관찰293 / 0.82 검수화면936·답장341·원장127·인증359·문구감수235) — 감사의 다섯 벌보다 한 벌 더 갈라져 있다. 게임 화면 0.75는 면 쪽(0.82)으로 접는다 — 얕은 단을 남길 근거가 코드에 없다. ③도착확인.js·관찰화면.js 는 피어 커밋 뒤 같은 규칙으로 치환. ④디자인 토큰(apps:docs/디자인_토큰.json) 등재는 별도 커밋으로 제안만.",
+  "evidence": "grep 실측: pressed opacity 리터럴이 0.6/0.65/0.7/0.75/0.8/0.82 여섯 벌 · 색.눌림 소비 0건(정의 테마.js:40뿐). 도착확인.js(0.65×14곳)·관찰화면.js가 피어 영토.",
+  "tests": "tests/테마면.test.js. 회귀 1건: src 전체에서 pressed 곁 opacity 숫자 리터럴 0건(눌림감 참조만) — grep형 소스 시험.",
+  "blockers": "도착확인.js·관찰화면.js가 피어 세션 미커밋 영토 — 그 커밋 뒤 전수 치환이 닫힌다"
+ },
+ {
+  "id": "D5-14",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/마스코트.js"
+  ],
+  "plan": "①마스코트 컴포넌트에 `const 마지막말 = useRef(null); if (말) 마지막말.current = 말;` 과 `const [퇴장중, set퇴장중] = useState(false);`. ②`useEffect(() => { if (말 || !마지막말.current || 줄임) { set퇴장중(false); return; } set퇴장중(true); const t = setTimeout(() => set퇴장중(false), 180); return () => clearTimeout(t); }, [말, 줄임])`. ③렌더(391행) `{말 ? <말풍선 key={말} …/> : null}` → `{(말 || 퇴장중) ? <말풍선 key={말 ?? 마지막말.current} 글={말 ?? 마지막말.current} 줄임={줄임} 퇴장={!말} /> : null}` — 말→null 은 key 가 같아 remount 없이 퇴장 prop 만 바뀌고, 말→다른 말은 key 교체로 기존 «뽁» 등장이 그대로 돈다(391행 🔑 주석 유지). ④말풍선에 퇴장 prop: `useEffect(() => { if (!퇴장) return; if (줄임) { 등장.setValue(0); return; } Animated.timing(등장, { toValue: 0, duration: 150, easing: Easing.in(Easing.quad), useNativeDriver: Platform.OS !== 'web' }).start(); }, [퇴장])` — 등장 값 역재생이라 새 값 0. reduce-motion 이면 즉시 소멸 그대로.",
+  "evidence": "마스코트.js:391 실측 — `{말 ? <말풍선 key={말} …/> : null}` 조건부 렌더 즉시 소멸 · 등장은 396~400행 스프링뿐(퇴장 축 0).",
+  "tests": "tests/마스코트배선.test.js·tests/화면렌더.test.js. 회귀 1건: 소스층 — 말풍선에 퇴장 갈래(toValue: 0)와 줄임 즉시 소멸 가드가 있음을 assert.",
+  "blockers": ""
+ },
+ {
+  "id": "D5-15",
+  "verdict": "blocked",
+  "repo": "talk",
+  "files": [
+   "talk:src/소리.js",
+   "talk:src/답장화면.js",
+   "talk:src/교수멘탈화면.js",
+   "talk:src/보고서교정화면.js",
+   "talk:src/서류관문화면.js"
+  ],
+  "plan": "선행 계측(실기기): 효과음 첫 재생에서 createAudioPlayer+로드가 재생 순간에 겹치는 지연 폭을 잰다 — 소리.js 71~74행 앞뒤 console.time 한 벌, 안드로이드 실기기에서 achieve 첫 발 vs 둘째 발 비교. 벌어지지 않으면 안 넣는다(항목 명문). 벌어지면: ①소리.js에 `export function 예열(이름) { if (!플레이어들[이름]) { const { createAudioPlayer } = 오디오(); 플레이어들[이름] = createAudioPlayer(효과음자산[이름]()); } }` — play 0·게이트 안 지남(판정은 재생 순간 그대로, 68행 규약 명시 주석). ②호출 자리: 답장화면 마운트에 예열('achieve')(157행 무오류 갈래가 쓸 소리), G1·G2·G4 마운트에 예열('achieve'), 말하기화면 G3 갈래 성립 때 예열('notify')(신호음). 각 파일 import 확장뿐 — 재생 통로·게이트 불변.",
+  "evidence": "소리.js:71-74 실측 — `if (!플레이어들[이름]) { … createAudioPlayer … }` 가 첫 재생 순간에 생성+로드를 겹침. 항목 스스로 「첫 재생 지연의 실제 폭은 안 재봤다 — 실기기 계측이 먼저」.",
+  "tests": "tests/소리.test.js. 계측 뒤 회귀 1건: 예열이 게이트 판정을 안 지나고 play 를 안 부름을 assert.",
+  "blockers": "실기기 계측 선행 — 첫 재생 지연 폭 미측정(에뮬레이터 통로도 08-25부터 막힘)"
+ },
+ {
+  "id": "D5-16",
+  "verdict": "already_done",
+  "repo": "none",
+  "files": [],
+  "plan": "손대지 않는다 — 이 항목의 산출물은 현재 실물 그대로다. D5 절의 다른 제안들이 이 결(등장=자리 잡음 · 축하는 몽글과 소리킷 몫 · 신호 1점 · 정지 화면이 곧 진실)의 어휘만 빌려 쓰는지가 시공 때의 유일한 검사다.",
+  "evidence": "유지 항목(cost 0) — 감사 스스로 「손대지 않는다」로 적음. 현행 소스가 곧 반영 상태다.",
+  "tests": "불요",
+  "blockers": ""
+ },
+ {
+  "id": "D5-4",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/교수멘탈화면.js",
+   "talk:src/보고서교정화면.js",
+   "talk:src/서류관문화면.js",
+   "talk:src/검수문.js"
+  ],
+  "plan": "①세 게임 화면 import 확장(교수멘탈 24행·보고서교정 12행·서류관문 19행): `{ 효과음, bgm재생, bgm정지 }`. ②각 컴포넌트 함수 첫머리에 `useEffect(() => { bgm재생(); return () => bgm정지(); }, []);` — 인자 없이(기본 = 유호 선정 측정 트랙, 소리.js 머리말 계약 그대로). 녹음 게이트가 음소거·복원을 진다(판정 'bgm시작' · 소리게이트.js). G3 제외 — tests/알바변명화면.test.js:229 금지 유지. ③검수문.js: import 확장(30행), ⑧ 막힘 카드 칸 블록 끝과 돌아가기 Pressable(~305행) 사이에 ⑨ 칸 「BGM — 게임 화면 밑에 깔리는 소리」: `const [bgm켬, setBgm켬] = useState(false)` + Pressable 토글(누르면 bgm켬 ? bgm정지() : bgm재생(), set 반전 · 라벨 「BGM 켜고 듣기 / 끄기」) + `useEffect(() => () => bgm정지(), [])` 언마운트 정리. 기존 s.칸·s.버튼·s.눌림 스타일 재사용. 게임 화면에 정말 깔지의 최종 판정은 유호님 귀 — 이 항목의 산출물은 배선과 귀검수 통로까지다.",
+  "evidence": "grep 실측: bgm재생( 호출부 src 전체 0건(정의 소리.js·금지 테스트뿐) · 검수문 칸은 ①~⑧까지(⑧ 막힘 카드가 마지막)로 BGM 칸 0.",
+  "tests": "tests/교수멘탈화면.test.js·보고서교정화면.test.js·서류관문화면.test.js·알바변명화면.test.js(⑪ 금지 유지). 회귀 1건: 세 화면 소스에 bgm재생 마운트 + bgm정지 언마운트 한 벌씩 assert.",
+  "blockers": ""
+ },
+ {
+  "id": "D5-5",
+  "verdict": "needs_yuho",
+  "repo": "talk",
+  "files": [
+   "talk:src/답장화면.js",
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "판정 재료 — 자리 후보 둘, 어느 쪽이든 시공은 몇 줄이다. 후보①(답장 무오류 첫 열람): 답장화면.js에 `import 반짝임, { 쓸수있나 } from './반짝임.js'` + `const [반짝, set반짝] = useState(false)`; 157행 `if (새것 && 무오류인가(교정))` 갈래(achieve·캐릭터사건과 같은 순간)에 `if (쓸수있나()) set반짝(true);` 한 줄; 교정 카드 위 모서리에 절대배치로 `<반짝임 보임={반짝} 크기={120} 줄임={줄임} 끝나면={() => set반짝(false)} />`. 후보②(말하기 완료카드): 1500행 카드등장 곁 — 「목소리가 도착했어요」가 처음 성립하는 순간(배달상태 첫 계산)에 같은 무늬. 자동 반복 0·별 셋 스태거 1.30초·reduce-motion 내장 — 구운 그대로, 자리만 얹는다. 유호님 픽: ① / ② / 아직 안 건다.",
+  "evidence": "src/반짝임.js 실화면 소비 0 현행 그대로 — 검수문.js 212행 「⑤ 반짝임 — 아직 «쓰는 자리» 없음」·203행 「어디에 쓸까를 유호님이 정하시라고 있는 자리」. 답장화면.js 157행 게이트 실물 확인. 08-27에 배선을 판정 사안으로 못박음.",
+  "tests": "tests/화면렌더.test.js. 판정 뒤 회귀 1건: 배선 갈래가 새것&&무오류(또는 완료 첫 성립) 게이트 안에만 있음을 assert.",
+  "blockers": "배선 자리(또는 안 걸기) 판정은 유호님 몫 — 08-27 명문"
+ },
+ {
+  "id": "D5-6",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js",
+   "talk:src/알바변명화면.js"
+  ],
+  "plan": "소리는 파일 밖에서 — 프롭 콜백으로 배선한다. ①말하기화면.js G3 갈래(615~624행 <알바변명화면>)에 `완주때={() => { try { 효과음('achieve'); 도장햅틱(); } catch { /* 무음 */ } }}` prop 추가(도장햅틱은 D5-3 G3 몫 — 90행 import 확장). ②알바변명화면.js: 컴포넌트 인자에 완주때 추가, 기록추가 래퍼(193행)를 `기록추가={(항목입력) => { const r = 기록추가(게임항목입력(재료, 항목입력)); if (항목입력.status === 'submitted') 완주때 && 완주때(); return r; }}` 로 — status 는 녹음카드가 싣는 값(말하기화면.js 1213행)이라 «보냈다»에만 1회 난다: abandoned(무발화)·retried 무음, 되세움 진입(87행 학습출석 게이트)도 무음 — G1·G2·G4 의 achieve 뜻(보냈다)과 같은 자다. 금지 문자열(효과음(·도장햅틱()은 알바변명화면.js에 안 들어가 테스트 ⑪(229행) 그대로 초록. 녹음끝() 뒤라 게이트 통과.",
+  "evidence": "grep: 알바변명화면.js 효과음 0건 · G1/G2/G4 achieve 있음(222·173·248행) — G3만 완주 무음 현행 그대로. tests/알바변명화면.test.js:227-231(⑪ 직접 소리 금지)·233행(⑫ 갈래 프롭 includes 검사 — 프롭 추가와 무충돌) 실측.",
+  "tests": "tests/알바변명화면.test.js(⑪·⑫ 기존). 회귀 1건: 완주때가 status === 'submitted' 가드 안에서만 불림 + 말하기화면 G3 갈래에 완주때 실림을 소스층 assert.",
+  "blockers": ""
+ },
+ {
+  "id": "D5-8",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/보고서교정화면.js"
+  ],
+  "plan": "①import 확장: react-native 줄에 Animated·Easing, react 줄에 useRef, '../lib/모션.js' 에서 use줄임. ②어절 map(305~312행)의 Pressable 몸을 컴포넌트로 뽑는다: `function 어절단추({ 짚힘, 누르기, 글 })` — `const 쫀득 = useRef(new Animated.Value(0)).current; const 줄임 = use줄임();` onPress 에서 `누르기()` 뒤 줄임이 아니면 `Animated.sequence([Animated.timing(쫀득, { toValue: 1, duration: 90, easing: Easing.out(Easing.quad), useNativeDriver: true }), Animated.spring(쫀득, { toValue: 0, friction: 3.6, tension: 160, useNativeDriver: true })]).start()` — 마스코트.js 207~212행 쫀득 계보 그대로. 렌더는 `<Animated.View style={{ transform: [{ scale: 쫀득.interpolate({ inputRange: [0, 1], outputRange: [1, 0.97] }) }] }}>` 가 기존 Pressable(스타일 s.어절·s.어절_짚힘·s.눌림 전부 불변)을 감싼다. 색·면·신호 1점 무접촉 — transform 뿐.",
+  "evidence": "보고서교정화면.js 300~312행 실측 — 어절 Pressable 이 `짚힘 && s.어절_짚힘` 스타일 즉시 교체뿐(Animated import 0건). 쫀득 계보 실물 = 마스코트.js:210-211(timing 90ms → spring friction 3.6·tension 160).",
+  "tests": "tests/보고서교정화면.test.js. 회귀 1건: 소스층 — 쫀득이 transform 만 만지고 어절 색 스타일이 불변임을 assert.",
+  "blockers": ""
+ },
+ {
+  "id": "D5-9",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/교수멘탈화면.js"
+  ],
+  "plan": "①import 확장: react-native 줄에 Animated·Easing·(StyleSheet 이미 있음), react 줄에 useRef, '../lib/모션.js' use줄임. ②338행 `<View style={[s.게이지면, 찼다 && s.게이지면_참]} />` 를 `<게이지칸면 찼다={찼다} />` 로 바꾸고 같은 파일에 컴포넌트를 둔다: `function 게이지칸면({ 찼다 }) { const 줄임 = use줄임(); const 덮개 = useRef(new Animated.Value(찼다 ? 1 : 0)).current; useEffect(() => { if (줄임) { 덮개.setValue(찼다 ? 1 : 0); return; } Animated.timing(덮개, { toValue: 찼다 ? 1 : 0, duration: 200, easing: Easing.out(Easing.quad), useNativeDriver: true }).start(); }, [찼다, 줄임, 덮개]); return <View style={s.게이지면}><Animated.View style={[s.게이지면_덮개, { opacity: 덮개 }]} /></View>; }` — 채울 때도 빠질 때도 같은 200ms(채점 아님·안내 설계 유지). ③스타일: 457행 게이지면(잉크_희미 바닥) 유지, 458행 게이지면_참 을 `게이지면_덮개: { ...StyleSheet.absoluteFillObject, borderRadius: 4, backgroundColor: 색.잉크 }` 로 교체. 게이지이름_참(글자)은 불변. 배선 뒤 검수문 눈검수는 기존 통로.",
+  "evidence": "교수멘탈화면.js 337-338·456-458행 실측 — backgroundColor 즉시 교체(색.잉크_희미→색.잉크 · bb904ab 색.선→잉크_희미 교체 반영판) · Animated import 0건.",
+  "tests": "tests/교수멘탈화면.test.js·tests/멘탈게이지.test.js. 회귀 1건: 덮개가 opacity(useNativeDriver)만 만지고 바닥 잉크_희미가 불변임을 assert.",
+  "blockers": ""
+ },
+ {
+  "id": "G1-7",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/시한fetch.js",
+   "talk:src/사건통로.js",
+   "talk:src/인증API.js",
+   "talk:src/과제API.js",
+   "talk:tests/lib/앱모듈세우기.js",
+   "talk:tests/사건통로.test.js"
+  ],
+  "plan": "① 새 ESM 파일 src/시한fetch.js: export const 조회상한=15000, 제출상한=30000; export function 시한fetch(url,옵션,상한ms){ if(typeof AbortController!=='function') return fetch(url,옵션); const 조종=new AbortController(); const 시계=setTimeout(()=>조종.abort(),상한ms); return fetch(url,{...옵션,signal:조종.signal}).finally(()=>clearTimeout(시계)); } — 반드시 ESM으로(CJS면 앱모듈세우기의 지름길 require를 타서 가짜 fetch 주입이 안 걸린다). 타임아웃은 기존 catch{}에서 NETWORK·retryable:true로 접힌다(키체인 안 지움 — 옳다). ② 소비 여섯: src/사건통로.js:53 한번()의 fetch를 시한fetch(...,읽기?조회상한:제출상한)로 · src/인증API.js:121(함수부르기·제출상한)·146(로그인·조회상한)·189(갱신·조회상한)·270(비밀번호변경 PUT·제출상한) · src/과제API.js:84(배치미달받기·조회상한, catch는 현행 null 유지). 음성 업로드는 fetch가 아니라 FS.File.upload(저장.js:198)라 과녁 밖 — 손대지 않는다. ③ tests/lib/앱모듈세우기.js vm 샌드박스(80~87행 Boolean 다음)에 AbortController·setTimeout·clearTimeout을 추가한다(없으면 vm 안에서 ReferenceError). ④ G1-3과 같은 커밋으로 — 함수부르기를 둘이 같이 재구성한다.",
+  "evidence": "grep -E 'AbortController|AbortSignal|signal:|timeout' src/ = 0건(오늘 재실측). fetch 실물은 6곳(사건통로:53·인증API:121·146·189·270·과제API:84) — 감사의 「두 함수면 전 API가 닫힌다」는 부정확해 여섯 전부로 넓혔다.",
+  "tests": "tests/사건통로.test.js(세운판이 opt를 기록) — 회귀 1건: 부르기 왕복의 요청들[0].opt.signal 존재를 잰다",
+  "blockers": ""
+ },
+ {
+  "id": "G1-3",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/인증API.js",
+   "talk:tests/인증API.test.js"
+  ],
+  "plan": "src/인증API.js 함수부르기(118~140행)를 재구성: 내부에 const 한판=async(실을토큰)=>{ …현행 fetch+catch(NETWORK)… }를 두고, const 쓸토큰=토큰?현재토큰(토큰):null; let r=await 한판(쓸토큰); 다음에 사건통로.부르기 78~81행과 같은 꼴로 「if(쓸토큰 && r.status===401){ const 새토큰=await 토큰되살리기(쓸토큰); if(새토큰) r=await 한판(새토큰); }」 — 재시도는 1회뿐(§7-6 무한 루프 없음). 토큰 없는 갈래(first-login·temp-login)는 ANON Bearer 그대로라 401 분기를 안 탄다. 현재토큰 경유는 부르기(사건통로:68)와 같은 신선화라 원장 화면의 낡은 prop 토큰도 첫 발사에서 걸러진다. 주석에 「auth/reset이 유일하게 토큰을 싣는 함수부르기 경로 — 통로의 만료 갱신이 여기만 없었다(감사 G1-3)」를 남긴다. G1-7과 같은 커밋으로(같은 함수를 두 번 재구성하지 않게), G1-8의 초기화요청 확장과도 충돌 없음.",
+  "evidence": "함수부르기(현재 118~140행)에 r.status 분기 0줄 — grep '401' src/인증API.js는 주석뿐, 코드 분기는 사건통로.js:78 하나다. 초기화요청은 291행(감사 시점 264행에서 밀림).",
+  "tests": "tests/인증API.test.js — 회귀 1건: 함수 응답 [401빈봉투, 200 temp_password]+갱신 200을 심고 초기화요청이 함수왕복 2회·둘째에 새 토큰을 실었는지 잰다",
+  "blockers": ""
+ },
+ {
+  "id": "G1-4",
+  "verdict": "already_done",
+  "repo": "none",
+  "files": [],
+  "plan": "추가 시공 불요. 감사가 겨눈 해악(만료 이후 «모든» 호출이 낡은 prop으로 401을 한 번 사는 이중 왕복)은 bb904ab가 현재토큰() 창구를 신설해 부르기 첫 발사 «전»에 기억 토큰을 고르게 함으로써 끊었다. 감사 proposal의 「App set세션 콜백」 안은 App.js(피어 영토)를 요구하는 데다 남은 해악이 없어 짓지 않는다 — 유일한 잔여(함수부르기가 현재토큰을 안 지남)는 G1-3 plan이 같은 무늬로 닫는다.",
+  "evidence": "커밋 bb904ab 본문 「현재토큰() 신설 + 사건통로 첫 발사 배선 (S1-3·G1-4)」 · src/인증API.js:70~79(현재토큰 정의, 주석이 G1-4를 명시) · src/사건통로.js:66~68(첫 발사 전 쓸토큰=현재토큰(토큰)).",
+  "tests": "tests/인증API.test.js·사건통로.test.js가 bb904ab에서 이미 확장됨(커밋 stat 41줄·26줄)",
+  "blockers": ""
+ },
+ {
+  "id": "G1-5",
+  "verdict": "peer_territory",
+  "repo": "talk",
+  "files": [
+   "talk:src/몽글문화면.js",
+   "talk:src/도착확인.js",
+   "talk:App.js",
+   "talk:tests/몽글문화면.test.js"
+  ],
+  "plan": "① 새 화면 src/몽글문화면.js({토큰,돌아가기}): 원장초기화.js의 wrap/카드/줄버튼 스타일 무늬 재사용(색·폰트 킷토큰만). 질문 TextInput은 lib/몽글물음.질문판정으로 보내기 버튼을 잠그고 상한 근접 때만 남은수를 보인다. 보내기 → import { 물어보기 as 몽글묻기 } from './몽글API.js'(도착확인.js:48 동명 로컬 함수와 충돌 예약 — 별칭 필수) → 몽글묻기(토큰,{질문,화면:'몽글문'}). 갈래 셋 렌더: 답함=글+출처 목록+근거없음 배지 / 넘김=색.잉크_보조 안내(「원장님께 넘겼어요」 — 오류색 금지: 인계는 설계된 정상 결과) / 못받음=오류칸. 자동 재시도·답 캐시 금지(몽글API 머리말 🚫 그대로). ② 도착확인.js 155행 「교실 관찰 남기기」 줄버튼 아래에 같은 무늬로 「몽글에게 묻기 (원장·강사)」 onPress={()=>가기('몽글')} — 숨기지 않는다(권한은 서버 403이 정한다). ③ App.js 287행 관찰 라우트 다음에 {화면==='몽글' && <몽글문화면 토큰={세션.access_token} 돌아가기={()=>set화면('시스템')} />}. ②③이 피어 영토(도착확인.js·App.js 미커밋 작업 중)라 시공은 대기.",
+  "evidence": "grep '몽글API' App.js·src/·lib/·tests/ = lib/몽글물음.js 주석 1건뿐 — import 하는 화면 0개(오늘 재실측, 감사와 일치). 도착확인.js:48에 동명 로컬 물어보기 실재.",
+  "tests": "신규 tests/몽글문화면.test.js — 화면이 lib/몽글물음.질문판정을 쓰고 넘김 갈래에 색.신호가 없으며 setInterval/재시도 0건임을 소스로 잰다",
+  "blockers": "src/도착확인.js·App.js가 피어 영토(다른 세션 미커밋) — 화면 파일·테스트는 지금 지어도 배선 두 줄은 그 세션 뒤로"
+ },
+ {
+  "id": "G1-6",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/검수화면.js",
+   "talk:tests/검수화면.test.js"
+  ],
+  "plan": "src/검수화면.js 모듈 스코프(226행 서명맵 선언 근처)에 헬퍼 하나: /** 서명이 아직 사나 — 만료 30초 전이면 죽은 것으로 본다(기기 시계 여유). 만료 null은 산 것(재검수 갈래·API가 expires_at을 못 받은 날) */ const 서명살았나=(s)=>Boolean(s && (!s.만료 || Date.parse(s.만료)-Date.now()>30000)); — 만료가 못 읽는 글자면 NaN 비교로 false가 돼 재발급 쪽(안전한 방향)으로 접힌다. 소비 두 곳: ① 354~355행 캐시 적중을 「const 이미=서명맵.get(sid); const 받은=서명살았나(이미)?이미:await 오디오서명받기(토큰,sid);」로 ② 409행 프리로드 가드를 「if(!다음||서명살았나(서명맵.get(다음.submission_id))) return;」으로 — 만료된 프리로드분도 갱신된다(발급은 게이트를 안 연다 · §2 개정 — 비용은 감사 꼬리뿐). 350행 재검수 갈래({url,만료:null})는 현행 유지 — 서명살았나가 null 만료를 산 것으로 읽어 그대로 통과한다.",
+  "evidence": "검수화면.js:354~356 캐시 적중이 「이미 || await」로 만료 무대조(오늘 실측) · 검수API.js:130이 만료(expires_at·10분)를 일부러 돌려주는데 소비 0 · 프리로드 409~412가 has()만 본다.",
+  "tests": "tests/검수화면.test.js — 회귀 1건: 화면소스에 서명살았나( 호출이 캐시 적중·프리로드 두 자리에 있음을 소스로 잰다",
+  "blockers": ""
+ },
+ {
+  "id": "G1-8",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:supabase/functions/auth/index.ts",
+   "talk:src/인증API.js",
+   "talk:src/원장초기화.js",
+   "talk:tests/인증API.test.js"
+  ],
+  "plan": "후방호환 두 탭: 서버는 preview 플래그가 «있을 때만» 미리보기 — 없으면 현행 실행 그대로라 배포 순서 결합이 없다. ① auth/index.ts: 222행 대상 select에 display_name 추가(learners에 실재 — 496행이 이미 반환). 「if(!대상) return 거부();」(약 232행) 다음에 미리보기 갈래: if(본문.preview===true){ staff_access_log에 ('learner.reset_preview',[learner_id]) 1행(action엔 CHECK 없음 — 20260806234000:98 주석 확인) 후 봉투(200,{ok:true,student_code,display_name:대상.display_name,preview:true}) } — GoTrue·DB 쓰기 «앞»이라 249행 순서 회귀와 무충돌. 244행·277행 두 최종 봉투에도 display_name을 싣는다. ② 인증API.초기화요청(291행): {학생번호,토큰,미리보기} 받아 preview 전달, 반환에 이름:몸.display_name??null·미리보기:몸.preview===true 추가. ③ 원장초기화.js: 만들기(29행)를 두 걸음으로 — 첫 탭=미리보기 호출 → 확인 카드 「SYNK-042 · {이름} 학생의 비밀번호를 초기화할까요? 지난 비밀번호가 즉시 무효가 되고 로그인된 기기가 모두 끊겨요」+「초기화하기」 버튼(둘째 탭이 실행 — 강사API 머리말의 비가역 두 탭 원칙과 정합) → 결과 카드 머리(76·84행)에 이름 병기. 곁: 87행을 결과.유효분!=null 조건부로(「분 동안」 빈 렌더 방지).",
+  "evidence": "원장초기화.js:29~41 만들기가 확인 걸음 없는 원탭(오늘 실측) · 응답·화면에 이름 0(초기화요청 293~298 반환 넷뿐) · auth/index.ts:222 select에 display_name 없음 · supabase/functions/auth는 피어 영토(teach/**) 밖.",
+  "tests": "tests/인증API.test.js(190~262행이 초기화를 이미 덮음) — 회귀 1건: 서버 소스에서 preview 갈래가 비밀번호갈기 «앞»에 있음 + 화면 소스에 두 탭 갈래 존재를 잰다",
+  "blockers": ""
+ },
+ {
+  "id": "G1-9",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:contents/문구_오류.js",
+   "talk:contents/문구_1차.js",
+   "talk:src/제출API.js",
+   "talk:tests/문구_오류.test.js"
+  ],
+  "plan": "① 문구_오류.js 문구 표(39~77행 절)에 키 5개 신설(mn:'' — 지어낸 번역 금지): err.upload.bad_format='올릴 수 없는 형식이에요: .{ext}' · err.upload.file_missing='녹음 파일을 찾지 못했어요' · err.upload.no_url='업로드 주소를 받지 못했어요' · err.upload.failed='녹음을 올리지 못했어요: {원인}' · err.kept.no_task='그날 서버 과제를 못 받아 기기에만 남겼어요'. 자리채움 {ext}·{원인}은 말()의 채움이 이미 지원(⑤ 회귀). 코드별 표는 안 건드린다(서버 코드 매핑이 아니라 앱쪽 문장). ② 문구_1차.js err.* 절(118행~)에 같은 5건을 기존 entry 무늬로(source_ko 글자 그대로·draft_mn:null·context 10자 이상·max_len:null·source_file:'contents/문구_오류.js') — ① 회귀가 1:1을 기계로 잰다. ③ 제출API.js: import { 말 } 추가 후 여섯 줄 치환 — 39행 말('err.upload.bad_format',{채움:{ext}}) · 42행 말('err.upload.file_missing') · 46행 말('err.upload.no_url') · 64행 말('err.no_token')(글자까지 같은 두 벌의 병합) · 68행 말('err.kept.no_task') · 77행 말('err.upload.failed',{채움:{원인:String(e.message||e)}}) — 학생이 보는 글자는 한 자도 안 변한다. ④ 두 파일 머리말의 「18줄」 수 표기를 «err.* 전량»으로 고쳐 수를 지운다(두 곳이 알면 갈린다).",
+  "evidence": "제출API.js 39·42·46·64·68·77행에 한국어 리터럴 6줄 실재(오늘 정독) · 64행 '로그인이 풀렸어요'는 문구_오류.js:46 err.no_token과 글자까지 동일 · 문구_오류.test.js ⑧ 겨눌것(97행)에 제출API.js 미포함이라 지금은 안 걸린다.",
+  "tests": "tests/문구_오류.test.js — 회귀: ⑧ 겨눌것 배열(97행)에 'src/제출API.js' 추가(재발 자동 차단) · ①②가 1:1·글자 대조를 이미 돈다",
+  "blockers": ""
+ },
+ {
+  "id": "G1-10",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/강사API.js",
+   "talk:src/반피드백API.js",
+   "talk:src/검수API.js",
+   "talk:tests/검수API.test.js"
+  ],
+  "plan": "각 API의 응답 해석에 «값이 0»과 «칸이 없다»를 가르는 throw를 심는다(통로가 아니라 해석 자리 — 봉투 규약은 통로 몫이고 칸 규약은 각 문 몫). 셋 다 import { 인증오류 } from './인증API.js' 추가(순환 없음 — 인증API는 이들을 모른다). ① 강사API.큐받기(49행 return 앞): for(const 칸 of ['remaining','sample_size','pool_size','data']) if(본문[칸]===undefined) throw new 인증오류('CONTRACT_VIOLATION',`응답에 ${칸} 칸이 없어요 — 서버와 앱의 판이 어긋났어요`,false); 주석: 「풀크기 0 접힘은 화면의 표본0/풀0 가름(35~38행 머리말) 자체를 거짓 재료로 만든다(감사 G1-10)」. ② 반피드백API.반목록(45행): if(!Array.isArray(본문.classes)) 같은 throw('classes') — 빈 []는 빈사유가 갈라 말하는 정상. map 안(51~53행): if(c.학생수===undefined||c.기다림===undefined||c.모양===undefined) throw(칸 이름 명시). ③ 검수API.반목록받기(110행): if(!Array.isArray(본문.classes)) throw · map 안 c.waiting===undefined throw. 던진 오류는 직원 화면 오류칸에 그대로 뜬다 — 조용한 0 대신 시끄러운 형태 위반.",
+  "evidence": "강사API.js:51~54·반피드백API.js:51~52·검수API.js:114가 Number(x)||0·[] 접기 그대로(오늘 정독 — bb904ab는 이 셋을 안 건드림).",
+  "tests": "tests/검수API.test.js(세운판 무늬) — 회귀 1건: 반목록받기에 {ok:true}(classes 없음)를 심어 CONTRACT_VIOLATION throw를 잰다 · 강사API는 tests/강사화면.test.js가 덮는다(피어 영토인 강사통로.test.js는 안 건드림)",
+  "blockers": ""
+ },
+ {
+  "id": "G1-11",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/사건통로.js",
+   "talk:tests/사건통로.test.js"
+  ],
+  "plan": "src/사건통로.js 한벌쏘기(153행)의 한건 파생을 「const 한건 = Array.isArray(본문.results) ? 본문.results[0] : undefined;」로 바꾸고, 156행 성공 판정 앞에 형태 위반 갈래를 세운다: if(한건===undefined){ return { 충돌:false, 결과:{ 오류: `${말('err.delivery_slow')} (응답 형태 어긋남: results 없음)`, 끝:false } }; } 주석: 「ok:true인데 results가 없다 — 서버가 저장했는지 알 수 없어 재시도는 남긴다(멱등키가 이중을 막는다). 다만 갈래를 글자로 남긴다: 이 괄호가 없으면 형태 표류와 진짜 배달 지연이 로그에서 같은 얼굴이 된다(감사 G1-11 · 이 파일 머리말 「새는 방향은 언제나 통과」의 자기 사례)」. 끝:true로 접지 않는 까닭도 주석에: 서버가 이미 저장한 경우 발화를 버리는 쪽이 더 비싸고, 괄호 달린 오류가 원장·개발 눈에 걸린다(실패 가시성 P0 §4-1 — 사건보내기 121행의 괄호 보존 무늬 그대로). 학생 문장 자체는 말() 정본 키라 몽골어 병기 규약도 그대로다. G1-7과 파일이 겹치지만 함수가 다르다(한번 vs 한벌쏘기) — 같은 커밋 묶음 권장.",
+  "evidence": "사건통로.js:153~161(오늘 정독): 한건=본문.results && 본문.results[0] → 부재 시 e={} → err.delivery_slow·끝:false로 접힘 — 감사 그대로 잔존(bb904ab의 사건통로 수정은 현재토큰 배선뿐).",
+  "tests": "tests/사건통로.test.js(세운판) — 회귀 1건: 함수 응답 {status:200,몸:{ok:true}}로 사건보내기 → 끝:false + 오류에 '형태' 포함을 잰다",
+  "blockers": ""
+ },
+ {
+  "id": "G1-12",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:lib/학생계정.js",
+   "talk:src/나침반API.js",
+   "talk:src/회고API.js",
+   "talk:src/검수API.js",
+   "talk:src/검수화면.js",
+   "talk:src/문구감수API.js",
+   "talk:src/회고화면.js",
+   "talk:tests/학생계정.test.js",
+   "talk:tests/회고.test.js"
+  ],
+  "plan": "① uuid 라우팅 자를 한 곳으로: lib/학생계정.js(CJS · module.exports 117행)에 「function uuid꼴인가(값){ return /^[0-9a-f-]{36}$/i.test(String(값).trim()); }」 추가+export — 주석에 「학생번호 칸이 uuid도 받는 화면(나침반·회고)의 라우팅 자 하나. 검수확정.js:156의 엄격 uuid꼴과 목적이 다르다(여긴 가름, 거긴 검증)」. 나침반API.js:48·회고API.js:46의 정규식 두 벌을 uuid꼴인가(학생번호) 호출로 치환(import 추가). ② 동명이값 export 가름: 검수API.js:70 기본쪽크기→검수쪽크기(소비 = 검수화면.js:61·277 두 곳 함께 개명) · 문구감수API.js:32 기본쪽크기→감수쪽크기(소비 = 같은 파일 49행뿐). ③ 손 폴백 제거: 회고API.js:59를 「사유상한: Number(본문.note_max)>0 ? Number(본문.note_max) : null」로 — 강사API:39~40 자기 규칙(화면이 서버 상수를 손으로 안 적는다)의 코드판. 회고화면.js:331을 「(t)=>set사유(세션?.사유상한 ? t.slice(0,세션.사유상한) : t)」로, 336행 확정 버튼 disabled에 「|| 세션?.사유상한==null」 추가 + 그 갈래에 안내 한 줄 「사유 글자수 규칙을 서버가 안 보냈어요 — 잠시 뒤 다시 열어 주세요」(직원 화면이라 리터럴 허용).",
+  "evidence": "나침반API.js:48·회고API.js:46 정규식 두 벌 동일(오늘 정독) · export 기본쪽크기 = 검수API.js:70(10)·문구감수API.js:32(20) 동명이값 · 회고API.js:59 ||200 + 회고화면.js:331 ??200 — 폴백이 실은 «두» 곳이라 감사보다 한 곳 더 있었다.",
+  "tests": "tests/학생계정.test.js — uuid꼴인가 참/거짓 각 1건 · tests/회고.test.js — note_max 부재 시 사유상한 null 회귀 1건 · 검수쪽크기 개명은 tests/검수API.test.js·검수화면.test.js 기존 스위트가 잡는다",
+  "blockers": ""
+ },
+ {
+  "id": "G2-1",
+  "verdict": "peer_territory",
+  "repo": "talk",
+  "files": [
+   "talk:App.js"
+  ],
+  "plan": "App.js에 안드로이드 백버튼 배선. ① 2행 react-native import에 BackHandler 추가. ② 41행 `const [화면, set화면] = useState('말하기')` 아래 useEffect 하나: `const 구독 = BackHandler.addEventListener('hardwareBackPress', () => { if (화면 === '말하기') return false; const 시스템행 = ['검수','강사','문구감수','반피드백','나침반','회고','관찰']; set화면(시스템행.includes(화면) ? '시스템' : '말하기'); return true; }); return () => 구독.remove();` 의존성 [화면]. 지도는 각 화면의 기존 돌아가기 prop과 동일하게(245~286행 실측: 직원 7화면→'시스템' · '답장'·'어제'·'시스템'·'비번변경'·'초기화'·'검수문'→'말하기'). '말하기'에서 false = 기본 동작(태스크 백그라운드) — 감사 원안 그대로. 내비 라이브러리 안 넣는 설계와 무충돌.",
+  "evidence": "grep BackHandler = App.js·index.js·src·lib 전체 0건(08-31 · HEAD 20d4455). android/app/src/main/java/lab/synk/talk/MainActivity.kt 존재(Expo 기본 템플릿). App.js 41행 화면 state·210~292행 조건부 렌더 실측.",
+  "blockers": "App.js 는 피어 세션 미커밋 영토 — 합류 뒤 시공",
+  "tests": "신규 소스 회귀 1건(tests/백버튼.test.js 또는 기존 화면구문 곁) — App.js에 hardwareBackPress 등록과 직원화면→'시스템' 지도 문자열 존재"
+ },
+ {
+  "id": "G2-2",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/저장.js",
+   "talk:src/말하기화면.js",
+   "talk:lib/녹음복구.js",
+   "talk:contents/문구_오류.js",
+   "talk:tests/녹음복구.test.js"
+  ],
+  "plan": "① src/저장.js: 임시녹음메타쓰기/읽기/지우기 — recordings 폴더 '임시녹음.json' 한 장(웹 no-op·읽기 null), 그리고 음성바이트읽기(경로) = `new FS.File(경로).bytes()`(비동기 — API 실존). ② 말하기화면 끝()의 1082행 `uri = await 음성쓰기(...)` 성공 직후 임시녹음메타쓰기({date, step, uri, duration_ms, hesitation_ms: r.머뭇거림_ms, spoke: r.발화있음}).catch(()=>{}). ③ 남기기(1164행)에서 로그 기록 뒤 임시녹음메타지우기().catch(()=>{}) — submitted·retried·abandoned 전부(그 시도는 이미 로그에 앉았다). ④ lib/녹음복구.js 순수 판정 복구후보(메타, 오늘, 로그): 메타 있고 date===오늘 && spoke && !학습출석(로그, 오늘)일 때만 true. ⑤ 마운트 초기화 효과의 로그읽기 뒤(449행 set호흡 곁)에서 복구후보면 카드 「아까 담은 녹음이 있어요 — 들어보고 보낼까요?」(문구_오류.js 새 키 · ko+mn 자리 · 카피 초안 표기 — 확정은 유호님) + 버튼 둘: [들어보고 정하기] = 음성바이트읽기(uri)→set녹음({uri, 바이트, duration_ms, hesitation_ms, spoke})+set단계('확인') — 기존 확인 카드(들어보기·다시 말하기·보내기)가 전부 산다 / [새로 말하기] = 메타지우기+현행 흐름. 파일 못 읽으면 카드 없이 현행. 킷 토큰·기존 카드 스타일 재사용.",
+  "evidence": "끝() 1043행·음성쓰기 1082행·background 핸들러 1101-1108행 실측 — 조각들·조립·'확인' 단계 전부 메모리 state, 임시녹음/복구 grep 0건. File.bytes(): Promise = expo-file-system NativeFileSystem.types.d.ts:145.",
+  "blockers": "",
+  "tests": "신규 tests/녹음복구.test.js — 복구후보 순수 판정(어제 메타·이미 제출·spoke=false 갈래) · 기존 tests/말하기로직.test.js·화면렌더.test.js가 곁을 덮는다"
+ },
+ {
+  "id": "G2-3",
+  "verdict": "peer_territory",
+  "repo": "talk",
+  "files": [
+   "talk:src/오류경계.js",
+   "talk:App.js",
+   "talk:contents/문구_오류.js",
+   "talk:tests/오류경계.test.js"
+  ],
+  "plan": "① 신설 src/오류경계.js(~30줄 · 클래스): static getDerivedStateFromError → {깨짐:true}; componentDidCatch(오류)에서 관측보고(오류, { spot: 'error_boundary', screen: this.props.화면이름 }) — 키는 ASCII(밖으로 나가는 키 규약), 값은 한글 OK. render: 깨짐이면 fallback — 문구_오류.js 새 키(진행형·명랑 초안 「화면이 잠깐 넘어졌어요 — 다시 세울게요!」 · 확정은 유호님) + 「말하기로 돌아가기」 버튼 = this.props.되세우기() 호출 후 깨짐 해제. 색·폰트는 src/테마.js 킷 토큰만. ② App.js: 화면 스위치 묶음(210~292행)을 <오류경계 화면이름={화면} key={화면} 되세우기={() => set화면('말하기')}>로 감싼다 — 겉테 상주 링크(294행~)는 밖에 둔다. key={화면}으로 화면 전환 때 경계 상태가 자연 리셋.",
+  "evidence": "grep componentDidCatch|getDerivedStateFromError|ErrorBoundary = App.js·src·lib 0건(08-31). 관측보고는 src/관측.js:129에 완성 — 미켜짐이면 false 반환이라 새 배선 0(감사 그대로).",
+  "blockers": "감싸는 자리가 App.js — 피어 세션 미커밋 영토, 합류 뒤 시공(오류경계.js·문구 키는 먼저 지어 둘 수 있다)",
+  "tests": "신규 tests/오류경계.test.js — 화면렌더.test.js 무늬로 오류 던지는 자식 → fallback 렌더·관측보고 호출 확인"
+ },
+ {
+  "id": "G2-4",
+  "verdict": "blocked",
+  "repo": "talk",
+  "files": [
+   "talk:eas.json"
+  ],
+  "plan": "① `eas env:list`(production·preview)로 EXPO_PUBLIC_SENTRY_DSN 유무 먼저 확인 — 안 재본 것부터. ② 없으면 eas.json 평문이 아니라 `eas env:create`(서버측 env) 우선 — tests/앱환경변수.test.js:48이 「eas.json의 비밀 모양」을 막고 있어 DSN(https://…@…sentry… 모양) 평문이 그 가드에 걸릴 수 있다. eas.json에 넣는 길을 고르면 그 시험의 검사() 규칙과 먼저 대조. ③ preview 빌드 1회 → 실기기 도착확인 화면 「관측(Sentry): 켜짐」 눈 확인(src/도착확인.js:78 표시행 이미 존재 — 피어 영토지만 수정 불요·읽기만). ④ EXPO_PUBLIC_COMMIT 주입 통로도 같은 판에서 확인.",
+  "evidence": "eas.json 전문 실측 — 4개 프로필 env에 EXPO_PUBLIC_SENTRY_DSN 0건(SUPABASE URL/KEY·SYNTHETIC_RUN뿐). src/관측.js:31 `process.env.EXPO_PUBLIC_SENTRY_DSN` 소비 확인. .gitignore 3~5행이 .env 제외(EAS 빌드에 안 실림).",
+  "blockers": "EAS 자격증명(env:list·secret)·preview 빌드 대기·실기기 눈확인 — 전부 이 세션 밖",
+  "tests": "tests/앱환경변수.test.js(eas.json 회귀 기존) — DSN을 eas.json에 넣는 갈래면 이 시험이 먼저 판정"
+ },
+ {
+  "id": "G2-5",
+  "verdict": "already_done",
+  "repo": "none",
+  "files": [],
+  "plan": "시공 불요 — 감사 전제(무거운 400행 렌더)가 현재 실물과 다르다. 목록은 데이터로만 누적되고 화면에 그리는 것은 항목 카드 1건뿐이라 FlatList 전환은 이득 0에 코드만 는다. 이 판정을 G2-6 문서 절에 함께 적어 다음 감사가 재조사하지 않게 한다.",
+  "evidence": "검수화면.js:247 `const 항목 = 재검수 ? 재검수.항목 : (보이는목록[0] ?? null)` — 렌더는 그 한 건. .map 렌더 전수(grep) = 기준3줄(531)·반칩(559)·조칩(578)·세그먼트(670)·태그(746)·폐기사유(803) — 전부 소수 상한. 20쪽×20건 누적(280행)은 조 칩 계수(246행 조묶기)와 다음 항목 재료용 데이터일 뿐이다. 특정 커밋의 수리가 아니라 원래 단건 카드 구조.",
+  "blockers": "",
+  "tests": ""
+ },
+ {
+  "id": "G2-6",
+  "verdict": "doc_only",
+  "repo": "talk",
+  "files": [
+   "talk:docs/이_저장소_규약.md"
+  ],
+  "plan": "이_저장소_규약.md에 짧은 절 「목록 가상화 판정 — 2026-08-31 감사 G2」: ① ScrollView.map 63곳 실측 분모 — 학생 접점 전부 상한 한 자릿수(말하기 문장≤3 · 어제의나·도착확인 고정 소수 행) ② 직원 접점 — 문구감수 총량 ≈95행·20건/쪽 수동 더받기로 충분(문구감수화면.js:95 목록.map · 118 더받기), 회고 8축·반피드백 반 수십 행 ③ 검수화면은 렌더가 카드 1건(검수화면.js:247)이라 가상화 대상 0 — FlatList 전환 금지(이득 0) ④ 새 화면 지을 때 한 줄: 「목록 상한이 화면 머리말 설계에 적혀 있는가 — 상한 없는 목록만 가상화 후보」. 감사 원안의 「검수화면 1곳은 전환」 몫은 G2-5 실측으로 소거됐다 — 문서에는 «전환 대상 0»으로 적는다(갈린 이유는 G2-5 evidence).",
+  "evidence": "문구감수화면.js 81(ScrollView)·95(목록.map)·118(더받기) 실측. docs 전체에 새 화면 체크리스트 문서 없음(grep 체크리스트 = 공용지침.md 일반 원칙뿐).",
+  "blockers": "",
+  "tests": "불요(문서)"
+ },
+ {
+  "id": "G2-7",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "① 95행 import에 게임큐읽기 추가(`import { 게임큐읽기, 게임큐밀기, 게임이탈수거 } from './게임큐.js';`) + `import { 보낼것 as 게임보낼것 } from '../lib/게임로그.js';`. ② ref 하나 `const 게임밀린수참조 = useRef(0);` + `const 게임밀린세기 = async () => { try { const { 로그 } = await 게임큐읽기(); 게임밀린수참조.current = 게임보낼것(로그, 막힘참조.current).length; } catch { /* 못 읽은 날은 이전 값 유지 */ } };`. ③ 밀린것보내기 끝(371행 `await 게임큐밀기(...)` 직후)에 `await 게임밀린세기();` — 마운트(465행 밀린것보내기 호출)와 매 밀기 뒤 값이 신선하다. ④ 482행을 `const 할일 = 복귀행동(date, 몽골날짜(), 보낼것(로그참조.current, 막힘참조.current).length + 게임밀린수참조.current);` 로. 복귀행동(lib/오늘과제.js 순수 함수)은 한 글자도 안 바꾼다.",
+  "evidence": "lib/오늘과제.js 복귀행동 = 밀린수 인자 하나 받는 순수 함수(실측). 말하기화면 482행 현재 talk 보낼것만 합산 · 게임큐밀기는 밀린것보내기 끝 371행에만 — 게임만 밀리고 talk 큐가 빈 날 복귀 시 할일=null 로 게임큐가 안 밀린다(감사 그대로 · HEAD 20d4455에서 미해결).",
+  "blockers": "",
+  "tests": "tests/말하기로직.test.js(복귀행동 기존 커버) + 값싼 소스 회귀 1건 — 복귀행동 호출 인자에 `게임밀린수참조.current` 합산이 있는지 정규식"
+ },
+ {
+  "id": "G2-8",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/교수멘탈화면.js",
+   "talk:src/보고서교정화면.js",
+   "talk:src/서류관문화면.js"
+  ],
+  "plan": "세 파일에 `import { 관측보고 } from './관측';` 추가 후 침묵 자리 다섯에 한 줄씩(맥락 키는 ASCII — Sentry 밖으로 나가는 키 규약 · 값은 한글 OK): ① 교수멘탈 154행 `.catch(() => {...})` → `.catch((e) => 관측보고(e, { spot: 'game_enqueue', game: 'G1' }))` ② 교수멘탈 173행 빈 `catch {}` → `catch (e) { 관측보고(e, { spot: 'game_enqueue', game: 'G1' }); }`(기존 주석 유지 — 화면 흐름은 그대로) ③ 교수멘탈 262행 빈 catch 동일 ④ 보고서교정 158행 .catch 동일(game:'G2') ⑤ 서류관문 185행 .catch 동일(game:'G4'). 교수멘탈 211행·보고서교정 185행·서류관문 231행의 await 갈래는 catch(e){set오류}로 이미 보인다 — 안 만진다. 관측 미켜짐이면 관측보고가 false만 돌려 무해(관측.js:129-137).",
+  "evidence": "grep 관측보고 = 세 화면 0건. 침묵 자리 실측 = 교수멘탈 154·173·262, 보고서교정 158, 서류관문 185. 감사 원안은 교수멘탈 셋만 꼽았으나 같은 `.catch(() => {})` 무늬가 형제 두 게임 화면에 그대로 있어 전수로 넓혔다(갈린 이유).",
+  "blockers": "",
+  "tests": "tests/교수멘탈화면.test.js·보고서교정화면.test.js·서류관문화면.test.js 기존 + 값싼 소스 회귀 1건(신규 tests/게임담기관측.test.js) — 세 화면의 게임사건담기 catch가 빈 몸이 아니라 관측보고를 부르는지 정규식"
+ },
+ {
+  "id": "G2-9",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:lib/제출로그.js",
+   "talk:lib/게임로그.js",
+   "talk:src/게임큐.js",
+   "talk:src/말하기화면.js",
+   "talk:src/저장.js",
+   "talk:tests/로그압축.test.js"
+  ],
+  "plan": "① lib/제출로그.js에 순수 `압축(로그, 오늘, 보존일수 = 14)`: 남길 행 = 보존창 안 date 전부 + 창 밖이라도 미final(event_id 없고 send_final 아님 · 되듣기보낼것/선택보낼것 판정 재사용). 창 밖 끝난 행은 (date,step)별 최대 attempt 행 하나만 남기고 무거운 칸(text·task_meta·compose_meta·선택·선택때)을 걷은 골격행으로 — 학습출석(step/status)·다음시도번호(attempt)·배달상태(event_id·send_final) 답이 압축 전후 동일해야 한다(회귀가 이 동일성을 잰다). module.exports 등재. ② lib/게임로그.js에 같은 무늬 — 밀린것·죽은배정들 재료(닻 있는 미final)는 절대 안 걷는다. ③ 게임 쪽 실행은 직렬 사슬 존중 — src/게임큐.js에 압축돌리기 하나(큐.읽기→압축→다르면 쓰기, 직렬로 경유). talk 쪽은 말하기화면 마운트 초기화 효과의 로그읽기 직후 1회(다르면 로그쓰기 1회). ④ 선택 수선: src/저장.js 읽기 셋의 f.textSync() → `await f.text()`(비동기 판 실존). ⚠ 감사의 「동기 write→비동기」 반쪽은 이 API에 없다 — write(): void뿐이라 실효 처방은 파일을 작게 유지하는 압축이다(갈린 이유).",
+  "evidence": "저장.js 33-105 실측 — talk·교정·게임 로그 셋 다 f.textSync() 전량 파싱 + f.write() 전량 재직렬화. 압축·정리·잘라 grep 0건(제출로그·게임로그·저장). 소비자 전수 실측: 학습출석·배달상태·다음시도번호 호출부 전부 오늘 날짜만(교수멘탈 202 · 말하기 449/881/1165/1485 · 알바변명 87/141/142). text(): Promise<string> = NativeFileSystem.types.d.ts:125, write(): void = 같은 파일 155행.",
+  "blockers": "",
+  "tests": "신규 tests/로그압축.test.js — 압축 전후 학습출석·다음시도번호·배달상태·밀린것·되듣기보낼것 동일성 + 미final 행 보존 · 기존 tests/말하기로직.test.js·게임로그.test.js가 곁을 덮는다"
+ },
+ {
+  "id": "G2-10",
+  "verdict": "doc_only",
+  "repo": "appsscript",
+  "files": [
+   "apps:docs/_ops/트랙.md"
+  ],
+  "plan": "트랙.md G2 절(없으면 신설)에 잔여 순서 넉 줄: ① 즉시 시공 가능 = G2-8(30분)→G2-7(한나절)→G2-2·G2-9(각 1~2일) ② App.js 피어 합류 뒤 = G2-3(격벽)→G2-1(백버튼) — 각 반나절 ③ EAS 창이 열리는 날 = G2-4(관측 DSN)를 그 창의 최우선으로 — G2-3·G2-8이 심는 관측보고가 이 통로로만 보인다 ④ 소거 둘 = 검수 FlatList(렌더 1건 실측 · G2-5)·「동기 write 비동기화」(API에 없음 · G2-9). 감사 원안 순서(④→②→①→…)는 ②①이 피어 영토, ④가 EAS 밖으로 재판정돼 갈렸다 — 그 갈림을 명기. 공용 원장이라 고치는 즉시 커밋(CLAUDE.md 규약), 끝낸 시공 세션이 그 커밋에서 제 줄을 지운다.",
+  "evidence": "합성 항목 — 구성 실측은 G2-1~G2-9 각 evidence에 있다. ErrorBoundary·BackHandler 0건, DSN 0건, 검수 렌더 1건이 이 세션에서 전부 재실측됐다.",
+  "blockers": "",
+  "tests": "불요(원장 문서)"
+ },
+ {
+  "id": "D4-1",
+  "verdict": "peer_territory",
+  "repo": "talk",
+  "files": [
+   "talk:src/저장.js",
+   "talk:src/인증화면.js",
+   "talk:App.js",
+   "talk:src/말하기화면.js",
+   "talk:src/답장화면.js"
+  ],
+  "plan": "① src/저장.js — 마스코트기록읽기(116행) 무늬 그대로 가이드읽기()/가이드쓰기(이름) 신설(guide_choice.json · 깨짐·부재는 '몽글' 폴백 — 마스코트 실패 모드는 조용함). 기기비우기(270행)에 이 파일 지우기 합류(학생 귀속). ② src/인증화면.js 첫등록 — 문항 map(172행) 아래 「누구랑 같이 공부할래요?」 보기줄: 보기 고르기 컴포넌트(262행) 재사용, 몽글·까몽 둘 활성 + 마린 칸은 비활성 「곧 와요」. 답은 서버 첫등록 페이로드에 안 넣는다(lib/가입문항.js 25행 🚫 새 문항 금지 · auth 동봉) — 실행(106행)에서 로그인성공 직전 가이드쓰기. ③ App.js — 세션 복원·세움 자리에서 가이드읽기→state, 말하기화면(211행)·답장화면 렌더에 캐릭터 prop 전달. ④ 두 화면 — prop 받아 <마스코트 캐릭터={캐릭터}> (말하기화면 734·743·753행 · 답장화면 298행). 강사화면 437행은 몽글 고정 유지. 마스코트.js·가이드목소리.js·마스코트생명.js는 캐릭터 인자를 이미 받는다(87행 기본값 몽글) — prop 만 흘리면 소리·혼잣말이 함께 갈린다.",
+  "evidence": "grep '캐릭터=' src/ App.js = 0건(exit 1) · src/저장.js export 17종에 가이드 키 0(실측) · src/검수문.js 150-153행 주석 「고르는 화면이 없어 앱 어디서도 안 난다」 · 혼잣말.json 까몽150·마린150 카운트 실측",
+  "tests": "tests/마스코트배선.test.js·tests/인증API.test.js 기존 + 새 회귀: 저장.js 가이드 왕복(쓰기→읽기 · 깨진 파일→'몽글' 폴백) 1건",
+  "blockers": "App.js 가 피어 영토(수정 금지) — 인증화면·저장.js 만 먼저 지어도 배선이 안 닫힌다"
+ },
+ {
+  "id": "D4-2",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:lib/마스코트생명.js",
+   "talk:src/마스코트.js",
+   "talk:tests/마스코트생명.test.js"
+  ],
+  "plan": "① lib/마스코트생명.js — 밤인가(150행) 아래 순수 함수 잘시간인가(캐릭터, 시각) 신설: 까몽은 false(밤에 안 졸림), 몽글·마린은 밤인가(시각). module.exports(221행)에 추가. 자리고르기(162행)는 안 건드린다 — 밤의 «중얼 풀» 선택은 캐릭터 무관 밤 풀이 맞고, 까몽 밤 풀이 이미 깨어 있는 문구다(자연히 「지금부터가 내 시간이지!」가 밤에 난다 — 새 배선 0). ② src/마스코트.js 두리번 인터벌(299-305행) — `const 밤 = 밤인가(지금)` 을 `const 밤졸림 = 잘시간인가(캐릭터, 지금)` 으로, `자야함 = 밤졸림 || 방치초과`, 잠드는 한마디 자리 인자도 `밤졸림 ? '밤' : '방치'` (까몽이 밤중 방치로 조는 날 「밤 풀」 각성 문구가 잠결 목소리로 나는 모순 차단). ③ 깨우기(224행) `!밤인가(new Date())` → `!잘시간인가(캐릭터, new Date())`. ④ import(39행)에 잘시간인가 추가 — 밤인가 소비가 0이 되면 그 import 는 뺀다. 방치 낮잠 축은 공통 유지.",
+  "evidence": "src/마스코트.js:301 `자야함 = 밤 || Date.now()-마지막입력…` 전 캐릭터 공통(실측) · contents/혼잣말.json kkamong-020 「지금부터가 내 시간이지!」·kkamong-023 「졸린 게 아니라 반짝이는 거야」 실재 — 코드와 정면 모순",
+  "tests": "tests/마스코트생명.test.js 기존 + 새 회귀: 잘시간인가 — 까몽 23시 false·몽글 23시 true·06시 경계 1건",
+  "blockers": ""
+ },
+ {
+  "id": "D4-3",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:tools/마스코트변환.py",
+   "talk:assets/마스코트/까몽_본체.webp",
+   "talk:assets/마스코트/까몽_놀람.webp",
+   "talk:assets/마스코트/까몽_눈웃음.webp",
+   "talk:assets/마스코트/까몽_눈감음.webp",
+   "talk:assets/마스코트/까몽_윙크.webp",
+   "talk:assets/마스코트/까몽_졸림.webp",
+   "talk:assets/마스코트/까몽_으쓱.webp",
+   "talk:assets/마스코트/까몽_민망.webp",
+   "talk:assets/마스코트/README.md",
+   "talk:lib/마스코트생명.js",
+   "talk:src/마스코트.js",
+   "talk:tests/마스코트생명.test.js",
+   "talk:tests/마스코트자산.test.js",
+   "talk:tests/마스코트배선.test.js"
+  ],
+  "plan": "① tools/마스코트변환.py — SRC 를 캐릭터별 지도로({몽글: 펠트코랄_0815/누끼, 까몽: 친구공방_0825/누끼}), 까몽 8종(본체·놀람·눈웃음·눈감음·윙크·졸림·으쓱·민망) 추가. 같은 리사이즈(1024→336 LANCZOS)·모서리α0·중심α 실측·캐릭터별 눈검수 시트. 실행해 8벌 반입, README 에 출처(친구공방_0825 · 08-30 밤샘 굽기)와 «반입 사본» 표기. ② lib/마스코트생명.js 표정컷(20행) → {캐릭터:{표정:컷}}: 몽글 내부 지도는 한 톨도 안 바꿈. 까몽 = 기본:까몽_본체 · 놀람:까몽_놀람 · 기쁨:까몽_눈웃음(몽글 22행과 같은 ⚠임시 접힘 주석) · 눈웃음 · 잔잔감음:까몽_눈감음 · 졸림:까몽_졸림 · 윙크 · 으쓱 · 민망. 마린 칸은 안 만든다(그림 외주 대기 — 빈 칸을 비슷한 컷으로 안 메움). ③ src/마스코트.js — 컷그림(44행)에 까몽 8 require, 그릴컷(347행) `const 컷 = 표정컷[캐릭터] || 표정컷.몽글` 로 조회, 졸림 갈래는 `컷.졸림 || 컷.잔잔감음`. ④ tests — 생명: 재염색_ 접두 검사를 몽글 갈래에만·까몽 갈래는 까몽_ 접두, 자산: Object.values 평탄화(중첩), 배선: 컷그림↔표정컷 평탄 대조.",
+  "evidence": "talk assets/마스코트 ls = 몽글(재염색_) 4컷뿐 · apps docs/캐릭터/친구공방_0825/누끼 8장 전부 1024×1024 실측(PNG IHDR 판독) · 결정.md 69행 08-31 「다섯을 확정 세트로 승격」",
+  "tests": "tests/마스코트자산·마스코트생명·마스코트배선.test.js 갱신 + 새 회귀: 까몽 8컷 실WebP·까몽_ 접두 1건",
+  "blockers": ""
+ },
+ {
+  "id": "D4-4",
+  "verdict": "needs_yuho",
+  "repo": "talk",
+  "files": [
+   "talk:src/말하기화면.js",
+   "talk:src/마스코트.js",
+   "talk:lib/마스코트생명.js",
+   "talk:tests/마스코트배선.test.js"
+  ],
+  "plan": "유호 판정(완료 화면 «상주» — 08-23 「한시 등장·상주 금지」와 결이 다른 자리라 판정 선행) 뒤: ① lib/마스코트생명.js — 평상혼잣말(178행) 서명을 (캐릭터, 시각, 갈래=활성갈래) 로 확장해 혼잣말(179행) 셋째 인자로 관통(기존 호출 무영향 — 긴 갈래는 「홈·대기 화면이 서는 날 갈래 인자만 바꾼다」로 예약된 자리, 72행 주석). ② src/마스코트.js — prop 갈래='짧' 추가, 중얼 인터벌(315행)이 평상혼잣말(캐릭터, new Date(), 갈래) 를 고르게. ③ src/말하기화면.js — `{호흡 === '완료' && !축하연기 && (<마스코트 잡담 갈래=\"긴\" 자리={인트로와 같은 자리} 캐릭터={캐릭터} />)}` 상주 렌더 한 자리(재접속 완료 포함 — 축하연기가 끝나면 상주로 이어진다). 완료 화면에는 녹음 통로가 없어 «녹음 시작 시 퇴장» 배선은 해당 없음을 주석으로 못박는다(생기는 날 사라짐 걸음으로). ④ 배선 회귀에 「완료 상태 렌더에 마스코트가 선다」 1건.",
+  "evidence": "src/말하기화면.js:207 축하연기 useState(false)·752행 `호흡==='완료' && 축하연기` — 재접속 완료엔 마스코트 0(실측) · lib/마스코트생명.js:96 활성갈래='짧' 고정 · 긴 갈래 239벌(카운트 실측 74+84+81)",
+  "tests": "tests/마스코트배선.test.js + 새 회귀: 평상혼잣말 갈래 인자 — '긴' 넘기면 긴 풀·기본은 짧 1건",
+  "blockers": "유호 판정 선행 — 완료 화면 상주 허용 여부(한시 등장 확정과 결이 다른 자리)"
+ },
+ {
+  "id": "D4-6",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:lib/마스코트생명.js",
+   "talk:src/마스코트.js",
+   "talk:tests/마스코트생명.test.js",
+   "talk:tests/마스코트배선.test.js"
+  ],
+  "plan": "① lib/마스코트생명.js — 순수 함수 탭반응고르기(캐릭터, 고르기, 연타수) 신설(난수 주입 — 목소리판정 무늬): 몽글 = {첫:'놀람', 뒤: 고르기<0.5?'기쁨':'눈웃음'} 현행 동작 그대로. 까몽 = {첫:'놀람'(겁!), 뒤:'으쓱'(허세 수습)}, 연타수≥3 이면 {첫:'놀람', 뒤:'민망'(들킴)}. 마린 키는 안 만든다 — 없으면 몽글 표로 폴백(그림 외주 대기). 반환 표정은 그 캐릭터 표정컷 어휘 안이어야 한다(회귀가 잰다). ② src/마스코트.js 탭(325행) — 연타 셈 ref 하나(1.2초 창 내 카운트, 창 지나면 리셋), 341-342행 고정 표를 `const 반응 = 탭반응고르기(캐릭터, Math.random(), 연타수)` 로 교체: set표정(반응.첫); 예약(()=>set표정(반응.뒤), 300). 쫀득·목소리·가끔말하기는 현행 유지. ③ 회귀 — 탭반응고르기: 몽글 반반 현행 동일 · 까몽 연타3 민망 · 산출 표정이 표정컷[캐릭터] 어휘 안 1건.",
+  "evidence": "src/마스코트.js:341-342 `set표정('놀람'); 예약(() => set표정(Math.random() < 0.5 ? '기쁨' : '눈웃음'), 300)` — 캐릭터 무관 공통(실측) · 필요 컷 셋(놀람·으쓱·민망)은 친구공방_0825/누끼 8장 안(ls 실측)",
+  "tests": "tests/마스코트생명.test.js + 새 회귀: 탭반응고르기 어휘 정합 1건",
+  "blockers": "D4-3(까몽 컷·표정 어휘 반입) 선행 — 민망·으쓱 컷이 어휘에 있어야 표가 선다"
+ },
+ {
+  "id": "D4-7",
+  "verdict": "needs_yuho",
+  "repo": "both",
+  "files": [
+   "apps:docs/디자인_토큰.json",
+   "apps:docs/브랜드_사운드킷",
+   "talk:lib/가이드목소리.js",
+   "talk:assets/sfx",
+   "talk:tests/가이드목소리.test.js",
+   "talk:tests/소리.test.js"
+  ],
+  "plan": "① apps docs/디자인_토큰.json 사운드.이벤트 — 기존 항목(까몽_베에 1163행·마린_기동 1419행)의 악기 필드를 변주해 후보 등재: 까몽_안심(낮은 그르렁 «내려앉기» 하강형) 2~3안 · 까몽_완료축하 2~3안 · 마린_안심(링모드 감쇠 하강) 2~3안. 확정 악기만(까몽 = 도톰 배음+그르렁 247~554Hz · 마린 = 홀로우 1.5배음+링모드 22Hz), 노이즈 전량 금지·안심은 하강형만(귀검수 교훈 넷). ② node tools/사운드킷빌드.js 로 굽고 시청 지면(docs/tools/사운드_후보.html 무늬)에 후보를 올려 유호 귀검수 1회. ③ 픽 뒤 — wav 를 talk assets/sfx/synk-voice-*.wav 로 반입, lib/가이드목소리.js 소리들(56·62행)에 이름 등재 + 배치의 빈 풀 채움(93행 까몽 안심·95행 완료축하 · 102행 마린 안심). 새 소리가 680ms 를 넘으면 겹침막기ms(117행)도 같이 올린다. ④ tests/소리.test.js SFX 분모 21(61행) 갱신 — 형제 바이트 대조는 자동으로 문다.",
+  "evidence": "lib/가이드목소리.js 92-95행 까몽 물음·안심·잠결·완료축하 = [] · 98-104행 마린 물음·안심·잠결 = [](실측) · 85-88행 주석 「빈 채로 둔다(정지선 ④)」가 이 자리의 설계 의도 · 합성 통로(tools/사운드킷빌드.js 토큰→wav) 실재",
+  "tests": "tests/가이드목소리.test.js·tests/소리.test.js(21종 분모·형제 바이트 대조) + 새 회귀: 안심 풀 등재 뒤 배치 정합 1건",
+  "blockers": "유호 귀검수 픽 선행 — 후보 합성·시청 지면까지는 지금 지을 수 있다"
+ },
+ {
+  "id": "D4-8",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:lib/마스코트생명.js",
+   "talk:src/마스코트.js",
+   "talk:src/말하기화면.js",
+   "talk:tests/마스코트생명.test.js"
+  ],
+  "plan": "① lib/마스코트생명.js — 순수 함수 오랜만복귀인가(로그, 오늘, 문턱일=3): 로그 항목들의 max e.date(YYYY-MM-DD)와 오늘의 일수 차 ≥ 문턱이면 true, 로그 0줄(생애 첫 만남)은 false(첫편지는 복귀가 아니다). 연출대본(194행)에 말하기인트로복귀 추가 — 현행 말하기인트로의 첫 두 걸음만 {표정:'놀람', 몸짓:'큰점프', 지속:650}·{표정:'눈웃음', 말:'다시 만나서 반가워요!'(⚠초안 — 유호 눈검수), 지속:2300} 으로 갈고 뒤 걸음들은 기존 배열 spread 로 공유. 날수·「오랜만」 세는 말 금지 — 대본 순회 금지패턴 회귀가 자동으로 잰다. ② src/마스코트.js 연출 걸음 처리(245행) — `else if (걸음.몸짓 === '큰점프') 점프(16)` 한 줄. ③ src/말하기화면.js 737행 — `대본: 오랜만복귀인가(로그, date) ? 연출대본.말하기인트로복귀 : 연출대본.말하기인트로` (로그 state 는 383행 로그읽기가 과제 도착 전에 채운다). ④ tests/마스코트생명.test.js 몸짓어휘(228행)에 '큰점프' 추가 — 기존 대본 순회(금지패턴·어절수·기쁨 금지)가 새 대본을 자동으로 문다.",
+  "evidence": "lib/마스코트생명.js:194-219 연출대본 = 말하기인트로·답하기질문·완료축하 셋뿐(실측 — 복귀판 0) · src/말하기화면.js:737 대본 고정 · 제출로그 항목 date 필드 실재(lib/제출로그.js:280)",
+  "tests": "tests/마스코트생명.test.js(대본 순회 자동) + 새 회귀: 오랜만복귀인가 — 로그0줄 false·2일차 false·3일차 true 1건",
+  "blockers": "반김 문구는 ⚠초안 표기(대본 관행 193행 그대로) — 유호 눈검수 뒤 확정"
+ },
+ {
+  "id": "D4-9",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:lib/마스코트생명.js",
+   "talk:src/말하기화면.js",
+   "talk:tests/마스코트생명.test.js"
+  ],
+  "plan": "① lib/마스코트생명.js — 대본의 «말 슬롯만» 캐릭터 표로 가른다: 상수 대본말 = {말하기인트로: {몽글: 현행 3마디, 까몽: 허세 3박자 초안(「이 몸이 다 알려주지!」·「따라 해 봐!」·「이야기를 들려줘 봐!」), 마린: 브리핑 결 초안(「청취 개시.」·「따라 말하기. 시작.」·「이야기를 기다린다.」)}, 완료축하: {몽글:'와아, 다 했다!', 까몽:'봤지? 다 했잖아!', 마린:'임무, 완수.'}} — 답하기질문은 @질문 슬롯뿐이라 표 불요. 함수 연출대본가져오기(이름, 캐릭터='몽글') 신설: 걸음 골격(몸짓·박자·표정)은 공유하고 말 필드만 치환한 동결 배열을 캐릭터별로 메모이즈. 기존 연출대본 export 는 몽글판 그대로 유지(소비자·회귀 무영향). 전 문구 ⚠초안 표기(193행 관행 — 확정은 유호 눈검수). ② src/말하기화면.js 737·746·756행 — 연출대본.X → 연출대본가져오기('X') (캐릭터 인자는 D4-1 배선이 서는 날 한 낱말). ③ 회귀 — 대본 순회 검사(227행)를 세 캐릭터 산출물 전부로 확장(금지패턴·어절 1~6·기쁨은 완료축하만 자동) + 캐릭터 지문 교차(「이 몸」은 까몽판에만 — 혼잣말검사 ⑤ 결).",
+  "evidence": "lib/마스코트생명.js:199·215행 말 슬롯이 몽글 결 고정(「같이 들어 봐요!」·「와아, 다 했다!」) — 대본 절에 캐릭터 축 0(실측)",
+  "tests": "tests/마스코트생명.test.js 대본 순회 확장 + 캐릭터 지문 교차 1건",
+  "blockers": "까몽·마린 문구는 초안 — 가이드 선택(D4-1)이 열리기 전엔 학생 노출 0이라 선반영 안전"
+ },
+ {
+  "id": "D4-10",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/NPC.js",
+   "talk:tests/npc배선.test.js"
+  ],
+  "plan": "① src/NPC.js — import { Animated } (react-native · 19행) + import { use등장 } from '../lib/모션.js'. 내부 컴포넌트 컷등장({그림, 크기, 라벨}) 신설: `const 등장 = use등장({ 올라옴: 10, 시간: 260 }); return <Animated.View style={등장}><Image source={그림} style={{width:크기,height:크기}} resizeMode=\"contain\" accessibilityLabel={라벨} /></Animated.View>`. ② 본체 return(60-69행) — <View> 안을 `<컷등장 key={컷이름(역, 상태)} …/>` 로: key 가 역·상태 전이마다 재마운트해 «전이 순간»에만 260ms 등장 한 박자가 돈다(지속 장치 아님 — 「입력 중 움직이는 장치는 하나」 검사와 무충돌). reduce-motion 은 use등장이 스스로 접는다(정지 화면). 숫자·퍼센트 병기 금지·pointerEvents=\"none\"·직함 라벨 전부 현행 유지, 새 duration 리터럴 0(눈금은 lib/모션.js 재사용). ③ tests/npc배선.test.js — 소스 검사 1건: NPC.js 가 lib/모션 use등장 을 쓰고 자체 duration 리터럴이 없다 + 기존 렌더 검사가 Animated 래핑에서도 선다.",
+  "evidence": "src/NPC.js:62-67 정적 Image 즉시 교체 — Animated·lib/모션 import 0(실측) · use등장 반환형(lib/모션.js:43-66)이 style 배열 얹기 규약",
+  "tests": "tests/npc배선.test.js·tests/NPC연출.test.js 기존 + 소스 검사 1건",
+  "blockers": ""
+ },
+ {
+  "id": "D4-11",
+  "verdict": "todo",
+  "repo": "both",
+  "files": [
+   "apps:docs/캐릭터/혼잣말_정본.json",
+   "talk:contents/혼잣말.json",
+   "talk:tests/혼잣말.test.js"
+  ],
+  "plan": "① apps docs/캐릭터/혼잣말_정본.json — 사건 자리 증편: 무오류첫열람·재도전의 짧 갈래를 캐릭터당 4~6벌이 되게 추가(긴 1~2벌 얹기는 자유 — 짧이 학습 중 화면의 활성 갈래다). id 는 끝 번호 이어서(mongle-151~ · kkamong-151~ · marine-151~ — _주 「추가는 끝 번호 · id 동결」), 필드 7종(id·캐릭터·자리·갈래·급수·소재·문구) 전부 채움. 결 준수: 몽글 = 자기 감정 감탄(「와아…!」 갈래), 까몽 = 허세(「이 몽」·「크앙」 지문은 까몽 전용), 마린 = 브리핑·마침표(「측정 불가」 지문은 마린 전용). 평가어(「잘했어요」류)·숫자·비교 금지 — 감정·동행·장난만. ② node tools/혼잣말검사.js 통과(짧 ≤4어절 · 금지패턴 4종 · 지문 교차 · 중복 0). ③ talk contents/혼잣말.json 에 같은 줄 반입(_주 「반입 사본」 표기 유지), tests/혼잣말.test.js 분모 450(27행)을 새 총수로 갱신. 형제 대조 테스트가 사본-정본 일치를 문다.",
+  "evidence": "node 카운트 실측 — 무오류첫열람·짧 = 몽글1·까몽1·마린2, 재도전·짧 = 몽글1·까몽1·마린2(idle 짧 43~53 대비) · tests/혼잣말.test.js:27 분모 450 하드코딩",
+  "tests": "tests/혼잣말.test.js(분모·스키마·정본 대조)·tests/마스코트생명.test.js(풀 규격 자동)",
+  "blockers": ""
+ },
+ {
+  "id": "D4-12",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/마스코트.js",
+   "talk:tests/마스코트배선.test.js"
+  ],
+  "plan": "① src/마스코트.js — react-native 의 PanResponder import(29행). `const 쓰다듬 = useRef(PanResponder.create({ onMoveShouldSetPanResponder: (_, g) => !줄임 && !지금녹음중() && !연출중 && Math.abs(g.dx) > 8, onPanResponderGrant: () => { 쓰다듬는중.current = true; 깨우기(); }, onPanResponderMove: (_, g) => 기울기.setValue(Math.max(-10, Math.min(10, g.dx / 8))), onPanResponderRelease·onPanResponderTerminate: () => { 쓰다듬는중.current = false; Animated.spring(기울기, { toValue: 0, friction: 4, tension: 90, useNativeDriver: Platform.OS !== 'web' }).start(); } })).current` — 이동 문턱 8px 라 탭(Pressable onPress)은 안 뺏긴다. ⚠줄임·연출중은 state 라 create 를 useRef 로 굳히면 낡은 값을 문다 — 판정 함수가 ref(줄임ref·연출중ref)를 읽게 하거나 create 인자를 렌더마다 재구성(PanResponder.create 는 값싸다). ② 핸들러를 Pressable(363행)에 {...쓰다듬.panHandlers} 로 얹는다 — 기울기 rotate 는 바깥 transform(358행)에 이미 상주라 Skia·Image 양쪽에 추가 배선 0(「손을 연속 추적」 그대로). ③ 쓰다듬는중 ref 로 idle 두리번(297행)의 기울이기 한 줄 가드. 재질음·햅틱 0 — 소리게이트 화이트리스트 안 건드림.",
+  "evidence": "grep 'PanResponder|GestureDetector|onLongPress|onPressIn' src/ lib/ App.js = 0건(exit 1) — 터치는 탭뿐(실측) · 기울기 rotate 상주 = src/마스코트.js:358",
+  "tests": "tests/마스코트배선.test.js 렌더 + 새 소스 검사 1건: PanResponder 가 지금녹음중 게이트를 지난다",
+  "blockers": "손맛(감쇠 계수·문턱)은 실기기 눈검수로 조율 — 배선 자체는 지금 가능"
+ },
+ {
+  "id": "D4-13",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/마스코트.js",
+   "talk:src/마스코트몸.js",
+   "talk:tests/마스코트배선.test.js"
+  ],
+  "plan": "① src/마스코트.js — 기지개() 신설: `Animated.sequence([Animated.timing(쫀득, { toValue: -0.8, duration: 280, easing: Easing.out(Easing.quad), useNativeDriver: Platform.OS !== 'web' }), Animated.spring(쫀득, { toValue: 0, friction: 3.6, tension: 120, useNativeDriver: … })]).start()` + 기울이기(3, 600) + set기지개시각(Date.now()) — 음수 쫀득 = 세로 늘림(기존 몸짓 재조합 · 새 컷 0). 깨우기(224행) 확장: 졸림→깸 전이(졸림 && 밤 판정 해제)일 때 set졸림(false) 직후 기지개(). 탭(334행) — 깨어나는 탭이면(잤었나 지역변수) 기지개만 하고 놀람→기쁨 정상 반응·쫀득하기는 건너뜀. 소리 호출 안 더함(잠깸 소리는 킷에 없다 — 안 메움). ② Animated.Image 갈래(382-383행) — 쫀득 interpolate inputRange [0,1] → [-1,0,1], scaleX [0.95,1,1.1]·scaleY [1.07,1,0.88]. ③ src/마스코트몸.js — prop 기지개시각 추가: 눌림 곡선(139-144행) 옆에 `늘림 = -0.5 * Math.exp(-지난 * 5)` (0.5초 감쇠), 눌림세기 합산(162행) — 발치부터 늘어나는 같은 관성. D4-2 와 같이 시공하면 밤 판정은 잘시간인가로, 아니면 현행 밤인가 유지.",
+  "evidence": "src/마스코트.js:224 깨우기 = 플래그 플립뿐(몸짓 호출 0 실측) · 쫀득 어휘(207-213행)는 눌림 방향만 있고 마스코트몸 눌림 곡선(143행)은 음수(-0.35 되튐)를 이미 안다",
+  "tests": "tests/마스코트배선.test.js 렌더 + 새 회귀: 마스코트몸 기지개시각 prop 렌더 비폭발 1건 (expo-audio 직접 호출 0 은 기존 소스 검사가 이미 문다)",
+  "blockers": ""
+ },
+ {
+  "id": "D4-14",
+  "verdict": "needs_yuho",
+  "repo": "talk",
+  "files": [
+   "talk:lib/마스코트생명.js",
+   "talk:tests/마스코트생명.test.js"
+  ],
+  "plan": "유호 픽 1회 선행 — 선택지: ㉮ 계절 합본 가중(계절 문구 1/3 확률 우선 · 나머지는 idle 풀 — 「계절감은 가끔 스치는 쪽이 산다」) ㉯ 현행 갈아타기 유지 ㉰ 가중치 값(1/3 이 아니라면). 픽이 ㉮면: lib/마스코트생명.js 평상혼잣말(178행) 서명을 (캐릭터, 시각, 골라잡기 = Math.random) 으로 — 자리고르기가 '겨울'·'여름'일 때만 `골라잡기() < 1/3 ? 계절풀 : idle풀`(계절풀 비면 idle). '밤'·'아침' 창은 현행 갈아타기 유지 — 창이 2~4시간이라 가짓수 급감 문제가 없고, 밤 풀은 D4-2 의 까몽 각성 축이 쓰는 자리다. 172-174행의 「섞을지 갈아탈지는 유호님 판정」 주석을 판정 결과·날짜로 교체(정정은 원문 교체). src/마스코트.js 호출(315행)은 무변경(기본 인자). 회귀: 골라잡기 고정값 주입 — 12월에 0.2→겨울 풀·0.8→idle 풀, 4월엔 항상 idle 1건.",
+  "evidence": "lib/마스코트생명.js:172-174 주석 자백 「겨울 3 vs idle 40+ … 섞을지 갈아탈지는 유호님 판정이고, 지금은 정본 지시대로 갈아탄다」(실측) · 겨울 짧 = 캐릭터당 3벌(카운트 실측)",
+  "tests": "tests/마스코트생명.test.js + 새 회귀: 골라잡기 주입 계절 가중 1건",
+  "blockers": "유호 픽 1회(합본 여부·가중치) 선행"
+ },
+ {
+  "id": "S2-1",
+  "verdict": "doc_only",
+  "repo": "appsscript",
+  "files": [
+   "apps:docs/_ops/트랙.md"
+  ],
+  "plan": "트랙.md의 기존 ⏳ 항목(현재 1351행 「⏳ **프롬프트 캐싱을 켠다 — 개원 «전»에」 — 감사 시점 1116행에서 밀림)을 «켜는 날의 한 벌» 명세로 증보한다. 그 항목은 이미 실측(usage 0)·금액(₩41→₩13)·순서 문제(학생 조각 110자 지점)·여는 자리(4회전 판정 뒤 판올림)를 쥐고 있으니, 빠진 네 걸음만 그 항목 안에 이어 적는다: ① [학생 상태]({{요약}} — prompts/과제생성.md 23행)·[겨냥 문법] 조각을 템플릿 맨 아래로 재배치 ② 공통 지시문을 system 블록 + cache_control로 — 무늬는 lib/교정엔진.js 161행(system: [{type:'text', text:…, cache_control:{type:'ephemeral'}}]) 그대로 ③ 판은 자동으로 오른다 — lib/과제생성.js 118행 prompt_ver 지문이 전문 SHA-256을 물고, 49~76행 호출옵션도 같은 파생에 든다(옛 채점 오염 0 — 별도 조치 불필요, 이 사실만 명기) ④ 「켰는데 안 걸림」 계기화 — 교정엔진.js 439행 캐시성적(usage)을 deliver-one 계측 요약에 이식(S2-5 착지 통로와 한 벌). 코드 구현은 트랙이 미룬 그 창(4회전 뒤 판올림)에서 — 지금은 명세만 굳힌다. 공용 원장이므로 고치는 즉시 커밋.",
+  "evidence": "grep cache lib/과제생성.js = 0건 vs lib/교정엔진.js:161 cache_control + :439 캐시성적. {{요약}} = prompts/과제생성.md 23행(본문 맨 위 · wc -c 27051). 트랙.md 1351~1360행 ⏳ 항목에 ②system 블록·④캐시성적 이식이 없다.",
+  "tests": "문서 항목 — 시험 불필요",
+  "blockers": ""
+ },
+ {
+  "id": "S2-2",
+  "verdict": "todo",
+  "repo": "both",
+  "files": [
+   "talk:supabase/functions/deliver-one/index.ts",
+   "talk:tests/생성종단.test.js",
+   "apps:docs/상태기반_과제선택_설계.md"
+  ],
+  "plan": "① apps 설계 §4-1의 「네트워크 오류 재시도도 이 판에는 없다 — 다음 밤이 돈다」(앵커: 그 문자열, 3014행 부근)를 개정: 일과성(재시도가능 판정 429·5xx + 타임아웃) 한정 · 상한 = job당 시도 2회 · 방식 = 같은 회차 재시도가 아니라 jobs_release 반납(다음 10분 회차가 새 fence로 집는다). 🚫검문탈락 재시도 금지는 그대로. ② talk deliver-one/index.ts: 벤더 왕복에서 `if (!r.ok) 결과 = '벤더오류'` 앵커에 r.status를 지역변수로 보존. attempt_close(닫힘) 뒤·폴백착지 «전»에 분기: (결과==='타임아웃' || (결과==='벤더오류' && 재시도가능(상태))) && `now() < engine.gen_deadline(오늘)`(307행 무늬 재사용) && `select count(*)::int from engine.generation_attempts where job_id=…` === 1 이면 → `engine.jobs_release(job_id, fence)`(346행 무늬) 성공 시 센다(계수,'일과성반납') 후 continue, 실패(false=펜스 낡음)면 현행 폴백착지. attempts.result 값목록은 안 늘린다(반납은 job 상태 전이일 뿐). ③ 머리말 27행 「닫는다(마감까지 기다릴 이유가 0…)」 주석을 개정 사실로 고친다. ④ 회귀: tests/생성종단.test.js에 이 스위트의 바이트 앵커 무늬(77~82행)로 「deliver-one 소스가 재시도가능·gen_deadline·jobs_release 세 앵커를 한 분기에 품는다」 1건. 라이브 반영은 Edge 재배포(배포장부) 별도.",
+  "evidence": "deliver-one 427~483행: !r.ok→'벤더오류'→즉시 폴백착지. 재시도가능은 62행 import·253행(평가 통로)만 소비. jobs_release = 마이그 20260821120000:742 + deliver-one:346 기존 사용. gen_deadline = 307행 기존 사용. 워커 재진입 = 활성조각:14 `*/10 16-21`.",
+  "tests": "tests/생성종단.test.js(기존 · 활성조각 바이트 앵커 무늬) + 신규 소스 계약 앵커 1건",
+  "blockers": ""
+ },
+ {
+  "id": "S2-3",
+  "verdict": "needs_yuho",
+  "repo": "both",
+  "files": [
+   "apps:엔진_콘텐츠AI.js",
+   "talk:tools/복습병행.js"
+  ],
+  "plan": "감사 proposal과 설계 정본이 충돌한다 — 감사안(「due를 생성 과제 겨냥 기술 선택에 합류」)은 설계 §5가 명시 금지한 자리다(「🚫 생성 과제 skill_ids 회전을 due로 바꾸기 — E2 자리에서만」). 허용된 길은 판정 ⓓ 하나: 「재출제 교체는 병행 출력 뒤 유호 판정의 한 커밋」. 병행 출력은 이미 집행됐다(talk 6e7e631 · tools/복습병행.js — 리허설 실측 행 989·교정 1864·리뷰 3·버림 444). 시공 순서(판정이 서면): ① tools/복습병행.js를 최신 리허설 행으로 1회 재실행해 due 목록 vs 현행 14일 창 산출을 나란히 놓은 판정 재료 한 장 ② 유호 픽 = 교체 시점(§6 인수 5가 「첫 실학생 리뷰가 쌓인 뒤」로 못박음 — 개원 뒤 자리) + 교체 범위 ③ 픽 후 한 커밋 = apps:엔진_콘텐츠AI.js의 14일 고정 창(2718행 aiWeakMap_·퀴즈오답맵_ 로더 · 2761행)을 due 목록 소비로 교체. 지금 세션 몫 = ①의 재료 준비까지만 가능하고, 배선 자체는 유호 판정 선행이라 착수 금지.",
+  "evidence": "docs/복습스케줄러_설계.md 118행 「ⓓ 범위 = 개원 전 «배선만» — 재출제 교체는 병행 출력 뒤 유호 판정의 한 커밋」 · §5 「🚫 생성 과제 skill_ids 회전을 due로 바꾸기(E2 자리에서만)」. 소비자 0은 결함이 아니라 이 설계의 상태다 — talk 6e7e631이 병행 도구까지 이미 세웠다.",
+  "tests": "talk:tests/복습파생.test.js·tests/복습스케줄.test.js(기존) — 교체 커밋 때 창 교체 앞뒤 동치 회귀 1건 추가",
+  "blockers": "유호 판정 ⓓ(교체 시점·범위) + §6 인수 5의 실학생 리뷰 축적(개원 뒤)"
+ },
+ {
+  "id": "S2-4",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:supabase/migrations/20260901000000_attempt_ack_c14.sql",
+   "talk:supabase/활성조각_c12.sql",
+   "talk:tests/활성조각.test.js"
+  ],
+  "plan": "① 신규 마이그레이션(파일명 예: 20260901000000_attempt_ack_c14.sql — 체인 규약 준수: base_version='20260831130000', expected_checksum은 tools/검증_마이그레이션.sh 통로로, do $migration$ 골격은 20260825000000_cron_ledger_wait_c13.sql 무늬 복사): `alter table engine.generation_attempts add column acked_at timestamptz;` + comment '감시 ④ 처분 도장 — 워커 사망으로 영영 result null인 시도를 사람이 «한 번 보고» 도장. null=미처분' + 되돌림 주석(drop column). 도장 SQL 한 줄(update … set acked_at=now() where attempt_id=…)을 마이그레이션 주석에 명기해 손 절차의 정본 자리를 준다. ② 활성조각_c12.sql 감시 ④(앵커: 「-- ④ 열린 시도(v5.6 B10 · v5.7 B7)」 아래 count 질의)에 술어 `and a.acked_at is null` 추가 + 주석에 ⑤의 근거(「상시 적색은 신호로서 죽는다 · F103」)가 ④에도 걸린다는 한 줄. ③ 회귀: tests/활성조각.test.js에 조각이 `acked_at is null` 술어를 품는지 바이트 앵커 1건(생성종단 T1 무늬). ⚠ 활성조각은 라이브에 이미 등록된 cron 몸이므로 라이브 재적용은 배포 절차 별도 — repo 구현·회귀는 지금 가능.",
+  "evidence": "활성조각_c12.sql ④(「④ 열린 시도」 질의)가 a.result is null을 날짜·처분 하한 없이 센다. jobs_reclaim 주석(마이그 20260821120000:727) 「열린 attempt는 안 닫는다」 · attempts를 닫는 update는 attempt_close(716행 · 워커 호출)뿐 — 스윕 부재 확인. grep acked supabase/migrations = 0건.",
+  "tests": "tests/활성조각.test.js·tests/생성종단.test.js(기존 조각 검사) + 신규 술어 앵커 1건",
+  "blockers": ""
+ },
+ {
+  "id": "S2-5",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:supabase/functions/deliver-one/index.ts",
+   "talk:supabase/활성조각_c12.sql",
+   "talk:supabase/migrations/20260901010000_check_reds_c14.sql",
+   "talk:tests/생성종단.test.js"
+  ],
+  "plan": "감사 주장 절반은 이미 서 있다 — generate-worker는 ops.발사로 등록돼(활성조각:111~113) ops.수확이 응답 본문을 ops.cron_runs.body(left 2000자)로 착지시킨다. 남은 구멍 둘만 닫는다. ① deliver-one 봉투(앵커: `return 봉투(200, { 날짜: 오늘, 회수, …, 계측 })`)에서 계측이 마지막 키라 2000자 절단에 잘린다 → 소형 `요약`(콜드스타트_ms·claim_ms·학생수·벤더 중앙값 — S2-1 명세의 캐시성적도 켜는 날 이 칸에 든다)을 «날짜 바로 뒤» 이른 키로 추가(JSON 직렬화가 삽입 순서를 지킨다 — left 2000 안에 산다). ② deliver-check는 SQL 직접(활성조각:126)이라 적색이 cron.job_run_details뿐 → 신규 마이그레이션으로 engine.generation_batch_runs에 `deliver_check_reds text[]`·`deliver_check_at timestamptz` 두 nullable 열 추가(체인·checksum 규약은 S2-4와 동일 — 둘을 같이 지으면 한 조각으로 합쳐 체인 순서 관리), 활성조각 do-block의 `raise exception` 직전(앵커: 「deliver-check 적색(§3-2-a 감시 9항)」)에 `if 정본.run_id is not null then update … set deliver_check_reds=적색, deliver_check_at=now() where run_id=정본.run_id; end if;` — 초록 날도 빈 배열로 도장해 「0건=안 돌았나」 모호를 없앤다(정본 행이 없으면 ②-a 적색이 그 이야기를 이미 하므로 착지 생략). 회귀: 생성종단.test.js 바이트 앵커 무늬로 「조각에 deliver_check_reds 착지 문이 raise보다 앞에 있다」 1건.",
+  "evidence": "활성조각:111~113 `cron.schedule('generate-worker', … ops.발사(…)/deliver-one)` + cron_ledger_c11:164 `body = left(resp.content, 2000)` — 워커 응답은 이미 표에 산다(감사의 「응답을 아무도 안 읽고」는 이 통로 앞에서 절반 낡음). deliver-check만 SQL 직접(활성조각:126 · 주석 「수신자는 지금 로그뿐 — §373」).",
+  "tests": "tests/활성조각.test.js·tests/생성종단.test.js(기존) + 착지 문 앵커 1건",
+  "blockers": ""
+ },
+ {
+  "id": "S2-6",
+  "verdict": "doc_only",
+  "repo": "appsscript",
+  "files": [
+   "apps:docs/_ops/트랙.md",
+   "apps:docs/SYNK_로드맵.html"
+  ],
+  "plan": "감사가 「안 재봤다」던 장부 등재는 재보니 이미 서 있다 — yuho-open-decisions.md ①(4회전 크레딧 ≈$2.25 · 「유호님 채점 80행 → --판정」)·②(초급 Lv1~2 예비 회전 · 유호 픽 갈래①)이 §8-B 사람 채점을 명시로 쥔다. 남은 반쪽만 문서로 닫는다: ① 트랙.md의 ⏳ 캐싱 항목(1351행)과 ⏳🔴 초급 예비 회전 항목(1361행)에 「같은 창 한 벌」 상호 참조 한 줄씩 — 「캐싱 켜는 판올림 = §8-B 채점 1벌(장부 ①②)과 같은 회전에서 닫는다(회전 한 번 = 둘)」 ② 로드맵 지면(docs/SYNK_로드맵.html — grep '8-B|채점' 해당 항 0건)의 개원 전 준비 절에 「AI 과제 문장 — 유호 채점 1벌 통과 전에는 학생 접점을 못 지난다(개원 2027-02-25 역산 · 돈 충전 뒤)」 마일스톤 한 줄. 캐싱 명세 증보(S2-1)와 같은 트랙.md 편집이므로 한 커밋으로 묶어도 된다. 공용 원장 — 고치는 즉시 커밋.",
+  "evidence": "yuho-open-decisions.md 31~41행에 ①②로 등재 확인(「1번으로 하자 … 뽑아서 채점할게」 08-26 원문 포함) · 트랙.md 1271행 「#6 = §8-B 평가·크레딧 충전·사람 채점 80회 — 첫 생성 행 «직전» 관문」. 로드맵 html에는 해당 항 0건(974·1026행 VR 채점뿐).",
+  "tests": "문서 항목 — 시험 불필요",
+  "blockers": ""
+ },
+ {
+  "id": "S2-7",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:supabase/functions/deliver/index.ts"
+  ],
+  "plan": "supabase/functions/deliver/index.ts 머리말 19~25행의 「■ AI 문장 생성은 아직 없다 — 그리고 그 사실이 행에 남는다」 문단을 현행 사실로 교체(정정은 원문 교체 — 각주 금지): 「■ AI 문장 생성은 c12 생성 트랙으로 가동 중 — 활성 학급 한정(engine.gen_active_from 게이트 · 활성 «전» 날짜는 라이브 경로가 진 날) · 경로는 생성모드.ts(생성배달·구제배달 — 38행 import가 그 실물). 비활성·생성 실패는 §6-4 강등이 그대로 받는다: 전날 문장 → 없으면 고정 도입 과제 · degraded=true. 판정은 lib/오늘과제.js가 지고 회귀가 DB 없이 잰다.」 — 강등 경로·판정 주체 두 문장은 지금도 참이라 보존. 판 영향 0 확인 완료: prompt_ver는 prompts/과제생성.md 전문 + lib/과제생성.js 호출옵션에서만 파생(118행)이라 deliver 소스 주석은 판 재료가 아니다. 머리말 문자열을 무는 시험도 0건(grep). 코드 변화 0이므로 다음 deliver 배포에 동승시키고 배포장부(docs/_ops/배포장부.jsonl) 규약대로 도장.",
+  "evidence": "deliver/index.ts 19행 「AI 문장 생성은 아직 없다」 vs 38행 `import { 생성배달, 구제배달 } from './생성모드.ts'` — 파일이 자기 머리말을 반증(bb904ab·20d4455 뒤에도 그대로). grep 'AI 문장 생성은 아직 없다' tests/ lib/ = 0건.",
+  "tests": "주석 전용 — 덮는 시험 0건(grep 확인) · 신규 회귀 불필요",
+  "blockers": ""
+ },
+ {
+  "id": "S2-8",
+  "verdict": "already_done",
+  "repo": "none",
+  "files": [],
+  "plan": "감사가 남긴 꼬리(「이벤트검증.js:372의 생산자가 c14 물리 위에 실제로 섰는지」)는 감사 «뒤» 오늘 커밋으로 닫혔다 — talk 20d4455 「M2 교실 관찰 한 벌 — (c14 생산자)」가 teach/index.ts +283행 · src/관찰화면.js 신설 298행 · src/관찰API.js 신설 122행 · lib/관찰초안.js 신설 176행 · 이벤트검증.js +10행 · tests/관찰통로.test.js 신설 201행을 한 벌로 실었다. 「지도·빚 목록에서 이 줄을 지운다」 쪽도: 파이프라인 지도는 repo 파일이 아니라 감사 중간 산출물이고, «무엇이 남았나»의 정본인 apps 트랙.md는 3408행에서 이미 「✅ 판정 + ② 구현·배포 완주(08-31 · 유호 「웅 그대로 가」)」 · 3413행 「talk 스위트 2850 전 초록」으로 현행이다. 상위 감사 합본이 이 항목 줄만 닫으면 끝 — 지을 것 없음.",
+  "evidence": "talk `git show --stat 20d4455`(HEAD · 08-31): teach/index.ts·관찰화면·관찰API·관찰통로.test 등 12파일 +1217행. apps docs/_ops/트랙.md 3408~3413행 c14 완주 도장.",
+  "tests": "talk:tests/관찰통로.test.js(신설 201행)·tests/강사통로.test.js(+68행)가 이미 덮는다",
+  "blockers": ""
+ },
+ {
+  "id": "S2-9",
+  "verdict": "already_done",
+  "repo": "none",
+  "files": [],
+  "plan": "판정 항목이다 — 「코드상 사슬은 닫혀 있다, 그대로 두라」. 실물 재확인 결과 판정 근거가 그대로 서 있어 지을 것이 0이다: 멱등·경쟁 장치(fence · unique(job_id,attempt_no) · jobs_reclaim · 닫기경합 처리 · 중복열림 건너뜀)가 deliver-one과 c12 마이그레이션에 실재하고, 마디마다 이름 붙은 회귀 파일이 전부 존재한다. 이 «건드리지 않기» 판정을 다른 항목(S2-2 일과성 반납 · S2-4 처분 도장)이 깨지 않도록 — 둘 다 attempts.result 값목록·판정 축을 안 바꾸는 설계로 각 plan에 못박아 뒀다.",
+  "evidence": "ls tests/: 과제검문·교정배치·생성종단·왕복골격·착지봉투·회고통로 .test.js 전부 존재. deliver-one 405~410행 중복열림 건너뜀 · 463행 닫기경합 · 마이그 20260821120000:253 unique(job_id, attempt_no) — 항목의 근거와 일치.",
+  "tests": "기존 회귀 6벌이 이미 덮는다 — 신규 불필요",
+  "blockers": ""
+ },
+ {
+  "id": "S2-10",
+  "verdict": "blocked",
+  "repo": "none",
+  "files": [],
+  "plan": "여섯 측정 대부분이 라이브 Supabase 접근을 요구해 이 정찰(소스 읽기 전용)은 못 잰다. 라이브 권한 세션이 «한 번에» 잴 목록(왕복 1회): ① `npm test` 전체 통과·줄 커버리지(talk-full-suite-before-commit — 이건 로컬로도 되니 첫 순서) ② 배포된 Edge Fn 판·cron 등록·활성조각 적용이 repo와 같은지([deploy-source-diff] · docs/_ops/배포장부.jsonl 대조 + supabase functions list / select * from cron.job) ③ engine.generation_jobs·generation_attempts 실행 행 — 강등률·중복열림 실발생·attempts.raw_response 속 usage 실측(캐싱 usage 0 재확인 포함) ⑥ 회고 판정(redirected 등)이 하류(엔진 학습·학습자상태)에 실제 소비되는지(learning_events 실행 행). 나머지 둘은 라이브 없이 이번 정찰이 닫았다: ④ c14 생산자 = talk 20d4455 커밋이 답(S2-8) · ⑤ 복습파생 소비자 0 = 설계 ⓓ 「배선만 · 교체는 유호 판정」이 정본인 의도된 상태(S2-3 판정 참조). 즉 남은 넷(①②③⑥)만 라이브 세션 몫이다.",
+  "evidence": "항목 자신이 「지시대로 실행 0 · 전부 grep/wc/ls가 자다」라 명기. ④는 talk 20d4455로, ⑤는 docs/복습스케줄러_설계.md 118행 ⓓ로 이번에 소스 판정 완료.",
+  "tests": "①은 talk `npm test` 전체가 그 자체 — 신규 시험 불필요",
+  "blockers": "라이브 Supabase 접근(psql/대시보드 — clasp 아님) + 배포장부 대조"
+ },
+ {
+  "id": "G3-1",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:contents/문구_오류.js",
+   "talk:src/인증화면.js",
+   "talk:src/말하기화면.js",
+   "talk:src/답장화면.js",
+   "talk:tests/문구_오류.test.js"
+  ],
+  "plan": "감사 제안(말() 반환형을 배열로)은 실물과 어긋나 렌더 분리안으로 고친다 — 수송은 문자열 유지, 화면에서 가른다. ① 문구_오류.js 말() 아래에 `const 줄들 = (글) => String(글 || '').split('\\n').map(s => s.trim()).filter(Boolean);` 를 추가하고 module.exports 에 얹는다(가르는 자 정본 한 곳). ② 인증화면.js 오류줄(233~235행): Animated.Text 하나를 `<Animated.View style={등장}>` 안에서 `줄들(글).map((줄,i) => <Text key={i} style={i===0 ? s.오류 : s.오류_병기}>{줄}</Text>)` 로. s.오류_병기 = { fontFamily: 몽골어폰트.강조, fontSize: 13, lineHeight: 19, color: 색.신호 } (몽골어폰트는 6행에 이미 import · 신호 1점 규율 유지 — 색은 그대로, 폰트만 가른다). ③ 말하기화면.js 578·589·639행의 `{오류 && <Text style={s.오류}>{오류}</Text>}` 셋을 같은 무늬로 — 1551행 옆에 오류_병기 = { fontFamily: 몽골어폰트.강조, fontSize: 13, lineHeight: 19, color: 색.잉크_서브 }, 26행 import 에 몽골어폰트 추가. ④ 답장화면.js 290행 오류를 같은 무늬로 — 346행 옆 알림_병기 = { fontFamily: 몽골어폰트.캡션, fontSize: 14, lineHeight: 22, color: 색.잉크_메타 }, 50행 import 에 몽골어폰트 추가. 사건통로.js:121 의 괄호 메타(`(계약 위반: …)`)는 mn 채워지는 날 mn 줄 꼬리에 붙는 알려진 꼬리 — 주석 한 줄만 남기고 이번 범위 밖.",
+  "evidence": "문구_오류.js:116 `return [짝.ko, 짝.mn].map(…).join('\\n')` 현존 · 소비 렌더 = 인증화면.js:194/233-235(s.오류=352행 폰트.강조), 말하기화면.js:578·589·639(s.오류=1551행 폰트.강조), 답장화면.js:290(s.알림=346행 폰트.캡션). 반환형 변경안은 기각 — 말() 산출이 인증오류 메시지(인증API.js:33·132·164 등 10곳 super(message))와 문자열 연결(사건통로.js:121)로도 흘러 배열화는 오류 배관 전체를 흔든다.",
+  "tests": "tests/문구_오류.test.js(양방향 대조 현존)에 줄들() 회귀 1건 — 「mn 채운 짝은 두 줄, 빈 mn 은 한 줄」 + tests/화면구문.test.js 전체",
+  "blockers": ""
+ },
+ {
+  "id": "G3-10",
+  "verdict": "doc_only",
+  "repo": "talk",
+  "files": [
+   "talk:docs/실기기_검수목록.md"
+  ],
+  "plan": "talk:docs/실기기_검수목록.md 를 신설하고(개원 전 실기기 검수일에 여는 단일 목록 — G3-6 의 글꼴 배율 두 줄도 이 파일) 캘리브레이션 절을 적는다: 실제 배포 기기에서 ①수업 전 교실 소음 ②수업 중 소음 ③소곤 발화 세 표본을 앱의 데시벨() 경로(lib/세호흡.js:27 — dBFS 동일 눈금)로 재고, 문턱을 바꾸게 되면 lib/세호흡.js:12 발화문턱_DB 수정과 제출 로그 threshold 필드 동반 기록(세호흡.js:10-11 주석이 이미 준비한 절차 — 머뭇거림 축의 과거와 안 갈라지게)을 «한 커밋»으로 묶는다는 줄까지. 코드 수정 0. 트랙 등재가 필요하면 apps:docs/_ops/트랙.md 에 한 줄 — 공용 원장이라 그 커밋 즉시 push 규약 준수.",
+  "evidence": "lib/세호흡.js:12 `const 발화문턱_DB = -35;` + 10-11행 주석 「실기기 실측 전의 초기값 — 바꾸면 … threshold 필드로 함께 남긴다」 현존. talk:docs/ 에 실기기 검수 전용 목록 문서는 없음(ls 실측 — 발주·계약·설계 문서뿐).",
+  "tests": "해당 없음(문서)",
+  "blockers": "실측 자체는 실기기 오는 날에만 가능(emulator-review-blocked) — 문서 작성은 지금 가능"
+ },
+ {
+  "id": "G3-11",
+  "verdict": "already_done",
+  "repo": "none",
+  "files": [],
+  "plan": "조치 불요 — 오늘 talk 커밋 bb904ab 가 「색.선 미정의 4곳(교수멘탈·목표카드·보고서교정·서류관문) → 색.잉크_희미」로 네 자리를 한 번에 닫았다(감사가 요구한 전수 방식 그대로). 테마.js 에 선 토큰을 새로 파는 안은 소비자 0이 되어 불요.",
+  "evidence": "bb904ab 커밋 본문 16행에 해당 문구 명시 · diff 에 목표카드.js `borderColor: 색.선 → 색.잉크_희미` 확인 · 현재 grep `색\\.선` = talk 전체 0건 · 목표카드.js:76 = `borderColor: 색.잉크_희미` 실물 확인.",
+  "tests": "",
+  "blockers": ""
+ },
+ {
+  "id": "G3-2",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/교수멘탈화면.js",
+   "talk:src/목표카드.js",
+   "talk:src/말하기화면.js"
+  ],
+  "plan": "넷 다 줄별 렌더 + i===0 킷폰트 무늬(정답 표본 = 막힘카드.js:46-51 렌더 · 79-80 병기 눈금: 폰트짝 그대로 몽골어폰트로, 크기·색 한 단 아래)로 바꾼다. ① 교수멘탈화면.js:400 `{확인답 ? <Text style={s.관찰}>{(반응안내(확인답) || []).join(' ')}</Text> : null}` → `{확인답 ? (반응안내(확인답) || []).map((줄, i) => <Text key={i} style={i === 0 ? s.관찰 : s.관찰_병기}>{줄}</Text>) : null}` · 3행 import 에 몽골어폰트 추가 · 472행 옆 관찰_병기 = { fontFamily: 몽골어폰트.캡션, fontSize: 13, lineHeight: 21, color: 색.잉크_메타, paddingHorizontal: 4 }. ② 목표카드.js:42 반응글 join(' ') → 같은 map · 반응글_병기 = { fontFamily: 몽골어폰트.캡션, fontSize: 13, lineHeight: 20, color: 색.잉크_메타 }. ③ 목표카드.js:50-52 카드.문장 map 의 스타일을 `i === 0 ? s.본문 : s.본문_병기` 로 · 본문_병기 = { fontFamily: 몽골어폰트.본문, fontSize: 14, lineHeight: 23, color: 색.잉크_메타 } · 3행 import `{ 색, 폰트 }` 에 몽골어폰트 추가. ④ 말하기화면.js:833-834 AI한줄 map 스타일을 `i === 0 ? s.녹음안내 : s.녹음안내_병기` 로 · 1583행 옆 녹음안내_병기 = { fontFamily: 몽골어폰트.캡션, fontSize: 12, lineHeight: 19, color: 색.잉크_메타 } · 26행 import 에 몽골어폰트(G3-1 과 같은 줄 — 함께 시공하면 한 번만). mn 전량 빈칸이라 오늘 화면 변화 0 — 감수가 채우는 날 병기가 선다.",
+  "evidence": "현재 실물: 교수멘탈화면.js:400 join(' ') · 목표카드.js:42 join(' ') · 목표카드.js:50-52 전 줄 s.본문 · 말하기화면.js:833-834 전 줄 s.녹음안내 — 넷 다 현존(grep). 문구 배열은 [ko, mn 필터] 형(문구_목표확인.js:42-45 · 문구_AI네낱말.js:57-60 실측)이라 i===0=ko 가 성립. 몽골어폰트 미import 셋 확인(교수멘탈 3행·목표카드 3행·말하기 26행).",
+  "tests": "tests/문구_AI네낱말.test.js·tests/교수멘탈화면.test.js 현존 · 회귀 1건: tests/화면구문.test.js 에 「반응안내(·목표반응( 호출 뒤 .join(' ') 무늬 = src 0건」 소스 대조 추가",
+  "blockers": ""
+ },
+ {
+  "id": "G3-3",
+  "verdict": "peer_territory",
+  "repo": "talk",
+  "files": [
+   "talk:src/인증화면.js",
+   "talk:src/답장화면.js",
+   "talk:App.js",
+   "talk:src/도착확인.js"
+  ],
+  "plan": "학생 접점 4자리부터, 시각 변화 0(속성만). ① 인증화면.js 칸(238행)의 TextInput(245행)에 `accessibilityLabel={라벨}` 한 줄 — 네 걸음 입력칸 전부가 이 한 곳으로 선다. 오류줄(233-235행) Animated.Text 에 `accessibilityRole=\"alert\"`. ② App.js(🔴피어) 겉테 Pressable 5곳 — 316(답장)·321(어제의 나)·294(SYSTEM — label 은 「설정」처럼 읽히는 이름)·195/329(검수문) — 에 `accessibilityRole=\"button\"` + `accessibilityLabel`. ③ 답장화면.js 응답 Pressable(270-284행)과 back(292행)에 `accessibilityRole=\"button\"`(이름은 안쪽 Text 가 읽힌다 — label 생략 가능). ④ 도착확인.js(🔴피어) 103-166행 줄버튼 9벌에 `accessibilityRole=\"button\"`. 직원 화면 잔여(회고·나침반·강사·검수·문구감수·반피드백·알바변명·어제의나)는 뒤로 미룬다(감사 제안 그대로). 피어 둘을 뺀 ①③은 지금도 시공 가능 — 그 경우 커밋을 갈라 피어분은 나중에.",
+  "evidence": "grep accessibility = 11파일 30곳(bb904ab 뒤 26→30) — 인증·답장·도착확인·App.js 전부 0곳 그대로. 칸 컴포넌트 238행·TextInput 245행·응답 버튼 270-284행·App.js hitSlop 링크 195/294/316/321/329 실측. App.js·src/도착확인.js 는 피어 미커밋 영토.",
+  "tests": "tests/화면구문.test.js 전체(속성 추가만이라 신규 회귀 불요)",
+  "blockers": "App.js·src/도착확인.js 가 피어 세션 미커밋 작업 중 — 그 둘만 피어 합류 뒤 시공"
+ },
+ {
+  "id": "G3-4",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/인증화면.js",
+   "talk:src/나침반화면.js",
+   "talk:src/말하기화면.js",
+   "talk:src/답장화면.js"
+  ],
+  "plan": "동적으로 등장하는 알림 Text 에 accessibilityLiveRegion 한 줄씩(Android 전용 속성 — iOS 는 무시되어 무해, 주석 한 줄). ① 인증화면.js 오류줄(235행 Animated.Text)에 `accessibilityLiveRegion=\"assertive\"`. ② 나침반화면.js 적혔어요줄(254행 컴포넌트 안 Text)에 `\"polite\"`. ③ 말하기화면.js 578·589·639행 오류 Text 에 `\"assertive\"`, 1512행 「목소리 N개를 보내지 못했어요」 줄에 `\"polite\"`. ④ 답장화면.js 289행(못보낸답)·290행(오류) 알림 둘에 `\"polite\"`(290 오류는 `\"assertive\"`). G3-1 시공과 같은 파일·같은 행이 겹치므로 한 커밋으로 묶어 시공 권장 — G3-1 의 줄배열 렌더로 바뀐 자리는 감싸는 Animated.View 에 속성을 얹는다.",
+  "evidence": "grep accessibilityLiveRegion·allowFontScaling 등 = talk 전체 0건(재실측) — 감사 이후에도 변화 없음. 앵커 현행 확인: 인증화면 194/233-235 · 나침반화면 222/254 적혔어요줄 · 말하기화면 578·589·639·1512 · 답장화면 289-290.",
+  "tests": "tests/화면구문.test.js 전체(속성만 — 신규 회귀 불요)",
+  "blockers": ""
+ },
+ {
+  "id": "G3-5",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/인증화면.js",
+   "talk:src/회고화면.js",
+   "talk:src/보고서교정화면.js",
+   "talk:src/서류관문화면.js",
+   "talk:src/강사화면.js"
+  ],
+  "plan": "시각 판정값(면 채움·테두리)을 그대로 속성에 싣는다 — 스타일 0. ① 인증화면.js 가입문항 보기 Pressable(280행)에 `accessibilityRole=\"button\"` + `accessibilityState={{ selected: 골랐나 }}`. ② 회고화면.js 학생 판정칩(270행 `s.판정칩, 자기고름` 스타일의 그 Pressable)에 `accessibilityState={{ selected: 자기고름 === o.코드, disabled: 자기저장됨 != null || 건너뜀 }}`, 강사 칩(317행 `s.판정칩, 강사고름`)에 `{{ selected: 강사고름 === o.코드 }}` — 둘 다 role=\"button\" 도 함께. ③ 보고서교정화면.js 확신토글(342-346행 Pressable)에 `accessibilityRole=\"togglebutton\"` + `accessibilityState={{ checked: 확신도 === 값 }}`. ④ 서류관문화면.js 확신토글(389-397행 · 스타일 574-576) 동일. ⑤ 강사화면.js 판정칩(337-339행)에 role=\"button\" + `{{ selected: 고름 }}`. 말하기화면 1286행(radio·selected — 유일 선례)의 무늬를 그대로 확장하는 것.",
+  "evidence": "grep accessibilityState = talk 전체 1건(말하기화면.js:1286)뿐 — 감사 주장 현행 유지. 앵커 실측: 인증 280 · 회고 270/317 · 보고서교정 342-346 · 서류관문 389-397 · 강사 337-339.",
+  "tests": "tests/보고서교정화면.test.js·서류관문화면.test.js·강사화면.test.js·회고.test.js 현존(앵커 민감 소스 대조 가능성 — npm test 전체 필수) · 신규 회귀 불요",
+  "blockers": ""
+ },
+ {
+  "id": "G3-6",
+  "verdict": "peer_territory",
+  "repo": "talk",
+  "files": [
+   "talk:src/테마.js",
+   "talk:App.js",
+   "talk:docs/실기기_검수목록.md"
+  ],
+  "plan": "① 테마.js 96행(모노트래킹) 옆에 `export const 글자배율상한 = 1.4;` — 값의 정본 한 곳(constant-known-in-two-places 방지). ② App.js(🔴피어) 진입부(최상단 import 직후)에 `Text.defaultProps = { ...(Text.defaultProps || {}), maxFontSizeMultiplier: 글자배율상한 }; TextInput.defaultProps = { ...(TextInput.defaultProps || {}), maxFontSizeMultiplier: 글자배율상한 };` — 화면 코드 0줄로 전 Text 에 상한이 선다. RN 0.86 에서 defaultProps deprecation 경고가 나오면 경고만인지 확인하고(동작은 유지되는 갈래) 깨지면 공용 Text 래퍼 안으로 승격 — 이번엔 안 짓는다. ③ talk:docs/실기기_검수목록.md(G3-10 이 신설하는 그 파일)에 「글꼴 크게 ×1.3」·「글꼴 크게 ×2.0」 두 줄 — 확인 항목은 App.js 겉테줄(top:34 절대좌표)과 마스코트(top:64) 사이 30pt 겹침, 오류칸 minHeight:20 넘침. 겉테 flex 화는 실측에서 겹침이 «실제로» 나면 그때 별도 트랙으로(선제 구조 변경 금지 — 지금은 상한+검수 두 줄이 최소선).",
+  "evidence": "grep allowFontScaling·maxFontSizeMultiplier·getFontScale = talk 전체 0건(재실측·감사와 일치). 테마.js 96행 모노트래킹 옆이 상수 자리로 자연스러움 실측. App.js 는 피어 미커밋 영토.",
+  "tests": "tests/앱시작.test.js·화면구문.test.js 전체",
+  "blockers": "App.js 가 피어 영토 + 배율 실검증은 실기기 검수일(emulator-review-blocked)"
+ },
+ {
+  "id": "G3-7",
+  "verdict": "peer_territory",
+  "repo": "talk",
+  "files": [
+   "talk:App.js",
+   "talk:src/보고서교정화면.js",
+   "talk:src/서류관문화면.js",
+   "talk:src/교수멘탈화면.js",
+   "talk:src/목표카드.js"
+  ],
+  "plan": "시각 한 픽셀 불변, hitSlop 만. ① App.js(🔴피어) 316행(답장)·321행(어제의 나) `hitSlop={8}` → `hitSlop={{ top: 15, bottom: 15, left: 8, right: 8 }}` — 두 링크가 가로 이웃이라 좌우는 8 유지(겹치면 먼저 그린 쪽이 먹힌다). 294행 SYSTEM `hitSlop={8}` → `{{ top: 16, bottom: 16, left: 8, right: 8 }}`(10pt 모노 ≈30 → 48). y34~50 겉테 좌표 규율은 스타일 불변이라 안 깨진다. ② 확신토글: 보고서교정화면.js 342-345 Pressable·서류관문화면.js 391-396 에 `hitSlop={{ top: 6, bottom: 6 }}` (paddingVertical 8 · ≈34-36 → 46-48 · 가로줄 gap 8 이라 좌우 0). ③ 확인단추: 교수멘탈화면.js 390-394·목표카드.js 55-62 Pressable 에 `hitSlop={{ top: 4, bottom: 4 }}` (paddingVertical 10 · ≈40 → 48). ⚠ D6-8(별 항목)이 겉테·back 링크의 같은 자리를 다룬다 — 시공 시 두 항목을 한 벌로 합쳐 이중 수정 금지(한 값 한 곳).",
+  "evidence": "App.js 294/316/321 hitSlop={8} 현행(grep) · 보고서교정 446행 확신토글 paddingVertical 8 · 서류관문 575행 동일 · 교수멘탈 476행 확인단추 paddingVertical 10 · 목표카드 76행 동일 — 감사 산수 그대로 유지 확인. App.js 는 피어 미커밋 영토.",
+  "tests": "tests/보고서교정화면.test.js·서류관문화면.test.js·교수멘탈화면.test.js(앵커 민감) + npm test 전체",
+  "blockers": "App.js 겉테 세 링크만 피어 합류 뒤 — 나머지 넷은 지금 가능"
+ },
+ {
+  "id": "G3-8",
+  "verdict": "todo",
+  "repo": "talk",
+  "files": [
+   "talk:src/검수화면.js",
+   "talk:src/강사화면.js"
+  ],
+  "plan": "① 검수화면.js 태그 칩(747-753행 Pressable)·구간 칩(674-682행)에 `hitSlop={{ top: 8, bottom: 8, left: 2, right: 2 }}` — 칩줄 gap 6 이라 좌우는 2 로 겹침 방지. ② 접이머리 둘(526행 검수 기준 · 742행 태그)의 Pressable 을 `hitSlop={{ top: 10, bottom: 10 }}` + `style={{ alignSelf: 'stretch' }}` 로 — 글자 오른쪽 빈 행 폭까지 탭 영역(감사 제안 「행 전체」 그대로). 758행 체크줄은 style 이 이미 있으니 배열로 stretch 만 추가. ③ 작은버튼 넷 — 711-715(되돌리기)·771-777(폐기)·828-834(다시 열기 Z)·843-849(다음 쪽 더 받기) — 에 `hitSlop={{ top: 8, bottom: 8 }}`. ④ 강사화면.js 접이머리 셋(249·373·398행) 동일하게 hitSlop 6 → `{{ top: 10, bottom: 10 }}` + stretch. 강사 판정칩(337행 · ≈40pt — 「한 층 크게」 이미 반영)은 `hitSlop={{ top: 4, bottom: 4 }}` 만. 시각 변화 0.",
+  "evidence": "검수화면.js 실측: 태그 칩(746-754)·구간 칩(670-682) hitSlop 없음 · 접이머리 526/742 hitSlop={6} · 되돌리기 712 hitSlop={6} · 폐기 771-777 hitSlop 없음 · 강사화면 접이머리 249/373/398 hitSlop={6} — 감사 산수(칩 ≈32pt·접이머리 ≈31pt) 유효. 두 파일 다 피어 목록 밖.",
+  "tests": "tests/검수화면.test.js·강사화면.test.js 현존(앵커 민감 가능 — npm test 전체로 확인) · 신규 회귀 불요(시각·로직 불변)",
+  "blockers": ""
+ },
+ {
+  "id": "G3-9",
+  "verdict": "needs_yuho",
+  "repo": "both",
+  "files": [
+   "talk:src/반피드백화면.js",
+   "talk:src/반피드백API.js",
+   "talk:src/답장화면.js"
+  ],
+  "plan": "유호님 판정 재료 두 안(항목 스스로 「어느 쪽이든 유호님 판정 자리」로 명기 — 학생 뒤 쓰기·서버 계약 변경). A안(싼 첫걸음) = teach/feedback/classes 응답에 학생별 «무음 폐기 N건» 칸을 얹고 반피드백화면 학생 줄에 그 수만 표시 — 강사가 말로 잇는다. 단 서버 쪽은 supabase/functions/teach/**(🔴피어 영토)라 피어 레인과 한 벌 시공. B안(학생 카드) = corrections 응답에 discard 사유('무음'·'손상' 둘만) 노출 + 답장화면에 「목소리가 잘 안 담긴 날이 있었어요. 내일 한 번 더 들려줄래요?」 카드(«내려놓은바늘» 재사용 — 벌 0·재촉 0 톤 · 문구 확정 유호님 몫). 판정 물음 둘: ① 학생에게 직접 되돌릴지(B) vs 강사 경유(A) — 개원 초기 규모(수십 명)면 A 가 계약 최소 ② B 채택 시 문구. 판정이 서면 그 안의 시공 지시서를 그때 행번호로 재작성한다.",
+  "evidence": "검수API.js:44 폐기사유 에 '무음' 존재 · 179-180행 review/discard 통로 확인 · grep 폐기|discard in src+App.js = 검수 «쓰기» 통로뿐, 학생/강사 «읽기» 0건(재실측 — 감사와 일치) · 반피드백 서버 = teach/feedback/*(반피드백API.js:44·117 grep)로 A안 서버부는 피어 영토.",
+  "tests": "판정 뒤: A안 = tests/반피드백.test.js·반피드백화면.test.js 확장, B안 = tests/교정API.test.js·교정확정.test.js 확장 + 문구 회귀 1건",
+  "blockers": "유호님 판정(A/B + 문구) 선행 · A안 서버부 = supabase/functions/teach/** 피어 영토 · 어느 안이든 서버 계약 확장 필요"
+ }
+]
