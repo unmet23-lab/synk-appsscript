@@ -706,7 +706,7 @@ function checkTuition(asText) {
   Logger.log('미납 메일: ' + unpaid.length + '명');
 }
 
-// [v9.28] 학부모 문의 인바운드 — inquiries 시트(Glide "Add Row"로 학부모가 직접 씀)를 읽기만. 주간 통합 리포트 섹션 규약(asText).
+// [v9.28] 학부모 문의 인바운드 — inquiries 시트(Glide "Add Row"로 학부모가 직접 씀)를 읽기만. 주간 통합 리포트 섹션 규약(asText). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
 function checkNewInquiries_(asText) {
   const wantText = asText === true;
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -787,7 +787,7 @@ function notifyParents() {
     });
   }
 
-  // [v9.28] 결석 사전신고 — 학부모가 미리 알린 학생은 미출석 오경보에서 제외 (Glide "Add Row"로 직접 씀)
+  // [v9.28] 결석 사전신고 — 학부모가 미리 알린 학생은 미출석 오경보에서 제외 (Glide "Add Row"로 직접 씀) — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
   const an = ensureSheet(ss, 'absence_notice', ['student_id', '반', '날짜', '사유', '등록시각']);
   const preNotified = new Set();
   if (an.getLastRow() >= 2) {
@@ -1421,7 +1421,7 @@ function raidFriday() {
   });
   rd.getRange(2, 1, rdData.length, 6).setValues(rdData);
 
-  // [v7.3] 결산 스토리 — 격파 서사 / 도주 서사 / 무공격 서사 (raid_story → Glide 레이드 탭)
+  // [v7.3] 결산 스토리 — 격파 서사 / 도주 서사 / 무공격 서사 (raid_story → Glide 레이드 탭) — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
   const rsSh = ensureSheet(ss, 'raid_story', ['date','class_name','유형','제목','스토리']);
   const dupe = new Set();
   if (rsSh.getLastRow() >= 2) {
@@ -1546,7 +1546,7 @@ function todayBoard_(ss) {
   /* [v9.126] 빈 상태 안내 — 08-02 라이브 실측: 일요일(무수업)에 출결 탭이 **완전한 백지**로 뜬다.
    *   데이터상으로는 정상이지만 강사·원장 화면에서는 「오늘 수업이 없음」과 「앱이 고장남」이 구별되지 않는다
    *   (성장 리포트 탭은 '첫 리포트는 다음 달 1일에 도착해요'라고 말해 주는데 여기만 침묵했다).
-   *   Glide 컬렉션은 행이 0이면 아무것도 안 그리므로, 안내를 **행 하나로** 만들어 준다. */
+   *   Glide 컬렉션은 행이 0이면 아무것도 안 그리므로, 안내를 **행 하나로** 만들어 준다. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md) */
   if (!rows.length && !stuRows.length) {
     const dow = now.getDay();
     stuRows.push(dow === 0
@@ -1931,7 +1931,7 @@ function parentWeeklyDigestCore_(holdRaw) {
       if (isE && pts !== 0) ptsW[sid] = (ptsW[sid] || 0) + pts;
       if (rs.indexOf('MVP') > -1 || rs.indexOf('도전') > -1) mvpW[sid] = (mvpW[sid] || 0) + (pts > 0 ? 1 : (rs.indexOf('정정') > -1 ? -1 : 0)); // [v9.0] 건수 — 금액 독립
       else if (rs.indexOf('시냅스') > -1 || rs.indexOf('성장') > -1) synW[sid] = (synW[sid] || 0) + (pts > 0 ? 1 : (rs.indexOf('정정') > -1 ? -1 : 0));
-      if (pts > 0 && rs.indexOf('칭찬·') === 0) { // [v9.51·B4] 💝 태그=사유 접미 — Glide 버튼은 reason='칭찬·발음↑' 등 4종 고정값으로 기록
+      if (pts > 0 && rs.indexOf('칭찬·') === 0) { // [v9.51·B4] 💝 태그=사유 접미 — Glide 버튼은 reason='칭찬·발음↑' 등 4종 고정값으로 기록 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
         const tg = rs.slice(3).trim();
         if (tg) (tagW[sid] = tagW[sid] || []).push(tg);
       }
@@ -3638,7 +3638,7 @@ function monthlyGameBatch() {
         if (r[1] === 'season' && Number(r[5]) === nowMonth) { sName = String(r[2]); sTheme = String(r[3] || ''); }
       });
     }
-    if (sName) setState(stG, '이달의시즌', nowMonth + '월의 무대 · ' + sName + (sTheme ? ' — ' + sTheme : '')); // [v9.56] 월 테마 개명 「이달의 무대」(유호 07-24) — "시즌"은 커리큘럼 8주 트랙 전용. app_state 키명은 Glide 바인딩 보호로 유지
+    if (sName) setState(stG, '이달의시즌', nowMonth + '월의 무대 · ' + sName + (sTheme ? ' — ' + sTheme : '')); // [v9.56] 월 테마 개명 「이달의 무대」(유호 07-24) — "시즌"은 커리큘럼 8주 트랙 전용. app_state 키명은 Glide 바인딩 보호로 유지 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
   }
 
   // [v7.1] 월간 정산 — ① 칭호보너스: 조건형만 포인트(경쟁형 1위류는 명예만) ② 출석 1회당 +3P

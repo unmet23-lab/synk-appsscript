@@ -504,7 +504,7 @@ function setupGrammarBank() { // contents type='grammar' 재건 — replaceConte
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   replaceContentType(ss, 'grammar', GRAMMAR_BANK.map(g =>
     [g[0], 'grammar', g[1], g[2], '', Number(String(g[0]).slice(1))])); // F = 단계×100+순번 (setupHomework 요일코드 패턴)
-  // [v9.38d] 마감폼 '전체도달도' 드롭다운 소스 — Glide Choice가 테이블 소스 전용이라 도달/더연습 2행을 contents에 둔다.
+  // [v9.38d] 마감폼 '전체도달도' 드롭다운 소스 — Glide Choice가 테이블 소스 전용이라 도달/더연습 2행을 contents에 둔다. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
   //   value_ko('도달'/'더연습')를 그대로 저장(expandMasteryLog_이 문자열 '도달' 접두 매칭). 재건 시 이 2행도 자동 복원.
   replaceContentType(ss, 'reach', [['REACH1', 'reach', '도달', '수업 목표 대부분 도달', '', 1], ['REACH2', 'reach', '더연습', '더 연습 필요', '', 2]]);
   // G열 몽골어는 translateContents(대상 type에 grammar 포함)가 초벌 번역 — 재실행 시 번역 초기화되면 translateContents 재실행
@@ -1921,7 +1921,7 @@ function sweepAttendanceForm_(ss) {
   props.setProperty('출석폼_포인터', String(last));
 }
 
-// [v9.49] 첨삭 '확인했어요' 정산 — Glide가 hw_feedback J열(학생확인·스크립트 불가침)에 기록하면 10분 스위프가 1회 +5P.
+// [v9.49] 첨삭 '확인했어요' 정산 — Glide가 hw_feedback J열(학생확인·스크립트 불가침)에 기록하면 10분 스위프가 1회 +5P. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
 //   멱등 3중: ①K열 마킹 ②당일 point_logs 재조회(지급 후 마킹 전 크래시 대비 — expandHwBatch v9.31 패턴) ③DAILY_LIMIT 1회/일.
 function sweepFeedbackAck_(ss) {
   const fb = ss.getSheetByName('hw_feedback');
@@ -4708,7 +4708,7 @@ const MN_HOMEWORK_CHECKPOINT = {
 };
 
 /* ===================== [v5.2] 학부모 화면 라벨 (한·몽·영 직접 큐레이션) =====================
- * type='label' → Glide에서 화면 라벨을 데이터로 바인딩할 때 사용 (C=키, D=한국어, G=몽골어, H=영어)
+ * type='label' → Glide에서 화면 라벨을 데이터로 바인딩할 때 사용 (C=키, D=한국어, G=몽골어, H=영어) — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * type='reason' → point_logs.reason(C와 일치)을 학부모 화면에서 몽골어로 표시 (Relation→Lookup) */
 
 function setupParentLabels() {
@@ -4794,7 +4794,7 @@ function setupTeacherCheers() {
 }
 
 function setupFuelMissions() {
-  // 레이드 연료 미션 — 이름이 Glide 폼 Choice와 정확히 일치해야 함 (raidFriday가 이름→P 매핑)
+  // 레이드 연료 미션 — 이름이 Glide 폼 Choice와 정확히 일치해야 함 (raidFriday가 이름→P 매핑) — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   replaceContentType(ss, 'fuel', [
     ['F01','fuel','⏰ 정시 출석 데이','출석자 전원 지각 0','',20],
@@ -4829,7 +4829,7 @@ function setupBosses() {
 }
 
 function setupTitleLore() {
-  // 칭호 로어 — C열이 대표칭호(AH) 문자열과 정확히 일치 → Glide Relation·Lookup으로 표시
+  // 칭호 로어 — C열이 대표칭호(AH) 문자열과 정확히 일치 → Glide Relation·Lookup으로 표시 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   // [v6.1] E열 = 등급 라벨 — 착용 칭호의 등급 Pill과 로어를 Relation 하나로 표시
   replaceContentType(ss, 'lore', [
@@ -5382,7 +5382,7 @@ function setupPlaceholderImages() {
 }
 
 /* ===================== [v9.25] 🚪 온보딩 콘텐츠 (역할별 첫 화면 안내) =====================
- * 'onboarding' 시트에 역할별 3줄 안내를 세팅. Glide가 role 필터로 홈 최상단에 표시.
+ * 'onboarding' 시트에 역할별 3줄 안내를 세팅. Glide가 role 필터로 홈 최상단에 표시. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * 순수 콘텐츠(계산 로직 아님) — 1회 실행. 몽골어는 초벌이라 원어민 검수 권장. */
 function setupOnboarding() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -5413,7 +5413,7 @@ function setupOnboarding() {
 /* ===================== [v9.38] 🏫 수업 입력 시트·열 물리 생성 (Glide 폼 바인딩 선행) =====================
  * W3(학습추적) 신규 구조는 스켈레톤엔 있으나 '기존' 라이브 시트엔 미반영이다(ensureSheet는 생성 시에만 헤더 기록).
  * 새 앱 조립 전 이 함수를 1회 실행하면 강사 마감폼(weekly_topics F~L)·출석 배치폼(attendance_batch)의
- * 바인딩 대상 열/시트가 정확한 헤더로 물리 생성된다. 멱등 — 이미 있으면 무해. 수동 헤더 입력(오타 위험) 대체. */
+ * 바인딩 대상 열/시트가 정확한 헤더로 물리 생성된다. 멱등 — 이미 있으면 무해. 수동 헤더 입력(오타 위험) 대체. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md) */
 function setupClassroomInputs() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tp = ensureSheet(ss, 'weekly_topics', ['class_name', '배운내용', '입력자', 'created_at', '배운내용_mn']);

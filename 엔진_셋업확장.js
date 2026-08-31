@@ -162,12 +162,12 @@ function sheetSkeleton_() {
     ['lectures', LECTURE_HEADERS],           // [v9.106] 온라인 강의 카탈로그(유호님이 채운다)
     ['lecture_views', LECTURE_VIEW_HEADERS, 수집표식_], // [v9.106] 수강 이력 — 주말반 승급 판정의 나머지 절반 · [v9.244] 학생이 «무엇을 언제 봤나»
     ['lesson_close', LESSON_CLOSE_HEADERS, 수집표식_], // [v9.91] 차시 마감폼 적재 — 진도 3택·미발화자. 조 편성 침묵 점수·이월 경보·4주차 명단의 공통 원천 · [v9.244] 🔴 #Q100 을 세운 반례 그 자체
-    ['hw_feedback', HW_FEEDBACK_HEADERS, 수집표식_], // [v9.49] AI 숙제 첨삭 카드 — aiFeedbackBatch_ 생성. I상태: '노출'=공개(게이트 통과·무인)/'대기'=수동검수 모드/'격리:'·'오류:'=미노출([v9.63]), J학생확인=Glide 전용(스크립트 불가침), K포인트지급=스크립트 전용 · [v9.138] 헤더 정본을 배치와 공유(구 구조는 두 벌이라 갈라졌다) + 수집 4열(숙제ID·오류태그·재작성원본·다시쓰기URL)
+    ['hw_feedback', HW_FEEDBACK_HEADERS, 수집표식_], // [v9.49] AI 숙제 첨삭 카드 — aiFeedbackBatch_ 생성. I상태: '노출'=공개(게이트 통과·무인)/'대기'=수동검수 모드/'격리:'·'오류:'=미노출([v9.63]), J학생확인=Glide 전용(스크립트 불가침), K포인트지급=스크립트 전용 · [v9.138] 헤더 정본을 배치와 공유(구 구조는 두 벌이라 갈라졌다) + 수집 4열(숙제ID·오류태그·재작성원본·다시쓰기URL) — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     ['student_errors', ['날짜','student_id','반','유형','메모','입력자','created_at','상태'], 수집표식_], // [v9.244] 강사가 본 약점 — teacher_gold 와 같은 계급(사람 산출이지만 학습 재료) · [v9.36] 강사 개인 약점 메모(선택 입력) — 리포트·브리핑 노출은 후속(학생 앱 미노출)
     ['onboarding', ['role','제목','안내KO','안내MN','아이콘']], // [v9.38] 역할별 홈 안내 카드(setupOnboarding) — 재건 목록 누락분 보강
     ['system_manifest', ['지표','값','상태']], // [v9.37] buildSystemManifest 출력 — 시트·콘텐츠·트리거·의존성 실측 정본(수동 숫자 대체)
     // [v9.40] 월간 배치 산출 시트 5종 — 배치가 매월 1일에야 ensureSheet로 만들던 것을 골격 정본에 편입.
-    //   Glide는 "존재하는 시트"만 테이블로 잡으므로, 조립 시점에 헤더가 미리 있어야 스토리·카드·리그 탭을 바인딩할 수 있다.
+    //   Glide는 "존재하는 시트"만 테이블로 잡으므로, 조립 시점에 헤더가 미리 있어야 스토리·카드·리그 탭을 바인딩할 수 있다. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     ['synk_stories', ['월','호수','제목','챕터','챕터제목','본문','문법포인트','씬프롬프트']],
     ['synk_cards', ['월','student_id','카드HTML']],
     ['world_raid', ['월','보스명','HP','누적데미지','상태']],
@@ -183,7 +183,7 @@ function sheetSkeleton_() {
     ['talk_log', TALK_LOG_HEADERS, 수집표식_],
     //   [v9.147] teacher_gold: 학생 데이터가 아니라 **정답(채점표)**을 쌓는 유일한 시트. 무인 발행이라
     //   「강사가 실제로 한 교정」이 어디에도 안 남는데, 그게 없으면 2년 뒤 모델 선택을 감으로 한다.
-    //   강사판정·강사교정·사유·강사 4열은 **Glide가 채운다**(주 5행이라 update 예산 ≈ 월 20).
+    //   강사판정·강사교정·사유·강사 4열은 **Glide가 채운다**(주 5행이라 update 예산 ≈ 월 20). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     ['teacher_gold', GOLD_HEADERS, 수집표식_],
     // [v9.239] 수집면 «출생» 단일화(엔진도달 전수감사 §9-4 (2)) — 학습 데이터 탭 3종이 골격 밖에서
     //   ensureSheet 로만 태어나 「우리 수집면 목록」이 두 갈래였다(갈라진 쪽의 증상은 언제나 「통과」).
@@ -448,7 +448,7 @@ function 시트도달상한_() {
 }
 
 /* ===================== [v9.43] 🎴 몬스터·보스 상세 카드 — "눌렀을 때 우와" =====================
- * contents의 monster·boss·worldboss 행에 '상세카드' 열(HTML)을 생성 — Glide 도감/보스 상세 화면의 Rich Text 소스.
+ * contents의 monster·boss·worldboss 행에 '상세카드' 열(HTML)을 생성 — Glide 도감/보스 상세 화면의 Rich Text 소스. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * 몬스터 = 그 단계의 시그니처 색(FRAME_CSS)으로 물들인 카드 + 숨쉬는 큰 이미지 + 스토리 + 진화 조건.
  * 보스 = 다크 톤 위압 카드 + 등장 대사(도발) + 격파 대사는 스포일러 방지로 숨김(격파의 순간에 스토리로 공개).
  * langColOf_ 패턴으로 열 탐색·생성(Row ID 회피) — preflightGlide 편입 + 수동 실행 가능(멱등·writeIfChanged). */
@@ -1075,7 +1075,7 @@ function bootstrapSynk() {
 
 /* ===================== [v9.40] 🛫 Glide 조립 사전점검 — 원버튼 준비+자동복구+진단 =====================
  * 새 Glide 앱 조립 전 이 함수 하나만 실행한다: 시트 골격·입력 시트·콘텐츠·월간 산출물·계산을 전부
- * 자동으로 채우고(멱등), 사람이 해야 하는 것(반 배정·이메일·가족 연결)만 ⚠로 남긴다.
+ * 자동으로 채우고(멱등), 사람이 해야 하는 것(반 배정·이메일·가족 연결)만 ⚠로 남긴다. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * [v9.40 개조 이유] 구 버전은 콘텐츠 구멍을 "setupXxx 실행" 경고로만 남겼고, 그 수동 실행이 누락돼
  *   숙제 0/210·연료 0/6·시즌 0/12·팁 0/30·문법 57/72 상태로 조립이 진행됐다(기능 다수 전멸의 최대 원인).
  * ⚠ 파괴 호출 없음 — setupSchedule(시트를 통째로 정본 24반으로 리셋함 — v9.102)은 절대 부르지 않는다.
@@ -1292,7 +1292,7 @@ function preflightGlide() {
     });
     // [v9.61] 학생 입력 폼 3종 미생성 감시 — 폼을 안 만들면 URL 틀이 없고 → calcAll이 CX102·CY103을 빈칸으로 두고
     //   → Glide의 Open-link 버튼이 "대상 없음"으로 조용히 안 그려진다. 컴포넌트는 멀쩡히 존재하므로 조립 점검을
-    //   눈으로만 하면 통과해 버린다(2026-07-24 실측: 출석·숙제 버튼 전원 미렌더 + GPS 삭제 후 출석 수단 0).
+    //   눈으로만 하면 통과해 버린다(2026-07-24 실측: 출석·숙제 버튼 전원 미렌더 + GPS 삭제 후 출석 수단 0). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     [['출석폼URL틀', 'createAttendanceForm', '앱 출석 버튼'], ['숙제폼URL틀', 'createHwForm', '숙제 제출 버튼(AI 첨삭 입구)'],
      ['약점메모폼URL', 'createTeacherMemoForm', '강사 약점 메모'],
      ['학업폼URL', 'createAcademicForm', '강사 학업 기록 버튼(수업준비 탭 — 급수·모의 차트 원료)'], // [v9.74]
@@ -1306,7 +1306,7 @@ function preflightGlide() {
     });
   }
 
-  // 6.5) [v9.48] 공유열 서버화 확인 — Glide가 계산 컬럼 없이 바로 바인딩할 수 있는 상태인지(조립 전제)
+  // 6.5) [v9.48] 공유열 서버화 확인 — Glide가 계산 컬럼 없이 바로 바인딩할 수 있는 상태인지(조립 전제) — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
   if (pf && pf.getLastRow() >= 2) {
     const endColP = SHARED2_COL_START + SHARED2_COL_HEADERS.length - 1; // [v9.74] 118(DN) — 2차 블록까지
     if (pf.getMaxColumns() < endColP) warn('공유열(CG85~CZ104·DH112~DN118) 미생성 — calcAll 1회 실행 필요(preflight가 이미 돌렸다면 로그의 calcAll 실패 사유 확인)'); // [v9.74] 카드·출퇴근·폼URL 2차 블록 포함(DA105~DG111 선점 구간은 제외)
@@ -1413,7 +1413,7 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   rehearsalForceOff_(); // [v9.120] 리허설이 켜진 채 배치가 오면 그날 알림이 통째로 죽는다 — TTL과 별개의 두 번째 안전장치
   safeRun('expandLessonLog', expandLessonLog_);   // [v9.36] 수업 마감 로그 승격분 → 숙제 +10·연료 전개 (calcAll 앞 = 그날 밤 게이지·랭킹 즉시 반영)
   safeRun('expandMasteryLog', expandMasteryLog_); // [v9.36] 당일 문법 태그 → mastery_log upsert (calcAll 앞 = 그날 밤 진화 게이트 즉시 반영)
-  safeRun('calcAll', calcAll); // 오늘의 숙제 게시(21시 조건) + Glide가 만든 point_logs A·F 빈칸 보정
+  safeRun('calcAll', calcAll); // 오늘의 숙제 게시(21시 조건) + Glide가 만든 point_logs A·F 빈칸 보정 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
   safeRun('expandHwBatch', expandHwBatch);       // [v8.0] 숙제 일괄 1탭 → 학생별 +10 전개 (가드·정산·스토리 전에)
   safeRun('dailyGuard', dailyGuard);             // [v7.5] 일일 한도 — MVP 반당 1명 + 숙제·칭찬·생일 1회/일 자동 정정
   safeRun('notifyDailyAwards', notifyDailyAwards); // [v7.6] 유효 MVP·시냅스 학부모 알림(한·몽 통합 1통)
@@ -1656,7 +1656,7 @@ function monthlyJobs() {   // 매월 1일 05시 — 순서 고정이 핵심
 // [v9.38e] Glide 원장 콕핏 수동 생성용 래퍼 — buildExecReport_·updateTravelMap_는 이름이 _로 끝나
 //   Apps Script 편집기의 실행 드롭다운에 안 떠서(private 취급), 원장이 개원 전 콕핏 카드를 미리 만들 때
 //   이 래퍼를 골라 ▶실행한다. 각 함수는 자기 app_state 키(경영리포트HTML·여행지도HTML)만 멱등 생성 —
-//   monthlyJobs를 통째로 돌릴 때의 archiveMonthly(로그 아카이브) 같은 부작용이 전혀 없다.
+//   monthlyJobs를 통째로 돌릴 때의 archiveMonthly(로그 아카이브) 같은 부작용이 전혀 없다. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
 function runExecReportNow() { buildExecReport_(); }
 function runTravelMapNow() { updateTravelMap_(); }
 // [v9.39] 조립 검증용 수동 러너 — 마감폼 저장분을 밤 22시까지 기다리지 않고 즉시 전개+재계산.
@@ -1928,7 +1928,7 @@ function bizDashboardNow() { setupBizDashboard(); return updateBizDashboard(true
  *   발표 8주 전원 최소 2회         → 역할 주기가 4차시라 주말반 8차시=정확히 2회·평일반 40차시=10회.
  *                                     로테이션이 이미 보장하므로 별도 순번표를 만들지 않는다.
  *
- * ▣ 쓰기 예산 (규칙서 §11 — Glide 월 500건 한도)
+ * ▣ 쓰기 예산 (규칙서 §11 — Glide 월 500건 한도) — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *   조 편성은 시즌당 반별 1회(16반 × 8주 = 두 달에 16행). 역할·짝·발표자는 저장하지 않고 차시 번호에서
  *   계산한다. 매 차시 쓰기가 0이라 한도에 손대지 않는다. */
 
@@ -3778,7 +3778,7 @@ function lessonPlanFill_(body, o) {
  *   §11 배선 대기표 "차시 마감폼(진도·발화자) 미구축 → 기록 없음"
  *
  * ▣ 왜 구글 폼인가 (규칙서 §11이 직접 계산해 둔 것)
- *   평일 12반×주5 + 주말 6반×주1 ≈ 월 284차시. 출석 1탭만으로 Glide 월 500건의 57%다.
+ *   평일 12반×주5 + 주말 6반×주1 ≈ 월 284차시. 출석 1탭만으로 Glide 월 500건의 57%다. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *   마감을 앱 화면으로 받으면 568건이 되어 한도를 넘긴다. 폼은 한도를 쓰지 않는다.
  *
  * ▣ 「말한 학생」이 아니라 「말하지 않은 학생」을 받는다 — 규칙서 문구와 다른 유일한 지점
@@ -3790,7 +3790,7 @@ function lessonPlanFill_(body, o) {
  *
  * ▣ weekly_topics와의 관계 — 겹치지 않는다
  *   weekly_topics F~L(v9.36)은 배운내용·문법태그·도달도·숙제완료자 = 수업 '내용' 로그이고
- *   Glide 입력 경로다. 이 폼은 진도 3택·미발화자 = 수업 '지표' 로그이고 폼 경로다.
+ *   Glide 입력 경로다. 이 폼은 진도 3택·미발화자 = 수업 '지표' 로그이고 폼 경로다. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *   소비처도 다르다(전자 = 진화 게이트·번역·브리핑 / 후자 = 조 편성 침묵 점수·이월 경보·4주차 명단). */
 
 // LESSON_CLOSE_HEADERS 정본은 Code.js(GROUPS_HEADERS 옆) — [v9.135] 골격이 지연 평가라 순서 제약은 없어졌지만, 헤더 정본은 상수 정본 파일(Code.js)에 모아 둔다.
