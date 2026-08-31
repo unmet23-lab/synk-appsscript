@@ -38,7 +38,8 @@ function consultPace_(goalLv, dueRaw, hoursRaw, now) {
   const due = new Date(Number(m[1]), mo, 0); // 그 달 말일(여유 쪽 해석)
   const weeks = Math.ceil((due.getTime() - now.getTime()) / (7 * 86400000));
   if (weeks < 1 || weeks > 260) return '';
-  return '🎯 TOPIK ' + goalLv + '까지 약 ' + weeks + '주' + (hoursRaw ? ' — 하루 ' + hoursRaw + '의 꾸준함으로' : '');
+  // 「닿아요」류 도달 약속 금지(codex c0f8674eb618 수용) — 도달 판정은 자동이 아니라 시즌 회고 사람 몫이다
+  return '🎯 TOPIK ' + goalLv + '까지 약 ' + weeks + '주' + (hoursRaw ? ' — 하루 ' + hoursRaw + '씩 가는 페이스예요' : '');
 }
 
 /* ── 진로 4칸 정본 ─ 「의도」가 사는 곳 ─────────────────────────────────────

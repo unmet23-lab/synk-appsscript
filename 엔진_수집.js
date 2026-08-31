@@ -237,6 +237,8 @@ function migrateHwFormV9138() {
  *   profiles는 현재값이라 승급하면 과거 응답의 난이도 맥락이 지워진다 — 행에 박아야 남는다. */
 const QUIZ_LOG_HEADERS = ['id', 'student_id', '퀴즈ID', '유형', '문제', '고른답', '정답', '정답여부', '확신도', '제출일', 'created_at', '급수', 'schema_ver'];
 const QUIZ_CONFIDENCE = ['확실해요', '아마도', '찍었어요'];
+/* 확신도 도움말 — 생성부와 migrateFormCopy0901 이 **같은 상수**를 본다(WORK_DESC 관례 · 두 곳에 적으면 갈린다). */
+const QUIZ_CONFIDENCE_HELP = '솔직하게 골라주세요 — 찍었다고 해서 불이익은 전혀 없고, 오히려 다음 문제를 더 잘 맞춰 드려요';
 
 /* 채점 정규화 — 원문자·공백·문장부호를 걷어낸다. 학생이 '①'로 쓰든 '1'로 쓰든 '1 번'으로 쓰든 같은 답이다. */
 function quizNorm_(s) {
@@ -293,7 +295,7 @@ function createQuizForm() {
   // 확신도는 필수다 — 선택으로 두면 대부분 비게 되고, 그러면 이 축이 있으나 마나가 된다
   form.addMultipleChoiceItem().setTitle('얼마나 확신하나요?').setRequired(true)
     .setChoiceValues(QUIZ_CONFIDENCE)
-    .setHelpText('솔직하게 골라주세요 — 찍었다고 해서 불이익은 전혀 없고, 오히려 다음 문제가 더 잘 맞춰집니다');
+    .setHelpText(QUIZ_CONFIDENCE_HELP);
   form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
   linkFormTab_(ss, before, '퀴즈폼_응답');
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
