@@ -1352,9 +1352,13 @@ function codex(args, 입력, timeoutMs, 라벨) {
     execFileSync(
       isWin ? (process.env.ComSpec || 'cmd.exe') : bin,
       isWin ? ['/c', bin, ...args] : args,
-      /* cwd = **재는 저장소**. codex 는 여기서 git 을 돌리고 여기서 `AGENTS.md`(없으면 `CLAUDE.md`)를
-       * 렌즈로 집는다 — 1단계에 커스텀 프롬프트를 못 주므로(위 ⛔막다른 길) 이 한 줄이 「어느
-       * 저장소의 규약으로 볼 것인가」를 정하는 유일한 손잡이다. */
+      /* cwd = **재는 저장소**. codex 는 여기서 git 을 돌린다(실측) — 1단계에 커스텀 프롬프트를
+       * 못 주므로(위 ⛔막다른 길) 이 한 줄이 「어느 저장소의 규약으로 볼 것인가」를 정하는
+       * 유일한 손잡이다.
+       * ⏭ 렌즈 파일의 «우선순위»는 **안 재봤다**: 이 집엔 `AGENTS.md` 가 없고 그때 codex 가
+       *   `CLAUDE.md:45` 를 인용한 것이 근거의 전부라, 「`AGENTS.md` 가 있으면 그쪽을 집는다」는
+       *   추론이다. talk 엔 둘 다 있어서(`AGENTS.md` → `docs/이_저장소_규약.md`) 첫 talk 런이
+       *   그 답을 낸다 — 그 결과를 여기 적어 추론을 실측으로 바꿔라. */
       자식옵션({ cwd: 대상ROOT, input: 입력, encoding: 'utf8', timeout: timeoutMs, stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 })
     );
     /* 성공 1회 = 한도가 풀렸다는 유일한 실측 — 마커가 있었다면 지운다(오탐 자가 치유). */
