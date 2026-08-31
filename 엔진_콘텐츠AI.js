@@ -1003,7 +1003,7 @@ function systemWatchdog(asText) {
   add(!!keys['오늘의팁'], 'app_state 오늘의팁: ' + (keys['오늘의팁'] ? '있음' : '없음 — setupBrainTips 실행 여부 확인')); // [v8.6]
 
   // 3) 셋업 실행 상태 (contents 수량 대조 — 부분 실행 감지)
-  const expect = CONTENT_EXPECT; // [v9.37] 모듈 정본(수동 숫자 승격) — grammar:72 포함, buildSystemManifest와 단일 소스. 세부 이력은 CONTENT_EXPECT 선언부 참조
+  const expect = CONTENT_EXPECT; // [v9.37] 모듈 정본(수동 숫자 승격) — grammar:91 포함, buildSystemManifest와 단일 소스. 세부 이력은 CONTENT_EXPECT 선언부 참조
   const cnt = {};
   let bossImg = 0, monThr = [], loreTier = 0;
   const ct = ss.getSheetByName('contents');
