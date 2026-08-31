@@ -48,12 +48,15 @@ const 우선 = new Set(자료.메타.우선);
 const 결함 = new Set(자료.메타.결함);
 
 const 배지 = (t, 결) => `<span class="배지${결 ? ' 배지결함' : ''}">${esc(t)}</span>`;
+/* 진행 배지 — 끝난 결(구현·수리·반영·해소·걷음·이미)은 초록 테, 나머지는 흐린 테. */
+const 끝난상태 = (s) => /^(구현됨|수리됨|반영됨|해소됨|걷음|이미 반영)/.test(s);
+const 상태배지 = (s) => (s ? `<span class="배지 ${끝난상태(s) ? '배지끝' : '배지대기'}">${끝난상태(s) ? '✅ ' : ''}${esc(s)}</span>` : '');
 function 항목카드(it) {
   const 결 = 결함.has(it.id);
   const 별 = 우선.has(it.id);
   const 확정메모 = 자료.메타.확정메모[it.id];
   return `<div class="유리 잔잔 항목${결 ? ' 항목결함' : ''}" id="${esc(it.id)}">
-  <p class="항목머리">${별 ? '⭐ ' : ''}${배지(it.id, 결)}${결 ? 배지('결함', true) : ''}${it.loom_use && it.loom_use !== '해당없음' ? 배지('Loom') : ''} <b>${esc(it.spot)}</b></p>
+  <p class="항목머리">${별 ? '⭐ ' : ''}${배지(it.id, 결)}${결 ? 배지('결함', true) : ''}${it.loom_use && it.loom_use !== '해당없음' ? 배지('Loom') : ''}${상태배지(it.상태)} <b>${esc(it.spot)}</b></p>
   <p class="항목제안">${esc(it.proposal)}</p>
   <p class="항목장면">👁 ${esc(it.scene)}</p>
   <p class="항목왜">${esc(it.why_luxury)}</p>
@@ -96,6 +99,8 @@ function main() {
 .항목메타{margin:0;font-size:.74rem;opacity:.62;}
 .배지{display:inline-block;padding:1px 8px;border-radius:99px;border:1px solid rgba(251,247,240,.28);font-size:.72rem;margin-right:6px;vertical-align:1px;}
 .배지결함{border-color:rgba(249,104,89,.6);}
+.배지끝{border-color:rgba(134,197,151,.55);opacity:.85;}
+.배지대기{border-color:rgba(251,247,240,.18);opacity:.6;}
 .절수{opacity:.5;font-size:.72em;}
 .절뜻{opacity:.75;font-size:.86rem;margin-top:-.4em;}
 .좋은것{font-size:.8rem;line-height:1.6;}
@@ -127,6 +132,7 @@ details.탈락절 summary{cursor:pointer;font-size:.9rem;padding:8px 0;}
 
 <div class="유리 알림 듦"><b>합계 = 갈래 + 갈래.</b> ${esc(자료.메타.합계줄)}
 <br>⭐ = 먼저 보실 ${별들.length} · 🔴 결함 = 지금 고칠 ${결함들.length} · 나머지는 절마다 값진 순.
+<br><b>진행(08-31 밤 물결 1·2):</b> ${(() => { const 끝 = 항목들.filter((it) => 끝난상태(it.상태 || '')).length; return `${끝}/${항목들.length} 닫힘 — 남은 것 = 유호님 판정 ${항목들.filter((it) => /^유호/.test(it.상태 || '')).length} · 판올림 뒤 ${항목들.filter((it) => /판올림|^걸림/.test(it.상태 || '')).length} · 그 외 ${항목들.length - 끝 - 항목들.filter((it) => /^유호/.test(it.상태 || '')).length - 항목들.filter((it) => /판올림|^걸림/.test(it.상태 || '')).length}`; })()} · 새 문구 초안 43벌 = <b>docs/감사_문구초안_검토.md</b>
 <br><small>모든 항목이 <b>실물 파일·행 번호</b>를 쥐고 있고, 세 렌즈(철학 정합 · 확정 충돌 · 실현성)의 적대 검증에서 살아남은 것만 실었다 — 두 렌즈 이상이 죽인 ${자료.탈락.length}개는 맨 끝 접힌 절에 사유와 함께 있다.</small></div>
 
 <h2 id="s0" class="듦"><span class="번호">00</span><span>먼저 보실 것 — 결함 ${결함들.length} + 별 ${별들.length}</span></h2>
