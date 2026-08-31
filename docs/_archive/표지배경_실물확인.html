@@ -8,11 +8,13 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&family=DM+Mono:wght@300;400;500&display=swap">
 <style>
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+
   :root{ --coral:#FF6B5C; --navy2:#0F1730; --cream:#F6F1E8; --paper:#FBF7EE; --cream2:#EFE7D7;
          --ink:#171820; --navy:#1A2340; --mut:rgba(23,24,32,.56); --line:rgba(23,24,32,.12); }
   *{ box-sizing:border-box; margin:0; padding:0; }
   body{ background:var(--cream2); padding:40px 20px 80px; color:var(--ink);
-        font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+        font-family:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
         letter-spacing:-0.02em; -webkit-font-smoothing:antialiased; }
   .mono{ font-family:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.14em; }
   .kr{ font-family:'SUIT Variable',sans-serif; }
@@ -95,7 +97,7 @@
 (function(){
   var W=1080, H=1350, PAD=86;
   var NAVY2='#0F1730', CREAM='#F6F1E8', CORAL='#FF6B5C';
-  var FONT="'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif";
+  var FONT="'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif";
 
   function prng(s){ var a=(s>>>0)||1; return function(){ a=(a*1664525+1013904223)>>>0; return a/4294967296; }; }
 

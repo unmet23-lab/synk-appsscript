@@ -6,10 +6,12 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&family=DM+Mono:wght@300;400;500&display=swap">
 <style>
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+
   :root{ --ink:#1B1B1A; --sub:#7A7566; --line:#D1D2D4; }
   *{ box-sizing:border-box; }
   body{ margin:0; padding:34px 40px 70px; background:#FAFAF9; color:var(--ink);
-        font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
+        font-family:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
   .wrap{ max-width:1180px; margin:0 auto; }
   h1{ font-size:18px; font-weight:600; margin:0 0 5px; letter-spacing:-.01em; }
   .sub{ font-size:12.5px; color:var(--sub); line-height:1.65; margin:0 0 4px; }
@@ -51,7 +53,7 @@ var BG='#08090C', INK='#E4E4E7', SIG='#FF6B5C', PAPER='#FAFAF9', DARK='#1B1B1A',
 // 대형 텍스트 기준(3.0)에도 미달한다. Coral 3는 같은 자리에서 3.40으로 통과한다.
 // SIG는 다크 배경 텍스트(6.5)와 면·도형(막대·리소 원)에만 쓴다. 정본 v1.3 §11 참조.
 var SIG_TEXT='#E8543F';
-var FONT="'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif";
+var FONT="'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif";
 var W=1080, H=1350, PAD=88;
 
 function prng(s){ var a=(s>>>0)||1; return function(){ a=(a*1664525+1013904223)>>>0; return a/4294967296; }; }

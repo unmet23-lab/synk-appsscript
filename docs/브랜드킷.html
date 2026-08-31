@@ -4,13 +4,15 @@
 <!-- 파생: docs/디자인_토큰.json · docs/캐릭터/펠트패치_0815/라이브러리.json · docs/발표물/_브랜드킷.md -->
 <!-- 로고 도형 = 위 _브랜드킷.md §3 복사 · 조립: python tools/브랜드킷조립.py — 손 편집 금지(재조립이 덮는다) -->
 <style>
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+
 /* 값은 전부 토큰 «시맨틱»에서 온다 — 어느 색을 어디 쓸지는 이 파일이 정하지 않는다. */
 :root { --paper:#FBF7F0; --ink:#2B2320; --navy2:#080605; --navy3:#575046;
   --cream:#FBF7F0; --darkmute:#C7BFB2; --line:#C7BFB2;
   --coral:#F96859; --coral3:#AE322A; --wash:#FEF0E9; --slate2:#575046; }
 * { box-sizing:border-box; margin:0 }
 body { background:var(--paper); color:var(--ink); line-height:1.6;
-  font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
+  font-family:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
 .band { background:var(--navy2); color:var(--cream); padding:56px 8% 48px; }
 .band svg { width:200px; display:block }
 .band h1 { font-size:30px; font-weight:800; margin-top:20px }
@@ -74,7 +76,7 @@ footer { padding:26px 8% 40px; font-size:12px; color:var(--slate2) }
     --룸-coral:#F96859; --룸-coral-rgb:249,104,89;
     --룸-coral3:#AE322A; --룸-coral3-rgb:174,50,42;
     --룸-ash2:#666666; --룸-ash2-rgb:102,102,102;
-    --룸-font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --룸-font:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   }
   /* ── 율 — 모든 간격이 여기서 나온다. 이름 없는 px 을 지면에 적지 않는다.
      4px 기반 ×1.5 근사 — 인접 두 단이 눈에 갈려야 «고른» 것이 된다. */
@@ -982,7 +984,7 @@ footer { padding:26px 8% 40px; font-size:12px; color:var(--slate2) }
   <tr><td>한글</td><td>SUIT Variable</td><td>본문 500 · 헤드 800</td></tr>
   <tr><td>라틴·키릴(몽골어)</td><td>Inter Tight — 스택에서 SUIT 보다 <b>앞</b></td><td>순서 불변(글리프 폴백이 3언어를 가른다) · 몽골어 병기 1.04배</td></tr>
   <tr><td>시스템 라벨·숫자</td><td>DM Mono</td><td><b>한글·키릴 금지</b>(글리프 없음 — 즉시 깨진다)</td></tr></table>
-  <div class="rulebox"><code>--synk-font: 'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;</code><br>
+  <div class="rulebox"><code>--synk-font: 'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;</code><br>
   <code>--synk-font-mono: 'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;</code></div>
 </section>
 

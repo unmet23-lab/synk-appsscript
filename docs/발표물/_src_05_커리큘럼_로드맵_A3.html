@@ -12,6 +12,8 @@
   ▶ 인쇄 — Ctrl+P → "PDF로 저장" · A3 · 가로 · 여백 "없음" · "배경 그래픽" 켜기
 -->
 <style>
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+
 /*@FONTS@*/
 @page { size: A3 landscape; margin: 0; }
 
@@ -34,7 +36,7 @@
 
 html,body{
   background:var(--paper); color:var(--navy);
-  font-family:'Inter Tight','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
+  font-family:'SYNK Bracket','Inter Tight','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
   font-weight:500;
   -webkit-print-color-adjust:exact; print-color-adjust:exact;
 }

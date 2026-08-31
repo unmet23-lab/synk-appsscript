@@ -7,12 +7,14 @@
      아래 link 는 「빌드 전 미리보기」용 — 최종 픽셀은 임베드 폰트가 결정한다(SUIT 900 포함) -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..800&family=DM+Mono:wght@300;400;500&display=swap">
 <style>
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+
 /*@FONTS@*/
 /*@SUIT900@*/
 *{margin:0;box-sizing:border-box}
 html,body{width:1200px;height:630px;overflow:hidden}
 body{background:#08090C;color:#E4E4E7;position:relative;
-  font-family:'Inter Tight','SUIT',system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif}
+  font-family:'SYNK Bracket','Inter Tight','SUIT',system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif}
 /* 시냅스 노드·링크 모티프 — 잉크의 저채도(Navy 3), 배경보다 살짝 밝게만 */
 svg.net{position:absolute;inset:0}
 .wrap{position:absolute;left:96px;bottom:88px}

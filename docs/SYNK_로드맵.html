@@ -14,6 +14,8 @@
   내부 은어·판정 대기 칩을 본문에 적지 않는다. 근거와 날짜는 결정.md 가 쥔다 — 갱신할 때도 이 어조를 지킨다.
 -->
 <style>
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+
 /* ── Loom 문서 지면 — 조립 산출물(손 편집 금지) ──────────────────────────
    통로: node tools/lib/loom.js --css 문서
    값:   docs/디자인_토큰.json (색·율·재질·부품) — 이 CSS 에 hex·px 원본은 없다
@@ -54,7 +56,7 @@
     --ash2:#666666; --ash2-rgb:102,102,102;
     --kccoolblue:#4E7CFF; --kccoolblue-rgb:78,124,255;
     --깃:22px; --깃속:12px;                /* 동심원 — 바깥 = 안쪽 + 패딩 */
-    --font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --font:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   }
   *{box-sizing:border-box;}
   html{scroll-padding-top:96px;background:var(--graphite);color-scheme:dark;}

@@ -13,6 +13,8 @@
   ▶ 도형은 <defs> 에 한 번만 정의하고 <use> 로 꺼낸다 — 후보시트에서 복붙이 락업을 조용히 깨뜨렸다.
 -->
 <style>
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+
 :root{
   --paper:#FBF7EE; --cream:#F6F1E8; --cream2:#EFE7D7; --cream3:#E7DDC7;
   --navy:#1A2340; --navy2:#0F1730; --navy3:#2A3358; --ink:#171820;
@@ -23,7 +25,7 @@
 *{ box-sizing:border-box; margin:0; padding:0; }
 body{
   background:var(--cream2); color:var(--navy); padding:10mm 8mm 24mm;
-  font-family:'Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic',sans-serif; font-weight:500;
+  font-family:'SYNK Bracket','Inter Tight','SUIT Variable','SUIT',system-ui,'Malgun Gothic',sans-serif; font-weight:500;
   -webkit-font-smoothing:antialiased;
 }
 .wrap{ max-width:1220px; margin:0 auto; }

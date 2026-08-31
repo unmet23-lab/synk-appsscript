@@ -118,11 +118,13 @@
 정본 = [브랜드 폰트 정본](docs/브랜드_폰트_정본.md) (SUIT Variable · Inter Tight · DM Mono — 유호님 확정, 구 지정 폐기).
 
 ```css
---synk-font:      'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+--synk-font:      'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 --synk-font-mono: 'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
 ```
 
 - **Inter Tight가 SUIT보다 앞** — 폴백이 글리프 단위라 이 순서가 3언어(라틴·키릴·한글)를 자동 분기한다. 순서를 바꾸지 말 것.
+- **`SYNK Bracket` 은 낫표 「 」 두 글자만 잡는 별칭**(넷째 폰트가 아니다 · 유호 확정 08-31). §1 「타이포는 안 건드린다」의 **유일한 예외**이고, 건드린 것은 서체가 아니라 **두 글자의 폴백 순서**다. 까닭·실측은 [브랜드 폰트 정본](docs/브랜드_폰트_정본.md) — 낫표 0.396em→0.571em, 같은 지면 라틴줄 변화 **0px**.
 - 🚫 **DM Mono에 한글·키릴 금지**(글리프 없음 — 즉시 깨진다). `₮`·`№`·키릴은 **Inter Tight만**.
 - 웨이트: 본문 500 · 헤드 800 · 태그라인 SUIT 900 / Inter Tight 500 소문자. 트래킹: 산세리프 음수 · 모노 양수.
 - 몽골어가 한국어와 대등한 자리는 **1.04배** 광학 보정(`--synk-mn-scale`).

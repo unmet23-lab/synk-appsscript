@@ -1,5 +1,7 @@
 /* 자동 생성 — 손으로 고치지 말 것. 원천 = docs/디자인_토큰.json · 빌드 = node tools/토큰빌드.js */
 /* 조항(코랄 글자 금지·순백 금지 등)의 정본 = DESIGN.md·디자인_컨셉_정본_v1.md — 변수는 값만 나른다. */
+/* 낫표 「 」 교정 — 까닭은 docs/디자인_토큰.json 「서체.낫표교정_까닭」이 쥔다(유호 확정 08-31). */
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
 :root{
   --synk-coral-soft:#FBB7A3; /* 코랄 램프 1(보풀 빛) — 알약·여린 면 */
   --synk-coral-2:#FD9C87; /* 코랄 램프 2(윗면) — 신호 보조 */
@@ -63,7 +65,7 @@
   --synk-보상_글자:#7E5A10; /* = Butter Deep */
   --synk-기념_면:#E05C97; /* = Pop */
   --synk-기념_글자:#99295D; /* = Pop Deep */
-  --synk-font:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --synk-font:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   --synk-font-mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
   --synk-mn-scale:1.04;
 }
