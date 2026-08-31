@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>어제의나 오늘 수 — 색 판정 재료 (D3-8)</title>
+<style>
+  /* 앱 실렌더에 최대한 붙인 목업 — 값은 전부 talk src/테마.js 실측(09-01). */
+  body { margin: 0; background: #080605; color: #FBF7F0; font-family: "Pretendard", "Apple SD Gothic Neo", sans-serif; padding: 40px 24px; }
+  h1 { font-size: 20px; margin: 0 0 6px; }
+  p.머리 { color: rgba(251,247,240,0.62); font-size: 13px; line-height: 1.6; margin: 0 0 28px; }
+  .판 { display: flex; gap: 24px; flex-wrap: wrap; }
+  .안 { width: 320px; }
+  .이름표 { font-size: 12px; color: rgba(251,247,240,0.62); margin: 0 0 8px; letter-spacing: .06em; }
+  .카드 { background: #2B2320; border-radius: 20px; padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+  .줄 { display: flex; align-items: baseline; gap: 12px; }
+  .이름 { flex: 1; font-size: 16px; color: rgba(251,247,240,0.72); }
+  .칸이름 { width: 52px; text-align: right; font-size: 13px; color: rgba(251,247,240,0.62); }
+  .수 { width: 52px; text-align: right; font-family: "JetBrains Mono", "DM Mono", monospace; font-size: 20px; color: rgba(251,247,240,0.72); }
+  .수_잉크 { color: #FBF7F0; }
+  .수_성장 { color: #D3E8BE; }
+  .고리 { font-size: 12px; line-height: 1.6; color: rgba(251,247,240,0.62); }
+  .고리_성장 { color: #D3E8BE; }
+  .주 { margin-top: 32px; font-size: 12px; color: rgba(251,247,240,0.62); line-height: 1.7; max-width: 640px; }
+</style>
+</head>
+<body>
+<h1>「어제의 나」 오늘 수 — 두 판 (D3-8 판정 재료)</h1>
+<p class="머리">늘어난 오늘 수(그리고 고리줄)를 무슨 색으로 밝힐까 — 색·미학 채택은 유호님 눈이 판정 축이라, 값 교체 없이 두 판을 나란히 구웠습니다. 픽 주시면 스타일 두 곳만 갈아 끼웁니다.</p>
+<div class="판">
+  <div class="안">
+    <p class="이름표">A · 현행 — 잉크(Paper)로 밝힘</p>
+    <div class="카드">
+      <div class="줄"><span class="이름">오늘 말한 문장</span><span class="칸이름">어제</span><span class="수">3</span></div>
+      <div class="줄"><span class="이름">&nbsp;</span><span class="칸이름">오늘</span><span class="수 수_잉크">5</span></div>
+      <p class="고리">어제 받은 교정을 오늘 다시 말했어요.</p>
+    </div>
+  </div>
+  <div class="안">
+    <p class="이름표">B · 후보 — 성장(Meadow Soft)으로 밝힘</p>
+    <div class="카드">
+      <div class="줄"><span class="이름">오늘 말한 문장</span><span class="칸이름">어제</span><span class="수">3</span></div>
+      <div class="줄"><span class="이름">&nbsp;</span><span class="칸이름">오늘</span><span class="수 수_성장">5</span></div>
+      <p class="고리 고리_성장">어제 받은 교정을 오늘 다시 말했어요.</p>
+    </div>
+  </div>
+</div>
+<p class="주">
+· A(현행)는 「오른 것 = 잉크 100%」 — 이번 물결 D3-7 이 회고에도 같은 자를 썼습니다(밝기 축 하나).<br>
+· B(후보)는 킷의 성장 표시색(Meadow Soft #D3E8BE · 바탕 위 대비 15.46) — 채택하면 앱에서 «성장 = 이 색» 축이 처음 섭니다. 회고의 오른 줄도 같은 날 같은 색으로 갈지 함께 정하시면 자가 하나가 됩니다.<br>
+· 파일: talk src/어제의나.js 수_오늘·고리 두 곳(+ 회고 동반 시 회고화면 줄_오름 한 곳).
+</p>
+</body>
+</html>
