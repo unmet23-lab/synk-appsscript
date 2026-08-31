@@ -1990,7 +1990,11 @@ const SCENE_LADDER_ = [
   [1, 1, 0], [2, 3, 0], [3, 7, 0], [4, 14, 2], [5, 25, 5], [6, 41, 9], [7, 63, 14],
   [8, 92, 20], [9, 129, 27], [10, 175, 35], [11, 231, 44], [12, 300, 54], [13, 380, 65]
 ];
-// 13 이후: 날 간격은 직전 간격+10, 말 문턱은 +12·+13…(뱅크 72 상한) — 문턱은 끝나지 않는다(설계 §2).
+// 13 이후: 날 간격은 직전 간격+10, 말 문턱은 +12·+13…(뱅크 크기가 상한) — 문턱은 끝나지 않는다(설계 §2).
+// 🔑 상한을 «여기 적지 않는다» — 화면 분모와 «같은 자»(L3082 `bank: CONTENT_EXPECT.grammar`)를 쓴다.
+//   두 자로 재면 학생이 「맞힌 말 91/91 인데 다음 장면이 안 열린다」를 만난다(같은 판정을 두 자로 재면 어긋난다).
+//   [08-31] 여기 손으로 적혀 있던 72 가 뱅크 72→91 때 안 따라와, 장면 14부터 말 문턱이 72 에 얼어 있었다
+//   (설계 §2 「문턱은 끝나지 않는다」가 말 축에서만 깨져 있었다 — 뱅크가 자랄 때마다 재발하던 자리).
 function sceneLadderAt_(k) { // k = 1부터. 표 밖은 규칙으로 잇는다
   if (k <= SCENE_LADDER_.length) return SCENE_LADDER_[k - 1];
   let prev = SCENE_LADDER_[SCENE_LADDER_.length - 1].slice();
@@ -1998,7 +2002,7 @@ function sceneLadderAt_(k) { // k = 1부터. 표 밖은 규칙으로 잇는다
   let mGap = 12;
   for (let i = SCENE_LADDER_.length + 1; i <= k; i++) {
     gap += 10;
-    prev = [i, prev[1] + gap, Math.min(prev[2] + mGap, 72)];
+    prev = [i, prev[1] + gap, Math.min(prev[2] + mGap, CONTENT_EXPECT.grammar)];
     mGap++;
   }
   return prev;

@@ -1052,7 +1052,7 @@ function bootstrapSynk() {
     ['브레인팁 30', setupBrainTips], ['학부모 라벨', setupParentLabels], ['크루 응원', setupTeacherCheers],
     ['연료 미션', setupFuelMissions], ['칭호 설화', setupTitleLore], ['워밍업 퀴즈', setupQuiz],
     ['숙제 210', setupHomework], ['학업 로그', setupAcademic], // [v9.18] 학업 성장 축 시트 재건 편입
-    ['문법 뱅크 72', setupGrammarBank], // [v9.36] 진화 게이트 문법 커리큘럼(contents type='grammar') 재건
+    ['문법 뱅크 91', setupGrammarBank], // [v9.36] 문법 커리큘럼(contents type='grammar') 재건 // [08-31] 72→91 요목 Lv1~5 전건 편입 — 이 수는 재건 로그에 «보이는» 이름이다
     ['수업 입력 구조', setupClassroomInputs], // [v9.38] weekly_topics F~L 승격 + attendance_batch·mastery_log·student_errors·teacher_checkins 정규화
     ['온보딩 카드', setupOnboarding] // [v9.38] 역할별 홈 안내(재건 목록 누락분 보강)
   ];
