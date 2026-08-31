@@ -115,7 +115,7 @@
  * 32. 숙제 뱅크 요일당 30개(총 210) — 30주 무반복 로테이션
  * 33. 평일반/주말반 숙제 분리: 평일 키는 월~금만 갱신(금 숙제가 주말 유지),
  *     토·일은 주말의숙제* 키만 갱신 → 평일반에 주말 숙제 미발행 + 덮어쓰기 버그 해결
- * 34. profiles AJ열 = 반유형 (Glide ITE로 숙제 키 자동 선택)
+ * 34. profiles AJ열 = 반유형 (Glide ITE로 숙제 키 자동 선택) — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * 35. checkConsultSync — 상담시트↔profiles↔폼 연동 읽기 전용 진단 (메일 보고)
  *
  * [v5.9 — 이름 자유화 · 업적 21종 · 숙제 초급 다듬기]
@@ -129,7 +129,7 @@
  *
  * [v6.1 — 칭호 착용 시스템 지원]
  * 41. setupTitleLore E열에 등급 라벨 — 학생이 고른 착용 칭호(profiles AK열, Glide 기록)의
- *     등급 Pill·로어를 Relation 하나로 표시. AK열은 스크립트가 건드리지 않음(사용자 선택 보존).
+ *     등급 Pill·로어를 Relation 하나로 표시. AK열은 스크립트가 건드리지 않음(사용자 선택 보존). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *
  * [v6.2 — 시스템 워치독]
  * 42. systemWatchdog(월 7시): 트리거 실종·로테이션 멈춤·셋업 미실행·데이터 무결성·번역 적체를
@@ -145,7 +145,7 @@
  *
  * [v6.5 — 사용자 기록 열 정비]
  * 45. calcAll이 AK(착용칭호)·AL(리포트확인월)·AO(몬스터이름) 헤더 자동 보장
- *     — 값은 Glide(학생·학부모)만 기록, 스크립트 불가침. 진화 임박 배너는 T열(진행률) Glide ITE로.
+ *     — 값은 Glide(학생·학부모)만 기록, 스크립트 불가침. 진화 임박 배너는 T열(진행률) Glide ITE로. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *
  * [v6.6 — 애정 장치 시트 반영]
  * 46. 지난달의 전당: 월초 리그 기록 시 app_state '지난달의전당' 배너 문구 자동 세팅
@@ -203,7 +203,7 @@
  * [v7.4 — MVP 하루 1명 가드 · 학부모 알림]
  * 72. mvpGuard(22시): 같은 날·같은 반 MVP 2건+ → 최초 1건만 유효, 초과분 자동 정정(-10) + 원장 경고.
  *     정정은 성장(P)·잔액(AQ)·레이드 데미지·스타왕 카운트까지 전부 대칭으로 되돌림
- * 73. Glide 사전 차단(1차): 오늘 우리 반에 MVP가 있으면 버튼 자동 숨김 — 레시피 §12
+ * 73. Glide 사전 차단(1차): 오늘 우리 반에 MVP가 있으면 버튼 자동 숨김 — 레시피 §12 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * 74. notifyMvpParents(22시): 유효 MVP만 학부모 한·몽 메일 (PARENT_MAIL_MVP=true, 반당 하루 1건)
  *
  * [v7.5 — 전 지급 경로 일일 한도 · 재실행 방어 총점검]
@@ -225,7 +225,7 @@
  * [v7.7 — 왕관 코너 · 무포인트 경보(7일) · 몬스터 도감/교체 · 왕관 컬렉션]
  * 83. 일일 전투 리포트 끝에 '👑 오늘의 왕관 — MVP·시냅스 수상자' 자동(순계 기준, 추가 행 0)
  * 84. QUIET_DAYS=7 무포인트 경보: AV열 마지막포인트일 → Y열 이탈위험 '중(N일 무포인트)' + 주간
- *     리포트 🔕절(기록 없음 포함) + Glide 배너(레시피 §16)
+ *     리포트 🔕절(기록 없음 포함) + Glide 배너(레시피 §16) — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * 85. AW·AX 왕관 컬렉션(MVP·시냅스 누적, checkAchievements가 매일 갱신) — 여정 탭 표시
  *     (몬스터 도감/교체는 v7.8에서 제거 — 진화 단계 S열 단일 체계 유지)
  *
@@ -236,7 +236,7 @@
  * 90. 시즌 보스 12종(몽골 계절 반영, 월별 고정) — setupBosses 재실행, 워치독 boss 12
  * 91. 월초 🏆 왕관 시상식 준비 메일: 칭호별 수상자 + 상장 문구(로어) — 실물 왕관 세리머니용
  * 92. teacher_stats 7·8열 '이번달왕관·왕관편중%' — 왕관이 한 아이에게 쏠리는지 공정성 감지
- * 93. hall_of_fame 시트(졸업생 명예의 전당) — 원장이 Glide 폼으로 TOPIK 합격자 등재
+ * 93. hall_of_fame 시트(졸업생 명예의 전당) — 원장이 Glide 폼으로 TOPIK 합격자 등재 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *
  * [v7.9 — 빼기 패치: 조잡 제거 · 알림 다이어트 · 주간 다이제스트]
  * 94. 명언·브레인팁 카드 폐지(app_state 게시 중단) — 몬스터·레이드 코어에서 시선 분산 제거
@@ -252,7 +252,7 @@
  * 101. hw_batch: 강사가 완료 학생 멀티 선택 → 저장 1탭(수업당 1업데이트, 학생당→수업당 ~85% 절감).
  *      expandHwBatch(22시)가 학생별 +10 전개 — 당일 레이드·스토리·왕관 집계에 전부 포함.
  *      개별 숙제 버튼 병행 가능(같은 날 지급자 자동 스킵) · '전개완료' 마킹 멱등
- * 102. Glide 업데이트 규칙(공식): 앱→시트 = 건당 1 / 시트→앱 sync = 변경 묶음당 1 / 변경 없으면 0
+ * 102. Glide 업데이트 규칙(공식): 앱→시트 = 건당 1 / 시트→앱 sync = 변경 묶음당 1 / 변경 없으면 0 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * 103. 스토어 20종 — 오늘의 DJ권·자리 지정권 삭제(원장 결정). 주간 소비는 간식 티어가 담당
  *
  * [v8.1 — 오늘의 출결 보드 (분 단위 한눈 뷰)]
@@ -300,19 +300,19 @@
  *      결석자로도 집계 → 미등원 메일 중복). scheduleMap과 동일 원칙으로 수리: 번호가 유일할 때만 폴백.
  *
  * [v8.9 — 시냅스 +3 → +10 상향 (경제 조정)]
- * 119. Glide 버튼 값만 변경 — 스크립트는 금액 하드코딩 0(정정=실지급액·사유=문자열 매칭)이라 자동 적응.
+ * 119. Glide 버튼 값만 변경 — 스크립트는 금액 하드코딩 0(정정=실지급액·사유=문자열 매칭)이라 자동 적응. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *      기존 +3 이력과 신규 +10 혼재 안전(가드가 각 행의 실제 pts를 되돌림). 문서·라벨 전수 갱신.
  *
  * [v9.0 — 만족도 팩 (진화 연출 · 생일 브리핑 · 칭찬 태그)]
  * 120. ①진화일 BB(54): calcAll이 단계 '상승'만 감지해 기록(신규생 첫 계산·하락 제외) → Glide 홈
  *      최상단 3일 축하 카드 ②강사 브리핑에 오늘 생일자 한 줄(교실 축하 유도) ③point_logs H(8)
- *      칭찬 태그(발음↑/열정/친구도움/집중력) → 다이제스트 '크루의 눈' 한/몽 병기. 스크립트는 H열 무해.
+ *      칭찬 태그(발음↑/열정/친구도움/집중력) → 다이제스트 '크루의 눈' 한/몽 병기. 스크립트는 H열 무해. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *
  * [v9.1 — 반 대항 리그 (자동 제안 + 원장 오버라이드)]
  * 121. 월요일 raidMonday가 학생≥1 반들을 인원순 인접 페어로 league_pairs에 '제안'(홀수=부전 휴식).
  *      원장은 Glide에서 반A/반B만 바꾸면 수동 매칭(행 기준 정산이라 상태 무관). 일요일 밤
  *      leagueSettle_: 판정 = class_stats 8열 '주간평균'(1인당 — 20명 vs 18명 인원차 공정 흡수),
- *      승리 반 전원 +5P('리그승리') + 자동 공지(몽골어 스위프 번역). 결과 기입 = 멱등 가드.
+ *      승리 반 전원 +5P('리그승리') + 자동 공지(몽골어 스위프 번역). 결과 기입 = 멱등 가드. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *
  * [v9.2 — 리그 서사: 양 반 모두의 스토리 ('패배' 없는 리그)]
  * 122. 정산 시 raid_story에 페어당 2행 — 승자: '👑 이번 주 리듬왕'(+방어전 예고로 자만 방지),
@@ -350,7 +350,7 @@
  * [v9.8 — 스토리북 v4: 몰입 우선 리라이팅]
  * 128. 문체 전면 교체: -했다체 서사, 감정은 설명 대신 장면으로, 본문 이모지 0·지문 느낌표 억제,
  *      억지 증량분 삭제(분량 자유·밀도 검증 폐기). 교육 장치는 전부 배지 열(G)로 격리 — 화당 하나,
- *      Glide에서 본문 카드 하단에 작게 렌더. 감정 관용구는 화당 최대 1회 *기울임* 마크다운(Rich Text).
+ *      Glide에서 본문 카드 하단에 작게 렌더. 감정 관용구는 화당 최대 1회 *기울임* 마크다운(Rich Text). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * 129. 캐스팅 5역: 주연 1(월간 최다 활약 — 전 이야기의 시점 축, 등장 화 6+), 조연 2, 단역 1~2(왕관왕
  *      중 미중복자), 엑스트라(반명·크루들). 진화 장면은 주·조연 중 실제 진화자에게 자동 배정.
  *
@@ -366,7 +366,7 @@
  *      image-to-video 모범: 이미지가 시각을, 프롬프트가 움직임을). 홀짝 아크별 12씬 2세트.
  *
  * [v9.11 — 🖼️ 몬스터 스킨 + 액자 시스템 (표현과 지위의 분리)]
- * 132. BC(55)=대표몬스터: 도감에서 학생이 선택(Glide Set Column — 도달 단계만 버튼 노출).
+ * 132. BC(55)=대표몬스터: 도감에서 학생이 선택(Glide Set Column — 도달 단계만 버튼 노출). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *      calcAll이 임계 검증 — 미도달 선택은 자동 무효화. BD(56)=액자HTML: 스킨 이미지 × AP 액자
  *      (FRAME_CSS 7종: 새싹→스파크→링크→서킷→불씨→빛→왕관) 합성 — Glide 홈 카드 = Rich Text 1개.
  *      스킨은 취향(가로 선택), 액자는 성장(세로 승급·다운그레이드 없음). 진행 게이지·수치는 실단계 유지.
@@ -398,7 +398,7 @@
  * 136. class_stats 9~12열(반 정렬 키 동일·writeIfChanged): ⑨수업전브리핑(🎂 오늘 생일 · 📵 어제
  *      결석(반에 어제 출석자 있을 때만 — 휴강 자동 무시) · 👩‍🏫 사각 · ⚡ 진화 임박 '오늘 왕관이면
  *      진화! 남은 nP') ⑩격파찬스(이번 주 raid 잔량 ≤ 인원×10 → '전원 숙제 하나면 끝', 아니면 공란
- *      — Glide visibility 숨김) ⑪오늘체크(숙제/MVP/시냅스/배운내용 ✅⏳ — 오늘 pl·topics 실데이터)
+ *      — Glide visibility 숨김) ⑪오늘체크(숙제/MVP/시냅스/배운내용 ✅⏳ — 오늘 pl·topics 실데이터) — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *      ⑫왕관밸런스(이번 달 수혜 k/n + 미수혜 명단, 전원 시 축하). 잠복버그 수리: monsterOf.next는
  *      객체 — 진화 임박 판정을 mon.rem으로(v9.12 한마디의 임박 대사도 이 수리로 비로소 발화).
  *      공유 집계 변수는 calcAll 최상단 선언(스코프 승격) · todayYmd0 TDZ 수리.
@@ -457,7 +457,7 @@
  * 146. ② 실력 성장 카드: profiles 학업추세HTML(BW 75) — 급수 + 모의 최근5 미니막대 + 증감(academicTrendHtml_,
  *      calcAcademic_ 편승). 학생 홈·학부모 뷰 Rich Text 바인딩 → "게임 재미가 실제 실력으로" 가시화.
  *      ③ 결정적 순간 알림: profiles 오늘의알림(BX 76) — 하루짜리 이벤트만(왕관/진화/생일), 없으면 공란.
- *      [최적화] 진화임박 분기 제거 = 시트 churn·푸시 피로↓(임박 넛지는 BF 담당). Glide 배너/푸시 훅.
+ *      [최적화] 진화임박 분기 제거 = 시트 churn·푸시 피로↓(임박 넛지는 BF 담당). Glide 배너/푸시 훅. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *      ① 강사 1탭은 Glide 레이아웃(class_stats 9~12열) — 코드 변경 없음.
  * 147. 📖 나의 여정(BY 77): 개인 스토리 센터피스 — 몬스터 7단계 여정(현재 강조) + 개인 마일스톤
  *      (최장연속·첫왕관·진화일·보스참여·최고월간·총누적) + 실력(급수·모의) + 다음 진화까지. myJourneyHtml_,
@@ -540,13 +540,13 @@
  *      calcAll 21~23시 주석의 '(applyLowUpdateMode의 22시)' 참조를 'resetAllTriggers의 22시 nightJobs'로 정정.
  *      healthCheck 껍데기는 수동/구트리거 호환용으로 존치(결정).
  * 159. [추가·철학1 실현] 🌟 드림 한 줄 — profiles 드림한줄(CB / 80) 신규 열. 학생이 Glide Set Column으로 직접
- *      쓰는 사용자 소유 열(calcAll·syncProfiles 어떤 배치도 데이터 미기입, 헤더만 보장 — AK 착용칭호와 동일).
+ *      쓰는 사용자 소유 열(calcAll·syncProfiles 어떤 배치도 데이터 미기입, 헤더만 보장 — AK 착용칭호와 동일). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *      원장/강사 전용 핵심비전(BA / 53, 설계노트 115 잠금)과 별개의 학생 자기선언 열. myJourneyHtml_(나의여정
  *      BY / 77 카드)이 드림한줄을 카드 최상단에 '🌟 나의 목표: {값}'(이스케이프)로, 비면 '🌟 나의 목표를
  *      적어보세요' 유도 문구. Glide 입력·확인 절차 = 지시서 1-7.
  * 160. [추가·철학3·4 최소구현] crew_projects 시트 신설(시즌·반·프로젝트명·한줄소개·결과물링크·사진URL·공개일·
  *      참여크루·비고) — 시즌 프로젝트 포트폴리오. bootstrapSynk 재건목록에만 추가, 수동 기입 전용
- *      (hall_of_fame 패턴 · 트리거·배치 연동 없음). Glide 탭 바인딩 절차 = 지시서 2-5.
+ *      (hall_of_fame 패턴 · 트리거·배치 연동 없음). Glide 탭 바인딩 절차 = 지시서 2-5. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *
  * [v9.30 — 안전 개선 1차: 부분 실패·재건 신뢰성]
  * 161. sendMorningDigest와 adminMail이 같은 ScriptLock으로 브리핑큐를 보호. 메일 성공 뒤에만 발송한 큐를 제거해
@@ -564,7 +564,7 @@
  *      유형(monster·store·boss·worldboss)은 0개일 때만 자동 재건 — 부분 불일치 자동 재설치가 시트 커스텀
  *      (진짜 이미지 URL·가격 편집)을 코드 기본값으로 소거하는 미래 경로 차단(경고로 강등).
  * 164. calcAll 콜드스타트 시딩 — '오늘의숙제'·'주말의숙제'·'오늘의퀴즈'·'오늘의팁' 키 부재 시 21시/기준일
- *      게이트와 무관하게 즉시 게시(멱등). preflight 1회로 Glide 바인딩 대상 키가 당일 전부 생긴다.
+ *      게이트와 무관하게 즉시 게시(멱등). preflight 1회로 Glide 바인딩 대상 키가 당일 전부 생긴다. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * 165. notices 스키마 드리프트 실버그 수정 — 라이브 구 스키마(notice_id·title_ko·body_ko…)에서 addNotice·
  *      translateNotices_가 title/body를 못 찾아 1·2열(notice_id·title_ko)에 오기록·오번역하던 것을 title_ko/
  *      body_ko 후보 추가로 해소. leagueSettle_·worldRaidMonthly_의 notices 직접 쓰기(1~3열 강제)도 addNotice
@@ -578,7 +578,7 @@
  *      낡던 것 → 주간) ③dailyGuard에 잔액 음수 학생 야간 감지(서명 dedup — 스토어 잔액 조건 누락·조작 조기 발각).
  * 168. GPS 출석(유호님 확정) 코드 지원 — attendance A열 id 빈칸 자동 채번(ATG+날짜+sid, calcAll 편승).
  *      학생 셀프 GPS 출석(Glide Form→attendance Add Row)은 기존 파이프라인과 완전 호환(전 소비처가 student_id·
- *      date·method만 읽음 · 중복 출석은 Set 기반 계산이라 무해 · 강사 일괄(attendance_batch)과 병존 dedup 기존재).
+ *      date·method만 읽음 · 중복 출석은 Set 기반 계산이라 무해 · 강사 일괄(attendance_batch)과 병존 dedup 기존재). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *      쿼터: 학생 1인당 수업일 1업데이트 — 재적 ~20명까지 Maker 500 안, 초과 시 Business 전환(가이드 §6-0).
  * 169. 2027 팔레트 시프트(44곳) — WGSN·Coloro 2027 올해의 컬러 Luminous Blue(테마 Interconnectedness =
  *      시냅스 세계관 정합)를 메인 축으로 썼다(구 인디고 체계 — 역사 기록). [v9.125] 브랜드 키트 「v10 Crew Dossier」로 전면 교체:
@@ -600,15 +600,15 @@
  *      시프트) · syncToNotion_은 DEMO- 스킵(실 크루 DB 오염 방지).
  * 171. 도감 잠금 — buildDexHtml_(CE 83 도감HTML): 도달 몬스터만 공개(현재 단계 글로우), 미도달은 🌫️ ???+필요
  *      P만. 구 조립에서 도감 전체(이미지·스토리)가 노출되던 문제의 코드 측 봉인 — Glide Collection 필터
- *      (threshold ≤ 누적잔액)와 이중. calcAll 편승·writeIfChanged.
+ *      (threshold ≤ 누적잔액)와 이중. calcAll 편승·writeIfChanged. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *
  * [v9.43 — 🫁 살아있는 몬스터 + 폼 자동화 완결 (유호님 지시: 숨쉬는 디테일·몰입 상세·사소함의 아름다움)]
  * 172. CSS 호흡 애니메이션(CARD_ANIM/ANIM_BREATH/ANIM_BOSS) — 홈 액자·도감 현재 칸·여정 스트립 현재 썸네일의
  *      몬스터가 3.2s 주기로 숨쉰다(transform만·성능 안전). Glide Rich Text(WebView) <style> 렌더 — 미지원
- *      기기는 정적 폴백(절대 깨지지 않음)·prefers-reduced-motion 존중. "전부 움직이면 조잡" — 현재 파트너만.
+ *      기기는 정적 폴백(절대 깨지지 않음)·prefers-reduced-motion 존중. "전부 움직이면 조잡" — 현재 파트너만. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * 173. buildMonsterDetailCards() — contents '상세카드' 열(langColOf_·Row ID 회피): 몬스터=그 단계 시그니처 색
  *      (FRAME_CSS)으로 물들인 히어로 카드(숨쉬는 150px+스토리+진화 조건), 보스·대군주=다크 위압 카드(등장 대사
- *      이탤릭·격파 대사는 스포일러 숨김). preflight 편입·멱등(변경분만 쓰기). Glide 도감/보스 상세 Rich Text 소스.
+ *      이탤릭·격파 대사는 스포일러 숨김). preflight 편입·멱등(변경분만 쓰기). Glide 도감/보스 상세 Rich Text 소스. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * 174. app_state '이달의보스HTML' — 월 로테이션 보스 실물 카드(숨쉬는 이미지+등장 대사) 매일 보장(동일값 무기록).
  *      학생 소식탭·강사 수업준비탭 바인딩용 — 보스가 텍스트가 아니라 "존재"가 된다.
  * 175. [자동화] sweepLeadForm_ — 광고 리드폼 응답(리드폼_응답)을 10분 스위프가 leads로 자동 편입(수기 이관 폐지,
@@ -669,13 +669,13 @@
  *      학부모 행(CQ95~CW101): parent_of 자녀의 이름·축하배너·주간리포트·출석달력·대화카드·학업추세·액자.
  *      → Glide 조립에서 Query·Single Value·If-Then-Else·Split·Relation·Lookup 약 38개가 전부 불필요해진다
  *        (조립 UI 조작 = 프리즈·실수의 최대 원천이라는 2026-07-20 실측 보고에 대한 구조적 대응).
- *      비용 0: 쓰기는 writeIfChanged 1블록, Glide sync는 "변경 묶음당 1"(docs/glide_업데이트_실측설계.md §1).
+ *      비용 0: 쓰기는 writeIfChanged 1블록, Glide sync는 "변경 묶음당 1"(docs/glide_업데이트_실측설계.md §1). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *
  * [v9.49 — 🤖 AI 숙제 첨삭(비동기) + 폼 출석 이관 (2026-07-21 유호 확정)]
  * 186. AI 숙제 첨삭 — 숙제폼(createHwForm) 제출 → 밤 22시 aiFeedbackBatch_가 Claude API(구조화 출력)로
  *      4칸 카드(고친문장·오늘의포인트MN·칭찬·다음미션) 생성 → [v9.63] 품질 게이트(fbQualityGate_) 통과분
  *      즉시 '노출'(무인 발행) · 미달분 '격리:사유'(학생 미노출, 관리자 메일 통보) →
- *      학생 '확인했어요'(J열·Glide 전용) → sweepFeedbackAck_(10분)가 +5P('첨삭확인'·1일 1회·시스템 지급).
+ *      학생 '확인했어요'(J열·Glide 전용) → sweepFeedbackAck_(10분)가 +5P('첨삭확인'·1일 1회·시스템 지급). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *      키=Script Properties CLAUDE_API_KEY(없으면 전체 스킵). 실패 행부터 포인터 유지 → 다음 밤 재시도.
  * 187. 폼 출석 — 출석폼(createAttendanceForm) 제출 → sweepAttendanceForm_(10분)가 attendance로 전개
  *      (method='출석(폼)'). 앱 출석의 월 ~600 update 소비를 0으로. 알림·보드·미등원·달력은 채널 무관 동일.
@@ -734,7 +734,7 @@
  *      포인터는 메일 전 마감) + 🧩 메모 폼 버튼 URL(DM117·DN118). 켜기 큐(preflight 폼 감시)에 학업폼URL 편입.
  * 197. 출퇴근 중복 방어 — 오늘출근·오늘퇴근(DK115·DL116, todayBoard_ 10분 갱신·강사 행만·hhmmOf_ 정규화 비교·
  *      텍스트 서식 고정 = 1899 Date 되읽힘 재기입 루프 차단(리뷰 B2, v9.68 계급)) = Glide 출퇴근 버튼 Visibility
- *      소스. checkoutCheerMail_ 당일 1회/강사 가드(발송 성공분만 마킹·쿼터 소진은 중단해 재시도·어제 키 선청소).
+ *      소스. checkoutCheerMail_ 당일 1회/강사 가드(발송 성공분만 마킹·쿼터 소진은 중단해 재시도·어제 키 선청소). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * 198. 학부모 접점 '몬스터' → '성장 파트너(хамтрагч)' 6곳: 출석달력 캡션·진화 메일·축하배너·대화카드(PARENT_Q)·
  *      3개월 편지·웰컴 스토리. 학생 세계관(도감·한마디·여정)은 유지 — 전면 개명은 유호 결정 항목.
  *      잔여 1곳 = 리포트카드 Slides 템플릿 {{몬스터단계}} 라벨(코드 밖 문서 — 유호 몫).
@@ -907,7 +907,7 @@ const AI_DAILY_BATCH_SIZE = 15;  // [v9.50] 한 API 호출에 묶는 학생 수(
 const WORLD_RAID_ON = false;  // 월드레이드(월간 전교 보스) — 같은 사유. 주간 레이드(협동·연료미션)는 유지
 const STORYBOOK_ON = false;   // 월간 스토리북(synk_stories) — 읽기 노출이나 로그 0. 월간 카드(synk_cards)는 유지(학부모 기념물·A4 인쇄)
 const STORY_AI_ON = false;    // 웰컴 스토리·미래편지의 **AI 호출만** 끈다(기능은 템플릿 폴백으로 유지 — 학부모 메일 채널이라 폐지 아님)
-/* 학생 카드 off — 계산 산출물만 비우고 **열은 보존**한다(Glide 바인딩·조립가이드가 열 위치를 참조).
+/* 학생 카드 off — 계산 산출물만 비우고 **열은 보존**한다(Glide 바인딩·조립가이드가 열 위치를 참조). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * 남기는 것: 액자BD·운세BE·몬스터한마디BF·주간리포트BL·학부모 3종(BM·BN·BW)·오늘의알림BX·나의여정BY·목표진행BZ·도감·출석달력.
  * ⚠ 사전 집계 자체는 못 끈다 — records{p14·pPrev14}는 리텐션신호(BK)·목표진행(BZ)이 함께 쓴다(공유 재료). */
 const CARD_OFF = { 기록실: true, 플레이스타일: true, 시냅스케미: true }; // [08-27] 매치업프리뷰 항목 제거 — 리그 폐지로 «되살릴 것»이 없어졌다
@@ -937,7 +937,7 @@ const PT = {
   재작성: 3,      // [v9.147] 신설 · 주 1회 상한(재작성포인트_ 사유 '재작성')
   퀴즈응답: 1,    // [v9.147] 신설 · 1일 1회 상한(사유 '퀴즈응답') · 정답 무관
   인정: 5,        // [08-27] 구 키 「왕관」 — 도전·성장 공통 5P. 시트 «사유» 키가 아니라 코드 상수라 개명이 안전하다(실측: point_logs 사유 정본은 '오늘의 도전'·'오늘의 성장' — 엔진_운영배치:2241). Glide 는 08-05 폐기라 버튼 계약도 죽었다
-  칭찬: 2,        // [v9.83] 3→2. ⚠ 실지급은 Glide Add row 버튼 4종이라 여기 값은 문서·시뮬용 — Glide도 함께 2로
+  칭찬: 2,        // [v9.83] 3→2. ⚠ 실지급은 Glide Add row 버튼 4종이라 여기 값은 문서·시뮬용 — Glide도 함께 2로 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
   레이드: 10,     // [v9.83] 20→10. 주 1회 반 전원
   월드: 5,        // [v9.83] 10→5. 월 1회 격파 시 전교
   개근: 15,       // [v9.83] 30→15 · [08-27] 구 키 「개근왕」
@@ -1548,7 +1548,7 @@ const PARENT_Q = [
 function hashPick_(arr, seedStr) { let h = 0; for (let i = 0; i < seedStr.length; i++) h = (h * 31 + seedStr.charCodeAt(i)) % 100000; return arr[h % arr.length]; }
 
 // [v9.40] 카드 타이포 토큰 — 전 HTML 카드 루트에 삽입되는 공통 폰트 스택. Glide Rich Text는 WebView라
-//   font-family 미지정 시 플랫폼 기본 폰트(기기마다 세리프/고딕 제각각)로 렌더된다 → 명시로 통일.
+//   font-family 미지정 시 플랫폼 기본 폰트(기기마다 세리프/고딕 제각각)로 렌더된다 → 명시로 통일. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
 // [브랜드 폰트 정본 §2] 유호님 확정 3종. **스택 순서가 곧 언어 배분이다** — 폴백은 글리프 단위로 돌기 때문에
 //   라틴·몽골 키릴은 Inter Tight가, 한글은(Inter Tight에 한글이 없으므로) SUIT Variable이 잡는다.
 //   **순서를 뒤집지 말 것** — SUIT를 앞에 두면 SUIT의 라틴 자형이 먼저 잡혀 Inter Tight가 영영 안 쓰인다.
@@ -1574,7 +1574,7 @@ const CARD_WEBFONT = '<style>' +
   '</style>';
 
 // [v9.43] 🫁 숨쉬는 몬스터 — CSS keyframes 토큰. Glide Rich Text(WebView)는 <style> 블록을 렌더하므로 작동하고,
-//   미지원 기기에선 스타일이 무시되어 "정적 이미지"로 조용히 남는다(그레이스풀 폴백 — 절대 깨지지 않음).
+//   미지원 기기에선 스타일이 무시되어 "정적 이미지"로 조용히 남는다(그레이스풀 폴백 — 절대 깨지지 않음). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
 //   synkBreath = 몬스터 호흡(3.2s 잔잔) · synkBoss = 보스 위압(4.4s 무겁게+그림자 맥동). transform만 사용(성능 안전).
 //   prefers-reduced-motion 존중 — 움직임 민감 사용자에겐 자동 정지(명품의 접근성 디테일).
 const CARD_ANIM = '<style>@keyframes synkBreath{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.035) translateY(-2px)}}' +
@@ -1726,7 +1726,7 @@ function buildCrownHud_(clsName, got, total, notYet) {
   }
   return CARD_WEBFONT + '<div style="' + CARD_FONT + HUD_CARD + '">' + head + body + '</div>';
 }
-// 반 상세 HUD(14열 — Glide가 바인딩하는 단 1장) — 다크 히어로 헤더(딥 네이비+블루 글로우) + 4절 스택.
+// 반 상세 HUD(14열 — Glide가 바인딩하는 단 1장) — 다크 히어로 헤더(딥 네이비+블루 글로우) + 4절 스택. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
 // 서브 카드는 clsName='' — 반명은 헤더 1번만. dateStr은 호출부 주입(빌더 순수성 유지).
 function buildClassHudDetail_(clsName, mats, ta, topicDone, crown, raid, dateStr, groupHtml) { // [v9.86·B] groupHtml — 조 편성 절(없으면 생략)
   ta = ta || {}; crown = crown || {}; raid = raid || {};
@@ -1982,7 +1982,7 @@ function setAppState_(ss, key, val) {
 
 // [v9.42] 🗂️ 도감 진행 카드 — 도달한 몬스터만 공개, 미도달은 🔒 ??? 실루엣(스포일러 차단).
 //   구 조립에서 도감이 전부 오픈돼 보이던 문제의 코드 측 봉인: Glide Collection 필터와 별개로,
-//   이 카드가 "몇 마리 만났고 다음은 몇 P인지"를 한 장으로 보여준다(여행지도 12칸 그리드 패턴).
+//   이 카드가 "몇 마리 만났고 다음은 몇 P인지"를 한 장으로 보여준다(여행지도 12칸 그리드 패턴). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
 /* ===================== [함께한날 막4] 장면 사다리 · 가이드 대사 · 카드 셋 =====================
  * 정본 = docs/함께한날_설계_v1.md. 축 둘 = 함께한 날(시간·매일) + 내가 맞힌 말(학습·중간).
  * 단계도 등급도 진화도 없다 — 쌓이는 것 하나, 열리는 조건 하나. 둘 다 남과 견줄 수 없다.
@@ -2285,7 +2285,7 @@ function calcAll() {
     }
   }
 
-  // --- point_logs 빈칸 보정 (Glide 버튼 대비) [v9.22] 변경 행의 A(id)·F(일시)만 기록, Glide 소유열(B~E) 미접촉 ---
+  // --- point_logs 빈칸 보정 (Glide 버튼 대비) [v9.22] 변경 행의 A(id)·F(일시)만 기록, Glide 소유열(B~E) 미접촉 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md) ---
   const needId = [];
   plData.forEach(r => { if (r[1] && !r[0]) needId.push(1); });
   const newIds = needId.length ? reservePlIds(ss, needId.length) : [];
@@ -2309,7 +2309,7 @@ function calcAll() {
     writeIfChanged(pl, 2, 7, ymCol);
   }
 
-  // --- [v9.41] attendance id(A열) 빈칸 보정 — GPS 셀프 출석(Glide Add Row)은 id를 비워 둔다.
+  // --- [v9.41] attendance id(A열) 빈칸 보정 — GPS 셀프 출석(Glide Add Row)은 id를 비워 둔다. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
   //     코드 파이프라인은 A열을 안 읽어 기능 무해하지만, 빈 키 행이 쌓이는 조잡함 제거(point_logs 보정과 동일 규율).
   {
     let aFirst = -1, aLast = -1;
@@ -2488,7 +2488,7 @@ function calcAll() {
     if (pf.getRange('AJ1').getValue() !== '반유형') pf.getRange('AJ1').setValue('반유형'); // [v5.8]
     // [v6.6] 열 부족 자동 확장 (AP=42열까지) — 좁은 시트에서 헤더 쓰기 오류 방지
     if (pf.getMaxColumns() < 50) pf.insertColumnsAfter(pf.getMaxColumns(), 50 - pf.getMaxColumns()); // [v7.7] AX까지
-    // [v6.5] 사용자 기록 전용 열 — 스크립트는 값을 절대 안 쓰고 헤더만 보장 (Glide 오타 방지)
+    // [v6.5] 사용자 기록 전용 열 — 스크립트는 값을 절대 안 쓰고 헤더만 보장 (Glide 오타 방지) — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     // [v9.20 → 함께한날 막2 정정] 구 주석 「AE·AF 헤더 유지 코드 제거」는 사실과 어긋났다(위에서 계속
     //   쓰고 있었다 — 설계 §4-1 ★확인). AE31·AF32 는 이제 함께한날 원장으로 «재사용»한다. AL38~AN40 은
     //   여전히 은퇴 열(인덱스 고정이라 물리 삭제 불가 — 삭제 시 AO~BX 전부 밀림 · 숨기기만 안전).
@@ -2497,7 +2497,7 @@ function calcAll() {
     // AP1 개명은 여기가 아니라 **AP42 값 기록 «뒤»**다(codex P2 fedb767e) — 개명 후 값 전에 죽으면
     // 다음 회차 apIsScene 이 구 몬스터 값(1~7)을 장면 러닝맥스로 읽는다. 값이 먼저, 이름은 마지막.
     if (pf.getRange('AQ1').getValue() !== '잔액') pf.getRange('AQ1').setValue('잔액'); // [v7.1] P열=획득 누계(진화), AQ=잔액(스토어)
-    // [v7.3] AR = 사용자 기록 전용(스토어 목표 찜 — Glide Set Column, 스크립트는 값 안 씀)
+    // [v7.3] AR = 사용자 기록 전용(스토어 목표 찜 — Glide Set Column, 스크립트는 값 안 씀) — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     if (pf.getRange('AR1').getValue() !== '목표아이템') pf.getRange('AR1').setValue('목표아이템');
     if (pf.getRange('AS1').getValue() !== '최고월간기록') pf.getRange('AS1').setValue('최고월간기록'); // [v7.3] 자기 경신
     if (pf.getRange('AT1').getValue() !== '최고기록월') pf.getRange('AT1').setValue('최고기록월');
@@ -3120,7 +3120,7 @@ function calcAll() {
     if (String(pf.getRange('BG1').getValue()) !== '기록실HTML') pf.getRange('BG1').setValue('기록실HTML');
     writeIfChanged(pf, 2, 54, evoDateOut);
     writeIfChanged(pf, 2, 55, skinOut);   // 무효 선택 자동 클리어 · 유효는 유지
-    writeIfChanged(pf, 2, 56, frameOut);  // 스킨 이미지 × AP 액자 합성 — Glide는 Rich Text 1개
+    writeIfChanged(pf, 2, 56, frameOut);  // 스킨 이미지 × AP 액자 합성 — Glide는 Rich Text 1개 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     writeIfChanged(pf, 2, 57, fortuneOut); // [v9.12] 🔮
     writeIfChanged(pf, 2, 58, speakOut);   // [v9.12] 💬 말풍선
     writeIfChanged(pf, 2, 59, recordOut);  // [v9.12] 📊
@@ -3138,19 +3138,19 @@ function calcAll() {
     writeIfChanged(pf, 2, 66, bannerOut); // [v9.16] 🎉
     if (String(pf.getRange('BK1').getValue()) !== '리텐션신호') pf.getRange('BK1').setValue('리텐션신호');
     writeIfChanged(pf, 2, 63, radarOut); // [v9.14] 📡
-    // [v9.20] 오늘의알림(BX 76) · 나의여정(BY 77) — Glide 인앱 배너/개인 스토리 카드
+    // [v9.20] 오늘의알림(BX 76) · 나의여정(BY 77) — Glide 인앱 배너/개인 스토리 카드 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     if (pf.getMaxColumns() < 77) pf.insertColumnsAfter(pf.getMaxColumns(), 77 - pf.getMaxColumns());
     if (String(pf.getRange('BX1').getValue()) !== '오늘의알림') pf.getRange('BX1').setValue('오늘의알림');
     if (String(pf.getRange('BY1').getValue()) !== '걸어온길') pf.getRange('BY1').setValue('걸어온길'); // [함께한날 막4]
     writeIfChanged(pf, 2, 76, alertOut);
     writeIfChanged(pf, 2, 77, journeyOut);
-    // [v9.28] 목표진행(BZ 78) — Glide Visibility "is not empty"로 숨김 처리 권장 · 출석일당포인트(CA 79) — 랭킹 참고 지표
+    // [v9.28] 목표진행(BZ 78) — Glide Visibility "is not empty"로 숨김 처리 권장 · 출석일당포인트(CA 79) — 랭킹 참고 지표 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     if (pf.getMaxColumns() < 79) pf.insertColumnsAfter(pf.getMaxColumns(), 79 - pf.getMaxColumns());
     if (String(pf.getRange('BZ1').getValue()) !== '목표진행') pf.getRange('BZ1').setValue('목표진행');
     if (String(pf.getRange('CA1').getValue()) !== '출석일당포인트') pf.getRange('CA1').setValue('출석일당포인트');
     writeIfChanged(pf, 2, 78, goalOut);
     writeIfChanged(pf, 2, 79, perDayOut);
-    // [v9.29] 드림한줄(CB 80) — 학생이 Glide Set Column으로 직접 쓰는 사용자 소유 열(목적 노출·철학1 실현).
+    // [v9.29] 드림한줄(CB 80) — 학생이 Glide Set Column으로 직접 쓰는 사용자 소유 열(목적 노출·철학1 실현). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     //   calcAll·syncProfiles 어떤 배치도 이 열의 데이터 행을 쓰지 않는다(헤더만 보장) — AK 착용칭호와 동일한 사용자 소유 방식.
     if (pf.getMaxColumns() < 80) pf.insertColumnsAfter(pf.getMaxColumns(), 80 - pf.getMaxColumns());
     if (String(pf.getRange('CB1').getValue()) !== '드림한줄') pf.getRange('CB1').setValue('드림한줄');
@@ -3198,7 +3198,7 @@ function calcAll() {
       if (String(getState(stDY, '만남열가동').val || '') !== 'Y') setState(stDY, '만남열가동', 'Y'); // [v9.125] 내 가동 표식 — 헤더 없는 점거 판정의 기준점
       writeIfChanged(pf, 2, 129, meetOut);
     }
-    // [v9.50·A4] 최애(DA 105) — 학생이 Glide Set Column으로 쓰는 사용자 소유 열(드림한줄 CB와 동일 방식).
+    // [v9.50·A4] 최애(DA 105) — 학생이 Glide Set Column으로 쓰는 사용자 소유 열(드림한줄 CB와 동일 방식). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     //   개인화 예문·한 문장·퀴즈의 재료로 aiStudioBatch_가 읽기만 한다. 비면 개인화는 약점 기반으로만.
     if (pf.getMaxColumns() < 105) pf.insertColumnsAfter(pf.getMaxColumns(), 105 - pf.getMaxColumns());
     if (String(pf.getRange('DA1').getValue()) !== '최애') pf.getRange('DA1').setValue('최애');
@@ -3242,12 +3242,12 @@ function calcAll() {
 
     // [v5] 게이지 3열 기록 (writeIfChanged라 변화 없으면 쓰기 0)
     writeIfChanged(pf, 2, 33, evoRemOut);
-    // [v5.1] 대표칭호(AH)·칭호등급(AI) — Glide에서 배지/태그로 표시
+    // [v5.1] 대표칭호(AH)·칭호등급(AI) — Glide에서 배지/태그로 표시 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     writeIfChanged(pf, 2, 34, badgeOut);
     writeIfChanged(pf, 2, 35, tierOut);
-    // [v5.8] 반유형(AJ) — 평일/주말 (Glide ITE가 오늘의숙제 vs 주말의숙제 선택)
+    // [v5.8] 반유형(AJ) — 평일/주말 (Glide ITE가 오늘의숙제 vs 주말의숙제 선택) — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     writeIfChanged(pf, 2, 36, pfData.map(r => [classTypeOf[r[0]] || '평일']));
-    // [v6.6] 단계번호(AP) — Glide Rollup(단계번호−1 합)으로 "우리 반 누적 진화 🐲" 계산
+    // [v6.6] 단계번호(AP) — Glide Rollup(단계번호−1 합)으로 "우리 반 누적 진화 🐲" 계산 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     writeIfChanged(pf, 2, 42, stageNumOut);
     if (pf.getRange('AP1').getValue() !== '지나온장면수') pf.getRange('AP1').setValue('지나온장면수'); // [함께한날] 전환 원자성 — 값(윗줄) 뒤에만 개명(codex P2 fedb767e)
     writeIfChanged(pf, 2, 43, balOut); // [v7.1] AQ 잔액
@@ -3275,7 +3275,7 @@ function calcAll() {
   //   반 카드 첫 토큰은 이제 «우리 반이 함께한 날의 합» — 비교 축이 아니라 시간 축이다.
   //   (문법 도달 합계는 반 카드에 안 올린다 — §8-⑨ 「반 합계는 강사 성적표가 된다」)
   //   ⚠ 열 «키»(반몬스터·반몬스터이미지 헤더)는 그대로 둔다 — Glide 가 헤더 이름으로 토큰을 무는데
-  //   개명하면 라이브 카드가 끊긴다(철학 A-2 「내부 기능명·시트 열 키는 몬스터로 남는다」).
+  //   개명하면 라이브 카드가 끊긴다(철학 A-2 「내부 기능명·시트 열 키는 몬스터로 남는다」). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
   const classDaysToken_ = c9 => '🤝 함께한 날 ' + (clsDaysSum[c9] || 0);
   // [v7.3] 반주간데미지 = 학생 주간 양수 포인트 + 연료 (raidFriday와 동일 산식, 14·22시 갱신)
   const mondayW = new Date(now);
@@ -3295,7 +3295,7 @@ function calcAll() {
   ctData.forEach(r => { if (r[1] === 'fuel' && r[2]) fuelMapW[String(r[2])] = Number(r[5]) || 0; });
   const fuelW = weeklyFuel_(ss, fuelMapW, mondayW).week; // [v9.25] 연료 주간집계 헬퍼 통합
   Object.keys(fuelW).forEach(c => { weekDmg[c] = (weekDmg[c] || 0) + fuelW[c]; });
-  const hof = ensureSheet(ss, 'hall_of_fame', ['연도','이름','반','업적','한마디','사진URL','student_id']); // [v7.8] 졸업생 명예의 전당 — 원장이 Glide 폼으로 행 추가
+  const hof = ensureSheet(ss, 'hall_of_fame', ['연도','이름','반','업적','한마디','사진URL','student_id']); // [v7.8] 졸업생 명예의 전당 — 원장이 Glide 폼으로 행 추가 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
   // [v9.151] student_id 증분(끝) — 이름만으로는 졸업 후 이력(로그·성장 기록)과 조인이 안 된다. 한국행 실적은
   //   연락이 끊기면 소급 불가 자산(memory masterplan-v3-2026-08-04) — class_stats 열 증분과 같은 패턴. 다른
   //   주인 헤더가 서 있으면 덮지 않는다(빈칸일 때만 — 점거 가드 계열).
@@ -3418,7 +3418,7 @@ function calcAll() {
       [buildRaidCard_(c, raidGoal[c] || 0, weekDmg[c] || 0, !!raidWin[c], cls[c].n)]); // [v9.78] stuN — 격파 사정권 콜아웃 흡수
     if (raidCards.length) writeIfChanged(cs, 2, 13, raidCards);
   }
-  { // [v9.52] 🧩 반 상세 통합 카드(14열) — Glide Rich Text 5장 → 1장 · [v9.78] 낱장 join → HUD 대시보드
+  { // [v9.52] 🧩 반 상세 통합 카드(14열) — Glide Rich Text 5장 → 1장 · [v9.78] 낱장 join → HUD 대시보드 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     //   (SYNK CLASS HUD 헤더 스탯 스트립 + 미션→루틴→레이드→도전·성장 스택, buildClassHudDetail_ 1콜).
     //   9~13열은 하위 호환·개별 참조용으로 그대로 둔다(구 5장 조립 화면도 새 디자인으로 갈아입음).
     if (cs.getMaxColumns() < 14) cs.insertColumnsAfter(cs.getMaxColumns(), 14 - cs.getMaxColumns());
@@ -3427,7 +3427,7 @@ function calcAll() {
   }
   { // [v9.81] 반 목록 카드 2열 — ⑮반카드요약(Collection Description)·⑯반몬스터이미지(Collection Image).
     //   유호 07-31 "강사 「반」 탭 첫 화면(반 리스트)이 후지다" — 목록 아이템 자체를 카드 재료로:
-    //   Glide는 스타일 Card + Description·Image 바인딩만 바꾸면 된다. 정렬 키 = 다른 열과 동일(sort).
+    //   Glide는 스타일 Card + Description·Image 바인딩만 바꾸면 된다. 정렬 키 = 다른 열과 동일(sort). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     if (cs.getMaxColumns() < 16) cs.insertColumnsAfter(cs.getMaxColumns(), 16 - cs.getMaxColumns());
     if (String(cs.getRange(1, 15).getValue()) !== '반카드요약') cs.getRange(1, 15).setValue('반카드요약');
     if (String(cs.getRange(1, 16).getValue()) !== '반몬스터이미지') cs.getRange(1, 16).setValue('반몬스터이미지');
@@ -3453,7 +3453,7 @@ function calcAll() {
   const dailyCold = getState(st, '오늘의퀴즈').row < 1 || getState(st, '오늘의팁').row < 1;
   if (props.getProperty('기준일') !== todayStr || dailyCold) {
     // [v5.7→v9.28] 오늘의 시냅스 퀴즈 — 난이도 3분기(초급/중급/고급). '오늘의퀴즈'는 초급과 동일값 유지(하위호환 —
-    //   classPrepMail_·워치독이 그대로 참조). Glide는 profiles.현재급수(BO67)로 학생별 ITE 분기 가능.
+    //   classPrepMail_·워치독이 그대로 참조). Glide는 profiles.현재급수(BO67)로 학생별 ITE 분기 가능. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     const quizPool = ctData.filter(r => r[1] === 'quiz' && r[3]);
     const quizMid = quizPool.filter(r => String(r[2] || '') === 'TOPIK필수');
     const quizHi = quizPool.filter(r => String(r[2] || '') === 'TOPIK중급');
@@ -3517,7 +3517,7 @@ function calcAll() {
     }
   }
   { // [v9.40] 숙제 콜드스타트 시딩 — 키가 아예 없으면(콘텐츠 첫 설치·재건 직후) 21시 게이트와 무관하게 즉시 게시.
-    //   평일·주말 키 모두 보장해 Glide ITE(반유형 분기) 바인딩을 조립 당일 검증할 수 있게 한다. 키가 있으면 no-op(멱등).
+    //   평일·주말 키 모두 보장해 Glide ITE(반유형 분기) 바인딩을 조립 당일 검증할 수 있게 한다. 키가 있으면 no-op(멱등). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
     const hwPoolC = ctData.filter(r => r[1] === 'homework' && r[3] && Number(r[5]) > 0);
     if (hwPoolC.length) {
       const wkC = Number(Utilities.formatDate(now, tz, 'w')) || 1;
@@ -3560,7 +3560,7 @@ function calcAll() {
  *   키마다 Query+Single Value 2개(총 30개)를 손으로 만들어야 했고, 학부모 자녀 카드도 Relation+Lookup
  *   8개가 필요했다. 조립 UI 조작이 곧 시간·프리즈·실수의 원천(2026-07-20 유호님 실측 보고).
  * 해결: 그 값들을 여기서 **각 행에 직접 써 넣는다**. 학생 행에는 자기 반유형·급수에 맞는 숙제·퀴즈가,
- *   학부모 행에는 자녀 카드가 이미 들어있으므로 Glide는 자기 행을 그냥 바인딩하면 끝(계산 컬럼 0개).
+ *   학부모 행에는 자녀 카드가 이미 들어있으므로 Glide는 자기 행을 그냥 바인딩하면 끝(계산 컬럼 0개). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * 비용: 시트 쓰기는 writeIfChanged 1블록 + Glide sync는 "변경 묶음당 1"(docs/glide_업데이트_실측설계.md §1).
  *   팁·퀴즈가 매일 로테이션해 profiles sync가 하루 최대 2회(14·22시) 확정 발생하나, profiles는 게이지·출석으로
  *   어차피 매일 변하는 시트라 순증분은 미미(리뷰 P2 판정). 정확한 소비는 첫 달 Usage 실측으로 확인.
@@ -3605,7 +3605,7 @@ const CLIMB_HEADS_ = ['등반카드HTML'];
 /* ── [v9.74] 숙제·퀴즈·수업준비 카드 빌더(순수 함수 — tests/safety.test.js가 직접 로드) ──
  * 유호 07-28 보고: 홈 숙제 카드가 "과제문 + 무라벨 검사포인트 + 퀴즈 문항"이 한 덩어리로 보여 무엇을
  * 하라는지 읽을 수 없었다 — 검사포인트(E열)는 강사용 문구인데 학생 화면에 라벨 없이 그대로 노출된 것.
- * → 조각마다 라벨을 입힌 완성 카드 1장씩으로 리빌드(Glide는 Rich Text 1개만 바인딩). */
+ * → 조각마다 라벨을 입힌 완성 카드 1장씩으로 리빌드(Glide는 Rich Text 1개만 바인딩). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md) */
 // [v9.87] mnTask·mnQ = 문항 본문 몽골어 병기(초급 학생만·MN_CONTENTS_G) — 유형·검사포인트만 병기되고 정작 "무엇을 하라"는 한국어뿐이던 것 해소
 function hwCardHtml_(ty, mnTy, task, mnTask, tip, mnTip) {
   if (!task) return '';
@@ -3802,7 +3802,7 @@ function ioDateLabel_(now) {
   return (now.getMonth() + 1) + '/' + now.getDate() + ' (' + ['일', '월', '화', '수', '목', '금', '토'][now.getDay()] + ')';
 }
 // [v9.74] 강사 행 오늘출근(DD108)·오늘퇴근(DE109)을 10분 스위프(todayBoard_)마다 갱신.
-//   Glide 출퇴근 버튼 Visibility 소스: 출근 버튼 = 오늘출근 is empty · 퇴근 버튼 = 오늘출근 not empty AND 오늘퇴근 is empty
+//   Glide 출퇴근 버튼 Visibility 소스: 출근 버튼 = 오늘출근 is empty · 퇴근 버튼 = 오늘출근 not empty AND 오늘퇴근 is empty — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
 //   → 유호 07-28 보고 "출근·퇴근이 중복 체크된다"의 UI 차단(중복 탭 자체는 teacherInOutMap_의 첫/마지막 집계가 무해화).
 //   자정 롤오버는 별도 청소 불필요 — 날짜가 바뀌면 map이 비어 다음 스위프가 빈칸('')으로 되돌린다.
 function updateTeacherInOut_(ss, tz, pf) {

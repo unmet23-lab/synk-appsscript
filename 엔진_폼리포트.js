@@ -1446,7 +1446,7 @@ function migrateWorkFormMn() {
 }
 
 /* ── [v9.89] 🔁 결석 연락 기록 폼 — 「결석 복귀율」의 입력 레일(약점 메모 폼 v9.55·v9.64 계보) ──
- * 왜 폼인가: Glide에서 입력받으면 update를 소비한다(Maker 월 500 제약). 폼은 0.
+ * 왜 폼인가: Glide에서 입력받으면 update를 소비한다(Maker 월 500 제약). 폼은 0. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * ⚠ 항목 수는 여기서 확정이다 — 나중에 추가·삭제하면 응답 시트에 새 열이 생기거나 밀려
  *   sweepAbsenceForm_의 위치 파싱(1~7열)이 깨진다. 동기화는 제목·안내·선택지만 바꾸고 항목은 건드리지 않는다.
  *   고정 6문항 = 강사 · 반 · 학생 이름 · 연락 수단 · 결과 · 메모 → 응답 7열(타임스탬프 포함). */
@@ -1522,7 +1522,7 @@ function createAbsenceForm() {
   linkFormTab_(ss, before, '결석폼_응답');
   setState(st, '결석폼ID', form.getId());
   setState(st, '결석폼URL', form.getPublishedUrl());
-  ensureSheet(ss, 'absence_followup', ABSENCE_FOLLOWUP_HEADERS); // Glide는 "존재하는 시트"만 테이블로 잡는다
+  ensureSheet(ss, 'absence_followup', ABSENCE_FOLLOWUP_HEADERS); // Glide는 "존재하는 시트"만 테이블로 잡는다 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
   adminMail('[SYNK] 🔁 결석 연락 기록 폼 생성 완료',
     '강사 단톡·즐겨찾기에 배포할 링크:\n' + form.getPublishedUrl() +
     '\n\n다음 계산(14/22시, 즉시 원하면 calcAll ▶)부터 강사 수업준비 탭의 🔁 버튼과 미등원 알림 메일에 자동으로 붙습니다.\n편집용: ' + form.getEditUrl() +
@@ -2243,7 +2243,7 @@ function runReportCards_() {
        *     ②「N개월 지난 카드는 공유 해제」: 그만큼 과거 달 카드가 앱에서 사라진다 —
        *       보안과 학부모 편의의 교환이라 유호님 결정 사안으로 올렸다(2026-08-03).
        *   ▣ 여기를 고치려는 다음 세션에게: 먼저 Glide 「성장 리포트」 탭이 이 URL을 안 쓰게
-       *     바꾼 다음에 닫아라. 순서가 반대면 라이브 화면이 먼저 죽는다. */
+       *     바꾼 다음에 닫아라. 순서가 반대면 라이브 화면이 먼저 죽는다. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md) */
       /* [v9.140] 실패를 세고 **알린다**. 구 코드는 '폴더 공유 설정으로 대체'라고만 로그했는데,
        *   그 문장이 문제를 몇 달 숨겼다 — 실제로 이 호출은 줄곧 실패하고 있었고, 카드가 열려 보인 건
        *   폴더가 공개였기 때문이다. 폴더를 잠근 지금 그 대체 수단은 **존재하지 않으므로**,
@@ -2520,7 +2520,7 @@ function fillReportCardSlide_(sl, d) {
 }
 
 /* [v9.138] 프리뷰 파일 접두어 — 정리 함수가 「내가 만든 프리뷰」만 골라내는 손잡이다.
- * 배치 카드(ym_sid_name.png)는 report_cards.image_url로 Glide가 읽으므로 절대 섞이면 안 된다. */
+ * 배치 카드(ym_sid_name.png)는 report_cards.image_url로 Glide가 읽으므로 절대 섞이면 안 된다. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md) */
 const PREVIEW_CARD_PREFIX = 'PREVIEW_';
 
 /* 테스트: 학생 1명만 카드 생성 → PNG 로그·반환 (report_cards 미기록 · 임시 슬라이드 정리)
@@ -2534,7 +2534,7 @@ const PREVIEW_CARD_PREFIX = 'PREVIEW_';
  *   사주던 기능은 **아무것도 없었다**. 소유자 인증 Drive 링크면 충분하다 — 유호님은 파일 소유자라
  *   그냥 열리고, 남에게는 애초에 열리지 않는다.
  *   ⚠ 배치(runReportCards_)의 공개 공유는 성격이 다르다 — 그건 Glide가 읽는 화면 배선이라
- *     여기서 함께 끄면 학부모 성장 리포트 탭이 통째로 빈다. 판단 근거는 그쪽 주석에 적었다.
+ *     여기서 함께 끄면 학부모 성장 리포트 탭이 통째로 빈다. 판단 근거는 그쪽 주석에 적었다. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *   ⚠ **코드를 고쳐도 이미 나간 프리뷰 파일은 계속 공개다**(2026-08-02 배포 보안 게이트의 교훈과
  *     같은 계급 — 코드를 지워도 라이브는 안 닫힌다). closePreviewCardLinks()가 그걸 닫는다.
  *   파일명에서도 이름을 뺐다(sid만) — 로그에 이름이 남으니 식별엔 지장이 없고, Drive 목록·공유
@@ -2596,7 +2596,7 @@ function previewOneReportCard(studentId) {
  * ▣ 왜 PREVIEW_ 접두어만 건드리는가 — 배치 카드는 끄면 안 된다
  *   runReportCards_가 만든 카드(ym_sid_name.png)는 report_cards.image_url에 박혀 Glide 학부모
  *   「성장 리포트」 탭의 Image 컴포넌트가 그 URL로 읽는다. 여기서 같이 닫으면 학부모 화면이 통째로
- *   빈 이미지가 된다. 접두어 필터가 그 사고를 막는 유일한 경계라 테스트가 이걸 직접 검사한다.
+ *   빈 이미지가 된다. 접두어 필터가 그 사고를 막는 유일한 경계라 테스트가 이걸 직접 검사한다. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  *
  * ▣ 판정 불가는 통과가 아니다
  *   getSharingAccess()가 예외를 던지면 「공개 아님」이 아니라 「모름」이다. 모르면 닫는다 —
