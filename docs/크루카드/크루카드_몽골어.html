@@ -15,7 +15,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SYNK LAB · Crew Card v14 · Монгол</title>
-<style>/* ========================================================================
+<style>
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+/* ========================================================================
    SYNK LAB · Crew Dossier v8 — Shared design system
    Palette · Cream / Coral / Deep Navy / Lime accent
    Typography · Inter Tight + SUIT Variable + DM Mono (정본 3종 · docs/브랜드_폰트_정본.md)
@@ -62,9 +64,9 @@
      정본 3종만 쓴다. **Inter Tight 가 SUIT 보다 앞**인 것이 핵심이다 —
      폴백이 글리프 단위라 이 순서가 라틴·키릴·한글을 자동으로 갈라 준다(정본이 「바꾸지 말 것」).
      몽골 키릴 Ө·Ү 도 Inter Tight 가 그린다(2026-08-05 폭 실측).                */
-  --serif:'Inter Tight', 'SUIT Variable', SUIT, serif;
-  --sans:'Inter Tight', 'SUIT Variable', SUIT, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --mono:'Inter Tight', 'SUIT Variable', SUIT, ui-monospace, monospace;
+  --serif:'SYNK Bracket','Inter Tight', 'SUIT Variable', SUIT, serif;
+  --sans:'SYNK Bracket','Inter Tight', 'SUIT Variable', SUIT, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --mono:'SYNK Bracket','Inter Tight', 'SUIT Variable', SUIT, ui-monospace, monospace;
 
   /* ⚠ Part 06 K-Culture 전용 예약 서체 — 정본 3종의 **유일한 예외**다(유호님 08-05 확정).
      08-05 에 한 번 「3종만」을 근거로 통째로 지워졌다가 되살렸다. 지운 쪽이 틀린 게 아니라
@@ -356,7 +358,7 @@ section.page{
     <rect width="1200" height="800" fill="#EDE7DC"></rect>
     <rect x="120" y="180" width="960" height="500" rx="28" fill="#F96859"></rect>
     <circle cx="1020" cy="240" r="90" fill="#C8FF3D"></circle>
-    <text x="600" y="112" text-anchor="middle" font-family="'Inter Tight','SUIT Variable',SUIT,sans-serif" font-style="italic" font-size="44" fill="#262626" font-weight="700">SYNK LAB · Крю карт</text>
+    <text x="600" y="112" text-anchor="middle" font-family="'SYNK Bracket','Inter Tight','SUIT Variable',SUIT,sans-serif" font-style="italic" font-size="44" fill="#262626" font-weight="700">SYNK LAB · Крю карт</text>
   </svg>
 </div><script>(function(){var s=document.getElementById("__splash");if(!s)return;function hide(){s.style.opacity="0";setTimeout(function(){if(s&&s.parentNode)s.parentNode.removeChild(s);},300);}if(document.readyState==="complete")hide();else window.addEventListener("load",hide);})();</script>
 <style>

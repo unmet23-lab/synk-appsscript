@@ -118,11 +118,15 @@ const 마스코트콘텐츠 = {};
 /* 정본 = docs/브랜드_폰트_정본.md §3 — 「모든 산출물은 이 3종만」.
  * 폴백 낱말(system-ui·sans-serif…)은 CDN 이 죽었을 때 레이아웃을 지키는 안전망이라
  * 금지 대상이 아니다(정본 §7). 실제로 **그려진** 폰트만 본다. */
-const FONTS_OK = ['Inter Tight', 'SUIT Variable', 'SUIT', 'DM Mono'];
+/* 🔑 'SYNK Bracket' 은 «넷째 브랜드 폰트가 아니다» — 낫표 「 」 두 글자(U+300C/300D)만 잡는
+ *   별칭 가족이고, 실제로 그리는 것은 OS 의 한국어 시스템 폰트다(Malgun Gothic 등 · 전부 GENERIC_OK).
+ *   유호 확정 2026-08-31 「낫표 그거 킷에 박아줘」 · 값의 정본 = docs/디자인_토큰.json 「서체.낫표교정」.
+ *   ⚠ 이 줄이 없으면 가드가 정본이 «시킨» 것을 위반으로 잡는다 — 바로 위 F094 가 지목한 재발 무늬다. */
+const FONTS_OK = ['Inter Tight', 'SUIT Variable', 'SUIT', 'DM Mono', 'SYNK Bracket'];
 /* ⚠ 이 목록은 **DESIGN.md §3 이 적어 둔 정본 스택에서 뽑는다.** 가드가 정본이 권장하는
  *   폴백을 위반으로 잡으면, 사람은 정본을 따랐는데 빨간불을 보게 되고 결국 가드를 끈다
  *   (F094 가 지목한 재발 원인이 정확히 「처방을 따를 수 없어 표기가 갈라진다」였다).
- *   정본 스택: 'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif
+ *   정본 스택: 'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif
  *             'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace */
 const GENERIC_OK = [
   'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif', 'serif',

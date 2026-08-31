@@ -116,10 +116,12 @@ const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <!-- 2027 킷 「내일 꾸러미」 · 지면 = Loom 인쇄 프리셋 · 조립 ${오늘} — 파생 주석에 ·로 잇지 않는다(doc-graph 가 조각을 경로로 오독 · 조직계보 08-24 같은 병) -->
 <!-- 조립: node tools/브랜드킷색상조립.js — 손 편집 금지(재조립이 덮는다) · PDF 짝과 한 벌 -->
 <style>
+  /* 낫표 「 」 교정 — 값의 정본 = docs/디자인_토큰.json 「서체.낫표교정」(유호 확정 08-31). 스택보다 먼저 선다. */
+  @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
 /*@FONTS@*/
 ${loom.css({ 지면: '인쇄' })}
 /* ── 이 지면 몫 — 스와치 레이아웃만. 간격은 전부 율 이름, 색은 전부 토큰 값이다. ── */
-:root{ --font:'Inter Tight','SUIT',system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
+:root{ --font:'SYNK Bracket','Inter Tight','SUIT',system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
 .글{max-width:920px;margin:0 auto;padding:var(--켜) var(--단) var(--장);}
 .표지머리{padding:var(--켜) 0 var(--단);}
 .표지머리 svg{width:172px;display:block;}

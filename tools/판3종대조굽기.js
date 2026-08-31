@@ -135,11 +135,13 @@ const html = `<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>판 3종 대조 — 정보를 담는 판을 무엇으로 할 것인가 (2026-08-20)</title>
 <style>
+  /* 낫표 「 」 교정 — 값의 정본 = docs/디자인_토큰.json 「서체.낫표교정」(유호 확정 08-31). 스택보다 먼저 선다. */
+  @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
   :root{
     --바탕:${C('바탕')}; --카드:${C('카드')}; --잉크:${C('잉크')};
     --보조:${C('보조잉크')}; --보조2:${C('보조잉크2')}; --실땀:${C('실땀')}; --신호:${C('신호')};
     --실2:2px; --숨:4px; --틈:8px; --참:12px; --칸:16px; --단:24px; --켜:40px; --장:64px; --막:104px;
-    --글:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --글:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--바탕);color:var(--잉크);font-family:var(--글);font-weight:500;

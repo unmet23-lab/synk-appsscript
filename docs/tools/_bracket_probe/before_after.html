@@ -1,0 +1,42 @@
+<meta charset="utf-8">
+<title>낫표 전후</title>
+<style>
+  @font-face{
+    font-family:'SYNK Bracket';
+    src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');
+    unicode-range:U+300C-300D;
+  }
+  :root{
+    --킷:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --고침:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  }
+  body{background:#12100F;color:#F2EFEA;margin:0;padding:26px 30px;font:15px/1.6 system-ui;}
+  h1{font:600 15px/1 system-ui;color:#9A9490;letter-spacing:.08em;margin:0 0 18px;text-transform:uppercase;}
+  .칸{border:1px solid #2C2825;border-radius:12px;padding:16px 20px;margin-bottom:12px;}
+  .꼬리{font:12px/1 ui-monospace,monospace;color:#8A8480;margin-bottom:9px;letter-spacing:.04em;}
+  .현{font-family:var(--킷);}
+  .고{font-family:var(--고침);}
+  .본문{font-size:17px;line-height:1.7;margin:0;}
+  .큰{font-size:40px;margin:0;}
+  em{font-style:normal;color:#FF6B5A;}
+</style>
+
+<h1>낫표 「 」 — 킷 현행 vs 고침</h1>
+
+<div class="칸">
+  <div class="꼬리">현행 · SUIT Variable 이 낫표를 그린다 (0.396em)</div>
+  <p class="본문 현">엄마가 물었다. 「이 사람 누구야?」 그래서 나는 「우리 선생님이야」 하고 답했다.</p>
+  <p class="큰 현">「이 사람 누구야?」</p>
+</div>
+
+<div class="칸">
+  <div class="꼬리">고침 · SYNK Bracket(= Malgun Gothic)이 낫표만 그린다 (0.571em)</div>
+  <p class="본문 고">엄마가 물었다. 「이 사람 누구야?」 그래서 나는 「우리 선생님이야」 하고 답했다.</p>
+  <p class="큰 고">「이 사람 누구야?」</p>
+</div>
+
+<div class="칸">
+  <div class="꼬리">본문이 안 흔들리는지 — 라틴·한글은 두 줄이 «같아야» 한다</div>
+  <p class="본문 현">SYNK LAB · Handling ABC gjpq 0123 · 한글 본문은 그대로 <em>(현행)</em></p>
+  <p class="본문 고">SYNK LAB · Handling ABC gjpq 0123 · 한글 본문은 그대로 <em>(고침)</em></p>
+</div>

@@ -134,6 +134,8 @@ function 지면(안, px) {
   const 밀기 = 변형 ? `transform:${변형};` : '';
   return `<!doctype html><meta charset="utf-8">
 <style>
+  /* 낫표 「 」 교정 — 값의 정본 = docs/디자인_토큰.json 「서체.낫표교정」(유호 확정 08-31). 스택보다 먼저 선다. */
+  @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
   html,body{margin:0;padding:0;background:${a.바탕};}
   .판{width:${px}px;height:${px}px;display:grid;place-items:center;position:relative;overflow:hidden;background:${a.바탕};}
   .속{position:relative;z-index:2;${폭}${밀기}}
@@ -200,13 +202,15 @@ function 시안(굽힌것) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>synkbrief 프로필 — 네 안</title>
 <style>
+  /* 낫표 「 」 교정 — 값의 정본 = docs/디자인_토큰.json 「서체.낫표교정」(유호 확정 08-31). 스택보다 먼저 선다. */
+  @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
   :root{--paper:${색['Paper']};--ink:${색['Ink']};--inkdeep:${색['Ink Deep']};
     --stitch:${색['Stitch']};--coral:${색['Coral']};--coral3:${색['Coral 3']};--stone:${색['Stone']};--ash:${색['Ash Wool']};
 ${변수}
   }
   .썸{display:block;border-radius:50%;background-size:cover;background-position:center;background-repeat:no-repeat;}
   body{margin:0;padding:40px 24px 72px;background:var(--inkdeep);color:var(--paper);
-    font-family:'Inter Tight','SUIT Variable',system-ui,'Malgun Gothic',sans-serif;}
+    font-family:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,'Malgun Gothic',sans-serif;}
   .지면{max-width:960px;margin:0 auto;}
   h1{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;margin:0 0 8px;}
   .머리{color:var(--stone);font-size:.95rem;line-height:1.7;margin:0 0 40px;}
