@@ -21,10 +21,14 @@ function ladderCtx() {
 
 test('①⑨ 사다리 — 단조 증가·문턱 간격 확대·첫 4주 안 장면 4(주4 만남 가정)', () => {
   const { sceneOf, sceneLadderAt_, SCENE_LADDER_ } = ladderCtx();
+  /* 뱅크 크기는 여기 «적지» 않고 엔진에서 읽는다 — 08-31 에 72→75 로 자랐고(Lv4 대조·양보 셋),
+   * 손으로 적어 둔 수는 그런 날 소리 없이 낡는다(같은 값을 두 곳이 알면 갈린다). */
+  const 뱅크수 = Number(code.match(/grammar: (\d+),/)[1]);
+  assert.ok(뱅크수 >= 60, `뱅크수를 ${뱅크수} 로 읽었다 — CONTENT_EXPECT.grammar 앵커가 깨졌다`);
   // 단조: 날이 늘면 장면은 절대 안 준다(같은 맞힌 말에서)
   let prev = 0;
   for (let d = 0; d <= 400; d++) {
-    const s = sceneOf(d, 72).idx;
+    const s = sceneOf(d, 뱅크수).idx;
     assert.ok(s >= prev, `함께한 날 ${d}에서 장면이 줄었다(${prev}→${s})`);
     prev = s;
   }
@@ -44,8 +48,10 @@ test('①⑨ 사다리 — 단조 증가·문턱 간격 확대·첫 4주 안 장
   // 30·60·100 회피(스트릭 업적과 같은 날 이중 축하 방지 — 설계 §2)
   const dayThresholds = SCENE_LADDER_.map(r => r[1]);
   [30, 60, 100].forEach(n => assert.ok(dayThresholds.indexOf(n) === -1, `날 문턱에 ${n}이 있다 — 스트릭 업적과 겹친다`));
-  // 말 문턱은 뱅크(72)를 안 넘는다 — 넘으면 영영 안 열리는 장면이 된다
-  for (let k = 1; k <= 30; k++) assert.ok(sceneLadderAt_(k)[2] <= 72, `장면 ${k} 말 문턱이 뱅크 72를 넘는다`);
+  // 말 문턱은 뱅크를 안 넘는다 — 넘으면 영영 안 열리는 장면이 된다
+  for (let k = 1; k <= 30; k++) {
+    assert.ok(sceneLadderAt_(k)[2] <= 뱅크수, `장면 ${k} 말 문턱이 뱅크 ${뱅크수}를 넘는다`);
+  }
 });
 
 test('① 함께한 날 — 증분·단조·결석 무해(소스 앵커)', () => {
