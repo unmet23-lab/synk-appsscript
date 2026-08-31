@@ -342,7 +342,7 @@ function MJ_expiryNoticeText_(name, dLeft, dateStr) {
     name + ' сурагчийн хичээлийн эрх ' + dLeft + ' хоногийн дараа (' + dateStr + ') дуусна.\n' +
     'Үргэлжлүүлэн суралцахыг хүсвэл багштай холбогдоорой — бид танд туслахад үргэлж бэлэн 😊\n\n' +
     '(' + name + ' 학생의 수강 기간이 ' + dLeft + '일 뒤(' + dateStr + ') 만료됩니다.\n' +
-    '계속 함께하시길 원하시면 편하게 상담을 예약해 주세요.)\n\n' +
+    '계속 함께하고 싶으시면 편하게 상담을 예약해 주세요.)\n\n' +
     '— SYNK · Тархи судлалд суурилсан солонгос хэлний академи';
 }
 
@@ -445,13 +445,18 @@ function MJ_expirySection_(wantText) {
  * '수업 방식·진전 체감'이었고, 이 점수가 떨어지는 학생이 다음 달 이탈 후보다. */
 
 // [몽골어 초벌 — 원어민 검수지 「만족도팩」 M3]
+/* 설문 폼 문구 — 생성부와 migrateFormCopy0901 이 **같은 상수**를 본다(WORK_DESC 관례).
+ * 자유 문항 «제목»을 갈아도 안전한 근거: 집계 MJ_surveyAgg_ 는 열 «인덱스»로 읽고(제목 무관),
+ * setTitle 은 같은 문항 id 라 응답 시트 열도 유지된다. */
+const SURVEY_DESC = '1 минут л зарцуулагдана 🙏 Таны санал бидэнд маш чухал.\n(1분이면 됩니다 — 보내주신 의견은 다음 달 수업에 바로 반영됩니다.)';
+const SURVEY_FREE_TITLE = 'Нэг зүйлийг өөрчилж болох бол юу вэ? (하나만 바꾼다면, 무엇을 바꾸고 싶으세요?)';
 function createSurveyForm() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const done = formAlreadyMade_(ss, '설문폼_응답', '설문폼URL틀', '설문폼ID', '학생ID', '만족도 폼'); // 두 번 눌러도 안전
   if (done) return done;
   const before = ss.getSheets().map(s => s.getName());
   const form = FormApp.create('SYNK — Сарын сэтгэл ханамжийн асуулга (월간 만족도 설문)')
-    .setDescription('1 минут л зарцуулагдана 🙏 Таны санал бидэнд маш чухал.\n(1분이면 됩니다 — 보내주신 의견은 다음 달 수업에 바로 반영합니다.)')
+    .setDescription(SURVEY_DESC)
     .setCollectEmail(false);
   setState(ensureSheet(ss, 'app_state', ['key', 'value']), '설문폼ID', form.getId()); // [v9.94] 생성 즉시 기록 — 뒤 단계(응답 시트 연결)에서 타임아웃돼도 앱이 이 폼을 잃지 않는다
   form.addTextItem().setTitle('학생ID').setRequired(true).setHelpText('Аппаас нээсэн бол аль хэдийн бөглөгдсөн байгаа (앱에서 열었다면 자동으로 채워져 있어요)');
@@ -459,7 +464,7 @@ function createSurveyForm() {
     .setBounds(1, 5).setLabels('Огт үгүй (전혀)', 'Маш их (매우)').setRequired(true);
   form.addScaleItem().setTitle('Хүүхдийн тань солонгос хэл ахиж байна гэж мэдрэгдэж байна уу? (아이의 한국어가 늘고 있다고 느끼시나요?)')
     .setBounds(1, 5).setLabels('Огт үгүй (전혀)', 'Тодорхой мэдрэгдэж байна (뚜렷이)').setRequired(true);
-  form.addParagraphTextItem().setTitle('Нэг зүйлийг өөрчилж болох бол юу вэ? (한 가지만 바꿀 수 있다면 무엇인가요?)');
+  form.addParagraphTextItem().setTitle(SURVEY_FREE_TITLE);
   form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
   linkFormTab_(ss, before, '설문폼_응답');
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);

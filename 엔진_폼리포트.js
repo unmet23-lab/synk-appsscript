@@ -1149,7 +1149,7 @@ const WORK_TAB = '직장기록_응답';
  * ✅ 몽골어는 `node tools/몽골어대조.js` 검문을 지났다(08-27 · 역번역+문법 층 · 지적 3건 반영해 재통과).
  *   ⚠ 말투 층은 voice-guard 철거로 «미측정»이다 — 0건이 아니라 안 잰 것이다. 원어민 눈이 한 번 더 필요하다. */
 const WORK_DESC = '한국에서, 또는 한국 회사에서 일해 본 경험을 나눠주세요.\n'
-  + '당신이 쓴 것이 다음 크루의 연습이 됩니다 — 잘한 일보다 혼났던 일이 더 큰 도움이 됩니다.\n'
+  + '여기 쓰신 것이 다음 크루의 연습이 됩니다 — 잘한 일보다 혼났던 일이 더 큰 도움이 됩니다.\n'
   + '이름은 적지 않으셔도 됩니다. 10분이면 충분합니다 🙂\n\n'
   + 'Солонгост, эсвэл солонгос компанид ажиллаж байсан туршлагаасаа хуваалцана уу.\n'
   + 'Таны бичсэн зүйл дараагийн сурагчдын дадлага болно. Сайн хийсэн зүйлээс загнуулсан зүйл нь илүү их тус болно.\n'
@@ -1443,6 +1443,49 @@ function migrateWorkFormMn() {
     + '\n한국어로 써야 한다고 생각하면 한 줄로 줄어듭니다 — 그래서 폼 설명 끝에 「몽골어로 답해도 된다」를 박았습니다.'
     + '\n\n⚠️ 몽골어는 기계 검문(역번역·문법)만 지났습니다. 말투 층은 도구가 없어 «미측정»입니다 — 대외로 크게 뿌리기 전에 원어민 눈이 한 번 더 보면 좋습니다.');
   return 요약;
+}
+
+/* ── 문구 다듬기 재적용(09-01 유호 지시 「애매한 문구 전수 교정」) — 라이브 폼에 코드 정본 문구를 다시 민다.
+ * 코드만 고치면 이미 생성된 폼은 옛 문구를 계속 낸다(배포 ≠ 반영) — 이 함수가 그 반쪽을 갚는다.
+ * 멱등: 값이 다를 때만 쓴다. 미생성 폼은 스킵(만들 때 새 문구로 태어난다). 동의·직장 폼은
+ * 이미 «상수를 다시 미는» 기존 마이그레이션이 있어 위임한다(한 값 한 곳 — WORK_DESC 관례). */
+function migrateFormCopy0901() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const out = [];
+  const 폼문항고치기 = (라벨, 폼ID키, 고치기) => {
+    const fid = String(getState(st, 폼ID키).val || '');
+    if (!fid) { out.push(라벨 + ': 미생성 — 코드가 정본, 만들 때 새 문구로 생성됩니다'); return; }
+    try { out.push(라벨 + ': ' + 고치기(FormApp.openById(fid))); }
+    catch (e) { out.push('⚠️ ' + 라벨 + ': 폼 접근 실패(' + e + ') — 아무것도 고치지 않았습니다'); }
+  };
+  폼문항고치기('퀴즈폼 확신도 도움말', '퀴즈폼ID', (form) => {
+    const it = form.getItems().filter((x) => String(x.getTitle()).trim() === '얼마나 확신하나요?')[0];
+    if (!it) return '⚠️ 문항을 못 찾아 안 고쳤습니다(제목 「얼마나 확신하나요?」 부재)';
+    if (String(it.getHelpText() || '') === QUIZ_CONFIDENCE_HELP) return '이미 최신';
+    it.setHelpText(QUIZ_CONFIDENCE_HELP);
+    return '도움말 갱신';
+  });
+  폼문항고치기('설문폼 설명', '설문폼ID', (form) => {
+    /* 자유 문항 «제목»은 여기서 안 민다 — 제목은 응답 시트 헤더·서명이라 마이그레이션 setTitle 금지
+     * 자(직장 폼 회귀)가 지키는 선이다. 이미 생성된 폼의 제목은 옛 한국어 괄호로 남되, 학부모가
+     * 실제로 읽는 본체는 몽골어라 실해가 없고, 새로 만드는 폼은 SURVEY_FREE_TITLE 로 태어난다. */
+    // 서명 — 낡은 ID 가 소유자의 «다른» 폼을 가리키면 안 고친다(migrateWorkFormMn :1413 전례).
+    // 학생ID 문항은 여러 폼에 있어 그것만으로는 못 가른다(codex fa962adc66e1 수용) — 몽골어 자유 문항까지 둘이 서명이다.
+    const 제목들 = form.getItems().map((x) => String(x.getTitle()).trim());
+    const 서명 = 제목들.indexOf('학생ID') !== -1
+      && 제목들.some((t) => t.indexOf('Нэг зүйлийг өөрчилж болох бол юу вэ?') === 0);
+    if (!서명) return '⚠️ 설문폼ID 가 가리키는 폼이 만족도 설문이 아닙니다(서명 문항 둘 중 하나 부재) — 남의 폼을 덮지 않으려고 안 고쳤습니다';
+    if (String(form.getDescription() || '') === SURVEY_DESC) return '이미 최신';
+    form.setDescription(SURVEY_DESC);
+    return '설명 갱신';
+  });
+  let 직장보고;
+  try { 직장보고 = migrateWorkFormMn(); } catch (e) { 직장보고 = '⚠️ 직장 폼 재적용 실패: ' + e; }
+  const report = '📝 폼 문구 다듬기 재적용(09-01)\n' + out.join('\n')
+    + '\n— 직장 폼: 기존 migrateWorkFormMn 위임\n' + String(직장보고).split('\n')[0];
+  Logger.log(report);
+  return report;
 }
 
 /* ── [v9.89] 🔁 결석 연락 기록 폼 — 「결석 복귀율」의 입력 레일(약점 메모 폼 v9.55·v9.64 계보) ──
