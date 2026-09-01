@@ -79,7 +79,10 @@ const 재기 = (n) => Math.round(n * 배);
  * 밴딩(띠 얼룩)이 생기는데, 전면의 미세 노이즈가 디더 역할을 해 그것을 깬다. */
 
 /** 전면 양모 천 — 뭉침(저주파) 2층 + 섬유(고주파) 2층. 팔레트만 받아 라이트/다크 둘 다 굽는다. */
-function 양모천svg({ 보풀, 그늘, 어둡나 }) {
+/* 🔑 크기를 인자로 받는다(기본값 = 배너 크기) — 형제 도구(라디오 배경굽기)가 720p 판을 빌려 간다.
+ *   ⚠ 크기를 안 받고 viewBox 만 늘리면 `preserveAspectRatio="none"` 이 노이즈를 «늘여서»
+ *     섬유 결이 가로로 뭉갠다. 재질은 늘리는 것이 아니라 그 크기로 다시 짜는 것이다. */
+function 양모천svg({ 보풀, 그늘, 어둡나, w = W, h = H }) {
   const rgb = (hex) => {
     const n = parseInt(hex.slice(1), 16);
     return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255].map((v) => v.toFixed(4));
@@ -98,7 +101,7 @@ function 양모천svg({ 보풀, 그늘, 어둡나 }) {
   const 뭉침빛알파 = 어둡나 ? '0.26 -0.16' : '0.3 -0.2';
   const 보풀알파 = 어둡나 ? '0.95 -0.48' : '0.7 -0.44';
   const 그늘알파 = 어둡나 ? '0.6 -0.33' : '0.5 -0.33';
-  return `<svg class="천" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+  return `<svg class="천" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
   <defs>
     <filter id="bn-wool" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
       <feFlood flood-color="#000" flood-opacity="0" result="base"/>
@@ -116,7 +119,7 @@ function 양모천svg({ 보풀, 그늘, 어둡나 }) {
       </feMerge>
     </filter>
   </defs>
-  <rect width="${W}" height="${H}" filter="url(#bn-wool)"/>
+  <rect width="${w}" height="${h}" filter="url(#bn-wool)"/>
 </svg>`;
 }
 
@@ -631,4 +634,7 @@ function main() {
   console.log(`\n[배너굽기] ${굽힌것.length}벌 · ${path.relative(ROOT, 낼곳)}`);
 }
 
-main();
+/* 형제 도구가 «천»과 «아플리케»를 빌려 간다(`tools/라디오배경굽기.js`) — 같은 재질을 두 곳이
+ * 각자 조립하면 그 자리에서 결이 갈린다. CLI 로 부를 때만 main 이 돈다. */
+module.exports = { 양모천svg, 잉크펠트꺾쇠, 실, W, H, 안전W, 안전H };
+if (require.main === module) main();
