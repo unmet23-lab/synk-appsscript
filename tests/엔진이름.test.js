@@ -69,14 +69,14 @@ test('픽스처 — 「SYNKLoom」처럼 붙여 쓴 것은 결합이 아니다',
 
 test('실저장소 — 엔진 갈래 지면 전량이 이름 칸에 회사명을 달고 있다', () => {
   const 지면 = 지면들(산출방);
-  assert.ok(지면.length >= 7, `엔진 갈래 지면 ${지면.length}벌 — 소개서 6 + 지도 1 아래로 떨어졌다(분모를 먼저 본다)`);
+  assert.ok(지면.length >= 8, `엔진 갈래 지면 ${지면.length}벌 — 소개서 7 + 지도 1 아래로 떨어졌다(분모를 먼저 본다)`);
   const 흠 = 지면.flatMap((f) => 이름칸흠(f, fs.readFileSync(path.join(산출방, f), 'utf8')).map((h) => `${f}: ${h}`));
   assert.deepStrictEqual(흠, [], `${지면.length}벌 중 ${흠.length}건 — 규약 = SYNK_엔진_지도.html 「작명 규약」(유호 지시 08-18)`);
 });
 
 test('실저장소 — 원고 전량도 같은 이름을 쓴다(원고가 정본이라 여기서 갈리면 다음 굽기가 되돌린다)', () => {
   const 원고 = 지면들(원고방);
-  assert.strictEqual(원고.length, 6, `원고 ${원고.length}벌 — 소개서 6벌이 분모다`);
+  assert.strictEqual(원고.length, 7, `원고 ${원고.length}벌 — 소개서 7벌이 분모다(Reed 편입 09-01)`);
   const 흠 = 원고.flatMap((f) => 이름칸흠(f, fs.readFileSync(path.join(원고방, f), 'utf8')).map((h) => `${f}: ${h}`));
   assert.deepStrictEqual(흠, [], `원고 ${원고.length}벌 중 ${흠.length}건`);
 });
