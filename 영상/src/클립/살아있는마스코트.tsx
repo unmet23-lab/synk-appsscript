@@ -422,7 +422,11 @@ export const 살아있는마스코트: React.FC<{
       const g = ctx.createLinearGradient(0, 0, S, 0);
       g.addColorStop(0, `rgba(255,252,246,${Math.max(0, 빛).toFixed(3)})`);
       g.addColorStop(0.5, "rgba(255,252,246,0)");
-      g.addColorStop(1, `rgba(8,9,12,${Math.max(0, 빛).toFixed(3)})`);
+      /* 🔑 그림자 쪽은 킷 다리 `그늘()` 을 지난다 — 여기 하나가 마지막 복제였다(09-01).
+         hex 가 아니라 rgba 표기라 「색은 킷만」을 재는 grep 이 **원리상 못 보던** 자리다.
+         ⚠ 반대편(빛)의 `rgba(255,252,246,…)` 은 **킷에 그 값이 없어** 다리를 안 만든다 —
+           없는 값에 킷 다리를 붙이면 킷 밖 색이 킷처럼 보인다(그게 더 나쁘다). */
+      g.addColorStop(1, 그늘(Number(Math.max(0, 빛).toFixed(3))));
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, S, S);
       ctx.restore();
