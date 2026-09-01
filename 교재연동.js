@@ -178,7 +178,7 @@ function voiceMissionTexts_(ss) {
   if (!sh || sh.getLastRow() < 2) return {};              // 아직 안 쓰셨다 — 정상
   const w = sh.getLastColumn();
   const head = sh.getRange(1, 1, 1, w).getValues()[0].map(h => String(h || '').replace(/\s/g, ''));
-  const cId = head.indexOf('미션ID'), cTx = head.indexOf('목표발화');
+  const cId = head.indexOf('미션ID'), cTx = head.indexOf('목표발화'), cAx = head.indexOf('축');
   if (cId < 0 || cTx < 0) {
     adminMail('[SYNK] 🎙 낭독 미션 목록의 열 이름이 안 맞습니다',
       'voice_missions 시트에 「미션ID」·「목표발화」 열이 필요한데 찾지 못했습니다.\n'
@@ -186,11 +186,21 @@ function voiceMissionTexts_(ss) {
       + '그대로 두면 voice_log 의 「목표발화」 칸이 계속 빈 채로 쌓이고, 그 소리는 나중에 못 씁니다.');
     return {};
   }
+  /* 🔴 [2026-09-01] **한 미션ID 에 낱말이 여럿이다 — 그래서 배열이다.**
+   *   그전 구현은 `out[id] = tx` 라 **뒤 행이 앞 행을 덮었다.** HW306 처럼 낱말 여섯을 지정하면
+   *   다섯이 조용히 사라졌고, 오류도 경고도 없었다. 아래 `voiceSweep_` 주석(:245)은 그때도
+   *   「그날의 값을 **스냅샷**한다」고 적고 있었으니 **구현이 자기 주석을 못 지킨 것**이다.
+   *   ⇒ 소급 불가 직격이었다: 그날 학생에게 무엇을 읽게 했는지가 영영 복원되지 않는다.
+   *   (발음데이터 규격 심문 P0-② · 판정 = `docs/_ops/심문결과/발음데이터_규격-전건판정.md`)
+   * 🔑 축을 함께 담는다(`P3:읽었어요`) — 한 낱말이 어느 축을 노렸는지가 목록에만 있고 로그에 없으면
+   *   나중에 축별로 못 센다. 축 열이 없으면 낱말만 담는다(없는 것을 지어내지 않는다). */
   const out = {};
   sh.getRange(2, 1, sh.getLastRow() - 1, w).getValues().forEach(r => {
     const id = String(r[cId] || '').trim();
     const tx = String(r[cTx] || '').trim();
-    if (id && tx) out[id] = tx;
+    if (!id || !tx) return;
+    const ax = cAx >= 0 ? String(r[cAx] || '').trim() : '';
+    (out[id] || (out[id] = [])).push(ax ? ax + ':' + tx : tx);
   });
   return out;
 }
@@ -277,7 +287,9 @@ function voiceSweep_(ss) {
       mid,
       SCHEMA_VER, // [v9.208] 행이 자기 규격을 들고 있게(A-8) — 정의는 엔진_수집.js 하나(사본 금지 · 함수 안 참조라 파일 로드 순서 무관)
       // [v9.277] 발음 6칸 — 지금 아는 둘만 채우고 나머지 넷은 각자의 채우는 자가 뒤에 붙인다
-      목표문[mid] || '',  // 목표발화 (목록 없으면 빈 칸 — 소급해 채우지 않는다)
+      // [2026-09-01] 그날 지정된 낱말 **전량** 스냅샷(`P3:읽었어요 · P9:많았어요`). 하나만 담던 것을
+      // 고쳤다 — 여섯을 지정하면 다섯이 조용히 사라지고 있었다(심문 P0-②). 목록 없으면 빈 칸.
+      (목표문[mid] || []).join(' · '),  // 목표발화 (소급해 채우지 않는다)
       시즌,               // 시즌     (Ⅰ-8 눈금의 전제)
       '',                 // 전사신뢰도 ← sttSweep_
       '',                 // 전사엔진판 ← sttSweep_

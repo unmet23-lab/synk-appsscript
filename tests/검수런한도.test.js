@@ -204,7 +204,14 @@ test('훅: 런 0건이어도 살아있는 마커면 알리고, 마커가 지났�
   const 런 = 런모듈();
   런.한도기록(실측줄);
   살려두기(런);   // 🔑 아래 ⚠ — 실측줄의 날짜에 기대지 않는다
-  const env = { ...process.env, SYNK_REVIEW_RUNS: process.env.SYNK_REVIEW_RUNS };
+  /* 이 시험이 재는 것은 «한도 마커» 축이다. 훅은 세 축을 내므로(런·마커·심문 드리프트) 나머지를
+   * 격리해야 「침묵」 검사가 성립한다 — 09-01 에 개명 사슬로 드리프트가 살아나자 아래 out2 침묵
+   * 검사가 거짓 적색이 됐다(엔진이 아니라 시험이 실저장소에 기대고 있었다). 없는 경로 = 이력 0. */
+  const env = {
+    ...process.env,
+    SYNK_REVIEW_RUNS: process.env.SYNK_REVIEW_RUNS,
+    SYNK_INTERROGATION_LEDGER: path.join(require('node:os').tmpdir(), 'synk-없는심문장부.jsonl'),
+  };
   delete env[런.한도무시키];
   const out = execFileSync(process.execPath, [path.join(ROOT, '.claude', 'hooks', 'review-runs.js')],
     { encoding: 'utf8', env, timeout: 30000 });
