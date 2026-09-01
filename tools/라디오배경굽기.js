@@ -152,8 +152,11 @@ function 지면(키) {
   /* ⑤ 각인 — 왼쪽 아래 구석. 어느 무대에 얹혀도 읽히게 그늘을 깐다.
      🔑 밝은 무대(시티팝)가 더 어렵다 — 모래가 잉크와 명도가 붙어 첫 판에서 글자가 씻겼다.
         그래서 밝은 판엔 «어둡게 까는» 그늘을 더 진하게 준다(어두운 판보다 세다). */
-  .각인막{position:absolute;left:0;bottom:0;width:52%;height:40%;z-index:4;pointer-events:none;
-    background:linear-gradient(to top right, ${a.천.어둡나 ? 'rgba(8,6,4,0.60)' : 'rgba(62,30,20,0.46)'} 0%, transparent 66%);}
+  /* 🔴 «모서리에서 뻗는» 그늘은 radial 이어야 한다 — linear 로 두면 상자 오른쪽 끝에서 값이
+     transparent 에 못 닿은 채 잘려 **세로 줄**이 선다(09-02 실측: 52%=665px 자리에 이음매).
+     radial 은 사방으로 같은 거리에서 사라지므로 상자 경계가 안 보인다. 상자도 넉넉히 준다. */
+  .각인막{position:absolute;left:0;bottom:0;width:64%;height:58%;z-index:4;pointer-events:none;
+    background:radial-gradient(ellipse 100% 100% at 0% 100%, ${a.천.어둡나 ? 'rgba(8,6,4,0.62)' : 'rgba(62,30,20,0.50)'} 0%, transparent 72%);}
   .각인{position:absolute;left:56px;bottom:46px;z-index:5;}
   .로고{width:104px;margin:0 0 12px;filter:drop-shadow(0 1px 4px ${a.천.어둡나 ? 'rgba(0,0,0,0.6)' : 'rgba(50,22,14,0.45)'});}
   .로고 svg{width:100%;height:auto;display:block;}
