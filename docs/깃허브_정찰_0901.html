@@ -66,6 +66,8 @@
   <strong>둘이 유호님 귀를 통과했고</strong>(「둘 다 너무 좋은데?」) <strong>둘은 탈락</strong>했다 —
   탈락 둘은 <em>내가 리스트에 올릴 때 잘못 읽은 것</em>이라 아래에 그대로 적는다.
   가장 큰 소득은 <strong>한국어 목소리 둘과, 몽골어가 소리로 나왔다는 것</strong>이다.
+  거기서 멈추지 않고 <strong>Arc GPU 를 붙였고</strong>(적재 12분 → 10초) <strong>통로를 세워 커밋했다</strong> —
+  이제 문장 한 줄이면 소리가 나온다. 다만 <strong>그 목소리를 어디에 쓸지는 아직 안 정했다</strong>(⑥).
 </div>
 
 <h2>① 유호님 귀를 통과한 둘<span class="n">둘 다 채택 후보</span></h2>
@@ -106,7 +108,29 @@
   </tbody>
 </table>
 </div>
-<p class="hint">OmniVoice 는 모델 적재에만 742초(12분)가 더 든다 — 한 번 띄우고 여러 줄을 뽑는 쪽이 맞다.</p>
+<div class="tbl-wrap">
+<table>
+  <thead><tr><th>같은 것을 <b>Arc GPU</b> 로 다시 (torch 2.12.0+xpu)</th><th class="num">CPU</th><th class="num">Arc</th><th class="num">배수</th></tr></thead>
+  <tbody>
+    <tr><td>몽골어 <b>모델 적재</b></td><td class="num">742초</td><td class="num"><b>9.7초</b></td><td class="num">76배</td></tr>
+    <tr><td>몽골어 생성</td><td class="num">21.0초</td><td class="num"><b>8.2초</b></td><td class="num">2.6배</td></tr>
+    <tr><td>한국어 모델 적재</td><td class="num">15.6초</td><td class="num">14.8초</td><td class="num">≈같음</td></tr>
+    <tr><td>한국어 생성</td><td class="num">22.0초</td><td class="num"><b>18.3초</b></td><td class="num">1.2배</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="hint">🔑 <b>적재가 12분 → 10초</b>라 「한 번 띄우고 몰아 뽑기」가 아니라 <b>한 줄씩 그때그때 불러도 된다</b> — 통로가 실용적인 물건이 된 지점이다.
+한국어 이득이 1.2배뿐인 까닭은 <b>qwen 이 XPU 에서 <code>float32</code> 밖에 못 쓰기 때문</b>이다(fp16·bf16 은 <code>TensorCompareKernels.cpp:180</code> assertion 으로 죽는다 · OmniVoice 는 같은 GPU 에서 fp16 이 멀쩡하다).</p>
+
+<h2>③ 그래서 통로를 세웠다<span class="n">유호 지시 「둘 다 해줘」</span></h2>
+<div class="item top">
+  <h3><code>node tools/목소리굽기.js</code></h3>
+  <div class="row">
+    <div class="k">쓰기</div><div><code>node tools/목소리굽기.js "잘했어요!" --톤 "밝고 신나게, 칭찬하듯"</code><br><code>node tools/목소리굽기.js "Сайн байна уу." --언어 몽골어</code></div>
+    <div class="k">정본</div><div>경로·모델·목소리 표를 <b>이 파일 하나가</b> 안다(알맹이 = <code>tools/lib/목소리.py</code>). 산출물은 <code>docs/소리/</code> — git 이 무시한다(도구가 정본이라 언제든 다시 굽는다).</div>
+    <div class="k">🔴함정</div><div><b>두 엔진은 같은 가상환경에 못 산다</b> — qwen 을 omnivoice 옆에 깔면 transformers 가 5.16→4.57 로 내려가 omnivoice 가 즉사한다(<code>ImportError: HiggsAudioV2TokenizerModel</code>). 환경을 갈라 뒀다.</div>
+  </div>
+</div>
 
 <h2>② 한국어는 기계로도 증명됐다<span class="n">몽골어는 못 쟀다</span></h2>
 <p class="hint">만든 소리를 받아쓰기(faster-whisper small)에 도로 먹여 「그 언어로 제대로 읽혔나」를 쟀다.</p>
@@ -123,7 +147,7 @@
   <div class="warn">⇒ 몽골어는 「됐다」가 아니라 <b>「소리는 나왔고, 그게 제대로 된 몽골어인지는 안 재봤다」</b>가 정직한 상태다. 남은 자는 <b>몽골어 감수자의 귀</b> 하나뿐이다.</div>
 </div>
 
-<h2>③ 값은 있으나 자리가 좁은 것</h2>
+<h2>④ 값은 있으나 자리가 좁은 것</h2>
 
 <div class="item">
   <h3>MOSS-TTS-Nano <span class="star">4,279★</span></h3>
@@ -144,7 +168,7 @@
   </div>
 </div>
 
-<h2>④ 탈락 둘 — 내가 잘못 읽은 것<span class="n">숨기지 않는다</span></h2>
+<h2>⑤ 탈락 둘 — 내가 잘못 읽은 것<span class="n">숨기지 않는다</span></h2>
 
 <div class="item dead">
   <h3>screenmap <span class="star">120★</span> — 원리상 불가</h3>
@@ -164,15 +188,16 @@
   <div class="warn">⇒ <b>발음 데이터 트랙에 그대로는 못 쓴다.</b> 원리상 한국어 wav2vec2 모델을 붙이면 되지만 그건 코드를 고치는 별개 작업이다.</div>
 </div>
 
-<h2>⑤ 못 잰 것<span class="n">「없다」와 다르다</span></h2>
+<h2>⑥ 남은 것 · 못 잰 것<span class="n">「없다」와 다르다</span></h2>
 <div class="item">
   <div class="row">
-    <div class="k">Arc GPU</div><div class="fit cond">XPU 용 PyTorch 가 <b>Intel 인덱스와 PyTorch 공식 인덱스 둘 다에서 45분간 21MB 에 멈춰</b> 붙이지 못했다. 위 수치는 <b>전부 CPU</b> 다. OmniVoice 는 GPU 에서 실시간의 40배(RTF 0.025)를 표방하므로, 붙으면 판이 달라진다.</div>
-    <div class="k">몽골어 품질</div><div class="fit cond">위 ② 참조 — 재는 자가 없다.</div>
+    <div class="k">Arc GPU</div><div class="fit yes"><b>붙였다</b> — <code>torch 2.12.0+xpu</code> · Arc B390(Battlemage) · VRAM 7.8GB. 🔑 <b>pip 은 두 인덱스에서 45분간 21MB 로 실패했고 <code>uv</code> 가 4분 26초에 끝냈다.</b> 함정 하나 더: CPU 판 torch 가 이미 있으면 재설치가 <b>조용히 무시된다</b> — uninstall 이 먼저다.</div>
+    <div class="k">몽골어 품질</div><div class="fit cond">위 ② 참조 — <b>재는 자가 없다.</b> 여전히 못 쟀다.</div>
+    <div class="k">쓸 자리</div><div class="fit cond"><b>아직 안 정했다</b>(유호님 질문 「이거 목소리 어디에 쓰는거야?」). 후보 넷 = ㉠몽골어 안내(개원 실무·추천) ㉡발음 본보기 ㉢라디오 멘트 ㉣앱 알림. ⚠ 가이드 셋(몽글·까몽·마린) 목소리는 <b>사인파 «악기»로 이미 확정</b>돼 있어 다른 층이다 — 겹치지 않는다.</div>
   </div>
 </div>
 
-<h2>⑥ 「없다」가 답인 갈래</h2>
+<h2>⑦ 「없다」가 답인 갈래</h2>
 <div class="item dead">
   <div class="row">
     <div class="k">몽골어</div><div>전용 도구 사실상 <b>0건</b>(별 0 습작 둘). ⇒ 다국어 모델(OmniVoice)이 유일한 길임이 이번에 확인됐다.</div>
