@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>심문 표식 판정 — 2026-09-01</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+:root{
+  --paper:#FBF7F0; --ink:#2B2320; --stitch:#F0E3C8;
+  --oat:#EDE7DC; --stone:#C7BFB2; --ash:#8D857A; --deepwool:#575046;
+  --coral:#F96859; --coral3:#AE322A; --coralsoft:#FBB7A3; --wash:#FEF0E9;
+  --lapis:#3D6BC9; --lapisdeep:#24448C; --lapissoft:#C5D6F5;
+  --meadow:#7DB45A; --meadowdeep:#3F6B2E; --meadowsoft:#D3E8BE;
+  --butter:#F5C445; --butterdeep:#7E5A10; --buttersoft:#FFEBB0;
+  --font:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  /* 한글 폴백을 «명시»한다 — DM Mono·Consolas 엔 한글 글리프가 없어서 안 적으면 기계가 알아서
+     고르고, 그러면 판정 지면의 코드 표기(«소급불가» 같은 한글이 든다)가 기계마다 달라진다.
+     2026-09-01 실측: 라틴은 DM Mono 가 쓰이는데 한글만 스택 밖 폰트로 떨어지고 있었다. */
+  --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,'Malgun Gothic','Apple SD Gothic Neo',monospace;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font); font-weight:500; line-height:1.72; letter-spacing:-0.011em; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1080px; margin:0 auto; padding:56px 28px 120px}
+header{border-bottom:2px solid var(--stitch); padding-bottom:28px; margin-bottom:40px}
+.kicker{font-family:var(--mono); font-size:12px; letter-spacing:.10em; color:var(--ash); text-transform:uppercase}
+h1{font-size:38px; font-weight:800; letter-spacing:-0.03em; line-height:1.18; margin:12px 0 14px}
+.sub{font-size:16px; color:var(--deepwool); max-width:70ch}
+h2{font-size:24px; font-weight:800; letter-spacing:-0.025em; margin:58px 0 6px; line-height:1.3}
+h2 .num{font-family:var(--mono); font-size:13px; font-weight:500; color:var(--coral); display:block; letter-spacing:.08em; margin-bottom:8px}
+p{margin:12px 0; max-width:74ch}
+strong{font-weight:800}
+code{font-family:var(--mono); font-size:.9em; background:var(--oat); padding:1px 5px; border-radius:4px}
+em{font-style:normal; background:var(--wash); padding:1px 5px; border-radius:4px; font-weight:800; color:var(--coral3)}
+
+.callout{background:#fff; border:2px solid var(--stitch); border-radius:18px; padding:26px 30px; margin:28px 0;
+  box-shadow:0 1px 0 var(--stitch), 0 14px 34px -26px rgba(43,35,32,.42);}
+.callout.warn{border-color:var(--coralsoft); background:var(--wash)}
+.callout .tag{display:inline-block; font-family:var(--mono); font-size:11px; letter-spacing:.10em;
+  background:var(--coral); color:var(--paper); padding:4px 10px; border-radius:99px; margin-bottom:12px}
+.callout.info .tag{background:var(--lapis)}
+.callout p:last-child{margin-bottom:0}
+
+table{width:100%; border-collapse:collapse; margin:26px 0; font-size:14.5px}
+th,td{text-align:left; padding:13px 12px; border-bottom:1px solid var(--stitch); vertical-align:top}
+th{font-family:var(--mono); font-size:11.5px; letter-spacing:.07em; color:var(--ash); text-transform:uppercase;
+  border-bottom:2px solid var(--stitch); white-space:nowrap}
+tbody tr:hover{background:#fff}
+td.doc{font-weight:800; letter-spacing:-0.02em; white-space:nowrap}
+td.doc .path{display:block; font-family:var(--mono); font-size:11px; font-weight:400; color:var(--ash); letter-spacing:0}
+.pill{display:inline-block; font-family:var(--mono); font-size:11px; font-weight:500; padding:3px 9px; border-radius:99px; white-space:nowrap}
+.p-now{background:var(--coral); color:#fff}
+.p-had{background:var(--buttersoft); color:var(--butterdeep)}
+.p-low{background:var(--oat); color:var(--deepwool)}
+.p-free{background:var(--meadowsoft); color:var(--meadowdeep)}
+.hist{font-size:12.5px; color:var(--ash); font-family:var(--mono); letter-spacing:0}
+
+.grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:24px 0}
+.card{background:#fff; border:2px solid var(--stitch); border-radius:16px; padding:22px 22px}
+.card .h{font-family:var(--mono); font-size:11px; letter-spacing:.09em; color:var(--ash); margin-bottom:8px}
+.card .t{font-size:17px; font-weight:800; letter-spacing:-0.02em; line-height:1.4; margin-bottom:8px}
+.card ul{margin:8px 0 0; padding-left:18px; font-size:14.5px}
+.card li{margin:5px 0}
+.tally{font-family:var(--mono); font-size:13px; color:var(--deepwool); background:var(--oat); border-radius:12px; padding:14px 18px; margin:20px 0}
+.scroll{overflow-x:auto}
+footer{margin-top:72px; padding-top:24px; border-top:2px solid var(--stitch); font-size:13.5px; color:var(--ash)}
+@media (max-width:760px){ .grid{grid-template-columns:1fr} h1{font-size:30px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">SYNK · 판정 지면 · 2026-09-01</div>
+  <h1>심문 표식 판정 — 13벌을 대상과 면제로 가른다</h1>
+  <p class="sub">
+    <code>tools/ai스택점검.js</code> 가 「본문이 스스로 <strong>소급 불가</strong>를 말하는 설계·계약·규격 문서」 13벌을 세웠습니다.
+    각 문서에 <code>&lt;!-- 심문: 소급불가 --&gt;</code> 또는 <code>&lt;!-- 심문: 면제 · 왜 --&gt;</code> 중
+    무엇을 심을지가 <strong>판정</strong>이라 자가 못 정합니다. 아래가 그 판정안입니다.
+  </p>
+</header>
+
+<div class="callout warn">
+  <span class="tag">먼저 정정</span>
+  <p><strong>어제 드린 「심문받은 정본 1벌」은 «장부 기준»이고, 실제 이력은 더 있었습니다.</strong>
+  장부(<code>docs/_ops/심문기록.jsonl</code> · 6줄)는 <strong>08-29 이후</strong>만 압니다. 그 전 심문들은
+  <strong>08-19 정리(<code>e75fc7fc</code>)에서 결과 파일이 걷혀</strong> 장부에 안 남았습니다 —
+  엔진도달(v1이 P0 12건으로 <em>동결 불가</em> 판정) · 상태기반(9회차) · 라디오24(독립 심문 3갈래) ·
+  가져가는것(적대 검증 36건).</p>
+  <p>수치가 틀린 게 아니라 <strong>자가 좁았습니다.</strong> 그래서 아래 표에 「장부 밖 이력」 칸을 따로 두었고,
+  자의 문구도 「안 받았다」가 아니라 <strong>「장부에 없다」</strong>로 고쳤습니다.</p>
+</div>
+
+<h2><span class="num">§1</span>가르는 선 — 무엇이 «소급 불가»인가</h2>
+<p>②설계 심문이 지키는 것은 <strong>동결 뒤 못 고치는 것</strong>입니다. 그래서 낱말이 나온다고 대상이 아니라,
+그 문서가 <strong>무엇을 «정하느냐»</strong>로 갈랐습니다.</p>
+
+<div class="grid">
+  <div class="card">
+    <div class="h">대상 — 셋 중 하나면 대상</div>
+    <div class="t">동결 뒤 못 고치는 것을 이 문서가 «정한다»</div>
+    <ul>
+      <li><strong>물리 계약</strong>을 정한다 — 스키마·열 이름·식별자(데이터가 쌓이면 못 고친다)</li>
+      <li><strong>무엇을 모으느냐</strong>를 정한다 — 안 모은 구간은 영원히 빈칸</li>
+      <li><strong>학생 접점의 약속</strong>을 정한다 — 동의·번호·기록 등급</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="h">면제 — 셋 중 하나면 면제</div>
+    <div class="t">바꿔도 소급 손실이 없다</div>
+    <ul>
+      <li><strong>연출·콘텐츠·재미</strong>층 — 언제든 다시 만든다</li>
+      <li>남의 계약을 <strong>쓰기만</strong> 한다 — 계약은 다른 정본이 진다</li>
+      <li><strong>운영 절차·전달 형태</strong> — 사람이 하는 방식일 뿐이다</li>
+    </ul>
+  </div>
+</div>
+
+<h2><span class="num">§2</span>판정 — 대상 10 · 면제 3</h2>
+
+<div class="scroll">
+<table>
+<thead>
+<tr><th>문서</th><th>판정</th><th>왜 그렇게 봤나</th><th>장부 밖 이력</th></tr>
+</thead>
+<tbody>
+
+<tr>
+  <td class="doc">발음데이터 규격<span class="path">docs/발음데이터_규격.md</span></td>
+  <td><span class="pill p-now">대상 · 지금</span></td>
+  <td>문서가 §1에서 <strong>소급 불가의 정체를 스스로 다시 정의</strong>합니다 — <em>「소급 불가 = 유도(elicitation) 설계, 소급 가능 = 라벨 체계」</em>.
+      즉 <strong>무엇을 말하게 하느냐</strong>는 학생이 오기 전에만 정할 수 있습니다.</td>
+  <td class="hist">없음</td>
+</tr>
+
+<tr>
+  <td class="doc">코어엔진 설계<span class="path">docs/코어엔진_설계.md</span></td>
+  <td><span class="pill p-now">대상 · 지금</span></td>
+  <td>계약에 박는 것이 <strong>레코드 5형</strong>(문서 표현: <em>「학습 방법=소급 가능 · 데이터만 소급 불가」</em>) ·
+      <strong>「빈 곳 6 — 전부 소급 불가 축」</strong> · 동의 v18.9 개정이 <strong>실학생 동의 시작 전이 마지막 기회</strong>라고 못박혀 있습니다.</td>
+  <td class="hist">없음(E0 초안 · 반박 1패스만)</td>
+</tr>
+
+<tr>
+  <td class="doc">세 층 합류 설계<span class="path">docs/세층합류_설계_v1.md</span></td>
+  <td><span class="pill p-now">대상 · 지금</span></td>
+  <td><strong>09-01 채택되어 시공이 시작됐고</strong>, 아래 정본 넷(성향추출·상태기반·복습스케줄러·함께한날)을 묶는 <strong>지붕</strong>입니다.
+      스키마·마이그레이션·식별자를 다 건드리므로 굳기 전이 마지막 기회입니다.</td>
+  <td class="hist">forge 하드게이트 2벌<br>(심문과는 다른 자)</td>
+</tr>
+
+<tr>
+  <td class="doc">시즌 회고 설계<span class="path">docs/시즌회고_설계.md</span></td>
+  <td><span class="pill p-now">대상 · 지금</span></td>
+  <td>소급 불가 지점이 <strong>한 곳으로 좁혀져</strong> 있고(<code>season_compass</code> 행 하나) 시한이 명시돼 있습니다 —
+      <em>「첫 학생의 «입학일» 전 — 개원일이 아니다」</em>. 아직 안 지었습니다.</td>
+  <td class="hist">없음</td>
+</tr>
+
+<tr>
+  <td class="doc">학생의 말 설계<span class="path">docs/학생의말_설계_v1.md</span></td>
+  <td><span class="pill p-now">대상 · 지금</span></td>
+  <td>§4가 <strong>「소급 불가 지점 — 딱 한 곳이다」</strong>로 스스로 자리를 지목합니다. 유호님 판정 넷이 아직 §7에 열려 있어
+      <strong>동결 전</strong>입니다.</td>
+  <td class="hist">없음</td>
+</tr>
+
+<tr>
+  <td class="doc">학생 ID 종단 설계<span class="path">docs/학생ID_종단_설계.md</span></td>
+  <td><span class="pill p-had">대상 · 재심문</span></td>
+  <td>㉠㉡가 <strong>「지금 · 소급 불가」</strong>로 못박혀 있습니다. 심문은 받았지만 <strong>그 뒤 v2로 자랐고</strong>,
+      파일이 <code>_v1</code> 없이 개명돼 <strong>장부 추적이 끊겼습니다</strong>(자가 매일 우는 그 줄).</td>
+  <td class="hist">4벌 — 장부가 아는 유일<br>결과 파일 살아 있음</td>
+</tr>
+
+<tr>
+  <td class="doc">라디오24 설계<span class="path">docs/라디오24_설계.md</span></td>
+  <td><span class="pill p-had">대상 · 재심문</span></td>
+  <td>DDL·not null·마이그레이션을 직접 정하고, <em>「송출 첫날부터 원장이 선다 — 나중에 붙이면 그 사이는 영원히 빈칸」</em>.
+      <strong>09-01 v1.6에서 채널 분리 확정으로 크게 바뀌었고</strong> P1 착수가 코앞입니다.</td>
+  <td class="hist">독립 심문 3갈래(v1.0 때)<br>결과 파일 없음</td>
+</tr>
+
+<tr>
+  <td class="doc">상태 기반 과제 선택<span class="path">docs/상태기반_과제선택_설계.md</span></td>
+  <td><span class="pill p-had">대상 · 이미 받음</span></td>
+  <td>계약 자리가 <strong>17곳</strong>이고 DDL·열 이름·마이그레이션이 다 있습니다. 다만 <strong>9회차 심문을 받고 종결</strong>됐습니다
+      (v5.13 · ②집행 23/23). 표식은 달되 재심문 급하지 않습니다.</td>
+  <td class="hist">9회차 — 결과 파일 살아 있음</td>
+</tr>
+
+<tr>
+  <td class="doc">엔진 도달 설계<span class="path">docs/엔진도달_설계.md</span></td>
+  <td><span class="pill p-had">대상 · 이미 받음</span></td>
+  <td>v1이 심문에서 <strong>P0 12건으로 동결 불가</strong> 판정을 받고 전건 반영해 v2가 됐습니다.
+      <code>scene_log</code>가 <em>「열린 날은 소급 불가」</em>. ⚠ <strong>문서가 가리키는 심문 원문이 지금 없습니다</strong>(08-19 정리로 걷힘).</td>
+  <td class="hist">v1 심문 1벌<br>결과 파일 <strong>사라짐</strong></td>
+</tr>
+
+<tr>
+  <td class="doc">가져가는 것 설계<span class="path">docs/가져가는것_설계_v1.md</span></td>
+  <td><span class="pill p-low">대상 · 낮음</span></td>
+  <td><em>「순간은 전부 소급 불가라 조용한 실패가 곧 영구 손실」</em> — 사진·영상 자산과 <strong>순간 폴더의 소유자</strong>(강사 개인 계정이면 퇴사 때 같이 사라진다)가 걸립니다.
+      다만 스키마를 정하지는 않고, <strong>적대 검증 36건을 이미 반영</strong>했습니다.</td>
+  <td class="hist">적대 검증 36건(v1.1)</td>
+</tr>
+
+<tr>
+  <td class="doc">출석 체크인 설계<span class="path">docs/출석체크인_설계_v1.md</span></td>
+  <td><span class="pill p-free">면제</span></td>
+  <td>계약은 <strong>talk 쪽 L0(c12)</strong>가 집니다. 이 문서가 정하는 것은 2층 구조와 보상의 위치입니다.
+      소급 불가 한 줄(링크 열람 기록)의 <strong>계약도 talk 몫</strong>이라 여기서 심문할 대상이 없습니다.</td>
+  <td class="hist">없음</td>
+</tr>
+
+<tr>
+  <td class="doc">미니게임 게임층<span class="path">docs/미니게임_게임층_설계.md</span></td>
+  <td><span class="pill p-free">면제</span></td>
+  <td>재미·연출·NPC층입니다. 문서가 스스로 <strong>「발주서가 데이터·수집·화면 흐름을 덮는다」</strong>고 밝히고,
+      이 문서는 <strong>재미를 만드는 생성 기준</strong>만 답니다. 바꿔도 소급 손실이 없습니다.</td>
+  <td class="hist">없음</td>
+</tr>
+
+<tr>
+  <td class="doc">몽골어 검수 꾸러미<span class="path">docs/몽골어_검수_꾸러미_설계.md</span></td>
+  <td><span class="pill p-free">면제</span></td>
+  <td>검수자가 <strong>무엇을 어떻게 받는가</strong> — 전달 형태·운영 절차입니다. 스키마·계약 0.
+      회차 배열을 바꿔도 잃는 것이 없습니다(<strong>몽골어 = 사람 검수</strong> 불변 규율은 그대로).</td>
+  <td class="hist">없음</td>
+</tr>
+
+</tbody>
+</table>
+</div>
+
+<div class="tally">
+  합계 13 = 대상 10 (지금 5 · 재심문 2 · 이미 받음 2 · 낮음 1) + 면제 3
+</div>
+
+<h2><span class="num">§3</span>이대로면 제가 하는 일</h2>
+
+<div class="callout info">
+  <span class="tag">승인하시면</span>
+  <p><strong>①</strong> 13벌에 표식을 심습니다 — 대상 10벌은 <code>소급불가</code>, 면제 3벌은 <strong>사유를 적어</strong> 심습니다
+  (사유 없는 면제는 자가 적색으로 웁니다).</p>
+  <p><strong>②</strong> 그러면 자의 적색이 <strong>「장부에 심문 기록이 없는 정본 10벌」</strong>로 바뀝니다 — 지금은 후보 13벌이 알림(🟠)인데,
+  표식을 심는 순간 <strong>대상 10벌이 적색(🔴)</strong>이 됩니다. 즉 <strong>일부러 시끄럽게 만드는 선택</strong>입니다.</p>
+  <p><strong>③</strong> 심문을 실제로 던지는 것은 <strong>따로</strong>입니다(<code>--심문 &lt;문서&gt; --던지기</code> · 한 벌에 20분 안팎).
+  「지금 5벌」부터 순서대로 던질지, 굵직한 착수 직전에만 던질지는 유호님이 정하시면 됩니다.</p>
+</div>
+
+<p><strong>바꾸실 자리는 판정 칸 하나뿐입니다.</strong> 「이건 면제로」·「이건 지금으로」 한 줄이면 그대로 반영합니다.</p>
+
+<h2><span class="num">§4</span>안 잰 것 — 정직하게</h2>
+<p>
+  <strong>①</strong> 판정 근거는 <strong>각 문서의 머리와 「소급 불가」가 나오는 줄</strong>입니다. 13벌 전문(합계 약 1.2MB)을 통독하지 않았습니다 —
+  두 문서는 특히 커서(상태기반 638KB · 가져가는것 103KB) 본문 깊은 곳의 계약이 제 판정을 뒤집을 수 있습니다.<br>
+  <strong>②</strong> 「장부 밖 이력」은 <strong>문서가 스스로 적은 문장</strong>으로 셌습니다. 안 적은 심문이 더 있었는지는 git 이력을 안 팠습니다.<br>
+  <strong>③</strong> 엔진도달의 심문 원문이 사라진 것은 <strong>파일 부재만 확인</strong>했습니다 — git 이력에서 되살릴 수 있는지는 안 봤습니다.
+</p>
+
+<footer>
+  자 = <code>node tools/ai스택점검.js</code> · 표식 규약 = <code>docs/AI_스택_가이드.md</code> §1-2 ·
+  이 지면은 판정 재료입니다(정본이 아닙니다). 판정이 서면 표식이 각 문서로 들어가고 이 지면의 역할은 끝납니다.
+</footer>
+
+</div>
+</body>
+</html>
