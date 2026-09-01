@@ -1,0 +1,84 @@
+# 노트북 없는 검수 ③ — 집계 잡(심판) (안 B · 정찰 지면 docs/교차검수_재설계_정찰_2026-09-02.html §8)
+#
+# 봇들의 코멘트를 읽어 «둘 이상이 P0/P1 을 짚었나»를 커밋 상태 하나(`SYNK/검수합의`)로 낸다.
+#   · 응답한 벤더가 둘 미만 → pending(아직 못 셌다 — «봇 침묵 = 미확인» 얼굴. 초록으로 접지 않는다)
+#   · 둘 이상이 P0/P1 → failure(사람이 본다) · 그 밖 → success
+#   유호님이 원하시면 Settings → Branches 에서 이 상태를 required 로 올리면 merge 게이트가 된다.
+# 🔴 스위치 — `SYNK_REVIEW_GITHUB` = `on`. 시크릿 불필요(GITHUB_TOKEN 만).
+# 📏 v0 — 벤더 판별은 코멘트 작성자 로그인(claude · chatgpt-codex-connector · gemini · coderabbit)과
+#    본문 표식(`합의표식: P0=n P1=n`, 없으면 P0/P1/critical 낱말)으로 한다. 자(규칙)는 이 파일 하나에만 산다.
+name: review-judge
+
+on:
+  issue_comment:
+    types: [created, edited]
+  pull_request_review:
+    types: [submitted, edited]
+  pull_request_review_comment:
+    types: [created, edited]
+
+jobs:
+  judge:
+    if: ${{ vars.SYNK_REVIEW_GITHUB == 'on' && (github.event_name != 'issue_comment' || github.event.issue.pull_request) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      statuses: write
+    steps:
+      - name: Tally bot reviews
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request ? context.payload.pull_request.number : context.payload.issue.number;
+            const { owner, repo } = context.repo;
+            const pr = (await github.rest.pulls.get({ owner, repo, pull_number: prNumber })).data;
+            if (pr.head.repo.full_name !== `${owner}/${repo}`) { core.info('포크 PR — 세지 않는다'); return; }
+
+            const 벤더 = (login, body) => {
+              const l = (login || '').toLowerCase(); const b = body || '';
+              if (l.includes('claude')) return 'claude';
+              if (l.includes('codex') || l.includes('chatgpt')) return 'codex';
+              if (l.includes('gemini') || /\[review-gemini\]|Gemini Code Assist|gemini-cli/i.test(b)) return 'gemini';
+              if (l.includes('coderabbit')) return 'coderabbit';
+              return null;
+            };
+            const 짚었나 = (body) => {
+              const m = /합의표식:\s*P0=(\d+)\s*P1=(\d+)/.exec(body || '');
+              if (m) return (Number(m[1]) + Number(m[2])) > 0;
+              return /\bP0\b|\bP1\b|\bcritical\b|\bblocker\b/i.test(body || '');
+            };
+
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: prNumber, per_page: 100 });
+            const reviewComments = await github.paginate(github.rest.pulls.listReviewComments, { owner, repo, pull_number: prNumber, per_page: 100 });
+            const reviews = await github.paginate(github.rest.pulls.listReviews, { owner, repo, pull_number: prNumber, per_page: 100 });
+
+            const 응답 = new Map(); // 벤더 → { 짚음: bool, 건수 }
+            for (const c of [...comments, ...reviewComments, ...reviews]) {
+              const u = c.user || {}; if (u.type !== 'Bot' && !/\[bot\]$/.test(u.login || '')) continue;
+              if (/^\s*\[review-judge\]/.test(c.body || '')) continue; // 내 자신
+              const v = 벤더(u.login, c.body); if (!v) continue;
+              const cur = 응답.get(v) || { 짚음: false, 건수: 0 };
+              cur.건수 += 1; cur.짚음 = cur.짚음 || 짚었나(c.body);
+              응답.set(v, cur);
+            }
+
+            const 응답벤더 = [...응답.keys()];
+            const 짚은벤더 = 응답벤더.filter((v) => 응답.get(v).짚음);
+            let state, 설명;
+            if (응답벤더.length < 2) { state = 'pending'; 설명 = `응답 벤더 ${응답벤더.length}/2 — 아직 못 셌다(봇 침묵 = 미확인)`; }
+            else if (짚은벤더.length >= 2) { state = 'failure'; 설명 = `P0/P1 합의 — ${짚은벤더.join('+')} 가 짚었다. 사람이 본다`; }
+            else { state = 'success'; 설명 = `응답 ${응답벤더.length} · P0/P1 을 둘 이상이 짚지 않았다${짚은벤더.length ? ` (단독: ${짚은벤더.join(',')})` : ''}`; }
+
+            await github.rest.repos.createCommitStatus({ owner, repo, sha: pr.head.sha, state, context: 'SYNK/검수합의', description: 설명.slice(0, 140) });
+
+            const 줄 = 응답벤더.length
+              ? 응답벤더.map((v) => `- ${v}: 코멘트 ${응답.get(v).건수} · ${응답.get(v).짚음 ? '🔴 P0/P1 짚음' : '✅ 차단급 없음'}`).join('\n')
+              : '- (아직 응답한 벤더가 없다)';
+            const body = `[review-judge] SYNK 검수 합의 — 커밋 ${pr.head.sha.slice(0, 7)}\n\n${줄}\n\n**판정: ${state}** — ${설명}\n\n_자 = .github/workflows/review-judge.yml v0 · 둘 이상이 P0/P1 을 짚어야 실패로 센다. 봇이 침묵하면 pending 이지 초록이 아니다._`;
+            const mine = comments.find((c) => /^\s*\[review-judge\]/.test(c.body || '') && (c.user || {}).type === 'Bot');
+            if (mine) await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
+            else await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
+            core.info(`${state} — ${설명}`);
