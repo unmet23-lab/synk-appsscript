@@ -24,9 +24,10 @@
  *   글자는 각인 하나뿐이다. 곡 제목·시계·가사는 두지 않는다 — 정지 화면이라 낡는다.
  *
  * 쓰기:
- *   node tools/라디오배경굽기.js                 전 장르
+ *   node tools/라디오배경굽기.js                 전 장르 → docs/라디오/배경/<장르>.png
  *   node tools/라디오배경굽기.js --장르 citypop  한 장만
- *   출력 = docs/라디오/배경/<장르>.png (1280×720)
+ *   node tools/라디오배경굽기.js --썸네일        목록·검색용 간판 → docs/라디오/썸네일.png
+ *   모두 1280×720. 무대는 `tools/라디오무대굽기.js` 가 먼저 구워 둔 것을 쓴다.
  */
 'use strict';
 const fs = require('fs');
@@ -118,8 +119,7 @@ function 지면(키) {
    *   410 이면 그림 높이가 약 229px(화면의 32%)로, 세계가 읽히면서 주인공도 안 작다. */
   const 폭 = Math.round(410 * 액.배율);
   const 무대 = 무대판(키);
-  /* 액자 아래 빈 몫을 빼야 «발»이 앉는선에 닿는다(그림 높이 기준). */
-  const 그림높이 = 폭 * (a.가이드 === '까몽' ? 0.859 : 0.558) / (a.가이드 === '까몽' ? 0.912 : 0.573);
+  /* 액자 아래 빈 몫을 빼야 «발»이 앉는선에 닿는다. */
   const 발여백 = Math.round(폭 * 액.아래여백 * 0.9);
 
   return `<!doctype html><meta charset="utf-8">
@@ -181,6 +181,79 @@ function 지면(키) {
 </div>`;
 }
 
+/* ── 썸네일 — 방송 화면과 «다른 물건»이다 ──────────────────────────────────────
+ * 배경은 24시간 켜 두는 «분위기»고, 썸네일은 목록·검색에서 **0.5초 안에 고르게 하는 간판**이다.
+ * 그래서 규칙이 정반대다: 배경은 글자를 안 싣고, 썸네일은 글자가 주인공이다.
+ * 🔑 그런데 **무대·마스코트·액자 보정은 같은 것을 쓴다** — 새 파일로 빼면 그 셋이 두 벌이 되고
+ *   그 순간 갈린다([[constant-known-in-two-places]]). 여기 붙여 재료를 한 곳에 둔다.
+ *
+ * 작게 줄었을 때가 진짜 판이다 — 목록 카드는 360px 안팎이라 1280 설계가 **3.6배 줄어든다**.
+ * ⇒ 큰 줄은 110px(줄면 ≈31px) · 실린 글자 수를 아낀다.
+ * ⚠ 몽골어는 안 싣는다 — 원어민 감수 전이다(설계 규칙 그대로). 한국어가 곧 상품이라 손해가 적다.
+ */
+const 썸네일 = {
+  무대: 'citypop',           // 노을이 목록에서 가장 눈에 든다(밤 판은 작게 줄면 검은 사각이 된다)
+  가이드: '몽글', 표정: '눈웃음',
+  작은줄: '24시간',
+  큰줄: '한국어 라디오',
+  받침줄: '공부할 때 켜 두세요',
+};
+
+function 썸네일지면() {
+  const t = 썸네일;
+  const a = 장르들[t.무대];
+  const 액 = 액자[t.가이드] || 액자.몽글;
+  /* 배경(410)보다 크게 — 썸네일은 «누구인지»가 먼저 보여야 한다. */
+  const 폭 = Math.round(520 * 액.배율);
+  const 발여백 = Math.round(폭 * 액.아래여백 * 0.9);
+  const 무대 = 무대판(t.무대);
+
+  return `<!doctype html><meta charset="utf-8">
+<style>
+  html,body{margin:0;padding:0;background:${a.바탕};}
+  .판{width:${W}px;height:${H}px;position:relative;overflow:hidden;background:${a.바탕};
+    font-family:'Inter Tight','SUIT Variable',system-ui,'Malgun Gothic',sans-serif;}
+  .무대{position:absolute;inset:0;z-index:0;
+    background:${무대 ? `url(${무대}) no-repeat` : a.바탕};
+    background-size:118% auto;background-position:64% 42%;}
+  .천{position:absolute;inset:0;width:100%;height:100%;z-index:0;display:block;}
+  /* 글자 자리를 만드는 그늘 — 왼쪽에서 뻗는다. 배경과 같은 이유로 radial 이다(모서리 이음매 방지). */
+  .막{position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(ellipse 86% 128% at 2% 50%, rgba(58,26,16,0.80) 0%, rgba(58,26,16,0.52) 38%, transparent 74%);}
+  /* 주인공 — 오른쪽에 앉힌다(글자가 왼쪽이라). 발이 모래에 닿는 선은 배경과 같은 자 */
+  .접지{position:absolute;left:73%;top:88.5%;transform:translate(-50%,-50%);z-index:2;
+    width:${Math.round(폭 * 0.86)}px;height:${Math.round(폭 * 0.14)}px;
+    background:radial-gradient(ellipse at 50% 50%, rgba(122,72,52,0.36) 0%, transparent 70%);filter:blur(24px);}
+  .얼굴{position:absolute;left:73%;top:88.5%;transform:translate(-50%,calc(-100% + ${발여백}px));
+    z-index:3;width:${폭}px;filter:drop-shadow(rgba(255,206,163,0.42) 0 0 22px) drop-shadow(0 18px 24px rgba(120,64,44,0.38));}
+  .얼굴 img{width:100%;height:auto;display:block;}
+  .말{position:absolute;left:74px;top:50%;transform:translateY(-50%);z-index:4;}
+  .작은{margin:0 0 10px;font-size:34px;font-weight:700;letter-spacing:.30em;text-transform:uppercase;
+    color:${색['Coral Soft']};text-shadow:0 2px 10px rgba(0,0,0,.5);}
+  .큰{margin:0;font-size:110px;line-height:1.02;font-weight:900;letter-spacing:-.035em;
+    color:${색['Paper']};text-shadow:0 4px 22px rgba(38,14,8,.62);}
+  .받침{margin:22px 0 0;font-size:31px;font-weight:600;letter-spacing:-.01em;
+    color:rgba(251,247,240,.90);text-shadow:0 2px 10px rgba(0,0,0,.55);}
+  .선{width:96px;height:2px;margin:26px 0 0;background:${색['Coral']};}
+  .로고{position:absolute;left:74px;bottom:52px;width:112px;z-index:4;
+    filter:drop-shadow(0 2px 8px rgba(0,0,0,.55));}
+  .로고 svg{width:100%;height:auto;display:block;}
+</style>
+<div class="판">
+  ${무대 ? '<div class="무대"></div>' : 양모천svg({ ...a.천, w: W, h: H })}
+  <div class="막"></div>
+  <div class="접지"></div>
+  <div class="얼굴">${가이드img(t.가이드, t.표정)}</div>
+  <div class="말">
+    <p class="작은">${t.작은줄}</p>
+    <p class="큰">${t.큰줄}</p>
+    <p class="받침">${t.받침줄}</p>
+    <div class="선"></div>
+  </div>
+  <div class="로고">${워드마크({ 판: '다크', 표현: '펠트', 색갈래: '코랄' })}</div>
+</div>`;
+}
+
 function 크롬() {
   const 후보 = ['C:/Program Files/Google/Chrome/Application/chrome.exe',
     'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'].filter(fs.existsSync);
@@ -188,33 +261,48 @@ function 크롬() {
   return 후보[0];
 }
 
-function 굽기(키) {
-  const src = path.join(낼곳, `_${키}.html`);
-  const png = path.join(낼곳, `${키}.png`);
-  fs.writeFileSync(src, 지면(키), 'utf8');
+/** 한 장 굽는다 — 어떤 지면이든 같은 크롬 호출을 탄다(호출 인자를 두 곳에 안 적는다). */
+function 굽기(이름, html, 방 = 낼곳) {
+  const src = path.join(방, `_${이름}.html`);
+  const png = path.join(방, `${이름}.png`);
+  fs.mkdirSync(방, { recursive: true });
+  fs.writeFileSync(src, html, 'utf8');
   spawnSync(크롬(), ['--headless=new', '--disable-gpu', '--force-device-scale-factor=1',
     '--hide-scrollbars', `--window-size=${W},${H}`, `--screenshot=${png}`,
     'file:///' + src.replace(/\\/g, '/')], { encoding: 'utf8' });
-  if (!fs.existsSync(png)) throw new Error(`굽기 실패: ${키}`);
+  if (!fs.existsSync(png)) throw new Error(`굽기 실패: ${이름}`);
   fs.unlinkSync(src);
-  return { 키, png, 바이트: fs.statSync(png).size, 무대: !!무대판(키) };
+  return { 이름, png, 바이트: fs.statSync(png).size };
 }
 
 function main() {
   const argv = process.argv.slice(2);
   const i = argv.indexOf('--장르');
   const 하나 = i >= 0 ? argv[i + 1] : null;
-  const 모름 = argv.filter((x) => x.startsWith('--') && x !== '--장르');
-  if (모름.length) { console.error(`[라디오배경굽기] 모르는 플래그 ${모름.join(' ')} — 아는 것은 --장르 뿐이다.`); process.exit(1); }
+  const 아는것 = ['--장르', '--썸네일'];
+  const 모름 = argv.filter((x) => x.startsWith('--') && !아는것.includes(x));
+  if (모름.length) { console.error(`[라디오배경굽기] 모르는 플래그 ${모름.join(' ')} — 아는 것 = ${아는것.join(' · ')}`); process.exit(1); }
   if (하나 && !장르들[하나]) throw new Error(`모르는 장르: ${하나} (있는 것: ${Object.keys(장르들).join(' · ')})`);
 
   fs.mkdirSync(낼곳, { recursive: true });
+
+  /* 썸네일만 굽는 갈래 — 배경과 산출 폴더가 다르다(배경 폴더는 «인코딩이 통째로 읽는» 자리라
+   * 방송 화면이 아닌 파일을 섞으면 장르 하나가 더 있는 것처럼 보인다). */
+  if (argv.includes('--썸네일')) {
+    const 방 = path.join(ROOT, 'docs/라디오');
+    const r = 굽기('썸네일', 썸네일지면(), 방);
+    const MB = r.바이트 / 1024 / 1024;
+    console.log(`✅ 썸네일 · ${W}×${H} · ${MB.toFixed(2)}MB ${MB < 2 ? '(유튜브 상한 2MB 안)' : '🔴 2MB 초과 — 유튜브가 거절한다'}`);
+    console.log(`   무대 ${무대판(썸네일.무대) ? '사진' : '⚠양모천 폴백'} · ${path.relative(ROOT, r.png)}`);
+    return;
+  }
+
   const 목록 = 하나 ? [하나] : Object.keys(장르들).filter((k) => !장르들[k].대기);
   const 뺀것 = Object.keys(장르들).filter((k) => 장르들[k].대기);
   for (const k of 목록) {
-    const r = 굽기(k);
+    const r = 굽기(k, 지면(k));
     console.log(`✅ ${k.padEnd(8)} ${장르들[k].이름} · ${장르들[k].가이드} · ${W}×${H} · ${(r.바이트 / 1024).toFixed(0)}KB`
-      + ` · 무대 ${r.무대 ? '사진' : '⚠양모천 폴백(무대굽기 먼저)'}`);
+      + ` · 무대 ${무대판(k) ? '사진' : '⚠양모천 폴백(무대굽기 먼저)'}`);
   }
   if (!하나 && 뺀것.length) {
     console.log(`⏳ 대기 = ${뺀것.map((k) => `${k}(${장르들[k].가이드})`).join(' · ')} — 얼굴이 아직 없어 안 굽는다(유호 확정 09-02)`);
