@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["결론", "근거URL", "갈리는지점", "확인못한것"],
+  "properties": {
+    "결론": {
+      "type": "string",
+      "description": "명제가 맞는지 틀리는지 한두 문장. 「내 답」을 반박하는 자리이니 동의도 반박도 근거와 함께."
+    },
+    "근거URL": {
+      "type": "array",
+      "description": "1차 출처만 — 법령 원문·관보·기관 공식 페이지. 블로그·요약 기사는 넣지 않는다. 없으면 빈 배열.",
+      "items": { "type": "string" }
+    },
+    "갈리는지점": {
+      "type": "string",
+      "description": "「내 답」과 어긋나는 지점을 구체적으로. 어긋나는 게 없으면 「없음」."
+    },
+    "확인못한것": {
+      "type": "string",
+      "description": "검색으로 확인하지 못한 것. 지어내지 않고 무엇이 비었는지 적는다. 없으면 「없음」."
+    }
+  }
+}

@@ -1386,8 +1386,19 @@ const 외부도구들 = [
   'computer_use',                  // 데스크톱 조작
   'skill_mcp_dependency_install',  // 검수 중 MCP 의존성 설치 = 바깥에서 실행물을 들인다
 ];
+/* 🔴 **넷째 플래그 — `windows.sandbox="elevated"` 를 명시로 되돌린다**(2026-09-02 실측 · codex 0.151.0/0.152.0).
+ *   `--ignore-user-config` 가 `~/.codex/config.toml` 의 `[windows] sandbox="elevated"` 까지 지우자, 남는 것은
+ *   «제한 토큰» 샌드박스인데 그 토큰은 **Microsoft Store 판 pwsh(`C:\Program Files\WindowsApps\…\pwsh.exe`)를
+ *   못 띄운다.** 그래서 검수자의 **모든 셸 명령**이 「Rejected(… rejected: blocked by policy)」로 죽었다 —
+ *   git 한 줄도 못 돈 채 codex 는 정상 종료하고 「확인 불가: 저장소 명령 실행이 정책에 의해 차단되어…」를 적었다
+ *   (넷째 모양 · 이 문면은 옛 못봤다징후 정규식에 안 걸렸다 → 정규식도 그날 넓혔다).
+ *   같은 잠금에 이 한 줄을 더하니 git 이 돌고 파일 쓰기는 「액세스가 거부되었습니다」로 막혔다(read-only 유지 실측).
+ *   ⚠ 08-05 의 「elevated 가 SpawnChild error 5 로 죽는다」는 그때 참이었고 0.150.0 「Fixed elevated Windows sandbox setup」
+ *   뒤 뒤집혔다 — 승급할 때마다 이 프로브(명령 실행 + 쓰기 거부)를 다시 돌린다. 언제부터 막혀 있었는지는 **안 쟀다**
+ *   (09-01 15:43 장부 행엔 지적이 있었다). */
 const 잠금플래그 = [
   '--ignore-user-config', '-c', 'sandbox_mode="read-only"', '-c', 'approval_policy="never"',
+  '-c', 'windows.sandbox="elevated"',
   ...외부도구들.flatMap((f) => ['--disable', f]),
 ];
 
@@ -1557,10 +1568,11 @@ function 단계끝났나(방, 단계, i) {
  * ⚠ 이 결정은 동시 프로세스 수를 2 → 4 로 올린다. codex CLI 의 **동시 rate limit 은 아직
  *   미측정**이다 — 걸려도 손실은 0 이지만(자식은 체크포인트에만 적고 부모가 순차로 마저 돈다)
  *   그건 「안 걸린다」가 아니라 「걸려도 안 잃는다」다. 끄는 손잡이는 `--직렬`. */
-function 병렬계획(argv, 회차) {
+function 병렬계획(argv, 회차, 검수회차 = 회차) {
   const a = argv || [];
   if (a.includes(직렬플래그)) return [];
-  const 계획 = [{ 단계: '검수', 회차 }];
+  // 검수 회차는 벤더 편성 길이다(`--벤더 둘` 이면 codex 회차 + gemini 1) · 기능체크는 codex 회차 그대로
+  const 계획 = [{ 단계: '검수', 회차: 검수회차 }];
   if (!a.includes('--버그만')) 계획.push({ 단계: '기능', 회차 });
   /* 총합이 1이면 안 띄운다 — 프로세스 값만 치르고 병렬 이득이 0 이다.
    * ⚠ 잣대가 「회차 > 1」이 아니라 **자식 총합**인 것이 이번 변경의 핵심이다: 옛 판은 단계마다
@@ -1625,16 +1637,31 @@ function 입력쓰기(방, 조각) {
   런.json쓰기(방, '입력', 0, { ...(런.json읽기(방, '입력', 0) || {}), ...조각 });
 }
 
-function codex실행(대상, timeoutMs, 회차 = 1, 방 = null, argv = [], 선띄움 = false) {
-  const 방경로 = 방 || 검수방(대상, 회차, argv);
+function codex실행(대상, timeoutMs, 회차 = 1, 방 = null, argv = [], 선띄움 = false, 벤더들 = null) {
+  const 편성 = 벤더들 || 벤더편성(argv, 회차);
+  const 방경로 = 방 || 검수방(대상, 편성.length, argv);
   /* 대상은 자식이 다시 만들 수 없다 — 미커밋 판정(`대상결정`)은 **시점 의존**이라 몇 초 뒤
    * 남의 세션이 커밋하면 딴 diff 를 가리킨다. 부모가 정한 그것을 그대로 넘긴다. */
-  입력쓰기(방경로, { 대상, timeoutMs, 회차, 분석: 모델설정.분석, 구조화: 모델설정.구조화 });
+  입력쓰기(방경로, { 대상, timeoutMs, 회차, 검수회차: 편성.length, 벤더들: 편성, 분석: 모델설정.분석, 구조화: 모델설정.구조화 });
   /* `선띄움` = 호출자가 이미 단계들을 한꺼번에 띄웠다(main 의 `병렬계획`). 여기서 또 띄우면
    * 같은 회차에 자식이 둘 붙어 codex 를 두 번 태운다 — 결과는 같고 값만 두 배다. */
-  if (!선띄움 && 회차 > 1 && !(argv || []).includes(직렬플래그)) 병렬단계(방경로, '검수', 회차, timeoutMs);
+  if (!선띄움 && 편성.length > 1 && !(argv || []).includes(직렬플래그)) 병렬단계(방경로, '검수', 편성.length, timeoutMs);
   const 회차들 = [];
-  for (let i = 1; i <= 회차; i++) 회차들.push(codex한회(대상, timeoutMs, 방경로, i, 회차));
+  for (let i = 1; i <= 편성.length; i++) {
+    try {
+      회차들.push(검수한회(대상, timeoutMs, 방경로, i, 편성.length));
+    } catch (e) {
+      /* 둘째 벤더(gemini)의 실패는 «그 회차의 확인 불가»로 남기고 통째로 죽이지 않는다 — 배포 게이트는
+       * codex 가 진다. ⚠ 조용히 통과가 아니다: 회차별에 「확인불가」가 찍히고 화면에도 🔴 로 나온다.
+       * codex 회차의 실패는 옛 규칙 그대로 던진다(한 회차라도 실패하면 통째로 실패). */
+      if (편성[i - 1] === 'gemini' && e && e.확인불가) {
+        console.error(`🔴 gemini 회차 ${i} 확인 불가 — 둘째 검수자가 못 봤다(codex 회차는 그대로 간다): ${e.message}`);
+        회차들.push({ 벤더: 'gemini', 실패: String(e.message), 요약: '', 지적: [], 원문: '' });
+        continue;
+      }
+      throw e;
+    }
+  }
   return 회차병합(회차들);
 }
 
@@ -1645,6 +1672,9 @@ function 회차병합(회차들) {
   const 지적 = [];
   const 본키 = new Set();
   const 키회차 = new Map();               // 키 → 그 지적을 낸 회차 번호들
+  /* 합의의 분모는 **실제로 본 회차**다(09-02) — gemini 회차가 확인 불가로 끝났는데 분모에 넣으면
+   * codex 만 본 지적이 「1/2」로 찍혀 «합의 없음»처럼 읽힌다. 못 본 회차는 분모가 아니라 «확인불가» 칸이다. */
+  const 분모 = 회차들.filter((r) => r && !r.실패).length || 1;
   for (let i = 0; i < 회차들.length; i++) {
     for (const f of (회차들[i] && 회차들[i].지적) || []) {
       const k = 키(f);
@@ -1670,7 +1700,7 @@ function 회차병합(회차들) {
    * 이 결함을 봤나」가 곧 공짜 재현성 측정이다. 지적마다 `합의: "2/2"` 꼴로 박는다.
    * ⚠ 등급을 자동으로 깎지 않는다 — 단독이 진짜인 실측이 있다(08-12 sol 단독 3건 전부
    *   P0 · 그중 둘 사실확인). 신호는 처분자(사람·클로드)가 읽고, 게이트 판정은 그대로다. */
-  for (const f of 지적) f.합의 = `${(키회차.get(키(f)) || []).length}/${회차들.length}`;
+  for (const f of 지적) f.합의 = `${(키회차.get(키(f)) || []).length}/${분모}`;
 
   const 단독 = 회차들.map(() => ({ 건수: 0, 등급: {} }));
   for (const f of 지적) {
@@ -1682,16 +1712,25 @@ function 회차병합(회차들) {
     칸.등급[g] = (칸.등급[g] || 0) + 1;
   }
 
+  /* 벤더 칸은 codex 가 아닐 때만 적는다 — 옛 행 전량이 codex 이고, «없으면 codex» 가 그 행들과 같은 규칙이다
+   * (`저장소` 칸이 「없으면 이 집」인 것과 같은 문법). `벤더들` 배열은 항상 들고 나간다. */
+  const 벤더of = (r) => (r && r.벤더) || 'codex';
+  const 표 = (r, i) => (벤더of(r) === 'codex' ? `${i + 1}회` : `${i + 1}회·${벤더of(r)}`);
   return {
-    요약: 회차들.map((r, i) => `[${i + 1}회] ${(r && r.요약) || '(요약 없음)'}`).join('\n'),
+    요약: 회차들.map((r, i) => `[${표(r, i)}] ${r && r.실패 ? '확인 불가 — ' + r.실패 : (r && r.요약) || '(요약 없음)'}`).join('\n'),
     지적,
-    원문: 회차들.map((r, i) => `── 1단계 원문 ${i + 1}/${회차들.length} ──\n${(r && r.원문) || ''}`).join('\n\n'),
+    원문: 회차들.map((r, i) => `── 1단계 원문 ${i + 1}/${회차들.length}${벤더of(r) === 'codex' ? '' : ` (${벤더of(r)})`} ──\n${(r && r.원문) || ''}`).join('\n\n'),
     회차별: 회차들.map((r, i) => ({
       회차: i + 1,
-      지적수: ((r && r.지적) || []).length,
+      ...(벤더of(r) === 'codex' ? {} : { 벤더: 벤더of(r) }),
+      // 못 본 회차는 0건이 아니라 null — 「지적 0건」과 「안 봤다」를 같은 모양으로 두지 않는다
+      지적수: r && r.실패 ? null : ((r && r.지적) || []).length,
       단독: 단독[i].건수,
       단독등급: 단독[i].등급,
+      ...(r && r.서빙모델 ? { 서빙모델: r.서빙모델 } : {}),
+      ...(r && r.실패 ? { 확인불가: r.실패 } : {}),
     })),
+    벤더들: 회차들.map(벤더of),
   };
 }
 
@@ -1700,7 +1739,9 @@ function 회차별줄(회차별, 지적) {
   if (!Array.isArray(회차별) || 회차별.length <= 1) return '';
   const 칸 = 회차별.map((r) => {
     const 등급 = Object.keys(r.단독등급 || {}).sort().map((g) => `${g} ${r.단독등급[g]}`).join('·');
-    return `[${r.회차}회] ${r.지적수}건 · 단독 ${r.단독 || 0}${등급 ? `(${등급})` : ''}`;
+    const 이름 = r.벤더 && r.벤더 !== 'codex' ? `${r.회차}회·${r.벤더}` : `${r.회차}회`;
+    if (r.확인불가) return `[${이름}] 🔴 확인 불가(${String(r.확인불가).slice(0, 60)})`;
+    return `[${이름}] ${r.지적수}건 · 단독 ${r.단독 || 0}${등급 ? `(${등급})` : ''}${r.서빙모델 ? ` · 서빙 ${r.서빙모델}` : ''}`;
   }).join(' ');
   const 줄들 = [`회차별: ${칸}\n   ↳ 「그 회차가 값했나」는 **단독**으로 읽는다 — 건수는 겹쳐도 그대로다.`];
   /* 차단급 합의 요약 — 처분 우선순위의 신호다. 전회차 합의 P1 과 단독 P1 은 무게가 다르다
@@ -1711,6 +1752,114 @@ function 회차별줄(회차별, 지적) {
     줄들.push(`   차단급 ${찬.length}건 중 전회차 합의 ${전원}건 · 단독 ${찬.length - 전원}건 — 단독도 진짜일 수 있다(08-12 실측). 합의는 순서지 면죄부가 아니다.`);
   }
   return 줄들.join('\n');
+}
+
+/* ── 벤더 편성 (2026-09-02 · 유호 「전부 진행해줘」 · 정찰 지면 docs/교차검수_재설계_정찰_2026-09-02.html)
+ *
+ * 「셋째 벤더를 꽂을 자리가 없다」(Muse 기각 ㉢)는 MCP 를 자리로 본 판정이었다. 자리는 **한 회차**다 —
+ *   회차 하나가 곧 «독립 검수 한 벌»이고, 병합·합의·단독 계산이 회차 단위로 이미 서 있으니 벤더를
+ *   회차의 «속성»으로 두면 병합 코드가 그대로 «벤더 합의»를 낸다(지적마다 `합의: "n/총"`).
+ * 편성 = codex ×회차 + (`--벤더 둘` 이면) gemini ×1. gemini 는 **diff 만** 본다(저장소를 못 돈다 —
+ *   API 키 레인 · HTTP 직결 · `tools/lib/제미나이호출.js`). 그래서 값은 «다른 눈»이지 «같은 깊이»가 아니다.
+ * 🔒 게이트는 codex 가 진다 — gemini 단독 모드는 일부러 없다(`--벤더 gemini` 는 거절). gemini 회차가
+ *   못 보면 그 회차만 확인불가로 남긴다(`codex실행`).
+ * ⚠ 모델·효력 값은 여기 없다 — 제미나이 픽도 `tools/모델정책.js` 의 `제미나이설정()` 하나가 정한다. */
+const 벤더플래그 = '--벤더';
+const 아는벤더모드 = new Set(['codex', '둘']);
+function 벤더모드(argv) {
+  const a = argv || [];
+  const i = a.indexOf(벤더플래그);
+  if (i < 0) return 'codex';
+  const v = a[i + 1];
+  if (!v || !아는벤더모드.has(v)) {
+    const e = new Error(`${벤더플래그} 는 codex | 둘 중 하나다 — 받은 값: ${v || '(없음)'} (gemini 단독 모드는 없다 · 배포 게이트는 codex 가 진다)`);
+    e.확인불가 = true; throw e;
+  }
+  return v;
+}
+function 벤더편성(argv, 회차) {
+  const 편성 = Array.from({ length: Math.max(1, Number(회차) || 1) }, () => 'codex');
+  if (벤더모드(argv) === '둘') 편성.push('gemini');
+  return 편성;
+}
+
+/* 회차 i 를 어느 벤더가 보나 — 방의 `입력.벤더들` 이 정본이다(부모·자식이 같은 것을 읽는다). */
+function 검수한회(대상, timeoutMs, 방, i, 총) {
+  const 입력 = 런.json읽기(방, '입력', 0) || {};
+  const 벤더 = (Array.isArray(입력.벤더들) && 입력.벤더들[i - 1]) || 'codex';
+  if (벤더 === 'gemini') return gemini한회(대상, timeoutMs, 방, i, 총);
+  return { ...codex한회(대상, timeoutMs, 방, i, 총), 벤더: 'codex' };
+}
+
+/* AGENTS.md 「## Code Review Rules」 — codex 는 저장소에서 스스로 읽지만(09-02 실측 · 첫 줄 「확인 불가」
+ * 규칙을 그대로 따랐다) gemini 는 diff 만 받으므로 프롬프트에 실어 준다. 규칙은 한 파일에만 산다. */
+function 검수규칙읽기() {
+  try {
+    const md = fs.readFileSync(path.join(대상ROOT, 'AGENTS.md'), 'utf8');
+    const 시작 = md.indexOf('## Code Review Rules');
+    if (시작 < 0) return '';
+    const 꼬리 = md.slice(시작);
+    const 끝 = 꼬리.slice(1).search(/\n## /);
+    return (끝 > 0 ? 꼬리.slice(0, 끝 + 1) : 꼬리).trim();
+  } catch (_) { return ''; }
+}
+
+function gemini프롬프트(대상, diff, 규칙) {
+  return [
+    '너는 SYNK 저장소의 «둘째 검수자»다(첫째는 GPT/Codex · 너는 독립으로 본다 · 서로 결과를 모른다).',
+    '아래 변경(diff)만 근거로 **결함**을 찾아라. 스타일 취향은 넣지 않는다. 확인 못 한 것은 추측이라고 밝힌다.',
+    '한국어로 답한다. 「파일」은 저장소 루트 기준 상대 경로, 행 번호를 모르면 「라인」은 0.',
+    '등급: P0=라이브 데이터 손상·보안·자격증명·배포 통로 / P1=배포 전 반드시 / P2=고쳐야 하나 배포 가능 / P3=사소.',
+    '결함이 없으면 「지적」은 빈 배열이고 「요약」에 없다고 명확히 쓴다. diff 를 못 읽었으면 「요약」 첫 줄에 「확인 불가」라고 쓴다.',
+    규칙 ? `\n--- 검수 규칙(AGENTS.md) ---\n${규칙}` : '',
+    `\n--- 대상 ---\n${대상.종류} ${대상.값} · 파일 ${(대상.파일들 || []).length}개`,
+    `\n--- diff ---\n${diff}`,
+  ].join('\n');
+}
+
+const 제미나이호출경로 = path.join(__dirname, 'lib', '제미나이호출.js');
+
+/* gemini 한 회차 — codex한회 와 같은 조각 규약(산문-i · 구조-i)을 지켜 이어받기·단계끝났나 가 그대로 선다.
+ * 동기 세상이라 HTTP 는 자식 프로세스(`제미나이호출.js` CLI)가 하고, 이 함수는 파일만 읽는다(codex 와 같은 꼴). */
+function gemini한회(대상, timeoutMs, 방, i, 총) {
+  const 꼬리 = 총 > 1 ? ` ${i}/${총}회` : '';
+  const 이전 = 런.json읽기(방, '구조', i);
+  if (이전 && Array.isArray(이전.지적)) {
+    console.log(`  ↩ ${i}/${총}회(gemini) 이어받음 — 이미 끝난 회차다(호출 0 · 지적 ${이전.지적.length}건).`);
+    return { ...이전, 원문: 런.조각읽기(방, '산문', i) || '', 벤더: 'gemini' };
+  }
+  const 픽 = 정책.제미나이설정();
+  const 프롬프트 = gemini프롬프트(대상, 디프수집(대상), 검수규칙읽기());
+  const out = 런.조각경로(방, '제미나이', i);
+  const 라벨 = `gemini 검수(둘째 검수자${꼬리} · ${픽.model}/${픽.thinking_level || '기본'})`;
+  try {
+    execFileSync(process.execPath,
+      [제미나이호출경로, '--model', 픽.model, ...(픽.thinking_level ? ['--thinking', 픽.thinking_level] : []),
+        '--schema', 스키마경로, '-o', out, '--timeout', String(Math.min(timeoutMs, 300000))],
+      자식옵션({ cwd: 대상ROOT, input: 프롬프트, encoding: 'utf8', timeout: timeoutMs, stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 16 * 1024 * 1024 }));
+  } catch (e) {
+    const 끝줄 = String((e && e.stderr) || (e && e.message) || e).trim().split('\n').filter(Boolean).slice(-2).join(' / ');
+    const err = new Error(`${라벨} 실패: ${끝줄 || '(원인 줄 없음)'}`);
+    err.확인불가 = true; err.벤더 = 'gemini'; throw err;
+  }
+  let r, j;
+  try {
+    r = JSON.parse(fs.readFileSync(out, 'utf8'));
+    j = JSON.parse(r.text);
+    if (!Array.isArray(j.지적)) throw new Error('지적 배열이 없다');
+  } catch (e) {
+    const err = new Error(`${라벨} 결과가 스키마와 다르다(${e.message})`);
+    err.확인불가 = true; err.벤더 = 'gemini'; throw err;
+  }
+  j.벤더 = 'gemini';
+  j.서빙모델 = r.modelVersion || null;          // «무엇이 답했나» — 픽과 다르면 장부가 그 사실을 들고 나간다
+  if (r.modelVersion && !String(r.modelVersion).startsWith(픽.model)) {
+    console.error(`   ⚠ gemini 서빙 모델이 픽과 다르다 — 픽 ${픽.model} · 답한 것 ${r.modelVersion}`);
+  }
+  런.조각쓰기(방, '산문', i, r.text);
+  런.json쓰기(방, '구조', i, j);
+  j.원문 = r.text;
+  return j;
 }
 
 function codex한회(대상, timeoutMs, 방, i, 총) {
@@ -2341,14 +2490,16 @@ function 미처분현황(장부 = {}) {
  *   거절한다」를 이미 쓰고 있었는데 **최상위 인자 파싱만** 그 규칙 밖이었다 — 한 파일 안에서 층마다
  *   엄격도가 다르면 **느슨한 층이 실질 정책**이 된다.
  *   값을 받는 플래그는 뒤 토큰을 건너뛴다(`--사유 "--x"` 같은 값을 인자로 오인하지 않는다). */
-const 값플래그 = ['--심문', '--제안판정', '--기각', '--채택수리', '--대상아님', '--사유', '--timeout', '--commit', '--base', '--모델', '--검수', '--효력', '--회차', '--런처분', '--런중단', 저장소플래그];
+const 값플래그 = ['--심문', '--제안판정', '--기각', '--채택수리', '--대상아님', '--사유', '--timeout', '--commit', '--base', '--모델', '--검수', '--효력', '--회차', '--런처분', '--런중단', 저장소플래그, 벤더플래그];
 const 홑플래그 = ['--채택', '--확인', '--제안', '--버그만', '--uncommitted', 범위밖탈출, 던지기플래그, 직렬플래그, '--런목록', 한도무시플래그, '--딴파일', '--미처분'];
 const 아는플래그 = new Set([...값플래그, ...홑플래그]);
 const 사용법 = [
   '사용:',
-  '  node tools/codex-review.js [--commit <sha> | --base <브랜치> | --uncommitted] [--버그만] [--검수 sol|luna] [--효력 max] [--회차 1] [--timeout 초]',
+  '  node tools/codex-review.js [--commit <sha> | --base <브랜치> | --uncommitted] [--버그만] [--검수 sol|luna] [--효력 max] [--회차 1] [--벤더 codex|둘] [--timeout 초]',
   '      ⚠ 대상 diff 에 배포 파일이 0건이면 **돌리기 전에 멈춘다**(F314 — 태워도 배포 게이트가 안 열린다).',
   '        배포와 무관한 코드 검수면 --범위밖 을 붙인다.',
+  '      --벤더 둘 = codex 회차 뒤에 gemini(둘째 검수자 · API 키 레인 · diff 만 본다) 한 회차를 더한다(09-02).',
+  '        합의 「n/총」이 «벤더 합의»가 된다. gemini 가 못 보면 그 회차만 «확인 불가»로 남고 게이트는 codex 가 진다.',
   '  node tools/codex-review.js --제안                      선파악(기능지도+업그레이드 제안)',
   '  node tools/codex-review.js --제안판정 <키> --채택|--기각 --사유 "왜"',
   '  node tools/codex-review.js --기각 <키> --사유 "왜"        틀린 지적 — 다음 런에서 걸러진다',
@@ -2578,7 +2729,7 @@ function main(argv) {
          * 없이 들어가면 `대상.flags` 에서 TypeError 로 죽고, 부모는 순차 폴백으로 **완주해 버린다**
          * — 증상이 「가끔 안 빨라짐」뿐이라 아무 데도 안 적힌다. 그래서 이름을 붙여 남긴다. */
         if (!입력.대상) throw new Error('검수 대상이 방에 없다(부모가 띄우기 전에 입력을 안 적었다)');
-        codex한회(입력.대상, 입력.timeoutMs, 방, i, 입력.회차);
+        검수한회(입력.대상, 입력.timeoutMs, 방, i, 입력.검수회차 || 입력.회차);
       }
       return 0;
     } catch (e) {
@@ -2867,8 +3018,10 @@ function main(argv) {
 
   /* 방을 **여기서** 연다 — 버그 사냥과 기능체크가 같은 방을 써야 한쪽이 죽어도 다른 쪽 결과가
    * 산다. 방마다 갈라 두면 「기능체크에서 죽었는데 검수까지 다시」가 되어 F334 가 반만 닫힌다. */
-  const 방경로 = 검수방(대상, 회차, argv);
+  // 방 지문의 총회차 = 검수 편성 길이 — `--벤더 둘` 과 codex 단독이 같은 방을 쓰면 한쪽이 다른 쪽 회차를 이어받는다
+  const 방경로 = 검수방(대상, 편성.length, argv);
   console.log(`체크포인트: ${방경로} — 중간에 죽어도 끝난 회차는 다시 안 돈다(같은 명령을 그대로 다시 부르면 이어받는다).`);
+  if (편성.length > 회차) console.log(`벤더 편성: ${편성.join(' → ')} — 마지막 회차는 gemini(둘째 검수자 · diff 만 · API 키 레인). 게이트는 codex 가 진다.`);
 
   /* 변경지문(change_id) — 기능체크에 **실제로 실릴 그 바이트**로 만든다. 그래야 선파악이 같은
    * 손잡이로 남긴 기능지도를 되찾을 수 있다. `--버그만` 이어도 장부엔 박는다(행마다 붙어야 계보다).
@@ -2908,7 +3061,7 @@ function main(argv) {
    *   자식이 `대상 = undefined` 를 읽는다. 새는 방향이 나쁘다 — 자식은 조용히 죽고 부모는
    *   순차 폴백으로 완주하니, 증상이 「가끔 안 빨라짐」뿐이고 아무 데도 안 적힌다. */
   입력쓰기(방경로, {
-    대상, timeoutMs: 초 * 1000, 회차, 분석: 모델설정.분석, 구조화: 모델설정.구조화,
+    대상, timeoutMs: 초 * 1000, 회차, 검수회차: 편성.length, 벤더들: 편성, 분석: 모델설정.분석, 구조화: 모델설정.구조화,
     // 회차 자식은 argv 로 이걸 못 받는다(`--회차실행` 은 인자가 넷뿐이다) — 방이 유일한 통로다
     ...(타저장소() ? { 저장소: 대상ROOT } : {}),
     /* 회차별 배열로 적는다. 옛 판의 단수 `기능프롬프트` 도 함께 남긴다 — 이 커밋 **전에** 시작된
@@ -2919,12 +3072,12 @@ function main(argv) {
   /* ⚡ 단계 병렬 — 검수와 기능체크를 **한꺼번에** 띄운다(판정·근거는 `병렬계획`).
    * 부모는 그 뒤 평소의 순차 루프를 그대로 돈다: 자식이 채운 칸은 이어받아 즉시 돌아오고,
    * 못 채운 칸만 부모가 태운다. 그래서 병렬이 통째로 실패해도 순차 폴백이 공짜다. */
-  const 계획 = 병렬계획(argv, 회차);
+  const 계획 = 병렬계획(argv, 회차, 편성.length);
   if (계획.length) 병렬실행(방경로, 계획, 초 * 1000);
 
   let 결과;
   try {
-    결과 = codex실행(대상, 초 * 1000, 회차, 방경로, argv, true);
+    결과 = codex실행(대상, 초 * 1000, 회차, 방경로, argv, true, 편성);
   } catch (e) {
     if (e.확인불가) {
       console.error('🔴 확인 불가 — 검수가 **안 돌았다**(통과가 아니다): ' + e.message);
@@ -3010,12 +3163,14 @@ function main(argv) {
    *   (2026-08-31 의 그 줄이 실제로 남았고, 그래서 그날 게이트는 재실행 뒤에도 거짓으로 열려 있었다). */
   {
     const 못봤다징후 = [
-      /명령\s*실행이\s*차단/,
+      /명령\s*실행이[^\n]{0,24}차단/,             // 09-02 실측 문면: 「저장소 명령 실행이 «정책에 의해» 차단되어」 — 옛 정규식은 사이 낱말에 막혔다
       /저장소를\s*(검사|확인|조회)할\s*수\s*없/,
-      /(파일|소스|코드)를?\s*(읽|열)지\s*못/,
+      /(파일|소스|코드|변경)[을를]?\s*(읽|열)지\s*못/,    // 「파일을 읽지 못했습니다」 — 목적격 조사가 «을»이면 옛 정규식이 안 물었다
+      /^\s*확인\s*불가/m,                          // AGENTS.md Code Review Rules ④ — 못 봤으면 첫 줄에 「확인 불가」(codex 가 실제로 따랐다 · 09-02)
       /command\s+execution\s+(was\s+)?blocked/i,
       /unable\s+to\s+(inspect|read|access)\s+the\s+(repo|repository|files)/i,
-      /sandbox\s+(denied|blocked|prevented)/i
+      /sandbox\s+(denied|blocked|prevented)/i,
+      /blocked\s+by\s+policy/i,                     // codex 0.15x 의 실제 거부 문구 — 「Rejected(… rejected: blocked by policy)」
     ];
     const 본문 = String(결과.요약 || '') + '\n' + String(결과.원문 || '');
     const 걸린것 = 지적.length === 0 ? 못봤다징후.find((re) => re.test(본문)) : null;
@@ -3040,6 +3195,8 @@ function main(argv) {
     모델: { 분석: { ...모델설정.분석 }, 구조화: { ...모델설정.구조화 } },
     // 몇 회 돌았고 회차마다 몇 건이었나 — 「2회가 값했나」는 이 분모 없이 못 읽는다
     회차, 회차별: 결과.회차별 || null,
+    // 어느 벤더들이 봤나(09-02) — 없으면 codex 만 본 옛 행이다. 회차별 칸이 벤더·서빙모델·확인불가를 쥔다.
+    벤더들: 결과.벤더들 || ['codex'],
     /* 기능체크 회차가 **어느 각도**였나(③). 이 칸이 없으면 회차 대조가 원리상 무효다 —
      * 조건이 갈렸는데 무엇이 갈렸는지 안 적히면 다음 사람이 원건 수를 그냥 빼 버린다(F281).
      * `--버그만` 이면 기능체크 자체가 없으므로 null 이고, 그건 「렌즈 0」과 다른 상태다. */
@@ -3134,6 +3291,8 @@ module.exports = {
   던짐지문읽기,
   심문형식통과, 심문결과읽기,
   검수방, 단계끝났나, 아는단계, 완료칸, 회차실행플래그, 직렬플래그, 던지기플래그, 런현황,
+  // 벤더 편성(09-02) — 회귀가 「편성·거절·합의 분모」를 출력으로 잰다 · `codex` 는 밖의사실.js 의 라이브 검색 반박이 빌린다
+  codex, 검수한회, 벤더편성, 벤더모드, 벤더플래그, 아는벤더모드, gemini프롬프트, 검수규칙읽기, 병렬계획,
   병렬계획, 입력쓰기, 회차별줄,
   자식옵션, 창숨김누락,
   사유_파일어긋남,

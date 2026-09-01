@@ -1,0 +1,76 @@
+# 노트북 없는 검수 ② — 제미나이 (안 B · 정찰 지면 docs/교차검수_재설계_정찰_2026-09-02.html §8)
+#
+# 🔴 스위치 — 저장소 변수 `SYNK_REVIEW_GITHUB` = `on` 일 때만 뜬다(review-claude.yml 과 같은 스위치).
+# 🔒 시크릿 — `GEMINI_API_KEY` : AI Studio 「Create API key」로 만든 auth key(무료 등급 · 250요청/일 · Flash 만).
+#    ⚠ 무료 등급은 입력이 구글 제품 개선에 쓰인다 — 이 저장소는 공개 코드뿐이라 같은 선 위에 있지만,
+#      학생을 식별하는 데이터가 든 PR 은 이 워크플로가 보게 두지 않는다(그런 데이터는 애초에 저장소에 없어야 한다).
+# 📐 공식 예제(google-github-actions/run-gemini-cli · examples/workflows/pr-review · v0.1.22) 를 pull_request 직결로 줄인 것.
+# 🛡 같은 저장소 브랜치의 PR 만 본다. 자동 승인·자동 수정 없음.
+name: review-gemini
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+concurrency:
+  group: review-gemini-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  review:
+    if: ${{ vars.SYNK_REVIEW_GITHUB == 'on' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.draft == false }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Prepare prompt context
+        run: |
+          mkdir -p .gemini
+          jq -n --arg repo "${REPOSITORY}" --arg pr "${PULL_REQUEST_NUMBER}" \
+            '{repository: $repo, pull_request_number: $pr, additional_context: "규칙 = AGENTS.md 「Code Review Rules」. 한국어. P0/P1/P2/P3. 값비싼 변경은 명시. 끝에 읽은 파일·안 본 것. 총평 첫 줄은 [review-gemini], 둘째 줄은 합의표식: P0=<n> P1=<n>"}' > .gemini/context.json
+        env:
+          REPOSITORY: ${{ github.repository }}
+          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+
+      - name: Gemini pull request review
+        uses: google-github-actions/run-gemini-cli@v0
+        env:
+          GEMINI_CLI_TRUST_WORKSPACE: 'true'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          gemini_model: ${{ vars.GEMINI_MODEL }}
+          workflow_name: gemini-review
+          github_pr_number: ${{ github.event.pull_request.number }}
+          settings: |
+            {
+              "model": { "maxSessionTurns": 25 },
+              "mcpServers": {
+                "github": {
+                  "command": "docker",
+                  "args": ["run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN", "ghcr.io/github/github-mcp-server:v0.27.0"],
+                  "includeTools": ["add_comment_to_pending_review", "pull_request_read", "pull_request_review_write"],
+                  "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" }
+                }
+              },
+              "tools": { "core": [] }
+            }
+          extensions: |
+            [
+              "https://github.com/gemini-cli-extensions/code-review"
+            ]
+          prompt: '/pr-code-review'

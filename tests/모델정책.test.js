@@ -182,7 +182,12 @@ test('🔑 몽골어대조(첫 라이브 호출자)가 정책 픽을 실제로 �
   const src = require('node:fs').readFileSync(path.join(ROOT, 'tools', '몽골어대조.js'), 'utf8');
   assert.match(src, /제미나이설정\(\)/, '몽골어대조가 정책 픽을 안 읽는다');
   assert.doesNotMatch(src, /기본모델 = 'gemini-/, '모델이 다시 하드코딩됐다');
-  assert.match(src, /thinkingLevel/, '사고 수준이 요청에 안 실린다');
+  /* 요청 조립은 09-02 부터 `tools/lib/제미나이호출.js` 한 통로다(검수 러너의 gemini 레인과 공유) —
+   * 사고 수준이 «요청에 실리나»는 그 파일에서 재고, 몽골어대조는 «정책의 사고 수준을 건네나»를 잰다. */
+  assert.match(src, /thinking/, '몽골어대조가 사고 수준을 호출에 안 건넨다');
+  const 통로 = require('node:fs').readFileSync(path.join(ROOT, 'tools', 'lib', '제미나이호출.js'), 'utf8');
+  assert.match(통로, /thinkingLevel/, '사고 수준이 요청에 안 실린다(제미나이호출.js)');
+  assert.doesNotMatch(src, /generateContent/, '몽골어대조가 HTTP 를 제 손으로 다시 부른다 — 통로가 둘이면 갈린다');
 });
 
 test('제미나이 키는 파일에서만 읽고, 모르는 토큰 여럿이면 null (조용한 401 방지 · 지적 a7be9e8a)', () => {

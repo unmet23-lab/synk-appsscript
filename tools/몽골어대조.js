@@ -58,13 +58,13 @@ const { 맞춤법검사 } = require('./lib/몽골어맞춤법.js');
  *   역번역은 「결혼식장에 AI 가…」라고 찍어 놨는데 **아무도 원문과 대조하지 않았다.**
  *   🔴 이 층만 codex(OpenAI)로 간다 — 역번역을 만든 제미나이가 제 답을 채점하면 늘 「같다」다. */
 const { 뜻대조 } = require('./lib/뜻대조.js');
+/* HTTP 호출은 `tools/lib/제미나이호출.js` **한 통로**다(09-02) — 검수 러너의 gemini 레인과 같은 함수를 쓴다.
+ * 재시도·타임아웃·스키마 처리를 여기 다시 적지 않는다(두 곳이 알면 갈린다). */
+const { 제미나이, 재시도가능 } = require('./lib/제미나이호출.js');
 
 const 기본키경로 = 'C:/Users/q1212/SYNK_보안/제미나이.txt';
 const 제미나이픽 = 정책.제미나이설정(); // 기본 = gemini-3.7-flash / thinking_level=high (유호 지시 08-31)
 const 기본모델 = 제미나이픽.model;
-const BASE = 'https://generativelanguage.googleapis.com/v1beta';
-const 호출타임아웃 = 60_000;
-const 재시도지연 = [5_000, 15_000]; // 무료 티어 분당 상한(429)·순간 장애(500/503)용
 
 // 키 파일에서 키만 뽑는다. 아는 접두어(AIza·AQ.·sk-)를 우선하고,
 // 못 알아보는데 토큰이 여럿이면 — 아무거나 집어 조용히 401을 만드느니 — 크게 실패한다.
@@ -111,10 +111,6 @@ function 파일분해(text) {
   const 번역 = s.slice(sep.index + sep[0].length).trim(); // 번역 블록 안의 --- 는 번역에 남는다
   if (!원문 || !번역) return null;
   return { 원문, 번역 };
-}
-
-function 재시도가능(status) {
-  return status === 429 || status === 500 || status === 503;
 }
 
 // 산문 정규식 폴백 — 형식을 안 지킨 답 = null = 검수 필요(통과 아님).
@@ -221,46 +217,6 @@ const 문법스키마 = {
   },
   required: ['판정', '이유'],
 };
-
-async function 제미나이(key, model, prompt, opts = {}) {
-  for (let 회 = 0; ; 회++) {
-    let res, 본문;
-    try {
-      res = await fetch(`${BASE}/models/${model}:generateContent`, {
-        method: 'POST',
-        headers: { 'x-goog-api-key': key, 'content-type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          // 사고 수준은 정책 픽의 모델일 때만 싣는다 — env GEMINI_MODEL 로 딴 모델을 골랐으면
-          // 그 모델이 이 파라미터를 받는지 모르므로 안 보낸다(조용한 400 방지).
-          ...(opts.schema || opts.thinking
-            ? {
-                generationConfig: {
-                  ...(opts.schema ? { responseMimeType: 'application/json', responseSchema: opts.schema } : {}),
-                  ...(opts.thinking ? { thinkingConfig: { thinkingLevel: opts.thinking } } : {}),
-                },
-              }
-            : {}),
-        }),
-        signal: AbortSignal.timeout(호출타임아웃),
-      });
-      본문 = await res.json();
-    } catch (e) {
-      if (회 < 재시도지연.length) { await new Promise((r) => setTimeout(r, 재시도지연[회])); continue; }
-      throw new Error(`네트워크/타임아웃: ${e.message}`);
-    }
-    if (!res.ok) {
-      if (재시도가능(res.status) && 회 < 재시도지연.length) {
-        await new Promise((r) => setTimeout(r, 재시도지연[회]));
-        continue;
-      }
-      throw new Error(`${res.status} ${(본문.error && 본문.error.message) || ''}`.trim());
-    }
-    const c = 본문.candidates && 본문.candidates[0];
-    const t = c && c.content && c.content.parts && c.content.parts.map((p) => p.text).join('');
-    return (t || '').trim();
-  }
-}
 
 async function main() {
   const argv = process.argv.slice(2);
