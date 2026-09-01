@@ -8,6 +8,11 @@
  * ⚠돈이 든다 — 1컷 ≈ 190원. 유호님 승인 없이 배치로 돌리지 않는다.
  * ⚠우하단 생성 표식(sparkle)이 출력에 붙는다 — 코너라 크롭·누끼로 떨어진다.
  *   비가시 SynthID 는 그대로 산다(🚫지우려는 시도).
+ *
+ * 2026-09-02 · `크기` 손잡이를 붙였다(1K·2K·4K). **기본값은 안 바꿨다** — 이미 구운 자산의
+ *   재현성을 지키려면 인자를 안 준 호출이 옛 그림과 같은 픽셀을 내야 한다(머리말 「건드리지 않았다」).
+ *   라디오 무대판이 2K 를 부른다: 1280×720 에 깔면서 우하단 표식을 «잘라» 버려야 해서
+ *   1K(≈1344×768)로는 잘라낸 뒤 확대가 물린다.
  */
 'use strict';
 const fs = require('fs');
@@ -25,7 +30,7 @@ function 키(키경로 = 기본키경로) {
 const mime = (p) => (/\.jpe?g$/i.test(p) ? 'image/jpeg' : 'image/png');
 
 /** 한 컷 굽는다. 참조 경로가 하나라도 없으면 «굽기 전에» 던진다(빈 참조로 구우면 색이 갈린다). */
-async function 한컷({ 이름, 지시, 참조 = [], 비율 = '1:1', 저장경로, k, 모델 = 기본모델 }) {
+async function 한컷({ 이름, 지시, 참조 = [], 비율 = '1:1', 크기 = '1K', 저장경로, k, 모델 = 기본모델 }) {
   for (const r of 참조) if (!fs.existsSync(r)) throw new Error(`${이름} 참조 없음 — ${r}`);
   const parts = [{ text: 지시 }];
   for (const r of 참조) {
@@ -37,7 +42,7 @@ async function 한컷({ 이름, 지시, 참조 = [], 비율 = '1:1', 저장경�
     headers: { 'x-goog-api-key': k, 'content-type': 'application/json' },
     body: JSON.stringify({
       contents: [{ parts }],
-      generationConfig: { responseModalities: ['IMAGE'], imageConfig: { imageSize: '1K', aspectRatio: 비율 } },
+      generationConfig: { responseModalities: ['IMAGE'], imageConfig: { imageSize: 크기, aspectRatio: 비율 } },
     }),
   });
   const 초 = ((Date.now() - t0) / 1000).toFixed(1);
