@@ -128,7 +128,7 @@
     <li><a href="#결론">결론</a></li><li><a href="#지금">지금 사슬</a></li><li><a href="#실측">오늘 잰 것</a></li>
     <li><a href="#벤더">벤더별 최신</a></li><li><a href="#브리지">브리지·오케스트레이터</a></li><li><a href="#깃허브">깃허브에서 저절로</a></li>
     <li><a href="#사람들">사람들이 쓰는 것</a></li><li><a href="#게이트">게이트 3 통과표</a></li><li><a href="#설계">재설계 안</a></li>
-    <li><a href="#충돌">옛 확정과 부딪히는 자리</a></li><li><a href="#픽">유호님 픽</a></li><li><a href="#못잰것">못 잰 것</a></li>
+    <li><a href="#충돌">옛 확정과 부딪히는 자리</a></li><li><a href="#픽">유호님 픽</a></li><li><a href="#착수">착수 기록</a></li><li><a href="#못잰것">못 잰 것</a></li>
   </ul>
 </header>
 
@@ -541,7 +541,41 @@
 <p><b>제 권한으로 바로 되는 것</b>(지시 한 마디면 그 자리에서): ① <code>codex-plugin-cc</code> 설치(게이트 off) ② 러너에 <code>검수자()</code> 접합점 + <code>--output-schema</code> + 라이브 검색 반박 행 ③ Gemini CLI 를 둘째 검수자로(㉮ A) + <code>stats.models</code> 검산 + 학생 데이터 필터 ④ <code>.agents/skills</code> 정본 규칙 ⑤ 첫 측정 셋(§8 안 A). 모델·효력 값은 안 건드립니다.</p>
 </div>
 
-<h2 id="못잰것"><span class="n">§11</span>못 잰 것 · 분모</h2>
+<h2 id="착수"><span class="n">§11</span>착수 기록 — 유호 09-02 「전부 진행해줘」 뒤 같은 날 저녁</h2>
+<p class="hint">워크트리 <code>engine/review-lanes</code> · 안 A 착수 · 결정 = <code>docs/_ops/결정.md</code> 09-02 줄. 아래는 짓는 도중 «실측이 계획을 고친» 자리부터 적었다.</p>
+
+<div class="card top">
+<h3>🔴 짓다가 발견한 것 — 배포 검수가 «눈을 감은 채» 돌고 있었다</h3>
+<p>1단계에 <code>--output-schema</code> 를 거는 실험을 돌리자 Codex 가 exit 0 으로 이렇게 답했다: 「확인 불가: 저장소 명령 실행이 정책에 의해 차단되어 커밋과 변경 파일을 읽지 못했습니다.」 러너와 똑같은 잠금 플래그로 다시 재니 <b>git 한 줄도 못 돌린다</b> — 로그 원문은 「Rejected("…\WindowsApps\…\pwsh.exe" … rejected: blocked by policy)」. 까닭: <code>--ignore-user-config</code> 가 사용자 설정의 <code>[windows] sandbox="elevated"</code> 까지 지우고, 남는 «제한 토큰» 샌드박스는 Microsoft Store 판 PowerShell 을 못 띄운다. Codex 를 0.152.0 으로 올려도(체인지로그의 Store pwsh 수정) 같았다.</p>
+<div class="row">
+  <div class="k">고침</div><div>잠금 플래그에 넷째를 더했다 — <code>-c windows.sandbox="elevated"</code>. 같은 조건에서 git 은 돌고 파일 쓰기는 「액세스가 거부되었습니다」(읽기 전용 유지). 08-05 에 「elevated 가 SpawnChild 오류로 죽는다」고 적은 것은 그때 참이었고 0.150.0 「Fixed elevated Windows sandbox setup」 뒤 뒤집혔다.</div>
+  <div class="k">왜 못 잡았나</div><div>넷째 실패 모양의 자(「못 봤다 징후」 정규식)가 「명령 실행이 차단」만 알았다 — 이번 문면은 「명령 실행이 «정책에 의해» 차단」이라 사이 낱말에 막혔다. 정규식을 넓혔고(「파일«을» 읽지 못」 · 첫 줄 「확인 불가」 · blocked by policy), AGENTS.md 규칙 ④(못 봤으면 첫 줄에 「확인 불가」)를 Codex 가 실제로 따르는 것이 확인돼 그 문면이 자가 됐다.</div>
+  <div class="k">안 잰 것</div><div><b>언제부터 막혀 있었나.</b> 09-01 15:43 장부 행에는 지적이 있었다. 그 뒤 Store PowerShell 갱신 또는 Codex 승급 어느 쪽인지 모른다.</div>
+</div>
+</div>
+
+<div class="tbl"><table>
+<tr><th>계획(§8 안 A)</th><th>실물</th><th>실측이 고친 것</th></tr>
+<tr><td>구조화 2단계 걷기(<code>--output-schema</code> 를 1단계에)</td><td class="v fail">접음</td><td><code>codex exec review</code> 는 0.151.0 에서도 스키마를 무시하고 산문을 낸다(실측 · 08-05 판정 유지). 2단계 유지.</td></tr>
+<tr><td>검수자 접합점</td><td class="v pass">섰다</td><td>벤더를 «회차의 속성»으로 — <code>--벤더 codex|둘</code>. 병합·합의·단독이 그대로 «벤더 합의»를 낸다. gemini 단독 모드는 일부러 없다(게이트는 codex).</td></tr>
+<tr><td>제미나이 둘째 검수자(API 키 레인)</td><td class="v pass">섰다</td><td>Gemini CLI 가 아니라 <b>HTTP 직결</b>(<code>tools/lib/제미나이호출.js</code>) — CLI 는 3.7 을 시켜도 3.5 가 답하는 버그(#28859)가 있어 «무엇이 답했나»를 못 믿는다. HTTP 는 응답의 <code>modelVersion</code> 을 장부에 적는다. diff 만 본다(저장소를 돌지 않는다). 못 보면 그 회차만 «확인 불가».</td></tr>
+<tr><td>라이브 검색 반박 패스</td><td class="v pass">섰다</td><td><code>node tools/밖의사실.js --반박 &lt;키&gt; --조사원 codex</code> — 읽기 전용 잠금 + <code>web_search="live"</code> + 스키마(결론·근거URL·갈리는지점·확인못한것). DR 손 통로는 그대로. 첫 명제 = 상표 우선권 기한(아래 측정 ③).</td></tr>
+<tr><td>AGENTS.md Code Review Rules</td><td class="v pass">섰다</td><td>Codex 가 읽고 따랐다(위). gemini 레인엔 프롬프트로 실린다.</td></tr>
+<tr><td>codex-plugin-cc</td><td class="v pass">설치</td><td>v1.0.6 · 게이트 off · <code>/codex:review</code> · <code>/codex:adversarial-review</code>. 장부에 안 적히니 배포 근거로는 안 쓴다.</td></tr>
+<tr><td>안 B(GitHub) 준비</td><td class="v cond">스위치 off</td><td><code>review-claude.yml</code>(Max 1년 토큰) · <code>review-gemini.yml</code>(무료 키) · <code>review-judge.yml</code>(둘 이상 동의 → 상태 하나). 변수 <code>SYNK_REVIEW_GITHUB=on</code> 전까지 아무것도 안 돈다(유호님 픽 ㉯).</td></tr>
+<tr><td>Codex 판</td><td class="v pass">0.152.0</td><td>승급(09-02). Store pwsh 문제는 이 판에서도 그대로였다 — 위 넷째 플래그가 답.</td></tr>
+</table></div>
+
+<div class="note" id="측정">
+<p><b>첫 측정 셋</b> — 같은 커밋 <code>e0e01043b</code>(엔진 · 7파일 · +185) 를 codex(luna/xhigh)와 gemini(3.7-flash/high)가 각각 봤다.</p>
+<ul>
+  <li>① 사각 편차(고유 지적 · 겹침) — <span class="num" id="측정1">(런 도는 중 · 끝나면 장부 <code>docs/_ops/검수기록.jsonl</code> 의 회차별 칸이 답)</span></li>
+  <li>② <code>--output-schema</code> 직행 — 접음(위 표).</li>
+  <li>③ 라이브 검색 반박 첫 행 — <span id="측정3">(돌아오는 중)</span></li>
+</ul>
+</div>
+
+<h2 id="못잰것"><span class="n">§12</span>못 잰 것 · 분모</h2>
 <ul>
   <li><b>자</b>: 조사 에이전트 6(웹 5 · last30days 1) · 웹 열람 495회(52+116+91+114+122) · 이 기계 실측 = Codex(MCP 서버 · 라이브 검색 · Windows 울타리 · 플래그) · Gemini CLI(설치 · 헤드리스 · 모델 검산) · Claude Code 플래그.</li>
   <li><b>안 잰 것</b>: <code>agy</code> 를 이 기계에 설치·로그인(유호님 자리라 안 했다 — Windows 행 #318 재현 여부 모름) · <code>claude setup-token</code> 실제 만료(문서 1년 vs 이슈 #727) · codex-plugin-cc 의 Windows 실동작 · <code>codex exec</code> «안의» 셸이 Windows 울타리에 드는지(헬퍼로만) · Plus 주간 상한 수치 · Gemini 무료 등급 RPM/RPD(대시보드만) · 우리 키의 종류 · 공개 저장소에서 <code>@codex review</code> 실동작 · Codex 가 프로젝트 <code>.codex/config.toml</code> 을 읽는지.</li>
