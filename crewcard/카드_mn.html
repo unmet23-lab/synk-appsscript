@@ -163,7 +163,9 @@ section.page{
 .field .k{
   font-family:var(--mono);font-size:9px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--muted);
-  display:flex;justify-content:space-between;
+  /* 🔴 space-between 이었다 — 1200px 화면에서 라벨 둘이 양끝으로 벌어져 가운데가 텅 비었다
+     (8쪽 전수 렌더 09-02: 02·04·05·06 이 전부 그 얼굴). 붙여서 한 덩어리로 읽히게 한다. */
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:0 9px;
 }
 .field .k .en{color:var(--muted);font-weight:600}  /* 40곳 — 라이트 위 코랄 글자 최대 표면 */
 .field .v{
@@ -172,7 +174,11 @@ section.page{
   border-bottom:1px solid rgba(43,35,32,.35);
   padding:4px 0 8px;min-height:1.7em;
   outline:none;
+  /* 🔴 폭 제한이 없어 밑줄이 화면을 가로질렀다 — 칸의 «크기»가 내용의 크기를 못 말한다.
+     긴 서술(.tall·.taller)은 아래에서 따로 넓힌다. */
+  max-width:30em;
 }
+.field.tall .v,.field.taller .v{max-width:46em;}
 .field .v[contenteditable="true"]:empty::before{
   content:attr(data-placeholder);color:rgba(43,35,32,.28);font-style:italic;
 }
@@ -362,6 +368,7 @@ section.page{
     .m-card-row{flex-wrap:wrap}
     .page-head{flex-direction:column;align-items:stretch;gap:12px}
     .m-chip{align-self:flex-start}
+    .m-card-row > *:last-child{padding-right:44px}   /* 폰에선 폼폼도 46px 로 준다 */
     .imx{grid-template-columns:1fr !important}
     .imx .steps{justify-self:start}
     h1{font-size:38px !important}
@@ -474,8 +481,8 @@ section.page{
   }
   .cov-deliverables h5 em{font-style:normal;color:inherit}
   .cov-deliverables .desc{
-    font-size:10.5px;line-height:1.45;color:var(--muted-2);
-    text-wrap:pretty;
+    font-size:11px;line-height:1.5;color:var(--muted-2);
+    text-wrap:pretty;   /* 10.5px 은 표지에서 «읽히기 전에 회색 띠»로 보였다 */
   }
   .cov-hero .eyebrow{
     font-family:var(--mono);font-size:11px;letter-spacing:.2em;
@@ -505,6 +512,9 @@ section.page{
 
   /* The membership card — hero object on the cover */
   .m-card{
+    /* 🔴 폭이 안 묶여 1200px 화면에서 «카드»가 아니라 «띠»로 보였다 — 멤버십 카드는 이 지면의
+       히어로라 형태부터 카드여야 한다(8쪽 전수 렌더 09-02). */
+    max-width:780px;
     margin-top:40px;
     background:
       radial-gradient(140% 100% at 0% 0%, rgba(255,255,255,.14), transparent 55%),
@@ -547,6 +557,8 @@ section.page{
     gap:16px;position:relative;z-index:3;
   }
   .m-card-row .name-col{max-width:60%}
+  /* 오른쪽 칸은 구운 폼폼·와펜이 앉은 모서리를 피한다 — 안 그러면 등록일 위에 털이 얹힌다. */
+  .m-card-row > *:last-child{padding-right:78px}   /* 폼폼이 카드 안으로 82px 들어온다 */
   .m-card-lbl{
     font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;
     text-transform:uppercase;opacity:.85;margin-bottom:8px;
@@ -593,7 +605,7 @@ section.page{
     caret-color:var(--lime);
     -moz-appearance:textfield;
   }
-  .m-date input.yr{width:3.6ch}
+  .m-date input.yr{width:4.5ch}   /* 3.6ch 은 네 자리 「2026」의 끝 글자를 잘랐다 */
   .m-date input::-webkit-outer-spin-button,
   .m-date input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   .m-date input:focus{border-bottom-color:var(--lime)}
@@ -741,11 +753,11 @@ section.page{
   }
   .m-chip .row{
     display:flex;justify-content:space-between;align-items:center;gap:12px;
-    font-family:var(--mono);font-size:9px;letter-spacing:.14em;
-    text-transform:uppercase;
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+    text-transform:uppercase;   /* 9px + .14em 은 코랄 면 위에서 획이 끊겨 보였다 */
   }
   .m-chip .row + .row{margin-top:10px}
-  .m-chip .row .k{opacity:.75}
+  .m-chip .row .k{opacity:.88}   /* .75 는 코랄 면 위에서 안 읽혔다(8쪽 전수 렌더 09-02) */
   .m-chip .row .v{font-weight:600}
   .m-chip .num{
     font-family:var(--mono);font-size:12px;letter-spacing:.14em;
@@ -1030,8 +1042,8 @@ section.page{
   }
   .pledge-body{
     font-size:14px;line-height:1.9;color:var(--muted-2);
-    background:var(--cream-2);border-radius:12px;padding:20px 22px;
-    margin-top:12px;
+    background:var(--cream-2);border-radius:12px;padding:22px 24px;
+    margin-top:12px;text-wrap:pretty;
   }
   .pledge-body b{color:var(--navy)}
   .sig-grid{
@@ -1111,17 +1123,24 @@ section.page{
   .persona-grid{
     display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;margin-top:8px;
   }
+  /* 스펙트럼은 «양극 사이 눈금»이라 양끝 배치가 뜻에 맞다 — 다만 폭이 과하면 눈금이 외로워진다. */
   .persona-row{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:10px 0;border-bottom:1px dashed rgba(43,35,32,.15);
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    max-width:440px;
+    padding:10px 8px;margin:0 -8px;border-radius:8px;
+    border-bottom:1px dashed rgba(43,35,32,.15);
     font-size:13px;color:var(--navy);
+    transition:background .16s var(--ease);
   }
+  .persona-row:hover{background:rgba(43,35,32,.035);}
   .persona-row .pair{color:var(--muted);font-size:11px;letter-spacing:.05em}
   .persona-row .scale{display:flex;gap:5px}
   .persona-row .scale i{
-    display:block;width:14px;height:14px;border-radius:50%;
-    border:1.4px solid rgba(43,35,32,.28);cursor:pointer;
+    display:block;width:15px;height:15px;border-radius:50%;
+    border:1.5px solid rgba(43,35,32,.34);background:rgba(43,35,32,.04);
+    cursor:pointer;transition:all .16s var(--ease);
   }
+  .persona-row .scale i:hover{border-color:var(--coral);background:rgba(249,104,89,.16)}
   .persona-row .scale i.on{background:var(--coral);border-color:var(--coral)}
 
   /* Timeline block */
@@ -1148,11 +1167,16 @@ section.page{
 
   /* Intensity slider — a 5-step pill row, click a step to set level.
      Left label + right label + 5 dots + strength number.  */
+  /* 🔴 1fr 이 라벨에 다 가서 강도 칸이 «화면 오른쪽 끝»에 홀로 떨어져 있었다 — 어느 줄의
+     눈금인지 눈으로 잇기 어렵다(8쪽 전수 렌더 09-02 · 03·04·06). 폭을 묶고 줄을 짚어 준다. */
   .imx{
-    display:grid;grid-template-columns:1fr auto;gap:10px 18px;
-    align-items:center;
-    padding:11px 0;border-bottom:1px dashed rgba(43,35,32,.14);
+    display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 18px;
+    align-items:center;max-width:760px;
+    padding:11px 10px;margin:0 -10px;border-radius:8px;
+    border-bottom:1px dashed rgba(43,35,32,.14);
+    transition:background .16s var(--ease);
   }
+  .imx:hover{background:rgba(43,35,32,.035);}
   .imx:last-child{border-bottom:0}
   .imx .lab{
     display:flex;flex-direction:column;gap:2px;min-width:0;
@@ -1167,12 +1191,17 @@ section.page{
   .imx .steps{
     display:inline-flex;gap:4px;align-items:center;
   }
+  /* 🔴 background rgba(...,.09) 뿐이라 크림 위에서 «사실상 안 보였다» — 매트릭스가 빈 표로
+     읽혔다(8쪽 전수 렌더 09-02 · 03·04·06). 테두리를 줘서 «칸»이라는 것부터 보이게 한다. */
   .imx .steps b{
-    display:block;width:22px;height:14px;border-radius:3px;
-    background:rgba(43,35,32,.09);cursor:pointer;
-    transition:background .18s var(--ease), transform .18s var(--ease);
+    display:block;width:22px;height:15px;border-radius:4px;
+    background:rgba(43,35,32,.05);
+    box-shadow:inset 0 0 0 1px rgba(43,35,32,.24);
+    cursor:pointer;
+    transition:background .18s var(--ease), box-shadow .18s var(--ease), transform .18s var(--ease);
   }
-  .imx .steps b:hover{background:rgba(249,104,89,.35)}
+  .imx .steps b:hover{background:rgba(249,104,89,.28);box-shadow:inset 0 0 0 1px rgba(249,104,89,.6)}
+  .imx .steps b.on{box-shadow:inset 0 0 0 1px rgba(43,35,32,.14)}
   .imx .steps b.on{background:var(--coral)}
   .imx .steps b.on:nth-child(1){background:var(--coral-soft)}
   .imx .steps b.on:nth-child(2){background:#FBB7A3}
@@ -1227,7 +1256,8 @@ section.page{
     display:grid;place-items:center;font-weight:700;
   }
   .quiz-opts{
-    display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-left:32px;
+    display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-left:32px;
+    max-width:720px;   /* 두 선택지가 화면 끝까지 늘어나 «고르는 것»으로 안 읽혔다 */
   }
   .quiz-opts .opt{padding:6px 12px;font-size:12px}
 
@@ -1237,10 +1267,11 @@ section.page{
   .tag.worry.on::before{content:'✓';color:var(--lime)}
 
   /* Story card — a nice full-width tall input for narrative answers */
+  /* 자유서술 — 한 줄이 100자를 넘으면 눈이 줄을 잃는다. 읽고 쓰는 폭을 묶는다. */
   .story{
     background:linear-gradient(180deg, #fff 0%, var(--paper) 100%);
     border:1px solid rgba(43,35,32,.09);border-radius:14px;
-    padding:16px 18px;margin-top:12px;
+    padding:16px 18px;margin-top:12px;max-width:820px;
     display:flex;flex-direction:column;gap:8px;
   }
   .story .lbl{
@@ -1262,12 +1293,14 @@ section.page{
   .story.tall .v{min-height:7em}
 
   /* "Matrix" — column headers over rows of intensity picks */
+  /* 안쪽 줄(.imx)은 760px 로 묶었는데 «상자»는 100% 라 오른쪽이 통째로 비어 있었다 —
+     상자와 내용의 폭이 갈리면 그 틈이 그대로 «구멍»으로 읽힌다(8쪽 전수 렌더 09-02). */
   .mtx{
     background:var(--paper);border-radius:12px;padding:14px 18px 12px;
-    border:1px solid rgba(43,35,32,.08);margin-top:8px;
+    border:1px solid rgba(43,35,32,.08);margin-top:8px;max-width:800px;
   }
   .mtx-head{
-    display:grid;grid-template-columns:1fr auto;gap:16px;
+    display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;
     padding-bottom:8px;margin-bottom:2px;
     border-bottom:1px solid rgba(43,35,32,.09);
   }
@@ -2052,7 +2085,7 @@ section.page{
               <input class="m-input serif" id="fCrewName" name="crewName" type="text" autocomplete="off" spellcheck="false" placeholder="Нэрээ бичнэ үү" data-field="name_kr" data-column="name_kr">
             </div>
           </div>
-          <div style="text-align:right;flex:0 0 auto;padding-top:44px">
+          <div style="text-align:right;flex:0 0 auto">
             <div class="m-card-lbl" data-lbl="date" style="justify-content:flex-end"><span class="dot"></span>Since · Бүртгүүлсэн огноо</div>
             <div class="m-date" style="justify-content:flex-end">
               <input class="yr" id="fYear" name="regYear" type="text" inputmode="numeric" maxlength="4" placeholder="">
