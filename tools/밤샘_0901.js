@@ -45,6 +45,13 @@ const path = require('node:path');
 /* ① 램문지기가 읽는 자리 — require 보다 «먼저» 서야 한다(모듈은 로드 때 한 번 읽는다). */
 process.env.RAM_WAIT_MIN = process.env.RAM_WAIT_MIN || '600';
 
+/* ①-b 한시 바닥 — 낮에 거는 판에서만 쓴다(09-01 14:47 유호 지시 「구워」).
+ *   🔴 규약(램문지기 머리말)이 «스래싱 감시 필수»라고 못 박은 통로다. 부르는 쪽이 감시를 단다.
+ *   근거 = 성공 실측 최저 3,375MB(08-30) · 실패 실측 3,036MB · 08-31 12:32 에 3,600 으로 붙어
+ *   우34 가 93.9분에 «건강하게» 났다. 6,000 은 밤에 창이 다 닫힌 자리의 값이라, 유호님이
+ *   기계를 쓰시는 낮에는 영영 안 온다(09-01 실측: 8시간 기다려 4,040MB 가 천장이었다). */
+process.env.RAM_FLOOR_TEMP = process.env.RAM_FLOOR_TEMP || '3600';
+
 /* ② stdout·stderr 을 파일로 직접 돌린다. 이어쓰기('a')라 재기동해도 앞 밤이 안 지워진다. */
 const 로그경로 = process.env.RAM_LOG_PATH
   || path.join(process.env.TEMP || process.env.TMP || '.', '밤샘0901.log');
