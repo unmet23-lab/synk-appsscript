@@ -162,23 +162,37 @@ function parseEdges(text) {
  * 그 열하나의 판을 **원리상** 못 읽어 전부 '미상'으로 냈고, 그래서 그 정본들을 인용하는
  * 파생의 낡음이 아무 데서도 안 잡혔다 — 급여 인센티브 정본이 08-26 에 v1.8 → v3 가 된 것을
  * 파생 일곱이 엿새 동안 모른 채 v1.6·v1.7·v1.8 을 「현행」이라 부르고 있었다(09-01 발견).
- * ⚠ 꼬리는 아무 vN 이나 줍지 않는다 — **줄이 판 표기로 «시작»할 때만**(`^v3 · …`).
- *   본문 한가운데의 「철학 v1.8 이 …」 같은 인용을 판으로 오독하지 않으려는 것이고,
- *   이 도구의 오탐 0 설계를 지키는 자리다. 머리가 이긴다(둘 다 적은 셋은 값이 같다 — 실측). */
+ * ⚠ 아무 vN 이나 줍지 않는다 — **줄이 판 표기로 «시작»할 때만**(`v3 · …` · 장식 `> ** ` 은 벗긴다).
+ *   이 저장소가 자기 판을 적는 꼴이 그것이고(`> **v1.4 · 2026-08-16**` · `*v1.5 가 한 일`),
+ *   **남의 판 인용은 언제나 이름 뒤에 온다**(「철학 v1.12 · 반편성 v2.3」). 줄머리 규칙 하나가
+ *   그 둘을 가른다 — 이 도구의 오탐 0 설계를 지키는 자리다.
+ *
+ * 🔴 [같은 날 두 번째 손] 첫 판은 「머리에서 «아무» vN 이나 먼저 집고, 없으면 꼬리」였다.
+ *   그게 **제목 줄의 파일명 유래 v1 을 집는다.** 실측 4건: 조직계보_정본_v1(제목 v1 · 실제 **v1.4**) ·
+ *   공간설계_v1(제목 v1 · 실제 **v1.5**) · 파일럿_체험2주_설계_v1(v1.1) · 강사채용_부트캠프_v1(v1.1).
+ *   조직계보는 파일명에 '정본' 이 있어 **이미 정본으로 세어지고 있었고, 그래서 자가 v1 이라는 틀린
+ *   값을 내고 있었다** — 「파일명에서 읽지 않는다」는 위 규약이 제목 줄을 통해 조용히 깨져 있었다.
+ *   ⇒ 순서를 ①머리 줄머리 → ②꼬리 줄머리 → ③(하위호환) 머리 아무 vN 으로 바꾼다.
+ *   꼬리는 **위에서부터** 훑는다 — 판 이력을 꼬리에 쌓는 문서는 «맨 위가 최신»이다(공간설계 v1.5). */
 const VERSION_SCAN_LINES = 12;
-const VERSION_TAIL_LINES = 5;
-const TAIL_VERSION_RE = /^v(\d+(?:\.\d+)*)(?=\s|·|$)/i;
+const VERSION_TAIL_LINES = 8;
+const LINE_VERSION_RE = /^v(\d+(?:\.\d+)*)(?=[\s·*,)(]|$)/i;
+function lineVersion(line) {
+  const m = String(line).trim().replace(/^[#>*\-\s]+/, '').match(LINE_VERSION_RE);
+  return m ? `v${m[1]}`.toLowerCase() : null;
+}
 function canonVersion(text) {
   const lines = String(text).split('\n');
-  const head = lines.slice(0, VERSION_SCAN_LINES).join('\n');
-  const m = head.match(/\bv\d+(?:\.\d+)*\b/i);
-  if (m) return m[0].toLowerCase();
-  for (const line of lines.slice(-VERSION_TAIL_LINES).reverse()) {
-    const t = line.trim().replace(/^[#>*\-\s]+/, '');
-    const tm = t.match(TAIL_VERSION_RE);
-    if (tm) return `v${tm[1]}`.toLowerCase();
+  for (const line of lines.slice(0, VERSION_SCAN_LINES)) {
+    const v = lineVersion(line);
+    if (v) return v;
   }
-  return null;
+  for (const line of lines.slice(-VERSION_TAIL_LINES)) {
+    const v = lineVersion(line);
+    if (v) return v;
+  }
+  const m = lines.slice(0, VERSION_SCAN_LINES).join('\n').match(/\bv\d+(?:\.\d+)*\b/i);
+  return m ? m[0].toLowerCase() : null;
 }
 
 /* [2026-08-09] 정본 지위를 **정본 자신이 선언**하는 통로.
