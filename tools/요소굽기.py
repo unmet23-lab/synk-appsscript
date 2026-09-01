@@ -742,9 +742,16 @@ def 실패스피너():
     sp = 꼬리.splines.new('POLY')
     N = 40
     sp.points.add(N - 1)
+    # 「진행=0~1」 — 로딩은 **루프**여야 한다(09-01 · Loom 살아있는 재질 §6-1).
+    #   그래서 «감긴 실을 줄이는» 길로 안 갔다: 그건 되감기가 없어 한 바퀴 돌면 빈 보빈이 남는다.
+    #   대신 꼬리를 지나는 **파동의 위상**만 민다 — 진행 1 이 진행 0 과 같은 그림이라 이음매가 없다.
+    #   ⚠ 감긴 고리는 원형이라 축 회전이 픽셀에 안 나타난다(돌려 봐야 같은 그림이다).
+    위상 = float(인자.get('진행', '0')) * 2 * math.pi
     for i in range(N):
         t = i / (N - 1)
-        sp.points[i].co = (0.4 + 1.5 * t, -0.15 * math.sin(t * 5), -0.35 - 0.55 * t + 0.14 * math.sin(t * 9), 1)
+        sp.points[i].co = (0.4 + 1.5 * t,
+                           -0.15 * math.sin(t * 5 + 위상),
+                           -0.35 - 0.55 * t + 0.14 * math.sin(t * 9 + 위상), 1)
     obj = bpy.data.objects.new('꼬리', 꼬리)
     bpy.context.collection.objects.link(obj)
     obj.data.materials.append(실재)
