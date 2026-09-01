@@ -12,7 +12,9 @@
 // 사용법:
 //   node tools/memory-graph.js              리포트(고아·깨진 링크·인덱스 불일치·미지 타입)
 //   node tools/memory-graph.js --decisions  결정 큐 — '막힘>' 엣지를 위상정렬해 우선순위 산출
-//   node tools/memory-graph.js --write      각 파일 하단에 역링크 섹션 삽입/갱신(멱등)
+//   node tools/memory-graph.js --위생       위생 리포트(사람 몫과 기계 몫을 갈라 낸다)
+//   node tools/memory-graph.js --위생고침   역링크 블록 동기화 — 쓰는 자는 이것 하나다
+//                                           (`--write` 는 이 플래그의 옛 이름 · 하는 일이 같다)
 //   node tools/memory-graph.js --json       위 결과를 기계 판독용 JSON으로
 //   SYNK_MEMORY_DIR=... 로 대상 디렉터리를 덮어쓸 수 있다(테스트용).
 'use strict';
@@ -88,7 +90,7 @@ function memoryDir() {
 /* ── 읽기 ────────────────────────────────────────────────────────────────── */
 /* 🔴 표식이 «반쪽»인 파일 — 시작 표식은 있는데 끝 표식이 없다.
  * 예전 이 함수는 그때 `text.slice(0, s)` 로 **그 지점부터 파일 끝까지 통째로 버렸다.**
- * 읽기만 하는 자리에선 링크 몇 개를 놓치는 정도지만, `writeBacklinks` 가 그 결과를
+ * 읽기만 하는 자리에선 링크 몇 개를 놓치는 정도지만, 역링크를 쓰는 자(`위생고치기`)가 그 결과를
  * `base` 로 삼아 다시 쓰므로 **뒷부분이 파일에서 영영 사라지고 도구는 「1개 파일 변경」으로
  * 성공을 보고한다.** 자동 쓰기를 켜기 전에 닫아야 하는 유일한 파괴 경로였다(08-30 실측 0벌 —
  * 즉 지금이 «아직 아무도 안 다친 채» 닫을 수 있는 창이다). */
@@ -306,31 +308,12 @@ function decisions(nodes) {
   return { ranked, cycles, waiting: waitsOn.size };
 }
 
-/* ── 역링크 쓰기 ─────────────────────────────────────────────────────────── */
-function writeBacklinks(nodes) {
-  let changed = 0;
-  for (const n of nodes.values()) {
-    if (n.isIndex) continue;
-    const original = fs.readFileSync(n.full, 'utf8');
-    const base = stripBacklinks(original).replace(/\s+$/, '');
-    let section = '';
-    if (n.incoming.length) {
-      const lines = n.incoming
-        .slice()
-        .sort((a, b) => a.from.localeCompare(b.from))
-        .map((i) => `- ${i.type} ← [[${i.from}]]`);
-      section = `\n\n${MARK_START}\n## ← 역링크 (${n.incoming.length})\n${lines.join('\n')}\n${MARK_END}\n`;
-    } else {
-      section = '\n';
-    }
-    const next = base + section;
-    if (next !== original) {
-      fs.writeFileSync(n.full, next, 'utf8');
-      changed++;
-    }
-  }
-  return changed;
-}
+/* ── 역링크 쓰기 ───────────────────────────────────────────────────────────
+ * [2026-09-01] 옛 `writeBacklinks` 를 여기서 걷었다 — **역링크를 쓰는 자는 `위생고치기` 하나다.**
+ * 왜: 옛 함수는 줄끝을 늘 LF 로 쓰고 중복을 안 접었는데, 같은 판정을 재는 `역링크블록`(08-30 개정)은
+ * 줄끝을 보존하고 `type|from` 으로 접는다. 09-01 에 `--write` 를 돌렸더니 205벌이 LF 로 뒤집히고
+ * **역링크 뒤처짐이 20 → 167 로 늘었다** — 두 자가 서로를 되돌리는 «매 실행 진동»이고,
+ * 그 개정 주석이 이미 예고해 둔 자리다([[one-ruler-per-judgment]]). */
 
 /* ══ 기억 위생 ══════════════════════════════════════════════════════════════
  * 왜 여기 있나 (2026-08-30 · 유호 지시 「철학정본에 빗댄 완벽히 자동화로 구동되는 결과」):
@@ -691,6 +674,15 @@ function main() {
     ['--decisions', '--write', '--json', '--위생', '--위생고침', '--훅줄']);
   if (막을말) { console.error(막을말); process.exit(2); }
 
+  /* [2026-09-01] `--write` 는 이제 `--위생고침` 의 옛 이름일 뿐이다 — 자를 하나로 모았다.
+   * 밟은 자리: 리포트 끝줄이 「역링크 삽입: --write」라 안내하길래 따랐더니 205벌이 바뀌고
+   * **역링크 뒤처짐이 20 → 167 로 늘었다.** 옛 `writeBacklinks` 는 줄끝을 늘 LF 로 쓰고 중복을
+   * 안 접었는데, `--위생` 이 재는 `역링크블록`(08-30 개정)은 줄끝을 보존하고 `type|from` 으로 접는다.
+   * 같은 판정을 두 자가 재니 서로를 되돌린다 — 그 개정 주석이 예고한 «매 실행 진동» 그대로다.
+   * ⇒ 옛 함수는 걷었고 쓰기는 `위생고치기`(역링크블록 + 안전쓰기) 하나만 남는다.
+   *   이름을 남긴 것은 손가락 기억과 옛 문서 때문이다 — 하는 일은 완전히 같다. */
+  if (args.includes('--write') && !args.includes('--위생고침')) args.push('--위생고침');
+
   const dir = memoryDir();
   /* 🔴 `--훅줄` 은 조기 종료 «앞»에 둔다 — 폴더를 못 읽는 것이야말로 이 줄이 말해야 하는 사건이다.
    *   아래로 두면 CLI 는 일반 오류로 빠지고 훅(require 경로)만 「확인 불가」를 내서 **두 통로가
@@ -747,11 +739,6 @@ function main() {
     return;
   }
 
-  if (args.includes('--write')) {
-    const changed = writeBacklinks(nodes);
-    console.log(`[memory-graph] 역링크 갱신 — ${changed}개 파일 변경 (전체 ${nodes.size - 1}개)`);
-    return;
-  }
 
   const d = diagnose(nodes);
   const dec = decisions(nodes);
@@ -795,12 +782,12 @@ function main() {
   sec('인덱스 누락(파일은 있는데 MEMORY.md에 줄 없음)', d.missingFromIndex, (m) => m);
   sec('고아 노드(들어오지도 나가지도 않음)', d.orphans, (o) => o);
   console.log(`\n  결정 큐: 기다리는 항목 ${dec.waiting}개 · 차단자 ${dec.ranked.length}개 → 상세는 --decisions`);
-  console.log(`  역링크 삽입: --write\n`);
+  console.log(`  역링크 삽입: --위생고침\n`);
 }
 
 if (require.main === module) main();
 module.exports = {
-  parseLinks, stripBacklinks, load, diagnose, decisions, writeBacklinks,
+  parseLinks, stripBacklinks, load, diagnose, decisions,
   projectDir, memoryDir, TYPES, MARK_START, MARK_END, INDEX_FILES,
   // 기억 위생(2026-08-30) — 자는 여기 하나뿐이다.
   프론트매터, 표식깨짐, 위생, 위생고치기, 역링크블록, 안전쓰기, 위생훅줄, 위생자판, 잠금잡기, 훅자동교정_상한,
