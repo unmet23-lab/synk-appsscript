@@ -172,7 +172,7 @@ test('평범한 문장·짧은 값은 비밀로 오인하지 않는다', () => {
 
 test('🔴 내장 브라우저로 로그인 벽 화면을 열면 막는다 — F467 실교정 그대로', () => {
   const d = 새상태();
-  const r = 가드('mcp__Claude_Browser__navigate', { url: 'https://www.instagram.com/synklab/' }, d);
+  const r = 가드('mcp__Claude_Browser__navigate', { url: 'https://www.instagram.com/synk.mn/' }, d);
   assert.equal(r.차단, true, 'F467 과 같은 형태가 통과했다');
   assert.match(r.사유, /F467/, '왜 막는지 근거가 없다');
   assert.match(r.사유, /브라우저열기\.js/, '작업 계정 크롬 통로를 안 알려준다');
@@ -182,7 +182,7 @@ test('🔴 내장 브라우저로 로그인 벽 화면을 열면 막는다 — F
 
 test('🔑 «진짜 크롬»은 같은 주소라도 막지 않는다 — 거기엔 로그인 세션이 산다', () => {
   const d = 새상태();
-  assert.equal(가드('mcp__claude-in-chrome__navigate', { url: 'https://www.instagram.com/synklab/' }, d).조용, true,
+  assert.equal(가드('mcp__claude-in-chrome__navigate', { url: 'https://www.instagram.com/synk.mn/' }, d).조용, true,
     '정당한 통로까지 막으면 남는 길이 없다 — 그 가드는 자기 처방을 자기가 막는다(F103)');
 });
 
