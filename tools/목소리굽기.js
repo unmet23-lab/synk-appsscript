@@ -75,7 +75,8 @@ function 도움말() {
   console.log(`목소리굽기 — 문장을 주면 소리가 나온다
 
   node tools/목소리굽기.js "<문장>" [--언어 한국어] [--톤 "..."] [--목소리 Sohee] [--출력 경로]
-  node tools/목소리굽기.js --목록
+  node tools/목소리굽기.js --목록 <파일> [--폴더 경로]   여러 줄을 «한 번 적재»로 전부 굽는다
+                                                          (파일 한 줄 = 「이름<탭>읽을 글」 또는 글만)
 
 언어`);
   for (const [이름, [엔진]] of Object.entries(언어표)) {
@@ -93,22 +94,23 @@ function 도움말() {
 
 function main(argv) {
   const args = argv.slice(2);
-  if (args.length === 0 || args.includes('--도움') || args.includes('-h')) { 도움말(); return 0; }
-  if (args.includes('--목록')) { 도움말(); return 0; }
+  if (args.length === 0 || args.includes('--도움') || args.includes('-h') || args.includes('--쓸것들')) { 도움말(); return 0; }
 
   // 값을 받는 플래그 — 그 «다음 칸»은 문장이 아니라 값이다(안 가르면 톤 문구를 문장으로 읽는다).
-  const 값플래그 = new Set(['--언어', '--톤', '--목소리', '--출력']);
+  const 값플래그 = new Set(['--언어', '--톤', '--목소리', '--출력', '--목록', '--폴더']);
   const 값 = (키, 기본) => {
     const i = args.indexOf(키);
     return i >= 0 && args[i + 1] !== undefined ? args[i + 1] : 기본;
   };
+
+  const 목록 = 값('--목록', null);   // 한 줄에 하나 — 모델을 «한 번만» 올려 전부 굽는다
 
   let 글 = null;
   for (let i = 0; i < args.length; i++) {
     if (args[i].startsWith('--')) { if (값플래그.has(args[i])) i++; continue; }
     if (글 === null) 글 = args[i];
   }
-  if (!글) { console.error('🔴 읽을 문장이 없다.'); 도움말(); return 2; }
+  if (!글 && !목록) { console.error('🔴 읽을 문장이 없다.'); 도움말(); return 2; }
 
   const 언어이름 = 값('--언어', '한국어');
   if (!언어표[언어이름]) {
@@ -127,20 +129,30 @@ function main(argv) {
   const 목소리 = 값('--목소리', 엔진.기본목소리 || 'Sohee');
   const 톤 = 값('--톤', null);
 
-  let 출력 = 값('--출력', null);
-  if (!출력) {
-    const 이름 = 글.replace(/[\\/:*?"<>|\s.!,]+/g, '_').slice(0, 24) || '소리';
-    출력 = path.join(ROOT, 'docs', '소리', `${이름}.wav`);
-  }
-  출력 = path.resolve(ROOT, 출력);
-  fs.mkdirSync(path.dirname(출력), { recursive: true });
-
   const 알맹이 = path.join(__dirname, 'lib', '목소리.py');
-  const 인자 = [알맹이, '--엔진', 엔진키, '--글', 글, '--언어', 언어값,
-                '--목소리', 목소리, '--출력', 출력, '--모델', 엔진.모델];
+  const 인자 = [알맹이, '--엔진', 엔진키, '--언어', 언어값, '--목소리', 목소리, '--모델', 엔진.모델];
+  let 출력 = null;
+
+  if (목록) {
+    const 목록경로 = path.resolve(ROOT, 목록);
+    if (!fs.existsSync(목록경로)) { console.error(`🔴 목록 파일이 없다: ${목록경로}`); return 2; }
+    const 폴더 = path.resolve(ROOT, 값('--폴더', path.join('docs', '소리', path.basename(목록경로, path.extname(목록경로)))));
+    fs.mkdirSync(폴더, { recursive: true });
+    인자.push('--글목록', 목록경로, '--출력폴더', 폴더);
+    출력 = 폴더;
+  } else {
+    출력 = 값('--출력', null);
+    if (!출력) {
+      const 이름 = 글.replace(/[\\/:*?"<>|\s.!,]+/g, '_').slice(0, 24) || '소리';
+      출력 = path.join(ROOT, 'docs', '소리', `${이름}.wav`);
+    }
+    출력 = path.resolve(ROOT, 출력);
+    fs.mkdirSync(path.dirname(출력), { recursive: true });
+    인자.push('--글', 글, '--출력', 출력);
+  }
   if (톤) 인자.push('--톤', 톤);
 
-  console.log(`▶ ${언어이름} · ${엔진.설명}${톤 ? ` · 톤 「${톤}」` : ''}`);
+  console.log(`▶ ${언어이름} · ${엔진.설명}${톤 ? ` · 톤 「${톤}」` : ''}${목록 ? ` · 목록 ${목록}` : ''}`);
   const r = spawnSync(엔진.venv, 인자, {
     stdio: 'inherit',
     env: { ...process.env, PYTHONIOENCODING: 'utf-8' },
