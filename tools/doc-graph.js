@@ -156,11 +156,29 @@ function parseEdges(text) {
  * 파일명에서 읽지 않는다 — 「문서 파일명에 버전을 박지 않는다」가 규약이고,
  * 실제로 `반편성_정본_v2.md`의 본문은 v2.3이다(파일명을 믿으면 0.3만큼 틀린다).
  * 못 찾으면 null을 돌려주고 '미상'으로 리포트한다 — 못 읽은 것을 '최신'으로 바꾸지 않는다. */
+/* [2026-09-01] 머리에서 못 읽으면 **꼬리**도 본다 — 이 저장소의 정본 다수가 판을 끝에 적는다.
+ * 실측: `docs/정본/SYNK LAB/…/SYNK_리라이팅_v2/` 14벌 중 **머리에 적은 것은 셋뿐**이고
+ * 나머지 열하나는 마지막 줄의 `v3 · 2026-08-26` 꼴이 유일한 판 표기다. 머리만 보던 자는
+ * 그 열하나의 판을 **원리상** 못 읽어 전부 '미상'으로 냈고, 그래서 그 정본들을 인용하는
+ * 파생의 낡음이 아무 데서도 안 잡혔다 — 급여 인센티브 정본이 08-26 에 v1.8 → v3 가 된 것을
+ * 파생 일곱이 엿새 동안 모른 채 v1.6·v1.7·v1.8 을 「현행」이라 부르고 있었다(09-01 발견).
+ * ⚠ 꼬리는 아무 vN 이나 줍지 않는다 — **줄이 판 표기로 «시작»할 때만**(`^v3 · …`).
+ *   본문 한가운데의 「철학 v1.8 이 …」 같은 인용을 판으로 오독하지 않으려는 것이고,
+ *   이 도구의 오탐 0 설계를 지키는 자리다. 머리가 이긴다(둘 다 적은 셋은 값이 같다 — 실측). */
 const VERSION_SCAN_LINES = 12;
+const VERSION_TAIL_LINES = 5;
+const TAIL_VERSION_RE = /^v(\d+(?:\.\d+)*)(?=\s|·|$)/i;
 function canonVersion(text) {
-  const head = String(text).split('\n').slice(0, VERSION_SCAN_LINES).join('\n');
+  const lines = String(text).split('\n');
+  const head = lines.slice(0, VERSION_SCAN_LINES).join('\n');
   const m = head.match(/\bv\d+(?:\.\d+)*\b/i);
-  return m ? m[0].toLowerCase() : null;
+  if (m) return m[0].toLowerCase();
+  for (const line of lines.slice(-VERSION_TAIL_LINES).reverse()) {
+    const t = line.trim().replace(/^[#>*\-\s]+/, '');
+    const tm = t.match(TAIL_VERSION_RE);
+    if (tm) return `v${tm[1]}`.toLowerCase();
+  }
+  return null;
 }
 
 /* [2026-08-09] 정본 지위를 **정본 자신이 선언**하는 통로.
