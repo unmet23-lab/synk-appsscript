@@ -59,6 +59,11 @@ FACES = [
     ("DM Mono", 300, "DM_Mono/DMMono-Light.ttf"),
     ("DM Mono", 400, "DM_Mono/DMMono-Regular.ttf"),
     ("DM Mono", 500, "DM_Mono/DMMono-Medium.ttf"),
+    # 낫표 「 」 두 글리프만 담은 조각(트랙 §3-낫표 인쇄 갈래 ㄱ · 09-01). 화면은 local() 별칭
+    # 가족이 OS 폰트로 그리지만 임베드 인쇄물은 폰트 «파일»이 필요하다 — Noto Sans KR(OFL)에서
+    # 서브셋·개명(3.8KB · RFN 'Source' 미사용 · 원본 저작권 name 레코드 유지 · OFL.txt 동봉).
+    # 글리프가 둘뿐이라 unicode-range 없이도 나머지 글자는 다음 폰트로 폴백된다.
+    ("SYNK Bracket", 400, "SYNKBracket/SYNKBracket-Regular.ttf"),
 ]
 
 def _chrome_candidates():

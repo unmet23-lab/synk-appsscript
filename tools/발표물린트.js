@@ -159,8 +159,11 @@ function lint(file) {
   const emoji = [...new Set(body.match(/\p{Extended_Pictographic}/gu) || [])];
   if (emoji.length) bad.push(`인쇄면에 이모지: ${emoji.join(' ')} (단색 라인 아이콘으로 바꿀 것)`);
 
-  // 구 서체가 CSS 스택에 남아 있는지도 본다(본문 텍스트엔 안 보이지만 렌더는 바뀐다)
-  const deadFont = ['Pretendard', 'Noto Sans KR', 'KoPubWorld'].filter((f) => css.includes(f));
+  // 구 서체가 CSS 스택에 남아 있는지도 본다(본문 텍스트엔 안 보이지만 렌더는 바뀐다).
+  // ⚠ local(...) 안은 스택이 아니라 별칭 가족의 «공급원»이라 제외한다 — 낫표 별칭(SYNK Bracket ·
+  //   unicode-range 두 글자)이 local('Noto Sans KR') 을 폴백 공급원으로 드는 것은 위반이 아니다(09-01 실측).
+  const 스택만 = css.replace(/local\([^)]*\)/g, '');
+  const deadFont = ['Pretendard', 'Noto Sans KR', 'KoPubWorld'].filter((f) => 스택만.includes(f));
   if (deadFont.length) bad.push(`CSS 스택에 구 서체: ${deadFont.join(', ')}`);
 
   // 반전면 색 — 탈락값이 되살아나면 막는다
