@@ -837,7 +837,7 @@ test('⑨-b 스케줄러 push 스크립트의 손 호출을 막는다 — 처방
   [
     'tools/memory-push.cmd',
     'cmd /c tools\\memory-push.cmd',
-    'node tools/board.js && tools/memory-push.cmd',
+    'node tools/board.js && tools/memory-push.cmd', // tools/board.js 는 ⚠삭제됨 08-20 390195532 — 여기선 «명령 문자열» 픽스처라 그대로 둔다(가드가 파싱을 제대로 하는지만 본다)
     "& 'C:/Users/q1212/Documents/SYNK-appsscript/tools/memory-push.cmd'",
   ].forEach((c) => {
     const r = 가드(c);
