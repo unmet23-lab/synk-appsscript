@@ -27,7 +27,10 @@
 
 const path = require('path');
 
-const ROOT = path.resolve(__dirname, '..', '..');
+/* 뿌리를 env 로 갈아끼울 수 있게 둔다 — **회귀가 픽스처 저장소를 세워 드리프트 탐지를 재기 위해서다.**
+ * 실저장소에선 대개 드리프트가 0이라 여기서 초록은 「깨끗하다」와 「이 함수가 죽었다」를 못 가른다
+ * (09-01 실물: 개명된 문서에서 이 함수가 «영원히 침묵»하고 있었는데 아무도 몰랐다). */
+const ROOT = process.env.SYNK_REVIEW_RUNS_ROOT || path.resolve(__dirname, '..', '..');
 
 /* ⚠ repo 밖 환경(git)에 기대는 조회다 — 못 돌면 **대조를 안 할 뿐** 알림 자체는 낸다.
  * 여기서 죽으면 던진 런이 통째로 안 보이게 되고, 그건 이 훅이 막으려던 바로 그것이다.
@@ -188,23 +191,33 @@ function main() {
  * 그 순간이 영영 안 왔다. 여기서 기계로 옮긴다: 심문받은 문서의 지문(장부 `대상지문`)과 지금
  * 파일 지문이 어긋나면 세션 시작에 한 줄 알린다 — 문서가 심문 뒤 자랐다 = 재심문 후보다.
  * ⚠ 알림이지 차단이 아니다. 심문 이력이 0이면 침묵한다(상시 소음은 훅 전체를 흘려보게 만든다).
- * ⚠ 「심문한 적 없는 정본」은 여기 안 잡힌다 — 그건 목록(정본 등재)이 없어 기계가 모르는 축이고,
- *   지어내면 그 목록이 둘째 정본이 된다(constant-known-in-two-places). */
+ * ⚠ 「심문한 적 없는 정본」은 여기 안 잡힌다 — 그건 «표식»이 있어야 아는 축이라 `tools/ai스택점검.js`
+ *   가 따로 센다(09-01 · 문서가 자기 머리에 raw 로 선언하고 자는 세기만 한다).
+ *
+ * 🔑 **[2026-09-01] 개명을 따라간다.** 그전엔 개명된 문서에서 이 함수가 «영원히 침묵»했다 —
+ *   장부가 가리키는 옛 이름의 파일이 없으니 아래 `continue` 로 빠져나갔고, 그래서
+ *   `docs/학생ID_종단_설계_v1.md`(→ `_v1` 없이 개명)가 **장부의 유일한 심문 이력인데도**
+ *   드리프트를 한 번도 못 냈다. 사슬 해석은 `tools/lib/심문장부.js` 하나가 한다 —
+ *   ai스택점검도 같은 모듈을 쓴다(두 자가 각자 풀면 한쪽은 소음, 한쪽은 실명이 된다). */
 function 심문드리프트줄들() {
   const fs = require('fs');
   const crypto = require('crypto');
-  const 장부 = path.join(ROOT, 'docs', '_ops', '심문기록.jsonl');
-  let 행들;
-  try { 행들 = fs.readFileSync(장부, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l)); }
-  catch (_) { return []; }               // 장부가 없다 = 심문 이력 0 = 침묵
-  const 최신 = new Map();                 // 대상 → 마지막 심문의 지문
-  for (const r of 행들) if (r && r.종류 === '심문' && r.대상 && r.대상지문) 최신.set(r.대상, r.대상지문);
+  let 해석;
+  // 모듈이 없으면 «대조를 안 할 뿐» 런 알림은 그대로 낸다(이 훅의 본디 일이 그쪽이다).
+  try { 해석 = require(path.join(ROOT, 'tools', 'lib', '심문장부.js')); }
+  catch (_) { return []; }
+  const 읽음 = 해석.읽기(path.join(ROOT, 'docs', '_ops', '심문기록.jsonl'));
+  if (!읽음) return [];                   // 장부가 없다 = 심문 이력 0 = 침묵
+  const 접힘 = 해석.요약(읽음.행);        // 대상들의 키는 **개명 사슬을 푼 최종 이름**이다
   const 줄 = [];
-  for (const [대상, 지문] of 최신) {
+  for (const [대상, v] of 접힘.대상들) {
     let 지금;
     try { 지금 = crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT, 대상))).digest('hex').slice(0, 12); }
-    catch (_) { continue; }              // 문서가 사라졌으면 드리프트 판정이 아니라 그 트랙의 일이다
-    if (지금 !== 지문) 줄.push(`   · ${대상} (심문 때 ${지문} → 지금 ${지금})`);
+    // 최종 이름의 파일도 없다 = 진짜 «추적 끊김». 여기서 지어내지 않는다 — ai스택점검이 그 축을 운다.
+    catch (_) { continue; }
+    if (지금 !== v.지문) {
+      줄.push(`   · ${대상}${v.개명됨 ? ` ← 개명 전 «${v.원본}» 때 심문` : ''} (심문 때 ${v.지문} → 지금 ${지금})`);
+    }
   }
   if (!줄.length) return [];
   return [
@@ -215,4 +228,4 @@ function 심문드리프트줄들() {
 }
 
 if (require.main === module) main();
-module.exports = { main };
+module.exports = { main, 심문드리프트줄들 };
