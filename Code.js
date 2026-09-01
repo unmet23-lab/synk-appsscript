@@ -1250,7 +1250,8 @@ const CORE_SLOTS = [ // 코어 = 출석·스트릭·레이드 대상. 위성(댄
   { type: '주말', tag: '14', time: '14:00', label: '토요일 2시' }
 ];
 
-// [v9.95] 시간표 행 생성 — 순수 함수(tests/반편성.test.js가 직접 로드해 반 수·정원·좌석 합계를 검증한다).
+// [v9.95] 시간표 행 생성 — 순수 함수(tests/반편성.test.js 가 직접 로드해 반 수·정원·좌석 합계를 검증«했다».
+//   ⚠삭제됨 08-19 e75fc7fc — 즉 **지금은 그 셋을 아무도 안 잰다.** 이 함수를 고칠 땐 손으로 대조한다).
 //   시트 접근이 없으므로 "몇 반이 나오는가"를 배포 전에 기계로 확인할 수 있다.
 function buildCoreSchedule_(rooms) {
   const n = Math.max(1, Math.min(ROOM_LETTERS.length, Math.round(Number(rooms) || CORE_ROOMS_DEFAULT)));

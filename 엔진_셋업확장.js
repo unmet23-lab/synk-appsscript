@@ -281,7 +281,7 @@ function 수집도달_() {
     'mastery_log': { 소비자: '교재연동.js:buildFocusNotes_', 층: '제품' },
     /* 강사 교정 → 비식별 평가 픽스처로 조립돼 형제 저장소(모델 교체 판정 시험지)로 간다.
      * 🔑 손=true 는 결함이 아니라 **의도된 게이트**다 — 바깥으로 나가는 쓰기는 사람이 누를 때만
-     *   돈다(설계 §2-1 · `tests/수집.test.js` 「[v9.175] 자동 배치에 넣지 않는다」). 🚫자동 배치
+     *   돈다(설계 §2-1 · `tests/수집.test.js`(⚠삭제됨 08-19 e75fc7fc) 「[v9.175] 자동 배치에 넣지 않는다」). 🚫자동 배치
      *   편입 재제안. 그래도 세는 이유는 「사람 손 없이」 축에서 이 칸이 미완이기 때문이다. */
     'teacher_gold': { 소비자: '엔진_수집.js:골든픽스처_', 층: '자산', 손: true },
     /* 결과 관측 → `궤적_최신관측_` 이 trajectory 한 줄(「지금 이 사람은 어디에 있나」)을 세운다.
@@ -4192,7 +4192,8 @@ function lessonCloseRate_(ss, tz) {
  *   카탈로그를 아직 안 채웠다는 이유로 학생·강사가 0점을 맞으면 안 된다.
  */
 
-// 순수 함수 — tests/온라인강의.test.js가 직접 로드해 검증한다(시트 접근 없음).
+// 순수 함수 — tests/온라인강의.test.js 가 직접 로드해 검증«했다»(시트 접근 없음).
+//   ⚠삭제됨 08-19 e75fc7fc — 지금은 이 함수를 재는 자가 없다.
 //   required = 그 학생에게 배정된 필수 강의ID 배열 · viewed = 그 학생이 제출한 강의ID 배열
 function lectureProgressOf_(required, viewed) {
   const need = [];
@@ -4396,7 +4397,8 @@ function menuMigrateConsent() { menuRun_(migrateConsentV186); }
 function menuCreateInterviewLogForm() { menuRun_(createInterviewLogForm); }
 function menuCreateWorkLogForm() { menuRun_(createWorkLogForm); }
 function menuMigrateWorkFormMn() { menuRun_(migrateWorkFormMn); }
-/* 같은 자리 3번째라 개별로 안 고치고 회귀로 못박았다(`tests/수집.test.js` 「▶ 표기는 메뉴가 실행 경로다」):
+/* 같은 자리 3번째라 개별로 안 고치고 회귀로 못박았«었»다(`tests/수집.test.js` 「▶ 표기는 메뉴가 실행 경로다」
+   — ⚠삭제됨 08-19 e75fc7fc · **그 못은 지금 없다**. 같은 자리가 네 번째로 어긋날 수 있다):
  *   Code.js 가 `(▶…)` 로 적은 함수는 **정의가 살아 있는 한 전부** 여기 있어야 한다. */
 function menuCreateTeacherMemoForm() { menuRun_(createTeacherMemoForm); }
 
