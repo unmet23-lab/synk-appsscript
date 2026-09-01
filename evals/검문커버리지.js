@@ -26,6 +26,7 @@
  * 쓰는 법:  node evals/검문커버리지.js            (전부)
  *          node evals/검문커버리지.js 0 6        (문항 번호만 골라서 — 통과했던 것만 다시 볼 때)
  */
+// <!-- 몽골어검문: 면제 · 여기 몽골어는 «일부러 부순» 시험 문항이다. 검문 대상 문안이 아니라 검문기를 재는 자다 -->
 'use strict';
 const { execFileSync } = require('child_process');
 const fs = require('fs');
