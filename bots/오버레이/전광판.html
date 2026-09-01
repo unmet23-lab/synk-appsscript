@@ -4,27 +4,41 @@
 <meta charset="utf-8">
 <title>SYNK 라디오 오버레이 — 전광판</title>
 <!--
-  라디오24 오버레이 · P3 전광판 층 (설계 §5 P3 · 기본 화면 = 학원 합산 전광판 §8 채택 확정)
+  라디오24 오버레이 · P3 전광판 층 (설계 v1.5 §8-2 「학생 표면 규격 — 잔잔함이 정본이다」)
 
-  이 파일은 «그리기»만 한다 — 무엇을 싣고 뺄지는 전부 `전광판판정.js`(순수·회귀가 잰다)가 정한다.
+  이 파일은 «그리기»만 한다 — 무엇을 싣고 뺄지는 전부 `전광판판정.js`(순수·Node 로도 잰다)가 정한다.
   화면 코드는 회귀가 원리상 못 닿는 층이라, 판정을 여기 두면 틀린 것이 **송출 첫날**에야 드러난다.
 
   마스코트(`마스코트.html`)와 **같은 문**으로 듣는다 — BroadcastChannel('라디오오버레이').
   둘은 서로를 모른다: 봇이 한 번 보내면 이 파일은 문안을, 마스코트는 모션을 각자 집는다
   (릴레이를 넣으면 마스코트가 두 번 반응한다).
 
-  ▶ 이 파일이 «내보내는» 것 = 노출 확인(BroadcastChannel('라디오전광판')):
-      { 종류:'노출',   round_id, at }   — 라운드 카드를 실제로 그린 시각
-      { 종류:'마감확인', round_id, at }   — 응답 마감을 그린 시각
-    이게 규격의 급소다. `radio.quiz_round.shown_at` 은 **「화면에 나간 시각」**이고 not null 이라,
-    라운드를 «만든» 쪽이 그 값을 지어내면 안 보여준 것을 보여줬다고 적는 행이 된다.
-    화면만이 「그렸다」를 안다 — 그래서 적는 쪽은 이 확인을 받고 적는다.
+  ■ v2 (2026-09-01 · 유호 확정 다섯 08-25 + 설계 v1.5) — **이 판의 값은 «뺀 것»에 있다.**
+    이 방송의 상품은 기능이 아니라 «혼자가 아닌 잔잔함»이고, 화면 연출은 전부 거기 세 들어 산다.
+      ⚰ 퀴즈 라운드 카드 — 화면에서 **채팅으로 내려갔다**(확정 ①). 공부하려고 켠 학생에게
+         정각마다 문제를 들이대면 그건 배경음악이 아니라 수업이다. 정답은 «축하 한 줄»만 남는다
+         (문항·보기를 안 그리므로 정답 문자도 안 그린다 — 무엇의 B 인지 화면이 말할 수 없다).
+      ⚰ 합산 전광판 «상시» — **순간 스냅숏**이 됐다(설계 §8). 숫자 3줄이 상시로 떠 있으면
+         잔잔한 공부방이 상황판이 된다. 결이 바뀔 때와 정답 뒤에만 20초.
+    ▶ 대신 **상시로 서는 것은 넷뿐**이다: 음악·배경(송출 몫) · 마스코트 DJ(옆 파일) ·
+      **불빛**(확정 ④ — 동시 시청자를 숫자 없이) · **구석 표기**(확정 ⑤ — 곡이 바뀔 때만 밝아진다).
+    ▶ **무대 연출은 한 번에 하나**(§8-2-2) — 합산 스냅숏은 큐로 직렬화한다. 잔잔함의 적은
+      기능 수가 아니라 «동시에 두 개 움직이는 화면»이다. 토스트는 구석 알림이라 이 큐 밖이다(동시 3).
+
+  ■ 🔑 «노출 확인»을 더 이상 내보내지 않는다 (설계 v1.5 §8-2-1 재정의)
+    v1 은 라운드 카드를 그린 시각을 `{종류:'노출'}` 로 되쏘았고, 적는 쪽이 그걸 받아
+    `radio.quiz_round.shown_at` 을 적었다 — 「그렸다」를 아는 것은 화면뿐이었기 때문이다.
+    이제 화면은 라운드를 **안 그린다.** 그리지 않은 것을 그렸다고 되쏘면 그것이야말로
+    그 규격이 막으려던 «안 보여준 것을 보여줬다고 적는 행»이다. ⇒ shown_at 의 근거는
+    **봇의 `liveChatMessages.insert` 성공 응답**(채팅에 실제로 오른 시각)으로 옮겼다.
+    그래서 이 파일에는 내보내는 문이 없다 — 듣기만 한다.
 
   안 하는 것(근거 있는 제외 — 넓히기 전에 원문을 연다):
     · 개인 순위·개인 성적·정답률 — §8 영구 금지(판정층 `금지칸` 이 기계로 문다).
     · 학생코드·실명·급수 — §3 철칙. 사람 표기는 유튜브 닉네임 하나.
-    · 라운드 «열림» 에 정답 표시 — 정답은 마감 뒤에만(판정층이 떼고 경고한다).
-    · innerHTML — 채팅 원문이 그대로 오는 자리라 textContent 만 쓴다(회귀가 0 을 문다).
+    · 동시 시청자 «숫자» — 확정 ④ 가 숫자를 뺐다. 불빛 개수로만 말한다(하한 1 · 상한 12).
+    · 곡 제목 — 구석 표기는 고정 문안 하나다(확정 ⑤ 「티 안 나게」). 제목까지 띄우면 그게 깨진다.
+    · innerHTML — 채팅 원문이 그대로 오는 자리라 textContent 만 쓴다.
     · 몽골어 지어내기 — 검수 전까지 한국어만 그린다(문안표 mn 칸이 비어 있다).
 -->
 <style>
@@ -34,13 +48,13 @@
     /* 브랜드 킷(정본 = docs/디자인_토큰.json) — 다크 「양모 밤」(조항 ⓚ · 유호 확정 2026-08-20).
        신호는 Coral 1점 · Lime·KC 반입 0. ⚠이름은 킷 이름만 쓴다 — 08-25 까지 여기 살던
        `--navy2`·`--cream`·`--slate` 는 무채축(0039209e · 08-18)에서 «퇴역한 이름»이었고,
-       `--테두리` 의 rgba(231,221,199) 은 퇴역 크림 #E7DDC7 그 자체였다(rgba 로 적혀 있어
-       tests/브랜드값.test.js 의 hex 회귀가 원리상 못 봤다 · 그 검사는 값 자리 두 파일만 본다). */
+       `--테두리` 의 rgba(231,221,199) 은 퇴역 크림 #E7DDC7 그 자체였다. */
     --잉크밤: #080605;   /* Ink Deep — 무대(방송 검수용 바닥) */
     --종이:   #FBF7F0;   /* Paper — 본문 글자 */
     --귀리:   #EDE7DC;   /* Oat — 보조 글자 */
     --돌:     #C7BFB2;   /* Stone — 가장 흐린 라벨 */
-    --코랄:   #F96859;   /* Coral — 신호 1점 */
+    --코랄:   #F96859;   /* Coral — 신호 1점(지금 이 화면에 쓰는 자리는 없다 — 불빛은 신호가 아니다) */
+    --버터연: #FFEBB0;   /* Butter Soft — 「따뜻한 빛」. 무대 그라디언트와 **같은 값**이다 */
     --카드바닥: rgba(43, 35, 32, .82);    /* Ink #2B2320 · 무대 위 합성 = #251E1B */
     --테두리:   rgba(240, 227, 200, .16); /* Stitch #F0E3C8(실땀) */
   }
@@ -58,13 +72,43 @@
       var(--잉크밤);
   }
 
-  /* ── 기본 화면 = 학원 합산 전광판 (§8) ─────────────────────────── */
+  /* ── 상시 ① 불빛 — 「지금 몇 명이 같이 공부 중」(유호 확정 08-25 ④) ─────
+     숫자를 쓰지 않는다. 라디오의 진짜 상품은 음악이 아니라 «혼자가 아니라는 느낌»이라,
+     세는 것보다 **켜져 있는 것**이 정확한 표현이다. 마스코트(우하단)와 대각선으로 짝을 이룬다. */
+  #불빛 {
+    position: absolute; right: 2.5vw; top: 3.5vh;
+    display: flex; gap: 9px; align-items: center;
+  }
+  #불빛 .빛 {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--버터연);
+    box-shadow: 0 0 7px rgba(255, 235, 176, .55);
+    animation: 숨쉼 3.6s ease-in-out infinite;
+  }
+  @keyframes 숨쉼 { 0%, 100% { opacity: .34; } 50% { opacity: .86; } }
+
+  /* ── 상시 ② 구석 표기 — 「광고가 아니라 증명」(유호 확정 08-25 ⑤) ────────
+     남의 음원 트는 학원과 원리적으로 다르다는 것을 화면이 스스로 말하는 자리다.
+     평소엔 거의 안 보이고(0.13), 곡이 바뀌는 순간에만 6초 밝아진다. */
+  #구석 {
+    position: absolute; left: 2.5vw; bottom: 1.4vh;
+    font-size: 11px; letter-spacing: .06em; color: var(--귀리);
+    opacity: .13; transition: opacity 1.2s ease;
+  }
+  #구석.밝음 { opacity: .52; }
+
+  /* ── 순간 ① 합산 스냅숏 — 상시 아님(§8 · v1.5) ─────────────────────
+     결이 바뀔 때와 정답 뒤에만 20초. 「데이터가 방송을 만든다」의 값은 노출 시간이 아니라
+     노출 «순간의 무게»가 지킨다. */
   #합산 {
-    position: absolute; left: 2.5vw; bottom: 3.5vh;
+    position: absolute; left: 2.5vw; bottom: 5vh;
     display: grid; gap: 10px;
     padding: 18px 22px 16px;
     background: var(--카드바닥); border: 1px solid var(--테두리); border-radius: 14px;
+    opacity: 0; transform: translateY(10px); pointer-events: none;
+    transition: opacity .5s ease, transform .5s ease;
   }
+  #합산.보임 { opacity: 1; transform: none; }
   #합산 .제목 { font-size: 13px; letter-spacing: .12em; color: var(--돌); margin-bottom: 2px; }
   #합산 .줄 { display: grid; grid-template-columns: auto auto; align-items: baseline; gap: 14px; }
   #합산 .이름 { font-size: 15px; color: var(--귀리); }
@@ -75,38 +119,8 @@
   }
   #합산 .값.모름 { font-size: 18px; color: var(--돌); font-weight: 500; }
 
-  /* ── 라운드 카드 (동심원 모서리: 바깥 16 = 안쪽 10 + 패딩) ─────── */
-  #라운드 {
-    position: absolute; left: 50%; top: 6vh; transform: translateX(-50%) translateY(-14px);
-    width: min(58vw, 780px);
-    padding: 20px 24px 18px;
-    background: var(--카드바닥); border: 1px solid var(--테두리); border-radius: 16px;
-    opacity: 0; pointer-events: none;
-    transition: opacity .28s ease, transform .28s ease;
-  }
-  #라운드.보임 { opacity: 1; transform: translateX(-50%) translateY(0); }
-  #라운드 .머리 { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-  #라운드 .꼬리표 { font-size: 12px; letter-spacing: .14em; color: var(--돌); }
-  #라운드 .남은 { font-size: 13px; color: var(--귀리); font-variant-numeric: tabular-nums; }
-  #라운드 .지시문 { margin: 12px 0 14px; font-size: 26px; font-weight: 700; line-height: 1.35; }
-  #라운드 .보기목록 { display: grid; gap: 8px; }
-  #라운드 .보기 {
-    display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 12px;
-    padding: 9px 12px; border: 1px solid var(--테두리); border-radius: 10px;
-    font-size: 18px;
-  }
-  #라운드 .보기 .번호 { color: var(--돌); font-weight: 700; font-variant-numeric: tabular-nums; }
-  #라운드 .보기 .몫 { font-size: 14px; color: var(--돌); font-variant-numeric: tabular-nums; opacity: 0; }
-  #라운드.공개 .보기 .몫 { opacity: 1; }
-  /* 정답 = 신호 1점(Coral · 다크 위 글자 허용). 나머지는 가라앉힌다 — 「틀렸다」를 칠하지 않는다. */
-  #라운드 .보기.정답 { border-color: var(--코랄); }
-  #라운드 .보기.정답 .번호 { color: var(--코랄); }
-  #라운드.공개 .보기:not(.정답) { color: var(--돌); }
-  #라운드 .시계 { height: 3px; margin-top: 14px; background: rgba(240,227,200,.14); border-radius: 2px; overflow: hidden; }
-  #라운드 .시계 i { display: block; height: 100%; width: 100%; background: var(--코랄); transform-origin: left center; }
-  #라운드 .꼬리 { margin-top: 12px; font-size: 13px; color: var(--돌); min-height: 1em; }
-
-  /* ── 명령 피드백 토스트 (설계 §5 P3 — 채팅 답글이 아니라 오버레이로) ── */
+  /* ── 순간 ② 토스트 (설계 §5 P3 — 채팅 답글이 아니라 오버레이로) ────────
+     구석 알림이라 무대 큐 밖이다(동시 3 · §8-2-2). 정답 축하도 여기로 내려왔다. */
   #토스트 {
     position: absolute; left: 50%; bottom: 4vh; transform: translateX(-50%);
     display: grid; gap: 8px; justify-items: center;
@@ -119,7 +133,7 @@
     animation: 뜸 .3s ease both;
   }
   #토스트 .알림 .무엇 { color: var(--귀리); font-size: 13px; letter-spacing: .06em; }
-  #토스트 .알림 .누구 { font-weight: 700; }
+  #토스트 .알림 .누구 { font-weight: 700; font-variant-numeric: tabular-nums; }
   #토스트 .알림.끝 { animation: 짐 .3s ease both; }
   @keyframes 뜸 { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   @keyframes 짐 { to { opacity: 0; transform: translateY(-6px); } }
@@ -138,11 +152,14 @@
   }
   body.데모 #데모판 { display: block; }
   @media (prefers-reduced-motion: reduce) {
-    #라운드, #토스트 .알림 { transition: none; animation: none; }
+    #합산, #구석, #토스트 .알림 { transition: none; animation: none; }
+    #불빛 .빛 { animation: none; opacity: .7; }
   }
 </style>
 </head>
 <body>
+<div id="불빛" aria-label="지금 함께 공부하는 사람들"></div>
+
 <section id="합산" aria-label="학원 합산 전광판">
   <div class="제목" id="합산제목"></div>
   <div class="줄"><span class="이름" id="이름1"></span><span class="값 모름" id="값1">—</span></div>
@@ -150,18 +167,8 @@
   <div class="줄"><span class="이름" id="이름3"></span><span class="값 모름" id="값3">—</span></div>
 </section>
 
-<section id="라운드" aria-live="polite">
-  <div class="머리">
-    <span class="꼬리표" id="라운드꼬리표"></span>
-    <span class="남은" id="남은시간"></span>
-  </div>
-  <div class="지시문" id="지시문"></div>
-  <div class="보기목록" id="보기목록"></div>
-  <div class="시계"><i id="시계바"></i></div>
-  <div class="꼬리" id="라운드꼬리"></div>
-</section>
-
 <div id="토스트"></div>
+<div id="구석"></div>
 <div id="데모판"></div>
 
 <script src="전광판판정.js"></script>
@@ -197,14 +204,35 @@ if (!판정) {
 function 시작() {
   const 수 = (n) => n.toLocaleString('ko-KR');
 
-  /* ── 기본 화면 = 학원 합산 전광판 ───────────────────────────── */
   글(요소('합산제목'), 판정.병기('합산제목'));
   글(요소('이름1'), 판정.병기('맞힌문제'));
   글(요소('이름2'), 판정.병기('진화레벨합'));
   글(요소('이름3'), 판정.병기('체크인주간'));
-  글(요소('라운드꼬리표'), 판정.병기('라운드제목'));
+  글(요소('구석'), 판정.병기('곡표기'));
 
-  function 합산그리기(값) {
+  /* ── 무대 큐 — 순간 연출은 한 번에 하나(§8-2-2) ──────────────────
+     겹치면 뒤 것이 «기다린다»(버리지 않는다 — 결 경계 스냅숏은 하루 다섯 번뿐이라 귀하다).
+     큐가 길어지는 것은 보낸 쪽이 과하게 보낸다는 뜻이라 상한 3 에서 버리고 센다. */
+  const 무대큐 = [];
+  let 무대중 = false;
+  const 셈 = { 받음: 0, 버림: 0, 경고: 0, 큐버림: 0 };
+
+  function 무대예약(연출) {
+    if (무대큐.length >= 3) { 셈.큐버림++; return; }
+    무대큐.push(연출);
+    무대돌리기();
+  }
+  function 무대돌리기() {
+    if (무대중 || !무대큐.length) return;
+    무대중 = true;
+    무대큐.shift()(() => { 무대중 = false; 무대돌리기(); });
+  }
+
+  /* ── 합산 스냅숏 ───────────────────────────────────────────── */
+  const 합산칸 = 요소('합산');
+  let 합산값 = null;   // 마지막으로 받은 값 — 스냅숏은 이걸 다시 쓴다
+
+  function 합산채우기(값) {
     const 짝 = [['값1', 값.맞힌문제], ['값2', 값.진화레벨합], ['값3', 값.체크인주간]];
     for (const [id, v] of 짝) {
       const el = 요소(id);
@@ -214,76 +242,42 @@ function 시작() {
     }
   }
 
-  /* ── 라운드 카드 ─────────────────────────────────────────── */
-  const 라운드칸 = 요소('라운드');
-  const 보기칸 = 요소('보기목록');
-  let 현재라운드 = null;   // {round_id, 마감ms, 창}
-  let 시계타이머 = null;
-  let 숨김타이머 = null;
-
-  function 시계멈춤() { if (시계타이머) { clearInterval(시계타이머); 시계타이머 = null; } }
-
-  function 라운드그리기(값) {
-    시계멈춤();
-    clearTimeout(숨김타이머);
-    라운드칸.classList.remove('공개');
-    보기칸.replaceChildren();
-    값.보기들.forEach((o, i) => {
-      const 줄 = document.createElement('div');
-      줄.className = '보기';
-      줄.dataset.option = o.option_id;
-      const 번호 = document.createElement('span'); 번호.className = '번호'; 글(번호, String(i + 1));
-      const 말 = document.createElement('span'); 글(말, o.label);
-      const 몫 = document.createElement('span'); 몫.className = '몫'; 글(몫, '');
-      줄.append(번호, 말, 몫);
-      보기칸.appendChild(줄);
+  /** 스냅숏 20초. 값이 한 번도 안 왔으면 **안 그린다**(빈 카드를 방송에 올리지 않는다). */
+  function 합산스냅숏() {
+    if (!합산값) return;
+    무대예약((끝) => {
+      합산채우기(합산값);
+      합산칸.classList.add('보임');
+      setTimeout(() => {
+        합산칸.classList.remove('보임');
+        setTimeout(끝, 600);   // 퇴장 전이(0.5s)가 끝난 뒤에 다음 연출을 부른다
+      }, 20000);
     });
-    글(요소('지시문'), 값.지시문);
-    글(요소('라운드꼬리'), '');
-    라운드칸.classList.add('보임');
-
-    현재라운드 = { round_id: 값.round_id, 마감ms: Date.now() + 값.마감초 * 1000, 창: 값.마감초 * 1000 };
-    시계틱();
-    시계타이머 = setInterval(시계틱, 200);
-
-    /* 🔑 노출 확인 — 「그렸다」를 아는 것은 화면뿐이다. 적는 쪽이 이걸 받고 shown_at 을 적는다. */
-    내보내기({ 종류: '노출', round_id: 값.round_id, at: new Date().toISOString() });
   }
 
-  function 시계틱() {
-    if (!현재라운드) return;
-    const 남음 = Math.max(0, 현재라운드.마감ms - Date.now());
-    요소('시계바').style.transform = 'scaleX(' + (남음 / 현재라운드.창).toFixed(4) + ')';
-    글(요소('남은시간'), 판정.병기('남은시간') + ' ' + Math.ceil(남음 / 1000) + '초');
-    if (남음 <= 0) 마감그리기({ round_id: 현재라운드.round_id }, true);
-  }
-
-  function 마감그리기(값, 시간만료) {
-    시계멈춤();
-    요소('시계바').style.transform = 'scaleX(0)';
-    글(요소('남은시간'), 판정.병기('마감'));
-    /* 시간만료는 이 화면의 «추정»이다 — 원장에 적는 마감은 보낸 쪽이 확정한 것만 확인한다. */
-    if (!시간만료) 내보내기({ 종류: '마감확인', round_id: 값.round_id, at: new Date().toISOString() });
-  }
-
-  function 정답그리기(값) {
-    시계멈춤();
-    라운드칸.classList.add('공개');
-    글(요소('남은시간'), 판정.병기('정답제목'));
-    const 총 = Object.values(값.분포).reduce((a, b) => a + b, 0);
-    for (const 줄 of 보기칸.children) {
-      const id = 줄.dataset.option;
-      if (id === 값.정답) 줄.classList.add('정답');
-      const n = 값.분포[id];
-      const 몫 = 줄.querySelector('.몫');
-      /* 개인은 없고 **집단 합산**만 그린다(§8) — 안 온 분포는 빈칸으로 두고 0 으로 안 접는다. */
-      글(몫, n === undefined ? '' : (총 > 0 ? Math.round((n / 총) * 100) + '%' : String(n)));
+  /* ── 불빛 ─────────────────────────────────────────────────── */
+  const 불빛칸 = 요소('불빛');
+  let 현재불빛 = 0;
+  function 불빛그리기(개수) {
+    if (개수 === 현재불빛) return;   // 같은 수면 손대지 않는다(숨쉼 위상이 튄다)
+    불빛칸.replaceChildren();
+    for (let i = 0; i < 개수; i++) {
+      const 점 = document.createElement('span');
+      점.className = '빛';
+      /* 위상을 어긋나게 — 전부 같이 밝아지면 «신호»로 보이고, 어긋나면 «숨»으로 보인다. */
+      점.style.animationDelay = (-(i * 0.42).toFixed(2)) + 's';
+      불빛칸.appendChild(점);
     }
-    const 꼬리 = [];
-    if (값.응답수 !== null) 꼬리.push(판정.병기('응답수') + ' ' + 수(값.응답수));
-    꼬리.push(판정.병기('재도전'));
-    글(요소('라운드꼬리'), 꼬리.join('  ·  '));
-    숨김타이머 = setTimeout(() => { 라운드칸.classList.remove('보임'); 현재라운드 = null; }, 12000);
+    현재불빛 = 개수;
+  }
+
+  /* ── 구석 표기 — 곡이 바뀌는 순간에만 밝아진다 ─────────────────── */
+  const 구석칸 = 요소('구석');
+  let 구석타이머 = null;
+  function 구석밝히기() {
+    구석칸.classList.add('밝음');
+    clearTimeout(구석타이머);
+    구석타이머 = setTimeout(() => 구석칸.classList.remove('밝음'), 6000);
   }
 
   /* ── 토스트 (닉네임만 · 최대 3) ───────────────────────────── */
@@ -298,8 +292,15 @@ function 시작() {
     setTimeout(() => { el.classList.add('끝'); setTimeout(() => el.remove(), 320); }, 4200);
   }
 
+  /** 정답 공개 — 축하 한 줄뿐이다(문항·보기·정답 문자 없음 · v1.5). 그 뒤 합산 스냅숏. */
+  function 정답축하(값) {
+    if (값.응답수 === null) 토스트(판정.병기('함께풀었다'), '');
+    else 토스트(판정.병기('응답수'), 수(값.응답수));
+    합산스냅숏();
+  }
+
   /* ── 사건 입구 (봇·데모가 같은 문 — 마스코트도 이 문을 듣는다) ── */
-  const 셈 = { 받음: 0, 버림: 0, 경고: 0 };
+  let 마지막결 = null;
   function 사건(원본) {
     셈.받음++;
     const r = 판정.정규화(원본);
@@ -312,62 +313,60 @@ function 시작() {
       return;
     }
     for (const w of r.경고) { 셈.경고++; 경고(w); }
-    if (r.종류 === '합산') 합산그리기(r.값);
-    else if (r.종류 === '라운드') 라운드그리기(r.값);
-    else if (r.종류 === '마감') 마감그리기(r.값, false);
-    else if (r.종류 === '정답') 정답그리기(r.값);
+
+    if (r.종류 === '합산') 합산값 = r.값;                 // 값만 갱신 — 그리는 것은 결 경계·정답 뒤
+    else if (r.종류 === '맥박') 불빛그리기(r.값.불빛);
+    else if (r.종류 === '곡') 구석밝히기();
+    else if (r.종류 === '결') { 마지막결 = r.값; 합산스냅숏(); }  // DJ 교대 연출은 마스코트 몫
+    else if (r.종류 === '정답') 정답축하(r.값);
     else if (r.종류 === '연동') 토스트(판정.병기('연동'), r.값.닉네임);
     else if (r.종류 === '체크인') 토스트(판정.병기('체크인'), r.값.닉네임);
     else if (r.종류 === '투표') 토스트(판정.병기('투표'), r.값.선택);
     else if (r.종류 === '인사') 토스트(판정.병기('시작'), '');
+    /* `라운드`·`마감` 은 화면이 아무것도 안 한다 — 퀴즈는 채팅으로 내려갔다(확정 ①).
+       버리지 않고 «받아서 아무것도 안 하는» 이유: 마스코트가 같은 문으로 반응하고,
+       데모 계기판이 봇의 말을 세기 때문이다. */
     데모판갱신();
   }
 
-  let 입구 = null;
-  try { 입구 = new BroadcastChannel('라디오오버레이'); 입구.onmessage = (e) => 사건(e.data); }
+  try { const 입구 = new BroadcastChannel('라디오오버레이'); 입구.onmessage = (e) => 사건(e.data); }
   catch (_) { /* OBS CEF 구버전 — postMessage 만으로 동작 */ }
   window.addEventListener('message', (e) => {
     if (e.data && e.data.채널 === '라디오오버레이') 사건(e.data);
   });
   window.전광판사건 = 사건; // 콘솔·시험용
 
-  /* ── 노출 확인 내보내기 ─────────────────────────────────── */
-  let 출구 = null;
-  try { 출구 = new BroadcastChannel('라디오전광판'); } catch (_) { 출구 = null; }
-  function 내보내기(쪽지) {
-    쪽지.판 = 판정.판;
-    if (출구) 출구.postMessage(쪽지);
-    try {
-      if (window.parent && window.parent !== window) {
-        window.parent.postMessage(Object.assign({ 채널: '라디오전광판' }, 쪽지), '*');
-      }
-    } catch (_) { /* 부모 창이 없거나 교차 출처 — BroadcastChannel 만으로 충분하다 */ }
-    console.info('[전광판] 확인 ' + 쪽지.종류 + ' round=' + 쪽지.round_id + ' at=' + 쪽지.at);
-  }
-
   /* ── 데모 (?demo=1 — 방송·봇 없이 눈으로 검수) ──────────────── */
   function 데모판갱신() {
     if (!document.body.classList.contains('데모')) return;
     글(요소('데모판'),
       '전광판 ' + 판정.판 + '\n'
-      + '받음 ' + 셈.받음 + ' = 그림 ' + (셈.받음 - 셈.버림) + ' + 버림 ' + 셈.버림 + ' · 경고 ' + 셈.경고 + '\n'
+      + '받음 ' + 셈.받음 + ' = 그림 ' + (셈.받음 - 셈.버림) + ' + 버림 ' + 셈.버림
+      + ' · 경고 ' + 셈.경고 + ' · 큐버림 ' + 셈.큐버림 + '\n'
+      + '상시: 불빛 ' + 현재불빛 + '개'
+      + ' · 결 ' + (마지막결 ? 마지막결.결 + '(DJ ' + 마지막결.DJ + ')' : '—')
+      + ' · 합산값 ' + (합산값 ? '있음' : '아직') + '\n'
       + '몽골어 검수 대기 ' + 판정.몽골어대기().length + '칸(한국어만 그린다)\n'
-      + "수동: 전광판사건({종류:'정답', 정답:'B', 분포:{A:3,B:9}, 응답수:12})");
+      + "수동: 전광판사건({종류:'맥박', 동시시청:5})");
   }
 
   if (document.body.classList.contains('데모')) {
     const 대본 = [
       { 종류: '인사' },
-      { 종류: '합산', 맞힌문제: 128, 진화레벨합: 412, 체크인주간: 37 },
+      { 종류: '맥박', 동시시청: 3 },
+      { 종류: '합산', 맞힌문제: 128, 진화레벨합: 412, 체크인주간: 37 },   // 값만 들어간다(안 그린다)
+      { 종류: '곡' },                                                  // 구석 표기가 6초 밝아진다
       { 종류: '연동', 닉네임: '바트자야' },
-      { 종류: '라운드', round_id: 'demo-1', 지시문: '다음 빈칸에 알맞은 것을 고르세요 — 학교( ) 갑니다.', 보기들: [
-        { option_id: 'A', label: '을' }, { option_id: 'B', label: '에' }, { option_id: 'C', label: '와' }, { option_id: 'D', label: '보다' },
-      ], 마감초: 12 },
+      { 종류: '라운드', round_id: 'demo-1', 지시문: '학교( ) 갑니다.', 보기들: [
+        { option_id: 'A', label: '을' }, { option_id: 'B', label: '에' },
+      ], 마감초: 12 },                                                 // 화면 무동작 — 채팅 몫
       { 종류: '체크인', 닉네임: '어용' },
-      { 종류: '정답', round_id: 'demo-1', 정답: 'B', 분포: { A: 4, B: 21, C: 3, D: 1 }, 응답수: 29 },
+      { 종류: '맥박', 동시시청: 8 },
+      { 종류: '정답', round_id: 'demo-1', 정답: 'B', 분포: { A: 4, B: 21 }, 응답수: 29 }, // 축하 + 스냅숏
       { 종류: '투표', 선택: '빗소리', 합계: { 빗소리: 12, asmr: 7 } },
-      { 종류: '슬럼프' },                                    // 허용 목록 밖 — 버려지는 것을 데모판이 센다
-      { 종류: '체크인', 닉네임: '누구', student_code: 'S-001' }, // 금지칸 — 사건 전체가 버려진다(화면 경고)
+      { 종류: '결', 결: '밤', DJ: '몽글' },                              // DJ 교대 + 스냅숏
+      { 종류: '슬럼프' },                                               // 허용 밖 — 버려지는 것을 계기판이 센다
+      { 종류: '체크인', 닉네임: '누구', student_code: 'S-001' },          // 금지칸 — 사건 전체가 버려진다(화면 경고)
     ];
     let i = 0;
     데모판갱신();
