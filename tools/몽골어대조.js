@@ -15,12 +15,16 @@
 //          파일 형식 = 한국어 원문 블록 / 단독 줄 `---` / 몽골어 번역 블록
 // 종료코드: 0=정상(그래도 대외 확정본은 사람 검수) · 2=검수 필요(어색·파손·판정불능·역번역 실패) · 1=실행 오류
 // 키:      C:\Users\q1212\SYNK_보안\제미나이.txt (git 밖 · env GEMINI_KEY_PATH 로 대체)
+// 장부:    docs/_ops/몽골어검문.jsonl — 매 실행이 한 줄(통과·불통과 **둘 다**). `--파일` 모드면
+//          대상 파일 지문이 남아 「검문 뒤 문안이 바뀐 것」을 tools/ai스택점검.js 가 센다.
 // ⚠ 무료 티어는 입력이 구글 학습에 쓰일 수 있다 — 학생 개인정보 금지, 공개 카피 전용.
 // ⚠ 신뢰 경계: 우리가 쓴 카피 검문용이다. 남이 보낸 몽골어(DM 등)를 넣는 용도가 아니다 —
 //    본문이 프롬프트에 실리므로 외부 텍스트는 지시 주입 표면이 된다.
 
 'use strict';
 const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 // 모델·사고 수준은 모델정책이 정본이다(유호님 확정 "flash high" · 2026-08-05) — 여기 하드코딩하지 않는다.
 // 이 파일의 「2.5-flash 는 신규 키에 404」 실측이 그 정본의 근거 중 하나로 들어가 있다.
 const 정책 = require('./모델정책.js');
@@ -124,6 +128,41 @@ function 말투대조(원문, 역번역) {
   return 말투위반(역번역).filter((v) => !원문규칙.has(v.id));
 }
 
+/* ── 검문 장부 (2026-09-01 · 유호님 「셋 다 지어줘」)
+ *
+ * 왜 있나: 이 검문의 **도장이 사람이 쓴 문장이었다.** 실측 09-01 — 도장이 박힌 문서 4벌
+ *   (`AI활용문안_몽골어_검수표`·`함께한날_몽골어_검수표`·`직장경험_회수_배포문`·`몽골어_검수_발주서`)
+ *   중 **지문을 든 것 0벌.** 즉 검문 뒤 문안을 한 글자 고쳐도 도장이 그대로 남았고, 「이 문안이
+ *   검문을 지났나」를 세는 방법이 없었다(장부 0줄).
+ *
+ * 🔑 자를 새로 만들지 않는다 — ①배포 검수가 이미 쓰는 자를 그대로 빌린다:
+ *   «대상 파일의 sha256 앞 12» (`codex-review.js:2110` · `review-runs.js:205` 와 같은 계산).
+ *   그래야 「검문 뒤 바뀐 문안」 판정이 심문 드리프트와 **같은 자**로 나온다(one-ruler-per-judgment).
+ *
+ * ⚠ 장부 쓰기가 실패해도 **판정은 그대로 낸다.** 여기서 죽으면 검문 자체가 안 도는 셈이 되고,
+ *   그건 이 장부가 막으려는 것보다 나쁘다. 대신 실패를 **말한다** — 조용히 넘어가면 「기록됐다」와
+ *   「안 됐다」가 같은 모양이 된다.
+ * ⚠ 인자 모드(문자열 둘)는 파일이 없어 드리프트를 못 잰다 — 그 줄은 `대상:"(인자)"`로 남고
+ *   번역문 지문만 든다. 「안 잰 것」이지 「통과」가 아니라서 갈라 적는다. */
+const ROOT = path.resolve(__dirname, '..');
+const 장부경로 = () => process.env.SYNK_MN_LEDGER || path.join(ROOT, 'docs', '_ops', '몽골어검문.jsonl');
+
+function 지문(buf) {
+  return crypto.createHash('sha256').update(buf).digest('hex').slice(0, 12);
+}
+
+/** @returns {string|null} 실패 사유(없으면 null) — 부르는 쪽이 «말할» 재료다. */
+function 장부쓰기(줄) {
+  try {
+    const p = 장부경로();
+    fs.mkdirSync(path.dirname(p), { recursive: true });
+    fs.appendFileSync(p, JSON.stringify(줄) + '\n', 'utf8');
+    return null;
+  } catch (e) {
+    return e.message;
+  }
+}
+
 const 문법스키마 = {
   type: 'object',
   properties: {
@@ -176,7 +215,7 @@ async function 제미나이(key, model, prompt, opts = {}) {
 
 async function main() {
   const argv = process.argv.slice(2);
-  let ko, mn;
+  let ko, mn, 대상 = '(인자)', 대상지문 = null;
   if (argv[0] === '--파일') {
     if (!argv[1] || !fs.existsSync(argv[1])) {
       console.error('실행 오류: --파일 뒤에 실재하는 경로가 필요하다');
@@ -188,6 +227,9 @@ async function main() {
       process.exit(1);
     }
     ko = 쪼갬.원문; mn = 쪼갬.번역;
+    // 드리프트를 재는 자는 **파일 지문**이다 — 검문한 그 바이트가 그대로인지만 이게 안다.
+    대상 = path.relative(ROOT, path.resolve(argv[1])).replace(/\\/g, '/');
+    대상지문 = 지문(fs.readFileSync(argv[1]));
   } else {
     [ko, mn] = argv;
   }
@@ -263,10 +305,28 @@ async function main() {
     : 말투미실행 ? '말투 층 미실행(voice-guard 철거 — 사람 검수 필요)'
     : `말투 위반 ${말투.length}건(${말투.map((v) => v.id).join('·')})`;
   console.log(`\n■ 종합: ${통과 ? '✅ 기계 검문 통과 — 대외 확정본은 그래도 사람 검수' : '🔴 사람 검수 필요'} (${사유})`);
+
+  /* 장부 — 「이 문안이 검문을 지났나」를 세는 유일한 자리. 통과·불통과를 **둘 다** 남긴다:
+   * 통과만 남기면 「검문했는데 걸렸다」와 「아예 안 했다」가 같은 모양이 된다. */
+  const 실패 = 장부쓰기({
+    시각: new Date().toISOString(),
+    대상, 대상지문,
+    번역지문: 지문(Buffer.from(String(mn), 'utf8')),
+    모델: model, 사고: thinking || null,
+    통과, 사유,
+    층: {
+      문법: 문법 ? 문법.판정 : null,          // null = 판정불능(안 잰 것)
+      역번역: !역실패,
+      말투: 말투미실행 ? null : 말투.length,  // null = 미실행 · 숫자 = 잰 결과
+    },
+  });
+  if (실패) console.log(`⚠ 장부에 못 남겼다(${실패}) — 이 검문은 «셈에 안 잡힌다»: ${장부경로()}`);
+  else console.log(`   장부: ${path.relative(ROOT, 장부경로()).replace(/\\/g, '/')}${대상지문 ? ` · 대상지문 ${대상지문}` : ' · (인자 모드 — 드리프트는 못 잰다)'}`);
+
   process.exit(통과 ? 0 : 2);
 }
 
-module.exports = { 키추출, 판정추출, 문법파싱, 파일분해, 재시도가능, 토큰대조, 말투대조 };
+module.exports = { 키추출, 판정추출, 문법파싱, 파일분해, 재시도가능, 토큰대조, 말투대조, 지문, 장부쓰기, 장부경로 };
 
 if (require.main === module) {
   main().catch((e) => {
