@@ -672,17 +672,46 @@ section.page{
      그림 자체는 `node tools/크루카드마스코트.js` 가 심는다. 여기는 «어디에 · 얼마나»만 정한다.
      🔑 여덟 쪽 전부에 놓지 않는다 — 뜻이 맞는 세 자리만이다(다 놓으면 벽지가 된다 · Loom 설계 §3-4 ②).
         표지=환영(눈웃음) · Part 06=설렘(놀람) · Part 08=약속을 지켜본다(눈감음). */
-  .cov-ribbon > .몽글{width:66px;height:66px;align-self:flex-end;margin:-16px -4px -6px auto;}
-  .kc-lead{display:flex;align-items:flex-end;gap:18px;}
-  .kc-lead > p{margin:0;flex:1;min-width:0;}
-  .kc-lead > .몽글{width:100px;height:100px;margin-bottom:-8px;}
-  .pledge-wrap{display:flex;align-items:flex-end;gap:20px;}
-  .pledge-wrap > .pledge-body{flex:1;min-width:0;}
-  .pledge-wrap > .몽글{width:78px;height:78px;margin-bottom:-4px;}
+  /* 🔴 몽글은 «단락 안»에 앉는다 (유호 교정 09-02 「마스코트가 붕 떠있는것같아서 아예 단락 안에」).
+     2차 판은 셋 다 면 «밖»에 있었다 — 리본은 음수 margin 으로 밀려났고, 서약은 크림 박스의
+     형제였고, Part 06 리드는 배경 면 자체가 없었다. 바닥이 없으면 drop-shadow 가 질 데가 없어
+     그림자만 공중에 뜬다. ⇒ 셋 다 제 단락의 배경 면 «안»으로 넣고, 글이 몽글을 감싸게 한다
+     (float + shape-outside — 옆에 세워 두는 것보다 «한 덩어리»로 읽힌다). */
+  .몽글{position:relative;}
+  /* 접지 그림자 — 면 위에 «놓인» 것으로 만드는 한 겹. 누끼는 이게 없으면 스티커다. */
+  .몽글::after{
+    content:'';position:absolute;left:14%;right:14%;bottom:-2px;height:9px;
+    background:radial-gradient(50% 50% at 50% 50%, rgba(43,35,32,.22), rgba(43,35,32,0) 72%);
+    pointer-events:none;
+  }
+
+  /* 표지 리본 — 리본 «안» 오른쪽. 음수 margin 을 걷었다(그게 밀어내던 손이다). */
+  .cov-ribbon > .몽글{width:56px;height:56px;flex:none;margin-left:auto;align-self:center;}
+
+  /* Part 06 리드 — 문단에 «면»을 준다(서약 본문과 같은 크림 박스). 몽글이 그 안에 앉는다. */
+  .kc-lead{
+    background:var(--cream-2);border-radius:14px;padding:18px 22px;
+    border:1px solid rgba(43,35,32,.07);
+  }
+  .kc-lead > p{margin:0;max-width:none;}
+  .kc-lead > .몽글{
+    width:104px;height:104px;
+    float:right;shape-outside:circle(48% at 50% 58%);
+    /* 박스 «바닥»에 앉힌다 — 위에 걸면 상자를 늘리기만 하고 여전히 떠 보인다. */
+    margin:-2px 0 -12px 18px;
+  }
+
+  /* 서약 — 크림 박스 «안»으로. 글이 몽글을 감싼다. */
+  .pledge-body > .몽글{
+    width:86px;height:86px;
+    float:right;shape-outside:circle(48% at 50% 56%);
+    margin:-2px 0 0 18px;
+  }
+
   @media (max-width:760px){
-    .kc-lead,.pledge-wrap{flex-direction:column;align-items:stretch;gap:10px}
-    .kc-lead > .몽글{width:74px;height:74px;align-self:flex-end}
-    .pledge-wrap > .몽글{width:62px;height:62px;align-self:flex-end}
+    .kc-lead{padding:16px 16px}
+    .kc-lead > .몽글{width:76px;height:76px;margin:-2px -2px 0 12px}
+    .pledge-body > .몽글{width:66px;height:66px;margin:0 0 0 14px}
     .cov-ribbon > .몽글{width:46px;height:46px}
   }
 
@@ -1042,7 +1071,8 @@ section.page{
   /* 트랙 표식 — 구운 자수 셋(별·폼폼·하트). 상자는 지면이 준다(Loom 은 배경만 준다).
      🔑 «뜻이 맞는 자리»에만 놓는다: 별=무대·보상 · 폼폼=움직임 · 하트=애정.
         아무 데나 놓으면 벽지가 된다(Loom 설계 §3-4 ②). */
-  .kc-card .cat > .표식{width:17px;height:17px;flex:none;vertical-align:0;}
+  .kc-card .cat > .표식{width:15px;height:15px;flex:none;vertical-align:0;
+    filter:drop-shadow(0 2px 3px rgba(43,35,32,.18));}
   .kc-card h4{
     font-family:var(--serif);font-weight:400;font-size:26px;line-height:1;
     color:var(--navy);margin:0;letter-spacing:-0.015em;
@@ -1051,8 +1081,31 @@ section.page{
   .kc-card.dance h4 em{color:inherit}
   .kc-card.beauty h4 em{color:inherit}
   .kc-card .desc{font-size:12px;line-height:1.5;color:var(--muted-2)}
-  .kc-card .opts{margin-top:6px}
-  .kc-card .opt{font-size:12px;padding:6px 10px}
+  /* 🔴 세 알약이 한 줄에 안 들어가 「관심 없음」만 다음 줄로 떨어졌고, 카드 셋의 높이가 저마다
+     달라졌다 — 그 어긋남이 조잡함의 큰 몫이었다. 균등 3열로 바꾸니 이번엔 «글자가 잘렸다»
+     (테두리·안쪽 여백이 알약마다 폭을 먹는다).
+     ⇒ 알약 셋을 **붙여 한 덩어리(세그먼트)로** 만든다. 테두리가 하나가 되면서 글자가 들어가고,
+        「셋 중 하나」라는 뜻도 모양이 진다. 고른 칸만 코랄로 채워진다(가시성).
+     🔑 입력은 칸 전체를 덮는 투명 판으로 남긴다 — display:none 으로 숨기면 포커스·탭 순서를 잃는다.
+        표식(구운 체크)은 자리를 늘 차지하고 «보이기»만 바뀐다 — 고를 때 글자가 안 흔들린다. */
+  .kc-card .opts{
+    margin-top:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+    border:1px solid rgba(43,35,32,.16);border-radius:10px;overflow:hidden;
+    background:rgba(251,247,240,.55);
+  }
+  .kc-card .opt{
+    font-size:10.5px;letter-spacing:-.01em;padding:9px 2px;justify-content:center;gap:4px;
+    border:0;border-right:1px solid rgba(43,35,32,.11);border-radius:0;
+    background:transparent;box-shadow:none;
+  }
+  .kc-card .opt:last-child{border-right:0;}
+  .kc-card .opt:hover{background:rgba(249,104,89,.07);color:var(--navy);}
+  .kc-card .opt:has(input:checked){background:var(--coral);color:var(--ink);box-shadow:none;}
+  .kc-card .opt > span{white-space:nowrap;}
+  .kc-card .opt > input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;}
+  .kc-card .opt > input:focus-visible{outline:2px solid var(--coral);outline-offset:-2px;}
+  .kc-card .opt > .체크{position:static;left:auto;top:auto;width:13px;height:13px;opacity:0;}
+  .kc-card .opt:has(input:checked) > .체크{opacity:1;}
 
   /* Interest slider inline */
   .interest-row{
@@ -1297,9 +1350,12 @@ section.page{
   }
   .kc-detail .row input{
     flex:1;background:transparent;border:0;border-bottom:1px solid rgba(43,35,32,.18);
-    outline:none;font:inherit;color:var(--navy);padding:2px 0;
-    text-align:right;
+    outline:none;font:inherit;color:var(--navy);padding:3px 2px 4px;
+    text-align:right;transition:border-color .16s var(--ease), background .16s var(--ease);
+    border-radius:3px 3px 0 0;
   }
+  /* 채우는 자리라는 것이 «비어 있을 때» 드러나야 한다 — 옅은 바닥 한 겹(가시성). */
+  .kc-detail .row input:placeholder-shown{background:rgba(43,35,32,.035);}
   .kc-detail .row input:focus{border-bottom-color:var(--coral)}
   .kc-detail .row input::placeholder{color:rgba(43,35,32,.28);font-style:italic}
 
@@ -2876,11 +2932,11 @@ section.page{
     </div>
 
     <div class="kc-lead" style="margin-top:20px">
+      <i class="몽글" data-몽글="놀람" data-synk-mascot aria-hidden="true"></i>
       <p style="font-size:14px;line-height:1.7;color:var(--muted-2);max-width:52ch;text-wrap:pretty">
       SYNK LAB의 정규 수업 앞뒤에 <b style="color:var(--navy)">K-컬처 프로그램</b>이 함께 열립니다.
       크루가 관심 있는 트랙을 골라주세요. 상담사가 크루의 성향과 시간표에 맞춰 조합해드립니다.
       </p>
-      <i class="몽글" data-몽글="놀람" data-synk-mascot aria-hidden="true"></i>
     </div>
 
     <div class="kc-grid">
@@ -3046,15 +3102,13 @@ section.page{
     </div>
 
     <div class="pledge-title" style="margin-top:22px"><i class="도장" aria-hidden="true"></i>크루 서약 · Crew Pledge</div>
-    <div class="pledge-wrap">
-      <div class="pledge-body">
+    <div class="pledge-body">
+      <i class="몽글" data-몽글="눈감음" data-synk-mascot aria-hidden="true"></i>
         나는 오늘 <b>SYNK LAB</b>의 크루가 되어, 이 여정에 성실히 함께할 것을 약속합니다.
         나는 나의 <b>학습 리듬</b>을 존중하고, 함께하는 크루와 강사를 존중하며,
         <b>한국어와 K-컬처</b>를 통해 나의 무대를 넓혀가겠습니다.
         오늘의 이 카드가, 언젠가 돌아볼 <b>첫 페이지</b>가 되기를.
       </div>
-      <i class="몽글" data-몽글="눈감음" data-synk-mascot aria-hidden="true"></i>
-    </div>
 
     <div class="sig-grid">
       <div class="sig-wrap">
