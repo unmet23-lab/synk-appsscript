@@ -76,6 +76,32 @@ function 키추출(raw) {
   return null;
 }
 
+/* 몽골어«만» 든 실물 파일(캐러셀 원고 등)에서 검문할 글만 뽑는다.
+ * 🔑 왜 있나(2026-09-02): 검문을 «짝 파일»(한국어/---/몽골어)에 돌리면 도장이 그 짝 파일에 찍힌다.
+ *   그런데 실제로 고쳐지는 것은 «원고»라서, 원고를 한 글자 고쳐도 도장이 그대로 남는다 —
+ *   장부가 막으려던 바로 그 병이다(`ai스택점검` 이 「저장소 밖 24 · 드리프트를 원리상 못 잰다」로 울었다).
+ *   짝 파일을 저장소에 넣는 길도 있었지만 그러면 몽골어가 «두 곳»에 살아 갈린다
+ *   ([[constant-known-in-two-places]]) — 그래서 원고를 «직접» 재고 원문만 밖에서 준다.
+ * ⚠ 마크다운·머리말은 검문 대상이 아니다: `언어: mn` 같은 줄을 그대로 보내면 맞춤법 자가 `mn` 을
+ *   모르는 낱말로 센다. 뜻 대조도 제목·기호를 「빠진 것」으로 읽는다. */
+function 실물에서뽑기(text) {
+  const 줄들 = String(text).replace(/^﻿/, '').split(/\r?\n/);
+  const 뽑음 = [];
+  for (const raw of 줄들) {
+    let l = raw.trim();
+    if (!l) continue;
+    if (/^-{3,}$/.test(l)) continue;                 // 장 구분
+    if (/^[가-힣]+:\s/.test(l)) continue;             // 머리말 (훅: · 언어: · 마무리:)
+    l = l.replace(/^#+\s*/, '')                       // 제목 표식
+         .replace(/^>\s*/, '')                        // 인용
+         .replace(/^[🔑🔴⚠✅⚪✖·]+\s*/u, '')          // 표식 글머리
+         .replace(/\*\*(.+?)\*\*/g, '$1')             // 굵게
+         .replace(/`([^`]+)`/g, '$1');                // 코드
+    if (l) 뽑음.push(l);
+  }
+  return 뽑음.join(' ').trim();
+}
+
 // --파일 모드: 한국어 블록 / 단독 줄 --- / 몽골어 블록. 형식이 어긋나면 null(크게 실패).
 function 파일분해(text) {
   const s = String(text).replace(/^\uFEFF/, '');
@@ -244,15 +270,35 @@ async function main() {
       console.error('실행 오류: --파일 뒤에 실재하는 경로가 필요하다');
       process.exit(1);
     }
+    /* `--원문 <경로>` 를 주면 대상 파일은 «몽골어만» 든 실물(캐러셀 원고 등)로 읽는다.
+     * 그래야 도장이 «짝 파일»이 아니라 실제로 고쳐지는 원고에 찍혀 드리프트를 잰다. */
+    const 원문칸 = argv.indexOf('--원문');
+    if (원문칸 > 0) {
+      const 원문경로 = argv[원문칸 + 1];
+      if (!원문경로 || !fs.existsSync(원문경로)) {
+        console.error('실행 오류: --원문 뒤에 실재하는 한국어 파일 경로가 필요하다');
+        process.exit(1);
+      }
+      ko = 실물에서뽑기(fs.readFileSync(원문경로, 'utf8'));
+      mn = 실물에서뽑기(fs.readFileSync(argv[1], 'utf8'));
+      if (!ko || !mn) {
+        console.error('실행 오류: 뽑고 나니 한쪽이 비었다 — 파일이 머리말·기호뿐인가');
+        process.exit(1);
+      }
+      대상 = path.relative(ROOT, path.resolve(argv[1])).replace(/\\/g, '/');
+      대상지문 = 지문(fs.readFileSync(argv[1]));
+    } else {
     const 쪼갬 = 파일분해(fs.readFileSync(argv[1], 'utf8'));
     if (!쪼갬) {
       console.error('실행 오류: 파일 형식이 아니다 — 한국어 원문 / 단독 줄 --- / 몽골어 번역 순이어야 한다');
+      console.error('        (또는 `--원문 <한국어파일>` 을 주면 대상 파일을 몽골어 실물로 읽는다)');
       process.exit(1);
     }
-    ko = 쪼갬.원문; mn = 쪼갬.번역;
-    // 드리프트를 재는 자는 **파일 지문**이다 — 검문한 그 바이트가 그대로인지만 이게 안다.
-    대상 = path.relative(ROOT, path.resolve(argv[1])).replace(/\\/g, '/');
-    대상지문 = 지문(fs.readFileSync(argv[1]));
+      ko = 쪼갬.원문; mn = 쪼갬.번역;
+      // 드리프트를 재는 자는 **파일 지문**이다 — 검문한 그 바이트가 그대로인지만 이게 안다.
+      대상 = path.relative(ROOT, path.resolve(argv[1])).replace(/\\/g, '/');
+      대상지문 = 지문(fs.readFileSync(argv[1]));
+    }
   } else {
     // 플래그는 원문이 아니다 — 안 걸러내면 `--한증인` 이 한국어 원문 자리로 들어간다.
     [ko, mn] = argv.filter((a) => !a.startsWith('--'));
