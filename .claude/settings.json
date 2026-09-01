@@ -45,6 +45,45 @@
         ]
       }
     ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/decision-catch.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then printf %s \"$IN\" | node \"$H\"; fi; exit 0",
+            "shell": "bash",
+            "timeout": 25,
+            "statusMessage": "확정 무늬 잡기"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/turn-end-ledger.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then printf %s \"$IN\" | node \"$H\"; fi; exit 0",
+            "shell": "bash",
+            "timeout": 25,
+            "statusMessage": "공용 원장 미커밋 검사"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/session-end-ledger.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then printf %s \"$IN\" | node \"$H\" --끝; fi; exit 0",
+            "shell": "bash",
+            "timeout": 30,
+            "statusMessage": "세션 유산 적기"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "matcher": "startup|resume|clear|compact",
@@ -55,6 +94,13 @@
             "shell": "bash",
             "timeout": 100,
             "statusMessage": "기억 데려오기"
+          },
+          {
+            "type": "command",
+            "command": "H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/session-end-ledger.js\"; if [ ! -f \"$H\" ]; then echo \"🧾 앞 세션 유산을 못 쟀다(훅 파일이 없다: $H) — 이건 «없다»가 아니라 «확인 불가»다\"; elif ! command -v node >/dev/null; then echo \"🧾 앞 세션 유산을 못 쟀다(node 가 없다) — 이건 «없다»가 아니라 «확인 불가»다\"; else node \"$H\" --시작 || echo \"🧾 앞 세션 유산 검사가 죽었다 — 이건 «없다»가 아니라 «확인 불가»다\"; fi; exit 0",
+            "shell": "bash",
+            "timeout": 30,
+            "statusMessage": "앞 세션 유산"
           },
           {
             "type": "command",
