@@ -88,11 +88,17 @@ async function 끝() {
   if (s.안민커밋) 남긴것.push(`안 민 커밋 ${s.안민커밋}`);
   if (s.미커밋 && s.미커밋.length) 남긴것.push(`미커밋 ${s.미커밋.length}`);
   if (남긴것.length) {
+    /* 🔴 2026-09-01 실측 수리 — **최상위 `systemMessage` 여야 한다.**
+     *   첫 판은 공식 문서대로 `hookSpecificOutput.hookEventName: "SessionEnd"` 를 냈는데
+     *   하네스(2.1.252)가 **스키마에서 거부**했다:
+     *     「expected one of "PreToolUse" | "UserPromptSubmit" | "UserPromptExpansion"
+     *       | "SessionStart" | "Setup" | "PreModelSwitch" | …」 — 목록에 SessionEnd 가 없다.
+     *   거부되면 출력 «전체»가 버려져 경고가 한 번도 안 나간다. 그리고 그 실패는 조용해서
+     *   로그를 안 보면 「경고 0건 = 남긴 것 없음」으로 읽힌다 — 이 파일이 막으려던 바로 그 무늬다.
+     *   옆 세션(synk-appsscript-9d)이 `claude mcp list` 를 돌리다 그 오류를 보고 알려줬다.
+     *   ⇒ **문서보다 실측이 이긴다.** 장부 적기(위)는 이 형식과 무관하게 이미 끝나 있다. */
     console.log(JSON.stringify({
-      hookSpecificOutput: {
-        hookEventName: 'SessionEnd',
-        systemMessage: `⚠ 이 세션이 남긴 것 — ${남긴것.join(' · ')} (다음 세션 첫머리에 다시 짖습니다)`,
-      },
+      systemMessage: `⚠ 이 세션이 남긴 것 — ${남긴것.join(' · ')} (다음 세션 첫머리에 다시 짖습니다)`,
     }));
   }
   process.exit(0);

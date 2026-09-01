@@ -68,18 +68,24 @@ function 스로틀경로(sid) {
   if (fs.existsSync(표)) process.exit(0);
 
   // ② 원장이 미커밋인가
+  /* 🔴 2026-09-01 실측 수리 — **stdout JSON 이 아니라 «exit 2 + stderr» 로 낸다.**
+   *   같은 날 SessionEnd 훅이 `hookSpecificOutput.hookEventName` 스키마에서 거부당했다
+   *   (허용 목록에 그 이름이 없어 **출력 전체가 버려졌다** · 옆 세션 실측).
+   *   Stop 이 그 목록에 드는지는 **안 재봤다** — headless 실측 통로가 OAuth 만료로 막혔다.
+   *   그래서 스키마를 **아예 안 타는** 통로를 고른다: 공식 규격의 「exit 2 = stop 을 막고
+   *   **stderr 를 사유로 쓴다**」. 이러면 이름 목록이 바뀌어도 이 훅은 안 죽는다.
+   *   ⚠ 대가: 유호님 화면에 뜨는 `systemMessage` 한 줄을 못 낸다(exit 2 면 stdout 을 안 읽는다).
+   *      대신 사유가 **나에게** 그대로 오므로 「그 자리에서 커밋한다」는 목적은 그대로 선다. */
   const r = 깃(cwd, ['status', '--porcelain', '--', ...원장]);
   if (!r.ok) {
-    // 🔴 못 쟀으면 «0건»과 같은 얼굴로 죽지 않는다 — 턴은 막지 않되 «확인 불가»라고 말한다.
-    //    이 훅의 첫 판이 정확히 이 자리에서 침묵했다(cwd 가 POSIX 경로라 spawn 이 ENOENT).
-    try { fs.writeFileSync(스로틀경로(sid), 'unmeasured'); } catch { /* 넘긴다 */ }
-    console.log(JSON.stringify({
-      hookSpecificOutput: {
-        hookEventName: 'Stop',
-        systemMessage: `⚠ 공용 원장 미커밋을 «못 쟀습니다» (${r.why}) — 이건 «0건»이 아닙니다. \`git status\` 로 직접 봅니다`,
-      },
-    }));
-    process.exit(0);
+    // 못 쟀으면 «0건»과 같은 얼굴로 죽지 않는다 — 이 훅의 첫 판이 정확히 여기서 침묵했다.
+    try { fs.writeFileSync(표, 'unmeasured'); } catch { /* 넘긴다 */ }
+    process.stderr.write(
+      `⚠ 공용 원장 미커밋을 «못 쟀다» (${r.why}) — 이건 «0건»이 아니다.\n` +
+      '`git status -- docs/_ops/트랙.md docs/_ops/결정.md` 로 직접 보고 끝낸다.\n' +
+      '⚠ 이 경보는 이 세션에 한 번뿐이다.\n'
+    );
+    process.exit(2);
   }
   const 더러움 = r.out.split('\n').map((l) => l.trim()).filter(Boolean);
   if (더러움.length === 0) process.exit(0); // 0건이면 완전 침묵
@@ -87,19 +93,12 @@ function 스로틀경로(sid) {
   try { fs.writeFileSync(표, new Date().toISOString()); } catch { /* 스로틀 실패는 넘긴다 */ }
 
   const 목록 = 더러움.map((l) => '  · ' + l).join('\n');
-  console.log(JSON.stringify({
-    hookSpecificOutput: {
-      hookEventName: 'Stop',
-      permissionDecision: 'deny',
-      permissionDecisionReason: '공용 원장이 미커밋 상태다',
-      additionalContext:
-        '🔴 **공용 원장이 미커밋이다 — 끝내기 전에 처리한다.**\n' + 목록 + '\n\n' +
-        '· **내가 고친 것이면 지금 커밋한다**: `git commit -m "..." -- <경로>` (범위를 못 박는다).\n' +
-        '· **남의 세션 것이면 손대지 말고 그냥 끝낸다** — 이 훅은 임자를 못 가른다.\n' +
-        '· rebase·merge 중이면 아무것도 하지 말고 그대로 끝낸다.\n' +
-        '⚠ 이 경보는 **이 세션에 한 번뿐**이다(무한 루프 방지). 다음 턴부터는 조용하다.',
-      systemMessage: `⚠ 공용 원장 미커밋 ${더러움.length}건 — 내 것이면 커밋, 남의 것이면 그대로 끝냅니다`,
-    },
-  }));
-  process.exit(0);
+  process.stderr.write(
+    '🔴 공용 원장이 미커밋이다 — 끝내기 전에 처리한다.\n' + 목록 + '\n' +
+    '· 내가 고친 것이면 지금 커밋한다: git commit -m "..." -- <경로> (범위를 못 박는다).\n' +
+    '· 남의 세션 것이면 손대지 말고 그냥 끝낸다 — 이 훅은 임자를 못 가른다.\n' +
+    '· rebase·merge 중이면 아무것도 하지 말고 그대로 끝낸다.\n' +
+    '⚠ 이 경보는 이 세션에 한 번뿐이다(무한 루프 방지). 다음 턴부터는 조용하다.\n'
+  );
+  process.exit(2);
 })().catch(() => process.exit(0));

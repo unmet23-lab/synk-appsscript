@@ -73,23 +73,37 @@ check('list-deployments 통과', r.code === 0 && r.out === '');
 r = feed('CLASP_GUARD_BYPASS=1 "/c/Users/q1212/AppData/Roaming/npm/clasp.cmd" push --force');
 check('BYPASS 우회 통과', r.code === 0 && r.out === '');
 
-// 4) clasp push → 게이트 가동: 결과는 (a) 무출력=불변식 전부 통과 또는 (b) deny JSON.
-//    저장소 상태에 따라 달라지므로 "형식이 올바른가"만 고정 검증한다.
+/* 4) clasp push → 게이트 가동. 얼굴이 **셋**이다(저장소 상태에 따라 갈리므로 형식만 고정 검증한다):
+ *      (a) 무출력            — 불변식 전부 통과
+ *      (b) deny JSON         — 차단
+ *      (c) 통과 + 안내 JSON  — 불변식은 통과했고 «배포 뒤 실행할 API» 안내를 붙였다(실행층점검 · 08-04 `ffc220053`)
+ *
+ *  🔴 2026-09-01 수리 — 옛 판은 (c) 를 몰랐다. 그래서 (c) 가 나오면 (b) 로 재단해 **거짓 적색**을 냈고,
+ *     그 직후 `permissionDecisionReason.split()` 을 무조건 불러 **테스트 프로세스가 그 자리에서 죽었다.**
+ *     피해는 그 한 줄이 아니다 — 뒤따르는 검사 **넷(5·6·7·8)이 통째로 안 돌았다.**
+ *     즉 안전 4종의 하나를 재는 자가 절반 넘게 침묵한 채 「적색 1건」 얼굴을 하고 있었다.
+ *     ⇒ 그래서 여기서는 **어떤 얼굴이든 뒤 검사로 넘어간다**(죽지 않는다). */
 r = feed('"/c/Users/q1212/AppData/Roaming/npm/clasp.cmd" push --force');
 if (r.out === '') {
   check('push 게이트: 불변식 전부 통과(무개입)', r.code === 0);
 } else {
-  let ok = false;
-  try {
-    const j = JSON.parse(r.out);
-    ok =
-      j.hookSpecificOutput &&
-      j.hookSpecificOutput.permissionDecision === 'deny' &&
-      /\[clasp-guard\]/.test(j.hookSpecificOutput.permissionDecisionReason);
-  } catch (_) {}
-  check('push 게이트: deny JSON 형식', r.code === 0 && ok);
-  console.log('  (현재 저장소 상태 기준 차단 사유)');
-  console.log('  ' + JSON.parse(r.out).hookSpecificOutput.permissionDecisionReason.split('\n').join('\n  '));
+  let j = null;
+  try { j = JSON.parse(r.out); } catch (_) {}
+  const hso = (j && j.hookSpecificOutput) || null;
+  const 사유 = (hso && hso.permissionDecisionReason) || '';
+  if (hso && hso.permissionDecision === 'deny') {
+    check('push 게이트: deny JSON 형식', r.code === 0 && /\[clasp-guard\]/.test(사유));
+    console.log('  (현재 저장소 상태 기준 차단 사유)');
+    console.log('  ' + 사유.split(String.fromCharCode(10)).join(String.fromCharCode(10) + '  '));
+  } else {
+    // (c) 통과 + 안내 — 막지 않았으므로 `permissionDecision` 이 없어야 하고, 안내는 붙어 있어야 한다.
+    check(
+      'push 게이트: 통과+안내 JSON 형식',
+      r.code === 0 && !!hso && !hso.permissionDecision && !!hso.additionalContext,
+    );
+    const 첫줄 = String((hso && hso.additionalContext) || '').split(String.fromCharCode(10))[0];
+    console.log('  (막지 않았다 · 붙은 안내 첫 줄) ' + 첫줄);
+  }
 }
 
 // 5) 워크트리에서의 push → 워크트리 사유로 차단(08-01: 메인 상태를 보고 엉뚱한 진단을 내던 결함)
