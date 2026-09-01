@@ -18,50 +18,38 @@
     font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
     line-height:1.7; -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:860px; margin:0 auto}
-  header{border-bottom:2px solid var(--stitch); padding-bottom:20px; margin-bottom:8px}
+  .wrap{max-width:880px; margin:0 auto}
+  header{border-bottom:2px solid var(--stitch); padding-bottom:20px}
   h1{font-size:30px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px}
   .sub{color:var(--ash); font-size:14px; margin:0}
   .lead{
     background:var(--coral-wash); border-left:4px solid var(--coral);
     padding:16px 20px; margin:28px 0 36px; border-radius:0 6px 6px 0;
   }
-  .lead strong{font-weight:800}
-  h2{
-    font-size:20px; font-weight:800; margin:44px 0 4px;
-    padding-bottom:8px; border-bottom:1px solid var(--stitch);
-  }
+  h2{font-size:20px; font-weight:800; margin:44px 0 4px; padding-bottom:8px; border-bottom:1px solid var(--stitch)}
   h2 .n{color:var(--ash); font-weight:600; font-size:15px; margin-left:8px}
   .hint{color:var(--ash); font-size:13.5px; margin:6px 0 20px}
-  .item{
-    border:1px solid var(--stitch); border-radius:8px;
-    padding:18px 20px; margin-bottom:14px; background:#fff;
-  }
+  .item{border:1px solid var(--stitch); border-radius:8px; padding:18px 20px; margin-bottom:14px; background:#fff}
   .item.top{border-color:var(--coral); border-width:1px 1px 1px 4px}
-  .item h3{
-    font-size:17px; font-weight:800; margin:0 0 2px;
-    display:flex; flex-wrap:wrap; align-items:baseline; gap:8px;
-  }
-  .star{font-size:13px; font-weight:700; color:var(--deepwool); background:var(--oat);
-        padding:1px 8px; border-radius:99px}
-  .repo{font-size:12.5px; color:var(--ash); font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-        margin:0 0 10px; word-break:break-all}
+  .item.dead{background:var(--oat); border-style:dashed}
+  .item h3{font-size:17px; font-weight:800; margin:0 0 2px; display:flex; flex-wrap:wrap; align-items:baseline; gap:8px}
+  .star{font-size:13px; font-weight:700; color:var(--deepwool); background:var(--oat); padding:1px 8px; border-radius:99px}
+  .item.dead .star{background:#fff}
+  .repo{font-size:12.5px; color:var(--ash); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; margin:0 0 10px; word-break:break-all}
   .row{display:grid; grid-template-columns:82px 1fr; gap:6px 12px; font-size:14.5px; margin-top:8px}
   .k{color:var(--ash); font-weight:700; font-size:13px; padding-top:2px}
   .fit{font-weight:700}
-  .fit.yes{color:var(--meadow)}
-  .fit.cond{color:var(--lapis)}
-  .fit.no{color:var(--rim)}
+  .fit.yes{color:var(--meadow)} .fit.cond{color:var(--lapis)} .fit.no{color:var(--rim)}
   .warn{background:var(--oat); border-radius:6px; padding:10px 14px; margin-top:10px; font-size:14px}
-  .empty{
-    border:1px dashed var(--stone); border-radius:8px; padding:16px 20px;
-    margin-bottom:12px; font-size:14.5px; color:var(--deepwool);
-  }
-  .empty b{color:var(--ink)}
-  footer{margin-top:56px; padding-top:20px; border-top:1px solid var(--stitch);
-         font-size:13px; color:var(--ash)}
-  footer code{background:var(--oat); padding:1px 6px; border-radius:4px;
-              font-size:12px; color:var(--deepwool)}
+  .item.dead .warn{background:#fff}
+  table{width:100%; border-collapse:collapse; margin:14px 0 4px; font-size:14px}
+  th,td{text-align:left; padding:8px 10px; border-bottom:1px solid var(--stitch)}
+  th{color:var(--ash); font-size:12.5px; font-weight:700; text-transform:none}
+  td.num{font-variant-numeric:tabular-nums; white-space:nowrap}
+  .tbl-wrap{overflow-x:auto}
+  code{background:var(--oat); padding:1px 6px; border-radius:4px; font-size:12.5px; color:var(--deepwool)}
+  .quote{border-left:3px solid var(--stone); padding:2px 0 2px 14px; margin:10px 0; color:var(--deepwool); font-size:14px}
+  footer{margin-top:56px; padding-top:20px; border-top:1px solid var(--stitch); font-size:13px; color:var(--ash)}
   @media (max-width:560px){ .row{grid-template-columns:1fr; gap:2px} .k{padding-top:8px} }
 </style>
 </head>
@@ -69,140 +57,138 @@
 <div class="wrap">
 
 <header>
-  <h1>깃허브 정찰 — 우리 작업에 닿는 것만</h1>
-  <p class="sub">2026-09-01 · 유호님 요청 「최근 깃허브에 올라온 것 중 내 작업에 큰 도움 될 만한 것」</p>
+  <h1>깃허브 정찰 — 무엇을 실제로 붙였나</h1>
+  <p class="sub">2026-09-01 · 유호님 요청 「최근 깃허브에 올라온 것 중 내 작업에 큰 도움 될 만한 것」 → 「전부 부탁해」로 <b>전부 설치·실행까지</b></p>
 </header>
 
 <div class="lead">
-  <strong>결론.</strong> 스무 갈래를 훑어 <strong>바로 값이 되는 것 다섯</strong>을 건졌다.
-  가장 큰 하나는 <strong>OmniVoice</strong> — 한국어와 <strong>몽골어</strong>를 둘 다 싣고,
-  <strong>유호님 기계의 Intel Arc GPU 를 공식 지원</strong>한다.
-  나머지 열다섯 갈래는 「쓸 것 없음」이 정직한 답이고, 그것도 아래에 적었다.
+  <strong>결론.</strong> 스무 갈래를 훑어 다섯을 골랐고, <strong>다섯을 다 손으로 돌려봤다.</strong>
+  <strong>둘이 유호님 귀를 통과했고</strong>(「둘 다 너무 좋은데?」) <strong>둘은 탈락</strong>했다 —
+  탈락 둘은 <em>내가 리스트에 올릴 때 잘못 읽은 것</em>이라 아래에 그대로 적는다.
+  가장 큰 소득은 <strong>한국어 목소리 둘과, 몽골어가 소리로 나왔다는 것</strong>이다.
 </div>
 
-<h2>① 지금 바로 값이 되는 것<span class="n">다섯</span></h2>
-<p class="hint">다섯 다 재봤다 — 별 수·마지막 push·README 요구사항을 직접 읽었다.</p>
+<h2>① 유호님 귀를 통과한 둘<span class="n">둘 다 채택 후보</span></h2>
+<p class="hint">역할이 갈린다 — 겹치지 않으니 둘 다 쥐는 게 맞다.</p>
 
 <div class="item top">
-  <h3>OmniVoice <span class="star">9,595★</span></h3>
-  <p class="repo">k2-fsa/OmniVoice · 2026-03-31 생성 · 마지막 push 2026-08-31</p>
+  <h3>Qwen3-TTS <span class="star">13,218★</span> — 한국어</h3>
+  <p class="repo">QwenLM/Qwen3-TTS · 모델 <code>Qwen3-TTS-12Hz-0.6B-CustomVoice</code></p>
   <div class="row">
-    <div class="k">무엇</div><div>600개 넘는 언어를 읽는 음성 생성 모델. 목소리 복제(3초 참조)와 「설명으로 목소리 설계」 둘 다.</div>
-    <div class="k">우리 자리</div><div>가이드 셋(몽글·까몽·마린) 목소리 · <b>몽골어 안내 음성</b>(학부모·학생 접점) · 라디오 낭독</div>
-    <div class="k">되나</div><div class="fit yes">된다 — README 가 Arc(Alchemist·Battlemage) 지원을 명시하고 <b>Arc A310 4GB·Arc Pro B50 16GB 에서 테스트</b>했다고 적었다. 실시간의 40배 속도(RTF 0.025).</div>
+    <div class="k">쓸 자리</div><div><b>한국어 접점 음성 전부</b> — 안내·알림·낭독. 유호님 판정 「훌륭해」</div>
+    <div class="k">결정타</div><div>목소리 <code>Sohee</code> 가 <b>한국어가 모국어</b>다. MOSS 처럼 「한국어를 흉내 내는 외국 목소리」가 아니다.</div>
+    <div class="k">숨은 값</div><div>🔑 <b>톤을 «말로» 지시한다</b> — <code>instruct="다정하고 따뜻하게, 아이를 맞이하듯"</code>. 목소리 조율이 코드가 아니라 글이 된다.</div>
+    <div class="k">되나</div><div class="fit yes">된다 — CPU 만으로 5.4초 소리를 17~33초에 뽑았다.</div>
   </div>
-  <div class="warn">언어 표 실측: <b>한국어 8,609시간 · 몽골어 269시간</b>. 몽골어가 한국어의 1/32 이라 품질은 귀로 재야 한다 — 아직 안 들어봤다.</div>
+  <div class="warn">🔴 <b>내가 처음에 틀렸던 것</b>: 「README 가 96GB 램을 요구한다」고 적었는데, 그건 <b>선택 라이브러리(flash-attn) 빌드</b> 얘기였지 모델 요구가 아니었다. 0.6B 판은 우리 기계에서 돈다.</div>
 </div>
 
 <div class="item top">
+  <h3>OmniVoice <span class="star">9,595★</span> — 몽골어·다국어</h3>
+  <p class="repo">k2-fsa/OmniVoice · 마지막 push 2026-08-31</p>
+  <div class="row">
+    <div class="k">쓸 자리</div><div><b>몽골어</b>(학생·학부모 접점) · 한국어도 유호님 판정 「맘에 들고」</div>
+    <div class="k">결정타</div><div>600개 넘는 언어 — 실측 표에 <b>한국어 8,609시간 · 몽골어 269시간</b>. 몽골어를 싣는 유일한 후보다.</div>
+    <div class="k">되나</div><div class="fit yes">된다 — CPU 로 한국어 4.5초를 31.6초에, 몽골어 3.2초를 21.0초에.</div>
+  </div>
+  <div class="warn">README 가 <b>Intel Arc(Alchemist·Battlemage) 를 공식 지원</b>한다고 적었고 우리 GPU 가 Arc B390(Battlemage)인데, <b>붙이지 못했다</b> — 아래 ⑤ 참조.</div>
+</div>
+
+<div class="tbl-wrap">
+<table>
+  <thead><tr><th>실측 (전부 CPU · 같은 문장)</th><th class="num">생성</th><th class="num">소리</th><th class="num">표본율</th></tr></thead>
+  <tbody>
+    <tr><td>Qwen <code>Sohee</code> · 톤 지시 없이</td><td class="num">17.4초</td><td class="num">5.44초</td><td class="num">24kHz</td></tr>
+    <tr><td>Qwen <code>Sohee</code> · 「다정하고 따뜻하게」</td><td class="num">29.2초</td><td class="num">5.36초</td><td class="num">24kHz</td></tr>
+    <tr><td>Qwen <code>Sohee</code> · 「밝고 신나게」</td><td class="num">33.0초</td><td class="num">5.92초</td><td class="num">24kHz</td></tr>
+    <tr><td>OmniVoice · 한국어</td><td class="num">31.6초</td><td class="num">4.52초</td><td class="num">24kHz</td></tr>
+    <tr><td>OmniVoice · <b>몽골어</b></td><td class="num">21.0초</td><td class="num">3.23초</td><td class="num">24kHz</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="hint">OmniVoice 는 모델 적재에만 742초(12분)가 더 든다 — 한 번 띄우고 여러 줄을 뽑는 쪽이 맞다.</p>
+
+<h2>② 한국어는 기계로도 증명됐다<span class="n">몽골어는 못 쟀다</span></h2>
+<p class="hint">만든 소리를 받아쓰기(faster-whisper small)에 도로 먹여 「그 언어로 제대로 읽혔나」를 쟀다.</p>
+
+<div class="item">
+  <div class="quote">
+    원문: 안녕하세요. <b>씽크랩입니다.</b> 오늘도 함께 공부해요. 잘 왔어요!<br>
+    들림: 안녕하세요. <b>씽크랩입니다.</b> 오늘도 함께 공부해요. 잘 왔어요.
+  </div>
+  <div class="row">
+    <div class="k">한국어</div><div class="fit yes">세 파일 모두 원문 그대로 받아써졌다 — 우리 고유명사 「씽크랩」까지. <b>기계 증거가 섰다.</b></div>
+    <div class="k">몽골어</div><div class="fit cond">받아쓰기가 <code>nghè màngu chè db cal…</code> 로 엉망이었다. <b>그런데 이걸로 OmniVoice 를 나쁘다고 판정할 수 없다</b> — whisper small 은 몽골어를 원래 못한다. ⓐ발음이 나쁜 것과 ⓑ자가 못 재는 것을 <b>이 자로는 못 가른다.</b></div>
+  </div>
+  <div class="warn">⇒ 몽골어는 「됐다」가 아니라 <b>「소리는 나왔고, 그게 제대로 된 몽골어인지는 안 재봤다」</b>가 정직한 상태다. 남은 자는 <b>몽골어 감수자의 귀</b> 하나뿐이다.</div>
+</div>
+
+<h2>③ 값은 있으나 자리가 좁은 것</h2>
+
+<div class="item">
   <h3>MOSS-TTS-Nano <span class="star">4,279★</span></h3>
-  <p class="repo">OpenMOSS/MOSS-TTS-Nano · 2026-04-10 생성 · 마지막 push 2026-08-30</p>
+  <p class="repo">OpenMOSS/MOSS-TTS-Nano</p>
   <div class="row">
-    <div class="k">무엇</div><div>0.1B(=아주 작은) 음성 모델. 48kHz 2채널 출력, 스트리밍.</div>
-    <div class="k">우리 자리</div><div>굽기가 램을 다 먹는 동안에도 도는 목소리 통로. 알림·짧은 대사·시안 음성</div>
-    <div class="k">되나</div><div class="fit yes">된다 — <b>4코어 CPU 로 스트리밍</b>, ONNX CPU 판이 따로 있어 PyTorch 없이 돈다(맥북에어 M4 에서 1코어로 부드러웠다고 적혀 있다). 한국어(ko) 지원.</div>
+    <div class="k">판정</div><div>접점 목소리로는 <b>탈락</b>(유호님: 「벨라가 그나마 낫다… 다른 방법이 있으면 좋겠다」). 내장 목소리 18개가 <b>중국어권 7·영어권 5·일본어권 6, 한국어 0개</b>라 무엇을 골라도 흉내다.</div>
+    <div class="k">남는 값</div><div><b>「램을 안 뺏는 가벼운 자리」</b> — 0.1B 라 CPU 만으로 12.5초, 48kHz. 굽기가 램을 다 먹는 동안에도 돈다.</div>
   </div>
-  <div class="warn">값의 핵심은 품질이 아니라 <b>램을 안 뺏는다</b>는 것. 큰 목소리는 OmniVoice, 가벼운 자리는 이것 — 두 자를 나눠 쓰는 그림.</div>
+  <div class="warn">Windows 함정 셋을 넘어야 했다 — ⓐ중국어 정규화 모듈 <code>tn</code> 강제(<code>--disable-wetext-processing</code> 로 끔) ⓑ torchcodec 이 Windows 에서 로딩 실패(참조 오디오 적재 불가 → 내장 목소리로 우회, 복제용 우회 러너는 <code>synk-vendor/moss_clone.py</code> 에 만들어 뒀다) ⓒ <b>README 의 「PyTorch 불필요」는 사실과 다르다</b> — 코드가 torch·torchaudio 를 그대로 임포트한다.</div>
 </div>
 
-<div class="item top">
-  <h3>OpenPronounce <span class="star">46★</span></h3>
-  <p class="repo">Halleck45/OpenPronounce · 2025-08-26 생성 · 마지막 push 2026-08-15</p>
-  <div class="row">
-    <div class="k">무엇</div><div>녹음과 「말했어야 할 문장」을 넣으면 점수 + <b>틀린 낱말과 실제로 들린 소리(IPA)</b> + 피치·에너지 곡선을 돌려준다.</div>
-    <div class="k">우리 자리</div><div><b>발음 데이터 트랙</b> — 낱말 11개 확정본을 채점하는 뼈대. Azure·SpeechAce·ELSA 가 API 로 파는 그 기능</div>
-    <div class="k">되나</div><div class="fit cond">조건부 — CPU 로 돈다. 다만 <b>사람 평가로 보정된 언어는 영어뿐</b>이고, 다른 언어는 영어 음소 기준을 그대로 쓴다고 README 가 스스로 적었다.</div>
-  </div>
-  <div class="warn">그래서 「한국어 점수를 그대로 믿는다」가 아니라 <b>「STT 가 오류를 고쳐 받아쓰는 문제」를 우회하는 뼈대</b>로 값이 있다 — 이건 우리가 이미 급소로 적어 둔 자리다.</div>
-</div>
-
-<div class="item top">
-  <h3>screenmap <span class="star">120★</span></h3>
-  <p class="repo">aleqsio/screenmap · 2026-08-08 생성 · 마지막 push 2026-08-30</p>
-  <div class="row">
-    <div class="k">무엇</div><div>Expo·React Native 앱의 <b>모든 화면을 지도 한 장</b>으로 만들고, 바뀐 화면이 어디인지 짚어 준다. 스크린샷은 자기 저장소에 남는다.</div>
-    <div class="k">우리 자리</div><div><b>08-25 에 막힌 앱 실물 검수 통로</b>의 대안 후보. 앱 화면을 눈으로 못 보고 고치는 지금 상태를 푼다</div>
-    <div class="k">되나</div><div class="fit cond">조건부 — <code>/screenmap</code> Claude Code 플러그인이 있어 내 손으로 로컬에서 돌릴 수 있다. 실제로 우리 앱에 붙는지는 <b>안 재봤다</b>.</div>
-  </div>
-</div>
-
-<div class="item top">
+<div class="item">
   <h3>Supabase 공식 에이전트 스킬 <span class="star">2,567★</span></h3>
-  <p class="repo">supabase/agent-skills · 2026-01-16 생성 · 마지막 push 2026-08-12</p>
+  <p class="repo">supabase/agent-skills</p>
   <div class="row">
-    <div class="k">무엇</div><div>Supabase 팀이 직접 낸 스킬 묶음(스키마·RLS·Postgres 관행). 한 줄로 설치된다.</div>
-    <div class="k">우리 자리</div><div>앱 네이티브 재구축(Supabase + Expo) — 내가 DB 를 만질 때 정확도가 올라간다</div>
-    <div class="k">되나</div><div class="fit yes">된다 — <code>claude plugin marketplace add supabase/agent-skills</code></div>
+    <div class="k">판정</div><div class="fit yes">설치 완료 — <code>supabase</code> · <code>postgres-best-practices</code> 둘. 앱 DB 를 만질 때 자동으로 걸린다.</div>
+    <div class="k">남은 것</div><div>딸려온 MCP 서버는 <b>유호님 승인이 있어야</b> 열린다(스킬 지식 부분은 그대로 작동).</div>
   </div>
 </div>
 
-<h2>② 값은 크나 조건이 붙는 것</h2>
-<p class="hint">지금 당장은 아니고, 그 트랙을 열 때 여는 자리.</p>
+<h2>④ 탈락 둘 — 내가 잘못 읽은 것<span class="n">숨기지 않는다</span></h2>
 
+<div class="item dead">
+  <h3>screenmap <span class="star">120★</span> — 원리상 불가</h3>
+  <div class="row">
+    <div class="k">왜</div><div>README 345줄: <b>“iOS only. Android is not supported yet.”</b> 그리고 <b>macOS 호스트 + iOS 시뮬레이터</b>가 있어야 한다. 유호님은 Windows 이고 talk 은 안드로이드 앱이다.</div>
+    <div class="k">처리</div><div>설치했다가 <b>플러그인·마켓플레이스 둘 다 걷어냈다</b>(매 세션 토큰만 먹는다).</div>
+  </div>
+  <div class="warn">내가 리스트에 올릴 때 「우리 앱 적용은 안 재봤다」라고 적었던 자리다. 재보니 <b>안 되는 게 답</b>이었다. 앱 실물 검수 통로는 여전히 막혀 있다.</div>
+</div>
+
+<div class="item dead">
+  <h3>OpenPronounce <span class="star">46★</span> — 한국어를 지원하지 않는다</h3>
+  <div class="row">
+    <div class="k">왜</div><div>CLI 의 <code>--lang</code> 선택지가 <b><code>{de,en,es,fr,it,nl,pt}</code> 일곱뿐</b>이다. 한국어가 없다.</div>
+    <div class="k">내 오독</div><div>README 의 “other languages reuse the English phone thresholds” 를 「한국어도 되되 보정만 안 된다」로 읽었다. <b>그 “other languages” 는 저 유럽 여섯을 가리킨 것</b>이었다.</div>
+  </div>
+  <div class="warn">⇒ <b>발음 데이터 트랙에 그대로는 못 쓴다.</b> 원리상 한국어 wav2vec2 모델을 붙이면 되지만 그건 코드를 고치는 별개 작업이다.</div>
+</div>
+
+<h2>⑤ 못 잰 것<span class="n">「없다」와 다르다</span></h2>
 <div class="item">
-  <h3>Qwen3-TTS <span class="star">13,218★</span></h3>
-  <p class="repo">QwenLM/Qwen3-TTS</p>
   <div class="row">
-    <div class="k">무엇</div><div>알리바바 Qwen 팀. 한국어 전용 목소리 프리셋(<i>Sohee</i> — 감정이 풍부한 한국어 여성)까지 들어 있다. 3초 클로닝, 「설명으로 목소리 설계」.</div>
-    <div class="k">되나</div><div class="fit cond">품질은 이 목록 최상급이나 <b>로컬 요구가 크다</b>(README 가 96GB 램 갈래를 따로 안내한다). 우리 기계로는 작은 판(0.6B)이나 API 쪽이 현실적 — 안 재봤다.</div>
+    <div class="k">Arc GPU</div><div class="fit cond">XPU 용 PyTorch 가 <b>Intel 인덱스와 PyTorch 공식 인덱스 둘 다에서 45분간 21MB 에 멈춰</b> 붙이지 못했다. 위 수치는 <b>전부 CPU</b> 다. OmniVoice 는 GPU 에서 실시간의 40배(RTF 0.025)를 표방하므로, 붙으면 판이 달라진다.</div>
+    <div class="k">몽골어 품질</div><div class="fit cond">위 ② 참조 — 재는 자가 없다.</div>
   </div>
 </div>
 
-<div class="item">
-  <h3>audio.cpp <span class="star">2,183★</span></h3>
-  <p class="repo">0xShug0/audio.cpp · 마지막 push 2026-09-01(오늘)</p>
+<h2>⑥ 「없다」가 답인 갈래</h2>
+<div class="item dead">
   <div class="row">
-    <div class="k">무엇</div><div>C++ 한 엔진에 음성합성·받아쓰기·음성구간검출·목소리변환·<b>음악 생성</b>이 다 들어간다. CPU 최적화가 목적.</div>
-    <div class="k">되나</div><div class="fit cond">우리처럼 GPU 가 좁은 기계를 정면으로 겨냥한 물건. 다만 어떤 모델이 실제로 붙는지 <b>안 재봤다</b>.</div>
+    <div class="k">몽골어</div><div>전용 도구 사실상 <b>0건</b>(별 0 습작 둘). ⇒ 다국어 모델(OmniVoice)이 유일한 길임이 이번에 확인됐다.</div>
+    <div class="k">굽기 램</div><div>같은 장면을 더 적은 램으로 굽게 해 주는 물건 <b>0건</b>. 손잡이는 여전히 「착수 시점 여유 램」 하나다.</div>
+    <div class="k">Apps Script</div><div>최근 상위는 전부 VPN·프록시 우회로. 엔진에 쓸 것 <b>0건</b>.</div>
+    <div class="k">TOPIK</div><div>최근 생성 레포 최고가 <b>3★</b>. 이 자리에 우리보다 앞선 공개 구현은 없다.</div>
+    <div class="k">라디오 곡</div><div>음악 모델은 크게 늘었으나(HeartMuLa 3,777★ 등) 전부 4090급 NVIDIA 전제. ⇒ 지금 통로 유지.</div>
   </div>
 </div>
-
-<div class="item">
-  <h3>HY-Motion 1.0 <span class="star">2,541★</span></h3>
-  <p class="repo">Tencent-Hunyuan/HY-Motion-1.0</p>
-  <div class="row">
-    <div class="k">무엇</div><div>3D 캐릭터 «동작»을 생성한다(사람 모션).</div>
-    <div class="k">되나</div><div class="fit cond">마스코트 「생명력」 자리에 닿는 유일한 최근 물건. GPU 요구는 <b>안 재봤다</b> — 굽기 병목을 생각하면 기대는 낮게.</div>
-  </div>
-</div>
-
-<div class="item">
-  <h3>claude-video-vision <span class="star">1,276★</span></h3>
-  <p class="repo">jordanrendric/claude-video-vision</p>
-  <div class="row">
-    <div class="k">무엇</div><div>내가 <b>영상을 실제로 보게</b> 만드는 플러그인(프레임 추출 + 소리 분석).</div>
-    <div class="k">되나</div><div class="fit cond">릴 12편·굽기 결과를 내가 눈으로 검수하는 통로. 지금은 내가 영상을 못 봐서 유호님이 대신 보신다.</div>
-  </div>
-</div>
-
-<div class="item">
-  <h3>claude-review-loop <span class="star">727★</span> · react-native-lingua <span class="star">133★</span> · shad-expo-studio <span class="star">177★</span></h3>
-  <p class="repo">hamelsmu · adrianhajdin · Ge-limin</p>
-  <div class="row">
-    <div class="k">무엇</div><div>차례로 ⓐ Codex 와 자동으로 주고받는 코드 검수 루프(우리 이종 검수와 같은 그림) ⓑ <b>Expo + 실시간 AI 음성 선생님</b>으로 만든 듀오링고 판박이(우리 앱과 같은 모양의 참조 구현) ⓒ Expo UI 화면 회귀 검사</div>
-    <div class="k">되나</div><div class="fit cond">셋 다 「베껴 쓸 것」이 아니라 <b>우리가 이미 하는 일의 남의 답안지</b>로 값이 있다.</div>
-  </div>
-</div>
-
-<h2>③ 「없다」가 답인 갈래<span class="n">숨기지 않는다</span></h2>
-<p class="hint">찾았는데 못 찾은 것이 아니라, 세어 보니 쓸 것이 없었던 자리들.</p>
-
-<div class="empty"><b>몽골어 전용 도구 — 사실상 0건.</b> 최근 것은 몽골어 음성합성 습작 하나와 몽골어 LLM 평가표 하나뿐, 별은 전부 0이었다. ⇒ 몽골어는 <b>전용 도구가 아니라 다국어 모델(OmniVoice)로</b> 가는 것이 현재의 유일한 길.</div>
-
-<div class="empty"><b>Apps Script — 엔진에 쓸 것 0건.</b> 최근 상위 레포는 전부 Apps Script 를 VPN·프록시 우회로로 쓰는 물건들이었다(4,402★·3,907★ 등). 우리 엔진에 닿는 것은 없었다.</div>
-
-<div class="empty"><b>굽기(램) 병목을 푸는 것 0건.</b> Blender 쪽 최근 것은 AI 가 Blender 를 조종하는 다리(MCP)뿐이고, <b>같은 장면을 더 적은 램으로 굽게 해 주는 물건은 없었다</b>. 굽기 속도의 손잡이는 여전히 「착수 시점 여유 램」 하나다.</div>
-
-<div class="empty"><b>라디오용 곡 생성 — 우리 기계에는 안 맞는다.</b> 음악 모델은 최근 크게 늘었으나(HeartMuLa 3,777★ · ACE-Step UI 4,820★) README 가 4090 급 NVIDIA 를 전제하고, Arc 지원 언급이 없다. ⇒ Reed 곡은 지금 통로(Lyria)를 유지하는 쪽이 맞다.</div>
-
-<div class="empty"><b>TOPIK·한국어 교육 — 참고할 만한 것 0건.</b> 「korean language learning」·「TOPIK」으로 최근 생성된 것을 별 순으로 세었더니 최고가 3★, 대부분 0★ 습작이었다. <b>이 자리에 우리보다 앞선 공개 구현은 없다.</b></div>
 
 <footer>
-  <b>무엇으로 쟀나</b> — 웹 검색이 아니라 GitHub 를 직접 셌다:
-  <code>gh search repos &lt;낱말&gt; --created=&gt;날짜 --sort=stars</code> 로 20갈래,
-  후보는 <code>gh api repos/&#123;레포&#125;/readme</code> 로 README 원문을 열어 요구사항을 확인했다.
-  별 수·생성일·마지막 push 는 2026-09-01 시점 GitHub 값이다.
-  「안 재봤다」라고 적힌 것은 정말 안 재본 것이고, 「없다」는 세어 본 결과다.
+  <b>무엇으로 쟀나</b> — ①후보 찾기: <code>gh search repos &lt;낱말&gt; --created=&gt;날짜 --sort=stars</code> 로 20갈래.
+  ②거르기: <code>gh api repos/&#123;레포&#125;/readme</code> 로 README 원문. ③<b>채택 판정: 전부 이 기계에 설치해 실제로 소리를 냈다</b>
+  (환경 = <code>C:\Users\q1212\Documents\synk-vendor</code> · 산출물 = 그 밑 <code>out\</code>).
+  ④되받아 재기: faster-whisper 로 만든 소리를 도로 받아썼다.
+  「안 재봤다」는 정말 안 재본 것이고, 「없다」는 세어 본 결과다. 별 수·날짜는 2026-09-01 시점 GitHub 값이다.
 </footer>
 
 </div>
