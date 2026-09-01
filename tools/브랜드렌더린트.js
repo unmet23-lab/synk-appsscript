@@ -432,8 +432,14 @@ function 측정기소스(kitHexes, fontsOk, genericOk, kcFontsOk, kcScope, freez
     el.hasAttribute('data-synk-mascot') ||
     new RegExp(${JSON.stringify(마스코트패턴소스)}).test(el.getAttribute('src') || '');
 
+  /* 🔴 «img 만» 돌고 있었다 (2026-09-02 실측). 위 머리말은 「인라인하면 data-synk-mascot 을 달아라」로
+   *   한계를 정직하게 적어 뒀는데, **속성을 달아도 img 가 아니면 못 봤다** — 크루카드가 몽글을
+   *   i 태그 + background-image 로 세우자 그 세 장이 통째로 안 세어졌고, 출력은 그대로 초록이었다
+   *   (분모 0 = 「해당 없음」인데 「깨끗함」으로 읽힌다).
+   *   ⇒ 속성이 달린 것은 태그를 안 가린다. img 는 경로로도 잡히므로 둘을 합집합으로 돈다.
+   *   ⚠ 이 구간은 브라우저에 «문자열로» 주입된다 — 주석에 백틱을 쓰면 템플릿 리터럴이 깨진다. */
   let 마스코트잰것 = 0;
-  for (const el of document.querySelectorAll('img')) {
+  for (const el of document.querySelectorAll('img, [data-synk-mascot]')) {
     if (!마스코트다(el)) continue;
     마스코트잰것++;                       // ⚠ 분모다 — 0 장이면 「깨끗함」이 아니라 「해당 없음」이다
     const bg = 배경찾기(el);
