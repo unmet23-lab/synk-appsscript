@@ -28,6 +28,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { 색, 기호선, 워드마크 } = require('./lib/로고정본.js');
+const 마스코트자산 = require('./lib/마스코트자산.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const 낼곳 = path.join(ROOT, 'docs/SHIFT/배너');
@@ -90,11 +91,32 @@ function 양모천svg({ 보풀, 그늘, 어둡나 }) {
 </svg>`;
 }
 
-/** 톤온톤 펠트 꺾쇠 — 잉크색 펠트 조각을 밤 천 위에 «꿰매 붙인» 아플리케.
+/* ══ 아플리케의 «실» — 채널마다 갈리는 유일한 값 (유호 지시 09-01 「잘 어울리게」) ═══════
+ *
+ * 🔑 구조는 셋이 같고 **실만 다르다.** 이것이 킷 원리 ②(「실은 부품, 램프가 정본」)의 집행이다 —
+ *   세 채널이 한 가족으로 읽히는 까닭은 같은 로고를 써서가 아니라 «같은 재질 문법»을 써서다.
+ *   잉크실 = 톤온톤(개인 · 기록) · 코랄실 = 브랜드 신호(정보) · 여린코랄 = 밝은 천 위(학생).
+ * ⚠ 램프의 «세 자리»(보풀 빛 · 몸통 · 그늘)를 실마다 그대로 채운다 — 한 자리라도 다른 실에서
+ *   빌려오면 펠트가 아니라 «색칠한 도형»이 된다. */
+const 실 = {
+  잉크: { 몸: 색['Ink'], 보풀: 색['Deep Wool'], 그늘: 색['Ink Deep'], 결어둠: '#080604', 땀: 색['Deep Wool'] },
+  코랄: { 몸: 색['Coral'], 보풀: 색['Coral Soft'], 그늘: 색['Coral 3'], 결어둠: 색['Coral Rim'], 땀: 색['Coral 3'] },
+  여린코랄: { 몸: 색['Coral Soft'], 보풀: '#FFD9CC', 그늘: 색['Coral 2'], 결어둠: 색['Coral 3'], 땀: 색['Coral 2'] },
+};
+
+/** hex → 0~1 삼원색. feColorMatrix 가 «비율»로 색을 받아서 필요하다. */
+const rgb01 = (hex) => {
+  const n = parseInt(String(hex).slice(1), 16);
+  return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255].map((v) => v.toFixed(4));
+};
+
+/** 펠트 꺾쇠 — 펠트 조각을 천 위에 «꿰매 붙인» 아플리케.
  *  층은 로고정본 펠트 문법 그대로(접촉 그림자 → 겉보풀 fuzz 2층 → 잘린 단 → 몸 → 손땀),
- *  좌표계만 픽셀이다. 색은 킷의 잉크 램프(몸 Ink · 보풀 Deep Wool · 그늘 Ink Deep)라
- *  멀리서는 «무늬»고 가까이서만 «조각»이다 — 명품 톤온톤의 문법. */
-function 잉크펠트꺾쇠(px) {
+ *  좌표계만 픽셀이다. 실이 잉크면 멀리서는 «무늬»고 가까이서만 «조각»이다 — 톤온톤의 문법.
+ *  실을 코랄로 갈면 같은 조각이 «신호»가 된다(구조는 한 줄도 안 바뀐다). */
+function 잉크펠트꺾쇠(px, 쓸실 = 실.잉크) {
+  const [lr, lg, lb] = rgb01(쓸실.보풀);
+  const [dr, dg, db] = rgb01(쓸실.결어둠);
   const S = px / 74;                        // 기호 펠트 viewBox 폭 74 → px
   const 몸 = (fill) => `<path d="${기호선}" fill="none" stroke="${fill}" stroke-width="13"
       stroke-linecap="round" stroke-linejoin="round"/>`;
@@ -124,10 +146,10 @@ function 잉크펠트꺾쇠(px) {
       <feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="3" seed="7" result="w"/>
       <feDisplacementMap in="SourceGraphic" in2="w" scale="12" result="shape"/>
       <feTurbulence type="fractalNoise" baseFrequency="0.96 0.42" numOctaves="2" seed="13" result="n1"/>
-      <feColorMatrix in="n1" type="matrix" values="0 0 0 0 0.3412  0 0 0 0 0.3137  0 0 0 0 0.2745  0 0 0 0.5 -0.31" result="lf"/>
+      <feColorMatrix in="n1" type="matrix" values="0 0 0 0 ${lr}  0 0 0 0 ${lg}  0 0 0 0 ${lb}  0 0 0 0.5 -0.31" result="lf"/>
       <feComposite in="lf" in2="shape" operator="in" result="lfc"/>
       <feTurbulence type="fractalNoise" baseFrequency="0.66 0.38" numOctaves="3" seed="29" result="n2"/>
-      <feColorMatrix in="n2" type="matrix" values="0 0 0 0 0.0314  0 0 0 0 0.0235  0 0 0 0 0.0196  0 0 0 0.72 -0.36" result="df"/>
+      <feColorMatrix in="n2" type="matrix" values="0 0 0 0 ${dr}  0 0 0 0 ${dg}  0 0 0 0 ${db}  0 0 0 0.72 -0.36" result="df"/>
       <feComposite in="df" in2="shape" operator="in" result="dfc"/>
       <feMerge><feMergeNode in="shape"/><feMergeNode in="dfc"/><feMergeNode in="lfc"/></feMerge>
     </filter>
@@ -137,17 +159,17 @@ function 잉크펠트꺾쇠(px) {
     </filter>
   </defs>
   <g transform="scale(${S}) translate(-96,-28)">
-    <g opacity="0.5" filter="url(#bn-soft)"><g transform="translate(1.0,2.3)">${몸(색['Ink Deep'])}</g></g>
-    <g opacity="0.1" filter="url(#bn-fuzz2)">${몸(색['Ink'])}</g>
-    <g opacity="0.22" filter="url(#bn-fuzz1)">${몸(색['Ink'])}</g>
-    <g filter="url(#bn-cut)"><g transform="translate(0,1.7)">${몸(색['Ink Deep'])}</g></g>
-    <g filter="url(#bn-felt-ink)">${몸(색['Ink'])}</g>
+    <g opacity="0.5" filter="url(#bn-soft)"><g transform="translate(1.0,2.3)">${몸(쓸실.그늘)}</g></g>
+    <g opacity="0.1" filter="url(#bn-fuzz2)">${몸(쓸실.몸)}</g>
+    <g opacity="0.22" filter="url(#bn-fuzz1)">${몸(쓸실.몸)}</g>
+    <g filter="url(#bn-cut)"><g transform="translate(0,1.7)">${몸(쓸실.그늘)}</g></g>
+    <g filter="url(#bn-felt-ink)">${몸(쓸실.몸)}</g>
     <g filter="url(#bn-soft)">
-      <path d="${기호선}" fill="none" stroke="${색['Ink Deep']}" stroke-width="${(4.6 / S).toFixed(3)}"
+      <path d="${기호선}" fill="none" stroke="${쓸실.그늘}" stroke-width="${(4.6 / S).toFixed(3)}"
         stroke-dasharray="${땀길} ${땀틈}" stroke-dashoffset="${(9 / S).toFixed(2)}"
         stroke-linecap="round" stroke-linejoin="round" opacity="0.5"
         transform="translate(0,${(1.8 / S).toFixed(3)})"/>
-      <path d="${기호선}" fill="none" stroke="${색['Deep Wool']}" stroke-width="${(3.4 / S).toFixed(3)}"
+      <path d="${기호선}" fill="none" stroke="${쓸실.땀}" stroke-width="${(3.4 / S).toFixed(3)}"
         stroke-dasharray="${땀길} ${땀틈}" stroke-linecap="round" stroke-linejoin="round" opacity="0.42"/>
     </g>
   </g>
@@ -197,8 +219,13 @@ const 안들 = {
     로고: () => 워드마크({ 판: '라이트', 표현: '펠트', 색갈래: '코랄' }),
     천: { 보풀: '#FFFFFF', 그늘: 색['Oat'], 어둡나: false },
   },
+  /* ══ 채널 셋 — 한 가족, 세 얼굴 (유호 지시 2026-09-01) ══════════════════════════
+   * 구조(양모천 → 조명 → 아플리케 → 이음 손땀 → 로고 → 문안)는 셋이 **같다.**
+   * 갈리는 것은 셋뿐: ①천의 밝기 ②아플리케의 실 ③문안. 그래서 나란히 놓으면 한 벌로 읽히고,
+   * 따로 만나면 채널마다 다른 말을 한다. 🔑 청중이 다르면 «밝기»부터 갈라야 한다 —
+   * 개인·정보 축은 한국어권이 밤에 보고, 학생 축은 낮에 밝은 화면에서 본다. */
   밤기호: {
-    이름: '③ 밤 바탕 · 기호 — ✅ 확정 + 명품화 (08-28)',
+    이름: '③ 밤 바탕 · 기호 — ✅ 확정 + 명품화 (08-28) · @yuhobuilds',
     설명: '톤온톤 잉크 펠트 아플리케 + 양모 천 결 + 이음 손땀 · 업로드본 = yuhobuilds_배너.png',
     바탕: 색['Ink Deep'],
     글자: 색['Paper'],
@@ -212,7 +239,70 @@ const 안들 = {
     이음: true,
     확정: 'yuhobuilds_배너',
   },
+
+  synkbrief: {
+    이름: '④ 밤 바탕 · 코랄 k — @synkbrief (SYNK 브리핑)',
+    설명: '③과 한 벌이다(같은 유호님 축·같은 한국어권). 갈리는 것은 워드마크의 k 한 글자와 문안뿐 · 업로드본 = synkbrief_배너.png',
+    바탕: 색['Ink Deep'],
+    글자: 색['Paper'],
+    보조: 색['Stone'],
+    /* 🔴 **코랄 아플리케를 두 번 시도했다가 걷었다**(09-01 눈검증 · 0.30 → 0.16 둘 다 실패).
+     *   밤 천 위의 코랄 #F96859 는 어떤 투명도에서도 «탁한 벽돌색»으로 읽힌다 —
+     *   투명도가 아니라 «채도»의 문제라, 낮출수록 갈색에 가까워질 뿐 코랄로 안 돌아온다
+     *   (펠트 필터의 그늘층이 Coral Rim #941F19 이라 더 탁해진다).
+     *   🔑 **킷이 이미 아는 규칙이었다** — 코랄은 «밝은 면 위»가 제자리다(철칙 ②③의 거울).
+     *   ⇒ 밤 판에서 코랄은 큰 면이 아니라 **한 점**으로만 산다: 워드마크의 k 한 글자.
+     *   그것이 ③(단색 k)과 이 판을 가르고, 프로필의 코랄 도장과도 이어진다.
+     *   ⚠ 다시 「코랄 배너」를 시도하려면 바탕부터 밝혀야 한다 — 실만 갈면 같은 자리에 온다. */
+    로고: () => 워드마크({ 판: '다크', 표현: '펠트', 색갈래: '코랄' }),
+    천: { 보풀: 색['Deep Wool'], 그늘: '#000000', 어둡나: true },
+    워터마크: true,
+    이음: true,
+    /* 정보 계정의 약속은 «무엇을»이 아니라 «어떻게»다 — 인스타 소개 3줄의 첫 두 줄을 그대로 잇는다. */
+    큰줄: '오늘 나온 AI, 무슨 뜻인가',
+    작은줄: '실제로 써 본 것만 · 매일 한 장',
+    확정: 'synkbrief_배너',
+  },
+
+  synklab: {
+    이름: '⑤ 양모 바탕 · 몽글 — @synkkorean (SYNK LAB)',
+    설명: '청중이 다르다(몽골 학생·학부모). 유일하게 밝은 판이고, 얼굴은 로고가 아니라 마스코트다 · 업로드본 = synklab_배너.png',
+    바탕: 색['Paper'],
+    글자: 색['Ink'],
+    보조: 색['Ash Wool'],
+    로고: () => 워드마크({ 판: '라이트', 표현: '펠트', 색갈래: '코랄' }),
+    천: { 보풀: '#FFFFFF', 그늘: 색['Oat'], 어둡나: false },
+    워터마크: true,
+    워터실: 실.여린코랄,
+    /* 🔴 첫 판(0.34)은 «분홍 얼룩»이 됐다 — 밝은 천 위에서는 같은 알파가 훨씬 세게 읽힌다.
+     * 톤온톤의 문법은 «멀리서 무늬 · 가까이서 조각»인데 멀리서도 보이면 실패다(09-01 눈검증). */
+    워터투명: 0.22,
+    이음: true,
+    /* 🔑 몽글은 «안전 영역 밖»에 앉는다 — 큰 화면에서만 보이는 덤이고, 폰에서 잘려도 뜻이 안 샌다.
+     *   학생이 아는 얼굴이 채널 지면에 있다는 것 자체가 값이라 넣되, 뜻은 안 싣는다. */
+    몽글: true,
+    /* 이 채널이 «지금» 하는 일의 진실. 라디오 하나뿐이라 라디오를 말한다 —
+     * 학원 콘텐츠가 붙는 날 이 두 줄을 갈면 된다(배너는 언제든 바뀐다). */
+    /* ⚠ 작은줄에서 「SYNK LAB」을 뺐다 — 채널 이름이 바로 위에 뜨는데 배너가 또 말하면
+     *   같은 값을 두 곳이 말하는 꼴이고, 좁은 안전 영역을 이름이 먹는다. */
+    큰줄: '공부할 때 켜 두세요',
+    작은줄: '24시간 한국어 라디오',
+    확정: 'synklab_배너',
+  },
 };
+
+/** 몽글 누끼 — 경로는 `lib/마스코트자산.js` 한 창구에서만 온다(마스코트 10벌 공존의 교훈).
+ *  표정은 «눈웃음» — 채널 첫 화면은 인사하는 얼굴이다(프로필굽기와 같은 판정).
+ *
+ *  🔑 **액자 실측(09-01 · 알파 bbox)** — 몽글 누끼는 1024² 캔버스에 그림이 폭 57.3% · 높이 55.8%
+ *    로 앉아 있고 **아래 여백이 22.0%** 다. 그래서 「발밑을 어디에 놓을까」는 요소의 bottom 이
+ *    아니라 `bottom = 목표 − 폭×0.220` 으로 셈해야 맞는다(그냥 bottom:0 을 주면 122px 뜬다).
+ *    ⚠ 같은 액자를 까몽에 기대면 안 된다 — 까몽 컷들은 폭 91.2% · 아래 여백 5.7% 로 규약이
+ *    아예 다르다(트랙 §0-라디오 「액자 규약 통일」이 그 미결이다). */
+function 몽글svg() {
+  const b64 = fs.readFileSync(마스코트자산.절대경로('눈웃음', { 누끼: true })).toString('base64');
+  return `<img src="data:image/png;base64,${b64}" alt="" data-synk-mascot>`;
+}
 
 /** 한 안의 자립형 HTML. `안내선` 이 참이면 안전 영역을 그린다(검수용 · 업로드본에는 안 넣는다).
  *
@@ -222,8 +312,13 @@ const 안들 = {
 function 지면(안, 안내선) {
   const a = 안들[안];
   const 천 = a.천 ? 양모천svg(a.천) : '';
-  const 워터 = a.워터마크 ? `<div class="워터">${잉크펠트꺾쇠(1440)}</div>` : '';
-  const 이음 = a.이음 ? 이음선svg(Math.round(H * 0.875), 색['Deep Wool'], 0.3) : '';
+  const 투명 = a.워터투명 == null ? 1 : a.워터투명;
+  const 워터 = a.워터마크
+    ? `<div class="워터" style="opacity:${투명}">${잉크펠트꺾쇠(1440, a.워터실 || 실.잉크)}</div>` : '';
+  const 몽글 = a.몽글 ? `<div class="디제이 몽글">${몽글svg()}</div>` : '';
+  const 이음 = a.이음 ? 이음선svg(Math.round(H * 0.875), a.천 && !a.천.어둡나 ? 색['Ash Wool'] : 색['Deep Wool'], 0.3) : '';
+  const 큰 = a.큰줄 || 큰줄;
+  const 작은 = a.작은줄 || 작은줄;
   const 선 = 안내선 ? `<div class="안전선"><span>안전 영역 ${안전W}×${안전H} — 여기 밖은 기기에 따라 잘린다</span></div>` : '';
   const 어둡 = a.천 ? a.천.어둡나 : true;
   return `<!doctype html><meta charset="utf-8">
@@ -244,6 +339,18 @@ function 지면(안, 안내선) {
     display:grid;place-items:center;
     filter:drop-shadow(0 26px 40px rgba(0,0,0,0.5));}
   .워터 svg{display:block;}
+  /* 몽글 — «안전 영역 밖»의 덤. 오른쪽 여백은 (2560−1235)/2 = 662px 이고 그 안에서만 논다.
+   * 발밑은 이음 솔기(H×0.875 + 선 오프셋 30 = 1290px)에 맞춘다: 누끼 캔버스의 아래 여백이
+   * 폭의 22.0%(알파 bbox 실측 09-01)라 bottom = 150 − 560×0.220 ≈ 27.
+   *
+   * 🔴 **까몽을 왼쪽에 세우는 판을 지었다가 걷었다**(09-01 눈검증) — 라디오 DJ 가 몽글↔까몽
+   *   교대라 둘이 함께 서면 좋겠다고 봤는데, **까몽은 검은 털 캐릭터라 밝은 양모 천 위에서
+   *   «얼룩»이 된다.** 코랄 몽글은 같은 천에 부드럽게 앉는데 까몽만 대비가 튀어 시선을
+   *   문안에서 뺏는다. ⇒ 밝은 판에 세울 가이드는 몽글 하나다(까몽은 밤 판에서 산다).
+   *   ⚠ 다시 시도하려면 그 전에 «밤 바탕 판»을 만들어야지, 이 판에 넣는 것이 아니다. */
+  .디제이{position:absolute;bottom:0;z-index:2;filter:drop-shadow(0 18px 26px rgba(43,35,32,0.22));}
+  .디제이 img{width:100%;height:auto;display:block;}
+  .몽글{right:186px;bottom:27px;width:560px;}
   .이음{position:absolute;left:0;width:100%;height:60px;z-index:2;display:block;}
   /* 안전 영역 — 모든 글자가 여기 «안»에 있다.
    * 🔴 overflow:hidden 이 이 파일의 안전장치다. 첫 판은 내용(로고 212 + 큰줄 109 + 작은줄 55 + 간격 68
@@ -269,11 +376,11 @@ function 지면(안, 안내선) {
 </style>
 <div class="판">
   <!-- 이음(솔기)이 워터(아플리케)보다 먼저다 — 실물이라면 조각을 솔기 «위에» 꿰맨다. -->
-  ${천}<div class="결"></div>${이음}${워터}${선}
+  ${천}<div class="결"></div>${이음}${워터}${몽글}${선}
   <div class="속">
     <div class="로고">${a.로고()}</div>
-    <p class="큰">${큰줄}</p>
-    <p class="작은">${작은줄}</p>
+    <p class="큰">${큰}</p>
+    <p class="작은">${작은}</p>
   </div>
 </div>`;
 }
@@ -397,11 +504,14 @@ function main() {
 
   /* 확정된 안은 «업로드본» 이름으로 한 벌 더 — 프로필굽기와 같은 규약.
    * 이 한 벌만 git 이 쥔다(후보·안내선 판은 .gitignore · 시안이 품는다). */
-  const 확정안 = 굽힌것.find(({ 안 }) => 안들[안] && 안들[안].확정);
-  if (확정안) {
-    const 업로드본 = path.join(낼곳, `${안들[확정안.안].확정}.png`);
-    fs.copyFileSync(확정안.png, 업로드본);
-    console.log(`\n🏷  확정 = ${path.relative(ROOT, 업로드본)} (← ${확정안.안})`);
+  /* 🔴 여기는 `find` 였다 — 확정이 «하나뿐»이라는 가정이 코드에 박혀 있었고,
+   *    채널이 셋이 되자 그 가정이 조용히 두 벌을 버렸다(첫 벌만 복사되고 나머지는 후보로 남는다).
+   *    확정은 채널 수만큼 있다 ⇒ 전부 복사한다. */
+  const 확정들 = 굽힌것.filter(({ 안 }) => 안들[안] && 안들[안].확정);
+  for (const c of 확정들) {
+    const 업로드본 = path.join(낼곳, `${안들[c.안].확정}.png`);
+    fs.copyFileSync(c.png, 업로드본);
+    console.log(`🏷  확정 = ${path.relative(ROOT, 업로드본)} (← ${c.안})`);
   }
 
   if (!하나) {

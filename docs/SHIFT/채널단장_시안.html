@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>유튜브 세 채널 단장 — 실물 미리보기</title>
+<style>
+  /* 낫표 「 」 교정 — 값의 정본 = docs/디자인_토큰.json 「서체.낫표교정」(유호 확정 08-31). */
+  @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+  :root{
+    --paper:#FBF7F0; --ink:#2B2320; --inkdeep:#1A1512;
+    --coral:#F96859; --coralsoft:#FBB7A3; --stone:#C7BFB2; --ash:#8D857A; --deepwool:#575046;
+    --oat:#EDE7DC; --stitch:#F0E3C8;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;padding:48px 24px 96px;background:var(--inkdeep);color:var(--paper);
+    font-family:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,'Malgun Gothic',sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  .지면{max-width:1120px;margin:0 auto;}
+
+  h1{font-size:2.1rem;font-weight:800;letter-spacing:-.035em;margin:0 0 10px;}
+  .머리{color:var(--stone);font-size:.95rem;line-height:1.75;margin:0 0 14px;max-width:78ch;}
+  .머리 b{color:var(--paper);}
+  .머리 code{font-family:'DM Mono',ui-monospace,Consolas,monospace;font-size:.9em;color:var(--coralsoft);}
+
+  /* 한 가족인지 한눈에 — 셋을 나란히 놓는 줄 */
+  .가족{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:28px 0 44px;
+    padding:20px;border-radius:18px;background:rgba(228,228,231,.045);
+    box-shadow:inset 0 0 0 1px rgba(228,228,231,.12);}
+  .가족 figure{margin:0;}
+  /* 🔴 display:block 이 빠져 있었다 — <i> 는 inline 이라 aspect-ratio 가 안 먹고 높이 0 이 된다.
+   *    「이미지가 안 뜬다」로 보이지만 실은 «칸이 없는» 것이다(09-01 렌더 검수에서 잡았다). */
+  .가족 .띠{display:block;width:100%;aspect-ratio:1235/338;border-radius:8px;
+    background-size:207.29% auto;background-position:center;
+    box-shadow:inset 0 0 0 1px rgba(228,228,231,.14);}
+  .가족 figcaption{margin-top:8px;font-size:.74rem;color:var(--ash);text-align:center;}
+  .가족 h2{grid-column:1/-1;margin:0 0 4px;font-size:.85rem;font-weight:700;color:var(--stone);
+    letter-spacing:.02em;}
+
+  /* 채널 카드 = 유튜브 채널 첫 화면을 그대로 흉내낸 것 */
+  .채널{margin:0 0 34px;border-radius:20px;overflow:hidden;background:#0F0C0A;
+    box-shadow:inset 0 0 0 1px rgba(228,228,231,.13), 0 20px 44px rgba(0,0,0,.45);}
+  .배너{width:100%;aspect-ratio:2560/1440;background-size:cover;background-position:center;
+    display:block;}
+  /* 🔴 처음엔 2560×423(«데스크톱 표시 크기»로 흔히 도는 값)으로 잘랐다가 되돌렸다 —
+   *    그 수치는 유튜브 공식 문서에 없다(배너굽기 주석이 이미 경고하던 자리다).
+   *    확실한 것은 «1235×338 안에 있으면 어디서도 안 잘린다» 하나뿐이므로, 그 띠만 보여준다.
+   *    2560/1235 = 207.29% — 캔버스를 그만큼 확대해 가운데만 창에 남긴다. */
+  .배너.띠판{aspect-ratio:1235/338;background-size:207.29% auto;}
+  .머리단{display:flex;gap:20px;align-items:flex-start;padding:22px 26px 26px;}
+  .프사{width:112px;height:112px;border-radius:50%;flex:0 0 112px;background-size:cover;
+    background-position:center;box-shadow:0 0 0 1px rgba(228,228,231,.14);}
+  .프사.빔{display:grid;place-items:center;background:#221C19;color:var(--ash);
+    font-size:.7rem;line-height:1.4;text-align:center;padding:10px;}
+  .메타{min-width:0;flex:1;}
+  .이름{font-size:1.55rem;font-weight:800;letter-spacing:-.03em;margin:0 0 4px;}
+  .핸들{color:var(--ash);font-size:.86rem;margin:0 0 10px;}
+  .핸들 b{color:var(--stone);font-weight:600;}
+  .소개{color:var(--stone);font-size:.9rem;line-height:1.7;margin:0;white-space:pre-line;}
+
+  /* 그 채널의 재료 — 무엇을 어디에 올리는지 */
+  .재료{padding:0 26px 24px;}
+  .재료 table{width:100%;border-collapse:collapse;font-size:.82rem;}
+  .재료 th,.재료 td{text-align:left;padding:9px 10px;border-top:1px solid rgba(228,228,231,.1);
+    vertical-align:top;}
+  .재료 th{width:112px;color:var(--ash);font-weight:600;}
+  .재료 code{font-family:'DM Mono',ui-monospace,Consolas,monospace;font-size:.92em;color:var(--coralsoft);}
+  .뱃지{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.7rem;font-weight:700;
+    vertical-align:1px;}
+  .새{background:rgba(249,104,89,.16);color:var(--coralsoft);}
+  .유지{background:rgba(199,191,178,.14);color:var(--stone);}
+  .대기{background:rgba(245,196,69,.16);color:#F5C445;}
+
+  .안전{margin:14px 0 0;padding:14px 16px;border-radius:12px;background:rgba(249,104,89,.07);
+    box-shadow:inset 0 0 0 1px rgba(249,104,89,.22);font-size:.8rem;color:var(--stone);line-height:1.65;}
+  .안전 b{color:var(--coralsoft);}
+
+  .꼬리{margin-top:40px;padding:22px 24px;border-radius:16px;background:rgba(228,228,231,.045);
+    box-shadow:inset 0 0 0 1px rgba(228,228,231,.12);color:var(--stone);font-size:.88rem;line-height:1.8;}
+  .꼬리 b{color:var(--paper);} .꼬리 h3{margin:0 0 10px;font-size:1rem;color:var(--paper);}
+  .꼬리 ol{margin:0;padding-left:20px;} .꼬리 li{margin:0 0 7px;}
+  code{font-family:'DM Mono',ui-monospace,Consolas,monospace;}
+  @media (max-width:760px){
+    .가족{grid-template-columns:1fr;} .머리단{flex-direction:column;}
+    .프사{flex-basis:auto;}
+  }
+</style></head>
+<body><div class="지면">
+
+<h1>유튜브 세 채널 단장 — 실물 미리보기</h1>
+<p class="머리">
+아래는 <b>유튜브 채널 첫 화면을 그대로 흉내낸 것</b>입니다 — 배너 위에 프로필이 얹히고 그 옆에 이름·핸들·소개가 서는, 사람들이 실제로 보는 배치입니다.<br>
+배너 줄은 <b>어디서도 안 잘리는 «안전 영역»</b>으로 잘라 뒀습니다. 캔버스는 2560×1440 이지만 유튜브가 보장하는 것은 그중 가운데 <b>1235×338</b>(48%×23%)뿐이라, 판정은 그 띠로 하는 것이 맞습니다 — 폰에서 보이는 것이 그것입니다.<br>
+다시 구우려면 <code>node tools/배너굽기.js</code> · <code>node tools/프로필굽기.js</code>.
+</p>
+
+<section class="가족">
+  <h2>먼저 — 셋이 한 가족으로 읽히는지</h2>
+  <figure><i class="띠" style="background-image:url('./배너/yuhobuilds_배너.png')"></i>
+    <figcaption>@yuhobuilds · 잉크 톤온톤</figcaption></figure>
+  <figure><i class="띠" style="background-image:url('./배너/synkbrief_배너.png')"></i>
+    <figcaption>@synkbrief · 같은 톤 + 코랄 k</figcaption></figure>
+  <figure><i class="띠" style="background-image:url('./배너/synklab_배너.png')"></i>
+    <figcaption>@synkkorean · 양모 + 몽글</figcaption></figure>
+</section>
+
+<!-- ══ 1. yuhobuilds ══ -->
+<article class="채널">
+  <i class="배너 띠판" style="background-image:url('./배너/yuhobuilds_배너.png')"></i>
+  <div class="머리단">
+    <div class="프사 빔">프로필<br>없음</div>
+    <div class="메타">
+      <p class="이름">유호 · 짓고 있습니다</p>
+      <p class="핸들"><b>@yuhobuilds</b> · 개인 채널 · 한국어권</p>
+      <p class="소개">몽골에서 한국어 교육 회사를 짓고 있습니다. 직원은 아직 없고, AI와 둘이 합니다.
+기획·번역·디자인·회계·앱까지 실제로 어떻게 하는지 화면 그대로 올립니다.</p>
+    </div>
+  </div>
+  <div class="재료">
+    <table>
+      <tr><th>배너</th><td><code>docs/SHIFT/배너/yuhobuilds_배너.png</code> <span class="뱃지 유지">그대로</span><br>
+        밤 바탕 · 잉크 펠트 꺾쇠를 톤온톤으로 눕혔습니다. 멀리서는 무늬고 가까이서만 조각입니다.</td></tr>
+      <tr><th>프로필</th><td><span class="뱃지 대기">유호님 손</span> <b>얼굴 사진이 필요합니다.</b>
+        개인 채널이라 로고를 쓰면 «개인»이 아니게 됩니다 — 정사각 1080² 한 장 주시면 원형 크롭에 맞춰 다듬어 올리겠습니다.<br>
+        임시로 쓰실 거면 후보 둘: <code>docs/SHIFT/프로필/도장밤.png</code> · <code>밤워드마크.png</code></td></tr>
+      <tr><th>소개</th><td><span class="뱃지 유지">그대로</span> 위 두 줄. 「곧 나옵니다」·날짜·업로드 주기를 한 글자도 안 썼습니다 — 못 지키는 날 그것이 거짓말이 됩니다.</td></tr>
+    </table>
+  </div>
+</article>
+
+<!-- ══ 2. synkbrief ══ -->
+<article class="채널">
+  <i class="배너 띠판" style="background-image:url('./배너/synkbrief_배너.png')"></i>
+  <div class="머리단">
+    <i class="프사" style="background-image:url('./프로필/synkbrief_프로필.png')"></i>
+    <div class="메타">
+      <p class="이름">SYNK 브리핑</p>
+      <p class="핸들"><b>@synkbrief</b> · 정보 채널 · 한국어권</p>
+      <p class="소개">오늘 나온 AI가 우리 회사엔 무슨 뜻인지, 매일 한 장으로 정리합니다.
+몽골에서 교육 회사를 짓는 중에 실제로 써 본 것만 올립니다.</p>
+    </div>
+  </div>
+  <div class="재료">
+    <table>
+      <tr><th>배너</th><td><code>docs/SHIFT/배너/synkbrief_배너.png</code> <span class="뱃지 새">새로 구움</span><br>
+        <b>@yuhobuilds 와 «구조가 같습니다»</b> — 같은 천, 같은 톤온톤 꺾쇠, 같은 이음 손땀.
+        갈리는 것은 워드마크의 <b>k 한 글자(코랄)</b>와 문안뿐입니다. 유호님의 두 채널이니 남남처럼 보이면 안 되고,
+        그 한 점이 프로필의 코랄 도장과 이어집니다.</td></tr>
+      <tr><th>프로필</th><td><code>docs/SHIFT/프로필/synkbrief_프로필.png</code> <span class="뱃지 유지">그대로</span> — 코랄 펠트 도장</td></tr>
+      <tr><th>소개</th><td><span class="뱃지 새">새로 씀</span> 인스타 소개 3줄을 유튜브 두 줄로 옮겼습니다(같은 계정이 플랫폼마다 다른 말을 하면 안 됩니다).</td></tr>
+    </table>
+    <p class="안전">🔴 <b>코랄 배너를 두 번 시도했다가 걷었습니다.</b> 밤 천 위의 코랄은 어떤 투명도에서도 «탁한 벽돌색»으로 읽힙니다 —
+    투명도가 아니라 채도의 문제라 낮출수록 갈색에 가까워질 뿐입니다. 킷이 이미 아는 규칙이었습니다:
+    <b>코랄의 제자리는 밝은 면 위</b>이고, 어두운 판에서는 «한 점»으로만 삽니다.</p>
+  </div>
+</article>
+
+<!-- ══ 3. synkkorean ══ -->
+<article class="채널">
+  <i class="배너 띠판" style="background-image:url('./배너/synklab_배너.png')"></i>
+  <div class="머리단">
+    <i class="프사" style="background-image:url('./프로필/synklab_프로필.png')"></i>
+    <div class="메타">
+      <p class="이름">SYNK LAB</p>
+      <p class="핸들"><b>@synkkorean</b> · 학원 대표 + 라디오 · <b>몽골 학생·학부모</b></p>
+      <p class="소개">몽골에서 한국어를 가르칩니다.
+
+24시간 한국어 라디오를 틉니다 — 여기 나오는 노래는 전부 SYNK가 직접 만들었습니다.
+공부할 때, 쉴 때, 자기 전에 켜 두세요.
+
+SYNK LAB · 울란바토르</p>
+    </div>
+  </div>
+  <div class="재료">
+    <table>
+      <tr><th>배너</th><td><code>docs/SHIFT/배너/synklab_배너.png</code> <span class="뱃지 새">새로 구움</span><br>
+        <b>셋 중 유일하게 밝습니다.</b> 청중이 다르기 때문입니다 — 앞 둘은 한국어권이 밤에 보고,
+        이 채널은 몽골 학생이 낮에 밝은 화면에서 봅니다. 오른쪽 몽글은 «안전 영역 밖»이라
+        폰에서는 안 보이는 덤이고, 발밑은 이음 솔기에 정확히 맞춰 천 위에 서 있게 뒀습니다.</td></tr>
+      <tr><th>프로필</th><td><code>docs/SHIFT/프로필/synklab_프로필.png</code> <span class="뱃지 새">새로 구움</span><br>
+        <b>여기만 얼굴이 마스코트입니다.</b> 학생이 아는 것은 <code>synk</code> 라는 글자가 아니라 몽글이고,
+        32px 짜리 목록에서도 «누구»인지가 먼저 읽혀야 합니다.</td></tr>
+      <tr><th>소개</th><td><span class="뱃지 새">새로 씀</span> 이 채널은 소개가 아예 없었습니다.
+        <b>몽골어 병기는 넣지 않았습니다</b> — 검수자가 아직 없어서이고, 규칙대로 한국어만 세웠습니다(검수 뒤 병기).</td></tr>
+    </table>
+    <p class="안전">🔑 <b>까몽을 왼쪽에 세웠다가 걷었습니다.</b> 라디오 DJ 가 몽글↔까몽 교대라 둘이 함께 서면 좋겠다고 봤는데,
+    까몽은 검은 털 캐릭터라 밝은 양모 천 위에서 «얼룩»이 되어 시선을 문안에서 뺏었습니다.
+    밝은 판에 서는 가이드는 몽글 하나입니다 — 까몽은 밤 판에서 삽니다.</p>
+  </div>
+</article>
+
+<div class="꼬리">
+  <h3>올리는 순서 — 채널마다 같습니다</h3>
+  <ol>
+    <li><b>YouTube Studio</b> → 왼쪽 <b>맞춤설정</b> → <b>브랜딩</b> 탭 → <b>사진</b>(프로필) · <b>배너 이미지</b> 올리기</li>
+    <li>같은 화면 <b>기본 정보</b> 탭 → <b>설명</b>에 위 소개 붙여넣기 · 채널 이름 확인</li>
+    <li>배너를 올리면 미리보기가 <b>TV · PC · 모바일</b> 셋으로 나옵니다 — 글자가 잘리는지 눈으로 보십시오</li>
+    <li>오른쪽 위 <b>게시</b> 를 눌러야 반영됩니다</li>
+  </ol>
+  <p style="margin:14px 0 0">
+  <b>남은 것 하나</b> — <code>@yuhobuilds</code> 의 프로필 사진(유호님 얼굴)입니다. 그것만 주시면 세 채널이 다 찹니다.</p>
+</div>
+
+</div></body></html>
