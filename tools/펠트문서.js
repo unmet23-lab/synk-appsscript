@@ -64,6 +64,8 @@ const { 표기접기 } = require('../tests/lib/소스검사.js');
 const 천길 = path.join(루트, 'docs', 'tools', '펠트천.json');
 const 토큰길 = path.join(루트, 'docs', '디자인_토큰.json');
 
+const 표지오브길 = path.join(루트, 'docs', 'tools', '표지오브.json');
+
 const 표식 = '<!--펠트스킨-->';
 // 검은 무대에서 실물 오브로 쓰는 천 — 첫째가 «기본 염료»다(유호 확정 08-19 · 조항 ⓘ:
 // 기본색 · 결 98.7% 라 굽기 가드 통과). 뒤는 무채 후퇴(다크 펠트는 결이 죽어 애초에 밝은 천만).
@@ -83,7 +85,11 @@ function 정본읽기() {
   const 토큰 = JSON.parse(fs.readFileSync(토큰길, 'utf8'));
   const 색 = {};
   for (const c of 토큰['색']['킷']) 색[c['이름']] = c['hex'];
-  return { 천: 천['천'], 규격: 천['_규격'], 색, 서체: 토큰['서체'] };
+  if (!fs.existsSync(표지오브길)) {
+    throw new Error('표지오브가 없다 — 먼저 `python tools/표지오브굽기.py` 를 돌린다: ' + 표지오브길);
+  }
+  const 표지오브 = JSON.parse(fs.readFileSync(표지오브길, 'utf8'));
+  return { 천: 천['천'], 규격: 천['_규격'], 색, 서체: 토큰['서체'], 표지오브 };
 }
 
 const 변수이름 = (이름) => '--' + 이름.toLowerCase().replace(/\s+/g, '');
@@ -118,7 +124,9 @@ const 면들 = {
   무대: { 바탕: 'Graphite', 층: [] },
   유리: { 바탕: 'Graphite', 층: [['Graphite 2', 0.55], ['Chalk', 0.035]] },
   유리밝은: { 바탕: 'Graphite', 층: [['Graphite 2', 0.55], ['Chalk', 0.085]] },
-  펠트오브: { 천: 기본색이름 },   /* 기본 염료 = 토큰 색.기본색 파생(조항 ⓘ) — 아래 짝 「Ink 글자」가 이 천 휘도로 재판정된다 */
+  펠트오브: { 천: 기본색이름 },   /* 표지 오브의 «자» — v0.4(09-01)부터 실물은 실굽기 렌더(표지오브.json · Paper ·
+                                     중심휘도 199/255)인데 심판은 천 타일로만 재므로 근백색 천(기본색)이 근사자다.
+                                     둘 다 근백색이라 성립 — 오브 색을 어두운 쪽으로 바꾸는 날 이 근사가 깨진다(그날 여기부터). */
   /* 낮 지면(인쇄·PDF) — 종이 위엔 합성이 없다. 전부 킷의 평면 hex 그대로다.
      ⚠이 셋을 «잰다»는 것이 요점이다: 지면을 하나 더 지어놓고 자를 안 대면
        안 재는 면이 하나 늘 뿐이다(장치가 새는 방향은 언제나 통과다). */
@@ -150,7 +158,7 @@ const 짝들 = [
   { 글자: 'Chalk', 면: '유리밝은', 자리: '표 머리·레일 활성·코드 조각' },
   { 글자: 'Coral 2', 면: '유리', 자리: '다크 보조 강조 글자(킷 직책 그대로)' },
   { 글자: 'Coral', 면: '무대', 자리: '신호 — 절 번호 옆 점·활성 표식' },
-  { 글자: 'Ink', 면: '펠트오브', 큰가: true, 자리: '펠트 오브 위 글자(표지 명패 — .오브 가 2.6rem·800 고정이라 대형 기준. 코랄 천(조항 ⓘ)에선 결 p1 이 4.5 를 못 넘고 3.71 — 본문 크기 글자를 이 천에 올리지 않는다)' },
+  { 글자: 'Ink', 면: '펠트오브', 큰가: true, 자리: '펠트 오브 위 글자(표지 명패 — .오브 2.3rem·800 고정 = 대형 기준 · v0.4 실물은 실굽기 렌더, 천은 근사자. 본문 크기 글자를 이 면에 올리지 않는다)' },
   { 글자: 'Ash', 면: '무대', 큰가: true, 자리: '히어로 그러데이션의 어두운 끝(대형 타이포)' },
   /* ── 낮 지면(인쇄·PDF) ── 화면과 «같은 골격, 다른 빛». 킷 직책의 허용 바닥을 그대로 탄다:
      Slate 는 다크 전용이라 종이에선 Slate 2 로 바뀌고, Coral 은 라이트에서 글자 금지라
@@ -161,7 +169,7 @@ const 짝들 = [
   { 글자: 'Ash 2', 면: '종이판', 지면: '낮', 자리: '패널 보조·인용' },
   { 글자: 'Ink', 면: '종이줄', 지면: '낮', 자리: '표 머리·절 번호 원판' },
   { 글자: 'Coral 3', 면: '종이', 지면: '낮', 큰가: true, 자리: '신호 — 종이에서는 Coral 이 글자로 못 서서 Coral 3(24px↑)' },
-  { 글자: 'Ink', 면: '펠트오브', 지면: '낮', 큰가: true, 자리: '펠트 오브는 낮에도 그대로 선다(명패 2.6rem·800 고정 — 대형 기준 · 밤 짝과 같은 근거)' },
+  { 글자: 'Ink', 면: '펠트오브', 지면: '낮', 큰가: true, 자리: '낮의 오브는 평면 Chalk 명패(렌더는 종이에 안 옮긴다 · v0.4) — 명패 2.3rem·800 고정, 대형 기준' },
 ];
 
 function 대비판정() {
@@ -189,7 +197,7 @@ const 채움 = (s, n) => String(s) + ' '.repeat(Math.max(0, n - String(s).length
 
 /** 스킨 CSS 조립. @param 쓸천 인라인할 펠트 타일 @param 림 '무채'(기본)|'스펙트럼' */
 function 스킨(쓸천, 림 = '무채') {
-  const { 천, 규격, 색, 서체 } = 정본읽기();
+  const { 천, 규격, 색, 서체, 표지오브 } = 정본읽기();
   const 목록 = (쓸천 && 쓸천.length ? 쓸천 : 기본천);
   const 없는것 = 목록.filter((n) => !천[n]);
   if (없는것.length) throw new Error('구운 적 없는 천: ' + 없는것.join(', '));
@@ -266,28 +274,16 @@ ${천줄}
   /* ── 표지 = 무대 위 실물 오브 1점 + 편집 타이포 ─────────────────────────── */
   .표지{padding:104px 0 66px;display:grid;gap:30px;grid-template-columns:1fr;}
   /* 실물 오브 1점 — 레퍼런스 ①(검은 무대 위 밝은 양모 아이콘)의 문법.
-     이 지면에서 «부피»를 가진 유일한 물건이고, 그래서 하나뿐이어야 한다. */
+     이 지면에서 «부피»를 가진 유일한 물건이고, 그래서 하나뿐이어야 한다.
+     v0.4(09-01 · 유호 교정 「이거 별로야 — Loom 실굽기 재질·요소를 써라」):
+     펠트천 타일 + inset 그림자 «CSS 흉내»(F498 계급 — 헌법 ① 「결은 사진 픽셀에서만」 위반)를 걷고
+     실굽기 렌더(오브공방_0821 · ${표지오브.색이름} · 표지오브굽기.py)를 그대로 싣는다 —
+     잔털·스티치·받침 그늘까지 전부 렌더의 것. 림라이트 그라디언트·테두리 흉내도 같이 걷었다. */
   .오브{
-    width:112px;height:112px;border-radius:31px;flex:none;position:relative;overflow:hidden;
-    background-color:var(--chalk);background-image:var(--천-${목록[0].toLowerCase()});background-size:46px;
-    box-shadow:
-      inset 0 3px 4px rgba(255,255,255,.62),
-      inset 0 -14px 24px -6px rgba(var(--graphite-rgb),.5),
-      inset 8px 0 20px -10px rgba(var(--graphite-rgb),.35),
-      inset -8px 0 20px -10px rgba(var(--graphite-rgb),.35),
-      0 2px 0 rgba(var(--그늘),.6),
-      0 38px 60px -20px rgba(var(--그늘),1);
+    width:132px;height:132px;flex:none;position:relative;
+    background-image:url(${표지오브.uri});background-size:cover;background-position:center;
     display:grid;place-items:center;
-    color:var(--ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
-  }
-  /* 잔털 림라이트 — 위 가장자리에서 빛이 섬유 끝을 태운다 */
-  .오브::before{
-    content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-    background:radial-gradient(78% 52% at 42% -6%, rgba(255,255,255,.72), rgba(255,255,255,0) 62%);
-  }
-  .오브::after{
-    content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);
+    color:var(--ink);font-weight:800;font-size:2.3rem;letter-spacing:-.05em;
   }
   .표지 .꼭지{
     display:inline-flex;align-items:center;gap:.55em;
@@ -429,6 +425,11 @@ ${천줄}
     html.js .듦,html.js .듦.왔다{opacity:1!important;transform:none!important;transition:none!important;}
 
     .유리.깊은{box-shadow:none;}
+
+    /* 표지 오브 — 실굽기 렌더는 «검은 무대의 물건»이라 흰 종이에 안 옮긴다(비네트가 얼룩이 된다).
+       종이는 평면 Chalk 명패(재질 흉내 0 — 정직한 플랫). 「배경 그래픽」이 꺼진 인쇄에선
+       배경류가 전부 빠져 글자만 남는다 — 렌더 시절과 같은 동작이라 잃는 것 없음. */
+    .오브{background-image:none;background-color:${색['Chalk']};border-radius:31px;}
 
     .표지{padding:0 0 22px;gap:16px;grid-template-columns:74px minmax(0,1fr);}
     .표지 h1{
