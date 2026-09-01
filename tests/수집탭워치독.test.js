@@ -306,7 +306,7 @@ test('🔑 실저장소 — 월간 아카이빙도 point_logs 기준선을 함�
     '월간 아카이빙이 기준선을 안 내린다(또는 죽은 조건 아래 있다) — 매달 1일 「줄었다」 오경보가 선다');
 });
 
-test('🔴 실저장소 — 넓힌 분모가 그대로 산다(표식 26종 = #Q100 22 + Ⅰ-④ 상담로그 + scene_log + 발음 사건 원장 둘 · 신규 전건)', () => {
+test('🔴 실저장소 — 넓힌 분모가 그대로 산다(표식 27종 = #Q100 22 + Ⅰ-④ 상담로그 + scene_log + 발음 사건 원장 둘 + 동의 이력 · 신규 전건)', () => {
   /* 표식은 **두 장부의 분모**다(«줄었나» 감시 · 도달 장부). 한 줄이 조용히 빠지면 그 탭은 두 곳
    * 모두에서 사라지고, 증상은 언제나 「위반 0」이다 — 그래서 이름을 세지 말고 **적어서** 못박는다.
    * [v9.259 · Ⅰ-④] 분모 22→23: `상담로그` 편입(입학 «전» 대화 원문 — E1 재료 · §8-0 두 관문 통과).
@@ -319,10 +319,10 @@ test('🔴 실저장소 — 넓힌 분모가 그대로 산다(표식 26종 = #Q1
   const 신규 = ['point_logs', 'attendance', 'attendance_batch', 'achievements', 'weekly_topics',
     'hw_batch', 'exit_log', 'absence_notice', 'absence_followup', 'lecture_views',
     'lesson_close', 'student_errors', 'academic_log', '상담로그', 'scene_log',
-    'voice_labels', 'voice_delivery'];
+    'voice_labels', 'voice_delivery', 'consent_log'];
   const 빠짐 = 신규.filter((n) => 수집.indexOf(n) === -1);
   assert.deepEqual(빠짐, [], `넓힌 수집 탭이 분모 밖으로 나갔다 — ${빠짐.join(', ')}`);
-  assert.equal(수집.length, 26, `수집 표식 ${수집.length}종 — 26이 아니면 판정표(docs/엔진도달_설계.md §8-0)와 갈라졌다`);
+  assert.equal(수집.length, 27, `수집 표식 ${수집.length}종 — 27이 아니면 판정표(docs/엔진도달_설계.md §8-0)와 갈라졌다`);
   /* leads 는 사람이 고치는 리드 원장(inquiries 동류)이라 골격엔 들되 표식은 ㉡ 탈락이다. */
   assert.equal(수집.indexOf('leads'), -1, 'leads 에 수집 표식이 붙었다 — 사람 원장은 ㉡ 탈락(Ⅰ-④ 판정)');
   /* 🔴 **탈락 쪽도 못박는다** — 통과 목록만 검사하면 「넓히기」가 무제한으로 번져도 초록이다.
