@@ -206,7 +206,12 @@ function 심문드리프트줄들() {
   // 모듈이 없으면 «대조를 안 할 뿐» 런 알림은 그대로 낸다(이 훅의 본디 일이 그쪽이다).
   try { 해석 = require(path.join(ROOT, 'tools', 'lib', '심문장부.js')); }
   catch (_) { return []; }
-  const 읽음 = 해석.읽기(path.join(ROOT, 'docs', '_ops', '심문기록.jsonl'));
+  /* 장부 경로 env 이름은 `tools/codex-review.js`(심문경로) 와 **같은 것**을 쓴다 — 한 값을 두 이름으로
+   * 알면 갈린다. 회귀가 이걸로 장부를 격리한다: 09-01 에 개명 사슬을 이어 드리프트가 «살아나자»
+   * 「훅이 런 0건이면 한 글자도 안 쓴다」를 재던 시험 넷이 깨졌다 — 런은 픽스처로 격리했는데
+   * **심문 장부는 실저장소를 읽고 있었다.** 그 시험들이 재려던 것은 런 축이지 드리프트 축이 아니다. */
+  const 읽음 = 해석.읽기(process.env.SYNK_INTERROGATION_LEDGER
+    || path.join(ROOT, 'docs', '_ops', '심문기록.jsonl'));
   if (!읽음) return [];                   // 장부가 없다 = 심문 이력 0 = 침묵
   const 접힘 = 해석.요약(읽음.행);        // 대상들의 키는 **개명 사슬을 푼 최종 이름**이다
   const 줄 = [];

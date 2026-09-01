@@ -366,12 +366,25 @@ test('모르는 단계는 자식 진입점이 거절한다 — 조용히 기본�
 
 // ───────────────────────────────────────────────── ⑦ 훅 — 침묵과 발화
 
+/* ⚠ 이 훅은 **세 축**을 낸다 — 런 · 벤더 한도 마커 · 심문 드리프트. 아래 시험들이 재는 것은
+ *   «런» 축이므로 나머지 둘을 격리해야 한다. 09-01 실측: 심문 장부만 격리가 없어서, 개명 사슬을
+ *   이어 드리프트가 «살아나자» 「0건이면 한 글자도 안 쓴다」류 시험 넷이 한꺼번에 깨졌다 —
+ *   엔진이 아니라 **시험이 실저장소 상태에 기대고 있던 것**이다(거짓 적색).
+ *   기본값으로 빈 장부를 물린다. 드리프트 축을 재려는 시험은 이 env 를 덮어쓰면 된다. */
 function 훅돌리기(env) {
   try {
     return {
       코드: 0,
       out: execFileSync(process.execPath, [path.join(ROOT, '.claude', 'hooks', 'review-runs.js')],
-        { encoding: 'utf8', env: { ...process.env, ...env } }),
+        {
+          encoding: 'utf8',
+          env: {
+            ...process.env,
+            // 없는 경로 = 「심문 이력 0」 = 드리프트 침묵. 덮어쓰려면 호출자가 env 로 준다(뒤가 이긴다).
+            SYNK_INTERROGATION_LEDGER: path.join(require('node:os').tmpdir(), 'synk-없는심문장부.jsonl'),
+            ...env,
+          },
+        }),
     };
   } catch (e) {
     return { 코드: e.status, out: String(e.stdout || '') + String(e.stderr || '') };
