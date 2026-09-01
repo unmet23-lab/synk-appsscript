@@ -46,6 +46,13 @@
   --lime:#C8FF3D;
   --lime-2:#B8E836;
 
+  /* 03 Threads — 킷의 «밝은 실» 넷. 여태 한 번도 안 쓰고 있었다(유호 09-02 「칙칙해서 별로같아」).
+     직책을 그대로 따른다: 청금석=안내 · 버터=보상 · 메도우=정답 · 팝=이벤트. */
+  --lapis-soft:#C5D6F5;    /* 안내 칩 바닥 */
+  --butter-soft:#FFEBB0;   /* 보상 여린 면 */
+  --meadow-soft:#D3E8BE;   /* 정답 칩 바닥 */
+  --pop-soft:#F8C7DE;      /* 이벤트 칩 바닥 */
+
   --ink:#2B2320;
   /* 2026-08-05 · 키트 밖 회색 174곳을 이 두 줄로 잡는다(호출부는 안 만진다).
      구값 --muted:#8D857A 은 Cream 위 대비 4.09 로 본문 기준 4.5 에 **아깝게** 미달했고,
@@ -83,7 +90,9 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
-  background:var(--cream-3);  /* 구값 #F0E3C8 — 키트 밖. 지면 바깥 바탕은 Cream 3 가 정본값 */
+  /* 🔴 Stitch(#F0E3C8)는 킷 직책이 「테두리·구분선」인데 화면 «바탕»으로 쓰고 있었다.
+     바깥 바탕은 Oat(가라앉은 면)가 맞다 — 그래야 Paper 지면이 그 위로 떠오른다. */
+  background:var(--cream);
   font-family:var(--sans);
   color:var(--ink);
   -webkit-font-smoothing:antialiased;
@@ -100,7 +109,9 @@ input,textarea,select,button{font-family:inherit;color:inherit}
 }
 section.page{
   position:relative;
-  background:var(--cream);
+  /* 🔴 Oat 는 킷 직책이 「가라앉은 면」이다 — 지면 전체를 그걸로 덮고 있었으니 칙칙했다.
+     「바탕(라이트)」 직책은 Paper 다. 바꿔 놓으니 지면이 밝아지고 글자 대비도 함께 오른다. */
+  background:var(--paper);
   border-radius:16px;
   /* ⚠A4 비율(aspect-ratio 1/1.414)·overflow:hidden 은 2026-09-02 에 걷었다 —
      아래 「Utility overrides」가 !important 로 이미 두 번 덮고 있어서 **한 번도 안 걸렸다.**
@@ -291,7 +302,7 @@ section.page{
 
 /* Notes / callouts ----------------------------------------------------- */
 .note{
-  background:var(--cream-2);
+  background:var(--coral-wash);   /* 코랄 선이 붙은 안내 = 「코랄이 앉는 여린 면」이 그 직책이다 */
   border-left:3px solid var(--coral);
   padding:14px 18px 13px;border-radius:0 10px 10px 0;
   font-size:12.5px;line-height:1.6;color:var(--muted-2);
@@ -316,12 +327,12 @@ section.page{
 
 /* Signature canvas ----------------------------------------------------- */
 .sig-wrap{
-  background:var(--cream-2);border-radius:12px;
+  background:var(--cream);border-radius:12px;   /* 서명 캔버스를 «담는» 판이라 가라앉은 면이 맞다 */
   padding:14px;position:relative;
 }
 .sig-wrap canvas{
   display:block;width:100%;height:120px;
-  background:var(--cream);border-radius:8px;cursor:crosshair;
+  background:var(--paper);border-radius:8px;cursor:crosshair;   /* 서명은 «흰 종이»에 한다 */
   box-shadow:inset 0 0 0 1px rgba(43,35,32,.1);
 }
 .sig-wrap .sig-label{
@@ -454,7 +465,7 @@ section.page{
     display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
   }
   .cov-deliverables .del{
-    background:var(--paper);border:1px solid rgba(43,35,32,.08);
+    background:var(--coral-wash);border:1px solid rgba(43,35,32,.08);
     border-radius:12px;padding:14px 14px 12px;
     display:flex;flex-direction:column;gap:6px;
     position:relative;overflow:hidden;
@@ -733,8 +744,8 @@ section.page{
   .cov-ribbon{
     display:flex;align-items:center;gap:14px;margin-top:22px;
     padding:14px 18px;
-    background:var(--cream-2);border-radius:12px;
-    border:1px dashed rgba(43,35,32,.18);
+    background:var(--butter-soft);border-radius:12px;   /* 환영 = 「보상 여린 면」 */
+    border:1px dashed rgba(43,35,32,.22);
   }
   .cov-ribbon .icon{
     width:34px;height:34px;border-radius:50%;
@@ -1057,7 +1068,7 @@ section.page{
   }
   .pledge-body{
     font-size:14px;line-height:1.9;color:var(--muted-2);
-    background:var(--cream-2);border-radius:12px;padding:22px 24px;
+    background:var(--coral-wash);border-radius:12px;padding:22px 24px;
     margin-top:12px;text-wrap:pretty;
   }
   .pledge-body b{color:var(--navy)}
@@ -1070,7 +1081,7 @@ section.page{
     display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:24px;
   }
   .kc-card{
-    background:var(--paper);border-radius:16px;padding:20px;
+    background:var(--coral-wash);border-radius:16px;padding:20px;
     box-shadow:0 14px 32px -18px rgba(8,9,12,.35);
     display:flex;flex-direction:column;gap:10px;
     position:relative;overflow:hidden;
@@ -1163,7 +1174,7 @@ section.page{
     display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px;
   }
   .tl-cell{
-    background:var(--cream-2);border-radius:10px;padding:12px 14px;
+    background:var(--meadow-soft);border-radius:10px;padding:12px 14px;   /* 타임라인 = 자라나는 것 */
     display:flex;flex-direction:column;gap:6px;
   }
   .tl-cell .k{
@@ -1311,7 +1322,7 @@ section.page{
   /* 안쪽 줄(.imx)은 760px 로 묶었는데 «상자»는 100% 라 오른쪽이 통째로 비어 있었다 —
      상자와 내용의 폭이 갈리면 그 틈이 그대로 «구멍»으로 읽힌다(8쪽 전수 렌더 09-02). */
   .mtx{
-    background:var(--paper);border-radius:12px;padding:14px 18px 12px;
+    background:var(--coral-wash);border-radius:12px;padding:14px 18px 12px;
     border:1px solid rgba(43,35,32,.08);margin-top:8px;max-width:800px;
   }
   .mtx-head{
@@ -1342,7 +1353,7 @@ section.page{
      tighter vertical rhythm between label and body; more generous padding. */
   .callout{
     display:flex;gap:14px;align-items:flex-start;
-    background:var(--cream-2);border-radius:12px;
+    background:var(--lapis-soft);border-radius:12px;   /* 「안내 칩 바닥」 직책 그대로 */
     padding:16px 18px 15px;
     margin-top:16px;
     border:1px solid rgba(43,35,32,.05);
@@ -1550,7 +1561,7 @@ section.page{
   }
   .row-divider::before{
     content:attr(data-label);position:absolute;left:0;top:-8px;
-    padding-right:8px;background:var(--cream);
+    padding-right:8px;background:var(--paper);   /* 구분선 라벨은 지면색을 덮어써야 선이 끊긴다 */
     font-family:var(--mono);font-size:9px;letter-spacing:.14em;
     text-transform:uppercase;color:var(--muted);font-weight:600;
   }
