@@ -525,9 +525,10 @@ section.page{
 
   /* The membership card — hero object on the cover */
   .m-card{
-    /* 🔴 폭이 안 묶여 1200px 화면에서 «카드»가 아니라 «띠»로 보였다 — 멤버십 카드는 이 지면의
-       히어로라 형태부터 카드여야 한다(8쪽 전수 렌더 09-02). */
-    max-width:780px;
+    /* ⚠ 09-02 에 여기 max-width:780px 을 넣었다가 **되돌렸다.** 「카드가 띠로 보인다」는 판정이
+       .doc 를 max-width:none 으로 억지로 넓혀 본 화면에서 나온 것이라 **관찰 자체가 틀렸다** —
+       실제로는 .doc 960px + 지면 패딩 때문에 카드는 늘 800px 안이다. 넣어 봐야 20px 좁히면서
+       코랄 면적만 깎았다(유호 09-02 「화사하고 쨍한 느낌이 사라졌는데」의 몫 하나). */
     margin-top:40px;
     background:
       radial-gradient(140% 100% at 0% 0%, rgba(255,255,255,.14), transparent 55%),
@@ -544,16 +545,28 @@ section.page{
      「UI·UX 에 CSS 흉내를 쓰지 말고 Loom 으로 구운 재질·요소를 적재적소에 써라」의 집행이다.
      상자는 지면이 준다 — Loom 은 «배경»만 준다(와펜·폼폼엔 폴백 상자가 없다).
      🚫«구»(유리·레진 구슬)는 안 쓴다(유호 확정 09-01 ③) — 이 둘은 털·자수다. */
+  /* 🔴 라임 원을 되돌린다 (유호 09-02 「화사하고 쨍한 느낌이 사라졌는데」 · 실측이 맞았다:
+     라임 면적이 0.217% → 0.010% 로 **95% 사라졌었다**). 1차에서 이 자리를 폼폼으로 «갈아 끼운»
+     것이 원인이다 — 재질은 얻고 **킷의 신호색을 잃었다.**
+     ⇒ 갈아 끼우지 말고 **겹친다.** 라임 원이 바닥이 되고 폼폼이 그 위에 앉는다.
+        곁값 하나 더: 폼폼이 «앉을 면»이 생겨서 붕 뜨는 병도 같이 닫힌다. */
+  .m-card::after{
+    content:'';position:absolute;right:-40px;top:-40px;
+    width:124px;height:124px;border-radius:50%;
+    background:var(--lime);opacity:.94;z-index:1;pointer-events:none;
+    transition:transform .5s var(--ease), opacity .5s var(--ease);
+  }
+  .m-card.is-ready::after{transform:scale(1.06)}
   .m-card > .폼폼{
-    /* 완료에 반응하는 모서리 표식. 카드가 overflow:hidden 이라 모서리에 «파묻힌» 털 방울이 된다. */
-    position:absolute;right:-22px;top:-22px;width:104px;height:104px;
-    z-index:1;pointer-events:none;
+    /* 라임 원 «위»에 앉는 털 방울. 카드가 overflow:hidden 이라 모서리에 파묻힌 모양이 된다. */
+    position:absolute;right:-26px;top:-24px;width:96px;height:96px;
+    z-index:2;pointer-events:none;
     transition:transform .5s var(--ease), opacity .5s var(--ease);
   }
   .m-card > .와펜{
     /* 크루 배지 — 원형 자수 와펜(체크가 이미 수놓여 있다) = 「발급됨·소속」. */
     position:absolute;right:14px;top:16px;width:42px;height:42px;
-    z-index:2;pointer-events:none;opacity:.92;
+    z-index:3;pointer-events:none;opacity:.92;
     transition:opacity .4s var(--ease);
   }
   .m-card.is-ready > .폼폼{transform:scale(1.06)}
@@ -702,7 +715,9 @@ section.page{
 
   /* Part 06 리드 — 문단에 «면»을 준다(서약 본문과 같은 크림 박스). 몽글이 그 안에 앉는다. */
   .kc-lead{
-    background:var(--cream-2);border-radius:14px;padding:18px 22px;
+    /* Cream 2 는 저채도 베이지라 지면을 «차분하게» 누른다(실측: 내 손질로 4.12% → 5.19% 로 늘었다).
+       리드는 K-컬처 지면의 «밝은 자리»가 맞다 — Paper 로 올린다. */
+    background:var(--paper);border-radius:14px;padding:18px 22px;
     border:1px solid rgba(43,35,32,.07);
   }
   .kc-lead > p{margin:0;max-width:none;}
@@ -1103,7 +1118,7 @@ section.page{
   .kc-card .opts{
     margin-top:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:0;
     border:1px solid rgba(43,35,32,.16);border-radius:10px;overflow:hidden;
-    background:rgba(251,247,240,.55);
+    background:var(--paper);
   }
   .kc-card .opt{
     font-size:10.5px;letter-spacing:-.01em;padding:9px 2px;justify-content:center;gap:4px;
@@ -1388,7 +1403,7 @@ section.page{
     border-radius:3px 3px 0 0;
   }
   /* 채우는 자리라는 것이 «비어 있을 때» 드러나야 한다 — 옅은 바닥 한 겹(가시성). */
-  .kc-detail .row input:placeholder-shown{background:rgba(43,35,32,.035);}
+  .kc-detail .row input:placeholder-shown{background:rgba(249,104,89,.055);}   /* 무채 회색은 지면을 탁하게 눌렀다 */
   .kc-detail .row input:focus{border-bottom-color:var(--coral)}
   .kc-detail .row input::placeholder{color:rgba(43,35,32,.28);font-style:italic}
 
